@@ -1,0 +1,3 @@
+#!/bin/sh
+cd kenyonexpress
+pnpm exec lint-staged

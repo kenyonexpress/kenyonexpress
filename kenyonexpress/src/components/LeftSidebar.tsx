@@ -1,17 +1,20 @@
 const banners = [
   {
+    id: 'hottest',
     heading: 'SHOP THE HOTTEST PRODUCTS',
     emoji: '🚗',
     emojiLabel: 'Tesla',
     bg: '#fff5f5',
   },
   {
+    id: 'consoles',
     heading: 'CATCH BIG DEALS ON THE CONSOLES',
     emoji: '🎮',
     emojiLabel: 'Consoles',
     bg: '#f5f5ff',
   },
   {
+    id: 'laptops',
     heading: 'LAPTOPS NOTEBOOKS AND MORE',
     emoji: '💻',
     emojiLabel: 'Laptops',
@@ -22,16 +25,13 @@ const banners = [
 export default function LeftSidebar() {
   return (
     <aside className="space-y-3">
-      {banners.map((b, i) => (
+      {banners.map((b) => (
         <div
-          key={i}
+          key={b.id}
           className="border border-gray-200 rounded-xl overflow-hidden bg-white hover:shadow-md transition-shadow cursor-pointer"
         >
           {/* Product image area */}
-          <div
-            className="flex items-center justify-center h-24"
-            style={{ background: b.bg }}
-          >
+          <div className="flex items-center justify-center h-24" style={{ background: b.bg }}>
             <span className="text-5xl select-none">{b.emoji}</span>
           </div>
           {/* Text + button */}
@@ -40,6 +40,7 @@ export default function LeftSidebar() {
               {b.heading}
             </p>
             <button
+              type="button"
               className="mt-2.5 w-full text-white text-xs font-bold py-1.5 rounded-full transition-colors hover:opacity-90"
               style={{ background: '#FF6B00' }}
             >

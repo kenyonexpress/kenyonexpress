@@ -14,11 +14,10 @@ export async function createClient() {
         },
         setAll(cookiesToSet) {
           try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options),
-            )
+            for (const { name, value, options } of cookiesToSet)
+              cookieStore.set(name, value, options)
           } catch {
-            // Server component — cookie writes are no-ops, middleware handles refresh
+            // Server component — cookie writes are no-ops, proxy handles refresh
           }
         },
       },

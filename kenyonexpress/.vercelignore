@@ -1,0 +1,12 @@
+.env.local
+.env*.local
+supabase/
+e2e/
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+vitest.config.ts
+playwright.config.ts
+biome.json
+.husky/

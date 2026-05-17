@@ -1,0 +1,32 @@
+{
+  "app": {
+    "name": "KenyonExpress",
+    "tagline": "קופונים, מוצרים ומבצעים"
+  },
+  "nav": {
+    "home": "דף הבית",
+    "coupons": "קופונים",
+    "products": "מוצרים",
+    "account": "החשבון שלי",
+    "cart": "עגלת קניות",
+    "search": "חיפוש"
+  },
+  "auth": {
+    "login": "התחברות",
+    "logout": "התנתקות",
+    "signup": "הרשמה",
+    "email": "אימייל",
+    "password": "סיסמה",
+    "fullName": "שם מלא",
+    "phone": "טלפון"
+  },
+  "common": {
+    "loading": "טוען...",
+    "error": "שגיאה",
+    "save": "שמירה",
+    "cancel": "ביטול",
+    "confirm": "אישור",
+    "back": "חזרה",
+    "currency": "₪"
+  }
+}

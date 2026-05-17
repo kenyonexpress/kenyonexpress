@@ -43,13 +43,12 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
       </div>
 
       <button
+        type="button"
         onClick={handleCopy}
         className="shrink-0 border-2 border-dashed border-brand rounded-lg px-3 py-2 text-center min-w-[90px] hover:bg-brand-light transition-colors"
       >
         <p className="text-xs text-gray-400 mb-0.5">קוד קופון</p>
-        <p className="font-mono font-bold text-sm text-brand">
-          {copied ? '✓ הועתק' : coupon.code}
-        </p>
+        <p className="font-mono font-bold text-sm text-brand">{copied ? '✓ הועתק' : coupon.code}</p>
       </button>
     </div>
   )

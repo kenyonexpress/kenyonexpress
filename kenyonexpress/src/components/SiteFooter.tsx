@@ -28,9 +28,9 @@ export default function SiteFooter() {
               <ul className="space-y-2">
                 {col.links.map((link) => (
                   <li key={link}>
-                    <a href="#" className="text-sm hover:text-white transition-colors">
+                    <span className="text-sm hover:text-white transition-colors cursor-pointer">
                       {link}
-                    </a>
+                    </span>
                   </li>
                 ))}
               </ul>

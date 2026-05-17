@@ -3,10 +3,10 @@
 :root {
   --background: #f9fafb;
   --foreground: #111827;
-  --brand: #0B6E4F;
+  --brand: #0b6e4f;
   --brand-dark: #095c41;
   --brand-light: #e6f4ef;
-  --accent: #F5C518;
+  --accent: #f5c518;
 }
 
 @theme inline {
@@ -16,7 +16,7 @@
   --color-brand-dark: var(--brand-dark);
   --color-brand-light: var(--brand-light);
   --color-accent: var(--accent);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-rubik);
 }
 
 body {

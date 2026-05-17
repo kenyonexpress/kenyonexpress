@@ -1,0 +1,32 @@
+{
+  "app": {
+    "name": "KenyonExpress",
+    "tagline": "Coupons, products and deals"
+  },
+  "nav": {
+    "home": "Home",
+    "coupons": "Coupons",
+    "products": "Products",
+    "account": "My Account",
+    "cart": "Cart",
+    "search": "Search"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "signup": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "fullName": "Full Name",
+    "phone": "Phone"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "back": "Back",
+    "currency": "₪"
+  }
+}
