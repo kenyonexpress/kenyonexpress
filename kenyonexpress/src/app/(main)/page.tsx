@@ -1,8 +1,8 @@
-import { createClient } from '@/lib/supabase/server'
-import HeroSlider from '@/components/HeroSlider'
 import CategoryStrip from '@/components/CategoryStrip'
-import ProductCard, { type Product } from '@/components/ProductCard'
 import CouponCard, { type Coupon } from '@/components/CouponCard'
+import ProductCard, { type Product } from '@/components/ProductCard'
+import HeroSection from '@/components/home/HeroSection'
+import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 
 export default async function HomePage() {
@@ -25,7 +25,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <HeroSlider />
+      <HeroSection />
       <CategoryStrip />
 
       {/* Featured products */}

@@ -19,11 +19,7 @@ export default function ProductCard({ product }: { product: Product }) {
     >
       <div className="aspect-square bg-gray-50 flex items-center justify-center relative">
         {product.image_url ? (
-          <img
-            src={product.image_url}
-            alt={product.name}
-            className="w-full h-full object-cover"
-          />
+          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
         ) : (
           <span className="text-5xl">📦</span>
         )}
@@ -39,9 +35,7 @@ export default function ProductCard({ product }: { product: Product }) {
         <p className="text-sm font-medium text-gray-800 line-clamp-2 leading-snug">
           {product.name}
         </p>
-        <p className="text-brand font-bold mt-1.5">
-          ₪{Number(product.price_ils).toFixed(2)}
-        </p>
+        <p className="text-brand font-bold mt-1.5">₪{Number(product.price_ils).toFixed(2)}</p>
       </div>
     </Link>
   )

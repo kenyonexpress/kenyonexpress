@@ -3,6 +3,11 @@ import SignupForm from './SignupForm'
 
 export const metadata: Metadata = { title: 'הרשמה — KenyonExpress' }
 
-export default function SignupPage() {
-  return <SignupForm />
+export default async function SignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>
+}) {
+  const { next } = await searchParams
+  return <SignupForm next={next} />
 }

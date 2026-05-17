@@ -5,10 +5,10 @@ import { usePathname } from 'next/navigation'
 
 const tabs = [
   { href: '/profile', label: 'פרופיל', emoji: '👤' },
-  { href: '/wallet',  label: 'ארנק',   emoji: '💳' },
+  { href: '/wallet', label: 'ארנק', emoji: '💳' },
   { href: '/coupons', label: 'קופונים', emoji: '🎟' },
-  { href: '/products', label: 'קניות',  emoji: '🛒' },
-  { href: '/',        label: 'בית',     emoji: '🏠' },
+  { href: '/products', label: 'קניות', emoji: '🛒' },
+  { href: '/', label: 'בית', emoji: '🏠' },
 ]
 
 export default function BottomNav() {
@@ -27,7 +27,9 @@ export default function BottomNav() {
                 active ? 'text-brand' : 'text-gray-400 hover:text-gray-600'
               }`}
             >
-              <span className={`text-2xl leading-none mb-0.5 ${active ? 'opacity-100' : 'opacity-50'}`}>
+              <span
+                className={`text-2xl leading-none mb-0.5 ${active ? 'opacity-100' : 'opacity-50'}`}
+              >
                 {emoji}
               </span>
               <span>{label}</span>

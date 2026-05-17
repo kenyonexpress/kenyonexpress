@@ -26,7 +26,45 @@ export async function proxy(request: NextRequest) {
   )
 
   // Refresh the Supabase session — do not remove, required for cookie rotation.
-  await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const { pathname } = request.nextUrl
+
+  // Route protection
+  const needsAuth =
+    pathname.startsWith('/account') || pathname === '/checkout' || pathname.startsWith('/checkout/')
+
+  if (needsAuth && !user) {
+    const loginUrl = request.nextUrl.clone()
+    loginUrl.pathname = '/login'
+    loginUrl.searchParams.set('next', pathname)
+    return NextResponse.redirect(loginUrl)
+  }
+
+  if (pathname.startsWith('/admin')) {
+    if (!user) {
+      const loginUrl = request.nextUrl.clone()
+      loginUrl.pathname = '/login'
+      loginUrl.searchParams.set('next', pathname)
+      return NextResponse.redirect(loginUrl)
+    }
+    const isAdmin = user.app_metadata?.role === 'admin'
+    if (!isAdmin) {
+      return NextResponse.redirect(new URL('/', request.url))
+    }
+  }
+
+  // Generate a guest session ID for unauthenticated users (cart tracking)
+  if (!user && !request.cookies.get('ke_session_id')) {
+    supabaseResponse.cookies.set('ke_session_id', crypto.randomUUID(), {
+      httpOnly: true,
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 30,
+      path: '/',
+    })
+  }
 
   return supabaseResponse
 }
