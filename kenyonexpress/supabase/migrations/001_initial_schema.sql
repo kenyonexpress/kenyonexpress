@@ -13,10 +13,6 @@ create extension if not exists "pg_trgm"; -- full-text search helpers
 -- Enums
 -- ---------------------------------------------------------------------------
 
-create type public.user_role as enum (
-  'customer', 'vendor', 'content_uploader', 'admin'
-);
-
 create type public.vendor_status as enum (
   'pending', 'active', 'suspended'
 );
@@ -69,6 +65,30 @@ end;
 $$;
 
 -- ---------------------------------------------------------------------------
+-- 1. profiles  (extends auth.users)
+-- ---------------------------------------------------------------------------
+
+CREATE TYPE public.user_role AS ENUM ('customer', 'content_uploader', 'vendor', 'admin', 'super_admin');
+
+create table public.profiles (
+  id           uuid primary key references auth.users(id) on delete cascade,
+  email        text not null,
+  full_name    text,
+  phone        text,
+  avatar_url   text,
+  role         public.user_role NOT NULL DEFAULT 'customer',
+  created_at   timestamptz not null default now(),
+  updated_at   timestamptz not null default now()
+);
+
+create index profiles_email_idx       on public.profiles (email);
+create index profiles_role_idx        on public.profiles (role);
+
+create trigger profiles_set_updated_at
+  before update on public.profiles
+  for each row execute procedure public.set_updated_at();
+
+-- ---------------------------------------------------------------------------
 -- Admin helper (used in RLS policies)
 -- ---------------------------------------------------------------------------
 
@@ -80,28 +100,6 @@ set search_path = public as $$
     where id = auth.uid() and role = 'admin'
   )
 $$;
-
--- ---------------------------------------------------------------------------
--- 1. profiles  (extends auth.users)
--- ---------------------------------------------------------------------------
-
-create table public.profiles (
-  id           uuid primary key references auth.users(id) on delete cascade,
-  email        text not null,
-  full_name    text,
-  phone        text,
-  avatar_url   text,
-  role         public.user_role not null default 'customer',
-  created_at   timestamptz not null default now(),
-  updated_at   timestamptz not null default now()
-);
-
-create index profiles_email_idx       on public.profiles (email);
-create index profiles_role_idx        on public.profiles (role);
-
-create trigger profiles_set_updated_at
-  before update on public.profiles
-  for each row execute procedure public.set_updated_at();
 
 -- ---------------------------------------------------------------------------
 -- 2. vendors
