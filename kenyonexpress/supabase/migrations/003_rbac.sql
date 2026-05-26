@@ -1,6 +1,71 @@
 -- Phase 3: RBAC — role hierarchy, created_by tracking, audit log
 
 -- ---------------------------------------------------------------------------
+-- 0. Ensure user_role enum and profiles.role enum column exist
+--    Self-contained: handles databases where migration 001 predates the enum.
+-- ---------------------------------------------------------------------------
+
+DO $$ BEGIN
+  CREATE TYPE public.user_role AS ENUM (
+    'customer', 'content_uploader', 'vendor', 'admin', 'super_admin'
+  );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- Convert profiles.role from text to the enum type if it hasn't been done yet.
+-- Normalises any unrecognised stored values to 'customer' before the ALTER so
+-- the USING expression never encounters an unmappable value.
+-- The "profiles: owner update" policy contains a self-referencing subquery
+-- (role = SELECT role ...) that Postgres re-validates during ALTER COLUMN TYPE;
+-- with the old text type still partially visible it produces
+-- "operator does not exist: user_role = text".  Drop it first; recreated below.
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name   = 'profiles'
+      AND column_name  = 'role'
+      AND udt_name    <> 'user_role'
+  ) THEN
+    ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_role_check;
+
+    UPDATE public.profiles
+    SET role = 'customer'
+    WHERE role NOT IN ('customer','content_uploader','vendor','admin','super_admin');
+
+    DROP POLICY IF EXISTS "profiles: owner update" ON public.profiles;
+
+    ALTER TABLE public.profiles ALTER COLUMN role DROP DEFAULT;
+    ALTER TABLE public.profiles
+      ALTER COLUMN role TYPE public.user_role
+      USING (
+        CASE role
+          WHEN 'customer'         THEN 'customer'        ::public.user_role
+          WHEN 'content_uploader' THEN 'content_uploader'::public.user_role
+          WHEN 'vendor'           THEN 'vendor'           ::public.user_role
+          WHEN 'admin'            THEN 'admin'            ::public.user_role
+          WHEN 'super_admin'      THEN 'super_admin'      ::public.user_role
+          ELSE                         'customer'         ::public.user_role
+        END
+      );
+    ALTER TABLE public.profiles
+      ALTER COLUMN role SET DEFAULT 'customer'::public.user_role;
+  END IF;
+END $$;
+
+-- Recreate the UPDATE policy unconditionally so re-runs are safe and the
+-- policy is always in place with the correct enum types on both sides.
+DROP POLICY IF EXISTS "profiles: owner update" ON public.profiles;
+CREATE POLICY "profiles: owner update"
+  ON public.profiles FOR UPDATE TO authenticated
+  USING (id = auth.uid())
+  WITH CHECK (
+    id = auth.uid()
+    AND role = (SELECT role FROM public.profiles WHERE id = auth.uid())
+  );
+
+-- ---------------------------------------------------------------------------
 -- 1. Add created_by to products, coupons, categories
 -- ---------------------------------------------------------------------------
 
@@ -13,24 +78,25 @@ ALTER TABLE public.coupons
 ALTER TABLE public.categories
   ADD COLUMN IF NOT EXISTS created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL;
 
-CREATE INDEX IF NOT EXISTS products_created_by_idx   ON public.products  (created_by);
-CREATE INDEX IF NOT EXISTS coupons_created_by_idx    ON public.coupons   (created_by);
-CREATE INDEX IF NOT EXISTS categories_created_by_idx ON public.categories(created_by);
+CREATE INDEX IF NOT EXISTS products_created_by_idx   ON public.products   (created_by);
+CREATE INDEX IF NOT EXISTS coupons_created_by_idx    ON public.coupons    (created_by);
+CREATE INDEX IF NOT EXISTS categories_created_by_idx ON public.categories (created_by);
 
 -- ---------------------------------------------------------------------------
--- 3. RBAC helper functions
+-- 2. RBAC helper functions
 -- ---------------------------------------------------------------------------
 
--- Returns the role of the calling user from the profiles table.
--- Returns NULL when called outside of an authenticated session.
+-- Returns the role of the calling user (NULL outside authenticated session).
 CREATE OR REPLACE FUNCTION public.current_user_role()
 RETURNS public.user_role LANGUAGE sql STABLE SECURITY DEFINER
 SET search_path = public AS $$
   SELECT role FROM public.profiles WHERE id = auth.uid()
 $$;
 
--- Returns true when the calling user holds at least `required_role` in the
--- role hierarchy: customer < vendor < content_uploader < admin < super_admin.
+-- Returns true when the caller holds at least `required_role` in the hierarchy:
+-- customer < vendor < content_uploader < admin < super_admin.
+-- All comparisons against v_role use explicit ::public.user_role casts to
+-- avoid "operator does not exist: user_role = text" at planning time.
 CREATE OR REPLACE FUNCTION public.has_role(required_role text)
 RETURNS boolean LANGUAGE plpgsql STABLE SECURITY DEFINER
 SET search_path = public AS $$
@@ -44,10 +110,19 @@ BEGIN
 
   RETURN CASE required_role
     WHEN 'customer'         THEN true
-    WHEN 'vendor'           THEN v_role IN ('vendor','content_uploader','admin','super_admin')
-    WHEN 'content_uploader' THEN v_role IN ('content_uploader','admin','super_admin')
-    WHEN 'admin'            THEN v_role IN ('admin','super_admin')
-    WHEN 'super_admin'      THEN v_role = 'super_admin'
+    WHEN 'vendor'           THEN v_role IN (
+                                   'vendor'          ::public.user_role,
+                                   'content_uploader'::public.user_role,
+                                   'admin'           ::public.user_role,
+                                   'super_admin'     ::public.user_role)
+    WHEN 'content_uploader' THEN v_role IN (
+                                   'content_uploader'::public.user_role,
+                                   'admin'           ::public.user_role,
+                                   'super_admin'     ::public.user_role)
+    WHEN 'admin'            THEN v_role IN (
+                                   'admin'      ::public.user_role,
+                                   'super_admin'::public.user_role)
+    WHEN 'super_admin'      THEN v_role = 'super_admin'::public.user_role
     ELSE false
   END;
 END;
@@ -59,19 +134,20 @@ RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
 SET search_path = public AS $$
   SELECT EXISTS (
     SELECT 1 FROM public.profiles
-    WHERE id = auth.uid() AND role IN ('admin', 'super_admin')
+    WHERE id = auth.uid()
+      AND role IN ('admin'::public.user_role, 'super_admin'::public.user_role)
   )
 $$;
 
 -- ---------------------------------------------------------------------------
--- 4. Admin audit log
+-- 3. Admin audit log
 -- ---------------------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS public.admin_audit_log (
   id          uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id     uuid        REFERENCES auth.users(id) ON DELETE SET NULL,
-  action      text        NOT NULL,   -- INSERT | UPDATE | DELETE
-  entity_type text        NOT NULL,   -- table name
+  action      text        NOT NULL,
+  entity_type text        NOT NULL,
   entity_id   uuid,
   changes     jsonb,
   ip          inet,
@@ -85,13 +161,13 @@ CREATE INDEX IF NOT EXISTS admin_audit_log_created_at_idx ON public.admin_audit_
 
 ALTER TABLE public.admin_audit_log ENABLE ROW LEVEL SECURITY;
 
--- Admins can read all entries; no direct write via the Data API.
+DROP POLICY IF EXISTS "audit_log: admin select" ON public.admin_audit_log;
 CREATE POLICY "audit_log: admin select"
   ON public.admin_audit_log FOR SELECT TO authenticated
   USING (public.is_admin());
 
 -- ---------------------------------------------------------------------------
--- 5. Audit trigger
+-- 4. Audit trigger
 -- ---------------------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION public.audit_log_trigger_fn()
@@ -130,35 +206,3 @@ CREATE OR REPLACE TRIGGER audit_profiles
   AFTER INSERT OR UPDATE OR DELETE ON public.profiles
   FOR EACH ROW EXECUTE PROCEDURE public.audit_log_trigger_fn();
 
--- ---------------------------------------------------------------------------
--- 6. Additional RLS policies for content_uploader on products
---    (the existing vendor/admin policies stay in place and are OR-ed with these)
--- ---------------------------------------------------------------------------
-
--- content_uploader can see their own products regardless of status
-CREATE POLICY "products: content_uploader select own"
-  ON public.products FOR SELECT TO authenticated
-  USING (
-    public.current_user_role() = 'content_uploader'
-    AND created_by = auth.uid()
-  );
-
--- content_uploader can insert products they own
-CREATE POLICY "products: content_uploader insert"
-  ON public.products FOR INSERT TO authenticated
-  WITH CHECK (
-    public.current_user_role() = 'content_uploader'
-    AND created_by = auth.uid()
-  );
-
--- content_uploader can update their own products
-CREATE POLICY "products: content_uploader update"
-  ON public.products FOR UPDATE TO authenticated
-  USING (
-    public.current_user_role() = 'content_uploader'
-    AND created_by = auth.uid()
-  )
-  WITH CHECK (
-    public.current_user_role() = 'content_uploader'
-    AND created_by = auth.uid()
-  );

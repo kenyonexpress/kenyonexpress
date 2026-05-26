@@ -1,0 +1,81 @@
+'use server'
+
+import { requireAdminSession } from '@/lib/admin/rbac'
+import { createClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
+import { redirect } from 'next/navigation'
+import { z } from 'zod'
+
+const schema = z.object({
+  id: z.string().uuid().optional(),
+  slug: z
+    .string()
+    .min(2, 'מזהה חייב להכיל לפחות 2 תווים')
+    .regex(/^[a-z0-9-]+$/, 'מזהה יכול להכיל אותיות לועזיות, מספרים ומקפים בלבד'),
+  name_he: z.string().min(1, 'שם בעברית נדרש'),
+  name_en: z.string().min(1, 'שם באנגלית נדרש'),
+  description_he: z.string().nullable().optional(),
+  parent_id: z.string().uuid().nullable().optional(),
+  icon_url: z.string().url().nullable().optional(),
+  sort_order: z.coerce.number().int().min(0).default(0),
+  is_active: z.coerce.boolean().default(true),
+})
+
+export type CategoryFormState = { error: string } | { success: string } | null
+
+export async function upsertCategory(
+  _: CategoryFormState,
+  formData: FormData,
+): Promise<CategoryFormState> {
+  try {
+    await requireAdminSession()
+  } catch {
+    return { error: 'אין הרשאה' }
+  }
+
+  const parsed = schema.safeParse({
+    id: formData.get('id') || undefined,
+    slug: formData.get('slug'),
+    name_he: formData.get('name_he'),
+    name_en: formData.get('name_en'),
+    description_he: formData.get('description_he') || null,
+    parent_id: formData.get('parent_id') || null,
+    icon_url: formData.get('icon_url') || null,
+    sort_order: formData.get('sort_order') ?? '0',
+    is_active: formData.get('is_active') === 'true',
+  })
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  const { id, ...fields } = parsed.data
+
+  if (id) {
+    const { error } = await supabase.from('categories').update(fields).eq('id', id)
+    if (error) return { error: error.message }
+  } else {
+    const { error } = await supabase.from('categories').insert({ ...fields, created_by: user!.id })
+    if (error) return { error: error.message }
+  }
+
+  revalidatePath('/admin/categories')
+  redirect('/admin/categories')
+}
+
+export async function deleteCategory(id: string): Promise<{ error?: string }> {
+  try {
+    await requireAdminSession()
+  } catch {
+    return { error: 'אין הרשאה' }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase.from('categories').delete().eq('id', id)
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/categories')
+  return {}
+}

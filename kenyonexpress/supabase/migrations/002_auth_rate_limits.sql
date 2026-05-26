@@ -1,7 +1,7 @@
 -- Phase 2: Auth rate limiting
 -- Tracks failed auth attempts per IP to prevent brute force
 
-create table public.rate_limits (
+create table if not exists public.rate_limits (
   id           uuid primary key default gen_random_uuid(),
   key          text not null unique,
   attempts     integer not null default 1,
@@ -11,9 +11,9 @@ create table public.rate_limits (
 -- No public access — accessed only via SECURITY DEFINER function
 alter table public.rate_limits enable row level security;
 
-create index rate_limits_key_idx on public.rate_limits (key);
+create index if not exists rate_limits_key_idx on public.rate_limits (key);
 -- Clean up old windows automatically
-create index rate_limits_window_idx on public.rate_limits (window_start);
+create index if not exists rate_limits_window_idx on public.rate_limits (window_start);
 
 -- Atomically check and increment rate limit.
 -- Returns true if the request is allowed, false if limit exceeded.

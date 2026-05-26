@@ -2,6 +2,17 @@
 -- Supersedes orders + order_items from 001 with the authoritative design
 -- from ARCHITECTURE.md §2.3, §3.1, §23.2.
 
+-- Defensive: 001 may have stopped early on a live DB before defining this function.
+CREATE OR REPLACE FUNCTION public.set_updated_at()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$;
+
 -- ---------------------------------------------------------------------------
 -- 1. Drop 001 order tables + enum
 --    CASCADE removes the FK in wallet_transactions.related_order_id (from 006).

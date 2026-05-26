@@ -1,5 +1,15 @@
 -- Migration 005: Products schema for KenyonExpress marketplace
 
+CREATE OR REPLACE FUNCTION public.set_updated_at()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$;
+
 -- Drop tables defined in 001 that this migration redefines with a new schema.
 -- CASCADE removes dependent FK constraints (on coupons, order_items) but leaves those tables intact.
 DROP TABLE IF EXISTS public.product_variants CASCADE;
@@ -37,6 +47,7 @@ CREATE TABLE IF NOT EXISTS public.categories (
   image_url text,
   sort_order int NOT NULL DEFAULT 0,
   is_active boolean NOT NULL DEFAULT true,
+  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
@@ -57,6 +68,7 @@ CREATE TABLE IF NOT EXISTS public.products (
   stock_quantity int,
   attributes jsonb NOT NULL DEFAULT '{}'::jsonb,
   published_at timestamptz,
+  created_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
@@ -90,10 +102,12 @@ CREATE TABLE IF NOT EXISTS public.product_images (
 CREATE INDEX IF NOT EXISTS idx_products_status_type ON public.products(status, type);
 CREATE INDEX IF NOT EXISTS idx_products_category ON public.products(category_id);
 CREATE INDEX IF NOT EXISTS idx_products_supplier ON public.products(supplier_id);
-CREATE INDEX IF NOT EXISTS idx_products_published ON public.products(published_at DESC) WHERE status = 'active';
+CREATE INDEX IF NOT EXISTS idx_products_published ON public.products(published_at DESC) WHERE status = 'active'::public.product_status;
 CREATE INDEX IF NOT EXISTS idx_categories_parent ON public.categories(parent_id);
 CREATE INDEX IF NOT EXISTS idx_variants_product ON public.product_variants(product_id);
 CREATE INDEX IF NOT EXISTS idx_images_product ON public.product_images(product_id, sort_order);
+CREATE INDEX IF NOT EXISTS products_created_by_idx   ON public.products   (created_by);
+CREATE INDEX IF NOT EXISTS categories_created_by_idx ON public.categories (created_by);
 
 -- updated_at triggers (using existing trigger function from migration 001)
 DROP TRIGGER IF EXISTS set_updated_at ON public.suppliers;
@@ -127,14 +141,14 @@ CREATE POLICY categories_admin_write ON public.categories FOR ALL USING (public.
 
 -- products: public read active, admin write
 DROP POLICY IF EXISTS products_public_read ON public.products;
-CREATE POLICY products_public_read ON public.products FOR SELECT USING (status = 'active');
+CREATE POLICY products_public_read ON public.products FOR SELECT USING (status = 'active'::public.product_status);
 DROP POLICY IF EXISTS products_admin_write ON public.products;
 CREATE POLICY products_admin_write ON public.products FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
 
 -- product_variants: public read if parent active, admin write
 DROP POLICY IF EXISTS variants_public_read ON public.product_variants;
 CREATE POLICY variants_public_read ON public.product_variants FOR SELECT USING (
-  product_id IN (SELECT id FROM public.products WHERE status = 'active')
+  product_id IN (SELECT id FROM public.products WHERE status = 'active'::public.product_status)
 );
 DROP POLICY IF EXISTS variants_admin_write ON public.product_variants;
 CREATE POLICY variants_admin_write ON public.product_variants FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
@@ -142,7 +156,37 @@ CREATE POLICY variants_admin_write ON public.product_variants FOR ALL USING (pub
 -- product_images: public read if parent active, admin write
 DROP POLICY IF EXISTS images_public_read ON public.product_images;
 CREATE POLICY images_public_read ON public.product_images FOR SELECT USING (
-  product_id IN (SELECT id FROM public.products WHERE status = 'active')
+  product_id IN (SELECT id FROM public.products WHERE status = 'active'::public.product_status)
 );
 DROP POLICY IF EXISTS images_admin_write ON public.product_images;
 CREATE POLICY images_admin_write ON public.product_images FOR ALL USING (public.is_admin()) WITH CHECK (public.is_admin());
+
+-- content_uploader: select/insert/update own products
+-- Moved here from 003_rbac.sql because 005 drops and recreates public.products.
+DROP POLICY IF EXISTS "products: content_uploader select own" ON public.products;
+CREATE POLICY "products: content_uploader select own"
+  ON public.products FOR SELECT TO authenticated
+  USING (
+    public.current_user_role() = 'content_uploader'::public.user_role
+    AND created_by = auth.uid()
+  );
+
+DROP POLICY IF EXISTS "products: content_uploader insert" ON public.products;
+CREATE POLICY "products: content_uploader insert"
+  ON public.products FOR INSERT TO authenticated
+  WITH CHECK (
+    public.current_user_role() = 'content_uploader'::public.user_role
+    AND created_by = auth.uid()
+  );
+
+DROP POLICY IF EXISTS "products: content_uploader update" ON public.products;
+CREATE POLICY "products: content_uploader update"
+  ON public.products FOR UPDATE TO authenticated
+  USING (
+    public.current_user_role() = 'content_uploader'::public.user_role
+    AND created_by = auth.uid()
+  )
+  WITH CHECK (
+    public.current_user_role() = 'content_uploader'::public.user_role
+    AND created_by = auth.uid()
+  );

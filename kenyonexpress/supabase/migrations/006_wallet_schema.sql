@@ -2,6 +2,17 @@
 -- Supersedes the wallets + wallet_transactions tables from 001 with the
 -- authoritative design from ARCHITECTURE.md §2.4, §2.5, §3.1.
 
+-- Defensive: 001 may have stopped early on a live DB before defining this function.
+CREATE OR REPLACE FUNCTION public.set_updated_at()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$;
+
 -- ---------------------------------------------------------------------------
 -- 1. Drop 001 wallet tables (clears FK dependency on the old enum)
 -- ---------------------------------------------------------------------------

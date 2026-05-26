@@ -1,6 +1,17 @@
 -- Migration 010: Referrals & Affiliates schema
 -- Implements §19.1 (referral program) and §19.2 (affiliate infrastructure).
 
+-- Defensive: 001 may have stopped early on a live DB before defining this function.
+CREATE OR REPLACE FUNCTION public.set_updated_at()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$;
+
 -- ---------------------------------------------------------------------------
 -- 1. ENUMs
 -- ---------------------------------------------------------------------------

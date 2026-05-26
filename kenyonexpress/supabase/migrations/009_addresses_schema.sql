@@ -1,6 +1,17 @@
 -- Migration 009: User addresses schema
 -- Also wires the deferred orders.address_id FK promised in 007.
 
+-- Defensive: 001 may have stopped early on a live DB before defining this function.
+CREATE OR REPLACE FUNCTION public.set_updated_at()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$;
+
 -- ---------------------------------------------------------------------------
 -- 1. user_addresses
 -- ---------------------------------------------------------------------------

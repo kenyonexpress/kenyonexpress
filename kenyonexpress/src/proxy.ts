@@ -50,7 +50,13 @@ export async function proxy(request: NextRequest) {
       loginUrl.searchParams.set('next', pathname)
       return NextResponse.redirect(loginUrl)
     }
-    const isAdmin = user.app_metadata?.role === 'admin'
+    // Role is authoritative in the profiles table, not app_metadata (which may be stale).
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+    const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin'
     if (!isAdmin) {
       return NextResponse.redirect(new URL('/', request.url))
     }

@@ -1,103 +1,112 @@
--- KenyonExpress — comprehensive initial schema
--- Applies to: fresh Supabase project (reset DB before running)
--- Run via: supabase db push  OR  Supabase Dashboard → SQL Editor
+-- KenyonExpress — initial schema
+-- Fully idempotent: safe to re-run on a live database.
 
 -- ---------------------------------------------------------------------------
 -- Extensions
 -- ---------------------------------------------------------------------------
 
-create extension if not exists "pgcrypto";
-create extension if not exists "pg_trgm"; -- full-text search helpers
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+
+-- ---------------------------------------------------------------------------
+-- set_updated_at — MUST be first: migrations 005-010 depend on it.
+-- ---------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION public.set_updated_at()
+RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$;
 
 -- ---------------------------------------------------------------------------
 -- Enums
 -- ---------------------------------------------------------------------------
 
-create type public.vendor_status as enum (
-  'pending', 'active', 'suspended'
-);
+DO $$ BEGIN
+  CREATE TYPE public.vendor_status AS ENUM ('pending', 'active', 'suspended');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
-create type public.product_type as enum (
-  'physical', 'coupon'
-);
+DO $$ BEGIN
+  CREATE TYPE public.product_type AS ENUM ('physical', 'coupon');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
-create type public.product_status as enum (
-  'draft', 'active', 'paused', 'archived'
-);
+DO $$ BEGIN
+  CREATE TYPE public.product_status AS ENUM ('draft', 'active', 'paused', 'archived');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
-create type public.coupon_status as enum (
-  'active', 'redeemed', 'expired'
-);
+DO $$ BEGIN
+  CREATE TYPE public.coupon_status AS ENUM ('active', 'redeemed', 'expired');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
-create type public.order_status as enum (
-  'pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'
-);
+DO $$ BEGIN
+  CREATE TYPE public.order_status AS ENUM (
+    'pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'
+  );
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
-create type public.wallet_tx_type as enum (
-  'cashback_earned', 'order_payment', 'refund', 'adjustment'
-);
+DO $$ BEGIN
+  CREATE TYPE public.wallet_tx_type AS ENUM (
+    'cashback_earned', 'order_payment', 'refund', 'adjustment'
+  );
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
--- ---------------------------------------------------------------------------
--- Shared updated_at trigger function
--- ---------------------------------------------------------------------------
-
-create or replace function public.set_updated_at()
-returns trigger language plpgsql as $$
-begin
-  new.updated_at = now();
-  return new;
-end;
-$$;
+DO $$ BEGIN
+  CREATE TYPE public.user_role AS ENUM (
+    'customer', 'content_uploader', 'vendor', 'admin', 'super_admin'
+  );
+EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- ---------------------------------------------------------------------------
 -- Order number sequence
 -- ---------------------------------------------------------------------------
 
-create sequence if not exists public.order_number_seq start 1;
+CREATE SEQUENCE IF NOT EXISTS public.order_number_seq START 1;
 
-create or replace function public.generate_order_number()
-returns trigger language plpgsql as $$
-begin
-  new.order_number = 'KE-' || to_char(now(), 'YYYYMMDD') || '-'
+CREATE OR REPLACE FUNCTION public.generate_order_number()
+RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+  NEW.order_number = 'KE-' || to_char(now(), 'YYYYMMDD') || '-'
     || lpad(nextval('public.order_number_seq')::text, 5, '0');
-  return new;
-end;
+  RETURN NEW;
+END;
 $$;
 
 -- ---------------------------------------------------------------------------
--- 1. profiles  (extends auth.users)
+-- 1. profiles
 -- ---------------------------------------------------------------------------
 
-CREATE TYPE public.user_role AS ENUM ('customer', 'content_uploader', 'vendor', 'admin', 'super_admin');
-
-create table public.profiles (
-  id           uuid primary key references auth.users(id) on delete cascade,
-  email        text not null,
-  full_name    text,
-  phone        text,
-  avatar_url   text,
-  role         public.user_role NOT NULL DEFAULT 'customer',
-  created_at   timestamptz not null default now(),
-  updated_at   timestamptz not null default now()
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id         uuid             PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email      text             NOT NULL,
+  full_name  text,
+  phone      text,
+  avatar_url text,
+  role       public.user_role NOT NULL DEFAULT 'customer',
+  created_at timestamptz      NOT NULL DEFAULT now(),
+  updated_at timestamptz      NOT NULL DEFAULT now()
 );
 
-create index profiles_email_idx       on public.profiles (email);
-create index profiles_role_idx        on public.profiles (role);
+CREATE INDEX IF NOT EXISTS profiles_email_idx ON public.profiles (email);
+CREATE INDEX IF NOT EXISTS profiles_role_idx  ON public.profiles (role);
 
-create trigger profiles_set_updated_at
-  before update on public.profiles
-  for each row execute procedure public.set_updated_at();
+DROP TRIGGER IF EXISTS profiles_set_updated_at ON public.profiles;
+CREATE TRIGGER profiles_set_updated_at
+  BEFORE UPDATE ON public.profiles
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 -- ---------------------------------------------------------------------------
--- Admin helper (used in RLS policies)
+-- Admin helper — includes super_admin (same as migration 003 version)
 -- ---------------------------------------------------------------------------
 
-create or replace function public.is_admin()
-returns boolean language sql stable security definer
-set search_path = public as $$
-  select exists (
-    select 1 from public.profiles
-    where id = auth.uid() and role = 'admin'
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path = public AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid()
+      AND role IN ('admin'::public.user_role, 'super_admin'::public.user_role)
   )
 $$;
 
@@ -105,489 +114,470 @@ $$;
 -- 2. vendors
 -- ---------------------------------------------------------------------------
 
-create table public.vendors (
-  id               uuid primary key default gen_random_uuid(),
-  profile_id       uuid not null unique references public.profiles(id) on delete cascade,
-  business_name    text not null,
-  business_id      text not null unique,    -- ח.פ / עוסק מורשה
-  contact_email    text not null,
-  contact_phone    text,
-  address          text,
-  bank_account     text,                    -- encrypted at application level
-  commission_rate  numeric(5,2) not null default 10
-    check (commission_rate between 0 and 100),
-  status           public.vendor_status not null default 'pending',
-  created_at       timestamptz not null default now()
+CREATE TABLE IF NOT EXISTS public.vendors (
+  id              uuid                 PRIMARY KEY DEFAULT gen_random_uuid(),
+  profile_id      uuid                 NOT NULL UNIQUE REFERENCES public.profiles(id) ON DELETE CASCADE,
+  business_name   text                 NOT NULL,
+  business_id     text                 NOT NULL UNIQUE,
+  contact_email   text                 NOT NULL,
+  contact_phone   text,
+  address         text,
+  bank_account    text,
+  commission_rate numeric(5,2)         NOT NULL DEFAULT 10
+    CHECK (commission_rate BETWEEN 0 AND 100),
+  status          public.vendor_status NOT NULL DEFAULT 'pending',
+  created_at      timestamptz          NOT NULL DEFAULT now()
 );
 
-create index vendors_profile_id_idx on public.vendors (profile_id);
-create index vendors_status_idx     on public.vendors (status);
+CREATE INDEX IF NOT EXISTS vendors_profile_id_idx ON public.vendors (profile_id);
+CREATE INDEX IF NOT EXISTS vendors_status_idx     ON public.vendors (status);
 
 -- ---------------------------------------------------------------------------
 -- 3. categories
 -- ---------------------------------------------------------------------------
 
-create table public.categories (
-  id             uuid primary key default gen_random_uuid(),
-  slug           text not null unique,
-  name_he        text not null,
-  name_en        text not null,
+CREATE TABLE IF NOT EXISTS public.categories (
+  id             uuid    PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug           text    NOT NULL UNIQUE,
+  name_he        text    NOT NULL,
+  name_en        text    NOT NULL,
   description_he text,
-  parent_id      uuid references public.categories(id) on delete set null,
+  parent_id      uuid    REFERENCES public.categories(id) ON DELETE SET NULL,
   icon_url       text,
-  sort_order     integer not null default 0,
-  is_active      boolean not null default true
+  sort_order     integer NOT NULL DEFAULT 0,
+  is_active      boolean NOT NULL DEFAULT true
 );
 
-create index categories_parent_id_idx  on public.categories (parent_id);
-create index categories_sort_order_idx on public.categories (sort_order);
-create index categories_is_active_idx  on public.categories (is_active) where is_active = true;
+CREATE INDEX IF NOT EXISTS categories_parent_id_idx  ON public.categories (parent_id);
+CREATE INDEX IF NOT EXISTS categories_sort_order_idx ON public.categories (sort_order);
+CREATE INDEX IF NOT EXISTS categories_is_active_idx
+  ON public.categories (is_active) WHERE is_active = true;
 
 -- ---------------------------------------------------------------------------
 -- 4. products
 -- ---------------------------------------------------------------------------
 
-create table public.products (
-  id              uuid primary key default gen_random_uuid(),
-  vendor_id       uuid not null references public.vendors(id) on delete restrict,
-  category_id     uuid references public.categories(id) on delete set null,
-  slug            text not null unique,
-  name_he         text not null,
-  description_he  text,
-  type            public.product_type not null default 'physical',
-  base_price      numeric(12,2) not null check (base_price >= 0),
-  sale_price      numeric(12,2) check (sale_price is null or sale_price >= 0),
-  currency        text not null default 'ILS',
-  stock_quantity  integer check (stock_quantity is null or stock_quantity >= 0),
-  status          public.product_status not null default 'draft',
-  images          jsonb not null default '[]'::jsonb,
-  seo_meta        jsonb not null default '{}'::jsonb,
-  created_at      timestamptz not null default now(),
-  updated_at      timestamptz not null default now()
+CREATE TABLE IF NOT EXISTS public.products (
+  id             uuid                  PRIMARY KEY DEFAULT gen_random_uuid(),
+  vendor_id      uuid                  NOT NULL REFERENCES public.vendors(id) ON DELETE RESTRICT,
+  category_id    uuid                  REFERENCES public.categories(id) ON DELETE SET NULL,
+  slug           text                  NOT NULL UNIQUE,
+  name_he        text                  NOT NULL,
+  description_he text,
+  type           public.product_type   NOT NULL DEFAULT 'physical',
+  base_price     numeric(12,2)         NOT NULL CHECK (base_price >= 0),
+  sale_price     numeric(12,2)         CHECK (sale_price IS NULL OR sale_price >= 0),
+  currency       text                  NOT NULL DEFAULT 'ILS',
+  stock_quantity integer               CHECK (stock_quantity IS NULL OR stock_quantity >= 0),
+  status         public.product_status NOT NULL DEFAULT 'draft',
+  images         jsonb                 NOT NULL DEFAULT '[]'::jsonb,
+  seo_meta       jsonb                 NOT NULL DEFAULT '{}'::jsonb,
+  created_at     timestamptz           NOT NULL DEFAULT now(),
+  updated_at     timestamptz           NOT NULL DEFAULT now()
 );
 
-create index products_vendor_id_idx    on public.products (vendor_id);
-create index products_category_id_idx  on public.products (category_id);
-create index products_slug_idx         on public.products (slug);
-create index products_status_idx       on public.products (status);
-create index products_type_idx         on public.products (type);
-create index products_active_idx
-  on public.products (vendor_id, category_id)
-  where status = 'active';
-create index products_name_he_trgm_idx
-  on public.products using gin (name_he gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS products_category_id_idx ON public.products (category_id);
+CREATE INDEX IF NOT EXISTS products_slug_idx        ON public.products (slug);
+CREATE INDEX IF NOT EXISTS products_status_idx      ON public.products (status);
+CREATE INDEX IF NOT EXISTS products_type_idx        ON public.products (type);
+CREATE INDEX IF NOT EXISTS products_name_he_trgm_idx
+  ON public.products USING gin (name_he gin_trgm_ops);
+-- products_vendor_id_idx and products_active_idx removed: migration 005 renames
+-- vendor_id -> supplier_id. Indexes and policies on products are owned by 005.
 
-create trigger products_set_updated_at
-  before update on public.products
-  for each row execute procedure public.set_updated_at();
+DROP TRIGGER IF EXISTS products_set_updated_at ON public.products;
+CREATE TRIGGER products_set_updated_at
+  BEFORE UPDATE ON public.products
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 -- ---------------------------------------------------------------------------
 -- 5. product_variants
 -- ---------------------------------------------------------------------------
 
-create table public.product_variants (
-  id              uuid primary key default gen_random_uuid(),
-  product_id      uuid not null references public.products(id) on delete cascade,
-  sku             text not null unique,
-  name_he         text not null,
-  price_modifier  numeric(12,2) not null default 0,
-  stock_quantity  integer check (stock_quantity is null or stock_quantity >= 0),
-  attributes      jsonb not null default '{}'::jsonb,
-  is_active       boolean not null default true
+CREATE TABLE IF NOT EXISTS public.product_variants (
+  id             uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_id     uuid        NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,
+  sku            text        NOT NULL UNIQUE,
+  name_he        text        NOT NULL,
+  price_modifier numeric(12,2) NOT NULL DEFAULT 0,
+  stock_quantity integer     CHECK (stock_quantity IS NULL OR stock_quantity >= 0),
+  attributes     jsonb       NOT NULL DEFAULT '{}'::jsonb,
+  is_active      boolean     NOT NULL DEFAULT true
 );
 
-create index product_variants_product_id_idx on public.product_variants (product_id);
-create index product_variants_sku_idx        on public.product_variants (sku);
+CREATE INDEX IF NOT EXISTS product_variants_product_id_idx ON public.product_variants (product_id);
+CREATE INDEX IF NOT EXISTS product_variants_sku_idx        ON public.product_variants (sku);
 
 -- ---------------------------------------------------------------------------
--- 6. coupons  (issued coupon instances for coupon-type products)
+-- 6. coupons
 -- ---------------------------------------------------------------------------
 
-create table public.coupons (
-  id                     uuid primary key default gen_random_uuid(),
-  product_id             uuid not null references public.products(id) on delete restrict,
-  code                   text not null unique,
-  qr_data                text not null,
-  expiry_date            timestamptz,
-  redeemed_at            timestamptz,
-  redeemed_by_vendor_at  timestamptz,
-  customer_id            uuid references public.profiles(id) on delete set null,
-  status                 public.coupon_status not null default 'active',
-  created_at             timestamptz not null default now()
+CREATE TABLE IF NOT EXISTS public.coupons (
+  id                    uuid                 PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_id            uuid                 NOT NULL REFERENCES public.products(id) ON DELETE RESTRICT,
+  code                  text                 NOT NULL UNIQUE,
+  qr_data               text                 NOT NULL,
+  expiry_date           timestamptz,
+  redeemed_at           timestamptz,
+  redeemed_by_vendor_at timestamptz,
+  customer_id           uuid                 REFERENCES public.profiles(id) ON DELETE SET NULL,
+  status                public.coupon_status NOT NULL DEFAULT 'active',
+  created_at            timestamptz          NOT NULL DEFAULT now()
 );
 
-create index coupons_product_id_idx   on public.coupons (product_id);
-create index coupons_customer_id_idx  on public.coupons (customer_id);
-create index coupons_status_idx       on public.coupons (status);
-create index coupons_code_idx         on public.coupons (code);
+CREATE INDEX IF NOT EXISTS coupons_product_id_idx  ON public.coupons (product_id);
+CREATE INDEX IF NOT EXISTS coupons_customer_id_idx ON public.coupons (customer_id);
+CREATE INDEX IF NOT EXISTS coupons_status_idx      ON public.coupons (status);
+CREATE INDEX IF NOT EXISTS coupons_code_idx        ON public.coupons (code);
 
 -- ---------------------------------------------------------------------------
 -- 7. orders
 -- ---------------------------------------------------------------------------
 
-create table public.orders (
-  id               uuid primary key default gen_random_uuid(),
-  order_number     text not null unique,
-  customer_id      uuid not null references public.profiles(id) on delete restrict,
-  status           public.order_status not null default 'pending',
-  subtotal         numeric(12,2) not null check (subtotal >= 0),
-  discount_amount  numeric(12,2) not null default 0 check (discount_amount >= 0),
-  total            numeric(12,2) not null check (total >= 0),
-  platform_fee     numeric(12,2) not null default 0 check (platform_fee >= 0),
-  vendor_payout    numeric(12,2) not null default 0 check (vendor_payout >= 0),
+CREATE TABLE IF NOT EXISTS public.orders (
+  id               uuid                 PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_number     text                 NOT NULL UNIQUE,
+  customer_id      uuid                 NOT NULL REFERENCES public.profiles(id) ON DELETE RESTRICT,
+  status           public.order_status  NOT NULL DEFAULT 'pending',
+  subtotal         numeric(12,2)        NOT NULL CHECK (subtotal >= 0),
+  discount_amount  numeric(12,2)        NOT NULL DEFAULT 0 CHECK (discount_amount >= 0),
+  total            numeric(12,2)        NOT NULL CHECK (total >= 0),
+  platform_fee     numeric(12,2)        NOT NULL DEFAULT 0 CHECK (platform_fee >= 0),
+  vendor_payout    numeric(12,2)        NOT NULL DEFAULT 0 CHECK (vendor_payout >= 0),
   payment_method   text,
   payment_token_id uuid,
   shipping_address jsonb,
   notes            text,
-  created_at       timestamptz not null default now(),
+  created_at       timestamptz          NOT NULL DEFAULT now(),
   paid_at          timestamptz,
-  updated_at       timestamptz not null default now()
+  updated_at       timestamptz          NOT NULL DEFAULT now()
 );
 
-create index orders_customer_id_created_at_idx on public.orders (customer_id, created_at desc);
-create index orders_order_number_idx           on public.orders (order_number);
-create index orders_status_idx                 on public.orders (status);
+CREATE INDEX IF NOT EXISTS orders_customer_id_created_at_idx
+  ON public.orders (customer_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS orders_order_number_idx ON public.orders (order_number);
+CREATE INDEX IF NOT EXISTS orders_status_idx       ON public.orders (status);
 
-create trigger orders_generate_order_number
-  before insert on public.orders
-  for each row when (new.order_number is null or new.order_number = '')
-  execute procedure public.generate_order_number();
+DROP TRIGGER IF EXISTS orders_generate_order_number ON public.orders;
+CREATE TRIGGER orders_generate_order_number
+  BEFORE INSERT ON public.orders
+  FOR EACH ROW WHEN (NEW.order_number IS NULL OR NEW.order_number = '')
+  EXECUTE FUNCTION public.generate_order_number();
 
-create trigger orders_set_updated_at
-  before update on public.orders
-  for each row execute procedure public.set_updated_at();
+DROP TRIGGER IF EXISTS orders_set_updated_at ON public.orders;
+CREATE TRIGGER orders_set_updated_at
+  BEFORE UPDATE ON public.orders
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 -- ---------------------------------------------------------------------------
 -- 8. order_items
 -- ---------------------------------------------------------------------------
 
-create table public.order_items (
-  id            uuid primary key default gen_random_uuid(),
-  order_id      uuid not null references public.orders(id) on delete cascade,
-  product_id    uuid references public.products(id) on delete set null,
-  variant_id    uuid references public.product_variants(id) on delete set null,
-  vendor_id     uuid not null references public.vendors(id) on delete restrict,
-  quantity      integer not null check (quantity > 0),
-  unit_price    numeric(12,2) not null check (unit_price >= 0),
-  subtotal      numeric(12,2) not null check (subtotal >= 0),
-  platform_fee  numeric(12,2) not null default 0 check (platform_fee >= 0),
-  vendor_payout numeric(12,2) not null default 0 check (vendor_payout >= 0),
-  created_at    timestamptz not null default now()
+CREATE TABLE IF NOT EXISTS public.order_items (
+  id            uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_id      uuid        NOT NULL REFERENCES public.orders(id) ON DELETE CASCADE,
+  product_id    uuid        REFERENCES public.products(id) ON DELETE SET NULL,
+  variant_id    uuid        REFERENCES public.product_variants(id) ON DELETE SET NULL,
+  vendor_id     uuid        NOT NULL REFERENCES public.vendors(id) ON DELETE RESTRICT,
+  quantity      integer     NOT NULL CHECK (quantity > 0),
+  unit_price    numeric(12,2) NOT NULL CHECK (unit_price >= 0),
+  subtotal      numeric(12,2) NOT NULL CHECK (subtotal >= 0),
+  platform_fee  numeric(12,2) NOT NULL DEFAULT 0 CHECK (platform_fee >= 0),
+  vendor_payout numeric(12,2) NOT NULL DEFAULT 0 CHECK (vendor_payout >= 0),
+  created_at    timestamptz NOT NULL DEFAULT now()
 );
 
-create index order_items_order_id_idx   on public.order_items (order_id);
-create index order_items_product_id_idx on public.order_items (product_id);
-create index order_items_vendor_id_idx  on public.order_items (vendor_id);
+CREATE INDEX IF NOT EXISTS order_items_order_id_idx   ON public.order_items (order_id);
+CREATE INDEX IF NOT EXISTS order_items_product_id_idx ON public.order_items (product_id);
+CREATE INDEX IF NOT EXISTS order_items_vendor_id_idx  ON public.order_items (vendor_id);
 
 -- ---------------------------------------------------------------------------
 -- 9. wallets
 -- ---------------------------------------------------------------------------
 
-create table public.wallets (
-  id               uuid primary key default gen_random_uuid(),
-  profile_id       uuid not null unique references public.profiles(id) on delete cascade,
-  balance          numeric(12,2) not null default 0 check (balance >= 0),
-  lifetime_earned  numeric(12,2) not null default 0 check (lifetime_earned >= 0),
-  lifetime_spent   numeric(12,2) not null default 0 check (lifetime_spent >= 0),
-  updated_at       timestamptz not null default now()
+CREATE TABLE IF NOT EXISTS public.wallets (
+  id              uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  profile_id      uuid        NOT NULL UNIQUE REFERENCES public.profiles(id) ON DELETE CASCADE,
+  balance         numeric(12,2) NOT NULL DEFAULT 0 CHECK (balance >= 0),
+  lifetime_earned numeric(12,2) NOT NULL DEFAULT 0 CHECK (lifetime_earned >= 0),
+  lifetime_spent  numeric(12,2) NOT NULL DEFAULT 0 CHECK (lifetime_spent >= 0),
+  updated_at      timestamptz NOT NULL DEFAULT now()
 );
 
-create index wallets_profile_id_idx on public.wallets (profile_id);
+CREATE INDEX IF NOT EXISTS wallets_profile_id_idx ON public.wallets (profile_id);
 
-create trigger wallets_set_updated_at
-  before update on public.wallets
-  for each row execute procedure public.set_updated_at();
+DROP TRIGGER IF EXISTS wallets_set_updated_at ON public.wallets;
+CREATE TRIGGER wallets_set_updated_at
+  BEFORE UPDATE ON public.wallets
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 -- ---------------------------------------------------------------------------
 -- 10. wallet_transactions
 -- ---------------------------------------------------------------------------
 
-create table public.wallet_transactions (
-  id               uuid primary key default gen_random_uuid(),
-  wallet_id        uuid not null references public.wallets(id) on delete cascade,
-  type             public.wallet_tx_type not null,
-  amount           numeric(12,2) not null,
-  related_order_id uuid references public.orders(id) on delete set null,
+CREATE TABLE IF NOT EXISTS public.wallet_transactions (
+  id               uuid                    PRIMARY KEY DEFAULT gen_random_uuid(),
+  wallet_id        uuid                    NOT NULL REFERENCES public.wallets(id) ON DELETE CASCADE,
+  type             public.wallet_tx_type   NOT NULL,
+  amount           numeric(12,2)           NOT NULL,
+  related_order_id uuid                    REFERENCES public.orders(id) ON DELETE SET NULL,
   description      text,
-  created_at       timestamptz not null default now()
+  created_at       timestamptz             NOT NULL DEFAULT now()
 );
 
-create index wallet_transactions_wallet_id_idx
-  on public.wallet_transactions (wallet_id, created_at desc);
-create index wallet_transactions_order_id_idx
-  on public.wallet_transactions (related_order_id);
+CREATE INDEX IF NOT EXISTS wallet_transactions_wallet_id_idx
+  ON public.wallet_transactions (wallet_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS wallet_transactions_order_id_idx
+  ON public.wallet_transactions (related_order_id);
 
 -- ---------------------------------------------------------------------------
--- 11. payment_tokens  (Cardcom tokenised cards)
+-- 11. payment_tokens
 -- ---------------------------------------------------------------------------
 
-create table public.payment_tokens (
-  id              uuid primary key default gen_random_uuid(),
-  profile_id      uuid not null references public.profiles(id) on delete cascade,
-  cardcom_token   text not null,
-  last_4          char(4) not null,
-  card_brand      text not null,
-  expiry_month    smallint not null check (expiry_month between 1 and 12),
-  expiry_year     smallint not null check (expiry_year >= 2024),
-  is_default      boolean not null default false,
-  created_at      timestamptz not null default now()
+CREATE TABLE IF NOT EXISTS public.payment_tokens (
+  id            uuid     PRIMARY KEY DEFAULT gen_random_uuid(),
+  profile_id    uuid     NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  cardcom_token text     NOT NULL,
+  last_4        char(4)  NOT NULL,
+  card_brand    text     NOT NULL,
+  expiry_month  smallint NOT NULL CHECK (expiry_month BETWEEN 1 AND 12),
+  expiry_year   smallint NOT NULL CHECK (expiry_year >= 2024),
+  is_default    boolean  NOT NULL DEFAULT false,
+  created_at    timestamptz NOT NULL DEFAULT now()
 );
 
-create index payment_tokens_profile_id_idx on public.payment_tokens (profile_id);
+CREATE INDEX IF NOT EXISTS payment_tokens_profile_id_idx ON public.payment_tokens (profile_id);
 
--- Only one default card per user
-create unique index payment_tokens_default_idx
-  on public.payment_tokens (profile_id)
-  where is_default = true;
+CREATE UNIQUE INDEX IF NOT EXISTS payment_tokens_default_idx
+  ON public.payment_tokens (profile_id) WHERE is_default = true;
 
 -- ---------------------------------------------------------------------------
--- 12. carts  (persistent + guest)
+-- 12. carts
 -- ---------------------------------------------------------------------------
 
-create table public.carts (
-  id          uuid primary key default gen_random_uuid(),
-  profile_id  uuid references public.profiles(id) on delete cascade,
-  session_id  text,
-  items       jsonb not null default '[]'::jsonb,
-  expires_at  timestamptz not null default now() + interval '30 days',
-  created_at  timestamptz not null default now(),
-  updated_at  timestamptz not null default now(),
-  constraint carts_owner_check check (profile_id is not null or session_id is not null)
+CREATE TABLE IF NOT EXISTS public.carts (
+  id         uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  profile_id uuid        REFERENCES public.profiles(id) ON DELETE CASCADE,
+  session_id text,
+  items      jsonb       NOT NULL DEFAULT '[]'::jsonb,
+  expires_at timestamptz NOT NULL DEFAULT now() + INTERVAL '30 days',
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT carts_owner_check CHECK (profile_id IS NOT NULL OR session_id IS NOT NULL)
 );
 
-create index carts_profile_id_idx  on public.carts (profile_id);
-create index carts_session_id_idx  on public.carts (session_id);
-create index carts_expires_at_idx  on public.carts (expires_at);
+CREATE INDEX IF NOT EXISTS carts_profile_id_idx ON public.carts (profile_id);
+CREATE INDEX IF NOT EXISTS carts_session_id_idx ON public.carts (session_id);
+CREATE INDEX IF NOT EXISTS carts_expires_at_idx ON public.carts (expires_at);
 
-create trigger carts_set_updated_at
-  before update on public.carts
-  for each row execute procedure public.set_updated_at();
+DROP TRIGGER IF EXISTS carts_set_updated_at ON public.carts;
+CREATE TRIGGER carts_set_updated_at
+  BEFORE UPDATE ON public.carts
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 -- ---------------------------------------------------------------------------
 -- Auto-create profile + wallet on signup
+-- NOTE: after migration 006, wallets is replaced by wallet_balances.
+-- handle_new_user must be updated in a later migration to use wallet_balances.
 -- ---------------------------------------------------------------------------
 
-create or replace function public.handle_new_user()
-returns trigger language plpgsql security definer
-set search_path = public as $$
-begin
-  insert into public.profiles (id, email, full_name, avatar_url)
-  values (
-    new.id,
-    new.email,
-    coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name'),
-    new.raw_user_meta_data->>'avatar_url'
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, full_name, avatar_url)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name'),
+    NEW.raw_user_meta_data->>'avatar_url'
   );
 
-  insert into public.wallets (profile_id)
-  values (new.id);
+  INSERT INTO public.wallets (profile_id)
+  VALUES (NEW.id);
 
-  return new;
-end;
+  RETURN NEW;
+END;
 $$;
 
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute procedure public.handle_new_user();
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- ---------------------------------------------------------------------------
 -- Row Level Security
 -- ---------------------------------------------------------------------------
 
-alter table public.profiles          enable row level security;
-alter table public.vendors           enable row level security;
-alter table public.categories        enable row level security;
-alter table public.products          enable row level security;
-alter table public.product_variants  enable row level security;
-alter table public.coupons           enable row level security;
-alter table public.orders            enable row level security;
-alter table public.order_items       enable row level security;
-alter table public.wallets           enable row level security;
-alter table public.wallet_transactions enable row level security;
-alter table public.payment_tokens    enable row level security;
-alter table public.carts             enable row level security;
+ALTER TABLE public.profiles           ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.vendors            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.categories         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.products           ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.product_variants   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.coupons            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.orders             ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.order_items        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.wallets            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.wallet_transactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.payment_tokens     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.carts              ENABLE ROW LEVEL SECURITY;
 
--- ---------- profiles ----------
+-- profiles
 
-create policy "profiles: owner select"
-  on public.profiles for select to authenticated
-  using (id = auth.uid() or public.is_admin());
+DROP POLICY IF EXISTS "profiles: owner select" ON public.profiles;
+CREATE POLICY "profiles: owner select"
+  ON public.profiles FOR SELECT TO authenticated
+  USING (id = auth.uid() OR public.is_admin());
 
-create policy "profiles: owner update"
-  on public.profiles for update to authenticated
-  using (id = auth.uid())
-  with check (id = auth.uid() and role = (select role from public.profiles where id = auth.uid()));
-
-create policy "profiles: admin all"
-  on public.profiles for all to authenticated
-  using (public.is_admin());
-
--- ---------- vendors ----------
-
-create policy "vendors: public select active"
-  on public.vendors for select
-  using (status = 'active' or public.is_admin());
-
-create policy "vendors: owner manage"
-  on public.vendors for all to authenticated
-  using (profile_id = auth.uid() or public.is_admin())
-  with check (profile_id = auth.uid() or public.is_admin());
-
--- ---------- categories ----------
-
-create policy "categories: public read active"
-  on public.categories for select
-  using (is_active = true or public.is_admin());
-
-create policy "categories: admin write"
-  on public.categories for all to authenticated
-  using (public.is_admin())
-  with check (public.is_admin());
-
--- ---------- products ----------
-
-create policy "products: public read active"
-  on public.products for select
-  using (status = 'active' or public.is_admin()
-    or vendor_id in (select id from public.vendors where profile_id = auth.uid()));
-
-create policy "products: vendor manage own"
-  on public.products for all to authenticated
-  using (
-    vendor_id in (select id from public.vendors where profile_id = auth.uid())
-    or public.is_admin()
-  )
-  with check (
-    vendor_id in (select id from public.vendors where profile_id = auth.uid())
-    or public.is_admin()
+DROP POLICY IF EXISTS "profiles: owner update" ON public.profiles;
+CREATE POLICY "profiles: owner update"
+  ON public.profiles FOR UPDATE TO authenticated
+  USING (id = auth.uid())
+  WITH CHECK (
+    id = auth.uid()
+    AND role = (SELECT role FROM public.profiles WHERE id = auth.uid())
   );
 
--- ---------- product_variants ----------
+DROP POLICY IF EXISTS "profiles: admin all" ON public.profiles;
+CREATE POLICY "profiles: admin all"
+  ON public.profiles FOR ALL TO authenticated
+  USING (public.is_admin());
 
-create policy "variants: public read active"
-  on public.product_variants for select
-  using (
-    is_active = true
-    or public.is_admin()
-    or product_id in (
-      select id from public.products
-      where vendor_id in (select id from public.vendors where profile_id = auth.uid())
-    )
+-- vendors
+
+DROP POLICY IF EXISTS "vendors: public select active" ON public.vendors;
+CREATE POLICY "vendors: public select active"
+  ON public.vendors FOR SELECT
+  USING (status = 'active'::public.vendor_status OR public.is_admin());
+
+DROP POLICY IF EXISTS "vendors: owner manage" ON public.vendors;
+CREATE POLICY "vendors: owner manage"
+  ON public.vendors FOR ALL TO authenticated
+  USING (profile_id = auth.uid() OR public.is_admin())
+  WITH CHECK (profile_id = auth.uid() OR public.is_admin());
+
+-- categories
+
+DROP POLICY IF EXISTS "categories: public read active" ON public.categories;
+CREATE POLICY "categories: public read active"
+  ON public.categories FOR SELECT
+  USING (is_active = true OR public.is_admin());
+
+DROP POLICY IF EXISTS "categories: admin write" ON public.categories;
+CREATE POLICY "categories: admin write"
+  ON public.categories FOR ALL TO authenticated
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
+
+-- products and product_variants: policies owned by migration 005.
+-- 005 renames vendor_id -> supplier_id and removes is_active from variants.
+-- RLS is enabled above; 005 creates the authoritative policies.
+
+-- coupons
+
+-- coupons: vendor_id removed from products in 005; coupon_codes table in 008
+-- replaces this table entirely. Keep only owner-select and admin policies.
+
+DROP POLICY IF EXISTS "coupons: customer select own" ON public.coupons;
+CREATE POLICY "coupons: customer select own"
+  ON public.coupons FOR SELECT TO authenticated
+  USING (customer_id = auth.uid() OR public.is_admin());
+
+DROP POLICY IF EXISTS "coupons: customer insert own" ON public.coupons;
+CREATE POLICY "coupons: customer insert own"
+  ON public.coupons FOR INSERT TO authenticated
+  WITH CHECK (customer_id = auth.uid() OR public.is_admin());
+
+DROP POLICY IF EXISTS "coupons: vendor redeem" ON public.coupons;
+CREATE POLICY "coupons: vendor redeem"
+  ON public.coupons FOR UPDATE TO authenticated
+  USING (public.is_admin());
+
+-- orders
+
+DROP POLICY IF EXISTS "orders: customer select own" ON public.orders;
+CREATE POLICY "orders: customer select own"
+  ON public.orders FOR SELECT TO authenticated
+  USING (customer_id = auth.uid() OR public.is_admin());
+
+DROP POLICY IF EXISTS "orders: customer insert" ON public.orders;
+CREATE POLICY "orders: customer insert"
+  ON public.orders FOR INSERT TO authenticated
+  WITH CHECK (customer_id = auth.uid());
+
+DROP POLICY IF EXISTS "orders: system update" ON public.orders;
+CREATE POLICY "orders: system update"
+  ON public.orders FOR UPDATE TO authenticated
+  USING (customer_id = auth.uid() OR public.is_admin());
+
+-- order_items
+
+DROP POLICY IF EXISTS "order_items: customer select via order" ON public.order_items;
+CREATE POLICY "order_items: customer select via order"
+  ON public.order_items FOR SELECT TO authenticated
+  USING (
+    order_id IN (SELECT id FROM public.orders WHERE customer_id = auth.uid())
+    OR public.is_admin()
   );
 
-create policy "variants: vendor manage own"
-  on public.product_variants for all to authenticated
-  using (
-    product_id in (
-      select id from public.products
-      where vendor_id in (select id from public.vendors where profile_id = auth.uid())
-    ) or public.is_admin()
-  )
-  with check (
-    product_id in (
-      select id from public.products
-      where vendor_id in (select id from public.vendors where profile_id = auth.uid())
-    ) or public.is_admin()
+DROP POLICY IF EXISTS "order_items: insert with order" ON public.order_items;
+CREATE POLICY "order_items: insert with order"
+  ON public.order_items FOR INSERT TO authenticated
+  WITH CHECK (
+    order_id IN (SELECT id FROM public.orders WHERE customer_id = auth.uid())
+    OR public.is_admin()
   );
 
--- ---------- coupons ----------
+-- wallets
 
-create policy "coupons: customer select own"
-  on public.coupons for select to authenticated
-  using (customer_id = auth.uid() or public.is_admin()
-    or product_id in (
-      select id from public.products
-      where vendor_id in (select id from public.vendors where profile_id = auth.uid())
-    ));
+DROP POLICY IF EXISTS "wallets: owner select" ON public.wallets;
+CREATE POLICY "wallets: owner select"
+  ON public.wallets FOR SELECT TO authenticated
+  USING (profile_id = auth.uid() OR public.is_admin());
 
-create policy "coupons: customer insert own"
-  on public.coupons for insert to authenticated
-  with check (customer_id = auth.uid() or public.is_admin());
+DROP POLICY IF EXISTS "wallets: system update" ON public.wallets;
+CREATE POLICY "wallets: system update"
+  ON public.wallets FOR UPDATE TO authenticated
+  USING (profile_id = auth.uid() OR public.is_admin());
 
-create policy "coupons: vendor redeem"
-  on public.coupons for update to authenticated
-  using (
-    product_id in (
-      select id from public.products
-      where vendor_id in (select id from public.vendors where profile_id = auth.uid())
-    ) or public.is_admin()
+-- wallet_transactions
+
+DROP POLICY IF EXISTS "wallet_transactions: owner select" ON public.wallet_transactions;
+CREATE POLICY "wallet_transactions: owner select"
+  ON public.wallet_transactions FOR SELECT TO authenticated
+  USING (
+    wallet_id IN (SELECT id FROM public.wallets WHERE profile_id = auth.uid())
+    OR public.is_admin()
   );
 
--- ---------- orders ----------
-
-create policy "orders: customer select own"
-  on public.orders for select to authenticated
-  using (customer_id = auth.uid() or public.is_admin());
-
-create policy "orders: customer insert"
-  on public.orders for insert to authenticated
-  with check (customer_id = auth.uid());
-
-create policy "orders: system update"
-  on public.orders for update to authenticated
-  using (customer_id = auth.uid() or public.is_admin());
-
--- ---------- order_items ----------
-
-create policy "order_items: customer select via order"
-  on public.order_items for select to authenticated
-  using (
-    order_id in (select id from public.orders where customer_id = auth.uid())
-    or public.is_admin()
-    or vendor_id in (select id from public.vendors where profile_id = auth.uid())
+DROP POLICY IF EXISTS "wallet_transactions: system insert" ON public.wallet_transactions;
+CREATE POLICY "wallet_transactions: system insert"
+  ON public.wallet_transactions FOR INSERT TO authenticated
+  WITH CHECK (
+    wallet_id IN (SELECT id FROM public.wallets WHERE profile_id = auth.uid())
+    OR public.is_admin()
   );
 
-create policy "order_items: insert with order"
-  on public.order_items for insert to authenticated
-  with check (
-    order_id in (select id from public.orders where customer_id = auth.uid())
-    or public.is_admin()
-  );
+-- payment_tokens
 
--- ---------- wallets ----------
+DROP POLICY IF EXISTS "payment_tokens: owner all" ON public.payment_tokens;
+CREATE POLICY "payment_tokens: owner all"
+  ON public.payment_tokens FOR ALL TO authenticated
+  USING (profile_id = auth.uid() OR public.is_admin())
+  WITH CHECK (profile_id = auth.uid() OR public.is_admin());
 
-create policy "wallets: owner select"
-  on public.wallets for select to authenticated
-  using (profile_id = auth.uid() or public.is_admin());
+-- carts
 
-create policy "wallets: system update"
-  on public.wallets for update to authenticated
-  using (profile_id = auth.uid() or public.is_admin());
-
--- ---------- wallet_transactions ----------
-
-create policy "wallet_transactions: owner select"
-  on public.wallet_transactions for select to authenticated
-  using (
-    wallet_id in (select id from public.wallets where profile_id = auth.uid())
-    or public.is_admin()
-  );
-
-create policy "wallet_transactions: system insert"
-  on public.wallet_transactions for insert to authenticated
-  with check (
-    wallet_id in (select id from public.wallets where profile_id = auth.uid())
-    or public.is_admin()
-  );
-
--- ---------- payment_tokens ----------
-
-create policy "payment_tokens: owner all"
-  on public.payment_tokens for all to authenticated
-  using (profile_id = auth.uid() or public.is_admin())
-  with check (profile_id = auth.uid() or public.is_admin());
-
--- ---------- carts ----------
-
-create policy "carts: owner all"
-  on public.carts for all
-  using (
+DROP POLICY IF EXISTS "carts: owner all" ON public.carts;
+CREATE POLICY "carts: owner all"
+  ON public.carts FOR ALL
+  USING (
     profile_id = auth.uid()
-    or session_id = current_setting('request.cookies', true)::json->>'session_id'
-    or public.is_admin()
+    OR session_id = current_setting('request.cookies', true)::json->>'session_id'
+    OR public.is_admin()
   )
-  with check (
+  WITH CHECK (
     profile_id = auth.uid()
-    or profile_id is null
-    or public.is_admin()
+    OR profile_id IS NULL
+    OR public.is_admin()
   );

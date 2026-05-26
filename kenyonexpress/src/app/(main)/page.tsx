@@ -2,6 +2,7 @@ import CategoryStrip from '@/components/CategoryStrip'
 import CouponCard, { type Coupon } from '@/components/CouponCard'
 import ProductCard, { type Product } from '@/components/ProductCard'
 import HeroSection from '@/components/home/HeroSection'
+import HomeThreeColumnSection from '@/components/home/HomeThreeColumnSection'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 
@@ -25,6 +26,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <HomeThreeColumnSection />
       <HeroSection />
       <CategoryStrip />
 

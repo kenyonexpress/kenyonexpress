@@ -1,4 +1,5 @@
 -- Phase 3: Storage buckets — product images, vendor logos, category icons
+-- Idempotent: safe to run multiple times.
 
 -- ---------------------------------------------------------------------------
 -- 1. Create buckets
@@ -35,12 +36,13 @@ ON CONFLICT (id) DO NOTHING;
 -- ---------------------------------------------------------------------------
 
 -- ---- product-images ----
--- Accessible by content_uploader and above (has_role returns true for admin too)
 
+DROP POLICY IF EXISTS "product-images: public read"    ON storage.objects;
 CREATE POLICY "product-images: public read"
   ON storage.objects FOR SELECT
   USING (bucket_id = 'product-images');
 
+DROP POLICY IF EXISTS "product-images: uploader insert" ON storage.objects;
 CREATE POLICY "product-images: uploader insert"
   ON storage.objects FOR INSERT TO authenticated
   WITH CHECK (
@@ -48,23 +50,25 @@ CREATE POLICY "product-images: uploader insert"
     AND public.has_role('content_uploader')
   );
 
--- UPDATE required for upsert to work
+DROP POLICY IF EXISTS "product-images: uploader update" ON storage.objects;
 CREATE POLICY "product-images: uploader update"
   ON storage.objects FOR UPDATE TO authenticated
   USING  (bucket_id = 'product-images' AND public.has_role('content_uploader'))
   WITH CHECK (bucket_id = 'product-images' AND public.has_role('content_uploader'));
 
+DROP POLICY IF EXISTS "product-images: uploader delete" ON storage.objects;
 CREATE POLICY "product-images: uploader delete"
   ON storage.objects FOR DELETE TO authenticated
   USING (bucket_id = 'product-images' AND public.has_role('content_uploader'));
 
 -- ---- vendor-logos ----
--- Accessible by vendors and above
 
+DROP POLICY IF EXISTS "vendor-logos: public read"   ON storage.objects;
 CREATE POLICY "vendor-logos: public read"
   ON storage.objects FOR SELECT
   USING (bucket_id = 'vendor-logos');
 
+DROP POLICY IF EXISTS "vendor-logos: vendor insert" ON storage.objects;
 CREATE POLICY "vendor-logos: vendor insert"
   ON storage.objects FOR INSERT TO authenticated
   WITH CHECK (
@@ -72,22 +76,25 @@ CREATE POLICY "vendor-logos: vendor insert"
     AND public.has_role('vendor')
   );
 
+DROP POLICY IF EXISTS "vendor-logos: vendor update" ON storage.objects;
 CREATE POLICY "vendor-logos: vendor update"
   ON storage.objects FOR UPDATE TO authenticated
   USING  (bucket_id = 'vendor-logos' AND public.has_role('vendor'))
   WITH CHECK (bucket_id = 'vendor-logos' AND public.has_role('vendor'));
 
+DROP POLICY IF EXISTS "vendor-logos: vendor delete" ON storage.objects;
 CREATE POLICY "vendor-logos: vendor delete"
   ON storage.objects FOR DELETE TO authenticated
   USING (bucket_id = 'vendor-logos' AND public.has_role('vendor'));
 
 -- ---- category-icons ----
--- Restricted to admins only
 
+DROP POLICY IF EXISTS "category-icons: public read"   ON storage.objects;
 CREATE POLICY "category-icons: public read"
   ON storage.objects FOR SELECT
   USING (bucket_id = 'category-icons');
 
+DROP POLICY IF EXISTS "category-icons: admin insert" ON storage.objects;
 CREATE POLICY "category-icons: admin insert"
   ON storage.objects FOR INSERT TO authenticated
   WITH CHECK (
@@ -95,11 +102,13 @@ CREATE POLICY "category-icons: admin insert"
     AND public.is_admin()
   );
 
+DROP POLICY IF EXISTS "category-icons: admin update" ON storage.objects;
 CREATE POLICY "category-icons: admin update"
   ON storage.objects FOR UPDATE TO authenticated
   USING  (bucket_id = 'category-icons' AND public.is_admin())
   WITH CHECK (bucket_id = 'category-icons' AND public.is_admin());
 
+DROP POLICY IF EXISTS "category-icons: admin delete" ON storage.objects;
 CREATE POLICY "category-icons: admin delete"
   ON storage.objects FOR DELETE TO authenticated
   USING (bucket_id = 'category-icons' AND public.is_admin());

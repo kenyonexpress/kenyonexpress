@@ -1,6 +1,5 @@
-// Auto-generated types from Supabase schema.
-// Regenerate with: pnpm db:types
-// Manual edits will be overwritten.
+// Auto-generated types from Supabase schema — manually extended for Phase 3.
+// Regenerate with: pnpm db:types (then re-apply manual extensions)
 
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
@@ -14,7 +13,7 @@ export type Database = {
           full_name: string | null
           phone: string | null
           avatar_url: string | null
-          role: 'customer' | 'vendor' | 'content_uploader' | 'admin'
+          role: 'customer' | 'vendor' | 'content_uploader' | 'admin' | 'super_admin'
           created_at: string
           updated_at: string
         }
@@ -24,7 +23,7 @@ export type Database = {
           full_name?: string | null
           phone?: string | null
           avatar_url?: string | null
-          role?: 'customer' | 'vendor' | 'content_uploader' | 'admin'
+          role?: 'customer' | 'vendor' | 'content_uploader' | 'admin' | 'super_admin'
           created_at?: string
           updated_at?: string
         }
@@ -34,7 +33,7 @@ export type Database = {
           full_name?: string | null
           phone?: string | null
           avatar_url?: string | null
-          role?: 'customer' | 'vendor' | 'content_uploader' | 'admin'
+          role?: 'customer' | 'vendor' | 'content_uploader' | 'admin' | 'super_admin'
           created_at?: string
           updated_at?: string
         }
@@ -93,6 +92,7 @@ export type Database = {
           icon_url: string | null
           sort_order: number
           is_active: boolean
+          created_by: string | null
         }
         Insert: {
           id?: string
@@ -104,6 +104,7 @@ export type Database = {
           icon_url?: string | null
           sort_order?: number
           is_active?: boolean
+          created_by?: string | null
         }
         Update: {
           id?: string
@@ -115,8 +116,12 @@ export type Database = {
           icon_url?: string | null
           sort_order?: number
           is_active?: boolean
+          created_by?: string | null
         }
-        Relationships: [{ foreignKeyName: 'categories_parent_id_fkey'; columns: ['parent_id']; referencedRelation: 'categories'; referencedColumns: ['id'] }]
+        Relationships: [
+          { foreignKeyName: 'categories_parent_id_fkey'; columns: ['parent_id']; referencedRelation: 'categories'; referencedColumns: ['id'] },
+          { foreignKeyName: 'categories_created_by_fkey'; columns: ['created_by']; referencedRelation: 'users'; referencedColumns: ['id'] }
+        ]
       }
       products: {
         Row: {
@@ -134,6 +139,7 @@ export type Database = {
           status: 'draft' | 'active' | 'paused' | 'archived'
           images: Json
           seo_meta: Json
+          created_by: string | null
           created_at: string
           updated_at: string
         }
@@ -152,6 +158,7 @@ export type Database = {
           status?: 'draft' | 'active' | 'paused' | 'archived'
           images?: Json
           seo_meta?: Json
+          created_by?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -170,12 +177,14 @@ export type Database = {
           status?: 'draft' | 'active' | 'paused' | 'archived'
           images?: Json
           seo_meta?: Json
+          created_by?: string | null
           created_at?: string
           updated_at?: string
         }
         Relationships: [
           { foreignKeyName: 'products_vendor_id_fkey'; columns: ['vendor_id']; referencedRelation: 'vendors'; referencedColumns: ['id'] },
-          { foreignKeyName: 'products_category_id_fkey'; columns: ['category_id']; referencedRelation: 'categories'; referencedColumns: ['id'] }
+          { foreignKeyName: 'products_category_id_fkey'; columns: ['category_id']; referencedRelation: 'categories'; referencedColumns: ['id'] },
+          { foreignKeyName: 'products_created_by_fkey'; columns: ['created_by']; referencedRelation: 'users'; referencedColumns: ['id'] }
         ]
       }
       product_variants: {
@@ -222,6 +231,7 @@ export type Database = {
           redeemed_by_vendor_at: string | null
           customer_id: string | null
           status: 'active' | 'redeemed' | 'expired'
+          created_by: string | null
           created_at: string
         }
         Insert: {
@@ -234,6 +244,7 @@ export type Database = {
           redeemed_by_vendor_at?: string | null
           customer_id?: string | null
           status?: 'active' | 'redeemed' | 'expired'
+          created_by?: string | null
           created_at?: string
         }
         Update: {
@@ -246,11 +257,13 @@ export type Database = {
           redeemed_by_vendor_at?: string | null
           customer_id?: string | null
           status?: 'active' | 'redeemed' | 'expired'
+          created_by?: string | null
           created_at?: string
         }
         Relationships: [
           { foreignKeyName: 'coupons_product_id_fkey'; columns: ['product_id']; referencedRelation: 'products'; referencedColumns: ['id'] },
-          { foreignKeyName: 'coupons_customer_id_fkey'; columns: ['customer_id']; referencedRelation: 'profiles'; referencedColumns: ['id'] }
+          { foreignKeyName: 'coupons_customer_id_fkey'; columns: ['customer_id']; referencedRelation: 'profiles'; referencedColumns: ['id'] },
+          { foreignKeyName: 'coupons_created_by_fkey'; columns: ['created_by']; referencedRelation: 'users'; referencedColumns: ['id'] }
         ]
       }
       orders: {
@@ -416,13 +429,42 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['carts']['Insert']>
         Relationships: [{ foreignKeyName: 'carts_profile_id_fkey'; columns: ['profile_id']; referencedRelation: 'profiles'; referencedColumns: ['id'] }]
       }
+      admin_audit_log: {
+        Row: {
+          id: string
+          user_id: string | null
+          action: string
+          entity_type: string
+          entity_id: string | null
+          changes: Json | null
+          ip: string | null
+          user_agent: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          action: string
+          entity_type: string
+          entity_id?: string | null
+          changes?: Json | null
+          ip?: string | null
+          user_agent?: string | null
+          created_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['admin_audit_log']['Insert']>
+        Relationships: [{ foreignKeyName: 'admin_audit_log_user_id_fkey'; columns: ['user_id']; referencedRelation: 'users'; referencedColumns: ['id'] }]
+      }
     }
     Views: Record<string, never>
     Functions: {
       is_admin: { Args: Record<string, never>; Returns: boolean }
+      current_user_role: { Args: Record<string, never>; Returns: 'customer' | 'vendor' | 'content_uploader' | 'admin' | 'super_admin' }
+      has_role: { Args: { required_role: string }; Returns: boolean }
+      check_rate_limit: { Args: { p_key: string; p_max_attempts?: number; p_window_seconds?: number }; Returns: boolean }
     }
     Enums: {
-      user_role: 'customer' | 'vendor' | 'content_uploader' | 'admin'
+      user_role: 'customer' | 'vendor' | 'content_uploader' | 'admin' | 'super_admin'
       vendor_status: 'pending' | 'active' | 'suspended'
       product_type: 'physical' | 'coupon'
       product_status: 'draft' | 'active' | 'paused' | 'archived'
@@ -457,3 +499,6 @@ export type Wallet = Tables<'wallets'>
 export type WalletTransaction = Tables<'wallet_transactions'>
 export type PaymentToken = Tables<'payment_tokens'>
 export type Cart = Tables<'carts'>
+export type AdminAuditLog = Tables<'admin_audit_log'>
+
+export type UserRole = Enums<'user_role'>
