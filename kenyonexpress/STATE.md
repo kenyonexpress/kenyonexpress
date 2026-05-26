@@ -4,7 +4,22 @@
 **Phase 3 — Admin Panel**
 
 ## Last Completed
-כל migrations 001-011 רצו בהצלחה ב-Supabase. DB schema מלא בפרודקשן.
+Commit `215a01c` pushed ל-`cursor/add-supabase-3c830`:
+- migrations 006-010: תיקון idempotency (set_updated_at defensive + TO authenticated ב-008)
+- biome fixes: htmlFor/id ב-CategoryForm + ProductForm, void→undefined ב-DeleteButton
+
+## Migrations Status (Supabase)
+- `001` ✅ רץ (fresh DB only — לא idempotent by design)
+- `002` ✅ רץ
+- `003` ✅ רץ
+- `004` ✅ רץ
+- `005` ✅ רץ
+- `006` ✅ רץ
+- `007` ✅ רץ
+- `008` ✅ רץ
+- `009` ✅ רץ
+- `010` ✅ רץ
+- `011` ✅ רץ
 
 ## In Progress
 nothing
@@ -15,8 +30,8 @@ none
 ## Next Task
 Phase 3 wrap-up — bootstrap admin + test admin panel:
 1. הרץ ב-Supabase SQL Editor: `UPDATE public.profiles SET role = 'admin' WHERE id = '<your-user-id>';`
-2. הפעל את הפרויקט מקומית (`pnpm dev`) ובדוק `/admin`
-3. ודא שכל ה-CRUD routes עובדים (products, categories, vendors, orders, users)
+2. `pnpm dev` ובדוק `/admin`
+3. ודא CRUD: products, categories, vendors, orders, users
 4. לאחר אימות — Phase 4: store frontend (product listing, cart, checkout + Cardcom)
 
 ## Working Directory
