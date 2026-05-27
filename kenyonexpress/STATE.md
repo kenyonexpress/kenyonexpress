@@ -29,10 +29,13 @@ Phase 4 — Full Admin CRUDs הושלם:
 nothing
 
 ## Blocking Issues
-none
+- Push נכשל: GitHub authentication failed (HTTPS token לא מוגדר)
+- commit `0625aee` קיים לוקאלית בלבד, טרם נדחף ל-remote
 
 ## Next Task
-הרץ migrations 012–015 על Supabase, אחר כך בדוק את פאנל האדמין בדפדפן (categories tree, vendors CRUD, products with variants, coupon deals).
+1. `git push origin cursor/add-supabase-3c830` (דורש GitHub token / SSH)
+2. הרץ migrations 012–015 על Supabase
+3. בדוק פאנל אדמין בדפדפן
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
