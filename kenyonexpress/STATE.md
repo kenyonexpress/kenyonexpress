@@ -28,11 +28,10 @@ nothing
 none
 
 ## Next Task
-Phase 3 wrap-up — bootstrap admin + test admin panel:
-1. הרץ ב-Supabase SQL Editor: `UPDATE public.profiles SET role = 'admin' WHERE id = '<your-user-id>';`
-2. `pnpm dev` ובדוק `/admin`
-3. ודא CRUD: products, categories, vendors, orders, users
-4. לאחר אימות — Phase 4: store frontend (product listing, cart, checkout + Cardcom)
+Phase 3 wrap-up — test admin panel (admin bootstrap הושלם):
+1. התחבר בדפדפן כ-kenyonexpress@gmail.com ובדוק `/admin` (אמור להציג dashboard)
+2. ודא CRUD: products, categories, vendors, orders, users
+3. לאחר אימות — Phase 4: store frontend (product listing, cart, checkout + Cardcom)
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
@@ -55,3 +54,19 @@ not set
 ### 2026-05-26 -- All migrations 001-011 applied to Supabase
 - DB schema מלא: auth, RBAC, storage, products, wallet, orders, coupons, addresses, referrals, audit log
 - Phase 3 admin panel components + routes קיימים בקוד, ממתינים לאימות
+
+### 2026-05-27 — Admin route blocked
+- .env.local תוקן: URL + ANON_KEY + SERVICE_ROLE_KEY
+- pnpm dev רץ ב-localhost:3000
+- העמוד הראשי עובד
+- /admin לא נטען - נופל לעמוד הראשי
+- בעיה: יש 2 תיקיות admin - src/app/(admin)/ ו-src/app/admin (ריקה)
+- צריך למחוק את src/app/admin (הריקה) - rm -rf src/app/admin
+
+### 2026-05-27 — Admin route: לא היה באג בקוד
+- ה-route תקין: src/proxy.ts (Next 16 — middleware הוחלף ב-proxy) רץ ומגן על /admin
+- proxy מפנה: ללא session → /login; משתמש לא-admin → / (דף הבית)
+- הסיבה ל"נפילה לדף הבית": kenyonexpress@gmail.com היה role=customer
+- תוקן: profiles.role → super_admin (via service-role key, user id 62c7f2a8…)
+- נמחקה תיקיית src/app/admin הריקה (.gitkeep, לא הגדירה route)
+- אימות UI סופי דורש התחברות בדפדפן (אין לי את הסיסמה לסימולציה)
