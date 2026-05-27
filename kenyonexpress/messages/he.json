@@ -28,5 +28,27 @@
     "confirm": "אישור",
     "back": "חזרה",
     "currency": "₪"
+  },
+  "admin": {
+    "title": "פאנל ניהול",
+    "dashboard": "לוח בקרה",
+    "categories": "קטגוריות",
+    "products": "מוצרים",
+    "vendors": "ספקים",
+    "orders": "הזמנות",
+    "coupons": "עסקאות קופון",
+    "users": "משתמשים",
+    "auditLog": "לוג פעילות",
+    "new": "חדש",
+    "edit": "עריכה",
+    "delete": "מחיקה",
+    "save": "שמירה",
+    "cancel": "ביטול",
+    "active": "פעיל",
+    "inactive": "לא פעיל",
+    "pending": "ממתין",
+    "suspended": "מושעה",
+    "draft": "טיוטה",
+    "archived": "ארכיון"
   }
 }

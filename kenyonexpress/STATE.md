@@ -1,25 +1,29 @@
 # KenyonExpress State
 
 ## Current Phase
-**Phase 3 — Admin Panel**
+**Phase 4 — Full Admin CRUDs + Infrastructure**
 
 ## Last Completed
-Commit `215a01c` pushed ל-`cursor/add-supabase-3c830`:
-- migrations 006-010: תיקון idempotency (set_updated_at defensive + TO authenticated ב-008)
-- biome fixes: htmlFor/id ב-CategoryForm + ProductForm, void→undefined ב-DeleteButton
+Phase 4 — Full Admin CRUDs הושלם:
+- `012_categories_v2.sql` — soft delete, updated_at, RLS
+- `013_vendors_v2.sql` — legal_name, tax_id, contact_name, bank fields, logo_url, soft delete, RLS
+- `014_products_v2.sql` — name_en, compare_at_price, sku, is_featured, soft delete, RLS; variants + price/deleted_at
+- `015_coupon_deals.sql` — טבלת coupon_deals חדשה (10% model), coupon-images bucket, audit trigger
+- Categories: tree view + dialog modal + auto-slug + soft delete (CategoryTree, CategoryDialog)
+- Vendors: full CRUD form (VendorForm) + filters + new/[id] pages
+- Products: pagination (20/page) + search + filters + bulk actions + variants inline + auto-slug
+- Coupon Deals: full CRUD at /admin/coupons עם live preview card (CouponDealForm)
+- Orders: date filters added
+- i18n: admin translations added to messages/he.json + messages/en.json
+- @dnd-kit installed (core, sortable, utilities)
+- pnpm type-check ✅ clean | pnpm lint ✅ clean (new files)
 
 ## Migrations Status (Supabase)
-- `001` ✅ רץ (fresh DB only — לא idempotent by design)
-- `002` ✅ רץ
-- `003` ✅ רץ
-- `004` ✅ רץ
-- `005` ✅ רץ
-- `006` ✅ רץ
-- `007` ✅ רץ
-- `008` ✅ רץ
-- `009` ✅ רץ
-- `010` ✅ רץ
-- `011` ✅ רץ
+- `001`–`011` ✅ רצו
+- `012` ⏳ טרם הורץ על Supabase
+- `013` ⏳ טרם הורץ על Supabase
+- `014` ⏳ טרם הורץ על Supabase
+- `015` ⏳ טרם הורץ על Supabase
 
 ## In Progress
 nothing
@@ -28,10 +32,7 @@ nothing
 none
 
 ## Next Task
-Phase 3 wrap-up — test admin panel (admin bootstrap הושלם):
-1. התחבר בדפדפן כ-kenyonexpress@gmail.com ובדוק `/admin` (אמור להציג dashboard)
-2. ודא CRUD: products, categories, vendors, orders, users
-3. לאחר אימות — Phase 4: store frontend (product listing, cart, checkout + Cardcom)
+הרץ migrations 012–015 על Supabase, אחר כך בדוק את פאנל האדמין בדפדפן (categories tree, vendors CRUD, products with variants, coupon deals).
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
@@ -62,6 +63,27 @@ not set
 - /admin לא נטען - נופל לעמוד הראשי
 - בעיה: יש 2 תיקיות admin - src/app/(admin)/ ו-src/app/admin (ריקה)
 - צריך למחוק את src/app/admin (הריקה) - rm -rf src/app/admin
+
+### 2026-05-27 — Phase 3 complete
+- Admin panel אומת: עובד כולל ניווט וסטטיסטיקות
+- kenyonexpress@gmail.com = super_admin
+- CRUD קטגוריות (כולל העלאת אייקון) קיים ומוכן
+- Phase 4 מתחיל: store frontend
+
+### 2026-05-27 — Phase 4 Admin CRUDs complete
+- 4 migrations חדשות: 012 (categories v2), 013 (vendors v2), 014 (products v2), 015 (coupon_deals)
+- Categories: tree view + dialog modal + auto-slug מעברית + soft delete
+- Vendors: full CRUD + filters (VendorForm)
+- Products: pagination + search + bulk actions + variants + auto-slug
+- Coupon Deals: /admin/coupons — עסקאות 10% עם live preview
+- Orders: date range filters
+- i18n: admin namespace נוסף ל-he.json + en.json
+- pnpm type-check + lint — ✅ clean
+
+### 2026-05-27 — 003_rbac.sql verified
+- CREATE TYPE public.user_role AS ENUM כבר קיים בתחילת הקובץ (שורות 8-13)
+- עטוף ב-DO $$ EXCEPTION WHEN duplicate_object THEN NULL — idempotent מלא
+- אין שינוי נדרש
 
 ### 2026-05-27 — Admin route: לא היה באג בקוד
 - ה-route תקין: src/proxy.ts (Next 16 — middleware הוחלף ב-proxy) רץ ומגן על /admin

@@ -3,7 +3,6 @@
 import { requireAdminSession } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
 const schema = z.object({
@@ -16,7 +15,7 @@ const schema = z.object({
   name_en: z.string().min(1, 'שם באנגלית נדרש'),
   description_he: z.string().nullable().optional(),
   parent_id: z.string().uuid().nullable().optional(),
-  icon_url: z.string().url().nullable().optional(),
+  icon_url: z.string().nullable().optional(),
   sort_order: z.coerce.number().int().min(0).default(0),
   is_active: z.coerce.boolean().default(true),
 })
@@ -62,7 +61,25 @@ export async function upsertCategory(
   }
 
   revalidatePath('/admin/categories')
-  redirect('/admin/categories')
+  return { success: id ? 'קטגוריה עודכנה' : 'קטגוריה נוצרה' }
+}
+
+export async function softDeleteCategory(id: string): Promise<{ error?: string }> {
+  try {
+    await requireAdminSession()
+  } catch {
+    return { error: 'אין הרשאה' }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('categories')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', id)
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/categories')
+  return {}
 }
 
 export async function deleteCategory(id: string): Promise<{ error?: string }> {
@@ -74,6 +91,24 @@ export async function deleteCategory(id: string): Promise<{ error?: string }> {
 
   const supabase = await createClient()
   const { error } = await supabase.from('categories').delete().eq('id', id)
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/categories')
+  return {}
+}
+
+export async function updateCategorySortOrder(
+  id: string,
+  sort_order: number,
+): Promise<{ error?: string }> {
+  try {
+    await requireAdminSession()
+  } catch {
+    return { error: 'אין הרשאה' }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase.from('categories').update({ sort_order }).eq('id', id)
   if (error) return { error: error.message }
 
   revalidatePath('/admin/categories')

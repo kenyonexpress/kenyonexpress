@@ -28,5 +28,27 @@
     "confirm": "Confirm",
     "back": "Back",
     "currency": "₪"
+  },
+  "admin": {
+    "title": "Admin Panel",
+    "dashboard": "Dashboard",
+    "categories": "Categories",
+    "products": "Products",
+    "vendors": "Vendors",
+    "orders": "Orders",
+    "coupons": "Coupon Deals",
+    "users": "Users",
+    "auditLog": "Audit Log",
+    "new": "New",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "suspended": "Suspended",
+    "draft": "Draft",
+    "archived": "Archived"
   }
 }

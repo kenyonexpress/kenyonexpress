@@ -16,20 +16,22 @@ const ORDER_STATUSES = [
 ]
 
 interface Props {
-  searchParams: Promise<{ status?: string }>
+  searchParams: Promise<{ status?: string; from?: string; to?: string }>
 }
 
 export default async function AdminOrdersPage({ searchParams }: Props) {
-  const { status } = await searchParams
+  const { status, from, to } = await searchParams
   const supabase = await createClient()
 
   let query = supabase
     .from('orders')
     .select('id, order_number, status, total, created_at, profiles(full_name, email)')
     .order('created_at', { ascending: false })
-    .limit(50)
+    .limit(100)
 
   if (status) query = query.eq('status', status)
+  if (from) query = query.gte('created_at', from)
+  if (to) query = query.lte('created_at', `${to}T23:59:59`)
 
   const { data: orders } = await query
 
@@ -37,8 +39,8 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
     <div className="space-y-4">
       <h1 className="text-xl font-bold text-gray-900">הזמנות</h1>
 
-      {/* Status filter */}
-      <div className="flex gap-2 flex-wrap">
+      {/* Filters */}
+      <div className="flex gap-2 flex-wrap items-center">
         {ORDER_STATUSES.map((s) => (
           <Link
             key={s.value}
@@ -52,6 +54,27 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
             {s.label}
           </Link>
         ))}
+        <form method="GET" action="/admin/orders" className="flex gap-2 mr-auto">
+          {status && <input type="hidden" name="status" value={status} />}
+          <input
+            name="from"
+            type="date"
+            defaultValue={from ?? ''}
+            className="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
+          />
+          <input
+            name="to"
+            type="date"
+            defaultValue={to ?? ''}
+            className="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
+          />
+          <button
+            type="submit"
+            className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-lg"
+          >
+            סינון
+          </button>
+        </form>
       </div>
 
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">

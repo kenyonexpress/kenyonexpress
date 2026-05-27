@@ -45,39 +45,66 @@ export type Database = {
           profile_id: string
           business_name: string
           business_id: string
+          legal_name: string | null
+          tax_id: string | null
+          contact_name: string | null
           contact_email: string
           contact_phone: string | null
           address: string | null
+          bank_account_holder: string | null
+          bank_name: string | null
+          bank_branch: string | null
           bank_account: string | null
           commission_rate: number
+          logo_url: string | null
           status: 'pending' | 'active' | 'suspended'
+          deleted_at: string | null
           created_at: string
+          updated_at: string
         }
         Insert: {
           id?: string
           profile_id: string
           business_name: string
           business_id: string
+          legal_name?: string | null
+          tax_id?: string | null
+          contact_name?: string | null
           contact_email: string
           contact_phone?: string | null
           address?: string | null
+          bank_account_holder?: string | null
+          bank_name?: string | null
+          bank_branch?: string | null
           bank_account?: string | null
           commission_rate?: number
+          logo_url?: string | null
           status?: 'pending' | 'active' | 'suspended'
+          deleted_at?: string | null
           created_at?: string
+          updated_at?: string
         }
         Update: {
           id?: string
           profile_id?: string
           business_name?: string
           business_id?: string
+          legal_name?: string | null
+          tax_id?: string | null
+          contact_name?: string | null
           contact_email?: string
           contact_phone?: string | null
           address?: string | null
+          bank_account_holder?: string | null
+          bank_name?: string | null
+          bank_branch?: string | null
           bank_account?: string | null
           commission_rate?: number
+          logo_url?: string | null
           status?: 'pending' | 'active' | 'suspended'
+          deleted_at?: string | null
           created_at?: string
+          updated_at?: string
         }
         Relationships: [{ foreignKeyName: 'vendors_profile_id_fkey'; columns: ['profile_id']; referencedRelation: 'profiles'; referencedColumns: ['id'] }]
       }
@@ -93,6 +120,9 @@ export type Database = {
           sort_order: number
           is_active: boolean
           created_by: string | null
+          deleted_at: string | null
+          created_at: string
+          updated_at: string
         }
         Insert: {
           id?: string
@@ -105,6 +135,9 @@ export type Database = {
           sort_order?: number
           is_active?: boolean
           created_by?: string | null
+          deleted_at?: string | null
+          created_at?: string
+          updated_at?: string
         }
         Update: {
           id?: string
@@ -117,6 +150,9 @@ export type Database = {
           sort_order?: number
           is_active?: boolean
           created_by?: string | null
+          deleted_at?: string | null
+          created_at?: string
+          updated_at?: string
         }
         Relationships: [
           { foreignKeyName: 'categories_parent_id_fkey'; columns: ['parent_id']; referencedRelation: 'categories'; referencedColumns: ['id'] },
@@ -130,16 +166,21 @@ export type Database = {
           category_id: string | null
           slug: string
           name_he: string
+          name_en: string | null
           description_he: string | null
           type: 'physical' | 'coupon'
           base_price: number
+          compare_at_price: number | null
           sale_price: number | null
           currency: string
           stock_quantity: number | null
+          sku: string | null
+          is_featured: boolean
           status: 'draft' | 'active' | 'paused' | 'archived'
           images: Json
           seo_meta: Json
           created_by: string | null
+          deleted_at: string | null
           created_at: string
           updated_at: string
         }
@@ -149,16 +190,21 @@ export type Database = {
           category_id?: string | null
           slug: string
           name_he: string
+          name_en?: string | null
           description_he?: string | null
           type?: 'physical' | 'coupon'
           base_price: number
+          compare_at_price?: number | null
           sale_price?: number | null
           currency?: string
           stock_quantity?: number | null
+          sku?: string | null
+          is_featured?: boolean
           status?: 'draft' | 'active' | 'paused' | 'archived'
           images?: Json
           seo_meta?: Json
           created_by?: string | null
+          deleted_at?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -168,16 +214,21 @@ export type Database = {
           category_id?: string | null
           slug?: string
           name_he?: string
+          name_en?: string | null
           description_he?: string | null
           type?: 'physical' | 'coupon'
           base_price?: number
+          compare_at_price?: number | null
           sale_price?: number | null
           currency?: string
           stock_quantity?: number | null
+          sku?: string | null
+          is_featured?: boolean
           status?: 'draft' | 'active' | 'paused' | 'archived'
           images?: Json
           seo_meta?: Json
           created_by?: string | null
+          deleted_at?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -193,30 +244,36 @@ export type Database = {
           product_id: string
           sku: string
           name_he: string
+          price: number | null
           price_modifier: number
           stock_quantity: number | null
           attributes: Json
           is_active: boolean
+          deleted_at: string | null
         }
         Insert: {
           id?: string
           product_id: string
           sku: string
           name_he: string
+          price?: number | null
           price_modifier?: number
           stock_quantity?: number | null
           attributes?: Json
           is_active?: boolean
+          deleted_at?: string | null
         }
         Update: {
           id?: string
           product_id?: string
           sku?: string
           name_he?: string
+          price?: number | null
           price_modifier?: number
           stock_quantity?: number | null
           attributes?: Json
           is_active?: boolean
+          deleted_at?: string | null
         }
         Relationships: [{ foreignKeyName: 'product_variants_product_id_fkey'; columns: ['product_id']; referencedRelation: 'products'; referencedColumns: ['id'] }]
       }
@@ -429,6 +486,77 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['carts']['Insert']>
         Relationships: [{ foreignKeyName: 'carts_profile_id_fkey'; columns: ['profile_id']; referencedRelation: 'profiles'; referencedColumns: ['id'] }]
       }
+      coupon_deals: {
+        Row: {
+          id: string
+          vendor_id: string | null
+          title_he: string
+          business_name: string
+          original_price: number
+          platform_price: number
+          discount_percentage: number
+          terms_he: string | null
+          valid_from: string
+          valid_until: string | null
+          max_uses: number | null
+          max_uses_per_user: number
+          location_he: string | null
+          lat: number | null
+          lng: number | null
+          image_url: string | null
+          status: 'draft' | 'active' | 'paused' | 'archived'
+          created_by: string | null
+          deleted_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          vendor_id?: string | null
+          title_he: string
+          business_name: string
+          original_price: number
+          terms_he?: string | null
+          valid_from?: string
+          valid_until?: string | null
+          max_uses?: number | null
+          max_uses_per_user?: number
+          location_he?: string | null
+          lat?: number | null
+          lng?: number | null
+          image_url?: string | null
+          status?: 'draft' | 'active' | 'paused' | 'archived'
+          created_by?: string | null
+          deleted_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          vendor_id?: string | null
+          title_he?: string
+          business_name?: string
+          original_price?: number
+          terms_he?: string | null
+          valid_from?: string
+          valid_until?: string | null
+          max_uses?: number | null
+          max_uses_per_user?: number
+          location_he?: string | null
+          lat?: number | null
+          lng?: number | null
+          image_url?: string | null
+          status?: 'draft' | 'active' | 'paused' | 'archived'
+          created_by?: string | null
+          deleted_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          { foreignKeyName: 'coupon_deals_vendor_id_fkey'; columns: ['vendor_id']; referencedRelation: 'vendors'; referencedColumns: ['id'] },
+          { foreignKeyName: 'coupon_deals_created_by_fkey'; columns: ['created_by']; referencedRelation: 'users'; referencedColumns: ['id'] }
+        ]
+      }
       admin_audit_log: {
         Row: {
           id: string
@@ -500,5 +628,6 @@ export type WalletTransaction = Tables<'wallet_transactions'>
 export type PaymentToken = Tables<'payment_tokens'>
 export type Cart = Tables<'carts'>
 export type AdminAuditLog = Tables<'admin_audit_log'>
+export type CouponDeal = Tables<'coupon_deals'>
 
 export type UserRole = Enums<'user_role'>

@@ -1,19 +1,73 @@
 import StatusBadge, { vendorStatusBadge } from '@/components/admin/StatusBadge'
 import { createClient } from '@/lib/supabase/server'
+import { Plus } from 'lucide-react'
 import Link from 'next/link'
 
 export const metadata = { title: 'ספקים' }
 
-export default async function AdminVendorsPage() {
+const STATUS_FILTERS = [
+  { value: '', label: 'הכל' },
+  { value: 'pending', label: 'ממתינים' },
+  { value: 'active', label: 'פעילים' },
+  { value: 'suspended', label: 'מושעים' },
+]
+
+interface Props {
+  searchParams: Promise<{ status?: string; q?: string }>
+}
+
+export default async function AdminVendorsPage({ searchParams }: Props) {
+  const { status, q } = await searchParams
   const supabase = await createClient()
-  const { data: vendors } = await supabase
+
+  let query = supabase
     .from('vendors')
     .select('*, profiles(full_name, email)')
+    .is('deleted_at', null)
     .order('created_at', { ascending: false })
+
+  if (status) query = query.eq('status', status)
+  if (q) query = query.ilike('business_name', `%${q}%`)
+
+  const { data: vendors } = await query
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold text-gray-900">ספקים</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold text-gray-900">ספקים</h1>
+        <Link
+          href="/admin/vendors/new"
+          className="inline-flex items-center gap-2 bg-brand hover:bg-brand-dark text-white text-sm font-semibold rounded-lg px-4 py-2 transition-colors"
+        >
+          <Plus size={15} />
+          ספק חדש
+        </Link>
+      </div>
+
+      <div className="flex gap-2 flex-wrap items-center">
+        {STATUS_FILTERS.map((f) => (
+          <Link
+            key={f.value}
+            href={f.value ? `/admin/vendors?status=${f.value}` : '/admin/vendors'}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              (status ?? '') === f.value
+                ? 'bg-brand text-white'
+                : 'bg-white border border-gray-200 text-gray-600 hover:border-brand hover:text-brand'
+            }`}
+          >
+            {f.label}
+          </Link>
+        ))}
+
+        <form method="GET" action="/admin/vendors" className="mr-auto">
+          <input
+            name="q"
+            defaultValue={q}
+            placeholder="חיפוש לפי שם..."
+            className="border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
+          />
+        </form>
+      </div>
 
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
         <table className="w-full text-sm">
@@ -59,7 +113,7 @@ export default async function AdminVendorsPage() {
                       href={`/admin/vendors/${vendor.id}`}
                       className="text-brand text-sm hover:underline"
                     >
-                      פרטים
+                      עריכה
                     </Link>
                   </td>
                 </tr>
@@ -68,7 +122,7 @@ export default async function AdminVendorsPage() {
             {!vendors?.length && (
               <tr>
                 <td colSpan={6} className="px-5 py-10 text-center text-gray-400">
-                  אין ספקים עדיין
+                  אין ספקים
                 </td>
               </tr>
             )}

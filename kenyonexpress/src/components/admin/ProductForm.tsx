@@ -1,66 +1,173 @@
 'use client'
 
 import ImageUploader from '@/components/admin/ImageUploader'
+import { slugify } from '@/lib/utils/slugify'
 import { type ProductFormState, upsertProduct } from '@/server/actions/admin/products'
-import type { Category, Product, Vendor } from '@/types/database'
+import type { Category, Product, ProductVariant, Vendor } from '@/types/database'
+import { Plus, Trash2 } from 'lucide-react'
 import { useActionState, useState } from 'react'
+
+interface VariantDraft {
+  _key: string
+  id?: string
+  name_he: string
+  sku: string
+  price: string
+  price_modifier: string
+  stock_quantity: string
+  is_active: boolean
+}
 
 interface Props {
   product?: Product
+  variants?: ProductVariant[]
   vendors: Pick<Vendor, 'id' | 'business_name'>[]
   categories: Pick<Category, 'id' | 'name_he'>[]
 }
 
 const INITIAL_STATE: ProductFormState = null
 
-export default function ProductForm({ product, vendors, categories }: Props) {
+function variantToFormData(v: ProductVariant): VariantDraft {
+  return {
+    _key: v.id,
+    id: v.id,
+    name_he: v.name_he,
+    sku: v.sku,
+    price: v.price != null ? String(v.price) : '',
+    price_modifier: String(v.price_modifier),
+    stock_quantity: v.stock_quantity != null ? String(v.stock_quantity) : '',
+    is_active: v.is_active,
+  }
+}
+
+export default function ProductForm({
+  product,
+  variants: initVariants = [],
+  vendors,
+  categories,
+}: Props) {
   const [state, action, pending] = useActionState(upsertProduct, INITIAL_STATE)
   const [images, setImages] = useState<string[]>(
     Array.isArray(product?.images) ? (product.images as string[]) : [],
   )
+  const [variantDrafts, setVariantDrafts] = useState<VariantDraft[]>(
+    initVariants.filter((v) => !v.deleted_at).map(variantToFormData),
+  )
+  const [nameHe, setNameHe] = useState(product?.name_he ?? '')
+  const [slugVal, setSlugVal] = useState(product?.slug ?? '')
 
   const error = state && 'error' in state ? state.error : null
 
+  function handleNameHe(val: string) {
+    setNameHe(val)
+    if (!product) setSlugVal(slugify(val))
+  }
+
+  function addVariant() {
+    setVariantDrafts((prev) => [
+      ...prev,
+      {
+        _key: crypto.randomUUID(),
+        name_he: '',
+        sku: '',
+        price: '',
+        price_modifier: '0',
+        stock_quantity: '',
+        is_active: true,
+      },
+    ])
+  }
+
+  function removeVariant(idx: number) {
+    setVariantDrafts((prev) => prev.filter((_, i) => i !== idx))
+  }
+
+  function updateVariant(idx: number, field: keyof VariantDraft, value: string | boolean) {
+    setVariantDrafts((prev) => prev.map((v, i) => (i === idx ? { ...v, [field]: value } : v)))
+  }
+
+  const variantsJson = JSON.stringify(
+    variantDrafts.map((v) => ({
+      ...(v.id ? { id: v.id } : {}),
+      name_he: v.name_he,
+      sku: v.sku,
+      price: v.price !== '' ? Number(v.price) : null,
+      price_modifier: Number(v.price_modifier) || 0,
+      stock_quantity: v.stock_quantity !== '' ? Number(v.stock_quantity) : null,
+      is_active: v.is_active,
+    })),
+  )
+
   return (
-    <form action={action} className="space-y-5 bg-white border border-gray-200 rounded-xl p-6">
+    <form action={action} className="space-y-6 bg-white border border-gray-200 rounded-xl p-6">
       {product && <input type="hidden" name="id" value={product.id} />}
       <input type="hidden" name="images" value={JSON.stringify(images)} />
+      <input type="hidden" name="variants" value={variantsJson} />
 
       {error && <div className="bg-red-50 text-red-700 text-sm rounded-lg px-4 py-2">{error}</div>}
 
-      {/* Name */}
-      <div>
-        <label htmlFor="name_he" className="block text-sm font-medium text-gray-700 mb-1">
-          שם מוצר *
-        </label>
-        <input
-          id="name_he"
-          name="name_he"
-          defaultValue={product?.name_he}
-          required
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-        />
+      {/* Names */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="name_he" className="block text-xs font-medium text-gray-700 mb-1">
+            שם בעברית *
+          </label>
+          <input
+            id="name_he"
+            name="name_he"
+            value={nameHe}
+            onChange={(e) => handleNameHe(e.target.value)}
+            required
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+          />
+        </div>
+        <div>
+          <label htmlFor="name_en" className="block text-xs font-medium text-gray-700 mb-1">
+            שם באנגלית
+          </label>
+          <input
+            id="name_en"
+            name="name_en"
+            defaultValue={product?.name_en ?? ''}
+            dir="ltr"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+          />
+        </div>
       </div>
 
-      {/* Slug */}
-      <div>
-        <label htmlFor="prod-slug" className="block text-sm font-medium text-gray-700 mb-1">
-          קישור (slug) *
-          <span className="text-gray-400 font-normal mr-1">— אותיות לועזיות ומקפים בלבד</span>
-        </label>
-        <input
-          id="prod-slug"
-          name="slug"
-          defaultValue={product?.slug}
-          required
-          dir="ltr"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-        />
+      {/* Slug + SKU */}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label htmlFor="prod-slug" className="block text-xs font-medium text-gray-700 mb-1">
+            Slug *
+          </label>
+          <input
+            id="prod-slug"
+            name="slug"
+            value={slugVal}
+            onChange={(e) => setSlugVal(e.target.value)}
+            required
+            dir="ltr"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand"
+          />
+        </div>
+        <div>
+          <label htmlFor="prod-sku" className="block text-xs font-medium text-gray-700 mb-1">
+            SKU
+          </label>
+          <input
+            id="prod-sku"
+            name="sku"
+            defaultValue={product?.sku ?? ''}
+            dir="ltr"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand"
+          />
+        </div>
       </div>
 
       {/* Description */}
       <div>
-        <label htmlFor="description_he" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="description_he" className="block text-xs font-medium text-gray-700 mb-1">
           תיאור
         </label>
         <textarea
@@ -75,7 +182,7 @@ export default function ProductForm({ product, vendors, categories }: Props) {
       {/* Vendor + Category */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="vendor_id" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="vendor_id" className="block text-xs font-medium text-gray-700 mb-1">
             ספק *
           </label>
           <select
@@ -94,7 +201,7 @@ export default function ProductForm({ product, vendors, categories }: Props) {
           </select>
         </div>
         <div>
-          <label htmlFor="category_id" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="category_id" className="block text-xs font-medium text-gray-700 mb-1">
             קטגוריה
           </label>
           <select
@@ -116,7 +223,7 @@ export default function ProductForm({ product, vendors, categories }: Props) {
       {/* Type + Status */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="prod-type" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="prod-type" className="block text-xs font-medium text-gray-700 mb-1">
             סוג *
           </label>
           <select
@@ -131,7 +238,7 @@ export default function ProductForm({ product, vendors, categories }: Props) {
           </select>
         </div>
         <div>
-          <label htmlFor="prod-status" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="prod-status" className="block text-xs font-medium text-gray-700 mb-1">
             סטטוס *
           </label>
           <select
@@ -152,7 +259,7 @@ export default function ProductForm({ product, vendors, categories }: Props) {
       {/* Pricing */}
       <div className="grid grid-cols-3 gap-4">
         <div>
-          <label htmlFor="base_price" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="base_price" className="block text-xs font-medium text-gray-700 mb-1">
             מחיר בסיס (₪) *
           </label>
           <input
@@ -168,22 +275,25 @@ export default function ProductForm({ product, vendors, categories }: Props) {
           />
         </div>
         <div>
-          <label htmlFor="sale_price" className="block text-sm font-medium text-gray-700 mb-1">
-            מחיר מבצע (₪)
+          <label
+            htmlFor="compare_at_price"
+            className="block text-xs font-medium text-gray-700 mb-1"
+          >
+            מחיר לפני (₪)
           </label>
           <input
-            id="sale_price"
-            name="sale_price"
+            id="compare_at_price"
+            name="compare_at_price"
             type="number"
             min="0"
             step="0.01"
-            defaultValue={product?.sale_price ?? ''}
+            defaultValue={product?.compare_at_price ?? ''}
             dir="ltr"
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
           />
         </div>
         <div>
-          <label htmlFor="stock_quantity" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="stock_quantity" className="block text-xs font-medium text-gray-700 mb-1">
             מלאי
           </label>
           <input
@@ -199,9 +309,117 @@ export default function ProductForm({ product, vendors, categories }: Props) {
         </div>
       </div>
 
+      {/* Featured */}
+      <div className="flex items-center gap-3">
+        <input
+          id="is_featured"
+          name="is_featured"
+          type="checkbox"
+          value="true"
+          defaultChecked={product?.is_featured ?? false}
+          className="w-4 h-4 rounded border-gray-300 text-brand focus:ring-brand"
+        />
+        <label htmlFor="is_featured" className="text-sm font-medium text-gray-700">
+          מוצר מומלץ
+        </label>
+      </div>
+
+      {/* Variants */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-sm font-semibold text-gray-700">גרסאות מוצר</p>
+          <button
+            type="button"
+            onClick={addVariant}
+            className="inline-flex items-center gap-1 text-xs text-brand hover:underline"
+          >
+            <Plus size={13} />
+            הוסף גרסה
+          </button>
+        </div>
+        {variantDrafts.length > 0 && (
+          <div className="border border-gray-200 rounded-xl overflow-hidden">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="bg-gray-50 text-gray-500 border-b border-gray-200 text-right">
+                  <th className="px-3 py-2 font-medium">שם</th>
+                  <th className="px-3 py-2 font-medium">SKU</th>
+                  <th className="px-3 py-2 font-medium">מחיר (₪)</th>
+                  <th className="px-3 py-2 font-medium">מלאי</th>
+                  <th className="px-3 py-2 font-medium">פעיל</th>
+                  <th className="px-3 py-2 w-8" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {variantDrafts.map((v, idx) => (
+                  <tr key={v._key}>
+                    <td className="px-3 py-2">
+                      <input
+                        value={v.name_he}
+                        onChange={(e) => updateVariant(idx, 'name_he', e.target.value)}
+                        placeholder="צבע, גודל..."
+                        className="w-full border border-gray-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-brand"
+                      />
+                    </td>
+                    <td className="px-3 py-2">
+                      <input
+                        value={v.sku}
+                        onChange={(e) => updateVariant(idx, 'sku', e.target.value)}
+                        dir="ltr"
+                        className="w-full border border-gray-200 rounded px-2 py-1 font-mono focus:outline-none focus:ring-1 focus:ring-brand"
+                      />
+                    </td>
+                    <td className="px-3 py-2">
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={v.price}
+                        onChange={(e) => updateVariant(idx, 'price', e.target.value)}
+                        dir="ltr"
+                        placeholder="כבסיס"
+                        className="w-24 border border-gray-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-brand"
+                      />
+                    </td>
+                    <td className="px-3 py-2">
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={v.stock_quantity}
+                        onChange={(e) => updateVariant(idx, 'stock_quantity', e.target.value)}
+                        dir="ltr"
+                        className="w-20 border border-gray-200 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-brand"
+                      />
+                    </td>
+                    <td className="px-3 py-2">
+                      <input
+                        type="checkbox"
+                        checked={v.is_active}
+                        onChange={(e) => updateVariant(idx, 'is_active', e.target.checked)}
+                        className="w-4 h-4 rounded border-gray-300"
+                      />
+                    </td>
+                    <td className="px-3 py-2">
+                      <button
+                        type="button"
+                        onClick={() => removeVariant(idx)}
+                        className="text-gray-400 hover:text-red-600"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
       {/* Images */}
       <div>
-        <p className="block text-sm font-medium text-gray-700 mb-2">תמונות</p>
+        <p className="text-sm font-medium text-gray-700 mb-2">תמונות (עד 8)</p>
         <ImageUploader
           bucket="product-images"
           folder="products"
@@ -211,7 +429,6 @@ export default function ProductForm({ product, vendors, categories }: Props) {
         />
       </div>
 
-      {/* Submit */}
       <div className="flex items-center gap-3 pt-2">
         <button
           type="submit"

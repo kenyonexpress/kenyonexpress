@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/client'
 
-export type UploadBucket = 'product-images' | 'vendor-logos' | 'category-icons'
+export type UploadBucket = 'product-images' | 'vendor-logos' | 'category-icons' | 'coupon-images'
 
 const BUCKET_CONFIG: Record<UploadBucket, { maxBytes: number; allowedTypes: string[] }> = {
   'product-images': {
@@ -14,6 +14,10 @@ const BUCKET_CONFIG: Record<UploadBucket, { maxBytes: number; allowedTypes: stri
   'category-icons': {
     maxBytes: 1 * 1024 * 1024,
     allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/svg+xml'],
+  },
+  'coupon-images': {
+    maxBytes: 3 * 1024 * 1024,
+    allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
   },
 }
 
