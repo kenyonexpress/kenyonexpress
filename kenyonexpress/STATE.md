@@ -1,41 +1,34 @@
 # KenyonExpress State
 
 ## Current Phase
-**Phase 4 — Full Admin CRUDs + Infrastructure**
+**Phase 4 — Admin functional, moving to storefront**
 
 ## Last Completed
-Phase 4 — Full Admin CRUDs הושלם:
-- `012_categories_v2.sql` — soft delete, updated_at, RLS
-- `013_vendors_v2.sql` — legal_name, tax_id, contact_name, bank fields, logo_url, soft delete, RLS
-- `014_products_v2.sql` — name_en, compare_at_price, sku, is_featured, soft delete, RLS; variants + price/deleted_at
-- `015_coupon_deals.sql` — טבלת coupon_deals חדשה (10% model), coupon-images bucket, audit trigger
-- Categories: tree view + dialog modal + auto-slug + soft delete (CategoryTree, CategoryDialog)
-- Vendors: full CRUD form (VendorForm) + filters + new/[id] pages
-- Products: pagination (20/page) + search + filters + bulk actions + variants inline + auto-slug
-- Coupon Deals: full CRUD at /admin/coupons עם live preview card (CouponDealForm)
-- Orders: date filters added
-- i18n: admin translations added to messages/he.json + messages/en.json
-- @dnd-kit installed (core, sortable, utilities)
-- pnpm type-check ✅ clean | pnpm lint ✅ clean (new files)
+Session 2026-05-29 — Admin polish + data entry (commit `9ffc7ed`, pushed to `cursor/add-supabase-3c830`):
+- Migration `007` (categories: `icon_url` + `name_en` columns) applied to Supabase
+- Migration `008_product_pricing_coupon.sql` — adds `kenyon_price`, `full_price`, `is_coupon_enabled` to products
+- `supplier_id` (was `vendor_id`) made optional: removed vendor select from `ProductForm`, removed from Zod schema + server action, `database.ts` updated to `string | null`
+- Category slug auto-generates from English name (`name_en`) instead of Hebrew
+- `CategoryDialog.tsx` — accessible `Dialog.Description` added
+- Admin sidebar (`AdminSidebar.tsx`) — "+" quick-action button next to מוצרים, links to `/admin/products/new`, `aria-label="מוצר חדש"`
+- First real categories created in the DB
+- tsc --noEmit ✅ clean
 
 ## Migrations Status (Supabase)
 - `001`–`011` ✅ רצו
-- `012` ⏳ טרם הורץ על Supabase
-- `013` ⏳ טרם הורץ על Supabase
-- `014` ⏳ טרם הורץ על Supabase
-- `015` ⏳ טרם הורץ על Supabase
+- `007` ✅ רץ (categories icon_url + name_en)
+- `008` ✅ רץ (kenyon_price, full_price, is_coupon_enabled)
+- `012`–`015` ⏳ טרם הורצו
 
 ## In Progress
 nothing
 
 ## Blocking Issues
-- Push נכשל: GitHub authentication failed (HTTPS token לא מוגדר)
-- commit `0625aee` קיים לוקאלית בלבד, טרם נדחף ל-remote
+none
 
 ## Next Task
-1. `git push origin cursor/add-supabase-3c830` (דורש GitHub token / SSH)
-2. הרץ migrations 012–015 על Supabase
-3. בדוק פאנל אדמין בדפדפן
+1. צור מוצרים ראשונים בפאנל האדמין (`/admin/products/new`)
+2. בנה עמוד מוצר בסטורפרונט (`src/app/(store)/products/[slug]/page.tsx`)
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
@@ -95,3 +88,12 @@ not set
 - תוקן: profiles.role → super_admin (via service-role key, user id 62c7f2a8…)
 - נמחקה תיקיית src/app/admin הריקה (.gitkeep, לא הגדירה route)
 - אימות UI סופי דורש התחברות בדפדפן (אין לי את הסיסמה לסימולציה)
+
+### 2026-05-29 — Admin functional, first categories created
+- Migration 007 (categories: icon_url + name_en) applied to Supabase
+- Migration 008 added: kenyon_price, full_price, is_coupon_enabled לטבלת products
+- vendor_id הפך אופציונלי: הוסר מ-ProductForm, מ-Zod schema, מ-server action; database.ts עודכן
+- Category slug מחולל מ-name_en (אנגלית) במקום עברית
+- AdminSidebar: כפתור "+" להוספת מוצר מהיר ליד "מוצרים"
+- קטגוריות ראשונות נוצרו ב-DB
+- commit 9ffc7ed pushed to cursor/add-supabase-3c830
