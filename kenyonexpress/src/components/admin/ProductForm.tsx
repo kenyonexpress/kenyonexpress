@@ -3,7 +3,7 @@
 import ImageUploader from '@/components/admin/ImageUploader'
 import { slugify } from '@/lib/utils/slugify'
 import { type ProductFormState, upsertProduct } from '@/server/actions/admin/products'
-import type { Category, Product, ProductVariant, Vendor } from '@/types/database'
+import type { Category, Product, ProductVariant } from '@/types/database'
 import { Plus, Trash2 } from 'lucide-react'
 import { useActionState, useState } from 'react'
 
@@ -21,7 +21,6 @@ interface VariantDraft {
 interface Props {
   product?: Product
   variants?: ProductVariant[]
-  vendors: Pick<Vendor, 'id' | 'business_name'>[]
   categories: Pick<Category, 'id' | 'name_he'>[]
 }
 
@@ -40,12 +39,7 @@ function variantToFormData(v: ProductVariant): VariantDraft {
   }
 }
 
-export default function ProductForm({
-  product,
-  variants: initVariants = [],
-  vendors,
-  categories,
-}: Props) {
+export default function ProductForm({ product, variants: initVariants = [], categories }: Props) {
   const [state, action, pending] = useActionState(upsertProduct, INITIAL_STATE)
   const [images, setImages] = useState<string[]>(
     Array.isArray(product?.images) ? (product.images as string[]) : [],
@@ -179,45 +173,24 @@ export default function ProductForm({
         />
       </div>
 
-      {/* Vendor + Category */}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="vendor_id" className="block text-xs font-medium text-gray-700 mb-1">
-            ספק *
-          </label>
-          <select
-            id="vendor_id"
-            name="vendor_id"
-            defaultValue={product?.vendor_id ?? ''}
-            required
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-          >
-            <option value="">בחרו ספק</option>
-            {vendors.map((v) => (
-              <option key={v.id} value={v.id}>
-                {v.business_name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="category_id" className="block text-xs font-medium text-gray-700 mb-1">
-            קטגוריה
-          </label>
-          <select
-            id="category_id"
-            name="category_id"
-            defaultValue={product?.category_id ?? ''}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-          >
-            <option value="">ללא קטגוריה</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name_he}
-              </option>
-            ))}
-          </select>
-        </div>
+      {/* Category */}
+      <div>
+        <label htmlFor="category_id" className="block text-xs font-medium text-gray-700 mb-1">
+          קטגוריה
+        </label>
+        <select
+          id="category_id"
+          name="category_id"
+          defaultValue={product?.category_id ?? ''}
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+        >
+          <option value="">ללא קטגוריה</option>
+          {categories.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name_he}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Type + Status */}
@@ -259,35 +232,32 @@ export default function ProductForm({
       {/* Pricing */}
       <div className="grid grid-cols-3 gap-4">
         <div>
-          <label htmlFor="base_price" className="block text-xs font-medium text-gray-700 mb-1">
-            מחיר בסיס (₪) *
+          <label htmlFor="kenyon_price" className="block text-xs font-medium text-gray-700 mb-1">
+            מחיר בקניון (₪) *
           </label>
           <input
-            id="base_price"
-            name="base_price"
+            id="kenyon_price"
+            name="kenyon_price"
             type="number"
             min="0"
             step="0.01"
-            defaultValue={product?.base_price}
+            defaultValue={product?.kenyon_price ?? ''}
             required
             dir="ltr"
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
           />
         </div>
         <div>
-          <label
-            htmlFor="compare_at_price"
-            className="block text-xs font-medium text-gray-700 mb-1"
-          >
-            מחיר לפני (₪)
+          <label htmlFor="full_price" className="block text-xs font-medium text-gray-700 mb-1">
+            מחיר מלא (₪)
           </label>
           <input
-            id="compare_at_price"
-            name="compare_at_price"
+            id="full_price"
+            name="full_price"
             type="number"
             min="0"
             step="0.01"
-            defaultValue={product?.compare_at_price ?? ''}
+            defaultValue={product?.full_price ?? ''}
             dir="ltr"
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
           />
@@ -309,19 +279,35 @@ export default function ProductForm({
         </div>
       </div>
 
-      {/* Featured */}
-      <div className="flex items-center gap-3">
-        <input
-          id="is_featured"
-          name="is_featured"
-          type="checkbox"
-          value="true"
-          defaultChecked={product?.is_featured ?? false}
-          className="w-4 h-4 rounded border-gray-300 text-brand focus:ring-brand"
-        />
-        <label htmlFor="is_featured" className="text-sm font-medium text-gray-700">
-          מוצר מומלץ
-        </label>
+      {/* Featured + Coupon toggles */}
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center gap-3">
+          <input
+            id="is_featured"
+            name="is_featured"
+            type="checkbox"
+            value="true"
+            defaultChecked={product?.is_featured ?? false}
+            className="w-4 h-4 rounded border-gray-300 text-brand focus:ring-brand"
+          />
+          <label htmlFor="is_featured" className="text-sm font-medium text-gray-700">
+            מוצר מומלץ
+          </label>
+        </div>
+        <div className="flex items-center gap-3">
+          <input
+            id="is_coupon_enabled"
+            name="is_coupon_enabled"
+            type="checkbox"
+            value="true"
+            defaultChecked={product?.is_coupon_enabled ?? false}
+            className="w-4 h-4 rounded border-gray-300 text-brand focus:ring-brand"
+          />
+          <label htmlFor="is_coupon_enabled" className="text-sm font-medium text-gray-700">
+            ניתן לרכישה כקופון
+          </label>
+          <span className="text-xs text-gray-400">(הלקוח משלם 10% אונליין, 90% בחנות)</span>
+        </div>
       </div>
 
       {/* Variants */}

@@ -162,7 +162,7 @@ export type Database = {
       products: {
         Row: {
           id: string
-          vendor_id: string
+          vendor_id: string | null
           category_id: string | null
           slug: string
           name_he: string
@@ -172,6 +172,9 @@ export type Database = {
           base_price: number
           compare_at_price: number | null
           sale_price: number | null
+          kenyon_price: number | null
+          full_price: number | null
+          is_coupon_enabled: boolean
           currency: string
           stock_quantity: number | null
           sku: string | null
@@ -186,16 +189,19 @@ export type Database = {
         }
         Insert: {
           id?: string
-          vendor_id: string
+          vendor_id?: string | null
           category_id?: string | null
           slug: string
           name_he: string
           name_en?: string | null
           description_he?: string | null
           type?: 'physical' | 'coupon'
-          base_price: number
+          base_price?: number
           compare_at_price?: number | null
           sale_price?: number | null
+          kenyon_price?: number | null
+          full_price?: number | null
+          is_coupon_enabled?: boolean
           currency?: string
           stock_quantity?: number | null
           sku?: string | null
@@ -210,7 +216,7 @@ export type Database = {
         }
         Update: {
           id?: string
-          vendor_id?: string
+          vendor_id?: string | null
           category_id?: string | null
           slug?: string
           name_he?: string
@@ -220,6 +226,9 @@ export type Database = {
           base_price?: number
           compare_at_price?: number | null
           sale_price?: number | null
+          kenyon_price?: number | null
+          full_price?: number | null
+          is_coupon_enabled?: boolean
           currency?: string
           stock_quantity?: number | null
           sku?: string | null

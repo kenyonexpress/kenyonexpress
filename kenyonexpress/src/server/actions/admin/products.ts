@@ -6,26 +6,35 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
-const schema = z.object({
-  id: z.string().uuid().optional(),
-  vendor_id: z.string().uuid('ספק נדרש'),
-  category_id: z.string().uuid().nullable().optional(),
-  slug: z
-    .string()
-    .min(2, 'קישור חייב להכיל לפחות 2 תווים')
-    .regex(/^[a-z0-9-]+$/, 'קישור יכול להכיל אותיות לועזיות, מספרים ומקפים בלבד'),
-  name_he: z.string().min(2, 'שם חייב להכיל לפחות 2 תווים'),
-  name_en: z.string().nullable().optional(),
-  description_he: z.string().nullable().optional(),
-  type: z.enum(['physical', 'coupon']),
-  base_price: z.coerce.number().min(0, 'מחיר חייב להיות אפס ומעלה'),
-  compare_at_price: z.coerce.number().min(0).nullable().optional(),
-  sale_price: z.coerce.number().min(0).nullable().optional(),
-  sku: z.string().nullable().optional(),
-  stock_quantity: z.coerce.number().int().min(0).nullable().optional(),
-  is_featured: z.coerce.boolean().default(false),
-  status: z.enum(['draft', 'active', 'paused', 'archived']),
-})
+const schema = z
+  .object({
+    id: z.string().uuid().optional(),
+    category_id: z.string().uuid().nullable().optional(),
+    slug: z
+      .string()
+      .min(2, 'קישור חייב להכיל לפחות 2 תווים')
+      .regex(/^[a-z0-9-]+$/, 'קישור יכול להכיל אותיות לועזיות, מספרים ומקפים בלבד'),
+    name_he: z.string().min(2, 'שם חייב להכיל לפחות 2 תווים'),
+    name_en: z.string().nullable().optional(),
+    description_he: z.string().nullable().optional(),
+    type: z.enum(['physical', 'coupon']),
+    kenyon_price: z.coerce.number().min(0, 'מחיר בקניון נדרש'),
+    full_price: z.coerce.number().min(0).nullable().optional(),
+    is_coupon_enabled: z.coerce.boolean().default(false),
+    sku: z.string().nullable().optional(),
+    stock_quantity: z.coerce.number().int().min(0).nullable().optional(),
+    is_featured: z.coerce.boolean().default(false),
+    status: z.enum(['draft', 'active', 'paused', 'archived']),
+  })
+  .superRefine((data, ctx) => {
+    if (data.full_price != null && data.full_price < data.kenyon_price) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'מחיר מלא חייב להיות גדול או שווה למחיר בקניון',
+        path: ['full_price'],
+      })
+    }
+  })
 
 const variantSchema = z.object({
   id: z.string().uuid().optional(),
@@ -51,16 +60,15 @@ export async function upsertProduct(
 
   const parsed = schema.safeParse({
     id: formData.get('id') || undefined,
-    vendor_id: formData.get('vendor_id'),
     category_id: formData.get('category_id') || null,
     slug: formData.get('slug'),
     name_he: formData.get('name_he'),
     name_en: formData.get('name_en') || null,
     description_he: formData.get('description_he') || null,
     type: formData.get('type'),
-    base_price: formData.get('base_price'),
-    compare_at_price: formData.get('compare_at_price') || null,
-    sale_price: formData.get('sale_price') || null,
+    kenyon_price: formData.get('kenyon_price'),
+    full_price: formData.get('full_price') || null,
+    is_coupon_enabled: formData.get('is_coupon_enabled') === 'true',
     sku: formData.get('sku') || null,
     stock_quantity: formData.get('stock_quantity') || null,
     is_featured: formData.get('is_featured') === 'true',
