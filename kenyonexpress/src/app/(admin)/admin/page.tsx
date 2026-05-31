@@ -28,7 +28,7 @@ export default async function AdminDashboardPage() {
       .limit(5),
     supabase
       .from('products')
-      .select('id, name_he, status, base_price, vendors(business_name)')
+      .select('id, name_he, status, kenyon_price')
       .order('created_at', { ascending: false })
       .limit(5),
   ])
@@ -112,14 +112,12 @@ export default async function AdminDashboardPage() {
             <thead>
               <tr className="text-right text-xs text-gray-500 border-b border-gray-100">
                 <th className="px-5 py-2.5 font-medium">שם</th>
-                <th className="px-5 py-2.5 font-medium">ספק</th>
                 <th className="px-5 py-2.5 font-medium">מחיר</th>
                 <th className="px-5 py-2.5 font-medium">סטטוס</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {(recentProducts ?? []).map((product) => {
-                const vendor = Array.isArray(product.vendors) ? product.vendors[0] : product.vendors
                 return (
                   <tr key={product.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-5 py-3">
@@ -130,11 +128,8 @@ export default async function AdminDashboardPage() {
                         {product.name_he}
                       </Link>
                     </td>
-                    <td className="px-5 py-3 text-gray-600 text-xs">
-                      {vendor?.business_name ?? '—'}
-                    </td>
                     <td className="px-5 py-3 text-gray-700">
-                      ₪{product.base_price.toLocaleString('he-IL')}
+                      ₪{(product.kenyon_price ?? 0).toLocaleString('he-IL')}
                     </td>
                     <td className="px-5 py-3">
                       <StatusBadge
@@ -153,7 +148,7 @@ export default async function AdminDashboardPage() {
               })}
               {!recentProducts?.length && (
                 <tr>
-                  <td colSpan={4} className="px-5 py-6 text-center text-gray-400 text-sm">
+                  <td colSpan={3} className="px-5 py-6 text-center text-gray-400 text-sm">
                     אין מוצרים עדיין
                   </td>
                 </tr>

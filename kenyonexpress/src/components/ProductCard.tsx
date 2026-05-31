@@ -2,24 +2,28 @@ import Link from 'next/link'
 
 export type Product = {
   id: string
-  name: string
-  description: string | null
-  price_ils: number
-  image_url: string | null
-  stock_quantity: number
+  slug: string
+  name_he: string
+  kenyon_price: number | null
+  images: unknown
+  stock_quantity: number | null
 }
 
 export default function ProductCard({ product }: { product: Product }) {
   const outOfStock = product.stock_quantity === 0
+  const thumb =
+    Array.isArray(product.images) && typeof product.images[0] === 'string'
+      ? (product.images[0] as string)
+      : null
 
   return (
     <Link
-      href={`/products/${product.id}`}
+      href={`/products/${product.slug}`}
       className="block bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
     >
       <div className="aspect-square bg-gray-50 flex items-center justify-center relative">
-        {product.image_url ? (
-          <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+        {thumb ? (
+          <img src={thumb} alt={product.name_he} className="w-full h-full object-cover" />
         ) : (
           <span className="text-5xl">📦</span>
         )}
@@ -33,9 +37,11 @@ export default function ProductCard({ product }: { product: Product }) {
       </div>
       <div className="p-3">
         <p className="text-sm font-medium text-gray-800 line-clamp-2 leading-snug">
-          {product.name}
+          {product.name_he}
         </p>
-        <p className="text-brand font-bold mt-1.5">₪{Number(product.price_ils).toFixed(2)}</p>
+        <p className="text-brand font-bold mt-1.5">
+          ₪{Number(product.kenyon_price ?? 0).toFixed(2)}
+        </p>
       </div>
     </Link>
   )

@@ -5,12 +5,23 @@ ALTER TABLE public.vendors
   ADD COLUMN IF NOT EXISTS legal_name          text,
   ADD COLUMN IF NOT EXISTS tax_id              text,
   ADD COLUMN IF NOT EXISTS contact_name        text,
+  ADD COLUMN IF NOT EXISTS contact_email       text,
+  ADD COLUMN IF NOT EXISTS contact_phone       text,
+  ADD COLUMN IF NOT EXISTS business_id         text,
+  ADD COLUMN IF NOT EXISTS address             text,
   ADD COLUMN IF NOT EXISTS bank_account_holder text,
   ADD COLUMN IF NOT EXISTS bank_name           text,
   ADD COLUMN IF NOT EXISTS bank_branch         text,
+  ADD COLUMN IF NOT EXISTS bank_account        text,
   ADD COLUMN IF NOT EXISTS logo_url            text,
+  ADD COLUMN IF NOT EXISTS status              text        NOT NULL DEFAULT 'pending',
   ADD COLUMN IF NOT EXISTS deleted_at          timestamptz,
   ADD COLUMN IF NOT EXISTS updated_at          timestamptz NOT NULL DEFAULT now();
+
+-- status is plain text + CHECK (no vendor_status enum exists in the live DB)
+ALTER TABLE public.vendors DROP CONSTRAINT IF EXISTS vendors_status_check;
+ALTER TABLE public.vendors
+  ADD CONSTRAINT vendors_status_check CHECK (status IN ('pending','active','suspended'));
 
 CREATE INDEX IF NOT EXISTS vendors_deleted_at_idx ON public.vendors (deleted_at)
   WHERE deleted_at IS NULL;

@@ -12,14 +12,18 @@ export default async function HomePage() {
   const [{ data: products }, { data: coupons }] = await Promise.all([
     supabase
       .from('products')
-      .select('id, name, description, price_ils, image_url, stock_quantity')
-      .eq('is_active', true)
+      .select('id, slug, name_he, kenyon_price, images, stock_quantity')
+      .eq('status', 'active')
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .limit(4),
     supabase
-      .from('coupons')
-      .select('id, code, discount_type, discount_value, ends_at, min_order_amount_ils')
-      .eq('is_active', true)
+      .from('coupon_deals')
+      .select(
+        'id, title_he, business_name, original_price, platform_price, discount_percentage, location_he, image_url',
+      )
+      .eq('status', 'active')
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .limit(3),
   ])

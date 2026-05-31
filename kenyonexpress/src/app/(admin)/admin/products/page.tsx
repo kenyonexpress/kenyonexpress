@@ -17,11 +17,11 @@ const STATUS_FILTERS = [
 ]
 
 interface Props {
-  searchParams: Promise<{ status?: string; q?: string; vendor?: string; page?: string }>
+  searchParams: Promise<{ status?: string; q?: string; page?: string }>
 }
 
 export default async function AdminProductsPage({ searchParams }: Props) {
-  const { status, q, vendor, page: pageStr } = await searchParams
+  const { status, q, page: pageStr } = await searchParams
   const page = Math.max(1, Number(pageStr ?? 1))
   const from = (page - 1) * PAGE_SIZE
   const to = from + PAGE_SIZE - 1
@@ -31,7 +31,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
   let query = supabase
     .from('products')
     .select(
-      'id, name_he, slug, status, base_price, type, is_featured, created_at, vendors(business_name), categories(name_he)',
+      'id, name_he, slug, status, kenyon_price, type, is_featured, created_at, categories(name_he)',
       { count: 'exact' },
     )
     .is('deleted_at', null)
@@ -40,17 +40,10 @@ export default async function AdminProductsPage({ searchParams }: Props) {
 
   if (status) query = query.eq('status', status)
   if (q) query = query.ilike('name_he', `%${q}%`)
-  if (vendor) query = query.eq('vendor_id', vendor)
 
   const { data: products, count } = await query
   const total = count ?? 0
   const totalPages = Math.ceil(total / PAGE_SIZE)
-
-  const { data: vendors } = await supabase
-    .from('vendors')
-    .select('id, business_name')
-    .is('deleted_at', null)
-    .order('business_name')
 
   return (
     <div className="space-y-4">
@@ -71,7 +64,6 @@ export default async function AdminProductsPage({ searchParams }: Props) {
           const params = new URLSearchParams()
           if (f.value) params.set('status', f.value)
           if (q) params.set('q', q)
-          if (vendor) params.set('vendor', vendor)
           return (
             <Link
               key={f.value}
@@ -89,25 +81,12 @@ export default async function AdminProductsPage({ searchParams }: Props) {
 
         <form method="GET" action="/admin/products" className="flex gap-2 mr-auto">
           {status && <input type="hidden" name="status" value={status} />}
-          {vendor && <input type="hidden" name="vendor" value={vendor} />}
           <input
             name="q"
             defaultValue={q}
             placeholder="חיפוש..."
             className="border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
           />
-          <select
-            name="vendor"
-            defaultValue={vendor ?? ''}
-            className="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
-          >
-            <option value="">כל הספקים</option>
-            {(vendors ?? []).map((v) => (
-              <option key={v.id} value={v.id}>
-                {v.business_name}
-              </option>
-            ))}
-          </select>
           <button
             type="submit"
             className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
@@ -130,7 +109,6 @@ export default async function AdminProductsPage({ searchParams }: Props) {
                   />
                 </th>
                 <th className="px-5 py-3 font-medium">שם</th>
-                <th className="px-5 py-3 font-medium">ספק</th>
                 <th className="px-5 py-3 font-medium">קטגוריה</th>
                 <th className="px-5 py-3 font-medium">מחיר</th>
                 <th className="px-5 py-3 font-medium">סוג</th>
@@ -141,9 +119,6 @@ export default async function AdminProductsPage({ searchParams }: Props) {
             <tbody className="divide-y divide-gray-100">
               {(products ?? []).map((product) => {
                 const badge = productStatusBadge(product.status)
-                const vendorRow = Array.isArray(product.vendors)
-                  ? product.vendors[0]
-                  : product.vendors
                 const category = Array.isArray(product.categories)
                   ? product.categories[0]
                   : product.categories
@@ -168,10 +143,9 @@ export default async function AdminProductsPage({ searchParams }: Props) {
                       </Link>
                       <div className="text-xs text-gray-400 font-mono">{product.slug}</div>
                     </td>
-                    <td className="px-5 py-3 text-gray-600">{vendorRow?.business_name ?? '—'}</td>
                     <td className="px-5 py-3 text-gray-600">{category?.name_he ?? '—'}</td>
                     <td className="px-5 py-3 text-gray-700">
-                      ₪{product.base_price.toLocaleString('he-IL')}
+                      ₪{(product.kenyon_price ?? 0).toLocaleString('he-IL')}
                     </td>
                     <td className="px-5 py-3">
                       <StatusBadge
@@ -195,7 +169,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
               })}
               {!products?.length && (
                 <tr>
-                  <td colSpan={8} className="px-5 py-10 text-center text-gray-400">
+                  <td colSpan={7} className="px-5 py-10 text-center text-gray-400">
                     אין מוצרים
                   </td>
                 </tr>

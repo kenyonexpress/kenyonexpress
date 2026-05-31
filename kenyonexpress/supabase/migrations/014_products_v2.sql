@@ -10,13 +10,14 @@ ALTER TABLE public.products
 
 CREATE INDEX IF NOT EXISTS products_deleted_at_idx  ON public.products (deleted_at) WHERE deleted_at IS NULL;
 CREATE INDEX IF NOT EXISTS products_status_idx       ON public.products (status);
-CREATE INDEX IF NOT EXISTS products_vendor_id_idx    ON public.products (vendor_id);
+CREATE INDEX IF NOT EXISTS products_supplier_id_idx  ON public.products (supplier_id);
 CREATE INDEX IF NOT EXISTS products_category_id_idx  ON public.products (category_id);
 CREATE INDEX IF NOT EXISTS products_is_featured_idx  ON public.products (is_featured) WHERE is_featured = true;
 
 -- Add direct price + sku columns to variants
 ALTER TABLE public.product_variants
-  ADD COLUMN IF NOT EXISTS price     numeric(10,2),
+  ADD COLUMN IF NOT EXISTS price      numeric(10,2),
+  ADD COLUMN IF NOT EXISTS is_active  boolean NOT NULL DEFAULT true,
   ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
 
 -- RLS on products
@@ -31,7 +32,7 @@ DROP POLICY IF EXISTS "products: vendor read own" ON public.products;
 CREATE POLICY "products: vendor read own"
   ON public.products FOR SELECT TO authenticated
   USING (
-    vendor_id IN (
+    supplier_id IN (
       SELECT id FROM public.vendors WHERE profile_id = auth.uid()
     )
   );
