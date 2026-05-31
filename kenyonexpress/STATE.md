@@ -1,10 +1,10 @@
 # KenyonExpress State
 
 ## Current Phase
-**Phase 4 — Admin CRUDs complete, schema fully synced; storefront in progress**
+**Phase 5 — Frontend / Homepage** (Phase 4 Admin CRUDs closed)
 
 ## Last Completed
-Session 2026-06-01 — Migrations 013/014/016/015 ran successfully on Supabase. All 5 Admin CRUDs complete (Categories / Vendors / Products / Coupon Deals / Orders), DB schema fully synced with the app code.
+Session 2026-06-01 — Phase 4 (Admin CRUDs) closed. All 5 CRUDs verified live in the browser (200 OK): Categories, Vendors, Products, Coupons, coupon_deals. Migrations 013/014/016/015 ran on Supabase, DB schema fully synced with the app code.
 
 ### Coupon deals wired end to end (homepage + public pages + admin CRUD):
 - עמוד הבית (`(main)/page.tsx`) הוחלף מטבלת `coupons` הישנה ל-`coupon_deals` (מודל 10% אונליין / 90% בבית העסק)
@@ -42,9 +42,10 @@ nothing
 none (השגיאה `42703 column "status" does not exist` נפתרה ב-`013`)
 
 ## Next Task
-1. הרץ ב-Supabase SQL Editor את ה-SQL המאוחד (013 + 014 + 016 + 015 לפי הסדר; אידמפוטנטי)
-2. צור עסקת קופון ראשונה ב-`/admin/coupons/new` עם status=active ואמת שהיא מופיעה בעמוד הבית וב-`/coupons`
-3. חבר תשלום אמיתי (Cardcom) לכפתור "רכישת קופון — בקרוב" ב-`(main)/coupons/[id]/page.tsx` (מודל: 10% אונליין, 90% בבית העסק)
+**Phase 5 — Frontend / Homepage.** בנה את חווית הסטורפרונט:
+1. עמוד הבית (`(main)/page.tsx`) — עיצוב מלא של hero/קטגוריות/מוצרים חמים/קופונים
+2. חבר תשלום אמיתי (Cardcom) לכפתור "רכישת קופון — בקרוב" ב-`(main)/coupons/[id]/page.tsx` (מודל: 10% אונליין, 90% בבית העסק)
+3. עקוב/קומיט את `src/app/(store)/` (עמוד מוצר בסטורפרונט) שעדיין untracked
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
@@ -54,6 +55,11 @@ https://ixvwfbuvfxxsjiywhbbb.supabase.co
 
 ---
 ## History
+
+### 2026-06-01 — Phase 4 closed: all Admin CRUDs verified live
+- Categories / Vendors / Products / Coupons / coupon_deals all return 200 in the browser
+- migrations 013/014/016/015 applied to Supabase, schema fully synced with the code
+- next phase: Frontend / Homepage
 
 ### 2026-06-01 — Coupon deals wired end to end
 - homepage + new public `/coupons` list + `/coupons/[id]` detail now read `coupon_deals` (10% model)
