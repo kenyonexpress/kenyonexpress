@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
-import { Rubik } from 'next/font/google'
+import { Heebo } from 'next/font/google'
 import './globals.css'
 
-const rubik = Rubik({
-  variable: '--font-rubik',
+// Hebrew-first variable font. Exposed as --font-heebo and wired to --font-sans in globals.css.
+const heebo = Heebo({
+  variable: '--font-heebo',
   subsets: ['latin', 'hebrew'],
   display: 'swap',
 })
@@ -23,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="he" dir="rtl" className={`${rubik.variable} h-full antialiased`}>
+    <html lang="he" dir="rtl" className={`${heebo.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-background text-foreground">{children}</body>
     </html>
   )

@@ -4,7 +4,16 @@
 **Phase 5 — Frontend / Homepage** (Phase 4 Admin CRUDs closed)
 
 ## Last Completed
-Session 2026-06-01 — Phase 4 (Admin CRUDs) closed. All 5 CRUDs verified live in the browser (200 OK): Categories, Vendors, Products, Coupons, coupon_deals. Migrations 013/014/016/015 ran on Supabase, DB schema fully synced with the app code.
+Session 2026-06-01 — Global layout shell (Phase 5). נבנה ה-shell הגלובלי של הסטורפרונט:
+- `globals.css` — design tokens מתועדים: `--brand-primary`/`--brand-secondary` (החלפת מותג במקום אחד), shades, רדיוס, spacing, alias-ים תואמי-אחורה (`--brand` וכו') כדי לא לשבור שימושים קיימים ב-`bg-brand`
+- גופן הוחלף ל-Heebo (next/font, עברית-first) ב-`app/layout.tsx`
+- נוצר `components/layout/Header.tsx` — header דביק (sticky), RTL: לוגו מימין, חיפוש במרכז, עגלה/חשבון משמאל, hamburger במובייל, אייקוני lucide
+- `SiteFooter.tsx` נכתב מחדש ל-4 עמודות: אודות / שירות לקוחות / משפטי / עקבו אחרינו (לינקים placeholder, אייקוני lucide גנריים כי הגרסה 1.14.0 ללא אייקוני מותג)
+- `MainHeader.tsx` נמחק (הוחלף ב-`Header`), לינק שבור `/auth/login` ב-`TopBar` תוקן ל-`/login`
+- tsc --noEmit ✅ + lint ✅. הערה: `next dev` חסום ב-sandbox כאן (uv_interface_addresses), אימות ויזואלי ב-localhost:3000 נותר להרצה מקומית.
+
+### Phase 4 (Admin CRUDs) — closed
+All 5 CRUDs verified live in the browser (200 OK): Categories, Vendors, Products, Coupons, coupon_deals. Migrations 013/014/016/015 ran on Supabase, DB schema fully synced with the app code.
 
 ### Coupon deals wired end to end (homepage + public pages + admin CRUD):
 - עמוד הבית (`(main)/page.tsx`) הוחלף מטבלת `coupons` הישנה ל-`coupon_deals` (מודל 10% אונליין / 90% בבית העסק)
@@ -55,6 +64,12 @@ https://ixvwfbuvfxxsjiywhbbb.supabase.co
 
 ---
 ## History
+
+### 2026-06-01 — Global layout shell (header, footer, design tokens, RTL)
+- design tokens מתועדים ב-`globals.css` (brand-primary/secondary + shades/radius/spacing, alias תואמי-אחורה)
+- גופן Heebo דרך next/font; `Header` דביק חדש (לוגו/חיפוש/עגלה/חשבון + hamburger מובייל, lucide); `SiteFooter` ב-4 עמודות
+- shell מחובר ל-`(main)/layout.tsx` בלבד (לא root) כדי לא לעטוף את `/admin` ו-`/login` (nested layouts עוטפים, לא מחליפים)
+- `MainHeader` נמחק; לינק `/auth/login` ב-`TopBar` תוקן ל-`/login`
 
 ### 2026-06-01 — Phase 4 closed: all Admin CRUDs verified live
 - Categories / Vendors / Products / Coupons / coupon_deals all return 200 in the browser

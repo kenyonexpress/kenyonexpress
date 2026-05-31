@@ -1,22 +1,58 @@
 @import "tailwindcss";
 
+/* ============================================================================
+   DESIGN TOKENS — KenyonExpress
+   To rebrand, edit --brand-primary / --brand-secondary in ONE place below.
+   All buttons, links, badges and accents derive from these two values.
+   ============================================================================ */
 :root {
-  --background: #f9fafb;
-  --foreground: #111827;
-  --brand: #0b6e4f;
-  --brand-dark: #095c41;
-  --brand-light: #e6f4ef;
-  --accent: #f5c518;
+  /* --- Brand identity (SWAP THESE TWO TO REBRAND) --------------------------- */
+  --brand-primary: #0b6e4f;        /* primary brand color: CTAs, links, active state */
+  --brand-secondary: #f5c518;      /* secondary/accent: badges, price highlights */
+
+  /* --- Brand shades (derived from primary; tweak when rebranding) ---------- */
+  --brand-primary-dark: #095c41;   /* hover / pressed state of primary */
+  --brand-primary-light: #e6f4ef;  /* tinted backgrounds, soft surfaces */
+
+  /* --- Surface & text ------------------------------------------------------ */
+  --background: #f9fafb;           /* page background */
+  --foreground: #111827;           /* default text color */
+
+  /* --- Radius scale -------------------------------------------------------- */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+
+  /* --- Spacing scale (layout rhythm; use via var() where needed) ----------- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+
+  /* --- Backward-compatible aliases (consumed by existing components) -------- */
+  --brand: var(--brand-primary);
+  --brand-dark: var(--brand-primary-dark);
+  --brand-light: var(--brand-primary-light);
+  --accent: var(--brand-secondary);
 }
 
+/* Expose tokens as Tailwind v4 utilities (bg-brand, text-brand-secondary, ...) */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-brand: var(--brand);
-  --color-brand-dark: var(--brand-dark);
-  --color-brand-light: var(--brand-light);
-  --color-accent: var(--accent);
-  --font-sans: var(--font-rubik);
+
+  --color-brand: var(--brand-primary);
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-secondary: var(--brand-secondary);
+  --color-brand-dark: var(--brand-primary-dark);
+  --color-brand-light: var(--brand-primary-light);
+  --color-accent: var(--brand-secondary);
+
+  /* Hebrew-first default font, wired from next/font in the root layout */
+  --font-sans: var(--font-heebo);
 }
 
 body {

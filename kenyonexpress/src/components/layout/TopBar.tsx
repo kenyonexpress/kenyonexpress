@@ -26,7 +26,7 @@ export default function TopBar() {
 
         <span className="mx-4 h-[18px] w-px bg-[#D9D9D9]" aria-hidden="true" />
 
-        <span className="flex items-center gap-1.5 hidden md:flex">
+        <span className="hidden md:flex items-center gap-1.5">
           <ShoppingBag size={18} strokeWidth={1.5} aria-hidden="true" />
           קניה בטוחה
         </span>
@@ -34,7 +34,7 @@ export default function TopBar() {
         <span className="mx-4 h-[18px] w-px bg-[#D9D9D9] hidden md:block" aria-hidden="true" />
 
         <Link
-          href="/auth/login"
+          href="/login"
           className="flex items-center gap-1.5 hover:text-[#F5C518] transition-colors duration-150"
         >
           <User size={18} strokeWidth={1.5} aria-hidden="true" />
