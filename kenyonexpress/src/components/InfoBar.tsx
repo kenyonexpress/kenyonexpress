@@ -12,6 +12,7 @@ export default function InfoBar() {
           {/* בפריסה ארצית */}
           <span className="flex items-center gap-1.5 text-gray-400">
             <svg
+              aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
               className="w-3.5 h-3.5"
               fill="none"
@@ -31,6 +32,7 @@ export default function InfoBar() {
           {/* משלוח מהיר חינם */}
           <span className="flex items-center gap-1.5 text-gray-400">
             <svg
+              aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
               className="w-3.5 h-3.5"
               fill="none"
@@ -56,6 +58,7 @@ export default function InfoBar() {
           {/* קניה בטוחה */}
           <span className="flex items-center gap-1.5 text-gray-400">
             <svg
+              aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
               className="w-3.5 h-3.5"
               fill="none"
@@ -78,6 +81,7 @@ export default function InfoBar() {
             className="flex items-center gap-1.5 text-gray-400 hover:text-white transition-colors"
           >
             <svg
+              aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
               className="w-3.5 h-3.5"
               fill="none"

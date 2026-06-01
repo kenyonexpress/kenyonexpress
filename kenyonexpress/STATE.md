@@ -4,6 +4,15 @@
 **Phase 5 — Frontend / Homepage** (Phase 4 Admin CRUDs closed)
 
 ## Last Completed
+Session 2026-06-02 — Lint clean (0 errors, 0 warnings). תוקנו 18 בעיות ב-4 קבצים:
+- `ProductGallery.tsx` — `type="button"` ל-3 כפתורים; `key={url}` במקום index ב-2 מפות (dots + thumbnails)
+- `VariantSelector.tsx` — `type="button"` ל-2 כפתורים (variant selector + add-to-cart)
+- `SiteHeader.tsx` — `aria-hidden="true"` ל-6 SVGs דקורטיביים
+- `InfoBar.tsx` — `aria-hidden="true"` ל-4 SVGs דקורטיביים
+- `biome lint` מחזיר 0 errors + 0 warnings
+
+---
+
 Session 2026-06-01 — Global layout shell (Phase 5). נבנה ה-shell הגלובלי של הסטורפרונט:
 - `globals.css` — design tokens מתועדים: `--brand-primary`/`--brand-secondary` (החלפת מותג במקום אחד), shades, רדיוס, spacing, alias-ים תואמי-אחורה (`--brand` וכו') כדי לא לשבור שימושים קיימים ב-`bg-brand`
 - גופן הוחלף ל-Heebo (next/font, עברית-first) ב-`app/layout.tsx`
@@ -64,6 +73,13 @@ https://ixvwfbuvfxxsjiywhbbb.supabase.co
 
 ---
 ## History
+
+### 2026-06-02 — Lint clean
+- 8 errors + 10 warnings → 0 errors + 0 warnings
+- `type="button"` ל-5 כפתורים ב-ProductGallery + VariantSelector; `key={url}` במקום index
+- `aria-hidden="true"` ל-10 SVGs דקורטיביים ב-SiteHeader + InfoBar
+
+
 
 ### 2026-06-01 — Global layout shell (header, footer, design tokens, RTL)
 - design tokens מתועדים ב-`globals.css` (brand-primary/secondary + shades/radius/spacing, alias תואמי-אחורה)

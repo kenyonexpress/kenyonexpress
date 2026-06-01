@@ -14,6 +14,7 @@ export default function SiteHeader({ user }: Props) {
             style={{ background: '#F5C518' }}
           >
             <svg
+              aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
               className="w-7 h-7 text-gray-900"
               fill="none"
@@ -43,6 +44,7 @@ export default function SiteHeader({ user }: Props) {
           >
             {/* Pin icon — first in button = visual RIGHT in RTL */}
             <svg
+              aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
               className="w-4 h-4 text-gray-500 shrink-0"
               fill="none"
@@ -59,6 +61,7 @@ export default function SiteHeader({ user }: Props) {
             <span className="flex-1 text-center">בחר אזור</span>
             {/* Chevron — last in button = visual LEFT in RTL */}
             <svg
+              aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
               className="w-4 h-4 text-gray-400 shrink-0"
               fill="none"
@@ -85,6 +88,7 @@ export default function SiteHeader({ user }: Props) {
             title="עגלת קניות"
           >
             <svg
+              aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
               className="w-6 h-6 text-gray-700"
               fill="none"
@@ -113,6 +117,7 @@ export default function SiteHeader({ user }: Props) {
             title="חשבון"
           >
             <svg
+              aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
               className="w-6 h-6 text-gray-700"
               fill="none"
@@ -135,6 +140,7 @@ export default function SiteHeader({ user }: Props) {
             title="רשימת משאלות"
           >
             <svg
+              aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
               className="w-6 h-6 text-gray-700"
               fill="none"
