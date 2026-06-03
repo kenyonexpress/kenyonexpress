@@ -4,6 +4,19 @@
 **Phase 5 — Frontend / Homepage** (Phase 4 Admin CRUDs closed)
 
 ## Last Completed
+Session 2026-06-04 — Storefront homepage 1:1 עם electro home-v7 + זהות KenyonExpress. commit `14fef20` pushed ל-main:
+- `src/components/storefront/` — 7 קומפוננטות חדשות: `Header`, `CategorySidebar`, `Hero`, `FeatureBar`, `CategoryRing`, `DealsSection`, `Footer`
+- `src/app/(store)/page.tsx` — homepage חדש, סדר סקשנים זהה ל-electro: hero row → category ring → deals timer → feature bar
+- `src/app/(store)/layout.tsx` — עודכן ל-StorefrontHeader + StorefrontFooter
+- `src/app/(main)/page.tsx` — נמחק (הוחלף ב-(store)/page.tsx)
+- `next.config.ts` — נוספו remotePatterns: images.unsplash.com, picsum.photos
+- `public/hero/slide{1,2,3}.jpg` + `public/banners/banner{1,2,3}.jpg` — תמונות מקומיות (next/image)
+- Layout: CategorySidebar שמאל (dir=ltr על hero row) + Hero carousel מרכז + 3 mini-banners ימין
+- DealsSection: countdown timer 23:59:59 (client) + 4-col product grid
+- CategoryRing: circle categories מ-Supabase (ללא deleted_at)
+- Header: top bar שחור + main white header + nav bar כהה עם "מחלקות" צהוב + quick links
+- אומת ויזואלית עם Playwright screenshot: 200 OK, תמונות נטענות
+
 Session 2026-06-04 — Brand tokens + ProductCard + Header. אומת ויזואלית ב-localhost:3000/category/electronics:
 - `globals.css` -- `:root`+`@theme inline` הוחלפו ב-`@theme` יחיד עם ערכי hex ישירים; טוקנים: `--color-brand-primary: #FFD200`, `--color-price: #E4002B`, `--color-brand-dark: #1A1A1A`, `--color-brand-accent: #EAF4F6`, `--color-success: #5CB85C`, semantic `primary`/`primary-foreground`, aliases לתאימות אחורה
 - `ProductCard.tsx` -- מחיר `text-price` (אדום), כפתור "הוסף לעגלה" `bg-brand-primary text-brand-dark`, hover border צהוב + scale תמונה
@@ -66,9 +79,10 @@ nothing
 none
 
 ## Next Task
-**Phase 5 המשך — שני נתיבים אפשריים:**
-1. **זהות מותג** — קבלת צבעים/פונט/radius מהמשתמש ← החלפה ב-`globals.css` (2 ערכי hex בלבד)
-2. **Cardcom** — חיבור תשלום אמיתי לכפתור "בקרוב" ב-`(main)/coupons/[id]/page.tsx` (10% אונליין, 90% בבית העסק)
+**Phase 5 המשך — אפשרויות:**
+1. **Cardcom** — חיבור תשלום אמיתי לכפתור "בקרוב" ב-`(main)/coupons/[id]/page.tsx` (10% אונליין, 90% בבית העסק)
+2. **עמוד מוצר** (`(store)/products/[slug]`) — ממשק storefront למוצר בודד עם תמונות, variants, הוסף לעגלה
+3. **עמוד coupons** — עדכון `(main)/coupons` לפריסת storefront (layout חדש, עיצוב electro-style)
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
@@ -84,6 +98,15 @@ https://ixvwfbuvfxxsjiywhbbb.supabase.co
 - ProductCard: red price, yellow CTA button, hover border + image scale
 - Header: yellow logo K with black text, brand-primary focus/hover
 - אומת ב-Playwright screenshot: logo rgb(255,210,0), price rgb(228,0,43) ✅
+
+### 2026-06-04 — Storefront homepage 1:1 electro home-v7
+- 7 קומפוננטות ב-`src/components/storefront/`: Header, CategorySidebar, Hero, FeatureBar, CategoryRing, DealsSection, Footer
+- סדר סקשנים: hero row (sidebar+carousel+mini-banners) → category ring → deals+timer → feature bar → footer
+- `dir=ltr` על hero row: sidebar ויזואלית שמאל כמו electro
+- תמונות מקומיות: `public/hero/`, `public/banners/` (next/image)
+- countdown timer 23:59:59 (client component)
+- `(main)/page.tsx` נמחק; `(store)/page.tsx` = דף הבית החדש
+- commit `14fef20`
 
 ### 2026-06-04 — Dynamic category page + store layout
 - `(store)/layout.tsx`: Header + Footer ל-store route group
