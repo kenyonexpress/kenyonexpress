@@ -4,6 +4,12 @@
 **Phase 5 — Frontend / Homepage** (Phase 4 Admin CRUDs closed)
 
 ## Last Completed
+Session 2026-06-04 — Brand tokens + ProductCard + Header. אומת ויזואלית ב-localhost:3000/category/electronics:
+- `globals.css` -- `:root`+`@theme inline` הוחלפו ב-`@theme` יחיד עם ערכי hex ישירים; טוקנים: `--color-brand-primary: #FFD200`, `--color-price: #E4002B`, `--color-brand-dark: #1A1A1A`, `--color-brand-accent: #EAF4F6`, `--color-success: #5CB85C`, semantic `primary`/`primary-foreground`, aliases לתאימות אחורה
+- `ProductCard.tsx` -- מחיר `text-price` (אדום), כפתור "הוסף לעגלה" `bg-brand-primary text-brand-dark`, hover border צהוב + scale תמונה
+- `Header.tsx` -- לוגו K `bg-brand-primary text-brand-dark` (צהוב/שחור), ring + nav hover → `brand-primary`
+- commit `b0c0c9f` pushed ל-main
+
 Session 2026-06-04 — עמוד קטגוריה דינמי + store layout. אומת ב-localhost:3000 עם נתונים אמיתיים מ-Supabase:
 - `src/app/(store)/layout.tsx` — Header דביק + SiteFooter ל-(store) route group (ללא sidebars)
 - `src/app/(store)/category/[slug]/page.tsx` — Server Component: שליפת קטגוריה לפי slug, מוצרים לפי category_id, notFound() אם slug לא קיים, breadcrumb + כותרת + grid של ProductCard
@@ -72,6 +78,12 @@ https://ixvwfbuvfxxsjiywhbbb.supabase.co
 
 ---
 ## History
+
+### 2026-06-04 — Brand tokens + ProductCard + Header
+- globals.css: single @theme block, #FFD200 primary, #E4002B price, #1A1A1A dark
+- ProductCard: red price, yellow CTA button, hover border + image scale
+- Header: yellow logo K with black text, brand-primary focus/hover
+- אומת ב-Playwright screenshot: logo rgb(255,210,0), price rgb(228,0,43) ✅
 
 ### 2026-06-04 — Dynamic category page + store layout
 - `(store)/layout.tsx`: Header + Footer ל-store route group
