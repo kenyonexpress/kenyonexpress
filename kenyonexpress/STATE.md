@@ -4,12 +4,12 @@
 **Phase 5 — Frontend / Homepage** (Phase 4 Admin CRUDs closed)
 
 ## Last Completed
-Session 2026-06-02 — Lint clean (0 errors, 0 warnings). תוקנו 18 בעיות ב-4 קבצים:
-- `ProductGallery.tsx` — `type="button"` ל-3 כפתורים; `key={url}` במקום index ב-2 מפות (dots + thumbnails)
-- `VariantSelector.tsx` — `type="button"` ל-2 כפתורים (variant selector + add-to-cart)
-- `SiteHeader.tsx` — `aria-hidden="true"` ל-6 SVGs דקורטיביים
-- `InfoBar.tsx` — `aria-hidden="true"` ל-4 SVGs דקורטיביים
-- `biome lint` מחזיר 0 errors + 0 warnings
+Session 2026-06-04 — עמוד קטגוריה דינמי + store layout. אומת ב-localhost:3000 עם נתונים אמיתיים מ-Supabase:
+- `src/app/(store)/layout.tsx` — Header דביק + SiteFooter ל-(store) route group (ללא sidebars)
+- `src/app/(store)/category/[slug]/page.tsx` — Server Component: שליפת קטגוריה לפי slug, מוצרים לפי category_id, notFound() אם slug לא קיים, breadcrumb + כותרת + grid של ProductCard
+- Seed data ב-Supabase: קטגוריית `electronics` (slug) + 4 מוצרים (סמסונג S24 / AirPods Pro / MacBook Air M3 / Anker PowerBank)
+- commit `49fa78e` pushed ל-main
+- ממצא DB: `categories` אין עמודת `deleted_at` בלייב (קוד תוקן בהתאם); `products` יש `price_ils` NOT NULL (נדרש בinsert)
 
 ---
 
@@ -57,13 +57,12 @@ All 5 CRUDs verified live in the browser (200 OK): Categories, Vendors, Products
 nothing
 
 ## Blocking Issues
-none (השגיאה `42703 column "status" does not exist` נפתרה ב-`013`)
+none
 
 ## Next Task
-**Phase 5 — Frontend / Homepage.** בנה את חווית הסטורפרונט:
-1. עמוד הבית (`(main)/page.tsx`) — עיצוב מלא של hero/קטגוריות/מוצרים חמים/קופונים
-2. חבר תשלום אמיתי (Cardcom) לכפתור "רכישת קופון — בקרוב" ב-`(main)/coupons/[id]/page.tsx` (מודל: 10% אונליין, 90% בבית העסק)
-3. עקוב/קומיט את `src/app/(store)/` (עמוד מוצר בסטורפרונט) שעדיין untracked
+**Phase 5 המשך — שני נתיבים אפשריים:**
+1. **זהות מותג** — קבלת צבעים/פונט/radius מהמשתמש ← החלפה ב-`globals.css` (2 ערכי hex בלבד)
+2. **Cardcom** — חיבור תשלום אמיתי לכפתור "בקרוב" ב-`(main)/coupons/[id]/page.tsx` (10% אונליין, 90% בבית העסק)
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
@@ -73,6 +72,13 @@ https://ixvwfbuvfxxsjiywhbbb.supabase.co
 
 ---
 ## History
+
+### 2026-06-04 — Dynamic category page + store layout
+- `(store)/layout.tsx`: Header + Footer ל-store route group
+- `(store)/category/[slug]/page.tsx`: Server Component, notFound(), breadcrumb, ProductCard grid
+- Seed: קטגוריית `electronics` + 4 מוצרים ב-Supabase ixvwfbuvfxxsjiywhbbb
+- אומת ב-localhost:3000 עם Playwright screenshot -- 4 מוצרים נטענים מ-DB
+- גילוי: `categories.deleted_at` לא קיים בלייב DB (תוקן בקוד); `products.price_ils` NOT NULL
 
 ### 2026-06-02 — Lint clean
 - 8 errors + 10 warnings → 0 errors + 0 warnings
