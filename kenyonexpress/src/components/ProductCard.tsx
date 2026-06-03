@@ -19,11 +19,15 @@ export default function ProductCard({ product }: { product: Product }) {
   return (
     <Link
       href={`/products/${product.slug}`}
-      className="block bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
+      className="group block bg-white rounded-xl border border-gray-100 overflow-hidden hover:border-brand-primary hover:shadow-md transition-all"
     >
-      <div className="aspect-square bg-gray-50 flex items-center justify-center relative">
+      <div className="aspect-square bg-gray-50 flex items-center justify-center relative overflow-hidden">
         {thumb ? (
-          <img src={thumb} alt={product.name_he} className="w-full h-full object-cover" />
+          <img
+            src={thumb}
+            alt={product.name_he}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
         ) : (
           <span className="text-5xl">📦</span>
         )}
@@ -35,13 +39,21 @@ export default function ProductCard({ product }: { product: Product }) {
           </div>
         )}
       </div>
-      <div className="p-3">
+
+      <div className="p-3 space-y-2">
         <p className="text-sm font-medium text-gray-800 line-clamp-2 leading-snug">
           {product.name_he}
         </p>
-        <p className="text-brand font-bold mt-1.5">
-          ₪{Number(product.kenyon_price ?? 0).toFixed(2)}
+
+        <p className="text-base font-black text-price">
+          ₪{Number(product.kenyon_price ?? 0).toLocaleString('he-IL', { minimumFractionDigits: 2 })}
         </p>
+
+        <div className="pt-0.5">
+          <span className="block w-full text-center text-xs font-bold py-1.5 rounded-lg bg-brand-primary text-brand-dark group-hover:bg-brand-primary-hover transition-colors">
+            הוסף לעגלה
+          </span>
+        </div>
       </div>
     </Link>
   )

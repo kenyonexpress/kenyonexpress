@@ -27,7 +27,7 @@ export default function Header({ user }: Props) {
           className="flex items-center gap-2 shrink-0"
           aria-label="קניון אקספרס, לדף הבית"
         >
-          <span className="w-10 h-10 rounded-full bg-brand text-white flex items-center justify-center font-black text-lg">
+          <span className="w-10 h-10 rounded-full bg-brand-primary text-brand-dark flex items-center justify-center font-black text-lg">
             K
           </span>
           <span className="hidden sm:flex flex-col leading-tight">
@@ -49,7 +49,7 @@ export default function Header({ user }: Props) {
               name="q"
               placeholder="חיפוש מוצרים, קופונים ועסקים..."
               aria-label="חיפוש"
-              className="w-full h-10 rounded-lg border border-gray-300 bg-gray-50 pr-10 pl-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:bg-white transition-colors"
+              className="w-full h-10 rounded-lg border border-gray-300 bg-gray-50 pr-10 pl-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary focus:bg-white transition-colors"
             />
           </div>
         </form>
@@ -70,7 +70,7 @@ export default function Header({ user }: Props) {
             aria-label="עגלת קניות"
           >
             <ShoppingCart size={22} strokeWidth={1.8} />
-            <span className="absolute top-1 left-1 text-[10px] font-black rounded-full w-4 h-4 flex items-center justify-center bg-brand-secondary text-gray-900">
+            <span className="absolute top-1 left-1 text-[10px] font-black rounded-full w-4 h-4 flex items-center justify-center bg-brand-primary text-brand-dark">
               0
             </span>
           </button>
@@ -111,7 +111,7 @@ export default function Header({ user }: Props) {
                 name="q"
                 placeholder="חיפוש..."
                 aria-label="חיפוש"
-                className="w-full h-10 rounded-lg border border-gray-300 bg-gray-50 pr-10 pl-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:bg-white"
+                className="w-full h-10 rounded-lg border border-gray-300 bg-gray-50 pr-10 pl-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary focus:bg-white"
               />
             </div>
           </form>
@@ -121,7 +121,7 @@ export default function Header({ user }: Props) {
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className="py-2.5 text-sm font-medium text-gray-700 hover:text-brand border-b border-gray-100 last:border-0"
+                className="py-2.5 text-sm font-medium text-gray-700 hover:text-brand-primary border-b border-gray-100 last:border-0"
               >
                 {link.label}
               </Link>

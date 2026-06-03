@@ -2,62 +2,40 @@
 
 /* ============================================================================
    DESIGN TOKENS — KenyonExpress
-   To rebrand, edit --brand-primary / --brand-secondary in ONE place below.
-   All buttons, links, badges and accents derive from these two values.
+   Palette extracted from the logo and electro home-v7 template.
+   To rebrand: edit the --color-brand-* values in @theme below.
    ============================================================================ */
-:root {
-  /* --- Brand identity (SWAP THESE TWO TO REBRAND) --------------------------- */
-  --brand-primary: #0b6e4f;        /* primary brand color: CTAs, links, active state */
-  --brand-secondary: #f5c518;      /* secondary/accent: badges, price highlights */
+@theme {
+  /* --- Brand identity -------------------------------------------------------- */
+  --color-brand-primary:       #FFD200;  /* CTAs, active state, badges */
+  --color-brand-primary-hover: #E6BD00;  /* hover / pressed */
+  --color-brand-dark:          #1A1A1A;  /* dark text, dark surfaces */
+  --color-brand-accent:        #EAF4F6;  /* tinted backgrounds, soft surfaces */
 
-  /* --- Brand shades (derived from primary; tweak when rebranding) ---------- */
-  --brand-primary-dark: #095c41;   /* hover / pressed state of primary */
-  --brand-primary-light: #e6f4ef;  /* tinted backgrounds, soft surfaces */
+  /* --- Functional colors ----------------------------------------------------- */
+  --color-price:               #E4002B;  /* current price */
+  --color-price-strike:        #9CA3AF;  /* crossed-out original price */
+  --color-success:             #5CB85C;  /* confirmation, in-stock */
 
-  /* --- Surface & text ------------------------------------------------------ */
-  --background: #f9fafb;           /* page background */
-  --foreground: #111827;           /* default text color */
+  /* --- Semantic tokens ------------------------------------------------------- */
+  --color-background:          #F9FAFB;  /* page background */
+  --color-foreground:          #1A1A1A;  /* default body text */
+  --color-primary:             #FFD200;  /* alias for brand-primary (Tailwind semantic) */
+  --color-primary-foreground:  #1A1A1A;  /* text on primary (black on yellow) */
 
-  /* --- Radius scale -------------------------------------------------------- */
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
+  /* --- Backward-compat aliases (existing components use these classes) -------- */
+  --color-brand:           #FFD200;  /* bg-brand / text-brand */
+  --color-brand-secondary: #FFD200;  /* bg-brand-secondary (cart badge etc.) */
+  --color-brand-light:     #EAF4F6;  /* bg-brand-light */
+  --color-accent:          #EAF4F6;  /* bg-accent */
 
-  /* --- Spacing scale (layout rhythm; use via var() where needed) ----------- */
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
-
-  /* --- Backward-compatible aliases (consumed by existing components) -------- */
-  --brand: var(--brand-primary);
-  --brand-dark: var(--brand-primary-dark);
-  --brand-light: var(--brand-primary-light);
-  --accent: var(--brand-secondary);
-}
-
-/* Expose tokens as Tailwind v4 utilities (bg-brand, text-brand-secondary, ...) */
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-
-  --color-brand: var(--brand-primary);
-  --color-brand-primary: var(--brand-primary);
-  --color-brand-secondary: var(--brand-secondary);
-  --color-brand-dark: var(--brand-primary-dark);
-  --color-brand-light: var(--brand-primary-light);
-  --color-accent: var(--brand-secondary);
-
-  /* Hebrew-first default font, wired from next/font in the root layout */
+  /* --- Typography ------------------------------------------------------------ */
   --font-sans: var(--font-heebo);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background-color: var(--color-background);
+  color: var(--color-foreground);
   font-family: var(--font-sans), Arial, sans-serif;
   direction: rtl;
 }
