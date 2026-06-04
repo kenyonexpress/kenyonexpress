@@ -1,46 +1,43 @@
-import { MapPin, ShoppingBag, Truck, User } from 'lucide-react'
 import Link from 'next/link'
+import { Lock, MapPin, Truck, User } from 'lucide-react'
 
 export default function TopBar() {
   return (
-    <nav
-      dir="rtl"
-      lang="he"
-      aria-label="top utility bar"
-      className="w-full bg-white border-b border-[#E5E5E5] h-12 px-8 flex justify-between items-center text-sm text-[#4A4A4A]"
-    >
-      <span className="hidden lg:block">ברוך הבא לעולמו של קניון Express</span>
+    <div dir="rtl" className="w-full bg-white border-b border-gray-200">
+      <div className="max-w-screen-xl mx-auto px-4 h-11 flex items-center justify-between text-[13px] text-gray-500">
+        <span className="hidden lg:block">ברוך הבא לעולם של קניון Express</span>
 
-      <div className="flex items-center">
-        <span className="flex items-center gap-1.5">
-          <MapPin size={18} strokeWidth={1.5} aria-hidden="true" />
-          בפריסה ארצית
-        </span>
+        <nav className="flex items-center" aria-label="מידע שירות">
+          <Link
+            href="/login"
+            className="flex items-center gap-1.5 hover:text-brand-primary transition-colors"
+          >
+            <User size={14} strokeWidth={1.5} aria-hidden="true" />
+            התחברות
+          </Link>
 
-        <span className="mx-4 h-[18px] w-px bg-[#D9D9D9]" aria-hidden="true" />
+          <span className="w-px h-4 bg-gray-300 mx-3" aria-hidden="true" />
 
-        <span className="flex items-center gap-1.5">
-          <Truck size={18} strokeWidth={1.5} aria-hidden="true" />
-          משלוח מהיר חינם
-        </span>
+          <span className="flex items-center gap-1.5">
+            <Lock size={14} strokeWidth={1.5} aria-hidden="true" />
+            קנייה בטוחה
+          </span>
 
-        <span className="mx-4 h-[18px] w-px bg-[#D9D9D9]" aria-hidden="true" />
+          <span className="w-px h-4 bg-gray-300 mx-3" aria-hidden="true" />
 
-        <span className="hidden md:flex items-center gap-1.5">
-          <ShoppingBag size={18} strokeWidth={1.5} aria-hidden="true" />
-          קניה בטוחה
-        </span>
+          <span className="flex items-center gap-1.5">
+            <Truck size={14} strokeWidth={1.5} aria-hidden="true" />
+            משלוח מהיר חינם
+          </span>
 
-        <span className="mx-4 h-[18px] w-px bg-[#D9D9D9] hidden md:block" aria-hidden="true" />
+          <span className="w-px h-4 bg-gray-300 mx-3" aria-hidden="true" />
 
-        <Link
-          href="/login"
-          className="flex items-center gap-1.5 hover:text-[#F5C518] transition-colors duration-150"
-        >
-          <User size={18} strokeWidth={1.5} aria-hidden="true" />
-          התחברות
-        </Link>
+          <span className="flex items-center gap-1.5">
+            <MapPin size={14} strokeWidth={1.5} aria-hidden="true" />
+            בפריסה ארצית
+          </span>
+        </nav>
       </div>
-    </nav>
+    </div>
   )
 }

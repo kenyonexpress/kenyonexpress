@@ -4,6 +4,25 @@
 **Phase 5 — Frontend / Homepage** (Phase 4 Admin CRUDs closed)
 
 ## Last Completed
+Session 2026-06-04 — Homepage rebuilt 1:1 per HOMEPAGE_SPEC.md. tsc clean, lint clean, אפס hex hardcoded:
+- `src/app/(store)/page.tsx` — מבנה חדש: `HomeHeroSection` + `CategoryStrip` + `InfoBar`
+- `src/components/store/` — 5 קומפוננטות חדשות: `HomeHeroSection`, `HeroSlider`, `CategorySidebar`, `PromoBanners`, `CategoryStrip`
+- `src/components/layout/` — `TopBar`, `Header`/`SiteHeader`, `InfoBar`, `SiteFooter` (newsletter bar + 4 עמודות)
+- `src/app/(store)/layout.tsx` — `TopBar` + `SiteHeader` + `SiteFooter`, ללא container (main = full-width)
+- ניקוי: נמחקו כל הקומפוננטות הלגנסי (`storefront/`, `home/`, `HeroSlider`, `InfoBar`, `SiteHeader`, `CategoryStrip`, `BottomNav` הישנים)
+
+Session 2026-06-04 — Homepage rebuilt per electro home-v7 DOM structure. tsc clean, אומת ב-Playwright screenshot:
+- `src/app/(store)/page.tsx` — 3-column RTL grid: [CategorySidebar ימין | Hero carousel אמצע | 2 mini-banners שמאל]; fetches 8 products (0-2 → banners, 0-2 → hero slides, 0-4 → deals); no dir="ltr" wrapper — RTL grid orders col-1 to right automatically
+- `src/components/storefront/Hero.tsx` — carousel-only (mini-banners extracted to page.tsx); 4 slides (slide-1 welcome + up to 3 from products); interval 5s; bg-brand-accent; active dot bg-brand-primary; fallback ImageIcon when no product image
+- `src/components/storefront/CategoryRing.tsx` — replaced circles with rectangular cards: 130px wide, 100px image area + white name strip; hover border brand-primary; 5 items from Supabase or static fallback
+- `src/components/storefront/DealsSection.tsx` — title "דילים של היום"; accepts 5 products from page
+
+Session 2026-06-04 — Homepage polish: Hero props + real product images + DealsSection fix. tsc clean, אומת ב-Playwright:
+- `src/components/storefront/Hero.tsx` — מקבל `featuredProducts?: Product[]` מ-page.tsx; בונה 4 slides דינמיים (slide 1 welcome static, slides 2-4 מ-Supabase products); interval 5s; רקע `bg-brand-accent`; dots `bg-brand-primary`; תמונות מוצר אמיתיות עם fallback `ImageIcon` (lucide); mini-banners משתמשים גם בתמונות המוצרים
+- `src/app/(store)/page.tsx` — מעביר `products.slice(0, 3)` ל-Hero כ-`featuredProducts`
+- `src/components/storefront/DealsSection.tsx` — כותרת תוקנה ל-"דילים של היום"
+- `src/lib/supabase/server.ts` + `.env.local` — תוקן: הוחלף `NEXT_PUBLIC_SUPABASE_ANON_KEY` ריק ב-`sb_publishable_...` פורמט; פורמט תקין עם `@supabase/ssr@0.10.3`
+
 Session 2026-06-04 — Storefront homepage 1:1 עם electro home-v7 + זהות KenyonExpress. commit `14fef20` pushed ל-main:
 - `src/components/storefront/` — 7 קומפוננטות חדשות: `Header`, `CategorySidebar`, `Hero`, `FeatureBar`, `CategoryRing`, `DealsSection`, `Footer`
 - `src/app/(store)/page.tsx` — homepage חדש, סדר סקשנים זהה ל-electro: hero row → category ring → deals timer → feature bar
@@ -83,6 +102,9 @@ none
 1. **Cardcom** — חיבור תשלום אמיתי לכפתור "בקרוב" ב-`(main)/coupons/[id]/page.tsx` (10% אונליין, 90% בבית העסק)
 2. **עמוד מוצר** (`(store)/products/[slug]`) — ממשק storefront למוצר בודד עם תמונות, variants, הוסף לעגלה
 3. **עמוד coupons** — עדכון `(main)/coupons` לפריסת storefront (layout חדש, עיצוב electro-style)
+
+## Active Branch
+phase5/homepage
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress

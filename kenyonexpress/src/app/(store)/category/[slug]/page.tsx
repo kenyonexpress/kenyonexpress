@@ -44,7 +44,7 @@ export default async function CategoryPage({ params }: Props) {
   const items = (products ?? []) as Product[]
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-screen-xl mx-auto px-4 py-6 space-y-6">
       {/* Breadcrumb */}
       <nav className="text-sm text-gray-500 flex items-center gap-1" aria-label="נתיב ניווט">
         <Link href="/" className="hover:text-brand">

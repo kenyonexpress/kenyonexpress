@@ -1,134 +1,137 @@
-'use client'
-
-import { Heart, Menu, Search, ShoppingCart, User, X } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
+import {
+  ChevronDown,
+  Clock,
+  Heart,
+  MapPin,
+  Search,
+  ShoppingBag,
+  User,
+} from 'lucide-react'
 
-type Props = {
-  user: { email?: string } | null
-}
-
-const NAV_LINKS = [
-  { href: '/products', label: 'מוצרים' },
-  { href: '/coupons', label: 'קופונים' },
-  { href: '/categories', label: 'קטגוריות' },
+const REGIONS = [
+  { value: '', label: 'בחר אזור' },
+  { value: 'all', label: 'כל הארץ' },
+  { value: 'center', label: 'מרכז' },
+  { value: 'north', label: 'צפון' },
+  { value: 'south', label: 'דרום' },
+  { value: 'jerusalem', label: 'ירושלים' },
+  { value: 'haifa', label: 'חיפה' },
 ]
 
-export default function Header({ user }: Props) {
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const accountHref = user ? '/profile' : '/login'
-
+export default function SiteHeader() {
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center gap-4">
-        {/* Logo — first in DOM = rightmost in RTL */}
+    <header dir="rtl" className="w-full bg-white border-b border-gray-200 sticky top-0 z-40">
+      <div className="max-w-screen-xl mx-auto px-4 py-5 flex items-center gap-5">
+
         <Link
           href="/"
-          className="flex items-center gap-2 shrink-0"
           aria-label="קניון אקספרס, לדף הבית"
+          className="shrink-0"
         >
-          <span className="w-10 h-10 rounded-full bg-brand-primary text-brand-dark flex items-center justify-center font-black text-lg">
-            K
-          </span>
-          <span className="hidden sm:flex flex-col leading-tight">
-            <span className="font-black text-lg text-gray-900 tracking-tight">קניון EXPRESS</span>
-            <span className="text-[11px] text-gray-500">מסדרים לך בילוי</span>
-          </span>
+          <Image
+            src="/logo.png"
+            alt="קניון EXPRESS"
+            width={133}
+            height={64}
+            className="h-16 w-auto object-contain"
+            priority
+          />
         </Link>
 
-        {/* Search — center, hidden on mobile */}
-        <form method="GET" action="/products" className="hidden md:flex flex-1 max-w-xl mx-auto">
-          <div className="relative w-full">
-            <Search
-              size={18}
-              className="absolute top-1/2 -translate-y-1/2 right-3 text-gray-400 pointer-events-none"
-              aria-hidden="true"
-            />
+        <form
+          method="GET"
+          action="/products"
+          className="flex flex-1 min-w-0 items-stretch gap-0"
+        >
+          <div className="flex flex-1 min-w-0 h-12 items-stretch rounded-full border-[3px] border-brand-secondary overflow-hidden bg-white">
+            <button
+              type="submit"
+              aria-label="חיפוש"
+              className="shrink-0 w-12 bg-brand-secondary text-brand-dark flex items-center justify-center hover:opacity-90 transition-opacity rounded-full -me-px"
+            >
+              <Search size={20} strokeWidth={2} aria-hidden="true" />
+            </button>
+
             <input
               type="search"
               name="q"
-              placeholder="חיפוש מוצרים, קופונים ועסקים..."
-              aria-label="חיפוש"
-              className="w-full h-10 rounded-lg border border-gray-300 bg-gray-50 pr-10 pl-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary focus:bg-white transition-colors"
+              placeholder="חפש מוצרים"
+              aria-label="חיפוש מוצרים"
+              className="flex-1 min-w-0 border-0 bg-white px-4 text-sm focus:outline-none"
+            />
+          </div>
+
+          <label className="sr-only" htmlFor="region-select">
+            בחר אזור
+          </label>
+          <div className="relative shrink-0 ms-2 flex items-center">
+            <MapPin
+              size={16}
+              className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+              aria-hidden="true"
+            />
+            <select
+              id="region-select"
+              name="region"
+              defaultValue=""
+              className="h-12 appearance-none rounded-lg border border-gray-300 bg-gray-50 ps-9 pe-8 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-primary cursor-pointer min-w-[130px]"
+            >
+              {REGIONS.map((r) => (
+                <option key={r.value} value={r.value} disabled={r.value === ''}>
+                  {r.label}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              size={16}
+              className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
+              aria-hidden="true"
             />
           </div>
         </form>
 
-        {/* Actions — last in DOM = leftmost in RTL */}
-        <div className="flex items-center gap-1 shrink-0 mr-auto md:mr-0">
-          <button
-            type="button"
-            className="hidden sm:inline-flex p-2.5 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
-            aria-label="רשימת משאלות"
-          >
-            <Heart size={22} strokeWidth={1.8} />
-          </button>
-
+        <div className="flex items-center gap-0.5 shrink-0">
           <button
             type="button"
             className="relative p-2.5 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
-            aria-label="עגלת קניות"
+            aria-label="עגלת קניות, 0 פריטים"
           >
-            <ShoppingCart size={22} strokeWidth={1.8} />
-            <span className="absolute top-1 left-1 text-[10px] font-black rounded-full w-4 h-4 flex items-center justify-center bg-brand-primary text-brand-dark">
+            <ShoppingBag size={22} strokeWidth={1.8} aria-hidden="true" />
+            <span
+              className="absolute top-1 end-1 w-4 h-4 rounded-full bg-brand-secondary text-brand-dark text-[10px] font-bold flex items-center justify-center"
+              aria-hidden="true"
+            >
               0
             </span>
           </button>
 
           <Link
-            href={accountHref}
+            href="/login"
             className="p-2.5 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
-            aria-label={user ? 'החשבון שלי' : 'התחברות'}
+            aria-label="החשבון שלי"
           >
-            <User size={22} strokeWidth={1.8} />
+            <User size={22} strokeWidth={1.8} aria-hidden="true" />
           </Link>
 
-          {/* Mobile hamburger */}
           <button
             type="button"
-            onClick={() => setMobileOpen((v) => !v)}
-            className="md:hidden p-2.5 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
-            aria-label="תפריט"
-            aria-expanded={mobileOpen}
+            className="p-2.5 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
+            aria-label="מועדפים"
           >
-            {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+            <Heart size={22} strokeWidth={1.8} aria-hidden="true" />
+          </button>
+
+          <button
+            type="button"
+            className="p-2.5 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
+            aria-label="היסטוריה"
+          >
+            <Clock size={22} strokeWidth={1.8} aria-hidden="true" />
           </button>
         </div>
       </div>
-
-      {/* Mobile panel */}
-      {mobileOpen && (
-        <div className="md:hidden border-t border-gray-200 bg-white px-4 py-3 space-y-3">
-          <form method="GET" action="/products">
-            <div className="relative">
-              <Search
-                size={18}
-                className="absolute top-1/2 -translate-y-1/2 right-3 text-gray-400 pointer-events-none"
-                aria-hidden="true"
-              />
-              <input
-                type="search"
-                name="q"
-                placeholder="חיפוש..."
-                aria-label="חיפוש"
-                className="w-full h-10 rounded-lg border border-gray-300 bg-gray-50 pr-10 pl-4 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary focus:bg-white"
-              />
-            </div>
-          </form>
-          <nav className="flex flex-col" aria-label="ניווט ראשי">
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileOpen(false)}
-                className="py-2.5 text-sm font-medium text-gray-700 hover:text-brand-primary border-b border-gray-100 last:border-0"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-      )}
     </header>
   )
 }

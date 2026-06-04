@@ -3,18 +3,12 @@ import RightSidebar from '@/components/RightSidebar'
 import SiteFooter from '@/components/SiteFooter'
 import Header from '@/components/layout/Header'
 import TopBar from '@/components/layout/TopBar'
-import { createClient } from '@/lib/supabase/server'
 
-export default async function MainLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
+export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex flex-col">
       <TopBar />
-      <Header user={user} />
+      <Header />
       <div className="flex-1 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="grid grid-cols-[200px_1fr_250px] gap-4 items-start">

@@ -18,7 +18,7 @@ export default function RightSidebar() {
   return (
     <aside className="border border-gray-200 rounded-xl overflow-hidden bg-white">
       {/* Solid yellow top block */}
-      <div className="px-4 py-4 text-center" style={{ background: '#F5C518' }}>
+      <div className="px-4 py-4 text-center bg-brand-secondary">
         <p className="font-extrabold text-gray-900 text-sm tracking-tight">קניון EXPRESS</p>
         <p className="text-xs text-gray-800 mt-0.5 font-medium">מסדרים לך בילוי</p>
       </div>
