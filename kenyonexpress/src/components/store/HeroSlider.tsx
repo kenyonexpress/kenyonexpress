@@ -2,18 +2,17 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { ArrowLeft, BadgePercent, MonitorSmartphone, ShoppingBag, type LucideIcon } from 'lucide-react'
+import { ArrowLeft, ImageIcon } from 'lucide-react'
 
 type Slide = {
   id: string
-  icon: LucideIcon
   href: string
 }
 
 const SLIDES: Slide[] = [
-  { id: 'welcome', icon: ShoppingBag, href: '/products' },
-  { id: 'slide-2', icon: BadgePercent, href: '/products' },
-  { id: 'slide-3', icon: MonitorSmartphone, href: '/category/electronics' },
+  { id: 'welcome', href: '/products' },
+  { id: 'slide-2', href: '/products' },
+  { id: 'slide-3', href: '/category/electronics' },
 ]
 
 export default function HeroSlider() {
@@ -49,8 +48,9 @@ export default function HeroSlider() {
           </Link>
         </div>
 
-        <div className="hidden sm:flex w-[200px] h-[280px] shrink-0 items-center justify-center rounded-lg bg-white/60">
-          <slide.icon key={slide.id} aria-hidden="true" className="h-16 w-16 text-gray-400" />
+        {/* Slide image placeholder — real images to be wired later */}
+        <div className="hidden sm:flex w-[200px] h-[280px] shrink-0 items-center justify-center rounded-lg bg-slate-100">
+          <ImageIcon aria-hidden="true" className="h-12 w-12 text-slate-400" />
         </div>
       </div>
 

@@ -34,7 +34,7 @@ export default function SiteHeader() {
             src="/logo.png"
             alt="קניון EXPRESS"
             width={133}
-            height={64}
+            height={102}
             className="h-16 w-auto object-contain"
             priority
           />

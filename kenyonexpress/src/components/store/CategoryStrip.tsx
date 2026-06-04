@@ -1,38 +1,29 @@
 import Link from 'next/link'
-import { Baby, GraduationCap, Hotel, PawPrint, Tag, type LucideIcon } from 'lucide-react'
+import { ImageIcon } from 'lucide-react'
 
-const CATEGORIES: ReadonlyArray<{
-  id: string
-  label: string
-  href: string
-  icon: LucideIcon
-}> = [
-  { id: 'under99', label: 'עד 99', href: '/category/under-99', icon: Tag },
+const CATEGORIES = [
+  { id: 'under99', label: 'עד 99', href: '/category/under-99' },
   {
     id: 'pets',
     label: 'ציוד ומזון לבעלי חיים',
     href: '/category/pets',
-    icon: PawPrint,
   },
   {
     id: 'hotels',
     label: 'צימרים מלונות ונופש',
     href: '/category/hotels',
-    icon: Hotel,
   },
   {
     id: 'courses',
     label: 'קורסים EXPRESS',
     href: '/products',
-    icon: GraduationCap,
   },
   {
     id: 'kids',
     label: 'תינוקות וילדים',
     href: '/category/kids',
-    icon: Baby,
   },
-]
+] as const
 
 export default function CategoryStrip() {
   return (
@@ -49,10 +40,11 @@ export default function CategoryStrip() {
               idx < CATEGORIES.length - 1 ? 'border-e border-gray-200' : ''
             }`}
           >
-            <div className="flex w-full h-[72px] max-w-[120px] items-center justify-center rounded-md bg-gray-100">
-              <cat.icon
+            {/* Category image placeholder — real images to be wired later */}
+            <div className="flex w-full h-[72px] max-w-[120px] items-center justify-center rounded-md bg-slate-100">
+              <ImageIcon
                 aria-hidden="true"
-                className="h-7 w-7 text-gray-400 group-hover:scale-110 transition-transform duration-300"
+                className="h-7 w-7 text-slate-400"
               />
             </div>
             <span className="text-xs font-bold text-gray-800 text-center leading-snug">
