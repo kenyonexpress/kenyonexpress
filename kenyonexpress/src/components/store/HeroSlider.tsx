@@ -1,19 +1,19 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { ArrowLeft, BadgePercent, MonitorSmartphone, ShoppingBag, type LucideIcon } from 'lucide-react'
 
 type Slide = {
   id: string
-  image: string
+  icon: LucideIcon
   href: string
 }
 
 const SLIDES: Slide[] = [
-  { id: 'welcome', image: 'https://picsum.photos/seed/hero-phone/280/360', href: '/products' },
-  { id: 'slide-2', image: 'https://picsum.photos/seed/hero-deal/280/360', href: '/products' },
-  { id: 'slide-3', image: 'https://picsum.photos/seed/hero-tech/280/360', href: '/category/electronics' },
+  { id: 'welcome', icon: ShoppingBag, href: '/products' },
+  { id: 'slide-2', icon: BadgePercent, href: '/products' },
+  { id: 'slide-3', icon: MonitorSmartphone, href: '/category/electronics' },
 ]
 
 export default function HeroSlider() {
@@ -45,23 +45,12 @@ export default function HeroSlider() {
             className="inline-flex mt-4 w-fit items-center gap-2 rounded-full bg-brand-secondary px-6 py-2.5 text-sm font-bold text-brand-dark hover:opacity-90 transition-opacity"
           >
             לקניות
-            <span aria-hidden="true" className="rtl:rotate-180">
-              ←
-            </span>
+            <ArrowLeft aria-hidden="true" className="h-4 w-4" />
           </Link>
         </div>
 
-        <div className="relative hidden sm:block w-[200px] h-[280px] shrink-0">
-          <Image
-            key={slide.id}
-            src={slide.image}
-            alt=""
-            aria-hidden="true"
-            fill
-            className="object-contain object-center drop-shadow-md"
-            sizes="200px"
-            unoptimized
-          />
+        <div className="hidden sm:flex w-[200px] h-[280px] shrink-0 items-center justify-center rounded-lg bg-white/60">
+          <slide.icon key={slide.id} aria-hidden="true" className="h-16 w-16 text-gray-400" />
         </div>
       </div>
 

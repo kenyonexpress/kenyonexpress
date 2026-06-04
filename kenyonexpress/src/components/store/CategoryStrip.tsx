@@ -1,33 +1,38 @@
-import Image from 'next/image'
 import Link from 'next/link'
+import { Baby, GraduationCap, Hotel, PawPrint, Tag, type LucideIcon } from 'lucide-react'
 
-const CATEGORIES = [
-  { id: 'under99', label: 'עד 99', href: '/category/under-99', image: 'https://picsum.photos/seed/cat-99/120/100' },
+const CATEGORIES: ReadonlyArray<{
+  id: string
+  label: string
+  href: string
+  icon: LucideIcon
+}> = [
+  { id: 'under99', label: 'עד 99', href: '/category/under-99', icon: Tag },
   {
     id: 'pets',
     label: 'ציוד ומזון לבעלי חיים',
     href: '/category/pets',
-    image: 'https://picsum.photos/seed/cat-pets/120/100',
+    icon: PawPrint,
   },
   {
     id: 'hotels',
     label: 'צימרים מלונות ונופש',
     href: '/category/hotels',
-    image: 'https://picsum.photos/seed/cat-hotels/120/100',
+    icon: Hotel,
   },
   {
     id: 'courses',
     label: 'קורסים EXPRESS',
     href: '/products',
-    image: 'https://picsum.photos/seed/cat-courses/120/100',
+    icon: GraduationCap,
   },
   {
     id: 'kids',
     label: 'תינוקות וילדים',
     href: '/category/kids',
-    image: 'https://picsum.photos/seed/cat-kids/120/100',
+    icon: Baby,
   },
-] as const
+]
 
 export default function CategoryStrip() {
   return (
@@ -44,15 +49,10 @@ export default function CategoryStrip() {
               idx < CATEGORIES.length - 1 ? 'border-e border-gray-200' : ''
             }`}
           >
-            <div className="relative w-full h-[72px] max-w-[120px]">
-              <Image
-                src={cat.image}
-                alt=""
+            <div className="flex w-full h-[72px] max-w-[120px] items-center justify-center rounded-md bg-gray-100">
+              <cat.icon
                 aria-hidden="true"
-                fill
-                className="object-cover rounded-md group-hover:scale-105 transition-transform duration-300"
-                sizes="120px"
-                unoptimized
+                className="h-7 w-7 text-gray-400 group-hover:scale-110 transition-transform duration-300"
               />
             </div>
             <span className="text-xs font-bold text-gray-800 text-center leading-snug">
