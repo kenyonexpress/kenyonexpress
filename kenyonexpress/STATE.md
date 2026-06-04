@@ -4,6 +4,12 @@
 **Phase 5 — Frontend / Homepage** (Phase 4 Admin CRUDs closed)
 
 ## Last Completed
+Session 2026-06-04 — Homepage polish: חצים RTL + הסרת picsum. commit `8592201`, tsc + lint clean:
+- `src/components/store/PromoBanners.tsx` — חץ Shop now הוחלף מ-unicode `→`+`rtl:rotate-180` ל-lucide `ArrowLeft` (מצביע לכיוון הקריאה ב-RTL); תמונות picsum הוחלפו ב-placeholder אפור (`bg-gray-100`) עם אייקון lucide פר באנר (Flame/Gamepad2/Laptop)
+- `src/components/store/HeroSlider.tsx` — חץ "לקניות" הוחלף ל-lucide `ArrowLeft` (היה `←`+rotate שהצביע אחורה); תמונת slide הוחלפה ב-placeholder עם אייקון פר slide (ShoppingBag/BadgePercent/MonitorSmartphone)
+- `src/components/store/CategoryStrip.tsx` — תמונות picsum הוחלפו ב-placeholder אפור עם אייקון פר קטגוריה (Tag/PawPrint/Hotel/GraduationCap/Baby)
+- `next.config.ts` — הוסר `picsum.photos` מ-remotePatterns (אין יותר שימוש)
+
 Session 2026-06-04 — Homepage rebuilt 1:1 per HOMEPAGE_SPEC.md. tsc clean, lint clean, אפס hex hardcoded:
 - `src/app/(store)/page.tsx` — מבנה חדש: `HomeHeroSection` + `CategoryStrip` + `InfoBar`
 - `src/components/store/` — 5 קומפוננטות חדשות: `HomeHeroSection`, `HeroSlider`, `CategorySidebar`, `PromoBanners`, `CategoryStrip`
