@@ -4,6 +4,12 @@
 **Phase 5 — Frontend / Homepage** (Phase 4 Admin CRUDs closed)
 
 ## Last Completed
+Session 2026-06-04 — Logo + PromoBanners per live site + placeholders אחידים. commit `1bf4f79`, tsc + lint clean:
+- `src/components/store/PromoBanners.tsx` — מבנה לפי kenyonexpress.co.il החי: טקסט אפור קטן `text-start` למעלה, placeholder תמונה באמצע, שורת "Shop now" עם עיגול צהוב (`bg-brand-secondary`) ו-`ChevronLeft` (קדימה ב-RTL); כפתור ה-pill הוסר
+- שלוש הקומפוננטות (`PromoBanners`, `HeroSlider`, `CategoryStrip`) — placeholder אחיד: `bg-slate-100` + lucide `ImageIcon` במרכז; תמונות אמיתיות יחוברו בהמשך
+- `src/components/layout/Header.tsx` — ממדי הלוגו תוקנו ל-133x102 (הממדים האמיתיים של `public/logo.png`), תצוגה `h-16 w-auto`
+- ⚠️ `public/logo.png` הקיים הוא לוגו חצים כחול גנרי, לא "קניון EXPRESS עם עגלה צהובה" — צריך להחליף את קובץ הנכס ידנית (הקוד כבר מצביע נכון)
+
 Session 2026-06-04 — Homepage polish: חצים RTL + הסרת picsum. commit `8592201`, tsc + lint clean:
 - `src/components/store/PromoBanners.tsx` — חץ Shop now הוחלף מ-unicode `→`+`rtl:rotate-180` ל-lucide `ArrowLeft` (מצביע לכיוון הקריאה ב-RTL); תמונות picsum הוחלפו ב-placeholder אפור (`bg-gray-100`) עם אייקון lucide פר באנר (Flame/Gamepad2/Laptop)
 - `src/components/store/HeroSlider.tsx` — חץ "לקניות" הוחלף ל-lucide `ArrowLeft` (היה `←`+rotate שהצביע אחורה); תמונת slide הוחלפה ב-placeholder עם אייקון פר slide (ShoppingBag/BadgePercent/MonitorSmartphone)
