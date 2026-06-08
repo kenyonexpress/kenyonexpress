@@ -54,7 +54,7 @@ export default function DealsSection({ products }: { products: Product[] }) {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 rounded-b-lg border border-t-0 border-gray-200 bg-gray-50 p-3">
+      <div className="grid grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-0 rounded-b-lg border border-t-0 border-gray-200 bg-gray-50 p-3">
         {products.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}

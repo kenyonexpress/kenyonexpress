@@ -33,8 +33,8 @@
   --color-accent:          #EAF4F6;  /* bg-accent */
 
   /* --- Typography ------------------------------------------------------------ */
-  /* Inter drives Latin text; Heebo covers Hebrew glyphs as fallback. */
-  --font-sans: var(--font-inter), var(--font-heebo);
+  /* Heebo drives all text (Hebrew-first, matches electro home-v7); Inter is the Latin fallback. */
+  --font-sans: var(--font-heebo), var(--font-inter);
 
   /* --- Layout ---------------------------------------------------------------- */
   --header-height: 54px;
