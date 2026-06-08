@@ -24,7 +24,7 @@ const REGIONS = [
 export default function SiteHeader() {
   return (
     <header dir="rtl" className="w-full bg-white border-b border-gray-200 sticky top-0 z-40">
-      <div className="max-w-screen-xl mx-auto px-4 py-5 flex items-center gap-5">
+      <div className="max-w-[1320px] mx-auto px-4 h-(--header-height) flex items-center gap-5">
 
         <Link
           href="/"
@@ -36,8 +36,8 @@ export default function SiteHeader() {
             alt="קניון EXPRESS"
             width={133}
             height={102}
-            className="h-16 w-auto object-contain"
-            fallbackClassName="h-16 w-20 rounded-md"
+            className="h-12 w-auto object-contain"
+            fallbackClassName="h-12 w-16 rounded-md"
             priority
           />
         </Link>
@@ -47,11 +47,11 @@ export default function SiteHeader() {
           action="/products"
           className="flex flex-1 min-w-0 items-stretch gap-0"
         >
-          <div className="flex flex-1 min-w-0 h-12 items-stretch rounded-full border-[3px] border-brand-secondary overflow-hidden bg-white">
+          <div className="flex flex-1 min-w-0 h-10 items-stretch rounded-full border-[3px] border-brand-secondary overflow-hidden bg-white">
             <button
               type="submit"
               aria-label="חיפוש"
-              className="shrink-0 w-12 bg-brand-secondary text-brand-dark flex items-center justify-center hover:opacity-90 transition-opacity rounded-full -me-px"
+              className="shrink-0 w-10 bg-brand-secondary text-brand-dark flex items-center justify-center hover:opacity-90 transition-opacity rounded-full -me-px"
             >
               <Search size={20} strokeWidth={2} aria-hidden="true" />
             </button>
@@ -78,7 +78,7 @@ export default function SiteHeader() {
               id="region-select"
               name="region"
               defaultValue=""
-              className="h-12 appearance-none rounded-lg border border-gray-300 bg-gray-50 ps-9 pe-8 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-primary cursor-pointer min-w-[130px]"
+              className="h-10 appearance-none rounded-lg border border-gray-300 bg-gray-50 ps-9 pe-8 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-primary cursor-pointer min-w-[130px]"
             >
               {REGIONS.map((r) => (
                 <option key={r.value} value={r.value} disabled={r.value === ''}>

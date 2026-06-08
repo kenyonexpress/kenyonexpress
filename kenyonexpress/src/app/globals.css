@@ -8,7 +8,7 @@
 @theme {
   /* --- Brand identity -------------------------------------------------------- */
   --color-brand-primary:       #FFD200;  /* CTAs, active state, badges */
-  --color-brand-primary-hover: #E6BD00;  /* hover / pressed */
+  --color-brand-primary-hover: #FEDD26;  /* hover / pressed */
   --color-brand-dark:          #1A1A1A;  /* dark text, dark surfaces */
   --color-brand-accent:        #EAF4F6;  /* tinted backgrounds, soft surfaces */
 
@@ -33,7 +33,11 @@
   --color-accent:          #EAF4F6;  /* bg-accent */
 
   /* --- Typography ------------------------------------------------------------ */
-  --font-sans: var(--font-heebo);
+  /* Inter drives Latin text; Heebo covers Hebrew glyphs as fallback. */
+  --font-sans: var(--font-inter), var(--font-heebo);
+
+  /* --- Layout ---------------------------------------------------------------- */
+  --header-height: 54px;
 }
 
 body {

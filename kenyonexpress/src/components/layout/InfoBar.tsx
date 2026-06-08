@@ -31,7 +31,7 @@ const ITEMS = [
 export default function InfoBar() {
   return (
     <div dir="rtl" className="w-full bg-white border-t border-gray-200">
-      <div className="max-w-screen-xl mx-auto">
+      <div className="max-w-[1320px] mx-auto">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
           {ITEMS.map((item, i) => (
             <div

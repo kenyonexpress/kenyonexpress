@@ -32,7 +32,7 @@ export default function HeroSlider() {
     <div className="flex flex-col h-full min-h-[440px] bg-brand-accent border-e border-gray-200 overflow-hidden">
       <div className="flex flex-1 items-center gap-6 px-8 py-6">
         <div className="flex-1 flex flex-col justify-center gap-2 min-w-0">
-          <h1 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight">
+          <h1 className="text-3xl md:text-4xl font-black text-brand-secondary leading-tight">
             ברוכים הבאים לקניון Express
           </h1>
           <p className="text-base font-bold text-gray-600">מסדרים לך בילוי. . .</p>

@@ -36,7 +36,7 @@ export default function SiteFooter() {
     <footer dir="rtl" className="w-full">
       {/* Newsletter bar */}
       <div className="bg-brand-secondary">
-        <div className="max-w-screen-xl mx-auto px-4 py-6 flex flex-col md:flex-row items-center justify-between gap-5">
+        <div className="max-w-[1320px] mx-auto px-4 py-6 flex flex-col md:flex-row items-center justify-between gap-5">
           <div className="flex items-center gap-3 text-center md:text-start">
             <Send size={36} strokeWidth={1.5} className="text-brand-dark shrink-0" aria-hidden="true" />
             <p className="text-brand-dark">
@@ -69,7 +69,7 @@ export default function SiteFooter() {
 
       {/* Footer body */}
       <div className="bg-footer-bg text-gray-300">
-        <div className="max-w-screen-xl mx-auto px-4 py-10">
+        <div className="max-w-[1320px] mx-auto px-4 py-10">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {/* Col 1: logo + 24/7 phone */}
             <div>
@@ -154,7 +154,7 @@ export default function SiteFooter() {
 
         {/* Bottom row (slightly darker) */}
         <div className="bg-black/20 border-t border-white/10">
-          <div className="max-w-screen-xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="max-w-[1320px] mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
             {/* RTL: first child sits on the right */}
             <p className="text-xs text-gray-400" aria-label="אמצעי תשלום">
               {PAYMENT_LABELS.join(' · ')}

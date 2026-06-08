@@ -4,7 +4,7 @@ import { Lock, MapPin, Truck, User } from 'lucide-react'
 export default function TopBar() {
   return (
     <div dir="rtl" className="w-full bg-white border-b border-gray-200">
-      <div className="max-w-screen-xl mx-auto px-4 h-11 flex items-center justify-between text-[13px] text-gray-500">
+      <div className="max-w-[1320px] mx-auto px-4 h-11 flex items-center justify-between text-[13px] text-gray-500">
         <span className="hidden lg:block">ברוך הבא לעולם של קניון Express</span>
 
         <nav className="flex items-center" aria-label="מידע שירות">
