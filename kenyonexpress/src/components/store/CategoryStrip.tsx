@@ -1,6 +1,6 @@
-import Link from 'next/link'
 import SmartImage from '@/components/ui/SmartImage'
 import { CATEGORIES as CATEGORY_IMAGES } from '@/lib/assets'
+import Link from 'next/link'
 
 const CATEGORIES = [
   {
@@ -37,11 +37,8 @@ const CATEGORIES = [
 
 export default function CategoryStrip() {
   return (
-    <section
-      aria-label="קטגוריות מובילות"
-      className="bg-white border-y border-gray-200"
-    >
-      <div className="max-w-page mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3">
+    <section aria-label="קטגוריות מובילות" className="bg-white border-y border-gray-200">
+      <div className="max-w-page mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
         {CATEGORIES.map((cat, idx) => (
           <Link
             key={cat.id}

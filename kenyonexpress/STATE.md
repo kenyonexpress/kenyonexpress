@@ -4,6 +4,16 @@
 **Phase 5 — Homepage**. שלב 0 (תשתית) הושלם. הבא: **שלב 1 — דפי תצוגה** (listing, קטגוריה, footer/feature-bar מלאים לפי KE_LIVE_SPEC.md).
 
 ## Last Completed
+Session 2026-06-09 (דף בית 1:1 + spec מהאתר החי). commit `feat: homepage 1:1 with live site structure + project decisions + foundation gaps`, push ל-phase5/homepage:
+- הורדו דפי האתר החי (`ke_live_home/product/cart.html`, untracked, לא בקומיט). זוהתה פלטפורמה: WordPress + Elementor + WooCommerce, תבנית electro.
+- `KE_LIVE_SPEC.md` נכתב מחדש לפי האמת של האתר החי + טבלת "סטיות שהוחלטו" (Heebo במקום Inter; בלי בורר אזור/חיפוש; מחיר אדום #E4002B במקום כחול #1da1f2; שם מוצר כחול #0062bd).
+- `src/components/store/CategoryNav.tsx` — חדש: תפריט קטגוריות עליון אופקי (11 slugs קנוניים), חובר ל-`(store)/layout.tsx` אחרי ה-header.
+- `CategoryStrip` → `lg:grid-cols-5` (תואם `columns-5` החי).
+- סדר דף הבית מאומת 1:1 (Playwright /tmp/home-1to1.png): top bar → header → תפריט קטגוריות → שורה ראשית 3 טורים → רצועת קטגוריות (5) → רשת מוצרים (3) → feature bar → newsletter → footer. ההחלטות נשמרו.
+
+---
+
+## Last Completed (שלב 0 — תשתית)
 Session 2026-06-09 (שלב 0 — תשתית הושלם). commit `feat: foundation complete ...`, push ל-phase5/homepage:
 - **6 פערי electro תוקנו ב-`globals.css @theme`** (single source, Tailwind v4): brand-primary `#fed700`, hover `#fedd26`; טוקן `--color-link: #0062bd` (שם מוצר כחול, נבדל ממחיר אדום `#e4002b`); `--container-page: 1320px` → utility `max-w-page` (החליף את כל ה-`max-w-[1320px]` בקומפוננטות storefront); `--header-height: 54px`; `--font-sans: var(--font-heebo), Arial` (Inter הוסר לגמרי מ-`layout.tsx`).
 - **grid מוצרים** → 3 עמודות ב-lg/xl: `DealsSection` ו-`products/page.tsx`.
