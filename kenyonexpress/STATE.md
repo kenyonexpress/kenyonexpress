@@ -4,6 +4,20 @@
 **Phase 5 — Homepage** (Phase 4 Admin CRUDs closed)
 
 ## Last Completed
+Session 2026-06-09 (המשך) — Header תואם לאתר החי. commit `feat: header matches live site - logo + 3 icons only, no area selector, no search`, push ל-phase5/homepage:
+- `src/components/layout/Header.tsx` — נכתב מחדש: הוסר בורר אזור (REGIONS + select + MapPin) והוסר שדה חיפוש (form/input/Search). נשאר: לוגו מימין + שלושה אייקונים משמאל (ShoppingBag עם badge "0", User→/login, Heart). brand tokens בלבד, RTL. type-check נקי, אומת ב-Playwright screenshot על localhost:3000.
+
+### עבודה לא-מקומטת (ממתינה לאישור screenshots, לא ב-commit הזה)
+- דף מוצר בודד: `src/app/(store)/product/[slug]/page.tsx` (slug יחיד) + `src/components/storefront/{ProductGallery,ProductInfo,RelatedProducts}.tsx`; `ProductCard` עודכן לקישור `/product/${slug}`; נמחק `(store)/products/[slug]/` הישן (page+ProductGallery+VariantSelector).
+- `KE_LIVE_SPEC.md` (שורש ה-repo) — מקור אמת חדש לחזית; הוסר סעיף בורר אזור + 16 אזורים, נוסף סעיף Header.
+- `supabase/migrations/018_seed_categories.sql` — גישה B: remap slugs קיימים לקנוניים (dyl-chm→hot-deals, ad-99→under-99, new-deals→new, restaurant-coffee→restaurants-cafes, typvch-bryavt-vyvpy→beauty-health, phones-electronics→phones-computers) + INSERT 5 חסרים (baby-kids, vacation, pets, professionals, courses). `electronics` נשאר ללא שינוי. idempotent.
+
+### Blocking
+- לא ניתן להריץ את `018_seed_categories.sql` מול ה-DB: ה-MCP של Supabase לא אומת, `SUPABASE_SERVICE_ROLE_KEY` ריק ב-`.env.local`, ואין DB url/token/password בקבצי env. נדרש אישור OAuth ל-MCP, או service role key, כדי לסיים את ה-remap (B).
+
+---
+
+## Last Completed (לפני Header)
 Session 2026-06-09 — DealsSection + Heebo/grid + HeroSlider→Supabase code + RTL audit. 3 commits (לא בוצע push):
 - `src/components/store/DealsSection.tsx` — נוצר: client component, countdown 23:59:59 (setInterval), כותרת "דילים של היום", grid מוצרים RTL; `(store)/page.tsx` שולף עד 8 מוצרים פעילים ומעביר כ-props. commit `b9fec5a`
 - `globals.css` — `--font-sans` שונה ל-`var(--font-heebo), var(--font-inter)` (Heebo ראשי); `DealsSection` grid → `grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-0`. commit `9dd48f2`
