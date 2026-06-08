@@ -4,6 +4,16 @@
 **Phase 5 — Homepage**. שלב 0 (תשתית) הושלם. הבא: **שלב 1 — דפי תצוגה** (listing, קטגוריה, footer/feature-bar מלאים לפי KE_LIVE_SPEC.md).
 
 ## Last Completed
+Session 2026-06-09 (יישור electro + לוגו חי). commit `feat: align homepage spacing/grid to electro reference measurements + wire live-site logo`, push ל-phase5/homepage:
+- `refs/` — תיקיית reference קבועה (ב-.gitignore). הועברו לשם: `ke_live_{home,product,cart}.html`, `electro_style.css` (1.1MB אמיתי), `electro_home_v7.html` (5KB — נחסם Cloudflare). מקור האמת מעכשיו.
+- `KE_LIVE_SPEC.md` — נוסף סעיף "מידות electro": container 1200/1430 (פרויקט בחר 1320), דף מוצר גלריה/summary **41.67% / 58.33%** (col-5/7), שורה ראשית עמודות 25%/270px, רשת מוצרים columns-3.
+- **יישור קוד למידות electro:** דף מוצר `(store)/product/[slug]/page.tsx` → `md:grid-cols-[5fr_7fr]` (נמדד 495.8/694.2px = 5:7 מדויק). `HomeHeroSection` שורה ראשית → `lg:grid-cols-[270px_1fr_270px]`.
+- **לוגו חי חובר:** הורדו מ-kenyonexpress.co.il ל-`public/images/logo.webp` + `logo-footer.webp` (WebP אמיתי: "קניון EXPRESS" + עגלה צהובה). `assets.ts` → `LOGO`/`LOGO_FOOTER`. Header מציג LOGO (רקע לבן), Footer מציג LOGO_FOOTER (עם brightness-0 invert על רקע כהה). אומת ב-Playwright.
+- type-check נקי לאורך כל הדרך. ההחלטות נשמרו (Heebo, מחיר אדום, בלי בורר אזור/חיפוש).
+
+---
+
+## Last Completed (דף בית 1:1)
 Session 2026-06-09 (דף בית 1:1 + spec מהאתר החי). commit `feat: homepage 1:1 with live site structure + project decisions + foundation gaps`, push ל-phase5/homepage:
 - הורדו דפי האתר החי (`ke_live_home/product/cart.html`, untracked, לא בקומיט). זוהתה פלטפורמה: WordPress + Elementor + WooCommerce, תבנית electro.
 - `KE_LIVE_SPEC.md` נכתב מחדש לפי האמת של האתר החי + טבלת "סטיות שהוחלטו" (Heebo במקום Inter; בלי בורר אזור/חיפוש; מחיר אדום #E4002B במקום כחול #1da1f2; שם מוצר כחול #0062bd).

@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Camera, Headphones, Play, Send, Share2 } from 'lucide-react'
 import SmartImage from '@/components/ui/SmartImage'
-import { LOGO } from '@/lib/assets'
+import { LOGO_FOOTER } from '@/lib/assets'
 
 const NAV_LINKS = [
   { label: 'דילים חמים', href: '/products' },
@@ -74,7 +74,7 @@ export default function SiteFooter() {
             {/* Col 1: logo + 24/7 phone */}
             <div>
               <SmartImage
-                src={LOGO}
+                src={LOGO_FOOTER}
                 alt="קניון EXPRESS"
                 width={133}
                 height={102}

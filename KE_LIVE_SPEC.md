@@ -109,3 +109,34 @@ Inter + Open Sans + Assistant + font-electro (אייקונים). **האתר הח
 | hover כפתורים | — | `#fedd26` |
 | רוחב container | — | `1320px` (token `--container-page`) |
 | גובה header | — | `54px` |
+
+---
+
+## מידות electro (מקור: electro_style.css האמיתי + ke_live_home.html)
+הערה: `electro_home_v7.html` נחסם ע"י Cloudflare (דף challenge), אז המידות חולצו מ-`electro_style.css` (1.1MB, התבנית האמיתית) ומה-HTML החי.
+
+### Container (max-width לפי breakpoint)
+| breakpoint | max-width |
+|---|---|
+| ≥576px | 540px |
+| ≥768px | 720px |
+| ≥992px | 960px |
+| ≥1200px | **1200px** |
+| ≥1480px | **1430px** |
+
+הפרויקט בחר `1320px` אחיד (token `--container-page`) — סטייה מכוונת בין 1200 ל-1430.
+
+### שורה ראשית (3 טורים)
+electro/elementor: עמודות 25% (`elementor-col-25` / Bootstrap `col-lg-3`). תפריט Departments אנכי ≈ 25% מהרוחב (כ-270px). הפרויקט: `lg:grid-cols-[270px_1fr_270px]` (departments 270 | hero גמיש | מיני-באנרים 270).
+
+### דף מוצר (יחס גלריה/summary)
+- גלריה: `col-lg-5` = **41.667%**
+- summary: `col-lg-7` = **58.333%**
+- מתחת ל-768px: נערמים (100%).
+- גלריה: תמונה ראשית + thumbnails carousel (`--columns-5`).
+
+### רשת מוצרים
+`columns-3` (3 עמודות בדסקטופ). gutters Bootstrap (~30px → ~15px לכל צד).
+
+### כרטיס מוצר
+padding פנימי קטן + `margin-bottom` בין שורות (~1.8em). תמונה ברוחב מלא של הכרטיס.

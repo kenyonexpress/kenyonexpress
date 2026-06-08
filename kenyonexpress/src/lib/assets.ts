@@ -2,7 +2,8 @@
 // All components must read image paths from here — never hardcode paths inline.
 // To swap an asset, change the path here only.
 
-export const LOGO = '/logo.png'
+export const LOGO = '/images/logo.webp'
+export const LOGO_FOOTER = '/images/logo-footer.webp'
 
 export const HERO_SLIDES = [
   '/images/hero/slide-1.jpg',
