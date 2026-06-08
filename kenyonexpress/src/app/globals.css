@@ -7,37 +7,40 @@
    ============================================================================ */
 @theme {
   /* --- Brand identity -------------------------------------------------------- */
-  --color-brand-primary:       #FFD200;  /* CTAs, active state, badges */
-  --color-brand-primary-hover: #FEDD26;  /* hover / pressed */
-  --color-brand-dark:          #1A1A1A;  /* dark text, dark surfaces */
-  --color-brand-accent:        #EAF4F6;  /* tinted backgrounds, soft surfaces */
+  --color-brand-primary: #fed700; /* CTAs, active state, badges */
+  --color-brand-primary-hover: #fedd26; /* hover / pressed */
+  --color-brand-dark: #1a1a1a; /* dark text, dark surfaces */
+  --color-brand-accent: #eaf4f6; /* tinted backgrounds, soft surfaces */
 
   /* --- Functional colors ----------------------------------------------------- */
-  --color-price:               #E4002B;  /* current price */
-  --color-price-strike:        #9CA3AF;  /* crossed-out original price */
-  --color-success:             #5CB85C;  /* confirmation, in-stock */
+  --color-price: #e4002b; /* current price */
+  --color-price-strike: #9ca3af; /* crossed-out original price */
+  --color-success: #5cb85c; /* confirmation, in-stock */
+  --color-link: #0062bd; /* product names + links (distinct from red price) */
 
   /* --- Surfaces ---------------------------------------------------------------- */
-  --color-footer-bg:           #333E48;  /* dark footer body (electro home-v7) */
+  --color-footer-bg: #333e48; /* dark footer body (electro home-v7) */
 
   /* --- Semantic tokens ------------------------------------------------------- */
-  --color-background:          #F9FAFB;  /* page background */
-  --color-foreground:          #1A1A1A;  /* default body text */
-  --color-primary:             #FFD200;  /* alias for brand-primary (Tailwind semantic) */
-  --color-primary-foreground:  #1A1A1A;  /* text on primary (black on yellow) */
+  --color-background: #f9fafb; /* page background */
+  --color-foreground: #1a1a1a; /* default body text */
+  --color-primary: #fed700; /* alias for brand-primary (Tailwind semantic) */
+  --color-primary-foreground: #1a1a1a; /* text on primary (black on yellow) */
 
   /* --- Backward-compat aliases (existing components use these classes) -------- */
-  --color-brand:           #FFD200;  /* bg-brand / text-brand */
-  --color-brand-secondary: #FFD200;  /* bg-brand-secondary (cart badge etc.) */
-  --color-brand-light:     #EAF4F6;  /* bg-brand-light */
-  --color-accent:          #EAF4F6;  /* bg-accent */
+  --color-brand: #fed700; /* bg-brand / text-brand */
+  --color-brand-secondary: #fed700; /* bg-brand-secondary (cart badge etc.) */
+  --color-brand-light: #eaf4f6; /* bg-brand-light */
+  --color-accent: #eaf4f6; /* bg-accent */
 
   /* --- Typography ------------------------------------------------------------ */
-  /* Heebo drives all text (Hebrew-first, matches electro home-v7); Inter is the Latin fallback. */
-  --font-sans: var(--font-heebo), var(--font-inter);
+  /* Heebo drives ALL text site-wide (Hebrew + Latin). No Inter. */
+  --font-sans: var(--font-heebo), Arial, sans-serif;
 
   /* --- Layout ---------------------------------------------------------------- */
   --header-height: 54px;
+  /* Single source of truth for page container width -> generates `max-w-page`. */
+  --container-page: 1320px;
 }
 
 body {

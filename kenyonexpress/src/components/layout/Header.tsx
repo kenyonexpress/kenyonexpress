@@ -6,7 +6,7 @@ import { Heart, ShoppingBag, User } from 'lucide-react'
 export default function SiteHeader() {
   return (
     <header dir="rtl" className="w-full bg-white border-b border-gray-200 sticky top-0 z-40">
-      <div className="max-w-[1320px] mx-auto px-4 h-(--header-height) flex items-center justify-between gap-5">
+      <div className="max-w-page mx-auto px-4 h-(--header-height) flex items-center justify-between gap-5">
         {/* Logo (right in RTL) */}
         <Link href="/" aria-label="קניון אקספרס, לדף הבית" className="shrink-0">
           <SmartImage

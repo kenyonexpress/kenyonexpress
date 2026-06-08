@@ -18,7 +18,7 @@ export default function ProductCard({ product }: { product: Product }) {
 
   return (
     <Link
-      href={`/products/${product.slug}`}
+      href={`/product/${product.slug}`}
       className="group block bg-white rounded-xl border border-gray-100 overflow-hidden hover:border-brand-primary hover:shadow-md transition-all"
     >
       <div className="aspect-square bg-gray-50 flex items-center justify-center relative overflow-hidden">
@@ -41,9 +41,7 @@ export default function ProductCard({ product }: { product: Product }) {
       </div>
 
       <div className="p-3 space-y-2">
-        <p className="text-sm font-medium text-gray-800 line-clamp-2 leading-snug">
-          {product.name_he}
-        </p>
+        <p className="text-sm font-medium text-link line-clamp-2 leading-snug">{product.name_he}</p>
 
         <p className="text-base font-black text-price">
           ₪{Number(product.kenyon_price ?? 0).toLocaleString('he-IL', { minimumFractionDigits: 2 })}

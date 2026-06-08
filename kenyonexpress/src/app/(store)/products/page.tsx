@@ -20,7 +20,7 @@ export default async function ProductsPage() {
   const products = (data ?? []) as Product[]
 
   return (
-    <div className="max-w-[1320px] mx-auto px-4 py-6 space-y-6">
+    <div className="max-w-page mx-auto px-4 py-6 space-y-6">
       <header className="flex items-baseline justify-between gap-3">
         <h1 className="text-2xl font-black text-gray-900">כל המוצרים</h1>
         <span className="text-sm text-gray-500">{products.length} מוצרים</span>
@@ -33,7 +33,7 @@ export default async function ProductsPage() {
           <p className="text-sm mt-1">בקרוב יתווספו מוצרים חדשים</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-3">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}

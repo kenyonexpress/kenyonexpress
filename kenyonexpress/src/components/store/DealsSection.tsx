@@ -31,7 +31,7 @@ export default function DealsSection({ products }: { products: Product[] }) {
   if (products.length === 0) return null
 
   return (
-    <section aria-label="דילים של היום" className="max-w-[1320px] mx-auto px-4 py-6">
+    <section aria-label="דילים של היום" className="max-w-page mx-auto px-4 py-6">
       <div className="flex items-center justify-between gap-3 rounded-t-lg bg-brand-dark px-4 py-3 text-white">
         <h2 className="text-lg font-black tracking-wide">דילים של היום</h2>
 
@@ -54,7 +54,7 @@ export default function DealsSection({ products }: { products: Product[] }) {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-0 rounded-b-lg border border-t-0 border-gray-200 bg-gray-50 p-3">
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-0 rounded-b-lg border border-t-0 border-gray-200 bg-gray-50 p-3">
         {products.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}

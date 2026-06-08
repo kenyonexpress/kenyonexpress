@@ -41,7 +41,7 @@ export default function CategoryStrip() {
       aria-label="קטגוריות מובילות"
       className="bg-white border-y border-gray-200"
     >
-      <div className="max-w-[1320px] mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3">
+      <div className="max-w-page mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3">
         {CATEGORIES.map((cat, idx) => (
           <Link
             key={cat.id}

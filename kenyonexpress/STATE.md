@@ -1,9 +1,29 @@
 # KenyonExpress State
 
 ## Current Phase
-**Phase 5 — Homepage** (Phase 4 Admin CRUDs closed)
+**Phase 5 — Homepage**. שלב 0 (תשתית) הושלם. הבא: **שלב 1 — דפי תצוגה** (listing, קטגוריה, footer/feature-bar מלאים לפי KE_LIVE_SPEC.md).
 
 ## Last Completed
+Session 2026-06-09 (שלב 0 — תשתית הושלם). commit `feat: foundation complete ...`, push ל-phase5/homepage:
+- **6 פערי electro תוקנו ב-`globals.css @theme`** (single source, Tailwind v4): brand-primary `#fed700`, hover `#fedd26`; טוקן `--color-link: #0062bd` (שם מוצר כחול, נבדל ממחיר אדום `#e4002b`); `--container-page: 1320px` → utility `max-w-page` (החליף את כל ה-`max-w-[1320px]` בקומפוננטות storefront); `--header-height: 54px`; `--font-sans: var(--font-heebo), Arial` (Inter הוסר לגמרי מ-`layout.tsx`).
+- **grid מוצרים** → 3 עמודות ב-lg/xl: `DealsSection` ו-`products/page.tsx`.
+- **ProductCard** — שם מוצר `text-link`.
+- **תמונות אמיתיות חוברו**: `public/hero/slide{1-3}.jpg` → `public/images/hero/slide-{1,2,3}.jpg`; `public/banners/banner{1-3}.jpg` → `public/images/promo/{hottest,deals,laptops}.jpg` (תואם `assets.ts`). PromoBanners (3 מיני-באנרים) מציג אותם. נוסף **fallback סטטי** ב-`HomeHeroSection` (FALLBACK_SLIDES מ-HERO_SLIDES) כי טבלת `hero_slides` לא קיימת ב-DB — כך ה-hero מציג את התמונות שהועלו. CategoryStrip נשאר placeholder (לא הועלו תמונות קטגוריה).
+- מדדים אומתו ב-Playwright על localhost:3000: header=54px, container=1320px, font=Heebo, hero img נטענת.
+- אומת gaps: type-check + lint נקיים.
+
+### עוד בקומיט הזה (display pages, יוצגו בשלב 1)
+- דף מוצר בודד: `(store)/product/[slug]/page.tsx` (slug יחיד) + `storefront/{ProductGallery,ProductInfo,RelatedProducts}.tsx`; נמחק `(store)/products/[slug]/` הישן.
+- `KE_LIVE_SPEC.md` (מקור אמת; בלי סעיף אזורים; עם סעיף Header) + `supabase/migrations/018_seed_categories.sql`.
+
+### Blocking
+- **slugs קטגוריות לא עודכנו ב-DB** (ג לא הושלם): `018_seed_categories.sql` מוכן (remap dyl-chm→hot-deals וכו'), אבל אין גישת כתיבה — MCP לא אומת, `SUPABASE_SERVICE_ROLE_KEY` ריק, אין DB url/token. צריך אישור OAuth ל-MCP או service role key.
+- **migration 017 (hero_slides) ו-018 לא הורצו על ה-DB** — הטבלה חסרה בפרוד (לכן ה-fallback ל-hero).
+- שני קבצי `007` ב-migrations; התנגשות 003↔005 (DROP TABLE products מוחק את audit trigger); שתי טבלאות audit (admin_audit_log/audit_log) — ראו דוח הכפילויות.
+
+---
+
+## Last Completed (לפני שלב 0)
 Session 2026-06-09 (המשך) — Header תואם לאתר החי. commit `feat: header matches live site - logo + 3 icons only, no area selector, no search`, push ל-phase5/homepage:
 - `src/components/layout/Header.tsx` — נכתב מחדש: הוסר בורר אזור (REGIONS + select + MapPin) והוסר שדה חיפוש (form/input/Search). נשאר: לוגו מימין + שלושה אייקונים משמאל (ShoppingBag עם badge "0", User→/login, Heart). brand tokens בלבד, RTL. type-check נקי, אומת ב-Playwright screenshot על localhost:3000.
 
