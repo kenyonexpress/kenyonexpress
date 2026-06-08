@@ -1,20 +1,25 @@
 import Link from 'next/link'
-import { ChevronLeft, ImageIcon } from 'lucide-react'
+import { ChevronLeft } from 'lucide-react'
+import SmartImage from '@/components/ui/SmartImage'
+import { PROMO } from '@/lib/assets'
 
 const BANNERS = [
   {
     id: 'hot',
     title: 'SHOP THE HOTTEST PRODUCTS',
+    image: PROMO[0],
     href: '/products',
   },
   {
     id: 'consoles',
     title: 'CATCH BIG DEALS ON THE CONSOLES',
+    image: PROMO[1],
     href: '/products',
   },
   {
     id: 'laptops',
     title: 'LAPTOPS NOTEBOOKS AND MORE',
+    image: PROMO[2],
     href: '/category/electronics',
   },
 ] as const
@@ -33,9 +38,15 @@ export default function PromoBanners() {
           <p className="text-[11px] font-black text-gray-500 uppercase leading-tight text-start line-clamp-2">
             {banner.title}
           </p>
-          {/* Brand image placeholder — real images to be wired later */}
-          <div className="flex flex-1 min-h-[64px] items-center justify-center rounded-md bg-slate-100">
-            <ImageIcon aria-hidden="true" className="h-8 w-8 text-slate-400" />
+          <div className="relative flex-1 min-h-[64px]">
+            <SmartImage
+              src={banner.image}
+              alt=""
+              fill
+              sizes="260px"
+              className="object-contain p-1 group-hover:scale-105 transition-transform duration-300"
+              fallbackClassName="absolute inset-0 rounded-md"
+            />
           </div>
           <span className="inline-flex items-center gap-2 text-xs font-bold text-gray-700">
             Shop now

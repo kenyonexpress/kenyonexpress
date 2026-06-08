@@ -17,6 +17,9 @@
   --color-price-strike:        #9CA3AF;  /* crossed-out original price */
   --color-success:             #5CB85C;  /* confirmation, in-stock */
 
+  /* --- Surfaces ---------------------------------------------------------------- */
+  --color-footer-bg:           #333E48;  /* dark footer body (electro home-v7) */
+
   /* --- Semantic tokens ------------------------------------------------------- */
   --color-background:          #F9FAFB;  /* page background */
   --color-foreground:          #1A1A1A;  /* default body text */

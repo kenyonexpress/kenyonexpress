@@ -2,17 +2,20 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { ArrowLeft, ImageIcon } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
+import SmartImage from '@/components/ui/SmartImage'
+import { HERO_SLIDES } from '@/lib/assets'
 
 type Slide = {
   id: string
+  image: string
   href: string
 }
 
 const SLIDES: Slide[] = [
-  { id: 'welcome', href: '/products' },
-  { id: 'slide-2', href: '/products' },
-  { id: 'slide-3', href: '/category/electronics' },
+  { id: 'welcome', image: HERO_SLIDES[0], href: '/products' },
+  { id: 'slide-2', image: HERO_SLIDES[1], href: '/products' },
+  { id: 'slide-3', image: HERO_SLIDES[2], href: '/category/electronics' },
 ]
 
 export default function HeroSlider() {
@@ -48,9 +51,17 @@ export default function HeroSlider() {
           </Link>
         </div>
 
-        {/* Slide image placeholder — real images to be wired later */}
-        <div className="hidden sm:flex w-[200px] h-[280px] shrink-0 items-center justify-center rounded-lg bg-slate-100">
-          <ImageIcon aria-hidden="true" className="h-12 w-12 text-slate-400" />
+        <div className="relative hidden sm:block w-[200px] h-[280px] shrink-0">
+          <SmartImage
+            key={slide.id}
+            src={slide.image}
+            alt=""
+            fill
+            sizes="200px"
+            className="object-contain drop-shadow-md"
+            fallbackClassName="absolute inset-0 rounded-lg"
+            iconSize={48}
+          />
         </div>
       </div>
 

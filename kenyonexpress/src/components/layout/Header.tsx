@@ -1,5 +1,6 @@
-import Image from 'next/image'
 import Link from 'next/link'
+import SmartImage from '@/components/ui/SmartImage'
+import { LOGO } from '@/lib/assets'
 import {
   ChevronDown,
   Clock,
@@ -30,12 +31,13 @@ export default function SiteHeader() {
           aria-label="קניון אקספרס, לדף הבית"
           className="shrink-0"
         >
-          <Image
-            src="/logo.png"
+          <SmartImage
+            src={LOGO}
             alt="קניון EXPRESS"
             width={133}
             height={102}
             className="h-16 w-auto object-contain"
+            fallbackClassName="h-16 w-20 rounded-md"
             priority
           />
         </Link>

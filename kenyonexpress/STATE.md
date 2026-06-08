@@ -4,6 +4,16 @@
 **Phase 5 — Frontend / Homepage** (Phase 4 Admin CRUDs closed)
 
 ## Last Completed
+Session 2026-06-04 — assets.ts + SmartImage: ריכוז נתיבי תמונות + fallback אוטומטי. tsc + lint clean (לא בוצע commit עדיין):
+- `src/lib/assets.ts` — נוצר: registry יחיד לנתיבי תמונות סטטיות: `LOGO`, `HERO_SLIDES[3]`, `PROMO[3]`, `CATEGORIES{5}`; כל הקומפוננטות קוראות מכאן בלבד
+- `src/components/ui/SmartImage.tsx` — נוצר: עוטף next/image; ב-onError מציג placeholder `bg-slate-100` + `ImageIcon` במרכז (a11y: role="img" אם יש alt, אחרת aria-hidden)
+- `Header.tsx` (logo), `HeroSlider`, `PromoBanners`, `CategoryStrip` — כולם משתמשים ב-SmartImage עם נתיבים מ-assets.ts; אפס קישורים חיצוניים
+- `public/images/{hero,promo,categories}/` — תיקיות נוצרו, ריקות; עד שיוכנסו קבצים SmartImage מציג placeholder אפור
+- `src/components/layout/SiteFooter.tsx` — נבנה מחדש בסגנון electro home-v7: newsletter bar צהוב (Send icon + input לבן + כפתור `bg-footer-bg`), גוף כהה 4 עמודות RTL (לוגו לבן ב-SmartImage + Headphones + טלפון / ניווט מהיר 7 לינקים / שירות לקוחות 5 / פרטי קשר + רשתות), שורה תחתונה `bg-black/20` עם תשלומים (ימין) ו-© (שמאל); אומת רינדור ב-localhost:3000
+- `globals.css` — טוקן חדש: `--color-footer-bg: #333E48`
+- הערה: lucide 1.16 בלי אייקוני מותג — רשתות עם Share2/Camera/Play/Send גנריים
+- ⏳ נדרש: להפיל קבצים אמיתיים: `logo.png` (הקיים הוא לוגו כחול גנרי), `images/hero/slide-{1,2,3}.jpg`, `images/promo/{hottest,deals,laptops}.jpg`, `images/categories/{under-99,pets,hotels,courses,kids}.jpg`
+
 Session 2026-06-04 — Logo + PromoBanners per live site + placeholders אחידים. commit `1bf4f79`, tsc + lint clean:
 - `src/components/store/PromoBanners.tsx` — מבנה לפי kenyonexpress.co.il החי: טקסט אפור קטן `text-start` למעלה, placeholder תמונה באמצע, שורת "Shop now" עם עיגול צהוב (`bg-brand-secondary`) ו-`ChevronLeft` (קדימה ב-RTL); כפתור ה-pill הוסר
 - שלוש הקומפוננטות (`PromoBanners`, `HeroSlider`, `CategoryStrip`) — placeholder אחיד: `bg-slate-100` + lucide `ImageIcon` במרכז; תמונות אמיתיות יחוברו בהמשך

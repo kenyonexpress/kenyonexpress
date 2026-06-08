@@ -1,27 +1,37 @@
 import Link from 'next/link'
-import { ImageIcon } from 'lucide-react'
+import SmartImage from '@/components/ui/SmartImage'
+import { CATEGORIES as CATEGORY_IMAGES } from '@/lib/assets'
 
 const CATEGORIES = [
-  { id: 'under99', label: 'עד 99', href: '/category/under-99' },
+  {
+    id: 'under99',
+    label: 'עד 99',
+    href: '/category/under-99',
+    image: CATEGORY_IMAGES.under99,
+  },
   {
     id: 'pets',
     label: 'ציוד ומזון לבעלי חיים',
     href: '/category/pets',
+    image: CATEGORY_IMAGES.pets,
   },
   {
     id: 'hotels',
     label: 'צימרים מלונות ונופש',
     href: '/category/hotels',
+    image: CATEGORY_IMAGES.hotels,
   },
   {
     id: 'courses',
     label: 'קורסים EXPRESS',
     href: '/products',
+    image: CATEGORY_IMAGES.courses,
   },
   {
     id: 'kids',
     label: 'תינוקות וילדים',
     href: '/category/kids',
+    image: CATEGORY_IMAGES.kids,
   },
 ] as const
 
@@ -40,11 +50,15 @@ export default function CategoryStrip() {
               idx < CATEGORIES.length - 1 ? 'border-e border-gray-200' : ''
             }`}
           >
-            {/* Category image placeholder — real images to be wired later */}
-            <div className="flex w-full h-[72px] max-w-[120px] items-center justify-center rounded-md bg-slate-100">
-              <ImageIcon
-                aria-hidden="true"
-                className="h-7 w-7 text-slate-400"
+            <div className="relative w-full h-[72px] max-w-[120px]">
+              <SmartImage
+                src={cat.image}
+                alt=""
+                fill
+                sizes="120px"
+                className="object-cover rounded-md group-hover:scale-105 transition-transform duration-300"
+                fallbackClassName="absolute inset-0 rounded-md"
+                iconSize={28}
               />
             </div>
             <span className="text-xs font-bold text-gray-800 text-center leading-snug">
