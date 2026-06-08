@@ -1,9 +1,17 @@
 # KenyonExpress State
 
 ## Current Phase
-**Phase 5 — Frontend / Homepage** (Phase 4 Admin CRUDs closed)
+**Phase 5 — Homepage** (Phase 4 Admin CRUDs closed)
 
 ## Last Completed
+Session 2026-06-09 — DealsSection + Heebo/grid + HeroSlider→Supabase code + RTL audit. 3 commits (לא בוצע push):
+- `src/components/store/DealsSection.tsx` — נוצר: client component, countdown 23:59:59 (setInterval), כותרת "דילים של היום", grid מוצרים RTL; `(store)/page.tsx` שולף עד 8 מוצרים פעילים ומעביר כ-props. commit `b9fec5a`
+- `globals.css` — `--font-sans` שונה ל-`var(--font-heebo), var(--font-inter)` (Heebo ראשי); `DealsSection` grid → `grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-0`. commit `9dd48f2`
+- HeroSlider→Supabase (קוד + migration, **ה-migration עדיין לא הורץ על ה-DB**): `017_hero_slides.sql` (טבלה + RLS public-read-active + seed 3 שורות), `HomeHeroSection` שולף server-side ומעביר ל-`HeroSlider` (client, props + fallback null, אנימציה נשמרה). commit `b877678`
+- ביקורת RTL לכל קומפוננטות ה-homepage: type-check + lint נקיים (exit 0), כל ה-dir תקין (2 חריגי `dir="ltr"` נכונים: countdown ב-DealsSection, טלפון ב-SiteFooter)
+- ⚠️ החלטות HeroSlider עודכנו אחרי ה-commit: נדרש לתקן את 017 ל-`updated_at` + trigger, ולהחזיר "SIMPLY THE BEST" כטקסט סטטי (ייעשה ב-commit חדש נפרד, לא amend)
+
+## Last Completed (קודם)
 Session 2026-06-04 — assets.ts + SmartImage: ריכוז נתיבי תמונות + fallback אוטומטי. tsc + lint clean (לא בוצע commit עדיין):
 - `src/lib/assets.ts` — נוצר: registry יחיד לנתיבי תמונות סטטיות: `LOGO`, `HERO_SLIDES[3]`, `PROMO[3]`, `CATEGORIES{5}`; כל הקומפוננטות קוראות מכאן בלבד
 - `src/components/ui/SmartImage.tsx` — נוצר: עוטף next/image; ב-onError מציג placeholder `bg-slate-100` + `ImageIcon` במרכז (a11y: role="img" אם יש alt, אחרת aria-hidden)
@@ -114,16 +122,16 @@ All 5 CRUDs verified live in the browser (200 OK): Categories, Vendors, Products
 - הסכמה מסונכרנת במלואה מול הקוד
 
 ## In Progress
-nothing
+**HeroSlider → Supabase** — טבלת `hero_slides`, migration `017`, RLS (public read active), seed 3 שורות. הקוד מחובר (commit `b877678`). נותר: לעדכן את 017 ל-`updated_at`+trigger ו-"SIMPLY THE BEST" סטטי, ואז **להריץ את ה-migration על ה-DB** (דרך Transaction pooler `aws-1-eu-north-1.pooler.supabase.com:6543`).
 
 ## Blocking Issues
-none
+- ה-migration `017_hero_slides.sql` עדיין לא הורץ → טבלת `hero_slides` לא קיימת ב-DB, HeroSlider מציג null (אזור הירו האמצעי ריק) עד שיורץ
+- חסר אמצעי הרצה: אין `psql`, אין מודול `pg` (צריך `pnpm add -D pg`), ואין סיסמת DB ב-`.env.local` (נדרשת סיסמה ל-pooler)
 
 ## Next Task
-**Phase 5 המשך — אפשרויות:**
-1. **Cardcom** — חיבור תשלום אמיתי לכפתור "בקרוב" ב-`(main)/coupons/[id]/page.tsx` (10% אונליין, 90% בבית העסק)
-2. **עמוד מוצר** (`(store)/products/[slug]`) — ממשק storefront למוצר בודד עם תמונות, variants, הוסף לעגלה
-3. **עמוד coupons** — עדכון `(main)/coupons` לפריסת storefront (layout חדש, עיצוב electro-style)
+1. **דף `/products`** (listing) — `(store)/products/page.tsx` server component (status='active', deleted_at IS NULL) + pagination, ProductsGrid עם ProductCard (grid 2/3/4 gap-0), sidebar סינון לפי קטגוריה + מיון מחיר/חדש, RTL מלא. תוכנית הוצגה, ממתינה לאישור + 3 החלטות (ProductsGrid נפרד? page size 24? מיון client/links?)
+2. **Footer gaps** — תיקון `SiteFooter.tsx` לפי טבלת מדידות Electro (ממתין למדידות מסוכן הדפדפן)
+3. **push** — `git push origin phase5/homepage` (3 commits) רק אחרי "אשר push" מפורש
 
 ## Active Branch
 phase5/homepage
