@@ -4,6 +4,16 @@
 **Phase 5 — Homepage**. **דף הבית הושלם** (תואם 1:1 ל-refs/ke_live_home.html במבנה ובתמונות). הבא: **דף מוצר** (השלמה/ליטוש לפי refs).
 
 ## Last Completed
+Session 2026-06-09 (כרטיס מוצר תואם לחי). commit `feat: homepage matches live site`, push ל-phase5/homepage:
+- **ProductCard שודרג לתבנית electro**: שם קטגוריה כקישור מעל (`category`), badge הנחה אדום בפינת התמונה (`bg-price`, מ-full_price), מחיר ישן strike (`text-price-strike`) ליד מחיר אדום (`text-price`). שדות `full_price?`/`category?` אופציונליים — שאר השימושים (products/category/related) לא נשברו. בוטל ה-`<Link>` העוטף יחיד (אין יותר nested anchors).
+- `(store)/page.tsx` query הורחב: `full_price` + `categories(name_he, slug)`, ממופה ל-`category`.
+- לולאת compare-and-fix (scripts/compare.mjs) רצה עד התכנסות: header, שורה ראשית 25/50/25, רצועת קטגוריות (תמונות אמיתיות), רשת 4 עמודות, כרטיסים, feature bar, footer — תואמים ל-refs/live.png.
+- type-check נקי. overrides נשמרו (Heebo, מחיר אדום #E4002B, שם כחול #0062bd, בלי בורר אזור/חיפוש).
+- **הבדל יחיד שנותר = נתונים**: 4 מוצרים פעילים ב-DB (sticky-footer יוצר רווח לבן בתחתית כי התוכן קצר). החי מציג קטלוג מלא. לא ניתן לתיקון בלי גישת כתיבה.
+
+---
+
+## Last Completed (תמונות אמיתיות + מבנה 1:1)
 Session 2026-06-09 (דף בית תואם 1:1 לחי + תמונות אמיתיות). commit `feat: homepage 1:1 with live site - 3-column hero, Tesla/Apple/Laptop banners, category images`, push ל-phase5/homepage:
 - **שיטת compare-and-fix**: `scripts/compare.mjs` (Playwright) מרנדר את refs/ke_live_home.html ואת localhost:3000 ב-1440px ל-refs/live.png ו-refs/mine.png; השוואה ויזואלית ותיקון בלולאה.
 - **שורה ראשית** → `lg:grid-cols-[1fr_2fr_1fr]` (25/50/25, departments צר ימין | hero רחב אמצע | מיני-באנרים צר שמאל). ה-class בחי הוא col-33 אבל ה-CSS של electro מרנדר 25/50/25 — סמכתי על ההשוואה הויזואלית.
