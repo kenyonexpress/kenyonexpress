@@ -1,9 +1,22 @@
 # KenyonExpress State
 
 ## Current Phase
-**Phase 5 — Homepage**. **דף הבית הושלם** (תואם 1:1 ל-refs/ke_live_home.html במבנה ובתמונות). הבא: **דף מוצר** (השלמה/ליטוש לפי refs).
+**Phase 5 — Homepage**. **דף הבית הושלם** + **קטלוג אמיתי ב-DB** (31 מוצרים) + **hero 5 שקופיות**. הבא: **דף מוצר**.
 
 ## Last Completed
+Session 2026-06-09 (קטלוג מוצרים אמיתי + hero 5 שקופיות). commit `feat: full product catalog from live site + 5-slide auto-play hero`, push ל-phase5/homepage:
+- **service role key** נשמר ב-`.env.local` (gitignored) — נפתחה גישת כתיבה ל-Supabase.
+- **remap קטגוריות (018) הורץ על ה-DB**: dyl-chm→hot-deals וכו' + INSERT 5 חסרים. 12 קטגוריות ב-DB עם slugs קנוניים.
+- **27 מוצרים אמיתיים יובאו מהאתר החי**: חולצו מדפי הקטגוריה (refs/categories/*.html, WooCommerce loop) — שם, מחיר, מחיר ישן, קטגוריה, תמונה. הוזרקו עם service role (upsert onConflict slug). **סה"כ 31 מוצרים פעילים** (4 מקוריים + 27). פילוח: beauty-health=8, vacation=6, restaurants-cafes=5, phones-computers=4, baby-kids=2, hot-deals=1, professionals=1.
+- **תמונות מוצרים** ל-`public/images/products/` (25 קבצים), מקושרות ב-DB (`images: ['/images/products/...']`).
+- **HeroSlider שודרג**: 5 שקופיות autoplay (5s), crossfade חלק (opacity), dots צהובים (active `bg-brand-secondary`), רקע תכלת (`bg-brand-accent`), label "SIMPLY THE BEST" בשקופית 1, כפתור "לקנייה". טקסטים מה-spec (ברוכים הבאים / THE NEW STANDARD / ממשק מהיר ונוח / תצוגה מושלמת / בקרוב האפליקציה).
+- דף הבית עכשיו מציג רשת מלאה (24 מוצרים, 6 שורות) כמו החי. אומת: type-check נקי, 5 dots, label קיים, ההשוואה תואמת.
+- overrides נשמרו: Heebo, מחיר אדום #E4002B, שם כחול #0062bd, בלי בורר אזור/חיפוש.
+- כלי ייבוא: `scripts/compare.mjs`; ה-parsing וההזרקה רצו דרך סקריפטים זמניים (refs/ gitignored).
+
+---
+
+## Last Completed (כרטיס מוצר תואם)
 Session 2026-06-09 (כרטיס מוצר תואם לחי). commit `feat: homepage matches live site`, push ל-phase5/homepage:
 - **ProductCard שודרג לתבנית electro**: שם קטגוריה כקישור מעל (`category`), badge הנחה אדום בפינת התמונה (`bg-price`, מ-full_price), מחיר ישן strike (`text-price-strike`) ליד מחיר אדום (`text-price`). שדות `full_price?`/`category?` אופציונליים — שאר השימושים (products/category/related) לא נשברו. בוטל ה-`<Link>` העוטף יחיד (אין יותר nested anchors).
 - `(store)/page.tsx` query הורחב: `full_price` + `categories(name_he, slug)`, ממופה ל-`category`.

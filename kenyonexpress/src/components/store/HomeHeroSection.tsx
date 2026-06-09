@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase/server'
 const FALLBACK_SLIDES: HeroSlide[] = [
   {
     id: 'fallback-1',
+    label: 'SIMPLY THE BEST',
     title: 'ברוכים הבאים לקניון Express',
     subtitle: 'מסדרים לך בילוי. . .',
     image_url: HERO_SLIDES[0],
@@ -16,8 +17,9 @@ const FALLBACK_SLIDES: HeroSlide[] = [
   },
   {
     id: 'fallback-2',
+    label: 'PRODUCT PREMIUM',
     title: 'THE NEW STANDARD',
-    subtitle: 'PRODUCT PREMIUM',
+    subtitle: null,
     image_url: HERO_SLIDES[1],
     link_url: '/products',
   },
@@ -26,6 +28,20 @@ const FALLBACK_SLIDES: HeroSlide[] = [
     title: 'ממשק מהיר ונוח',
     subtitle: null,
     image_url: HERO_SLIDES[2],
+    link_url: '/products',
+  },
+  {
+    id: 'fallback-4',
+    title: 'תצוגה מושלמת',
+    subtitle: null,
+    image_url: HERO_SLIDES[0],
+    link_url: '/products',
+  },
+  {
+    id: 'fallback-5',
+    title: 'בקרוב האפליקציה',
+    subtitle: null,
+    image_url: HERO_SLIDES[1],
     link_url: '/products',
   },
 ]
