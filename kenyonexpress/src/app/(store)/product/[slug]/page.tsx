@@ -8,7 +8,8 @@ import { notFound } from 'next/navigation'
 type Props = { params: Promise<{ slug: string }> }
 
 export async function generateMetadata({ params }: Props) {
-  const { slug } = await params
+  const { slug: rawSlug } = await params
+  const slug = decodeURIComponent(rawSlug)
   const supabase = await createClient()
   const { data } = await supabase
     .from('products')
@@ -22,7 +23,8 @@ export async function generateMetadata({ params }: Props) {
 }
 
 export default async function ProductPage({ params }: Props) {
-  const { slug } = await params
+  const { slug: rawSlug } = await params
+  const slug = decodeURIComponent(rawSlug)
   const supabase = await createClient()
 
   const { data: product } = await supabase
@@ -111,9 +113,7 @@ export default async function ProductPage({ params }: Props) {
       </div>
 
       {/* Related products */}
-      {product.category_id && (
-        <RelatedProducts categoryId={product.category_id} excludeId={product.id} />
-      )}
+      <RelatedProducts categoryId={product.category_id} excludeId={product.id} />
     </div>
   )
 }

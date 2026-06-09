@@ -1,9 +1,19 @@
 # KenyonExpress State
 
 ## Current Phase
-**Phase 5 — Homepage**. **דף הבית הושלם** + **קטלוג אמיתי ב-DB** (31 מוצרים) + **hero 5 שקופיות**. הבא: **דף מוצר**.
+**Phase 5 — Homepage**. דף הבית + קטלוג + hero + **דף מוצר הושלמו**. הבא: **דף קטגוריה** (`(store)/category/[slug]`).
 
 ## Last Completed
+Session 2026-06-10 (דף מוצר תואם לחי + תיקון slug עברי). commit `feat: product page matches live site + Hebrew-slug fix`, push ל-phase5/homepage:
+- **באג קריטי תוקן**: דף המוצר החזיר 404 לכל המוצרים עם slug עברי (27 מהחי). Next 16 מעביר את `params.slug` **מקודד** (%D7…) ולא מפוענח. הפתרון: `decodeURIComponent(rawSlug)` ב-`generateMetadata` וב-`ProductPage` שב-`(store)/product/[slug]/page.tsx`. אומת 200.
+- **RelatedProducts** נכתב מחדש: 4 מוצרים — מעדיף אותה קטגוריה, ממלא ממוצרים אחרים אם דליל (כי hot-deals=1), עם נתוני כרטיס מלאים (full_price + category). הדף מרנדר אותו תמיד (גם אם category_id null).
+- דף המוצר תואם 1:1 לחי (refs/ke_live_product.html, "מוצר-לדוגמא"/תיק JEEP): breadcrumb, גלריה ימין, summary שמאל (h1, מחיר אדום #E4002B + ישן strike + badge -49%, מלאי ירוק, בורר כמות +/-, כפתור הוסף לסל צהוב #fed700), בלי ביקורות, מוצרים נוספים מתחת.
+- `scripts/compare-product.mjs` חדש (משווה refs/ke_live_product.html ל-/product/<slug>).
+- type-check נקי. overrides נשמרו.
+
+---
+
+## Last Completed (קטלוג + hero)
 Session 2026-06-09 (קטלוג מוצרים אמיתי + hero 5 שקופיות). commit `feat: full product catalog from live site + 5-slide auto-play hero`, push ל-phase5/homepage:
 - **service role key** נשמר ב-`.env.local` (gitignored) — נפתחה גישת כתיבה ל-Supabase.
 - **remap קטגוריות (018) הורץ על ה-DB**: dyl-chm→hot-deals וכו' + INSERT 5 חסרים. 12 קטגוריות ב-DB עם slugs קנוניים.
