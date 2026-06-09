@@ -19,7 +19,7 @@ export default async function HomePage() {
     .eq('status', 'active')
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
-    .limit(8)
+    .limit(24)
 
   const products = (data ?? []) as Product[]
 

@@ -44,7 +44,7 @@ export default async function HomeHeroSection() {
   return (
     <section
       aria-label="אזור ראשי"
-      className="grid grid-cols-1 lg:grid-cols-[270px_1fr_270px] min-h-[440px] border-b border-gray-200 max-w-page mx-auto w-full"
+      className="grid grid-cols-1 lg:grid-cols-[1fr_2fr_1fr] min-h-[440px] border-b border-gray-200 max-w-page mx-auto w-full"
     >
       <CategorySidebar />
       <HeroSlider slides={slides} />

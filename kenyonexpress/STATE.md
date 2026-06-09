@@ -1,9 +1,21 @@
 # KenyonExpress State
 
 ## Current Phase
-**Phase 5 — Homepage**. שלב 0 (תשתית) הושלם. הבא: **שלב 1 — דפי תצוגה** (listing, קטגוריה, footer/feature-bar מלאים לפי KE_LIVE_SPEC.md).
+**Phase 5 — Homepage**. **דף הבית הושלם** (תואם 1:1 ל-refs/ke_live_home.html במבנה ובתמונות). הבא: **דף מוצר** (השלמה/ליטוש לפי refs).
 
 ## Last Completed
+Session 2026-06-09 (דף בית תואם 1:1 לחי + תמונות אמיתיות). commit `feat: homepage 1:1 with live site - 3-column hero, Tesla/Apple/Laptop banners, category images`, push ל-phase5/homepage:
+- **שיטת compare-and-fix**: `scripts/compare.mjs` (Playwright) מרנדר את refs/ke_live_home.html ואת localhost:3000 ב-1440px ל-refs/live.png ו-refs/mine.png; השוואה ויזואלית ותיקון בלולאה.
+- **שורה ראשית** → `lg:grid-cols-[1fr_2fr_1fr]` (25/50/25, departments צר ימין | hero רחב אמצע | מיני-באנרים צר שמאל). ה-class בחי הוא col-33 אבל ה-CSS של electro מרנדר 25/50/25 — סמכתי על ההשוואה הויזואלית.
+- **רשת מוצרים** → 4 עמודות (`DealsSection lg:grid-cols-4`), תואם לחי. fetch הועלה ל-24.
+- **תמונות אמיתיות חולצו מ-refs/ke_live_home.html וחוברו**: מיני-באנרים `public/images/promo/{tesla,apple,laptop}.webp` (Tesla/Apple/Laptop); קטגוריות `public/images/categories/{under-99.png,kids,courses,hotels,pets}.webp` (e-baby-d2 / student-849821 / maldives-2 / cute-golden-retriever / Screen-Shot). `assets.ts` PROMO+CATEGORIES עודכנו; הוסרו 3 הבאנרים הישנים.
+- אומת: type-check נקי, home 200, כל 8 התמונות 200, ההשוואה הויזואלית תואמת.
+- **הבדל יחיד שנשאר = נתונים**: 4 מוצרים פעילים בלבד ב-DB (content-range 0-3/4), אז הרשת מציגה שורה אחת בעוד החי מציג קטלוג מלא. לא ניתן לתקן בלי גישת כתיבה.
+- overrides נשמרו: Heebo, מחיר אדום #E4002B, שם מוצר כחול #0062bd, בלי בורר אזור/חיפוש.
+
+---
+
+## Last Completed (יישור electro + לוגו)
 Session 2026-06-09 (יישור electro + לוגו חי). commit `feat: align homepage spacing/grid to electro reference measurements + wire live-site logo`, push ל-phase5/homepage:
 - `refs/` — תיקיית reference קבועה (ב-.gitignore). הועברו לשם: `ke_live_{home,product,cart}.html`, `electro_style.css` (1.1MB אמיתי), `electro_home_v7.html` (5KB — נחסם Cloudflare). מקור האמת מעכשיו.
 - `KE_LIVE_SPEC.md` — נוסף סעיף "מידות electro": container 1200/1430 (פרויקט בחר 1320), דף מוצר גלריה/summary **41.67% / 58.33%** (col-5/7), שורה ראשית עמודות 25%/270px, רשת מוצרים columns-3.

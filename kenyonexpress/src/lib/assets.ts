@@ -11,16 +11,18 @@ export const HERO_SLIDES = [
   '/images/hero/slide-3.jpg',
 ] as const
 
+// 3 mini-banners from the live site: Tesla (Hottest), Apple (Consoles), Laptop (Notebooks).
 export const PROMO = [
-  '/images/promo/hottest.jpg',
-  '/images/promo/deals.jpg',
-  '/images/promo/laptops.jpg',
+  '/images/promo/tesla.webp',
+  '/images/promo/apple.webp',
+  '/images/promo/laptop.webp',
 ] as const
 
+// Category-strip images extracted from the live site (refs/ke_live_home.html).
 export const CATEGORIES = {
-  under99: '/images/categories/under-99.jpg',
-  pets: '/images/categories/pets.jpg',
-  hotels: '/images/categories/hotels.jpg',
-  courses: '/images/categories/courses.jpg',
-  kids: '/images/categories/kids.jpg',
+  under99: '/images/categories/under-99.png',
+  pets: '/images/categories/pets.webp',
+  hotels: '/images/categories/hotels.webp',
+  courses: '/images/categories/courses.webp',
+  kids: '/images/categories/kids.webp',
 } as const
