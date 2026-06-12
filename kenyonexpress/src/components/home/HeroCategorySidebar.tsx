@@ -13,11 +13,10 @@ export default function HeroCategorySidebar() {
       className="home-vertical-nav departments-menu-v2 hidden h-full shrink-0 flex-col overflow-hidden border-s border-gray-200 bg-white font-sans lg:flex"
     >
       <div
+        aria-hidden="true"
         style={{ backgroundColor: '#fed700' }}
-        className="vertical-menu-title departments-menu-v2-title flex h-14 shrink-0 items-center px-4"
-      >
-        <span className="title text-sm font-bold text-brand-dark">קטגוריות</span>
-      </div>
+        className="vertical-menu-title departments-menu-v2-title h-14 shrink-0"
+      />
 
       <nav aria-label="קטגוריות" className="flex-1 overflow-y-auto">
         <ul className="m-0 list-none p-0">

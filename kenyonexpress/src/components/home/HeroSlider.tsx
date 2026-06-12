@@ -227,7 +227,9 @@ function WelcomeSlideCopy({ slide }: { slide: HeroSlide }) {
       {slide.title_secondary && (
         <span
           style={{ color: T.headline2.color, letterSpacing: '-1px' }}
-          className="mt-0.5 block ps-[47px] text-[38px] font-light leading-[1.08] lg:mt-1 lg:text-[51px]"
+          className={`mt-0.5 block text-[38px] font-light leading-[1.08] lg:mt-1 lg:text-[51px] ${
+            slide.title_secondary_indent ? 'ps-[47px]' : ''
+          }`}
         >
           {slide.title_secondary}
         </span>
@@ -244,8 +246,8 @@ function WelcomeSlideCopy({ slide }: { slide: HeroSlide }) {
     {slide.promo_small && (
       <p
         dir="ltr"
-        style={{ color: T.description.color }}
-        className="mt-3 ps-[11px] text-[12px] leading-[15px] lg:mt-4 lg:text-[15px]"
+        style={{ color: T.headline1.color }}
+        className="mt-3 ps-[11px] text-[12px] font-normal leading-[15px] lg:mt-4 lg:text-[15px]"
       >
         {slide.promo_small}
       </p>
@@ -321,7 +323,7 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
       {slides.length > 1 && (
         <div
           aria-label="ניווט שקופיות"
-          className="absolute bottom-6 start-[61px] z-20 flex items-center gap-2"
+          className="absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2"
         >
           {slides.map((s, i) => {
             const isCurrent = i === active
