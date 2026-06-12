@@ -5,8 +5,8 @@ import { ELECTRO_HERO } from '@/lib/electro-hero-tokens'
 import SmartImage from '@/components/ui/SmartImage'
 
 const SB = ELECTRO_HERO.sideBanners
-const TEXT_COLOR = '#333e48'
-const DIVIDER = '#e7e7e7'
+const BANNER_WIDTH = 200
+const BANNER_IMAGE_HEIGHT = 80
 
 type BannerLine = { text: string; bold?: boolean }[]
 
@@ -46,16 +46,16 @@ const PROMO_BANNERS: PromoBanner[] = [
 
 function BannerText({ lines }: { lines: BannerLine[] }) {
   return (
-    <div
-      dir="ltr"
-      style={{ fontSize: 11, lineHeight: '13px', color: TEXT_COLOR }}
-      className="da-text text-end font-normal uppercase"
-    >
+    <div dir="ltr" className="da-text text-end font-normal uppercase text-heading">
       {lines.map((line, lineIdx) => (
-        <span key={lineIdx} className={lineIdx > 0 ? 'block' : undefined}>
+        <span
+          key={lineIdx}
+          className={lineIdx > 0 ? 'block' : undefined}
+          style={{ fontSize: 11, lineHeight: '13px' }}
+        >
           {line.map((part, i) =>
             part.bold ? (
-              <strong key={i} className="font-bold">
+              <strong key={i} className="font-bold" style={{ fontSize: 13 }}>
                 {part.text}
               </strong>
             ) : (
@@ -72,17 +72,15 @@ function ShopNowButton() {
   return (
     <span
       dir="ltr"
-      style={{ fontSize: 11, color: TEXT_COLOR }}
-      className="da-action mt-2 inline-flex items-center gap-2 self-end font-bold leading-none"
+      className="da-action mt-2 inline-flex items-center gap-2 self-end text-[11px] font-bold leading-none text-heading"
     >
       <span
         aria-hidden="true"
         style={{
           width: SB.shopButtonSize,
           height: SB.shopButtonSize,
-          backgroundColor: SB.shopButtonColor,
         }}
-        className="flex shrink-0 items-center justify-center rounded-full text-brand-dark"
+        className="flex shrink-0 items-center justify-center rounded-full bg-brand-secondary text-brand-dark"
       >
         <ChevronRight className="h-3.5 w-3.5" strokeWidth={2.5} />
       </span>
@@ -95,15 +93,16 @@ export default function HeroPromoBanners() {
   return (
     <div
       dir="rtl"
-      style={{ width: 200 }}
-      className="slider-das-block hidden h-full w-[200px] shrink-0 flex-col bg-white font-sans lg:flex"
+      style={{ width: BANNER_WIDTH, minWidth: BANNER_WIDTH, maxWidth: BANNER_WIDTH, flex: `0 0 ${BANNER_WIDTH}px` }}
+      className="slider-das-block hidden h-full shrink-0 flex-col bg-white font-sans lg:flex"
     >
       {PROMO_BANNERS.map((banner, idx) => (
         <Link
           key={banner.id}
           href={banner.href}
-          style={idx < PROMO_BANNERS.length - 1 ? { borderBottom: `1px solid ${DIVIDER}` } : undefined}
-          className="group relative flex min-h-0 flex-1 items-stretch overflow-hidden px-3 py-4 transition-colors hover:bg-brand-accent/40"
+          className={`group relative flex min-h-0 flex-1 items-stretch overflow-hidden px-3 py-4 transition-colors hover:bg-brand-accent/40 ${
+            idx < PROMO_BANNERS.length - 1 ? 'border-b border-gray-200' : ''
+          }`}
         >
           <div className="relative z-10 flex min-w-0 flex-1 flex-col items-end justify-center">
             <BannerText lines={banner.lines} />
@@ -112,13 +111,14 @@ export default function HeroPromoBanners() {
 
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute bottom-[-28px] end-[-10px] z-0 h-[100px] w-[100px] rotate-[16deg] lg:h-[110px] lg:w-[110px]"
+            className="pointer-events-none absolute bottom-[-20px] end-[-10px] z-0 w-[80px] rotate-[16deg]"
+            style={{ height: BANNER_IMAGE_HEIGHT }}
           >
             <SmartImage
               src={banner.image}
               alt=""
               fill
-              sizes="110px"
+              sizes="80px"
               quality={90}
               className="object-contain transition-transform duration-300 group-hover:scale-105"
               fallbackClassName="absolute inset-0"

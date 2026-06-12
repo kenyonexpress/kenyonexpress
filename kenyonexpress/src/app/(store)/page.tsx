@@ -1,9 +1,9 @@
 import type { Product } from '@/components/ProductCard'
-import BenefitsBar from '@/components/home/BenefitsBar'
+import BenefitBar from '@/components/home/BenefitBar'
+import DealsOfTheDay from '@/components/home/DealsOfTheDay'
 import HeroSection from '@/components/home/HeroSection'
 import CategoryProductSection from '@/components/store/CategoryProductSection'
 import CategoryStrip from '@/components/store/CategoryStrip'
-import DealsSection from '@/components/store/DealsSection'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata = {
@@ -57,14 +57,13 @@ export default async function HomePage() {
   })
 
   const byCategory = groupByCategorySlug(products)
-  const dealProducts = products.slice(0, 8)
 
   return (
     <>
       <HeroSection />
-      <BenefitsBar />
       <CategoryStrip />
-      <DealsSection products={dealProducts} />
+      <BenefitBar />
+      <DealsOfTheDay />
       {CATEGORY_SECTIONS.map(({ slug, title }) => (
         <CategoryProductSection
           key={slug}

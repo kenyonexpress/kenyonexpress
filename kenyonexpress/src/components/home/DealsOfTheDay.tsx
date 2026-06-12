@@ -1,0 +1,63 @@
+'use client'
+
+import ProductCard from '@/components/ProductCard'
+import { KE_LIVE_DEALS } from '@/lib/ke-live-deals-data'
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
+import { useEffect, useState } from 'react'
+
+function pad(n: number) {
+  return String(n).padStart(2, '0')
+}
+
+function formatCountdown(totalSeconds: number) {
+  const h = Math.floor(totalSeconds / 3600)
+  const m = Math.floor((totalSeconds % 3600) / 60)
+  const s = totalSeconds % 60
+  return `${pad(h)} : ${pad(m)} : ${pad(s)}`
+}
+
+const INITIAL_SECONDS = 23 * 3600 + 59 * 60 + 59
+
+export default function DealsOfTheDay() {
+  const [remaining, setRemaining] = useState(INITIAL_SECONDS)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setRemaining((prev) => (prev > 0 ? prev - 1 : 0))
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  return (
+    <section aria-label="דילים של היום" className="max-w-page mx-auto px-4 py-6">
+      <div className="flex items-center justify-between gap-3 rounded-t-lg bg-brand-dark px-4 py-3 text-white">
+        <h2 className="text-[22px] font-black tracking-wide">דילים של היום</h2>
+
+        <div className="hidden sm:flex items-center gap-2 text-sm text-gray-300">
+          <span>מסתיים בעוד:</span>
+          <span
+            dir="ltr"
+            className="rounded bg-brand-secondary px-3 py-1 font-mono text-base font-black tracking-widest text-brand-dark"
+          >
+            {formatCountdown(remaining)}
+          </span>
+        </div>
+
+        <Link
+          href="/products"
+          className="flex items-center gap-1 whitespace-nowrap text-sm text-gray-300 hover:text-white transition-colors"
+        >
+          לכל המבצעים
+          <ArrowLeft size={16} className="rtl:rotate-180" aria-hidden="true" />
+        </Link>
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 rounded-b-lg border border-t-0 border-gray-200 bg-gray-50 p-3">
+        {KE_LIVE_DEALS.slice(0, 4).map((product) => (
+          <ProductCard key={product.id} product={product} />
+        ))}
+      </div>
+    </section>
+  )
+}

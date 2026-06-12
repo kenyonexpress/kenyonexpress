@@ -8,7 +8,7 @@ const BENEFITS = [
   { Icon: MapPin, label: 'לכל חלקי הארץ' },
 ] as const
 
-export default function BenefitsBar() {
+export default function BenefitBar() {
   return (
     <section aria-label="יתרונות" dir="rtl" className="w-full border-y border-gray-200 bg-white font-sans">
       <div className="max-w-page mx-auto">

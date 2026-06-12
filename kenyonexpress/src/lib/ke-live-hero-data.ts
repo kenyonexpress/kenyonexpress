@@ -165,9 +165,23 @@ export function resolveHeroSlide(row: DbHeroRow, index: number): HeroSlide {
   }
 }
 
+const SLIDE_IMAGE_ORDER = KE_LIVE_SLIDES.map((s) => s.image_url).filter(
+  (url): url is string => Boolean(url),
+)
+
+function slideSortKey(imageUrl: string | null): number {
+  if (!imageUrl) return SLIDE_IMAGE_ORDER.length
+  const index = SLIDE_IMAGE_ORDER.indexOf(imageUrl)
+  return index === -1 ? SLIDE_IMAGE_ORDER.length : index
+}
+
+/** Canonical order: rs-18 welcome/iPhone first, rs-19 app last */
 export function resolveHeroSlides(rows: DbHeroRow[]): HeroSlide[] {
   if (rows.length === 0) return KE_LIVE_SLIDES
-  return rows.map(resolveHeroSlide)
+  const sorted = [...rows].sort(
+    (a, b) => slideSortKey(a.image_url) - slideSortKey(b.image_url),
+  )
+  return sorted.map((row, index) => resolveHeroSlide(row, index))
 }
 
 export const KE_LIVE_CATEGORIES: KeLiveCategoryItem[] = [

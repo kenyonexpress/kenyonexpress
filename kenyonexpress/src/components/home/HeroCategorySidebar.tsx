@@ -14,8 +14,7 @@ export default function HeroCategorySidebar() {
     >
       <div
         aria-hidden="true"
-        style={{ backgroundColor: '#fed700' }}
-        className="vertical-menu-title departments-menu-v2-title h-14 shrink-0"
+        className="vertical-menu-title departments-menu-v2-title h-14 shrink-0 bg-brand-secondary"
       />
 
       <nav aria-label="קטגוריות" className="flex-1 overflow-y-auto">
