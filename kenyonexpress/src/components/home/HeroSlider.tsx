@@ -294,8 +294,8 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
   return (
     <div
       dir="rtl"
-      style={{ backgroundColor: HERO_SLIDER_BG, height: HERO_SLIDER_HEIGHT, minHeight: HERO_SLIDER_HEIGHT }}
-      className="relative w-full min-w-0 overflow-hidden border-x border-gray-200 font-sans"
+      style={{ backgroundColor: HERO_SLIDER_BG }}
+      className="relative h-full min-h-0 w-full min-w-0 flex-1 overflow-hidden border-x border-gray-200 font-sans"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}

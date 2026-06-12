@@ -95,8 +95,8 @@ export default function HeroPromoBanners() {
   return (
     <div
       dir="rtl"
-      style={{ width: SB.width }}
-      className="slider-das-block hidden h-full shrink-0 flex-col bg-white font-sans lg:flex"
+      style={{ width: 200 }}
+      className="slider-das-block hidden h-full w-[200px] shrink-0 flex-col bg-white font-sans lg:flex"
     >
       {PROMO_BANNERS.map((banner, idx) => (
         <Link

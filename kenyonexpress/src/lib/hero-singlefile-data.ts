@@ -6,7 +6,7 @@ import type { HeroSlide } from '@/components/home/HeroSlider'
 
 export const HERO_SLIDER_BG = '#eef4f7'
 
-export const HERO_SLIDER_HEIGHT = 470
+export const HERO_SLIDER_HEIGHT = 500
 
 const WELCOME_SLIDE: HeroSlide = {
   id: 'rs-18',

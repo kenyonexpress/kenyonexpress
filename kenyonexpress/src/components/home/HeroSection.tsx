@@ -1,7 +1,7 @@
 import HeroCategorySidebar from '@/components/home/HeroCategorySidebar'
 import HeroPromoBanners from '@/components/home/HeroPromoBanners'
 import HeroSlider from '@/components/home/HeroSlider'
-import { ELECTRO_HERO } from '@/lib/electro-hero-tokens'
+import { HERO_SLIDER_HEIGHT } from '@/lib/hero-singlefile-data'
 import { HERO_FALLBACK_SLIDES } from '@/lib/hero-slides-fallback'
 import { resolveHeroSlides } from '@/lib/ke-live-hero-data'
 import { createClient } from '@/lib/supabase/server'
@@ -21,16 +21,15 @@ export default async function HeroSection() {
   return (
     <section
       aria-label="אזור ראשי"
-      dir="ltr"
-      style={{
-        gridTemplateColumns: ELECTRO_HERO.grid.columns,
-        minHeight: ELECTRO_HERO.grid.rowHeight,
-      }}
-      className="mx-auto grid w-full max-w-page grid-cols-1 border-b border-gray-200 font-sans lg:items-start"
+      dir="rtl"
+      style={{ minHeight: HERO_SLIDER_HEIGHT, height: HERO_SLIDER_HEIGHT }}
+      className="mx-auto flex w-full max-w-page flex-col border-b border-gray-200 font-sans lg:flex-row lg:items-stretch"
     >
-      <HeroPromoBanners />
-      <HeroSlider slides={slides} />
       <HeroCategorySidebar />
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <HeroSlider slides={slides} />
+      </div>
+      <HeroPromoBanners />
     </section>
   )
 }
