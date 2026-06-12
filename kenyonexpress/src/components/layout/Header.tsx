@@ -1,7 +1,8 @@
 import Link from 'next/link'
 import SmartImage from '@/components/ui/SmartImage'
 import { LOGO } from '@/lib/assets'
-import { Heart, ShoppingBag, User } from 'lucide-react'
+import { KE_LIVE_REGIONS } from '@/lib/ke-live-regions'
+import { ChevronDown, Heart, MapPin, ShoppingBag, User } from 'lucide-react'
 
 export default function SiteHeader() {
   return (
@@ -20,8 +21,29 @@ export default function SiteHeader() {
           />
         </Link>
 
+        <label className="relative mx-2 hidden min-w-0 flex-1 items-center gap-1.5 sm:flex sm:max-w-[200px] lg:max-w-[240px]">
+          <MapPin size={16} className="shrink-0 text-gray-500" aria-hidden="true" />
+          <select
+            defaultValue=""
+            aria-label="בחר אזור"
+            className="w-full cursor-pointer appearance-none truncate border-0 bg-transparent py-2 pe-6 text-sm font-medium text-heading focus:outline-none focus:ring-0"
+          >
+            <option value="">בחר אזור</option>
+            {KE_LIVE_REGIONS.map((region) => (
+              <option key={region} value={region}>
+                {region}
+              </option>
+            ))}
+          </select>
+          <ChevronDown
+            size={14}
+            className="pointer-events-none absolute end-0 top-1/2 -translate-y-1/2 text-gray-500"
+            aria-hidden="true"
+          />
+        </label>
+
         {/* Icons (left in RTL) */}
-        <div className="flex items-center gap-0.5 shrink-0">
+        <div className="flex shrink-0 items-center gap-0.5">
           <button
             type="button"
             className="p-2.5 hover:bg-gray-100 rounded-full transition-colors text-gray-700"

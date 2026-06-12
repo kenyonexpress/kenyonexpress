@@ -308,14 +308,14 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
           <div
             key={slide.id}
             aria-hidden={!isActive}
-            className={`absolute inset-0 transition-[opacity,transform] duration-700 ease-in-out ${
-              isActive
-                ? 'z-10 translate-x-0 opacity-100'
-                : 'pointer-events-none z-0 translate-x-3 opacity-0'
+            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+              isActive ? 'z-10 opacity-100' : 'pointer-events-none z-0 opacity-0'
             }`}
           >
             <SlideImage slide={slide} priority={isActive && i === 0} />
-            <SlideCopy slide={slide} />
+            <div className="[&_*]:!animate-none [&_*]:!transition-none">
+              <SlideCopy slide={slide} />
+            </div>
           </div>
         )
       })}

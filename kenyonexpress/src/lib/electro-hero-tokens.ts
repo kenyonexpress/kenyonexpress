@@ -28,7 +28,7 @@ export const ELECTRO_HERO = {
     },
   },
   categoryColumn: {
-    width: 225,
+    width: 220,
     height: 512,
     textColor: '#333e48',
   },

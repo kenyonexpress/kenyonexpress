@@ -22,30 +22,46 @@ const CATEGORIES = [
     image: HERO_CATEGORY_BANNERS.hotels,
   },
   {
+    id: 'kids',
+    label: 'תינוקות וילדים',
+    href: '/category/baby-kids',
+    image: HERO_CATEGORY_BANNERS.kids,
+  },
+  {
     id: 'courses',
     label: 'קורסים EXPRESS',
     href: '/products',
     image: HERO_CATEGORY_BANNERS.courses,
   },
   {
-    id: 'kids',
-    label: 'תינוקות וילדים',
-    href: '/category/baby-kids',
-    image: HERO_CATEGORY_BANNERS.kids,
+    id: 'restaurants',
+    label: 'מסעדות ובתי קפה',
+    href: '/category/restaurants-cafes',
+    image: HERO_CATEGORY_BANNERS.restaurants,
+  },
+  {
+    id: 'beauty',
+    label: 'יופי בריאות וטיפוח',
+    href: '/category/beauty-health',
+    image: HERO_CATEGORY_BANNERS.beauty,
+  },
+  {
+    id: 'phones',
+    label: 'טלפונים מחשבים ואביזרים',
+    href: '/category/phones-computers',
+    image: HERO_CATEGORY_BANNERS.phones,
   },
 ] as const
 
 export default function CategoryStrip() {
   return (
-    <section aria-label="קטגוריות מובילות" className="bg-white border-y border-gray-200 font-sans">
-      <div className="max-w-page mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
-        {CATEGORIES.map((cat, idx) => (
+    <section aria-label="קטגוריות מובילות" className="border-y border-gray-200 bg-white font-sans">
+      <div className="max-w-page mx-auto flex overflow-x-auto lg:overflow-visible">
+        {CATEGORIES.map((cat) => (
           <Link
             key={cat.id}
             href={cat.href}
-            className={`group flex flex-col items-center justify-center gap-2 px-3 py-4 transition-colors hover:bg-gray-50 ${
-              idx < CATEGORIES.length - 1 ? 'border-e border-gray-200' : ''
-            }`}
+            className="group flex min-w-[28%] flex-1 flex-col items-center justify-center gap-2 border-e border-gray-200 px-3 py-4 transition-colors last:border-e-0 hover:bg-gray-50 sm:min-w-[120px] lg:min-w-0"
           >
             <div className="relative h-[72px] w-full max-w-[120px]">
               <SmartImage

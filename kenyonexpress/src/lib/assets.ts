@@ -36,6 +36,9 @@ export const HERO_CATEGORY_BANNERS = {
   hotels: '/images/hero/category/maldives-2-600x488.webp',
   pets: '/images/hero/category/cute-golden-retriever-600x600.webp',
   under99: '/images/categories/under-99.png',
+  restaurants: '/images/products/bq-plate-3-600x600.webp',
+  beauty: '/images/products/facial-small-600x600.webp',
+  phones: '/images/products/maxresdefault-1-600x600.webp',
 } as const
 
 /** @deprecated use HERO_CATEGORY_BANNERS */
