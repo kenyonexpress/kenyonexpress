@@ -31,7 +31,7 @@ export default function ProductGallery({ images, name }: Props) {
 
       {/* Thumbnails */}
       {images.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-1">
+        <div className="flex flex-wrap gap-2 pb-1">
           {images.map((url, i) => (
             <button
               type="button"

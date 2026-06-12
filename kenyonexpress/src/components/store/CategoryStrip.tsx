@@ -56,12 +56,12 @@ const CATEGORIES = [
 export default function CategoryStrip() {
   return (
     <section aria-label="קטגוריות מובילות" className="border-y border-gray-200 bg-white font-sans">
-      <div className="max-w-page mx-auto flex overflow-x-auto lg:overflow-visible">
+      <div className="max-w-page mx-auto flex flex-wrap lg:flex-nowrap">
         {CATEGORIES.map((cat) => (
           <Link
             key={cat.id}
             href={cat.href}
-            className="group flex min-w-[28%] flex-1 flex-col items-center justify-center gap-2 border-e border-gray-200 px-3 py-4 transition-colors last:border-e-0 hover:bg-gray-50 sm:min-w-[120px] lg:min-w-0"
+            className="group flex w-1/4 flex-col items-center justify-center gap-2 border-e border-gray-200 px-3 py-4 transition-colors last:border-e-0 hover:bg-gray-50 lg:w-auto lg:flex-1 lg:min-w-0"
           >
             <div className="relative h-[72px] w-full max-w-[120px]">
               <SmartImage

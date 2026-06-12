@@ -19,7 +19,7 @@ const CATEGORIES = [
 export default function CategoryNav() {
   return (
     <nav dir="rtl" aria-label="מחלקות" className="w-full bg-white border-b border-gray-200">
-      <ul className="max-w-page mx-auto px-4 flex items-center gap-1 overflow-x-auto whitespace-nowrap">
+      <ul className="max-w-page mx-auto px-4 flex flex-wrap items-center gap-1">
         {CATEGORIES.map((cat) =>
           'muted' in cat && cat.muted ? (
             <li key={cat.slug}>
