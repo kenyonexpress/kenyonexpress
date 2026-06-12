@@ -29,7 +29,7 @@ export const KE_LIVE_SLIDES: HeroSlide[] = [
     title: 'ברוכים הבאים',
     title_secondary: 'לקניון Express',
     title_secondary_indent: true,
-    tagline: 'מסדרים לך בילוי. . .',
+    tagline: 'מסדרים לך בילוי . . .',
     promo_small: 'SIMPLY THE',
     promo_large: 'BEST',
     image_url: HERO_SLIDER_IMAGES[0],

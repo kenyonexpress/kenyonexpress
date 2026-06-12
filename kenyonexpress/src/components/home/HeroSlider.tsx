@@ -2,7 +2,7 @@
 
 import SmartImage from '@/components/ui/SmartImage'
 import { ELECTRO_HERO } from '@/lib/electro-hero-tokens'
-import { HERO_SLIDER_BG, HERO_SLIDER_HEIGHT } from '@/lib/hero-singlefile-data'
+import { HERO_SLIDER_BG } from '@/lib/hero-singlefile-data'
 import { useCallback, useEffect, useState } from 'react'
 
 export type HeroSlideImageLayout = {

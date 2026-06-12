@@ -1,9 +1,9 @@
 import type { Product } from '@/components/ProductCard'
-import InfoBar from '@/components/layout/InfoBar'
+import BenefitsBar from '@/components/home/BenefitsBar'
+import HeroSection from '@/components/home/HeroSection'
 import CategoryProductSection from '@/components/store/CategoryProductSection'
 import CategoryStrip from '@/components/store/CategoryStrip'
 import DealsSection from '@/components/store/DealsSection'
-import HeroExact from '@/components/home/HeroExact'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata = {
@@ -16,7 +16,7 @@ const CATEGORY_SECTIONS = [
   { slug: 'beauty-health', title: 'יופי בריאות וטיפוח' },
   { slug: 'vacation', title: 'צימרים ובתי מלון' },
   { slug: 'baby-kids', title: 'תינוקות וילדים' },
-  { slug: 'phones-computers', title: 'טלפונים מחשבים ואביזורים' },
+  { slug: 'phones-computers', title: 'טלפונים מחשבים ואביזרים' },
 ] as const
 
 function groupByCategorySlug(products: Product[]): Map<string, Product[]> {
@@ -61,7 +61,8 @@ export default async function HomePage() {
 
   return (
     <>
-      <HeroExact />
+      <HeroSection />
+      <BenefitsBar />
       <CategoryStrip />
       <DealsSection products={dealProducts} />
       {CATEGORY_SECTIONS.map(({ slug, title }) => (
@@ -72,7 +73,6 @@ export default async function HomePage() {
           products={byCategory.get(slug) ?? []}
         />
       ))}
-      <InfoBar />
     </>
   )
 }

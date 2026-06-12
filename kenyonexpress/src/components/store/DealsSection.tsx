@@ -28,8 +28,6 @@ export default function DealsSection({ products }: { products: Product[] }) {
     return () => clearInterval(timer)
   }, [])
 
-  if (products.length === 0) return null
-
   return (
     <section aria-label="דילים של היום" className="max-w-page mx-auto px-4 py-6">
       <div className="flex items-center justify-between gap-3 rounded-t-lg bg-brand-dark px-4 py-3 text-white">
@@ -55,9 +53,11 @@ export default function DealsSection({ products }: { products: Product[] }) {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-0 rounded-b-lg border border-t-0 border-gray-200 bg-gray-50 p-3">
-        {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
+        {products.length > 0 ? (
+          products.map((product) => <ProductCard key={product.id} product={product} />)
+        ) : (
+          <p className="col-span-full py-10 text-center text-sm text-gray-500">אין דילים להצגה כרגע</p>
+        )}
       </div>
     </section>
   )
