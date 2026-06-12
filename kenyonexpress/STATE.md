@@ -4,6 +4,12 @@
 **Phase 5 — Homepage**. branch `phase5/homepage`. Hero: React composition (לא DOM injection). מקור יחיד: `refs/ke_live_singlefile.html` (4.5MB). הבא: SingleFile חדש עם כל הסליידים מאותחלים, אחר כך דף קטגוריה.
 
 ## Last Completed
+Session 2026-06-12 (תיקוני מבנה homepage). commit `f34f85a` push ל-`phase5/homepage`:
+- `HeroSlider`: טקסט סטטי (ללא transform על שקפים, `animate-none` על copy)
+- `HeroCategorySidebar`: רוחב 220px (`electro-hero-tokens`)
+- `CategoryStrip`: 8 קטגוריות, `flex flex-1`, גלילה אופקית במובייל
+- `Header`: dropdown "בחר אזור" בין לוגו לאייקונים (`ke-live-regions.ts`)
+
 Session 2026-06-09 (Hero React composition — אופציה 3):
 - **נמחק hack:** `hero-exact-html.ts` (346KB), `hero-exact-init.ts`, `hero-exact.css`, `dangerouslySetInnerHTML` ב-`HeroExact`.
 - **`HeroExact`** = grid 3 עמודות (`200px | 1fr | 225px`, dir=ltr): `HeroPromoBanners` שמאל | `HeroSlider` מרכז | `HeroCategorySidebar` ימין (כותרת `#fed700`).
