@@ -1,5 +1,5 @@
 import SmartImage from '@/components/ui/SmartImage'
-import { CATEGORIES as CATEGORY_IMAGES } from '@/lib/assets'
+import { HERO_CATEGORY_BANNERS } from '@/lib/assets'
 import Link from 'next/link'
 
 const CATEGORIES = [
@@ -7,58 +7,58 @@ const CATEGORIES = [
     id: 'under99',
     label: 'עד 99',
     href: '/category/under-99',
-    image: CATEGORY_IMAGES.under99,
+    image: HERO_CATEGORY_BANNERS.under99,
   },
   {
     id: 'pets',
     label: 'ציוד ומזון לבעלי חיים',
     href: '/category/pets',
-    image: CATEGORY_IMAGES.pets,
+    image: HERO_CATEGORY_BANNERS.pets,
   },
   {
     id: 'hotels',
     label: 'צימרים מלונות ונופש',
-    href: '/category/hotels',
-    image: CATEGORY_IMAGES.hotels,
+    href: '/category/vacation',
+    image: HERO_CATEGORY_BANNERS.hotels,
   },
   {
     id: 'courses',
     label: 'קורסים EXPRESS',
     href: '/products',
-    image: CATEGORY_IMAGES.courses,
+    image: HERO_CATEGORY_BANNERS.courses,
   },
   {
     id: 'kids',
     label: 'תינוקות וילדים',
-    href: '/category/kids',
-    image: CATEGORY_IMAGES.kids,
+    href: '/category/baby-kids',
+    image: HERO_CATEGORY_BANNERS.kids,
   },
 ] as const
 
 export default function CategoryStrip() {
   return (
-    <section aria-label="קטגוריות מובילות" className="bg-white border-y border-gray-200">
+    <section aria-label="קטגוריות מובילות" className="bg-white border-y border-gray-200 font-sans">
       <div className="max-w-page mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
         {CATEGORIES.map((cat, idx) => (
           <Link
             key={cat.id}
             href={cat.href}
-            className={`group flex flex-col items-center justify-center gap-2 px-3 py-4 hover:bg-gray-50 transition-colors ${
+            className={`group flex flex-col items-center justify-center gap-2 px-3 py-4 transition-colors hover:bg-gray-50 ${
               idx < CATEGORIES.length - 1 ? 'border-e border-gray-200' : ''
             }`}
           >
-            <div className="relative w-full h-[72px] max-w-[120px]">
+            <div className="relative h-[72px] w-full max-w-[120px]">
               <SmartImage
                 src={cat.image}
                 alt=""
                 fill
                 sizes="120px"
-                className="object-cover rounded-md group-hover:scale-105 transition-transform duration-300"
+                className="rounded-md object-cover transition-transform duration-300 group-hover:scale-105"
                 fallbackClassName="absolute inset-0 rounded-md"
                 iconSize={28}
               />
             </div>
-            <span className="text-xs font-bold text-gray-800 text-center leading-snug">
+            <span className="text-center text-xs font-bold leading-snug text-heading">
               {cat.label}
             </span>
           </Link>

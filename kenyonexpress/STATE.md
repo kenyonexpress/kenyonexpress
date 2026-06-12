@@ -1,9 +1,14 @@
 # KenyonExpress State
 
 ## Current Phase
-**Phase 5 — Homepage**. דף הבית + קטלוג + hero + **דף מוצר הושלמו**. הבא: **דף קטגוריה** (`(store)/category/[slug]`).
+**Phase 5 — Homepage**. Hero מ-SingleFile בלבד (staged). הבא: **דף קטגוריה**.
 
 ## Last Completed
+Session 2026-06-12 (Hero SingleFile בלבד — iron rule):
+- `refs/ke_live_singlefile.html` (4.3MB): רק rs-19 עם 4 שכבות (בקרוב 51px, האפליקציה 58px + 2 תמונות base64). שאר סליידים/באנרים/קטגוריות hero — DOM ריק בקובץ.
+- `build-hero-from-singlefile.mjs` → `hero-exact-html.ts` + `hero-exact.css` (187 rules). ללא live capture.
+- `HeroExact.tsx` + `elementor-5202` wrapper. `page.tsx` → HeroExact.
+
 Session 2026-06-10 (דף מוצר תואם לחי + תיקון slug עברי). commit `feat: product page matches live site + Hebrew-slug fix`, push ל-phase5/homepage:
 - **באג קריטי תוקן**: דף המוצר החזיר 404 לכל המוצרים עם slug עברי (27 מהחי). Next 16 מעביר את `params.slug` **מקודד** (%D7…) ולא מפוענח. הפתרון: `decodeURIComponent(rawSlug)` ב-`generateMetadata` וב-`ProductPage` שב-`(store)/product/[slug]/page.tsx`. אומת 200.
 - **RelatedProducts** נכתב מחדש: 4 מוצרים — מעדיף אותה קטגוריה, ממלא ממוצרים אחרים אם דליל (כי hot-deals=1), עם נתוני כרטיס מלאים (full_price + category). הדף מרנדר אותו תמיד (גם אם category_id null).

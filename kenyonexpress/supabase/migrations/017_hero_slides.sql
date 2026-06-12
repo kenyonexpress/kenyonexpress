@@ -29,8 +29,10 @@ CREATE POLICY "hero_slides public read active"
   TO anon, authenticated
   USING (is_active = true);
 
--- Seed: 3 initial slides using the existing local hero image paths.
+-- Seed: 5 slides — refs/ke_live_home.html RevSlider rs-18 … rs-19
 INSERT INTO public.hero_slides (title, subtitle, image_url, link_url, sort_order, is_active) VALUES
-  ('ברוכים הבאים לקניון Express', 'מסדרים לך בילוי. . .', '/images/hero/slide-1.jpg', '/products', 1, true),
-  ('הדילים החמים של השבוע', 'מבצעים שלא תרצו לפספס', '/images/hero/slide-2.jpg', '/products', 2, true),
-  ('אלקטרוניקה במחירים הכי טובים', 'גאדג׳טים, מחשבים ועוד', '/images/hero/slide-3.jpg', '/category/electronics', 3, true);
+  ('ברוכים הבאים', 'מסדרים לך בילוי. . .', '/images/hero/slider/ios13-iphone-11pro-airpods-pro-setup-animation-steps.gif', '/products', 1, true),
+  ('PREMIUM PRODUCT', NULL, '/images/hero/slider/redPhone-1-1.png', '/products', 2, true),
+  ('ממשק מהיר ונוח', NULL, '/images/hero/slider/Smartwatches1.png', '/products', 3, true),
+  ('תצוגה מושלמת', NULL, '/images/hero/slider/iapdlap.png', '/products', 4, true),
+  ('האפליקציה בקרוב', NULL, '/images/hero/slider/Screen-Shot-2021-11-09-at-6.41.46.png', '/products', 5, true);

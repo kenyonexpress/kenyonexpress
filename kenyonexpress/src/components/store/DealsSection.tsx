@@ -33,7 +33,7 @@ export default function DealsSection({ products }: { products: Product[] }) {
   return (
     <section aria-label="דילים של היום" className="max-w-page mx-auto px-4 py-6">
       <div className="flex items-center justify-between gap-3 rounded-t-lg bg-brand-dark px-4 py-3 text-white">
-        <h2 className="text-lg font-black tracking-wide">דילים של היום</h2>
+        <h2 className="text-[22px] font-black tracking-wide">דילים של היום</h2>
 
         <div className="hidden sm:flex items-center gap-2 text-sm text-gray-300">
           <span>מסתיים בעוד:</span>

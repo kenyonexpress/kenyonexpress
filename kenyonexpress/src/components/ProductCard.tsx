@@ -68,13 +68,13 @@ export default function ProductCard({ product }: { product: Product }) {
 
         <Link
           href={`/product/${product.slug}`}
-          className="block text-sm font-medium text-link line-clamp-2 leading-snug hover:underline"
+          className="block text-sm font-bold text-link line-clamp-2 leading-snug hover:underline"
         >
           {product.name_he}
         </Link>
 
         <div className="flex items-baseline gap-2">
-          <span className="text-base font-black text-price">{shekels(price)}</span>
+          <span className="text-xl font-normal text-heading">{shekels(price)}</span>
           {hasDiscount && old != null && (
             <span className="text-xs text-price-strike line-through">{shekels(old)}</span>
           )}

@@ -17,6 +17,7 @@
   --color-price-strike: #9ca3af; /* crossed-out original price */
   --color-success: #5cb85c; /* confirmation, in-stock */
   --color-link: #0062bd; /* product names + links (distinct from red price) */
+  --color-heading: #333e48; /* hero + section headings (electro home-v7) */
 
   /* --- Surfaces ---------------------------------------------------------------- */
   --color-footer-bg: #333e48; /* dark footer body (electro home-v7) */
