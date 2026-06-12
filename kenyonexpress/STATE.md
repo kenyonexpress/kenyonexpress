@@ -1,9 +1,19 @@
 # KenyonExpress State
 
 ## Current Phase
-**Phase 5 — Homepage**. branch `phase5/homepage`. Hero: React composition (לא DOM injection). מקור יחיד: `refs/ke_live_singlefile.html` (4.5MB). הבא: SingleFile חדש עם כל הסליידים מאותחלים, אחר כך דף קטגוריה.
+**Phase 5 — Homepage כמעט הושלם**. branch `phase5/homepage`. מקור יחיד: `refs/ke_live_singlefile.html`.
+
+**הושלם:** header (ללא חיפוש/אזור), hero מלא (סליידר + סיידבר + באנרים), רצועת יתרונות במסגרת, דילים של היום, גריד מוצרים, footer, הסרת `CategoryNav`.
+
+**נותר:** התאמת `scripts/compare.mjs` ל-1:1, סדר sections סופי.
 
 ## Last Completed
+Session 2026-06-12 (סגירת פערי homepage). commits אחרונים על `phase5/homepage`:
+- `fd69063` — הסרת `<CategoryNav />` מ-`(store)/layout.tsx` (רצועה אופקית לא קיימת בחי)
+- `048f645` — `BenefitBar`: מסגרת מעוגלת אחת (`border #e5e7eb`, `radius 8px`) בתוך `max-w-page`
+- `a829a2e` — הסרת `overflow-x-auto` מ-`CategoryStrip`, `CategoryNav`, `ProductGallery`
+- `defd47b` — `ProductCard`: ערכים מדויקים מהמקור (elementor-9175)
+
 Session 2026-06-12 (תיקוני מבנה homepage). commit `f34f85a` push ל-`phase5/homepage`:
 - `HeroSlider`: טקסט סטטי (ללא transform על שקפים, `animate-none` על copy)
 - `HeroCategorySidebar`: רוחב 220px (`electro-hero-tokens`)
@@ -238,16 +248,15 @@ All 5 CRUDs verified live in the browser (200 OK): Categories, Vendors, Products
 - הסכמה מסונכרנת במלואה מול הקוד
 
 ## In Progress
-**HeroSlider → Supabase** — טבלת `hero_slides`, migration `017`, RLS (public read active), seed 3 שורות. הקוד מחובר (commit `b877678`). נותר: לעדכן את 017 ל-`updated_at`+trigger ו-"SIMPLY THE BEST" סטטי, ואז **להריץ את ה-migration על ה-DB** (דרך Transaction pooler `aws-1-eu-north-1.pooler.supabase.com:6543`).
+**Homepage polish** — השוואה ויזואלית 1:1 מול `refs/ke_live_singlefile.html` (`scripts/compare.mjs`), סדר sections סופי.
 
 ## Blocking Issues
-- ה-migration `017_hero_slides.sql` עדיין לא הורץ → טבלת `hero_slides` לא קיימת ב-DB, HeroSlider מציג null (אזור הירו האמצעי ריק) עד שיורץ
-- חסר אמצעי הרצה: אין `psql`, אין מודול `pg` (צריך `pnpm add -D pg`), ואין סיסמת DB ב-`.env.local` (נדרשת סיסמה ל-pooler)
+none
 
 ## Next Task
-1. **דף `/products`** (listing) — `(store)/products/page.tsx` server component (status='active', deleted_at IS NULL) + pagination, ProductsGrid עם ProductCard (grid 2/3/4 gap-0), sidebar סינון לפי קטגוריה + מיון מחיר/חדש, RTL מלא. תוכנית הוצגה, ממתינה לאישור + 3 החלטות (ProductsGrid נפרד? page size 24? מיון client/links?)
-2. **Footer gaps** — תיקון `SiteFooter.tsx` לפי טבלת מדידות Electro (ממתין למדידות מסוכן הדפדפן)
-3. **push** — `git push origin phase5/homepage` (3 commits) רק אחרי "אשר push" מפורש
+1. הרצת `scripts/compare.mjs` ותיקון פערים עד התכנסות 1:1
+2. אימות סדר sections סופי ב-`(store)/page.tsx` מול המקור
+3. דף קטגוריה (אחרי סגירת homepage)
 
 ## Active Branch
 phase5/homepage
