@@ -22,21 +22,22 @@ const WELCOME_SLIDE: HeroSlide = {
   imageLayout: { offsetTop: 21, widthPercent: 49.8, minHeight: 495 },
 }
 
-/** 5 RevSlider slides — dots match live order */
+const PREMIUM_SLIDE: HeroSlide = {
+  id: 'rs-35',
+  variant: 'product',
+  title: 'PREMIUM',
+  title_secondary: 'PRODUCT',
+  standard_line: 'THE NEW STANDARD',
+  promo_small: 'SIMPLY THE',
+  promo_large: 'BEST',
+  image_url: HERO_SLIDER_IMAGES[1],
+  link_url: '/products',
+  imageLayout: { offsetTop: -15, widthPercent: 58.7, minHeight: 447 },
+}
+
+/** 5 RevSlider slides — welcome first, PREMIUM PRODUCT last */
 export const HERO_SINGLEFILE_SLIDES: HeroSlide[] = [
   WELCOME_SLIDE,
-  {
-    id: 'rs-35',
-    variant: 'product',
-    title: 'PREMIUM',
-    title_secondary: 'PRODUCT',
-    standard_line: 'THE NEW STANDARD',
-    promo_small: 'SIMPLY THE',
-    promo_large: 'BEST',
-    image_url: HERO_SLIDER_IMAGES[1],
-    link_url: '/products',
-    imageLayout: { offsetTop: -15, widthPercent: 58.7, minHeight: 447 },
-  },
   {
     id: 'rs-20',
     variant: 'product',
@@ -74,4 +75,5 @@ export const HERO_SINGLEFILE_SLIDES: HeroSlide[] = [
     link_url: '/products',
     imageLayout: { offsetTop: -1, widthPercent: 50.4, minHeight: 425 },
   },
+  PREMIUM_SLIDE,
 ]
