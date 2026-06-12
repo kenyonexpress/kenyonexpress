@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
     root: __dirname,
   },
   images: {
-    qualities: [75, 95],
+    qualities: [75, 90, 95],
     remotePatterns: [
       { protocol: 'https', hostname: '*.supabase.co' },
       { protocol: 'https', hostname: 'images.unsplash.com' },
