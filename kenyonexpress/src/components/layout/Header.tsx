@@ -38,19 +38,22 @@ export default function SiteHeader() {
             <User size={22} strokeWidth={1.8} aria-hidden="true" />
           </Link>
 
-          <button
-            type="button"
-            className="relative p-2.5 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
-            aria-label="עגלת קניות, 0 פריטים"
-          >
-            <ShoppingBag size={22} strokeWidth={1.8} aria-hidden="true" />
-            <span
-              className="absolute top-1 end-1 w-4 h-4 rounded-full bg-brand-secondary text-brand-dark text-[10px] font-bold flex items-center justify-center"
-              aria-hidden="true"
+          <div className="flex items-center gap-0.5">
+            <span style={{ fontSize: 14, fontWeight: 600, color: '#000' }}>₪0</span>
+            <button
+              type="button"
+              className="relative p-2.5 hover:bg-gray-100 rounded-full transition-colors text-gray-700"
+              aria-label="עגלת קניות, 0 פריטים"
             >
-              0
-            </span>
-          </button>
+              <ShoppingBag size={22} strokeWidth={1.8} aria-hidden="true" />
+              <span
+                className="absolute top-1 end-1 w-4 h-4 rounded-full bg-brand-secondary text-brand-dark text-[10px] font-bold flex items-center justify-center"
+                aria-hidden="true"
+              >
+                0
+              </span>
+            </button>
+          </div>
         </div>
       </div>
     </header>
