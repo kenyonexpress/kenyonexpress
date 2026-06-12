@@ -1,13 +1,19 @@
 # KenyonExpress State
 
 ## Current Phase
-**Phase 5 — Homepage**. Hero מ-SingleFile בלבד (staged). הבא: **דף קטגוריה**.
+**Phase 5 — Homepage**. branch `phase5/homepage`. Hero: React composition (לא DOM injection). מקור יחיד: `refs/ke_live_singlefile.html` (4.5MB). הבא: SingleFile חדש עם כל הסליידים מאותחלים, אחר כך דף קטגוריה.
 
 ## Last Completed
-Session 2026-06-12 (Hero SingleFile בלבד — iron rule):
-- `refs/ke_live_singlefile.html` (4.3MB): רק rs-19 עם 4 שכבות (בקרוב 51px, האפליקציה 58px + 2 תמונות base64). שאר סליידים/באנרים/קטגוריות hero — DOM ריק בקובץ.
-- `build-hero-from-singlefile.mjs` → `hero-exact-html.ts` + `hero-exact.css` (187 rules). ללא live capture.
-- `HeroExact.tsx` + `elementor-5202` wrapper. `page.tsx` → HeroExact.
+Session 2026-06-09 (Hero React composition — אופציה 3):
+- **נמחק hack:** `hero-exact-html.ts` (346KB), `hero-exact-init.ts`, `hero-exact.css`, `dangerouslySetInnerHTML` ב-`HeroExact`.
+- **`HeroExact`** = grid 3 עמודות (`200px | 1fr | 225px`, dir=ltr): `HeroPromoBanners` שמאל | `HeroSlider` מרכז | `HeroCategorySidebar` ימין (כותרת `#fed700`).
+- **`hero-singlefile-data.ts`**: נתוני rs-19 מ-`ke_live_singlefile-hero-extract.json`; סלייד יחיד: "ברוכים הבאים לקניון Express" + `redPhone-1-1.png`, רקע `#eef4f7`, גובה 470px.
+- **`HeroPromoBanners`**: 3 באנרים (Tesla/Apple/laptop), Shop now + כפתור צהוב `#fed700`.
+- **בעיה ידועה:** SingleFile הנוכחי — rs-18/35/20/33 ריקים, באנרים בלי `da-text` ב-DOM. תור פקודות ב-Cursor יצר placeholders שגויים (App Store). שיטה: בלוק אחד, הוראה אחת, בלי תור.
+- **נותר:** 5 סליידים מלאים (PREMIUM PRODUCT + THE NEW STANDARD + SIMPLY THE BEST), compare-and-fix ויזואלי.
+
+Session 2026-06-12 (Hero SingleFile DOM — הוחלף):
+- ניסיון `build-hero-from-singlefile.mjs` → injection — ננטש (רק rs-19 בקובץ, placeholders).
 
 Session 2026-06-10 (דף מוצר תואם לחי + תיקון slug עברי). commit `feat: product page matches live site + Hebrew-slug fix`, push ל-phase5/homepage:
 - **באג קריטי תוקן**: דף המוצר החזיר 404 לכל המוצרים עם slug עברי (27 מהחי). Next 16 מעביר את `params.slug` **מקודד** (%D7…) ולא מפוענח. הפתרון: `decodeURIComponent(rawSlug)` ב-`generateMetadata` וב-`ProductPage` שב-`(store)/product/[slug]/page.tsx`. אומת 200.

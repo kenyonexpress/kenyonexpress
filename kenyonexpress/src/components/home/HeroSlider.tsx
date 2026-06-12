@@ -2,7 +2,7 @@
 
 import SmartImage from '@/components/ui/SmartImage'
 import { ELECTRO_HERO } from '@/lib/electro-hero-tokens'
-import { KE_LIVE_HERO } from '@/lib/ke-live-hero-data'
+import { HERO_SLIDER_BG, HERO_SLIDER_HEIGHT } from '@/lib/hero-singlefile-data'
 import { useCallback, useEffect, useState } from 'react'
 
 export type HeroSlideImageLayout = {
@@ -36,7 +36,8 @@ export type HeroSlide = {
 
 const T = ELECTRO_HERO.typography
 const SLIDE = ELECTRO_HERO.slider
-const LIVE = KE_LIVE_HERO
+const DOT_ACTIVE = '#fed700'
+const DOT_INACTIVE = 'rgba(125, 125, 125, 0.5)'
 const AUTOPLAY_MS = 5000
 
 const HERO_IMAGE_SIZES = `(max-width: 1024px) 100vw, ${SLIDE.width * 2}px`
@@ -291,8 +292,8 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
   return (
     <div
       dir="rtl"
-      style={{ backgroundColor: LIVE.slider.bg }}
-      className="relative h-[280px] min-h-[280px] w-full min-w-0 overflow-hidden border-x border-gray-200 font-sans sm:h-[320px] sm:min-h-[320px] lg:h-[377px] lg:min-h-[377px]"
+      style={{ backgroundColor: HERO_SLIDER_BG, height: HERO_SLIDER_HEIGHT, minHeight: HERO_SLIDER_HEIGHT }}
+      className="relative w-full min-w-0 overflow-hidden border-x border-gray-200 font-sans"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
@@ -320,27 +321,27 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
       {slides.length > 1 && (
         <div
           aria-label="ניווט שקופיות"
-          className="absolute z-20 flex items-center gap-2"
-          style={{
-            insetInlineStart: LIVE.dots.offsetStart,
-            bottom: LIVE.dots.offsetBottom,
-          }}
+          className="absolute bottom-6 start-[61px] z-20 flex items-center gap-2"
         >
-          {slides.map((s, i) => (
+          {slides.map((s, i) => {
+            const isCurrent = i === active
+            return (
             <button
               key={s.id}
               type="button"
               onClick={() => goTo(i)}
               aria-label={`שקופית ${i + 1}`}
-              aria-current={i === active ? 'true' : undefined}
+              aria-current={isCurrent ? 'true' : undefined}
               style={{
-                width: LIVE.dots.size,
-                height: LIVE.dots.size,
-                backgroundColor: i === active ? LIVE.dots.active : LIVE.dots.inactive,
+                width: isCurrent ? 30 : 8,
+                height: 8,
+                backgroundColor: isCurrent ? DOT_ACTIVE : DOT_INACTIVE,
+                borderRadius: isCurrent ? 3 : 9999,
               }}
-              className="shrink-0 rounded-full border-0 p-0 transition-colors duration-200 hover:opacity-80"
+              className="shrink-0 border-0 p-0 transition-all duration-200 hover:opacity-80"
             />
-          ))}
+            )
+          })}
         </div>
       )}
     </div>

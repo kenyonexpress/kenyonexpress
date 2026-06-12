@@ -9,10 +9,13 @@ export default function HeroCategorySidebar() {
     <aside
       dir="rtl"
       aria-label="קטגוריות"
-      style={{ width: CC.width, height: CC.height, color: CC.textColor }}
-      className="home-vertical-nav departments-menu-v2 hidden shrink-0 flex-col overflow-hidden border-s border-gray-200 bg-white font-sans lg:flex"
+      style={{ width: CC.width, color: CC.textColor }}
+      className="home-vertical-nav departments-menu-v2 hidden h-full shrink-0 flex-col overflow-hidden border-s border-gray-200 bg-white font-sans lg:flex"
     >
-      <div className="vertical-menu-title departments-menu-v2-title flex h-14 shrink-0 items-center bg-brand-primary px-4">
+      <div
+        style={{ backgroundColor: '#fed700' }}
+        className="vertical-menu-title departments-menu-v2-title flex h-14 shrink-0 items-center px-4"
+      >
         <span className="title text-sm font-bold text-brand-dark">קטגוריות</span>
       </div>
 
