@@ -1,10 +1,11 @@
 import Link from 'next/link'
 import { Lock, MapPin, Truck, User } from 'lucide-react'
 
-/** Values from refs/ke_live_singlefile.html (.top-bar.top-bar-v2) */
+/** refs/ke_live_singlefile.html — .top-bar.top-bar-v2 */
 const TOPBAR = {
   backgroundColor: '#fff',
   borderBottom: '1px solid #ddd',
+  height: '40px',
   fontSize: '0.929em',
   color: '#333e48',
   linkPadding: '0.58em 0',
@@ -39,8 +40,8 @@ export default function TopBar() {
       style={{ backgroundColor: TOPBAR.backgroundColor, borderBottom: TOPBAR.borderBottom }}
     >
       <div
-        className="max-w-page mx-auto flex items-center justify-between px-[0.9375rem]"
-        style={{ fontSize: '0.875rem', color: TOPBAR.color }}
+        className="mx-auto flex max-w-page items-center justify-between px-[0.9375rem]"
+        style={{ height: TOPBAR.height, fontSize: '0.875rem', color: TOPBAR.color }}
       >
         <span style={{ fontSize: TOPBAR.fontSize, padding: TOPBAR.linkPadding }}>
           ברוך הבא לעולם של קניון Express
@@ -64,7 +65,7 @@ export default function TopBar() {
 
           <Link
             href="/login"
-            className="inline-flex items-center hover:opacity-80 transition-opacity"
+            className="inline-flex items-center transition-opacity hover:opacity-80"
             style={{ padding: TOPBAR.linkPadding, gap: TOPBAR.iconGap, color: TOPBAR.color }}
           >
             <User size={TOPBAR.iconSize} strokeWidth={1.5} aria-hidden="true" />

@@ -2,25 +2,8 @@ import SmartImage from '@/components/ui/SmartImage'
 import { HERO_CATEGORY_BANNERS } from '@/lib/assets'
 import Link from 'next/link'
 
+/** refs/ke_live_singlefile.html — .product-categories-list .categories (5 items @ xl) */
 const CATEGORIES = [
-  {
-    id: 'under99',
-    label: 'עד 99',
-    href: '/category/under-99',
-    image: HERO_CATEGORY_BANNERS.under99,
-  },
-  {
-    id: 'pets',
-    label: 'ציוד ומזון לבעלי חיים',
-    href: '/category/pets',
-    image: HERO_CATEGORY_BANNERS.pets,
-  },
-  {
-    id: 'hotels',
-    label: 'צימרים מלונות ונופש',
-    href: '/category/vacation',
-    image: HERO_CATEGORY_BANNERS.hotels,
-  },
   {
     id: 'kids',
     label: 'תינוקות וילדים',
@@ -34,51 +17,60 @@ const CATEGORIES = [
     image: HERO_CATEGORY_BANNERS.courses,
   },
   {
-    id: 'restaurants',
-    label: 'מסעדות ובתי קפה',
-    href: '/category/restaurants-cafes',
-    image: HERO_CATEGORY_BANNERS.restaurants,
+    id: 'hotels',
+    label: 'צימרים מלונות ונופש',
+    href: '/category/vacation',
+    image: HERO_CATEGORY_BANNERS.hotels,
   },
   {
-    id: 'beauty',
-    label: 'יופי בריאות וטיפוח',
-    href: '/category/beauty-health',
-    image: HERO_CATEGORY_BANNERS.beauty,
+    id: 'pets',
+    label: 'ציוד ומזון לבעלי חיים',
+    href: '/category/pets',
+    image: HERO_CATEGORY_BANNERS.pets,
   },
   {
-    id: 'phones',
-    label: 'טלפונים מחשבים ואביזרים',
-    href: '/category/phones-computers',
-    image: HERO_CATEGORY_BANNERS.phones,
+    id: 'under99',
+    label: 'עד 99',
+    href: '/category/under-99',
+    image: HERO_CATEGORY_BANNERS.under99,
   },
 ] as const
 
 export default function CategoryStrip() {
   return (
-    <section aria-label="קטגוריות מובילות" className="border-y border-gray-200 bg-white font-sans">
-      <div className="max-w-page mx-auto flex flex-wrap lg:flex-nowrap">
-        {CATEGORIES.map((cat) => (
-          <Link
-            key={cat.id}
-            href={cat.href}
-            className="group flex w-1/4 flex-col items-center justify-center gap-2 border-e border-gray-200 px-3 py-4 transition-colors last:border-e-0 hover:bg-gray-50 lg:w-auto lg:flex-1 lg:min-w-0"
-          >
-            <div className="relative h-[72px] w-full max-w-[120px]">
-              <SmartImage
-                src={cat.image}
-                alt=""
-                fill
-                sizes="120px"
-                className="rounded-md object-cover transition-transform duration-300 group-hover:scale-105"
-                fallbackClassName="absolute inset-0 rounded-md"
-                iconSize={28}
-              />
-            </div>
-            <span className="text-center text-xs font-bold leading-snug text-heading">
-              {cat.label}
-            </span>
-          </Link>
-        ))}
+    <section aria-label="קטגוריות מובילות" className="bg-white font-sans">
+      <div className="mx-auto max-w-page">
+        <ul className="m-0 flex list-none flex-wrap p-0 lg:flex-nowrap" style={{ height: '170px' }}>
+          {CATEGORIES.map((cat) => (
+            <li
+              key={cat.id}
+              className="flex w-1/2 items-center border-e border-[#e7e7e7] first:border-s lg:w-[20%] lg:flex-[0_0_20%]"
+            >
+              <Link
+                href={cat.href}
+                className="group mx-auto flex flex-col items-center justify-center px-3 py-2 text-center transition-shadow hover:shadow-[0_0_18px_-2px_rgba(0,0,0,0.2)]"
+              >
+                <div className="relative mb-[10px] h-[100px] w-full max-w-[100px]">
+                  <SmartImage
+                    src={cat.image}
+                    alt=""
+                    fill
+                    sizes="100px"
+                    className="object-contain transition-transform duration-300 group-hover:scale-105"
+                    fallbackClassName="absolute inset-0"
+                    iconSize={28}
+                  />
+                </div>
+                <h4
+                  className="m-0 leading-snug text-[#333e48]"
+                  style={{ fontSize: '14px', fontWeight: 600 }}
+                >
+                  {cat.label}
+                </h4>
+              </Link>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   )

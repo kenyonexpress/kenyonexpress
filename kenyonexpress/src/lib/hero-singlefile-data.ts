@@ -6,7 +6,7 @@ import { HERO_SLIDER_IMAGES } from '@/lib/assets'
 
 export const HERO_SLIDER_BG = '#eef4f7'
 
-export const HERO_SLIDER_HEIGHT = 500
+export const HERO_SLIDER_HEIGHT = 422
 
 const WELCOME_SLIDE: HeroSlide = {
   id: 'rs-18',
@@ -35,9 +35,10 @@ const PREMIUM_SLIDE: HeroSlide = {
   imageLayout: { offsetTop: -15, widthPercent: 58.7, minHeight: 447 },
 }
 
-/** 5 RevSlider slides — welcome first, PREMIUM PRODUCT last */
+/** 5 RevSlider slides — rs-18, rs-35, rs-20, rs-33, rs-19 (active in singlefile) */
 export const HERO_SINGLEFILE_SLIDES: HeroSlide[] = [
   WELCOME_SLIDE,
+  PREMIUM_SLIDE,
   {
     id: 'rs-20',
     variant: 'product',
@@ -75,5 +76,4 @@ export const HERO_SINGLEFILE_SLIDES: HeroSlide[] = [
     link_url: '/products',
     imageLayout: { offsetTop: -1, widthPercent: 50.4, minHeight: 425 },
   },
-  PREMIUM_SLIDE,
 ]

@@ -1,60 +1,42 @@
-'use client'
-
+import type { Product } from '@/components/ProductCard'
 import ProductCard from '@/components/ProductCard'
 import { KE_LIVE_DEALS } from '@/lib/ke-live-deals-data'
-import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/server'
 
-function pad(n: number) {
-  return String(n).padStart(2, '0')
-}
+/** refs/ke_live_singlefile.html — jet-listing-grid faf8583, 4 columns, no section title */
+export default async function DealsOfTheDay() {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('products')
+    .select('id, slug, name_he, kenyon_price, full_price, images, stock_quantity, categories(name_he, slug)')
+    .eq('status', 'active')
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+    .limit(24)
 
-function formatCountdown(totalSeconds: number) {
-  const h = Math.floor(totalSeconds / 3600)
-  const m = Math.floor((totalSeconds % 3600) / 60)
-  const s = totalSeconds % 60
-  return `${pad(h)} : ${pad(m)} : ${pad(s)}`
-}
+  const staticSlugs = new Set(KE_LIVE_DEALS.map((p) => p.slug))
+  const dbProducts: Product[] = (data ?? [])
+    .filter((p) => !staticSlugs.has(p.slug))
+    .map((p) => {
+      const cat = Array.isArray(p.categories) ? (p.categories[0] ?? null) : p.categories
+      return {
+        id: p.id,
+        slug: p.slug,
+        name_he: p.name_he,
+        kenyon_price: p.kenyon_price,
+        full_price: p.full_price,
+        images: p.images,
+        stock_quantity: p.stock_quantity,
+        category: cat,
+      }
+    })
 
-const INITIAL_SECONDS = 23 * 3600 + 59 * 60 + 59
-
-export default function DealsOfTheDay() {
-  const [remaining, setRemaining] = useState(INITIAL_SECONDS)
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setRemaining((prev) => (prev > 0 ? prev - 1 : 0))
-    }, 1000)
-    return () => clearInterval(timer)
-  }, [])
+  const products = [...KE_LIVE_DEALS, ...dbProducts].slice(0, 24)
 
   return (
-    <section aria-label="דילים של היום" className="max-w-page mx-auto px-4 py-6">
-      <div className="flex items-center justify-between gap-3 rounded-t-lg bg-brand-dark px-4 py-3 text-white">
-        <h2 className="text-[22px] font-black tracking-wide">דילים של היום</h2>
-
-        <div className="hidden sm:flex items-center gap-2 text-sm text-gray-300">
-          <span>מסתיים בעוד:</span>
-          <span
-            dir="ltr"
-            className="rounded bg-brand-secondary px-3 py-1 font-mono text-base font-black tracking-widest text-brand-dark"
-          >
-            {formatCountdown(remaining)}
-          </span>
-        </div>
-
-        <Link
-          href="/products"
-          className="flex items-center gap-1 whitespace-nowrap text-sm text-gray-300 hover:text-white transition-colors"
-        >
-          לכל המבצעים
-          <ArrowLeft size={16} className="rtl:rotate-180" aria-hidden="true" />
-        </Link>
-      </div>
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-0 rounded-b-lg border border-t-0 border-gray-200 bg-gray-50 p-3">
-        {KE_LIVE_DEALS.slice(0, 4).map((product) => (
+    <section aria-label="מוצרים מובילים" className="mx-auto max-w-page px-4 py-6">
+      <div className="grid grid-cols-2 gap-0 bg-white lg:grid-cols-4">
+        {products.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
       </div>

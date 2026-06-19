@@ -23,7 +23,7 @@
   --color-footer-bg: #333e48; /* dark footer body (electro home-v7) */
 
   /* --- Semantic tokens ------------------------------------------------------- */
-  --color-background: #f9fafb; /* page background */
+  --color-background: #fff; /* page background (body in ke_live_singlefile) */
   --color-foreground: #1a1a1a; /* default body text */
   --color-primary: #fed700; /* alias for brand-primary (Tailwind semantic) */
   --color-primary-foreground: #1a1a1a; /* text on primary (black on yellow) */
@@ -39,7 +39,7 @@
   --font-sans: var(--font-heebo), Arial, sans-serif;
 
   /* --- Layout ---------------------------------------------------------------- */
-  --header-height: 54px;
+  --header-height: 70px;
   /* Single source of truth for page container width -> generates `max-w-page`. */
   --container-page: 1320px;
 }

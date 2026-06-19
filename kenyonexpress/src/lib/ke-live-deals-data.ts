@@ -1,6 +1,6 @@
 /**
  * Deals grid (jet-listing-grid faf8583) from refs/ke_live_singlefile.html.
- * First page: 6 slots; demo "קופון טסט" omitted per refs/content-map.md.
+ * First 6 products in DOM order.
  */
 import type { Product } from '@/components/ProductCard'
 
@@ -48,6 +48,16 @@ export const KE_LIVE_DEALS: Product[] = [
     kenyon_price: 250,
     full_price: 500,
     images: ['/images/products/WhatsApp-Image-2023-12-22-at-15.27.50-600x600.webp'],
+    stock_quantity: 1,
+    category: { name_he: 'יופי בריאות וטיפוח', slug: 'beauty-health' },
+  },
+  {
+    id: 'ke-deal-8836',
+    slug: 'קופון-טסט',
+    name_he: 'קופון טסט',
+    kenyon_price: 9,
+    full_price: null,
+    images: [`${WP_UPLOADS}/2023/05/m2.jpeg`],
     stock_quantity: 1,
     category: { name_he: 'יופי בריאות וטיפוח', slug: 'beauty-health' },
   },

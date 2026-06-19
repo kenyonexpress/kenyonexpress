@@ -272,7 +272,10 @@ function SlideCopy({ slide }: { slide: HeroSlide }) {
 }
 
 export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
-  const [active, setActive] = useState(0)
+  const [active, setActive] = useState(() => {
+    const appIndex = slides.findIndex((s) => s.id === 'rs-19')
+    return appIndex >= 0 ? appIndex : 0
+  })
   const [paused, setPaused] = useState(false)
 
   const goTo = useCallback(
