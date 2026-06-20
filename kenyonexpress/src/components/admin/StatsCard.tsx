@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils'
 import type { LucideIcon } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface Props {
   label: string
@@ -7,24 +8,49 @@ interface Props {
   icon: LucideIcon
   className?: string
   trend?: { value: number; label: string }
+  variant?: 'default' | 'admin'
 }
 
-export default function StatsCard({ label, value, icon: Icon, className, trend }: Props) {
+export default function StatsCard({
+  label,
+  value,
+  icon: Icon,
+  className,
+  trend,
+  variant = 'default',
+}: Props) {
+  const isAdmin = variant === 'admin'
+
   return (
-    <div className={cn('bg-white border border-gray-200 rounded-xl p-5', className)}>
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-sm font-medium text-gray-500">{label}</p>
-        <div className="p-2 bg-brand-light rounded-lg">
-          <Icon size={18} className="text-brand" />
-        </div>
-      </div>
-      <p className="text-2xl font-bold text-gray-900">{value}</p>
-      {trend && (
-        <p className="mt-1 text-xs text-gray-400">
-          {trend.value >= 0 ? '+' : ''}
-          {trend.value}% {trend.label}
-        </p>
+    <Card
+      className={cn(
+        'border shadow-sm',
+        isAdmin ? 'border-black/10 bg-[#FFFFFF] text-[#000000]' : 'border-gray-200 bg-white',
+        className,
       )}
-    </div>
+    >
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className={cn('text-sm font-medium', isAdmin ? 'text-black/60' : 'text-gray-500')}>
+          {label}
+        </CardTitle>
+        <div
+          className={cn(
+            'rounded-lg p-2',
+            isAdmin ? 'bg-[#B0E0E9]/40' : 'bg-brand-light',
+          )}
+        >
+          <Icon size={18} className={cn(isAdmin ? 'text-[#000000]' : 'text-brand')} aria-hidden="true" />
+        </div>
+      </CardHeader>
+      <CardContent>
+        <p className={cn('text-2xl font-bold', isAdmin ? 'text-[#000000]' : 'text-gray-900')}>{value}</p>
+        {trend && (
+          <p className="mt-1 text-xs text-black/40">
+            {trend.value >= 0 ? '+' : ''}
+            {trend.value}% {trend.label}
+          </p>
+        )}
+      </CardContent>
+    </Card>
   )
 }

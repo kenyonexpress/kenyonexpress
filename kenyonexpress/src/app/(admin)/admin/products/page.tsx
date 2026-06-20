@@ -1,8 +1,10 @@
-import StatusBadge, { productStatusBadge } from '@/components/admin/StatusBadge'
+import ProductForm from '@/components/admin/ProductForm'
+import ProductsTable, { type ProductRow } from '@/components/admin/ProductsTable'
+import { productListParamsSchema } from '@/lib/admin/page-params'
 import { createClient } from '@/lib/supabase/server'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
-import ProductBulkClient from './ProductBulkClient'
+import { notFound } from 'next/navigation'
 
 export const metadata = { title: 'מוצרים' }
 
@@ -14,15 +16,27 @@ const STATUS_FILTERS = [
   { value: 'draft', label: 'טיוטה' },
   { value: 'paused', label: 'מושהה' },
   { value: 'archived', label: 'ארכיון' },
-]
+] as const
+
+const adminBtn =
+  'inline-flex items-center gap-2 rounded-lg border border-black/10 bg-[#000000] px-4 py-2 text-sm font-semibold text-[#FFFFFF] transition-colors hover:bg-[#B0E0E9] hover:text-[#000000]'
 
 interface Props {
-  searchParams: Promise<{ status?: string; q?: string; page?: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }
 
 export default async function AdminProductsPage({ searchParams }: Props) {
-  const { status, q, page: pageStr } = await searchParams
-  const page = Math.max(1, Number(pageStr ?? 1))
+  const raw = await searchParams
+  const parsed = productListParamsSchema.safeParse({
+    q: typeof raw.q === 'string' ? raw.q : undefined,
+    status: typeof raw.status === 'string' ? raw.status : undefined,
+    page: typeof raw.page === 'string' ? raw.page : undefined,
+    new: raw.new === '1' ? '1' : undefined,
+    edit: typeof raw.edit === 'string' ? raw.edit : undefined,
+  })
+
+  const params = parsed.success ? parsed.data : { page: 1 }
+  const { q, status, page, new: isNew, edit } = params
   const from = (page - 1) * PAGE_SIZE
   const to = from + PAGE_SIZE - 1
 
@@ -41,37 +55,64 @@ export default async function AdminProductsPage({ searchParams }: Props) {
   if (status) query = query.eq('status', status)
   if (q) query = query.ilike('name_he', `%${q}%`)
 
-  const { data: products, count } = await query
+  const [{ data: products, count }, { data: categories }] = await Promise.all([
+    query,
+    supabase.from('categories').select('id, name_he').eq('is_active', true).order('name_he'),
+  ])
+
+  let editingProduct = null
+  let variants = null
+  if (edit) {
+    const [{ data: product }, { data: productVariants }] = await Promise.all([
+      supabase.from('products').select('*').eq('id', edit).single(),
+      supabase.from('product_variants').select('*').eq('product_id', edit).is('deleted_at', null),
+    ])
+    if (!product) notFound()
+    editingProduct = product
+    variants = productVariants ?? []
+  }
+
+  const rows: ProductRow[] = (products ?? []).map((p) => {
+    const category = Array.isArray(p.categories) ? p.categories[0] : p.categories
+    return {
+      id: p.id,
+      name_he: p.name_he,
+      slug: p.slug,
+      status: p.status,
+      kenyon_price: p.kenyon_price,
+      type: p.type,
+      is_featured: p.is_featured,
+      category_name: category?.name_he ?? null,
+    }
+  })
+
   const total = count ?? 0
   const totalPages = Math.ceil(total / PAGE_SIZE)
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900">מוצרים</h1>
-        <Link
-          href="/admin/products/new"
-          className="inline-flex items-center gap-2 bg-brand hover:bg-brand-dark text-white text-sm font-semibold rounded-lg px-4 py-2 transition-colors"
-        >
+        <h1 className="text-xl font-bold text-[#000000]">מוצרים</h1>
+        <Link href="/admin/products?new=1" className={adminBtn}>
           <Plus size={15} />
           מוצר חדש
         </Link>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-2 items-center">
+      <div className="flex flex-wrap items-center gap-2">
         {STATUS_FILTERS.map((f) => {
-          const params = new URLSearchParams()
-          if (f.value) params.set('status', f.value)
-          if (q) params.set('q', q)
+          const sp = new URLSearchParams()
+          if (f.value) sp.set('status', f.value)
+          if (q) sp.set('q', q)
+          const href = sp.toString() ? `/admin/products?${sp}` : '/admin/products'
           return (
             <Link
-              key={f.value}
-              href={`/admin/products?${params}`}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              key={f.value || 'all'}
+              href={href}
+              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                 (status ?? '') === f.value
-                  ? 'bg-brand text-white'
-                  : 'bg-white border border-gray-200 text-gray-600 hover:border-brand hover:text-brand'
+                  ? 'bg-[#B0E0E9] text-[#000000]'
+                  : 'border border-black/10 text-black/60 hover:bg-[#B0E0E9]/30 hover:text-[#000000]'
               }`}
             >
               {f.label}
@@ -79,124 +120,66 @@ export default async function AdminProductsPage({ searchParams }: Props) {
           )
         })}
 
-        <form method="GET" action="/admin/products" className="flex gap-2 mr-auto">
+        <form method="GET" action="/admin/products" className="ms-auto flex gap-2">
           {status && <input type="hidden" name="status" value={status} />}
           <input
             name="q"
             defaultValue={q}
-            placeholder="חיפוש..."
-            className="border border-gray-200 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
+            placeholder="חיפוש בשרת..."
+            className="rounded-lg border border-black/10 bg-[#FFFFFF] px-3 py-1.5 text-xs text-[#000000] focus:outline-none focus:ring-2 focus:ring-[#B0E0E9]"
           />
           <button
             type="submit"
-            className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+            className="rounded-lg border border-black/10 px-3 py-1.5 text-xs font-medium text-black/70 transition-colors hover:bg-[#B0E0E9]/30"
           >
             סינון
           </button>
         </form>
       </div>
 
-      <ProductBulkClient>
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-right text-xs text-gray-500 bg-gray-50 border-b border-gray-200">
-                <th className="px-4 py-3 w-8">
-                  <input
-                    type="checkbox"
-                    data-select-all
-                    className="w-4 h-4 rounded border-gray-300"
-                  />
-                </th>
-                <th className="px-5 py-3 font-medium">שם</th>
-                <th className="px-5 py-3 font-medium">קטגוריה</th>
-                <th className="px-5 py-3 font-medium">מחיר</th>
-                <th className="px-5 py-3 font-medium">סוג</th>
-                <th className="px-5 py-3 font-medium">סטטוס</th>
-                <th className="px-5 py-3 font-medium">פעולות</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {(products ?? []).map((product) => {
-                const badge = productStatusBadge(product.status)
-                const category = Array.isArray(product.categories)
-                  ? product.categories[0]
-                  : product.categories
-                return (
-                  <tr key={product.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3">
-                      <input
-                        type="checkbox"
-                        data-product-id={product.id}
-                        className="w-4 h-4 rounded border-gray-300"
-                      />
-                    </td>
-                    <td className="px-5 py-3">
-                      <Link
-                        href={`/admin/products/${product.id}`}
-                        className="text-brand hover:underline font-medium"
-                      >
-                        {product.name_he}
-                        {product.is_featured && (
-                          <span className="mr-1 text-yellow-500 text-xs">★</span>
-                        )}
-                      </Link>
-                      <div className="text-xs text-gray-400 font-mono">{product.slug}</div>
-                    </td>
-                    <td className="px-5 py-3 text-gray-600">{category?.name_he ?? '—'}</td>
-                    <td className="px-5 py-3 text-gray-700">
-                      ₪{(product.kenyon_price ?? 0).toLocaleString('he-IL')}
-                    </td>
-                    <td className="px-5 py-3">
-                      <StatusBadge
-                        label={product.type === 'physical' ? 'פיזי' : 'קופון'}
-                        variant={product.type === 'physical' ? 'blue' : 'yellow'}
-                      />
-                    </td>
-                    <td className="px-5 py-3">
-                      <StatusBadge label={badge.label} variant={badge.variant} />
-                    </td>
-                    <td className="px-5 py-3">
-                      <Link
-                        href={`/admin/products/${product.id}`}
-                        className="text-brand text-sm hover:underline"
-                      >
-                        עריכה
-                      </Link>
-                    </td>
-                  </tr>
-                )
-              })}
-              {!products?.length && (
-                <tr>
-                  <td colSpan={7} className="px-5 py-10 text-center text-gray-400">
-                    אין מוצרים
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+      {(isNew || editingProduct) && (
+        <div className="space-y-2">
+          <h2 className="text-sm font-semibold text-[#000000]">
+            {editingProduct ? 'עריכת מוצר' : 'מוצר חדש'}
+          </h2>
+          <ProductForm
+            product={editingProduct ?? undefined}
+            variants={variants ?? []}
+            categories={categories ?? []}
+          />
+          <Link href="/admin/products" className="text-xs text-black/40 hover:underline">
+            סגור טופס
+          </Link>
         </div>
-      </ProductBulkClient>
+      )}
 
-      {/* Pagination */}
+      <ProductsTable products={rows} />
+
       {totalPages > 1 && (
-        <div className="flex items-center gap-2 justify-center">
+        <div className="flex items-center justify-center gap-2">
           {page > 1 && (
             <Link
-              href={`/admin/products?${new URLSearchParams({ ...(status ? { status } : {}), ...(q ? { q } : {}), page: String(page - 1) })}`}
-              className="px-3 py-1.5 text-xs border border-gray-200 rounded-lg hover:border-brand"
+              href={`/admin/products?${new URLSearchParams({
+                ...(status ? { status } : {}),
+                ...(q ? { q } : {}),
+                page: String(page - 1),
+              })}`}
+              className="rounded-lg border border-black/10 px-3 py-1.5 text-xs transition-colors hover:bg-[#B0E0E9]/30"
             >
               הקודם
             </Link>
           )}
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-black/50">
             עמוד {page} מתוך {totalPages} ({total} מוצרים)
           </span>
           {page < totalPages && (
             <Link
-              href={`/admin/products?${new URLSearchParams({ ...(status ? { status } : {}), ...(q ? { q } : {}), page: String(page + 1) })}`}
-              className="px-3 py-1.5 text-xs border border-gray-200 rounded-lg hover:border-brand"
+              href={`/admin/products?${new URLSearchParams({
+                ...(status ? { status } : {}),
+                ...(q ? { q } : {}),
+                page: String(page + 1),
+              })}`}
+              className="rounded-lg border border-black/10 px-3 py-1.5 text-xs transition-colors hover:bg-[#B0E0E9]/30"
             >
               הבא
             </Link>

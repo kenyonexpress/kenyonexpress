@@ -1,11 +1,12 @@
-import DeleteButton from '@/components/admin/DeleteButton'
-import StatusBadge, { productStatusBadge } from '@/components/admin/StatusBadge'
+import CouponForm from '@/components/admin/CouponForm'
+import CouponsTable, { type CouponRow } from '@/components/admin/CouponsTable'
+import { couponListParamsSchema } from '@/lib/admin/page-params'
 import { createClient } from '@/lib/supabase/server'
-import { softDeleteCouponDeal } from '@/server/actions/admin/coupon-deals'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
+import { notFound } from 'next/navigation'
 
-export const metadata = { title: 'עסקאות קופון' }
+export const metadata = { title: 'קופונים' }
 
 const STATUS_FILTERS = [
   { value: '', label: 'הכל' },
@@ -13,50 +14,77 @@ const STATUS_FILTERS = [
   { value: 'draft', label: 'טיוטה' },
   { value: 'paused', label: 'מושהה' },
   { value: 'archived', label: 'ארכיון' },
-]
+] as const
+
+const adminBtn =
+  'inline-flex items-center gap-2 rounded-lg border border-black/10 bg-[#000000] px-4 py-2 text-sm font-semibold text-[#FFFFFF] transition-colors hover:bg-[#B0E0E9] hover:text-[#000000]'
 
 interface Props {
-  searchParams: Promise<{ status?: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }
 
 export default async function AdminCouponsPage({ searchParams }: Props) {
-  const { status } = await searchParams
+  const raw = await searchParams
+  const parsed = couponListParamsSchema.safeParse({
+    status: typeof raw.status === 'string' ? raw.status : undefined,
+    new: raw.new === '1' ? '1' : undefined,
+    edit: typeof raw.edit === 'string' ? raw.edit : undefined,
+  })
+
+  const params = parsed.success ? parsed.data : {}
+  const { status, new: isNew, edit } = params
+
   const supabase = await createClient()
 
   let query = supabase
     .from('coupon_deals')
-    .select(
-      'id, title_he, business_name, original_price, platform_price, status, valid_until, created_at, vendors(business_name)',
-    )
+    .select('id, title_he, business_name, original_price, platform_price, status, valid_until')
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
 
   if (status) query = query.eq('status', status)
 
-  const { data: deals } = await query
+  const [{ data: deals }, { data: vendors }] = await Promise.all([
+    query,
+    supabase.from('vendors').select('id, business_name').eq('status', 'active').order('business_name'),
+  ])
+
+  let editingDeal = null
+  if (edit) {
+    const { data: deal } = await supabase.from('coupon_deals').select('*').eq('id', edit).single()
+    if (!deal) notFound()
+    editingDeal = deal
+  }
+
+  const rows: CouponRow[] = (deals ?? []).map((d) => ({
+    id: d.id,
+    title_he: d.title_he,
+    business_name: d.business_name,
+    original_price: d.original_price,
+    platform_price: d.platform_price,
+    status: d.status,
+    valid_until: d.valid_until,
+  }))
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900">עסקאות קופון</h1>
-        <Link
-          href="/admin/coupons/new"
-          className="inline-flex items-center gap-2 bg-brand hover:bg-brand-dark text-white text-sm font-semibold rounded-lg px-4 py-2 transition-colors"
-        >
+        <h1 className="text-xl font-bold text-[#000000]">קופונים</h1>
+        <Link href="/admin/coupons?new=1" className={adminBtn}>
           <Plus size={15} />
-          עסקה חדשה
+          קופון חדש
         </Link>
       </div>
 
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex flex-wrap gap-2">
         {STATUS_FILTERS.map((f) => (
           <Link
-            key={f.value}
+            key={f.value || 'all'}
             href={f.value ? `/admin/coupons?status=${f.value}` : '/admin/coupons'}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
               (status ?? '') === f.value
-                ? 'bg-brand text-white'
-                : 'bg-white border border-gray-200 text-gray-600 hover:border-brand hover:text-brand'
+                ? 'bg-[#B0E0E9] text-[#000000]'
+                : 'border border-black/10 text-black/60 hover:bg-[#B0E0E9]/30 hover:text-[#000000]'
             }`}
           >
             {f.label}
@@ -64,71 +92,19 @@ export default async function AdminCouponsPage({ searchParams }: Props) {
         ))}
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-right text-xs text-gray-500 bg-gray-50 border-b border-gray-200">
-              <th className="px-5 py-3 font-medium">כותרת</th>
-              <th className="px-5 py-3 font-medium">עסק</th>
-              <th className="px-5 py-3 font-medium">מחיר מקורי</th>
-              <th className="px-5 py-3 font-medium">מחיר פלטפורם</th>
-              <th className="px-5 py-3 font-medium">תוקף עד</th>
-              <th className="px-5 py-3 font-medium">סטטוס</th>
-              <th className="px-5 py-3 font-medium">פעולות</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {(deals ?? []).map((deal) => {
-              const badge = productStatusBadge(
-                deal.status as 'draft' | 'active' | 'paused' | 'archived',
-              )
-              return (
-                <tr key={deal.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-5 py-3">
-                    <Link
-                      href={`/admin/coupons/${deal.id}`}
-                      className="text-brand hover:underline font-medium"
-                    >
-                      {deal.title_he}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3 text-gray-600">{deal.business_name}</td>
-                  <td className="px-5 py-3 text-gray-700">₪{deal.original_price}</td>
-                  <td className="px-5 py-3 text-brand font-semibold">
-                    ₪{deal.platform_price ?? (deal.original_price * 0.1).toFixed(2)}
-                  </td>
-                  <td className="px-5 py-3 text-gray-500 text-xs">
-                    {deal.valid_until
-                      ? new Date(deal.valid_until).toLocaleDateString('he-IL')
-                      : 'ללא הגבלה'}
-                  </td>
-                  <td className="px-5 py-3">
-                    <StatusBadge label={badge.label} variant={badge.variant} />
-                  </td>
-                  <td className="px-5 py-3">
-                    <div className="flex items-center gap-3">
-                      <Link
-                        href={`/admin/coupons/${deal.id}`}
-                        className="text-brand text-sm hover:underline"
-                      >
-                        עריכה
-                      </Link>
-                      <DeleteButton onConfirm={() => softDeleteCouponDeal(deal.id)} />
-                    </div>
-                  </td>
-                </tr>
-              )
-            })}
-            {!deals?.length && (
-              <tr>
-                <td colSpan={7} className="px-5 py-10 text-center text-gray-400">
-                  אין עסקאות
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      {(isNew || editingDeal) && (
+        <div className="space-y-2">
+          <h2 className="text-sm font-semibold text-[#000000]">
+            {editingDeal ? 'עריכת קופון' : 'קופון חדש'}
+          </h2>
+          <CouponForm deal={editingDeal ?? undefined} vendors={vendors ?? []} />
+          <Link href="/admin/coupons" className="text-xs text-black/40 hover:underline">
+            סגור טופס
+          </Link>
+        </div>
+      )}
+
+      <CouponsTable deals={rows} />
     </div>
   )
 }
