@@ -4,6 +4,12 @@
 **Phase 5 — Homepage 1:1 (סגור)**. branch `phase5/homepage`. מקור יחיד: `refs/ke_live_singlefile.html`.
 
 ## Last Completed
+Session 2026-06-20 — מיגרציות rate-limit + storage:
+- `019_user_rate_limits.sql` (commit `77cf701`, pushed): טבלת `public.user_rate_limits` + `check_user_rate_limit(user_id, action, limit, window)` SECURITY DEFINER, RLS ללא policies; helper `checkUserRateLimit()` ב-rate-limit.ts + טיפוס ב-database.ts. additive ל-002 (IP-keyed).
+- `020_storage_product_images_admin.sql` (commit `a1aa413`, pushed): הוספת `public.is_admin()` ל-policies של bucket `product-images` (admin ProductForm). במקום עריכת 004 שכבר רץ.
+- `021_products_coupons_buckets.sql` (לא committed עדיין): buckets חדשים `products` + `coupons`, public read, גישה `has_role('content_uploader') OR is_admin()`. נכתב כתחליף נכון לניסיונות לשכתב את 004 (באג `auth.role()='content_uploader'` = deny-all).
+- כל ניסיונות `migration up`/`db push` נכשלו: אין DB נגיש (Docker down מקומית; remote unlinked + paused). 002/003/004 לא שונו (שכתובים שבורים נדחו).
+
 Session 2026-06-20 — דף קטגוריה (commit `b5139e8`):
 - `(store)/category/[slug]/page.tsx`: resolve לפי slug, breadcrumb עם הורה, צ'יפים לתת-קטגוריות, גריד מוצרים
 - מיון `?sort=` (newest/price_asc/price_desc/name) דרך `components/category/CategorySort.tsx` (client)
@@ -35,7 +41,8 @@ commit: `feat: homepage 1:1 match with live source`
 nothing
 
 ## Blocking Issues
-- פרויקט Supabase `ixvwfbuvfxxsjiywhbbb` במצב INACTIVE (paused) — צריך resume לבדיקה חיה של דף הקטגוריה.
+- אין DB נגיש להרצת מיגרציות: Docker לא רץ מקומית (`supabase start` נכשל), והפרויקט המרוחק `ixvwfbuvfxxsjiywhbbb` במצב INACTIVE + לא linked. צריך או Docker+`supabase start` מקומי, או resume+login+link+`db push` למרוחק.
+- מיגרציות `019`/`020`/`021` כתובות אך לא הוחלו על שום DB.
 
 ## Next Task
 בדיקה חיה של דף הקטגוריה אחרי resume ל-DB; אין `/categories` index page (breadcrumb לא מקשר אליו) — לשקול אם צריך.
