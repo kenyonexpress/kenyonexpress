@@ -13,10 +13,11 @@ const ICON = { size: 22, color: '#515151', strokeWidth: 1.8 } as const
 export default function SiteHeader() {
   return (
     <>
-      {/* Top bar — welcome only (no nav links, no region selector) */}
+      {/* Top bar — refs/ke_live_singlefile.html .top-bar: white, border-bottom #ddd,
+          font-size .929em, item padding .58em 0 */}
       <div dir="rtl" className="w-full border-b border-[#ddd] bg-white">
-        <div className="mx-auto flex max-w-page items-center px-4 py-2 text-[0.8125rem] text-[#333e48]">
-          ברוך הבא לעולם של קניון Express
+        <div className="mx-auto flex max-w-page items-center px-4 text-[0.929em] text-[#333e48]">
+          <span className="py-[0.58em]">ברוך הבא לעולם של קניון Express</span>
         </div>
       </div>
 
