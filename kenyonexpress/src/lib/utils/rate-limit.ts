@@ -25,3 +25,24 @@ export async function checkRateLimit(
   }
   return data === true
 }
+
+export async function checkUserRateLimit(
+  userId: string,
+  action: string,
+  maxAttempts = 100,
+  windowSeconds = 3600,
+): Promise<boolean> {
+  const supabase = await createClient()
+  const { data, error } = await supabase.rpc('check_user_rate_limit', {
+    p_user_id: userId,
+    p_action: action,
+    p_limit: maxAttempts,
+    p_window_seconds: windowSeconds,
+  })
+  if (error) {
+    // Fail open — don't block legitimate users if rate limit RPC is unavailable
+    console.error('User rate limit check failed:', error.message)
+    return true
+  }
+  return data === true
+}

@@ -599,6 +599,7 @@ export type Database = {
       current_user_role: { Args: Record<string, never>; Returns: 'customer' | 'vendor' | 'content_uploader' | 'admin' | 'super_admin' }
       has_role: { Args: { required_role: string }; Returns: boolean }
       check_rate_limit: { Args: { p_key: string; p_max_attempts?: number; p_window_seconds?: number }; Returns: boolean }
+      check_user_rate_limit: { Args: { p_user_id: string; p_action: string; p_limit?: number; p_window_seconds?: number }; Returns: boolean }
     }
     Enums: {
       user_role: 'customer' | 'vendor' | 'content_uploader' | 'admin' | 'super_admin'
