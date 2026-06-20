@@ -4,6 +4,13 @@
 **Phase 5 — Homepage 1:1 (סגור)**. branch `phase5/homepage`. מקור יחיד: `refs/ke_live_singlefile.html`.
 
 ## Last Completed
+Session 2026-06-20 — דף קטגוריה (commit `b5139e8`):
+- `(store)/category/[slug]/page.tsx`: resolve לפי slug, breadcrumb עם הורה, צ'יפים לתת-קטגוריות, גריד מוצרים
+- מיון `?sort=` (newest/price_asc/price_desc/name) דרך `components/category/CategorySort.tsx` (client)
+- pagination `?page=` עם `count: 'exact'` ו-`components/category/Pagination.tsx` (חלון עמודים קומפקטי)
+- empty state + `notFound()` לקטגוריה חסרה/לא פעילה
+- `type-check` + `biome` נקיים. בדיקה חיה חסומה: פרויקט Supabase במצב INACTIVE (queries עושים timeout → 404)
+
 Session 2026-06-20 — Admin refactor (commit `6f96164`):
 - `DataTable` גנרי (מיון/חיפוש) + `CategoriesTable`/`CouponsTable`/`ProductsTable`/`UsersTable`/`CouponForm`
 - shell עבר מ-`(admin)/admin/layout.tsx` ל-`(admin)/layout.tsx`
@@ -28,10 +35,10 @@ commit: `feat: homepage 1:1 match with live source`
 nothing
 
 ## Blocking Issues
-- worktree יתום `.claude/worktrees/agent-a54b4f308d924b8e8` — לבדוק/לנקות.
+- פרויקט Supabase `ixvwfbuvfxxsjiywhbbb` במצב INACTIVE (paused) — צריך resume לבדיקה חיה של דף הקטגוריה.
 
 ## Next Task
-דף קטגוריה (אחרי סגירת homepage)
+בדיקה חיה של דף הקטגוריה אחרי resume ל-DB; אין `/categories` index page (breadcrumb לא מקשר אליו) — לשקול אם צריך.
 
 ## Active Branch
 phase5/homepage
