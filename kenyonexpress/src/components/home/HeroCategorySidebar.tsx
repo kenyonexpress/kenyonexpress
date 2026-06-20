@@ -17,7 +17,7 @@ export default function HeroCategorySidebar() {
         className="vertical-menu-title departments-menu-v2-title h-14 shrink-0 bg-brand-secondary"
       />
 
-      <nav aria-label="קטגוריות" className="flex-1 overflow-y-auto">
+      <nav aria-label="קטגוריות" className="flex-1">
         <ul className="m-0 list-none p-0">
           {KE_LIVE_CATEGORIES.map((cat) => {
             const href = cat.href ?? `/category/${cat.slug}`

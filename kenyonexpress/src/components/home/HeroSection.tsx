@@ -1,8 +1,9 @@
 import HeroCategorySidebar from '@/components/home/HeroCategorySidebar'
+import HeroPromoBanners from '@/components/home/HeroPromoBanners'
 import HeroSlider from '@/components/home/HeroSlider'
 import { HERO_SINGLEFILE_SLIDES, HERO_SLIDER_HEIGHT } from '@/lib/hero-singlefile-data'
 
-/** refs/ke_live_singlefile.html — rs-19 active, 422px; vertical category column on the right (RTL), slider fills the rest */
+/** refs/ke_live_singlefile.html — rs-19 active, 422px; 3 columns (RTL): category column (right) | slider (center) | promo blocks (left) */
 export default function HeroSection() {
   return (
     <section
@@ -15,6 +16,7 @@ export default function HeroSection() {
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <HeroSlider slides={HERO_SINGLEFILE_SLIDES} />
       </div>
+      <HeroPromoBanners />
     </section>
   )
 }
