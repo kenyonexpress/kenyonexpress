@@ -4,6 +4,12 @@
 **Phase 5 — Homepage 1:1 (סגור)**. branch `phase5/homepage`. מקור יחיד: `refs/ke_live_singlefile.html`.
 
 ## Last Completed
+Session 2026-06-22 — Admin dashboard shell:
+- `(admin)/layout.tsx`: RBAC `requireStaffSession` (admin/super_admin/content_uploader) → `/login`, sidebar, RTL, Heebo via `font-sans`, צבע `#fed700`
+- `(admin)/dashboard/page.tsx`: StatsCard עם ספירה חיה מ-`products`, `orders`, `coupon_deals`
+- `requireStaffSession` + `isStaffRole` ב-`lib/admin/rbac.ts`; `/admin` מפנה ל-`/dashboard`
+- AdminSidebar + StatsCard עודכנו ל-`#fed700`
+
 Session 2026-06-22 — החלת 019/020/021 על המרוחק דרך Supabase MCP:
 - הפרויקט `ixvwfbuvfxxsjiywhbbb` כבר ACTIVE_HEALTHY (לא INACTIVE כפי שתועד). יש דאטה: 12 קטגוריות, 31 מוצרים.
 - `019` הוחל: טבלת `public.user_rate_limits` + `check_user_rate_limit` + `cleanup_user_rate_limits` (verified `to_regclass` not null).

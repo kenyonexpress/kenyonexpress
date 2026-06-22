@@ -22,6 +22,10 @@ export function isAdminRole(role: UserRole | null | undefined): boolean {
   return role === 'admin' || role === 'super_admin'
 }
 
+export function isStaffRole(role: UserRole | null | undefined): boolean {
+  return role === 'content_uploader' || isAdminRole(role)
+}
+
 export async function getSessionWithRole(): Promise<{
   userId: string
   role: UserRole
@@ -46,7 +50,16 @@ export async function getSessionWithRole(): Promise<{
 export async function requireAdminSession(): Promise<{ userId: string; role: UserRole }> {
   const session = await getSessionWithRole()
   if (!session || !isAdminRole(session.role)) {
-    redirect('/')
+    redirect('/login')
+  }
+  return session
+}
+
+// Admin panel guard: admin, super_admin, or content_uploader.
+export async function requireStaffSession(): Promise<{ userId: string; role: UserRole }> {
+  const session = await getSessionWithRole()
+  if (!session || !isStaffRole(session.role)) {
+    redirect('/login')
   }
   return session
 }

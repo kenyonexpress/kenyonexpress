@@ -25,7 +25,7 @@ export default function StatsCard({
     <Card
       className={cn(
         'border shadow-sm',
-        isAdmin ? 'border-black/10 bg-[#FFFFFF] text-[#000000]' : 'border-gray-200 bg-white',
+        isAdmin ? 'border-gray-200 bg-white text-[#333e48]' : 'border-gray-200 bg-white',
         className,
       )}
     >
@@ -36,14 +36,14 @@ export default function StatsCard({
         <div
           className={cn(
             'rounded-lg p-2',
-            isAdmin ? 'bg-[#B0E0E9]/40' : 'bg-brand-light',
+            isAdmin ? 'bg-[#fed700]/30' : 'bg-brand-light',
           )}
         >
-          <Icon size={18} className={cn(isAdmin ? 'text-[#000000]' : 'text-brand')} aria-hidden="true" />
+          <Icon size={18} className={cn(isAdmin ? 'text-[#333e48]' : 'text-brand')} aria-hidden="true" />
         </div>
       </CardHeader>
       <CardContent>
-        <p className={cn('text-2xl font-bold', isAdmin ? 'text-[#000000]' : 'text-gray-900')}>{value}</p>
+        <p className={cn('text-2xl font-bold', isAdmin ? 'text-[#333e48]' : 'text-gray-900')}>{value}</p>
         {trend && (
           <p className="mt-1 text-xs text-black/40">
             {trend.value >= 0 ? '+' : ''}

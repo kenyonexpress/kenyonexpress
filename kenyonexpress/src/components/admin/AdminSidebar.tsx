@@ -16,7 +16,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const NAV_ITEMS = [
-  { href: '/admin', label: 'לוח בקרה', icon: LayoutDashboard, exact: true },
+  { href: '/dashboard', label: 'לוח בקרה', icon: LayoutDashboard, exact: true },
   { href: '/admin/products', label: 'מוצרים', icon: Package, quickAdd: '/admin/products/new' },
   { href: '/admin/categories', label: 'קטגוריות', icon: Tag },
   { href: '/admin/vendors', label: 'ספקים', icon: Store },
@@ -32,8 +32,8 @@ export default function AdminSidebar() {
   return (
     <aside className="w-56 shrink-0">
       <nav className="sticky top-4 overflow-hidden rounded-xl border border-black/10 bg-[#FFFFFF]">
-        <div className="border-b border-black/10 bg-[#B0E0E9] px-4 py-3">
-          <span className="text-sm font-bold tracking-wide text-[#000000]">פאנל ניהול</span>
+        <div className="border-b border-gray-200 bg-[#fed700] px-4 py-3">
+          <span className="text-sm font-bold tracking-wide text-[#333e48]">פאנל ניהול</span>
         </div>
         <ul className="py-2">
           {NAV_ITEMS.map(({ href, label, icon: Icon, exact, quickAdd }) => {
@@ -46,8 +46,8 @@ export default function AdminSidebar() {
                     'flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors',
                     quickAdd && 'flex-1',
                     active
-                      ? 'bg-[#B0E0E9]/50 text-[#000000]'
-                      : 'text-black/60 hover:bg-black/[0.03] hover:text-[#000000]',
+                      ? 'bg-[#fed700]/40 text-[#333e48]'
+                      : 'text-black/60 hover:bg-[#fed700]/15 hover:text-[#333e48]',
                   )}
                 >
                   <Icon size={16} className="shrink-0" />
