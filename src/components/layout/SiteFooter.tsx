@@ -1,7 +1,7 @@
-import Link from 'next/link'
-import { Headphones } from 'lucide-react'
 import SmartImage from '@/components/ui/SmartImage'
 import { LOGO_FOOTER } from '@/lib/assets'
+import { Headphones } from 'lucide-react'
+import Link from 'next/link'
 
 /**
  * kenyonexpress.co.il footer — structure + values extracted from
@@ -103,7 +103,7 @@ export default function SiteFooter() {
           <form
             method="post"
             action="/api/newsletter"
-            className="flex w-full items-stretch overflow-hidden rounded-md bg-white lg:w-auto lg:min-w-[420px]"
+            className="flex w-full items-stretch overflow-hidden rounded-full bg-white lg:w-auto lg:min-w-[420px]"
           >
             <input
               type="email"
@@ -111,7 +111,7 @@ export default function SiteFooter() {
               required
               placeholder="הזן כתובת אימייל"
               aria-label="כתובת אימייל לניוזלטר"
-              className="h-12 min-w-0 flex-1 border-0 bg-white px-4 text-sm text-gray-900 focus:outline-none"
+              className="h-12 min-w-0 flex-1 border-0 bg-white px-6 text-sm text-gray-900 focus:outline-none"
             />
             <button
               type="submit"
@@ -221,11 +221,8 @@ export default function SiteFooter() {
           <p className="m-0 text-sm">
             כל הזכויות שמורות © <strong className="font-bold">Kenyon Express</strong>
           </p>
-          <ul
-            className="flex items-center gap-2.5"
-            aria-label="אמצעי תשלום"
-          >
-            {['DISCOVER', 'MasterCard', 'PayPal', 'Visa'].map((label) => (
+          <ul className="flex items-center gap-2.5" aria-label="אמצעי תשלום">
+            {['Visa', 'Mastercard', 'Discover', 'American Express'].map((label) => (
               <li
                 key={label}
                 className="rounded border border-black/15 bg-white px-2 py-1 text-[11px] font-semibold text-heading/70"
