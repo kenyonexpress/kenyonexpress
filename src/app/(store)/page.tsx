@@ -1,6 +1,7 @@
 import BenefitBar from '@/components/home/BenefitBar'
 import DealsOfTheDay from '@/components/home/DealsOfTheDay'
 import HeroSection from '@/components/home/HeroSection'
+import Newsletter from '@/components/home/Newsletter'
 import CategoryStrip from '@/components/store/CategoryStrip'
 
 export const metadata = {
@@ -16,6 +17,7 @@ export default function HomePage() {
       <CategoryStrip />
       <BenefitBar />
       <DealsOfTheDay />
+      <Newsletter />
     </>
   )
 }
