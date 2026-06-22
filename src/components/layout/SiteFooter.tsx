@@ -103,15 +103,15 @@ export default function SiteFooter() {
           <form
             method="post"
             action="/api/newsletter"
-            className="flex w-full items-stretch overflow-hidden rounded-full bg-white lg:w-auto lg:min-w-[420px]"
+            className="flex w-full items-stretch overflow-hidden rounded-none bg-white lg:w-auto lg:min-w-[420px]"
           >
             <input
               type="email"
               name="email"
               required
-              placeholder="הזן כתובת אימייל"
+              placeholder="הזן כתובת Email"
               aria-label="כתובת אימייל לניוזלטר"
-              className="h-12 min-w-0 flex-1 border-0 bg-white px-6 text-sm text-gray-900 focus:outline-none"
+              className="h-12 min-w-0 flex-1 border-0 bg-white px-4 text-sm text-gray-900 focus:outline-none"
             />
             <button
               type="submit"
