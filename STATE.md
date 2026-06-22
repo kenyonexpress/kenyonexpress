@@ -4,6 +4,13 @@
 **Phase 5 — Homepage 1:1 (סגור)**. branch `phase5/homepage`. מקור יחיד: `refs/ke_live_singlefile.html`.
 
 ## Last Completed
+Session 2026-06-23 — שחזור פרויקט + שיטוח מבנה:
+- הקוד שוחזר מ-`origin/phase5/homepage` (commit `92b858a`) אחרי איבוד מקומי. עץ העבודה היה מקונן (`kenyonexpress/kenyonexpress/`) — **שוטח**: כל הקבצים הועברו לשורש `/Users/ofir/kenyonexpress-web/kenyonexpress`, ה-scaffold הישן (13 tsx, eslint) הוסר. כעת מבנה יחיד ושטוח.
+- `.env.local` שוחזר מגיבוי (פרויקט Supabase `ixvwfbuvfxxsjiywhbbb`) → השורש; מוגנן ב-gitignore.
+- **אישור pnpm builds:** `pnpm-workspace.yaml` תוקן ל-`allowBuilds: {biome,parcel/watcher,swc/core,esbuild,sharp: true}` (pnpm 11.1.2 משתמש ב-`allowBuilds`, לא `onlyBuiltDependencies`). אזהרת `ERR_PNPM_IGNORED_BUILDS` נעלמה; `pnpm dev` עובד ישירות.
+- אומת: `pnpm dev` → `localhost:3000` HTTP 200, כותרת "קניון EXPRESS", `.env.local` נטען.
+- **חוקי פרויקט קבועים נוספו ל-CLAUDE.md** (נתיב יחיד, אין עותקים כפולים, pwd לפני כל פעולה, push מיידי אחרי commit).
+
 Session 2026-06-22 — Admin dashboard shell:
 - `(admin)/layout.tsx`: RBAC `requireStaffSession` (admin/super_admin/content_uploader) → `/login`, sidebar, RTL, Heebo via `font-sans`, צבע `#fed700`
 - `(admin)/dashboard/page.tsx`: StatsCard עם ספירה חיה מ-`products`, `orders`, `coupon_deals`
@@ -64,8 +71,13 @@ nothing
 ## Active Branch
 phase5/homepage
 
-## Working Directory
-/Users/ofir/kenyonexpress-web/kenyonexpress
+## Working Directory ⛔ נתיב יחיד ונכון
+`/Users/ofir/kenyonexpress-web/kenyonexpress` — שורש הפרויקט (כאן `package.json`, `.git`, `src/`). מבנה שטוח, **אין מקונן**.
+
+**חוקים קבועים (גם ב-CLAUDE.md):**
+1. אסור עותקים כפולים של הפרויקט (`* copy`, `src copy`, מבנה מקונן). גיבוי = git/GitHub בלבד.
+2. אסור להריץ פקודות מתיקיות אחרות. לפני כל פעולה — לוודא `pwd` = הנתיב לעיל.
+3. כל `git commit` מחייב `git push` מיידי ל-`origin phase5/homepage` כגיבוי.
 
 ## Supabase Project URL
 https://ixvwfbuvfxxsjiywhbbb.supabase.co
