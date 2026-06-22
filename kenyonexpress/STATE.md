@@ -4,6 +4,14 @@
 **Phase 5 — Homepage 1:1 (סגור)**. branch `phase5/homepage`. מקור יחיד: `refs/ke_live_singlefile.html`.
 
 ## Last Completed
+Session 2026-06-22 — החלת 019/020/021 על המרוחק דרך Supabase MCP:
+- הפרויקט `ixvwfbuvfxxsjiywhbbb` כבר ACTIVE_HEALTHY (לא INACTIVE כפי שתועד). יש דאטה: 12 קטגוריות, 31 מוצרים.
+- `019` הוחל: טבלת `public.user_rate_limits` + `check_user_rate_limit` + `cleanup_user_rate_limits` (verified `to_regclass` not null).
+- `020` הוחל: policies אדמין ל-bucket `product-images` (idempotent).
+- `021` הוחל: buckets `products` + `coupons` נוצרו (buckets עכשיו: category-icons, coupon-images, coupons, product-images, products, vendor-logos) + policies.
+- הוחל דרך `apply_migration` ולא `db push`: היסטוריית המיגרציות במרוחק מכילה רק 2 רשומות (auth_rate_limits, storage_buckets) בעוד שהסכמה כבר קיימת — `db push` היה נכשל על "already exists".
+- git: עץ העבודה נקי, אין commits לא-דחופים. 021 כבר committed (בניגוד לתיעוד הקודם).
+
 Session 2026-06-20 — מיגרציות rate-limit + storage:
 - `019_user_rate_limits.sql` (commit `77cf701`, pushed): טבלת `public.user_rate_limits` + `check_user_rate_limit(user_id, action, limit, window)` SECURITY DEFINER, RLS ללא policies; helper `checkUserRateLimit()` ב-rate-limit.ts + טיפוס ב-database.ts. additive ל-002 (IP-keyed).
 - `020_storage_product_images_admin.sql` (commit `a1aa413`, pushed): הוספת `public.is_admin()` ל-policies של bucket `product-images` (admin ProductForm). במקום עריכת 004 שכבר רץ.
@@ -41,11 +49,11 @@ commit: `feat: homepage 1:1 match with live source`
 nothing
 
 ## Blocking Issues
-- אין DB נגיש להרצת מיגרציות: Docker לא רץ מקומית (`supabase start` נכשל), והפרויקט המרוחק `ixvwfbuvfxxsjiywhbbb` במצב INACTIVE + לא linked. צריך או Docker+`supabase start` מקומי, או resume+login+link+`db push` למרוחק.
-- מיגרציות `019`/`020`/`021` כתובות אך לא הוחלו על שום DB.
+- none חוסם. הערה: היסטוריית המיגרציות במרוחק לא מסונכרנת (2 רשומות מול 21 קבצים מקומיים). אין להריץ `supabase db push` למרוחק — ייכשל על "already exists". להחיל מיגרציות חדשות נקודתית דרך MCP `apply_migration` או `supabase migration repair`.
+- Docker מקומי עדיין לא רץ (לא רלוונטי כל עוד עובדים מול המרוחק).
 
 ## Next Task
-בדיקה חיה של דף הקטגוריה אחרי resume ל-DB; אין `/categories` index page (breadcrumb לא מקשר אליו) — לשקול אם צריך.
+בדיקה חיה של דף הקטגוריה מול המרוחק (יש דאטה: 12 קטגוריות, 31 מוצרים); אין `/categories` index page (breadcrumb לא מקשר אליו) — לשקול אם צריך.
 
 ## Active Branch
 phase5/homepage
@@ -58,6 +66,11 @@ https://ixvwfbuvfxxsjiywhbbb.supabase.co
 
 ---
 ## History
+
+### 2026-06-22 — מיגרציות 019/020/021 הוחלו על המרוחק
+- הוחל דרך Supabase MCP `apply_migration` (לא `db push`, בגלל היסטוריה לא מסונכרנת)
+- user_rate_limits + buckets products/coupons + product-images admin policies — verified
+- DB מרוחק ACTIVE עם דאטה (12 קטגוריות, 31 מוצרים); חסם ה-DB הקודם בוטל
 
 ### 2026-06-19 — Homepage 1:1 match with live singlefile
 - מבנה דף, hero rs-19, 5 קטגוריות, benefits, גריד מוצרים לפי faf8583
