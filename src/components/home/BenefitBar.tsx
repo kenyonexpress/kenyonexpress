@@ -10,7 +10,7 @@ const benefits = [
 
 export default function BenefitBar() {
   return (
-    <section dir="rtl" className="w-full bg-white">
+    <section dir="rtl" className="w-full bg-white font-sans">
       <div className="max-w-[1430px] mx-auto px-4">
         <ul className="flex flex-nowrap justify-between rounded-lg border border-[#ddd]">
           {benefits.map((b) => {
@@ -18,7 +18,7 @@ export default function BenefitBar() {
             return (
               <li
                 key={b.title}
-                className="w-1/5 flex items-center justify-center gap-2.5 pt-[1.357em] pb-[0.929em] border-l border-[#ddd] last:border-l-0"
+                className="w-1/5 flex items-center justify-center gap-2.5 px-4 pt-[1.357em] pb-[0.929em] border-l border-[#ddd] last:border-l-0"
               >
                 <Icon className="w-9 h-9 text-[#fed700] flex-shrink-0" strokeWidth={1.5} />
                 <div className="text-center">
