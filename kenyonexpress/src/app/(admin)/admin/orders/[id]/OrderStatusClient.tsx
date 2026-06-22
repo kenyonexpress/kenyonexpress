@@ -44,7 +44,7 @@ export default function OrderStatusClient({ orderId, currentStatus }: Props) {
         <button
           type="submit"
           disabled={pending}
-          className="w-full bg-brand hover:bg-brand-dark disabled:opacity-60 text-white text-sm font-semibold rounded-lg py-2 transition-colors"
+          className="w-full bg-brand hover:bg-[#fedd26] disabled:opacity-60 text-brand-dark text-sm font-semibold rounded-lg py-2 transition-colors"
         >
           {pending ? 'שומר...' : 'עדכון סטטוס'}
         </button>

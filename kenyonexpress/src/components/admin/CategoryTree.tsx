@@ -201,7 +201,7 @@ export default function CategoryTree({ categories }: Props) {
         <button
           type="button"
           onClick={() => openCreate()}
-          className="inline-flex items-center gap-2 bg-brand hover:bg-brand-dark text-white text-sm font-semibold rounded-lg px-4 py-2 transition-colors"
+          className="inline-flex items-center gap-2 bg-brand hover:bg-[#fedd26] text-brand-dark text-sm font-semibold rounded-lg px-4 py-2 transition-colors"
         >
           <Plus size={15} />
           קטגוריה חדשה

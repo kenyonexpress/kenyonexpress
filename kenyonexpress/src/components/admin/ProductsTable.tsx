@@ -54,9 +54,7 @@ export default function ProductsTable({ products }: Props) {
       sortable: true,
       accessor: (p) => p.kenyon_price ?? 0,
       cell: (p) => (
-        <span className="text-black/80">
-          ₪{(p.kenyon_price ?? 0).toLocaleString('he-IL')}
-        </span>
+        <span className="text-black/80">₪{(p.kenyon_price ?? 0).toLocaleString('he-IL')}</span>
       ),
     },
     {

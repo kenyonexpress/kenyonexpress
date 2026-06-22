@@ -53,9 +53,7 @@ export default function DataTable<T>({
 
     if (query.trim() && searchKeys?.length) {
       const q = query.trim().toLowerCase()
-      result = result.filter((row) =>
-        searchKeys.some((fn) => fn(row).toLowerCase().includes(q)),
-      )
+      result = result.filter((row) => searchKeys.some((fn) => fn(row).toLowerCase().includes(q)))
     }
 
     if (sortCol) {
@@ -93,7 +91,7 @@ export default function DataTable<T>({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={searchPlaceholder}
-              className="border-black/10 bg-[#FFFFFF] ps-9 text-[#000000] focus-visible:ring-[#B0E0E9]"
+              className="border-black/10 bg-[#FFFFFF] ps-9 text-[#000000] focus-visible:ring-[#fed700]"
             />
           </div>
         )}
@@ -134,7 +132,7 @@ export default function DataTable<T>({
             {rows.map((row) => (
               <tr
                 key={rowKey(row)}
-                className="text-[#000000] transition-colors hover:bg-[#B0E0E9]/20"
+                className="text-[#000000] transition-colors hover:bg-[#fed700]/20"
               >
                 {columns.map((col) => (
                   <td key={col.id} className={cn('px-4 py-3', col.className)}>

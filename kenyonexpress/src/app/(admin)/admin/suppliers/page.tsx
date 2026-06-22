@@ -36,8 +36,8 @@ export default async function AdminVendorsPage({ searchParams }: Props) {
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-gray-900">ספקים</h1>
         <Link
-          href="/admin/vendors/new"
-          className="inline-flex items-center gap-2 bg-brand hover:bg-brand-dark text-white text-sm font-semibold rounded-lg px-4 py-2 transition-colors"
+          href="/admin/suppliers/new"
+          className="inline-flex items-center gap-2 bg-brand hover:bg-[#fedd26] text-brand-dark text-sm font-semibold rounded-lg px-4 py-2 transition-colors"
         >
           <Plus size={15} />
           ספק חדש
@@ -48,10 +48,10 @@ export default async function AdminVendorsPage({ searchParams }: Props) {
         {STATUS_FILTERS.map((f) => (
           <Link
             key={f.value}
-            href={f.value ? `/admin/vendors?status=${f.value}` : '/admin/vendors'}
+            href={f.value ? `/admin/suppliers?status=${f.value}` : '/admin/suppliers'}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
               (status ?? '') === f.value
-                ? 'bg-brand text-white'
+                ? 'bg-brand text-brand-dark'
                 : 'bg-white border border-gray-200 text-gray-600 hover:border-brand hover:text-brand'
             }`}
           >
@@ -59,7 +59,7 @@ export default async function AdminVendorsPage({ searchParams }: Props) {
           </Link>
         ))}
 
-        <form method="GET" action="/admin/vendors" className="mr-auto">
+        <form method="GET" action="/admin/suppliers" className="mr-auto">
           <input
             name="q"
             defaultValue={q}
@@ -89,7 +89,7 @@ export default async function AdminVendorsPage({ searchParams }: Props) {
                 <tr key={vendor.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-5 py-3">
                     <Link
-                      href={`/admin/vendors/${vendor.id}`}
+                      href={`/admin/suppliers/${vendor.id}`}
                       className="text-brand hover:underline font-medium"
                     >
                       {vendor.business_name}
@@ -110,7 +110,7 @@ export default async function AdminVendorsPage({ searchParams }: Props) {
                   </td>
                   <td className="px-5 py-3">
                     <Link
-                      href={`/admin/vendors/${vendor.id}`}
+                      href={`/admin/suppliers/${vendor.id}`}
                       className="text-brand text-sm hover:underline"
                     >
                       עריכה

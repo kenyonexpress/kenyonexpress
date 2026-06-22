@@ -1,6 +1,6 @@
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import type { LucideIcon } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface Props {
   label: string
@@ -30,20 +30,23 @@ export default function StatsCard({
       )}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className={cn('text-sm font-medium', isAdmin ? 'text-black/60' : 'text-gray-500')}>
+        <CardTitle
+          className={cn('text-sm font-medium', isAdmin ? 'text-black/60' : 'text-gray-500')}
+        >
           {label}
         </CardTitle>
-        <div
-          className={cn(
-            'rounded-lg p-2',
-            isAdmin ? 'bg-[#fed700]/30' : 'bg-brand-light',
-          )}
-        >
-          <Icon size={18} className={cn(isAdmin ? 'text-[#333e48]' : 'text-brand')} aria-hidden="true" />
+        <div className={cn('rounded-lg p-2', isAdmin ? 'bg-[#fed700]/30' : 'bg-brand-light')}>
+          <Icon
+            size={18}
+            className={cn(isAdmin ? 'text-[#333e48]' : 'text-brand')}
+            aria-hidden="true"
+          />
         </div>
       </CardHeader>
       <CardContent>
-        <p className={cn('text-2xl font-bold', isAdmin ? 'text-[#333e48]' : 'text-gray-900')}>{value}</p>
+        <p className={cn('text-2xl font-bold', isAdmin ? 'text-[#333e48]' : 'text-gray-900')}>
+          {value}
+        </p>
         {trend && (
           <p className="mt-1 text-xs text-black/40">
             {trend.value >= 0 ? '+' : ''}

@@ -44,7 +44,7 @@ export default function VendorDetailClient({ vendorId, currentStatus, currentCom
           <button
             type="submit"
             disabled={statusPending}
-            className="w-full bg-brand hover:bg-brand-dark disabled:opacity-60 text-white text-sm font-semibold rounded-lg py-2 transition-colors"
+            className="w-full bg-brand hover:bg-[#fedd26] disabled:opacity-60 text-brand-dark text-sm font-semibold rounded-lg py-2 transition-colors"
           >
             {statusPending ? 'שומר...' : 'עדכון סטטוס'}
           </button>
@@ -80,7 +80,7 @@ export default function VendorDetailClient({ vendorId, currentStatus, currentCom
           <button
             type="submit"
             disabled={commPending}
-            className="w-full bg-brand hover:bg-brand-dark disabled:opacity-60 text-white text-sm font-semibold rounded-lg py-2 transition-colors"
+            className="w-full bg-brand hover:bg-[#fedd26] disabled:opacity-60 text-brand-dark text-sm font-semibold rounded-lg py-2 transition-colors"
           >
             {commPending ? 'שומר...' : 'עדכון עמלה'}
           </button>

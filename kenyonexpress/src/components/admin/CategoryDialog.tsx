@@ -226,7 +226,7 @@ export default function CategoryDialog({ open, onClose, category, parentOptions 
               <button
                 type="submit"
                 disabled={pending}
-                className="bg-brand hover:bg-brand-dark disabled:opacity-60 text-white font-semibold rounded-lg px-5 py-2 text-sm transition-colors"
+                className="bg-brand hover:bg-[#fedd26] disabled:opacity-60 text-brand-dark font-semibold rounded-lg px-5 py-2 text-sm transition-colors"
               >
                 {pending ? 'שומר...' : category ? 'עדכון' : 'יצירה'}
               </button>

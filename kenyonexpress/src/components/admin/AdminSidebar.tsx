@@ -16,10 +16,10 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const NAV_ITEMS = [
-  { href: '/dashboard', label: 'לוח בקרה', icon: LayoutDashboard, exact: true },
+  { href: '/admin/dashboard', label: 'לוח בקרה', icon: LayoutDashboard, exact: true },
   { href: '/admin/products', label: 'מוצרים', icon: Package, quickAdd: '/admin/products/new' },
   { href: '/admin/categories', label: 'קטגוריות', icon: Tag },
-  { href: '/admin/vendors', label: 'ספקים', icon: Store },
+  { href: '/admin/suppliers', label: 'ספקים', icon: Store },
   { href: '/admin/orders', label: 'הזמנות', icon: ShoppingCart },
   { href: '/admin/coupons', label: 'קופונים', icon: FileText },
   { href: '/admin/users', label: 'משתמשים', icon: Users },

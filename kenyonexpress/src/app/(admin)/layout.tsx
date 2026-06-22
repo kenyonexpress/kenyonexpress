@@ -18,7 +18,7 @@ export default async function AdminGroupLayout({ children }: { children: React.R
     >
       <header className="sticky top-0 z-20 border-b border-gray-200 bg-white px-6 py-3">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <Link href="/dashboard" className="text-lg font-bold text-[#333e48]">
+          <Link href="/admin/dashboard" className="text-lg font-bold text-[#333e48]">
             KenyonExpress <span className="text-sm font-normal text-black/50">/ ניהול</span>
           </Link>
           <div className="flex items-center gap-4">

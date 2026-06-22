@@ -4,8 +4,6 @@ import CategoryForm from '@/components/admin/CategoryForm'
 import DataTable, { type DataTableColumn } from '@/components/admin/DataTable'
 import DeleteButton from '@/components/admin/DeleteButton'
 import StatusBadge from '@/components/admin/StatusBadge'
-import { softDeleteCategory } from '@/server/actions/admin/categories'
-import type { Category } from '@/types/database'
 import {
   Dialog,
   DialogContent,
@@ -13,6 +11,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { softDeleteCategory } from '@/server/actions/admin/categories'
+import type { Category } from '@/types/database'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
@@ -115,7 +115,7 @@ export default function CategoriesTable({
             setActiveCategory(undefined)
             setDialogOpen(true)
           }}
-          className="inline-flex items-center gap-2 rounded-lg border border-black/10 bg-[#000000] px-4 py-2 text-sm font-semibold text-[#FFFFFF] transition-colors hover:bg-[#B0E0E9] hover:text-[#000000]"
+          className="inline-flex items-center gap-2 rounded-lg border border-black/10 bg-brand px-4 py-2 text-sm font-semibold text-brand-dark transition-colors hover:bg-[#fedd26]"
         >
           <Plus size={15} />
           קטגוריה חדשה
@@ -132,7 +132,10 @@ export default function CategoriesTable({
       />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent dir="rtl" className="max-h-[90vh] max-w-lg overflow-y-auto border-black/10 bg-[#FFFFFF]">
+        <DialogContent
+          dir="rtl"
+          className="max-h-[90vh] max-w-lg overflow-y-auto border-black/10 bg-[#FFFFFF]"
+        >
           <DialogHeader className="text-start">
             <DialogTitle className="text-[#000000]">
               {activeCategory ? 'עריכת קטגוריה' : 'קטגוריה חדשה'}

@@ -273,7 +273,7 @@ export default function CouponDealForm({ deal, vendors }: Props) {
             <button
               type="submit"
               disabled={pending}
-              className="bg-brand hover:bg-brand-dark disabled:opacity-60 text-white font-semibold rounded-lg px-6 py-2.5 text-sm transition-colors"
+              className="bg-brand hover:bg-[#fedd26] disabled:opacity-60 text-brand-dark font-semibold rounded-lg px-6 py-2.5 text-sm transition-colors"
             >
               {pending ? 'שומר...' : deal ? 'עדכון עסקה' : 'יצירת עסקה'}
             </button>
@@ -333,7 +333,7 @@ function CouponPreviewCard({
             <Tag size={40} />
           </div>
         )}
-        <div className="absolute top-2 right-2 bg-brand text-white text-xs font-bold px-2 py-1 rounded-lg">
+        <div className="absolute top-2 right-2 bg-brand text-brand-dark text-xs font-bold px-2 py-1 rounded-lg">
           {discountPct}% הנחה
         </div>
       </div>

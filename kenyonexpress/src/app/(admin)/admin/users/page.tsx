@@ -55,8 +55,8 @@ export default async function AdminUsersPage({ searchParams }: Props) {
               href={f.value ? `/admin/users?role=${f.value}` : '/admin/users'}
               className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                 (roleFilter ?? '') === f.value
-                  ? 'bg-[#B0E0E9] text-[#000000]'
-                  : 'border border-black/10 text-black/60 hover:bg-[#B0E0E9]/30 hover:text-[#000000]'
+                  ? 'bg-[#fed700] text-[#000000]'
+                  : 'border border-black/10 text-black/60 hover:bg-[#fed700]/30 hover:text-[#000000]'
               }`}
             >
               {f.label}

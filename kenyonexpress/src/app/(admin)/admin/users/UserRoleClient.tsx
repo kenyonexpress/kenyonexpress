@@ -45,7 +45,7 @@ export default function UserRoleClient({ userId, currentRole, callerRole }: Prop
       <button
         type="submit"
         disabled={pending}
-        className="px-2 py-1 bg-brand hover:bg-brand-dark disabled:opacity-60 text-white text-xs rounded-lg transition-colors"
+        className="px-2 py-1 bg-brand hover:bg-[#fedd26] disabled:opacity-60 text-brand-dark text-xs rounded-lg transition-colors"
       >
         {pending ? '...' : 'שמירה'}
       </button>

@@ -1,6 +1,6 @@
 'use server'
 
-import { requireAdminSession } from '@/lib/admin/rbac'
+import { requireStaffSession } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -53,7 +53,7 @@ export async function upsertProduct(
   formData: FormData,
 ): Promise<ProductFormState> {
   try {
-    await requireAdminSession()
+    await requireStaffSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
@@ -133,7 +133,7 @@ export async function upsertProduct(
 
 export async function deleteProduct(id: string): Promise<{ error?: string }> {
   try {
-    await requireAdminSession()
+    await requireStaffSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
@@ -154,7 +154,7 @@ export async function bulkUpdateProductStatus(
   status: 'draft' | 'active' | 'paused' | 'archived',
 ): Promise<{ error?: string }> {
   try {
-    await requireAdminSession()
+    await requireStaffSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
@@ -169,7 +169,7 @@ export async function bulkUpdateProductStatus(
 
 export async function deleteVariant(id: string): Promise<{ error?: string }> {
   try {
-    await requireAdminSession()
+    await requireStaffSession()
   } catch {
     return { error: 'אין הרשאה' }
   }

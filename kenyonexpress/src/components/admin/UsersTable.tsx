@@ -1,9 +1,9 @@
 'use client'
 
+import UserRoleClient from '@/app/(admin)/admin/users/UserRoleClient'
 import DataTable, { type DataTableColumn } from '@/components/admin/DataTable'
 import { ROLE_LABELS } from '@/lib/admin/rbac'
 import type { UserRole } from '@/types/database'
-import UserRoleClient from '@/app/(admin)/admin/users/UserRoleClient'
 
 export type UserRow = {
   id: string
@@ -17,7 +17,7 @@ const ROLE_BADGE: Record<UserRole, string> = {
   customer: 'bg-black/5 text-black/60',
   vendor: 'bg-blue-100 text-blue-800',
   content_uploader: 'bg-purple-100 text-purple-800',
-  admin: 'bg-[#B0E0E9] text-[#000000]',
+  admin: 'bg-[#fed700] text-[#000000]',
   super_admin: 'bg-red-100 text-red-800',
 }
 
@@ -70,9 +70,7 @@ export default function UsersTable({ users, callerRole }: Props) {
       id: 'actions',
       header: 'שינוי תפקיד',
       className: 'w-48',
-      cell: (u) => (
-        <UserRoleClient userId={u.id} currentRole={u.role} callerRole={callerRole} />
-      ),
+      cell: (u) => <UserRoleClient userId={u.id} currentRole={u.role} callerRole={callerRole} />,
     },
   ]
 

@@ -56,8 +56,12 @@ export async function proxy(request: NextRequest) {
       .select('role')
       .eq('id', user.id)
       .single()
-    const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin'
-    if (!isAdmin) {
+    // Admin panel is open to staff: admin, super_admin, and content_uploader.
+    const isStaff =
+      profile?.role === 'admin' ||
+      profile?.role === 'super_admin' ||
+      profile?.role === 'content_uploader'
+    if (!isStaff) {
       return NextResponse.redirect(new URL('/', request.url))
     }
   }

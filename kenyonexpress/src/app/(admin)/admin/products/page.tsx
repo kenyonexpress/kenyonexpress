@@ -19,7 +19,7 @@ const STATUS_FILTERS = [
 ] as const
 
 const adminBtn =
-  'inline-flex items-center gap-2 rounded-lg border border-black/10 bg-[#000000] px-4 py-2 text-sm font-semibold text-[#FFFFFF] transition-colors hover:bg-[#B0E0E9] hover:text-[#000000]'
+  'inline-flex items-center gap-2 rounded-lg border border-black/10 bg-brand px-4 py-2 text-sm font-semibold text-brand-dark transition-colors hover:bg-[#fedd26]'
 
 interface Props {
   searchParams: Promise<Record<string, string | string[] | undefined>>
@@ -111,8 +111,8 @@ export default async function AdminProductsPage({ searchParams }: Props) {
               href={href}
               className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                 (status ?? '') === f.value
-                  ? 'bg-[#B0E0E9] text-[#000000]'
-                  : 'border border-black/10 text-black/60 hover:bg-[#B0E0E9]/30 hover:text-[#000000]'
+                  ? 'bg-[#fed700] text-[#000000]'
+                  : 'border border-black/10 text-black/60 hover:bg-[#fed700]/30 hover:text-[#000000]'
               }`}
             >
               {f.label}
@@ -126,11 +126,11 @@ export default async function AdminProductsPage({ searchParams }: Props) {
             name="q"
             defaultValue={q}
             placeholder="חיפוש בשרת..."
-            className="rounded-lg border border-black/10 bg-[#FFFFFF] px-3 py-1.5 text-xs text-[#000000] focus:outline-none focus:ring-2 focus:ring-[#B0E0E9]"
+            className="rounded-lg border border-black/10 bg-[#FFFFFF] px-3 py-1.5 text-xs text-[#000000] focus:outline-none focus:ring-2 focus:ring-[#fed700]"
           />
           <button
             type="submit"
-            className="rounded-lg border border-black/10 px-3 py-1.5 text-xs font-medium text-black/70 transition-colors hover:bg-[#B0E0E9]/30"
+            className="rounded-lg border border-black/10 px-3 py-1.5 text-xs font-medium text-black/70 transition-colors hover:bg-[#fed700]/30"
           >
             סינון
           </button>
@@ -164,7 +164,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
                 ...(q ? { q } : {}),
                 page: String(page - 1),
               })}`}
-              className="rounded-lg border border-black/10 px-3 py-1.5 text-xs transition-colors hover:bg-[#B0E0E9]/30"
+              className="rounded-lg border border-black/10 px-3 py-1.5 text-xs transition-colors hover:bg-[#fed700]/30"
             >
               הקודם
             </Link>
@@ -179,7 +179,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
                 ...(q ? { q } : {}),
                 page: String(page + 1),
               })}`}
-              className="rounded-lg border border-black/10 px-3 py-1.5 text-xs transition-colors hover:bg-[#B0E0E9]/30"
+              className="rounded-lg border border-black/10 px-3 py-1.5 text-xs transition-colors hover:bg-[#fed700]/30"
             >
               הבא
             </Link>

@@ -9,10 +9,7 @@ export default async function DashboardPage() {
 
   const [{ count: productCount }, { count: orderCount }, { count: couponCount }] =
     await Promise.all([
-      supabase
-        .from('products')
-        .select('*', { count: 'exact', head: true })
-        .is('deleted_at', null),
+      supabase.from('products').select('*', { count: 'exact', head: true }).is('deleted_at', null),
       supabase.from('orders').select('*', { count: 'exact', head: true }),
       supabase
         .from('coupon_deals')
