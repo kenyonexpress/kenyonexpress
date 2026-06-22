@@ -1,81 +1,52 @@
-import '@/styles/electro-icons.css'
+'use client'
 
-type Benefit = {
-  icon: 'ec-transport' | 'ec-customers' | 'ec-support' | 'ec-payment' | 'ec-tag'
-  bold: string
-  rest: string
-  iconSize?: string
-}
+import { Headphones, ShieldCheck, Truck, Wallet } from 'lucide-react'
 
-/** refs/ke_live_singlefile.html — .features-list .feature (DOM order, RTL right → left) */
-const BENEFITS: Benefit[] = [
-  { icon: 'ec-transport', bold: 'לכל חלקי', rest: 'הארץ' },
-  { icon: 'ec-customers', bold: 'קניה', rest: 'חכמה', iconSize: '3.386em' },
-  { icon: 'ec-support', bold: 'שירות', rest: 'לקוחות' },
-  { icon: 'ec-payment', bold: 'מחירים', rest: 'מנצחים' },
-  { icon: 'ec-tag', bold: 'מותגי יוקרה', rest: 'מובילים !' },
+const benefits = [
+  {
+    icon: Truck,
+    title: 'משלוח מהיר חינם',
+    subtitle: 'לכל חלקי הארץ',
+  },
+  {
+    icon: Headphones,
+    title: 'שירות לקוחות',
+    subtitle: 'זמינים 24/7',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'קנייה בטוחה',
+    subtitle: 'תשלום מאובטח',
+  },
+  {
+    icon: Wallet,
+    title: 'מחירים משתלמים',
+    subtitle: 'הזולים בארץ',
+  },
 ]
 
 export default function BenefitBar() {
   return (
-    <section aria-label="יתרונות" dir="rtl" className="featured-block-md w-full bg-white font-sans">
-      <div className="mx-auto max-w-page px-4">
-        <div
-          className="features-list row row-cols-lg-5 flex flex-nowrap justify-between overflow-auto"
-          style={{
-            border: '1px solid #ddd',
-            borderRadius: '8px',
-            marginBottom: '1.643em',
-            marginRight: 0,
-            marginLeft: 0,
-          }}
-        >
-          {BENEFITS.map((item, index) => (
-            <div
-              key={item.icon}
-              className="feature mx-auto flex w-[180px] shrink-0 lg:w-1/5 lg:pl-[15px]"
-              style={{
-                paddingTop: '1.357em',
-                paddingBottom: '0.929em',
-                borderBottom: 'none',
-                flex: '0 0 auto',
-                ...(index > 0 ? { borderRight: '1px solid #ddd' } : {}),
-              }}
-            >
-              <div
-                className="media mx-auto flex items-center"
-                style={{ width: '150px' }}
-              >
-                <div
-                  className="media-left feature-icon media-middle shrink-0"
-                  style={{ paddingLeft: '10px' }}
-                >
-                  <i
-                    className={`ec ${item.icon}`}
-                    aria-hidden="true"
-                    style={{
-                      color: '#fed700',
-                      fontSize: item.iconSize ?? '2.571em',
-                    }}
-                  />
+    <section dir="rtl" className="w-full bg-white border-t border-b border-[#ededed]">
+      <div className="max-w-[1430px] mx-auto px-4">
+        <ul className="grid grid-cols-2 md:grid-cols-4 divide-x divide-x-reverse divide-[#ededed]">
+          {benefits.map((b) => {
+            const Icon = b.icon
+            return (
+              <li key={b.title} className="flex items-center justify-center gap-4 py-7 px-4">
+                <Icon className="w-9 h-9 text-[#333e48] flex-shrink-0" strokeWidth={1.5} />
+                <div className="text-right">
+                  <div className="text-[15px] font-bold text-[#333e48] leading-tight">
+                    {b.title}
+                  </div>
+                  <div className="text-[13px] text-[#7e7e7e] leading-tight mt-0.5">
+                    {b.subtitle}
+                  </div>
                 </div>
-                <div
-                  className="media-body feature-text media-middle"
-                  style={{
-                    fontSize: '1em',
-                    lineHeight: 1.25,
-                    flexGrow: 1,
-                    textAlign: 'right',
-                    color: '#333e48',
-                  }}
-                >
-                  <strong className="block font-bold">{item.bold}</strong>
-                  <span className="font-normal">{item.rest}</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+              </li>
+            )
+          })}
+        </ul>
       </div>
     </section>
   )
