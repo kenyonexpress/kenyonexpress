@@ -52,11 +52,17 @@ export default function DealsSection({ products }: { products: Product[] }) {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-0 rounded-b-lg border border-t-0 border-gray-200 bg-gray-50 p-3">
+      <div className="rounded-b-lg border border-t-0 border-[#ddd] bg-white">
         {products.length > 0 ? (
-          products.map((product) => <ProductCard key={product.id} product={product} />)
+          <div className="jet-listing-grid-deals">
+            {products.map((product) => (
+              <div key={product.id} className="jet-listing-grid-deals__item">
+                <ProductCard product={product} variant="deals" />
+              </div>
+            ))}
+          </div>
         ) : (
-          <p className="col-span-full py-10 text-center text-sm text-gray-500">אין דילים להצגה כרגע</p>
+          <p className="py-10 text-center text-sm text-gray-500">אין דילים להצגה כרגע</p>
         )}
       </div>
     </section>

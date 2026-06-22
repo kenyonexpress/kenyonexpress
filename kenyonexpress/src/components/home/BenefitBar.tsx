@@ -1,47 +1,78 @@
-import { CreditCard, Headphones, MapPin, Tag, Users } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+import '@/styles/electro-icons.css'
 
 type Benefit = {
-  Icon: LucideIcon
+  icon: 'ec-transport' | 'ec-customers' | 'ec-support' | 'ec-payment' | 'ec-tag'
   bold: string
   rest: string
+  iconSize?: string
 }
 
-/** refs/ke_live_singlefile.html — .features-list (DOM order). Bold first word, regular second line. */
+/** refs/ke_live_singlefile.html — .features-list .feature (DOM order, RTL right → left) */
 const BENEFITS: Benefit[] = [
-  { Icon: MapPin, bold: 'לכל', rest: 'חלקי הארץ' },
-  { Icon: Users, bold: 'קניה', rest: 'חכמה' },
-  { Icon: Headphones, bold: 'שירות', rest: 'לקוחות' },
-  { Icon: CreditCard, bold: 'מחירים', rest: 'מנצחים' },
-  { Icon: Tag, bold: 'מותגי', rest: 'יוקרה מובילים !' },
+  { icon: 'ec-transport', bold: 'לכל חלקי', rest: 'הארץ' },
+  { icon: 'ec-customers', bold: 'קניה', rest: 'חכמה', iconSize: '3.386em' },
+  { icon: 'ec-support', bold: 'שירות', rest: 'לקוחות' },
+  { icon: 'ec-payment', bold: 'מחירים', rest: 'מנצחים' },
+  { icon: 'ec-tag', bold: 'מותגי יוקרה', rest: 'מובילים !' },
 ]
 
 export default function BenefitBar() {
   return (
-    <section aria-label="יתרונות" dir="rtl" className="w-full bg-white py-4 font-sans">
+    <section aria-label="יתרונות" dir="rtl" className="featured-block-md w-full bg-white font-sans">
       <div className="mx-auto max-w-page px-4">
         <div
-          className="flex flex-wrap lg:flex-nowrap lg:justify-between"
-          style={{ marginBottom: '1.643em' }}
+          className="features-list row row-cols-lg-5 flex flex-nowrap justify-between overflow-auto"
+          style={{
+            border: '1px solid #ddd',
+            borderRadius: '8px',
+            marginBottom: '1.643em',
+            marginRight: 0,
+            marginLeft: 0,
+          }}
         >
-          {BENEFITS.map((item, i) => (
+          {BENEFITS.map((item, index) => (
             <div
-              key={item.bold}
-              className={`flex min-w-[50%] flex-1 items-center gap-2.5 px-4 lg:min-w-0 ${
-                i < BENEFITS.length - 1 ? 'border-e border-[#ddd]' : ''
-              }`}
-              style={{ paddingTop: '1.357em', paddingBottom: '0.929em' }}
+              key={item.icon}
+              className="feature mx-auto flex w-[180px] shrink-0 lg:w-1/5 lg:pl-[15px]"
+              style={{
+                paddingTop: '1.357em',
+                paddingBottom: '0.929em',
+                borderBottom: 'none',
+                flex: '0 0 auto',
+                ...(index > 0 ? { borderRight: '1px solid #ddd' } : {}),
+              }}
             >
-              <item.Icon
-                size={36}
-                strokeWidth={1.5}
-                className="shrink-0 text-brand-secondary"
-                aria-hidden="true"
-              />
-              <p className="m-0 text-sm leading-tight text-[#333e48]">
-                <strong className="font-bold">{item.bold}</strong>
-                <span className="block font-normal">{item.rest}</span>
-              </p>
+              <div
+                className="media mx-auto flex items-center"
+                style={{ width: '150px' }}
+              >
+                <div
+                  className="media-left feature-icon media-middle shrink-0"
+                  style={{ paddingLeft: '10px' }}
+                >
+                  <i
+                    className={`ec ${item.icon}`}
+                    aria-hidden="true"
+                    style={{
+                      color: '#fed700',
+                      fontSize: item.iconSize ?? '2.571em',
+                    }}
+                  />
+                </div>
+                <div
+                  className="media-body feature-text media-middle"
+                  style={{
+                    fontSize: '1em',
+                    lineHeight: 1.25,
+                    flexGrow: 1,
+                    textAlign: 'right',
+                    color: '#333e48',
+                  }}
+                >
+                  <strong className="block font-bold">{item.bold}</strong>
+                  <span className="font-normal">{item.rest}</span>
+                </div>
+              </div>
             </div>
           ))}
         </div>

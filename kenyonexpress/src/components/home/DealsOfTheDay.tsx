@@ -35,9 +35,11 @@ export default async function DealsOfTheDay() {
 
   return (
     <section aria-label="מוצרים מובילים" className="mx-auto max-w-page px-4 py-6">
-      <div className="grid grid-cols-2 gap-0 bg-white lg:grid-cols-4">
+      <div className="jet-listing-grid-deals bg-white">
         {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
+          <div key={product.id} className="jet-listing-grid-deals__item">
+            <ProductCard product={product} variant="deals" />
+          </div>
         ))}
       </div>
     </section>

@@ -4,51 +4,70 @@ import { KE_LIVE_CATEGORIES } from '@/lib/ke-live-hero-data'
 
 const CC = ELECTRO_HERO.categoryColumn
 
+/** refs/ke_live_singlefile-hero.css — .departments-menu-v2 .departments-menu-v2-title + .dropdown-menu */
+const MENU_LI_STYLE = { padding: '0 1em' } as const
+const MENU_LINK_STYLE = {
+  padding: '6.5px 5px 6.5px 0',
+  lineHeight: 1.5,
+  whiteSpace: 'normal' as const,
+  borderBottom: '1px solid rgb(221, 221, 221)',
+} as const
+
 export default function HeroCategorySidebar() {
+  const lastSlug = KE_LIVE_CATEGORIES.at(-1)?.slug
+
   return (
     <aside
       dir="rtl"
       aria-label="קטגוריות"
       style={{ width: CC.width, color: CC.textColor }}
-      className="home-vertical-nav departments-menu-v2 hidden h-full shrink-0 flex-col overflow-hidden border-s border-gray-200 bg-white font-sans lg:flex"
+      className="home-vertical-nav departments-menu-v2 hidden h-full shrink-0 flex-col overflow-hidden bg-white font-sans lg:flex"
     >
-      <div
-        aria-hidden="true"
-        className="vertical-menu-title departments-menu-v2-title h-14 shrink-0 bg-brand-secondary"
-      />
+      <div className="dropdown show-dropdown flex h-full min-h-0 flex-col">
+        <div
+          aria-hidden="true"
+          className="vertical-menu-title departments-menu-v2-title shrink-0 bg-brand-secondary"
+          style={{
+            borderRadius: 0,
+            padding: '12px 20px',
+            fontWeight: 500,
+            display: 'flex',
+            justifyContent: 'space-between',
+          }}
+        />
 
-      <nav aria-label="קטגוריות" className="flex-1">
-        <ul className="m-0 list-none p-0">
-          {KE_LIVE_CATEGORIES.map((cat) => {
-            const href = cat.href ?? `/category/${cat.slug}`
-            const isSoon = cat.slug === 'courses'
+        <nav aria-label="קטגוריות" className="min-h-0 flex-1">
+          <ul
+            className="dropdown-menu yamm m-0 list-none p-0"
+            style={{ borderWidth: 0, borderRadius: 0 }}
+          >
+            {KE_LIVE_CATEGORIES.map((cat) => {
+              const href = cat.href ?? `/category/${cat.slug}`
+              const isLast = cat.slug === lastSlug
 
-            return (
-              <li key={cat.slug} className={cat.highlight ? 'highlight' : undefined}>
-                {isSoon ? (
+              return (
+                <li
+                  key={cat.slug}
+                  className={cat.highlight ? 'highlight' : undefined}
+                  style={MENU_LI_STYLE}
+                >
                   <Link
                     href={href}
-                    style={{ fontSize: ELECTRO_HERO.typography.categoryLink.size }}
-                    className="block border-b border-gray-100 px-4 py-2.5 text-sm font-medium text-heading transition-colors hover:bg-brand-accent hover:text-brand-dark"
+                    className="block text-end transition-colors hover:bg-[#f5f5f5] hover:font-bold focus:bg-[#f5f5f5] focus:font-bold"
+                    style={{
+                      ...MENU_LINK_STYLE,
+                      ...(isLast ? { borderBottom: 'none' } : {}),
+                      ...(cat.highlight ? { fontWeight: 700 } : {}),
+                    }}
                   >
                     {cat.label}
                   </Link>
-                ) : (
-                  <Link
-                    href={href}
-                    style={{ fontSize: ELECTRO_HERO.typography.categoryLink.size }}
-                    className={`block border-b border-gray-100 px-4 py-2.5 text-heading transition-colors hover:bg-brand-accent hover:text-brand-dark ${
-                      cat.highlight ? 'font-bold' : 'font-medium'
-                    }`}
-                  >
-                    {cat.label}
-                  </Link>
-                )}
-              </li>
-            )
-          })}
-        </ul>
-      </nav>
+                </li>
+              )
+            })}
+          </ul>
+        </nav>
+      </div>
     </aside>
   )
 }
