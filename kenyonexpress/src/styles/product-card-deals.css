@@ -42,6 +42,11 @@
   }
 }
 
+.jet-listing-grid-deals__item:has(.p_con:hover) {
+  position: relative;
+  z-index: 999;
+}
+
 .p_con {
   display: flex;
   flex-direction: column;
@@ -49,9 +54,12 @@
   gap: 16px;
   padding: 24px;
   background: #fff;
+  transition: box-shadow 0.3s;
 }
 
 .p_con:hover {
+  position: relative;
+  z-index: 999;
   box-shadow: 0 3px 16px 0 rgba(0, 0, 0, 0.1);
 }
 
@@ -76,6 +84,11 @@
   font-size: 22px;
   margin: 0;
   font-weight: inherit;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .p_con__image-wrap {
@@ -131,6 +144,7 @@
   flex-wrap: nowrap;
   align-items: center;
   gap: 8px;
+  text-align: end;
 }
 
 .p_con__strike {
@@ -154,6 +168,10 @@
   font-weight: 700;
 }
 
+.p_con .atc {
+  flex-shrink: 0;
+}
+
 .p_con .atc a {
   display: inline-flex;
   flex-direction: row;
@@ -165,6 +183,7 @@
   padding: 10px 11px 10px 10px;
   border: none;
   border-radius: 200px;
+  transition: background-color 0.3s;
 }
 
 .p_con .atc a svg {
