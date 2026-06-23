@@ -1,5 +1,6 @@
 import BenefitBar from '@/components/home/BenefitBar'
 import DealsOfTheDay from '@/components/home/DealsOfTheDay'
+import FeaturedProducts from '@/components/home/FeaturedProducts'
 import HeroSection from '@/components/home/HeroSection'
 import CategoryStrip from '@/components/store/CategoryStrip'
 
@@ -16,6 +17,7 @@ export default function HomePage() {
       <CategoryStrip />
       <BenefitBar />
       <DealsOfTheDay />
+      <FeaturedProducts />
     </>
   )
 }
