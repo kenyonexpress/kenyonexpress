@@ -1,4 +1,5 @@
 import BenefitBar from '@/components/home/BenefitBar'
+import Brands from '@/components/home/Brands'
 import DealsOfTheDay from '@/components/home/DealsOfTheDay'
 import FeaturedProducts from '@/components/home/FeaturedProducts'
 import HeroSection from '@/components/home/HeroSection'
@@ -20,6 +21,7 @@ export default function HomePage() {
       <DealsOfTheDay />
       <FeaturedProducts />
       <HotCoupons />
+      <Brands />
     </>
   )
 }
