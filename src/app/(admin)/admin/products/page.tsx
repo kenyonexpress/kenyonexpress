@@ -1,10 +1,8 @@
-import ProductForm from '@/components/admin/ProductForm'
 import ProductsTable, { type ProductRow } from '@/components/admin/ProductsTable'
 import { productListParamsSchema } from '@/lib/admin/page-params'
 import { createClient } from '@/lib/supabase/server'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
-import { notFound } from 'next/navigation'
 
 export const metadata = { title: 'מוצרים' }
 
@@ -31,12 +29,10 @@ export default async function AdminProductsPage({ searchParams }: Props) {
     q: typeof raw.q === 'string' ? raw.q : undefined,
     status: typeof raw.status === 'string' ? raw.status : undefined,
     page: typeof raw.page === 'string' ? raw.page : undefined,
-    new: raw.new === '1' ? '1' : undefined,
-    edit: typeof raw.edit === 'string' ? raw.edit : undefined,
   })
 
   const params = parsed.success ? parsed.data : { page: 1 }
-  const { q, status, page, new: isNew, edit } = params
+  const { q, status, page } = params
   const from = (page - 1) * PAGE_SIZE
   const to = from + PAGE_SIZE - 1
 
@@ -55,22 +51,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
   if (status) query = query.eq('status', status)
   if (q) query = query.ilike('name_he', `%${q}%`)
 
-  const [{ data: products, count }, { data: categories }] = await Promise.all([
-    query,
-    supabase.from('categories').select('id, name_he').eq('is_active', true).order('name_he'),
-  ])
-
-  let editingProduct = null
-  let variants = null
-  if (edit) {
-    const [{ data: product }, { data: productVariants }] = await Promise.all([
-      supabase.from('products').select('*').eq('id', edit).single(),
-      supabase.from('product_variants').select('*').eq('product_id', edit).is('deleted_at', null),
-    ])
-    if (!product) notFound()
-    editingProduct = product
-    variants = productVariants ?? []
-  }
+  const { data: products, count } = await query
 
   const rows: ProductRow[] = (products ?? []).map((p) => {
     const category = Array.isArray(p.categories) ? p.categories[0] : p.categories
@@ -93,7 +74,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-[#000000]">מוצרים</h1>
-        <Link href="/admin/products?new=1" className={adminBtn}>
+        <Link href="/admin/products/new" className={adminBtn}>
           <Plus size={15} />
           מוצר חדש
         </Link>
@@ -136,22 +117,6 @@ export default async function AdminProductsPage({ searchParams }: Props) {
           </button>
         </form>
       </div>
-
-      {(isNew || editingProduct) && (
-        <div className="space-y-2">
-          <h2 className="text-sm font-semibold text-[#000000]">
-            {editingProduct ? 'עריכת מוצר' : 'מוצר חדש'}
-          </h2>
-          <ProductForm
-            product={editingProduct ?? undefined}
-            variants={variants ?? []}
-            categories={categories ?? []}
-          />
-          <Link href="/admin/products" className="text-xs text-black/40 hover:underline">
-            סגור טופס
-          </Link>
-        </div>
-      )}
 
       <ProductsTable products={rows} />
 

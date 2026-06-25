@@ -31,7 +31,7 @@ export default function ProductsTable({ products }: Props) {
       cell: (p) => (
         <div>
           <Link
-            href={`/admin/products?edit=${p.id}`}
+            href={`/admin/products/${p.id}/edit`}
             className="font-medium text-[#000000] underline-offset-2 hover:underline"
           >
             {p.name_he}
@@ -84,7 +84,7 @@ export default function ProductsTable({ products }: Props) {
       cell: (p) => (
         <div className="flex items-center gap-3">
           <Link
-            href={`/admin/products?edit=${p.id}`}
+            href={`/admin/products/${p.id}/edit`}
             className="text-sm text-[#000000] underline-offset-2 hover:underline"
           >
             עריכה
