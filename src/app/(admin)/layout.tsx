@@ -1,5 +1,5 @@
 import AdminSidebar from '@/components/admin/AdminSidebar'
-import { ROLE_LABELS, requireStaffSession } from '@/lib/admin/rbac'
+import { ROLE_LABELS, requireAdminSession } from '@/lib/admin/rbac'
 import { signOut } from '@/server/actions/auth'
 import { LogOut } from 'lucide-react'
 import Link from 'next/link'
@@ -7,7 +7,7 @@ import Link from 'next/link'
 export const metadata = { title: { template: '%s | ניהול KenyonExpress', default: 'ניהול' } }
 
 export default async function AdminGroupLayout({ children }: { children: React.ReactNode }) {
-  const { role } = await requireStaffSession()
+  const { role } = await requireAdminSession()
 
   return (
     <div
