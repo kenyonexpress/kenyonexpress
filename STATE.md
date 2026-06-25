@@ -4,6 +4,12 @@
 **Phase 5 — Homepage 1:1 (סגור)**. branch `phase5/homepage`. מקור יחיד: `refs/ke_live_singlefile.html`.
 
 ## Last Completed
+Session 2026-06-26 — פתרון 401 (מפתחות Supabase):
+- ב-`.env.local` היה `NEXT_PUBLIC_SUPABASE_ANON_KEY` חתוך ומשובש (32 תווים, בלי נקודות, header פגום) → גרם ל-401.
+- אחרי `Claude Code /login`: הוחלף ה-anon במפתח JWT מלא ותקין (role=anon, ref `ixvwfbuvfxxsjiywhbbb`, exp 2036), ונוסף `SUPABASE_SERVICE_ROLE_KEY` מלא (role=service_role) — **בלי** קידומת `NEXT_PUBLIC_` (סוד server-side בלבד).
+- אומת: `git check-ignore .env.local` → מוגנן ב-gitignore (לא נכנס ל-git).
+- אומת נקי: `pnpm dev` → `✓ Ready` על `localhost:3000`, `GET /` → 200, probe ישיר ל-Supabase REST עם ה-anon → 200. אין 401.
+
 Session 2026-06-23 — שחזור פרויקט + שיטוח מבנה:
 - הקוד שוחזר מ-`origin/phase5/homepage` (commit `92b858a`) אחרי איבוד מקומי. עץ העבודה היה מקונן (`kenyonexpress/kenyonexpress/`) — **שוטח**: כל הקבצים הועברו לשורש `/Users/ofir/kenyonexpress-web/kenyonexpress`, ה-scaffold הישן (13 tsx, eslint) הוסר. כעת מבנה יחיד ושטוח.
 - `.env.local` שוחזר מגיבוי (פרויקט Supabase `ixvwfbuvfxxsjiywhbbb`) → השורש; מוגנן ב-gitignore.
