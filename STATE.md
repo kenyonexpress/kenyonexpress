@@ -4,6 +4,11 @@
 **Phase 5 — Homepage 1:1 (סגור)**. branch `phase5/homepage`. מקור יחיד: `refs/ke_live_singlefile.html`.
 
 ## Last Completed
+Session 2026-06-26 — Phase 3 admin dashboard wired:
+- פאנל הניהול מחווט ועובד ב-`/admin/dashboard` (קובץ `src/app/(admin)/admin/dashboard/page.tsx`; `(admin)` הוא route group ולכן לא ב-URL).
+- StatsCards מציגים נתונים אמיתיים מ-DB (8 קופונים, 31 מוצרים).
+- RBAC guard פעיל: `(admin)/layout.tsx` עבר מ-`requireStaffSession` ל-`requireAdminSession` (admin/super_admin בלבד). אומת: `GET /admin/dashboard` → 307 → `/login?next=%2Fadmin%2Fdashboard`. commit `b4539d8`, pushed.
+
 Session 2026-06-26 — פתרון 401 (מפתחות Supabase):
 - ב-`.env.local` היה `NEXT_PUBLIC_SUPABASE_ANON_KEY` חתוך ומשובש (32 תווים, בלי נקודות, header פגום) → גרם ל-401.
 - אחרי `Claude Code /login`: הוחלף ה-anon במפתח JWT מלא ותקין (role=anon, ref `ixvwfbuvfxxsjiywhbbb`, exp 2036), ונוסף `SUPABASE_SERVICE_ROLE_KEY` מלא (role=service_role) — **בלי** קידומת `NEXT_PUBLIC_` (סוד server-side בלבד).
@@ -72,7 +77,7 @@ nothing
 - Docker מקומי עדיין לא רץ (לא רלוונטי כל עוד עובדים מול המרוחק).
 
 ## Next Task
-בדיקה חיה של דף הקטגוריה מול המרוחק (יש דאטה: 12 קטגוריות, 31 מוצרים); אין `/categories` index page (breadcrumb לא מקשר אליו) — לשקול אם צריך.
+wire ProductForm + CategoryForm pages — חיווט הטפסים `src/components/admin/ProductForm.tsx` ו-`CategoryForm.tsx` לדפי הניהול שלהם.
 
 ## Active Branch
 phase5/homepage
