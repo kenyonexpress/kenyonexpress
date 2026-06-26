@@ -8,7 +8,7 @@ Session 2026-06-26 — Phase 3 (Admin Panel) הושלם + מבנה דף מוצר
 - **Phase 3 (Admin Panel) הושלם** — כל דפי הניהול מחווטים ועובדים.
 - **מבנה דף המוצר הסופי הוחלט:** מבוסס Groupon (AMC) + Electro. מקורות ייחוס שמורים ב-`refs/groupon_amc_deal.mhtml` + `refs/electro_product_page.mhtml` (gitignored, מקומיים בלבד — לא בריפו).
 - **הבהרה:** קבצי ה-refs הם ייחוס **עיצובי בלבד** — אין לייבא מהם דאטה. טבלת `products` נשארת כמות שהיא (31 מוצרים). בונים את דף המוצר לפי המבנה, לא מייבאים את AMC/Electro.
-- **קובץ אב למילוי:** `refs/KenyonExpress_קובץ_אב_דף_מוצר.docx` ⚠️ (טרם נוסף לתיקייה — Ofir יוסיף).
+- **קובץ אב למילוי:** `docs/product-page/KenyonExpress_קובץ_אב_דף_מוצר.docx` (tracked בריפו). Ofir ממלא אותו ואז commit מחדש עם הגרסה המלאה.
 - **Next:** Ofir ממלא את קובץ האב → בונים `/products/[slug]` לפי המבנה שיתקבל.
 - **שדות חדשים שיידרשו בטבלת `products`** (טרם קיימים — ראו סכמה חיה בת 26 עמודות): `city`, `business_whatsapp`, `promo_code`, `options[]`, `sold_count`, `redemption_steps`, `business_hours`, `waze_coords`, + supplier fields.
 
