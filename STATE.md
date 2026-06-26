@@ -4,6 +4,13 @@
 **Phase 5 — Homepage 1:1 (סגור)**. branch `phase5/homepage`. מקור יחיד: `refs/ke_live_singlefile.html`.
 
 ## Last Completed
+Session 2026-06-26 — Phase 3 (Admin Panel) הושלם + מבנה דף מוצר סופי הוחלט:
+- **Phase 3 (Admin Panel) הושלם** — כל דפי הניהול מחווטים ועובדים.
+- **מבנה דף המוצר הסופי הוחלט:** מבוסס Groupon (AMC) + Electro. מקורות ייחוס שמורים ב-`refs/groupon_amc_deal.mhtml` + `refs/electro_product_page.mhtml`.
+- **קובץ אב למילוי:** `refs/KenyonExpress_קובץ_אב_דף_מוצר.docx` ⚠️ (טרם נוסף לתיקייה — Ofir יוסיף).
+- **Next:** Ofir ממלא את קובץ האב → בונים `/products/[slug]` לפי המבנה שיתקבל.
+- **שדות חדשים שיידרשו בטבלת `products`** (טרם קיימים — ראו סכמה חיה בת 26 עמודות): `city`, `business_whatsapp`, `promo_code`, `options[]`, `sold_count`, `redemption_steps`, `business_hours`, `waze_coords`, + supplier fields.
+
 Session 2026-06-26 — Phase 3 admin dashboard wired:
 - פאנל הניהול מחווט ועובד ב-`/admin/dashboard` (קובץ `src/app/(admin)/admin/dashboard/page.tsx`; `(admin)` הוא route group ולכן לא ב-URL).
 - StatsCards מציגים נתונים אמיתיים מ-DB (8 קופונים, 31 מוצרים).
@@ -70,14 +77,14 @@ Session 2026-06-19 — Homepage 1:1 מול `ke_live_singlefile.html`:
 commit: `feat: homepage 1:1 match with live source`
 
 ## In Progress
-nothing
+ממתין ל-Ofir: מילוי קובץ האב (`refs/KenyonExpress_קובץ_אב_דף_מוצר.docx`) לפני בניית `/products/[slug]`.
 
 ## Blocking Issues
 - none חוסם. הערה: היסטוריית המיגרציות במרוחק לא מסונכרנת (2 רשומות מול 21 קבצים מקומיים). אין להריץ `supabase db push` למרוחק — ייכשל על "already exists". להחיל מיגרציות חדשות נקודתית דרך MCP `apply_migration` או `supabase migration repair`.
 - Docker מקומי עדיין לא רץ (לא רלוונטי כל עוד עובדים מול המרוחק).
 
 ## Next Task
-wire ProductForm + CategoryForm pages — חיווט הטפסים `src/components/admin/ProductForm.tsx` ו-`CategoryForm.tsx` לדפי הניהול שלהם.
+בניית `/products/[slug]` לפי מבנה דף המוצר הסופי (Groupon AMC + Electro), אחרי ש-Ofir ממלא את קובץ האב ב-`refs/`. כולל הוספת שדות חדשים ל-`products`: city, business_whatsapp, promo_code, options[], sold_count, redemption_steps, business_hours, waze_coords, supplier fields.
 
 ## Active Branch
 phase5/homepage
