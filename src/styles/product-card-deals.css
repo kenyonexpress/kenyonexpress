@@ -5,9 +5,11 @@
   flex-wrap: wrap;
 }
 
-/* live: item box 287.5px (1150/4), no gutters; dividers via border only */
+/* live: item box 287.5px (1150/4) x 501px; 8px vertical padding around the
+   485px card, no horizontal gutters; dividers via border only */
 .jet-listing-grid-deals__item {
   box-sizing: border-box;
+  padding: 8px 0;
   max-width: 50%;
   flex: 0 0 50%;
 }
@@ -67,6 +69,7 @@
 .p_con__category {
   font-size: 12px;
   font-weight: 400;
+  line-height: 24px; /* live: category row is 24px tall */
   color: #768b9e;
 }
 
@@ -84,6 +87,7 @@
 .jet-listing-grid-deals h2.p_con__title {
   color: #0062bd;
   font-size: 22px;
+  line-height: 32px; /* live: 2 clamped lines = 64px */
   margin: 0;
   font-weight: inherit;
   display: -webkit-box;
