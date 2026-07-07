@@ -3,12 +3,11 @@
 .jet-listing-grid-deals {
   display: flex;
   flex-wrap: wrap;
-  margin: 0 -10px;
 }
 
+/* live: item box 287.5px (1150/4), no gutters; dividers via border only */
 .jet-listing-grid-deals__item {
   box-sizing: border-box;
-  padding: 10px;
   max-width: 50%;
   flex: 0 0 50%;
 }
@@ -20,25 +19,27 @@
   }
 }
 
+/* live: divider on the LEFT edge (inline-end in RTL) of every item except the
+   last one in each row (nth-child(4n)) — lines at x 433 / 721 / 1009 */
 .jet-listing-grid-deals__item .p_con {
-  border-inline-start: 1px solid #ddd;
+  border-inline-end: 1px solid #ddd;
   height: 100%;
 }
 
 @media (min-width: 1024px) {
   .jet-listing-grid-deals__item:nth-child(4n) .p_con {
-    border-inline-start: none;
+    border-inline-end: none;
   }
 }
 
 @media (max-width: 767px) {
   .jet-listing-grid-deals__item .p_con {
-    border-inline-start: 1px solid #ddd;
+    border-inline-end: 1px solid #ddd;
   }
 
   .jet-listing-grid-deals__item:first-child .p_con,
   .jet-listing-grid-deals__item:last-child .p_con {
-    border-inline-start: none;
+    border-inline-end: none;
   }
 }
 
@@ -103,17 +104,21 @@
   width: 100%;
 }
 
+/* live: natural aspect ratio at 245px height, aligned to inline-start (right
+   in RTL); narrow images (e.g. 480x600) do NOT stretch to full width */
 .p_con__image {
-  width: 100%;
+  width: auto;
+  max-width: 100%;
   height: 245px;
   object-fit: cover;
   object-position: top center;
   display: block;
 }
 
+/* live: badge pinned to the LEFT edge (inline-end in RTL) of the image area */
 .p_con__badge {
   position: absolute;
-  inset-inline-start: 0;
+  inset-inline-end: 0;
   z-index: 2;
   background-color: #e00;
   padding: 2px 10px;

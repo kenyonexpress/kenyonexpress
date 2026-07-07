@@ -1,10 +1,13 @@
 /**
  * Deals grid (jet-listing-grid faf8583) from refs/ke_live_singlefile.html.
- * First 6 products in DOM order.
+ * First 16 products in DOM order (rows 1-4 of the live grid, everything that
+ * falls inside the first 2600px). Images extracted from the singlefile via
+ * scripts/extract-deals-assets.mjs into /images/products/ke-live-deal-*.avif
+ * so no card depends on a remote host.
  */
 import type { Product } from '@/components/ProductCard'
 
-const WP_UPLOADS = 'https://kenyonexpress.co.il/wp-content/uploads'
+const POOL_IMG = '/images/products/WhatsApp-Image-2023-05-29-at-21.59.02-1-600x600.webp'
 
 export const KE_LIVE_DEALS: Product[] = [
   {
@@ -13,9 +16,7 @@ export const KE_LIVE_DEALS: Product[] = [
     name_he: 'עוזרת אישית - שירותי משרד',
     kenyon_price: 949,
     full_price: 1500,
-    images: [
-      `${WP_UPLOADS}/2025/01/Outsourcing-Success_-Transforming-Property-Management-with-Virtual-Assistants-600x600.webp`,
-    ],
+    images: ['/images/products/ke-live-deal-0.avif'],
     stock_quantity: 1,
     category: { name_he: 'בעלי מקצוע', slug: 'professionals' },
   },
@@ -25,9 +26,7 @@ export const KE_LIVE_DEALS: Product[] = [
     name_he: 'תספורת לגבר, ילד, סידור זקן בפתח תקווה',
     kenyon_price: 20,
     full_price: 50,
-    images: [
-      `${WP_UPLOADS}/2025/01/Free-Photo-_-Client-doing-hair-cut-at-a-barber-shop-salon-600x417.webp`,
-    ],
+    images: ['/images/products/ke-live-deal-1.avif'],
     stock_quantity: 1,
     category: { name_he: 'יופי בריאות וטיפוח', slug: 'beauty-health' },
   },
@@ -37,7 +36,7 @@ export const KE_LIVE_DEALS: Product[] = [
     name_he: 'צימר שוויץ בצפון',
     kenyon_price: 3900,
     full_price: 5600,
-    images: ['/images/products/WhatsApp-Image-2023-05-29-at-21.59.02-1-600x600.webp'],
+    images: [POOL_IMG],
     stock_quantity: 1,
     category: { name_he: 'צימרים מלונות ונופש', slug: 'vacation' },
   },
@@ -47,7 +46,7 @@ export const KE_LIVE_DEALS: Product[] = [
     name_he: 'הסרת שיער בלייזר קר',
     kenyon_price: 250,
     full_price: 500,
-    images: ['/images/products/WhatsApp-Image-2023-12-22-at-15.27.50-600x600.webp'],
+    images: ['/images/products/ke-live-deal-3.avif'],
     stock_quantity: 1,
     category: { name_he: 'יופי בריאות וטיפוח', slug: 'beauty-health' },
   },
@@ -57,7 +56,7 @@ export const KE_LIVE_DEALS: Product[] = [
     name_he: 'קופון טסט',
     kenyon_price: 9,
     full_price: null,
-    images: [`${WP_UPLOADS}/2023/05/m2.jpeg`],
+    images: ['/images/products/ke-live-deal-4.avif'],
     stock_quantity: 1,
     category: { name_he: 'יופי בריאות וטיפוח', slug: 'beauty-health' },
   },
@@ -67,8 +66,108 @@ export const KE_LIVE_DEALS: Product[] = [
     name_he: 'תיק עור JEEP יוקרתי',
     kenyon_price: 99,
     full_price: 195,
-    images: ['/images/products/S5cf8b9b35a5b49b0bf525d6cb7b89181H-600x600.webp'],
+    images: ['/images/products/ke-live-deal-5.avif'],
     stock_quantity: 1,
     category: { name_he: 'דילים חמים', slug: 'hot-deals' },
+  },
+  {
+    id: 'ke-deal-rw',
+    slug: 'reverse-withdrawal-payment',
+    name_he: 'Reverse Withdrawal Payment',
+    kenyon_price: 0,
+    full_price: null,
+    images: [],
+    stock_quantity: 1,
+    category: null,
+  },
+  {
+    id: 'ke-deal-icecream',
+    slug: 'פינוק-גלידה',
+    name_he: 'פינוק גלידה',
+    kenyon_price: 9,
+    full_price: null,
+    images: ['/images/products/ke-live-deal-7.avif'],
+    stock_quantity: 1,
+    category: { name_he: 'מסעדות ובתי קפה', slug: 'restaurants-cafes' },
+  },
+  {
+    id: 'ke-deal-baby-massage',
+    slug: 'עיסוי-לתינוק',
+    name_he: 'עיסוי לתינוק',
+    kenyon_price: 160,
+    full_price: null,
+    images: ['/images/products/ke-live-deal-8.avif'],
+    stock_quantity: 1,
+    category: { name_he: 'תינוקות וילדים', slug: 'babies-kids' },
+  },
+  {
+    id: 'ke-deal-daniel',
+    slug: 'חופשה-חלומית-באחוזת-דניאל',
+    name_he: 'חופשה חלומית באחוזת דניאל, לילה + 1 במתנה!',
+    kenyon_price: 900,
+    full_price: null,
+    images: [POOL_IMG],
+    stock_quantity: 1,
+    category: { name_he: 'צימרים מלונות ונופש', slug: 'vacation' },
+  },
+  {
+    id: 'ke-deal-holistic',
+    slug: 'טיפול-בתזונה-הוליסטית',
+    name_he: 'טיפול בתזונה הוליסטית טבעית וצמחי מרפא',
+    kenyon_price: 9,
+    full_price: null,
+    images: ['/images/products/ke-live-deal-10.avif'],
+    stock_quantity: 1,
+    category: { name_he: 'יופי בריאות וטיפוח', slug: 'beauty-health' },
+  },
+  {
+    id: 'ke-deal-reflexology',
+    slug: 'אבחון-וטיפול-רפלקסולוגי',
+    name_he: 'אבחון וטיפול רפסולוגי',
+    kenyon_price: 9,
+    full_price: null,
+    images: ['/images/products/ke-live-deal-11.avif'],
+    stock_quantity: 1,
+    category: { name_he: 'יופי בריאות וטיפוח', slug: 'beauty-health' },
+  },
+  {
+    id: 'ke-deal-facial',
+    slug: 'טיפול-פנים',
+    name_he: 'טיפול פנים',
+    kenyon_price: 99,
+    full_price: 150,
+    images: ['/images/products/ke-live-deal-12.avif'],
+    stock_quantity: 1,
+    category: { name_he: 'יופי בריאות וטיפוח', slug: 'beauty-health' },
+  },
+  {
+    id: 'ke-deal-massages',
+    slug: 'מבחר-עיסויים-לבחירה',
+    name_he: 'מבחר עיסויים לבחירה',
+    kenyon_price: 20,
+    full_price: null,
+    images: ['/images/products/ke-live-deal-13.avif'],
+    stock_quantity: 1,
+    category: { name_he: 'יופי בריאות וטיפוח', slug: 'beauty-health' },
+  },
+  {
+    id: 'ke-deal-master-massage',
+    slug: 'עיסוי-מאסטר',
+    name_he: 'עיסוי מאסטר',
+    kenyon_price: 9,
+    full_price: null,
+    images: ['/images/products/ke-live-deal-14.avif'],
+    stock_quantity: 1,
+    category: { name_he: 'יופי בריאות וטיפוח', slug: 'beauty-health' },
+  },
+  {
+    id: 'ke-deal-master-zimmer',
+    slug: 'צימר-מאסטר',
+    name_he: '! צימר מאסטר',
+    kenyon_price: 699,
+    full_price: 899,
+    images: ['/images/products/ke-live-deal-15.avif'],
+    stock_quantity: 1,
+    category: { name_he: 'צימרים מלונות ונופש', slug: 'vacation' },
   },
 ]

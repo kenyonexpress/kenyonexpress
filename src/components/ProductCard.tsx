@@ -12,8 +12,9 @@ export type Product = {
   category?: { name_he: string; slug: string } | null
 }
 
+/* live singlefile format: "₪3900" — no decimals, no thousands separator */
 function shekels(value: number): string {
-  return `₪${value.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  return `₪${Math.round(value)}`
 }
 
 function CartPlusIcon() {
@@ -44,10 +45,7 @@ function DealsProductCard({ product }: { product: Product }) {
   return (
     <article className="p_con">
       {product.category && (
-        <Link
-          href={`/category/${product.category.slug}`}
-          className="p_con__category"
-        >
+        <Link href={`/category/${product.category.slug}`} className="p_con__category">
           {product.category.name_he}
         </Link>
       )}
@@ -61,20 +59,8 @@ function DealsProductCard({ product }: { product: Product }) {
       <div className="p_con__image-wrap relative">
         <Link href={`/product/${product.slug}`} className="p_con__image-link">
           {thumb ? (
-            <img
-              src={thumb}
-              alt={product.name_he}
-              className="p_con__image"
-              loading="lazy"
-            />
-          ) : (
-            <span
-              className="p_con__image flex items-center justify-center bg-gray-50 text-5xl"
-              aria-hidden="true"
-            >
-              📦
-            </span>
-          )}
+            <img src={thumb} alt={product.name_he} className="p_con__image" loading="lazy" />
+          ) : null}
         </Link>
 
         {hasDiscount && (
@@ -166,7 +152,13 @@ function DefaultProductCard({ product }: { product: Product }) {
           {hasDiscount && old != null && (
             <span className="text-[14px] text-[#2d2d2d] line-through">{shekels(old)}</span>
           )}
-          <span className={hasDiscount ? 'text-[16px] font-bold text-[#c93636]' : 'text-[16px] font-bold text-[#2d2d2d]'}>
+          <span
+            className={
+              hasDiscount
+                ? 'text-[16px] font-bold text-[#c93636]'
+                : 'text-[16px] font-bold text-[#2d2d2d]'
+            }
+          >
             {shekels(price)}
           </span>
         </div>

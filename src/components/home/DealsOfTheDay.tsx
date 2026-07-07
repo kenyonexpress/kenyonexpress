@@ -36,7 +36,8 @@ export default async function DealsOfTheDay() {
   const products = [...KE_LIVE_DEALS, ...dbProducts].slice(0, 24)
 
   return (
-    <section aria-label="מוצרים מובילים" className="mx-auto max-w-page px-4 py-6">
+    // live: grid box x=145 w=1150 at 1440px viewport -> exact 1150px container
+    <section aria-label="מוצרים מובילים" className="mx-auto w-full max-w-[1150px] py-6">
       <div className="jet-listing-grid-deals bg-white">
         {products.map((product) => (
           <div key={product.id} className="jet-listing-grid-deals__item">
