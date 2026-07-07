@@ -4,6 +4,14 @@
 **Phase 5 — Homepage 1:1 (סגור)**. branch `phase5/homepage`. מקור יחיד: `refs/ke_live_singlefile.html`.
 
 ## Last Completed
+Session 2026-07-08 - מיגרציה 025 קונסולידציה הוחלה על המרוחק (Phase 3 סגור):
+- **`025_consolidation.sql` הוחל** דרך Supabase MCP `apply_migration` על `ixvwfbuvfxxsjiywhbbb` (ACTIVE_HEALTHY). idempotent, מקור אמת ל-RLS: `003_rbac.sql`.
+- **created_by** מאומת קיים על `products`, `categories`, `coupons`, `coupon_deals` (products/categories כבר היו איתו מ-005; ל-coupons ה-ALTER היה no-op כי כבר קיים).
+- **content_uploader RLS**: `products` עם SELECT/INSERT/UPDATE own (בלי DELETE, מחיקה admin-only דרך 014); `categories` עם SELECT own בלבד (INSERT/UPDATE/DELETE נשארים admin-only לפי 012). 4 policies מאומתות ב-`pg_policies`.
+- **איחוד audit**: 58 שורות (51 INSERT + 7 UPDATE) הוגרו מ-`admin_audit_log` ל-`audit_log` עם מיפוי enum (INSERT->created, UPDATE->updated); `admin_audit_log` נמחקה (DROP CASCADE); `audit_log_trigger_fn()` שוכתבה לכתוב ל-`audit_log` **לפני** ה-DROP כדי לא לשבור כתיבות עתידיות. אפס איבוד שורות.
+- **12 storage policies** מאומתות קיימות (product-images / vendor-logos / category-icons x4), כולל תוספת האדמין מ-020 על product-images.
+- **DRIFT שהתגלה**: בניגוד לקבצי המיגרציה (008 מוחקת `coupons`), ב-DB החי הטבלה `coupons` **קיימת** ועם `created_by`. יש פער בין קבצי המיגרציה למצב הפרודקשן. שווה בדיקה נפרדת.
+
 Session 2026-06-26 — Phase 3 (Admin Panel) הושלם + מבנה דף מוצר סופי הוחלט:
 - **Phase 3 (Admin Panel) הושלם** — כל דפי הניהול מחווטים ועובדים.
 - **מבנה דף המוצר הסופי הוחלט:** מבוסס Groupon (AMC) + Electro. מקורות ייחוס שמורים ב-`refs/groupon_amc_deal.mhtml` + `refs/electro_product_page.mhtml` (gitignored, מקומיים בלבד — לא בריפו).
@@ -103,6 +111,11 @@ https://ixvwfbuvfxxsjiywhbbb.supabase.co
 
 ---
 ## History
+
+### 2026-07-08 - מיגרציה 025 consolidation הוחלה על המרוחק
+- הוחל דרך Supabase MCP `apply_migration` על `ixvwfbuvfxxsjiywhbbb` (ACTIVE_HEALTHY)
+- created_by re-assert (products/categories/coupons) + content_uploader RLS (products CRUD-minus-delete, categories select-only) + איחוד audit (58 שורות admin_audit_log -> audit_log, טבלה ישנה נמחקה, trigger fn שוכתבה) + 12 storage policies - הכול verified
+- drift התגלה: `coupons` קיימת ב-DB החי למרות ש-008 מוחקת אותה בקבצים
 
 ### 2026-06-22 — מיגרציות 019/020/021 הוחלו על המרוחק
 - הוחל דרך Supabase MCP `apply_migration` (לא `db push`, בגלל היסטוריה לא מסונכרנת)

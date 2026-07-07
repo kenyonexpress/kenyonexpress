@@ -3,12 +3,14 @@ import ProductCard from '@/components/ProductCard'
 import { KE_LIVE_DEALS } from '@/lib/ke-live-deals-data'
 import { createClient } from '@/lib/supabase/server'
 
-/** refs/ke_live_singlefile.html — jet-listing-grid faf8583, 4 columns, no section title */
+/** refs/ke_live_singlefile.html — jet-listing-grid faf8583, 3 columns desktop, no section title */
 export default async function DealsOfTheDay() {
   const supabase = await createClient()
   const { data } = await supabase
     .from('products')
-    .select('id, slug, name_he, kenyon_price, full_price, images, stock_quantity, categories(name_he, slug)')
+    .select(
+      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, categories(name_he, slug)',
+    )
     .eq('status', 'active')
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
