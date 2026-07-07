@@ -15,8 +15,8 @@
 
 @media (min-width: 1024px) {
   .jet-listing-grid-deals__item {
-    max-width: 33.333333%;
-    flex: 0 0 33.333333%;
+    max-width: 25%;
+    flex: 0 0 25%;
   }
 }
 
@@ -26,7 +26,7 @@
 }
 
 @media (min-width: 1024px) {
-  .jet-listing-grid-deals__item:nth-child(3n) .p_con {
+  .jet-listing-grid-deals__item:nth-child(4n) .p_con {
     border-inline-start: none;
   }
 }

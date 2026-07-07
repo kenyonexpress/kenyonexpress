@@ -11,7 +11,7 @@ const benefits = [
 export default function BenefitBar() {
   return (
     <section dir="rtl" className="w-full bg-white font-sans">
-      <div className="max-w-[1430px] mx-auto px-4">
+      <div className="mx-auto max-w-page px-4">
         <ul className="flex flex-nowrap justify-between rounded-lg border border-[#ddd]">
           {benefits.map((b) => {
             const Icon = b.icon

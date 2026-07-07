@@ -48,8 +48,11 @@ export default function SiteHeader() {
         </div>
       </div>
 
-      {/* Masthead — 54px, logo (right) + 3 icons (left) */}
-      <header dir="rtl" className="sticky top-0 z-40 w-full border-b border-[#ddd] bg-white">
+      {/* Masthead — hidden on desktop in ke_live_singlefile (sf-hidden); handheld only */}
+      <header
+        dir="rtl"
+        className="sticky top-0 z-40 w-full border-b border-[#ddd] bg-white lg:hidden"
+      >
         <div className="mx-auto flex h-[54px] max-w-page items-center justify-between px-4">
           <Link href="/" aria-label="קניון אקספרס, לדף הבית" className="shrink-0">
             <SmartImage
