@@ -4,6 +4,12 @@
 **Phase 5 — Homepage 1:1 (סגור)**. branch `phase5/homepage`. מקור יחיד: `refs/ke_live_singlefile.html`.
 
 ## Last Completed
+Session 2026-07-08 - תכנון מלא של פורטל ספקים ומימוש קופונים (design only, לא הוחל):
+- **`docs/SUPPLIER-REDEMPTION-ARCHITECTURE.md`**: מודל כסף (platform_percent פר מוצר עם fallback ל-suppliers.commission_percent), onboarding עם supplier_applications + אישור אדמין, חברות דרך supplier_members (owner/manager/scanner) במקום role, פרטי בנק ישראליים בטבלה נפרדת (owner בלבד), מימוש קופון עם QR חתום Ed25519 + UPDATE אטומי יחיד כהגנת מרוץ, coupon_scan_events append-only, מנוע payout חודשי עם snapshot בלבד, reconciliation מול Cardcom, מודל איומים מלא.
+- **`supabase/migrations/027_suppliers.sql`** (טיוטה, idempotent, **לא הוחלה**): 9 טבלאות/הרחבות + 8 enums + 12 פונקציות (redeem_coupon, update_shipping_status, approve_supplier_application, generate_payout_statement ועוד) + RLS מלא + audit triggers + bucket supplier-docs.
+- **באג שהתגלה ב-014**: policy בשם "products: vendor read own" משווה products.supplier_id (מפנה ל-suppliers) מול vendors.id. לא מחזיר שורות. 027 מחליפה אותו ב-policy מבוסס supplier_members.
+- **תנאים מוקדמים ל-027**: 016 (name_he), 019 (rate limit), 025 (audit fn) חייבים להיות מוחלים. להחיל רק דרך MCP apply_migration.
+
 Session 2026-07-08 - מיגרציה 025 קונסולידציה הוחלה על המרוחק (Phase 3 סגור):
 - **`025_consolidation.sql` הוחל** דרך Supabase MCP `apply_migration` על `ixvwfbuvfxxsjiywhbbb` (ACTIVE_HEALTHY). idempotent, מקור אמת ל-RLS: `003_rbac.sql`.
 - **created_by** מאומת קיים על `products`, `categories`, `coupons`, `coupon_deals` (products/categories כבר היו איתו מ-005; ל-coupons ה-ALTER היה no-op כי כבר קיים).
