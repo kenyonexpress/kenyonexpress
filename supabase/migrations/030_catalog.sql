@@ -432,7 +432,7 @@ CREATE TRIGGER set_updated_at
 
 ALTER TABLE public.seo_redirects ENABLE ROW LEVEL SECURITY;
 
--- Middleware does the lookup with the anon client; paths are not secrets.
+-- proxy.ts / not-found flow does the lookup with the anon client; paths are not secrets.
 DROP POLICY IF EXISTS "seo_redirects: public read" ON public.seo_redirects;
 CREATE POLICY "seo_redirects: public read"
   ON public.seo_redirects FOR SELECT

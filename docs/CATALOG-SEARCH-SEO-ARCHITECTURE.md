@@ -359,9 +359,10 @@ seo_redirects (old_path UNIQUE, new_path, status_code 301|308|302|307|410,
    כל ה-URLs מ-GSC (עמודים עם קליקים) + sitemap ישן. כל URL ממופה ידנית או
    בכלל גזירה ליעד החדש, ונטען כ-`wordpress_import`. עמודים בלי יעד ענייני
    (תגיות וורדפרס, עמודי מחבר): 301 לקטגוריה הקרובה או לבית.
-2. **אכיפה ב-runtime**: ה-middleware של Next בודק על 404 בלבד (לא על כל
-   בקשה): lookup לפי path מנורמל (percent-decoded, בלי trailing slash),
-   מחזיר את `status_code`, מגדיל `hits` דרך `touch_seo_redirect()`.
+2. **אכיפה ב-runtime**: ב-`proxy.ts` (המחליף של middleware ב-Next 16) או
+   ב-`not-found` flow, בדיקה על 404 בלבד (לא על כל בקשה): lookup לפי path
+   מנורמל (percent-decoded, בלי trailing slash), החזרת `status_code`,
+   הגדלת `hits` דרך `touch_seo_redirect()`.
 3. **שינוי slug עתידי**: trigger בשם `record_slug_redirect` על
    `products`/`categories`/`coupon_deals` כותב שורת 301 אוטומטית, מקרוס
    שרשראות (A->B ואז B->C מתקפל ל-A->C) ומוחק self-redirects.
