@@ -14,7 +14,7 @@ export default async function DealsOfTheDay() {
     .eq('status', 'active')
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
-    .limit(24)
+    .limit(40)
 
   const staticSlugs = new Set(KE_LIVE_DEALS.map((p) => p.slug))
   const dbProducts: Product[] = (data ?? [])
@@ -33,7 +33,7 @@ export default async function DealsOfTheDay() {
       }
     })
 
-  const products = [...KE_LIVE_DEALS, ...dbProducts].slice(0, 24)
+  const products = [...KE_LIVE_DEALS, ...dbProducts].slice(0, 32)
 
   return (
     // live: grid box x=145 w=1150 at 1440px viewport -> exact 1150px container
