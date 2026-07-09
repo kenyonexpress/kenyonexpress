@@ -39,6 +39,29 @@
 
 ## 1. שלב החילוץ (Inventory Extraction)
 
+### 1.0 ממצאי בדיקה חיה (2026-07-09, HTTP מול האתר בפועל)
+
+נאסף מ-sitemap של Yoast ומה-Store API הפתוח של Woo. עובדות, לא הנחות:
+
+- **סטאק**: WordPress 6.8.1, WooCommerce, Elementor 3.30.2,
+  Slider Revolution 6.5.8, WP Rocket, Redux, Yoast SEO
+  (`sitemap_index.xml`), Facebook for WooCommerce.
+- **היקף**: 46 מוצרים ב-`product-sitemap.xml` (‏45 גלויים ב-Store API:
+  ‏44 simple, ‏1 variable), 9 קטגוריות מוצר, 26 עמודים, פוסט יחיד.
+  סדר הגודל מאשר את D9 (one-shot) ומאפשר spot-check בכיסוי גבוה מאוד.
+- **slugs**: עבריים percent-encoded תחת `/product/` ו-`/product-category/`,
+  בדיוק כהנחת סעיף 2.3.
+- **מחירים**: שקלים שלמים (`currency_minor_unit=0`); ‏25 מתוך 45 מוצרים
+  ב-on_sale (מזין את כלל `full_price` בסעיף 2.1).
+- **SKU**: רק 4 מתוך 45 מוצרים נושאים SKU, בלי כפילויות. סיכון dup-SKU
+  זניח בפועל; הכיסוי הכמעט-אפסי נרשם כ-issue ברמת info, לא חוסם.
+- **ביקורות**: סך `review_count` = ‏324. זו הכמות שנזנחת לפי D13
+  (נשמרת רק בתוך ה-dump).
+- **API**: ‏WC REST v3 מחזיר 401 בלי מפתחות; ה-Store API פתוח לקריאה
+  אנונימית. לא משנה את D1 (ה-dump נשאר מקור האמת היחיד), אבל ה-Store API
+  משמש אימות צולב זול בפרוטוקול 5.2.
+- **Elementor פעיל**: נגזר כלל ניקוי 8 בסעיף 2.5.
+
 ### 1.1 החלטת כלי: MySQL dump הוא מקור האמת, לא REST ולא WXR
 
 **הוכרע: `mysqldump` מלא של ה-DB הוורדפרסי + העתק `wp-content/uploads`.**
@@ -298,6 +321,11 @@ option_values נחסמת ע"י ה-unique החלקי של 030 ונרשמת כ-iss
    היא עניין של ה-UI.
 7. **קידוד**: ה-dump נטען utf8mb4; בדיקת mojibake אוטומטית (שאילתת
    דגימה לתווים עבריים שבורים) לפני כל טעינה.
+8. **Elementor** (מותקן באתר, ממצא 1.0): תיאורי מוצר של Woo יושבים בדרך
+   כלל ב-post_content רגיל, אבל תוכן שנבנה ב-builder חי ב-meta
+   ‏`_elementor_data` (JSON). כלל: אם post_content ריק/דל ו-`_elementor_data`
+   קיים על המוצר, מחלצים את הטקסט מעץ האלמנטים + issue ברמת warn לבדיקת
+   עין. עמודי תוכן (שנכתבים מחדש ממילא) לא עוברים חילוץ כזה.
 
 ---
 
