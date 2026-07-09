@@ -1,8 +1,8 @@
-import { chromium } from '@playwright/test'
 import { existsSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { pathToFileURL } from 'node:url'
 import { resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
+import { chromium } from '@playwright/test'
 
 const VIEW = { width: 1440, height: 2600 }
 const LIVE_HTML = resolve('refs/ke_live_singlefile.html')

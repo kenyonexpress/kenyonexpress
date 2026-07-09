@@ -32,7 +32,8 @@ const CATEGORIES = [
     id: 'under99',
     label: 'עד 99',
     href: '/category/under-99',
-    image: HERO_CATEGORY_BANNERS.under99,
+    /* singlefile renders this tile as text-only (no icon) */
+    image: null,
   },
 ] as const
 
@@ -40,29 +41,37 @@ export default function CategoryStrip() {
   return (
     <section aria-label="קטגוריות מובילות" className="bg-white font-sans">
       <div className="mx-auto max-w-page">
-        <ul className="m-0 flex list-none flex-wrap p-0 lg:flex-nowrap" style={{ height: '170px' }}>
+        {/* singlefile: strip belongs to the middle hero column — x336-1064 (728px), not page-centered */}
+        <ul
+          className="m-0 flex list-none flex-wrap p-0 lg:ms-auto lg:me-[276px] lg:max-w-[728px] lg:flex-nowrap"
+          style={{ height: '170px' }}
+        >
           {CATEGORIES.map((cat) => (
             <li
               key={cat.id}
-              className="flex w-1/2 items-center border-e border-[#e7e7e7] first:border-s lg:w-[20%] lg:flex-[0_0_20%]"
+              className="flex w-1/2 border-e border-[#e7e7e7] first:border-s lg:w-[20%] lg:flex-[0_0_20%]"
             >
               <Link
                 href={cat.href}
-                className="group mx-auto flex flex-col items-center justify-center px-3 py-2 text-center transition-shadow hover:shadow-[0_0_18px_-2px_rgba(0,0,0,0.2)]"
+                className={`group mx-auto flex h-full flex-col items-center px-3 text-center transition-shadow hover:shadow-[0_0_18px_-2px_rgba(0,0,0,0.2)] ${
+                  cat.image ? 'justify-start pt-[16px]' : 'justify-center'
+                }`}
               >
-                <div className="relative mb-[10px] h-[100px] w-full max-w-[100px]">
-                  <SmartImage
-                    src={cat.image}
-                    alt=""
-                    fill
-                    sizes="100px"
-                    className="object-contain transition-transform duration-300 group-hover:scale-105"
-                    fallbackClassName="absolute inset-0"
-                    iconSize={28}
-                  />
-                </div>
+                {cat.image ? (
+                  <div className="relative mb-[10px] h-[100px] w-[100px]">
+                    <SmartImage
+                      src={cat.image}
+                      alt=""
+                      fill
+                      sizes="100px"
+                      className="object-contain transition-transform duration-300 group-hover:scale-105"
+                      fallbackClassName="absolute inset-0"
+                      iconSize={28}
+                    />
+                  </div>
+                ) : null}
                 <h4
-                  className="m-0 leading-snug text-[#333e48]"
+                  className="m-0 whitespace-nowrap leading-snug text-[#333e48]"
                   style={{ fontSize: '14px', fontWeight: 600 }}
                 >
                   {cat.label}

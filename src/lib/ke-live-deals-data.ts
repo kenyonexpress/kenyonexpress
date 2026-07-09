@@ -7,8 +7,6 @@
  */
 import type { Product } from '@/components/ProductCard'
 
-const POOL_IMG = '/images/products/WhatsApp-Image-2023-05-29-at-21.59.02-1-600x600.webp'
-
 export const KE_LIVE_DEALS: Product[] = [
   {
     id: 'ke-deal-9132',
@@ -36,7 +34,7 @@ export const KE_LIVE_DEALS: Product[] = [
     name_he: 'צימר שוויץ בצפון',
     kenyon_price: 3900,
     full_price: 5600,
-    images: [POOL_IMG],
+    images: ['/images/products/ke-live-deal-2.avif'],
     stock_quantity: 1,
     category: { name_he: 'צימרים מלונות ונופש', slug: 'vacation' },
   },
@@ -106,7 +104,7 @@ export const KE_LIVE_DEALS: Product[] = [
     name_he: 'חופשה חלומית באחוזת דניאל, לילה + 1 במתנה!',
     kenyon_price: 900,
     full_price: null,
-    images: [POOL_IMG],
+    images: ['/images/products/ke-live-deal-9.avif'],
     stock_quantity: 1,
     category: { name_he: 'צימרים מלונות ונופש', slug: 'vacation' },
   },
