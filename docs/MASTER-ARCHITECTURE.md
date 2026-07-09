@@ -10,6 +10,7 @@
 `docs/WP-DATA-MIGRATION-ARCHITECTURE.md` (טיוטת 032),
 `docs/ANALYTICS-BI-ARCHITECTURE.md` (טיוטת 033),
 `docs/PRODUCTION-OPS-ARCHITECTURE.md` (ללא מיגרציה),
+`docs/TESTING-CICD-ARCHITECTURE.md` (ללא מיגרציה),
 `docs/SUPERAPP-MOBILE-ARCHITECTURE.md` (ללא מיגרציה),
 `docs/product-page/` (מאסטר דף מוצר),
 ואת המיגרציות 001 עד 025 (מוחלות) + הטיוטות 026-033 (לא מוחלות).
@@ -59,7 +60,7 @@
 
 015 הגדירה על `coupon_deals` את `platform_price` כ-GENERATED (תמיד 10% מהמחיר) ואת `discount_percentage` כ-GENERATED (תמיד 90.00). 026 מוסיפה `platform_percent` דינמי, ואז שתי העמודות המחושבות משקרות לכל אחוז שאינו 10.
 
-**הכרעה:** במיגרציית ה-commerce, `platform_price` ו-`discount_percentage` מומרות מ-GENERATED לעמודות רגילות (הערכים הקיימים נשמרים), והאפליקציה מחשבת אותן בכתיבה מתוך `platform_percent`. `coupon_deals.platform_percent` נשארת nullable עם fallback ל-10 (ספק קנוני יתווסף לה רק ב-032, סתירה 1.12).
+**הכרעה:** במיגרציית ה-commerce, `platform_price` ו-`discount_percentage` מומרות מ-GENERATED לעמודות רגילות (הערכים הקיימים נשמרים), והאפליקציה מחשבת אותן בכתיבה מתוך `platform_percent`. `coupon_deals.platform_percent` נשארת nullable עם fallback ל-10 (ספק קנוני יתווסף לה רק ב-034, סתירה 1.12).
 
 #### 1.6 שתי פונקציות מימוש ושתי טבלאות לוג
 
@@ -192,7 +193,7 @@
 
 מסמך המובייל מציע טבלת `push_subscriptions`; 029 שומרת ערוץ `push` ב-outbox בלי רישום מכשירים; מסמך ההתראות משאיר זאת כשאלה פתוחה (10.5); מסמך דף המוצר (15) מציע שדה "מזהה Push לספק" נפרד.
 
-**הכרעה:** טבלת `push_subscriptions` (בנוסח מסמך המובייל: endpoint UNIQUE, p256dh, auth, platform web/apns/fcm, failed_count) תוגדר במיגרציה עתידית `033_push.sql` בבעלות דומיין ההתראות, כתנאי קדם לשלב 1 של המובייל. היא ממוקדת-משתמש בלבד: סורק של ספק הוא משתמש רגיל עם מנוי push משלו. שדה "מזהה Push לספק" בדף המוצר נמחק מהאפיון; אין אחסון טוקנים כפול.
+**הכרעה:** טבלת `push_subscriptions` (בנוסח מסמך המובייל: endpoint UNIQUE, p256dh, auth, platform web/apns/fcm, failed_count) תוגדר במיגרציית push עתידית (מספר לפי הפנוי בזמן הכתיבה [1.19]) בבעלות דומיין ההתראות, כתנאי קדם לשלב 1 של המובייל. היא ממוקדת-משתמש בלבד: סורק של ספק הוא משתמש רגיל עם מנוי push משלו. שדה "מזהה Push לספק" בדף המוצר נמחק מהאפיון; אין אחסון טוקנים כפול.
 
 #### 1.27 מוסכמת שמות אירועי התראה: מפתחות שטוחים מול topics מנוקדים
 
@@ -387,6 +388,7 @@ SELECT name, installed_version FROM pg_available_extensions WHERE name = 'pg_trg
 2. ההחלה מתבצעת בסשן אחד (כל הקבצים מוכנים אחרי עריכות סעיף 2); טבלאות שעוד אין להן UI פשוט ממתינות. 032 עצמאית וניתנת להחלה גם מוקדם יותר אם ייבוא ה-WP מקדים את הלוח, אבל ברירת המחדל היא הסדר המספרי.
 3. אחרי הרצף כולו: `generate_typescript_types` ועדכון `src/types/database.ts` פעם אחת.
 4. הטיוטות בריפו לא מוחלות כמות שהן: קודם מבצעים את העריכות. מסמך זה הוא ה-checklist.
+5. אימות לפני החלה על המרוחק: ‏harness המיגרציות של מסמך הבדיקות (TESTING-CICD) מריץ את הרצף המלא פעמיים על ‏stack מקומי נקי (בדיקת idempotency) ומאמת `pg_policies` יציב. ה-stack המקומי הוא סביבת CI בלבד; ההחלה על המרוחק נשארת דרך MCP.
 
 ---
 
@@ -409,7 +411,7 @@ DOMAIN: זהות וחשבון
 DOMAIN: קטלוג, חיפוש ו-SEO
   categories (005/012, +kind/rule/seo 030)   עץ עצמי, עומק 2; taxonomy|collection
   suppliers (005, מורחבת 027)                <- כל הכסף מפנה לכאן
-  vendors (001/013) (L)                      רק coupon_deals; מוקפאת ב-032
+  vendors (001/013) (L)                      רק coupon_deals; מוקפאת ב-034
   products (005/014/016, +026 percent,       -> suppliers, categories; search_vector; has_variants,
             +030 brand/seo/וריאציות)            variant_axes; low_stock_threshold
   product_variants (005/014/016, +030)       -> products; option_values (price_modifier deprecated)
@@ -417,15 +419,15 @@ DOMAIN: קטלוג, חיפוש ו-SEO
   product_categories (030)                   -> products, categories (שיוך משני)
   attribute_definitions (030)                סכימת פילטרים
   category_attributes (030)                  -> categories, attribute_definitions
-  coupon_deals (015, +026 percent,           -> vendors (L) + supplier_id (032); slug + search_vector
-               +030 slug/seo, +032 supplier)
+  coupon_deals (015, +026 percent,           -> vendors (L) + supplier_id (034); slug + search_vector
+               +030 slug/seo, +034 supplier)
   hero_slides (017)
   search_synonyms (030)                      מילון הרחבת שאילתות
   search_queries (030)                       append-only; דוח אפס תוצאות
   seo_redirects (030)                        301/308/410; wordpress_import | slug_change | manual
 
 DOMAIN: הזמנות ותשלומים
-  orders (007, מורחבת 026)                   -> auth.users, user_addresses; expires_at
+  orders (007, מורחבת 026, +attribution 033) -> auth.users, user_addresses; expires_at
   order_items (007, +026 snapshot,           -> orders, products, variants, suppliers;
                +027 shipping)                   snapshot: platform_percent, platform_fee_ils,
                                                 supplier_due_ils, charged_on_site_ils,
@@ -483,30 +485,47 @@ DOMAIN: התראות ושיווק
   notification_conversions (031)             -> notifications_outbox, orders UNIQUE; ייחוס הכנסה
   v_notification_kpis, v_journey_revenue     views (security_invoker)
 
+DOMAIN: אנליטיקה ו-BI
+  analytics_event_definitions (033)          registry אירועים; מקור אמת לטקסונומיה; audit
+  analytics_events (033)                     גולמי, PARTITION BY RANGE(occurred_at) חודשי;
+                                                PK (occurred_at, event_id); 13 חודשים
+  analytics_events_default (033)             partition ביטחון (חייב להישאר ריק; מנוטר ב-alarms)
+  analytics_daily (033)                      רולאפ יומי (יום עסקים ישראלי); לנצח
+  views: v_owner_dashboard, v_money_alarms, v_revenue_daily, v_refunds_daily,
+         v_wallet_liability, v_wallet_ledger_drift [1.36], v_coupon_funnel_monthly,
+         v_supplier_leaderboard_30d, v_cohort_ltv_monthly, v_channel_revenue_weekly,
+         v_funnel_daily, v_search_quality_daily (מותנית ב-030)
+
+SCHEMA: wp_import (032; ארכיון + staging, לא חשוף ל-PostgREST, service_role בלבד)
+  import_batches, id_map, products, categories, customers, orders, order_items,
+  coupons, vouchers, media, url_inventory, issues + v_reconciliation, v_open_issues
+  השקות ל-public רק דרך סקריפטי שלב W: seo_redirects (030), שרשרת שוברים חיים (026/027),
+  לקוחות דרך Auth Admin API (marketing_*=false)
+
 DOMAIN: תפעול
   audit_log (011/025)                        append-only, אדמין SELECT בלבד; לנצח
   storage buckets: product-images, vendor-logos, category-icons (004), coupon-images (015),
                    products, coupons (021), supplier-docs (027, פרטי)
   drift: coupons (טבלת L חיה בפרודקשן, מחוץ לתכנון)
 
-PLANNED (אין קובץ; לא חלק מהרצף הנוכחי)
-  push_subscriptions (P, 033)                -> auth.users; endpoint UNIQUE; web|apns|fcm [1.26]
-  verticals + orders.vertical (P, 034)       רישום ורטיקלים + kill switch [1.30]
+PLANNED (אין קובץ; לא חלק מהרצף הנוכחי; מספר לפי הפנוי בזמן הכתיבה)
+  push_subscriptions (P)                     -> auth.users; endpoint UNIQUE; web|apns|fcm [1.26]
+  verticals + orders.vertical (P)            רישום ורטיקלים + kill switch [1.30]
 ```
 
 ---
 
 ## 4. סדר בנייה: שלבים 2-5
 
-כל צעד מציין: מיגרציות קדם + סעיפי המסמכים. מסלול התפעול (CI, ‏Sentry, גיבויים, פרויקט PROD, ‏cutover מ-WordPress) רץ במקביל לפי PRODUCTION-OPS סעיף 8 (P0 לפני שיגור) ואינו חוסם את השלבים כאן, למעט האמור בו במפורש.
+כל צעד מציין: מיגרציות קדם + סעיפי המסמכים. מסלול התפעול (CI, ‏Sentry, גיבויים, פרויקט PROD, ‏cutover מ-WordPress) רץ במקביל לפי PRODUCTION-OPS סעיף 8 (P0 לפני שיגור), ומסלול הבדיקות לפי TESTING-CICD (צינור ‏ci.yml, מטריצת ‏RLS הצהרתית, ‏harness מיגרציות, ‏fake ל-Cardcom, ‏DoD פר שלב); שניהם אינם חוסמים את השלבים כאן, למעט האמור בהם במפורש. חובה אחת מוקדמת ממסמך הבדיקות: מודול הכסף הטהור `src/lib/money/` נכתב עם 22 מקרי הבדיקה שלו (M1-M22) לפני `beginCheckout` (שלב 3.2).
 
 ### שלב 2.0: תשתית (חד פעמי)
 
 | צעד | תוכן | מקור |
 |---|---|---|
-| 2.0.1 | בדיקות קדם (2.8) מול ה-DB החי | כאן |
-| 2.0.2 | ביצוע עריכות סעיף 2 בטיוטות 026-031 + כתיבת 032 | כאן 2.1-2.7 |
-| 2.0.3 | החלת 026→032 בסדר, ואז `generate_typescript_types` | כאן 2.9 |
+| 2.0.1 | בדיקות קדם (2.10) מול ה-DB החי | כאן |
+| 2.0.2 | ביצוע עריכות סעיף 2 בטיוטות 026-031 ו-033 + כתיבת 034 | כאן 2.1-2.9 |
+| 2.0.3 | החלת 026→034 בסדר, ואז `generate_typescript_types` | כאן 2.11 |
 
 ### שלב 2: עגלה
 
@@ -551,10 +570,10 @@ PLANNED (אין קובץ; לא חלק מהרצף הנוכחי)
 
 | צעד | תוכן | קדם | מסמך |
 |---|---|---|---|
-| 5.1 | ‏onboarding: טופס בקשה + תור אדמין (approve/reject) | 027, 032 | SUPPLIER ‏2.3 |
+| 5.1 | ‏onboarding: טופס בקשה + תור אדמין (approve/reject) | 027, 034 | SUPPLIER ‏2.3 |
 | 5.2 | פורטל: ‏dashboard, הזמנות למשלוח (`update_shipping_status`), הגדרות (בנק ל-owner, צוות) | 027 | SUPPLIER ‏4, 2.4-2.5 |
 | 5.3 | מסך סריקה PWA ‏(`redeem_coupon`, ‏fail-closed ‏[1.29], ירוק/אדום, ‏offline banner) + שדרוג QR בהנפקה וב-`/account/coupons` | 027 | SUPPLIER ‏3; ACCOUNT ‏4.2 |
-| 5.4 | דוחות: יצירה/אישור/תשלום (super_admin ב-action ‏[1.13]) + מחלוקות + ‏PDF ל-bucket | 027, 032 | SUPPLIER ‏5.1-5.2, 4.2 |
+| 5.4 | דוחות: יצירה/אישור/תשלום (super_admin ב-action ‏[1.13]) + מחלוקות + ‏PDF ל-bucket | 027, 034 | SUPPLIER ‏5.1-5.2, 4.2 |
 | 5.5 | ‏reconciliation ‏Cardcom (קליטת דוח, `reconcile_cardcom_settlement`, תור unmatched + התראת אדמין) + ‏cron ‏`expire_coupons` | 027 | SUPPLIER ‏5.3; OPS ‏5.3 |
 
 ### שלב 5ב: ‏AI Agents
@@ -574,11 +593,23 @@ PLANNED (אין קובץ; לא חלק מהרצף הנוכחי)
 | 5.11 | מסע עגלה נטושה (cron יומי 08:00 + מגעים 1h/24h) + ‏win-back רבעוני; מכסות תדירות ושעות שקט חיות | 031 | NOTIF ‏5.1, 5.3-5.5 |
 | 5.12 | ייחוס הכנסות: פרמטר `?ke_n=<outbox_id>` + ‏cookie ‏7 ימים + ‏`notification_conversions`; דשבורד ‏KPI מה-views | 031 | NOTIF ‏6 |
 | 5.13 | ‏WhatsApp: חיבור Meta Cloud API + תבניות + מיגרציית cutover שמחווטת `coupon_expiry_whatsapp` לתוך `fn_enqueue_coupon_expiry_reminders` ‏[1.23] | 031 + מיגרציה עתידית | NOTIF ‏2.2, 5.2 |
-| 5.14 | ‏cron ‏retention חודשי לפי הרישום ‏[1.31] | 031 | OPS ‏5.4 |
+| 5.14 | ‏cron ‏retention חודשי לפי הרישום ‏[1.31] | 031, 033 | OPS ‏5.4 |
+
+### שלב A (אנליטיקה; מתחיל אחרי שלב 3, במקביל לשאר)
+
+| צעד | תוכן | קדם | מסמך |
+|---|---|---|---|
+| A1 | ‏SDK לקוח + ‏route ‏`/api/a` ‏(batch עד 50, ‏120/דקה/IP) + ‏banner הסכמה + כתיבת `orders.attribution` ב-`beginCheckout` | 033 | ANALYTICS ‏2.1-2.3 |
+| A2 | ‏crons: ‏rollup יומי ‏02:10, תחזוקת ‏partitions חודשית, קריאת ‏`v_money_alarms` + התראת אדמין | 033 | ANALYTICS ‏6; OPS ‏5.3 |
+| A3 | דשבורד הבעלים (`v_owner_dashboard`) + עיון שבועי (כולל שימוש חוזר ב-`v_notification_kpis`/`v_journey_revenue` של 031) | 033 | ANALYTICS ‏4 |
+
+### שלב W (ייבוא WordPress ו-cutover; לוח זמנים עצמאי)
+
+לפי `docs/WP-DATA-MIGRATION-ARCHITECTURE.md` שלבים 0-5: גישה ו-dump → ‏032 מוחלת (כבר ברצף) → טעינת staging + ‏curation → הקרנה ל-public בסביבת dev (קטלוג/לקוחות: מיד; ‏redirects: אחרי 030; שוברים חיים: אחרי 026+027) → אימות (ספירות, checksums, ‏spot-checks, כיסוי `url_inventory` מלא) → ‏cutover ‏DNS לפי PRODUCTION-OPS ‏2. כל המיובאים ‏marketing_*=false ‏[חוק 30א].
 
 ### שלב 6 (עתידי, מחוץ להיקף הנוכחי)
 
-‏PWA/מובייל שלב 1 (דורש `033_push`), חנויות אפליקציות (TWA/Capacitor), ורטיקלים (`034_verticals`), לפי SUPERAPP-MOBILE סעיף 6.
+‏PWA/מובייל שלב 1 (דורש מיגרציית push), חנויות אפליקציות (TWA/Capacitor), ורטיקלים, לפי SUPERAPP-MOBILE סעיף 6.
 
 ---
 
@@ -647,15 +678,20 @@ PLANNED (אין קובץ; לא חלק מהרצף הנוכחי)
 `search_queries.source`: ‏search, autocomplete, zero_fallback ‏(030). ‏`seo_redirects.source`: ‏manual, wordpress_import, slug_change; ‏status_code: ‏301, 302, 307, 308, 410 ‏(030).
 `wallet_accounts.owner_type`: ‏user, platform ‏(026). שיטת מימוש: ‏camera, manual ‏(026/027).
 `agent_runs.trigger`: ‏chat, form, cron, admin; ‏`agent_escalations.kind`: ‏general, refund_intake, complaint, sales; ‏severity: ‏low, medium, high ‏(028).
+`analytics_events.source`: ‏web, pwa, server; ‏`analytics_event_definitions.origin`: ‏client, server, derived; שם אירוע לפי regex ‏`^[a-z][a-z0-9_]{2,49}$` ‏(033).
+סטים פנימיים של `wp_import` (032, לא חשופים): ‏batches.kind, ‏id_map.entity, ‏media.status, ‏issues.severity וכו'; אינם חלק מה-API הציבורי.
 
 ### 5.3 סוגי אירועים
 
 **‏audit_log:** הטיפוס הוא enum ‏`audit_action` ‏(9 ערכים). אין להוסיף ערכים בלי מיגרציה ייעודית; כל אירוע ממופה לתשעת הקיימים (`status_change` לשינויי סטטוס יזומים, ‏`manual_override` להתערבות אדמין). ה-writer היחיד: ‏`audit_log_trigger_fn()` ‏(025) + כתיבות יזומות מפונקציות definer.
 
-טבלאות עם ה-trigger הגנרי: ‏products, vendors, profiles, coupon_deals ‏(baseline); ‏payments ‏(026); ‏suppliers, supplier_applications, supplier_members, supplier_bank_accounts, payout_statements, supplier_disputes ‏(027); ‏agent_prompts, agent_flags, listing_drafts, agent_escalations ‏(028); ‏account_deletion_requests ‏(029); ‏attribute_definitions, search_synonyms ‏(030); ‏notification_templates ‏(031).
+טבלאות עם ה-trigger הגנרי: ‏products, vendors, profiles, coupon_deals ‏(baseline); ‏payments ‏(026); ‏suppliers, supplier_applications, supplier_members, supplier_bank_accounts, payout_statements, supplier_disputes ‏(027); ‏agent_prompts, agent_flags, listing_drafts, agent_escalations ‏(028); ‏account_deletion_requests ‏(029); ‏attribute_definitions, search_synonyms ‏(030); ‏notification_templates ‏(031); ‏analytics_event_definitions ‏(033).
 חריג יחיד: ‏`payment_tokens` עם trigger ייעודי בלי הטוקן ‏(029) ‏[1.17].
-לא מקבלות audit trigger (הן עצמן יומן append-only): ‏audit_log, wallet_transactions, coupon_scan_events, coupon_redemptions, agent_run_steps, payment_webhook_events, notifications_outbox, notification_events, consent_events, notification_delivery_events, notification_conversions, search_queries.
+לא מקבלות audit trigger (הן עצמן יומן append-only): ‏audit_log, wallet_transactions, coupon_scan_events, coupon_redemptions, agent_run_steps, payment_webhook_events, notifications_outbox, notification_events, consent_events, notification_delivery_events, notification_conversions, search_queries, analytics_events, analytics_daily, וכל סכימת wp_import.
 מחיקת חשבון מנקה PII מתוך `changes`/`ip_address`/`user_agent` ‏(029).
+
+**אירועי אנליטיקה (033):** מקור האמת הוא הטבלה `analytics_event_definitions`; ‏12 האירועים הקנוניים: ‏page_view, view_product, view_category, add_to_cart, remove_from_cart ‏(client); ‏begin_checkout ‏(server); ‏purchase, refund, coupon_scan, wallet_earn, wallet_spend, search ‏(derived: לעולם לא נכתבים ל-`analytics_events`, נגזרים מטבלאות האמת ב-views). אירוע חדש = שורה ב-registry, לא מיגרציה.
+**התראות כסף (`v_money_alarms`):** ‏failed_payments_24h, invalid_webhook_signatures_24h, payments_stuck_redirected_10m, pending_orders_past_expiry_1h, wallet_ledger_drift_accounts, analytics_default_partition_rows.
 
 **‏notification_events (event_type):** ‏order_paid, order_refunded, order_item_shipped, order_item_delivered, coupon_delivered, coupon_refunded ‏(031). ‏entity_type: ‏order, order_item, coupon_code.
 **מפתחות kind/template_key ב-outbox:** הטרנזקציוניים = ששת ה-event_type; תזכורות: ‏coupon_expiry_7d, coupon_expiry_48h ‏(029); שיווק: ‏abandoned_cart_1, abandoned_cart_2, winback ‏(031). מפתחות שטוחים בלבד ‏[1.27].
@@ -674,6 +710,7 @@ PLANNED (אין קובץ; לא חלק מהרצף הנוכחי)
 | `consent_change` | 20 | 3600 שניות | ‏`fn_set_marketing_consent` | open | NOTIF ‏4.2 |
 | `agent_chat` | 20 | 3600 שניות | ‏shopping + ‏support ‏(app) | open | AGENTS ‏1.4 |
 | `listing_draft` | 10 | 24 שעות | ‏supplier_ops ‏(app) | open | AGENTS ‏3 |
+| ‏ingest אנליטיקה `/api/a` | 120 | 60 שניות (פר IP) | ‏SDK הלקוח | open (איבוד אירועים מותר) | ANALYTICS ‏2.1 |
 | שכבת IP כללית | 10 | 3600 שניות | ‏auth + ‏routes רגישים | closed | 002 |
 
 תקרות מדיניות (לא rate limit, אותו רישום):
@@ -682,7 +719,8 @@ PLANNED (אין קובץ; לא חלק מהרצף הנוכחי)
 התראות ושיווק: תזכורות פקיעה 7 ימים + 48 שעות עם dedupe; שעות שקט לשיווק 09:00-21:00 ‏Asia/Jerusalem, שישי עד 15:00, שבת מ-20:30; מכסת שיווק 1 ליום ו-3 לשבוע פר משתמש; ‏retry ‏backoff ‏5min×2^attempts עד 6 שעות, ‏dead אחרי 5 ניסיונות; נעילת worker נגנבת אחרי 10 דקות; עגלה נטושה: מגע 1 אחרי שעה, מגע 2 אחרי 24 שעות, חלון עד 72 שעות; ‏win-back: הזמנה אחרונה מעל 90 יום, פעם ברבעון; ‏SMS עד 134 תווים.
 ‏agents: צעדי כלים 6 (צ'אט) / 10 ‏(supplier_ops); ‏max_output_tokens ברירת מחדל 2048; ‏fraud_watch עד 50 מועמדות לריצה; עד 5 תמונות לטיוטה.
 קטלוג: עמוד 24 מוצרים; ‏autocomplete ‏8 שורות, מינימום 2 תווים, ‏debounce ‏150ms; סף trigram ‏0.35; ‏low_stock_threshold ברירת מחדל 3; יעדי מעבר למנוע חיצוני: אפס-תוצאות מעל 12% חודשי או ‏p95 מעל 250ms או מעל ‏30k מוצרים פעילים.
-‏retention: לפי הכרעה 1.31.
+אנליטיקה: ‏batch ‏ingest ‏1-50 אירועים; ‏props עד 4KB; חלון `occurred_at` ‏[עכשיו-7 ימים, עכשיו+5 דקות]; ‏IP נחתך ל-/24 (‏v4) או ‏/48 (‏v6); ‏rollup יומי ‏02:10 שעון ישראל; ‏partitions: יצירה חודשית מראש (2), הפלה אחרי 13 חודשים; ספי התראת משלוח התראות: ‏email מתחת ל-95%, ‏WhatsApp מתחת ל-90% ‏(031).
+‏retention: לפי הכרעה 1.31 (כולל עדכון 1.37).
 
 ---
 
@@ -692,10 +730,13 @@ PLANNED (אין קובץ; לא חלק מהרצף הנוכחי)
 |---|---|---|
 | COMMERCE | 026 (ערוכה) | 2, 3 |
 | ACCOUNT-IDENTITY | 029 (ערוכה) | 2.2, 4 |
-| SUPPLIER-REDEMPTION | 027 (ערוכה) + 032 | 5א |
+| SUPPLIER-REDEMPTION | 027 (ערוכה) + 034 | 5א |
 | AI-AGENTS | 028 (ערוכה) | 5ב |
 | CATALOG-SEARCH-SEO | 030 (ערוכה) | C |
 | NOTIFICATIONS-MARKETING | 031 (ערוכה) | 3.6, 4.4, 4.6, 5ג |
+| WP-DATA-MIGRATION | 032 (כמות שהיא) | W |
+| ANALYTICS-BI | 033 (תיקון כותרת) | A |
 | PRODUCTION-OPS | אין (תפעול) | מסלול מקביל; P0 לפני שיגור |
-| SUPERAPP-MOBILE | עתידיות 033/034 | שלב 6 |
+| TESTING-CICD | אין (בדיקות/CI) | מסלול מקביל; מודול הכסף לפני 3.2; harness לפני 2.0.3 |
+| SUPERAPP-MOBILE | עתידיות (push, verticals) | שלב 6 |
 | product-page | אין (אפיון UI) | C, ‏5א (שדה push לספק בוטל [1.26]) |
