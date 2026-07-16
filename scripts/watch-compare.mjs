@@ -14,7 +14,7 @@ function runCompare() {
     const diffPercent = diffMatch ? parseFloat(diffMatch[1]) : null;
 
     console.clear();
-    console.log(`\n📊 Diff: ${diffPercent}%\n`);
+    console.limage.pngog(`\n📊 Diff: ${diffPercent}%\n`);
     
     if (diffPercent < 2) {
       console.log('✅ DONE!\n');

@@ -1,3 +1,4 @@
+import { spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { resolve } from 'node:path'
@@ -33,3 +34,13 @@ await mine.screenshot({ path: 'refs/mine.png', fullPage: true })
 console.log('mine.png written')
 
 await b.close()
+
+await new Promise((resolvePromise, reject) => {
+  const child = spawn(process.execPath, [resolve('scripts/diff-bands.mjs')], {
+    stdio: 'inherit',
+    cwd: process.cwd(),
+  })
+  child.on('exit', (code) =>
+    code === 0 ? resolvePromise() : reject(new Error(`diff-bands exited ${code}`)),
+  )
+})
