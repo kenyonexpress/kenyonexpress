@@ -86,7 +86,10 @@ function DealsProductCard({ product }: { product: Product }) {
           </div>
         ) : (
           <div className="p_con__prices">
-            <span className="p_con__single-price">{shekels(price)}</span>
+            {/* live renders an empty price area when the product has no price (e.g. restaurants-meat-2) */}
+            {product.kenyon_price != null && (
+              <span className="p_con__single-price">{shekels(price)}</span>
+            )}
           </div>
         )}
 
