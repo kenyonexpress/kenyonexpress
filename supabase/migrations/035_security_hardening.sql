@@ -1,11 +1,12 @@
--- Migration 036: Security hardening
+-- Migration 035: Security hardening
 -- ============================================================================
 -- Companion to docs/ARCHITECTURE-SECURITY.md. Implements the fixes for the
 -- findings register SEC-01..SEC-14.
 --
--- Numbered after all existing drafts (highest on disk is 035_analytics_bi.sql;
--- there is no 034). Fully idempotent and existence-guarded: safe to apply on the
--- live DB (currently ~025) whether or not drafts 026-035 have been applied. Every
+-- Numbered after all existing drafts (renumbered 036 -> 035 on 2026-07-17 for a
+-- gapless 026-035 sequence; analytics_bi is now 034). Fully idempotent and
+-- existence-guarded: safe to apply on the
+-- live DB (currently ~025) whether or not drafts 026-034 have been applied. Every
 -- statement that targets a draft-era object is wrapped in an existence check, so
 -- it is skipped until that draft lands and then activates on a re-run. The fixes
 -- that target already-applied objects (SEC-02/03/04/06/09) run immediately.
@@ -153,7 +154,7 @@ CREATE POLICY "profiles: owner update"
 -- SEC-04: coupons_supplier_mark_used (008) was a column-unrestricted UPDATE, so
 --   a supplier could set status='refunded', reset used_at or move expires_at.
 --   Redemption goes only through redeem_coupon() (027, SECURITY DEFINER). Draft
---   027 drops this policy; 036 makes it true on the live DB now. Guarded.
+--   027 drops this policy; 035 makes it true on the live DB now. Guarded.
 -- ---------------------------------------------------------------------------
 
 DO $$
@@ -461,7 +462,7 @@ BEGIN
 END $$;
 
 -- ============================================================================
--- End of migration 036. Re-run after applying drafts 026-035 to activate the
+-- End of migration 035. Re-run after applying drafts 026-034 to activate the
 -- guarded fixes (SEC-01/10/11/12 and the check_my_rate_limit wrapper). Every
 -- statement is idempotent.
 -- ============================================================================

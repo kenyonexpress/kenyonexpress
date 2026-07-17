@@ -1,5 +1,5 @@
 -- Migration 028: AI Agents infrastructure (DRAFT - DO NOT APPLY YET)
--- Design: docs/AI-AGENTS-ARCHITECTURE.md
+-- Design: docs/ARCHITECTURE-AI-AGENTS.md
 -- Shared foundation for internal agents: shopping, supplier_ops, support,
 -- fraud_watch. Prompt versioning, run logging, fraud review queue, listing
 -- drafts, escalations. No dependency on 026/027 drafts.

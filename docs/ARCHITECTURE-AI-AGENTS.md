@@ -4,7 +4,7 @@
 `supabase/migrations/028_agents.sql`
 
 תאריך: 2026-07-08. ענף: `phase5/homepage`.
-מסמכים קשורים: `docs/COMMERCE-ARCHITECTURE.md` (026), `docs/SUPPLIER-REDEMPTION-ARCHITECTURE.md` (027).
+מסמכים קשורים: `docs/ARCHITECTURE-COMMERCE.md` (026), `docs/ARCHITECTURE-SUPPLIER-REDEMPTION.md` (027).
 
 > אזהרת תלות: 026 ו-027 הן טיוטות שטרם הוחלו, ויש ביניהן התנגשות
 > (enum בשם `payout_status` עם ערכים שונים + שני מנועי settlement מקבילים).

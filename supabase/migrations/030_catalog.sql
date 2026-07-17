@@ -1,5 +1,5 @@
 -- Migration 030: Catalog, Search & SEO foundation (DRAFT, NOT applied)
--- Companion doc: docs/CATALOG-SEARCH-SEO-ARCHITECTURE.md
+-- Companion doc: docs/ARCHITECTURE-CATALOG-SEARCH-SEO.md
 --
 -- Prerequisites on the live DB (all already applied per STATE.md):
 --   005/012/014 (products/categories/variants), 015 (coupon_deals),

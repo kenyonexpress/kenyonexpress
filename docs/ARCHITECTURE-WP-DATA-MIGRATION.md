@@ -2,16 +2,25 @@
 
 תאריך: 2026-07-17. ענף: `phase5/homepage`.
 
-מעמד המסמך: זהו מסמך ההפעלה המחייב של מסלול W (ייבוא WP). הוא מאחד את
-`docs/WP-DATA-MIGRATION-ARCHITECTURE.md` (2026-07-09) עם הסכימה החיה
-ועם הכרעות `docs/MASTER-ARCHITECTURE.md`, ומכריע את כל השאלות שנשארו
-פתוחות שם (סעיף 6.4 כאן). בכל סתירה: המסמך הזה גובר.
+מעמד המסמך: זהו מסמך ההפעלה המחייב והיחיד של מסלול W (ייבוא WP).
+הוא בנוי על הסכימה החיה ועל הכרעות `docs/MASTER-ARCHITECTURE.md`,
+ומכריע את כל השאלות שהיו פתוחות בתכנון המקורי (סעיף 6.4 כאן).
+בכל סתירה: המסמך הזה גובר.
+
+הקשר: האתר החי `kenyonexpress.co.il` רץ על WordPress + WooCommerce
+ומוחלף במערכת החדשה (Next.js + Supabase) על אותו דומיין, באפס איבוד
+דאטה. מסמכים קשורים: `docs/ARCHITECTURE-PRODUCTION-OPS.md` (cutover,
+DNS, גיבויים), `docs/ARCHITECTURE-CATALOG-SEARCH-SEO.md` (030: slugs,
+seo_redirects), `docs/ARCHITECTURE-COMMERCE.md` (026),
+`docs/ARCHITECTURE-ACCOUNT-IDENTITY.md` (029),
+`docs/ARCHITECTURE-NOTIFICATIONS-MARKETING.md` (031, חוק הספאם 30א),
+`docs/MASTER-ARCHITECTURE.md` (סדר מיגרציות קנוני).
 
 תשתית DB נלווית: `supabase/migrations/032_wp_import_staging.sql`
 (סכימת `wp_import`: ארכיון + staging, לא חשופה ל-PostgREST, החלה דרך
 MCP `apply_migration` בלבד).
 
-עקרונות על (ללא שינוי מהמסמך הקודם):
+עקרונות על:
 
 1. אפס איבוד דאטה: כל ביט מהאתר הישן נשמר לצמיתות ב-`wp_import`.
    רק תת-קבוצה נקייה מוקרנת ל-public.
@@ -72,10 +81,24 @@ rsync -az user@host:/path/to/wp-content/uploads/ ./wp-uploads/
 `sitemap_index.xml` של Yoast, וייצוא GSC של כל URL עם קליקים ב-12
 החודשים האחרונים. שלושתם מזינים את `url_inventory` ואת צנרת המדיה.
 
-היקף ידוע (בדיקה חיה 2026-07-09): WordPress 6.8.1, WooCommerce,
-Elementor, Yoast. ‏46 מוצרים (44 simple, ‏1 variable), 9 קטגוריות מוצר,
-26 עמודים, ‏4 מוצרים עם SKU בלבד, ‏25 מוצרים ב-on_sale, מחירים בשקלים
-שלמים. סדר גודל שמאשר ביצוע one-shot עם spot-check בכיסוי גבוה.
+היקף ידוע (בדיקה חיה 2026-07-09, HTTP מול האתר בפועל; נאסף מ-sitemap
+של Yoast ומה-Store API הפתוח: עובדות, לא הנחות):
+
+- **סטאק**: WordPress 6.8.1, WooCommerce, Elementor 3.30.2,
+  Slider Revolution 6.5.8, WP Rocket, Redux, Yoast SEO
+  (`sitemap_index.xml`), Facebook for WooCommerce.
+- **היקף**: 46 מוצרים ב-`product-sitemap.xml` (‏45 גלויים ב-Store API:
+  ‏44 simple, ‏1 variable), 9 קטגוריות מוצר, 26 עמודים, פוסט יחיד.
+- **מחירים**: שקלים שלמים (`currency_minor_unit=0`); ‏25 מתוך 45
+  מוצרים ב-on_sale (מזין את כלל `full_price` בסעיף 2.1).
+- **SKU**: רק 4 מתוך 45 מוצרים נושאים SKU, בלי כפילויות. סיכון
+  dup-SKU זניח בפועל; הכיסוי הכמעט-אפסי נרשם כ-issue ברמת info.
+- **ביקורות**: סך `review_count` = ‏324 (נזנחות, D13/M17).
+- **API**: ‏WC REST v3 מחזיר 401 בלי מפתחות; ה-Store API פתוח לקריאה
+  אנונימית (משמש רק לאימות צולב, סעיף 4.4).
+- **Elementor פעיל**: נגזר כלל הניקוי C10.
+
+סדר גודל שמאשר ביצוע one-shot עם spot-check בכיסוי גבוה.
 
 ---
 
@@ -91,12 +114,14 @@ Elementor, Yoast. ‏46 מוצרים (44 simple, ‏1 variable), 9 קטגורי�
 | `ID` | `id_map(entity='product')` | מפתח idempotency בלבד |
 | `post_title` | `name_he` | trim; ריק = issue ברמת error, לא מיובא |
 | `post_content` | `description_he` | ניקוי HTML (כלל C4), שכתוב URLs של תמונות (2.5) |
+| `post_excerpt` | נשמר ב-raw בלבד | אין שדה תקציר; מועמד ל-`seo_description` כשהוא קצר ונקי |
 | `post_name` (slug עברי) | לא נכנס ל-`slug` | נכנס ל-`url_inventory` בלבד; ראו 2.2 |
 | slug חדש (curation) | `slug` | לטיני `^[a-z0-9]+(-[a-z0-9]+)*$`, ייחודי גלובלית |
-| `post_status` | `status` | publish -> active; draft/pending/private -> draft (private מקבל issue); trash -> לא מיובא |
+| `post_status` | `status` | publish -> active; draft/pending/private -> draft (private מקבל issue); trash -> לא מיובא (issue info) |
 | `post_date_gmt` | `published_at` + `created_at` | ערך היסטורי נכתב במפורש |
+| `post_modified_gmt` | staging בלבד | `updated_at` ב-public מתנהל ע"י trigger |
 | `_sku` | `sku` | trim; ריק -> NULL; כפילות לפי כלל C3 |
-| `_price` (אפקטיבי) | `kenyon_price` **וגם** `price_ils` | numeric(10,2). `price_ils` היא NOT NULL בסכימה החיה (005), לכן כתיבה כפולה זהה עד לניקוי העמודה הישנה |
+| `_price` (אפקטיבי) / `_sale_price` בתוקף | `kenyon_price` **וגם** `price_ils` | numeric(10,2). `price_ils` היא NOT NULL בסכימה החיה (005), לכן כתיבה כפולה זהה עד לניקוי העמודה הישנה |
 | `_regular_price` | `full_price` | רק אם גדול ממש מהמחיר האפקטיבי; אחרת NULL (CHECK של 030: `full_price >= kenyon_price`) |
 | `_manage_stock` + `_stock` + `_stock_status` | `stock_quantity` | manage=yes -> `_stock`; manage=no+instock -> NULL; manage=no+outofstock -> 0 |
 | `product_type` taxonomy | `has_variants` (030) | variable -> true |
@@ -106,14 +131,16 @@ Elementor, Yoast. ‏46 מוצרים (44 simple, ‏1 variable), 9 קטגורי�
 | `product_tag` | `search_keywords` (030) | join ברווחים |
 | `_thumbnail_id` + `_product_image_gallery` | `images` jsonb + `product_images` | צנרת המדיה (2.5); הראשונה = ראשית |
 | `_yoast_wpseo_title` / `_yoast_wpseo_metadesc` | `seo_title` / `seo_description` (030) | רק אם קיימים ולא תבניתיים |
-| `_virtual`, קטגוריה, מילות מפתח ("שובר", "קופון") | `type` | היוריסטיקה מציעה `coupon` או `physical`; אדמין מאשר בקובץ curation. הערך `service` אסור לשימוש בייבוא (drift: עלול לחסור ב-enum החי) |
+| `_virtual`, קטגוריה, מילות מפתח ("שובר", "קופון") | `type` | היוריסטיקה מציעה `coupon` או `physical`; **כל** הסיווגים נכתבים לדוח curation ואדמין מאשר לפני ההקרנה; ברירת מחדל בספק: `physical`. הערך `service` אסור לשימוש בייבוא (drift: עלול לחסור ב-enum החי) |
 | `total_sales` | staging בלבד | מזין spot-check והחלטת `sold_count` עתידית |
+| `menu_order` | לא עובר | המיון החדש: `is_featured` + `published_at` |
 | meta של עיר/מיקום | **לא מוקרן** | כלל C1 (באג נהריה) |
 
 עמודות בלי מקור: `supplier_id = NULL` (שיוך ידני, 2.4),
 `platform_percent` לא נכתב (נופל לברירת המחדל/‏fallback של הסכימה),
 `is_coupon_enabled = false`, `is_featured = false`,
-`created_by` = משתמש האדמין המריץ.
+`created_by` = משתמש האדמין המריץ,
+`brand`/`low_stock_threshold` = ברירות המחדל של 030.
 
 ### 2.2 slugs: לטיניים חדשים, העברי מת עם 301
 
@@ -121,21 +148,28 @@ Elementor, Yoast. ‏46 מוצרים (44 simple, ‏1 variable), 9 קטגורי�
 אם קיים, אחרת תעתיק אוטומטי מ-`name_he` כהצעה. קובץ ה-curation מציג
 `wp_slug -> proposed_slug` ואדמין מאשר. התנגשות: סיומת `-2`.
 כל URL ישן מקבל שורת `seo_redirects` עם `source='wordpress_import'`
-ויעד `/products/<new-slug>` (רבים; הכרעה 1.28 של MASTER).
+ויעד `/products/<new-slug>` (רבים; הכרעה 1.28 של MASTER). הערה
+מיישבת: PRODUCTION-OPS כתב `/product/` (יחיד) כיעד; ההכרעה המחייבת
+היא של מסמך הקטלוג + MASTER: **`/products/` (רבים)**.
 
 ### 2.3 וריאציות וקטגוריות
 
 וריאציות (`product_variation`) אל `product_variants`:
 `post_parent` -> ‏`product_id` (דרך id_map), ‏`attribute_*` meta ->
-‏`option_values` (030, ‏UNIQUE חלקי פר מוצר) + ‏`attributes`, שם מורכב
-("הורה: M / שחור") -> ‏`name_he`, ‏`_price` -> ‏`price` (NULL אם שווה
-למחיר ההורה), ‏`_sku` -> ‏`sku` (UNIQUE; התנגשות = סיומת + issue),
+‏`option_values` (030, ‏UNIQUE חלקי פר מוצר) + ‏`attributes` (למשל
+`{"size":"M","color":"שחור"}`; ערכים מתורגמים לפי `wp_terms` של
+הטקסונומיה), שם מורכב ("הורה: M / שחור") -> ‏`name_he`, ‏`_price` ->
+‏`price` (NULL אם שווה למחיר ההורה, ואז נופל ל-`kenyon_price` לפי כלל
+הקטלוג), ‏`_sku` -> ‏`sku` (UNIQUE; התנגשות = סיומת + issue),
 ‏`_stock` -> ‏`stock_quantity`, ‏`menu_order` -> ‏`sort_order`,
 ‏`is_active = true`. ‏`price_modifier` לא נכתב (DEPRECATED מ-030).
+וריאציה כפולה באותם `option_values` נחסמת ע"י ה-UNIQUE החלקי של 030
+ונרשמת כ-issue.
 
-קטגוריות: **מיפוי, לא ייבוא.** ‏9 קטגוריות המוצר של WP ממופות אל
-הקטגוריות הקנוניות הקיימות (seed ‏018: ‏hot-deals, ‏restaurants-cafes,
-‏beauty-health וכו') בקובץ curation עם `manual_target_slug`. יצירת
+קטגוריות: **מיפוי, לא ייבוא.** ב-DB החדש כבר יש 12 קטגוריות קנוניות
+(seed ‏018: ‏hot-deals, ‏restaurants-cafes, ‏beauty-health וכו'), ו-9
+קטגוריות המוצר של WP ממופות אליהן בקובץ curation עם
+`manual_target_slug`; המיפוי חי ב-id_map (`entity='category'`). יצירת
 תת-קטגוריה חדשה רק כשאין יעד (עומק 2 נאכף ע"י trigger של 030).
 ‏term בלי יעד: המוצרים נופלים לקטגוריית ההורה וה-URL מקבל 301.
 
@@ -155,8 +189,10 @@ Elementor, Yoast. ‏46 מוצרים (44 simple, ‏1 variable), 9 קטגורי�
    התיאור) נרשם ב-`wp_import.media` עם `source_url` מקורי.
 2. תמיד קובץ המקור (regex מסיר סיומות ריסייז `-300x300`); הבאה מ-rsync
    של uploads, ‏fallback ל-HTTP מהאתר החי עם retry ואימות Content-Type.
-3. המרה בהעלאה: WebP ברוחב מקסימלי 1600px איכות 80; נגזרת OG ‏1200x630
-   מתחת ל-300KB לתמונה הראשית (דרישת וואטסאפ).
+3. המרה בהעלאה (כלל "מעלים מוכן" של PRODUCTION-OPS): WebP ברוחב
+   מקסימלי 1600px איכות 80 (מעל זה אין טעם: הרינדור עובר דרך Vercel
+   Image Optimization); נגזרת OG ‏1200x630 מתחת ל-300KB לתמונה
+   הראשית (דרישת וואטסאפ).
 4. יעד: bucket ‏`product-images` (public, קיים מ-004), path דטרמיניסטי
    `wp/<wp_attachment_id>/<basename>.webp` (העלאה חוזרת דורסת את עצמה).
    דה-דופ לפי `sha256` של קובץ המקור: קובץ זהה מועלה פעם אחת.
@@ -204,7 +240,7 @@ profile + חשבונות ארנק, וה-trigger של 029 יוצר שורת הע�
 
 1. מוצרי דיל/שובר של האתר הישן הם מוצרים לכל דבר: עוברים ל-`products`
    עם `type='coupon'` לפי ה-curation. **לא** נוצרות שורות `coupon_deals`
-   (הטבלה כבולה ל-`vendors` הישנה עד 034, והתוכן בה admin-curated).
+   (הטבלה כבולה ל-`vendors` הישנה עד איחוד ה-vendors המתוכנן כ-036, והתוכן בה admin-curated).
 2. קודי הנחה של Woo (`shop_coupon`): נטענים ל-`wp_import.coupons`
    כארכיון בלבד. אין להם מנגנון יעד ב-public (אין טבלת discount codes),
    וקודים שפורסמו בעבר מתים עם האתר הישן.
@@ -268,6 +304,14 @@ mojibake (שאילתת דגימה לעברית שבורה) לפני כל טעי�
 
 ### 4.1 מבנה, סטאק והרצה
 
+מודל הביצוע (M12): **one-shot חזרתי (rehearsed one-shot), לא סנכרון
+מתמשך.** נימוקים: סדר הגודל קטן (עשרות מוצרים, אלפי לקוחות לכל
+היותר), כך שטעינה מלאה נמדדת בדקות ותשתית CDC/sync הייתה הנדסת יתר
+מסוכנת; ה-idempotency דרך `id_map` נותנת את אותה תוצאה (dump חדש ->
+הרצה חוזרת -> רק דלתות משתנות); וסנכרון דו-כיווני היה מחייב פתרון
+התנגשויות עריכה בין שתי מערכות חיות, במקום זה יש חלון הקפאת תוכן
+(סעיף 5.1).
+
 TypeScript מורץ ב-`tsx`, תלויות: `mysql2` (קריאת ה-dump הטעון),
 `pg` (כתיבה ל-Supabase דרך session pooler עם service role),
 `@supabase/supabase-js` (Auth Admin + Storage בלבד), `sharp` (WebP/OG),
@@ -303,7 +347,9 @@ scripts/wp-import/
    פעם אחת דרך id_map).
 5. טריגרים: audit נשארים דלוקים בכוונה (הייבוא הוא בדיוק מה ש-audit
    צריך לתעד); `published_at`/`created_at` היסטוריים נכתבים במפורש;
-   לקוחות נוצרים דרך Admin API כדי ששרשרת ה-triggers תרוץ.
+   לקוחות נוצרים דרך Admin API כדי ששרשרת ה-triggers תרוץ. טריגר
+   ההתראות של 031 על orders לא נורה כי לא כותבים paid-transition
+   (השוברים החיים נכנסים ישירות בסטטוס הסופי).
 
 ### 4.3 dry-run
 
@@ -319,7 +365,7 @@ scripts/wp-import/
 
 | בדיקה | תנאי עצירה |
 |---|---|
-| `wp_import.v_reconciliation` | ‏staged = mapped = נספר ב-public, פר ישות (מוצרים publish, וריאציות, קטגוריות, לקוחות עם אימייל תקין, redirects) |
+| `wp_import.v_reconciliation` | ‏staged = mapped = נספר ב-public, פר ישות: מוצרים publish (פער = חסימה), וריאציות (סכום פר מוצר-הורה זהה), קטגוריות (לכל term עם מוצרים יש יעד ממופה), לקוחות עם אימייל תקין, redirects |
 | תמונות של מוצרים active | ‏100% בסטטוס uploaded; אפס failed/pending |
 | checksums | ‏Σ`kenyon_price` ו-Σ`stock_quantity` פר קטגוריה שווים בין staging ליעד |
 | שוברים חיים (אם יש) | ספירת staging פתוחים = ‏`coupon_codes` בסטטוס issued שנוצרו |
@@ -338,6 +384,28 @@ scripts/wp-import/
    רק למי שאין פעילות חדשה). ה-staging וה-dump לא נמחקים לעולם.
 3. נקודת אל-חזור: מרגע שיש הזמנות אמיתיות במערכת החדשה, purge גורף
    אסור; מתקנים קדימה נקודתית לפי id_map.
+
+### 4.6 תכולת 032 (סכימת wp_import)
+
+`supabase/migrations/032_wp_import_staging.sql`, ‏idempotent,
+staging בלבד, מוחלת דרך MCP `apply_migration` בלבד:
+
+1. `CREATE SCHEMA wp_import` (לא חשופה ל-PostgREST: לא ברשימת
+   הסכימות של ה-API; גישה רק דרך service role / MCP).
+2. טבלאות: `import_batches`, `products`, `categories`, `customers`,
+   `orders`, `order_items`, `coupons`, `vouchers`, `media`,
+   `url_inventory`, `id_map`, `issues`. כולן עם עמודת raw jsonb
+   (נאמנות מלאה למקור), מפתח וורדפרסי טבעי, ו-timestamps.
+3. views: ‏`v_reconciliation` (ספירות מקור/ממופה פר ישות),
+   ‏`v_open_issues`.
+4. ‏RLS מופעל על הכול; policies קריאה לאדמין בלבד; אפס policies
+   כתיבה (הכותב היחיד הוא service role, שעוקף RLS).
+5. ‏GRANTs מפורשים ל-service_role בלבד; אין GRANT ל-anon/authenticated
+   ברמת הסכימה.
+
+לא כלול ב-032 בכוונה: שינוי כלשהו ב-public, טעינת דאטה, פונקציות
+הקרנה (הן קוד סקריפטים, לא DB). המיגרציה בטוחה להחלה בכל נקודה
+בשרשרת (אין תלות ב-026-031).
 
 ---
 
@@ -477,7 +545,7 @@ Host override): מצופה 301 -> 200, בלי שרשראות ובלי לולאו
 שלב 2: 00 -> 01 -> 02 -> 03 -> אישורי curation -> 04
 שלב 3: הקרנה מלאה על פרויקט ה-DEV (05 -> 06 -> 07) + 08-verify
 שלב 4: תיקון כללים וחזרה על 2-3 עד אפס errors
-שלב 5: פרודקשן: החלת 001->034 מסודר (לפי MASTER) -> הקרנה -> verify -> cutover (סעיף 5)
+שלב 5: פרודקשן: החלת 001->035 מסודר (לפי MASTER) -> הקרנה -> verify -> cutover (סעיף 5)
 ```
 
 תלויות סכימה: הקרנת קטלוג ולקוחות רצה על הסכימה החיה (016+025

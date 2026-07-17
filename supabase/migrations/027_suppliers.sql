@@ -1,7 +1,7 @@
 -- Migration 027: Supplier Portal + Coupon Redemption + Payout Engine
 -- ============================================================================
 -- DRAFT: do NOT apply yet. Reviewed design lives in
--- docs/SUPPLIER-REDEMPTION-ARCHITECTURE.md
+-- docs/ARCHITECTURE-SUPPLIER-REDEMPTION.md
 -- Fully idempotent. Requires 016 applied (products.name_he) and 019
 -- (public.check_user_rate_limit) on the target DB.
 -- Canonical business entity: public.suppliers (from 005).

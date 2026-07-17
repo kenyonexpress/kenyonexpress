@@ -1,5 +1,5 @@
 -- Migration 026: Commerce domain (DRAFT - DO NOT APPLY YET)
--- Design: docs/COMMERCE-ARCHITECTURE.md
+-- Design: docs/ARCHITECTURE-COMMERCE.md
 -- Dynamic per-product platform_percent, payments (Cardcom), double-entry wallet,
 -- coupon redemptions with replay guards, supplier payout settlement.
 -- Fully idempotent. Written defensively against known live-DB drift.

@@ -1,6 +1,6 @@
 -- Migration 031: Notifications, Messaging & Marketing Automation (DRAFT - DO NOT APPLY YET)
 -- ============================================================================
--- Design: docs/NOTIFICATIONS-MARKETING-ARCHITECTURE.md
+-- Design: docs/ARCHITECTURE-NOTIFICATIONS-MARKETING.md
 -- Builds ON TOP of 029_accounts.sql (notifications_outbox,
 -- user_notification_preferences, enum notification_status). Does not replace
 -- or redefine anything owned by 029 (incl. fn_enqueue_coupon_expiry_reminders).

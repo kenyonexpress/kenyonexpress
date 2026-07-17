@@ -4,7 +4,7 @@
 `supabase/migrations/029_accounts.sql`
 
 תאריך: 2026-07-08. ענף: `phase5/homepage`.
-מסמכים קשורים: `docs/COMMERCE-ARCHITECTURE.md` (026), `docs/SUPPLIER-REDEMPTION-ARCHITECTURE.md` (027), `docs/AI-AGENTS-ARCHITECTURE.md` (028).
+מסמכים קשורים: `docs/ARCHITECTURE-COMMERCE.md` (026), `docs/ARCHITECTURE-SUPPLIER-REDEMPTION.md` (027), `docs/ARCHITECTURE-AI-AGENTS.md` (028).
 
 > הערת גרסה: הבריף מדבר על Next.js 15, אבל הריפו בפועל על Next 16.2.4.
 > ההשלכה המעשית: ה-middleware הוא `src/proxy.ts` (פונקציית `proxy`), לא `middleware.ts`. כל התכנון כאן מיושר למה שקיים בקוד.

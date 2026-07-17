@@ -1,5 +1,5 @@
 -- ===========================================================================
--- 035_analytics_bi.sql  (DRAFT, NOT APPLIED)
+-- 034_analytics_bi.sql  (DRAFT, NOT APPLIED)
 -- Analytics & BI extension layer on top of 033_analytics:
 --   * supplier-facing, RLS-scoped dashboard views (portal)
 --   * admin BI: take-rate by platform_percent, cohort retention (matview),
@@ -17,10 +17,11 @@
 -- OPTIONAL (objects created only if present):
 --   028_agents.sql    : agent_runs -> v_agent_costs_daily
 --
--- Numbering: 034 is reserved for 034_vendors_unification.sql
--- (MASTER-ARCHITECTURE decisions 1.19 / 1.38). This domain takes 035.
--- No dependency on 034: views read suppliers/order_items directly and pick up
--- unified rows automatically once 034 backfills them.
+-- Numbering: renumbered 035 -> 034 (2026-07-17, MASTER-ARCHITECTURE v2) to keep
+-- a gapless 026-035 sequence. The vendors unification migration is now planned
+-- as 036_vendors_unification.sql. No dependency on it: views read
+-- suppliers/order_items directly and pick up unified rows automatically once
+-- the unification backfills them.
 --
 -- Apply ONLY via Supabase MCP apply_migration (never db push), after 033.
 -- Every statement is idempotent; the whole file is one transaction.
@@ -36,21 +37,21 @@ BEGIN
     WHERE table_schema = 'public' AND table_name = 'order_items'
       AND column_name = 'platform_fee_ils'
   ) THEN
-    RAISE EXCEPTION '035_analytics_bi requires 026_commerce (order_items.platform_fee_ils missing)';
+    RAISE EXCEPTION '034_analytics_bi requires 026_commerce (order_items.platform_fee_ils missing)';
   END IF;
 
   IF to_regclass('public.payout_statements') IS NULL
      OR to_regclass('public.coupon_scan_events') IS NULL THEN
-    RAISE EXCEPTION '035_analytics_bi requires 027_suppliers (payout_statements / coupon_scan_events missing)';
+    RAISE EXCEPTION '034_analytics_bi requires 027_suppliers (payout_statements / coupon_scan_events missing)';
   END IF;
 
   IF to_regproc('public.is_supplier_member') IS NULL THEN
-    RAISE EXCEPTION '035_analytics_bi requires 027_suppliers (is_supplier_member missing)';
+    RAISE EXCEPTION '034_analytics_bi requires 027_suppliers (is_supplier_member missing)';
   END IF;
 
   IF to_regproc('public.fn_il_date') IS NULL
      OR to_regclass('public.analytics_event_definitions') IS NULL THEN
-    RAISE EXCEPTION '035_analytics_bi requires 033_analytics (fn_il_date / analytics_event_definitions missing)';
+    RAISE EXCEPTION '034_analytics_bi requires 033_analytics (fn_il_date / analytics_event_definitions missing)';
   END IF;
 END $$;
 
@@ -460,7 +461,7 @@ BEGIN
 END $do$;
 
 -- ===========================================================================
--- NOT in 035 (deliberately):
+-- NOT in 034 (deliberately):
 --   * application code: supplier portal screens, admin BI screens, agent tool
 --     wiring for fn_agent_kpi_snapshot
 --   * cron scheduling (pg_cron at apply time: nightly 02:40 Israel
@@ -468,5 +469,5 @@ END $do$;
 --   * new event-collection objects (033 owns ingest, partitions, rollup)
 --   * wallet cashback expiry job (policy decided in the design doc section 8;
 --     implementation belongs to the wallet/commerce domain)
---   * any change to 026-033; 034_vendors_unification.sql stays reserved
+--   * any change to 026-033; vendors unification is planned as 036
 -- ===========================================================================

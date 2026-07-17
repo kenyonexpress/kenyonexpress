@@ -1,5 +1,5 @@
 -- Migration 029: Customer Account & Identity (DRAFT - DO NOT APPLY YET)
--- Design: docs/ACCOUNT-IDENTITY-ARCHITECTURE.md
+-- Design: docs/ARCHITECTURE-ACCOUNT-IDENTITY.md
 -- Notification preferences, account deletion (Israeli privacy/tax retention),
 -- notifications outbox + coupon expiry reminders, payment_tokens hardening,
 -- race-safe guest cart merge.

@@ -4,7 +4,7 @@
 `supabase/migrations/031_notifications.sql`
 
 תאריך: 2026-07-08. ענף: `phase5/homepage`.
-מסמכים קשורים: `docs/COMMERCE-ARCHITECTURE.md` (026), `docs/SUPPLIER-REDEMPTION-ARCHITECTURE.md` (027), `docs/AI-AGENTS-ARCHITECTURE.md` (028), `docs/ACCOUNT-IDENTITY-ARCHITECTURE.md` (029).
+מסמכים קשורים: `docs/ARCHITECTURE-COMMERCE.md` (026), `docs/ARCHITECTURE-SUPPLIER-REDEMPTION.md` (027), `docs/ARCHITECTURE-AI-AGENTS.md` (028), `docs/ARCHITECTURE-ACCOUNT-IDENTITY.md` (029).
 
 > תלות קריטית: 031 בנויה **מעל** תשתית ההתראות של 029
 > (`notifications_outbox`, `user_notification_preferences`, enum `notification_status`,

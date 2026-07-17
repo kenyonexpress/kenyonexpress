@@ -3,24 +3,24 @@
 KenyonExpress security architecture, threat model, and hardening plan.
 Stack: Next.js 16.2.4 (middleware = `src/proxy.ts`), Supabase (Postgres 17, RLS), Drizzle, Cardcom (Israeli PSP). Marketplace handling payments, internal wallet, and coupon redemption at physical businesses.
 
-Companion migration: `supabase/migrations/036_security_hardening.sql` (idempotent, numbered after all existing drafts 026-035).
+Companion migration: `supabase/migrations/035_security_hardening.sql` (idempotent, numbered after all existing drafts 026-034; renumbered 036 -> 035 on 2026-07-17 for a gapless sequence).
 
 ## 0. Scope, sources, and authority
 
 This document is the binding security decision record. Where it conflicts with any other doc, this document wins for security controls.
 
-Sources reviewed: all `docs/*.md` and all `supabase/migrations/*.sql` (001 through 035 plus `0075`), and the live `src/` code.
+Sources reviewed: all `docs/*.md` and all `supabase/migrations/*.sql` (001 through 034 plus `0075`), and the live `src/` code.
 
 Ground truth of the codebase (this matters for every threat below):
 
-- Applied to the dev DB: migrations 001-025. Drafts NOT applied: 026, 027, 028, 029, 030, 031, 032, 033, 035. Migration 036 (this plan) is authored to be safe whether or not 026-035 are applied.
+- Applied to the dev DB: migrations 001-025. Drafts NOT applied: 026, 027, 028, 029, 030, 031, 032, 033, 034 (analytics_bi). Migration 035 (this plan) is authored to be safe whether or not 026-034 are applied.
 - Implemented in `src/` today: Supabase auth (Google OAuth + email/magic-link) in `src/server/actions/auth.ts`; middleware auth gating in `src/proxy.ts`; RBAC helpers in `src/lib/admin/rbac.ts`; service-role client in `src/lib/supabase/admin.ts` (2 callers); IP rate limiting wired to auth only in `src/lib/utils/rate-limit.ts`.
 - NOT implemented yet (design-only): all Cardcom code, all webhook routes (`src/app/api/` is empty), `src/server/actions/payments/`, coupon redemption endpoint, wallet spend, payout engine, cron jobs, `CRON_SECRET`, security headers/CSP, CI/CD.
 - Doc authority conflict: `MASTER-ARCHITECTURE.md` (2026-07-09) declares itself binding; `BUSINESS-MODEL.md` + `ARCHITECTURE-COMMERCE.md` (2026-07-17, newer) declare themselves single source of truth but describe a simpler, less-secure coupon model (`coupons_issued`, plain `qr_payload`, "role supplier", migration number 032 colliding with WP import). Decision: the security model in this document is built on the Gen A mechanisms (`coupon_codes` + Ed25519 `qr_token` + `supplier_members` + `redeem_coupon`), because they are the only ones with a defined security design. The newer business docs are treated as product intent, not as a security schema. Anyone implementing the Gen B coupon model MUST re-run this threat model first (see SEC-15).
 
 ### 0.1 Findings register (severity-ordered)
 
-| ID | Severity | Title | Where | Fixed in 036 |
+| ID | Severity | Title | Where | Fixed in 035 |
 |----|----------|-------|-------|--------------|
 | SEC-01 | Critical | `fn_wallet_transfer` executable by any authenticated user, no ownership/admin check, platform accounts exempt from non-negative floor -> wallet minting | 026:335 | Yes (revoke to service_role only) |
 | SEC-02 | High | `affiliates` self-UPDATE policy has no column restriction -> self-approve + inflate `total_earnings_ils` | 010 | Yes (drop policy) |
@@ -35,7 +35,7 @@ Ground truth of the codebase (this matters for every threat below):
 | SEC-11 | Medium | `supplier_members` owner-INSERT can add any `user_id` as `owner` with no consent/target-role check -> supplier account takeover / peer escalation | 027 | Yes (constrain member_role on self-service insert) |
 | SEC-12 | Medium | Full bank account numbers serialized into `audit_log.changes` by the generic audit trigger (payment_tokens got a redacting trigger; bank accounts did not) | 025/027 | Yes (dedicated redacting trigger for `supplier_bank_accounts`) |
 | SEC-17 | Medium | `profiles: owner update` pins only `role`, not `supplier_id`; a vendor/content_uploader self-assigns any `supplier_id` and reads that supplier's coupons (names, codes, collect amounts) via the applied 008 `coupons_supplier_read_assigned` policy | 003/008 | Yes (pin `supplier_id` in the owner-update WITH CHECK) |
-| SEC-13 | Medium | `audit_log` (011) has write-blocking policies but no populating writer wired in applied migrations; real writes went to `admin_audit_log` (dropped in draft 025). Audit trail is effectively dead until 025 is applied | 011/025 | Documented; 036 adds `security_events` + verifies writer |
+| SEC-13 | Medium | `audit_log` (011) has write-blocking policies but no populating writer wired in applied migrations; real writes went to `admin_audit_log` (dropped in draft 025). Audit trail is effectively dead until 025 is applied | 011/025 | Documented; 035 adds `security_events` + verifies writer |
 | SEC-14 | Low | Seed migration 023 creates 6 login-capable demo vendor accounts with a hardcoded, in-repo password, pre-confirmed | 023 | Guard: block in production (see SEC-14) |
 | SEC-15 | Low | Plaintext at rest: `cardcom_token` (until 029 applied), `vendors.bank_account`, `affiliates.payout_details`, `supplier_bank_accounts.account_number`; column encryption deferred | multiple | Documented decision (RLS + audit + deferral) |
 | SEC-16 | Info | Gen B business docs reintroduce an unsigned coupon model and an undocumented subscription/recurring-billing surface with no security design | docs | Documented; must re-threat-model |
@@ -107,7 +107,7 @@ STRIDE legend: S poofing, T ampering, R epudiation, I nformation disclosure, D e
 
 | STRIDE | Threat | Control |
 |--------|--------|---------|
-| S | Impersonate the crediting authority | Wallet writes go only through `fn_wallet_transfer` (SECURITY DEFINER). SEC-01: this function must be service-role-only; today it is callable by any authenticated user -> CRITICAL, fixed in 036. |
+| S | Impersonate the crediting authority | Wallet writes go only through `fn_wallet_transfer` (SECURITY DEFINER). SEC-01: this function must be service-role-only; today it is callable by any authenticated user -> CRITICAL, fixed in 035. |
 | T | Mint credit / go negative | Double-entry ledger (`wallet_transactions`, append-only, no UPDATE/DELETE policy). `wallet_accounts_user_nonneg CHECK` floors user accounts at 0. But platform accounts are CHECK-exempt, so SEC-01 (open grant) lets a user debit `platform:cashback_reserve` and credit themselves without any floor. Fix = lock the function down. |
 | R | Dispute a balance | Every transfer has an `idempotency_key`, `created_by`, and reason; nightly `v_wallet_ledger_drift` reconciles cache vs ledger. |
 | I | Read another user's ledger | RLS: `wallet_accounts`/`wallet_transactions` SELECT scoped to owner via account ownership. |
@@ -146,7 +146,7 @@ Each scenario names the concrete exploit, the current state, and the decided mit
 Exploit: two scanners (or a screenshot + the original) submit the same code within milliseconds.
 Current: canonical `redeem_coupon` (027) uses a single atomic `UPDATE ... WHERE status='issued'`; the row lock serializes the second scan, which then updates 0 rows and is diagnosed as `already_used`. The 026 path additionally inserts into `coupon_redemptions` (UNIQUE `coupon_code_id`).
 Gap (SEC-10): the 027 canonical path does NOT insert a `coupon_redemptions` row, so it relies solely on the CAS predicate; the 026 path (`fn_redeem_coupon`) is a second, differently-authorized entry that is still executable.
-Decision: `redeem_coupon` (027, membership-scoped) is the single live path. 036 revokes execute on the legacy `fn_redeem_coupon` (026). The 027 path must be extended to also write the `coupon_redemptions` truth row inside the same transaction so the UNIQUE barrier is always in force (code task tracked here; DB barrier already exists via the CAS + status terminal states). The atomic CAS alone is sufficient for correctness; the UNIQUE row is defense-in-depth and the source of the redemption ledger.
+Decision: `redeem_coupon` (027, membership-scoped) is the single live path. 035 revokes execute on the legacy `fn_redeem_coupon` (026). The 027 path must be extended to also write the `coupon_redemptions` truth row inside the same transaction so the UNIQUE barrier is always in force (code task tracked here; DB barrier already exists via the CAS + status terminal states). The atomic CAS alone is sufficient for correctness; the UNIQUE row is defense-in-depth and the source of the redemption ledger.
 
 ### 2.2 Webhook replay / forgery (Cardcom signature)
 Exploit: attacker POSTs a crafted "paid" event, or replays a captured real one.
@@ -161,12 +161,12 @@ select public.fn_wallet_transfer(
   100000, 'manual_adjust', 'anything-unique');
 ```
 Because `fn_wallet_transfer` is SECURITY DEFINER, does no caller-ownership or `is_admin()` check, and (026:335) only `REVOKE ... FROM anon` (leaving the default PUBLIC EXECUTE that includes `authenticated`), the transfer succeeds. Platform accounts are exempt from the non-negative CHECK, so the debit floor never triggers. Result: unlimited self-credit of spendable wallet balance.
-Decision (036): `REVOKE ALL ON FUNCTION fn_wallet_transfer(...) FROM PUBLIC, anon, authenticated;` and `GRANT EXECUTE ... TO service_role;` (existence-guarded, applied only if the function is present). Removing EXECUTE from `authenticated` fully closes the vulnerability: an attacker with only a user JWT can no longer invoke the function at all. Wallet transfers then happen only inside server-side webhook/admin flows using the service role, as the design already assumes. Defense-in-depth follow-up (a code task, not this migration, because it requires recreating the function body): add an in-function guard that rejects a transfer whose `credit_account` is a user account when `auth.uid()` is non-null and not admin, so any future accidental re-grant of EXECUTE stays safe.
+Decision (035): `REVOKE ALL ON FUNCTION fn_wallet_transfer(...) FROM PUBLIC, anon, authenticated;` and `GRANT EXECUTE ... TO service_role;` (existence-guarded, applied only if the function is present). Removing EXECUTE from `authenticated` fully closes the vulnerability: an attacker with only a user JWT can no longer invoke the function at all. Wallet transfers then happen only inside server-side webhook/admin flows using the service role, as the design already assumes. Defense-in-depth follow-up (a code task, not this migration, because it requires recreating the function body): add an in-function guard that rejects a transfer whose `credit_account` is a user account when `auth.uid()` is non-null and not admin, so any future accidental re-grant of EXECUTE stays safe.
 
 ### 2.4 RLS bypass attempts
 Exploit vectors and rulings:
 - Direct PostgREST write to a financial table (`payments`, `wallet_transactions`, `coupon_codes.status`, `payout_*`): no client write policy exists -> denied by RLS default-deny. Confirmed correct; keep it that way (never add a client write policy to a money table).
-- Overlapping legacy policies (SEC-06): `products_admin_write`/`variants_admin_write`/`images_admin_write`/`categories_admin_write` (ALL, `is_admin()`) from 005/012 and the 001 `vendors: owner manage` (ALL) survive alongside newer, narrower policies. Because permissive policies OR together, effective write scope is the union. Decision (036): drop the stale ALL policies so the newer per-command policies are authoritative.
+- Overlapping legacy policies (SEC-06): `products_admin_write`/`variants_admin_write`/`images_admin_write`/`categories_admin_write` (ALL, `is_admin()`) from 005/012 and the 001 `vendors: owner manage` (ALL) survive alongside newer, narrower policies. Because permissive policies OR together, effective write scope is the union. Decision (035): drop the stale ALL policies so the newer per-command policies are authoritative.
 - Service-role leakage into the client bundle: CI check (planned) greps `next build` output for `SUPABASE_SERVICE_ROLE_KEY`; `src/lib/supabase/admin.ts` is server-only. Keep the 2-caller discipline.
 
 ### 2.5 IDOR on orders / coupons
@@ -174,13 +174,13 @@ Exploit vectors and rulings:
 - Coupons: `coupons_user_read_own USING (user_id = auth.uid())`; suppliers read only coupons of suppliers they are a member of. The 8-digit code is not an object id used in any GET; redemption is by RPC with membership + rate limit + anti-enumeration. No sequential/guessable id is exposed in a URL that returns another user's resource.
 
 ### 2.6 Card token theft
-- No PAN stored. `payment_tokens.cardcom_token` is the only card reference; after 029 it is column-REVOKEd from `anon` and `authenticated` (only `id, profile_id, last_4, card_brand, expiry_*, is_default, created_at` are grantable), so a browser `SELECT *` fails 42501. Until 029 is applied, the 001 "owner all" policy still exposes the token column to the owner (SEC-15). Decision: do NOT write a real Cardcom token to the DB until 029 is applied (documented invariant); 036 does not duplicate 029 but records the dependency.
+- No PAN stored. `payment_tokens.cardcom_token` is the only card reference; after 029 it is column-REVOKEd from `anon` and `authenticated` (only `id, profile_id, last_4, card_brand, expiry_*, is_default, created_at` are grantable), so a browser `SELECT *` fails 42501. Until 029 is applied, the 001 "owner all" policy still exposes the token column to the owner (SEC-15). Decision: do NOT write a real Cardcom token to the DB until 029 is applied (documented invariant); 035 does not duplicate 029 but records the dependency.
 - The dedicated `audit_payment_tokens_fn` (029) logs only non-secret columns; the generic audit trigger must never be attached to `payment_tokens`.
 
 ### 2.7 Admin privilege escalation (SEC-03)
 Exploit: a plain `admin` (not super_admin) updates `profiles` to set their own or a colleague's `role='super_admin'`, then performs super_admin-only money-out.
 Cause: `profiles: admin all` is `FOR ALL USING (is_admin())` with NO WITH CHECK, so any admin can write any role.
-Decision (036): recreate the policy with `WITH CHECK (is_admin())`, and add a BEFORE UPDATE/INSERT trigger `enforce_role_change_privilege()` that rejects setting `role` to `admin` or `super_admin` unless the acting user is a `super_admin` (via `current_user_role()`), and rejects self-elevation entirely. This keeps normal admin management working while making the staff tier non-self-widening.
+Decision (035): recreate the policy with `WITH CHECK (is_admin())`, and add a BEFORE UPDATE/INSERT trigger `enforce_role_change_privilege()` that rejects setting `role` to `admin` or `super_admin` unless the acting user is a `super_admin` (via `current_user_role()`), and rejects self-elevation entirely. This keeps normal admin management working while making the staff tier non-self-widening.
 
 ---
 
@@ -198,11 +198,11 @@ Every table below has RLS ENABLED. The audit lists the effective policy set, the
 
 ### 3.2 Gaps and decisions
 
-| Table / object | Gap | Decision (036 unless noted) |
+| Table / object | Gap | Decision (035 unless noted) |
 |----------------|-----|------------------------------|
 | `affiliates` | `affiliates_user_update` (SEC-02): owner may UPDATE any column incl. `status`, `approved_by`, `total_earnings_ils` | Drop `affiliates_user_update`. Affiliate self-service edits (payout method) are re-added later via a scoped SECURITY DEFINER function, not a raw policy. Admin manages status/earnings. |
 | `profiles` | `profiles: admin all` no WITH CHECK (SEC-03) | Recreate with `WITH CHECK (is_admin())` + role-elevation trigger. |
-| `coupon_codes` | `coupons_supplier_mark_used` column-unrestricted (SEC-04) | Drop it. Redemption is only via `redeem_coupon`. (Draft 027 already drops it; 036 makes it true on the live DB now.) |
+| `coupon_codes` | `coupons_supplier_mark_used` column-unrestricted (SEC-04) | Drop it. Redemption is only via `redeem_coupon`. (Draft 027 already drops it; 035 makes it true on the live DB now.) |
 | `products`,`product_variants`,`product_images`,`categories` | Stale `*_admin_write` ALL policies from 005/012 (SEC-06) | Drop the stale ALL policies; keep the newer per-command policies. |
 | `vendors` | 001 `vendors: owner manage` ALL survives under 013's super_admin-only intent (SEC-06); owner can still edit `bank_account`, `commission_rate`, `status` | Drop `vendors: owner manage`. Writes limited to super_admin (013) + owner read. |
 | `carts` | WITH CHECK permits `profile_id IS NULL` for anyone (SEC-09) | Recreate: authenticated WITH CHECK requires `profile_id = auth.uid()`; guest carts continue via service role. |
@@ -264,7 +264,7 @@ Binding policy:
 | analytics ingest `/api/a` | IP | 120 / min | fail-open |
 | `request_account_deletion` | user | 3 / 24h | fail-CLOSED |
 
-Decisions (036 + code):
+Decisions (035 + code):
 - SEC-05: add `check_my_rate_limit(p_action, p_limit, p_window)` (SECURITY DEFINER) that keys on `auth.uid()` internally; `REVOKE` the raw `check_user_rate_limit` from `authenticated` (keep for `service_role`, which legitimately acts on behalf of a resolved user). All authenticated rate-limit checks call the wrapper.
 - SEC-07: `REVOKE` execute on `cleanup_rate_limits()` / `cleanup_user_rate_limits()` from PUBLIC/anon/authenticated; grant `service_role`; run via cron.
 - SEC-08 (code task, not SQL): change the money-path helpers to fail-CLOSED, wire the limiter into checkout and coupon-scan actions, and report every RPC error to monitoring. The canonical `redeem_coupon` already calls the limiter internally; the checkout action must add it.
@@ -297,18 +297,18 @@ Requirements mapping and gaps:
 
 | Requirement | Status | Gap / fix |
 |-------------|--------|-----------|
-| Every financial + permission write is audited | Generic `audit_log_trigger_fn` attached across money/permission tables (025-035 drafts) | SEC-13: in the applied DB (<=025 not yet applying the draft trigger repoint), verify the writer is live. Real writes historically went to `admin_audit_log`, which draft 025 drops after migrating rows. Until 025 is applied, wire the trigger or apply 025. 036 adds a fast-path: ensure `audit_log` has at least the security-events companion. |
+| Every financial + permission write is audited | Generic `audit_log_trigger_fn` attached across money/permission tables (025-034 drafts) | SEC-13: in the applied DB (<=025 not yet applying the draft trigger repoint), verify the writer is live. Real writes historically went to `admin_audit_log`, which draft 025 drops after migrating rows. Until 025 is applied, wire the trigger or apply 025. 035 adds a fast-path: ensure `audit_log` has at least the security-events companion. |
 | Auth events (login/logout) | Enum supports them; not currently written from `auth.ts` | Code task: emit login/logout into `audit_log` (or rely on Supabase auth logs + `security_events`). |
-| Secrets never in audit | `payment_tokens` has a redacting trigger (029) | SEC-12: `supplier_bank_accounts` full account number lands in `audit_log.changes` via the generic trigger. 036 adds a dedicated redacting trigger for it and detaches the generic one. |
-| Security anomalies (signature failures, rate-limit trips, redemption fraud, admin-sensitive actions) | Scattered across `payment_webhook_events`, `coupon_scan_events` | 036 adds `public.security_events` (append-only, admin-read, service/definer-write) as the single cross-cutting security signal table feeding `v_money_alarms`-style monitoring. |
+| Secrets never in audit | `payment_tokens` has a redacting trigger (029) | SEC-12: `supplier_bank_accounts` full account number lands in `audit_log.changes` via the generic trigger. 035 adds a dedicated redacting trigger for it and detaches the generic one. |
+| Security anomalies (signature failures, rate-limit trips, redemption fraud, admin-sensitive actions) | Scattered across `payment_webhook_events`, `coupon_scan_events` | 035 adds `public.security_events` (append-only, admin-read, service/definer-write) as the single cross-cutting security signal table feeding `v_money_alarms`-style monitoring. |
 | Retention | Forever for audit_log/consent/wallet/payments/payouts/coupon_redemptions; 90d for scan/agent/delivery; analytics 13mo | Accepted; cron enforces purges on the 90-day tables. |
-| Tamper-evidence | RLS blocks Data-API writes | Service-role can still mutate history (SEC-13 residual). Decision: keep append-only via absence of policies; add a periodic integrity check comparing `audit_log` row counts/hashes is out of scope for 036 but recommended. |
+| Tamper-evidence | RLS blocks Data-API writes | Service-role can still mutate history (SEC-13 residual). Decision: keep append-only via absence of policies; add a periodic integrity check comparing `audit_log` row counts/hashes is out of scope for 035 but recommended. |
 
 ---
 
-## 8. Migration 036: what it does
+## 8. Migration 035: what it does
 
-`supabase/migrations/036_security_hardening.sql`, idempotent, safe whether or not drafts 026-035 are applied (every reference to a draft object is existence-guarded).
+`supabase/migrations/035_security_hardening.sql`, idempotent, safe whether or not drafts 026-034 are applied (every reference to a draft object is existence-guarded).
 
 1. SEC-01: lock `fn_wallet_transfer` to `service_role` (grant lockdown: revoke EXECUTE from PUBLIC/anon/authenticated, grant to service_role) — existence-guarded, applied only if the function exists. The in-function caller guard is a later code task (needs a function-body recreate).
 2. SEC-10: revoke execute on legacy `fn_redeem_coupon` (026).
@@ -321,6 +321,6 @@ Requirements mapping and gaps:
 9. SEC-05 + SEC-07: add `check_my_rate_limit()`; revoke raw limiter + cleanup functions from browser roles, grant service_role.
 10. SEC-12: dedicated `audit_supplier_bank_accounts_fn()` redacting trigger (guarded).
 11. SEC-13/7: create `public.security_events` (append-only, admin-read, RLS enabled).
-12. SEC-14: make demo-vendor seeding refuse to run when a `KE_ENV=production` marker is set (documented guard; the seed lives in 023, so 036 adds a defensive check function for future seeds).
+12. SEC-14: make demo-vendor seeding refuse to run when a `KE_ENV=production` marker is set (documented guard; the seed lives in 023, so 035 adds a defensive check function for future seeds).
 
-Apply order: after 035. On the live DB (currently at 025), 036 is still safe: guards skip the 026-035-dependent statements until those drafts are applied, and the fixes that target applied objects (SEC-02/03/04/06/09) run immediately. Re-run 036 after applying 026-035 to activate the remaining guarded fixes (idempotent).
+Apply order: after 034. On the live DB (currently at 025), 035 is still safe: guards skip the draft-dependent statements until those drafts are applied, and the fixes that target applied objects (SEC-02/03/04/06/09) run immediately. Re-run 035 after applying 026-034 to activate the remaining guarded fixes (idempotent).

@@ -4,8 +4,8 @@
 `supabase/migrations/030_catalog.sql`
 
 תאריך: 2026-07-08. ענף: `phase5/homepage`.
-מסמכים קשורים: `docs/COMMERCE-ARCHITECTURE.md` (026),
-`docs/SUPPLIER-REDEMPTION-ARCHITECTURE.md` (027), `docs/AI-AGENTS-ARCHITECTURE.md` (028).
+מסמכים קשורים: `docs/ARCHITECTURE-COMMERCE.md` (026),
+`docs/ARCHITECTURE-SUPPLIER-REDEMPTION.md` (027), `docs/ARCHITECTURE-AI-AGENTS.md` (028).
 
 > תלות: 030 עומדת בפני עצמה ואינה תלויה ב-026/027/028. היא מוסיפה
 > `products.platform_percent` באופן מגונן (nullable, בנוסח 027) כי מנוע הדירוג

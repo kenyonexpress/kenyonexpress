@@ -1,5 +1,5 @@
 -- Migration 032: WordPress/WooCommerce import staging (DRAFT, DO NOT APPLY)
--- Companion doc: docs/WP-DATA-MIGRATION-ARCHITECTURE.md
+-- Companion doc: docs/ARCHITECTURE-WP-DATA-MIGRATION.md
 --
 -- Staging + permanent archive for the kenyonexpress.co.il WooCommerce data.
 -- Creates ONLY the wp_import schema. Touches nothing in public.

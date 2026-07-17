@@ -2,7 +2,7 @@
 
 מסמך תכנון תשתית. סטטוס: DESIGN. אין בו מיגרציות ואין בו קוד להחלה.
 תאריך: 2026-07-08. ענף: `phase5/homepage`.
-מסמכים קשורים: `COMMERCE-ARCHITECTURE.md` (026), `SUPPLIER-REDEMPTION-ARCHITECTURE.md` (027), `AI-AGENTS-ARCHITECTURE.md` (028).
+מסמכים קשורים: `ARCHITECTURE-COMMERCE.md` (026), `ARCHITECTURE-SUPPLIER-REDEMPTION.md` (027), `ARCHITECTURE-AI-AGENTS.md` (028).
 
 > מטרת המסמך: להעביר את KenyonExpress מפרויקט dev לאתר פרודקשן שמחליף אתר WordPress חי
 > ב-`kenyonexpress.co.il` ללא downtime, עם מודל עלות ברור מתי Supabase Pro הופך לחובה.
@@ -92,7 +92,7 @@ CRON_SECRET                  # מגן על Vercel cron routes, ראו 4.5
 ### 1.3 seed data ומצב ה-DB לפרודקשן
 
 - פרויקט הפרודקשן החדש נבנה בהחלת **001 עד 028 לפי הסדר** דרך `apply_migration`, בלי ה-drift של dev.
-- **לפני החלה חייבים לסגור את התנגשות 026↔027** (שתיהן מגדירות `payout_status` עם ערכים שונים ושני מנועי settlement). לפי `AI-AGENTS-ARCHITECTURE.md` שאלה 9.1: 027 היא העדכנית, לעדכן את 026 להסיר את החלק החופף. זה חוסם פרודקשן מסחרי.
+- **לפני החלה חייבים לסגור את התנגשות 026↔027** (שתיהן מגדירות `payout_status` עם ערכים שונים ושני מנועי settlement). לפי `ARCHITECTURE-AI-AGENTS.md` שאלה 9.1: 027 היא העדכנית, לעדכן את 026 להסיר את החלק החופף. זה חוסם פרודקשן מסחרי.
 - seed לפרודקשן: קטגוריות (018), platform wallet accounts (026), hero slides (017). **לא** להריץ את seed הדמו (022/024 - vendors/coupons/products דמו). מוצרי הפרודקשן נכנסים דרך האדמין או ייבוא מבוקר.
 - הדאטה מ-dev (12 קטגוריות, 31 מוצרים) הם נתוני בדיקה. להחליט פר-שורה מה עובר לפרודקשן; לא migration של ה-DB כולו.
 
@@ -293,7 +293,7 @@ base-uri 'self';
 
 ### 4.3 אימות חתימת webhook של Cardcom
 
-טרם מומש (אין `/api/payments/cardcom/webhook`). התכנון מ-`COMMERCE-ARCHITECTURE.md` §2.3 + §6 T3 הוא הסטנדרט; לאכוף אותו בפרודקשן:
+טרם מומש (אין `/api/payments/cardcom/webhook`). התכנון מ-`ARCHITECTURE-COMMERCE.md` §2.3 + §6 T3 הוא הסטנדרט; לאכוף אותו בפרודקשן:
 
 1. **אימות חתימה/secret ראשון**: כל בקשה נכנסת נבדקת מול `CARDCOM_WEBHOOK_SECRET`. חתימה לא תקינה → לוג עם `signature_valid=false`, החזר 200, drop (200 כדי שתוקף לא ילמד כלום).
 2. **אימות server-to-server**: גם עם חתימה תקינה, קריאה חוזרת ל-API של Cardcom לפי `cardcom_low_profile_id` לשליפת הסכום והסטטוס האמיתיים. סומכים **רק** על התשובה הזו (`verified_against_api=true`). "paid" מזויף על 1 ILS בהזמנת 500 ILS נכשל בהתאמת סכום.

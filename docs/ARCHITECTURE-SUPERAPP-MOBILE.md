@@ -3,7 +3,7 @@
 מסמך תכנון. אין מיגרציה נלווית (מסמך בלבד, שום דבר לא מוחל).
 
 תאריך: 2026-07-08. ענף: `phase5/homepage`.
-מסמכים קשורים: `docs/COMMERCE-ARCHITECTURE.md` (026), `docs/SUPPLIER-REDEMPTION-ARCHITECTURE.md` (027), `docs/AI-AGENTS-ARCHITECTURE.md` (028), `docs/ACCOUNT-IDENTITY-ARCHITECTURE.md` (029), `docs/PRODUCTION-OPS-ARCHITECTURE.md`.
+מסמכים קשורים: `docs/ARCHITECTURE-COMMERCE.md` (026), `docs/ARCHITECTURE-SUPPLIER-REDEMPTION.md` (027), `docs/ARCHITECTURE-AI-AGENTS.md` (028), `docs/ARCHITECTURE-ACCOUNT-IDENTITY.md` (029), `docs/ARCHITECTURE-PRODUCTION-OPS.md`.
 
 > הקשר עסקי: שוק ישראלי בלבד. היום: אתר web-first. היעד: super-app שבו כל
 > ורטיקל (קומרס, קופונים, משלוחי אוכל, הסעות, שירותים, בסגנון Wolt/Gett)
@@ -210,7 +210,7 @@ supabase/migrations/          קידומת בתיאור: "food:", "rides:"
 
 ### 3.2 אחסון מקומי (צד לקוח)
 
-עקבי עם `docs/ACCOUNT-IDENTITY-ARCHITECTURE.md` סעיף 4.2 (אותה אסטרטגיה
+עקבי עם `docs/ARCHITECTURE-ACCOUNT-IDENTITY.md` סעיף 4.2 (אותה אסטרטגיה
 בדיוק); כאן הפירוט המלא.
 
 - IndexedDB, store בשם `coupon_wallet`, רשומה פר קופון:
@@ -268,7 +268,7 @@ supabase/migrations/          קידומת בתיאור: "food:", "rides:"
 
 ### 4.1 תשתית: 029 היא הבסיס, חסרה רק שכבת ה-push
 
-מיגרציה 029 (טיוטה, `docs/ACCOUNT-IDENTITY-ARCHITECTURE.md`) כבר מגדירה
+מיגרציה 029 (טיוטה, `docs/ARCHITECTURE-ACCOUNT-IDENTITY.md`) כבר מגדירה
 את שתי אבני היסוד:
 
 - `notifications_outbox`: תור שליחה גנרי (kind, channel email/push/inapp,

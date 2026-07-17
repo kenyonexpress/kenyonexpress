@@ -1,7 +1,7 @@
 -- ===========================================================================
 -- 033_analytics.sql  (DRAFT, NOT APPLIED)
 -- Analytics & BI domain: first-party event collection, daily rollups,
--- owner dashboard views. Design doc: docs/ANALYTICS-BI-ARCHITECTURE.md
+-- owner dashboard views. Design doc: docs/ARCHITECTURE-ANALYTICS-BI.md
 --
 -- HARD PREREQUISITES (checked below, migration aborts if missing):
 --   026_commerce.sql  : order_items snapshot columns, payments, wallet_accounts
