@@ -4,8 +4,8 @@
 **Phase 5 - Homepage 1:1 (סגור)**. branch `phase5/homepage`. מקור יחיד: `refs/ke_live_singlefile.html`.
 
 ## Last Completed
-Session 2026-07-17 (ערב) - איחוד קאנוני מלא: dedup מסמכים, מספור מחדש, MASTER-ARCHITECTURE v2:
-- **`docs/MASTER-ARCHITECTURE.md` שוכתב והורחב כ-v2 (מהדורת 2026-07-17)**: ביקורת סתירות 1.1-1.57; תוכנית מיגרציות סופית; רישום SEC-01..17; ERD מאוחד; סדר בנייה שלב 0 עד שער השיגור; רישום R1-R38.
+Session 2026-07-17 (ערב) - MASTER v3: איחוד סופי של כל 16 הדומיינים לתיקיית docs/ אחת:
+- **`docs/MASTER-ARCHITECTURE.md` הוא כעת v3 (מהדורת 2026-07-17 ערב)**: ביקורת סתירות 1.1-1.57 (כולן DECIDED, אפס אופציות פתוחות); היררכיית סמכות: אבטחה > משפט > מסמך האב > דומיין; תוכנית מיגרציות סופית 026-039 עם עריכות פר קובץ (כולל WO-1: ‏enum ‏agent_key בן 6 ערכים ב-028); **רישום קריטיים מאוחד בסעיף 3: ‏SEC-01..17 (3.1) + ‏LEG-01..14 (3.2) עם בעלים, מיגרציה וסטטוס**; חוסמי שיגור מאוחדים (3.3); ‏ERD מעודכן (כולל 037: ‏cancellation_requests, ‏invoices, ‏legal_document_versions, ‏wallet expiry; ‏038: אינדקסים + ‏related_products; ‏039: ‏enrichment_suggestions, ‏agent_reports); סדר בנייה מהמצב הנוכחי עד שיגור עם מיפוי מפורש של פקודות העבודה WO-1..6 לשלבים; טבלת ‏rate limits עם ‏cancellation_request; רישום R1-R38.
 - **dedup**: נמחקו 4 כפילויות (ANALYTICS-BI-, TESTING-CICD-, WP-DATA-MIGRATION-, COMMERCE-ARCHITECTURE.md) אחרי מיזוג מלא לקבצים הקנוניים; כל docs/ עבר לקונבנציה `ARCHITECTURE-<TOPIC>.md` וכל ההפניות עודכנו (כולל בקבצי המיגרציות).
 - **מספור מחדש לרצף רציף 026-035**: `035_analytics_bi.sql` -> `034_analytics_bi.sql`; `036_security_hardening.sql` -> `035_security_hardening.sql`; איחוד ה-vendors המתוכנן = `036_vendors_unification.sql` (טרם נכתב). כל ההפניות בקבצי SQL ובמסמכים עודכנו. אזכורי 035/036 הישנים ברשומות ההיסטוריה למטה מתייחסים למספור הישן.
 - **נקלטו מסמכי API ומובייל**: `docs/ARCHITECTURE-API-CONTRACTS.md` (חוזי API; R33) ו-`docs/ARCHITECTURE-MOBILE-SUPERAPP.md` (RN+Expo, ‏Turborepo M1-M14; R27/R34). מסמך ה-PWA הישן נבלע במלואו בסעיף 11 של מסמך המובייל ונמחק, בלי לאבד את C1-C4/D3-D10.
@@ -18,16 +18,17 @@ Session 2026-07-17 (ערב) - איחוד קאנוני מלא: dedup מסמכים
   ב-ERD, בסדר הבנייה ובשער השיגור. מסמכי הדומיין קיבלו עוגני סמכות; הכרעת
   breakage הישנה ב-ANALYTICS/SUPPLIER/COMMERCE הוחלפה בזיכוי `refund_credit`
   ל-5 שנים ו-cashback ל-24 חודשים. אף מיגרציה חדשה לא נכתבה או הוחלה.
+- **הערת ריצה מקבילה**: חלק מצעדי האיחוד (העברת שלושת מסמכי ה-lanes ל-docs/, הקצאת 037-039, יישור מסמכי הדומיין, commit ‏6466a8b) בוצעו בידי סוכן Cursor שרץ במקביל באותו ענף; הסשן הזה אימת אותם, השלים את מיזוג צמד המובייל (סעיף 11), את רישום ה-LEG, את מיפוי ה-WO ואת עדכון v3, בלי כפילויות.
 - לא הוחלה שום מיגרציה, לא שונה קוד רץ.
 
 ## In Progress
 nothing
 
 ## Blocking Issues
-none
+none חוסם. הערות קבועות: היסטוריית המיגרציות במרוחק לא מסונכרנת; אסור `supabase db push` (ייכשל על "already exists"), החלה רק דרך MCP `apply_migration`. Docker מקומי לא רץ (רלוונטי רק ל-harness המקומי של D6).
 
 ## Next Task
-שלב 0 של סדר הבנייה ב-MASTER v2: צעד 0.1 (אימות דף המוצר) בוצע (24.72%). הבא: צעד 0.2 - החלת `035_security_hardening.sql` על ה-DB החי דרך Supabase MCP apply_migration (**רק באישור מפורש**), ואז צעד 0.3 בדיקות קדם 2.10.
+שלב 0 של סדר הבנייה ב-MASTER v3: צעד 0.1 בוצע (24.72%). הבא: צעד 0.2 - החלת `035_security_hardening.sql` על ה-DB החי דרך Supabase MCP apply_migration (**רק באישור מפורש**), ואז 0.3 בדיקות קדם 2.10, ‏0.4 כתיבת 037 המשפטית, ‏0.5 ביצועים P0, ‏0.6 החלת ה-seed הממתין (באישור).
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
@@ -208,30 +209,7 @@ Session 2026-06-19 — Homepage 1:1 מול `ke_live_singlefile.html`:
 
 commit: `feat: homepage 1:1 match with live source`
 
-## In Progress
-ממתין ל-Ofir: מילוי קובץ האב (`refs/KenyonExpress_קובץ_אב_דף_מוצר.docx`) לפני בניית `/products/[slug]`.
-
-## Blocking Issues
-- none חוסם. הערה: היסטוריית המיגרציות במרוחק לא מסונכרנת (2 רשומות מול 21 קבצים מקומיים). אין להריץ `supabase db push` למרוחק — ייכשל על "already exists". להחיל מיגרציות חדשות נקודתית דרך MCP `apply_migration` או `supabase migration repair`.
-- Docker מקומי עדיין לא רץ (לא רלוונטי כל עוד עובדים מול המרוחק).
-
-## Next Task
-שלב 2.0 של מסמך האב (docs/MASTER-ARCHITECTURE.md סעיף 4): (1) בדיקות קדם מסעיף 2.10 מול ה-DB החי; (2) ביצוע עריכות סעיף 2 בטיוטות 026-031+033 וכתיבת 034_vendors_unification.sql; (3) החלת 026→034 דרך MCP apply_migration + generate_typescript_types. במקביל: בניית /products/[slug] לפי קובץ האב של דף המוצר (ממתין למילוי על ידי Ofir); שדות המוצר החדשים שיידרשו כבר מכוסים חלקית ב-030 (brand/seo/variant_axes) והשאר (city, business_whatsapp, promo_code, redemption_steps, business_hours, waze_coords) יתווספו במיגרציה עתידית לפי משמעת המספור.
-בנוסף, מסלול ה-CI (docs/ARCHITECTURE-TESTING-CICD.md, חוב T1): הקמת `.github/workflows/ci.yml` עם static/unit/build עוד לפני כתיבת קוד כסף, ואז `.nvmrc`, פיצול vitest ל-projects, `supabase/seed.sql` ו-`tests/sql/90_test_support.sql` לפי סעיף 7 של המסמך.
-
-## Active Branch
-phase5/homepage
-
-## Working Directory ⛔ נתיב יחיד ונכון
-`/Users/ofir/kenyonexpress-web/kenyonexpress` — שורש הפרויקט (כאן `package.json`, `.git`, `src/`). מבנה שטוח, **אין מקונן**.
-
-**חוקים קבועים (גם ב-CLAUDE.md):**
-1. אסור עותקים כפולים של הפרויקט (`* copy`, `src copy`, מבנה מקונן). גיבוי = git/GitHub בלבד.
-2. אסור להריץ פקודות מתיקיות אחרות. לפני כל פעולה — לוודא `pwd` = הנתיב לעיל.
-3. כל `git commit` מחייב `git push` מיידי ל-`origin phase5/homepage` כגיבוי.
-
-## Supabase Project URL
-https://ixvwfbuvfxxsjiywhbbb.supabase.co
+(סטטוס ישן שהיה כפול כאן קופל לרשומת ההיסטוריה: ה-Next Task שלו התייחס למספור הישן 034=vendors; המקור העדכני הוא הסעיפים בראש הקובץ. חוקי הנתיב היחיד וה-push המיידי חיים ב-CLAUDE.md.)
 
 ---
 ## History

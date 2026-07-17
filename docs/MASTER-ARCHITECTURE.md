@@ -1,8 +1,10 @@
-# MASTER ARCHITECTURE: מסמך האב המאוחד (v2, מהדורת 2026-07-17)
+# MASTER ARCHITECTURE: מסמך האב המאוחד (v3, מהדורת 2026-07-17 ערב)
 
-מסמך ההכרעות המחייב של KenyonExpress. מהדורה זו מחליפה במלואה את מהדורת 2026-07-09.
-ענף: `phase5/homepage`. כל סתירה בין מסמך זה למסמכי הדומיין: **מסמך זה גובר**, למעט
-בקרות אבטחה, שם `ARCHITECTURE-SECURITY.md` הוא המקור המחייב (והוא מיושר למסמך זה).
+מסמך ההכרעות המחייב של KenyonExpress. מהדורה זו מחליפה במלואה את מהדורות
+2026-07-09 ו-v2 (2026-07-17 בוקר). ענף: `phase5/homepage`. סדר הסמכות בסתירה:
+בקרות אבטחה: `ARCHITECTURE-SECURITY.md` גובר; ענייני דין וציות:
+`ARCHITECTURE-LEGAL-COMPLIANCE.md` גובר [1.51]; בכל השאר: **מסמך זה גובר** על
+מסמכי הדומיין.
 
 ## 0. רישום המסמכים והמספור (אחרי האיחוד של 2026-07-17)
 
@@ -36,7 +38,8 @@
 ‏`ARCHITECTURE-MOBILE-SUPERAPP.md` (מובייל RN+Expo, מחליף את D1/D2 של מסמך
 ה-PWA; ‏R27/R34). מסמך ה-PWA הישן נבלע בסעיף 11 של מסמך המובייל ונמחק.
 שלושת מסמכי ה-lanes המשפטי, ביצועים וסוכני runtime הועברו מהתיקיות הזמניות
-אל `docs/`, והתיקיות הזמניות נמחקו.
+אל `docs/`, והתיקיות הזמניות נמחקו. **כלל מחייב מעתה: כל מסמך ארכיטקטורה חי
+ב-`docs/` בלבד; אסור לפתוח תיקיות ארכיטקטורה צדדיות.**
 
 ### 0.2 מספור המיגרציות (שונה ב-2026-07-17, רצף רציף)
 
@@ -367,7 +370,9 @@ orders/order_items (חמש עמודות snapshot + backfill); ‏payments + ‏p
 
 (1) מחיקת ‏`is_supplier_member_compat`; ‏policy של ‏listing_drafts עובר ל-`is_supplier_member`
 ‏[1.8]. (2) **‏`fn_log_agent_run`: ‏REVOKE מלא מ-PUBLIC/anon/authenticated + ‏GRANT
-ל-service_role ‏[1.42]**. כל השאר נשאר.
+ל-service_role ‏[1.42]**. (3) **WO-1 ‏[1.56]: ‏CREATE TYPE ‏`agent_key` נוצר עם ששת
+הערכים ‏`('shopping','supplier_ops','support','fraud_watch','catalog_enrichment','pricing_analyst')`
+‏(R22 אוסר ADD VALUE בקובץ רגיל)**. כל השאר נשאר.
 
 ### 2.5 עריכות ל-`029_accounts.sql`
 
@@ -432,7 +437,9 @@ RLS, ‏audit ו-REVOKE מלא לכל definer. 028 מקבלת את ערכי
 
 ---
 
-## 3. רישום ממצאי האבטחה (SEC-01..SEC-17)
+## 3. רישום הקריטיים: אבטחה (SEC-01..17) וציות (LEG-01..14)
+
+### 3.1 אבטחה
 
 המקור המחייב: ‏`ARCHITECTURE-SECURITY.md`. ‏"תוקן ב-035" = כתוב בטיוטה, **טרם הוחל**.
 
@@ -456,12 +463,38 @@ RLS, ‏audit ו-REVOKE מלא לכל definer. 028 מקבלת את ערכי
 | SEC-16 | מידע | מודל Gen B לא חתום + משטח מנויים בלי תכנון אבטחה | docs | הוכרע ב-1.40/1.41 (מנגנוני Gen A; מנויים מחוץ להיקף עד threat model) | סגור ברמת הכרעה |
 | SEC-17 | בינוני | ‏"profiles: owner update" לא מקבע ‏supplier_id → קריאת קופונים חוצת-ספקים **דליפה חיה היום** | 003/008 | 035 (קיבוע ‏supplier_id) | תוקן בטיוטה; מיידי |
 
+### 3.2 ציות משפטי
+
+המקור המחייב: ‏`ARCHITECTURE-LEGAL-COMPLIANCE.md` ‏[1.51]. "הוכרע" = ההכרעה עוגנה
+במסמכים; המימוש לפי עמודת התיקון.
+
+| ID | חומרה | ממצא | תיקון | בעלים | סטטוס |
+|---|---|---|---|---|---|
+| LEG-01 | **קריטי** | אין מנוע ביטול צרכני (14ג קוגנטי; קיים רק "admin refund") | ‏`cancellation_requests` + ‏fns + עמוד ‏`/cancel` ‏(037 + קוד שלבים 3-4) ‏[1.53] | COMMERCE | פתוח; חוסם checkout |
+| LEG-02 | **קריטי** | אין מערכת חשבוניות (‏`orders.invoice_number` יתום) | טבלת ‏`invoices` ‏(037) + הפקה בטרנזקציית ה-webhook + חשבונית עמלה צמודת ‏payout_statements ‏[1.54] | COMMERCE + SUPPLIER | פתוח; חוסם שקל ראשון |
+| LEG-03 | **קריטי** | אפס נגישות ת"י 5568 / ‏WCAG 2.0 AA בכל המסמכים והקוד | הצהרת ‏`/accessibility` + ‏axe-core חוסם ב-CI + בדיקת NVDA + תיקון רטרואקטיבי ‏[1.54] | UI + TESTING | פתוח; חוסם שיגור |
+| LEG-04 | גבוה | קופון שפג בלי מימוש: שמירת הכסף = חשיפה לפי דיני שוברים | זיכוי ארנק אוטומטי מלא ‏refund_credit ל-5 שנים ‏[1.52]; ‏job על ‏expire_coupons; ‏credit_note | SUPPLIER | הוכרע; מימוש ב-037 + cron |
+| LEG-05 | גבוה | אין רצפת תוקף לשובר | רצפה 4 חודשים מהרכישה, ולידציית שרת ‏[1.52]; סוגר את SUPPLIER ‏9.3 | SUPPLIER | הוכרע; ולידציה בקוד |
+| LEG-06 | גבוה | אין מסמך גילוי 14ג(ב) בעסקה | תבנית ‏`order_disclosure` חובה בטרנזקציית paid, עם ‏snapshot ו-`wording_version` ‏[1.54] | NOTIFICATIONS | פתוח |
+| LEG-07 | גבוה | אין עמודים משפטיים; ‏`accept_terms` בלי תקנון ובלי ‏terms_version | 4 עמודי ‏`/legal/*` + ‏`/accessibility` + ‏`/cancel`; ‏`orders.terms_version`/`terms_accepted_at` ‏(037) | UI + COMMERCE | פתוח; חוסם שיגור |
+| LEG-08 | בינוני | חורי PII במחיקה: ‏`security_events` לא נכלל בניקוי; ‏applications דחויות נשמרות לנצח | הרחבת ‏`fn_execute_account_deletion` + ‏cron ניקוי (מיושם ב-037) | ACCOUNT + SECURITY | פתוח; מימוש ב-037 |
+| LEG-09 | בינוני | חובות תיקון 13 לא ממופות (סיווג מאגר, ‏DPO, ‏runbook אירוע) | רמת אבטחה בינונית; ‏DPO בסף 100k נושאי מידע; מסמכים עם עו"ד לפני שיגור | OPS + בעלים | הוכרע; ביצוע לפני שיגור |
+| LEG-10 | בינוני | "החזר לארנק, לא לכרטיס" (026) סותר 14ה | ניתוב לפי אמצעי התשלום ‏[1.53]; ‏COMMERCE ‏3.2 תוקן | COMMERCE | הוכרע ומיושם במסמכים |
+| LEG-11 | בינוני | פקיעת cashback לא מוגדרת (‏`expire` בלי מדיניות) | ‏cashback/referral ‏24 חודשים; ‏refund_credit ‏5 שנים; פר-צבירה FIFO דרך ‏`wallet_transactions.expires_at` ‏(037) ‏[1.52] | COMMERCE | הוכרע; מימוש ב-037 |
+| LEG-12 | בינוני | אישור ספק בלי בסיס חוזי (אין חתימת הסכם) | ‏`agreement_version`/`agreement_signed_at` כתנאי ל-`approve_supplier_application` ‏(037) | SUPPLIER | פתוח; מימוש ב-037 |
+| LEG-13 | נמוך | אין הגבלת גיל או התייחסות לקטינים | סעיף 18+ בתקנון + הצהרת גיל משולבת ב-accept_terms ב-checkout | UI | פתוח |
+| LEG-14 | נמוך | נוסחים סופיים ללא אישור עו"ד | סבב ייעוץ משפטי מאוחד אחד (תקנון, פרטיות, הסכם ספק, באנר, מסמך גילוי) לפני שיגור | בעלים | פתוח; חוסם שיגור |
+
+### 3.3 חוסמי שיגור ומשימות פתוחות
+
 **חוסמי שיגור:** ‏SEC-01..06 מוחלים לפני שכסף אמיתי או קופון אמיתי זזים; ‏CSP/security
 headers + ‏env.ts (הפער היחיד ל-SAQ-A); אין טוקן Cardcom אמיתי לפני 029; ‏SEC-08
-(fail-closed) לפני checkout חי; נוסח באנר הסכמה עובר ייעוץ משפטי.
+(fail-closed) לפני checkout חי; ‏037 חלה + ‏LEG-01/02 חיים לפני התשלום האמיתי
+הראשון; ‏LEG-03/07/13 לפני שיגור; סבב עו"ד מאוחד ‏(LEG-14, כולל באנר ההסכמה).
 
 **משימות קוד פתוחות מהרישום:** ‏SEC-08 (חיווט לימיטר + fail-closed); ‏CSP headers
-ב-proxy; ‏env.ts ‏zod; ‏guard פנימי ב-`fn_wallet_transfer`; אימות writer של audit_log.
+ב-proxy; ‏env.ts ‏zod; ‏guard פנימי ב-`fn_wallet_transfer`; אימות writer של audit_log;
+‏axe-core ב-CI ‏(LEG-03); תבנית ‏order_disclosure ‏(LEG-06); הצהרת גיל ‏(LEG-13).
 
 ---
 
@@ -602,6 +635,7 @@ PLANNED (אין קובץ)
 | 0.3 | בדיקות קדם 2.10 מול ה-DB החי | כאן |
 | 0.4 | כתיבת 037 המשפטית ואישור עו"ד לנוסחים; אין checkout לפני LEG-01..03 | LEGAL ‏6 |
 | 0.5 | תשתית ביצועים P0: ‏Cache Components/PPR, תמונות, budgets ו-Lighthouse | PERFORMANCE ‏7 |
+| 0.6 | החלת ה-seed הממתין ‏`supabase/seed-fixes/PENDING-live-products.sql` על dev (באישורך): 8 המוצרים החסרים בגריד דף הבית | STATE.md |
 
 ### שלב 1: תשתית סכימה (חד פעמי)
 
@@ -664,6 +698,17 @@ A1 ‏SDK + ‏`/api/a` + באנר הסכמה + ‏attribution; A2 ‏crons (‏
 וטעינת staging; אחריו ‏support; ‏shopping אחרי C2 וקטלוג מועשר; ‏supplier_ops
 אחרי פורטל הספקים; ‏fraud_watch אחרי 4-6 שבועות דאטה; ‏pricing_analyst אחרי
 8 שבועות דאטה ו-034. ‏seed prompts + eval harness קודמים להפעלת כל סוכן.
+
+**מיפוי שש פקודות העבודה (WO-1..6) של מסמך ה-runtime לשלבי הבנייה:**
+
+| WO | תוכן | שלב ביצוע |
+|---|---|---|
+| WO-1 | ‏enum ‏`agent_key` עם ששת הערכים בעריכת 028 | שלב 1.1 (עריכות 2.4) |
+| WO-2 | כתיבת ‏`039_agents_v2.sql` (טבלאות ייעוד + ‏fn_agent_open_refund_intake) | תחילת 5ב / לפני enrichment בשלב W (2.13) |
+| WO-3 | ‏`src/contracts/agents.ts`: סכימות Zod לכלים ולפלטים | עם חילוץ ‏`src/contracts/` ‏(G-5 של מסמך ה-API, שלב 3) |
+| WO-4 | הפניה קדימה ממסמך V1 למסמך ה-runtime | **בוצע** (איחוד v3) |
+| WO-5 | עדכון סדר 5ב + ‏enrichment בשלב W + רישום 039 במסמך האב | **בוצע** (מסמך זה) |
+| WO-6 | שלושה ‏crons: ‏agents-enrichment (יומי 03:00), ‏agents-fraud (יומי 05:00), ‏agents-pricing (שבועי ראשון 06:00); כולם ‏CRON_SECRET | עם השקת כל סוכן בהתאמה (5ב) |
 
 ### שלב 5ג: אוטומציית שיווק
 
@@ -753,6 +798,7 @@ API ‏[1.44] + מיגרציית cutover לחיווט התזכורות [1.23]); 
 | `begin_checkout` | 10 | דקה | **closed** | ‏beginCheckout |
 | `coupon_scan` | 30 | דקה | **closed** | ‏redeem_coupon |
 | `account_deletion` | 3 | 24 שעות | **closed** | ‏fn_request_account_deletion |
+| `cancellation_request` | 5 | 24 שעות | **closed** | ‏fn_request_cancellation (037) |
 | ‏webhook ‏Cardcom | ~300 | דקה (IP) | open | ‏route |
 | `consent_change` | 20 | שעה | open | ‏fn_set_marketing_consent |
 | `agent_chat` | 20 | שעה | open | ‏shopping/support |
