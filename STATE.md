@@ -19,6 +19,7 @@ Session 2026-07-17 (ערב) - MASTER v3: איחוד סופי של כל 16 הדו
   breakage הישנה ב-ANALYTICS/SUPPLIER/COMMERCE הוחלפה בזיכוי `refund_credit`
   ל-5 שנים ו-cashback ל-24 חודשים. אף מיגרציה חדשה לא נכתבה או הוחלה.
 - **הערת ריצה מקבילה**: חלק מצעדי האיחוד (העברת שלושת מסמכי ה-lanes ל-docs/, הקצאת 037-039, יישור מסמכי הדומיין, commit ‏6466a8b) בוצעו בידי סוכן Cursor שרץ במקביל באותו ענף; הסשן הזה אימת אותם, השלים את מיזוג צמד המובייל (סעיף 11), את רישום ה-LEG, את מיפוי ה-WO ואת עדכון v3, בלי כפילויות.
+- **נקלט מסמך observability חדש**: ‏`docs/ARCHITECTURE-OBSERVABILITY.md` ‏(OBS-01..22: ‏Sentry errors-only, לוגר יחיד + ‏scrubber, ‏Better Stack ‏uptime/heartbeats/סטטוס/on-call, מנוע התראות על ‏v_money_alarms, ‏8 ‏runbooks). הופיע בתיקייה צדדית ‏obs-arch/ תוך כדי הסשן, הועבר ל-docs/ לפי הכלל, ונרשם במסמך האב; מיגרציית ‏`040_observability.sql` שמורה לו (המספר הפנוי הבא: 041).
 - לא הוחלה שום מיגרציה, לא שונה קוד רץ.
 
 ## In Progress

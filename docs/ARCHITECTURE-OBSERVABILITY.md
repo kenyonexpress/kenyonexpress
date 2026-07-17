@@ -2,7 +2,7 @@
 
 תאריך: 2026-07-17 | סטטוס: **מסמך הכרעות מחייב, design only** (לא נכתב קוד, לא נוצרה מיגרציה, לא הותקן שירות חיצוני)
 מחבר: ארכיטקט observability ותגובה לתקריות
-כפיפות סמכות: כפוף ל-`docs/MASTER-ARCHITECTURE.md` (v2) ול-`docs/ARCHITECTURE-SECURITY.md`. מרחיב את `docs/ARCHITECTURE-PRODUCTION-OPS.md` סעיף 5 וגובר עליו בפרטי המימוש של ניטור והתראות. חוזי ה-API כפופים ל-`docs/ARCHITECTURE-API-CONTRACTS.md` (המסמך הזה לא משנה אף חוזה, רק מוסיף routes חדשים בתבנית L2).
+כפיפות סמכות: כפוף ל-`docs/MASTER-ARCHITECTURE.md` (v3) ול-`docs/ARCHITECTURE-SECURITY.md`. מרחיב את `docs/ARCHITECTURE-PRODUCTION-OPS.md` סעיף 5 וגובר עליו בפרטי המימוש של ניטור והתראות. חוזי ה-API כפופים ל-`docs/ARCHITECTURE-API-CONTRACTS.md` (המסמך הזה לא משנה אף חוזה, רק מוסיף routes חדשים בתבנית L2).
 הקשר: מיזם בבעלות מפעיל יחיד. אין צוות, אין NOC. כל הכרעה כאן מותאמת לאדם אחד עם טלפון.
 
 ---

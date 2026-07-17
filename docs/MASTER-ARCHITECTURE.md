@@ -26,6 +26,7 @@
 | `ARCHITECTURE-PRODUCTION-OPS.md` | תשתית, cutover, עלויות | אין |
 | `ARCHITECTURE-PERFORMANCE.md` | ‏Cache Components, תקציבי ביצועים, קיבולת ואינדקסים | 038 (מתוכננת) |
 | `ARCHITECTURE-LEGAL-COMPLIANCE.md` | ציות ישראלי, ביטולים, חשבוניות, נגישות ושמירה | 037 (מתוכננת) |
+| `ARCHITECTURE-OBSERVABILITY.md` | ניטור, לוגים, התראות, runbooks, ‏on-call ‏(OBS-01..22) | 040 (מתוכננת) |
 | `ARCHITECTURE-MOBILE-SUPERAPP.md` | React Native + Expo, monorepo (M1-M14), חוזי הליבה שנבלעו מה-PWA | עתידיות (push) |
 | `ARCHITECTURE-API-CONTRACTS.md` | משטח ה-API המלא: transports, ‏Zod, ‏idempotency, שגיאות (API-1..) | אין |
 | `BUSINESS-MODEL.md` | כוונת מוצר (שלושה סוגי מוצרים) | אין |
@@ -51,6 +52,7 @@
 | חדש | **037** (מתוכנן) | `037_legal_compliance.sql` |
 | חדש | **038** (מתוכנן) | `038_performance_indexes.sql` |
 | חדש | **039** (מתוכנן) | `039_agents_v2.sql` |
+| חדש | **040** (מתוכנן) | `040_observability.sql` (guard לקוד השמור, ‏probe, ‏v_ops_alarms; ‏OBS-21) |
 
 הרצף על הדיסק כעת רציף: 026-035, ללא חורים. 036-039 שמורים לפי הטבלה ואינם
 כתובים עדיין. משמעת מספור: לפני קובץ חדש בודקים `ls supabase/migrations/`,
@@ -613,7 +615,8 @@ DOMAIN: תפעול
 
 PLANNED (אין קובץ)
   036_vendors_unification (2.9)
-  037_legal_compliance (2.11); 038_performance_indexes (2.12); 039_agents_v2 (2.13)
+  037_legal_compliance (2.11); 038_performance_indexes (2.12); 039_agents_v2 (2.13);
+  040_observability (OBS-21: guard לקוד `00000000`, ‏probe seed, ‏v_ops_alarms)
   push_subscriptions (P) [1.26]; verticals + orders.vertical (P) [1.30]
   subscriptions (P) [1.41, אחרי threat model]
 ```
@@ -781,7 +784,7 @@ API ‏[1.44] + מיגרציית cutover לחיווט התזכורות [1.23]); 
 | R28 | סוכני AI | ‏grounding בלבד; ‏RLS כגבול; אף סוכן לא כותב כסף; ‏fn_log_agent_run ‏service בלבד | AGENTS, 1.42 |
 | R29 | אנליטיקה | ‏first-party בלבד; שני מישורים (כסף מטבלאות אמת, התנהגות מ-events); 2 ‏matviews בלבד | ANALYTICS |
 | R30 | מנויים | מחוץ להיקף עד ‏threat model ומיגרציה ייעודית | 1.41 |
-| R31 | מספור | רצף רציף; 036-039 שמורים לפי 0.2; המספר החדש הבא הוא 040; עדכון מסמך זה באותו commit | 0.2, 1.19, 1.57 |
+| R31 | מספור | רצף רציף; 036-040 שמורים לפי 0.2; המספר החדש הבא הוא 041; עדכון מסמך זה באותו commit | 0.2, 1.19, 1.57 |
 | R32 | שמות מסמכים | ‏`ARCHITECTURE-<TOPIC>.md`; מסמך זה ומסמך האבטחה = היררכיית הסמכות | 0.1 |
 | R33 | חוזי API | שני transports בלבד (Server Actions לדפדפן, ‏Route Handlers ל-machine-to-machine); מעטפת ‏`ActionResult<T>` אחידה; טקסונומיית 16 שגיאות; כל מהלך כסף עם ‏idempotency key בעל שם | API-CONTRACTS |
 | R34 | ‏monorepo | מעבר ‏Turborepo בשלב 6: ‏M1 (‏`apps/web`, ‏PR אטומי, עדכון ‏CLAUDE.md באותו commit) ואז חילוץ חבילות ‏M2; אפס שינוי התנהגות פר ‏PR | MOBILE-SUPERAPP ‏2 |
