@@ -12,7 +12,8 @@
 |---|---|---|
 | `ARCHITECTURE-COMMERCE.md` | עגלה, checkout, Cardcom, ארנק double-entry | 026 |
 | `ARCHITECTURE-SUPPLIER-REDEMPTION.md` | ספקים, מימוש קופונים, התחשבנות | 027 |
-| `ARCHITECTURE-AI-AGENTS.md` | ארבעת סוכני ה-AI | 028 |
+| `ARCHITECTURE-AI-AGENTS.md` | סכימת הבסיס ואינווריאנטים לסוכני AI | 028 |
+| `ARCHITECTURE-AI-AGENTS-RUNTIME.md` | runtime, ‏evals והרחבת הקטלוג ל-6 סוכנים | 039 (מתוכננת) |
 | `ARCHITECTURE-ACCOUNT-IDENTITY.md` | חשבון, זהות, מחיקה, payment_tokens | 029 |
 | `ARCHITECTURE-CATALOG-SEARCH-SEO.md` | קטלוג, חיפוש עברי, SEO | 030 |
 | `ARCHITECTURE-NOTIFICATIONS-MARKETING.md` | התראות, הסכמה, מסעות שיווק | 031 |
@@ -21,8 +22,9 @@
 | `ARCHITECTURE-SECURITY.md` | מודל האיומים ורישום SEC-01..17 | 035 |
 | `ARCHITECTURE-TESTING-CICD.md` | בדיקות ו-CI/CD (D1-D22) | אין |
 | `ARCHITECTURE-PRODUCTION-OPS.md` | תשתית, cutover, עלויות | אין |
-| `ARCHITECTURE-SUPERAPP-MOBILE.md` | חוזי הליבה לוורטיקלים; PWA כגשר (D1/D2 הוחלפו) | עתידיות |
-| `ARCHITECTURE-MOBILE-SUPERAPP.md` | אפליקציית מובייל: React Native + Expo, monorepo (M1-M14) | עתידיות (push) |
+| `ARCHITECTURE-PERFORMANCE.md` | ‏Cache Components, תקציבי ביצועים, קיבולת ואינדקסים | 038 (מתוכננת) |
+| `ARCHITECTURE-LEGAL-COMPLIANCE.md` | ציות ישראלי, ביטולים, חשבוניות, נגישות ושמירה | 037 (מתוכננת) |
+| `ARCHITECTURE-MOBILE-SUPERAPP.md` | React Native + Expo, monorepo (M1-M14), חוזי הליבה שנבלעו מה-PWA | עתידיות (push) |
 | `ARCHITECTURE-API-CONTRACTS.md` | משטח ה-API המלא: transports, ‏Zod, ‏idempotency, שגיאות (API-1..) | אין |
 | `BUSINESS-MODEL.md` | כוונת מוצר (שלושה סוגי מוצרים) | אין |
 | `docs/product-page/` | אפיון דף מוצר | אין |
@@ -32,7 +34,9 @@
 בקבצים הקנוניים). שאר המסמכים שונו לשם הקונבנציה, וכל ההפניות עודכנו.
 נוספו ב-2026-07-17: ‏`ARCHITECTURE-API-CONTRACTS.md` (חוזי ה-API, ‏R33) ו-
 ‏`ARCHITECTURE-MOBILE-SUPERAPP.md` (מובייל RN+Expo, מחליף את D1/D2 של מסמך
-ה-PWA; ‏R27/R34).
+ה-PWA; ‏R27/R34). מסמך ה-PWA הישן נבלע בסעיף 11 של מסמך המובייל ונמחק.
+שלושת מסמכי ה-lanes המשפטי, ביצועים וסוכני runtime הועברו מהתיקיות הזמניות
+אל `docs/`, והתיקיות הזמניות נמחקו.
 
 ### 0.2 מספור המיגרציות (שונה ב-2026-07-17, רצף רציף)
 
@@ -41,9 +45,13 @@
 | `035_analytics_bi.sql` | `034_analytics_bi.sql` | הרחבת BI |
 | `036_security_hardening.sql` | `035_security_hardening.sql` | הקשחת אבטחה |
 | 034 (שמור, לא נכתב) | **036** (מתוכנן, טרם נכתב) | `036_vendors_unification.sql` |
+| חדש | **037** (מתוכנן) | `037_legal_compliance.sql` |
+| חדש | **038** (מתוכנן) | `038_performance_indexes.sql` |
+| חדש | **039** (מתוכנן) | `039_agents_v2.sql` |
 
-הרצף על הדיסק כעת רציף: 026-035, ללא חורים. משמעת מספור: לפני קובץ חדש בודקים
-`ls supabase/migrations/` ולוקחים את הפנוי הבא, ומעדכנים מסמך זה באותו commit.
+הרצף על הדיסק כעת רציף: 026-035, ללא חורים. 036-039 שמורים לפי הטבלה ואינם
+כתובים עדיין. משמעת מספור: לפני קובץ חדש בודקים `ls supabase/migrations/`,
+מאמתים את ההקצאה כאן ומעדכנים מסמך זה באותו commit.
 
 ---
 
@@ -169,7 +177,7 @@
 #### 1.41 מנויים (Subscription)
 
 ‏`BUSINESS-MODEL.md` מוסיף סוג מוצר שלישי בלי שום תכנון אבטחה (SEC-16). **הכרעה:**
-מנויים מחוץ לרצף 026-036. יידרשו: מודל איומים ייעודי, מיגרציה ייעודית (טבלת
+מנויים מחוץ לרצף 026-039. יידרשו: מודל איומים ייעודי, מיגרציה ייעודית (טבלת
 `subscriptions`, ‏Cardcom Recurring Token), ‏idempotency פר ‏`(subscription_id,
 cycle_number)`, ‏3 ניסיונות חיוב ואז ‏`paused` ‏(D17). שום קובץ קיים לא נוגע בזה.
 
@@ -206,7 +214,8 @@ cycle_number)`, ‏3 ניסיונות חיוב ואז ‏`paused` ‏(D17). שו
 #### 1.46 bootstrap של פרודקשן
 
 מסמך התפעול (מיושן) אמר "001-028". **הכרעה:** פרויקט פרודקשן חדש (eu-central-1)
-מקבל את הרצף המלא הערוך 001→035 (ו-036 כשתיכתב), בסדר של סעיף 2, דרך MCP בלבד.
+מקבל את הרצף המלא הערוך 001→039 ככל שהקבצים נכתבים ומאושרים, בסדר של סעיף 2,
+דרך MCP בלבד. אין checkout לפני 037.
 
 #### 1.47 מלכודת הסדר של SEC-12 (audit חשבונות בנק)
 
@@ -235,6 +244,53 @@ cycle_number)`, ‏3 ניסיונות חיוב ואז ‏`paused` ‏(D17). שו
 ענף היעד הוא ‏`cursor/add-supabase-3c830` (ה-main בפועל); ‏branch protection עליו;
 ההגנות יועברו כשיוקם ‏main אמיתי.
 
+#### 1.51 סמכות הציות המשפטי
+
+`ARCHITECTURE-LEGAL-COMPLIANCE.md` הוא המקור המחייב בענייני דין. נוסח משפטי
+סופי עדיין דורש אישור עו"ד ישראלי. בבקרות אבטחה מסמך האבטחה ממשיך לגבור.
+רישום LEG-01..14 הוא חלק משער השיגור, ו-LEG-01..03 קריטיים.
+
+#### 1.52 תוקף קופון ופקיעה ללא מימוש
+
+הכרעת ה-breakage הישנה מבוטלת. תוקף דיל מינימלי הוא 4 חודשים. קופון שפג
+במצב `issued` מזכה אוטומטית את ארנק הלקוח במלוא `platform_paid_ils`
+כ-`refund_credit`, עם תוקף 5 שנים. ‏cashback ו-referral bonus פגים אחרי
+24 חודשים, פר שורת צבירה וב-FIFO. אין פקיעה גורפת של יתרה.
+
+#### 1.53 ביטול והחזר לפי אמצעי התשלום
+
+מנוע ביטול צרכני הוא חוסם checkout: בקשת ביטול, חישוב זכאות בשרת, דמי ביטול
+עד 5% או 100 ש"ח לפי הנמוך ובכפוף לסיבה, ונתיב `/cancel`. החלק ששולם בכרטיס
+חוזר לכרטיס; החלק ששולם מארנק חוזר לארנק. החזר כרטיס לארנק דורש הסכמה
+אקטיבית ומתועדת. ‏`037_legal_compliance.sql` מחזיקה את הסכימה.
+
+#### 1.54 חשבוניות, מסמכי גילוי ונגישות
+
+לפני קבלת שקל ראשון נדרשים מנוע חשבוניות, מודל מס לפיצול ספק/פלטפורמה
+ומסמך גילוי סטטוטורי עם snapshot ו-`wording_version`. לפני שיגור נדרשים
+עמודי legal, הצהרת נגישות, קישור ביטול קבוע, ‏axe חוסם ב-CI ובדיקת עומק
+לפי ת"י 5568.
+
+#### 1.55 ארכיטקטורת ביצועים
+
+`ARCHITECTURE-PERFORMANCE.md` מחייב: ‏Cache Components + PPR לפני checkout;
+קטלוג ציבורי דרך client אנונימי ללא cookies בתוך `use cache`; אזורים תלויי
+משתמש דינמיים בתוך Suspense; תמונות דרך `next/image`; תקציבי LCP/JS
+ו-Lighthouse CI. אינדקסים ו-`related_products` מתוכננים ב-038.
+
+#### 1.56 הרחבת סוכני AI
+
+`ARCHITECTURE-AI-AGENTS-RUNTIME.md` מרחיב את הקטלוג מ-4 ל-6 ומחייב סדר:
+‏catalog_enrichment, ‏support, ‏shopping, ‏supplier_ops, ‏fraud_watch,
+‏pricing_analyst. 028 מתעדכנת לפני החלה עם שני ערכי enum חדשים; טבלאות
+הייעוד נוצרות ב-039. אף סוכן אינו כותב כסף, מחיר או פרסום ללא אישור אנושי.
+
+#### 1.57 הקצאת 037-039
+
+שלושת המסמכים נכתבו במקביל וכל אחד הניח שהוא 037. ההקצאה הקנונית פותרת
+את ההתנגשות: 037 משפטי (חוסם קבלת תשלום), 038 ביצועים, 039 סוכנים v2.
+המספרים שמורים גם לפני כתיבת הקבצים.
+
 ---
 
 ## 2. תוכנית המיגרציות הסופית
@@ -262,9 +318,13 @@ cycle_number)`, ‏3 ניסיונות חיוב ואז ‏`paused` ‏(D17). שו
 | 9 | `034_analytics_bi.sql` | אין (מוכן) | 026, 027, 033 (guards) | חסום עד 033 |
 | 10 | `035_security_hardening.sql` (הרצה חוזרת) | אין | אחרי כל הרצף | מפעיל את SEC-01/10/11/12 |
 | 11 | `036_vendors_unification.sql` | **קובץ חדש** (2.9) | 027 | חסום עד כתיבה |
+| 12 | `037_legal_compliance.sql` | **קובץ חדש** (2.11) | 026, 027, 029, 031, 036 | חסום עד כתיבה; חוסם checkout |
+| 13 | `038_performance_indexes.sql` | **קובץ חדש** (2.12) | 030 | חסום עד כתיבה ומדידת query plans |
+| 14 | `039_agents_v2.sql` | **קובץ חדש** (2.13) | 028, 034, 037 | חסום עד כתיבה; נדרש לסוכן הראשון |
 
 הערות סדר: ‏035 מוחלת פעמיים בכוונה (מיידית + בסוף). ‏032 עצמאית לחלוטין וניתנת
 להחלה בכל נקודה. ‏028/029/030 לא תלויות זו בזו; הסדר המספרי הוא ברירת המחדל.
+037-039 הן expand-only מתוכננות ואינן משנות את סדר 026-036.
 
 ### 2.2 עריכות ל-`026_commerce.sql`
 
@@ -350,6 +410,25 @@ SELECT name, installed_version FROM pg_available_extensions WHERE name = 'pg_trg
 ```
 
 ערך enum חסר = מיגרציית ‏ADD VALUE ייעודית ונפרדת לפני הקובץ הצורך, לעולם לא בתוך קובץ.
+
+### 2.11 `037_legal_compliance.sql` (קובץ חדש, לפני checkout)
+
+טבלאות `cancellation_requests`, ‏`invoices` ו-`legal_document_versions`;
+snapshot קבלת תנאים על orders; ח.פ/עוסק וחתימת הסכם על suppliers; פונקציות
+בקשת/אישור ביטול; תשתית תוקף יתרות; הרחבות המחיקה וה-retention. הכל
+expand-only, עם RLS, ‏audit והרשאות לפי מסמך האבטחה.
+
+### 2.12 `038_performance_indexes.sql` (קובץ חדש)
+
+שמונה האינדקסים ורכיב `related_products` המפורטים בסעיף 5.2 של
+`ARCHITECTURE-PERFORMANCE.md`. כל אינדקס נכתב רק אחרי אימות שאין כפילות
+מול האינדקסים הקיימים ועם query plan מתועד.
+
+### 2.13 `039_agents_v2.sql` (קובץ חדש)
+
+טבלאות `enrichment_suggestions` ו-`agent_reports`, פונקציית intake להחזר,
+RLS, ‏audit ו-REVOKE מלא לכל definer. 028 מקבלת את ערכי
+`catalog_enrichment` ו-`pricing_analyst` בתוך CREATE TYPE לפני החלה.
 
 ---
 
@@ -474,6 +553,21 @@ DOMAIN: אבטחה (ARCHITECTURE-SECURITY; 035)
   triggers: enforce_role_change_privilege, enforce_supplier_member_role;
   check_my_rate_limit; assert_seeds_allowed
 
+DOMAIN: ציות משפטי (ARCHITECTURE-LEGAL-COMPLIANCE; 037 מתוכננת)
+  cancellation_requests                     -> orders, order_items, auth.users; 7 שנים
+  invoices                                  snapshot חשבונאי; 7 שנים לפחות
+  legal_document_versions                   תקנון/פרטיות/ביטול/הסכם ספק versioned
+  orders.terms_version/terms_accepted_at; suppliers.registration/agreement snapshot
+
+DOMAIN: ביצועים (ARCHITECTURE-PERFORMANCE; 038 מתוכננת)
+  related_products(...)                     STABLE, SECURITY INVOKER
+  אינדקסים תומכי קטלוג, הזמנות, קופונים והתראות לפי query plans
+
+DOMAIN: AI Agents v2 (ARCHITECTURE-AI-AGENTS-RUNTIME; 039 מתוכננת)
+  enrichment_suggestions                    -> products, agent_runs; תור אישור staff
+  agent_reports                             -> agent_runs; אדמין בלבד
+  fn_agent_open_refund_intake               intake בלבד, ללא שינוי כסף
+
 SCHEMA: wp_import (032; ארכיון + staging, service_role בלבד, לא חשוף ל-PostgREST)
   import_batches, id_map, products, categories, customers, orders, order_items,
   coupons, vouchers, media, url_inventory, issues + v_reconciliation, v_open_issues
@@ -486,6 +580,7 @@ DOMAIN: תפעול
 
 PLANNED (אין קובץ)
   036_vendors_unification (2.9)
+  037_legal_compliance (2.11); 038_performance_indexes (2.12); 039_agents_v2 (2.13)
   push_subscriptions (P) [1.26]; verticals + orders.vertical (P) [1.30]
   subscriptions (P) [1.41, אחרי threat model]
 ```
@@ -494,25 +589,27 @@ PLANNED (אין קובץ)
 
 ## 5. סדר הבנייה: מהמצב הנוכחי ועד שיגור ב-kenyonexpress.co.il
 
-מצב פתיחה (2026-07-17): ‏Phase 5 (דף בית 1:1) סגור; דף מוצר ממתין לאימות
-‏compare.mjs מול הרפרנס; 001-025 מוחלות על ‏dev; כל הטיוטות 026-035 כתובות; ‏036
-טרם נכתבה; אפס קוד checkout.
+מצב פתיחה (2026-07-17): ‏Phase 5 (דף בית 1:1) סגור; דף המוצר אומת מול האתר
+החי ב-24.72% (מתחת ליעד 30%); דף הבית 6.69%; 001-025 מוחלות על dev; כל
+הטיוטות 026-035 כתובות; 036-039 מתוכננות וטרם נכתבו; אפס קוד checkout.
 
 ### שלב 0: סגירת החזית הנוכחית + אבטחה מיידית
 
 | צעד | תוכן | מקור |
 |---|---|---|
-| 0.1 | אימות דף המוצר מול הרפרנס (‏compare.mjs, המסלול הידני של D7) וסגירת ה-Phase | product-page; TESTING ‏4.6 |
+| 0.1 | **בוצע:** אימות דף המוצר מול האתר החי, 24.72% מול יעד 30% | product-page; TESTING ‏4.6 |
 | 0.2 | **החלת `035_security_hardening.sql` על ה-DB החי (באישורך)**: סוגר מיד את SEC-02/03/04/06/09/17, כולל דליפת הקופונים החיה (SEC-17) | SECURITY ‏8 |
 | 0.3 | בדיקות קדם 2.10 מול ה-DB החי | כאן |
+| 0.4 | כתיבת 037 המשפטית ואישור עו"ד לנוסחים; אין checkout לפני LEG-01..03 | LEGAL ‏6 |
+| 0.5 | תשתית ביצועים P0: ‏Cache Components/PPR, תמונות, budgets ו-Lighthouse | PERFORMANCE ‏7 |
 
 ### שלב 1: תשתית סכימה (חד פעמי)
 
 | צעד | תוכן | מקור |
 |---|---|---|
-| 1.1 | ביצוע עריכות סעיף 2 בטיוטות 026-031 + תיקון כותרת 033 + כתיבת 036 | כאן 2.2-2.9 |
+| 1.1 | ביצוע עריכות סעיף 2 בטיוטות 026-031 + כתיבת 036-039 | כאן 2.2-2.13 |
 | 1.2 | ‏harness מיגרציות ‏apply-twice ירוק על stack מקומי נקי (D6) | TESTING ‏3.4, 6 |
-| 1.3 | החלת הרצף 026→034 בסדר, הרצה חוזרת של 035, החלת 036; ‏`generate_typescript_types` | כאן 2.1 |
+| 1.3 | החלת הרצף 026→034 בסדר, הרצה חוזרת של 035, ואז 036→039 לפי תנאי הכניסה; ‏`generate_typescript_types` | כאן 2.1 |
 
 ### שלב 2: עגלה
 
@@ -521,7 +618,8 @@ PLANNED (אין קובץ)
 
 ### שלב 3: ‏checkout + Cardcom (הכסף)
 
-3.0 **קדם:** מודול הכסף הטהור ‏`src/lib/money/` + כל מקרי ‏M/K/S ירוקים (D2, D13);
+3.0 **קדם:** 037 חלה; מנוע ביטול, חשבוניות, מסמך גילוי ועמודי legal קיימים;
+מודול הכסף הטהור ‏`src/lib/money/` + כל מקרי ‏M/K/S/ביטול ירוקים (D2, D13);
 ‏env.ts ‏zod + ‏CSP/security headers ב-proxy (חוסם SAQ-A); חיווט rate limit ‏fail-closed
 ‏(SEC-08) דרך ‏`check_my_rate_limit`.
 3.1 ‏`requireUserSession()` + אכיפת login בלחיצת תשלום.
@@ -562,8 +660,10 @@ A1 ‏SDK + ‏`/api/a` + באנר הסכמה + ‏attribution; A2 ‏crons (‏
 
 ### שלב 5ב: ‏AI Agents
 
-5.6 ‏seed prompts + ‏eval harness; 5.7 ‏shopping; 5.8 ‏support; 5.9 ‏supplier_ops;
-5.10 ‏fraud_watch.
+סדר מחייב לפי מסמך ה-runtime: ‏catalog_enrichment במקביל ל-W אחרי 028+039
+וטעינת staging; אחריו ‏support; ‏shopping אחרי C2 וקטלוג מועשר; ‏supplier_ops
+אחרי פורטל הספקים; ‏fraud_watch אחרי 4-6 שבועות דאטה; ‏pricing_analyst אחרי
+8 שבועות דאטה ו-034. ‏seed prompts + eval harness קודמים להפעלת כל סוכן.
 
 ### שלב 5ג: אוטומציית שיווק
 
@@ -578,6 +678,8 @@ API ‏[1.44] + מיגרציית cutover לחיווט התזכורות [1.23]); 
 ‏checksums, כיסוי ‏url_inventory מלא) → הקפאות (שוברים T-30, קטלוג T-48h) → ‏cutover
 ‏DNS לפי ‏`ARCHITECTURE-PRODUCTION-OPS.md` (‏TTL 300, ‏rollback = ‏DNS, ‏WP חי שבועיים).
 כל המיובאים ‏marketing_*=false.
+אחרי טעינת staging ו-028+039, ‏catalog_enrichment יכול להכין הצעות תוכן ו-SEO
+לתור אישור staff לפני ההקרנה לקטלוג החי.
 
 ### שער השיגור (כולם חייבים ירוק)
 
@@ -587,6 +689,9 @@ API ‏[1.44] + מיגרציית cutover לחיווט התזכורות [1.23]); 
 4. ‏reconciliation ו-‏v_money_alarms מחוברים להתראת אדמין.
 5. עסקת אמת אחת ב-Cardcom פרודקשן (המסלול השלישי של אסטרטגיית Cardcom).
 6. באנר הסכמה מאושר משפטית; ‏sitemap + ‏robots + ‏redirects חיים.
+7. ‏LEG-01..03 סגורים: ביטול צרכני, חשבוניות/מסמכי גילוי ונגישות; כל עמודי
+   legal והסכם הספק מאושרים בידי עו"ד.
+8. תקציבי PERFORMANCE ירוקים ב-Lighthouse ובתרחיש k6 הרלוונטי.
 
 ### שלב 6 (עתידי, מחוץ להיקף הנוכחי; לפי ‏ARCHITECTURE-MOBILE-SUPERAPP)
 
@@ -615,7 +720,7 @@ API ‏[1.44] + מיגרציית cutover לחיווט התזכורות [1.23]); 
 | R12 | ‏webhook | חתימה + אימות server-to-server; ‏browser redirect לעולם לא משנה state | COMMERCE T3 |
 | R13 | ‏RBAC צוות | ‏super_admin בלבד מעניק admin+ (trigger ‏035); כסף יוצא = ‏super_admin | SEC-03, 1.13 |
 | R14 | ‏rate limits | טבלת 5.4; ‏fail-closed לכסף ול-auth; ‏check_my_rate_limit ללקוח | 1.29, 1.48 |
-| R15 | ‏retention | לפי הרישום ‏[1.31 + 1.37] | 1.31 |
+| R15 | ‏retention | לפי הרישום ‏[1.31 + 1.37] והרחבת הטבלה המשפטית; refund_credit ‏5 שנים, הטבות 24 חודשים | 1.31, 1.52, LEGAL ‏5 |
 | R16 | הסכמה | מצב = העדפות; ראיה = ‏consent_events; ‏opt-in בלבד (30א) | 1.25 |
 | R17 | ‏WhatsApp | ‏Meta Cloud API ישיר | 1.44 |
 | R18 | ‏redirects | ‏seo_redirects + ‏proxy.ts, ‏301 מדויק; אין ‏next.config redirects | 1.45 |
@@ -625,16 +730,20 @@ API ‏[1.44] + מיגרציית cutover לחיווט התזכורות [1.23]); 
 | R22 | מיגרציות | ‏idempotent; ‏enum שלם ב-CREATE TYPE; אין ‏ADD VALUE בקובץ רגיל; החלה רק ‏MCP באישור | 2.0 |
 | R23 | בדיקות | ‏D1-D22 מחייבים; מודול כסף לפני checkout; ‏apply-twice לפני החלה | 1.49 |
 | R24 | ‏deploy | מיגרציה לפני קוד (expand/contract); ‏DB ‏forward-only; ‏rollback = ‏Vercel Instant | D20, D21 |
-| R25 | פרודקשן | פרויקט Supabase חדש ‏eu-central-1 + ‏fra1; ‏Pro לפני תשלום ראשון; ‏bootstrap ‏001→035(+036) | 1.46, OPS |
+| R25 | פרודקשן | פרויקט Supabase חדש ‏eu-central-1 + ‏fra1; ‏Pro לפני תשלום ראשון; ‏bootstrap ‏001→039 ככל שנכתבו ואושרו | 1.46, OPS |
 | R26 | ‏cutover | ‏DNS ‏TTL 300; ‏WP חי שבועיים כ-rollback; הקפאות ‏M15 | OPS, WP |
-| R27 | מובייל | **React Native + Expo** ב-monorepo ‏Turborepo (‏`apps/web` + ‏`apps/mobile`, הכרעות M1-M14); ה-PWA הוא גשר עד ההשקה בלבד; חוזי הליבה וורטיקלים כ-plug-in על ‏orders.vertical נשארים | MOBILE-SUPERAPP; SUPERAPP ‏2-5 |
+| R27 | מובייל | **React Native + Expo** ב-monorepo ‏Turborepo (‏`apps/web` + ‏`apps/mobile`, הכרעות M1-M14); ה-PWA הוא גשר עד ההשקה בלבד; חוזי הליבה שנבלעו בסעיף 11 נשארים | MOBILE-SUPERAPP ‏11 |
 | R28 | סוכני AI | ‏grounding בלבד; ‏RLS כגבול; אף סוכן לא כותב כסף; ‏fn_log_agent_run ‏service בלבד | AGENTS, 1.42 |
 | R29 | אנליטיקה | ‏first-party בלבד; שני מישורים (כסף מטבלאות אמת, התנהגות מ-events); 2 ‏matviews בלבד | ANALYTICS |
 | R30 | מנויים | מחוץ להיקף עד ‏threat model ומיגרציה ייעודית | 1.41 |
-| R31 | מספור | רצף רציף; הפנוי הבא = 036 (איחוד vendors); עדכון מסמך זה באותו commit | 0.2, 1.19 |
+| R31 | מספור | רצף רציף; 036-039 שמורים לפי 0.2; המספר החדש הבא הוא 040; עדכון מסמך זה באותו commit | 0.2, 1.19, 1.57 |
 | R32 | שמות מסמכים | ‏`ARCHITECTURE-<TOPIC>.md`; מסמך זה ומסמך האבטחה = היררכיית הסמכות | 0.1 |
 | R33 | חוזי API | שני transports בלבד (Server Actions לדפדפן, ‏Route Handlers ל-machine-to-machine); מעטפת ‏`ActionResult<T>` אחידה; טקסונומיית 16 שגיאות; כל מהלך כסף עם ‏idempotency key בעל שם | API-CONTRACTS |
 | R34 | ‏monorepo | מעבר ‏Turborepo בשלב 6: ‏M1 (‏`apps/web`, ‏PR אטומי, עדכון ‏CLAUDE.md באותו commit) ואז חילוץ חבילות ‏M2; אפס שינוי התנהגות פר ‏PR | MOBILE-SUPERAPP ‏2 |
+| R35 | ציות משפטי | מסמך LEGAL גובר בענייני דין; LEG-01..03 חוסמים checkout/שיגור; נוסחים דורשים עו"ד | 1.51-1.54 |
+| R36 | קופון שפג | רצפה 4 חודשים; פקיעה ללא מימוש מזכה refund_credit ל-5 שנים | 1.52 |
+| R37 | ביצועים | ‏Cache Components + PPR; דינמי בתוך Suspense; תקציבים חוסמים CI; אינדקסים ב-038 | 1.55 |
+| R38 | סוכני AI v2 | 6 סוכנים; סדר enrichment-first; 039 לטבלאות הייעוד; אישור אנושי לכל תוצר כותב | 1.56 |
 
 ### 5.4 טבלת ‏rate limits (מקור אמת יחיד)
 

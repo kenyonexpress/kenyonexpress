@@ -7,6 +7,11 @@
 מסמכים קשורים: `docs/ARCHITECTURE-COMMERCE.md` (026),
 `docs/ARCHITECTURE-SUPPLIER-REDEMPTION.md` (027), `docs/ARCHITECTURE-AI-AGENTS.md` (028).
 
+> **הרחבת ביצועים מחייבת (2026-07-17):**
+> `docs/ARCHITECTURE-PERFORMANCE.md` מקבע Cache Components + PPR,
+> ‏cache tags, client קטלוג אנונימי, `next/image` ו-`related_products`
+> במיגרציה 038. החלטות SEO והחיפוש במסמך זה נשארות בתוקף.
+
 > תלות: 030 עומדת בפני עצמה ואינה תלויה ב-026/027/028. היא מוסיפה
 > `products.platform_percent` באופן מגונן (nullable, בנוסח 027) כי מנוע הדירוג
 > משתמש בו כ-boost. אם 026/027 יוחלו לפני או אחרי, אין התנגשות

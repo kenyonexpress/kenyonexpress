@@ -1,12 +1,13 @@
-# ARCHITECTURE-AI-AGENTS-V2: העמקת פלטפורמת סוכני ה-AI
+# ARCHITECTURE-AI-AGENTS-RUNTIME: העמקת פלטפורמת סוכני ה-AI
 
 סטטוס: טיוטה מחייבת v2.0 (2026-07-17). בעלים: ארכיטקט פלטפורמת ה-AI.
 מסמך זה מעמיק את `docs/ARCHITECTURE-AI-AGENTS.md` (להלן "V1") לרמת מימוש.
 היררכיית סמכות: `docs/MASTER-ARCHITECTURE.md` גובר; `docs/ARCHITECTURE-SECURITY.md` גובר בבקרות אבטחה; מסמך זה גובר על V1 בכל סתירה פנימית של דומיין הסוכנים.
 
-מקורות שנקראו: V1, ‏MASTER v2 (הכרעות 1.1-1.50, R28), ‏`ARCHITECTURE-API-CONTRACTS.md` (API-1..12), ‏`ARCHITECTURE-SECURITY.md`, ‏`ARCHITECTURE-SUPPLIER-REDEMPTION.md`, ‏`ARCHITECTURE-COMMERCE.md`, ‏`ARCHITECTURE-ANALYTICS-BI.md` (534, ‏`fn_agent_kpi_snapshot`, ‏`v_agent_costs_daily`), ‏`BUSINESS-MODEL.md`, ‏`supabase/migrations/028_agents.sql`.
+מקורות שנקראו: V1, ‏MASTER v2 (הכרעות 1.1-1.57, R28/R38), ‏`ARCHITECTURE-API-CONTRACTS.md` (API-1..12), ‏`ARCHITECTURE-SECURITY.md`, ‏`ARCHITECTURE-SUPPLIER-REDEMPTION.md`, ‏`ARCHITECTURE-COMMERCE.md`, ‏`ARCHITECTURE-ANALYTICS-BI.md` (534, ‏`fn_agent_kpi_snapshot`, ‏`v_agent_costs_daily`), ‏`BUSINESS-MODEL.md`, ‏`supabase/migrations/028_agents.sql`.
 
-מגבלת בעלות: מסמך זה חי ב-`ai-arch/` בלבד. כל שינוי נדרש בקבצים של דומיינים אחרים (docs/, supabase/, src/) רשום כפקודת עבודה (Work Order) בסעיף 9 ואינו מבוצע כאן.
+מסמך קנוני משלים בתוך `docs/`. מסמך האב ומסמכי הדומיין עודכנו לפי פקודות העבודה
+התיעודיות בסעיף 9. פקודות העבודה של מיגרציות וקוד נשארות מתוכננות בלבד.
 
 ---
 
@@ -25,7 +26,7 @@
 | AI-9 | ‏thinking: ‏`{type: "adaptive"}` מפורש בכל קריאה (על Opus 4.8 ברירת המחדל היא בלי thinking). ‏effort פר סוכן לפי טבלת 2.2. ‏`strict: true` על כל כלי; ‏`output_config.format` ‏(json_schema) בכל פלט שנכנס ל-DB. |
 | AI-10 | תקציבים: תקרת צעדים ותקרת טוקנים כמו V1, ובנוסף תקרות דולריות יומיות פר סוכן עם kill switch דו-שלבי (סעיף 6.3). המקור: ‏`v_agent_costs_daily` ‏(034). |
 | AI-11 | סדר השקה מחייב: ‏1) ‏catalog_enrichment ‏2) ‏support ‏3) ‏shopping ‏4) ‏supplier_ops ‏5) ‏fraud_watch ‏6) ‏pricing_analyst. זה תיקון לסדר 5.6-5.10 ב-MASTER (‏WO-5). נימוק בסעיף 7. |
-| AI-12 | כל סוכן חדש מקבל טבלת ייעוד משלו ב-`037_agents_v2.sql` (המספר הפנוי אחרי 036): ‏`enrichment_suggestions`, ‏`agent_reports`, כולל RLS ו-audit triggers ‏(WO-2). |
+| AI-12 | כל סוכן חדש מקבל טבלת ייעוד משלו ב-`039_agents_v2.sql`: ‏`enrichment_suggestions`, ‏`agent_reports`, כולל RLS ו-audit triggers ‏(WO-2). |
 
 ---
 
@@ -145,7 +146,7 @@
 - אסור להמציא מפרט: תכונה שלא מופיעה בקלט לא מופיעה בתיאור. ההנחיה + בדיקה דטרמיניסטית ב-eval (סעיף 5.3).
 - אסור הבטחות מחיר/משלוח/אחריות בתיאור.
 - ‏SEO: ‏title עד 60 תווים, ‏description עד 155, בלי keyword stuffing.
-- הפלט נכתב ל-`enrichment_suggestions` ‏(037), לא ל-`products`. לעולם.
+- הפלט נכתב ל-`enrichment_suggestions` ‏(039), לא ל-`products`. לעולם.
 
 **שער אישור אנושי**: ‏staff ‏(`content_uploader`+) מאשר במסך אדמין; אישור מפעיל את ‏I1 ‏`upsertProduct` הקיים (עם audit). גם ‏alt-text דורש אישור ב-v1; מעבר ל-auto-apply של ‏alt-text בלבד יוחלט אחרי 500 אישורים עם קבלה מעל 95%.
 
@@ -212,7 +213,7 @@ V1 סעיף 2 תקף. מוזכר כאן רק לשלמות הקטלוג, טבלת
 ### 4.3 ‏audit של כל פעולת סוכן
 
 1. כל ריצה: ‏`agent_runs` (טוקנים, עלות, סטטוס) דרך ‏`fn_log_agent_run`; כל קריאת כלי: ‏`agent_run_steps` עם ‏`input_redacted` (מיסוך PII: קודי קופון, טלפונים, מספרי חשבון) ופלט מסוכם.
-2. כל טבלת מצב של סוכן מחוברת ל-audit trigger של 025: ‏028 כבר מכסה ‏`agent_prompts`/`agent_flags`/`listing_drafts`/`agent_escalations`; ‏037 מוסיף את אותו trigger על ‏`enrichment_suggestions` ו-`agent_reports` ‏(WO-2).
+2. כל טבלת מצב של סוכן מחוברת ל-audit trigger של 025: ‏028 כבר מכסה ‏`agent_prompts`/`agent_flags`/`listing_drafts`/`agent_escalations`; ‏039 מוסיף את אותו trigger על ‏`enrichment_suggestions` ו-`agent_reports` ‏(WO-2).
 3. החלת תוצר סוכן (אישור טיוטה, אישור העשרה) עוברת דרך ה-actions הקיימים של האדמין, כך שה-actor ב-`audit_log` הוא האדם המאשר, וה-`run_id` נשמר בעמודת המקור של הטבלה הייעודית. שרשרת מלאה: ‏prompt version -> ‏run -> ‏steps -> ‏suggestion -> ‏approval -> ‏audit_log.
 
 ---
@@ -329,7 +330,7 @@ V1 סעיף 2 תקף. מוזכר כאן רק לשלמות הקטלוג, טבלת
 
 | # | סוכן | תנאי מקדים | שלב במפת MASTER |
 |---|---|---|---|
-| 1 | `catalog_enrichment` | ‏028+037 חלות; ‏staging של 032 טעון | במקביל לשלב W (לפני cutover) |
+| 1 | `catalog_enrichment` | ‏028+039 חלות; ‏staging של 032 טעון | במקביל לשלב W (לפני cutover) |
 | 2 | `support` | שלבים 3-4 (יש הזמנות/קופונים אמיתיים); ‏RL פעיל | תחילת 5ב |
 | 3 | `shopping` | קטלוג מועשר חי; ‏search ‏(C2) חי | 5ב |
 | 4 | `supplier_ops` | פורטל ספקים ‏(5א) חי | סוף 5א/5ב |
@@ -358,17 +359,17 @@ V1 סעיף 2 תקף. מוזכר כאן רק לשלמות הקטלוג, טבלת
 | WO | קובץ (בעלים) | שינוי נדרש |
 |---|---|---|
 | WO-1 | `supabase/migrations/028_agents.sql` | להוסיף ל-CREATE TYPE של ‏`agent_key` את ‏`catalog_enrichment`, ‏`pricing_analyst` (לפני החלה; ‏R22 אוסר ‏ADD VALUE בקובץ רגיל). מצטרף לרשימת עריכות ‏MASTER ‏2.4 |
-| WO-2 | `supabase/migrations/037_agents_v2.sql` (חדש; הפנוי אחרי 036) | טבלאות ‏`enrichment_suggestions` (product_id, ‏run_id, ‏suggestion jsonb, ‏quality_flags, ‏status ‏pending/approved/rejected/applied, ‏reviewed_by/at), ‏`agent_reports` (agent_key, ‏run_id, ‏period, ‏report_md, ‏recommendations jsonb, ‏status), פונקציית ‏`fn_agent_open_refund_intake` (definer, ‏auth.uid, אכיפת חלון 14 יום), ‏RLS (אדמין/סוכן בהתאמה, ‏staff ל-suggestions), ‏audit triggers של 025, ותבנית הרשאות ‏1.42 (REVOKE מלא) על כל definer |
+| WO-2 | `supabase/migrations/039_agents_v2.sql` (חדש; אחרי 037 משפטי ו-038 ביצועים) | טבלאות ‏`enrichment_suggestions` (product_id, ‏run_id, ‏suggestion jsonb, ‏quality_flags, ‏status ‏pending/approved/rejected/applied, ‏reviewed_by/at), ‏`agent_reports` (agent_key, ‏run_id, ‏period, ‏report_md, ‏recommendations jsonb, ‏status), פונקציית ‏`fn_agent_open_refund_intake` (definer, ‏auth.uid, אכיפת חלון 14 יום), ‏RLS (אדמין/סוכן בהתאמה, ‏staff ל-suggestions), ‏audit triggers של 025, ותבנית הרשאות ‏1.42 (REVOKE מלא) על כל definer |
 | WO-3 | `src/contracts/agents.ts` (בעלי src/) | סכימות Zod לכל קלט/פלט כלי וסוכן, מייבא מהחוזים הקיימים; נרשם ברשימת ‏2.6 של מסמך ה-API |
-| WO-4 | `docs/ARCHITECTURE-AI-AGENTS.md` | הפניה קדימה: ‏V2 ב-`ai-arch/` מעמיק ומרחיב את הקטלוג ל-6 סוכנים |
-| WO-5 | `docs/MASTER-ARCHITECTURE.md` | עדכון שלב 5ב לסדר של סעיף 7 כאן + הוספת ‏enrichment לשלב W; רישום 037 בטבלת המיגרציות |
+| WO-4 | `docs/ARCHITECTURE-AI-AGENTS.md` | הפניה קדימה למסמך runtime זה, המעמיק ומרחיב את הקטלוג ל-6 סוכנים |
+| WO-5 | `docs/MASTER-ARCHITECTURE.md` | עדכון שלב 5ב לסדר של סעיף 7 כאן + הוספת ‏enrichment לשלב W; רישום 039 בטבלת המיגרציות |
 | WO-6 | `vercel.json` / ‏`src/app/api/cron/` | שלושה ‏crons חדשים: ‏`agents-enrichment` (יומי 03:00), ‏`agents-fraud` (יומי 05:00, קיים במפרט V1), ‏`agents-pricing` (שבועי ראשון 06:00); כולם ‏CRON_SECRET |
 
 ---
 
 ## 10. הגדרת Done לדומיין הסוכנים
 
-1. ‏028 (ערוכה) + 037 חלות דרך MCP; ‏types מיוצרים.
+1. ‏028 (ערוכה) + 039 חלות דרך MCP; ‏types מיוצרים.
 2. ‏`src/server/agents/` runtime משותף: ‏toolRunner, ‏logging ל-`fn_log_agent_run`, בדיקת תקציב, ‏kill switch, מיסוך PII ב-steps.
 3. ‏eval harness רץ ב-CI על כל שינוי prompt; שערי 5.3 ירוקים לפני הפעלת גרסה.
 4. סוכן ראשון (catalog_enrichment) מריץ backfill מלא של קטלוג ה-WP עם תור אישור עובד.

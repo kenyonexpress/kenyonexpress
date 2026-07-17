@@ -4,7 +4,9 @@
 **תאריך:** 2026-07-17
 **בעלים:** Performance Architect
 **תלות:** נכתב מול Next.js 16.2.4 (נבדק מול `node_modules/next/dist/docs/`), Supabase Postgres 17.6, Vercel, מיגרציות 001-035.
-**הערת בעלות:** מסמך זה חי ב-`perf-arch/` בלבד. שינויי קוד ומיגרציות המפורטים כאן מיושמים על ידי בעלי `src/` ו-`supabase/` בהתאמה. SQL מוצע כאן מסומן כטיוטה למיגרציה 037+.
+**הערת בעלות:** מסמך קנוני בתוך `docs/`. שינויי קוד ומיגרציות המפורטים כאן
+מיושמים על ידי בעלי `src/` ו-`supabase/` בהתאמה. SQL מוצע כאן מסומן כטיוטה
+למיגרציה 038.
 
 ---
 
@@ -22,7 +24,7 @@
 | D-8 | תקציב LCP דף בית | p75 עד 2.0 שניות, תמונת הירו עד 200KB, עם `preload` על הסלייד הפעיל |
 | D-9 | RUM | Vercel Speed Insights (ראשי) + `useReportWebVitals` אל `/api/a` (משני) + Lighthouse CI חוסם ב-PR |
 | D-10 | Pooling | בזמן ריצה: PostgREST בלבד (supabase-js). אסור pg driver ישיר בפונקציות Vercel. Supavisor transaction mode רק אם יידרש SQL ישיר בעתיד |
-| D-11 | אינדקסים | 8 אינדקסים חדשים (סעיף 5.2), טיוטת מיגרציה 037 |
+| D-11 | אינדקסים | 8 אינדקסים חדשים (סעיף 5.2), טיוטת מיגרציה 038 |
 | D-12 | יעד עומס | תכנון ל-30,000 סשנים ביום באירוע מכירה, שיא 100 RPS קטלוג עם פגיעת CDN של 90% ומעלה |
 
 ---
@@ -250,10 +252,10 @@ images: {
 | G-5 | FK ללא אינדקס | `order_items.variant_id`, `payments.token_id`, `payments.refund_of_payment_id`, `notification_conversions.outbox_id` |
 | G-6 | מיון לפי שם בקטגוריה | ללא אינדקס, וזו החלטה: מתחת ל-30,000 מוצרים sort in-memory זול. לא מוסיפים |
 
-### 5.2 טיוטת מיגרציה 037 (מיושמת על ידי בעלי `supabase/`)
+### 5.2 טיוטת מיגרציה 038 (מיושמת על ידי בעלי `supabase/`)
 
 ```sql
--- 037_performance_indexes.sql (draft, owned by supabase/)
+-- 038_performance_indexes.sql (draft, owned by supabase/)
 
 -- G-1: catalog "newest" listings
 create index if not exists idx_products_active_created
@@ -292,7 +294,7 @@ create index if not exists idx_notification_conversions_outbox
 | מקום | מצב היום | החלטה |
 |------|----------|-------|
 | גריד דף הבית | אפס N+1 (מערך קבוע בזיכרון). כשעובר ל-DB: | שאילתה אחת ל-16 מוצרים, תמונות מתוך `products.images` (jsonb). אסור join ל-`product_images` פר כרטיס ואסור שאילתה פר כרטיס |
-| מוצרים קשורים | 2 שאילתות עוקבות (קטגוריה, ואז backfill) | RPC יחיד `related_products(p_product_id, p_category_id, p_limit)`: שאילתת UNION אחת (same-category ואז newest, ללא המוצר עצמו). STABLE, SECURITY INVOKER. טיוטה נמסרת לבעלי `supabase/` יחד עם 037 |
+| מוצרים קשורים | 2 שאילתות עוקבות (קטגוריה, ואז backfill) | RPC יחיד `related_products(p_product_id, p_category_id, p_limit)`: שאילתת UNION אחת (same-category ואז newest, ללא המוצר עצמו). STABLE, SECURITY INVOKER. טיוטה נמסרת לבעלי `supabase/` יחד עם 038 |
 | `generateMetadata` | שאילתה כפולה בכל דף מוצר/קופון | נעלם עם שכבת `use cache` + `React.cache()` (סעיף 2.2) |
 | RBAC אדמין | `auth.getUser()` + שאילתת profiles בכל בקשה | מקובל בהיקף אדמין. לא מטפלים |
 | דשבורד אדמין (`v_owner_dashboard`) | ~20 subqueries | נשאר view רגיל לפי הכלל הקיים: המרה ל-matview רק כששאילתה נמדדת מעל 200ms |
@@ -351,7 +353,7 @@ k6 מול סביבת preview המחוברת ל-DB ייעודי (לא dev המש�
 
 1. **P0 (לפני checkout):** `cacheComponents: true` + קליינט אנונימי ללא עוגיות + שכבת `use cache` לקטלוג + Suspense ב-layouts הדינמיים + פיצול Header. (בעלי `src/`)
 2. **P0:** תצורת `images` החדשה + מעבר כרטיסי מוצר וגלריה ל-`next/image` + תיקון הירו (GIF החוצה, `preload` על הסלייד הפעיל). (בעלי `src/`)
-3. **P1:** מיגרציה 037 (אינדקסים) + RPC `related_products`. (בעלי `supabase/`)
+3. **P1:** מיגרציה 038 (אינדקסים) + RPC `related_products`. (בעלי `supabase/`)
 4. **P1:** Speed Insights + Lighthouse CI עם התקציבים. (בעלי `src/` + CI)
 5. **P2:** `web_vital` אל `/api/a` כשנבנה, בדיקת k6 ראשונה לפני אירוע המכירה הראשון.
 

@@ -1,12 +1,10 @@
 # ארכיטקטורת Mobile Super-App: React Native + Expo
 
 מסמך תכנון מחייב. תאריך: 2026-07-17. ענף: `phase5/homepage`.
-(הועבר מהמיקום הזמני `mobile-arch/` למיקום הקבוע; תיקוני העוגן של סעיף 10 בוצעו
-במסמכים הקנוניים באותו commit.)
+מיקום קנוני: `docs/`. תיקוני העוגן וספיגת מסמך ה-PWA הישן הושלמו.
 
 מסמכים קשורים:
-`docs/MASTER-ARCHITECTURE.md` (הכרעות R1-R34; מסמך זה מעוגן שם כ-R27/R34),
-`docs/ARCHITECTURE-SUPERAPP-MOBILE.md` (מסמך ה-PWA, ראו יחס בסעיף 0),
+`docs/MASTER-ARCHITECTURE.md` (הכרעות R1-R38; מסמך זה מעוגן שם כ-R27/R34),
 `docs/ARCHITECTURE-COMMERCE.md` (026),
 `docs/ARCHITECTURE-SUPPLIER-REDEMPTION.md` (027),
 `docs/ARCHITECTURE-ACCOUNT-IDENTITY.md` (029),
@@ -15,11 +13,13 @@
 
 ---
 
-## 0. היקף ויחס למסמך ה-PWA הקיים (supersession מדויק)
+## 0. היקף ויחס למסמך ה-PWA הקודם (supersession מדויק)
 
-`docs/ARCHITECTURE-SUPERAPP-MOBILE.md` הכריע (D1/D2, מעוגן כ-R27 במסמך האב):
-PWA על ה-Next הקיים, עטיפות TWA/Capacitor בהמשך, בלי React Native. מסמך זה
-**מחליף את שכבת הפלטפורמה בלבד** ומשאיר את כל השאר בתוקף:
+מסמך ה-PWA הקודם (`ARCHITECTURE-SUPERAPP-MOBILE.md`, ‏2026-07-08) **נבלע במסמך
+זה ונמחק** באיחוד v3. הוא הכריע (D1/D2): ‏PWA על ה-Next הקיים, עטיפות
+TWA/Capacitor בהמשך, בלי React Native. מסמך זה **מחליף את שכבת הפלטפורמה
+בלבד** ומשאיר את כל השאר בתוקף; חוזי הליבה שלו (C1-C4, ‏D3-D10) חיים כעת
+בסעיף 11 כאן:
 
 | הכרעה קיימת | סטטוס במסמך זה |
 |---|---|
@@ -31,7 +31,7 @@ PWA על ה-Next הקיים, עטיפות TWA/Capacitor בהמשך, בלי React
 | D8 (push שיווקי תחת משטר 30א מלא) | בתוקף מלא |
 | D9 (deep links = https בלבד, לא משתפים קופון) | בתוקף; מתווסף scheme פנימי ל-OAuth redirect בלבד (סעיף 5.2) |
 | D10 (הקומרס לא נבנה מחדש באף שלב) | בתוקף מלא. עיקרון העל של מסמך זה |
-| חוזי C1-C4 (זהות, כסף, התראות, גבולות מודולים) | בתוקף מלא; סעיף 4 ממפה אותם ל-runtime של המיני-אפים |
+| חוזי C1-C4 (זהות, כסף, התראות, גבולות מודולים; סעיף 11) | בתוקף מלא; סעיף 4 ממפה אותם ל-runtime של המיני-אפים |
 
 מדוע ההכרעה מתהפכת (מה השתנה מאז 2026-07-08):
 
@@ -41,7 +41,7 @@ PWA על ה-Next הקיים, עטיפות TWA/Capacitor בהמשך, בלי React
    התקנה ידנית למסך הבית, אין live activities).
 2. **Push הוא עצב ההכנסות** (תזכורות פקיעת קופון = מנוע ההכנסות של 031 סעיף 5.2).
    ב-iOS, PWA push מותנה בהתקנה ידנית שהמרתה חד-ספרתית; APNs נייטיב עובד לכל מתקין.
-3. **עלות "codebase שני" נחתכת ב-monorepo.** הטענה המרכזית של מסמך ה-PWA
+3. **עלות "codebase שני" נחתכת ב-monorepo.** הטענה המרכזית של מסמך ה-PWA הקודם
    (שיתוף ~20% בלבד עם RN) נכונה רק כשהלוגיקה כלואה בתוך ה-Next app. סעיף 2
    מוציא את הלוגיקה לחבילות משותפות; היעד: 80%+ מהקוד שאינו UI משותף, וה-UI
    בשני הצדדים הוא שכבת views דקה.
@@ -610,8 +610,8 @@ competitor; מוצג בחנות כ"יתרת קניות". ניסוח ה-listing �
 
 ## 8. שלבי בנייה ושערי יציאה
 
-התלות בקומרס: שלב 0 של מסמך ה-PWA בתוקף: אין אפליקציה לפני שיש checkout web
-חי (מסמך האב, שלבים 1-3). המובייל נבנה במקביל לשלבים 4-5, לא לפניהם.
+התלות בקומרס: שלב 0 של מסלול המדורג (סעיף 11.5) בתוקף: אין אפליקציה לפני שיש
+checkout web חי (מסמך האב, שלבים 1-3). המובייל נבנה במקביל לשלבים 4-5, לא לפניהם.
 
 | שלב | תוכן | שער יציאה |
 |---|---|---|
@@ -647,11 +647,125 @@ competitor; מוצג בחנות כ"יתרת קניות". ניסוח ה-listing �
 
 1. `MASTER-ARCHITECTURE.md`: עדכון R27 (פלטפורמת מובייל: RN+Expo לפי מסמך זה;
    PWA יורד מ"יעד" ל"גשר עד ההשקה"), הוספת הכרעות M1-M14 לרישום, ועדכון שלב 6.
-2. `ARCHITECTURE-SUPERAPP-MOBILE.md`: סימון D1/D2 כמוחלפים + הפניה למסמך זה;
-   סעיפים 2-5 שלו נשארים בתוקף כחוזים.
+   **בוצע ב-v2.**
+2. ‏`ARCHITECTURE-SUPERAPP-MOBILE.md`: **בוצע באיחוד v3**: המסמך נבלע בסעיף 11
+   כאן ונמחק; D1/D2 מסומנים כמוחלפים והחוזים C1-C4 ‏+ ‏D3-D10 נשמרו במלואם.
 3. מיגרציית push העתידית (1.26): לאמץ את הסכימה מסעיף 5.1.2 (platform
    'web'/'expo').
 4. `ARCHITECTURE-TESTING-CICD.md`: הרחבת ci.yml למשימות turbo + mobile lane.
 5. `CLAUDE.md`: עדכון חוק הנתיב היחיד אחרי M1 (apps/web), באותו commit של המעבר.
 6. שאלות שנשארות פתוחות בכוונה: מספר חשבון Apple Developer/Play Console (על מי
    נרשם), עיתוי הוספת WhatsApp כערוץ push חלופי, וורטיקל הספקים הנייטיב.
+
+---
+
+## 11. נספח: החוזים המחייבים מהמסמך שנבלע (ARCHITECTURE-SUPERAPP-MOBILE, ‏2026-07-08)
+
+המסמך המקורי נמחק באיחוד v3. ‏D1/D2 שלו הוחלפו (סעיף 0); כל השאר כאן, בתוקף
+מלא. מקור הסמכות להכרעות שכבר עוגנו במסמך האב: המסמך האב.
+
+### 11.1 עקרונות על שנשארים
+
+1. **הליבה המשותפת היא חוזה, לא ספרייה.** זהות, ארנק, תשלומים, התראות ו-audit
+   הם חוזים יציבים שכל ורטיקל צורך. ורטיקל לעולם לא נוגע בורטיקל אחר, רק בליבה.
+2. **הכסף זז רק בצינורות הקיימים.** ‏`orders` + ‏`payments` + ‏`fn_wallet_transfer()`
+   ‏+ פונקציות ‏SECURITY DEFINER. ורטיקל חדש לא ממציא מסלול כסף; הוא מרכיב
+   ‏detail tables על המעטפת הקיימת.
+3. **offline הוא cache, השרת הוא אמת.** חתימת Ed25519 מוכיחה אותנטיות offline;
+   חד-פעמיות נאכפת רק ב-DB (העיקרון מ-027 סעיף 3.1).
+4. **קטלוג הוא לא ליבה.** לכל ורטיקל הדומיין שלו (לקומרס `products`, למשלוחי
+   אוכל `restaurants`/`menus`, להסעות אין קטלוג). אין "קטלוג גנרי".
+
+### 11.2 חוזה C1: זהות והרשאות
+
+- ‏`profiles` + ‏`user_role` הם המקור היחיד לזהות. אין ערכי enum פר ורטיקל.
+- **תבנית ה-membership של 027 היא החוזה**: כמו `supplier_members`
+  ‏(owner/manager/scanner), ורטיקל חדש מביא טבלת membership משלו באותה תבנית:
+
+```
+supplier_members  (קיים, 027)    ->  is_supplier_member()
+courier_members   (food, עתידי)  ->  is_courier_member()
+driver_members    (rides, עתידי) ->  is_driver_member()
+```
+
+- כל טבלת membership מגיעה עם פונקציות עזר SECURITY DEFINER משלה, RLS משלה
+  ו-audit trigger מ-025. אין קשר בין חברות של אותו משתמש בשני ורטיקלים.
+
+### 11.3 חוזה C2: מעטפת הכסף
+
+- **`orders` היא מעטפת התשלום האוניברסלית של כל הורטיקלים.** מיגרציה עתידית
+  מוסיפה עמודה אחת: ‏`orders.vertical` (ברירת מחדל `'shop'`). זה כל השינוי.
+- ורטיקל מוסיף detail tables שמפנות אל המעטפת ולא נוגע בשום טבלת כסף:
+
+```
+food:  delivery_jobs (order_id FK, restaurant_id, courier_id, eta, geo...)
+rides: ride_details  (order_id FK, driver_id, pickup, dropoff, route...)
+```
+
+- מה מתקבל בחינם לכל ורטיקל: ‏payments + ‏payment_webhook_events ‏(idempotency,
+  ‏replay protection), ‏refund flow, ‏reconciliation מול Cardcom, ‏snapshot פר
+  שורה ב-`order_items`, ‏settlement דרך מנוע ה-statements של 027, ‏cashback
+  והחלת ארנק בצ'קאאוט.
+- **הארנק**: ורטיקל קורא ל-`fn_wallet_transfer()` בלבד (דרך הליבה, ‏service_role,
+  ‏SEC-01), עם שני כללי namespace: ערכי ‏`wallet_reason` חדשים נוספים במיגרציה
+  של הורטיקל (`ride_fare`, ‏`food_refund_credit`); ‏`idempotency_key` עם קידומת
+  ורטיקל (`food:order:<uuid>:cashback`).
+
+### 11.4 חוזי C3 ו-C4: התראות וגבולות קוד
+
+- ‏C3: ‏registry של ‏topics בקונבנציה ‏`<vertical>.<entity>.<event>`
+  ‏(`shop.order.paid`, ‏`food.courier.assigned`). ורטיקל שולח דרך
+  ‏`notify(user_id, topic, payload)` אחת; ‏preferences, חוק הספאם, ‏quiet hours
+  וה-log נאכפים במקום אחד. (מפתחות האירועים הפנימיים של 031 נשארים snake_case
+  שטוח לפי הכרעת האב [1.27]; המוסכמה המנוקדת שמורה לורטיקלים עתידיים.)
+- ‏C4 (בצד ה-web): ‏route group פר ורטיקל, ‏UI פרטי ב-`src/components/<vertical>/`,
+  ‏server actions פרטיים; ‏`src/server/actions/payments/` = ליבה בלבד. אכיפה
+  סטטית: קובץ תחת ורטיקל לא מייבא מורטיקל אחר. אין FK בין טבלאות של שני
+  ורטיקלים; FK מותר רק אל הליבה. (המקבילה ברמת החבילות: סעיף 4.4 כאן.)
+
+### 11.5 רישום ורטיקלים, המסלול המדורג וה-PWA כגשר
+
+- טבלת `verticals` (עתידית): ‏`key`, ‏`title_he`, ‏`icon`, ‏`status`
+  ‏(hidden/beta/active/paused), ‏`sort_order`, ‏`min_users_percent`. ‏`paused`
+  מוריד ורטיקל מה-UI מיידית בלי deploy (דפוס ה-kill switch של `agent_prompts`).
+- שלב 0 של המסלול המקורי בתוקף: אין אפליקציה לפני checkout web חי.
+- **מה נשאר מהמסלול הישן כגשר ה-PWA** (עד השקת אפליקציית ה-RN):
+  ‏`app/manifest.ts` ‏(display standalone, ‏dir rtl), ‏service worker ‏(Serwist,
+  ‏precache ל-app shell), ארנק קופונים offline ב-IndexedDB ‏(store ‏`coupon_wallet`,
+  אותה סכימת רשומה של סעיף 5.4 כאן, ‏delta sync לפי ‏`updated_at`, הלקוח לעולם
+  לא כותב סטטוס), ‏prompt התקנה ברגע ערך, מרכז התראות in-app על ‏outbox.
+- **מה מת עם D1**: עטיפות החנות (TWA ל-Play, ‏Capacitor ל-App Store). ההפצה
+  לחנויות היא דרך אפליקציית ה-RN בלבד (סעיף 7).
+- **סורק הספק נשאר PWA** (027 סעיף 3.5) גם אחרי השקת האפליקציה: אימות Ed25519
+  ‏offline בסורק (מפת מפתחות ציבוריים לפי ‏`kid`, רוטציה: מפתח חדש נכנס, ישנים
+  נשארים); ‏intent מקומי בתור ‏(`redeem_intents` ב-IDB) שמנוקז אל
+  ‏`redeem_coupon()` בחזרת רשת; ‏`already_used` מהתור מוצג כהתראה. **הכלל העסקי
+  לא מתרכך: אין מסירת סחורה לפני אישור online.**
+
+### 11.6 סטטוס הכרעות D1-D10 של המסמך שנבלע
+
+| # | החלטה | סטטוס |
+|---|---|---|
+| D1 | ‏PWA + עטיפות TWA/Capacitor | **הוחלף** ב-M1 ‏(RN+Expo); ‏PWA = גשר בלבד |
+| D2 | הלקוח הוא תמיד ה-web app | **הוחלף** ב-M4 (שני צינורות: supabase-js ‏+ ‏`/api/mobile/v1`) |
+| D3 | ‏`orders` מעטפת אוניברסלית + ‏`orders.vertical` | בתוקף (11.3) |
+| D4 | ארנק דרך ‏`fn_wallet_transfer` בלבד + ‏namespace פר ורטיקל | בתוקף (11.3) |
+| D5 | ‏membership בתבנית ‏`supplier_members`, לא enum | בתוקף (11.2) |
+| D6 | ארנק קופונים offline: ‏cache מקומי, שרת = אמת | בתוקף; מימוש נייטיב ב-MMKV (5.4), גשר ה-PWA ב-IndexedDB (11.5) |
+| D7 | מימוש offline: ‏Ed25519 = אותנטיות; חד-פעמיות online בלבד | בתוקף (11.5) |
+| D8 | ‏push שיווקי תחת מלוא משטר 30א | בתוקף; ממומש ב-031 ‏(consent_events) |
+| D9 | ‏deep links = https בלבד; לא משתפים קופון | בתוקף; ‏scheme פנימי ל-OAuth בלבד (5.2) |
+| D10 | הקומרס לא נבנה מחדש באף שלב | בתוקף; עיקרון העל |
+
+### 11.7 סטטוס השאלות הפתוחות של המסמך שנבלע
+
+1. סדר החלת ההתראות: נסגר. ‏029 ואז 031; ‏push_subscriptions במיגרציית push
+   עתידית בבעלות דומיין ההתראות [1.26], בסכימת סעיף 5.1.2 כאן.
+2. דומיין קנוני: נסגר. ‏kenyonexpress.co.il (אותו דומיין, ‏cutover לפי OPS).
+3. סיווג תזכורות תוקף כהודעת שירות: העמדה אומצה; הנוסח בסבב הייעוץ המשפטי
+   המאוחד (LEG-14).
+4. חשבון Apple Developer / Play Console: פתוח (גם בסעיף 10.6 כאן).
+5. ‏deferred deep link ב-iOS: נסגר. בלי SDK צד ג' (5.2.4 כאן).
+6. ‏WhatsApp Business API: נסגר. ‏Meta Cloud API ישיר [1.44].
+7. ביומטריה לארנק: נסגר. סטנדרט באפליקציית ה-RN ‏(5.4.5); לא נבנה WebAuthn בגשר.
+8. ‏retention להתראות: נסגר ברישום ה-retention של האב [1.31].

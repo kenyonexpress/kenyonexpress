@@ -336,8 +336,11 @@ Failure paths:
 - **Refund**: new `payments` row `kind='refund'`, `refund_of_payment_id` set;
   original row flips to `refunded` only after Cardcom confirms. Coupon items:
   refund only `charged_on_site_ils` and only for coupons still `issued`
-  (refunding flips the coupon to `refunded`, blocking future scans). Wallet part
-  of the order is refunded to the wallet, never to the card.
+  (refunding flips the coupon to `refunded`, blocking future scans). החזר משמר
+  את אמצעי התשלום: החלק ששולם בכרטיס חוזר לכרטיס דרך Cardcom; החלק ששולם
+  מארנק חוזר לארנק. החזר חלק הכרטיס לארנק מותר רק בהסכמה אקטיבית ומתועדת של
+  הלקוח. זהו תיקון LEG-10 המחייב של
+  `ARCHITECTURE-LEGAL-COMPLIANCE.md`.
 
 ### 3.3 Coupon code
 
@@ -346,6 +349,11 @@ issued --(fn_redeem_coupon at business)--> used        [terminal]
 issued --(expires_at passed, cron)-------> expired     [terminal]
 issued --(admin refund)------------------> refunded    [terminal]
 ```
+
+במעבר `issued -> expired`, ה-job מזכה אוטומטית את ארנק הלקוח במלוא
+`platform_paid_ils` כ-`refund_credit` עם תוקף 5 שנים. תוקף הדיל עצמו הוא
+לפחות 4 חודשים ממועד הרכישה. ראו
+`ARCHITECTURE-LEGAL-COMPLIANCE.md` סעיף 1.2.
 
 All three transitions are one-way; `used`/`expired`/`refunded` never revert. The
 only writer for `issued -> used` is `fn_redeem_coupon()` (5.3).

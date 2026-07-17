@@ -6,6 +6,12 @@
 תאריך: 2026-07-08. ענף: `phase5/homepage`.
 מסמכים קשורים: `docs/ARCHITECTURE-COMMERCE.md` (026), `docs/ARCHITECTURE-SUPPLIER-REDEMPTION.md` (027), `docs/ARCHITECTURE-AI-AGENTS.md` (028).
 
+> **הרחבת ציות מחייבת (2026-07-17):**
+> `docs/ARCHITECTURE-LEGAL-COMPLIANCE.md` מחייב ייצוא נתונים עצמי
+> ב-`/account/privacy`, הרחבת scrub ל-`security_events`, retention לפי
+> מטריצה משפטית ו-replay של מחיקות אחרי restore. 037 מחזיקה את תוספות
+> הסכימה; 029 נשארת בסיס הזהות והפסאודונימיזציה.
+
 > הערת גרסה: הבריף מדבר על Next.js 15, אבל הריפו בפועל על Next 16.2.4.
 > ההשלכה המעשית: ה-middleware הוא `src/proxy.ts` (פונקציית `proxy`), לא `middleware.ts`. כל התכנון כאן מיושר למה שקיים בקוד.
 

@@ -5,12 +5,19 @@
 
 ## Last Completed
 Session 2026-07-17 (ערב) - איחוד קאנוני מלא: dedup מסמכים, מספור מחדש, MASTER-ARCHITECTURE v2:
-- **`docs/MASTER-ARCHITECTURE.md` שוכתב כ-v2 (מהדורת 2026-07-17)**: ביקורת סתירות 1.1-1.50 (הכרעות 1.1-1.38 נשמרו; חדשות: 1.39 מספור, 1.40 מודל coupon_price חופשי Gen A+B, 1.41 מנויים מחוץ להיקף עד threat model, 1.42 SEC-01 + תבנית REVOKE שבורה גם ב-fn_log_agent_run, 1.43 wallet_earn קנוני, 1.44 Meta Cloud API, 1.45 redirects ב-proxy בלבד, 1.46 bootstrap פרודקשן 001-035, 1.47 מלכודת SEC-12, 1.48 auth fail-closed, 1.49 D1-D22 מחייבים); תוכנית מיגרציות סופית (סדר, עריכות פר קובץ, 035 ניתנת להחלה מיידית); רישום SEC-01..17 מלא; ERD מאוחד; סדר בנייה שלב 0 עד שער השיגור; רישום R1-R34.
+- **`docs/MASTER-ARCHITECTURE.md` שוכתב והורחב כ-v2 (מהדורת 2026-07-17)**: ביקורת סתירות 1.1-1.57; תוכנית מיגרציות סופית; רישום SEC-01..17; ERD מאוחד; סדר בנייה שלב 0 עד שער השיגור; רישום R1-R38.
 - **dedup**: נמחקו 4 כפילויות (ANALYTICS-BI-, TESTING-CICD-, WP-DATA-MIGRATION-, COMMERCE-ARCHITECTURE.md) אחרי מיזוג מלא לקבצים הקנוניים; כל docs/ עבר לקונבנציה `ARCHITECTURE-<TOPIC>.md` וכל ההפניות עודכנו (כולל בקבצי המיגרציות).
 - **מספור מחדש לרצף רציף 026-035**: `035_analytics_bi.sql` -> `034_analytics_bi.sql`; `036_security_hardening.sql` -> `035_security_hardening.sql`; איחוד ה-vendors המתוכנן = `036_vendors_unification.sql` (טרם נכתב). כל ההפניות בקבצי SQL ובמסמכים עודכנו. אזכורי 035/036 הישנים ברשומות ההיסטוריה למטה מתייחסים למספור הישן.
-- **נקלטו שני מסמכים מסוכנים מקבילים**: `docs/ARCHITECTURE-API-CONTRACTS.md` (חוזי API: שני transports, ActionResult, 16 שגיאות, G-1..G-8; R33) ו-`docs/ARCHITECTURE-MOBILE-SUPERAPP.md` (RN+Expo, Turborepo M1-M14; מחליף את D1/D2 של מסמך ה-PWA; R27/R34) + תיקוני העוגן שלהם ב-MASTER, ב-SUPERAPP-MOBILE וב-TESTING-CICD.
-- **סריקת סגירה (סוף הסשן)**: אומת שאין הפניות שבורות לשמות המסמכים הישנים או למספור הישן בכל docs/ + supabase/ + src/ + scripts/; תוקנו 3 שאריות: כותרת `033_analytics.sql` (האיחוד מופנה ל-036), `ARCHITECTURE-MOBILE-SUPERAPP.md` (R1-R32 -> R1-R34; הוסר `mobile-arch/` מעץ הקבצים של M1, התיקייה הזמנית כבר לא קיימת).
+- **נקלטו מסמכי API ומובייל**: `docs/ARCHITECTURE-API-CONTRACTS.md` (חוזי API; R33) ו-`docs/ARCHITECTURE-MOBILE-SUPERAPP.md` (RN+Expo, ‏Turborepo M1-M14; R27/R34). מסמך ה-PWA הישן נבלע במלואו בסעיף 11 של מסמך המובייל ונמחק, בלי לאבד את C1-C4/D3-D10.
+- **סריקת סגירה (סוף הסשן)**: אומת שאין הפניות פעילות שבורות לשמות המסמכים הישנים או למספור הישן בכל docs/ + supabase/ + src/ + scripts/; כותרת `033_analytics.sql` מפנה ל-036; עץ M1 אינו כולל עוד תיקייה זמנית.
 - **במקביל (lane דף הבית, commit ddefe96)**: אומת דף המוצר מול האתר החי (24.72% < 30%, שלב 0.1 של סדר הבנייה); גריד דף הבית הורחב ל-32 המוצרים המדויקים מה-singlefile (0 חוסרים / 0 עודפים / 0 שגיאות סדר לפי `scripts/sync-live-products.mjs`); דף הבית 6.69%. seed ל-8 מוצרים החסרים ב-Supabase ממתין לא-מוחל ב-`supabase/seed-fixes/PENDING-live-products.sql`.
+- **אינטגרציית שלושת מסמכי ה-lanes הושלמה**: `ARCHITECTURE-LEGAL-COMPLIANCE.md`,
+  `ARCHITECTURE-PERFORMANCE.md` ו-`ARCHITECTURE-AI-AGENTS-RUNTIME.md` הועברו
+  מהתיקיות הזמניות אל `docs/`; התיקיות הזמניות הוסרו; התנגשויות המספור הוכרעו
+  ל-037 משפטי, 038 ביצועים, 039 סוכנים. MASTER עודכן ב-1.51-1.57/R35-R38,
+  ב-ERD, בסדר הבנייה ובשער השיגור. מסמכי הדומיין קיבלו עוגני סמכות; הכרעת
+  breakage הישנה ב-ANALYTICS/SUPPLIER/COMMERCE הוחלפה בזיכוי `refund_credit`
+  ל-5 שנים ו-cashback ל-24 חודשים. אף מיגרציה חדשה לא נכתבה או הוחלה.
 - לא הוחלה שום מיגרציה, לא שונה קוד רץ.
 
 ## In Progress

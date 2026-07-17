@@ -8,6 +8,11 @@
 
 מסמכים קשורים: `MASTER-ARCHITECTURE.md` (v2), `ARCHITECTURE-PRODUCTION-OPS.md`, `ARCHITECTURE-SUPPLIER-REDEMPTION.md`, `ARCHITECTURE-ACCOUNT-IDENTITY.md`.
 
+> **הרחבות מחייבות (2026-07-17):** `ARCHITECTURE-LEGAL-COMPLIANCE.md`
+> מוסיף ‏axe חוסם, בדיקות ביטול/חשבוניות/מסמך גילוי ו-LEG-01..03 לשער
+> השיגור. `ARCHITECTURE-PERFORMANCE.md` מוסיף תקציבי Lighthouse חוסמים
+> ותרחישי k6. הרחבות אלה מצטרפות ל-D1-D22 ואינן מחליפות אותן.
+
 > מטרת המסמך: אסטרטגיית בדיקות ו-CI/CD לאתר שמזיז כסף אמיתי (Cardcom, ארנק cashback,
 > פיצול platform_percent, קופונים חד-פעמיים) עם בעלים יחיד. באג בקוד הכסף שווה כסף אבוד,
 > ולכן ההיררכיה כאן הפוכה מהמקובל: קודם כסף ו-RLS, אחר כך UI.

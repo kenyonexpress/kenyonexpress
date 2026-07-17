@@ -6,6 +6,11 @@
 תאריך: 2026-07-08. ענף: `phase5/homepage`.
 מסמכים קשורים: `docs/ARCHITECTURE-COMMERCE.md` (026), `docs/ARCHITECTURE-SUPPLIER-REDEMPTION.md` (027), `docs/ARCHITECTURE-AI-AGENTS.md` (028), `docs/ARCHITECTURE-ACCOUNT-IDENTITY.md` (029).
 
+> **הרחבת ציות מחייבת (2026-07-17):**
+> `docs/ARCHITECTURE-LEGAL-COMPLIANCE.md` מוסיף `order_disclosure`
+> טרנזקציוני עם snapshot מלא ו-`wording_version`. הוא נשלח כחלק מזרימת
+> paid ואינו תלוי בהסכמה שיווקית.
+
 > תלות קריטית: 031 בנויה **מעל** תשתית ההתראות של 029
 > (`notifications_outbox`, `user_notification_preferences`, enum `notification_status`,
 > `fn_enqueue_coupon_expiry_reminders`). היא לא מחליפה אותן אלא מרחיבה.

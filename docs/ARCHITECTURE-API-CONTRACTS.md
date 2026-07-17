@@ -3,7 +3,7 @@
 Status: BINDING draft v1.0 (2026-07-17)
 Owner: API contracts architect
 Scope: the complete API surface of KenyonExpress, from product page to production.
-Sources: docs/MASTER-ARCHITECTURE.md (binding), docs/ARCHITECTURE-COMMERCE.md (026), docs/ARCHITECTURE-SUPPLIER-REDEMPTION.md (027), docs/ARCHITECTURE-ACCOUNT-IDENTITY.md (029), docs/ARCHITECTURE-CATALOG-SEARCH-SEO.md (030), docs/ARCHITECTURE-NOTIFICATIONS-MARKETING.md (031), docs/ARCHITECTURE-ANALYTICS-BI.md (033/034), docs/ARCHITECTURE-SECURITY.md (035, authoritative for security), docs/ARCHITECTURE-SUPERAPP-MOBILE.md, supabase/migrations/001..035, src/server/actions/**.
+Sources: docs/MASTER-ARCHITECTURE.md (binding), docs/ARCHITECTURE-COMMERCE.md (026), docs/ARCHITECTURE-SUPPLIER-REDEMPTION.md (027), docs/ARCHITECTURE-ACCOUNT-IDENTITY.md (029), docs/ARCHITECTURE-CATALOG-SEARCH-SEO.md (030), docs/ARCHITECTURE-NOTIFICATIONS-MARKETING.md (031), docs/ARCHITECTURE-ANALYTICS-BI.md (033/034), docs/ARCHITECTURE-SECURITY.md (035, authoritative for security), docs/ARCHITECTURE-MOBILE-SUPERAPP.md (incl. section 11, the absorbed superapp contracts), supabase/migrations/001..035, src/server/actions/**.
 
 Precedence: where this document conflicts with ARCHITECTURE-SECURITY.md, security wins. Where it conflicts with any other doc, MASTER-ARCHITECTURE.md decision log wins, then this document, then the per-domain docs.
 

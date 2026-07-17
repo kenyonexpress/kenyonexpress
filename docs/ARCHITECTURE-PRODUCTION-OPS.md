@@ -4,6 +4,11 @@
 תאריך: 2026-07-08. ענף: `phase5/homepage`.
 מסמכים קשורים: `ARCHITECTURE-COMMERCE.md` (026), `ARCHITECTURE-SUPPLIER-REDEMPTION.md` (027), `ARCHITECTURE-AI-AGENTS.md` (028).
 
+> **הרחבות מחייבות (2026-07-17):**
+> `ARCHITECTURE-LEGAL-COMPLIANCE.md` מוסיף runbook דיווח אירוע, מסמכי
+> מאגר ואישור משפטי לשער השיגור. `ARCHITECTURE-PERFORMANCE.md` מקבע
+> ‏fra1, תקציבי קיבולת, RUM ותרחישי עומס. במקרה סתירה, MASTER v2 גובר.
+
 > מטרת המסמך: להעביר את KenyonExpress מפרויקט dev לאתר פרודקשן שמחליף אתר WordPress חי
 > ב-`kenyonexpress.co.il` ללא downtime, עם מודל עלות ברור מתי Supabase Pro הופך לחובה.
 
