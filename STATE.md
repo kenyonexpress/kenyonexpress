@@ -1,9 +1,33 @@
 # KenyonExpress State
 
 ## Current Phase
-**Phase 5 — Homepage 1:1 (סגור)**. branch `phase5/homepage`. מקור יחיד: `refs/ke_live_singlefile.html`.
+**Phase 5 - Homepage 1:1 (סגור)**. branch `phase5/homepage`. מקור יחיד: `refs/ke_live_singlefile.html`.
 
 ## Last Completed
+Session 2026-07-17 (ערב) - איחוד קאנוני מלא: dedup מסמכים, מספור מחדש, MASTER-ARCHITECTURE v2:
+- **`docs/MASTER-ARCHITECTURE.md` שוכתב כ-v2 (מהדורת 2026-07-17)**: ביקורת סתירות 1.1-1.50 (הכרעות 1.1-1.38 נשמרו; חדשות: 1.39 מספור, 1.40 מודל coupon_price חופשי Gen A+B, 1.41 מנויים מחוץ להיקף עד threat model, 1.42 SEC-01 + תבנית REVOKE שבורה גם ב-fn_log_agent_run, 1.43 wallet_earn קנוני, 1.44 Meta Cloud API, 1.45 redirects ב-proxy בלבד, 1.46 bootstrap פרודקשן 001-035, 1.47 מלכודת SEC-12, 1.48 auth fail-closed, 1.49 D1-D22 מחייבים); תוכנית מיגרציות סופית (סדר, עריכות פר קובץ, 035 ניתנת להחלה מיידית); רישום SEC-01..17 מלא; ERD מאוחד; סדר בנייה שלב 0 עד שער השיגור; רישום R1-R34.
+- **dedup**: נמחקו 4 כפילויות (ANALYTICS-BI-, TESTING-CICD-, WP-DATA-MIGRATION-, COMMERCE-ARCHITECTURE.md) אחרי מיזוג מלא לקבצים הקנוניים; כל docs/ עבר לקונבנציה `ARCHITECTURE-<TOPIC>.md` וכל ההפניות עודכנו (כולל בקבצי המיגרציות).
+- **מספור מחדש לרצף רציף 026-035**: `035_analytics_bi.sql` -> `034_analytics_bi.sql`; `036_security_hardening.sql` -> `035_security_hardening.sql`; איחוד ה-vendors המתוכנן = `036_vendors_unification.sql` (טרם נכתב). כל ההפניות בקבצי SQL ובמסמכים עודכנו. אזכורי 035/036 הישנים ברשומות ההיסטוריה למטה מתייחסים למספור הישן.
+- **נקלטו שני מסמכים מסוכנים מקבילים**: `docs/ARCHITECTURE-API-CONTRACTS.md` (חוזי API: שני transports, ActionResult, 16 שגיאות, G-1..G-8; R33) ו-`docs/ARCHITECTURE-MOBILE-SUPERAPP.md` (RN+Expo, Turborepo M1-M14; מחליף את D1/D2 של מסמך ה-PWA; R27/R34) + תיקוני העוגן שלהם ב-MASTER, ב-SUPERAPP-MOBILE וב-TESTING-CICD.
+- לא הוחלה שום מיגרציה, לא שונה קוד רץ.
+
+## In Progress
+nothing
+
+## Blocking Issues
+none
+
+## Next Task
+שלב 0 של סדר הבנייה ב-MASTER v2: אימות דף המוצר מול compare.mjs, ואז (באישור מפורש) החלת `035_security_hardening.sql` על ה-DB החי דרך Supabase MCP apply_migration.
+
+## Working Directory
+/Users/ofir/kenyonexpress-web/kenyonexpress
+
+## Supabase Project URL
+https://ixvwfbuvfxxsjiywhbbb.supabase.co (dev)
+
+---
+
 Session 2026-07-17 - מסמך אבטחה מחייב + מיגרציית הקשחה 036 (design only, לא הוחל):
 - **`docs/ARCHITECTURE-SECURITY.md` (חדש)**: מסמך ההכרעות המחייב לאבטחה. גובר על כל מסמך אחר בבקרות אבטחה. מבוסס על סקירת כל docs/ + כל 001-035 + הקוד החי ב-src/. כולל: רישום ממצאים SEC-01..SEC-17 ממוין לפי חומרה; STRIDE פר 7 זרימות (עגלת אורח, Google login בתשלום, Cardcom + webhook, סריקת/מימוש קופון, ארנק פנימי, payout ספק, פאנל אדמין); תרחישי תקיפה + מיטיגציה (מרוץ מימוש כפול, webhook replay/forgery, מניפולציית ארנק, עקיפת RLS, IDOR, גניבת טוקן כרטיס, escalation אדמין); אודיט RLS מלא עם החלטות; ניהול סודות + תוכנית רוטציה (כולל rotation מבוסס qr_key_id ל-Ed25519); rate limiting דיפרנציאלי (fail-closed לכסף/קופון, fail-open ל-UX); ניתוח חוק הגנת הפרטיות + תיקון 13, והכרעת PCI-DSS = SAQ-A (Cardcom hosted Low Profile, אין PAN אצלנו, טוקן revoked מכל תפקידי דפדפן; הפער היחיד ל-SAQ-A הוא הוספת CSP/security headers שחסרים); מיפוי דרישות אודיט מול audit_log.
 - **הממצא הקריטי (SEC-01)**: `fn_wallet_transfer` (טיוטה 026) עושה רק `REVOKE ... FROM anon`, כלומר נשאר PUBLIC EXECUTE הכולל `authenticated`. הפונקציה SECURITY DEFINER בלי בדיקת בעלות/is_admin, וחשבונות platform פטורים מ-CHECK של יתרה אי-שלילית -> כל משתמש מחובר יכול לחייב את `platform:cashback_reserve` ולזכות את הארנק שלו בכל סכום (wallet minting). אומת ישירות מול 026:335 וגוף הפונקציה. שאר הפונקציות הכספיות (redeem_coupon, payouts) עושות נכון `REVOKE FROM PUBLIC, anon`.

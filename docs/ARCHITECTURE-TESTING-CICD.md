@@ -491,6 +491,10 @@ cron מדומה מחייב מחזור 2; ביטול מהאזור האישי עו
 
 ### 4.2 `ci.yml`
 
+> הערת עתיד (עוגן ‏ARCHITECTURE-MOBILE-SUPERAPP סעיף 10): במעבר ל-monorepo
+> ‏(M1/M2 שם) המשימות כאן עוברות לרוץ דרך ‏turbo (`turbo type-check lint test build`)
+> ונוסף ‏lane נפרד לאפליקציית המובייל. עד אז המסמך הזה תקף כמות שהוא.
+
 ```yaml
 name: CI
 on:

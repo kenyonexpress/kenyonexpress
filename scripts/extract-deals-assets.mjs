@@ -1,5 +1,6 @@
-// Save the first 16 deals-grid images from the rendered singlefile to
+// Save the deals-grid images (default 32) from the rendered singlefile to
 // public/images/products/ke-live-deal-<n>.<ext> + print per-item metadata.
+// Usage: node scripts/extract-deals-assets.mjs [count]
 import { chromium } from '@playwright/test'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
@@ -22,18 +23,21 @@ try {
 }
 await page.waitForTimeout(4000)
 
-const items = await page.evaluate(() => {
+const COUNT = Number(process.argv[2] ?? 32)
+const items = await page.evaluate((count) => {
   const grid = document.querySelector('.elementor-element-faf8583 .jet-listing-grid__items')
     ?? document.querySelector('.jet-listing-grid__items')
-  return [...grid.querySelectorAll('.jet-listing-grid__item')].slice(0, 16).map((el) => {
+  return [...grid.querySelectorAll('.jet-listing-grid__item')].slice(0, count).map((el) => {
     const img = el.querySelector('img')
     const cat = el.querySelector('a[href*="product-category"]')
     const title = el.querySelector('h1,h2,h3,h4,h5,h6,.elementor-heading-title')
     const strike = el.querySelector('del .woocommerce-Price-amount, del')
     const sale = el.querySelector('ins .woocommerce-Price-amount, ins')
+    const productLink = el.querySelector('a[href*="/product/"]')
     const text = el.textContent ?? ''
     return {
       title: title?.textContent?.trim(),
+      productHref: productLink?.getAttribute('href'),
       category: cat?.textContent?.trim(),
       categoryHref: cat?.getAttribute('href'),
       strike: strike?.textContent?.trim(),
@@ -43,7 +47,7 @@ const items = await page.evaluate(() => {
       imgSrc: img && !img.currentSrc?.startsWith('data:') ? img.currentSrc : null,
     }
   })
-})
+}, COUNT)
 await b.close()
 
 mkdirSync('public/images/products', { recursive: true })
@@ -58,7 +62,8 @@ items.forEach((it, n) => {
       writeFileSync(file, Buffer.from(m[2], 'base64'))
     }
   }
-  meta.push({ n, title: it.title, category: it.category, categoryHref: it.categoryHref,
-    strike: it.strike, sale: it.sale, prices: it.prices, file, imgSrc: it.imgSrc })
+  meta.push({ n, title: it.title, productHref: it.productHref, category: it.category,
+    categoryHref: it.categoryHref, strike: it.strike, sale: it.sale, prices: it.prices,
+    file, imgSrc: it.imgSrc })
 })
 console.log(JSON.stringify(meta, null, 1))

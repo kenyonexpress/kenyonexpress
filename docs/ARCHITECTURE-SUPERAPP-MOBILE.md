@@ -2,6 +2,13 @@
 
 מסמך תכנון. אין מיגרציה נלווית (מסמך בלבד, שום דבר לא מוחל).
 
+> **עדכון supersession (2026-07-17):** הכרעות D1/D2 של מסמך זה (PWA כיעד +
+> עטיפות TWA/Capacitor) **הוחלפו** על ידי `docs/ARCHITECTURE-MOBILE-SUPERAPP.md`
+> (React Native + Expo, monorepo Turborepo). ה-PWA יורד מ"יעד" ל"גשר עד השקת
+> האפליקציה". סעיפים 2-5 כאן (חוזי הליבה: identity, מעטפת הכסף orders.vertical,
+> notify(), גבולות קוד, ורטיקלים כ-plug-in) **נשארים בתוקף מלא כחוזים**, והמסמך
+> החדש בנוי עליהם. ראו סעיף 0 שם ליחס המדויק.
+
 תאריך: 2026-07-08. ענף: `phase5/homepage`.
 מסמכים קשורים: `docs/ARCHITECTURE-COMMERCE.md` (026), `docs/ARCHITECTURE-SUPPLIER-REDEMPTION.md` (027), `docs/ARCHITECTURE-AI-AGENTS.md` (028), `docs/ARCHITECTURE-ACCOUNT-IDENTITY.md` (029), `docs/ARCHITECTURE-PRODUCTION-OPS.md`.
 
