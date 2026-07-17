@@ -9,6 +9,8 @@ Session 2026-07-17 (ערב) - איחוד קאנוני מלא: dedup מסמכים
 - **dedup**: נמחקו 4 כפילויות (ANALYTICS-BI-, TESTING-CICD-, WP-DATA-MIGRATION-, COMMERCE-ARCHITECTURE.md) אחרי מיזוג מלא לקבצים הקנוניים; כל docs/ עבר לקונבנציה `ARCHITECTURE-<TOPIC>.md` וכל ההפניות עודכנו (כולל בקבצי המיגרציות).
 - **מספור מחדש לרצף רציף 026-035**: `035_analytics_bi.sql` -> `034_analytics_bi.sql`; `036_security_hardening.sql` -> `035_security_hardening.sql`; איחוד ה-vendors המתוכנן = `036_vendors_unification.sql` (טרם נכתב). כל ההפניות בקבצי SQL ובמסמכים עודכנו. אזכורי 035/036 הישנים ברשומות ההיסטוריה למטה מתייחסים למספור הישן.
 - **נקלטו שני מסמכים מסוכנים מקבילים**: `docs/ARCHITECTURE-API-CONTRACTS.md` (חוזי API: שני transports, ActionResult, 16 שגיאות, G-1..G-8; R33) ו-`docs/ARCHITECTURE-MOBILE-SUPERAPP.md` (RN+Expo, Turborepo M1-M14; מחליף את D1/D2 של מסמך ה-PWA; R27/R34) + תיקוני העוגן שלהם ב-MASTER, ב-SUPERAPP-MOBILE וב-TESTING-CICD.
+- **סריקת סגירה (סוף הסשן)**: אומת שאין הפניות שבורות לשמות המסמכים הישנים או למספור הישן בכל docs/ + supabase/ + src/ + scripts/; תוקנו 3 שאריות: כותרת `033_analytics.sql` (האיחוד מופנה ל-036), `ARCHITECTURE-MOBILE-SUPERAPP.md` (R1-R32 -> R1-R34; הוסר `mobile-arch/` מעץ הקבצים של M1, התיקייה הזמנית כבר לא קיימת).
+- **במקביל (lane דף הבית, commit ddefe96)**: אומת דף המוצר מול האתר החי (24.72% < 30%, שלב 0.1 של סדר הבנייה); גריד דף הבית הורחב ל-32 המוצרים המדויקים מה-singlefile (0 חוסרים / 0 עודפים / 0 שגיאות סדר לפי `scripts/sync-live-products.mjs`); דף הבית 6.69%. seed ל-8 מוצרים החסרים ב-Supabase ממתין לא-מוחל ב-`supabase/seed-fixes/PENDING-live-products.sql`.
 - לא הוחלה שום מיגרציה, לא שונה קוד רץ.
 
 ## In Progress
@@ -18,7 +20,7 @@ nothing
 none
 
 ## Next Task
-שלב 0 של סדר הבנייה ב-MASTER v2: אימות דף המוצר מול compare.mjs, ואז (באישור מפורש) החלת `035_security_hardening.sql` על ה-DB החי דרך Supabase MCP apply_migration.
+שלב 0 של סדר הבנייה ב-MASTER v2: צעד 0.1 (אימות דף המוצר) בוצע (24.72%). הבא: צעד 0.2 - החלת `035_security_hardening.sql` על ה-DB החי דרך Supabase MCP apply_migration (**רק באישור מפורש**), ואז צעד 0.3 בדיקות קדם 2.10.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress

@@ -12,8 +12,9 @@
 --   030_catalog.sql   : search_queries -> v_search_quality_daily
 --
 -- Numbering note: 032 is taken by 032_wp_import_staging.sql (WP import).
--- The vendors -> suppliers unification (MASTER-ARCHITECTURE 2.4) will take a
--- future free number. This domain takes 033. No dependency on 028-032.
+-- The vendors -> suppliers unification is planned as 036_vendors_unification.sql
+-- (MASTER-ARCHITECTURE v2 section 2.9). This domain takes 033 (BI extension is
+-- 034, security hardening is 035). No dependency on 028-032.
 --
 -- Apply ONLY via Supabase MCP apply_migration (never db push), after 026+027.
 -- Every statement is idempotent; the whole file is one transaction.

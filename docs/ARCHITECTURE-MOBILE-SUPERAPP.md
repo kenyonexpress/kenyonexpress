@@ -5,7 +5,7 @@
 במסמכים הקנוניים באותו commit.)
 
 מסמכים קשורים:
-`docs/MASTER-ARCHITECTURE.md` (הכרעות R1-R32),
+`docs/MASTER-ARCHITECTURE.md` (הכרעות R1-R34; מסמך זה מעוגן שם כ-R27/R34),
 `docs/ARCHITECTURE-SUPERAPP-MOBILE.md` (מסמך ה-PWA, ראו יחס בסעיף 0),
 `docs/ARCHITECTURE-COMMERCE.md` (026),
 `docs/ARCHITECTURE-SUPPLIER-REDEMPTION.md` (027),
@@ -146,7 +146,7 @@ kenyonexpress/                      (אותו repo, אותו שורש git)
   verticals/                        (שלב מאוחר, סעיף 4) חבילת קוד פר ורטיקל
     food/  rides/
   supabase/                         נשאר בשורש (מיגרציות הן נכס כלל-מערכתי)
-  docs/  mobile-arch/  e2e/  scripts/  refs/
+  docs/  e2e/  scripts/  refs/
 ```
 
 ### 2.2 סדר המהלכים המדויק (zero downtime ל-web)
