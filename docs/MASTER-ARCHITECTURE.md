@@ -27,6 +27,7 @@
 | `ARCHITECTURE-PERFORMANCE.md` | ‏Cache Components, תקציבי ביצועים, קיבולת ואינדקסים | 038 (מתוכננת) |
 | `ARCHITECTURE-LEGAL-COMPLIANCE.md` | ציות ישראלי, ביטולים, חשבוניות, נגישות ושמירה | 037 (מתוכננת) |
 | `ARCHITECTURE-OBSERVABILITY.md` | ניטור, לוגים, התראות, runbooks, ‏on-call ‏(OBS-01..22) | 040 (מתוכננת) |
+| `ARCHITECTURE-GROWTH-SEO.md` | צמיחה: שימור SEO ב-cutover, ‏referrals/cashback, ‏CRM, ‏CAPI/ROAS ‏(G1-G18) | 041 (מתוכננת) |
 | `ARCHITECTURE-MOBILE-SUPERAPP.md` | React Native + Expo, monorepo (M1-M14), חוזי הליבה שנבלעו מה-PWA | עתידיות (push) |
 | `ARCHITECTURE-API-CONTRACTS.md` | משטח ה-API המלא: transports, ‏Zod, ‏idempotency, שגיאות (API-1..) | אין |
 | `BUSINESS-MODEL.md` | כוונת מוצר (שלושה סוגי מוצרים) | אין |
@@ -53,8 +54,9 @@
 | חדש | **038** (מתוכנן) | `038_performance_indexes.sql` |
 | חדש | **039** (מתוכנן) | `039_agents_v2.sql` |
 | חדש | **040** (מתוכנן) | `040_observability.sql` (guard לקוד השמור, ‏probe, ‏v_ops_alarms; ‏OBS-21) |
+| חדש | **041** (מתוכנן) | `041_growth.sql` (‏referrals השלמה, ‏cashback CHECK, ‏v_crm_segments, ‏ad_spend_daily, ‏capi_events; ‏G18. המסמך נכתב עם "040" ותוקן: 040 נתפס ע"י observability) |
 
-הרצף על הדיסק כעת רציף: 026-035, ללא חורים. 036-039 שמורים לפי הטבלה ואינם
+הרצף על הדיסק כעת רציף: 026-035, ללא חורים. 036-041 שמורים לפי הטבלה ואינם
 כתובים עדיין. משמעת מספור: לפני קובץ חדש בודקים `ls supabase/migrations/`,
 מאמתים את ההקצאה כאן ומעדכנים מסמך זה באותו commit.
 
@@ -617,6 +619,10 @@ PLANNED (אין קובץ)
   036_vendors_unification (2.9)
   037_legal_compliance (2.11); 038_performance_indexes (2.12); 039_agents_v2 (2.13);
   040_observability (OBS-21: guard לקוד `00000000`, ‏probe seed, ‏v_ops_alarms)
+  041_growth (G18: referrals.qualifying_order_id + fn_complete_referrals;
+              CHECK cashback <= 25% מה-fee; v_crm_segments; 6 journey fns;
+              ad_spend_daily; capi_events; v_roas_weekly/v_referral_kpis/
+              v_wallet_engagement; הרחבת v_money_alarms בגדר ה-12%)
   push_subscriptions (P) [1.26]; verticals + orders.vertical (P) [1.30]
   subscriptions (P) [1.41, אחרי threat model]
 ```
@@ -627,7 +633,7 @@ PLANNED (אין קובץ)
 
 מצב פתיחה (2026-07-17): ‏Phase 5 (דף בית 1:1) סגור; דף המוצר אומת מול האתר
 החי ב-24.72% (מתחת ליעד 30%); דף הבית 6.69%; 001-025 מוחלות על dev; כל
-הטיוטות 026-035 כתובות; 036-039 מתוכננות וטרם נכתבו; אפס קוד checkout.
+הטיוטות 026-035 כתובות; 036-041 מתוכננות וטרם נכתבו; אפס קוד checkout.
 
 ### שלב 0: סגירת החזית הנוכחית + אבטחה מיידית
 
@@ -644,7 +650,7 @@ PLANNED (אין קובץ)
 
 | צעד | תוכן | מקור |
 |---|---|---|
-| 1.1 | ביצוע עריכות סעיף 2 בטיוטות 026-031 + כתיבת 036-039 | כאן 2.2-2.13 |
+| 1.1 | ביצוע עריכות סעיף 2 בטיוטות 026-031 + כתיבת 036-039 (‏040-041 בשלביהם: ‏OBS ‏7.4, ‏GROWTH ‏5ג) | כאן 2.2-2.13 |
 | 1.2 | ‏harness מיגרציות ‏apply-twice ירוק על stack מקומי נקי (D6) | TESTING ‏3.4, 6 |
 | 1.3 | החלת הרצף 026→034 בסדר, הרצה חוזרת של 035, ואז 036→039 לפי תנאי הכניסה; ‏`generate_typescript_types` | כאן 2.1 |
 
@@ -658,7 +664,9 @@ PLANNED (אין קובץ)
 3.0 **קדם:** 037 חלה; מנוע ביטול, חשבוניות, מסמך גילוי ועמודי legal קיימים;
 מודול הכסף הטהור ‏`src/lib/money/` + כל מקרי ‏M/K/S/ביטול ירוקים (D2, D13);
 ‏env.ts ‏zod + ‏CSP/security headers ב-proxy (חוסם SAQ-A); חיווט rate limit ‏fail-closed
-‏(SEC-08) דרך ‏`check_my_rate_limit`.
+‏(SEC-08) דרך ‏`check_my_rate_limit`; חיווט observability בסיסי לפני קוד ה-checkout
+הראשון: ‏Sentry ‏errors-only + ‏scrubber, ‏`src/lib/log.ts`, ‏`/api/health`, ‏uptime
+‏(OBS ‏7.4 צעד 1: "שום קוד כסף לא נכתב בלי שהעצבים מחוברים").
 3.1 ‏`requireUserSession()` + אכיפת login בלחיצת תשלום.
 3.2 ‏`beginCheckout` (טרנזקציה: ולידציה, snapshot דרך ‏`product_platform_percent` ומחיר
 קופון לפי [1.40], ‏orders+order_items+payments, ‏Low Profile) + ‏rate limit ‏fail-closed.
@@ -716,7 +724,12 @@ A1 ‏SDK + ‏`/api/a` + באנר הסכמה + ‏attribution; A2 ‏crons (‏
 ### שלב 5ג: אוטומציית שיווק
 
 5.11 עגלה נטושה + ‏win-back; 5.12 ייחוס הכנסות (‏?ke_n=); 5.13 ‏WhatsApp (Meta Cloud
-API ‏[1.44] + מיגרציית cutover לחיווט התזכורות [1.23]); 5.14 ‏cron ‏retention ‏[1.31].
+API ‏[1.44] + מיגרציית cutover לחיווט התזכורות [1.23]); 5.14 ‏cron ‏retention ‏[1.31];
+5.15 צמיחה (מסמך GROWTH): ‏041 + מנוע referrals/cashback, ‏v_crm_segments ושש
+המסעות (אחרי 026+031+033); לכידת click-IDs לתוך עוגיית ה-attribution נבנית כבר
+עם A1 (אי אפשר להשלים בדיעבד); צנרת ‏CAPI/ROAS רק עם קמפיין ראשון בתשלום.
+מסלול ה-SEO של המעבר (G1-G7: ‏baseline GSC ‏T-7, ‏CSV ה-redirects, ‏checklist יום
+ה-flip, ניטור 30 יום) שייך לשלב W ולשער השיגור.
 
 ### שלב W: ייבוא WordPress ו-cutover (מסלול עצמאי; חוסם שיגור)
 
@@ -734,7 +747,9 @@ API ‏[1.44] + מיגרציית cutover לחיווט התזכורות [1.23]); 
 1. ‏SEC-01..06 מוחלים; ‏CSP headers; אין טוקן אמיתי לפני 029; ‏SEC-08 סגור.
 2. ‏Supabase Pro פעיל + גיבוי ‏pg_dump יומי + תרגיל restore אחד.
 3. ‏CI ירוק כחוסם merge; ‏harness מיגרציות ירוק פעמיים.
-4. ‏reconciliation ו-‏v_money_alarms מחוברים להתראת אדמין.
+4. ‏reconciliation ו-‏v_money_alarms מחוברים להתראת אדמין דרך מנוע ההתראות
+   ‏(OBS-13, ‏cron כל 15 דק'); סעיף 7.4 של מסמך ה-observability ירוק, כולל
+   ‏heartbeat ‏Cardcom, תרגיל אש ותרגיל restore ראשונים ‏(OBS-20).
 5. עסקת אמת אחת ב-Cardcom פרודקשן (המסלול השלישי של אסטרטגיית Cardcom).
 6. באנר הסכמה מאושר משפטית; ‏sitemap + ‏robots + ‏redirects חיים.
 7. ‏LEG-01..03 סגורים: ביטול צרכני, חשבוניות/מסמכי גילוי ונגישות; כל עמודי
@@ -784,7 +799,7 @@ API ‏[1.44] + מיגרציית cutover לחיווט התזכורות [1.23]); 
 | R28 | סוכני AI | ‏grounding בלבד; ‏RLS כגבול; אף סוכן לא כותב כסף; ‏fn_log_agent_run ‏service בלבד | AGENTS, 1.42 |
 | R29 | אנליטיקה | ‏first-party בלבד; שני מישורים (כסף מטבלאות אמת, התנהגות מ-events); 2 ‏matviews בלבד | ANALYTICS |
 | R30 | מנויים | מחוץ להיקף עד ‏threat model ומיגרציה ייעודית | 1.41 |
-| R31 | מספור | רצף רציף; 036-040 שמורים לפי 0.2; המספר החדש הבא הוא 041; עדכון מסמך זה באותו commit | 0.2, 1.19, 1.57 |
+| R31 | מספור | רצף רציף; 036-041 שמורים לפי 0.2; המספר החדש הבא הוא 042; עדכון מסמך זה באותו commit | 0.2, 1.19, 1.57 |
 | R32 | שמות מסמכים | ‏`ARCHITECTURE-<TOPIC>.md`; מסמך זה ומסמך האבטחה = היררכיית הסמכות | 0.1 |
 | R33 | חוזי API | שני transports בלבד (Server Actions לדפדפן, ‏Route Handlers ל-machine-to-machine); מעטפת ‏`ActionResult<T>` אחידה; טקסונומיית 16 שגיאות; כל מהלך כסף עם ‏idempotency key בעל שם | API-CONTRACTS |
 | R34 | ‏monorepo | מעבר ‏Turborepo בשלב 6: ‏M1 (‏`apps/web`, ‏PR אטומי, עדכון ‏CLAUDE.md באותו commit) ואז חילוץ חבילות ‏M2; אפס שינוי התנהגות פר ‏PR | MOBILE-SUPERAPP ‏2 |
@@ -792,6 +807,8 @@ API ‏[1.44] + מיגרציית cutover לחיווט התזכורות [1.23]); 
 | R36 | קופון שפג | רצפה 4 חודשים; פקיעה ללא מימוש מזכה refund_credit ל-5 שנים | 1.52 |
 | R37 | ביצועים | ‏Cache Components + PPR; דינמי בתוך Suspense; תקציבים חוסמים CI; אינדקסים ב-038 | 1.55 |
 | R38 | סוכני AI v2 | 6 סוכנים; סדר enrichment-first; 039 לטבלאות הייעוד; אישור אנושי לכל תוצר כותב | 1.56 |
+| R39 | ‏observability | ‏Sentry ‏errors-only + ‏scrubber יחיד; ‏Better Stack ל-uptime/on-call/סטטוס; מנוע התראות אחד על ‏v_money_alarms + ‏v_ops_alarms ‏(040); ראיות משפטיות רק ב-DB, לוגים = אבחון בלבד; אין קוד כסף בלי חיווט (שלב 3.0) | OBS-01..22 |
+| R40 | צמיחה | ‏referrals: ‏20/10 ש"ח, סף 50 ש"ח, חלון 14 יום, תקרות 5/חודש 30/שנה, ‏clawback; ‏cashback: קופון 10% / פיזי 1% מ-charged_on_site, תקרה 25% מה-fee, פקיעה 24 חודשים; גדר תקציב הטבות 12% מהכנסת פלטפורמה ב-v_money_alarms; ‏CAPI/‏offline conversions רק בהסכמה ועם קמפיין ראשון, אין GA4; ‏retention: ‏ad_spend_daily לנצח, ‏capi_events ‏90 יום אחרי sent; ‏`?ke_n=` (התראות) ועוגיית ‏`ref` (הפניות /r/[code]) חיים זה לצד זה על ‏orders.attribution | GROWTH G1-G18, 041 |
 
 ### 5.4 טבלת ‏rate limits (מקור אמת יחיד)
 
@@ -806,6 +823,7 @@ API ‏[1.44] + מיגרציית cutover לחיווט התזכורות [1.23]); 
 | `consent_change` | 20 | שעה | open | ‏fn_set_marketing_consent |
 | `agent_chat` | 20 | שעה | open | ‏shopping/support |
 | `listing_draft` | 10 | 24 שעות | open | ‏supplier_ops |
+| `referral_share` | 30 | 24 שעות | open | יצירת קישורי ‏/r/[code] ‏(041, ‏G-fraud) |
 | ‏ingest ‏`/api/a` | 120 | דקה (IP) | open | ‏SDK |
 
 תקרות מדיניות נלוות (ללא שינוי מהמהדורה הקודמת): כמות 1-99 לפריט; פקיעת pending

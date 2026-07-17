@@ -20,6 +20,8 @@ Session 2026-07-17 (ערב) - MASTER v3: איחוד סופי של כל 16 הדו
   ל-5 שנים ו-cashback ל-24 חודשים. אף מיגרציה חדשה לא נכתבה או הוחלה.
 - **הערת ריצה מקבילה**: חלק מצעדי האיחוד (העברת שלושת מסמכי ה-lanes ל-docs/, הקצאת 037-039, יישור מסמכי הדומיין, commit ‏6466a8b) בוצעו בידי סוכן Cursor שרץ במקביל באותו ענף; הסשן הזה אימת אותם, השלים את מיזוג צמד המובייל (סעיף 11), את רישום ה-LEG, את מיפוי ה-WO ואת עדכון v3, בלי כפילויות.
 - **נקלט מסמך observability חדש**: ‏`docs/ARCHITECTURE-OBSERVABILITY.md` ‏(OBS-01..22: ‏Sentry errors-only, לוגר יחיד + ‏scrubber, ‏Better Stack ‏uptime/heartbeats/סטטוס/on-call, מנוע התראות על ‏v_money_alarms, ‏8 ‏runbooks). הופיע בתיקייה צדדית ‏obs-arch/ תוך כדי הסשן, הועבר ל-docs/ לפי הכלל, ונרשם במסמך האב; מיגרציית ‏`040_observability.sql` שמורה לו (המספר הפנוי הבא: 041).
+- **נקלט מסמך צמיחה חדש**: ‏`docs/ARCHITECTURE-GROWTH-SEO.md` ‏(G1-G18: שימור SEO ב-cutover, ‏referrals ‏20/10 ש"ח, ‏cashback ‏10%/1% עם תקרת 25% מה-fee, גדר תקציב 12%, ‏CRM segments + 6 מסעות, ‏CAPI/ROAS). הופיע ב-`growth-arch/` תוך כדי הסשן והועבר ל-docs/ לפי הכלל; המיגרציה שלו תוקנה מ-040 (נתפס ע"י observability) ל-**`041_growth.sql`** בכל המסמך; ‏MASTER עודכן (0.1/0.2, ‏ERD, ‏R31: הבא 042, ‏R40, שורת ‏rate limit ‏`referral_share`, צעד 5.15). נתיבי ה-baseline הוסבו ל-`docs/growth/`.
+- **סגירת שורש הריפו (סוף הסשן)**: ‏`ARCHITECTURE.md` בשורש (גרסת מאי 2026: ‏Turborepo/Drizzle/tRPC/Cloudflare/Capacitor, הכריז על עצמו מקור אמת) הוחלף במצביע אל ‏`docs/MASTER-ARCHITECTURE.md`; ‏`STATE_NEXT.md` המיושן נמחק (הציע למחוק את ‏`cursor/add-supabase-3c830` בניגוד להכרעה 1.50). ‏MASTER קיבל ‏R39 ‏(observability) + עיגון ‏OBS בקדם של שלב 3.0 ובפריט 4 של שער השיגור.
 - לא הוחלה שום מיגרציה, לא שונה קוד רץ.
 
 ## In Progress
