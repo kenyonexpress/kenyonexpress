@@ -1,19 +1,25 @@
 # ארכיטקטורת פורטל הספקים (Supplier Portal)
 
-מסמך הכרעות מחייב לדומיין פורטל הספקים. כל סעיף מכריע, אין אופציות פתוחות.
-תאריך: 2026-07-17. ענף: `phase5/homepage`. מיקום זמני: `supplier-arch/` (תיקיית
-`docs/` קפואה בידי בעלים אחרים; עם הסרת ההקפאה המסמך עובר ל-
-`docs/ARCHITECTURE-SUPPLIER-PORTAL.md` ונרשם במסמך האב, ראו סעיף 9).
+מסמך תכנון מלא לדומיין פורטל הספקים. תכנון בלבד, אפס קוד ואפס מיגרציות.
+תאריך: 2026-07-19. ענף: `phase5/homepage`. מיקום מחייב לפי המשימה:
+שורש הפרויקט.
 
-מקורות שנקראו: `MASTER-ARCHITECTURE.md` (v3), `ARCHITECTURE-SUPPLIER-REDEMPTION.md` (027),
+מקורות שנקראו: `docs/MASTER-ARCHITECTURE.md` (v3), `docs/ARCHITECTURE-SUPPLIER-REDEMPTION.md` (027),
 `ARCHITECTURE-COMMERCE.md` (026), `ARCHITECTURE-SECURITY.md` (035, גובר באבטחה),
 `ARCHITECTURE-LEGAL-COMPLIANCE.md` (037, גובר בדין), `ARCHITECTURE-NOTIFICATIONS-MARKETING.md` (031),
 `ARCHITECTURE-ACCOUNT-IDENTITY.md` (029), `ARCHITECTURE-MOBILE-SUPERAPP.md` (M1-M14),
 `ARCHITECTURE-API-CONTRACTS.md` (דומיין F), `BUSINESS-MODEL.md`, מיגרציות 001-035.
 
+הקובץ `ARCHITECTURE-CART-CHECKOUT.md` שהתבקש כמקור לסעיפים 3 ו-6 אינו קיים
+בריפו, ב-`docs/` או בהיסטוריית Git בזמן כתיבת מסמך זה. לכן חוזי
+`commission_ledger`, ‏cashback וה-lifecycle להלן מבוססים על ההחלטות המפורשות
+במשימה ועל מסמכי Commerce/Supplier הקנוניים. לפני מימוש חובה ליישב אותם מול
+מסמך Cart/Checkout כשיסופק. הפערים מרוכזים בסעיף 11.
+
 מעמד: מסמך זה מפרט את שכבת המוצר/UX/אפליקציה של הפורטל מעל המנגנונים הקנוניים
-של 027 (סכימה, RLS, פונקציות). הוא אינו משנה שום מנגנון כסף. סתירות מוכרעות כך:
-אבטחה לפי SECURITY, דין לפי LEGAL, כסף וסכימה לפי MASTER/027; כל השאר: מסמך זה.
+של 027 (סכימה, RLS, פונקציות). הוא מציע מעבר לדוחות שבועיים מעל
+`commission_ledger`, אך אינו מוסמך ליישם או לגבור על חוזה הכסף הקנוני לפני
+יישוב סעיף 11. אבטחה לפי SECURITY, דין לפי LEGAL, כסף וסכימה לפי MASTER/027.
 
 ---
 
@@ -26,15 +32,23 @@
 3. **מימוש**: `redeem_coupon()` (027) הוא המסלול היחיד; CAS אטומי + שורת
    `coupon_redemptions` (R5); rate limit 30/דקה fail-closed (R14).
 4. **QR**: `qr_token` חתום Ed25519; חתימה = אותנטיות, חד-פעמיות = DB בלבד (R7).
-5. **כסף לספק**: מנוע `payout_statements` (027) בלבד; snapshot מזמן ההזמנה;
-   דוח במחלוקת לא משולם; mark-paid = super_admin בשכבת ה-action (R1, R13).
-6. **מודל הקופון**: `platform_price` = מה ששולם באתר (חופשי),
-   `collect_amount_ils` = היתרה שנגבית בעסק (1.40). "ה-90%" בדרישה העסקית =
-   `collect_amount_ils`, שאינו בהכרח 90% (האחוז חופשי פר דיל).
+5. **כסף לספק**: `commission_ledger` הוא יומן המקור החדש שנדרש במשימה;
+   `payout_statements` הוא מסמך הסגירה השבועי שמקבץ שורות ledger. כל שורה
+   מצביעה ל-`order_item_id`, נושאת snapshot כספי ואינה נערכת. דוח במחלוקת
+   לא משולם; mark-paid = super_admin בשכבת ה-action. המיפוי מהמודל הקיים
+   של 027 ל-ledger החדש דורש הכרעה בסעיף 11.
+6. **מודל הקופון**: הפורטל לעולם אינו מחשב 10/90. הוא מציג את ה-snapshot:
+   `customer_pays_now`, ‏`face_value_ils` ו-`collect_amount_ils`. המשימה
+   הנוכחית מגדירה 10% באתר ו-90% בעסק, בעוד MASTER 1.40 מגדיר מחיר קופון
+   חופשי. עד הכרעה, ה-snapshot הוא מקור האמת והפורטל אינו מקודד אחוז קבוע.
 7. **חוזי API**: דומיין F של `ARCHITECTURE-API-CONTRACTS.md` (F1-F10) הוא
    הבסיס; מסמך זה מוסיף עליו ומעדכן שני חוזים (סעיף 9.2).
 8. **תנאי הפעלה**: SEC-01..06 מוחלים לפני כסף אמיתי; 037 (הסכם ספק, חשבוניות)
    לפני קבלת תשלום; LEG-12 חוסם אישור ספק בלי חתימת הסכם.
+9. **Cashback**: הבסיס הוא `customerPaysNow` בלבד, לעולם לא face value.
+   קופון מזכה רק אחרי `redeem_coupon` מוצלח; פיזי מזכה רק אחרי אישור משלוח
+   לפי lifecycle המוכרע; ביטול יוצר reversal מקושר לתנועה המקורית. הפורטל
+   מציג את האחוז אך אינו מחשב, מזכה או מבטל cashback.
 
 ---
 
@@ -68,6 +82,13 @@
 3. ריבוי עסקים למשתמש: נתמך בסכימה; ה-UI v1 בוחר דרך `current_supplier_id()`
    ומציג בורר רק אם `getMySupplierContext` (F2) מחזיר יותר מחברות אחת.
    כל action מעביר `supplier_id` מפורש (כלל דומיין F).
+4. **Supabase Auth מאמת זהות, לא tenancy.** claim גס של supplier/vendor
+   משמש רק לניתוב. גבול הנתונים הוא membership פעיל ב-`supplier_members`.
+   אין לסמוך על `user_metadata`, פרמטר מהלקוח או `profiles.supplier_id`
+   להחלטת RLS.
+5. owner מזמין scanner דרך magic link חד-פעמי עם תפוגה. קבלת ההזמנה יוצרת
+   או מפעילה membership לעסק המזמין בלבד. owner אינו יכול להעניק owner;
+   שינוי בעלות הוא תהליך אדמין עם recent-auth ו-audit.
 
 ### 1.2 מפת העמודים
 
@@ -92,12 +113,45 @@
 כל העמודים: עברית, RTL, קריאה עם ה-client של המשתמש בלבד (RLS = גבול האמת,
 אפס service role במסכי ספק), `revalidate` דינמי (נתונים פרטיים, אין cache ציבורי).
 
+### 1.2.1 מפת קבצים וגבולות guard
+
+```text
+src/app/(supplier)/
+  supplier/
+    layout.tsx
+    page.tsx
+    dashboard/page.tsx
+    scan/page.tsx
+    scan/history/page.tsx
+    orders/page.tsx
+    orders/[itemId]/page.tsx
+    coupons/page.tsx
+    products/page.tsx
+    statements/page.tsx
+    statements/[id]/page.tsx
+    requests/page.tsx
+    requests/new/page.tsx
+    profile/page.tsx
+    team/page.tsx
+    settings/page.tsx
+    onboarding/page.tsx
+```
+
+- `src/proxy.ts` מבצע guard גס בלבד: session קיים וניתוב משתמש לא מחובר
+  ל-login. הוא אינו מחליט לאיזה ספק מותרת גישה.
+- `layout.tsx` טוען context של membership פעיל בצד שרת, מציב `dir="rtl"`,
+  ומנתב scanner ל-`/supplier/scan`.
+- כל page/action מפעיל guard תפקידי משלו. RLS נשארת שכבת ההכרעה האחרונה גם
+  אם guard או URL נעקפו.
+- header משותף כולל לוגו ואייקונים בלבד. אין טקסט ניווט בכותרת. ניווט מורחב
+  נמצא במגירה במובייל וב-sidebar בדסקטופ; מסך הסריקה מסתיר אותם בזמן מצלמה.
+
 ### 1.3 דשבורד (`/supplier/dashboard`): ווידג'טים ומקורות נתונים
 
 | ווידג'ט | תוכן | מקור (הכול תחת RLS) |
 |---|---|---|
 | מימושים היום | מספר סריקות מוצלחות היום + סכום שנגבה בעסק | `coupon_scan_events` (היום, result=success) + `coupon_redemptions.amount_collected_ils`; טרנד: `v_supplier_scans_daily` (034) |
-| יתרה לתשלום | (א) דוחות approved שטרם שולמו; (ב) "נצבר וטרם נכלל בדוח": פריטים פיזיים delivered שלא בדוח חי | (א) `payout_statements`; (ב) view חדש `v_supplier_pending_payout` (042, security_invoker, סעיף 7.3) |
+| יתרה לתשלום | (א) דוחות approved שטרם שולמו; (ב) "נצבר וטרם נכלל בדוח": שורות ledger זכאיות שלא בדוח חי | (א) `payout_statements`; (ב) view חדש `v_supplier_pending_payout` (M-SP, security_invoker, סעיף 7.3) |
 | קופונים פעילים | ספירת `issued` בתוקף + התפלגות לפי דיל; דגל "פגים בקרוב" (30 יום) | `coupon_codes` (member read) |
 | הזמנות ממתינות | פריטים פיזיים במצב pending/issued בהזמנות בתשלום | `order_items` supplier read (027) |
 | מכירות 30 יום | גרף יומי: פריטים, gross, supplier_due | `v_supplier_sales_daily` (034) |
@@ -105,10 +159,27 @@
 
 אפס חישוב כספי בצד לקוח: כל הסכומים הם snapshot או view של ה-DB.
 
+### 1.3.1 הזמנות פיזיות ופיד מימושים
+
+`/supplier/orders` מציג שני טאבים מופרדים:
+
+1. **משלוחים**: תור פריטי `order_items` של הספק בלבד. מצבי UI:
+   `new -> shipped -> delivered`; כל מצב ממופה לסטטוס הקנוני של ה-lifecycle
+   ואינו enum מקביל. מעבר ל-`shipped` מחייב מוביל ומספר מעקב, נכתב בפעולה
+   אטומית ומייצר אירוע notification. `delivered` נקבע רק מהחוזה הקנוני,
+   לא מכפתור חופשי אם קיימת אינטגרציית מוביל.
+2. **מימושי קופון**: feed בזמן יורד מתוך `coupon_redemptions`, עם דיל,
+   קופאי, סכום שנגבה ומועד. אין חשיפת טלפון, כתובת או פרטי תשלום של הלקוח.
+
+מעל הטאבים מוצגים counters ליום לפי `Asia/Jerusalem`: הזמנות חדשות, נשלחו,
+נמסרו, מימושים מוצלחים וסכום שנגבה בעסק. החיתוך מתבצע ב-query/view ולא
+באזור הזמן של הדפדפן. שינוי סטטוס הוא compare-and-set עם `expected_status`;
+retry עם אותו idempotency key מחזיר את התוצאה הקודמת.
+
 ### 1.4 בקשות מוצר/דיל לאדמין (`/supplier/requests`)
 
 הספק לא כותב לקטלוג לעולם (כתיבת `products`/`coupon_deals` נשארת אדמין).
-הערוץ: טבלה חדשה `supplier_requests` (042, סעיף 7.4).
+הערוץ: טבלה חדשה `supplier_requests` (M-SP, סעיף 7.4).
 
 - סוגים (`request_kind`): `new_deal` (דיל קופון חדש), `new_product` (מוצר פיזי),
   `edit_deal` (שינוי מחיר/תיאור/תוקף), `pause_deal` (השהיית מכירה),
@@ -129,7 +200,7 @@
 `BUSINESS-MODEL.md` סעיף 2 מחייב בדף המוצר: כתובת + Waze, טלפון + WhatsApp,
 שעות פתיחה, עיר, קואורדינטות. השדות האלה חיים על `suppliers` ונערכים בפורטל.
 
-1. **שדות חדשים על `suppliers`** (042, סעיף 7.1): `phone`, `whatsapp`,
+1. **שדות חדשים על `suppliers`** (M-SP, סעיף 7.1): `phone`, `whatsapp`,
    `opening_hours jsonb`, `lat numeric(9,6)`, `lng numeric(9,6)`,
    `photos jsonb` (מערך נתיבי storage), `about_he text`.
    קישור Waze אינו עמודה: נגזר בצד לקוח
@@ -138,15 +209,31 @@
    `[{ "day": 0, "ranges": [["09:00","19:00"]] }, ...]`; ריק = סגור. ולידציית zod;
    ה-UI מציג "פתוח עכשיו" מחושב בצד לקוח בשעון `Asia/Jerusalem`.
 3. **כתיבה**: שורת `suppliers` נשארת ללא policy כתיבה לספק (005/027). העריכה
-   דרך פונקציה חדשה `update_supplier_profile()` (SECURITY DEFINER, 042):
+   דרך פונקציה חדשה `update_supplier_profile()` (SECURITY DEFINER, M-SP):
    owner בלבד, מוגבלת לשדות התדמיתיים בלבד (phone, whatsapp, opening_hours,
    lat/lng, photos, about_he, logo_url). שם, שם משפטי, ח.פ, עמלה, סטטוס
    ו-payout_terms: אדמין בלבד, לעולם לא דרך הפונקציה. audit trigger קיים (027).
-4. **תמונות**: bucket ציבורי חדש `supplier-photos` (042), נתיב
+4. **תמונות**: bucket ציבורי חדש `supplier-photos` (M-SP), נתיב
    `<supplier_id>/<uuid>.webp`, כתיבה דרך server action עם דחיסה (עד 5 תמונות,
    2MB אחרי דחיסה). הלוגו נשאר ב-`vendor-logos` הקיים עד איחוד buckets עתידי.
 5. גיאוקידוד: ה-UI מציג מפה עם pin נגרר; אין תלות בשירות geocoding חיצוני
    ב-v1 (הזנה ידנית של כתובת + מיקום pin).
+
+### 1.6 נראות מוצרים (`/supplier/products`)
+
+המסך הוא read-only ומציג רק שורות שבהן `products.supplier_id` שייך ל-membership
+הפעיל. הוא כולל חיפוש וסינון לפי coupon/physical, סטטוס וזמינות, ובכל שורה:
+
+- שם, SKU/slug, תמונה, סוג, סטטוס ומלאי מוצג.
+- `platform_percent` ו-`cashback_percent` כ-snapshot/ערך האדמין הקנוני.
+- בקופון: מחיר ששולם באתר, שווי, סכום לגבייה בעסק ותוקף.
+- בפיזי: מחיר לקוח, עמלת פלטפורמה צפויה ויתרת ספק צפויה, מסומנות כהערכה בלבד;
+  רק שורת ה-ledger שנוצרה במכירה היא הסכום המחייב.
+
+אין policy של UPDATE לספק על `products`, אחוזים, מחיר, מלאי או סטטוס.
+שינוי מבוקש רק דרך `/supplier/requests`; האדמין מאשר ומיישם. כל מוצר coupon
+או physical חייב `supplier_id` לפני פרסום. RLS על `products`, ‏`order_items`
+ו-`commission_ledger` משתמשת באותו predicate של membership כדי למנוע drift.
 
 ---
 
@@ -255,6 +342,11 @@
 | screenshot של קופון שכבר מומש | חד-פעמיות ב-DB; מסך אדום עם מועד המימוש הראשון + שם הלקוח לאימות זהות | איום 6.2 של 027 |
 | קופאי מנחש קודים | rate limit 30/דקה fail-closed בתוך ה-RPC + שכבת IP + כל ניסיון נרשם ב-`coupon_scan_events` | 027 3.3 |
 
+מימוש מוצלח הוא יחידה אטומית אחת: מעבר הקופון ל-used, כתיבת redemption,
+כתיבת scan event, פרסום אירוע cashback ללקוח ויצירת עובדת ledger מתאימה.
+מפתח ה-idempotency נגזר מזהות הקופון והפעולה, ולכן replay offline או retry
+אחרי timeout אינם יכולים ליצור cashback, מימוש או ledger כפולים.
+
 ### 2.6 שגיאות: הנוסח העברי המחייב פר מצב
 
 צבע: אדום = אין לספק שירות; כתום = תקלה זמנית; צהוב = offline.
@@ -304,7 +396,7 @@
    INSERT supplier_applications (status='pending'; ייחודי: pending אחת פר משתמש)
         │
         v
-שלב 2: העלאת מסמכים (חדש; טבלת supplier_application_documents, 042)
+שלב 2: העלאת מסמכים (חדש; טבלת supplier_application_documents, M-SP)
    חובה: רישיון עסק / תעודת עוסק; אישור ניהול ספרים; אישור ניכוי מס במקור
    רשות: אישור ניהול חשבון בנק (אפשר גם אחרי אישור)
    נתיב storage: supplier-docs/applications/<application_id>/<doc_kind>.pdf
@@ -312,7 +404,7 @@
         │
         v
 שלב 3: תור אדמין (/admin/suppliers/applications, קיים בתכנון 027)
-   האדמין רואה טופס + מסמכים. חסר מסמך -> סטטוס חדש needs_more_info (042)
+   האדמין רואה טופס + מסמכים. חסר מסמך -> סטטוס חדש needs_more_info (M-SP)
    שמחזיר את הכדור למבקש (באנר בפורטל + מייל)
         │
         v
@@ -345,8 +437,8 @@
    האדמין; פרטי בנק נשארים בפורטל אחרי האישור (זרימת 027 2.3 נשמרת), כי
    הזנתם דורשת את הרשאת ה-owner הקשיחה + audit המסתיר (SEC-12).
 2. **`needs_more_info`** נוסף ל-enum `supplier_application_status` בדרך
-   הקנונית: כיוון ש-R22 אוסר `ADD VALUE` בקובץ רגיל, 042 יוצרת את הערך
-   במיגרציית `ADD VALUE` ייעודית נפרדת (`042a`) לפני הקובץ הצורך, לפי
+   הקנונית: כיוון ש-R22 אוסר `ADD VALUE` בקובץ רגיל, M-SP יוצרת את הערך
+   במיגרציית `ADD VALUE` ייעודית נפרדת לפני הקובץ הצורך, לפי
    משמעת 2.10 של האב. לחלופין ב-DB שטרם הוחלה בו 027: עריכת ה-CREATE TYPE
    המקורי (הטיוטה טרם הוחלה, מותר לפי R22). ההכרעה: עריכת הטיוטה של 027
    עדיפה (הוספת הערך ל-CREATE TYPE), כי 027 עוד לא הוחלה בשום סביבה.
@@ -354,12 +446,12 @@
    checkbox + שם מלא + OTP + `wording_version`/`agreement_version` + timestamp
    מספקים. אין ספק חתימות חיצוני (DocuSign וכד') ב-v1.
 4. **אישור ניכוי מס במקור וניהול ספרים**: שדות `withholding_cert_expires_at`
-   ו-`bookkeeping_cert_expires_at` על `suppliers` (042). דוח לא מסומן paid
-   כשאחד מהם פג (בדיקה בתוך `mark_payout_statement_paid`, הרחבת 037/042;
+   ו-`bookkeeping_cert_expires_at` על `suppliers` (M-SP). דוח לא מסומן paid
+   כשאחד מהם פג (בדיקה בתוך `mark_payout_statement_paid`, הרחבת 037/M-SP;
    אשרור הסכם 4.4.5 של LEGAL). cron חודשי מתריע לספק 30 יום לפני פקיעה.
 5. ספק במצב `suspended`: הפורטל נפתח לקריאה בלבד + באנר; הסריקה **ממשיכה
    לעבוד** (קופונים שנמכרו חייבים כיבוד, LEGAL 4.3.4) אלא אם ההשעיה הוגדרה
-   ע"י אדמין כ-`redeem_blocked` (שדה על ההשעיה, 042): מצב קיצוני שבו גם
+   ע"י אדמין כ-`redeem_blocked` (שדה על ההשעיה, M-SP): מצב קיצוני שבו גם
    מימוש נחסם והלקוחות מזוכים.
 
 ---
@@ -368,21 +460,26 @@
 
 ### 4.1 קצב יצירת דוחות (הכרעה)
 
-- **מחזור**: חודש קלנדרי (027 5.1). **יצירה**: cron ב-3 לחודש, 06:00
-  שעון ישראל, מריץ `generate_payout_statement(supplier, חודש קודם)` לכל ספק
-  פעיל עם פעילות בתקופה (פריט delivered או קופון used). היום ה-3 ולא ה-1:
-  מרווח לעדכוני delivered מאוחרים של סוף החודש.
+- **מחזור**: שבוע קלנדרי, שני 00:00 עד ראשון 23:59:59 בשעון
+  `Asia/Jerusalem`. **יצירה**: cron בכל יום שני 06:00 עבור השבוע שהסתיים,
+  לכל ספק עם שורת `commission_ledger` eligible בתקופה. ה-cutoff נקבע לפי
+  timestamp עסקי קנוני, לא `created_at` טכני.
 - הדוח נולד `pending_approval` (כך כתובה הפונקציה ב-027) וגלוי לספק מיידית
-  (draft מוסתר ב-RLS ממילא). אישור אדמין -> `approved`; תשלום בפועל עד
-  שוטף+`payout_terms_days` (ברירת מחדל 15) -> `mark_payout_statement_paid`
-  (super_admin בשכבת ה-action, R13) עם אסמכתת העברה.
+  (draft מוסתר ב-RLS ממילא). אישור אדמין -> `approved`; תשלום שבועי בפועל
+  לפי יום התשלום שיוכרע בסעיף 11 -> `mark_payout_statement_paid`
+  (super_admin בשכבת ה-action) עם אסמכתת העברה.
 - אין תשלום על תקופה שה-reconciliation מול Cardcom שלה לא הושלם (כלל תפעולי,
   027 5.3). באדמין: הדוח מציג דגל "התאמה הושלמה/לא" ליד כפתור התשלום.
+- **`payout_due`** הוא SUM של שורות ledger פיזיות במצב earned שטרם נכללו
+  בדוח paid, פחות reversals/adjustments. קופון מופיע לשקיפות עם
+  `supplier_due_ils=0`, כי הספק גובה את חלקו ישירות בעסק.
+- **דוח חודשי להורדה** אינו payout נוסף. הוא projection שמאגד את כל הדוחות
+  השבועיים והשורות בחודש הנבחר ל-CSV/PDF, בלי ליצור או לשנות חוב.
 
 ### 4.2 מסך הדוח (`/supplier/statements/[id]`)
 
 ```
-דוח PS-000123 | 01-30/06/2026 | סטטוס: אושר, לתשלום עד 15/07
+דוח PS-000123 | 06-12/07/2026 | סטטוס: אושר, ממתין להעברה השבועית
 ────────────────────────────────────────────────────────────
 סה"כ מחזור (כולל מע"מ):        12,400 ₪
 עמלת פלטפורמה:                  1,240 ₪   [חשבונית מס עמלה: INV-...] <- kind='commission' (037)
@@ -409,7 +506,7 @@ order_items/coupon_codes). אפס סכום מחושב ב-UI.
 
 - פתיחה: owner בלבד (F10), מתוך דוח/שורה/פריט/קופון, תוך **30 יום** מפרסום
   הדוח (LEGAL 4.4.4). אחרי 30 יום הכפתור ננעל ("הדוח נחשב מאושר"); אכיפת
-  החלון גם ב-fn (042 מוסיפה בדיקת `created_at` של הדוח ל-INSERT policy דרך
+  החלון גם ב-fn (M-SP מוסיפה בדיקת `created_at` של הדוח ל-INSERT policy דרך
   trigger, לא רק UI).
 - מחזור חיים: `open -> in_review -> resolved_accepted | resolved_rejected`
   (אדמין; 027). דוח עם מחלוקת open/in_review לא ניתן לסימון paid (נאכף
@@ -465,22 +562,23 @@ order_items/coupon_codes). אפס סכום מחושב ב-UI.
 | `supplier_new_order` : נמכר פריט פיזי שלך | `orders` paid עם order_item של הספק (`supplier_new_order:<order_item_id>:<user_id>`) | owner+manager | תמיד | `supplier_ops_email` (ברירת מחדל: דולק) | `supplier_ops_whatsapp` (opt-in) | כן (חוץ מ-inapp) |
 | `supplier_coupon_sold` : נמכר קופון לדיל שלך | INSERT `coupon_codes` issued (`supplier_coupon_sold:<coupon_id>:<user_id>`) | owner+manager | תמיד | digest יומי בלבד (לא מייל פר מכירה) | לא | כן |
 | `supplier_coupon_redeemed` : מומש קופון בעסק | INSERT `coupon_redemptions` (`supplier_coupon_redeemed:<coupon_id>:<user_id>`) | owner בלבד (בקרה על קופאים) | תמיד | לא (רעש) | לא | כן |
-| `supplier_statement_ready` : דוח חודשי נוצר | payout_statements -> pending_approval (`supplier_statement_ready:<statement_id>:<user_id>`) | owner+manager | תמיד | **תמיד** (מסמך כספי) | `supplier_ops_whatsapp` | לא (מייל כספי) |
+| `supplier_statement_ready` : דוח שבועי נוצר | payout_statements -> pending_approval (`supplier_statement_ready:<statement_id>:<user_id>`) | owner+manager | תמיד | **תמיד** (מסמך כספי) | `supplier_ops_whatsapp` | לא (מייל כספי) |
 | `supplier_payout_paid` : התשלום הועבר | payout_statements -> paid (`supplier_payout_paid:<statement_id>:<user_id>`) | owner | תמיד | **תמיד** + PDF + חשבונית עמלה מצורפים | `supplier_ops_whatsapp` | לא |
 | `supplier_deal_expiring` : דיל קרוב לפקיעה עם מימוש נמוך | cron שבועי א' 08:00: דילים עם קופונים issued שפגים בתוך 30 יום ושיעור מימוש < 50% (`supplier_deal_expiring:<supplier_id>:<iso_week>`) | owner+manager | תמיד | `supplier_ops_email`, digest אחד לשבוע | לא | כן |
 | `supplier_dispute_resolved` : הוכרעה מחלוקת | supplier_disputes -> resolved_* (`supplier_dispute_resolved:<dispute_id>:<user_id>`) | owner | תמיד | תמיד | לא | לא |
 | `supplier_application_approved/rejected/needs_info` : סטטוס בקשה | supplier_applications מעבר סטטוס (`supplier_application_<status>:<application_id>`) | המבקש | תמיד | תמיד | לא | לא |
 | `supplier_member_invited` : הוזמנת לצוות | INSERT supplier_members (`supplier_member_invited:<member_id>`) | המוזמן | תמיד | תמיד (magic-link, F9) | לא | לא |
 | `supplier_cert_expiring` : אישור ניכוי מס/ניהול ספרים פג בעוד 30 יום | cron חודשי (`supplier_cert_expiring:<supplier_id>:<cert>:<YYYY-MM>`) | owner | תמיד | תמיד (חוסם תשלומים) | לא | לא |
+| `supplier_daily_redemption_summary` : סיכום מימושי אתמול | cron יומי 08:00, רק אם היו מימושים (`supplier_daily_redemption_summary:<supplier_id>:<YYYY-MM-DD>:<user_id>`) | owner+manager | לא | `supplier_ops_email` | לא | כן |
 
 - מפתחות אירועים: snake_case שטוח, לפי הכרעת האב [1.27].
-- העדפות חדשות על `user_notification_preferences` (042):
+- העדפות חדשות על `user_notification_preferences` (M-SP):
   `supplier_ops_email` (default true), `supplier_ops_whatsapp` (default false),
-  `supplier_sales_digest_email` (default true). ה-digest היומי של מכירות קופונים
-  נשלח ב-cron יומי 08:00 רק אם היו מכירות.
+  `supplier_sales_digest_email` (default true). סיכום המימושים היומי נשלח
+  ב-cron יומי 08:00 רק אם היו מימושים ביום הקודם.
 - ולידציית WhatsApp: כמו לקוחות, נשלח רק אם `profiles.phone` קיים; תבניות
   utility מאושרות Meta (031 2.2).
-- מימוש: 042 מוסיפה את הטריגרים (על טבלאות 027, מוגני `to_regclass` היכן
+- מימוש: M-SP מוסיפה את הטריגרים (על טבלאות 027, מוגני `to_regclass` היכן
   שנדרש) שכותבים ל-`notification_events`; הרחבת ה-resolver בתוך
   `fn_fanout_notification_events` (קובץ 031 בבעלות דומיין ההתראות; העריכה
   נרשמת אצלם, סעיף 9.2). עד העריכה: אין התראות ספק, הפורטל מתפקד בלעדיהן.
@@ -530,15 +628,33 @@ order_items/coupon_codes). אפס סכום מחושב ב-UI.
   זרימת סריקה עם מצלמה מדומה נכנסת ל-CI לפני שלב 5א.
 - **טאבלט קופה**: אותו UI רספונסיבי; אין build נפרד.
 
+### 6.3 שפת עיצוב, RTL ונגישות
+
+- פונט: Heebo בכל הפורטל. מסמך HTML וה-layout הם `dir="rtl"` ו-`lang="he"`.
+  כל spacing משתמש ב-logical properties כדי שלא לקבע left/right.
+- טוקנים מחייבים: צהוב Electro `#fed700` לפעולה ראשית, כחול `#0062bd`
+  לקישורים ומצבי מידע, אדום `#E4002B` לסכנה, כשל ומימוש שכבר בוצע.
+- header כולל לוגו ואייקונים בלבד, עם accessible names לקוראי מסך. אין
+  תוויות טקסט גלויות בכותרת ואין ניווט עמוס מעל מסך המצלמה.
+- הסורק mobile-first: פעולה ראשית באזור האגודל, תוצאה בצבע מסך מלא, טקסט
+  שאינו נשען על צבע בלבד, focus ברור, הודעות `aria-live` ו-fallback ידני.
+- טבלאות הזמנות וכספים הופכות לכרטיסים במובייל בלי להסתיר סכום, סטטוס או
+  פעולה. פורמט מטבע הוא `he-IL` ו-ILS; תאריכים מוצגים בשעון ישראל.
+- אין לקבוע ערכי pixel parity נוספים בלי extraction מהמקור החי. הטוקנים
+  שניתנו במשימה מחייבים; מידות שלא נמדדו אינן מומצאות במסמך זה.
+
 ---
 
-## 7. דלתא הסכימה: מיגרציה 042 (מוצעת, טרם נכתבת)
+## 7. דלתא הסכימה: M-SP (מוצעת, מספר טרם הוקצה)
 
-לפי משמעת R31: המספר הפנוי הבא במסמך האב הוא **042**. הקובץ
-`042_supplier_portal.sql` ייכתב על ידי בעלי `supabase/` (התיקייה קפואה כרגע)
+`M-SP` הוא מזהה תכנוני בלבד. שם הקובץ הסופי ייקבע אחרי פתרון התנגשות המספור
 ויירשם בטבלת 0.2 של האב באותו commit. הכול expand-only, idempotent, RLS מלא,
 audit לפי הדפוסים הקיימים. תלות: 027, 031 (טריגרי אירועים מוגני קיום), 037
 (הסכם/חשבוניות). תוכן:
+
+אזהרת מספור: R31 מציין ש-042 הוא הבא, אבל הטיוטה
+`admin-arch/ARCHITECTURE-ADMIN-OPS-V2.md` כבר מקצה אותו לעצמה. אין לכתוב
+אף מיגרציה לפני הקצאה קנונית מחדש ב-MASTER.
 
 ### 7.1 פרופיל עסק
 
@@ -571,8 +687,10 @@ CREATE FUNCTION public.is_supplier_manager(p_supplier_id uuid) -- owner או man
   RETURNS boolean ... SECURITY DEFINER;
 
 -- החלפת policies קיימים (DROP + CREATE) כך שקריאת
--- orders / order_items / user_addresses / payout_statements / payout_statement_lines
+-- orders / order_items / user_addresses / commission_ledger /
+-- payout_statements / payout_statement_lines
 -- דורשת is_supplier_manager() במקום is_supplier_member().
+-- products מוגבלת ל-supplier_id של member פעיל ול-SELECT בלבד.
 -- coupon_codes + coupon_scan_events + suppliers(SELECT) נשארים member.
 ```
 
@@ -580,7 +698,8 @@ CREATE FUNCTION public.is_supplier_manager(p_supplier_id uuid) -- owner או man
 
 ```sql
 CREATE VIEW public.v_supplier_pending_payout WITH (security_invoker = true) AS
--- (א) סכום supplier_due של פריטים delivered שאינם בשום דוח לא-מבוטל
+-- (א) סכום supplier_due של שורות commission_ledger earned
+--     שאינן כלולות בדוח לא-מבוטל
 -- (ב) סכום total_payout_ils של דוחות approved שטרם paid
 -- שורה פר ספק; RLS של הטבלאות התחתונות תוחמת לספק של הקורא
 ```
@@ -621,9 +740,10 @@ CREATE TABLE public.supplier_application_documents (
 - עמודות העדפה: `supplier_ops_email` (true), `supplier_ops_whatsapp` (false),
   `supplier_sales_digest_email` (true) על `user_notification_preferences`.
 - שתי פונקציות cron: `fn_enqueue_supplier_deal_expiry_digest()` (שבועי),
-  `fn_enqueue_supplier_cert_expiry_alerts()` (חודשי).
+  `fn_enqueue_supplier_cert_expiry_alerts()` (חודשי), וכן
+  `fn_enqueue_supplier_daily_redemption_summary()` (יומי).
 - הרחבת ה-resolver של `fn_fanout_notification_events` לאירועי ספק: **עריכה
-  בקובץ 031** (בבעלות דומיין ההתראות), לא ב-042.
+  בקובץ 031** (בבעלות דומיין ההתראות), לא ב-M-SP.
 
 ---
 
@@ -647,29 +767,30 @@ CREATE TABLE public.supplier_application_documents (
 ### 9.1 מה מסמך זה מוסיף בלי לסתור
 
 מפת עמודים, מכונת מצבי סריקה עם preview, נוסחי שגיאות, onboarding עם מסמכים,
-cadence דוחות, ייצוא חשבונאי, מטריצת התראות ספק, מפרט PWA, ותוכן 042.
+cadence דוחות, ייצוא חשבונאי, מטריצת התראות ספק, מפרט PWA, ותוכן M-SP.
 
-### 9.2 עדכונים שיירשמו בבעלים כשההקפאה על `docs/` תוסר
+### 9.2 עדכונים נדרשים במסמכים הקנוניים לפני מימוש
 
 | מסמך | עדכון | סיבה |
 |---|---|---|
-| `MASTER-ARCHITECTURE.md` | רישום מסמך זה בטבלת 0.1; הקצאת 042 בטבלת 0.2 (המספר הבא הופך 043); שורת R חדשה: "קופאי סורק בלבד; פורטל = PWA" | R31/R32 |
+| `MASTER-ARCHITECTURE.md` | רישום מסמך זה בטבלת 0.1; פתרון התנגשות 042 מול Admin Ops והקצאת מספר סופי; שורת R חדשה: "קופאי סורק בלבד; פורטל = PWA" | R31/R32 |
 | `ARCHITECTURE-SUPPLIER-REDEMPTION.md` | סעיף 2.5: קריאת orders/דוחות עוברת מ-member ל-manager+ (הידוק 7.2); סעיף 2.3: שלב מסמכים + needs_more_info בזרימת ה-onboarding | הכרעת "קופאי רק סורק" |
 | `ARCHITECTURE-API-CONTRACTS.md` | F4-F7: רמת auth מינימלית עולה מ-supplier:scanner ל-supplier:manager; נוספים חוזים: getCouponPreview, updateSupplierProfile, submitSupplierRequest, listApplicationDocuments | סעיפים 2.1, 1.4, 1.5 |
-| `ARCHITECTURE-NOTIFICATIONS-MARKETING.md` | הרחבת fn_fanout_notification_events לאירועי ספק + 3 עמודות העדפה + 2 crons | סעיף 5 |
+| `ARCHITECTURE-NOTIFICATIONS-MARKETING.md` | הרחבת fn_fanout_notification_events לאירועי ספק + 3 עמודות העדפה + 3 crons | סעיף 5 |
 | `ARCHITECTURE-LEGAL-COMPLIANCE.md` | אשרור: מסך הקבלה מציג את תזכורת החשבונית (1.6); חלון מחלוקת 30 יום נאכף ב-DB | סעיפים 2.4, 4.3 |
 | טיוטת `027_suppliers.sql` | הוספת `needs_more_info` ל-CREATE TYPE (מותר: הטיוטה טרם הוחלה) | סעיף 3.2.2 |
 
 ### 9.3 סדר בנייה (מיפוי לשלב 5א של האב)
 
 ```
-תנאים מוקדמים: 026, 027 (ערוכה), 029, 031, 035x2, 036, 037 חלות; SEC-01..06 סגורים
-5א.0  כתיבת 042 + עריכת fanout ב-031 + apply-twice ירוק -> החלה באישור
+תנאים מוקדמים: Cart/Checkout שסופק ויושב; 026, 027 (ערוכה), 029, 031, 035x2,
+036, 037 חלות; SEC-01..06 סגורים; מספר migration סופי הוקצה ב-MASTER
+5א.0  כתיבת migration הפורטל + עריכת fanout ב-031 + apply-twice ירוק -> החלה באישור
 5א.1  onboarding: /supplier/onboarding + מסמכים + תור אדמין + שער הסכם (LEG-12)
 5א.2  שלד פורטל: layout + requireSupplierMember + דשבורד (views 034 + v_supplier_pending_payout)
 5א.3  מסך סריקה PWA: מצלמה, preview, confirm, receipt, תור offline, e2e מצלמה מדומה
 5א.4  הזמנות ומשלוחים (F4/F5) + קופונים
-5א.5  דוחות: מסך דוח + drill-down + CSV/PDF + מחלוקות; cron יצירה חודשי
+5א.5  דוחות: מסך דוח + drill-down + CSV/PDF + מחלוקות; cron יצירה שבועי
 5א.6  פרופיל עסק + צוות + התראות ספק (אחרי עריכת 031)
 5א.7  reconciliation באדמין + cron expire_coupons (027 סעיף 7) : נשאר כמתוכנן
 ```
@@ -685,9 +806,36 @@ cadence דוחות, ייצוא חשבונאי, מטריצת התראות ספק,
 | SP3 | offline: תור redeem_intents בלבד; בלי cache סכומים; אין מסירת סחורה לפני אישור אונליין (D6/D7 בתוקף) |
 | SP4 | נוסחי שגיאה עבריים קבועים פר מצב (טבלת 2.6); ירוק/אדום מסך מלא + רטט |
 | SP5 | onboarding: בקשה -> מסמכים (רישיון, ניהול ספרים, ניכוי במקור) -> אדמין -> חתימת הסכם דיגיטלית (חוסמת אישור, LEG-12) -> אישור -> צ'קליסט בנק/פרופיל |
-| SP6 | דוחות: cron ב-3 לחודש על החודש הקודם; תשלום שוטף+payout_terms_days; מחלוקת תוך 30 יום נאכפת ב-DB; אישורי מס בתוקף = תנאי לתשלום |
+| SP6 | דוחות: cron שבועי ביום שני על השבוע שהסתיים; payout_due נגזר מ-commission_ledger בלבד; דוח חודשי הוא projection להורדה; מחלוקת תוך 30 יום נאכפת ב-DB |
 | SP7 | ייצוא: CSV פר-שורה עם פירוק מע"מ מ-snapshot (שיעור חוקי במועד החיוב, עיגול אגורות פעם אחת) + PDF רשמי + חשבונית עמלה ב-supplier-docs |
-| SP8 | התראות ספק: תפעוליות-חוזיות על צנרת 031, נמענים לפי תפקיד, כספיות תמיד במייל, digest שבועי לדילים פגים עם מימוש נמוך |
+| SP8 | התראות ספק: מייל על הזמנה פיזית חדשה, סיכום מימושים יומי, כספיות תמיד במייל ו-digest שבועי לדילים פגים; נמענים נקבעים לפי membership |
 | SP9 | פלטפורמה: PWA על ה-web עכשיו; ורטיקל supplier נייטיב ב-RN רק לפי טריגרים מדודים (כשל מצלמה iOS > 3%, או 50+ ספקים פעילים, או צורך push) |
-| SP10 | פרופיל עסק: שדות על suppliers (042), עריכת owner דרך fn מוגבלת-שדות; Waze נגזר מ-lat/lng; בקשות קטלוג דרך supplier_requests, הקטלוג נכתב רק בידי אדמין |
-| SP11 | כל דלתא הסכימה מרוכזת ב-042 (expand-only) + עריכה אחת ב-031 (fanout) + עריכת טיוטת 027 (needs_more_info); שום שינוי במנגנון כסף קיים |
+| SP10 | פרופיל עסק: שדות על suppliers (M-SP), עריכת owner דרך fn מוגבלת-שדות; Waze נגזר מ-lat/lng; בקשות קטלוג דרך supplier_requests, הקטלוג נכתב רק בידי אדמין |
+| SP11 | דלתת הסכימה תרוכז במיגרציה אחת שמספרה טרם הוקצה, עם עריכה ב-031 ל-fanout וב-027 ל-needs_more_info; חוזה הכסף לא ימומש עד יישוב commission_ledger מול payout_statement_lines |
+
+---
+
+## 11. שאלות פתוחות להכרעה לפני מימוש
+
+1. **איפה מסמך Cart/Checkout?** יש לספק את
+   `ARCHITECTURE-CART-CHECKOUT.md`, בעיקר סעיפים 3 ו-6, כדי לנעול שמות שדות,
+   סטטוסים, idempotency keys ורגעי lifecycle. הוא אינו קיים כרגע בריפו.
+2. **10/90 קבוע או מחיר קופון חופשי?** המשימה אומרת 10% באתר ו-90% בעסק;
+   MASTER 1.40 אומר ש-`platform_price` חופשי פר דיל. איזה חוזה גובר?
+3. **Ledger מול 027:** האם `commission_ledger` מחליף את מנגנון
+   `payout_statement_lines` של 027 כמקור אמת, או שהוא שכבת facts שממנה
+   נבנות אותן שורות? נדרשת תוכנית migration ו-backfill אחת.
+4. **רגע cashback בפיזי:** האם "shipment confirmed" הוא מעבר הספק ל-shipped
+   עם tracking, אישור webhook של המוביל, או delivered? בחירה מוקדמת מדי
+   מאפשרת לספק לייצר cashback לפני מסירה; בחירה מאוחרת משנה את ה-UX ללקוח.
+5. **יום ותנאי payout שבועי:** באיזה יום מתבצעת ההעברה, מהו cutoff, ומה
+   קורה בחג/כשל reconciliation? המסמך קובע יצירת דוח ביום שני אך לא ממציא
+   מועד בנקאי שלא הוגדר.
+6. **שם התפקיד הגס:** האם משנים את `profiles.role='vendor'` ל-`supplier`,
+   או משאירים vendor לתאימות ורק ה-UI נקרא "ספק"? RLS אינה תלויה בשם זה.
+7. **התנגשות מיגרציה 042:** גם Admin Ops וגם Supplier Portal דורשים 042.
+   מי מקבל 042 ומי עובר ל-043? יש לעדכן MASTER ואת שני המסמכים יחד.
+8. **PII במסך האישור:** האם קופאי רשאי לראות שם לקוח מלא, שם פרטי בלבד,
+   או ארבע ספרות מזהה? ברירת המחדל המומלצת היא המינימום הנדרש למניעת הונאה.
+9. **פורמט דוח חודשי:** האם CSV ו-PDF מספיקים ל-v1, או שנדרש פורמט ייבוא
+   ייעודי לתוכנת הנהלת החשבונות של הספק?

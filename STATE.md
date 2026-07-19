@@ -1,9 +1,20 @@
 # KenyonExpress State
 
 ## Current Phase
-**Phase 5 - Homepage 1:1 (סגור)**. branch `phase5/homepage`. מקור יחיד: `refs/ke_live_singlefile.html`.
+**Supplier Portal architecture, design only (הושלם)**. branch `phase5/homepage`.
 
 ## Last Completed
+Session 2026-07-19 - תכנון מלא של פורטל הספקים:
+- `ARCHITECTURE-SUPPLIER-PORTAL.md` הועבר מהתיקייה הזמנית לשורש והורחב:
+  Auth ו-staff memberships, RLS פר ספק, סורק QR כ-PWA עם offline replay
+  והגנת double-scan, תור הזמנות פיזיות, feed מימושים, counters יומיים,
+  Finance שבועי מעל `commission_ledger`, דוח חודשי להורדה, products read-only
+  עם `platform_percent` ו-`cashback_percent`, מטריצת התראות, מפת
+  `src/app/(supplier)/`, ‏Heebo/RTL וטוקני Electro.
+- נוספו 9 שאלות פתוחות. אין קוד, אין migration ואין שינוי DB.
+- `ARCHITECTURE-CART-CHECKOUT.md` אינו קיים ולכן חוזי ledger/lifecycle
+  מסומנים ל-reconciliation לפני מימוש. קיימת גם התנגשות 042 מול Admin Ops.
+
 Session 2026-07-17 (ערב) - MASTER v3: איחוד סופי של כל 16 הדומיינים לתיקיית docs/ אחת:
 - **`docs/MASTER-ARCHITECTURE.md` הוא כעת v3 (מהדורת 2026-07-17 ערב)**: ביקורת סתירות 1.1-1.57 (כולן DECIDED, אפס אופציות פתוחות); היררכיית סמכות: אבטחה > משפט > מסמך האב > דומיין; תוכנית מיגרציות סופית 026-039 עם עריכות פר קובץ (כולל WO-1: ‏enum ‏agent_key בן 6 ערכים ב-028); **רישום קריטיים מאוחד בסעיף 3: ‏SEC-01..17 (3.1) + ‏LEG-01..14 (3.2) עם בעלים, מיגרציה וסטטוס**; חוסמי שיגור מאוחדים (3.3); ‏ERD מעודכן (כולל 037: ‏cancellation_requests, ‏invoices, ‏legal_document_versions, ‏wallet expiry; ‏038: אינדקסים + ‏related_products; ‏039: ‏enrichment_suggestions, ‏agent_reports); סדר בנייה מהמצב הנוכחי עד שיגור עם מיפוי מפורש של פקודות העבודה WO-1..6 לשלבים; טבלת ‏rate limits עם ‏cancellation_request; רישום R1-R38.
 - **dedup**: נמחקו 4 כפילויות (ANALYTICS-BI-, TESTING-CICD-, WP-DATA-MIGRATION-, COMMERCE-ARCHITECTURE.md) אחרי מיזוג מלא לקבצים הקנוניים; כל docs/ עבר לקונבנציה `ARCHITECTURE-<TOPIC>.md` וכל ההפניות עודכנו (כולל בקבצי המיגרציות).
@@ -28,10 +39,15 @@ Session 2026-07-17 (ערב) - MASTER v3: איחוד סופי של כל 16 הדו
 nothing
 
 ## Blocking Issues
-none חוסם. הערות קבועות: היסטוריית המיגרציות במרוחק לא מסונכרנת; אסור `supabase db push` (ייכשל על "already exists"), החלה רק דרך MCP `apply_migration`. Docker מקומי לא רץ (רלוונטי רק ל-harness המקומי של D6).
+`ARCHITECTURE-CART-CHECKOUT.md` חסר, ולכן אי אפשר לנעול את סעיפים 3 ו-6
+של חוזי ה-ledger וה-lifecycle. בנוסף, מיגרציה 042 מוקצית גם ל-Admin Ops וגם
+ל-Supplier Portal. הערות קבועות: היסטוריית המיגרציות במרוחק לא מסונכרנת;
+אסור `supabase db push` (ייכשל על "already exists"), החלה רק דרך MCP
+`apply_migration`. Docker מקומי לא רץ (רלוונטי רק ל-harness המקומי של D6).
 
 ## Next Task
-שלב 0 של סדר הבנייה ב-MASTER v3: צעד 0.1 בוצע (24.72%). הבא: צעד 0.2 - החלת `035_security_hardening.sql` על ה-DB החי דרך Supabase MCP apply_migration (**רק באישור מפורש**), ואז 0.3 בדיקות קדם 2.10, ‏0.4 כתיבת 037 המשפטית, ‏0.5 ביצועים P0, ‏0.6 החלת ה-seed הממתין (באישור).
+לספק את `ARCHITECTURE-CART-CHECKOUT.md` ולהכריע את שאלות סעיף 11 במסמך
+הפורטל, בעיקר 10/90, מבנה `commission_ledger`, רגע cashback בפיזי ומספור 042.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
@@ -236,3 +252,9 @@ commit: `feat: homepage 1:1 match with live source`
 
 ### 2026-06-09 — Product catalog + hero 5 slides + foundation
 - 31 מוצרים ב-DB, `scripts/compare.mjs` הוקם
+
+### 2026-07-19 — Supplier Portal architecture complete
+- נוצר מסמך design-only מלא בשורש: `ARCHITECTURE-SUPPLIER-PORTAL.md`
+- כיסוי: Auth/RLS, staff, scanner PWA/offline, orders, weekly finance,
+  product visibility, notifications, route map, RTL/Electro ו-open questions
+- לא נכתב קוד, לא נכתבה מיגרציה ולא שונה DB
