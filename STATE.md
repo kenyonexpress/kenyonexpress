@@ -1,29 +1,26 @@
 # KenyonExpress State
 
 ## Current Phase
-**Testing + CI/CD architecture v3 (design only)**. branch `phase5/homepage`.
+**Checkout + Payment Engine architecture (design only)**. branch `phase5/homepage`.
 
 ## Last Completed
-Session 2026-07-20 (המשך) - `docs/ARCHITECTURE-TESTING-CICD.md` v3:
-- סעיף 2.7: מיפוי מימוש `money.ts`, `commission.ts`, `042_commerce_core.sql`
-  מול בדיקות נדרשות.
-- סעיף 9.0: DoD commerce core (2/6 סימון ירוק).
-- עדכון עובדות מוצא: 36 tests ירוקים, 042 untracked.
-- נוסף מצביע שורש `ARCHITECTURE-TESTING-CICD.md`.
+Session 2026-07-20 - `ARCHITECTURE-CHECKOUT-PAYMENT.md` (שורש הפרויקט, design only):
+- מכונת מצבים מלאה: cart → identity → address → Cardcom → webhook → finalize → fulfillment.
+- Guest flow, Cardcom Low Profile, `checkout_finalize` idempotent, refunds, payment_attempts, error recovery, security.
+- ER + sequence diagrams + 10 open questions. מרחיב COMMERCE/API-CONTRACTS; `ARCHITECTURE-CART-CHECKOUT.md` עדיין חסר.
 
 ## In Progress
 nothing
 
 ## Blocking Issues
-`ARCHITECTURE-CART-CHECKOUT.md` חסר, ולכן אי אפשר לנעול את סעיפים 3 ו-6
-של חוזי ה-ledger וה-lifecycle. בנוסף, מיגרציה 042 מוקצית גם ל-Admin Ops וגם
-ל-Supplier Portal. הערות קבועות: היסטוריית המיגרציות במרוחק לא מסונכרנת;
-אסור `supabase db push` (ייכשל על "already exists"), החלה רק דרך MCP
-`apply_migration`. Docker מקומי לא רץ (רלוונטי רק ל-harness המקומי של D6).
+`ARCHITECTURE-CART-CHECKOUT.md` עדיין חסר (handoff עגלה מצוין ב-Q2 של מסמך התשלומים).
+מיגרציה 042 מוקצית גם ל-Admin Ops וגם ל-Supplier Portal. היסטוריית המיגרציות
+במרוחק לא מסונכרנת; אסור `supabase db push`; החלה רק דרך MCP `apply_migration`.
+Docker מקומי לא רץ (רלוונטי ל-harness D6).
 
 ## Next Task
-יישום Phase 0 של CI: `ci.yml` עם static + unit + build (T1), לפני קוד תשלומים נוסף.
-או: המשך lane דף קטגוריה / `ARCHITECTURE-CART-CHECKOUT.md`.
+יישום Phase 0 של CI: `ci.yml` עם static + unit + build (T1), לפני קוד תשלומים.
+או: כתיבת `ARCHITECTURE-CART-CHECKOUT.md` / סגירת Q1-Q10 במסמך התשלומים.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
@@ -234,3 +231,9 @@ commit: `feat: homepage 1:1 match with live source`
 - כיסוי: Auth/RLS, staff, scanner PWA/offline, orders, weekly finance,
   product visibility, notifications, route map, RTL/Electro ו-open questions
 - לא נכתב קוד, לא נכתבה מיגרציה ולא שונה DB
+
+### 2026-07-20 - Checkout + Payment Engine architecture
+- נוצר `ARCHITECTURE-CHECKOUT-PAYMENT.md` (design only, שורש הפרויקט)
+- pipeline מלא: identity gate, Cardcom Low Profile, webhook HMAC,
+  `checkout_finalize`, coupon vs physical fulfillment, refunds, payment_attempts
+- אין קוד יישום; מרחיב COMMERCE / API-CONTRACTS / SECURITY
