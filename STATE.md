@@ -1,9 +1,15 @@
 # KenyonExpress State
 
 ## Current Phase
-**AI Agents Layer architecture (design only)**. branch `phase5/homepage`.
+**Analytics + BI architecture v3 (design only)**. branch `phase5/homepage`.
 
 ## Last Completed
+Session 2026-07-20 - `ARCHITECTURE-ANALYTICS-BI.md` (שורש הפרויקט, design only, v3):
+- מקור האמת המאוחד החדש לדומיין האנליטיקה. בולע את `docs/ARCHITECTURE-ANALYTICS-BI.md` (v2, קיבל הודעת האחדה בראשו) ומיושר מול טיוטות 033+034 (לא הוחלו).
+- תוספות v3: שדה `source_app` (shop/delivery/taxi) לאירועים ול-rollup (מוכנות superapp); session stitching אורח-למחובר בשלוש שכבות (עוגיית anonymous_id יציבה + טבלת `analytics_identity_links` חדשה + שאילתות stitched אד-הוק בלבד); אירועי client חדשים `checkout_step` ו-`web_vital`; דייג'סט מייל יומי 08:00 (`/api/cron/daily-digest`, ממוזג עם SEV3 של OBS-15, שלב A ב-Resend); `v_repeat_purchase_monthly` + `v_web_vitals_daily` + הרחבת `v_funnel_daily`.
+- הכרעות: דשבורד אדמין מ-views בזמן אמת (לא matview שעתי; שער 200ms p95 למעבר); Vercel Speed Insights כן / Vercel Web Analytics לא; web_vital בדגימת 25% תחת gate ההסכמה; retention raw 13 חודשים (12 + חפיפת YoY); שאילתות איטיות דרך pg_stat_statements חודשי עם ספים 200ms/100ms.
+- הדלתא נכנסת לטיוטות 033/034 עצמן לפני החלה (סעיף 11 במסמך), לא מיגרציה חדשה. לא נכתב קוד, לא הוחלה מיגרציה. 6 שאלות פתוחות.
+
 Session 2026-07-20 - `ARCHITECTURE-AI-AGENTS.md` (שורש הפרויקט, design only):
 - תכנון מאוחד ל-5 סוכני המשימה: support, supplier_ops (onboarding), catalog_enrichment (content), fraud_watch, pricing_analyst. ממופה ל-agent_key הקנוני של 028 + docs V1/V2.
 - נשען על התשתית הקיימת (028, V1, V2 runtime) בלי לשכתב; גובר על V2 רק בשתי תוספות המשימה: יומן שיחת תמיכה (`support_conversations`/`support_messages`) וגרידת מתחרים (`competitor_sources`/`competitor_price_observations`) עם גבולות חוקיים (robots.txt, facts-only, ToS, ללא PII).
