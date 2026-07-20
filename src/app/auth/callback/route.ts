@@ -1,3 +1,4 @@
+import { GUEST_SESSION_COOKIE, parseGuestSessionToken } from '@/lib/cart/guest-session'
 import { createClient } from '@/lib/supabase/server'
 import { mergeGuestCart } from '@/server/actions/cart'
 import { cookies } from 'next/headers'
@@ -18,10 +19,10 @@ export async function GET(request: NextRequest) {
 
     if (!error && session) {
       const cookieStore = await cookies()
-      const sessionId = cookieStore.get('ke_session_id')?.value
+      const sessionId = parseGuestSessionToken(cookieStore.get(GUEST_SESSION_COOKIE)?.value)
       if (sessionId) {
         await mergeGuestCart(session.user.id, sessionId)
-        cookieStore.delete('ke_session_id')
+        cookieStore.delete(GUEST_SESSION_COOKIE)
       }
       return NextResponse.redirect(new URL(safeNext, origin))
     }

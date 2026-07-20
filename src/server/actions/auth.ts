@@ -1,5 +1,6 @@
 'use server'
 
+import { GUEST_SESSION_COOKIE, getGuestSessionId } from '@/lib/cart/guest-session'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import {
@@ -9,6 +10,8 @@ import {
   passwordResetSchema,
   signupSchema,
 } from '@/lib/validations/auth'
+import { mergeGuestCart } from '@/server/actions/cart'
+import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 export type AuthState = { error: string } | { success: string } | null
@@ -68,8 +71,15 @@ export async function signInWithEmail(_: AuthState, formData: FormData): Promise
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
 
   const supabase = await createClient()
-  const { error } = await supabase.auth.signInWithPassword(parsed.data)
+  const { data: signInData, error } = await supabase.auth.signInWithPassword(parsed.data)
   if (error) return { error: toHebrew(error.message) }
+
+  const sessionId = await getGuestSessionId()
+  if (signInData.user && sessionId) {
+    await mergeGuestCart(signInData.user.id, sessionId)
+    const cookieStore = await cookies()
+    cookieStore.delete(GUEST_SESSION_COOKIE)
+  }
 
   redirect(safeNext(formData.get('next')))
 }
