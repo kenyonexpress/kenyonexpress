@@ -1,39 +1,16 @@
 # KenyonExpress State
 
 ## Current Phase
-**Supplier Portal architecture, design only (הושלם)**. branch `phase5/homepage`.
+**Testing + CI/CD architecture (design only, v2 refresh)**. branch `phase5/homepage`.
 
 ## Last Completed
-Session 2026-07-19 - תכנון מלא של פורטל הספקים:
-- `ARCHITECTURE-SUPPLIER-PORTAL.md` הועבר מהתיקייה הזמנית לשורש והורחב:
-  Auth ו-staff memberships, RLS פר ספק, סורק QR כ-PWA עם offline replay
-  והגנת double-scan, תור הזמנות פיזיות, feed מימושים, counters יומיים,
-  Finance שבועי מעל `commission_ledger`, דוח חודשי להורדה, products read-only
-  עם `platform_percent` ו-`cashback_percent`, מטריצת התראות, מפת
-  `src/app/(supplier)/`, ‏Heebo/RTL וטוקני Electro.
-- נוספו 9 שאלות פתוחות. אין קוד, אין migration ואין שינוי DB.
-- `ARCHITECTURE-CART-CHECKOUT.md` אינו קיים ולכן חוזי ledger/lifecycle
-  מסומנים ל-reconciliation לפני מימוש. קיימת גם התנגשות 042 מול Admin Ops.
-
-Session 2026-07-17 (ערב) - MASTER v3: איחוד סופי של כל 16 הדומיינים לתיקיית docs/ אחת:
-- **`docs/MASTER-ARCHITECTURE.md` הוא כעת v3 (מהדורת 2026-07-17 ערב)**: ביקורת סתירות 1.1-1.57 (כולן DECIDED, אפס אופציות פתוחות); היררכיית סמכות: אבטחה > משפט > מסמך האב > דומיין; תוכנית מיגרציות סופית 026-039 עם עריכות פר קובץ (כולל WO-1: ‏enum ‏agent_key בן 6 ערכים ב-028); **רישום קריטיים מאוחד בסעיף 3: ‏SEC-01..17 (3.1) + ‏LEG-01..14 (3.2) עם בעלים, מיגרציה וסטטוס**; חוסמי שיגור מאוחדים (3.3); ‏ERD מעודכן (כולל 037: ‏cancellation_requests, ‏invoices, ‏legal_document_versions, ‏wallet expiry; ‏038: אינדקסים + ‏related_products; ‏039: ‏enrichment_suggestions, ‏agent_reports); סדר בנייה מהמצב הנוכחי עד שיגור עם מיפוי מפורש של פקודות העבודה WO-1..6 לשלבים; טבלת ‏rate limits עם ‏cancellation_request; רישום R1-R38.
-- **dedup**: נמחקו 4 כפילויות (ANALYTICS-BI-, TESTING-CICD-, WP-DATA-MIGRATION-, COMMERCE-ARCHITECTURE.md) אחרי מיזוג מלא לקבצים הקנוניים; כל docs/ עבר לקונבנציה `ARCHITECTURE-<TOPIC>.md` וכל ההפניות עודכנו (כולל בקבצי המיגרציות).
-- **מספור מחדש לרצף רציף 026-035**: `035_analytics_bi.sql` -> `034_analytics_bi.sql`; `036_security_hardening.sql` -> `035_security_hardening.sql`; איחוד ה-vendors המתוכנן = `036_vendors_unification.sql` (טרם נכתב). כל ההפניות בקבצי SQL ובמסמכים עודכנו. אזכורי 035/036 הישנים ברשומות ההיסטוריה למטה מתייחסים למספור הישן.
-- **נקלטו מסמכי API ומובייל**: `docs/ARCHITECTURE-API-CONTRACTS.md` (חוזי API; R33) ו-`docs/ARCHITECTURE-MOBILE-SUPERAPP.md` (RN+Expo, ‏Turborepo M1-M14; R27/R34). מסמך ה-PWA הישן נבלע במלואו בסעיף 11 של מסמך המובייל ונמחק, בלי לאבד את C1-C4/D3-D10.
-- **סריקת סגירה (סוף הסשן)**: אומת שאין הפניות פעילות שבורות לשמות המסמכים הישנים או למספור הישן בכל docs/ + supabase/ + src/ + scripts/; כותרת `033_analytics.sql` מפנה ל-036; עץ M1 אינו כולל עוד תיקייה זמנית.
-- **במקביל (lane דף הבית, commit ddefe96)**: אומת דף המוצר מול האתר החי (24.72% < 30%, שלב 0.1 של סדר הבנייה); גריד דף הבית הורחב ל-32 המוצרים המדויקים מה-singlefile (0 חוסרים / 0 עודפים / 0 שגיאות סדר לפי `scripts/sync-live-products.mjs`); דף הבית 6.69%. seed ל-8 מוצרים החסרים ב-Supabase ממתין לא-מוחל ב-`supabase/seed-fixes/PENDING-live-products.sql`.
-- **אינטגרציית שלושת מסמכי ה-lanes הושלמה**: `ARCHITECTURE-LEGAL-COMPLIANCE.md`,
-  `ARCHITECTURE-PERFORMANCE.md` ו-`ARCHITECTURE-AI-AGENTS-RUNTIME.md` הועברו
-  מהתיקיות הזמניות אל `docs/`; התיקיות הזמניות הוסרו; התנגשויות המספור הוכרעו
-  ל-037 משפטי, 038 ביצועים, 039 סוכנים. MASTER עודכן ב-1.51-1.57/R35-R38,
-  ב-ERD, בסדר הבנייה ובשער השיגור. מסמכי הדומיין קיבלו עוגני סמכות; הכרעת
-  breakage הישנה ב-ANALYTICS/SUPPLIER/COMMERCE הוחלפה בזיכוי `refund_credit`
-  ל-5 שנים ו-cashback ל-24 חודשים. אף מיגרציה חדשה לא נכתבה או הוחלה.
-- **הערת ריצה מקבילה**: חלק מצעדי האיחוד (העברת שלושת מסמכי ה-lanes ל-docs/, הקצאת 037-039, יישור מסמכי הדומיין, commit ‏6466a8b) בוצעו בידי סוכן Cursor שרץ במקביל באותו ענף; הסשן הזה אימת אותם, השלים את מיזוג צמד המובייל (סעיף 11), את רישום ה-LEG, את מיפוי ה-WO ואת עדכון v3, בלי כפילויות.
-- **נקלט מסמך observability חדש**: ‏`docs/ARCHITECTURE-OBSERVABILITY.md` ‏(OBS-01..22: ‏Sentry errors-only, לוגר יחיד + ‏scrubber, ‏Better Stack ‏uptime/heartbeats/סטטוס/on-call, מנוע התראות על ‏v_money_alarms, ‏8 ‏runbooks). הופיע בתיקייה צדדית ‏obs-arch/ תוך כדי הסשן, הועבר ל-docs/ לפי הכלל, ונרשם במסמך האב; מיגרציית ‏`040_observability.sql` שמורה לו (המספר הפנוי הבא: 041).
-- **נקלט מסמך צמיחה חדש**: ‏`docs/ARCHITECTURE-GROWTH-SEO.md` ‏(G1-G18: שימור SEO ב-cutover, ‏referrals ‏20/10 ש"ח, ‏cashback ‏10%/1% עם תקרת 25% מה-fee, גדר תקציב 12%, ‏CRM segments + 6 מסעות, ‏CAPI/ROAS). הופיע ב-`growth-arch/` תוך כדי הסשן והועבר ל-docs/ לפי הכלל; המיגרציה שלו תוקנה מ-040 (נתפס ע"י observability) ל-**`041_growth.sql`** בכל המסמך; ‏MASTER עודכן (0.1/0.2, ‏ERD, ‏R31: הבא 042, ‏R40, שורת ‏rate limit ‏`referral_share`, צעד 5.15). נתיבי ה-baseline הוסבו ל-`docs/growth/`.
-- **סגירת שורש הריפו (סוף הסשן)**: ‏`ARCHITECTURE.md` בשורש (גרסת מאי 2026: ‏Turborepo/Drizzle/tRPC/Cloudflare/Capacitor, הכריז על עצמו מקור אמת) הוחלף במצביע אל ‏`docs/MASTER-ARCHITECTURE.md`; ‏`STATE_NEXT.md` המיושן נמחק (הציע למחוק את ‏`cursor/add-supabase-3c830` בניגוד להכרעה 1.50). ‏MASTER קיבל ‏R39 ‏(observability) + עיגון ‏OBS בקדם של שלב 3.0 ובפריט 4 של שער השיגור.
-- לא הוחלה שום מיגרציה, לא שונה קוד רץ.
+Session 2026-07-20 - `docs/ARCHITECTURE-TESTING-CICD.md` v2:
+- עדכון עובדות מוצא (מיגרציות עד 042, `src/lib/commerce/`, משפחת compare scripts).
+- הכרעות D23-D27: Conventional Commits, coverage floors פר מודול, שער prod ידני,
+  axe חוסם ב-PR, webhook replay לילי.
+- סעיפים חדשים: 2.6 coverage floors, 4.7 commit conventions, CD עם Preview אוטומטי
+  + Production ידני, הרחבת Cardcom replay.
+- 8 שאלות פתוחות מעודכנות. אין קוד, אין workflows, אין מיגרציות.
 
 ## In Progress
 nothing
@@ -46,8 +23,8 @@ nothing
 `apply_migration`. Docker מקומי לא רץ (רלוונטי רק ל-harness המקומי של D6).
 
 ## Next Task
-לספק את `ARCHITECTURE-CART-CHECKOUT.md` ולהכריע את שאלות סעיף 11 במסמך
-הפורטל, בעיקר 10/90, מבנה `commission_ledger`, רגע cashback בפיזי ומספור 042.
+יישום Phase 0 של CI: `ci.yml` עם static + unit + build (T1), לפני קוד תשלומים נוסף.
+או: המשך lane דף קטגוריה / `ARCHITECTURE-CART-CHECKOUT.md`.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress

@@ -1,6 +1,6 @@
 # ארכיטקטורת בדיקות ו-CI/CD - KenyonExpress (מסמך מחייב)
 
-סטטוס: FINAL DESIGN. תאריך: 2026-07-17. ענף: `phase5/homepage`.
+סטטוס: FINAL DESIGN (v2). תאריך: 2026-07-20. ענף: `phase5/homepage`.
 
 מסמך זה הוא מקור האמת היחיד לאסטרטגיית הבדיקות ול-CI/CD, מיושר למודל העסקי המעודכן
 ב-`BUSINESS-MODEL.md` וב-`ARCHITECTURE-COMMERCE.md` (2026-07-17, מקור אמת יחיד).
@@ -23,16 +23,18 @@
 
 | רכיב | מצב בפועל |
 |---|---|
-| CI | אין `.github/` בכלל. רק husky + lint-staged |
-| בדיקות | 2 unit (`src/__tests__/`), 2 E2E (`e2e/`), אפס כיסוי כסף |
-| vitest | 3.x, jsdom בלבד, include `src/**/*.test.ts(x)` |
-| Playwright | 1.50, chromium בלבד, `locale he-IL`, webServer `pnpm dev` |
+| CI | אין `.github/workflows` בכלל. רק husky pre-commit + `.lintstagedrc.json` (biome על staged) |
+| בדיקות | 4 unit (`src/__tests__/`, `src/lib/commerce/*.test.ts`), 2 E2E (`e2e/`), כיסוי כסף התחיל (`money.ts`, `commission.ts`) |
+| vitest | 3.x, jsdom בלבד (עדיין ללא projects), include `src/**/*.test.ts(x)` |
+| Playwright | 1.50, chromium בלבד, `locale he-IL`, webServer `pnpm dev` (יעבור ל-`build && start` ב-CI) |
 | קוד תשלומים | לא קיים. אין `src/server/actions/payments/`, אין webhook route, אין Cardcom client |
-| מיגרציות | 001-025 מוחלות, 026-033 טיוטות. drift ידוע מול dev |
+| מודול כסף | `src/lib/commerce/` (אגורות, פיצול עמלה, golden cases). יעד ארוך טווח: `src/lib/money/` לפי D2 |
+| מיגרציות | 001-025 מוחלות על dev; 026-035 + 042 טיוטות ב-git; 036-041 שמורים במסמך האב. drift ידוע מול מרוחק |
 | Supabase מקומי | `config.toml` מלא (api 54321, db 54322, shadow 54320, Postgres 17, `db.seed` מופעל) אבל `supabase/seed.sql` **לא קיים** |
-| ויזואלי | `scripts/compare.mjs` (שני צילומי PNG ב-1440px) + `scripts/diff-bands.mjs` (diff בפועל, TOL=24 לערוץ, פסים של 100px). תשתית טובה כבסיס, אבל ידנית ולא רצה ב-CI |
-| כלים | pnpm (lockfile), biome 1.9, tsc strict + `noUncheckedIndexedAccess`, Next 16.2.4, React 19.2 |
-| ענף יעד ל-PR | `cursor/add-supabase-3c830` (יוחלף ב-main בקאטאובר) |
+| ויזואלי | משפחת `scripts/compare-*.mjs` (hero, product, product-live, exact) + `diff-bands.mjs` (TOL=24, פסים 100px) + `watch-compare.mjs`. ידני בלבד, לא ב-CI |
+| כלים | pnpm 11, biome 1.9, tsc strict + `noUncheckedIndexedAccess`, Next 16.2.4, React 19.2 |
+| ענף עבודה | `phase5/homepage` (push מיידי אחרי commit). ענף יעד ל-PR: `cursor/add-supabase-3c830` (יוחלף ל-main בקאטאובר) |
+| commitlint | **לא מוגדר.** husky מריץ lint-staged בלבד, בלי hook ל-commit-msg |
 
 ---
 
@@ -66,9 +68,19 @@
 | D17 | **מנוי (subscription)**: מפתח ה-idempotency של חיוב מחזורי הוא `(subscription_id, cycle_number)`. חיוב שנכשל: 3 ניסיונות בגיבוי אקספוננציאלי על פני 7 ימים, אחר כך `paused` + התראה. ביטול באמצע מחזור: המחזור הנוכחי נשאר בתוקף, אין חיוב הבא, אין החזר יחסי |
 | D18 | **אין טבלאות בדיקה במיגרציות פרודקשן.** כל תמיכת בדיקות חיה ב-`supabase/seed.sql` (נטען רק מקומית/CI) וב-`tests/sql/90_test_support.sql` (סכמת `test_support`, מוחלת רק ב-CI אחרי המיגרציות, לעולם לא דרך MCP למרוחק). לכן **לא נוצר קובץ מיגרציה חדש** |
 | D19 | **Node 22 LTS** ננעל ב-`.nvmrc` + `engines` + כל workflow. pnpm דרך `packageManager` הקיים |
-| D20 | **קידום לפרודקשן הוא git-based בלבד**: merge לענף היעד אחרי CI ירוק הוא הטריגר היחיד ל-deploy פרודקשן. אין `vercel --prod` ידני. rollback אפליקציה: Vercel Instant Rollback. rollback DB: forward-only, מיגרציה מפצה, לעולם לא down |
+| D20 | **קידום לפרודקשן הוא git-based בלבד**: merge לענף היעד אחרי CI ירוק מפעיל build פרודקשן, אבל פרסום לדומיין החי דורש אישור ידני (D25). אין `vercel --prod` ידני. rollback אפליקציה: Vercel Instant Rollback. rollback DB: forward-only, מיגרציה מפצה, לעולם לא down |
 | D21 | **סדר deploy מחייב**: מיגרציה תמיד לפני קוד, והסכמה חייבת להיות תואמת-אחורה לקוד הרץ (expand/contract). ה-CI אוכף זאת בכך שה-E2E רץ על הקוד הישן מול הסכמה החדשה בכל PR שנוגע במיגרציות |
 | D22 | **kill switch לתשלומים**: `CHECKOUT_ENABLED` (server-only, ברירת מחדל true). `beginCheckout` ו-webhook ההנפקה בודקים אותו. בדיקת unit מקבעת שהכיבוי עוצר checkout אבל לא עוצר עיבוד webhooks של עסקאות שכבר שולמו |
+
+### 1.3 הכרעות v2 (D23-D27, 2026-07-20)
+
+| # | הכרעה |
+|---|---|
+| D23 | **Conventional Commits** בפורמט `<type>(<scope>): <subject>`. אכיפה: `@commitlint/cli` + hook `commit-msg` ב-husky, ו-job `commitlint` ב-CI על הודעות ה-commits בטווח ה-PR. סוגים מותרים: `feat`, `fix`, `test`, `docs`, `chore`, `refactor`, `ci`, `perf`, `build`. scope אופציונלי אך מומלץ (`commerce`, `payments`, `admin`, `e2e`, `db`, `visual`) |
+| D24 | **רצפות כיסוי (coverage floors) פר מודול**, לא אחוז גלובלי. CI נכשל אם מודול מסומן "כסף" יורד מתחת לרצפה שלו (סעיף 2.6). רשימת האינברינטים (סעיף 2.0) עדיין גוברת על כל אחוז |
+| D25 | **שער פרודקשן ידני**: merge לענף היעד מפעיל build ב-Vercel, אבל **לא** מפרסם לפרודקשן אוטומטית. פרסום ל-`kenyonexpress.co.il` דורש אישור ידני דרך GitHub Environment `production` (required reviewer: Ofir) או Vercel Deployment Protection "Promote to Production". Preview לכל PR נשאר אוטומטי |
+| D26 | **axe-core חוסם ב-PR** (LEG-03): job `a11y` ב-`ci.yml` מריץ `@axe-core/playwright` על דפי ליבה (בית, קטגוריה, מוצר כשקיים, עגלה, checkout כשקיים). כשל = חסימת merge. Lighthouse budgets (PERF) נשארים אזהרה בלילי עד ייצוב |
+| D27 | **Webhook replay כחלק מחובת האינטגרציה**: כל שינוי ב-webhook handler חייב בדיקת replay מלאה (W1-W10) עם harness שמאפשר ירי כפול, חתימה מזויפת, וסדר אירועים הפוך. suite לילית מוסיפה replay מול Cardcom sandbox אמיתי עם `external_event_id` אמיתי שנשמר ב-fixture |
 
 ---
 
@@ -130,7 +142,32 @@ export default defineConfig({
 13. מיגרציה שהוחלה פעמיים מצליחה פעמיים.
 14. כשל rate-limit או כשל תשתית בזרימת כסף עוצר את הפעולה (fail-closed).
 
-### 2.1 Unit - אריתמטיקת כסף (`src/lib/money/`)
+### 2.6 רצפות כיסוי (coverage floors, D24)
+
+אין יעד גלובלי (למשל "80% על כל הריפו"). במקום זה, CI מודד כיסוי שורות עם `@vitest/coverage-v8` ומכשיל אם מודול מסומן יורד מתחת לרצפתו. מודול שלא ברשימה: אין חובת אחוז (אבל עדיין חייב לכסות אינברינטים רלוונטיים מסעיף 2.0).
+
+| נתיב | רצפת שורות | רצפת branches | הערה |
+|---|---|---|---|
+| `src/lib/commerce/**` (יעד: `src/lib/money/**`) | 95% | 90% | כל אריתמטיקת כסף |
+| `src/lib/coupons/**` | 90% | 85% | state machine + QR |
+| `src/lib/validations/**` | 85% | 80% | דחיית שדות מחיר מהלקוח |
+| `src/server/actions/payments/**` | 90% | 85% | כשייווצר |
+| `src/lib/admin/rbac.ts` | 100% | 100% | 5 roles, מעט שורות |
+| `src/lib/env.ts` | 90% | 85% | fail-fast על סודות |
+| שאר `src/**` | אין רצפה | אין רצפה | component tests לפי D15 |
+
+אכיפה ב-CI:
+
+```yaml
+# בתוך job unit, אחרי vitest run --coverage
+- run: node scripts/check-coverage-floors.mjs coverage/coverage-summary.json
+```
+
+`check-coverage-floors.mjs` קורא את ה-JSON של v8, משווה לטבלה למעלה, ומדפיס diff ברור על הפרה. אין `--passWithNoTests` על מודולי כסף: אם אין קובץ בדיקות צמוד, ה-job נכשל (D11).
+
+דיווח: artifact `coverage/` בכל PR; badge אופציונלי ב-README אחרי הקמת CI.
+
+### 2.1 Unit - אריתמטיקת כסף (`src/lib/commerce/`, יעד `src/lib/money/`)
 
 המודול נכתב **לפני** השורה הראשונה של `beginCheckout` (D2). פונקציות טהורות, כל החישוב באגורות
 כ-integer, עמודות ה-DB מקבלות תוצאה מעוגלת בלבד. קבצים ובדיקות:
@@ -516,16 +553,33 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }   # נדרש ל-commitlint על טווח PR
       - uses: ./.github/actions/setup
       - run: pnpm exec biome ci .
       - run: pnpm type-check
+      - name: conventional commits on PR range
+        if: github.event_name == 'pull_request'
+        run: pnpm exec commitlint --from ${{ github.event.pull_request.base.sha }} --to HEAD --verbose
+
+  a11y:                         # < 3 דקות, חוסם (LEG-03, D26)
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - uses: supabase/setup-cli@v1
+      - run: supabase start
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm build && pnpm exec playwright test e2e/a11y.spec.ts
+        env: { NEXT_PUBLIC_SUPABASE_URL: 'http://127.0.0.1:54321', NEXT_PUBLIC_SUPABASE_ANON_KEY: 'ci-anon' }
 
   unit:                         # < 1 דקה, חוסם (unit + component)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/setup
-      - run: pnpm exec vitest run --project unit --project component
+      - run: pnpm exec vitest run --project unit --project component --coverage
+      - run: node scripts/check-coverage-floors.mjs coverage/coverage-summary.json
 
   build:                        # חוסם; כולל שומר דליפת סודות
     needs: static
@@ -654,11 +708,62 @@ Jobs: `e2e-full` (כל התרחישים כולל פורטל ספק, מול stack
 
 על ענף היעד `cursor/add-supabase-3c830` (ואחר כך main):
 
-- Required checks: `static`, `unit`, `build`, `integration`, `migrations`, `e2e-smoke`.
+- Required checks: `static`, `unit`, `build`, `integration`, `migrations`, `e2e-smoke`, `a11y`.
   (`migrations` מדווח success גם כשדילג, דרך ה-paths-filter הפנימי, ולכן בטוח כ-required.)
 - Require branch up to date לפני merge. אסור force-push לענף היעד.
 - `preview-e2e`, `nightly`, `visual` לא חוסמים. visual מקודם לחוסם אחרי שבועיים של baseline יציב (D8).
 - push ישיר לענף העבודה `phase5/homepage` מותר וממשיך עם כלל ה-push המיידי מ-CLAUDE.md.
+
+### 4.7 מוסכמות commit (D23)
+
+שלוש שכבות: מקומי (לפני commit), מרוחק (CI), ומשמעות (קישור לשחרור).
+
+**פורמט (Conventional Commits 1.0):**
+
+```
+<type>(<scope>): <subject>
+
+[optional body]
+
+[optional footer: BREAKING CHANGE:, Closes #123]
+```
+
+| type | מתי |
+|---|---|
+| `feat` | פיצ'ר חדש למשתמש |
+| `fix` | תיקון באג |
+| `test` | בדיקות בלבד |
+| `docs` | מסמכים |
+| `chore` | תחזוקה (deps, config) |
+| `refactor` | שינוי מבנה בלי שינוי התנהגות |
+| `ci` | GitHub Actions, husky |
+| `perf` | ביצועים |
+| `build` | build system |
+
+**scope מומלץ:** `commerce`, `payments`, `wallet`, `coupons`, `supplier`, `admin`, `homepage`, `category`, `e2e`, `db`, `visual`, `a11y`.
+
+**דוגמאות מהריפו:**
+
+```
+feat(commerce): add integer money primitives
+test(commerce): lock golden settlement cases
+docs(testing): refresh CI/CD architecture v2
+ci: add migration idempotency harness
+```
+
+**אכיפה מקומית (קיים + חסר):**
+
+| שלב | כלי | מצב |
+|---|---|---|
+| pre-commit | husky → lint-staged → `biome check --write` על staged | קיים (`.husky/pre-commit`, `.lintstagedrc.json`) |
+| commit-msg | husky → `commitlint` | **חסר, יתווסף עם CI** |
+| pre-push | אופציונלי: `pnpm type-check && pnpm test` | לא מוגדר (CI הוא השער) |
+
+**אכיפה ב-CI:** job `static` מריץ `commitlint` על כל ה-commits בטווח PR (לא רק HEAD).
+
+**קישור ל-CD:** רק commits מסוג `feat`/`fix` עם scope רלוונטי נכנסים ל-changelog אוטומטי (עתידי, `release-please` או `changesets`). `BREAKING CHANGE:` בגוף ההודעה = major bump כשיגיע semver רשמי.
+
+**כלל push (CLAUDE.md):** אחרי כל commit מוצלח, `git push` מיידי ל-`origin phase5/homepage`. זה גיבוי; ההגנה האמיתית היא branch protection על ענף היעד (D12).
 
 ---
 
@@ -672,13 +777,32 @@ Jobs: `e2e-full` (כל התרחישים כולל פורטל ספק, מול stack
 | Preview | deploy אוטומטי לכל PR | פרויקט dev `ixvwfbuvfxxsjiywhbbb` (eu-north-1) | dev חי, לא דטרמיניסטי |
 | Production | `kenyonexpress.co.il`, region `fra1` | פרויקט prod חדש ונקי (eu-central-1), נבנה 001->אחרון דרך MCP | אמיתי |
 
-### 5.2 זרימת קידום
+### 5.2 זרימת קידום (Preview אוטומטי, Production ידני)
+
+```
+feature branch ──push──> CI (ci.yml) ──green──> PR לענף יעד
+                              │
+                              ├──> Vercel Preview (אוטומטי לכל PR)
+                              │         └──> preview-e2e.yml (@preview read-only)
+                              │
+merge לענף יעד ──> Vercel Production Build (אוטומטי)
+                              │
+                              └──> שער ידני (D25) ──approve──> kenyonexpress.co.il
+```
 
 1. עבודה על `phase5/homepage` (או ענף פיצ'ר). כל push מריץ CI וכל commit נדחף מיד.
-2. PR לענף היעד -> CI מלא + Vercel Preview + `preview-e2e`.
+2. PR לענף היעד -> CI מלא + Vercel Preview אוטומטי + `preview-e2e` (אזהרה).
 3. merge מותר רק עם כל ה-required checks ירוקים (סעיף 4.6).
-4. merge לענף היעד = טריגר יחיד ל-deploy פרודקשן (D20). אין `vercel --prod` ידני מהמחשב.
-5. PR שנוגע במיגרציות: קודם החלה מרוחקת ידנית דרך MCP `apply_migration` + עדכון
+4. merge לענף היעד מפעיל **build** פרודקשן ב-Vercel, אבל **לא** מפרסם לדומיין החי עד אישור ידני (D25).
+5. **שער פרודקשן ידני** (אחת מהשתיים, מוגדרות במקביל כגיבוי):
+
+| מנגנון | הגדרה | מי מאשר |
+|---|---|---|
+| GitHub Environment `production` | `workflow_dispatch` job `deploy-production.yml` עם `environment: production`, required reviewers | Ofir |
+| Vercel Deployment Protection | Production deployments דורשים "Promote" מה-Dashboard או `vercel promote --yes` עם token מוגבל | Ofir |
+
+6. אין `vercel --prod` ידני מהמחשב האישי (D20). rollback אפליקציה: Vercel Instant Rollback.
+7. PR שנוגע במיגרציות: קודם החלה מרוחקת ידנית דרך MCP `apply_migration` + עדכון
    `src/types/database.ts` + STATE.md, ורק אחר כך merge של הקוד (D21, expand/contract:
    הסכמה החדשה חייבת לעבוד עם הקוד הרץ).
 
@@ -750,7 +874,7 @@ Jobs: `e2e-full` (כל התרחישים כולל פורטל ספק, מול stack
 מעל ה-seed, coupon_codes, coupon_redemptions, coupon_scan_events, carts, cart_items),
 לעולם לא לסכמה או ל-personas.
 
-### 6.3 שכבות Cardcom והה-fake (`tests/fake-cardcom/`)
+### 6.3 שכבות Cardcom, fake, sandbox ו-webhook replay (D27)
 
 שלוש שכבות, מהמהיר לאיטי:
 
@@ -760,13 +884,24 @@ Jobs: `e2e-full` (כל התרחישים כולל פורטל ספק, מול stack
 | Cardcom sandbox אמיתי (terminal בדיקות + `CARDCOM_*` של סביבת test) | החוזה האמיתי: פורמט תשובות, קודי שגיאה, התנהגות token | suite לילי או ידני לפני release; לא חוסם PR |
 | פרודקשן (terminal אמיתי) | עסקת אמת אחת בסכום מינימלי + refund מיידי | פעם אחת בקאטאובר, ידנית, לפי checklist |
 
+**Webhook replay harness** (`tests/helpers/webhook.ts`):
+
+| יכולת | שימוש |
+|---|---|
+| ירי POST חתום ל-`/api/payments/cardcom/webhook` | W1-W10 |
+| replay אותו `external_event_id` N פעמים | W1, idempotency |
+| חתימה שגויה / חסרה / סכום לא תואם | W2-W4 |
+| סדר אירועים: success לפני pending, או כפול במקביל | W10, race |
+| שמירת payload אמיתי מ-sandbox כ-fixture JSON | suite לילית (D27) |
+| replay מול Preview URL | **אסור** (אין כסף ב-preview) |
+
 ה-fake: שרת HTTP קטן (node, אפס תלויות) שמדמה יצירת Low Profile (מחזיר URL מקומי +
 `low_profile_id`), דף "תשלום" שמאפשר לבדיקה לבחור הצלחה/דחייה, ירי webhook חתום (או מזויף,
 לפי הוראת הבדיקה), endpoint אימות server-to-server עם תשובה נשלטת, refund, ו-token למנויים.
 ה-adapter היחיד (`src/lib/payments/cardcom-client.ts`) הוא הנקודה היחידה שמדברת עם Cardcom,
 ומחליף בין fake ל-sandbox לאמיתי דרך `CARDCOM_BASE_URL` בלבד. בדיקות החוזה של ה-adapter
 רצות מול ה-fake (כל CI) ומול ה-sandbox (לילי) עם אותם asserts, כך שסטייה של ה-fake מהמציאות
-מתגלה בריצה הלילית.
+מתגלה בריצה הלילית. **Replay לילי:** שומרים 3 payloads אמיתיים מ-sandbox (success, decline, duplicate) ב-`tests/fixtures/cardcom/` ומריצים אותם מול stack מקומי אחרי כל שינוי ב-handler.
 
 ### 6.4 תמיכת SQL לבדיקות (`tests/sql/90_test_support.sql`, CI בלבד, לא מיגרציה - D18)
 
@@ -811,7 +946,7 @@ revoke all on all functions in schema test_support from public, anon, authentica
 
 ### 7.1 שני מסלולים (D7)
 
-1. **התאמת 1:1 ידנית (קיים)**: `scripts/compare.mjs` מצלם את `refs/ke_live_singlefile.html` מול localhost ב-1440px, `scripts/diff-bands.mjs` נותן אחוז חוסר-התאמה בפסים של 100px עם סבילות 24 לערוץ. נשאר ככלי עבודה בפיתוח עיצוב, לא רץ ב-CI. (ניקוי נלווה: `scripts/_diff-bands.mjs` ו-`scripts/_tmp-hero.mjs` הלא-committed ימוזגו או יימחקו.)
+1. **התאמת 1:1 ידנית (קיים)**: משפחת `scripts/compare-*.mjs` מצלמת localhost מול `refs/ke_live_singlefile.html` (או מול האתר החי ב-`compare-product-live.mjs`) ב-1440px. `scripts/diff-bands.mjs` נותן אחוז חוסר-התאמה בפסים של 100px עם סבילות 24 לערוץ. `scripts/watch-compare.mjs` מריץ compare בלולאה בזמן פיתוח. נשאר ככלי עבודה לפיקסל-פרפקט, **לא רץ ב-CI**.
 2. **רגרסיה אוטומטית**: פרויקט Playwright ייעודי `visual` עם `toHaveScreenshot`, baseline ב-git, threshold ברוח ה-TOL הקיים (`maxDiffPixelRatio` נמוך + סבילות אנטי-aliasing). דטרמיניזם: קפיאת אנימציות, המתנה לטעינת פונט Heebo, נתוני seed קבועים, מסכות על אזורים דינמיים (מונה עגלה, תמונות מ-storage אם משתנות). רץ בלילי; מקודם לחוסם אחרי ייצוב baseline (D8, סעיף 4.6).
 
 ### 7.2 מטריצת breakpoints ודפים
@@ -846,17 +981,30 @@ kenyonexpress/
 │   │   └── setup/
 │   │       └── action.yml              # composite: pnpm + node 22 + cache + install
 │   └── workflows/
-│       ├── ci.yml                      # static | unit+component | build | integration | migrations | e2e-smoke
+│       ├── ci.yml                      # static | unit+component+coverage | build | a11y | integration | migrations | e2e-smoke
 │       ├── preview-e2e.yml             # @preview מול Vercel Preview URL (deployment_status)
-│       ├── nightly.yml                 # e2e-full | cardcom-contract (sandbox) | visual | migrations-full
+│       ├── deploy-production.yml       # workflow_dispatch + environment: production (שער ידני, D25)
+│       ├── nightly.yml                 # e2e-full | cardcom-contract+replay | visual | migrations-full | lighthouse
 │       └── db-backup.yml               # pg_dump יומי -> artifact (עד Supabase Pro)
+├── .husky/
+│   ├── pre-commit                      # lint-staged (קיים)
+│   └── commit-msg                      # commitlint (יתווסף)
+├── commitlint.config.js                # conventional commits (יתווסף)
 ├── .nvmrc                              # 22
 ├── vitest.config.ts                    # projects: unit (node) / component (jsdom) / integration (node+stack)
 ├── vitest.setup.ts
 ├── playwright.config.ts                # projects: desktop-1440, mobile-390, visual; tags @smoke/@full/@preview
+├── scripts/
+│   ├── check-coverage-floors.mjs       # אכיפת D24 מול coverage-summary.json
+│   ├── compare-hero.mjs                # ויזואלי ידני (לא CI)
+│   ├── compare-product.mjs
+│   ├── compare-product-live.mjs
+│   ├── diff-bands.mjs
+│   └── watch-compare.mjs
 ├── e2e/
 │   ├── auth.spec.ts                    # קיים, מתוקן (T9)
 │   ├── homepage.spec.ts                # קיים
+│   ├── a11y.spec.ts                    # axe-core, חוסם PR (D26)
 │   ├── checkout-happy-path.spec.ts     # @smoke: אורח -> login -> Cardcom -> webhook -> אימות snapshot מול DB
 │   ├── checkout-failures.spec.ts       # @smoke חלקי: נדחה, double submit; @full: השאר
 │   ├── supplier-redeem.spec.ts         # @full: סריקה, כפולה, ספק זר, פג
@@ -864,7 +1012,7 @@ kenyonexpress/
 │   ├── preview-smoke.spec.ts           # @preview: read-only בלבד
 │   └── visual.spec.ts                  # toHaveScreenshot, 4 breakpoints
 ├── src/
-│   ├── lib/money/                      # + *.test.ts צמודים (M, K, S cases)
+│   ├── lib/commerce/                   # money + commission (יעד: lib/money/) + *.test.ts
 │   ├── lib/coupons/state-machine.ts    # + state-machine.test.ts (סעיף 2.2)
 │   └── components/**/*.test.tsx        # component project (RTL עברית)
 ├── tests/
@@ -880,7 +1028,9 @@ kenyonexpress/
 │   ├── helpers/
 │   │   ├── factories.ts
 │   │   ├── personas.ts                 # uuid קבועים + clients לכל persona
-│   │   └── webhook.ts                  # harness ירי webhooks
+│   │   └── webhook.ts                  # harness ירי + replay webhooks
+│   ├── fixtures/
+│   │   └── cardcom/                    # payloads אמיתיים מ-sandbox ל-replay לילי
 │   ├── fake-cardcom/
 │   │   └── server.mjs
 │   └── sql/
@@ -945,7 +1095,9 @@ projects + `PLAYWRIGHT_BASE_URL` מ-env + webServer של build (לא dev); `pack
 
 | # | פריט | סיכון | פעולה |
 |---|---|---|---|
-| T1 | **אין CI בכלל** | כל האמור במסמך לא נאכף; type-check נשבר בשקט | הקמת `ci.yml` עם static/unit/build עוד לפני שנכתב קוד כסף. יום עבודה |
+| T1 | **אין CI בכלל** | כל האמור במסמך לא נאכף; type-check נשבר בשקט | הקמת `ci.yml` עם static/unit/build עוד לפני שנכתב קוד כסף נוסף. יום עבודה |
+| T1b | **אין commitlint** | הודעות commit לא אחידות | `@commitlint/cli` + husky `commit-msg` + job ב-static (D23) |
+| T1c | **אין coverage floors script** | D24 לא נאכף | `check-coverage-floors.mjs` + `@vitest/coverage-v8` |
 | T2 | **`rate-limit.ts` fails open + `checkUserRateLimit` בלי קוראים** (באג מתועד) | ברגע שיהיה checkout, כשל RPC שקט מבטל את כל ההגנה | בדיקת unit שמקבעת fail-closed לפעולות כסף; התיקון עצמו ב-Phase 3 (D10) |
 | T3 | **`mergeGuestCart` הקיים ב-`src/server/actions/cart.ts` הוא read-merge-write בלי נעילה** (ממצא מתועד) | איבוד/הכפלת פריטים בהתחברות | בדיקת integration שמדגימה את המרוץ על הקוד הקיים (תיכשל, מתועדת כ-known failure), מוחלפת בירוק כש-029 מחליפה ל-RPC |
 | T4 | **policy שבורה ב-014** ("products: vendor read own" משווה מול vendors.id) | ספק לא רואה מוצרים; גרוע מזה, תיקון נאיבי עלול לפתוח יותר מדי | בדיקה מתעדת (אפס שורות היום) שתתהפך לבדיקה חיובית עם 027 |
@@ -962,9 +1114,16 @@ projects + `PLAYWRIGHT_BASE_URL` מ-env + webServer של build (לא dev); `pack
 
 ## 11. שאלות פתוחות
 
-1. פרטי sandbox של Cardcom (terminal בדיקות, credentials): צריך פתיחה מול Cardcom לפני Phase 3. עד אז ה-fake נבנה לפי התיעוד הציבורי של Low Profile API.
-2. GitHub Actions minutes: הצינור המלא צורך בערך 25-30 דקות מחשב לכל PR. בחשבון free (2,000 דקות לחודש לריפו פרטי) זה בערך 60-70 PRs בחודש. אם יש חריגה: לצמצם את e2e-full ללילי בלבד.
-3. שם ענף היעד: ההגנות מוגדרות היום על `cursor/add-supabase-3c830`. כשעוברים ל-main אמיתי צריך להעביר את ה-branch protection.
-4. ריצת ה-integrity הלילית של הארנק בפרודקשן (השוואת cache מול ledger): איפה רצה, Vercel cron או pg_cron. תלוי בהחלטת ה-Pro של PRODUCTION-OPS.
+1. **Cardcom sandbox:** פרטי terminal בדיקות (credentials, webhook URL לסביבת CI). צריך פתיחה מול Cardcom לפני Phase 3. עד אז ה-fake נבנה לפי התיעוד הציבורי של Low Profile API, וה-replay הלילי (D27) ממתין ל-fixtures אמיתיים.
+2. **GitHub Actions minutes:** הצינור המלא צורך בערך 25-30 דקות מחשב לכל PR (כולל `a11y` + coverage). בחשבון free (2,000 דקות לחודש לריפו פרטי) זה בערך 60-70 PRs בחודש. אם יש חריגה: לצמצם `e2e-full` ו-Lighthouse ללילי בלבד, ולהשאיר `e2e-smoke` + `a11y` חוסמים.
+3. **שם ענף היעד:** ההגנות מוגדרות היום על `cursor/add-supabase-3c830`. כשעוברים ל-main אמיתי צריך להעביר branch protection ו-Vercel production branch.
+4. **Integrity לילי של הארנק** (השוואת cache מול ledger): איפה רצה, Vercel cron או pg_cron. תלוי בהחלטת ה-Pro של PRODUCTION-OPS.
+5. **שער פרודקשן ידני (D25):** האם מספיק Vercel Deployment Protection בלבד, או גם GitHub Environment עם `deploy-production.yml`? המלצה: שניהם (גיבוי הדדי).
+6. **מספור 042:** `042_commerce_core.sql` מתנגש עם הקצאות אחרות במסמך האב. צריך הכרעה לפני שה-harness יאכוף את הקובץ ב-CI.
+7. **העברת `src/lib/commerce/` ל-`src/lib/money/`:** האם לשנות נתיב לפני Phase 3 או להשאיר alias? משפיע על רצפות הכיסוי ועל imports.
+8. **Docker מקומי:** STATE.md מדווח ש-Docker לא רץ. harness המיגרציות (D6) ו-integration (D1) דורשים `supabase start` ב-CI (GitHub ubuntu + Docker). מקומית: Ofir צריך להפעיל Docker Desktop לפני `pnpm test:integration`.
 
 (נסגר: מועד קידום visual מ"מזהיר" ל"חוסם" הוכרע, אחרי שבועיים של baseline יציב, סעיף 4.6.)
+(נסגר: axe חוסם ב-PR הוכרע ב-D26 / LEG-03.)
+(נסגר: Conventional Commits הוכרע ב-D23.)
+(נסגר: coverage floors פר מודול הוכרע ב-D24, לא אחוז גלובלי.)
