@@ -13,6 +13,11 @@
 - build ירוק (`pnpm build`), type-check נקי.
 
 ## Last Completed
+Session 2026-07-20 (לילה, המשך) - קישור מוצרים ל-6 ה-vendors הקיימים (044):
+- **מיגרציה** `supabase/migrations/044_link_products_to_vendors.sql` (idempotent): משקפת את 6 ה-vendors (אלקטרו פלוס, סטייל הבית, ביוטי לאב, ספורט מקס, טעמים גורמה, טק וורלד) לתוך `public.suppliers` עם אותם UUIDs (כיוון האיחוד המתוכנן של 036; `products.supplier_id` מפנה ל-suppliers, לא ל-vendors), מקשרת את כל 31 המוצרים לפי קטגוריה (electronics->אלקטרו פלוס, phones-computers->טק וורלד, restaurants-cafes+professionals->טעמים גורמה, beauty-health->ביוטי לאב, vacation->ספורט מקס, השאר->סטייל הבית), ומוחקת את 3 ספקי הדמו הזמניים של 043.
+- **הוחל על המרוחק** דרך `scripts/apply-044-link-vendors.mjs` (PostgREST). הרצה חוזרת = 0 שינויים. אימות: 31/31 supplier_id, 31/31 תמונות, חלוקה 4/4/6/6/8/3, suppliers=6.
+- **תמונות**: המציאות כבר מיושרת מ-043 - `products.images` jsonb (מקור, Unsplash demo URLs) + `product_images` (הוקרנה, 31 שורות). אין תמונות ב-buckets.
+
 Session 2026-07-20 (לילה) - Data Integrity Audit + Seed Repair (`17dbca0`):
 - **אודיט מציאות מול סכימה** (`scripts/audit-data-integrity.mjs`, קורא דרך PostgREST עם service role): במרוחק products=31 (כולם physical/active), categories=12, suppliers=0, vendors=6, product_images=0. התמונות חיות ב-`products.images` jsonb (עמודה מ-016, כרגע URLs של Unsplash), לא ב-`product_images` ולא ב-bucket. ה-DB המרוחק חסר את עמודות 027 על suppliers (אין status/legal_name) ואת 042 (אין platform_percent, אין wallet_accounts/commission_ledger), אבל כן יש products.cashback_percent+coupon_expiry_days.
 - **מיגרציה חדשה** `supabase/migrations/043_seed_suppliers_link_products.sql` (idempotent, עמודות 005 בלבד כך שרצה על המרוחק): 3 ספקי דמו עבריים עם UUID קבועים (אלקטרו סחר / חופשות ישראל / בית ומשפחה), קישור round-robin דטרמיניסטי לפי slug של כל מוצר עם supplier_id NULL, והקרנת `products.images` jsonb אל `product_images` (ראשונה=ראשית, לפי המודל הכפול של ARCHITECTURE-WP-DATA-MIGRATION).
