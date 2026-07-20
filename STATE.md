@@ -1,9 +1,15 @@
 # KenyonExpress State
 
 ## Current Phase
-**WP Data Migration architecture v2 (design only)**. branch `phase5/homepage`.
+**AI Agents Layer architecture (design only)**. branch `phase5/homepage`.
 
 ## Last Completed
+Session 2026-07-20 - `ARCHITECTURE-AI-AGENTS.md` (שורש הפרויקט, design only):
+- תכנון מאוחד ל-5 סוכני המשימה: support, supplier_ops (onboarding), catalog_enrichment (content), fraud_watch, pricing_analyst. ממופה ל-agent_key הקנוני של 028 + docs V1/V2.
+- נשען על התשתית הקיימת (028, V1, V2 runtime) בלי לשכתב; גובר על V2 רק בשתי תוספות המשימה: יומן שיחת תמיכה (`support_conversations`/`support_messages`) וגרידת מתחרים (`competitor_sources`/`competitor_price_observations`) עם גבולות חוקיים (robots.txt, facts-only, ToS, ללא PII).
+- כיסוי: runtime (Anthropic SDK server-side, ANTHROPIC_API_KEY env-only, SSE, prompt templates ב-DB admin-editable, cost tracking דרך agent_runs+v_agent_costs_daily, kill switch דו-שלבי), מטריצת הרשאות + PII + אין card data, השקה מדורגת עם מדד הצלחה פר סוכן, 7 פקודות עבודה (WO-A..G), 8 שאלות פתוחות.
+- לא נכתב קוד, לא נכתבה מיגרציה, לא שונה DB.
+
 Session 2026-07-20 - `ARCHITECTURE-WP-MIGRATION.md` (שורש הפרויקט, design only):
 - עדכון מחייב של `docs/ARCHITECTURE-WP-DATA-MIGRATION.md` (M1-M17) לסכימת 042: המרת אגורות (W2), commission_ledger accrual לשוברי legacy (W6), cashback_percent=0 למיובאים.
 - הכרעות חדשות W1-W8: שיוך ספק = שער curation חוסם (042 NOT NULL, גובר על M6); קוד שובר 8 ספרות או הנפקה חדשה עם מיפוי ב-id_map (W7); coupon_expiry_days חובה ב-curation (W8); Google auto-link לפי אימייל + מייל מעבר יחיד למשתמשי סיסמה (W3).
