@@ -19,6 +19,7 @@
       "Edit",
       "Write"
     ],
-    "defaultMode": "acceptEdits"
+    "ask": ["Bash(git push:*)"],
+    "defaultMode": "default"
   }
 }

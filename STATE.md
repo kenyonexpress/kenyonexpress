@@ -1,9 +1,17 @@
 # KenyonExpress State
 
 ## Current Phase
-**Analytics + BI architecture v3 (design only)**. branch `phase5/homepage`.
+**Homepage 1:1 מול live + ייצוב build**. branch `phase5/homepage`.
 
 ## Last Completed
+Session 2026-07-20 (ערב) - תיקוני RTL, build והרשאות:
+- **Hero RTL** (`8c36a52`): `HeroSlider.tsx` הוחלף לכיוון electro - תמונה ב-`start-0` (ימין תחת RTL), כל תיבות הטקסט ב-`end-0` עם `text-end` (שמאל), הזחות `ps->pe`, פסקאות מחיר `dir=ltr` קיבלו `text-start`, תג החנויות `ms-auto`. אושר על ידי Ofir.
+- **פיצול rbac** (`971ac6b`): `src/lib/admin/roles.ts` חדש (ROLE_LABELS/ROLE_ORDER/isAdminRole/isStaffRole client-safe); `rbac.ts` מייצא מחדש ושומר את ה-guards. `UsersTable.tsx` + `UserRoleClient.tsx` מייבאים מ-roles. תיקן שבירת build (supabase/server בתוך client).
+- **CartProvider ב-(main)** (`1fd3a5f`): `(main)/layout.tsx` עוטף ב-CartProvider+CartDrawer+Toaster כי Header->MastheadNav->CartNavLink קורא useCart; תיקן קריסת prerender של /coupons. build ירוק מקצה לקצה.
+- **הרשאות Claude Code**: ב-`.claude/settings.json` נוסף `ask: ["Bash(git push:*)"]` ו-defaultMode הוחזר מ-acceptEdits ל-default, לפי בקשת Ofir שדחיפות יידרשו אישור. הגלובלי (`~/.claude/settings.json`) נשאר bypassPermissions - גובר עליו ה-project בפרויקט הזה.
+- **ניתוח compare.mjs** (משווה את דף הבית מול `refs/ke_live_singlefile.html`, מתעלם מ---page): OVERALL 22.66% ב-2600px הראשונים. הרצועות הגרועות (y900-1200 עד 55%) הן היסט אנכי ~56px שמקורו ב-masthead שמוסתר בלכידת ה-singlefile (ארטיפקט מתועד בסשן 2026-07-09) - לא לתקן על ידי הסתרת ה-masthead שלנו. פער אמיתי שנותר: רוחב קונטיינר ~1290px אצלנו מול 1170px ב-live (בר USP וגריד הדילים), וגובה אזור hero גבוה בכ-60px.
+
+
 Session 2026-07-20 - `ARCHITECTURE-ANALYTICS-BI.md` (שורש הפרויקט, design only, v3):
 - מקור האמת המאוחד החדש לדומיין האנליטיקה. בולע את `docs/ARCHITECTURE-ANALYTICS-BI.md` (v2, קיבל הודעת האחדה בראשו) ומיושר מול טיוטות 033+034 (לא הוחלו).
 - תוספות v3: שדה `source_app` (shop/delivery/taxi) לאירועים ול-rollup (מוכנות superapp); session stitching אורח-למחובר בשלוש שכבות (עוגיית anonymous_id יציבה + טבלת `analytics_identity_links` חדשה + שאילתות stitched אד-הוק בלבד); אירועי client חדשים `checkout_step` ו-`web_vital`; דייג'סט מייל יומי 08:00 (`/api/cron/daily-digest`, ממוזג עם SEV3 של OBS-15, שלב A ב-Resend); `v_repeat_purchase_monthly` + `v_web_vitals_daily` + הרחבת `v_funnel_daily`.
@@ -28,7 +36,7 @@ Session 2026-07-20 - `ARCHITECTURE-CHECKOUT-PAYMENT.md` (שורש הפרויקט
 - ER + sequence diagrams + 10 open questions. מרחיב COMMERCE/API-CONTRACTS; `ARCHITECTURE-CART-CHECKOUT.md` עדיין חסר.
 
 ## In Progress
-nothing
+צמצום פערי compare.mjs של דף הבית. המועמד האמיתי הבא: יישור רוחב הקונטיינר של בר ה-USP וגריד הדילים ל-1170px כמו ב-live. מושהה עד הכרעת Ofir בגלל הארטיפקט (ראו Blocking).
 
 ## Blocking Issues
 `ARCHITECTURE-CART-CHECKOUT.md` עדיין חסר (handoff עגלה מצוין ב-Q2 של מסמך התשלומים).
@@ -37,8 +45,8 @@ nothing
 Docker מקומי לא רץ (רלוונטי ל-harness D6).
 
 ## Next Task
-יישום Phase 0 של CI: `ci.yml` עם static + unit + build (T1), לפני קוד תשלומים.
-או: כתיבת `ARCHITECTURE-CART-CHECKOUT.md` / סגירת Q1-Q10 במסמך התשלומים.
+הכרעת Ofir: האם יעד "כל רצועת compare מתחת 30%" תקף למרות ארטיפקט ה-masthead (שמייצר לבדו רצועות 50%+), או שמתקנים רק פערים אמיתיים (רוחב קונטיינר 1170px, גובה hero). אחרי ההכרעה: יישום והרצת compare.
+בהמשך: Phase 0 של CI (`ci.yml`) או `ARCHITECTURE-CART-CHECKOUT.md`.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
