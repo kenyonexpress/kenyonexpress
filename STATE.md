@@ -1,7 +1,16 @@
 # KenyonExpress State
 
 ## Current Phase
-**Homepage 1:1 מול live + ייצוב build**. branch `phase5/homepage`.
+**Phase 5 storefront + יסודות commerce**. branch `phase5/homepage`.
+
+מה בנוי נכון ל-2026-07-20:
+- **Homepage 1:1** מול `refs/ke_live_singlefile.html`: hero RTL תקין (`8c36a52`), compare 22.66% (מתחת ליעד 30%; רצועות 50%+ הן ארטיפקט masthead מוסתר בלכידה). פער אמיתי פתוח: רוחב קונטיינר ~1290 מול 1170 ב-live.
+- **Product page 1:1** מול live (`0e20947`), נתיב `/product/[slug]`.
+- **Cart מקצה לקצה**: server actions עם guest session + מיזוג בהתחברות, CartProvider/Drawer/badge, דף עגלה, add-to-cart ב-PDP ובכרטיסים (`9a0a113`..`d409092`), provider גם ב-`(main)` וגם ב-`(store)` (`1fd3a5f`).
+- **Commerce engine**: סכימת Drizzle (`4758711`), primitives של כסף ב-integer אגורות (`62f06fb`), מנוע עמלות דטרמיניסטי (`db28408`), golden settlement tests (`4c342e1`). קובץ מיגרציה `042_commerce_core.sql` קיים.
+- **Admin panel** (Phase 3) פעיל; פיצול rbac ל-client-safe (`971ac6b`).
+- **מיגרציות**: קבצים עד 042 בריפו. מוחלות על המרוחק: 001-025 + 019/020/021. כל 026+ טיוטות שלא הוחלו; החלה רק דרך MCP `apply_migration` בסדר הקנוני.
+- build ירוק (`pnpm build`), type-check נקי.
 
 ## Last Completed
 Session 2026-07-20 (ערב) - תיקוני RTL, build והרשאות:
