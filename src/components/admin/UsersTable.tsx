@@ -2,7 +2,7 @@
 
 import UserRoleClient from '@/app/(admin)/admin/users/UserRoleClient'
 import DataTable, { type DataTableColumn } from '@/components/admin/DataTable'
-import { ROLE_LABELS } from '@/lib/admin/rbac'
+import { ROLE_LABELS } from '@/lib/admin/roles'
 import type { UserRole } from '@/types/database'
 
 export type UserRow = {

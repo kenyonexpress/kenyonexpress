@@ -1,6 +1,6 @@
 'use client'
 
-import { ROLE_LABELS, ROLE_ORDER } from '@/lib/admin/rbac'
+import { ROLE_LABELS, ROLE_ORDER } from '@/lib/admin/roles'
 import { type UserActionState, updateUserRole } from '@/server/actions/admin/users'
 import type { UserRole } from '@/types/database'
 import { useActionState } from 'react'
