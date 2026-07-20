@@ -1,10 +1,10 @@
 # ארכיטקטורת בדיקות ו-CI/CD - KenyonExpress (מסמך מחייב)
 
-סטטוס: FINAL DESIGN (v2). תאריך: 2026-07-20. ענף: `phase5/homepage`.
+סטטוס: FINAL DESIGN (v3). תאריך: 2026-07-20. ענף: `phase5/homepage`.
 
 מסמך זה הוא מקור האמת היחיד לאסטרטגיית הבדיקות ול-CI/CD, מיושר למודל העסקי המעודכן
 ב-`BUSINESS-MODEL.md` וב-`ARCHITECTURE-COMMERCE.md` (2026-07-17, מקור אמת יחיד).
-כל ההכרעות המחייבות (D1-D22) מרוכזות בסעיף 1. כל מה שכתוב כאן הוא הכרעה, לא הצעה.
+כל ההכרעות המחייבות (D1-D27) מרוכזות בסעיף 1. כל מה שכתוב כאן הוא הכרעה, לא הצעה.
 
 מסמכים קשורים: `MASTER-ARCHITECTURE.md` (v2), `ARCHITECTURE-PRODUCTION-OPS.md`, `ARCHITECTURE-SUPPLIER-REDEMPTION.md`, `ARCHITECTURE-ACCOUNT-IDENTITY.md`.
 
@@ -24,12 +24,12 @@
 | רכיב | מצב בפועל |
 |---|---|
 | CI | אין `.github/workflows` בכלל. רק husky pre-commit + `.lintstagedrc.json` (biome על staged) |
-| בדיקות | 4 unit (`src/__tests__/`, `src/lib/commerce/*.test.ts`), 2 E2E (`e2e/`), כיסוי כסף התחיל (`money.ts`, `commission.ts`) |
+| בדיקות | 4 קבצי unit, 36 tests ירוקים (`pnpm test`). כולל `src/lib/commerce/{money,commission}.test.ts` (14 tests כסף) |
 | vitest | 3.x, jsdom בלבד (עדיין ללא projects), include `src/**/*.test.ts(x)` |
 | Playwright | 1.50, chromium בלבד, `locale he-IL`, webServer `pnpm dev` (יעבור ל-`build && start` ב-CI) |
 | קוד תשלומים | לא קיים. אין `src/server/actions/payments/`, אין webhook route, אין Cardcom client |
 | מודול כסף | `src/lib/commerce/` (אגורות, פיצול עמלה, golden cases). יעד ארוך טווח: `src/lib/money/` לפי D2 |
-| מיגרציות | 001-025 מוחלות על dev; 026-035 + 042 טיוטות ב-git; 036-041 שמורים במסמך האב. drift ידוע מול מרוחק |
+| מיגרציות | 001-025 מוחלות על dev; 026-035 טיוטות; `042_commerce_core.sql` טיוטה **untracked** (לא הוחלה); 036-041 שמורים במסמך האב. drift ידוע מול מרוחק |
 | Supabase מקומי | `config.toml` מלא (api 54321, db 54322, shadow 54320, Postgres 17, `db.seed` מופעל) אבל `supabase/seed.sql` **לא קיים** |
 | ויזואלי | משפחת `scripts/compare-*.mjs` (hero, product, product-live, exact) + `diff-bands.mjs` (TOL=24, פסים 100px) + `watch-compare.mjs`. ידני בלבד, לא ב-CI |
 | כלים | pnpm 11, biome 1.9, tsc strict + `noUncheckedIndexedAccess`, Next 16.2.4, React 19.2 |
@@ -51,7 +51,7 @@
 | D5 | **בדיקות RLS הן data-driven**: מטריצת role על table על operation יושבת כקובץ נתונים אחד, ו-runner גנרי (vitest, node env) מריץ אותה מול ה-stack המקומי עם JWT לכל persona | policy חדשה בלי שורה במטריצה = נכשל. שינוי policy שמרחיב הרשאה בטעות = נתפס. זה הביטוח היחיד האמיתי מול טעויות RLS |
 | D6 | **בדיקת idempotency של מיגרציות היא apply פעמיים מלא**: stack נקי, כל הקבצים לפי הסדר, ואז כל הקבצים שוב. שתי הריצות חייבות להצליח | זה החוק שכבר קיים ב-skill של המיגרציות; ה-harness הופך אותו מאמונה לעובדה נאכפת בכל PR שנוגע ב-`supabase/migrations/` |
 | D7 | **ויזואלי-RTL עובר ל-Playwright snapshots** (`toHaveScreenshot`) עם מטריצת breakpoints, וגישת compare.mjs (מול `ke_live_singlefile.html`) נשארת ככלי 1:1 ידני לעבודת פיקסלים בלבד | שני צרכים שונים: רגרסיה אוטומטית מול baseline של עצמנו (CI) לעומת התאמה חד-פעמית למקור חי (ידני) |
-| D8 | **מה שחוסם merge**: biome, tsc, unit, build, integration (כולל RLS + idempotency), E2E smoke. **מה שמזהיר בלבד**: E2E מלא, visual diff, Lighthouse | חסימה על בדיקות יציבות בלבד. ויזואלי מתחיל כאזהרה עד שה-baseline מתייצב, ואז מקודם לחוסם |
+| D8 | **מה שחוסם merge**: biome, tsc, commitlint, unit+coverage floors, build, a11y (axe), integration (כולל RLS + idempotency), E2E smoke. **מה שמזהיר בלבד**: E2E מלא, visual diff, Lighthouse | חסימה על בדיקות יציבות בלבד. ויזואלי מתחיל כאזהרה עד שה-baseline מתייצב, ואז מקודם לחוסם |
 | D9 | **בדיקות ריצה כפולה (race) הן חובה לכל פונקציית כסף**: `fn_wallet_transfer`, `redeem_coupon`, `fn_merge_guest_cart`, webhook handler. תבנית קבועה: שני קוראים במקביל, בדיוק אחד מצליח | כל ההגנות בתכנון (CAS אטומי, advisory lock, idempotency key, UNIQUE) הן בדיוק הדברים שנשברים בשקט ב-refactor |
 | D10 | **fail-closed לכסף נבדק כחוזה**: בדיקה שמוכיחה ש-checkout וסריקת קופון נעצרים כש-rate-limit RPC נכשל. הבאג הידוע (`rate-limit.ts` fails open, `checkUserRateLimit` בלי קוראים) נסגר ב-Phase 3 והבדיקה מקבעת את התיקון | תועד ב-PRODUCTION-OPS 4.2 כבאג. בלי בדיקה הוא יחזור |
 | D11 | **פירמידה לפי סיכון, לא לפי צורה**: יעד כיסוי גורף אין. במקום זה, רשימת אינברינטים סגורה (סעיף 2.0) שכל אחד מהם חייב בדיקה אחת לפחות, ו-CI נכשל אם קובץ בדיקות של מודול כסף לא קיים | כיסוי 80% על קוד UI שווה פחות מ-14 בדיקות הפיצול. בעלים יחיד = תקציב תשומת לב מוגבל, מוציאים אותו על מה שעולה כסף |
@@ -166,6 +166,38 @@ export default defineConfig({
 `check-coverage-floors.mjs` קורא את ה-JSON של v8, משווה לטבלה למעלה, ומדפיס diff ברור על הפרה. אין `--passWithNoTests` על מודולי כסף: אם אין קובץ בדיקות צמוד, ה-job נכשל (D11).
 
 דיווח: artifact `coverage/` בכל PR; badge אופציונלי ב-README אחרי הקמת CI.
+
+### 2.7 מיפוי מימוש commerce (סטטוס 2026-07-20)
+
+**קוד TypeScript (committed, `pnpm test` ירוק):**
+
+| קובץ | מה ממומש | בדיקות קיימות |
+|---|---|---|
+| `src/lib/commerce/money.ts` | `Agorot` branded type; `ilsToAgorot` (מקס 2 ספרות עשרוניות); `agorotToIls`; `formatIls` (he-IL); `sumAgorot`; `multiplyAgorot`; `percentToBasisPoints`; `percentageOf` (half away from zero) | 5 tests ב-`money.test.ts` |
+| `src/lib/commerce/commission.ts` | `calculateCommission`: פיצול קופון/פיזי, ארנק רק מפחית `cardCharge`, idempotency key חובה | 9 golden tests ב-`commission.test.ts` |
+
+**חוזי החישוב שחייבים להישאר ירוקים (ממופים ל-`commission.ts`):**
+
+| כלל | קופון | פיזי |
+|---|---|---|
+| R1: `customerPaysNow` | `percentageOf(faceValue, platformPercentBps)` | `faceValue` |
+| R2: `platformFee` | `customerPaysNow` (לא מ-`platform_percent` ישירות) | `percentageOf(faceValue, platformPercentBps)` |
+| R3: `cashbackAmount` | `percentageOf(customerPaysNow, cashbackBps)` | אותו דבר |
+| R4: ארנק | מפחית רק `cardCharge`; לא משנה settlement שורות | אותו דבר |
+
+**מיגרציה `042_commerce_core.sql` (טיוטה, לא הוחלה):**
+
+| אזור | מה נוסף | בדיקות אינטגרציה נדרשות (עדיין לא קיימות) |
+|---|---|---|
+| `products` | `cashback_percent`, `coupon_expiry_days` (ללא default גלובלי), `supplier_id NOT NULL` | seed עם ערכי תפוגה מפורשים; ולידציה שמוצר קופון בלי `coupon_expiry_days` נכשל |
+| `orders` / `order_items` | עמודות `*_agorot` + backfill מ-`*_ils` | אינברינטים 1-3: `platform_fee + supplier_due = face_value` לכל שורה |
+| `commission_ledger` | טבלה append-only + RLS read-only + `idempotency_key UNIQUE` | insert כפול על אותו `order_item` לא יוצר שורה שנייה |
+| `fn_snapshot_commission_ledger` | trigger אחרי insert ל-`order_items` | accrual אוטומטי עם מפתח `commission:accrual:<id>` |
+| `fn_credit_order_item_cashback` | זיכוי ארנק אחרי `shipped` / קופון `used` | deferred: לא ב-checkout; רק אחרי lifecycle |
+| `fn_reverse_order_item_cashback` | היפוך + `cashback_reversal_debts` | refund אחרי זיכוי: חלק חוזר לארנק, יתרה כחוב |
+| policy preflight/postflight | snapshot של 5 policies מוגנות; שינוי = exception | harness מיגרציות חייב לרוץ פעמיים בלי לשנות policies |
+
+**פערים מול D2:** המודול חי ב-`src/lib/commerce/` (לא `src/lib/money/`). לפני Phase 3 checkout: rename או re-export alias; עדכון רצפות כיסוי ב-2.6.
 
 ### 2.1 Unit - אריתמטיקת כסף (`src/lib/commerce/`, יעד `src/lib/money/`)
 
@@ -1049,6 +1081,15 @@ projects + `PLAYWRIGHT_BASE_URL` מ-env + webServer של build (לא dev); `pack
 ## 9. Definition of Done לכל שלב
 
 תנאי סף משותף לכל השלבים: CI ירוק מלא, אפס אזהרות biome חדשות, STATE.md מעודכן, והאינברינטים מסעיף 2.0 הרלוונטיים לשלב מכוסים בבדיקות שרצות ב-CI.
+
+### 9.0 commerce core (Phase 1.5, ביניים)
+
+- [x] `money.ts` + `money.test.ts` (5 tests): המרות ILS, basis points, עיגול half-up.
+- [x] `commission.ts` + `commission.test.ts` (9 tests): golden cases קופון, פיזי, מעורב, ארנק, עיגול 3×33.33.
+- [ ] טבלת מקרי M1-M22 (סעיף 2.1) מכוסה במלואה (חסרים: property test M15, מקרי K, מקרי S).
+- [ ] `042_commerce_core.sql` הוחלה על stack מקומי + harness apply-twice ירוק.
+- [ ] בדיקות אינטגרציה ל-`commission_ledger`, deferred cashback, reversal debts.
+- [ ] חוזה TS↔DB: `calculateCommission` output תואם ל-snapshot ב-`order_items.*_agorot`.
 
 ### 9.1 עגלה (Phase 2, אחרי החלת 026)
 

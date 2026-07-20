@@ -1,16 +1,15 @@
 # KenyonExpress State
 
 ## Current Phase
-**Testing + CI/CD architecture (design only, v2 refresh)**. branch `phase5/homepage`.
+**Testing + CI/CD architecture v3 (design only)**. branch `phase5/homepage`.
 
 ## Last Completed
-Session 2026-07-20 - `docs/ARCHITECTURE-TESTING-CICD.md` v2:
-- עדכון עובדות מוצא (מיגרציות עד 042, `src/lib/commerce/`, משפחת compare scripts).
-- הכרעות D23-D27: Conventional Commits, coverage floors פר מודול, שער prod ידני,
-  axe חוסם ב-PR, webhook replay לילי.
-- סעיפים חדשים: 2.6 coverage floors, 4.7 commit conventions, CD עם Preview אוטומטי
-  + Production ידני, הרחבת Cardcom replay.
-- 8 שאלות פתוחות מעודכנות. אין קוד, אין workflows, אין מיגרציות.
+Session 2026-07-20 (המשך) - `docs/ARCHITECTURE-TESTING-CICD.md` v3:
+- סעיף 2.7: מיפוי מימוש `money.ts`, `commission.ts`, `042_commerce_core.sql`
+  מול בדיקות נדרשות.
+- סעיף 9.0: DoD commerce core (2/6 סימון ירוק).
+- עדכון עובדות מוצא: 36 tests ירוקים, 042 untracked.
+- נוסף מצביע שורש `ARCHITECTURE-TESTING-CICD.md`.
 
 ## In Progress
 nothing
