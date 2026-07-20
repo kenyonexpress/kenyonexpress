@@ -1,5 +1,6 @@
 'use client'
 
+import { useCart } from '@/components/cart/CartProvider'
 import { Check, Minus, Plus, ShoppingCart } from 'lucide-react'
 import { useState } from 'react'
 
@@ -18,6 +19,7 @@ interface Attribute {
 }
 
 interface Props {
+  productId: string
   name: string
   nameEn: string | null
   basePrice: number
@@ -35,6 +37,7 @@ function shekels(value: number): string {
 }
 
 export default function ProductInfo({
+  productId,
   name,
   nameEn,
   basePrice,
@@ -46,6 +49,7 @@ export default function ProductInfo({
   variants,
   isCoupon,
 }: Props) {
+  const { addToCart, isPending } = useCart()
   const [selected, setSelected] = useState<string | null>(
     variants.length === 1 ? (variants[0]?.id ?? null) : null,
   )
@@ -66,15 +70,15 @@ export default function ProductInfo({
   const dec = () => setQty((q) => Math.max(1, q - 1))
   const inc = () => setQty((q) => Math.min(maxQty, q + 1))
 
-  const addToCart = () => {
+  const handleAddToCart = async () => {
     if (outOfStock || needsVariant) return
+    await addToCart(productId, selected, qty, name)
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)
   }
 
   return (
     <div className="space-y-5">
-      {/* Stock availability */}
       <p
         className={`inline-flex items-center gap-1.5 text-sm font-semibold ${
           outOfStock ? 'text-gray-500' : 'text-success'
@@ -87,7 +91,6 @@ export default function ProductInfo({
         {outOfStock ? 'אזל מהמלאי' : 'במלאי'}
       </p>
 
-      {/* Name */}
       <div>
         <h1 className="text-2xl font-black text-brand-dark leading-snug">{name}</h1>
         {nameEn && (
@@ -97,7 +100,6 @@ export default function ProductInfo({
         )}
       </div>
 
-      {/* Price */}
       <div className="flex items-end gap-3 flex-wrap">
         <span className="text-3xl font-black text-price">{shekels(price)}</span>
         {hasDiscount && (
@@ -112,7 +114,6 @@ export default function ProductInfo({
         )}
       </div>
 
-      {/* Coupon hint */}
       {isCoupon && (
         <div className="bg-brand-accent border border-brand-primary/40 rounded-lg p-3 text-sm">
           <p className="font-bold text-brand-dark">ניתן לרכישה כקופון</p>
@@ -122,7 +123,6 @@ export default function ProductInfo({
         </div>
       )}
 
-      {/* Attributes */}
       {attributes.length > 0 && (
         <ul className="text-sm text-gray-600 space-y-1.5 border-y border-gray-100 py-4">
           {attributes.map((attr) => (
@@ -134,12 +134,10 @@ export default function ProductInfo({
         </ul>
       )}
 
-      {/* Short description */}
       {description && (
         <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">{description}</p>
       )}
 
-      {/* Variants */}
       {variants.length > 0 && (
         <div>
           <p className="text-sm font-semibold text-gray-700 mb-2">בחר גרסה</p>
@@ -163,7 +161,6 @@ export default function ProductInfo({
         </div>
       )}
 
-      {/* Quantity + add to cart */}
       <div className="flex items-stretch gap-3 pt-1">
         <div className="flex items-center border border-gray-300 rounded-xl overflow-hidden">
           <button
@@ -189,8 +186,8 @@ export default function ProductInfo({
 
         <button
           type="button"
-          onClick={addToCart}
-          disabled={outOfStock || needsVariant}
+          onClick={() => void handleAddToCart()}
+          disabled={outOfStock || needsVariant || isPending}
           className="flex-1 flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-primary-hover text-brand-dark font-bold rounded-xl h-12 text-base transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {added ? (
@@ -207,7 +204,6 @@ export default function ProductInfo({
         </button>
       </div>
 
-      {/* SKU */}
       {effectiveSku && (
         <p className="text-xs text-gray-400">
           מק"ט: <span dir="ltr">{effectiveSku}</span>
