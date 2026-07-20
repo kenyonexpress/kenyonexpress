@@ -1,22 +1,32 @@
 import LeftSidebar from '@/components/LeftSidebar'
 import RightSidebar from '@/components/RightSidebar'
 import SiteFooter from '@/components/SiteFooter'
+import CartDrawer from '@/components/cart/CartDrawer'
+import { CartProvider } from '@/components/cart/CartProvider'
 import Header from '@/components/layout/Header'
+import { Toaster } from '@/components/ui/sonner'
+import { getCart } from '@/server/actions/cart'
 
-export default function MainLayout({ children }: { children: React.ReactNode }) {
+export default async function MainLayout({ children }: { children: React.ReactNode }) {
+  const cart = await getCart()
+
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header />
-      <div className="flex-1 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="grid grid-cols-[200px_1fr_250px] gap-4 items-start">
-            <RightSidebar />
-            <main className="min-w-0 space-y-4">{children}</main>
-            <LeftSidebar />
+    <CartProvider initialCart={cart}>
+      <div className="min-h-screen flex flex-col">
+        <Header />
+        <div className="flex-1 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 py-4">
+            <div className="grid grid-cols-[200px_1fr_250px] gap-4 items-start">
+              <RightSidebar />
+              <main className="min-w-0 space-y-4">{children}</main>
+              <LeftSidebar />
+            </div>
           </div>
         </div>
+        <SiteFooter />
       </div>
-      <SiteFooter />
-    </div>
+      <CartDrawer />
+      <Toaster position="top-center" dir="rtl" richColors closeButton />
+    </CartProvider>
   )
 }
