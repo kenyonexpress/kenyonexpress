@@ -63,8 +63,13 @@ Session 2026-07-20 - `ARCHITECTURE-CHECKOUT-PAYMENT.md` (שורש הפרויקט
 - Guest flow, Cardcom Low Profile, `checkout_finalize` idempotent, refunds, payment_attempts, error recovery, security.
 - ER + sequence diagrams + 10 open questions. מרחיב COMMERCE/API-CONTRACTS; `ARCHITECTURE-CART-CHECKOUT.md` עדיין חסר.
 
+## Last Completed (המשך סשן 2026-07-20 ערב)
+- **בר USP + שורת קטגוריות יושרו ל-live**: `BenefitBar.tsx` קונטיינר 1170px (x135-1305), `CategoryStrip.tsx` הוזז ל-x577-1305 (`me-[517px]`). אומת ויזואלית 1:1 מול הרפרנס. compare דף הבית: 22.5% (השארית = ארטיפקט masthead).
+- **עמוד מוצר נמדד מול האתר החי** (`compare-product-live.mjs`, slug 'מוצר-לדוגמא'): OVERALL 24.44% ב-2600px. רצועות פתוחות לתיקון: y400 (50%), y900-1100 (65-77%), y1500 (63%), y2100 (53%). לא 1:1 עדיין.
+- **מדיניות סוכנים**: manual mode גלובלי + ask על git commit/push (גלובלי ופרויקט), חוק 4 ב-CLAUDE.md שוכתב ל"commit ו-push רק באישור".
+
 ## In Progress
-צמצום פערי compare.mjs של דף הבית. המועמד האמיתי הבא: יישור רוחב הקונטיינר של בר ה-USP וגריד הדילים ל-1170px כמו ב-live. מושהה עד הכרעת Ofir בגלל הארטיפקט (ראו Blocking).
+nothing
 
 ## Blocking Issues
 `ARCHITECTURE-CART-CHECKOUT.md` עדיין חסר (handoff עגלה מצוין ב-Q2 של מסמך התשלומים).
@@ -73,7 +78,8 @@ Session 2026-07-20 - `ARCHITECTURE-CHECKOUT-PAYMENT.md` (שורש הפרויקט
 Docker מקומי לא רץ (רלוונטי ל-harness D6).
 
 ## Next Task
-הכרעת Ofir: האם יעד "כל רצועת compare מתחת 30%" תקף למרות ארטיפקט ה-masthead (שמייצר לבדו רצועות 50%+), או שמתקנים רק פערים אמיתיים (רוחב קונטיינר 1170px, גובה hero). אחרי ההכרעה: יישום והרצת compare.
+דף קטגוריה 1:1 - grid מוצרים, סינון, pagination לפי `refs/ke_live_singlefile.html` (הוראת Ofir 2026-07-20).
+במקביל/אחרי: סגירת רצועות עמוד המוצר (y400, y900-1100, y1500, y2100) מול האתר החי.
 בהמשך: Phase 0 של CI (`ci.yml`) או `ARCHITECTURE-CART-CHECKOUT.md`.
 
 ## Working Directory
