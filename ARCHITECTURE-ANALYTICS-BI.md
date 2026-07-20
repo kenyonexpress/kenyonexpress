@@ -8,6 +8,12 @@
 את השכבות שחסרו: session stitching אורח-למחובר, דייג'סט מייל יומי, איסוף Web Vitals,
 אסטרטגיית שאילתות איטיות, שדה `source_app` לאפליקציות עתידיות, ומדד repeat purchase.
 
+> **הכרעות בעלים (2026-07-20), סגרו את השאלות הפתוחות של הסבב הקודם:**
+> 1. **ייחוס = UTM בלבד** בשלב זה (סעיף 6).
+> 2. **דייג'סט מייל יומי לאדמין ב-07:00 ישראל** (סעיף 5.4).
+> 3. **Vercel Cron ל-jobs אפליקטיביים; pg_cron רק ל-jobs פנימיים ל-DB**
+>    (פקיעות, הזמנות תקועות; סעיף 8).
+
 מיגרציות נלוות (טיוטות, לא הוחלו):
 
 | קובץ | תפקיד |
@@ -346,12 +352,14 @@ repeat rate עונה "מי קנה החודש: חדשים או חוזרים" במ
 
 ### 5.4 דייג'סט מייל יומי לאדמין (חדש ב-v3)
 
-מייל אחד, עברית RTL, כל בוקר 08:00 ישראל. מתמזג עם דייג'סט ה-SEV3 של
+**הכרעת בעלים (2026-07-20): יומי ב-07:00 ישראל, לאדמין.**
+
+מייל אחד, עברית RTL, כל בוקר 07:00 ישראל. מתמזג עם דייג'סט ה-SEV3 של
 OBSERVABILITY (OBS-15) לאותה שליחה: מייל בוקר אחד, לא שניים.
 
 | רכיב | ערך |
 |---|---|
-| מנגנון | Vercel cron -> route `/api/cron/daily-digest` מוגן `CRON_SECRET` |
+| מנגנון | Vercel cron -> route `/api/cron/daily-digest` מוגן `CRON_SECRET`. Vercel cron הוא UTC בלבד, לכן נרשמים שני schedules (04:00 + 05:00 UTC) וה-route שולח רק כשהשעה המקומית בישראל היא 07, עם idempotency key `owner_digest:<il_date>` כך שכפל DST ו-retries מתמוטטים למייל אחד ביום ישראלי |
 | מקורות | `v_owner_dashboard` (יום אתמול מלא + היום עד כה), `v_money_alarms`, SEV3 פתוחים |
 | שליחה | שלב A (לפני 031 חיה): Resend ישירות מה-route. שלב B: דרך `notifications_outbox` (031), template ייעודי `owner_digest`, ערוץ מייל + WhatsApp |
 | תוכן | 1) התראות פתוחות (אם יש: הן למעלה, באדום). 2) הכנסת פלטפורמה אתמול מול ממוצע 7 ימים. 3) הזמנות + AOV. 4) GMV מול cash-in. 5) לקוחות ראשונים. 6) סריקות (הצלחות/כשלונות). 7) קופונים פתוחים + ₪. 8) התחייבות ארנק. 9) עגלות נטושות פתוחות |
@@ -365,10 +373,15 @@ OBSERVABILITY (OBS-15) לאותה שליחה: מייל בוקר אחד, לא ש�
 
 ## 6. ייחוס שיווקי (attribution)
 
-1. **עוגיית ייחוס 30 יום** (first-party): נלכדים `utm_*` (הסכימה הקנונית של
-   GROWTH 3.1: lowercase, סדר אלפביתי), `referrer`, `landing_path`, וגם click IDs
-   (`gclid`, `fbclid`, `ttclid`, הכרעת GROWTH 5.4) ומפתח `ref` של קישורי הפניה
-   `/r/<code>`. נשמרים first-touch (הביקור הראשון בחלון) ו-last-touch (העדכני).
+**הכרעת בעלים (2026-07-20): ייחוס = UTM בלבד בשלב זה.**
+
+1. **עוגיית ייחוס 30 יום** (first-party): נלכדים אך ורק פרמטרי `utm_*`
+   (הסכימה הקנונית של GROWTH 3.1: lowercase, סדר אלפביתי).
+   נשמרים first-touch (הביקור הראשון בחלון) ו-last-touch (העדכני).
+   **נדחה במפורש עד פרסום בתשלום:** `referrer`, `landing_path`, click IDs
+   (`gclid`, `fbclid`, `ttclid`) ומפתח `ref` של קישורי הפניה `/r/<code>`.
+   מבנה ה-jsonb מכיל אותם כמפתחות עתידיים, כך שההרחבה היא שינוי SDK בלבד,
+   בלי מיגרציה ובלי שינוי ב-`orders.attribution`.
 2. **`orders.attribution` (jsonb, קיים בטיוטת 033):** `beginCheckout` כותב לתוכו
    `{first: {...}, last: {...}}` פעם אחת; לעולם לא מתעדכן אחרי paid. זה נותן
    הכנסה-לפי-ערוץ ישירות על טבלת הכסף, בלי session stitching.
@@ -452,17 +465,27 @@ view רגיל על raw (13 חודשים מספיקים לניתוח ביצועי
 
 ### לוח רענון (נקבע בזמן החלה, לא בתוך המיגרציות)
 
-| job | תדירות | מנגנון |
-|---|---|---|
-| `expire_coupons()` (027) | יומי, לפני ה-rollup | pg_cron |
-| `fn_rollup_analytics_daily()` | לילי 02:10 ישראל | pg_cron |
-| `fn_refresh_analytics_matviews()` | לילי 02:40 ישראל | pg_cron |
-| `fn_ensure_analytics_partitions(2)` + `fn_drop_old_analytics_partitions(13)` | חודשי, 1 לחודש 03:00 | pg_cron |
-| `/api/cron/alerts` (קורא `v_money_alarms` + ספים, OBS-13) | כל 15 דקות | Vercel cron |
-| `/api/cron/daily-digest` (סעיף 5.4) | יומי 08:00 ישראל | Vercel cron |
+**הכרעת בעלים (2026-07-20): חלוקת cron מחייבת. Vercel Cron לכל job ברמת
+האפליקציה; pg_cron אך ורק ל-jobs פנימיים ל-DB (SQL טהור, בלי רשת ובלי API
+חיצוני): פקיעת קופונים, הזמנות pending תקועות, rollup, matviews, partitions, purges.**
 
-pg_cron מריץ SQL טהור וזמין גם ב-free tier; כל מה שנוגע ב-API חיצוני (מיילים,
-התראות) רץ ב-Vercel cron עם `CRON_SECRET`.
+| job | תדירות | מנגנון | למה בצד הזה של הקו |
+|---|---|---|---|
+| `expire_coupons()` (027) + זיכויי refund_credit של פקיעה | יומי 01:50, לפני ה-rollup | pg_cron | סריקת מצב SQL טהורה |
+| ביטול הזמנות pending שעברו `expires_at` | כל 15 דקות | pg_cron | SQL טהור; אחרת מציף את `v_money_alarms` |
+| `fn_rollup_analytics_daily()` | לילי 02:10 ישראל | pg_cron | SQL טהור |
+| `fn_refresh_analytics_matviews()` | לילי 02:40 ישראל | pg_cron | SQL טהור |
+| `fn_ensure_analytics_partitions(2)` + `fn_drop_old_analytics_partitions(13)` | חודשי, 1 לחודש 03:00 | pg_cron | DDL פנימי |
+| purge של `coupon_scan_events` (90 יום) / `search_queries` (6 חודשים) | לפי הדומיינים שלהם | pg_cron | SQL טהור |
+| `/api/cron/alerts` (קורא `v_money_alarms` + ספים, OBS-13) | כל 15 דקות | Vercel cron | שולח התראות (API חיצוני) |
+| `/api/cron/daily-digest` (סעיף 5.4) | יומי 07:00 ישראל (schedules כפולים ב-UTC + guard) | Vercel cron | שולח מייל (API חיצוני) |
+| worker של `notifications_outbox`, reconcile מול Cardcom | לפי המסמכים שלהם | Vercel cron | APIs חיצוניים |
+
+הרציונל: pg_cron ב-Supabase לא מחזיק סודות ספקים ולא קורא HTTP; Vercel cron לא
+מתחרה ב-sweep תוך-DB בטרנזקציוניות ובזמינות. החלוקה גם שורדת נפילת Vercel עם
+מצב כסף תקין (פקיעות וביטולי pending ממשיכים לרוץ ב-DB). תזמון pg_cron נעשה
+בזמן החלה (בלוק `cron.schedule` אחד פר job), לעולם לא בתוך המיגרציות הממוספרות;
+jobs של Vercel חיים ב-`vercel.json` עם handlers תחת `/api/cron/*` מוגני `CRON_SECRET`.
 
 ---
 
@@ -556,8 +579,10 @@ SDK צד לקוח (batch, sendBeacon, דגימת web vitals, עוגיות סשן
 3. **דשבורד אדמין מ-views בזמן אמת; אין matview שעתי עכשיו.** שער מוגדר: שאילתה
    מעל 200ms p95 הופכת ל-matview עם רענון שעתי CONCURRENTLY. שני ה-matviews
    ההיסטוריים נשארים ליליים 02:40.
-4. **דייג'סט מייל יומי 08:00** דרך `/api/cron/daily-digest`, ממוזג עם דייג'סט
-   ה-SEV3 של OBS-15; שלב A ב-Resend ישיר, שלב B דרך outbox. כל מספר מול baseline.
+4. **דייג'סט מייל יומי 07:00 ישראל לאדמין** (הכרעת בעלים 2026-07-20) דרך
+   `/api/cron/daily-digest` (Vercel cron כפול ב-UTC + guard שעה ישראלית +
+   idempotency פר יום), ממוזג עם דייג'סט ה-SEV3 של OBS-15; שלב A ב-Resend ישיר,
+   שלב B דרך outbox. כל מספר מול baseline.
 5. **Web Vitals בשני מסלולים:** Speed Insights ראשי (הכרעת D-9), `web_vital`
    first-party משני בדגימת 25% ובאותו gate הסכמה; `v_web_vitals_daily` לעיון השבועי.
 6. **Vercel Web Analytics: לא.** Speed Insights: כן. אין כפילות התנהגות מחוץ למחסן.
@@ -568,6 +593,12 @@ SDK צד לקוח (batch, sendBeacon, דגימת web vitals, עוגיות סשן
    `checkout_step` במשפך. הכנסת ספקים מוגדרת: `supplier_due_ils` (physical) +
    `collect_amount_ils` במימוש (קופונים).
 10. **הדלתא נכנסת לטיוטות 033/034 עצמן**, לא למיגרציה חדשה (הן טרם הוחלו; 042 תפוס).
+11. **ייחוס = UTM בלבד** (הכרעת בעלים 2026-07-20): עוגיית 30 יום עם `utm_*`
+    first/last בלבד; referrer, click IDs ו-`ref` נדחים לפרסום בתשלום; ההרחבה
+    היא שינוי SDK בלי מיגרציה.
+12. **חלוקת cron** (הכרעת בעלים 2026-07-20): Vercel Cron לכל job אפליקטיבי
+    (מיילים, התראות, workers, reconcile); pg_cron רק ל-SQL פנימי (פקיעת קופונים,
+    ביטול pending תקועות, rollup, matviews, partitions, purges).
 
 ---
 
