@@ -1,9 +1,15 @@
 # KenyonExpress State
 
 ## Current Phase
-**Checkout + Payment Engine architecture (design only)**. branch `phase5/homepage`.
+**WP Data Migration architecture v2 (design only)**. branch `phase5/homepage`.
 
 ## Last Completed
+Session 2026-07-20 - `ARCHITECTURE-WP-MIGRATION.md` (שורש הפרויקט, design only):
+- עדכון מחייב של `docs/ARCHITECTURE-WP-DATA-MIGRATION.md` (M1-M17) לסכימת 042: המרת אגורות (W2), commission_ledger accrual לשוברי legacy (W6), cashback_percent=0 למיובאים.
+- הכרעות חדשות W1-W8: שיוך ספק = שער curation חוסם (042 NOT NULL, גובר על M6); קוד שובר 8 ספרות או הנפקה חדשה עם מיפוי ב-id_map (W7); coupon_expiry_days חובה ב-curation (W8); Google auto-link לפי אימייל + מייל מעבר יחיד למשתמשי סיסמה (W3).
+- 032 מאושררת + תוספת שתי עמודות curation (`approved_supplier_slug`, `approved_coupon_expiry_days`) בגוף הטיוטה (W5, טרם הוחלה).
+- כיסוי מלא: data inventory (mysqldump), מיפוי שדה-שדה, staging pipeline (resumable+dry-run), לקוחות ל-Auth, שוברים חיים ל-coupon_codes, integrity gates, cutover + parallel-run, 8 שאלות פתוחות.
+
 Session 2026-07-20 - `ARCHITECTURE-CHECKOUT-PAYMENT.md` (שורש הפרויקט, design only):
 - מכונת מצבים מלאה: cart → identity → address → Cardcom → webhook → finalize → fulfillment.
 - Guest flow, Cardcom Low Profile, `checkout_finalize` idempotent, refunds, payment_attempts, error recovery, security.
@@ -231,6 +237,11 @@ commit: `feat: homepage 1:1 match with live source`
 - כיסוי: Auth/RLS, staff, scanner PWA/offline, orders, weekly finance,
   product visibility, notifications, route map, RTL/Electro ו-open questions
 - לא נכתב קוד, לא נכתבה מיגרציה ולא שונה DB
+
+### 2026-07-20 - WP Migration architecture v2 (root doc)
+- נוצר `ARCHITECTURE-WP-MIGRATION.md` (design only, שורש הפרויקט)
+- יישור מסלול W לסכימת 042 (אגורות, commission_ledger); הכרעות W1-W8
+- 032 נשארת טיוטה לא מוחלת; אין קוד, אין דאטה
 
 ### 2026-07-20 - Checkout + Payment Engine architecture
 - נוצר `ARCHITECTURE-CHECKOUT-PAYMENT.md` (design only, שורש הפרויקט)
