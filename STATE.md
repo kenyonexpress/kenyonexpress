@@ -3,16 +3,22 @@
 ## Current Phase
 **Phase 5 storefront + יסודות commerce**. branch `phase5/homepage`.
 
-מה בנוי נכון ל-2026-07-20:
-- **Homepage 1:1** מול `refs/ke_live_singlefile.html`: hero RTL תקין (`8c36a52`), compare 22.66% (מתחת ליעד 30%; רצועות 50%+ הן ארטיפקט masthead מוסתר בלכידה). פער אמיתי פתוח: רוחב קונטיינר ~1290 מול 1170 ב-live.
-- **Product page 1:1** מול live (`0e20947`), נתיב `/product/[slug]`.
-- **Cart מקצה לקצה**: server actions עם guest session + מיזוג בהתחברות, CartProvider/Drawer/badge, דף עגלה, add-to-cart ב-PDP ובכרטיסים (`9a0a113`..`d409092`), provider גם ב-`(main)` וגם ב-`(store)` (`1fd3a5f`).
-- **Commerce engine**: סכימת Drizzle (`4758711`), primitives של כסף ב-integer אגורות (`62f06fb`), מנוע עמלות דטרמיניסטי (`db28408`), golden settlement tests (`4c342e1`). קובץ מיגרציה `042_commerce_core.sql` קיים.
-- **Admin panel** (Phase 3) פעיל; פיצול rbac ל-client-safe (`971ac6b`).
-- **מיגרציות**: קבצים עד 042 בריפו. מוחלות על המרוחק: 001-025 + 019/020/021. כל 026+ טיוטות שלא הוחלו; החלה רק דרך MCP `apply_migration` בסדר הקנוני.
-- build ירוק (`pnpm build`), type-check נקי.
-
 ## Last Completed
+Session 2026-07-20 (ערב) - `ARCHITECTURE-PERFORMANCE-SEO.md` (שורש, design only):
+- מסמך מאוחד מחייב לביצועים + SEO בזמן ריצה. בולע/מיישר את
+  `docs/ARCHITECTURE-PERFORMANCE.md` ומחבר ל-CATALOG §3, GROWTH §1,
+  WP M8, TESTING-CICD D8/D26, ANALYTICS §7.
+- כיסוי: מיפוי 301 (proxy בלבד, לא vercel.json), sitemap/robots/canonical,
+  אין hreflang (סיגנלי he/he_IL/he-IL), JSON-LD בלי ratings, meta עברית +
+  OG סטטי ראשי / `@vercel/og` משני, CWV + תמונות + Heebo + PPR + bundle,
+  cacheLife/tags, טבלת רינדור לכל route (כולל supplier/admin), RUM +
+  Lighthouse nightly warn, 8 שאלות פתוחות.
+- מצביעים עודכנו בראש PERFORMANCE ו-GROWTH-SEO. אין קוד, אין מיגרציה.
+
+מה בנוי נכון ל-2026-07-20 (רקע, לא השתנה בסשן הזה):
+- Homepage 1:1, PDP `/product/[slug]`, Cart E2E, commerce engine + 042 draft,
+  Admin Phase 3, מיגרציות מרוחקות עד 025 (+019/020/021), build ירוק.
+
 Session 2026-07-20 (לילה, המשך) - קישור מוצרים ל-6 ה-vendors הקיימים (044):
 - **מיגרציה** `supabase/migrations/044_link_products_to_vendors.sql` (idempotent): משקפת את 6 ה-vendors (אלקטרו פלוס, סטייל הבית, ביוטי לאב, ספורט מקס, טעמים גורמה, טק וורלד) לתוך `public.suppliers` עם אותם UUIDs (כיוון האיחוד המתוכנן של 036; `products.supplier_id` מפנה ל-suppliers, לא ל-vendors), מקשרת את כל 31 המוצרים לפי קטגוריה (electronics->אלקטרו פלוס, phones-computers->טק וורלד, restaurants-cafes+professionals->טעמים גורמה, beauty-health->ביוטי לאב, vacation->ספורט מקס, השאר->סטייל הבית), ומוחקת את 3 ספקי הדמו הזמניים של 043.
 - **הוחל על המרוחק** דרך `scripts/apply-044-link-vendors.mjs` (PostgREST). הרצה חוזרת = 0 שינויים. אימות: 31/31 supplier_id, 31/31 תמונות, חלוקה 4/4/6/6/8/3, suppliers=6.
@@ -284,6 +290,11 @@ commit: `feat: homepage 1:1 match with live source`
 - נוצר `ARCHITECTURE-WP-MIGRATION.md` (design only, שורש הפרויקט)
 - יישור מסלול W לסכימת 042 (אגורות, commission_ledger); הכרעות W1-W8
 - 032 נשארת טיוטה לא מוחלת; אין קוד, אין דאטה
+
+### 2026-07-20 - Performance + SEO architecture (root doc)
+- נוצר `ARCHITECTURE-PERFORMANCE-SEO.md` (design only, שורש הפרויקט)
+- איחוד PERFORMANCE + מכניקת SEO בזמן ריצה; מצביעים ב-docs/
+- אין קוד, אין מיגרציה
 
 ### 2026-07-20 - Checkout + Payment Engine architecture
 - נוצר `ARCHITECTURE-CHECKOUT-PAYMENT.md` (design only, שורש הפרויקט)
