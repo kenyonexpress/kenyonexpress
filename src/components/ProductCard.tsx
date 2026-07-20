@@ -1,3 +1,6 @@
+'use client'
+
+import AddToCartButton from '@/components/cart/AddToCartButton'
 import Link from 'next/link'
 import '@/styles/product-card-deals.css'
 
@@ -12,7 +15,6 @@ export type Product = {
   category?: { name_he: string; slug: string } | null
 }
 
-/* live singlefile format: "₪3900" — no decimals, no thousands separator */
 function shekels(value: number): string {
   return `₪${Math.round(value)}`
 }
@@ -41,6 +43,7 @@ function DealsProductCard({ product }: { product: Product }) {
   const hasDiscount = old != null && old > price
   const discountPct = hasDiscount ? Math.round((1 - price / old) * 100) : 0
   const outOfStock = product.stock_quantity === 0
+  const canAdd = product.kenyon_price != null && !outOfStock
 
   return (
     <article className="p_con">
@@ -86,7 +89,6 @@ function DealsProductCard({ product }: { product: Product }) {
           </div>
         ) : (
           <div className="p_con__prices">
-            {/* live renders an empty price area when the product has no price (e.g. restaurants-meat-2) */}
             {product.kenyon_price != null && (
               <span className="p_con__single-price">{shekels(price)}</span>
             )}
@@ -94,9 +96,21 @@ function DealsProductCard({ product }: { product: Product }) {
         )}
 
         <div className="atc shrink-0">
-          <Link href={`/product/${product.slug}`} aria-label="הוסף לעגלה">
-            <CartPlusIcon />
-          </Link>
+          {canAdd ? (
+            <AddToCartButton
+              productId={product.id}
+              productName={product.name_he}
+              disabled={outOfStock}
+              variant="icon"
+              className="flex h-full w-full items-center justify-center"
+            >
+              <CartPlusIcon />
+            </AddToCartButton>
+          ) : (
+            <Link href={`/product/${product.slug}`} aria-label="צפה במוצר">
+              <CartPlusIcon />
+            </Link>
+          )}
         </div>
       </div>
     </article>
@@ -113,6 +127,7 @@ function DefaultProductCard({ product }: { product: Product }) {
   const old = product.full_price != null ? Number(product.full_price) : null
   const hasDiscount = old != null && old > price
   const outOfStock = product.stock_quantity === 0
+  const canAdd = product.kenyon_price != null && !outOfStock
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-100 bg-white">
@@ -151,19 +166,31 @@ function DefaultProductCard({ product }: { product: Product }) {
           )}
         </Link>
 
-        <div className="flex flex-wrap items-baseline gap-2">
-          {hasDiscount && old != null && (
-            <span className="text-[14px] text-[#2d2d2d] line-through">{shekels(old)}</span>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-baseline gap-2">
+            {hasDiscount && old != null && (
+              <span className="text-[14px] text-[#2d2d2d] line-through">{shekels(old)}</span>
+            )}
+            <span
+              className={
+                hasDiscount
+                  ? 'text-[16px] font-bold text-[#c93636]'
+                  : 'text-[16px] font-bold text-[#2d2d2d]'
+              }
+            >
+              {shekels(price)}
+            </span>
+          </div>
+
+          {canAdd && (
+            <AddToCartButton
+              productId={product.id}
+              productName={product.name_he}
+              className="rounded-lg bg-brand-primary px-3 py-1.5 text-xs font-bold text-brand-dark hover:bg-brand-primary-hover transition-colors"
+            >
+              הוסף לסל
+            </AddToCartButton>
           )}
-          <span
-            className={
-              hasDiscount
-                ? 'text-[16px] font-bold text-[#c93636]'
-                : 'text-[16px] font-bold text-[#2d2d2d]'
-            }
-          >
-            {shekels(price)}
-          </span>
         </div>
       </div>
     </div>
