@@ -13,6 +13,13 @@
 - build ירוק (`pnpm build`), type-check נקי.
 
 ## Last Completed
+Session 2026-07-20 (לילה) - Data Integrity Audit + Seed Repair (`17dbca0`):
+- **אודיט מציאות מול סכימה** (`scripts/audit-data-integrity.mjs`, קורא דרך PostgREST עם service role): במרוחק products=31 (כולם physical/active), categories=12, suppliers=0, vendors=6, product_images=0. התמונות חיות ב-`products.images` jsonb (עמודה מ-016, כרגע URLs של Unsplash), לא ב-`product_images` ולא ב-bucket. ה-DB המרוחק חסר את עמודות 027 על suppliers (אין status/legal_name) ואת 042 (אין platform_percent, אין wallet_accounts/commission_ledger), אבל כן יש products.cashback_percent+coupon_expiry_days.
+- **מיגרציה חדשה** `supabase/migrations/043_seed_suppliers_link_products.sql` (idempotent, עמודות 005 בלבד כך שרצה על המרוחק): 3 ספקי דמו עבריים עם UUID קבועים (אלקטרו סחר / חופשות ישראל / בית ומשפחה), קישור round-robin דטרמיניסטי לפי slug של כל מוצר עם supplier_id NULL, והקרנת `products.images` jsonb אל `product_images` (ראשונה=ראשית, לפי המודל הכפול של ARCHITECTURE-WP-DATA-MIGRATION).
+- **הוחל בפועל על המרוחק** דרך `scripts/apply-043-seed.mjs` (PostgREST, אין SQL ישיר; אין SUPABASE_DB_URL ואין MCP). הרצה חוזרת = 0 שינויים.
+- **אימות** (`scripts/verify-data-integrity.mjs`): 31/31 עם supplier_id, 31/31 עם תמונה (jsonb וגם product_images), חלוקה 11/10/10. VERIFICATION PASSED. type-check ירוק, push בוצע.
+- **הערת סדר**: על DB שבו 042 טרם הוחלה יש להריץ 043 לפני 042 (ה-preflight של 042 דורש supplier_id לכל המוצרים). אחרי 042 היא no-op בטוח.
+
 Session 2026-07-20 (ערב) - תיקוני RTL, build והרשאות:
 - **Hero RTL** (`8c36a52`): `HeroSlider.tsx` הוחלף לכיוון electro - תמונה ב-`start-0` (ימין תחת RTL), כל תיבות הטקסט ב-`end-0` עם `text-end` (שמאל), הזחות `ps->pe`, פסקאות מחיר `dir=ltr` קיבלו `text-start`, תג החנויות `ms-auto`. אושר על ידי Ofir.
 - **פיצול rbac** (`971ac6b`): `src/lib/admin/roles.ts` חדש (ROLE_LABELS/ROLE_ORDER/isAdminRole/isStaffRole client-safe); `rbac.ts` מייצא מחדש ושומר את ה-guards. `UsersTable.tsx` + `UserRoleClient.tsx` מייבאים מ-roles. תיקן שבירת build (supabase/server בתוך client).
