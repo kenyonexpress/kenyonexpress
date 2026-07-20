@@ -79,7 +79,7 @@ function SlideImage({
   return (
     <>
       <div
-        className="absolute end-0 hidden overflow-hidden lg:block"
+        className="absolute start-0 hidden overflow-hidden lg:block"
         style={{
           top: layout.offsetTop,
           width: `${layout.widthPercent}%`,
@@ -99,57 +99,127 @@ function SlideImage({
 
 function AppSlideCopy({ slide }: { slide: HeroSlide }) {
   return (
-  <div className="pointer-events-none absolute start-0 top-0 z-10 w-1/2 max-w-[50%] ps-[31px]">
-    {slide.title && (
-      <span
-        style={{ color: T.headline1.color }}
-        className="mt-[52px] block text-[43px] font-light leading-[43px] lg:text-[58px] lg:leading-[58px]"
-      >
-        {slide.title}
-      </span>
-    )}
-    {slide.title_secondary && (
-      <span
-        style={{ color: T.headline2.color, letterSpacing: '-1px' }}
-        className={`mt-0 block text-[38px] font-light leading-[38px] lg:text-[51px] lg:leading-[51px] ${
-          slide.title_secondary_indent ? 'ps-[70px] lg:ps-[70px]' : ''
-        }`}
-      >
-        {slide.title_secondary}
-      </span>
-    )}
-    {slide.badge_image_url && (
-      <div className="relative mt-16 h-[46px] w-[286px] max-w-full lg:mt-24">
-        <SmartImage
-          src={slide.badge_image_url}
-          alt=""
-          fill
-          sizes="572px"
-          quality={90}
-          className="object-contain object-start"
-          fallbackClassName="absolute inset-0"
-        />
-      </div>
-    )}
-  </div>
+    <div className="pointer-events-none absolute end-0 top-0 z-10 w-1/2 max-w-[50%] pe-[31px] text-end">
+      {slide.title && (
+        <span
+          style={{ color: T.headline1.color }}
+          className="mt-[52px] block text-[43px] font-light leading-[43px] lg:text-[58px] lg:leading-[58px]"
+        >
+          {slide.title}
+        </span>
+      )}
+      {slide.title_secondary && (
+        <span
+          style={{ color: T.headline2.color, letterSpacing: '-1px' }}
+          className={`mt-0 block text-[38px] font-light leading-[38px] lg:text-[51px] lg:leading-[51px] ${
+            slide.title_secondary_indent ? 'pe-[70px] lg:pe-[70px]' : ''
+          }`}
+        >
+          {slide.title_secondary}
+        </span>
+      )}
+      {slide.badge_image_url && (
+        <div className="relative ms-auto mt-16 h-[46px] w-[286px] max-w-full lg:mt-24">
+          <SmartImage
+            src={slide.badge_image_url}
+            alt=""
+            fill
+            sizes="572px"
+            quality={90}
+            className="object-contain object-left"
+            fallbackClassName="absolute inset-0"
+          />
+        </div>
+      )}
+    </div>
   )
 }
 
 function ProductSlideCopy({ slide }: { slide: HeroSlide }) {
   const tagline = slide.tagline ?? slide.subtitle
-  const line1Class = slide.title_indent ? 'ps-[21px] lg:ps-[21px]' : ''
+  const line1Class = slide.title_indent ? 'pe-[21px] lg:pe-[21px]' : ''
 
   return (
-  <div
-    className="pointer-events-none absolute start-0 top-0 z-10 w-full max-w-[50%] pb-12 ps-[31px] lg:w-1/2"
-    style={{ paddingTop: SLIDE.text.paddingTop }}
-  >
-    {(slide.title || slide.title_secondary) && (
+    <div
+      className="pointer-events-none absolute end-0 top-0 z-10 w-full max-w-[50%] pb-12 pe-[31px] text-end lg:w-1/2"
+      style={{ paddingTop: SLIDE.text.paddingTop }}
+    >
+      {(slide.title || slide.title_secondary) && (
+        <h1 className="m-0 min-h-[86px] lg:min-h-[118px]">
+          {slide.title && (
+            <span
+              style={{ color: T.headline1.color }}
+              className={`block text-[43px] font-light leading-[1.08] lg:text-[58px] ${line1Class}`}
+            >
+              {slide.title}
+            </span>
+          )}
+          {slide.title_secondary && (
+            <span
+              style={{ color: T.headline2.color, letterSpacing: '-1px' }}
+              className={`mt-0.5 block text-[38px] font-light leading-[1.08] lg:mt-1 lg:text-[51px] ${
+                slide.title_secondary_indent ? 'pe-[47px] lg:pe-[47px]' : ''
+              }`}
+            >
+              {slide.title_secondary}
+            </span>
+          )}
+        </h1>
+      )}
+
+      {tagline && (
+        <p
+          style={{ color: T.tagline.color }}
+          className="mt-3 text-[11px] font-bold leading-[11px] lg:mt-4 lg:text-[19px] lg:leading-[19px]"
+        >
+          {tagline}
+        </p>
+      )}
+
+      {slide.standard_line && (
+        <p
+          dir="ltr"
+          style={{ color: T.headline1.color }}
+          className="mt-4 text-start text-[11px] font-bold leading-[15px] lg:mt-5 lg:text-[15px]"
+        >
+          {slide.standard_line}
+        </p>
+      )}
+
+      {slide.promo_small && (
+        <p
+          dir="ltr"
+          style={{ color: T.priceLabel.color }}
+          className="mt-2 text-start text-[12px] leading-[13px] lg:mt-3 lg:text-[13px]"
+        >
+          {slide.promo_small}
+        </p>
+      )}
+
+      {slide.promo_large && (
+        <p
+          dir="ltr"
+          style={{ color: T.price.color }}
+          className="mt-0 text-start text-[35px] font-bold leading-[35px] lg:text-[50px] lg:leading-[50px]"
+        >
+          {slide.promo_large}
+        </p>
+      )}
+    </div>
+  )
+}
+
+function WelcomeSlideCopy({ slide }: { slide: HeroSlide }) {
+  return (
+    <div
+      className="pointer-events-none absolute end-0 top-0 z-10 w-full max-w-[50%] pb-12 pe-[31px] text-end lg:w-1/2"
+      style={{ paddingTop: SLIDE.text.paddingTop }}
+    >
       <h1 className="m-0 min-h-[86px] lg:min-h-[118px]">
         {slide.title && (
           <span
             style={{ color: T.headline1.color }}
-            className={`block text-[43px] font-light leading-[1.08] lg:text-[58px] ${line1Class}`}
+            className="block text-[43px] font-light leading-[1.08] lg:text-[58px]"
           >
             {slide.title}
           </span>
@@ -158,110 +228,40 @@ function ProductSlideCopy({ slide }: { slide: HeroSlide }) {
           <span
             style={{ color: T.headline2.color, letterSpacing: '-1px' }}
             className={`mt-0.5 block text-[38px] font-light leading-[1.08] lg:mt-1 lg:text-[51px] ${
-              slide.title_secondary_indent ? 'ps-[47px] lg:ps-[47px]' : ''
+              slide.title_secondary_indent ? 'pe-[47px]' : ''
             }`}
           >
             {slide.title_secondary}
           </span>
         )}
       </h1>
-    )}
-
-    {tagline && (
-      <p
-        style={{ color: T.tagline.color }}
-        className="mt-3 text-[11px] font-bold leading-[11px] lg:mt-4 lg:text-[19px] lg:leading-[19px]"
-      >
-        {tagline}
-      </p>
-    )}
-
-    {slide.standard_line && (
-      <p
-        dir="ltr"
-        style={{ color: T.headline1.color }}
-        className="mt-4 text-[11px] font-bold leading-[15px] lg:mt-5 lg:text-[15px]"
-      >
-        {slide.standard_line}
-      </p>
-    )}
-
-    {slide.promo_small && (
-      <p
-        dir="ltr"
-        style={{ color: T.priceLabel.color }}
-        className="mt-2 text-[12px] leading-[13px] lg:mt-3 lg:text-[13px]"
-      >
-        {slide.promo_small}
-      </p>
-    )}
-
-    {slide.promo_large && (
-      <p
-        dir="ltr"
-        style={{ color: T.price.color }}
-        className="mt-0 text-[35px] font-bold leading-[35px] lg:text-[50px] lg:leading-[50px]"
-      >
-        {slide.promo_large}
-      </p>
-    )}
-  </div>
-  )
-}
-
-function WelcomeSlideCopy({ slide }: { slide: HeroSlide }) {
-  return (
-  <div
-    className="pointer-events-none absolute start-0 top-0 z-10 w-full max-w-[50%] pb-12 ps-[31px] lg:w-1/2"
-    style={{ paddingTop: SLIDE.text.paddingTop }}
-  >
-    <h1 className="m-0 min-h-[86px] lg:min-h-[118px]">
-      {slide.title && (
-        <span
+      {slide.tagline && (
+        <p
+          style={{ color: T.tagline.color }}
+          className="mt-4 text-[11px] font-bold leading-[11px] lg:mt-5 lg:text-[19px] lg:leading-[19px]"
+        >
+          {slide.tagline}
+        </p>
+      )}
+      {slide.promo_small && (
+        <p
+          dir="ltr"
           style={{ color: T.headline1.color }}
-          className="block text-[43px] font-light leading-[1.08] lg:text-[58px]"
+          className="mt-3 ps-[11px] text-start text-[12px] font-normal leading-[15px] lg:mt-4 lg:text-[15px]"
         >
-          {slide.title}
-        </span>
+          {slide.promo_small}
+        </p>
       )}
-      {slide.title_secondary && (
-        <span
-          style={{ color: T.headline2.color, letterSpacing: '-1px' }}
-          className={`mt-0.5 block text-[38px] font-light leading-[1.08] lg:mt-1 lg:text-[51px] ${
-            slide.title_secondary_indent ? 'ps-[47px]' : ''
-          }`}
+      {slide.promo_large && (
+        <p
+          dir="ltr"
+          style={{ color: T.price.color }}
+          className="mt-0 ps-[10px] text-start text-[35px] font-bold leading-[40px] lg:text-[45px] lg:leading-[50px]"
         >
-          {slide.title_secondary}
-        </span>
+          {slide.promo_large}
+        </p>
       )}
-    </h1>
-    {slide.tagline && (
-      <p
-        style={{ color: T.tagline.color }}
-        className="mt-4 text-[11px] font-bold leading-[11px] lg:mt-5 lg:text-[19px] lg:leading-[19px]"
-      >
-        {slide.tagline}
-      </p>
-    )}
-    {slide.promo_small && (
-      <p
-        dir="ltr"
-        style={{ color: T.headline1.color }}
-        className="mt-3 ps-[11px] text-[12px] font-normal leading-[15px] lg:mt-4 lg:text-[15px]"
-      >
-        {slide.promo_small}
-      </p>
-    )}
-    {slide.promo_large && (
-      <p
-        dir="ltr"
-        style={{ color: T.price.color }}
-        className="mt-0 ps-[10px] text-[35px] font-bold leading-[40px] lg:text-[45px] lg:leading-[50px]"
-      >
-        {slide.promo_large}
-      </p>
-    )}
-  </div>
+    </div>
   )
 }
 
@@ -331,20 +331,20 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
           {slides.map((s, i) => {
             const isCurrent = i === active
             return (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => goTo(i)}
-              aria-label={`שקופית ${i + 1}`}
-              aria-current={isCurrent ? 'true' : undefined}
-              style={{
-                width: isCurrent ? 30 : 8,
-                height: 8,
-                backgroundColor: isCurrent ? DOT_ACTIVE : DOT_INACTIVE,
-                borderRadius: isCurrent ? 3 : 9999,
-              }}
-              className="shrink-0 border-0 p-0 transition-all duration-200 hover:opacity-80"
-            />
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => goTo(i)}
+                aria-label={`שקופית ${i + 1}`}
+                aria-current={isCurrent ? 'true' : undefined}
+                style={{
+                  width: isCurrent ? 30 : 8,
+                  height: 8,
+                  backgroundColor: isCurrent ? DOT_ACTIVE : DOT_INACTIVE,
+                  borderRadius: isCurrent ? 3 : 9999,
+                }}
+                className="shrink-0 border-0 p-0 transition-all duration-200 hover:opacity-80"
+              />
             )
           })}
         </div>
