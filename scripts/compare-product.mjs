@@ -1,11 +1,16 @@
-import { chromium } from '@playwright/test'
-import { pathToFileURL } from 'node:url'
 import { resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
+import { chromium } from '@playwright/test'
 const VIEW = { width: 1440, height: 2000 }
 const b = await chromium.launch()
 const ctx = await b.newContext({ viewport: VIEW, deviceScaleFactor: 1 })
 const live = await ctx.newPage()
-try { await live.goto(pathToFileURL(resolve('refs/ke_live_product.html')).href, { waitUntil: 'networkidle', timeout: 45000 }) } catch {}
+try {
+  await live.goto(pathToFileURL(resolve('refs/ke_live_product.html')).href, {
+    waitUntil: 'networkidle',
+    timeout: 45000,
+  })
+} catch {}
 await live.waitForTimeout(3000)
 await live.screenshot({ path: 'refs/live-product.png', fullPage: true })
 console.log('live-product.png written')

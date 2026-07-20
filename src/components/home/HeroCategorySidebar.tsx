@@ -1,6 +1,6 @@
-import Link from 'next/link'
 import { ELECTRO_HERO } from '@/lib/electro-hero-tokens'
 import { KE_LIVE_CATEGORIES } from '@/lib/ke-live-hero-data'
+import Link from 'next/link'
 
 const CC = ELECTRO_HERO.categoryColumn
 

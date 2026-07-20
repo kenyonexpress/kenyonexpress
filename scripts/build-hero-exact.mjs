@@ -1,6 +1,6 @@
+import { execSync } from 'child_process'
 import fs from 'fs'
 import path from 'path'
-import { execSync } from 'child_process'
 
 const heroPath = 'refs/ke_live_singlefile-hero.html'
 const cssPath = 'refs/ke_live_singlefile-hero.css'
@@ -11,9 +11,18 @@ hero = hero.replace(/\/images\/hero\/slider\/(e-baby-d2[^"'\s]*)/g, '/images/her
 hero = hero.replace(/\/images\/hero\/slider\/(student-[^"'\s]*)/g, '/images/hero/category/$1')
 hero = hero.replace(/\/images\/hero\/slider\/(maldives-[^"'\s]*)/g, '/images/hero/category/$1')
 hero = hero.replace(/\/images\/hero\/slider\/(cute-golden[^"'\s]*)/g, '/images/hero/category/$1')
-hero = hero.replace(/\/images\/hero\/slider\/(tesla-logo-main[^"'\s]*)/g, '/images/hero/side-banners/$1')
-hero = hero.replace(/\/images\/hero\/slider\/(apple-140-new[^"'\s]*)/g, '/images/hero/side-banners/$1')
-hero = hero.replace(/\/images\/hero\/slider\/(home-sl-da-3[^"'\s]*)/g, '/images/hero/side-banners/$1')
+hero = hero.replace(
+  /\/images\/hero\/slider\/(tesla-logo-main[^"'\s]*)/g,
+  '/images/hero/side-banners/$1',
+)
+hero = hero.replace(
+  /\/images\/hero\/slider\/(apple-140-new[^"'\s]*)/g,
+  '/images/hero/side-banners/$1',
+)
+hero = hero.replace(
+  /\/images\/hero\/slider\/(home-sl-da-3[^"'\s]*)/g,
+  '/images/hero/side-banners/$1',
+)
 
 // Strip scripts
 hero = hero.replace(/<script[\s\S]*?<\/script>/gi, '')
@@ -47,7 +56,8 @@ for (const local of urls) {
 
 // Scope CSS
 let css = fs.readFileSync(cssPath, 'utf8')
-css = `.ke-hero-exact-root {\n  --bs-ec-primary: #fed700;\n  font-family: var(--font-heebo), "Open Sans", Arial, sans-serif;\n}\n` +
+css =
+  `.ke-hero-exact-root {\n  --bs-ec-primary: #fed700;\n  font-family: var(--font-heebo), "Open Sans", Arial, sans-serif;\n}\n` +
   css
     .split('\n')
     .filter(Boolean)
@@ -65,10 +75,7 @@ css = `.ke-hero-exact-root {\n  --bs-ec-primary: #fed700;\n  font-family: var(--
 fs.mkdirSync('src/styles', { recursive: true })
 fs.writeFileSync('src/styles/hero-exact.css', css)
 
-const escaped = hero
-  .replace(/\\/g, '\\\\')
-  .replace(/`/g, '\\`')
-  .replace(/\$\{/g, '\\${')
+const escaped = hero.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$\{/g, '\\${')
 
 fs.writeFileSync(
   'src/lib/hero-exact-html.ts',

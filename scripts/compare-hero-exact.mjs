@@ -10,7 +10,10 @@ function parseSlides(html) {
     for (const lm of block.matchAll(
       /<(?:rs-layer|span)\b[^>]*\bid=["']?([^"'\s]+)["']?[^>]*data-type=["']?text["']?[^>]*(?:style=["']([^"']*)["']|style=([^;>\s][^>]*))?[^>]*>([\s\S]*?)<\/(?:rs-layer|span)>/gi,
     )) {
-      const text = lm[4].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()
+      const text = lm[4]
+        .replace(/<[^>]+>/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
       const style = lm[2] || lm[3] || ''
       if (text)
         layers.push({
@@ -34,21 +37,24 @@ await page.waitForSelector('.ke-hero-exact-root', { timeout: 60000 })
 const rows = []
 for (const ref of refSlides) {
   await page.evaluate((k) => {
-    document.querySelector(`.ke-hero-exact-root rs-bullet[data-key="${k}"]`)?.dispatchEvent(
-      new MouseEvent('click', { bubbles: true }),
-    )
+    document
+      .querySelector(`.ke-hero-exact-root rs-bullet[data-key="${k}"]`)
+      ?.dispatchEvent(new MouseEvent('click', { bubbles: true }))
   }, ref.key)
   await page.waitForTimeout(400)
   const built = await page.evaluate((k) => {
     const s = document.querySelector(`.ke-hero-exact-root rs-slide[data-key="${k}"]`)
     if (!s) return null
-    const layers = [...s.querySelectorAll('rs-layer[data-type="text"], span[data-type="text"]')].map((l) => {
-      const style = l.getAttribute('style') || ''
-      return {
-        text: (l.textContent || '').replace(/\s+/g, ' ').trim(),
-        fontSize: style.match(/font-size:\s*([^;]+)/)?.[1]?.trim() || getComputedStyle(l).fontSize,
-      }
-    }).filter((l) => l.text)
+    const layers = [...s.querySelectorAll('rs-layer[data-type="text"], span[data-type="text"]')]
+      .map((l) => {
+        const style = l.getAttribute('style') || ''
+        return {
+          text: (l.textContent || '').replace(/\s+/g, ' ').trim(),
+          fontSize:
+            style.match(/font-size:\s*([^;]+)/)?.[1]?.trim() || getComputedStyle(l).fontSize,
+        }
+      })
+      .filter((l) => l.text)
     return layers
   }, ref.key)
 

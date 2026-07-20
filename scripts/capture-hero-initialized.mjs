@@ -12,16 +12,18 @@ const slideHtmlByKey = {}
 
 for (const key of slideKeys) {
   await page.click(`rs-bullet[data-key="${key}"]`)
-  await page.waitForFunction(
-    (k) => {
-      const layer = document.querySelector(`rs-slide[data-key="${k}"] rs-layer[data-type="text"]`)
-      if (!layer) return true
-      const fs = getComputedStyle(layer).fontSize
-      return fs && fs !== '16px' && fs !== '14px'
-    },
-    key,
-    { timeout: 5000 },
-  ).catch(() => {})
+  await page
+    .waitForFunction(
+      (k) => {
+        const layer = document.querySelector(`rs-slide[data-key="${k}"] rs-layer[data-type="text"]`)
+        if (!layer) return true
+        const fs = getComputedStyle(layer).fontSize
+        return fs && fs !== '16px' && fs !== '14px'
+      },
+      key,
+      { timeout: 5000 },
+    )
+    .catch(() => {})
   await page.waitForTimeout(400)
   const html = await page.evaluate((k) => {
     const slide = document.querySelector(`rs-slide[data-key="${k}"]`)
@@ -46,18 +48,24 @@ const heroShell = await page.evaluate(() => {
 let hero = heroShell
 for (const [key, slideHtml] of Object.entries(slideHtmlByKey)) {
   if (!slideHtml) continue
-  hero = hero.replace(
-    new RegExp(`<rs-slide[^>]*data-key="${key}"[\\s\\S]*?</rs-slide>`),
-    slideHtml,
-  )
+  hero = hero.replace(new RegExp(`<rs-slide[^>]*data-key="${key}"[\\s\\S]*?</rs-slide>`), slideHtml)
 }
 
 function mapImages(fragment) {
   return fragment
     .replace(/https?:\/\/kenyonexpress\.co\.il\/wp-content\/uploads\/([^"'\s)]+)/g, (_, p) => {
       const base = p.split('/').pop().split('?')[0]
-      if (p.includes('2021/11') || p.includes('2020') || p.includes('slider') || /\.(gif|png|jpe?g|webp)$/i.test(base)) {
-        if (['e-baby-d2', 'student-', 'maldives', 'cute-golden', 'golden-retriever'].some((x) => base.includes(x) || p.includes(x)))
+      if (
+        p.includes('2021/11') ||
+        p.includes('2020') ||
+        p.includes('slider') ||
+        /\.(gif|png|jpe?g|webp)$/i.test(base)
+      ) {
+        if (
+          ['e-baby-d2', 'student-', 'maldives', 'cute-golden', 'golden-retriever'].some(
+            (x) => base.includes(x) || p.includes(x),
+          )
+        )
           return `/images/hero/category/${base}`
         if (['tesla', 'apple', 'home-sl'].some((x) => p.includes(x)))
           return `/images/hero/side-banners/${base}`

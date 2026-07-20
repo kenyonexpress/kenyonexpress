@@ -165,8 +165,8 @@ export function resolveHeroSlide(row: DbHeroRow, index: number): HeroSlide {
   }
 }
 
-const SLIDE_IMAGE_ORDER = KE_LIVE_SLIDES.map((s) => s.image_url).filter(
-  (url): url is string => Boolean(url),
+const SLIDE_IMAGE_ORDER = KE_LIVE_SLIDES.map((s) => s.image_url).filter((url): url is string =>
+  Boolean(url),
 )
 
 function slideSortKey(imageUrl: string | null): number {
@@ -178,9 +178,7 @@ function slideSortKey(imageUrl: string | null): number {
 /** Canonical order: rs-18 welcome/iPhone first, rs-19 app last */
 export function resolveHeroSlides(rows: DbHeroRow[]): HeroSlide[] {
   if (rows.length === 0) return KE_LIVE_SLIDES
-  const sorted = [...rows].sort(
-    (a, b) => slideSortKey(a.image_url) - slideSortKey(b.image_url),
-  )
+  const sorted = [...rows].sort((a, b) => slideSortKey(a.image_url) - slideSortKey(b.image_url))
   return sorted.map((row, index) => resolveHeroSlide(row, index))
 }
 

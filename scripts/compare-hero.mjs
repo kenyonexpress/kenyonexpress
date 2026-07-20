@@ -3,8 +3,8 @@
  * Writes refs/live.png (singlefile) and refs/mine.png (localhost).
  */
 import fs from 'fs'
-import path from 'path'
 import { pathToFileURL } from 'node:url'
+import path from 'path'
 import { chromium } from '@playwright/test'
 import sharp from 'sharp'
 

@@ -38,58 +38,69 @@ await b.close()
 
 // band diff on the two product screenshots
 const { readFileSync } = await import('node:fs')
-const toDataUrl = (p) =>
-  `data:image/png;base64,${readFileSync(resolve(p)).toString('base64')}`
+const toDataUrl = (p) => `data:image/png;base64,${readFileSync(resolve(p)).toString('base64')}`
 const b2 = await chromium.launch()
 const page = await b2.newPage()
 await page.goto('about:blank')
-const report = await page.evaluate(async ({ liveUrl, mineUrl }) => {
-  const load = (src) => new Promise((res, rej) => {
-    const img = new Image()
-    img.onload = () => res(img)
-    img.onerror = rej
-    img.src = src
-  })
-  const [liveImg, mineImg] = await Promise.all([load(liveUrl), load(mineUrl)])
-  const W = Math.min(liveImg.width, mineImg.width)
-  const H = Math.min(liveImg.height, mineImg.height, 4000)
-  const data = (img) => {
-    const c = document.createElement('canvas')
-    c.width = W; c.height = H
-    const ctx = c.getContext('2d', { willReadFrequently: true })
-    ctx.drawImage(img, 0, 0)
-    return ctx.getImageData(0, 0, W, H).data
-  }
-  const a = data(liveImg), m = data(mineImg)
-  const TOL = 24
-  const BAND = 100
-  const bands = []
-  let totalDiff = 0
-  for (let y0 = 0; y0 < H; y0 += BAND) {
-    const y1 = Math.min(y0 + BAND, H)
-    let diff = 0
-    for (let y = y0; y < y1; y++) {
-      for (let x = 0; x < W; x++) {
-        const i = (y * W + x) * 4
-        if (Math.abs(a[i] - m[i]) > TOL ||
-            Math.abs(a[i + 1] - m[i + 1]) > TOL ||
-            Math.abs(a[i + 2] - m[i + 2]) > TOL) diff++
-      }
+const report = await page.evaluate(
+  async ({ liveUrl, mineUrl }) => {
+    const load = (src) =>
+      new Promise((res, rej) => {
+        const img = new Image()
+        img.onload = () => res(img)
+        img.onerror = rej
+        img.src = src
+      })
+    const [liveImg, mineImg] = await Promise.all([load(liveUrl), load(mineUrl)])
+    const W = Math.min(liveImg.width, mineImg.width)
+    const H = Math.min(liveImg.height, mineImg.height, 4000)
+    const data = (img) => {
+      const c = document.createElement('canvas')
+      c.width = W
+      c.height = H
+      const ctx = c.getContext('2d', { willReadFrequently: true })
+      ctx.drawImage(img, 0, 0)
+      return ctx.getImageData(0, 0, W, H).data
     }
-    totalDiff += diff
-    bands.push({ y0, y1, pct: +(100 * diff / ((y1 - y0) * W)).toFixed(1) })
-  }
-  return {
-    W, H,
-    liveSize: { w: liveImg.width, h: liveImg.height },
-    mineSize: { w: mineImg.width, h: mineImg.height },
-    overallPct: +(100 * totalDiff / (W * H)).toFixed(2),
-    bands,
-  }
-}, { liveUrl: toDataUrl('refs/live-product.png'), mineUrl: toDataUrl('refs/mine-product.png') })
+    const a = data(liveImg),
+      m = data(mineImg)
+    const TOL = 24
+    const BAND = 100
+    const bands = []
+    let totalDiff = 0
+    for (let y0 = 0; y0 < H; y0 += BAND) {
+      const y1 = Math.min(y0 + BAND, H)
+      let diff = 0
+      for (let y = y0; y < y1; y++) {
+        for (let x = 0; x < W; x++) {
+          const i = (y * W + x) * 4
+          if (
+            Math.abs(a[i] - m[i]) > TOL ||
+            Math.abs(a[i + 1] - m[i + 1]) > TOL ||
+            Math.abs(a[i + 2] - m[i + 2]) > TOL
+          )
+            diff++
+        }
+      }
+      totalDiff += diff
+      bands.push({ y0, y1, pct: +((100 * diff) / ((y1 - y0) * W)).toFixed(1) })
+    }
+    return {
+      W,
+      H,
+      liveSize: { w: liveImg.width, h: liveImg.height },
+      mineSize: { w: mineImg.width, h: mineImg.height },
+      overallPct: +((100 * totalDiff) / (W * H)).toFixed(2),
+      bands,
+    }
+  },
+  { liveUrl: toDataUrl('refs/live-product.png'), mineUrl: toDataUrl('refs/mine-product.png') },
+)
 await b2.close()
 
-console.log(`live: ${report.liveSize.w}x${report.liveSize.h}  mine: ${report.mineSize.w}x${report.mineSize.h}`)
+console.log(
+  `live: ${report.liveSize.w}x${report.liveSize.h}  mine: ${report.mineSize.w}x${report.mineSize.h}`,
+)
 console.log(`compared: ${report.W}x${report.H}`)
 console.log(`OVERALL first ${report.H}px: ${report.overallPct}%`)
 console.log('all bands:')

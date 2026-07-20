@@ -43,7 +43,10 @@ const slides = slideBlocks.map((m) => {
   while ((lm = re.exec(block))) {
     const attrs = lm[2]
     const inner = lm[3]
-    const rawText = inner.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()
+    const rawText = inner
+      .replace(/<[^>]+>/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
     const id = attrs.match(/\bid="([^"]*)"/)?.[1] || ''
     const type = attrs.match(/data-type="([^"]*)"/)?.[1] || 'text'
     const lazyLayer = attrs.match(/data-lazyload="([^"]*)"/)?.[1]

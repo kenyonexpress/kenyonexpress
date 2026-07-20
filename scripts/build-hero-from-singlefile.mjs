@@ -36,14 +36,14 @@ function parseLayers(slideHtml) {
   while ((m = re.exec(slideHtml))) {
     const attrs = m[1]
     const type = attrs.match(/data-type=(\w+)/)?.[1]
-    const style =
-      attrs.match(/style="([^"]*)"/)?.[1] ||
-      attrs.match(/style='([^']*)'/)?.[1] ||
-      ''
+    const style = attrs.match(/style="([^"]*)"/)?.[1] || attrs.match(/style='([^']*)'/)?.[1] || ''
     const dataXy = attrs.match(/data-xy=([^ >]+)/)?.[1]
     const dataColor = attrs.match(/data-color=(#[0-9a-fA-F]+)/)?.[1]
     const dataText = attrs.match(/data-text=([^ >]+)/)?.[1]
-    const text = m[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()
+    const text = m[2]
+      .replace(/<[^>]+>/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
     if (!type) continue
     layers.push({
       id: (attrs.match(/\bid=(slider-6-slide-[^ >\s]+)/) || [])[1],
@@ -68,7 +68,8 @@ const savedB64 = new Map()
 
 function heroSubfolder(name) {
   const n = name.toLowerCase()
-  if (n.includes('tesla') || n.includes('apple-140') || n.includes('home-sl-da')) return 'side-banners'
+  if (n.includes('tesla') || n.includes('apple-140') || n.includes('home-sl-da'))
+    return 'side-banners'
   if (
     n.includes('e-baby') ||
     n.includes('student-') ||
@@ -130,7 +131,13 @@ hero = hero.replace(/<img\b[^>]*>/gi, (tag) => {
   if (ref && !ref.startsWith('data:')) {
     const local = localPathFromUrl(ref)
     let t = tag
-    for (const attr of ['src', 'data-lazyload', 'data-lazy-src', 'data-reference', 'data-src-rs-ref']) {
+    for (const attr of [
+      'src',
+      'data-lazyload',
+      'data-lazy-src',
+      'data-reference',
+      'data-src-rs-ref',
+    ]) {
       if (t.includes(`${attr}=`)) t = t.replace(new RegExp(`${attr}="[^"]*"`), `${attr}="${local}"`)
     }
     return t
@@ -159,14 +166,19 @@ const banners = []
 for (const bm of hero.matchAll(/<div class="da-inner[\s\S]*?<\/a>/g)) {
   const block = bm[0]
   banners.push({
-    text: block.match(/<div class="da-text">([\s\S]*?)<\/div>/)?.[1]?.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() || null,
+    text:
+      block
+        .match(/<div class="da-text">([\s\S]*?)<\/div>/)?.[1]
+        ?.replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim() || null,
     action: block.match(/<div class="da-action">([\s\S]*?)<\/div>/)?.[1]?.trim() || null,
   })
 }
 
-const categories = [...hero.matchAll(/<li[^>]*class="[^"]*menu-item[^"]*"[^>]*><a[^>]*title="([^"]*)"/g)].map(
-  (m) => m[1],
-)
+const categories = [
+  ...hero.matchAll(/<li[^>]*class="[^"]*menu-item[^"]*"[^>]*><a[^>]*title="([^"]*)"/g),
+].map((m) => m[1])
 
 fs.writeFileSync(
   'refs/ke_live_singlefile-hero-extract.json',
@@ -180,7 +192,15 @@ for (const m of hero.matchAll(/class="([^"]+)"/g)) {
 for (const m of hero.matchAll(/class=([a-zA-Z0-9_-]+)/g)) classTokens.add(m[1])
 
 const allCss = html.match(/<style id=wpr-usedcss>([\s\S]*?)<\/style>/)?.[1] || ''
-const heroIds = ['1b49fac0', '7e293eca', '7072159f', '45c00b23', 'rev_slider_6_1', '4fd2762a', 'elementor-5202']
+const heroIds = [
+  '1b49fac0',
+  '7e293eca',
+  '7072159f',
+  '45c00b23',
+  'rev_slider_6_1',
+  '4fd2762a',
+  'elementor-5202',
+]
 
 const rules = []
 for (const rule of allCss.split('}')) {
@@ -205,7 +225,8 @@ css += rules
       .split(',')
       .map((s) => {
         const t = s.trim()
-        if (t.startsWith('.elementor-5202')) return `.ke-hero-exact-root${t.slice('.elementor-5202'.length)}`
+        if (t.startsWith('.elementor-5202'))
+          return `.ke-hero-exact-root${t.slice('.elementor-5202'.length)}`
         return `.ke-hero-exact-root ${t}`
       })
       .join(',')
@@ -228,7 +249,9 @@ slides.forEach((s) => {
   const textLayers = s.layers.filter((l) => l.type === 'text' && l.text)
   console.log(
     s.key,
-    textLayers.length ? textLayers.map((l) => `${l.text}@${l.fontSize || l.dataText || '?'}`).join(' | ') : '(empty in file)',
+    textLayers.length
+      ? textLayers.map((l) => `${l.text}@${l.fontSize || l.dataText || '?'}`).join(' | ')
+      : '(empty in file)',
   )
 })
 console.log('banners in file:', banners.filter((b) => b.text).length)

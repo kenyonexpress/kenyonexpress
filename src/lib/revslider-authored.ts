@@ -5,7 +5,9 @@
 
 export const REV_BREAKPOINTS = [1240, 1024, 778, 480] as const
 
-export function revBreakpointIndex(width = typeof window !== 'undefined' ? window.innerWidth : 1440): number {
+export function revBreakpointIndex(
+  width = typeof window !== 'undefined' ? window.innerWidth : 1440,
+): number {
   if (width >= REV_BREAKPOINTS[0]) return 0
   if (width >= REV_BREAKPOINTS[1]) return 1
   if (width >= REV_BREAKPOINTS[2]) return 2

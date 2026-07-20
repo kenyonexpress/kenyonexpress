@@ -1,7 +1,7 @@
 'use client'
 
-import Image, { type ImageProps } from 'next/image'
 import { ImageIcon } from 'lucide-react'
+import Image, { type ImageProps } from 'next/image'
 import { useState } from 'react'
 
 type SmartImageProps = ImageProps & {

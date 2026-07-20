@@ -7,7 +7,7 @@ if (!databaseUrl) {
 }
 
 export default defineConfig({
-  schema: './src/db/schema/commerce.ts',
+  schema: './src/db/schema/commerce-managed.ts',
   out: './supabase/drizzle',
   dialect: 'postgresql',
   dbCredentials: {

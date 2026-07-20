@@ -40,9 +40,7 @@ async function extractGrid(page) {
   return page.evaluate(() => {
     // live: jet-listing grid items; local: .jet-listing-grid-deals__item
     const nodes = [
-      ...document.querySelectorAll(
-        '.jet-listing-grid__item, .jet-listing-grid-deals__item',
-      ),
+      ...document.querySelectorAll('.jet-listing-grid__item, .jet-listing-grid-deals__item'),
     ]
     return nodes.map((el, i) => {
       const title = el.querySelector('h1,h2,h3,h4,h5,h6,.elementor-heading-title')
@@ -163,4 +161,6 @@ console.log(`\n== PRICE MISMATCH LIVE VS SUPABASE (${priceMismatchDb.length}) ==
 for (const x of priceMismatchDb)
   console.log(`  ${x.slug}: live ₪${x.livePrice} vs db ₪${x.dbPrice} (status=${x.dbStatus})`)
 
-console.log(`\nsupabase active products: ${dbRows.filter((r) => !r.deleted_at && r.status === 'active').length}`)
+console.log(
+  `\nsupabase active products: ${dbRows.filter((r) => !r.deleted_at && r.status === 'active').length}`,
+)

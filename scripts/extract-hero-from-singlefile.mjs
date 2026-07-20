@@ -36,7 +36,15 @@ function mapImage(url) {
   IMAGE_MAP.set(clean, local)
   // side banners / category
   if (url.includes('side-banners') || url.includes('uploads')) {
-    const sub = url.includes('apple') ? 'side-banners' : url.includes('tesla') ? 'side-banners' : url.includes('home-sl') ? 'side-banners' : url.includes('category') ? 'category' : 'slider'
+    const sub = url.includes('apple')
+      ? 'side-banners'
+      : url.includes('tesla')
+        ? 'side-banners'
+        : url.includes('home-sl')
+          ? 'side-banners'
+          : url.includes('category')
+            ? 'category'
+            : 'slider'
     const local2 = `/images/hero/${sub}/${base}`
     IMAGE_MAP.set(clean, local2)
     return local2
@@ -46,8 +54,12 @@ function mapImage(url) {
 
 function rewriteUrls(fragment) {
   return fragment
-    .replace(/https?:\/\/kenyonexpress\.co\.il\/wp-content\/uploads\/[^"'\s)]+/g, (u) => mapImage(u))
-    .replace(/\/\/kenyonexpress\.co\.il\/wp-content\/uploads\/[^"'\s)]+/g, (u) => mapImage('https:' + u))
+    .replace(/https?:\/\/kenyonexpress\.co\.il\/wp-content\/uploads\/[^"'\s)]+/g, (u) =>
+      mapImage(u),
+    )
+    .replace(/\/\/kenyonexpress\.co\.il\/wp-content\/uploads\/[^"'\s)]+/g, (u) =>
+      mapImage('https:' + u),
+    )
     .replace(/data-lazyload="\/\/[^"]+"/g, (m) => {
       const u = m.match(/data-lazyload="([^"]+)"/)[1]
       return `data-lazyload="${mapImage(u.startsWith('//') ? 'https:' + u : u)}"`
@@ -66,8 +78,13 @@ for (const sm of hero.matchAll(/data-key="(rs-\d+)"[\s\S]*?<\/rs-slide>/g)) {
   const key = sm[1]
   const block = sm[0]
   const layers = []
-  for (const lm of block.matchAll(/<rs-layer id="([^"]+)"[^>]*data-type="([^"]*)"[^>]*style="([^"]*)"[^>]*>([\s\S]*?)<\/rs-layer>/g)) {
-    const text = lm[4].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()
+  for (const lm of block.matchAll(
+    /<rs-layer id="([^"]+)"[^>]*data-type="([^"]*)"[^>]*style="([^"]*)"[^>]*>([\s\S]*?)<\/rs-layer>/g,
+  )) {
+    const text = lm[4]
+      .replace(/<[^>]+>/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
     const style = lm[3]
     const fontSize = style.match(/font-size:\s*([^;]+)/)?.[1]?.trim()
     const color = style.match(/(?:^|;\s*)color:\s*([^;]+)/)?.[1]?.trim()
@@ -82,8 +99,14 @@ for (const sm of hero.matchAll(/data-key="(rs-\d+)"[\s\S]*?<\/rs-slide>/g)) {
 const banners = []
 for (const bm of hero.matchAll(/<div class="da-inner[\s\S]*?<\/div>\s*<\/div>/g)) {
   const block = bm[0]
-  const title = block.match(/<h4[^>]*>([\s\S]*?)<\/h4>/)?.[1]?.replace(/<[^>]+>/g, '').trim()
-  const subtitle = block.match(/<p[^>]*>([\s\S]*?)<\/p>/)?.[1]?.replace(/<[^>]+>/g, '').trim()
+  const title = block
+    .match(/<h4[^>]*>([\s\S]*?)<\/h4>/)?.[1]
+    ?.replace(/<[^>]+>/g, '')
+    .trim()
+  const subtitle = block
+    .match(/<p[^>]*>([\s\S]*?)<\/p>/)?.[1]
+    ?.replace(/<[^>]+>/g, '')
+    .trim()
   const img = block.match(/(?:src|data-lazyload|data-src)="([^"]+)"/)?.[1]
   const btnStyle = block.match(/class="[^"]*da-action[^"]*"[^>]*style="([^"]*)"/)?.[1]
   banners.push({ title, subtitle, img, btnStyle })
@@ -91,16 +114,33 @@ for (const bm of hero.matchAll(/<div class="da-inner[\s\S]*?<\/div>\s*<\/div>/g)
 
 // Category menu items
 const categories = []
-for (const cm of hero.matchAll(/<li[^>]*class="[^"]*menu-item[^"]*"[^>]*><a[^>]*title="([^"]*)"[^>]*>([\s\S]*?)<\/a><\/li>/g)) {
+for (const cm of hero.matchAll(
+  /<li[^>]*class="[^"]*menu-item[^"]*"[^>]*><a[^>]*title="([^"]*)"[^>]*>([\s\S]*?)<\/a><\/li>/g,
+)) {
   categories.push({ title: cm[1], text: cm[2].replace(/<[^>]+>/g, '').trim() })
 }
 
 fs.writeFileSync('refs/ke_live_singlefile-hero.html', hero)
-fs.writeFileSync('refs/ke_live_singlefile-hero-extract.json', JSON.stringify({ slides, banners, categories, images: [...IMAGE_MAP.entries()] }, null, 2))
+fs.writeFileSync(
+  'refs/ke_live_singlefile-hero-extract.json',
+  JSON.stringify({ slides, banners, categories, images: [...IMAGE_MAP.entries()] }, null, 2),
+)
 
 console.log('hero bytes:', hero.length)
 console.log('slides:', slides.length)
-slides.forEach((s) => console.log(s.key, s.layers.filter((l) => l.type === 'text').map((l) => `${l.text}@${l.fontSize}`).join(' | ')))
-console.log('banners:', banners.length, banners.map((b) => b.title))
+slides.forEach((s) =>
+  console.log(
+    s.key,
+    s.layers
+      .filter((l) => l.type === 'text')
+      .map((l) => `${l.text}@${l.fontSize}`)
+      .join(' | '),
+  ),
+)
+console.log(
+  'banners:',
+  banners.length,
+  banners.map((b) => b.title),
+)
 console.log('categories:', categories.length)
 console.log('images to download:', IMAGE_MAP.size)

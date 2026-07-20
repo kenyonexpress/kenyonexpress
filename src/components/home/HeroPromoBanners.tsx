@@ -1,8 +1,8 @@
-import Link from 'next/link'
-import { ChevronRight } from 'lucide-react'
+import SmartImage from '@/components/ui/SmartImage'
 import { SIDE_BANNERS } from '@/lib/assets'
 import { ELECTRO_HERO } from '@/lib/electro-hero-tokens'
-import SmartImage from '@/components/ui/SmartImage'
+import { ChevronRight } from 'lucide-react'
+import Link from 'next/link'
 
 const SB = ELECTRO_HERO.sideBanners
 const BANNER_WIDTH = 200
@@ -37,10 +37,7 @@ const PROMO_BANNERS: PromoBanner[] = [
     id: 'das-3',
     href: '/category/phones-computers',
     image: SIDE_BANNERS[2],
-    lines: [
-      [{ text: 'LAPTOPS NOTEBOOKS' }],
-      [{ text: 'AND MORE', bold: true }],
-    ],
+    lines: [[{ text: 'LAPTOPS NOTEBOOKS' }], [{ text: 'AND MORE', bold: true }]],
   },
 ]
 
@@ -49,17 +46,17 @@ function BannerText({ lines }: { lines: BannerLine[] }) {
     <div dir="ltr" className="da-text text-end font-normal uppercase text-heading">
       {lines.map((line, lineIdx) => (
         <span
-          key={lineIdx}
+          key={line.map((p) => p.text).join('|')}
           className={lineIdx > 0 ? 'block' : undefined}
           style={{ fontSize: 11, lineHeight: '13px' }}
         >
-          {line.map((part, i) =>
+          {line.map((part) =>
             part.bold ? (
-              <strong key={i} className="font-bold" style={{ fontSize: 13 }}>
+              <strong key={`${part.text}-b`} className="font-bold" style={{ fontSize: 13 }}>
                 {part.text}
               </strong>
             ) : (
-              <span key={i}>{part.text}</span>
+              <span key={`${part.text}-n`}>{part.text}</span>
             ),
           )}
         </span>
@@ -93,7 +90,12 @@ export default function HeroPromoBanners() {
   return (
     <div
       dir="rtl"
-      style={{ width: BANNER_WIDTH, minWidth: BANNER_WIDTH, maxWidth: BANNER_WIDTH, flex: `0 0 ${BANNER_WIDTH}px` }}
+      style={{
+        width: BANNER_WIDTH,
+        minWidth: BANNER_WIDTH,
+        maxWidth: BANNER_WIDTH,
+        flex: `0 0 ${BANNER_WIDTH}px`,
+      }}
       className="slider-das-block hidden h-full shrink-0 flex-col bg-white font-sans lg:flex"
     >
       {PROMO_BANNERS.map((banner, idx) => (

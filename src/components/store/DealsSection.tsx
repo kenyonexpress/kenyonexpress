@@ -1,8 +1,8 @@
 'use client'
 
 import ProductCard, { type Product } from '@/components/ProductCard'
-import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 function pad(n: number) {
