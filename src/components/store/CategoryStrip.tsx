@@ -41,9 +41,9 @@ export default function CategoryStrip() {
   return (
     <section aria-label="קטגוריות מובילות" className="bg-white font-sans">
       <div className="mx-auto max-w-page">
-        {/* singlefile: strip belongs to the middle hero column — x336-1064 (728px), not page-centered */}
+        {/* singlefile: strip sits at x577-1305 (728px) in the compare reference, not page-centered */}
         <ul
-          className="m-0 flex list-none flex-wrap p-0 lg:ms-auto lg:me-[276px] lg:max-w-[728px] lg:flex-nowrap"
+          className="m-0 flex list-none flex-wrap p-0 lg:ms-auto lg:me-[517px] lg:max-w-[728px] lg:flex-nowrap"
           style={{ height: '170px' }}
         >
           {CATEGORIES.map((cat) => (
