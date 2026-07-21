@@ -1,9 +1,96 @@
 # KenyonExpress State
 
 ## Current Phase
-**Phase 5 storefront + יסודות commerce**. branch `phase5/homepage`.
+**Phase 5 storefront + commerce מחווט**. branch `phase5/homepage`.
 
 ## Last Completed
+Session 2026-07-21 - יום עבודה אוטונומי מלא: קטגוריה, חנות, עגלה, merge checkout, חיווט תשלום.
+
+**MEASURED-LIVE.md (לא בקומיט, לפי הוראה)**: `scripts/measure-live.mjs` מדד את
+kenyonexpress.co.il ב-1440x900 + 375x812 עם getComputedStyle+getBoundingClientRect
+(מוצר, קטגוריה, עגלה עם פריט אמיתי, header, footer; 1,025 שורות; צילומים ב-`shots/`).
+כל ערכי העיצוב בסשן נלקחו מהקובץ הזה.
+
+**שלב א - דף קטגוריה (`1af2de7`)**: `/category/[slug]` נבנה מחדש ל-Electro החי:
+breadcrumb 25/22.4px, h1 25px/500 מימין + ספירת תוצאות משמאל, בר מיון #efefef
+radius 9 עם מחליף תצוגה ו-select מעוגל 174x34, grid flex של כרטיסי 234px
+(תגית 12px #768b9e, מחיר 20px ins #dc3545 del 12px, כותרת 14/700/#0062bd,
+תמונה 186, badge ‎#44b81b בפינת תחתית-imline-start, כפתור עגלה עגול 37x34),
+pagination צהוב #fed700, sidebar סינון חדש (`CategoryFilterSidebar`: קטגוריות +
+טווח מחיר min/max, עמודה 234 ב-inline-end). מיון ברירת מחדל -> name_he asc
+(תואם menu_order החי). `compare-category-live.mjs` מול קטגוריית המסעדות החיה:
+**23.7%** (מתחת ליעד 30%; השארית נשלטת ע"י ה-header הנעול שקצר ב-70px מהחי).
+
+**שלב ב - `/products` (`239600c`)**: ארכיון "חנות" כמו live /shop/ - אותם רכיבים,
+`getShopProducts` עם 24 לעמוד. `compare-shop-live.mjs`: **26.07%** (לחי 44 מוצרים
+מול 31 אצלנו - השוני תוכן, לא layout).
+
+**שלב ג - עגלה (`7964b2b`)**: **מיגרציה 045_restore_carts הוחלה על המרוחק** -
+public.carts חסרה שם (001 נעצרה מוקדם) וכל add-to-cart של אורח נפל ב-PGRST205.
+עיצוב `/cart` יושר ל-Electro הנמדד (h1 40/500/#333e48, שורות 17px, qty pill 14,
+מחיקה #a7a7a7, checkout צהוב pill 22, רוקן-עגלה אפור #efecec). commitCart עטוף
+ב-startTransition. אומת E2E כאורח: הוספה, drawer, כמות, הסרה; פיצול מעורב
+קופון 18/162 + פיזי 230 => באתר 248, עמלה 41, לספק 207.
+
+**שלב ד - merge (`bad5548`+`1e7e027`)**: ה-WIP הלא-מקומט מ-worktree
+`kenyon-checkout` קומט על `phase6/checkout` ומוזג פנימה: payments provider
+(Cardcom Low Profile + mock + HMAC), דומיין orders (state machine, escrow,
+redemption, settlement + 41 בדיקות), webhook + supplier redeem routes, עגלת
+Zustand (useCart API נשמר), admin orders, טיפוסי DB, zustand+qrcode.
+קונפליקט יחיד: CartProvider -> גרסת ה-store. build נקי, vitest 84/84.
+
+**שלב ה - חיווט checkout (`0f5228e`)**: `/checkout` (סקירת הזמנה, פיצול פר שורה,
+טופס כתובת לפיזי -> user_addresses, ארנק, תקנון) -> `submitCheckout` ->
+`beginCheckout` -> ספק (mock אוטומטי בפיתוח, אין קרדנצ׳יאלס sandbox ב-env) ->
+`/checkout/return` עם reconcile שרת (verifyLowProfile + בדיקת סכום + finalize
+אידמפוטנטי), עמוד הצלחה עם כרטיסי קופון (קוד 8 ספרות + QR + סכום לתשלום בעסק +
+תוקף) והודעת קאשבק; `/checkout/failed`. finalizeOrder: זיכוי ארנק
+מ-platform:cashback_reserve (idempotency `order:<id>:cashback`), ניקוי עגלה,
+תיקון supplier_payout_ils (NOT NULL מ-007). **מיגרציות שהוחלו על המרוחק דרך MCP**:
+`046_checkout_runtime.sql` (גשר: payments, payment_webhook_events, coupon_codes,
+payment_tokens, wallet_accounts+wallet_entries+fn_wallet_transfer service-only,
+products.platform_percent, snapshots ל-order_items, stub is_supplier_member, RLS)
++ `047_checkout_settlement.sql` (הטיוטה מה-merge, ממוספרת מחדש).
+אומת E2E בדפדפן (משתמש בדיקה checkout-e2e@kenyonexpress.test בסיסמה):
+הזמנת קופון (שולם 18 מ-180, קופון+QR הונפק, escrow held, קאשבק 0.90 נזקף,
+reserve ‎-0.90 כפול-רישום) והזמנה מעורבת עם כתובת (817 שולם, split 759.05/39.95,
+מלאי ועגלה עודכנו).
+
+**החלטות דאטה בסשן (dev)**: מוצרי restaurants-cafes סומנו is_coupon_enabled=true
+(דילים של מסעדות = קופונים באופיים); ל"ארוחה בשרית" נקבע cashback_percent=5
+להדגמת הזיכוי. משתמש בדיקה חדש ב-auth.
+
+**הערת מודל פתוחה**: ה-settlement הממוזג משתמש בעמלת פלטפורמה 5% ברירת מחדל
+(commission_percent, ניתן לעקיפה פר מוצר) בעוד סקיל cardcom-payments אומר 10%
+לפיזי. upfront של קופון = platform_percent (ברירת מחדל 10) - תואם. נדרשת הכרעת
+Ofir איזו ברירת מחדל נכונה ל-commission_percent.
+
+## In Progress
+nothing
+
+## Blocking Issues
+- ה-header הנעול קצר ב-70px מה-masthead החי (topbar+masthead 148px בחי מול 95px
+  אצלנו) - מגביל כל compare מול האתר החי; נדרש אישור Ofir לגעת בקבצים הנעולים.
+- redirect_to של Google OAuth נבנה עם `undefined` כשה-NEXT_PUBLIC_APP_URL חסר
+  בקונטקסט הפעולה (נצפה בלוגי E2E) - לא חוסם checkout, כן חוסם התחברות Google
+  אמיתית מקומית.
+- `supabase db push` עדיין אסור; החלות רק דרך MCP apply_migration.
+
+## Next Task
+מימוש קופון אצל הספק (api/supplier/redeem כבר קיים מה-merge אבל תלוי
+supplier_members/coupon_redemptions שטרם הוקמו במרוחק) + דף הזמנות ללקוח.
+במקביל: הכרעת ברירת מחדל commission_percent (5 מול 10).
+
+## Working Directory
+/Users/ofir/kenyonexpress-web/kenyonexpress
+
+## Supabase Project URL
+https://ixvwfbuvfxxsjiywhbbb.supabase.co (dev)
+
+---
+
+## History (סשנים קודמים)
+
 Session 2026-07-20 (ערב) - `ARCHITECTURE-PERFORMANCE-SEO.md` (שורש, design only):
 - מסמך מאוחד מחייב לביצועים + SEO בזמן ריצה. בולע/מיישר את
   `docs/ARCHITECTURE-PERFORMANCE.md` ומחבר ל-CATALOG §3, GROWTH §1,
