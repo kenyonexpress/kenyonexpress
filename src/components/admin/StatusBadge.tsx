@@ -55,9 +55,8 @@ export function orderStatusBadge(status: string) {
   const map: Record<string, { label: string; variant: Variant }> = {
     pending: { label: 'ממתין', variant: 'yellow' },
     paid: { label: 'שולם', variant: 'blue' },
-    processing: { label: 'בטיפול', variant: 'blue' },
-    shipped: { label: 'נשלח', variant: 'blue' },
-    delivered: { label: 'נמסר', variant: 'green' },
+    partially_fulfilled: { label: 'סופק חלקית', variant: 'blue' },
+    fulfilled: { label: 'סופק', variant: 'green' },
     cancelled: { label: 'בוטל', variant: 'red' },
     refunded: { label: 'הוחזר', variant: 'gray' },
   }

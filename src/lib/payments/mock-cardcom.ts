@@ -1,0 +1,144 @@
+import { agorot } from '@/lib/commerce/money'
+import { loadCardcomEnv } from '@/lib/payments/env'
+import type {
+  ChargeWithTokenInput,
+  ChargeWithTokenResult,
+  CreateLowProfileInput,
+  CreateLowProfileResult,
+  PaymentProvider,
+  VerifyLowProfileResult,
+} from '@/lib/payments/types'
+
+type StoredDeal = {
+  input: CreateLowProfileInput
+  status: 'pending' | 'succeeded' | 'failed'
+  transactionId: string
+}
+
+/**
+ * In-memory Cardcom stand-in for Vitest / local checkout without real credentials.
+ * Deals succeed by default; call `failNext` to simulate declines.
+ */
+export class MockCardcomProvider implements PaymentProvider {
+  readonly name = 'mock' as const
+  private deals = new Map<string, StoredDeal>()
+  private failNextCharge = false
+  private sequence = 0
+
+  failNext(): void {
+    this.failNextCharge = true
+  }
+
+  reset(): void {
+    this.deals.clear()
+    this.failNextCharge = false
+    this.sequence = 0
+  }
+
+  async createLowProfile(input: CreateLowProfileInput): Promise<CreateLowProfileResult> {
+    this.sequence += 1
+    const lowProfileId = `mock-lp-${this.sequence}-${input.paymentId.slice(0, 8)}`
+    const transactionId = `mock-txn-${this.sequence}`
+    this.deals.set(lowProfileId, {
+      input,
+      status: 'pending',
+      transactionId,
+    })
+    const env = loadCardcomEnv()
+    const redirectUrl = `${env.appUrl}/checkout/return?order_id=${encodeURIComponent(input.orderId)}&lp=${encodeURIComponent(lowProfileId)}`
+    return {
+      lowProfileId,
+      redirectUrl,
+      raw: { mock: true, lowProfileId, amountAgorot: input.amountAgorot },
+    }
+  }
+
+  async chargeWithToken(input: ChargeWithTokenInput): Promise<ChargeWithTokenResult> {
+    this.sequence += 1
+    if (this.failNextCharge) {
+      this.failNextCharge = false
+      return {
+        success: false,
+        transactionId: null,
+        failureCode: 'DECLINED',
+        failureMessage: 'Mock decline',
+        raw: { mock: true, declined: true },
+      }
+    }
+    const transactionId = `mock-tok-${this.sequence}`
+    return {
+      success: true,
+      transactionId,
+      failureCode: null,
+      failureMessage: null,
+      token: {
+        token: input.cardcomToken,
+        last4: '4242',
+        brand: 'Visa',
+        expiryMonth: 12,
+        expiryYear: 2030,
+      },
+      raw: { mock: true, transactionId },
+    }
+  }
+
+  async verifyLowProfile(lowProfileId: string): Promise<VerifyLowProfileResult> {
+    const deal = this.deals.get(lowProfileId)
+    if (!deal) {
+      return {
+        success: false,
+        amountAgorot: null,
+        transactionId: null,
+        lowProfileId,
+        raw: { mock: true, found: false },
+      }
+    }
+
+    if (this.failNextCharge) {
+      this.failNextCharge = false
+      deal.status = 'failed'
+      return {
+        success: false,
+        amountAgorot: deal.input.amountAgorot,
+        transactionId: deal.transactionId,
+        lowProfileId,
+        raw: { mock: true, status: 'failed' },
+      }
+    }
+
+    deal.status = 'succeeded'
+    return {
+      success: true,
+      amountAgorot: agorot(deal.input.amountAgorot),
+      transactionId: deal.transactionId,
+      lowProfileId,
+      token: deal.input.saveToken
+        ? {
+            token: `tok_${deal.transactionId}`,
+            last4: '4242',
+            brand: 'Visa',
+            expiryMonth: 12,
+            expiryYear: 2030,
+          }
+        : undefined,
+      raw: { mock: true, status: 'succeeded', amountAgorot: deal.input.amountAgorot },
+    }
+  }
+
+  /** Simulate a successful hosted payment so webhook tests can verify. */
+  markSucceeded(lowProfileId: string): void {
+    const deal = this.deals.get(lowProfileId)
+    if (deal) deal.status = 'succeeded'
+  }
+
+  getDeal(lowProfileId: string): StoredDeal | undefined {
+    return this.deals.get(lowProfileId)
+  }
+}
+
+let sharedMock: MockCardcomProvider | null = null
+
+export function getSharedMockCardcom(): MockCardcomProvider {
+  if (!sharedMock) sharedMock = new MockCardcomProvider()
+  return sharedMock
+}

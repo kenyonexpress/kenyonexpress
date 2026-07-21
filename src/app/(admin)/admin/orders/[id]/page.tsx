@@ -16,7 +16,7 @@ export default async function OrderDetailPage({ params }: Props) {
   const { data: order } = await supabase
     .from('orders')
     .select(
-      '*, profiles(full_name, email, phone), order_items(*, products(name_he), vendors(business_name))',
+      '*, profiles(full_name, email, phone), order_items(*, products(name_he), suppliers(name))',
     )
     .eq('id', id)
     .single()
@@ -28,17 +28,19 @@ export default async function OrderDetailPage({ params }: Props) {
   type OrderItemRow = {
     id: string
     quantity: number
-    unit_price: number
-    subtotal: number
+    unit_price_ils: number
+    total_price_ils: number
     products: { name_he: string }[] | { name_he: string } | null
-    vendors: { business_name: string }[] | { business_name: string } | null
+    suppliers: { name: string }[] | { name: string } | null
   }
   const items = (Array.isArray(order.order_items) ? order.order_items : []) as OrderItemRow[]
 
   return (
     <div className="space-y-6 max-w-3xl">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900 font-mono">{order.order_number}</h1>
+        <h1 className="text-xl font-bold text-gray-900 font-mono">
+          {order.invoice_number ?? order.id.slice(0, 8)}
+        </h1>
         <StatusBadge label={badge.label} variant={badge.variant} />
       </div>
 
@@ -52,11 +54,13 @@ export default async function OrderDetailPage({ params }: Props) {
         </div>
         <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-3">
           <h2 className="font-semibold text-gray-800">סיכום כספי</h2>
-          <InfoRow label="סכום ביניים" value={`₪${order.subtotal.toLocaleString('he-IL')}`} />
-          <InfoRow label="הנחה" value={`₪${order.discount_amount.toLocaleString('he-IL')}`} />
-          <InfoRow label="סה״כ" value={`₪${order.total.toLocaleString('he-IL')}`} bold />
-          <InfoRow label="עמלת פלטפורמה" value={`₪${order.platform_fee.toLocaleString('he-IL')}`} />
-          <InfoRow label="תשלום לספק" value={`₪${order.vendor_payout.toLocaleString('he-IL')}`} />
+          <InfoRow label="סכום ביניים" value={`₪${order.subtotal_ils.toLocaleString('he-IL')}`} />
+          <InfoRow label="הנחה" value={`₪${order.discount_ils.toLocaleString('he-IL')}`} />
+          <InfoRow
+            label="קאשבק שמומש"
+            value={`₪${order.cashback_applied_ils.toLocaleString('he-IL')}`}
+          />
+          <InfoRow label="סה״כ" value={`₪${order.total_ils.toLocaleString('he-IL')}`} bold />
         </div>
       </div>
 
@@ -78,17 +82,17 @@ export default async function OrderDetailPage({ params }: Props) {
           <tbody className="divide-y divide-gray-100">
             {items.map((item) => {
               const product = Array.isArray(item.products) ? item.products[0] : item.products
-              const vendor = Array.isArray(item.vendors) ? item.vendors[0] : item.vendors
+              const supplier = Array.isArray(item.suppliers) ? item.suppliers[0] : item.suppliers
               return (
                 <tr key={item.id}>
                   <td className="px-5 py-3 text-gray-800">{product?.name_he ?? '—'}</td>
-                  <td className="px-5 py-3 text-gray-600">{vendor?.business_name ?? '—'}</td>
+                  <td className="px-5 py-3 text-gray-600">{supplier?.name ?? '—'}</td>
                   <td className="px-5 py-3 text-gray-700">{item.quantity}</td>
                   <td className="px-5 py-3 text-gray-700">
-                    ₪{item.unit_price.toLocaleString('he-IL')}
+                    ₪{item.unit_price_ils.toLocaleString('he-IL')}
                   </td>
                   <td className="px-5 py-3 text-gray-700">
-                    ₪{item.subtotal.toLocaleString('he-IL')}
+                    ₪{item.total_price_ils.toLocaleString('he-IL')}
                   </td>
                 </tr>
               )
