@@ -162,26 +162,31 @@ export type Database = {
       products: {
         Row: {
           id: string
-          vendor_id: string | null
+          supplier_id: string
           category_id: string | null
           slug: string
           name_he: string
           name_en: string | null
           description_he: string | null
-          type: 'physical' | 'coupon'
-          base_price: number
+          type: 'coupon' | 'physical' | 'service'
+          status: 'draft' | 'active' | 'paused' | 'sold_out' | 'archived'
+          price_ils: number
+          compare_at_price_ils: number | null
           compare_at_price: number | null
-          sale_price: number | null
+          cost_ils: number | null
           kenyon_price: number | null
           full_price: number | null
           is_coupon_enabled: boolean
-          currency: string
+          platform_percent: number
+          cashback_percent: number
+          coupon_expiry_days: number
+          commission_percent: number
           stock_quantity: number | null
           sku: string | null
           is_featured: boolean
-          status: 'draft' | 'active' | 'paused' | 'archived'
           images: Json
-          seo_meta: Json
+          attributes: Json
+          published_at: string | null
           created_by: string | null
           deleted_at: string | null
           created_at: string
@@ -189,60 +194,39 @@ export type Database = {
         }
         Insert: {
           id?: string
-          vendor_id?: string | null
+          supplier_id: string
           category_id?: string | null
           slug: string
           name_he: string
           name_en?: string | null
           description_he?: string | null
-          type?: 'physical' | 'coupon'
-          base_price?: number
+          type: 'coupon' | 'physical' | 'service'
+          status?: 'draft' | 'active' | 'paused' | 'sold_out' | 'archived'
+          price_ils: number
+          compare_at_price_ils?: number | null
           compare_at_price?: number | null
-          sale_price?: number | null
+          cost_ils?: number | null
           kenyon_price?: number | null
           full_price?: number | null
           is_coupon_enabled?: boolean
-          currency?: string
+          platform_percent?: number
+          cashback_percent?: number
+          coupon_expiry_days: number
+          commission_percent?: number
           stock_quantity?: number | null
           sku?: string | null
           is_featured?: boolean
-          status?: 'draft' | 'active' | 'paused' | 'archived'
           images?: Json
-          seo_meta?: Json
+          attributes?: Json
+          published_at?: string | null
           created_by?: string | null
           deleted_at?: string | null
           created_at?: string
           updated_at?: string
         }
-        Update: {
-          id?: string
-          vendor_id?: string | null
-          category_id?: string | null
-          slug?: string
-          name_he?: string
-          name_en?: string | null
-          description_he?: string | null
-          type?: 'physical' | 'coupon'
-          base_price?: number
-          compare_at_price?: number | null
-          sale_price?: number | null
-          kenyon_price?: number | null
-          full_price?: number | null
-          is_coupon_enabled?: boolean
-          currency?: string
-          stock_quantity?: number | null
-          sku?: string | null
-          is_featured?: boolean
-          status?: 'draft' | 'active' | 'paused' | 'archived'
-          images?: Json
-          seo_meta?: Json
-          created_by?: string | null
-          deleted_at?: string | null
-          created_at?: string
-          updated_at?: string
-        }
+        Update: Partial<Database['public']['Tables']['products']['Insert']>
         Relationships: [
-          { foreignKeyName: 'products_vendor_id_fkey'; columns: ['vendor_id']; referencedRelation: 'vendors'; referencedColumns: ['id'] },
+          { foreignKeyName: 'products_supplier_id_fkey'; columns: ['supplier_id']; referencedRelation: 'suppliers'; referencedColumns: ['id'] },
           { foreignKeyName: 'products_category_id_fkey'; columns: ['category_id']; referencedRelation: 'categories'; referencedColumns: ['id'] },
           { foreignKeyName: 'products_created_by_fkey'; columns: ['created_by']; referencedRelation: 'users'; referencedColumns: ['id'] }
         ]
@@ -335,42 +319,62 @@ export type Database = {
       orders: {
         Row: {
           id: string
-          order_number: string
-          customer_id: string
-          status: 'pending' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
-          subtotal: number
-          discount_amount: number
-          total: number
-          platform_fee: number
-          vendor_payout: number
-          payment_method: string | null
-          payment_token_id: string | null
-          shipping_address: Json | null
+          user_id: string
+          status: 'pending' | 'paid' | 'partially_fulfilled' | 'fulfilled' | 'cancelled' | 'refunded'
+          subtotal_ils: number
+          discount_ils: number
+          cashback_applied_ils: number
+          total_ils: number
+          currency: string
+          cardcom_payment_id: string | null
+          invoice_number: string | null
+          address_id: string | null
+          affiliate_code: string | null
+          referral_code_used: string | null
+          accepted_terms_at: string | null
           notes: string | null
-          created_at: string
           paid_at: string | null
+          cancelled_at: string | null
+          refunded_at: string | null
+          expires_at: string | null
+          subtotal_agorot: number
+          discount_agorot: number
+          wallet_applied_agorot: number
+          customer_pays_now_agorot: number
+          deleted_at: string | null
+          created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
-          order_number?: string
-          customer_id: string
-          status?: 'pending' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
-          subtotal: number
-          discount_amount?: number
-          total: number
-          platform_fee?: number
-          vendor_payout?: number
-          payment_method?: string | null
-          payment_token_id?: string | null
-          shipping_address?: Json | null
+          user_id: string
+          status?: 'pending' | 'paid' | 'partially_fulfilled' | 'fulfilled' | 'cancelled' | 'refunded'
+          subtotal_ils: number
+          discount_ils?: number
+          cashback_applied_ils?: number
+          total_ils: number
+          currency?: string
+          cardcom_payment_id?: string | null
+          invoice_number?: string | null
+          address_id?: string | null
+          affiliate_code?: string | null
+          referral_code_used?: string | null
+          accepted_terms_at?: string | null
           notes?: string | null
-          created_at?: string
           paid_at?: string | null
+          cancelled_at?: string | null
+          refunded_at?: string | null
+          expires_at?: string | null
+          subtotal_agorot: number
+          discount_agorot?: number
+          wallet_applied_agorot?: number
+          customer_pays_now_agorot: number
+          deleted_at?: string | null
+          created_at?: string
           updated_at?: string
         }
         Update: Partial<Database['public']['Tables']['orders']['Insert']>
-        Relationships: [{ foreignKeyName: 'orders_customer_id_fkey'; columns: ['customer_id']; referencedRelation: 'profiles'; referencedColumns: ['id'] }]
+        Relationships: [{ foreignKeyName: 'orders_user_id_fkey'; columns: ['user_id']; referencedRelation: 'users'; referencedColumns: ['id'] }]
       }
       order_items: {
         Row: {
@@ -378,31 +382,95 @@ export type Database = {
           order_id: string
           product_id: string | null
           variant_id: string | null
-          vendor_id: string
+          product_type: 'coupon' | 'physical' | 'service'
+          supplier_id: string
           quantity: number
-          unit_price: number
-          subtotal: number
-          platform_fee: number
-          vendor_payout: number
+          unit_price_ils: number
+          total_price_ils: number
+          commission_percent: number
+          supplier_payout_ils: number
+          cashback_earned_ils: number
+          item_status: 'pending' | 'issued' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
+          platform_percent: number
+          platform_fee_ils: number
+          supplier_due_ils: number
+          charged_on_site_ils: number
+          balance_due_at_business_ils: number
+          shipping_carrier: string | null
+          tracking_number: string | null
+          shipped_at: string | null
+          delivered_at: string | null
+          unit_price_agorot: number
+          face_value_agorot: number
+          customer_pays_now_agorot: number
+          platform_fee_agorot: number
+          supplier_due_agorot: number
+          cashback_percent: number
+          cashback_amount_agorot: number
+          settlement_status: 'pending' | 'paid' | 'split_executed' | 'escrow_held' | 'escrow_released' | 'redeemed' | 'refunded' | 'cancelled'
+          upfront_percent: number | null
+          commission_percent_snapshot: number | null
+          paid_on_site_agorot: number | null
+          commission_agorot: number | null
+          supplier_immediate_agorot: number | null
+          escrow_held_agorot: number | null
+          escrow_release_agorot: number | null
+          balance_due_agorot: number | null
+          fulfilled_at: string | null
+          deleted_at: string | null
           created_at: string
+          updated_at: string
         }
         Insert: {
           id?: string
           order_id: string
           product_id?: string | null
           variant_id?: string | null
-          vendor_id: string
-          quantity: number
-          unit_price: number
-          subtotal: number
-          platform_fee?: number
-          vendor_payout?: number
+          product_type: 'coupon' | 'physical' | 'service'
+          supplier_id: string
+          quantity?: number
+          unit_price_ils: number
+          total_price_ils: number
+          commission_percent: number
+          supplier_payout_ils: number
+          cashback_earned_ils?: number
+          item_status?: 'pending' | 'issued' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
+          platform_percent?: number
+          platform_fee_ils?: number
+          supplier_due_ils?: number
+          charged_on_site_ils?: number
+          balance_due_at_business_ils?: number
+          shipping_carrier?: string | null
+          tracking_number?: string | null
+          shipped_at?: string | null
+          delivered_at?: string | null
+          unit_price_agorot: number
+          face_value_agorot: number
+          customer_pays_now_agorot: number
+          platform_fee_agorot: number
+          supplier_due_agorot: number
+          cashback_percent: number
+          cashback_amount_agorot: number
+          settlement_status?: 'pending' | 'paid' | 'split_executed' | 'escrow_held' | 'escrow_released' | 'redeemed' | 'refunded' | 'cancelled'
+          upfront_percent?: number | null
+          commission_percent_snapshot?: number | null
+          paid_on_site_agorot?: number | null
+          commission_agorot?: number | null
+          supplier_immediate_agorot?: number | null
+          escrow_held_agorot?: number | null
+          escrow_release_agorot?: number | null
+          balance_due_agorot?: number | null
+          fulfilled_at?: string | null
+          deleted_at?: string | null
           created_at?: string
+          updated_at?: string
         }
         Update: Partial<Database['public']['Tables']['order_items']['Insert']>
         Relationships: [
           { foreignKeyName: 'order_items_order_id_fkey'; columns: ['order_id']; referencedRelation: 'orders'; referencedColumns: ['id'] },
-          { foreignKeyName: 'order_items_vendor_id_fkey'; columns: ['vendor_id']; referencedRelation: 'vendors'; referencedColumns: ['id'] }
+          { foreignKeyName: 'order_items_product_id_fkey'; columns: ['product_id']; referencedRelation: 'products'; referencedColumns: ['id'] },
+          { foreignKeyName: 'order_items_variant_id_fkey'; columns: ['variant_id']; referencedRelation: 'product_variants'; referencedColumns: ['id'] },
+          { foreignKeyName: 'order_items_supplier_id_fkey'; columns: ['supplier_id']; referencedRelation: 'suppliers'; referencedColumns: ['id'] }
         ]
       }
       wallets: {
@@ -592,6 +660,325 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['admin_audit_log']['Insert']>
         Relationships: [{ foreignKeyName: 'admin_audit_log_user_id_fkey'; columns: ['user_id']; referencedRelation: 'users'; referencedColumns: ['id'] }]
       }
+      suppliers: {
+        Row: {
+          id: string
+          name: string
+          contact_email: string | null
+          contact_phone: string | null
+          commission_percent: number
+          notes: string | null
+          legal_name: string | null
+          business_id: string | null
+          address: string | null
+          city: string | null
+          logo_url: string | null
+          status: 'active' | 'suspended' | 'closed'
+          payout_terms_days: number
+          application_id: string | null
+          approved_by: string | null
+          approved_at: string | null
+          deleted_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          contact_email?: string | null
+          contact_phone?: string | null
+          commission_percent?: number
+          notes?: string | null
+          legal_name?: string | null
+          business_id?: string | null
+          address?: string | null
+          city?: string | null
+          logo_url?: string | null
+          status?: 'active' | 'suspended' | 'closed'
+          payout_terms_days?: number
+          application_id?: string | null
+          approved_by?: string | null
+          approved_at?: string | null
+          deleted_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['suppliers']['Insert']>
+        Relationships: [
+          { foreignKeyName: 'suppliers_application_id_fkey'; columns: ['application_id']; referencedRelation: 'supplier_applications'; referencedColumns: ['id'] },
+          { foreignKeyName: 'suppliers_approved_by_fkey'; columns: ['approved_by']; referencedRelation: 'users'; referencedColumns: ['id'] }
+        ]
+      }
+      coupon_codes: {
+        Row: {
+          id: string
+          code: string
+          qr_code_url: string | null
+          product_id: string
+          order_item_id: string
+          user_id: string
+          supplier_id: string
+          status: 'issued' | 'used' | 'expired' | 'refunded'
+          expires_at: string
+          used_at: string | null
+          used_by_supplier_user_id: string | null
+          used_scan_method: 'camera' | 'manual' | null
+          refunded_at: string | null
+          platform_percent: number | null
+          face_value_ils: number | null
+          platform_paid_ils: number | null
+          collect_amount_ils: number | null
+          qr_token: string | null
+          qr_key_id: string | null
+          deleted_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          code: string
+          qr_code_url?: string | null
+          product_id: string
+          order_item_id: string
+          user_id: string
+          supplier_id: string
+          status?: 'issued' | 'used' | 'expired' | 'refunded'
+          expires_at: string
+          used_at?: string | null
+          used_by_supplier_user_id?: string | null
+          used_scan_method?: 'camera' | 'manual' | null
+          refunded_at?: string | null
+          platform_percent?: number | null
+          face_value_ils?: number | null
+          platform_paid_ils?: number | null
+          collect_amount_ils?: number | null
+          qr_token?: string | null
+          qr_key_id?: string | null
+          deleted_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['coupon_codes']['Insert']>
+        Relationships: [
+          { foreignKeyName: 'coupon_codes_product_id_fkey'; columns: ['product_id']; referencedRelation: 'products'; referencedColumns: ['id'] },
+          { foreignKeyName: 'coupon_codes_order_item_id_fkey'; columns: ['order_item_id']; referencedRelation: 'order_items'; referencedColumns: ['id'] },
+          { foreignKeyName: 'coupon_codes_user_id_fkey'; columns: ['user_id']; referencedRelation: 'users'; referencedColumns: ['id'] },
+          { foreignKeyName: 'coupon_codes_supplier_id_fkey'; columns: ['supplier_id']; referencedRelation: 'suppliers'; referencedColumns: ['id'] }
+        ]
+      }
+      coupon_redemptions: {
+        Row: {
+          id: string
+          coupon_code_id: string
+          order_item_id: string | null
+          supplier_id: string
+          scanned_by: string
+          method: 'camera' | 'manual'
+          amount_collected_ils: number | null
+          ip: string | null
+          user_agent: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          coupon_code_id: string
+          order_item_id?: string | null
+          supplier_id: string
+          scanned_by: string
+          method: 'camera' | 'manual'
+          amount_collected_ils?: number | null
+          ip?: string | null
+          user_agent?: string | null
+          created_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['coupon_redemptions']['Insert']>
+        Relationships: [
+          { foreignKeyName: 'coupon_redemptions_coupon_code_id_fkey'; columns: ['coupon_code_id']; referencedRelation: 'coupon_codes'; referencedColumns: ['id'] },
+          { foreignKeyName: 'coupon_redemptions_order_item_id_fkey'; columns: ['order_item_id']; referencedRelation: 'order_items'; referencedColumns: ['id'] },
+          { foreignKeyName: 'coupon_redemptions_supplier_id_fkey'; columns: ['supplier_id']; referencedRelation: 'suppliers'; referencedColumns: ['id'] },
+          { foreignKeyName: 'coupon_redemptions_scanned_by_fkey'; columns: ['scanned_by']; referencedRelation: 'users'; referencedColumns: ['id'] }
+        ]
+      }
+      payments: {
+        Row: {
+          id: string
+          order_id: string
+          kind: 'charge' | 'token_charge' | 'refund'
+          status: 'initiated' | 'redirected' | 'succeeded' | 'failed' | 'cancelled' | 'refunded'
+          amount_ils: number
+          currency: string
+          wallet_applied_ils: number
+          token_id: string | null
+          cardcom_low_profile_id: string | null
+          cardcom_transaction_id: string | null
+          refund_of_payment_id: string | null
+          idempotency_key: string
+          failure_code: string | null
+          failure_message: string | null
+          raw_response: Json
+          succeeded_at: string | null
+          failed_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          order_id: string
+          kind?: 'charge' | 'token_charge' | 'refund'
+          status?: 'initiated' | 'redirected' | 'succeeded' | 'failed' | 'cancelled' | 'refunded'
+          amount_ils: number
+          currency?: string
+          wallet_applied_ils?: number
+          token_id?: string | null
+          cardcom_low_profile_id?: string | null
+          cardcom_transaction_id?: string | null
+          refund_of_payment_id?: string | null
+          idempotency_key: string
+          failure_code?: string | null
+          failure_message?: string | null
+          raw_response?: Json
+          succeeded_at?: string | null
+          failed_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['payments']['Insert']>
+        Relationships: [
+          { foreignKeyName: 'payments_order_id_fkey'; columns: ['order_id']; referencedRelation: 'orders'; referencedColumns: ['id'] },
+          { foreignKeyName: 'payments_token_id_fkey'; columns: ['token_id']; referencedRelation: 'payment_tokens'; referencedColumns: ['id'] },
+          { foreignKeyName: 'payments_refund_of_payment_id_fkey'; columns: ['refund_of_payment_id']; referencedRelation: 'payments'; referencedColumns: ['id'] }
+        ]
+      }
+      payment_webhook_events: {
+        Row: {
+          id: string
+          provider: string
+          external_event_id: string
+          payment_id: string | null
+          signature_valid: boolean
+          verified_against_api: boolean
+          payload: Json
+          received_at: string
+          processed_at: string | null
+        }
+        Insert: {
+          id?: string
+          provider?: string
+          external_event_id: string
+          payment_id?: string | null
+          signature_valid: boolean
+          verified_against_api?: boolean
+          payload: Json
+          received_at?: string
+          processed_at?: string | null
+        }
+        Update: Partial<Database['public']['Tables']['payment_webhook_events']['Insert']>
+        Relationships: [{ foreignKeyName: 'payment_webhook_events_payment_id_fkey'; columns: ['payment_id']; referencedRelation: 'payments'; referencedColumns: ['id'] }]
+      }
+      cart_items: {
+        Row: {
+          id: string
+          cart_id: string
+          product_id: string
+          variant_id: string | null
+          quantity: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          cart_id: string
+          product_id: string
+          variant_id?: string | null
+          quantity?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['cart_items']['Insert']>
+        Relationships: [
+          { foreignKeyName: 'cart_items_cart_id_fkey'; columns: ['cart_id']; referencedRelation: 'carts'; referencedColumns: ['id'] },
+          { foreignKeyName: 'cart_items_product_id_fkey'; columns: ['product_id']; referencedRelation: 'products'; referencedColumns: ['id'] },
+          { foreignKeyName: 'cart_items_variant_id_fkey'; columns: ['variant_id']; referencedRelation: 'product_variants'; referencedColumns: ['id'] }
+        ]
+      }
+      escrow_holds: {
+        Row: {
+          id: string
+          coupon_code_id: string
+          order_id: string
+          order_item_id: string
+          supplier_id: string
+          held_agorot: number
+          commission_agorot: number
+          release_agorot: number
+          status: 'held' | 'released' | 'refunded'
+          held_at: string
+          released_at: string | null
+          refunded_at: string | null
+          release_idempotency_key: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          coupon_code_id: string
+          order_id: string
+          order_item_id: string
+          supplier_id: string
+          held_agorot: number
+          commission_agorot: number
+          release_agorot: number
+          status?: 'held' | 'released' | 'refunded'
+          held_at?: string
+          released_at?: string | null
+          refunded_at?: string | null
+          release_idempotency_key?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['escrow_holds']['Insert']>
+        Relationships: [
+          { foreignKeyName: 'escrow_holds_coupon_code_id_fkey'; columns: ['coupon_code_id']; referencedRelation: 'coupon_codes'; referencedColumns: ['id'] },
+          { foreignKeyName: 'escrow_holds_order_id_fkey'; columns: ['order_id']; referencedRelation: 'orders'; referencedColumns: ['id'] },
+          { foreignKeyName: 'escrow_holds_order_item_id_fkey'; columns: ['order_item_id']; referencedRelation: 'order_items'; referencedColumns: ['id'] },
+          { foreignKeyName: 'escrow_holds_supplier_id_fkey'; columns: ['supplier_id']; referencedRelation: 'suppliers'; referencedColumns: ['id'] }
+        ]
+      }
+      split_executions: {
+        Row: {
+          id: string
+          order_item_id: string
+          order_id: string
+          supplier_id: string
+          face_value_agorot: number
+          commission_agorot: number
+          supplier_agorot: number
+          executed_at: string
+          payment_id: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          order_item_id: string
+          order_id: string
+          supplier_id: string
+          face_value_agorot: number
+          commission_agorot: number
+          supplier_agorot: number
+          executed_at?: string
+          payment_id?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['split_executions']['Insert']>
+        Relationships: [
+          { foreignKeyName: 'split_executions_order_item_id_fkey'; columns: ['order_item_id']; referencedRelation: 'order_items'; referencedColumns: ['id'] },
+          { foreignKeyName: 'split_executions_order_id_fkey'; columns: ['order_id']; referencedRelation: 'orders'; referencedColumns: ['id'] },
+          { foreignKeyName: 'split_executions_supplier_id_fkey'; columns: ['supplier_id']; referencedRelation: 'suppliers'; referencedColumns: ['id'] },
+          { foreignKeyName: 'split_executions_payment_id_fkey'; columns: ['payment_id']; referencedRelation: 'payments'; referencedColumns: ['id'] }
+        ]
+      }
     }
     Views: Record<string, never>
     Functions: {
@@ -604,10 +991,16 @@ export type Database = {
     Enums: {
       user_role: 'customer' | 'vendor' | 'content_uploader' | 'admin' | 'super_admin'
       vendor_status: 'pending' | 'active' | 'suspended'
-      product_type: 'physical' | 'coupon'
-      product_status: 'draft' | 'active' | 'paused' | 'archived'
-      coupon_status: 'active' | 'redeemed' | 'expired'
-      order_status: 'pending' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
+      supplier_status: 'active' | 'suspended' | 'closed'
+      product_type: 'coupon' | 'physical' | 'service'
+      product_status: 'draft' | 'active' | 'paused' | 'sold_out' | 'archived'
+      coupon_status: 'issued' | 'used' | 'expired' | 'refunded'
+      order_status: 'pending' | 'paid' | 'partially_fulfilled' | 'fulfilled' | 'cancelled' | 'refunded'
+      order_item_status: 'pending' | 'issued' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
+      payment_kind: 'charge' | 'token_charge' | 'refund'
+      payment_status: 'initiated' | 'redirected' | 'succeeded' | 'failed' | 'cancelled' | 'refunded'
+      settlement_status: 'pending' | 'paid' | 'split_executed' | 'escrow_held' | 'escrow_released' | 'redeemed' | 'refunded' | 'cancelled'
+      escrow_status: 'held' | 'released' | 'refunded'
       wallet_tx_type: 'cashback_earned' | 'order_payment' | 'refund' | 'adjustment'
     }
     CompositeTypes: Record<string, never>
@@ -639,5 +1032,21 @@ export type PaymentToken = Tables<'payment_tokens'>
 export type Cart = Tables<'carts'>
 export type AdminAuditLog = Tables<'admin_audit_log'>
 export type CouponDeal = Tables<'coupon_deals'>
+export type Supplier = Tables<'suppliers'>
+export type CouponCode = Tables<'coupon_codes'>
+export type CouponRedemption = Tables<'coupon_redemptions'>
+export type Payment = Tables<'payments'>
+export type PaymentWebhookEvent = Tables<'payment_webhook_events'>
+export type CartItemRow = Tables<'cart_items'>
+export type EscrowHold = Tables<'escrow_holds'>
+export type SplitExecution = Tables<'split_executions'>
 
 export type UserRole = Enums<'user_role'>
+export type OrderStatus = Enums<'order_status'>
+export type OrderItemStatus = Enums<'order_item_status'>
+export type SettlementStatus = Enums<'settlement_status'>
+export type EscrowStatus = Enums<'escrow_status'>
+export type PaymentKind = Enums<'payment_kind'>
+export type PaymentStatus = Enums<'payment_status'>
+export type CouponStatus = Enums<'coupon_status'>
+export type SupplierStatus = Enums<'supplier_status'>

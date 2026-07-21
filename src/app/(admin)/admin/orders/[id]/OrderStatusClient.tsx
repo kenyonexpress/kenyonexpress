@@ -13,9 +13,8 @@ const INITIAL: OrderActionState = null
 const STATUS_OPTIONS = [
   { value: 'pending', label: 'ממתין' },
   { value: 'paid', label: 'שולם' },
-  { value: 'processing', label: 'בטיפול' },
-  { value: 'shipped', label: 'נשלח' },
-  { value: 'delivered', label: 'נמסר' },
+  { value: 'partially_fulfilled', label: 'סופק חלקית' },
+  { value: 'fulfilled', label: 'סופק' },
   { value: 'cancelled', label: 'בוטל' },
   { value: 'refunded', label: 'הוחזר' },
 ]

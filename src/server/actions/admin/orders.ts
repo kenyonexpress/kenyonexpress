@@ -8,9 +8,8 @@ import { z } from 'zod'
 const statusSchema = z.enum([
   'pending',
   'paid',
-  'processing',
-  'shipped',
-  'delivered',
+  'partially_fulfilled',
+  'fulfilled',
   'cancelled',
   'refunded',
 ])

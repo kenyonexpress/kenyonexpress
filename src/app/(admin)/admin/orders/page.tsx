@@ -8,9 +8,8 @@ const ORDER_STATUSES = [
   { value: '', label: 'כל הסטטוסים' },
   { value: 'pending', label: 'ממתין' },
   { value: 'paid', label: 'שולם' },
-  { value: 'processing', label: 'בטיפול' },
-  { value: 'shipped', label: 'נשלח' },
-  { value: 'delivered', label: 'נמסר' },
+  { value: 'partially_fulfilled', label: 'סופק חלקית' },
+  { value: 'fulfilled', label: 'סופק' },
   { value: 'cancelled', label: 'בוטל' },
   { value: 'refunded', label: 'הוחזר' },
 ]
@@ -25,7 +24,7 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
 
   let query = supabase
     .from('orders')
-    .select('id, order_number, status, total, created_at, profiles(full_name, email)')
+    .select('id, invoice_number, status, total_ils, created_at, profiles(full_name, email)')
     .order('created_at', { ascending: false })
     .limit(100)
 
@@ -100,14 +99,14 @@ export default async function AdminOrdersPage({ searchParams }: Props) {
                       href={`/admin/orders/${order.id}`}
                       className="text-brand hover:underline font-mono text-xs"
                     >
-                      {order.order_number}
+                      {order.invoice_number ?? order.id.slice(0, 8)}
                     </Link>
                   </td>
                   <td className="px-5 py-3 text-gray-700">
                     {profile?.full_name ?? profile?.email ?? '—'}
                   </td>
                   <td className="px-5 py-3 text-gray-700">
-                    ₪{order.total.toLocaleString('he-IL')}
+                    ₪{order.total_ils.toLocaleString('he-IL')}
                   </td>
                   <td className="px-5 py-3">
                     <StatusBadge label={badge.label} variant={badge.variant} />
