@@ -101,8 +101,12 @@ export function CartProvider({
 
   const commitCart = useCallback(
     (next: CartView) => {
-      setCart(next)
-      dispatchOptimistic({ type: 'replace', cart: next })
+      // useOptimistic dispatch must run inside a transition (React 19 warning
+      // when commitCart is called from an effect, e.g. CartPageView hydration).
+      startTransition(() => {
+        setCart(next)
+        dispatchOptimistic({ type: 'replace', cart: next })
+      })
     },
     [dispatchOptimistic],
   )
