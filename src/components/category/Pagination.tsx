@@ -1,9 +1,8 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 
 type Props = {
   pathname: string
-  /** Current query params (sort, etc.) to preserve across page links. */
+  /** Current query params (sort, min, max...) to preserve across page links. */
   params: Record<string, string | undefined>
   currentPage: number
   totalPages: number
@@ -35,8 +34,21 @@ function pageWindow(current: number, total: number): (number | `gap-${number}`)[
   return out
 }
 
-const baseLink =
-  'inline-flex h-9 min-w-9 items-center justify-center rounded-lg border px-2 text-sm transition-colors'
+function Chevron({ dir }: { dir: 'prev' | 'next' }) {
+  // RTL: "prev" points to the inline-start (right), "next" to the inline-end (left)
+  return (
+    <svg
+      viewBox="0 0 8 12"
+      width={8}
+      height={12}
+      fill="currentColor"
+      aria-hidden="true"
+      className={dir === 'prev' ? 'rtl:scale-x-[-1]' : undefined}
+    >
+      <path d="M5.9 0 0 6l5.9 6L8 9.9 4.2 6 8 2.1z" />
+    </svg>
+  )
+}
 
 export default function Pagination({ pathname, params, currentPage, totalPages }: Props) {
   if (totalPages <= 1) return null
@@ -45,65 +57,40 @@ export default function Pagination({ pathname, params, currentPage, totalPages }
   const nextDisabled = currentPage >= totalPages
 
   return (
-    <nav className="flex items-center justify-center gap-1.5" aria-label="ניווט בין עמודים">
-      {/* In RTL "previous" sits on the end side; chevrons mirror automatically */}
+    <nav className="category-pagination" aria-label="ניווט בין עמודים">
       {prevDisabled ? (
-        <span
-          className={`${baseLink} cursor-not-allowed border-gray-100 text-gray-300`}
-          aria-hidden
-        >
-          <ChevronRight className="rtl:scale-x-[-1]" size={18} />
+        <span className="is-disabled" aria-hidden>
+          <Chevron dir="prev" />
         </span>
       ) : (
-        <Link
-          href={hrefFor(pathname, params, currentPage - 1)}
-          className={`${baseLink} border-gray-200 text-gray-700 hover:border-brand-primary`}
-          aria-label="העמוד הקודם"
-          rel="prev"
-        >
-          <ChevronRight className="rtl:scale-x-[-1]" size={18} />
+        <Link href={hrefFor(pathname, params, currentPage - 1)} aria-label="העמוד הקודם" rel="prev">
+          <Chevron dir="prev" />
         </Link>
       )}
 
       {pageWindow(currentPage, totalPages).map((p) =>
         typeof p === 'string' ? (
-          <span key={p} className="px-1 text-gray-400" aria-hidden>
+          <span key={p} className="is-disabled" aria-hidden>
             …
           </span>
         ) : p === currentPage ? (
-          <span
-            key={p}
-            aria-current="page"
-            className={`${baseLink} border-brand-primary bg-brand-primary font-semibold text-gray-900`}
-          >
+          <span key={p} aria-current="page" className="is-current">
             {p}
           </span>
         ) : (
-          <Link
-            key={p}
-            href={hrefFor(pathname, params, p)}
-            className={`${baseLink} border-gray-200 text-gray-700 hover:border-brand-primary`}
-          >
+          <Link key={p} href={hrefFor(pathname, params, p)}>
             {p}
           </Link>
         ),
       )}
 
       {nextDisabled ? (
-        <span
-          className={`${baseLink} cursor-not-allowed border-gray-100 text-gray-300`}
-          aria-hidden
-        >
-          <ChevronLeft className="rtl:scale-x-[-1]" size={18} />
+        <span className="is-disabled" aria-hidden>
+          <Chevron dir="next" />
         </span>
       ) : (
-        <Link
-          href={hrefFor(pathname, params, currentPage + 1)}
-          className={`${baseLink} border-gray-200 text-gray-700 hover:border-brand-primary`}
-          aria-label="העמוד הבא"
-          rel="next"
-        >
-          <ChevronLeft className="rtl:scale-x-[-1]" size={18} />
+        <Link href={hrefFor(pathname, params, currentPage + 1)} aria-label="העמוד הבא" rel="next">
+          <Chevron dir="next" />
         </Link>
       )}
     </nav>

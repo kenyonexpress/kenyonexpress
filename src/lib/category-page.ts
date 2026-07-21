@@ -118,7 +118,9 @@ export async function getCategoryProducts(opts: {
       query = query.order('created_at', { ascending: false })
       break
     default:
-      query = query.order('created_at', { ascending: false })
+      // menu_order / popularity / rating: live default archive order matches
+      // Hebrew-alphabetical name order; there is no menu_order column here.
+      query = query.order('name_he', { ascending: true })
   }
 
   const { data, count } = await query.range(from, from + CATEGORY_PAGE_SIZE - 1)
@@ -126,4 +128,14 @@ export async function getCategoryProducts(opts: {
     normalizeCategoryJoin(row as CategoryProductRow, category),
   )
   return { items, total: count ?? 0 }
+}
+
+export async function getAllCategories(): Promise<{ slug: string; name_he: string }[]> {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('categories')
+    .select('slug, name_he')
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true })
+  return data ?? []
 }

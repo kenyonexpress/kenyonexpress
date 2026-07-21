@@ -12,7 +12,20 @@ export default function CategoryBreadcrumb({ items }: Props) {
     <nav className="category-breadcrumb" aria-label="נתיב ניווט">
       {items.map((item, i) => (
         <span key={`${item.label}-${i}`}>
-          {i > 0 && <span aria-hidden="true"> </span>}
+          {i > 0 && (
+            <span className="category-breadcrumb__sep" aria-hidden="true">
+              <svg
+                viewBox="0 0 8 12"
+                width={7}
+                height={10}
+                fill="currentColor"
+                className="inline-block"
+                aria-hidden="true"
+              >
+                <path d="M5.9 0 0 6l5.9 6L8 9.9 4.2 6 8 2.1z" />
+              </svg>
+            </span>
+          )}
           {item.href ? <Link href={item.href}>{item.label}</Link> : <span>{item.label}</span>}
         </span>
       ))}

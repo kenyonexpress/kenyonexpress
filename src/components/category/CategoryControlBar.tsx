@@ -1,39 +1,42 @@
 'use client'
 
-import { CATEGORY_TOKENS, ORDERBY_TO_SORT, SORT_TO_ORDERBY } from '@/lib/category-tokens'
+import {
+  CATEGORY_TOKENS,
+  ORDERBY_TO_SORT,
+  SORT_TO_ORDERBY,
+  type SortValue,
+} from '@/lib/category-tokens'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useTransition } from 'react'
 
-export type SortValue =
-  | 'newest'
-  | 'price_asc'
-  | 'price_desc'
-  | 'name'
-  | 'menu_order'
-  | 'popularity'
-  | 'rating'
+export type { SortValue }
 
-const VALID_SORTS = new Set<string>([
-  'newest',
-  'price_asc',
-  'price_desc',
-  'name',
-  'menu_order',
-  'popularity',
-  'rating',
-])
-
-export function parseSort(raw: string | string[] | undefined): SortValue {
-  if (typeof raw === 'string' && VALID_SORTS.has(raw)) return raw as SortValue
-  return 'menu_order'
+/* Live control bar (measured): grid/list view switcher on the inline-start
+   side, orderby select on the inline-end side. Switcher is visual only. */
+function ViewSwitcher() {
+  const icons = [
+    'M1 1h3v3H1zM5 1h3v3H5zM9 1h3v3H9zM13 1h3v3h-3zM1 5h3v3H1zM5 5h3v3H5zM9 5h3v3H9zM13 5h3v3h-3zM1 9h3v3H1zM5 9h3v3H5zM9 9h3v3H9zM13 9h3v3h-3zM1 13h3v3H1zM5 13h3v3H5zM9 13h3v3H9zM13 13h3v3h-3z',
+    'M1 1h4v4H1zM6 1h4v4H6zM11 1h4v4h-4zM1 6h4v4H1zM6 6h4v4H6zM11 6h4v4h-4zM1 11h4v4H1zM6 11h4v4H6zM11 11h4v4h-4z',
+    'M1 2h3v3H1zM5 3h11v1H5zM1 7h3v3H1zM5 8h11v1H5zM1 12h3v3H1zM5 13h11v1H5z',
+    'M1 1h5v5H1zM7 2h9v1H7zM7 4h9v1H7zM1 10h5v5H1zM7 11h9v1H7zM7 13h9v1H7z',
+  ]
+  return (
+    <div className="category-view-switcher" aria-hidden="true">
+      {icons.map((d, i) => (
+        <span
+          key={d.slice(0, 8)}
+          className={`category-view-switcher__btn${i === 0 ? ' is-active' : ''}`}
+        >
+          <svg viewBox="0 0 17 17" width={16} height={16} fill="currentColor" aria-hidden="true">
+            <path d={d} />
+          </svg>
+        </span>
+      ))}
+    </div>
+  )
 }
 
-type Props = {
-  value: SortValue
-  total: number
-}
-
-export default function CategoryControlBar({ value, total }: Props) {
+export default function CategoryControlBar({ value }: { value: SortValue }) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -56,9 +59,7 @@ export default function CategoryControlBar({ value, total }: Props) {
 
   return (
     <div className="category-control-bar">
-      <p className="category-control-bar__count">
-        {CATEGORY_TOKENS.controlBar.resultCountTemplate(total)}
-      </p>
+      <ViewSwitcher />
       <div className="category-control-bar__sort">
         <label className="sr-only" htmlFor="category-orderby">
           מיון מוצרים

@@ -75,3 +75,27 @@ export const ORDERBY_TO_SORT: Record<string, string> = {
   popularity: 'popularity',
   rating: 'rating',
 }
+
+export type SortValue =
+  | 'newest'
+  | 'price_asc'
+  | 'price_desc'
+  | 'name'
+  | 'menu_order'
+  | 'popularity'
+  | 'rating'
+
+const VALID_SORTS = new Set<string>([
+  'newest',
+  'price_asc',
+  'price_desc',
+  'name',
+  'menu_order',
+  'popularity',
+  'rating',
+])
+
+export function parseSort(raw: string | string[] | undefined): SortValue {
+  if (typeof raw === 'string' && VALID_SORTS.has(raw)) return raw as SortValue
+  return 'menu_order'
+}

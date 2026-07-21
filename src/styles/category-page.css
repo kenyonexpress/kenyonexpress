@@ -1,4 +1,5 @@
-/* refs/category-tokens.json — WooCommerce archive on kenyonexpress.co.il */
+/* Category archive - values measured from live kenyonexpress.co.il
+   (MEASURED-LIVE.md, 1440x900). Container 1170 inside max-w-page. */
 
 .category-page {
   color: #333e48;
@@ -9,9 +10,16 @@
 .category-page__inner {
   max-width: 1170px;
   margin-inline: auto;
+  padding-inline: 15px;
 }
 
-/* Breadcrumb */
+@media (min-width: 1200px) {
+  .category-page__inner {
+    padding-inline: 0;
+  }
+}
+
+/* Breadcrumb: measured padding 25px top / 22.4px bottom, 14px #333e48 */
 .category-breadcrumb {
   padding: 25.004px 0 22.4px;
   font-size: 14px;
@@ -28,49 +36,112 @@
   color: #0062bd;
 }
 
-/* Page title */
+.category-breadcrumb__sep {
+  display: inline-block;
+  margin-inline: 10px;
+  color: #333e48;
+}
+
+/* Header row: h1 on inline-start (right), result count on inline-end (left).
+   Measured: h1 25.004px/500/40px line-height, block margin-bottom 14px. */
+.category-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
 .category-page__title {
-  margin: 0 0 14px;
+  margin: 0;
   font-size: 25.004px;
   font-weight: 500;
   line-height: 40.0064px;
   color: #333e48;
 }
 
-/* Control bar */
+.category-page__count {
+  margin: 0;
+  font-size: 14px;
+  line-height: 23.996px;
+  color: #333e48;
+}
+
+.category-page__count--bottom {
+  padding-block: 16px 8px;
+}
+
+/* Control bar: measured #efefef, radius 9px, padding 2.8px 20.006px, h~45.9.
+   Select on inline-end (left), view switcher on inline-start (right). */
 .category-control-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  min-height: 45.89px;
   padding: 2.8px 20.006px;
   background-color: #efefef;
+  border-radius: 9px;
   color: #333e48;
   font-size: 14px;
   line-height: 23.996px;
 }
 
-.category-control-bar__count {
-  margin: 0;
-}
-
-.category-control-bar__sort {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
+/* Measured select: 174x34.3, radius 20px, 1px #ddd, white bg */
 .category-control-bar__select {
+  width: 174px;
+  height: 34.3px;
   border: 1px solid #ddd;
+  border-radius: 20.006px;
   background: #fff;
   color: #333e48;
   font-size: 14px;
-  padding: 4px 8px;
-  border-radius: 0;
+  padding: 4.16px 12px;
   cursor: pointer;
 }
 
-/* Product grid — live: flex, 234px cards, no gap */
+/* View switcher: measured 116x39 on the inline-start side, hidden on mobile */
+.category-view-switcher {
+  display: none;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (min-width: 768px) {
+  .category-view-switcher {
+    display: flex;
+  }
+}
+
+.category-view-switcher__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 39.33px;
+  color: #b6bfc8;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.category-view-switcher__btn.is-active,
+.category-view-switcher__btn:hover {
+  color: #333e48;
+}
+
+/* Body: product area + filter sidebar (sidebar on inline-end = left in RTL) */
+.category-page__body {
+  display: flex;
+  align-items: flex-start;
+}
+
+.category-page__main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Product grid - measured: display flex, wrap, no gap, 234px fixed cards */
 .category-products {
   display: flex;
   flex-wrap: wrap;
@@ -85,12 +156,19 @@
   box-sizing: border-box;
 }
 
-/* WooCommerce loop card */
+@media (max-width: 575px) {
+  .category-products__item {
+    width: 50%;
+    flex: 0 0 50%;
+  }
+}
+
+/* Card: measured h~365, no li padding; inner spacing via card */
 .category-card {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 0 0.8em 1em;
+  padding: 0 0.8em 22px;
   box-sizing: border-box;
 }
 
@@ -99,11 +177,12 @@
   flex-direction: column;
 }
 
+/* Measured: 11.998px, link color #768b9e, margin-bottom ~12px */
 .category-card__categories {
-  font-size: 12px;
-  color: #768b9e;
-  margin-bottom: 0.5em;
-  line-height: 1.5;
+  font-size: 11.998px;
+  color: #333e48;
+  margin-bottom: 11.998px;
+  line-height: 23.996px;
 }
 
 .category-card__categories a {
@@ -115,14 +194,17 @@
   color: #333e48;
 }
 
+/* Measured: 20.006px, sale ins #dc3545 400, del 12px #768b9e */
 .category-card__price {
   font-size: 20.006px;
-  margin-bottom: 0.5em;
-  line-height: 1.2;
+  line-height: 27px;
+  color: #333e48;
+  margin-bottom: 0;
 }
 
 .category-card__price del {
   color: #768b9e;
+  font-size: 12.0036px;
   text-decoration: line-through;
   font-weight: 400;
 }
@@ -130,8 +212,8 @@
 .category-card__price ins {
   color: #dc3545;
   text-decoration: none;
-  font-weight: 700;
-  margin-inline-start: 0.25em;
+  font-weight: 400;
+  margin-inline-end: 0.25em;
 }
 
 .category-card__link {
@@ -139,43 +221,172 @@
   color: inherit;
 }
 
+/* Measured: 14px/700/#0062bd/18px */
 .category-card__title {
-  margin: 0 0 0.5em;
+  margin: 0 0 8px;
   font-size: 14px;
   font-weight: 700;
   line-height: 18.0001px;
   color: #0062bd;
 }
 
+.category-card__link:hover .category-card__title {
+  color: #333e48;
+}
+
+/* Image: measured 186x186 centered inside 234 card */
 .category-card__thumb {
   position: relative;
   display: block;
   text-align: center;
+  margin-top: 19px;
 }
 
 .category-card__thumb img {
   width: auto;
-  max-width: 100%;
+  max-width: 186.03px;
+  max-height: 186.03px;
   height: auto;
   display: inline-block;
   vertical-align: middle;
 }
 
+/* Sale badge: measured bottom inline-start corner of the image,
+   #44b81b, white, 11.998px/700, radius 4, padding 2px 10px */
 .category-card__badge {
   position: absolute;
   inset-inline-start: 0;
-  top: 0;
+  bottom: 0;
   z-index: 2;
   background-color: #44b81b;
   color: #fff;
   font-size: 11.998px;
   font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 3px;
-  line-height: 1.4;
+  padding: 2px 10px;
+  border-radius: 4px;
+  line-height: 2;
 }
 
-/* Pagination — Electro WooCommerce style */
+/* Add-to-cart icon: measured 37x34 circle, transparent bg, below image
+   on the inline-end side, radius 22 */
+.category-card__atc {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 37.14px;
+  height: 33.88px;
+  margin-top: 11px;
+  border: 1px solid #ddd;
+  border-radius: 22px;
+  background: transparent;
+  color: #333e48;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.category-card__atc:hover {
+  background: #fed700;
+  border-color: #fed700;
+}
+
+/* Filter sidebar: one card-column wide (234px), on inline-end (left) */
+.category-sidebar {
+  flex: 0 0 234px;
+  width: 234px;
+  padding-inline-start: 20px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 767px) {
+  .category-page__body {
+    flex-direction: column;
+  }
+  .category-sidebar {
+    width: 100%;
+    flex: 1 1 auto;
+    padding-inline-start: 0;
+    padding-top: 24px;
+  }
+}
+
+.category-sidebar__widget {
+  margin-bottom: 28px;
+}
+
+.category-sidebar__title {
+  margin: 0 0 14px;
+  font-size: 16.002px;
+  font-weight: 700;
+  color: #333e48;
+}
+
+.category-sidebar__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.category-sidebar__list li {
+  padding-block: 4px;
+}
+
+.category-sidebar__list a {
+  color: #333e48;
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.category-sidebar__list a:hover {
+  color: #0062bd;
+}
+
+.category-sidebar__list a.is-current {
+  color: #0062bd;
+  font-weight: 700;
+}
+
+.category-sidebar__price-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.category-sidebar__price-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.category-sidebar__price-input {
+  width: 0;
+  flex: 1 1 auto;
+  height: 34.3px;
+  border: 1px solid #ddd;
+  border-radius: 20.006px;
+  padding: 4.16px 12px;
+  font-size: 14px;
+  color: #333e48;
+  background: #fff;
+}
+
+.category-sidebar__price-btn {
+  align-self: flex-start;
+  height: 34.3px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 20.006px;
+  background: #fed700;
+  color: #333e48;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.category-sidebar__price-btn:hover {
+  background: #fedd26;
+}
+
+/* Pagination - Electro yellow (#fed700 measured site-wide accent) */
 .category-pagination {
   display: flex;
   justify-content: center;
@@ -194,6 +405,7 @@
   height: 36px;
   padding: 0 8px;
   border: 1px solid #ddd;
+  border-radius: 18px;
   font-size: 14px;
   color: #333e48;
   text-decoration: none;
@@ -209,4 +421,17 @@
   background: #fed700;
   border-color: #fed700;
   font-weight: 700;
+}
+
+.category-pagination .is-disabled {
+  color: #b6bfc8;
+  cursor: default;
+}
+
+/* Empty state */
+.category-page__empty {
+  padding: 48px 0 64px;
+  text-align: center;
+  color: #768b9e;
+  font-size: 16px;
 }
