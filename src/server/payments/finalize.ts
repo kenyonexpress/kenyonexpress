@@ -26,6 +26,7 @@ type OrderItemRow = {
   face_value_agorot: number | null
   balance_due_agorot: number | null
   supplier_immediate_agorot: number | null
+  cashback_amount_agorot: number | null
   settlement_status: string
 }
 
@@ -149,6 +150,64 @@ async function executeSplitForItem(
   }
 }
 
+async function getOrCreateUserWalletAccount(
+  admin: AdminClient,
+  userId: string,
+): Promise<{ id: string } | null> {
+  const { data: existing } = await admin
+    .from('wallet_accounts')
+    .select('id')
+    .eq('user_id', userId)
+    .maybeSingle()
+  if (existing) return existing
+  const { data: created } = await admin
+    .from('wallet_accounts')
+    .insert({ user_id: userId })
+    .select('id')
+    .maybeSingle()
+  if (created) return created
+  // unique-violation race: someone else created it, re-read
+  const { data: reread } = await admin
+    .from('wallet_accounts')
+    .select('id')
+    .eq('user_id', userId)
+    .maybeSingle()
+  return reread ?? null
+}
+
+/**
+ * Credits the order's cashback snapshot to the buyer's wallet from
+ * platform:cashback_reserve. Idempotent via `order:<id>:cashback`.
+ */
+async function creditCashback(
+  admin: AdminClient,
+  orderId: string,
+  userId: string,
+  cashbackAgorot: number,
+): Promise<void> {
+  if (cashbackAgorot <= 0) return
+  const [userAccount, { data: reserve }] = await Promise.all([
+    getOrCreateUserWalletAccount(admin, userId),
+    admin
+      .from('wallet_accounts')
+      .select('id')
+      .eq('code', 'platform:cashback_reserve')
+      .maybeSingle(),
+  ])
+  if (!userAccount || !reserve) {
+    throw new Error('wallet accounts missing for cashback credit')
+  }
+  const { error } = await admin.rpc('fn_wallet_transfer', {
+    p_debit_account: reserve.id,
+    p_credit_account: userAccount.id,
+    p_amount_ils: agorotToIls(agorot(cashbackAgorot)),
+    p_reason: 'order_cashback',
+    p_idempotency: `order:${orderId}:cashback`,
+    p_order_id: orderId,
+  })
+  if (error) throw new Error(`cashback credit failed: ${error.message}`)
+}
+
 async function spendWallet(
   admin: AdminClient,
   orderId: string,
@@ -215,7 +274,7 @@ export async function finalizeOrder(input: {
   const { data: items } = await admin
     .from('order_items')
     .select(
-      'id, order_id, product_id, product_type, supplier_id, quantity, unit_price_ils, upfront_percent, commission_percent_snapshot, paid_on_site_agorot, commission_agorot, escrow_held_agorot, escrow_release_agorot, face_value_agorot, balance_due_agorot, supplier_immediate_agorot, settlement_status',
+      'id, order_id, product_id, product_type, supplier_id, quantity, unit_price_ils, upfront_percent, commission_percent_snapshot, paid_on_site_agorot, commission_agorot, escrow_held_agorot, escrow_release_agorot, face_value_agorot, balance_due_agorot, supplier_immediate_agorot, cashback_amount_agorot, settlement_status',
     )
     .eq('order_id', order.id)
   if (!items || items.length === 0) {
@@ -284,6 +343,12 @@ export async function finalizeOrder(input: {
       }
     }
 
+    const cashbackTotal = (items as OrderItemRow[]).reduce(
+      (sum, item) => sum + (item.cashback_amount_agorot ?? 0),
+      0,
+    )
+    await creditCashback(admin, order.id, order.user_id, cashbackTotal)
+
     if (input.token) {
       await admin.from('payment_tokens').insert({
         profile_id: order.user_id,
@@ -313,6 +378,9 @@ export async function finalizeOrder(input: {
       changes: { status: { from: 'pending', to: 'paid' } } as unknown as Json,
       metadata: { source: 'checkout_finalize', payment_id: input.paymentId } as unknown as Json,
     })
+
+    // Best-effort: the purchased cart is done; leftovers confuse the header badge.
+    await admin.from('carts').update({ items: [] }).eq('profile_id', order.user_id)
 
     return { ok: true, replay: false, orderId: order.id }
   } catch (error) {

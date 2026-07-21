@@ -1,4 +1,4 @@
--- 046_checkout_settlement.sql
+-- 047_checkout_settlement.sql
 -- Settlement lifecycle for orders (phase6/checkout):
 --   pending, paid, split_executed, escrow_held, escrow_released, redeemed, refunded, cancelled
 -- Coupon: customer pays upfront percent on site -> escrow per coupon code -> released to supplier on redemption.

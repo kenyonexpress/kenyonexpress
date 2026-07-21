@@ -19,6 +19,7 @@ import {
   calculateSettlement,
 } from '@/server/domain/orders/settlement'
 import { finalizeOrder } from '@/server/payments/finalize'
+import { redirect } from 'next/navigation'
 
 const ORDER_EXPIRY_MINUTES = 30
 
@@ -86,7 +87,7 @@ export async function beginCheckout(
 
   if (input.address_id) {
     const { data: address } = await admin
-      .from('addresses')
+      .from('user_addresses')
       .select('id, user_id')
       .eq('id', input.address_id)
       .maybeSingle()
@@ -221,6 +222,10 @@ export async function beginCheckout(
       quantity: item.quantity,
       unit_price_ils: item.unit_price,
       total_price_ils: agorotToIls(line.faceValue),
+      // legacy 007 NOT NULL: supplier take = immediate split + future escrow release
+      supplier_payout_ils: agorotToIls(
+        agorot(line.supplierImmediate + line.escrowReleaseToSupplier),
+      ),
       platform_percent: line.upfrontBps / 100,
       commission_percent: line.commissionBps / 100,
       cashback_percent: 0,
@@ -311,4 +316,148 @@ export async function beginCheckout(
       .eq('id', payment.id)
     return { ok: false, error: 'שגיאה בחיבור לספק הסליקה', code: 'PAYMENT_PROVIDER_ERROR' }
   }
+}
+
+export type CheckoutFormState = { error: string } | null
+
+/**
+ * Form-facing wrapper: optionally persists a shipping address, then runs
+ * beginCheckout and redirects to the provider / return page.
+ */
+export async function submitCheckout(
+  _prev: CheckoutFormState,
+  formData: FormData,
+): Promise<CheckoutFormState> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: 'יש להתחבר לפני התשלום' }
+
+  const text = (name: string) => {
+    const v = formData.get(name)
+    return typeof v === 'string' ? v.trim() : ''
+  }
+
+  let addressId: string | null = text('address_id') || null
+  const needsAddress = text('needs_address') === 'true'
+
+  if (needsAddress && !addressId) {
+    const city = text('city')
+    const street = text('street')
+    const streetNumber = text('street_number')
+    const fullName = text('full_name')
+    const phone = text('phone')
+    if (!city || !street || !streetNumber || !fullName) {
+      return { error: 'יש למלא שם, עיר, רחוב ומספר בית למשלוח' }
+    }
+    const admin = createAdminClient()
+    const { data: created, error: addressError } = await admin
+      .from('user_addresses')
+      .insert({
+        user_id: user.id,
+        full_name: fullName,
+        phone: phone || null,
+        city,
+        street,
+        street_number: streetNumber,
+        apartment: text('apartment') || null,
+        zip: text('zip') || null,
+        is_default: true,
+      })
+      .select('id')
+      .single()
+    if (addressError || !created) {
+      return { error: 'שמירת הכתובת נכשלה, נסו שוב' }
+    }
+    addressId = created.id
+  }
+
+  const result = await beginCheckout({
+    client_ref: text('client_ref'),
+    accept_terms: formData.get('accept_terms') === 'on',
+    apply_wallet_ils: text('apply_wallet_ils') || 0,
+    save_card: formData.get('save_card') === 'on',
+    address_id: addressId,
+  })
+
+  if (!result.ok) return { error: result.error }
+
+  if (result.data.kind === 'paid') {
+    redirect(`/checkout/return?order_id=${result.data.order_id}`)
+  }
+  redirect(result.data.redirect_url)
+}
+
+export type ReturnReconcileResult =
+  | { status: 'paid'; order_id: string }
+  | { status: 'pending'; order_id: string; reason?: string }
+  | { status: 'failed'; order_id: string; reason?: string }
+  | { status: 'not_found' }
+
+/**
+ * Called from /checkout/return. The redirect itself is cosmetic; payment truth
+ * comes only from a server-to-server verify against the provider (same rules
+ * as the webhook), then the idempotent finalize.
+ */
+export async function reconcileOrderReturn(orderId: string): Promise<ReturnReconcileResult> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { status: 'not_found' }
+
+  const admin = createAdminClient()
+  const { data: order } = await admin
+    .from('orders')
+    .select('id, user_id, status, paid_at')
+    .eq('id', orderId)
+    .maybeSingle()
+  if (!order || order.user_id !== user.id) return { status: 'not_found' }
+  if (order.paid_at || order.status === 'paid') return { status: 'paid', order_id: order.id }
+  if (order.status !== 'pending') {
+    return { status: 'failed', order_id: order.id, reason: `order ${order.status}` }
+  }
+
+  const { data: payment } = await admin
+    .from('payments')
+    .select('id, status, amount_ils, cardcom_low_profile_id')
+    .eq('order_id', order.id)
+    .eq('kind', 'charge')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  if (!payment) {
+    return { status: 'pending', order_id: order.id }
+  }
+  if (payment.status === 'succeeded') return { status: 'paid', order_id: order.id }
+  if (payment.status === 'failed') return { status: 'failed', order_id: order.id }
+  if (!payment.cardcom_low_profile_id) return { status: 'pending', order_id: order.id }
+
+  const provider = getPaymentProvider()
+  const verified = await provider.verifyLowProfile(payment.cardcom_low_profile_id)
+  if (!verified.success || verified.amountAgorot === null) {
+    await admin
+      .from('payments')
+      .update({ status: 'failed', failed_at: new Date().toISOString() })
+      .eq('id', payment.id)
+      .in('status', ['initiated', 'redirected'])
+    return { status: 'failed', order_id: order.id, reason: 'verification failed' }
+  }
+
+  const expectedAgorot = Math.round(Number(payment.amount_ils) * 100)
+  if (verified.amountAgorot !== expectedAgorot) {
+    return { status: 'pending', order_id: order.id, reason: 'amount mismatch' }
+  }
+
+  const finalized = await finalizeOrder({
+    orderId: order.id,
+    paymentId: payment.id,
+    transactionId: verified.transactionId,
+    token: verified.token,
+  })
+  if (!finalized.ok) {
+    return { status: 'pending', order_id: order.id, reason: finalized.error }
+  }
+  return { status: 'paid', order_id: order.id }
 }
