@@ -1,44 +1,112 @@
-import ProductCard, { type Product } from '@/components/ProductCard'
-import { createClient } from '@/lib/supabase/server'
+import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/CategoryBreadcrumb'
+import CategoryControlBar from '@/components/category/CategoryControlBar'
+import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
+import CategoryProductCard, {
+  type CategoryProduct,
+} from '@/components/category/CategoryProductCard'
+import Pagination from '@/components/category/Pagination'
+import { SHOP_PAGE_SIZE, getAllCategories, getShopProducts } from '@/lib/category-page'
+import { parseSort } from '@/lib/category-tokens'
+import '@/styles/category-page.css'
+
+/* Live equivalent: kenyonexpress.co.il/shop/ - h1 "חנות", 24 per page */
+const PAGE_TITLE = 'חנות'
 
 export const metadata = {
-  title: 'כל המוצרים',
+  title: PAGE_TITLE,
   description: 'כל המוצרים, הדילים והקופונים של קניון Express במקום אחד.',
 }
 
-export default async function ProductsPage() {
-  const supabase = await createClient()
+type Props = {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}
 
-  const { data } = await supabase
-    .from('products')
-    .select('id, slug, name_he, kenyon_price, images, stock_quantity')
-    .eq('status', 'active')
-    .is('deleted_at', null)
-    .order('created_at', { ascending: false })
-    .limit(24)
+function parsePage(raw: string | string[] | undefined): number {
+  const n = typeof raw === 'string' ? Number.parseInt(raw, 10) : 1
+  return Number.isFinite(n) && n >= 1 ? n : 1
+}
 
-  const products = (data ?? []) as Product[]
+function parsePrice(raw: string | string[] | undefined): number | undefined {
+  if (typeof raw !== 'string') return undefined
+  const n = Number.parseFloat(raw)
+  return Number.isFinite(n) && n >= 0 ? n : undefined
+}
+
+function resultCountText(total: number, from: number, to: number): string {
+  if (total === 1) return 'מציג תוצאה יחידה'
+  if (to - from + 1 >= total) return `מציגים את כל ⁦${total}⁩ התוצאות`
+  return `מציג ${from}–${to} מתוך ${total} תוצאות`
+}
+
+export default async function ProductsPage({ searchParams }: Props) {
+  const sp = await searchParams
+  const sort = parseSort(sp.sort)
+  const page = parsePage(sp.page)
+  const priceMin = parsePrice(sp.min)
+  const priceMax = parsePrice(sp.max)
+
+  const [allCategories, { items, total }] = await Promise.all([
+    getAllCategories(),
+    getShopProducts({ sort, page, priceMin, priceMax }),
+  ])
+
+  const totalPages = Math.max(1, Math.ceil(total / SHOP_PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const from = (currentPage - 1) * SHOP_PAGE_SIZE + 1
+  const to = Math.min(currentPage * SHOP_PAGE_SIZE, total)
+  const countText = resultCountText(total, from, to)
+
+  const linkParams = {
+    sort: sort === 'menu_order' ? undefined : sort,
+    min: priceMin != null ? String(priceMin) : undefined,
+    max: priceMax != null ? String(priceMax) : undefined,
+  }
 
   return (
-    <div className="max-w-page mx-auto px-4 py-6 space-y-6">
-      <header className="flex items-baseline justify-between gap-3">
-        <h1 className="text-2xl font-black text-gray-900">כל המוצרים</h1>
-        <span className="text-sm text-gray-500">{products.length} מוצרים</span>
-      </header>
+    <div className="category-page">
+      <div className="category-page__inner">
+        <CategoryBreadcrumb items={[defaultHomeCrumb(), { label: PAGE_TITLE }]} />
 
-      {products.length === 0 ? (
-        <div className="text-center py-16 text-gray-400 bg-white rounded-xl border border-gray-200">
-          <p className="text-5xl mb-3">📦</p>
-          <p className="font-semibold text-gray-600">אין מוצרים זמינים כרגע</p>
-          <p className="text-sm mt-1">בקרוב יתווספו מוצרים חדשים</p>
+        <header className="category-page__header">
+          <h1 className="category-page__title">{PAGE_TITLE}</h1>
+          {total > 0 && <p className="category-page__count">{countText}</p>}
+        </header>
+
+        <CategoryControlBar value={sort} />
+
+        <div className="category-page__body">
+          <div className="category-page__main">
+            {items.length > 0 ? (
+              <>
+                <ul className="category-products">
+                  {items.map((product) => (
+                    <li key={product.id} className="category-products__item">
+                      <CategoryProductCard product={product as CategoryProduct} />
+                    </li>
+                  ))}
+                </ul>
+                <Pagination
+                  pathname="/products"
+                  params={linkParams}
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                />
+                <p className="category-page__count category-page__count--bottom">{countText}</p>
+              </>
+            ) : (
+              <div className="category-page__empty">
+                <p>לא נמצאו מוצרים התואמים את הבחירה שלך.</p>
+              </div>
+            )}
+          </div>
+
+          <CategoryFilterSidebar
+            categories={allCategories}
+            priceMin={priceMin}
+            priceMax={priceMax}
+          />
         </div>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-3">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      )}
+      </div>
     </div>
   )
 }

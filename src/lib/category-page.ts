@@ -139,3 +139,55 @@ export async function getAllCategories(): Promise<{ slug: string; name_he: strin
     .order('sort_order', { ascending: true })
   return data ?? []
 }
+
+export const SHOP_PAGE_SIZE = 24
+
+/** All active products for /products (live /shop/ archive), same sort rules. */
+export async function getShopProducts(opts: {
+  sort: SortValue
+  page: number
+  priceMin?: number
+  priceMax?: number
+}): Promise<{ items: CategoryProductRow[]; total: number }> {
+  const { sort, page, priceMin, priceMax } = opts
+  const supabase = await createClient()
+  const from = (page - 1) * SHOP_PAGE_SIZE
+
+  let query = supabase
+    .from('products')
+    .select(
+      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, categories(name_he, slug)',
+      { count: 'exact' },
+    )
+    .eq('status', 'active')
+    .is('deleted_at', null)
+
+  if (priceMin != null) query = query.gte('kenyon_price', priceMin)
+  if (priceMax != null) query = query.lte('kenyon_price', priceMax)
+
+  switch (sort) {
+    case 'price_asc':
+      query = query.order('kenyon_price', { ascending: true, nullsFirst: false })
+      break
+    case 'price_desc':
+      query = query.order('kenyon_price', { ascending: false, nullsFirst: false })
+      break
+    case 'name':
+      query = query.order('name_he', { ascending: true })
+      break
+    case 'newest':
+      query = query.order('created_at', { ascending: false })
+      break
+    default:
+      query = query.order('name_he', { ascending: true })
+  }
+
+  const { data, count } = await query.range(from, from + SHOP_PAGE_SIZE - 1)
+  const items = (data ?? []).map((row) => {
+    const r = row as CategoryProductRow
+    const joined = r.categories
+    const primary = Array.isArray(joined) ? joined[0] : joined
+    return { ...r, categories: primary ? [primary] : [] }
+  })
+  return { items, total: count ?? 0 }
+}
