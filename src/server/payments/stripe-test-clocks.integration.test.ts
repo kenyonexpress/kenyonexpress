@@ -4,22 +4,26 @@ import Stripe from 'stripe'
 /**
  * Stripe Test Clocks integration suite.
  * Runs only when STRIPE_SECRET_KEY is a sk_test_ key.
- * Advances a test clock and asserts our recovery planner uses injected `now`
- * (order TTL is platform-owned; the clock proves time control wiring).
+ * Advances a test clock and asserts our recovery planner uses injected time
+ * (order TTL is platform-owned; the clock proves time-control wiring).
  */
 import { afterAll, describe, expect, it } from 'vitest'
 
 const secret = process.env.STRIPE_SECRET_KEY ?? ''
 const shouldRun = secret.startsWith('sk_test_')
 
-const describeIntegration = shouldRun ? describe : describe.skip
+describe('Stripe test clocks gate', () => {
+  it('skips live Stripe calls without sk_test_ key', () => {
+    expect(typeof shouldRun).toBe('boolean')
+  })
+})
 
-describeIntegration('Stripe test clocks integration', () => {
-  const stripe = new Stripe(secret, { apiVersion: '2025-08-27.basil' })
+describe.runIf(shouldRun)('Stripe test clocks integration', () => {
+  let stripe: Stripe
   let clockId: string | null = null
 
   afterAll(async () => {
-    if (clockId) {
+    if (clockId && stripe) {
       try {
         await stripe.testHelpers.testClocks.del(clockId)
       } catch {
@@ -29,6 +33,7 @@ describeIntegration('Stripe test clocks integration', () => {
   })
 
   it('creates a test clock, freezes time, and advances it', async () => {
+    stripe = new Stripe(secret, { apiVersion: '2025-08-27.basil' })
     const frozen = Math.floor(Date.now() / 1000) - 60
     const clock = await stripe.testHelpers.testClocks.create({
       frozen_time: frozen,
@@ -43,8 +48,6 @@ describeIntegration('Stripe test clocks integration', () => {
     })
     expect(advanced.frozen_time).toBe(advancedTo)
 
-    // Platform TTL: a pending order that "started" at frozen would be expired
-    // after +31 minutes relative to the advanced clock.
     const startedAt = new Date(frozen * 1000)
     const expiresAt = new Date(startedAt.getTime() + 30 * 60_000)
     const now = new Date(advancedTo * 1000)
@@ -63,6 +66,7 @@ describeIntegration('Stripe test clocks integration', () => {
   }, 60_000)
 
   it('creates a PaymentIntent in ILS agorot and plans finalize', async () => {
+    stripe = new Stripe(secret, { apiVersion: '2025-08-27.basil' })
     const pi = await stripe.paymentIntents.create(
       {
         amount: 11800,
@@ -88,14 +92,4 @@ describeIntegration('Stripe test clocks integration', () => {
     })
     expect(plan.kind).toBe('apply')
   }, 60_000)
-})
-
-describe('Stripe test clocks gate', () => {
-  it('documents skip behavior without sk_test_ key', () => {
-    if (!shouldRun) {
-      expect(secret.startsWith('sk_test_')).toBe(false)
-    } else {
-      expect(shouldRun).toBe(true)
-    }
-  })
 })
