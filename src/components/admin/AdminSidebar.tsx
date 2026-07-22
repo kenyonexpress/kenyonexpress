@@ -4,6 +4,7 @@ import { type AdminSection, canReadSection } from '@/lib/admin/permissions'
 import { cn } from '@/lib/utils'
 import type { UserRole } from '@/types/database'
 import {
+  BadgeCheck,
   BarChart3,
   ClipboardList,
   CreditCard,
@@ -46,6 +47,7 @@ const NAV_ITEMS: NavItem[] = [
   },
   { href: '/admin/categories', label: 'קטגוריות', icon: Tag, section: 'catalog' },
   { href: '/admin/coupons', label: 'קופונים ודילים', icon: FileText, section: 'catalog' },
+  { href: '/admin/approvals', label: 'תור אישורים', icon: BadgeCheck, section: 'catalog' },
   { href: '/admin/orders', label: 'הזמנות', icon: ShoppingCart, section: 'orders' },
   { href: '/admin/users', label: 'משתמשים', icon: Users, section: 'users' },
   { href: '/admin/suppliers', label: 'ספקים', icon: Store, section: 'suppliers' },
