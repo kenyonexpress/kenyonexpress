@@ -1,10 +1,32 @@
 # KenyonExpress State
 
 ## Current Phase
-**Phase 5 storefront + commerce מחווט**. branch `phase5/homepage`.
+**Architecture master v2**. branch `arch/master-v2` (worktree `kenyon-arch`).
 
 ## Last Completed
-Session 2026-07-21 - יום עבודה אוטונומי מלא: קטגוריה, חנות, עגלה, merge checkout, חיווט תשלום.
+Session 2026-07-23 - `MASTER-ARCHITECTURE.md` rewritten to owner business model:
+- Coupon: on-site `platform_percent` %, remainder at merchant, **NO escrow**, breakage on expiry.
+- Physical: 100% on site; snapshot `platform_percent`; settle via `payout_statements` after delivered+14d.
+- Agorot integers; hybrid ledger (wallet double-entry + Cardcom reconcile); Cardcom = production PSP.
+- Full ERD, state machines, scan race safety, RBAC, cache tags, background jobs, migration 050+ plan, risk register.
+- Design only; no UI files.
+
+## In Progress
+nothing
+
+## Blocking Issues
+Live runtime still books coupon escrow (R1) until migration 050.
+QR still unkeyed SHA-256 (R2) until 052.
+
+## Next Task
+Implement migration 050 money convergence on an implementation branch (not this design branch).
+
+## Working Directory
+/Users/ofir/kenyonexpress-web/kenyon-arch
+
+## Supabase Project URL
+https://ixvwfbuvfxxsjiywhbbb.supabase.co (dev)
+
 
 **MEASURED-LIVE.md (לא בקומיט, לפי הוראה)**: `scripts/measure-live.mjs` מדד את
 kenyonexpress.co.il ב-1440x900 + 375x812 עם getComputedStyle+getBoundingClientRect
