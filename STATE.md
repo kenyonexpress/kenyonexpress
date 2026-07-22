@@ -27,6 +27,17 @@ Implement migration 050 money convergence on an implementation branch (not this 
 ## Supabase Project URL
 https://ixvwfbuvfxxsjiywhbbb.supabase.co (dev)
 
+## Running Now
+
+## Product Page: Locked Decisions (Chat 07-23, confirmed)
+- platform_percent: **per-product** (תקן commission.ts + 042, הסר כפיית 10% לקופון)
+- Escrow: **אין** (סוכם סופי)
+- Description: **שדה אחד** (הסר short_description)
+- offer_valid_until: יורד אוטומטית + חובה חוקית (מוצג ללקוח)
+- Supplier notifications: **פנימי בלבד** (Supabase Trigger + Edge Function + Resend, הסר Make/Zapier)
+- SKU, inventory, weight, dimensions, warranty, cancellation_policy: בניהול admin בלבד (לא ללקוח)
+- Supplier details בכל דף מוצר: שם, כתובת, טלפון, שעות, Waze, עיר (חובה)
+
 ---
 
 ## History
