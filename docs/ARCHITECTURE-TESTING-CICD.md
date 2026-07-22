@@ -1,1170 +1,569 @@
-# ארכיטקטורת בדיקות ו-CI/CD - KenyonExpress (מסמך מחייב)
+# Architecture: Testing and CI/CD (KenyonExpress)
 
-סטטוס: FINAL DESIGN (v3). תאריך: 2026-07-20. ענף: `phase5/homepage`.
+Status: FINAL DESIGN. Branch: `phase5/homepage`. Target branch for PRs: `cursor/add-supabase-3c830` (the current default branch, renamed to `main` at cutover).
 
-מסמך זה הוא מקור האמת היחיד לאסטרטגיית הבדיקות ול-CI/CD, מיושר למודל העסקי המעודכן
-ב-`BUSINESS-MODEL.md` וב-`ARCHITECTURE-COMMERCE.md` (2026-07-17, מקור אמת יחיד).
-כל ההכרעות המחייבות (D1-D27) מרוכזות בסעיף 1. כל מה שכתוב כאן הוא הכרעה, לא הצעה.
+This document is the single source of truth for the testing strategy and the CI/CD pipeline. It is written for a marketplace that moves real money: Cardcom charges, a cashback wallet, per product commission splits, and single use coupons. A bug in the money path is lost money, so the test hierarchy here is inverted from the usual: money and atomicity first, UI second.
 
-מסמכים קשורים: `MASTER-ARCHITECTURE.md` (v2), `ARCHITECTURE-PRODUCTION-OPS.md`, `ARCHITECTURE-SUPPLIER-REDEMPTION.md`, `ARCHITECTURE-ACCOUNT-IDENTITY.md`.
+Ground truth for this document:
 
-> **הרחבות מחייבות (2026-07-17):** `ARCHITECTURE-LEGAL-COMPLIANCE.md`
-> מוסיף ‏axe חוסם, בדיקות ביטול/חשבוניות/מסמך גילוי ו-LEG-01..03 לשער
-> השיגור. `ARCHITECTURE-PERFORMANCE.md` מוסיף תקציבי Lighthouse חוסמים
-> ותרחישי k6. הרחבות אלה מצטרפות ל-D1-D22 ואינן מחליפות אותן.
+- Next.js App Router (Next 16.2.4, React 19.2), Supabase (Postgres, RLS), Hebrew RTL.
+- Payments via Cardcom, single terminal, webhook verified with HMAC-SHA256 (`src/lib/payments/hmac.ts`) and then verified against the Cardcom API before finalize.
+- Products are `coupon` or `physical`. Commission: the platform keeps `platform_percent` per product. For a coupon: 10 percent is charged on-site and 90 percent is paid in-store (no escrow of the in-store part). For a physical product: 100 percent is charged on-site.
+- All money is agorot as integers (`src/lib/commerce/money.ts`). Never floats for money.
+- Merchant coupon scan is `POST /api/supplier/redeem`, made race-safe by a `UNIQUE(coupon_code_id)` constraint on `coupon_redemptions` (the DB is the final arbiter, the app gate is `validateRedemption`).
+- A manual visual diff tool exists at `scripts/compare.mjs` (referenced in git history: "verified vs live via compare.mjs").
 
-> מטרת המסמך: אסטרטגיית בדיקות ו-CI/CD לאתר שמזיז כסף אמיתי (Cardcom, ארנק cashback,
-> פיצול platform_percent, קופונים חד-פעמיים) עם בעלים יחיד. באג בקוד הכסף שווה כסף אבוד,
-> ולכן ההיררכיה כאן הפוכה מהמקובל: קודם כסף ו-RLS, אחר כך UI.
+Current repo facts (verified):
+
+| Area | State |
+|---|---|
+| Unit runner | Vitest 3.x, jsdom env, `src/**/*.test.ts(x)`, setup `vitest.setup.ts`, alias `@ -> src` |
+| E2E runner | Playwright 1.50, chromium only, `locale he-IL`, `baseURL http://localhost:3000`, `webServer: pnpm dev` |
+| Existing tests | `money.test.ts`, `commission.test.ts`, `settlement.test.ts`, `redemption.test.ts`, `escrow.test.ts`, `state-machine.test.ts`, `checkout-flow.test.ts`, plus `src/__tests__/*` and two e2e specs (`auth.spec.ts`, `homepage.spec.ts`) |
+| CI | None. No `.github/workflows`. Only husky pre-commit + lint-staged (biome on staged) |
+| Lint/format | Biome 1.9 (`pnpm lint`, `pnpm check`) |
+| Typecheck | `tsc --noEmit` (`pnpm type-check`), strict + `noUncheckedIndexedAccess` |
+| Money module | `src/lib/commerce/money.ts` (branded `Agorot` type), `commission.ts`, `src/server/domain/orders/settlement.ts` |
+| Known test debt | T1 no CI, T2 `rate-limit.ts` fails open, T3 guest cart merge race, plus RLS/policy items T4-T12 tracked in STATE.md |
+
+The rest of this document turns those facts into a concrete, implementation-ready plan.
 
 ---
 
-## 0. עובדות מוצא (נכון להיום, נבדק בריפו)
+## 1. Vitest unit strategy
 
-| רכיב | מצב בפועל |
-|---|---|
-| CI | אין `.github/workflows` בכלל. רק husky pre-commit + `.lintstagedrc.json` (biome על staged) |
-| בדיקות | 4 קבצי unit, 36 tests ירוקים (`pnpm test`). כולל `src/lib/commerce/{money,commission}.test.ts` (14 tests כסף) |
-| vitest | 3.x, jsdom בלבד (עדיין ללא projects), include `src/**/*.test.ts(x)` |
-| Playwright | 1.50, chromium בלבד, `locale he-IL`, webServer `pnpm dev` (יעבור ל-`build && start` ב-CI) |
-| קוד תשלומים | לא קיים. אין `src/server/actions/payments/`, אין webhook route, אין Cardcom client |
-| מודול כסף | `src/lib/commerce/` (אגורות, פיצול עמלה, golden cases). יעד ארוך טווח: `src/lib/money/` לפי D2 |
-| מיגרציות | 001-025 מוחלות על dev; 026-035 טיוטות; `042_commerce_core.sql` טיוטה **untracked** (לא הוחלה); 036-041 שמורים במסמך האב. drift ידוע מול מרוחק |
-| Supabase מקומי | `config.toml` מלא (api 54321, db 54322, shadow 54320, Postgres 17, `db.seed` מופעל) אבל `supabase/seed.sql` **לא קיים** |
-| ויזואלי | משפחת `scripts/compare-*.mjs` (hero, product, product-live, exact) + `diff-bands.mjs` (TOL=24, פסים 100px) + `watch-compare.mjs`. ידני בלבד, לא ב-CI |
-| כלים | pnpm 11, biome 1.9, tsc strict + `noUncheckedIndexedAccess`, Next 16.2.4, React 19.2 |
-| ענף עבודה | `phase5/homepage` (push מיידי אחרי commit). ענף יעד ל-PR: `cursor/add-supabase-3c830` (יוחלף ל-main בקאטאובר) |
-| commitlint | **לא מוגדר.** husky מריץ lint-staged בלבד, בלי hook ל-commit-msg |
+### 1.1 Principle: risk-based, not coverage-shaped
 
----
+There is no global coverage percentage that unlocks merge. Instead there is a closed list of money invariants (below), and every one of them must have at least one test. A module tagged "money" that is missing its test file fails CI. Coverage floors (section 1.6) are a secondary guard, per module, not a global number.
 
-## 1. הכרעות מחייבות (D1-D22)
+### 1.2 What to unit test (the closed invariant list)
 
-### 1.1 הכרעות יסוד (D1-D12)
+Every function here is a pure function or an isolated guard. None of them does I/O, so all of them are unit tested with no Supabase and no network.
 
-| # | הכרעה | נימוק |
-|---|---|---|
-| D1 | **סביבת האינטגרציה היא Supabase מקומי (Docker) שנבנה מאפס בכל ריצת CI**, לא Supabase branch מנוהל ולא פרויקט dev המשותף | branching דורש Pro (הוחלט ב-PRODUCTION-OPS 1.1 לא לקנות עכשיו); ה-drift ב-dev הופך אותו לבלתי-אמין כבסיס; stack נקי מ-001 עד אחרון הוא בדיוק החזרה על bootstrap הפרודקשן העתידי, אז ה-CI מוודא אותו בחינם בכל PR. כשעוברים ל-Pro אפשר להוסיף preview branches כשכבה שנייה, לא כתחליף |
-| D2 | **כל אריתמטיקת כסף באפליקציה חיה במודול טהור אחד**: `src/lib/money/` (פונקציות טהורות, אגורות כ-integer, בלי I/O). server actions רק קוראים לו | אי אפשר לבדוק ביסודיות חישוב שמפוזר בתוך actions. המודול נכתב לפני ה-action הראשון של checkout, יחד עם קובץ הבדיקות שלו (סעיף 2.1) |
-| D3 | **Cardcom אמיתי לא משתתף ב-CI של PR.** גבול ה-HTTP של Cardcom נעטף ב-adapter יחיד, וב-CI רץ fake בצד ה-HTTP (מדמה Low Profile, עסקה, refund, webhook). sandbox אמיתי רץ רק ב-suite ליליים/ידניים | יציבות ומהירות של PR CI לא יכולות להיות תלויות בצד שלישי. ה-fake מוודא את הלוגיקה שלנו; ה-sandbox מוודא את ההנחות על Cardcom |
-| D4 | **E2E לא מבצע Google OAuth אמיתי.** משתמשי בדיקה נוצרים ב-auth המקומי (email+password או session מוזרק דרך admin API), וזרימת ה-OAuth האמיתית נבדקת ידנית פעם לפני כל release | OAuth של Google ב-headless CI שביר ונחסם. מה שחשוב לבדוק אצלנו הוא merge של עגלת אורח והפניות next, לא את גוגל |
-| D5 | **בדיקות RLS הן data-driven**: מטריצת role על table על operation יושבת כקובץ נתונים אחד, ו-runner גנרי (vitest, node env) מריץ אותה מול ה-stack המקומי עם JWT לכל persona | policy חדשה בלי שורה במטריצה = נכשל. שינוי policy שמרחיב הרשאה בטעות = נתפס. זה הביטוח היחיד האמיתי מול טעויות RLS |
-| D6 | **בדיקת idempotency של מיגרציות היא apply פעמיים מלא**: stack נקי, כל הקבצים לפי הסדר, ואז כל הקבצים שוב. שתי הריצות חייבות להצליח | זה החוק שכבר קיים ב-skill של המיגרציות; ה-harness הופך אותו מאמונה לעובדה נאכפת בכל PR שנוגע ב-`supabase/migrations/` |
-| D7 | **ויזואלי-RTL עובר ל-Playwright snapshots** (`toHaveScreenshot`) עם מטריצת breakpoints, וגישת compare.mjs (מול `ke_live_singlefile.html`) נשארת ככלי 1:1 ידני לעבודת פיקסלים בלבד | שני צרכים שונים: רגרסיה אוטומטית מול baseline של עצמנו (CI) לעומת התאמה חד-פעמית למקור חי (ידני) |
-| D8 | **מה שחוסם merge**: biome, tsc, commitlint, unit+coverage floors, build, a11y (axe), integration (כולל RLS + idempotency), E2E smoke. **מה שמזהיר בלבד**: E2E מלא, visual diff, Lighthouse | חסימה על בדיקות יציבות בלבד. ויזואלי מתחיל כאזהרה עד שה-baseline מתייצב, ואז מקודם לחוסם |
-| D9 | **בדיקות ריצה כפולה (race) הן חובה לכל פונקציית כסף**: `fn_wallet_transfer`, `redeem_coupon`, `fn_merge_guest_cart`, webhook handler. תבנית קבועה: שני קוראים במקביל, בדיוק אחד מצליח | כל ההגנות בתכנון (CAS אטומי, advisory lock, idempotency key, UNIQUE) הן בדיוק הדברים שנשברים בשקט ב-refactor |
-| D10 | **fail-closed לכסף נבדק כחוזה**: בדיקה שמוכיחה ש-checkout וסריקת קופון נעצרים כש-rate-limit RPC נכשל. הבאג הידוע (`rate-limit.ts` fails open, `checkUserRateLimit` בלי קוראים) נסגר ב-Phase 3 והבדיקה מקבעת את התיקון | תועד ב-PRODUCTION-OPS 4.2 כבאג. בלי בדיקה הוא יחזור |
-| D11 | **פירמידה לפי סיכון, לא לפי צורה**: יעד כיסוי גורף אין. במקום זה, רשימת אינברינטים סגורה (סעיף 2.0) שכל אחד מהם חייב בדיקה אחת לפחות, ו-CI נכשל אם קובץ בדיקות של מודול כסף לא קיים | כיסוי 80% על קוד UI שווה פחות מ-14 בדיקות הפיצול. בעלים יחיד = תקציב תשומת לב מוגבל, מוציאים אותו על מה שעולה כסף |
-| D12 | **branch protection על ענף היעד של PRs** (כיום `cursor/add-supabase-3c830`, בעתיד main): אסור merge בלי CI ירוק. push ישיר לענף עבודה מותר (עבודה יומיומית), אבל שום דבר לא מתמזג לענף היעד בלי הצינור | כלל "commit ואז push מיידי" מ-CLAUDE.md נשאר, הוא גיבוי. ההגנה היא על נקודת המיזוג |
+#### A. `money.ts` agorot math and rounding
 
-### 1.2 הכרעות עדכניות (D13-D22)
+Target file: `src/lib/commerce/money.test.ts` (already exists, extend it).
 
-| # | הכרעה |
-|---|---|
-| D13 | **מודל הקופון החדש גובר**: `coupon_price` הוא שדה חופשי פר מוצר (לא נגזרת של `platform_percent`). כל בדיקות שורת הקופון מחשבות: `charged_on_site = coupon_price`, `balance_due_at_business = total_deal_price - coupon_price`, `supplier_due = 0`, `platform_fee = charged_on_site`. שדה `platform_percent` בשורת קופון הוא אינפורמטיבי בלבד ולעולם לא משתתף בחישוב |
-| D14 | **ה-enum הקנוני לקופון נשאר `coupon_status` מ-008**: `issued, used, expired, refunded`. הסטטוסים `active/redeemed` מ-`ARCHITECTURE-COMMERCE.md` הם תוויות UI שממופות אליו. טבלת `coupons_issued` מהמסמך ההוא ממומשת על גבי `coupon_codes` הקיימת, לא כטבלה חדשה |
-| D15 | **שכבת component נוספת לפירמידה**: Testing Library + jsdom, פרויקט vitest נפרד. בודקת רינדור עברית/RTL של קומפוננטות כסף בלבד (כרטיס מוצר לפי סוג, שורת עגלה, סיכום checkout, תצוגת קופון+QR) |
-| D16 | **E2E על Vercel Preview הוא workflow נפרד** (`preview-e2e.yml`) שנורה על `deployment_status`. מריץ רק תרחישים read-only מתויגים `@preview` (הסביבה חולקת DB חי של dev ולכן אסור לה להריץ זרימות כסף). זרימות הכסף המלאות רצות ב-CI על stack מקומי + Cardcom fake, ובלילה מול Cardcom sandbox אמיתי |
-| D17 | **מנוי (subscription)**: מפתח ה-idempotency של חיוב מחזורי הוא `(subscription_id, cycle_number)`. חיוב שנכשל: 3 ניסיונות בגיבוי אקספוננציאלי על פני 7 ימים, אחר כך `paused` + התראה. ביטול באמצע מחזור: המחזור הנוכחי נשאר בתוקף, אין חיוב הבא, אין החזר יחסי |
-| D18 | **אין טבלאות בדיקה במיגרציות פרודקשן.** כל תמיכת בדיקות חיה ב-`supabase/seed.sql` (נטען רק מקומית/CI) וב-`tests/sql/90_test_support.sql` (סכמת `test_support`, מוחלת רק ב-CI אחרי המיגרציות, לעולם לא דרך MCP למרוחק). לכן **לא נוצר קובץ מיגרציה חדש** |
-| D19 | **Node 22 LTS** ננעל ב-`.nvmrc` + `engines` + כל workflow. pnpm דרך `packageManager` הקיים |
-| D20 | **קידום לפרודקשן הוא git-based בלבד**: merge לענף היעד אחרי CI ירוק מפעיל build פרודקשן, אבל פרסום לדומיין החי דורש אישור ידני (D25). אין `vercel --prod` ידני. rollback אפליקציה: Vercel Instant Rollback. rollback DB: forward-only, מיגרציה מפצה, לעולם לא down |
-| D21 | **סדר deploy מחייב**: מיגרציה תמיד לפני קוד, והסכמה חייבת להיות תואמת-אחורה לקוד הרץ (expand/contract). ה-CI אוכף זאת בכך שה-E2E רץ על הקוד הישן מול הסכמה החדשה בכל PR שנוגע במיגרציות |
-| D22 | **kill switch לתשלומים**: `CHECKOUT_ENABLED` (server-only, ברירת מחדל true). `beginCheckout` ו-webhook ההנפקה בודקים אותו. בדיקת unit מקבעת שהכיבוי עוצר checkout אבל לא עוצר עיבוד webhooks של עסקאות שכבר שולמו |
-
-### 1.3 הכרעות v2 (D23-D27, 2026-07-20)
-
-| # | הכרעה |
-|---|---|
-| D23 | **Conventional Commits** בפורמט `<type>(<scope>): <subject>`. אכיפה: `@commitlint/cli` + hook `commit-msg` ב-husky, ו-job `commitlint` ב-CI על הודעות ה-commits בטווח ה-PR. סוגים מותרים: `feat`, `fix`, `test`, `docs`, `chore`, `refactor`, `ci`, `perf`, `build`. scope אופציונלי אך מומלץ (`commerce`, `payments`, `admin`, `e2e`, `db`, `visual`) |
-| D24 | **רצפות כיסוי (coverage floors) פר מודול**, לא אחוז גלובלי. CI נכשל אם מודול מסומן "כסף" יורד מתחת לרצפה שלו (סעיף 2.6). רשימת האינברינטים (סעיף 2.0) עדיין גוברת על כל אחוז |
-| D25 | **שער פרודקשן ידני**: merge לענף היעד מפעיל build ב-Vercel, אבל **לא** מפרסם לפרודקשן אוטומטית. פרסום ל-`kenyonexpress.co.il` דורש אישור ידני דרך GitHub Environment `production` (required reviewer: Ofir) או Vercel Deployment Protection "Promote to Production". Preview לכל PR נשאר אוטומטי |
-| D26 | **axe-core חוסם ב-PR** (LEG-03): job `a11y` ב-`ci.yml` מריץ `@axe-core/playwright` על דפי ליבה (בית, קטגוריה, מוצר כשקיים, עגלה, checkout כשקיים). כשל = חסימת merge. Lighthouse budgets (PERF) נשארים אזהרה בלילי עד ייצוב |
-| D27 | **Webhook replay כחלק מחובת האינטגרציה**: כל שינוי ב-webhook handler חייב בדיקת replay מלאה (W1-W10) עם harness שמאפשר ירי כפול, חתימה מזויפת, וסדר אירועים הפוך. suite לילית מוסיפה replay מול Cardcom sandbox אמיתי עם `external_event_id` אמיתי שנשמר ב-fixture |
-
----
-
-## 2. פירמידת הבדיקות
-
-```
-        E2E (Playwright)            הזרימות שמזיזות כסף, מול build אמיתי
-      ───────────────────────
-      Integration (Postgres)        RLS matrix, פונקציות DB, idempotency מיגרציות
-    ───────────────────────────
-    Component (RTL + jsdom)         רינדור עברית/RTL של קומפוננטות כסף
-  ───────────────────────────────
-  Unit (vitest, node, טהור)         אריתמטיקת כסף, מכונות מצבים, ולידציות
-```
-
-חלוקת פרויקטים ב-`vitest.config.ts`:
+- `agorot()` rejects non safe integers (`assertSafeInteger`).
+- `ilsToAgorot('12.34')` equals `1234`. `ilsToAgorot('12.3')` equals `1230`. `ilsToAgorot('12')` equals `1200`.
+- Reject more than two fraction digits: `ilsToAgorot('1.234')` throws `TypeError`.
+- Negative handling: `ilsToAgorot('-5.50')` equals `-550` (refund lines).
+- Round trip: `agorotToIls(ilsToAgorot(x))` for a table of values.
+- Rounding happens once per line and never per unit. Percentage of an agorot amount uses `round-half-up` at the agorot boundary, and the test pins the edge percents: `0`, `0.01`, `10`, `12.5`, `33.33`, `99.99`, `100`.
+- Allocation invariant: when splitting a total into parts, the parts sum back to the exact total (no lost or created agorot). This is the single most important money test.
 
 ```ts
-export default defineConfig({
-  test: {
-    projects: [
-      { test: { name: 'unit', environment: 'node', include: ['src/**/*.test.ts'] } },
-      {
-        test: {
-          name: 'component', environment: 'jsdom',
-          setupFiles: './vitest.setup.ts', include: ['src/**/*.test.tsx'],
-        },
-      },
-      {
-        test: {
-          name: 'integration', environment: 'node',
-          include: ['tests/integration/**/*.test.ts'], testTimeout: 30_000,
-          globalSetup: './tests/integration/global-setup.ts', // מוודא stack מקומי חי
-        },
-      },
-    ],
-  },
+import { describe, expect, it } from 'vitest'
+import { agorot, agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
+
+describe('ilsToAgorot', () => {
+  it('parses two fraction digits exactly', () => {
+    expect(ilsToAgorot('12.34')).toBe(1234)
+    expect(ilsToAgorot('12.3')).toBe(1230)
+    expect(ilsToAgorot('12')).toBe(1200)
+  })
+  it('rejects three fraction digits', () => {
+    expect(() => ilsToAgorot('1.234')).toThrow(TypeError)
+  })
+  it('round trips through agorotToIls', () => {
+    for (const v of ['0.01', '99.99', '100.00', '-5.50']) {
+      expect(agorotToIls(ilsToAgorot(v))).toBeCloseTo(Number(v), 2)
+    }
+  })
+  it('never yields an unsafe integer silently', () => {
+    expect(() => agorot(2 ** 53)).toThrow(RangeError)
+  })
 })
 ```
 
-`pnpm test` מריץ unit+component בלבד (מהיר, בלי DB). `pnpm test:integration` מריץ את השלישי.
+#### B. `settlement.ts` commission split (coupon vs physical)
 
-### 2.0 רשימת האינברינטים (החוזה שהבדיקות אוכפות)
+Target file: `src/server/domain/orders/settlement.test.ts` (exists, extend). `calculateSettlement(input: SettlementInput): SettlementResult` is pure. Constants in the module today: `DEFAULT_PLATFORM_COMMISSION_PERCENT = 5`, `DEFAULT_COUPON_UPFRONT_PERCENT = 10`.
 
-כל שורה כאן חייבת בדיקה אחת לפחות. זו רשימה סגורה שמתעדכנת רק דרך מסמך זה:
+Note an open model decision recorded in STATE.md: the merged settlement uses a 5 percent default platform commission for physical, while the `cardcom-payments` skill states 10 percent. The tests must not hardcode a magic number as if it were settled. Instead each test passes the percent explicitly via the input and asserts the arithmetic. When Ofir decides the default, one test pins the default and the rest stay explicit.
 
-1. `platform_fee + supplier_due = total` בכל פריט פיזי, תמיד, בלי drift של אגורה.
-2. `charged_on_site + balance_due_at_business = total` בכל פריט, פיזי וקופון.
-3. בקופון: `supplier_due = 0` וגם `charged_on_site = platform_fee` (הערכים נגזרים מ-`coupon_price`, D13).
-4. עיגול קורה פעם אחת בדיוק, על העמלה בלבד, ברמת השורה (לא ליחידה, לא להזמנה), חצי כלפי מעלה.
-5. סכומי ההזמנה הם סכימת שורות, לעולם לא חישוב מחדש מאחוזים.
-6. ארנק משתמש לעולם לא שלילי; כל תנועה היא זוג debit/credit מאוזן; ledger הוא append-only.
-7. אותו idempotency key לעולם לא מייצר תנועת ארנק שנייה, תשלום שני או זיכוי כפול.
-8. קופון נפדה פעם אחת בדיוק, גם תחת שתי סריקות מקבילות.
-9. webhook בלי חתימה תקפה, או עם סכום שלא תואם אימות API, לא משנה שום state.
-10. אף שדה כסף לא מגיע מהלקוח; ה-client שולח מזהים וכמויות בלבד.
-11. `cardcom_token` לא קריא לאף role דפדפני, כולל admin.
-12. הרשאות supplier נקבעות רק דרך `supplier_members`, לא דרך `profiles.role`.
-13. מיגרציה שהוחלה פעמיים מצליחה פעמיים.
-14. כשל rate-limit או כשל תשתית בזרימת כסף עוצר את הפעולה (fail-closed).
+Invariants to pin:
 
-### 2.6 רצפות כיסוי (coverage floors, D24)
+- Coupon line: `charged_on_site = coupon upfront amount` (10 percent by the current model), `balance_due_at_business = total_deal_price - charged_on_site`, `supplier_due_on_site = 0` (no escrow of the in-store 90 percent), `platform_fee = charged_on_site` (the platform keeps the whole on-site slice for a coupon).
+- Physical line: `charged_on_site = full price`, `platform_fee = platform_percent of full price`, `supplier_due = charged_on_site - platform_fee`.
+- Mixed cart (coupon line plus physical line) sums per line, never on the blended total. The STATE.md worked example is the golden case: coupon 18/162 split plus physical 230 gives on-site total 248, platform fee 41, supplier due 207.
+- Every split satisfies the allocation invariant: the sum of `platform_fee + supplier_due + balance_due_at_business` reconstructs the deal total for that line.
 
-אין יעד גלובלי (למשל "80% על כל הריפו"). במקום זה, CI מודד כיסוי שורות עם `@vitest/coverage-v8` ומכשיל אם מודול מסומן יורד מתחת לרצפתו. מודול שלא ברשימה: אין חובת אחוז (אבל עדיין חייב לכסות אינברינטים רלוונטיים מסעיף 2.0).
+```ts
+import { describe, expect, it } from 'vitest'
+import { calculateSettlement } from '@/server/domain/orders/settlement'
 
-| נתיב | רצפת שורות | רצפת branches | הערה |
-|---|---|---|---|
-| `src/lib/commerce/**` (יעד: `src/lib/money/**`) | 95% | 90% | כל אריתמטיקת כסף |
-| `src/lib/coupons/**` | 90% | 85% | state machine + QR |
-| `src/lib/validations/**` | 85% | 80% | דחיית שדות מחיר מהלקוח |
-| `src/server/actions/payments/**` | 90% | 85% | כשייווצר |
-| `src/lib/admin/rbac.ts` | 100% | 100% | 5 roles, מעט שורות |
-| `src/lib/env.ts` | 90% | 85% | fail-fast על סודות |
-| שאר `src/**` | אין רצפה | אין רצפה | component tests לפי D15 |
-
-אכיפה ב-CI:
-
-```yaml
-# בתוך job unit, אחרי vitest run --coverage
-- run: node scripts/check-coverage-floors.mjs coverage/coverage-summary.json
+describe('calculateSettlement mixed cart golden case', () => {
+  it('splits coupon and physical per line, not on the blended total', () => {
+    const result = calculateSettlement({
+      // coupon deal total 180, upfront 10 percent = 18, balance in store 162
+      // physical 230, platform 5 percent = 11.5, supplier 218.5
+      lines: [
+        { kind: 'coupon', dealTotalAgorot: 18000, upfrontPercent: 10 },
+        { kind: 'physical', priceAgorot: 23000, platformPercent: 5 },
+      ],
+    })
+    expect(result.chargedOnSiteAgorot).toBe(18000 * 0.1 + 23000) // 24800
+    // per line reconstruction, no agorot lost
+    for (const line of result.lines) {
+      expect(line.platformFeeAgorot + line.supplierDueAgorot + line.balanceDueAtBusinessAgorot)
+        .toBe(line.dealTotalAgorot)
+    }
+  })
+})
 ```
 
-`check-coverage-floors.mjs` קורא את ה-JSON של v8, משווה לטבלה למעלה, ומדפיס diff ברור על הפרה. אין `--passWithNoTests` על מודולי כסף: אם אין קובץ בדיקות צמוד, ה-job נכשל (D11).
+Adjust the field names to the real `SettlementLineInput` / `SettlementLineResult` shapes in `settlement.ts` when writing; the invariant assertions are what matter.
 
-דיווח: artifact `coverage/` בכל PR; badge אופציונלי ב-README אחרי הקמת CI.
+#### C. QR payload sign and verify
 
-### 2.7 מיפוי מימוש commerce (סטטוס 2026-07-20)
+Two distinct signing surfaces, both live in pure or near pure functions.
 
-**קוד TypeScript (committed, `pnpm test` ירוק):**
+1. Cardcom webhook HMAC, `src/lib/payments/hmac.ts`. `signCardcomBody(raw, secret)` and `verifyCardcomSignature(raw, header, secret)` are exported (the sign helper exists specifically as a test helper). Target file: `src/lib/payments/hmac.test.ts` (new).
 
-| קובץ | מה ממומש | בדיקות קיימות |
-|---|---|---|
-| `src/lib/commerce/money.ts` | `Agorot` branded type; `ilsToAgorot` (מקס 2 ספרות עשרוניות); `agorotToIls`; `formatIls` (he-IL); `sumAgorot`; `multiplyAgorot`; `percentToBasisPoints`; `percentageOf` (half away from zero) | 5 tests ב-`money.test.ts` |
-| `src/lib/commerce/commission.ts` | `calculateCommission`: פיצול קופון/פיזי, ארנק רק מפחית `cardCharge`, idempotency key חובה | 9 golden tests ב-`commission.test.ts` |
+   - A body signed with the secret verifies true.
+   - Wrong secret verifies false.
+   - Tampered body verifies false.
+   - `sha256=` prefix and case are normalized (verifier lowercases and strips the prefix).
+   - Missing header or missing secret verifies false (fail closed).
+   - Length mismatch does not throw (constant-time compare guarded by a length check).
 
-**חוזי החישוב שחייבים להישאר ירוקים (ממופים ל-`commission.ts`):**
+```ts
+import { describe, expect, it } from 'vitest'
+import { signCardcomBody, verifyCardcomSignature } from '@/lib/payments/hmac'
 
-| כלל | קופון | פיזי |
-|---|---|---|
-| R1: `customerPaysNow` | `percentageOf(faceValue, platformPercentBps)` | `faceValue` |
-| R2: `platformFee` | `customerPaysNow` (לא מ-`platform_percent` ישירות) | `percentageOf(faceValue, platformPercentBps)` |
-| R3: `cashbackAmount` | `percentageOf(customerPaysNow, cashbackBps)` | אותו דבר |
-| R4: ארנק | מפחית רק `cardCharge`; לא משנה settlement שורות | אותו דבר |
+const SECRET = 'test-webhook-secret'
+const BODY = JSON.stringify({ ResponseCode: 0, LowProfileId: 'lp_123', Amount: 24800 })
 
-**מיגרציה `042_commerce_core.sql` (טיוטה, לא הוחלה):**
-
-| אזור | מה נוסף | בדיקות אינטגרציה נדרשות (עדיין לא קיימות) |
-|---|---|---|
-| `products` | `cashback_percent`, `coupon_expiry_days` (ללא default גלובלי), `supplier_id NOT NULL` | seed עם ערכי תפוגה מפורשים; ולידציה שמוצר קופון בלי `coupon_expiry_days` נכשל |
-| `orders` / `order_items` | עמודות `*_agorot` + backfill מ-`*_ils` | אינברינטים 1-3: `platform_fee + supplier_due = face_value` לכל שורה |
-| `commission_ledger` | טבלה append-only + RLS read-only + `idempotency_key UNIQUE` | insert כפול על אותו `order_item` לא יוצר שורה שנייה |
-| `fn_snapshot_commission_ledger` | trigger אחרי insert ל-`order_items` | accrual אוטומטי עם מפתח `commission:accrual:<id>` |
-| `fn_credit_order_item_cashback` | זיכוי ארנק אחרי `shipped` / קופון `used` | deferred: לא ב-checkout; רק אחרי lifecycle |
-| `fn_reverse_order_item_cashback` | היפוך + `cashback_reversal_debts` | refund אחרי זיכוי: חלק חוזר לארנק, יתרה כחוב |
-| policy preflight/postflight | snapshot של 5 policies מוגנות; שינוי = exception | harness מיגרציות חייב לרוץ פעמיים בלי לשנות policies |
-
-**פערים מול D2:** המודול חי ב-`src/lib/commerce/` (לא `src/lib/money/`). לפני Phase 3 checkout: rename או re-export alias; עדכון רצפות כיסוי ב-2.6.
-
-### 2.1 Unit - אריתמטיקת כסף (`src/lib/commerce/`, יעד `src/lib/money/`)
-
-המודול נכתב **לפני** השורה הראשונה של `beginCheckout` (D2). פונקציות טהורות, כל החישוב באגורות
-כ-integer, עמודות ה-DB מקבלות תוצאה מעוגלת בלבד. קבצים ובדיקות:
-
-| קובץ | אחריות | קובץ בדיקות |
-|---|---|---|
-| `agorot.ts` | `A(ils) = Math.round(ils*100)` והמרה חזרה | `agorot.test.ts` |
-| `split.ts` | פיצול פיזי/מנוי לפי `platform_percent` | `split.test.ts` |
-| `coupon-line.ts` | שורת קופון לפי `coupon_price` / `total_deal_price` (D13) | `coupon-line.test.ts` |
-| `order-totals.ts` | סכימת שורות + הקצאת ארנק מול חיוב כרטיס | `order-totals.test.ts` |
-| `subscription.ts` | סכום חיוב מחזורי, פיצול פר חיוב, מפתח idempotency למחזור | `subscription.test.ts` |
-| `format.ts` | תצוגת ₪ he-IL | `format.test.ts` |
-
-**נוסחת הפיצול (פיזי + מנוי), עיגול פעם אחת בדיוק, על העמלה, ברמת השורה, half-up:**
-
-```
-line_total_ag = unit_price_ag * quantity
-fee_ag        = round_half_up(line_total_ag * pp / 100)
-supplier_ag   = line_total_ag - fee_ag
+describe('verifyCardcomSignature', () => {
+  it('accepts a correctly signed body, with or without the sha256= prefix', () => {
+    const sig = signCardcomBody(BODY, SECRET)
+    expect(verifyCardcomSignature(BODY, sig, SECRET)).toBe(true)
+    expect(verifyCardcomSignature(BODY, `sha256=${sig.toUpperCase()}`, SECRET)).toBe(true)
+  })
+  it('rejects a tampered body', () => {
+    const sig = signCardcomBody(BODY, SECRET)
+    expect(verifyCardcomSignature(`${BODY} `, sig, SECRET)).toBe(false)
+  })
+  it('fails closed on a missing header or secret', () => {
+    expect(verifyCardcomSignature(BODY, null, SECRET)).toBe(false)
+    expect(verifyCardcomSignature(BODY, signCardcomBody(BODY, SECRET), '')).toBe(false)
+  })
+})
 ```
 
-**טבלת מקרי הפיצול (M, חובה אחד לאחד).** כל הערכים באגורות (integer):
+2. Coupon QR payload, `src/server/domain/orders/redemption.ts`. `verifyQrPayload(payload)` parses and verifies `KE|<code>|<orderItemId>|<expiresUnix>|<userId>|<sha256-32-hex>`, where the digest is the first 32 hex chars of `sha256("KE|<code>|<orderItemId>|<expiresUnix>|<userId>")`, compared constant-time. (This is a keyed SHA-256 payload signature, distinct from the Cardcom HMAC.) Target file: `src/server/domain/orders/redemption.test.ts` (exists, extend).
 
-| # | מקרה | line_total_ag | pp | fee_ag צפוי | supplier_ag צפוי | מה המקרה תופס |
-|---|---|---|---|---|---|---|
-| M1 | המקרה הקנוני מהמסמכים (400 ₪, 10%) | 40000 | 10 | 4000 | 36000 | בסיס |
-| M2 | מחיר לא עגול | 9990 | 10 | 999 | 8991 | בסיס |
-| M3 | סכום מזערי, עמלה מתעגלת ל-0 | 1 | 10 | 0 | 1 | עמלה 0 חוקית, הספק מקבל הכול |
-| M4 | חצי אגורה בדיוק, כלפי מעלה | 5 | 10 | 1 | 4 | round half up ולא truncate |
-| M5 | חצי בדיוק על ערך אי-זוגי | 15 | 50 | 8 | 7 | half up ולא banker's rounding |
-| M6 | חצי בדיוק על ערך זוגי | 25 | 50 | 13 | 12 | banker's rounding היה נותן 12; אצלנו 13 |
-| M7 | אחוז עשרוני (numeric(5,2)) | 9990 | 12.5 | 1249 | 8741 | 1248.75 מתעגל ל-1249 |
-| M8 | אחוז עשרוני "עגול לכאורה" | 10000 | 33.33 | 3333 | 6667 | דיוק כפל עשרוני |
-| M9 | שארית 0.9 | 9999 | 10 | 1000 | 8999 | 999.9 כלפי מעלה |
-| M10 | אחוז 0 | 40000 | 0 | 0 | 40000 | קצה תחתון של ה-CHECK |
-| M11 | אחוז 100 | 40000 | 100 | 40000 | 0 | קצה עליון, ספק מקבל 0 |
-| M12 | אחוז מינימלי | 40000 | 0.01 | 4 | 39996 | רזולוציית numeric(5,2) |
-| M13 | אחוז מקסימלי לא שלם | 40000 | 99.99 | 39996 | 4 | סימטריה ל-M12 |
-| M14 | כמות: עיגול לשורה ולא ליחידה. יחידה 3333 אג' × 3 | 9999 | 10 | 1000 | 8999 | עיגול ליחידה היה נותן 333×3=999. חייב 1000 |
+   - A payload produced by the issuer (mirror the digest construction in the test) verifies and returns the parsed parts.
+   - Wrong field count, wrong prefix, or an empty field returns `null`.
+   - `code` that is not 8 digits (`SHORT_CODE_PATTERN = /^\d{8}$/`) returns `null`.
+   - Non integer or non positive `expiresUnix` returns `null`.
+   - A flipped digest byte returns `null`.
 
-בדיקות נלוות באותו קובץ (M18 הישן, שגזר את שורת הקופון מ-pp, בוטל והוחלף במקרי K לפי D13):
+#### D. `validateRedemption` guards
 
-| # | מקרה | ציפייה |
-|---|---|---|
-| M15 | property test (fast-check או לולאה דטרמיניסטית): לכל total באגורות 1..10^7 ולכל pp ברשת 0.01: `fee + supplier = total`, שניהם ≥ 0, `fee ≤ total` | אינברינטים 1, 4 |
-| M16 | המרת float: `A(19.99) = 1999` (למרות ש-`19.99*100 = 1998.999...9`), `A(0.29) = 29`, `A(102.99) = 10299` | round ולא trunc בהמרה |
-| M17 | קלט לא חוקי: total שלילי, pp מחוץ ל-0..100, total לא שלם | זריקת שגיאה, לא תוצאה שקטה |
-| M19 | הקצאת ארנק: total 10000, ארנק 3000 | חיוב כרטיס 7000; הפיצול מחושב על 10000 המלא (הכרעה O5) |
-| M20 | ארנק מכסה הכול: total 10000, ארנק 10000 | חיוב כרטיס 0, אין קריאת Cardcom, הזמנה paid |
-| M21 | ארנק גדול מהסכום | נחתך ל-total, לעולם לא חיוב שלילי |
-| M22 | resolution של האחוז: מוצר עם override, מוצר בלי override עם ספק, מוצר בלי כלום | שרשרת `product.platform_percent -> supplier.commission_percent -> 10` (מקביל TS ל-`product_platform_percent`; ההתאמה בין שניהם נבדקת באינטגרציה) |
+Pure gate in `redemption.ts`: `validateRedemption({ coupon, requestingSupplierId, now })` returns one of `not_found`, `wrong_supplier`, `already_used`, `refunded`, `expired`, `success`. This is the app side gate; the DB `UNIQUE(coupon_code_id)` is the final arbiter under concurrency (that path is exercised in E2E and integration, not here).
 
-זמן ריצה יעד לכל שכבת ה-unit: פחות מ-10 שניות.
+- `null` coupon returns `not_found`.
+- Coupon belonging to another supplier returns `wrong_supplier` (a merchant cannot redeem someone else's coupon).
+- Status `used`, `refunded`, `expired` map to their outcomes.
+- `expiresAt` at or before `now` returns `expired` (boundary test at exactly equal timestamps).
+- A valid, issued, unexpired coupon for the right supplier returns `success`.
 
-**מקרי שורת קופון (K, לפי D13):**
+```ts
+import { describe, expect, it } from 'vitest'
+import { validateRedemption } from '@/server/domain/orders/redemption'
 
-| # | קלט (אגורות) | ציפייה |
-|---|---|---|
-| K1 | total_deal 10000, coupon_price 1000 | charged_on_site 1000, balance 9000, supplier_due 0, platform_fee 1000 |
-| K2 | coupon_price = total_deal (10000/10000) | balance 0, עדיין תקין |
-| K3 | coupon_price > total_deal | שגיאת ולידציה, לא תוצאה שקטה |
-| K4 | coupon_price <= 0 | שגיאה |
-| K5 | quantity 3 | כל הערכים מוכפלים ברמת השורה; 3 קודים מונפקים (נבדק באינטגרציה) |
-| K6 | coupon_price 1055 (10.55 ₪) | אין drift של אגורה בהמרות הלוך ושוב |
-| K7 | אינברינט: `charged_on_site + balance_due_at_business = total_price` לכל K | תואם ל-CHECK של 026 |
-| K8 | `platform_percent` בשורת קופון | נגזר לתצוגה בלבד (`coupon_price/total_deal*100` מעוגל ל-2 ספרות), החישוב לעולם לא משתמש בו |
+const base = { supplierId: 'sup-1', status: 'issued' as const, expiresAt: '2099-01-01T00:00:00Z' }
+const now = new Date('2026-07-23T00:00:00Z')
 
-**מקרי מנוי (S):**
+describe('validateRedemption', () => {
+  it('rejects a coupon from another supplier', () => {
+    expect(validateRedemption({ coupon: { ...base }, requestingSupplierId: 'sup-2', now }))
+      .toBe('wrong_supplier')
+  })
+  it('rejects an already used coupon', () => {
+    expect(validateRedemption({ coupon: { ...base, status: 'used' }, requestingSupplierId: 'sup-1', now }))
+      .toBe('already_used')
+  })
+  it('treats expiry at exactly now as expired', () => {
+    expect(validateRedemption({ coupon: { ...base, expiresAt: now.toISOString() }, requestingSupplierId: 'sup-1', now }))
+      .toBe('expired')
+  })
+  it('passes a valid coupon for the right supplier', () => {
+    expect(validateRedemption({ coupon: base, requestingSupplierId: 'sup-1', now })).toBe('success')
+  })
+})
+```
 
-| # | מקרה | ציפייה |
-|---|---|---|
-| S1 | חיוב ראשון: recurring 4990, pp 20 | fee 998, supplier 3992, מפתח `(sub_id, 1)` |
-| S2 | אותו מחזור פעמיים (cron רץ כפול) | אותו מפתח `(sub_id, n)` בדיוק; חיוב שני לא נוצר |
-| S3 | `max_billing_cycles = 3`, מחזור 4 | אין חיוב, סטטוס מסיים; `cycles_completed = 3` |
-| S4 | `max_billing_cycles = NULL` | אין תקרה |
-| S5 | ביטול באמצע מחזור (D17) | אין חיוב הבא, אין החזר יחסי, סטטוס `cancelled` |
-| S6 | חיוב מחזורי נכשל | ניסיון 1-3 בגיבוי, אחרי השלישי `paused` + התראה; אף פעם לא חיוב כפול על אותו מחזור |
-| S7 | pp משתנה במוצר אחרי הרשמה | חיובים חדשים לפי snapshot ההרשמה, לא לפי המוצר (אותו עיקרון כמו order_items) |
+#### E. Cart merge (pure merge logic)
 
-**אינברינטים של מפתחות ה-idempotency לארנק ברמת unit** (הלוגיקה עצמה ב-`fn_wallet_transfer`, אינטגרציה):
+The guest to authenticated cart merge is a known race (STATE.md T3): the current `mergeGuestCart` in `src/server/actions/cart.ts` is read-merge-write without a lock, and the design fix is an atomic RPC (`fn_merge_guest_cart` with an advisory lock). Split the concern:
 
-| מקרה | ציפייה |
-|---|---|
-| נגזרת המפתח: `(order_id, reason)` | דטרמיניסטי, ייחודי לצמד, יציב בין ריצות |
-| שני webhooks על אותה הזמנה | אותו מפתח בדיוק (זה מה שמנטרל כפילות) |
-| אותה הזמנה, reason שונה (spend מול refund_credit) | מפתחות שונים |
+- The pure quantity merge rule (when guest cart and user cart both contain a line, quantities combine; distinct lines union; invalid or out of stock lines are dropped or clamped) is unit tested against a pure helper. If the merge logic currently lives inline in the action, extract it into a pure `mergeCartLines(guestLines, userLines)` helper so it can be tested without Supabase. Target file: `src/server/actions/cart.merge.test.ts` (new).
+- The atomicity of the merge (exactly one winner under a concurrent double merge) is not a unit test. It is an integration or E2E race test against the DB, since the guarantee comes from the advisory lock, not from JS.
 
-בנוסף בשכבת unit: סכמות zod (`src/lib/validations/*`, כולל דחיית שדות מחיר מהלקוח),
-`src/lib/admin/rbac.ts` (`isAdminRole`, `isStaffRole` על כל חמשת ה-roles).
+### 1.3 Test structure
 
-### 2.2 Unit - מכונת המצבים של פדיון קופון
+- Colocate: `foo.ts` is tested by `foo.test.ts` in the same directory. This is the existing convention and Vitest `include` already matches it.
+- One `describe` per exported function, one `it` per invariant. Name the `it` after the invariant, not after the input.
+- Golden cases (the worked money examples from STATE.md) live in a `describe('golden cases')` block per money module so they read as a specification.
+- Pure functions get no mocks at all. If a function needs a mock to be tested, that is a signal to extract the pure core (as with cart merge, section E).
 
-reducer טהור ב-`src/lib/coupons/state-machine.ts` שמשקף אחד-לאחד את הלוגיקה של
-`redeem_coupon` (027) ושל ה-cron. ה-DB הוא האוכף האמיתי (האטומיות נבדקת באינטגרציה);
-ה-unit מקבע את טבלת המעברים כחוזה קריא:
+### 1.4 Fixtures and mocks for Supabase
 
-| מצב נוכחי | אירוע | תוצאה |
-|---|---|---|
-| issued, לא פג | scan של הספק הנכון | used + `used_at` + `redeemed_by` |
-| issued, פג תוקף | scan | דחייה `expired`, המצב לא משתנה |
-| issued | `expires_at` עבר (cron) | expired |
-| issued | refund אדמין | refunded |
-| used | scan נוסף | דחייה `already_used` + מועד הפדיון הראשון |
-| used | refund | דחייה. אין refund אחרי מימוש |
-| expired / refunded | scan | דחייה בסטטוס האמיתי |
-| כל מצב | scan של ספק אחר | `not_found` גנרי החוצה, `wrong_supplier` בלוג (אנטי-enumeration) |
-| כל מצב | מעבר הפוך כלשהו (used->issued וכו') | בלתי אפשרי, ה-reducer זורק |
+Unit tests do not touch Supabase. The money, settlement, QR, redemption gate, and cart merge functions are all pure by design and must stay that way (money arithmetic lives in a pure module, server actions only call it).
 
-בדיקות נלוות: כל המעברים חד-כיווניים וטרמינליים; קלט סטטוס לא מוכר זורק;
-פונקציית התיוג ל-UI ממפה `issued->active`, `used->redeemed` (D14).
+For the thin layer that does call Supabase (the redeem route, the webhook handler, the finalize step), unit test the pure decision and integration test the persistence. When a unit test genuinely needs a Supabase client double, use a hand written fake, not a network call:
 
-### 2.3 Component (Testing Library + jsdom, פרויקט `component`)
+- A `createFakeSupabase(tables)` helper in `src/test/fake-supabase.ts` returns an object with `.from(table).select().eq()...` returning seeded rows and an insert that throws a `23505` unique violation when a duplicate key is inserted. This lets the redeem route's "second scan loses on `UNIQUE(coupon_code_id)`" branch be unit tested deterministically.
+- Do not mock `@supabase/supabase-js` globally with `vi.mock`. Inject the client. The route already resolves an `admin` client; make it injectable in tests via a parameter or a module boundary so the fake can be passed in.
+- Fixtures (a valid issued coupon row, a used coupon row, a settlement input) live in `src/test/fixtures/` as plain objects, typed against `src/types/database.ts`, and are imported by both unit and integration tests so the shapes never drift.
 
-עטיפת render עם `NextIntlClientProvider` (he) ועם `<div dir="rtl">`. נבדקות רק קומפוננטות
-שמציגות כסף או מצב קופון:
+### 1.5 Coverage targets
 
-| קומפוננטה | בדיקות |
-|---|---|
-| כרטיס מוצר - קופון | מציג `coupon_price` כ"משלמים באתר", `total_deal_price` כשווי הדיל, והיתרה לתשלום בעסק; פורמט ₪ he-IL; עיר הספק מוצגת |
-| כרטיס מוצר - פיזי | מחיר מלא בלבד, בלי שדות קופון |
-| כרטיס מוצר - מנוי | `recurring_amount` + "לחודש"; כפתור "הרשם" |
-| בלוק פרטי ספק | שם עסק, לינק Waze עם lat/lng, לינק WhatsApp מהטלפון, שעות פתיחה. חובה בכל שלושת הסוגים (BUSINESS-MODEL סעיף 2) |
-| שורת עגלה + סיכום | כמות×מחיר, סכום ביניים, בלי שום קלט מחיר מהמשתמש ב-DOM |
-| סיכום checkout | פירוק: חיוב באתר עכשיו מול "לתשלום בעסק"; הקצאת ארנק מוצגת כהפחתה |
-| תצוגת קופון באזור אישי | קוד 8 ספרות, QR, תאריך תפוגה, סטטוס בעברית |
-| מסך סריקה לספק | מצב ירוק עם `collect_amount`, מצב אדום עם סיבה |
+- Money modules (`money.ts`, `commission.ts`, `settlement.ts`, `redemption.ts`, `hmac.ts`, the extracted cart merge helper): line and branch coverage floor 95 percent, enforced per file.
+- Everything else: no floor, coverage reported for information only.
+- The closed invariant list (section 1.2) overrides coverage. A file at 100 percent coverage that is missing the allocation invariant test still fails review.
 
-בדיקות RTL רוחביות (על כל אחת מהקומפוננטות למעלה): אין LTR קשיח בתוך משפט עברי
-(bidi על שורת "סה"כ: ₪99.90"), מספרים מוצגים עם `formatPrice` ולא בשרשור ידני.
+Enable coverage in `vitest.config.ts`:
 
-### 2.4 Integration (vitest node מול Supabase מקומי)
+```ts
+test: {
+  environment: 'jsdom',
+  setupFiles: ['./vitest.setup.ts'],
+  globals: true,
+  include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+  exclude: ['node_modules', '.next', 'e2e'],
+  coverage: {
+    provider: 'v8',
+    reporter: ['text', 'json-summary', 'lcov'],
+    thresholds: {
+      'src/lib/commerce/money.ts': { lines: 95, branches: 95, functions: 95, statements: 95 },
+      'src/lib/commerce/commission.ts': { lines: 95, branches: 95, functions: 95, statements: 95 },
+      'src/server/domain/orders/settlement.ts': { lines: 95, branches: 95, functions: 95, statements: 95 },
+      'src/server/domain/orders/redemption.ts': { lines: 95, branches: 95, functions: 95, statements: 95 },
+      'src/lib/payments/hmac.ts': { lines: 95, branches: 95, functions: 95, statements: 95 },
+    },
+  },
+},
+```
 
-תשתית: `supabase start` (Docker), החלת כל המיגרציות מאפס, seed personas (סעיף 6.1). שלוש משפחות:
-
-#### 2.4.1 מטריצת RLS data-driven (D5)
-
-Personas: `anon`, `customer_a` (בעל הרשומות), `customer_b` (משתמש אחר), `uploader`
-(content_uploader), `sup_owner` / `sup_manager` / `sup_scanner` (חברי supplier X),
-`sup_other` (חבר supplier Y), `admin`, `service` (service_role, עוקף RLS, נבדק רק כ-sanity).
-
-סימון: S/I/U/D מותר, `-` נדחה, `fn` רק דרך פונקציית SECURITY DEFINER, `S*` קריאה חלקית (מסונן או עמודות בלבד).
-
-| טבלה | anon | customer_a | customer_b | supplier member (X) | sup_other (Y) | uploader | admin |
-|---|---|---|---|---|---|---|---|
-| products (active) | S | S | S | S (שלו) | S (שלו) | S,I,U (created_by שלו) | S,I,U,D |
-| products (draft של אחר) | - | - | - | - | - | - | S,I,U,D |
-| carts / cart_items | לפי session cookie | S,I,U,D (שלו) | - | - | - | - | הכול |
-| orders | - | S (שלו) | - | S* (paid עם פריט שלו בלבד) | - | - | הכול |
-| order_items | - | S (דרך הזמנה שלו) | - | S (של הספק), U רק דרך `update_shipping_status` | - | - | הכול |
-| payments | - | S (שלו) | - | - | - | - | S בלבד |
-| payment_webhook_events | - | - | - | - | - | - | S בלבד |
-| payment_tokens | - | S* (עמודות בטוחות; `select('*')` נכשל 42501), D | - | - | - | - | S* (אותה מגבלת עמודות) |
-| wallet_accounts | - | S (שלו) | - | - | - | - | S |
-| wallet_transactions | - | S (חשבון שלו בצד כלשהו) | - | - | - | - | S. **אפס policy כתיבה לכולם, כולל admin** |
-| coupon_codes | - | S (שלו) | - | S (של הספק). U ישיר נחסם (ה-policy מ-008 הוסרה ב-027) | - | - | הכול |
-| coupon_redemptions | - | S (הקופון שלו) | - | S | - | - | S |
-| coupon_scan_events | - | - | - | S (של הספק). I/U/D policy false לכולם | - | - | S |
-| suppliers | - | - | - | S (שלו) | S (שלו) | - | הכול |
-| supplier_applications | - | S,I (שלו, pending) | - | - | - | - | S,U,D |
-| supplier_members | - | - | - | S; I/U/D רק owner | - | - | הכול |
-| supplier_bank_accounts | - | - | - | **owner בלבד** (manager/scanner נדחים) | - | - | הכול |
-| payout_statements + lines | - | - | - | S (לא draft) | - | - | הכול |
-| supplier_disputes | - | - | - | S; פתיחה owner | - | - | S,U,D |
-| cardcom_settlements / txns | - | - | - | - | - | - | הכול |
-| user_addresses | - | S,I,U,D (שלו) | - | S* (כתובת של הזמנה paid עם פריט שלו) | - | - | הכול |
-| profiles | - | S,U (שלו, בלי שינוי role) | - | - | - | - | הכול |
-| user_notification_preferences | - | S,I,U (שלו) | - | - | - | - | S |
-| notifications_outbox | - | S (שלו), U עמודת `read_at` בלבד | - | - | - | - | S |
-| account_deletion_requests | - | S (שלו); I/U דרך fn | - | - | - | - | S |
-| user_rate_limits | - | - | - | - | - | - | - (deny-all מוחלט, רק fn) |
-| audit_log | - | - | - | - | - | - | S. I/U/D false לכולם |
-
-לכל תא "נדחה" יש שתי בדיקות: הפעולה נכשלת, וגם לא השאירה שום שורה (ל-INSERT) או שינוי (ל-UPDATE). בדיקות דגל מיוחדות:
-
-- `customer_b` מנסה לקרוא הזמנות, ארנק, קופונים וכתובות של `customer_a`: אפס שורות.
-- `sup_other` (ספק אחר) מנסה לקרוא הזמנות/קופונים של supplier X: אפס שורות.
-- `sup_scanner` מנסה לקרוא `supplier_bank_accounts` ולכתוב `supplier_members`: נדחה.
-- `payment_tokens`: קריאת `cardcom_token` מפורשת נכשלת לכל persona דפדפני; `last_4` ו-`card_brand` נקראים לבעלים.
-- ה-policy השבורה מ-014 ("products: vendor read own", השוואת supplier_id ל-vendors.id): בדיקה שמתעדת שהיא מחזירה אפס שורות, ושאחרי 027 ה-policy החדשה מבוססת החברות כן מחזירה.
-- **מבחן שלילי על ה-runner עצמו**: policy פיקטיבית מרחיבה שמוזרקת בבדיקה אחת חייבת להכשיל את המטריצה (מוודא שה-runner באמת מרגיש הרחבות, לא רק צמצומים).
-
-**Runner**: קובץ vitest אחד גנרי (סביבת node) + קובץ מטריצה הצהרתי (הטבלה למעלה כ-data).
-לכל persona נוצר משתמש אמיתי דרך admin API של ה-stack המקומי, מקבל role/חברות דרך service
-client, ונשמר לו access token. ה-runner מריץ כל תא במטריצה עם ה-client של ה-persona ומאמת
-מותר/נדחה, כולל אפס-שורות ואי-שינוי. תוצאה: הוספת policy בלי עדכון המטריצה מפילה את הבדיקה
-לשני הכיוונים (גם הרחבה, גם צמצום).
-
-#### 2.4.2 פונקציות DB (SECURITY DEFINER)
-
-מקרי הכסף המרכזיים (ארנק, פדיון, checkout, webhook, refund, מיזוג עגלה) מפורטים בסעיף 3.
-מקרי חובה נוספים לפונקציות:
-
-| פונקציה | מקרים חובה |
-|---|---|
-| `generate_payout_statement` | לא-admin נדחה; פריט delivered בתקופה נכנס עם הסכומים המוקפאים בלבד (אין חישוב מחדש); פריט שכבר בשורת statement לא-מבוטל לא נכנס שוב (הגנת settlement כפול); ביטול statement מחזיר פריטים למאגר; שורות קופון אינפורמטיביות עם payout 0; `mark_payout_statement_paid` נחסם עם dispute פתוח ונכשל בהיעדר חשבון בנק פעיל; bank_snapshot מוקפא ולא משתנה אחרי החלפת חשבון |
-| `approve_supplier_application` | לא-admin נדחה; אישור יוצר supplier + חברות owner; העלאת profiles.role נרשמת ב-audit |
-| `update_shipping_status` | רק חבר ספק על פריט שלו; מעברי סטטוס לא חוקיים נדחים |
-| `fn_set_default_payment_token` | רק על token בבעלות הקורא; is_default יחיד |
-| `fn_request/cancel/execute_account_deletion` | rate limit 3/24h; ביטול בתוך חלון החסד; execute רק service_role; אחרי execute: PII מנוקה, רשומות כספיות נשארות |
-| `check_user_rate_limit` | מעל הסף מוחזר false; חלון מתגלגל; `cleanup_user_rate_limits` מוחק ישנים; **החוזה fail-closed** בצד האפליקציה (D10): כשה-RPC נופל, checkout וסריקה נעצרים |
-| `fn_claim_notification_batch` (כשתוחל 031) | שני workers במקביל לא מקבלים את אותה שורה (SKIP LOCKED); reclaim אחרי 10 דקות |
-
-#### 2.4.3 חוזה סכמה
-
-`supabase gen types` על ה-stack המקומי מושווה ל-`src/types/database.ts` שב-git.
-drift בטיפוסים מכשיל את הבדיקה (מוודא שה-repo לא משקר לגבי הסכמה).
-
-### 2.5 E2E (Playwright)
-
-רץ מול `next build && next start` (לא dev server) + Supabase מקומי + Cardcom fake (PR) או Cardcom sandbox (לילי).
-
-**המסלול המאושר המלא (בדיקה אחת רציפה, `@smoke`):**
-
-1. אורח בדף הבית (`html[dir=rtl][lang=he]`), מוסיף לעגלה מוצר פיזי + דיל קופון. עוגיית `ke_session_id` קיימת, העגלה שורדת רענון.
-2. לחיצה על "שלם" מפנה ל-`/login?next=/checkout`.
-3. התחברות. ב-PR CI: משתמש בדיקה דרך admin API (D4, בלי Google אמיתי). זרימת Google OAuth האמיתית: ידנית לפני release לפי checklist. `fn_merge_guest_cart` רץ: העגלה מלאה אצל המשתמש, עגלת האורח נעלמה.
-4. checkout: כתובת, אפס שדות מחיר מהדפדפן. הזמנה נוצרת `pending` + `expires_at`.
-5. הפניה לדף Cardcom (fake/sandbox), תשלום, ירי webhook חתום.
-6. חזרה לאתר: הסטטוס נשאר `pending` עד ה-webhook (דף ה-redirect לבדו לא משנה state); אחרי ה-webhook - `paid`.
-7. **אימות snapshot ישירות מול ה-DB (service client מתוך הבדיקה):** לכל שורת `order_items`:
-   - פיזי: `platform_percent` שנשמר = ערך ה-resolution בזמן הקנייה; `platform_fee_ils + supplier_due_ils = total_price_ils`; `charged_on_site_ils = total_price_ils`; `balance_due_at_business_ils = 0`.
-   - קופון: `charged_on_site_ils = coupon_price × qty`; `balance_due_at_business_ils = (total_deal_price - coupon_price) × qty`; `supplier_due_ils = 0`; `platform_fee_ils = charged_on_site_ils`.
-   - שינוי `platform_percent` במוצר אחרי התשלום ואימות שה-snapshot לא זז.
-8. אזור אישי: ההזמנה מופיעה, קוד 8 ספרות + QR לפריט הקופון.
-
-**מסלולי כשל E2E (כל אחד בדיקה נפרדת):**
-
-| תרחיש | ציפייה |
-|---|---|
-| כרטיס נדחה (ה-fake מחזיר decline) | payment נשאר failed, הזמנה לא paid, מלאי לא ירד, אין קוד קופון, אין תנועת ארנק |
-| נטישה בדף התשלום + חלוף 30 דקות (cron מדומה) | הזמנה cancelled, payment failed |
-| לחיצה כפולה על "שלם" (double submit) | הזמנה אחת, payment אחד (idempotency key) |
-| webhook כפול על אותה עסקה | state לא משתנה בפעם השנייה, אין זיכוי כפול |
-| יתרת ארנק לא מספיקה בין ולידציה לחיוב (מרוץ מדומה) | ההזמנה מסומנת לטיפול, אין יתרה שלילית |
-| מלאי אזל בין עגלה ל-checkout | checkout נדחה עם הודעה, לא נוצרת הזמנה |
-| אורח מנסה `/checkout` ו-`/account` ישירות | redirect ל-login (קיים היום ב-e2e/auth.spec.ts, נשמר) |
-| משתמש מחובר עם עגלה ריקה נכנס ל-checkout | הפניה לעגלה, אין הזמנת אפס |
-
-`@smoke` חוסם: המסלול המאושר + כרטיס נדחה + double submit. השאר `@full` (לילי).
-
-**E2E פורטל ספק:** התחברות scanner, סריקה תקפה (ירוק + `collect_amount`), סריקה שנייה (אדום + מועד ראשון),
-קוד של ספק אחר (`not_found` גנרי), קוד פג.
-
-**E2E מנוי (כשהשלב ייבנה):** הרשמה -> token -> חיוב ראשון -> `subscription active`;
-cron מדומה מחייב מחזור 2; ביטול מהאזור האישי עוצר את מחזור 3.
-
-**`@preview` (רץ על Vercel Preview בלבד, read-only):** דף בית 200 + RTL, דף קטגוריה, דף מוצר,
-הוספה לעגלה כאורח (עגלה היא כתיבה זולה ל-dev, מותרת), אפס שגיאות קונסול קריטיות.
-אסור: checkout, webhook, redeem.
+CI runs `pnpm test -- --coverage`. A floor breach fails the job.
 
 ---
 
-## 3. מטריצת בדיקות המסלול הקריטי (כסף/קופון/ארנק)
+## 2. Playwright E2E
 
-כל שורה = בדיקה אחת לפחות, עם השכבה שבה היא רצה. רשימה סגורה; מתעדכנת רק דרך מסמך זה.
+Playwright config today: chromium only, `locale he-IL`, `baseURL http://localhost:3000`, `webServer: pnpm dev`, retries 2 and workers 1 in CI. For CI the `webServer` command switches to `pnpm build && pnpm start` (a production build behaves differently from dev for RTL, caching, and server actions). E2E in CI runs against a locally built app plus a clean local Supabase stack plus a Cardcom stub. Real Cardcom and real Google OAuth never run in PR CI.
 
-### 3.1 Checkout ותשלום (P)
+### 2.1 Flow A: checkout (guest cart to confirmed order)
 
-| # | תרחיש | ציפייה | שכבה |
-|---|---|---|---|
-| P1 | `beginCheckout` תקין (פיזי+קופון) | הזמנה `pending` + `expires_at=now()+30min`, payments `initiated` עם `idempotency_key`, snapshot מלא לכל שורה | integration |
-| P2 | payload עם שדה מחיר מהלקוח | נדחה בוולידציית zod, אין הזמנה | unit + integration |
-| P3 | double submit (שתי קריאות באותו cart) | הזמנה אחת, payment אחד (`payments.idempotency_key` UNIQUE) | integration |
-| P4 | מלאי אזל בין עגלה ל-checkout | נדחה, אין הזמנה | integration |
-| P5 | מוצר draft/paused בעגלה | נדחה | integration |
-| P6 | ארנק מכסה חלק | `payments.amount_ils = total - wallet`, הפיצול על המלא (O5) | unit + integration |
-| P7 | ארנק מכסה הכול | אפס קריאות Cardcom, הזמנה `paid` בטרנזקציה אחת | integration + E2E |
-| P8 | rate limit `begin_checkout` 10/60 | הקריאה ה-11 נדחית | integration |
-| P9 | כשל RPC של rate limit | checkout נעצר (fail-closed, D10) | unit |
-| P10 | `CHECKOUT_ENABLED=false` (D22) | beginCheckout נדחה; webhook על עסקה קיימת עדיין מעובד | unit + integration |
-| P11 | מעבר `paid` כטרנזקציה שלמה | payment succeeded + חיוב ארנק + הנפקת קופונים + מלאי + audit יחד; כשל אמצעי מגלגל הכול אחורה | integration |
-| P12 | cron ביטול pending אחרי expiry | הזמנה `cancelled`, payment `failed` | integration |
+Spec file: `e2e/checkout.spec.ts`.
 
-### 3.2 Idempotency של webhooks (W1-W10, חובה מלאה)
+Steps:
 
-| # | תקיפה/תקלה | ציפייה |
-|---|---|---|
-| W1 | אותו webhook פעמיים (אותו `external_event_id`) | השני נעצר על `UNIQUE (provider, external_event_id)` לפני כל שינוי state; אין קופון כפול, אין תנועת ארנק שנייה, אין הפחתת מלאי כפולה |
-| W2 | חתימה שגויה | `signature_valid=false` נרשם, מוחזר 200, אפס כתיבות, alert |
-| W3 | חתימה חסרה | כמו W2 |
-| W4 | חתימה תקפה, אימות server-to-server מחזיר סכום אחר (עסקת 1 ₪ על הזמנת 500 ₪) | נדחה, הזמנה נשארת `pending`, התראה |
-| W5 | אימות API מחזיר סטטוס לא-משולם | אין מעבר ל-paid |
-| W6 | webhook על payment לא מוכר | נרשם עם `payment_id NULL`, alert, אפס כתיבות |
-| W7 | webhook מאחר אחרי שה-cron ביטל | ההזמנה לא קופצת מ-cancelled ל-paid בשקט; מסומן ל-reconcile ידני (הכסף נגבה אצל Cardcom אבל ההזמנה בוטלה) |
-| W8 | אותו `cardcom_transaction_id` על שני payments | UNIQUE חוסם; בדיוק payment אחד succeeded |
-| W9 | קריאת success-URL ישירה עם פרמטרים מזויפים | אפס שינוי state; רק webhook מאומת כותב |
-| W10 | מרוץ webhook מול cron reconcile | בדיוק מעבר אחד ל-succeeded; מפתח הארנק `(order_id, reason)` מנטרל כפילות |
+1. As a guest (no session), open a product page and add a coupon product and a physical product to the cart. Assert the cart drawer shows the split (on-site charge vs balance in store for the coupon line).
+2. Go to `/checkout`, press Pay. The app requires auth at this point.
+3. Authenticate as a seeded test user via email and password (not Google OAuth). The guest cart merges into the user cart; assert quantities merged correctly (this is the observable side of the T3 race fix).
+4. Fill the shipping address for the physical line (writes `user_addresses`).
+5. Begin checkout. The Cardcom Low Profile call is intercepted by the stub (section 2.3) and returns a hosted-page redirect that the stub short-circuits back to the app's return URL.
+6. The Cardcom webhook fires (the test posts a signed webhook body to the webhook route, see 2.3). The order finalizes: coupon codes are issued with QR, escrow is held for the coupon in-store balance model, cashback is credited to the wallet, the cart is cleared.
+7. Assert the success page: coupon card with an 8 digit code, a QR image, the amount to pay in store, and the expiry. Assert the order appears as confirmed and the cart is empty.
 
-כלי: harness ב-`tests/helpers/webhook.ts` שיורה POST ל-`/api/payments/cardcom/webhook`
-עם שליטה על חתימה (תקפה/שגויה/חסרה), מזהי LowProfileId/TranzactionId, סכום, סטטוס וכפילות,
-וה-fake עונה לקריאת האימות server-to-server עם תשובה שנשלטת גם היא. כל בדיקה מאמתת שלושה
-דברים: קוד תשובה 200, שורת `payment_webhook_events` עם הדגלים הנכונים, ומצב הזמנה/ארנק/קופונים אחרי.
+Tag: `@checkout @money`. This is a blocking smoke flow.
 
-### 3.3 Refund (R1-R8)
+### 2.2 Flow B: coupon scan (issue, redeem, double scan)
 
-| # | תרחיש | ציפייה |
-|---|---|---|
-| R1 | refund מלא פיזי (admin) | שורת payments חדשה `kind=refund` + `refund_of_payment_id`; המקור `refunded` רק אחרי אישור Cardcom |
-| R2 | refund קופון `issued` | מוחזר `charged_on_site_ils` (מה ששולם באתר) בלבד; הקופון `refunded`; סריקה אחריו נכשלת `refunded` |
-| R3 | refund קופון `used` | נדחה. אין refund אחרי מימוש |
-| R4 | הזמנה ששולמה חלקית בארנק | חלק הארנק חוזר לארנק (`refund_credit`), חלק הכרטיס לכרטיס; לעולם לא הכול לכרטיס |
-| R5 | refund כפול | השני נחסם |
-| R6 | סכום גדול מהמקור | נדחה בוולידציה |
-| R7 | קריאה על ידי לא-admin | נדחית ב-`requireAdminSession` |
-| R8 | refund אחרי payout statement סגור | ה-statement ההיסטורי לא משתנה; adjustment בתקופה הבאה |
+Spec file: `e2e/redeem.spec.ts`.
 
-### 3.4 פדיון קופון ומניעת פדיון כפול (C)
+Steps:
 
-| # | תרחיש | ציפייה | שכבה |
-|---|---|---|---|
-| C1 | סריקה תקינה | UPDATE אטומי אחד, `used`, שורת `coupon_redemptions` (UNIQUE על `coupon_code_id`), שורת `coupon_scan_events`; snapshot הסכומים לפי מודל `coupon_price` (D13) | integration |
-| C2 | **מרוץ: שתי סריקות מקבילות על אותו קוד** | בדיוק אחת `success`, השנייה `already_used`; ה-CAS `WHERE status='issued'` הוא ההגנה, לא read-then-write | integration (חובה, D9) |
-| C3 | replay של INSERT ל-`coupon_redemptions` | נחסם על UNIQUE - מחסום שני בלתי תלוי | integration |
-| C4 | קוד של ספק אחר | לסורק `not_found` גנרי; בלוג `wrong_supplier` מדויק | integration |
-| C5 | קוד לא קיים | `not_found`, אפס דליפת מידע | integration |
-| C6 | פג תוקף / refunded | נדחה בסטטוס האמיתי | integration |
-| C7 | סורק לא חבר `supplier_members` | `unauthorized`; `profiles.role` לבדו לא מספיק (אינברינט 12) | integration |
-| C8 | rate limit 30/60 | הסריקה ה-31 `rate_limited`; גם כשל נרשם ב-scan_events | integration |
-| C9 | QR חתום: תקף/פג/חתימה שבורה/`qr_key_id` לא מוכר | אימות `KE1.` ב-unit; החד-פעמיות לא נשענת על ה-QR אלא רק על ה-DB | unit |
-| C10 | cron `expire_coupons` | רק `issued` שפגו הופכים `expired` | integration |
-| C11 | סריקה כפולה דרך ה-UI המלא | מסך ירוק ואז מסך אדום עם מועד הפדיון הראשון | E2E |
+1. Seed an issued coupon for a known supplier and a merchant user who is a member of that supplier (`supplier_members`).
+2. As the merchant, `POST /api/supplier/redeem` with the coupon short code (or QR payload). Assert 200 and `success`, and that `coupon_redemptions` now has one row and the coupon status is `used`.
+3. Scan the same coupon a second time. Assert the response is `already_used` and that `coupon_redemptions` still has exactly one row (the `UNIQUE(coupon_code_id)` constraint is the arbiter).
+4. Race variant (`@race`): fire two redeem requests concurrently with `Promise.all`. Assert exactly one returns `success` and exactly one returns `already_used`, and the row count is one. This is the real proof of the atomic single-use guarantee; the unit test only covers the app side gate.
+5. Negative: a merchant of a different supplier scanning the coupon gets `wrong_supplier` and no row is written.
 
-### 3.5 ארנק (WL)
+Tag: `@redeem @money @race`. Blocking.
 
-| # | תרחיש | ציפייה |
-|---|---|---|
-| WL1 | `fn_wallet_transfer` תקין | זוג debit/credit מאוזן, cache מעודכן באותה טרנזקציה |
-| WL2 | replay של `idempotency_key` | מוחזר ה-id הקיים, אין תנועה שנייה |
-| WL3 | סכום שלילי/אפס, debit=credit | נדחה |
-| WL4 | חריגת יתרה של משתמש | נכשל על `wallet_accounts_user_nonneg`, כל הטרנזקציה מתבטלת; חשבון פלטפורמה (cashback_reserve) כן יכול להישלל |
-| WL5 | **מרוץ: שתי העברות של 60 מיתרת 100** | בדיוק אחת מצליחה (`FOR UPDATE` בסדר uuid) |
-| WL6 | אחרי N העברות אקראיות | `balance_ils` שווה לנגזרת מה-ledger (אותה שאילתה של ה-integrity הלילי) |
-| WL7 | append-only | אין policy UPDATE/DELETE לאף אחד כולל admin; תיקון = תנועה מפצה בלבד |
-| WL8 | מרוץ שתי הזמנות על אותה יתרה | שתיהן עוברות ולידציה, רק ה-webhook הראשון מחייב; השני נכשל ומסומן לטיפול, אין יתרה שלילית |
+### 2.3 Stubbing Cardcom
 
-### 3.6 עגלת אורח ומיזוג (G)
+Cardcom is stubbed at the single HTTP boundary. There is one adapter around the Cardcom HTTP calls; in CI a fake stands in for the real Cardcom on the HTTP side.
 
-| # | תרחיש | ציפייה |
-|---|---|---|
-| G1 | מיזוג לפי `(product_id, variant_id)` | כמויות מתחברות, תקרה 99 |
-| G2 | אין עגלת משתמש | claim אטומי של עגלת האורח |
-| G3 | **מרוץ: double callback של OAuth** | `pg_advisory_xact_lock` מונע הכפלה; עגלה אחת בלבד (UNIQUE חלקי על `carts(profile_id)`) |
-| G4 | עגלת אורח שורדת רענון + התחברות | E2E במסלול המאושר |
+Two interception points:
+
+1. Outbound Low Profile create. In the E2E run, set `CHECKOUT_PROVIDER=mock` (the app already has an automatic mock provider in dev per STATE.md, "no sandbox credentials in env"). The mock provider returns a deterministic `LowProfileId` and a return URL, so no external host is contacted. Alternatively, use Playwright `page.route('**/api/cardcom/**', ...)` to fulfill the request with a canned response, but the env-driven mock provider is preferred because it also exercises the app's own return handling.
+2. Inbound webhook. The test constructs the webhook body the app expects (approved transaction, matching amount in agorot, the `LowProfileId` from step 1), signs it with `signCardcomBody(body, CARDCOM_WEBHOOK_SECRET)` from `src/lib/payments/hmac.ts` using the CI test secret, and posts it to the webhook route with the `sha256=` header. The route verifies HMAC, then (in production) verifies against the Cardcom API; in CI that verify-against-API call also routes to the mock provider, which confirms the transaction. This proves the full verify path without a real terminal.
+
+Never put a real Cardcom terminal number or secret in CI. The CI secret is a throwaway used only so sign and verify agree.
+
+### 2.4 Seeding and teardown
+
+- Seeding uses `supabase/seed.sql` (loaded only locally and in CI, never applied to the remote via MCP) plus a `tests/sql/90_test_support.sql` file in a `test_support` schema applied after the migrations in CI. Test users, a test supplier, supplier membership, and a couple of catalog products (one coupon enabled, one physical) are seeded there. No test tables ever land in a production migration.
+- Each spec that mutates money state runs against a fresh stack, or resets the affected tables in `beforeEach` via a `test_support.reset()` SQL function that truncates `orders`, `order_items`, `payments`, `coupon_codes`, `coupon_redemptions`, `wallet_entries`, and `carts` and re-seeds the fixtures. Truncate order respects FKs.
+- Test users are created in the local Auth (email plus password, or a session injected via the admin API). Google OAuth is never exercised in CI; the real OAuth flow is checked manually once before a release.
+- Teardown is the reset function plus a global teardown that tears the stack down (`supabase stop`) in CI, which is free because the stack is disposable per run.
 
 ---
 
-## 4. צינורות GitHub Actions
+## 3. GitHub Actions pipeline
 
-### 4.1 מבנה
+Stages, in order, gating merge into the target branch: lint (biome), typecheck (tsc), test (vitest with coverage floors), build (next build), then a visual diff gate via `scripts/compare.mjs` with a 30 percent threshold. E2E runs as its own job on the built app plus the local stack. Node is pinned (Node 22 LTS), pnpm comes from `packageManager`.
 
-ארבעה workflows + composite action אחד:
+`scripts/compare.mjs` today screenshots the live reference (`refs/ke_live_singlefile.html`) and the local app at `http://localhost:3000`, then hands off to `scripts/diff-bands.mjs` which computes banded pixel and style diffs. In CI the local target is the freshly built app (`pnpm start`), and the gate fails when the overall diff versus the reference exceeds 30 percent. Today the homepage sits at roughly 22.5 percent versus the reference, so 30 percent is a real, passable gate with headroom, and it catches a regression that pushes the diff past that line.
 
-```
-.github/
-├── actions/
-│   └── setup/action.yml        # composite: checkout כבר בוצע; pnpm+node 22+cache+install
-└── workflows/
-    ├── ci.yml                  # PR + push: static, unit, build, integration, migrations, e2e-smoke
-    ├── preview-e2e.yml         # deployment_status: בדיקות @preview מול ה-URL של Vercel
-    ├── nightly.yml             # לילי: e2e מלא, חוזה Cardcom sandbox, visual, migrations מלא
-    └── db-backup.yml           # יומי: pg_dump מוצפן כ-artifact (עד מעבר ל-Pro)
-```
-
-### 4.2 `ci.yml`
-
-> הערת עתיד (עוגן ‏ARCHITECTURE-MOBILE-SUPERAPP סעיף 10): במעבר ל-monorepo
-> ‏(M1/M2 שם) המשימות כאן עוברות לרוץ דרך ‏turbo (`turbo type-check lint test build`)
-> ונוסף ‏lane נפרד לאפליקציית המובייל. עד אז המסמך הזה תקף כמות שהוא.
+### 3.1 `.github/workflows/ci.yml`
 
 ```yaml
 name: CI
+
 on:
   pull_request:
-    branches: [cursor/add-supabase-3c830]   # יוחלף ל-main בקאטאובר
+    branches: [cursor/add-supabase-3c830, main]
   push:
-    branches: [phase5/homepage]
+    branches: [cursor/add-supabase-3c830, main]
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  NODE_VERSION: 22
+
 jobs:
-  static:                       # < 1 דקה, חוסם
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }   # נדרש ל-commitlint על טווח PR
-      - uses: ./.github/actions/setup
-      - run: pnpm exec biome ci .
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - run: pnpm type-check
-      - name: conventional commits on PR range
-        if: github.event_name == 'pull_request'
-        run: pnpm exec commitlint --from ${{ github.event.pull_request.base.sha }} --to HEAD --verbose
 
-  a11y:                         # < 3 דקות, חוסם (LEG-03, D26)
-    needs: build
+  test:
+    needs: [lint, typecheck]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
-      - uses: supabase/setup-cli@v1
-      - run: supabase start
-      - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm build && pnpm exec playwright test e2e/a11y.spec.ts
-        env: { NEXT_PUBLIC_SUPABASE_URL: 'http://127.0.0.1:54321', NEXT_PUBLIC_SUPABASE_ANON_KEY: 'ci-anon' }
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test -- --coverage
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: coverage/
 
-  unit:                         # < 1 דקה, חוסם (unit + component)
+  build:
+    needs: [test]
     runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.CI_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.CI_SUPABASE_ANON_KEY }}
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
-      - run: pnpm exec vitest run --project unit --project component --coverage
-      - run: node scripts/check-coverage-floors.mjs coverage/coverage-summary.json
-
-  build:                        # חוסם; כולל שומר דליפת סודות
-    needs: static
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - run: pnpm build
-        env: { NEXT_PUBLIC_SUPABASE_URL: 'http://127.0.0.1:54321', NEXT_PUBLIC_SUPABASE_ANON_KEY: 'ci-anon' }
-      - name: assert no service key in client bundle
-        run: '! grep -rl "service_role" .next/static'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: next-build
+          path: .next/
 
-  integration:                  # חוסם: RLS matrix + פונקציות DB + חוזה טיפוסים
-    needs: static
+  e2e:
+    needs: [build]
     runs-on: ubuntu-latest
+    env:
+      CHECKOUT_PROVIDER: mock
+      CARDCOM_WEBHOOK_SECRET: ci-test-webhook-secret
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - uses: supabase/setup-cli@v1
-      - run: supabase start          # stack נקי, מחיל migrations + seed.sql אוטומטית
-      - run: psql "$LOCAL_DB_URL" -f tests/sql/90_test_support.sql
-      - run: pnpm exec vitest run --project integration
-
-  migrations:                   # dry-run מול shadow DB; חוסם כשנוגעים במיגרציות
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with: { filters: "db: ['supabase/migrations/**']" }
-      - if: steps.filter.outputs.db == 'true'
-        uses: supabase/setup-cli@v1
-      - if: steps.filter.outputs.db == 'true'
-        name: apply twice on clean shadow stack
+        with:
+          version: latest
+      - name: Start local Supabase and apply migrations + seed
         run: |
-          supabase db start
-          for f in supabase/migrations/*.sql; do psql "$SHADOW_DB_URL" -v ON_ERROR_STOP=1 -f "$f"; done
-          for f in supabase/migrations/*.sql; do psql "$SHADOW_DB_URL" -v ON_ERROR_STOP=1 -f "$f"; done
-      - if: steps.filter.outputs.db == 'true'
-        name: post-apply assertions
-        run: psql "$SHADOW_DB_URL" -f tests/sql/assert-migrations.sql
-
-  e2e-smoke:                    # חוסם: מסלול מאושר + כרטיס נדחה + double submit
-    needs: [build, integration]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
-      - uses: supabase/setup-cli@v1
-      - run: supabase start && psql "$LOCAL_DB_URL" -f tests/sql/90_test_support.sql
+          supabase start
+          supabase db reset --local
+          psql "$(supabase status --output json | jq -r '.DB_URL')" -f tests/sql/90_test_support.sql
       - run: pnpm exec playwright install --with-deps chromium
-      - run: node tests/fake-cardcom/server.mjs &     # ה-fake על פורט 4545
-      - run: pnpm build && pnpm exec playwright test --grep @smoke
-        env: { CARDCOM_BASE_URL: 'http://127.0.0.1:4545', CHECKOUT_ENABLED: 'true' }
-```
-
-הערות מחייבות:
-
-- `migrations` בודק **פעמיים מלא** על stack נקי (D6, אינברינט 13): image ננעל לגרסת Postgres 17,
-  החלה בסדר לקסיקוגרפי (כולל `0075` במקומו), קובץ קובץ, עצירה בשגיאה הראשונה. `assert-migrations.sql` מוודא:
-  ספירת `pg_policies` זהה בין שני המעברים (מעבר שני לא הכפיל ולא מחק), אין טבלה ב-public עם RLS
-  כבוי (מלבד רשימת חריגים), כל ה-enums בערכים הצפויים, חשבונות הפלטפורמה קיימים פעם אחת בדיוק.
-- תיחום ה-harness: הוא בודק את הקבצים כפי שהם מול stack נקי. הוא לא פותר את ה-drift מול dev
-  (הטבלה `coupons` החיה); הוא כן מוודא שה-bootstrap של פרויקט הפרודקשן העתידי (P0 ב-PRODUCTION-OPS)
-  יעבור חלק. סדר תלויות (027 דורש 016/019/025, 031 דורש 029 וכו') נאכף על ידי ה-exception guards
-  שכבר קיימים בקבצים: ה-harness פשוט מפעיל אותם.
-- שני קונפליקטי הטיוטות הידועים (`payout_status` 026 מול 027, `products.platform_percent`
-  NOT NULL מול nullable) חייבים להיפתר לפי MASTER 1.1/1.4 **לפני** שה-job הזה יעבור. זה פיצ'ר: ה-CI תופס אותם.
-- `supabase db push` לכל פרויקט מרוחק אסור בכל שלב ב-CI, וכך גם החלת מיגרציות על dev/prod או
-  שימוש ב-service key של פרויקט מרוחק. ה-CI נוגע רק ב-stack המקומי שלו. החלה מרוחקת נשארת
-  ידנית דרך MCP `apply_migration` + תיעוד ב-STATE.md.
-- caching:
-
-| cache | מפתח | חוסך |
-|---|---|---|
-| pnpm store | `pnpm-lock.yaml` | 1-2 דק' לכל job |
-| Playwright browsers | גרסת `@playwright/test` | ~1 דק' בכל job E2E/visual |
-| `.next/cache` | lockfile + קבצי מקור | חצי מזמן ה-build בריצות חוזרות |
-| Docker images של Supabase | גרסת CLI | 2-3 דק' ב-integration/migrations |
-
-- יעד: PR רגיל (בלי מיגרציות) ירוק בתוך 8-10 דקות. ה-jobs הקלים רצים במקביל מיידית; הכבדים מחכים רק למה שהם באמת צריכים.
-
-### 4.3 `preview-e2e.yml` (E2E על Preview Deploy)
-
-```yaml
-name: Preview E2E
-on: [deployment_status]
-jobs:
-  e2e-preview:
-    if: >
-      github.event.deployment_status.state == 'success' &&
-      contains(github.event.deployment_status.environment, 'Preview')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup
-      - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm exec playwright test --grep @preview
+      - name: Run E2E against the production build
+        run: pnpm exec playwright test
         env:
-          PLAYWRIGHT_BASE_URL: ${{ github.event.deployment_status.environment_url }}
+          E2E_WEB_COMMAND: pnpm start
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+
+  visual-diff:
+    needs: [build]
+    runs-on: ubuntu-latest
+    env:
+      VISUAL_DIFF_THRESHOLD: '30'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with:
+          name: next-build
+          path: .next/
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Start built app
+        run: pnpm start &
+      - name: Wait for app
+        run: npx --yes wait-on http://localhost:3000
+      - name: Visual diff gate (fail if overall diff > 30 percent)
+        run: node scripts/compare.mjs
 ```
 
-מזהיר בלבד (לא ב-required checks): הסביבה חולקת את DB ה-dev החי ולכן לא דטרמיניסטית.
-מריץ אך ורק את תרחישי `@preview` הקריאתיים (סעיף 2.5). זרימות כסף לעולם לא רצות מול preview.
+For the visual gate to fail the job, `scripts/compare.mjs` (or the `diff-bands.mjs` it spawns) must exit non-zero when the overall diff exceeds `VISUAL_DIFF_THRESHOLD`. The script already spawns `diff-bands.mjs` and propagates its exit code; add a threshold check in `diff-bands.mjs` that reads `process.env.VISUAL_DIFF_THRESHOLD` (default 30) and exits 1 when the computed overall percentage is above it. This is the only change the pipeline needs in the existing tooling. Until the baseline stabilizes, the visual-diff job can be marked non-blocking (`continue-on-error` or excluded from required checks) and promoted to blocking once green consistently.
 
-### 4.4 `nightly.yml`
+### 3.2 Stage rationale
+
+- lint and typecheck run in parallel first (fast, no secrets, no services). A style or type break stops the pipeline cheaply.
+- test needs both to pass, then runs unit plus coverage floors.
+- build needs tests green, produces the `.next` artifact once, reused by e2e and visual-diff so the app is built exactly once.
+- e2e and visual-diff both consume the build artifact and run in parallel. e2e brings up a local Supabase stack and the Cardcom mock; visual-diff only needs the running app and the reference HTML.
+
+---
+
+## 4. Preview deploys on Vercel per PR
+
+Every PR gets a Vercel Preview deployment automatically (Vercel GitHub integration, no workflow needed for the deploy itself). The preview is a full running instance at a unique URL, useful for manual review and for a read-only slice of the visual gate.
+
+### 4.1 Environment variables and secrets
+
+Two homes for configuration:
+
+- Vercel project env (Preview and Production scopes): the app runtime needs `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_APP_URL`, `SUPABASE_SERVICE_ROLE_KEY` (server only), `CARDCOM_TERMINAL`, `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD`, `CARDCOM_WEBHOOK_SECRET`, and `CHECKOUT_ENABLED`. Preview scope points at the dev Supabase project and at Cardcom sandbox credentials (or `CHECKOUT_PROVIDER=mock` if no sandbox is available, which matches the current dev state). Production scope points at production Supabase and the real single Cardcom terminal.
+- GitHub Actions secrets: `CI_SUPABASE_URL`, `CI_SUPABASE_ANON_KEY` for the build job, and a throwaway `CARDCOM_WEBHOOK_SECRET` for E2E signing. These never overlap with production values.
+
+Important: `NEXT_PUBLIC_APP_URL` must be set in every environment. STATE.md records a bug where the Google OAuth `redirect_to` is built with `undefined` when `NEXT_PUBLIC_APP_URL` is missing in the action context. Setting it in Preview and Production scopes prevents that on deployed environments.
+
+Preview never runs full money E2E. The preview shares the dev Supabase database, so writing real orders and coupons against it from CI is forbidden. Full money flows run only in the `e2e` job against the disposable local stack plus the Cardcom mock (section 2). This mirrors the existing rule: the shared dev DB is read-only from CI's perspective.
+
+### 4.2 Diff gate against the preview URL
+
+A second visual check runs against the live preview URL, separate from the local visual-diff job. This is a lightweight, read-only comparison of the deployed preview against the reference, and it is non-blocking (a warning) because the preview shares dev data and content differences (product counts, live catalog) legitimately move the pixel diff. Content-driven diff is not layout regression.
 
 ```yaml
+name: Preview visual check
+
 on:
-  schedule: [{ cron: '30 0 * * *' }]   # 03:30 ישראל בקיץ
-  workflow_dispatch:
+  deployment_status:
+
+jobs:
+  preview-diff:
+    if: github.event.deployment_status.state == 'success' && github.event.deployment_status.environment == 'Preview'
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    env:
+      VISUAL_DIFF_THRESHOLD: '30'
+      COMPARE_TARGET_URL: ${{ github.event.deployment_status.target_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Visual diff against the preview URL
+        run: node scripts/compare.mjs
 ```
 
-Jobs: `e2e-full` (כל התרחישים כולל פורטל ספק, מול stack מקומי + fake),
-`cardcom-contract` (בדיקות החוזה של ה-adapter מול **Cardcom sandbox אמיתי** עם
-`CARDCOM_*` של סביבת הבדיקות מ-secrets; אותם asserts כמו מול ה-fake, כך שסטיית ה-fake
-מהמציאות מתגלה כאן), `visual` (snapshots של Playwright ב-4 breakpoints: 360/390/768/1440),
-`migrations-full` (ה-harness המלא גם בלי שינוי בקבצים). כשל בלילי פותח issue אוטומטי (`gh issue create`).
+For this to hit the preview instead of `localhost:3000`, `scripts/compare.mjs` must read a `COMPARE_TARGET_URL` env var and fall back to `http://localhost:3000` when it is unset. That is a small, backward compatible change to the existing script: it currently hardcodes `mine.goto('http://localhost:3000', ...)`; make that `process.env.COMPARE_TARGET_URL ?? 'http://localhost:3000'`. The blocking visual gate stays local (section 3: deterministic, no shared data); the preview check is informational.
 
-### 4.5 `db-backup.yml`
+---
 
-יומי עד המעבר ל-Supabase Pro: `pg_dump` של פרויקט ה-dev (ובעתיד prod) דרך connection string
-מ-secrets, gzip, artifact עם retention של 30 יום. חובה לפני שקיים תשלום אמיתי (PRODUCTION-OPS 4.4).
+## 5. Branch protection rules
 
-### 4.6 חסימת merge (branch protection)
+The target branch for PRs is the current default branch `cursor/add-supabase-3c830` (renamed to `main` at cutover). The daily working branch is `phase5/homepage`. The project rule of "commit then push immediately" to the working branch stays; it is a backup. The protection is on the merge point, not on daily work.
 
-על ענף היעד `cursor/add-supabase-3c830` (ואחר כך main):
+### 5.1 Rules on the target branch (`cursor/add-supabase-3c830`, later `main`)
 
-- Required checks: `static`, `unit`, `build`, `integration`, `migrations`, `e2e-smoke`, `a11y`.
-  (`migrations` מדווח success גם כשדילג, דרך ה-paths-filter הפנימי, ולכן בטוח כ-required.)
-- Require branch up to date לפני merge. אסור force-push לענף היעד.
-- `preview-e2e`, `nightly`, `visual` לא חוסמים. visual מקודם לחוסם אחרי שבועיים של baseline יציב (D8).
-- push ישיר לענף העבודה `phase5/homepage` מותר וממשיך עם כלל ה-push המיידי מ-CLAUDE.md.
+Configure in GitHub Settings, Branches, Branch protection rule (or a repository ruleset):
 
-### 4.7 מוסכמות commit (D23)
+- No direct push. All changes land through a PR. Include administrators (the owner is not exempt, so an accidental direct push cannot bypass the pipeline).
+- Require a pull request before merging.
+- Require status checks to pass before merging, and require branches to be up to date before merging. Required checks (the blocking set):
+  - `lint`
+  - `typecheck`
+  - `test`
+  - `build`
+  - `e2e`
+  - `visual-diff` (promoted to required once the baseline is stable; until then it is present but not required, running as a warning)
+- Require at least 1 approving review. With a single owner this is effectively a self review gate that forces the diff to be looked at before merge; when a second maintainer exists, require review from someone other than the author.
+- Require conversation resolution before merging.
+- Require linear history (squash or rebase merges only), which keeps the history readable and makes reverts clean.
+- Do not allow force pushes and do not allow deletions on the target branch.
 
-שלוש שכבות: מקומי (לפני commit), מרוחק (CI), ומשמעות (קישור לשחרור).
+### 5.2 Working branch (`phase5/homepage`)
 
-**פורמט (Conventional Commits 1.0):**
+- No protection. Direct push is allowed (this is where daily autonomous work commits and pushes immediately per CLAUDE.md).
+- CI still runs on push to the working branch (the `push` trigger in `ci.yml`), so breakage is visible early, but it does not block the working branch.
+- A PR from `phase5/homepage` into the target branch is where the full required-checks gate applies. Nothing merges into the target branch without a green pipeline.
 
-```
-<type>(<scope>): <subject>
+### 5.3 Promotion to production
 
-[optional body]
+Merging into the target branch after a green pipeline triggers the production build on Vercel, but publishing to the live domain requires manual approval (a Vercel production promotion or a protected environment gate). There is no ad hoc `vercel --prod`. Application rollback is Vercel Instant Rollback; database rollback is forward-only via a compensating migration, never a down migration, and migrations are applied to the remote only through the approved MCP path, never `supabase db push`.
 
-[optional footer: BREAKING CHANGE:, Closes #123]
-```
+---
 
-| type | מתי |
+## Appendix: file map
+
+| Concern | File |
 |---|---|
-| `feat` | פיצ'ר חדש למשתמש |
-| `fix` | תיקון באג |
-| `test` | בדיקות בלבד |
-| `docs` | מסמכים |
-| `chore` | תחזוקה (deps, config) |
-| `refactor` | שינוי מבנה בלי שינוי התנהגות |
-| `ci` | GitHub Actions, husky |
-| `perf` | ביצועים |
-| `build` | build system |
-
-**scope מומלץ:** `commerce`, `payments`, `wallet`, `coupons`, `supplier`, `admin`, `homepage`, `category`, `e2e`, `db`, `visual`, `a11y`.
-
-**דוגמאות מהריפו:**
-
-```
-feat(commerce): add integer money primitives
-test(commerce): lock golden settlement cases
-docs(testing): refresh CI/CD architecture v2
-ci: add migration idempotency harness
-```
-
-**אכיפה מקומית (קיים + חסר):**
-
-| שלב | כלי | מצב |
-|---|---|---|
-| pre-commit | husky → lint-staged → `biome check --write` על staged | קיים (`.husky/pre-commit`, `.lintstagedrc.json`) |
-| commit-msg | husky → `commitlint` | **חסר, יתווסף עם CI** |
-| pre-push | אופציונלי: `pnpm type-check && pnpm test` | לא מוגדר (CI הוא השער) |
-
-**אכיפה ב-CI:** job `static` מריץ `commitlint` על כל ה-commits בטווח PR (לא רק HEAD).
-
-**קישור ל-CD:** רק commits מסוג `feat`/`fix` עם scope רלוונטי נכנסים ל-changelog אוטומטי (עתידי, `release-please` או `changesets`). `BREAKING CHANGE:` בגוף ההודעה = major bump כשיגיע semver רשמי.
-
-**כלל push (CLAUDE.md):** אחרי כל commit מוצלח, `git push` מיידי ל-`origin phase5/homepage`. זה גיבוי; ההגנה האמיתית היא branch protection על ענף היעד (D12).
-
----
-
-## 5. Vercel: Preview, קידום לפרודקשן, סודות, rollback
-
-### 5.1 טופולוגיה
-
-| סביבה | Vercel | Supabase | נתונים |
-|---|---|---|---|
-| Development | localhost:3000 | stack מקומי (Docker) או פרויקט dev | seed |
-| Preview | deploy אוטומטי לכל PR | פרויקט dev `ixvwfbuvfxxsjiywhbbb` (eu-north-1) | dev חי, לא דטרמיניסטי |
-| Production | `kenyonexpress.co.il`, region `fra1` | פרויקט prod חדש ונקי (eu-central-1), נבנה 001->אחרון דרך MCP | אמיתי |
-
-### 5.2 זרימת קידום (Preview אוטומטי, Production ידני)
-
-```
-feature branch ──push──> CI (ci.yml) ──green──> PR לענף יעד
-                              │
-                              ├──> Vercel Preview (אוטומטי לכל PR)
-                              │         └──> preview-e2e.yml (@preview read-only)
-                              │
-merge לענף יעד ──> Vercel Production Build (אוטומטי)
-                              │
-                              └──> שער ידני (D25) ──approve──> kenyonexpress.co.il
-```
-
-1. עבודה על `phase5/homepage` (או ענף פיצ'ר). כל push מריץ CI וכל commit נדחף מיד.
-2. PR לענף היעד -> CI מלא + Vercel Preview אוטומטי + `preview-e2e` (אזהרה).
-3. merge מותר רק עם כל ה-required checks ירוקים (סעיף 4.6).
-4. merge לענף היעד מפעיל **build** פרודקשן ב-Vercel, אבל **לא** מפרסם לדומיין החי עד אישור ידני (D25).
-5. **שער פרודקשן ידני** (אחת מהשתיים, מוגדרות במקביל כגיבוי):
-
-| מנגנון | הגדרה | מי מאשר |
-|---|---|---|
-| GitHub Environment `production` | `workflow_dispatch` job `deploy-production.yml` עם `environment: production`, required reviewers | Ofir |
-| Vercel Deployment Protection | Production deployments דורשים "Promote" מה-Dashboard או `vercel promote --yes` עם token מוגבל | Ofir |
-
-6. אין `vercel --prod` ידני מהמחשב האישי (D20). rollback אפליקציה: Vercel Instant Rollback.
-7. PR שנוגע במיגרציות: קודם החלה מרוחקת ידנית דרך MCP `apply_migration` + עדכון
-   `src/types/database.ts` + STATE.md, ורק אחר כך merge של הקוד (D21, expand/contract:
-   הסכמה החדשה חייבת לעבוד עם הקוד הרץ).
-
-### 5.3 משתני env וסודות (שלושת ה-scopes של Vercel)
-
-| משתנה | Development | Preview | Production |
-|---|---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` / `ANON_KEY` | מקומי | dev project | prod project |
-| `SUPABASE_SERVICE_ROLE_KEY` | מקומי | dev | prod (שונה, מסובב רבעונית) |
-| `NEXT_PUBLIC_APP_URL` | localhost | `$VERCEL_URL` | `https://kenyonexpress.co.il` |
-| `CARDCOM_TERMINAL/USERNAME/API_NAME/API_PASSWORD` | fake | **לא מוגדר** (אין כסף ב-preview) | terminal אמיתי |
-| `CARDCOM_WEBHOOK_SECRET` | ערך בדיקה | לא מוגדר | אמיתי |
-| `CARDCOM_BASE_URL` | `http://127.0.0.1:4545` (fake) | לא מוגדר | ברירת המחדל של Cardcom. **ה-fake לעולם לא מוגדר ב-Production** |
-| `SUPPLIER_QR_SIGNING_KEY`, `CRON_SECRET`, `ANTHROPIC_API_KEY` | בדיקה | בדיקה/חסר | אמיתי |
-| `CHECKOUT_ENABLED` | true | false | true (kill switch, D22) |
-
-אכיפה: `src/lib/env.ts` עם סכמת zod שמפילה build אם משתנה חסר; בדיקת ה-bundle ב-`build`
-(סעיף 4.2) מוודאת שאין `service_role` בצד לקוח. סודות GitHub Actions נפרדים מסודות Vercel
-(ה-CI לא מקבל שום secret של פרודקשן; רק sandbox של Cardcom וחיבור ה-backup).
-
-### 5.4 נוהל rollback
-
-| שכבה | פעולה | זמן |
-|---|---|---|
-| אפליקציה | Vercel Instant Rollback ל-deployment הקודם (Dashboard או `vercel rollback`) | פחות מדקה |
-| תשלומים בלבד | `CHECKOUT_ENABLED=false` ב-Production + redeploy (או Edge Config בעתיד) | 1-2 דקות |
-| DB | **forward-only.** אין down migrations. תקלה בסכמה = מיגרציה מפצה חדשה דרך MCP. שחזור מלא רק מ-backup (עד Pro: ה-dump היומי; אחרי Pro: PITR) | לפי חומרה |
-| DNS (קאטאובר) | TTL 300s מראש; חזרה ל-A record של WordPress הישן, שנשאר חי שבועיים | ~5 דקות |
-
-סדר ההחלמה בתקלת prod: קודם kill switch לתשלומים, אחר כך rollback אפליקציה, ורק אז
-טיפול ב-DB. לעולם לא מגלגלים אחורה קוד מתחת לסכמה חדשה בלי לוודא תאימות (D21 מבטיח שיש).
-
----
-
-## 6. אסטרטגיית Seed, Fixtures ו-Cardcom fake
-
-### 6.1 `supabase/seed.sql` (נטען אוטומטית ב-`supabase start`; לעולם לא רץ על מרוחק)
-
-עיקרון: מיגרציות = סכמה, seed = נתוני בדיקה. ה-seeds ההיסטוריים (017/018/022/023/024)
-נשארים כמות שהם; נתוני בדיקה חדשים נכנסים רק ל-seed.sql. מזהים קשיחים (uuid קבועים)
-כדי ש-E2E ו-visual יהיו דטרמיניסטיים.
-
-**Personas (דרך auth admin + service):**
-
-| uuid (סיומת) | persona | תפקיד |
-|---|---|---|
-| `...0001` | customer_a | לקוח, בעל הרשומות |
-| `...0002` | customer_b | לקוח עוין (בדיקות בידוד RLS) |
-| `...0003` | uploader | content_uploader |
-| `...0011/0012/0013` | sup_owner / sup_manager / sup_scanner | חברי ספק X |
-| `...0021` | sup_other | owner של ספק Y |
-| `...0099` | admin | admin |
-
-**ספקים:** X עם `commission_percent=10` (שלושה חברים), Y עם 15 (owner בלבד). כתובת+עיר+lat/lng
-+ טלפון + שעות פתיחה מלאים (חובה לבדיקת בלוק פרטי הספק).
-
-**קטלוג (מוצר אחד לכל מצב):** פיזי בלי override (יורש 10 מהספק); פיזי עם `platform_percent=12.5`;
-דיל קופון (`total_deal_price=100`, `coupon_price=10`); מוצר `sold_out`; מוצר `draft`;
-מנוי (`recurring_amount=49.90`, `platform_percent=20`, `max_billing_cycles=NULL`) - נכנס כשסכמת המנויים תוחל.
-
-**מצב פתיחה:** יתרות ארנק (customer_a: 30 ₪ דרך `fn_wallet_transfer` עם מפתח seed);
-הזמנה היסטורית אחת `paid` עם קופון `issued` ופריט `delivered` (בסיס לבדיקות payout וסריקה).
-
-### 6.2 Factories (`tests/helpers/factories.ts`)
-
-יצירת הזמנה/תשלום/קופון/מנוי במצב נתון דרך service client. כל בדיקת integration בונה
-את המצב שלה ולא נשענת על שאריות מבדיקה אחרת; ניקוי לפני כל בדיקה הוא truncate לטבלאות
-תנועה בלבד (orders, order_items, payments, payment_webhook_events, wallet_transactions
-מעל ה-seed, coupon_codes, coupon_redemptions, coupon_scan_events, carts, cart_items),
-לעולם לא לסכמה או ל-personas.
-
-### 6.3 שכבות Cardcom, fake, sandbox ו-webhook replay (D27)
-
-שלוש שכבות, מהמהיר לאיטי:
-
-| שכבה | מה מדמה | מתי רצה |
-|---|---|---|
-| Cardcom fake (שרת HTTP מקומי) | Low Profile create, דף תשלום, שליפת עסקה לאימות, refund, ירי webhook עם חתימה תקפה/שגויה, token למנויים | כל CI, כל E2E |
-| Cardcom sandbox אמיתי (terminal בדיקות + `CARDCOM_*` של סביבת test) | החוזה האמיתי: פורמט תשובות, קודי שגיאה, התנהגות token | suite לילי או ידני לפני release; לא חוסם PR |
-| פרודקשן (terminal אמיתי) | עסקת אמת אחת בסכום מינימלי + refund מיידי | פעם אחת בקאטאובר, ידנית, לפי checklist |
-
-**Webhook replay harness** (`tests/helpers/webhook.ts`):
-
-| יכולת | שימוש |
-|---|---|
-| ירי POST חתום ל-`/api/payments/cardcom/webhook` | W1-W10 |
-| replay אותו `external_event_id` N פעמים | W1, idempotency |
-| חתימה שגויה / חסרה / סכום לא תואם | W2-W4 |
-| סדר אירועים: success לפני pending, או כפול במקביל | W10, race |
-| שמירת payload אמיתי מ-sandbox כ-fixture JSON | suite לילית (D27) |
-| replay מול Preview URL | **אסור** (אין כסף ב-preview) |
-
-ה-fake: שרת HTTP קטן (node, אפס תלויות) שמדמה יצירת Low Profile (מחזיר URL מקומי +
-`low_profile_id`), דף "תשלום" שמאפשר לבדיקה לבחור הצלחה/דחייה, ירי webhook חתום (או מזויף,
-לפי הוראת הבדיקה), endpoint אימות server-to-server עם תשובה נשלטת, refund, ו-token למנויים.
-ה-adapter היחיד (`src/lib/payments/cardcom-client.ts`) הוא הנקודה היחידה שמדברת עם Cardcom,
-ומחליף בין fake ל-sandbox לאמיתי דרך `CARDCOM_BASE_URL` בלבד. בדיקות החוזה של ה-adapter
-רצות מול ה-fake (כל CI) ומול ה-sandbox (לילי) עם אותם asserts, כך שסטייה של ה-fake מהמציאות
-מתגלה בריצה הלילית. **Replay לילי:** שומרים 3 payloads אמיתיים מ-sandbox (success, decline, duplicate) ב-`tests/fixtures/cardcom/` ומריצים אותם מול stack מקומי אחרי כל שינוי ב-handler.
-
-### 6.4 תמיכת SQL לבדיקות (`tests/sql/90_test_support.sql`, CI בלבד, לא מיגרציה - D18)
-
-```sql
--- CI/local only. NEVER applied to a remote project. Not part of supabase/migrations.
-create schema if not exists test_support;
-
--- מדמה חלוף זמן בלי לחכות: מזיז expiry אחורה כדי שה-cron ייתפוס
-create or replace function test_support.force_order_expiry(p_order_id uuid)
-returns void language sql security definer set search_path = public as $$
-  update orders set expires_at = now() - interval '1 minute'
-  where id = p_order_id and status = 'pending';
-$$;
-
-create or replace function test_support.force_coupon_expiry(p_code text)
-returns void language sql security definer set search_path = public as $$
-  update coupon_codes set expires_at = now() - interval '1 minute'
-  where code = p_code and status = 'issued';
-$$;
-
--- מפעיל את לוגיקת ה-cron בלי לחכות ל-scheduler
-create or replace function test_support.run_pending_order_cancel()
-returns integer language plpgsql security definer set search_path = public as $$
-declare v_count integer;
-begin
-  update orders set status = 'cancelled', cancelled_at = now()
-  where status = 'pending' and expires_at < now();
-  get diagnostics v_count = row_count;
-  return v_count;
-end $$;
-
-revoke all on all functions in schema test_support from public, anon, authenticated;
-```
-
-נימוק D18: כל דבר שנכנס ל-`supabase/migrations/` מגיע בסוף לפרודקשן (ה-bootstrap של פרויקט
-ה-prod מריץ את כל הקבצים). פונקציות עקיפת-זמן בפרודקשן הן חור אבטחה. לכן אפס קבצי מיגרציה
-לצורכי בדיקה, וה-CI מחיל את הקובץ הזה בנפרד אחרי `supabase start`.
-
----
-
-## 7. ויזואלי + RTL עברית
-
-### 7.1 שני מסלולים (D7)
-
-1. **התאמת 1:1 ידנית (קיים)**: משפחת `scripts/compare-*.mjs` מצלמת localhost מול `refs/ke_live_singlefile.html` (או מול האתר החי ב-`compare-product-live.mjs`) ב-1440px. `scripts/diff-bands.mjs` נותן אחוז חוסר-התאמה בפסים של 100px עם סבילות 24 לערוץ. `scripts/watch-compare.mjs` מריץ compare בלולאה בזמן פיתוח. נשאר ככלי עבודה לפיקסל-פרפקט, **לא רץ ב-CI**.
-2. **רגרסיה אוטומטית**: פרויקט Playwright ייעודי `visual` עם `toHaveScreenshot`, baseline ב-git, threshold ברוח ה-TOL הקיים (`maxDiffPixelRatio` נמוך + סבילות אנטי-aliasing). דטרמיניזם: קפיאת אנימציות, המתנה לטעינת פונט Heebo, נתוני seed קבועים, מסכות על אזורים דינמיים (מונה עגלה, תמונות מ-storage אם משתנות). רץ בלילי; מקודם לחוסם אחרי ייצוב baseline (D8, סעיף 4.6).
-
-### 7.2 מטריצת breakpoints ודפים
-
-| breakpoint | רוחב | ייצוג |
-|---|---|---|
-| mobile | 390 | iPhone modern, הקהל העיקרי בישראל |
-| mobile-small | 360 | Android נפוץ, קצה צר |
-| tablet | 768 | גבול פריסת הביניים |
-| desktop | 1440 | ה-baseline הקיים של compare.mjs |
-
-דפים בכל breakpoint: דף בית, קטגוריה, דף מוצר (כשייבנה), עגלה, checkout, אזור אישי (הזמנות + ארנק + קופון עם QR), דף סריקה של ספק (מסך ירוק/אדום), ודף אדמין מייצג אחד (טבלת מוצרים). סה"כ בערך 36 צילומים; רצים כ-job נפרד, מזהיר בלבד בהתחלה (D8).
-
-### 7.3 בדיקות RTL פונקציונליות (לא צילום)
-
-רצות כחלק מה-E2E הרגיל:
-
-- `html[dir=rtl][lang=he]` על כל דף (קיים היום לדף הבית, מורחב לכולם).
-- מחירים: `formatPrice` מציג ₪ בפורמט he-IL עקבי; אין מספר "הפוך" בתוך משפט עברי (בדיקת bidi על שורת סכום בעגלה ובאישור הזמנה).
-- אין overflow אופקי ב-390px (scrollWidth שווה clientWidth על body) בדפי הליבה.
-- מיקוד מקלדת וניווט בטפסים (checkout) עובדים בכיוון RTL.
-- טקסט תבניות התראה (כשיגיע 031): כללי ה-RTL המחייבים מהמסמך נבדקים על תבנית דוגמה.
-
----
-
-## 8. עץ קבצי ה-CI והבדיקות הסופי
-
-```
-kenyonexpress/
-├── .github/
-│   ├── actions/
-│   │   └── setup/
-│   │       └── action.yml              # composite: pnpm + node 22 + cache + install
-│   └── workflows/
-│       ├── ci.yml                      # static | unit+component+coverage | build | a11y | integration | migrations | e2e-smoke
-│       ├── preview-e2e.yml             # @preview מול Vercel Preview URL (deployment_status)
-│       ├── deploy-production.yml       # workflow_dispatch + environment: production (שער ידני, D25)
-│       ├── nightly.yml                 # e2e-full | cardcom-contract+replay | visual | migrations-full | lighthouse
-│       └── db-backup.yml               # pg_dump יומי -> artifact (עד Supabase Pro)
-├── .husky/
-│   ├── pre-commit                      # lint-staged (קיים)
-│   └── commit-msg                      # commitlint (יתווסף)
-├── commitlint.config.js                # conventional commits (יתווסף)
-├── .nvmrc                              # 22
-├── vitest.config.ts                    # projects: unit (node) / component (jsdom) / integration (node+stack)
-├── vitest.setup.ts
-├── playwright.config.ts                # projects: desktop-1440, mobile-390, visual; tags @smoke/@full/@preview
-├── scripts/
-│   ├── check-coverage-floors.mjs       # אכיפת D24 מול coverage-summary.json
-│   ├── compare-hero.mjs                # ויזואלי ידני (לא CI)
-│   ├── compare-product.mjs
-│   ├── compare-product-live.mjs
-│   ├── diff-bands.mjs
-│   └── watch-compare.mjs
-├── e2e/
-│   ├── auth.spec.ts                    # קיים, מתוקן (T9)
-│   ├── homepage.spec.ts                # קיים
-│   ├── a11y.spec.ts                    # axe-core, חוסם PR (D26)
-│   ├── checkout-happy-path.spec.ts     # @smoke: אורח -> login -> Cardcom -> webhook -> אימות snapshot מול DB
-│   ├── checkout-failures.spec.ts       # @smoke חלקי: נדחה, double submit; @full: השאר
-│   ├── supplier-redeem.spec.ts         # @full: סריקה, כפולה, ספק זר, פג
-│   ├── subscription.spec.ts            # @full: הרשמה, מחזור 2, ביטול (כשהשלב ייבנה)
-│   ├── preview-smoke.spec.ts           # @preview: read-only בלבד
-│   └── visual.spec.ts                  # toHaveScreenshot, 4 breakpoints
-├── src/
-│   ├── lib/commerce/                   # money + commission (יעד: lib/money/) + *.test.ts
-│   ├── lib/coupons/state-machine.ts    # + state-machine.test.ts (סעיף 2.2)
-│   └── components/**/*.test.tsx        # component project (RTL עברית)
-├── tests/
-│   ├── integration/
-│   │   ├── global-setup.ts
-│   │   ├── rls-matrix.data.ts          # המטריצה ההצהרתית
-│   │   ├── rls-matrix.test.ts          # ה-runner הגנרי
-│   │   ├── wallet.test.ts              # WL1-WL8 כולל מרוצים
-│   │   ├── redeem-coupon.test.ts       # C1-C10 כולל המרוץ
-│   │   ├── checkout-payments.test.ts   # P1-P12, W1-W10, R1-R8
-│   │   ├── cart-merge.test.ts          # G1-G3
-│   │   └── types-contract.test.ts      # gen types מול src/types/database.ts
-│   ├── helpers/
-│   │   ├── factories.ts
-│   │   ├── personas.ts                 # uuid קבועים + clients לכל persona
-│   │   └── webhook.ts                  # harness ירי + replay webhooks
-│   ├── fixtures/
-│   │   └── cardcom/                    # payloads אמיתיים מ-sandbox ל-replay לילי
-│   ├── fake-cardcom/
-│   │   └── server.mjs
-│   └── sql/
-│       ├── 90_test_support.sql         # סכמת test_support, CI בלבד (D18)
-│       └── assert-migrations.sql       # אימותי אחרי-apply-פעמיים
-└── supabase/
-    └── seed.sql                        # personas, ספקים X/Y, קטלוג לפי סוג, מצב פתיחה
-```
-
-שינויים בקבצים קיימים: `vitest.config.ts` עובר למבנה projects; `playwright.config.ts` מקבל
-projects + `PLAYWRIGHT_BASE_URL` מ-env + webServer של build (לא dev); `package.json` מקבל
-`test:integration`, `test:e2e:smoke`, ו-engines. שום מיגרציה חדשה לא נוצרת (D18).
-
----
-
-## 9. Definition of Done לכל שלב
-
-תנאי סף משותף לכל השלבים: CI ירוק מלא, אפס אזהרות biome חדשות, STATE.md מעודכן, והאינברינטים מסעיף 2.0 הרלוונטיים לשלב מכוסים בבדיקות שרצות ב-CI.
-
-### 9.0 commerce core (Phase 1.5, ביניים)
-
-- [x] `money.ts` + `money.test.ts` (5 tests): המרות ILS, basis points, עיגול half-up.
-- [x] `commission.ts` + `commission.test.ts` (9 tests): golden cases קופון, פיזי, מעורב, ארנק, עיגול 3×33.33.
-- [ ] טבלת מקרי M1-M22 (סעיף 2.1) מכוסה במלואה (חסרים: property test M15, מקרי K, מקרי S).
-- [ ] `042_commerce_core.sql` הוחלה על stack מקומי + harness apply-twice ירוק.
-- [ ] בדיקות אינטגרציה ל-`commission_ledger`, deferred cashback, reversal debts.
-- [ ] חוזה TS↔DB: `calculateCommission` output תואם ל-snapshot ב-`order_items.*_agorot`.
-
-### 9.1 עגלה (Phase 2, אחרי החלת 026)
-
-- [ ] מודול `src/lib/money/` קיים עם כל טבלת המקרים M1-M17, M19-M22 ומקרי K1-K8 ירוקה (הפיצול נחוץ כבר לתצוגת snapshot בעגלה).
-- [ ] בדיקות integration ל-`fn_merge_guest_cart` כולל מקרה המרוץ (double callback) ותקרת 99.
-- [ ] RLS matrix מעודכנת ל-`cart_items` וכל התאים ירוקים.
-- [ ] E2E: אורח בונה עגלה, מתחבר, העגלה ממוזגת ושורדת; עגלה ריקה לא מגיעה ל-checkout.
-- [ ] harness המיגרציות עבר על 026 (פעמיים) כולל אימות שה-rename של `wallet_transactions_legacy` בטוח לריצה חוזרת.
-- [ ] אין מחיר בשום שורת cart_items (אינברינט 10 ברמת הסכמה: הבדיקה מוודאת שאין עמודת מחיר ושה-action דוחה קלט מחיר).
-
-### 9.2 checkout ותשלומים (Phase 3)
-
-- [ ] Cardcom adapter + fake + harness ה-webhook קיימים; כל W1-W10 ירוקים.
-- [ ] כל R1-R8 (refund) ירוקים.
-- [ ] `beginCheckout` נבדק: snapshot נכון לכל שורה (כולל override 12.5 מה-seed), expires_at, אפס שדות כסף מהלקוח (payload עם מחיר נדחה).
-- [ ] מעבר paid נבדק כטרנזקציה שלמה: payment succeeded + חיוב ארנק + הנפקת קופונים + מלאי + audit, והכול מתגלגל אחורה יחד בכשל אמצעי.
-- [ ] fail-closed ל-rate-limit פעיל ונבדק (D10): הבאג של `rate-limit.ts` סגור.
-- [ ] E2E המסלול המאושר המלא ירוק כולל מסלולי הכשל החוסמים.
-- [ ] בדיקת חוזה אחת ירוקה מול Cardcom sandbox אמיתי (ידנית או לילית) לפני פתיחת השלב למשתמשים.
-- [ ] crons (ביטול pending, reconcile) נבדקים ב-integration עם הזזת זמן מדומה (test_support).
-
-### 9.3 ארנק (עם 026, נאכף לפני שכסף אמיתי נכנס לארנק)
-
-- [ ] כל בדיקות `fn_wallet_transfer` (WL1-WL8) ירוקות, כולל שני מקרי המרוץ ובדיקת ה-cache מול הסכימה הנגזרת.
-- [ ] בדיקת ledger append-only: אין policy כתיבה לאף אחד כולל admin (RLS matrix), ו-UPDATE ישיר ב-service נחסם נוהלית (בדיקה שמתעדת שהתיקון היחיד הוא תנועה מפצה).
-- [ ] הקצאת ארנק ב-checkout: M19-M21 ברמת unit + התרחיש המלא ב-integration (כולל ארנק מכסה הכול: אפס קריאות ל-fake).
-- [ ] refund לארנק (R4) ירוק.
-- [ ] שאילתת ה-integrity הלילית (balance מול ledger) קיימת ורצה גם כבדיקה.
-
-### 9.4 ספקים (Phase 5a, אחרי החלת 027 ויורשותיה)
-
-- [ ] RLS matrix מורחבת לכל טבלאות הספקים, כולל שלושת תתי-התפקידים (owner/manager/scanner) ו-`sup_other` כ-persona עוינת.
-- [ ] כל בדיקות `redeem_coupon` (C1-C11) ירוקות כולל המרוץ, האנטי-enumeration וה-rate limit.
-- [ ] כל בדיקות ה-payout ירוקות (settlement כפול, dispute חוסם, bank_snapshot מוקפא, ביטול משחרר פריטים).
-- [ ] אימות חתימת QR: unit לפורמט `KE1.` (תקף/פג/חתימה שבורה/מפתח לא מוכר לפי qid) + חוזה שהחד-פעמיות לא נשענת על ה-QR (אינברינט 8 נאכף רק ב-DB).
-- [ ] E2E פורטל ספקים (סעיף 2.5) ירוק.
-- [ ] הבדיקה המתעדת של ה-policy השבורה מ-014 הוחלפה בבדיקה החיובית על ה-policy החדשה.
-
----
-
-## 10. חוב בדיקות לקוד הקיים (מתועדף)
-
-מה שכבר כתוב היום וחשוף, מהדחוף לפחות דחוף:
-
-| # | פריט | סיכון | פעולה |
-|---|---|---|---|
-| T1 | **אין CI בכלל** | כל האמור במסמך לא נאכף; type-check נשבר בשקט | הקמת `ci.yml` עם static/unit/build עוד לפני שנכתב קוד כסף נוסף. יום עבודה |
-| T1b | **אין commitlint** | הודעות commit לא אחידות | `@commitlint/cli` + husky `commit-msg` + job ב-static (D23) |
-| T1c | **אין coverage floors script** | D24 לא נאכף | `check-coverage-floors.mjs` + `@vitest/coverage-v8` |
-| T2 | **`rate-limit.ts` fails open + `checkUserRateLimit` בלי קוראים** (באג מתועד) | ברגע שיהיה checkout, כשל RPC שקט מבטל את כל ההגנה | בדיקת unit שמקבעת fail-closed לפעולות כסף; התיקון עצמו ב-Phase 3 (D10) |
-| T3 | **`mergeGuestCart` הקיים ב-`src/server/actions/cart.ts` הוא read-merge-write בלי נעילה** (ממצא מתועד) | איבוד/הכפלת פריטים בהתחברות | בדיקת integration שמדגימה את המרוץ על הקוד הקיים (תיכשל, מתועדת כ-known failure), מוחלפת בירוק כש-029 מחליפה ל-RPC |
-| T4 | **policy שבורה ב-014** ("products: vendor read own" משווה מול vendors.id) | ספק לא רואה מוצרים; גרוע מזה, תיקון נאיבי עלול לפתוח יותר מדי | בדיקה מתעדת (אפס שורות היום) שתתהפך לבדיקה חיובית עם 027 |
-| T5 | **`payment_tokens` תחת ה-policy הישנה מ-001** (owner all, כולל קריאת cardcom_token) | ברגע שיישמרו tokens אמיתיים, דליפה | ה-policy החדשה ב-029; בדיקת ה-42501 נכנסת ל-RLS matrix מיום החלתה. עד אז: אסור לכתוב token אמיתי לטבלה |
-| T6 | **דפי אדמין בלי בדיקות authorization** (`requireAdminSession`, actions תחת `src/server/actions/admin/`) | פעולת אדמין חשופה תעבור בשקט | בדיקות integration קצרות: כל admin action נדחה ל-customer. חצי יום |
-| T7 | **`formatPrice` כמעט לא נבדק** (בדיקה אחת שבודקת שיש "99") | שבירת תצוגת מחירים ב-refactor | 6-8 מקרים: אגורות, אפס, סכומים גדולים, he-IL |
-| T8 | **validations קיימות בלי בדיקות לצד ה-actions** (auth.ts, cart.ts משתמשים ב-supabase ישירות) | שינוי חתימה שקט | בדיקות unit ל-zod של cart (כמות 1-99, uuid) כשנכתב מחדש ב-Phase 2 |
-| T9 | **E2E מפנה ל-`/checkout` שלא קיים** (`e2e/auth.spec.ts` בודק redirect לדף שאין לו route) | הבדיקה עוברת על 404 עתידי | לתקן את הבדיקה להצהיר על הצפוי היום, ולעדכן כשה-route ייבנה |
-| T10 | **סקריפטים ויזואליים לא ממוסדים** (`_diff-bands.mjs`, `_tmp-hero.mjs` לא ב-git, כפילות עם `diff-bands.mjs`) | אובדן כלי העבודה, בלבול | מיזוג/מחיקה + commit; הקמת פרויקט visual של Playwright לפי סעיף 7 |
-| T11 | **אין `supabase/seed.sql` ואין factories** | כל בדיקת integration עתידית תמציא נתונים משלה | הקמה יחד עם ה-runner של ה-RLS matrix, לפני Phase 2 |
-| T12 | **drift מול dev לא ממופה** (`coupons` חיה בניגוד לקבצים, היסטוריה מרוחקת לא מסונכרנת) | הפתעות בכל החלת מיגרציה | ריצת השוואה חד-פעמית (schema diff בין dev לבין stack נקי אחרי 001-025) ותיעוד הפערים ב-STATE.md; לא חוסם את ה-harness שרץ על stack נקי |
-
----
-
-## 11. שאלות פתוחות
-
-1. **Cardcom sandbox:** פרטי terminal בדיקות (credentials, webhook URL לסביבת CI). צריך פתיחה מול Cardcom לפני Phase 3. עד אז ה-fake נבנה לפי התיעוד הציבורי של Low Profile API, וה-replay הלילי (D27) ממתין ל-fixtures אמיתיים.
-2. **GitHub Actions minutes:** הצינור המלא צורך בערך 25-30 דקות מחשב לכל PR (כולל `a11y` + coverage). בחשבון free (2,000 דקות לחודש לריפו פרטי) זה בערך 60-70 PRs בחודש. אם יש חריגה: לצמצם `e2e-full` ו-Lighthouse ללילי בלבד, ולהשאיר `e2e-smoke` + `a11y` חוסמים.
-3. **שם ענף היעד:** ההגנות מוגדרות היום על `cursor/add-supabase-3c830`. כשעוברים ל-main אמיתי צריך להעביר branch protection ו-Vercel production branch.
-4. **Integrity לילי של הארנק** (השוואת cache מול ledger): איפה רצה, Vercel cron או pg_cron. תלוי בהחלטת ה-Pro של PRODUCTION-OPS.
-5. **שער פרודקשן ידני (D25):** האם מספיק Vercel Deployment Protection בלבד, או גם GitHub Environment עם `deploy-production.yml`? המלצה: שניהם (גיבוי הדדי).
-6. **מספור 042:** `042_commerce_core.sql` מתנגש עם הקצאות אחרות במסמך האב. צריך הכרעה לפני שה-harness יאכוף את הקובץ ב-CI.
-7. **העברת `src/lib/commerce/` ל-`src/lib/money/`:** האם לשנות נתיב לפני Phase 3 או להשאיר alias? משפיע על רצפות הכיסוי ועל imports.
-8. **Docker מקומי:** STATE.md מדווח ש-Docker לא רץ. harness המיגרציות (D6) ו-integration (D1) דורשים `supabase start` ב-CI (GitHub ubuntu + Docker). מקומית: Ofir צריך להפעיל Docker Desktop לפני `pnpm test:integration`.
-
-(נסגר: מועד קידום visual מ"מזהיר" ל"חוסם" הוכרע, אחרי שבועיים של baseline יציב, סעיף 4.6.)
-(נסגר: axe חוסם ב-PR הוכרע ב-D26 / LEG-03.)
-(נסגר: Conventional Commits הוכרע ב-D23.)
-(נסגר: coverage floors פר מודול הוכרע ב-D24, לא אחוז גלובלי.)
+| Agorot money math | `src/lib/commerce/money.ts` + `money.test.ts` |
+| Commission split (coupon vs physical) | `src/lib/commerce/commission.ts`, `src/server/domain/orders/settlement.ts` + `settlement.test.ts` |
+| Cardcom webhook HMAC | `src/lib/payments/hmac.ts` + new `hmac.test.ts` |
+| QR payload sign and verify | `src/server/domain/orders/redemption.ts` (`verifyQrPayload`) + `redemption.test.ts` |
+| Redemption gate | `src/server/domain/orders/redemption.ts` (`validateRedemption`) |
+| Redeem route, single-use arbiter | `src/app/api/supplier/redeem/route.ts` (`UNIQUE(coupon_code_id)`) |
+| Cart merge | `src/server/actions/cart.ts` (extract pure `mergeCartLines` for unit test) |
+| Checkout E2E | new `e2e/checkout.spec.ts` |
+| Redeem E2E (incl. race) | new `e2e/redeem.spec.ts` |
+| Test support SQL | new `tests/sql/90_test_support.sql`, `supabase/seed.sql` |
+| Visual diff | `scripts/compare.mjs` + `scripts/diff-bands.mjs` (add threshold exit code + `COMPARE_TARGET_URL`) |
+| CI pipeline | new `.github/workflows/ci.yml` |
+| Preview visual check | new `.github/workflows/preview-visual.yml` |

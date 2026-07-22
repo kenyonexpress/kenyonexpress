@@ -1,651 +1,687 @@
-# ארכיטקטורת אנליטיקה ו-BI: מסמך מאוחד (v2)
+# Architecture: Analytics and BI
 
-> **הודעת האחדה (2026-07-20):** מסמך זה נבלע ב-`ARCHITECTURE-ANALYTICS-BI.md` (v3)
-> בשורש הפרויקט, שהוא מקור האמת הנוכחי לדומיין. v3 שומר את כל הכרעות v2 ומוסיף:
-> session stitching, דייג'סט מייל יומי, Web Vitals, אסטרטגיית שאילתות איטיות,
-> `source_app`, ו-repeat purchase rate. הקובץ הזה נשאר כתיעוד היסטורי בלבד.
+Status: authoritative spec. Scope: event taxonomy, Supabase event storage, BI dashboard queries, and privacy controls for the KenyonExpress marketplace.
 
-תאריך: 2026-07-17 (שכבת הבסיס 033 תוכננה ב-2026-07-09). ענף: `phase5/homepage`.
+## 0. Ground truth and core principle
 
-מסמך זה הוא **מקור האמת היחיד** לדומיין האנליטיקה וה-BI. הוא כולל את שתי השכבות:
-שכבת הבסיס (033: registry, איסוף אירועים, rollup, דשבורד בעלים) ושכבת ההרחבה
-(034: דשבורד ספקים, דוח התחייבות פקיעה, take-rate, cohort retention ואינטגרציית סוכני AI).
+The marketplace runs on Supabase Postgres. Products have a `product_type` of `coupon` or `physical`. Commission works by the platform keeping `platform_percent` per product, which is snapshotted into `order_items` at purchase time (so `order_items` carries `supplier_id`, `platform_percent`, and money columns in agorot). Suppliers (table `suppliers`) are the merchant entity.
 
-מיגרציות נלוות (טיוטות, לא הוחלו):
+Money model by product type:
 
-| קובץ | תפקיד |
-|---|---|
-| `supabase/migrations/033_analytics.sql` | שכבת הבסיס: registry, `analytics_events` (partitioned), ingest, rollup יומי, views של הבעלים |
-| `supabase/migrations/034_analytics_bi.sql` | שכבת ההרחבה: views לספקים, BI אדמין, materialized views, ממשק סוכנים |
+- `coupon`: the customer pays 10 percent on-site at checkout, and the remaining 90 percent in-store when the coupon is scanned. There is no escrow. In-store collection is recorded in `coupon_redemptions.amount_collected`.
+- `physical`: the customer pays 100 percent on-site.
 
-> **מספור (עודכן 2026-07-17):** 032 נתפסה על ידי `032_wp_import_staging.sql` (ייבוא מוורדפרס).
-> מיגרציית ההרחבה של הדומיין מוספרה מחדש מ-035 ל-**034** (רצף רציף 026-035), ואיחוד
-> ה-vendors מתוכנן כ-`036_vendors_unification.sql`. אין תלות של 034 באיחוד: ה-views קוראים
-> `suppliers` / `order_items` ישירות וקולטים אוטומטית שורות שיאוחדו.
->
-> **תנאים מוקדמים של 033 (קשיחים):** 026 (עמודות snapshot על `order_items`, `payments`,
-> `wallet_accounts`) ו-027 (עמודות snapshot על `coupon_codes`, `coupon_scan_events`).
-> המיגרציה נכשלת מוקדם ובמכוון אם הם חסרים. 030 (`search_queries`) ו-031
-> (`notification_conversions`) אופציונליים: ה-views שלהם נוצרים רק אם הטבלאות קיימות.
+All money is stored as integer agorot (1 shekel = 100 agorot). Never use floats for money.
 
-מסמכים קשורים: `ARCHITECTURE-COMMERCE.md` (026), `ARCHITECTURE-SUPPLIER-REDEMPTION.md` (027),
-`ARCHITECTURE-ACCOUNT-IDENTITY.md` (029), `ARCHITECTURE-CATALOG-SEARCH-SEO.md` (030),
-`ARCHITECTURE-NOTIFICATIONS-MARKETING.md` (031), `ARCHITECTURE-PRODUCTION-OPS.md`, `MASTER-ARCHITECTURE.md`.
+### The one principle that governs this whole document
 
----
+Money numbers come ONLY from ledger tables: `orders`, `order_items`, `payments`, `coupon_codes`, `coupon_redemptions`. Money is NEVER summed from analytics events.
 
-## 0. עקרונות על (מחייבים)
+Behavioral events measure intent and funnel behavior (views, adds to cart, checkout starts). They are lossy by nature: ad blockers, bots, consent opt-outs, and network failures all drop events. Ledger rows are transactional and complete. If GMV or commission were summed from `purchase` events, the totals would silently drift from what suppliers are actually owed. So the split is strict:
 
-1. **שני מישורים, לעולם לא מערבבים.** כסף ועובדות עסקיות חיים בטבלאות המקור
-   (`orders`, `order_items`, `payments`, `wallet_transactions`, `coupon_codes`,
-   `coupon_scan_events`, `payout_statements`). התנהגות (צפיות, עגלה, checkout)
-   חיה ב-`analytics_events`. **אסור לסכום כסף מאירועי אנליטיקה.** הכנסה נקראת תמיד
-   מה-ledger; אירועים סופרים התנהגות בלבד. זה מבטל מראש את בעיית ה"דשבורד לא מסתדר
-   עם הנהלת החשבונות" שכל מערכת אנליטיקה כפולה סובלת ממנה.
-2. **first-party בלבד בתוך Supabase.** אין GA4, אין PostHog, אין פיקסלים (הכרעה בסעיף 3.1).
-   טריגרים לפתיחה מחדש: תחילת פרסום בתשלום, או ~200 אלף אירועי לקוח בחודש.
-3. **מספרים להחלטה, לא לגאווה.** כל מדד בדשבורד חייב לענות על "איזו פעולה אעשה אם המספר רע".
-   אין impressions, אין "עמודים לביקור". יש הכנסת פלטפורמה, שיעור מימוש, התחייבות ארנק, והתראות כסף.
-4. **snapshot הוא מקור האמת ההיסטורי.** כל חישוב הכנסה מ-`platform_fee_ils` /
-   `platform_paid_ils` שהוקפאו בזמן רכישה. שינוי `platform_percent` היום לא מזיז דוח עבר.
-   אין חישוב אחוזים בדיעבד.
-5. **יום עסקים = יום Asia/Jerusalem** דרך `fn_il_date(ts)` בלבד. אחסון UTC (`timestamptz`);
-   לעולם לא `::date` ישיר על timestamptz (זה יום UTC, שקו החצות שלו נופל ב-02:00/03:00
-   בלילה בישראל).
-6. **RLS הוא גבול ההרשאה גם ב-BI.** views לספקים הם `security_invoker` ונשענים על
-   policies של 027; אין נתיב שבו ספק רואה נתוני ספק אחר.
+- Funnel, conversion rates, and behavior: from `analytics_events`.
+- GMV, commission, payouts, redemption revenue: from ledger tables only.
 
----
+The `purchase` and `coupon_redeemed` events still exist, but they are derived FROM the ledger (emitted by server-side triggers after the money row is written) and are used only to place transactions on the behavioral timeline and to compute funnel conversion. Their money fields are a denormalized convenience copy, and are authoritative-by-reference to `order_id`, never a source of truth.
 
-## 1. טקסונומיית אירועים
+## 1. Event taxonomy
 
-### 1.1 מעטפת קנונית (envelope) לאירועי `analytics_events`
+### 1.1 Conventions
 
-כל אירוע, מכל מקור, נושא את אותה מעטפת:
+- Event names: `snake_case`, verb-object where natural.
+- Property keys: `snake_case`.
+- Every event carries a `schema_version` integer. Breaking changes bump the version; the registry (section 2.3) records the current version and validates against it.
+- Money in any event payload is agorot integers, and is a denormalized copy only.
+- No PII in any payload (see section 4). No email, phone, name, or full IP.
 
-| שדה | טיפוס | מי כותב | הערות |
-|---|---|---|---|
-| `event_id` | uuid | שולח | מפתח דה-דופ; retry שולח אותו id |
-| `event_name` | text | שולח | snake_case, מה-registry בלבד (1.3) |
-| `schema_version` | smallint | שרת | נחתם מה-registry בזמן ingest, לא מהלקוח |
-| `occurred_at` | timestamptz | שולח | זמן האירוע אצל השולח; ingest מצמיד לחלון [now-7d, now+5m] |
-| `source` | text | שולח | `web` / `pwa` / `server` |
-| `anonymous_id` | text | לקוח | עוגיית `ke_session_id` הקיימת (אותה עוגייה של עגלת אורח, כך שנטישת עגלה מתחברת ל-`carts.session_id`) |
-| `session_id` | text | לקוח | סשן מתגלגל 30 דקות, נוצר בצד לקוח |
-| `user_id` | uuid | שרת | נכתב על ידי ה-route מהסשן בלבד, לעולם לא מהלקוח |
-| `path`, `referrer` | text | לקוח | |
-| `utm` | jsonb | לקוח | `{source, medium, campaign, content, term}`, אם קיים |
-| `props` | jsonb | שולח | מפתחות חובה לפי registry; עד 4KB; **בלי PII** |
-| `ip_trunc`, `user_agent`, `is_bot` | | שרת | IP קטום /24 (IPv6 /48); בלי IP מלא |
+### 1.2 Envelope (common to all events)
 
-### 1.2 האירועים המלאים וסכימות ה-payload
+Every event, regardless of name, is wrapped in a common envelope. The `props` jsonb holds the event-specific payload from the tables below.
 
-מקור האמת: טבלת `analytics_event_definitions`. **הכרעת המפתח: אירוע `derived` לא נכתב
-ל-`analytics_events` בכלל**; הוא נקרא מטבלת המקור שלו, שהיא כבר append-only עם snapshot כספי.
-כתיבה כפולה (גם לטבלת המקור וגם לאירועים) היא מתכון ל-drift ולשני מספרים שונים לאותה שאלה.
-לכן אין triggers חדשים על טבלאות הליבה, אין הכפלת נפח, ואין סיכון לצנרת התשלומים.
-זו ההגנה המבנית מפני double-counting.
-
-| event_name | origin | payload (props / עמודות מקור) | מקור אמת |
-|---|---|---|---|
-| `page_view` | client | (אין props חובה) | `analytics_events` |
-| `view_product` | client | `product_id` uuid (חובה), `category_id` uuid, `price_ils` numeric, `product_type` text | `analytics_events` |
-| `view_category` | client | `category_id` uuid (חובה) | `analytics_events` |
-| `add_to_cart` | client | `product_id` uuid (חובה), `quantity` int (חובה), `variant_id` uuid, `price_ils` numeric | `analytics_events` |
-| `remove_from_cart` | client | `product_id` uuid (חובה) | `analytics_events` |
-| `begin_checkout` | server | `order_id` uuid (חובה), `items_count` int (חובה), `cart_total_ils` numeric | `analytics_events`, נפלט מ-`beginCheckout` אחרי יצירת הזמנה pending |
-| `purchase` | derived | `orders.paid_at`, `order_items`: `total_price_ils`, `charged_on_site_ils`, `platform_fee_ils`, `supplier_due_ils`, `cashback_earned_ils`, `platform_percent`, `product_type` | `orders` + `order_items` (webhook מאומת של Cardcom) |
-| `refund` | derived | `payments`: `amount_ils`, `succeeded_at`, `order_id` | `payments` עם `kind='refund'`, `status='succeeded'` |
-| `coupon_scan` | derived | `coupon_scan_events`: `result` (success/not_found/already_used/expired/refunded/wrong_supplier/unauthorized/rate_limited), `scan_method`, `supplier_id`, `scanned_by` | `coupon_scan_events` (כל ניסיון, כולל כשלונות) |
-| `coupon_redeemed` | derived (**חדש ב-034**) | `coupon_codes`: `used_at`, `supplier_id`, `face_value_ils`, `platform_paid_ils`, `collect_amount_ils` | `coupon_codes` במעבר ל-`used` בתוך `redeem_coupon()` |
-| `wallet_earn` | derived | `wallet_transactions`: `amount_ils`, `reason`, `related_order_id`, `idempotency_key` | credit לחשבון user (המקבילה ל-`wallet_credit` מהדרישה; השם הקנוני נשאר `wallet_earn`) |
-| `wallet_spend` | derived | כנ"ל, debit מחשבון user | `wallet_transactions` |
-| `supplier_payout` | derived (**חדש ב-034**) | `payout_statements`: `paid_at`, `supplier_id`, `total_gross_ils`, `total_platform_fee_ils`, `total_payout_ils`, `payment_reference`, `bank_snapshot` | `payout_statements` במעבר ל-`paid` בתוך `mark_payout_statement_paid()` |
-| `search` | derived | `search_queries`: `query`, `results_count`, `source`, `took_ms` | `search_queries` (030) |
-
-`purchase` לא נפלט מדף התודה (הדפדפן לא אמין: סוגרים טאב, redirect נכשל). ספירת רכישות
-היא תמיד `orders.paid_at`, שנכתב בטרנזקציית ה-webhook המאומתת של Cardcom.
-
-מיפוי שמות מהדרישה העסקית לשמות הקנוניים:
-
-| שם בדרישה | שם קנוני | הערה |
-|---|---|---|
-| `coupon_redeemed` | `coupon_redeemed` | נוסף ב-034; רמת "הצלחה בלבד". רמת הניסיון היא `coupon_scan` |
-| `wallet_credit` | `wallet_earn` | אין שינוי שם: rename אסור לפי כללי ה-registry |
-| `supplier_payout` | `supplier_payout` | נוסף ב-034 |
-
-### 1.3 registry, כללי שמות וגרסאות (מחייבים)
-
-- טבלת `analytics_event_definitions` היא מקור האמת: `event_name` (PK), `origin`, `required_props`,
-  `schema_version`, `is_active`. ה-ingest דוחה אירוע שלא רשום או שחסר לו prop חובה.
-  זה חוסם junk cardinality (טעויות כתיב יוצרות סדרות מתות בדשבורד).
-- שמות: `snake_case`, פועל ואז אובייקט (`view_product`, `add_to_cart`), אנגלית בלבד,
-  3-50 תווים (CHECK בטבלה). `purchase` ו-`refund` הם שמות תעשייה מקובלים ונשארים כמות שהם.
-- **גרסאות:** שינוי מוסיף (prop אופציונלי חדש) לא מעלה גרסה. שינוי שובר (שינוי משמעות/טיפוס
-  של prop, הוספת prop חובה) מעלה `schema_version` ומעדכן `required_props` באותה שורה.
-  ה-ingest חותם על כל שורה את הגרסה שבתוקף בזמן הכתיבה, כך שאפשר לפלח לפי גרסה בדיעבד.
-- **אסור לשנות שם אירוע.** שם שגוי = השבתה (`is_active=false`) ורישום שם חדש. היסטוריה לא משוכתבת.
-- אירוע חדש = INSERT ל-registry (אדמין, עם audit trigger), בלי מיגרציה.
-
----
-
-## 2. צנרת איסוף
-
-### 2.1 חלוקת לקוח/שרת
-
-```
-לקוח (דפדפן / PWA)                          שרת
-  page_view, view_product, view_category,     begin_checkout  (בתוך ה-server action,
-  add_to_cart, remove_from_cart                אחרי יצירת ההזמנה, service client)
-      |                                            |
-      | batch עד 20 אירועים, flush כל 10 שניות     |
-      | או ב-pagehide דרך navigator.sendBeacon     |
-      v                                            v
-POST /api/a  (route handler)  ------------------->+
-  - קורא session (user_id מהשרת, לא מהלקוח)
-  - בדיקת עוגיית הסכמה (3.4): אין הסכמה -> 204, drop
-  - rate limit IP (תשתית 002): ~120 אירועים לדקה ל-IP
-  - service client -> rpc fn_ingest_analytics_events(batch, user_id, ip, ua)
-      v
-fn_ingest_analytics_events  (SECURITY DEFINER, service role בלבד)
-  - ולידציה מול ה-registry (שם, origin, props חובה)
-  - clamp של occurred_at, סימון is_bot לפי user_agent, קיטום IP
-  - INSERT ... ON CONFLICT (occurred_at, event_id) DO NOTHING   <- דה-דופ
-      v
-analytics_events  (partitioned, סעיף 3.2)
+```json
+{
+  "event_id": "b2f1c9de-3a44-4e0b-9b71-2f0a8c1d55aa",
+  "event_name": "view_product",
+  "schema_version": 1,
+  "occurred_at": "2026-07-23T09:41:12.482Z",
+  "session_id": "s_3f9a2c7e10b84d6e",
+  "user_id": null,
+  "consent": true,
+  "context": {
+    "app": "web",
+    "app_version": "2026.07.21",
+    "locale": "he-IL",
+    "page_path": "/product/271",
+    "referrer_host": "google.com"
+  },
+  "props": {}
+}
 ```
 
-- אירוע שנפל בולידציה נזרק בשקט (הפונקציה מחזירה כמה נכנסו). אנליטיקה לעולם לא מפילה UX:
-  כשל ב-`/api/a` נבלע בצד לקוח בלי retry loop אגרסיבי (נסיון אחד + פעם אחת ב-flush הבא).
-- ה-route דורש Content-Type ו-Origin תקינים.
+Envelope field notes:
 
----
+- `event_id`: client-generated UUID v4, used as the idempotency and dedup key.
+- `session_id`: opaque rotating id (see section 4.5), not tied to identity.
+- `user_id`: nullable. Present only for authenticated sessions, and only as the Supabase auth uuid, never an email.
+- `consent`: boolean snapshot of the `ke_consent` cookie at emit time. Events with `consent=false` are still accepted for strictly necessary or security purposes but are stored with reduced fields (see section 4.2).
+- `context.page_path`: path only, query string stripped (query strings can carry PII and tokens).
+- `context.referrer_host`: hostname only, never the full referrer URL.
 
-## 3. עיצוב אחסון ופרטיות
+### 1.3 The five primary events
 
-### 3.1 הכרעה: first-party בתוך Supabase, בלי כלי חיצוני
+#### view_product (behavioral)
 
-| קריטריון | first-party (Supabase) | GA4 | PostHog Cloud EU |
-|---|---|---|---|
-| חיבור להכנסה אמיתית (snapshot, ארנק) | JOIN ישיר | ידני, כפול, לא מסתדר | חלקי, דורש sync |
-| הסכמה ופרטיות | אין צד שלישי, IP קטום | consent mode, DPA, דיווח לחו"ל | DPA, עלות |
-| עלות | כלול ב-DB הקיים | חינם אבל הזמן שלך יקר | ~$0 בהתחלה, גדל |
-| עקומת למידה לבעלים יחיד | דשבורד אחד ב-/admin שכבר קיים | ממשק שנלחמים בו | עוד מערכת לתחזק |
-| session replay / heatmaps | אין | אין | יש |
+Source: client. Fired when a product detail page is meaningfully viewed (rendered and visible past a debounce).
 
-**החלטה: איסוף first-party לתוך Postgres של Supabase, בלי שום כלי חיצוני בשלב זה.**
-נימוק מכריע: JOIN ישיר בין התנהגות לכסף האמיתי (snapshot + ledger) בדשבורד אחד,
-בלי sync, בלי DPA צד שלישי, בלי העברת מידע לחו"ל. שני טריגרים לפתיחת ההחלטה מחדש:
-(א) התחלת רכישת מדיה בתשלום (אז נדרש ייבוא conversions לפלטפורמות הפרסום);
-(ב) מעל ~200 אלף אירועי לקוח בחודש או צורך אמיתי ב-session replay, ואז PostHog EU
-כתוספת, לא כתחליף. Vercel Speed Insights (ביצועים, לא התנהגות) מאושר בנפרד במסמך
-ה-ops ואינו סותר.
-
-### 3.2 Partitioning
-
-- `analytics_events` היא טבלה מפורקת (declarative partitioning) לפי `RANGE (occurred_at)`,
-  partition לחודש קלנדרי (UTC) בשם `analytics_events_YYYYMM`, ועוד partition בשם
-  `analytics_events_default` כרשת ביטחון שחייבת להישאר ריקה (שורה בו = התראה ב-`v_money_alarms`).
-- `PRIMARY KEY (occurred_at, event_id)`: מפתח החלוקה חייב להיכלל, וה-unique הזה הוא גם הדה-דופ.
-- `fn_ensure_analytics_partitions(2)` רץ חודשי ויוצר [חודש קודם .. חודש+2] כולל הפעלת RLS על כל
-  partition חדש (partition הוא טבלה נפרדת שחייבת RLS משלה נגד גישה ישירה דרך PostgREST).
-- `fn_drop_old_analytics_partitions(13)` מוחק partitions מעבר ל-13 חודשים. DROP של partition
-  הוא מיידי וזול (בלי DELETE, בלי vacuum). לפני המחיקה ה-rollup היומי כבר שימר את מה שחשוב.
-- ב-free tier (500MB) זה הדומיין הראשון שמתנפח; ה-rollup היומי (`analytics_daily`) הוא זה
-  שנשמר לנצח, והוא זעיר (שורות בודדות ליום).
-
-### 3.3 Retention
-
-| דאטה | שמירה | מנגנון |
-|---|---|---|
-| `analytics_events` (raw) | 13 חודשים | DROP partition חודשי |
-| `analytics_daily` (rollup) | לנצח | זעיר |
-| `mv_cohort_retention_monthly`, `mv_take_rate_monthly` | מתרעננים לילית | REFRESH, לא גדלים |
-| טבלאות כסף (`orders`, `payments`, `wallet_transactions`, `coupon_codes`, `payout_statements`) | לנצח (7 שנים לפחות, הוראות מס וניהול ספרים) | אין purge |
-| `coupon_scan_events` | 90 יום (הוחלט ב-PRODUCTION-OPS; ה-truth למימוש הוא `coupon_redemptions`) | purge של דומיין הספקים |
-| `search_queries` | 6 חודשים | purge של דומיין הקטלוג |
-| `agent_run_steps` | 90 יום | purge של דומיין הסוכנים |
-
-### 3.4 פרטיות: GDPR + חוק הגנת הפרטיות (תיקון 13)
-
-הבסיס המשפטי: חוק הגנת הפרטיות ותיקון 13 (בתוקף מאוגוסט 2025): צמצום נתונים,
-מטרה מוגדרת, שקיפות, חובת מחיקה. בישראל אין חוק עוגיות נפרד בנוסח ePrivacy, אבל
-הנחיות הרשות להגנת הפרטיות מחייבות יידוע והסכמה מדעת לניטור התנהגותי. GDPR רלוונטי
-עקרונית (שרתים ב-EU) ומיושם באותם כלים. המדיניות:
-
-1. **רשומות עסקיות אינן מותנות בהסכמה:** הזמנות, תשלומים, מימושים, ארנק, payouts,
-   `begin_checkout` (חלק מעסקה שהמשתמש יזם). אלו תפעול העסקה, לא מעקב.
-2. **אירועי דפדפן מותנים בהסכמה:** באנר עברית RTL, קבלה/דחייה שוות מעמד, עוגיית
-   `ke_consent` (12 חודשים) עם `wording_version`, בדפוס `consent_events` מ-031.
-   בלי הסכמה: אפס אירועי לקוח, ה-SDK לא נטען.
-3. **הפרדת PII מבנית:**
-   - PII (שם, מייל, טלפון, כתובת) חי אך ורק ב-`profiles` / `user_addresses` / auth.
-   - `analytics_events.props` לעולם לא מכיל PII; המזהים היחידים הם `user_id` פנימי ועוגיות סשן.
-   - IP נקטם לפני אחסון (/24, IPv6 /48); אין fingerprinting; אין מזהי צד שלישי.
-   - `notification_events.payload` (031): ids ועובדות כסף בלבד, בלי PII. אותו כלל כאן.
-4. **מחיקת חשבון (029):** `fn_execute_account_deletion` מבצע פסאודונימיזציה; job המחיקה
-   מאפס `user_id` בשורות `analytics_events` של הנמחק (UPDATE ממוקד באינדקס user_id;
-   אין FK בכוונה, כדי שה-partitions יישארו זולים). השורות האנונימיות נשארות כסטטיסטיקה.
-   רשומות הכסף נשמרות 7 שנים מכוח דין.
-5. **בקרת גישה:** raw ו-rollup נקראים רק על ידי אדמין (RLS) או service role;
-   ה-matviews בלי RLS ולכן SELECT נשלל מ-anon/authenticated וניגשים אליהם רק דרך
-   service client אחרי `requireAdminSession`.
-
----
-
-## 4. מודל הכנסות
-
-### 4.1 הגדרת הכנסת פלטפורמה (per-order)
-
-לכל שורת הזמנה ששולמה:
-
-| סוג פריט | GMV (מחזור) | הכנסת פלטפורמה | חוב לספק | נגבה בעסק |
-|---|---|---|---|---|
-| physical | `total_price_ils` | `platform_fee_ils` | `supplier_due_ils` | 0 |
-| coupon | `total_price_ils` (שווי הפנים) | `platform_fee_ils` (= כל מה שנגבה באתר) | 0 | `balance_due_at_business_ils` |
-
-- הכול מעמודות ה-snapshot של 026. שורות היסטוריות שלפני 026 מכוסות על ידי ה-backfill
-  שהוגדר שם (`commission_percent`/`supplier_payout_ils` הישנים שוכפלו לעמודות החדשות).
-- **GMV של קופון הוא שווי הפנים, לא התקבול.** התקבול באתר הוא `charged_on_site_ils`.
-  שלושת המספרים מוצגים בנפרד בדשבורד: מחזור (GMV), תקבולים באתר (cash-in), הכנסת
-  פלטפורמה (revenue). אצל בעלים יחיד הבלבול בין השלושה הוא הדרך המהירה ביותר להחלטות שגויות.
-- **הכנסה מוכרת בזמן `paid`** (מזומן התקבל). ההחזרים מדווחים כשורה שלילית נפרדת לפי יום ההחזר
-  (`payments` עם `kind='refund'`), לא כשכתוב של יום המכירה. כך גרף העבר לעולם לא זז רטרואקטיבית.
-- ארנק: `cashback_applied_ils` הוא הנחה במקור מימון הפלטפורמה; הוא לא מקטין GMV ולא את חלק הספק
-  (הכרעת O5 ב-026). הדשבורד מציג אותו כעמודת "מומן מארנק".
-
-### 4.2 משפך הקופון
-
-מכונת המצבים של 026/027 קובעת: קוד קופון **נוצר רק בתשלום**. כלומר "issued" ו-"paid" הם אותו רגע,
-ומשפך המסחר המלא הוא שני שלבים מובחנים:
-
-```
-התנהגות (analytics_events):  view_product -> add_to_cart -> begin_checkout
-                                                              |
-כסף (orders):                                          orders.paid_at
-                                                              |
-נכס (coupon_codes):        issued --+--> used      (redeem_coupon, מימוש בעסק)
-                                    +--> expired   (cron, פקע בלי מימוש)
-                                    +--> refunded  (החזר אדמין)
+```json
+{
+  "product_id": 271,
+  "product_type": "coupon",
+  "supplier_id": 44,
+  "list_price_agorot": 12000,
+  "category_id": 8,
+  "position": null,
+  "source": "search"
+}
 ```
 
-מדדי ההכרעה (כולם ב-`v_coupon_funnel_monthly`):
+- `list_price_agorot`: display price at view time, denormalized copy, not authoritative.
+- `source`: how the user reached the product (`search`, `category`, `home`, `deep_link`, `cart`).
 
-- **scan rate**: `used / (used + expired)` על קופונים שהגיעו למצב סופי. זה מדד הבריאות המרכזי
-  של העסק: קופון שפג בלי מימוש = לקוח שנכווה, וספק שלא ראה את הלקוח. יעד מובהק לתזכורות של 029/031.
-- **median days to scan**: חציון ימים מהנפקה למימוש. קובע את ברירת המחדל של `expires_at` ואת
-  תזמון התזכורות (7d/48h).
-- **outstanding**: קופונים `issued` פתוחים: כמה, כמה `platform_paid_ils` כבר בקופה שלנו, וכמה
-  `collect_amount_ils` העסקים עוד אמורים לגבות. מדיניות הפקיעה שקובעת את פרשנות המספר
-  הוכרעה משפטית בסעיף 6.4: פקיעה יוצרת התחייבות זיכוי, לא breakage.
+#### add_to_cart (behavioral)
 
-### 4.3 לוח מנהיגות ספקים
+Source: client. Fired on successful add-to-cart.
 
-`v_supplier_leaderboard_30d`, שורה פר ספק, חלון 30 יום:
-GMV, הכנסת פלטפורמה, כמות פריטים, סריקות מוצלחות/כושלות (מ-`coupon_scan_events`, כולל
-`wrong_supplier` שהוא אות fraud), שיעור מימוש 90 יום, מחלוקות פתוחות.
-ההחלטות שהוא משרת: את מי לקדם בדף הבית, את מי לחייב ב-`platform_percent` גבוה יותר בחידוש,
-ומי מסמן סיכון (הרבה סריקות כושלות או מחלוקות).
+```json
+{
+  "product_id": 271,
+  "product_type": "coupon",
+  "supplier_id": 44,
+  "quantity": 1,
+  "unit_price_agorot": 12000,
+  "cart_id": "c_9a71f0",
+  "source": "product_page"
+}
+```
 
-### 4.4 cohort LTV
+#### begin_checkout (behavioral)
 
-`v_cohort_ltv_monthly`: קוהורטת חודש-רכישה-ראשונה, ולכל (קוהורטה, חודש-סטייה): קונים פעילים,
-הכנסת פלטפורמה מצטברת, והכנסה מצטברת פר חבר קוהורטה. המספר האחרון הוא תקרת עלות רכישת לקוח
-(CAC ceiling) ביום שבו יתחיל פרסום בתשלום, ועד אז הוא מודד אם המוצר מחזיק לקוחות בכלל.
-בסיס ההכנסה הוא `platform_fee_ils` (מה שאנחנו באמת מרוויחים), לא GMV.
+Source: client. Fired when the checkout flow is entered.
 
-### 4.5 התחייבות ארנק (wallet liability)
+```json
+{
+  "cart_id": "c_9a71f0",
+  "item_count": 2,
+  "distinct_suppliers": 2,
+  "cart_value_agorot": 21000,
+  "has_coupon_item": true,
+  "has_physical_item": true
+}
+```
 
-יתרות cashback הן **חוב אמיתי של הפלטפורמה ללקוחות**, לא מדד שיווקי.
+- `cart_value_agorot`: sum of cart line items at checkout start, denormalized copy for funnel value estimation only. The authoritative order total is written later to `orders`.
 
-- **ההתחייבות = `sum(balance_ils)` על כל חשבונות ה-user** ב-`wallet_accounts`. בזכות ה-double-entry
-  של 026 אין דרך להזרים יתרה אלא מחשבון פלטפורמה, אז המספר תמיד ניתן לגזירה גם מה-ledger.
-- `v_wallet_ledger_drift` משווה כל יתרה שמורה מול השחזור מה-ledger ומחזירה רק שורות סוטות.
-  שורה אחת = באג או התערבות ידנית; זו התראה אדומה ב-`v_money_alarms`, נבדקת לילית.
-- **תנאי לנכונות ה-drift view:** העתקת היתרות ההיסטוריות ב-026 חייבת להיעשות כרשומת פתיחה
-  ב-ledger (שורת `manual_adjust` מ-`platform:adjustments` עם idempotency key בסגנון
-  `opening:<user_id>`), לא כהעתקת עמודה שקטה. אחרת כל חשבון ותיק יסטה מיום אחד. זו עריכה
-  נדרשת ל-026 לפני החלה (נרשם בסיכום ההחלטות).
-- תנועת היום (`wallet_earn` / `wallet_spend` / `expire`) נקראת ישירות מ-`wallet_transactions`
-  לפי `reason`; אין צורך באירועים נוספים.
+#### purchase (derived from ledger)
 
----
+Source: server-side, emitted by a trigger AFTER an `orders` row reaches a paid state and `order_items` are written. This is a projection of the money tables onto the event timeline, NOT a client event.
 
-## 5. דשבורד ספקים (RLS-scoped)
+```json
+{
+  "order_id": 90183,
+  "session_id_ref": "s_3f9a2c7e10b84d6e",
+  "item_count": 2,
+  "distinct_suppliers": 2,
+  "order_gross_agorot": 21000,
+  "onsite_charged_agorot": 3000,
+  "platform_commission_agorot": 2100,
+  "contains_coupon": true,
+  "contains_physical": true
+}
+```
 
-### 5.1 מנגנון האבטחה
+- Every money field here is a read-through copy of the corresponding ledger value at emit time. For any reporting, join back to `orders` and `order_items` by `order_id`. The event money fields exist so a single query can annotate the funnel without a join, and must never be summed for financial reporting.
+- `onsite_charged_agorot`: what `payments` actually captured on-site (for a coupon order this is the 10 percent portion; for physical it is the full amount).
 
-כל ה-views לספקים הם `security_invoker = true`, כלומר רצים עם הרשאות הקורא, ו-RLS
-של 027 עושה את הסינון: `is_supplier_member(supplier_id)` על `order_items`, `orders`,
-`coupon_codes`, `coupon_scan_events`, ו-policy שמסתירה statements בסטטוס `draft`.
-אין `WHERE supplier_id = ...` באפליקציה בתור הגנה; זה נוחות בלבד. אדמין רואה את כולם
-דרך policies של אדמין. את ה-views קוראים עם ה-client של המשתמש (לא service client).
+#### coupon_redeemed (derived from ledger)
 
-### 5.2 ה-views (נוצרים ב-034)
+Source: server-side, emitted by a trigger AFTER a `coupon_redemptions` row is inserted (the in-store scan). Not a client event.
 
-| view | גרעין | שאלת ההחלטה של הספק |
-|---|---|---|
-| `v_supplier_sales_daily` | מכירות ששולמו פר יום ישראלי: פריטים, הזמנות, GMV, שולם באתר, לגבייה בעסק, עמלת פלטפורמה, `supplier_due_ils` | כמה מכרתי וכמה מגיע לי |
-| `v_supplier_redemptions_monthly` | משפך קופונים פר חודש הנפקה: issued / redeemed / expired / outstanding, `redemption_rate_pct`, מזומן שנגבה בעסק, חציון ימים למימוש | כמה לקוחות באמת מגיעים אליי |
-| `v_supplier_scans_daily` | ניסיונות סריקה פר יום: הצלחות, already_used, expired, כשלים אחרים | בעיית מכשיר/הדרכה בעסק |
-| `v_supplier_payouts` | ה-statements שלו (בלי drafts): תקופה, סטטוס, סכומים, אסמכתה, מחלוקות פתוחות | מתי ואיפה הכסף |
+```json
+{
+  "redemption_id": 5521,
+  "coupon_code_id": 30877,
+  "order_id": 90183,
+  "supplier_id": 44,
+  "product_id": 271,
+  "amount_collected_agorot": 10800,
+  "days_since_issue": 6
+}
+```
 
-`redemption_rate_pct` מוגדר `used / (used + expired)` על מצבים סופיים בלבד, זהה להגדרת
-האדמין, כדי ששני הצדדים יראו את אותו מספר בשיחת טלפון.
+- `amount_collected_agorot`: read-through copy of `coupon_redemptions.amount_collected`. Authoritative value stays in the ledger.
+- `days_since_issue`: convenience integer, recomputable from `coupon_codes.issued_at` and the redemption time.
 
-### 5.3 מה במפורש לא נחשף לספק
+### 1.4 Secondary events (behavioral)
 
-- השוואות בין ספקים (leaderboard, דירוגים, מדדי ספקים אחרים): אדמין בלבד.
-- אירועי התנהגות (`analytics_events`, צפיות במוצרים): נשאר admin-only בשלב זה;
-  אם ייחשף בעתיד, יהיה זה rollup יומי לפי מוצר, לא raw.
-- פירוט `wrong_supplier` (אות fraud): הספק רואה רק "כשלים אחרים"; החקירה אצל האדמין.
+#### search
 
----
+```json
+{
+  "query_hash": "sha256:9f2b...",
+  "query_len": 14,
+  "result_count": 23,
+  "category_id": null,
+  "has_results": true
+}
+```
 
-## 6. BI אדמין
+- The raw query string is NOT stored (free-text search terms can contain PII). Store a salted hash for dedup and popularity, plus the length for quality analysis.
 
-### 6.1 הדשבורד היומי היחיד של הבעלים (033)
+#### remove_from_cart
 
-מסך אחד ב-`/admin/dashboard` (מרחיב את הקיים), שנקרא פעם ביום עם הקפה. שתי שכבות:
-שורת התראות (אם יש) ואז המספרים. המקור: `v_owner_dashboard` (שורה אחת) + `v_money_alarms`.
+```json
+{
+  "product_id": 271,
+  "product_type": "coupon",
+  "supplier_id": 44,
+  "quantity": 1,
+  "unit_price_agorot": 12000,
+  "cart_id": "c_9a71f0"
+}
+```
 
-**חשוב:** את ה-views של האדמין קוראים בצד השרת עם service client אחרי `requireAdminSession`.
-ה-views מוגדרים `security_invoker` ולכן קריאה עם JWT של אדמין תיתקל בחורים ב-RLS ישן
-(למשל אין policy אדמין על `carts`); service role עוקף את זה, וההגנה היא ה-guard באפליקציה,
-כמו בשאר האדמין.
+### 1.5 Taxonomy summary
 
-| # | מדד | למה זה decision-grade | מקור |
-|---|---|---|---|
-| 0 | `v_money_alarms` (תשלומים כושלים, חתימות webhook לא תקינות, תשלומים תקועים, drift בארנק, שורות ב-default partition, הזמנות pending שלא פגו) | כל שורה = תקלת כסף שמטופלת היום, לא בסוף החודש | payments, webhook_events, drift view |
-| 1 | הכנסת פלטפורמה היום / אתמול / ממוצע 7 ימים | המספר. מתחת לממוצע = לחפור למה עוד היום | order_items snapshot |
-| 2 | הזמנות ששולמו + AOV היום | מפריד "פחות הזמנות" מ"הזמנות קטנות" | orders |
-| 3 | GMV מול תקבולים באתר | פער גדול = תלות בקופונים (תזרים אצל הספקים) | order_items |
-| 4 | לקוחות ראשונים היום | צמיחה אמיתית מול לקוחות חוזרים | orders (min paid_at) |
-| 5 | סריקות קופון היום (הצלחות + כשלונות) | כשלונות רבים = בעיה בשטח אצל ספק, מתקשרים אליו היום | coupon_scan_events |
-| 6 | שיעור מימוש 30 יום | ירידה = התזכורות לא עובדות או דיל גרוע נמכר | coupon_codes |
-| 7 | קופונים פתוחים: כמות + ₪ ששולם לנו + ₪ לגבייה בעסק | החשיפה התפעולית המצטברת מול לקוחות וספקים | coupon_codes snapshot |
-| 8 | התחייבות ארנק (סך יתרות לקוחות) + cashback שחולק היום | חוב אמיתי; קופץ פתאום = באג או ניצול | wallet_accounts |
-| 9 | החזרים היום (₪) | יום החזרים חריג מטופל מיידית | payments kind=refund |
-| 10 | עגלות נטושות פתוחות (1-72 שעות) | דלק למסע ה-abandoned_cart של 031 | carts |
-| 11 | סשנים היום + יחס המרה גס (הזמנות/סשנים) | ההקשר לכל השאר: תנועה או המרה | analytics_events |
+| Event | Source | Money source of truth | Primary |
+| --- | --- | --- | --- |
+| view_product | client | n/a | yes |
+| add_to_cart | client | n/a | yes |
+| begin_checkout | client | n/a | yes |
+| purchase | server (ledger trigger) | orders / order_items / payments | yes |
+| coupon_redeemed | server (ledger trigger) | coupon_redemptions | yes |
+| search | client | n/a | no |
+| remove_from_cart | client | n/a | no |
 
-sketch מרכזי (המימוש המלא ב-033):
+## 2. Supabase event storage
+
+### 2.1 Extensions and schema
 
 ```sql
--- הכנסת פלטפורמה ליום עסקים ישראלי
-SELECT public.fn_il_date(o.paid_at) AS day_il,
-       count(DISTINCT o.id)          AS paid_orders,
-       sum(oi.total_price_ils)       AS gmv_ils,
-       sum(oi.charged_on_site_ils)   AS charged_on_site_ils,
-       sum(oi.platform_fee_ils)      AS platform_revenue_ils,
-       sum(oi.cashback_earned_ils)   AS cashback_granted_ils
-FROM public.orders o
-JOIN public.order_items oi ON oi.order_id = o.id
-WHERE o.paid_at IS NOT NULL AND o.deleted_at IS NULL AND oi.deleted_at IS NULL
-GROUP BY 1;                                   -- = v_revenue_daily
+create schema if not exists analytics;
+
+create extension if not exists pgcrypto;   -- gen_random_uuid, digest
 ```
+
+### 2.2 analytics_events (monthly partitioned)
+
+The raw event table is range-partitioned by `occurred_at` (monthly). Partitioning keeps hot months small, makes retention a partition DROP (instant, no bloat), and keeps rollup scans bounded.
 
 ```sql
--- התחייבות ארנק (החוב ללקוחות עכשיו)
-SELECT COALESCE(sum(balance_ils), 0) AS outstanding_cashback_ils,
-       count(*) FILTER (WHERE balance_ils > 0) AS users_with_balance
-FROM public.wallet_accounts
-WHERE owner_type = 'user';                    -- = v_wallet_liability
+create table if not exists analytics.analytics_events (
+  event_id       uuid        not null,
+  event_name     text        not null,
+  schema_version smallint    not null default 1,
+  occurred_at    timestamptz not null,
+  received_at    timestamptz not null default now(),
+  session_id     text        not null,
+  user_id        uuid        null,
+  consent        boolean     not null default false,
+  props          jsonb       not null default '{}'::jsonb,
+  context        jsonb       not null default '{}'::jsonb,
+  ip_trunc       inet        null,   -- IPv4 truncated to /24, IPv6 to /48 (section 4.3)
+  is_bot         boolean     not null default false,
+  primary key (event_id, occurred_at)
+) partition by range (occurred_at);
 ```
+
+Notes:
+
+- Primary key includes `occurred_at` because Postgres requires the partition key inside any unique constraint. `event_id` still provides the dedup guarantee within a partition, and event ids are globally unique in practice, so the composite key is safe for idempotency.
+- `ip_trunc` is `inet` and is always already truncated before insert (the raw IP never reaches this table).
+- `user_id` is the auth uuid only.
+
+Partition creation (one per month; automate via a scheduled job or `pg_partman`). Example for the current and next month:
 
 ```sql
--- משפך קופונים לפי חודש הנפקה
-SELECT date_trunc('month', (created_at AT TIME ZONE 'Asia/Jerusalem'))::date AS issue_month,
-       count(*)                                                        AS issued,
-       count(*) FILTER (WHERE status = 'used'::public.coupon_status)    AS scanned,
-       count(*) FILTER (WHERE status = 'expired'::public.coupon_status) AS expired,
-       count(*) FILTER (WHERE status = 'issued'::public.coupon_status)  AS outstanding,
-       round(100.0 * count(*) FILTER (WHERE status = 'used'::public.coupon_status)
-         / NULLIF(count(*) FILTER (WHERE status IN
-             ('used'::public.coupon_status, 'expired'::public.coupon_status)), 0), 1) AS scan_rate_pct
-FROM public.coupon_codes
-WHERE deleted_at IS NULL
-GROUP BY 1;                                   -- = v_coupon_funnel_monthly (מקוצר)
+create table if not exists analytics.analytics_events_2026_07
+  partition of analytics.analytics_events
+  for values from ('2026-07-01 00:00:00+00') to ('2026-08-01 00:00:00+00');
+
+create table if not exists analytics.analytics_events_2026_08
+  partition of analytics.analytics_events
+  for values from ('2026-08-01 00:00:00+00') to ('2026-09-01 00:00:00+00');
 ```
 
-### 6.2 עיון שבועי (weekly deep-dive, 033)
+Indexes (created per partition, or as partitioned indexes on the parent):
 
-נקרא פעם בשבוע, לא כל בוקר:
+```sql
+create index if not exists ix_ae_name_time
+  on analytics.analytics_events (event_name, occurred_at);
 
-| view | שאלה שהוא עונה עליה |
-|---|---|
-| `v_funnel_daily` | איפה המשפך דולף: צפייה -> עגלה -> checkout -> תשלום, יחס יומי |
-| `v_cohort_ltv_monthly` | האם לקוחות חוזרים, וכמה שווה לקוח לאורך זמן |
-| `v_supplier_leaderboard_30d` | את מי לקדם, את מי לתמחר מחדש, מי מסוכן |
-| `v_channel_revenue_weekly` | מאיפה מגיעה הכנסה (UTM last-touch מ-`orders.attribution`) |
-| `v_search_quality_daily` (אם 030 הוחלה) | zero-results ו-p95 של החיפוש; מזין את ספי Meilisearch |
-| `v_notification_kpis` + `v_journey_revenue` (031, קיימים שם) | האם המסעות מרוויחים את קיומם |
+create index if not exists ix_ae_session
+  on analytics.analytics_events (session_id, occurred_at);
 
-ייחוס ערוצים: 033 מוסיפה `orders.attribution` (jsonb): `beginCheckout` כותב לתוכו first-touch
-ו-last-touch (utm + referrer + landing) מעוגיית ייחוס בת 30 יום. זה נותן הכנסה-לפי-ערוץ ישירות
-על טבלת הכסף, בלי stitching של סשנים. ייחוס הודעות כבר פתור ב-031 (`notification_conversions`)
-ולא מוכפל כאן. GMV, תקבולים באתר והכנסת פלטפורמה נשארים שלושה מספרים נפרדים;
-GMV של קופון = שווי פנים.
+create index if not exists ix_ae_props_gin
+  on analytics.analytics_events using gin (props jsonb_path_ops);
+```
 
-### 6.3 take-rate לפי platform_percent (חדש ב-034)
+A helper to create a month partition on demand, callable from a nightly job:
 
-`v_take_rate_monthly` + snapshot לילי `mv_take_rate_monthly`: פר (חודש ישראלי,
-`product_type`, `platform_percent` מה-snapshot): הזמנות, פריטים, GMV, שולם באתר,
-הכנסת פלטפורמה, ו-`effective_take_rate_pct = platform_fee / GMV`.
+```sql
+create or replace function analytics.fn_ensure_month_partition(p_month date)
+returns void
+language plpgsql
+security definer
+set search_path = analytics, public
+as $$
+declare
+  v_start date := date_trunc('month', p_month)::date;
+  v_end   date := (date_trunc('month', p_month) + interval '1 month')::date;
+  v_name  text := format('analytics_events_%s', to_char(v_start, 'YYYY_MM'));
+begin
+  execute format(
+    'create table if not exists analytics.%I partition of analytics.analytics_events
+       for values from (%L) to (%L)',
+    v_name, v_start::timestamptz, v_end::timestamptz
+  );
+end;
+$$;
+```
 
-ההחלטות שהוא משרת: אילו מדרגות עמלה באמת מייצרות הכנסה, איפה effective take-rate
-נמוך מהחוזי (קופונים: היחס בין `coupon_price` לשווי הפנים), ואת מי לתמחר מחדש בחידוש.
+### 2.3 Event definition registry
 
-### 6.4 דוח התחייבות פקיעת קופונים (חדש ב-034)
+The registry is the contract. The ingestion function validates every incoming event against it: the event name must be active, and the schema version must match the current registered version. Required prop keys are enforced as a lightweight presence check.
 
-`v_coupon_expiry_liability`, שורה פר דלי:
+```sql
+create table if not exists analytics.event_definitions (
+  event_name     text        not null,
+  schema_version smallint    not null,
+  is_active      boolean     not null default true,
+  is_derived     boolean     not null default false,  -- true = server/ledger sourced
+  required_props text[]      not null default '{}',
+  description    text        null,
+  created_at     timestamptz not null default now(),
+  primary key (event_name, schema_version)
+);
 
-| דלי | משמעות |
-|---|---|
-| `overdue_not_swept` | `expires_at` עבר אבל עדיין `issued`: ה-cron `expire_coupons()` מפגר. חייב להיות 0 |
-| `expiring_7d` / `expiring_8_30d` / `expiring_31_90d` / `expiring_90d_plus` / `no_expiry` | קופונים פתוחים לפי זמן לפקיעה, עם `platform_paid_ils` (כבר אצלנו) ו-`collect_amount_ils` (העסק עוד מצפה לגבות) |
-| `expired_unredeemed_12m` | קופונים שפגו בלי מימוש ב-12 חודשים: התחייבות refund_credit שיש לאפס |
-| `refunded_12m` | הקשר: כמה הוחזר |
+insert into analytics.event_definitions
+  (event_name, schema_version, is_derived, required_props, description)
+values
+  ('view_product',     1, false, array['product_id','product_type','supplier_id'], 'Product detail viewed'),
+  ('add_to_cart',      1, false, array['product_id','supplier_id','quantity','unit_price_agorot'], 'Item added to cart'),
+  ('begin_checkout',   1, false, array['cart_id','item_count','cart_value_agorot'], 'Checkout started'),
+  ('purchase',         1, true,  array['order_id','order_gross_agorot','platform_commission_agorot'], 'Ledger-derived paid order'),
+  ('coupon_redeemed',  1, true,  array['redemption_id','coupon_code_id','amount_collected_agorot'], 'Ledger-derived in-store scan'),
+  ('search',           1, false, array['query_hash','result_count'], 'Search performed'),
+  ('remove_from_cart', 1, false, array['product_id','supplier_id','quantity'], 'Item removed from cart')
+on conflict (event_name, schema_version) do update
+  set is_active      = excluded.is_active,
+      is_derived     = excluded.is_derived,
+      required_props = excluded.required_props,
+      description    = excluded.description;
+```
 
-**הכרעת ציות מעודכנת (LEGAL 1.2, גוברת על ההכרעה העסקית הישנה):**
-קופון שפג בלי מימוש מזכה אוטומטית את הארנק במלוא `platform_paid_ils`
-כ-`refund_credit` עם תוקף 5 שנים. אין הכרת breakage בסכום ששולם לפני
-הזיכוי. `overdue_not_swept` כולל גם את מצב הכשל שבו הקופון פג אך הזיכוי
-לא נרשם, וחייב להיות 0. דלי `expiring_7d` נשאר יעד תזכורות 7d/48h מ-031.
+### 2.4 Ingestion function fn_ingest_analytics_events
 
-**הכרעת פקיעת cashback המעודכנת:** cashback פוקע **24 חודשים**
-אחרי הצבירה, עם תזכורת 30 יום מראש דרך ה-outbox של 031. מימוש: job של דומיין הארנק
-(לא 034) שמזרים `expire` ב-`fn_wallet_transfer` מחשבון המשתמש ל-`platform:cashback_reserve`.
-עד שה-job קיים, ההתחייבות בדוח מוצגת open-ended, וזה השמרני הנכון.
+Service-only (revoked from `anon` and `authenticated`, so only the service role or an edge function with the service key can call it). Accepts a jsonb array of enveloped events, validates each against the registry, dedups on the primary key, and returns a per-event result. Bad events are rejected individually, so one malformed row does not poison the batch.
 
-### 6.5 cohort retention (חדש ב-034)
+```sql
+create or replace function analytics.fn_ingest_analytics_events(p_events jsonb)
+returns table (event_id uuid, status text, reason text)
+language plpgsql
+security definer
+set search_path = analytics, public
+as $$
+declare
+  e          jsonb;
+  v_event_id uuid;
+  v_name     text;
+  v_version  smallint;
+  v_occurred timestamptz;
+  v_def      analytics.event_definitions%rowtype;
+  v_missing  text;
+  v_ip_trunc inet;
+begin
+  if jsonb_typeof(p_events) <> 'array' then
+    raise exception 'p_events must be a jsonb array';
+  end if;
 
-`mv_cohort_retention_monthly`: קוהורטת חודש-רכישה-ראשונה x חודש-סטייה, עם
-`retention_pct = active_buyers / cohort_size` בנוסף ל-LTV המצטבר של `v_cohort_ltv_monthly`.
-retention עונה "האם לקוחות חוזרים"; LTV עונה "כמה זה שווה". שניהם על
-`platform_fee_ils`, לא GMV.
+  for e in select * from jsonb_array_elements(p_events)
+  loop
+    -- reset per-row outputs
+    v_event_id := null; v_name := null; reason := null; status := 'rejected';
 
----
+    begin
+      v_event_id := (e->>'event_id')::uuid;
+      v_name     := e->>'event_name';
+      v_version  := coalesce((e->>'schema_version')::smallint, 1);
+      v_occurred := (e->>'occurred_at')::timestamptz;
 
-## 7. אסטרטגיית אגרגציה ו-materialized views
+      -- 1) required envelope fields
+      if v_event_id is null or v_name is null or v_occurred is null then
+        event_id := v_event_id; status := 'rejected';
+        reason := 'missing envelope fields'; return next; continue;
+      end if;
 
-שלוש מדרגות, לפי עלות החישוב מול טריות:
+      -- 2) registry lookup, active check, version match
+      select * into v_def
+      from analytics.event_definitions d
+      where d.event_name = v_name and d.schema_version = v_version;
 
-| מדרגה | אובייקטים | טריות | נימוק |
-|---|---|---|---|
-| טבלת rollup | `analytics_daily` (נכתבת ב-`fn_rollup_analytics_daily`) | לילי, ניתנת לבנייה מחדש פר יום | שורדת מחיקת partitions; זעירה; לנצח |
-| views רגילים | כל ה-`v_*` (בעלים, ספקים, take-rate, liability) | real-time | הנפחים קטנים (עשרות אלפי שורות בשנים הקרובות); אינדקסים של 033/034 מספיקים; אפס תחזוקת קונסיסטנטיות |
-| materialized views | `mv_cohort_retention_monthly`, `mv_take_rate_monthly` | לילי | סריקות היסטוריה מלאות שאין צורך לרוץ בכל טעינת מסך; בלי RLS ולכן service-role בלבד |
+      if not found then
+        event_id := v_event_id; status := 'rejected';
+        reason := 'unknown event or version'; return next; continue;
+      end if;
 
-**הכרעה:** לא הופכים views נוספים ל-mat views עד שיש בעיה נמדדת (מעל ~200ms לשאילתה
-בדשבורד). ההיפוך זול (אותו SELECT), וההקדמה יוצרת בעיות staleness בחינם.
+      if not v_def.is_active then
+        event_id := v_event_id; status := 'rejected';
+        reason := 'event inactive'; return next; continue;
+      end if;
 
-### לוח רענון (נקבע בזמן החלה, לא בתוך המיגרציות)
+      -- 3) required props presence check
+      v_missing := null;
+      select k into v_missing
+      from unnest(v_def.required_props) as k
+      where not (coalesce(e->'props','{}'::jsonb) ? k)
+      limit 1;
 
-| job | תדירות | מנגנון |
-|---|---|---|
-| `fn_rollup_analytics_daily()` | לילי 02:10 ישראל | pg_cron |
-| `fn_refresh_analytics_matviews()` | לילי 02:40 ישראל (אחרי ה-rollup) | pg_cron |
-| `fn_ensure_analytics_partitions(2)` + `fn_drop_old_analytics_partitions(13)` | חודשי, 1 לחודש 03:00 | pg_cron |
-| `expire_coupons()` (027) | יומי, לפני ה-rollup | pg_cron |
-| קריאת `v_money_alarms` + התראה לאדמין (מייל/וואטסאפ דרך outbox) | לילי + בכל טעינת דשבורד | Vercel cron (דורש Pro) |
+      if v_missing is not null then
+        event_id := v_event_id; status := 'rejected';
+        reason := 'missing prop: ' || v_missing; return next; continue;
+      end if;
 
-pg_cron זמין גם ב-free tier ומריץ SQL טהור; כל מה שנוגע ב-API חיצוני (התראות, reconcile)
-נשאר ב-Vercel cron עם `CRON_SECRET`.
+      -- 4) IP is expected pre-truncated by caller; store as-is (inet) or null
+      v_ip_trunc := nullif(e->>'ip_trunc','')::inet;
 
----
+      -- 5) ensure the target partition exists
+      perform analytics.fn_ensure_month_partition(v_occurred::date);
 
-## 8. איכות דאטה
+      -- 6) insert with dedup on PK (event_id, occurred_at)
+      insert into analytics.analytics_events (
+        event_id, event_name, schema_version, occurred_at,
+        session_id, user_id, consent, props, context, ip_trunc, is_bot
+      )
+      values (
+        v_event_id, v_name, v_version, v_occurred,
+        coalesce(e->>'session_id',''),
+        nullif(e->>'user_id','')::uuid,
+        coalesce((e->>'consent')::boolean, false),
+        coalesce(e->'props','{}'::jsonb),
+        coalesce(e->'context','{}'::jsonb),
+        v_ip_trunc,
+        coalesce((e->>'is_bot')::boolean, false)
+      )
+      on conflict (event_id, occurred_at) do nothing;
 
-1. **דה-דופ:** `event_id` נוצר פעם אחת אצל השולח; retry שולח את אותו זוג (event_id, occurred_at);
-   `ON CONFLICT DO NOTHING` על ה-PK בולע כפילויות. בצנרת הכסף הדה-דופ כבר קיים (webhook events,
-   idempotency keys) ולא נוגעים בו.
-2. **בוטים:** סימון בזמן ingest (`is_bot` לפי regex על user_agent: crawlers, headless, monitors,
-   preview bots של וואטסאפ/פייסבוק). שומרים ולא זורקים (לזיהוי scraping), אבל כל rollup וכל view
-   מסננים `NOT is_bot`.
-3. **תנועת צוות:** ה-rollup מסנן משתמשים עם role של admin / super_admin / content_uploader.
-   הבעלים שבודק את האתר שלו עשר פעמים ביום הוא זיהום המדידה הגדול ביותר בעסק קטן.
-4. **אזור זמן:** אחסון UTC בלבד; בקיטה אך ורק דרך `fn_il_date` (Asia/Jerusalem, מטפל ב-DST).
-   ה-partitions הם חודשי UTC (גבול טכני), הדוחות הם ימי ישראל (גבול עסקי); ה-rollup מתרגם.
-5. **שעון לקוח:** `occurred_at` עתידי מעל 5 דקות מוצמד ל-now(); ישן מ-7 ימים נזרק (בין השאר
-   מגן על partitions שנמחקו מכתיבה מחודשת).
-6. **בדיקת שפיות מובנית:** `v_money_alarms` כוללת גם `analytics_default_partition_rows`
-   (ה-default partition אמור להיות ריק תמיד) וגם drift של הארנק. תקלות איכות דאטה מופיעות
-   באותו מקום כמו תקלות כסף.
+      if found then
+        event_id := v_event_id; status := 'inserted'; reason := null;
+      else
+        event_id := v_event_id; status := 'duplicate'; reason := null;
+      end if;
+      return next;
 
-(מדיניות ה-retention המלאה: סעיף 3.3.)
+    exception when others then
+      event_id := v_event_id; status := 'rejected';
+      reason := 'error: ' || sqlerrm; return next; continue;
+    end;
+  end loop;
+end;
+$$;
 
----
+revoke all on function analytics.fn_ingest_analytics_events(jsonb) from public, anon, authenticated;
+grant execute on function analytics.fn_ingest_analytics_events(jsonb) to service_role;
+```
 
-## 9. אינטגרציה עם סוכני AI (028)
+Ingestion path: browser posts events to a Supabase edge function, the edge function does bot detection and IP truncation (section 4.3), then calls `fn_ingest_analytics_events` with the service key. The browser never touches this function directly, and the raw IP never enters the database.
 
-עקרון: **סוכנים צורכים אנליטיקה דרך משטחים צרים וקריאים בלבד; לעולם לא raw events,
-לעולם לא כתיבה.** RLS נשאר גבול ההרשאה של tools בצד המשתמש.
+### 2.5 Retention: 13 months raw plus daily rollup
 
-1. **`fn_agent_kpi_snapshot()` (חדש ב-034):** קריאה אחת זולה, service role בלבד,
-   מחזירה jsonb עם KPI מטבלאות האמת: הכנסת פלטפורמה היום/7 ימים, הזמנות היום,
-   קופונים פתוחים + לגבייה, שיעור מימוש 30 יום, התחייבות ארנק, מספר התראות כסף.
-   זה משטח ה-grounding של `support` ושל דוחות אוטומטיים עתידיים. הרחבת יכולות
-   סוכן = הוספת מפתח כאן, לא הרחבת הרשאות טבלאות.
-2. **`v_agent_costs_daily` (חדש ב-034, מותנה בקיום `agent_runs`):** עלות/טוקנים/סטטוסים
-   פר יום ופר `agent_key`. זה ה-view שמסמך 028 הזכיר ולא מימש; הוא מזין את תקרת
-   התקציב היומית ואת מתג ההשבתה (`is_active=false`).
-3. **fraud_watch:** ממשיך לקרוא דטקטורים דטרמיניסטיים על `coupon_scan_events`
-   (`wrong_supplier`, `rate_limited`, velocity). `v_supplier_scans_daily` נותן לאדמין
-   את אותה תמונה בעין אנושית; ההצלבה מכוונת.
-4. **supplier_ops:** ממשיך עם `category_benchmark` (אגרגציה בלבד, בלי שורות של ספקים
-   אחרים). `v_take_rate_monthly` הוא הצד האדמיני של אותה שאלה (מה platform_percent שווה).
-5. **אירועי סוכנים באנליטיקה:** ריצות סוכן הן `agent_runs` (טבלת מקור, origin=derived
-   בפוטנציה). לא נרשם אירוע client על שיחת צ'אט בשלב זה; אם יידרש משפך widget,
-   יתווסף `agent_chat_opened` ל-registry ב-INSERT, בלי מיגרציה.
-6. **עתידי (superapp):** ורטיקלים חדשים ימשיכו לעבוד באותו דפוס: טבלת אמת פר דומיין,
-   אירוע derived ב-registry, ו-views. אין צורך בשינוי סכימת האירועים.
+Policy:
 
----
+- Raw `analytics_events`: keep 13 months (current month plus 12). 13 months gives a full year plus one, so year-over-year comparisons always have both endpoints.
+- Rollups: keep indefinitely (they are tiny and PII-free).
 
-## 10. תכולת המיגרציות
+Daily rollup table (aggregate counts by day, event, and a few low-cardinality dimensions). No money is stored here; money rollups live in the ledger-side marts.
 
-### 10.1 מה 033 כוללת (ומה לא)
+```sql
+create table if not exists analytics.rollup_daily (
+  day           date    not null,
+  event_name    text    not null,
+  product_type  text    null,
+  supplier_id   bigint  null,
+  event_count   bigint  not null,
+  session_count bigint  not null,
+  primary key (day, event_name, product_type, supplier_id)
+);
+```
 
-כוללת (הכול idempotent, קובץ = טרנזקציה אחת):
+Nightly rollup for the previous business day (Asia/Jerusalem, section 4.6):
 
-1. בדיקת prerequisites קשיחה (026 + 027), בדפוס של 031.
-2. עזרים: `fn_il_date` (IMMUTABLE), `fn_is_bot_ua`.
-3. `analytics_event_definitions` + seed 12 האירועים הקנוניים + audit trigger + RLS.
-4. `analytics_events` (partitioned) + אינדקסים + RLS + `analytics_events_default` +
-   `fn_ensure_analytics_partitions` (כולל יצירה ראשונית) + `fn_drop_old_analytics_partitions`.
-5. `fn_ingest_analytics_events` (service בלבד, ולידציה מלאה, דה-דופ, בוטים, קיטום IP).
-6. `analytics_daily` + `fn_rollup_analytics_daily` (מסנן בוטים וצוות).
-7. `orders.attribution` (jsonb, נכתב על ידי `beginCheckout`).
-8. אינדקסי עזר לדוחות: `orders(paid_at)`, `coupon_codes(status, created_at)`,
-   `coupon_scan_events(created_at)`, `wallet_transactions(created_at)`.
-9. views (כולם `security_invoker=true`): `v_revenue_daily`, `v_refunds_daily`, `v_wallet_liability`,
-   `v_wallet_ledger_drift`, `v_coupon_funnel_monthly`, `v_supplier_leaderboard_30d`,
-   `v_cohort_ltv_monthly`, `v_channel_revenue_weekly`, `v_funnel_daily`, `v_money_alarms`,
-   `v_owner_dashboard`.
-10. views מותנים (רק אם הטבלה קיימת): `v_search_quality_daily` (על `search_queries` מ-030).
+```sql
+create or replace function analytics.fn_rollup_daily(p_day date)
+returns void
+language sql
+security definer
+set search_path = analytics, public
+as $$
+  insert into analytics.rollup_daily
+    (day, event_name, product_type, supplier_id, event_count, session_count)
+  select
+    (ae.occurred_at at time zone 'Asia/Jerusalem')::date as day,
+    ae.event_name,
+    ae.props->>'product_type',
+    nullif(ae.props->>'supplier_id','')::bigint,
+    count(*),
+    count(distinct ae.session_id)
+  from analytics.analytics_events ae
+  where ae.is_bot = false
+    and (ae.occurred_at at time zone 'Asia/Jerusalem')::date = p_day
+  group by 1,2,3,4
+  on conflict (day, event_name, product_type, supplier_id) do update
+    set event_count   = excluded.event_count,
+        session_count = excluded.session_count;
+$$;
+```
 
-לא כוללת: קוד אפליקציה (SDK צד לקוח, route `/api/a`, באנר הסכמה, מסך הדשבורד, כתיבת
-`orders.attribution` ו-event `begin_checkout` בתוך `beginCheckout`), תזמון crons, שינוי כלשהו
-ב-026-031, וה-purge jobs של `coupon_scan_events`/`search_queries` (בבעלות הדומיינים שלהם).
+Retention drop (run monthly, after the rollup for that month is confirmed complete):
 
-### 10.2 מה 034 כוללת (ומה לא)
+```sql
+-- drops the partition older than 13 months in one metadata operation
+drop table if exists analytics.analytics_events_2025_06;
+```
 
-כוללת (idempotent, קובץ = טרנזקציה אחת, בדיקת prerequisites קשיחה על 026+027+033):
+Automate rollup and drop via `pg_cron` or a scheduled edge function. Never DELETE from the raw table for retention; always DROP the partition.
 
-1. שני אירועי registry חדשים: `coupon_redeemed`, `supplier_payout` (derived).
-2. אינדקסים: `coupon_codes(expires_at) WHERE issued`, `coupon_codes(supplier_id, status)`,
-   `order_items(supplier_id)`.
-3. views לספקים: `v_supplier_sales_daily`, `v_supplier_redemptions_monthly`,
-   `v_supplier_scans_daily`, `v_supplier_payouts` (כולם security_invoker).
-4. BI אדמין: `v_take_rate_monthly`, `v_coupon_expiry_liability`.
-5. matviews: `mv_cohort_retention_monthly`, `mv_take_rate_monthly` (REVOKE מ-anon/authenticated,
-   unique index ל-REFRESH CONCURRENTLY) + `fn_refresh_analytics_matviews()`.
-6. ממשק סוכנים: `fn_agent_kpi_snapshot()` + `v_agent_costs_daily` (מותנה ב-028).
+## 3. BI dashboard queries (ledger only)
 
-לא כוללת: קוד אפליקציה (מסכי פורטל ספק, מסכי BI, חיווט tool לסוכנים), תזמון pg_cron,
-job פקיעת cashback (דומיין הארנק), שינוי כלשהו ב-026-033; איחוד ה-vendors מתוכנן כ-036.
+Every query in this section reads the money tables. None sums an analytics event. Assumed ledger shape (from ground truth): `orders(id, status, created_at, ...)`, `order_items(order_id, supplier_id, product_id, product_type, platform_percent, face_value_agorot, ...)`, `payments(order_id, amount_captured_agorot, ...)`, `coupon_codes(id, order_item_id, supplier_id, issued_at, status, ...)`, `coupon_redemptions(coupon_code_id, amount_collected, redeemed_at, ...)`. Column names below match this shape; adjust to the live column names where they differ, keeping the logic identical.
 
-### 10.3 סדר החלה
+### 3.1 GMV (sum of face value)
 
-026 -> 027 -> ... -> 033 -> **034**. בפועל: 033 דורשת רק 026+027 (028-032 אינן תנאי);
-034 דורשת רק 026+027+033 (028 אופציונלית ומזוהה דינמית). רק דרך Supabase MCP
-`apply_migration`; אחרי החלה `generate_typescript_types`.
+GMV is the total face value transacted, independent of who collected the money and when. For coupons, face value includes the 90 percent collected in-store, so GMV uses `order_items.face_value_agorot`, not what was captured on-site.
 
----
+```sql
+-- GMV per day, last 30 days, Asia/Jerusalem business day
+select
+  (o.created_at at time zone 'Asia/Jerusalem')::date as biz_day,
+  sum(oi.face_value_agorot)                           as gmv_agorot,
+  round(sum(oi.face_value_agorot) / 100.0, 2)         as gmv_ils
+from order_items oi
+join orders o on o.id = oi.order_id
+where o.status in ('paid','completed','fulfilled')
+  and o.created_at >= (now() at time zone 'Asia/Jerusalem')::date - interval '30 days'
+group by 1
+order by 1;
+```
 
-## 11. סיכום הכרעות
+### 3.2 Commission revenue (platform cut in agorot)
 
-### 11.1 הכרעות שכבת הבסיס (033)
+Commission is the platform percent applied to face value, using the percent snapshotted on the order item (never the current product percent, which may have changed since purchase).
 
-1. **שני מישורים:** כסף מטבלאות ה-ledger בלבד; `analytics_events` להתנהגות בלבד; אירועי
-   purchase / refund / coupon_scan / wallet_* / search הם derived ולא נכתבים פעמיים.
-2. **first-party בתוך Supabase, בלי כלי חיצוני.** טריגרים לפתיחה מחדש: פרסום בתשלום או
-   ~200 אלף אירועים בחודש / צורך ב-session replay (ואז PostHog EU כתוספת).
-3. **registry אירועים ב-DB** עם ולידציית שם + props חובה בזמן ingest; snake_case; שינוי שובר
-   מעלה `schema_version`; אסור rename.
-4. **Partitioning חודשי** על `analytics_events`, PK (occurred_at, event_id) כדה-דופ,
-   retention 13 חודשים ל-raw, rollup יומי לנצח.
-5. **הסכמה:** אירועי דפדפן רק אחרי opt-in בבאנר (עוגיית `ke_consent` עם wording_version);
-   רשומות עסקיות לא מותנות; IP קטום; בלי PII ב-props; מחיקת חשבון מאפסת user_id באירועים.
-6. **הכנסה = snapshot:** `platform_fee_ils` בזמן paid; החזרים כשורה שלילית ביום ההחזר;
-   GMV, תקבולים באתר והכנסה מוצגים כשלושה מספרים נפרדים.
-7. **התחייבות ארנק = sum יתרות user**, עם view drift מול ה-ledger כהתראה. נגזרת: לפני החלת 026
-   יש להמיר את העתקת היתרות ההיסטוריות לרשומות פתיחה ב-ledger (אחרת ה-drift view צועק על כולם).
-8. **דשבורד אחד** (`v_owner_dashboard` + `v_money_alarms`) נקרא עם service client אחרי
-   `requireAdminSession`; עיון שבועי ב-views הייעודיים; ייחוס ערוצים דרך `orders.attribution`
-   (last-touch, בלי session stitching).
-9. **איכות:** בוטים מסומנים ומסוננים, תנועת צוות מסוננת מה-rollup, זמן עסקי Asia/Jerusalem בלבד
-   דרך `fn_il_date`, שעון לקוח מוצמד לחלון.
-10. **מספור:** 032 נתפסה על ידי ייבוא הוורדפרס; שכבת הבסיס היא 033, עם תלות קשיחה ב-026+027 בלבד.
+```sql
+-- platform commission earned, last 30 days
+select
+  (o.created_at at time zone 'Asia/Jerusalem')::date as biz_day,
+  sum( (oi.face_value_agorot * oi.platform_percent) / 100 )::bigint as commission_agorot,
+  round(sum( (oi.face_value_agorot * oi.platform_percent) / 100 ) / 100.0, 2) as commission_ils
+from order_items oi
+join orders o on o.id = oi.order_id
+where o.status in ('paid','completed','fulfilled')
+  and o.created_at >= (now() at time zone 'Asia/Jerusalem')::date - interval '30 days'
+group by 1
+order by 1;
+```
 
-### 11.2 הכרעות שכבת ההרחבה (034)
+Note on integer math: `(face_value_agorot * platform_percent) / 100` stays in integer agorot. Define and apply the rounding rule (floor here) consistently everywhere commission is computed, so BI matches payouts to the agora.
 
-1. **מספור:** דומיין ה-BI המורחב הוא 034 (מוספר מחדש מ-035); איחוד ה-vendors מתוכנן כ-036.
-2. **שמות אירועים:** `wallet_credit` מהדרישה = `wallet_earn` הקנוני (אין rename);
-   `coupon_redeemed` ו-`supplier_payout` נוספים כ-derived. רמת ניסיון (כשלים) נשארת `coupon_scan`.
-3. **קופון שפג בלי מימוש:** זיכוי אוטומטי מלא כ-`refund_credit` ל-5 שנים;
-   אין breakage לפני הזיכוי (LEGAL 1.2, מחליף את ההכרעה העסקית הישנה).
-4. **cashback פוקע אחרי 24 חודשים,** תזכורת 30 יום מראש; מימוש אצל דומיין הארנק.
-5. **דשבורד ספק:** נחשפים מכירות, מימושים, סריקות ו-payouts שלו בלבד, דרך RLS;
-   לא נחשפים leaderboard, התנהגות גולשים, ופירוט `wrong_supplier`.
-6. **אגרגציה:** views רגילים כברירת מחדל; בדיוק שני matviews (cohort retention, take-rate),
-   רענון לילי 02:40, service-role בלבד; אין matviews נוספים בלי בעיית ביצועים נמדדת.
-7. **סוכנים:** צריכת אנליטיקה דרך `fn_agent_kpi_snapshot()` ו-views בלבד; אף סוכן לא
-   קורא `analytics_events` raw ולא כותב לאובייקט אנליטי.
-8. **יחס המרה session-scoped:** נשאר day-level; stitching מלא נדחה עד פרסום בתשלום.
-   (אם יידרש: העברת `anonymous_id` לתוך `beginCheckout` ושמירתו על ההזמנה.)
-9. **הארכת raw מעבר ל-13 חודשים:** נשארת 13; ההשוואות השנתיות נעשות
-   על `analytics_daily` ועל ה-matviews שנשמרים לנצח.
+### 3.3 Redemption rate and time-to-scan (coupons)
 
-הערה: שש השאלות הפתוחות של תכנון 033 נסגרו כך: קופון שפג (הכרעה 11.2.3), פקיעת cashback
-(11.2.4), דשבורד ספק (11.2.5), session stitching (11.2.8), הארכת raw (11.2.9);
-נוסח באנר ההסכמה נשאר פתוח (סעיף 12).
+Redemption rate is redeemed coupon codes over issued coupon codes. Both come from the ledger: issuance from `coupon_codes`, redemption from `coupon_redemptions`. Median days-to-scan uses the interval between issuance and redemption.
 
-## 12. שאלות פתוחות שנשארו
+```sql
+-- redemption rate + median days to scan, coupons issued in the last 90 days
+with issued as (
+  select cc.id as coupon_code_id, cc.supplier_id, cc.issued_at
+  from coupon_codes cc
+  where cc.issued_at >= (now() at time zone 'Asia/Jerusalem')::date - interval '90 days'
+),
+redeemed as (
+  select r.coupon_code_id, min(r.redeemed_at) as first_redeemed_at
+  from coupon_redemptions r
+  group by r.coupon_code_id
+)
+select
+  count(*)                                as issued_count,
+  count(rd.coupon_code_id)                as redeemed_count,
+  round(
+    100.0 * count(rd.coupon_code_id) / nullif(count(*),0)
+  , 2)                                    as redemption_rate_pct,
+  percentile_cont(0.5) within group (
+    order by extract(epoch from (rd.first_redeemed_at - i.issued_at)) / 86400.0
+  )                                       as median_days_to_scan
+from issued i
+left join redeemed rd on rd.coupon_code_id = i.coupon_code_id;
+```
 
-1. נוסח באנר ההסכמה ומעמדו מול הנחיות הרשות להגנת הפרטיות אחרי תיקון 13:
-   ייעוץ משפטי לפני production (יחד עם סבב חוק הספאם של 031).
-2. איחוד מנועי הסליקה לספקים (`supplier_payouts` מ-026 מול `payout_statements` מ-027):
-   קונפליקט ידוע שחייב הכרעה לפני החלת 026/027. ה-BI כאן בנוי על `payout_statements`
-   (027); אם ההכרעה תתהפך, `v_supplier_payouts` ו-`supplier_payout` יוסבו באותה מיגרציה.
+Per-supplier variant: add `i.supplier_id` to the select and `group by i.supplier_id`.
+
+### 3.4 Supplier leaderboard (top suppliers by GMV and commission, 30d)
+
+```sql
+-- top 20 suppliers by GMV over the last 30 days, with commission and in-store collection
+with sales as (
+  select
+    oi.supplier_id,
+    sum(oi.face_value_agorot)                                         as gmv_agorot,
+    sum( (oi.face_value_agorot * oi.platform_percent) / 100 )::bigint as commission_agorot,
+    count(distinct o.id)                                              as order_count
+  from order_items oi
+  join orders o on o.id = oi.order_id
+  where o.status in ('paid','completed','fulfilled')
+    and o.created_at >= (now() at time zone 'Asia/Jerusalem')::date - interval '30 days'
+  group by oi.supplier_id
+),
+instore as (
+  -- 90 percent collected in-store on coupon scans, from the ledger
+  select cc.supplier_id, sum(r.amount_collected) as instore_collected_agorot
+  from coupon_redemptions r
+  join coupon_codes cc on cc.id = r.coupon_code_id
+  where r.redeemed_at >= (now() at time zone 'Asia/Jerusalem')::date - interval '30 days'
+  group by cc.supplier_id
+)
+select
+  s.name                                    as supplier,
+  sa.order_count,
+  sa.gmv_agorot,
+  round(sa.gmv_agorot / 100.0, 2)           as gmv_ils,
+  sa.commission_agorot,
+  round(sa.commission_agorot / 100.0, 2)    as commission_ils,
+  coalesce(ins.instore_collected_agorot, 0) as instore_collected_agorot
+from sales sa
+join suppliers s on s.id = sa.supplier_id
+left join instore ins on ins.supplier_id = sa.supplier_id
+order by sa.gmv_agorot desc
+limit 20;
+```
+
+### 3.5 Funnel conversion (events for the funnel, ledger for the value)
+
+The one place events and ledger meet: conversion counts come from events, but any value or revenue shown alongside is pulled from the ledger by `order_id`. Example, 30-day funnel counts:
+
+```sql
+select
+  count(*) filter (where event_name = 'view_product')   as views,
+  count(*) filter (where event_name = 'add_to_cart')    as adds,
+  count(*) filter (where event_name = 'begin_checkout') as checkouts,
+  count(*) filter (where event_name = 'purchase')       as purchases
+from analytics.analytics_events
+where is_bot = false
+  and consent = true
+  and occurred_at >= now() - interval '30 days';
+```
+
+The `purchases` count here is the count of purchase events for funnel-rate purposes only. Purchase revenue for the same window still comes from section 3.1 and 3.2, never from summing this table.
+
+## 4. Privacy (Israeli law, Amendment 13 to the Protection of Privacy Law)
+
+### 4.1 No PII in events
+
+Behavioral events carry no directly identifying data: no email, no phone, no full name, no national id, no full IP, no free-text that could embed PII (search terms are hashed, section 1.4). The only identity link permitted in an event is `user_id` as the opaque auth uuid, and only for authenticated sessions. The mapping from `user_id` to a real person lives exclusively in the auth and customer tables (section 4.4), never in `analytics_events`.
+
+### 4.2 Consent gating (ke_consent cookie)
+
+Marketing and non-essential analytics are opt-in. A first-party cookie `ke_consent` records the choice:
+
+- `ke_consent=granted`: full behavioral events flow with `consent=true`.
+- `ke_consent=denied` or absent: the client suppresses behavioral events. Only strictly necessary or security signals are recorded, stored with `consent=false` and with `session_id` and `user_id` nulled or coarsened, so they cannot build a behavioral profile.
+
+Reporting queries filter `where consent = true` for behavioral and marketing analysis (as in section 3.5). Consent state is captured per event in the envelope, so a later withdrawal does not retroactively legitimize earlier data, and the audit trail stays honest.
+
+Cookie shape:
+
+```
+ke_consent=granted; Max-Age=15552000; Path=/; SameSite=Lax; Secure
+```
+
+### 4.3 IP truncation
+
+The raw IP is used only transiently at the edge for bot detection and geo-coarsening, then truncated before storage. It is never written in full.
+
+- IPv4: keep the /24 network, zero the host octet (e.g. 203.0.113.57 becomes 203.0.113.0).
+- IPv6: keep the /48 prefix.
+
+Done at the edge function before the DB call:
+
+```sql
+-- reference truncation (edge does this; shown for parity)
+select set_masklen(inet '203.0.113.57', 24) & inet '255.255.255.0';
+-- -> 203.0.113.0/24
+```
+
+Store the truncated value in `analytics_events.ip_trunc`. This supports coarse geo and abuse detection while preventing per-user IP identification.
+
+### 4.4 PII separation
+
+Strict separation of stores:
+
+- Identity and PII (email, phone, name, payment identifiers): auth and customer/order tables under RLS, access limited to the roles that need it for fulfilment and support.
+- Behavioral (`analytics.*`): no PII, joined to identity ONLY through `user_id` and ONLY inside secured server-side reporting, never exposed to the client or to broad analyst roles.
+
+The `analytics` schema is not granted to `anon` or `authenticated` for select. BI users read from views and marts that already exclude any path back to raw PII. A join from `analytics_events.user_id` to a customer email is possible in principle but is gated behind a privileged role and audited, so casual analytics cannot re-identify.
+
+### 4.5 Session id and team-traffic filtering
+
+- `session_id` is an opaque, rotating identifier (rotates on a timeout and is not stored against identity). It groups events within a visit for funnel analysis without being a stable cross-session fingerprint.
+- Internal and team traffic is flagged and excluded from BI. Team devices set a first-party marker (a `ke_internal=1` cookie or a known truncated IP block), the edge function sets `is_bot=true` (or a dedicated `is_internal` flag can be added) for those sessions, and every reporting query filters `where is_bot = false`. Bots are filtered the same way via user-agent and behavioral heuristics at the edge.
+
+### 4.6 Business time in Asia/Jerusalem
+
+All timestamps are stored as `timestamptz` in UTC. All business-day bucketing, retention day boundaries, and dashboard grouping convert to `Asia/Jerusalem` at query time via `at time zone 'Asia/Jerusalem'` (used throughout section 2.5 and section 3). This keeps a single UTC source of truth on disk while making every reported day match the Israeli business day, including DST shifts, which Postgres handles automatically for a named zone.
+
+## 5. Summary of guarantees
+
+- Money (GMV, commission, redemption revenue, payouts) is computed only from `orders`, `order_items`, `payments`, `coupon_codes`, `coupon_redemptions`, using the `platform_percent` snapshotted on `order_items`.
+- Behavioral events are lossy and are used only for funnel and behavior, never for financial totals.
+- `purchase` and `coupon_redeemed` events are ledger-derived projections; their money fields are convenience copies, authoritative by reference to `order_id`.
+- Raw events are PII-free, consent-gated, IP-truncated, partitioned monthly, retained 13 months, and rolled up daily.
+- All business reporting is bucketed in Asia/Jerusalem over a UTC store.
