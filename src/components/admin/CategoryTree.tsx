@@ -56,7 +56,7 @@ function CategoryNode({ node, allFlat, depth, onEdit, onAddChild }: NodeProps) {
 
   async function handleMove(direction: 'up' | 'down') {
     const siblings = allFlat
-      .filter((c) => c.parent_id === node.parent_id && !c.deleted_at)
+      .filter((c) => c.parent_id === node.parent_id)
       .sort((a, b) => a.sort_order - b.sort_order)
     const idx = siblings.findIndex((c) => c.id === node.id)
     const target = direction === 'up' ? siblings[idx - 1] : siblings[idx + 1]
@@ -174,7 +174,7 @@ export default function CategoryTree({ categories }: Props) {
   const [editing, setEditing] = useState<Category | undefined>()
   const [defaultParent, setDefaultParent] = useState<string | undefined>()
 
-  const active = categories.filter((c) => !c.deleted_at)
+  const active = categories
   const tree = buildTree(active)
   const parentOptions = active.map((c) => ({
     id: c.id,
