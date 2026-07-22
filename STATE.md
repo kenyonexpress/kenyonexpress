@@ -72,18 +72,15 @@ Session 2026-07-20 - `ARCHITECTURE-CHECKOUT-PAYMENT.md` (שורש הפרויקט
 nothing
 
 ## Blocking Issues
-`ARCHITECTURE-CART-CHECKOUT.md` עדיין חסר (handoff עגלה מצוין ב-Q2 של מסמך התשלומים).
-מיגרציה 042 מוקצית גם ל-Admin Ops וגם ל-Supplier Portal. היסטוריית המיגרציות
-במרוחק לא מסונכרנת; אסור `supabase db push`; החלה רק דרך MCP `apply_migration`.
-Docker מקומי לא רץ (רלוונטי ל-harness D6).
+`046_checkout_foundation.sql` not applied to remote yet.
+Production PSP cutover (Stripe vs Cardcom) open (ARCHITECTURE-CHECKOUT §8 Q1).
+Cardcom `beginCheckout` still parallel to Stripe `beginStripeCheckout`.
 
 ## Next Task
-דף קטגוריה 1:1 - grid מוצרים, סינון, pagination לפי `refs/ke_live_singlefile.html` (הוראת Ofir 2026-07-20).
-במקביל/אחרי: סגירת רצועות עמוד המוצר (y400, y900-1100, y1500, y2100) מול האתר החי.
-בהמשך: Phase 0 של CI (`ci.yml`) או `ARCHITECTURE-CART-CHECKOUT.md`.
+Apply migration 046 on remote; wire storefront checkout UI to `beginStripeCheckout` + Stripe Elements; decide production PSP (Q1).
 
 ## Working Directory
-/Users/ofir/kenyonexpress-web/kenyonexpress
+/Users/ofir/kenyonexpress-web/kenyon-checkout-foundation
 
 ## Supabase Project URL
 https://ixvwfbuvfxxsjiywhbbb.supabase.co (dev)
