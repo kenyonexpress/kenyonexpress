@@ -89,9 +89,10 @@ orders/payments/coupon_codes החיים במקום `v_*` חסרים; reconciliat
 כל ה-pagination, המיון והסינון עוברים דרך searchParams עם סכימות
 Zod (`page-params.ts`). זה נותן RSC טהור (אפס fetch בצד לקוח,
 עיקרון "אדמין רואה אמת עדכנית"), קישורים שיתופיים, ותאימות ל-Next
-16 (searchParams הוא Promise, נקרא עם await בעמוד). audit-log
-מקבל cursor (created_at + id) כי הטבלה צומחת ללא גבול; שאר
-הרשימות offset עם `count: 'exact'`.
+16 (searchParams הוא Promise, נקרא עם await בעמוד). כל הרשימות,
+כולל audit-log, על offset עם `count: 'exact'`: בהיקף הנוכחי cursor
+הוא מורכבות בלי תמורה, והמעבר אליו יתבצע כשהלוג יגיע לעשרות אלפי
+שורות.
 
 ## D11: מעטפת ActionResult לפעולות חדשות בלבד
 
