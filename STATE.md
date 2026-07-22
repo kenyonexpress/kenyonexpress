@@ -1,21 +1,21 @@
 # KenyonExpress State
 
 ## Current Phase
-**Phase 5 storefront + יסודות commerce**. branch `phase5/homepage`.
+**Phase 6 checkout foundation**. branch `phase6/checkout-foundation` (worktree `kenyon-checkout-foundation`).
 
 ## Last Completed
-Session 2026-07-20 (ערב) - `ARCHITECTURE-PERFORMANCE-SEO.md` (שורש, design only):
-- מסמך מאוחד מחייב לביצועים + SEO בזמן ריצה. בולע/מיישר את
-  `docs/ARCHITECTURE-PERFORMANCE.md` ומחבר ל-CATALOG §3, GROWTH §1,
-  WP M8, TESTING-CICD D8/D26, ANALYTICS §7.
-- כיסוי: מיפוי 301 (proxy בלבד, לא vercel.json), sitemap/robots/canonical,
-  אין hreflang (סיגנלי he/he_IL/he-IL), JSON-LD בלי ratings, meta עברית +
-  OG סטטי ראשי / `@vercel/og` משני, CWV + תמונות + Heebo + PPR + bundle,
-  cacheLife/tags, טבלת רינדור לכל route (כולל supplier/admin), RUM +
-  Lighthouse nightly warn, 8 שאלות פתוחות.
-- מצביעים עודכנו בראש PERFORMANCE ו-GROWTH-SEO. אין קוד, אין מיגרציה.
+Session 2026-07-23 - Stripe checkout foundation (autonomous):
+- `ARCHITECTURE-CHECKOUT.md` + `DECISIONS.md` (ADR-001..008): PaymentProvider swappable, Stripe first, Payoneer stub, lifecycle `pending->paid->fulfilled->refunded`, VAT-inclusive 18%, webhook-only paid.
+- Provider: `src/lib/payments/provider.ts` + Stripe + Payoneer stub + mock; factory `getCheckoutPaymentProvider`.
+- Migration `046_checkout_foundation.sql`: payment_attempts, order_status_audit, agorot/VAT columns, webhook dedupe RLS.
+- Lifecycle TS: `src/server/domain/orders/lifecycle.ts` + audit planner.
+- Stripe PI + webhook: `beginStripeCheckout`, `/api/payments/stripe/webhook`, idempotent finalize.
+- VAT: `src/lib/commerce/vat.ts` (round gross*18/118).
+- Failure paths: double-click idempotency, webhook replay, `/api/cron/checkout-recovery` + `vercel.json` cron.
+- Tests: unit green (103 pass / 2 skip without sk_test_); integration suite gated on `STRIPE_SECRET_KEY`.
+- type-check + build green. Commits on branch (no push).
 
-מה בנוי נכון ל-2026-07-20 (רקע, לא השתנה בסשן הזה):
+מה בנוי נכון ל-2026-07-20 (רקע):
 - Homepage 1:1, PDP `/product/[slug]`, Cart E2E, commerce engine + 042 draft,
   Admin Phase 3, מיגרציות מרוחקות עד 025 (+019/020/021), build ירוק.
 
