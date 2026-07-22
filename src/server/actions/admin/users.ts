@@ -1,19 +1,17 @@
 'use server'
 
-import { requireAdminSession } from '@/lib/admin/rbac'
+import { writeAuditLog } from '@/lib/admin/audit'
+import { canAssignRole } from '@/lib/admin/permissions'
+import { type AdminSessionInfo, isAdminRole, requireAdminSession } from '@/lib/admin/rbac'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
-import type { UserRole } from '@/types/database'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
-const roleSchema = z.enum([
-  'customer',
-  'vendor',
-  'content_uploader',
-  'admin',
-  'super_admin',
-] as const)
+const updateRoleSchema = z.object({
+  user_id: z.string().uuid({ message: 'מזהה משתמש לא תקין' }),
+  role: z.enum(['customer', 'vendor', 'content_uploader', 'support', 'admin', 'super_admin']),
+})
 
 export type UserActionState = { error: string } | { success: string } | null
 
@@ -21,20 +19,43 @@ export async function updateUserRole(
   _: UserActionState,
   formData: FormData,
 ): Promise<UserActionState> {
-  const { role: callerRole } = await requireAdminSession()
+  let session: AdminSessionInfo
+  try {
+    session = await requireAdminSession()
+  } catch {
+    return { error: 'אין הרשאה' }
+  }
 
-  const targetUserId = formData.get('user_id') as string
-  const parsed = roleSchema.safeParse(formData.get('role'))
-  if (!parsed.success) return { error: 'תפקיד לא תקין' }
+  const parsed = updateRoleSchema.safeParse({
+    user_id: formData.get('user_id'),
+    role: formData.get('role'),
+  })
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'קלט לא תקין' }
+  const { user_id: targetUserId, role: newRole } = parsed.data
 
-  const newRole = parsed.data as UserRole
-
-  // Only super_admin can assign admin or super_admin roles.
-  if ((newRole === 'admin' || newRole === 'super_admin') && callerRole !== 'super_admin') {
+  // Matrix rule: admin assigns up to content_uploader/support; only
+  // super_admin grants admin tier (re-enforced by DB trigger from 035).
+  if (!canAssignRole(session.role, newRole)) {
     return { error: 'רק מנהל-על יכול להעניק הרשאות מנהל' }
   }
 
+  if (targetUserId === session.userId) {
+    return { error: 'אי אפשר לשנות את התפקיד של עצמך' }
+  }
+
   const supabase = await createClient()
+  const { data: target } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', targetUserId)
+    .single()
+  if (!target) return { error: 'משתמש לא נמצא' }
+
+  // Demoting an admin-tier user is a super_admin-only operation too.
+  if (isAdminRole(target.role) && session.role !== 'super_admin') {
+    return { error: 'רק מנהל-על יכול לשנות תפקיד של מנהל' }
+  }
+
   const { error: profileError } = await supabase
     .from('profiles')
     .update({ role: newRole })
@@ -48,6 +69,16 @@ export async function updateUserRole(
     app_metadata: { role: newRole },
   })
 
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'permission_change',
+    entityType: 'profiles',
+    entityId: targetUserId,
+    changes: { role: { from: target.role, to: newRole } },
+  })
+
   revalidatePath('/admin/users')
+  revalidatePath(`/admin/users/${targetUserId}`)
   return { success: 'תפקיד עודכן בהצלחה' }
 }

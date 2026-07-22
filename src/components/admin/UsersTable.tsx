@@ -25,16 +25,21 @@ const ROLE_BADGE: Record<UserRole, string> = {
 interface Props {
   users: UserRow[]
   callerRole: UserRole
+  canEdit?: boolean
 }
 
-export default function UsersTable({ users, callerRole }: Props) {
+export default function UsersTable({ users, callerRole, canEdit = true }: Props) {
   const columns: DataTableColumn<UserRow>[] = [
     {
       id: 'name',
       header: 'משתמש',
       sortable: true,
       accessor: (u) => u.full_name ?? u.email,
-      cell: (u) => <span className="font-medium">{u.full_name ?? '—'}</span>,
+      cell: (u) => (
+        <a href={`/admin/users/${u.id}`} className="font-medium hover:underline">
+          {u.full_name ?? u.email}
+        </a>
+      ),
     },
     {
       id: 'email',
