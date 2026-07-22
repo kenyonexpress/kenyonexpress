@@ -137,8 +137,11 @@ Money columns are integer agorot; rate columns are integer basis points, unless 
 | `scan_result` | success, not_found, already_used, expired, refunded, wrong_supplier, unauthorized, rate_limited | — |
 | `ledger_account_kind` | cardcom_clearing, platform_revenue, vat_output, supplier_payable, customer_wallet | — |
 | `ledger_event` | order_paid, coupon_issued, coupon_redeemed, coupon_expired, physical_settled, refund, chargeback, wallet_cashback_earned, wallet_spent, wallet_expired, reversal | — |
-| `settlement_status` | draft, pending_approval, approved, paid, cancelled | paid, cancelled |
-| `reconciliation_status` | running, passed, failed | passed, failed |
+| `settlement_batch_status` (054) | draft, pending_approval, approved, paid, cancelled | paid, cancelled |
+| `recon_run_status` (055) | running, succeeded, failed | succeeded, failed |
+| `recon_severity` (055) | info, warning, critical | — |
+
+The legacy escrow-era `settlement_status` (047) enum (pending, split_executed, escrow_held, escrow_released, redeemed, refunded, cancelled) is **runoff only**; new settlement uses `settlement_batch_status`.
 
 ### 1.5 Audit trail
 
