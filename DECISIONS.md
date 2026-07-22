@@ -5,6 +5,16 @@ Living ADR log. Newest entries at the top.
 
 ---
 
+## 2026-07-23 — ADR-008: Recovery cron every 15 minutes
+
+**Context:** Abandoned pending orders and stale carts.
+
+**Decision:** `POST /api/cron/checkout-recovery` with `CRON_SECRET` bearer auth; Vercel cron `*/15 * * * *`. Expires `pending` orders past `expires_at` to `cancelled` with audit. Counts carts idle > 24h (enqueue later).
+
+**Consequences:** Requires `CRON_SECRET` in production. Without it, route is open only in non-production.
+
+---
+
 ## 2026-07-23 — ADR-001: Stripe first, Payoneer stub, Cardcom deferred behind same interface
 
 **Context:** Prior docs bind checkout to Cardcom Low Profile. Task asks for a swappable `PaymentProvider` with Stripe now and Payoneer stub.

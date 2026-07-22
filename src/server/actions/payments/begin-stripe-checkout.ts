@@ -2,6 +2,7 @@
 
 import { randomUUID } from 'node:crypto'
 import { agorot } from '@/lib/commerce/money'
+import { splitInclusiveVat } from '@/lib/commerce/vat'
 import { getCheckoutPaymentProvider, loadCheckoutPaymentsEnv } from '@/lib/payments'
 import { paymentAttemptIdempotencyKey } from '@/lib/payments/idempotency'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -16,19 +17,20 @@ export type BeginStripeCheckoutResult =
         payment_attempt_id: string
         client_secret: string | null
         provider_payment_id: string
+        vat_agorot: number
+        total_agorot: number
       }
     }
   | { ok: false; error: string; code: string }
 
 /**
  * Minimal Stripe beginCheckout: creates pending order + payment_attempt,
- * then a PaymentIntent via PaymentProvider. Prices must already be computed
- * server-side (agorot). Double-click safe via unique idempotency_key.
+ * then a PaymentIntent via PaymentProvider. VAT is derived server-side from
+ * the VAT-inclusive charge total (never trust client tax).
  */
 export async function beginStripeCheckout(input: {
+  /** VAT-inclusive pre-discount catalog total in agorot. */
   totalAgorot: number
-  subtotalAgorot: number
-  vatAgorot: number
   discountAgorot?: number
   description?: string
 }): Promise<BeginStripeCheckoutResult> {
@@ -50,6 +52,13 @@ export async function beginStripeCheckout(input: {
     return { ok: false, error: 'סכום לא תקין', code: 'VALIDATION' }
   }
 
+  const discount = input.discountAgorot ?? 0
+  if (!Number.isSafeInteger(discount) || discount < 0 || discount >= input.totalAgorot) {
+    return { ok: false, error: 'הנחה לא תקינה', code: 'VALIDATION' }
+  }
+
+  const chargeAgorot = input.totalAgorot - discount
+  const vatSplit = splitInclusiveVat(chargeAgorot)
   const admin = createAdminClient()
   const now = new Date()
   const expiresAt = new Date(now.getTime() + 30 * 60_000)
@@ -60,16 +69,16 @@ export async function beginStripeCheckout(input: {
     .insert({
       user_id: user.id,
       status: 'pending',
-      subtotal_ils: input.subtotalAgorot / 100,
-      discount_ils: (input.discountAgorot ?? 0) / 100,
+      subtotal_ils: input.totalAgorot / 100,
+      discount_ils: discount / 100,
       cashback_applied_ils: 0,
-      total_ils: input.totalAgorot / 100,
+      total_ils: chargeAgorot / 100,
       currency: 'ILS',
-      subtotal_agorot: input.subtotalAgorot,
-      discount_agorot: input.discountAgorot ?? 0,
-      vat_agorot: input.vatAgorot,
-      total_agorot: input.totalAgorot,
-      vat_rate_bps: 1800,
+      subtotal_agorot: input.totalAgorot,
+      discount_agorot: discount,
+      vat_agorot: vatSplit.vatAgorot,
+      total_agorot: chargeAgorot,
+      vat_rate_bps: vatSplit.vatRateBps,
       order_number: orderNumber,
       expires_at: expiresAt.toISOString(),
       accepted_terms_at: now.toISOString(),
@@ -92,7 +101,7 @@ export async function beginStripeCheckout(input: {
       provider:
         env.provider === 'payoneer' ? 'payoneer' : env.provider === 'mock' ? 'mock' : 'stripe',
       idempotency_key: idempotencyKey,
-      amount_agorot: input.totalAgorot,
+      amount_agorot: chargeAgorot,
       currency: 'ILS',
       status: 'initiated',
     })
@@ -110,7 +119,7 @@ export async function beginStripeCheckout(input: {
     const created = await provider.createPayment({
       orderId: order.id,
       paymentAttemptId: attempt.id,
-      amountAgorot: agorot(input.totalAgorot),
+      amountAgorot: agorot(chargeAgorot),
       currency: 'ILS',
       idempotencyKey,
       description: input.description ?? `הזמנה ${orderNumber}`,
@@ -141,7 +150,11 @@ export async function beginStripeCheckout(input: {
       to_status: 'pending',
       event: 'BEGIN_CHECKOUT',
       actor: `user:${user.id}`,
-      payload: { payment_attempt_id: attempt.id, provider: provider.kind },
+      payload: {
+        payment_attempt_id: attempt.id,
+        provider: provider.kind,
+        vat_agorot: vatSplit.vatAgorot,
+      },
     })
 
     return {
@@ -151,6 +164,8 @@ export async function beginStripeCheckout(input: {
         payment_attempt_id: attempt.id,
         client_secret: created.clientSecret,
         provider_payment_id: created.providerPaymentId,
+        vat_agorot: vatSplit.vatAgorot,
+        total_agorot: chargeAgorot,
       },
     }
   } catch (error) {
