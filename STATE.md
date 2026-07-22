@@ -1,85 +1,58 @@
 # KenyonExpress State
 
 ## Current Phase
-**Phase 5 storefront + commerce מחווט**. branch `phase5/homepage`.
+**Phase 6 Admin Super App**. branch `phase6/admin` (נבנה מחדש מ-`phase5/homepage`).
 
 ## Last Completed
-Session 2026-07-21 - יום עבודה אוטונומי מלא: קטגוריה, חנות, עגלה, merge checkout, חיווט תשלום.
+Session 2026-07-23 - בנייה אוטונומית מלאה של פאנל האדמין (M0-M11, כל מודול commit+push נפרד):
 
-**MEASURED-LIVE.md (לא בקומיט, לפי הוראה)**: `scripts/measure-live.mjs` מדד את
-kenyonexpress.co.il ב-1440x900 + 375x812 עם getComputedStyle+getBoundingClientRect
-(מוצר, קטגוריה, עגלה עם פריט אמיתי, header, footer; 1,025 שורות; צילומים ב-`shots/`).
-כל ערכי העיצוב בסשן נלקחו מהקובץ הזה.
+- **M0 מסמכים**: `ARCHITECTURE-ADMIN.md` (מפת מודולים, 4 שכבות הרשאה, סדר בנייה)
+  + `DECISIONS.md` (D1-D12: בסיס phase5/homepage ולא main הישן, editor=content_uploader,
+  Cardcom ולא Stripe, בלי טבלאות roles/permissions, אין שחזור admin_audit_log).
+- **M1 מיגרציות**: שחזור `048_product_approval_workflow.sql` (parity עם המרוחק),
+  `049_admin_rbac_support.sql` חדשה: תפקיד support ב-enum, `is_support()`,
+  מדיניות SELECT ל-support, view `v_admin_pending_queues`. **010 (affiliates/referrals)
+  ו-049 הוחלו על המרוחק דרך MCP**. `src/types/database.ts` נוצר מחדש מהסכימה החיה
+  (הוסרו aliases מתים: wallets, admin_audit_log, coupon_redemptions, cart_items).
+- **M2 RBAC**: `permissions.ts` (מטריצת סקשנים טהורה + בדיקות), `rbac.ts`
+  (requirePanelSession + requireSection), `labels.ts` (כל תוויות ה-enum בעברית),
+  `audit.ts` (writeAuditLog יחיד), `action-result.ts`; proxy + layout מכניסים support;
+  ה-(admin) group כולו force-dynamic + noindex; sidebar מסונן לפי תפקיד.
+- **M3 ערכת UI**: `ServerDataTable` (RSC, מיון בקישורים, bulk checkboxes),
+  `TablePagination` (he-IL, חצים מראה ב-RTL), `FilterBar` (GET form), `list-params.ts`.
+- **M4 audit-log**: שכתוב מלא מעל `audit_log` החיה (העמוד הישן קרא טבלה שנמחקה ב-025).
+- **M5 הזמנות**: רשימה עם pagination/חיפוש/סטטוס/תאריכים; `cancelPendingOrder` מחליף
+  עדכון סטטוס חופשי - רק pending->cancelled עם סיבה + audit (F2).
+- **M6 משתמשים**: pagination + חיפוש, עמוד משתמש 360 (`/admin/users/[id]`: ארנק,
+  קופונים, הזמנות), `updateUserRole` מוקשח (admin מעניק עד support, בלי שינוי עצמי,
+  הורדת admin רק ע"י super_admin, audit).
+- **M7 תשלומים**: `/admin/payments` בארבעה טאבים: payments, webhook events
+  (תקינות חתימה), escrow holds, split executions (אגורות->שקלים).
+- **M8 קופונים**: `/admin/coupons/codes` (קודים מונפקים עם face/paid/collect)
+  + שחזור `/admin/approvals` מהענף הישן מול מיגרציה 048 החיה.
+- **M9 שותפים**: `/admin/affiliates` בשני טאבים (בקשות שותפים עם אישור/דחייה/השעיה
+  + הפניות חבר-מביא-חבר) מעל טבלאות 010.
+- **M10 אנליטיקה**: `/admin/analytics` - 30 יום ב-RSC על הטבלאות החיות (הכנסות יומיות,
+  משפך קופונים, מוצרים מובילים); בלי v_* עד שיוחלו 033/034.
+- **M11 דשבורד**: קוקפיט יומי - מספרי היום, כרטיסי תורים מ-`v_admin_pending_queues`
+  עם צביעת SLA, פיד audit; support רואה הכול בלי מספרי כסף.
 
-**שלב א - דף קטגוריה (`1af2de7`)**: `/category/[slug]` נבנה מחדש ל-Electro החי:
-breadcrumb 25/22.4px, h1 25px/500 מימין + ספירת תוצאות משמאל, בר מיון #efefef
-radius 9 עם מחליף תצוגה ו-select מעוגל 174x34, grid flex של כרטיסי 234px
-(תגית 12px #768b9e, מחיר 20px ins #dc3545 del 12px, כותרת 14/700/#0062bd,
-תמונה 186, badge ‎#44b81b בפינת תחתית-imline-start, כפתור עגלה עגול 37x34),
-pagination צהוב #fed700, sidebar סינון חדש (`CategoryFilterSidebar`: קטגוריות +
-טווח מחיר min/max, עמודה 234 ב-inline-end). מיון ברירת מחדל -> name_he asc
-(תואם menu_order החי). `compare-category-live.mjs` מול קטגוריית המסעדות החיה:
-**23.7%** (מתחת ליעד 30%; השארית נשלטת ע"י ה-header הנעול שקצר ב-70px מהחי).
-
-**שלב ב - `/products` (`239600c`)**: ארכיון "חנות" כמו live /shop/ - אותם רכיבים,
-`getShopProducts` עם 24 לעמוד. `compare-shop-live.mjs`: **26.07%** (לחי 44 מוצרים
-מול 31 אצלנו - השוני תוכן, לא layout).
-
-**שלב ג - עגלה (`7964b2b`)**: **מיגרציה 045_restore_carts הוחלה על המרוחק** -
-public.carts חסרה שם (001 נעצרה מוקדם) וכל add-to-cart של אורח נפל ב-PGRST205.
-עיצוב `/cart` יושר ל-Electro הנמדד (h1 40/500/#333e48, שורות 17px, qty pill 14,
-מחיקה #a7a7a7, checkout צהוב pill 22, רוקן-עגלה אפור #efecec). commitCart עטוף
-ב-startTransition. אומת E2E כאורח: הוספה, drawer, כמות, הסרה; פיצול מעורב
-קופון 18/162 + פיזי 230 => באתר 248, עמלה 41, לספק 207.
-
-**שלב ד - merge (`bad5548`+`1e7e027`)**: ה-WIP הלא-מקומט מ-worktree
-`kenyon-checkout` קומט על `phase6/checkout` ומוזג פנימה: payments provider
-(Cardcom Low Profile + mock + HMAC), דומיין orders (state machine, escrow,
-redemption, settlement + 41 בדיקות), webhook + supplier redeem routes, עגלת
-Zustand (useCart API נשמר), admin orders, טיפוסי DB, zustand+qrcode.
-קונפליקט יחיד: CartProvider -> גרסת ה-store. build נקי, vitest 84/84.
-
-**שלב ה - חיווט checkout (`0f5228e`)**: `/checkout` (סקירת הזמנה, פיצול פר שורה,
-טופס כתובת לפיזי -> user_addresses, ארנק, תקנון) -> `submitCheckout` ->
-`beginCheckout` -> ספק (mock אוטומטי בפיתוח, אין קרדנצ׳יאלס sandbox ב-env) ->
-`/checkout/return` עם reconcile שרת (verifyLowProfile + בדיקת סכום + finalize
-אידמפוטנטי), עמוד הצלחה עם כרטיסי קופון (קוד 8 ספרות + QR + סכום לתשלום בעסק +
-תוקף) והודעת קאשבק; `/checkout/failed`. finalizeOrder: זיכוי ארנק
-מ-platform:cashback_reserve (idempotency `order:<id>:cashback`), ניקוי עגלה,
-תיקון supplier_payout_ils (NOT NULL מ-007). **מיגרציות שהוחלו על המרוחק דרך MCP**:
-`046_checkout_runtime.sql` (גשר: payments, payment_webhook_events, coupon_codes,
-payment_tokens, wallet_accounts+wallet_entries+fn_wallet_transfer service-only,
-products.platform_percent, snapshots ל-order_items, stub is_supplier_member, RLS)
-+ `047_checkout_settlement.sql` (הטיוטה מה-merge, ממוספרת מחדש).
-אומת E2E בדפדפן (משתמש בדיקה checkout-e2e@kenyonexpress.test בסיסמה):
-הזמנת קופון (שולם 18 מ-180, קופון+QR הונפק, escrow held, קאשבק 0.90 נזקף,
-reserve ‎-0.90 כפול-רישום) והזמנה מעורבת עם כתובת (817 שולם, split 759.05/39.95,
-מלאי ועגלה עודכנו).
-
-**החלטות דאטה בסשן (dev)**: מוצרי restaurants-cafes סומנו is_coupon_enabled=true
-(דילים של מסעדות = קופונים באופיים); ל"ארוחה בשרית" נקבע cashback_percent=5
-להדגמת הזיכוי. משתמש בדיקה חדש ב-auth.
-
-**הערת מודל פתוחה**: ה-settlement הממוזג משתמש בעמלת פלטפורמה 5% ברירת מחדל
-(commission_percent, ניתן לעקיפה פר מוצר) בעוד סקיל cardcom-payments אומר 10%
-לפיזי. upfront של קופון = platform_percent (ברירת מחדל 10) - תואם. נדרשת הכרעת
-Ofir איזו ברירת מחדל נכונה ל-commission_percent.
+**במקביל (לפי בקשות אופיר)**: worktree ‏`kenyon-audit` על `infra/audit` -
+INFRA-AUDIT.md מלא + תיקון P0 יחיד (security headers ב-next.config.ts), שני commits,
+רשימת P1 בדוח; worktree ‏`kenyon-arch` על `arch/master-v2` - MASTER-ARCHITECTURE.md
+‏(990 שורות, commit). הגדרות claude הוחלפו ל-bypassPermissions גלובלית לפי הוראה.
+מדידת electro.madrasthemes.com נחסמה ע"י Cloudflare (עמוד אתגר).
 
 ## In Progress
 nothing
 
 ## Blocking Issues
-- ה-header הנעול קצר ב-70px מה-masthead החי (topbar+masthead 148px בחי מול 95px
-  אצלנו) - מגביל כל compare מול האתר החי; נדרש אישור Ofir לגעת בקבצים הנעולים.
-- redirect_to של Google OAuth נבנה עם `undefined` כשה-NEXT_PUBLIC_APP_URL חסר
-  בקונטקסט הפעולה (נצפה בלוגי E2E) - לא חוסם checkout, כן חוסם התחברות Google
-  אמיתית מקומית.
-- `supabase db push` עדיין אסור; החלות רק דרך MCP apply_migration.
+none
 
 ## Next Task
-מימוש קופון אצל הספק (api/supplier/redeem כבר קיים מה-merge אבל תלוי
-supplier_members/coupon_redemptions שטרם הוקמו במרוחק) + דף הזמנות ללקוח.
-במקביל: הכרעת ברירת מחדל commission_percent (5 מול 10).
+לפי סדר AD של V2: תיקון coupon_price החופשי בטופס הדילים (MASTER 1.40),
+עדכון עמוד ההזמנה `/admin/orders/[id]` לצפייה בפריטי settlement,
+ובהמשך מסכי 027+ (payouts/reconciliation) כשהמיגרציות יוחלו.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
@@ -394,3 +367,11 @@ commit: `feat: homepage 1:1 match with live source`
 - pipeline מלא: identity gate, Cardcom Low Profile, webhook HMAC,
   `checkout_finalize`, coupon vs physical fulfillment, refunds, payment_attempts
 - אין קוד יישום; מרחיב COMMERCE / API-CONTRACTS / SECURITY
+
+### 2026-07-23 - Phase 6 Admin Super App (phase6/admin)
+- הענף נמחק ונבנה מחדש מ-phase5/homepage (ה-tip הישן 97647b3 נשמר ב-reflog)
+- מיגרציות שהוחלו על המרוחק: 010 referrals/affiliates, 049 admin_rbac_support
+- 11 מודולים, כל אחד commit+push: docs, db+types, rbac, ui-kit, audit-log,
+  orders, users, payments, coupons+approvals, affiliates, analytics, dashboard
+- typecheck + build + vitest ירוקים אחרי כל מודול
+- ענפים מקבילים: infra/audit (אודיט + security headers), arch/master-v2 (MASTER-ARCHITECTURE v2)
