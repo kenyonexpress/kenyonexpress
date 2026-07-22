@@ -1,140 +1,209 @@
+import FilterBar from '@/components/admin/FilterBar'
+import ServerDataTable, { type ServerColumn } from '@/components/admin/ServerDataTable'
 import StatusBadge, { orderStatusBadge } from '@/components/admin/StatusBadge'
+import TablePagination from '@/components/admin/TablePagination'
+import { ORDER_STATUS_LABELS } from '@/lib/admin/labels'
+import { baseListParamsSchema, listRange } from '@/lib/admin/list-params'
+import { requireSection } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
+import type { OrderStatus } from '@/types/database'
 import Link from 'next/link'
+import { z } from 'zod'
 
 export const metadata = { title: 'הזמנות' }
 
-const ORDER_STATUSES = [
-  { value: '', label: 'כל הסטטוסים' },
-  { value: 'pending', label: 'ממתין' },
-  { value: 'paid', label: 'שולם' },
-  { value: 'partially_fulfilled', label: 'סופק חלקית' },
-  { value: 'fulfilled', label: 'סופק' },
-  { value: 'cancelled', label: 'בוטל' },
-  { value: 'refunded', label: 'הוחזר' },
-]
+const ORDER_STATUSES = Object.keys(ORDER_STATUS_LABELS) as OrderStatus[]
 
-interface Props {
-  searchParams: Promise<{ status?: string; from?: string; to?: string }>
+const paramsSchema = baseListParamsSchema.extend({
+  status: z.enum(ORDER_STATUSES as [OrderStatus, ...OrderStatus[]]).optional(),
+  from: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
+  to: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
+})
+
+type OrderRow = {
+  id: string
+  invoice_number: string | null
+  status: OrderStatus
+  total_ils: number
+  created_at: string
+  customer: string
 }
 
-export default async function AdminOrdersPage({ searchParams }: Props) {
-  const { status, from, to } = await searchParams
+export default async function AdminOrdersPage(props: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
+  await requireSection('orders')
+
+  const raw = await props.searchParams
+  const params = paramsSchema.parse(raw)
+  const { from: rangeFrom, to: rangeTo } = listRange(params)
+
   const supabase = await createClient()
+
+  // Free-text search covers invoice number directly; customer name/email
+  // resolves through profiles first (orders.user_id -> auth.users, so no
+  // direct PostgREST embed filter).
+  let matchedUserIds: string[] | null = null
+  if (params.q) {
+    const { data: matched } = await supabase
+      .from('profiles')
+      .select('id')
+      .or(`full_name.ilike.%${params.q}%,email.ilike.%${params.q}%`)
+      .limit(50)
+    matchedUserIds = (matched ?? []).map((p) => p.id)
+  }
 
   let query = supabase
     .from('orders')
-    .select('id, invoice_number, status, total_ils, created_at, profiles(full_name, email)')
+    .select(
+      'id, invoice_number, status, total_ils, created_at, user_id, profiles(full_name, email)',
+      {
+        count: 'exact',
+      },
+    )
+    .is('deleted_at', null)
     .order('created_at', { ascending: false })
-    .limit(100)
+    .range(rangeFrom, rangeTo)
 
-  if (status) query = query.eq('status', status)
-  if (from) query = query.gte('created_at', from)
-  if (to) query = query.lte('created_at', `${to}T23:59:59`)
+  if (params.status) query = query.eq('status', params.status)
+  if (params.from) query = query.gte('created_at', params.from)
+  if (params.to) query = query.lte('created_at', `${params.to}T23:59:59`)
+  if (params.q) {
+    const idList = (matchedUserIds ?? []).map((id) => `user_id.eq.${id}`).join(',')
+    query = query.or([`invoice_number.ilike.%${params.q}%`, idList].filter(Boolean).join(','))
+  }
 
-  const { data: orders } = await query
+  const { data: orders, count, error } = await query
+
+  const rows: OrderRow[] = (orders ?? []).map((order) => {
+    const profile = Array.isArray(order.profiles) ? order.profiles[0] : order.profiles
+    return {
+      id: order.id,
+      invoice_number: order.invoice_number,
+      status: order.status,
+      total_ils: order.total_ils,
+      created_at: order.created_at,
+      customer: profile?.full_name ?? profile?.email ?? '',
+    }
+  })
+
+  const urlParams = {
+    q: params.q,
+    status: params.status,
+    from: params.from,
+    to: params.to,
+    per: params.per,
+    page: params.page,
+  }
+
+  const columns: ServerColumn<OrderRow>[] = [
+    {
+      id: 'invoice',
+      header: 'מס׳ הזמנה',
+      cell: (order) => (
+        <Link
+          href={`/admin/orders/${order.id}`}
+          className="font-mono text-xs text-brand hover:underline"
+        >
+          {order.invoice_number ?? order.id.slice(0, 8)}
+        </Link>
+      ),
+    },
+    { id: 'customer', header: 'לקוח', cell: (order) => order.customer },
+    {
+      id: 'total',
+      header: 'סכום',
+      sortKey: 'total_ils',
+      cell: (order) => `₪${order.total_ils.toLocaleString('he-IL')}`,
+    },
+    {
+      id: 'status',
+      header: 'סטטוס',
+      cell: (order) => {
+        const badge = orderStatusBadge(order.status)
+        return <StatusBadge label={badge.label} variant={badge.variant} />
+      },
+    },
+    {
+      id: 'created_at',
+      header: 'תאריך',
+      sortKey: 'created_at',
+      className: 'whitespace-nowrap text-xs text-black/50',
+      cell: (order) => new Date(order.created_at).toLocaleDateString('he-IL'),
+    },
+  ]
 
   return (
     <div className="space-y-4">
       <h1 className="text-xl font-bold text-gray-900">הזמנות</h1>
 
-      {/* Filters */}
-      <div className="flex gap-2 flex-wrap items-center">
-        {ORDER_STATUSES.map((s) => (
+      <div className="flex flex-wrap items-center gap-2">
+        {[undefined, ...ORDER_STATUSES].map((status) => (
           <Link
-            key={s.value}
-            href={s.value ? `/admin/orders?status=${s.value}` : '/admin/orders'}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-              (status ?? '') === s.value
+            key={status ?? 'all'}
+            href={status ? `/admin/orders?status=${status}` : '/admin/orders'}
+            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+              params.status === status || (!params.status && !status)
                 ? 'bg-brand text-brand-dark'
-                : 'bg-white border border-gray-200 text-gray-600 hover:border-brand hover:text-brand'
+                : 'border border-gray-200 bg-white text-gray-600 hover:border-brand hover:text-brand'
             }`}
           >
-            {s.label}
+            {status ? ORDER_STATUS_LABELS[status] : 'כל הסטטוסים'}
           </Link>
         ))}
-        <form method="GET" action="/admin/orders" className="flex gap-2 mr-auto">
-          {status && <input type="hidden" name="status" value={status} />}
-          <input
-            name="from"
-            type="date"
-            defaultValue={from ?? ''}
-            className="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
-          />
-          <input
-            name="to"
-            type="date"
-            defaultValue={to ?? ''}
-            className="border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
-          />
-          <button
-            type="submit"
-            className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-lg"
-          >
-            סינון
-          </button>
-        </form>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-right text-xs text-gray-500 bg-gray-50 border-b border-gray-200">
-              <th className="px-5 py-3 font-medium">מס׳ הזמנה</th>
-              <th className="px-5 py-3 font-medium">לקוח</th>
-              <th className="px-5 py-3 font-medium">סכום</th>
-              <th className="px-5 py-3 font-medium">סטטוס</th>
-              <th className="px-5 py-3 font-medium">תאריך</th>
-              <th className="px-5 py-3 font-medium">פעולות</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100">
-            {(orders ?? []).map((order) => {
-              const badge = orderStatusBadge(order.status)
-              const profile = Array.isArray(order.profiles) ? order.profiles[0] : order.profiles
-              return (
-                <tr key={order.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-5 py-3">
-                    <Link
-                      href={`/admin/orders/${order.id}`}
-                      className="text-brand hover:underline font-mono text-xs"
-                    >
-                      {order.invoice_number ?? order.id.slice(0, 8)}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3 text-gray-700">
-                    {profile?.full_name ?? profile?.email ?? '—'}
-                  </td>
-                  <td className="px-5 py-3 text-gray-700">
-                    ₪{order.total_ils.toLocaleString('he-IL')}
-                  </td>
-                  <td className="px-5 py-3">
-                    <StatusBadge label={badge.label} variant={badge.variant} />
-                  </td>
-                  <td className="px-5 py-3 text-gray-500 text-xs">
-                    {new Date(order.created_at).toLocaleDateString('he-IL')}
-                  </td>
-                  <td className="px-5 py-3">
-                    <Link
-                      href={`/admin/orders/${order.id}`}
-                      className="text-brand text-sm hover:underline"
-                    >
-                      פרטים
-                    </Link>
-                  </td>
-                </tr>
-              )
-            })}
-            {!orders?.length && (
-              <tr>
-                <td colSpan={6} className="px-5 py-10 text-center text-gray-400">
-                  אין הזמנות
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <FilterBar
+        basePath="/admin/orders"
+        searchPlaceholder="חיפוש לפי מס׳ הזמנה, שם או אימייל..."
+        defaultQuery={params.q}
+        preserve={{ status: params.status, per: params.per }}
+      >
+        <input
+          name="from"
+          type="date"
+          defaultValue={params.from ?? ''}
+          className="h-9 rounded-md border border-black/10 bg-[#FFFFFF] px-2 text-sm"
+          aria-label="מתאריך"
+        />
+        <input
+          name="to"
+          type="date"
+          defaultValue={params.to ?? ''}
+          className="h-9 rounded-md border border-black/10 bg-[#FFFFFF] px-2 text-sm"
+          aria-label="עד תאריך"
+        />
+      </FilterBar>
+
+      {error ? (
+        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+          שגיאה בטעינת הזמנות: {error.message}
+        </p>
+      ) : (
+        <>
+          <ServerDataTable
+            rows={rows}
+            columns={columns}
+            rowKey={(order) => order.id}
+            basePath="/admin/orders"
+            params={urlParams}
+            emptyMessage="אין הזמנות"
+          />
+          <TablePagination
+            basePath="/admin/orders"
+            params={urlParams}
+            page={params.page}
+            perPage={params.per}
+            total={count ?? 0}
+          />
+        </>
+      )}
     </div>
   )
 }
