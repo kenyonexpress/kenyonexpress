@@ -13,6 +13,7 @@
     "type-check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:integration": "vitest run src/**/*.integration.test.ts",
     "test:e2e": "playwright test",
     "db:types": "supabase gen types typescript --linked --schema public > src/types/database.ts",
     "prepare": "husky || true"
