@@ -27,6 +27,11 @@ Implement migration 050 money convergence on an implementation branch (not this 
 ## Supabase Project URL
 https://ixvwfbuvfxxsjiywhbbb.supabase.co (dev)
 
+---
+
+## History
+
+Session 2026-07-21 - יום עבודה אוטונומי (קטגוריה/חנות/עגלה) — context preserved below:
 
 **MEASURED-LIVE.md (לא בקומיט, לפי הוראה)**: `scripts/measure-live.mjs` מדד את
 kenyonexpress.co.il ב-1440x900 + 375x812 עם getComputedStyle+getBoundingClientRect
