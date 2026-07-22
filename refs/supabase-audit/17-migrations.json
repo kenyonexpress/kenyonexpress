@@ -1,0 +1,29 @@
+{
+  "query": "17 - applied migration history (supabase_migrations.schema_migrations)",
+  "generated_from": "live project ixvwfbuvfxxsjiywhbbb",
+  "generated_at": "2026-07-23",
+  "note": "This is the tracked remote migration history via MCP. The base schema (local files 001-024) was applied before tracking (direct), so it does not all appear here. Local draft files 026-044 exist on disk but were never applied as their own tracked entries. product_approval_workflow and admin_rbac_support are remote-only (no matching local migration file). Apply new migrations only via MCP apply_migration, never db push.",
+  "count": 12,
+  "applied": [
+    {"version": "20260622132032", "name": "auth_rate_limits"},
+    {"version": "20260622132053", "name": "storage_buckets"},
+    {"version": "20260622141347", "name": "user_rate_limits"},
+    {"version": "20260622141403", "name": "storage_product_images_admin"},
+    {"version": "20260622141427", "name": "products_coupons_buckets"},
+    {"version": "20260707225659", "name": "025_consolidation"},
+    {"version": "20260721135444", "name": "restore_carts"},
+    {"version": "20260721142011", "name": "checkout_runtime"},
+    {"version": "20260721142046", "name": "checkout_settlement"},
+    {"version": "20260721180220", "name": "product_approval_workflow"},
+    {"version": "20260722193106", "name": "referrals_affiliates_schema"},
+    {"version": "20260722193128", "name": "admin_rbac_support"}
+  ],
+  "local_only_not_applied": [
+    "026_commerce", "027_suppliers", "028_agents", "029_accounts", "030_catalog",
+    "031_notifications", "032_wp_import_staging", "033_analytics", "034_analytics_bi",
+    "035_security_hardening", "042_commerce_core", "043_seed_suppliers_link_products",
+    "044_link_products_to_vendors"
+  ],
+  "remote_only_no_local_file": ["product_approval_workflow", "admin_rbac_support"],
+  "next_migration": "048 (create coupon_redemptions, coupon_scan_events, supplier_members; agorot money columns; drop escrow per D1)"
+}

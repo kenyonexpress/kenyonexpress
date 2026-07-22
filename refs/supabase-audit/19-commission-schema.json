@@ -1,0 +1,93 @@
+{
+  "generated_from": "live project ixvwfbuvfxxsjiywhbbb",
+  "generated_at": "2026-07-23",
+  "note": "Commission-relevant schema verified via Supabase MCP execute_sql against information_schema and pg_catalog. Money in ILS numeric on headers, agorot integers on settlement columns. See docs/ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md for the target model and the open decisions D1-D6.",
+  "enums": {
+    "settlement_status": ["pending", "paid", "split_executed", "escrow_held", "escrow_released", "redeemed", "refunded", "cancelled"],
+    "escrow_status": ["held", "released", "refunded"],
+    "order_item_status": ["pending", "issued", "shipped", "delivered", "cancelled", "refunded"],
+    "product_type": ["coupon", "physical", "service"],
+    "coupon_status": ["issued", "used", "expired", "refunded"]
+  },
+  "rate_sources": {
+    "resolution_order": ["products.platform_percent (per-product override)", "suppliers.commission_percent (per-supplier fallback)", "code default"],
+    "products.commission_percent": {"type": "numeric(5,2)", "nullable": false, "default": 5, "role": "physical platform commission (added by 047)"},
+    "products.platform_percent": {"type": "numeric(5,2)", "nullable": true, "role": "coupon upfront percent charged on-site"},
+    "products.cashback_percent": {"type": "numeric(5,2)", "nullable": false, "default": 0},
+    "suppliers.commission_percent": {"type": "numeric(5,2)", "nullable": false, "default": 0, "role": "per-supplier fallback"},
+    "known_conflict": "Three overlapping percent columns (products.platform_percent, products.commission_percent, suppliers.commission_percent). Authoritative rule unifies on platform_percent. See decision D2."
+  },
+  "tables": {
+    "order_items": {
+      "role": "immutable per-line commission + settlement snapshot",
+      "commission_columns": {
+        "supplier_id": {"type": "uuid", "nullable": true, "fk": "suppliers.id"},
+        "unit_price_ils": {"type": "numeric(12,2)", "nullable": false},
+        "total_price_ils": {"type": "numeric(12,2)", "nullable": false},
+        "commission_percent": {"type": "numeric(5,2)", "nullable": false},
+        "commission_percent_snapshot": {"type": "numeric(5,2)", "nullable": true},
+        "platform_percent": {"type": "numeric(5,2)", "nullable": true},
+        "upfront_percent": {"type": "numeric(5,2)", "nullable": true},
+        "cashback_percent": {"type": "numeric(5,2)", "nullable": true},
+        "supplier_payout_ils": {"type": "numeric(12,2)", "nullable": false},
+        "settlement_status": {"type": "settlement_status", "nullable": false, "default": "pending"},
+        "item_status": {"type": "order_item_status", "nullable": false, "default": "pending"},
+        "face_value_agorot": {"type": "integer", "nullable": true},
+        "paid_on_site_agorot": {"type": "integer", "nullable": true},
+        "commission_agorot": {"type": "integer", "nullable": true},
+        "supplier_immediate_agorot": {"type": "integer", "nullable": true},
+        "escrow_held_agorot": {"type": "integer", "nullable": true, "deprecate": "D1 (remove escrow from coupon path)"},
+        "escrow_release_agorot": {"type": "integer", "nullable": true, "deprecate": "D1"},
+        "balance_due_agorot": {"type": "integer", "nullable": true},
+        "cashback_amount_agorot": {"type": "integer", "nullable": true}
+      }
+    },
+    "escrow_holds": {
+      "role": "live coupon escrow engine (047); slated for removal per authoritative NO-escrow rule (D1)",
+      "columns": {
+        "id": "uuid",
+        "coupon_code_id": "uuid NOT NULL",
+        "order_id": "uuid NOT NULL",
+        "order_item_id": "uuid NOT NULL",
+        "supplier_id": "uuid NOT NULL",
+        "held_agorot": "integer NOT NULL",
+        "commission_agorot": "integer NOT NULL",
+        "release_agorot": "integer NOT NULL",
+        "status": "escrow_status NOT NULL default held",
+        "release_idempotency_key": "text",
+        "held_at": "timestamptz",
+        "released_at": "timestamptz",
+        "refunded_at": "timestamptz"
+      },
+      "check_constraint": "escrow_holds_conservation: held_agorot = commission_agorot + release_agorot"
+    },
+    "split_executions": {
+      "role": "live physical split ledger (047), one row per settled physical line",
+      "columns": {
+        "id": "uuid",
+        "order_id": "uuid NOT NULL",
+        "order_item_id": "uuid NOT NULL",
+        "supplier_id": "uuid NOT NULL",
+        "payment_id": "uuid",
+        "face_value_agorot": "integer NOT NULL",
+        "commission_agorot": "integer NOT NULL",
+        "supplier_agorot": "integer NOT NULL",
+        "executed_at": "timestamptz NOT NULL default now()"
+      },
+      "check_constraint": "split_executions_conservation: face_value_agorot = commission_agorot + supplier_agorot"
+    },
+    "coupon_codes": {
+      "role": "issued coupon instance (046); already no-escrow-shaped",
+      "commission_columns": {
+        "supplier_id": "uuid",
+        "platform_percent": "numeric(5,2)",
+        "face_value_ils": "numeric NOT NULL default 0",
+        "platform_paid_ils": "numeric NOT NULL default 0 (the on-site 10%)",
+        "collect_amount_ils": "numeric NOT NULL default 0 (the in-store 90%)",
+        "status": "coupon_status NOT NULL default issued"
+      }
+    }
+  },
+  "live_row_counts": {"suppliers": 6, "vendors": 0, "order_items": 3, "escrow_holds": 2, "split_executions": 1, "coupon_codes": 2},
+  "not_applied_on_remote": ["042_commerce_core (commission_ledger, agorot order header columns)", "cashback_reversal_debts", "coupon_redemptions", "coupon_scan_events", "supplier_members"]
+}

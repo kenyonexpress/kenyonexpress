@@ -1,0 +1,43 @@
+{
+  "query": "7 - RLS enabled + policy count per public table",
+  "generated_from": "live project ixvwfbuvfxxsjiywhbbb",
+  "generated_at": "2026-07-23",
+  "source": "pg_class (relrowsecurity, relforcerowsecurity) joined to pg_policies, schema public, relkind='r'",
+  "summary": {
+    "tables_total": 27,
+    "rls_enabled": 27,
+    "rls_forced": 0,
+    "rls_enabled_but_zero_policies": ["payment_webhook_events", "rate_limits", "user_rate_limits"],
+    "note": "Zero-policy tables are RLS-on with no policy, so only the service role (which bypasses RLS) can read/write them. This is intentional for webhook events and rate-limit tables. rls_forced=false everywhere means table owners still bypass RLS."
+  },
+  "tables": [
+    {"table_name": "affiliates", "rls_enabled": true, "rls_forced": false, "policy_count": 4},
+    {"table_name": "audit_log", "rls_enabled": true, "rls_forced": false, "policy_count": 4},
+    {"table_name": "carts", "rls_enabled": true, "rls_forced": false, "policy_count": 1},
+    {"table_name": "categories", "rls_enabled": true, "rls_forced": false, "policy_count": 3},
+    {"table_name": "coupon_codes", "rls_enabled": true, "rls_forced": false, "policy_count": 2},
+    {"table_name": "coupon_deals", "rls_enabled": true, "rls_forced": false, "policy_count": 5},
+    {"table_name": "coupons", "rls_enabled": true, "rls_forced": false, "policy_count": 1},
+    {"table_name": "escrow_holds", "rls_enabled": true, "rls_forced": false, "policy_count": 3},
+    {"table_name": "order_items", "rls_enabled": true, "rls_forced": false, "policy_count": 3},
+    {"table_name": "orders", "rls_enabled": true, "rls_forced": false, "policy_count": 3},
+    {"table_name": "payment_tokens", "rls_enabled": true, "rls_forced": false, "policy_count": 1},
+    {"table_name": "payment_webhook_events", "rls_enabled": true, "rls_forced": false, "policy_count": 0},
+    {"table_name": "payments", "rls_enabled": true, "rls_forced": false, "policy_count": 1},
+    {"table_name": "product_images", "rls_enabled": true, "rls_forced": false, "policy_count": 2},
+    {"table_name": "product_variants", "rls_enabled": true, "rls_forced": false, "policy_count": 4},
+    {"table_name": "products", "rls_enabled": true, "rls_forced": false, "policy_count": 11},
+    {"table_name": "profiles", "rls_enabled": true, "rls_forced": false, "policy_count": 4},
+    {"table_name": "rate_limits", "rls_enabled": true, "rls_forced": false, "policy_count": 0},
+    {"table_name": "referrals", "rls_enabled": true, "rls_forced": false, "policy_count": 3},
+    {"table_name": "split_executions", "rls_enabled": true, "rls_forced": false, "policy_count": 3},
+    {"table_name": "suppliers", "rls_enabled": true, "rls_forced": false, "policy_count": 1},
+    {"table_name": "user_addresses", "rls_enabled": true, "rls_forced": false, "policy_count": 5},
+    {"table_name": "user_rate_limits", "rls_enabled": true, "rls_forced": false, "policy_count": 0},
+    {"table_name": "vendors", "rls_enabled": true, "rls_forced": false, "policy_count": 5},
+    {"table_name": "wallet_accounts", "rls_enabled": true, "rls_forced": false, "policy_count": 1},
+    {"table_name": "wallet_balances", "rls_enabled": true, "rls_forced": false, "policy_count": 3},
+    {"table_name": "wallet_entries", "rls_enabled": true, "rls_forced": false, "policy_count": 1},
+    {"table_name": "wallet_transactions", "rls_enabled": true, "rls_forced": false, "policy_count": 3}
+  ]
+}
