@@ -28,6 +28,13 @@ export function isSupportRole(role: UserRole | null | undefined): boolean {
   return role === 'support' || isAdminRole(role)
 }
 
+// Staff = catalog writers. Existing write guards depend on this meaning,
+// so support is deliberately NOT included here.
 export function isStaffRole(role: UserRole | null | undefined): boolean {
-  return role === 'content_uploader' || role === 'support' || isAdminRole(role)
+  return role === 'content_uploader' || isAdminRole(role)
+}
+
+// Panel entry: everyone with any admin-panel access, including support.
+export function isPanelRole(role: UserRole | null | undefined): boolean {
+  return isStaffRole(role) || role === 'support'
 }

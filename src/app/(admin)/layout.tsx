@@ -1,13 +1,21 @@
 import AdminSidebar from '@/components/admin/AdminSidebar'
-import { ROLE_LABELS, requireAdminSession } from '@/lib/admin/rbac'
+import { ROLE_LABELS, requirePanelSession } from '@/lib/admin/rbac'
 import { signOut } from '@/server/actions/auth'
 import { LogOut } from 'lucide-react'
 import Link from 'next/link'
 
-export const metadata = { title: { template: '%s | ניהול KenyonExpress', default: 'ניהול' } }
+export const metadata = {
+  title: { template: '%s | ניהול KenyonExpress', default: 'ניהול' },
+  robots: { index: false, follow: false },
+}
+
+// Admin is always fully dynamic: zero cache, always-fresh truth (V2 rule 4).
+export const dynamic = 'force-dynamic'
 
 export default async function AdminGroupLayout({ children }: { children: React.ReactNode }) {
-  const { role } = await requireAdminSession()
+  // Layout guard = layer 2 of 4 (proxy -> layout -> per-page section gate ->
+  // action guard + RLS). Panel entry only; pages enforce the section matrix.
+  const { role } = await requirePanelSession()
 
   return (
     <div
@@ -37,7 +45,7 @@ export default async function AdminGroupLayout({ children }: { children: React.R
       </header>
 
       <div className="mx-auto flex max-w-7xl items-start gap-6 px-6 py-6">
-        <AdminSidebar />
+        <AdminSidebar role={role} />
         <main className="min-w-0 flex-1">{children}</main>
       </div>
     </div>
