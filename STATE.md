@@ -1,15 +1,14 @@
 # KenyonExpress State
 
 ## Current Phase
-**Architecture master v2**. branch `arch/master-v2` (worktree `kenyon-arch`).
+**Checkout + Cardcom architecture**. branch `arch/checkout-cardcom` (worktree `kenyon-arch`). Design only.
 
 ## Last Completed
-Session 2026-07-23 - `MASTER-ARCHITECTURE.md` rewritten to owner business model:
-- Coupon: on-site `platform_percent` %, remainder at merchant, **NO escrow**, breakage on expiry.
-- Physical: 100% on site; snapshot `platform_percent`; settle via `payout_statements` after delivered+14d.
-- Agorot integers; hybrid ledger (wallet double-entry + Cardcom reconcile); Cardcom = production PSP.
-- Full ERD, state machines, scan race safety, RBAC, cache tags, background jobs, migration 050+ plan, risk register.
-- Design only; no UI files.
+Session 2026-07-23 - `CHECKOUT-ARCHITECTURE.md` on `arch/checkout-cardcom`:
+- Flow: guest cart -> שלם -> Google OAuth -> snapshot + Cardcom (coupon partial / physical full).
+- Cardcom: Low Profile + ChargeToken; no Multi-Account; webhook HMAC + GetLpResult + payment_webhook_events replay protection.
+- Order/payment state machine, failure paths, idempotency, zod routes D1-D7, sandbox matrix S1-S22.
+- Bound to MASTER v2 (no escrow, per-product platform_percent). LEDGER-DESIGN.md absent (D-LEDGER in MASTER).
 
 ## In Progress
 nothing
@@ -19,7 +18,7 @@ Live runtime still books coupon escrow (R1) until migration 050.
 QR still unkeyed SHA-256 (R2) until 052.
 
 ## Next Task
-Implement migration 050 money convergence on an implementation branch (not this design branch).
+Implement checkout/Cardcom against CHECKOUT-ARCHITECTURE on an implementation branch (not this design branch).
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyon-arch
