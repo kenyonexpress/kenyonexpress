@@ -1,9 +1,29 @@
 'use client'
 
 import { type UploadBucket, uploadImage, validateFile } from '@/lib/storage/upload'
+import { requestUploadUrl } from '@/server/actions/admin/upload'
 import { ImagePlus, Trash2 } from 'lucide-react'
 import Image from 'next/image'
 import { useRef, useState } from 'react'
+
+// Upload one file: prefer Cloudflare R2 (presigned PUT), fall back to Supabase.
+async function uploadOne(file: File, bucket: UploadBucket, folder: string): Promise<string> {
+  const target = await requestUploadUrl(folder, file.name)
+  if ('error' in target) throw new Error(target.error)
+
+  if (target.provider === 'r2') {
+    const res = await fetch(target.uploadUrl, {
+      method: 'PUT',
+      body: file,
+      headers: { 'Content-Type': file.type },
+    })
+    if (!res.ok) throw new Error(`שגיאת העלאה ל-R2 (${res.status})`)
+    return target.publicUrl
+  }
+
+  const { url } = await uploadImage(file, bucket, folder)
+  return url
+}
 
 interface Props {
   bucket: UploadBucket
@@ -37,8 +57,8 @@ export default function ImageUploader({ bucket, folder, value, onChange, maxFile
 
     setUploading(true)
     try {
-      const uploaded = await Promise.all(validFiles.map((f) => uploadImage(f, bucket, folder)))
-      onChange([...value, ...uploaded.map((u) => u.url)])
+      const uploaded = await Promise.all(validFiles.map((f) => uploadOne(f, bucket, folder)))
+      onChange([...value, ...uploaded])
     } catch (e) {
       setError(e instanceof Error ? e.message : 'שגיאת העלאה')
     } finally {
