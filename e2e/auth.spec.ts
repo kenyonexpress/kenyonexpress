@@ -18,7 +18,7 @@ test.describe('Login page', () => {
   test('shows email and password fields', async ({ page }) => {
     await expect(page.getByLabel('אימייל')).toBeVisible()
     await expect(page.getByLabel('סיסמה')).toBeVisible()
-    await expect(page.getByRole('button', { name: 'כניסה' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'כניסה', exact: true })).toBeVisible()
   })
 
   test('has forgot password link', async ({ page }) => {
