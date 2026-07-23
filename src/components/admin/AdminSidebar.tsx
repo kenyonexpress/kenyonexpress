@@ -31,9 +31,9 @@ export default function AdminSidebar() {
 
   return (
     <aside className="w-56 shrink-0">
-      <nav className="sticky top-4 overflow-hidden rounded-xl border border-black/10 bg-[#FFFFFF]">
-        <div className="border-b border-gray-200 bg-[#fed700] px-4 py-3">
-          <span className="text-sm font-bold tracking-wide text-[#333e48]">פאנל ניהול</span>
+      <nav className="sticky top-4 overflow-hidden rounded-xl border border-black/10 bg-white">
+        <div className="border-b border-gray-200 bg-brand-primary px-4 py-3">
+          <span className="text-sm font-bold tracking-wide text-heading">פאנל ניהול</span>
         </div>
         <ul className="py-2">
           {NAV_ITEMS.map(({ href, label, icon: Icon, exact, quickAdd }) => {
@@ -46,8 +46,8 @@ export default function AdminSidebar() {
                     'flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors',
                     quickAdd && 'flex-1',
                     active
-                      ? 'bg-[#fed700]/40 text-[#333e48]'
-                      : 'text-black/60 hover:bg-[#fed700]/15 hover:text-[#333e48]',
+                      ? 'bg-brand-primary/40 text-heading'
+                      : 'text-black/60 hover:bg-brand-primary/15 hover:text-heading',
                   )}
                 >
                   <Icon size={16} className="shrink-0" />
@@ -57,7 +57,7 @@ export default function AdminSidebar() {
                   <Link
                     href={quickAdd}
                     aria-label="מוצר חדש"
-                    className="flex items-center px-2 text-black/40 transition-colors hover:bg-black/[0.03] hover:text-[#000000]"
+                    className="flex items-center px-2 text-black/40 transition-colors hover:bg-black/[0.03] hover:text-black"
                   >
                     <Plus size={13} />
                   </Link>

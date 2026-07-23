@@ -37,7 +37,7 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
             <Tag size={36} />
           </div>
         )}
-        <div className="absolute top-2 right-2 bg-brand text-white text-xs font-bold px-2 py-1 rounded-lg">
+        <div className="absolute top-2 end-2 bg-brand text-white text-xs font-bold px-2 py-1 rounded-lg">
           {discountPct}% הנחה
         </div>
       </div>

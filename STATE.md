@@ -4,6 +4,29 @@
 **Phase 5 storefront + commerce מחווט**. branch `phase5/homepage`.
 
 ## Last Completed
+Session 2026-07-23 - Phase 5 pixel/token + migration debt (לא בקומיט, לפי הוראה):
+
+**מספרי diff (compare.mjs):** home מול ה-single-file `refs/ke_live_singlefile.html` = 22.5%;
+home מול האתר החי האמיתי = 27.96% (baseline). **מסקנה מאומתת: יעד <3% pixel לא בר-השגה** דרך
+tokens/layout: (1) ה-single-file הוא snapshot מנוון (header קרוס ל-1px מול 110px אמיתי, hero 422
+מול 370), כך ש-<3% מולו ידרוש למחוק את ה-header; (2) מול האתר החי התוכן שונה (מוצרים, תמונות,
+פרסום, גובה 5492 מול 5274) כך שרצפת ה-pixel-diff גבוהה ללא קשר ל-CSS. ה-"6.69%" הקודם היה section
+בודד (רצועת USP), לא overall. ה-drift מצטבר: רק 51px עד רצועת ה-USP, השאר מתחת.
+
+**נמסר בסשן:**
+- `scripts/compare.mjs` תומך `--page=home|product`, home מכוון לאתר החי.
+- `scripts/measure-electro.mjs` + `scripts/measure-live.mjs` (טבלאות `| Element | CSS | ref | Local | Match |`
+  ל-`refs/`; נכתבו, לא הורצו: electro מאחורי Cloudflare + צריך localhost).
+- `DESIGN-MEASURED.md` (פלטת #fed700 אמיתית, טיפוגרפיה, ריווח; מחליף את הגנרי).
+- `src/styles/tokens.ts` (primary תוקן ל-#fed700, לא #FDD700; #B0E0E9 sky-blue סומן שגוי).
+- `BenefitBar` + `CategoryStrip` ממקור tokens (`ELECTRO_HERO.uspBar/categoryStrip`), RTL logical, אפס hex/px.
+- **SupplierInfo חדש** נרנדר על כל מוצר (coupon ופיזי), שם ספק public-safe דרך admin client (RLS של
+  suppliers = admin-only), fallback חינני. אומת על מוצר פיזי.
+- **Migration debt:** 002/003/004/005/011 מתועדים/idempotent (רובם כבר תוקנו ב-025). באג app תוקן:
+  `admin/audit-log/page.tsx` עבר מ-`admin_audit_log` (נמחקה ב-025) ל-`audit_log` עם enum audit_action
+  ופתרון actor דרך שאילתה שנייה (אין FK ל-profiles). **לא אומת על branch** (create_branch מריץ
+  היסטוריה מרוחקת שנכשלת על 025 מסיבות לא קשורות; אומת בניתוח סטטי).
+
 Session 2026-07-21 - יום עבודה אוטונומי מלא: קטגוריה, חנות, עגלה, merge checkout, חיווט תשלום.
 
 **MEASURED-LIVE.md (לא בקומיט, לפי הוראה)**: `scripts/measure-live.mjs` מדד את

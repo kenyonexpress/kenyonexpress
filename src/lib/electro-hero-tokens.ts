@@ -67,4 +67,43 @@ export const ELECTRO_HERO = {
     columns: '200px minmax(0,1fr) 225px',
     rowHeight: 512,
   },
+  /**
+   * USP / benefit bar (the icons-with-text strip below the hero).
+   * Values match the electro home-v7 / ke_live build (compare.mjs band ~6.6%).
+   * paddingBlock kept as em (relative to the 16px row font-size) to reproduce
+   * the exact measured row height without a magic pixel constant.
+   */
+  uspBar: {
+    maxWidth: 1170,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    gap: 10,
+    paddingInline: 16,
+    paddingBlockStart: '1.357em',
+    paddingBlockEnd: '0.929em',
+    icon: {
+      size: 36,
+      color: '#fed700',
+      strokeWidth: 1.5,
+    },
+    title: { size: 15, weight: 700, color: '#333e48' },
+    subtitle: { size: 13, weight: 400, color: '#7e7e7e', marginBlockStart: 2 },
+  },
+  /**
+   * Top categories row (below the hero, above the USP bar). Matches ke_live /
+   * electro home-v7: a 5-up strip right-offset inside the page container
+   * (x577-1305 @ 1440px), not page-centred. RTL order: first item renders
+   * at the inline-start (visual right).
+   */
+  categoryStrip: {
+    height: 170,
+    borderColor: '#e7e7e7',
+    offsetInlineEnd: 517,
+    maxWidth: 728,
+    itemPaddingInline: 12,
+    itemPaddingTop: 16,
+    image: { size: 100, marginBottom: 10, fallbackIconSize: 28 },
+    label: { size: 14, weight: 600, color: '#333e48' },
+    hoverShadow: '0 0 18px -2px rgba(0,0,0,0.2)',
+  },
 } as const

@@ -32,7 +32,7 @@ export default function ProductsTable({ products }: Props) {
         <div>
           <Link
             href={`/admin/products/${p.id}/edit`}
-            className="font-medium text-[#000000] underline-offset-2 hover:underline"
+            className="font-medium text-black underline-offset-2 hover:underline"
           >
             {p.name_he}
             {p.is_featured && <span className="ms-1 text-xs text-amber-500">★</span>}
@@ -85,7 +85,7 @@ export default function ProductsTable({ products }: Props) {
         <div className="flex items-center gap-3">
           <Link
             href={`/admin/products/${p.id}/edit`}
-            className="text-sm text-[#000000] underline-offset-2 hover:underline"
+            className="text-sm text-black underline-offset-2 hover:underline"
           >
             עריכה
           </Link>

@@ -2,7 +2,7 @@ import CartNavLink from '@/components/cart/CartNavLink'
 import { Heart, User } from 'lucide-react'
 import Link from 'next/link'
 
-const ICON = { size: 22, color: '#515151', strokeWidth: 1.8 } as const
+const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
 
 export default function MastheadNav() {
   return (

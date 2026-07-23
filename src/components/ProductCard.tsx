@@ -135,7 +135,7 @@ function DefaultProductCard({ product }: { product: Product }) {
         {product.category && (
           <Link
             href={`/category/${product.category.slug}`}
-            className="block text-[12px] text-[#768b9e] hover:text-[#333e48] line-clamp-1"
+            className="block text-xs text-muted-2 hover:text-heading line-clamp-1"
           >
             {product.category.name_he}
           </Link>
@@ -143,7 +143,7 @@ function DefaultProductCard({ product }: { product: Product }) {
 
         <Link
           href={`/product/${product.slug}`}
-          className="line-clamp-2 text-[22px] text-[#0062bd] leading-snug hover:underline"
+          className="line-clamp-2 text-[22px] text-link leading-snug hover:underline"
         >
           {product.name_he}
         </Link>
@@ -169,13 +169,13 @@ function DefaultProductCard({ product }: { product: Product }) {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap items-baseline gap-2">
             {hasDiscount && old != null && (
-              <span className="text-[14px] text-[#2d2d2d] line-through">{shekels(old)}</span>
+              <span className="text-sm text-[#2d2d2d] line-through">{shekels(old)}</span>
             )}
             <span
               className={
                 hasDiscount
-                  ? 'text-[16px] font-bold text-[#c93636]'
-                  : 'text-[16px] font-bold text-[#2d2d2d]'
+                  ? 'text-base font-bold text-price'
+                  : 'text-base font-bold text-[#2d2d2d]'
               }
             >
               {shekels(price)}

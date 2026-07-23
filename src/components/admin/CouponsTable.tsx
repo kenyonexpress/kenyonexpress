@@ -30,7 +30,7 @@ export default function CouponsTable({ deals }: Props) {
       cell: (d) => (
         <Link
           href={`/admin/coupons?edit=${d.id}`}
-          className="font-medium text-[#000000] underline-offset-2 hover:underline"
+          className="font-medium text-black underline-offset-2 hover:underline"
         >
           {d.title_he}
         </Link>
@@ -90,7 +90,7 @@ export default function CouponsTable({ deals }: Props) {
         <div className="flex items-center gap-3">
           <Link
             href={`/admin/coupons?edit=${d.id}`}
-            className="text-sm text-[#000000] underline-offset-2 hover:underline"
+            className="text-sm text-black underline-offset-2 hover:underline"
           >
             עריכה
           </Link>

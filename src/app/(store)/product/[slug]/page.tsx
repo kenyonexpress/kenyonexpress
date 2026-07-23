@@ -1,6 +1,8 @@
 import ProductGallery from '@/components/storefront/ProductGallery'
 import ProductInfo from '@/components/storefront/ProductInfo'
 import RelatedProducts from '@/components/storefront/RelatedProducts'
+import SupplierInfo from '@/components/storefront/SupplierInfo'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -32,7 +34,7 @@ export default async function ProductPage({ params }: Props) {
     .select(
       `id, slug, name_he, name_en, description_he,
        kenyon_price, full_price, is_coupon_enabled,
-       type, sku, images, stock_quantity, category_id,
+       type, sku, images, stock_quantity, category_id, supplier_id,
        categories(id, name_he, slug)`,
     )
     .eq('slug', slug)
@@ -41,6 +43,21 @@ export default async function ProductPage({ params }: Props) {
     .single()
 
   if (!product) notFound()
+
+  // Supplier is resolved separately so the SupplierInfo block renders on every
+  // product (coupon and physical). suppliers RLS is admin-only, so the
+  // public-safe name is read server-side via the service client (name only,
+  // no contact details are exposed to the page).
+  let supplier: { id: string; name: string } | null = null
+  if (product.supplier_id) {
+    const admin = createAdminClient()
+    const { data } = await admin
+      .from('suppliers')
+      .select('id, name')
+      .eq('id', product.supplier_id)
+      .maybeSingle()
+    supplier = data
+  }
 
   const { data: variants } = await supabase
     .from('product_variants')
@@ -112,6 +129,9 @@ export default async function ProductPage({ params }: Props) {
           />
         </div>
       </div>
+
+      {/* Supplier details: rendered for every product (coupon and physical) */}
+      <SupplierInfo supplier={supplier} productType={product.type} />
 
       {/* Related products */}
       <RelatedProducts categoryId={product.category_id} excludeId={product.id} />

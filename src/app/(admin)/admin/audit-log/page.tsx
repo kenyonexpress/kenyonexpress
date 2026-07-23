@@ -2,22 +2,33 @@ import { createClient } from '@/lib/supabase/server'
 
 export const metadata = { title: 'לוג פעילות' }
 
+// Canonical audit table is public.audit_log (011). admin_audit_log (003) was
+// consolidated into it by 025_consolidation and dropped, so this page reads
+// audit_log. action is the audit_action enum, actor_id is the acting user.
 const ACTION_LABELS: Record<string, string> = {
-  INSERT: 'יצירה',
-  UPDATE: 'עדכון',
-  DELETE: 'מחיקה',
+  created: 'יצירה',
+  updated: 'עדכון',
+  deleted: 'מחיקה',
+  restored: 'שחזור',
+  login: 'כניסה',
+  logout: 'יציאה',
+  permission_change: 'שינוי הרשאה',
+  status_change: 'שינוי סטטוס',
+  manual_override: 'עקיפה ידנית',
 }
 
 const ACTION_COLORS: Record<string, string> = {
-  INSERT: 'bg-green-100 text-green-700',
-  UPDATE: 'bg-blue-100 text-blue-700',
-  DELETE: 'bg-red-100 text-red-700',
+  created: 'bg-green-100 text-green-700',
+  updated: 'bg-blue-100 text-blue-700',
+  deleted: 'bg-red-100 text-red-700',
+  restored: 'bg-amber-100 text-amber-700',
 }
 
 const ENTITY_LABELS: Record<string, string> = {
   products: 'מוצרים',
   categories: 'קטגוריות',
   vendors: 'ספקים',
+  suppliers: 'ספקים',
   profiles: 'משתמשים',
   coupons: 'קופונים',
 }
@@ -25,10 +36,23 @@ const ENTITY_LABELS: Record<string, string> = {
 export default async function AuditLogPage() {
   const supabase = await createClient()
   const { data: logs } = await supabase
-    .from('admin_audit_log')
-    .select('*, profiles(full_name, email)')
+    .from('audit_log')
+    .select('id, action, entity_type, entity_id, actor_id, actor_role, created_at')
     .order('created_at', { ascending: false })
     .limit(100)
+
+  // audit_log has no FK to profiles, so resolve actor display names separately.
+  const actorIds = [...new Set((logs ?? []).map((l) => l.actor_id).filter(Boolean))] as string[]
+  const profileById = new Map<string, { full_name: string | null; email: string | null }>()
+  if (actorIds.length) {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, full_name, email')
+      .in('id', actorIds)
+    for (const p of profiles ?? []) {
+      profileById.set(p.id, { full_name: p.full_name, email: p.email })
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -47,7 +71,7 @@ export default async function AuditLogPage() {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {(logs ?? []).map((log) => {
-              const profile = Array.isArray(log.profiles) ? log.profiles[0] : log.profiles
+              const profile = log.actor_id ? profileById.get(log.actor_id) : undefined
               return (
                 <tr key={log.id} className="hover:bg-gray-50 transition-colors align-top">
                   <td className="px-5 py-3">
@@ -63,10 +87,14 @@ export default async function AuditLogPage() {
                     {ENTITY_LABELS[log.entity_type] ?? log.entity_type}
                   </td>
                   <td className="px-5 py-3 font-mono text-xs text-gray-400">
-                    {log.entity_id ? `${log.entity_id.slice(0, 8)}…` : '—'}
+                    {log.entity_id ? `${log.entity_id.slice(0, 8)}...` : '-'}
                   </td>
                   <td className="px-5 py-3 text-gray-600">
-                    {profile?.full_name ?? profile?.email ?? log.user_id?.slice(0, 8) ?? '—'}
+                    {profile?.full_name ??
+                      profile?.email ??
+                      log.actor_role ??
+                      log.actor_id?.slice(0, 8) ??
+                      '-'}
                   </td>
                   <td className="px-5 py-3 text-gray-500 text-xs whitespace-nowrap">
                     {new Date(log.created_at).toLocaleString('he-IL')}

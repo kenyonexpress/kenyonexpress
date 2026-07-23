@@ -60,7 +60,7 @@ export default function CategoriesTable({
         <button
           type="button"
           onClick={() => openEdit(c.id)}
-          className="font-medium text-[#000000] underline-offset-2 hover:underline"
+          className="font-medium text-black underline-offset-2 hover:underline"
         >
           {c.name_he}
         </button>
@@ -108,14 +108,14 @@ export default function CategoriesTable({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-[#000000]">קטגוריות</h1>
+        <h1 className="text-xl font-bold text-black">קטגוריות</h1>
         <button
           type="button"
           onClick={() => {
             setActiveCategory(undefined)
             setDialogOpen(true)
           }}
-          className="inline-flex items-center gap-2 rounded-lg border border-black/10 bg-brand px-4 py-2 text-sm font-semibold text-brand-dark transition-colors hover:bg-[#fedd26]"
+          className="inline-flex items-center gap-2 rounded-lg border border-black/10 bg-brand px-4 py-2 text-sm font-semibold text-brand-dark transition-colors hover:bg-brand-primary-hover"
         >
           <Plus size={15} />
           קטגוריה חדשה
@@ -134,10 +134,10 @@ export default function CategoriesTable({
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent
           dir="rtl"
-          className="max-h-[90vh] max-w-lg overflow-y-auto border-black/10 bg-[#FFFFFF]"
+          className="max-h-[90vh] max-w-lg overflow-y-auto border-black/10 bg-white"
         >
           <DialogHeader className="text-start">
-            <DialogTitle className="text-[#000000]">
+            <DialogTitle className="text-black">
               {activeCategory ? 'עריכת קטגוריה' : 'קטגוריה חדשה'}
             </DialogTitle>
             <DialogDescription className="sr-only">

@@ -31,7 +31,7 @@ export default function FeaturedProductsTabs({ products }: { products: Product[]
   return (
     <div>
       <header className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-[#ededed] pb-3">
-        <h2 className="text-[22px] font-bold text-[#333e48]">מוצרים מומלצים</h2>
+        <h2 className="text-[22px] font-bold text-heading">מוצרים מומלצים</h2>
         <nav className="flex items-center gap-1">
           {TABS.map((t) => (
             <button
@@ -41,8 +41,8 @@ export default function FeaturedProductsTabs({ products }: { products: Product[]
               aria-pressed={active === t.id}
               className={`rounded-md px-3 py-1.5 text-sm font-semibold transition-colors ${
                 active === t.id
-                  ? 'bg-[#fed700] text-[#333e48]'
-                  : 'text-[#7e7e7e] hover:text-[#333e48]'
+                  ? 'bg-brand-primary text-heading'
+                  : 'text-muted hover:text-heading'
               }`}
             >
               {t.label}
@@ -60,7 +60,7 @@ export default function FeaturedProductsTabs({ products }: { products: Product[]
           ))}
         </div>
       ) : (
-        <p className="py-10 text-center text-sm text-[#7e7e7e]">אין מוצרים להצגה</p>
+        <p className="py-10 text-center text-sm text-muted">אין מוצרים להצגה</p>
       )}
     </div>
   )

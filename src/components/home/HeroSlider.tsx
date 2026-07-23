@@ -36,7 +36,7 @@ export type HeroSlide = {
 
 const T = ELECTRO_HERO.typography
 const SLIDE = ELECTRO_HERO.slider
-const DOT_ACTIVE = '#fed700'
+const DOT_ACTIVE = 'var(--color-brand-primary)'
 const DOT_INACTIVE = 'rgba(125, 125, 125, 0.5)'
 const AUTOPLAY_MS = 5000
 

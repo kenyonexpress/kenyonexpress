@@ -47,7 +47,7 @@ const columns = [
 
 export default function Footer() {
   return (
-    <footer dir="rtl" className="w-full bg-[#333e48] text-white">
+    <footer dir="rtl" className="w-full bg-heading text-white">
       <div className="max-w-[1430px] mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-1">
@@ -59,12 +59,12 @@ export default function Footer() {
               className="h-10 w-auto mb-6 brightness-0 invert"
             />
             <div className="flex items-start gap-3">
-              <Phone className="w-12 h-12 text-[#fed700] flex-shrink-0" strokeWidth={1.5} />
+              <Phone className="w-12 h-12 text-brand-primary flex-shrink-0" strokeWidth={1.5} />
               <div>
                 <div className="text-[13px] text-white/80">יש שאלות? התקשרו 24/7</div>
                 <a
                   href="tel:1800397777"
-                  className="text-[20px] font-bold text-white hover:text-[#fed700] transition-colors"
+                  className="text-[20px] font-bold text-white hover:text-brand-primary transition-colors"
                 >
                   1-800-EXPRESS
                 </a>
@@ -82,7 +82,7 @@ export default function Footer() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-[14px] text-white/70 hover:text-[#fed700] transition-colors"
+                      className="text-[14px] text-white/70 hover:text-brand-primary transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -97,7 +97,7 @@ export default function Footer() {
             <p className="text-[14px] text-white/70 mb-2">תל אביב, ישראל</p>
             <a
               href="mailto:info@kenyonexpress.co.il"
-              className="text-[14px] text-white/70 hover:text-[#fed700] transition-colors block mb-6"
+              className="text-[14px] text-white/70 hover:text-brand-primary transition-colors block mb-6"
             >
               info@kenyonexpress.co.il
             </a>
@@ -111,7 +111,7 @@ export default function Footer() {
                 <button
                   key={label}
                   type="button"
-                  className="w-9 h-9 rounded-full bg-white/10 hover:bg-[#fed700] hover:text-[#333e48] flex items-center justify-center transition-colors"
+                  className="w-9 h-9 rounded-full bg-white/10 hover:bg-brand-primary hover:text-heading flex items-center justify-center transition-colors"
                   aria-label={label}
                 >
                   <Icon className="w-4 h-4" />

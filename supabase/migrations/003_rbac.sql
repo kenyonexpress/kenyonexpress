@@ -1,4 +1,26 @@
--- Phase 3: RBAC — role hierarchy, created_by tracking, audit log
+-- Phase 3: RBAC, role hierarchy, created_by tracking, audit log
+--
+-- CROSS-FILE INVARIANTS (read this before editing 003, 005 or 011):
+--  * created_by on products/categories is added here defensively, but 005 DROPs and
+--    recreates products/categories (CASCADE) and re-declares created_by inline, so the
+--    column survives the recreate. coupons.created_by added here is later dropped when
+--    008 replaces coupons with coupon_codes (025 re-guards a created_by if a legacy
+--    coupons table survives).
+--  * content_uploader own-row RLS for the catalog is intentionally NOT defined in this
+--    file. Because 005 drops and recreates public.products (CASCADE), any catalog
+--    content_uploader policy declared here would be silently dropped. Those policies
+--    live in 005 (immediately after the CREATE TABLE) and are re-asserted in 025. Do
+--    not move them back here.
+--  * Audit log consolidation decision: public.audit_log (created in 011) is the single
+--    canonical audit table. public.admin_audit_log created below is a TRANSITIONAL
+--    table only. 025 migrates every admin_audit_log row into audit_log, repoints
+--    audit_log_trigger_fn() at audit_log, then DROPs admin_audit_log. It is kept here
+--    (not removed) because the audit triggers created at the bottom of this file write
+--    to admin_audit_log during the 003..024 window (e.g. the vendor/profile seeds in
+--    022/023) which run before 025. audit_log preserves every admin_audit_log column:
+--    user_id maps to actor_id, action (free text TG_OP) maps to action (audit_action
+--    enum, INSERT/UPDATE/DELETE to created/updated/deleted), ip maps to ip_address, and
+--    user_agent/changes/entity_type/entity_id/created_at carry over unchanged.
 
 -- ---------------------------------------------------------------------------
 -- 0. Ensure user_role enum and profiles.role enum column exist
@@ -140,7 +162,9 @@ SET search_path = public AS $$
 $$;
 
 -- ---------------------------------------------------------------------------
--- 3. Admin audit log
+-- 3. Admin audit log (TRANSITIONAL, consolidated into public.audit_log by 025)
+--    See the cross-file invariants note at the top of this file. Do not add new
+--    references to admin_audit_log: write to public.audit_log (011) instead.
 -- ---------------------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS public.admin_audit_log (

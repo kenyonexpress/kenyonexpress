@@ -13,11 +13,19 @@
   --color-brand-accent: #eaf4f6; /* tinted backgrounds, soft surfaces */
 
   /* --- Functional colors ----------------------------------------------------- */
-  --color-price: #e4002b; /* current price */
+  --color-price: #dc3545; /* current price (live measured) */
   --color-price-strike: #9ca3af; /* crossed-out original price */
   --color-success: #5cb85c; /* confirmation, in-stock */
   --color-link: #0062bd; /* product names + links (distinct from red price) */
   --color-heading: #333e48; /* hero + section headings (electro home-v7) */
+  --color-sale-badge: #44b81b; /* on-sale badge green (live measured) */
+
+  /* --- Neutrals / borders / muted text (live measured) ----------------------- */
+  --color-border: #ddd; /* default hairline borders / dividers */
+  --color-border-alt: #e7e7e7; /* secondary borders (category strips) */
+  --color-muted: #7e7e7e; /* muted secondary text */
+  --color-muted-2: #768b9e; /* muted slate-blue text (product meta) */
+  --color-icon: #515151; /* nav / masthead icon gray */
 
   /* --- Surfaces ---------------------------------------------------------------- */
   --color-footer-bg: #333e48; /* dark footer body (electro home-v7) */

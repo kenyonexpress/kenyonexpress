@@ -1,12 +1,27 @@
 import { spawn } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { copyFileSync, existsSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { resolve } from 'node:path'
-import { pathToFileURL } from 'node:url'
 import { chromium } from '@playwright/test'
 
+// Usage: node scripts/compare.mjs [--page=home|product] [--live=<url>] [--mine=<url>]
+// home    : live = refs/ke_live_singlefile.html    mine = http://localhost:3000/
+// product : live = live kenyonexpress product page mine = http://localhost:3000/product/<slug>
+// Writes refs/live.png + refs/mine.png (consumed by diff-bands.mjs), plus
+// page-suffixed copies refs/live-<page>.png / refs/mine-<page>.png for reference.
+
+const argOf = (name, dflt) => {
+  const hit = process.argv.find((a) => a.startsWith(`--${name}=`))
+  return hit ? hit.slice(name.length + 3) : dflt
+}
+const page = argOf('page', 'home')
 const VIEW = { width: 1440, height: 2600 }
-const LIVE_HTML = resolve('refs/ke_live_singlefile.html')
+const LOCAL = process.env.LOCAL_BASE ?? 'http://localhost:3000'
+const LIVE_HOME = 'https://kenyonexpress.co.il/'
+const LIVE_PRODUCT = 'https://kenyonexpress.co.il/product/מוצר-לדוגמא/'
+// The saved refs/ke_live_singlefile.html renders a collapsed header (masthead 1px,
+// no 110px header row), so it under-represents the real site. Default the home
+// reference to the live site; pass --live=<file url> to use the single-file.
 
 if (!process.env.PLAYWRIGHT_BROWSERS_PATH) {
   const cache = resolve(homedir(), 'Library/Caches/ms-playwright')
@@ -16,29 +31,59 @@ if (!process.env.PLAYWRIGHT_BROWSERS_PATH) {
 const b = await chromium.launch()
 const ctx = await b.newContext({ viewport: VIEW, deviceScaleFactor: 1 })
 
-const live = await ctx.newPage()
-const fileUrl = pathToFileURL(LIVE_HTML).href
-try {
-  await live.goto(fileUrl, { waitUntil: 'networkidle', timeout: 120000 })
-} catch {
-  await live.goto(fileUrl, { waitUntil: 'domcontentloaded', timeout: 120000 })
-}
-await live.waitForTimeout(4000)
-await live.screenshot({ path: 'refs/live.png', fullPage: true })
-console.log('live.png written')
+let liveUrl = argOf('live', null)
+let mineUrl = argOf('mine', null)
 
-const mine = await ctx.newPage()
-await mine.goto('http://localhost:3000', { waitUntil: 'networkidle' })
-await mine.waitForTimeout(2000)
-await mine.screenshot({ path: 'refs/mine.png', fullPage: true })
-console.log('mine.png written')
+if (page === 'home') {
+  liveUrl ??= LIVE_HOME
+  mineUrl ??= `${LOCAL}/`
+} else if (page === 'product') {
+  liveUrl ??= LIVE_PRODUCT
+  if (!mineUrl) {
+    const probe = await ctx.newPage()
+    await probe.goto(`${LOCAL}/products`, { waitUntil: 'networkidle' }).catch(() => {})
+    const href = await probe
+      .evaluate(() => {
+        const a = document.querySelector('a[href*="/product/"]')
+        return a ? a.getAttribute('href') : null
+      })
+      .catch(() => null)
+    await probe.close()
+    mineUrl = href ? `${LOCAL}${href.startsWith('/') ? '' : '/'}${href}` : `${LOCAL}/product/`
+    console.log(`product: discovered local slug -> ${mineUrl}`)
+  }
+} else {
+  console.error(`unknown --page=${page} (use home or product)`)
+  process.exit(2)
+}
+
+const shoot = async (url, out) => {
+  const p = await ctx.newPage()
+  try {
+    await p.goto(url, { waitUntil: 'networkidle', timeout: 120000 })
+  } catch {
+    await p.goto(url, { waitUntil: 'domcontentloaded', timeout: 120000 })
+  }
+  const external = url.startsWith('file:') || url.includes('kenyonexpress.co.il')
+  await p.waitForTimeout(external ? 4000 : 2000)
+  await p.screenshot({ path: out, fullPage: true })
+  await p.close()
+  console.log(`${out} written (${url})`)
+}
+
+await shoot(liveUrl, 'refs/live.png')
+await shoot(mineUrl, 'refs/mine.png')
+copyFileSync('refs/live.png', `refs/live-${page}.png`)
+copyFileSync('refs/mine.png', `refs/mine-${page}.png`)
 
 await b.close()
 
+console.log(`=== compare --page=${page} ===`)
 await new Promise((resolvePromise, reject) => {
   const child = spawn(process.execPath, [resolve('scripts/diff-bands.mjs')], {
     stdio: 'inherit',
     cwd: process.cwd(),
+    env: { ...process.env, COMPARE_PAGE: page },
   })
   child.on('exit', (code) =>
     code === 0 ? resolvePromise() : reject(new Error(`diff-bands exited ${code}`)),

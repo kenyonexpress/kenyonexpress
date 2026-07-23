@@ -52,7 +52,7 @@ export default function DealsSection({ products }: { products: Product[] }) {
         </Link>
       </div>
 
-      <div className="rounded-b-lg border border-t-0 border-[#ddd] bg-white">
+      <div className="rounded-b-lg border border-t-0 border-border bg-white">
         {products.length > 0 ? (
           <div className="jet-listing-grid-deals">
             {products.map((product) => (

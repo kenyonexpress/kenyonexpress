@@ -11,8 +11,8 @@ import Link from 'next/link'
 export default function SiteHeader() {
   return (
     <>
-      <div dir="rtl" className="w-full border-b border-[#ddd] bg-white">
-        <div className="mx-auto flex max-w-page items-center px-4 text-[0.929em] text-[#333e48]">
+      <div dir="rtl" className="w-full border-b border-border bg-white">
+        <div className="mx-auto flex max-w-page items-center px-4 text-[0.929em] text-heading">
           <span className="py-[0.58em]">ברוך הבא לעולם של קניון Express</span>
 
           <div className="ms-auto hidden items-center gap-3 py-[0.58em] md:flex">
@@ -20,17 +20,17 @@ export default function SiteHeader() {
               <MapPin size={14} strokeWidth={1.8} aria-hidden="true" />
               בפריסה ארצית
             </span>
-            <span className="h-3 w-px bg-[#ddd]" aria-hidden="true" />
+            <span className="h-3 w-px bg-border" aria-hidden="true" />
             <span className="flex items-center gap-1.5">
               <Truck size={14} strokeWidth={1.8} aria-hidden="true" />
               משלוח מהיר חינם
             </span>
-            <span className="h-3 w-px bg-[#ddd]" aria-hidden="true" />
+            <span className="h-3 w-px bg-border" aria-hidden="true" />
             <span className="flex items-center gap-1.5">
               <ShoppingBag size={14} strokeWidth={1.8} aria-hidden="true" />
               קניה בטוחה
             </span>
-            <span className="h-3 w-px bg-[#ddd]" aria-hidden="true" />
+            <span className="h-3 w-px bg-border" aria-hidden="true" />
             <Link
               href="/login"
               className="flex items-center gap-1.5 transition-opacity hover:opacity-70"
@@ -42,7 +42,7 @@ export default function SiteHeader() {
         </div>
       </div>
 
-      <header dir="rtl" className="sticky top-0 z-40 w-full border-b border-[#ddd] bg-white">
+      <header dir="rtl" className="sticky top-0 z-40 w-full border-b border-border bg-white">
         <div className="mx-auto flex h-[54px] max-w-page items-center justify-between px-4">
           <Link href="/" aria-label="קניון אקספרס, לדף הבית" className="shrink-0">
             <SmartImage

@@ -3,7 +3,7 @@
 import { useCart } from '@/components/cart/CartProvider'
 import { ShoppingCart } from 'lucide-react'
 
-const ICON = { size: 22, color: '#515151', strokeWidth: 1.8 } as const
+const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
 
 function formatBadgeTotal(value: number): string {
   if (value <= 0) return '₪0'

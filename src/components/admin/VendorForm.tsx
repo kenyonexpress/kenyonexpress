@@ -168,7 +168,7 @@ export default function VendorForm({ vendor }: Props) {
         <button
           type="submit"
           disabled={pending}
-          className="bg-brand hover:bg-[#fedd26] disabled:opacity-60 text-brand-dark font-semibold rounded-lg px-6 py-2.5 text-sm transition-colors"
+          className="bg-brand hover:bg-brand-primary-hover disabled:opacity-60 text-brand-dark font-semibold rounded-lg px-6 py-2.5 text-sm transition-colors"
         >
           {pending ? 'שומר...' : vendor ? 'עדכון ספק' : 'יצירת ספק'}
         </button>

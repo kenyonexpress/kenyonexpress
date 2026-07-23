@@ -1,5 +1,13 @@
 -- Migration 011: System-wide audit log (INSERT-only, no UPDATE, no DELETE)
--- Written exclusively via SECURITY DEFINER functions — never via the Data API.
+-- Written exclusively via SECURITY DEFINER functions, never via the Data API.
+--
+-- CANONICAL AUDIT TABLE. public.audit_log defined here is the single source of truth
+-- for auditing. It subsumes public.admin_audit_log (the transitional table created in
+-- 003): 025 copies every admin_audit_log row into this table, repoints
+-- audit_log_trigger_fn() at this table, then DROPs admin_audit_log. This table is a
+-- strict superset of admin_audit_log columns (actor_id, actor_role, action as the
+-- audit_action enum, entity_type, entity_id, changes, metadata, ip_address, user_agent,
+-- created_at). New audit writes must target public.audit_log, never admin_audit_log.
 
 -- ---------------------------------------------------------------------------
 -- 1. ENUM
@@ -54,7 +62,7 @@ CREATE INDEX IF NOT EXISTS idx_audit_log_created_at
   ON public.audit_log (created_at DESC);
 
 -- ---------------------------------------------------------------------------
--- 4. RLS — admins SELECT only; all direct writes blocked via the Data API
+-- 4. RLS: admins SELECT only; all direct writes blocked via the Data API
 -- ---------------------------------------------------------------------------
 
 ALTER TABLE public.audit_log ENABLE ROW LEVEL SECURITY;

@@ -197,7 +197,7 @@ export default function SiteFooter() {
         </div>
 
         {/* 3. Social icons row — dark circular */}
-        <div className="border-t border-[#ddd]">
+        <div className="border-t border-border">
           <div className="mx-auto flex max-w-page items-center justify-center gap-3 px-4 py-6">
             {SOCIALS.map((s) => (
               <a

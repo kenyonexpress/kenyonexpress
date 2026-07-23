@@ -91,14 +91,14 @@ export default function DataTable<T>({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={searchPlaceholder}
-              className="border-black/10 bg-[#FFFFFF] ps-9 text-[#000000] focus-visible:ring-[#fed700]"
+              className="border-black/10 bg-white ps-9 text-black focus-visible:ring-brand-primary"
             />
           </div>
         )}
         {toolbar}
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-black/10 bg-[#FFFFFF]">
+      <div className="overflow-hidden rounded-xl border border-black/10 bg-white">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-black/10 bg-black/[0.02] text-end text-xs text-black/50">
@@ -108,7 +108,7 @@ export default function DataTable<T>({
                     <button
                       type="button"
                       onClick={() => toggleSort(col.id)}
-                      className="inline-flex items-center gap-1 transition-colors hover:text-[#000000]"
+                      className="inline-flex items-center gap-1 transition-colors hover:text-black"
                     >
                       {col.header}
                       {sortCol === col.id ? (
@@ -132,7 +132,7 @@ export default function DataTable<T>({
             {rows.map((row) => (
               <tr
                 key={rowKey(row)}
-                className="text-[#000000] transition-colors hover:bg-[#fed700]/20"
+                className="text-black transition-colors hover:bg-brand-primary/20"
               >
                 {columns.map((col) => (
                   <td key={col.id} className={cn('px-4 py-3', col.className)}>

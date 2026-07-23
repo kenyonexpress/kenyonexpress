@@ -1,4 +1,16 @@
 -- Migration 005: Products schema for KenyonExpress marketplace
+--
+-- 003 <-> 005 RECONCILIATION (task: keep content_uploader RLS + created_by alive):
+-- This file DROPs public.products and public.categories with CASCADE (see below),
+-- which would destroy anything 003 attached to those tables. To keep intent intact:
+--  1. created_by is re-declared INLINE on the recreated categories and products tables
+--     (see the CREATE TABLE statements), and its indexes are recreated further down, so
+--     the created_by tracking added in 003 survives the drop/recreate.
+--  2. The content_uploader own-row policies (a content_uploader may select/insert/update
+--     the catalog rows it created) are defined HERE, after the CREATE TABLE, rather than
+--     in 003. If they lived in 003 the CASCADE below would drop them. 025 re-asserts the
+--     same policies (plus a categories select-own policy) idempotently.
+-- Do not move created_by or the content_uploader policies back into 003.
 
 CREATE OR REPLACE FUNCTION public.set_updated_at()
 RETURNS trigger
