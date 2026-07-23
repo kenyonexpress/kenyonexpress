@@ -1,5 +1,7 @@
 import StatusBadge, { orderStatusBadge } from '@/components/admin/StatusBadge'
+import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
 import { createClient } from '@/lib/supabase/server'
+import { buildOrderUpdateText, waChatLink } from '@/lib/whatsapp'
 import { notFound } from 'next/navigation'
 import OrderStatusClient from './OrderStatusClient'
 
@@ -51,6 +53,30 @@ export default async function OrderDetailPage({ params }: Props) {
           <InfoRow label="שם" value={profile?.full_name ?? '—'} />
           <InfoRow label="אימייל" value={profile?.email ?? '—'} />
           <InfoRow label="טלפון" value={profile?.phone ?? '—'} />
+          {(() => {
+            const href = profile?.phone
+              ? waChatLink(
+                  profile.phone,
+                  buildOrderUpdateText({
+                    customerName: profile?.full_name ?? null,
+                    orderShortId: order.invoice_number ?? order.id.slice(0, 8).toUpperCase(),
+                    statusLabel: badge.label,
+                  }),
+                )
+              : null
+            if (!href) return null
+            return (
+              <a
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-[#128c7e] hover:text-[#075e54] pt-1"
+              >
+                <WhatsAppIcon size={16} />
+                שליחת עדכון הזמנה בוואטסאפ
+              </a>
+            )
+          })()}
         </div>
         <div className="bg-white border border-gray-200 rounded-xl p-5 space-y-3">
           <h2 className="font-semibold text-gray-800">סיכום כספי</h2>

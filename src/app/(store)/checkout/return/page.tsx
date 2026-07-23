@@ -1,4 +1,12 @@
+import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
 import { createAdminClient } from '@/lib/supabase/admin'
+import {
+  buildCouponShareText,
+  buildOrderInquiryText,
+  storeWhatsAppNumber,
+  waChatLink,
+  waShareLink,
+} from '@/lib/whatsapp'
 import { reconcileOrderReturn } from '@/server/actions/payments/checkout'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -94,6 +102,15 @@ export default async function CheckoutReturnPage({ searchParams }: Props) {
               const productName = Array.isArray(coupon.products)
                 ? coupon.products[0]?.name_he
                 : (coupon.products as { name_he: string } | null)?.name_he
+              const shareHref = waShareLink(
+                buildCouponShareText({
+                  productName: productName ?? null,
+                  code: coupon.code,
+                  collectAmountIls: Number(coupon.collect_amount_ils),
+                  expiresAt: coupon.expires_at,
+                  siteUrl: process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il',
+                }),
+              )
               return (
                 <article className="coupon-card" key={coupon.id}>
                   <div>
@@ -113,6 +130,24 @@ export default async function CheckoutReturnPage({ searchParams }: Props) {
                       })}
                       {' · '}הציגו את הקוד או את ה-QR בבית העסק
                     </div>
+                    <a
+                      href={shareHref}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="coupon-card__share"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        marginTop: 10,
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: '#128c7e',
+                      }}
+                    >
+                      <WhatsAppIcon size={16} />
+                      שתפו את הקופון בוואטסאפ
+                    </a>
                   </div>
                   <div className="coupon-card__qr">
                     <img src={coupon.qrDataUrl} alt={`קוד QR לקופון ${coupon.code}`} />
@@ -126,6 +161,36 @@ export default async function CheckoutReturnPage({ searchParams }: Props) {
         {cashback > 0 && (
           <p className="checkout-wallet-note">נוסף לארנק שלך: {shekels(cashback)} קאשבק</p>
         )}
+
+        {(() => {
+          const storePhone = storeWhatsAppNumber()
+          if (!storePhone) return null
+          const href = waChatLink(
+            storePhone,
+            buildOrderInquiryText(order.id.slice(0, 8).toUpperCase()),
+          )
+          if (!href) return null
+          return (
+            <p style={{ marginTop: 20 }}>
+              <a
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: '#128c7e',
+                }}
+              >
+                <WhatsAppIcon size={18} />
+                לעדכונים על ההזמנה דברו איתנו בוואטסאפ
+              </a>
+            </p>
+          )
+        })()}
 
         <p style={{ marginTop: 28 }}>
           <Link href="/products" className="checkout-pay-btn" style={{ display: 'inline-flex' }}>

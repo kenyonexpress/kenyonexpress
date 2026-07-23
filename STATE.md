@@ -2,8 +2,26 @@
 
 ## Current Phase
 **Phase 5 storefront + commerce מחווט**. branch `phase5/homepage`.
+רץ מרתון 20 יעדי /goal (סשן 2026-07-23): יעד 1 (WhatsApp) הושלם.
 
 ## Last Completed
+Session 2026-07-23 (המשך) - יעד 1/20: אינטגרציית WhatsApp (קומיט feat(whatsapp)):
+- `src/lib/whatsapp.ts` + בדיקות (9): נרמול טלפון ישראלי ל-wa.me (מקומי/בינלאומי/קווי),
+  waChatLink/waShareLink, בוני טקסט בעברית לשיתוף מוצר/קופון/פניית הזמנה/עדכון אדמין.
+- `WhatsAppIcon` (SVG inline, אין brand icons ב-lucide), `WhatsAppFloat` (צף bottom-end,
+  נסתר כש-NEXT_PUBLIC_WHATSAPP_PHONE ריק), `WhatsAppShareButton` (client, מוסיף URL נוכחי).
+- חיווט: float ב-layouts של (store)+(main); שיתוף מוצר ב-ProductInfo ליד המק"ט;
+  שיתוף קופון + קישור עדכוני הזמנה בעמוד checkout/return; קישור "שליחת עדכון הזמנה
+  בוואטסאפ" באדמין ליד טלפון הלקוח עם טקסט סטטוס מוכן.
+- `NEXT_PUBLIC_WHATSAPP_PHONE` נוסף ל-.env.example + .env.local (placeholder 0501234567,
+  להחליף למספר האמיתי).
+- תיקון סביבה אגבי: `createAdminClient` מקבל גם `SUPABASE_SECRET_KEY` (השם החדש שקיים
+  ב-.env.local); בלעדיו כל דף עם admin client נפל 500 בדב. נמחק `.next/types/validator.ts`
+  ישן שהפיל type-check על ראוטים שלא קיימים.
+- אומת: vitest 93/93, type-check נקי, biome נקי על הקבצים שנגעו, curl על /products,
+  עמוד מוצר ודף הבית מראה את הכפתור הצף ואת כפתור השיתוף.
+
+## Previous Last Completed
 Session 2026-07-23 - Phase 5 pixel/token + migration debt (לא בקומיט, לפי הוראה):
 
 **מספרי diff (compare.mjs):** home מול ה-single-file `refs/ke_live_singlefile.html` = 22.5%;
@@ -100,9 +118,11 @@ nothing
 - `supabase db push` עדיין אסור; החלות רק דרך MCP apply_migration.
 
 ## Next Task
-מימוש קופון אצל הספק (api/supplier/redeem כבר קיים מה-merge אבל תלוי
-supplier_members/coupon_redemptions שטרם הוקמו במרוחק) + דף הזמנות ללקוח.
-במקביל: הכרעת ברירת מחדל commission_percent (5 מול 10).
+מרתון ה-/goal: יעד 2/20 - pipeline תמונות (webp/avif ב-R2, גדלים, blur placeholder,
+alt עברית, דחיסה). אחריו: bulk admin, cron, כתובות, ביטול הזמנה, דוחות ספק, Q&A,
+סל נטוש, גלריה, פילטרים, Cmd+K, feature flags, Redis cache, API layer, webhooks,
+פרטיות, DB opt, visual regression, RTL sweep.
+(משימות קודמות שנדחו: מימוש קופון אצל הספק + דף הזמנות ללקוח + הכרעת commission_percent.)
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress

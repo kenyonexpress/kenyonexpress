@@ -1,6 +1,7 @@
 'use client'
 
 import { useCart } from '@/components/cart/CartProvider'
+import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import { Check, Minus, Plus, ShoppingCart } from 'lucide-react'
 import { useState } from 'react'
 
@@ -204,11 +205,19 @@ export default function ProductInfo({
         </button>
       </div>
 
-      {effectiveSku && (
-        <p className="text-xs text-gray-400">
-          מק"ט: <span dir="ltr">{effectiveSku}</span>
-        </p>
-      )}
+      <div className="flex items-center justify-between gap-3">
+        {effectiveSku ? (
+          <p className="text-xs text-gray-400">
+            מק"ט: <span dir="ltr">{effectiveSku}</span>
+          </p>
+        ) : (
+          <span />
+        )}
+        <WhatsAppShareButton
+          message={`מצאתי משהו שווה ב-KenyonExpress: ${name} ב-${shekels(price)}`}
+          appendCurrentUrl
+        />
+      </div>
     </div>
   )
 }

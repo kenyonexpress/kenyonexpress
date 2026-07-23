@@ -2,6 +2,7 @@ import CartDrawer from '@/components/cart/CartDrawer'
 import { CartProvider } from '@/components/cart/CartProvider'
 import SiteFooter from '@/components/layout/SiteFooter'
 import SiteHeader from '@/components/layout/SiteHeader'
+import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
 import { Toaster } from '@/components/ui/sonner'
 import { getCart } from '@/server/actions/cart'
 import '@/styles/cart-page.css'
@@ -17,6 +18,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
         <SiteFooter />
       </div>
       <CartDrawer />
+      <WhatsAppFloat />
       <Toaster position="top-center" dir="rtl" richColors closeButton />
     </CartProvider>
   )

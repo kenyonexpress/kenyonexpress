@@ -4,6 +4,7 @@ import SiteFooter from '@/components/SiteFooter'
 import CartDrawer from '@/components/cart/CartDrawer'
 import { CartProvider } from '@/components/cart/CartProvider'
 import Header from '@/components/layout/Header'
+import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
 import { Toaster } from '@/components/ui/sonner'
 import { getCart } from '@/server/actions/cart'
 
@@ -26,6 +27,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
         <SiteFooter />
       </div>
       <CartDrawer />
+      <WhatsAppFloat />
       <Toaster position="top-center" dir="rtl" richColors closeButton />
     </CartProvider>
   )
