@@ -1,5 +1,6 @@
 'use server'
 
+import { safeNextPath } from '@/lib/auth/safe-next'
 import { GUEST_SESSION_COOKIE, getGuestSessionId } from '@/lib/cart/guest-session'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
@@ -33,10 +34,7 @@ function toHebrew(msg: string): string {
   return 'אירעה שגיאה, נסו שוב'
 }
 
-function safeNext(raw: FormDataEntryValue | null): string {
-  const s = typeof raw === 'string' ? raw : ''
-  return s.startsWith('/') ? s : '/'
-}
+const safeNext = safeNextPath
 
 // ──────────────────────────────────────────────
 // Google OAuth

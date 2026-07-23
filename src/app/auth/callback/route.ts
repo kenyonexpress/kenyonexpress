@@ -1,3 +1,4 @@
+import { safeNextPath } from '@/lib/auth/safe-next'
 import { GUEST_SESSION_COOKIE, parseGuestSessionToken } from '@/lib/cart/guest-session'
 import { createClient } from '@/lib/supabase/server'
 import { mergeGuestCart } from '@/server/actions/cart'
@@ -7,8 +8,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/'
-  const safeNext = next.startsWith('/') ? next : '/'
+  const safeNext = safeNextPath(searchParams.get('next'))
 
   if (code) {
     const supabase = await createClient()
