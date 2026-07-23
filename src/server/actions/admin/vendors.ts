@@ -1,31 +1,12 @@
 'use server'
 
 import { requireAdminSession } from '@/lib/admin/rbac'
+import { parseVendorForm } from '@/lib/admin/vendor-form'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
 const statusSchema = z.enum(['pending', 'active', 'suspended'])
-
-const upsertSchema = z.object({
-  id: z.string().uuid().optional(),
-  profile_id: z.string().uuid().optional(),
-  business_name: z.string().min(2, 'שם עסק נדרש'),
-  legal_name: z.string().nullable().optional(),
-  business_id: z.string().min(2, 'ח.פ נדרש'),
-  tax_id: z.string().nullable().optional(),
-  contact_name: z.string().nullable().optional(),
-  contact_email: z.string().email('אימייל לא תקין'),
-  contact_phone: z.string().nullable().optional(),
-  address: z.string().nullable().optional(),
-  bank_account_holder: z.string().nullable().optional(),
-  bank_name: z.string().nullable().optional(),
-  bank_branch: z.string().nullable().optional(),
-  bank_account: z.string().nullable().optional(),
-  commission_rate: z.coerce.number().min(0).max(100).default(90),
-  logo_url: z.string().nullable().optional(),
-  status: statusSchema.default('pending'),
-})
 
 export type VendorActionState = { error: string } | { success: string } | null
 
@@ -59,8 +40,8 @@ export async function upsertVendor(
     status: formData.get('status'),
   }
 
-  const parsed = upsertSchema.safeParse(raw)
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
+  const parsed = parseVendorForm(raw)
+  if (!parsed.ok) return { error: parsed.error }
 
   const supabase = await createClient()
   const { id, ...fields } = parsed.data
@@ -69,7 +50,7 @@ export async function upsertVendor(
     const { error } = await supabase.from('vendors').update(fields).eq('id', id)
     if (error) return { error: error.message }
   } else {
-    if (!fields.profile_id) return { error: 'profile_id נדרש ליצירת ספק' }
+    // parseVendorForm guarantees profile_id is present on creation.
     const { error } = await supabase
       .from('vendors')
       .insert(fields as typeof fields & { profile_id: string })

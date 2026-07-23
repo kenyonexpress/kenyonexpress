@@ -1,17 +1,20 @@
 'use client'
 
 import ImageUploader from '@/components/admin/ImageUploader'
+import type { VendorProfileOption } from '@/lib/admin/vendor-form'
 import { type VendorActionState, upsertVendor } from '@/server/actions/admin/vendors'
 import type { Vendor } from '@/types/database'
 import { useActionState, useState } from 'react'
 
 interface Props {
   vendor?: Vendor
+  // Profiles available to link to a new vendor (creation only).
+  profiles?: VendorProfileOption[]
 }
 
 const INITIAL: VendorActionState = null
 
-export default function VendorForm({ vendor }: Props) {
+export default function VendorForm({ vendor, profiles = [] }: Props) {
   const [state, action, pending] = useActionState(upsertVendor, INITIAL)
   const [logoUrl, setLogoUrl] = useState<string[]>(vendor?.logo_url ? [vendor.logo_url] : [])
 
@@ -27,6 +30,36 @@ export default function VendorForm({ vendor }: Props) {
       {error && <div className="bg-red-50 text-red-700 text-sm rounded-lg px-4 py-2">{error}</div>}
       {success && (
         <div className="bg-green-50 text-green-700 text-sm rounded-lg px-4 py-2">{success}</div>
+      )}
+
+      {!vendor && (
+        <section>
+          <h3 className="text-sm font-semibold text-gray-700 mb-3 border-b pb-1">משתמש מקושר</h3>
+          <div>
+            <label htmlFor="profile_id" className="block text-xs font-medium text-gray-700 mb-1">
+              משתמש מקושר *
+            </label>
+            <select
+              id="profile_id"
+              name="profile_id"
+              required
+              defaultValue=""
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            >
+              <option value="" disabled>
+                {profiles.length ? 'בחרו משתמש...' : 'אין משתמשים זמינים לקישור'}
+              </option>
+              {profiles.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.full_name ? `${p.full_name} (${p.email})` : p.email}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-gray-500">
+              חשבון המשתמש שישויך לספק. יש ליצור את המשתמש מראש.
+            </p>
+          </div>
+        </section>
       )}
 
       <section>
