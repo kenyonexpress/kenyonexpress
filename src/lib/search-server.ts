@@ -5,6 +5,7 @@
 import 'server-only'
 import type { Product } from '@/components/ProductCard'
 import { createClient } from '@/lib/supabase/server'
+import { sanitizeOrTerm } from '@/lib/utils/search-escape'
 
 export type SearchOutcome = {
   results: Product[]
@@ -12,12 +13,7 @@ export type SearchOutcome = {
   engine: 'meilisearch' | 'database'
 }
 
-function sanitize(term: string): string {
-  return term
-    .replace(/[%,()*]/g, ' ')
-    .trim()
-    .slice(0, 80)
-}
+const sanitize = sanitizeOrTerm
 
 function meiliConfigured(): boolean {
   return Boolean(process.env.MEILISEARCH_HOST && process.env.MEILISEARCH_API_KEY)

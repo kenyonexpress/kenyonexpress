@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { sanitizeOrTerm } from '@/lib/utils/search-escape'
 import { type NextRequest, NextResponse } from 'next/server'
 
 // Stage 1 search (ARCHITECTURE section 10): Postgres ILIKE over name_he +
@@ -23,12 +24,7 @@ function firstImage(images: unknown): string | null {
 }
 
 // Escape PostgREST ILIKE wildcards / commas so user input can't alter the filter.
-function sanitize(term: string): string {
-  return term
-    .replace(/[%,()*]/g, ' ')
-    .trim()
-    .slice(0, 80)
-}
+const sanitize = sanitizeOrTerm
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)

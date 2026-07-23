@@ -1,6 +1,7 @@
 import StatusBadge, { vendorStatusBadge } from '@/components/admin/StatusBadge'
 import { requireAdminPage } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
+import { likeContains } from '@/lib/utils/search-escape'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
 
@@ -29,7 +30,7 @@ export default async function AdminVendorsPage({ searchParams }: Props) {
     .order('created_at', { ascending: false })
 
   if (status) query = query.eq('status', status)
-  if (q) query = query.ilike('business_name', `%${q}%`)
+  if (q) query = query.ilike('business_name', likeContains(q))
 
   const { data: vendors } = await query
 
