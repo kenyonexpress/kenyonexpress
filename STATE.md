@@ -5,6 +5,15 @@
 רץ מרתון 20 יעדי /goal (סשן 2026-07-23): יעד 1 (WhatsApp) הושלם.
 
 ## Last Completed
+Session 2026-07-23 (המשך 2) - כריית ה-repo הכפול (`/Users/ofir/kenyonexpress/kenyonexpress 0.48.20`,
+נבנה בטעות בלילה) ופורט מה ששווה. דוח מלא: `docs/PORT-FROM-DUP-REPO.md`.
+- נלקח (4 קומיטים): חיפוש `/search`+API+hook (`ba177b6`); ‏4 E2E specs מותאמים + תיקון
+  auth.spec, סוויטה 24/24 (`25430c1`); שכבת R2 presigned + fallback (`fc25aac`);
+  מיגרציה 048 שדות תוכן/מלאי/לוגיסטיקה/SEO למוצר, הוחלה על המרוחק דרך MCP,
+  טופס+action+טיפוסים+מטא PDP (`9a7672a`).
+- נזרק: Drizzle schema, checkout/cardcom של העותק, מודל split 70%, RLS ציבורי על
+  suppliers, פסי בית מונעי-DB, HeaderSearch (header נעול), seed-demo, ועוד - נימוקים בדוח.
+
 Session 2026-07-23 (המשך) - יעד 1/20: אינטגרציית WhatsApp (קומיט feat(whatsapp)):
 - `src/lib/whatsapp.ts` + בדיקות (9): נרמול טלפון ישראלי ל-wa.me (מקומי/בינלאומי/קווי),
   waChatLink/waShareLink, בוני טקסט בעברית לשיתוף מוצר/קופון/פניית הזמנה/עדכון אדמין.
