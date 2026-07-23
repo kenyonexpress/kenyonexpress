@@ -310,6 +310,40 @@ export type Database = {
         }
         Relationships: [{ foreignKeyName: 'product_variants_product_id_fkey'; columns: ['product_id']; referencedRelation: 'products'; referencedColumns: ['id'] }]
       }
+      media_assets: {
+        Row: {
+          id: string
+          url: string
+          alt_he: string
+          blur_data_url: string | null
+          width: number | null
+          height: number | null
+          renditions: Json
+          provider: string
+          bucket: string | null
+          base_path: string | null
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          url: string
+          alt_he: string
+          blur_data_url?: string | null
+          width?: number | null
+          height?: number | null
+          renditions?: Json
+          provider?: string
+          bucket?: string | null
+          base_path?: string | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['media_assets']['Insert']>
+        Relationships: []
+      }
       coupons: {
         Row: {
           id: string

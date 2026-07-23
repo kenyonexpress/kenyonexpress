@@ -72,6 +72,19 @@ export default async function ProductPage({ params }: Props) {
     ? (product.images as unknown[]).filter((u): u is string => typeof u === 'string')
     : []
 
+  // Pipeline metadata (blur placeholder + mandatory Hebrew alt) for images
+  // uploaded through the media pipeline; legacy URLs simply get no entry.
+  let galleryAssets: Record<string, { alt: string | null; blurDataURL: string | null }> = {}
+  if (images.length > 0) {
+    const { data: assetRows } = await supabase
+      .from('media_assets')
+      .select('url, alt_he, blur_data_url')
+      .in('url', images)
+    galleryAssets = Object.fromEntries(
+      (assetRows ?? []).map((a) => [a.url, { alt: a.alt_he, blurDataURL: a.blur_data_url }]),
+    )
+  }
+
   const category = Array.isArray(product.categories)
     ? null
     : (product.categories as { id: string; name_he: string; slug: string } | null)
@@ -114,7 +127,7 @@ export default async function ProductPage({ params }: Props) {
       {/* Two columns: gallery (right in RTL) + info (left) */}
       <div className="bg-white rounded-2xl border border-gray-200 p-5 lg:p-8">
         <div className="grid md:grid-cols-[5fr_7fr] gap-8">
-          <ProductGallery images={images} name={product.name_he} />
+          <ProductGallery images={images} name={product.name_he} assets={galleryAssets} />
           <ProductInfo
             productId={product.id}
             name={product.name_he}

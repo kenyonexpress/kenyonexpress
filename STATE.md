@@ -5,6 +5,23 @@
 רץ מרתון 20 יעדי /goal (סשן 2026-07-23): יעד 1 (WhatsApp) הושלם.
 
 ## Last Completed
+Session 2026-07-24 - יעד 2/20: pipeline תמונות (קומיט feat(images)):
+- `src/lib/images/process.ts`: ‏sharp - המרה ל-webp (1600/800/400, q80) + avif לרוחב
+  הגדול (q55), בלי upscale, ‏blur placeholder ‏16px base64. ‏9 בדיקות vitest.
+- `src/lib/images/validate.ts` (client-safe): סוגי קובץ, 8MB, ‏isValidHebrewAlt
+  (לפחות 3 תווים + אותיות עבריות).
+- `processAndUploadImage` ‏action: ‏staff-only, מעבד בשרת, מעלה כל rendition ל-R2
+  (PUT חתום מהשרת) או ל-Supabase Storage כשאין R2 env, רושם ב-`media_assets`.
+- מיגרציה 049 `media_assets` (הוחלה על המרוחק דרך MCP): ‏url ייחודי, ‏alt_he חובה,
+  ‏blur, מידות, ‏renditions jsonb, ‏RLS: קריאה ציבורית, כתיבה staff.
+- ‏ImageUploader: שלב staging עם שדה alt עברי חובה פר תמונה; ההעלאה חסומה עד
+  שכל ה-alts תקינים.
+- ‏ProductGallery עבר ל-next/image עם blur+alt מ-media_assets (עמודי מוצר ישנים
+  בלי רשומה מקבלים fallback לשם המוצר); ‏PDP שולף metadata לפי URL.
+- ‏sharp הועבר ל-dependencies; ‏next.config: ‏bodySizeLimit 10mb ל-server actions,
+  ‏remotePatterns ל-R2/CDN.
+- אומת: vitest ‏109/109, ‏Playwright ‏24/24, ‏type-check ו-biome נקיים.
+
 Session 2026-07-23 (המשך 2) - כריית ה-repo הכפול (`/Users/ofir/kenyonexpress/kenyonexpress 0.48.20`,
 נבנה בטעות בלילה) ופורט מה ששווה. דוח מלא: `docs/PORT-FROM-DUP-REPO.md`.
 - נלקח (4 קומיטים): חיפוש `/search`+API+hook (`ba177b6`); ‏4 E2E specs מותאמים + תיקון

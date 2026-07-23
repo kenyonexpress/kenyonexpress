@@ -16,7 +16,17 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: '*.supabase.co' },
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'plus.unsplash.com' },
+      // R2 public CDN (image pipeline renditions)
+      { protocol: 'https', hostname: '*.kenyonexpress.co.il' },
+      { protocol: 'https', hostname: '*.r2.dev' },
     ],
+  },
+  experimental: {
+    serverActions: {
+      // The image pipeline posts original files (up to 8MB) to a server action
+      // for sharp processing before upload to R2/Supabase.
+      bodySizeLimit: '10mb',
+    },
   },
 }
 
