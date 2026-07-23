@@ -15,12 +15,13 @@ export async function generateMetadata({ params }: Props) {
   const supabase = await createClient()
   const { data } = await supabase
     .from('products')
-    .select('name_he, description_he')
+    .select('name_he, description_he, short_description_he, seo_title, seo_description')
     .eq('slug', slug)
     .single()
   return {
-    title: data?.name_he ?? 'מוצר',
-    description: data?.description_he ?? undefined,
+    title: data?.seo_title ?? data?.name_he ?? 'מוצר',
+    description:
+      data?.seo_description ?? data?.short_description_he ?? data?.description_he ?? undefined,
   }
 }
 

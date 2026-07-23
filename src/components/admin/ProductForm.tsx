@@ -310,6 +310,328 @@ export default function ProductForm({ product, variants: initVariants = [], cate
         </div>
       </div>
 
+      {/* Marketing content (048) */}
+      <div className="border-t border-gray-100 pt-5 space-y-4">
+        <p className="text-sm font-semibold text-gray-700">תוכן שיווקי</p>
+        <div>
+          <label
+            htmlFor="short_description_he"
+            className="block text-xs font-medium text-gray-700 mb-1"
+          >
+            תיאור קצר (עד 300 תווים)
+          </label>
+          <textarea
+            id="short_description_he"
+            name="short_description_he"
+            defaultValue={product?.short_description_he ?? ''}
+            rows={2}
+            maxLength={300}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand resize-none"
+          />
+        </div>
+        <div>
+          <label htmlFor="highlights" className="block text-xs font-medium text-gray-700 mb-1">
+            נקודות מכירה (שורה לכל נקודה)
+          </label>
+          <textarea
+            id="highlights"
+            name="highlights"
+            defaultValue={
+              Array.isArray(product?.highlights) ? (product.highlights as string[]).join('\n') : ''
+            }
+            rows={3}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand resize-none"
+          />
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label htmlFor="brand" className="block text-xs font-medium text-gray-700 mb-1">
+              מותג
+            </label>
+            <input
+              id="brand"
+              name="brand"
+              defaultValue={product?.brand ?? ''}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+          </div>
+          <div>
+            <label htmlFor="video_url" className="block text-xs font-medium text-gray-700 mb-1">
+              קישור וידאו
+            </label>
+            <input
+              id="video_url"
+              name="video_url"
+              type="url"
+              defaultValue={product?.video_url ?? ''}
+              dir="ltr"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+          </div>
+          <div>
+            <label htmlFor="barcode" className="block text-xs font-medium text-gray-700 mb-1">
+              ברקוד
+            </label>
+            <input
+              id="barcode"
+              name="barcode"
+              defaultValue={product?.barcode ?? ''}
+              dir="ltr"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Coupon details (048) */}
+      <div className="border-t border-gray-100 pt-5 space-y-4">
+        <p className="text-sm font-semibold text-gray-700">פרטי קופון</p>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label
+              htmlFor="coupon_terms_he"
+              className="block text-xs font-medium text-gray-700 mb-1"
+            >
+              תנאי הקופון
+            </label>
+            <textarea
+              id="coupon_terms_he"
+              name="coupon_terms_he"
+              defaultValue={product?.coupon_terms_he ?? ''}
+              rows={3}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand resize-none"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="redemption_instructions_he"
+              className="block text-xs font-medium text-gray-700 mb-1"
+            >
+              הוראות מימוש בעסק
+            </label>
+            <textarea
+              id="redemption_instructions_he"
+              name="redemption_instructions_he"
+              defaultValue={product?.redemption_instructions_he ?? ''}
+              rows={3}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand resize-none"
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label
+              htmlFor="min_purchase_ils"
+              className="block text-xs font-medium text-gray-700 mb-1"
+            >
+              מינימום רכישה בעסק (₪)
+            </label>
+            <input
+              id="min_purchase_ils"
+              name="min_purchase_ils"
+              type="number"
+              min="0"
+              step="0.01"
+              defaultValue={product?.min_purchase_ils ?? ''}
+              dir="ltr"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Inventory + logistics (048) */}
+      <div className="border-t border-gray-100 pt-5 space-y-4">
+        <p className="text-sm font-semibold text-gray-700">מלאי ולוגיסטיקה</p>
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label
+              htmlFor="low_stock_threshold"
+              className="block text-xs font-medium text-gray-700 mb-1"
+            >
+              סף מלאי נמוך
+            </label>
+            <input
+              id="low_stock_threshold"
+              name="low_stock_threshold"
+              type="number"
+              min="0"
+              step="1"
+              defaultValue={product?.low_stock_threshold ?? 5}
+              dir="ltr"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+          </div>
+          <div>
+            <label htmlFor="max_per_order" className="block text-xs font-medium text-gray-700 mb-1">
+              מקסימום ליחידת הזמנה
+            </label>
+            <input
+              id="max_per_order"
+              name="max_per_order"
+              type="number"
+              min="1"
+              step="1"
+              defaultValue={product?.max_per_order ?? ''}
+              dir="ltr"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+          </div>
+          <div>
+            <label htmlFor="condition" className="block text-xs font-medium text-gray-700 mb-1">
+              מצב המוצר
+            </label>
+            <select
+              id="condition"
+              name="condition"
+              defaultValue={product?.condition ?? ''}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            >
+              <option value="">לא צוין</option>
+              <option value="new">חדש</option>
+              <option value="refurbished">מחודש</option>
+              <option value="used">משומש</option>
+            </select>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <input
+            id="requires_shipping"
+            name="requires_shipping"
+            type="checkbox"
+            value="true"
+            defaultChecked={product?.requires_shipping ?? true}
+            className="w-4 h-4 rounded border-gray-300 text-brand focus:ring-brand"
+          />
+          <label htmlFor="requires_shipping" className="text-sm font-medium text-gray-700">
+            דורש משלוח פיזי
+          </label>
+        </div>
+        <div className="grid grid-cols-5 gap-4">
+          <div>
+            <label htmlFor="weight_grams" className="block text-xs font-medium text-gray-700 mb-1">
+              משקל (גרם)
+            </label>
+            <input
+              id="weight_grams"
+              name="weight_grams"
+              type="number"
+              min="0"
+              step="1"
+              defaultValue={product?.weight_grams ?? ''}
+              dir="ltr"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+          </div>
+          <div>
+            <label htmlFor="length_cm" className="block text-xs font-medium text-gray-700 mb-1">
+              אורך (ס"מ)
+            </label>
+            <input
+              id="length_cm"
+              name="length_cm"
+              type="number"
+              min="0"
+              step="0.1"
+              defaultValue={product?.length_cm ?? ''}
+              dir="ltr"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+          </div>
+          <div>
+            <label htmlFor="width_cm" className="block text-xs font-medium text-gray-700 mb-1">
+              רוחב (ס"מ)
+            </label>
+            <input
+              id="width_cm"
+              name="width_cm"
+              type="number"
+              min="0"
+              step="0.1"
+              defaultValue={product?.width_cm ?? ''}
+              dir="ltr"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+          </div>
+          <div>
+            <label htmlFor="height_cm" className="block text-xs font-medium text-gray-700 mb-1">
+              גובה (ס"מ)
+            </label>
+            <input
+              id="height_cm"
+              name="height_cm"
+              type="number"
+              min="0"
+              step="0.1"
+              defaultValue={product?.height_cm ?? ''}
+              dir="ltr"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="warranty_months"
+              className="block text-xs font-medium text-gray-700 mb-1"
+            >
+              אחריות (חודשים)
+            </label>
+            <input
+              id="warranty_months"
+              name="warranty_months"
+              type="number"
+              min="0"
+              step="1"
+              defaultValue={product?.warranty_months ?? ''}
+              dir="ltr"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* SEO (048) */}
+      <div className="border-t border-gray-100 pt-5 space-y-4">
+        <p className="text-sm font-semibold text-gray-700">SEO</p>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="seo_title" className="block text-xs font-medium text-gray-700 mb-1">
+              כותרת SEO (עד 70 תווים)
+            </label>
+            <input
+              id="seo_title"
+              name="seo_title"
+              maxLength={70}
+              defaultValue={product?.seo_title ?? ''}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+          </div>
+          <div>
+            <label htmlFor="seo_keywords" className="block text-xs font-medium text-gray-700 mb-1">
+              מילות מפתח (מופרדות בפסיק)
+            </label>
+            <input
+              id="seo_keywords"
+              name="seo_keywords"
+              defaultValue={product?.seo_keywords ?? ''}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+          </div>
+        </div>
+        <div>
+          <label htmlFor="seo_description" className="block text-xs font-medium text-gray-700 mb-1">
+            תיאור SEO (עד 170 תווים)
+          </label>
+          <textarea
+            id="seo_description"
+            name="seo_description"
+            defaultValue={product?.seo_description ?? ''}
+            rows={2}
+            maxLength={170}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand resize-none"
+          />
+        </div>
+      </div>
+
       {/* Variants */}
       <div>
         <div className="flex items-center justify-between mb-3">

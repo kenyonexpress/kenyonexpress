@@ -25,6 +25,31 @@ const schema = z
     stock_quantity: z.coerce.number().int().min(0).nullable().optional(),
     is_featured: z.coerce.boolean().default(false),
     status: z.enum(['draft', 'active', 'paused', 'archived']),
+    // content/marketing (048)
+    short_description_he: z.string().max(300, 'תיאור קצר עד 300 תווים').nullable().optional(),
+    brand: z.string().nullable().optional(),
+    highlights: z.array(z.string().min(1)).default([]),
+    video_url: z.string().url('כתובת וידאו לא תקינה').nullable().optional(),
+    barcode: z.string().nullable().optional(),
+    // inventory (048)
+    low_stock_threshold: z.coerce.number().int().min(0).default(5),
+    max_per_order: z.coerce.number().int().min(1).nullable().optional(),
+    // logistics (048)
+    requires_shipping: z.coerce.boolean().default(true),
+    weight_grams: z.coerce.number().int().min(0).nullable().optional(),
+    length_cm: z.coerce.number().min(0).nullable().optional(),
+    width_cm: z.coerce.number().min(0).nullable().optional(),
+    height_cm: z.coerce.number().min(0).nullable().optional(),
+    warranty_months: z.coerce.number().int().min(0).nullable().optional(),
+    condition: z.enum(['new', 'refurbished', 'used']).nullable().optional(),
+    // coupon specifics (048)
+    coupon_terms_he: z.string().nullable().optional(),
+    redemption_instructions_he: z.string().nullable().optional(),
+    min_purchase_ils: z.coerce.number().min(0).nullable().optional(),
+    // SEO (048)
+    seo_title: z.string().max(70, 'כותרת SEO עד 70 תווים').nullable().optional(),
+    seo_description: z.string().max(170, 'תיאור SEO עד 170 תווים').nullable().optional(),
+    seo_keywords: z.string().nullable().optional(),
   })
   .superRefine((data, ctx) => {
     if (data.full_price != null && data.full_price < data.kenyon_price) {
@@ -73,6 +98,30 @@ export async function upsertProduct(
     stock_quantity: formData.get('stock_quantity') || null,
     is_featured: formData.get('is_featured') === 'true',
     status: formData.get('status'),
+    short_description_he: formData.get('short_description_he') || null,
+    brand: formData.get('brand') || null,
+    // one highlight per line from the textarea
+    highlights: String(formData.get('highlights') ?? '')
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean),
+    video_url: formData.get('video_url') || null,
+    barcode: formData.get('barcode') || null,
+    low_stock_threshold: formData.get('low_stock_threshold') || 5,
+    max_per_order: formData.get('max_per_order') || null,
+    requires_shipping: formData.get('requires_shipping') === 'true',
+    weight_grams: formData.get('weight_grams') || null,
+    length_cm: formData.get('length_cm') || null,
+    width_cm: formData.get('width_cm') || null,
+    height_cm: formData.get('height_cm') || null,
+    warranty_months: formData.get('warranty_months') || null,
+    condition: formData.get('condition') || null,
+    coupon_terms_he: formData.get('coupon_terms_he') || null,
+    redemption_instructions_he: formData.get('redemption_instructions_he') || null,
+    min_purchase_ils: formData.get('min_purchase_ils') || null,
+    seo_title: formData.get('seo_title') || null,
+    seo_description: formData.get('seo_description') || null,
+    seo_keywords: formData.get('seo_keywords') || null,
   })
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
 

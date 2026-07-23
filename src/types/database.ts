@@ -186,6 +186,26 @@ export type Database = {
           is_featured: boolean
           images: Json
           attributes: Json
+          short_description_he: string | null
+          brand: string | null
+          highlights: Json
+          video_url: string | null
+          barcode: string | null
+          low_stock_threshold: number
+          max_per_order: number | null
+          requires_shipping: boolean
+          weight_grams: number | null
+          length_cm: number | null
+          width_cm: number | null
+          height_cm: number | null
+          warranty_months: number | null
+          condition: string | null
+          coupon_terms_he: string | null
+          redemption_instructions_he: string | null
+          min_purchase_ils: number | null
+          seo_title: string | null
+          seo_description: string | null
+          seo_keywords: string | null
           published_at: string | null
           created_by: string | null
           deleted_at: string | null
@@ -218,6 +238,26 @@ export type Database = {
           is_featured?: boolean
           images?: Json
           attributes?: Json
+          short_description_he?: string | null
+          brand?: string | null
+          highlights?: Json
+          video_url?: string | null
+          barcode?: string | null
+          low_stock_threshold?: number
+          max_per_order?: number | null
+          requires_shipping?: boolean
+          weight_grams?: number | null
+          length_cm?: number | null
+          width_cm?: number | null
+          height_cm?: number | null
+          warranty_months?: number | null
+          condition?: string | null
+          coupon_terms_he?: string | null
+          redemption_instructions_he?: string | null
+          min_purchase_ils?: number | null
+          seo_title?: string | null
+          seo_description?: string | null
+          seo_keywords?: string | null
           published_at?: string | null
           created_by?: string | null
           deleted_at?: string | null
