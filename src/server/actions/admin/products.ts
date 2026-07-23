@@ -1,5 +1,6 @@
 'use server'
 
+import { variantIdsToRemove } from '@/lib/admin/product-variants'
 import { requireStaffSession } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
@@ -163,6 +164,27 @@ export async function upsertProduct(
       .single()
     if (error) return { error: error.message }
     productId = data.id
+  }
+
+  // Soft-delete variants removed in the editor (edit flow only). New products
+  // have no existing variants to reconcile.
+  if (id) {
+    const { data: existing } = await supabase
+      .from('product_variants')
+      .select('id')
+      .eq('product_id', id)
+      .is('deleted_at', null)
+    const toRemove = variantIdsToRemove(
+      (existing ?? []).map((e) => e.id),
+      variants.map((v) => v.id),
+    )
+    if (toRemove.length > 0) {
+      const { error } = await supabase
+        .from('product_variants')
+        .update({ deleted_at: new Date().toISOString(), is_active: false })
+        .in('id', toRemove)
+      if (error) return { error: error.message }
+    }
   }
 
   if (variants.length > 0 && productId) {
