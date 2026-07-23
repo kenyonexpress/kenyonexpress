@@ -1,5 +1,6 @@
 'use server'
 
+import { passwordResetResult } from '@/lib/auth/password-reset'
 import { safeNextPath } from '@/lib/auth/safe-next'
 import { GUEST_SESSION_COOKIE, getGuestSessionId } from '@/lib/cart/guest-session'
 import { createClient } from '@/lib/supabase/server'
@@ -165,8 +166,11 @@ export async function sendPasswordReset(_: AuthState, formData: FormData): Promi
   const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
     redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=/reset-password`,
   })
-  if (error) return { error: toHebrew(error.message) }
-  return { success: 'שלחנו לך קישור לאיפוס הסיסמה — בדקו את תיבת הדואר' }
+
+  // Never let the reply reveal whether the address is registered. Failures are
+  // logged for operators; the caller always sees the same message.
+  if (error) console.error('[auth] password reset failed:', error.message)
+  return passwordResetResult(error)
 }
 
 // ──────────────────────────────────────────────
