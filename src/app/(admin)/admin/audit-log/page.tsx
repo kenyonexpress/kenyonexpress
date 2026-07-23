@@ -1,3 +1,4 @@
+import { requireAdminPage } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata = { title: 'לוג פעילות' }
@@ -34,6 +35,7 @@ const ENTITY_LABELS: Record<string, string> = {
 }
 
 export default async function AuditLogPage() {
+  await requireAdminPage()
   const supabase = await createClient()
   const { data: logs } = await supabase
     .from('audit_log')

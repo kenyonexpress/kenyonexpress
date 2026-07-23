@@ -1,9 +1,11 @@
 import CouponDealForm from '@/components/admin/CouponDealForm'
+import { requireAdminPage } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata = { title: 'עסקה חדשה' }
 
 export default async function NewCouponDealPage() {
+  await requireAdminPage()
   const supabase = await createClient()
   const { data: vendors } = await supabase
     .from('vendors')

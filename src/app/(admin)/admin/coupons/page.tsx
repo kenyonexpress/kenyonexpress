@@ -1,6 +1,7 @@
 import CouponForm from '@/components/admin/CouponForm'
 import CouponsTable, { type CouponRow } from '@/components/admin/CouponsTable'
 import { couponListParamsSchema } from '@/lib/admin/page-params'
+import { requireAdminPage } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
@@ -34,6 +35,7 @@ export default async function AdminCouponsPage({ searchParams }: Props) {
   const params = parsed.success ? parsed.data : {}
   const { status, new: isNew, edit } = params
 
+  await requireAdminPage()
   const supabase = await createClient()
 
   let query = supabase

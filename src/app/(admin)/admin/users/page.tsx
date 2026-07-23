@@ -1,6 +1,6 @@
 import UsersTable, { type UserRow } from '@/components/admin/UsersTable'
 import { userListParamsSchema } from '@/lib/admin/page-params'
-import { requireAdminSession } from '@/lib/admin/rbac'
+import { requireAdminPage } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
 import type { UserRole } from '@/types/database'
 
@@ -18,7 +18,7 @@ interface Props {
 }
 
 export default async function AdminUsersPage({ searchParams }: Props) {
-  const { userId: callerId, role: callerRole } = await requireAdminSession()
+  const { userId: callerId, role: callerRole } = await requireAdminPage()
   const raw = await searchParams
   const parsed = userListParamsSchema.safeParse({
     role: typeof raw.role === 'string' ? raw.role : undefined,

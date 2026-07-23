@@ -1,5 +1,6 @@
 import AdminSidebar from '@/components/admin/AdminSidebar'
-import { ROLE_LABELS, requireAdminSession } from '@/lib/admin/rbac'
+import { adminLandingPath } from '@/lib/admin/nav'
+import { ROLE_LABELS, requireStaffSession } from '@/lib/admin/rbac'
 import { signOut } from '@/server/actions/auth'
 import { LogOut } from 'lucide-react'
 import Link from 'next/link'
@@ -7,7 +8,7 @@ import Link from 'next/link'
 export const metadata = { title: { template: '%s | ניהול KenyonExpress', default: 'ניהול' } }
 
 export default async function AdminGroupLayout({ children }: { children: React.ReactNode }) {
-  const { role } = await requireAdminSession()
+  const { role } = await requireStaffSession()
 
   return (
     <div
@@ -18,7 +19,7 @@ export default async function AdminGroupLayout({ children }: { children: React.R
     >
       <header className="sticky top-0 z-20 border-b border-gray-200 bg-white px-6 py-3">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <Link href="/admin/dashboard" className="text-lg font-bold text-[#333e48]">
+          <Link href={adminLandingPath(role)} className="text-lg font-bold text-[#333e48]">
             KenyonExpress <span className="text-sm font-normal text-black/50">/ ניהול</span>
           </Link>
           <div className="flex items-center gap-4">
@@ -37,7 +38,7 @@ export default async function AdminGroupLayout({ children }: { children: React.R
       </header>
 
       <div className="mx-auto flex max-w-7xl items-start gap-6 px-6 py-6">
-        <AdminSidebar />
+        <AdminSidebar role={role} />
         <main className="min-w-0 flex-1">{children}</main>
       </div>
     </div>

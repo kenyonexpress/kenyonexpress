@@ -1,4 +1,5 @@
 import StatusBadge, { vendorStatusBadge } from '@/components/admin/StatusBadge'
+import { requireAdminPage } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
@@ -18,6 +19,7 @@ interface Props {
 
 export default async function AdminVendorsPage({ searchParams }: Props) {
   const { status, q } = await searchParams
+  await requireAdminPage()
   const supabase = await createClient()
 
   let query = supabase

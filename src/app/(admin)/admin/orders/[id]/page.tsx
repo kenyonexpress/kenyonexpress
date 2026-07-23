@@ -1,5 +1,6 @@
 import StatusBadge, { orderStatusBadge } from '@/components/admin/StatusBadge'
 import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
+import { requireAdminPage } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
 import { buildOrderUpdateText, waChatLink } from '@/lib/whatsapp'
 import { notFound } from 'next/navigation'
@@ -13,6 +14,7 @@ interface Props {
 
 export default async function OrderDetailPage({ params }: Props) {
   const { id } = await params
+  await requireAdminPage()
   const supabase = await createClient()
 
   const { data: order } = await supabase

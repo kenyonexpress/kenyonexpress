@@ -1,4 +1,5 @@
 import CouponDealForm from '@/components/admin/CouponDealForm'
+import { requireAdminPage } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 
@@ -10,6 +11,7 @@ interface Props {
 
 export default async function EditCouponDealPage({ params }: Props) {
   const { id } = await params
+  await requireAdminPage()
   const supabase = await createClient()
 
   const [{ data: deal }, { data: vendors }] = await Promise.all([

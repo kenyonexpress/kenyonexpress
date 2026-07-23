@@ -1,10 +1,12 @@
 import StatsCard from '@/components/admin/StatsCard'
+import { requireAdminPage } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
 import { FileText, Package, ShoppingCart } from 'lucide-react'
 
 export const metadata = { title: 'לוח בקרה' }
 
 export default async function DashboardPage() {
+  await requireAdminPage()
   const supabase = await createClient()
 
   const [{ count: productCount }, { count: orderCount }, { count: couponCount }] =

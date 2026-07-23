@@ -42,3 +42,17 @@ export async function requireStaffSession(): Promise<{ userId: string; role: Use
   }
   return session
 }
+
+// Guard for admin-only pages inside the staff-accessible admin panel. Non-staff
+// go to /login; staff who are not admins (content_uploader) are sent to the one
+// section they can use instead of being bounced out of the panel entirely.
+export async function requireAdminPage(): Promise<{ userId: string; role: UserRole }> {
+  const session = await getSessionWithRole()
+  if (!session || !isStaffRole(session.role)) {
+    redirect('/login')
+  }
+  if (!isAdminRole(session.role)) {
+    redirect('/admin/products')
+  }
+  return session
+}

@@ -1,9 +1,11 @@
 import CategoryForm from '@/components/admin/CategoryForm'
+import { requireAdminPage } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata = { title: 'קטגוריה חדשה' }
 
 export default async function NewCategoryPage() {
+  await requireAdminPage()
   const supabase = await createClient()
   const { data: categories } = await supabase
     .from('categories')

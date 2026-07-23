@@ -1,4 +1,5 @@
 import StatusBadge, { orderStatusBadge } from '@/components/admin/StatusBadge'
+import { requireAdminPage } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 
@@ -20,6 +21,7 @@ interface Props {
 
 export default async function AdminOrdersPage({ searchParams }: Props) {
   const { status, from, to } = await searchParams
+  await requireAdminPage()
   const supabase = await createClient()
 
   let query = supabase

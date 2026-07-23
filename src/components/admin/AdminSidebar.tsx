@@ -1,6 +1,8 @@
 'use client'
 
+import { canAccessAdminSection } from '@/lib/admin/nav'
 import { cn } from '@/lib/utils'
+import type { UserRole } from '@/types/database'
 import {
   ClipboardList,
   FileText,
@@ -26,8 +28,9 @@ const NAV_ITEMS = [
   { href: '/admin/audit-log', label: 'לוג פעילות', icon: ClipboardList },
 ]
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ role }: { role: UserRole }) {
   const pathname = usePathname()
+  const items = NAV_ITEMS.filter((item) => canAccessAdminSection(role, item.href))
 
   return (
     <aside className="w-56 shrink-0">
@@ -36,7 +39,7 @@ export default function AdminSidebar() {
           <span className="text-sm font-bold tracking-wide text-heading">פאנל ניהול</span>
         </div>
         <ul className="py-2">
-          {NAV_ITEMS.map(({ href, label, icon: Icon, exact, quickAdd }) => {
+          {items.map(({ href, label, icon: Icon, exact, quickAdd }) => {
             const active = exact ? pathname === href : pathname.startsWith(href)
             return (
               <li key={href} className={quickAdd ? 'flex items-stretch' : undefined}>

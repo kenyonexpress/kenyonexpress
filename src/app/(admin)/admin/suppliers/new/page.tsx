@@ -1,10 +1,12 @@
 import VendorForm from '@/components/admin/VendorForm'
+import { requireAdminPage } from '@/lib/admin/rbac'
 import { eligibleVendorProfiles } from '@/lib/admin/vendor-form'
 import { createClient } from '@/lib/supabase/server'
 
 export const metadata = { title: 'ספק חדש' }
 
 export default async function NewVendorPage() {
+  await requireAdminPage()
   const supabase = await createClient()
 
   const [{ data: profiles }, { data: vendors }] = await Promise.all([
