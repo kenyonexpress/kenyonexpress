@@ -9,6 +9,7 @@ interface Props {
   userId: string
   currentRole: UserRole
   callerRole: UserRole
+  isSelf?: boolean
 }
 
 const INITIAL: UserActionState = null
@@ -20,9 +21,14 @@ function assignableRoles(callerRole: UserRole): UserRole[] {
   return []
 }
 
-export default function UserRoleClient({ userId, currentRole, callerRole }: Props) {
+export default function UserRoleClient({ userId, currentRole, callerRole, isSelf }: Props) {
   const [state, action, pending] = useActionState(updateUserRole, INITIAL)
   const available = assignableRoles(callerRole)
+
+  // You cannot change your own role (prevents self-lockout); mirror the server guard.
+  if (isSelf) {
+    return <span className="text-xs text-gray-400">{ROLE_LABELS[currentRole]}</span>
+  }
 
   if (!available.length) {
     return <span className="text-xs text-gray-400">—</span>

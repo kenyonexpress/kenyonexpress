@@ -24,9 +24,10 @@ const ROLE_BADGE: Record<UserRole, string> = {
 interface Props {
   users: UserRow[]
   callerRole: UserRole
+  callerId: string
 }
 
-export default function UsersTable({ users, callerRole }: Props) {
+export default function UsersTable({ users, callerRole, callerId }: Props) {
   const columns: DataTableColumn<UserRow>[] = [
     {
       id: 'name',
@@ -70,7 +71,14 @@ export default function UsersTable({ users, callerRole }: Props) {
       id: 'actions',
       header: 'שינוי תפקיד',
       className: 'w-48',
-      cell: (u) => <UserRoleClient userId={u.id} currentRole={u.role} callerRole={callerRole} />,
+      cell: (u) => (
+        <UserRoleClient
+          userId={u.id}
+          currentRole={u.role}
+          callerRole={callerRole}
+          isSelf={u.id === callerId}
+        />
+      ),
     },
   ]
 

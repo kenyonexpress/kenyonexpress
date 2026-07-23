@@ -18,7 +18,7 @@ interface Props {
 }
 
 export default async function AdminUsersPage({ searchParams }: Props) {
-  const { role: callerRole } = await requireAdminSession()
+  const { userId: callerId, role: callerRole } = await requireAdminSession()
   const raw = await searchParams
   const parsed = userListParamsSchema.safeParse({
     role: typeof raw.role === 'string' ? raw.role : undefined,
@@ -65,7 +65,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
         </div>
       </div>
 
-      <UsersTable users={users} callerRole={callerRole} />
+      <UsersTable users={users} callerRole={callerRole} callerId={callerId} />
     </div>
   )
 }

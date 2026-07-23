@@ -1,6 +1,7 @@
 'use server'
 
 import { requireAdminSession } from '@/lib/admin/rbac'
+import { authorizeRoleChange } from '@/lib/admin/role-change'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import type { UserRole } from '@/types/database'
@@ -21,7 +22,7 @@ export async function updateUserRole(
   _: UserActionState,
   formData: FormData,
 ): Promise<UserActionState> {
-  const { role: callerRole } = await requireAdminSession()
+  const { userId: callerId, role: callerRole } = await requireAdminSession()
 
   const targetUserId = formData.get('user_id') as string
   const parsed = roleSchema.safeParse(formData.get('role'))
@@ -29,10 +30,8 @@ export async function updateUserRole(
 
   const newRole = parsed.data as UserRole
 
-  // Only super_admin can assign admin or super_admin roles.
-  if ((newRole === 'admin' || newRole === 'super_admin') && callerRole !== 'super_admin') {
-    return { error: 'רק מנהל-על יכול להעניק הרשאות מנהל' }
-  }
+  const authz = authorizeRoleChange({ callerId, callerRole, targetUserId, newRole })
+  if (!authz.ok) return { error: authz.error }
 
   const supabase = await createClient()
   const { error: profileError } = await supabase
