@@ -1,12 +1,20 @@
 import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/CategoryBreadcrumb'
 import CategoryControlBar from '@/components/category/CategoryControlBar'
 import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
+import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
 import Pagination from '@/components/category/Pagination'
-import { SHOP_PAGE_SIZE, getAllCategories, getShopProducts } from '@/lib/category-page'
-import { parseSort } from '@/lib/category-tokens'
+import {
+  type ProductTypeFilter,
+  SHOP_PAGE_SIZE,
+  getAllCategories,
+  getShopProductsCached,
+  parseProductType,
+} from '@/lib/category-page'
+import { type SortValue, parseSort } from '@/lib/category-tokens'
+import { Suspense } from 'react'
 import '@/styles/category-page.css'
 
 /* Live equivalent: kenyonexpress.co.il/shop/ - h1 "חנות", 24 per page */
@@ -38,28 +46,90 @@ function resultCountText(total: number, from: number, to: number): string {
   return `מציג ${from}–${to} מתוך ${total} תוצאות`
 }
 
+type QueryArgs = {
+  sort: SortValue
+  page: number
+  priceMin?: number
+  priceMax?: number
+  productType?: ProductTypeFilter
+}
+
+function pageWindow(total: number, page: number) {
+  const totalPages = Math.max(1, Math.ceil(total / SHOP_PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const from = (currentPage - 1) * SHOP_PAGE_SIZE + 1
+  const to = Math.min(currentPage * SHOP_PAGE_SIZE, total)
+  return { totalPages, currentPage, from, to }
+}
+
+/** Header count. Shares one query with the grid via getShopProductsCached. */
+async function ResultCount({ args }: { args: QueryArgs }) {
+  const { total } = await getShopProductsCached(args)
+  if (total === 0) return null
+  const { from, to } = pageWindow(total, args.page)
+  return <p className="category-page__count">{resultCountText(total, from, to)}</p>
+}
+
+async function ResultGrid({
+  args,
+  linkParams,
+}: {
+  args: QueryArgs
+  linkParams: Record<string, string | undefined>
+}) {
+  const { items, total } = await getShopProductsCached(args)
+
+  if (items.length === 0) {
+    return (
+      <div className="category-page__empty">
+        <p>לא נמצאו מוצרים התואמים את הבחירה שלך.</p>
+      </div>
+    )
+  }
+
+  const { totalPages, currentPage, from, to } = pageWindow(total, args.page)
+
+  return (
+    <>
+      <ul className="category-products">
+        {items.map((product) => (
+          <li key={product.id} className="category-products__item">
+            <CategoryProductCard product={product as CategoryProduct} />
+          </li>
+        ))}
+      </ul>
+      <Pagination
+        pathname="/products"
+        params={linkParams}
+        currentPage={currentPage}
+        totalPages={totalPages}
+      />
+      <p className="category-page__count category-page__count--bottom">
+        {resultCountText(total, from, to)}
+      </p>
+    </>
+  )
+}
+
 export default async function ProductsPage({ searchParams }: Props) {
   const sp = await searchParams
   const sort = parseSort(sp.sort)
   const page = parsePage(sp.page)
   const priceMin = parsePrice(sp.min)
   const priceMax = parsePrice(sp.max)
+  const productType = parseProductType(sp.type)
 
-  const [allCategories, { items, total }] = await Promise.all([
-    getAllCategories(),
-    getShopProducts({ sort, page, priceMin, priceMax }),
-  ])
+  // Cheap shell data only. The product query is deferred to the boundaries
+  // below so the breadcrumb, title, control bar and sidebar can stream first.
+  const allCategories = await getAllCategories()
 
-  const totalPages = Math.max(1, Math.ceil(total / SHOP_PAGE_SIZE))
-  const currentPage = Math.min(page, totalPages)
-  const from = (currentPage - 1) * SHOP_PAGE_SIZE + 1
-  const to = Math.min(currentPage * SHOP_PAGE_SIZE, total)
-  const countText = resultCountText(total, from, to)
+  const args: QueryArgs = { sort, page, priceMin, priceMax, productType }
 
   const linkParams = {
     sort: sort === 'menu_order' ? undefined : sort,
     min: priceMin != null ? String(priceMin) : undefined,
     max: priceMax != null ? String(priceMax) : undefined,
+    type: productType,
   }
 
   return (
@@ -67,43 +137,34 @@ export default async function ProductsPage({ searchParams }: Props) {
       <div className="category-page__inner">
         <CategoryBreadcrumb items={[defaultHomeCrumb(), { label: PAGE_TITLE }]} />
 
+        {/* Live /shop/ carries this section between the breadcrumb and the H1.
+            Its carousel renders no items on live, so the section is the heading
+            rule alone. Without it every landmark below sits ~62px too high. */}
+        <div className="shop-carousel-head">
+          <h2 className="shop-carousel-head__title">Recommended Products</h2>
+        </div>
+
         <header className="category-page__header">
           <h1 className="category-page__title">{PAGE_TITLE}</h1>
-          {total > 0 && <p className="category-page__count">{countText}</p>}
+          <Suspense fallback={null}>
+            <ResultCount args={args} />
+          </Suspense>
         </header>
 
         <CategoryControlBar value={sort} />
 
         <div className="category-page__body">
           <div className="category-page__main">
-            {items.length > 0 ? (
-              <>
-                <ul className="category-products">
-                  {items.map((product) => (
-                    <li key={product.id} className="category-products__item">
-                      <CategoryProductCard product={product as CategoryProduct} />
-                    </li>
-                  ))}
-                </ul>
-                <Pagination
-                  pathname="/products"
-                  params={linkParams}
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                />
-                <p className="category-page__count category-page__count--bottom">{countText}</p>
-              </>
-            ) : (
-              <div className="category-page__empty">
-                <p>לא נמצאו מוצרים התואמים את הבחירה שלך.</p>
-              </div>
-            )}
+            <Suspense fallback={<CategoryGridSkeleton count={SHOP_PAGE_SIZE} />}>
+              <ResultGrid args={args} linkParams={linkParams} />
+            </Suspense>
           </div>
 
           <CategoryFilterSidebar
             categories={allCategories}
             priceMin={priceMin}
             priceMax={priceMax}
+            productType={productType}
           />
         </div>
       </div>

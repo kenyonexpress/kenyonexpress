@@ -6,6 +6,7 @@ import 'server-only'
 import type { Product } from '@/components/ProductCard'
 import { createClient } from '@/lib/supabase/server'
 import { sanitizeOrTerm } from '@/lib/utils/search-escape'
+import { cache } from 'react'
 
 export type SearchOutcome = {
   results: Product[]
@@ -62,9 +63,13 @@ async function searchMeili(q: string, limit: number): Promise<SearchOutcome | nu
   }
 }
 
-async function searchDb(q: string, limit: number): Promise<SearchOutcome> {
+async function searchDb(
+  q: string,
+  limit: number,
+  productType?: 'coupon' | 'physical',
+): Promise<SearchOutcome> {
   const supabase = await createClient()
-  const { data, count } = await supabase
+  let query = supabase
     .from('products')
     .select(
       'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, categories(name_he, slug)',
@@ -73,7 +78,12 @@ async function searchDb(q: string, limit: number): Promise<SearchOutcome> {
     .eq('status', 'active')
     .is('deleted_at', null)
     .or(`name_he.ilike.%${q}%,description_he.ilike.%${q}%`)
-    .limit(limit)
+
+  // Same coupon/physical facet the archives expose, applied in the query so the
+  // count stays truthful rather than filtering an already-capped page.
+  if (productType) query = query.eq('type', productType)
+
+  const { data, count } = await query.limit(limit)
 
   const results: Product[] = (data ?? []).map((p) => {
     const cat = Array.isArray(p.categories) ? (p.categories[0] ?? null) : p.categories
@@ -91,13 +101,25 @@ async function searchDb(q: string, limit: number): Promise<SearchOutcome> {
   return { results, total: count ?? results.length, engine: 'database' }
 }
 
-export async function searchProductsServer(query: string, limit = 48): Promise<SearchOutcome> {
+export async function searchProductsServer(
+  query: string,
+  limit = 48,
+  productType?: 'coupon' | 'physical',
+): Promise<SearchOutcome> {
   const q = sanitize(query)
   if (q.length < 2) return { results: [], total: 0, engine: 'database' }
 
-  if (meiliConfigured()) {
+  // Meilisearch has no type facet configured yet, so a filtered search falls
+  // through to the database rather than silently returning unfiltered hits.
+  if (meiliConfigured() && !productType) {
     const meili = await searchMeili(q, limit)
     if (meili) return meili
   }
-  return searchDb(q, limit)
+  return searchDb(q, limit, productType)
 }
+
+/**
+ * Request-scoped memoisation. The result count and the grid sit behind separate
+ * Suspense boundaries; without this each would run the search independently.
+ */
+export const searchProductsCached = cache(searchProductsServer)

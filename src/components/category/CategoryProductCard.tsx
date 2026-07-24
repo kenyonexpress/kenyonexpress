@@ -110,19 +110,6 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
         )}
       </div>
 
-      {/* Measured live .custom-price-wrapper (h 72): two plain #333e48 14px lines,
-          full price then discounted, separated by a <br>. The live numbers are a
-          separate, manually entered WooCommerce field that does not match the
-          card price (e.g. card ₪195/₪99 but wrapper ₪399/₪196), so we do not copy
-          them; we reproduce the block geometry from our own full_price /
-          kenyon_price. See docs/CATEGORY-1TO1-FINDINGS.md. */}
-      {price != null && (
-        <div className="category-card__custom-price">
-          <div className="full-price">{formatPrice(old ?? price)}</div>
-          <br />
-          <div className="discount-price">{formatPrice(price)}</div>
-        </div>
-      )}
     </article>
   )
 }

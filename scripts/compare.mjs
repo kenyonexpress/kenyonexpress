@@ -24,6 +24,11 @@ const LIVE_PRODUCT = 'https://kenyonexpress.co.il/product/מוצר-לדוגמא/
 // were extracted from, so measurements and the pixel diff describe one page.
 const LIVE_CATEGORY = 'https://kenyonexpress.co.il/product-category/hot-deals/'
 const LOCAL_CATEGORY_SLUG = process.env.COMPARE_CATEGORY_SLUG ?? 'hot-deals'
+// /products is our rebuild of the live /shop/ archive.
+const LIVE_PRODUCTS = 'https://kenyonexpress.co.il/shop/'
+// Live search is a WordPress query string, not a route.
+const COMPARE_QUERY = process.env.COMPARE_SEARCH_Q ?? 'אוזניות'
+const LIVE_SEARCH = `https://kenyonexpress.co.il/?s=${encodeURIComponent(COMPARE_QUERY)}&post_type=product`
 // The saved refs/ke_live_singlefile.html renders a collapsed header (masthead 1px,
 // no 110px header row), so it under-represents the real site. Default the home
 // reference to the live site; pass --live=<file url> to use the single-file.
@@ -60,8 +65,14 @@ if (page === 'home') {
 } else if (page === 'category') {
   liveUrl ??= LIVE_CATEGORY
   mineUrl ??= `${LOCAL}/category/${LOCAL_CATEGORY_SLUG}`
+} else if (page === 'products') {
+  liveUrl ??= LIVE_PRODUCTS
+  mineUrl ??= `${LOCAL}/products`
+} else if (page === 'search') {
+  liveUrl ??= LIVE_SEARCH
+  mineUrl ??= `${LOCAL}/search?q=${encodeURIComponent(COMPARE_QUERY)}`
 } else {
-  console.error(`unknown --page=${page} (use home, product or category)`)
+  console.error(`unknown --page=${page} (use home, product, category, products or search)`)
   process.exit(2)
 }
 
