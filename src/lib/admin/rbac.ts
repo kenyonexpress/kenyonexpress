@@ -1,14 +1,14 @@
-import { isAdminRole, isStaffRole } from '@/lib/admin/roles'
+import { type AdminSection, canReadSection, canWriteSection } from '@/lib/admin/permissions'
+import { isAdminRole, isPanelRole, isStaffRole } from '@/lib/admin/roles'
 import { createClient } from '@/lib/supabase/server'
 import type { UserRole } from '@/types/database'
 import { redirect } from 'next/navigation'
 
-export { ROLE_LABELS, ROLE_ORDER, isAdminRole, isStaffRole } from '@/lib/admin/roles'
+export { ROLE_LABELS, ROLE_ORDER, isAdminRole, isPanelRole, isStaffRole } from '@/lib/admin/roles'
 
-export async function getSessionWithRole(): Promise<{
-  userId: string
-  role: UserRole
-} | null> {
+export type AdminSessionInfo = { userId: string; role: UserRole }
+
+export async function getSessionWithRole(): Promise<AdminSessionInfo | null> {
   const supabase = await createClient()
   const {
     data: { user },
@@ -26,7 +26,7 @@ export async function getSessionWithRole(): Promise<{
 }
 
 // Server-component guard: redirects if caller is not admin/super_admin.
-export async function requireAdminSession(): Promise<{ userId: string; role: UserRole }> {
+export async function requireAdminSession(): Promise<AdminSessionInfo> {
   const session = await getSessionWithRole()
   if (!session || !isAdminRole(session.role)) {
     redirect('/login')
@@ -34,8 +34,9 @@ export async function requireAdminSession(): Promise<{ userId: string; role: Use
   return session
 }
 
-// Admin panel guard: admin, super_admin, or content_uploader.
-export async function requireStaffSession(): Promise<{ userId: string; role: UserRole }> {
+// Catalog-writer guard: admin, super_admin, or content_uploader.
+// Deliberately excludes support (read-only role, never writes catalog).
+export async function requireStaffSession(): Promise<AdminSessionInfo> {
   const session = await getSessionWithRole()
   if (!session || !isStaffRole(session.role)) {
     redirect('/login')
@@ -53,6 +54,34 @@ export async function requireAdminPage(): Promise<{ userId: string; role: UserRo
   }
   if (!isAdminRole(session.role)) {
     redirect('/admin/products')
+  }
+  return session
+}
+
+// Panel-entry guard for the (admin) layout: any role with panel access,
+// including support. Pages still gate per-section via requireSection.
+export async function requirePanelSession(): Promise<AdminSessionInfo> {
+  const session = await getSessionWithRole()
+  if (!session || !isPanelRole(session.role)) {
+    redirect('/login')
+  }
+  return session
+}
+
+// Per-page gate (guard layer 3 of 4): panel entry passed, now enforce the
+// section matrix. Redirects into the panel root rather than /login so a
+// support user deep-linking to /admin/payments lands somewhere useful.
+export async function requireSection(
+  section: AdminSection,
+  access: 'read' | 'write' = 'read',
+): Promise<AdminSessionInfo> {
+  const session = await requirePanelSession()
+  const allowed =
+    access === 'write'
+      ? canWriteSection(session.role, section)
+      : canReadSection(session.role, section)
+  if (!allowed) {
+    redirect('/admin')
   }
   return session
 }

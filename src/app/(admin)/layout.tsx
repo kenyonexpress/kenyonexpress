@@ -1,14 +1,22 @@
 import AdminSidebar from '@/components/admin/AdminSidebar'
 import { adminLandingPath } from '@/lib/admin/nav'
-import { ROLE_LABELS, requireStaffSession } from '@/lib/admin/rbac'
+import { ROLE_LABELS, requirePanelSession } from '@/lib/admin/rbac'
 import { signOut } from '@/server/actions/auth'
 import { LogOut } from 'lucide-react'
 import Link from 'next/link'
 
-export const metadata = { title: { template: '%s | ניהול KenyonExpress', default: 'ניהול' } }
+export const metadata = {
+  title: { template: '%s | ניהול KenyonExpress', default: 'ניהול' },
+  robots: { index: false, follow: false },
+}
+
+// Admin is always fully dynamic: zero cache, always-fresh truth (V2 rule 4).
+export const dynamic = 'force-dynamic'
 
 export default async function AdminGroupLayout({ children }: { children: React.ReactNode }) {
-  const { role } = await requireStaffSession()
+  // Layout guard = layer 2 of 4 (proxy -> layout -> per-page section gate ->
+  // action guard + RLS). Panel entry only; pages enforce the section matrix.
+  const { role } = await requirePanelSession()
 
   return (
     <div

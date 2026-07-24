@@ -17,6 +17,7 @@ const ROLE_BADGE: Record<UserRole, string> = {
   customer: 'bg-black/5 text-black/60',
   vendor: 'bg-blue-100 text-blue-800',
   content_uploader: 'bg-purple-100 text-purple-800',
+  support: 'bg-teal-100 text-teal-800',
   admin: 'bg-brand-primary text-black',
   super_admin: 'bg-red-100 text-red-800',
 }

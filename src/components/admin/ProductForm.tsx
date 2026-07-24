@@ -30,8 +30,8 @@ function variantToFormData(v: ProductVariant): VariantDraft {
   return {
     _key: v.id,
     id: v.id,
-    name_he: v.name_he,
-    sku: v.sku,
+    name_he: v.name_he ?? '',
+    sku: v.sku ?? '',
     price: v.price != null ? String(v.price) : '',
     price_modifier: String(v.price_modifier),
     stock_quantity: v.stock_quantity != null ? String(v.stock_quantity) : '',

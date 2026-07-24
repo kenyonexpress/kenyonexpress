@@ -24,7 +24,7 @@ export default function VendorForm({ vendor, profiles = [] }: Props) {
   return (
     <form action={action} className="space-y-6 bg-white border border-gray-200 rounded-xl p-6">
       {vendor && <input type="hidden" name="id" value={vendor.id} />}
-      {vendor && <input type="hidden" name="profile_id" value={vendor.profile_id} />}
+      {vendor && <input type="hidden" name="profile_id" value={vendor.profile_id ?? ''} />}
       <input type="hidden" name="logo_url" value={logoUrl[0] ?? ''} />
 
       {error && <div className="bg-red-50 text-red-700 text-sm rounded-lg px-4 py-2">{error}</div>}

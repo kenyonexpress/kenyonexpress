@@ -56,12 +56,15 @@ export async function proxy(request: NextRequest) {
       .select('role')
       .eq('id', user.id)
       .single()
-    // Admin panel is open to staff: admin, super_admin, and content_uploader.
-    const isStaff =
+    // Admin panel is open to panel roles: admin, super_admin,
+    // content_uploader, and support (049). Optimistic check only; every page
+    // re-gates per section and every server action re-checks its own guard.
+    const isPanel =
       profile?.role === 'admin' ||
       profile?.role === 'super_admin' ||
-      profile?.role === 'content_uploader'
-    if (!isStaff) {
+      profile?.role === 'content_uploader' ||
+      profile?.role === 'support'
+    if (!isPanel) {
       return NextResponse.redirect(new URL('/', request.url))
     }
   }

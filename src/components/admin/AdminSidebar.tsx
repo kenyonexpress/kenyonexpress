@@ -1,14 +1,17 @@
 'use client'
 
-import { canAccessAdminSection } from '@/lib/admin/nav'
+import { type AdminSection, canReadSection } from '@/lib/admin/permissions'
 import { cn } from '@/lib/utils'
 import type { UserRole } from '@/types/database'
 import {
+  BarChart3,
   ClipboardList,
+  CreditCard,
   FileText,
   LayoutDashboard,
   Package,
   Plus,
+  Share2,
   ShoppingCart,
   Store,
   Tag,
@@ -17,20 +20,44 @@ import {
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-const NAV_ITEMS = [
-  { href: '/admin/dashboard', label: 'לוח בקרה', icon: LayoutDashboard, exact: true },
-  { href: '/admin/products', label: 'מוצרים', icon: Package, quickAdd: '/admin/products/new' },
-  { href: '/admin/categories', label: 'קטגוריות', icon: Tag },
-  { href: '/admin/suppliers', label: 'ספקים', icon: Store },
-  { href: '/admin/orders', label: 'הזמנות', icon: ShoppingCart },
-  { href: '/admin/coupons', label: 'קופונים', icon: FileText },
-  { href: '/admin/users', label: 'משתמשים', icon: Users },
-  { href: '/admin/audit-log', label: 'לוג פעילות', icon: ClipboardList },
+type NavItem = {
+  href: string
+  label: string
+  icon: React.ComponentType<{ size?: number; className?: string }>
+  section: AdminSection
+  exact?: boolean
+  quickAdd?: string
+}
+
+const NAV_ITEMS: NavItem[] = [
+  {
+    href: '/admin/dashboard',
+    label: 'לוח בקרה',
+    icon: LayoutDashboard,
+    section: 'dashboard',
+    exact: true,
+  },
+  {
+    href: '/admin/products',
+    label: 'מוצרים',
+    icon: Package,
+    section: 'catalog',
+    quickAdd: '/admin/products/new',
+  },
+  { href: '/admin/categories', label: 'קטגוריות', icon: Tag, section: 'catalog' },
+  { href: '/admin/coupons', label: 'קופונים ודילים', icon: FileText, section: 'catalog' },
+  { href: '/admin/orders', label: 'הזמנות', icon: ShoppingCart, section: 'orders' },
+  { href: '/admin/users', label: 'משתמשים', icon: Users, section: 'users' },
+  { href: '/admin/suppliers', label: 'ספקים', icon: Store, section: 'suppliers' },
+  { href: '/admin/payments', label: 'תשלומים', icon: CreditCard, section: 'payments' },
+  { href: '/admin/affiliates', label: 'שותפים והפניות', icon: Share2, section: 'affiliates' },
+  { href: '/admin/analytics', label: 'אנליטיקה', icon: BarChart3, section: 'analytics' },
+  { href: '/admin/audit-log', label: 'לוג פעילות', icon: ClipboardList, section: 'audit-log' },
 ]
 
 export default function AdminSidebar({ role }: { role: UserRole }) {
   const pathname = usePathname()
-  const items = NAV_ITEMS.filter((item) => canAccessAdminSection(role, item.href))
+  const visible = NAV_ITEMS.filter((item) => canReadSection(role, item.section))
 
   return (
     <aside className="w-56 shrink-0">
@@ -39,7 +66,7 @@ export default function AdminSidebar({ role }: { role: UserRole }) {
           <span className="text-sm font-bold tracking-wide text-heading">פאנל ניהול</span>
         </div>
         <ul className="py-2">
-          {items.map(({ href, label, icon: Icon, exact, quickAdd }) => {
+          {visible.map(({ href, label, icon: Icon, exact, quickAdd }) => {
             const active = exact ? pathname === href : pathname.startsWith(href)
             return (
               <li key={href} className={quickAdd ? 'flex items-stretch' : undefined}>
