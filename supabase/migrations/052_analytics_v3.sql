@@ -334,6 +334,28 @@ GROUP BY ad.day_il;
 COMMENT ON VIEW public.v_funnel_daily IS
   'Daily behavioral funnel from the rollup, joined to purchases from the money truth table. Step-to-step conversion percentages are computed in the presentation layer: one raw number here, many ratios there.';
 
+-- 5.1 Weekly channel revenue moves to a Sunday-start week.
+--     date_trunc('week') is ISO, i.e. Monday. The Israeli business week starts
+--     on Sunday, and the admin dashboard buckets weeks that way, so the view has
+--     to agree: two answers to "how did last week go" is a bug by definition.
+CREATE OR REPLACE VIEW public.v_channel_revenue_weekly
+WITH (security_invoker = true) AS
+SELECT
+  (date_trunc('week', (o.paid_at AT TIME ZONE 'Asia/Jerusalem') + interval '1 day')
+    - interval '1 day')::date                                         AS week_start,
+  COALESCE(o.attribution #>> '{last,utm_source}', '(direct)')         AS utm_source,
+  COALESCE(o.attribution #>> '{last,utm_campaign}', '(none)')         AS utm_campaign,
+  count(DISTINCT o.id)                                                AS orders,
+  sum(oi.total_price_ils)                                             AS gmv_ils,
+  sum(oi.platform_fee_ils)                                            AS platform_revenue_ils
+FROM public.orders o
+JOIN public.order_items oi ON oi.order_id = o.id
+WHERE o.paid_at IS NOT NULL AND o.deleted_at IS NULL AND oi.deleted_at IS NULL
+GROUP BY 1, 2, 3;
+
+COMMENT ON VIEW public.v_channel_revenue_weekly IS
+  'Last-touch UTM revenue per Sunday-start Israeli week. Weeks start on Sunday everywhere in this system, including the admin dashboard.';
+
 -- ---------------------------------------------------------------------------
 -- 6. New reporting views (doc sections 4.3, 7.3)
 -- ---------------------------------------------------------------------------
