@@ -482,3 +482,8 @@
   color: #768b9e;
   font-size: 16px;
 }
+
+/* Search box sits between the header and the results, at the control-bar width. */
+.category-search__box {
+  margin-bottom: 20px;
+}
