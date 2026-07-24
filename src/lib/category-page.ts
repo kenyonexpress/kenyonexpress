@@ -79,6 +79,15 @@ function normalizeCategoryJoin(
   return { ...row, categories: tags }
 }
 
+/** `products.type` values in use: 'coupon' and 'physical'. */
+export type ProductTypeFilter = 'coupon' | 'physical'
+
+export function parseProductType(
+  raw: string | string[] | undefined,
+): ProductTypeFilter | undefined {
+  return raw === 'coupon' || raw === 'physical' ? raw : undefined
+}
+
 export async function getCategoryProducts(opts: {
   categoryId: string
   category: { name_he: string; slug: string }
@@ -86,15 +95,16 @@ export async function getCategoryProducts(opts: {
   page: number
   priceMin?: number
   priceMax?: number
+  productType?: ProductTypeFilter
 }): Promise<{ items: CategoryProductRow[]; total: number }> {
-  const { categoryId, category, sort, page, priceMin, priceMax } = opts
+  const { categoryId, category, sort, page, priceMin, priceMax, productType } = opts
   const supabase = await createClient()
   const from = (page - 1) * CATEGORY_PAGE_SIZE
 
   let query = supabase
     .from('products')
     .select(
-      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, categories(name_he, slug)',
+      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, categories(name_he, slug)',
       { count: 'exact' },
     )
     .eq('category_id', categoryId)
@@ -103,6 +113,7 @@ export async function getCategoryProducts(opts: {
 
   if (priceMin != null) query = query.gte('kenyon_price', priceMin)
   if (priceMax != null) query = query.lte('kenyon_price', priceMax)
+  if (productType) query = query.eq('type', productType)
 
   switch (sort) {
     case 'price_asc':
@@ -148,15 +159,16 @@ export async function getShopProducts(opts: {
   page: number
   priceMin?: number
   priceMax?: number
+  productType?: ProductTypeFilter
 }): Promise<{ items: CategoryProductRow[]; total: number }> {
-  const { sort, page, priceMin, priceMax } = opts
+  const { sort, page, priceMin, priceMax, productType } = opts
   const supabase = await createClient()
   const from = (page - 1) * SHOP_PAGE_SIZE
 
   let query = supabase
     .from('products')
     .select(
-      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, categories(name_he, slug)',
+      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, categories(name_he, slug)',
       { count: 'exact' },
     )
     .eq('status', 'active')
@@ -164,6 +176,7 @@ export async function getShopProducts(opts: {
 
   if (priceMin != null) query = query.gte('kenyon_price', priceMin)
   if (priceMax != null) query = query.lte('kenyon_price', priceMax)
+  if (productType) query = query.eq('type', productType)
 
   switch (sort) {
     case 'price_asc':

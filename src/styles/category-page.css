@@ -132,8 +132,17 @@
 
 /* Body: measured live grid.rect = x135-1305 (full 1170 container), and
    sidebar.present = false, so the product area spans the whole container. */
+/* Product area + filter sidebar. The sidebar sits on the inline end, which is
+   the left in RTL, and is one card column wide so the grid keeps whole columns. */
 .category-page__body {
+  display: flex;
+  align-items: flex-start;
   width: 100%;
+}
+
+.category-page__main {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 /* Product grid - measured: display flex, wrap, no gap, 234px fixed cards */
@@ -351,6 +360,36 @@
 .category-sidebar__list a.is-current {
   color: #0062bd;
   font-weight: 700;
+}
+
+/* Type filter: a button, because it toggles a query param rather than
+   navigating to a new resource. Styled to read exactly like the category
+   links above it so the sidebar stays one visual list. */
+.category-sidebar__filter-btn {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  color: #333e48;
+  text-align: start;
+  cursor: pointer;
+}
+
+.category-sidebar__filter-btn:hover {
+  color: #0062bd;
+}
+
+.category-sidebar__filter-btn.is-current {
+  color: #0062bd;
+  font-weight: 700;
+}
+
+.category-sidebar__filter-btn[disabled] {
+  opacity: 0.6;
+  cursor: progress;
 }
 
 .category-sidebar__price-form {

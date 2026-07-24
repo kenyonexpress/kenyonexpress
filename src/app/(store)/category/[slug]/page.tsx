@@ -1,14 +1,17 @@
 import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/CategoryBreadcrumb'
 import CategoryControlBar from '@/components/category/CategoryControlBar'
+import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
 import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
 import Pagination from '@/components/category/Pagination'
 import {
   CATEGORY_PAGE_SIZE,
+  getAllCategories,
   getCategoryBySlug,
   getCategoryParent,
   getCategoryProducts,
+  parseProductType,
 } from '@/lib/category-page'
 import { parseSort } from '@/lib/category-tokens'
 import { createClient } from '@/lib/supabase/server'
@@ -60,12 +63,14 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   const page = parsePage(sp.page)
   const priceMin = parsePrice(sp.min)
   const priceMax = parsePrice(sp.max)
+  const productType = parseProductType(sp.type)
 
   const category = await getCategoryBySlug(slug)
   if (!category) notFound()
 
-  const [parent, { items, total }] = await Promise.all([
+  const [parent, allCategories, { items, total }] = await Promise.all([
     category.parent_id ? getCategoryParent(category.parent_id) : Promise.resolve(null),
+    getAllCategories(),
     getCategoryProducts({
       categoryId: category.id,
       category: { name_he: category.name_he, slug: category.slug },
@@ -73,6 +78,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
       page,
       priceMin,
       priceMax,
+      productType,
     }),
   ])
 
@@ -87,6 +93,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     sort: sort === 'menu_order' ? undefined : sort,
     min: priceMin != null ? String(priceMin) : undefined,
     max: priceMax != null ? String(priceMax) : undefined,
+    type: productType,
   }
 
   const crumbs = [
@@ -107,32 +114,39 @@ export default async function CategoryPage({ params, searchParams }: Props) {
 
         <CategoryControlBar value={sort} />
 
-        {/* Measured on the live archive (refs/category-tokens.json): sidebar.present
-            is false and the grid spans the full 1170px container, so the product
-            area has no aside. */}
         <div className="category-page__body">
-          {items.length > 0 ? (
-            <>
-              <ul className="category-products">
-                {items.map((product) => (
-                  <li key={product.id} className="category-products__item">
-                    <CategoryProductCard product={product as CategoryProduct} />
-                  </li>
-                ))}
-              </ul>
-              <Pagination
-                pathname={pathname}
-                params={linkParams}
-                currentPage={currentPage}
-                totalPages={totalPages}
-              />
-              <p className="category-page__count category-page__count--bottom">{countText}</p>
-            </>
-          ) : (
-            <div className="category-page__empty">
-              <p>לא נמצאו מוצרים התואמים את הבחירה שלך.</p>
-            </div>
-          )}
+          <div className="category-page__main">
+            {items.length > 0 ? (
+              <>
+                <ul className="category-products">
+                  {items.map((product) => (
+                    <li key={product.id} className="category-products__item">
+                      <CategoryProductCard product={product as CategoryProduct} />
+                    </li>
+                  ))}
+                </ul>
+                <Pagination
+                  pathname={pathname}
+                  params={linkParams}
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                />
+                <p className="category-page__count category-page__count--bottom">{countText}</p>
+              </>
+            ) : (
+              <div className="category-page__empty">
+                <p>לא נמצאו מוצרים התואמים את הבחירה שלך.</p>
+              </div>
+            )}
+          </div>
+
+          <CategoryFilterSidebar
+            categories={allCategories}
+            currentSlug={category.slug}
+            priceMin={priceMin}
+            priceMax={priceMax}
+            productType={productType}
+          />
         </div>
       </div>
     </div>

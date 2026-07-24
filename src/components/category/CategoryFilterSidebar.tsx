@@ -11,13 +11,21 @@ type Props = {
   currentSlug?: string
   priceMin?: number
   priceMax?: number
+  productType?: 'coupon' | 'physical'
 }
+
+const TYPE_OPTIONS = [
+  { value: undefined, label: 'הכל' },
+  { value: 'coupon' as const, label: 'קופונים' },
+  { value: 'physical' as const, label: 'מוצרים פיזיים' },
+]
 
 export default function CategoryFilterSidebar({
   categories,
   currentSlug,
   priceMin,
   priceMax,
+  productType,
 }: Props) {
   const router = useRouter()
   const pathname = usePathname()
@@ -26,17 +34,31 @@ export default function CategoryFilterSidebar({
   const [min, setMin] = useState(priceMin != null ? String(priceMin) : '')
   const [max, setMax] = useState(priceMax != null ? String(priceMax) : '')
 
-  function applyPrice(e: React.FormEvent) {
-    e.preventDefault()
+  /** Any filter change resets paging: page 3 of the old result set is meaningless. */
+  function pushWith(mutate: (params: URLSearchParams) => void) {
     const params = new URLSearchParams(searchParams)
-    if (min && Number(min) >= 0) params.set('min', min)
-    else params.delete('min')
-    if (max && Number(max) >= 0) params.set('max', max)
-    else params.delete('max')
+    mutate(params)
     params.delete('page')
     const qs = params.toString()
     startTransition(() => {
       router.push(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
+    })
+  }
+
+  function applyPrice(e: React.FormEvent) {
+    e.preventDefault()
+    pushWith((params) => {
+      if (min && Number(min) >= 0) params.set('min', min)
+      else params.delete('min')
+      if (max && Number(max) >= 0) params.set('max', max)
+      else params.delete('max')
+    })
+  }
+
+  function applyType(value: 'coupon' | 'physical' | undefined) {
+    pushWith((params) => {
+      if (value) params.set('type', value)
+      else params.delete('type')
     })
   }
 
@@ -53,6 +75,27 @@ export default function CategoryFilterSidebar({
               >
                 {cat.name_he}
               </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="category-sidebar__widget">
+        <h3 className="category-sidebar__title">סוג מוצר</h3>
+        <ul className="category-sidebar__list">
+          {TYPE_OPTIONS.map((option) => (
+            <li key={option.label}>
+              <button
+                type="button"
+                className={`category-sidebar__filter-btn${
+                  productType === option.value ? ' is-current' : ''
+                }`}
+                onClick={() => applyType(option.value)}
+                disabled={isPending}
+                aria-pressed={productType === option.value}
+              >
+                {option.label}
+              </button>
             </li>
           ))}
         </ul>
