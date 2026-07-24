@@ -12,9 +12,14 @@ export default async function StoreLayout({ children }: { children: React.ReactN
 
   return (
     <CartProvider initialCart={cart}>
+      {/* Measured live: the footer sits directly after the content (top 871 on
+          hot-deals) with white space below, i.e. no sticky footer. flex-1 would
+          stretch main to the viewport and push the footer to the bottom, which is
+          the 1218px vertical mismatch in the category compare. Keep min-h-screen
+          for the background fill, but let the footer follow the content. */}
       <div className="min-h-screen flex flex-col bg-white">
         <SiteHeader />
-        <main className="flex-1 w-full">{children}</main>
+        <main className="w-full">{children}</main>
         <SiteFooter />
       </div>
       <CartDrawer />

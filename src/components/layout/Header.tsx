@@ -6,7 +6,11 @@ import Link from 'next/link'
 
 /**
  * kenyonexpress.co.il — top bar (welcome) + masthead.
- * Project override: logo + 3 icons (favorites, account, cart), 54px, 1320px container.
+ * Masthead height matched to the live site (measured 2026-07-24): live masthead is
+ * 127px (28px top/bottom padding around the logo row), so content starts at 165.4.
+ * The earlier 54px was a project override against the collapsed single-file snapshot;
+ * Ofir approved raising it to live parity to close the 70px content offset. Container
+ * stays 1320px (max-w-page) per the standing project override.
  */
 export default function SiteHeader() {
   return (
@@ -43,7 +47,7 @@ export default function SiteHeader() {
       </div>
 
       <header dir="rtl" className="sticky top-0 z-40 w-full border-b border-border bg-white">
-        <div className="mx-auto flex h-[54px] max-w-page items-center justify-between px-4">
+        <div className="mx-auto flex h-[127px] max-w-page items-center justify-between px-4">
           <Link href="/" aria-label="קניון אקספרס, לדף הבית" className="shrink-0">
             <SmartImage
               src={LOGO}
