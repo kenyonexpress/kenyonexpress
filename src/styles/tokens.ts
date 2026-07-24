@@ -1,12 +1,42 @@
+/**
+ * Design tokens for KenyonExpress.
+ *
+ * Source of truth for measured brand + catalog values. globals.css @theme and
+ * category-page.css must stay in step with this file (see tokens.test.ts).
+ *
+ * Palette rules (DESIGN-MEASURED.md):
+ *   - Brand yellow is #fed700 (rgb 254,215,0), NEVER #FDD700.
+ *   - #B0E0E9 (generic Electro sky-blue) is NOT part of the live brand.
+ *   - Heading/ink slate is #333e48.
+ */
+
+/** WCAG 2.5.5 / Apple HIG minimum interactive target (CSS px). */
+export const TOUCH_TARGET_PX = 44
+
 export const ELECTRO = {
-  // primary corrected to the live-verified brand yellow (rgb 254,215,0),
-  // not the design-spec #FDD700. dark matches live #333e48. blue is the
-  // generic Electro sky-blue and is not part of the live brand (unused).
-  colors: { primary: '#fed700', dark: '#333E48', blue: '#B0E0E9' },
+  colors: {
+    /** Live-verified brand yellow (search button, badges, CTAs). */
+    primary: '#fed700',
+    /** Live heading / body slate. */
+    dark: '#333e48',
+    /**
+     * @deprecated Never use. Generic Electro sky-blue; absent from the live
+     * site. Kept only so old imports fail loudly via the brand assertion test.
+     */
+    blue: '#B0E0E9',
+  },
   radius: { card: '8px', btn: '4px', elevated: '12px' },
-  shadow: { card: '0px 2px 8px rgba(0,0,0,0.08)', hover: '0px 4px 16px rgba(0,0,0,0.12)' },
+  shadow: {
+    card: '0px 2px 8px rgba(0,0,0,0.08)',
+    hover: '0px 4px 16px rgba(0,0,0,0.12)',
+  },
   transition: { card: 'box-shadow 300ms ease-in-out' },
-}
+  /** Accessibility geometry shared across storefront controls. */
+  a11y: {
+    touchTargetPx: TOUCH_TARGET_PX,
+    touchTarget: `${TOUCH_TARGET_PX}px`,
+  },
+} as const
 
 /**
  * Catalog archive tokens: /category/[slug], /products, /search.
@@ -90,6 +120,18 @@ export const CATALOG = {
     carouselTitleLine: '35.2px',
     carouselTitlePad: '8.7976px',
   },
+} as const
+
+/** Brand colours that must match globals.css @theme (case-insensitive). */
+export const THEME_BRAND = {
+  '--color-brand-primary': ELECTRO.colors.primary,
+  '--color-brand-primary-hover': CATALOG.color.brandHover,
+  '--color-heading': ELECTRO.colors.dark,
+  '--color-price': CATALOG.color.sale,
+  '--color-link': CATALOG.color.link,
+  '--color-sale-badge': CATALOG.color.badge,
+  '--color-brand': ELECTRO.colors.primary,
+  '--color-primary': ELECTRO.colors.primary,
 } as const
 
 /** The CSS custom-property name each colour maps to in category-page.css. */
