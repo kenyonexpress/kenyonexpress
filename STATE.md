@@ -553,3 +553,37 @@ commit: `feat: homepage 1:1 match with live source`
 - pipeline מלא: identity gate, Cardcom Low Profile, webhook HMAC,
   `checkout_finalize`, coupon vs physical fulfillment, refunds, payment_attempts
 - אין קוד יישום; מרחיב COMMERCE / API-CONTRACTS / SECURITY
+
+### 2026-07-24 - WP Data Migration: צינור ETL מלא (ענף `feat/wp-migration`)
+- ענף עצמאי ב-worktree `../ke-wp-migration`. **אפס כתיבה ל-DB**: הכל dry-run וסקריפטים.
+- מיגרציה `052_wp_migration_log.sql` (טיוטה, **לא הוחלה**): `wp_import.migration_log`
+  (append-only, שורה לכל פעולה עם `external_id`, `dry_run`, before/after),
+  `wp_import.validation_reports`, ו-`fn_rollback_batch(batch, p_dry_run => true)`.
+  מבטלת גם את האינדקס הייחודי של 032 על `media.storage_path` (מפתחות
+  content-addressed משותפים בין מוצרים).
+- צינור `scripts/wp-import/`: extract -> transform -> load -> media -> project -> validate.
+  ברירת המחדל dry-run, וכתיבה דורשת **שני** מנעולים: `--apply` וגם
+  `WP_IMPORT_ALLOW_WRITES=1`.
+- מפתח idempotency יחיד: `wp:<entity>:<wp_id>`; uuid מ-`wp_import.id_map` ונשמר,
+  כך שהרצה חוזרת מעדכנת ולא משכפלת.
+- מדיניות שנאכפת בשערים: אין העברת סיסמאות (reset flow), אין הסכמה שיווקית
+  מיובאת, הזמנות היסטוריות ארכיון בלבד, מוצר בלי מחיר/קטגוריה = draft,
+  אין URL ישן שמחזיר 404 (301 או 410 מפורש).
+- אומת offline מול `fixtures/make-fixture.mjs`; המרת תמונות ו-dedup לפי sha256
+  אומתו מול שרת תמונות מקומי.
+
+#### באגים אמיתיים שהאימות תפס
+- `mapStatus` השתמש ב-`?? 'draft'`, מה שהפך כל החרגה מכוונת (trash/private)
+  למוצר טיוטה מיובא. מוצר מהאשפה הגיע לקטלוג.
+- מוצרים מוחרגים נשארו בלי החלטת URL בכלל; עכשיו מקבלים 410 מפורש.
+- מפתח האחסון היה `wp/<wp_id>/<hash>.webp` - תחילית פר-מוצר שמנטרלת את
+  ה-dedup שלידה. עכשיו `wp/<ab>/<hash>.webp`.
+- `fn_rollback_batch` השתמשה ב-`target_table`/`entity` כשמות פרמטרים, שהם שמות
+  עמודות ב-`migration_log`; ב-PL/pgSQL זו התנגשות שנכשלת בזמן קריאה.
+
+#### מה שטרם אומת
+- ה-SQL של 052 **מעולם לא הורץ**: אין Postgres בסביבה (daemon של Docker כבוי).
+- שום שלב לא רץ מול החנות החיה או מול פרויקט Supabase אמיתי.
+- `public.seo_redirects` **לא קיימת**. צד ה-staging בנוי (`url_inventory` כולל
+  410), אבל אין טבלה ציבורית ואין middleware שקורא ממנה. זה החסם הפתוח האחרון
+  בחצי ה-SEO של ה-cutover.

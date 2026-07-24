@@ -71,7 +71,7 @@ supplier concept, so every imported product is attached to one synthetic
 supplied (section 2.4).
 
 Storage: Supabase Storage bucket `product-images` (public read). Cloudflare
-R2 is an approved alternative behind the same key layout `wp/<wp_id>/...`;
+R2 is an approved alternative behind the same key layout `wp/<ab>/<sha256>`;
 the pipeline in section 3 is storage-agnostic and only the upload adapter
 changes.
 
