@@ -17,13 +17,41 @@
   --cat-brand: #fed700;
   --cat-brand-hover: #fedd26;
 
+  /* Geometry measured on the live archive. Same contract as the colours:
+     change the number in tokens.ts, never in a rule. */
+  --cat-container: 1170px;
+  --cat-card-col: 234px;
+  --cat-thumb-max: 186.03px;
+  --cat-body-line: 23.996px;
+  --cat-title-size: 25.004px;
+  --cat-title-line: 40.0064px;
+  --cat-price-size: 20.006px;
+  --cat-price-del-size: 12.0036px;
+  --cat-eyebrow-size: 11.998px;
+  --cat-eyebrow-line: 12.5979px;
+  --cat-ptitle-line: 18.0001px;
+  --cat-bar-height: 45.89px;
+  --cat-bar-pad-y: 2.8px;
+  --cat-select-w: 174px;
+  --cat-select-h: 34.3px;
+  --cat-select-pad-y: 4.16px;
+  --cat-crumb-pad-top: 25.004px;
+  --cat-crumb-pad-bot: 22.4px;
+  --cat-thumb-gap: 25.96px;
+  --cat-atc-w: 37.14px;
+  --cat-atc-h: 33.88px;
+  --cat-carousel-gap: 16.996px;
+  --cat-carousel-size: 21.994px;
+  --cat-carousel-line: 35.2px;
+  --cat-carousel-pad: 8.7976px;
+
   color: var(--cat-ink);
   font-size: 14px;
   line-height: 24px;
 }
 
 .category-page__inner {
-  max-width: 1170px;
+  max-width: var(--cat-container);
   margin-inline: auto;
   padding-inline: 15px;
 }
@@ -34,11 +62,11 @@
   }
 }
 
-/* Breadcrumb: measured padding 25px top / 22.4px bottom, 14px var(--cat-ink) */
+/* Breadcrumb: measured padding 25px top / var(--cat-crumb-pad-bot) bottom, 14px var(--cat-ink) */
 .category-breadcrumb {
-  padding: 25.004px 0 22.4px;
+  padding: var(--cat-title-size) 0 var(--cat-crumb-pad-bot);
   font-size: 14px;
-  line-height: 23.996px;
+  line-height: var(--cat-body-line);
   color: var(--cat-ink);
 }
 
@@ -58,7 +86,7 @@
 }
 
 /* Header row: h1 on inline-start (right), result count on inline-end (left).
-   Measured: h1 25.004px/500/40px line-height, block margin-bottom 14px. */
+   Measured: h1 var(--cat-title-size)/500/40px line-height, block margin-bottom 14px. */
 .category-page__header {
   display: flex;
   align-items: center;
@@ -69,16 +97,16 @@
 
 .category-page__title {
   margin: 0;
-  font-size: 25.004px;
+  font-size: var(--cat-title-size);
   font-weight: 500;
-  line-height: 40.0064px;
+  line-height: var(--cat-title-line);
   color: var(--cat-ink);
 }
 
 .category-page__count {
   margin: 0;
   font-size: 14px;
-  line-height: 23.996px;
+  line-height: var(--cat-body-line);
   color: var(--cat-ink);
 }
 
@@ -86,32 +114,32 @@
   padding-block: 16px 8px;
 }
 
-/* Control bar: measured var(--cat-bar), radius 9px, padding 2.8px 20.006px, h~45.9.
+/* Control bar: measured var(--cat-bar), radius 9px, padding var(--cat-bar-pad-y) var(--cat-price-size), h~45.9.
    Select on inline-end (left), view switcher on inline-start (right). */
 .category-control-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  min-height: 45.89px;
-  padding: 2.8px 20.006px;
+  min-height: var(--cat-bar-height);
+  padding: var(--cat-bar-pad-y) var(--cat-price-size);
   background-color: var(--cat-bar);
   border-radius: 9px;
   color: var(--cat-ink);
   font-size: 14px;
-  line-height: 23.996px;
+  line-height: var(--cat-body-line);
 }
 
 /* Measured select: 174x34.3, radius 20px, 1px var(--cat-line), white bg */
 .category-control-bar__select {
-  width: 174px;
-  height: 34.3px;
+  width: var(--cat-select-w);
+  height: var(--cat-select-h);
   border: 1px solid var(--cat-line);
-  border-radius: 20.006px;
+  border-radius: var(--cat-price-size);
   background: var(--cat-surface);
   color: var(--cat-ink);
   font-size: 14px;
-  padding: 4.16px 12px;
+  padding: var(--cat-select-pad-y) 12px;
   cursor: pointer;
 }
 
@@ -160,7 +188,7 @@
   min-width: 0;
 }
 
-/* Product grid - measured: display flex, wrap, no gap, 234px fixed cards */
+/* Product grid - measured: display flex, wrap, no gap, var(--cat-card-col) fixed cards */
 .category-products {
   display: flex;
   flex-wrap: wrap;
@@ -170,8 +198,8 @@
 }
 
 .category-products__item {
-  width: 234px;
-  flex: 0 0 234px;
+  width: var(--cat-card-col);
+  flex: 0 0 var(--cat-card-col);
   box-sizing: border-box;
 }
 
@@ -182,13 +210,13 @@
   }
 }
 
-/* Card: measured .product-inner padding 20.006px top / 14px bottom, content
-   box 186px inside the 234px column (24px each side). */
+/* Card: measured .product-inner padding var(--cat-price-size) top / 14px bottom, content
+   box 186px inside the var(--cat-card-col) column (24px each side). */
 .category-card {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 20.006px 24px 14px;
+  padding: var(--cat-price-size) 24px 14px;
   box-sizing: border-box;
 }
 
@@ -197,12 +225,12 @@
   flex-direction: column;
 }
 
-/* Measured: 11.998px/12.5979px, h 12.6, link var(--cat-muted), margin-bottom 11.998px */
+/* Measured: var(--cat-eyebrow-size)/var(--cat-eyebrow-line), h 12.6, link var(--cat-muted), margin-bottom var(--cat-eyebrow-size) */
 .category-card__categories {
-  font-size: 11.998px;
+  font-size: var(--cat-eyebrow-size);
   color: var(--cat-ink);
-  margin-bottom: 11.998px;
-  line-height: 12.5979px;
+  margin-bottom: var(--cat-eyebrow-size);
+  line-height: var(--cat-eyebrow-line);
 }
 
 .category-card__categories a {
@@ -214,20 +242,20 @@
   color: var(--cat-ink);
 }
 
-/* Measured: 20.006px, sale ins var(--cat-sale) 400, del 12px var(--cat-muted) */
-/* Measured live span.price: font 20.006px, line-height 20.006px, box height 27px */
+/* Measured: var(--cat-price-size), sale ins var(--cat-sale) 400, del 12px var(--cat-muted) */
+/* Measured live span.price: font var(--cat-price-size), line-height var(--cat-price-size), box height 27px */
 .category-card__price {
   display: block;
   height: 27px;
-  font-size: 20.006px;
-  line-height: 20.006px;
+  font-size: var(--cat-price-size);
+  line-height: var(--cat-price-size);
   color: var(--cat-ink);
   margin-bottom: 0;
 }
 
 .category-card__price del {
   color: var(--cat-muted);
-  font-size: 12.0036px;
+  font-size: var(--cat-price-del-size);
   text-decoration: line-through;
   font-weight: 400;
 }
@@ -249,7 +277,7 @@
   margin: 0 0 8px;
   font-size: 14px;
   font-weight: 700;
-  line-height: 18.0001px;
+  line-height: var(--cat-ptitle-line);
   color: var(--cat-link);
 }
 
@@ -258,25 +286,25 @@
 }
 
 /* Image: measured 186x186 centered inside 234 card */
-/* Measured: image top sits 25.96px below the title box (margins collapse) */
+/* Measured: image top sits var(--cat-thumb-gap) below the title box (margins collapse) */
 .category-card__thumb {
   position: relative;
   display: block;
   text-align: center;
-  margin-top: 25.96px;
+  margin-top: var(--cat-thumb-gap);
 }
 
 .category-card__thumb img {
   width: auto;
-  max-width: 186.03px;
-  max-height: 186.03px;
+  max-width: var(--cat-thumb-max);
+  max-height: var(--cat-thumb-max);
   height: auto;
   display: inline-block;
   vertical-align: middle;
 }
 
 /* Sale badge: measured bottom inline-start corner of the image,
-   var(--cat-badge), white, 11.998px/700, radius 4, padding 2px 10px */
+   var(--cat-badge), white, var(--cat-eyebrow-size)/700, radius 4, padding 2px 10px */
 .category-card__badge {
   position: absolute;
   inset-inline-start: 0;
@@ -284,7 +312,7 @@
   z-index: 2;
   background-color: var(--cat-badge);
   color: var(--cat-surface);
-  font-size: 11.998px;
+  font-size: var(--cat-eyebrow-size);
   font-weight: 700;
   padding: 2px 10px;
   border-radius: 4px;
@@ -306,8 +334,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 37.14px;
-  height: 33.88px;
+  width: var(--cat-atc-w);
+  height: var(--cat-atc-h);
   flex: 0 0 auto;
   border: 1px solid var(--cat-line);
   border-radius: 22px;
@@ -321,10 +349,10 @@
   border-color: var(--cat-brand);
 }
 
-/* Filter sidebar: one card-column wide (234px), on inline-end (left) */
+/* Filter sidebar: one card-column wide (var(--cat-card-col)), on inline-end (left) */
 .category-sidebar {
-  flex: 0 0 234px;
-  width: 234px;
+  flex: 0 0 var(--cat-card-col);
+  width: var(--cat-card-col);
   padding-inline-start: 20px;
   box-sizing: border-box;
 }
@@ -422,10 +450,10 @@
 .category-sidebar__price-input {
   width: 0;
   flex: 1 1 auto;
-  height: 34.3px;
+  height: var(--cat-select-h);
   border: 1px solid var(--cat-line);
-  border-radius: 20.006px;
-  padding: 4.16px 12px;
+  border-radius: var(--cat-price-size);
+  padding: var(--cat-select-pad-y) 12px;
   font-size: 14px;
   color: var(--cat-ink);
   background: var(--cat-surface);
@@ -433,10 +461,10 @@
 
 .category-sidebar__price-btn {
   align-self: flex-start;
-  height: 34.3px;
+  height: var(--cat-select-h);
   padding: 0 20px;
   border: 0;
-  border-radius: 20.006px;
+  border-radius: var(--cat-price-size);
   background: var(--cat-brand);
   color: var(--cat-ink);
   font-size: 14px;
@@ -505,25 +533,25 @@
 
 /* Live /shop/ renders a "Recommended Products" carousel section between the
    breadcrumb and the archive H1. Measured: section.section-products-carousel
-   is 1170x45 with margin-bottom 16.996px, its header carries a 1px var(--cat-line) bottom
-   rule across the full width, and the h2 is 21.994px/400 at 249.6px wide with
-   padding-bottom 8.7976px and a yellow rule of its own. The live carousel holds
+   is 1170x45 with margin-bottom var(--cat-carousel-gap), its header carries a 1px var(--cat-line) bottom
+   rule across the full width, and the h2 is var(--cat-carousel-size)/400 at 249.6px wide with
+   padding-bottom var(--cat-carousel-pad) and a yellow rule of its own. The live carousel holds
    no items, so the section is the heading and nothing else. */
 .shop-carousel-head {
   display: flex;
   align-items: flex-start;
   height: 45px;
-  margin-bottom: 16.996px;
+  margin-bottom: var(--cat-carousel-gap);
   border-bottom: 1px solid var(--cat-line);
   box-sizing: border-box;
 }
 
 .shop-carousel-head__title {
   margin: 0;
-  padding-bottom: 8.7976px;
-  font-size: 21.994px;
+  padding-bottom: var(--cat-carousel-pad);
+  font-size: var(--cat-carousel-size);
   font-weight: 400;
-  line-height: 35.2px;
+  line-height: var(--cat-carousel-line);
   color: var(--cat-ink);
   border-bottom: 2px solid var(--cat-brand);
 }
@@ -543,7 +571,7 @@
 .category-skeleton--eyebrow {
   height: 12.6px;
   width: 60%;
-  margin-bottom: 11.998px;
+  margin-bottom: var(--cat-eyebrow-size);
 }
 
 .category-skeleton--price {
@@ -552,15 +580,15 @@
 }
 
 .category-skeleton--title {
-  height: 18.0001px;
+  height: var(--cat-ptitle-line);
   width: 85%;
   margin-top: 4px;
 }
 
 .category-skeleton--thumb {
-  height: 186.03px;
+  height: var(--cat-thumb-max);
   width: 100%;
-  margin-top: 25.96px;
+  margin-top: var(--cat-thumb-gap);
 }
 
 .category-skeleton--footer {

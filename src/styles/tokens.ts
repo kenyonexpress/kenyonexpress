@@ -84,7 +84,7 @@ export const CATALOG = {
   },
 } as const
 
-/** The CSS custom-property name each token maps to in category-page.css. */
+/** The CSS custom-property name each colour maps to in category-page.css. */
 export const CATALOG_CSS_VARS: Record<string, string> = {
   '--cat-ink': CATALOG.color.ink,
   '--cat-link': CATALOG.color.link,
@@ -97,4 +97,43 @@ export const CATALOG_CSS_VARS: Record<string, string> = {
   '--cat-surface': CATALOG.color.surface,
   '--cat-brand': CATALOG.color.brand,
   '--cat-brand-hover': CATALOG.color.brandHover,
+}
+
+/**
+ * Geometry measured off the live archive, and the custom property each value
+ * is exposed through. Only DISTINCTIVE measurements are tokenised: ordinary
+ * CSS spacing (1px hairlines, 4px and 8px radii) is not a measurement and stays
+ * literal, because tokenising it would say something untrue about where it came
+ * from.
+ *
+ * Several measurements share a number (25.004px is both the archive title size
+ * and the breadcrumb top padding). They keep separate names for readability;
+ * the stylesheet may use either, since the rendered result is identical.
+ */
+export const CATALOG_CSS_METRICS: Record<string, string> = {
+  '--cat-container': CATALOG.metric.container,
+  '--cat-card-col': CATALOG.metric.cardColumn,
+  '--cat-thumb-max': CATALOG.metric.thumbMax,
+  '--cat-body-line': CATALOG.metric.bodyLine,
+  '--cat-title-size': CATALOG.metric.titleSize,
+  '--cat-title-line': CATALOG.metric.titleLine,
+  '--cat-price-size': CATALOG.metric.priceSize,
+  '--cat-price-del-size': '12.0036px',
+  '--cat-eyebrow-size': CATALOG.metric.eyebrowSize,
+  '--cat-eyebrow-line': CATALOG.metric.eyebrowLine,
+  '--cat-ptitle-line': CATALOG.metric.productTitleLine,
+  '--cat-bar-height': CATALOG.metric.controlBarHeight,
+  '--cat-bar-pad-y': '2.8px',
+  '--cat-select-w': CATALOG.metric.selectWidth,
+  '--cat-select-h': CATALOG.metric.selectHeight,
+  '--cat-select-pad-y': '4.16px',
+  '--cat-crumb-pad-top': '25.004px',
+  '--cat-crumb-pad-bot': '22.4px',
+  '--cat-thumb-gap': CATALOG.metric.thumbGap,
+  '--cat-atc-w': CATALOG.metric.atcWidth,
+  '--cat-atc-h': CATALOG.metric.atcHeight,
+  '--cat-carousel-gap': CATALOG.metric.carouselHeadGap,
+  '--cat-carousel-size': CATALOG.metric.carouselTitleSize,
+  '--cat-carousel-line': CATALOG.metric.carouselTitleLine,
+  '--cat-carousel-pad': CATALOG.metric.carouselTitlePad,
 }

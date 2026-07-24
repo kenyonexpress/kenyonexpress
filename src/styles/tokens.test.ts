@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { CATALOG_CSS_VARS } from './tokens'
+import { CATALOG_CSS_METRICS, CATALOG_CSS_VARS } from './tokens'
 
 /**
  * The catalog stylesheet is only allowed to name a colour once, in its custom
@@ -37,6 +37,30 @@ describe('catalog colour tokens', () => {
     const rules = source.replace(block, '')
     const stray = rules.match(/#[0-9a-fA-F]{3,8}\b/g) ?? []
     expect(stray, `raw hex found in rules: ${stray.join(', ')}`).toHaveLength(0)
+  })
+
+  it('declares every measured metric with the same value as tokens.ts', () => {
+    const block = declarationBlock(css())
+    for (const [name, value] of Object.entries(CATALOG_CSS_METRICS)) {
+      const match = block.match(new RegExp(`${name}\\s*:\\s*([^;]+);`))
+      expect(match, `${name} is missing from category-page.css`).not.toBeNull()
+      expect(match?.[1]?.trim(), `${name} drifted from tokens.ts`).toBe(value)
+    }
+  })
+
+  it('carries no measured px literal inside a rule', () => {
+    const source = css()
+    const block = declarationBlock(source)
+    // Media queries cannot read custom properties, so breakpoints stay literal.
+    const rules = source.replace(block, '').replace(/@media[^{]+/g, '')
+    const offenders: string[] = []
+    for (const value of new Set(Object.values(CATALOG_CSS_METRICS))) {
+      // (?<![\d.]) so 20.006px is not matched inside a longer number
+      if (new RegExp(`(?<![\\d.])${value.replace('.', '\\.')}`).test(rules)) {
+        offenders.push(value)
+      }
+    }
+    expect(offenders, `measured values hardcoded in rules: ${offenders.join(', ')}`).toHaveLength(0)
   })
 
   it('keeps the sale colour on the live value, not the brief', () => {
