@@ -4,6 +4,45 @@
 **Phase 5 storefront + commerce מחווט**. branch `phase5/homepage`.
 רץ מרתון 20 יעדי /goal (סשן 2026-07-23): יעדים 1-3 הושלמו.
 
+## ענף feat/account-wallet (worktree `ke-account`, 2026-07-24)
+
+אזור אישי + ארנק דיגיטלי. מסמך מלא: `docs/ARCHITECTURE-ACCOUNT-WALLET.md`.
+
+| קומיט | תוכן |
+|---|---|
+| `33e4dd1` | מסמך הארכיטקטורה של הדומיין |
+| `79693b6` | מיגרציה `052_account_wallet.sql`, **הוחלה על המרוחק ואומתה** |
+| `a673f6f` | 8 מסכי `/account` |
+| `ae974e4` | בדיקות + harness ל-RLS + תיקון באג התוויות |
+
+**ההכרעה המרכזית**: לא נוצרה צורת ארנק חמישית. בבסיס הנתונים כבר היו ארבע
+(`wallets` מ-001, `wallet_balances`+`wallet_transactions` מ-006, הגרסה של 026,
+ו-`wallet_accounts`+`wallet_entries` מ-046). רק 046 מוחלת ויש בה נתונים, והיא
+בדיוק המבנה שנדרש: חשבון פר משתמש + פנקס append-only ברישום כפול. 052 מרחיבה
+אותה ומסמנת את הנטושות כ-DEPRECATED.
+
+**מה 052 הוסיפה**: `cashback_rules` (הכלל של 5% בכל רכישה חמישית הפך משורת קוד
+לשורת דאטה, עם אחוז / `every_nth_order` / מינימום / תקרה / קטגוריה / חלון
+תאריכים), `fn_wallet_cashback_percent` ו-`fn_wallet_cashback_amount`,
+`v_wallet_ledger` (עם `security_invoker`) ו-`v_wallet_balance_drift`, טריגר
+שמבטיח חשבון ארנק לכל פרופיל, **ושני חורי RLS אמיתיים**: משתמש לא יכול היה
+לקרוא את הפנקס של עצמו בכלל, ולכרטיסים שמורים לא הייתה מדיניות DELETE.
+
+**באג שנמצא ותוקן**: `WALLET_REASON_LABELS` הכיל קודים מומצאים בעוד
+`finalize.ts` כותב `order_cashback` / `order_spend`. עמוד הארנק היה מציג
+ללקוחות קוד גולמי. נוספה בדיקה שקוראת את הקודים מתוך `finalize.ts` כדי שהשניים
+לא יתפצלו שוב.
+
+**אומת מול ה-DB החי**: בעלים רואה 2 שורות פנקס, זר רואה 0 (וגם 0 כתובות, 0
+כרטיסים, 0 קופונים), ניסיון INSERT לפנקס נדחה, UPDATE ו-DELETE נגעו ב-0 שורות,
+היתרה נשארה 1.80 ולא 9999, drift = 0. הרצה חוזרת:
+`tests/sql/account_wallet_rls.sql`. סוויטה: 162 בדיקות עוברות, build נקי עם
+כל 8 הראוטים.
+
+**פתוח בענף הזה**: `cashback_rules` עדיין לא מחוברת ל-`finalize.ts` (הקאשבק
+מחושב מ-`order_items.cashback_amount_agorot`); החיבור שייך ל-`ke-payments`.
+`order_refund` ו-`admin_credit` מתועדים אך לא ממומשים.
+
 ## סיכום מצב 2026-07-24
 
 ### מה הושלם ועובד
