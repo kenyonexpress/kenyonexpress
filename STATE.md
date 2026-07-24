@@ -89,7 +89,8 @@ Commits on this branch:
 - `3a94c96` fix(rtl): logical props sweep (rtl-lint 30 → 1; HeroSlider left-1/2 remains LOCKED)
 - `43264a4` feat(a11y): skip-to-main, Hebrew aria names, decorative aria-hidden
 - `d19fcd3` feat(a11y): 44px touch targets (Button, cart, masthead, footer; ATC hit-area pad)
-- `54c14c5` fix(visual): restore custom-price card block + compare demo slug + search chrome
+- `54c14c5` fix(visual): restore custom-price
+- `6a6075e` fix(visual): home deals spacing + shop archive geometry card block + compare demo slug + search chrome
 
 compare.mjs OVERALL first 2600px (live, with .env.local):
 | page | % | vs 11% |
