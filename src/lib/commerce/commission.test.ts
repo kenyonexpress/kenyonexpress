@@ -2,12 +2,14 @@ import { describe, expect, it } from 'vitest'
 import { type CommissionInput, calculateCommission } from './commission'
 import { agorot } from './money'
 
+// Final rules: the coupon on-site charge is the ABSOLUTE admin price (40₪
+// here on a 400₪ face), never a percent.
 const coupon = {
   id: 'coupon-1',
   productType: 'coupon' as const,
   unitPrice: agorot(40_000),
   quantity: 1,
-  platformPercent: 10,
+  couponPriceUnit: agorot(4_000),
   cashbackPercent: 5,
 }
 
@@ -21,7 +23,7 @@ const physical = {
 }
 
 describe('calculateCommission golden cases', () => {
-  it('calculates a coupon from face value while charging only the site share', () => {
+  it('charges a coupon its absolute admin-set price on site', () => {
     const result = calculateCommission({
       idempotencyKey: 'checkout:coupon',
       lines: [coupon],

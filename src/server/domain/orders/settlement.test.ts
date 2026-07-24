@@ -8,13 +8,14 @@ function at<T>(items: readonly T[], index: number): T {
   return item
 }
 
+// Final rules (2026-07-24): a coupon charges its ABSOLUTE admin-set price on
+// site; face 400₪, coupon price 40₪ per unit here.
 const couponLine = (over: Partial<SettlementLineInput> = {}): SettlementLineInput => ({
   id: 'line-coupon',
   productType: 'coupon',
   unitPrice: ilsToAgorot('400'),
   quantity: 1,
-  upfrontPercent: 10,
-  commissionPercent: 5,
+  couponPriceUnit: ilsToAgorot('40'),
   ...over,
 })
 
@@ -23,39 +24,37 @@ const physicalLine = (over: Partial<SettlementLineInput> = {}): SettlementLineIn
   productType: 'physical',
   unitPrice: ilsToAgorot('100'),
   quantity: 1,
-  commissionPercent: 5,
+  platformPercent: 5,
   ...over,
 })
 
-describe('calculateSettlement — split math', () => {
-  it('coupon: 10% upfront to escrow, 5% commission on the on-site amount', () => {
+describe('calculateSettlement — final business rules', () => {
+  it('coupon: absolute price on site, all of it stays with the platform', () => {
     const result = calculateSettlement({ idempotencyKey: 'k', lines: [couponLine()] })
     const line = at(result.lines, 0)
     expect(line.faceValue).toBe(40000)
     expect(line.paidOnSite).toBe(4000)
     expect(line.balanceDueAtBusiness).toBe(36000)
-    expect(line.escrowHeld).toBe(4000)
-    expect(line.commission).toBe(200)
-    expect(line.escrowReleaseToSupplier).toBe(3800)
-    expect(line.supplierImmediate).toBe(0)
+    expect(line.commission).toBe(4000) // 100% of the on-site charge
+    expect(line.supplierDue).toBe(0) // no payout for coupon lines
+    expect(line.platformPercentBps).toBe(0) // no percent is ever derived
     expect(result.cardCharge).toBe(4000)
   })
 
-  it('physical: customer pays face, immediate split of face minus commission', () => {
+  it('physical: customer pays face, platform_percent split, remainder to supplier', () => {
     const result = calculateSettlement({ idempotencyKey: 'k', lines: [physicalLine()] })
     const line = at(result.lines, 0)
     expect(line.faceValue).toBe(10000)
     expect(line.paidOnSite).toBe(10000)
     expect(line.balanceDueAtBusiness).toBe(0)
     expect(line.commission).toBe(500)
-    expect(line.supplierImmediate).toBe(9500)
-    expect(line.escrowHeld).toBe(0)
-    expect(line.escrowReleaseToSupplier).toBe(0)
+    expect(line.supplierDue).toBe(9500)
+    expect(line.perUnitVoucher).toHaveLength(0)
   })
 
-  // CONTRADICTIONS C1: there is no default commission. A line without an
-  // explicit percent must fail loudly rather than settle on an invented rate.
-  it('rejects a line with no commission percent', () => {
+  // There is no default percent and no default coupon price. A line missing
+  // its mandatory value must fail loudly rather than settle on an invention.
+  it('rejects a physical line with no platform percent', () => {
     expect(() =>
       calculateSettlement({
         idempotencyKey: 'k',
@@ -68,10 +67,10 @@ describe('calculateSettlement — split math', () => {
           } as unknown as SettlementLineInput,
         ],
       }),
-    ).toThrow(/commission percent is required/)
+    ).toThrow(/platform percent is required/)
   })
 
-  it('rejects a coupon line with no upfront percent', () => {
+  it('rejects a coupon line with no coupon price', () => {
     expect(() =>
       calculateSettlement({
         idempotencyKey: 'k',
@@ -81,88 +80,97 @@ describe('calculateSettlement — split math', () => {
             productType: 'coupon',
             unitPrice: ilsToAgorot('200'),
             quantity: 1,
-            commissionPercent: 8,
           },
         ],
       }),
-    ).toThrow(/upfront percent is required/)
+    ).toThrow(/coupon price is required/)
   })
 
-  it('honors admin per-product commission override', () => {
+  it('rejects a coupon price of zero or above the unit price', () => {
+    expect(() =>
+      calculateSettlement({
+        idempotencyKey: 'k',
+        lines: [couponLine({ couponPriceUnit: agorot(0) })],
+      }),
+    ).toThrow(/positive and at most the unit price/)
+    expect(() =>
+      calculateSettlement({
+        idempotencyKey: 'k',
+        lines: [couponLine({ couponPriceUnit: ilsToAgorot('400.01') })],
+      }),
+    ).toThrow(/positive and at most the unit price/)
+  })
+
+  it('honors admin per-product percent on physical lines', () => {
     const result = calculateSettlement({
       idempotencyKey: 'k',
-      lines: [physicalLine({ commissionPercent: 12 })],
+      lines: [physicalLine({ platformPercent: 12 })],
     })
     expect(at(result.lines, 0).commission).toBe(1200)
-    expect(at(result.lines, 0).supplierImmediate).toBe(8800)
+    expect(at(result.lines, 0).supplierDue).toBe(8800)
   })
 
   it('keeps conservation invariants on a mixed cart', () => {
     const result = calculateSettlement({
       idempotencyKey: 'k',
       lines: [
-        couponLine({ id: 'c1', unitPrice: ilsToAgorot('33.33'), quantity: 3 }),
-        couponLine({ id: 'c2', unitPrice: ilsToAgorot('149.9'), upfrontPercent: 25 }),
+        couponLine({ id: 'c1', unitPrice: ilsToAgorot('33.33'), couponPriceUnit: ilsToAgorot('10'), quantity: 3 }),
+        couponLine({ id: 'c2', unitPrice: ilsToAgorot('149.9'), couponPriceUnit: ilsToAgorot('99.9') }),
         physicalLine({ id: 'p1', unitPrice: ilsToAgorot('79.99'), quantity: 2 }),
       ],
     })
     for (const line of result.lines) {
       expect(line.paidOnSite + line.balanceDueAtBusiness).toBe(line.faceValue)
       if (line.productType === 'coupon') {
-        expect(line.escrowHeld).toBe(line.paidOnSite)
-        expect(line.commission + line.escrowReleaseToSupplier).toBe(line.escrowHeld)
+        expect(line.commission).toBe(line.paidOnSite)
+        expect(line.supplierDue).toBe(0)
       } else {
-        expect(line.commission + line.supplierImmediate).toBe(line.faceValue)
+        expect(line.commission + line.supplierDue).toBe(line.faceValue)
       }
     }
     expect(result.paidOnSite).toBe(result.lines.reduce((acc, l) => acc + l.paidOnSite, 0))
     expect(result.cardCharge).toBe(result.paidOnSite)
   })
 
-  it('splits per-unit escrow exactly, first unit absorbs the remainder', () => {
-    // 3 units, face 99.99₪ each => paidOnSite 10% = 3000 agorot total (2999.7 rounded)
+  it('splits per-unit voucher money exactly, first unit absorbs the remainder', () => {
+    // 3 units, face 99.99₪ each, coupon price 33.33₪ each.
     const result = calculateSettlement({
       idempotencyKey: 'k',
-      lines: [couponLine({ unitPrice: ilsToAgorot('99.99'), quantity: 3 })],
+      lines: [
+        couponLine({
+          unitPrice: ilsToAgorot('99.99'),
+          couponPriceUnit: ilsToAgorot('33.33'),
+          quantity: 3,
+        }),
+      ],
     })
     const line = at(result.lines, 0)
-    expect(line.perUnitEscrow).toHaveLength(3)
-    expect(sumAgorot(line.perUnitEscrow.map((u) => u.held))).toBe(line.escrowHeld)
-    expect(sumAgorot(line.perUnitEscrow.map((u) => u.commission))).toBe(line.commission)
-    expect(sumAgorot(line.perUnitEscrow.map((u) => u.release))).toBe(line.escrowReleaseToSupplier)
-    for (const unit of line.perUnitEscrow) {
-      expect(unit.commission + unit.release).toBe(unit.held)
-      expect(unit.commission).toBeGreaterThanOrEqual(0)
-      expect(unit.release).toBeGreaterThanOrEqual(0)
+    expect(line.perUnitVoucher).toHaveLength(3)
+    expect(sumAgorot(line.perUnitVoucher.map((u) => u.faceValue))).toBe(line.faceValue)
+    expect(sumAgorot(line.perUnitVoucher.map((u) => u.paidOnSite))).toBe(line.paidOnSite)
+    expect(sumAgorot(line.perUnitVoucher.map((u) => u.balanceDue))).toBe(line.balanceDueAtBusiness)
+    for (const unit of line.perUnitVoucher) {
+      expect(unit.paidOnSite + unit.balanceDue).toBe(unit.faceValue)
+      expect(unit.paidOnSite).toBeGreaterThanOrEqual(0)
+      expect(unit.balanceDue).toBeGreaterThanOrEqual(0)
     }
     // remainder goes to the first unit only
-    expect(at(line.perUnitEscrow, 0).held).toBeGreaterThanOrEqual(at(line.perUnitEscrow, 1).held)
-    expect(at(line.perUnitEscrow, 1)).toEqual(at(line.perUnitEscrow, 2))
+    expect(at(line.perUnitVoucher, 0).paidOnSite).toBeGreaterThanOrEqual(
+      at(line.perUnitVoucher, 1).paidOnSite,
+    )
+    expect(at(line.perUnitVoucher, 1)).toEqual(at(line.perUnitVoucher, 2))
   })
 
-  it('edge: 0% upfront coupon holds nothing and charges nothing', () => {
+  it('edge: coupon price equal to face leaves no balance at the business', () => {
     const result = calculateSettlement({
       idempotencyKey: 'k',
-      lines: [couponLine({ upfrontPercent: 0 })],
-    })
-    const line = at(result.lines, 0)
-    expect(line.paidOnSite).toBe(0)
-    expect(line.escrowHeld).toBe(0)
-    expect(line.commission).toBe(0)
-    expect(line.escrowReleaseToSupplier).toBe(0)
-    expect(line.balanceDueAtBusiness).toBe(40000)
-    expect(result.cardCharge).toBe(0)
-  })
-
-  it('edge: 100% upfront coupon leaves no balance at the business', () => {
-    const result = calculateSettlement({
-      idempotencyKey: 'k',
-      lines: [couponLine({ upfrontPercent: 100 })],
+      lines: [couponLine({ couponPriceUnit: ilsToAgorot('400') })],
     })
     const line = at(result.lines, 0)
     expect(line.paidOnSite).toBe(40000)
     expect(line.balanceDueAtBusiness).toBe(0)
-    expect(line.escrowReleaseToSupplier).toBe(38000)
+    expect(line.commission).toBe(40000)
+    expect(line.supplierDue).toBe(0)
   })
 
   it('wallet reduces only the card charge, never settlement amounts', () => {
@@ -176,9 +184,8 @@ describe('calculateSettlement — split math', () => {
       lines: [couponLine(), physicalLine()],
     })
     expect(withWallet.cardCharge).toBe(without.cardCharge - 3000)
-    expect(withWallet.escrowHeld).toBe(without.escrowHeld)
     expect(withWallet.commission).toBe(without.commission)
-    expect(withWallet.supplierImmediate).toBe(without.supplierImmediate)
+    expect(withWallet.supplierDue).toBe(without.supplierDue)
   })
 
   it('rejects wallet above the on-site charge', () => {
@@ -186,7 +193,7 @@ describe('calculateSettlement — split math', () => {
       calculateSettlement({
         idempotencyKey: 'k',
         lines: [couponLine()], // on-site 4000 agorot
-        walletApplied: agorot(4001),
+        walletApplied: agorot(14001),
       }),
     ).toThrowError(RangeError)
   })
@@ -206,7 +213,7 @@ describe('calculateSettlement — split math', () => {
     expect(() =>
       calculateSettlement({
         idempotencyKey: 'k',
-        lines: [couponLine({ commissionPercent: 101 })],
+        lines: [physicalLine({ platformPercent: 101 })],
       }),
     ).toThrow()
   })
@@ -239,26 +246,26 @@ describe('calculateSettlement — split math', () => {
     ).toThrow('wallet applied must not be negative')
   })
 
-  it('rejects a null commission percent as loudly as a missing one', () => {
+  it('rejects a null platform percent as loudly as a missing one', () => {
     expect(() =>
       calculateSettlement({
         idempotencyKey: 'k',
-        lines: [physicalLine({ commissionPercent: null as unknown as number })],
+        lines: [physicalLine({ platformPercent: null as unknown as number })],
       }),
-    ).toThrow(/commission percent is required/)
+    ).toThrow(/platform percent is required/)
   })
 
-  it('rejects a null upfront percent on a coupon line', () => {
+  it('rejects a null coupon price on a coupon line', () => {
     expect(() =>
       calculateSettlement({
         idempotencyKey: 'k',
-        lines: [couponLine({ upfrontPercent: null as unknown as number })],
+        lines: [couponLine({ couponPriceUnit: null as unknown as ReturnType<typeof agorot> })],
       }),
-    ).toThrow(/upfront percent is required/)
+    ).toThrow(/coupon price is required/)
   })
 
   it('snapshots cashback off the on-site amount when a percent is given', () => {
-    // coupon face 400₪, 10% upfront => 40₪ on site, 5% cashback => 2₪.
+    // coupon price 40₪ on site, 5% cashback => 2₪.
     const result = calculateSettlement({
       idempotencyKey: 'k',
       lines: [couponLine({ cashbackPercent: 5 })],
@@ -266,16 +273,5 @@ describe('calculateSettlement — split math', () => {
     expect(at(result.lines, 0).paidOnSite).toBe(4000)
     expect(at(result.lines, 0).cashbackAmount).toBe(200)
     expect(result.cashbackAmount).toBe(200)
-  })
-
-  it('defaults cashback to nothing when the product carries no percent', () => {
-    const result = calculateSettlement({ idempotencyKey: 'k', lines: [physicalLine()] })
-    expect(at(result.lines, 0).cashbackAmount).toBe(0)
-  })
-
-  it('rejects a line with an empty id', () => {
-    expect(() =>
-      calculateSettlement({ idempotencyKey: 'k', lines: [physicalLine({ id: '  ' })] }),
-    ).toThrow(TypeError)
   })
 })

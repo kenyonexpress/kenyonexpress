@@ -6,8 +6,8 @@ import { getPaymentProvider } from '@/lib/payments'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   RefundError,
-  type RefundHoldInput,
   type RefundLineInput,
+  type RefundVoucherInput,
   planOrderRefund,
 } from '@/server/domain/orders/refund'
 import type { SettlementState } from '@/server/domain/orders/state-machine'
@@ -81,9 +81,9 @@ export async function refundOrder(input: {
     return { ok: false, error: 'להזמנה אין פריטים', code: 'STATE_INVALID' }
   }
 
-  const { data: holds } = await admin
-    .from('escrow_holds')
-    .select('coupon_code_id, status, held_agorot')
+  const { data: voucherRows } = await admin
+    .from('vouchers')
+    .select('id, status')
     .eq('order_id', order.id)
 
   const cardChargedAgorot = Math.round(Number(payment.amount_ils) * 100)
@@ -92,10 +92,9 @@ export async function refundOrder(input: {
     productType: i.product_type as ProductType,
     settlementStatus: i.settlement_status as SettlementState,
   }))
-  const holdInputs: RefundHoldInput[] = (holds ?? []).map((h) => ({
-    couponCodeId: h.coupon_code_id,
-    status: h.status,
-    heldAgorot: h.held_agorot,
+  const voucherInputs: RefundVoucherInput[] = (voucherRows ?? []).map((v) => ({
+    voucherId: v.id,
+    status: v.status,
   }))
 
   let plan: ReturnType<typeof planOrderRefund>
@@ -103,7 +102,7 @@ export async function refundOrder(input: {
     plan = planOrderRefund({
       cardChargedAgorot,
       lines,
-      holds: holdInputs,
+      vouchers: voucherInputs,
       isDefectClaim: input.isDefectClaim ?? false,
       now,
       partialAmountAgorot:
@@ -146,17 +145,14 @@ export async function refundOrder(input: {
       idempotency_key: `refund:${payment.id}`,
     })
 
-    if (plan.holdRefunds.length > 0) {
+    if (plan.voucherRefunds.length > 0) {
+      // Conditional update mirrors the voucher state machine: REFUND is legal
+      // only from `issued`; a voucher that raced into another state stays put.
       await admin
-        .from('escrow_holds')
-        .update({ status: 'refunded', refunded_at: now.toISOString() })
-        .in('coupon_code_id', plan.holdRefunds)
-        .eq('status', 'held')
-      await admin
-        .from('coupon_codes')
-        .update({ status: 'refunded', refunded_at: now.toISOString() })
-        .in('id', plan.holdRefunds)
-        .in('status', ['issued'])
+        .from('vouchers')
+        .update({ status: 'refunded', refunded_at: now.toISOString(), status_reason: input.reason })
+        .in('id', plan.voucherRefunds)
+        .eq('status', 'issued')
     }
 
     for (const t of plan.lineTransitions) {

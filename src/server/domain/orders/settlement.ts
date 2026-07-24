@@ -9,21 +9,38 @@ import {
 } from '@/lib/commerce/money'
 
 /**
- * There is NO default commission anywhere (docs/CONTRADICTIONS.md C1).
- * `products.platform_percent` is a mandatory per-product value set by the admin,
- * and it is the single commission knob (C2). A line that reaches this engine
- * without an explicit percent is a bug, not a case to paper over with 5 or 10.
+ * Order-persistence settlement under the FINAL business rules (2026-07-24,
+ * STATE.md Business Rules; they supersede every earlier escrow/upfront draft):
+ *
+ * - Coupon: the customer pays the ABSOLUTE admin-set coupon price on site
+ *   (products.coupon_price_ils), all of it stays with the platform, the
+ *   remainder is collected at the business on scan and the voucher then
+ *   expires. NO escrow, NO supplier payout for coupon lines.
+ * - Physical: the customer pays the full face value on site; the split is
+ *   platform_percent (per product, snapshotted to order_items at purchase,
+ *   no default anywhere) to the platform, remainder to the supplier.
+ *
+ * There is NO default commission and NO default coupon price. A line that
+ * reaches this engine without its mandatory value is a bug, not a case to
+ * paper over with a constant.
  */
 export interface SettlementLineInput {
   id: string
   productType: CommissionProductType
   unitPrice: Agorot
   quantity: number
-  /** Coupon only: percent of face value the customer pays on site. Required for coupon lines. */
-  upfrontPercent?: string | number
-  /** Platform commission percent, charged on the on-site amount only (C5). Required. */
-  commissionPercent: string | number
+  /** Coupon only: absolute per-unit on-site price in agorot. Required for coupon lines. */
+  couponPriceUnit?: Agorot
+  /** Physical commission percent (products.platform_percent). Required for physical lines. */
+  platformPercent?: string | number
   cashbackPercent?: string | number
+}
+
+/** Per-unit money snapshot, used to stamp each issued voucher. */
+export interface VoucherUnitAmounts {
+  faceValue: Agorot
+  paidOnSite: Agorot
+  balanceDue: Agorot
 }
 
 export interface SettlementLineResult {
@@ -35,25 +52,18 @@ export interface SettlementLineResult {
   paidOnSite: Agorot
   /** Coupon only: paid directly at the business on redemption. */
   balanceDueAtBusiness: Agorot
-  upfrontBps: number
-  commissionBps: number
-  /** Platform commission on the on-site amount. */
+  /** Physical only; 0 (never derived) for coupon lines. */
+  platformPercentBps: number
+  /**
+   * Platform take. Coupon: equals paidOnSite (everything stays on the
+   * platform). Physical: platform_percent of face.
+   */
   commission: Agorot
-  /** Physical only: released to the supplier at split execution. */
-  supplierImmediate: Agorot
-  /** Coupon only: held in escrow at finalize (equals paidOnSite). */
-  escrowHeld: Agorot
-  /** Coupon only: released to the supplier on redemption (escrowHeld - commission). */
-  escrowReleaseToSupplier: Agorot
-  /** Coupon only: escrow per single unit (quantity divides escrowHeld with remainder on the first unit). */
-  perUnitEscrow: readonly EscrowUnitAmounts[]
+  /** Physical only: owed to the supplier from the on-site charge. */
+  supplierDue: Agorot
+  /** Coupon only: one entry per purchased unit, for voucher issuance. */
+  perUnitVoucher: readonly VoucherUnitAmounts[]
   cashbackAmount: Agorot
-}
-
-export interface EscrowUnitAmounts {
-  held: Agorot
-  commission: Agorot
-  release: Agorot
 }
 
 export interface SettlementInput {
@@ -69,9 +79,7 @@ export interface SettlementResult {
   paidOnSite: Agorot
   balanceDueAtBusiness: Agorot
   commission: Agorot
-  supplierImmediate: Agorot
-  escrowHeld: Agorot
-  escrowReleaseToSupplier: Agorot
+  supplierDue: Agorot
   cashbackAmount: Agorot
   walletApplied: Agorot
   cardCharge: Agorot
@@ -84,32 +92,27 @@ function assertNonNegative(value: Agorot, label: string): void {
 }
 
 /**
- * Splits a line-level escrow amount into per-unit holds so each purchased
- * coupon code carries its own escrow row. Sum of units always equals the line
- * totals exactly; the first unit absorbs rounding remainders.
+ * Splits line totals into per-unit integers so each issued voucher carries its
+ * own exact money snapshot. Sums always equal the line totals; the first unit
+ * absorbs rounding remainders. Conservation per unit is asserted because a
+ * voucher whose face != paid + balance would mischarge at the counter.
  */
-function splitEscrowPerUnit(
+function splitVoucherUnits(
   quantity: number,
-  escrowHeld: Agorot,
-  commission: Agorot,
-): EscrowUnitAmounts[] {
-  const baseHeld = Math.floor(escrowHeld / quantity)
-  const baseCommission = Math.floor(commission / quantity)
-  const units: EscrowUnitAmounts[] = []
+  faceValue: Agorot,
+  paidOnSite: Agorot,
+): VoucherUnitAmounts[] {
+  const baseFace = Math.floor(faceValue / quantity)
+  const basePaid = Math.floor(paidOnSite / quantity)
+  const units: VoucherUnitAmounts[] = []
 
   for (let i = 0; i < quantity; i += 1) {
-    const held = agorot(i === 0 ? escrowHeld - baseHeld * (quantity - 1) : baseHeld)
-    const unitCommission = agorot(
-      i === 0 ? commission - baseCommission * (quantity - 1) : baseCommission,
-    )
-    if (unitCommission > held) {
-      throw new RangeError('per-unit commission must not exceed per-unit escrow')
+    const face = agorot(i === 0 ? faceValue - baseFace * (quantity - 1) : baseFace)
+    const paid = agorot(i === 0 ? paidOnSite - basePaid * (quantity - 1) : basePaid)
+    if (paid > face) {
+      throw new RangeError('per-unit paid amount must not exceed per-unit face value')
     }
-    units.push({
-      held,
-      commission: unitCommission,
-      release: agorot(held - unitCommission),
-    })
+    units.push({ faceValue: face, paidOnSite: paid, balanceDue: agorot(face - paid) })
   }
 
   return units
@@ -124,72 +127,69 @@ function calculateLine(line: SettlementLineInput): SettlementLineResult {
   }
   assertNonNegative(line.unitPrice, 'unit price')
 
-  if (line.commissionPercent === undefined || line.commissionPercent === null) {
-    throw new TypeError(`commission percent is required for line ${line.id} (no default exists)`)
+  const faceValue = multiplyAgorot(line.unitPrice, line.quantity)
+
+  if (line.productType === 'coupon') {
+    if (line.couponPriceUnit === undefined || line.couponPriceUnit === null) {
+      throw new TypeError(`coupon price is required for coupon line ${line.id} (no default exists)`)
+    }
+    if (line.couponPriceUnit <= 0 || line.couponPriceUnit > line.unitPrice) {
+      throw new RangeError(
+        `coupon price for line ${line.id} must be positive and at most the unit price`,
+      )
+    }
+
+    const paidOnSite = multiplyAgorot(line.couponPriceUnit, line.quantity)
+    const cashbackBps = percentToBasisPoints(line.cashbackPercent ?? 0)
+
+    return {
+      id: line.id,
+      productType: line.productType,
+      quantity: line.quantity,
+      faceValue,
+      paidOnSite,
+      balanceDueAtBusiness: agorot(faceValue - paidOnSite),
+      platformPercentBps: 0,
+      // Everything paid on site stays with the platform; the supplier's
+      // consideration is the balance collected at the counter.
+      commission: paidOnSite,
+      supplierDue: agorot(0),
+      perUnitVoucher: splitVoucherUnits(line.quantity, faceValue, paidOnSite),
+      cashbackAmount: percentageOf(paidOnSite, cashbackBps),
+    }
   }
-  if (
-    line.productType === 'coupon' &&
-    (line.upfrontPercent === undefined || line.upfrontPercent === null)
-  ) {
+
+  if (line.platformPercent === undefined || line.platformPercent === null) {
     throw new TypeError(
-      `upfront percent is required for coupon line ${line.id} (no default exists)`,
+      `platform percent is required for physical line ${line.id} (no default exists)`,
     )
   }
-
-  const faceValue = multiplyAgorot(line.unitPrice, line.quantity)
-  const commissionBps = percentToBasisPoints(line.commissionPercent)
-  const upfrontBps =
-    line.productType === 'coupon'
-      ? percentToBasisPoints(line.upfrontPercent as string | number)
-      : percentToBasisPoints(100)
+  const platformPercentBps = percentToBasisPoints(line.platformPercent)
   const cashbackBps = percentToBasisPoints(line.cashbackPercent ?? 0)
 
-  // On-site charge: coupons collect only the upfront percent, physical collects face.
-  const paidOnSite = line.productType === 'coupon' ? percentageOf(faceValue, upfrontBps) : faceValue
-  const balanceDueAtBusiness =
-    line.productType === 'coupon' ? agorot(faceValue - paidOnSite) : agorot(0)
-
-  // Commission is always taken from the money that passed through the platform.
-  const commission = percentageOf(paidOnSite, commissionBps)
-
-  const supplierImmediate =
-    line.productType === 'physical' ? agorot(faceValue - commission) : agorot(0)
-  const escrowHeld = line.productType === 'coupon' ? paidOnSite : agorot(0)
-  const escrowReleaseToSupplier =
-    line.productType === 'coupon' ? agorot(escrowHeld - commission) : agorot(0)
-
-  const perUnitEscrow =
-    line.productType === 'coupon' ? splitEscrowPerUnit(line.quantity, escrowHeld, commission) : []
-
-  const cashbackAmount = percentageOf(paidOnSite, cashbackBps)
+  const commission = percentageOf(faceValue, platformPercentBps)
 
   return {
     id: line.id,
     productType: line.productType,
     quantity: line.quantity,
     faceValue,
-    paidOnSite,
-    balanceDueAtBusiness,
-    upfrontBps,
-    commissionBps,
+    paidOnSite: faceValue,
+    balanceDueAtBusiness: agorot(0),
+    platformPercentBps,
     commission,
-    supplierImmediate,
-    escrowHeld,
-    escrowReleaseToSupplier,
-    perUnitEscrow,
-    cashbackAmount,
+    supplierDue: agorot(faceValue - commission),
+    perUnitVoucher: [],
+    cashbackAmount: percentageOf(faceValue, cashbackBps),
   }
 }
 
 /**
- * Escrow-aware settlement calculator (supersedes the pre-escrow commission
- * semantics for order persistence; calculateCommission remains the cart-view
- * engine).
- *
  * Invariants, per line and in total:
  * - faceValue = paidOnSite + balanceDueAtBusiness
- * - physical: faceValue = commission + supplierImmediate
- * - coupon: escrowHeld = paidOnSite = commission + escrowReleaseToSupplier
+ * - physical: paidOnSite = commission + supplierDue
+ * - coupon: paidOnSite = commission, supplierDue = 0, and the per-unit
+ *   snapshots sum exactly to the line totals
  * - cardCharge = paidOnSite - walletApplied
  */
 export function calculateSettlement(input: SettlementInput): SettlementResult {
@@ -209,9 +209,7 @@ export function calculateSettlement(input: SettlementInput): SettlementResult {
   const paidOnSite = sumAgorot(lines.map((l) => l.paidOnSite))
   const balanceDueAtBusiness = sumAgorot(lines.map((l) => l.balanceDueAtBusiness))
   const commission = sumAgorot(lines.map((l) => l.commission))
-  const supplierImmediate = sumAgorot(lines.map((l) => l.supplierImmediate))
-  const escrowHeld = sumAgorot(lines.map((l) => l.escrowHeld))
-  const escrowReleaseToSupplier = sumAgorot(lines.map((l) => l.escrowReleaseToSupplier))
+  const supplierDue = sumAgorot(lines.map((l) => l.supplierDue))
   const cashbackAmount = sumAgorot(lines.map((l) => l.cashbackAmount))
   const walletApplied = input.walletApplied ?? agorot(0)
 
@@ -227,9 +225,7 @@ export function calculateSettlement(input: SettlementInput): SettlementResult {
     paidOnSite,
     balanceDueAtBusiness,
     commission,
-    supplierImmediate,
-    escrowHeld,
-    escrowReleaseToSupplier,
+    supplierDue,
     cashbackAmount,
     walletApplied,
     cardCharge: agorot(paidOnSite - walletApplied),

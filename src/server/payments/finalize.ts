@@ -1,6 +1,6 @@
-import { issueCouponCode } from '@/lib/checkout/coupon-issue'
 import { agorot, agorotToIls } from '@/lib/commerce/money'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { type VoucherIssueClient, issueVoucher } from '@/server/domain/vouchers/issue'
 import type { Json } from '@/types/database'
 
 export type FinalizeOutcome =
@@ -41,78 +41,49 @@ function perUnit(total: number, quantity: number): number[] {
   )
 }
 
-async function issueCouponsForItem(
+async function issueVouchersForItem(
   admin: AdminClient,
   item: OrderItemRow,
   userId: string,
-  couponExpiryDays: number,
+  product: { couponExpiryDays: number; offerValidUntil: Date | null },
   now: Date,
 ): Promise<void> {
-  const heldUnits = perUnit(item.escrow_held_agorot ?? 0, item.quantity)
-  const commissionUnits = perUnit(item.commission_agorot ?? 0, item.quantity)
+  if (!item.product_id || !item.supplier_id) {
+    throw new Error(`coupon order item ${item.id} is missing product or supplier`)
+  }
+
   const faceUnits = perUnit(item.face_value_agorot ?? 0, item.quantity)
-  const balanceUnits = perUnit(item.balance_due_agorot ?? 0, item.quantity)
+  const paidUnits = perUnit(item.paid_on_site_agorot ?? 0, item.quantity)
 
   // Idempotency: never issue beyond quantity for this order_item (replay-safe).
-  const { data: existingCodes } = await admin
-    .from('coupon_codes')
+  // The vouchers UNIQUE(code) plus this count cap make webhook replays no-ops.
+  const { data: existing } = await admin
+    .from('vouchers')
     .select('id')
     .eq('order_item_id', item.id)
-  const alreadyIssued = existingCodes?.length ?? 0
+  const alreadyIssued = existing?.length ?? 0
   if (alreadyIssued >= item.quantity) return
 
+  // No offer deadline on the product means the rolling per-product window is
+  // the only limit; feed the issuer that same date so it never widens the TTL.
+  const fallbackDeadline = new Date(
+    now.getTime() + Math.max(1, product.couponExpiryDays) * 24 * 60 * 60 * 1000,
+  )
+  const offerValidUntil = product.offerValidUntil ?? fallbackDeadline
+
   for (let unit = alreadyIssued; unit < item.quantity; unit += 1) {
-    const held = heldUnits[unit] ?? 0
-    const commission = commissionUnits[unit] ?? 0
-
-    let inserted: { id: string } | null = null
-    for (let attempt = 0; attempt < 5 && !inserted; attempt += 1) {
-      const issuedCode = issueCouponCode({
-        orderItemId: item.id,
-        userId,
-        expiryDays: couponExpiryDays,
-        now,
-      })
-      const { data, error } = await admin
-        .from('coupon_codes')
-        .insert({
-          code: issuedCode.code,
-          product_id: item.product_id,
-          order_item_id: item.id,
-          user_id: userId,
-          supplier_id: item.supplier_id,
-          status: 'issued',
-          expires_at: issuedCode.expiresAt.toISOString(),
-          qr_token: issuedCode.qrPayload,
-          platform_percent: item.upfront_percent,
-          face_value_ils: agorotToIls(agorot(faceUnits[unit] ?? 0)),
-          platform_paid_ils: agorotToIls(agorot(held)),
-          collect_amount_ils: agorotToIls(agorot(balanceUnits[unit] ?? 0)),
-        })
-        .select('id')
-        .maybeSingle()
-      if (!error && data) {
-        inserted = data
-      } else if (error && !`${error.message}`.includes('duplicate')) {
-        throw new Error(`coupon insert failed: ${error.message}`)
-      }
-      // duplicate code collision: loop retries with a fresh random code
-    }
-    if (!inserted) throw new Error('coupon code generation exhausted retries')
-
-    const { error: escrowError } = await admin.from('escrow_holds').insert({
-      coupon_code_id: inserted.id,
-      order_id: item.order_id,
-      order_item_id: item.id,
-      supplier_id: item.supplier_id as string,
-      held_agorot: held,
-      commission_agorot: commission,
-      release_agorot: held - commission,
-      status: 'held',
+    await issueVoucher(admin as unknown as VoucherIssueClient, {
+      orderId: item.order_id,
+      orderItemId: item.id,
+      productId: item.product_id,
+      supplierId: item.supplier_id,
+      userId,
+      priceIls: agorotToIls(agorot(faceUnits[unit] ?? 0)),
+      couponPriceIls: agorotToIls(agorot(paidUnits[unit] ?? 0)),
+      couponExpiryDays: product.couponExpiryDays,
+      offerValidUntil,
+      now,
     })
-    if (escrowError && !escrowError.message.includes('duplicate')) {
-      throw new Error(`escrow hold failed: ${escrowError.message}`)
-    }
   }
 }
 
@@ -310,27 +281,35 @@ export async function finalizeOrder(input: {
   try {
     await spendWallet(admin, order.id, order.user_id, walletApplied)
 
-    const expiryByProduct = new Map<string, number>()
+    const productInfo = new Map<string, { couponExpiryDays: number; offerValidUntil: Date | null }>()
     const productIds = items
       .map((i) => i.product_id)
       .filter((id): id is string => typeof id === 'string')
     if (productIds.length > 0) {
       const { data: products } = await admin
         .from('products')
-        .select('id, coupon_expiry_days')
+        .select('id, coupon_expiry_days, offer_valid_until')
         .in('id', productIds)
       for (const p of products ?? []) {
-        expiryByProduct.set(p.id, p.coupon_expiry_days ?? 90)
+        productInfo.set(p.id, {
+          couponExpiryDays: p.coupon_expiry_days ?? 90,
+          offerValidUntil: p.offer_valid_until ? new Date(p.offer_valid_until) : null,
+        })
       }
     }
 
     for (const item of items as OrderItemRow[]) {
       if (item.product_type === 'coupon') {
-        const expiryDays = item.product_id ? (expiryByProduct.get(item.product_id) ?? 90) : 90
-        await issueCouponsForItem(admin, item, order.user_id, expiryDays, now)
+        const info = (item.product_id ? productInfo.get(item.product_id) : undefined) ?? {
+          couponExpiryDays: 90,
+          offerValidUntil: null,
+        }
+        await issueVouchersForItem(admin, item, order.user_id, info, now)
+        // No escrow under the final rules: the on-site money is platform
+        // revenue at paid-time; the item is simply settled once vouchers exist.
         await admin
           .from('order_items')
-          .update({ settlement_status: 'escrow_held', item_status: 'issued' })
+          .update({ settlement_status: 'platform_settled', item_status: 'issued' })
           .eq('id', item.id)
           .in('settlement_status', ['pending', 'paid'])
       } else {

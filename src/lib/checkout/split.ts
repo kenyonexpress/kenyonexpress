@@ -34,9 +34,11 @@ export type SplitResultView = {
 }
 
 /**
- * Wire-facing split calculator.
- * Coupon: customer pays platform_percent on site (mandatory per product, no default), remainder at business.
- * Physical: customer pays 100% on site; platform_percent snapshotted per product for supplier split.
+ * Wire-facing split calculator (final rules 2026-07-24).
+ * Coupon: customer pays the admin-set ABSOLUTE coupon price on site (mandatory
+ * per product, no default and no percent derivation), remainder at business.
+ * Physical: customer pays 100% on site; platform_percent (mandatory per
+ * product) is snapshotted per line for the supplier split.
  */
 export function calculateSplit(input: CalculateSplitInput): SplitResultView {
   const commissionInput: CommissionInput = {
@@ -47,7 +49,10 @@ export function calculateSplit(input: CalculateSplitInput): SplitResultView {
       productType: line.productType,
       unitPrice: ilsToAgorot(line.unitPriceIls.toFixed(2)),
       quantity: line.quantity,
-      platformPercent: line.platformPercent,
+      // Coupon lines never consult a percent; 0 keeps the engine's field total.
+      platformPercent: line.productType === 'coupon' ? 0 : (line.platformPercent ?? null),
+      couponPriceUnit:
+        line.couponPriceIls !== undefined ? ilsToAgorot(line.couponPriceIls.toFixed(2)) : undefined,
       cashbackPercent: line.cashbackPercent,
     })),
   }

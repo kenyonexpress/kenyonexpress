@@ -19,6 +19,7 @@ type ProductRow = {
   images: unknown
   is_coupon_enabled: boolean
   platform_percent?: number | null
+  coupon_price_ils?: number | null
   cashback_percent?: number | null
 }
 
@@ -70,6 +71,13 @@ function platformPercent(product: ProductRow): number | null {
   return Number(value)
 }
 
+/** Null when the admin has not set the mandatory absolute coupon price yet. */
+function couponPriceIls(product: ProductRow): number | null {
+  const value = product.coupon_price_ils
+  if (value == null || Number.isNaN(Number(value)) || Number(value) <= 0) return null
+  return Number(value)
+}
+
 function cashbackPercent(product: ProductRow): number {
   const value = product.cashback_percent
   return value != null && !Number.isNaN(Number(value)) ? Number(value) : DEFAULT_CASHBACK_PERCENT
@@ -94,6 +102,7 @@ export function buildCartView(
     unitPrice: ReturnType<typeof ilsToAgorot>
     quantity: number
     platformPercent: number
+    couponPriceUnit?: ReturnType<typeof ilsToAgorot>
     cashbackPercent: number
   }[] = []
   const viewItems: CartViewItem[] = []
@@ -111,17 +120,29 @@ export function buildCartView(
     const lineKey = `${item.product_id}::${item.variant_id ?? 'null'}`
 
     const percent = platformPercent(product)
+    const couponPrice = couponPriceIls(product)
 
-    commissionLines.push({
-      id: lineKey,
-      productType: type,
-      unitPrice: ilsToAgorot(unitPrice.toFixed(2)),
-      quantity: item.quantity,
-      // 0 keeps the arithmetic honest for a line that is already unavailable:
-      // nothing is charged and nothing is split until the admin sets the percent.
-      platformPercent: percent ?? 0,
-      cashbackPercent: cashbackPercent(product),
-    })
+    // Final rules: a coupon needs its admin-set absolute price, a physical
+    // line needs its percent. A line missing its mandatory value renders as
+    // unavailable and is kept OUT of the money engine (which would rightly
+    // refuse to price it) instead of being priced with an invented number.
+    const priceable = type === 'coupon' ? couponPrice != null : true
+    if (priceable) {
+      commissionLines.push({
+        id: lineKey,
+        productType: type,
+        unitPrice: ilsToAgorot(unitPrice.toFixed(2)),
+        quantity: item.quantity,
+        // 0 keeps the arithmetic honest for a physical line that is already
+        // unavailable: nothing is charged or split until the admin sets it.
+        platformPercent: percent ?? 0,
+        couponPriceUnit:
+          type === 'coupon' && couponPrice != null
+            ? ilsToAgorot(couponPrice.toFixed(2))
+            : undefined,
+        cashbackPercent: cashbackPercent(product),
+      })
+    }
 
     viewItems.push({
       product_id: item.product_id,
@@ -133,7 +154,9 @@ export function buildCartView(
       unit_price: unitPrice,
       line_total: lineTotal,
       type,
-      available: percent != null && isAvailable(product, variant, item.quantity),
+      available:
+        (type === 'coupon' ? couponPrice != null : percent != null) &&
+        isAvailable(product, variant, item.quantity),
       platform_fee: 0,
       supplier_due: 0,
       customer_pays_now: 0,
@@ -141,7 +164,7 @@ export function buildCartView(
     })
   }
 
-  if (viewItems.length === 0) {
+  if (viewItems.length === 0 || commissionLines.length === 0) {
     return { ...EMPTY_CART, id: cartId }
   }
 

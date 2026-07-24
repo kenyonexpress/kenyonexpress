@@ -18,6 +18,7 @@ const PHYSICAL_TABLE: Record<SettlementState, Expected> = {
   pending: { PAYMENT_CONFIRMED: 'paid', CANCEL: 'cancelled' },
   paid: { EXECUTE_SPLIT: 'split_executed', REFUND: 'refunded' },
   split_executed: { REFUND: 'refunded' },
+  platform_settled: { REFUND: 'refunded' },
   escrow_held: { REFUND: 'refunded' },
   redeemed: {},
   escrow_released: {},
@@ -27,16 +28,17 @@ const PHYSICAL_TABLE: Record<SettlementState, Expected> = {
 
 const COUPON_TABLE: Record<SettlementState, Expected> = {
   pending: { PAYMENT_CONFIRMED: 'paid', CANCEL: 'cancelled' },
-  paid: { HOLD_ESCROW: 'escrow_held', REFUND: 'refunded' },
-  escrow_held: { REDEEM: 'redeemed', REFUND: 'refunded' },
-  redeemed: { RELEASE_ESCROW: 'escrow_released' },
+  paid: { SETTLE_PLATFORM: 'platform_settled', REFUND: 'refunded' },
+  platform_settled: { REFUND: 'refunded' },
+  escrow_held: { REFUND: 'refunded' },
+  redeemed: {},
   split_executed: { REFUND: 'refunded' },
   escrow_released: {},
   refunded: {},
   cancelled: {},
 }
 
-describe('settlement state machine', () => {
+describe('settlement state machine (final rules, no escrow)', () => {
   it('matches the full physical transition matrix', () => {
     for (const from of SETTLEMENT_STATES) {
       for (const event of SETTLEMENT_EVENTS) {
@@ -74,29 +76,27 @@ describe('settlement state machine', () => {
     expect(isSettled(state)).toBe(true)
   })
 
-  it('walks the coupon happy path through redemption', () => {
+  it('walks the coupon happy path: money settles to the platform at paid-time', () => {
     let state: SettlementState = 'pending'
     state = transition(state, 'PAYMENT_CONFIRMED', 'coupon')
-    state = transition(state, 'HOLD_ESCROW', 'coupon')
-    state = transition(state, 'REDEEM', 'coupon')
-    state = transition(state, 'RELEASE_ESCROW', 'coupon')
-    expect(state).toBe('escrow_released')
-    expect(isTerminal(state)).toBe(true)
+    state = transition(state, 'SETTLE_PLATFORM', 'coupon')
+    expect(state).toBe('platform_settled')
+    expect(isTerminal(state)).toBe(false) // refund window still open
     expect(isSettled(state)).toBe(true)
   })
 
-  it('throws WRONG_PRODUCT_TYPE when a physical line tries the escrow leg', () => {
-    expect(() => transition('paid', 'HOLD_ESCROW', 'physical')).toThrowError(
+  it('throws WRONG_PRODUCT_TYPE when a physical line tries the coupon leg', () => {
+    expect(() => transition('paid', 'SETTLE_PLATFORM', 'physical')).toThrowError(
       SettlementTransitionError,
     )
     try {
-      transition('paid', 'HOLD_ESCROW', 'physical')
+      transition('paid', 'SETTLE_PLATFORM', 'physical')
     } catch (error) {
       expect((error as SettlementTransitionError).code).toBe('WRONG_PRODUCT_TYPE')
     }
   })
 
-  it('throws ILLEGAL_TRANSITION for money-gone refunds', () => {
+  it('throws ILLEGAL_TRANSITION for consumed-value refunds (legacy states included)', () => {
     for (const from of ['redeemed', 'escrow_released'] as const) {
       try {
         transition(from, 'REFUND', 'coupon')
@@ -105,6 +105,10 @@ describe('settlement state machine', () => {
         expect((error as SettlementTransitionError).code).toBe('ILLEGAL_TRANSITION')
       }
     }
+  })
+
+  it('still allows refunding a legacy escrow_held row', () => {
+    expect(transition('escrow_held', 'REFUND', 'coupon')).toBe('refunded')
   })
 
   it('keeps refunded and cancelled terminal', () => {
@@ -121,7 +125,7 @@ describe('settlement state machine', () => {
 describe('deriveOrderStatus', () => {
   it('is pending for empty or any-pending orders', () => {
     expect(deriveOrderStatus([])).toBe('pending')
-    expect(deriveOrderStatus(['pending', 'escrow_released'])).toBe('pending')
+    expect(deriveOrderStatus(['pending', 'platform_settled'])).toBe('pending')
   })
 
   it('shows the least-advanced active line', () => {
@@ -134,7 +138,7 @@ describe('deriveOrderStatus', () => {
     expect(deriveOrderStatus(['cancelled', 'cancelled'])).toBe('cancelled')
     expect(deriveOrderStatus(['refunded', 'cancelled'])).toBe('refunded')
     expect(deriveOrderStatus(['split_executed', 'refunded'])).toBe('split_executed')
-    expect(deriveOrderStatus(['escrow_released', 'split_executed'])).toBe('escrow_released')
-    expect(deriveOrderStatus(['escrow_released'])).toBe('escrow_released')
+    expect(deriveOrderStatus(['platform_settled', 'split_executed'])).toBe('platform_settled')
+    expect(deriveOrderStatus(['escrow_released', 'platform_settled'])).toBe('escrow_released')
   })
 })

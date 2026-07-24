@@ -1,16 +1,25 @@
 import type { CommissionProductType } from '@/lib/commerce/commission'
 
 /**
- * Settlement lifecycle of an order line (and, derived, of an order).
+ * Settlement lifecycle of an order line (and, derived, of an order), under the
+ * final business rules (2026-07-24): no escrow anywhere.
  *
  * Physical happy path: pending -> paid -> split_executed
- * Coupon happy path:   pending -> paid -> escrow_held -> redeemed -> escrow_released
- * Failure paths:       pending -> cancelled; paid | escrow_held | split_executed -> refunded
+ * Coupon happy path:   pending -> paid -> platform_settled
+ *   (the on-site charge is platform revenue the moment the order is paid;
+ *   voucher redemption and expiry are voucher-level events that move no money)
+ * Failure paths: pending -> cancelled;
+ *   paid | platform_settled | split_executed -> refunded
+ *
+ * escrow_held / escrow_released / redeemed remain ONLY so rows written by the
+ * retired escrow model still type-check and can be refunded; no new row ever
+ * enters them.
  */
 export type SettlementState =
   | 'pending'
   | 'paid'
   | 'split_executed'
+  | 'platform_settled'
   | 'escrow_held'
   | 'escrow_released'
   | 'redeemed'
@@ -20,9 +29,7 @@ export type SettlementState =
 export type SettlementEvent =
   | 'PAYMENT_CONFIRMED'
   | 'EXECUTE_SPLIT'
-  | 'HOLD_ESCROW'
-  | 'REDEEM'
-  | 'RELEASE_ESCROW'
+  | 'SETTLE_PLATFORM'
   | 'REFUND'
   | 'CANCEL'
 
@@ -30,6 +37,7 @@ export const SETTLEMENT_STATES: readonly SettlementState[] = [
   'pending',
   'paid',
   'split_executed',
+  'platform_settled',
   'escrow_held',
   'escrow_released',
   'redeemed',
@@ -40,9 +48,7 @@ export const SETTLEMENT_STATES: readonly SettlementState[] = [
 export const SETTLEMENT_EVENTS: readonly SettlementEvent[] = [
   'PAYMENT_CONFIRMED',
   'EXECUTE_SPLIT',
-  'HOLD_ESCROW',
-  'REDEEM',
-  'RELEASE_ESCROW',
+  'SETTLE_PLATFORM',
   'REFUND',
   'CANCEL',
 ]
@@ -57,8 +63,10 @@ type TransitionRule = {
  * Single source of truth for legal transitions.
  * REFUND from split_executed covers physical returns inside the legal window
  * (money recovery from the supplier happens via payout adjustments).
- * REFUND is NOT legal from redeemed / escrow_released: after redemption the
- * platform no longer holds the money.
+ * REFUND from platform_settled is legal only while every voucher of the line
+ * is still `issued`; the refund planner checks the voucher states.
+ * Legacy escrow_held rows can still be refunded; redeemed / escrow_released
+ * rows cannot (their value was already consumed at the business).
  */
 const TRANSITIONS: Readonly<
   Record<SettlementState, Partial<Record<SettlementEvent, TransitionRule>>>
@@ -69,16 +77,16 @@ const TRANSITIONS: Readonly<
   },
   paid: {
     EXECUTE_SPLIT: { to: 'split_executed', productType: 'physical' },
-    HOLD_ESCROW: { to: 'escrow_held', productType: 'coupon' },
+    SETTLE_PLATFORM: { to: 'platform_settled', productType: 'coupon' },
+    REFUND: { to: 'refunded' },
+  },
+  platform_settled: {
     REFUND: { to: 'refunded' },
   },
   escrow_held: {
-    REDEEM: { to: 'redeemed', productType: 'coupon' },
     REFUND: { to: 'refunded' },
   },
-  redeemed: {
-    RELEASE_ESCROW: { to: 'escrow_released', productType: 'coupon' },
-  },
+  redeemed: {},
   split_executed: {
     REFUND: { to: 'refunded' },
   },
@@ -138,6 +146,7 @@ export function isTerminal(state: SettlementState): boolean {
 export function isSettled(state: SettlementState): boolean {
   return (
     state === 'split_executed' ||
+    state === 'platform_settled' ||
     state === 'escrow_released' ||
     state === 'refunded' ||
     state === 'cancelled'
@@ -158,9 +167,10 @@ export function deriveOrderStatus(lineStates: readonly SettlementState[]): Settl
   if (lineStates.some((s) => s === 'escrow_held')) return 'escrow_held'
   if (lineStates.some((s) => s === 'redeemed')) return 'redeemed'
 
-  // Every line is terminal from here on.
+  // Every line is settled from here on.
   if (lineStates.every((s) => s === 'cancelled')) return 'cancelled'
   if (lineStates.every((s) => s === 'refunded' || s === 'cancelled')) return 'refunded'
   if (lineStates.some((s) => s === 'escrow_released')) return 'escrow_released'
+  if (lineStates.some((s) => s === 'platform_settled')) return 'platform_settled'
   return 'split_executed'
 }

@@ -87,7 +87,10 @@ export const calculateSplitInputSchema = z.object({
         productType: z.enum(['coupon', 'physical']),
         unitPriceIls: ilsAmount,
         quantity: z.number().int().min(1).max(99),
-        platformPercent: z.union([z.string(), z.number()]),
+        // Physical lines: mandatory. Coupon lines ignore it (final rules).
+        platformPercent: z.union([z.string(), z.number()]).optional(),
+        // Coupon lines: the admin-set absolute on-site price. Mandatory there.
+        couponPriceIls: ilsAmount.optional(),
         cashbackPercent: z.union([z.string(), z.number()]).default(0),
       }),
     )

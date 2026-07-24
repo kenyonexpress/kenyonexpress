@@ -29,7 +29,7 @@ type SettlementProductRow = {
   is_coupon_enabled: boolean | null
   supplier_id: string | null
   platform_percent: number | null
-  commission_percent: number | null
+  coupon_price_ils: number | null
   cashback_percent: number | null
 }
 
@@ -129,7 +129,7 @@ export async function beginCheckout(
   const { data: productRows } = await admin
     .from('products')
     .select(
-      'id, type, is_coupon_enabled, supplier_id, platform_percent, commission_percent, cashback_percent',
+      'id, type, is_coupon_enabled, supplier_id, platform_percent, coupon_price_ils, cashback_percent',
     )
     .in('id', productIds)
   const productMap = new Map<string, SettlementProductRow>(
@@ -145,24 +145,43 @@ export async function beginCheckout(
     if (!product.supplier_id) {
       return { ok: false, error: `למוצר "${item.name_he}" אין ספק משויך`, code: 'INTERNAL' }
     }
-    // platform_percent is the single, mandatory commission knob (CONTRADICTIONS
-    // C1/C2). There is no fallback: a product without it cannot be sold.
-    if (product.platform_percent === null || product.platform_percent === undefined) {
-      return {
-        ok: false,
-        error: `למוצר "${item.name_he}" לא הוגדר אחוז פלטפורמה`,
-        code: 'INTERNAL',
+    // Final rules 2026-07-24: a coupon line needs the admin-set ABSOLUTE
+    // coupon price; a physical line needs platform_percent. No defaults exist
+    // for either: a product missing its mandatory value cannot be sold.
+    if (item.type === 'coupon') {
+      const couponPrice = Number(product.coupon_price_ils ?? 0)
+      if (!(couponPrice > 0)) {
+        return {
+          ok: false,
+          error: `למוצר "${item.name_he}" לא הוגדר מחיר קופון`,
+          code: 'INTERNAL',
+        }
       }
+      settlementLines.push({
+        id: `${item.product_id}::${item.variant_id ?? 'null'}`,
+        productType: item.type,
+        unitPrice: ilsToAgorot(item.unit_price.toFixed(2)),
+        quantity: item.quantity,
+        couponPriceUnit: ilsToAgorot(couponPrice.toFixed(2)),
+        cashbackPercent: product.cashback_percent ?? 0,
+      })
+    } else {
+      if (product.platform_percent === null || product.platform_percent === undefined) {
+        return {
+          ok: false,
+          error: `למוצר "${item.name_he}" לא הוגדר אחוז פלטפורמה`,
+          code: 'INTERNAL',
+        }
+      }
+      settlementLines.push({
+        id: `${item.product_id}::${item.variant_id ?? 'null'}`,
+        productType: item.type,
+        unitPrice: ilsToAgorot(item.unit_price.toFixed(2)),
+        quantity: item.quantity,
+        platformPercent: product.platform_percent,
+        cashbackPercent: product.cashback_percent ?? 0,
+      })
     }
-    settlementLines.push({
-      id: `${item.product_id}::${item.variant_id ?? 'null'}`,
-      productType: item.type,
-      unitPrice: ilsToAgorot(item.unit_price.toFixed(2)),
-      quantity: item.quantity,
-      upfrontPercent: product.platform_percent,
-      commissionPercent: product.platform_percent,
-      cashbackPercent: product.cashback_percent ?? 0,
-    })
   }
 
   // Wallet: cap at balance and at the on-site charge
@@ -222,6 +241,11 @@ export async function beginCheckout(
     )
     if (!line) throw new Error('settlement line missing for cart item')
     const product = productMap.get(item.product_id)
+    // Snapshot semantics (final rules): platform_percent is the immutable
+    // per-line split knob for PHYSICAL lines; a coupon line stores 100 because
+    // the whole on-site charge stays with the platform. Escrow columns are
+    // legacy 046/047 shape and always 0 under the no-escrow model.
+    const percentSnapshot = line.productType === 'coupon' ? 100 : line.platformPercentBps / 100
     return {
       order_id: order.id,
       product_id: item.product_id,
@@ -231,23 +255,20 @@ export async function beginCheckout(
       quantity: item.quantity,
       unit_price_ils: item.unit_price,
       total_price_ils: agorotToIls(line.faceValue),
-      // legacy 007 NOT NULL: supplier take = immediate split + future escrow release
-      supplier_payout_ils: agorotToIls(
-        agorot(line.supplierImmediate + line.escrowReleaseToSupplier),
-      ),
-      platform_percent: line.upfrontBps / 100,
-      commission_percent: line.commissionBps / 100,
+      supplier_payout_ils: agorotToIls(line.supplierDue),
+      platform_percent: percentSnapshot,
+      commission_percent: percentSnapshot,
       cashback_percent: 0,
       item_status: 'pending' as const,
       settlement_status: 'pending' as const,
-      upfront_percent: line.upfrontBps / 100,
-      commission_percent_snapshot: line.commissionBps / 100,
+      upfront_percent: percentSnapshot,
+      commission_percent_snapshot: percentSnapshot,
       face_value_agorot: line.faceValue,
       paid_on_site_agorot: line.paidOnSite,
       commission_agorot: line.commission,
-      supplier_immediate_agorot: line.supplierImmediate,
-      escrow_held_agorot: line.escrowHeld,
-      escrow_release_agorot: line.escrowReleaseToSupplier,
+      supplier_immediate_agorot: line.supplierDue,
+      escrow_held_agorot: 0,
+      escrow_release_agorot: 0,
       balance_due_agorot: line.balanceDueAtBusiness,
       cashback_amount_agorot: line.cashbackAmount,
     }

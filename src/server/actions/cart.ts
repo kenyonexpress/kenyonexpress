@@ -50,7 +50,7 @@ async function loadProductData(items: CartStorageItem[]) {
   const admin = createAdminClient()
 
   const productSelect =
-    'id, slug, name_he, type, kenyon_price, stock_quantity, status, deleted_at, images, is_coupon_enabled'
+    'id, slug, name_he, type, kenyon_price, stock_quantity, status, deleted_at, images, is_coupon_enabled, platform_percent, coupon_price_ils, cashback_percent'
 
   const { data: products } = await admin.from('products').select(productSelect).in('id', productIds)
 

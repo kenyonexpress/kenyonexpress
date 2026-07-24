@@ -9,12 +9,14 @@ function at<T>(items: readonly T[], index: number): T {
   return item
 }
 
+// Final rules: the coupon line carries the ABSOLUTE admin price (40₪ on a
+// 400₪ face); no percent participates in coupon pricing.
 const couponLine = (over: Partial<CalculateSplitInput['lines'][number]> = {}) => ({
   id: 'coupon-1',
   productType: 'coupon' as const,
   unitPriceIls: 400,
   quantity: 1,
-  platformPercent: 10,
+  couponPriceIls: 40,
   cashbackPercent: 5,
   ...over,
 })
@@ -37,7 +39,7 @@ const split = (over: Partial<CalculateSplitInput> = {}): CalculateSplitInput => 
 })
 
 describe('calculateSplit — wire view', () => {
-  it('charges a coupon only its platform percent on site, remainder at the business', () => {
+  it('charges a coupon its absolute price on site, remainder at the business', () => {
     const result = calculateSplit(split())
     const line = at(result.lines, 0)
 
@@ -75,8 +77,8 @@ describe('calculateSplit — wire view', () => {
     const result = calculateSplit(
       split({
         lines: [
-          couponLine({ id: 'c1', unitPriceIls: 33.33, quantity: 3, platformPercent: 12.5 }),
-          couponLine({ id: 'c2', unitPriceIls: 149.9, platformPercent: 25 }),
+          couponLine({ id: 'c1', unitPriceIls: 33.33, quantity: 3, couponPriceIls: 10 }),
+          couponLine({ id: 'c2', unitPriceIls: 149.9, couponPriceIls: 99.9 }),
           physicalLine({ id: 'p1', unitPriceIls: 79.99, quantity: 2, platformPercent: 7.5 }),
         ],
       }),
@@ -109,12 +111,17 @@ describe('calculateSplit — wire view', () => {
 
   it('reports percents back in whole percent, not basis points', () => {
     const result = calculateSplit(
-      split({ lines: [couponLine({ platformPercent: 12.5, cashbackPercent: 2.5 })] }),
+      split({ lines: [physicalLine({ platformPercent: 12.5, cashbackPercent: 2.5 })] }),
     )
     const line = at(result.lines, 0)
 
     expect(line.platformPercent).toBe(12.5)
     expect(line.cashbackPercent).toBe(2.5)
+  })
+
+  it('reports 0 percent for coupon lines: no percent participates in their pricing', () => {
+    const result = calculateSplit(split({ lines: [couponLine()] }))
+    expect(at(result.lines, 0).platformPercent).toBe(0)
   })
 
   it('derives cashback from the on-site charge, never from face value', () => {

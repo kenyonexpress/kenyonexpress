@@ -1,6 +1,6 @@
 import type { CommissionProductType } from '@/lib/commerce/commission'
 import { type Agorot, agorot } from '@/lib/commerce/money'
-import type { EscrowHoldStatus } from './escrow'
+import type { VoucherState } from '@/server/domain/vouchers/state-machine'
 import { type SettlementState, canTransition, deriveOrderStatus, transition } from './state-machine'
 
 /** Consumer-protection cap on cancellation fees: 5% of the charge, capped at ₪100. */
@@ -23,17 +23,17 @@ export interface RefundLineInput {
   settlementStatus: SettlementState
 }
 
-export interface RefundHoldInput {
-  couponCodeId: string
-  status: EscrowHoldStatus
-  heldAgorot: number
+export interface RefundVoucherInput {
+  voucherId: string
+  status: VoucherState
 }
 
 export interface PlanRefundInput {
   /** The amount actually charged to the card for this order, in agorot. */
   cardChargedAgorot: number
   lines: RefundLineInput[]
-  holds: RefundHoldInput[]
+  /** Every voucher of the order (coupon lines only; empty for physical-only orders). */
+  vouchers: RefundVoucherInput[]
   isDefectClaim: boolean
   now: Date
   /** Explicit partial refund in agorot; when set, no cancellation fee is applied. */
@@ -62,22 +62,32 @@ export interface RefundPlan {
   refundAmountAgorot: Agorot
   cancellationFeeAgorot: Agorot
   lineTransitions: RefundLineTransition[]
-  /** couponCodeIds whose escrow hold moves held -> refunded. */
-  holdRefunds: string[]
+  /** voucherIds that move issued -> refunded. */
+  voucherRefunds: string[]
   /** Resulting order-level settlement state. */
   orderStatus: SettlementState
 }
 
 /**
- * Pure refund decision. Validates each line against the settlement state machine,
- * computes the (fee-adjusted) card refund, and reverses only escrow holds still
- * `held`. A line already past the platform's custody (redeemed / escrow_released)
- * makes the whole order non-refundable — the platform no longer holds that money.
+ * Pure refund decision under the final rules. Validates each line against the
+ * settlement state machine and refunds only vouchers still `issued`. A voucher
+ * already redeemed or expired blocks the card refund: its value was consumed
+ * at the business (or lapsed as breakage), so pulling the card money back
+ * would refund consumed value. A post-consumption goodwill refund is a wallet
+ * credit, which is a different money movement and never touches this planner.
  *
  * DB idempotency (don't refund twice) is enforced by the caller via the order
  * status guard, mirroring finalize's `paid_at` guard.
  */
 export function planOrderRefund(input: PlanRefundInput): RefundPlan {
+  const consumed = input.vouchers.filter((v) => v.status === 'redeemed' || v.status === 'expired')
+  if (consumed.length > 0) {
+    throw new RefundError(
+      'NOT_REFUNDABLE',
+      'order has redeemed or expired vouchers; their value cannot return to the card',
+    )
+  }
+
   const refundable: RefundLineTransition[] = []
   let hasBlocking = false
 
@@ -119,7 +129,7 @@ export function planOrderRefund(input: PlanRefundInput): RefundPlan {
     throw new RefundError('INVALID_AMOUNT', 'refund amount out of range')
   }
 
-  const holdRefunds = input.holds.filter((h) => h.status === 'held').map((h) => h.couponCodeId)
+  const voucherRefunds = input.vouchers.filter((v) => v.status === 'issued').map((v) => v.voucherId)
 
   // Order state after applying the refund to every refundable line.
   const refundedIds = new Set(refundable.map((t) => t.orderItemId))
@@ -131,7 +141,7 @@ export function planOrderRefund(input: PlanRefundInput): RefundPlan {
     refundAmountAgorot: agorot(rawRefund),
     cancellationFeeAgorot: cancellationFee,
     lineTransitions: refundable,
-    holdRefunds,
+    voucherRefunds,
     orderStatus: deriveOrderStatus(resultingStates),
   }
 }

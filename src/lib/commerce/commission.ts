@@ -14,8 +14,15 @@ export interface CommissionLineInput {
   productType: CommissionProductType
   unitPrice: Agorot
   quantity: number
-  platformPercent: string | number
+  /** Physical only: mandatory split percent. Coupon lines ignore it entirely. */
+  platformPercent?: string | number | null
   cashbackPercent: string | number
+  /**
+   * Coupon only: the ABSOLUTE per-unit amount the customer pays on site, set by
+   * the admin on the product (products.coupon_price_ils). Required for coupon
+   * lines; never derived from a percent (final business rules, 2026-07-24).
+   */
+  couponPriceUnit?: Agorot
 }
 
 export interface CommissionInput {
@@ -68,13 +75,34 @@ function calculateLine(line: CommissionLineInput): CommissionLineResult {
   assertNonNegative(line.unitPrice, 'unit price')
 
   const faceValue = multiplyAgorot(line.unitPrice, line.quantity)
-  const platformPercentBps = percentToBasisPoints(line.platformPercent)
+  if (line.productType === 'physical' && (line.platformPercent === undefined || line.platformPercent === null)) {
+    throw new TypeError(
+      `platform percent is required for physical line ${line.id} (no default exists)`,
+    )
+  }
+  // A coupon's percent is not part of its pricing model; 0 bps is reported so
+  // no percent-derived math can sneak back in.
+  const platformPercentBps =
+    line.productType === 'coupon' ? 0 : percentToBasisPoints(line.platformPercent as string | number)
   const cashbackPercentBps = percentToBasisPoints(line.cashbackPercent)
 
-  // R1: coupon checkout charges only the product platform percentage.
-  // The supplier collects the remaining face value directly at redemption.
+  // R1 (final rules 2026-07-24): the coupon on-site charge is the admin-set
+  // absolute coupon price, never a percent of face. A coupon line without it
+  // cannot be priced; refusing beats inventing a number.
+  if (line.productType === 'coupon') {
+    if (line.couponPriceUnit === undefined || line.couponPriceUnit === null) {
+      throw new TypeError(`coupon price is required for coupon line ${line.id} (no default exists)`)
+    }
+    if (line.couponPriceUnit <= 0 || line.couponPriceUnit > line.unitPrice) {
+      throw new RangeError(
+        `coupon price for line ${line.id} must be positive and at most the unit price`,
+      )
+    }
+  }
   const customerPaysNow =
-    line.productType === 'coupon' ? percentageOf(faceValue, platformPercentBps) : faceValue
+    line.productType === 'coupon'
+      ? multiplyAgorot(line.couponPriceUnit as Agorot, line.quantity)
+      : faceValue
   const balanceDueAtBusiness =
     line.productType === 'coupon' ? agorot(faceValue - customerPaysNow) : agorot(0)
 
