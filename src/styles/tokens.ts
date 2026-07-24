@@ -7,3 +7,94 @@ export const ELECTRO = {
   shadow: { card: '0px 2px 8px rgba(0,0,0,0.08)', hover: '0px 4px 16px rgba(0,0,0,0.12)' },
   transition: { card: 'box-shadow 300ms ease-in-out' },
 }
+
+/**
+ * Catalog archive tokens: /category/[slug], /products, /search.
+ *
+ * Every value here was read off the LIVE site with getComputedStyle, not taken
+ * from a design spec. Where the two disagree the live value wins, because the
+ * pixel comparison runs against live:
+ *
+ *   - sale price is #dc3545 on live. The brief says #E4002B. Live wins.
+ *   - the view switcher is #495057 on live, not the #b6bfc8 we had.
+ *
+ * `category-page.css` declares these as custom properties on `.category-page`
+ * and every rule in that file reads them through var(). `tokens.test.ts`
+ * asserts the two stay in step, so a colour can only be changed here.
+ */
+export const CATALOG = {
+  color: {
+    /** body / default archive text */
+    ink: '#333e48',
+    /** product titles */
+    link: '#0062bd',
+    /** struck-through original price, category eyebrow */
+    muted: '#768b9e',
+    /** sale price. Measured on live; NOT the #E4002B in the brief. */
+    sale: '#dc3545',
+    /** discount badge background */
+    badge: '#44b81b',
+    /** control bar background */
+    bar: '#efefef',
+    /** hairlines: select border, card bottom rule, carousel rule */
+    line: '#dddddd',
+    /** view switcher icons. Measured on live. */
+    switcher: '#495057',
+    surface: '#ffffff',
+    /** brand yellow and its hover, per the brief and the live masthead */
+    brand: '#fed700',
+    brandHover: '#fedd26',
+  },
+  /** Geometry measured on the live archive. */
+  metric: {
+    container: '1170px',
+    cardColumn: '234px',
+    cardContent: '186px',
+    thumbMax: '186.03px',
+    controlBarHeight: '45.89px',
+    controlBarRadius: '9px',
+    selectWidth: '174px',
+    selectHeight: '34.3px',
+    selectRadius: '20.006px',
+    titleSize: '25.004px',
+    titleLine: '40.0064px',
+    priceSize: '20.006px',
+    priceLine: '20.006px',
+    priceBox: '27px',
+    eyebrowSize: '11.998px',
+    eyebrowLine: '12.5979px',
+    bodySize: '14px',
+    bodyLine: '23.996px',
+    productTitleSize: '14px',
+    productTitleLine: '18.0001px',
+    cardPadTop: '20.006px',
+    cardPadInline: '24px',
+    cardPadBottom: '14px',
+    thumbGap: '25.96px',
+    footerHeight: '36px',
+    footerGap: '7px',
+    atcWidth: '37.14px',
+    atcHeight: '33.88px',
+    atcRadius: '22px',
+    carouselHeadHeight: '45px',
+    carouselHeadGap: '16.996px',
+    carouselTitleSize: '21.994px',
+    carouselTitleLine: '35.2px',
+    carouselTitlePad: '8.7976px',
+  },
+} as const
+
+/** The CSS custom-property name each token maps to in category-page.css. */
+export const CATALOG_CSS_VARS: Record<string, string> = {
+  '--cat-ink': CATALOG.color.ink,
+  '--cat-link': CATALOG.color.link,
+  '--cat-muted': CATALOG.color.muted,
+  '--cat-sale': CATALOG.color.sale,
+  '--cat-badge': CATALOG.color.badge,
+  '--cat-bar': CATALOG.color.bar,
+  '--cat-line': CATALOG.color.line,
+  '--cat-switcher': CATALOG.color.switcher,
+  '--cat-surface': CATALOG.color.surface,
+  '--cat-brand': CATALOG.color.brand,
+  '--cat-brand-hover': CATALOG.color.brandHover,
+}

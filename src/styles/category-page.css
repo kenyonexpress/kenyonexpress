@@ -2,7 +2,22 @@
    (MEASURED-LIVE.md, 1440x900). Container 1170 inside max-w-page. */
 
 .category-page {
-  color: #333e48;
+  /* Colour tokens. Single source of truth: src/styles/tokens.ts (CATALOG).
+     tokens.test.ts fails if these drift from it. Every rule below reads them
+     through var() so no rule carries a raw hex. */
+  --cat-ink: #333e48;
+  --cat-link: #0062bd;
+  --cat-muted: #768b9e;
+  --cat-sale: #dc3545;
+  --cat-badge: #44b81b;
+  --cat-bar: #efefef;
+  --cat-line: #dddddd;
+  --cat-switcher: #495057;
+  --cat-surface: #ffffff;
+  --cat-brand: #fed700;
+  --cat-brand-hover: #fedd26;
+
+  color: var(--cat-ink);
   font-size: 14px;
   line-height: 24px;
 }
@@ -19,27 +34,27 @@
   }
 }
 
-/* Breadcrumb: measured padding 25px top / 22.4px bottom, 14px #333e48 */
+/* Breadcrumb: measured padding 25px top / 22.4px bottom, 14px var(--cat-ink) */
 .category-breadcrumb {
   padding: 25.004px 0 22.4px;
   font-size: 14px;
   line-height: 23.996px;
-  color: #333e48;
+  color: var(--cat-ink);
 }
 
 .category-breadcrumb a {
-  color: #333e48;
+  color: var(--cat-ink);
   text-decoration: none;
 }
 
 .category-breadcrumb a:hover {
-  color: #0062bd;
+  color: var(--cat-link);
 }
 
 .category-breadcrumb__sep {
   display: inline-block;
   margin-inline: 10px;
-  color: #333e48;
+  color: var(--cat-ink);
 }
 
 /* Header row: h1 on inline-start (right), result count on inline-end (left).
@@ -57,21 +72,21 @@
   font-size: 25.004px;
   font-weight: 500;
   line-height: 40.0064px;
-  color: #333e48;
+  color: var(--cat-ink);
 }
 
 .category-page__count {
   margin: 0;
   font-size: 14px;
   line-height: 23.996px;
-  color: #333e48;
+  color: var(--cat-ink);
 }
 
 .category-page__count--bottom {
   padding-block: 16px 8px;
 }
 
-/* Control bar: measured #efefef, radius 9px, padding 2.8px 20.006px, h~45.9.
+/* Control bar: measured var(--cat-bar), radius 9px, padding 2.8px 20.006px, h~45.9.
    Select on inline-end (left), view switcher on inline-start (right). */
 .category-control-bar {
   display: flex;
@@ -80,21 +95,21 @@
   gap: 12px;
   min-height: 45.89px;
   padding: 2.8px 20.006px;
-  background-color: #efefef;
+  background-color: var(--cat-bar);
   border-radius: 9px;
-  color: #333e48;
+  color: var(--cat-ink);
   font-size: 14px;
   line-height: 23.996px;
 }
 
-/* Measured select: 174x34.3, radius 20px, 1px #ddd, white bg */
+/* Measured select: 174x34.3, radius 20px, 1px var(--cat-line), white bg */
 .category-control-bar__select {
   width: 174px;
   height: 34.3px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--cat-line);
   border-radius: 20.006px;
-  background: #fff;
-  color: #333e48;
+  background: var(--cat-surface);
+  color: var(--cat-ink);
   font-size: 14px;
   padding: 4.16px 12px;
   cursor: pointer;
@@ -119,7 +134,7 @@
   justify-content: center;
   width: 26px;
   height: 39.33px;
-  color: #b6bfc8;
+  color: var(--cat-switcher);
   background: none;
   border: 0;
   cursor: pointer;
@@ -127,7 +142,7 @@
 
 .category-view-switcher__btn.is-active,
 .category-view-switcher__btn:hover {
-  color: #333e48;
+  color: var(--cat-ink);
 }
 
 /* Body: measured live grid.rect = x135-1305 (full 1170 container), and
@@ -182,43 +197,43 @@
   flex-direction: column;
 }
 
-/* Measured: 11.998px/12.5979px, h 12.6, link #768b9e, margin-bottom 11.998px */
+/* Measured: 11.998px/12.5979px, h 12.6, link var(--cat-muted), margin-bottom 11.998px */
 .category-card__categories {
   font-size: 11.998px;
-  color: #333e48;
+  color: var(--cat-ink);
   margin-bottom: 11.998px;
   line-height: 12.5979px;
 }
 
 .category-card__categories a {
-  color: #768b9e;
+  color: var(--cat-muted);
   text-decoration: none;
 }
 
 .category-card__categories a:hover {
-  color: #333e48;
+  color: var(--cat-ink);
 }
 
-/* Measured: 20.006px, sale ins #dc3545 400, del 12px #768b9e */
+/* Measured: 20.006px, sale ins var(--cat-sale) 400, del 12px var(--cat-muted) */
 /* Measured live span.price: font 20.006px, line-height 20.006px, box height 27px */
 .category-card__price {
   display: block;
   height: 27px;
   font-size: 20.006px;
   line-height: 20.006px;
-  color: #333e48;
+  color: var(--cat-ink);
   margin-bottom: 0;
 }
 
 .category-card__price del {
-  color: #768b9e;
+  color: var(--cat-muted);
   font-size: 12.0036px;
   text-decoration: line-through;
   font-weight: 400;
 }
 
 .category-card__price ins {
-  color: #dc3545;
+  color: var(--cat-sale);
   text-decoration: none;
   font-weight: 400;
   margin-inline-end: 0.25em;
@@ -229,17 +244,17 @@
   color: inherit;
 }
 
-/* Measured: 14px/700/#0062bd/18px */
+/* Measured: 14px/700/var(--cat-link)/18px */
 .category-card__title {
   margin: 0 0 8px;
   font-size: 14px;
   font-weight: 700;
   line-height: 18.0001px;
-  color: #0062bd;
+  color: var(--cat-link);
 }
 
 .category-card__link:hover .category-card__title {
-  color: #333e48;
+  color: var(--cat-ink);
 }
 
 /* Image: measured 186x186 centered inside 234 card */
@@ -261,14 +276,14 @@
 }
 
 /* Sale badge: measured bottom inline-start corner of the image,
-   #44b81b, white, 11.998px/700, radius 4, padding 2px 10px */
+   var(--cat-badge), white, 11.998px/700, radius 4, padding 2px 10px */
 .category-card__badge {
   position: absolute;
   inset-inline-start: 0;
   bottom: 0;
   z-index: 2;
-  background-color: #44b81b;
-  color: #fff;
+  background-color: var(--cat-badge);
+  color: var(--cat-surface);
   font-size: 11.998px;
   font-weight: 700;
   padding: 2px 10px;
@@ -294,16 +309,16 @@
   width: 37.14px;
   height: 33.88px;
   flex: 0 0 auto;
-  border: 1px solid #ddd;
+  border: 1px solid var(--cat-line);
   border-radius: 22px;
   background: transparent;
-  color: #333e48;
+  color: var(--cat-ink);
   cursor: pointer;
 }
 
 .category-card__atc:hover {
-  background: #fed700;
-  border-color: #fed700;
+  background: var(--cat-brand);
+  border-color: var(--cat-brand);
 }
 
 /* Filter sidebar: one card-column wide (234px), on inline-end (left) */
@@ -334,7 +349,7 @@
   margin: 0 0 14px;
   font-size: 16.002px;
   font-weight: 700;
-  color: #333e48;
+  color: var(--cat-ink);
 }
 
 .category-sidebar__list {
@@ -348,17 +363,17 @@
 }
 
 .category-sidebar__list a {
-  color: #333e48;
+  color: var(--cat-ink);
   font-size: 14px;
   text-decoration: none;
 }
 
 .category-sidebar__list a:hover {
-  color: #0062bd;
+  color: var(--cat-link);
 }
 
 .category-sidebar__list a.is-current {
-  color: #0062bd;
+  color: var(--cat-link);
   font-weight: 700;
 }
 
@@ -373,17 +388,17 @@
   background: none;
   font: inherit;
   font-size: 14px;
-  color: #333e48;
+  color: var(--cat-ink);
   text-align: start;
   cursor: pointer;
 }
 
 .category-sidebar__filter-btn:hover {
-  color: #0062bd;
+  color: var(--cat-link);
 }
 
 .category-sidebar__filter-btn.is-current {
-  color: #0062bd;
+  color: var(--cat-link);
   font-weight: 700;
 }
 
@@ -408,12 +423,12 @@
   width: 0;
   flex: 1 1 auto;
   height: 34.3px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--cat-line);
   border-radius: 20.006px;
   padding: 4.16px 12px;
   font-size: 14px;
-  color: #333e48;
-  background: #fff;
+  color: var(--cat-ink);
+  background: var(--cat-surface);
 }
 
 .category-sidebar__price-btn {
@@ -422,18 +437,18 @@
   padding: 0 20px;
   border: 0;
   border-radius: 20.006px;
-  background: #fed700;
-  color: #333e48;
+  background: var(--cat-brand);
+  color: var(--cat-ink);
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
 }
 
 .category-sidebar__price-btn:hover {
-  background: #fedd26;
+  background: var(--cat-brand-hover);
 }
 
-/* Pagination - Electro yellow (#fed700 measured site-wide accent) */
+/* Pagination - Electro yellow (var(--cat-brand) measured site-wide accent) */
 .category-pagination {
   display: flex;
   justify-content: center;
@@ -451,27 +466,27 @@
   min-width: 36px;
   height: 36px;
   padding: 0 8px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--cat-line);
   border-radius: 18px;
   font-size: 14px;
-  color: #333e48;
+  color: var(--cat-ink);
   text-decoration: none;
-  background: #fff;
+  background: var(--cat-surface);
 }
 
 .category-pagination a:hover {
-  background: #fed700;
-  border-color: #fed700;
+  background: var(--cat-brand);
+  border-color: var(--cat-brand);
 }
 
 .category-pagination .is-current {
-  background: #fed700;
-  border-color: #fed700;
+  background: var(--cat-brand);
+  border-color: var(--cat-brand);
   font-weight: 700;
 }
 
 .category-pagination .is-disabled {
-  color: #b6bfc8;
+  color: var(--cat-switcher);
   cursor: default;
 }
 
@@ -479,7 +494,7 @@
 .category-page__empty {
   padding: 48px 0 64px;
   text-align: center;
-  color: #768b9e;
+  color: var(--cat-muted);
   font-size: 16px;
 }
 
@@ -490,7 +505,7 @@
 
 /* Live /shop/ renders a "Recommended Products" carousel section between the
    breadcrumb and the archive H1. Measured: section.section-products-carousel
-   is 1170x45 with margin-bottom 16.996px, its header carries a 1px #ddd bottom
+   is 1170x45 with margin-bottom 16.996px, its header carries a 1px var(--cat-line) bottom
    rule across the full width, and the h2 is 21.994px/400 at 249.6px wide with
    padding-bottom 8.7976px and a yellow rule of its own. The live carousel holds
    no items, so the section is the heading and nothing else. */
@@ -499,7 +514,7 @@
   align-items: flex-start;
   height: 45px;
   margin-bottom: 16.996px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--cat-line);
   box-sizing: border-box;
 }
 
@@ -509,6 +524,6 @@
   font-size: 21.994px;
   font-weight: 400;
   line-height: 35.2px;
-  color: #333e48;
-  border-bottom: 2px solid #fed700;
+  color: var(--cat-ink);
+  border-bottom: 2px solid var(--cat-brand);
 }
