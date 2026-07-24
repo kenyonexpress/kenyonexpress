@@ -2,6 +2,10 @@
 
 תאריך: 2026-07-20. ענף: `phase5/homepage`. design only, אפס מימוש.
 
+> **עדכון 2026-07-24:** המסמך אינו עוד design only. הדומיין מומש בענף
+> `feat/analytics-bi`. **סעיף 11א מתעד את מצב המימוש ואת החריגות מהתכנון, והוא
+> גובר על כל נוסח סותר בגוף המסמך.**
+
 מסמך זה הוא **מקור האמת היחיד** לדומיין האנליטיקה וה-BI. הוא בולע את
 `docs/ARCHITECTURE-ANALYTICS-BI.md` (v2, 2026-07-17), שמקבל הודעת האחדה בראשו ונשאר
 כתיעוד היסטורי. v3 מיושר מול טיוטות המיגרציות הקיימות (033 + 034, לא הוחלו) ומוסיף
@@ -574,9 +578,62 @@ SDK צד לקוח (batch, sendBeacon, דגימת web vitals, עוגיות סשן
 
 ### 11.4 סדר החלה
 
-026 -> 027 -> ... -> 033 -> 034 (033 דורשת רק 026+027; 034 דורשת 026+027+033;
+026 -> 027 -> ... -> 033 -> 034 -> 053 (033 דורשת רק 026+027; 034 דורשת 026+027+033;
 028/030 אופציונליות ומזוהות דינמית). רק דרך Supabase MCP `apply_migration`
 (לעולם לא `db push`); אחרי החלה `generate_typescript_types`.
+
+---
+
+## 11א. מצב מימוש (עודכן 2026-07-24, ענף `feat/analytics-bi`)
+
+הסעיף הזה מתעד מה נבנה בפועל ואיפה המימוש חורג מהתכנון. **חריגה מתועדת גוברת על
+הנוסח המקורי בגוף המסמך.**
+
+### מה נבנה
+
+| רכיב | קובץ |
+|---|---|
+| דלתת v3 כמיגרציה חדשה | `supabase/migrations/056_analytics_v3.sql` |
+| תזמון pg_cron | `supabase/schedules/analytics_cron.sql` |
+| טקסונומיה + סכמת payload | `src/lib/analytics/events.ts` |
+| הסכמה, ייחוס, סשן, תור, SDK | `src/lib/analytics/{consent,attribution,session,queue,tracker}.ts` |
+| route ingest | `src/app/api/a/route.ts` |
+| כתיבות שרת | `src/server/analytics/track.ts` |
+| מנוע אגרגציה | `src/lib/analytics/aggregate.ts` |
+| טעינת נתוני דשבורד | `src/server/analytics/queries.ts` |
+| דשבורד אדמין | `src/app/(admin)/admin/analytics/` |
+| בדיקות (57) | `src/lib/analytics/{aggregate,pipeline}.test.ts` |
+
+### חריגות מהתכנון, עם הנימוק
+
+1. **הדלתא היא מיגרציה חדשה (053), לא עריכה של 033/034.** סעיף 11 קבע עריכה
+   בתוך הטיוטות. חוק הפרויקט אוסר לערוך מיגרציה ממוספרת, מוחלת או לא. 053 ממוינת
+   אחרי שתיהן, ולכן עובדת גם על DB נקי (033 -> 034 -> 053) וגם על DB שכבר
+   הריץ אותן. המספר 053 ולא 052 כי 052 שמור ל-`052_product_page_fields.sql`
+   (`docs/PRODUCT-PAGE-SPEC.md`).
+2. **`anonymous_id` נחתם בשרת, לא נשלח מהלקוח.** סעיף 1.1 קבע שה-SDK שולח את
+   עוגיית `ke_session_id`. העוגייה הזו היא `httpOnly`
+   (`src/lib/cart/guest-session.ts`), ולכן הדפדפן לא יכול לקרוא אותה. `/api/a`
+   קורא אותה בצד שרת וחותם אותה בעצמו. זה גם מהודק יותר: הלקוח לא יכול לראות ולא
+   לזייף מזהה אורח של מישהו אחר. `session_id` נשאר בבעלות הלקוח.
+3. **טבלאות הכסף האמיתיות אינן מה ש-033/034 מניחות.** ב-DB החי ל-`order_items`
+   אין `platform_fee_ils`, `charged_on_site_ils` או `supplier_due_ils`; יש עמודות
+   אגורות מ-046/047 (`face_value_agorot`, `paid_on_site_agorot`,
+   `commission_agorot`, `supplier_immediate_agorot`, `escrow_release_agorot`).
+   הדשבורד קורא את העמודות הקיימות, ולכן עובד היום. **033/034 ייכשלו על ה-guard
+   שלהן עד שהפער ייסגר** - זו משימה פתוחה, לא באג בדשבורד.
+4. **`orders.attribution` נכתב ב-UPDATE נפרד** ולא כחלק ב-INSERT של ההזמנה,
+   כי העמודה מגיעה עם 033 שטרם הוחלה. עמודה חסרה עולה שורת לוג, לא מכירה אבודה.
+5. **שבוע מתחיל ביום ראשון.** `v_channel_revenue_weekly` השתמשה ב-`date_trunc('week')`
+   שהוא ISO (יום שני). 053 מעבירה אותה לראשון, כדי שהדשבורד וה-view יחזירו את אותה
+   תשובה ל"איך היה השבוע שעבר".
+6. **`checkout_step` ממופה ל-checkout של עמוד אחד:** `identity` בעלייה,
+   `address` כשנדרשת כתובת, `payment_redirect` בשליחה.
+
+### מה עוד לא נבנה מסעיף 11.3
+
+דשבורד הספקים, `/api/cron/daily-digest`, חיבור Vercel Speed Insights,
+והרצת `supabase/schedules/analytics_cron.sql` על הסביבה בפועל.
 
 ---
 

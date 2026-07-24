@@ -1,6 +1,7 @@
 'use client'
 
 import { useCart } from '@/components/cart/CartProvider'
+import { track } from '@/lib/analytics/tracker'
 import { LoaderCircle } from 'lucide-react'
 import { useState } from 'react'
 
@@ -36,6 +37,9 @@ export default function AddToCartButton({
     setBusy(true)
     try {
       await addToCart(productId, variantId, quantity, productName)
+      // Emitted after the server accepted the item, not on click: an intent
+      // that failed is not an add_to_cart.
+      track('add_to_cart', { product_id: productId, quantity, variant_id: variantId })
     } finally {
       setBusy(false)
     }

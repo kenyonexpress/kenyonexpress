@@ -1,8 +1,9 @@
 'use client'
 
+import { track } from '@/lib/analytics/tracker'
 import type { CartView } from '@/lib/cart/types'
 import { type CheckoutFormState, submitCheckout } from '@/server/actions/payments/checkout'
-import { useActionState } from 'react'
+import { useActionState, useEffect } from 'react'
 
 function shekels(value: number): string {
   return `₪${value.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
@@ -39,8 +40,23 @@ export default function CheckoutForm({
 
   const balanceAtBusiness = cart.balance_due_at_business
 
+  // Checkout funnel steps. This is a single-page checkout, so the steps are the
+  // sections a shopper actually has to clear: they are here (identity), they
+  // need to supply a shipping address (address), and they pressed pay
+  // (payment_redirect). Together with begin_checkout (emitted server-side once
+  // an order row exists) this separates "never started" from "started and
+  // dropped before an order existed".
+  useEffect(() => {
+    track('checkout_step', { step: 'identity' })
+    if (needsAddress) track('checkout_step', { step: 'address' })
+  }, [needsAddress])
+
   return (
-    <form action={formAction} className="checkout-page__grid">
+    <form
+      action={formAction}
+      onSubmit={() => track('checkout_step', { step: 'payment_redirect' })}
+      className="checkout-page__grid"
+    >
       <input type="hidden" name="client_ref" value={clientRef} />
       <input type="hidden" name="needs_address" value={needsAddress ? 'true' : 'false'} />
 

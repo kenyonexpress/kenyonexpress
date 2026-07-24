@@ -1,3 +1,5 @@
+import AnalyticsProvider from '@/components/analytics/AnalyticsProvider'
+import ConsentBanner from '@/components/analytics/ConsentBanner'
 import type { Metadata } from 'next'
 import { Heebo } from 'next/font/google'
 import './globals.css'
@@ -26,7 +28,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="he" dir="rtl" className={`${heebo.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-background text-foreground">{children}</body>
+      <body className="min-h-full flex flex-col bg-background text-foreground">
+        {children}
+        <AnalyticsProvider />
+        <ConsentBanner />
+      </body>
     </html>
   )
 }
