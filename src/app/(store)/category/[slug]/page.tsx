@@ -1,3 +1,4 @@
+import ViewTracker from '@/components/analytics/ViewTracker'
 import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/CategoryBreadcrumb'
 import CategoryControlBar from '@/components/category/CategoryControlBar'
 import CategoryProductCard, {
@@ -97,6 +98,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
 
   return (
     <div className="category-page">
+      <ViewTracker event="view_category" props={{ category_id: category.id }} />
       <div className="category-page__inner">
         <CategoryBreadcrumb items={crumbs} />
 

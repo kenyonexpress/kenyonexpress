@@ -1,3 +1,4 @@
+import ViewTracker from '@/components/analytics/ViewTracker'
 import ProductGallery from '@/components/storefront/ProductGallery'
 import ProductInfo from '@/components/storefront/ProductInfo'
 import RelatedProducts from '@/components/storefront/RelatedProducts'
@@ -104,6 +105,16 @@ export default async function ProductPage({ params }: Props) {
 
   return (
     <div className="max-w-page mx-auto px-4 py-6 space-y-8">
+      <ViewTracker
+        event="view_product"
+        props={{
+          product_id: product.id,
+          category_id: product.category_id,
+          price_ils: product.kenyon_price,
+          product_type: product.type,
+        }}
+      />
+
       {/* Breadcrumb */}
       <nav
         className="text-sm text-gray-500 flex items-center gap-1.5 flex-wrap"

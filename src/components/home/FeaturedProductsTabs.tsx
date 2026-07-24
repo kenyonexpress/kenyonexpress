@@ -40,9 +40,7 @@ export default function FeaturedProductsTabs({ products }: { products: Product[]
               onClick={() => setActive(t.id)}
               aria-pressed={active === t.id}
               className={`rounded-md px-3 py-1.5 text-sm font-semibold transition-colors ${
-                active === t.id
-                  ? 'bg-brand-primary text-heading'
-                  : 'text-muted hover:text-heading'
+                active === t.id ? 'bg-brand-primary text-heading' : 'text-muted hover:text-heading'
               }`}
             >
               {t.label}

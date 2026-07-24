@@ -12,6 +12,11 @@ import {
   beginCheckoutInputSchema,
 } from '@/lib/validations/checkout'
 import { getCart } from '@/server/actions/cart'
+import {
+  linkAnalyticsIdentity,
+  stampOrderAttribution,
+  trackServerEvent,
+} from '@/server/analytics/track'
 import { type SettlementLineInput, calculateSettlement } from '@/server/domain/orders/settlement'
 import { finalizeOrder } from '@/server/payments/finalize'
 import { redirect } from 'next/navigation'
@@ -252,6 +257,21 @@ export async function beginCheckout(
     await admin.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
     return { ok: false, error: `שמירת פריטי הזמנה נכשלה: ${itemsError.message}`, code: 'INTERNAL' }
   }
+
+  // Analytics: the order now exists, so this is the real "checkout started"
+  // moment. All three calls swallow their own errors; none can fail a checkout.
+  await stampOrderAttribution(order.id)
+  await linkAnalyticsIdentity(user.id)
+  await trackServerEvent({
+    eventName: 'begin_checkout',
+    userId: user.id,
+    path: '/checkout',
+    props: {
+      order_id: order.id,
+      items_count: cart.items.length,
+      cart_total_ils: agorotToIls(settlement.faceValue),
+    },
+  })
 
   // 5. Wallet covers everything: finalize without a provider round-trip
   if (settlement.cardCharge === 0) {
