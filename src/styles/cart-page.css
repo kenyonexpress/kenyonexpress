@@ -103,15 +103,18 @@
   border: 1px solid #ddd;
   border-radius: 14px;
   overflow: hidden;
-  height: 39.98px;
+  min-height: 44px;
+  height: 44px;
 }
 
 .cart-line__qty-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   color: #515151;
   transition: background 0.15s;
 }
@@ -143,8 +146,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   color: #a7a7a7;
   border-radius: 0.375rem;
   transition: color 0.15s, background 0.15s;

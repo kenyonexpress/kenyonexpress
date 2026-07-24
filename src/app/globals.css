@@ -50,6 +50,8 @@
   --header-height: 70px;
   /* Single source of truth for page container width -> generates `max-w-page`. */
   --container-page: 1320px;
+  /* WCAG 2.5.5 / Apple HIG minimum interactive target */
+  --touch-target: 44px;
 }
 
 body {

@@ -10,7 +10,7 @@ export default function MastheadNav() {
       <Link
         href="/wishlist"
         aria-label="מועדפים"
-        className="transition-opacity hover:opacity-70"
+        className="inline-flex min-h-11 min-w-11 items-center justify-center transition-opacity hover:opacity-70"
         style={{ color: ICON.color }}
       >
         <Heart size={ICON.size} strokeWidth={ICON.strokeWidth} aria-hidden="true" />
@@ -19,7 +19,7 @@ export default function MastheadNav() {
       <Link
         href="/login"
         aria-label="החשבון שלי"
-        className="transition-opacity hover:opacity-70"
+        className="inline-flex min-h-11 min-w-11 items-center justify-center transition-opacity hover:opacity-70"
         style={{ color: ICON.color }}
       >
         <User size={ICON.size} strokeWidth={ICON.strokeWidth} aria-hidden="true" />

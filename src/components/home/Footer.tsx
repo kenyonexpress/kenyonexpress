@@ -111,7 +111,7 @@ export default function Footer() {
                 <button
                   key={label}
                   type="button"
-                  className="w-9 h-9 rounded-full bg-white/10 hover:bg-brand-primary hover:text-heading flex items-center justify-center transition-colors"
+                  className="flex h-11 w-11 min-h-11 min-w-11 items-center justify-center rounded-full bg-white/10 hover:bg-brand-primary hover:text-heading transition-colors"
                   aria-label={label}
                 >
                   <Icon className="w-4 h-4" aria-hidden="true" />

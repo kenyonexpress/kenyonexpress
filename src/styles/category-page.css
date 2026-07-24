@@ -339,11 +339,12 @@
   margin-bottom: 7px;
 }
 
-/* Add-to-cart icon: measured 37x34 circle, transparent bg, radius 22 */
+/* Add-to-cart icon: measured 37x34 circle visually; hit area padded to 44x44 */
 .category-card__atc {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  position: relative;
   width: var(--cat-atc-w);
   height: var(--cat-atc-h);
   flex: 0 0 auto;
@@ -352,6 +353,16 @@
   background: transparent;
   color: var(--cat-ink);
   cursor: pointer;
+}
+
+.category-card__atc::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
 }
 
 .category-card__atc:hover {

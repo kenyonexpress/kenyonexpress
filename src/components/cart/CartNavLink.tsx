@@ -20,7 +20,7 @@ export default function CartNavLink() {
       onClick={openDrawer}
       aria-label={label}
       aria-haspopup="dialog"
-      className={`flex items-center gap-1.5 transition-opacity hover:opacity-70 ${isPending ? 'opacity-70' : ''}`}
+      className={`inline-flex min-h-11 items-center gap-1.5 transition-opacity hover:opacity-70 ${isPending ? 'opacity-70' : ''}`}
       style={{ color: ICON.color }}
     >
       <span className="relative">
