@@ -1,10 +1,97 @@
 # KenyonExpress State
 
-Date: 2026-07-23.
+Date: 2026-07-24.
 
 ## Current Phase
-**Phase 5 storefront + commerce מחווט**. branch `phase5/homepage`.
-רץ מרתון 20 יעדי /goal (סשן 2026-07-23): יעדים 1-3 הושלמו.
+**אחרי יום המיזוג (2026-07-24)**: כל עבודת הלילה אוחדה לתוך `phase5/homepage`.
+עץ יחיד, רצף מיגרציות יחיד 001..065, ‏413 בדיקות vitest ירוקות, ‏build נקי,
+‏reset מלא מאפס עובר.
+
+## יום המיזוג 2026-07-24: מה מוזג, מה נמחק, מה פתוח
+
+### מוזג לתוך phase5/homepage (לפי סדר)
+1. ‏`checkout/v1` (בולע את `arch/master-v2`, ‏`arch/money-ledger`,
+   ‏`phase6/complete-architecture`): אדמין RBAC (‏support role, מטריצת sections,
+   טבלאות RSC, ‏orders + audit-log), ספריות money/ledger/idempotency, מכונת
+   מצבים להזמנות, מסמכי הארכיטקטורה, משפחת מיגרציות ה-ledger.
+2. ‏`arch/checkout-cardcom`: ‏`CHECKOUT-ARCHITECTURE.md` (עם הערת דריסה של
+   המודל המחייב).
+3. ‏`feat/voucher-redemption`: דומיין הוואוצ'רים (88 בדיקות), ‏API מימוש, מסך
+   סריקה לספק, עמוד ואוצ'רים ללקוח. **המימוש הקנוני של מודל המחיר המוחלט**:
+   ‏`products.coupon_price_ils`.
+4. ‏`feat/account-wallet`: אזור אישי + ארנק פנימי + ‏cashback_rules + בדיקות RLS.
+5. ‏`feat/catalog-pages`: ‏22 קומיטים של עבודת 1:1 מדודה (טוקנים, גריד מלא,
+   פילטרים מתחת, ‏header ‏126+1px). דרס את בלוק ה-custom-price של הבוקר
+   (נמדד: מופיע רק ב-6/24 כרטיסים בחי, קלט חופשי של סוחר).
+6. ‏`feat/analytics-bi`: ‏pipeline אירועים צד-ראשון, מנוע אגרגציה (57 בדיקות),
+   דשבורד ‏`/admin/analytics`, ‏pg_cron.
+7. ‏`feat/testing-cicd`: ‏GitHub Actions עם lint gate רגרסיבי, ‏E2E אורח,
+   ‏seed אידמפוטנטי, רצפות coverage לנתיב הכסף.
+8. ‏`feat/wp-migration`: ‏ETL חמישה שלבים (יבש כברירת מחדל), ‏dedup תוכן-כתובת
+   למדיה, ‏migration_log + rollback.
+9. ‏`infra/audit`: ‏INFRA-AUDIT.md, ‏WP-DATA-MIGRATION.md, ‏security headers
+   ב-`next.config.ts`.
+10. ‏`phase6/admin`: קוקפיט יומי, קונסולות payments/coupons/affiliates,
+    ‏users 360. פעולת שינוי role מריצה עכשיו את שתי שכבות ההגנה + audit log.
+
+### הכרעות מודל ביום המיזוג (המודל המחייב דרס)
+- מחיר קופון = סכום מוחלט שאדמין קובע. עמודות ה-GENERATED ‏10%/90% של
+  ‏coupon_deals הוסרו מ-059 והוחלפו ב-`coupon_price_agorot` רגילה עם backfill.
+  ‏C4 ו-C11 מוכרעות: הפלטפורמה שומרת 100% ממחיר הקופון, הספק מקבל 0.
+- ‏`wip/checkout-foundation` + ‏`phase6/checkout-foundation` (ניסוי Stripe)
+  נדחו במלואם: PSP שגוי, מע"מ קבוע 18%, checkout שדורש התחברות בניגוד
+  ל-Guest Cart. תג הצלה מקומי: ‏`archive/stripe-checkout-foundation`.
+- מסמכי MASTER/CHECKOUT ARCHITECTURE קיבלו הערת דריסה: כל נוסחת אחוז-מהמחיר
+  לקופון בטלה; ‏`platform_percent` נשאר לפיצול פיזי בלבד.
+
+### רצף המיגרציות הסופי
+- ‏052 approval, ‏053 support (תוקן: ‏deleted_at מותנה), ‏054 vouchers,
+  ‏055 account wallet, ‏056 analytics v3, ‏057 wp_migration_log: **חלות עכשיו**.
+- ‏058-065 (‏ledger, אגורות, ‏idempotency, ‏coupon single-use, ‏settlement,
+  ‏reconciliation, ‏money RLS, ‏fn_post_journal): **קבצים בלבד עד cutover קוד**.
+  ‏059 משנה שמות עמודות שהקוד הרץ קורא.
+- אומת: ‏`supabase db reset --local` מאפס, ‏65/65 עוברות, ‏211 policies,
+  ‏0 טבלאות בלי RLS, מדיניות content_uploader (13) וספקים (21) שרדו.
+
+### נמחק
+- ‏24 ענפים מקומיים + ‏25 ענפי origin (כל ענפי הלילה והכפולים). נשארו:
+  ‏`phase5/homepage`, ‏`cursor/add-supabase-3c830` (ברירת מחדל ל-PR), ‏`main`,
+  ‏`feat/visual-polish` (סשן מקביל פעיל), ‏`claude/terminal-cursor-work-*`.
+- ‏21 worktrees של הלילה הוסרו. נשארו: הראשי + ‏`ke-visual` (סשן מקביל, לא שלי
+  למחוק).
+
+### ⚠️ דריסת bypassPermissions: הוחזרה, ממתינה להחלטה שלך
+שלושה snapshot-ענפים, ‏stash בשם "settings", ‏infra/audit ו-phase6/admin
+(‏c125a2e, בטענת "per owner request") כולם ניסו להחליף את
+‏`.claude/settings.json` ב-`bypassPermissions` + ‏`Bash(*)` ולמחוק את שערי
+ה-ask על commit/push. **לא מוזג, פעמיים הוחזר** (‏c494475, ‏78237f0): שינוי
+מדיניות הרשאות קבוע לא עובר בתוך merge, והוא סותר את חוק 4 שלך. אם אתה באמת
+רוצה bypassPermissions, זו החלטה מפורשת שלך ב-commit ייעודי. ה-stash עדיין
+קיים (`stash@{0}` על arch/master-v2 שנמחק).
+
+### אירועי סשן מקביל ביום המיזוג
+- באמצע מיזוג analytics סשן אחר יצר את `feat/visual-polish` והחליף את הענף
+  ב-worktree הראשי; קומיט המיזוג נחת עליו. תוקן: הענף הוחזר לנקודת היצירה,
+  ‏phase5/homepage קודם, ההורות נרשמה ב-merge ‎-s ours.
+- שלוש פקודות `drizzle-kit migrate/push` הודבקו לצ'אט באמצע העבודה. לא הורצו:
+  ‏push מחיל diff הרסני של סכימה ישנה על פרודקשן, בניגוד לאיסור המפורש של
+  היעד. ‏`drizzle.config.ts` מועמד למחיקה.
+
+### פתוח אחרי יום המיזוג
+1. החלת 052..057 על הפרודקשן דרך MCP (סשן נפרד, עם גיבוי).
+2. מילוי `coupon_price_ils` באדמין לכל מוצר קופון + חשיפת `platform_percent`
+   ו-`coupon_expiry_days` בטופס (עדיין חסר).
+3. ‏cutover אגורות (קוד קורא `*_agorot`) ואז החלת 058-065.
+4. חיווט ה-checkout ל-`products.coupon_price_ils` (הקוד הישן עדיין גוזר אחוז).
+5. ‏nonce ל-CSP דרך `src/proxy.ts` (במקום `unsafe-inline`).
+6. ‏G1: ‏`payment_webhook_events` בלי טריגר append-only.
+7. מע"מ: משפחת ה-ledger מקודדת 17%; לאמת מול השיעור בתוקף לפני cutover.
+8. ‏Playwright E2E מלא מול stack מקומי עם seed (לא הורץ ביום המיזוג).
+
+### מסמכי פריסה חדשים (יעד שני של היום)
+‏`ARCHITECTURE-DEPLOYMENT.md` (טופולוגיה, env, headers, סדר החלה),
+‏`GO-LIVE.md` (צ'קליסט שערים), ‏`.env.example` הושלם (R2, Meilisearch,
+Cardcom base, WP-import, voucher QR).
 
 ## ענף feat/account-wallet (worktree `ke-account`, 2026-07-24)
 
