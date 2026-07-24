@@ -75,7 +75,7 @@ export default function CategoryDialog({ open, onClose, category, parentOptions 
         <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
         <Dialog.Content
           dir="rtl"
-          className="fixed right-1/2 top-1/2 -translate-y-1/2 translate-x-1/2 z-50 w-full max-w-lg bg-white rounded-2xl shadow-xl p-6 max-h-[90vh] overflow-y-auto"
+          className="fixed inset-x-0 mx-auto top-1/2 -translate-y-1/2 z-50 w-full max-w-lg bg-white rounded-2xl shadow-xl p-6 max-h-[90vh] overflow-y-auto"
         >
           <div className="flex items-center justify-between mb-5">
             <Dialog.Title className="text-lg font-bold text-gray-900">

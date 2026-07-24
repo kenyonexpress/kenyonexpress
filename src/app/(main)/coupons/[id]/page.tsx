@@ -46,7 +46,7 @@ export default async function CouponDealPage({ params }: Props) {
               <Tag size={48} />
             </div>
           )}
-          <div className="absolute top-3 right-3 bg-brand text-white text-sm font-bold px-3 py-1.5 rounded-lg">
+          <div className="absolute top-3 end-3 bg-brand text-white text-sm font-bold px-3 py-1.5 rounded-lg">
             {discountPct}% הנחה
           </div>
         </div>

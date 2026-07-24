@@ -333,7 +333,7 @@ function CouponPreviewCard({
             <Tag size={40} />
           </div>
         )}
-        <div className="absolute top-2 right-2 bg-brand text-brand-dark text-xs font-bold px-2 py-1 rounded-lg">
+        <div className="absolute top-2 end-2 bg-brand text-brand-dark text-xs font-bold px-2 py-1 rounded-lg">
           {discountPct}% הנחה
         </div>
       </div>

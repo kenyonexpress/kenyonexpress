@@ -6,61 +6,19 @@ should be replaced with logical properties that flip automatically.
 
 ## Summary
 
-- Generated: 2026-07-22
-- Files scanned: 206
-- Files with violations: 16
-- Total violations: 35
+- Generated: 2026-07-24
+- Files scanned: 314
+- Files with violations: 1
+- Total violations: 1
 
 ### By token
 
 | Physical | Count |
 | --- | --- |
-| `pl-` | 7 |
-| `text-right` | 6 |
-| `left-` | 6 |
-| `right-` | 5 |
-| `pr-` | 4 |
-| `mr-` | 2 |
-| `border-l` | 2 |
-| `ml-` | 2 |
-| `text-left` | 1 |
+| `left-` | 1 |
 
 ## Violations
 
 | File | Line | Physical | Logical replacement |
 | --- | --- | --- | --- |
-| src/app/(admin)/admin/audit-log/page.tsx | 40 | `text-right` | `text-end` |
-| src/app/(admin)/admin/orders/[id]/page.tsx | 74 | `text-right` | `text-end` |
-| src/app/(admin)/admin/orders/page.tsx | 56 | `mr-` | `me-` |
-| src/app/(admin)/admin/orders/page.tsx | 82 | `text-right` | `text-end` |
-| src/app/(admin)/admin/suppliers/[id]/VendorDetailClient.tsx | 70 | `left-` | `start-` |
-| src/app/(admin)/admin/suppliers/page.tsx | 62 | `mr-` | `me-` |
-| src/app/(admin)/admin/suppliers/page.tsx | 75 | `text-right` | `text-end` |
-| src/app/(auth)/signup/SignupForm.tsx | 116 | `text-right` | `text-end` |
-| src/app/(main)/coupons/[id]/page.tsx | 49 | `right-` | `end-` |
-| src/components/admin/CategoryDialog.tsx | 78 | `right-` | `end-` |
-| src/components/admin/CouponDealForm.tsx | 336 | `right-` | `end-` |
-| src/components/admin/ProductForm.tsx | 330 | `text-right` | `text-end` |
-| src/components/CouponCard.tsx | 40 | `right-` | `end-` |
-| src/components/home/BenefitBar.tsx | 21 | `border-l` | `border-s` |
-| src/components/home/BenefitBar.tsx | 21 | `border-l` | `border-s` |
 | src/components/home/HeroSlider.tsx | 329 | `left-` | `start-` |
-| src/components/ui/dialog.tsx | 41 | `left-` | `start-` |
-| src/components/ui/dialog.tsx | 47 | `right-` | `end-` |
-| src/components/ui/dialog.tsx | 57 | `text-left` | `text-start` |
-| src/components/ui/dropdown-menu.tsx | 31 | `pl-` | `ps-` |
-| src/components/ui/dropdown-menu.tsx | 37 | `ml-` | `ms-` |
-| src/components/ui/dropdown-menu.tsx | 85 | `pl-` | `ps-` |
-| src/components/ui/dropdown-menu.tsx | 100 | `pl-` | `ps-` |
-| src/components/ui/dropdown-menu.tsx | 100 | `pr-` | `pe-` |
-| src/components/ui/dropdown-menu.tsx | 106 | `left-` | `start-` |
-| src/components/ui/dropdown-menu.tsx | 123 | `pl-` | `ps-` |
-| src/components/ui/dropdown-menu.tsx | 123 | `pr-` | `pe-` |
-| src/components/ui/dropdown-menu.tsx | 128 | `left-` | `start-` |
-| src/components/ui/dropdown-menu.tsx | 146 | `pl-` | `ps-` |
-| src/components/ui/dropdown-menu.tsx | 165 | `ml-` | `ms-` |
-| src/components/ui/select.tsx | 101 | `pl-` | `ps-` |
-| src/components/ui/select.tsx | 101 | `pr-` | `pe-` |
-| src/components/ui/select.tsx | 114 | `pl-` | `ps-` |
-| src/components/ui/select.tsx | 114 | `pr-` | `pe-` |
-| src/components/ui/select.tsx | 119 | `left-` | `start-` |

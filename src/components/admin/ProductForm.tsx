@@ -649,7 +649,7 @@ export default function ProductForm({ product, variants: initVariants = [], cate
           <div className="border border-gray-200 rounded-xl overflow-hidden">
             <table className="w-full text-xs">
               <thead>
-                <tr className="bg-gray-50 text-gray-500 border-b border-gray-200 text-right">
+                <tr className="bg-gray-50 text-gray-500 border-b border-gray-200 text-end">
                   <th className="px-3 py-2 font-medium">שם</th>
                   <th className="px-3 py-2 font-medium">SKU</th>
                   <th className="px-3 py-2 font-medium">מחיר (₪)</th>

@@ -62,7 +62,7 @@ export default async function AdminVendorsPage({ searchParams }: Props) {
           </Link>
         ))}
 
-        <form method="GET" action="/admin/suppliers" className="mr-auto">
+        <form method="GET" action="/admin/suppliers" className="me-auto">
           <input
             name="q"
             defaultValue={q}
@@ -75,7 +75,7 @@ export default async function AdminVendorsPage({ searchParams }: Props) {
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-right text-xs text-gray-500 bg-gray-50 border-b border-gray-200">
+            <tr className="text-end text-xs text-gray-500 bg-gray-50 border-b border-gray-200">
               <th className="px-5 py-3 font-medium">שם עסק</th>
               <th className="px-5 py-3 font-medium">ח.פ</th>
               <th className="px-5 py-3 font-medium">אימייל</th>

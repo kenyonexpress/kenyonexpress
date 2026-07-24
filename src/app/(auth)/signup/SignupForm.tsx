@@ -113,7 +113,7 @@ export default function SignupForm({ next }: Props) {
             autoComplete="tel"
             placeholder="050-1234567"
             dir="ltr"
-            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent text-right"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent text-start"
           />
           <p className="mt-1 text-xs text-gray-400">מספר ישראלי (050, 052, 054 וכו׳)</p>
         </div>

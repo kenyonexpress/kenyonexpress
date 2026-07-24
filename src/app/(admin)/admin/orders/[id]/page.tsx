@@ -99,7 +99,7 @@ export default async function OrderDetailPage({ params }: Props) {
         </div>
         <table className="w-full text-sm">
           <thead>
-            <tr className="text-right text-xs text-gray-500 bg-gray-50 border-b border-gray-200">
+            <tr className="text-end text-xs text-gray-500 bg-gray-50 border-b border-gray-200">
               <th className="px-5 py-2.5 font-medium">מוצר</th>
               <th className="px-5 py-2.5 font-medium">ספק</th>
               <th className="px-5 py-2.5 font-medium">כמות</th>

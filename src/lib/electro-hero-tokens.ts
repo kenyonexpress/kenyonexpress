@@ -91,9 +91,9 @@ export const ELECTRO_HERO = {
   },
   /**
    * Top categories row (below the hero, above the USP bar). Matches ke_live /
-   * electro home-v7: a 5-up strip right-offset inside the page container
-   * (x577-1305 @ 1440px), not page-centred. RTL order: first item renders
-   * at the inline-start (visual right).
+   * electro home-v7: a 5-up strip with inline-end offset inside the page
+   * container (x577-1305 @ 1440px), not page-centred. RTL order: first item
+   * renders at the inline-start (visual end).
    */
   categoryStrip: {
     height: 170,
