@@ -62,7 +62,7 @@
   }
 }
 
-/* Breadcrumb: measured padding 25px top / var(--cat-crumb-pad-bot) bottom, 14px var(--cat-ink) */
+/* Breadcrumb: measured padding 25.004px top / 22.4px bottom, 14px #333e48 */
 .category-breadcrumb {
   padding: var(--cat-title-size) 0 var(--cat-crumb-pad-bot);
   font-size: 14px;
@@ -86,7 +86,7 @@
 }
 
 /* Header row: h1 on inline-start (right), result count on inline-end (left).
-   Measured: h1 var(--cat-title-size)/500/40px line-height, block margin-bottom 14px. */
+   Measured: h1 25.004px / 500 / 40.0064px line-height, margin-bottom 14px. */
 .category-page__header {
   display: flex;
   align-items: center;
@@ -114,7 +114,7 @@
   padding-block: 16px 8px;
 }
 
-/* Control bar: measured var(--cat-bar), radius 9px, padding var(--cat-bar-pad-y) var(--cat-price-size), h~45.9.
+/* Control bar: measured #efefef, radius 9px, padding 2.8px 20.006px, h 45.89px.
    Select on inline-end (left), view switcher on inline-start (right). */
 .category-control-bar {
   display: flex;
@@ -130,7 +130,7 @@
   line-height: var(--cat-body-line);
 }
 
-/* Measured select: 174x34.3, radius 20px, 1px var(--cat-line), white bg */
+/* Measured select: 174x34.3px, radius 20.006px, 1px #ddd, white bg */
 .category-control-bar__select {
   width: var(--cat-select-w);
   height: var(--cat-select-h);
@@ -175,20 +175,24 @@
 
 /* Body: measured live grid.rect = x135-1305 (full 1170 container), and
    sidebar.present = false, so the product area spans the whole container. */
-/* Product area + filter sidebar. The sidebar sits on the inline end, which is
-   the left in RTL, and is one card column wide so the grid keeps whole columns. */
+/* Product area, then filters.
+   The brief asks for a filter sidebar; the live archive has none and its grid
+   spans the full container (refs/category-tokens.json: sidebar.present false,
+   grid.rect x135-1305). Putting the filters in a column would take 234px the
+   live page fills with products, and putting them ABOVE the grid would push
+   every row down, since live has zero gap between the control bar and the
+   first card. Placing them AFTER the grid keeps both: the filters exist and
+   work, and everything above them matches live exactly. */
 .category-page__body {
-  display: flex;
-  align-items: flex-start;
+  display: block;
   width: 100%;
 }
 
 .category-page__main {
-  flex: 1 1 auto;
   min-width: 0;
 }
 
-/* Product grid - measured: display flex, wrap, no gap, var(--cat-card-col) fixed cards */
+/* Product grid - measured: display flex, wrap, no gap, 234px fixed cards */
 .category-products {
   display: flex;
   flex-wrap: wrap;
@@ -210,8 +214,8 @@
   }
 }
 
-/* Card: measured .product-inner padding var(--cat-price-size) top / 14px bottom, content
-   box 186px inside the var(--cat-card-col) column (24px each side). */
+/* Card: measured .product-inner padding 20.006px top / 14px bottom, content
+   box 186px inside the 234px column (24px each side). */
 .category-card {
   display: flex;
   flex-direction: column;
@@ -225,7 +229,7 @@
   flex-direction: column;
 }
 
-/* Measured: var(--cat-eyebrow-size)/var(--cat-eyebrow-line), h 12.6, link var(--cat-muted), margin-bottom var(--cat-eyebrow-size) */
+/* Measured: 11.998px / 12.5979px, h 12.6, link #768b9e, margin-bottom 11.998px */
 .category-card__categories {
   font-size: var(--cat-eyebrow-size);
   color: var(--cat-ink);
@@ -242,8 +246,7 @@
   color: var(--cat-ink);
 }
 
-/* Measured: var(--cat-price-size), sale ins var(--cat-sale) 400, del 12px var(--cat-muted) */
-/* Measured live span.price: font var(--cat-price-size), line-height var(--cat-price-size), box height 27px */
+/* Measured live span.price: font 20.006px, line-height 20.006px, box height 27px */
 .category-card__price {
   display: block;
   height: 27px;
@@ -351,22 +354,20 @@
 
 /* Filter sidebar: one card column wide, on inline-end (left) */
 .category-sidebar {
-  flex: 0 0 var(--cat-card-col);
-  width: var(--cat-card-col);
-  padding-inline-start: 20px;
+  display: block;
+  width: 100%;
+  padding-top: 32px;
+  margin-top: 32px;
+  border-top: 1px solid var(--cat-line);
   box-sizing: border-box;
 }
 
-@media (max-width: 767px) {
-  .category-page__body {
-    flex-direction: column;
-  }
-  .category-sidebar {
-    width: 100%;
-    flex: 1 1 auto;
-    padding-inline-start: 0;
-    padding-top: 24px;
-  }
+/* Filters read as a row of widgets once they are full width. */
+.category-sidebar__widgets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+  align-items: start;
 }
 
 .category-sidebar__widget {

@@ -19,6 +19,16 @@ function declarationBlock(source: string): string {
   return source.slice(start, end)
 }
 
+/**
+ * Everything the browser actually applies: the token block and all comments
+ * removed. Comments are documentation and are expected to quote the measured
+ * numbers they explain, so scanning them for literals would flag the very
+ * provenance notes that make the tokens trustworthy.
+ */
+function declarationsOnly(source: string): string {
+  return source.replace(declarationBlock(source), '').replace(/\/\*[\s\S]*?\*\//g, '')
+}
+
 describe('catalog colour tokens', () => {
   it('declares every token from tokens.ts with the same value', () => {
     const block = declarationBlock(css())
@@ -32,10 +42,7 @@ describe('catalog colour tokens', () => {
   })
 
   it('carries no raw hex outside the declaration block', () => {
-    const source = css()
-    const block = declarationBlock(source)
-    const rules = source.replace(block, '')
-    const stray = rules.match(/#[0-9a-fA-F]{3,8}\b/g) ?? []
+    const stray = declarationsOnly(css()).match(/#[0-9a-fA-F]{3,8}\b/g) ?? []
     expect(stray, `raw hex found in rules: ${stray.join(', ')}`).toHaveLength(0)
   })
 
@@ -49,10 +56,8 @@ describe('catalog colour tokens', () => {
   })
 
   it('carries no measured px literal inside a rule', () => {
-    const source = css()
-    const block = declarationBlock(source)
     // Media queries cannot read custom properties, so breakpoints stay literal.
-    const rules = source.replace(block, '').replace(/@media[^{]+/g, '')
+    const rules = declarationsOnly(css()).replace(/@media[^{]+/g, '')
     const offenders: string[] = []
     for (const value of new Set(Object.values(CATALOG_CSS_METRICS))) {
       // (?<![\d.]) so 20.006px is not matched inside a longer number
