@@ -50,17 +50,27 @@ if (page === 'home') {
 } else if (page === 'product') {
   liveUrl ??= LIVE_PRODUCT
   if (!mineUrl) {
+    const preferred = `${LOCAL}/product/${encodeURI('מוצר-לדוגמא')}`
     const probe = await ctx.newPage()
-    await probe.goto(`${LOCAL}/products`, { waitUntil: 'networkidle' }).catch(() => {})
-    const href = await probe
-      .evaluate(() => {
-        const a = document.querySelector('a[href*="/product/"]')
-        return a ? a.getAttribute('href') : null
-      })
-      .catch(() => null)
+    const preferredOk = await probe
+      .goto(preferred, { waitUntil: 'domcontentloaded', timeout: 30000 })
+      .then((r) => r?.ok())
+      .catch(() => false)
+    if (preferredOk) {
+      mineUrl = preferred
+      console.log(`product: using matching demo slug -> ${mineUrl}`)
+    } else {
+      await probe.goto(`${LOCAL}/products`, { waitUntil: 'networkidle' }).catch(() => {})
+      const href = await probe
+        .evaluate(() => {
+          const a = document.querySelector('a[href*="/product/"]')
+          return a ? a.getAttribute('href') : null
+        })
+        .catch(() => null)
+      mineUrl = href ? `${LOCAL}${href.startsWith('/') ? '' : '/'}${href}` : `${LOCAL}/product/`
+      console.log(`product: discovered local slug -> ${mineUrl}`)
+    }
     await probe.close()
-    mineUrl = href ? `${LOCAL}${href.startsWith('/') ? '' : '/'}${href}` : `${LOCAL}/product/`
-    console.log(`product: discovered local slug -> ${mineUrl}`)
   }
 } else if (page === 'category') {
   liveUrl ??= LIVE_CATEGORY

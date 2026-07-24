@@ -370,6 +370,25 @@
   border-color: var(--cat-brand-hover);
 }
 
+/* Measured live .custom-price-wrapper: height 72, two plain ink lines at
+   14px / body-line (weight 400, no strike), inline-start aligned, separated by a
+   <br>. Reproduces the live block geometry (see CategoryProductCard). */
+.category-card__custom-price {
+  height: 72px;
+  font-size: 14px;
+  line-height: var(--cat-body-line);
+  color: var(--cat-ink);
+  text-align: start;
+}
+
+.category-card__custom-price .full-price,
+.category-card__custom-price .discount-price {
+  font-size: 14px;
+  line-height: var(--cat-body-line);
+  font-weight: 400;
+  color: var(--cat-ink);
+}
+
 /* Filter sidebar: one card column wide, on inline-end (left) */
 .category-sidebar {
   display: block;

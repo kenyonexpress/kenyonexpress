@@ -1,11 +1,10 @@
 import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/CategoryBreadcrumb'
-import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
 import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
 import SearchBox from '@/components/search/SearchBox'
-import { type ProductTypeFilter, getAllCategories, parseProductType } from '@/lib/category-page'
+import { type ProductTypeFilter, parseProductType } from '@/lib/category-page'
 import { searchProductsCached } from '@/lib/search-server'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
@@ -33,13 +32,8 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 
 /** Count and grid share one search call via searchProductsCached. */
 async function ResultCount({ q, productType }: { q: string; productType?: ProductTypeFilter }) {
-  const { total, engine } = await searchProductsCached(q, 48, productType)
-  return (
-    <p className="category-page__count">
-      נמצאו {total} מוצרים
-      {engine === 'meilisearch' && ' · Meilisearch'}
-    </p>
-  )
+  const { total } = await searchProductsCached(q, 48, productType)
+  return <p className="category-page__count">נמצאו {total} מוצרים</p>
 }
 
 async function ResultGrid({ q, productType }: { q: string; productType?: ProductTypeFilter }) {
@@ -77,9 +71,6 @@ export default async function SearchPage({ searchParams }: Props) {
   const q = firstStr(sp.q).trim()
   const productType = parseProductType(sp.type)
 
-  // Shell only. The search itself streams in behind the boundaries below.
-  const allCategories = await getAllCategories()
-
   return (
     <div className="category-page">
       <div className="category-page__inner">
@@ -100,6 +91,7 @@ export default async function SearchPage({ searchParams }: Props) {
           <SearchBox defaultValue={q} />
         </div>
 
+        {/* Live WP search has no filter chrome; keep the grid full-width. */}
         <div className="category-page__body">
           <div className="category-page__main">
             {q.length < MIN_QUERY ? (
@@ -112,13 +104,6 @@ export default async function SearchPage({ searchParams }: Props) {
               </Suspense>
             )}
           </div>
-
-          <CategoryFilterSidebar
-            categories={allCategories}
-            priceMin={undefined}
-            priceMax={undefined}
-            productType={productType}
-          />
         </div>
       </div>
     </div>
