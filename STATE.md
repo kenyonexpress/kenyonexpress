@@ -1,3 +1,24 @@
+# KenyonExpress — Project State
+
+Updated: 2026-07-24 (אחרי תיקון כללי העסקים)
+
+## Business Rules (final)
+- קופון: לקוח משלם באתר את מלא מחיר הקופון. השאר בבית העסק בסריקה. כל מה שנשאר אצל אופיר הוא מה שהלקוח שילם באתר.
+- מוצר פיזי: פיצול מיידי לפי platform_percent (שהוא מגדיר בדף). חלק לאופיר, השאר לספק.
+- עמלה: אחוז דינמי פר-מוצר, מצולם ל-order_items בזמן קנייה. אין אחוז קבוע.
+- אין Escrow.
+- כל דף מוצר מציג פרטי ספק.
+- כרגע: רק קופונים.
+
+## Next Phase
+1. דף קופון (1:1 מול האתר החי)
+2. דף עגלה + checkout end-to-end
+3. תקן את קוד התשלומים: src/server/payments/ + src/server/actions/payments/ (מכיל שאריות 5% + Escrow שגויים; אין packages/payments בפרויקט)
+
+---
+
+# היסטוריה (לא למחוק, פרוטוקול STATE)
+
 # KenyonExpress State
 
 Date: 2026-07-24.
