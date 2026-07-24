@@ -1,5 +1,6 @@
+import { timingSafeEqual } from 'node:crypto'
 import { cardcomWebhookPayloadSchema, isCardcomSuccess } from '@/lib/contracts/webhooks'
-import { getPaymentProvider, loadCardcomEnv, verifyCardcomSignature } from '@/lib/payments'
+import { getPaymentProvider, loadCardcomEnv } from '@/lib/payments'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { finalizeOrder } from '@/server/payments/finalize'
 import type { Json } from '@/types/database'
@@ -7,21 +8,32 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 export const runtime = 'nodejs'
 
+/** Constant-time string compare; false on any length/format mismatch. */
+function secretMatches(provided: string, expected: string): boolean {
+  if (!provided || !expected) return false
+  const a = Buffer.from(provided)
+  const b = Buffer.from(expected)
+  if (a.length !== b.length) return false
+  return timingSafeEqual(a, b)
+}
+
 /**
- * Cardcom webhook. Security posture (ARCHITECTURE-CHECKOUT-PAYMENT §3.3):
- * 1. Always log the event first, then act.
- * 2. Invalid signature: log, return 200, change nothing.
- * 3. Valid signature: still re-verify amount/status server-to-server; only the
- *    re-fetched result is trusted.
- * 4. Dedup on (provider, external_event_id); replays are 200 no-ops.
+ * Cardcom webhook (IndicatorUrl). Cardcom does NOT sign its callbacks — there is
+ * no HMAC or signature header to verify. Authenticity therefore rests on two
+ * things, never on the POST body:
+ * 1. An unguessable shared secret carried in the callback URL (`?s=`), which we
+ *    set when creating the Low Profile page.
+ * 2. Mandatory server-to-server re-verification via GetLpResult — the re-fetched
+ *    result is the ONLY trusted source of amount / status / token.
+ * Plus: log every event first, dedup on (provider, external_event_id), replays
+ * are 200 no-ops.
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const rawBody = await request.text()
   const env = loadCardcomEnv()
   const admin = createAdminClient()
 
-  const signature = request.headers.get('x-cardcom-signature') ?? request.headers.get('x-signature')
-  const signatureValid = verifyCardcomSignature(rawBody, signature, env.webhookSecret)
+  const secretOk = secretMatches(request.nextUrl.searchParams.get('s') ?? '', env.webhookSecret)
 
   let payloadJson: Json
   try {
@@ -39,7 +51,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const { error: eventError } = await admin.from('payment_webhook_events').insert({
     provider: 'cardcom',
     external_event_id: externalEventId,
-    signature_valid: signatureValid,
+    signature_valid: secretOk,
     verified_against_api: false,
     payload: payloadJson,
   })
@@ -48,7 +60,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true, replay: true })
   }
 
-  if (!signatureValid || !parsed.success) {
+  if (!secretOk || !parsed.success) {
     return NextResponse.json({ ok: true })
   }
   const payload = parsed.data

@@ -112,10 +112,13 @@ CREATE TRIGGER set_updated_at
   BEFORE UPDATE ON public.analytics_event_definitions
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
+-- NOTE: no audit_log_trigger_fn() here. That shared trigger (025) reads NEW.id /
+-- OLD.id and writes it into audit_log.entity_id (uuid NOT NULL). This registry
+-- keyed by event_name (text) has no id column, so attaching it made every
+-- INSERT/UPDATE/DELETE fail with 42703 (record "old" has no field "id"),
+-- including the seed INSERT right below. The table is admin-only via RLS and
+-- changes are rare; audit coverage is not worth a synthetic uuid PK.
 DROP TRIGGER IF EXISTS audit_analytics_event_definitions ON public.analytics_event_definitions;
-CREATE TRIGGER audit_analytics_event_definitions
-  AFTER INSERT OR UPDATE OR DELETE ON public.analytics_event_definitions
-  FOR EACH ROW EXECUTE FUNCTION public.audit_log_trigger_fn();
 
 INSERT INTO public.analytics_event_definitions
   (event_name, origin, required_props, description)

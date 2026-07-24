@@ -1,5 +1,9 @@
 # Architecture: Testing and CI/CD (KenyonExpress)
 
+> **גובר עליו `docs/CONTRADICTIONS.md` (2026-07-24).** כל מספר עמלה, ברירת מחדל
+> (10%/5%) או נוסח Escrow במסמך הזה הוא שריד. ההכרעה: `platform_percent`
+> פר-מוצר, חובה, בלי ברירת מחדל בשום מקום; ה-held הוא רישום פנימי ב-ledger בלבד.
+
 Status: FINAL DESIGN. Branch: `phase5/homepage`. Target branch for PRs: `cursor/add-supabase-3c830` (the current default branch, renamed to `main` at cutover).
 
 This document is the single source of truth for the testing strategy and the CI/CD pipeline. It is written for a marketplace that moves real money: Cardcom charges, a cashback wallet, per product commission splits, and single use coupons. A bug in the money path is lost money, so the test hierarchy here is inverted from the usual: money and atomicity first, UI second.

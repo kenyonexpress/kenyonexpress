@@ -238,6 +238,123 @@ export async function bulkUpdateProductStatus(
   return {}
 }
 
+export async function bulkAssignCategory(
+  ids: string[],
+  categoryId: string | null,
+): Promise<{ error?: string }> {
+  try {
+    await requireStaffSession()
+  } catch {
+    return { error: 'אין הרשאה' }
+  }
+  if (ids.length === 0) return { error: 'לא נבחרו מוצרים' }
+  if (categoryId != null && !z.string().uuid().safeParse(categoryId).success) {
+    return { error: 'קטגוריה לא תקינה' }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('products')
+    .update({ category_id: categoryId })
+    .in('id', ids)
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/products')
+  return {}
+}
+
+const bulkPriceSchema = z.discriminatedUnion('mode', [
+  // percent: -90..500, applied to kenyon_price AND full_price so the
+  // displayed discount ratio survives the adjustment
+  z.object({ mode: z.literal('percent'), value: z.coerce.number().min(-90).max(500) }),
+  // set: absolute kenyon_price in ILS
+  z.object({ mode: z.literal('set'), value: z.coerce.number().min(0.01) }),
+])
+
+export type BulkPriceInput = z.infer<typeof bulkPriceSchema>
+
+function round2(n: number): number {
+  return Math.round(n * 100) / 100
+}
+
+/**
+ * Bulk price update. Percent mode scales kenyon_price and full_price together;
+ * set mode writes kenyon_price and skips products whose full_price would fall
+ * below it (those are reported back, not silently broken).
+ */
+export async function bulkAdjustPrices(
+  ids: string[],
+  input: BulkPriceInput,
+): Promise<{ error?: string; updated?: number; skipped?: string[] }> {
+  try {
+    await requireStaffSession()
+  } catch {
+    return { error: 'אין הרשאה' }
+  }
+  if (ids.length === 0) return { error: 'לא נבחרו מוצרים' }
+
+  const parsed = bulkPriceSchema.safeParse(input)
+  if (!parsed.success) return { error: 'ערך מחיר לא תקין' }
+
+  const supabase = await createClient()
+  const { data: products, error: loadError } = await supabase
+    .from('products')
+    .select('id, name_he, kenyon_price, full_price')
+    .in('id', ids)
+  if (loadError) return { error: loadError.message }
+
+  let updated = 0
+  const skipped: string[] = []
+
+  for (const p of products ?? []) {
+    const current = Number(p.kenyon_price ?? 0)
+    if (parsed.data.mode === 'percent') {
+      const factor = 1 + parsed.data.value / 100
+      const patch: { kenyon_price: number; full_price?: number } = {
+        kenyon_price: round2(current * factor),
+      }
+      if (p.full_price != null) patch.full_price = round2(Number(p.full_price) * factor)
+      const { error } = await supabase.from('products').update(patch).eq('id', p.id)
+      if (error) return { error: error.message, updated }
+      updated += 1
+    } else {
+      const next = round2(parsed.data.value)
+      if (p.full_price != null && Number(p.full_price) < next) {
+        skipped.push(p.name_he)
+        continue
+      }
+      const { error } = await supabase
+        .from('products')
+        .update({ kenyon_price: next })
+        .eq('id', p.id)
+      if (error) return { error: error.message, updated }
+      updated += 1
+    }
+  }
+
+  revalidatePath('/admin/products')
+  return { updated, skipped }
+}
+
+export async function bulkSoftDeleteProducts(ids: string[]): Promise<{ error?: string }> {
+  try {
+    await requireStaffSession()
+  } catch {
+    return { error: 'אין הרשאה' }
+  }
+  if (ids.length === 0) return { error: 'לא נבחרו מוצרים' }
+
+  const supabase = await createClient()
+  const { error } = await supabase
+    .from('products')
+    .update({ deleted_at: new Date().toISOString(), status: 'archived' })
+    .in('id', ids)
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/products')
+  return {}
+}
+
 export async function deleteVariant(id: string): Promise<{ error?: string }> {
   try {
     await requireStaffSession()

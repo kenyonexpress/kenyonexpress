@@ -1,5 +1,9 @@
 # Architecture: Analytics and BI
 
+> **גובר עליו `docs/CONTRADICTIONS.md` (2026-07-24).** כל מספר עמלה, ברירת מחדל
+> (10%/5%) או נוסח Escrow במסמך הזה הוא שריד. ההכרעה: `platform_percent`
+> פר-מוצר, חובה, בלי ברירת מחדל בשום מקום; ה-held הוא רישום פנימי ב-ledger בלבד.
+
 Status: authoritative spec. Scope: event taxonomy, Supabase event storage, BI dashboard queries, and privacy controls for the KenyonExpress marketplace.
 
 ## 0. Ground truth and core principle

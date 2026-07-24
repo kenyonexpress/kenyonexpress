@@ -1,5 +1,9 @@
 # ARCHITECTURE-API-CONTRACTS.md
 
+> **גובר עליו `docs/CONTRADICTIONS.md` (2026-07-24).** כל מספר עמלה, ברירת מחדל
+> (10%/5%) או נוסח Escrow במסמך הזה הוא שריד. ההכרעה: `platform_percent`
+> פר-מוצר, חובה, בלי ברירת מחדל בשום מקום; ה-held הוא רישום פנימי ב-ledger בלבד.
+
 Status: BINDING draft v1.0 (2026-07-17)
 Owner: API contracts architect
 Scope: the complete API surface of KenyonExpress, from product page to production.

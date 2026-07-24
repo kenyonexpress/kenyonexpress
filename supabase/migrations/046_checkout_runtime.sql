@@ -155,9 +155,33 @@ CREATE TRIGGER set_updated_at
   BEFORE UPDATE ON public.wallet_accounts
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
-INSERT INTO public.wallet_accounts (code)
-VALUES ('platform:revenue'), ('platform:cashback_reserve'), ('platform:adjustments')
-ON CONFLICT (code) DO NOTHING;
+-- Two shapes of wallet_accounts exist in the wild: the slim one created just
+-- above (live DB, which stopped at 025) and the 026 one, which adds a NOT NULL
+-- owner_type. On a from-zero run 026 wins the CREATE TABLE IF NOT EXISTS race,
+-- so a bare (code) insert would fail with 23502. Branch on the column.
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name   = 'wallet_accounts'
+      AND column_name  = 'owner_type'
+  ) THEN
+    EXECUTE $ins$
+      INSERT INTO public.wallet_accounts (owner_type, code)
+      VALUES ('platform', 'platform:revenue'),
+             ('platform', 'platform:cashback_reserve'),
+             ('platform', 'platform:adjustments')
+      ON CONFLICT (code) DO NOTHING
+    $ins$;
+  ELSE
+    EXECUTE $ins$
+      INSERT INTO public.wallet_accounts (code)
+      VALUES ('platform:revenue'), ('platform:cashback_reserve'), ('platform:adjustments')
+      ON CONFLICT (code) DO NOTHING
+    $ins$;
+  END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS public.wallet_entries (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),

@@ -6,6 +6,8 @@ import type {
   CreateLowProfileInput,
   CreateLowProfileResult,
   PaymentProvider,
+  RefundInput,
+  RefundResult,
   VerifyLowProfileResult,
 } from '@/lib/payments/types'
 
@@ -124,6 +126,48 @@ export class CardcomProvider implements PaymentProvider {
     return {
       success: true,
       transactionId,
+      failureCode: null,
+      failureMessage: null,
+      raw,
+    }
+  }
+
+  async refundByTransactionId(input: RefundInput): Promise<RefundResult> {
+    const env = this.env
+    const amountAgorot = input.partialAmountAgorot ?? input.amountAgorot
+    // Legacy credit/refund. ApiPassword is mandatory for money-moving-back calls.
+    // TODO(cardcom): confirm the exact legacy refund endpoint + field names against
+    // the live terminal before go-live; kept legacy to match the rest of this client.
+    const raw = await this.postForm('/Interface/RefundDeal.aspx', {
+      TerminalNumber: env.terminalNumber,
+      ApiName: env.apiName,
+      ApiPassword: env.apiPassword,
+      InternalDealNumber: input.transactionId,
+      Amount: this.ilsFromAgorot(amountAgorot),
+      CoinId: '1',
+      Codepage: '65001',
+    })
+
+    const responseCode = asNumber(raw.ResponseCode ?? raw.responsecode) ?? -1
+    const refundTxId = asString(
+      raw.NewDealNumber ?? raw.newdealnumber ?? raw.InternalDealNumber ?? raw.internaldealnumber,
+    )
+
+    if (responseCode !== 0) {
+      return {
+        success: false,
+        refundTransactionId: null,
+        refundedAgorot: null,
+        failureCode: String(responseCode),
+        failureMessage: asString(raw.Description ?? raw.description) ?? 'Cardcom refund failed',
+        raw,
+      }
+    }
+
+    return {
+      success: true,
+      refundTransactionId: refundTxId,
+      refundedAgorot: agorot(amountAgorot),
       failureCode: null,
       failureMessage: null,
       raw,

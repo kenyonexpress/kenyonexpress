@@ -32,7 +32,9 @@ type VariantRow = {
   deleted_at: string | null
 }
 
-const DEFAULT_PLATFORM_PERCENT = 10
+// CONTRADICTIONS C1: platform_percent has no default anywhere. A product without
+// it cannot be priced, so the cart marks the line unavailable instead of inventing
+// a percent. cashback_percent is a genuine opt-in perk, so absent means zero.
 const DEFAULT_CASHBACK_PERCENT = 0
 
 function firstImage(images: unknown): string | null {
@@ -61,9 +63,11 @@ function productType(product: ProductRow): 'physical' | 'coupon' {
   return product.type === 'coupon' || product.is_coupon_enabled ? 'coupon' : 'physical'
 }
 
-function platformPercent(product: ProductRow): number {
+/** Null when the admin has not set the mandatory per-product percent yet. */
+function platformPercent(product: ProductRow): number | null {
   const value = product.platform_percent
-  return value != null && !Number.isNaN(Number(value)) ? Number(value) : DEFAULT_PLATFORM_PERCENT
+  if (value == null || Number.isNaN(Number(value))) return null
+  return Number(value)
 }
 
 function cashbackPercent(product: ProductRow): number {
@@ -106,12 +110,16 @@ export function buildCartView(
     const type = productType(product)
     const lineKey = `${item.product_id}::${item.variant_id ?? 'null'}`
 
+    const percent = platformPercent(product)
+
     commissionLines.push({
       id: lineKey,
       productType: type,
       unitPrice: ilsToAgorot(unitPrice.toFixed(2)),
       quantity: item.quantity,
-      platformPercent: platformPercent(product),
+      // 0 keeps the arithmetic honest for a line that is already unavailable:
+      // nothing is charged and nothing is split until the admin sets the percent.
+      platformPercent: percent ?? 0,
       cashbackPercent: cashbackPercent(product),
     })
 
@@ -125,7 +133,7 @@ export function buildCartView(
       unit_price: unitPrice,
       line_total: lineTotal,
       type,
-      available: isAvailable(product, variant, item.quantity),
+      available: percent != null && isAvailable(product, variant, item.quantity),
       platform_fee: 0,
       supplier_due: 0,
       customer_pays_now: 0,

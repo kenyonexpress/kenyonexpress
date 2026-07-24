@@ -58,11 +58,14 @@ enabled = true
 schema_paths = []
 
 [db.seed]
-# If enabled, seeds the database after migrations during a db reset.
-enabled = true
+# Disabled on purpose. supabase/seed.sql has never existed, so every `db reset`
+# ended with `WARN: no files matched pattern`. Demo data ships inside the
+# migrations themselves (018, 022, 023, 024, 041), and supabase/seed/categories.sql
+# is a manual one-off that its own header says must not run automatically.
+enabled = false
 # Specifies an ordered list of seed files to load during db reset.
 # Supports glob patterns relative to supabase directory: "./seeds/*.sql"
-sql_paths = ["./seed.sql"]
+sql_paths = []
 
 [db.network_restrictions]
 # Enable management of network restrictions.

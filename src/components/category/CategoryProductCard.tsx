@@ -53,6 +53,16 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
 
   const categoryTags = product.categories ?? []
 
+  const priceBlock =
+    price == null ? null : hasDiscount && old != null ? (
+      <>
+        <del>{formatPrice(old)}</del>
+        <ins>{formatPrice(price)}</ins>
+      </>
+    ) : (
+      <span>{formatPrice(price)}</span>
+    )
+
   return (
     <article className="category-card">
       <div className="category-card__header">
@@ -67,18 +77,7 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
           </span>
         )}
 
-        {price != null && (
-          <span className="category-card__price">
-            {hasDiscount && old != null ? (
-              <>
-                <del>{formatPrice(old)}</del>
-                <ins>{formatPrice(price)}</ins>
-              </>
-            ) : (
-              <span>{formatPrice(price)}</span>
-            )}
-          </span>
-        )}
+        {priceBlock && <span className="category-card__price">{priceBlock}</span>}
 
         <Link href={`/product/${product.slug}`} className="category-card__link">
           <h2 className="category-card__title">{product.name_he}</h2>
@@ -93,7 +92,12 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
             ) : null}
           </span>
         </Link>
+      </div>
 
+      {/* Measured live .product-loop-footer > .price-add-to-cart: the price is
+          repeated under the image with the round add-to-cart on the inline end. */}
+      <div className="category-card__footer">
+        {priceBlock && <span className="category-card__price">{priceBlock}</span>}
         {canAdd && (
           <AddToCartButton
             productId={product.id}

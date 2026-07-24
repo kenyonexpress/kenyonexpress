@@ -6,6 +6,8 @@ import type {
   CreateLowProfileInput,
   CreateLowProfileResult,
   PaymentProvider,
+  RefundInput,
+  RefundResult,
   VerifyLowProfileResult,
 } from '@/lib/payments/types'
 
@@ -122,6 +124,30 @@ export class MockCardcomProvider implements PaymentProvider {
           }
         : undefined,
       raw: { mock: true, status: 'succeeded', amountAgorot: deal.input.amountAgorot },
+    }
+  }
+
+  async refundByTransactionId(input: RefundInput): Promise<RefundResult> {
+    this.sequence += 1
+    if (this.failNextCharge) {
+      this.failNextCharge = false
+      return {
+        success: false,
+        refundTransactionId: null,
+        refundedAgorot: null,
+        failureCode: 'REFUND_DECLINED',
+        failureMessage: 'Mock refund decline',
+        raw: { mock: true, declined: true },
+      }
+    }
+    const refunded = input.partialAmountAgorot ?? input.amountAgorot
+    return {
+      success: true,
+      refundTransactionId: `mock-refund-${this.sequence}`,
+      refundedAgorot: agorot(refunded),
+      failureCode: null,
+      failureMessage: null,
+      raw: { mock: true, refundedAgorot: refunded },
     }
   }
 

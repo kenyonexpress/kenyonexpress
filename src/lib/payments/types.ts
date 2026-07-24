@@ -45,6 +45,27 @@ export interface ChargeWithTokenResult {
   raw: Record<string, unknown>
 }
 
+export interface RefundInput {
+  /** Cardcom transaction id (InternalDealNumber) of the ORIGINAL successful charge. */
+  transactionId: string
+  /** Full amount of the original charge, in agorot. */
+  amountAgorot: Agorot
+  /** Partial refund in agorot; omit for a full refund of `amountAgorot`. */
+  partialAmountAgorot?: Agorot
+  description: string
+}
+
+export interface RefundResult {
+  success: boolean
+  /** Cardcom transaction id of the NEW refund deal. */
+  refundTransactionId: string | null
+  /** Amount actually refunded, in agorot. */
+  refundedAgorot: Agorot | null
+  failureCode: string | null
+  failureMessage: string | null
+  raw: Record<string, unknown>
+}
+
 export interface VerifyLowProfileResult {
   success: boolean
   amountAgorot: Agorot | null
@@ -65,4 +86,5 @@ export interface PaymentProvider {
   createLowProfile(input: CreateLowProfileInput): Promise<CreateLowProfileResult>
   chargeWithToken(input: ChargeWithTokenInput): Promise<ChargeWithTokenResult>
   verifyLowProfile(lowProfileId: string): Promise<VerifyLowProfileResult>
+  refundByTransactionId(input: RefundInput): Promise<RefundResult>
 }

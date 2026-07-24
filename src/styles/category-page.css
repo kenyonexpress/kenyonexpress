@@ -130,15 +130,10 @@
   color: #333e48;
 }
 
-/* Body: product area + filter sidebar (sidebar on inline-end = left in RTL) */
+/* Body: measured live grid.rect = x135-1305 (full 1170 container), and
+   sidebar.present = false, so the product area spans the whole container. */
 .category-page__body {
-  display: flex;
-  align-items: flex-start;
-}
-
-.category-page__main {
-  flex: 1 1 auto;
-  min-width: 0;
+  width: 100%;
 }
 
 /* Product grid - measured: display flex, wrap, no gap, 234px fixed cards */
@@ -163,12 +158,13 @@
   }
 }
 
-/* Card: measured h~365, no li padding; inner spacing via card */
+/* Card: measured .product-inner padding 20.006px top / 14px bottom, content
+   box 186px inside the 234px column (24px each side). */
 .category-card {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 0 0.8em 22px;
+  padding: 20.006px 24px 14px;
   box-sizing: border-box;
 }
 
@@ -177,12 +173,12 @@
   flex-direction: column;
 }
 
-/* Measured: 11.998px, link color #768b9e, margin-bottom ~12px */
+/* Measured: 11.998px/12.5979px, h 12.6, link #768b9e, margin-bottom 11.998px */
 .category-card__categories {
   font-size: 11.998px;
   color: #333e48;
   margin-bottom: 11.998px;
-  line-height: 23.996px;
+  line-height: 12.5979px;
 }
 
 .category-card__categories a {
@@ -195,9 +191,12 @@
 }
 
 /* Measured: 20.006px, sale ins #dc3545 400, del 12px #768b9e */
+/* Measured live span.price: font 20.006px, line-height 20.006px, box height 27px */
 .category-card__price {
+  display: block;
+  height: 27px;
   font-size: 20.006px;
-  line-height: 27px;
+  line-height: 20.006px;
   color: #333e48;
   margin-bottom: 0;
 }
@@ -235,11 +234,12 @@
 }
 
 /* Image: measured 186x186 centered inside 234 card */
+/* Measured: image top sits 25.96px below the title box (margins collapse) */
 .category-card__thumb {
   position: relative;
   display: block;
   text-align: center;
-  margin-top: 19px;
+  margin-top: 25.96px;
 }
 
 .category-card__thumb img {
@@ -267,21 +267,29 @@
   line-height: 2;
 }
 
-/* Add-to-cart icon: measured 37x34 circle, transparent bg, below image
-   on the inline-end side, radius 22 */
+/* Footer: measured .price-add-to-cart = 186x36 with 7px below it. Price sits
+   at the inline start, the round add-to-cart at the inline end. */
+.category-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 36px;
+  margin-bottom: 7px;
+}
+
+/* Add-to-cart icon: measured 37x34 circle, transparent bg, radius 22 */
 .category-card__atc {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 37.14px;
   height: 33.88px;
-  margin-top: 11px;
+  flex: 0 0 auto;
   border: 1px solid #ddd;
   border-radius: 22px;
   background: transparent;
   color: #333e48;
   cursor: pointer;
-  align-self: flex-start;
 }
 
 .category-card__atc:hover {

@@ -51,7 +51,10 @@ export default async function AdminProductsPage({ searchParams }: Props) {
   if (status) query = query.eq('status', status)
   if (q) query = query.ilike('name_he', `%${q}%`)
 
-  const { data: products, count } = await query
+  const [{ data: products, count }, { data: categories }] = await Promise.all([
+    query,
+    supabase.from('categories').select('id, name_he').order('name_he'),
+  ])
 
   const rows: ProductRow[] = (products ?? []).map((p) => {
     const category = Array.isArray(p.categories) ? p.categories[0] : p.categories
@@ -118,7 +121,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
         </form>
       </div>
 
-      <ProductsTable products={rows} />
+      <ProductsTable products={rows} categories={categories ?? []} />
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">

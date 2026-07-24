@@ -53,6 +53,19 @@ ALTER TABLE public.products ALTER COLUMN commission_percent DROP DEFAULT;
 COMMENT ON COLUMN public.products.commission_percent IS
   'DEPRECATED (2026-07-24). Superseded by platform_percent as the single commission knob. Kept read-only for pre-050 order snapshots; do not write.';
 
--- 4. Restate the canonical expiry field rather than adding a duplicate.
+-- 4. Drop the last invented default in SQL. 027 defined product_platform_percent
+--    as COALESCE(product, supplier, 10); the literal 10 is exactly the default C1
+--    forbids. After step 2 the column is NOT NULL, so the product value is always
+--    the answer and the supplier fallback is dead too (C2: one knob).
+CREATE OR REPLACE FUNCTION public.product_platform_percent(p_product_id uuid)
+RETURNS numeric LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path = public AS $$
+  SELECT pr.platform_percent FROM public.products pr WHERE pr.id = p_product_id
+$$;
+
+COMMENT ON FUNCTION public.product_platform_percent(uuid) IS
+  'Mandatory per-product platform percent (CONTRADICTIONS C1/C2). No default and no supplier fallback: returns NULL only when the product id does not exist.';
+
+-- 5. Restate the canonical expiry field rather than adding a duplicate.
 COMMENT ON COLUMN public.products.coupon_expiry_days IS
   'Per-product coupon validity in days (30 / 60 / 90 or any integer). On expiry without redemption the paid upfront is credited to the customer wallet (CONTRADICTIONS C6).';

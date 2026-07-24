@@ -1,14 +1,16 @@
--- Migration 043: Seed demo suppliers, link ALL products, backfill product_images
+-- Migration 041: Seed demo suppliers, link ALL products, backfill product_images
 -- ============================================================================
 -- Business rule: every product (coupon AND physical) must carry supplier_id.
 -- Uses only 005-era supplier columns (name, contact_email, contact_phone,
 -- commission_percent, notes) so it runs on the live DB, which has not yet
 -- applied 027/042.
 --
--- ORDER NOTE: on a DB where 042 has not been applied yet, run 043 BEFORE 042
--- (042's preflight raises unless every product already has supplier_id).
--- On a DB where 042 is already applied this migration is a safe no-op:
+-- ORDER NOTE: this file was numbered 043 and therefore ran AFTER 042, which
+-- made every from-zero run fail, because 042's preflight raises unless every product
+-- already carries supplier_id. Renumbered to 041 so the linking UPDATE lands
+-- first. On a DB where 042 is already applied this migration is a safe no-op:
 -- supplier_id is NOT NULL there, so the linking UPDATE matches zero rows.
+-- Re-running it under the new number is harmless (see idempotency note below).
 --
 -- product_images backfill: per docs/ARCHITECTURE-WP-DATA-MIGRATION.md the
 -- canonical model is dual: products.images jsonb is the denormalized read
