@@ -1,5 +1,13 @@
 # CHECKOUT-ARCHITECTURE
 
+> **דריסה מחייבת (2026-07-24, יום המיזוג):** כל נוסחת תמחור קופון באחוז-מהמחיר
+> (`face * platform_percent / 100`) במסמך הזה בטלה. המודל המחייב: האדמין קובע סכום
+> מוחלט `coupon_price` (בעמודה `coupon_deals.coupon_price_agorot`, מיגרציה 055),
+> הלקוח משלם בדיוק אותו ב-Cardcom, הכל נשאר בפלטפורמה, אין payout לספק על קופונים,
+> היתרה נגבית בבית העסק בסריקה ואז הקופון פג לצמיתות. `platform_percent` נשאר
+> בתוקף לפיצול על מוצרים פיזיים בלבד (מצולם ל-order_items בקנייה).
+
+
 Status: **DESIGN ONLY**. Branch `arch/checkout-cardcom`. No UI files in this deliverable.
 
 Date: 2026-07-23.

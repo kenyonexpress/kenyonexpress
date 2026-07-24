@@ -1,5 +1,13 @@
 # MASTER-ARCHITECTURE v2
 
+> **דריסה מחייבת (2026-07-24, יום המיזוג):** כל נוסחת תמחור קופון באחוז-מהמחיר
+> (`face * platform_percent / 100`) במסמך הזה בטלה. המודל המחייב: האדמין קובע סכום
+> מוחלט `coupon_price` (בעמודה `coupon_deals.coupon_price_agorot`, מיגרציה 055),
+> הלקוח משלם בדיוק אותו ב-Cardcom, הכל נשאר בפלטפורמה, אין payout לספק על קופונים,
+> היתרה נגבית בבית העסק בסריקה ואז הקופון פג לצמיתות. `platform_percent` נשאר
+> בתוקף לפיצול על מוצרים פיזיים בלבד (מצולם ל-order_items בקנייה).
+
+
 kenyonexpress.co.il. Branch `arch/master-v2`. **Design only.** No UI files.
 
 Supersedes earlier drafts on this branch that still modeled coupon **escrow**.
@@ -526,7 +534,7 @@ Apply via approved MCP/`apply_migration` only — never `db push`.
 |---|---|
 | Expired coupon money | Breakage (D-EXPIRY) |
 | Production PSP | Cardcom (D-PSP); Stripe stays experimental |
-| Coupon on-site basis | `% of face` via `platform_percent`, not free `coupon_price` |
+| Coupon on-site basis | **הוכרע 2026-07-24:** סכום מוחלט `coupon_price_agorot` שהאדמין קובע; לא אחוז |
 | Cashback rule | Configurable server-side; skill "every 5th / 5%" is launch config not schema |
 | `vendors` vs `suppliers` | `suppliers` canonical; vendors legacy until unification migration |
 
