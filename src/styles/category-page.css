@@ -345,11 +345,11 @@
 }
 
 .category-card__atc:hover {
-  background: var(--cat-brand);
-  border-color: var(--cat-brand);
+  background: var(--cat-brand-hover);
+  border-color: var(--cat-brand-hover);
 }
 
-/* Filter sidebar: one card-column wide (var(--cat-card-col)), on inline-end (left) */
+/* Filter sidebar: one card column wide, on inline-end (left) */
 .category-sidebar {
   flex: 0 0 var(--cat-card-col);
   width: var(--cat-card-col);
@@ -503,8 +503,8 @@
 }
 
 .category-pagination a:hover {
-  background: var(--cat-brand);
-  border-color: var(--cat-brand);
+  background: var(--cat-brand-hover);
+  border-color: var(--cat-brand-hover);
 }
 
 .category-pagination .is-current {

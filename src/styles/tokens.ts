@@ -12,11 +12,19 @@ export const ELECTRO = {
  * Catalog archive tokens: /category/[slug], /products, /search.
  *
  * Every value here was read off the LIVE site with getComputedStyle, not taken
- * from a design spec. Where the two disagree the live value wins, because the
- * pixel comparison runs against live:
+ * from a design spec. Where the two disagree the measured value wins, because
+ * the pixel comparison runs against live:
  *
- *   - sale price is #dc3545 on live. The brief says #E4002B. Live wins.
+ *   - sale price is #dc3545. The brief says #E4002B. Checked BOTH sources the
+ *     brief names: getComputedStyle on the live archive returns #dc3545, and
+ *     grepping refs/ke_live_singlefile.html (the file the brief designates as
+ *     the source of truth) finds #dc3545 twice and #E4002B zero times. The
+ *     brief's red does not exist anywhere in the reference.
  *   - the view switcher is #495057 on live, not the #b6bfc8 we had.
+ *
+ * `brandHover` (#fedd26) is the one value kept purely on the brief's word: it
+ * also appears zero times in the singlefile, but it only drives :hover, which
+ * no screenshot captures, so honouring the brief there costs no fidelity.
  *
  * `category-page.css` declares these as custom properties on `.category-page`
  * and every rule in that file reads them through var(). `tokens.test.ts`
