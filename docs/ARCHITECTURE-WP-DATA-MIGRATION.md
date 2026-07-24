@@ -41,11 +41,11 @@ Guiding principles:
 | `description_he` | text | long description, cleaned |
 | `price_ils` | numeric | selling price in ILS |
 | `compare_at_price_ils` | numeric | strike-through / was price |
-| `supplier_id` | uuid | fk suppliers (merchant entity) |
+| `supplier_id` | uuid | fk suppliers (merchant entity), **NOT NULL** |
 | `category_id` | uuid | fk categories |
 | `type` | product_type | enum: coupon, physical, service |
 | `images` | jsonb | array of image objects (section 3.4) |
-| `status` | product_status | enum: draft, active, archived |
+| `status` | product_status | enum: draft, active, paused, sold_out, archived |
 | `is_coupon_enabled` | boolean | coupon behavior toggle |
 | `platform_percent` | numeric | platform take rate |
 | `commission_percent` | numeric | supplier commission |
@@ -58,9 +58,12 @@ Guiding principles:
 | --- | --- | --- |
 | `id` | uuid | pk |
 | `name_he` | text | display name |
+| `name_en` | text | **NOT NULL**; WooCommerce has no equivalent, seeded from the slug |
 | `slug` | text | UNIQUE, SEO slug |
+| `parent_id` | uuid | fk categories; the table is a TREE, not flat |
 | `icon_url` | text | category icon (storage URL) |
 | `sort_order` | integer | display order |
+| `is_active` | boolean | visibility |
 
 `public.suppliers`: the merchant entity. WooCommerce has no first-class
 supplier concept, so every imported product is attached to one synthetic
@@ -269,11 +272,15 @@ resolved once and reviewed before the run. `is_coupon_enabled` follows
 | `icon_url` | `image.src` | term meta `thumbnail_id` | run through image pipeline, store storage URL |
 | `sort_order` | `menu_order` | `wp_term_taxonomy` order | integer; default 0 |
 
-Category hierarchy: WooCommerce categories are a tree (`parent`). The target
-`public.categories` is flat, so the `parent` chain is flattened to the leaf
-category, and each product maps to its most specific (leaf) `product_cat`
-term. Parent-only URLs still get 301s (section 4). The `parent` value is
-retained in the id_map metadata for redirect construction.
+Category hierarchy: WooCommerce categories are a tree (`parent`), and so is
+`public.categories` (it has `parent_id`). The tree is therefore PRESERVED, not
+flattened. The loader projects categories parents-first so a child's
+`parent_id` always resolves, and guards against a looping parent chain by
+treating a term more than 20 levels deep as a root.
+
+Each product still maps to its most specific (leaf) `product_cat` term for
+`category_id`, because `public.products.category_id` is a single reference.
+Parent category URLs get their own rows and their own 301s (section 4).
 
 ---
 
@@ -302,9 +309,15 @@ for each source image URL:
        - main:  resize to max width 1600px (no upscale), WebP q80
        - og:    1200x630 cover crop, WebP q80  (social / OG derivative)
      strip EXIF and metadata.
-  4. compute storage keys under a per-product prefix:
-       wp/<wp_id>/<content_hash>.webp
-       wp/<wp_id>/<content_hash>.og.webp
+  4. compute storage keys from the CONTENT HASH ALONE, sharded by its first
+     two characters:
+       wp/<ab>/<content_hash>.webp
+       wp/<ab>/<content_hash>.og.webp
+     Deliberately not prefixed by the product id: a per-product prefix stores
+     the same bytes once per product that uses them, which would make the
+     sha256 dedup save conversion work and nothing else. The consequence is
+     that one object can be referenced by many products, so deleting a product
+     must never delete its objects (see 5.6).
   5. upload both derivatives to bucket product-images
      (upsert; content-addressed keys make this idempotent).
   6. record {wp_attachment_id, content_hash, storage keys, width,
@@ -325,8 +338,8 @@ overwrites the same objects: safe to re-run.
 {
   "images": [
     {
-      "url": "https://<project>.supabase.co/storage/v1/object/public/product-images/wp/1234/9f8a...c1.webp",
-      "og_url": "https://<project>.supabase.co/storage/v1/object/public/product-images/wp/1234/9f8a...c1.og.webp",
+      "url": "https://<project>.supabase.co/storage/v1/object/public/product-images/wp/9f/9f8a...c1.webp",
+      "og_url": "https://<project>.supabase.co/storage/v1/object/public/product-images/wp/9f/9f8a...c1.og.webp",
       "alt": "product alt text",
       "width": 1600,
       "height": 1200,
@@ -379,6 +392,14 @@ The exact new path prefixes (`/p`, `/c`, `/shop`) are the ones defined in
 path in the sitemap and in Search Console is enumerated and gets a row.
 
 ### 4.4 seo_redirects DDL
+
+**Status: NOT BUILT.** `public.seo_redirects` does not exist in the live schema
+as of migration 052. The DDL below is the spec, not the state. The staging side
+is done (`wp_import.url_inventory` holds every old path and its decision, and
+the transform stage fills it including explicit 410s for products we chose not
+to import), but nothing projects those rows into a public table and no
+middleware consumes one. This is the last open blocker on the SEO half of the
+cutover, and it needs its own migration.
 
 ```sql
 create table if not exists public.seo_redirects (
@@ -525,7 +546,7 @@ The migration is reversible at two levels:
    CDN / edge cache and the `seo_redirects` edge map by batch so stale
    redirects do not point at the half-migrated new site. Storage objects
    are content-addressed and harmless to leave; they are garbage-collected
-   later by prefix.
+   later by content hash.
 
 Because everything is content-addressed and id-mapped, rollback plus re-run
 is always safe: no state diverges, no duplicate is created.
@@ -546,3 +567,127 @@ is always safe: no state diverges, no duplicate is created.
 
 All config is version-controlled with the run report so every derived
 value (economics, type, supplier) is auditable after the fact.
+
+---
+
+## 7. The runner: `scripts/wp-import/`
+
+Sections 0 to 6 are the contract. This section is the implementation of it.
+
+Operator guide: `scripts/wp-import/README.md`.
+Schema: `032_wp_import_staging.sql` (staging), `052_wp_migration_log.sql`
+(operation log, validation reports, rollback).
+
+### 7.1 Stages
+
+```
+extract -> transform -> load -> media -> project -> validate
+```
+
+| Stage | File | Reads | Writes | Touches `public.*` |
+| --- | --- | --- | --- | --- |
+| extract | `01-extract.mjs` | WC REST, or a restored dump via `sql/extract-from-dump.sql` | `wp_import/raw/` | no |
+| transform | `02-transform.mjs` | `wp_import/raw/` | `wp_import/normalized/` | no |
+| load | `03-load-staging.mjs` | normalized JSON | `wp_import.*` | no |
+| media | `06-media-sync.mjs` | media inventory | storage bucket, `wp_import.media` | no |
+| project | `04-project-public.mjs` | `wp_import.*` | `public.categories`, `public.products` | **yes** |
+| validate | `05-validate.mjs` | everything | `wp_import/reports/`, `wp_import.validation_reports` | no |
+
+`transform` is a pure function: raw JSON in, normalized JSON out, no network
+and no database. That is what makes the entire plan reviewable before anything
+is written, and it is why the dry run is worth reading rather than skipping.
+
+### 7.2 The two write locks
+
+Dry run is the default. A write requires **both**:
+
+```bash
+WP_IMPORT_ALLOW_WRITES=1 node scripts/wp-import/run.mjs --apply
+```
+
+One lock is a typo away from a live import. Two locks cannot both be tripped
+by accident. A dry run performs every read, transform, image fetch, conversion
+and gate, and emits the exact plan it would have applied. The plan is computed
+by the same code path in both modes, so the preview is literal, not
+approximate.
+
+### 7.3 Idempotency: one key, everywhere
+
+Every upsert keys on
+
+```
+external_id = wp:<entity>:<wp_id>
+```
+
+Staging tables upsert on the natural WordPress key (`wp_post_id`,
+`wp_term_id`, `wp_user_id`). Public tables upsert on the uuid held in
+`wp_import.id_map`, which is minted once on first sight and persisted, so
+re-running updates the row it created last time rather than minting a second
+one. The key used is recorded on every `migration_log` row, so a re-run can be
+proven to have targeted the same rows as the run before it.
+
+### 7.4 migration_log
+
+`wp_import.migration_log` is append-only: one row per (batch, stage, entity,
+wp_id), carrying the action (`insert` / `update` / `noop` / `skip` / `fail` /
+`delete`), the `dry_run` flag, before and after images, and the error code when
+it failed. Amending a row would destroy the audit trail; corrections are new
+rows.
+
+Every operation is also mirrored to `wp_import/logs/<batch>.jsonl`
+unconditionally, dry runs included. That file is the artifact you read when the
+database was deliberately never touched.
+
+Reading it:
+
+```sql
+SELECT * FROM wp_import.v_migration_log_summary WHERE batch_id = '<uuid>';
+SELECT * FROM wp_import.v_migration_failures    WHERE batch_id = '<uuid>';
+```
+
+### 7.5 Validation gates
+
+`05-validate.mjs` evaluates 17 gates and writes
+`wp_import/reports/validation-<batch>.{json,md}` plus a row in
+`wp_import.validation_reports`. Severity `error` blocks cutover; `warn` is
+reported only. A gate that cannot be evaluated (no database, no data) reports
+`unknown` and does **not** pass: silence is never success.
+
+Count parity, referential integrity, images (missing, dead references,
+unsynced), price sanity including fake strike-throughs, slug uniqueness,
+redirect coverage, and three policy gates that are not data quality at all:
+
+- `no_password_material_staged` - a WordPress hash reaching staging is a
+  security incident, not a bug.
+- `no_imported_marketing_consent` - every imported person starts opted out.
+- `customers_with_usable_email` - customers we cannot invite are archive-only.
+
+### 7.6 Rollback
+
+```sql
+SELECT * FROM wp_import.fn_rollback_batch('<batch-uuid>');                     -- plan
+SELECT * FROM wp_import.fn_rollback_batch('<batch-uuid>', p_dry_run => false); -- execute
+```
+
+Dry-run by default, like everything else here. It deletes only rows the batch
+**inserted**, in child-before-parent order off a hardcoded table allow-list,
+clears the matching `id_map` rows so a re-run mints them cleanly, and logs the
+undo with `stage = 'rollback'`. Rows the batch merely **updated** are reported
+for manual review and never auto-reverted: undoing an update means restoring
+`migration_log.before_data`, which is a human decision.
+
+### 7.7 Verification status
+
+The pipeline has been exercised end to end offline against
+`fixtures/make-fixture.mjs`, a synthetic export carrying the failure modes the
+real catalog is expected to have: percent-encoded Hebrew slugs, Gutenberg
+comments and shortcodes, a sale price above the regular price, a product with
+no price, a product with no category, a dead attachment reference, a slug
+collision, a trashed product, a broken email, and a password hash in user meta.
+Image download, sha256 dedup and webp conversion were verified against a local
+image server.
+
+Not yet verified: the SQL in `052` has never been executed (no Postgres
+available in the authoring environment and the brief forbids touching a real
+database), and no stage has run against the live WooCommerce store or a real
+Supabase project.
