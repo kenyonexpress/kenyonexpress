@@ -144,4 +144,6 @@ export const CATALOG_CSS_METRICS: Record<string, string> = {
   '--cat-carousel-size': CATALOG.metric.carouselTitleSize,
   '--cat-carousel-line': CATALOG.metric.carouselTitleLine,
   '--cat-carousel-pad': CATALOG.metric.carouselTitlePad,
+  '--cat-eyebrow-gap': '8px',
+  '--cat-footer-gap-top': '10px',
 }

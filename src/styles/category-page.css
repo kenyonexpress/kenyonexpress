@@ -44,6 +44,12 @@
   --cat-carousel-size: 21.994px;
   --cat-carousel-line: 35.2px;
   --cat-carousel-pad: 8.7976px;
+  /* Rendered gaps, not computed styles. Live's eyebrow declares
+     margin-bottom 11.998px but lays out an 8px gap because the span is inline;
+     the pixel comparison cares about the geometry, so the geometry is what is
+     tokenised. Same for the 10px live leaves between header and footer. */
+  --cat-eyebrow-gap: 8px;
+  --cat-footer-gap-top: 10px;
 
   color: var(--cat-ink);
   font-size: 14px;
@@ -233,7 +239,7 @@
 .category-card__categories {
   font-size: var(--cat-eyebrow-size);
   color: var(--cat-ink);
-  margin-bottom: var(--cat-eyebrow-size);
+  margin-bottom: var(--cat-eyebrow-gap);
   line-height: var(--cat-eyebrow-line);
 }
 
@@ -329,6 +335,7 @@
   align-items: center;
   justify-content: space-between;
   height: 36px;
+  margin-top: var(--cat-footer-gap-top);
   margin-bottom: 7px;
 }
 

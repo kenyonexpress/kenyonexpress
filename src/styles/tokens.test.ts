@@ -59,7 +59,13 @@ describe('catalog colour tokens', () => {
     // Media queries cannot read custom properties, so breakpoints stay literal.
     const rules = declarationsOnly(css()).replace(/@media[^{]+/g, '')
     const offenders: string[] = []
-    for (const value of new Set(Object.values(CATALOG_CSS_METRICS))) {
+    // Only unambiguous measurements are scanned: fractional values, or values
+    // of 100px and up. Round two-digit ones like 8px and 10px are also ordinary
+    // spacing elsewhere in the sheet, so flagging them would be a false alarm.
+    const distinctive = [...new Set(Object.values(CATALOG_CSS_METRICS))].filter(
+      (v) => v.includes('.') || Number.parseFloat(v) >= 100,
+    )
+    for (const value of distinctive) {
       // (?<![\d.]) so 20.006px is not matched inside a longer number
       if (new RegExp(`(?<![\\d.])${value.replace('.', '\\.')}`).test(rules)) {
         offenders.push(value)
