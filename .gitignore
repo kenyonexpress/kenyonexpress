@@ -45,3 +45,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 refs/
+
+# WordPress import run artifacts (raw payloads, normalized rows, reports, logs)
+wp_import/

@@ -5,7 +5,6 @@
 // upsertRows(), which refuses to touch the database in a dry run. There is no
 // other write path in this pipeline.
 
-import { createClient } from '@supabase/supabase-js'
 import { DRY_RUN, SUPABASE, dryRunReason } from '../config.mjs'
 import { externalId, warn } from './log.mjs'
 
@@ -16,14 +15,25 @@ let warned = false
  * Service-role client, or null when credentials are absent. A null client is
  * not an error: the pipeline then runs fully offline against the JSON
  * artifacts, which is the normal mode for authoring and reviewing a plan.
+ *
+ * The driver is imported lazily on purpose. extract and transform are pure
+ * stages, and they must stay runnable in a checkout with no node_modules.
  */
-export function getDb() {
+export async function getDb() {
   if (client !== undefined) return client
   if (!SUPABASE.url || !SUPABASE.serviceKey) {
     if (!warned) {
       warn('SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set - running offline (no DB reads)')
       warned = true
     }
+    client = null
+    return client
+  }
+  let createClient
+  try {
+    ;({ createClient } = await import('@supabase/supabase-js'))
+  } catch (err) {
+    warn(`@supabase/supabase-js unavailable (${err.message}) - running offline`)
     client = null
     return client
   }
@@ -128,6 +138,34 @@ export async function resolveIdMap({ db, entity, wpIds, cache = new Map() }) {
     out.set(key, cache.get(key))
   }
   return out
+}
+
+/**
+ * Persist the uuids resolveIdMap minted this run.
+ *
+ * Without this the crosswalk only lives in memory and the NEXT run mints fresh
+ * uuids, duplicating every row. id_map is the idempotency backbone; writing it
+ * is not optional once we have actually inserted the target rows.
+ */
+export async function persistIdMap({ db, entity, ids, batchId = null }) {
+  if (DRY_RUN || !db) return 0
+  const fresh = [...ids.entries()]
+    .filter(([, value]) => !value.existing)
+    .map(([wpId, value]) => ({
+      entity,
+      wp_id: String(wpId),
+      new_id: value.newId,
+      batch_id: batchId,
+    }))
+  if (fresh.length === 0) return 0
+  for (let i = 0; i < fresh.length; i += 500) {
+    const { error } = await db
+      .schema('wp_import')
+      .from('id_map')
+      .upsert(fresh.slice(i, i + 500), { onConflict: 'entity,wp_id' })
+    if (error) throw new Error(`id_map upsert failed: ${error.message}`)
+  }
+  return fresh.length
 }
 
 /** Row count of a table, or null when offline. Used for before/after gates. */

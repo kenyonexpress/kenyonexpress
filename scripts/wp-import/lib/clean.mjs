@@ -199,9 +199,16 @@ const STATUS_MAP = {
   inherit: null,
 }
 
-/** Woo post_status to public.product_status. null means do not import. */
+/**
+ * Woo post_status to public.product_status. null means do not import.
+ *
+ * The `in` check matters: several entries map to null on purpose (trash,
+ * private, auto-draft). Reaching for `?? 'draft'` would turn every one of
+ * those deliberate exclusions back into an imported draft.
+ */
 export function mapStatus(statusRaw) {
-  return STATUS_MAP[String(statusRaw || '').toLowerCase()] ?? 'draft'
+  const key = String(statusRaw || '').toLowerCase()
+  return key in STATUS_MAP ? STATUS_MAP[key] : 'draft'
 }
 
 /** Woo stock status overrides an otherwise-active product. */
