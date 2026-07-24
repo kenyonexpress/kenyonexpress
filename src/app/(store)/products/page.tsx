@@ -5,7 +5,12 @@ import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
 import Pagination from '@/components/category/Pagination'
-import { SHOP_PAGE_SIZE, getAllCategories, getShopProducts } from '@/lib/category-page'
+import {
+  SHOP_PAGE_SIZE,
+  getAllCategories,
+  getShopProducts,
+  parseProductType,
+} from '@/lib/category-page'
 import { parseSort } from '@/lib/category-tokens'
 import '@/styles/category-page.css'
 
@@ -44,10 +49,11 @@ export default async function ProductsPage({ searchParams }: Props) {
   const page = parsePage(sp.page)
   const priceMin = parsePrice(sp.min)
   const priceMax = parsePrice(sp.max)
+  const productType = parseProductType(sp.type)
 
   const [allCategories, { items, total }] = await Promise.all([
     getAllCategories(),
-    getShopProducts({ sort, page, priceMin, priceMax }),
+    getShopProducts({ sort, page, priceMin, priceMax, productType }),
   ])
 
   const totalPages = Math.max(1, Math.ceil(total / SHOP_PAGE_SIZE))
@@ -60,6 +66,7 @@ export default async function ProductsPage({ searchParams }: Props) {
     sort: sort === 'menu_order' ? undefined : sort,
     min: priceMin != null ? String(priceMin) : undefined,
     max: priceMax != null ? String(priceMax) : undefined,
+    type: productType,
   }
 
   return (
@@ -104,6 +111,7 @@ export default async function ProductsPage({ searchParams }: Props) {
             categories={allCategories}
             priceMin={priceMin}
             priceMax={priceMax}
+            productType={productType}
           />
         </div>
       </div>
