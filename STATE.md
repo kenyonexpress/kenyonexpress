@@ -35,6 +35,32 @@
 3. **קומיט מנוע Cardcom + refund** אחרי אימות ה-endpoint מול המסוף החי.
 
 ## Last Completed
+Session 2026-07-24 (לילה) - מערכת מימוש שוברים מקצה לקצה, branch `feat/voucher-redemption`:
+- **מודל עסקי (מקור אמת, דורס escrow/payout ישן)**: האדמין קובע `coupon_price` מוחלט,
+  הלקוח משלם בדיוק אותו באתר, היתרה נגבית בבית העסק בסריקה, הכל נשאר בפלטפורמה,
+  `platform_percent=100`. אין escrow, אין payout, אין split. סריקה שורפת את השובר לצמיתות.
+- **מיגרציה 051** (חדשה, forward-only, לא נגעתי בקיימות): טבלת `vouchers` עם סכומים
+  באגורות + ‏CHECK שימור (`face = coupon_price + remaining_due`), ‏`platform_percent=100`,
+  קוד Crockford base32 עם ‏CHECK פורמט, ‏`qr_payload` חתום ‏HMAC, ‏CHECK שמחייב שדות מימוש
+  מלאים. ‏`voucher_redemptions` audit של כל ניסיון + partial unique index שמונע מימוש כפול.
+  ‏`redeem_voucher()` ‏SECURITY DEFINER הוא הנתיב היחיד: ‏UPDATE מותנה יחיד כשומר אטומי,
+  הספק מ-`supplier_members` (לא מהבקשה), ‏idempotency_key משחזר במקום למַמֵש פעמיים,
+  ‏wrong_supplier מתכווץ ל-not_found ללקוח והאמת נשמרת ב-audit. אומת עם ‏libpg_query.
+- **RLS לפי `auth.uid()` בלבד** (אין ‏tenant_id): לקוח רואה שוברים שלו, ספק רואה מה שמומש
+  אצלו (`redeemed_by_supplier_id`). אין policy כתיבה על אף טבלה.
+- **שכבת domain טהורה** ב-`src/server/domain/vouchers/`: ‏state-machine (כל מצב לא-issued
+  טרמינלי), ‏code (קוד crypto-secure עם rejection sampling, ‏TTL מוגבל ל-`offer_valid_until`),
+  ‏qr (‏HMAC חתום, מחליף את ה-sha256 הלא-חתום הישן), ‏redemption, ‏issue. ‏88 בדיקות Vitest
+  כולל מטריצת state×event מלאה ו-edge cases (ביטול/החזר אחרי מימוש אסורים, ספק שגוי, סריקה כפולה).
+- **API** `POST /api/supplier/vouchers/redeem`: מאמת חתימת QR לפני ה-DB, קורא ל-RPC דרך
+  ה-client של המשתמש (כדי ש-`auth.uid()` יהיה מאוכלס), ממפה תוצאה ל-HTTP + הודעת עברית.
+- **מסכים**: `/supplier/scan` (‏BarcodeDetector + הקלדה, שלב אישור נפרד לפני מימוש בלתי-הפיך,
+  יתרה לגבייה בגופן הגדול, ‏idempotency_key טרי לכל שליחה), ‏`/account/vouchers`
+  (‏QR מרונדר בשרת רק לשוברים בתוקף, קוד, סטטוס, תוקף לפי חוק הגנת הצרכן).
+- `ARCHITECTURE-VOUCHER-REDEMPTION.md` מלא. ‏.env.example: ‏VOUCHER_QR_SECRET + rotation.
+- אומת: ‏vitest ‏238/238, ‏tsc נקי, ‏biome נקי. **המיגרציה טרם הוחלה על המרוחק** (דורש
+  ‏VOUCHER_QR_SECRET ב-env וחיווט ההנפקה ל-webhook של Cardcom, שנמצא ב-branch של payments).
+
 Session 2026-07-24 (המשך) - יעד 3/20: פעולות bulk באדמין (קומיט feat(admin/bulk)):
 - ‏actions חדשים ב-`src/server/actions/admin/products.ts`: ‏bulkAssignCategory
   (uuid או ללא קטגוריה), ‏bulkAdjustPrices (אחוזים: מכפיל גם את full_price לשמירת
@@ -199,6 +225,12 @@ https://ixvwfbuvfxxsjiywhbbb.supabase.co (dev)
 ---
 
 ## History (סשנים קודמים)
+
+### 2026-07-24 (לילה) - מערכת מימוש שוברים הושלמה (branch feat/voucher-redemption)
+- מודל מחיר מוחלט: `coupon_price` באתר, יתרה בבית העסק, `platform_percent=100`, בלי escrow/payout.
+- מיגרציה 051: `vouchers` + `voucher_redemptions`, ‏`redeem_voucher()` אטומי, ‏RLS לפי `auth.uid()`.
+- ‏domain טהור + ‏88 בדיקות state-machine, ‏API מימוש, מסכי `/supplier/scan` ו-`/account/vouchers`.
+- ‏238/238 vitest, tsc/biome נקי. המיגרציה טרם הוחלה על המרוחק. `ARCHITECTURE-VOUCHER-REDEMPTION.md` מלא.
 
 Session 2026-07-20 (ערב) - `ARCHITECTURE-PERFORMANCE-SEO.md` (שורש, design only):
 - מסמך מאוחד מחייב לביצועים + SEO בזמן ריצה. בולע/מיישר את
