@@ -1,11 +1,6 @@
 import { agorot, ilsToAgorot, sumAgorot } from '@/lib/commerce/money'
 import { describe, expect, it } from 'vitest'
-import {
-  DEFAULT_COUPON_UPFRONT_PERCENT,
-  DEFAULT_PLATFORM_COMMISSION_PERCENT,
-  type SettlementLineInput,
-  calculateSettlement,
-} from './settlement'
+import { type SettlementLineInput, calculateSettlement } from './settlement'
 
 function at<T>(items: readonly T[], index: number): T {
   const item = items[index]
@@ -58,21 +53,39 @@ describe('calculateSettlement — split math', () => {
     expect(line.escrowReleaseToSupplier).toBe(0)
   })
 
-  it('applies defaults: 5% commission, 10% coupon upfront', () => {
-    const result = calculateSettlement({
-      idempotencyKey: 'k',
-      lines: [
-        { id: 'c', productType: 'coupon', unitPrice: ilsToAgorot('200'), quantity: 1 },
-        { id: 'p', productType: 'physical', unitPrice: ilsToAgorot('200'), quantity: 1 },
-      ],
-    })
-    expect(DEFAULT_PLATFORM_COMMISSION_PERCENT).toBe(5)
-    expect(DEFAULT_COUPON_UPFRONT_PERCENT).toBe(10)
-    const coupon = at(result.lines, 0)
-    const physical = at(result.lines, 1)
-    expect(coupon.paidOnSite).toBe(2000) // 10% of 200₪
-    expect(coupon.commission).toBe(100) // 5% of the on-site amount
-    expect(physical.commission).toBe(1000) // 5% of 200₪
+  // CONTRADICTIONS C1: there is no default commission. A line without an
+  // explicit percent must fail loudly rather than settle on an invented rate.
+  it('rejects a line with no commission percent', () => {
+    expect(() =>
+      calculateSettlement({
+        idempotencyKey: 'k',
+        lines: [
+          {
+            id: 'p',
+            productType: 'physical',
+            unitPrice: ilsToAgorot('200'),
+            quantity: 1,
+          } as unknown as SettlementLineInput,
+        ],
+      }),
+    ).toThrow(/commission percent is required/)
+  })
+
+  it('rejects a coupon line with no upfront percent', () => {
+    expect(() =>
+      calculateSettlement({
+        idempotencyKey: 'k',
+        lines: [
+          {
+            id: 'c',
+            productType: 'coupon',
+            unitPrice: ilsToAgorot('200'),
+            quantity: 1,
+            commissionPercent: 8,
+          },
+        ],
+      }),
+    ).toThrow(/upfront percent is required/)
   })
 
   it('honors admin per-product commission override', () => {

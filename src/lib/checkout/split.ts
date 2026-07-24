@@ -35,7 +35,7 @@ export type SplitResultView = {
 
 /**
  * Wire-facing split calculator.
- * Coupon: customer pays platform_percent on site (launch default 10%), remainder at business.
+ * Coupon: customer pays platform_percent on site (mandatory per product, no default), remainder at business.
  * Physical: customer pays 100% on site; platform_percent snapshotted per product for supplier split.
  */
 export function calculateSplit(input: CalculateSplitInput): SplitResultView {

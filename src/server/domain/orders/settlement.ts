@@ -9,24 +9,20 @@ import {
 } from '@/lib/commerce/money'
 
 /**
- * Platform commission default: 5% of every agora that flows through the
- * platform (the on-site charge). Admin can override per product via
- * products.commission_percent.
+ * There is NO default commission anywhere (docs/CONTRADICTIONS.md C1).
+ * `products.platform_percent` is a mandatory per-product value set by the admin,
+ * and it is the single commission knob (C2). A line that reaches this engine
+ * without an explicit percent is a bug, not a case to paper over with 5 or 10.
  */
-export const DEFAULT_PLATFORM_COMMISSION_PERCENT = 5
-
-/** Coupon upfront default when the product has no admin value (products.platform_percent). */
-export const DEFAULT_COUPON_UPFRONT_PERCENT = 10
-
 export interface SettlementLineInput {
   id: string
   productType: CommissionProductType
   unitPrice: Agorot
   quantity: number
-  /** Coupon only: percent of face value the customer pays on site (products.platform_percent). */
+  /** Coupon only: percent of face value the customer pays on site. Required for coupon lines. */
   upfrontPercent?: string | number
-  /** Platform commission percent on the on-site amount (products.commission_percent, default 5). */
-  commissionPercent?: string | number
+  /** Platform commission percent, charged on the on-site amount only (C5). Required. */
+  commissionPercent: string | number
   cashbackPercent?: string | number
 }
 
@@ -128,13 +124,23 @@ function calculateLine(line: SettlementLineInput): SettlementLineResult {
   }
   assertNonNegative(line.unitPrice, 'unit price')
 
+  if (line.commissionPercent === undefined || line.commissionPercent === null) {
+    throw new TypeError(`commission percent is required for line ${line.id} (no default exists)`)
+  }
+  if (
+    line.productType === 'coupon' &&
+    (line.upfrontPercent === undefined || line.upfrontPercent === null)
+  ) {
+    throw new TypeError(
+      `upfront percent is required for coupon line ${line.id} (no default exists)`,
+    )
+  }
+
   const faceValue = multiplyAgorot(line.unitPrice, line.quantity)
-  const commissionBps = percentToBasisPoints(
-    line.commissionPercent ?? DEFAULT_PLATFORM_COMMISSION_PERCENT,
-  )
+  const commissionBps = percentToBasisPoints(line.commissionPercent)
   const upfrontBps =
     line.productType === 'coupon'
-      ? percentToBasisPoints(line.upfrontPercent ?? DEFAULT_COUPON_UPFRONT_PERCENT)
+      ? percentToBasisPoints(line.upfrontPercent as string | number)
       : percentToBasisPoints(100)
   const cashbackBps = percentToBasisPoints(line.cashbackPercent ?? 0)
 

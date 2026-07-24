@@ -58,7 +58,8 @@ the already-rounded results, so sums always reconcile exactly.
 ### 2.1 `products.platform_percent`, `coupon_deals.platform_percent`
 
 ```sql
-platform_percent numeric(5,2) NOT NULL DEFAULT 10 CHECK (platform_percent BETWEEN 0 AND 100)
+platform_percent numeric(5,2) NOT NULL CHECK (platform_percent BETWEEN 0 AND 100)
+-- No DEFAULT. Mandatory per-product admin input (docs/CONTRADICTIONS.md C1).
 ```
 
 - Set on the admin product page. Required for `active` status (app-level guard).
@@ -153,7 +154,7 @@ expires_at timestamptz    -- pending orders auto-cancel after 30 min (cron)
 `order_items` (007) gains the dynamic-split snapshot:
 
 ```sql
-platform_percent            numeric(5,2)  NOT NULL DEFAULT 10,  -- snapshot at purchase
+platform_percent            numeric(5,2)  NOT NULL,  -- snapshot at purchase, no default
 platform_fee_ils            numeric(12,2) NOT NULL DEFAULT 0,   -- platform share of line
 supplier_due_ils            numeric(12,2) NOT NULL DEFAULT 0,   -- physical: paid at settlement
 charged_on_site_ils         numeric(12,2) NOT NULL DEFAULT 0,   -- physical: = line total; coupon: = platform fee

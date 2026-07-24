@@ -2,9 +2,50 @@
 
 ## Current Phase
 **Phase 5 storefront + commerce מחווט**. branch `phase5/homepage`.
-רץ מרתון 20 יעדי /goal (סשן 2026-07-23): יעד 1 (WhatsApp) הושלם.
+רץ מרתון 20 יעדי /goal (סשן 2026-07-23): יעדים 1-3 הושלמו.
+
+## סיכום מצב 2026-07-24
+
+### מה הושלם ועובד
+| תחום | מצב | ראיה |
+|---|---|---|
+| החלטות עסקיות | **הוכרעו וננעלו** ב-`docs/CONTRADICTIONS.md` (C1-C10) | המסמך גובר על כל נוסח סותר |
+| עמלת פלטפורמה | `platform_percent` פר-מוצר, חובה, **בלי ברירת מחדל** בשום מקום | מיגרציה 050, `settlement.ts` זורק בלי אחוז מפורש |
+| עמוד מוצר | מאומת מול האתר החי | `77fb030` |
+| Checkout | עגלה → `/checkout` → ספק → success + QR → זיכוי ארנק. מיגרציות 046/047 הוחלו על המרוחק | `0f5228e`, אומת E2E בדפדפן |
+| Cardcom | ה-API הישן (`/Interface/*.aspx`), webhook לא חתום ומאומת דרך סוד ב-URL + GetLpResult, refund | `docs/CARDCOM-ARCHITECTURE.md` (בעץ, טרם בקומיט) |
+| חיפוש | `/search` + API + hook, כולל escape ל-LIKE ול-metachars של PostgREST | `ba177b6`, `876aae0` |
+| WhatsApp | כפתור צף, שיתוף מוצר/קופון, קישורי עדכון הזמנה | `76631d1` |
+| Storage ותמונות | R2 presigned + pipeline webp/avif/blur + alt עברית חובה + `media_assets` (049) | `fc25aac`, `d6817fb` |
+| E2E | Playwright 24/24 | `25430c1` |
+| אדמין | שדות תוכן/לוגיסטיקה/SEO (048), פעולות bulk, תיקוני QA: open redirect, user enumeration, נעילה עצמית של role, גישת content_uploader, soft-delete לווריאציות, יצירת ספק | `9a7672a` + סדרת `fix(...)` |
+| בדיקות | vitest 150/150, type-check נקי | הורץ 2026-07-24 |
+
+### מה פתוח
+1. **עבודה בעץ שטרם בקומיט**: מנוע Cardcom הישן + refund (`src/server/{actions/payments,domain/orders}/refund.ts`), פעולות bulk, `docs/DEPLOY.md`. צריך סבב בדיקות ואז קומיט משלה.
+2. **מיגרציה 050 לא הוחלה על המרוחק** ובכוונה: היא זורקת אם קיים מוצר חי בלי `platform_percent`. צריך למלא את הערך פר מוצר באדמין קודם.
+3. **טופס האדמין עדיין לא חושף `platform_percent` ולא `coupon_expiry_days`** - בלעדיהם אי אפשר לעמוד בדרישת "שדה חובה".
+4. **מודל מחיר הקופון (C4)**: הקוד עדיין גוזר את המקדמה כאחוז. אין עמודת מחיר קופון פר-מוצר.
+5. **מנוע payout**: T+3 ומינימום 100 ש"ח מתועדים, לא ממומשים.
+6. ה-header הנעול קצר ב-70px מה-masthead החי, `redirect_to` של Google OAuth, `supabase db push` אסור (רק MCP).
+
+### 3 המשימות הבאות לפי סדר
+1. **עמוד קטגוריה 1:1 מול החי** - `compare.mjs --page=category` מ-23.7% אל מתחת ל-7%.
+2. **`platform_percent` כשדה חובה באדמין** + `coupon_expiry_days`, ואז החלת 050 על המרוחק.
+3. **קומיט מנוע Cardcom + refund** אחרי אימות ה-endpoint מול המסוף החי.
 
 ## Last Completed
+Session 2026-07-24 (המשך) - יעד 3/20: פעולות bulk באדמין (קומיט feat(admin/bulk)):
+- ‏actions חדשים ב-`src/server/actions/admin/products.ts`: ‏bulkAssignCategory
+  (uuid או ללא קטגוריה), ‏bulkAdjustPrices (אחוזים: מכפיל גם את full_price לשמירת
+  יחס ההנחה; קביעת מחיר: מדלג על מוצרים עם full_price נמוך ומדווח), ‏bulkSoftDeleteProducts
+  (deleted_at + archived). ‏bulkUpdateProductStatus היה קיים.
+- ‏ProductsTable: עמודת checkbox + בחר-הכל-בעמוד, סרגל bulk צף (פרסום/הסתרה,
+  שיוך קטגוריה, עדכון מחירים percent/set, מחיקה עם confirm), ‏router.refresh
+  וניקוי בחירה אחרי כל פעולה. העמוד מזרים רשימת קטגוריות.
+- ‏ProductBulkClient הרדום (סטטוס בלבד, לא היה מחווט) נמחק.
+- אומת: vitest ‏128/128, ‏Playwright ‏24/24, ‏type-check ו-biome נקיים.
+
 Session 2026-07-24 - יעד 2/20: pipeline תמונות (קומיט feat(images)):
 - `src/lib/images/process.ts`: ‏sharp - המרה ל-webp (1600/800/400, q80) + avif לרוחב
   הגדול (q55), בלי upscale, ‏blur placeholder ‏16px base64. ‏9 בדיקות vitest.
@@ -127,10 +168,9 @@ reserve ‎-0.90 כפול-רישום) והזמנה מעורבת עם כתובת 
 (דילים של מסעדות = קופונים באופיים); ל"ארוחה בשרית" נקבע cashback_percent=5
 להדגמת הזיכוי. משתמש בדיקה חדש ב-auth.
 
-**הערת מודל פתוחה**: ה-settlement הממוזג משתמש בעמלת פלטפורמה 5% ברירת מחדל
-(commission_percent, ניתן לעקיפה פר מוצר) בעוד סקיל cardcom-payments אומר 10%
-לפיזי. upfront של קופון = platform_percent (ברירת מחדל 10) - תואם. נדרשת הכרעת
-Ofir איזו ברירת מחדל נכונה ל-commission_percent.
+**הערת מודל - הוכרעה 2026-07-24**: אין ברירת מחדל לעמלה. `platform_percent`
+פר-מוצר הוא הידית היחידה ו-`commission_percent` יצא משימוש. פירוט מלא
+ב-`docs/CONTRADICTIONS.md`.
 
 ## In Progress
 nothing
@@ -144,11 +184,11 @@ nothing
 - `supabase db push` עדיין אסור; החלות רק דרך MCP apply_migration.
 
 ## Next Task
-מרתון ה-/goal: יעד 2/20 - pipeline תמונות (webp/avif ב-R2, גדלים, blur placeholder,
-alt עברית, דחיסה). אחריו: bulk admin, cron, כתובות, ביטול הזמנה, דוחות ספק, Q&A,
-סל נטוש, גלריה, פילטרים, Cmd+K, feature flags, Redis cache, API layer, webhooks,
-פרטיות, DB opt, visual regression, RTL sweep.
-(משימות קודמות שנדחו: מימוש קופון אצל הספק + דף הזמנות ללקוח + הכרעת commission_percent.)
+ראה "3 המשימות הבאות" בסיכום המצב למעלה. אחריהן ממשיך מרתון ה-/goal:
+cron, כתובות, ביטול הזמנה, דוחות ספק, Q&A, סל נטוש, גלריה, פילטרים, Cmd+K,
+feature flags, Redis cache, API layer, webhooks, פרטיות, DB opt,
+visual regression, RTL sweep.
+(משימה קודמת שנדחתה: מימוש קופון אצל הספק + דף הזמנות ללקוח.)
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress

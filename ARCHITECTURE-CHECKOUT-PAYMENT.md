@@ -17,7 +17,7 @@ Date: 2026-07-20. Branch: `phase5/homepage`.
 
 **Precedence on payment pipeline conflicts:** SECURITY (controls) > LEGAL (refund rights) > this document > COMMERCE / API-CONTRACTS for checkout-payment lifecycle detail. Business split rules stay in COMMERCE / BUSINESS-MODEL.
 
-**Out of scope here:** Stripe as a PSP. Tokenization is Cardcom only (`payment_tokens.cardcom_token`). See Open Questions (Q1) if Stripe was intended as a second rail.
+**Single PSP, decided:** Cardcom is the only payment rail. Tokenization is Cardcom only (`payment_tokens.cardcom_token`). No second PSP is planned and no other provider appears anywhere in this design.
 
 ---
 
@@ -209,7 +209,7 @@ sequenceDiagram
 
 | Topic | Decision |
 |---|---|
-| PSP | Cardcom only (Israeli). No Stripe in this design |
+| PSP | Cardcom only (Israeli). Single rail, no alternate provider |
 | Hosted UI | Low Profile (redirect or iframe). SAQ-A: PAN never on our origin |
 | Amount | Integer **agorot** (1/100 ILS). Same scale as "cents". Convert to Cardcom's expected unit at the adapter boundary; never float |
 | Create | Low Profile create / CreateAndCharge equivalent in the official API |
@@ -642,7 +642,7 @@ flowchart TD
 
 | ID | Question | Default if undecided |
 |---|---|---|
-| Q1 | Was "Stripe tokens" in the brief a misnomer for Cardcom tokens, or is a second PSP required? | Cardcom only; Stripe out of scope |
+| Q1 | RESOLVED: the "tokens" in the brief are Cardcom tokens. Single PSP. | Cardcom only |
 | Q2 | `ARCHITECTURE-CART-CHECKOUT.md` still missing: own cart UX doc, or absorb cart handoff into COMMERCE + this file? | Absorb handoff here; cart UI stays in components until a short cart doc exists |
 | Q3 | Low Profile embed: full redirect vs iframe on `/checkout`? | Full redirect (simpler CSP / SAQ-A story) |
 | Q4 | Exact Cardcom HMAC header/field name and canonical string-to-sign (vendor docs drift)? | Pin in adapter against current Cardcom doc at implement time; dual-secret rotation window |

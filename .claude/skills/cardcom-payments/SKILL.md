@@ -9,18 +9,26 @@ KenyonExpress is a PLATFORM, not a supplier. It connects customers to suppliers 
 
 ## Payment split by product type
 
+Commission is `products.platform_percent`: a MANDATORY per-product value the
+admin sets. There is no default rate anywhere (docs/CONTRADICTIONS.md C1/C2).
+It is snapshotted into `order_items` at purchase.
+
 ### Physical product
 - Customer pays 100% of the price on checkout.
-- Platform keeps 10% (commission).
-- 90% goes to the supplier via Cardcom Multi-Account split at time of payment.
-- No manual payout step needed -- Cardcom splits at transaction time.
+- Platform keeps `platform_percent` of that amount; the rest goes to the supplier.
+- Cardcom has no atomic split, so the split is recorded in our ledger and settled
+  by payout (T+3 business days, minimum 100 ILS accrued balance).
 
 ### Coupon product
-- Customer pays 10% only, on the KenyonExpress site.
-- The remaining 90% is paid directly at the business on coupon scan.
-- No escrow, no payout from platform to supplier.
+- Customer pays the coupon price set on that product, on the KenyonExpress site.
+- The remainder is paid directly at the business on coupon scan.
+- Commission is taken from the upfront only, never from the full face value.
+- The upfront is recorded as an INTERNAL `held` entry in our own ledger until
+  redemption. There is no external escrow and no J5 authorization.
 - Coupon status transitions: `active` -> `redeemed` (on QR scan at business).
-- Coupon expires (status `expired`) at `expiry_date` if not scanned.
+- Expiry is `products.coupon_expiry_days` per product (30 / 60 / 90 or any
+  integer). On expiry without redemption the upfront is credited to the
+  customer's digital wallet.
 
 ## First purchase incentive
 

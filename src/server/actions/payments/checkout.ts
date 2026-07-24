@@ -12,12 +12,7 @@ import {
   beginCheckoutInputSchema,
 } from '@/lib/validations/checkout'
 import { getCart } from '@/server/actions/cart'
-import {
-  DEFAULT_COUPON_UPFRONT_PERCENT,
-  DEFAULT_PLATFORM_COMMISSION_PERCENT,
-  type SettlementLineInput,
-  calculateSettlement,
-} from '@/server/domain/orders/settlement'
+import { type SettlementLineInput, calculateSettlement } from '@/server/domain/orders/settlement'
 import { finalizeOrder } from '@/server/payments/finalize'
 import { redirect } from 'next/navigation'
 
@@ -145,13 +140,22 @@ export async function beginCheckout(
     if (!product.supplier_id) {
       return { ok: false, error: `למוצר "${item.name_he}" אין ספק משויך`, code: 'INTERNAL' }
     }
+    // platform_percent is the single, mandatory commission knob (CONTRADICTIONS
+    // C1/C2). There is no fallback: a product without it cannot be sold.
+    if (product.platform_percent === null || product.platform_percent === undefined) {
+      return {
+        ok: false,
+        error: `למוצר "${item.name_he}" לא הוגדר אחוז פלטפורמה`,
+        code: 'INTERNAL',
+      }
+    }
     settlementLines.push({
       id: `${item.product_id}::${item.variant_id ?? 'null'}`,
       productType: item.type,
       unitPrice: ilsToAgorot(item.unit_price.toFixed(2)),
       quantity: item.quantity,
-      upfrontPercent: product.platform_percent ?? DEFAULT_COUPON_UPFRONT_PERCENT,
-      commissionPercent: product.commission_percent ?? DEFAULT_PLATFORM_COMMISSION_PERCENT,
+      upfrontPercent: product.platform_percent,
+      commissionPercent: product.platform_percent,
       cashbackPercent: product.cashback_percent ?? 0,
     })
   }
@@ -291,7 +295,9 @@ export async function beginCheckout(
       saveToken: input.save_card,
       successRedirectUrl: `${env.appUrl}/checkout/return?order_id=${order.id}`,
       failedRedirectUrl: `${env.appUrl}/checkout/failed?order_id=${order.id}`,
-      webhookUrl: `${env.appUrl}/api/payments/cardcom/webhook`,
+      // Cardcom does not sign webhooks; the unguessable secret in the URL is the
+      // authenticity gate (paired with server-side GetLpResult re-verification).
+      webhookUrl: `${env.appUrl}/api/payments/cardcom/webhook?s=${encodeURIComponent(env.webhookSecret)}`,
       description: `הזמנה ${order.id.slice(0, 8)}`,
     })
 

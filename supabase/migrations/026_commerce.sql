@@ -40,11 +40,11 @@ EXCEPTION WHEN duplicate_object THEN null; END $$;
 -- ===========================================================================
 
 ALTER TABLE public.products
-  ADD COLUMN IF NOT EXISTS platform_percent numeric(5,2) NOT NULL DEFAULT 10
+  ADD COLUMN IF NOT EXISTS platform_percent numeric(5,2)
     CHECK (platform_percent BETWEEN 0 AND 100);
 
 ALTER TABLE public.coupon_deals
-  ADD COLUMN IF NOT EXISTS platform_percent numeric(5,2) NOT NULL DEFAULT 10
+  ADD COLUMN IF NOT EXISTS platform_percent numeric(5,2)
     CHECK (platform_percent BETWEEN 0 AND 100);
 
 -- ===========================================================================
@@ -99,7 +99,7 @@ CREATE INDEX IF NOT EXISTS idx_orders_pending_expiry
   WHERE status = 'pending'::public.order_status;
 
 ALTER TABLE public.order_items
-  ADD COLUMN IF NOT EXISTS platform_percent            numeric(5,2)  NOT NULL DEFAULT 10,
+  ADD COLUMN IF NOT EXISTS platform_percent            numeric(5,2),
   ADD COLUMN IF NOT EXISTS platform_fee_ils            numeric(12,2) NOT NULL DEFAULT 0 CHECK (platform_fee_ils >= 0),
   ADD COLUMN IF NOT EXISTS supplier_due_ils            numeric(12,2) NOT NULL DEFAULT 0 CHECK (supplier_due_ils >= 0),
   ADD COLUMN IF NOT EXISTS charged_on_site_ils         numeric(12,2) NOT NULL DEFAULT 0 CHECK (charged_on_site_ils >= 0),
@@ -107,9 +107,11 @@ ALTER TABLE public.order_items
 
 -- Backfill deprecated twins from any pre-existing rows (best effort; both
 -- directions guarded to zero-only rows so re-runs never clobber real data).
+-- No default exists for platform_percent (docs/CONTRADICTIONS.md C1), so the
+-- backfill keys off NULL rather than off a sentinel rate.
 UPDATE public.order_items
    SET platform_percent = commission_percent
- WHERE platform_percent = 10 AND commission_percent IS NOT NULL AND commission_percent <> 10;
+ WHERE platform_percent IS NULL AND commission_percent IS NOT NULL;
 
 -- ===========================================================================
 -- 5. payments + payment_webhook_events
