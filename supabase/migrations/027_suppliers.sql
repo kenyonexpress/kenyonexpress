@@ -82,7 +82,7 @@ ALTER TABLE public.suppliers
   ADD COLUMN IF NOT EXISTS deleted_at        timestamptz;
 
 COMMENT ON COLUMN public.suppliers.commission_percent IS
-  'Default platform_percent for this supplier. Overridden per product by products.platform_percent.';
+  'NOT a default and NOT a fallback (CONTRADICTIONS C1/C2). Agreement percent shown as a suggestion while creating a product for this supplier; never read at checkout or settlement. The only split knob is products.platform_percent (mandatory, NOT NULL, no DEFAULT since 050).';
 
 CREATE INDEX IF NOT EXISTS suppliers_status_idx ON public.suppliers (status);
 CREATE INDEX IF NOT EXISTS suppliers_deleted_at_idx ON public.suppliers (deleted_at) WHERE deleted_at IS NULL;
