@@ -121,8 +121,8 @@ export function periodKey(iso: string, period: Period): string {
 
   // Parsed as UTC noon so the day arithmetic below cannot slip across a DST
   // boundary; only the calendar date matters here, never the clock time.
-  const [year, month, date] = day.split('-').map(Number)
-  const anchor = new Date(Date.UTC(year, month - 1, date, 12))
+  const [year, month, date] = day.split('-')
+  const anchor = new Date(Date.UTC(Number(year), Number(month) - 1, Number(date), 12))
   anchor.setUTCDate(anchor.getUTCDate() - anchor.getUTCDay())
   return anchor.toISOString().slice(0, 10)
 }
@@ -317,20 +317,23 @@ const FUNNEL_LABELS: Array<[keyof FunnelRow, string]> = [
  * null rather than 0: "no data" and "nobody converted" are different answers.
  */
 export function funnelWithRates(row: FunnelRow): FunnelStep[] {
-  const top = row[FUNNEL_LABELS[0][0]]
+  // sessions is the top of the funnel by definition; every later step is a
+  // subset of it. Carrying the previous value forward beats index arithmetic.
+  const top = row.sessions
+  let previous: number | null = null
 
-  return FUNNEL_LABELS.map(([key, label], index) => {
+  return FUNNEL_LABELS.map(([key, label]) => {
     const value = row[key]
-    const previous = index === 0 ? null : row[FUNNEL_LABELS[index - 1][0]]
-
-    return {
+    const step: FunnelStep = {
       key,
       label,
       value,
       fromPreviousPct:
         previous === null || previous === 0 ? null : round1((100 * value) / previous),
-      fromTopPct: index === 0 ? null : top === 0 ? null : round1((100 * value) / top),
+      fromTopPct: previous === null || top === 0 ? null : round1((100 * value) / top),
     }
+    previous = value
+    return step
   })
 }
 

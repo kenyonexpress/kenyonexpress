@@ -4,6 +4,7 @@ import { canAccessAdminSection } from '@/lib/admin/nav'
 import { cn } from '@/lib/utils'
 import type { UserRole } from '@/types/database'
 import {
+  ChartLine,
   ClipboardList,
   FileText,
   LayoutDashboard,
@@ -19,6 +20,7 @@ import { usePathname } from 'next/navigation'
 
 const NAV_ITEMS = [
   { href: '/admin/dashboard', label: 'לוח בקרה', icon: LayoutDashboard, exact: true },
+  { href: '/admin/analytics', label: 'אנליטיקה', icon: ChartLine },
   { href: '/admin/products', label: 'מוצרים', icon: Package, quickAdd: '/admin/products/new' },
   { href: '/admin/categories', label: 'קטגוריות', icon: Tag },
   { href: '/admin/suppliers', label: 'ספקים', icon: Store },

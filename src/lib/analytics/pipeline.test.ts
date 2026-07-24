@@ -105,8 +105,8 @@ describe('event validation', () => {
     const parsed = ingestBatchSchema.safeParse({ events: [validEvent] })
 
     expect(parsed.success).toBe(true)
-    expect(parsed.success && parsed.data.events[0].source).toBe('web')
-    expect(parsed.success && parsed.data.events[0].source_app).toBe('shop')
+    expect(parsed.success && parsed.data.events[0]?.source).toBe('web')
+    expect(parsed.success && parsed.data.events[0]?.source_app).toBe('shop')
   })
 
   it('rejects an event name outside the taxonomy', () => {

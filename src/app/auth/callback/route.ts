@@ -2,6 +2,7 @@ import { safeNextPath } from '@/lib/auth/safe-next'
 import { GUEST_SESSION_COOKIE, parseGuestSessionToken } from '@/lib/cart/guest-session'
 import { createClient } from '@/lib/supabase/server'
 import { mergeGuestCart } from '@/server/actions/cart'
+import { linkAnalyticsIdentity } from '@/server/analytics/track'
 import { cookies } from 'next/headers'
 import { type NextRequest, NextResponse } from 'next/server'
 
@@ -22,6 +23,9 @@ export async function GET(request: NextRequest) {
       const sessionId = parseGuestSessionToken(cookieStore.get(GUEST_SESSION_COOKIE)?.value)
       if (sessionId) {
         await mergeGuestCart(session.user.id, sessionId)
+        // Before the cookie is cleared: this is the last moment the guest id
+        // and the user id are both known.
+        await linkAnalyticsIdentity(session.user.id, sessionId)
         cookieStore.delete(GUEST_SESSION_COOKIE)
       }
       return NextResponse.redirect(new URL(safeNext, origin))

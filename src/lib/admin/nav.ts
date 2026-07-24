@@ -7,6 +7,7 @@ import { isAdminRole, isStaffRole } from './roles'
 // is open to them.
 export const ADMIN_SECTIONS = [
   { href: '/admin/dashboard', staffAllowed: false },
+  { href: '/admin/analytics', staffAllowed: false },
   { href: '/admin/products', staffAllowed: true },
   { href: '/admin/categories', staffAllowed: false },
   { href: '/admin/suppliers', staffAllowed: false },

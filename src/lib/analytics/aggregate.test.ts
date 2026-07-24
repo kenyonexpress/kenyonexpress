@@ -85,10 +85,10 @@ describe('bucketSales', () => {
       'day',
     )
 
-    expect(bucket.orders).toBe(2)
-    expect(bucket.items).toBe(3)
-    expect(bucket.gmvIls).toBe(180)
-    expect(bucket.platformRevenueIls).toBe(18)
+    expect(bucket?.orders).toBe(2)
+    expect(bucket?.items).toBe(3)
+    expect(bucket?.gmvIls).toBe(180)
+    expect(bucket?.platformRevenueIls).toBe(18)
   })
 
   it('divides AOV by orders, not by item lines', () => {
@@ -97,7 +97,7 @@ describe('bucketSales', () => {
       'day',
     )
 
-    expect(bucket.aovIls).toBe(150)
+    expect(bucket?.aovIls).toBe(150)
   })
 
   it('returns buckets in chronological order', () => {
@@ -138,7 +138,7 @@ describe('bucketSales', () => {
       'day',
     )
 
-    expect(bucket.gmvIls).toBe(0.3)
+    expect(bucket?.gmvIls).toBe(0.3)
   })
 
   it('returns nothing for no sales', () => {
@@ -166,16 +166,16 @@ describe('topProducts', () => {
       line({ productId: 'p1', orderId: 'b', gmvIls: 100, platformFeeIls: 10 }),
     ])
 
-    expect(row.units).toBe(2)
-    expect(row.gmvIls).toBe(200)
-    expect(row.platformRevenueIls).toBe(20)
+    expect(row?.units).toBe(2)
+    expect(row?.gmvIls).toBe(200)
+    expect(row?.platformRevenueIls).toBe(20)
   })
 
   it('labels a product that no longer exists instead of dropping its sales', () => {
     const [row] = topProducts([line({ productId: null, productName: null })])
 
-    expect(row.productName).toBe('מוצר שנמחק')
-    expect(row.gmvIls).toBe(100)
+    expect(row?.productName).toBe('מוצר שנמחק')
+    expect(row?.gmvIls).toBe(100)
   })
 })
 
@@ -197,14 +197,14 @@ describe('splitByProductType', () => {
       line({ productType: 'coupon', gmvIls: 300, chargedOnSiteIls: 100 }),
     ])
 
-    expect(coupon.gmvIls).toBe(300)
-    expect(coupon.chargedOnSiteIls).toBe(100)
+    expect(coupon?.gmvIls).toBe(300)
+    expect(coupon?.chargedOnSiteIls).toBe(100)
   })
 
   it('does not divide by zero when there is no GMV', () => {
     const [row] = splitByProductType([line({ gmvIls: 0, chargedOnSiteIls: 0 })])
 
-    expect(row.gmvSharePct).toBe(0)
+    expect(row?.gmvSharePct).toBe(0)
   })
 })
 
@@ -229,20 +229,20 @@ describe('takeRateByPlatformPercent', () => {
       line({ productType: 'coupon', platformPercent: 10, gmvIls: 300, platformFeeIls: 10 }),
     ])
 
-    expect(row.effectiveTakeRatePct).toBe(3.33)
+    expect(row?.effectiveTakeRatePct).toBe(3.33)
   })
 
   it('reports no take rate rather than zero when there is no GMV', () => {
     const [row] = takeRateByPlatformPercent([line({ gmvIls: 0, platformFeeIls: 0 })])
 
-    expect(row.effectiveTakeRatePct).toBeNull()
+    expect(row?.effectiveTakeRatePct).toBeNull()
   })
 
   it('keeps items with no snapshotted percent visible', () => {
     const rows = takeRateByPlatformPercent([line({ platformPercent: null })])
 
     expect(rows).toHaveLength(1)
-    expect(rows[0].platformPercent).toBeNull()
+    expect(rows[0]?.platformPercent).toBeNull()
   })
 })
 

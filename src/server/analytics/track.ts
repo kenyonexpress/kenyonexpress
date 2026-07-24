@@ -59,11 +59,21 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
  * Records that a guest id and a user id are the same person, so pre-login
  * behavior can be attributed at query time. Written at login and again at
  * checkout: two cheap upserts beat one missed link.
+ *
+ * The login callback clears the guest cookie once it has merged the guest cart,
+ * so the guest id is gone from that point on. That makes the link written there
+ * the only chance to connect a visitor's pre-login browsing to their account,
+ * which is why the caller can pass the id explicitly instead of relying on a
+ * cookie that is about to be deleted.
  */
-export async function linkAnalyticsIdentity(userId: string): Promise<void> {
+export async function linkAnalyticsIdentity(
+  userId: string,
+  explicitAnonymousId?: string | null,
+): Promise<void> {
   try {
     const cookieStore = await cookies()
-    const anonymousId = parseGuestSessionToken(cookieStore.get(GUEST_SESSION_COOKIE)?.value)
+    const anonymousId =
+      explicitAnonymousId ?? parseGuestSessionToken(cookieStore.get(GUEST_SESSION_COOKIE)?.value)
     if (!anonymousId) return
 
     const admin = createAdminClient()
