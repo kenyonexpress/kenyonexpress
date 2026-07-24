@@ -1,5 +1,6 @@
 import type { SortValue } from '@/components/category/CategoryControlBar'
 import { createClient } from '@/lib/supabase/server'
+import { cache } from 'react'
 
 export const CATEGORY_PAGE_SIZE = 12
 
@@ -204,3 +205,14 @@ export async function getShopProducts(opts: {
   })
   return { items, total: count ?? 0 }
 }
+
+/**
+ * Request-scoped memoisation of the archive queries.
+ *
+ * The result count renders in the page header and the grid renders in the body,
+ * and each sits behind its own Suspense boundary so the shell can stream first.
+ * Without `cache` that would issue the same query twice per request; with it
+ * both boundaries share one round trip.
+ */
+export const getCategoryProductsCached = cache(getCategoryProducts)
+export const getShopProductsCached = cache(getShopProducts)

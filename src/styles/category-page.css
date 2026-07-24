@@ -527,3 +527,60 @@
   color: var(--cat-ink);
   border-bottom: 2px solid var(--cat-brand);
 }
+
+/* Streaming placeholder. Mirrors the measured card boxes so the grid does not
+   reflow when the real products arrive. */
+.category-card--skeleton {
+  gap: 0;
+}
+
+.category-skeleton {
+  display: block;
+  background: var(--cat-bar);
+  border-radius: 4px;
+}
+
+.category-skeleton--eyebrow {
+  height: 12.6px;
+  width: 60%;
+  margin-bottom: 11.998px;
+}
+
+.category-skeleton--price {
+  height: 27px;
+  width: 45%;
+}
+
+.category-skeleton--title {
+  height: 18.0001px;
+  width: 85%;
+  margin-top: 4px;
+}
+
+.category-skeleton--thumb {
+  height: 186.03px;
+  width: 100%;
+  margin-top: 25.96px;
+}
+
+.category-skeleton--footer {
+  height: 36px;
+  width: 100%;
+  margin-top: 8px;
+  margin-bottom: 7px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .category-skeleton {
+    animation: category-skeleton-pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes category-skeleton-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.55;
+    }
+  }
+}

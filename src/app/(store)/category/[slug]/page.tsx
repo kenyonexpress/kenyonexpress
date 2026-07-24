@@ -1,21 +1,24 @@
 import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/CategoryBreadcrumb'
 import CategoryControlBar from '@/components/category/CategoryControlBar'
 import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
+import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
 import Pagination from '@/components/category/Pagination'
 import {
   CATEGORY_PAGE_SIZE,
+  type ProductTypeFilter,
   getAllCategories,
   getCategoryBySlug,
   getCategoryParent,
-  getCategoryProducts,
+  getCategoryProductsCached,
   parseProductType,
 } from '@/lib/category-page'
-import { parseSort } from '@/lib/category-tokens'
+import { type SortValue, parseSort } from '@/lib/category-tokens'
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 import '@/styles/category-page.css'
 
 type Props = {
@@ -56,6 +59,75 @@ export async function generateMetadata({ params }: Props) {
   }
 }
 
+type QueryArgs = {
+  categoryId: string
+  category: { name_he: string; slug: string }
+  sort: SortValue
+  page: number
+  priceMin?: number
+  priceMax?: number
+  productType?: ProductTypeFilter
+}
+
+function pageWindow(total: number, page: number) {
+  const totalPages = Math.max(1, Math.ceil(total / CATEGORY_PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const from = (currentPage - 1) * CATEGORY_PAGE_SIZE + 1
+  const to = Math.min(currentPage * CATEGORY_PAGE_SIZE, total)
+  return { totalPages, currentPage, from, to }
+}
+
+/** Header count. Shares one query with the grid via getCategoryProductsCached. */
+async function ResultCount({ args }: { args: QueryArgs }) {
+  const { total } = await getCategoryProductsCached(args)
+  if (total === 0) return null
+  const { from, to } = pageWindow(total, args.page)
+  return <p className="category-page__count">{resultCountText(total, from, to)}</p>
+}
+
+async function ResultGrid({
+  args,
+  pathname,
+  linkParams,
+}: {
+  args: QueryArgs
+  pathname: string
+  linkParams: Record<string, string | undefined>
+}) {
+  const { items, total } = await getCategoryProductsCached(args)
+
+  if (items.length === 0) {
+    return (
+      <div className="category-page__empty">
+        <p>לא נמצאו מוצרים התואמים את הבחירה שלך.</p>
+      </div>
+    )
+  }
+
+  const { totalPages, currentPage, from, to } = pageWindow(total, args.page)
+
+  return (
+    <>
+      <ul className="category-products">
+        {items.map((product) => (
+          <li key={product.id} className="category-products__item">
+            <CategoryProductCard product={product as CategoryProduct} />
+          </li>
+        ))}
+      </ul>
+      <Pagination
+        pathname={pathname}
+        params={linkParams}
+        currentPage={currentPage}
+        totalPages={totalPages}
+      />
+      <p className="category-page__count category-page__count--bottom">
+        {resultCountText(total, from, to)}
+      </p>
+    </>
+  )
+}
+
 export default async function CategoryPage({ params, searchParams }: Props) {
   const { slug } = await params
   const sp = await searchParams
@@ -68,25 +140,22 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   const category = await getCategoryBySlug(slug)
   if (!category) notFound()
 
-  const [parent, allCategories, { items, total }] = await Promise.all([
+  // Cheap shell data only. The product query is deferred to the boundaries
+  // below so the breadcrumb, title, control bar and sidebar can stream first.
+  const [parent, allCategories] = await Promise.all([
     category.parent_id ? getCategoryParent(category.parent_id) : Promise.resolve(null),
     getAllCategories(),
-    getCategoryProducts({
-      categoryId: category.id,
-      category: { name_he: category.name_he, slug: category.slug },
-      sort,
-      page,
-      priceMin,
-      priceMax,
-      productType,
-    }),
   ])
 
-  const totalPages = Math.max(1, Math.ceil(total / CATEGORY_PAGE_SIZE))
-  const currentPage = Math.min(page, totalPages)
-  const from = (currentPage - 1) * CATEGORY_PAGE_SIZE + 1
-  const to = Math.min(currentPage * CATEGORY_PAGE_SIZE, total)
-  const countText = resultCountText(total, from, to)
+  const args: QueryArgs = {
+    categoryId: category.id,
+    category: { name_he: category.name_he, slug: category.slug },
+    sort,
+    page,
+    priceMin,
+    priceMax,
+    productType,
+  }
 
   const pathname = `/category/${category.slug}`
   const linkParams = {
@@ -109,35 +178,18 @@ export default async function CategoryPage({ params, searchParams }: Props) {
 
         <header className="category-page__header">
           <h1 className="category-page__title">{category.name_he}</h1>
-          {total > 0 && <p className="category-page__count">{countText}</p>}
+          <Suspense fallback={null}>
+            <ResultCount args={args} />
+          </Suspense>
         </header>
 
         <CategoryControlBar value={sort} />
 
         <div className="category-page__body">
           <div className="category-page__main">
-            {items.length > 0 ? (
-              <>
-                <ul className="category-products">
-                  {items.map((product) => (
-                    <li key={product.id} className="category-products__item">
-                      <CategoryProductCard product={product as CategoryProduct} />
-                    </li>
-                  ))}
-                </ul>
-                <Pagination
-                  pathname={pathname}
-                  params={linkParams}
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                />
-                <p className="category-page__count category-page__count--bottom">{countText}</p>
-              </>
-            ) : (
-              <div className="category-page__empty">
-                <p>לא נמצאו מוצרים התואמים את הבחירה שלך.</p>
-              </div>
-            )}
+            <Suspense fallback={<CategoryGridSkeleton count={CATEGORY_PAGE_SIZE} />}>
+              <ResultGrid args={args} pathname={pathname} linkParams={linkParams} />
+            </Suspense>
           </div>
 
           <CategoryFilterSidebar

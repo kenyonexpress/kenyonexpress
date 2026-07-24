@@ -6,6 +6,7 @@ import 'server-only'
 import type { Product } from '@/components/ProductCard'
 import { createClient } from '@/lib/supabase/server'
 import { sanitizeOrTerm } from '@/lib/utils/search-escape'
+import { cache } from 'react'
 
 export type SearchOutcome = {
   results: Product[]
@@ -116,3 +117,9 @@ export async function searchProductsServer(
   }
   return searchDb(q, limit, productType)
 }
+
+/**
+ * Request-scoped memoisation. The result count and the grid sit behind separate
+ * Suspense boundaries; without this each would run the search independently.
+ */
+export const searchProductsCached = cache(searchProductsServer)

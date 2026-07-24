@@ -1,12 +1,14 @@
 import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/CategoryBreadcrumb'
 import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
+import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
 import SearchBox from '@/components/search/SearchBox'
-import { getAllCategories, parseProductType } from '@/lib/category-page'
-import { searchProductsServer } from '@/lib/search-server'
+import { type ProductTypeFilter, getAllCategories, parseProductType } from '@/lib/category-page'
+import { searchProductsCached } from '@/lib/search-server'
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import '@/styles/category-page.css'
 
 type Props = {
@@ -29,15 +31,54 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   }
 }
 
+/** Count and grid share one search call via searchProductsCached. */
+async function ResultCount({ q, productType }: { q: string; productType?: ProductTypeFilter }) {
+  const { total, engine } = await searchProductsCached(q, 48, productType)
+  return (
+    <p className="category-page__count">
+      נמצאו {total} מוצרים
+      {engine === 'meilisearch' && ' · Meilisearch'}
+    </p>
+  )
+}
+
+async function ResultGrid({ q, productType }: { q: string; productType?: ProductTypeFilter }) {
+  const { results } = await searchProductsCached(q, 48, productType)
+
+  if (results.length === 0) {
+    return (
+      <div className="category-page__empty">
+        <p>לא נמצאו מוצרים עבור "{q}".</p>
+        <p>נסו מילת חיפוש אחרת.</p>
+      </div>
+    )
+  }
+
+  return (
+    <ul className="category-products">
+      {results.map((product) => (
+        <li key={product.id} className="category-products__item">
+          <CategoryProductCard
+            product={
+              {
+                ...product,
+                categories: product.category ? [product.category] : [],
+              } as unknown as CategoryProduct
+            }
+          />
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 export default async function SearchPage({ searchParams }: Props) {
   const sp = await searchParams
   const q = firstStr(sp.q).trim()
   const productType = parseProductType(sp.type)
 
-  const [allCategories, { results, total, engine }] = await Promise.all([
-    getAllCategories(),
-    searchProductsServer(q, 48, productType),
-  ])
+  // Shell only. The search itself streams in behind the boundaries below.
+  const allCategories = await getAllCategories()
 
   return (
     <div className="category-page">
@@ -49,10 +90,9 @@ export default async function SearchPage({ searchParams }: Props) {
             {q ? `תוצאות חיפוש עבור "${q}"` : 'חיפוש מוצרים'}
           </h1>
           {q.length >= MIN_QUERY && (
-            <p className="category-page__count">
-              נמצאו {total} מוצרים
-              {engine === 'meilisearch' && ' · Meilisearch'}
-            </p>
+            <Suspense fallback={null}>
+              <ResultCount q={q} productType={productType} />
+            </Suspense>
           )}
         </header>
 
@@ -66,26 +106,10 @@ export default async function SearchPage({ searchParams }: Props) {
               <div className="category-page__empty">
                 <p>הקלידו לפחות {MIN_QUERY} תווים כדי לחפש.</p>
               </div>
-            ) : results.length > 0 ? (
-              <ul className="category-products">
-                {results.map((product) => (
-                  <li key={product.id} className="category-products__item">
-                    <CategoryProductCard
-                      product={
-                        {
-                          ...product,
-                          categories: product.category ? [product.category] : [],
-                        } as unknown as CategoryProduct
-                      }
-                    />
-                  </li>
-                ))}
-              </ul>
             ) : (
-              <div className="category-page__empty">
-                <p>לא נמצאו מוצרים עבור "{q}".</p>
-                <p>נסו מילת חיפוש אחרת.</p>
-              </div>
+              <Suspense fallback={<CategoryGridSkeleton count={12} />}>
+                <ResultGrid q={q} productType={productType} />
+              </Suspense>
             )}
           </div>
 
