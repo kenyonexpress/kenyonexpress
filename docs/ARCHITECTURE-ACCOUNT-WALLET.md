@@ -1,7 +1,7 @@
 # ארכיטקטורת אזור אישי + ארנק דיגיטלי
 
 סטטוס: DESIGN + IMPLEMENTATION. ענף `feat/account-wallet`, worktree `ke-account`.
-תאריך: 2026-07-24. מיגרציה נלווית: `supabase/migrations/052_account_wallet.sql`.
+תאריך: 2026-07-24. מיגרציה נלווית: `supabase/migrations/055_account_wallet.sql`.
 
 מסמך זה הוא מקור האמת לדומיין החשבון והארנק. הוא לא נוגע בדומיין השוברים
 (`ke-voucher`) ולא בדומיין הספקים (`ke-supplier`); כל נקודת מגע ביניהם מסומנת

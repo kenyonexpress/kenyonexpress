@@ -1,5 +1,5 @@
 -- ============================================================================
--- 056_money_integer_units.sql  (spec number 034; renumbered 033->050 ...
+-- 057_money_integer_units.sql  (spec number 034; renumbered 033->050 ...
 -- 039->056 because 033-035 already exist in this tree and 049 was the last
 -- used number; see LEDGER-DESIGN.md section 0)
 --
@@ -156,6 +156,10 @@ SELECT public.fn_money_col_to_int('wallet_transactions', 'gross_amount_ils', 'gr
 
 -- wallet_accounts + wallet_entries (046)
 SELECT public.fn_money_col_to_int('wallet_accounts', 'balance_ils', 'balance_agorot');
+
+-- cashback_rules (055_account_wallet)
+SELECT public.fn_money_col_to_int('cashback_rules', 'min_order_ils', 'min_order_agorot');
+SELECT public.fn_money_col_to_int('cashback_rules', 'max_cashback_ils', 'max_cashback_agorot');
 SELECT public.fn_money_col_to_int('wallet_entries', 'amount_ils', 'amount_agorot');
 
 -- products + product_variants (005)

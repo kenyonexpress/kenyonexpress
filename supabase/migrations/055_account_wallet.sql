@@ -1,4 +1,4 @@
--- 052_account_wallet.sql
+-- 055_account_wallet.sql
 -- Personal area + internal wallet. See docs/ARCHITECTURE-ACCOUNT-WALLET.md.
 --
 -- Builds on the APPLIED 046 ledger (wallet_accounts + wallet_entries). It does

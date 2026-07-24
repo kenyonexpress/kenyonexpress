@@ -21,13 +21,13 @@
 
 | מספר במפרט | קובץ בפועל | תוכן |
 |---|---|---|
-| 033 | `supabase/migrations/055_ledger_core.sql` | טבלאות ledger, אילוצים, אינדקסים, sum-zero, immutability |
-| 034 | `supabase/migrations/056_money_integer_units.sql` | כסף numeric לאגורות integer, אחוזים לנקודות בסיס |
-| 035 | `supabase/migrations/057_idempotency_keys.sql` | טבלת idempotency_keys |
-| 036 | `supabase/migrations/058_coupon_single_use.sql` | הקשחת מימוש קופון חד-פעמי |
-| 037 | `supabase/migrations/059_settlement_batches.sql` | settlement_batches + settlement_items פר ספק |
-| 038 | `supabase/migrations/060_reconciliation.sql` | reconciliation_runs + reconciliation_discrepancies |
-| 039 | `supabase/migrations/061_money_rls.sql` | RLS לכל הטבלאות החדשות |
+| 033 | `supabase/migrations/056_ledger_core.sql` | טבלאות ledger, אילוצים, אינדקסים, sum-zero, immutability |
+| 034 | `supabase/migrations/057_money_integer_units.sql` | כסף numeric לאגורות integer, אחוזים לנקודות בסיס |
+| 035 | `supabase/migrations/058_idempotency_keys.sql` | טבלת idempotency_keys |
+| 036 | `supabase/migrations/059_coupon_single_use.sql` | הקשחת מימוש קופון חד-פעמי |
+| 037 | `supabase/migrations/060_settlement_batches.sql` | settlement_batches + settlement_items פר ספק |
+| 038 | `supabase/migrations/061_reconciliation.sql` | reconciliation_runs + reconciliation_discrepancies |
+| 039 | `supabase/migrations/062_money_rls.sql` | RLS לכל הטבלאות החדשות |
 
 כל מיגרציה אידמפוטנטית לפי כללי הסקיל `supabase-migrations`, עם הערת rollback בראש הקובץ.
 המיגרציות הן קבצים בלבד: שום דבר לא הוחל על מסד נתונים.
@@ -38,7 +38,7 @@
 - בטבלאות ה-ledger עצמן הסכומים הם `bigint` (צבירה ארוכת טווח על חשבון אחד עלולה לחצות
   את תקרת int4; שורה בודדת תמיד קטנה, אבל טור הסכום אחיד).
 - כל אחוז הוא `integer` בנקודות בסיס (basis points): 10% = 1000 bp, 100% = 10000 bp.
-  ההמרה מאחוז עשרוני היא הכפלה ב-100 בדיוק כמו כסף, ולכן מיגרציה 056 משתמשת באותו helper.
+  ההמרה מאחוז עשרוני היא הכפלה ב-100 בדיוק כמו כסף, ולכן מיגרציה 057 משתמשת באותו helper.
 - עיגול: `round()` של Postgres (half up על numeric חיובי) בכל הכפלה של סכום באחוז:
   `round(amount_agorot * bp / 10000.0)::integer`.
 
@@ -73,7 +73,7 @@
 - חשבון גלובלי: שורה אחת בדיוק, נאכף באינדקס unique חלקי על `kind` כאשר אין בעלים.
 - חשבון ספק: unique על `(kind, supplier_id)`. חשבון לקוח: unique על `(kind, user_id)`.
 - CHECK מבטיח שבעלות תואמת kind (לחשבון ספק חייב `supplier_id` ואסור `user_id`, וכן הלאה).
-- שלושת החשבונות הגלובליים נזרעים במיגרציה 055. חשבונות ספק ולקוח נוצרים בעצלנות דרך
+- שלושת החשבונות הגלובליים נזרעים במיגרציה 056. חשבונות ספק ולקוח נוצרים בעצלנות דרך
   `fn_ensure_ledger_account` (service only).
 
 ## 3. מודל היומן: journals ו-lines
@@ -100,7 +100,7 @@ CHECK ב-Postgres מוערך על שורה בודדת ואינו יכול לבצ
 - טריגרים `BEFORE UPDATE OR DELETE` על `ledger_journals` ועל `ledger_journal_lines`
   (וטריגר `BEFORE TRUNCATE`) מרימים חריגה תמיד. הטריגרים חלים גם על service_role, ולכן
   זו שכבת האכיפה האמיתית: RLS לבדו לא מגן מפני service_role שעוקף RLS.
-- RLS (מיגרציה 061) מוסיף שכבה שנייה: אין שום policy של INSERT/UPDATE/DELETE לאף רול
+- RLS (מיגרציה 062) מוסיף שכבה שנייה: אין שום policy של INSERT/UPDATE/DELETE לאף רול
   לקוח, כך שדפדפן לא כותב ל-ledger בכלל.
 - תיקון נעשה אך ורק בתנועת היפוך: journal חדש עם `event_type = 'reversal'`,
   `reverses_journal_id` מצביע על המקור (unique: היפוך אחד לכל journal), ושורות בסכומים
@@ -220,7 +220,7 @@ unique על webhook events). ניקוי: מחיקת שורות שפגו מגוב
 
 - קוד השרת (checkout, finalize, redeem) עובר לקרוא ולכתוב עמודות `*_agorot` ו-`*_bp`.
 - פונקציות SQL קיימות שקוראות עמודות בשמן הישן (למשל `product_platform_percent`,
-  פונקציות ה-settlement של 027) נשברות אחרי ה-rename; מיגרציה 056 מגדירה מחדש את
+  פונקציות ה-settlement של 027) נשברות אחרי ה-rename; מיגרציה 057 מגדירה מחדש את
   `product_platform_percent` ומוסיפה `product_platform_bp`, אבל את פונקציות 027 הישנות
   יש להגדיר מחדש או להוציא משימוש במיגרציית הניקוי.
 - Drizzle types וה-views האנליטיים (033, 034) מסונכרנים מחדש אחרי ההמרה.

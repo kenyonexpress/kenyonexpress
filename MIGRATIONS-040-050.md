@@ -10,16 +10,16 @@ The original plan numbered these migrations **040–050**. In this tree, numbers
 
 | Logical (plan) | Actual file | Content |
 |---|---|---|
-| 040 money numeric → integer agorot (backfill, verify, CHECK) | `056_money_integer_units.sql` | add/backfill/verify/rename every `*_ils` → `*_agorot` |
-| 041 percentage → basis points | `056_money_integer_units.sql` (same file) | every `*_percent` → `*_bp` (×100) |
-| 042 coupon single-use race-safe | `058_coupon_single_use.sql` | CAS + partial unique + transition guard |
-| 043 settlement_batches + items | `059_settlement_batches.sql` | per-supplier batch + item snapshot from order_items |
-| 044 reconciliation_runs + discrepancies | `060_reconciliation.sql` | scheduled-integrity run + discrepancy tables |
-| 045 ledger (accounts, journals, lines, RLS) | `055_ledger_core.sql` (+ RLS in `056`) | double-entry core with sum-zero + immutability |
-| 046 idempotency_keys | `057_idempotency_keys.sql` | generic `(scope, key)` store |
+| 040 money numeric → integer agorot (backfill, verify, CHECK) | `057_money_integer_units.sql` | add/backfill/verify/rename every `*_ils` → `*_agorot` |
+| 041 percentage → basis points | `057_money_integer_units.sql` (same file) | every `*_percent` → `*_bp` (×100) |
+| 042 coupon single-use race-safe | `059_coupon_single_use.sql` | CAS + partial unique + transition guard |
+| 043 settlement_batches + items | `060_settlement_batches.sql` | per-supplier batch + item snapshot from order_items |
+| 044 reconciliation_runs + discrepancies | `061_reconciliation.sql` | scheduled-integrity run + discrepancy tables |
+| 045 ledger (accounts, journals, lines, RLS) | `056_ledger_core.sql` (+ RLS in `056`) | double-entry core with sum-zero + immutability |
+| 046 idempotency_keys | `058_idempotency_keys.sql` | generic `(scope, key)` store |
 | 047 payment_webhook_events immutability | see §3.8 | dedup UNIQUE exists (046); append-only hardening documented as a gap-fill |
 | 048 indexes for hot paths | see §3.9 | partial indexes across 042/046/047 + MASTER §5.4 plan |
-| 049 RLS complete | `061_money_rls.sql` | RLS on every new money table |
+| 049 RLS complete | `062_money_rls.sql` | RLS on every new money table |
 | 050 production checklist | `DEPLOYMENT.md` | ship gates (not a SQL file) |
 
 Foundational commerce/checkout migrations this set builds on: **`042_commerce_core.sql`** (agorot columns, commission_ledger, cashback), **`046_checkout_runtime.sql`** (payments, webhook events, tokens, wallet accounts/entries), **`047_checkout_settlement.sql`** (escrow_holds, split_executions — **legacy in runoff**).
@@ -46,7 +46,7 @@ Every file in this set obeys, so a re-run is a no-op, never an error:
 
 ## 3. Per-migration reference
 
-### 3.1 `055_ledger_core.sql` — ledger (plan 045)
+### 3.1 `056_ledger_core.sql` — ledger (plan 045)
 
 **Adds:** enums `ledger_account_kind`, `ledger_side`, `ledger_event`; tables `ledger_accounts`, `ledger_journals`, `ledger_journal_lines`; functions `fn_ensure_ledger_account`, `fn_ledger_check_journal_balance`, `fn_ledger_block_mutation`. Seeds the three global accounts (`platform_revenue`, `cardcom_clearing`, `vat_output`).
 
@@ -58,7 +58,7 @@ Every file in this set obeys, so a re-run is a no-op, never an error:
 
 **Idempotency:** guarded enum/table/index creates; seed uses `ON CONFLICT DO NOTHING`. **Rollback:** drop triggers, then `ledger_journal_lines`, `ledger_journals`, `ledger_accounts`, then the three functions and three enums. **Compatibility:** purely additive; no existing table altered. New subsystem, safe to ship ahead of code that posts to it.
 
-### 3.2 `056_money_integer_units.sql` — agorot + basis points (plan 040+041)
+### 3.2 `057_money_integer_units.sql` — agorot + basis points (plan 040+041)
 
 **Strategy per column** (helper `fn_money_col_to_int(table, old, new, verify)`, dropped at file end):
 1. `ADD COLUMN IF NOT EXISTS <new> integer`.
@@ -74,13 +74,13 @@ Every file in this set obeys, so a re-run is a no-op, never an error:
 
 **Compatibility — the one breaking edge:** SQL functions that reference old column names by text (the 027 settlement functions) break after rename. `product_platform_percent` is redefined here; the 027 functions are legacy-in-runoff and are redefined/retired in a future cleanup migration. **Code cutover (server actions reading `*_agorot`/`*_bp`) is a hard precondition to applying 051 in production** (LEDGER §12). This is the highest-risk migration in the set — treat as "backward compatible only after code cutover," otherwise a full replacement of the money column contract.
 
-### 3.3 `057_idempotency_keys.sql` — generic idempotency (plan 046)
+### 3.3 `058_idempotency_keys.sql` — generic idempotency (plan 046)
 
 **Adds:** `idempotency_keys (scope, key, response_hash, expires_at default now()+24h)`; UNIQUE `(scope, key)`; index on `expires_at`. RLS **enabled with zero policies** (default deny; service_role only). Complements — does not replace — the dedicated keys already on `payments`, `ledger_journals`, `wallet_entries`, `wallet_transactions`, `commission_ledger`, and the webhook dedup unique.
 
 **Cleanup:** delete expired rows via `pg_cron`/scheduled function (backed by the `expires_at` index); never from a request handler. **Idempotency:** guarded creates. **Rollback:** `DROP TABLE idempotency_keys`. **Compatibility:** purely additive.
 
-### 3.4 `058_coupon_single_use.sql` — race-safe redemption (plan 042)
+### 3.4 `059_coupon_single_use.sql` — race-safe redemption (plan 042)
 
 **Adds:** `coupon_codes.redeemed_by_merchant_user_id` (FK, SET NULL); partial unique index `coupon_codes_one_used_per_code ON (code) WHERE status='used'`; `coupon_redemptions` (idempotent create) with `coupon_code_id UNIQUE` + a second unique index; transition-guard trigger `trg_coupon_codes_guard_transitions` (BEFORE UPDATE) blocking any exit from a terminal state (`used`/`expired`/`refunded`) and freezing redemption facts.
 
@@ -88,7 +88,7 @@ Every file in this set obeys, so a re-run is a no-op, never an error:
 
 **Idempotency:** guarded creates; `DROP TRIGGER IF EXISTS` before `CREATE`. **Rollback:** drop the trigger, the two unique indexes, the added column; leave `coupon_redemptions` if 026 already created it. **Compatibility:** additive + strictly-tightening constraints; safe if existing data already satisfies single-use (verify first with INV-4).
 
-### 3.5 `059_settlement_batches.sql` — per-supplier settlement (plan 043)
+### 3.5 `060_settlement_batches.sql` — per-supplier settlement (plan 043)
 
 **Adds:** enum `settlement_batch_status` (draft/pending_approval/approved/paid/cancelled); tables `settlement_batches` (bigint agorot, `net_due = gross - commission` CHECK, UNIQUE `(supplier_id, period_start, period_end)`) and `settlement_items` (`order_item_id UNIQUE` across all batches, `platform_bp` NOT NULL, `gross = commission + net` CHECK); function `fn_build_settlement_batch`; trigger `trg_order_items_snapshot_lock`.
 
@@ -96,13 +96,13 @@ Every file in this set obeys, so a re-run is a no-op, never an error:
 
 **Idempotency:** guarded creates; `fn_build_settlement_batch` idempotent per `(supplier, period)` via the batch unique + `settlement_items.order_item_id` unique. **Rollback:** drop trigger, `settlement_items`, `settlement_batches`, function, enum. **Compatibility:** additive; supersedes draft `supplier_payouts`/`payout_statements` (026/027) which stay read-only until archived.
 
-### 3.6 `060_reconciliation.sql` — integrity job tables (plan 044)
+### 3.6 `061_reconciliation.sql` — integrity job tables (plan 044)
 
 **Adds:** enums `recon_run_status` (running/succeeded/failed), `recon_severity` (info/warning/critical); tables `reconciliation_runs` (`run_type`, counters, `finished_at` CHECK tied to status) and `reconciliation_discrepancies` (`expected_agorot`, `actual_agorot`, `delta_agorot` GENERATED = actual − expected, `entity_table`/`entity_id`, resolution fields). Partial indexes for running runs and open discrepancies.
 
 The queries in `INVARIANTS.md` are exactly what these jobs run: one violating row → one `reconciliation_discrepancies` row with the matching `run_type`. **Idempotency:** guarded creates. **Rollback:** drop the two tables and two enums. **Compatibility:** additive.
 
-### 3.7 `061_money_rls.sql` — RLS complete (plan 049)
+### 3.7 `062_money_rls.sql` — RLS complete (plan 049)
 
 **Adds/asserts RLS** on every new money table: `ledger_accounts` (admin read; owner reads own `customer_wallet`), `ledger_journals`/`ledger_journal_lines` (admin read; wallet owner reads lines touching own account; **no write policies**), `settlement_batches`/`settlement_items` (admin read; writes service-role only), `reconciliation_runs`/`reconciliation_discrepancies` (admin read), `idempotency_keys` (no policies). Restates owner/admin policies on `coupon_redemptions`.
 
