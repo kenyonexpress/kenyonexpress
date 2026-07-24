@@ -74,6 +74,13 @@ export default async function ProductsPage({ searchParams }: Props) {
       <div className="category-page__inner">
         <CategoryBreadcrumb items={[defaultHomeCrumb(), { label: PAGE_TITLE }]} />
 
+        {/* Live /shop/ carries this section between the breadcrumb and the H1.
+            Its carousel renders no items on live, so the section is the heading
+            rule alone. Without it every landmark below sits ~62px too high. */}
+        <div className="shop-carousel-head">
+          <h2 className="shop-carousel-head__title">Recommended Products</h2>
+        </div>
+
         <header className="category-page__header">
           <h1 className="category-page__title">{PAGE_TITLE}</h1>
           {total > 0 && <p className="category-page__count">{countText}</p>}

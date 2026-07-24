@@ -487,3 +487,28 @@
 .category-search__box {
   margin-bottom: 20px;
 }
+
+/* Live /shop/ renders a "Recommended Products" carousel section between the
+   breadcrumb and the archive H1. Measured: section.section-products-carousel
+   is 1170x45 with margin-bottom 16.996px, its header carries a 1px #ddd bottom
+   rule across the full width, and the h2 is 21.994px/400 at 249.6px wide with
+   padding-bottom 8.7976px and a yellow rule of its own. The live carousel holds
+   no items, so the section is the heading and nothing else. */
+.shop-carousel-head {
+  display: flex;
+  align-items: flex-start;
+  height: 45px;
+  margin-bottom: 16.996px;
+  border-bottom: 1px solid #ddd;
+  box-sizing: border-box;
+}
+
+.shop-carousel-head__title {
+  margin: 0;
+  padding-bottom: 8.7976px;
+  font-size: 21.994px;
+  font-weight: 400;
+  line-height: 35.2px;
+  color: #333e48;
+  border-bottom: 2px solid #fed700;
+}
