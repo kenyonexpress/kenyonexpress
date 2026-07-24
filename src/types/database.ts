@@ -1825,12 +1825,13 @@ export type Database = {
         | "refunded"
       product_approval_status: "draft" | "pending" | "approved" | "rejected"
       product_status: "draft" | "active" | "paused" | "sold_out" | "archived"
-      product_type: "coupon" | "physical" | "service"
+      product_type: "coupon" | "physical" | "service" | "subscription"
       referral_status: "pending" | "completed" | "rejected"
       settlement_status:
         | "pending"
         | "paid"
         | "split_executed"
+        | "platform_settled"
         | "escrow_held"
         | "escrow_released"
         | "redeemed"
@@ -2012,12 +2013,13 @@ export const Constants = {
       ],
       product_approval_status: ["draft", "pending", "approved", "rejected"],
       product_status: ["draft", "active", "paused", "sold_out", "archived"],
-      product_type: ["coupon", "physical", "service"],
+      product_type: ["coupon", "physical", "service", "subscription"],
       referral_status: ["pending", "completed", "rejected"],
       settlement_status: [
         "pending",
         "paid",
         "split_executed",
+        "platform_settled",
         "escrow_held",
         "escrow_released",
         "redeemed",

@@ -67,6 +67,7 @@ export const PRODUCT_TYPE_LABELS: Record<ProductType, string> = {
   coupon: 'קופון',
   physical: 'מוצר פיזי',
   service: 'שירות',
+  subscription: 'מנוי',
 }
 
 export const APPROVAL_STATUS_LABELS: Record<ProductApprovalStatus, string> = {
@@ -80,6 +81,7 @@ export const SETTLEMENT_STATUS_LABELS: Record<SettlementStatus, string> = {
   pending: 'ממתין',
   paid: 'שולם',
   split_executed: 'פוצל לספק',
+  platform_settled: 'נסלק לפלטפורמה',
   escrow_held: 'בנאמנות',
   escrow_released: 'שוחרר מנאמנות',
   redeemed: 'מומש',

@@ -10,7 +10,7 @@ export default function SupplierInfo({
   productType,
 }: {
   supplier: SupplierSummary
-  productType: 'coupon' | 'physical' | 'service'
+  productType: 'coupon' | 'physical' | 'service' | 'subscription'
 }) {
   return (
     <section
