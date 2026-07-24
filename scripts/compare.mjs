@@ -46,8 +46,7 @@ await ctx.addCookies([
   {
     name: 'ke_consent',
     value: 'denied.1',
-    url: LOCAL,
-    path: '/',
+    url: LOCAL.endsWith('/') ? LOCAL : `${LOCAL}/`,
   },
 ])
 

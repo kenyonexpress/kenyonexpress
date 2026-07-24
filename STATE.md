@@ -89,17 +89,16 @@ Commits on this branch:
 - `3a94c96` fix(rtl): logical props sweep (rtl-lint 30 → 1; HeroSlider left-1/2 remains LOCKED)
 - `43264a4` feat(a11y): skip-to-main, Hebrew aria names, decorative aria-hidden
 - `d19fcd3` feat(a11y): 44px touch targets (Button, cart, masthead, footer; ATC hit-area pad)
-- `54c14c5` fix(visual): restore custom-price
-- `6a6075e` fix(visual): home deals spacing + shop archive geometry card block + compare demo slug + search chrome
+- `54c14c5` fix(visual): restore custom-price card block + compare demo slug + search chrome
 
 compare.mjs OVERALL first 2600px (live, with .env.local):
 | page | % | vs 11% |
 |---|---|---|
-| category | **9.32%** | pass |
-| search | **13.76%** | fail (3 local hits vs 6 live; content floor) |
-| home | **16.78%** | fail (LOCKED header/hero content drift) |
-| product | **21.19%** | fail (PDP structure vs live demo) |
-| products | **24.91%** | fail (catalog content + card geometry floor) |
+| category | **9.12%** | pass |
+| home | **13.51%** | fail (LOCKED header/hero; deals spacing improved) |
+| search | **13.60%** | fail (3 local hits vs 6 live; content floor) |
+| product | **20.99%** | fail (PDP structure vs live demo) |
+| products | **24.53%** | fail (catalog content floor; shop geometry closer) |
 
 Irreducible without unlocking LOCKED_COMPONENTS / matching live DB content.
 Worktree: `/Users/ofir/kenyonexpress-web/ke-visual`.
