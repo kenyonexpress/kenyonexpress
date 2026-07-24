@@ -83,9 +83,23 @@ CREATE POLICY wallet_balances_support_select
   USING (public.is_support() AND deleted_at IS NULL);
 
 DROP POLICY IF EXISTS wallet_transactions_support_select ON public.wallet_transactions;
-CREATE POLICY wallet_transactions_support_select
-  ON public.wallet_transactions FOR SELECT TO authenticated
-  USING (public.is_support() AND deleted_at IS NULL);
+-- wallet_transactions has no deleted_at on a fresh 006-shaped schema; only the
+-- live DB variant carries it. Predicate on the column only when it exists.
+DO $$ BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'wallet_transactions'
+      AND column_name = 'deleted_at'
+  ) THEN
+    CREATE POLICY wallet_transactions_support_select
+      ON public.wallet_transactions FOR SELECT TO authenticated
+      USING (public.is_support() AND deleted_at IS NULL);
+  ELSE
+    CREATE POLICY wallet_transactions_support_select
+      ON public.wallet_transactions FOR SELECT TO authenticated
+      USING (public.is_support());
+  END IF;
+END $$;
 
 -- Affiliates module (tables from 010): support reads, admin manages.
 DO $$ BEGIN
