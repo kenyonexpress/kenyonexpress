@@ -156,3 +156,79 @@ describe('calculateCommission golden cases', () => {
     ).toThrow('wallet applied must not exceed customerPaysNow')
   })
 })
+
+/**
+ * Every guard below protects a money invariant. A silently-accepted bad input
+ * here becomes a wrong charge, so each one must fail loudly rather than settle
+ * on a plausible-looking number.
+ */
+describe('calculateCommission guards', () => {
+  it('requires an idempotency key', () => {
+    expect(() => calculateCommission({ idempotencyKey: '   ', lines: [coupon] })).toThrow(TypeError)
+  })
+
+  it('requires at least one line', () => {
+    expect(() => calculateCommission({ idempotencyKey: 'k', lines: [] })).toThrow(RangeError)
+  })
+
+  it('rejects duplicate line ids', () => {
+    expect(() =>
+      calculateCommission({
+        idempotencyKey: 'k',
+        lines: [coupon, { ...physical, id: coupon.id }],
+      }),
+    ).toThrow('commerce line ids must be unique')
+  })
+
+  it('requires a non-empty line id', () => {
+    expect(() =>
+      calculateCommission({ idempotencyKey: 'k', lines: [{ ...coupon, id: '  ' }] }),
+    ).toThrow(TypeError)
+  })
+
+  it('rejects a non-positive or fractional quantity', () => {
+    for (const quantity of [0, -1, 1.5]) {
+      expect(() =>
+        calculateCommission({ idempotencyKey: 'k', lines: [{ ...physical, quantity }] }),
+      ).toThrow(RangeError)
+    }
+  })
+
+  it('rejects a negative unit price', () => {
+    expect(() =>
+      calculateCommission({
+        idempotencyKey: 'k',
+        lines: [{ ...physical, unitPrice: agorot(-1) }],
+      }),
+    ).toThrow('unit price must not be negative')
+  })
+
+  it('rejects a negative wallet balance', () => {
+    expect(() =>
+      calculateCommission({
+        idempotencyKey: 'k',
+        lines: [physical],
+        walletApplied: agorot(-1),
+      }),
+    ).toThrow('wallet applied must not be negative')
+  })
+
+  it('rejects a percent outside 0..100 on either knob', () => {
+    expect(() =>
+      calculateCommission({ idempotencyKey: 'k', lines: [{ ...physical, platformPercent: 101 }] }),
+    ).toThrow(RangeError)
+    expect(() =>
+      calculateCommission({ idempotencyKey: 'k', lines: [{ ...physical, cashbackPercent: -1 }] }),
+    ).toThrow(RangeError)
+  })
+
+  it('allows wallet to cover the on-site charge exactly, leaving a zero card charge', () => {
+    const result = calculateCommission({
+      idempotencyKey: 'k',
+      lines: [coupon],
+      walletApplied: agorot(4_000),
+    })
+    expect(result.cardCharge).toBe(0)
+    expect(result.platformFee).toBe(4_000)
+  })
+})
