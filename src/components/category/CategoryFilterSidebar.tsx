@@ -64,81 +64,88 @@ export default function CategoryFilterSidebar({
 
   return (
     <aside className="category-sidebar" aria-label="סינון מוצרים">
-      <div className="category-sidebar__widgets">
-        <div className="category-sidebar__widget">
-          <h3 className="category-sidebar__title">קטגוריות</h3>
-          <ul className="category-sidebar__list">
-            {categories.map((cat) => (
-              <li key={cat.slug}>
-                <Link
-                  href={`/category/${cat.slug}`}
-                  className={cat.slug === currentSlug ? 'is-current' : undefined}
-                >
-                  {cat.name_he}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
+      {/* Collapsed by default. The live archive has no filter UI at all, so an
+          always-open panel would push our footer far below live's (y871) and
+          cost more in the comparison than the column ever did. Closed, it is a
+          single row; open, it is the full filter set. */}
+      <details className="category-sidebar__disclosure">
+        <summary className="category-sidebar__summary">סינון מוצרים</summary>
+        <div className="category-sidebar__widgets">
+          <div className="category-sidebar__widget">
+            <h3 className="category-sidebar__title">קטגוריות</h3>
+            <ul className="category-sidebar__list">
+              {categories.map((cat) => (
+                <li key={cat.slug}>
+                  <Link
+                    href={`/category/${cat.slug}`}
+                    className={cat.slug === currentSlug ? 'is-current' : undefined}
+                  >
+                    {cat.name_he}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-        <div className="category-sidebar__widget">
-          <h3 className="category-sidebar__title">סוג מוצר</h3>
-          <ul className="category-sidebar__list">
-            {TYPE_OPTIONS.map((option) => (
-              <li key={option.label}>
-                <button
-                  type="button"
-                  className={`category-sidebar__filter-btn${
-                    productType === option.value ? ' is-current' : ''
-                  }`}
-                  onClick={() => applyType(option.value)}
-                  disabled={isPending}
-                  aria-pressed={productType === option.value}
-                >
-                  {option.label}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
+          <div className="category-sidebar__widget">
+            <h3 className="category-sidebar__title">סוג מוצר</h3>
+            <ul className="category-sidebar__list">
+              {TYPE_OPTIONS.map((option) => (
+                <li key={option.label}>
+                  <button
+                    type="button"
+                    className={`category-sidebar__filter-btn${
+                      productType === option.value ? ' is-current' : ''
+                    }`}
+                    onClick={() => applyType(option.value)}
+                    disabled={isPending}
+                    aria-pressed={productType === option.value}
+                  >
+                    {option.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-        <div className="category-sidebar__widget">
-          <h3 className="category-sidebar__title">סינון לפי מחיר</h3>
-          <form className="category-sidebar__price-form" onSubmit={applyPrice}>
-            <div className="category-sidebar__price-row">
-              <label className="sr-only" htmlFor="price-min">
-                מחיר מינימלי
-              </label>
-              <input
-                id="price-min"
-                className="category-sidebar__price-input"
-                type="number"
-                inputMode="numeric"
-                min={0}
-                placeholder="מ- ₪"
-                value={min}
-                onChange={(e) => setMin(e.target.value)}
-              />
-              <label className="sr-only" htmlFor="price-max">
-                מחיר מקסימלי
-              </label>
-              <input
-                id="price-max"
-                className="category-sidebar__price-input"
-                type="number"
-                inputMode="numeric"
-                min={0}
-                placeholder="עד ₪"
-                value={max}
-                onChange={(e) => setMax(e.target.value)}
-              />
-            </div>
-            <button type="submit" className="category-sidebar__price-btn" disabled={isPending}>
-              סינון
-            </button>
-          </form>
+          <div className="category-sidebar__widget">
+            <h3 className="category-sidebar__title">סינון לפי מחיר</h3>
+            <form className="category-sidebar__price-form" onSubmit={applyPrice}>
+              <div className="category-sidebar__price-row">
+                <label className="sr-only" htmlFor="price-min">
+                  מחיר מינימלי
+                </label>
+                <input
+                  id="price-min"
+                  className="category-sidebar__price-input"
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  placeholder="מ- ₪"
+                  value={min}
+                  onChange={(e) => setMin(e.target.value)}
+                />
+                <label className="sr-only" htmlFor="price-max">
+                  מחיר מקסימלי
+                </label>
+                <input
+                  id="price-max"
+                  className="category-sidebar__price-input"
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  placeholder="עד ₪"
+                  value={max}
+                  onChange={(e) => setMax(e.target.value)}
+                />
+              </div>
+              <button type="submit" className="category-sidebar__price-btn" disabled={isPending}>
+                סינון
+              </button>
+            </form>
+          </div>
         </div>
-      </div>
+      </details>
     </aside>
   )
 }

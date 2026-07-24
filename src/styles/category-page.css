@@ -613,3 +613,30 @@
     }
   }
 }
+
+/* Filter disclosure: closed it is one row, so the footer stays near live's. */
+.category-sidebar__summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--cat-ink);
+  list-style: none;
+  padding: 4px 0;
+}
+
+.category-sidebar__summary::-webkit-details-marker {
+  display: none;
+}
+
+.category-sidebar__summary::after {
+  content: " ▾";
+  color: var(--cat-muted);
+}
+
+.category-sidebar__disclosure[open] .category-sidebar__summary::after {
+  content: " ▴";
+}
+
+.category-sidebar__disclosure[open] .category-sidebar__widgets {
+  padding-top: 20px;
+}
