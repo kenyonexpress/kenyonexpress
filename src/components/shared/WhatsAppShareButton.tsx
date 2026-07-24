@@ -27,6 +27,7 @@ export default function WhatsAppShareButton({
     <button
       type="button"
       onClick={handleClick}
+      aria-label={label}
       className={
         className ??
         'inline-flex items-center gap-2 text-sm font-semibold text-[#128c7e] hover:text-[#075e54] transition-colors'

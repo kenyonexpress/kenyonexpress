@@ -18,8 +18,16 @@ export default async function StoreLayout({ children }: { children: React.ReactN
           the 1218px vertical mismatch in the category compare. Keep min-h-screen
           for the background fill, but let the footer follow the content. */}
       <div className="min-h-screen flex flex-col bg-white">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:start-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-brand-primary focus:px-4 focus:py-3 focus:text-sm focus:font-bold focus:text-heading"
+        >
+          דלג לתוכן הראשי
+        </a>
         <SiteHeader />
-        <main className="w-full">{children}</main>
+        <main id="main-content" className="w-full" tabIndex={-1}>
+          {children}
+        </main>
         <SiteFooter />
       </div>
       <CartDrawer />

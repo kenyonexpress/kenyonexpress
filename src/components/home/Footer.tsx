@@ -103,9 +103,9 @@ export default function Footer() {
             </a>
             <div className="flex gap-3">
               {[
-                { Icon: Send, label: 'Telegram' },
-                { Icon: InstagramIcon, label: 'Instagram' },
-                { Icon: FacebookIcon, label: 'Facebook' },
+                { Icon: Send, label: 'טלגרם' },
+                { Icon: InstagramIcon, label: 'אינסטגרם' },
+                { Icon: FacebookIcon, label: 'פייסבוק' },
                 { Icon: Share2, label: 'שיתוף' },
               ].map(({ Icon, label }) => (
                 <button
@@ -114,7 +114,7 @@ export default function Footer() {
                   className="w-9 h-9 rounded-full bg-white/10 hover:bg-brand-primary hover:text-heading flex items-center justify-center transition-colors"
                   aria-label={label}
                 >
-                  <Icon className="w-4 h-4" />
+                  <Icon className="w-4 h-4" aria-hidden="true" />
                 </button>
               ))}
             </div>

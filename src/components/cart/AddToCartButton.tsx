@@ -54,7 +54,11 @@ export default function AddToCartButton({
         aria-label={`הוסף ${productName} לעגלה`}
         className={className}
       >
-        {busy || isPending ? <LoaderCircle size={16} className="animate-spin" /> : children}
+        {busy || isPending ? (
+          <LoaderCircle size={16} className="animate-spin" aria-hidden="true" />
+        ) : (
+          children
+        )}
       </button>
     )
   }
@@ -64,11 +68,13 @@ export default function AddToCartButton({
       type="button"
       onClick={(e) => void handleClick(e)}
       disabled={disabled || busy || isPending}
+      aria-label={`הוסף ${productName} לעגלה`}
+      aria-busy={busy || isPending}
       className={className}
     >
       {busy || isPending ? (
         <>
-          <LoaderCircle size={18} className="animate-spin" />
+          <LoaderCircle size={18} className="animate-spin" aria-hidden="true" />
           מוסיף...
         </>
       ) : (

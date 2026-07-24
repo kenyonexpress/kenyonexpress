@@ -171,9 +171,14 @@ export default function ProductInfo({
             aria-label="הפחת כמות"
             className="w-11 h-12 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-30"
           >
-            <Minus size={16} />
+            <Minus size={16} aria-hidden="true" />
           </button>
-          <span className="w-12 text-center font-bold text-brand-dark tabular-nums">{qty}</span>
+          <span
+            className="w-12 text-center font-bold text-brand-dark tabular-nums"
+            aria-live="polite"
+          >
+            {qty}
+          </span>
           <button
             type="button"
             onClick={inc}
@@ -181,7 +186,7 @@ export default function ProductInfo({
             aria-label="הוסף כמות"
             className="w-11 h-12 flex items-center justify-center text-gray-600 hover:bg-gray-50 disabled:opacity-30"
           >
-            <Plus size={16} />
+            <Plus size={16} aria-hidden="true" />
           </button>
         </div>
 
@@ -189,16 +194,19 @@ export default function ProductInfo({
           type="button"
           onClick={() => void handleAddToCart()}
           disabled={outOfStock || needsVariant || isPending}
+          aria-label={
+            outOfStock ? 'אזל מהמלאי' : isCoupon ? `רכוש קופון ${name}` : `הוסף ${name} לסל`
+          }
           className="flex-1 flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-primary-hover text-brand-dark font-bold rounded-xl h-12 text-base transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {added ? (
             <>
-              <Check size={20} />
+              <Check size={20} aria-hidden="true" />
               נוסף לסל
             </>
           ) : (
             <>
-              <ShoppingCart size={20} />
+              <ShoppingCart size={20} aria-hidden="true" />
               {outOfStock ? 'אזל מהמלאי' : isCoupon ? 'רכוש קופון' : 'הוסף לסל'}
             </>
           )}

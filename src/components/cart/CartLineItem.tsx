@@ -80,9 +80,11 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
               aria-label="הפחת כמות"
               className="cart-line__qty-btn"
             >
-              <Minus size={14} />
+              <Minus size={14} aria-hidden="true" />
             </button>
-            <span className="cart-line__qty-value tabular-nums">{localQty}</span>
+            <span className="cart-line__qty-value tabular-nums" aria-live="polite">
+              {localQty}
+            </span>
             <button
               type="button"
               onClick={inc}
@@ -90,7 +92,7 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
               aria-label="הוסף כמות"
               className="cart-line__qty-btn"
             >
-              <Plus size={14} />
+              <Plus size={14} aria-hidden="true" />
             </button>
           </div>
 
