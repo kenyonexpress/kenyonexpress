@@ -1,6 +1,7 @@
 'use client'
 
-import { ROLE_LABELS, ROLE_ORDER } from '@/lib/admin/roles'
+import { assignableRoles } from '@/lib/admin/permissions'
+import { ROLE_LABELS } from '@/lib/admin/roles'
 import { type UserActionState, updateUserRole } from '@/server/actions/admin/users'
 import type { UserRole } from '@/types/database'
 import { useActionState } from 'react'
@@ -13,13 +14,6 @@ interface Props {
 }
 
 const INITIAL: UserActionState = null
-
-// Roles a caller with a given role is allowed to assign
-function assignableRoles(callerRole: UserRole): UserRole[] {
-  if (callerRole === 'super_admin') return ROLE_ORDER
-  if (callerRole === 'admin') return ROLE_ORDER.filter((r) => r !== 'admin' && r !== 'super_admin')
-  return []
-}
 
 export default function UserRoleClient({ userId, currentRole, callerRole, isSelf }: Props) {
   const [state, action, pending] = useActionState(updateUserRole, INITIAL)
