@@ -117,24 +117,15 @@ export default function CategoryProductCard({
         )}
       </div>
 
-      {/* Measured live .custom-price-wrapper (h 72): two plain ink 14px lines,
-          full price then discounted, separated by a <br>. Live WooCommerce
-          numbers are a separate manual field; we reproduce geometry from
-          full_price / kenyon_price. See docs/CATEGORY-1TO1-FINDINGS.md.
-          Live /shop/ keeps this slot blank (no wrapper text) while the card
-          stays 438px tall, so shop mode reserves the height without ink. */}
-      {price != null && (
-        <div
-          className="category-card__custom-price"
-          aria-hidden={showCustomPrice ? undefined : true}
-        >
-          {showCustomPrice ? (
-            <>
-              <div className="full-price">{formatPrice(old ?? price)}</div>
-              <br />
-              <div className="discount-price">{formatPrice(price)}</div>
-            </>
-          ) : null}
+      {/* Measured live .custom-price-wrapper (h 72). Category archives fill it
+          from full_price / kenyon_price. Live /shop/ only has the field on a
+          few products; shop mode omits the block so flex-row stretch can
+          reproduce the measured short row (see category-page--shop CSS). */}
+      {showCustomPrice && price != null && (
+        <div className="category-card__custom-price">
+          <div className="full-price">{formatPrice(old ?? price)}</div>
+          <br />
+          <div className="discount-price">{formatPrice(price)}</div>
         </div>
       )}
     </article>

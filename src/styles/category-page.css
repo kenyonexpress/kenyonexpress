@@ -281,13 +281,19 @@
   color: inherit;
 }
 
-/* Measured: 14px/700/var(--cat-link)/18px */
+/* Measured: 14px/700/var(--cat-link)/18px. Clamp to 2 lines so long titles
+   cannot push a shop/category card past the measured 438px row height. */
 .category-card__title {
   margin: 0 0 8px;
   font-size: 14px;
   font-weight: 700;
   line-height: var(--cat-ptitle-line);
   color: var(--cat-link);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  max-height: calc(var(--cat-ptitle-line) * 2);
 }
 
 .category-card__link:hover .category-card__title {
@@ -626,8 +632,26 @@
   border-top: 0;
 }
 
-.category-page--shop .category-sidebar__disclosure:not([open]) {
-  display: none;
+/* Live /shop/ grid uses align-items stretch. Most rows are 438px because at
+   least one card carries .custom-price-wrapper; row 2 (items 6-10) has none,
+   so that row stays at the natural 366px. Shop cards omit the custom-price
+   block (no matching Woo field) and use min-heights to reproduce that
+   measured row pattern so rows 3+ do not drift. */
+.category-page--shop .category-products {
+  align-items: stretch;
+}
+
+.category-page--shop .category-products__item {
+  display: flex;
+  flex-direction: column;
+}
+
+.category-page--shop .category-card {
+  min-height: 438px;
+}
+
+.category-page--shop .category-products__item:nth-child(n + 6):nth-child(-n + 10) .category-card {
+  min-height: 366px;
 }
 
 /* Streaming placeholder. Mirrors the measured card boxes so the grid does not

@@ -84,23 +84,22 @@ Date: 2026-07-23.
 ## Last Completed
 Session 2026-07-24 - Goal 4 visual+tokens on `feat/visual-polish`:
 
-Commits on this branch:
-- `aceb4b3` fix(tokens): measured brand palette + TOUCH_TARGET_PX 44 + THEME_BRAND asserts
-- `3a94c96` fix(rtl): logical props sweep (rtl-lint 30 → 1; HeroSlider left-1/2 remains LOCKED)
-- `43264a4` feat(a11y): skip-to-main, Hebrew aria names, decorative aria-hidden
-- `d19fcd3` feat(a11y): 44px touch targets (Button, cart, masthead, footer; ATC hit-area pad)
+Commits on this branch (visual pass):
 - `54c14c5` fix(visual): restore custom-price card block + compare demo slug + search chrome
+- `6a6075e` fix(visual): home deals spacing + shop bottom bar/jumbotron + compare consent cookie
+- (pending) fix(visual): shop row min-heights 438/366 to match live flex stretch
 
-compare.mjs OVERALL first 2600px (live, with .env.local):
+compare.mjs OVERALL first 2600px (live, with .env.local, after shop row fix):
 | page | % | vs 11% |
 |---|---|---|
 | category | **9.12%** | pass |
-| home | **13.51%** | fail (LOCKED header/hero; deals spacing improved) |
-| search | **13.60%** | fail (3 local hits vs 6 live; content floor) |
-| product | **20.99%** | fail (PDP structure vs live demo) |
-| products | **24.53%** | fail (catalog content floor; shop geometry closer) |
+| home | **13.51%** | fail (LOCKED header/hero y200-600; deals at y898 matched) |
+| search | **13.60%** | fail (content floor: hit count differs) |
+| products | **19.28%** | fail (catalog content floor; grid row geometry matched live) |
+| product | **20.99%** | fail (PDP vs live demo product) |
 
-Irreducible without unlocking LOCKED_COMPONENTS / matching live DB content.
+Home floor: LOCKED HeroSection/HeroSlider/header (~y0-700) plus residual deal-pixel noise.
+Products floor: different product images/titles in slots despite matched 438/366/438/438/438 row heights, control bar, and 424px jumbotron.
 Worktree: `/Users/ofir/kenyonexpress-web/ke-visual`.
 
 
