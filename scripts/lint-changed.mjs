@@ -42,8 +42,8 @@ const LINTABLE = /\.(?:ts|tsx|js|jsx|mjs|cjs|json|jsonc|css)$/
  * merge base every file reads as "new" and a strict gate would demand the
  * backlog be cleared before the first PR could ever go green.
  *
- * Application code (src/, e2e/, configs) has exactly one violation between
- * all of it, so it is gated strictly and stays that way.
+ * Application code (src/, e2e/, configs) is clean as of this branch, so it is
+ * gated strictly and stays that way.
  */
 const ADVISORY_PREFIXES = ['scripts/']
 
