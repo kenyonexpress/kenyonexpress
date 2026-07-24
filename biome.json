@@ -7,7 +7,18 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "ignore": ["node_modules", ".next", "out", "build", "src/types/database.ts", "*.config.mjs"]
+    "ignore": [
+      "node_modules",
+      ".next",
+      "out",
+      "build",
+      "src/types/database.ts",
+      "*.config.mjs",
+      "coverage",
+      "playwright-report",
+      "test-results",
+      "blob-report"
+    ]
   },
   "formatter": {
     "enabled": true,
