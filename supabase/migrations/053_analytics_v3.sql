@@ -1,13 +1,13 @@
 -- ===========================================================================
--- 052_analytics_v3.sql
+-- 053_analytics_v3.sql
 -- Analytics & BI v3 delta on top of 033_analytics + 034_analytics_bi.
 -- Design doc: ARCHITECTURE-ANALYTICS-BI.md section 11.
 --
 -- The design doc proposed editing drafts 033/034 in place. Project rule wins:
 -- applied or not, a numbered migration is never edited. This file carries the
 -- whole v3 delta and always sorts after 033/034, so both orders work:
---   fresh DB   : 033 -> 034 -> 052
---   partial DB : 052 alone, on top of an already-applied 033/034
+--   fresh DB   : 033 -> 034 -> 053
+--   partial DB : 053 alone, on top of an already-applied 033/034
 --
 -- Contents:
 --   1. source_app dimension (analytics_events + analytics_daily + ingest)
@@ -30,11 +30,11 @@ BEGIN
   IF to_regclass('public.analytics_events') IS NULL
      OR to_regclass('public.analytics_daily') IS NULL
      OR to_regclass('public.analytics_event_definitions') IS NULL THEN
-    RAISE EXCEPTION '052_analytics_v3 requires 033_analytics (analytics_* objects missing)';
+    RAISE EXCEPTION '053_analytics_v3 requires 033_analytics (analytics_* objects missing)';
   END IF;
 
   IF to_regproc('public.fn_il_date') IS NULL THEN
-    RAISE EXCEPTION '052_analytics_v3 requires 033_analytics (fn_il_date missing)';
+    RAISE EXCEPTION '053_analytics_v3 requires 033_analytics (fn_il_date missing)';
   END IF;
 END $$;
 
@@ -426,7 +426,7 @@ COMMENT ON VIEW public.v_web_vitals_daily IS
   'First-party RUM rollup: p75 per (Israel day, metric, route template). Route is the template (/product/[slug]), never the full path, to keep cardinality bounded. p75 over budget for 7 consecutive days opens a performance task before feature work.';
 
 -- ===========================================================================
--- NOT in 052 (deliberately):
+-- NOT in 053 (deliberately):
 --   * cron scheduling: pg_cron blocks live in supabase/schedules/, run at apply
 --     time, never inside a numbered migration
 --   * application code: SDK, /api/a, consent banner, dashboard, begin_checkout

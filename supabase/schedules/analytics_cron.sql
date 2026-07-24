@@ -13,7 +13,7 @@
 -- written next to each entry; DST shifts them by an hour twice a year, which is
 -- irrelevant for jobs that run in the middle of the night and are idempotent.
 --
--- Prerequisites: 033_analytics, 034_analytics_bi, 052_analytics_v3.
+-- Prerequisites: 033_analytics, 034_analytics_bi, 053_analytics_v3.
 -- Run via Supabase MCP execute_sql (or the SQL editor) once per environment.
 -- ===========================================================================
 

@@ -112,7 +112,7 @@ export function israelDayKey(iso: string): string {
 
 /**
  * Bucket key for a timestamp. Weeks start on Sunday: this is an Israeli
- * business, and the SQL views agree (v_channel_revenue_weekly, migration 052).
+ * business, and the SQL views agree (v_channel_revenue_weekly, migration 053).
  */
 export function periodKey(iso: string, period: Period): string {
   const day = israelDayKey(iso)

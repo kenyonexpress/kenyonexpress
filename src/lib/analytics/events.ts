@@ -26,7 +26,7 @@ export const WEB_VITAL_METRICS = ['LCP', 'CLS', 'INP', 'TTFB', 'FCP'] as const
 export type WebVitalMetric = (typeof WEB_VITAL_METRICS)[number]
 
 // Required props per client event, mirroring the registry seed in migrations
-// 033 and 052. Keep in sync when adding an event.
+// 033 and 053. Keep in sync when adding an event.
 export const REQUIRED_PROPS: Record<ClientEventName, readonly string[]> = {
   page_view: [],
   view_product: ['product_id'],

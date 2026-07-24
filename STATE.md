@@ -40,6 +40,37 @@
 3. **עמוד קטגוריה 1:1 מול החי** - `compare.mjs --page=category` מ-23.7% אל מתחת ל-7%.
 
 ## Last Completed
+Session 2026-07-24 - **דומיין Analytics + BI מומש** (worktree `../ke-analytics`,
+ענף `feat/analytics-bi`, 4 קומיטים). זה המימוש הראשון של הדומיין; עד עכשיו הוא
+היה design only.
+
+- `supabase/migrations/053_analytics_v3.sql` - דלתת v3 של סעיף 11 במסמך
+  הארכיטקטורה כמיגרציה **חדשה**, לא כעריכה של טיוטות 033/034 (חוק הפרויקט:
+  מיגרציה ממוספרת לא נערכת). 053 ולא 052 כי 052 שמור ל-`052_product_page_fields.sql`.
+  תוכן: `source_app` על `analytics_events` ועל `analytics_daily` כולל ה-PK,
+  `analytics_identity_links` עם RLS לאדמין בלבד, רישום `checkout_step` ו-`web_vital`,
+  כתיבה מחדש של `fn_ingest_analytics_events` ו-`fn_rollup_analytics_daily`,
+  `v_funnel_daily` עם `checkout_steps`, ו-`v_repeat_purchase_monthly` +
+  `v_web_vitals_daily` חדשים.
+- `supabase/schedules/analytics_cron.sql` - תזמון pg_cron (rollup, matviews,
+  partitions) מחוץ למיגרציות הממוספרות: תזמון הוא מצב סביבה, לא סכימה.
+- צנרת איסוף first-party: `src/lib/analytics/*` (טקסונומיה, הסכמה, ייחוס UTM,
+  סשן, תור batch), `src/app/api/a/route.ts`, `src/server/analytics/track.ts`,
+  באנר הסכמה RTL, ואירועים מחווטים בחנות (page_view, view_product,
+  view_category, add_to_cart, checkout_step, web_vital בדגימת 25%).
+  `begin_checkout` נפלט מהשרת בתוך `beginCheckout`.
+- `/admin/analytics` - מכירות יומי/שבועי/חודשי, מוצרים מובילים, משפך המרה,
+  קופון מול פיזי, והכנסות לפי `platform_percent` שצולם.
+- 57 בדיקות חדשות (סה"כ 207 עוברות), type-check נקי, `pnpm build` עובר.
+
+**הממצא החשוב מהסשן:** ל-`order_items` ב-DB החי **אין** `platform_fee_ils`,
+`charged_on_site_ils` או `supplier_due_ils`. יש עמודות אגורות מ-046/047
+(`face_value_agorot`, `paid_on_site_agorot`, `commission_agorot`,
+`supplier_immediate_agorot`, `escrow_release_agorot`). מיגרציות 033/034 בנויות
+על העמודות שאינן קיימות, ולכן **ייפלו על ה-guard שלהן**. הדשבורד נכתב מול
+העמודות האמיתיות ולכן עובד היום בלי שום מיגרציה חדשה.
+פירוט החריגות: `ARCHITECTURE-ANALYTICS-BI.md` סעיף 11א.
+
 Session 2026-07-24 - יעד 5/20: `docs/PRODUCT-PAGE-SPEC.md` (קומיט `docs: product page spec`):
 מסמך אחד שבולע את קובץ האב `docs/product-page/*.docx` ואת מפרט טופס הניהול.
 16 קבוצות השדות של Ofir מופו אחת לאחת לעמודות בפועל, עם סימון 🟢 לקוח / 🔵 פנימי,
@@ -232,6 +263,14 @@ nothing
   בקונטקסט הפעולה (נצפה בלוגי E2E) - לא חוסם checkout, כן חוסם התחברות Google
   אמיתית מקומית.
 - `supabase db push` עדיין אסור; החלות רק דרך MCP apply_migration.
+- **033/034 לא ניתנות להחלה כמו שהן.** ה-guard של 033 דורש
+  `order_items.platform_fee_ils` וה-guard של 034 דורש `payout_statements`;
+  שניהם לא קיימים ב-DB החי (העמלה שם היא `commission_agorot` מ-046/047).
+  ההחלה תיפול על:
+  `033_analytics requires 026_commerce (order_items.platform_fee_ils missing)`.
+  צריך להכריע: להתאים את 033/034 לעמודות האגורות, או להחיל את 026/027 קודם.
+  עד אז 053 לא ניתנת להחלה גם היא (היא דורשת את `analytics_events` של 033),
+  וסעיף המשפך ב-`/admin/analytics` מציג הודעה במקום נתונים. שאר הדף עובד.
 
 ## Next Task
 ראה "3 המשימות הבאות" בסיכום המצב למעלה. אחריהן ממשיך מרתון ה-/goal:
@@ -553,3 +592,11 @@ commit: `feat: homepage 1:1 match with live source`
 - pipeline מלא: identity gate, Cardcom Low Profile, webhook HMAC,
   `checkout_finalize`, coupon vs physical fulfillment, refunds, payment_attempts
 - אין קוד יישום; מרחיב COMMERCE / API-CONTRACTS / SECURITY
+
+### 2026-07-24 - Analytics + BI domain implemented
+- ענף `feat/analytics-bi` (worktree `../ke-analytics`), 4 קומיטים
+- מיגרציה `053_analytics_v3.sql` + `supabase/schedules/analytics_cron.sql`
+- צנרת first-party מלאה: SDK, `/api/a`, באנר הסכמה, אירועי שרת
+- `/admin/analytics` עובד מול הסכימה הקיימת (עמודות אגורות), בלי להמתין ל-033/034
+- 57 בדיקות חדשות; `ARCHITECTURE-ANALYTICS-BI.md` סעיף 11א מתעד את החריגות
+- לא הוחלה שום מיגרציה על המרוחק בסשן הזה
