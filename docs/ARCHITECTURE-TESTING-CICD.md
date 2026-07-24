@@ -571,3 +571,110 @@ Merging into the target branch after a green pipeline triggers the production bu
 | Visual diff | `scripts/compare.mjs` + `scripts/diff-bands.mjs` (add threshold exit code + `COMPARE_TARGET_URL`) |
 | CI pipeline | new `.github/workflows/ci.yml` |
 | Preview visual check | new `.github/workflows/preview-visual.yml` |
+
+---
+
+## 6. Implementation status (2026-07-24, branch `feat/testing-cicd`)
+
+This section records what was actually built against this design, and where the
+design above describes code that does not exist. The sections above are the
+plan; this one is the ground truth. Where the two disagree, believe this one.
+
+### 6.1 Built
+
+| Piece | Where | Notes |
+|---|---|---|
+| Coverage floors | `vitest.config.ts` | v8 provider, per-file 95% floors on `money.ts`, `commission.ts`, `split.ts`, `settlement.ts`, `escrow.ts`, `state-machine.ts`. No global gate, by design (§1.1). |
+| `calculateSplit` suite | `src/lib/checkout/split.test.ts` (new) | The wire-facing engine had zero tests. 14 cases. |
+| Money invariants | `src/lib/commerce/money.test.ts` | Allocation invariant, round trips, overflow guards, edge percents. |
+| Engine guards | `commission.test.ts`, `settlement.test.ts` | The input guards were passing through uncovered. |
+| E2E | `e2e/` | 24 → 51 tests. New `category.spec.ts`; cart, checkout, product, home extended. Shared discovery in `e2e/helpers.ts`. |
+| CI | `.github/workflows/ci.yml` | lint, typecheck, test, build, e2e. |
+| Diff-scoped lint | `scripts/lint-changed.mjs` | See §6.3. |
+| Test fixtures | `scripts/seed-test-data.mjs` | Idempotent, with `--check` and `--clean`. Verified against the real schema. |
+
+Unit tests: 150 → 197. E2E: 24 → 51. Typecheck clean.
+
+### 6.2 Design claims that do not match the code
+
+These are load bearing. Anyone implementing §1.2 or §2 from the text above will
+hit them:
+
+1. **`src/lib/payments/hmac.ts` does not exist, and should not.** §1.2 C.1
+   specifies tests for `signCardcomBody` / `verifyCardcomSignature`. Cardcom
+   does not sign its callbacks at all — there is no HMAC and no signature
+   header. The real mechanism (`src/app/api/payments/cardcom/webhook/route.ts`)
+   is an unguessable shared secret in the callback URL (`?s=`) plus mandatory
+   server-to-server re-verification via `GetLpResult`. §1.2 C.1 and the
+   `hmac.test.ts` row in the appendix should be deleted, not implemented.
+2. **The webhook secret check is untested and currently untestable.**
+   `secretMatches` in the webhook route is a constant-time compare that fails
+   closed on empty or length-mismatched input — a genuine money-path guard. It
+   is module-private, so testing it needs a small extraction into an exported
+   pure helper. Not done here: that file belongs to the payments work. This is
+   the single highest-value unit test still missing.
+3. **The settlement defaults named in §1.2 B are gone.**
+   `DEFAULT_PLATFORM_COMMISSION_PERCENT = 5` and
+   `DEFAULT_COUPON_UPFRONT_PERCENT = 10` no longer exist. `settlement.ts` now
+   throws when a line arrives without an explicit percent, matching
+   CONTRADICTIONS C1. §1.2 B's note about "when Ofir decides the default" is
+   settled: there is no default.
+4. **Auth gating lives in `src/proxy.ts`, not middleware.** Next 16 replaced
+   `middleware.ts`; the exported function must be named `proxy`. It gates the
+   whole `/checkout` subtree, so `/checkout/return` and `/checkout/failed`
+   bounce a guest to login. Worth a second look from the payments side: the
+   Cardcom return URL only resolves for a caller whose session cookie survived
+   the third-party hop.
+5. **`compare.mjs` already takes an override, under a different name.** §4.2
+   asks for `COMPARE_TARGET_URL`; the script reads `LOCAL_BASE`. No change
+   needed, only the doc.
+6. **The visual-diff gate is not implementable as written.** §3.1 requires
+   `diff-bands.mjs` to exit non-zero above `VISUAL_DIFF_THRESHOLD`; it has no
+   threshold logic and no such exit path. The `visual-diff` job is therefore
+   not in `ci.yml`. It needs that script change first.
+
+### 6.3 How the lint gate is scoped
+
+A repo-wide `pnpm lint` reports 45 errors. All 45 are in `scripts/*.mjs`, the
+one-off scraping and measurement tools (`useNodejsImportProtocol` ×14,
+`useTemplate` ×7, `useOptionalChain` ×6, and similar). `src/` and `e2e/` held
+exactly two between them, both now fixed on this branch: a formatting break in
+`FeaturedProductsTabs.tsx`, and `useGenericFontNames` in `electro-icons.css`,
+suppressed with a reason — `font-electro` is an icon font, and a generic
+fallback would render meaningless letterforms instead of icons.
+
+`scripts/lint-changed.mjs` gates in two layers:
+
+1. **Regression, not absolute count.** For every changed file it compares the
+   diagnostic count now against the same file at the merge base (materialised
+   via `git show` into a temp tree, linted with `--config-path` at the repo
+   root and `--vcs-enabled=false`). Only an increase blocks. Fixing violations
+   is always allowed; carrying them unchanged is not a failure.
+2. **Advisory paths.** `scripts/` is reported but never blocks.
+
+Layer 2 exists because layer 1 alone is not sufficient *here*: the default
+branch `cursor/add-supabase-3c830` predates essentially the whole application,
+so at that merge base every file — `money.ts` included — reads as new, and a
+strict gate would demand the entire backlog be cleared before the first PR
+could go green. Layer 1 starts doing real work once the branch topology
+normalises; layer 2 is what keeps the gate honest until then.
+
+Verified in all three directions: a new violation under `src/` exits 1, the
+same violation under `scripts/` exits 0, and the clean tree exits 0.
+
+### 6.4 Not built, and why
+
+- **`e2e/redeem.spec.ts` (§2.2), including the concurrency race.** Needs a
+  seeded merchant session and `supplier_members` rows. The fixture script seeds
+  the supplier and products but not auth users; creating those needs the admin
+  auth API and a decision about where CI's test accounts live.
+- **Full money checkout E2E (§2.1).** Needs `CHECKOUT_PROVIDER=mock` end to end
+  plus a webhook the test can post. Blocked on the same fixture work, and on
+  the webhook secret being injectable in tests.
+- **`tests/sql/90_test_support.sql` and the local Supabase stack (§2.3–2.4).**
+  The E2E job runs against a CI Supabase project via secrets instead. A local
+  stack means `supabase db reset`, which touches migrations; that is owned
+  elsewhere.
+- **`visual-diff` and `preview-visual.yml` (§3.1, §4.2).** Blocked on 6.2 item 6.
+- **Branch protection (§5).** Repository settings, not code. Still to be applied
+  by hand in GitHub.

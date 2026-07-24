@@ -21,9 +21,10 @@
 | חיפוש | `/search` + API + hook, כולל escape ל-LIKE ול-metachars של PostgREST | `ba177b6`, `876aae0` |
 | WhatsApp | כפתור צף, שיתוף מוצר/קופון, קישורי עדכון הזמנה | `76631d1` |
 | Storage ותמונות | R2 presigned + pipeline webp/avif/blur + alt עברית חובה + `media_assets` (049) | `fc25aac`, `d6817fb` |
-| E2E | Playwright 24/24 | `25430c1` |
+| E2E | Playwright 51/51 (home, product, category, cart, checkout guest) | `25430c1` הרחבה בענף `feat/testing-cicd` |
 | אדמין | שדות תוכן/לוגיסטיקה/SEO (048), פעולות bulk, תיקוני QA: open redirect, user enumeration, נעילה עצמית של role, גישת content_uploader, soft-delete לווריאציות, יצירת ספק | `9a7672a` + סדרת `fix(...)` |
-| בדיקות | vitest 150/150, type-check נקי | הורץ 2026-07-24 |
+| בדיקות | vitest 197/197, type-check נקי, רצפות coverage 95% על 6 מודולי הכסף | ענף `feat/testing-cicd`, הורץ 2026-07-24 |
+| CI | `.github/workflows/ci.yml`: lint (diff-scoped) + typecheck + test + build + e2e | ענף `feat/testing-cicd` |
 
 ### מה פתוח
 1. **עבודה בעץ שטרם בקומיט**: מנוע Cardcom הישן + refund (`src/server/{actions/payments,domain/orders}/refund.ts`), פעולות bulk, `docs/DEPLOY.md`. צריך סבב בדיקות ואז קומיט משלה.
@@ -33,6 +34,10 @@
 5. **מנוע payout**: הסכימה נסגרה ב-051 (T+3 + מינימום 100), **אבל 051 טרם הוחלה על המרוחק** ואין עדיין מסך אדמין שמריץ `generate_payout_statement` ומציג ריצות שהתגלגלו (`rolled_over`).
 6. **C11 - סתירה עסקית פתוחה שדורשת הכרעה של Ofir**: מי מקבל את מחיר הקופון ששולם באתר כשה-held נסגר במימוש. `BUSINESS-MODEL.md`, `ARCHITECTURE-COMMERCE` והקוד עצמו (`027`: שורות `coupon_redemption` עם `payout_ils = 0`) אומרים שהפלטפורמה שומרת 100% והספק מקבל 0; C5 ("העמלה על המקדמה בלבד") מרמז שהספק מקבל את היתרה. לא הוכרע לבד - הכל נשאר על ההתנהגות הקיימת. פירוט ב-`docs/CONTRADICTIONS.md` §סתירה פתוחה.
 7. ה-header הנעול קצר ב-70px מה-masthead החי, `redirect_to` של Google OAuth, `supabase db push` אסור (רק MCP).
+8. **`secretMatches` ב-webhook של Cardcom חסר בדיקה** (`src/app/api/payments/cardcom/webhook/route.ts:12`). זו ההגנה היחידה על ה-webhook (סוד ב-URL, Cardcom לא חותם), והיא module-private ולכן לא ניתנת לבדיקה בלי חילוץ ל-helper מיוצא. הבדיקה הכי שווה שעדיין חסרה במסלול הכסף. לא בוצע כאן: הקובץ שייך לעבודת התשלומים.
+9. **`src/proxy.ts` חוסם את כל תת-העץ `/checkout`**, כולל `/checkout/return`. כלומר ה-return URL של Cardcom נפתר רק אם ה-session cookie שרד את המעבר לצד ג. שווה בדיקה מצד התשלומים.
+10. **שער ה-visual-diff לא ניתן ליישום כפי שכתוב** ב-`docs/ARCHITECTURE-TESTING-CICD.md` §3.1: ל-`scripts/diff-bands.mjs` אין לוגיקת threshold ואין exit code. לכן ה-job הזה לא נכנס ל-`ci.yml`.
+11. **E2E ב-CI מדלג** עד שייווצרו secrets בשם `CI_SUPABASE_URL` / `CI_SUPABASE_ANON_KEY` / `CI_SUPABASE_SECRET_KEY` ב-GitHub. אחרי שייווצרו, יש להפוך אותו ל-required check.
 
 ### 3 המשימות הבאות לפי סדר
 1. **הכרעת C11** (שאלה ל-Ofir, חוסמת כסף): הספק מקבל 0 או את היתרה מהמקדמה בקופון. עד שזה לא מוכרע, כל דוח settlement לקופונים הוא הימור.
@@ -553,3 +558,29 @@ commit: `feat: homepage 1:1 match with live source`
 - pipeline מלא: identity gate, Cardcom Low Profile, webhook HMAC,
   `checkout_finalize`, coupon vs physical fulfillment, refunds, payment_attempts
 - אין קוד יישום; מרחיב COMMERCE / API-CONTRACTS / SECURITY
+
+### 2026-07-24 - Testing + CI/CD foundation (branch `feat/testing-cicd`)
+- **Vitest**: 150 -> 197. רצפות coverage per-file של 95% (v8) על `money.ts`,
+  `commission.ts`, `split.ts`, `settlement.ts`, `escrow.ts`, `state-machine.ts`.
+  אין שער אחוז גלובלי - רשימת האינווריאנטות היא ההגנה, coverage הוא משני.
+- **`src/lib/checkout/split.test.ts` חדש**: ל-`calculateSplit` לא היו בדיקות בכלל
+  למרות שזה המנוע שהעגלה וה-checkout מציגים ממנו. שני ממצאים תועדו כהתנהגות:
+  `calculateSplit` מנרמל מחירים ב-`toFixed(2)` ולכן קלט מספרי מתחת לאגורה מעוגל
+  בשקט במקום להיזרק; ו-cashback נגזר מהתשלום באתר ולא מהערך הנקוב.
+- **`money.test.ts`**: אינווריאנטת ההקצאה (פיצול שורה לפלטפורמה/ספק מסתכם בדיוק
+  לסכום המקורי, 287 סכומים x 8 אחוזים, בלי אגורה שנוצרת או נעלמת).
+- **E2E**: 24 -> 51. `e2e/category.spec.ts` חדש; cart/checkout/product/home הורחבו;
+  `e2e/helpers.ts` מרכז את גילוי המוצר/קטגוריה; `homepage.spec.ts` מוזג ל-`home.spec.ts`.
+  `playwright.config.ts` מונע-env: `E2E_PORT`, `E2E_WEB_COMMAND`, `E2E_BASE_URL`.
+- **CI**: `.github/workflows/ci.yml` - lint, typecheck, test, build, e2e.
+- **שער lint diff-scoped** (`scripts/lint-changed.mjs`): כל 45 שגיאות ה-Biome
+  הקיימות נמצאות ב-`scripts/*.mjs` בלבד. ב-`src/` וב-`e2e/` יש בדיוק אחת
+  (כלל a11y ב-CSS). לכן השער חוסם רק על קבצים שהענף נגע בהם, וסריקה על כל הריפו
+  רצה כ-`continue-on-error` כדי שהחוב יישאר גלוי בלי לחסום.
+- **`scripts/seed-test-data.mjs`**: פיקסצ׳רים אידמפוטנטיים (ספק, קטגוריה, מוצר
+  קופון, מוצר פיזי) עם `--check` ו-`--clean`. אומת מקצה לקצה מול ה-DB ואז נוקה;
+  לא נשאר ממנו כלום ב-dev.
+- **`docs/ARCHITECTURE-TESTING-CICD.md` §6**: מצב יישום + 6 מקומות שבהם המסמך
+  מתאר קוד שלא קיים (בראשם `src/lib/payments/hmac.ts` - Cardcom לא חותם webhooks,
+  ולכן §1.2 C.1 צריך להימחק ולא להיות ממומש).
+- לא נגעתי במיגרציות ולא בקבצים של worktrees אחרים.
