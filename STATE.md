@@ -3,7 +3,7 @@
 Date: 2026-07-23.
 
 ## Current Phase
-**Phase 5 storefront + commerce מחווט**. branch `phase5/homepage`.
+**Goal 4 visual+tokens** on `feat/visual-polish` (worktree ke-visual). Main line still `phase5/homepage`.
 רץ מרתון 20 יעדי /goal (סשן 2026-07-23): יעדים 1-3 הושלמו.
 
 ## ענף feat/account-wallet (worktree `ke-account`, 2026-07-24)
@@ -80,7 +80,31 @@ Date: 2026-07-23.
 2. **`platform_percent` כשדה חובה באדמין** + `coupon_expiry_days`, ואז החלת 050 ו-051 על המרוחק באותו סשן MCP.
 3. **עמוד קטגוריה 1:1 מול החי** - `compare.mjs --page=category` מ-23.7% אל מתחת ל-7%.
 
+
 ## Last Completed
+Session 2026-07-24 - Goal 4 visual+tokens on `feat/visual-polish`:
+
+Commits on this branch:
+- `aceb4b3` fix(tokens): measured brand palette + TOUCH_TARGET_PX 44 + THEME_BRAND asserts
+- `3a94c96` fix(rtl): logical props sweep (rtl-lint 30 → 1; HeroSlider left-1/2 remains LOCKED)
+- `43264a4` feat(a11y): skip-to-main, Hebrew aria names, decorative aria-hidden
+- `d19fcd3` feat(a11y): 44px touch targets (Button, cart, masthead, footer; ATC hit-area pad)
+- `54c14c5` fix(visual): restore custom-price card block + compare demo slug + search chrome
+
+compare.mjs OVERALL first 2600px (live, with .env.local):
+| page | % | vs 11% |
+|---|---|---|
+| category | **9.32%** | pass |
+| search | **13.76%** | fail (3 local hits vs 6 live; content floor) |
+| home | **16.78%** | fail (LOCKED header/hero content drift) |
+| product | **21.19%** | fail (PDP structure vs live demo) |
+| products | **24.91%** | fail (catalog content + card geometry floor) |
+
+Irreducible without unlocking LOCKED_COMPONENTS / matching live DB content.
+Worktree: `/Users/ofir/kenyonexpress-web/ke-visual`.
+
+
+## Previous Last Completed
 Session 2026-07-24 - יעד 5/20: `docs/PRODUCT-PAGE-SPEC.md` (קומיט `docs: product page spec`):
 מסמך אחד שבולע את קובץ האב `docs/product-page/*.docx` ואת מפרט טופס הניהול.
 16 קבוצות השדות של Ofir מופו אחת לאחת לעמודות בפועל, עם סימון 🟢 לקוח / 🔵 פנימי,
