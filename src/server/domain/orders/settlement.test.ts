@@ -219,4 +219,63 @@ describe('calculateSettlement — split math', () => {
     }
     expect(calculateSettlement(input)).toEqual(calculateSettlement(input))
   })
+
+  it('rejects a negative unit price', () => {
+    expect(() =>
+      calculateSettlement({
+        idempotencyKey: 'k',
+        lines: [physicalLine({ unitPrice: agorot(-1) })],
+      }),
+    ).toThrow('unit price must not be negative')
+  })
+
+  it('rejects a negative wallet balance', () => {
+    expect(() =>
+      calculateSettlement({
+        idempotencyKey: 'k',
+        lines: [physicalLine()],
+        walletApplied: agorot(-1),
+      }),
+    ).toThrow('wallet applied must not be negative')
+  })
+
+  it('rejects a null commission percent as loudly as a missing one', () => {
+    expect(() =>
+      calculateSettlement({
+        idempotencyKey: 'k',
+        lines: [physicalLine({ commissionPercent: null as unknown as number })],
+      }),
+    ).toThrow(/commission percent is required/)
+  })
+
+  it('rejects a null upfront percent on a coupon line', () => {
+    expect(() =>
+      calculateSettlement({
+        idempotencyKey: 'k',
+        lines: [couponLine({ upfrontPercent: null as unknown as number })],
+      }),
+    ).toThrow(/upfront percent is required/)
+  })
+
+  it('snapshots cashback off the on-site amount when a percent is given', () => {
+    // coupon face 400₪, 10% upfront => 40₪ on site, 5% cashback => 2₪.
+    const result = calculateSettlement({
+      idempotencyKey: 'k',
+      lines: [couponLine({ cashbackPercent: 5 })],
+    })
+    expect(at(result.lines, 0).paidOnSite).toBe(4000)
+    expect(at(result.lines, 0).cashbackAmount).toBe(200)
+    expect(result.cashbackAmount).toBe(200)
+  })
+
+  it('defaults cashback to nothing when the product carries no percent', () => {
+    const result = calculateSettlement({ idempotencyKey: 'k', lines: [physicalLine()] })
+    expect(at(result.lines, 0).cashbackAmount).toBe(0)
+  })
+
+  it('rejects a line with an empty id', () => {
+    expect(() =>
+      calculateSettlement({ idempotencyKey: 'k', lines: [physicalLine({ id: '  ' })] }),
+    ).toThrow(TypeError)
+  })
 })

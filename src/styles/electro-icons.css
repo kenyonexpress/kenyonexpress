@@ -7,6 +7,10 @@
 }
 .ec {
   display: inline-block;
+  /* biome-ignore lint/a11y/useGenericFontNames: font-electro is an icon font.
+     A generic fallback would render meaningless letterforms in place of the
+     icons if it ever failed to load, which is worse than the icon simply not
+     appearing. Deliberate, and the reason the rule does not apply here. */
   font: 14px / 1 font-electro;
   font-size: inherit;
   text-rendering: auto;
