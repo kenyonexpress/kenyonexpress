@@ -12,6 +12,7 @@ import { extract } from './01-extract.mjs'
 import { transform } from './02-transform.mjs'
 import { loadStaging } from './03-load-staging.mjs'
 import { projectPublic } from './04-project-public.mjs'
+import { mediaSync } from './06-media-sync.mjs'
 import { validate } from './05-validate.mjs'
 import { Run, error, info, ok, warn } from './lib/log.mjs'
 
@@ -19,11 +20,13 @@ const STAGES = {
   extract: { kind: 'staging_load', fn: extract },
   transform: { kind: 'staging_load', fn: transform },
   load: { kind: 'staging_load', fn: loadStaging },
+  media: { kind: 'media_sync', fn: mediaSync },
   project: { kind: 'project_catalog', fn: projectPublic },
   validate: { kind: 'verify', fn: validate },
 }
 
-const ORDER = ['extract', 'transform', 'load', 'project', 'validate']
+// media before project: the projection writes image URLs into products.images
+const ORDER = ['extract', 'transform', 'load', 'media', 'project', 'validate']
 
 if (RUN.help) {
   process.stdout.write(HELP)

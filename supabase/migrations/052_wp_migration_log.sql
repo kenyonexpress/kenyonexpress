@@ -122,6 +122,25 @@ CREATE TRIGGER set_updated_at BEFORE UPDATE ON wp_import.validation_reports
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 -- ---------------------------------------------------------------------------
+-- 2b. Fix: media storage paths are content-addressed, therefore SHARED
+-- ---------------------------------------------------------------------------
+-- 032 created wp_media_storage_path_uniq as UNIQUE (bucket, storage_path),
+-- which assumed one object per attachment. The media pipeline keys objects on
+-- sha256 alone (wp/<ab>/<hash>.webp) precisely so that an image used by forty
+-- products is stored and uploaded once. Under that scheme forty attachment
+-- rows legitimately share one storage_path and the unique index rejects the
+-- upsert.
+--
+-- The index becomes a plain lookup index. Uniqueness of the OBJECT is already
+-- guaranteed by the hash; uniqueness of the ROW is wp_attachment_id, the pk.
+
+DROP INDEX IF EXISTS wp_import.wp_media_storage_path_uniq;
+
+CREATE INDEX IF NOT EXISTS wp_media_storage_path_idx
+  ON wp_import.media (bucket, storage_path)
+  WHERE storage_path IS NOT NULL;
+
+-- ---------------------------------------------------------------------------
 -- 3. Summary views
 -- ---------------------------------------------------------------------------
 
@@ -177,8 +196,9 @@ GROUP BY batch_id, target_table, entity;
 --   * id_map rows for the deleted targets are removed too, so a re-run mints
 --     the row again cleanly instead of pointing at a dead uuid.
 --   * Storage objects are NOT deleted here (SQL cannot reach the bucket). They
---     are content-addressed, so leaving them is harmless; the media GC script
---     sweeps them by wp/<id>/ prefix.
+--     are content-addressed and shared between products, so deleting a
+--     product must never delete its objects. Leaving them is harmless; a
+--     separate GC sweep removes hashes no live row references.
 --   * Every deletion is itself logged with stage='rollback'.
 --
 -- The delete is driven by target_table from the log, so a table added to the
@@ -189,8 +209,12 @@ CREATE OR REPLACE FUNCTION wp_import.fn_rollback_batch(
   p_dry_run  boolean DEFAULT true
 )
 RETURNS TABLE (
-  target_table  text,
-  entity        text,
+  -- Deliberately NOT named target_table / entity. Those are column names in
+  -- wp_import.migration_log, and a RETURNS TABLE parameter is a PL/pgSQL
+  -- variable: reusing them makes every unqualified reference in the body
+  -- ambiguous, which fails at runtime rather than at CREATE time.
+  table_name    text,
+  entity_name   text,
   rows_planned  bigint,
   rows_deleted  bigint,
   executed      boolean,
@@ -223,7 +247,7 @@ BEGIN
   -- iterate the allow-list in order, not the log, so FK order is guaranteed
   FOREACH v_table IN ARRAY v_allowed LOOP
     FOR v_rec IN
-      SELECT ml.entity                                   AS entity,
+      SELECT ml.entity                                   AS ent,
              count(*) FILTER (WHERE ml.action = 'insert') AS insert_rows,
              count(*) FILTER (WHERE ml.action = 'update') AS update_rows,
              array_agg(ml.target_id) FILTER (WHERE ml.action = 'insert') AS ids
@@ -243,20 +267,20 @@ BEGIN
         GET DIAGNOSTICS v_deleted = ROW_COUNT;
 
         DELETE FROM wp_import.id_map im
-        WHERE im.entity = v_rec.entity
+        WHERE im.entity = v_rec.ent
           AND im.new_id = ANY(v_rec.ids);
 
         INSERT INTO wp_import.migration_log
           (batch_id, stage, entity, wp_id, external_id, target_table,
            action, dry_run, error_detail)
         VALUES
-          (p_batch_id, 'rollback', v_rec.entity, 'batch', 'rollback:' || p_batch_id::text,
+          (p_batch_id, 'rollback', v_rec.ent, 'batch', 'rollback:' || p_batch_id::text,
            v_table, 'delete', false,
            format('rolled back %s rows', v_deleted));
       END IF;
 
-      target_table := v_table;
-      entity       := v_rec.entity;
+      table_name   := v_table;
+      entity_name  := v_rec.ent;
       rows_planned := v_rec.insert_rows;
       rows_deleted := v_deleted;
       executed     := NOT p_dry_run;

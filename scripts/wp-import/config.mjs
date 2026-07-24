@@ -164,9 +164,10 @@ Stages (default: all)
   extract     read WooCommerce (REST or dump) into wp_import/raw/
   transform   raw payloads into normalized rows in wp_import/normalized/
   load        upsert normalized rows into the wp_import.* staging schema
+  media       download, dedupe by sha256, convert to webp, upload to storage
   project     project staging into public.* through wp_import.id_map
   validate    run the gates and write a report to wp_import/reports/
-  all         extract -> transform -> load -> project -> validate
+  all         extract -> transform -> load -> media -> project -> validate
 
 Options
   --apply             actually write. Requires WP_IMPORT_ALLOW_WRITES=1 too.
