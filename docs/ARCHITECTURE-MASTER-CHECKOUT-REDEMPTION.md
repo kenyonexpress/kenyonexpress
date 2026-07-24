@@ -9,11 +9,12 @@ Scope: reconciles the authoritative business rules with the applied live schema 
 ## 0. Authoritative rules and the conflicts they create with live code
 
 The business rules below are authoritative. Where the live code disagrees, the code changes, not the rules.
+`docs/CONTRADICTIONS.md` (RESOLVED 2026-07-24) outranks this table wherever the two differ.
 
 | # | Authoritative rule | Live code today | Action |
 |---|---|---|---|
-| R1 | Coupon: customer pays 10% on site, 90% collected in-store on scan, then expires. **NO escrow.** | `047` creates `escrow_holds`; redeem route releases escrow on scan. | **Remove escrow from the coupon path.** Deprecate `escrow_holds`. |
-| R2 | Physical: customer pays 100%; platform keeps `platform_percent` (per product, admin-set); remainder to supplier. | `047` added a second column `products.commission_percent` (default 5) as the physical cut; `platform_percent` used only for coupons. Three overlapping percent columns. | **Unify on `platform_percent`.** Retire `commission_percent` as the split knob. |
+| R1 | Coupon: customer pays a per-product `coupon_price` on site (a free field, **not** a percentage of the deal - C4), the remainder is collected in-store on scan, then the coupon expires. **No EXTERNAL escrow and no J5** (C3): the on-site charge is a `held` row in our own ledger until redemption. | `047` creates `escrow_holds`; redeem route releases escrow on scan. | **Remove the external-escrow framing and the `escrow_holds` table.** Keep the internal `held` state in `commission_ledger` / `wallet_entries` only. |
+| R2 | Physical: customer pays 100%; platform keeps `platform_percent` (per product, admin-set, **mandatory with no default** - C1). Remainder to supplier. | `047` added a second column `products.commission_percent` (default 5) as the physical cut; `platform_percent` used only for coupons. Three overlapping percent columns. | **Unify on `platform_percent`.** Retire `commission_percent` as the split knob. Done in `050` (defaults dropped, `NOT NULL`). |
 | R3 | `platform_percent` is dynamic per product and MUST be snapshotted into `order_items` at purchase. | Snapshotted as `order_items.platform_percent` (046) plus `commission_percent_snapshot` (047). | Keep the snapshot; collapse to one column. |
 | R4 | Money is agorot integers, zero floats. | `orders`/`order_items`/`payments`/`coupon_codes` headers are ILS `numeric`; only settlement columns are agorot. | Migrate money columns to agorot integers (matches the unapplied 042 direction). |
 | R5 | QR must be signed, tamper-proof, single-use, offline-verifiable. | `coupon-issue.ts` uses an **unkeyed SHA-256 hash** (forgeable, no secret). | **Replace with keyed HMAC-SHA256 now, Ed25519 for offline verify.** |

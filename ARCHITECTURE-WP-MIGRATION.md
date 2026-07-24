@@ -110,7 +110,7 @@ one-shot חזרתי עם spot-check בכיסוי גבוה.
 | `_yoast_wpseo_title` / `_metadesc` | `seo_title` / `seo_description` | רק אם קיימים ולא תבניתיים |
 | היוריסטיקת סיווג ("שובר", "קופון", `_virtual`, קטגוריה) | `type` | הצעה בדוח curation; אדמין מאשר; ברירת מחדל `physical`; הערך `service` אסור בייבוא (drift אפשרי ב-enum) |
 | curation: שיוך ספק | `supplier_id` | **חובה, שער חוסם** (ראו 2.4) |
-| curation: אחוז פלטפורמה | `platform_percent` | מהסכם הספק; אם לא הוזן נופל ל-default של הסכימה |
+| curation: אחוז פלטפורמה | `platform_percent` | **חובה, שער חוסם.** מהסכם הספק, ערך מפורש בקובץ ה-curation. אין ברירת מחדל בסכימה ליפול אליה (050: `NOT NULL` בלי `DEFAULT`; CONTRADICTIONS C1). מוצר בלי אחוז לא מיובא |
 | אין מקור | `cashback_percent` | **0 לכל המיובאים** (042: NOT NULL DEFAULT 0). קמפיין cashback הוא החלטת אדמין עתידית, לא ירושה |
 | curation / תוקף שובר | `coupon_expiry_days` | **חובה לכל מוצר** (042: NOT NULL בלי default). physical -> 0; coupon -> ערך מפורש בקובץ ה-curation (ברירת הצעה: תוקף השוברים שנמכרו בעבר) |
 | `total_sales`, `menu_order`, meta של עיר | staging בלבד | עיר לא מוקרנת לעולם (C1, באג נהריה) |

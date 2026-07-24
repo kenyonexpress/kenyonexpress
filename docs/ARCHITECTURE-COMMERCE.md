@@ -1,5 +1,9 @@
 # KenyonExpress Commerce Architecture
 
+> **גובר עליו `docs/CONTRADICTIONS.md` (2026-07-24).** כל מספר עמלה, ברירת מחדל
+> (10%/5%) או נוסח Escrow במסמך הזה הוא שריד. ההכרעה: `platform_percent`
+> פר-מוצר, חובה, בלי ברירת מחדל בשום מקום; ה-held הוא רישום פנימי ב-ledger בלבד.
+
 Status: DESIGN. Companion draft migration: `supabase/migrations/026_commerce.sql` (NOT applied).
 Date: 2026-07-08. Supersedes the fixed-10% commission model documented in
 `.claude/skills/cardcom-payments` wherever the two conflict. This document also
@@ -9,18 +13,27 @@ are kept in section 8, superseded stub ideas are listed there explicitly.
 
 ## 0. Business rules (authoritative)
 
-1. **Commission is dynamic per product.** Every product and coupon deal carries an
-   admin-defined `platform_percent`, set on its admin product page. Platform keeps
-   `platform_percent` of the line total; the supplier gets the remainder.
+1. **Commission is dynamic per product, and mandatory.** Every product and coupon
+   deal carries an admin-defined `platform_percent`, set on its admin product page.
+   There is **no default anywhere** (CONTRADICTIONS C1, migration 050: `NOT NULL`
+   with no `DEFAULT`); a product without it cannot be priced or sold.
+   `commission_percent` is retired as the split knob (C2). Platform keeps
+   `platform_percent` of the on-site amount; the supplier gets the remainder.
 2. **Physical product**: customer pays 100% on site. The split is applied at
    settlement (supplier_payouts), not at transaction time. This supersedes the
-   skill's "Cardcom Multi-Account split at time of payment".
-3. **Coupon**: customer pays only `platform_percent` on site. The remainder is paid
-   directly at the business when the coupon is scanned. Coupon expires on scan.
-   No escrow, no platform-to-supplier payout for the on-site part (the platform
-   keeps the entire on-site charge; it IS the commission).
+   skill's "Cardcom Multi-Account split at time of payment". Payout is released
+   T+3 business days after delivery and only once the accrued balance reaches
+   100 ILS (C8, migration 051); below that it rolls over.
+3. **Coupon**: customer pays a per-product `coupon_price` on site - a free field,
+   NOT derived from `platform_percent` (C4). The remainder is paid directly at the
+   business when the coupon is scanned. Coupon expires on scan, or after
+   `coupon_expiry_days` (C7); on expiry without redemption the paid upfront is
+   credited to the customer wallet (C6). The on-site charge is held as an
+   **internal ledger record only** until redemption - no external escrow, no
+   trustee, no J5 authorization against Cardcom (C3). The money sits in our own
+   Cardcom account throughout.
 4. **Snapshot rule**: `platform_percent` is copied into `order_items` at purchase
-   time. Later admin changes never affect past orders.
+   time. Later admin changes never affect past orders (C10).
 5. **Wallet**: internal site credit only. Cashback is spendable only on-site,
    never cashes out. Applied as a discount at checkout on user request, not
    automatically.
@@ -36,7 +49,7 @@ are kept in section 8, superseded stub ideas are listed there explicitly.
 |---|---|---|
 | `carts` (jsonb `items`, `profile_id`/`session_id`) | 001 | live, used by `src/server/actions/cart.ts` |
 | `payment_tokens` (`cardcom_token`) | 001 | live |
-| `vendors` (`commission_rate`) | 001 + 013 | live; `commission_rate` becomes a DEFAULT only, see 2.1 |
+| `vendors` (`commission_rate`) | 001 + 013 | live; `commission_rate` is NOT a default for the split. CONTRADICTIONS C1 forbids any commission default: `products.platform_percent` is mandatory per product (050) |
 | `products`, `product_variants` | 005 + 014 | live |
 | `coupon_deals` | 015 | live |
 | `coupon_codes` (8-digit, statuses issued/used/expired/refunded) | 008 | live |
@@ -65,8 +78,10 @@ platform_percent numeric(5,2) NOT NULL CHECK (platform_percent BETWEEN 0 AND 100
 - Set on the admin product page. Required for `active` status (app-level guard).
 - `vendors.commission_rate` is demoted to a default suggestion when creating a
   product for that vendor. It is never read at checkout.
-- OPEN QUESTION (O1): `vendors.commission_rate` schema default is 10 but the admin
-  form default is 90. Decide which number means "platform share" and unify.
+- ~~OPEN QUESTION (O1)~~ **CLOSED by C1/C2 (2026-07-24)**: neither number is a
+  default. `vendors.commission_rate` and `suppliers.commission_percent` are
+  suggestions shown while creating a product, never read at checkout or settlement.
+  The only value that means "platform share" is `products.platform_percent`.
 
 ### 2.2 `carts` (exists) + new `cart_items`
 

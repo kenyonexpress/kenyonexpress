@@ -11,6 +11,10 @@
 |---|---|---|
 | החלטות עסקיות | **הוכרעו וננעלו** ב-`docs/CONTRADICTIONS.md` (C1-C10) | המסמך גובר על כל נוסח סותר |
 | עמלת פלטפורמה | `platform_percent` פר-מוצר, חובה, **בלי ברירת מחדל** בשום מקום | מיגרציה 050, `settlement.ts` זורק בלי אחוז מפורש |
+| אכיפת ההחלטות במסמכים | **הושלם 2026-07-24**: כל שרשראות ה-fallback לעמלה הוסרו מ-`ARCHITECTURE-SUPPLIER-REDEMPTION` (היה `product -> supplier -> 10`), `ARCHITECTURE-WP-MIGRATION` (היה "נופל ל-default של הסכימה"), `ARCHITECTURE-COMMERCE` (O1 נסגרה), `ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION` (R1/R2) | `docs/CONTRADICTIONS.md` §מצב יישום |
+| Escrow | נוסח אחיד בכל המסמכים: ה-held הוא **רישום פנימי ב-ledger בלבד**, אין Escrow חיצוני, אין נאמן ואין J5 | C3, אומת ב-grep על כל העץ |
+| ספקי צד ג | **C9 מאומת**: אין Stripe, אין Payoneer, אין Cloudways בשום קובץ בפרויקט (מלבד שורת ההכרעה עצמה) | grep על `*.ts/tsx/md/sql/json/toml` |
+| תנאי payout | **T+3 ימי עסקים + מינימום 100 ש"ח בסכימה** (היו תיעוד בלבד) | מיגרציה `051_payout_terms.sql` |
 | עמוד מוצר | מאומת מול האתר החי | `77fb030` |
 | Checkout | עגלה → `/checkout` → ספק → success + QR → זיכוי ארנק. מיגרציות 046/047 הוחלו על המרוחק | `0f5228e`, אומת E2E בדפדפן |
 | Cardcom | ה-API הישן (`/Interface/*.aspx`), webhook לא חתום ומאומת דרך סוד ב-URL + GetLpResult, refund | `docs/CARDCOM-ARCHITECTURE.md` (בעץ, טרם בקומיט) |
@@ -26,15 +30,48 @@
 2. **מיגרציה 050 לא הוחלה על המרוחק** ובכוונה: היא זורקת אם קיים מוצר חי בלי `platform_percent`. צריך למלא את הערך פר מוצר באדמין קודם.
 3. **טופס האדמין עדיין לא חושף `platform_percent` ולא `coupon_expiry_days`** - בלעדיהם אי אפשר לעמוד בדרישת "שדה חובה".
 4. **מודל מחיר הקופון (C4)**: הקוד עדיין גוזר את המקדמה כאחוז. אין עמודת מחיר קופון פר-מוצר.
-5. **מנוע payout**: T+3 ומינימום 100 ש"ח מתועדים, לא ממומשים.
-6. ה-header הנעול קצר ב-70px מה-masthead החי, `redirect_to` של Google OAuth, `supabase db push` אסור (רק MCP).
+5. **מנוע payout**: הסכימה נסגרה ב-051 (T+3 + מינימום 100), **אבל 051 טרם הוחלה על המרוחק** ואין עדיין מסך אדמין שמריץ `generate_payout_statement` ומציג ריצות שהתגלגלו (`rolled_over`).
+6. **C11 - סתירה עסקית פתוחה שדורשת הכרעה של Ofir**: מי מקבל את מחיר הקופון ששולם באתר כשה-held נסגר במימוש. `BUSINESS-MODEL.md`, `ARCHITECTURE-COMMERCE` והקוד עצמו (`027`: שורות `coupon_redemption` עם `payout_ils = 0`) אומרים שהפלטפורמה שומרת 100% והספק מקבל 0; C5 ("העמלה על המקדמה בלבד") מרמז שהספק מקבל את היתרה. לא הוכרע לבד - הכל נשאר על ההתנהגות הקיימת. פירוט ב-`docs/CONTRADICTIONS.md` §סתירה פתוחה.
+7. ה-header הנעול קצר ב-70px מה-masthead החי, `redirect_to` של Google OAuth, `supabase db push` אסור (רק MCP).
 
 ### 3 המשימות הבאות לפי סדר
-1. **עמוד קטגוריה 1:1 מול החי** - `compare.mjs --page=category` מ-23.7% אל מתחת ל-7%.
-2. **`platform_percent` כשדה חובה באדמין** + `coupon_expiry_days`, ואז החלת 050 על המרוחק.
-3. **קומיט מנוע Cardcom + refund** אחרי אימות ה-endpoint מול המסוף החי.
+1. **הכרעת C11** (שאלה ל-Ofir, חוסמת כסף): הספק מקבל 0 או את היתרה מהמקדמה בקופון. עד שזה לא מוכרע, כל דוח settlement לקופונים הוא הימור.
+2. **`platform_percent` כשדה חובה באדמין** + `coupon_expiry_days`, ואז החלת 050 ו-051 על המרוחק באותו סשן MCP.
+3. **עמוד קטגוריה 1:1 מול החי** - `compare.mjs --page=category` מ-23.7% אל מתחת ל-7%.
 
 ## Last Completed
+Session 2026-07-24 - יעד 4/20: אכיפת ההחלטות העסקיות בכל המסמכים וה-schema
+(קומיט `docs: decisions + state sync`). מה נבדק ומה נמצא:
+
+- **C1/C2 (עמלה בלי ברירת מחדל)**: היה כבר מיושם ב-`050`, אבל ארבעה מסמכים
+  עדיין תיארו שרשרת fallback. תוקנו: `docs/ARCHITECTURE-SUPPLIER-REDEMPTION.md`
+  (הוסר `product -> suppliers.commission_percent -> 10`),
+  `ARCHITECTURE-WP-MIGRATION.md` (הוסר "נופל ל-default של הסכימה", האחוז הפך
+  לשער חוסם בייבוא), `docs/ARCHITECTURE-COMMERCE.md` (§0 נכתב מחדש, O1 נסגרה),
+  `docs/ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md` (R1/R2).
+- **C3 (Escrow)**: הנוסח אוחד - ה-held הוא רישום פנימי ב-ledger בלבד, בלי נאמן
+  ובלי J5. R1 במסמך ה-MASTER שינה מ"הסר Escrow לגמרי" ל"הסר את ה-framing
+  החיצוני ואת `escrow_holds`, השאר את מצב ה-held הפנימי".
+- **C7 (תוקף)**: היה כבר מיושם - `products.coupon_expiry_days` הוא השדה הקנוני
+  (050 §5). לא נוצרה עמודת `expiry_days` כפולה בכוונה.
+- **C9 (Stripe/Payoneer/Cloudways)**: grep על כל העץ - אפס אזכורים מלבד שורת
+  ההכרעה עצמה. לא נדרשה מחיקה.
+- **C8 (payout)**: היה הפער האמיתי - תיעוד בלבד, אפס אכיפה. נוצרה
+  **`supabase/migrations/051_payout_terms.sql`**: `add_business_days()` +
+  `payout_available_at()` (T+3 בשבוע העבודה הישראלי, מדלג שישי-שבת),
+  `suppliers.min_payout_ils` (100) ו-`payout_hold_business_days` (3),
+  `payout_statements.available_at/min_payout_ils/rolled_over`,
+  `payout_statement_lines.available_at`. `generate_payout_statement` נכתבה
+  מחדש עם פרמטר `p_as_of`: אוספת רק שורות שעברו T+3, ואם היתרה מתחת לסף
+  סוגרת את הריצה כ-`cancelled` + `rolled_over = true` כך שהשורות מתגלגלות
+  לריצה הבאה. החתימה הישנה בת 3 הארגומנטים נמחקה כדי שלא תעקוף את הכללים,
+  ו-trigger `enforce_payout_availability` חוסם מעבר ל-`paid` לפני הזמן או
+  מתחת לסף.
+- **C11 נפתחה**: תוך כדי היישור התגלתה סתירה כספית אמיתית בין C5 לבין
+  `BUSINESS-MODEL.md` + הקוד. לא הוכרעה - נרשמה ב-`docs/CONTRADICTIONS.md`
+  כשאלה ל-Ofir. ראו "מה פתוח" סעיף 6.
+- **051 טרם הוחלה על המרוחק**, כמו 050.
+
 Session 2026-07-24 (המשך) - יעד 3/20: פעולות bulk באדמין (קומיט feat(admin/bulk)):
 - ‏actions חדשים ב-`src/server/actions/admin/products.ts`: ‏bulkAssignCategory
   (uuid או ללא קטגוריה), ‏bulkAdjustPrices (אחוזים: מכפיל גם את full_price לשמירת
