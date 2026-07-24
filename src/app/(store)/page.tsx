@@ -14,7 +14,10 @@ export default function HomePage() {
     <>
       <HeroSection />
       <CategoryStrip />
-      <div className="mt-[50px]">
+      {/* Live: strip ends y688, USP block y761-896, deals items y898.
+          Header lock leaves our strip ~69px lower; keep the post-strip gap
+          tight so deals still land at y898 (mt 35 + benefit ~76 + pt 15). */}
+      <div className="mt-[35px]">
         <BenefitBar />
       </div>
       <DealsOfTheDay />

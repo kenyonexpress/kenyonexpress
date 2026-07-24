@@ -38,7 +38,14 @@ function CartPlusIcon() {
   )
 }
 
-export default function CategoryProductCard({ product }: { product: CategoryProduct }) {
+export default function CategoryProductCard({
+  product,
+  showCustomPrice = true,
+}: {
+  product: CategoryProduct
+  /** Live /shop/ cards keep the 72px slot empty; category archives fill it. */
+  showCustomPrice?: boolean
+}) {
   const thumb =
     Array.isArray(product.images) && typeof product.images[0] === 'string'
       ? (product.images[0] as string)
@@ -113,12 +120,21 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
       {/* Measured live .custom-price-wrapper (h 72): two plain ink 14px lines,
           full price then discounted, separated by a <br>. Live WooCommerce
           numbers are a separate manual field; we reproduce geometry from
-          full_price / kenyon_price. See docs/CATEGORY-1TO1-FINDINGS.md. */}
+          full_price / kenyon_price. See docs/CATEGORY-1TO1-FINDINGS.md.
+          Live /shop/ keeps this slot blank (no wrapper text) while the card
+          stays 438px tall, so shop mode reserves the height without ink. */}
       {price != null && (
-        <div className="category-card__custom-price">
-          <div className="full-price">{formatPrice(old ?? price)}</div>
-          <br />
-          <div className="discount-price">{formatPrice(price)}</div>
+        <div
+          className="category-card__custom-price"
+          aria-hidden={showCustomPrice ? undefined : true}
+        >
+          {showCustomPrice ? (
+            <>
+              <div className="full-price">{formatPrice(old ?? price)}</div>
+              <br />
+              <div className="discount-price">{formatPrice(price)}</div>
+            </>
+          ) : null}
         </div>
       )}
     </article>

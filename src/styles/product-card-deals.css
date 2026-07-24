@@ -12,6 +12,7 @@
   padding: 8px 0;
   max-width: 50%;
   flex: 0 0 50%;
+  min-height: 501px;
 }
 
 @media (min-width: 1024px) {
@@ -58,6 +59,9 @@
   padding: 24px;
   background: #fff;
   transition: box-shadow 0.3s;
+  /* Measured live card inside the 501px item (8px pad each side). */
+  min-height: 485px;
+  box-sizing: border-box;
 }
 
 .p_con:hover {

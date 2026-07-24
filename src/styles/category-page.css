@@ -594,6 +594,42 @@
   border-bottom: 2px solid var(--cat-brand);
 }
 
+/* Live /shop/ .shop-control-bar-bottom: count + pagination, h 64. */
+.shop-control-bar-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 64px;
+  box-sizing: border-box;
+}
+
+.shop-control-bar-bottom .category-pagination {
+  margin-top: 0;
+}
+
+/* Live /shop/ .shop-archive-bottom > .jumbotron-product-category: 424px. */
+.shop-archive-bottom {
+  width: 100%;
+}
+
+.jumbotron-product-category {
+  min-height: 424px;
+  box-sizing: border-box;
+}
+
+/* Shop archive: live has no filter chrome. Collapse sidebar vertical chrome
+   so the jumbotron can sit against the footer the way live does. */
+.category-page--shop .category-sidebar {
+  padding-top: 0;
+  margin-top: 0;
+  border-top: 0;
+}
+
+.category-page--shop .category-sidebar__disclosure:not([open]) {
+  display: none;
+}
+
 /* Streaming placeholder. Mirrors the measured card boxes so the grid does not
    reflow when the real products arrive. */
 .category-card--skeleton {

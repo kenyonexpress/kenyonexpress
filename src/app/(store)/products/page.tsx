@@ -94,19 +94,26 @@ async function ResultGrid({
       <ul className="category-products">
         {items.map((product) => (
           <li key={product.id} className="category-products__item">
-            <CategoryProductCard product={product as CategoryProduct} />
+            <CategoryProductCard product={product as CategoryProduct} showCustomPrice={false} />
           </li>
         ))}
       </ul>
-      <Pagination
-        pathname="/products"
-        params={linkParams}
-        currentPage={currentPage}
-        totalPages={totalPages}
-      />
-      <p className="category-page__count category-page__count--bottom">
-        {resultCountText(total, from, to)}
-      </p>
+      {/* Live .shop-control-bar-bottom: result count + pagination, h 64. */}
+      <div className="shop-control-bar-bottom">
+        <p className="category-page__count">{resultCountText(total, from, to)}</p>
+        <Pagination
+          pathname="/products"
+          params={linkParams}
+          currentPage={currentPage}
+          totalPages={totalPages}
+        />
+      </div>
+      {/* Live .shop-archive-bottom > .jumbotron-product-category: 424px promo
+          block after the grid. Live image is a theme placeholder; height is
+          what the pixel compare needs so the footer lands near y3072. */}
+      <div className="shop-archive-bottom" aria-hidden="true">
+        <div className="jumbotron-product-category" />
+      </div>
     </>
   )
 }
@@ -133,7 +140,7 @@ export default async function ProductsPage({ searchParams }: Props) {
   }
 
   return (
-    <div className="category-page">
+    <div className="category-page category-page--shop">
       <div className="category-page__inner">
         <CategoryBreadcrumb items={[defaultHomeCrumb(), { label: PAGE_TITLE }]} />
 
@@ -160,6 +167,8 @@ export default async function ProductsPage({ searchParams }: Props) {
             </Suspense>
           </div>
 
+          {/* Live /shop/ has no filter chrome. Keep filters for UX, collapsed,
+              with shop-specific spacing so they do not eat the jumbotron gap. */}
           <CategoryFilterSidebar
             categories={allCategories}
             priceMin={priceMin}

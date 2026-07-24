@@ -40,6 +40,16 @@ if (!process.env.PLAYWRIGHT_BROWSERS_PATH) {
 
 const b = await chromium.launch()
 const ctx = await b.newContext({ viewport: VIEW, deviceScaleFactor: 1 })
+// Live has no consent chrome. Dismiss ours so the fixed banner does not
+// paint into every full-page band (especially y2400-2600).
+await ctx.addCookies([
+  {
+    name: 'ke_consent',
+    value: 'denied.1',
+    url: LOCAL,
+    path: '/',
+  },
+])
 
 let liveUrl = argOf('live', null)
 let mineUrl = argOf('mine', null)
