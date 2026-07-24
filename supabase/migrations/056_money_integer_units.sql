@@ -1,5 +1,5 @@
 -- ============================================================================
--- 055_money_integer_units.sql  (spec number 034; renumbered 033->050 ...
+-- 056_money_integer_units.sql  (spec number 034; renumbered 033->050 ...
 -- 039->056 because 033-035 already exist in this tree and 049 was the last
 -- used number; see LEDGER-DESIGN.md section 0)
 --
@@ -162,6 +162,9 @@ SELECT public.fn_money_col_to_int('wallet_entries', 'amount_ils', 'amount_agorot
 SELECT public.fn_money_col_to_int('products', 'price_ils', 'price_agorot');
 SELECT public.fn_money_col_to_int('products', 'compare_at_price_ils', 'compare_at_price_agorot');
 SELECT public.fn_money_col_to_int('products', 'cost_ils', 'cost_agorot');
+-- Binding model 2026-07-24: the admin-set absolute coupon price (added by 054)
+-- converts like any other money column.
+SELECT public.fn_money_col_to_int('products', 'coupon_price_ils', 'coupon_price_agorot');
 SELECT public.fn_money_col_to_int('product_variants', 'price_ils', 'price_agorot');
 
 -- coupon_redemptions (026)
@@ -186,6 +189,7 @@ SELECT public.fn_money_col_to_int('order_items', 'commission_percent_snapshot', 
 
 -- coupon_codes (046)
 SELECT public.fn_money_col_to_int('coupon_codes', 'platform_percent', 'platform_bp');
+SELECT public.fn_money_col_to_int('vouchers', 'platform_percent', 'platform_bp');
 
 -- wallet_transactions (006)
 SELECT public.fn_money_col_to_int('wallet_transactions', 'cashback_percent', 'cashback_bp');

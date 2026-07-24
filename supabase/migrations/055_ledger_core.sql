@@ -1,5 +1,5 @@
 -- ============================================================================
--- 054_ledger_core.sql  (spec number 033; renumbered 033->050 because 033-035
+-- 055_ledger_core.sql  (spec number 033; renumbered 033->050 because 033-035
 -- already exist in this tree and 049 was the last used number; full mapping
 -- 033->050 ... 039->056, see LEDGER-DESIGN.md section 0)
 --
@@ -10,7 +10,7 @@
 -- triggers (effective even for service_role); corrections are reversal
 -- journals only. Amounts are signed bigint agorot: positive = debit,
 -- negative = credit. RLS is enabled here with no policies (default deny);
--- read policies land in 060_money_rls.sql.
+-- read policies land in 061_money_rls.sql.
 --
 -- ROLLBACK NOTE: this migration only creates new objects. To roll back:
 --   DROP TABLE IF EXISTS public.ledger_journal_lines;

@@ -1,5 +1,5 @@
 -- ============================================================================
--- 061_fn_post_journal.sql
+-- 062_fn_post_journal.sql
 --
 -- Atomic ledger posting entry point for checkout v1. `src/lib/ledger.ts`
 -- calls this RPC so that a journal header and all its lines are inserted in a

@@ -1,5 +1,5 @@
 -- ============================================================================
--- 057_coupon_single_use.sql  (spec number 036; renumbered 033->050 ... 039->056
+-- 058_coupon_single_use.sql  (spec number 036; renumbered 033->050 ... 039->056
 -- because 033-035 already exist in this tree and 049 was the last used
 -- number; see LEDGER-DESIGN.md section 0)
 --

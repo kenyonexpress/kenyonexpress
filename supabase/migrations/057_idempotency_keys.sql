@@ -1,5 +1,5 @@
 -- ============================================================================
--- 056_idempotency_keys.sql  (spec number 035; renumbered 033->050 ... 039->056
+-- 057_idempotency_keys.sql  (spec number 035; renumbered 033->050 ... 039->056
 -- because 033-035 already exist in this tree and 049 was the last used
 -- number; see LEDGER-DESIGN.md section 0)
 --

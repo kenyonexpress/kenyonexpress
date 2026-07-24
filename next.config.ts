@@ -16,6 +16,9 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: '*.supabase.co' },
       { protocol: 'https', hostname: 'images.unsplash.com' },
       { protocol: 'https', hostname: 'plus.unsplash.com' },
+      // Seed/demo product images (024_seed_demo_products). Without this host in
+      // the allowlist, next/image throws and every demo product page 500s.
+      { protocol: 'https', hostname: 'picsum.photos' },
       // R2 public CDN (image pipeline renditions)
       { protocol: 'https', hostname: '*.kenyonexpress.co.il' },
       { protocol: 'https', hostname: '*.r2.dev' },
