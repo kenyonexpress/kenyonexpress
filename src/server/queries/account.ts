@@ -71,11 +71,17 @@ export interface AccountCoupon {
   productName: string | null
 }
 
-/** Hebrew labels for the ledger `reason` codes written by fn_wallet_transfer. */
+/**
+ * Hebrew labels for the ledger `reason` codes.
+ *
+ * These MUST match the strings finalize.ts passes as `p_reason`, which are
+ * `order_cashback` and `order_spend` (verified against the live ledger). An
+ * unknown code falls through to itself rather than to a wrong label.
+ */
 export const WALLET_REASON_LABELS: Record<string, string> = {
-  cashback: 'קאשבק על רכישה',
-  wallet_spend: 'שימוש בארנק',
-  refund: 'החזר על ביטול',
+  order_cashback: 'קאשבק על רכישה',
+  order_spend: 'שימוש בארנק',
+  order_refund: 'החזר על ביטול',
   admin_credit: 'זיכוי ידני',
   coupon_expired: 'קרדיט על קופון שפג',
 }

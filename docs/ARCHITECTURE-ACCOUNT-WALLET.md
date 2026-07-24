@@ -163,12 +163,16 @@ cashback_rules (
 
 ## 4. מסלול הכסף בארנק
 
-| אירוע | חיוב | זיכוי | `reason` | `idempotency_key` |
-|---|---|---|---|---|
-| קאשבק על הזמנה | `platform:cashback_reserve` | ארנק המשתמש | `cashback` | `order:<id>:cashback` |
-| שימוש בארנק בתשלום | ארנק המשתמש | `platform:revenue` | `wallet_spend` | `order:<id>:wallet` |
-| החזר על ביטול הזמנה | `platform:revenue` | ארנק המשתמש | `refund` | `order:<id>:refund` |
-| זיכוי ידני של אדמין | `platform:adjustments` | ארנק המשתמש | `admin_credit` | `adj:<uuid>` |
+הקודים למטה הם מה ש-`finalize.ts` באמת כותב, ואומתו מול הפנקס החי. כל שינוי
+בהם מחייב עדכון של `WALLET_REASON_LABELS` ב-`src/server/queries/account.ts`,
+אחרת עמוד הארנק יציג את הקוד הגולמי במקום תווית בעברית.
+
+| אירוע | חיוב | זיכוי | `reason` | `idempotency_key` | ממומש |
+|---|---|---|---|---|---|
+| קאשבק על הזמנה | `platform:cashback_reserve` | ארנק המשתמש | `order_cashback` | `order:<id>:cashback` | כן |
+| שימוש בארנק בתשלום | ארנק המשתמש | `platform:revenue` | `order_spend` | `order:<id>:spend` | כן |
+| החזר על ביטול הזמנה | `platform:revenue` | ארנק המשתמש | `order_refund` | `order:<id>:refund` | לא, מתוכנן |
+| זיכוי ידני של אדמין | `platform:adjustments` | ארנק המשתמש | `admin_credit` | `adj:<uuid>` | לא, מתוכנן |
 
 פקיעת קופון בלי מימוש מזכה גם היא את הארנק, אבל השורה הזאת נכתבת בדומיין
 השוברים (`ke-voucher`) ולא כאן. סעיף 8.
