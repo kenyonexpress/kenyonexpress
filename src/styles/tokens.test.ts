@@ -1,7 +1,7 @@
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { readFileSync, readdirSync } from 'node:fs'
+import { join, relative, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { CATALOG_CSS_METRICS, CATALOG_CSS_VARS } from './tokens'
+import { CATALOG_CSS_METRICS, CATALOG_CSS_VARS, SITE_CSS_METRICS, SITE_CSS_VARS } from './tokens'
 
 /**
  * The catalog stylesheet is only allowed to name a colour once, in its custom
@@ -78,5 +78,86 @@ describe('catalog colour tokens', () => {
     // The brief says #E4002B. getComputedStyle on the live archive says
     // #dc3545, and the pixel comparison runs against live.
     expect(CATALOG_CSS_VARS['--cat-sale']).toBe('#dc3545')
+  })
+})
+
+/**
+ * The site palette: same contract as the catalog one above, applied to the
+ * `@theme` block in globals.css and to every component.
+ *
+ * The second test here is the one that makes the sweep stick. Before it, "use
+ * a token" was a convention: 74 raw hexes had accumulated across 33 components
+ * because nothing objected when one more was pasted in. Now a hex in a .tsx
+ * fails the suite, and the only way to add a colour is to name it in tokens.ts
+ * and mirror it into globals.css.
+ */
+function globalsCss(): string {
+  return readFileSync(resolve(process.cwd(), 'src/app/globals.css'), 'utf8')
+}
+
+function themeBlock(source: string): string {
+  const start = source.indexOf('@theme {')
+  return source.slice(start, source.indexOf('\n}', start))
+}
+
+/** Every .tsx under src/, repo-relative. */
+function tsxFiles(dir = resolve(process.cwd(), 'src'), out: string[] = []): string[] {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const full = join(dir, entry.name)
+    if (entry.isDirectory()) tsxFiles(full, out)
+    else if (entry.name.endsWith('.tsx')) out.push(relative(process.cwd(), full))
+  }
+  return out
+}
+
+/**
+ * The one file allowed to name a hex. Google's sign-in mark is a trademark
+ * reproduced to their branding guidelines, so it is deliberately NOT a design
+ * token: a KenyonExpress rebrand must leave it alone. It is declared once, in
+ * a file whose only job is to be that mark.
+ */
+const HEX_ALLOWLIST = new Set(['src/components/shared/GoogleLogo.tsx'])
+
+describe('site colour tokens', () => {
+  it('declares every token from tokens.ts in the @theme block with the same value', () => {
+    const block = themeBlock(globalsCss())
+    for (const [name, value] of Object.entries(SITE_CSS_VARS)) {
+      const match = block.match(new RegExp(`${name}\\s*:\\s*([^;]+);`))
+      expect(match, `${name} is missing from globals.css @theme`).not.toBeNull()
+      expect(match?.[1]?.trim().toLowerCase(), `${name} drifted from tokens.ts`).toBe(
+        value.toLowerCase(),
+      )
+    }
+  })
+
+  it('declares every shared metric with the same value as tokens.ts', () => {
+    const block = themeBlock(globalsCss())
+    for (const [name, value] of Object.entries(SITE_CSS_METRICS)) {
+      const match = block.match(new RegExp(`${name}\\s*:\\s*([^;]+);`))
+      expect(match, `${name} is missing from globals.css @theme`).not.toBeNull()
+      expect(match?.[1]?.trim(), `${name} drifted from tokens.ts`).toBe(value)
+    }
+  })
+
+  it('carries no raw hex in any component', () => {
+    const offenders: string[] = []
+    for (const file of tsxFiles()) {
+      if (HEX_ALLOWLIST.has(file)) continue
+      // Comments are documentation and may name a token, not a hex; the sweep
+      // rewrote the provenance notes to say "bg = brand-primary" for exactly
+      // that reason, so nothing here needs stripping first.
+      for (const hex of readFileSync(file, 'utf8').match(/#[0-9a-fA-F]{3,8}\b/g) ?? []) {
+        offenders.push(`${file}: ${hex}`)
+      }
+    }
+    expect(offenders, `raw hex in components:\n  ${offenders.join('\n  ')}`).toHaveLength(0)
+  })
+
+  it('keeps the Google mark out of the palette', () => {
+    // A rebrand edits SITE.brand.*; it must not be able to reach Google's mark.
+    const palette = JSON.stringify(SITE_CSS_VARS).toLowerCase()
+    for (const google of ['#4285f4', '#34a853', '#fbbc05', '#ea4335']) {
+      expect(palette, `${google} must not be a design token`).not.toContain(google)
+    }
   })
 })

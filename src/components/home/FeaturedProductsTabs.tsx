@@ -30,8 +30,8 @@ export default function FeaturedProductsTabs({ products }: { products: Product[]
 
   return (
     <div>
-      <header className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-[#ededed] pb-3">
-        <h2 className="text-[22px] font-bold text-heading">מוצרים מומלצים</h2>
+      <header className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-rule pb-3">
+        <h2 className="text-section-title font-bold text-heading">מוצרים מומלצים</h2>
         <nav className="flex items-center gap-1">
           {TABS.map((t) => (
             <button

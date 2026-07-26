@@ -58,7 +58,7 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
             ₪{Number(coupon.original_price).toFixed(2)}
           </span>
         </div>
-        <p className="text-[11px] text-gray-400">שלם 10% עכשיו, 90% בבית העסק</p>
+        <p className="text-micro text-gray-400">שלם 10% עכשיו, 90% בבית העסק</p>
       </div>
     </Link>
   )

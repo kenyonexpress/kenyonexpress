@@ -48,7 +48,7 @@ export default function InfoBar() {
               />
               <div>
                 <p className="text-xs font-bold text-gray-900 leading-tight">{item.title}</p>
-                <p className="text-[11px] text-gray-500 leading-tight mt-0.5">{item.subtitle}</p>
+                <p className="text-micro text-gray-500 leading-tight mt-0.5">{item.subtitle}</p>
               </div>
             </div>
           ))}

@@ -75,7 +75,10 @@ function calculateLine(line: CommissionLineInput): CommissionLineResult {
   assertNonNegative(line.unitPrice, 'unit price')
 
   const faceValue = multiplyAgorot(line.unitPrice, line.quantity)
-  if (line.productType === 'physical' && (line.platformPercent === undefined || line.platformPercent === null)) {
+  if (
+    line.productType === 'physical' &&
+    (line.platformPercent === undefined || line.platformPercent === null)
+  ) {
     throw new TypeError(
       `platform percent is required for physical line ${line.id} (no default exists)`,
     )
@@ -83,7 +86,9 @@ function calculateLine(line: CommissionLineInput): CommissionLineResult {
   // A coupon's percent is not part of its pricing model; 0 bps is reported so
   // no percent-derived math can sneak back in.
   const platformPercentBps =
-    line.productType === 'coupon' ? 0 : percentToBasisPoints(line.platformPercent as string | number)
+    line.productType === 'coupon'
+      ? 0
+      : percentToBasisPoints(line.platformPercent as string | number)
   const cashbackPercentBps = percentToBasisPoints(line.cashbackPercent)
 
   // R1 (final rules 2026-07-24): the coupon on-site charge is the admin-set

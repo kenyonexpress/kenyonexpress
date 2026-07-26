@@ -17,7 +17,7 @@ export default function SiteHeader() {
     <>
       <div dir="rtl" className="w-full border-b border-border bg-white">
         {/* 37.3px + 1px border = the 38.3px top bar measured on the live site. */}
-        <div className="mx-auto flex h-[37.3px] max-w-page items-center px-4 text-[0.929em] text-heading">
+        <div className="mx-auto flex h-header-topbar max-w-page items-center px-4 text-[0.929em] text-heading">
           <span>ברוך הבא לעולם של קניון Express</span>
 
           <div className="ms-auto hidden items-center gap-3 md:flex">
@@ -51,7 +51,7 @@ export default function SiteHeader() {
         {/* 126px + 1px border = the 127px masthead measured on the live site.
             Everything below the header inherits this offset, so the height has
             to match before any page can be compared band by band. */}
-        <div className="mx-auto flex h-[126px] max-w-page items-center justify-between px-4">
+        <div className="mx-auto flex h-header-masthead max-w-page items-center justify-between px-4">
           <Link href="/" aria-label="קניון אקספרס, לדף הבית" className="shrink-0">
             <SmartImage
               src={LOGO}
@@ -62,8 +62,8 @@ export default function SiteHeader() {
               // project container is 1320px, so matching the live SIZE lands it
               // on different pixels and measured worse. Size stays at 40px until
               // the container question is settled.
-              className="h-[40px] w-auto object-contain"
-              fallbackClassName="h-[40px] w-[52px] rounded-md"
+              className="h-logo-h w-auto object-contain"
+              fallbackClassName="h-logo-h w-logo-w rounded-md"
               priority
             />
           </Link>

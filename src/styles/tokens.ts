@@ -9,6 +9,186 @@ export const ELECTRO = {
 }
 
 /**
+ * The site-wide palette. Every colour a component may use lives here, is
+ * mirrored into `@theme` in `src/app/globals.css` as `--color-<name>`, and is
+ * consumed only through the Tailwind utility that property generates
+ * (`bg-brand`, `text-heading`, `border-rule`, ...). No `.tsx` file is allowed
+ * to name a hex; `tokens.test.ts` enforces both halves of that rule.
+ *
+ * Values are grouped by what they mean, not by hue. Where a value was read off
+ * the live site rather than taken from the brief the comment says so, because
+ * the pixel comparison runs against live and a "corrected" colour would fail it.
+ */
+export const SITE = {
+  /** Brand identity. Yellow is live-verified rgb(254,215,0), not the brief's #FDD700. */
+  brand: {
+    primary: '#fed700',
+    primaryHover: '#fedd26',
+    dark: '#1a1a1a',
+    accent: '#eaf4f6',
+  },
+  /** Colours that carry meaning: price, state, links, headings. */
+  functional: {
+    price: '#dc3545',
+    priceStrike: '#9ca3af',
+    /** Deals-card price ink. Measured on live; darker than `brand.dark`. */
+    dealPrice: '#2d2d2d',
+    success: '#5cb85c',
+    link: '#0062bd',
+    heading: '#333e48',
+    saleBadge: '#44b81b',
+  },
+  /** Neutrals: hairlines, muted text, icon greys. */
+  neutral: {
+    border: '#dddddd',
+    borderAlt: '#e7e7e7',
+    /** Section-header rule under a tab strip. */
+    rule: '#ededed',
+    muted: '#7e7e7e',
+    muted2: '#768b9e',
+    icon: '#515151',
+    /** Large empty-state glyphs (empty cart, no results). */
+    iconEmpty: '#cccccc',
+  },
+  /**
+   * Surfaces. `ink` and `surface` are the admin console's text/paper pair: they
+   * are deliberately pure black on pure white rather than the storefront's
+   * softer `brand.dark`, because admin tables are dense and read all day.
+   */
+  surface: {
+    page: '#ffffff',
+    ink: '#000000',
+    /** Row/menu hover tint. */
+    hover: '#f5f5f5',
+    /** Chart bar + progress track. */
+    track: '#f1f2f4',
+    /** Footer copyright bar. */
+    bottomBar: '#eaeaea',
+    /** Inline warning banner (unsaved changes, validation notice). */
+    warning: '#fffbe6',
+    footer: '#333e48',
+  },
+  /**
+   * Promo tints for the left-rail banner cards. Three near-white washes that
+   * only ever appear as that card's background.
+   */
+  promo: {
+    rose: '#fff5f5',
+    violet: '#f5f5ff',
+    sky: '#f0f7ff',
+    /** Banner CTA button. */
+    flame: '#ff6b00',
+  },
+  /**
+   * WhatsApp's own brand colours, used by the share button and the float.
+   * They are a third-party mark, not part of the KenyonExpress palette: they
+   * are tokenised so no component repeats them, but they must never be
+   * rebranded along with `brand.*`.
+   */
+  whatsapp: {
+    base: '#25d366',
+    ink: '#128c7e',
+    inkHover: '#075e54',
+  },
+} as const
+
+/**
+ * Every custom property `globals.css` must declare in its `@theme` block, and
+ * the value it must carry. `tokens.test.ts` asserts the stylesheet agrees with
+ * this map, so a colour can only be changed here.
+ *
+ * Semantic aliases (`--color-primary`, `--color-brand`, ...) point at the same
+ * value as their source token and are listed so a rename cannot silently leave
+ * an alias behind pointing at a stale hex.
+ */
+export const SITE_CSS_VARS: Record<string, string> = {
+  '--color-brand-primary': SITE.brand.primary,
+  '--color-brand-primary-hover': SITE.brand.primaryHover,
+  '--color-brand-dark': SITE.brand.dark,
+  '--color-brand-accent': SITE.brand.accent,
+
+  '--color-price': SITE.functional.price,
+  '--color-price-strike': SITE.functional.priceStrike,
+  '--color-deal-price': SITE.functional.dealPrice,
+  '--color-success': SITE.functional.success,
+  '--color-link': SITE.functional.link,
+  '--color-heading': SITE.functional.heading,
+  '--color-sale-badge': SITE.functional.saleBadge,
+
+  '--color-border': SITE.neutral.border,
+  '--color-border-alt': SITE.neutral.borderAlt,
+  '--color-rule': SITE.neutral.rule,
+  '--color-muted': SITE.neutral.muted,
+  '--color-muted-2': SITE.neutral.muted2,
+  '--color-icon': SITE.neutral.icon,
+  '--color-icon-empty': SITE.neutral.iconEmpty,
+
+  '--color-surface': SITE.surface.page,
+  '--color-ink': SITE.surface.ink,
+  '--color-surface-hover': SITE.surface.hover,
+  '--color-track': SITE.surface.track,
+  '--color-bottom-bar': SITE.surface.bottomBar,
+  '--color-warning-surface': SITE.surface.warning,
+  '--color-footer-bg': SITE.surface.footer,
+
+  '--color-promo-rose': SITE.promo.rose,
+  '--color-promo-violet': SITE.promo.violet,
+  '--color-promo-sky': SITE.promo.sky,
+  '--color-promo-flame': SITE.promo.flame,
+
+  '--color-whatsapp': SITE.whatsapp.base,
+  '--color-whatsapp-ink': SITE.whatsapp.ink,
+  '--color-whatsapp-ink-hover': SITE.whatsapp.inkHover,
+
+  // Semantic + backward-compat aliases.
+  '--color-background': SITE.surface.page,
+  '--color-foreground': SITE.brand.dark,
+  '--color-primary': SITE.brand.primary,
+  '--color-primary-foreground': SITE.brand.dark,
+  '--color-brand': SITE.brand.primary,
+  '--color-brand-secondary': SITE.brand.primary,
+  '--color-brand-light': SITE.brand.accent,
+  '--color-accent': SITE.brand.accent,
+}
+
+/**
+ * Non-colour tokens `globals.css` must declare, and the value each carries.
+ *
+ * Only two kinds of number get in here: a size that MORE THAN ONE component
+ * uses (the shared type scale), and a box that was MEASURED off the live site
+ * (the header bars, the two off-page container widths, the logo boxes).
+ *
+ * Ordinary one-off spacing stays a literal in the component that uses it. A
+ * 2px flex gap or an 80px textarea minimum is not a measurement and not a
+ * scale, and giving it a token name would say something untrue about where it
+ * came from. `tokens.test.ts` therefore checks that these values agree with
+ * the stylesheet; it does not try to ban every px in every file.
+ */
+export const SITE_CSS_METRICS: Record<string, string> = {
+  '--text-nano': '10px',
+  '--text-micro': '11px',
+  '--text-section-title': '22px',
+  '--text-footer-note': '13px',
+  '--text-footer-link': '14px',
+  '--text-footer-head': '16px',
+  '--text-footer-phone': '20px',
+
+  '--header-height': '70px',
+  '--container-page': '1320px',
+  '--container-footer': '1430px',
+  '--container-deals': '1150px',
+
+  '--spacing-header-topbar': '37.3px',
+  '--spacing-header-masthead': '126px',
+  '--spacing-logo-h': '40px',
+  '--spacing-logo-w': '52px',
+  '--spacing-footer-logo-h': '42px',
+  '--spacing-footer-logo-w': '160px',
+  '--spacing-newsletter-min': '420px',
+  '--spacing-deals-top': '30px',
+}
+
+/**
  * Catalog archive tokens: /category/[slug], /products, /search.
  *
  * Every value here was read off the LIVE site with getComputedStyle, not taken

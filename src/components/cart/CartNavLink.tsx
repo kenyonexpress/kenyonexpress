@@ -27,7 +27,7 @@ export default function CartNavLink() {
         <ShoppingCart size={ICON.size} strokeWidth={ICON.strokeWidth} aria-hidden="true" />
         {cart.item_count > 0 && (
           <span
-            className="absolute -top-1.5 -start-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-primary px-1 text-[10px] font-bold text-brand-dark"
+            className="absolute -top-1.5 -start-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-primary px-1 text-nano font-bold text-brand-dark"
             aria-hidden="true"
           >
             {cart.item_count > 99 ? '99+' : cart.item_count}

@@ -143,7 +143,7 @@ export default async function AuditLogPage(props: {
         <select
           name="action"
           defaultValue={params.action ?? ''}
-          className="h-9 rounded-md border border-black/10 bg-[#FFFFFF] px-2 text-sm"
+          className="h-9 rounded-md border border-black/10 bg-surface px-2 text-sm"
         >
           <option value="">כל הפעולות</option>
           {AUDIT_ACTIONS.map((action) => (

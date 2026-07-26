@@ -114,8 +114,17 @@ describe('calculateSettlement — final business rules', () => {
     const result = calculateSettlement({
       idempotencyKey: 'k',
       lines: [
-        couponLine({ id: 'c1', unitPrice: ilsToAgorot('33.33'), couponPriceUnit: ilsToAgorot('10'), quantity: 3 }),
-        couponLine({ id: 'c2', unitPrice: ilsToAgorot('149.9'), couponPriceUnit: ilsToAgorot('99.9') }),
+        couponLine({
+          id: 'c1',
+          unitPrice: ilsToAgorot('33.33'),
+          couponPriceUnit: ilsToAgorot('10'),
+          quantity: 3,
+        }),
+        couponLine({
+          id: 'c2',
+          unitPrice: ilsToAgorot('149.9'),
+          couponPriceUnit: ilsToAgorot('99.9'),
+        }),
         physicalLine({ id: 'p1', unitPrice: ilsToAgorot('79.99'), quantity: 2 }),
       ],
     })

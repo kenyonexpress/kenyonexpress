@@ -48,7 +48,7 @@ const columns = [
 export default function Footer() {
   return (
     <footer dir="rtl" className="w-full bg-heading text-white">
-      <div className="max-w-[1430px] mx-auto px-4 py-12">
+      <div className="max-w-footer mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-1">
             <Image
@@ -61,10 +61,10 @@ export default function Footer() {
             <div className="flex items-start gap-3">
               <Phone className="w-12 h-12 text-brand-primary flex-shrink-0" strokeWidth={1.5} />
               <div>
-                <div className="text-[13px] text-white/80">יש שאלות? התקשרו 24/7</div>
+                <div className="text-footer-note text-white/80">יש שאלות? התקשרו 24/7</div>
                 <a
                   href="tel:1800397777"
-                  className="text-[20px] font-bold text-white hover:text-brand-primary transition-colors"
+                  className="text-footer-phone font-bold text-white hover:text-brand-primary transition-colors"
                 >
                   1-800-EXPRESS
                 </a>
@@ -74,7 +74,7 @@ export default function Footer() {
 
           {columns.map((col) => (
             <div key={col.title}>
-              <h4 className="text-[16px] font-bold mb-5 pb-3 border-b border-white/15">
+              <h4 className="text-footer-head font-bold mb-5 pb-3 border-b border-white/15">
                 {col.title}
               </h4>
               <ul className="space-y-3">
@@ -82,7 +82,7 @@ export default function Footer() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-[14px] text-white/70 hover:text-brand-primary transition-colors"
+                      className="text-footer-link text-white/70 hover:text-brand-primary transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -93,11 +93,13 @@ export default function Footer() {
           ))}
 
           <div>
-            <h4 className="text-[16px] font-bold mb-5 pb-3 border-b border-white/15">פרטי קשר</h4>
-            <p className="text-[14px] text-white/70 mb-2">תל אביב, ישראל</p>
+            <h4 className="text-footer-head font-bold mb-5 pb-3 border-b border-white/15">
+              פרטי קשר
+            </h4>
+            <p className="text-footer-link text-white/70 mb-2">תל אביב, ישראל</p>
             <a
               href="mailto:info@kenyonexpress.co.il"
-              className="text-[14px] text-white/70 hover:text-brand-primary transition-colors block mb-6"
+              className="text-footer-link text-white/70 hover:text-brand-primary transition-colors block mb-6"
             >
               info@kenyonexpress.co.il
             </a>
@@ -123,9 +125,9 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-white/10">
-        <div className="max-w-[1430px] mx-auto px-4 py-5 flex flex-col md:flex-row items-center justify-between gap-3">
-          <p className="text-[13px] text-white/60">© קניון Express · כל הזכויות שמורות</p>
-          <p className="text-[13px] text-white/60">ויזה · ביט · Visa · Mastercard · PayPal</p>
+        <div className="max-w-footer mx-auto px-4 py-5 flex flex-col md:flex-row items-center justify-between gap-3">
+          <p className="text-footer-note text-white/60">© קניון Express · כל הזכויות שמורות</p>
+          <p className="text-footer-note text-white/60">ויזה · ביט · Visa · Mastercard · PayPal</p>
         </div>
       </div>
     </footer>

@@ -165,7 +165,7 @@ export default function ImageUploader({ bucket, folder, value, onChange, maxFile
             type="button"
             onClick={() => void uploadStaged()}
             disabled={!allAltsValid || uploading}
-            className="inline-flex items-center gap-2 bg-brand hover:bg-[#fedd26] disabled:opacity-50 text-brand-dark font-semibold rounded-lg px-4 py-2 text-sm transition-colors"
+            className="inline-flex items-center gap-2 bg-brand hover:bg-brand-primary-hover disabled:opacity-50 text-brand-dark font-semibold rounded-lg px-4 py-2 text-sm transition-colors"
           >
             <Upload size={14} />
             {uploading ? 'מעבד ומעלה...' : `העלאת ${staged.length} תמונות`}

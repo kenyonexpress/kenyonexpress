@@ -20,7 +20,7 @@ export default function WhatsAppFloat() {
       rel="noopener noreferrer"
       aria-label="דברו איתנו בוואטסאפ"
       title="דברו איתנו בוואטסאפ"
-      className="fixed bottom-5 end-5 z-40 w-14 h-14 rounded-full bg-[#25d366] text-white shadow-lg shadow-black/20 flex items-center justify-center transition-transform hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#25d366]"
+      className="fixed bottom-5 end-5 z-40 w-14 h-14 rounded-full bg-whatsapp text-white shadow-lg shadow-black/20 flex items-center justify-center transition-transform hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-whatsapp"
     >
       <WhatsAppIcon size={30} />
     </a>

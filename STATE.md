@@ -1,6 +1,77 @@
 # KenyonExpress — Project State
 
-Updated: 2026-07-24 (אחרי תיקון כללי העסקים)
+Updated: 2026-07-27 (סבב תשתית: token sweep + אימות מיגרציות)
+
+## Current Phase
+תשתית נעולה. שכבת הטוקנים נאכפת בטסט, שרשרת המיגרציות מאומתת מאפס, כל הבדיקות ירוקות.
+
+## Last Completed
+### 1. Token sweep — הושלם ונאכף
+- ‏`src/styles/tokens.ts`: נוסף `SITE` (הפלטה המלאה) + `SITE_CSS_VARS` (33 custom properties)
+  + ‏`SITE_CSS_METRICS` (19 מידות משותפות/נמדדות).
+- ‏`src/app/globals.css`: בלוק ה-`@theme` הוא עכשיו מראה מדויקת של tokens.ts.
+- ‏**hex ב-tsx: ‏74 -> 4** (‏33 קבצים -> קובץ אחד). ארבעת הנותרים הם סימן המסחר של Google
+  ב-`src/components/shared/GoogleLogo.tsx` (רכיב חדש; ה-SVG היה משוכפל ב-LoginForm וב-SignupForm).
+  הוא ה-allowlist היחיד, בכוונה: rebrand של המותג לא אמור לגעת בו.
+- ‏**px ב-tsx: ‏130 -> 83.** מה שחזר על עצמו בין קבצים הפך לטוקן
+  (‏`text-section-title` 22px ב-4 קבצים, ‏`text-micro` 11px ב-4, סקאלת ה-footer,
+  ‏`max-w-footer` 1430px, ‏`max-w-deals` 1150px, מידות ה-header וה-logo שנמדדו בחי).
+  ‏`HeroSlider.tsx` ירד מ-65 מופעים ל-47, וכולם יושבים עכשיו פעם אחת במפת `RS` מתועדת
+  בראש הקובץ במקום להיות משוכפלים על פני שלושת וריאנטי השקופית.
+- מה שנשאר literal בכוונה: ריווח חד-פעמי רגיל (‏gap 2px, ‏textarea min-h 80px,
+  ‏`sizes=` של next/image, מיקומי ה-promo banner). זה אותו עיקרון שכבר כתוב
+  ב-`tokens.test.ts`: טוקן אומר "זו מדידה או סקאלה", ולתת שם למרווח חד-פעמי זו אמירה לא נכונה.
+- ‏`src/styles/tokens.test.ts`: ‏4 טסטים חדשים (9 סה"כ) — ה-@theme חייב להסכים עם tokens.ts,
+  ‏**אסור hex גולמי באף tsx**, וצבעי Google אסורים בפלטה. זה מה שהופך את הסריקה לחד-כיוונית.
+- באג שהתגלה ותוקן תוך כדי: ‏`UsersTable.tsx` קיבל prop ‏`canEdit` והתעלם ממנו לגמרי,
+  כך שצופה לקריאה בלבד ראה תפריט שינוי-תפקיד שה-server action ממילא דוחה.
+
+### 2. שרשרת המיגרציות — אומתה מאפס, לא נדרש תיקון
+ארבעת הסעיפים שהיו ברשימה כבר טופלו בסבבים קודמים. אימות בפועל, לא קריאת קוד:
+- ‏`supabase db reset --local` רץ נקי מאפס, exit 0.
+- ‏**63/63 מיגרציות הוחלו** (‏diff מלא בין הקבצים ל-`schema_migrations`: ריק לשני הכיוונים).
+- ‏87 טבלאות, ‏**0 בלי RLS**, ‏211 policies, ‏13 policies של content_uploader שרדו.
+- ‏`admin_audit_log` נמחקה כמצופה, ‏`audit_log` היא הקנונית (‏025 מבצע את המיזוג).
+- סריקה סטטית של כל 63 הקבצים: ‏0 ‏`CREATE POLICY` בלי ‏`DROP POLICY IF EXISTS`,
+  ‏0 ‏`CREATE TRIGGER` בלי ‏`DROP TRIGGER IF EXISTS` (116 טריגרים נבדקו),
+  ‏0 ‏`CREATE TABLE/INDEX/ADD COLUMN` בלי ‏`IF NOT EXISTS`, כל ‏`CREATE TYPE` בתוך ‏DO block.
+  ‏002 היה אידמפוטנטי כבר; ‏004 כבר מכיל ‏DROP POLICY IF EXISTS לכל policy.
+
+### 3. אימות סופי
+- ‏`biome check src/` — נקי (תוקנו גם 5 קבצי format שקדמו לסבב).
+- ‏`tsc --noEmit` — נקי.
+- ‏`vitest run` — ‏**401/401 ב-33 קבצים**.
+- ‏`next build` — נקי, exit 0.
+- הערה: אין `turbo.json` ואין turbo ב-`package.json`. הרצתי ישירות ב-pnpm/vitest.
+
+## Branch Status
+| branch | local | origin | מצב | הבא |
+| --- | --- | --- | --- | --- |
+| `phase5/homepage` | 211591d +3 | e14181f | הענף הפעיל, מכיל את סבב התשתית | דף קופון 1:1 |
+| `feat/payments-core` | 211591d | 211591d | מסונכרן, זהה ל-phase5 | תיקון שאריות 5%+Escrow |
+| `feat/visual-polish` | 7a6ae13 +1 | f43dba3 | worktree ב-`../ke-visual`, קומיט אחד לא נדחף | לדחוף ולמזג |
+| `cursor/add-supabase-3c830` | — | קיים | ענף ברירת המחדל ב-origin | — |
+| `main` | — | קיים | לא בשימוש | — |
+
+## In Progress
+‏feat/ci-foundation — ‏GitHub Actions עם typecheck+tests+build, ו-lint gate מוגבל ל-diff.
+
+## Blocking Issues
+‏**`feat/search-core` לא קיים.** המשימה ביקשה לסיים אותו ב-worktree ‏`../ke-search`:
+- ‏`git worktree list` מחזיר שני worktrees בלבד: השורש ו-`../ke-visual`.
+- ‏`../ke-search` לא קיים בדיסק. ‏`/Users/ofir/kenyonexpress-web/` מכיל רק
+  ‏`kenyonexpress` ו-`ke-visual`.
+- אין ענף בשם ‏`*search*` לא מקומי ולא ב-origin.
+אין מה לחדש ואין ‏`pnpm install` שנקטע. קוד החיפוש הקיים בריפו
+(‏`src/lib/search.ts`, ‏`src/lib/search-server.ts`, ‏`src/app/api/search/route.ts`)
+עובר build ובדיקות. אם העבודה קיימת — היא במכונה/‏clone אחר.
+
+## Next Task
+דף קופון (1:1 מול האתר החי) לפי
+docs/coupon-page-measured.md
+
+## Working Directory
+/Users/ofir/kenyonexpress-web/kenyonexpress
 
 ## Business Rules (final)
 - קופון: לקוח משלם באתר את מלא מחיר הקופון. השאר בבית העסק בסריקה. כל מה שנשאר אצל אופיר הוא מה שהלקוח שילם באתר.
@@ -11,7 +82,9 @@ Updated: 2026-07-24 (אחרי תיקון כללי העסקים)
 - כרגע: רק קופונים.
 
 ## Next Phase
-1. דף קופון (1:1 מול האתר החי)
+1. דף קופון (1:1 מול האתר החי): מדידות חי הושלמו ב-
+docs/coupon-page-measured.md
+   (מקור: קופון טסט). הבא: מימוש UI מול הטבלה.
 2. דף עגלה + checkout end-to-end
 3. תקן את קוד התשלומים: src/server/payments/ + src/server/actions/payments/ (מכיל שאריות 5% + Escrow שגויים; אין packages/payments בפרויקט)
 
@@ -189,6 +262,22 @@ Cardcom base, WP-import, voucher QR).
 3. **עמוד קטגוריה 1:1 מול החי** - `compare.mjs --page=category` מ-23.7% אל מתחת ל-7%.
 
 ## Last Completed
+Session 2026-07-27: מדידת computed styles לדף קופון חי.
+מקור:
+https://kenyonexpress.co.il/product/קופון-טסט/
+פלט:
+docs/coupon-page-measured.md
+(~1320 שורות טבלה `selector | property | value`, viewport 1440x900).
+סקריפט עזר:
+scripts/measure-coupon-page.mjs
+ממצאים מרכזיים בדף:
+- מחיר רגיל: ₪100 (`.full-price`, 14px Open Sans, rgb(51,62,72))
+- מחיר בקניון: ₪50 (`.discount-price`, אותם סגנונות)
+- מחיר Woo לעגלה: ₪9 (`p.price`, 35px)
+- מיקום ספק: `.city-tag` / `.area-status` (לא בלוק WCFM vendor מלא)
+- אין בלייב את המחרוזות "לתשלום באתר" / "בבית העסק"; השפה היא רגיל/בקניון
+- כרטיסי related משתמשים ב-`.custom-price-wrapper` עם ₪500/₪250
+
 Session 2026-07-24 - יעד 5/20: `docs/PRODUCT-PAGE-SPEC.md` (קומיט `docs: product page spec`):
 מסמך אחד שבולע את קובץ האב `docs/product-page/*.docx` ואת מפרט טופס הניהול.
 16 קבוצות השדות של Ofir מופו אחת לאחת לעמודות בפועל, עם סימון 🟢 לקוח / 🔵 פנימי,
@@ -359,16 +448,21 @@ Session 2026-07-21 - יום עבודה אוטונומי מלא: קטגוריה, 
 
 ## In Progress
 
-Checkout v1 modules (see Next Tasks). `src/lib/money.ts` + `src/lib/money.test.ts` started.
+nothing (מדידת דף קופון חי הושלמה)
 
 ## Blocking Issues
 
 - מיגרציית ההמרה לאגורות (ledger family) דורשת cutover של קוד server actions לפני החלה על DB.
-- Product-page visual diff (26-55% in y900-2100) unverified against live.
+- Product-page visual diff (26-55% in y900-2100): יש עכשיו מדידות חי ב-
+docs/coupon-page-measured.md
+  ; עדיין אין מימוש 1:1 ב-Next.
 - Gap **G1**: `payment_webhook_events` lacks an append-only block trigger (P1).
 
 ## Next Task
-ראה "3 המשימות הבאות" בסיכום המצב למעלה. אחריהן ממשיך מרתון ה-/goal:
+מימוש דף קופון ב-Next מול
+docs/coupon-page-measured.md
+(מחיר רגיל / מחיר בקניון / `p.price` / `.city-tag` / `.area-status`).
+אחרי כן: דף עגלה + checkout. אחר כך ממשיך מרתון ה-/goal:
 cron, כתובות, ביטול הזמנה, דוחות ספק, Q&A, סל נטוש, גלריה, פילטרים, Cmd+K,
 feature flags, Redis cache, API layer, webhooks, פרטיות, DB opt,
 visual regression, RTL sweep.

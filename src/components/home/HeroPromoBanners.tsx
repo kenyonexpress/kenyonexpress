@@ -69,7 +69,7 @@ function ShopNowButton() {
   return (
     <span
       dir="ltr"
-      className="da-action mt-2 inline-flex items-center gap-2 self-end text-[11px] font-bold leading-none text-heading"
+      className="da-action mt-2 inline-flex items-center gap-2 self-end text-micro font-bold leading-none text-heading"
     >
       <span
         aria-hidden="true"

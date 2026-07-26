@@ -17,7 +17,7 @@ const STATUS_FILTERS = [
 ] as const
 
 const adminBtn =
-  'inline-flex items-center gap-2 rounded-lg border border-black/10 bg-brand px-4 py-2 text-sm font-semibold text-brand-dark transition-colors hover:bg-[#fedd26]'
+  'inline-flex items-center gap-2 rounded-lg border border-black/10 bg-brand px-4 py-2 text-sm font-semibold text-brand-dark transition-colors hover:bg-brand-primary-hover'
 
 interface Props {
   searchParams: Promise<Record<string, string | string[] | undefined>>
@@ -76,7 +76,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-[#000000]">מוצרים</h1>
+        <h1 className="text-xl font-bold text-ink">מוצרים</h1>
         <Link href="/admin/products/new" className={adminBtn}>
           <Plus size={15} />
           מוצר חדש
@@ -95,8 +95,8 @@ export default async function AdminProductsPage({ searchParams }: Props) {
               href={href}
               className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                 (status ?? '') === f.value
-                  ? 'bg-[#fed700] text-[#000000]'
-                  : 'border border-black/10 text-black/60 hover:bg-[#fed700]/30 hover:text-[#000000]'
+                  ? 'bg-brand-primary text-ink'
+                  : 'border border-black/10 text-black/60 hover:bg-brand-primary/30 hover:text-ink'
               }`}
             >
               {f.label}
@@ -110,11 +110,11 @@ export default async function AdminProductsPage({ searchParams }: Props) {
             name="q"
             defaultValue={q}
             placeholder="חיפוש בשרת..."
-            className="rounded-lg border border-black/10 bg-[#FFFFFF] px-3 py-1.5 text-xs text-[#000000] focus:outline-none focus:ring-2 focus:ring-[#fed700]"
+            className="rounded-lg border border-black/10 bg-surface px-3 py-1.5 text-xs text-ink focus:outline-none focus:ring-2 focus:ring-brand-primary"
           />
           <button
             type="submit"
-            className="rounded-lg border border-black/10 px-3 py-1.5 text-xs font-medium text-black/70 transition-colors hover:bg-[#fed700]/30"
+            className="rounded-lg border border-black/10 px-3 py-1.5 text-xs font-medium text-black/70 transition-colors hover:bg-brand-primary/30"
           >
             סינון
           </button>
@@ -132,7 +132,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
                 ...(q ? { q } : {}),
                 page: String(page - 1),
               })}`}
-              className="rounded-lg border border-black/10 px-3 py-1.5 text-xs transition-colors hover:bg-[#fed700]/30"
+              className="rounded-lg border border-black/10 px-3 py-1.5 text-xs transition-colors hover:bg-brand-primary/30"
             >
               הקודם
             </Link>
@@ -147,7 +147,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
                 ...(q ? { q } : {}),
                 page: String(page + 1),
               })}`}
-              className="rounded-lg border border-black/10 px-3 py-1.5 text-xs transition-colors hover:bg-[#fed700]/30"
+              className="rounded-lg border border-black/10 px-3 py-1.5 text-xs transition-colors hover:bg-brand-primary/30"
             >
               הבא
             </Link>

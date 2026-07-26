@@ -73,7 +73,14 @@ export default function UsersTable({ users, callerRole, callerId, canEdit = true
         </span>
       ),
     },
-    {
+  ]
+
+  // The page computes canWriteSection(callerRole, 'users') and passes it in;
+  // until now the prop was accepted and ignored, so a read-only viewer still
+  // got a role dropdown. The server action rejected the write, but offering a
+  // control that always fails is its own bug. Drop the column instead.
+  if (canEdit) {
+    columns.push({
       id: 'actions',
       header: 'שינוי תפקיד',
       className: 'w-48',
@@ -85,8 +92,8 @@ export default function UsersTable({ users, callerRole, callerId, canEdit = true
           isSelf={u.id === callerId}
         />
       ),
-    },
-  ]
+    })
+  }
 
   return (
     <DataTable

@@ -3,7 +3,14 @@
 /* ============================================================================
    DESIGN TOKENS — KenyonExpress
    Palette extracted from the logo and electro home-v7 template.
-   To rebrand: edit the --color-brand-* values in @theme below.
+
+   MIRROR OF src/styles/tokens.ts. Every --color-* below is asserted against
+   SITE_CSS_VARS by tokens.test.ts, so a colour can only be changed in
+   tokens.ts. The same test forbids a raw hex anywhere in src/**.tsx: a
+   component reaches a colour only through the Tailwind utility a property here
+   generates (bg-brand, text-heading, border-rule, ...).
+
+   To rebrand: edit SITE.brand.* in tokens.ts, then mirror it here.
    ============================================================================ */
 @theme {
   /* --- Brand identity -------------------------------------------------------- */
@@ -15,23 +22,43 @@
   /* --- Functional colors ----------------------------------------------------- */
   --color-price: #dc3545; /* current price (live measured) */
   --color-price-strike: #9ca3af; /* crossed-out original price */
+  --color-deal-price: #2d2d2d; /* deals-card price ink (live measured) */
   --color-success: #5cb85c; /* confirmation, in-stock */
   --color-link: #0062bd; /* product names + links (distinct from red price) */
   --color-heading: #333e48; /* hero + section headings (electro home-v7) */
   --color-sale-badge: #44b81b; /* on-sale badge green (live measured) */
 
   /* --- Neutrals / borders / muted text (live measured) ----------------------- */
-  --color-border: #ddd; /* default hairline borders / dividers */
+  --color-border: #dddddd; /* default hairline borders / dividers */
   --color-border-alt: #e7e7e7; /* secondary borders (category strips) */
+  --color-rule: #ededed; /* rule under a section-header tab strip */
   --color-muted: #7e7e7e; /* muted secondary text */
   --color-muted-2: #768b9e; /* muted slate-blue text (product meta) */
   --color-icon: #515151; /* nav / masthead icon gray */
+  --color-icon-empty: #cccccc; /* large empty-state glyphs */
 
   /* --- Surfaces ---------------------------------------------------------------- */
+  --color-surface: #ffffff; /* cards, inputs, table paper */
+  --color-ink: #000000; /* admin console text (denser than brand-dark) */
+  --color-surface-hover: #f5f5f5; /* row / menu hover tint */
+  --color-track: #f1f2f4; /* chart bar + progress track */
+  --color-bottom-bar: #eaeaea; /* footer copyright bar */
+  --color-warning-surface: #fffbe6; /* inline warning banner */
   --color-footer-bg: #333e48; /* dark footer body (electro home-v7) */
 
+  /* --- Promo rail tints ------------------------------------------------------- */
+  --color-promo-rose: #fff5f5;
+  --color-promo-violet: #f5f5ff;
+  --color-promo-sky: #f0f7ff;
+  --color-promo-flame: #ff6b00; /* promo card CTA */
+
+  /* --- WhatsApp (third-party mark; never rebrand with --color-brand-*) -------- */
+  --color-whatsapp: #25d366;
+  --color-whatsapp-ink: #128c7e;
+  --color-whatsapp-ink-hover: #075e54;
+
   /* --- Semantic tokens ------------------------------------------------------- */
-  --color-background: #fff; /* page background (body in ke_live_singlefile) */
+  --color-background: #ffffff; /* page background (body in ke_live_singlefile) */
   --color-foreground: #1a1a1a; /* default body text */
   --color-primary: #fed700; /* alias for brand-primary (Tailwind semantic) */
   --color-primary-foreground: #1a1a1a; /* text on primary (black on yellow) */
@@ -46,10 +73,38 @@
   /* Heebo drives ALL text site-wide (Hebrew + Latin). No Inter. */
   --font-sans: var(--font-heebo), Arial, sans-serif;
 
+  /* --- Type scale (measured; sizes only, no line-height) ---------------------
+     Tailwind pairs its own sizes with a line-height. These declare size ONLY,
+     so `text-section-title` is byte-identical to the `text-[22px]` it replaced.
+     Adding a line-height here would silently reflow every 1:1 comparison. */
+  --text-nano: 10px; /* cart count badge */
+  --text-micro: 11px; /* captions, payment chips, promo eyebrow */
+  --text-section-title: 22px; /* section headings + product-card titles */
+  --text-footer-note: 13px; /* footer smallprint + copyright */
+  --text-footer-link: 14px; /* footer nav links + contact lines */
+  --text-footer-head: 16px; /* footer column headings */
+  --text-footer-phone: 20px; /* footer support phone number */
+
   /* --- Layout ---------------------------------------------------------------- */
   --header-height: 70px;
   /* Single source of truth for page container width -> generates `max-w-page`. */
   --container-page: 1320px;
+  /* Measured on live: the footer and the deals grid do NOT share the page
+     container, they run wider and narrower respectively. */
+  --container-footer: 1430px;
+  --container-deals: 1150px;
+
+  /* --- Measured layout boxes -------------------------------------------------
+     Each was read off the live site; the component that used to inline the
+     number carries the provenance comment. `--spacing-*` generates h-/w-/min-w-. */
+  --spacing-header-topbar: 37.3px; /* + 1px border = the 38.3px live top bar */
+  --spacing-header-masthead: 126px; /* + 1px border = the 127px live masthead */
+  --spacing-logo-h: 40px; /* header logo box (not live's 270x71; see Header.tsx) */
+  --spacing-logo-w: 52px;
+  --spacing-footer-logo-h: 42px;
+  --spacing-footer-logo-w: 160px;
+  --spacing-newsletter-min: 420px; /* footer newsletter form min width at lg */
+  --spacing-deals-top: 30px; /* live deals grid top offset */
 }
 
 body {

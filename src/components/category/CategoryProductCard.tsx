@@ -109,7 +109,6 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
           </AddToCartButton>
         )}
       </div>
-
     </article>
   )
 }

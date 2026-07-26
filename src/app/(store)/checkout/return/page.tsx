@@ -142,7 +142,7 @@ export default async function CheckoutReturnPage({ searchParams }: Props) {
                         marginTop: 10,
                         fontSize: 13,
                         fontWeight: 600,
-                        color: '#128c7e',
+                        color: 'var(--color-whatsapp-ink)',
                       }}
                     >
                       <WhatsAppIcon size={16} />
@@ -182,7 +182,7 @@ export default async function CheckoutReturnPage({ searchParams }: Props) {
                   gap: 8,
                   fontSize: 14,
                   fontWeight: 600,
-                  color: '#128c7e',
+                  color: 'var(--color-whatsapp-ink)',
                 }}
               >
                 <WhatsAppIcon size={18} />

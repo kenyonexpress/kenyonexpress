@@ -169,14 +169,14 @@ export default async function AdminOrdersPage(props: {
           name="from"
           type="date"
           defaultValue={params.from ?? ''}
-          className="h-9 rounded-md border border-black/10 bg-[#FFFFFF] px-2 text-sm"
+          className="h-9 rounded-md border border-black/10 bg-surface px-2 text-sm"
           aria-label="מתאריך"
         />
         <input
           name="to"
           type="date"
           defaultValue={params.to ?? ''}
-          className="h-9 rounded-md border border-black/10 bg-[#FFFFFF] px-2 text-sm"
+          className="h-9 rounded-md border border-black/10 bg-surface px-2 text-sm"
           aria-label="עד תאריך"
         />
       </FilterBar>

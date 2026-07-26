@@ -70,7 +70,7 @@ export default async function ApprovalsQueuePage() {
                   <td className="px-5 py-3">
                     <Link
                       href={`/admin/products/${p.id}/edit`}
-                      className="font-medium text-[#000000] underline-offset-2 hover:underline"
+                      className="font-medium text-ink underline-offset-2 hover:underline"
                     >
                       {p.name_he}
                     </Link>

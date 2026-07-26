@@ -5,11 +5,13 @@ import Link from 'next/link'
 
 /**
  * kenyonexpress.co.il footer — structure + values extracted from
- * refs/ke_live_home.html (footer-v2) and refs/electro_style.css:
- *  - newsletter bar bg #fed700 (--bs-ec-primary), padding .55em 0
+ * refs/ke_live_home.html (footer-v2) and refs/electro_style.css. Each colour
+ * the extraction found is now a token in src/styles/tokens.ts; the token name
+ * is given so the mapping back to the reference stays traceable:
+ *  - newsletter bar bg = brand-primary (live --bs-ec-primary), padding .55em 0
  *  - newsletter title 1.429em, marketing text 1.071em
- *  - submit button bg #333e48, white text
- *  - copyright bar bg #eaeaea
+ *  - submit button bg = heading, white text
+ *  - copyright bar bg = bottom-bar
  */
 
 const PERSONAL_LINKS = [
@@ -71,7 +73,7 @@ function SocialGlyph({ path }: { path: string }) {
 export default function SiteFooter() {
   return (
     <footer dir="rtl" className="w-full font-sans">
-      {/* 1. Newsletter bar — bg #fed700, padding .55em 0 */}
+      {/* 1. Newsletter bar — bg brand-primary, padding .55em 0 */}
       <div className="bg-brand-secondary text-heading">
         <div className="mx-auto flex max-w-page flex-col items-center justify-between gap-4 px-4 py-[0.55em] lg:flex-row">
           {/* right side: paper-plane + title + subtitle */}
@@ -103,7 +105,7 @@ export default function SiteFooter() {
           <form
             method="post"
             action="/api/newsletter"
-            className="flex w-full items-stretch overflow-hidden rounded-none bg-white lg:w-auto lg:min-w-[420px]"
+            className="flex w-full items-stretch overflow-hidden rounded-none bg-white lg:w-auto lg:min-w-newsletter-min"
           >
             <input
               type="email"
@@ -133,8 +135,8 @@ export default function SiteFooter() {
               alt="קניון EXPRESS"
               width={190}
               height={50}
-              className="mb-5 h-[42px] w-auto object-contain"
-              fallbackClassName="mb-5 h-[42px] w-[160px] rounded-md"
+              className="mb-5 h-footer-logo-h w-auto object-contain"
+              fallbackClassName="mb-5 h-footer-logo-h w-footer-logo-w rounded-md"
             />
 
             <p className="m-0 text-sm text-heading/80">יש לך שאלות, הצעות או הערות ?</p>
@@ -215,8 +217,8 @@ export default function SiteFooter() {
         </div>
       </div>
 
-      {/* 4. Bottom gray bar — bg #eaeaea, copyright (right) + payment (left) */}
-      <div className="bg-[#eaeaea] text-heading">
+      {/* 4. Bottom gray bar — bg bottom-bar, copyright (right) + payment (left) */}
+      <div className="bg-bottom-bar text-heading">
         <div className="mx-auto flex max-w-page flex-col items-center justify-between gap-3 px-4 py-3 sm:flex-row">
           <p className="m-0 text-sm">
             כל הזכויות שמורות © <strong className="font-bold">Kenyon Express</strong>
@@ -225,7 +227,7 @@ export default function SiteFooter() {
             {['Visa', 'Mastercard', 'Discover', 'American Express'].map((label) => (
               <li
                 key={label}
-                className="rounded border border-black/15 bg-white px-2 py-1 text-[11px] font-semibold text-heading/70"
+                className="rounded border border-black/15 bg-white px-2 py-1 text-micro font-semibold text-heading/70"
               >
                 {label}
               </li>

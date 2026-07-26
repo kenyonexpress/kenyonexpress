@@ -40,7 +40,7 @@ export default async function AdminVendorsPage({ searchParams }: Props) {
         <h1 className="text-xl font-bold text-gray-900">ספקים</h1>
         <Link
           href="/admin/suppliers/new"
-          className="inline-flex items-center gap-2 bg-brand hover:bg-[#fedd26] text-brand-dark text-sm font-semibold rounded-lg px-4 py-2 transition-colors"
+          className="inline-flex items-center gap-2 bg-brand hover:bg-brand-primary-hover text-brand-dark text-sm font-semibold rounded-lg px-4 py-2 transition-colors"
         >
           <Plus size={15} />
           ספק חדש

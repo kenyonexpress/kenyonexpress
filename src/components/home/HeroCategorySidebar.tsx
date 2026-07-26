@@ -53,7 +53,7 @@ export default function HeroCategorySidebar() {
                 >
                   <Link
                     href={href}
-                    className="block text-end transition-colors hover:bg-[#f5f5f5] hover:font-bold focus:bg-[#f5f5f5] focus:font-bold"
+                    className="block text-end transition-colors hover:bg-surface-hover hover:font-bold focus:bg-surface-hover focus:font-bold"
                     style={{
                       ...MENU_LINK_STYLE,
                       ...(isLast ? { borderBottom: 'none' } : {}),

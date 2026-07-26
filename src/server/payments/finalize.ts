@@ -57,10 +57,7 @@ async function issueVouchersForItem(
 
   // Idempotency: never issue beyond quantity for this order_item (replay-safe).
   // The vouchers UNIQUE(code) plus this count cap make webhook replays no-ops.
-  const { data: existing } = await admin
-    .from('vouchers')
-    .select('id')
-    .eq('order_item_id', item.id)
+  const { data: existing } = await admin.from('vouchers').select('id').eq('order_item_id', item.id)
   const alreadyIssued = existing?.length ?? 0
   if (alreadyIssued >= item.quantity) return
 
@@ -281,7 +278,10 @@ export async function finalizeOrder(input: {
   try {
     await spendWallet(admin, order.id, order.user_id, walletApplied)
 
-    const productInfo = new Map<string, { couponExpiryDays: number; offerValidUntil: Date | null }>()
+    const productInfo = new Map<
+      string,
+      { couponExpiryDays: number; offerValidUntil: Date | null }
+    >()
     const productIds = items
       .map((i) => i.product_id)
       .filter((id): id is string => typeof id === 'string')

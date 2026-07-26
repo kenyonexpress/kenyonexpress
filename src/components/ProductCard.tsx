@@ -143,7 +143,7 @@ function DefaultProductCard({ product }: { product: Product }) {
 
         <Link
           href={`/product/${product.slug}`}
-          className="line-clamp-2 text-[22px] text-link leading-snug hover:underline"
+          className="line-clamp-2 text-section-title text-link leading-snug hover:underline"
         >
           {product.name_he}
         </Link>
@@ -169,13 +169,13 @@ function DefaultProductCard({ product }: { product: Product }) {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap items-baseline gap-2">
             {hasDiscount && old != null && (
-              <span className="text-sm text-[#2d2d2d] line-through">{shekels(old)}</span>
+              <span className="text-sm text-deal-price line-through">{shekels(old)}</span>
             )}
             <span
               className={
                 hasDiscount
                   ? 'text-base font-bold text-price'
-                  : 'text-base font-bold text-[#2d2d2d]'
+                  : 'text-base font-bold text-deal-price'
               }
             >
               {shekels(price)}

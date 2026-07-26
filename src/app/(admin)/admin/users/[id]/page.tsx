@@ -110,7 +110,7 @@ export default async function AdminUserDetailPage(props: {
 
         <section className="rounded-xl border border-black/10 bg-white p-5">
           <h2 className="mb-3 text-sm font-semibold text-gray-800">ארנק</h2>
-          <p className="text-2xl font-bold text-[#333e48]">
+          <p className="text-2xl font-bold text-heading">
             ₪{(wallet?.balance_ils ?? 0).toLocaleString('he-IL')}
           </p>
           <p className="mt-1 text-xs text-black/50">
@@ -167,7 +167,7 @@ export default async function AdminUserDetailPage(props: {
             {(orders ?? []).map((order) => {
               const badge = orderStatusBadge(order.status)
               return (
-                <tr key={order.id} className="transition-colors hover:bg-[#fed700]/15">
+                <tr key={order.id} className="transition-colors hover:bg-brand-primary/15">
                   <td className="px-5 py-2.5">
                     <Link
                       href={`/admin/orders/${order.id}`}

@@ -53,7 +53,7 @@ export default function TablePagination({
               className={cn(
                 'min-w-8 rounded-lg px-2 py-1.5 text-center transition-colors',
                 p === page
-                  ? 'bg-[#fed700] font-bold text-[#333e48]'
+                  ? 'bg-brand-primary font-bold text-heading'
                   : 'text-black/60 hover:bg-black/[0.04]',
               )}
             >

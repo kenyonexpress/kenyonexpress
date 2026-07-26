@@ -212,7 +212,7 @@ export default function ProductsTable({ products, categories }: Props) {
       </div>
 
       {selected.size > 0 && (
-        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-black/10 bg-[#fffbe6] px-3 py-2">
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-black/10 bg-warning-surface px-3 py-2">
           {/* Publish / hide / archive */}
           <button
             type="button"

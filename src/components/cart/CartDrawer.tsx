@@ -130,7 +130,7 @@ export default function CartDrawer() {
         <div className={`cart-drawer__body ${isPending ? 'opacity-70' : ''}`}>
           {cart.items.length === 0 ? (
             <div className="cart-drawer__empty">
-              <ShoppingCart size={40} className="text-[#ccc]" aria-hidden="true" />
+              <ShoppingCart size={40} className="text-icon-empty" aria-hidden="true" />
               <p>העגלה ריקה</p>
               <button type="button" onClick={closeDrawer} className="cart-drawer__shop-link">
                 המשך לקניות

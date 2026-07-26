@@ -40,6 +40,53 @@ const DOT_ACTIVE = 'var(--color-brand-primary)'
 const DOT_INACTIVE = 'rgba(125, 125, 125, 0.5)'
 const AUTOPLAY_MS = 5000
 
+/**
+ * The rs-layer type ramp, measured off the live Revolution Slider at both
+ * breakpoints. Every number below appeared inline three or four times across
+ * the three slide variants; naming each ramp once means a remeasure edits one
+ * line instead of hunting for repeats.
+ *
+ * These stay component-local rather than becoming @theme tokens because each
+ * value is used only by this slider. A token in globals.css claims a value is
+ * part of the site's scale; these are one component's measurements.
+ */
+const RS = {
+  /** headline 1: rs-layer .tp-caption headline */
+  h1: 'text-[43px] font-light lg:text-[58px]',
+  h1Leading: 'leading-[43px] lg:leading-[58px]',
+  /** headline 2: the lighter second line, always 5px shy of h1 */
+  h2: 'text-[38px] font-light lg:text-[51px]',
+  h2Leading: 'leading-[38px] lg:leading-[51px]',
+  /** tagline strip under the headlines */
+  tagline: 'text-[11px] font-bold leading-[11px] lg:text-[19px] lg:leading-[19px]',
+  /** "standard" caption line (product slide only) */
+  standard: 'text-[11px] font-bold leading-[15px] lg:text-[15px]',
+  /** small promo line above the big price */
+  promoSmall: 'text-[12px] leading-[13px] lg:text-[13px]',
+  promoSmallWelcome: 'text-[12px] font-normal leading-[15px] lg:text-[15px]',
+  /** the big promo price */
+  promoLarge: 'text-[35px] font-bold leading-[35px] lg:text-[50px] lg:leading-[50px]',
+  promoLargeWelcome: 'text-[35px] font-bold leading-[40px] lg:text-[45px] lg:leading-[50px]',
+  /** copy column: 31px gutter from the slide edge */
+  copyColumn: 'pointer-events-none absolute end-0 top-0 z-10 max-w-[50%] pe-[31px] text-end',
+  /** headline box reserves its live height so shorter titles do not reflow */
+  headBox: 'm-0 min-h-[86px] lg:min-h-[118px]',
+  /** headline 2 rides -1px tighter than headline 1 on every variant */
+  h2Tracking: '-1px',
+  /** app slide: headline starts 52px down, badge is a fixed 46x286 box */
+  appHeadOffset: 'mt-[52px]',
+  badgeBox: 'h-[46px] w-[286px]',
+  /** 2x the badge width, so the 2x raster is the one that gets fetched */
+  badgeSizes: '572px',
+  /** welcome slide insets its two promo lines by different amounts */
+  promoSmallInset: 'ps-[11px]',
+  promoLargeInset: 'ps-[10px]',
+  /** rs-layer xo offsets: three distinct measured indents */
+  indentSm: 'pe-[21px]',
+  indentMd: 'pe-[47px]',
+  indentLg: 'pe-[70px]',
+} as const
+
 const HERO_IMAGE_SIZES = `(max-width: 1024px) 100vw, ${SLIDE.width * 2}px`
 
 function HeroSlideImage({ src, priority }: { src: string; priority: boolean }) {
@@ -99,32 +146,32 @@ function SlideImage({
 
 function AppSlideCopy({ slide }: { slide: HeroSlide }) {
   return (
-    <div className="pointer-events-none absolute end-0 top-0 z-10 w-1/2 max-w-[50%] pe-[31px] text-end">
+    <div className={`${RS.copyColumn} w-1/2`}>
       {slide.title && (
         <span
           style={{ color: T.headline1.color }}
-          className="mt-[52px] block text-[43px] font-light leading-[43px] lg:text-[58px] lg:leading-[58px]"
+          className={`${RS.appHeadOffset} block ${RS.h1} ${RS.h1Leading}`}
         >
           {slide.title}
         </span>
       )}
       {slide.title_secondary && (
         <span
-          style={{ color: T.headline2.color, letterSpacing: '-1px' }}
-          className={`mt-0 block text-[38px] font-light leading-[38px] lg:text-[51px] lg:leading-[51px] ${
-            slide.title_secondary_indent ? 'pe-[70px] lg:pe-[70px]' : ''
+          style={{ color: T.headline2.color, letterSpacing: RS.h2Tracking }}
+          className={`mt-0 block ${RS.h2} ${RS.h2Leading} ${
+            slide.title_secondary_indent ? RS.indentLg : ''
           }`}
         >
           {slide.title_secondary}
         </span>
       )}
       {slide.badge_image_url && (
-        <div className="relative ms-auto mt-16 h-[46px] w-[286px] max-w-full lg:mt-24">
+        <div className={`relative ms-auto mt-16 max-w-full lg:mt-24 ${RS.badgeBox}`}>
           <SmartImage
             src={slide.badge_image_url}
             alt=""
             fill
-            sizes="572px"
+            sizes={RS.badgeSizes}
             quality={90}
             className="object-contain object-left"
             fallbackClassName="absolute inset-0"
@@ -137,28 +184,28 @@ function AppSlideCopy({ slide }: { slide: HeroSlide }) {
 
 function ProductSlideCopy({ slide }: { slide: HeroSlide }) {
   const tagline = slide.tagline ?? slide.subtitle
-  const line1Class = slide.title_indent ? 'pe-[21px] lg:pe-[21px]' : ''
+  const line1Class = slide.title_indent ? RS.indentSm : ''
 
   return (
     <div
-      className="pointer-events-none absolute end-0 top-0 z-10 w-full max-w-[50%] pb-12 pe-[31px] text-end lg:w-1/2"
+      className={`${RS.copyColumn} w-full pb-12 lg:w-1/2`}
       style={{ paddingTop: SLIDE.text.paddingTop }}
     >
       {(slide.title || slide.title_secondary) && (
-        <h1 className="m-0 min-h-[86px] lg:min-h-[118px]">
+        <h1 className={RS.headBox}>
           {slide.title && (
             <span
               style={{ color: T.headline1.color }}
-              className={`block text-[43px] font-light leading-[1.08] lg:text-[58px] ${line1Class}`}
+              className={`block ${RS.h1} leading-[1.08] ${line1Class}`}
             >
               {slide.title}
             </span>
           )}
           {slide.title_secondary && (
             <span
-              style={{ color: T.headline2.color, letterSpacing: '-1px' }}
-              className={`mt-0.5 block text-[38px] font-light leading-[1.08] lg:mt-1 lg:text-[51px] ${
-                slide.title_secondary_indent ? 'pe-[47px] lg:pe-[47px]' : ''
+              style={{ color: T.headline2.color, letterSpacing: RS.h2Tracking }}
+              className={`mt-0.5 block ${RS.h2} leading-[1.08] lg:mt-1 ${
+                slide.title_secondary_indent ? RS.indentMd : ''
               }`}
             >
               {slide.title_secondary}
@@ -168,10 +215,7 @@ function ProductSlideCopy({ slide }: { slide: HeroSlide }) {
       )}
 
       {tagline && (
-        <p
-          style={{ color: T.tagline.color }}
-          className="mt-3 text-[11px] font-bold leading-[11px] lg:mt-4 lg:text-[19px] lg:leading-[19px]"
-        >
+        <p style={{ color: T.tagline.color }} className={`mt-3 lg:mt-4 ${RS.tagline}`}>
           {tagline}
         </p>
       )}
@@ -180,7 +224,7 @@ function ProductSlideCopy({ slide }: { slide: HeroSlide }) {
         <p
           dir="ltr"
           style={{ color: T.headline1.color }}
-          className="mt-4 text-start text-[11px] font-bold leading-[15px] lg:mt-5 lg:text-[15px]"
+          className={`mt-4 text-start lg:mt-5 ${RS.standard}`}
         >
           {slide.standard_line}
         </p>
@@ -190,7 +234,7 @@ function ProductSlideCopy({ slide }: { slide: HeroSlide }) {
         <p
           dir="ltr"
           style={{ color: T.priceLabel.color }}
-          className="mt-2 text-start text-[12px] leading-[13px] lg:mt-3 lg:text-[13px]"
+          className={`mt-2 text-start lg:mt-3 ${RS.promoSmall}`}
         >
           {slide.promo_small}
         </p>
@@ -200,7 +244,7 @@ function ProductSlideCopy({ slide }: { slide: HeroSlide }) {
         <p
           dir="ltr"
           style={{ color: T.price.color }}
-          className="mt-0 text-start text-[35px] font-bold leading-[35px] lg:text-[50px] lg:leading-[50px]"
+          className={`mt-0 text-start ${RS.promoLarge}`}
         >
           {slide.promo_large}
         </p>
@@ -212,23 +256,20 @@ function ProductSlideCopy({ slide }: { slide: HeroSlide }) {
 function WelcomeSlideCopy({ slide }: { slide: HeroSlide }) {
   return (
     <div
-      className="pointer-events-none absolute end-0 top-0 z-10 w-full max-w-[50%] pb-12 pe-[31px] text-end lg:w-1/2"
+      className={`${RS.copyColumn} w-full pb-12 lg:w-1/2`}
       style={{ paddingTop: SLIDE.text.paddingTop }}
     >
-      <h1 className="m-0 min-h-[86px] lg:min-h-[118px]">
+      <h1 className={RS.headBox}>
         {slide.title && (
-          <span
-            style={{ color: T.headline1.color }}
-            className="block text-[43px] font-light leading-[1.08] lg:text-[58px]"
-          >
+          <span style={{ color: T.headline1.color }} className={`block ${RS.h1} leading-[1.08]`}>
             {slide.title}
           </span>
         )}
         {slide.title_secondary && (
           <span
-            style={{ color: T.headline2.color, letterSpacing: '-1px' }}
-            className={`mt-0.5 block text-[38px] font-light leading-[1.08] lg:mt-1 lg:text-[51px] ${
-              slide.title_secondary_indent ? 'pe-[47px]' : ''
+            style={{ color: T.headline2.color, letterSpacing: RS.h2Tracking }}
+            className={`mt-0.5 block ${RS.h2} leading-[1.08] lg:mt-1 ${
+              slide.title_secondary_indent ? RS.indentMd : ''
             }`}
           >
             {slide.title_secondary}
@@ -236,10 +277,7 @@ function WelcomeSlideCopy({ slide }: { slide: HeroSlide }) {
         )}
       </h1>
       {slide.tagline && (
-        <p
-          style={{ color: T.tagline.color }}
-          className="mt-4 text-[11px] font-bold leading-[11px] lg:mt-5 lg:text-[19px] lg:leading-[19px]"
-        >
+        <p style={{ color: T.tagline.color }} className={`mt-4 lg:mt-5 ${RS.tagline}`}>
           {slide.tagline}
         </p>
       )}
@@ -247,7 +285,7 @@ function WelcomeSlideCopy({ slide }: { slide: HeroSlide }) {
         <p
           dir="ltr"
           style={{ color: T.headline1.color }}
-          className="mt-3 ps-[11px] text-start text-[12px] font-normal leading-[15px] lg:mt-4 lg:text-[15px]"
+          className={`mt-3 text-start lg:mt-4 ${RS.promoSmallInset} ${RS.promoSmallWelcome}`}
         >
           {slide.promo_small}
         </p>
@@ -256,7 +294,7 @@ function WelcomeSlideCopy({ slide }: { slide: HeroSlide }) {
         <p
           dir="ltr"
           style={{ color: T.price.color }}
-          className="mt-0 ps-[10px] text-start text-[35px] font-bold leading-[40px] lg:text-[45px] lg:leading-[50px]"
+          className={`mt-0 text-start ${RS.promoLargeInset} ${RS.promoLargeWelcome}`}
         >
           {slide.promo_large}
         </p>

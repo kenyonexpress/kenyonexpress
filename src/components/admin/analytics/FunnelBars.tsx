@@ -30,7 +30,7 @@ export default function FunnelBars({ steps }: { steps: FunnelStep[] }) {
                 </span>
               </span>
             </div>
-            <div className="mt-1 h-2 w-full rounded bg-[#f1f2f4]">
+            <div className="mt-1 h-2 w-full rounded bg-track">
               <div
                 className="h-2 rounded bg-heading/80"
                 style={{ width: `${width}%` }}

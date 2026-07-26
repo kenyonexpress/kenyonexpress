@@ -82,7 +82,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-bold text-[#333e48]">לוח בקרה</h1>
+      <h1 className="text-xl font-bold text-heading">לוח בקרה</h1>
 
       {/* Row 1: today's numbers */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
@@ -146,11 +146,11 @@ export default async function DashboardPage() {
                 <Link
                   key={key}
                   href={QUEUE_LINKS[key] ?? '/admin/dashboard'}
-                  className={`rounded-xl border p-4 transition-colors hover:border-[#fed700] ${
+                  className={`rounded-xl border p-4 transition-colors hover:border-brand-primary ${
                     slaBreached ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-white'
                   }`}
                 >
-                  <p className="text-2xl font-bold text-[#333e48]">
+                  <p className="text-2xl font-bold text-heading">
                     {(queue.n ?? 0).toLocaleString('he-IL')}
                   </p>
                   <p className="text-sm text-black/60">{labelFor(PENDING_QUEUE_LABELS, key)}</p>

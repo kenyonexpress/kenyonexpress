@@ -18,7 +18,7 @@ const STATUS_FILTERS = [
 ] as const
 
 const adminBtn =
-  'inline-flex items-center gap-2 rounded-lg border border-black/10 bg-brand px-4 py-2 text-sm font-semibold text-brand-dark transition-colors hover:bg-[#fedd26]'
+  'inline-flex items-center gap-2 rounded-lg border border-black/10 bg-brand px-4 py-2 text-sm font-semibold text-brand-dark transition-colors hover:bg-brand-primary-hover'
 
 interface Props {
   searchParams: Promise<Record<string, string | string[] | undefined>>
@@ -75,7 +75,7 @@ export default async function AdminCouponsPage({ searchParams }: Props) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-[#000000]">קופונים</h1>
+        <h1 className="text-xl font-bold text-ink">קופונים</h1>
         <Link href="/admin/coupons?new=1" className={adminBtn}>
           <Plus size={15} />
           קופון חדש
@@ -89,8 +89,8 @@ export default async function AdminCouponsPage({ searchParams }: Props) {
             href={f.value ? `/admin/coupons?status=${f.value}` : '/admin/coupons'}
             className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
               (status ?? '') === f.value
-                ? 'bg-[#fed700] text-[#000000]'
-                : 'border border-black/10 text-black/60 hover:bg-[#fed700]/30 hover:text-[#000000]'
+                ? 'bg-brand-primary text-ink'
+                : 'border border-black/10 text-black/60 hover:bg-brand-primary/30 hover:text-ink'
             }`}
           >
             {f.label}
@@ -100,7 +100,7 @@ export default async function AdminCouponsPage({ searchParams }: Props) {
 
       {(isNew || editingDeal) && (
         <div className="space-y-2">
-          <h2 className="text-sm font-semibold text-[#000000]">
+          <h2 className="text-sm font-semibold text-ink">
             {editingDeal ? 'עריכת קופון' : 'קופון חדש'}
           </h2>
           <CouponForm deal={editingDeal ?? undefined} vendors={vendors ?? []} />

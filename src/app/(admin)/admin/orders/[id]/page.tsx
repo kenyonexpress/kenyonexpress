@@ -72,7 +72,7 @@ export default async function OrderDetailPage({ params }: Props) {
                 href={href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm font-semibold text-[#128c7e] hover:text-[#075e54] pt-1"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-whatsapp-ink hover:text-whatsapp-ink-hover pt-1"
               >
                 <WhatsAppIcon size={16} />
                 שליחת עדכון הזמנה בוואטסאפ

@@ -41,7 +41,7 @@ export default function ServerDataTable<T>({
   const currentDir = (params.dir as string | undefined) ?? 'desc'
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-black/10 bg-[#FFFFFF]">
+    <div className="overflow-x-auto rounded-xl border border-black/10 bg-surface">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-black/10 bg-black/[0.02] text-end text-xs text-black/50">
@@ -55,7 +55,7 @@ export default function ServerDataTable<T>({
                       dir: currentSort === col.sortKey && currentDir === 'desc' ? 'asc' : 'desc',
                       page: 1,
                     })}`}
-                    className="inline-flex items-center gap-1 transition-colors hover:text-[#000000]"
+                    className="inline-flex items-center gap-1 transition-colors hover:text-ink"
                   >
                     {col.header}
                     {currentSort === col.sortKey ? (
@@ -77,17 +77,14 @@ export default function ServerDataTable<T>({
         </thead>
         <tbody className="divide-y divide-black/5">
           {rows.map((row) => (
-            <tr
-              key={rowKey(row)}
-              className="text-[#000000] transition-colors hover:bg-[#fed700]/20"
-            >
+            <tr key={rowKey(row)} className="text-ink transition-colors hover:bg-brand-primary/20">
               {selectable && (
                 <td className="w-10 px-3 py-3">
                   <input
                     type="checkbox"
                     name="ids"
                     value={rowKey(row)}
-                    className="size-4 accent-[#fed700]"
+                    className="size-4 accent-brand-primary"
                     aria-label="בחירת שורה"
                   />
                 </td>

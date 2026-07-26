@@ -50,7 +50,7 @@ export default async function AdminUsersPage(props: {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-xl font-bold text-[#000000]">משתמשים</h1>
+        <h1 className="text-xl font-bold text-ink">משתמשים</h1>
         <div className="flex flex-wrap gap-2">
           {[undefined, ...ROLE_ORDER].map((role) => (
             <Link
@@ -58,8 +58,8 @@ export default async function AdminUsersPage(props: {
               href={role ? `/admin/users?role=${role}` : '/admin/users'}
               className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                 params.role === role || (!params.role && !role)
-                  ? 'bg-[#fed700] text-[#000000]'
-                  : 'border border-black/10 text-black/60 hover:bg-[#fed700]/30 hover:text-[#000000]'
+                  ? 'bg-brand-primary text-ink'
+                  : 'border border-black/10 text-black/60 hover:bg-brand-primary/30 hover:text-ink'
               }`}
             >
               {role ? ROLE_LABELS[role] : 'הכל'}
