@@ -142,3 +142,21 @@ describe('deriveOrderStatus', () => {
     expect(deriveOrderStatus(['escrow_released', 'platform_settled'])).toBe('escrow_released')
   })
 })
+
+describe('isSettled covers every state where the platform owes nobody', () => {
+  // The two happy paths above reach split_executed and platform_settled, so
+  // those two arms were the only ones exercised. The remaining three decide
+  // whether a line still shows up in the payout run; a false negative there
+  // pays a supplier twice, a false positive strands money.
+  it('reports the escrow, refund and cancellation outcomes as settled', () => {
+    for (const state of ['escrow_released', 'refunded', 'cancelled'] as const) {
+      expect(isSettled(state), `${state} should be settled`).toBe(true)
+    }
+  })
+
+  it('reports every state with money still in flight as unsettled', () => {
+    for (const state of ['pending', 'paid', 'escrow_held', 'redeemed'] as const) {
+      expect(isSettled(state), `${state} should not be settled`).toBe(false)
+    }
+  })
+})

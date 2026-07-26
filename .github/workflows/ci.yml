@@ -1,10 +1,16 @@
 name: CI
 
 on:
+  # Deliberately unfiltered: every pull request runs typecheck, tests and build,
+  # whatever it targets. The previous filter listed only the two branches nobody
+  # actually opens PRs against, so a PR into phase5/homepage — the branch all the
+  # work happens on — got no CI at all. A gate that does not run on the branch
+  # under development is not a gate.
   pull_request:
-    branches: [cursor/add-supabase-3c830, main]
   push:
     branches: [cursor/add-supabase-3c830, main, phase5/homepage]
+  # So a branch can be checked before its PR exists.
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -32,6 +38,12 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Lint files this branch touched
+        env:
+          # PR runs derive the base from GITHUB_BASE_REF. Push runs have no base
+          # branch, so hand the script the commit the branch was at before this
+          # push; without it the fallback is the default branch, which predates
+          # the application and drags the whole backlog in.
+          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
         run: pnpm lint:changed
 
       # Informational only: the size of the backlog, so it stays visible

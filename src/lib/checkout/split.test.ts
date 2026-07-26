@@ -212,3 +212,16 @@ describe('toSplitView', () => {
     expect(at(view.lines, 0).supplierDueIls).toBe(108.02)
   })
 })
+
+describe('calculateSplit passes a missing platform percent through as a refusal', () => {
+  it('refuses a physical line whose product never had a platform percent set', () => {
+    // split.ts maps `line.platformPercent ?? null` before calling the engine.
+    // That `?? null` branch was untested, so nothing proved the refusal
+    // survives the ILS -> agorot mapping layer rather than being swallowed
+    // into a silent 0%. It is the same "no default exists" rule as the engine's.
+    const { platformPercent: _drop, ...noPercent } = physicalLine()
+    expect(() =>
+      calculateSplit(split({ lines: [noPercent as ReturnType<typeof physicalLine>] })),
+    ).toThrow(/platform percent is required/)
+  })
+})

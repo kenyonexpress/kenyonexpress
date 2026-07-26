@@ -234,3 +234,79 @@ describe('calculateCommission guards', () => {
     expect(result.platformFee).toBe(4_000)
   })
 })
+
+/**
+ * The guards, not the golden cases.
+ *
+ * Every branch below was uncovered, which meant the CI coverage floor for this
+ * module sat at 89.89% against a 95% threshold and the money job was red. That
+ * is the worst place to have a blind spot: these are the clauses that make the
+ * engine refuse to price a line rather than invent a number for it, and the
+ * "no default exists" rule from the 2026-07-24 business rules is enforced
+ * nowhere else in the codebase.
+ */
+describe('calculateCommission refuses to invent a missing number', () => {
+  it('refuses a physical line with no platform percent, undefined or null', () => {
+    // There is deliberately no fallback percent. A physical line whose product
+    // never had one set must fail loudly at checkout, not settle at 0% and pay
+    // the supplier the whole face value.
+    const { platformPercent: _drop, ...noPercent } = physical
+    expect(() =>
+      calculateCommission({ idempotencyKey: 'k', lines: [noPercent as typeof physical] }),
+    ).toThrow(TypeError)
+    expect(() =>
+      calculateCommission({ idempotencyKey: 'k', lines: [{ ...physical, platformPercent: null }] }),
+    ).toThrow(/platform percent is required for physical line physical-1/)
+  })
+
+  it('refuses a coupon line with no absolute coupon price, undefined or null', () => {
+    const { couponPriceUnit: _drop, ...noPrice } = coupon
+    expect(() =>
+      calculateCommission({ idempotencyKey: 'k', lines: [noPrice as typeof coupon] }),
+    ).toThrow(TypeError)
+    // `null` is unreachable through the type, but the guard checks for it
+    // because the value arrives from the database as a nullable column and
+    // reaches here through a `satisfies`-free mapping layer.
+    expect(() =>
+      calculateCommission({
+        idempotencyKey: 'k',
+        lines: [{ ...coupon, couponPriceUnit: null as unknown as undefined }],
+      }),
+    ).toThrow(/coupon price is required for coupon line coupon-1/)
+  })
+
+  it('refuses a coupon price of zero or below', () => {
+    // A free coupon would settle 0 to the platform while still handing the
+    // customer a voucher the business has to honour at full face value.
+    for (const bad of [agorot(0), agorot(-1)]) {
+      expect(() =>
+        calculateCommission({
+          idempotencyKey: 'k',
+          lines: [{ ...coupon, couponPriceUnit: bad }],
+        }),
+      ).toThrow(RangeError)
+    }
+  })
+
+  it('refuses a coupon price above the face value', () => {
+    // Above face, balanceDueAtBusiness would go negative: the business would
+    // owe the customer money at redemption.
+    expect(() =>
+      calculateCommission({
+        idempotencyKey: 'k',
+        lines: [{ ...coupon, couponPriceUnit: agorot(40_001) }],
+      }),
+    ).toThrow(/must be positive and at most the unit price/)
+  })
+
+  it('allows a coupon priced at exactly its face value', () => {
+    // The boundary the guard above must NOT reject: paying the whole face on
+    // site is a legitimate coupon, it just leaves nothing due at the business.
+    const result = calculateCommission({
+      idempotencyKey: 'k',
+      lines: [{ ...coupon, couponPriceUnit: agorot(40_000) }],
+    })
+    expect(result.balanceDueAtBusiness).toBe(0)
+    expect(result.platformFee).toBe(40_000)
+  })
+})

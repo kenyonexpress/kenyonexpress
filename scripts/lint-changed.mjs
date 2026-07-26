@@ -19,7 +19,14 @@
  * Base ref resolution, in order:
  *   1. --base=<ref> / LINT_BASE_REF
  *   2. GITHUB_BASE_REF (pull_request runs)
- *   3. the repo's default branch
+ *   3. GITHUB_EVENT_BEFORE (push runs — the branch's own previous tip)
+ *   4. the repo's default branch
+ *
+ * Step 3 exists because the default branch is a bad baseline for a push: it
+ * predates the application, so every file in the push reads as new and the
+ * gate blocks on the whole backlog. Comparing a push to the branch's previous
+ * tip asks the only question a push can answer — did this push make anything
+ * worse?
  *
  * Exit codes: 0 clean or nothing to lint, 1 a file got worse.
  */
@@ -67,6 +74,24 @@ function resolveBase() {
   if (flag) return flag.slice('--base='.length)
   if (process.env.LINT_BASE_REF) return process.env.LINT_BASE_REF
   if (process.env.GITHUB_BASE_REF) return `origin/${process.env.GITHUB_BASE_REF}`
+
+  // Push runs have no base branch. Comparing them to DEFAULT_BASE was wrong:
+  // that branch predates essentially the whole application, so every file in
+  // the push read as "new" and the gate blocked on the entire backlog — the
+  // exact always-red failure this script exists to prevent. The right baseline
+  // for a push is what the branch looked like before it: GITHUB_EVENT_BEFORE.
+  // It is all-zeroes on a branch's first push, in which case fall through.
+  const before = process.env.GITHUB_EVENT_BEFORE
+  if (
+    before &&
+    !/^0+$/.test(before) &&
+    git(['cat-file', '-e', `${before}^{commit}`], {
+      allowFailure: true,
+    }) !== null
+  ) {
+    return before
+  }
+
   return git(['rev-parse', '--verify', `origin/${DEFAULT_BASE}`], { allowFailure: true })
     ? `origin/${DEFAULT_BASE}`
     : DEFAULT_BASE
