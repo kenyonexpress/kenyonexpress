@@ -46,10 +46,18 @@ export async function firstCategorySlug(page: Page): Promise<string | null> {
   return null
 }
 
+/**
+ * The purchase button's label depends on the product: a coupon says "קנה עכשיו"
+ * (it is a single-item purchase, priced by the absolute coupon model), anything
+ * else says "הוסף לסל". Specs match either rather than assuming a product type,
+ * because the seed decides which one they land on.
+ */
+export const BUY_BUTTON = /הוסף לסל|קנה עכשיו/
+
 /** Adds the currently open product to the cart and waits for the confirmation. */
 export async function addOpenProductToCart(page: Page): Promise<void> {
   // .first(): related-product cards carry their own add-to-cart buttons
-  const addButton = page.getByRole('button', { name: /הוסף לסל|רכוש קופון/ }).first()
+  const addButton = page.getByRole('button', { name: BUY_BUTTON }).first()
   await expect(addButton).toBeVisible()
   await addButton.click()
   await expect(page.getByRole('button', { name: /נוסף לסל/ }).first()).toBeVisible()

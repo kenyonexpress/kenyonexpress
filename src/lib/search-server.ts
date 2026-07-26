@@ -31,7 +31,11 @@ type MeiliHit = {
   category?: { name_he: string; slug: string } | null
 }
 
-async function searchMeili(q: string, limit: number): Promise<SearchOutcome | null> {
+async function searchMeili(
+  q: string,
+  limit: number,
+  productType?: 'coupon' | 'physical',
+): Promise<SearchOutcome | null> {
   try {
     const host = (process.env.MEILISEARCH_HOST as string).replace(/\/$/, '')
     const index = process.env.MEILISEARCH_INDEX ?? 'products'
@@ -41,7 +45,13 @@ async function searchMeili(q: string, limit: number): Promise<SearchOutcome | nu
         'Content-Type': 'application/json',
         Authorization: `Bearer ${process.env.MEILISEARCH_API_KEY}`,
       },
-      body: JSON.stringify({ q, limit }),
+      // `type` is a filterable attribute (see lib/search/meili-settings.ts), so
+      // the facet is applied in the engine and estimatedTotalHits stays truthful.
+      body: JSON.stringify({
+        q,
+        limit,
+        ...(productType ? { filter: `type = ${productType}` } : {}),
+      }),
       // Search is request-time; do not cache across queries.
       cache: 'no-store',
     })
@@ -109,10 +119,12 @@ export async function searchProductsServer(
   const q = sanitize(query)
   if (q.length < 2) return { results: [], total: 0, engine: 'database' }
 
-  // Meilisearch has no type facet configured yet, so a filtered search falls
-  // through to the database rather than silently returning unfiltered hits.
-  if (meiliConfigured() && !productType) {
-    const meili = await searchMeili(q, limit)
+  // scripts/setup-meilisearch.mjs declares `type` filterable, so the facet is
+  // honoured by the engine. If the index has not been configured the filtered
+  // request 400s, searchMeili returns null, and the database path takes over —
+  // which is correct behaviour, not a silent unfiltered result set.
+  if (meiliConfigured()) {
+    const meili = await searchMeili(q, limit, productType)
     if (meili) return meili
   }
   return searchDb(q, limit, productType)

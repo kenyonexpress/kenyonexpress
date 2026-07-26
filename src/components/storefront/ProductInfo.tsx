@@ -2,6 +2,8 @@
 
 import { useCart } from '@/components/cart/CartProvider'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
+import CouponPricing from '@/components/storefront/CouponPricing'
+import type { CouponOffer } from '@/lib/commerce/coupon-offer'
 import { Check, Minus, Plus, ShoppingCart } from 'lucide-react'
 import { useState } from 'react'
 
@@ -31,6 +33,12 @@ interface Props {
   attributes: Attribute[]
   variants: Variant[]
   isCoupon: boolean
+  /**
+   * Present only for coupon products. Built server-side from
+   * products.coupon_price_ils so the page quotes the exact amount the cart
+   * bills; deriving it here from a percent is what caused the two to disagree.
+   */
+  couponOffer: CouponOffer | null
 }
 
 function shekels(value: number): string {
@@ -49,6 +57,7 @@ export default function ProductInfo({
   attributes,
   variants,
   isCoupon,
+  couponOffer,
 }: Props) {
   const { addToCart, isPending } = useCart()
   const [selected, setSelected] = useState<string | null>(
@@ -63,6 +72,9 @@ export default function ProductInfo({
   const outOfStock = stock === 0
   const effectiveSku = variant?.sku ?? sku
   const needsVariant = variants.length > 0 && !selected
+  // The commission engine refuses a coupon line with no absolute price, so the
+  // button must not offer a purchase the checkout would reject.
+  const couponUnsellable = isCoupon && couponOffer !== null && !couponOffer.sellable
 
   const hasDiscount = oldPrice != null && oldPrice > price
   const discountPct = hasDiscount ? Math.round((1 - price / oldPrice) * 100) : 0
@@ -72,7 +84,7 @@ export default function ProductInfo({
   const inc = () => setQty((q) => Math.min(maxQty, q + 1))
 
   const handleAddToCart = async () => {
-    if (outOfStock || needsVariant) return
+    if (outOfStock || needsVariant || couponUnsellable) return
     await addToCart(productId, selected, qty, name)
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)
@@ -101,26 +113,23 @@ export default function ProductInfo({
         )}
       </div>
 
-      <div className="flex items-end gap-3 flex-wrap">
-        <span className="text-3xl font-black text-price">{shekels(price)}</span>
-        {hasDiscount && (
-          <>
-            <span className="text-lg text-price-strike line-through font-medium">
-              {shekels(oldPrice)}
-            </span>
-            <span className="text-sm font-bold text-white bg-price px-2 py-0.5 rounded-md">
-              {discountPct}%-
-            </span>
-          </>
-        )}
-      </div>
-
-      {isCoupon && (
-        <div className="bg-brand-accent border border-brand-primary/40 rounded-lg p-3 text-sm">
-          <p className="font-bold text-brand-dark">ניתן לרכישה כקופון</p>
-          <p className="text-gray-600 mt-0.5">
-            שלם {shekels(price * 0.1)} עכשיו (10%) ואת השאר בחנות
-          </p>
+      {/* A coupon is priced by its own absolute model, so it gets the whole
+          pricing block. Everything else shows the ordinary sale price. */}
+      {couponOffer ? (
+        <CouponPricing offer={couponOffer} />
+      ) : (
+        <div className="flex items-end gap-3 flex-wrap">
+          <span className="text-3xl font-black text-price">{shekels(price)}</span>
+          {hasDiscount && (
+            <>
+              <span className="text-lg text-price-strike line-through font-medium">
+                {shekels(oldPrice)}
+              </span>
+              <span className="text-sm font-bold text-white bg-price px-2 py-0.5 rounded-md">
+                {discountPct}%-
+              </span>
+            </>
+          )}
         </div>
       )}
 
@@ -188,8 +197,12 @@ export default function ProductInfo({
         <button
           type="button"
           onClick={() => void handleAddToCart()}
-          disabled={outOfStock || needsVariant || isPending}
-          className="flex-1 flex items-center justify-center gap-2 bg-brand-primary hover:bg-brand-primary-hover text-brand-dark font-bold rounded-xl h-12 text-base transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          disabled={outOfStock || needsVariant || couponUnsellable || isPending}
+          className={`flex-1 flex items-center justify-center gap-2 font-bold rounded-xl h-12 text-base transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+            isCoupon
+              ? 'bg-price hover:bg-price/90 text-white'
+              : 'bg-brand-primary hover:bg-brand-primary-hover text-brand-dark'
+          }`}
         >
           {added ? (
             <>
@@ -199,7 +212,13 @@ export default function ProductInfo({
           ) : (
             <>
               <ShoppingCart size={20} />
-              {outOfStock ? 'אזל מהמלאי' : isCoupon ? 'רכוש קופון' : 'הוסף לסל'}
+              {outOfStock
+                ? 'אזל מהמלאי'
+                : couponUnsellable
+                  ? 'לא זמין לרכישה'
+                  : isCoupon
+                    ? 'קנה עכשיו'
+                    : 'הוסף לסל'}
             </>
           )}
         </button>

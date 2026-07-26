@@ -12,13 +12,19 @@ export type Coupon = {
   image_url: string | null
 }
 
-function platformPriceOf(coupon: Coupon): number {
-  return coupon.platform_price ?? Math.round(coupon.original_price * 0.1 * 100) / 100
-}
-
 export default function CouponCard({ coupon }: { coupon: Coupon }) {
-  const platformPrice = platformPriceOf(coupon)
-  const discountPct = coupon.discount_percentage ?? 90
+  // platform_price is the absolute amount charged online, set per product by
+  // the admin. There is no default: the card used to fall back to 10% of the
+  // sticker and the strip below it read "שלם 10% עכשיו, 90% בבית העסק", which
+  // is the pricing model abolished on 2026-07-24. A coupon without a price is
+  // shown without one rather than advertised at an invented number.
+  const platformPrice = coupon.platform_price
+  const original = Number(coupon.original_price)
+  const discountPct =
+    coupon.discount_percentage ??
+    (platformPrice != null && original > 0
+      ? Math.round((1 - platformPrice / original) * 100)
+      : null)
 
   return (
     <Link
@@ -37,9 +43,11 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
             <Tag size={36} />
           </div>
         )}
-        <div className="absolute top-2 end-2 bg-brand text-white text-xs font-bold px-2 py-1 rounded-lg">
-          {discountPct}% הנחה
-        </div>
+        {discountPct != null && discountPct > 0 && (
+          <div className="absolute top-2 end-2 bg-brand text-white text-xs font-bold px-2 py-1 rounded-lg">
+            {discountPct}% הנחה
+          </div>
+        )}
       </div>
       <div className="p-3 space-y-1">
         <p className="text-xs text-gray-500">{coupon.business_name}</p>
@@ -53,12 +61,20 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
           </div>
         )}
         <div className="pt-1 flex items-baseline gap-2">
-          <span className="text-lg font-bold text-brand">₪{platformPrice.toFixed(2)}</span>
-          <span className="text-xs text-gray-400 line-through">
-            ₪{Number(coupon.original_price).toFixed(2)}
-          </span>
+          {platformPrice != null ? (
+            <>
+              <span className="text-lg font-bold text-brand">₪{platformPrice.toFixed(2)}</span>
+              <span className="text-xs text-gray-400 line-through">₪{original.toFixed(2)}</span>
+            </>
+          ) : (
+            <span className="text-sm text-gray-400">המחיר יעודכן בקרוב</span>
+          )}
         </div>
-        <p className="text-micro text-gray-400">שלם 10% עכשיו, 90% בבית העסק</p>
+        {platformPrice != null && (
+          <p className="text-micro text-gray-400">
+            ₪{platformPrice.toFixed(2)} באתר, היתרה בבית העסק
+          </p>
+        )}
       </div>
     </Link>
   )

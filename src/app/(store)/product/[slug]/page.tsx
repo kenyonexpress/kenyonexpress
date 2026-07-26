@@ -1,8 +1,11 @@
 import ViewTracker from '@/components/analytics/ViewTracker'
+import { CouponTerms } from '@/components/storefront/CouponPricing'
 import ProductGallery from '@/components/storefront/ProductGallery'
 import ProductInfo from '@/components/storefront/ProductInfo'
 import RelatedProducts from '@/components/storefront/RelatedProducts'
+import ShippingInfo from '@/components/storefront/ShippingInfo'
 import SupplierInfo from '@/components/storefront/SupplierInfo'
+import { type CouponOffer, buildCouponOffer } from '@/lib/commerce/coupon-offer'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
@@ -35,7 +38,10 @@ export default async function ProductPage({ params }: Props) {
     .from('products')
     .select(
       `id, slug, name_he, name_en, description_he,
-       kenyon_price, full_price, is_coupon_enabled,
+       kenyon_price, full_price, price_ils, is_coupon_enabled,
+       coupon_price_ils, offer_valid_until, coupon_expiry_days,
+       coupon_terms_he, redemption_instructions_he,
+       requires_shipping, weight_grams, warranty_months,
        type, sku, images, stock_quantity, category_id, supplier_id,
        categories(id, name_he, slug)`,
     )
@@ -96,6 +102,22 @@ export default async function ProductPage({ params }: Props) {
       ? Number(product.full_price)
       : null
 
+  // A coupon is priced by its own absolute model. Building the offer here, on
+  // the server, from the same column the commission engine bills from is what
+  // keeps the quoted price and the charged price identical; the page used to
+  // render price * 0.1 and disagree with the cart.
+  const isCoupon = product.type === 'coupon' || product.is_coupon_enabled
+  const couponOffer: CouponOffer | null = isCoupon
+    ? buildCouponOffer({
+        // price_ils is the sticker price the business would charge; full_price
+        // is the legacy column and is used only when price_ils is unset.
+        fullPriceIls: product.price_ils ?? product.full_price ?? basePrice,
+        couponPriceIls: product.coupon_price_ils,
+        validUntil: product.offer_valid_until,
+        expiryDays: product.coupon_expiry_days,
+      })
+    : null
+
   const attributes: { label: string; value: string }[] = []
   if (category) attributes.push({ label: 'קטגוריה', value: category.name_he })
   attributes.push({
@@ -150,10 +172,31 @@ export default async function ProductPage({ params }: Props) {
             description={product.description_he}
             attributes={attributes}
             variants={variants ?? []}
-            isCoupon={product.is_coupon_enabled}
+            isCoupon={isCoupon}
+            couponOffer={couponOffer}
           />
         </div>
       </div>
+
+      {/* Coupon-only: how and by when the voucher may be redeemed. */}
+      {couponOffer && (
+        <CouponTerms
+          offer={couponOffer}
+          terms={product.coupon_terms_he}
+          instructions={product.redemption_instructions_he}
+        />
+      )}
+
+      {/* Physical-only: shipping and delivery. The platform/supplier split is
+          deliberately NOT shown — it is an internal settlement detail and the
+          customer pays the full price either way. */}
+      {!isCoupon && (
+        <ShippingInfo
+          requiresShipping={product.requires_shipping}
+          weightGrams={product.weight_grams}
+          warrantyMonths={product.warranty_months}
+        />
+      )}
 
       {/* Supplier details: rendered for every product (coupon and physical) */}
       <SupplierInfo supplier={supplier} productType={product.type} />

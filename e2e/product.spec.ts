@@ -10,7 +10,7 @@ test.describe('product page', () => {
     await expect(page.getByRole('navigation', { name: 'נתיב ניווט' })).toBeVisible()
     // .first(): related-products cards carry their own add-to-cart buttons
     await expect(
-      page.getByRole('button', { name: /הוסף לסל|רכוש קופון|אזל מהמלאי/ }).first(),
+      page.getByRole('button', { name: /הוסף לסל|קנה עכשיו|אזל מהמלאי|לא זמין לרכישה/ }).first(),
     ).toBeVisible()
   })
 
