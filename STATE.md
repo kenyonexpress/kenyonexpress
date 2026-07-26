@@ -1,103 +1,115 @@
 # KenyonExpress — Project State
 
-Updated: 2026-07-27 (סבב תשתית: token sweep + אימות מיגרציות)
+Updated: 2026-07-27 (שכבת מוצר: מודל הקופון תוקן, Meilisearch מוגדר)
 
 ## Current Phase
-תשתית נעולה. שכבת הטוקנים נאכפת בטסט, שרשרת המיגרציות מאומתת מאפס, כל הבדיקות ירוקות.
+שכבת המוצר מחוברת. הבאג הקריטי במחיר הקופון סגור.
 
-## Last Completed
-### 1. Token sweep — הושלם ונאכף
-- ‏`src/styles/tokens.ts`: נוסף `SITE` (הפלטה המלאה) + `SITE_CSS_VARS` (33 custom properties)
-  + ‏`SITE_CSS_METRICS` (19 מידות משותפות/נמדדות).
-- ‏`src/app/globals.css`: בלוק ה-`@theme` הוא עכשיו מראה מדויקת של tokens.ts.
-- ‏**hex ב-tsx: ‏74 -> 4** (‏33 קבצים -> קובץ אחד). ארבעת הנותרים הם סימן המסחר של Google
-  ב-`src/components/shared/GoogleLogo.tsx` (רכיב חדש; ה-SVG היה משוכפל ב-LoginForm וב-SignupForm).
-  הוא ה-allowlist היחיד, בכוונה: rebrand של המותג לא אמור לגעת בו.
-- ‏**px ב-tsx: ‏130 -> 83.** מה שחזר על עצמו בין קבצים הפך לטוקן
-  (‏`text-section-title` 22px ב-4 קבצים, ‏`text-micro` 11px ב-4, סקאלת ה-footer,
-  ‏`max-w-footer` 1430px, ‏`max-w-deals` 1150px, מידות ה-header וה-logo שנמדדו בחי).
-  ‏`HeroSlider.tsx` ירד מ-65 מופעים ל-47, וכולם יושבים עכשיו פעם אחת במפת `RS` מתועדת
-  בראש הקובץ במקום להיות משוכפלים על פני שלושת וריאנטי השקופית.
-- מה שנשאר literal בכוונה: ריווח חד-פעמי רגיל (‏gap 2px, ‏textarea min-h 80px,
-  ‏`sizes=` של next/image, מיקומי ה-promo banner). זה אותו עיקרון שכבר כתוב
-  ב-`tokens.test.ts`: טוקן אומר "זו מדידה או סקאלה", ולתת שם למרווח חד-פעמי זו אמירה לא נכונה.
-- ‏`src/styles/tokens.test.ts`: ‏4 טסטים חדשים (9 סה"כ) — ה-@theme חייב להסכים עם tokens.ts,
-  ‏**אסור hex גולמי באף tsx**, וצבעי Google אסורים בפלטה. זה מה שהופך את הסריקה לחד-כיוונית.
-- באג שהתגלה ותוקן תוך כדי: ‏`UsersTable.tsx` קיבל prop ‏`canEdit` והתעלם ממנו לגמרי,
-  כך שצופה לקריאה בלבד ראה תפריט שינוי-תפקיד שה-server action ממילא דוחה.
+## Last Completed — סבב שכבת המוצר
 
-### 2. שרשרת המיגרציות — אומתה מאפס, לא נדרש תיקון
-ארבעת הסעיפים שהיו ברשימה כבר טופלו בסבבים קודמים. אימות בפועל, לא קריאת קוד:
-- ‏`supabase db reset --local` רץ נקי מאפס, exit 0.
-- ‏**63/63 מיגרציות הוחלו** (‏diff מלא בין הקבצים ל-`schema_migrations`: ריק לשני הכיוונים).
-- ‏87 טבלאות, ‏**0 בלי RLS**, ‏211 policies, ‏13 policies של content_uploader שרדו.
-- ‏`admin_audit_log` נמחקה כמצופה, ‏`audit_log` היא הקנונית (‏025 מבצע את המיזוג).
-- סריקה סטטית של כל 63 הקבצים: ‏0 ‏`CREATE POLICY` בלי ‏`DROP POLICY IF EXISTS`,
-  ‏0 ‏`CREATE TRIGGER` בלי ‏`DROP TRIGGER IF EXISTS` (116 טריגרים נבדקו),
-  ‏0 ‏`CREATE TABLE/INDEX/ADD COLUMN` בלי ‏`IF NOT EXISTS`, כל ‏`CREATE TYPE` בתוך ‏DO block.
-  ‏002 היה אידמפוטנטי כבר; ‏004 כבר מכיל ‏DROP POLICY IF EXISTS לכל policy.
+### הבאג שנמצא ותוקן: הלקוח קיבל ציטוט אחד וחויב באחר
+דף המוצר הציג
+`price * 0.1`
+עם הכיתוב "שלם 10% עכשיו (10%) ואת השאר בחנות", וכרטיס הקופון הציג
+"שלם 10% עכשיו, 90% בבית העסק". זה **המודל שבוטל ב-2026-07-24**.
+העגלה, מנוע העמלות ועמודת ה-DB כבר היו על המודל המחליף (סכום מוחלט
+ב-`products.coupon_price_ils`) — כלומר הלקוח ראה מספר אחד בדף ושילם אחר בקופה.
 
-### 3. אימות סופי
-- ‏`biome check src/` — נקי (תוקנו גם 5 קבצי format שקדמו לסבב).
-- ‏`tsc --noEmit` — נקי.
-- ‏`vitest run` — ‏**401/401 ב-33 קבצים**.
-- ‏`next build` — נקי, exit 0.
-- הערה: אין `turbo.json` ואין turbo ב-`package.json`. הרצתי ישירות ב-pnpm/vitest.
+`src/lib/commerce/coupon-offer.ts`
+גוזר את ההצעה מאותה עמודה שהמנוע מחייב לפיה, כך שהציטוט והחיוב לא יכולים
+להיפרד שוב. קופון בלי מחיר מוגדר מסומן כלא-זמין והכפתור מושבת (במקום להמציא
+10% מהמחיר). מחיר מעל המחירון נחתך — ה-constraint שאוסר זאת נוסף כ-NOT VALID,
+אז שורות ישנות עדיין יכולות להפר אותו, ו"יתרה בבית העסק" שלילית נקראת
+כאילו העסק חייב כסף ללקוח.
 
-### 4. ‏feat/ci-foundation — נבנה ונדחף (‏a1d94b1)
-ה-workflow כבר היה קיים ומקיף. מה שהיה שבור זה שהוא לא רץ ולא עבר:
-- ‏**ה-trigger של PR הצביע על ‏`[cursor/add-supabase-3c830, main]` בלבד.** אף אחד לא פותח
-  ‏PR לשם. כל ‏PR ל-`phase5/homepage` — הענף שכל העבודה עליו — רץ בלי typecheck, בלי
-  טסטים ובלי build. הפילטר הוסר: כל ‏PR רץ, לא משנה ליעד.
-- ‏**ה-lint gate היה אדום ב-push.** ‏`resolveBase()` נפל חזרה לענף ברירת המחדל,
-  שקודם לכל האפליקציה, אז ‏push השווה מאות קבצים וחסם על כל ה-backlog — בדיוק
-  הכישלון ה"תמיד אדום" שהסקריפט עצמו כתוב כדי למנוע. עכשיו ‏push משווה מול
-  ‏`GITHUB_EVENT_BEFORE` (הקצה הקודם של הענף עצמו). ‏PR לא השתנה.
-- ‏**ה-test job היה אדום על coverage.** שלושה מודולי כסף מתחת לרצפת ה-95%,
-  והשורות הלא-מכוסות היו כולן ה-guards: פיזי בלי platform_percent, קופון בלי
-  מחיר מוחלט, מחיר קופון 0 או מעל ה-face, ושלוש הזרועות של ‏`isSettled` שקובעות
-  אם שורה עוד מופיעה בריצת תשלום. הוספתי טסטים במקום להוריד את הרצפה
-  (‏401 -> ‏409 טסטים). ‏`tsconfig.json` היה מקומט ב-commit וחסם כל diff שנגע בו.
-- אומת מקומית מקצה לקצה: ‏biome נקי, ‏lint:changed נקי גם במצב ‏PR וגם ב-push,
-  ‏tsc נקי, ‏test:coverage עובר את הרצפות.
+### (א) דף קופון
+- כותרת מחירים בשפה של האתר החי (`מחיר רגיל` / `מחיר בקניון`) לפי
+docs/coupon-page-measured.md
+- טבלת פיצול: לתשלום באתר עכשיו / יתרה לתשלום בבית העסק / סה"כ שווי.
+  **זו סטייה מכוונת מ-1:1** — לאתר החי אין את הפיצול הזה, אבל תחת הכללים
+  הסופיים התשלום באתר הוא מקדמה, ולקוח שלא נאמר לו על היתרה מגלה אותה בקופה.
+- `CouponTerms`: תוקף ההצעה, ימי מימוש, אופן המימוש, תנאים והגבלות.
+- כפתור "קנה עכשיו" אדום (`bg-price`) לקופונים, צהוב למוצר רגיל.
+- `SupplierInfo` כבר הופיע בכל דף מוצר; נשאר.
 
-## Branch Status (סופי)
-| branch | local | origin | מצב | הבא |
-| --- | --- | --- | --- | --- |
-| `phase5/homepage` | ab3dd31 | ab3dd31 | **pushed, מסונכרן.** הענף הפעיל; סבב הטוקנים בפנים | דף קופון 1:1 |
-| `feat/ci-foundation` | a1d94b1 | a1d94b1 | **pushed.** חדש, מבוסס על phase5 | לפתוח PR ולמזג ל-phase5 |
-| `feat/payments-core` | 211591d | 211591d | **pushed, מסונכרן.** זהה לקצה phase5 לפני סבב הטוקנים; **merged בפועל** | תיקון שאריות 5%+Escrow ב-`src/server/payments/` |
-| `feat/visual-polish` | 7a6ae13 | f43dba3 | worktree ב-`../ke-visual`, עץ נקי, **קומיט אחד לא נדחף** | לדחוף ואז למזג ל-phase5 |
-| `arch/admin-supplier` | 3babc98 | — | מקומי בלבד, נוצר בסשן מקביל, **לא נדחף** | לבדוק מה יש בו לפני דחיפה |
-| `cursor/add-supabase-3c830` | — | קיים | ענף ברירת המחדל ב-origin, קודם לאפליקציה | להחליף את ברירת המחדל ל-phase5 |
-| `main` | — | קיים | לא בשימוש | — |
+### (ב) דף מוצר פיזי
+`ShippingInfo` חדש: זמן אספקה, אופן משלוח, משקל, אחריות.
+**הפיצול נסתר מהלקוח בכוונה** — הוא קובע איך הכסף מתחלק אחרי המכירה, הלקוח
+משלם אותו מחיר כך או כך, וחשיפתו מגלה את המרווח של הספק בלי תועלת לקונה.
 
-לא נדחפו ביוזמתי: ‏`feat/visual-polish` ו-`arch/admin-supplier`. שניהם קומיטים
-שנעשו מחוץ לסשן הזה, ולא התבקשתי לדחוף אותם.
+### (ג) קטגוריה וקטלוג — כבר היו בנויים
+גריד RTL, פילטר קטגוריה, טווח מחיר (min/max), מיון, pagination.
+‏7 קומפוננטות ב-`src/components/category/`. לא נדרשה עבודה.
 
-## In Progress
-כלום.
+### (ד) עגלה — כבר הייתה בנויה
+Zustand ב-`src/lib/cart/store.ts`, הוספה/עדכון כמות/מחיקה, סיכום עם עמלה
+ויתרה בבית העסק, מחוברת ל-checkout. התמחור ב-`src/lib/cart/pricing.ts`
+כבר היה על המודל הנכון.
+
+### (ה) Meilisearch — הוגדר מאפס ואומת חי
+לאינדקס לא הייתה שום קונפיגורציה. עכשיו:
+`src/lib/search/meili-settings.ts` + `scripts/setup-meilisearch.mjs`
+- **typo tolerance מכוונן לעברית**: שגיאה אחת מ-4 תווים במקום 5, שתיים מ-7
+  במקום 9. עברית נכתבת בלי ניקוד ומילותיה קצרות שיטתית — בברירת המחדל
+  ‏`מסעדה` (5) ו-`ספא` (3) לא מקבלות תקציב שגיאות בכלל.
+- מזהים (`sku`, `slug`, `barcode`) עם typo tolerance כבוי: שגיאה ב-SKU
+  תחזיר כלום ולא מוצר שגוי בביטחון.
+- ‏`in_stock:desc` לפני `proximity`: עדיף התאמה קרובה שאפשר לקנות מהתאמה
+  מדויקת שאזלה.
+- פאסט `type` רץ עכשיו במנוע במקום ליפול ל-Postgres.
+- **אומת מול Meilisearch v1.11 אמיתי**: ההגדרות נחתו, `מסעדח` מצא `מסעדה`,
+  ‏`ספה` מצא `ספא` (3 אותיות — בלתי אפשרי בברירת המחדל), הפאסט סינן,
+  ו-SKU לא קיים החזיר ריק.
+
+### (ו) טסטים
+- ‏`coupon-offer.test.ts` (10) — כולל הרגרסיה עצמה: שהמחיר אינו 10%.
+- ‏`meili-settings.test.ts` (11) — הספים לעברית, סדר ה-ranking, הפאסטים.
+- ‏`e2e/purchase-flow.spec.ts` — הזרימה המלאה חיפוש ← מוצר ← עגלה ← checkout
+  בריצה אחת, פלוס בדיקה שהכיתוב שבוטל לא חוזר. זה התפר שהספקים
+  הפר-מסכיים לא כיסו.
+- **סה"כ: 411 -> 422 טסטים.**
+
+## אימות
+‏biome נקי (331 קבצים), ‏`tsc --noEmit` נקי, ‏422/422 vitest, ‏`next build` נקי.
+
+## מה חסר להשקה
+1. **לא הרצתי השוואת פיקסלים מול האתר החי.** `scripts/compare-product-live.mjs`
+   קיים אבל דורש רשת ואת האתר החי. המדידות ב-`docs/coupon-page-measured.md`
+   שימשו לניסוח, לא להשוואה מספרית.
+2. **‏`src/types/database.ts` מיושן** — נוצר לפני מיגרציה 054, חסרים בו
+   `coupon_price_ils` ו-`offer_valid_until`. להריץ `pnpm db:types` מול הפרויקט המקושר.
+3. **המודל שבוטל עדיין חי באדמין**: `ProductForm.tsx:309` ("הלקוח משלם 10%
+   אונליין, 90% בחנות"), `CouponDealForm.tsx:25,92`, `CouponsTable.tsx:57,60`.
+   האדמין עדיין מציג/מחשב 10%. **זה הפריט הבא בתור.**
+4. ‏E2E לא רצו בסבב הזה (דורשים DB עם seed + build). CI מריץ אותם כשיוגדרו
+   ה-secrets של Supabase.
+5. ‏Meilisearch בפרודקשן: להריץ `node scripts/setup-meilisearch.mjs` ולהגדיר
+   ‏`MEILISEARCH_HOST` / `MEILISEARCH_API_KEY`. בלעדיהם החיפוש נופל ל-ILIKE,
+   שעובד אבל בלי typo tolerance.
+
+## Branch Status
+| branch | origin | מצב | הבא |
+| --- | --- | --- | --- |
+| `phase5/homepage` | מסונכרן | הענף הפעיל; טוקנים + שכבת מוצר | לתקן את האדמין (סעיף 3 למעלה) |
+| `feat/ci-foundation` | pushed | ‏CI מתוקן: trigger, lint gate, coverage | לפתוח PR ולמזג |
+| `feat/payments-core` | מסונכרן | merged בפועל | שאריות 5%+Escrow ב-`src/server/payments/` |
+| `feat/visual-polish` | קומיט אחד לא נדחף | worktree ב-`../ke-visual` | לדחוף ולמזג |
+| `arch/admin-supplier` | לא נדחף | מקומי, מסשן מקביל | לבדוק תוכן |
+| `cursor/add-supabase-3c830` | ברירת מחדל ב-origin | קודם לאפליקציה | להחליף ברירת מחדל ל-phase5 |
 
 ## Blocking Issues
-‏**`feat/search-core` לא קיים — אי אפשר היה לסיים אותו.** נבדק:
-- ‏`git worktree list` מחזיר שני worktrees בלבד: השורש ו-`../ke-visual`.
-- ‏`../ke-search` לא קיים בדיסק. ‏`/Users/ofir/kenyonexpress-web/` מכיל רק
-  ‏`kenyonexpress` ו-`ke-visual`.
-- אין ענף ‏`*search*` לא מקומי ולא ב-origin, ואין קומיט עם `search` בהודעה.
-אין ‏`pnpm install` שנקטע ואין טסטים של schema/mapping/webhook/queue לרוץ.
-קוד החיפוש שכן קיים בריפו (‏`src/lib/search.ts`, ‏`src/lib/search-server.ts`,
-‏`src/app/api/search/route.ts`) עובר ‏build ו-tsc. אם העבודה על Meilisearch קיימת —
-היא במכונה או ב-clone אחר, לא כאן.
+‏`feat/search-core` לא קיים (אין worktree ב-`../ke-search`, אין ענף, אין קומיט).
+קוד החיפוש שכן קיים בריפו עובד ועכשיו גם מוגדר מול Meilisearch.
 
 ## שים לב: סשן מקביל פעיל על הריפו
-במהלך העבודה סשן Cursor אחר עשה ‏`git reset` פעמיים ואז קומיט ודחף את השינויים
-המשותפים בעצמו (‏ab3dd31, ‏co-authored-by Cursor). התוכן שלם ואומת אחרי זה,
-אבל בזמן שרצות כמה סוכנים במקביל כדאי לבדוק ‏`git log` לפני שמסתמכים על
-מצב העץ.
+סשן Cursor אחר עשה `git reset` פעמיים וקומיט שינויים משותפים בעצמו.
+כדאי לבדוק `git log` לפני שמסתמכים על מצב העץ.
 
 ## Next Task
-דף קופון (1:1 מול האתר החי) לפי
-docs/coupon-page-measured.md
+לנקות את המודל שבוטל מהאדמין:
+src/components/admin/ProductForm.tsx
+src/components/admin/CouponDealForm.tsx
+src/components/admin/CouponsTable.tsx
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
