@@ -44,27 +44,56 @@ Updated: 2026-07-27 (סבב תשתית: token sweep + אימות מיגרציו�
 - ‏`next build` — נקי, exit 0.
 - הערה: אין `turbo.json` ואין turbo ב-`package.json`. הרצתי ישירות ב-pnpm/vitest.
 
-## Branch Status
+### 4. ‏feat/ci-foundation — נבנה ונדחף (‏a1d94b1)
+ה-workflow כבר היה קיים ומקיף. מה שהיה שבור זה שהוא לא רץ ולא עבר:
+- ‏**ה-trigger של PR הצביע על ‏`[cursor/add-supabase-3c830, main]` בלבד.** אף אחד לא פותח
+  ‏PR לשם. כל ‏PR ל-`phase5/homepage` — הענף שכל העבודה עליו — רץ בלי typecheck, בלי
+  טסטים ובלי build. הפילטר הוסר: כל ‏PR רץ, לא משנה ליעד.
+- ‏**ה-lint gate היה אדום ב-push.** ‏`resolveBase()` נפל חזרה לענף ברירת המחדל,
+  שקודם לכל האפליקציה, אז ‏push השווה מאות קבצים וחסם על כל ה-backlog — בדיוק
+  הכישלון ה"תמיד אדום" שהסקריפט עצמו כתוב כדי למנוע. עכשיו ‏push משווה מול
+  ‏`GITHUB_EVENT_BEFORE` (הקצה הקודם של הענף עצמו). ‏PR לא השתנה.
+- ‏**ה-test job היה אדום על coverage.** שלושה מודולי כסף מתחת לרצפת ה-95%,
+  והשורות הלא-מכוסות היו כולן ה-guards: פיזי בלי platform_percent, קופון בלי
+  מחיר מוחלט, מחיר קופון 0 או מעל ה-face, ושלוש הזרועות של ‏`isSettled` שקובעות
+  אם שורה עוד מופיעה בריצת תשלום. הוספתי טסטים במקום להוריד את הרצפה
+  (‏401 -> ‏409 טסטים). ‏`tsconfig.json` היה מקומט ב-commit וחסם כל diff שנגע בו.
+- אומת מקומית מקצה לקצה: ‏biome נקי, ‏lint:changed נקי גם במצב ‏PR וגם ב-push,
+  ‏tsc נקי, ‏test:coverage עובר את הרצפות.
+
+## Branch Status (סופי)
 | branch | local | origin | מצב | הבא |
 | --- | --- | --- | --- | --- |
-| `phase5/homepage` | 211591d +3 | e14181f | הענף הפעיל, מכיל את סבב התשתית | דף קופון 1:1 |
-| `feat/payments-core` | 211591d | 211591d | מסונכרן, זהה ל-phase5 | תיקון שאריות 5%+Escrow |
-| `feat/visual-polish` | 7a6ae13 +1 | f43dba3 | worktree ב-`../ke-visual`, קומיט אחד לא נדחף | לדחוף ולמזג |
-| `cursor/add-supabase-3c830` | — | קיים | ענף ברירת המחדל ב-origin | — |
+| `phase5/homepage` | ab3dd31 | ab3dd31 | **pushed, מסונכרן.** הענף הפעיל; סבב הטוקנים בפנים | דף קופון 1:1 |
+| `feat/ci-foundation` | a1d94b1 | a1d94b1 | **pushed.** חדש, מבוסס על phase5 | לפתוח PR ולמזג ל-phase5 |
+| `feat/payments-core` | 211591d | 211591d | **pushed, מסונכרן.** זהה לקצה phase5 לפני סבב הטוקנים; **merged בפועל** | תיקון שאריות 5%+Escrow ב-`src/server/payments/` |
+| `feat/visual-polish` | 7a6ae13 | f43dba3 | worktree ב-`../ke-visual`, עץ נקי, **קומיט אחד לא נדחף** | לדחוף ואז למזג ל-phase5 |
+| `arch/admin-supplier` | 3babc98 | — | מקומי בלבד, נוצר בסשן מקביל, **לא נדחף** | לבדוק מה יש בו לפני דחיפה |
+| `cursor/add-supabase-3c830` | — | קיים | ענף ברירת המחדל ב-origin, קודם לאפליקציה | להחליף את ברירת המחדל ל-phase5 |
 | `main` | — | קיים | לא בשימוש | — |
 
+לא נדחפו ביוזמתי: ‏`feat/visual-polish` ו-`arch/admin-supplier`. שניהם קומיטים
+שנעשו מחוץ לסשן הזה, ולא התבקשתי לדחוף אותם.
+
 ## In Progress
-‏feat/ci-foundation — ‏GitHub Actions עם typecheck+tests+build, ו-lint gate מוגבל ל-diff.
+כלום.
 
 ## Blocking Issues
-‏**`feat/search-core` לא קיים.** המשימה ביקשה לסיים אותו ב-worktree ‏`../ke-search`:
+‏**`feat/search-core` לא קיים — אי אפשר היה לסיים אותו.** נבדק:
 - ‏`git worktree list` מחזיר שני worktrees בלבד: השורש ו-`../ke-visual`.
 - ‏`../ke-search` לא קיים בדיסק. ‏`/Users/ofir/kenyonexpress-web/` מכיל רק
   ‏`kenyonexpress` ו-`ke-visual`.
-- אין ענף בשם ‏`*search*` לא מקומי ולא ב-origin.
-אין מה לחדש ואין ‏`pnpm install` שנקטע. קוד החיפוש הקיים בריפו
-(‏`src/lib/search.ts`, ‏`src/lib/search-server.ts`, ‏`src/app/api/search/route.ts`)
-עובר build ובדיקות. אם העבודה קיימת — היא במכונה/‏clone אחר.
+- אין ענף ‏`*search*` לא מקומי ולא ב-origin, ואין קומיט עם `search` בהודעה.
+אין ‏`pnpm install` שנקטע ואין טסטים של schema/mapping/webhook/queue לרוץ.
+קוד החיפוש שכן קיים בריפו (‏`src/lib/search.ts`, ‏`src/lib/search-server.ts`,
+‏`src/app/api/search/route.ts`) עובר ‏build ו-tsc. אם העבודה על Meilisearch קיימת —
+היא במכונה או ב-clone אחר, לא כאן.
+
+## שים לב: סשן מקביל פעיל על הריפו
+במהלך העבודה סשן Cursor אחר עשה ‏`git reset` פעמיים ואז קומיט ודחף את השינויים
+המשותפים בעצמו (‏ab3dd31, ‏co-authored-by Cursor). התוכן שלם ואומת אחרי זה,
+אבל בזמן שרצות כמה סוכנים במקביל כדאי לבדוק ‏`git log` לפני שמסתמכים על
+מצב העץ.
 
 ## Next Task
 דף קופון (1:1 מול האתר החי) לפי
