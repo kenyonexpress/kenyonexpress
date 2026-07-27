@@ -1033,3 +1033,94 @@ release לספק. מיגרציה 073 כבר בנויה על המודל הזה. �
   את ה-hold לספק אבל הלקוח לא מזוכה.
 - ‏`platform_settled` (מיגרציה 071) כבר לא נכתב על ידי שום קוד. נשאר ב-enum,
   לא ניתן להסרה ב-Postgres.
+
+---
+
+# סבב 2026-07-27 (המשך) — בדיקת מציאות בלבד, נעצר לבקשת Ofir
+
+הסבב הזה **לא שינה שורת קוד אחת.** הוא כולו אימות של מה שהסבב הקודם השאיר,
+מול הפרויקט החי `ixvwfbuvfxxsjiywhbbb`. עץ העבודה נקי, הענף
+`feat/checkout-complete` מסונכרן מול origin.
+
+## מה שאומת ונמצא תקין
+
+**מיגרציה 074 חלה ומלאה בפרודקשן.** נשאל `pg_proc` ישירות: כל שבע הפונקציות
+קיימות עם החתימות הנכונות — `redeem_voucher(text,text,text)`,
+`log_voucher_scan(text,text,text)`, `voucher_success_payload(vouchers)`,
+`expire_vouchers()`, `credit_expired_vouchers()`,
+`cancel_vouchers_for_order(uuid,text)`, `refund_vouchers_for_order(uuid,text)`.
+מסלול ה-escrow release במימוש קיים בפועל, לא רק בקובץ. **הסעיף הראשון של
+היעד סגור.**
+
+**כל ערכי ה-enum נבדקו מול ה-DB החי ותואמים ל-`src/types/database.ts`:**
+
+| enum | ערכים בפרודקשן |
+|---|---|
+| `order_status` | pending, paid, partially_fulfilled, fulfilled, cancelled, refunded |
+| `order_item_status` | pending, issued, shipped, delivered, cancelled, refunded |
+| `settlement_status` | pending, paid, split_executed, escrow_held, escrow_released, redeemed, refunded, cancelled, platform_settled |
+| `voucher_status` | issued, redeemed, expired, cancelled, refunded |
+| `voucher_scan_outcome` | success, already_redeemed, expired, cancelled, refunded, wrong_supplier, not_found, invalid_signature, invalid_request, unauthorized, rate_limited |
+| `escrow_status` | held, released, refunded |
+| `payment_status` | initiated, redirected, succeeded, failed, refunded |
+| `payment_kind` | charge, refund |
+
+**דאטה חיה ב-`order_items`**: שורה אחת `split_executed`, שתיים `escrow_held`.
+‏**אפס שורות `platform_settled`** — כלומר הערך מת גם בדאטה, לא רק בקוד.
+
+## 🔴 באג חי שנמצא ולא תוקן (זה מה שהייתי מתקן ראשון)
+
+`src/app/api/cron/expire-vouchers/route.ts:21` קורא
+`admin.rpc('expire_vouchers', { p_limit: 1000 })`, אבל הפונקציה בפרודקשן
+מקבלת **אפס ארגומנטים** (אומת ב-`pg_proc`). ‏PostgREST מחפש עומס יתר בשם
+`expire_vouchers(p_limit)`, לא מוצא, ומחזיר שגיאה. **סוויפ פקיעת השוברים
+מעולם לא רץ בהצלחה.** התיקון הוא הסרת הפרמטר; ‏074 מגבילה את עצמה ב-LIMIT
+פנימי ולכן אין מה להעביר.
+
+זה לא חוסם מימוש (‏`redeem_voucher` בודקת פקיעה בתוך ה-UPDATE האטומי בעצמה),
+אבל שובר שפג נשאר `issued` לתצוגה, וה-hold של הספק לא חוזר.
+
+## 🔴 מכונת המצבים סותרת את הקוד שרץ
+
+`src/server/domain/orders/state-machine.ts` עדיין כתובה על המודל שבוטל.
+ה-docblock אומר מפורשות "no escrow anywhere", ומסלול הקופון בטבלה הוא
+`paid --SETTLE_PLATFORM--> platform_settled`. בפועל:
+
+- `finalize.ts:381` כותב `escrow_held` לשורת קופון.
+- ‏`redeem_voucher()` מ-074 מעביר אותה ל-`escrow_released`.
+
+**אין בכלל אירועים `HOLD_ESCROW` ו-`RELEASE_ESCROW` במכונה**, כלומר המסלול
+שהקוד באמת עובר אינו ניתן לייצוג בה. `escrow_held` מופיעה שם רק כמצב legacy
+שאפשר להחזיר ממנו כסף. ‏`state-machine.test.ts:31` מקבע את הטבלה הבטלה, אז
+הטסטים ירוקים על מודל שלא קיים.
+
+**מה שצריך**: אירועים `HOLD_ESCROW` (קופון, `paid -> escrow_held`) ו-
+`RELEASE_ESCROW` (קופון, `escrow_held -> escrow_released`), הורדת
+`SETTLE_PLATFORM` למעמד legacy כמו `platform_settled` עצמו, ועדכון שתי
+טבלאות הטסט. `planOrderRefund` ב-`refund.ts` נשען על `canTransition`, אז
+השינוי הזה משפיע ישירות על מה שניתן להחזיר.
+
+## שתי מכונות מצבים מקבילות, אף אחת לא כותבת fulfilled
+
+`src/lib/checkout/state-machine.ts` עובדת ברמת `order_status`
+(‏pending/paid/partially_fulfilled/fulfilled), ו-
+`src/server/domain/orders/state-machine.ts` ברמת `settlement_status`.
+‏**שום קוד לא כותב `partially_fulfilled` או `fulfilled`** — הכותבים היחידים
+ל-`orders.status` הם `finalize.ts` (paid), ‏`refund.ts` (refunded),
+‏`checkout.ts:380` (cancelled) והאדמין. שני ערכי ה-fulfillment חיים ב-enum
+ובתוויות בלבד. צריך להכריע אם מחווטים אותם או מסמנים כלא בשימוש.
+
+## איפה בדיוק עצרתי ומה נשאר
+
+נעצרתי **לפני** התיקון הראשון, לבקשת Ofir. סדר העבודה שתוכנן:
+
+1. באג ה-cron של `p_limit` (שורה אחת) + חיווט `credit_expired_vouchers()`
+   לאותו ראוט, כדי שזיכוי הלקוח לפי C6 יקרה בפועל.
+2. יישור מכונת המצבים למודל ה-escrow, כולל שתי טבלאות הטסט.
+3. ‏Cardcom multi-account client: אימות חתימת webhook, `payment_events`,
+   idempotency, ‏sandbox. ‏`src/lib/payments/cardcom.ts` (‏208 שורות) עדיין
+   single-terminal מול ה-legacy `/Interface/*.aspx`.
+4. ‏Checkout: עגלת אורח ב-Zustand, ‏Google auth רק בלחיצת "שלם", ‏card token.
+5. ‏E2E מלא. **חסם ידוע**: `supplier_members` ריקה בפרודקשן, אין חבר ספק
+   שיכול לסרוק.
+6. שלבים 2-4 של היעד (storefront, אזור אישי, הקשחה) לא התחילו.
