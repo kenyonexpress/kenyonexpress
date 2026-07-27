@@ -7,6 +7,7 @@ import {
   buildOrderItemSnapshot,
   completeSplitPair,
 } from '@/lib/commerce/product-money'
+import { capturePaymentError } from '@/lib/observability/sentry'
 import {
   type PaymentProvider,
   getCardcomAccounts,
@@ -156,6 +157,12 @@ async function chargeSavedToken(args: {
       .from('payments')
       .update({ status: 'failed', failure_message: message, failed_at: now.toISOString() })
       .eq('id', payment.id)
+    capturePaymentError(error, {
+      stage: 'charge_saved_token',
+      orderId,
+      paymentId: payment.id,
+      detail: { message },
+    })
     return { ok: false, error: 'שגיאה בחיבור לספק הסליקה', code: 'PAYMENT_PROVIDER_ERROR' }
   }
 
@@ -599,6 +606,14 @@ export async function beginCheckout(
       .from('payments')
       .update({ status: 'failed', failure_message: message, failed_at: new Date().toISOString() })
       .eq('id', payment.id)
+    // A declined card is ordinary; the provider being unreachable is not, and
+    // it stops every checkout at once.
+    capturePaymentError(error, {
+      stage: 'create_low_profile',
+      orderId: order.id,
+      paymentId: payment.id,
+      detail: { message },
+    })
     return { ok: false, error: 'שגיאה בחיבור לספק הסליקה', code: 'PAYMENT_PROVIDER_ERROR' }
   }
 }

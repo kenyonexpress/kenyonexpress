@@ -1,3 +1,4 @@
+import { capturePaymentError } from '@/lib/observability/sentry'
 import { createClient } from '@/lib/supabase/server'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
 import { verifyVoucherQrPayload } from '@/server/domain/vouchers/qr'
@@ -153,6 +154,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // The RPC only raises on infrastructure failure; a redemption refusal is a
     // normal jsonb result, not an error.
     console.error('redeem_voucher rpc failed:', error.message)
+    // The customer is standing at the counter with a voucher the platform
+    // cannot decide about, and the supplier's escrow release rides on this
+    // same call.
+    capturePaymentError(new Error(error.message), {
+      stage: 'redeem_voucher_rpc',
+      detail: { code: error.code, scan_method: method },
+    })
     return respond({ outcome: 'invalid_request', message: 'שגיאת מערכת, נסה שוב' }, 500)
   }
 

@@ -1414,3 +1414,57 @@ order_items_user_read  USING (order_id IN (SELECT id FROM orders WHERE user_id =
 | אינדקסים | ✅ ‏074 הוסיפה `escrow_holds_status_supplier_idx` ו-`escrow_holds_voucher_id_key`; ‏075 שני אינדקסים חלקיים לחשבון Cardcom |
 | ‏Sentry על נתיב התשלום | ⛔ **לא קיים.** אין תלות Sentry ב-`package.json`. זו ההתקנה היחידה שנשארה משלב 4 |
 | ‏`payment_webhook_events` | ⚠️ ‏RLS מופעל ו-**אפס מדיניות**, כלומר סגור לכולם חוץ מ-service role. זו התנהגות נכונה לטבלת webhook, אבל שווה לדעת שזה מכוון ולא פספוס |
+
+## ✅ שלב 4 הושלם — Sentry על נתיב הכסף
+
+זה היה הפריט היחיד משלב 4 שבאמת חסר (‏RLS, ‏rate limiting ואינדקסים כבר
+נבדקו ואומתו קיימים בטבלה למעלה).
+
+**‏`@sentry/node` הותקן, ו-`src/lib/observability/sentry.ts` עוטף אותו.**
+התחלתי מ-`@sentry/nextjs` והחלפתי: הוא גורר את `@sentry/cli`, ש-pnpm חוסם
+את ה-build script שלו ומפיל את ה-pre-commit hook. ה-CLI נחוץ רק להעלאת
+source maps דרך `withSentryConfig`, שממילא לא בשימוש כאן, אז החבילה
+הצרה יותר היא גם ההתאמה הנכונה למימוש שכולו צד-שרת.
+
+**מכוון להיות צר.** מדווחים רק כשלים בנתיב הכסף, לא כל חריגה באפליקציה.
+ערוץ התראות שנושא גם שגיאות רינדור של הקטלוג הוא ערוץ שאף אחד לא קורא, וכל
+הערך של התראה כאן הוא שאירוע בה **תמיד** אומר שייתכן שלקוח חויב.
+
+**אינרטי לחלוטין בלי `SENTRY_DSN`**: אין init, אין capture, אין קריאת רשת.
+לכן טסטים, CI ופיתוח מקומי לא צריכים שום קונפיגורציה.
+
+### איפה זה מחובר
+| נקודה | מה מדווח |
+|---|---|
+| `webhook/route.ts` | ‏Cardcom אמר הצלחה ו-`GetLpResult` לא מסכים |
+| `webhook/route.ts` | סכום שחויב שונה ממה שביקשנו |
+| `webhook/route.ts` | התשלום אומת ו-`finalizeOrder` נכשל — **המצב הגרוע ביותר במערכת** |
+| `finalize.ts` | כל זריקה אחרי שהכרטיס כבר חויב |
+| `checkout.ts` | ספק הסליקה לא נגיש (עוצר כל checkout בבת אחת) |
+| `refund.ts` | זיכוי שנדחה — הלקוח נשאר חייב כסף שהרשומות שלנו אולי כבר סימנו כמוחזר |
+| `vouchers/redeem/route.ts` | ה-RPC נכשל בזמן שהלקוח עומד בקופה |
+
+**‏`src/instrumentation.ts`** (‏file convention של Next 16, נקרא מ-
+`node_modules/next/dist/docs` לפי AGENTS.md): `register()` מאתחל בצד השרת,
+ו-`onRequestError` מעביר ל-Sentry **רק** שגיאות בנתיבי `/api/payments/`,
+`/api/supplier/vouchers/`, `/api/cron/expire-vouchers` ו-`/checkout`.
+
+**לא נעשה שימוש ב-`withSentryConfig`** ב-`next.config`: התפקיד שלו הוא bundling
+בצד לקוח והעלאת source maps, ושניהם לא נדרשים כדי להתריע על חיוב שלא נסגר,
+ושניהם משנים איך כל האפליקציה נבנית.
+
+### הצנזור, וטסטים עליו (‏6)
+כל מה שמגיע ל-reporter **יוצא מהשרת**, והנתיב הזה נושא אמצעי חיוב.
+‏`redact()` מוחק לפי מחרוזת-חלקית בשם המפתח: `token`, `secret`, `password`,
+`authorization`, `cookie`, `key`, `card`, `cvv`, `jwt`. מוגבל לעומק 4, כי
+טיול לא-חסום על מבנה שמושפע מקלט חיצוני הוא DoS בפני עצמו.
+
+‏`key` נבחר כמילה בודדת ולא `api_key`: הוא תופס גם `idempotency_key` שאינו
+סוד, אבל המחיר של לאבד אותו מדוח שגיאה הוא אפס, והמחיר של שדה `*_key` שיתווסף
+בעתיד וידלוף בשקט גדול בהרבה.
+
+### אימות
+**‏523/523 vitest (42 קבצים), ‏tsc נקי, biome נקי (337 קבצים),
+‏`next build` עובר, והדב-סרבר מחזיר 200 עם Sentry מותקן ובלי DSN.**
+‏`.env.example` עודכן עם `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `CARDCOM_ACCOUNTS`,
+`CARDCOM_SANDBOX` ו-`CARDCOM_ALLOW_SANDBOX`.

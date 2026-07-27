@@ -2,6 +2,7 @@
 
 import { requireAdminSession } from '@/lib/admin/rbac'
 import { agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
+import { capturePaymentError } from '@/lib/observability/sentry'
 import { getPaymentProvider } from '@/lib/payments'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
@@ -127,6 +128,14 @@ export async function refundOrder(input: {
     description: `זיכוי הזמנה ${order.id.slice(0, 8)}: ${input.reason}`,
   })
   if (!refund.success) {
+    // A refund the provider refuses leaves the customer owed money that our
+    // own records may already show as returned.
+    capturePaymentError(new Error(refund.failureMessage ?? 'cardcom refund declined'), {
+      stage: 'cardcom_refund',
+      orderId: order.id,
+      paymentId: payment.id,
+      detail: { failure_code: refund.failureCode },
+    })
     return {
       ok: false,
       error: refund.failureMessage ?? 'הזיכוי נדחה על ידי Cardcom',

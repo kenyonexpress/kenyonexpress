@@ -1,5 +1,6 @@
 import { timingSafeEqual } from 'node:crypto'
 import { cardcomWebhookPayloadSchema, isCardcomSuccess } from '@/lib/contracts/webhooks'
+import { capturePaymentAlarm } from '@/lib/observability/sentry'
 import { getPaymentProvider, loadCardcomEnv } from '@/lib/payments'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { finalizeOrder } from '@/server/payments/finalize'
@@ -95,6 +96,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const provider = getPaymentProvider(payment.cardcom_account_id)
   const verified = await provider.verifyLowProfile(payload.lowprofilecode)
   if (!verified.success || verified.amountAgorot === null) {
+    // Cardcom said the deal succeeded and the re-verify disagrees. Someone is
+    // wrong about whether the customer was charged, and it is not resolvable
+    // from here.
+    capturePaymentAlarm('cardcom webhook reported success but GetLpResult did not', {
+      stage: 'cardcom_webhook_verify',
+      orderId: payment.order_id,
+      paymentId: payment.id,
+      detail: { low_profile_id: payload.lowprofilecode },
+    })
     return NextResponse.json({ ok: true, verified: false })
   }
 
@@ -112,6 +122,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         expected_agorot: expectedAgorot,
         got_agorot: verified.amountAgorot,
       } as unknown as Json,
+    })
+    capturePaymentAlarm('cardcom charged an amount we did not ask for', {
+      stage: 'cardcom_webhook_amount',
+      orderId: payment.order_id,
+      paymentId: payment.id,
+      detail: { expected_agorot: expectedAgorot, got_agorot: verified.amountAgorot },
     })
     return NextResponse.json({ ok: true, amount_mismatch: true })
   }
@@ -133,6 +149,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     transactionId: verified.transactionId,
     token: verified.token,
   })
+
+  if (!result.ok) {
+    // The card was charged and verified; the order did not close. This is the
+    // single worst state in the system, so it alerts unconditionally.
+    capturePaymentAlarm('payment verified but finalize failed', {
+      stage: 'cardcom_webhook_finalize',
+      orderId: payment.order_id,
+      paymentId: payment.id,
+      detail: { error: result.error, code: result.code },
+    })
+  }
 
   return NextResponse.json({ ok: result.ok })
 }

@@ -1,4 +1,5 @@
 import { agorot, agorotToIls } from '@/lib/commerce/money'
+import { capturePaymentError } from '@/lib/observability/sentry'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { buildVoucherHolds } from '@/server/domain/vouchers/escrow'
 import { type VoucherIssueClient, issueVoucher } from '@/server/domain/vouchers/issue'
@@ -438,6 +439,14 @@ export async function finalizeOrder(input: {
     return { ok: true, replay: false, orderId: order.id }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'finalize failed'
+    // Past this point the customer's card has already been charged, so a throw
+    // here is money taken against an order that never closed.
+    capturePaymentError(error, {
+      stage: 'finalize_order',
+      orderId: order.id,
+      paymentId: input.paymentId,
+      detail: { message },
+    })
     return { ok: false, error: message, code: 'INTERNAL' }
   }
 }
