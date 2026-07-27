@@ -1,7 +1,6 @@
 import { agorot, agorotToIls } from '@/lib/commerce/money'
 import { capturePaymentError } from '@/lib/observability/sentry'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { buildVoucherHolds } from '@/server/domain/vouchers/escrow'
 import { type VoucherIssueClient, issueVoucher } from '@/server/domain/vouchers/issue'
 import type { Json } from '@/types/database'
 
@@ -45,15 +44,13 @@ function perUnit(total: number, quantity: number): number[] {
 }
 
 /**
- * Issues one voucher per purchased unit and puts the supplier's share of each
- * prepayment into escrow (C11 version b): the platform keeps
- * `platform_percent` of what was charged online, the remainder is held until
- * that specific voucher is scanned. `redeem_voucher()` (074) is what releases
- * it.
+ * Issues one voucher per purchased unit. No custody row is written: the whole
+ * on-site prepayment is platform revenue at paid-time, and the supplier is owed
+ * nothing by us for the line. What they earn is the balance the customer pays
+ * at their counter, which never passes through our clearing account.
  *
- * Holds are reconciled rather than only appended, so a run that issued a
- * voucher and then failed before writing its hold repairs itself on the retry
- * instead of leaving a voucher whose supplier share belongs to nobody.
+ * Issuing is capped at the purchased quantity and keyed on order_item_id, so a
+ * webhook replay is a no-op rather than a second voucher for the same unit.
  */
 async function issueVouchersForItem(
   admin: AdminClient,
@@ -84,10 +81,6 @@ async function issueVouchersForItem(
 
   const faceUnits = perUnit(item.face_value_agorot ?? 0, item.quantity)
   const paidUnits = perUnit(item.paid_on_site_agorot ?? 0, item.quantity)
-  const holds = buildVoucherHolds(
-    paidUnits.map((unit) => agorot(unit)),
-    agorot(item.commission_agorot ?? 0),
-  )
 
   // Idempotency: never issue beyond quantity for this order_item (replay-safe).
   // The vouchers UNIQUE(code) plus this count cap make webhook replays no-ops.
@@ -118,45 +111,6 @@ async function issueVouchersForItem(
       now,
     })
     issuedIds.push(issued.id)
-  }
-
-  await writeVoucherHolds(admin, item, issuedIds, holds)
-}
-
-async function writeVoucherHolds(
-  admin: AdminClient,
-  item: OrderItemRow,
-  voucherIds: readonly string[],
-  holds: readonly { held: number; commission: number; release: number }[],
-): Promise<void> {
-  const { data: heldAlready } = await admin
-    .from('escrow_holds')
-    .select('voucher_id')
-    .eq('order_item_id', item.id)
-  const covered = new Set((heldAlready ?? []).map((row) => row.voucher_id))
-
-  const missing = voucherIds
-    .map((voucherId, index) => ({ voucherId, amounts: holds[index] }))
-    .filter((row) => row.amounts !== undefined && !covered.has(row.voucherId))
-
-  if (missing.length === 0) return
-
-  const { error } = await admin.from('escrow_holds').insert(
-    missing.map(({ voucherId, amounts }) => ({
-      voucher_id: voucherId,
-      order_id: item.order_id,
-      order_item_id: item.id,
-      supplier_id: item.supplier_id as string,
-      held_agorot: amounts?.held ?? 0,
-      commission_agorot: amounts?.commission ?? 0,
-      release_agorot: amounts?.release ?? 0,
-      status: 'held' as const,
-    })),
-  )
-  // A concurrent finalize won the unique index on voucher_id; its holds are the
-  // same amounts, so the row already exists and there is nothing to repair.
-  if (error && !error.message.includes('duplicate')) {
-    throw new Error(`escrow hold insert failed: ${error.message}`)
   }
 }
 
@@ -383,14 +337,13 @@ export async function finalizeOrder(input: {
           offerValidUntil: null,
         }
         await issueVouchersForItem(admin, item, order.user_id, info, now)
-        // C11(b): only the platform's cut is revenue at paid-time. The
-        // supplier's share of the prepayment sits in escrow_holds until each
-        // voucher is scanned, so the line is held, not settled. redeem_voucher()
-        // moves it to escrow_released once no voucher of this line is still
-        // outstanding.
+        // The coupon line is settled the moment it is paid: everything charged
+        // online is ours, nothing is deferred, and scanning the voucher moves
+        // no money. platform_settled is therefore terminal for the line, and
+        // the only way out of it is a refund.
         await admin
           .from('order_items')
-          .update({ settlement_status: 'escrow_held', item_status: 'issued' })
+          .update({ settlement_status: 'platform_settled', item_status: 'issued' })
           .eq('id', item.id)
           .in('settlement_status', ['pending', 'paid'])
       } else {
