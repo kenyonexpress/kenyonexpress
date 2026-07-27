@@ -785,7 +785,7 @@ cadence דוחות, ייצוא חשבונאי, מטריצת התראות ספק,
 ```
 תנאים מוקדמים: Cart/Checkout שסופק ויושב; 026, 027 (ערוכה), 029, 031, 035x2,
 036, 037 חלות; SEC-01..06 סגורים; מספר migration סופי הוקצה ב-MASTER
-5א.0  כתיבת migration הפורטל + עריכת fanout ב-031 + apply-twice ירוק -> החלה באישור
+5א.0  כתיבת migration הפורטל + עריכת fanout ב-031 + apply-twice ירוק -> החלה מיידית
 5א.1  onboarding: /supplier/onboarding + מסמכים + תור אדמין + שער הסכם (LEG-12)
 5א.2  שלד פורטל: layout + requireSupplierMember + דשבורד (views 034 + v_supplier_pending_payout)
 5א.3  מסך סריקה PWA: מצלמה, preview, confirm, receipt, תור offline, e2e מצלמה מדומה

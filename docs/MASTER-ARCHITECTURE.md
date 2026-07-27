@@ -308,8 +308,8 @@ cycle_number)`, ‏3 ניסיונות חיוב ואז ‏`paused` ‏(D17). שו
 
 ### 2.0 חוק ההחלה
 
-**החלה אך ורק דרך Supabase MCP בכלי ‏`apply_migration`, קובץ אחד = טרנזקציה אחת,
-ורק אחרי אישור מפורש שלך לכל קובץ. לעולם לא ‏`supabase db push`.** לפני החלה מרוחקת:
+**החלה אך ורק דרך Supabase MCP בכלי ‏`apply_migration`, קובץ אחד = טרנזקציה אחת.
+אין דרישת אישור לאף קובץ. לעולם לא ‏`supabase db push`.** לפני החלה מרוחקת:
 ‏harness ה-apply-twice רץ ירוק על stack מקומי נקי (D6). אחרי הרצף:
 ‏`generate_typescript_types` ועדכון ‏`src/types/database.ts` פעם אחת.
 
@@ -644,11 +644,11 @@ PLANNED (אין קובץ)
 | צעד | תוכן | מקור |
 |---|---|---|
 | 0.1 | **בוצע:** אימות דף המוצר מול האתר החי, 24.72% מול יעד 30% | product-page; TESTING ‏4.6 |
-| 0.2 | **החלת `035_security_hardening.sql` על ה-DB החי (באישורך)**: סוגר מיד את SEC-02/03/04/06/09/17, כולל דליפת הקופונים החיה (SEC-17) | SECURITY ‏8 |
+| 0.2 | **החלת `035_security_hardening.sql` על ה-DB החי**: סוגר מיד את SEC-02/03/04/06/09/17, כולל דליפת הקופונים החיה (SEC-17) | SECURITY ‏8 |
 | 0.3 | בדיקות קדם 2.10 מול ה-DB החי | כאן |
 | 0.4 | כתיבת 037 המשפטית ואישור עו"ד לנוסחים; אין checkout לפני LEG-01..03 | LEGAL ‏6 |
 | 0.5 | תשתית ביצועים P0: ‏Cache Components/PPR, תמונות, budgets ו-Lighthouse | PERFORMANCE ‏7 |
-| 0.6 | החלת ה-seed הממתין ‏`supabase/seed-fixes/PENDING-live-products.sql` על dev (באישורך): 8 המוצרים החסרים בגריד דף הבית | STATE.md |
+| 0.6 | החלת ה-seed הממתין ‏`supabase/seed-fixes/PENDING-live-products.sql` על dev: 8 המוצרים החסרים בגריד דף הבית | STATE.md |
 
 ### שלב 1: תשתית סכימה (חד פעמי)
 
@@ -794,7 +794,7 @@ API ‏[1.44] + מיגרציית cutover לחיווט התזכורות [1.23]); 
 | R19 | ‏URL מוצר | ‏`/products/[slug]` רבים | 1.28 |
 | R20 | ‏slugs | לטיניים; עבריים ישנים מקבלים 301 | CATALOG |
 | R21 | חיפוש | ‏Postgres FTS ‏simple + ‏he_tsquery + ‏trigram; ‏Meilisearch רק בטריגרים מדודים | CATALOG |
-| R22 | מיגרציות | ‏idempotent; ‏enum שלם ב-CREATE TYPE; אין ‏ADD VALUE בקובץ רגיל; החלה רק ‏MCP באישור | 2.0 |
+| R22 | מיגרציות | ‏idempotent; ‏enum שלם ב-CREATE TYPE; אין ‏ADD VALUE בקובץ רגיל; החלה רק ‏MCP, בלי אישור | 2.0 |
 | R23 | בדיקות | ‏D1-D22 מחייבים; מודול כסף לפני checkout; ‏apply-twice לפני החלה | 1.49 |
 | R24 | ‏deploy | מיגרציה לפני קוד (expand/contract); ‏DB ‏forward-only; ‏rollback = ‏Vercel Instant | D20, D21 |
 | R25 | פרודקשן | פרויקט Supabase חדש ‏eu-central-1 + ‏fra1; ‏Pro לפני תשלום ראשון; ‏bootstrap ‏001→039 ככל שנכתבו ואושרו | 1.46, OPS |

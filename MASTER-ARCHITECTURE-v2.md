@@ -320,7 +320,7 @@ WP import schema (032): staging + id_map + v_reconciliation (service_role, לא 
 
 ### 5.0 חוק ההחלה
 
-**רק דרך Supabase MCP `apply_migration`, קובץ = טרנזקציה, אחרי אישור מפורש לכל קובץ.
+**רק דרך Supabase MCP `apply_migration`, קובץ = טרנזקציה, בלי דרישת אישור לאף קובץ.
 לעולם לא `supabase db push`.** לפני החלה מרוחקת: harness apply-twice ירוק על stack
 נקי (D6). אחרי הרצף: `generate_typescript_types`.
 
@@ -491,7 +491,7 @@ DB forward-only; rollback = Vercel Instant Rollback + DNS. פרויקט prod ח�
 
 ## 8. מה פתוח (למעקב)
 
-1. **C11 עוגן כאן ל-(א)** אך CONTRADICTIONS.md עדיין מסמן אותו "פתוח" - יש לעדכן שם באישור.
+1. **C11 עוגן כאן ל-(א)** אך CONTRADICTIONS.md עדיין מסמן אותו "פתוח" - יש לעדכן שם, בלי אישור.
 2. **033/034/053 לא ניתנות להחלה** עד התאמת העמודות (§5.2).
 3. **050/051 טרם הוחלו** על המרוחק (חסר טופס אדמין ל-`platform_percent`/`coupon_expiry_days`).
 4. **037 המשפטית** טרם נכתבה; חוסמת checkout ותשלום ראשון (LEG-01/02/03).
