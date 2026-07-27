@@ -498,3 +498,64 @@ WHERE name = '076_vouchers_reconcile_054_constraints';
 
 Doing so re-blocks every voucher for every product that is not on a 100 percent
 platform take, i.e. all 61 of them.
+
+---
+
+## 7. Migration 077: break an RLS recursion that makes `orders` unreadable
+
+Applied via MCP `apply_migration` as `077_orders_supplier_read_no_recursion`.
+Repo file: `supabase/migrations/077_orders_supplier_read_no_recursion.sql`.
+
+**On production this creates one function and changes no policy.** Verified
+after applying: `is_supplier_order` exists and is SECURITY DEFINER, and
+`orders` still carries exactly its three pre-existing policies
+(`orders_user_read`, `orders_admin_all`, `orders_support_select`).
+`user_addresses` is likewise untouched.
+
+### The bug it fixes elsewhere
+
+027 gives suppliers a read on orders containing their items, and also gives
+customers a read on order_items:
+
+```sql
+orders_supplier_read     USING (... EXISTS (SELECT 1 FROM order_items oi
+                                            WHERE oi.order_id = orders.id ...))
+order_items_user_read    USING (order_id IN (SELECT id FROM orders
+                                             WHERE user_id = auth.uid()))
+```
+
+Evaluating the first reads order_items, which evaluates the second, which reads
+orders, which evaluates the first. Postgres stops it with
+`42P17 infinite recursion detected in policy for relation "orders"`.
+
+Policies are OR'd, so this fires for **every reader**, not only suppliers. On a
+database carrying both policies a customer opening `/account/orders` gets the
+recursion error instead of their own orders. Found by running the new
+`tests/sql/voucher_account_rls.sql` against a freshly reset local stack.
+
+The fix moves the inner lookup into a SECURITY DEFINER function, so the
+order_items read does not re-enter RLS and the cycle cannot form.
+
+### Why the policy was not added here
+
+The hosted project never received 027 in full, only the adapted subset applied
+as 072, so it has no `orders_supplier_read` and suppliers cannot read orders at
+all. **Granting them that access is a real change in who can see customer orders
+and shipping addresses**, and it is a decision about access, not a bug fix. The
+migration therefore repairs the policy only where it already exists, and creates
+just the helper where it does not. If the supplier portal is meant to read
+orders in production, that is a separate, deliberate change.
+
+### Rollback
+
+```sql
+DROP FUNCTION IF EXISTS public.is_supplier_order(uuid);
+
+DELETE FROM supabase_migrations.schema_migrations
+WHERE name = '077_orders_supplier_read_no_recursion';
+```
+
+Safe on production: nothing calls the function here, because no policy
+references it. On a database where the policy WAS repaired, dropping the
+function first requires restoring 027's recursive policy text, which reinstates
+the outage.
