@@ -443,3 +443,58 @@ Safe while only the platform account exists: nothing but NULLs is lost. Once a
 second account has cleared a payment, dropping the column loses which terminal
 owns those transactions, and neither refunds nor re-verification for them can be
 routed afterwards.
+
+---
+
+## 6. Migration 076: reconcile the 054-era voucher constraints
+
+Applied via MCP `apply_migration` as `076_vouchers_reconcile_054_constraints`.
+Repo file: `supabase/migrations/076_vouchers_reconcile_054_constraints.sql`.
+
+**On production this is a no-op, and that is the point.** Verified before and
+after: `vouchers_platform_percent_full` was already absent,
+`vouchers_platform_percent_range` already present, and `platform_percent` had
+no default. Nothing changed.
+
+### Why it exists anyway
+
+073 was adapted by hand before being applied here, because 054 writes the
+abolished C11(a) rule into the schema:
+
+```sql
+CONSTRAINT vouchers_platform_percent_full CHECK (platform_percent = 100)
+platform_percent numeric(5,2) NOT NULL DEFAULT 100
+```
+
+Under C11(a) the platform kept the whole prepayment, so 100 was the only legal
+value. Under C11(b) the split is per product and every live product carries 15,
+25 or 30, so that CHECK rejects every voucher the shop can issue.
+
+Production dodged it because 073 went in adapted. A local database does not:
+054 creates the table, and 073's `CREATE TABLE IF NOT EXISTS` then sees it
+already there and does nothing. **`supabase db reset` therefore produces a
+developer database on which the entire coupon path fails at the first insert**,
+with a constraint error naming a rule abolished on 2026-07-27. This was found
+by running the new lifecycle harness against a freshly started local stack.
+
+076 makes the two environments agree by running the same files, rather than by
+remembering which ones were hand-adapted.
+
+### Rollback
+
+Not meaningful on production: it changed nothing here. To reverse it on a
+database where it did act (restoring the abolished rule, which should not be
+wanted):
+
+```sql
+ALTER TABLE public.vouchers DROP CONSTRAINT IF EXISTS vouchers_platform_percent_range;
+ALTER TABLE public.vouchers ALTER COLUMN platform_percent SET DEFAULT 100;
+ALTER TABLE public.vouchers ADD CONSTRAINT vouchers_platform_percent_full
+  CHECK (platform_percent = 100);
+
+DELETE FROM supabase_migrations.schema_migrations
+WHERE name = '076_vouchers_reconcile_054_constraints';
+```
+
+Doing so re-blocks every voucher for every product that is not on a 100 percent
+platform take, i.e. all 61 of them.
