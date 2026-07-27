@@ -180,6 +180,7 @@ export const SITE_CSS_METRICS: Record<string, string> = {
   '--header-height': '70px',
   '--container-page': '1320px',
   '--container-footer': '1430px',
+  '--container-store-footer': '1200px',
   '--container-deals': '1150px',
 
   '--spacing-header-topbar': '37.3px',
@@ -188,7 +189,9 @@ export const SITE_CSS_METRICS: Record<string, string> = {
   '--spacing-logo-w': '52px',
   '--spacing-footer-logo-h': '42px',
   '--spacing-footer-logo-w': '160px',
-  '--spacing-newsletter-min': '420px',
+  '--spacing-newsletter-min': '470px',
+  '--spacing-newsletter-field': '41px',
+  '--spacing-newsletter-bar': '80px',
   '--spacing-deals-top': '30px',
 }
 

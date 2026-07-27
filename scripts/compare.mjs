@@ -85,6 +85,14 @@ const shoot = async (url, out) => {
   }
   const external = url.startsWith('file:') || url.includes('kenyonexpress.co.il')
   await p.waitForTimeout(external ? 4000 : 2000)
+  // The Next dev overlay renders a route badge into <nextjs-portal> and it was
+  // being counted as page content: a ~150x45 box in the bottom-left of every
+  // local screenshot that has no counterpart on live and does not exist in a
+  // production build. It is dev tooling, not the page under comparison.
+  if (!external) {
+    await p.addStyleTag({ content: 'nextjs-portal { display: none !important; }' })
+    await p.waitForTimeout(200)
+  }
   await p.screenshot({ path: out, fullPage: true })
   await p.close()
   console.log(`${out} written (${url})`)

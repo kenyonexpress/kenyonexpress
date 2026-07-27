@@ -103,6 +103,13 @@
   /* Measured on live: the footer and the deals grid do NOT share the page
      container, they run wider and narrower respectively. */
   --container-footer: 1430px;
+  /* Measured on the live single-product template: the site footer's newsletter
+     bar, columns and copyright bar all sit in a 1200 container with 15px of
+     inline padding, which lands their content on the same x135..x1305 edges as
+     the page body. SiteFooter used --container-page and ran 68px wider on each
+     side. --container-footer above belongs to home/Footer.tsx, a different
+     component; the two are not the same box. */
+  --container-store-footer: 1200px;
   --container-deals: 1150px;
 
   /* --- Measured layout boxes -------------------------------------------------
@@ -114,7 +121,9 @@
   --spacing-logo-w: 52px;
   --spacing-footer-logo-h: 42px;
   --spacing-footer-logo-w: 160px;
-  --spacing-newsletter-min: 420px; /* footer newsletter form min width at lg */
+  --spacing-newsletter-min: 470px; /* live newsletter pill: 470x41 */
+  --spacing-newsletter-field: 41px;
+  --spacing-newsletter-bar: 80px; /* live newsletter bar height */
   --spacing-deals-top: 30px; /* live deals grid top offset */
 }
 
