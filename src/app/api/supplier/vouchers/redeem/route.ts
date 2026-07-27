@@ -1,6 +1,8 @@
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
 import { verifyVoucherQrPayload } from '@/server/domain/vouchers/qr'
+import { isEscrowFlowEnabled, releaseEscrowForOrderItem } from '@/server/payments/escrow'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
@@ -160,6 +162,36 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const outcome = asOutcome(result.outcome)
   const status = HTTP_STATUS[outcome]
   const replayed = result.replayed === true
+
+  if (outcome === 'success' && !replayed && isEscrowFlowEnabled()) {
+    // Escrow leg: redemption is the release trigger. The scan already
+    // succeeded; a release failure must page us (audit trail via
+    // payment_events is inside the release), never fail the scanner.
+    try {
+      const admin = createAdminClient()
+      const redeemedCode = (result.code as string) ?? shortCode
+      const { data: voucher } = await admin
+        .from('vouchers')
+        .select('order_item_id')
+        .eq('code', redeemedCode)
+        .maybeSingle()
+      if (voucher?.order_item_id) {
+        const released = await releaseEscrowForOrderItem(
+          admin,
+          voucher.order_item_id as string,
+          idempotency_key ?? `redeem:${redeemedCode}`,
+        )
+        if (!released.ok) {
+          console.error(`escrow release failed for voucher ${redeemedCode}: ${released.error}`)
+        }
+      }
+    } catch (error) {
+      console.error(
+        `escrow release threw for voucher ${shortCode}:`,
+        error instanceof Error ? error.message : error,
+      )
+    }
+  }
 
   if (outcome === 'success') {
     return respond(

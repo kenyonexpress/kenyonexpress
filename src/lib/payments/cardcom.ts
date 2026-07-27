@@ -1,5 +1,5 @@
 import { agorot } from '@/lib/commerce/money'
-import { loadCardcomEnv } from '@/lib/payments/env'
+import { type CardcomAccount, platformAccountFromEnv } from '@/lib/payments/accounts'
 import type {
   ChargeWithTokenInput,
   ChargeWithTokenResult,
@@ -31,12 +31,27 @@ function asNumber(value: unknown): number | null {
 /**
  * Cardcom Low Profile HTTP adapter.
  * Amounts are sent as ILS with 2 decimals (Cardcom convention); we convert from agorot at the boundary.
+ *
+ * Multi-account: an instance is bound to one Cardcom account (terminal). The
+ * default is the platform terminal from env; pass a `cardcom_accounts` row to
+ * charge/verify/refund on a supplier's own terminal. Tokens are terminal-bound
+ * (CARDCOM-ARCHITECTURE section 2), so callers must keep charging a token on
+ * the account that created it.
  */
 export class CardcomProvider implements PaymentProvider {
   readonly name = 'cardcom' as const
+  private readonly boundAccount: CardcomAccount | null
+
+  constructor(account?: CardcomAccount) {
+    this.boundAccount = account ?? null
+  }
+
+  get account(): CardcomAccount {
+    return this.boundAccount ?? platformAccountFromEnv()
+  }
 
   private get env() {
-    return loadCardcomEnv()
+    return this.account
   }
 
   private baseUrl(): string {

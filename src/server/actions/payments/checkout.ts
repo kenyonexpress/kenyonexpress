@@ -1,8 +1,20 @@
 'use server'
 
 import { validateCartView } from '@/lib/checkout/validate-cart'
-import { agorot, agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
-import { getPaymentProvider, loadCardcomEnv } from '@/lib/payments'
+import {
+  agorot,
+  agorotToIls,
+  ilsToAgorot,
+  percentToBasisPoints,
+  percentageOf,
+} from '@/lib/commerce/money'
+import {
+  getPaymentProvider,
+  loadCardcomEnv,
+  platformAccountFromEnv,
+  resolveAccountByKey,
+  resolveAccountForSupplier,
+} from '@/lib/payments'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
@@ -18,6 +30,8 @@ import {
   trackServerEvent,
 } from '@/server/analytics/track'
 import { type SettlementLineInput, calculateSettlement } from '@/server/domain/orders/settlement'
+import { isEscrowFlowEnabled } from '@/server/payments/escrow'
+import { appendPaymentEvent } from '@/server/payments/events'
 import { finalizeOrder } from '@/server/payments/finalize'
 import { redirect } from 'next/navigation'
 
@@ -157,6 +171,18 @@ export async function beginCheckout(
           code: 'INTERNAL',
         }
       }
+      // The escrow leg splits the upfront by the product's platform_percent at
+      // release time, so the snapshot must exist for coupons too (no default).
+      if (
+        isEscrowFlowEnabled() &&
+        (product.platform_percent === null || product.platform_percent === undefined)
+      ) {
+        return {
+          ok: false,
+          error: `למוצר "${item.name_he}" לא הוגדר אחוז פלטפורמה`,
+          code: 'INTERNAL',
+        }
+      }
       settlementLines.push({
         id: `${item.product_id}::${item.variant_id ?? 'null'}`,
         productType: item.type,
@@ -242,10 +268,18 @@ export async function beginCheckout(
     if (!line) throw new Error('settlement line missing for cart item')
     const product = productMap.get(item.product_id)
     // Snapshot semantics (final rules): platform_percent is the immutable
-    // per-line split knob for PHYSICAL lines; a coupon line stores 100 because
-    // the whole on-site charge stays with the platform. Escrow columns are
-    // legacy 046/047 shape and always 0 under the no-escrow model.
-    const percentSnapshot = line.productType === 'coupon' ? 100 : line.platformPercentBps / 100
+    // per-line split knob for PHYSICAL lines. A coupon line stores 100 (the
+    // whole on-site charge stays with the platform) UNLESS the escrow flow is
+    // on, in which case it stores the product's own platform_percent: that
+    // snapshot is what the release splits by. Escrow money columns stay 0
+    // here; the hold row itself carries the escrow amounts.
+    const couponPercent = isEscrowFlowEnabled() ? Number(product?.platform_percent ?? 0) : 100
+    const percentSnapshot =
+      line.productType === 'coupon' ? couponPercent : line.platformPercentBps / 100
+    const couponCommission =
+      line.productType === 'coupon' && isEscrowFlowEnabled()
+        ? percentageOf(line.paidOnSite, percentToBasisPoints(couponPercent))
+        : line.commission
     return {
       order_id: order.id,
       product_id: item.product_id,
@@ -265,7 +299,7 @@ export async function beginCheckout(
       commission_percent_snapshot: percentSnapshot,
       face_value_agorot: line.faceValue,
       paid_on_site_agorot: line.paidOnSite,
-      commission_agorot: line.commission,
+      commission_agorot: couponCommission,
       supplier_immediate_agorot: line.supplierDue,
       escrow_held_agorot: 0,
       escrow_release_agorot: 0,
@@ -278,6 +312,16 @@ export async function beginCheckout(
     await admin.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
     return { ok: false, error: `שמירת פריטי הזמנה נכשלה: ${itemsError.message}`, code: 'INTERNAL' }
   }
+
+  await appendPaymentEvent(admin, {
+    orderId: order.id,
+    eventType: 'checkout_started',
+    toState: 'pending',
+    amountAgorot: settlement.paidOnSite,
+    actor: `user:${user.id}`,
+    idempotencyKey: `order:${order.id}:checkout_started`,
+    metadata: { items: cart.items.length, wallet_applied_agorot: settlement.walletApplied },
+  })
 
   // Analytics: the order now exists, so this is the real "checkout started"
   // moment. All three calls swallow their own errors; none can fail a checkout.
@@ -308,7 +352,18 @@ export async function beginCheckout(
     return { ok: true, data: { kind: 'paid', order_id: order.id } }
   }
 
-  // 6. Payment row + hosted page
+  // 6. Payment row + hosted page.
+  // Multi-account rule: a single-supplier order charges on that supplier's own
+  // terminal when one is registered; anything else (mixed cart, no dedicated
+  // terminal) charges on the platform terminal and splits via the ledger.
+  // Tokens are terminal-bound, so the account key is recorded on the payment
+  // and every later verify/refund runs on the same account.
+  const supplierIds = [...new Set(itemRows.map((r) => r.supplier_id).filter(Boolean))]
+  const chargeAccount =
+    supplierIds.length === 1
+      ? await resolveAccountForSupplier(admin, supplierIds[0] as string)
+      : platformAccountFromEnv()
+
   const { data: payment, error: paymentError } = await admin
     .from('payments')
     .insert({
@@ -319,6 +374,7 @@ export async function beginCheckout(
       currency: 'ILS',
       wallet_applied_ils: agorotToIls(settlement.walletApplied),
       idempotency_key: idempotencyKey,
+      cardcom_account_key: chargeAccount.key,
     })
     .select('id')
     .single()
@@ -326,8 +382,18 @@ export async function beginCheckout(
     return { ok: false, error: `יצירת תשלום נכשלה: ${paymentError?.message}`, code: 'INTERNAL' }
   }
 
+  await appendPaymentEvent(admin, {
+    orderId: order.id,
+    paymentId: payment.id,
+    eventType: 'payment_initiated',
+    toState: 'initiated',
+    amountAgorot: settlement.cardCharge,
+    idempotencyKey: `payment:${payment.id}:initiated`,
+    metadata: { account_key: chargeAccount.key },
+  })
+
   try {
-    const provider = getPaymentProvider()
+    const provider = getPaymentProvider(chargeAccount)
     const created = await provider.createLowProfile({
       paymentId: payment.id,
       orderId: order.id,
@@ -351,6 +417,16 @@ export async function beginCheckout(
       })
       .eq('id', payment.id)
 
+    await appendPaymentEvent(admin, {
+      orderId: order.id,
+      paymentId: payment.id,
+      eventType: 'payment_redirected',
+      fromState: 'initiated',
+      toState: 'redirected',
+      idempotencyKey: `payment:${payment.id}:redirected`,
+      metadata: { low_profile_id: created.lowProfileId, account_key: chargeAccount.key },
+    })
+
     return {
       ok: true,
       data: { kind: 'redirect', order_id: order.id, redirect_url: created.redirectUrl },
@@ -361,6 +437,15 @@ export async function beginCheckout(
       .from('payments')
       .update({ status: 'failed', failure_message: message, failed_at: new Date().toISOString() })
       .eq('id', payment.id)
+    await appendPaymentEvent(admin, {
+      orderId: order.id,
+      paymentId: payment.id,
+      eventType: 'payment_failed',
+      fromState: 'initiated',
+      toState: 'failed',
+      idempotencyKey: `payment:${payment.id}:failed`,
+      metadata: { reason: message },
+    })
     return { ok: false, error: 'שגיאה בחיבור לספק הסליקה', code: 'PAYMENT_PROVIDER_ERROR' }
   }
 }
@@ -468,7 +553,7 @@ export async function reconcileOrderReturn(orderId: string): Promise<ReturnRecon
 
   const { data: payment } = await admin
     .from('payments')
-    .select('id, status, amount_ils, cardcom_low_profile_id')
+    .select('id, status, amount_ils, cardcom_low_profile_id, cardcom_account_key')
     .eq('order_id', order.id)
     .eq('kind', 'charge')
     .order('created_at', { ascending: false })
@@ -481,7 +566,9 @@ export async function reconcileOrderReturn(orderId: string): Promise<ReturnRecon
   if (payment.status === 'failed') return { status: 'failed', order_id: order.id }
   if (!payment.cardcom_low_profile_id) return { status: 'pending', order_id: order.id }
 
-  const provider = getPaymentProvider()
+  // Verify on the account that charged, never blindly on the platform terminal.
+  const account = await resolveAccountByKey(admin, payment.cardcom_account_key as string | null)
+  const provider = getPaymentProvider(account)
   const verified = await provider.verifyLowProfile(payment.cardcom_low_profile_id)
   if (!verified.success || verified.amountAgorot === null) {
     await admin

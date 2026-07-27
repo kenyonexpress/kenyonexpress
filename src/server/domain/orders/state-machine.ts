@@ -11,9 +11,12 @@ import type { CommissionProductType } from '@/lib/commerce/commission'
  * Failure paths: pending -> cancelled;
  *   paid | platform_settled | split_executed -> refunded
  *
- * escrow_held / escrow_released / redeemed remain ONLY so rows written by the
- * retired escrow model still type-check and can be refunded; no new row ever
- * enters them.
+ * Escrow flow (ESCROW_FLOW_ENABLED, feat/checkout-cardcom): coupon lines may
+ * instead take pending -> paid -> escrow_held -> escrow_released. The hold is
+ * INTERNAL per C3 (a ledger record, no external escrow, no J5): the upfront is
+ * held until redemption, then released to supplier_payable minus the platform
+ * fee. With the flag off no new row enters the escrow states; they also remain
+ * for rows written by the pre-2026-07-24 escrow model.
  */
 export type SettlementState =
   | 'pending'
@@ -30,6 +33,8 @@ export type SettlementEvent =
   | 'PAYMENT_CONFIRMED'
   | 'EXECUTE_SPLIT'
   | 'SETTLE_PLATFORM'
+  | 'HOLD_ESCROW'
+  | 'RELEASE_ESCROW'
   | 'REFUND'
   | 'CANCEL'
 
@@ -49,6 +54,8 @@ export const SETTLEMENT_EVENTS: readonly SettlementEvent[] = [
   'PAYMENT_CONFIRMED',
   'EXECUTE_SPLIT',
   'SETTLE_PLATFORM',
+  'HOLD_ESCROW',
+  'RELEASE_ESCROW',
   'REFUND',
   'CANCEL',
 ]
@@ -78,12 +85,14 @@ const TRANSITIONS: Readonly<
   paid: {
     EXECUTE_SPLIT: { to: 'split_executed', productType: 'physical' },
     SETTLE_PLATFORM: { to: 'platform_settled', productType: 'coupon' },
+    HOLD_ESCROW: { to: 'escrow_held', productType: 'coupon' },
     REFUND: { to: 'refunded' },
   },
   platform_settled: {
     REFUND: { to: 'refunded' },
   },
   escrow_held: {
+    RELEASE_ESCROW: { to: 'escrow_released', productType: 'coupon' },
     REFUND: { to: 'refunded' },
   },
   redeemed: {},

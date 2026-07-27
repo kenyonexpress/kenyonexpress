@@ -39,8 +39,10 @@ export class MockCardcomProvider implements PaymentProvider {
 
   async createLowProfile(input: CreateLowProfileInput): Promise<CreateLowProfileResult> {
     this.sequence += 1
+    // Ids carry the payment id: payments.cardcom_transaction_id is UNIQUE in
+    // the DB, and a bare per-process sequence collides across test processes.
     const lowProfileId = `mock-lp-${this.sequence}-${input.paymentId.slice(0, 8)}`
-    const transactionId = `mock-txn-${this.sequence}`
+    const transactionId = `mock-txn-${this.sequence}-${input.paymentId.slice(0, 8)}`
     this.deals.set(lowProfileId, {
       input,
       status: 'pending',
@@ -67,7 +69,7 @@ export class MockCardcomProvider implements PaymentProvider {
         raw: { mock: true, declined: true },
       }
     }
-    const transactionId = `mock-tok-${this.sequence}`
+    const transactionId = `mock-tok-${this.sequence}-${input.paymentId.slice(0, 8)}`
     return {
       success: true,
       transactionId,
@@ -143,7 +145,7 @@ export class MockCardcomProvider implements PaymentProvider {
     const refunded = input.partialAmountAgorot ?? input.amountAgorot
     return {
       success: true,
-      refundTransactionId: `mock-refund-${this.sequence}`,
+      refundTransactionId: `mock-refund-${this.sequence}-${input.transactionId.slice(-8)}`,
       refundedAgorot: agorot(refunded),
       failureCode: null,
       failureMessage: null,

@@ -1,11 +1,39 @@
 # KenyonExpress — Project State
 
-Updated: 2026-07-27 (שכבת מוצר + נתיב הרכישה השבור בפרודקשן)
+Updated: 2026-07-27 (checkout + Cardcom multi-account, worktree ke-checkout, branch feat/checkout-cardcom)
 
 ## Current Phase
-שכבת המוצר מחוברת. הבאג הקריטי במחיר הקופון סגור.
+זרימת checkout מלאה עם Cardcom רב-חשבוני, יומן אירועים append-only, מסלול escrow לקופונים מאחורי דגל, ותור retry ל-webhooks. הכל ירוק: tsc, ‏448 בדיקות vitest (כולל E2E אינטגרציה מול ה-stack המקומי), biome.
 
-## Last Completed — סבב שכבת המוצר
+## Last Completed — סבב checkout-cardcom (branch feat/checkout-cardcom)
+
+### מה נבנה
+1. **לקוח Cardcom רב-חשבוני**: `src/lib/payments/accounts.ts` + טבלת `cardcom_accounts` (מיגרציה 070). ספק עם מסוף משלו נסלק על המסוף שלו כשכל ההזמנה שלו; כל fallback הוא מסוף הפלטפורמה. `payments.cardcom_account_key` מקבע על איזה חשבון בוצע החיוב, ו-verify/refund רצים תמיד על אותו חשבון (טוקנים כבולים למסוף).
+2. **אימות חתימת webhook**: `src/lib/payments/signature.ts`, ‏HMAC-SHA256 על גוף הבקשה בכותרת `x-ke-webhook-signature`, עם סוד פר-חשבון. ‏Cardcom עצמה לא חותמת, אז שער ה-URL secret + אימות GetLpResult נשארים; החתימה משרתת את תור ה-retry, סימולציות E2E ו-proxy עתידי.
+3. **יומן `payment_events` append-only** (מיגרציה 070, טריגרים חוסמים UPDATE/DELETE/TRUNCATE גם ל-service_role): כל מעבר מצב נכתב מ-checkout, מה-webhook, מה-finalize ומה-escrow. מכונת המצבים ב-`src/server/domain/orders/state-machine.ts` הורחבה ב-HOLD_ESCROW/RELEASE_ESCROW (קופון בלבד).
+4. **מסלול escrow לקופונים** מאחורי `ESCROW_FLOW_ENABLED` (ברירת מחדל: כבוי, C11-א נשאר). כשהדגל דולק: המקדמה מוחזקת ב-`order_escrow_holds`, במימוש הפלטפורמה שומרת עמלה לפי **snapshot של `platform_percent` של המוצר** (אין שום אחוז קבוע בקוד) והיתרה משוחררת לספק; בפקיעה ההחזקה נסגרת לכיוון הלקוח (sweep ב-cron). שחרור מחובר ל-redeem route.
+5. **פיצול מוצר פיזי**: ללא שינוי מודל — `platform_percent` פר מוצר, `split_executions`, ועכשיו גם אירועי `split_executed` ביומן.
+6. **תור retry ב-Upstash Redis**: `src/lib/queue/webhook-retry.ts` (REST ללא SDK, ‏fallback בזיכרון בלי env), ‏route ניקוז `/api/payments/cardcom/retry` (Bearer CRON_SECRET), עד 5 ניסיונות ואז DLQ + audit_log. עיבוד ה-webhook חולץ ל-`src/server/payments/webhook-processing.ts` ומשותף לשני המסלולים.
+7. **E2E**: `src/server/payments/checkout-cardcom.e2e.test.ts` מול ה-Supabase המקומי: יצירת הזמנה, תשלום mock, ‏webhook חתום, אימות escrow_held + מתמטיקת העמלה מהמוצר, שחרור במימוש, פיצול פיזי, דחיית webhook לא חתום, קבלת חתימה של חשבון ספק, replay=no-op, ותור retry עד DLQ. בנוסף בדיקות יחידה לחתימה ולתור.
+
+### החלטות שהתקבלו אוטומטית
+- המיגרציה מוספרה **070** כי 069 תפוסה ב-`feat/search-core` (‏`069_search_index_dlq.sql`).
+- מיגרציה 070 הוחלה על ה-**stack המקומי בלבד** (docker). הפרויקט המרוחק לא נגוע.
+- תיקון בעל-הבית מהסשן: **אין עמלת 5% קבועה**. העמלה במסלול ה-escrow נקראת מ-snapshot של `products.platform_percent` (חובה פר מוצר, בלי ברירת מחדל, C1 נשמר). מודול `platform-fee.ts` שקודד 5% נמחק.
+- דגל `ESCROW_FLOW_ENABLED` כבוי כברירת מחדל: המודל הנעול (המקדמה = הכנסת פלטפורמה במלואה, C11-א) לא השתנה. הדגל דולק = C11-ב עם עמלה לפי אחוז המוצר.
+- `MockCardcomProvider` מייצר עכשיו מזהי עסקה ייחודיים בין תהליכים (ה-UNIQUE על `payments.cardcom_transaction_id` הפיל ריצת בדיקות שנייה).
+- הזמנות/הזמנות-פריטים ב-E2E ממלאות גם עמודות agorot שקיימות רק בסכימה המקומית (סטיית סכימה מקומית מ-059-style, מתועדת בבדיקה).
+
+## In Progress
+כלום. הכל committed ו-pushed ל-`feat/checkout-cardcom`.
+
+## Blocking Issues
+none
+
+## Next Task
+מיזוג `feat/checkout-cardcom` (יחד עם `feat/search-core` שתופסת את 069) ואז החלת מיגרציה 070 על הפרויקט המרוחק דרך תהליך הפריסה הרגיל.
+
+## Last Completed (קודם) — סבב שכבת המוצר
 
 ### הבאג שנמצא ותוקן: הלקוח קיבל ציטוט אחד וחויב באחר
 דף המוצר הציג

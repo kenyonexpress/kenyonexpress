@@ -1,6 +1,8 @@
-import { agorot, agorotToIls } from '@/lib/commerce/money'
+import { agorot, agorotToIls, percentToBasisPoints } from '@/lib/commerce/money'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { type VoucherIssueClient, issueVoucher } from '@/server/domain/vouchers/issue'
+import { holdCouponItem, isEscrowFlowEnabled } from '@/server/payments/escrow'
+import { appendPaymentEvent } from '@/server/payments/events'
 import type { Json } from '@/types/database'
 
 export type FinalizeOutcome =
@@ -253,7 +255,7 @@ export async function finalizeOrder(input: {
   if (input.paymentId) {
     const { data: payment } = await admin
       .from('payments')
-      .select('id, status, wallet_applied_ils')
+      .select('id, status, amount_ils, wallet_applied_ils')
       .eq('id', input.paymentId)
       .maybeSingle()
     if (!payment) return { ok: false, error: 'payment not found', code: 'NOT_FOUND' }
@@ -271,6 +273,15 @@ export async function finalizeOrder(input: {
     if (payError) {
       return { ok: false, error: `payment update failed: ${payError.message}`, code: 'INTERNAL' }
     }
+
+    await appendPaymentEvent(admin, {
+      orderId: order.id,
+      paymentId: payment.id,
+      eventType: 'payment_succeeded',
+      amountAgorot: Math.round(Number(payment.amount_ils ?? 0) * 100),
+      idempotencyKey: `payment:${payment.id}:succeeded`,
+      metadata: { transaction_id: input.transactionId },
+    })
   } else {
     walletApplied = Number(order.cashback_applied_ils ?? 0)
   }
@@ -305,13 +316,41 @@ export async function finalizeOrder(input: {
           offerValidUntil: null,
         }
         await issueVouchersForItem(admin, item, order.user_id, info, now)
-        // No escrow under the final rules: the on-site money is platform
-        // revenue at paid-time; the item is simply settled once vouchers exist.
-        await admin
-          .from('order_items')
-          .update({ settlement_status: 'platform_settled', item_status: 'issued' })
-          .eq('id', item.id)
-          .in('settlement_status', ['pending', 'paid'])
+        if (isEscrowFlowEnabled()) {
+          // Escrow leg: the upfront is HELD, not revenue. The fee share comes
+          // from the purchase-time platform_percent snapshot; the remainder is
+          // released to the supplier on redemption.
+          if (!item.supplier_id) {
+            throw new Error(`coupon item ${item.id} has no supplier for escrow hold`)
+          }
+          const held = await holdCouponItem(admin, {
+            orderId: order.id,
+            orderItemId: item.id,
+            supplierId: item.supplier_id,
+            paymentId: input.paymentId,
+            heldAgorot: agorot(item.paid_on_site_agorot ?? 0),
+            platformPercentBps: percentToBasisPoints(item.commission_percent_snapshot ?? 0),
+          })
+          if (!held.ok) throw new Error(held.error)
+        } else {
+          // No escrow under the final rules: the on-site money is platform
+          // revenue at paid-time; the item is simply settled once vouchers exist.
+          await admin
+            .from('order_items')
+            .update({ settlement_status: 'platform_settled', item_status: 'issued' })
+            .eq('id', item.id)
+            .in('settlement_status', ['pending', 'paid'])
+          await appendPaymentEvent(admin, {
+            orderId: order.id,
+            orderItemId: item.id,
+            paymentId: input.paymentId,
+            eventType: 'platform_settled',
+            fromState: 'paid',
+            toState: 'platform_settled',
+            amountAgorot: item.paid_on_site_agorot ?? 0,
+            idempotencyKey: `item:${item.id}:settled`,
+          })
+        }
       } else {
         await executeSplitForItem(admin, item, input.paymentId)
         await admin
@@ -319,6 +358,21 @@ export async function finalizeOrder(input: {
           .update({ settlement_status: 'split_executed' })
           .eq('id', item.id)
           .in('settlement_status', ['pending', 'paid'])
+        await appendPaymentEvent(admin, {
+          orderId: order.id,
+          orderItemId: item.id,
+          paymentId: input.paymentId,
+          eventType: 'split_executed',
+          fromState: 'paid',
+          toState: 'split_executed',
+          amountAgorot: item.face_value_agorot ?? 0,
+          idempotencyKey: `item:${item.id}:split`,
+          metadata: {
+            commission_agorot: item.commission_agorot ?? 0,
+            supplier_agorot: item.supplier_immediate_agorot ?? 0,
+            supplier_id: item.supplier_id,
+          },
+        })
       }
     }
 
@@ -356,6 +410,15 @@ export async function finalizeOrder(input: {
       entity_id: order.id,
       changes: { status: { from: 'pending', to: 'paid' } } as unknown as Json,
       metadata: { source: 'checkout_finalize', payment_id: input.paymentId } as unknown as Json,
+    })
+
+    await appendPaymentEvent(admin, {
+      orderId: order.id,
+      paymentId: input.paymentId,
+      eventType: 'order_paid',
+      fromState: 'pending',
+      toState: 'paid',
+      idempotencyKey: `order:${order.id}:paid`,
     })
 
     // Best-effort: the purchased cart is done; leftovers confuse the header badge.

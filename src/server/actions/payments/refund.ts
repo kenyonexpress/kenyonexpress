@@ -2,7 +2,7 @@
 
 import { requireAdminSession } from '@/lib/admin/rbac'
 import { agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
-import { getPaymentProvider } from '@/lib/payments'
+import { getPaymentProvider, resolveAccountByKey } from '@/lib/payments'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   RefundError,
@@ -62,7 +62,7 @@ export async function refundOrder(input: {
 
   const { data: payment } = await admin
     .from('payments')
-    .select('id, amount_ils, cardcom_transaction_id, status')
+    .select('id, amount_ils, cardcom_transaction_id, status, cardcom_account_key')
     .eq('order_id', order.id)
     .eq('kind', 'charge')
     .order('created_at', { ascending: false })
@@ -117,8 +117,10 @@ export async function refundOrder(input: {
     throw error
   }
 
-  // Cardcom refund (money moves back to the card).
-  const provider = getPaymentProvider()
+  // Cardcom refund (money moves back to the card), on the terminal that
+  // charged: a deal can only be credited on its own account.
+  const account = await resolveAccountByKey(admin, payment.cardcom_account_key as string | null)
+  const provider = getPaymentProvider(account)
   const refund = await provider.refundByTransactionId({
     transactionId: payment.cardcom_transaction_id,
     amountAgorot: plan.refundAmountAgorot,

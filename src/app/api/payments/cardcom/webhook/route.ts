@@ -1,8 +1,15 @@
 import { timingSafeEqual } from 'node:crypto'
 import { cardcomWebhookPayloadSchema, isCardcomSuccess } from '@/lib/contracts/webhooks'
-import { getPaymentProvider, loadCardcomEnv } from '@/lib/payments'
+import {
+  WEBHOOK_SIGNATURE_HEADER,
+  loadCardcomEnv,
+  resolveAccountByTerminal,
+  verifyWebhookSignature,
+} from '@/lib/payments'
+import { enqueueWebhookRetry } from '@/lib/queue/webhook-retry'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { finalizeOrder } from '@/server/payments/finalize'
+import { appendPaymentEvent } from '@/server/payments/events'
+import { isRetriable, processCardcomLowProfile } from '@/server/payments/webhook-processing'
 import type { Json } from '@/types/database'
 import { type NextRequest, NextResponse } from 'next/server'
 
@@ -18,22 +25,28 @@ function secretMatches(provided: string, expected: string): boolean {
 }
 
 /**
- * Cardcom webhook (IndicatorUrl). Cardcom does NOT sign its callbacks — there is
- * no HMAC or signature header to verify. Authenticity therefore rests on two
- * things, never on the POST body:
- * 1. An unguessable shared secret carried in the callback URL (`?s=`), which we
- *    set when creating the Low Profile page.
- * 2. Mandatory server-to-server re-verification via GetLpResult — the re-fetched
- *    result is the ONLY trusted source of amount / status / token.
- * Plus: log every event first, dedup on (provider, external_event_id), replays
- * are 200 no-ops.
+ * Cardcom webhook (IndicatorUrl), multi-account.
+ *
+ * Authenticity gates, in order of strength:
+ * 1. HMAC-SHA256 signature header (x-ke-webhook-signature) over the raw body,
+ *    keyed by the webhook secret of the account whose terminal number the
+ *    payload names. Real Cardcom does not sign, so this gate serves our own
+ *    signed callers (retry driver, E2E simulator, future signing proxy).
+ * 2. Legacy: unguessable shared secret in the callback URL (`?s=`), set when
+ *    creating the Low Profile page. Accepted against the resolved account's
+ *    secret or the platform secret.
+ * Either gate admits the request; the POST body is NEVER trusted for money:
+ * processing re-verifies via GetLpResult on the account that charged, and the
+ * re-fetched result is the only source of amount / status / token.
+ *
+ * Always: log the event first, dedup on (provider, external_event_id), answer
+ * 200 (Cardcom re-posts on non-200; our own retry queue owns retries).
+ * A verified event that fails processing is parked on the Upstash retry queue.
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const rawBody = await request.text()
   const env = loadCardcomEnv()
   const admin = createAdminClient()
-
-  const secretOk = secretMatches(request.nextUrl.searchParams.get('s') ?? '', env.webhookSecret)
 
   let payloadJson: Json
   try {
@@ -43,6 +56,24 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   const parsed = cardcomWebhookPayloadSchema.safeParse(payloadJson)
+
+  // Resolve the claimed account for signature verification. Unknown terminals
+  // resolve to the platform account, so single-terminal setups keep working.
+  const account = await resolveAccountByTerminal(
+    admin,
+    parsed.success ? parsed.data.terminalnumber : null,
+  )
+
+  const signatureOk = verifyWebhookSignature(
+    rawBody,
+    account.webhookSecret,
+    request.headers.get(WEBHOOK_SIGNATURE_HEADER),
+  )
+  const urlSecret = request.nextUrl.searchParams.get('s') ?? ''
+  const urlSecretOk =
+    secretMatches(urlSecret, account.webhookSecret) || secretMatches(urlSecret, env.webhookSecret)
+  const authOk = signatureOk || urlSecretOk
+
   const externalEventId = parsed.success
     ? `${parsed.data.lowprofilecode}:${parsed.data.InternalDealNumber ?? 'na'}`
     : `unparsed:${rawBody.slice(0, 64)}`
@@ -51,7 +82,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const { error: eventError } = await admin.from('payment_webhook_events').insert({
     provider: 'cardcom',
     external_event_id: externalEventId,
-    signature_valid: secretOk,
+    signature_valid: authOk,
     verified_against_api: false,
     payload: payloadJson,
   })
@@ -60,7 +91,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true, replay: true })
   }
 
-  if (!secretOk || !parsed.success) {
+  if (!authOk || !parsed.success) {
     return NextResponse.json({ ok: true })
   }
   const payload = parsed.data
@@ -68,12 +99,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   // 2. Locate our payment by the hosted-page id
   const { data: payment } = await admin
     .from('payments')
-    .select('id, order_id, status, amount_ils')
+    .select('id, order_id, status')
     .eq('cardcom_low_profile_id', payload.lowprofilecode)
     .maybeSingle()
   if (!payment) {
     return NextResponse.json({ ok: true, unknown_payment: true })
   }
+
+  await appendPaymentEvent(admin, {
+    orderId: payment.order_id,
+    paymentId: payment.id,
+    eventType: 'webhook_received',
+    actor: signatureOk ? 'webhook:signed' : 'webhook:url-secret',
+    idempotencyKey: `webhook:${externalEventId}`,
+    metadata: { account_key: account.key, response_code: payload.ResponseCode },
+  })
 
   if (!isCardcomSuccess(payload)) {
     await admin
@@ -85,51 +125,49 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       })
       .eq('id', payment.id)
       .in('status', ['initiated', 'redirected'])
+    await appendPaymentEvent(admin, {
+      orderId: payment.order_id,
+      paymentId: payment.id,
+      eventType: 'payment_failed',
+      toState: 'failed',
+      idempotencyKey: `payment:${payment.id}:failed`,
+      metadata: { failure_code: String(payload.ResponseCode) },
+    })
     return NextResponse.json({ ok: true })
   }
 
-  // 3. Server-to-server re-verify; trust only this response
-  const provider = getPaymentProvider()
-  const verified = await provider.verifyLowProfile(payload.lowprofilecode)
-  if (!verified.success || verified.amountAgorot === null) {
-    return NextResponse.json({ ok: true, verified: false })
+  // 3+4. Re-verify on the charging account and finalize (shared with retries)
+  const result = await processCardcomLowProfile(payload.lowprofilecode, 'webhook')
+
+  if (result.status === 'finalized') {
+    await admin
+      .from('payment_webhook_events')
+      .update({
+        verified_against_api: true,
+        payment_id: payment.id,
+        processed_at: new Date().toISOString(),
+      })
+      .eq('provider', 'cardcom')
+      .eq('external_event_id', externalEventId)
+    return NextResponse.json({ ok: true })
   }
 
-  const expectedAgorot = Math.round(Number(payment.amount_ils) * 100)
-  if (verified.amountAgorot !== expectedAgorot) {
-    await admin.from('audit_log').insert({
-      actor_id: null,
-      actor_role: null,
-      action: 'manual_override',
-      entity_type: 'payment',
-      entity_id: payment.id,
-      changes: {} as Json,
-      metadata: {
-        alarm: 'cardcom_amount_mismatch',
-        expected_agorot: expectedAgorot,
-        got_agorot: verified.amountAgorot,
-      } as unknown as Json,
+  if (isRetriable(result)) {
+    await enqueueWebhookRetry({
+      provider: 'cardcom',
+      lowProfileId: payload.lowprofilecode,
+      externalEventId,
+      attempt: 1,
     })
-    return NextResponse.json({ ok: true, amount_mismatch: true })
+    await appendPaymentEvent(admin, {
+      orderId: payment.order_id,
+      paymentId: payment.id,
+      eventType: 'webhook_retry_enqueued',
+      idempotencyKey: `webhook:${externalEventId}:retry:1`,
+      metadata: { reason: result.status },
+    })
+    return NextResponse.json({ ok: true, queued: true })
   }
 
-  await admin
-    .from('payment_webhook_events')
-    .update({
-      verified_against_api: true,
-      payment_id: payment.id,
-      processed_at: new Date().toISOString(),
-    })
-    .eq('provider', 'cardcom')
-    .eq('external_event_id', externalEventId)
-
-  // 4. The single valuable transition
-  const result = await finalizeOrder({
-    orderId: payment.order_id,
-    paymentId: payment.id,
-    transactionId: verified.transactionId,
-    token: verified.token,
-  })
-
-  return NextResponse.json({ ok: result.ok })
+  return NextResponse.json({ ok: true, result: result.status })
 }
