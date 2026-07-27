@@ -559,3 +559,84 @@ Safe on production: nothing calls the function here, because no policy
 references it. On a database where the policy WAS repaired, dropping the
 function first requires restoring 027's recursive policy text, which reinstates
 the outage.
+
+---
+
+## 8. Migration 078: supplier order access, scoped
+
+Applied via MCP `apply_migration` as `078_supplier_scoped_order_read`. Repo
+file: `supabase/migrations/078_supplier_scoped_order_read.sql`.
+Backup of the prior policy state:
+`/Users/ofir/kenyonexpress-web/backups/rls-policies-2026-07-27-pre-078.sql`
+(kept outside the repo, matching the pre-070 convention).
+
+Section 7 left this open deliberately: 077 repaired the recursive policy where
+one existed and refused to grant new access on its own. **Ofir decided it on
+2026-07-27**: suppliers must read the orders containing their own products,
+only those, and no customer personal data beyond what shipping requires. 078 is
+that decision.
+
+### The three rules, as written
+
+| Policy | Grants | Denies |
+|---|---|---|
+| `order_items_supplier_read` | lines whose `supplier_id` the caller staffs | a co-supplier's line on the same order |
+| `orders_supplier_read` | the order row, once `paid`/`partially_fulfilled`/`fulfilled`, if it holds such a line | pending carts, cancelled and refunded orders, orders they are not on |
+| `user_addresses_supplier_read` | the address, only where they have a live **physical** line | every address for a coupon-only supplier |
+
+Every policy is `FOR SELECT`. Suppliers get no write of any kind.
+
+**Why the address rule is narrower than the order rule.** `is_supplier_order()`
+answers "is this supplier on the order", which is what justifies seeing the
+order. `is_supplier_shipping_order()` additionally requires a live `physical`
+line, which is what justifies seeing where the customer lives. A coupon is
+redeemed in person at the business, so nothing about it requires an address.
+
+**`profiles` was left alone on purpose.** RLS is row-level, so silence there
+would have been ambiguous: no supplier policy exists on `profiles` and 078 adds
+none, meaning customer name, email and phone stay invisible. Verified after
+applying: `profiles` still carries exactly its four pre-existing policies. The
+`orders` row itself carries no personal data either - the table has no name,
+email or phone column, only `user_id` (an opaque uuid) and `address_id`.
+
+### Verification
+
+Policy definitions read back from `pg_policy` after applying and match the
+migration exactly. All three helpers (`is_supplier_member`, `is_supplier_order`,
+`is_supplier_shipping_order`) are `SECURITY DEFINER`, which is what keeps the
+`orders` <-> `order_items` policy cycle from re-forming (see section 7).
+
+A read-only probe on production impersonating a random authenticated user
+returned `orders 0, order_items 0, user_addresses 0, profiles 0` **with no
+error** - the point being the absence of `42P17`, since a recursion here takes
+the table down for every reader, not only suppliers.
+
+The behavioural assertions run against the local stack, which carries the same
+policies, in `tests/sql/voucher_account_rls.sql`: on an order shared between a
+physical supplier and a coupon supplier, each sees exactly one line and not the
+other's; neither sees an order they have no line on; the shipping supplier gets
+the address and **the coupon supplier does not**; neither reads the customer
+profile; and an attempted write on an order line changes nothing.
+
+### Blast radius on the day of application
+
+`supplier_members` holds **0 rows** in production, so every predicate resolves
+through `is_supplier_member()` and is false for every caller. The policies match
+nothing until a supplier member is created, which makes this a change that takes
+effect deliberately rather than immediately.
+
+### Rollback
+
+```sql
+DROP POLICY IF EXISTS user_addresses_supplier_read ON public.user_addresses;
+DROP POLICY IF EXISTS orders_supplier_read         ON public.orders;
+DROP POLICY IF EXISTS order_items_supplier_read    ON public.order_items;
+DROP FUNCTION IF EXISTS public.is_supplier_shipping_order(uuid);
+
+DELETE FROM supabase_migrations.schema_migrations
+WHERE name = '078_supplier_scoped_order_read';
+```
+
+Additive only: dropping these returns suppliers to seeing no orders at all,
+which is where production stood before. No customer-facing policy is touched by
+either direction.

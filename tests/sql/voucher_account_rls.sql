@@ -226,4 +226,184 @@ BEGIN
   RAISE NOTICE 'voucher account RLS: all assertions passed';
 END $$;
 
+-- ═══════════════════════════════════════════════════════════════════════════
+-- Supplier scoping (migration 078).
+--
+-- The grant is "orders containing your own products, and nothing else". These
+-- are the three ways that can go wrong: seeing a co-supplier's line, seeing an
+-- order you are not on, and being handed a customer's address when you have
+-- nothing to ship.
+-- ═══════════════════════════════════════════════════════════════════════════
+
+DO $$
+DECLARE
+  v_sup_a      uuid := gen_random_uuid();  -- physical goods
+  v_sup_b      uuid := gen_random_uuid();  -- coupons only
+  v_prod_a     uuid := gen_random_uuid();
+  v_prod_b     uuid := gen_random_uuid();
+  v_buyer      uuid := gen_random_uuid();
+  v_staff_a    uuid := gen_random_uuid();
+  v_staff_b    uuid := gen_random_uuid();
+  v_address    uuid := gen_random_uuid();
+  v_order      uuid := gen_random_uuid();  -- shared: one line each
+  v_solo       uuid := gen_random_uuid();  -- supplier A only
+  v_item_a     uuid := gen_random_uuid();
+  v_item_b     uuid := gen_random_uuid();
+  v_count      integer;
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policy
+    WHERE polrelid = 'public.orders'::regclass AND polname = 'orders_supplier_read'
+  ) THEN
+    RAISE NOTICE 'supplier scoping: skipped, 078 not applied here';
+    RETURN;
+  END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'wallet_accounts'
+      AND column_name = 'owner_type' AND is_nullable = 'NO'
+  ) THEN
+    EXECUTE $ddl$ALTER TABLE public.wallet_accounts ALTER COLUMN owner_type SET DEFAULT 'user'$ddl$;
+  END IF;
+
+  INSERT INTO auth.users (id, instance_id, aud, role, email, encrypted_password,
+                          email_confirmed_at, created_at, updated_at)
+  SELECT u, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
+         u::text || '@scope.local', '', now(), now(), now()
+  FROM unnest(ARRAY[v_buyer, v_staff_a, v_staff_b]) AS u;
+
+  INSERT INTO public.profiles (id, email)
+  SELECT u, u::text || '@scope.local' FROM unnest(ARRAY[v_buyer, v_staff_a, v_staff_b]) AS u
+  ON CONFLICT (id) DO NOTHING;
+
+  INSERT INTO public.suppliers (id, name) VALUES
+    (v_sup_a, 'ספק פיזי'), (v_sup_b, 'ספק קופונים');
+  INSERT INTO public.supplier_members (supplier_id, user_id, is_active) VALUES
+    (v_sup_a, v_staff_a, true), (v_sup_b, v_staff_b, true);
+
+  INSERT INTO public.products
+    (id, supplier_id, type, slug, name_he, price_ils, platform_percent,
+     coupon_expiry_days, commission_percent, coupon_price_ils)
+  VALUES
+    (v_prod_a, v_sup_a, 'physical', 'scope-physical', 'מוצר פיזי', 100, 15, 90, 15, NULL),
+    (v_prod_b, v_sup_b, 'coupon',   'scope-coupon',   'קופון',     100, 30, 90, 30, 50);
+
+  INSERT INTO public.user_addresses (id, user_id, full_name, phone, city, street, street_number)
+  VALUES (v_address, v_buyer, 'לקוח בדיקה', '0500000000', 'תל אביב', 'הרצל', '1');
+
+  -- A shared order: supplier A ships, supplier B sells a coupon on the same one.
+  INSERT INTO public.orders
+    (id, user_id, status, subtotal_ils, total_ils, subtotal_agorot,
+     customer_pays_now_agorot, address_id, paid_at)
+  VALUES (v_order, v_buyer, 'paid', 150, 150, 15000, 15000, v_address, now());
+
+  INSERT INTO public.order_items
+    (id, order_id, product_id, product_type, supplier_id, quantity,
+     unit_price_ils, total_price_ils, commission_percent, supplier_payout_ils,
+     unit_price_agorot, face_value_agorot, customer_pays_now_agorot,
+     platform_fee_agorot, supplier_due_agorot, cashback_percent,
+     cashback_amount_agorot, platform_percent, settlement_status, item_status)
+  VALUES
+    (v_item_a, v_order, v_prod_a, 'physical', v_sup_a, 1,
+     100, 100, 15, 85, 10000, 10000, 10000, 1500, 8500, 0, 0, 15,
+     'split_executed', 'pending'),
+    (v_item_b, v_order, v_prod_b, 'coupon', v_sup_b, 1,
+     100, 100, 30, 70, 10000, 10000, 5000, 1500, 3500, 0, 0, 30,
+     'escrow_held', 'issued');
+
+  -- An order supplier A is not on at all.
+  INSERT INTO public.orders
+    (id, user_id, status, subtotal_ils, total_ils, subtotal_agorot,
+     customer_pays_now_agorot, paid_at)
+  VALUES (v_solo, v_buyer, 'paid', 50, 50, 5000, 5000, now());
+
+  INSERT INTO public.order_items
+    (order_id, product_id, product_type, supplier_id, quantity,
+     unit_price_ils, total_price_ils, commission_percent, supplier_payout_ils,
+     unit_price_agorot, face_value_agorot, customer_pays_now_agorot,
+     platform_fee_agorot, supplier_due_agorot, cashback_percent,
+     cashback_amount_agorot, platform_percent, settlement_status, item_status)
+  VALUES
+    (v_solo, v_prod_b, 'coupon', v_sup_b, 1,
+     100, 100, 30, 70, 10000, 10000, 5000, 1500, 3500, 0, 0, 30,
+     'escrow_held', 'issued');
+
+  SET LOCAL ROLE authenticated;
+
+  -- ── A: ships. Sees own line, own order, and the address ──────────────────
+  PERFORM set_config('request.jwt.claims',
+    json_build_object('sub', v_staff_a, 'role', 'authenticated')::text, true);
+
+  SELECT count(*) INTO v_count FROM public.order_items WHERE order_id = v_order;
+  IF v_count <> 1 THEN
+    RAISE EXCEPTION
+      'SECURITY: supplier A sees % lines on the shared order, must see only its own', v_count;
+  END IF;
+
+  SELECT count(*) INTO v_count FROM public.order_items WHERE id = v_item_b;
+  IF v_count <> 0 THEN
+    RAISE EXCEPTION 'SECURITY: supplier A reads a co-supplier''s order line';
+  END IF;
+
+  SELECT count(*) INTO v_count FROM public.orders WHERE id = v_order;
+  IF v_count <> 1 THEN
+    RAISE EXCEPTION 'supplier A cannot read the order carrying its line (% rows)', v_count;
+  END IF;
+
+  SELECT count(*) INTO v_count FROM public.orders WHERE id = v_solo;
+  IF v_count <> 0 THEN
+    RAISE EXCEPTION 'SECURITY: supplier A reads an order it has no line on';
+  END IF;
+
+  SELECT count(*) INTO v_count FROM public.user_addresses WHERE id = v_address;
+  IF v_count <> 1 THEN
+    RAISE EXCEPTION
+      'the shipping supplier cannot read the address it must ship to (% rows)', v_count;
+  END IF;
+
+  -- ── B: coupons only. Sees its line and order, but NO address ─────────────
+  PERFORM set_config('request.jwt.claims',
+    json_build_object('sub', v_staff_b, 'role', 'authenticated')::text, true);
+
+  SELECT count(*) INTO v_count FROM public.order_items WHERE order_id = v_order;
+  IF v_count <> 1 THEN
+    RAISE EXCEPTION 'SECURITY: supplier B sees % lines on the shared order', v_count;
+  END IF;
+
+  SELECT count(*) INTO v_count FROM public.orders WHERE id = v_order;
+  IF v_count <> 1 THEN
+    RAISE EXCEPTION 'supplier B cannot read the order carrying its coupon line';
+  END IF;
+
+  -- The point of the whole address rule: a coupon is redeemed in person, so
+  -- nothing about it justifies handing over where the customer lives.
+  SELECT count(*) INTO v_count FROM public.user_addresses WHERE id = v_address;
+  IF v_count <> 0 THEN
+    RAISE EXCEPTION
+      'SECURITY: a coupon-only supplier reads the customer address (% rows)', v_count;
+  END IF;
+
+  -- ── Neither supplier reads the customer's profile ────────────────────────
+  SELECT count(*) INTO v_count FROM public.profiles WHERE id = v_buyer;
+  IF v_count <> 0 THEN
+    RAISE EXCEPTION 'SECURITY: a supplier reads the customer profile row';
+  END IF;
+
+  -- ── Read-only: no supplier may write an order or a line ──────────────────
+  BEGIN
+    UPDATE public.order_items SET item_status = 'delivered' WHERE id = v_item_b;
+    IF FOUND THEN
+      RAISE EXCEPTION 'SECURITY: a supplier updated an order line';
+    END IF;
+  EXCEPTION
+    WHEN insufficient_privilege THEN NULL;
+    WHEN others THEN
+      IF SQLERRM LIKE '%SECURITY:%' THEN RAISE; END IF;
+  END;
+
+  RESET ROLE;
+  RAISE NOTICE 'supplier scoping (078): all assertions passed';
+END $$;
+
 ROLLBACK;
