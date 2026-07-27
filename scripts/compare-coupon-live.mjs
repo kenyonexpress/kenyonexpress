@@ -25,7 +25,7 @@ if (!process.env.PLAYWRIGHT_BROWSERS_PATH) {
 }
 const VIEW = { width: 1440, height: 900 }
 const LIVE = `https://kenyonexpress.co.il/product/${encodeURIComponent('קופון-טסט')}/`
-const MINE = 'http://localhost:3000/product/barbecue'
+const MINE = process.env.MINE_URL ?? 'http://localhost:3000/product/demo-coupon-2'
 
 const probe = () => {
   const g = (el) => {
@@ -79,7 +79,7 @@ for (const [name, url] of [
   }
   await p.waitForTimeout(3000)
   out[name] = await p.evaluate(probe)
-  await p.screenshot({ path: `refs/coupon-${name}.png`, fullPage: false })
+  await p.screenshot({ path: `refs/coupon-${name}.png`, fullPage: true })
   await p.close()
 }
 await b.close()
@@ -104,3 +104,63 @@ for (const key of Object.keys(out.live)) {
   } else rows.push({ el: key, prop: '', live: L, mine: M, delta: L === M ? 'same' : 'DIFF' })
 }
 console.table(rows)
+
+// ---------------------------------------------------------------------------
+// Pixel band diff. Reported with the caveat it deserves: the two pages show
+// DIFFERENT products (the live קופון-טסט is not in this database), so the
+// number measures content plus layout, and only the trend across runs is
+// meaningful. The structural table above is the fidelity signal.
+// ---------------------------------------------------------------------------
+const { readFileSync } = await import('node:fs')
+const toDataUrl = (p) => `data:image/png;base64,${readFileSync(resolve(p)).toString('base64')}`
+const b2 = await chromium.launch()
+const pg = await b2.newPage()
+await pg.goto('about:blank')
+const bands = await pg.evaluate(
+  async ([liveSrc, mineSrc]) => {
+    const load = (src) =>
+      new Promise((res) => {
+        const i = new Image()
+        i.onload = () => res(i)
+        i.src = src
+      })
+    const [a, b] = await Promise.all([load(liveSrc), load(mineSrc)])
+    const W = Math.min(a.width, b.width)
+    const H = Math.min(a.height, b.height)
+    const draw = (img) => {
+      const c = document.createElement('canvas')
+      c.width = W
+      c.height = H
+      c.getContext('2d').drawImage(img, 0, 0)
+      return c.getContext('2d').getImageData(0, 0, W, H).data
+    }
+    const da = draw(a)
+    const db = draw(b)
+    const BAND = 200
+    const out = []
+    for (let y0 = 0; y0 < H; y0 += BAND) {
+      const y1 = Math.min(H, y0 + BAND)
+      let diff = 0
+      let total = 0
+      for (let y = y0; y < y1; y += 2) {
+        for (let x = 0; x < W; x += 2) {
+          const i = (y * W + x) * 4
+          const d =
+            Math.abs(da[i] - db[i]) +
+            Math.abs(da[i + 1] - db[i + 1]) +
+            Math.abs(da[i + 2] - db[i + 2])
+          if (d > 45) diff++
+          total++
+        }
+      }
+      out.push({ band: `${y0}-${y1}px`, diffPct: +((100 * diff) / total).toFixed(1) })
+    }
+    return { W, H, out }
+  },
+  [toDataUrl('refs/coupon-live.png'), toDataUrl('refs/coupon-mine.png')],
+)
+await b2.close()
+console.log(`\npixel band diff over ${bands.W}x${bands.H} (different products; trend only)`)
+console.table(bands.out)
+const overall = bands.out.reduce((s, b) => s + b.diffPct, 0) / bands.out.length
+console.log(`mean band difference: ${overall.toFixed(1)}%`)

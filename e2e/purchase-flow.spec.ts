@@ -78,16 +78,30 @@ test.describe('search to checkout', () => {
     // while the cart billed products.coupon_price_ils, so the customer was
     // quoted one number and charged another.
     await page.goto('/products?type=coupon')
-    const couponCard = page.locator('a[href^="/product/"]').first()
-    const found = await couponCard.isVisible({ timeout: DISCOVERY_TIMEOUT }).catch(() => false)
-    test.skip(!found, 'no coupon products in this seed')
+    const cards = page.locator('a[href^="/product/"]')
+    await expect(cards.first()).toBeVisible({ timeout: DISCOVERY_TIMEOUT })
 
-    await couponCard.click()
-    await page.waitForURL(/\/product\//)
+    // Walk the coupon cards for one that is actually priced rather than taking
+    // the first. coupon_price_ils has no default, so a catalogue legitimately
+    // holds coupons the admin has not priced yet; those render the unsellable
+    // state and would make this spec's outcome depend on sort order.
+    const hrefs = (
+      await cards.evaluateAll((nodes) =>
+        nodes.map((n) => (n as HTMLAnchorElement).getAttribute('href')),
+      )
+    ).filter((h): h is string => Boolean(h))
 
-    const split = page.getByText('לתשלום באתר עכשיו')
-    const isCouponPage = await split.isVisible().catch(() => false)
-    test.skip(!isCouponPage, 'discovered product is not a sellable coupon')
+    let split = page.getByText('לתשלום באתר עכשיו')
+    let priced = false
+    for (const href of hrefs.slice(0, 12)) {
+      await page.goto(href)
+      split = page.getByText('לתשלום באתר עכשיו')
+      if (await split.isVisible().catch(() => false)) {
+        priced = true
+        break
+      }
+    }
+    test.skip(!priced, 'no coupon in this catalogue has an absolute price set')
 
     await expect(split).toBeVisible()
     await expect(page.getByText('יתרה לתשלום בבית העסק')).toBeVisible()
