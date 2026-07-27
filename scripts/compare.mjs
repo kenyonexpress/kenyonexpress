@@ -64,7 +64,27 @@ if (page === 'home') {
   }
 } else if (page === 'category') {
   liveUrl ??= LIVE_CATEGORY
-  mineUrl ??= `${LOCAL}/category/${LOCAL_CATEGORY_SLUG}`
+  if (!mineUrl) {
+    // hot-deals is the live archive's slug and does not exist in the local
+    // database, whose categories are baby-kids / vacation / pets / ... . Hard
+    // coding it meant the category run had been screenshotting a 404 page and
+    // reporting the diff against it as a fidelity score. Fall back to whatever
+    // category the local catalogue actually links to.
+    const probe = await ctx.newPage()
+    const preferred = `${LOCAL}/category/${LOCAL_CATEGORY_SLUG}`
+    const res = await probe.goto(preferred, { waitUntil: 'domcontentloaded' }).catch(() => null)
+    if (res?.ok()) {
+      mineUrl = preferred
+    } else {
+      await probe.goto(`${LOCAL}/products`, { waitUntil: 'networkidle' }).catch(() => {})
+      const href = await probe
+        .evaluate(() => document.querySelector('a[href^="/category/"]')?.getAttribute('href'))
+        .catch(() => null)
+      mineUrl = href ? `${LOCAL}${href}` : preferred
+      console.log(`category: ${LOCAL_CATEGORY_SLUG} is not local, discovered -> ${mineUrl}`)
+    }
+    await probe.close()
+  }
 } else if (page === 'products') {
   liveUrl ??= LIVE_PRODUCTS
   mineUrl ??= `${LOCAL}/products`
@@ -92,6 +112,20 @@ const shoot = async (url, out) => {
   if (!external) {
     await p.addStyleTag({ content: 'nextjs-portal { display: none !important; }' })
     await p.waitForTimeout(200)
+    // Refuse to score an error page. Twice now a percentage has been recorded
+    // in STATE against a page that never rendered -- once a blank product page,
+    // once a 404 category -- and both numbers looked plausible enough to be
+    // believed. A comparison against nothing is not a low number, it is no
+    // measurement at all.
+    const notFound = await p.evaluate(
+      () =>
+        document.title.includes('404') ||
+        /This page could not be found|לא נמצא/.test(document.body?.innerText ?? ''),
+    )
+    if (notFound) {
+      console.error(`REFUSING to measure: ${url} rendered a not-found page.`)
+      process.exit(3)
+    }
   }
   await p.screenshot({ path: out, fullPage: true })
   await p.close()
