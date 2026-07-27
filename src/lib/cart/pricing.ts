@@ -122,20 +122,23 @@ export function buildCartView(
     const percent = platformPercent(product)
     const couponPrice = couponPriceIls(product)
 
-    // Final rules: a coupon needs its admin-set absolute price, a physical
-    // line needs its percent. A line missing its mandatory value renders as
+    // Both types need the percent since 2026-07-27, and a coupon additionally
+    // needs its admin-set absolute price. A line missing either renders as
     // unavailable and is kept OUT of the money engine (which would rightly
     // refuse to price it) instead of being priced with an invented number.
-    const priceable = type === 'coupon' ? couponPrice != null : true
+    //
+    // The percent used to be defaulted to 0 here for lines that were already
+    // unavailable, which was harmless while a coupon's percent did nothing.
+    // It is not harmless now: 0% on a coupon means the platform takes nothing
+    // and the whole prepayment is held for the supplier.
+    const priceable = percent != null && (type !== 'coupon' || couponPrice != null)
     if (priceable) {
       commissionLines.push({
         id: lineKey,
         productType: type,
         unitPrice: ilsToAgorot(unitPrice.toFixed(2)),
         quantity: item.quantity,
-        // 0 keeps the arithmetic honest for a physical line that is already
-        // unavailable: nothing is charged or split until the admin sets it.
-        platformPercent: percent ?? 0,
+        platformPercent: percent,
         couponPriceUnit:
           type === 'coupon' && couponPrice != null
             ? ilsToAgorot(couponPrice.toFixed(2))
@@ -154,9 +157,7 @@ export function buildCartView(
       unit_price: unitPrice,
       line_total: lineTotal,
       type,
-      available:
-        (type === 'coupon' ? couponPrice != null : percent != null) &&
-        isAvailable(product, variant, item.quantity),
+      available: priceable && isAvailable(product, variant, item.quantity),
       platform_fee: 0,
       supplier_due: 0,
       customer_pays_now: 0,
