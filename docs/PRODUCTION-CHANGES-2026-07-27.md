@@ -640,3 +640,75 @@ WHERE name = '078_supplier_scoped_order_read';
 Additive only: dropping these returns suppliers to seeing no orders at all,
 which is where production stood before. No customer-facing policy is touched by
 either direction.
+
+---
+
+## 9. Migrations 032 + 057: the `wp_import` schema
+
+Applied via MCP `apply_migration` as `032_wp_import_staging` and
+`057_wp_migration_log`. Repo files of the same names.
+
+### Why now
+
+The WordPress import pipeline has existed since 2026-07-24: six ETL stages in
+`scripts/wp-import/` (~72KB), dry-run by default, with a migration log and a
+rollback function. **It had nowhere to write.** `wp_import` did not exist on the
+hosted project at all, so no stage past extract could run against production.
+This unblocks that and nothing else: no WordPress data was imported by these
+migrations.
+
+### Backup
+
+None taken, because there is nothing to back up: the schema did not exist. The
+pre-state is "no `wp_import` namespace", confirmed by querying `pg_namespace`
+before applying, and the rollback is a single `DROP SCHEMA`.
+
+### What was applied
+
+- **032**: the schema plus 12 staging/archive tables (`import_batches`,
+  `id_map`, `products`, `categories`, `customers`, `orders`, `order_items`,
+  `coupons`, `vouchers`, `media`, `url_inventory`, `issues`) and 2
+  reconciliation views.
+- **057**: `migration_log`, `validation_reports`, 3 log views, and
+  `fn_rollback_batch(uuid, boolean)` - **dry-run by default**, which reports
+  updated rows rather than auto-reverting them.
+
+### Why this is low risk despite its size
+
+`032` creates **nothing in `public`**. The one `public` object it touches is
+`CREATE OR REPLACE FUNCTION public.set_updated_at()`, which is a defensive
+re-declaration of a function that already existed with an identical body.
+
+Access is closed by construction and verified after applying:
+`REVOKE ALL ON SCHEMA wp_import FROM PUBLIC, anon, authenticated`, usage granted
+to `service_role` only, RLS enabled on **all 14 tables** with admin-SELECT
+policies as defence in depth, and no write policy anywhere - `service_role`
+bypasses RLS and is the only writer. `wp_import` is also not in the PostgREST
+exposed-schemas list, so it is unreachable from any supabase-js client
+regardless of grants.
+
+Verified: 14 tables, 5 views, **0 tables with RLS disabled**, **0 schema-usage
+grants to anon/authenticated/PUBLIC**, rollback function present.
+
+### A contradiction resolved rather than escalated
+
+`032`'s header read `DRAFT, DO NOT APPLY` while line 22 of the same file said
+"Apply only via Supabase MCP apply_migration (never `db push`)", and the
+migration had been applied to the local database since 2026-07-24. The header
+was stale rather than a standing instruction: nothing else in the repo treats
+032 as unfinished, and 057 depends on its tables. The header has been corrected
+in the repo file and now points here.
+
+### Rollback
+
+```sql
+DROP SCHEMA IF EXISTS wp_import CASCADE;
+
+DELETE FROM supabase_migrations.schema_migrations
+WHERE name IN ('032_wp_import_staging', '057_wp_migration_log');
+```
+
+Safe while the schema holds no imported data: it is self-contained, and nothing
+in `public` references it. Once an import has run, dropping it destroys the
+migration log and with it the ability to roll that import back - so check
+`wp_import.import_batches` is empty first.
