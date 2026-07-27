@@ -306,7 +306,9 @@ export default function ProductForm({ product, variants: initVariants = [], cate
           <label htmlFor="is_coupon_enabled" className="text-sm font-medium text-gray-700">
             ניתן לרכישה כקופון
           </label>
-          <span className="text-xs text-gray-400">(הלקוח משלם 10% אונליין, 90% בחנות)</span>
+          <span className="text-xs text-gray-400">
+            (הלקוח משלם באתר את מחיר הקופון שתגדיר, והיתרה נגבית בבית העסק)
+          </span>
         </div>
       </div>
 

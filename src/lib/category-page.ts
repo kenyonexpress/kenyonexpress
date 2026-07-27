@@ -83,6 +83,28 @@ function normalizeCategoryJoin(
 /** `products.type` values in use: 'coupon' and 'physical'. */
 export type ProductTypeFilter = 'coupon' | 'physical'
 
+/**
+ * The archive facet, as a PostgREST filter.
+ *
+ * A product counts as a coupon if `type = 'coupon'` OR `is_coupon_enabled` is
+ * set. Filtering on the `type` column alone was wrong and visibly so: the
+ * product page, `lib/cart/pricing.ts`, the commission engine and the
+ * Meilisearch document builder all read `is_coupon_enabled` as well, so a
+ * product sold as a coupon, priced as a coupon and settled as a coupon did not
+ * appear in the coupon archive. `barbecue` is exactly that row.
+ *
+ * The physical side is the strict complement, so the two facets still partition
+ * the catalogue and their counts still add up to the unfiltered total.
+ */
+export function productTypeFilter(productType: ProductTypeFilter): {
+  column: string
+  value: string
+} {
+  return productType === 'coupon'
+    ? { column: 'or', value: 'type.eq.coupon,is_coupon_enabled.is.true' }
+    : { column: 'and', value: 'type.neq.coupon,is_coupon_enabled.is.false' }
+}
+
 export function parseProductType(
   raw: string | string[] | undefined,
 ): ProductTypeFilter | undefined {
@@ -114,7 +136,10 @@ export async function getCategoryProducts(opts: {
 
   if (priceMin != null) query = query.gte('kenyon_price', priceMin)
   if (priceMax != null) query = query.lte('kenyon_price', priceMax)
-  if (productType) query = query.eq('type', productType)
+  if (productType) {
+    const facet = productTypeFilter(productType)
+    query = facet.column === 'or' ? query.or(facet.value) : query.or(`and(${facet.value})`)
+  }
 
   switch (sort) {
     case 'price_asc':
@@ -177,7 +202,10 @@ export async function getShopProducts(opts: {
 
   if (priceMin != null) query = query.gte('kenyon_price', priceMin)
   if (priceMax != null) query = query.lte('kenyon_price', priceMax)
-  if (productType) query = query.eq('type', productType)
+  if (productType) {
+    const facet = productTypeFilter(productType)
+    query = facet.column === 'or' ? query.or(facet.value) : query.or(`and(${facet.value})`)
+  }
 
   switch (sort) {
     case 'price_asc':

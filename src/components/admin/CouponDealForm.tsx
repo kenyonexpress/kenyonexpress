@@ -22,8 +22,15 @@ export default function CouponDealForm({ deal, vendors }: Props) {
   const [businessName, setBusinessName] = useState(deal?.business_name ?? '')
   const [locationHe, setLocationHe] = useState(deal?.location_he ?? '')
 
-  const platformPrice = Math.round(originalPrice * 0.1 * 100) / 100
-  const discountPct = 90
+  // The absolute amount the customer pays on site, entered by the admin. It is
+  // NOT 10% of the sticker: that model was abolished on 2026-07-24 and the
+  // money engine bills products.coupon_price_ils. Deriving it here quoted the
+  // admin one number while the checkout charged another.
+  const [platformPrice, setPlatformPrice] = useState(deal?.platform_price ?? 0)
+  const discountPct =
+    originalPrice > 0 && platformPrice > 0
+      ? Math.round((1 - platformPrice / originalPrice) * 100)
+      : 0
 
   const error = state && 'error' in state ? state.error : null
 
@@ -89,10 +96,26 @@ export default function CouponDealForm({ deal, vendors }: Props) {
               />
             </div>
             <div>
-              <p className="block text-xs font-medium text-gray-700 mb-1">מחיר פלטפורם (10%)</p>
-              <div className="border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-700 font-mono">
-                ₪{platformPrice.toFixed(2)}
-              </div>
+              <label
+                htmlFor="platform_price"
+                className="block text-xs font-medium text-gray-700 mb-1"
+              >
+                מחיר באתר (סכום מוחלט)
+              </label>
+              <input
+                id="platform_price"
+                name="platform_price"
+                type="number"
+                min={0}
+                step="0.01"
+                max={originalPrice || undefined}
+                value={platformPrice || ''}
+                onChange={(e) => setPlatformPrice(Number(e.target.value))}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                הסכום שהלקוח משלם באתר. היתרה נגבית בבית העסק.
+              </p>
             </div>
             <div>
               <p className="block text-xs font-medium text-gray-700 mb-1">הנחה</p>

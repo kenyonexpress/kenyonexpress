@@ -54,12 +54,16 @@ export default function CouponsTable({ deals }: Props) {
       id: 'platform',
       header: 'מחיר פלטפורמה',
       sortable: true,
-      accessor: (d) => d.platform_price ?? d.original_price * 0.1,
-      cell: (d) => (
-        <span className="font-semibold">
-          ₪{(d.platform_price ?? d.original_price * 0.1).toFixed(2)}
-        </span>
-      ),
+      // No fallback: platform_price has no default. Showing 10% of the sticker
+      // for an unpriced deal told the admin a number the checkout would not
+      // charge, and hid the fact that the deal is not sellable yet.
+      accessor: (d) => d.platform_price ?? -1,
+      cell: (d) =>
+        d.platform_price != null ? (
+          <span className="font-semibold">₪{d.platform_price.toFixed(2)}</span>
+        ) : (
+          <span className="text-xs text-gray-400">לא הוגדר</span>
+        ),
     },
     {
       id: 'valid_until',
