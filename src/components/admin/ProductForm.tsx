@@ -49,8 +49,31 @@ export default function ProductForm({ product, variants: initVariants = [], cate
   )
   const [nameHe, setNameHe] = useState(product?.name_he ?? '')
   const [slugVal, setSlugVal] = useState(product?.slug ?? '')
+  const [platformPercent, setPlatformPercent] = useState(
+    product?.platform_percent != null ? String(product.platform_percent) : '',
+  )
 
   const error = state && 'error' in state ? state.error : null
+
+  const isCouponProduct = product?.type === 'coupon' || product?.is_coupon_enabled === true
+
+  /**
+   * The supplier's share is shown, never stored. Keeping a second column that
+   * has to stay at 100 minus this one invites a row where the two disagree and
+   * the money owed has no single answer. Deriving it costs nothing and cannot
+   * drift.
+   *
+   * What it applies to differs by type: a physical line splits the full charge,
+   * a coupon splits only the amount paid on site, since the balance is collected
+   * in cash at the business and never reaches us.
+   */
+  const supplierSplitLabel = (() => {
+    const value = Number(platformPercent)
+    if (platformPercent === '' || Number.isNaN(value) || value < 0 || value > 100) {
+      return 'לספק: הזינו עמלה בין 0 ל-100'
+    }
+    return `לספק: ${Number((100 - value).toFixed(2))}%`
+  })()
 
   function handleNameHe(val: string) {
     setNameHe(val)
@@ -261,6 +284,31 @@ export default function ProductForm({ product, variants: initVariants = [], cate
             dir="ltr"
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
           />
+        </div>
+        <div>
+          <label
+            htmlFor="platform_percent"
+            className="block text-xs font-medium text-gray-700 mb-1"
+          >
+            עמלת פלטפורמה (%) *
+          </label>
+          <input
+            id="platform_percent"
+            name="platform_percent"
+            type="number"
+            min="0"
+            max="100"
+            step="0.01"
+            value={platformPercent}
+            onChange={(e) => setPlatformPercent(e.target.value)}
+            required
+            dir="ltr"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            {supplierSplitLabel}
+            {isCouponProduct ? ' · נגזר מהסכום ששולם באתר' : ' · נגזר מהמחיר המלא'}
+          </p>
         </div>
         <div>
           <label htmlFor="stock_quantity" className="block text-xs font-medium text-gray-700 mb-1">

@@ -21,6 +21,14 @@ const schema = z
     type: z.enum(['physical', 'coupon']),
     kenyon_price: z.coerce.number().min(0, 'מחיר בקניון נדרש'),
     full_price: z.coerce.number().min(0).nullable().optional(),
+    // CONTRADICTIONS C1: no default exists anywhere, on purpose. It is the only
+    // split handle, and since 2026-07-27 it governs coupons too. A product
+    // without it cannot be priced, so the storefront hides it rather than
+    // guessing; that is why this is required rather than nullable.
+    platform_percent: z.coerce
+      .number({ invalid_type_error: 'עמלת פלטפורמה נדרשת' })
+      .min(0, 'עמלה לא יכולה להיות שלילית')
+      .max(100, 'עמלה לא יכולה לעלות על 100'),
     is_coupon_enabled: z.coerce.boolean().default(false),
     sku: z.string().nullable().optional(),
     stock_quantity: z.coerce.number().int().min(0).nullable().optional(),
@@ -94,6 +102,7 @@ export async function upsertProduct(
     type: formData.get('type'),
     kenyon_price: formData.get('kenyon_price'),
     full_price: formData.get('full_price') || null,
+    platform_percent: formData.get('platform_percent'),
     is_coupon_enabled: formData.get('is_coupon_enabled') === 'true',
     sku: formData.get('sku') || null,
     stock_quantity: formData.get('stock_quantity') || null,
