@@ -15,9 +15,15 @@ export interface CommissionLineInput {
   unitPrice: Agorot
   quantity: number
   /**
-   * Mandatory on BOTH product types since the 2026-07-27 ruling. There is no
-   * default anywhere (C1). On a physical line it splits the full charge; on a
-   * coupon line it splits the on-site prepayment only (C5).
+   * Mandatory on BOTH product types. There is no default anywhere (C1).
+   *
+   * On a PHYSICAL line it is the split: the platform takes this percent of the
+   * full charge and the rest settles to the supplier immediately.
+   *
+   * On a COUPON line it does not divide anything, because the platform keeps
+   * the whole on-site prepayment. It stays required so the catalog invariant
+   * holds one way for every product and a mispriced product fails loudly
+   * instead of selling at an accidental split.
    */
   platformPercent?: string | number | null
   cashbackPercent: string | number
@@ -51,15 +57,11 @@ export interface CommissionLineResult {
    */
   supplierImmediate: Agorot
   /**
-   * Coupon only: the supplier's share of the prepayment, held internally until
-   * the voucher is redeemed and released then. Zero on physical lines.
-   *
-   * "Held" is a row in our own ledger and nothing more (C3). The money sits in
-   * our Cardcom account; there is no third-party escrow agent, no J5, and no
-   * hold placed on the customer's card.
+   * Everything the supplier is owed from the platform. Equals supplierImmediate:
+   * there is no deferred component, because a coupon owes the supplier nothing
+   * from us. What the supplier earns on a coupon is the balance the customer
+   * hands over at the counter, which never passes through the platform.
    */
-  escrowHeld: Agorot
-  /** Everything the supplier is eventually owed: immediate + held. */
   supplierDue: Agorot
   cashbackPercentBps: number
   cashbackAmount: Agorot
@@ -73,7 +75,6 @@ export interface CommissionResult {
   balanceDueAtBusiness: Agorot
   platformFee: Agorot
   supplierImmediate: Agorot
-  escrowHeld: Agorot
   supplierDue: Agorot
   cashbackAmount: Agorot
   walletApplied: Agorot
@@ -98,10 +99,9 @@ function calculateLine(line: CommissionLineInput): CommissionLineResult {
 
   const faceValue = multiplyAgorot(line.unitPrice, line.quantity)
 
-  // Required on both types since 2026-07-27. Previously coupon lines reported
-  // 0 bps because the platform kept the whole prepayment; under the escrow
-  // model the percent is what decides how the prepayment divides, so a missing
-  // one is unpriceable rather than harmless.
+  // Required on both types. A physical line is unpriceable without it, and a
+  // coupon product that reached checkout without one was mis-configured in
+  // admin, so refusing is better than shipping a silent split.
   if (line.platformPercent === undefined || line.platformPercent === null) {
     throw new TypeError(
       `platform percent is required for ${line.productType} line ${line.id} (no default exists)`,
@@ -130,19 +130,18 @@ function calculateLine(line: CommissionLineInput): CommissionLineResult {
   const balanceDueAtBusiness =
     line.productType === 'coupon' ? agorot(faceValue - customerPaysNow) : agorot(0)
 
-  // R2: commission is rounded once, on the complete line total, and the base
-  // differs by type. Physical splits the full charge; a coupon splits only the
-  // prepayment (C5), never the face value, because the balance is collected in
-  // cash at the business and never passes through us.
-  const commissionBase = line.productType === 'coupon' ? customerPaysNow : faceValue
-  const platformFee = percentageOf(commissionBase, platformPercentBps)
-
-  // R5 (2026-07-27, C11 version b): the supplier's share of a coupon is held
-  // rather than transferred, and released when the voucher is redeemed. Under
-  // the abolished 24.07 rule this was zero and the platform kept everything.
-  const supplierShare = agorot(commissionBase - platformFee)
-  const supplierImmediate = line.productType === 'coupon' ? agorot(0) : supplierShare
-  const escrowHeld = line.productType === 'coupon' ? supplierShare : agorot(0)
+  // Coupon: the platform keeps the entire on-site prepayment. Nothing is split,
+  // nothing is held, and the supplier is paid nothing by us for the line. The
+  // balance the customer pays at the counter is the supplier's revenue and is
+  // collected directly, never through our clearing account.
+  //
+  // Physical: the platform takes platformPercent of the full charge, rounded
+  // once on the complete line total, and the residual settles to the supplier
+  // in the same run. The residual is gross minus fee rather than the mirror
+  // percent applied a second time, so the two halves can never disagree.
+  const isCoupon = line.productType === 'coupon'
+  const platformFee = isCoupon ? customerPaysNow : percentageOf(faceValue, platformPercentBps)
+  const supplierImmediate = isCoupon ? agorot(0) : agorot(faceValue - platformFee)
 
   // R3: cashback uses customerPaysNow only and is merely snapshotted here.
   // Lifecycle handlers credit it after redemption or shipment.
@@ -155,11 +154,13 @@ function calculateLine(line: CommissionLineInput): CommissionLineResult {
     faceValue,
     customerPaysNow,
     balanceDueAtBusiness,
-    platformPercentBps,
+    // A coupon's effective platform share of the prepayment is the whole of it.
+    // Reporting the product's configured percent here would describe a split
+    // that did not happen, and this value is what gets snapshotted downstream.
+    platformPercentBps: isCoupon ? 10_000 : platformPercentBps,
     platformFee,
     supplierImmediate,
-    escrowHeld,
-    supplierDue: agorot(supplierImmediate + escrowHeld),
+    supplierDue: supplierImmediate,
     cashbackPercentBps,
     cashbackAmount,
   }
@@ -184,7 +185,6 @@ export function calculateCommission(input: CommissionInput): CommissionResult {
   const balanceDueAtBusiness = sumAgorot(lines.map((line) => line.balanceDueAtBusiness))
   const platformFee = sumAgorot(lines.map((line) => line.platformFee))
   const supplierImmediate = sumAgorot(lines.map((line) => line.supplierImmediate))
-  const escrowHeld = sumAgorot(lines.map((line) => line.escrowHeld))
   const supplierDue = sumAgorot(lines.map((line) => line.supplierDue))
   const cashbackAmount = sumAgorot(lines.map((line) => line.cashbackAmount))
   const walletApplied = input.walletApplied ?? agorot(0)
@@ -206,7 +206,6 @@ export function calculateCommission(input: CommissionInput): CommissionResult {
     balanceDueAtBusiness,
     platformFee,
     supplierImmediate,
-    escrowHeld,
     supplierDue,
     cashbackAmount,
     walletApplied,

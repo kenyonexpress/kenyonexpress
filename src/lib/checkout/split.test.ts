@@ -47,11 +47,11 @@ describe('calculateSplit — wire view', () => {
     expect(line.faceValueIls).toBe(400)
     expect(line.customerPaysNowIls).toBe(40)
     expect(line.balanceDueAtBusinessIls).toBe(360)
-    // 20% of the 40₪ prepayment, not of the 400₪ face.
-    expect(line.platformFeeIls).toBe(8)
+    // The whole 40₪ prepayment is platform revenue; the 360₪ balance is the
+    // supplier's and is collected at their counter, never through us.
+    expect(line.platformFeeIls).toBe(40)
     expect(line.supplierImmediateIls).toBe(0)
-    expect(line.escrowHeldIls).toBe(32)
-    expect(line.supplierDueIls).toBe(32)
+    expect(line.supplierDueIls).toBe(0)
     expect(result.cardChargeIls).toBe(40)
   })
 
@@ -72,11 +72,11 @@ describe('calculateSplit — wire view', () => {
     expect(result.faceValueIls).toBe(500)
     expect(result.customerPaysNowIls).toBe(140)
     expect(result.balanceDueAtBusinessIls).toBe(360)
-    // 8₪ off the coupon prepayment + 10₪ off the physical line.
-    expect(result.platformFeeIls).toBe(18)
+    // The full 40₪ coupon prepayment + 10₪ off the physical line.
+    expect(result.platformFeeIls).toBe(50)
     expect(result.supplierImmediateIls).toBe(90)
-    expect(result.escrowHeldIls).toBe(32)
-    expect(result.supplierDueIls).toBe(122)
+    // Only the physical line owes the supplier anything; the coupon owes 0.
+    expect(result.supplierDueIls).toBe(90)
     expect(result.cardChargeIls).toBe(140)
   })
 
@@ -127,11 +127,12 @@ describe('calculateSplit — wire view', () => {
   })
 
   it('reports the coupon percent it actually applied, so the snapshot is auditable', () => {
-    // This asserted 0 until 2026-07-27, when coupon pricing genuinely ignored
-    // the percent. It now participates, and reporting 0 while charging 20%
-    // would put a wrong number in the order_items snapshot.
+    // The product is configured at 20%, but a coupon prepayment is not split:
+    // the platform takes all of it. Snapshotting the configured 20% would
+    // describe a division that never happened and would make the order_items
+    // row disagree with the money actually booked.
     const result = calculateSplit(split({ lines: [couponLine()] }))
-    expect(at(result.lines, 0).platformPercent).toBe(20)
+    expect(at(result.lines, 0).platformPercent).toBe(100)
   })
 
   it('derives cashback from the on-site charge, never from face value', () => {
@@ -202,7 +203,6 @@ describe('toSplitView', () => {
           platformPercentBps: 1_250,
           platformFee: agorot(1_543),
           supplierImmediate: agorot(10_802),
-          escrowHeld: agorot(0),
           supplierDue: agorot(10_802),
           cashbackPercentBps: 250,
           cashbackAmount: agorot(309),
@@ -213,7 +213,6 @@ describe('toSplitView', () => {
       balanceDueAtBusiness: agorot(0),
       platformFee: agorot(1_543),
       supplierImmediate: agorot(10_802),
-      escrowHeld: agorot(0),
       supplierDue: agorot(10_802),
       cashbackAmount: agorot(309),
       walletApplied: agorot(0),
@@ -223,9 +222,8 @@ describe('toSplitView', () => {
     expect(view.faceValueIls).toBe(123.45)
     expect(at(view.lines, 0).platformPercent).toBe(12.5)
     expect(at(view.lines, 0).cashbackPercent).toBe(2.5)
+    // A physical line settles immediately: due equals immediate, always.
     expect(at(view.lines, 0).supplierDueIls).toBe(108.02)
-    // A physical line settles immediately and holds nothing.
     expect(at(view.lines, 0).supplierImmediateIls).toBe(108.02)
-    expect(at(view.lines, 0).escrowHeldIls).toBe(0)
   })
 })
