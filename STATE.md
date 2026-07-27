@@ -1,9 +1,56 @@
 # KenyonExpress — Project State
 
-Updated: 2026-07-27 (שכבת מוצר: מודל הקופון תוקן, Meilisearch מוגדר)
+Updated: 2026-07-27 (search: צינור אינדוקס מלא על feat/search-core)
 
 ## Current Phase
-שכבת המוצר מחוברת. הבאג הקריטי במחיר הקופון סגור.
+שכבת המוצר מחוברת. הבאג הקריטי במחיר הקופון סגור. צינור אינדוקס החיפוש בנוי.
+
+## Last Completed — feat/search-core: צינור אינדוקס אינקרמנטלי (worktree ../ke-search)
+
+הקוד המקורי של המשימה אבד (הענף מעולם לא נדחף, ה-worktree נמחק, "quota cut").
+נבנה מחדש נקי, ברמת production:
+
+### החלטות שהתקבלו אוטומטית
+1. **בסיס הענף: `origin/phase5/homepage` ולא `main`.** ההוראה אמרה main, אבל
+   origin/main הוא השלד הישן: מבנה מקונן (`kenyonexpress/kenyonexpress/`)
+   שאסור לפי חוקי הפרויקט, ו-52 מיגרציות מאחור (016 מול 068). בנייה עליו
+   הייתה מייצרת קוד בתוך המבנה האסור ומתנגשת בסכימה החיה.
+2. **Upstash QStash בלי SDK.** כל אינטגרציית HTTP בריפו היא raw fetch
+   ‏(Meilisearch, Cardcom). publish אחד ואימות JWS אחד לא שווים תלות חדשה.
+3. **ה-webhook הוא התראה, לא נתונים.** ה-worker קורא מחדש את השורה מ-Postgres
+   לפני כל כתיבה לאינדקס (אותה פילוסופיה כמו re-verify של Cardcom). לכן
+   כפילויות, הודעות באיחור או payload מזויף מתכנסים לאמת של ה-DB.
+4. **בלי QSTASH_TOKEN הצינור רץ inline** (dev/preview): אותו קוד, בלי תור.
+
+### מה נבנה
+- `src/lib/search/pipeline-contracts.ts`: סכמות zod ל-webhook של Supabase
+  ‏(INSERT/UPDATE/DELETE) ול-job, ולוגיקת ההחלטה `jobForChange`: הפרדיקט
+  הציבורי (`status='active' AND deleted_at IS NULL`) קובע upsert או delete.
+- `src/lib/search/qstash.ts`: publish ל-QStash עם Upstash-Retries: 5,
+  ‏Failure-Callback ל-DLQ ו-Deduplication-Id; אימות חתימת JWS (HS256) עם
+  שני מפתחות rotation, בדיקת exp/nbf/sub/גיבוב גוף, השוואות constant-time.
+- `src/lib/search/indexer.ts`: ה-worker. קריאת שורה טרייה + שם ספק
+  (ציבורי בלבד), mapping דרך `toProductDocument` הקיים, PUT/DELETE ל-Meili.
+  ‏upsert שהתיישן הופך ל-delete. Meili לא מוגדר = no-op מוצלח (שלב ILIKE).
+  כישלון = throw, כדי ש-QStash ינסה שוב.
+- Routes: `POST /api/webhooks/products` (HMAC hex ב-x-search-signature או
+  סוד סטטי ב-x-webhook-secret, כי Supabase שולח רק כותרות סטטיות),
+  ‏`POST /api/search/index-job` (חתימת QStash או Bearer CRON_SECRET לריפליי
+  ידני), `POST /api/search/index-dlq` (failure callback, כותב לטבלה).
+- `supabase/migrations/069_search_index_dlq.sql`: טבלת dead letters,
+  ‏RLS בלי policies (service-role בלבד), אידמפוטנטית. **טרם הורצה על ה-DB.**
+- `.env.example`: ‏SEARCH_WEBHOOK_SECRET, ‏QSTASH_*, ‏CRON_SECRET (תועד לראשונה).
+- טסטים: 45 חדשים בארבעה קבצים (contracts, qstash+חתימות, indexer, routes).
+
+### אימות (worktree ../ke-search)
+‏467/467 vitest, ‏`tsc --noEmit` נקי, biome נקי על כל הקבצים החדשים.
+‏`pnpm lint` המלא נכשל על חוב ישן ב-`scripts/*.mjs` שירש מהבסיס (לא מהסבב הזה).
+
+### חיבור לפרודקשן (עוד לא בוצע)
+1. להריץ את מיגרציה 069.
+2. ‏Supabase Dashboard: Database Webhook על public.products (כל האירועים)
+   אל `/api/webhooks/products` עם כותרת `x-webhook-secret`.
+3. להגדיר env: ‏SEARCH_WEBHOOK_SECRET, ‏QSTASH_TOKEN + שני מפתחות חתימה.
 
 ## Last Completed — סבב שכבת המוצר
 
@@ -93,13 +140,14 @@ Zustand ב-`src/lib/cart/store.ts`, הוספה/עדכון כמות/מחיקה, �
 | `phase5/homepage` | מסונכרן | הענף הפעיל; טוקנים + שכבת מוצר | לתקן את האדמין (סעיף 3 למעלה) |
 | `feat/ci-foundation` | pushed | ‏CI מתוקן: trigger, lint gate, coverage | לפתוח PR ולמזג |
 | `feat/payments-core` | מסונכרן | merged בפועל | שאריות 5%+Escrow ב-`src/server/payments/` |
+| `feat/search-core` | pushed | worktree ב-`../ke-search`; צינור אינדוקס מלא | מיגרציה 069 + חיבור webhook בפרודקשן |
 | `feat/visual-polish` | קומיט אחד לא נדחף | worktree ב-`../ke-visual` | לדחוף ולמזג |
 | `arch/admin-supplier` | לא נדחף | מקומי, מסשן מקביל | לבדוק תוכן |
 | `cursor/add-supabase-3c830` | ברירת מחדל ב-origin | קודם לאפליקציה | להחליף ברירת מחדל ל-phase5 |
 
 ## Blocking Issues
-‏`feat/search-core` לא קיים (אין worktree ב-`../ke-search`, אין ענף, אין קומיט).
-קוד החיפוש שכן קיים בריפו עובד ועכשיו גם מוגדר מול Meilisearch.
+none. (`feat/search-core` נוצר מחדש: worktree ב-`../ke-search`, בסיס
+phase5/homepage, הצינור בנוי וירוק. מיגרציה 069 טרם הורצה על ה-DB.)
 
 ## שים לב: סשן מקביל פעיל על הריפו
 סשן Cursor אחר עשה `git reset` פעמיים וקומיט שינויים משותפים בעצמו.
