@@ -1,4 +1,15 @@
 -- 080_ledger_escrow_held_account.sql
+--
+-- ⛔ CANCELLED 2026-07-28, NEVER APPLIED. DO NOT APPLY.
+-- This file implements C11 version (b), the escrow model that the operator
+-- instruction of 28.07 reversed: the coupon prepayment is now platform revenue
+-- in full at payment time, so there is no held balance for this account to
+-- carry. See the flip section at the top of docs/CONTRADICTIONS.md.
+-- It is kept, not deleted, because it is the ready-made way back if the escrow
+-- model returns. Reviving it means C11 goes back to (b) FIRST, in
+-- docs/CONTRADICTIONS.md, and commission.ts/finalize.ts follow.
+-- The rationale below describes the cancelled model and is preserved as-is.
+--
 -- The ledger had no way to say "held" (docs/CONTRADICTIONS.md C3, C11 b).
 --
 -- 058 seeded five account kinds and none of them expresses the supplier's share

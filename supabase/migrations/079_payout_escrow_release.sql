@@ -1,4 +1,20 @@
 -- 079_payout_escrow_release.sql
+--
+-- ⛔ CANCELLED 2026-07-28, NEVER APPLIED. DO NOT APPLY.
+-- Superseded by 081_payout_no_escrow.sql. The operator instruction of 28.07 put
+-- C11 back to version (a): the coupon prepayment is platform revenue in full and
+-- no escrow hold is written, so the release this file pays out never exists.
+-- See the flip section at the top of docs/CONTRADICTIONS.md.
+--
+-- ⚠️ 079 bundled a SECOND fix that did NOT die with the escrow model: 051's
+-- generate_payout_statement reads pre-059 column names and therefore raises
+-- undefined_column on every call, which breaks PHYSICAL payouts too. That fix
+-- lives on in 081. Do not read "079 is cancelled" as "the payout engine is fine".
+--
+-- Kept, not deleted, as the way back if escrow returns. Reviving it means C11
+-- goes back to (b) FIRST, in docs/CONTRADICTIONS.md, and 081 is superseded in
+-- turn. The rationale below describes the cancelled model and is preserved as-is.
+--
 -- Closes the last open money item of the 2026-07-27 decision (docs/CONTRADICTIONS.md
 -- C11 version b): the supplier gets the remainder of the on-site prepayment once
 -- the voucher is redeemed.
