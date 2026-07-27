@@ -599,3 +599,52 @@ visual regression, RTL sweep.
 ## Working Directory
 
 `/Users/ofir/kenyonexpress-web/kenyonexpress` (branch `phase5/homepage`). עץ יחיד אחרי יום המיזוג.
+
+---
+
+## אימות branches ו-working tree — 2026-07-27 07:35
+
+`git status` נקי. כל ששת ה-branches המקומיים מסונכרנים מול origin:
+
+| branch | upstream | ahead | behind |
+|---|---|---|---|
+| `arch/admin-supplier` | `origin/arch/admin-supplier` | 0 | 0 |
+| `feat/ci-foundation` | `origin/feat/ci-foundation` | 0 | 0 |
+| `feat/payments-core` | `origin/feat/payments-core` | 0 | 0 |
+| `feat/search-core` | `origin/feat/search-core` | 0 | 0 |
+| `feat/visual-polish` | `origin/feat/visual-polish` | 0 | 0 |
+| `phase5/homepage` | `origin/phase5/homepage` | 0 | 0 |
+
+`feat/visual-polish` היה ahead=1 (`7a6ae13`, fix ויזואלי מ-24.07) ונדחף בסבב הזה.
+שאר ה-branches כבר היו מסונכרנים.
+
+## החלטות שהתקבלו אוטומטית — הסרת שערי האישור
+
+הוסרו כל שערי האישור מקבצי ההוראות, לפי הנחיה מפורשת:
+
+- `CLAUDE.md` כלל 4: אישור לפני commit/push -> commit ו-push אוטומטיים.
+- `CLAUDE.md` הוראת קבע: נוסף "אין מצב manual ואין שער אישור על אף פעולה".
+- `.claude/settings.json`: `ask` רוקן, `defaultMode` -> `bypassPermissions`.
+- `LOCKED_COMPONENTS.md`: "STOP and ask the user first" -> לעקוף ולתעד, בלי לעצור.
+  הרכיבים עצמם נשארים נעולים.
+- `docs/MASTER-ARCHITECTURE.md` 2.0 + R22, `MASTER-ARCHITECTURE-v2.md` 5.0,
+  `ARCHITECTURE-SUPPLIER-PORTAL.md` 5א.0: בוטלה דרישת האישור להחלת מיגרציה.
+  דרישת ה-MCP ו-apply-twice נשמרה (מנגנון, לא שער אישור).
+- `docs/CATEGORY-1TO1-FINDINGS.md`: אישור לנגיעה ב-TopBar/MainHeader -> נשארים נעולים.
+
+**לא הוסרו** אזכורי "אישור" שאינם שערי אישור לסוכן: אישור אונליין של תשלום,
+אישור אפוטרופוס לקטין (LEGAL), ואישור עו"ד לנוסחים המשפטיים. אלה כללי מוצר
+ומשפט, לא שערי workflow.
+
+## אזהרה: כתיבה מקבילה על אותו working tree
+
+בזמן הסבב הזה רצו ארבעה סשנים נוספים עם `--dangerously-skip-permissions`
+על אותה תיקייה. שתי קבוצות עריכות שנעשו כאן נבלעו ל-commits של סשן אחר:
+
+- `029aa29` "feat: apply the blocking migration, E2E now fully green" — מכיל גם את
+  שינוי `CLAUDE.md` ו-`.claude/settings.json` (הסרת שער ההרשאות). ההודעה לא מזכירה זאת.
+- `0020e4f` "docs: record the two production changes, with rollback" — מכיל גם את
+  חמשת שינויי מסמכי הארכיטקטורה שלמעלה. ההודעה לא מזכירה זאת.
+
+שני ה-commits כבר ב-origin. זה בדיוק הדפוס ש-`78237f0`
+("revert(claude): keep the ask-gated permission policy") ביטל בעבר.
