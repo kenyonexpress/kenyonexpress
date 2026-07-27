@@ -7,9 +7,11 @@ Updated: 2026-07-27 (סבב תשתית: token sweep + אימות מיגרציו�
 
 ## Last Completed
 ### 2026-07-27 - CI foundation (feat/ci-foundation)
-- Commit `31447a9` `chore(ci): diff-scoped lint gates` pushed to origin.
+- Commit `31447a9` `chore(ci): diff-scoped lint gates` on origin.
 - Gates on tip commit (`git diff HEAD~1..HEAD --name-only`): Biome, tsc --strict, hardcoded hex/px vs `docs/hardcoded-audit.md`.
-- Dummy hex commit verified: gate exit 1 on `#ff00aa`, then removed before push.
+- Existing ledger debt does not block; only NEW hits on changed files do.
+- Dummy hex commit verified: `gate:hardcoded` exit 1 on `#ff00aa`, probe removed.
+- Follow-up: `typecheck-changed` writes `tsconfig.ci-changed.json` in repo root (not /tmp) so tsc resolves changed files.
 
 ### 1. Token sweep — הושלם ונאכף
 - ‏`src/styles/tokens.ts`: נוסף `SITE` (הפלטה המלאה) + `SITE_CSS_VARS` (33 custom properties)
