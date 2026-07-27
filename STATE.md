@@ -71,7 +71,14 @@ Zustand ב-`src/lib/cart/store.ts`, הוספה/עדכון כמות/מחיקה, �
 - **סה"כ: 411 -> 428 טסטים.**
 
 ## אימות
-‏biome נקי (331 קבצים), ‏`tsc --noEmit` נקי, ‏428/428 vitest, ‏`next build` נקי.
+‏biome נקי, ‏`tsc --noEmit` נקי, ‏**428/428 vitest**, ‏**52/52 E2E** (‏1 דולג),
+‏`next build` נקי.
+
+### מה ה-E2E תפס
+הטיוטה הראשונה של `purchase-flow.spec.ts` קבעה ש-checkout פתוח לאורח,
+ונפלה מול שלוש בדיקות קיימות שעוברות. **הקביעה שלי הייתה שגויה, לא האפליקציה.**
+החוזה הוא **עגלת אורח + checkout מאומת**: `src/proxy.ts` חוסם את כל תת-העץ
+‏`/checkout` כדי שנתוני הזמנה לא יגיעו למבקר אנונימי. הספק תוקן לחוזה האמיתי.
 
 ## ⛔ הדבר החשוב ביותר: המיגרציה שחסרה בפרודקשן
 
@@ -133,7 +140,8 @@ supabase/migrations/054_voucher_redemption.sql
 2. **המודל שבוטל עדיין חי באדמין**: `ProductForm.tsx:309`,
    `CouponDealForm.tsx:25,92`, `CouponsTable.tsx:57,60` עדיין מחשבים 10%.
 3. **‏`src/types/database.ts` מיושן** — נוצר לפני 054.
-4. ‏E2E לא רצו (דורשים seed ייעודי). היחידה + הבנייה כן רצו.
+4. **‏E2E רצו — ‏52 עברו, ‏1 דולג, ‏0 נכשלו** (‏`E2E_WEB_COMMAND="npx next start"`).
+   הדילוג היחיד הוא בדיקת תמחור הקופון: אין קופון בר-מכירה עד שתרוץ 054.
 5. ‏Meilisearch בפרודקשן: להגדיר `MEILISEARCH_HOST` / `MEILISEARCH_API_KEY`
    ולהריץ `node scripts/setup-meilisearch.mjs`.
 6. **החלטה נדרשת על 059**: כשהיא תרוץ, כל הקוד שקורא `price_ils`,

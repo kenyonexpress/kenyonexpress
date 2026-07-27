@@ -2,7 +2,8 @@ import { expect, test } from '@playwright/test'
 import { BUY_BUTTON } from './helpers'
 
 /**
- * The whole customer journey in one pass: search -> product -> cart -> checkout.
+ * The whole customer journey in one pass: search -> product -> cart -> the
+ * checkout gate.
  *
  * The existing specs each cover one surface, so a break in the seam between two
  * of them (a renamed button, a cart that loads but never receives the item, a
@@ -55,16 +56,19 @@ test.describe('search to checkout', () => {
     await expect(page.getByText(/₪/).first()).toBeVisible({ timeout: DISCOVERY_TIMEOUT })
     await expect(page.locator('a[href^="/product/"]').first()).toBeVisible()
 
-    // 5. And checkout must be reachable from it.
-    const checkout = page.getByRole('link', { name: /לתשלום|המשך לתשלום|checkout/i }).first()
-    const hasCheckoutLink = await checkout.isVisible().catch(() => false)
-    if (hasCheckoutLink) {
-      await checkout.click()
-    } else {
-      await page.goto('/checkout')
-    }
-    // Guest checkout is the requirement; a redirect to login is a regression.
-    await expect(page).not.toHaveURL(/\/login/)
+    // 5. And the cart must hand the shopper on to checkout.
+    //
+    // The contract is a GUEST CART with an AUTHENTICATED CHECKOUT: src/proxy.ts
+    // gates the whole /checkout subtree so order data never reaches an
+    // anonymous visitor, and checkout.spec.ts pins that in both directions.
+    // The first draft of this spec asserted guest checkout and failed against
+    // three passing tests — the assertion was wrong, not the app. What this
+    // step actually proves is that the journey arrives at the gate carrying a
+    // return path, rather than dead-ending or losing the cart.
+    await expect(page.getByRole('button', { name: /המשך לתשלום/ })).toBeVisible()
+
+    await page.goto('/checkout')
+    await expect(page).toHaveURL(/\/login\?next=%2Fcheckout/, { timeout: 15000 })
   })
 
   test('a coupon page quotes the on-site charge and the balance at the business', async ({
