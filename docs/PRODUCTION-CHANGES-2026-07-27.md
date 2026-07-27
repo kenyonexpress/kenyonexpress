@@ -151,6 +151,57 @@ Reverting returns the catalog to a state where no product can be priced, since
 `platform_percent` is mandatory under the current model. The added columns can
 be left in place; they are nullable and additive.
 
+---
+
+## 4. Enum: settlement_status gains 'platform_settled' (migration 071)
+
+Applied via MCP `apply_migration`, recorded as
+`071_settlement_status_platform_settled`.
+
+`src/server/payments/finalize.ts:312` writes
+`settlement_status = 'platform_settled'` on the coupon branch. The live enum
+held eight labels and not that one, because migration 066 introduced it and was
+never applied here. The failure was Postgres 22P02 raised **after Cardcom had
+already charged the customer**: money taken, order never closed.
+
+Enum now reads:
+`pending, paid, split_executed, escrow_held, escrow_released, redeemed,
+refunded, cancelled, platform_settled`.
+
+### NOT REVERSIBLE
+
+Postgres has no `DROP VALUE` for an enum. Undoing this means recreating the
+type and rewriting every column that uses it. No backup was taken because the
+change is purely additive and no existing row was read or written, so there is
+nothing to restore, but unlike 070 it cannot simply be rolled back.
+
+Written with `ADD VALUE IF NOT EXISTS`, so re-running is a no-op and applying
+066 later will not collide with it.
+
+### Verified after applying
+
+Casts that previously raised 22P02 now resolve, checked without touching data:
+
+| expression | result |
+| --- | --- |
+| `'platform_settled'::settlement_status` | ok |
+| `'issued'::order_item_status` | ok |
+| `'split_executed'::settlement_status` | ok |
+| `'paid'::order_status` | ok |
+
+**Physical settlement is now complete end to end**: every table and enum that
+`finalize.ts` touches on that branch exists (`split_executions`, `payments`,
+`wallet_accounts`, `wallet_entries`, `payment_tokens`, `audit_log`, `orders`,
+`order_items`).
+
+**The coupon branch is still blocked, on a different cause.**
+`public.vouchers` does not exist, and `finalize.ts:307` calls
+`issueVouchersForItem` before it ever reaches the enum write, so the coupon
+path fails earlier than the bug this migration fixed. The enum was necessary
+and is not sufficient. Creating `vouchers` means the rest of migration 054,
+which depends on 027 (`supplier_members`), also absent. That is the next
+blocker and it is larger than this one.
+
 ## What was NOT done
 
 - Migration 027 (`supplier_members`) — not applied.
