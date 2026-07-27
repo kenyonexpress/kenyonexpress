@@ -1,19 +1,30 @@
 import type { CommissionProductType } from '@/lib/commerce/commission'
 
 /**
- * Settlement lifecycle of an order line (and, derived, of an order), under the
- * final business rules (2026-07-24): no escrow anywhere.
+ * Settlement lifecycle of an order line (and, derived, of an order), under
+ * C11 version (b), decided 2026-07-27: a coupon prepayment is held for the
+ * supplier until the voucher is scanned.
  *
  * Physical happy path: pending -> paid -> split_executed
- * Coupon happy path:   pending -> paid -> platform_settled
- *   (the on-site charge is platform revenue the moment the order is paid;
- *   voucher redemption and expiry are voucher-level events that move no money)
+ *   (the whole charge splits the moment the order is paid)
+ * Coupon happy path:   pending -> paid -> escrow_held -> escrow_released
+ *   (the platform keeps platform_percent of the prepayment at paid-time; the
+ *   remainder is held per voucher and released by the same transaction that
+ *   redeems it, once no voucher of the line is still outstanding)
  * Failure paths: pending -> cancelled;
- *   paid | platform_settled | split_executed -> refunded
+ *   paid | escrow_held | split_executed -> refunded
  *
- * escrow_held / escrow_released / redeemed remain ONLY so rows written by the
- * retired escrow model still type-check and can be refunded; no new row ever
- * enters them.
+ * Every state here is a live `settlement_status` enum value, verified against
+ * the hosted project. Two of them are LEGACY and no new row enters them:
+ *
+ *   platform_settled - written by the abolished C11(a) rule, under which the
+ *     platform kept the whole prepayment and the supplier got nothing. Kept
+ *     refundable so such a row can still be unwound. Zero rows carry it.
+ *   redeemed - the pre-voucher coupon_codes model recorded consumption on the
+ *     line rather than on the voucher. Terminal, like escrow_released.
+ *
+ * The write path this mirrors: finalize.ts issues vouchers and sets the line
+ * to escrow_held; redeem_voucher() (migration 074) sets escrow_released.
  */
 export type SettlementState =
   | 'pending'
@@ -29,7 +40,8 @@ export type SettlementState =
 export type SettlementEvent =
   | 'PAYMENT_CONFIRMED'
   | 'EXECUTE_SPLIT'
-  | 'SETTLE_PLATFORM'
+  | 'HOLD_ESCROW'
+  | 'RELEASE_ESCROW'
   | 'REFUND'
   | 'CANCEL'
 
@@ -48,7 +60,8 @@ export const SETTLEMENT_STATES: readonly SettlementState[] = [
 export const SETTLEMENT_EVENTS: readonly SettlementEvent[] = [
   'PAYMENT_CONFIRMED',
   'EXECUTE_SPLIT',
-  'SETTLE_PLATFORM',
+  'HOLD_ESCROW',
+  'RELEASE_ESCROW',
   'REFUND',
   'CANCEL',
 ]
@@ -61,12 +74,20 @@ type TransitionRule = {
 
 /**
  * Single source of truth for legal transitions.
+ *
  * REFUND from split_executed covers physical returns inside the legal window
  * (money recovery from the supplier happens via payout adjustments).
- * REFUND from platform_settled is legal only while every voucher of the line
- * is still `issued`; the refund planner checks the voucher states.
- * Legacy escrow_held rows can still be refunded; redeemed / escrow_released
- * rows cannot (their value was already consumed at the business).
+ * REFUND from escrow_held is legal only while every voucher of the line is
+ * still `issued`; the refund planner checks the voucher states, and the hold
+ * itself is unwound by refund_vouchers_for_order().
+ * escrow_released and redeemed cannot be refunded to the card: the value was
+ * consumed at the business, and the supplier has already been paid out of the
+ * hold. A goodwill refund after that point is a wallet credit, which is a
+ * different money movement entirely.
+ *
+ * There is deliberately no event leading INTO platform_settled. It is a state
+ * this machine can only exit, which is what "legacy, no new row enters it"
+ * means when written as code rather than as a comment.
  */
 const TRANSITIONS: Readonly<
   Record<SettlementState, Partial<Record<SettlementEvent, TransitionRule>>>
@@ -77,13 +98,14 @@ const TRANSITIONS: Readonly<
   },
   paid: {
     EXECUTE_SPLIT: { to: 'split_executed', productType: 'physical' },
-    SETTLE_PLATFORM: { to: 'platform_settled', productType: 'coupon' },
-    REFUND: { to: 'refunded' },
-  },
-  platform_settled: {
+    HOLD_ESCROW: { to: 'escrow_held', productType: 'coupon' },
     REFUND: { to: 'refunded' },
   },
   escrow_held: {
+    RELEASE_ESCROW: { to: 'escrow_released', productType: 'coupon' },
+    REFUND: { to: 'refunded' },
+  },
+  platform_settled: {
     REFUND: { to: 'refunded' },
   },
   redeemed: {},

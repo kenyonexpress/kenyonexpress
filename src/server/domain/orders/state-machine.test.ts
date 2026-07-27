@@ -28,9 +28,9 @@ const PHYSICAL_TABLE: Record<SettlementState, Expected> = {
 
 const COUPON_TABLE: Record<SettlementState, Expected> = {
   pending: { PAYMENT_CONFIRMED: 'paid', CANCEL: 'cancelled' },
-  paid: { SETTLE_PLATFORM: 'platform_settled', REFUND: 'refunded' },
+  paid: { HOLD_ESCROW: 'escrow_held', REFUND: 'refunded' },
+  escrow_held: { RELEASE_ESCROW: 'escrow_released', REFUND: 'refunded' },
   platform_settled: { REFUND: 'refunded' },
-  escrow_held: { REFUND: 'refunded' },
   redeemed: {},
   split_executed: { REFUND: 'refunded' },
   escrow_released: {},
@@ -38,7 +38,7 @@ const COUPON_TABLE: Record<SettlementState, Expected> = {
   cancelled: {},
 }
 
-describe('settlement state machine (final rules, no escrow)', () => {
+describe('settlement state machine (C11 version b: the coupon prepayment is held)', () => {
   it('matches the full physical transition matrix', () => {
     for (const from of SETTLEMENT_STATES) {
       for (const event of SETTLEMENT_EVENTS) {
@@ -76,23 +76,34 @@ describe('settlement state machine (final rules, no escrow)', () => {
     expect(isSettled(state)).toBe(true)
   })
 
-  it('walks the coupon happy path: money settles to the platform at paid-time', () => {
+  it('walks the coupon happy path: held at paid-time, released at the scan', () => {
     let state: SettlementState = 'pending'
     state = transition(state, 'PAYMENT_CONFIRMED', 'coupon')
-    state = transition(state, 'SETTLE_PLATFORM', 'coupon')
-    expect(state).toBe('platform_settled')
-    expect(isTerminal(state)).toBe(false) // refund window still open
+    state = transition(state, 'HOLD_ESCROW', 'coupon')
+    expect(state).toBe('escrow_held')
+    // The supplier's share is not settled while it is held, and the customer
+    // can still be refunded, so this is neither terminal nor settled.
+    expect(isSettled(state)).toBe(false)
+    expect(isTerminal(state)).toBe(false)
+
+    state = transition(state, 'RELEASE_ESCROW', 'coupon')
+    expect(state).toBe('escrow_released')
     expect(isSettled(state)).toBe(true)
+    expect(isTerminal(state)).toBe(true) // value consumed at the business
   })
 
-  it('throws WRONG_PRODUCT_TYPE when a physical line tries the coupon leg', () => {
-    expect(() => transition('paid', 'SETTLE_PLATFORM', 'physical')).toThrowError(
-      SettlementTransitionError,
-    )
-    try {
-      transition('paid', 'SETTLE_PLATFORM', 'physical')
-    } catch (error) {
-      expect((error as SettlementTransitionError).code).toBe('WRONG_PRODUCT_TYPE')
+  it('throws WRONG_PRODUCT_TYPE when a line tries the other type leg', () => {
+    for (const [from, event, wrongType] of [
+      ['paid', 'HOLD_ESCROW', 'physical'],
+      ['paid', 'EXECUTE_SPLIT', 'coupon'],
+      ['escrow_held', 'RELEASE_ESCROW', 'physical'],
+    ] as const) {
+      expect(() => transition(from, event, wrongType)).toThrowError(SettlementTransitionError)
+      try {
+        transition(from, event, wrongType)
+      } catch (error) {
+        expect((error as SettlementTransitionError).code).toBe('WRONG_PRODUCT_TYPE')
+      }
     }
   })
 
@@ -107,8 +118,24 @@ describe('settlement state machine (final rules, no escrow)', () => {
     }
   })
 
-  it('still allows refunding a legacy escrow_held row', () => {
+  it('lets a held line be refunded while its vouchers are still outstanding', () => {
     expect(transition('escrow_held', 'REFUND', 'coupon')).toBe('refunded')
+  })
+
+  it('has no event leading into platform_settled: the C11(a) state is exit-only', () => {
+    for (const from of SETTLEMENT_STATES) {
+      for (const event of SETTLEMENT_EVENTS) {
+        for (const type of ['coupon', 'physical'] as const) {
+          if (!canTransition(from, event, type)) continue
+          expect(
+            transition(from, event, type),
+            `${from} + ${event} (${type}) must not reach platform_settled`,
+          ).not.toBe('platform_settled')
+        }
+      }
+    }
+    // Exit-only, not unreachable-and-stuck: a legacy row can still be unwound.
+    expect(transition('platform_settled', 'REFUND', 'coupon')).toBe('refunded')
   })
 
   it('keeps refunded and cancelled terminal', () => {
