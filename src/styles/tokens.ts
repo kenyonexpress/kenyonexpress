@@ -172,6 +172,10 @@ export const SITE_CSS_METRICS: Record<string, string> = {
   '--text-footer-link': '14px',
   '--text-footer-head': '16px',
   '--text-footer-phone': '20px',
+  '--text-pdp-title': '25.004px',
+  '--text-pdp-body': '14px',
+  '--leading-pdp-title': '32.0051px',
+  '--leading-pdp-body': '23.996px',
 
   '--header-height': '70px',
   '--container-page': '1320px',

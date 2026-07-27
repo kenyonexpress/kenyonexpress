@@ -7,6 +7,11 @@ import ShippingInfo from '@/components/storefront/ShippingInfo'
 import SupplierInfo from '@/components/storefront/SupplierInfo'
 import { type CouponOffer, buildCouponOffer } from '@/lib/commerce/coupon-offer'
 import { createAdminClient } from '@/lib/supabase/admin'
+import {
+  COUPON_054_COLUMNS,
+  type Coupon054Row,
+  readOptionalColumns,
+} from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -39,8 +44,7 @@ export default async function ProductPage({ params }: Props) {
     .select(
       `id, slug, name_he, name_en, description_he,
        kenyon_price, full_price, price_ils, is_coupon_enabled,
-       coupon_price_ils, offer_valid_until, coupon_expiry_days,
-       coupon_terms_he, redemption_instructions_he,
+       coupon_expiry_days, coupon_terms_he, redemption_instructions_he,
        requires_shipping, weight_grams, warranty_months,
        type, sku, images, stock_quantity, category_id, supplier_id,
        categories(id, name_he, slug)`,
@@ -107,13 +111,29 @@ export default async function ProductPage({ params }: Props) {
   // keeps the quoted price and the charged price identical; the page used to
   // render price * 0.1 and disagree with the cart.
   const isCoupon = product.type === 'coupon' || product.is_coupon_enabled
+
+  // coupon_price_ils and offer_valid_until come from migration 054, which is
+  // not applied to every deployment. Naming them in the select above would
+  // fail the WHOLE product query with 42703 and blank the page; read
+  // separately, a database without them simply yields an unpriced coupon.
+  const coupon054 = isCoupon
+    ? (
+        await readOptionalColumns<Coupon054Row>(
+          (select, ids) => supabase.from('products').select(select).in('id', ids) as never,
+          COUPON_054_COLUMNS,
+          [product.id],
+          'product page',
+        )
+      ).get(product.id)
+    : undefined
+
   const couponOffer: CouponOffer | null = isCoupon
     ? buildCouponOffer({
         // price_ils is the sticker price the business would charge; full_price
         // is the legacy column and is used only when price_ils is unset.
         fullPriceIls: product.price_ils ?? product.full_price ?? basePrice,
-        couponPriceIls: product.coupon_price_ils,
-        validUntil: product.offer_valid_until,
+        couponPriceIls: coupon054?.coupon_price_ils,
+        validUntil: coupon054?.offer_valid_until,
         expiryDays: product.coupon_expiry_days,
       })
     : null

@@ -8,6 +8,11 @@ import {
 import { buildCartView } from '@/lib/cart/pricing'
 import type { CartActionResult, CartStorageItem, CartView } from '@/lib/cart/types'
 import { createAdminClient } from '@/lib/supabase/admin'
+import {
+  COUPON_054_COLUMNS,
+  type Coupon054Row,
+  readOptionalColumns,
+} from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import { addToCartSchema, updateCartItemSchema } from '@/lib/validations/cart'
@@ -50,9 +55,23 @@ async function loadProductData(items: CartStorageItem[]) {
   const admin = createAdminClient()
 
   const productSelect =
-    'id, slug, name_he, type, kenyon_price, stock_quantity, status, deleted_at, images, is_coupon_enabled, platform_percent, coupon_price_ils, cashback_percent'
+    'id, slug, name_he, type, kenyon_price, stock_quantity, status, deleted_at, images, is_coupon_enabled, platform_percent, cashback_percent'
 
   const { data: products } = await admin.from('products').select(productSelect).in('id', productIds)
+
+  // coupon_price_ils arrives with migration 054, which is not applied to every
+  // deployment. Naming it above would fail the whole cart query with 42703 and
+  // leave the shopper with an empty cart rather than an unpriced coupon line.
+  const coupon054 = await readOptionalColumns<Coupon054Row>(
+    (select, ids) => admin.from('products').select(select).in('id', ids) as never,
+    COUPON_054_COLUMNS,
+    productIds,
+    'cart',
+  )
+  const pricedProducts = (products ?? []).map((p) => ({
+    ...p,
+    coupon_price_ils: coupon054.get(p.id)?.coupon_price_ils ?? null,
+  }))
 
   let variants: {
     id: string
@@ -72,7 +91,7 @@ async function loadProductData(items: CartStorageItem[]) {
     variants = data ?? []
   }
 
-  return { products: products ?? [], variants }
+  return { products: pricedProducts, variants }
 }
 
 async function resolveCartView(cartId: string | null, items: CartStorageItem[]): Promise<CartView> {

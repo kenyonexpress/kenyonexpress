@@ -84,6 +84,17 @@
   --text-footer-link: 14px; /* footer nav links + contact lines */
   --text-footer-head: 16px; /* footer column headings */
   --text-footer-phone: 20px; /* footer support phone number */
+  /* Product detail page, measured off the live coupon PDP
+     (docs/coupon-page-measured.md). The title is 25.004px/32.0051px and the
+     summary body is 14px/23.996px; the defaults (24px and 16px) were close
+     enough to look right and wrong enough to fail the comparison. */
+  --text-pdp-title: 25.004px;
+  --text-pdp-body: 14px;
+  /* Tailwind's --text-* carries a size only, so the paired line heights are
+     their own tokens rather than --text-*--line-height companions, which would
+     also apply them to anything else reusing the size. */
+  --leading-pdp-title: 32.0051px;
+  --leading-pdp-body: 23.996px;
 
   /* --- Layout ---------------------------------------------------------------- */
   --header-height: 70px;

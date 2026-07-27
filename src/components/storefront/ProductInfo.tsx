@@ -91,7 +91,7 @@ export default function ProductInfo({
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 text-pdp-body leading-pdp-body text-heading">
       <p
         className={`inline-flex items-center gap-1.5 text-sm font-semibold ${
           outOfStock ? 'text-gray-500' : 'text-success'
@@ -105,7 +105,7 @@ export default function ProductInfo({
       </p>
 
       <div>
-        <h1 className="text-2xl font-black text-brand-dark leading-snug">{name}</h1>
+        <h1 className="text-pdp-title leading-pdp-title font-black text-heading">{name}</h1>
         {nameEn && (
           <p className="text-sm text-gray-400 mt-1" dir="ltr">
             {nameEn}
