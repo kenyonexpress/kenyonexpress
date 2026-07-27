@@ -2,6 +2,11 @@
 
 import { validateCartView } from '@/lib/checkout/validate-cart'
 import { agorot, agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
+import {
+  type SupplierIdentity,
+  buildOrderItemSnapshot,
+  completeSplitPair,
+} from '@/lib/commerce/product-money'
 import { getPaymentProvider, loadCardcomEnv } from '@/lib/payments'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
@@ -29,8 +34,44 @@ type SettlementProductRow = {
   is_coupon_enabled: boolean | null
   supplier_id: string | null
   platform_percent: number | null
+  supplier_split_percent: number | null
+  discount_percent: number | null
   coupon_price_ils: number | null
   cashback_percent: number | null
+}
+
+/**
+ * Supplier identity as it stands at purchase. Read here and copied onto the
+ * order line by value, never joined back to at read time: an order has to keep
+ * naming the business it was bought from after that business is renamed, moves,
+ * or changes its logo.
+ */
+type SnapshotSupplierRow = {
+  id: string
+  name: string | null
+  contact_phone: string | null
+  address: string | null
+  logo_url: string | null
+}
+
+/**
+ * Maps the supplier row onto the shape product-money snapshots from. Returns an
+ * id-only identity when the supplier row is missing rather than throwing: the
+ * publish gate is what guarantees these fields are filled, and a checkout must
+ * not fail on a detail that only affects how the order is later displayed.
+ */
+function supplierIdentityOf(
+  product: SettlementProductRow,
+  suppliers: Map<string, SnapshotSupplierRow>,
+): SupplierIdentity {
+  const row = product.supplier_id ? suppliers.get(product.supplier_id) : undefined
+  return {
+    id: product.supplier_id,
+    name: row?.name ?? null,
+    phone: row?.contact_phone ?? null,
+    address: row?.address ?? null,
+    logoUrl: row?.logo_url ?? null,
+  }
 }
 
 /**
@@ -129,11 +170,28 @@ export async function beginCheckout(
   const { data: productRows } = await admin
     .from('products')
     .select(
-      'id, type, is_coupon_enabled, supplier_id, platform_percent, coupon_price_ils, cashback_percent',
+      'id, type, is_coupon_enabled, supplier_id, platform_percent, supplier_split_percent, discount_percent, coupon_price_ils, cashback_percent',
     )
     .in('id', productIds)
   const productMap = new Map<string, SettlementProductRow>(
-    (productRows ?? []).map((p) => [p.id, p as SettlementProductRow]),
+    (productRows ?? []).map((p) => [p.id, p as unknown as SettlementProductRow]),
+  )
+
+  // Supplier identity for the snapshot. Loaded in one round trip keyed by the
+  // supplier ids the cart's products point at.
+  const supplierIds = [
+    ...new Set(
+      (productRows ?? [])
+        .map((p) => (p as unknown as SettlementProductRow).supplier_id)
+        .filter((id): id is string => typeof id === 'string'),
+    ),
+  ]
+  const { data: supplierRows } = await admin
+    .from('suppliers')
+    .select('id, name, contact_phone, address, logo_url')
+    .in('id', supplierIds.length > 0 ? supplierIds : ['00000000-0000-0000-0000-000000000000'])
+  const supplierMap = new Map<string, SnapshotSupplierRow>(
+    (supplierRows ?? []).map((s) => [s.id, s as unknown as SnapshotSupplierRow]),
   )
 
   const settlementLines: SettlementLineInput[] = []
@@ -145,9 +203,28 @@ export async function beginCheckout(
     if (!product.supplier_id) {
       return { ok: false, error: `למוצר "${item.name_he}" אין ספק משויך`, code: 'INTERNAL' }
     }
-    // Final rules 2026-07-24: a coupon line needs the admin-set ABSOLUTE
-    // coupon price; a physical line needs platform_percent. No defaults exist
-    // for either: a product missing its mandatory value cannot be sold.
+    // Final rules (docs/ADMIN-ARCHITECTURE.md section 0): the split pair is
+    // required on BOTH types, and a coupon line also needs the admin-set
+    // ABSOLUTE coupon price. No defaults exist for any of them: a product
+    // missing a mandatory value cannot be sold, and inventing one here would
+    // move money that belongs to someone else.
+    //
+    // completeSplitPair fills in whichever half the product is missing. That
+    // matters in practice rather than in theory: all 61 live products carry
+    // supplier_split_percent and none carried platform_percent before
+    // migration 070 backfilled it.
+    const split = completeSplitPair({
+      platformPercent: product.platform_percent,
+      supplierSplitPercent: product.supplier_split_percent,
+    })
+    if (!split.ok) {
+      return {
+        ok: false,
+        error: `למוצר "${item.name_he}" לא הוגדר פיצול עמלה: ${split.message}`,
+        code: 'INTERNAL',
+      }
+    }
+
     if (item.type === 'coupon') {
       const couponPrice = Number(product.coupon_price_ils ?? 0)
       if (!(couponPrice > 0)) {
@@ -163,22 +240,16 @@ export async function beginCheckout(
         unitPrice: ilsToAgorot(item.unit_price.toFixed(2)),
         quantity: item.quantity,
         couponPriceUnit: ilsToAgorot(couponPrice.toFixed(2)),
+        platformPercent: split.pair.platformPercent,
         cashbackPercent: product.cashback_percent ?? 0,
       })
     } else {
-      if (product.platform_percent === null || product.platform_percent === undefined) {
-        return {
-          ok: false,
-          error: `למוצר "${item.name_he}" לא הוגדר אחוז פלטפורמה`,
-          code: 'INTERNAL',
-        }
-      }
       settlementLines.push({
         id: `${item.product_id}::${item.variant_id ?? 'null'}`,
         productType: item.type,
         unitPrice: ilsToAgorot(item.unit_price.toFixed(2)),
         quantity: item.quantity,
-        platformPercent: product.platform_percent,
+        platformPercent: split.pair.platformPercent,
         cashbackPercent: product.cashback_percent ?? 0,
       })
     }
@@ -241,32 +312,63 @@ export async function beginCheckout(
     )
     if (!line) throw new Error('settlement line missing for cart item')
     const product = productMap.get(item.product_id)
-    // Snapshot semantics (final rules): platform_percent is the immutable
-    // per-line split knob for PHYSICAL lines; a coupon line stores 100 because
-    // the whole on-site charge stays with the platform. Escrow columns are
-    // legacy 046/047 shape and always 0 under the no-escrow model.
-    const percentSnapshot = line.productType === 'coupon' ? 100 : line.platformPercentBps / 100
+    if (!product) throw new Error('product row missing for cart item')
+
+    /**
+     * Snapshot semantics (docs/ADMIN-ARCHITECTURE.md section 0.4). Every value
+     * here is COPIED, never referenced. Editing the product or the supplier
+     * afterwards must not move this row: a line bought at 70/30 keeps reading
+     * 70/30 after the product moves to 85/15, and the order keeps naming the
+     * business it was bought from after that business is renamed.
+     *
+     * The hardcoded 100 that used to sit on coupon lines is gone. It recorded a
+     * rule rather than a fact, so every coupon order in the table claimed the
+     * platform took everything regardless of what the admin had configured.
+     */
+    const snapshot = buildOrderItemSnapshot({
+      type: line.productType,
+      platformPercent: product.platform_percent,
+      supplierSplitPercent: product.supplier_split_percent,
+      discountPercent: product.discount_percent,
+      couponPriceIls: product.coupon_price_ils,
+      supplier: supplierIdentityOf(product, supplierMap),
+    })
+
+    // The percent the money was actually billed at, straight off the settlement
+    // result, so the snapshot cannot drift from the arithmetic that produced
+    // commission_agorot even by a rounding step.
+    const billedPercent = line.platformPercentBps / 100
+
     return {
       order_id: order.id,
       product_id: item.product_id,
       variant_id: item.variant_id,
       product_type: item.type,
-      supplier_id: product?.supplier_id ?? null,
+      supplier_id: product.supplier_id ?? null,
       quantity: item.quantity,
       unit_price_ils: item.unit_price,
       total_price_ils: agorotToIls(line.faceValue),
       supplier_payout_ils: agorotToIls(line.supplierDue),
-      platform_percent: percentSnapshot,
-      commission_percent: percentSnapshot,
+      platform_percent: billedPercent,
+      supplier_split_percent: snapshot.supplier_split_percent,
+      discount_percent: snapshot.discount_percent,
+      coupon_price_ils: snapshot.coupon_price_ils,
+      supplier_name: snapshot.supplier_name,
+      supplier_phone: snapshot.supplier_phone,
+      supplier_address: snapshot.supplier_address,
+      supplier_logo_url: snapshot.supplier_logo_url,
+      commission_percent: billedPercent,
       cashback_percent: 0,
       item_status: 'pending' as const,
       settlement_status: 'pending' as const,
-      upfront_percent: percentSnapshot,
-      commission_percent_snapshot: percentSnapshot,
+      upfront_percent: billedPercent,
+      commission_percent_snapshot: billedPercent,
       face_value_agorot: line.faceValue,
       paid_on_site_agorot: line.paidOnSite,
       commission_agorot: line.commission,
       supplier_immediate_agorot: line.supplierDue,
+      // Legacy 046/047 shape. Always 0: there is no escrow, and "held" was only
+      // ever a flag in our own ledger.
       escrow_held_agorot: 0,
       escrow_release_agorot: 0,
       balance_due_agorot: line.balanceDueAtBusiness,
