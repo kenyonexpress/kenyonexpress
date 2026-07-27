@@ -199,7 +199,20 @@ export interface SupplierIdentity {
   status?: string | null
 }
 
-const SUPPLIER_FIELD_LABELS: Record<string, { field: ProductMoneyField; label: string }> = {
+/**
+ * Keyed by its four real keys rather than by `string`. A `string` index
+ * signature widens every lookup to `| undefined` under noUncheckedIndexedAccess,
+ * which is what made the two accesses in missingSupplierDetails fail to compile
+ * even though the loop only ever passes keys that are present.
+ */
+const SUPPLIER_DETAIL_KEYS = ['name', 'phone', 'address', 'logoUrl'] as const
+
+type SupplierDetailKey = (typeof SUPPLIER_DETAIL_KEYS)[number]
+
+const SUPPLIER_FIELD_LABELS: Record<
+  SupplierDetailKey,
+  { field: ProductMoneyField; label: string }
+> = {
   name: { field: 'supplier_name', label: 'שם העסק' },
   phone: { field: 'supplier_phone', label: 'טלפון' },
   address: { field: 'supplier_address', label: 'כתובת' },
@@ -225,7 +238,7 @@ export function missingSupplierDetails(
     return [{ field: 'supplier_id', message: 'חייב לשייך ספק למוצר' }]
   }
   const blockers: PublishBlocker[] = []
-  for (const key of ['name', 'phone', 'address', 'logoUrl'] as const) {
+  for (const key of SUPPLIER_DETAIL_KEYS) {
     if (!present(supplier[key])) {
       const meta = SUPPLIER_FIELD_LABELS[key]
       blockers.push({ field: meta.field, message: `חסר ${meta.label} של הספק` })
