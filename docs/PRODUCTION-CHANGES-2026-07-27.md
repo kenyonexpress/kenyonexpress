@@ -202,6 +202,100 @@ and is not sufficient. Creating `vouchers` means the rest of migration 054,
 which depends on 027 (`supplier_members`), also absent. That is the next
 blocker and it is larger than this one.
 
+---
+
+## 5. supplier_members (subset of 027) and the voucher tables (adapted 054)
+
+Applied via MCP `apply_migration` as
+`027_subset_supplier_members_for_vouchers` and
+`054_vouchers_tables_escrow_model`. Written to the repo as
+`072_027subset_supplier_members.sql` and `073_vouchers_escrow_model.sql`.
+
+**Neither was applied verbatim, and the reason is the same in both cases: an
+older migration would have undone a newer decision.**
+
+### 027: subset, because the whole file regresses 070
+
+`027_suppliers.sql` defines `product_platform_percent()` as
+`COALESCE(pr.platform_percent, s.commission_percent, 10)`. That literal 10 is
+the fixed commission C1 forbids, and 070 had just replaced the function with one
+returning NULL so callers refuse the sale instead of inventing a rate. It also
+re-comments `products.platform_percent` with the superseded fallback model.
+
+Applied instead: `supplier_member_role`, `supplier_members` with its trigger,
+indexes and RLS, and the three helpers (`is_supplier_member`,
+`is_supplier_owner`, `current_supplier_id`) that 054 needs, plus the products
+policy repair 027 exists to make. The live `products: vendor read own` policy
+compared `products.supplier_id` against `vendors.id`, but that column references
+`suppliers`, so it matched nothing; it is now a real membership check.
+
+Still unapplied from 027: payout statements, cardcom settlements, disputes,
+applications, bank accounts. Eight tables and twelve functions, none needed to
+close a coupon order.
+
+### 054: adapted, because it hardcodes the abolished model
+
+Two changes:
+
+1. `CONSTRAINT vouchers_platform_percent_full CHECK (platform_percent = 100)`
+   would have rejected every voucher issued under the current model. The 61
+   live products carry 15, 25 or 30 percent, so issuing would have been
+   impossible for all of them. Replaced with a 0..100 range check.
+2. `platform_percent ... DEFAULT 100` is an invented default of the kind C1
+   forbids. Removed, so a voucher issued without a split fails loudly instead of
+   silently recording a 100 percent platform take.
+
+Deliberately **not** applied: `redeem_voucher()`, `log_voucher_scan()`,
+`voucher_success_payload()` and the lifecycle sweeps. Those are the scan-time
+path, they are not needed to close an order, and hand-reproducing ~180 lines of
+plpgsql is how transcription bugs enter a money path. **Redemption is still
+unavailable.**
+
+### Verified: a coupon order now closes end to end
+
+Simulated the exact sequence `finalize.ts` performs, against production, then
+deleted the simulation rows. Product: `barbecue`, price ₪99, coupon price
+₪49.50, platform 30%.
+
+| step | result |
+| --- | --- |
+| create order + coupon line | OK |
+| issue voucher (`finalize.ts:307`) | OK |
+| settle line, `platform_settled` (`finalize.ts:312`) | OK |
+| close order, `paid` (`finalize.ts:344`) | OK |
+
+Final state: `order=paid, settlement=platform_settled, item=issued,
+voucher=issued`, and the money divides as the model requires: **platform keeps
+1485 agorot (₪14.85, 30% of the prepayment), 3465 agorot (₪34.65) is held for
+the supplier, and the business collects 4950 agorot (₪49.50) at the counter.**
+Under the abolished rule the supplier's share would have been zero.
+
+Cleanup verified: `vouchers` and `voucher_redemptions` are empty, `order_items`
+back to 3 rows, and the four orders in the table all predate today.
+
+### Rollback
+
+```sql
+-- Supabase > SQL Editor. Safe: both tables are empty.
+DROP TABLE IF EXISTS public.voucher_redemptions;
+DROP TABLE IF EXISTS public.vouchers;
+DROP TYPE  IF EXISTS public.voucher_scan_outcome;
+DROP TYPE  IF EXISTS public.voucher_status;
+
+DROP POLICY IF EXISTS "products: supplier member read own" ON public.products;
+DROP TABLE IF EXISTS public.supplier_members;
+DROP TYPE  IF EXISTS public.supplier_member_role;
+DROP FUNCTION IF EXISTS public.is_supplier_member(uuid);
+DROP FUNCTION IF EXISTS public.is_supplier_owner(uuid);
+DROP FUNCTION IF EXISTS public.current_supplier_id();
+
+DELETE FROM supabase_migrations.schema_migrations
+WHERE name IN ('027_subset_supplier_members_for_vouchers','054_vouchers_tables_escrow_model');
+```
+
+Reverting returns the coupon path to failing at `issueVouchersForItem`, i.e.
+charged but never closed. Do not revert this without also reverting 071.
+
 ## What was NOT done
 
 - Migration 027 (`supplier_members`) — not applied.
