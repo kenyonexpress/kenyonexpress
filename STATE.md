@@ -762,3 +762,64 @@ visual regression, RTL sweep.
 ‏`defaultMode` עדיין `bypassPermissions` ו-`ask` ריק. לפי הסעיף מ-07:35 זו
 הייתה הנחיה מפורשת ולא הברחה של סשן לילה, אז לא שוניתי — אבל זה מצב שראוי
 שתאשר במודע, כי הוא חל על כל סשן שרץ בתיקייה הזאת.
+
+---
+
+## פרודקשן מול הריפו — נמדד מול ה-DB החי 2026-07-27
+
+נשאל ה-project `ixvwfbuvfxxsjiywhbbb` ישירות דרך MCP. זה לא נכתב, זה נמדד.
+
+### 🔴 הממצא הקריטי: הסגירה נכשלת אחרי שהכסף נלקח
+
+`src/server/payments/finalize.ts:312` בנתיב הקופון כותב:
+```ts
+.update({ settlement_status: 'platform_settled', item_status: 'issued' })
+```
+ה-enum `settlement_status` בפרודקשן מכיל שמונה ערכים, **ו-`platform_settled`
+איננו אחד מהם**: `pending, paid, split_executed, escrow_held, escrow_released,
+redeemed, refunded, cancelled`. מיגרציה 066 מוסיפה אותו ומעולם לא הורצה.
+
+הרצף בפועל: הלקוח משלם ב-Cardcom -> Cardcom מאשר -> `finalize` נקרא ->
+‏`issueVouchersForItem` נופל כי `vouchers` לא קיימת -> ואם היה עובר, ה-update
+נופל ב-22P02. **הכסף נגבה וההזמנה לא נסגרת.**
+
+זה אותו דפוס של באג `coupon_price_ils` שנסגר בסבב הקודם, אבל חמור יותר:
+הקודם חסם *לפני* התשלום (החנות פשוט לא מכרה), הזה נופל *אחרי*.
+
+### מה קיים ומה לא — נמדד
+
+| אובייקט | מיגרציה | קיים בפרודקשן |
+|---|---|---|
+| `products.coupon_price_ils` + `offer_valid_until` | 054 סעיף 2 | ✅ כן |
+| `media_assets` | 049 | ✅ כן |
+| `vouchers`, `voucher_redemptions` | 054 | ❌ לא |
+| `supplier_members` | 027 | ❌ לא |
+| `ledger_entries`, `ledger_accounts` | 058 | ❌ לא |
+| `idempotency_keys` | 060 | ❌ לא |
+| `settlement_batches` | 062 | ❌ לא |
+| `wp_migration_log` | 057 | ❌ לא |
+| `settlement_status.platform_settled` | 066 | ❌ לא |
+| `product_type.subscription` | 066 | ❌ לא (יש coupon/physical/service) |
+
+עמודות הכסף ב-`products` הן `price_ils`, `platform_percent`, `cashback_percent`
+— כלומר **לפני** 059. זה תואם את מה שהקוד קורא, וזה בסדר כרגע.
+
+### פער יומן המיגרציות
+
+לפרודקשן ‏**17 רשומות** ביומן; לריפו ‏**64 קבצי מיגרציה**. הרשומות מתמפות
+לתת-קבוצה מפוזרת: 002, 004, 010, 019, 020, 021, 025, 045, 046, 047, 048,
+‏049, 052, 053, 055, 054_section2. (‏025 היא consolidation, מה שמסביר למה
+המוקדמות לא רשומות בנפרד.) **‏056-068 לא הורצו כלל** — וזה מאושש על ידי
+טבלת האובייקטים למעלה, לא רק על ידי היומן.
+
+רשומה אחת בפרודקשן, `products_full_fields`, **אין לה קובץ בריפו כלל.**
+
+**המשמעות המסוכנת:** `supabase db push` מהריפו יריץ את כל מה שלא רשום,
+כולל **059** — ה-cutover שמשנה שם לכל עמודות הכסף ושובר כל קוד רץ.
+אסור להריץ `db push` על הפרויקט הזה עד שהיומן יושר.
+
+### הצעד הבא המומלץ
+לכתוב מיגרציה ממוקדת שמוסיפה **רק** את `platform_settled` ל-enum
+(‏`ALTER TYPE ... ADD VALUE IF NOT EXISTS`) ואת תת-מערכת הוואוצ'רים
+(‏027 ואז שאר 054), ולהחיל דרך MCP `apply_migration` בלבד — לא `db push`.
+זה מה שפותח את נתיב הרכישה מקצה לקצה.
