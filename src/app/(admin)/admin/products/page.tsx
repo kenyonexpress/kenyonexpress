@@ -41,7 +41,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
   let query = supabase
     .from('products')
     .select(
-      'id, name_he, slug, status, kenyon_price, type, is_featured, created_at, categories(name_he)',
+      'id, name_he, slug, status, kenyon_price, type, is_featured, created_at, categories!products_category_id_fkey(name_he)',
       { count: 'exact' },
     )
     .is('deleted_at', null)

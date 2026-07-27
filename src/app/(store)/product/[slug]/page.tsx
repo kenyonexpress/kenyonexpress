@@ -47,7 +47,7 @@ export default async function ProductPage({ params }: Props) {
        coupon_expiry_days, coupon_terms_he, redemption_instructions_he,
        requires_shipping, weight_grams, warranty_months,
        type, sku, images, stock_quantity, category_id, supplier_id,
-       categories(id, name_he, slug)`,
+       categories!products_category_id_fkey(id, name_he, slug)`,
     )
     .eq('slug', slug)
     .eq('status', 'active')

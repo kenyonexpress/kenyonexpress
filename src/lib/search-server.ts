@@ -82,7 +82,7 @@ async function searchDb(
   let query = supabase
     .from('products')
     .select(
-      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, categories(name_he, slug)',
+      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, categories!products_category_id_fkey(name_he, slug)',
       { count: 'exact' },
     )
     .eq('status', 'active')

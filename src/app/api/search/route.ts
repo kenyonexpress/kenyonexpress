@@ -37,7 +37,9 @@ export async function GET(request: NextRequest) {
   const supabase = await createClient()
   let query = supabase
     .from('products')
-    .select('id, slug, name_he, kenyon_price, full_price, images, categories(name_he, slug)')
+    .select(
+      'id, slug, name_he, kenyon_price, full_price, images, categories!products_category_id_fkey(name_he, slug)',
+    )
     .eq('status', 'active')
     .is('deleted_at', null)
     .or(`name_he.ilike.%${q}%,description_he.ilike.%${q}%`)

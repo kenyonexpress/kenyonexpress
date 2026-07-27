@@ -127,7 +127,7 @@ export async function getCategoryProducts(opts: {
   let query = supabase
     .from('products')
     .select(
-      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, categories(name_he, slug)',
+      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, categories!products_category_id_fkey(name_he, slug)',
       { count: 'exact' },
     )
     .eq('category_id', categoryId)
@@ -194,7 +194,7 @@ export async function getShopProducts(opts: {
   let query = supabase
     .from('products')
     .select(
-      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, categories(name_he, slug)',
+      'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, categories!products_category_id_fkey(name_he, slug)',
       { count: 'exact' },
     )
     .eq('status', 'active')
