@@ -26,7 +26,10 @@ export default function ProductGallery({ images, name, assets = {} }: Props) {
 
   if (images.length === 0) {
     return (
-      <div className="aspect-square bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-center text-7xl">
+      <div
+        data-pdp="gallery"
+        className="aspect-square bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-center text-7xl"
+      >
         📦
       </div>
     )
@@ -36,7 +39,7 @@ export default function ProductGallery({ images, name, assets = {} }: Props) {
   const activeAsset = assets[activeUrl]
 
   return (
-    <div className="space-y-3">
+    <div data-pdp="gallery" className="space-y-3">
       {/* Main image */}
       <div className="relative aspect-square bg-white rounded-xl border border-gray-200 overflow-hidden">
         <Image

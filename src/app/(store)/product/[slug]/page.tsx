@@ -146,7 +146,7 @@ export default async function ProductPage({ params }: Props) {
   })
 
   return (
-    <div className="max-w-page mx-auto px-4 py-6 space-y-8">
+    <div data-pdp="container" className="max-w-page mx-auto px-4 py-6 space-y-8">
       <ViewTracker
         event="view_product"
         props={{
@@ -179,7 +179,7 @@ export default async function ProductPage({ params }: Props) {
 
       {/* Two columns: gallery (right in RTL) + info (left) */}
       <div className="bg-white rounded-2xl border border-gray-200 p-5 lg:p-8">
-        <div className="grid md:grid-cols-[5fr_7fr] gap-8">
+        <div data-pdp="columns" className="grid md:grid-cols-[5fr_7fr] gap-8">
           <ProductGallery images={images} name={product.name_he} assets={galleryAssets} />
           <ProductInfo
             productId={product.id}

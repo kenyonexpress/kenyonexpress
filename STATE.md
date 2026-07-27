@@ -216,16 +216,22 @@ docs/PRODUCTION-CHANGES-2026-07-27.md
 - פאסט `type=coupon` -> 20, ‏`in_stock` -> 61, ג'יבריש -> 0
 
 ## מה עדיין חסר להשקה
+0. 🔴 **הנתיב שאחרי התשלום שבור בפרודקשן. זה הסעיף הדחוף.**
+   ראה "פרודקשן מול הריפו" בתחתית הקובץ. בקצרה: הלקוח משלם ב-Cardcom
+   והסגירה נכשלת אחרי שהכסף נלקח.
 1. **להריץ את 027 ואז את שאר 054** — תת-מערכת הוואוצ'רים (טבלאות וואוצ'רים,
-   ‏`redeem_voucher`). בלעדיה אפשר לקנות קופון אבל לא לממש אותו בסריקה.
+   ‏`redeem_voucher`). אומת מול ה-DB החי: `vouchers`, `voucher_redemptions`
+   ו-`supplier_members` **אינן קיימות**. בלעדיהן אי אפשר גם להנפיק, לא רק לממש.
 2. ✅ **בוצע** — המודל שבוטל הוסר מהאדמין.
-3. **‏`src/types/database.ts` מיושן** — נוצר לפני 054.
-4. ✅ **‏E2E: ‏53 עברו, ‏0 דולגו, ‏0 נכשלו.**
+3. **‏`src/types/database.ts` מיושן** — אומת: ‏0 אזכורים של `coupon_price_ils`.
+   הוא גם מתאר סכמה שהפרודקשן לא מריץ (ראה סעיף 0).
+4. ✅ **‏E2E: ‏53 עברו, ‏0 דולגו, ‏0 נכשלו** (ריצה חמה בלבד, ראה אזהרת ה-timeout).
 5. ‏Meilisearch בפרודקשן: להגדיר `MEILISEARCH_HOST` / `MEILISEARCH_API_KEY`
    ולהריץ `node scripts/setup-meilisearch.mjs`.
 6. **החלטה נדרשת על 059**: כשהיא תרוץ, כל הקוד שקורא `price_ils`,
    `coupon_price_ils`, `platform_percent`, `cashback_percent` יישבר.
-   זה cutover שצריך לתכנן, לא להריץ בטעות.
+   זה cutover שצריך לתכנן, לא להריץ בטעות. **סכנה מוחשית**: הפרודקשן לא רשם
+   ‏47 מהמיגרציות בריפו, כך ש-`supabase db push` יריץ את 059 כתופעת לוואי.
 
 ## Branch Status
 אומת מול `git` ב-2026-07-27 08:0x. **כל ששת הענפים המקומיים דחופים ומסונכרנים
@@ -242,11 +248,21 @@ docs/PRODUCTION-CHANGES-2026-07-27.md
 | `cursor/add-supabase-3c830` | ברירת מחדל ב-origin | — | קודם לאפליקציה | להחליף ברירת מחדל ל-phase5 |
 
 ## Blocking Issues
-1. **מיגרציה שרצה בפרודקשן ואין לה קובץ בריפו.**
-   `054_section2_product_coupon_price_fields` הוחלה על ה-DB החי, אבל
-   `supabase/migrations/` לא מכיל אותה (הרצף עוצר ב-068). כלומר אי אפשר
-   לשחזר את סכמת הפרודקשן מהריפו, וסביבה חדשה תיבנה בלי שתי העמודות
-   שחוסמות את החנות. **צריך לכתוב את הקובץ.**
+0. 🔴 **`settlement_status = 'platform_settled'` לא קיים בפרודקשן.**
+   `src/server/payments/finalize.ts:312` כותב את הערך הזה בסגירת קופון.
+   ה-enum החי מכיל `pending, paid, split_executed, escrow_held,
+   escrow_released, redeemed, refunded, cancelled` **ובלי `platform_settled`**
+   (מיגרציה 066 מוסיפה אותו ומעולם לא הורצה). התוצאה: Postgres 22P02
+   `invalid input value for enum settlement_status` **אחרי ש-Cardcom כבר
+   חייב את הלקוח**. באותה שורה `issueVouchersForItem` כותב לטבלת `vouchers`
+   שגם היא לא קיימת. זה גרוע יותר מבאג `coupon_price_ils` שנסגר, כי הוא
+   נופל אחרי גביית הכסף ולא לפניה.
+1. ✅ **נסגר** — `054_section2_product_coupon_price_fields` נכתב כקובץ
+   ב-`supabase/migrations/`, זהה בית-לבית לסעיף 2 של 054. אומת מול ה-DB החי:
+   שתי העמודות, ה-constraint (`convalidated=false`, כלומר NOT VALID כמתוכנן)
+   וה-partial index — כולם תואמים במדויק.
+   **נותר פער אחד**: הפרודקשן רשם מיגרציה בשם `products_full_fields`
+   שאין לה קובץ בריפו כלל. לא אותר מקור.
 2. **‏`src/types/database.ts` מיושן** — אומת: ‏0 אזכורים של `coupon_price_ils`
    ו-0 של `voucher`. נוצר לפני 054.
 3. **תת-מערכת הוואוצ'רים לא קיימת ב-DB** — דורשת 027 ואז את שאר 054.

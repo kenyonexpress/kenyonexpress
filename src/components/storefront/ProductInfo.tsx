@@ -91,7 +91,7 @@ export default function ProductInfo({
   }
 
   return (
-    <div className="space-y-5 text-pdp-body leading-pdp-body text-heading">
+    <div data-pdp="summary" className="space-y-5 text-pdp-body leading-pdp-body text-heading">
       <p
         className={`inline-flex items-center gap-1.5 text-sm font-semibold ${
           outOfStock ? 'text-gray-500' : 'text-success'
