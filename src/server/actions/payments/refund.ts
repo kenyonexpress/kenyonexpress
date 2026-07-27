@@ -62,7 +62,7 @@ export async function refundOrder(input: {
 
   const { data: payment } = await admin
     .from('payments')
-    .select('id, amount_ils, cardcom_transaction_id, status')
+    .select('id, amount_ils, cardcom_transaction_id, status, cardcom_account_id')
     .eq('order_id', order.id)
     .eq('kind', 'charge')
     .order('created_at', { ascending: false })
@@ -117,8 +117,10 @@ export async function refundOrder(input: {
     throw error
   }
 
-  // Cardcom refund (money moves back to the card).
-  const provider = getPaymentProvider()
+  // Cardcom refund (money moves back to the card). Refunding through any
+  // terminal other than the one that took the money would either be rejected or
+  // debit the wrong account, so the id is read off the original charge.
+  const provider = getPaymentProvider(payment.cardcom_account_id)
   const refund = await provider.refundByTransactionId({
     transactionId: payment.cardcom_transaction_id,
     amountAgorot: plan.refundAmountAgorot,

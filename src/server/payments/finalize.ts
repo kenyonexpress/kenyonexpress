@@ -316,14 +316,16 @@ export async function finalizeOrder(input: {
   }
 
   let walletApplied = 0
+  let cardcomAccountId: string | null = null
   if (input.paymentId) {
     const { data: payment } = await admin
       .from('payments')
-      .select('id, status, wallet_applied_ils')
+      .select('id, status, wallet_applied_ils, cardcom_account_id')
       .eq('id', input.paymentId)
       .maybeSingle()
     if (!payment) return { ok: false, error: 'payment not found', code: 'NOT_FOUND' }
     walletApplied = Number(payment.wallet_applied_ils ?? 0)
+    cardcomAccountId = payment.cardcom_account_id
 
     const { error: payError } = await admin
       .from('payments')
@@ -405,6 +407,9 @@ export async function finalizeOrder(input: {
         card_brand: input.token.brand,
         expiry_month: input.token.expiryMonth,
         expiry_year: input.token.expiryYear,
+        // A token is only chargeable on the terminal that minted it, so the
+        // saved card is useless without knowing which account that was.
+        cardcom_account_id: cardcomAccountId,
       })
     }
 

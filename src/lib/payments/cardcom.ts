@@ -1,5 +1,5 @@
 import { agorot } from '@/lib/commerce/money'
-import { loadCardcomEnv } from '@/lib/payments/env'
+import { type CardcomAccount, loadCardcomAccounts } from '@/lib/payments/accounts'
 import type {
   ChargeWithTokenInput,
   ChargeWithTokenResult,
@@ -29,14 +29,25 @@ function asNumber(value: unknown): number | null {
 }
 
 /**
- * Cardcom Low Profile HTTP adapter.
- * Amounts are sent as ILS with 2 decimals (Cardcom convention); we convert from agorot at the boundary.
+ * Cardcom Low Profile HTTP adapter, bound to ONE account.
+ *
+ * Amounts are sent as ILS with 2 decimals (Cardcom convention); we convert from
+ * agorot at the boundary.
+ *
+ * One instance means one terminal, deliberately. Cardcom scopes both tokens and
+ * Low Profile ids to the terminal that created them, so an instance that could
+ * switch accounts between calls would let a verify or a token charge land on a
+ * terminal that has never heard of the artefact and answer "not found" for a
+ * payment the customer really made. Callers get an instance from
+ * `getPaymentProvider(accountId)` and carry the id alongside whatever they
+ * store.
  */
 export class CardcomProvider implements PaymentProvider {
   readonly name = 'cardcom' as const
+  readonly account: CardcomAccount
 
-  private get env() {
-    return loadCardcomEnv()
+  constructor(account?: CardcomAccount) {
+    this.account = account ?? loadCardcomAccounts(process.env, { mock: false }).platform
   }
 
   private baseUrl(): string {
@@ -69,10 +80,9 @@ export class CardcomProvider implements PaymentProvider {
   }
 
   async createLowProfile(input: CreateLowProfileInput): Promise<CreateLowProfileResult> {
-    const env = this.env
     const raw = await this.postForm('/Interface/LowProfile.aspx', {
-      TerminalNumber: env.terminalNumber,
-      ApiName: env.apiName,
+      TerminalNumber: this.account.terminalNumber,
+      ApiName: this.account.apiName,
       Amount: this.ilsFromAgorot(input.amountAgorot),
       CoinId: '1',
       Language: 'he',
@@ -99,10 +109,9 @@ export class CardcomProvider implements PaymentProvider {
   }
 
   async chargeWithToken(input: ChargeWithTokenInput): Promise<ChargeWithTokenResult> {
-    const env = this.env
     const raw = await this.postForm('/Interface/ChargeToken.aspx', {
-      TerminalNumber: env.terminalNumber,
-      ApiName: env.apiName,
+      TerminalNumber: this.account.terminalNumber,
+      ApiName: this.account.apiName,
       Token: input.cardcomToken,
       Amount: this.ilsFromAgorot(input.amountAgorot),
       CoinId: '1',
@@ -133,15 +142,14 @@ export class CardcomProvider implements PaymentProvider {
   }
 
   async refundByTransactionId(input: RefundInput): Promise<RefundResult> {
-    const env = this.env
     const amountAgorot = input.partialAmountAgorot ?? input.amountAgorot
     // Legacy credit/refund. ApiPassword is mandatory for money-moving-back calls.
     // TODO(cardcom): confirm the exact legacy refund endpoint + field names against
     // the live terminal before go-live; kept legacy to match the rest of this client.
     const raw = await this.postForm('/Interface/RefundDeal.aspx', {
-      TerminalNumber: env.terminalNumber,
-      ApiName: env.apiName,
-      ApiPassword: env.apiPassword,
+      TerminalNumber: this.account.terminalNumber,
+      ApiName: this.account.apiName,
+      ApiPassword: this.account.apiPassword,
       InternalDealNumber: input.transactionId,
       Amount: this.ilsFromAgorot(amountAgorot),
       CoinId: '1',
@@ -175,10 +183,9 @@ export class CardcomProvider implements PaymentProvider {
   }
 
   async verifyLowProfile(lowProfileId: string): Promise<VerifyLowProfileResult> {
-    const env = this.env
     const raw = await this.postForm('/Interface/GetLpResult.aspx', {
-      TerminalNumber: env.terminalNumber,
-      ApiName: env.apiName,
+      TerminalNumber: this.account.terminalNumber,
+      ApiName: this.account.apiName,
       LowProfileCode: lowProfileId,
       Codepage: '65001',
     })

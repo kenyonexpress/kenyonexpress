@@ -7,7 +7,7 @@ import {
   buildOrderItemSnapshot,
   completeSplitPair,
 } from '@/lib/commerce/product-money'
-import { getPaymentProvider, loadCardcomEnv } from '@/lib/payments'
+import { getCardcomAccounts, getPaymentProvider, loadCardcomEnv } from '@/lib/payments'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
@@ -410,7 +410,11 @@ export async function beginCheckout(
     return { ok: true, data: { kind: 'paid', order_id: order.id } }
   }
 
-  // 6. Payment row + hosted page
+  // 6. Payment row + hosted page.
+  // The account is recorded before the hosted page exists, because the Low
+  // Profile id it returns is only meaningful on this account's terminal: a
+  // later GetLpResult or refund has to know where to ask.
+  const account = getCardcomAccounts().platform
   const { data: payment, error: paymentError } = await admin
     .from('payments')
     .insert({
@@ -421,6 +425,7 @@ export async function beginCheckout(
       currency: 'ILS',
       wallet_applied_ils: agorotToIls(settlement.walletApplied),
       idempotency_key: idempotencyKey,
+      cardcom_account_id: account.id,
     })
     .select('id')
     .single()
@@ -429,7 +434,7 @@ export async function beginCheckout(
   }
 
   try {
-    const provider = getPaymentProvider()
+    const provider = getPaymentProvider(account.id)
     const created = await provider.createLowProfile({
       paymentId: payment.id,
       orderId: order.id,
@@ -570,7 +575,7 @@ export async function reconcileOrderReturn(orderId: string): Promise<ReturnRecon
 
   const { data: payment } = await admin
     .from('payments')
-    .select('id, status, amount_ils, cardcom_low_profile_id')
+    .select('id, status, amount_ils, cardcom_low_profile_id, cardcom_account_id')
     .eq('order_id', order.id)
     .eq('kind', 'charge')
     .order('created_at', { ascending: false })
@@ -583,7 +588,9 @@ export async function reconcileOrderReturn(orderId: string): Promise<ReturnRecon
   if (payment.status === 'failed') return { status: 'failed', order_id: order.id }
   if (!payment.cardcom_low_profile_id) return { status: 'pending', order_id: order.id }
 
-  const provider = getPaymentProvider()
+  // Verify against the terminal that issued this Low Profile id; any other one
+  // reports not_found for a payment that may well have gone through.
+  const provider = getPaymentProvider(payment.cardcom_account_id)
   const verified = await provider.verifyLowProfile(payment.cardcom_low_profile_id)
   if (!verified.success || verified.amountAgorot === null) {
     await admin

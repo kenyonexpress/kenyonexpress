@@ -68,7 +68,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   // 2. Locate our payment by the hosted-page id
   const { data: payment } = await admin
     .from('payments')
-    .select('id, order_id, status, amount_ils')
+    .select('id, order_id, status, amount_ils, cardcom_account_id')
     .eq('cardcom_low_profile_id', payload.lowprofilecode)
     .maybeSingle()
   if (!payment) {
@@ -88,8 +88,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true })
   }
 
-  // 3. Server-to-server re-verify; trust only this response
-  const provider = getPaymentProvider()
+  // 3. Server-to-server re-verify; trust only this response. The account comes
+  //    from the stored payment, not from the callback: a Low Profile id only
+  //    resolves on the terminal that created it, so asking any other one would
+  //    answer not_found for a customer who was charged.
+  const provider = getPaymentProvider(payment.cardcom_account_id)
   const verified = await provider.verifyLowProfile(payload.lowprofilecode)
   if (!verified.success || verified.amountAgorot === null) {
     return NextResponse.json({ ok: true, verified: false })

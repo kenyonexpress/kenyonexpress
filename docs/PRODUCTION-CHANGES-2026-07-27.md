@@ -382,3 +382,64 @@ WHERE name = '074_voucher_redemption_rpcs';
 Reverting returns redemption to "function does not exist", i.e. a voucher that
 can be bought and never used. It also strips the wallet credit an expired
 voucher is owed under C6.
+
+---
+
+## 5. Migration 075: `cardcom_account_id` on payments and tokens
+
+Applied via MCP `apply_migration` as `075_cardcom_account_id`. Repo file:
+`supabase/migrations/075_cardcom_account_id.sql`.
+
+Multi-account Cardcom needs exactly one thing from the database, and this is it.
+
+### Why a column and not a lookup
+
+Cardcom scopes both Low Profile ids and card tokens to the terminal that
+created them. Send `GetLpResult` to a different terminal and it answers "not
+found"; the webhook reads that as "the payment did not happen" for a customer
+who was in fact charged. Charge a token on a different terminal and it is
+declined. Neither failure announces itself as a configuration problem, which is
+why the account is recorded at the moment the artefact is created rather than
+re-derived later.
+
+### What it adds
+
+- `payments.cardcom_account_id text` (nullable)
+- `payment_tokens.cardcom_account_id text` (nullable)
+- `payments_cardcom_account_idx`, `payment_tokens_cardcom_account_idx` -
+  partial indexes, `WHERE cardcom_account_id IS NOT NULL`. The platform account
+  is the overwhelming majority and NULL is its marker, so a full index would be
+  a near-copy of the table.
+- Two `CHECK (... IS NULL OR length(btrim(...)) > 0)` constraints, so an empty
+  string cannot become a third spelling of "platform" that no code tests for.
+
+NULL means the platform account. Every row that existed before this migration
+was cleared on the platform terminal, so NULL reads history correctly rather
+than standing for "unknown", and `getPaymentProvider(null)` resolves to platform
+for the same reason.
+
+### Blast radius
+
+Additive only. Two nullable columns on tables holding 2 rows each, no existing
+value touched, no NOT NULL, no default, no code required to populate them.
+Verified after applying: both columns present and nullable, both constraints
+`convalidated = true`, both indexes created.
+
+### Rollback
+
+```sql
+ALTER TABLE public.payments DROP CONSTRAINT IF EXISTS payments_cardcom_account_id_not_blank;
+ALTER TABLE public.payment_tokens DROP CONSTRAINT IF EXISTS payment_tokens_cardcom_account_id_not_blank;
+DROP INDEX IF EXISTS public.payments_cardcom_account_idx;
+DROP INDEX IF EXISTS public.payment_tokens_cardcom_account_idx;
+ALTER TABLE public.payments DROP COLUMN IF EXISTS cardcom_account_id;
+ALTER TABLE public.payment_tokens DROP COLUMN IF EXISTS cardcom_account_id;
+
+DELETE FROM supabase_migrations.schema_migrations
+WHERE name = '075_cardcom_account_id';
+```
+
+Safe while only the platform account exists: nothing but NULLs is lost. Once a
+second account has cleared a payment, dropping the column loses which terminal
+owns those transactions, and neither refunds nor re-verification for them can be
+routed afterwards.

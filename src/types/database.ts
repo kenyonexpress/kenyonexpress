@@ -864,6 +864,7 @@ export type Database = {
       payment_tokens: {
         Row: {
           card_brand: string | null
+          cardcom_account_id: string | null
           cardcom_token: string
           created_at: string
           expiry_month: number | null
@@ -875,6 +876,7 @@ export type Database = {
         }
         Insert: {
           card_brand?: string | null
+          cardcom_account_id?: string | null
           cardcom_token: string
           created_at?: string
           expiry_month?: number | null
@@ -886,6 +888,7 @@ export type Database = {
         }
         Update: {
           card_brand?: string | null
+          cardcom_account_id?: string | null
           cardcom_token?: string
           created_at?: string
           expiry_month?: number | null
@@ -952,6 +955,7 @@ export type Database = {
       payments: {
         Row: {
           amount_ils: number
+          cardcom_account_id: string | null
           cardcom_low_profile_id: string | null
           cardcom_transaction_id: string | null
           created_at: string
@@ -971,6 +975,7 @@ export type Database = {
         }
         Insert: {
           amount_ils: number
+          cardcom_account_id?: string | null
           cardcom_low_profile_id?: string | null
           cardcom_transaction_id?: string | null
           created_at?: string
@@ -990,6 +995,7 @@ export type Database = {
         }
         Update: {
           amount_ils?: number
+          cardcom_account_id?: string | null
           cardcom_low_profile_id?: string | null
           cardcom_transaction_id?: string | null
           created_at?: string
