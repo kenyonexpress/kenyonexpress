@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { validateCartView } from '@/lib/checkout/validate-cart'
+import { isCardTokenExpired } from '@/lib/payments/token-expiry'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { getCart } from '@/server/actions/cart'
@@ -25,18 +26,25 @@ export default async function CheckoutPage() {
   const validation = validateCartView(cart)
 
   const admin = createAdminClient()
-  const [{ data: walletAccount }, { data: defaultAddress }] = await Promise.all([
-    admin.from('wallet_accounts').select('balance_ils').eq('user_id', user.id).maybeSingle(),
-    admin
-      .from('user_addresses')
-      .select('id, full_name, phone, city, street, street_number, apartment, zip')
-      .eq('user_id', user.id)
-      .is('deleted_at', null)
-      .order('is_default', { ascending: false })
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-  ])
+  const [{ data: walletAccount }, { data: defaultAddress }, { data: savedCards }] =
+    await Promise.all([
+      admin.from('wallet_accounts').select('balance_ils').eq('user_id', user.id).maybeSingle(),
+      admin
+        .from('user_addresses')
+        .select('id, full_name, phone, city, street, street_number, apartment, zip')
+        .eq('user_id', user.id)
+        .is('deleted_at', null)
+        .order('is_default', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      admin
+        .from('payment_tokens')
+        .select('id, last_4, card_brand, expiry_month, expiry_year, is_default')
+        .eq('profile_id', user.id)
+        .order('is_default', { ascending: false })
+        .order('created_at', { ascending: false }),
+    ])
 
   const address: CheckoutAddressPrefill = {
     id: defaultAddress?.id ?? null,
@@ -58,6 +66,16 @@ export default async function CheckoutPage() {
         needsAddress={validation.requiresAddress}
         address={address}
         walletBalance={Number(walletAccount?.balance_ils ?? 0)}
+        savedCards={(savedCards ?? [])
+          // An expired card is still listed in /account so the customer can
+          // delete it, but offering it here only buys a guaranteed decline.
+          .filter((card) => !isCardTokenExpired(card.expiry_month, card.expiry_year, new Date()))
+          .map((card) => ({
+            id: card.id,
+            last4: card.last_4,
+            brand: card.card_brand,
+            isDefault: card.is_default,
+          }))}
       />
     </div>
   )

@@ -3,7 +3,7 @@
 import { track } from '@/lib/analytics/tracker'
 import type { CartView } from '@/lib/cart/types'
 import { type CheckoutFormState, submitCheckout } from '@/server/actions/payments/checkout'
-import { useActionState, useEffect } from 'react'
+import { useActionState, useEffect, useState } from 'react'
 
 function shekels(value: number): string {
   return `₪${value.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
@@ -20,23 +20,39 @@ export type CheckoutAddressPrefill = {
   zip: string
 }
 
+export type CheckoutSavedCard = {
+  id: string
+  last4: string | null
+  brand: string | null
+  isDefault: boolean
+}
+
 export default function CheckoutForm({
   cart,
   clientRef,
   needsAddress,
   address,
   walletBalance,
+  savedCards = [],
 }: {
   cart: CartView
   clientRef: string
   needsAddress: boolean
   address: CheckoutAddressPrefill
   walletBalance: number
+  savedCards?: CheckoutSavedCard[]
 }) {
   const [state, formAction, isPending] = useActionState<CheckoutFormState, FormData>(
     submitCheckout,
     null,
   )
+
+  // Default to the saved card when there is one: it is the faster path and the
+  // one the shopper asked for by saving it. 'new' always stays available.
+  const [paymentChoice, setPaymentChoice] = useState<string>(
+    savedCards.find((card) => card.isDefault)?.id ?? savedCards[0]?.id ?? 'new',
+  )
+  const usingSavedCard = paymentChoice !== 'new'
 
   const balanceAtBusiness = cart.balance_due_at_business
 
@@ -191,15 +207,55 @@ export default function CheckoutForm({
             <span>קראתי ואני מאשר את התקנון ומדיניות הביטולים</span>
           </label>
 
-          <label className="checkout-terms">
-            <input type="checkbox" name="save_card" defaultChecked />
-            <span>שמירת כרטיס לתשלום מהיר בפעם הבאה</span>
-          </label>
+          {savedCards.length > 0 && (
+            <fieldset className="checkout-cards">
+              <legend className="checkout-cards__legend">אמצעי תשלום</legend>
+              {savedCards.map((card) => (
+                <label className="checkout-cards__option" key={card.id}>
+                  <input
+                    type="radio"
+                    name="token_id"
+                    value={card.id}
+                    checked={paymentChoice === card.id}
+                    onChange={() => setPaymentChoice(card.id)}
+                  />
+                  <span>
+                    {card.brand ?? 'כרטיס'} המסתיים ב-{card.last4 ?? '****'}
+                  </span>
+                </label>
+              ))}
+              <label className="checkout-cards__option">
+                <input
+                  type="radio"
+                  name="token_id"
+                  value="new"
+                  checked={paymentChoice === 'new'}
+                  onChange={() => setPaymentChoice('new')}
+                />
+                <span>כרטיס אחר</span>
+              </label>
+            </fieldset>
+          )}
+
+          {/* Charging a saved token cannot mint a new one, so the option is
+              hidden rather than shown as a checkbox that would do nothing. */}
+          {!usingSavedCard && (
+            <label className="checkout-terms">
+              <input type="checkbox" name="save_card" defaultChecked />
+              <span>שמירת כרטיס לתשלום מהיר בפעם הבאה</span>
+            </label>
+          )}
 
           {state?.error && <div className="checkout-error">{state.error}</div>}
 
           <button type="submit" className="checkout-pay-btn" disabled={isPending}>
-            {isPending ? 'מעביר לדף תשלום מאובטח...' : 'מעבר לתשלום מאובטח'}
+            {isPending
+              ? usingSavedCard
+                ? 'מחייב את הכרטיס השמור...'
+                : 'מעביר לדף תשלום מאובטח...'
+              : usingSavedCard
+                ? 'שלם עם הכרטיס השמור'
+                : 'מעבר לתשלום מאובטח'}
           </button>
         </section>
       </aside>

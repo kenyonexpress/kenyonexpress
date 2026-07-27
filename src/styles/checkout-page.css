@@ -244,3 +244,32 @@
   padding-block: 60px;
   color: #333e48;
 }
+
+/* Saved-card picker. Radio list rather than a select: two or three cards is the
+   realistic count, and a native select on mobile hides the choice behind a tap. */
+.checkout-cards {
+  margin-top: 14px;
+  padding: 0;
+  border: 0;
+}
+
+.checkout-cards__legend {
+  padding: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-heading, #333e48);
+}
+
+.checkout-cards__option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--color-heading, #333e48);
+  cursor: pointer;
+}
+
+.checkout-cards__option input {
+  accent-color: #0062bd;
+}

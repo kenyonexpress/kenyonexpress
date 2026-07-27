@@ -1,6 +1,7 @@
 'use client'
 
-import { useCart } from '@/components/cart/CartProvider'
+import CartCheckoutButton from '@/components/cart/CartCheckoutButton'
+import { useCart, useCartAuth } from '@/components/cart/CartProvider'
 import SmartImage from '@/components/ui/SmartImage'
 import { Minus, Plus, ShoppingCart, X } from 'lucide-react'
 import Link from 'next/link'
@@ -85,6 +86,7 @@ function DrawerLineItem({
 
 export default function CartDrawer() {
   const { cart, drawerOpen, closeDrawer, isPending } = useCart()
+  const isAuthenticated = useCartAuth()
 
   useEffect(() => {
     if (!drawerOpen) return
@@ -157,9 +159,14 @@ export default function CartDrawer() {
             <Link href="/cart" onClick={closeDrawer} className="cart-drawer__view-cart">
               צפייה בעגלה המלאה
             </Link>
-            <Link href="/checkout" onClick={closeDrawer} className="cart-drawer__checkout">
-              המשך לתשלום
-            </Link>
+            {/* Same gate as the cart page. Linking straight to /checkout here
+                sent a guest into a proxy bounce instead of the sign-in they
+                actually need, and lost the drawer's context on the way. */}
+            <CartCheckoutButton
+              isAuthenticated={isAuthenticated}
+              className="cart-drawer__checkout"
+              onNavigate={closeDrawer}
+            />
           </footer>
         )}
       </dialog>

@@ -34,7 +34,7 @@ export default async function AccountLayout({ children }: { children: React.Reac
   ])
 
   return (
-    <CartProvider initialCart={cart}>
+    <CartProvider initialCart={cart} isAuthenticated>
       <div className="min-h-screen flex flex-col bg-white">
         <SiteHeader />
         <main className="flex-1 w-full">

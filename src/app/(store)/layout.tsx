@@ -4,14 +4,16 @@ import SiteFooter from '@/components/layout/SiteFooter'
 import SiteHeader from '@/components/layout/SiteHeader'
 import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
 import { Toaster } from '@/components/ui/sonner'
+import { createClient } from '@/lib/supabase/server'
 import { getCart } from '@/server/actions/cart'
 import '@/styles/cart-page.css'
 
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
-  const cart = await getCart()
+  const supabase = await createClient()
+  const [cart, { data: auth }] = await Promise.all([getCart(), supabase.auth.getUser()])
 
   return (
-    <CartProvider initialCart={cart}>
+    <CartProvider initialCart={cart} isAuthenticated={auth.user !== null}>
       {/* Measured live: the footer sits directly after the content (top 871 on
           hot-deals) with white space below, i.e. no sticky footer. flex-1 would
           stretch main to the viewport and push the footer to the bottom, which is

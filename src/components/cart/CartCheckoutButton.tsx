@@ -11,9 +11,14 @@ function getError(state: AuthState): string | null {
 export default function CartCheckoutButton({
   isAuthenticated,
   disabled,
+  className = 'cart-checkout-btn',
+  onNavigate,
 }: {
   isAuthenticated: boolean
   disabled?: boolean
+  /** Lets the drawer keep its own button styling while sharing the auth gate. */
+  className?: string
+  onNavigate?: () => void
 }) {
   const [googleState, googleAction, googlePending] = useActionState<AuthState, FormData>(
     signInWithGoogle,
@@ -24,7 +29,8 @@ export default function CartCheckoutButton({
     return (
       <Link
         href="/checkout"
-        className="cart-checkout-btn"
+        className={className}
+        onClick={onNavigate}
         aria-disabled={disabled}
         data-disabled={disabled ? '' : undefined}
       >
@@ -40,7 +46,7 @@ export default function CartCheckoutButton({
       {error && <p className="cart-checkout-error">{error}</p>}
       <form action={googleAction}>
         <input type="hidden" name="next" value="/checkout" />
-        <button type="submit" className="cart-checkout-btn" disabled={disabled || googlePending}>
+        <button type="submit" className={className} disabled={disabled || googlePending}>
           {googlePending ? 'מעביר להתחברות...' : 'המשך לתשלום — התחברות עם Google'}
         </button>
       </form>

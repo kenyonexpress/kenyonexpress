@@ -7,7 +7,13 @@ import {
   buildOrderItemSnapshot,
   completeSplitPair,
 } from '@/lib/commerce/product-money'
-import { getCardcomAccounts, getPaymentProvider, loadCardcomEnv } from '@/lib/payments'
+import {
+  type PaymentProvider,
+  getCardcomAccounts,
+  getPaymentProvider,
+  loadCardcomEnv,
+} from '@/lib/payments'
+import { isCardTokenExpired } from '@/lib/payments/token-expiry'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
@@ -72,6 +78,114 @@ function supplierIdentityOf(
     address: row?.address ?? null,
     logoUrl: row?.logo_url ?? null,
   }
+}
+
+/**
+ * Charges a saved card token and finalizes in one server-to-server call. No
+ * hosted page, so no redirect and no webhook: the charge response IS the
+ * outcome, and `finalizeOrder` runs inline with the transaction id it returned.
+ *
+ * The token decides the account, not the platform default. Cardcom will not
+ * charge a token on a terminal other than the one that minted it, and the
+ * decline it returns for that says nothing about why.
+ *
+ * A decline leaves the order `pending` on purpose rather than cancelling it:
+ * the customer is still on the checkout page and the ordinary next move is to
+ * try another card, which reuses this same order.
+ */
+async function chargeSavedToken(args: {
+  admin: ReturnType<typeof createAdminClient>
+  tokenId: string
+  userId: string
+  orderId: string
+  amountAgorot: ReturnType<typeof agorot>
+  walletAppliedAgorot: ReturnType<typeof agorot>
+  idempotencyKey: string
+  now: Date
+}): Promise<CheckoutActionResult<BeginCheckoutOutput>> {
+  const { admin, tokenId, userId, orderId, amountAgorot, walletAppliedAgorot, now } = args
+
+  const { data: token } = await admin
+    .from('payment_tokens')
+    .select('id, cardcom_token, cardcom_account_id, expiry_month, expiry_year, profile_id')
+    .eq('id', tokenId)
+    .maybeSingle()
+  // Ownership is checked here rather than by RLS because this runs on the admin
+  // client: a token id from another account must not be chargeable by guessing.
+  if (!token || token.profile_id !== userId) {
+    return { ok: false, error: 'הכרטיס השמור לא נמצא', code: 'NOT_FOUND' }
+  }
+
+  // Cardcom would decline an expired card anyway; refusing here keeps a
+  // pointless decline off the customer's record and out of the terminal's.
+  if (isCardTokenExpired(token.expiry_month, token.expiry_year, now)) {
+    return { ok: false, error: 'תוקף הכרטיס השמור פג', code: 'VALIDATION' }
+  }
+
+  const { data: payment, error: paymentError } = await admin
+    .from('payments')
+    .insert({
+      order_id: orderId,
+      kind: 'charge',
+      status: 'initiated',
+      amount_ils: agorotToIls(amountAgorot),
+      currency: 'ILS',
+      wallet_applied_ils: agorotToIls(walletAppliedAgorot),
+      idempotency_key: args.idempotencyKey,
+      cardcom_account_id: token.cardcom_account_id,
+    })
+    .select('id')
+    .single()
+  if (paymentError || !payment) {
+    return { ok: false, error: `יצירת תשלום נכשלה: ${paymentError?.message}`, code: 'INTERNAL' }
+  }
+
+  let charged: Awaited<ReturnType<PaymentProvider['chargeWithToken']>>
+  try {
+    const provider = getPaymentProvider(token.cardcom_account_id)
+    charged = await provider.chargeWithToken({
+      paymentId: payment.id,
+      orderId,
+      amountAgorot,
+      cardcomToken: token.cardcom_token,
+      description: `הזמנה ${orderId.slice(0, 8)}`,
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'payment provider error'
+    await admin
+      .from('payments')
+      .update({ status: 'failed', failure_message: message, failed_at: now.toISOString() })
+      .eq('id', payment.id)
+    return { ok: false, error: 'שגיאה בחיבור לספק הסליקה', code: 'PAYMENT_PROVIDER_ERROR' }
+  }
+
+  if (!charged.success) {
+    await admin
+      .from('payments')
+      .update({
+        status: 'failed',
+        failure_code: charged.failureCode,
+        failure_message: charged.failureMessage,
+        failed_at: now.toISOString(),
+      })
+      .eq('id', payment.id)
+    return {
+      ok: false,
+      error: charged.failureMessage ?? 'החיוב נדחה',
+      code: 'PAYMENT_PROVIDER_ERROR',
+    }
+  }
+
+  const finalized = await finalizeOrder({
+    orderId,
+    paymentId: payment.id,
+    transactionId: charged.transactionId,
+    now,
+  })
+  if (!finalized.ok) {
+    return { ok: false, error: finalized.error, code: 'INTERNAL' }
+  }
+  return { ok: true, data: { kind: 'paid', order_id: orderId } }
 }
 
 /**
@@ -410,6 +524,23 @@ export async function beginCheckout(
     return { ok: true, data: { kind: 'paid', order_id: order.id } }
   }
 
+  // 5b. Saved card: charge the stored token server-to-server, no hosted page.
+  // `token_id` has been in the input schema since checkout was written and was
+  // never read, so a customer with a saved card was still sent through the full
+  // redirect every time.
+  if (input.token_id) {
+    return await chargeSavedToken({
+      admin,
+      tokenId: input.token_id,
+      userId: user.id,
+      orderId: order.id,
+      amountAgorot: settlement.cardCharge,
+      walletAppliedAgorot: settlement.walletApplied,
+      idempotencyKey,
+      now,
+    })
+  }
+
   // 6. Payment row + hosted page.
   // The account is recorded before the hosted page exists, because the Low
   // Profile id it returns is only meaningful on this account's terminal: a
@@ -527,12 +658,21 @@ export async function submitCheckout(
     addressId = created.id
   }
 
+  // 'new' is the radio value for "charge a fresh card", which is the hosted
+  // page. Anything else is a saved token id, and beginCheckout re-checks that
+  // it belongs to this user before charging it.
+  const tokenChoice = text('token_id')
+  const savedTokenId = tokenChoice && tokenChoice !== 'new' ? tokenChoice : undefined
+
   const result = await beginCheckout({
     client_ref: text('client_ref'),
     accept_terms: formData.get('accept_terms') === 'on',
     apply_wallet_ils: text('apply_wallet_ils') || 0,
-    save_card: formData.get('save_card') === 'on',
+    // Saving is a hosted-page operation; charging an existing token cannot mint
+    // another one, so the checkbox is meaningless on that path.
+    save_card: savedTokenId ? false : formData.get('save_card') === 'on',
     address_id: addressId,
+    token_id: savedTokenId,
   })
 
   if (!result.ok) return { error: result.error }

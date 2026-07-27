@@ -6,13 +6,15 @@ import { CartProvider } from '@/components/cart/CartProvider'
 import Header from '@/components/layout/Header'
 import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
 import { Toaster } from '@/components/ui/sonner'
+import { createClient } from '@/lib/supabase/server'
 import { getCart } from '@/server/actions/cart'
 
 export default async function MainLayout({ children }: { children: React.ReactNode }) {
-  const cart = await getCart()
+  const supabase = await createClient()
+  const [cart, { data: auth }] = await Promise.all([getCart(), supabase.auth.getUser()])
 
   return (
-    <CartProvider initialCart={cart}>
+    <CartProvider initialCart={cart} isAuthenticated={auth.user !== null}>
       <div className="min-h-screen flex flex-col">
         <Header />
         <div className="flex-1 bg-gray-50">
