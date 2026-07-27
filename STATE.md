@@ -6,6 +6,11 @@ Updated: 2026-07-27 (סבב תשתית: token sweep + אימות מיגרציו�
 תשתית נעולה. שכבת הטוקנים נאכפת בטסט, שרשרת המיגרציות מאומתת מאפס, כל הבדיקות ירוקות.
 
 ## Last Completed
+### 2026-07-27 - CI foundation (feat/ci-foundation)
+- Commit `31447a9` `chore(ci): diff-scoped lint gates` pushed to origin.
+- Gates on tip commit (`git diff HEAD~1..HEAD --name-only`): Biome, tsc --strict, hardcoded hex/px vs `docs/hardcoded-audit.md`.
+- Dummy hex commit verified: gate exit 1 on `#ff00aa`, then removed before push.
+
 ### 1. Token sweep — הושלם ונאכף
 - ‏`src/styles/tokens.ts`: נוסף `SITE` (הפלטה המלאה) + `SITE_CSS_VARS` (33 custom properties)
   + ‏`SITE_CSS_METRICS` (19 מידות משותפות/נמדדות).

@@ -121,7 +121,7 @@ jobs:
 
   # E2E drives a real browser against a real database, so it needs a Supabase
   # project. Until CI_SUPABASE_URL exists as a repository secret this job skips
-  # rather than failing — a permanently red required check teaches people to
+  # rather than failing - a permanently red required check teaches people to
   # ignore red checks. Promote it to a required check once the secret is set.
   e2e:
     name: E2E (Playwright)
