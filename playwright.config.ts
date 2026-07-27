@@ -16,7 +16,21 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  /**
+   * Capped, not unbounded.
+   *
+   * `undefined` lets Playwright use about half the local cores, and every one
+   * of those workers drives guest-cart writes against the SAME Supabase
+   * project. That is a shared, finite backend, not a per-worker fixture: at
+   * full parallelism the cart specs fail with an empty cart, and the pass count
+   * varies run to run (53, then 50, then 44) — the signature of contention
+   * rather than a regression. The same suite passes 53/53 at two workers and in
+   * isolation.
+   *
+   * E2E_WORKERS overrides it for a machine with a local database, where the
+   * contention does not apply.
+   */
+  workers: process.env.CI ? 1 : Number(process.env.E2E_WORKERS ?? 2),
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'html',
   use: {
     baseURL: BASE_URL,
