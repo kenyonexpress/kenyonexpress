@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import type { UserRole } from '@/types/database'
 import {
   BadgeCheck,
+  Banknote,
   BarChart3,
   ClipboardList,
   CreditCard,
@@ -52,6 +53,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/users', label: 'משתמשים', icon: Users, section: 'users' },
   { href: '/admin/suppliers', label: 'ספקים', icon: Store, section: 'suppliers' },
   { href: '/admin/payments', label: 'תשלומים', icon: CreditCard, section: 'payments' },
+  { href: '/admin/payouts', label: 'תשלומים לספקים', icon: Banknote, section: 'payments' },
   { href: '/admin/affiliates', label: 'שותפים והפניות', icon: Share2, section: 'affiliates' },
   { href: '/admin/analytics', label: 'אנליטיקה', icon: BarChart3, section: 'analytics' },
   { href: '/admin/audit-log', label: 'לוג פעילות', icon: ClipboardList, section: 'audit-log' },
