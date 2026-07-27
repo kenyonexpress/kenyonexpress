@@ -9,14 +9,15 @@ function at<T>(items: readonly T[], index: number): T {
   return item
 }
 
-// Final rules: the coupon line carries the ABSOLUTE admin price (40₪ on a
-// 400₪ face); no percent participates in coupon pricing.
+// The coupon line carries the ABSOLUTE admin price (40₪ on a 400₪ face), plus
+// a platform percent that splits that 40₪ prepayment (2026-07-27 model).
 const couponLine = (over: Partial<CalculateSplitInput['lines'][number]> = {}) => ({
   id: 'coupon-1',
   productType: 'coupon' as const,
   unitPriceIls: 400,
   quantity: 1,
   couponPriceIls: 40,
+  platformPercent: 20,
   cashbackPercent: 5,
   ...over,
 })
@@ -46,8 +47,11 @@ describe('calculateSplit — wire view', () => {
     expect(line.faceValueIls).toBe(400)
     expect(line.customerPaysNowIls).toBe(40)
     expect(line.balanceDueAtBusinessIls).toBe(360)
-    expect(line.platformFeeIls).toBe(40)
-    expect(line.supplierDueIls).toBe(0)
+    // 20% of the 40₪ prepayment, not of the 400₪ face.
+    expect(line.platformFeeIls).toBe(8)
+    expect(line.supplierImmediateIls).toBe(0)
+    expect(line.escrowHeldIls).toBe(32)
+    expect(line.supplierDueIls).toBe(32)
     expect(result.cardChargeIls).toBe(40)
   })
 
@@ -68,8 +72,11 @@ describe('calculateSplit — wire view', () => {
     expect(result.faceValueIls).toBe(500)
     expect(result.customerPaysNowIls).toBe(140)
     expect(result.balanceDueAtBusinessIls).toBe(360)
-    expect(result.platformFeeIls).toBe(50)
-    expect(result.supplierDueIls).toBe(90)
+    // 8₪ off the coupon prepayment + 10₪ off the physical line.
+    expect(result.platformFeeIls).toBe(18)
+    expect(result.supplierImmediateIls).toBe(90)
+    expect(result.escrowHeldIls).toBe(32)
+    expect(result.supplierDueIls).toBe(122)
     expect(result.cardChargeIls).toBe(140)
   })
 
@@ -119,9 +126,12 @@ describe('calculateSplit — wire view', () => {
     expect(line.cashbackPercent).toBe(2.5)
   })
 
-  it('reports 0 percent for coupon lines: no percent participates in their pricing', () => {
+  it('reports the coupon percent it actually applied, so the snapshot is auditable', () => {
+    // This asserted 0 until 2026-07-27, when coupon pricing genuinely ignored
+    // the percent. It now participates, and reporting 0 while charging 20%
+    // would put a wrong number in the order_items snapshot.
     const result = calculateSplit(split({ lines: [couponLine()] }))
-    expect(at(result.lines, 0).platformPercent).toBe(0)
+    expect(at(result.lines, 0).platformPercent).toBe(20)
   })
 
   it('derives cashback from the on-site charge, never from face value', () => {
@@ -191,6 +201,8 @@ describe('toSplitView', () => {
           balanceDueAtBusiness: agorot(0),
           platformPercentBps: 1_250,
           platformFee: agorot(1_543),
+          supplierImmediate: agorot(10_802),
+          escrowHeld: agorot(0),
           supplierDue: agorot(10_802),
           cashbackPercentBps: 250,
           cashbackAmount: agorot(309),
@@ -200,6 +212,8 @@ describe('toSplitView', () => {
       customerPaysNow: agorot(12_345),
       balanceDueAtBusiness: agorot(0),
       platformFee: agorot(1_543),
+      supplierImmediate: agorot(10_802),
+      escrowHeld: agorot(0),
       supplierDue: agorot(10_802),
       cashbackAmount: agorot(309),
       walletApplied: agorot(0),
@@ -210,5 +224,8 @@ describe('toSplitView', () => {
     expect(at(view.lines, 0).platformPercent).toBe(12.5)
     expect(at(view.lines, 0).cashbackPercent).toBe(2.5)
     expect(at(view.lines, 0).supplierDueIls).toBe(108.02)
+    // A physical line settles immediately and holds nothing.
+    expect(at(view.lines, 0).supplierImmediateIls).toBe(108.02)
+    expect(at(view.lines, 0).escrowHeldIls).toBe(0)
   })
 })

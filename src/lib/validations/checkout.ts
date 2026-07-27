@@ -87,7 +87,9 @@ export const calculateSplitInputSchema = z.object({
         productType: z.enum(['coupon', 'physical']),
         unitPriceIls: ilsAmount,
         quantity: z.number().int().min(1).max(99),
-        // Physical lines: mandatory. Coupon lines ignore it (final rules).
+        // Mandatory on BOTH types since 2026-07-27: a coupon's prepayment is
+        // now split by it too. Optional here only so the engine, not zod,
+        // reports the missing-percent error with the offending line id.
         platformPercent: z.union([z.string(), z.number()]).optional(),
         // Coupon lines: the admin-set absolute on-site price. Mandatory there.
         couponPriceIls: ilsAmount.optional(),

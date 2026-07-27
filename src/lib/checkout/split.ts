@@ -15,6 +15,10 @@ export type SplitLineView = {
   balanceDueAtBusinessIls: number
   platformPercent: number
   platformFeeIls: number
+  /** Physical: transferred with the settlement. Zero on coupons. */
+  supplierImmediateIls: number
+  /** Coupon: held internally, released to the supplier at redemption. */
+  escrowHeldIls: number
   supplierDueIls: number
   cashbackPercent: number
   cashbackAmountIls: number
@@ -27,6 +31,8 @@ export type SplitResultView = {
   customerPaysNowIls: number
   balanceDueAtBusinessIls: number
   platformFeeIls: number
+  supplierImmediateIls: number
+  escrowHeldIls: number
   supplierDueIls: number
   cashbackAmountIls: number
   walletAppliedIls: number
@@ -34,11 +40,17 @@ export type SplitResultView = {
 }
 
 /**
- * Wire-facing split calculator (final rules 2026-07-24).
+ * Wire-facing split calculator (model of 2026-07-27).
  * Coupon: customer pays the admin-set ABSOLUTE coupon price on site (mandatory
- * per product, no default and no percent derivation), remainder at business.
- * Physical: customer pays 100% on site; platform_percent (mandatory per
- * product) is snapshotted per line for the supplier split.
+ * per product, no default and no percent derivation), remainder at the
+ * business. The platform keeps platform_percent OF THAT PREPAYMENT and the
+ * rest is held for the supplier until redemption.
+ * Physical: customer pays 100% on site; platform_percent splits it immediately.
+ *
+ * platform_percent is mandatory on both types. It used to be forced to 0 for
+ * coupons here, which was correct only while the platform kept the whole
+ * prepayment; passing 0 now would silently pay the supplier the entire
+ * prepayment and the platform nothing.
  */
 export function calculateSplit(input: CalculateSplitInput): SplitResultView {
   const commissionInput: CommissionInput = {
@@ -49,8 +61,7 @@ export function calculateSplit(input: CalculateSplitInput): SplitResultView {
       productType: line.productType,
       unitPrice: ilsToAgorot(line.unitPriceIls.toFixed(2)),
       quantity: line.quantity,
-      // Coupon lines never consult a percent; 0 keeps the engine's field total.
-      platformPercent: line.productType === 'coupon' ? 0 : (line.platformPercent ?? null),
+      platformPercent: line.platformPercent ?? null,
       couponPriceUnit:
         line.couponPriceIls !== undefined ? ilsToAgorot(line.couponPriceIls.toFixed(2)) : undefined,
       cashbackPercent: line.cashbackPercent,
@@ -72,6 +83,8 @@ export function toSplitView(result: CommissionResult): SplitResultView {
       balanceDueAtBusinessIls: agorotToIls(line.balanceDueAtBusiness),
       platformPercent: line.platformPercentBps / 100,
       platformFeeIls: agorotToIls(line.platformFee),
+      supplierImmediateIls: agorotToIls(line.supplierImmediate),
+      escrowHeldIls: agorotToIls(line.escrowHeld),
       supplierDueIls: agorotToIls(line.supplierDue),
       cashbackPercent: line.cashbackPercentBps / 100,
       cashbackAmountIls: agorotToIls(line.cashbackAmount),
@@ -80,6 +93,8 @@ export function toSplitView(result: CommissionResult): SplitResultView {
     customerPaysNowIls: agorotToIls(result.customerPaysNow),
     balanceDueAtBusinessIls: agorotToIls(result.balanceDueAtBusiness),
     platformFeeIls: agorotToIls(result.platformFee),
+    supplierImmediateIls: agorotToIls(result.supplierImmediate),
+    escrowHeldIls: agorotToIls(result.escrowHeld),
     supplierDueIls: agorotToIls(result.supplierDue),
     cashbackAmountIls: agorotToIls(result.cashbackAmount),
     walletAppliedIls: agorotToIls(result.walletApplied),

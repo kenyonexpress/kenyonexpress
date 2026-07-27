@@ -2,14 +2,17 @@ import { describe, expect, it } from 'vitest'
 import { type CommissionInput, calculateCommission } from './commission'
 import { agorot } from './money'
 
-// Final rules: the coupon on-site charge is the ABSOLUTE admin price (40₪
-// here on a 400₪ face), never a percent.
+// The coupon on-site charge is the ABSOLUTE admin price (40₪ here on a 400₪
+// face), never a percent. Since 2026-07-27 the coupon also carries a platform
+// percent, which splits that 40₪ prepayment: the platform keeps 20% of it and
+// the remaining 32₪ is held for the supplier until the voucher is redeemed.
 const coupon = {
   id: 'coupon-1',
   productType: 'coupon' as const,
   unitPrice: agorot(40_000),
   quantity: 1,
   couponPriceUnit: agorot(4_000),
+  platformPercent: 20,
   cashbackPercent: 5,
 }
 
@@ -33,11 +36,56 @@ describe('calculateCommission golden cases', () => {
       faceValue: 40_000,
       customerPaysNow: 4_000,
       balanceDueAtBusiness: 36_000,
-      platformFee: 4_000,
-      supplierDue: 0,
+      // 20% of the 4,000 prepayment, NOT of the 40,000 face: the balance is
+      // collected in cash at the business and never passes through us (C5).
+      platformFee: 800,
+      supplierImmediate: 0,
+      escrowHeld: 3_200,
+      supplierDue: 3_200,
       cashbackAmount: 200,
     })
     expect(result.cardCharge).toBe(4_000)
+  })
+
+  it('holds the supplier share of a coupon rather than paying it out now', () => {
+    const result = calculateCommission({
+      idempotencyKey: 'checkout:coupon-escrow',
+      lines: [coupon],
+    })
+
+    // The regression that matters: under the abolished 2026-07-24 rule the
+    // platform kept the whole prepayment and supplierDue was 0. A coupon that
+    // settles anything immediately is the other failure mode, since the money
+    // is only earned once the voucher is actually redeemed.
+    expect(result.lines[0]?.supplierImmediate).toBe(0)
+    expect(result.lines[0]?.escrowHeld).toBeGreaterThan(0)
+    expect(result.escrowHeld).toBe(3_200)
+    expect(result.supplierImmediate).toBe(0)
+  })
+
+  it('splits the prepayment exactly, leaving nothing unaccounted for', () => {
+    const result = calculateCommission({
+      idempotencyKey: 'checkout:coupon-conservation',
+      lines: [coupon],
+    })
+
+    const line = result.lines[0]
+    if (!line) throw new Error('expected one line')
+    // Every agora the customer paid is either ours or held for the supplier.
+    expect(line.platformFee + line.escrowHeld).toBe(line.customerPaysNow)
+    // And the face value is fully explained by what was paid plus what is owed.
+    expect(line.customerPaysNow + line.balanceDueAtBusiness).toBe(line.faceValue)
+  })
+
+  it('refuses a coupon line with no platform percent instead of assuming one', () => {
+    const { platformPercent: _omitted, ...noPercent } = coupon
+
+    // Before 2026-07-27 this was legal and reported 0 bps, because the percent
+    // played no part in coupon pricing. Now it decides how the prepayment
+    // divides, so a missing one would silently hand the supplier all of it.
+    expect(() =>
+      calculateCommission({ idempotencyKey: 'checkout:no-percent', lines: [noPercent] }),
+    ).toThrow(TypeError)
   })
 
   it('calculates physical commission from the complete line price', () => {
@@ -69,8 +117,12 @@ describe('calculateCommission golden cases', () => {
       faceValue: 50_000,
       customerPaysNow: 14_000,
       balanceDueAtBusiness: 36_000,
-      platformFee: 5_000,
-      supplierDue: 9_000,
+      // 800 from the coupon prepayment + 1,000 from the physical line.
+      platformFee: 1_800,
+      // The physical line settles now; the coupon's share waits for redemption.
+      supplierImmediate: 9_000,
+      escrowHeld: 3_200,
+      supplierDue: 12_200,
       cashbackAmount: 1_400,
       walletApplied: 0,
       cardCharge: 14_000,
@@ -86,8 +138,10 @@ describe('calculateCommission golden cases', () => {
 
     expect(result).toMatchObject({
       customerPaysNow: 14_000,
-      platformFee: 5_000,
-      supplierDue: 9_000,
+      platformFee: 1_800,
+      supplierImmediate: 9_000,
+      escrowHeld: 3_200,
+      supplierDue: 12_200,
       cashbackAmount: 700,
       walletApplied: 3_000,
       cardCharge: 11_000,
@@ -231,6 +285,10 @@ describe('calculateCommission guards', () => {
       walletApplied: agorot(4_000),
     })
     expect(result.cardCharge).toBe(0)
-    expect(result.platformFee).toBe(4_000)
+    // Wallet is a payment source, not a discount: paying by wallet must leave
+    // the commission and the held supplier share exactly where they were.
+    expect(result.platformFee).toBe(800)
+    expect(result.escrowHeld).toBe(3_200)
+    expect(result.customerPaysNow).toBe(4_000)
   })
 })
