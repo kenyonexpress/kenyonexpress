@@ -13,14 +13,15 @@ const NOW = new Date('2026-07-21T12:00:00.000Z')
 const SCAN_AT = new Date('2026-07-25T09:30:00.000Z')
 
 /**
- * End-to-end domain flow for a mixed cart under the FINAL business rules:
- * coupon = absolute admin price on site, all of it platform revenue, balance
- * collected at the business on scan, voucher then terminal. No escrow.
+ * End-to-end domain flow for a mixed cart under the FINAL business rules
+ * (docs/ADMIN-ARCHITECTURE.md section 0): coupon = absolute admin price on site,
+ * split by the product's own platform_percent, balance collected at the business
+ * on scan, voucher then terminal. No escrow.
  */
 describe('checkout flow (domain integration, final rules)', () => {
   it('runs a mixed order from pending to full settlement', () => {
     // 1. Settlement snapshot at beginCheckout: coupon face 250₪ x2 at coupon
-    //    price 99₪ each, physical 120₪ at 5%.
+    //    price 99₪ each with the platform on 25%, physical 120₪ at 5%.
     const settlement = calculateSettlement({
       idempotencyKey: 'order-1',
       lines: [
@@ -30,6 +31,7 @@ describe('checkout flow (domain integration, final rules)', () => {
           unitPrice: ilsToAgorot('250'),
           quantity: 2,
           couponPriceUnit: ilsToAgorot('99'),
+          platformPercent: 25,
         },
         {
           id: 'item-physical',
@@ -44,10 +46,12 @@ describe('checkout flow (domain integration, final rules)', () => {
     const physicalLine = settlement.lines.find((l) => l.id === 'item-physical')
     if (!couponLine || !physicalLine) throw new Error('missing settlement lines')
 
-    // coupon: 2 x 9900 on site, all platform; balance 2 x 15100 at the business
+    // coupon: 2 x 9900 on site, 25% of it to the platform and the residual to
+    // the supplier; balance 2 x 15100 collected at the business.
     expect(couponLine.paidOnSite).toBe(19800)
-    expect(couponLine.commission).toBe(19800)
-    expect(couponLine.supplierDue).toBe(0)
+    expect(couponLine.commission).toBe(4950)
+    expect(couponLine.supplierDue).toBe(14850)
+    expect(couponLine.commission + couponLine.supplierDue).toBe(couponLine.paidOnSite)
     expect(couponLine.balanceDueAtBusiness).toBe(30200)
     // physical: face 12000, commission 600, supplier 11400
     expect(physicalLine.commission).toBe(600)
@@ -119,10 +123,14 @@ describe('checkout flow (domain integration, final rules)', () => {
     expect(wrongSupplier).toBe('wrong_supplier')
     expect(toPublicOutcome(wrongSupplier)).toBe('not_found')
 
-    // 7. Money conservation: platform keeps the on-site charge no matter what
-    //    happens to the vouchers; the business collected only the balance.
+    // 7. Money conservation: the on-site charge divides between platform and
+    //    supplier by each product's own percent, no matter what happens to the
+    //    vouchers; the business collected only the balance.
     const platformKeeps = couponLine.commission + physicalLine.commission
-    expect(platformKeeps).toBe(19800 + 600)
+    expect(platformKeeps).toBe(4950 + 600)
+    const suppliersAreOwed = couponLine.supplierDue + physicalLine.supplierDue
+    expect(suppliersAreOwed).toBe(14850 + 11400)
+    expect(platformKeeps + suppliersAreOwed).toBe(settlement.paidOnSite)
     const collectedAtBusiness = vouchers.reduce((acc, v) => acc + v.remainingAmountDueAgorot, 0)
     expect(collectedAtBusiness).toBe(couponLine.balanceDueAtBusiness)
     for (const v of vouchers) {
