@@ -87,6 +87,70 @@ WHERE slug LIKE 'demo-coupon-%' OR slug = 'barbecue';
 
 ---
 
+---
+
+## 3. Schema + backfill: migration 070_product_dynamic_split
+
+Applied via MCP `apply_migration` (never `db push`), on explicit approval and
+after a backup, recorded as `20260727033456 / 070_product_dynamic_split`.
+
+**Backup taken first**, deliberately outside the git repository so production
+data cannot become a committed artifact:
+
+    /Users/ofir/kenyonexpress-web/backups/products-money-2026-07-27-pre-070.sql
+
+61 UPDATE statements keyed by `id`, wrapped in BEGIN/COMMIT, setting absolute
+values, so it is idempotent and order-independent.
+
+### What it changed
+
+Added to `products`: `discount_percent`, and defensively `platform_percent`,
+`supplier_split_percent`, `coupon_price_ils`, `offer_valid_until`.
+Added to `order_items`: `supplier_split_percent`, `discount_percent`,
+`coupon_price_ils`, and four supplier identity columns.
+
+The backfill derived `platform_percent = 100 - supplier_split_percent` on all
+61 rows. This is recovery, not invention: `supplier_split_percent` was already
+set on every row (70% x31, 75% x15, 85% x15) and `platform_percent` was NULL on
+every row. `discount_percent` was derived from the two prices on the 16 rows
+that carry a coupon price, and came out at 50.00% on all of them.
+
+Six CHECK constraints were added NOT VALID and then all six VALIDATED
+successfully, so no existing row violates any of them.
+
+### Behaviour changes worth knowing
+
+- `products.commission_percent` lost its `DEFAULT 5` and is now commented
+  DEPRECATED. It is kept readable so pre-070 order snapshots still resolve.
+- `product_platform_percent()` no longer returns `COALESCE(product, supplier,
+  10)`. It returns the product's percent or NULL. A caller that relied on the
+  fallback to 10 now gets NULL and must refuse the sale rather than substitute
+  a constant. That is the intent, but it is a live behaviour change.
+
+### Rollback
+
+```sql
+-- Supabase > SQL Editor
+ALTER TABLE public.products
+  DROP CONSTRAINT IF EXISTS products_split_pair_sums_to_100,
+  DROP CONSTRAINT IF EXISTS products_supplier_split_percent_range,
+  DROP CONSTRAINT IF EXISTS products_discount_percent_range;
+ALTER TABLE public.order_items
+  DROP CONSTRAINT IF EXISTS order_items_split_pair_sums_to_100,
+  DROP CONSTRAINT IF EXISTS order_items_discount_percent_range;
+
+-- restore the pre-070 money values (also sets platform_percent back to NULL)
+\i /Users/ofir/kenyonexpress-web/backups/products-money-2026-07-27-pre-070.sql
+UPDATE public.products SET discount_percent = NULL;
+
+DELETE FROM supabase_migrations.schema_migrations
+WHERE version = '20260727033456';
+```
+
+Reverting returns the catalog to a state where no product can be priced, since
+`platform_percent` is mandatory under the current model. The added columns can
+be left in place; they are nullable and additive.
+
 ## What was NOT done
 
 - Migration 027 (`supplier_members`) — not applied.
