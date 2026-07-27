@@ -1,6 +1,10 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
-import { type SettlementState, deriveOrderStatus } from '@/server/domain/orders/state-machine'
+import {
+  SETTLEMENT_STATES,
+  type SettlementState,
+  deriveOrderStatus,
+} from '@/server/domain/orders/state-machine'
 import QRCode from 'qrcode'
 
 export interface OrderSummary {
@@ -64,17 +68,19 @@ export interface OrderDetail {
 }
 
 function asSettlementState(value: string | null | undefined): SettlementState {
-  const states: readonly string[] = [
-    'pending',
-    'paid',
-    'split_executed',
-    'escrow_held',
-    'escrow_released',
-    'redeemed',
-    'refunded',
-    'cancelled',
-  ]
-  return states.includes(value ?? '') ? (value as SettlementState) : 'pending'
+  // Rows written before the escrow model was removed can still carry
+  // escrow_held / escrow_released / platform_settled. All three meant "the
+  // money question for this line is closed", which is split_executed now.
+  const legacy: Record<string, SettlementState> = {
+    escrow_held: 'split_executed',
+    escrow_released: 'split_executed',
+    platform_settled: 'split_executed',
+  }
+  const mapped = legacy[value ?? '']
+  if (mapped) return mapped
+  return SETTLEMENT_STATES.includes(value as SettlementState)
+    ? (value as SettlementState)
+    : 'pending'
 }
 
 async function requireUserId(): Promise<string | null> {
@@ -136,7 +142,7 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
   const { data: items } = await admin
     .from('order_items')
     .select(
-      'id, product_id, product_type, supplier_id, quantity, unit_price_ils, total_price_ils, paid_on_site_agorot, balance_due_agorot, settlement_status, item_status',
+      'id, product_id, product_type, supplier_id, quantity, unit_price_agorot, total_price_agorot, paid_on_site_agorot, balance_due_agorot, settlement_status, item_status',
     )
     .eq('order_id', order.id)
 
@@ -232,8 +238,10 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
       productImage: firstImage,
       productType: item.product_type === 'coupon' ? 'coupon' : 'physical',
       quantity: item.quantity,
-      unitPriceIls: Number(item.unit_price_ils ?? 0),
-      totalIls: Number(item.total_price_ils ?? 0),
+      // Integer agorot is the only money unit in the database since 059; the
+      // shekel columns it renamed away are not read anywhere.
+      unitPriceIls: (item.unit_price_agorot ?? 0) / 100,
+      totalIls: (item.total_price_agorot ?? 0) / 100,
       paidOnSiteIls: (item.paid_on_site_agorot ?? 0) / 100,
       balanceDueIls: (item.balance_due_agorot ?? 0) / 100,
       settlementStatus: asSettlementState(item.settlement_status),

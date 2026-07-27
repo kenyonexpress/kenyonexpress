@@ -39,7 +39,7 @@ describe('order status', () => {
   it('maps the settlement states the order queries emit', () => {
     expect(orderStatusLabel('pending')).toBe('ממתינה לתשלום')
     expect(orderStatusLabel('paid')).toBe('שולמה')
-    expect(orderStatusLabel('escrow_released')).toBe('הושלמה')
+    expect(orderStatusLabel('split_executed')).toBe('הושלמה')
     expect(orderStatusLabel('cancelled')).toBe('בוטלה')
   })
 

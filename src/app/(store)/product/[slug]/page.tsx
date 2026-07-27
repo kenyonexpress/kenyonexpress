@@ -43,7 +43,7 @@ export default async function ProductPage({ params }: Props) {
     .from('products')
     .select(
       `id, slug, name_he, name_en, description_he,
-       kenyon_price, full_price, price_ils, is_coupon_enabled,
+       kenyon_price, full_price, price_agorot, is_coupon_enabled,
        coupon_expiry_days, coupon_terms_he, redemption_instructions_he,
        requires_shipping, weight_grams, warranty_months,
        type, sku, images, stock_quantity, category_id, supplier_id,
@@ -129,9 +129,17 @@ export default async function ProductPage({ params }: Props) {
 
   const couponOffer: CouponOffer | null = isCoupon
     ? buildCouponOffer({
-        // price_ils is the sticker price the business would charge; full_price
-        // is the legacy column and is used only when price_ils is unset.
-        fullPriceIls: product.price_ils ?? product.full_price ?? basePrice,
+        // price_agorot is the sticker price the business would charge, in
+        // integer agorot since migration 059. full_price is the pre-059 shekel
+        // column and is used only when the agorot one is unset.
+        //
+        // This read said product.price_ils until 2026-07-28. 059 renamed that
+        // column to price_ils_legacy, so the select failed and EVERY product
+        // page returned 404 on any database with 059 applied.
+        fullPriceIls:
+          product.price_agorot != null
+            ? product.price_agorot / 100
+            : (product.full_price ?? basePrice),
         couponPriceIls: coupon054?.coupon_price_ils,
         validUntil: coupon054?.offer_valid_until,
         expiryDays: product.coupon_expiry_days,

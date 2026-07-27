@@ -29,9 +29,7 @@ export function formatDateTime(iso: string | null): string {
 const ORDER_STATUS_LABELS: Record<string, string> = {
   pending: 'ממתינה לתשלום',
   paid: 'שולמה',
-  split_executed: 'שולמה',
-  escrow_held: 'שולמה',
-  escrow_released: 'הושלמה',
+  split_executed: 'הושלמה',
   redeemed: 'מומשה',
   refunded: 'זוכתה',
   cancelled: 'בוטלה',

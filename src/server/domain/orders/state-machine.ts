@@ -23,35 +23,25 @@ import type { CommissionProductType } from '@/lib/commerce/commission'
  *   redeemed - the pre-voucher coupon_codes model recorded consumption on the
  *     line rather than on the voucher. Terminal, like escrow_released.
  *
- * The write path this mirrors: finalize.ts issues vouchers and sets the line
- * to escrow_held; redeem_voucher() (migration 074) sets escrow_released.
+ * The write path this mirrors: finalize.ts issues vouchers and settles the
+ * coupon line immediately, because the whole prepayment is platform revenue
+ * the moment it is charged. Nothing is deferred and nothing is held, so there
+ * is no state between paid and settled.
  */
 export type SettlementState =
   | 'pending'
   | 'paid'
   | 'split_executed'
-  | 'platform_settled'
-  | 'escrow_held'
-  | 'escrow_released'
   | 'redeemed'
   | 'refunded'
   | 'cancelled'
 
-export type SettlementEvent =
-  | 'PAYMENT_CONFIRMED'
-  | 'EXECUTE_SPLIT'
-  | 'HOLD_ESCROW'
-  | 'RELEASE_ESCROW'
-  | 'REFUND'
-  | 'CANCEL'
+export type SettlementEvent = 'PAYMENT_CONFIRMED' | 'EXECUTE_SPLIT' | 'REFUND' | 'CANCEL'
 
 export const SETTLEMENT_STATES: readonly SettlementState[] = [
   'pending',
   'paid',
   'split_executed',
-  'platform_settled',
-  'escrow_held',
-  'escrow_released',
   'redeemed',
   'refunded',
   'cancelled',
@@ -60,8 +50,6 @@ export const SETTLEMENT_STATES: readonly SettlementState[] = [
 export const SETTLEMENT_EVENTS: readonly SettlementEvent[] = [
   'PAYMENT_CONFIRMED',
   'EXECUTE_SPLIT',
-  'HOLD_ESCROW',
-  'RELEASE_ESCROW',
   'REFUND',
   'CANCEL',
 ]
@@ -97,22 +85,17 @@ const TRANSITIONS: Readonly<
     CANCEL: { to: 'cancelled' },
   },
   paid: {
-    EXECUTE_SPLIT: { to: 'split_executed', productType: 'physical' },
-    HOLD_ESCROW: { to: 'escrow_held', productType: 'coupon' },
-    REFUND: { to: 'refunded' },
-  },
-  escrow_held: {
-    RELEASE_ESCROW: { to: 'escrow_released', productType: 'coupon' },
-    REFUND: { to: 'refunded' },
-  },
-  platform_settled: {
+    // Both types land in split_executed. A physical line splits by the
+    // per-product platform_percent; a coupon line "splits" 100/0, because the
+    // platform keeps the whole prepayment and the supplier collects their part
+    // in cash at the counter.
+    EXECUTE_SPLIT: { to: 'split_executed' },
     REFUND: { to: 'refunded' },
   },
   redeemed: {},
   split_executed: {
     REFUND: { to: 'refunded' },
   },
-  escrow_released: {},
   refunded: {},
   cancelled: {},
 }
@@ -166,33 +149,23 @@ export function isTerminal(state: SettlementState): boolean {
 
 /** States in which the platform no longer owes anyone money for the line. */
 export function isSettled(state: SettlementState): boolean {
-  return (
-    state === 'split_executed' ||
-    state === 'platform_settled' ||
-    state === 'escrow_released' ||
-    state === 'refunded' ||
-    state === 'cancelled'
-  )
+  return state === 'split_executed' || state === 'refunded' || state === 'cancelled'
 }
 
 /**
  * Order-level rollup from line states, in the same enum.
  * The order shows the least-advanced ACTIVE line; once every line is settled,
- * the dominant settlement outcome wins (escrow_released over split_executed,
- * because the coupon leg is the last to settle in a mixed order).
+ * the dominant settlement outcome wins.
  */
 export function deriveOrderStatus(lineStates: readonly SettlementState[]): SettlementState {
   if (lineStates.length === 0) return 'pending'
 
   if (lineStates.some((s) => s === 'pending')) return 'pending'
   if (lineStates.some((s) => s === 'paid')) return 'paid'
-  if (lineStates.some((s) => s === 'escrow_held')) return 'escrow_held'
   if (lineStates.some((s) => s === 'redeemed')) return 'redeemed'
 
   // Every line is settled from here on.
   if (lineStates.every((s) => s === 'cancelled')) return 'cancelled'
   if (lineStates.every((s) => s === 'refunded' || s === 'cancelled')) return 'refunded'
-  if (lineStates.some((s) => s === 'escrow_released')) return 'escrow_released'
-  if (lineStates.some((s) => s === 'platform_settled')) return 'platform_settled'
   return 'split_executed'
 }

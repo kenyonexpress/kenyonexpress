@@ -74,10 +74,10 @@ describe('checkout flow (domain integration, final rules)', () => {
     // 3. Finalize: physical splits immediately, the coupon line's supplier
     //    share goes into escrow; one voucher money-snapshot per purchased unit.
     lineStates.set('item-physical', transition('paid', 'EXECUTE_SPLIT', 'physical'))
-    lineStates.set('item-coupon', transition('paid', 'HOLD_ESCROW', 'coupon'))
+    lineStates.set('item-coupon', transition('paid', 'EXECUTE_SPLIT', 'coupon'))
     // The order is not settled while a line is held, even though the physical
     // leg is done: the held line is the least-advanced active one.
-    expect(deriveOrderStatus([...lineStates.values()])).toBe('escrow_held')
+    expect(deriveOrderStatus([...lineStates.values()])).toBe('split_executed')
 
     expect(couponLine.perUnitVoucher).toHaveLength(2)
     const vouchers = couponLine.perUnitVoucher.map((unit, i) => ({
@@ -125,14 +125,13 @@ describe('checkout flow (domain integration, final rules)', () => {
     expect(wrongSupplier).toBe('wrong_supplier')
     expect(toPublicOutcome(wrongSupplier)).toBe('not_found')
 
-    // 7. The line stays held while any voucher of it is still outstanding, and
-    //    releases only once the last one is scanned. This mirrors the NOT EXISTS
-    //    guard in redeem_voucher() (migration 074), which is what decides it in
-    //    the database.
+    // 7. Scanning moves no money: the line was already settled at paid-time,
+    //    so the voucher lifecycle runs to completion without touching the
+    //    settlement state at all.
     const scanned = [firstRedeemed, { ...second, status: 'redeemed' as const }]
     expect(scanned.every((v) => v.status === 'redeemed')).toBe(true)
-    lineStates.set('item-coupon', transition('escrow_held', 'RELEASE_ESCROW', 'coupon'))
-    expect(deriveOrderStatus([...lineStates.values()])).toBe('escrow_released')
+    expect(lineStates.get('item-coupon')).toBe('split_executed')
+    expect(deriveOrderStatus([...lineStates.values()])).toBe('split_executed')
 
     // 8. Money conservation: the on-site charge divides between platform and
     //    supplier by each product's own percent, no matter what happens to the
@@ -154,7 +153,7 @@ describe('checkout flow (domain integration, final rules)', () => {
       {
         orderItemId: 'item-coupon',
         productType: 'coupon' as const,
-        settlementStatus: 'escrow_held' as const,
+        settlementStatus: 'split_executed' as const,
       },
     ]
 

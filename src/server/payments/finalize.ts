@@ -17,14 +17,12 @@ type OrderItemRow = {
   product_type: string
   supplier_id: string | null
   quantity: number
-  unit_price_ils: number
+  unit_price_agorot: number | null
   platform_percent: number | null
   upfront_percent: number | null
   commission_percent_snapshot: number | null
   paid_on_site_agorot: number | null
   commission_agorot: number | null
-  escrow_held_agorot: number | null
-  escrow_release_agorot: number | null
   face_value_agorot: number | null
   balance_due_agorot: number | null
   supplier_immediate_agorot: number | null
@@ -272,7 +270,7 @@ export async function finalizeOrder(input: {
   const { data: items } = await admin
     .from('order_items')
     .select(
-      'id, order_id, product_id, product_type, supplier_id, quantity, unit_price_ils, platform_percent, upfront_percent, commission_percent_snapshot, paid_on_site_agorot, commission_agorot, escrow_held_agorot, escrow_release_agorot, face_value_agorot, balance_due_agorot, supplier_immediate_agorot, cashback_amount_agorot, settlement_status',
+      'id, order_id, product_id, product_type, supplier_id, quantity, unit_price_agorot, platform_percent, upfront_percent, commission_percent_snapshot, paid_on_site_agorot, commission_agorot, face_value_agorot, balance_due_agorot, supplier_immediate_agorot, cashback_amount_agorot, settlement_status',
     )
     .eq('order_id', order.id)
   if (!items || items.length === 0) {
@@ -339,11 +337,11 @@ export async function finalizeOrder(input: {
         await issueVouchersForItem(admin, item, order.user_id, info, now)
         // The coupon line is settled the moment it is paid: everything charged
         // online is ours, nothing is deferred, and scanning the voucher moves
-        // no money. platform_settled is therefore terminal for the line, and
-        // the only way out of it is a refund.
+        // no money. It shares split_executed with physical lines because the
+        // split did happen, at 100/0.
         await admin
           .from('order_items')
-          .update({ settlement_status: 'platform_settled', item_status: 'issued' })
+          .update({ settlement_status: 'split_executed', item_status: 'issued' })
           .eq('id', item.id)
           .in('settlement_status', ['pending', 'paid'])
       } else {

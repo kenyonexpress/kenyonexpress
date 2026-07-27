@@ -92,6 +92,42 @@ Updated: 2026-07-28 (היפוך מודל: הקופון חוזר ל"הכל לפל
 `pnpm exec tsc --noEmit` נקי, `pnpm exec vitest run` — 523 בדיקות ב-42 קבצים,
 כולן עוברות.
 
+## סבב 2026-07-28 (לילה) — באג ה-404 בדפי מוצר + מחיקת שאריות escrow
+
+### הבאג שחסם הכל: כל דף מוצר החזיר 404
+`src/app/(store)/product/[slug]/page.tsx` בחר `price_ils` ב-select. מיגרציה
+059 שינתה את שם העמודה ל-`price_agorot` (הישנה הפכה ל-`price_ils_legacy`),
+ולכן ה-select נכשל, המוצר חזר null ו-`notFound()` רץ על **כל** מוצר בכל DB
+שבו 059 הוחלה. זה גם מה שהסתיר את הבאג: `compare.mjs` מדד דף ריק ודיווח
+‏12.04%, מספר שנראה סביר. אחרי התיקון הדף עולה 200 והמדידה האמיתית היא
+**16.56%** — עדיין מעל הסף של 11%, וזה הבסיס הנכון להמשך.
+
+תוקנו באותו כיוון עוד שני מסלולים שקראו עמודות מלפני 059:
+- ‏`finalize.ts`: ‏`unit_price_ils` -> `unit_price_agorot`, והוסרו
+  `escrow_held_agorot` / `escrow_release_agorot` מה-select ומטיפוס השורה.
+- ‏`server/queries/orders.ts`: ‏`unit_price_ils` / `total_price_ils` ->
+  `unit_price_agorot` / `total_price_agorot`, עם המרה ב-/100 במקום `Number()`.
+
+### מחיקת שאריות ה-escrow (המודל הנעול: 035ef8e)
+- **`state-machine.ts`**: הסטטוסים `escrow_held`, `escrow_released`
+  ו-`platform_settled` נמחקו, וגם האירועים `HOLD_ESCROW` / `RELEASE_ESCROW`.
+  נשארו שישה מצבים. שני סוגי המוצר עוברים דרך אותו `EXECUTE_SPLIT`: פיזי
+  מתפצל לפי האחוז פר-מוצר, קופון "מתפצל" 100/0.
+- **`finalize.ts`**: שורת קופון מקבלת `split_executed` מיד בתשלום.
+- **נמחקו**: ‏`src/server/domain/vouchers/escrow.ts` והבדיקות שלו.
+- **`account/format.ts`**: ‏`split_executed` = "הושלמה"; התוויות של מצבי
+  ה-escrow הוסרו.
+- **`queries/orders.ts`**: שורות היסטוריות עם `escrow_held` /
+  `escrow_released` / `platform_settled` ממופות ל-`split_executed` בקריאה,
+  כדי שהזמנות ישנות ימשיכו להיקרא בלי DDL.
+- **בדיקות**: ‏`state-machine.test.ts` ו-`checkout-flow.test.ts` נכתבו מחדש
+  למודל: הקופון מסולק בתשלום, הסריקה לא מזיזה כסף. **505 ירוקות, tsc נקי.**
+
+⚠️ **שאריות escrow שנשארו ולמה:** ‏`admin/payments/page.tsx` (טאב שקורא
+`escrow_holds` להצגת שורות היסטוריות), הערות ב-`redeem/route.ts` וב-cron של
+הפקיעה, ו-`checkout.ts` שכותב אפסים לעמודות 046/047. כולן דורשות DDL או
+מיגרציה כדי להיעלם לגמרי, **וההוראה אוסרת DDL בסבב הזה** (enum ממתין).
+
 ## סבב 2026-07-28 — MEGA-GOAL שלב 2: היפוך מודל הקופון
 
 ההוראה נמסרה שוב ללא שינוי אחרי שסימנתי את הסתירה, ולכן בוצעה.
