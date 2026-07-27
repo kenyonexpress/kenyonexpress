@@ -58,14 +58,24 @@ export default function ProductForm({ product, variants: initVariants = [], cate
   const isCouponProduct = product?.type === 'coupon' || product?.is_coupon_enabled === true
 
   /**
-   * The supplier's share is shown, never stored. Keeping a second column that
-   * has to stay at 100 minus this one invites a row where the two disagree and
-   * the money owed has no single answer. Deriving it costs nothing and cannot
-   * drift.
+   * The supplier's share, shown live so the admin sets one number and sees both.
    *
-   * What it applies to differs by type: a physical line splits the full charge,
-   * a coupon splits only the amount paid on site, since the balance is collected
-   * in cash at the business and never reaches us.
+   * This is a display of `supplier_split_percent`, NOT a replacement for it.
+   * An earlier version of this comment claimed the share is "never stored" and
+   * that a second column would be redundant. That was wrong on the facts: the
+   * live catalog carries its split in `supplier_split_percent` on all 61
+   * products (70/75/85) while `platform_percent` is NULL on every one of them,
+   * so the "redundant" column is the one holding the real data. It is also
+   * wrong in principle, because a derived value cannot survive the snapshot
+   * `order_items` needs to report a months-old line at the percent agreed then.
+   *
+   * Both halves are columns, and migration 070 forbids a row where they fail to
+   * sum to 100 (`products_split_pair_sums_to_100`). Persisting the supplier half
+   * from this form is still to be wired; see docs/CONTRADICTIONS.md.
+   *
+   * What the percent applies to differs by type: a physical line splits the full
+   * charge, a coupon splits only the amount paid on site, since the balance is
+   * collected in cash at the business and never reaches us.
    */
   const supplierSplitLabel = (() => {
     const value = Number(platformPercent)
