@@ -1,5 +1,6 @@
 import { agorot, agorotToIls } from '@/lib/commerce/money'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { buildVoucherHolds } from '@/server/domain/vouchers/escrow'
 import { type VoucherIssueClient, issueVoucher } from '@/server/domain/vouchers/issue'
 import type { Json } from '@/types/database'
 
@@ -17,6 +18,7 @@ type OrderItemRow = {
   supplier_id: string | null
   quantity: number
   unit_price_ils: number
+  platform_percent: number | null
   upfront_percent: number | null
   commission_percent_snapshot: number | null
   paid_on_site_agorot: number | null
@@ -41,6 +43,17 @@ function perUnit(total: number, quantity: number): number[] {
   )
 }
 
+/**
+ * Issues one voucher per purchased unit and puts the supplier's share of each
+ * prepayment into escrow (C11 version b): the platform keeps
+ * `platform_percent` of what was charged online, the remainder is held until
+ * that specific voucher is scanned. `redeem_voucher()` (074) is what releases
+ * it.
+ *
+ * Holds are reconciled rather than only appended, so a run that issued a
+ * voucher and then failed before writing its hold repairs itself on the retry
+ * instead of leaving a voucher whose supplier share belongs to nobody.
+ */
 async function issueVouchersForItem(
   admin: AdminClient,
   item: OrderItemRow,
@@ -51,15 +64,27 @@ async function issueVouchersForItem(
   if (!item.product_id || !item.supplier_id) {
     throw new Error(`coupon order item ${item.id} is missing product or supplier`)
   }
+  if (item.platform_percent === null || item.platform_percent === undefined) {
+    throw new Error(
+      `coupon order item ${item.id} has no platform_percent snapshot; refusing to issue`,
+    )
+  }
 
   const faceUnits = perUnit(item.face_value_agorot ?? 0, item.quantity)
   const paidUnits = perUnit(item.paid_on_site_agorot ?? 0, item.quantity)
+  const holds = buildVoucherHolds(
+    paidUnits.map((unit) => agorot(unit)),
+    agorot(item.commission_agorot ?? 0),
+  )
 
   // Idempotency: never issue beyond quantity for this order_item (replay-safe).
   // The vouchers UNIQUE(code) plus this count cap make webhook replays no-ops.
-  const { data: existing } = await admin.from('vouchers').select('id').eq('order_item_id', item.id)
-  const alreadyIssued = existing?.length ?? 0
-  if (alreadyIssued >= item.quantity) return
+  const { data: existing } = await admin
+    .from('vouchers')
+    .select('id')
+    .eq('order_item_id', item.id)
+    .order('issued_at', { ascending: true })
+  const issuedIds = (existing ?? []).map((row) => row.id)
 
   // No offer deadline on the product means the rolling per-product window is
   // the only limit; feed the issuer that same date so it never widens the TTL.
@@ -68,8 +93,8 @@ async function issueVouchersForItem(
   )
   const offerValidUntil = product.offerValidUntil ?? fallbackDeadline
 
-  for (let unit = alreadyIssued; unit < item.quantity; unit += 1) {
-    await issueVoucher(admin as unknown as VoucherIssueClient, {
+  for (let unit = issuedIds.length; unit < item.quantity; unit += 1) {
+    const issued = await issueVoucher(admin as unknown as VoucherIssueClient, {
       orderId: item.order_id,
       orderItemId: item.id,
       productId: item.product_id,
@@ -77,10 +102,51 @@ async function issueVouchersForItem(
       userId,
       priceIls: agorotToIls(agorot(faceUnits[unit] ?? 0)),
       couponPriceIls: agorotToIls(agorot(paidUnits[unit] ?? 0)),
+      platformPercent: item.platform_percent,
       couponExpiryDays: product.couponExpiryDays,
       offerValidUntil,
       now,
     })
+    issuedIds.push(issued.id)
+  }
+
+  await writeVoucherHolds(admin, item, issuedIds, holds)
+}
+
+async function writeVoucherHolds(
+  admin: AdminClient,
+  item: OrderItemRow,
+  voucherIds: readonly string[],
+  holds: readonly { held: number; commission: number; release: number }[],
+): Promise<void> {
+  const { data: heldAlready } = await admin
+    .from('escrow_holds')
+    .select('voucher_id')
+    .eq('order_item_id', item.id)
+  const covered = new Set((heldAlready ?? []).map((row) => row.voucher_id))
+
+  const missing = voucherIds
+    .map((voucherId, index) => ({ voucherId, amounts: holds[index] }))
+    .filter((row) => row.amounts !== undefined && !covered.has(row.voucherId))
+
+  if (missing.length === 0) return
+
+  const { error } = await admin.from('escrow_holds').insert(
+    missing.map(({ voucherId, amounts }) => ({
+      voucher_id: voucherId,
+      order_id: item.order_id,
+      order_item_id: item.id,
+      supplier_id: item.supplier_id as string,
+      held_agorot: amounts?.held ?? 0,
+      commission_agorot: amounts?.commission ?? 0,
+      release_agorot: amounts?.release ?? 0,
+      status: 'held' as const,
+    })),
+  )
+  // A concurrent finalize won the unique index on voucher_id; its holds are the
+  // same amounts, so the row already exists and there is nothing to repair.
+  if (error && !error.message.includes('duplicate')) {
+    throw new Error(`escrow hold insert failed: ${error.message}`)
   }
 }
 
@@ -242,7 +308,7 @@ export async function finalizeOrder(input: {
   const { data: items } = await admin
     .from('order_items')
     .select(
-      'id, order_id, product_id, product_type, supplier_id, quantity, unit_price_ils, upfront_percent, commission_percent_snapshot, paid_on_site_agorot, commission_agorot, escrow_held_agorot, escrow_release_agorot, face_value_agorot, balance_due_agorot, supplier_immediate_agorot, cashback_amount_agorot, settlement_status',
+      'id, order_id, product_id, product_type, supplier_id, quantity, unit_price_ils, platform_percent, upfront_percent, commission_percent_snapshot, paid_on_site_agorot, commission_agorot, escrow_held_agorot, escrow_release_agorot, face_value_agorot, balance_due_agorot, supplier_immediate_agorot, cashback_amount_agorot, settlement_status',
     )
     .eq('order_id', order.id)
   if (!items || items.length === 0) {
@@ -305,11 +371,14 @@ export async function finalizeOrder(input: {
           offerValidUntil: null,
         }
         await issueVouchersForItem(admin, item, order.user_id, info, now)
-        // No escrow under the final rules: the on-site money is platform
-        // revenue at paid-time; the item is simply settled once vouchers exist.
+        // C11(b): only the platform's cut is revenue at paid-time. The
+        // supplier's share of the prepayment sits in escrow_holds until each
+        // voucher is scanned, so the line is held, not settled. redeem_voucher()
+        // moves it to escrow_released once no voucher of this line is still
+        // outstanding.
         await admin
           .from('order_items')
-          .update({ settlement_status: 'platform_settled', item_status: 'issued' })
+          .update({ settlement_status: 'escrow_held', item_status: 'issued' })
           .eq('id', item.id)
           .in('settlement_status', ['pending', 'paid'])
       } else {

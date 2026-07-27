@@ -151,6 +151,62 @@ export type Database = {
           },
         ]
       }
+      cashback_rules: {
+        Row: {
+          category_id: string | null
+          created_at: string
+          ends_at: string | null
+          every_nth_order: number | null
+          id: string
+          is_active: boolean
+          max_cashback_ils: number | null
+          min_order_ils: number
+          name_he: string
+          percent: number
+          priority: number
+          starts_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string
+          ends_at?: string | null
+          every_nth_order?: number | null
+          id?: string
+          is_active?: boolean
+          max_cashback_ils?: number | null
+          min_order_ils?: number
+          name_he: string
+          percent: number
+          priority?: number
+          starts_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string
+          ends_at?: string | null
+          every_nth_order?: number | null
+          id?: string
+          is_active?: boolean
+          max_cashback_ils?: number | null
+          min_order_ils?: number
+          name_he?: string
+          percent?: number
+          priority?: number
+          starts_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cashback_rules_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           created_at: string
@@ -441,7 +497,7 @@ export type Database = {
       escrow_holds: {
         Row: {
           commission_agorot: number
-          coupon_code_id: string
+          coupon_code_id: string | null
           created_at: string
           held_agorot: number
           held_at: string
@@ -455,10 +511,11 @@ export type Database = {
           status: Database["public"]["Enums"]["escrow_status"]
           supplier_id: string
           updated_at: string
+          voucher_id: string | null
         }
         Insert: {
           commission_agorot: number
-          coupon_code_id: string
+          coupon_code_id?: string | null
           created_at?: string
           held_agorot: number
           held_at?: string
@@ -472,10 +529,11 @@ export type Database = {
           status?: Database["public"]["Enums"]["escrow_status"]
           supplier_id: string
           updated_at?: string
+          voucher_id?: string | null
         }
         Update: {
           commission_agorot?: number
-          coupon_code_id?: string
+          coupon_code_id?: string | null
           created_at?: string
           held_agorot?: number
           held_at?: string
@@ -489,6 +547,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["escrow_status"]
           supplier_id?: string
           updated_at?: string
+          voucher_id?: string | null
         }
         Relationships: [
           {
@@ -519,7 +578,62 @@ export type Database = {
             referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "escrow_holds_voucher_id_fkey"
+            columns: ["voucher_id"]
+            isOneToOne: false
+            referencedRelation: "vouchers"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      media_assets: {
+        Row: {
+          alt_he: string
+          base_path: string | null
+          blur_data_url: string | null
+          bucket: string | null
+          created_at: string
+          created_by: string | null
+          height: number | null
+          id: string
+          provider: string
+          renditions: Json
+          updated_at: string
+          url: string
+          width: number | null
+        }
+        Insert: {
+          alt_he: string
+          base_path?: string | null
+          blur_data_url?: string | null
+          bucket?: string | null
+          created_at?: string
+          created_by?: string | null
+          height?: number | null
+          id?: string
+          provider?: string
+          renditions?: Json
+          updated_at?: string
+          url: string
+          width?: number | null
+        }
+        Update: {
+          alt_he?: string
+          base_path?: string | null
+          blur_data_url?: string | null
+          bucket?: string | null
+          created_at?: string
+          created_by?: string | null
+          height?: number | null
+          id?: string
+          provider?: string
+          renditions?: Json
+          updated_at?: string
+          url?: string
+          width?: number | null
+        }
+        Relationships: []
       }
       order_items: {
         Row: {
@@ -530,8 +644,10 @@ export type Database = {
           commission_agorot: number | null
           commission_percent: number
           commission_percent_snapshot: number | null
+          coupon_price_ils: number | null
           created_at: string
           deleted_at: string | null
+          discount_percent: number | null
           escrow_held_agorot: number | null
           escrow_release_agorot: number | null
           face_value_agorot: number | null
@@ -545,9 +661,14 @@ export type Database = {
           product_type: Database["public"]["Enums"]["product_type"]
           quantity: number
           settlement_status: Database["public"]["Enums"]["settlement_status"]
+          supplier_address: string | null
           supplier_id: string | null
           supplier_immediate_agorot: number | null
+          supplier_logo_url: string | null
+          supplier_name: string | null
           supplier_payout_ils: number
+          supplier_phone: string | null
+          supplier_split_percent: number | null
           total_price_ils: number
           unit_price_ils: number
           updated_at: string
@@ -562,8 +683,10 @@ export type Database = {
           commission_agorot?: number | null
           commission_percent: number
           commission_percent_snapshot?: number | null
+          coupon_price_ils?: number | null
           created_at?: string
           deleted_at?: string | null
+          discount_percent?: number | null
           escrow_held_agorot?: number | null
           escrow_release_agorot?: number | null
           face_value_agorot?: number | null
@@ -577,9 +700,14 @@ export type Database = {
           product_type: Database["public"]["Enums"]["product_type"]
           quantity?: number
           settlement_status?: Database["public"]["Enums"]["settlement_status"]
+          supplier_address?: string | null
           supplier_id?: string | null
           supplier_immediate_agorot?: number | null
+          supplier_logo_url?: string | null
+          supplier_name?: string | null
           supplier_payout_ils: number
+          supplier_phone?: string | null
+          supplier_split_percent?: number | null
           total_price_ils: number
           unit_price_ils: number
           updated_at?: string
@@ -594,8 +722,10 @@ export type Database = {
           commission_agorot?: number | null
           commission_percent?: number
           commission_percent_snapshot?: number | null
+          coupon_price_ils?: number | null
           created_at?: string
           deleted_at?: string | null
+          discount_percent?: number | null
           escrow_held_agorot?: number | null
           escrow_release_agorot?: number | null
           face_value_agorot?: number | null
@@ -609,9 +739,14 @@ export type Database = {
           product_type?: Database["public"]["Enums"]["product_type"]
           quantity?: number
           settlement_status?: Database["public"]["Enums"]["settlement_status"]
+          supplier_address?: string | null
           supplier_id?: string | null
           supplier_immediate_agorot?: number | null
+          supplier_logo_url?: string | null
+          supplier_name?: string | null
           supplier_payout_ils?: number
+          supplier_phone?: string | null
+          supplier_split_percent?: number | null
           total_price_ils?: number
           unit_price_ils?: number
           updated_at?: string
@@ -980,6 +1115,7 @@ export type Database = {
           attributes: Json
           barcode: string | null
           brand: string | null
+          cashback_enabled: boolean
           cashback_percent: number
           category_id: string | null
           commission_percent: number
@@ -988,11 +1124,13 @@ export type Database = {
           condition: string | null
           cost_ils: number | null
           coupon_expiry_days: number | null
+          coupon_price_ils: number | null
           coupon_terms_he: string | null
           created_at: string
           created_by: string | null
           deleted_at: string | null
           description_he: string | null
+          discount_percent: number | null
           full_price: number | null
           height_cm: number | null
           highlights: Json
@@ -1007,8 +1145,10 @@ export type Database = {
           min_purchase_ils: number | null
           name_en: string | null
           name_he: string
+          offer_valid_until: string | null
           platform_percent: number | null
           price_ils: number
+          profit_share_cap_percent: number
           published_at: string | null
           redemption_instructions_he: string | null
           requires_shipping: boolean
@@ -1022,6 +1162,7 @@ export type Database = {
           stock_quantity: number | null
           submitted_at: string | null
           supplier_id: string | null
+          supplier_split_percent: number | null
           type: Database["public"]["Enums"]["product_type"]
           updated_at: string
           video_url: string | null
@@ -1037,19 +1178,22 @@ export type Database = {
           attributes?: Json
           barcode?: string | null
           brand?: string | null
+          cashback_enabled?: boolean
           cashback_percent?: number
           category_id?: string | null
-          commission_percent?: number
+          commission_percent: number
           compare_at_price?: number | null
           compare_at_price_ils?: number | null
           condition?: string | null
           cost_ils?: number | null
           coupon_expiry_days?: number | null
+          coupon_price_ils?: number | null
           coupon_terms_he?: string | null
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
           description_he?: string | null
+          discount_percent?: number | null
           full_price?: number | null
           height_cm?: number | null
           highlights?: Json
@@ -1064,8 +1208,10 @@ export type Database = {
           min_purchase_ils?: number | null
           name_en?: string | null
           name_he: string
+          offer_valid_until?: string | null
           platform_percent?: number | null
           price_ils: number
+          profit_share_cap_percent?: number
           published_at?: string | null
           redemption_instructions_he?: string | null
           requires_shipping?: boolean
@@ -1079,6 +1225,7 @@ export type Database = {
           stock_quantity?: number | null
           submitted_at?: string | null
           supplier_id?: string | null
+          supplier_split_percent?: number | null
           type: Database["public"]["Enums"]["product_type"]
           updated_at?: string
           video_url?: string | null
@@ -1094,6 +1241,7 @@ export type Database = {
           attributes?: Json
           barcode?: string | null
           brand?: string | null
+          cashback_enabled?: boolean
           cashback_percent?: number
           category_id?: string | null
           commission_percent?: number
@@ -1102,11 +1250,13 @@ export type Database = {
           condition?: string | null
           cost_ils?: number | null
           coupon_expiry_days?: number | null
+          coupon_price_ils?: number | null
           coupon_terms_he?: string | null
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
           description_he?: string | null
+          discount_percent?: number | null
           full_price?: number | null
           height_cm?: number | null
           highlights?: Json
@@ -1121,8 +1271,10 @@ export type Database = {
           min_purchase_ils?: number | null
           name_en?: string | null
           name_he?: string
+          offer_valid_until?: string | null
           platform_percent?: number | null
           price_ils?: number
+          profit_share_cap_percent?: number
           published_at?: string | null
           redemption_instructions_he?: string | null
           requires_shipping?: boolean
@@ -1136,6 +1288,7 @@ export type Database = {
           stock_quantity?: number | null
           submitted_at?: string | null
           supplier_id?: string | null
+          supplier_split_percent?: number | null
           type?: Database["public"]["Enums"]["product_type"]
           updated_at?: string
           video_url?: string | null
@@ -1347,36 +1500,107 @@ export type Database = {
           },
         ]
       }
-      suppliers: {
+      supplier_members: {
         Row: {
-          commission_percent: number
-          contact_email: string | null
-          contact_phone: string | null
           created_at: string
           id: string
-          name: string
-          notes: string | null
+          invited_by: string | null
+          is_active: boolean
+          member_role: Database["public"]["Enums"]["supplier_member_role"]
+          supplier_id: string
           updated_at: string
+          user_id: string
         }
         Insert: {
-          commission_percent?: number
-          contact_email?: string | null
-          contact_phone?: string | null
           created_at?: string
           id?: string
-          name: string
-          notes?: string | null
+          invited_by?: string | null
+          is_active?: boolean
+          member_role?: Database["public"]["Enums"]["supplier_member_role"]
+          supplier_id: string
           updated_at?: string
+          user_id: string
         }
         Update: {
-          commission_percent?: number
-          contact_email?: string | null
-          contact_phone?: string | null
           created_at?: string
           id?: string
+          invited_by?: string | null
+          is_active?: boolean
+          member_role?: Database["public"]["Enums"]["supplier_member_role"]
+          supplier_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_members_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      suppliers: {
+        Row: {
+          address: string | null
+          business_id: string | null
+          city: string | null
+          commission_percent: number
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          default_split_percent: number
+          deleted_at: string | null
+          id: string
+          logo_url: string | null
+          name: string
+          notes: string | null
+          status: string
+          updated_at: string
+          website: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          address?: string | null
+          business_id?: string | null
+          city?: string | null
+          commission_percent?: number
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          default_split_percent?: number
+          deleted_at?: string | null
+          id?: string
+          logo_url?: string | null
+          name: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+          website?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          address?: string | null
+          business_id?: string | null
+          city?: string | null
+          commission_percent?: number
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          default_split_percent?: number
+          deleted_at?: string | null
+          id?: string
+          logo_url?: string | null
           name?: string
           notes?: string | null
+          status?: string
           updated_at?: string
+          website?: string | null
+          whatsapp?: string | null
         }
         Relationships: []
       }
@@ -1547,6 +1771,186 @@ export type Database = {
           },
         ]
       }
+      voucher_redemptions: {
+        Row: {
+          amount_collected_agorot: number | null
+          code_entered: string
+          created_at: string
+          id: string
+          idempotency_key: string | null
+          metadata: Json
+          outcome: Database["public"]["Enums"]["voucher_scan_outcome"]
+          scan_method: string | null
+          scanned_by: string | null
+          supplier_id: string | null
+          voucher_id: string | null
+        }
+        Insert: {
+          amount_collected_agorot?: number | null
+          code_entered: string
+          created_at?: string
+          id?: string
+          idempotency_key?: string | null
+          metadata?: Json
+          outcome: Database["public"]["Enums"]["voucher_scan_outcome"]
+          scan_method?: string | null
+          scanned_by?: string | null
+          supplier_id?: string | null
+          voucher_id?: string | null
+        }
+        Update: {
+          amount_collected_agorot?: number | null
+          code_entered?: string
+          created_at?: string
+          id?: string
+          idempotency_key?: string | null
+          metadata?: Json
+          outcome?: Database["public"]["Enums"]["voucher_scan_outcome"]
+          scan_method?: string | null
+          scanned_by?: string | null
+          supplier_id?: string | null
+          voucher_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voucher_redemptions_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voucher_redemptions_voucher_id_fkey"
+            columns: ["voucher_id"]
+            isOneToOne: false
+            referencedRelation: "vouchers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vouchers: {
+        Row: {
+          cancelled_at: string | null
+          code: string
+          coupon_price_agorot: number
+          created_at: string
+          expires_at: string
+          face_value_agorot: number
+          id: string
+          issued_at: string
+          offer_valid_until: string
+          order_id: string
+          order_item_id: string
+          platform_percent: number
+          product_id: string
+          qr_key_id: string
+          qr_payload: string
+          redeemed_amount_collected_agorot: number | null
+          redeemed_at: string | null
+          redeemed_by_supplier_id: string | null
+          redeemed_by_user_id: string | null
+          refunded_at: string | null
+          remaining_amount_due_agorot: number
+          status: Database["public"]["Enums"]["voucher_status"]
+          status_reason: string | null
+          supplier_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cancelled_at?: string | null
+          code: string
+          coupon_price_agorot: number
+          created_at?: string
+          expires_at: string
+          face_value_agorot: number
+          id?: string
+          issued_at?: string
+          offer_valid_until: string
+          order_id: string
+          order_item_id: string
+          platform_percent: number
+          product_id: string
+          qr_key_id?: string
+          qr_payload: string
+          redeemed_amount_collected_agorot?: number | null
+          redeemed_at?: string | null
+          redeemed_by_supplier_id?: string | null
+          redeemed_by_user_id?: string | null
+          refunded_at?: string | null
+          remaining_amount_due_agorot: number
+          status?: Database["public"]["Enums"]["voucher_status"]
+          status_reason?: string | null
+          supplier_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cancelled_at?: string | null
+          code?: string
+          coupon_price_agorot?: number
+          created_at?: string
+          expires_at?: string
+          face_value_agorot?: number
+          id?: string
+          issued_at?: string
+          offer_valid_until?: string
+          order_id?: string
+          order_item_id?: string
+          platform_percent?: number
+          product_id?: string
+          qr_key_id?: string
+          qr_payload?: string
+          redeemed_amount_collected_agorot?: number | null
+          redeemed_at?: string | null
+          redeemed_by_supplier_id?: string | null
+          redeemed_by_user_id?: string | null
+          refunded_at?: string | null
+          remaining_amount_due_agorot?: number
+          status?: Database["public"]["Enums"]["voucher_status"]
+          status_reason?: string | null
+          supplier_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vouchers_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vouchers_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vouchers_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vouchers_redeemed_by_supplier_id_fkey"
+            columns: ["redeemed_by_supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vouchers_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       wallet_accounts: {
         Row: {
           balance_ils: number
@@ -1651,8 +2055,22 @@ export type Database = {
             foreignKeyName: "wallet_entries_credit_account_fkey"
             columns: ["credit_account"]
             isOneToOne: false
+            referencedRelation: "v_wallet_balance_drift"
+            referencedColumns: ["account_id"]
+          },
+          {
+            foreignKeyName: "wallet_entries_credit_account_fkey"
+            columns: ["credit_account"]
+            isOneToOne: false
             referencedRelation: "wallet_accounts"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wallet_entries_debit_account_fkey"
+            columns: ["debit_account"]
+            isOneToOne: false
+            referencedRelation: "v_wallet_balance_drift"
+            referencedColumns: ["account_id"]
           },
           {
             foreignKeyName: "wallet_entries_debit_account_fkey"
@@ -1747,8 +2165,59 @@ export type Database = {
         }
         Relationships: []
       }
+      v_wallet_balance_drift: {
+        Row: {
+          account_id: string | null
+          cached_balance_ils: number | null
+          code: string | null
+          drift_ils: number | null
+          ledger_balance_ils: number | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_accounts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_wallet_ledger: {
+        Row: {
+          amount_ils: number | null
+          created_at: string | null
+          direction: string | null
+          id: string | null
+          order_id: string | null
+          reason: string | null
+          signed_amount_ils: number | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_accounts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wallet_entries_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      cancel_vouchers_for_order: {
+        Args: { p_order_id: string; p_reason?: string }
+        Returns: number
+      }
       check_rate_limit: {
         Args: {
           p_key: string
@@ -1768,9 +2237,28 @@ export type Database = {
       }
       cleanup_rate_limits: { Args: never; Returns: undefined }
       cleanup_user_rate_limits: { Args: never; Returns: undefined }
+      credit_expired_vouchers: { Args: never; Returns: number }
+      current_supplier_id: { Args: never; Returns: string }
       current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
+      }
+      expire_vouchers: { Args: never; Returns: number }
+      fn_wallet_cashback_amount: {
+        Args: {
+          p_category_ids?: string[]
+          p_order_total_ils: number
+          p_user_id: string
+        }
+        Returns: number
+      }
+      fn_wallet_cashback_percent: {
+        Args: {
+          p_category_ids?: string[]
+          p_order_total_ils: number
+          p_user_id: string
+        }
+        Returns: number
       }
       fn_wallet_transfer: {
         Args: {
@@ -1786,7 +2274,36 @@ export type Database = {
       has_role: { Args: { required_role: string }; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       is_supplier_member: { Args: { p_supplier_id: string }; Returns: boolean }
+      is_supplier_owner: { Args: { p_supplier_id: string }; Returns: boolean }
       is_support: { Args: never; Returns: boolean }
+      log_voucher_scan: {
+        Args: {
+          p_code_entered: string
+          p_outcome?: string
+          p_scan_method?: string
+        }
+        Returns: undefined
+      }
+      product_platform_percent: {
+        Args: { p_product_id: string }
+        Returns: number
+      }
+      redeem_voucher: {
+        Args: {
+          p_code: string
+          p_idempotency_key?: string
+          p_scan_method?: string
+        }
+        Returns: Json
+      }
+      refund_vouchers_for_order: {
+        Args: { p_order_id: string; p_reason?: string }
+        Returns: number
+      }
+      voucher_success_payload: {
+        Args: { v: Database["public"]["Tables"]["vouchers"]["Row"] }
+        Returns: Json
+      }
     }
     Enums: {
       affiliate_status: "pending_review" | "approved" | "rejected" | "suspended"
@@ -1825,18 +2342,19 @@ export type Database = {
         | "refunded"
       product_approval_status: "draft" | "pending" | "approved" | "rejected"
       product_status: "draft" | "active" | "paused" | "sold_out" | "archived"
-      product_type: "coupon" | "physical" | "service" | "subscription"
+      product_type: "coupon" | "physical" | "service"
       referral_status: "pending" | "completed" | "rejected"
       settlement_status:
         | "pending"
         | "paid"
         | "split_executed"
-        | "platform_settled"
         | "escrow_held"
         | "escrow_released"
         | "redeemed"
         | "refunded"
         | "cancelled"
+        | "platform_settled"
+      supplier_member_role: "owner" | "manager" | "scanner"
       user_role:
         | "customer"
         | "content_uploader"
@@ -1844,6 +2362,24 @@ export type Database = {
         | "admin"
         | "super_admin"
         | "support"
+      voucher_scan_outcome:
+        | "success"
+        | "already_redeemed"
+        | "expired"
+        | "cancelled"
+        | "refunded"
+        | "wrong_supplier"
+        | "not_found"
+        | "invalid_signature"
+        | "invalid_request"
+        | "unauthorized"
+        | "rate_limited"
+      voucher_status:
+        | "issued"
+        | "redeemed"
+        | "expired"
+        | "cancelled"
+        | "refunded"
       wallet_tx_source: "cashback" | "referral" | "manual"
       wallet_tx_type: "earn" | "redeem" | "expire" | "refund"
     }
@@ -2013,19 +2549,20 @@ export const Constants = {
       ],
       product_approval_status: ["draft", "pending", "approved", "rejected"],
       product_status: ["draft", "active", "paused", "sold_out", "archived"],
-      product_type: ["coupon", "physical", "service", "subscription"],
+      product_type: ["coupon", "physical", "service"],
       referral_status: ["pending", "completed", "rejected"],
       settlement_status: [
         "pending",
         "paid",
         "split_executed",
-        "platform_settled",
         "escrow_held",
         "escrow_released",
         "redeemed",
         "refunded",
         "cancelled",
+        "platform_settled",
       ],
+      supplier_member_role: ["owner", "manager", "scanner"],
       user_role: [
         "customer",
         "content_uploader",
@@ -2034,14 +2571,32 @@ export const Constants = {
         "super_admin",
         "support",
       ],
+      voucher_scan_outcome: [
+        "success",
+        "already_redeemed",
+        "expired",
+        "cancelled",
+        "refunded",
+        "wrong_supplier",
+        "not_found",
+        "invalid_signature",
+        "invalid_request",
+        "unauthorized",
+        "rate_limited",
+      ],
+      voucher_status: [
+        "issued",
+        "redeemed",
+        "expired",
+        "cancelled",
+        "refunded",
+      ],
       wallet_tx_source: ["cashback", "referral", "manual"],
       wallet_tx_type: ["earn", "redeem", "expire", "refund"],
     },
   },
 } as const
 
-// Row shorthands (the generic Tables/TablesInsert/TablesUpdate/Enums helpers
-// are emitted by the Supabase codegen above; Tables<> also covers views)
 export type Profile = Tables<'profiles'>
 export type Vendor = Tables<'vendors'>
 export type Category = Tables<'categories'>

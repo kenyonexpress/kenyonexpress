@@ -952,3 +952,84 @@ visual regression, RTL sweep.
 ‏`defaultMode` עדיין `bypassPermissions` ו-`ask` ריק. לפי הסעיף מ-07:35 זו
 הייתה הנחיה מפורשת ולא הברחה של סשן לילה, אז לא שוניתי — אבל זה מצב שראוי
 שתאשר במודע, כי הוא חל על כל סשן שרץ בתיקייה הזאת.
+
+---
+
+# סבב 2026-07-27 11:00-11:15 — `feat/checkout-complete`, שלב 1 חלקי
+
+ענף חדש `feat/checkout-complete` מ-`feat/admin-core`. הסבב נעצר לבקשת Ofir
+אחרי החלק הראשון של שלב 1 (מסלול המימוש). מה שנעשה ירוק במלואו:
+‏**500/500 vitest, ‏`tsc --noEmit` נקי, ‏biome נקי.**
+
+## מה שנמצא בבדיקת המציאות מול ה-DB החי
+
+| ממצא | סטטוס |
+|---|---|
+| ‏`redeem_voucher()` ו-`log_voucher_scan()` **לא קיימות בפרודקשן** בזמן ש-`/api/supplier/vouchers/redeem` קוראת להן | **תוקן** (074) |
+| ‏`issue.ts:150` חורט `platform_percent: 100` בכל שובר — זה בדיוק C11(א) שבוטל | **תוקן** |
+| ‏`finalize.ts` סימן שורות קופון `platform_settled` עם הערה "הכל הכנסת פלטפורמה" — סותר את C11(ב) | **תוקן** ל-`escrow_held` |
+| ‏`escrow_holds.coupon_code_id NOT NULL` — הטבלה לא יכלה להחזיק hold של שובר | **תוקן** (074) |
+| ‏`supplier_members` ריקה בפרודקשן (0 שורות) | **פתוח** — אף אחד לא יכול לממש עד שיוזן חבר ספק |
+| ‏`vouchers` ריקה, ‏`orders` 4 שורות, ‏`escrow_holds` 2 שורות legacy | רקע |
+
+## הכרעת סתירה בין המסמכים (החלטה אוטומטית)
+
+`docs/ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md` (23.07) ו-054 (24.07) מתארים
+מודל קופון שבו הפלטפורמה גובה 10% והספק גובה 90% במזומן ואין hold. הסעיף
+"Business rules" ב-STATE למעלה עוד אומר "הכל נשאר בפלטפורמה, לספק 0".
+**שניהם בטלים.** `docs/CONTRADICTIONS.md` C11 גרסה (ב) מ-27.07 גובר, וזה גם
+מה שה-`/goal` של הלילה אומר מילה במילה: כל התשלום בפלטפורמה עד redeem, ואז
+release לספק. מיגרציה 073 כבר בנויה על המודל הזה. לא נעצרתי לשאול כי אין כאן
+סתירה מול ההכרעה האחרונה, רק מסמכים ישנים שלא נמחקו.
+
+## מה נבנה
+
+**`supabase/migrations/074_voucher_redemption_rpcs.sql` — הוחלה על פרודקשן**
+דרך MCP `apply_migration`, מתועדת עם rollback מלא ב-
+`docs/PRODUCTION-CHANGES-2026-07-27.md` סעיף 4. אומת אחרי ההחלה: כל 7
+הפונקציות קיימות, ה-CHECK עבר `convalidated=true`.
+
+- `escrow_holds` מקבלת `voucher_id` + unique index + CHECK "בדיוק אחד".
+- `redeem_voucher()` — UPDATE מותנה יחיד מכריע את המרוץ, זהות הספק מגיעה
+  מ-`supplier_members` ולא מהבקשה, ובאותה טרנזקציה סוגר את ה-hold ומעביר את
+  שורת ההזמנה ל-`escrow_released` כשאין עוד שובר `issued` באותה שורה.
+- `expire_vouchers()` מחזיר את ה-hold לספק (refunded), ו-`credit_expired_vouchers()`
+  מזכה את ארנק הלקוח לפי C6 — שובר שפג אינו מופקע לאף אחד. הופרד מהסוויפ
+  בכוונה: אם רגל הכסף נכשלת הסטטוסים עדיין נכונים והזיכוי חוזר בריצה הבאה.
+
+**`src/server/domain/vouchers/escrow.ts` + טסטים (14)**
+`splitCommissionPerUnit` מחלק את עמלת השורה ליחידות לפי מה שכל יחידה חויבה.
+לא בשיטת "היחידה הראשונה בולעת את השארית" — בכמות 10, חיוב 1000 ועמלה 995
+היא נותנת ליחידה 1 עמלה 104 מול חיוב 100, כלומר חלק ספק שלילי ושורה
+ש-`escrow_holds_conservation` דוחה. יש טסט בדיוק על המקרה הזה.
+
+**`src/server/payments/finalize.ts`**
+כותב hold אחד לכל שובר, ומשלים holds חסרים במקום רק להוסיף — ריצה שהנפיקה
+שובר ונפלה לפני כתיבת ה-hold מתקנת את עצמה בניסיון הבא.
+
+**`src/types/database.ts`** — נוצר מחדש מול הפרויקט החי. גילה ש-`product_type`
+בפרודקשן הוא `coupon|physical|service` בלבד; `PRODUCT_TYPE_LABELS` החזיק
+מפתח `subscription` שלא קיים בשום מקום ב-DB. הוסר.
+
+## איפה בדיוק עצרתי
+
+שלב 1 בערך בשליש. **הושלם:** מסלול המימוש בצד ה-DB, תיקון שני באגי הכסף,
+ומנוע הפיצול ליחידות. **לא נגעתי עדיין:**
+
+1. **E2E מלא** קנייה → sandbox → סגירה → מימוש → פג. חוסם: `supplier_members`
+   ריקה בפרודקשן, צריך seed של חבר ספק לטסט.
+2. **Cardcom multi-account client** — אימות חתימת webhook, `payment_events`,
+   idempotency, sandbox mode. `src/lib/payments/cardcom.ts` עדיין single-terminal
+   ‏legacy `/Interface/*.aspx`.
+3. **Checkout flow** — Guest cart ב-Zustand (אין `src/stores/` בכלל), Google auth
+   רק בלחיצת "שלם", card token לכניסה הבאה.
+4. **Order state machine** מלא מול ה-enum החי.
+5. שלבים 2-4 (storefront, אזור אישי, הקשחה) לא התחילו.
+
+## חוב שנוצר בסבב הזה
+
+- ‏`credit_expired_vouchers()` קיימת ואף אחד לא קורא לה. ה-cron
+  `/api/cron/expire-vouchers` מריץ רק את הסוויפ. עד שיחווט, שובר שפג מחזיר
+  את ה-hold לספק אבל הלקוח לא מזוכה.
+- ‏`platform_settled` (מיגרציה 071) כבר לא נכתב על ידי שום קוד. נשאר ב-enum,
+  לא ניתן להסרה ב-Postgres.

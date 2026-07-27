@@ -66,6 +66,7 @@ function input(overrides: Partial<VoucherIssueInput> = {}): VoucherIssueInput {
     userId: 'user-1',
     priceIls: '200.00',
     couponPriceIls: '50.00',
+    platformPercent: '25.00',
     couponExpiryDays: 30,
     offerValidUntil: new Date('2026-12-31T00:00:00.000Z'),
     now: new Date('2026-07-24T00:00:00.000Z'),
@@ -113,7 +114,7 @@ describe('issueVoucher', () => {
     expect(id).toBe('voucher-1')
     expect(inserted).toHaveLength(1)
     expect(isValidVoucherCode(row.code)).toBe(true)
-    expect(row.platform_percent).toBe(100)
+    expect(row.platform_percent).toBe(25)
     expect(row.face_value_agorot).toBe(20000)
     expect(row.coupon_price_agorot).toBe(5000)
     expect(row.remaining_amount_due_agorot).toBe(15000)
@@ -122,6 +123,32 @@ describe('issueVoucher', () => {
     expect(parsed?.c).toBe(row.code)
     expect(parsed?.s).toBe('supplier-1')
     expect(parsed?.u).toBe('user-1')
+  })
+
+  // Until 2026-07-27 this issuer stamped a constant 100, which is the abolished
+  // C11(a) rule: the platform keeps the whole prepayment and the supplier gets
+  // nothing. The percent must come from the order line's snapshot.
+  it('snapshots the caller platform percent rather than a constant', async () => {
+    const { client } = fakeClient()
+    const { row } = await issueVoucher(client, input({ platformPercent: '15.00' }))
+    expect(row.platform_percent).toBe(15)
+  })
+
+  it('refuses to issue when the platform percent is out of range', async () => {
+    const { client } = fakeClient()
+    await expect(issueVoucher(client, input({ platformPercent: 101 }))).rejects.toThrow(
+      VoucherIssueError,
+    )
+    await expect(issueVoucher(client, input({ platformPercent: -1 }))).rejects.toThrow(
+      VoucherIssueError,
+    )
+  })
+
+  it('refuses to issue when the platform percent is not a number', async () => {
+    const { client } = fakeClient()
+    await expect(issueVoucher(client, input({ platformPercent: 'not a percent' }))).rejects.toThrow(
+      VoucherIssueError,
+    )
   })
 
   it('clamps expiry to offer_valid_until when the rolling window overshoots', async () => {

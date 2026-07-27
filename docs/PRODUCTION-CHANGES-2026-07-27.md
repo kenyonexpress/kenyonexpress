@@ -307,3 +307,78 @@ charged but never closed. Do not revert this without also reverting 071.
   agorot/basis-point equivalents, and every one of those names is read by
   running code. It is a planned cutover, not a routine migration, and running
   `supabase db push` would apply it as a side effect of pushing anything else.
+
+---
+
+## 4. Migration 074: the voucher redemption RPCs
+
+Applied via MCP `apply_migration` as `074_voucher_redemption_rpcs`. Repo file:
+`supabase/migrations/074_voucher_redemption_rpcs.sql`.
+
+This closes the gap the "What was NOT done" section above named: the redeem
+route was calling `redeem_voucher()` and `log_voucher_scan()`, and neither
+existed on the hosted project. A voucher could be bought and never scanned.
+
+### What it adds
+
+**Schema**
+- `escrow_holds.voucher_id uuid REFERENCES vouchers(id)`, and
+  `escrow_holds.coupon_code_id` becomes nullable. A hold now belongs to either
+  a legacy coupon code or a voucher, enforced by
+  `escrow_holds_exactly_one_instance CHECK (num_nonnulls(...) = 1)` (validated
+  clean against the two existing rows).
+- `escrow_holds_voucher_id_key` unique partial index, one hold per voucher.
+- `escrow_holds_status_supplier_idx`.
+
+**Functions** (ported from `054_voucher_redemption.sql` sections 5-7, adapted)
+- `voucher_success_payload(vouchers)` - the counter-facing success shape.
+- `redeem_voucher(text, text, text)` - the only redemption path. One
+  conditional UPDATE decides the race; supplier identity comes from
+  `supplier_members` and never from the request; `not_found` and
+  `wrong_supplier` collapse to one answer for the caller.
+- `log_voucher_scan(text, text, text)` - audit for scans rejected before the DB
+  (bad HMAC, malformed code). Cannot record a success.
+- `expire_vouchers()`, `credit_expired_vouchers()`,
+  `cancel_vouchers_for_order(uuid, text)`,
+  `refund_vouchers_for_order(uuid, text)` - service-role sweeps.
+
+### Two deliberate departures from 054
+
+1. **Escrow release** (C11 version b). 054 was written when the platform kept
+   the whole prepayment, so redemption moved no money. Under the current model
+   the supplier's share is held from payment until scan, so `redeem_voucher()`
+   closes the hold in the same transaction as the status flip and moves the
+   order line to `escrow_released` once no voucher of that line is still
+   outstanding.
+2. **Expiry is not forfeiture** (C6). An unscanned expired voucher refunds the
+   supplier's hold and credits the customer's wallet with what they paid
+   online, debited from `platform:adjustments` and keyed
+   `voucher:<id>:expiry_credit`. The credit is a separate function from the
+   status sweep so a failure in the money leg leaves the statuses correct and
+   retries on the next run.
+
+### Rollback
+
+```sql
+DROP FUNCTION IF EXISTS public.refund_vouchers_for_order(uuid, text);
+DROP FUNCTION IF EXISTS public.cancel_vouchers_for_order(uuid, text);
+DROP FUNCTION IF EXISTS public.credit_expired_vouchers();
+DROP FUNCTION IF EXISTS public.expire_vouchers();
+DROP FUNCTION IF EXISTS public.log_voucher_scan(text, text, text);
+DROP FUNCTION IF EXISTS public.redeem_voucher(text, text, text);
+DROP FUNCTION IF EXISTS public.voucher_success_payload(public.vouchers);
+
+ALTER TABLE public.escrow_holds DROP CONSTRAINT IF EXISTS escrow_holds_exactly_one_instance;
+DROP INDEX IF EXISTS public.escrow_holds_status_supplier_idx;
+DROP INDEX IF EXISTS public.escrow_holds_voucher_id_key;
+ALTER TABLE public.escrow_holds DROP COLUMN IF EXISTS voucher_id;
+-- Only if no voucher hold was written: the column above must be gone first.
+ALTER TABLE public.escrow_holds ALTER COLUMN coupon_code_id SET NOT NULL;
+
+DELETE FROM supabase_migrations.schema_migrations
+WHERE name = '074_voucher_redemption_rpcs';
+```
+
+Reverting returns redemption to "function does not exist", i.e. a voucher that
+can be bought and never used. It also strips the wallet credit an expired
+voucher is owed under C6.

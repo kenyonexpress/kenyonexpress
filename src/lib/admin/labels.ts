@@ -67,7 +67,6 @@ export const PRODUCT_TYPE_LABELS: Record<ProductType, string> = {
   coupon: 'קופון',
   physical: 'מוצר פיזי',
   service: 'שירות',
-  subscription: 'מנוי',
 }
 
 export const APPROVAL_STATUS_LABELS: Record<ProductApprovalStatus, string> = {

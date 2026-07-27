@@ -21,6 +21,15 @@ export interface VoucherIssueInput {
   priceIls: string | number
   /** Absolute amount charged online, ILS. Must be > 0 and <= priceIls. */
   couponPriceIls: string | number
+  /**
+   * The order line's snapshot of products.platform_percent. Required and with
+   * no default: it decides how the prepayment splits between the platform and
+   * the supplier's hold, so a missing value is a bug rather than a case to
+   * paper over. Stamping a constant 100 here, as this issuer did until
+   * 2026-07-27, silently re-imposed the abolished C11(a) rule in which the
+   * supplier receives nothing.
+   */
+  platformPercent: string | number
   couponExpiryDays: number
   offerValidUntil: Date
   now?: Date
@@ -111,6 +120,12 @@ export async function issueVoucher(
   }
 
   const { faceValue, couponPrice, remainingDue } = buildVoucherMoney(input)
+  const platformPercent = Number(input.platformPercent)
+  if (!Number.isFinite(platformPercent) || platformPercent < 0 || platformPercent > 100) {
+    throw new VoucherIssueError(
+      'platform_percent must be a number between 0 and 100; no default exists',
+    )
+  }
 
   const expiresAt = computeVoucherExpiry({
     issuedAt: now,
@@ -147,7 +162,7 @@ export async function issueVoucher(
       face_value_agorot: faceValue,
       coupon_price_agorot: couponPrice,
       remaining_amount_due_agorot: remainingDue,
-      platform_percent: 100,
+      platform_percent: platformPercent,
       offer_valid_until: input.offerValidUntil.toISOString(),
       expires_at: expiresAt.toISOString(),
       issued_at: now.toISOString(),
