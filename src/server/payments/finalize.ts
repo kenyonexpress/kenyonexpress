@@ -59,11 +59,22 @@ async function issueVouchersForItem(
   admin: AdminClient,
   item: OrderItemRow,
   userId: string,
-  product: { couponExpiryDays: number; offerValidUntil: Date | null },
+  product: { couponExpiryDays: number | null; offerValidUntil: Date | null },
   now: Date,
 ): Promise<void> {
   if (!item.product_id || !item.supplier_id) {
     throw new Error(`coupon order item ${item.id} is missing product or supplier`)
+  }
+  // CONTRADICTIONS C7: validity is a mandatory per-product field with no
+  // default. This used to fall back to 90 days, which invents a consumer
+  // promise nobody made and, on expiry, decides when we owe the customer their
+  // money back (C6). Refusing here is loud and recoverable: the payment stands,
+  // finalize retries, and an admin sets the field. Guessing is neither.
+  const expiryDays = product.couponExpiryDays
+  if (expiryDays === null || expiryDays === undefined || expiryDays < 1) {
+    throw new Error(
+      `coupon order item ${item.id}: product has no coupon_expiry_days; refusing to issue a voucher with an invented expiry`,
+    )
   }
   if (item.platform_percent === null || item.platform_percent === undefined) {
     throw new Error(
@@ -89,9 +100,7 @@ async function issueVouchersForItem(
 
   // No offer deadline on the product means the rolling per-product window is
   // the only limit; feed the issuer that same date so it never widens the TTL.
-  const fallbackDeadline = new Date(
-    now.getTime() + Math.max(1, product.couponExpiryDays) * 24 * 60 * 60 * 1000,
-  )
+  const fallbackDeadline = new Date(now.getTime() + expiryDays * 24 * 60 * 60 * 1000)
   const offerValidUntil = product.offerValidUntil ?? fallbackDeadline
 
   for (let unit = issuedIds.length; unit < item.quantity; unit += 1) {
@@ -104,7 +113,7 @@ async function issueVouchersForItem(
       priceIls: agorotToIls(agorot(faceUnits[unit] ?? 0)),
       couponPriceIls: agorotToIls(agorot(paidUnits[unit] ?? 0)),
       platformPercent: item.platform_percent,
-      couponExpiryDays: product.couponExpiryDays,
+      couponExpiryDays: expiryDays,
       offerValidUntil,
       now,
     })
@@ -349,7 +358,7 @@ export async function finalizeOrder(input: {
 
     const productInfo = new Map<
       string,
-      { couponExpiryDays: number; offerValidUntil: Date | null }
+      { couponExpiryDays: number | null; offerValidUntil: Date | null }
     >()
     const productIds = items
       .map((i) => i.product_id)
@@ -361,7 +370,7 @@ export async function finalizeOrder(input: {
         .in('id', productIds)
       for (const p of products ?? []) {
         productInfo.set(p.id, {
-          couponExpiryDays: p.coupon_expiry_days ?? 90,
+          couponExpiryDays: p.coupon_expiry_days,
           offerValidUntil: p.offer_valid_until ? new Date(p.offer_valid_until) : null,
         })
       }
@@ -370,7 +379,7 @@ export async function finalizeOrder(input: {
     for (const item of items as OrderItemRow[]) {
       if (item.product_type === 'coupon') {
         const info = (item.product_id ? productInfo.get(item.product_id) : undefined) ?? {
-          couponExpiryDays: 90,
+          couponExpiryDays: null,
           offerValidUntil: null,
         }
         await issueVouchersForItem(admin, item, order.user_id, info, now)

@@ -1,6 +1,6 @@
 # KenyonExpress — Project State
 
-Updated: 2026-07-27 (שינוי מודל: הקופון חוזר ל-Escrow)
+Updated: 2026-07-28 (סנכרון החלטות עסקיות: מסמכים + סכימה)
 
 ## Current Phase
 ‏**שינוי מודל פעיל.** Ofir הכריע ב-27.07 שהקופון חוזר ל-Escrow, וזה דורס
@@ -40,6 +40,57 @@ Updated: 2026-07-27 (שינוי מודל: הקופון חוזר ל-Escrow)
 העמלה מחושבת על המקדמה בלבד. Cardcom בלבד. האחוזים מצולמים ל-`order_items`.
 ‏`coupon_price_ils` נשאר הערך הקנוני שהמנוע מחייב לפיו, וההנחה נגזרת ממנו
 ולא להפך — זה מה שמונע חזרה של הבאג שבו הציטוט והחיוב נפרדו.
+
+## סבב 2026-07-28 — אימות חמש ההכרעות העסקיות מול המסמכים והסכימה
+
+בדיקה של חמש ההכרעות אחת-אחת. שלוש היו מיושמות, שתיים לא, ובכל המסמכים נשארו
+נוסחים של המודל שבוטל ב-24.07 שסתרו את המחייב.
+
+### מה נמצא מיושם כבר
+- **`platform_percent` בלי ברירת מחדל:** ‏050 מסירה DEFAULT ומחייבת NOT NULL,
+  ‏070 מוסיפה את זוג האחוזים עם CHECK שסכומם 100, וכל מסלולי הקוד
+  (`commission.ts`, `settlement.ts`, `finalize.ts`, `issue.ts`, `pricing.ts`)
+  זורקים על אחוז חסר במקום לנחש.
+- **Escrow held בלבד:** ‏073 מגדירה `vouchers` בלי default ובטווח 0..100,
+  ‏074 מקשרת `escrow_holds.voucher_id` ומשחררת את ה-hold באותה טרנזקציה של
+  המימוש. אין נאמן חיצוני ואין J5.
+- **‏payout ‏T+3 ומינימום 100 ש"ח:** ‏051 מלאה ותקינה, כולל גלגול ריצה מתחת לסף
+  ו-trigger שחוסם תשלום מוקדם.
+
+### מה לא היה מיושם, ותוקן עכשיו
+1. **הבאג הכספי של C11(ב).** ‏`generate_payout_statement` שילמה `payout_ils = 0`
+   על קופון שמומש, כלומר תת-תשלום לספק בדיוק בגובה ה-hold המשוחרר. בדרך התגלה
+   שהיא גם קוראת שמות עמודות מלפני 059 (`total_price_ils`, `supplier_payout_ils`,
+   `commission_percent`), כך שעל DB מעודכן היא נופלת על undefined_column: מנוע
+   ה-payout היה קוד מת. **מיגרציה `079_payout_escrow_release.sql`** משכתבת אותה:
+   שורת voucher משלמת את `escrow_holds.release_agorot`, נוספה
+   `payout_statement_lines.voucher_id` עם index ייחודי שמונע תשלום כפול, וריצה
+   שמתגלגלת מוחקת את שורותיה כדי שהריצה הבאה תוכל לאסוף אותן.
+2. **חשבון ledger ל-held.** ‏`ledger_account_kind` לא הכיל שום חשבון שמבטא
+   "מוחזק": רישום ל-`supplier_payable` בקנייה היה מצהיר על חוב לספק על שובר
+   שעוד עשוי לפוג לטובת הלקוח. **מיגרציה `080_ledger_escrow_held_account.sql`**
+   מוסיפה `escrow_held` פר-ספק ומרחיבה את `ledger_accounts_owner_by_kind`.
+3. **‏`expiry_days` לא היה ניתן להזנה.** השדה חובה לפי C7 וחוסם מכירה
+   ב-`product-money.ts`, אבל טופס האדמין לא הכיל אותו כלל, ו-`finalize.ts` השלים
+   ‏`?? 90` בשקט: הבטחה צרכנית שאיש לא נתן, ושקובעת מתי מגיע ללקוח כספו חזרה.
+   השדה נוסף לטופס ולסכימת ה-server action (חובה על מוצר קופון), וברירת המחדל
+   הוסרה: מוצר בלי תוקף מסרב להנפיק ואצר בקול.
+4. **‏`supplier_split_percent` לא נשמר.** הטופס הזין רק את חצי הפלטפורמה.
+   ה-server action גוזר עכשיו `100 −` הקלט ושומר את שני החצאים, כך ש-CHECK
+   ‏`products_split_pair_sums_to_100` מסופק בבנייה.
+5. **המסמכים סתרו את ההכרעה.** ‏`MASTER-ARCHITECTURE`,
+   `ARCHITECTURE-VOUCHER-REDEMPTION`, `LEDGER-DESIGN`, `CHECKOUT-ARCHITECTURE`
+   ו-`COMPLETE-SYSTEM-ARCHITECTURE` עדיין הכריזו "אין escrow", "הספק מקבל 0",
+   `platform_percent = 100` בכל voucher, ו"פקיעה = breakage". כולם תוקנו לגוף
+   המסמך, לא רק בבאנר.
+6. **‏C9 לא היה מאומת באמת.** ‏`docs/CONTRADICTIONS.md` הצהיר "אפס אזכורים",
+   אבל ארבעה מסמכים החזיקו את Stripe כ"ניסוי מקביל שממתין ל-ADR" ו-R12 פתוחה.
+   נסגר: Cardcom הוא ה-PSP היחיד, וספק שני דורש הכרעת בעלים חדשה. אין ולא היה
+   שום קוד Stripe / Payoneer / Cloudways בשום שכבה.
+
+### אימות
+`pnpm exec tsc --noEmit` נקי, `pnpm exec vitest run` — 523 בדיקות ב-42 קבצים,
+כולן עוברות.
 
 ## סבב 2026-07-27 (מאוחר) — מימוש מודל ה-Escrow + חיפוש במאסטהד
 
@@ -449,19 +500,36 @@ docs/PRODUCTION-CHANGES-2026-07-27.md
 כדאי לבדוק `git log` לפני שמסתמכים על מצב העץ.
 
 ## Next Task
-לנקות את המודל שבוטל מהאדמין:
-src/components/admin/ProductForm.tsx
-src/components/admin/CouponDealForm.tsx
-src/components/admin/CouponsTable.tsx
+שלוש המשימות הבאות, לפי הסדר:
+
+1. **להחיל את המיגרציות התלויות על המרוחק:** 050, 051, 070, 079, 080. הסדר
+   מחייב, ו-050/070 יעצרו בכוונה כל עוד קיים מוצר חי בלי `platform_percent`.
+   לכן קודם מעבר על הקטלוג בטופס האדמין (שעכשיו מזין גם
+   `supplier_split_percent` וגם `coupon_expiry_days`), ורק אז ההחלה.
+2. **מסך payout באדמין:** מריץ `generate_payout_statement`, מציג ריצות שהתגלגלו
+   מתחת ל-100 ש"ח, ומאשר תשלום דרך `approve_payout_statement` /
+   `mark_payout_statement_paid`. בלעדיו התיקון של 079 קיים ב-DB ואין מי שיפעיל
+   אותו.
+3. **לחווט את `fn_post_journal` למסלול הקופון:** לרשום ל-`escrow_held` בקנייה,
+   להעביר ל-`supplier_payable` במימוש ולהפוך לארנק הלקוח בפקיעה. החשבון קיים
+   מ-080, הרישום הכספי חי כרגע ב-`escrow_holds` בלבד.
+
+נותר מהתור הקודם: ניקוי המודל שבוטל מ-`CouponDealForm.tsx` ו-`CouponsTable.tsx`
+(‏`ProductForm.tsx` טופל ב-2026-07-28).
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
 
-## Business Rules (final)
-- קופון: לקוח משלם באתר את מלא מחיר הקופון. השאר בבית העסק בסריקה. כל מה שנשאר אצל אופיר הוא מה שהלקוח שילם באתר.
+## Business Rules (final, מעודכן 2026-07-27)
+- קופון: הלקוח משלם באתר את `coupon_price_ils` (סכום מוחלט). מהסכום הזה
+  הפלטפורמה לוקחת `platform_percent` **והשאר מוחזק לספק ומשוחרר במימוש**.
+  היתרה מול המחירון נגבית בבית העסק בסריקה ואינה עוברת דרכנו.
 - מוצר פיזי: פיצול מיידי לפי platform_percent (שהוא מגדיר בדף). חלק לאופיר, השאר לספק.
 - עמלה: אחוז דינמי פר-מוצר, מצולם ל-order_items בזמן קנייה. אין אחוז קבוע.
-- אין Escrow.
+- יש Escrow פנימי לקופון (`escrow_holds`), בלי נאמן חיצוני ובלי J5.
+  ⚠️ השורה "אין Escrow" שהופיעה כאן עד 2026-07-27 בוטלה.
+- פקיעה בלי מימוש: קרדיט לארנק הלקוח. לא breakage.
+- payout לספק: ‏T+3 ימי עסקים, מינימום 100 ש"ח, מתחת לסף מתגלגל.
 - כל דף מוצר מציג פרטי ספק.
 - כרגע: רק קופונים.
 

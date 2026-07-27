@@ -30,6 +30,16 @@ const schema = z
       .min(0, 'עמלה לא יכולה להיות שלילית')
       .max(100, 'עמלה לא יכולה לעלות על 100'),
     is_coupon_enabled: z.coerce.boolean().default(false),
+    // CONTRADICTIONS C7: coupon validity is a per-product field, 30/60/90 or any
+    // other integer. No default: an unset value used to become a silent 90 days
+    // in finalize, which is a consumer-facing promise nobody made. Required on a
+    // coupon product, meaningless on a physical one.
+    coupon_expiry_days: z.coerce
+      .number({ invalid_type_error: 'תוקף קופון בימים נדרש' })
+      .int('תוקף חייב להיות מספר שלם של ימים')
+      .min(1, 'תוקף חייב להיות לפחות יום אחד')
+      .nullable()
+      .optional(),
     sku: z.string().nullable().optional(),
     stock_quantity: z.coerce.number().int().min(0).nullable().optional(),
     is_featured: z.coerce.boolean().default(false),
@@ -61,6 +71,15 @@ const schema = z
     seo_keywords: z.string().nullable().optional(),
   })
   .superRefine((data, ctx) => {
+    // A coupon cannot be sold without a validity period (C7). Checked here
+    // rather than in the field schema because it depends on the product type.
+    if ((data.type === 'coupon' || data.is_coupon_enabled) && data.coupon_expiry_days == null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'תוקף קופון בימים נדרש למוצר קופון',
+        path: ['coupon_expiry_days'],
+      })
+    }
     if (data.full_price != null && data.full_price < data.kenyon_price) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -104,6 +123,7 @@ export async function upsertProduct(
     full_price: formData.get('full_price') || null,
     platform_percent: formData.get('platform_percent'),
     is_coupon_enabled: formData.get('is_coupon_enabled') === 'true',
+    coupon_expiry_days: formData.get('coupon_expiry_days') || null,
     sku: formData.get('sku') || null,
     stock_quantity: formData.get('stock_quantity') || null,
     is_featured: formData.get('is_featured') === 'true',
@@ -157,18 +177,28 @@ export async function upsertProduct(
 
   const { id, ...fields } = parsed.data
 
+  // The admin enters one number; both halves are stored (CONTRADICTIONS,
+  // "two percents are kept"). Deriving the supplier half here rather than
+  // asking for it twice is what keeps products_split_pair_sums_to_100 (070)
+  // satisfiable by construction, and order_items still snapshots both so a
+  // months-old line reports the share agreed at the time (C10).
+  const withSplit = {
+    ...fields,
+    supplier_split_percent: 100 - fields.platform_percent,
+  }
+
   let productId = id
 
   if (id) {
     const { error } = await supabase
       .from('products')
-      .update({ ...fields, images })
+      .update({ ...withSplit, images })
       .eq('id', id)
     if (error) return { error: error.message }
   } else {
     const { data, error } = await supabase
       .from('products')
-      .insert({ ...fields, images, created_by: user!.id })
+      .insert({ ...withSplit, images, created_by: user!.id })
       .select('id')
       .single()
     if (error) return { error: error.message }

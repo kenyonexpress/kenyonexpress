@@ -9,8 +9,11 @@
 
 - `platform_percent` הוא פר-מוצר ומצולם לתוך `order_items` בזמן הרכישה. ה-ledger קורא
   את האחוז אך ורק מצילומי `order_items`, לעולם לא מ-`products` בזמן settlement.
-- אין escrow. הטבלאות `escrow_holds` ו-`split_executions` ממיגרציה 047 מטופלות כ-legacy
-  in runoff (סעיף 11). כללי הרישום כאן בנויים למודל ללא escrow בלבד.
+- **תוקן 2026-07-27 (C11 גרסה ב):** יש escrow לקופון. `escrow_holds` היא טבלת
+  המשמורת החיה, לא legacy: המקדמה נרשמת כ-`held`, הפלטפורמה מכירה את חלקה מיד,
+  וחלק הספק משוחרר במימוש. ה-held הוא רישום פנימי אצלנו בלבד, בלי נאמן חיצוני
+  ובלי J5 (C3). כללי הרישום בסעיף 5 עודכנו בהתאם; סעיף 11 מתאר עכשיו runoff של
+  `split_executions` בלבד.
 - התראות ספק פנימיות בלבד (מחוץ לתחום מסמך זה; לא משפיע על הכספים).
 
 ## 0. מיפוי מספרי מיגרציות
@@ -135,8 +138,8 @@ CHECK ב-Postgres מוערך על שורה בודדת ואינו יכול לבצ
 | הזמנה שולמה, פריט קופון (נגבה באתר רק `P = round(F * platform_bp / 10000)`) | `order_paid` | D `cardcom_clearing` (P - W); D `customer_wallet` W; C `platform_revenue` net(P); C `vat_output` vat(P) | `order:<order_id>:paid` |
 | הזמנה שולמה, פריט פיזי (נגבה באתר `F` במלואו, `comm = round(F * platform_bp / 10000)`) | `order_paid` | D `cardcom_clearing` (F - W); D `customer_wallet` W; C `supplier_payable` (F - comm); C `platform_revenue` net(comm); C `vat_output` vat(comm) | `order:<order_id>:paid` |
 | קופון הונפק | `coupon_issued` | אין שורות כספיות (journal תיעודי אופציונלי). הכסף כבר נרשם ב-order_paid; ההנפקה לא יוצרת נכס או התחייבות של הפלטפורמה | `coupon:<coupon_code_id>:issued` |
-| קופון מומש בעסק | `coupon_redeemed` | אין שורות כספיות. אין תנועת כסף פלטפורמה במימוש (מודל ללא escrow); היתרה נגבית אצל הספק במזומן שלו | `coupon:<coupon_code_id>:redeemed` |
-| קופון פקע | `coupon_expired` | אין שורות כספיות. ההכנסה כבר הוכרה בתשלום; פקיעה היא breakage | `coupon:<coupon_code_id>:expired` |
+| קופון מומש בעסק | `coupon_redeemed` | D `escrow_held` R; C `supplier_payable` R, כאשר `R = release_agorot` מה-hold. ההחזקה נסגרת והסכום הופך לחוב לספק, לתשלום ב-payout הבא אחרי T+3 ומעל 100 ש"ח. היתרה נגבית אצל הספק במזומן שלו ולא עוברת דרכנו | `voucher:<voucher_id>:redeemed` |
+| קופון פקע | `coupon_expired` | D `escrow_held` R; D `platform_revenue` net(comm); D `vat_output` vat(comm); C `customer_wallet` P. פקיעה **אינה** breakage (C6): המקדמה המלאה נזקפת לארנק הלקוח, ההכרה בהכנסה מתהפכת וה-hold של הספק מוחזר | `voucher:<voucher_id>:expired` |
 | settlement פיזי שולם לספק (batch מאושר, סכום `S = net_due_agorot`) | `physical_settled` | D `supplier_payable` S; C `cardcom_clearing` S | `settlement:<batch_id>:paid` |
 | refund מלא של פריט קופון לא ממומש (החזר `P` לכרטיס) | `refund` | D `platform_revenue` net(P); D `vat_output` vat(P); C `cardcom_clearing` P | `refund:<payment_id>:<n>` |
 | refund של פריט פיזי לפני תשלום לספק | `refund` | D `supplier_payable` (F - comm); D `platform_revenue` net(comm); D `vat_output` vat(comm); C `cardcom_clearing` F | `refund:<payment_id>:<n>` |
@@ -201,20 +204,22 @@ unique על webhook events). ניקוי: מחיקת שורות שפגו מגוב
   שדות resolution. השאילתות של INVARIANTS.md הן בדיוק מה שה-jobs מריצים; שורה מפרה
   אחת = שורת discrepancy אחת.
 
-## 11. Runoff של escrow הישן (047)
+## 11. מעמד הטבלאות של 047 (מעודכן 2026-07-27)
 
-מיגרציה 047 יצרה `escrow_holds` ו-`split_executions` וסטטוסי settlement עם escrow.
-ההחלטה הנעולה: אין escrow. הטיפול:
+הנוסח הקודם כאן הכריז על `escrow_holds` כ-legacy in runoff, לפי המודל שבוטל.
+המצב המחייב:
 
-1. אין כתיבה חדשה: קוד ההמשך לא יוצר יותר escrow_holds; מסלול הקופון החדש רושם הכל
-   ב-order_paid בלבד.
-2. שורות `escrow_holds` חיות במצב `held` מנוקזות עסקית (מימוש, פקיעה או refund של
-   הקופון שלהן) עד שהטבלה ריקה ממצבים פתוחים.
-3. `split_executions` נשארת כרשומת claim היסטורית לקריאה בלבד; המידע שלה חופף לצילומי
-   `order_items` ול-journal.
-4. מיגרציית פרישה עתידית (אחרי אימות שאין שורות פתוחות, מחוץ לסדרה הזו) תעביר את
-   הטבלאות ל-schema ארכיון או תמחק אותן, יחד עם ניקוי ערכי enum של escrow
-   מ-`settlement_status` ועם מחיקת עמודות `*_legacy` של 051.
+1. **`escrow_holds` חיה ומחייבת.** מיגרציה 074 הוסיפה לה `voucher_id` ו-CHECK
+   שמחייב בדיוק ישות אחת (voucher או coupon_code היסטורי).
+   `held_agorot = commission_agorot + release_agorot` נאכף ב-CHECK, ו-
+   `redeem_voucher()` סוגרת את ה-hold באותה טרנזקציה של המימוש, כך שמצב של hold
+   משוחרר בלי voucher ממומש אינו בר-הגעה.
+2. `escrow_status` וערכי ה-`settlement_status` מסוג escrow נשארים בשימוש. אין
+   ניקוי enum.
+3. `split_executions` היא כן runoff: היא רשומת claim לפריט פיזי, המידע שלה חופף
+   לצילומי `order_items` ול-journal, והיא נשארת לקריאה בלבד.
+4. הנקודה היחידה שנשארה פתוחה מהנוסח הישן היא מחיקת עמודות `*_legacy` של 059,
+   אחרי שכל הקוד עבר ל-`*_agorot` / `*_bp`.
 
 ## 12. רשימת cutover (מחוץ לתחום הקבצים כאן, חובה לפני apply)
 
