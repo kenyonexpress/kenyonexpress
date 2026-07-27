@@ -13,22 +13,19 @@ export default function SupplierInfo({
   productType: 'coupon' | 'physical' | 'service' | 'subscription'
 }) {
   return (
-    <section
-      aria-label="פרטי ספק"
-      className="rounded-2xl border border-gray-200 bg-white p-5 lg:p-6"
-    >
-      <h2 className="text-base font-bold text-heading">פרטי הספק</h2>
+    <section aria-label="פרטי ספק">
+      <h2 className="pdp-details__title">פרטי הספק</h2>
 
       {supplier ? (
-        <p className="mt-3 text-sm">
-          <span className="text-gray-500">ספק: </span>
-          <span className="font-medium text-heading">{supplier.name}</span>
+        <p className="pdp-details__list">
+          <span className="pdp-details__label">ספק: </span>
+          <span className="font-medium">{supplier.name}</span>
         </p>
       ) : (
-        <p className="mt-3 text-sm text-gray-500">פרטי הספק יתעדכנו בקרוב.</p>
+        <p className="pdp-details__list pdp-details__label">פרטי הספק יתעדכנו בקרוב.</p>
       )}
 
-      <p className="mt-3 text-xs text-gray-500">
+      <p className="pdp-details__note">
         {productType === 'coupon'
           ? 'מימוש הקופון מתבצע ישירות מול הספק בבית העסק.'
           : 'המוצר נשלח ומסופק על ידי הספק.'}

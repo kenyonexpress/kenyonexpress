@@ -75,9 +75,9 @@ export default async function RelatedProducts({ categoryId, excludeId }: Props) 
   if (products.length === 0) return null
 
   return (
-    <section>
-      <h2 className="text-lg font-black text-brand-dark mb-4">מוצרים נוספים</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+    <section className="pdp-related">
+      <h2 className="pdp-related__title">מומלצים</h2>
+      <div className="pdp-related__grid">
         {products.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}

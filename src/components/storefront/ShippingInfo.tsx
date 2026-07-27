@@ -22,28 +22,25 @@ export default function ShippingInfo({
   if (requiresShipping === false && warrantyMonths == null) return null
 
   return (
-    <section
-      aria-label="משלוח ואספקה"
-      className="rounded-2xl border border-border bg-white p-5 lg:p-6"
-    >
-      <h2 className="text-base font-bold text-heading">משלוח ואספקה</h2>
+    <section aria-label="משלוח ואספקה">
+      <h2 className="pdp-details__title">משלוח ואספקה</h2>
 
-      <ul className="mt-3 space-y-1.5 text-sm text-heading">
+      <ul className="pdp-details__list">
         {requiresShipping === false ? (
           <li>מוצר דיגיטלי, נשלח במייל ואינו דורש משלוח פיזי.</li>
         ) : (
           <>
             <li>
-              <span className="text-muted">זמן אספקה משוער: </span>
+              <span className="pdp-details__label">זמן אספקה משוער: </span>
               <span className="font-medium">3-7 ימי עסקים</span>
             </li>
             <li>
-              <span className="text-muted">אופן המשלוח: </span>
+              <span className="pdp-details__label">אופן המשלוח: </span>
               <span className="font-medium">נשלח ישירות על ידי הספק</span>
             </li>
             {weightGrams != null && weightGrams > 0 && (
               <li>
-                <span className="text-muted">משקל: </span>
+                <span className="pdp-details__label">משקל: </span>
                 <span className="font-medium">
                   {weightGrams >= 1000
                     ? `${(weightGrams / 1000).toLocaleString('he-IL', { maximumFractionDigits: 2 })} ק"ג`
@@ -56,13 +53,13 @@ export default function ShippingInfo({
 
         {warrantyMonths != null && warrantyMonths > 0 && (
           <li>
-            <span className="text-muted">אחריות: </span>
+            <span className="pdp-details__label">אחריות: </span>
             <span className="font-medium">{warrantyMonths} חודשים</span>
           </li>
         )}
       </ul>
 
-      <p className="mt-3 text-xs text-muted">
+      <p className="pdp-details__note">
         זמני האספקה נמדדים מרגע אישור ההזמנה ואינם כוללים סופי שבוע וחגים.
       </p>
     </section>

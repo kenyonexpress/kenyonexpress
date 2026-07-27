@@ -13,6 +13,7 @@ import {
   readOptionalColumns,
 } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
+import '@/styles/product-page.css'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
@@ -154,40 +155,37 @@ export default async function ProductPage({ params }: Props) {
   })
 
   return (
-    <div data-pdp="container" className="max-w-page mx-auto px-4 py-6 space-y-8">
-      <ViewTracker
-        event="view_product"
-        props={{
-          product_id: product.id,
-          category_id: product.category_id,
-          price_ils: product.kenyon_price,
-          product_type: product.type,
-        }}
-      />
+    <div data-pdp="container" className="pdp">
+      <div className="pdp__inner">
+        <ViewTracker
+          event="view_product"
+          props={{
+            product_id: product.id,
+            category_id: product.category_id,
+            price_ils: product.kenyon_price,
+            product_type: product.type,
+          }}
+        />
 
-      {/* Breadcrumb */}
-      <nav
-        className="text-sm text-gray-500 flex items-center gap-1.5 flex-wrap"
-        aria-label="נתיב ניווט"
-      >
-        <Link href="/" className="hover:text-brand-dark">
-          בית
-        </Link>
-        {category && (
-          <>
-            <span className="text-gray-300">/</span>
-            <Link href={`/category/${category.slug}`} className="hover:text-brand-dark">
-              {category.name_he}
-            </Link>
-          </>
-        )}
-        <span className="text-gray-300">/</span>
-        <span className="text-brand-dark font-medium">{product.name_he}</span>
-      </nav>
+        {/* Breadcrumb. The row is 84px on live, and that height is what puts
+            the columns block below it on y250. */}
+        <nav className="pdp-breadcrumb" aria-label="נתיב ניווט">
+          <Link href="/">בית</Link>
+          {category && (
+            <>
+              <span className="pdp-breadcrumb__sep">/</span>
+              <Link href={`/category/${category.slug}`}>{category.name_he}</Link>
+            </>
+          )}
+          <span className="pdp-breadcrumb__sep">/</span>
+          <span>{product.name_he}</span>
+        </nav>
 
-      {/* Two columns: gallery (right in RTL) + info (left) */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-5 lg:p-8">
-        <div data-pdp="columns" className="grid md:grid-cols-[5fr_7fr] gap-8">
+        {/* Two columns: gallery (right in RTL, 470px) + summary (left, 670px).
+            No card wrapper: live puts both straight on the page, and the
+            border plus 32px of padding we used to draw round them offset every
+            row inside by the width of the chrome. */}
+        <div data-pdp="columns" className="pdp__columns">
           <ProductGallery images={images} name={product.name_he} assets={galleryAssets} />
           <ProductInfo
             productId={product.id}
@@ -197,40 +195,56 @@ export default async function ProductPage({ params }: Props) {
             oldPrice={oldPrice}
             baseStock={product.stock_quantity}
             sku={product.sku}
-            description={product.description_he}
+            categoryName={category?.name_he ?? null}
             attributes={attributes}
             variants={variants ?? []}
             isCoupon={isCoupon}
             couponOffer={couponOffer}
           />
         </div>
+
+        {/* Coupon-only: how and by when the voucher may be redeemed. */}
+        {couponOffer && (
+          <div className="pdp-coupon">
+            <CouponTerms
+              offer={couponOffer}
+              terms={product.coupon_terms_he}
+              instructions={product.redemption_instructions_he}
+            />
+          </div>
+        )}
+
+        {/* One flat band for description, shipping and supplier. Live leaves
+            160px here before the recommendations; the same three blocks as
+            stacked bordered cards took 423px and carried the footer 230px down
+            the page, which is what every band below y1400 was really measuring.
+
+            Physical-only for shipping. The platform/supplier split stays off
+            the page either way — it is an internal settlement detail and the
+            customer pays the full price however it divides. */}
+        <div className="pdp-details">
+          {product.description_he && (
+            <section aria-label="תיאור המוצר">
+              <h2 className="pdp-details__title">תיאור המוצר</h2>
+              <p className="pdp-details__text">{product.description_he}</p>
+            </section>
+          )}
+
+          {!isCoupon && (
+            <ShippingInfo
+              requiresShipping={product.requires_shipping}
+              weightGrams={product.weight_grams}
+              warrantyMonths={product.warranty_months}
+            />
+          )}
+
+          {/* Supplier details: rendered for every product (coupon and physical) */}
+          <SupplierInfo supplier={supplier} productType={product.type} />
+        </div>
+
+        {/* Related products */}
+        <RelatedProducts categoryId={product.category_id} excludeId={product.id} />
       </div>
-
-      {/* Coupon-only: how and by when the voucher may be redeemed. */}
-      {couponOffer && (
-        <CouponTerms
-          offer={couponOffer}
-          terms={product.coupon_terms_he}
-          instructions={product.redemption_instructions_he}
-        />
-      )}
-
-      {/* Physical-only: shipping and delivery. The platform/supplier split is
-          deliberately NOT shown — it is an internal settlement detail and the
-          customer pays the full price either way. */}
-      {!isCoupon && (
-        <ShippingInfo
-          requiresShipping={product.requires_shipping}
-          weightGrams={product.weight_grams}
-          warrantyMonths={product.warranty_months}
-        />
-      )}
-
-      {/* Supplier details: rendered for every product (coupon and physical) */}
-      <SupplierInfo supplier={supplier} productType={product.type} />
-
-      {/* Related products */}
-      <RelatedProducts categoryId={product.category_id} excludeId={product.id} />
     </div>
   )
 }

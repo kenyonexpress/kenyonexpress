@@ -1,7 +1,14 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { CATALOG_CSS_METRICS, CATALOG_CSS_VARS, SITE_CSS_METRICS, SITE_CSS_VARS } from './tokens'
+import {
+  CATALOG_CSS_METRICS,
+  CATALOG_CSS_VARS,
+  PDP_CSS_METRICS,
+  PDP_CSS_VARS,
+  SITE_CSS_METRICS,
+  SITE_CSS_VARS,
+} from './tokens'
 
 /**
  * The catalog stylesheet is only allowed to name a colour once, in its custom
@@ -13,8 +20,12 @@ function css(): string {
   return readFileSync(resolve(process.cwd(), 'src/styles/category-page.css'), 'utf8')
 }
 
-function declarationBlock(source: string): string {
-  const start = source.indexOf('.category-page {')
+function pdpCss(): string {
+  return readFileSync(resolve(process.cwd(), 'src/styles/product-page.css'), 'utf8')
+}
+
+function declarationBlock(source: string, selector = '.category-page {'): string {
+  const start = source.indexOf(selector)
   const end = source.indexOf('}', start)
   return source.slice(start, end)
 }
@@ -25,8 +36,8 @@ function declarationBlock(source: string): string {
  * numbers they explain, so scanning them for literals would flag the very
  * provenance notes that make the tokens trustworthy.
  */
-function declarationsOnly(source: string): string {
-  return source.replace(declarationBlock(source), '').replace(/\/\*[\s\S]*?\*\//g, '')
+function declarationsOnly(source: string, selector = '.category-page {'): string {
+  return source.replace(declarationBlock(source, selector), '').replace(/\/\*[\s\S]*?\*\//g, '')
 }
 
 describe('catalog colour tokens', () => {
@@ -78,6 +89,60 @@ describe('catalog colour tokens', () => {
     // The brief says #E4002B. getComputedStyle on the live archive says
     // #dc3545, and the pixel comparison runs against live.
     expect(CATALOG_CSS_VARS['--cat-sale']).toBe('#dc3545')
+  })
+})
+
+/**
+ * The product page gets the same contract as the catalog sheet: every colour
+ * and every measured number is declared once, on `.pdp`, and has to agree with
+ * PDP in tokens.ts. The PDP numbers are load-bearing in a way the catalog ones
+ * are not -- they are what puts our footer on live's y1442 instead of 230px
+ * above it -- so a number that drifts here silently un-aligns the whole page.
+ */
+describe('product page tokens', () => {
+  it('declares every colour from tokens.ts with the same value', () => {
+    const block = declarationBlock(pdpCss(), '.pdp {')
+    for (const [name, value] of Object.entries(PDP_CSS_VARS)) {
+      const match = block.match(new RegExp(`${name}\\s*:\\s*([^;]+);`))
+      expect(match, `${name} is missing from product-page.css`).not.toBeNull()
+      expect(match?.[1]?.trim().toLowerCase(), `${name} drifted from tokens.ts`).toBe(
+        value.toLowerCase(),
+      )
+    }
+  })
+
+  it('declares every measured metric with the same value as tokens.ts', () => {
+    const block = declarationBlock(pdpCss(), '.pdp {')
+    for (const [name, value] of Object.entries(PDP_CSS_METRICS)) {
+      const match = block.match(new RegExp(`${name}\\s*:\\s*([^;]+);`))
+      expect(match, `${name} is missing from product-page.css`).not.toBeNull()
+      expect(match?.[1]?.trim(), `${name} drifted from tokens.ts`).toBe(value)
+    }
+  })
+
+  it('carries no raw hex outside the declaration block', () => {
+    const stray = declarationsOnly(pdpCss(), '.pdp {').match(/#[0-9a-fA-F]{3,8}\b/g) ?? []
+    expect(stray, `raw hex found in rules: ${stray.join(', ')}`).toHaveLength(0)
+  })
+
+  it('carries no measured px literal inside a rule', () => {
+    const rules = declarationsOnly(pdpCss(), '.pdp {').replace(/@media[^{]+/g, '')
+    const offenders: string[] = []
+    const distinctive = [...new Set(Object.values(PDP_CSS_METRICS))].filter(
+      (v) => v.includes('.') || Number.parseFloat(v) >= 100,
+    )
+    for (const value of distinctive) {
+      if (new RegExp(`(?<![\\d.])${value.replace('.', '\\.')}`).test(rules)) {
+        offenders.push(value)
+      }
+    }
+    expect(offenders, `measured values hardcoded in rules: ${offenders.join(', ')}`).toHaveLength(0)
+  })
+
+  it('keeps the container at the measured 1170, not the 1320 page override', () => {
+    // The site container is deliberately 1320 (see STATE). Live's single-product
+    // template is 1170, and using the wider one put every column edge ~26px out.
+    expect(PDP_CSS_METRICS['--pdp-container']).toBe('1170px')
   })
 })
 

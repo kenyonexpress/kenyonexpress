@@ -331,3 +331,139 @@ export const CATALOG_CSS_METRICS: Record<string, string> = {
   '--cat-eyebrow-gap': '8px',
   '--cat-footer-gap-top': '10px',
 }
+
+/**
+ * Product-detail page. Measured on the live single-product template
+ * (`https://kenyonexpress.co.il/product/מוצר-לדוגמא/`) at 1440x2600 with
+ * `scripts/_pdp-probe.mjs` and `scripts/_pdp-summary-probe.mjs`, and the
+ * hairline colours read straight out of `refs/live.png`.
+ *
+ * The vertical numbers are the load-bearing ones. The rebuilt page had the
+ * summary wrapped in a card and the shipping/supplier blocks stacked as two
+ * more cards, which pushed the footer 230px below where live puts it; every
+ * band from y1400 down was comparing our recommendations grid against live's
+ * footer. The measurements below are what put the two pages back on the same
+ * vertical grid.
+ *
+ * Same contract as CATALOG: `product-page.css` declares these on `.pdp` and
+ * every rule reads them through var(), with `tokens.test.ts` failing if the
+ * two drift apart.
+ */
+export const PDP = {
+  color: {
+    /** body and heading text */
+    ink: '#333e48',
+    /** category eyebrow links */
+    muted: '#768b9e',
+    /** secondary actions (the stock line sits where live puts its wishlist) */
+    action: '#5d7184',
+    /** sale price */
+    sale: '#dc3545',
+    /** struck-through original price next to the sale price */
+    strike: '#848484',
+    /** hairline under the title block, measured at y353 */
+    rule: '#cccfd1',
+    /** hairline under the recommendations heading, measured at y938 */
+    line: '#dddddd',
+    /** add-to-cart pill */
+    brand: '#fed700',
+    brandHover: '#fedd26',
+    /** the full-width buy-now button under it */
+    buy: '#ee6443',
+    buyHover: '#e5502c',
+    surface: '#ffffff',
+  },
+  /** Geometry measured on the live single-product template. */
+  metric: {
+    container: '1170px',
+    /** gallery column: x835..1305 */
+    gallery: '470px',
+    /** summary column: x135..805 */
+    summary: '670px',
+    columnGap: '30px',
+    /** breadcrumb block y165..249 */
+    crumbHeight: '84px',
+    eyebrowSize: '11.998px',
+    eyebrowLine: '17.2771px',
+    titleSize: '25.004px',
+    titleLine: '32.0051px',
+    metaSize: '13.006px',
+    metaLine: '18.0133px',
+    bodySize: '14px',
+    bodyLine: '23.996px',
+    priceSize: '35px',
+    priceLine: '45.01px',
+    priceDelSize: '21px',
+    priceDelLine: '31.5px',
+    /** quantity field x665..805, y548..593 */
+    qtyWidth: '140px',
+    qtyHeight: '45px',
+    /** add-to-cart pill x469..661, y545..598 */
+    atcWidth: '192px',
+    atcHeight: '53px',
+    /** buy-now spans the whole summary column, y608..654 */
+    buyHeight: '46px',
+    /** recommendations heading y888..939 */
+    relatedTitleSize: '25.004px',
+    relatedTitleLine: '40.0064px',
+    /** yellow segment of the rule under it, x1071..1304 */
+    relatedRuleWidth: '233px',
+    /** heading rule y939 to the first card's own text y993 */
+    relatedGap: '54px',
+    /** live's summary runs 40px past its tag line, y688..728 */
+    summaryTail: '40px',
+    /** gap between the last section and the footer, y1362..1442 */
+    pageTail: '80px',
+    /** the content column between header and footer, y165..1442 */
+    contentHeight: '1277px',
+  },
+} as const
+
+/** The CSS custom-property name each PDP colour maps to in product-page.css. */
+export const PDP_CSS_VARS: Record<string, string> = {
+  '--pdp-ink': PDP.color.ink,
+  '--pdp-muted': PDP.color.muted,
+  '--pdp-action': PDP.color.action,
+  '--pdp-sale': PDP.color.sale,
+  '--pdp-strike': PDP.color.strike,
+  '--pdp-rule': PDP.color.rule,
+  '--pdp-line': PDP.color.line,
+  '--pdp-brand': PDP.color.brand,
+  '--pdp-brand-hover': PDP.color.brandHover,
+  '--pdp-buy': PDP.color.buy,
+  '--pdp-buy-hover': PDP.color.buyHover,
+  '--pdp-surface': PDP.color.surface,
+}
+
+/** Measured PDP geometry and the custom property each value is exposed through. */
+export const PDP_CSS_METRICS: Record<string, string> = {
+  '--pdp-container': PDP.metric.container,
+  '--pdp-gallery': PDP.metric.gallery,
+  '--pdp-summary': PDP.metric.summary,
+  '--pdp-column-gap': PDP.metric.columnGap,
+  '--pdp-crumb-h': PDP.metric.crumbHeight,
+  '--pdp-eyebrow-size': PDP.metric.eyebrowSize,
+  '--pdp-eyebrow-line': PDP.metric.eyebrowLine,
+  '--pdp-title-size': PDP.metric.titleSize,
+  '--pdp-title-line': PDP.metric.titleLine,
+  '--pdp-meta-size': PDP.metric.metaSize,
+  '--pdp-meta-line': PDP.metric.metaLine,
+  '--pdp-body-size': PDP.metric.bodySize,
+  '--pdp-body-line': PDP.metric.bodyLine,
+  '--pdp-price-size': PDP.metric.priceSize,
+  '--pdp-price-line': PDP.metric.priceLine,
+  '--pdp-price-del-size': PDP.metric.priceDelSize,
+  '--pdp-price-del-line': PDP.metric.priceDelLine,
+  '--pdp-qty-w': PDP.metric.qtyWidth,
+  '--pdp-qty-h': PDP.metric.qtyHeight,
+  '--pdp-atc-w': PDP.metric.atcWidth,
+  '--pdp-atc-h': PDP.metric.atcHeight,
+  '--pdp-buy-h': PDP.metric.buyHeight,
+  '--pdp-related-size': PDP.metric.relatedTitleSize,
+  '--pdp-related-line': PDP.metric.relatedTitleLine,
+  '--pdp-related-rule': PDP.metric.relatedRuleWidth,
+  '--pdp-related-gap': PDP.metric.relatedGap,
+  '--pdp-summary-tail': PDP.metric.summaryTail,
+  '--pdp-page-tail': PDP.metric.pageTail,
+  '--pdp-content-h': PDP.metric.contentHeight,
+}
