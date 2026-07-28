@@ -2406,3 +2406,46 @@ reconciliation) ו-057 (‏`migration_log`, ‏`validation_reports`, ‏3 views,
 2. **`WP_SITE_URL` ופרטי גישה** ב-env (ראה `scripts/wp-import/config.mjs`).
 3. הרצת `run.mjs` ב-dry-run מול הפרודקשן, ואז קריאת `wp_import.v_open_issues`
    ו-`v_reconciliation` לפני שמורידים את דגל ה-dry-run.
+
+---
+
+## 2026-07-28 — סבב Storefront Completion
+
+‏Branch: `phase5/homepage`. שלוש המשימות נבדקו מול המערכת הרצה, לא מול הזיכרון.
+
+### 1. קטגוריה — עבר
+‏`compare.mjs --page=category` מול ארכיון hot-deals החי: **8.62%**, מתחת ליעד 11%.
+‏grid כרטיסים, sidebar סינון RTL, בורר מיון ו-pagination (‏24 לעמוד, 61 מוצרים,
+‏6 קישורי עמוד, עמוד 2 מחזיר 200) — כולם מרונדרים. ב-hot-deals אין pagination
+כי יש בו 4 מוצרים, וזו התנהגות נכונה. **אין שינוי קוד.**
+
+הערה: היעד ביקש השוואה מול `electro.madrasthemes.com`. המארח מחזיר 403
+‏Cloudflare מהמכונה הזאת (‏`bodyChars: 272`, אפס אלמנטי מוצר), ולכן המדידה היא
+מול kenyonexpress.co.il, שזה גם מה ש-`compare.mjs` מכוון אליו ממילא.
+
+### 2. עגלה — תוקן חלקית, נותר פער
+עובד: Zustand ‏(`createStore` מ-`zustand/vanilla`), עגלת אורח בלי שער התחברות,
+מצב ריק, שורות, כמות, סיכום הזמנה.
+
+**תוקן:** סיכום ההזמנה הציג ללקוח "עמלת פלטפורמה" ו"לתשלום לספק". זה הפיצול
+הפנימי בינינו לספק, לא משנה כלום במה שהלקוח משלם, ומזמין את השאלה למה הוא
+מחויב בו. הוסרו. היתרה לתשלום בבית העסק נשארה, כי אותה הלקוח באמת משלם.
+
+**פער פתוח: אין input לקוד קופון, ואין מנגנון הנחה בצד השרת בכלל.**
+לא ב-`CartTotalsSidebar`, לא ב-`CartPageView`, ולא ב-`server/actions/cart.ts`.
+הוספת השדה לבדה תהיה קישוט: צריך טבלת קודים, אימות, והחלה על הסכומים.
+
+### 3. חיפוש — עובד, בלי suggestions
+‏`HeaderSearch` דוחף ל-`/search?q=`. ‏`/search` קורא ל-`searchProductsCached`
+ב-`src/lib/search-server.ts`, שמשתמש ב-Meilisearch כש-`MEILISEARCH_HOST` ו-
+`MEILISEARCH_API_KEY` מוגדרים, ונופל ל-Postgres אחרת. נבדק: `?q=אוזניות`
+מחזיר 200 עם 3 כרטיסי מוצר וכותרת RTL. מקומית אין env, ולכן רץ על Postgres.
+
+**פער פתוח: אין suggestions dropdown.** ‏`HeaderSearch` רק מנווט ב-submit.
+החיפוש עצמו הוא צד שרת בלבד, וזה נכון: מפתח Meilisearch הוא סוד שרת ואסור
+שיגיע לדפדפן, אז dropdown יצטרך route handler משלנו ולא קריאה ישירה למנוע.
+
+### החלטות שהתקבלו אוטומטית
+- לא בניתי input קופון חצי-עובד. שדה שמקבל קוד ולא עושה בו כלום גרוע
+  מהיעדרו, כי הוא נראה כמו תכונה שנשברה ולא כמו תכונה שחסרה.
+- לא פתחתי `connect-src` ל-Meilisearch ב-CSP. ראה `ARCHITECTURE-DEPLOYMENT.md` §3.1.
