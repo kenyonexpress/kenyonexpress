@@ -3,197 +3,151 @@
 KenyonExpress storefront SEO and performance architecture (Hebrew RTL).
 
 Status: BINDING for `arch/admin-supplier` (2026-07-28)
-Worktree: `/Users/ofir/kenyonexpress-web/ke-arch` only (docs). No application code.
-Companions: `docs/ARCHITECTURE-ADMIN-DASHBOARD.md`, WP migration docs in main repo (`WP-DATA-MIGRATION.md`, `docs/ARCHITECTURE-CATALOG-SEARCH-SEO.md`).
+Worktree: `/Users/ofir/kenyonexpress-web/ke-arch` only. **Documentation only.**
+Authority: `MASTER-ARCHITECTURE-v2.md` (business model §1; system diagram `proxy.ts` + seo_redirects; launch track **C** catalog/search/SEO; gates for sitemap/robots/consent). Domain sources: `ARCHITECTURE-CATALOG-SEARCH-SEO.md`, performance notes in v2/related PERFORMANCE docs.
 
-**Stack note:** The running app uses **Next.js 16.2.x** (`package.json`), App Router, Turbopack in dev. The user brief said "Next.js 15"; treat App Router caching APIs below as the contract and flag version drift as **Q-SEO-1**. Do not design for Pages Router.
+Stack reality: Next.js App Router (repo currently on Next 16.x). Design against App Router caching. **Q-SEO-1:** document version pin vs "Next 15" wording elsewhere.
 
-Money/catalog context: coupons-first; PDP always shows supplier identity; prices from admin money knobs / snapshots.
+Money display for SEO/JSON-LD must follow v2 §1: coupon offer price = absolute `coupon_price`; physical price = full on-site charge; never invent fixed commission; never use live `platform_percent` to invent a customer price after the fact. `platform_percent` is dynamic admin config for **split**, snapshotted on purchase; it is not a substitute for `coupon_price`.
 
 ---
 
 ## 0. Goals
 
-| Metric | Target (binding until product changes) | How |
+| Metric | Target | How |
 |---|---|---|
-| LCP | ≤ 2.5s p75 mobile | prioritized hero/PDP image via `next/image`, ISR HTML, CDN |
-| INP | ≤ 200ms p75 | lean client JS; Server Components default; defer non-critical |
-| CLS | ≤ 0.1 | fixed image dimensions / aspect boxes; no late font swap jank (`next/font` Heebo) |
-| TTFB HTML | ≤ 800ms p75 origin+edge | cache product/category/home at edge |
-| Indexation | preserve WP equity | `seo_redirects` + sitemap parity |
+| LCP p75 mobile | ≤ 2.5s | priority `next/image`, ISR HTML, R2/CDN |
+| INP p75 | ≤ 200ms | RSC default; thin client |
+| CLS | ≤ 0.1 | aspect boxes; `next/font` Heebo |
+| TTFB HTML | ≤ 800ms p75 | edge cache home/category/PDP |
+| Equity | preserve WP | `seo_redirects` via `proxy.ts` (v2 diagram) |
+
+Launch gate from v2: consent banner counsel-approved; **sitemap + robots + redirects live**.
 
 ---
 
-## 1. Rendering strategy by route
+## 1. Rendering by route
 
-Real route groups today: `(store)`, `(main)`, `(account)`, `(admin)`, `(supplier)`, `(auth)`.
+Align with actual App Router groups `(store)`, `(main)`, `(account)`, `(admin)`, `(supplier)`, `(auth)`.
 
-| Route | Example | Mode | Cache | Notes |
-|---|---|---|---|---|
-| Homepage | `(store)/page.tsx` `/` | ISR | `revalidate` 60–300s | marketing blocks + featured coupons |
-| Category | `/category/[slug]` | ISR | 300s + tag `category:{id}` | listing |
-| Products index | `/products` | ISR | 120s | shop archive |
-| Product PDP | `/product/[slug]` | ISR | 60–300s + tag `product:{id}` | `generateMetadata` exists |
-| Legacy coupons | `/coupons`, `/coupons/[id]` | ISR | 300s | bridge → product coupons over time |
-| Search | `/search` | Dynamic SSR | `Cache-Control` short (API already `s-maxage=30`) | **noindex** |
-| Cart / checkout | `/cart`, `/checkout*` | Dynamic | private, no store | noindex |
-| Account / admin / supplier | `/account/**`, `/admin/**`, `/supplier/**` | Dynamic | private | disallow robots |
-| Auth | `/login`, `/signup`, … | Dynamic | private | noindex |
+| Route | Mode | Cache | Index |
+|---|---|---|---|
+| `/` home | ISR | revalidate 60–300s | yes |
+| `/category/[slug]` | ISR | 300s + tag `category:{id}` | yes |
+| `/products` | ISR | 120s | yes |
+| `/product/[slug]` (v2 also cites `/products/[slug]` migration path) | ISR | 60–300s + tag `product:{id}` | yes |
+| `/coupons`, `/coupons/[id]` | ISR | 300s | yes until canonicalized to product |
+| `/search` | Dynamic | short `s-maxage` | **noindex** |
+| `/cart`, `/checkout*` | Dynamic private | no store | noindex |
+| `/account/**`, `/admin/**`, `/supplier/**`, auth | Dynamic private | | disallow |
 
-On-demand revalidation: planned `POST /api/admin/revalidate` after product publish (admin architecture). Prefer `revalidateTag('product:'+id)` over blanket path nukes.
+On publish: `revalidateTag('product:'+id)` / path (admin actions). **Q-SEO-2:** exact TTL numbers.
 
-**Open Q-SEO-2:** Exact ISR seconds per template (legal price freshness vs CDN hit rate).
+Canonical URL strategy after WP cutover: one host (**Q-SEO-3** www vs apex).
 
 ---
 
-## 2. Caching strategy
+## 2. Caching layers
 
 ```
-Browser
-  -> CDN / Vercel edge (HTML ISR + immutable hashed assets)
-  -> Next data cache (fetch to Supabase with next: { tags, revalidate })
-  -> Supabase (source of truth)
+Browser -> CDN/edge (ISR HTML + hashed assets)
+  -> Next data cache (tagged fetch)
+  -> Supabase (RLS-safe anonymous catalog reads; never service role in public RSC)
 ```
 
-Rules:
+Personalized chrome (cart) must not disable whole-page ISR. Search stays short-cache.
 
-1. Anonymous catalog reads use a **publishable** Supabase key / RLS-safe views only (no service role in RSC for public pages).
-2. Mutating admin actions call `revalidatePath` / `revalidateTag` (already used in admin actions).
-3. Personalized fragments (cart badge) via client fetch or Suspense; do not disable ISR for whole PDP.
-4. Search API: keep short `s-maxage` (`src/app/api/search/route.ts`).
+Money: HTML and JSON-LD prices computed server-side from `coupon_price` / list price fields, not from guessing `platform_percent`.
 
 ---
 
-## 3. Core Web Vitals: concrete controls
+## 3. Core Web Vitals controls
 
-| Vital | Controls in this codebase |
+| Vital | Controls |
 |---|---|
-| LCP | `ProductGallery` / home hero with `next/image` priority on first image; blur placeholder from `media_assets` where available; avoid lazy on LCP image |
-| INP | Minimize client components on PDP; scanner/camera only on `/supplier/scan`; no heavy analytics on main thread without idle |
-| CLS | Reserve aspect ratio for gallery; font via `next/font` (Heebo self-hosted per `next.config.ts` CSP notes) |
-| Bandwidth | WebP/AVIF through image optimizer; responsive `sizes` on cards |
+| LCP | First gallery/hero `priority`; blur from media assets; R2 URLs in `images.remotePatterns` + CSP `img-src` |
+| INP | Avoid heavy third parties on catalog (**Q-SEO-4**) |
+| CLS | Fixed aspect ratios; self-hosted font |
+| JS weight | No checkout/Cardcom scripts on pure browse templates |
 
-Budget: ship no third-party chat widgets on catalog templates without **Q-SEO-3**.
+Analytics: batch + `sendBeacon` (v2 client SDK) without blocking LCP.
 
 ---
 
-## 4. Images and R2 CDN
+## 4. Images and R2
 
-Admin upload: `src/server/actions/admin/images.ts` supports R2 when configured (`R2_BUCKET`, public base URL).
-
-Binding:
-
-1. Store object keys in `products.images` / media tables; public URL = `R2_PUBLIC_BASE_URL + key` (or Supabase Storage until cutover).
-2. `next.config.ts` `images.remotePatterns` must allow R2 host (today allowlist includes Supabase + Unsplash; **add R2 host** or PDP breaks).
-3. CSP `img-src` must include R2 (`ARCHITECTURE-DEPLOYMENT.md` notes this).
-4. Never hotlink WP uploads long-term; migrate binaries in WP migration pipeline.
+Admin uploads to R2 when configured (`R2_BUCKET`, public base). Store keys on products/media. Migrate off WP hotlinks. Document CSP/R2 allowlist as a required config change (description only; no code in this worktree).
 
 ---
 
 ## 5. Structured data (JSON-LD)
 
-Emit in RSC for:
-
-| Type | Where | Fields |
+| Type | Pages | Rules |
 |---|---|---|
-| `Organization` + `WebSite` | homepage | name, url, logo, `SearchAction` → `/search?q=` |
-| `BreadcrumbList` | category + PDP | home → category → product |
-| `Product` + `Offer` | PDP | `name`, `image`, `description`, `sku`, `brand`, `offers.price` / `priceCurrency=ILS`, `availability`, seller = supplier name (not KenyonExpress as manufacturer) |
-| `Coupon` / offer validity | coupon PDP | `validThrough` from `offer_valid_until` / expiry |
+| `Organization` + `WebSite` + `SearchAction` | home | Hebrew name; search target `/search?q=` |
+| `BreadcrumbList` | category, PDP | |
+| `Product` + `Offer` | PDP | `priceCurrency=ILS`; coupon `offers.price` = **`coupon_price`**; physical = on-site full price; `seller` = supplier identity (platform is marketplace) |
+| Validity | coupon PDP | `validThrough` from offer/expiry fields |
 
-Price in JSON-LD must match **on-site charge** (coupon → `coupon_price_ils`; physical → discounted price). Never invent 10% defaults.
-
-**Gap:** no shared `JsonLd` component enforced today; add one module and use on `(store)/product/[slug]` and category pages.
+Never encode a fake "10% off" from a hardcoded commission. Dynamic `platform_percent` is **not** the customer-facing discount; `discount_percent` / price pair is.
 
 ---
 
-## 6. Hebrew RTL SEO specifics
+## 6. Hebrew RTL SEO
 
-1. `<html lang="he" dir="rtl">` on storefront layouts.
-2. Primary content in `name_he` / Hebrew descriptions; `name_en` secondary.
-3. hreflang: **Open Q-SEO-4** whether English storefront exists; if not, do not emit `en` alternates.
-4. URL slugs: prefer ASCII slugs (`products.slug`) for stability; Hebrew titles in H1/meta.
-5. WhatsApp/OG: Hebrew `og:title` / `og:locale=he_IL`.
-6. Avoid duplicate `/coupons/[id]` vs `/product/[slug]` without canonical; canonical → product slug when dual-published.
+- `lang="he"` `dir="rtl"` on storefront.
+- Primary fields `*_he`; ASCII `slug` for stable URLs.
+- `og:locale=he_IL`; WhatsApp-friendly OG image from gallery.
+- hreflang only if EN storefront exists (**Q-SEO-5**).
+- Duplicate coupon vs product URLs: `rel=canonical` to chosen PDP form.
 
 ---
 
 ## 7. Sitemap and robots
 
-**Current gap (INFRA-AUDIT):** `src/app/sitemap.ts` and `src/app/robots.ts` missing.
+v2 launch gate requires both.
 
-Binding design:
+**robots (design):** allow catalog; disallow `/admin`, `/account`, `/supplier`, `/api`, `/checkout`, `/cart`, `/login`, `/search`; point to sitemap.
 
-### `app/robots.ts`
+**sitemap (design):** Supabase-sourced active categories + published products (`slug`, `updated_at`); split index if large; exclude drafts/`deleted_at`.
 
-- Allow `/`, `/products`, `/product/`, `/category/`, `/coupons` (while live)
-- Disallow `/admin`, `/account`, `/supplier`, `/api`, `/checkout`, `/cart`, `/login`, `/search`
-- Sitemap URL: `https://<domain>/sitemap.xml`
-
-### `app/sitemap.ts`
-
-Sources from Supabase:
-
-- Active categories (`categories.slug`)
-- Active/published products (`products.slug`, `updated_at`)
-- Static marketing URLs
-
-Split sitemap index if >50k URLs. Only indexable statuses; exclude `deleted_at` and drafts.
+Submit sitemap in the **same** GSC property as the legacy domain after cutover.
 
 ---
 
-## 8. Metadata strategy
+## 8. Metadata
 
-Already started: `generateMetadata` on product, category, search.
-
-| Page | title | description | robots |
-|---|---|---|---|
-| PDP | `seo_title` or `name_he` + brand suffix | `seo_description` or truncated | index,follow |
-| Category | category name | curated or generated | index,follow |
-| Search | query echo | | **noindex,follow** |
-| Checkout/account | minimal | | noindex |
-
-Open Graph images: product first gallery image on R2; fallback site OG.
+`generateMetadata` on PDP/category/search (patterns already in app). Prefer `seo_title` / `seo_description`; fallback `name_he`. Search: noindex. Checkout/account: noindex.
 
 ---
 
-## 9. WordPress SEO preservation and redirects
+## 9. WordPress equity and redirects
 
-Grounded in `WP-DATA-MIGRATION.md` / `seo_redirects` design:
+v2: `proxy.ts` applies `seo_redirects` 301 + CSP.
 
-1. Inventory: Yoast `sitemap_index.xml` + GSC click URLs → `wp_import.url_inventory`.
-2. Map each old path → new App Router path.
-3. Persist `public.seo_redirects` (`from_path`, `to_path`, `status_code` default 301, `hits`).
-4. Enforce in `src/proxy.ts` (middleware) **before** page render; preserve query string only when safe.
-5. After launch: submit new sitemap in **same** GSC property; monitor 404s.
+1. Inventory from Yoast sitemap + GSC (WP migration docs).
+2. Table `seo_redirects` (`from_path`, `to_path`, status, hits).
+3. Middleware/proxy match before render.
+4. Monitor 404s post-launch.
 
-**Open Q-SEO-5:** final production domain cutover date and whether `www` canonical is forced.
+Preserve money-accurate landing pages so redirected coupon URLs still show correct `coupon_price` (admin dynamic pricing), not legacy hardcoded percents.
 
 ---
 
 ## 10. Monitoring
 
-| Signal | Tool |
-|---|---|
-| CWV field data | CrUX / GSC Core Web Vitals |
-| Lab | Lighthouse CI on `/`, sample PDP, `/products` |
-| Index coverage | GSC |
-| 404 / redirect | logs on `seo_redirects.hits` + edge logs |
-| Uptime TTFB | existing health/cron when added |
-
-Alert when LCP p75 mobile > target for 7 days.
+CrUX/GSC CWV; Lighthouse on `/`, sample PDP, `/products`; `v_web_vitals_daily` (v2 analytics); redirect hit counts; uptime via Better Stack (v2 externals).
 
 ---
 
-## 11. Rollout
+## 11. Rollout sequence (docs)
 
-1. Add `robots.ts` + `sitemap.ts`.
-2. Expand `images.remotePatterns` + CSP for R2.
-3. Shared JSON-LD helpers on PDP/category/home.
-4. Tag-based revalidation on product publish.
-5. Load `seo_redirects` from WP inventory; enable proxy redirects.
-6. Decommission duplicate coupon URLs with canonicals.
-7. Baseline Lighthouse + GSC after cutover.
+1. robots + sitemap live (gate).
+2. R2 + CSP image allowlist.
+3. JSON-LD module on home/category/PDP with v2 price rules.
+4. Tag revalidation on admin publish (includes when admin changes `coupon_price` or `platform_percent` for future HTML; past orders unaffected).
+5. Load redirects; cutover; GSC sitemap submit.
+6. Canonicalize legacy `/coupons/[id]` if product PDP is canonical (**Q-SEO-6**).
 
 ---
 
@@ -201,25 +155,15 @@ Alert when LCP p75 mobile > target for 7 days.
 
 | ID | Question |
 |---|---|
-| Q-SEO-1 | Document against Next 16 vs require Next 15 wording |
+| Q-SEO-1 | Next version wording |
 | Q-SEO-2 | Exact ISR TTLs |
-| Q-SEO-3 | Third-party scripts allowed on catalog? |
-| Q-SEO-4 | English locale / hreflang? |
-| Q-SEO-5 | Canonical host and cutover window |
-| Q-SEO-6 | Keep `/coupons/[id]` indefinitely or redirect-only? |
+| Q-SEO-3 | Canonical host |
+| Q-SEO-4 | Third-party scripts on browse |
+| Q-SEO-5 | English locale |
+| Q-SEO-6 | Long-term fate of `/coupons/[id]` |
 
 ---
 
-## 13. Related routes and files
+## 13. Related
 
-| Path | Role |
-|---|---|
-| `src/app/(store)/page.tsx` | home |
-| `src/app/(store)/product/[slug]/page.tsx` | PDP + metadata |
-| `src/app/(store)/category/[slug]/page.tsx` | category |
-| `src/app/(store)/products/page.tsx` | archive |
-| `src/app/(store)/search/page.tsx` | search |
-| `src/app/(main)/coupons/**` | legacy coupon browse |
-| `src/proxy.ts` | redirect / auth edge |
-| `src/server/actions/admin/images.ts` | R2 upload |
-| `next.config.ts` | headers, image config |
+`MASTER-ARCHITECTURE-v2.md` §1, §2, launch track C, gates 4–6; `ARCHITECTURE-CATALOG-SEARCH-SEO.md`; WP migration docs; `docs/ADMIN-PRODUCT-PAGE-SPEC.md` for dynamic money fields that feed visible price.
