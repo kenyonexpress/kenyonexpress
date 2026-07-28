@@ -28,7 +28,14 @@ export default async function CheckoutPage() {
   const admin = createAdminClient()
   const [{ data: walletAccount }, { data: defaultAddress }, { data: savedCards }] =
     await Promise.all([
-      admin.from('wallet_accounts').select('balance_ils').eq('user_id', user.id).maybeSingle(),
+      // balance_agorot since 059. Selecting the old name failed with 42703, so
+      // walletAccount came back null and every customer was shown a wallet
+      // balance of zero: the money was there and could never be spent.
+      admin
+        .from('wallet_accounts')
+        .select('balance_agorot')
+        .eq('user_id', user.id)
+        .maybeSingle(),
       admin
         .from('user_addresses')
         .select('id, full_name, phone, city, street, street_number, apartment, zip')
@@ -65,7 +72,7 @@ export default async function CheckoutPage() {
         clientRef={randomUUID()}
         needsAddress={validation.requiresAddress}
         address={address}
-        walletBalance={Number(walletAccount?.balance_ils ?? 0)}
+        walletBalance={Number(walletAccount?.balance_agorot ?? 0) / 100}
         savedCards={(savedCards ?? [])
           // An expired card is still listed in /account so the customer can
           // delete it, but offering it here only buys a guaranteed decline.

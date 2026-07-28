@@ -122,12 +122,14 @@ export async function getWalletSummary(): Promise<WalletSummary> {
 
   const { data } = await supabase
     .from('wallet_accounts')
-    .select('id, balance_ils')
+    // balance_agorot since 059; the old name took the whole select down with
+    // 42703 and the account page reported an empty wallet to everybody.
+    .select('id, balance_agorot')
     .eq('user_id', user.id)
     .maybeSingle()
 
   return {
-    balanceIls: Number(data?.balance_ils ?? 0),
+    balanceIls: Number(data?.balance_agorot ?? 0) / 100,
     accountId: data?.id ?? null,
   }
 }

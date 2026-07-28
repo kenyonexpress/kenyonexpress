@@ -61,44 +61,44 @@ BEGIN
   VALUES (v_supplier, v_scanner, true);
 
   INSERT INTO public.products
-    (id, supplier_id, type, slug, name_he, price_ils, platform_percent,
-     coupon_expiry_days, commission_percent, coupon_price_ils)
+    (id, supplier_id, type, slug, name_he, price_agorot, platform_percent,
+     coupon_expiry_days, supplier_split_percent, coupon_price_agorot)
   VALUES (v_product, v_supplier, 'coupon', 'rls-coupon', 'קופון RLS',
-          100, 30, 90, 30, 50);
+          10000, 30, 90, 70, 5000);
 
   INSERT INTO public.orders
-    (id, user_id, status, subtotal_ils, total_ils, subtotal_agorot,
-     customer_pays_now_agorot, paid_at)
-  VALUES (v_order, v_buyer, 'paid', 50, 50, 5000, 5000, now());
+    (id, user_id, status, subtotal_agorot, discount_agorot, wallet_applied_agorot,
+     cashback_applied_agorot, customer_pays_now_agorot, total_agorot, paid_at)
+  VALUES (v_order, v_buyer, 'paid', 5000, 0, 0, 0, 5000, 5000, now());
 
   INSERT INTO public.order_items
     (id, order_id, product_id, product_type, supplier_id, quantity,
-     unit_price_ils, total_price_ils, commission_percent, supplier_payout_ils,
-     unit_price_agorot, face_value_agorot, customer_pays_now_agorot,
-     platform_fee_agorot, supplier_due_agorot, cashback_percent,
-     cashback_amount_agorot, platform_percent, settlement_status, item_status)
+     unit_price_agorot, total_price_agorot, face_value_agorot,
+     customer_pays_now_agorot, platform_fee_agorot, supplier_due_agorot,
+     cashback_amount_agorot, platform_bp, supplier_split_percent,
+     settlement_status, item_status)
   VALUES (v_item, v_order, v_product, 'coupon', v_supplier, 2,
-          100, 200, 30, 70, 10000, 20000, 10000, 3000, 7000, 0, 0, 30,
-          'escrow_held', 'issued');
+          5000, 10000, 20000, 10000, 10000, 0, 0, 3000, 70,
+          'split_executed', 'issued');
 
   -- One still spendable, one already scanned.
   INSERT INTO public.vouchers
     (id, code, qr_payload, order_id, order_item_id, product_id, supplier_id,
      user_id, face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot,
-     platform_percent, status, offer_valid_until, expires_at)
+     platform_bp, status, offer_valid_until, expires_at)
   VALUES
     (v_open, 'RSVPAAAA01', 'qr-open', v_order, v_item, v_product, v_supplier,
-     v_buyer, 10000, 5000, 5000, 30, 'issued',
+     v_buyer, 10000, 5000, 5000, 3000, 'issued',
      now() + interval '30 days', now() + interval '30 days');
 
   INSERT INTO public.vouchers
     (id, code, qr_payload, order_id, order_item_id, product_id, supplier_id,
      user_id, face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot,
-     platform_percent, status, offer_valid_until, expires_at,
+     platform_bp, status, offer_valid_until, expires_at,
      redeemed_at, redeemed_by_supplier_id, redeemed_by_user_id)
   VALUES
     (v_done, 'RSVPAAAA02', 'qr-done', v_order, v_item, v_product, v_supplier,
-     v_buyer, 10000, 5000, 5000, 30, 'redeemed',
+     v_buyer, 10000, 5000, 5000, 3000, 'redeemed',
      now() + interval '30 days', now() + interval '30 days',
      now(), v_supplier, v_scanner);
 
@@ -210,7 +210,7 @@ BEGIN
     INSERT INTO public.vouchers
       (code, qr_payload, order_id, order_item_id, product_id, supplier_id,
        user_id, face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot,
-       platform_percent, status, offer_valid_until, expires_at)
+       platform_bp, status, offer_valid_until, expires_at)
     VALUES
       ('RSVPAAAA03', 'qr-mint', v_order, v_item, v_product, v_supplier,
        v_buyer, 10000, 0, 10000, 30, 'issued',
@@ -283,51 +283,51 @@ BEGIN
     (v_sup_a, v_staff_a, true), (v_sup_b, v_staff_b, true);
 
   INSERT INTO public.products
-    (id, supplier_id, type, slug, name_he, price_ils, platform_percent,
-     coupon_expiry_days, commission_percent, coupon_price_ils)
+    (id, supplier_id, type, slug, name_he, price_agorot, platform_percent,
+     coupon_expiry_days, supplier_split_percent, coupon_price_agorot)
   VALUES
-    (v_prod_a, v_sup_a, 'physical', 'scope-physical', 'מוצר פיזי', 100, 15, 90, 15, NULL),
-    (v_prod_b, v_sup_b, 'coupon',   'scope-coupon',   'קופון',     100, 30, 90, 30, 50);
+    (v_prod_a, v_sup_a, 'physical', 'scope-physical', 'מוצר פיזי', 10000, 15, 90, 85, NULL),
+    (v_prod_b, v_sup_b, 'coupon',   'scope-coupon',   'קופון',     10000, 30, 90, 70, 5000);
 
   INSERT INTO public.user_addresses (id, user_id, full_name, phone, city, street, street_number)
   VALUES (v_address, v_buyer, 'לקוח בדיקה', '0500000000', 'תל אביב', 'הרצל', '1');
 
   -- A shared order: supplier A ships, supplier B sells a coupon on the same one.
   INSERT INTO public.orders
-    (id, user_id, status, subtotal_ils, total_ils, subtotal_agorot,
-     customer_pays_now_agorot, address_id, paid_at)
-  VALUES (v_order, v_buyer, 'paid', 150, 150, 15000, 15000, v_address, now());
+    (id, user_id, status, subtotal_agorot, discount_agorot, wallet_applied_agorot,
+     cashback_applied_agorot, customer_pays_now_agorot, total_agorot, address_id, paid_at)
+  VALUES (v_order, v_buyer, 'paid', 20000, 0, 0, 0, 15000, 15000, v_address, now());
 
   INSERT INTO public.order_items
     (id, order_id, product_id, product_type, supplier_id, quantity,
-     unit_price_ils, total_price_ils, commission_percent, supplier_payout_ils,
-     unit_price_agorot, face_value_agorot, customer_pays_now_agorot,
-     platform_fee_agorot, supplier_due_agorot, cashback_percent,
-     cashback_amount_agorot, platform_percent, settlement_status, item_status)
+     unit_price_agorot, total_price_agorot, face_value_agorot,
+     customer_pays_now_agorot, platform_fee_agorot, supplier_due_agorot,
+     cashback_amount_agorot, platform_bp, supplier_split_percent,
+     settlement_status, item_status)
   VALUES
     (v_item_a, v_order, v_prod_a, 'physical', v_sup_a, 1,
-     100, 100, 15, 85, 10000, 10000, 10000, 1500, 8500, 0, 0, 15,
+     10000, 10000, 10000, 10000, 1500, 8500, 0, 1500, 85,
      'split_executed', 'pending'),
     (v_item_b, v_order, v_prod_b, 'coupon', v_sup_b, 1,
-     100, 100, 30, 70, 10000, 10000, 5000, 1500, 3500, 0, 0, 30,
-     'escrow_held', 'issued');
+     5000, 5000, 10000, 5000, 5000, 0, 0, 3000, 70,
+     'split_executed', 'issued');
 
   -- An order supplier A is not on at all.
   INSERT INTO public.orders
-    (id, user_id, status, subtotal_ils, total_ils, subtotal_agorot,
-     customer_pays_now_agorot, paid_at)
-  VALUES (v_solo, v_buyer, 'paid', 50, 50, 5000, 5000, now());
+    (id, user_id, status, subtotal_agorot, discount_agorot, wallet_applied_agorot,
+     cashback_applied_agorot, customer_pays_now_agorot, total_agorot, paid_at)
+  VALUES (v_solo, v_buyer, 'paid', 5000, 0, 0, 0, 5000, 5000, now());
 
   INSERT INTO public.order_items
     (order_id, product_id, product_type, supplier_id, quantity,
-     unit_price_ils, total_price_ils, commission_percent, supplier_payout_ils,
-     unit_price_agorot, face_value_agorot, customer_pays_now_agorot,
-     platform_fee_agorot, supplier_due_agorot, cashback_percent,
-     cashback_amount_agorot, platform_percent, settlement_status, item_status)
+     unit_price_agorot, total_price_agorot, face_value_agorot,
+     customer_pays_now_agorot, platform_fee_agorot, supplier_due_agorot,
+     cashback_amount_agorot, platform_bp, supplier_split_percent,
+     settlement_status, item_status)
   VALUES
     (v_solo, v_prod_b, 'coupon', v_sup_b, 1,
-     100, 100, 30, 70, 10000, 10000, 5000, 1500, 3500, 0, 0, 30,
-     'escrow_held', 'issued');
+     5000, 5000, 10000, 5000, 5000, 0, 0, 3000, 70,
+     'split_executed', 'issued');
 
   SET LOCAL ROLE authenticated;
 
