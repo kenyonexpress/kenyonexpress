@@ -1,6 +1,35 @@
 # KenyonExpress — Project State
 
-Updated: 2026-07-28 (שלבים 1-5 — מימוש קופון, רצף קנייה, אזור אישי, מיזוג, הקשחה)
+Updated: 2026-07-28 (homepage complete → product page validation)
+
+## Current Phase
+Homepage complete on `phase5/homepage`. Moving to product page visual validation.
+
+## Last Completed
+Commit `04dee6a` (homepage complete: full product catalog from live site + 5-slide auto-play hero). Verified on branch `phase5/homepage`.
+
+## In Progress
+Autonomous mode active (Fable 5 + Cursor + Browser agent).
+
+## Blocking Issues
+none
+
+## Next Task
+Product page validation + `compare.mjs` diff under 11%.
+
+## Working Directory
+/Users/ofir/kenyonexpress-web/kenyonexpress
+
+## Branch
+`phase5/homepage` (verified)
+
+## Models
+Fable 5 (architecture tasks) | Opus (docs/schema) | Sonnet (UI edits)
+
+## Supabase Project URL
+not restated here (use env / prior STATE entries)
+
+---
 
 ## סבב 2026-07-28 — שלב 5: Hardening
 
