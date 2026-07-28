@@ -79,6 +79,75 @@ export interface RefundPlan {
  * DB idempotency (don't refund twice) is enforced by the caller via the order
  * status guard, mirroring finalize's `paid_at` guard.
  */
+export interface RefundBlocker {
+  /** Hebrew, shown to the admin as-is. */
+  message: string
+  /** What the blocker attaches to, so the row can be highlighted. */
+  voucherIds: string[]
+  orderItemIds: string[]
+}
+
+/**
+ * Why a card refund would be refused, named BEFORE the attempt.
+ *
+ * `planOrderRefund` already throws on all of these, but a thrown English
+ * RefundError after the admin has clicked is not an answer to "can I refund
+ * this order". The admin screen asks this first and shows the reason next to
+ * the button, so the same rule is stated once and read twice.
+ *
+ * Empty result means a card refund is currently legal, not that it will
+ * succeed: the provider round trip can still fail.
+ */
+export function describeRefundBlockers(input: {
+  lines: RefundLineInput[]
+  vouchers: RefundVoucherInput[]
+}): RefundBlocker[] {
+  const blockers: RefundBlocker[] = []
+
+  const redeemed = input.vouchers.filter((v) => v.status === 'redeemed')
+  if (redeemed.length > 0) {
+    blockers.push({
+      message: `${redeemed.length} שוברים כבר מומשו בבית העסק. הערך נצרך ולא ניתן להחזיר אותו לכרטיס.`,
+      voucherIds: redeemed.map((v) => v.voucherId),
+      orderItemIds: [],
+    })
+  }
+
+  const expired = input.vouchers.filter((v) => v.status === 'expired')
+  if (expired.length > 0) {
+    blockers.push({
+      message: `${expired.length} שוברים פגו. ערכם נזקף כפחת ולא חוזר לכרטיס.`,
+      voucherIds: expired.map((v) => v.voucherId),
+      orderItemIds: [],
+    })
+  }
+
+  const stuck = input.lines.filter(
+    (line) =>
+      line.settlementStatus !== 'refunded' &&
+      line.settlementStatus !== 'cancelled' &&
+      !canTransition(line.settlementStatus, 'REFUND', line.productType),
+  )
+  const refundable = input.lines.filter(
+    (line) =>
+      line.settlementStatus !== 'refunded' &&
+      line.settlementStatus !== 'cancelled' &&
+      canTransition(line.settlementStatus, 'REFUND', line.productType),
+  )
+  if (refundable.length === 0) {
+    blockers.push({
+      message:
+        stuck.length > 0
+          ? 'אין שורות שניתן להחזיר: כולן כבר מומשו או שוחררו לספק.'
+          : 'אין שורות שניתן להחזיר בהזמנה הזו.',
+      voucherIds: [],
+      orderItemIds: stuck.map((line) => line.orderItemId),
+    })
+  }
+
+  return blockers
+}
+
 export function planOrderRefund(input: PlanRefundInput): RefundPlan {
   const consumed = input.vouchers.filter((v) => v.status === 'redeemed' || v.status === 'expired')
   if (consumed.length > 0) {
