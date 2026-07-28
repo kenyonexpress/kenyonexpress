@@ -4,7 +4,7 @@
 Architecture docs for admin dashboard + supplier portal.
 
 ## Last Completed
-2026-07-28: docs/ARCHITECTURE-ADMIN-DASHBOARD.md (full admin control-center architecture). Docs only in ke-arch.
+2026-07-28: docs/ARCHITECTURE-NOTIFICATIONS.md (Resend + triggers + worker + ntfy). Docs only in ke-arch.
 
 
 ## In Progress
@@ -14,7 +14,7 @@ nothing
 none
 
 ## Next Task
-docs/ARCHITECTURE-NOTIFICATIONS.md then SEO-PERFORMANCE then MOBILE-APP (commit after each).
+docs/ARCHITECTURE-SEO-PERFORMANCE.md then ARCHITECTURE-MOBILE-APP.md (commit after each).
 
 
 ## Working Directory
@@ -38,4 +38,8 @@ docs/ARCHITECTURE-NOTIFICATIONS.md then SEO-PERFORMANCE then MOBILE-APP (commit 
 ### 2026-07-28: ARCHITECTURE-ADMIN-DASHBOARD
 - Added docs/ARCHITECTURE-ADMIN-DASHBOARD.md (products, orders, suppliers, coupons, finance, RBAC, RLS, threats, rollout).
 - Worktree: ke-arch only. No application code touched.
+
+### 2026-07-28: ARCHITECTURE-NOTIFICATIONS
+- Added docs/ARCHITECTURE-NOTIFICATIONS.md.
+- Worktree: ke-arch only.
 
