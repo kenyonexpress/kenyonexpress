@@ -1,19 +1,19 @@
 # KenyonExpress State (arch/admin-supplier worktree)
 
 ## Current Phase
-Architecture docs for admin dashboard + supplier portal.
+Architecture docs for admin dashboard + supplier portal + platform docs queue.
 
 ## Last Completed
-2026-07-28: docs/ARCHITECTURE-SUPPLIER-PORTAL.md (full supplier portal architecture: identity/onboarding, RBAC, RLS, products, orders, redeem, payouts, notifications, data model, API, threats, rollout). Docs only in ke-arch.
+2026-07-28: docs/ARCHITECTURE-ADMIN-DASHBOARD.md (full admin control-center architecture). Docs only in ke-arch.
 
 ## In Progress
-nothing
+docs/ARCHITECTURE-NOTIFICATIONS.md next, then SEO-PERFORMANCE, then MOBILE-APP (commit+push after each).
 
 ## Blocking Issues
 none
 
 ## Next Task
-Implement supplier portal surfaces against docs/ARCHITECTURE-SUPPLIER-PORTAL.md on a feature branch. Apply 027 remainder as additive migrations (no fixed-commission regression). Align ADMIN-ARCHITECTURE.md section 0 with ADMIN-PRODUCT-PAGE-SPEC and this supplier money model (no Escrow; coupon online charge stays with platform).
+Write docs/ARCHITECTURE-NOTIFICATIONS.md.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
@@ -21,14 +21,15 @@ Implement supplier portal surfaces against docs/ARCHITECTURE-SUPPLIER-PORTAL.md 
 ---
 ## History
 
+### 2026-07-28: ARCHITECTURE-ADMIN-DASHBOARD
+- Added docs/ARCHITECTURE-ADMIN-DASHBOARD.md grounded in admin routes, rbac, audit_log, 070 money model.
+- Worktree: ke-arch only. No application code.
+
 ### 2026-07-28: ARCHITECTURE-SUPPLIER-PORTAL
-- Added docs/ARCHITECTURE-SUPPLIER-PORTAL.md binding supplier portal from first principles.
-- Grounded in migrations 070/072/073/074/077/078/081 and live scan surface.
-- Worktree: ke-arch only. No application code touched.
+- Added docs/ARCHITECTURE-SUPPLIER-PORTAL.md.
 
 ### 2026-07-27: ADMIN-PRODUCT-PAGE-SPEC
-- Added docs/ADMIN-PRODUCT-PAGE-SPEC.md binding the four dynamic fields, supplier publish gate, order_items snapshot, and publish validation.
-- Worktree: ke-arch only. No application code touched.
+- Added docs/ADMIN-PRODUCT-PAGE-SPEC.md.
 
 ### 2026-07-27: ADMIN + SUPPLIER architecture
-- ADMIN-ARCHITECTURE.md + SUPPLIER-PORTAL-ARCHITECTURE.md (API routes, RLS SQL, redeem flow).
+- ADMIN-ARCHITECTURE.md + SUPPLIER-PORTAL-ARCHITECTURE.md.
