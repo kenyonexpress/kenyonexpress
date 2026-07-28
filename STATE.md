@@ -4,13 +4,13 @@
 Admin Dashboard Core (Fable 5). Docs channel open on `arch/admin-supplier`.
 
 ## Last Completed
-2026-07-28: Three architecture docs written (docs only):
+2026-07-28: Checkout + fulfillment architecture pair (docs only):
 
-1. `docs/ARCHITECTURE-SEO-PERFORMANCE.md` (meta, hreflang he-IL, sitemap, JSON-LD, R2/next/image, ISR, CWV, Hebrew SEO)
-2. `docs/ARCHITECTURE-COUPON-REDEMPTION.md` (signed QR, scan PWA, state machine, races, offline, redemption_events, fraud, migrations 077+)
-3. `docs/ARCHITECTURE-WP-MIGRATION.md` (WP inventory, field maps, R2 media, 301s, dry-run, rollback, DNS cutover)
+1. `docs/ARCHITECTURE-CHECKOUT-CARDCOM.md` (guest→pay, IL postal, Cardcom multi-account, webhook, idempotency, settlement_events, test matrix)
+2. `docs/ARCHITECTURE-FULFILLMENT-SUPPLIER-WORKFLOW.md` (supplier notify, portal orders, ship/deliver/refund machine, coupon QR/PDF delivery)
 
-Money rules embedded everywhere: dynamic `platform_percent` (no default), coupon online `coupon_price_ils` + till remainder, physical immediate split, platform never a supplier, PDP shows supplier.
+### החלטות שהתקבלו אוטומטית
+- Prompt “Escrow until QR / Escrow on delivery” mapped to binding **no third-party Escrow**: coupon till is outside platform; prepaid may be internal `held`; physical split is immediate at `payment_settled`; delivery is fulfillment-only (payout remains T+3).
 
 ## In Progress
 Admin Dashboard Core goal (Fable 5). Docs channel on `arch/admin-supplier`.
@@ -19,7 +19,7 @@ Admin Dashboard Core goal (Fable 5). Docs channel on `arch/admin-supplier`.
 none for this docs pass
 
 ## Next Task
-Implement Admin Core surfaces (RBAC shell → product money editor → …) using the three new specs plus `ARCHITECTURE-ADMIN.md`.
+Implement Admin Core surfaces (RBAC shell → product money editor → …) with checkout/fulfillment specs available for money snapshots and supplier notify hooks.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-admin
@@ -35,6 +35,10 @@ not set in this worktree STATE
 
 ---
 ## History
+
+### 2026-07-28: Checkout Cardcom + fulfillment workflow
+- Added `ARCHITECTURE-CHECKOUT-CARDCOM.md` and `ARCHITECTURE-FULFILLMENT-SUPPLIER-WORKFLOW.md`.
+- Worktree: ke-admin. Docs only.
 
 ### 2026-07-28: SEO + coupon redemption + WP migration trio
 - Wrote/rewrote `ARCHITECTURE-SEO-PERFORMANCE.md`, `ARCHITECTURE-COUPON-REDEMPTION.md`, `ARCHITECTURE-WP-MIGRATION.md`.
