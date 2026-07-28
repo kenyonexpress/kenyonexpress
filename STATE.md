@@ -1,30 +1,30 @@
 # KenyonExpress — Project State
 
-Updated: 2026-07-28 (homepage complete → product page validation)
+Updated: 2026-07-28 (storefront closed → Admin Dashboard Core open)
 
 ## Current Phase
-Homepage complete on `phase5/homepage`. Moving to product page visual validation.
+Admin Dashboard Core (Fable 5). Storefront goal closed.
 
 ## Last Completed
-Commit `04dee6a` (homepage complete: full product catalog from live site + 5-slide auto-play hero). Verified on branch `phase5/homepage`.
+Storefront / homepage goal complete. Branch `phase5/homepage` includes `40dae12` (STATE) after homepage work (`04dee6a` catalog + hero). Verified pushed.
 
 ## In Progress
-Autonomous mode active (Fable 5 + Cursor + Browser agent).
+Admin Dashboard Core goal (Fable 5). Cursor docs channel: `docs/ARCHITECTURE-ADMIN.md` in worktree `ke-admin` (branch `arch/admin-supplier`).
 
 ## Blocking Issues
 none
 
 ## Next Task
-Product page validation + `compare.mjs` diff under 11%.
+Admin Dashboard Core implementation against `docs/ARCHITECTURE-ADMIN.md` + `docs/ADMIN-PRODUCT-PAGE-SPEC.md` (product money editor first). PDP visual validation (`compare.mjs` < 11%) remains a parallel storefront polish track if needed.
 
 ## Working Directory
-/Users/ofir/kenyonexpress-web/kenyonexpress
+/Users/ofir/kenyonexpress-web/kenyonexpress (storefront) | `/Users/ofir/kenyonexpress-web/ke-admin` (Admin Core docs/impl)
 
 ## Branch
-`phase5/homepage` (verified)
+`phase5/homepage` (storefront, closed) | `arch/admin-supplier` via `ke-admin` (Admin Core)
 
 ## Models
-Fable 5 (architecture tasks) | Opus (docs/schema) | Sonnet (UI edits)
+Fable 5 (architecture / Admin Core) | Opus (docs/schema) | Sonnet (UI edits)
 
 ## Supabase Project URL
 not restated here (use env / prior STATE entries)
