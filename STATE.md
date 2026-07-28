@@ -321,9 +321,9 @@ Session 2026-07-21 - יום עבודה אוטונומי מלא: קטגוריה, 
 פר-מוצר הוא הידית היחידה ו-`commission_percent` יצא משימוש. פירוט מלא
 ב-`docs/CONTRADICTIONS.md`.
 
-## In Progress
+## In Progress (archived 2026-07-28)
 
-Checkout v1 modules (see Next Tasks). `src/lib/money.ts` + `src/lib/money.test.ts` started.
+Checkout v1 modules were listed here historically. Goal 4 is complete; see top of file.
 
 ## Blocking Issues
 
