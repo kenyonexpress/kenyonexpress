@@ -1,53 +1,39 @@
-# KenyonExpress State (arch/admin-supplier worktree)
+# KenyonExpress State (ke-admin worktree)
 
 ## Current Phase
-Architecture docs for admin dashboard + supplier portal.
+Admin Dashboard Core (Fable 5). Docs channel open on `arch/admin-supplier`.
 
 ## Last Completed
-2026-07-28: docs/ARCHITECTURE-MOBILE-APP.md (Expo super-app design). Docs only in ke-arch.
-
+2026-07-28: `docs/ARCHITECTURE-ADMIN.md` (Admin Dashboard Core binding entry). Docs only in ke-admin.
 
 ## In Progress
-nothing
+Admin Dashboard Core goal (architecture → implementation against this file + ADMIN-PRODUCT-PAGE-SPEC).
 
 ## Blocking Issues
 none
 
 ## Next Task
-Architecture docs queue complete for admin/notifications/SEO/mobile. Next: implement against binding docs on feature branches.
-
+Implement Core surfaces in order: RBAC shell → product money editor → approvals → order split ledger → payments stuck → suppliers on `suppliers` → dashboard queues.
 
 ## Working Directory
-/Users/ofir/kenyonexpress-web/ke-arch
+/Users/ofir/kenyonexpress-web/ke-admin
+
+## Branch
+`arch/admin-supplier`
+
+## Models
+Fable 5 (architecture / Admin Core) | Opus (docs/schema) | Sonnet (UI edits)
+
+## Supabase Project URL
+not set in this worktree STATE
 
 ---
 ## History
 
-### 2026-07-28: ARCHITECTURE-SUPPLIER-PORTAL
-- Added docs/ARCHITECTURE-SUPPLIER-PORTAL.md binding supplier portal from first principles.
-- Grounded in migrations 070/072/073/074/077/078/081 and live scan surface.
-- Worktree: ke-arch only. No application code touched.
+### 2026-07-28: Admin Dashboard Core opened
+- Storefront goal closed on `phase5/homepage` (`40dae12`).
+- Added `docs/ARCHITECTURE-ADMIN.md` as Core goal entry doc.
+- Worktree: ke-admin. Docs only.
 
-### 2026-07-27: ADMIN-PRODUCT-PAGE-SPEC
-- Added docs/ADMIN-PRODUCT-PAGE-SPEC.md binding the four dynamic fields, supplier publish gate, order_items snapshot, and publish validation.
-- Worktree: ke-arch only. No application code touched.
-
-### 2026-07-27: ADMIN + SUPPLIER architecture
-- ADMIN-ARCHITECTURE.md + SUPPLIER-PORTAL-ARCHITECTURE.md (API routes, RLS SQL, redeem flow).
-
-### 2026-07-28: ARCHITECTURE-ADMIN-DASHBOARD
-- Added docs/ARCHITECTURE-ADMIN-DASHBOARD.md (products, orders, suppliers, coupons, finance, RBAC, RLS, threats, rollout).
-- Worktree: ke-arch only. No application code touched.
-
-### 2026-07-28: ARCHITECTURE-NOTIFICATIONS
-- Added docs/ARCHITECTURE-NOTIFICATIONS.md.
-- Worktree: ke-arch only.
-
-### 2026-07-28: ARCHITECTURE-SEO-PERFORMANCE
-- Added docs/ARCHITECTURE-SEO-PERFORMANCE.md.
-- Worktree: ke-arch only.
-
-### 2026-07-28: ARCHITECTURE-MOBILE-APP
-- Added docs/ARCHITECTURE-MOBILE-APP.md.
-- Worktree: ke-arch only.
-
+### Prior (inherited from arch docs on this branch)
+- ARCHITECTURE-ADMIN-DASHBOARD, NOTIFICATIONS, SEO, MOBILE, SECURITY, SUPPLIER-PORTAL, ADMIN-PRODUCT-PAGE-SPEC.
