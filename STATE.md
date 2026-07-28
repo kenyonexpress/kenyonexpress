@@ -4,7 +4,7 @@
 Architecture docs for admin dashboard + supplier portal.
 
 ## Last Completed
-2026-07-28: docs/ARCHITECTURE-NOTIFICATIONS.md (Resend + triggers + worker + ntfy). Docs only in ke-arch.
+2026-07-28: docs/ARCHITECTURE-SEO-PERFORMANCE.md. Docs only in ke-arch.
 
 
 ## In Progress
@@ -14,7 +14,7 @@ nothing
 none
 
 ## Next Task
-docs/ARCHITECTURE-SEO-PERFORMANCE.md then ARCHITECTURE-MOBILE-APP.md (commit after each).
+docs/ARCHITECTURE-MOBILE-APP.md (commit after).
 
 
 ## Working Directory
@@ -41,5 +41,9 @@ docs/ARCHITECTURE-SEO-PERFORMANCE.md then ARCHITECTURE-MOBILE-APP.md (commit aft
 
 ### 2026-07-28: ARCHITECTURE-NOTIFICATIONS
 - Added docs/ARCHITECTURE-NOTIFICATIONS.md.
+- Worktree: ke-arch only.
+
+### 2026-07-28: ARCHITECTURE-SEO-PERFORMANCE
+- Added docs/ARCHITECTURE-SEO-PERFORMANCE.md.
 - Worktree: ke-arch only.
 
