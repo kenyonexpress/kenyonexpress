@@ -11,6 +11,7 @@ import {
   COUPON_054_COLUMNS,
   type Coupon054Row,
   readOptionalColumns,
+  readStickerPriceIls,
 } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
 import '@/styles/product-page.css'
@@ -44,7 +45,7 @@ export default async function ProductPage({ params }: Props) {
     .from('products')
     .select(
       `id, slug, name_he, name_en, description_he,
-       kenyon_price, full_price, price_agorot, is_coupon_enabled,
+       kenyon_price, full_price, is_coupon_enabled,
        coupon_expiry_days, coupon_terms_he, redemption_instructions_he,
        requires_shipping, weight_grams, warranty_months,
        type, sku, images, stock_quantity, category_id, supplier_id,
@@ -128,19 +129,22 @@ export default async function ProductPage({ params }: Props) {
       ).get(product.id)
     : undefined
 
+  // The sticker price the business would charge. Which column holds it depends
+  // on whether migration 059 has been applied to this database, so it is probed
+  // rather than named in the select above: a select naming a column this
+  // database lacks fails the WHOLE query with 42703 and the page 404s. Both
+  // spellings have shipped that outage, one week apart, each as the other's fix.
+  const stickerPriceIls = isCoupon
+    ? await readStickerPriceIls(
+        (select, ids) => supabase.from('products').select(select).in('id', ids) as never,
+        product.id,
+        'product page',
+      )
+    : null
+
   const couponOffer: CouponOffer | null = isCoupon
     ? buildCouponOffer({
-        // price_agorot is the sticker price the business would charge, in
-        // integer agorot since migration 059. full_price is the pre-059 shekel
-        // column and is used only when the agorot one is unset.
-        //
-        // This read said product.price_ils until 2026-07-28. 059 renamed that
-        // column to price_ils_legacy, so the select failed and EVERY product
-        // page returned 404 on any database with 059 applied.
-        fullPriceIls:
-          product.price_agorot != null
-            ? product.price_agorot / 100
-            : (product.full_price ?? basePrice),
+        fullPriceIls: stickerPriceIls ?? product.full_price ?? basePrice,
         couponPriceIls: coupon054?.coupon_price_ils,
         validUntil: coupon054?.offer_valid_until,
         expiryDays: product.coupon_expiry_days,

@@ -1,5 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { COUPON_054_COLUMNS, type Coupon054Row, readOptionalColumns } from './optional-columns'
+import {
+  COUPON_054_COLUMNS,
+  type Coupon054Row,
+  readOptionalColumns,
+  readStickerPriceIls,
+} from './optional-columns'
 
 const UNDEFINED_COLUMN = {
   code: '42703',
@@ -74,5 +79,66 @@ describe('readOptionalColumns', () => {
     const result = await readOptionalColumns<Coupon054Row>(run, COUPON_054_COLUMNS, [], 'test')
     expect(result.size).toBe(0)
     expect(run).not.toHaveBeenCalled()
+  })
+})
+
+describe('readStickerPriceIls', () => {
+  const undefinedColumn = (col: string) => ({
+    code: '42703',
+    message: `column products.${col} does not exist`,
+  })
+
+  it('reads price_ils when this database still has it (the hosted project)', async () => {
+    const run = vi.fn(async (select: string) => {
+      if (select.includes('price_agorot'))
+        return { data: null, error: undefinedColumn('price_agorot') }
+      return { data: [{ id: 'p1', price_ils: 180 }], error: null }
+    })
+    expect(await readStickerPriceIls(run as never, 'p1', 'test')).toBe(180)
+  })
+
+  it('falls back to price_agorot and converts to shekels when 059 has been applied', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const run = vi.fn(async (select: string) => {
+      if (select.includes('price_ils')) return { data: null, error: undefinedColumn('price_ils') }
+      return { data: [{ id: 'p1', price_agorot: 18_000 }], error: null }
+    })
+    expect(await readStickerPriceIls(run as never, 'p1', 'test')).toBe(180)
+    warn.mockRestore()
+  })
+
+  it('returns null when neither column exists, instead of inventing a price', async () => {
+    // The caller then falls back to its own pre-059 column. Returning 0 here
+    // would quote a free product.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const run = vi.fn(async (select: string) => ({
+      data: null,
+      error: undefinedColumn(select.includes('price_ils') ? 'price_ils' : 'price_agorot'),
+    }))
+    expect(await readStickerPriceIls(run as never, 'p1', 'test')).toBeNull()
+    warn.mockRestore()
+  })
+
+  it('skips a column that exists but is null on this row', async () => {
+    const run = vi.fn(async (select: string) => {
+      if (select.includes('price_ils'))
+        return { data: [{ id: 'p1', price_ils: null }], error: null }
+      return { data: [{ id: 'p1', price_agorot: 9900 }], error: null }
+    })
+    expect(await readStickerPriceIls(run as never, 'p1', 'test')).toBe(99)
+  })
+
+  it('never names both spellings in one select', async () => {
+    // Naming a column this database lacks fails the WHOLE query with 42703.
+    // That is what made every product page 404, twice, in both directions.
+    const selects: string[] = []
+    const run = vi.fn(async (select: string) => {
+      selects.push(select)
+      return { data: [{ id: 'p1', price_ils: 10 }], error: null }
+    })
+    await readStickerPriceIls(run as never, 'p1', 'test')
+    for (const s of selects) {
+      expect(s.includes('price_ils') && s.includes('price_agorot')).toBe(false)
+    }
   })
 })

@@ -82,3 +82,49 @@ export type Coupon054Row = {
   coupon_price_ils: number | null
   offer_valid_until: string | null
 }
+
+/**
+ * Where the sticker price lives, by deployment, most current first.
+ *
+ * Migration 059 renames `products.price_ils` to `price_ils_legacy` and adds
+ * integer `price_agorot`. It is not applied to the hosted project, which still
+ * carries `price_ils` and has neither of the other two.
+ *
+ * Naming the wrong one in the product page's main select is not a cosmetic
+ * miss: 42703 fails the whole query, `data` comes back null, and the page calls
+ * notFound(). Every product page 404s. That happened twice on 2026-07-28, once
+ * in each direction, each time as the fix for the other. Probing instead of
+ * guessing is what stops the third time.
+ */
+export const STICKER_PRICE_CANDIDATES = [
+  { column: 'price_ils', toIls: (v: number) => v },
+  { column: 'price_agorot', toIls: (v: number) => v / 100 },
+] as const
+
+/**
+ * The sticker price in shekels, from whichever column this database has.
+ *
+ * Returns null when none of the candidates exist or the row has no value, which
+ * is the caller's cue to fall back to its own pre-059 column rather than to
+ * invent a price.
+ */
+export async function readStickerPriceIls(
+  run: (select: string, ids: string[]) => OptionalColumnsResult<Record<string, unknown>>,
+  productId: string,
+  label: string,
+): Promise<number | null> {
+  for (const candidate of STICKER_PRICE_CANDIDATES) {
+    const rows = await readOptionalColumns<{ id: string } & Record<string, unknown>>(
+      run as never,
+      [candidate.column],
+      [productId],
+      `${label} (${candidate.column})`,
+    )
+    const raw = rows.get(productId)?.[candidate.column]
+    if (raw === null || raw === undefined) continue
+    const parsed = Number(raw)
+    if (!Number.isFinite(parsed)) continue
+    return candidate.toIls(parsed)
+  }
+  return null
+}
