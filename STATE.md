@@ -152,28 +152,6 @@ Worktree: `/Users/ofir/kenyonexpress-web/ke-visual`.
 3. **עמוד קטגוריה 1:1 מול החי** - `compare.mjs --page=category` מ-23.7% אל מתחת ל-7%.
 
 
-## Last Completed
-Session 2026-07-24 - Goal 4 visual+tokens on `feat/visual-polish`:
-
-Commits on this branch (visual pass):
-- `54c14c5` fix(visual): restore custom-price card block + compare demo slug + search chrome
-- `6a6075e` fix(visual): home deals spacing + shop bottom bar/jumbotron + compare consent cookie
-- (pending) fix(visual): shop row min-heights 438/366 to match live flex stretch
-
-compare.mjs OVERALL first 2600px (live, with .env.local, after shop row fix):
-| page | % | vs 11% |
-|---|---|---|
-| category | **9.12%** | pass |
-| home | **13.51%** | fail (LOCKED header/hero y200-600; deals at y898 matched) |
-| search | **13.60%** | fail (content floor: hit count differs) |
-| products | **19.28%** | fail (catalog content floor; grid row geometry matched live) |
-| product | **20.99%** | fail (PDP vs live demo product) |
-
-Home floor: LOCKED HeroSection/HeroSlider/header (~y0-700) plus residual deal-pixel noise.
-Products floor: different product images/titles in slots despite matched 438/366/438/438/438 row heights, control bar, and 424px jumbotron.
-Worktree: `/Users/ofir/kenyonexpress-web/ke-visual`.
-
-
 ## Previous Last Completed
 Session 2026-07-24 - יעד 5/20: `docs/PRODUCT-PAGE-SPEC.md` (קומיט `docs: product page spec`):
 מסמך אחד שבולע את קובץ האב `docs/product-page/*.docx` ואת מפרט טופס הניהול.
