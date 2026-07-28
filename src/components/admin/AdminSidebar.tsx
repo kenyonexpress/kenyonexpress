@@ -50,7 +50,16 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/approvals', label: 'תור אישורים', icon: BadgeCheck, section: 'catalog' },
   { href: '/admin/orders', label: 'הזמנות', icon: ShoppingCart, section: 'orders' },
   { href: '/admin/users', label: 'משתמשים', icon: Users, section: 'users' },
-  { href: '/admin/suppliers', label: 'ספקים', icon: Store, section: 'suppliers' },
+  {
+    href: '/admin/suppliers',
+    label: 'ספקים',
+    icon: Store,
+    section: 'suppliers',
+    quickAdd: '/admin/suppliers/new',
+  },
+  // Legacy payout table. Separate from ספקים on purpose: nothing on the purchase
+  // path references it (docs/ADMIN-ARCHITECTURE.md section 2).
+  { href: '/admin/vendors', label: 'ספקים (מערכת ישנה)', icon: Store, section: 'suppliers' },
   { href: '/admin/payments', label: 'תשלומים', icon: CreditCard, section: 'payments' },
   { href: '/admin/affiliates', label: 'שותפים והפניות', icon: Share2, section: 'affiliates' },
   { href: '/admin/analytics', label: 'אנליטיקה', icon: BarChart3, section: 'analytics' },

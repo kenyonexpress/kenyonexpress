@@ -1,32 +1,19 @@
-import VendorForm from '@/components/admin/VendorForm'
-import { requireAdminPage } from '@/lib/admin/rbac'
-import { eligibleVendorProfiles } from '@/lib/admin/vendor-form'
-import { createClient } from '@/lib/supabase/server'
+import SupplierForm from '@/components/admin/SupplierForm'
+import { requireSection } from '@/lib/admin/rbac'
 
 export const metadata = { title: 'ספק חדש' }
 
-export default async function NewVendorPage() {
-  await requireAdminPage()
-  const supabase = await createClient()
-
-  const [{ data: profiles }, { data: vendors }] = await Promise.all([
-    supabase
-      .from('profiles')
-      .select('id, email, full_name')
-      .order('created_at', { ascending: false }),
-    supabase.from('vendors').select('profile_id').is('deleted_at', null),
-  ])
-
-  const linkedProfileIds = (vendors ?? []).map((v) => v.profile_id)
-  const available = eligibleVendorProfiles(profiles ?? [], linkedProfileIds)
+export default async function NewSupplierPage() {
+  await requireSection('suppliers', 'write')
 
   return (
     <div className="space-y-4 max-w-3xl">
       <h1 className="text-xl font-bold text-gray-900">ספק חדש</h1>
       <p className="text-sm text-gray-500">
-        בחרו את המשתמש שישויך לספק. יש ליצור את המשתמש מראש (דרך הרשמה או מסך המשתמשים).
+        שם, טלפון, כתובת ולוגו נדרשים כדי שמוצר של הספק יוכל להתפרסם. אפשר לשמור בלעדיהם ולהשלים אחר
+        כך.
       </p>
-      <VendorForm profiles={available} />
+      <SupplierForm />
     </div>
   )
 }

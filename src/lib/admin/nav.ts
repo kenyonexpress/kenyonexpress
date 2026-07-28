@@ -11,6 +11,7 @@ export const ADMIN_SECTIONS = [
   { href: '/admin/products', staffAllowed: true },
   { href: '/admin/categories', staffAllowed: false },
   { href: '/admin/suppliers', staffAllowed: false },
+  { href: '/admin/vendors', staffAllowed: false },
   { href: '/admin/orders', staffAllowed: false },
   { href: '/admin/coupons', staffAllowed: false },
   { href: '/admin/users', staffAllowed: false },

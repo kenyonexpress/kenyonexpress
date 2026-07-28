@@ -205,7 +205,7 @@ export default function VendorForm({ vendor, profiles = [] }: Props) {
         >
           {pending ? 'שומר...' : vendor ? 'עדכון ספק' : 'יצירת ספק'}
         </button>
-        <a href="/admin/suppliers" className="text-sm text-gray-500 hover:underline">
+        <a href="/admin/vendors" className="text-sm text-gray-500 hover:underline">
           ביטול
         </a>
       </div>

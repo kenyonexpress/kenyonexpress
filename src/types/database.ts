@@ -530,8 +530,10 @@ export type Database = {
           commission_agorot: number | null
           commission_percent: number
           commission_percent_snapshot: number | null
+          coupon_price_ils: number | null
           created_at: string
           deleted_at: string | null
+          discount_percent: number | null
           escrow_held_agorot: number | null
           escrow_release_agorot: number | null
           face_value_agorot: number | null
@@ -545,9 +547,14 @@ export type Database = {
           product_type: Database["public"]["Enums"]["product_type"]
           quantity: number
           settlement_status: Database["public"]["Enums"]["settlement_status"]
+          supplier_address: string | null
           supplier_id: string | null
           supplier_immediate_agorot: number | null
+          supplier_logo_url: string | null
+          supplier_name: string | null
           supplier_payout_ils: number
+          supplier_phone: string | null
+          supplier_split_percent: number | null
           total_price_ils: number
           unit_price_ils: number
           updated_at: string
@@ -562,8 +569,10 @@ export type Database = {
           commission_agorot?: number | null
           commission_percent: number
           commission_percent_snapshot?: number | null
+          coupon_price_ils?: number | null
           created_at?: string
           deleted_at?: string | null
+          discount_percent?: number | null
           escrow_held_agorot?: number | null
           escrow_release_agorot?: number | null
           face_value_agorot?: number | null
@@ -577,9 +586,14 @@ export type Database = {
           product_type: Database["public"]["Enums"]["product_type"]
           quantity?: number
           settlement_status?: Database["public"]["Enums"]["settlement_status"]
+          supplier_address?: string | null
           supplier_id?: string | null
           supplier_immediate_agorot?: number | null
+          supplier_logo_url?: string | null
+          supplier_name?: string | null
           supplier_payout_ils: number
+          supplier_phone?: string | null
+          supplier_split_percent?: number | null
           total_price_ils: number
           unit_price_ils: number
           updated_at?: string
@@ -594,8 +608,10 @@ export type Database = {
           commission_agorot?: number | null
           commission_percent?: number
           commission_percent_snapshot?: number | null
+          coupon_price_ils?: number | null
           created_at?: string
           deleted_at?: string | null
+          discount_percent?: number | null
           escrow_held_agorot?: number | null
           escrow_release_agorot?: number | null
           face_value_agorot?: number | null
@@ -609,9 +625,14 @@ export type Database = {
           product_type?: Database["public"]["Enums"]["product_type"]
           quantity?: number
           settlement_status?: Database["public"]["Enums"]["settlement_status"]
+          supplier_address?: string | null
           supplier_id?: string | null
           supplier_immediate_agorot?: number | null
+          supplier_logo_url?: string | null
+          supplier_name?: string | null
           supplier_payout_ils?: number
+          supplier_phone?: string | null
+          supplier_split_percent?: number | null
           total_price_ils?: number
           unit_price_ils?: number
           updated_at?: string
@@ -980,6 +1001,7 @@ export type Database = {
           attributes: Json
           barcode: string | null
           brand: string | null
+          cashback_enabled: boolean
           cashback_percent: number
           category_id: string | null
           commission_percent: number
@@ -988,11 +1010,13 @@ export type Database = {
           condition: string | null
           cost_ils: number | null
           coupon_expiry_days: number | null
+          coupon_price_ils: number | null
           coupon_terms_he: string | null
           created_at: string
           created_by: string | null
           deleted_at: string | null
           description_he: string | null
+          discount_percent: number | null
           full_price: number | null
           height_cm: number | null
           highlights: Json
@@ -1007,8 +1031,10 @@ export type Database = {
           min_purchase_ils: number | null
           name_en: string | null
           name_he: string
+          offer_valid_until: string | null
           platform_percent: number | null
           price_ils: number
+          profit_share_cap_percent: number
           published_at: string | null
           redemption_instructions_he: string | null
           requires_shipping: boolean
@@ -1022,6 +1048,7 @@ export type Database = {
           stock_quantity: number | null
           submitted_at: string | null
           supplier_id: string | null
+          supplier_split_percent: number | null
           type: Database["public"]["Enums"]["product_type"]
           updated_at: string
           video_url: string | null
@@ -1037,6 +1064,7 @@ export type Database = {
           attributes?: Json
           barcode?: string | null
           brand?: string | null
+          cashback_enabled?: boolean
           cashback_percent?: number
           category_id?: string | null
           commission_percent?: number
@@ -1045,11 +1073,13 @@ export type Database = {
           condition?: string | null
           cost_ils?: number | null
           coupon_expiry_days?: number | null
+          coupon_price_ils?: number | null
           coupon_terms_he?: string | null
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
           description_he?: string | null
+          discount_percent?: number | null
           full_price?: number | null
           height_cm?: number | null
           highlights?: Json
@@ -1064,8 +1094,10 @@ export type Database = {
           min_purchase_ils?: number | null
           name_en?: string | null
           name_he: string
+          offer_valid_until?: string | null
           platform_percent?: number | null
           price_ils: number
+          profit_share_cap_percent?: number
           published_at?: string | null
           redemption_instructions_he?: string | null
           requires_shipping?: boolean
@@ -1079,6 +1111,7 @@ export type Database = {
           stock_quantity?: number | null
           submitted_at?: string | null
           supplier_id?: string | null
+          supplier_split_percent?: number | null
           type: Database["public"]["Enums"]["product_type"]
           updated_at?: string
           video_url?: string | null
@@ -1094,6 +1127,7 @@ export type Database = {
           attributes?: Json
           barcode?: string | null
           brand?: string | null
+          cashback_enabled?: boolean
           cashback_percent?: number
           category_id?: string | null
           commission_percent?: number
@@ -1102,11 +1136,13 @@ export type Database = {
           condition?: string | null
           cost_ils?: number | null
           coupon_expiry_days?: number | null
+          coupon_price_ils?: number | null
           coupon_terms_he?: string | null
           created_at?: string
           created_by?: string | null
           deleted_at?: string | null
           description_he?: string | null
+          discount_percent?: number | null
           full_price?: number | null
           height_cm?: number | null
           highlights?: Json
@@ -1121,8 +1157,10 @@ export type Database = {
           min_purchase_ils?: number | null
           name_en?: string | null
           name_he?: string
+          offer_valid_until?: string | null
           platform_percent?: number | null
           price_ils?: number
+          profit_share_cap_percent?: number
           published_at?: string | null
           redemption_instructions_he?: string | null
           requires_shipping?: boolean
@@ -1136,6 +1174,7 @@ export type Database = {
           stock_quantity?: number | null
           submitted_at?: string | null
           supplier_id?: string | null
+          supplier_split_percent?: number | null
           type?: Database["public"]["Enums"]["product_type"]
           updated_at?: string
           video_url?: string | null
@@ -1349,34 +1388,64 @@ export type Database = {
       }
       suppliers: {
         Row: {
+          address: string | null
+          business_id: string | null
+          city: string | null
           commission_percent: number
           contact_email: string | null
+          contact_name: string | null
           contact_phone: string | null
           created_at: string
+          default_split_percent: number
+          deleted_at: string | null
           id: string
+          logo_url: string | null
           name: string
           notes: string | null
+          status: string
           updated_at: string
+          website: string | null
+          whatsapp: string | null
         }
         Insert: {
+          address?: string | null
+          business_id?: string | null
+          city?: string | null
           commission_percent?: number
           contact_email?: string | null
+          contact_name?: string | null
           contact_phone?: string | null
           created_at?: string
+          default_split_percent?: number
+          deleted_at?: string | null
           id?: string
+          logo_url?: string | null
           name: string
           notes?: string | null
+          status?: string
           updated_at?: string
+          website?: string | null
+          whatsapp?: string | null
         }
         Update: {
+          address?: string | null
+          business_id?: string | null
+          city?: string | null
           commission_percent?: number
           contact_email?: string | null
+          contact_name?: string | null
           contact_phone?: string | null
           created_at?: string
+          default_split_percent?: number
+          deleted_at?: string | null
           id?: string
+          logo_url?: string | null
           name?: string
           notes?: string | null
+          status?: string
           updated_at?: string
+          website?: string | null
+          whatsapp?: string | null
         }
         Relationships: []
       }

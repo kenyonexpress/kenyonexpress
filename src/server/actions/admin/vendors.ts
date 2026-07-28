@@ -57,8 +57,8 @@ export async function upsertVendor(
     if (error) return { error: error.message }
   }
 
-  revalidatePath('/admin/suppliers')
-  if (id) revalidatePath(`/admin/suppliers/${id}`)
+  revalidatePath('/admin/vendors')
+  if (id) revalidatePath(`/admin/vendors/${id}`)
   return { success: id ? 'ספק עודכן' : 'ספק נוצר' }
 }
 
@@ -80,8 +80,8 @@ export async function updateVendorStatus(
   const { error } = await supabase.from('vendors').update({ status: parsed.data }).eq('id', id)
   if (error) return { error: error.message }
 
-  revalidatePath('/admin/suppliers')
-  revalidatePath(`/admin/suppliers/${id}`)
+  revalidatePath('/admin/vendors')
+  revalidatePath(`/admin/vendors/${id}`)
   return { success: 'סטטוס עודכן' }
 }
 
@@ -106,8 +106,8 @@ export async function updateVendorCommission(
     .eq('id', id)
   if (error) return { error: error.message }
 
-  revalidatePath('/admin/suppliers')
-  revalidatePath(`/admin/suppliers/${id}`)
+  revalidatePath('/admin/vendors')
+  revalidatePath(`/admin/vendors/${id}`)
   return { success: 'עמלה עודכנה' }
 }
 
@@ -125,6 +125,6 @@ export async function softDeleteVendor(id: string): Promise<{ error?: string }> 
     .eq('id', id)
   if (error) return { error: error.message }
 
-  revalidatePath('/admin/suppliers')
+  revalidatePath('/admin/vendors')
   return {}
 }
