@@ -1,4 +1,5 @@
 import { getSupplierMemberships, getSupplierSession } from '@/lib/supplier/rbac'
+import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
 import { verifyVoucherQrPayload } from '@/server/domain/vouchers/qr'
 import { readScanContext, recordRefusedScan } from '@/server/domain/vouchers/scan-context'
@@ -82,6 +83,31 @@ function Refusal({ title, detail }: { title: string; detail: string }) {
 export default async function RedeemTokenPage({ params }: Props) {
   const { token } = await params
   const scanContext = readScanContext(await headers())
+
+  // 0. Per-address ceiling, before the HMAC is even computed.
+  //
+  //    redeem_voucher() already rate limits by user, but that only binds a
+  //    caller who has a session; this page answers before one is required, on
+  //    purpose, so that a forged token gets recorded. Without a second limit
+  //    keyed on the address, an anonymous client could ask this route to verify
+  //    signatures and write audit rows as fast as it liked.
+  //
+  //    60 an hour is far above a real counter - a busy till scans a handful a
+  //    minute in bursts and stops - and far below anything useful for probing
+  //    the token space. checkRateLimit fails OPEN if its RPC is unavailable,
+  //    which is the right way round here: a rate limiter that is down must not
+  //    stop a paying customer redeeming at a till.
+  if (scanContext.ip) {
+    const allowed = await checkRateLimit(`redeem:${scanContext.ip}`, 60, 3600)
+    if (!allowed) {
+      return (
+        <Refusal
+          title="יותר מדי נסיונות"
+          detail="בוצעו יותר מדי סריקות מכתובת זו בשעה האחרונה. המתינו מעט ונסו שוב, או הזינו את הקוד ידנית במסך הסריקה."
+        />
+      )
+    }
+  }
 
   // 1. Signature first, before anything reads the database. A tampered token is
   //    logged even from a visitor with no session at all - that is the attempt
