@@ -1616,6 +1616,93 @@ export type Database = {
           },
         ]
       }
+      vouchers: {
+        Row: {
+          cancelled_at: string | null
+          code: string
+          coupon_price_agorot: number
+          created_at: string
+          expires_at: string
+          face_value_agorot: number
+          id: string
+          issued_at: string
+          offer_valid_until: string
+          order_id: string
+          order_item_id: string
+          platform_percent: number
+          product_id: string
+          qr_key_id: string
+          qr_payload: string
+          redeemed_amount_collected_agorot: number | null
+          redeemed_at: string | null
+          redeemed_by_supplier_id: string | null
+          redeemed_by_user_id: string | null
+          refunded_at: string | null
+          remaining_amount_due_agorot: number
+          status: Database["public"]["Enums"]["voucher_status"]
+          status_reason: string | null
+          supplier_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cancelled_at?: string | null
+          code: string
+          coupon_price_agorot: number
+          created_at?: string
+          expires_at: string
+          face_value_agorot: number
+          id?: string
+          issued_at?: string
+          offer_valid_until: string
+          order_id: string
+          order_item_id: string
+          platform_percent: number
+          product_id: string
+          qr_key_id: string
+          qr_payload: string
+          redeemed_amount_collected_agorot?: number | null
+          redeemed_at?: string | null
+          redeemed_by_supplier_id?: string | null
+          redeemed_by_user_id?: string | null
+          refunded_at?: string | null
+          remaining_amount_due_agorot: number
+          status?: Database["public"]["Enums"]["voucher_status"]
+          status_reason?: string | null
+          supplier_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cancelled_at?: string | null
+          code?: string
+          coupon_price_agorot?: number
+          created_at?: string
+          expires_at?: string
+          face_value_agorot?: number
+          id?: string
+          issued_at?: string
+          offer_valid_until?: string
+          order_id?: string
+          order_item_id?: string
+          platform_percent?: number
+          product_id?: string
+          qr_key_id?: string
+          qr_payload?: string
+          redeemed_amount_collected_agorot?: number | null
+          redeemed_at?: string | null
+          redeemed_by_supplier_id?: string | null
+          redeemed_by_user_id?: string | null
+          refunded_at?: string | null
+          remaining_amount_due_agorot?: number
+          status?: Database["public"]["Enums"]["voucher_status"]
+          status_reason?: string | null
+          supplier_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       wallet_accounts: {
         Row: {
           balance_ils: number
@@ -1913,6 +2000,7 @@ export type Database = {
         | "admin"
         | "super_admin"
         | "support"
+      voucher_status: "issued" | "redeemed" | "expired" | "cancelled" | "refunded"
       wallet_tx_source: "cashback" | "referral" | "manual"
       wallet_tx_type: "earn" | "redeem" | "expire" | "refund"
     }
@@ -2103,6 +2191,7 @@ export const Constants = {
         "super_admin",
         "support",
       ],
+      voucher_status: ["issued", "redeemed", "expired", "cancelled", "refunded"],
       wallet_tx_source: ["cashback", "referral", "manual"],
       wallet_tx_type: ["earn", "redeem", "expire", "refund"],
     },
@@ -2129,6 +2218,7 @@ export type Cart = Tables<'carts'>
 export type CouponDeal = Tables<'coupon_deals'>
 export type Supplier = Tables<'suppliers'>
 export type CouponCode = Tables<'coupon_codes'>
+export type Voucher = Tables<'vouchers'>
 export type Payment = Tables<'payments'>
 export type PaymentWebhookEvent = Tables<'payment_webhook_events'>
 export type EscrowHold = Tables<'escrow_holds'>

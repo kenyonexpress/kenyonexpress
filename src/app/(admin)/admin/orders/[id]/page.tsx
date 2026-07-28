@@ -100,13 +100,22 @@ export default async function OrderDetailPage({ params }: Props) {
 
   const items = (Array.isArray(order.order_items) ? order.order_items : []) as OrderItemRow[]
 
-  // Vouchers are keyed off the order's coupon lines. Service role: coupon_codes
-  // has no permissive select policy for `authenticated`.
+  // Vouchers are keyed off the order's coupon lines.
+  //
+  // `vouchers`, not `coupon_codes`. Both tables exist; only this one is on the
+  // live path. finalize.ts issues into `vouchers`, refund.ts and the customer
+  // account read it, and its `voucher_status` enum is the one the voucher state
+  // machine models. `coupon_codes` is read-only everywhere in the tree and holds
+  // two rows predating the cutover. Reading it here would show an empty voucher
+  // list on every real coupon order.
+  //
+  // Service role: `vouchers` RLS scopes rows to the owning customer, so a staff
+  // read has to come through the gate above instead.
   const couponItemIds = items.filter((i) => i.product_type === 'coupon').map((i) => i.id)
   const { data: voucherRows } =
     couponItemIds.length > 0
       ? await admin
-          .from('coupon_codes')
+          .from('vouchers')
           .select('id, code, status, order_item_id, redeemed_at, expires_at')
           .in('order_item_id', couponItemIds)
       : { data: [] }
