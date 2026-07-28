@@ -33,6 +33,20 @@ type OrderRow = {
   total_ils: number
   created_at: string
   customer: string
+  couponLines: number
+  physicalLines: number
+}
+
+/**
+ * A coupon order and a physical order are different operations: one issues a
+ * voucher that someone has to redeem at a business, the other ships. Without
+ * this column the list gave no way to tell them apart before opening each row.
+ */
+function kindLabel(row: Pick<OrderRow, 'couponLines' | 'physicalLines'>): string {
+  if (row.couponLines > 0 && row.physicalLines > 0) return 'מעורב'
+  if (row.couponLines > 0) return 'קופון'
+  if (row.physicalLines > 0) return 'פיזי'
+  return '—'
 }
 
 export default async function AdminOrdersPage(props: {
@@ -62,7 +76,7 @@ export default async function AdminOrdersPage(props: {
   let query = supabase
     .from('orders')
     .select(
-      'id, invoice_number, status, total_ils, created_at, user_id, profiles(full_name, email)',
+      'id, invoice_number, status, total_ils, created_at, user_id, profiles(full_name, email), order_items(product_type)',
       {
         count: 'exact',
       },
@@ -83,6 +97,9 @@ export default async function AdminOrdersPage(props: {
 
   const rows: OrderRow[] = (orders ?? []).map((order) => {
     const profile = Array.isArray(order.profiles) ? order.profiles[0] : order.profiles
+    const lines = (Array.isArray(order.order_items) ? order.order_items : []) as {
+      product_type: string
+    }[]
     return {
       id: order.id,
       invoice_number: order.invoice_number,
@@ -90,6 +107,8 @@ export default async function AdminOrdersPage(props: {
       total_ils: order.total_ils,
       created_at: order.created_at,
       customer: profile?.full_name ?? profile?.email ?? '',
+      couponLines: lines.filter((l) => l.product_type === 'coupon').length,
+      physicalLines: lines.filter((l) => l.product_type === 'physical').length,
     }
   })
 
@@ -116,6 +135,12 @@ export default async function AdminOrdersPage(props: {
       ),
     },
     { id: 'customer', header: 'לקוח', cell: (order) => order.customer },
+    {
+      id: 'kind',
+      header: 'סוג',
+      className: 'whitespace-nowrap text-xs text-black/60',
+      cell: (order) => kindLabel(order),
+    },
     {
       id: 'total',
       header: 'סכום',

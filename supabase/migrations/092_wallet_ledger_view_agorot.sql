@@ -1,4 +1,4 @@
--- 090_wallet_ledger_view_agorot.sql
+-- 092_wallet_ledger_view_agorot.sql
 --
 -- LOCAL ONLY. NOT APPLIED TO PRODUCTION. Assumes 059 and 089.
 --

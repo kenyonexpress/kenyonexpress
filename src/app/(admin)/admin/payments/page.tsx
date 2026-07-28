@@ -7,15 +7,19 @@ import {
   labelFor,
 } from '@/lib/admin/labels'
 import { baseListParamsSchema, listRange } from '@/lib/admin/list-params'
+import { needsAttention, reconcile, summarize } from '@/lib/admin/payment-reconciliation'
 import { requireSection } from '@/lib/admin/rbac'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import type { EscrowHold, Payment, PaymentWebhookEvent, SplitExecution } from '@/types/database'
 import Link from 'next/link'
 import { z } from 'zod'
+import ReconcileClient from './ReconcileClient'
 
 export const metadata = { title: 'תשלומים' }
 
 const TABS = [
+  { key: 'reconcile', label: 'התאמה' },
   { key: 'payments', label: 'תשלומים' },
   { key: 'webhooks', label: 'אירועי Webhook' },
   { key: 'escrow', label: 'נאמנות (Escrow)' },
@@ -25,7 +29,7 @@ const TABS = [
 type TabKey = (typeof TABS)[number]['key']
 
 const paramsSchema = baseListParamsSchema.extend({
-  tab: z.enum(['payments', 'webhooks', 'escrow', 'splits']).catch('payments'),
+  tab: z.enum(['reconcile', 'payments', 'webhooks', 'escrow', 'splits']).catch('reconcile'),
 })
 
 const agorot = (value: number) => `₪${(value / 100).toLocaleString('he-IL')}`
@@ -52,7 +56,48 @@ export default async function AdminPaymentsPage(props: {
   let table: React.ReactNode = null
   let total = 0
 
-  if (params.tab === 'payments') {
+  if (params.tab === 'reconcile') {
+    // Reconciliation joins the two tables that were only ever listed apart: a
+    // charge can read `succeeded` on one screen while its order reads `pending`
+    // on another, and nothing said so. Service role because it spans orders and
+    // payments, both of which are money tables with no permissive read.
+    const admin = createAdminClient()
+    const { data: payments } = await admin
+      .from('payments')
+      .select('id, order_id, kind, status, amount_ils, succeeded_at, cardcom_transaction_id')
+      .order('created_at', { ascending: false })
+      .limit(500)
+
+    const orderIds = [
+      ...new Set((payments ?? []).map((p) => p.order_id).filter((id): id is string => !!id)),
+    ]
+    const { data: orders } = await admin
+      .from('orders')
+      .select('id, status, paid_at')
+      .in('id', orderIds.length > 0 ? orderIds : ['00000000-0000-0000-0000-000000000000'])
+    const orderById = new Map((orders ?? []).map((o) => [o.id, o]))
+
+    const reconciled = (payments ?? [])
+      .filter((p) => p.order_id)
+      .map((p) => {
+        const order = orderById.get(p.order_id as string)
+        return reconcile({
+          paymentId: p.id,
+          orderId: p.order_id as string,
+          paymentStatus: p.status,
+          paymentKind: p.kind,
+          orderPaidAt: order?.paid_at ?? null,
+          orderStatus: order?.status ?? 'unknown',
+          amountIls: p.amount_ils,
+          succeededAt: p.succeeded_at,
+          transactionId: p.cardcom_transaction_id,
+        })
+      })
+
+    const summary = summarize(reconciled)
+    table = <ReconcileClient rows={needsAttention(reconciled)} strandedIls={summary.strandedIls} />
+    total = 0
+  } else if (params.tab === 'payments') {
     const { data, count } = await supabase
       .from('payments')
       .select('*', { count: 'exact' })

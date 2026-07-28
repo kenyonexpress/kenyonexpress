@@ -50,9 +50,13 @@
 - [x] ✅ `coupon_price_ils` מלא בכל 15 הקופונים הפעילים.
 - [x] ✅ `090_profiles_no_self_role_change` הוחלה. עד אליה כל משתמש מחובר יכול
       היה להציב לעצמו `role = admin` דרך מדיניות UPDATE ישנה בלי `WITH CHECK`.
-- [ ] החלטה על `091_product_commission_type` (טיוטה). הקוד כבר כותב את השדה,
-      ולכן **אין לפרוס את `feat/admin-core` לפני שהיא הוחלה**, אחרת כל insert
-      של מוצר ייכשל על עמודה שאינה קיימת.
+- [ ] ⛔ החלטה על `093_product_commission_type` (מוספרה מחדש מ-091 במיזוג; ראה
+      `ARCHITECTURE-DEPLOYMENT.md` §4.2). הקוד כבר כותב את השדה —
+      `buildProductMoneyWrite` ב-`src/lib/commerce/product-money.ts` מחזיר
+      `commission_type` בתוך `fields`, וגם ה-insert וגם ה-update של מוצר
+      פורשים אותו. מאז שהמיזוג נכנס ל-`phase5/homepage` זה **חוסם פריסה של
+      הענף הראשי**, ולא רק של `feat/admin-core`: בלי המיגרציה כל יצירה
+      ועריכה של מוצר באדמין תיכשל על עמודה שאינה קיימת.
 
 ## שלב 3: תוכן ונתונים
 

@@ -1,11 +1,30 @@
 'use client'
 
 import ImageUploader from '@/components/admin/ImageUploader'
+import { supplierReadiness } from '@/lib/admin/supplier-form'
+import {
+  commissionTypeOf,
+  completeSplitPair,
+  deriveDiscountPercent,
+  normalizeIls,
+  normalizePercent,
+  previewProductMoney,
+} from '@/lib/commerce/product-money'
 import { slugify } from '@/lib/utils/slugify'
 import { type ProductFormState, upsertProduct } from '@/server/actions/admin/products'
 import type { Category, Product, ProductVariant } from '@/types/database'
-import { Plus, Trash2 } from 'lucide-react'
+import { AlertTriangle, Plus, Trash2 } from 'lucide-react'
 import { useActionState, useState } from 'react'
+
+/** Only the identity fields the publish gate and the product page need. */
+export interface SupplierOption {
+  id: string
+  name: string
+  contact_phone: string | null
+  address: string | null
+  logo_url: string | null
+  status: string
+}
 
 interface VariantDraft {
   _key: string
@@ -22,6 +41,7 @@ interface Props {
   product?: Product
   variants?: ProductVariant[]
   categories: Pick<Category, 'id' | 'name_he'>[]
+  suppliers?: SupplierOption[]
 }
 
 const INITIAL_STATE: ProductFormState = null
@@ -39,7 +59,12 @@ function variantToFormData(v: ProductVariant): VariantDraft {
   }
 }
 
-export default function ProductForm({ product, variants: initVariants = [], categories }: Props) {
+export default function ProductForm({
+  product,
+  variants: initVariants = [],
+  categories,
+  suppliers = [],
+}: Props) {
   const [state, action, pending] = useActionState(upsertProduct, INITIAL_STATE)
   const [images, setImages] = useState<string[]>(
     Array.isArray(product?.images) ? (product.images as string[]) : [],
@@ -52,38 +77,77 @@ export default function ProductForm({ product, variants: initVariants = [], cate
   const [platformPercent, setPlatformPercent] = useState(
     product?.platform_percent != null ? String(product.platform_percent) : '',
   )
+  const [supplierSplit, setSupplierSplit] = useState(
+    product?.supplier_split_percent != null ? String(product.supplier_split_percent) : '',
+  )
+  const [productType, setProductType] = useState<'physical' | 'coupon'>(
+    product?.type === 'coupon' ? 'coupon' : 'physical',
+  )
+  const [kenyonPrice, setKenyonPrice] = useState(
+    product?.kenyon_price != null ? String(product.kenyon_price) : '',
+  )
+  const [couponPrice, setCouponPrice] = useState(
+    product?.coupon_price_ils != null ? String(product.coupon_price_ils) : '',
+  )
+  const [discountPercent, setDiscountPercent] = useState(
+    product?.discount_percent != null ? String(product.discount_percent) : '',
+  )
+  const [supplierId, setSupplierId] = useState(product?.supplier_id ?? '')
 
   const error = state && 'error' in state ? state.error : null
 
-  const isCouponProduct = product?.type === 'coupon' || product?.is_coupon_enabled === true
+  const isCouponProduct = productType === 'coupon'
+  // Derived from the type, never stored: see commissionTypeOf and
+  // docs/CONTRADICTIONS.md C2.
+  const commissionType = commissionTypeOf(productType)
+
+  const selectedSupplier = suppliers.find((s) => s.id === supplierId)
+  const supplierGap = selectedSupplier
+    ? supplierReadiness(selectedSupplier)
+    : { ready: false, missing: [], missingLabels: [] }
 
   /**
-   * The supplier's share, shown live so the admin sets one number and sees both.
-   *
-   * This is a display of `supplier_split_percent`, NOT a replacement for it.
-   * An earlier version of this comment claimed the share is "never stored" and
-   * that a second column would be redundant. That was wrong on the facts: the
-   * live catalog carries its split in `supplier_split_percent` on all 61
-   * products (70/75/85) while `platform_percent` is NULL on every one of them,
-   * so the "redundant" column is the one holding the real data. It is also
-   * wrong in principle, because a derived value cannot survive the snapshot
-   * `order_items` needs to report a months-old line at the percent agreed then.
-   *
-   * Both halves are columns, and migration 070 forbids a row where they fail to
-   * sum to 100 (`products_split_pair_sums_to_100`). Persisting the supplier half
-   * from this form is still to be wired; see docs/CONTRADICTIONS.md.
-   *
-   * What the percent applies to differs by type: a physical line splits the full
-   * charge, a coupon splits only the amount paid on site, since the balance is
-   * collected in cash at the business and never reaches us.
+   * The consequence of the four knobs, computed with the same pure functions the
+   * server action and checkout use. Three separate implementations of this
+   * arithmetic is how the page once quoted a customer one number while checkout
+   * billed another (see lib/commerce/coupon-offer.ts).
    */
-  const supplierSplitLabel = (() => {
-    const value = Number(platformPercent)
-    if (platformPercent === '' || Number.isNaN(value) || value < 0 || value > 100) {
-      return 'לספק: הזינו עמלה בין 0 ל-100'
-    }
-    return `לספק: ${Number((100 - value).toFixed(2))}%`
+  const preview = (() => {
+    const price = normalizeIls(kenyonPrice)
+    const split = completeSplitPair({
+      platformPercent,
+      supplierSplitPercent: supplierSplit,
+    })
+    if (price === null || !split.ok) return null
+    if (isCouponProduct && normalizeIls(couponPrice) === null) return null
+    return previewProductMoney({
+      type: productType,
+      priceIls: price,
+      platformPercent: split.pair.platformPercent,
+      couponPriceIls: normalizeIls(couponPrice),
+      discountPercent: normalizePercent(discountPercent),
+    })
   })()
+
+  // On a coupon the badge is derived from the prices, never typed, so the page
+  // cannot advertise a saving the checkout will not honour (section 3.2).
+  const couponBadgePercent = deriveDiscountPercent(
+    normalizeIls(kenyonPrice),
+    normalizeIls(couponPrice),
+  )
+
+  /** Either half determines the other; 100 minus a number is not a default. */
+  function handlePlatformPercent(value: string) {
+    setPlatformPercent(value)
+    const parsed = normalizePercent(value)
+    setSupplierSplit(parsed === null ? '' : String(Math.round((100 - parsed) * 100) / 100))
+  }
+
+  function handleSupplierSplit(value: string) {
+    setSupplierSplit(value)
+    const parsed = normalizePercent(value)
+    setPlatformPercent(parsed === null ? '' : String(Math.round((100 - parsed) * 100) / 100))
+  }
 
   function handleNameHe(val: string) {
     setNameHe(val)
@@ -235,7 +299,8 @@ export default function ProductForm({ product, variants: initVariants = [], cate
           <select
             id="prod-type"
             name="type"
-            defaultValue={product?.type ?? 'physical'}
+            value={productType}
+            onChange={(e) => setProductType(e.target.value as 'physical' | 'coupon')}
             required
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
           >
@@ -262,78 +327,298 @@ export default function ProductForm({ product, variants: initVariants = [], cate
         </div>
       </div>
 
-      {/* Pricing */}
-      <div className="grid grid-cols-3 gap-4">
+      {/* Supplier */}
+      <div className="border-t border-gray-100 pt-5 space-y-3">
+        <p className="text-sm font-semibold text-gray-700">ספק</p>
         <div>
-          <label htmlFor="kenyon_price" className="block text-xs font-medium text-gray-700 mb-1">
-            מחיר בקניון (₪) *
+          <label htmlFor="supplier_id" className="block text-xs font-medium text-gray-700 mb-1">
+            ספק משויך *
           </label>
-          <input
-            id="kenyon_price"
-            name="kenyon_price"
-            type="number"
-            min="0"
-            step="0.01"
-            defaultValue={product?.kenyon_price ?? ''}
-            required
-            dir="ltr"
+          <select
+            id="supplier_id"
+            name="supplier_id"
+            value={supplierId}
+            onChange={(e) => setSupplierId(e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-          />
-        </div>
-        <div>
-          <label htmlFor="full_price" className="block text-xs font-medium text-gray-700 mb-1">
-            מחיר מלא (₪)
-          </label>
-          <input
-            id="full_price"
-            name="full_price"
-            type="number"
-            min="0"
-            step="0.01"
-            defaultValue={product?.full_price ?? ''}
-            dir="ltr"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="platform_percent"
-            className="block text-xs font-medium text-gray-700 mb-1"
           >
-            עמלת פלטפורמה (%) *
-          </label>
-          <input
-            id="platform_percent"
-            name="platform_percent"
-            type="number"
-            min="0"
-            max="100"
-            step="0.01"
-            value={platformPercent}
-            onChange={(e) => setPlatformPercent(e.target.value)}
-            required
-            dir="ltr"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-          />
-          <p className="mt-1 text-xs text-gray-500">
-            {supplierSplitLabel}
-            {isCouponProduct ? ' · נגזר מהסכום ששולם באתר' : ' · נגזר מהמחיר המלא'}
+            <option value="">ללא ספק</option>
+            {suppliers.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+                {supplierReadiness(s).ready ? '' : ' (חסרים פרטים)'}
+              </option>
+            ))}
+          </select>
+          {supplierId && !supplierGap.ready && (
+            <p className="mt-1 flex items-start gap-1 text-xs text-amber-700">
+              <AlertTriangle size={13} className="mt-0.5 shrink-0" />
+              <span>
+                {supplierGap.missingLabels.length > 0
+                  ? `לספק חסרים: ${supplierGap.missingLabels.join(', ')}. `
+                  : 'הספק אינו פעיל. '}
+                המוצר לא יוכל לעבור לסטטוס פעיל עד שיושלמו.{' '}
+                <a href={`/admin/suppliers/${supplierId}`} className="underline">
+                  השלמה בעמוד הספק
+                </a>
+              </span>
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Money: the four per-product knobs. No default exists for any of them. */}
+      <div className="border-t border-gray-100 pt-5 space-y-4">
+        <div>
+          <p className="text-sm font-semibold text-gray-700">מחירים ועמלות</p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            כל הערכים נקבעים למוצר הזה בלבד. אין ברירת מחדל ואין אחוז קבוע במערכת. שינוי כאן חל על
+            הזמנות עתידיות בלבד.
+          </p>
+          <p className="mt-2 text-xs text-gray-600">
+            <span className="font-medium">סוג העמלה: {commissionType.label}</span>{' '}
+            <span className="text-gray-500">
+              נקבע לפי סוג המוצר, לא נבחר בנפרד. עמלת הפלטפורמה חלה על {commissionType.baseLabel}
+            </span>
           </p>
         </div>
-        <div>
-          <label htmlFor="stock_quantity" className="block text-xs font-medium text-gray-700 mb-1">
-            מלאי
-          </label>
-          <input
-            id="stock_quantity"
-            name="stock_quantity"
-            type="number"
-            min="0"
-            step="1"
-            defaultValue={product?.stock_quantity ?? ''}
-            dir="ltr"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-          />
+
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label htmlFor="kenyon_price" className="block text-xs font-medium text-gray-700 mb-1">
+              מחיר רגיל (₪) *
+            </label>
+            <input
+              id="kenyon_price"
+              name="kenyon_price"
+              type="number"
+              min="0"
+              step="0.01"
+              value={kenyonPrice}
+              onChange={(e) => setKenyonPrice(e.target.value)}
+              required
+              dir="ltr"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+            <p className="mt-1 text-xs text-gray-500">מחיר המחירון של בית העסק</p>
+          </div>
+          <div>
+            <label htmlFor="full_price" className="block text-xs font-medium text-gray-700 mb-1">
+              מחיר לפני הנחה (₪)
+            </label>
+            <input
+              id="full_price"
+              name="full_price"
+              type="number"
+              min="0"
+              step="0.01"
+              defaultValue={product?.full_price ?? ''}
+              dir="ltr"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+            <p className="mt-1 text-xs text-gray-500">מוצג מחוק בעמוד המוצר</p>
+          </div>
+          <div>
+            <label
+              htmlFor="stock_quantity"
+              className="block text-xs font-medium text-gray-700 mb-1"
+            >
+              מלאי
+            </label>
+            <input
+              id="stock_quantity"
+              name="stock_quantity"
+              type="number"
+              min="0"
+              step="1"
+              defaultValue={product?.stock_quantity ?? ''}
+              dir="ltr"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label
+              htmlFor="platform_percent"
+              className="block text-xs font-medium text-gray-700 mb-1"
+            >
+              עמלת פלטפורמה (%) *
+            </label>
+            <input
+              id="platform_percent"
+              name="platform_percent"
+              type="number"
+              min="0"
+              max="100"
+              step="0.01"
+              value={platformPercent}
+              onChange={(e) => handlePlatformPercent(e.target.value)}
+              required
+              dir="ltr"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="supplier_split_percent"
+              className="block text-xs font-medium text-gray-700 mb-1"
+            >
+              אחוז לספק (%) *
+            </label>
+            <input
+              id="supplier_split_percent"
+              name="supplier_split_percent"
+              type="number"
+              min="0"
+              max="100"
+              step="0.01"
+              value={supplierSplit}
+              onChange={(e) => handleSupplierSplit(e.target.value)}
+              dir="ltr"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+          </div>
+        </div>
+        <p className="text-xs text-gray-500 -mt-2">
+          שני החצאים נשמרים ומצטרפים תמיד ל-100%. עדכון אחד מעדכן את השני.{' '}
+          {isCouponProduct
+            ? 'החלוקה חלה על הסכום שמשולם באתר בלבד, לא על היתרה שנגבית בבית העסק.'
+            : 'החלוקה חלה על מלוא הסכום שמשולם באתר.'}
+        </p>
+
+        {isCouponProduct ? (
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label
+                htmlFor="coupon_price_ils"
+                className="block text-xs font-medium text-gray-700 mb-1"
+              >
+                מחיר הקופון באתר (₪) *
+              </label>
+              <input
+                id="coupon_price_ils"
+                name="coupon_price_ils"
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={couponPrice}
+                onChange={(e) => setCouponPrice(e.target.value)}
+                dir="ltr"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+              <p className="mt-1 text-xs text-gray-500">סכום מוחלט, לא אחוז</p>
+            </div>
+            <div>
+              <label
+                htmlFor="coupon_expiry_days"
+                className="block text-xs font-medium text-gray-700 mb-1"
+              >
+                תוקף השובר (ימים) *
+              </label>
+              <input
+                id="coupon_expiry_days"
+                name="coupon_expiry_days"
+                type="number"
+                min="1"
+                step="1"
+                defaultValue={product?.coupon_expiry_days ?? ''}
+                dir="ltr"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+              <p className="mt-1 text-xs text-gray-500">מיום הרכישה</p>
+            </div>
+            <div>
+              <span className="block text-xs font-medium text-gray-700 mb-1">
+                אחוז ההנחה לתצוגה
+              </span>
+              <div className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600">
+                {couponBadgePercent === null ? '—' : `${couponBadgePercent}%`}
+              </div>
+              <p className="mt-1 text-xs text-gray-500">מחושב מהמחירים, לא נקבע ידנית</p>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                htmlFor="discount_percent"
+                className="block text-xs font-medium text-gray-700 mb-1"
+              >
+                אחוז הנחה (%) *
+              </label>
+              <input
+                id="discount_percent"
+                name="discount_percent"
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                value={discountPercent}
+                onChange={(e) => setDiscountPercent(e.target.value)}
+                dir="ltr"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+              <p className="mt-1 text-xs text-gray-500">מקטין בפועל את הסכום שנגבה באתר</p>
+            </div>
+            <div>
+              <label
+                htmlFor="offer_valid_until"
+                className="block text-xs font-medium text-gray-700 mb-1"
+              >
+                המבצע בתוקף עד
+              </label>
+              <input
+                id="offer_valid_until"
+                name="offer_valid_until"
+                type="date"
+                defaultValue={product?.offer_valid_until?.slice(0, 10) ?? ''}
+                dir="ltr"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+            </div>
+          </div>
+        )}
+
+        {isCouponProduct && (
+          <div>
+            <label
+              htmlFor="offer_valid_until"
+              className="block text-xs font-medium text-gray-700 mb-1"
+            >
+              המבצע בתוקף עד
+            </label>
+            <input
+              id="offer_valid_until"
+              name="offer_valid_until"
+              type="date"
+              defaultValue={product?.offer_valid_until?.slice(0, 10) ?? ''}
+              dir="ltr"
+              className="w-full max-w-xs border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+          </div>
+        )}
+
+        {/* Consequence of the numbers above, before saving them. */}
+        <div className="rounded-lg bg-gray-50 border border-gray-200 p-4">
+          <p className="text-xs font-semibold text-gray-700 mb-2">מה יקרה בפועל ליחידה אחת</p>
+          {preview === null ? (
+            <p className="text-xs text-gray-500">
+              השלימו מחיר, עמלה{isCouponProduct ? ' ומחיר קופון' : ''} כדי לראות את החלוקה.
+            </p>
+          ) : (
+            <dl className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs">
+              <Row label="הלקוח משלם באתר" value={preview.paidOnlineIls} />
+              {isCouponProduct && (
+                <Row label="הלקוח משלים בבית העסק" value={preview.balanceAtBusinessIls} />
+              )}
+              <Row label="הפלטפורמה שומרת" value={preview.platformKeepsIls} />
+              <Row label="הספק מקבל" value={preview.supplierGetsIls} />
+              <div className="col-span-2 mt-1 text-gray-500">
+                אחוז ההנחה שיוצג: {preview.discountPercent}%
+              </div>
+            </dl>
+          )}
         </div>
       </div>
 
@@ -832,5 +1117,21 @@ export default function ProductForm({ product, variants: initVariants = [], cate
         </a>
       </div>
     </form>
+  )
+}
+
+/** One line of the money preview. Shekels, he-IL, never agorot in the UI. */
+function Row({ label, value }: { label: string; value: number }) {
+  return (
+    <>
+      <dt className="text-gray-600">{label}</dt>
+      <dd className="text-end font-medium text-gray-900" dir="ltr">
+        ₪
+        {value.toLocaleString('he-IL', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}
+      </dd>
+    </>
   )
 }

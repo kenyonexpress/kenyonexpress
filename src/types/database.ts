@@ -2621,6 +2621,7 @@ export type Cart = Tables<'carts'>
 export type CouponDeal = Tables<'coupon_deals'>
 export type Supplier = Tables<'suppliers'>
 export type CouponCode = Tables<'coupon_codes'>
+export type Voucher = Tables<'vouchers'>
 export type Payment = Tables<'payments'>
 export type PaymentWebhookEvent = Tables<'payment_webhook_events'>
 export type EscrowHold = Tables<'escrow_holds'>

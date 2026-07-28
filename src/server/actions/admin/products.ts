@@ -2,6 +2,8 @@
 
 import { variantIdsToRemove } from '@/lib/admin/product-variants'
 import { requireStaffSession } from '@/lib/admin/rbac'
+import { assertPublishable, buildProductMoneyWrite } from '@/lib/commerce/product-money'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -10,6 +12,7 @@ import { z } from 'zod'
 const schema = z
   .object({
     id: z.string().uuid().optional(),
+    supplier_id: z.string().uuid().nullable().optional(),
     category_id: z.string().uuid().nullable().optional(),
     slug: z
       .string()
@@ -29,6 +32,18 @@ const schema = z
       .number({ invalid_type_error: 'עמלת פלטפורמה נדרשת' })
       .min(0, 'עמלה לא יכולה להיות שלילית')
       .max(100, 'עמלה לא יכולה לעלות על 100'),
+    // The supplier's half. Sent so the admin can type either side; the pair is
+    // completed and checked against 100 by completeSplitPair before it is
+    // written, and the DB CHECK products_split_pair_sums_to_100 backs that up.
+    supplier_split_percent: z.coerce.number().min(0).max(100).nullable().optional(),
+    // Physical: reduces the on-site charge. Coupon: badge only, and recomputed
+    // from the two prices so the page cannot quote a saving checkout will not
+    // honour (ADMIN-ARCHITECTURE.md section 3.2).
+    discount_percent: z.coerce.number().min(0).max(100).nullable().optional(),
+    // Absolute shekel amount charged on this site for a coupon. Not a percent,
+    // and no default: see lib/commerce/coupon-offer.ts for the bug that caused.
+    coupon_price_ils: z.coerce.number().positive().nullable().optional(),
+    offer_valid_until: z.string().nullable().optional(),
     is_coupon_enabled: z.coerce.boolean().default(false),
     // CONTRADICTIONS C7: coupon validity is a per-product field, 30/60/90 or any
     // other integer. No default: an unset value used to become a silent 90 days
@@ -87,6 +102,25 @@ const schema = z
         path: ['full_price'],
       })
     }
+    // Mirrors products_coupon_price_within_price, which was added NOT VALID and
+    // so cannot be relied on alone for rows that predate it.
+    if (data.coupon_price_ils != null && data.coupon_price_ils > data.kenyon_price) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'מחיר הקופון לא יכול לעלות על המחיר הרגיל',
+        path: ['coupon_price_ils'],
+      })
+    }
+    if (data.supplier_split_percent != null) {
+      const sum = Math.round((data.platform_percent + data.supplier_split_percent) * 100) / 100
+      if (sum !== 100) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `עמלת פלטפורמה ואחוז לספק חייבים להסתכם ב-100%. כרגע ${sum}%.`,
+          path: ['supplier_split_percent'],
+        })
+      }
+    }
   })
 
 const variantSchema = z.object({
@@ -113,6 +147,7 @@ export async function upsertProduct(
 
   const parsed = schema.safeParse({
     id: formData.get('id') || undefined,
+    supplier_id: formData.get('supplier_id') || null,
     category_id: formData.get('category_id') || null,
     slug: formData.get('slug'),
     name_he: formData.get('name_he'),
@@ -122,8 +157,12 @@ export async function upsertProduct(
     kenyon_price: formData.get('kenyon_price'),
     full_price: formData.get('full_price') || null,
     platform_percent: formData.get('platform_percent'),
-    is_coupon_enabled: formData.get('is_coupon_enabled') === 'true',
+    supplier_split_percent: formData.get('supplier_split_percent') || null,
+    discount_percent: formData.get('discount_percent') || null,
+    coupon_price_ils: formData.get('coupon_price_ils') || null,
     coupon_expiry_days: formData.get('coupon_expiry_days') || null,
+    offer_valid_until: formData.get('offer_valid_until') || null,
+    is_coupon_enabled: formData.get('is_coupon_enabled') === 'true',
     sku: formData.get('sku') || null,
     stock_quantity: formData.get('stock_quantity') || null,
     is_featured: formData.get('is_featured') === 'true',
@@ -177,14 +216,56 @@ export async function upsertProduct(
 
   const { id, ...fields } = parsed.data
 
-  // The admin enters one number; both halves are stored (CONTRADICTIONS,
-  // "two percents are kept"). Deriving the supplier half here rather than
-  // asking for it twice is what keeps products_split_pair_sums_to_100 (070)
-  // satisfiable by construction, and order_items still snapshots both so a
-  // months-old line reports the share agreed at the time (C10).
-  const withSplit = {
-    ...fields,
-    supplier_split_percent: 100 - fields.platform_percent,
+  // Every money column this write must set, derived once by the same pure
+  // module the form preview and checkout use.
+  const money = buildProductMoneyWrite({
+    type: fields.type,
+    kenyonPrice: fields.kenyon_price,
+    platformPercent: fields.platform_percent,
+    supplierSplitPercent: fields.supplier_split_percent,
+    discountPercent: fields.discount_percent,
+    couponPriceIls: fields.coupon_price_ils,
+    couponExpiryDays: fields.coupon_expiry_days,
+  })
+  if (!money.ok) return { error: money.message }
+
+  if (fields.status === 'active') {
+    // Publishing needs a complete supplier, so the identity is loaded rather
+    // than assumed. Service role: this is a staff read of a table with no
+    // permissive select policy for `authenticated`.
+    const adminClient = createAdminClient()
+    const { data: supplier } = fields.supplier_id
+      ? await adminClient
+          .from('suppliers')
+          .select('id, name, contact_phone, address, logo_url, status')
+          .eq('id', fields.supplier_id)
+          .single()
+      : { data: null }
+
+    const gate = assertPublishable({
+      type: fields.type,
+      priceIls: money.fields.price_ils,
+      platformPercent: money.fields.platform_percent,
+      supplierSplitPercent: money.fields.supplier_split_percent,
+      discountPercent: money.fields.discount_percent,
+      couponPriceIls: money.fields.coupon_price_ils,
+      couponExpiryDays: money.fields.coupon_expiry_days,
+      supplier: supplier
+        ? {
+            id: supplier.id,
+            name: supplier.name,
+            phone: supplier.contact_phone,
+            address: supplier.address,
+            logoUrl: supplier.logo_url,
+            status: supplier.status,
+          }
+        : { id: fields.supplier_id },
+    })
+    // Every failing reason at once. An admin filling in a product should not
+    // have to submit six times to discover six missing fields (section 3.4).
+    if (!gate.ok) {
+      return { error: gate.blockers.map((b) => b.message).join(' · ') }
+    }
   }
 
   let productId = id
@@ -192,13 +273,13 @@ export async function upsertProduct(
   if (id) {
     const { error } = await supabase
       .from('products')
-      .update({ ...withSplit, images })
+      .update({ ...fields, ...money.fields, images })
       .eq('id', id)
     if (error) return { error: error.message }
   } else {
     const { data, error } = await supabase
       .from('products')
-      .insert({ ...withSplit, images, created_by: user!.id })
+      .insert({ ...fields, ...money.fields, images, created_by: user!.id })
       .select('id')
       .single()
     if (error) return { error: error.message }

@@ -379,6 +379,96 @@ function trimOrNull(value: string | null | undefined): string | null {
 }
 
 /**
+ * The money columns a product write must set, derived from what the admin typed.
+ *
+ * Kept here rather than inline in the server action so the rules are testable
+ * without a database, and so the form preview and the write cannot disagree.
+ *
+ * Two of these columns exist only because the live schema still carries the
+ * older names, and both are NOT NULL with no default, so omitting them fails the
+ * insert outright:
+ *
+ *   `commission_percent` is the legacy name for the platform's share. Checkout
+ *   still writes it onto the order line, so it is kept equal to
+ *   `platform_percent` rather than allowed to drift.
+ *
+ *   `price_ils` is what the coupon CHECK and this module read as the sticker
+ *   price, while the admin form and the storefront both use `kenyon_price`. The
+ *   two are equal on all 61 live rows; writing both keeps them that way instead
+ *   of letting `price_ils` go stale behind an edit and quietly loosen
+ *   `products_coupon_price_within_price`.
+ */
+export interface ProductMoneyWrite {
+  /**
+   * Mirrors products.type. Migration 091 holds the two equal with a CHECK, so
+   * writing it is naming a fact rather than choosing one; a row where the two
+   * disagree cannot be inserted.
+   */
+  commission_type: CommissionShape
+  platform_percent: number
+  supplier_split_percent: number
+  discount_percent: number | null
+  coupon_price_ils: number | null
+  coupon_expiry_days: number | null
+  commission_percent: number
+  price_ils: number
+}
+
+export type ProductMoneyWriteResult =
+  | { ok: true; fields: ProductMoneyWrite }
+  | { ok: false; field: ProductMoneyField; message: string }
+
+export function buildProductMoneyWrite(input: {
+  type: ProductMoneyType
+  /** The sticker price as the admin form names it. */
+  kenyonPrice: number | null | undefined
+  platformPercent: unknown
+  supplierSplitPercent: unknown
+  discountPercent: unknown
+  couponPriceIls: unknown
+  couponExpiryDays: number | null | undefined
+}): ProductMoneyWriteResult {
+  const price = normalizeIls(input.kenyonPrice)
+  if (price === null) {
+    return { ok: false, field: 'price_ils', message: 'חייב להגדיר מחיר רגיל חיובי' }
+  }
+
+  const split = completeSplitPair({
+    platformPercent: input.platformPercent,
+    supplierSplitPercent: input.supplierSplitPercent,
+  })
+  if (!split.ok) return { ok: false, field: split.field, message: split.message }
+
+  const isCoupon = input.type === 'coupon'
+
+  // A coupon price left on a product that has been switched to physical would
+  // sit in the column unread and resurface if the type were ever flipped back.
+  const couponPriceIls = isCoupon ? normalizeIls(input.couponPriceIls) : null
+  const couponExpiryDays = isCoupon ? (input.couponExpiryDays ?? null) : null
+
+  // On a coupon the badge is DERIVED from the two prices, never taken from the
+  // form. Letting the admin type a saving that disagrees with the billed amount
+  // is the quote-versus-charge split coupon-offer.ts exists to prevent.
+  const discountPercent = isCoupon
+    ? deriveDiscountPercent(price, couponPriceIls)
+    : normalizePercent(input.discountPercent)
+
+  return {
+    ok: true,
+    fields: {
+      platform_percent: split.pair.platformPercent,
+      supplier_split_percent: split.pair.supplierSplitPercent,
+      discount_percent: discountPercent,
+      coupon_price_ils: couponPriceIls,
+      coupon_expiry_days: couponExpiryDays,
+      commission_percent: split.pair.platformPercent,
+      commission_type: commissionTypeOf(input.type).shape,
+      price_ils: price,
+    },
+  }
+}
+
+/**
  * What the admin form shows under the money fields, so the person setting the
  * numbers sees the consequence of them before saving.
  */
@@ -390,6 +480,44 @@ export interface MoneyPreview {
   platformKeepsIls: number
   supplierGetsIls: number
   discountPercent: number
+}
+
+/**
+ * How this product's commission is expressed, for the admin to see.
+ *
+ * DERIVED, never stored. `docs/CONTRADICTIONS.md` C2 closed the question of a
+ * second commission column ("two percent columns -> one column:
+ * platform_percent"), and section 0.3 already ties the shape to the product
+ * type: a coupon bills an absolute `coupon_price_ils` and splits it, a physical
+ * bills `price_ils` reduced by `discount_percent` and splits that. A stored
+ * `commission_type` would be a third place to say the same thing, and the first
+ * place to disagree with the other two.
+ *
+ * So the admin sees the shape without being able to set it independently of the
+ * type that determines it.
+ */
+export type CommissionShape = 'coupon_absolute' | 'physical_percent'
+
+export interface CommissionTypeView {
+  shape: CommissionShape
+  /** Hebrew, shown next to the money fields. */
+  label: string
+  /** What the platform percent is applied to. */
+  baseLabel: string
+}
+
+export function commissionTypeOf(type: ProductMoneyType): CommissionTypeView {
+  return type === 'coupon'
+    ? {
+        shape: 'coupon_absolute',
+        label: 'מחיר קופון מוחלט',
+        baseLabel: 'הסכום ששולם באתר בלבד. היתרה נגבית בבית העסק ואינה עוברת דרכנו.',
+      }
+    : {
+        shape: 'physical_percent',
+        label: 'אחוז מהמחיר באתר',
+        baseLabel: 'מלוא הסכום שמשולם באתר, אחרי ההנחה.',
+      }
 }
 
 export function previewProductMoney(input: {
