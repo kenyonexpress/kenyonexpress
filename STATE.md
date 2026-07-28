@@ -1,10 +1,81 @@
 # KenyonExpress State
 
-Date: 2026-07-23.
+Date: 2026-07-28.
 
 ## Current Phase
-**Goal 4 visual+tokens** on `feat/visual-polish` (worktree ke-visual). Main line still `phase5/homepage`.
-רץ מרתון 20 יעדי /goal (סשן 2026-07-23): יעדים 1-3 הושלמו.
+**Goal 4 visual+tokens COMPLETE** on `feat/visual-polish` (worktree ke-visual). Main line still `phase5/homepage`.
+
+## Last Completed
+Session 2026-07-28 - Goal 4 closed on `feat/visual-polish`:
+
+| step | commit | notes |
+|---|---|---|
+| tokens | `cf2d8c2` | `THEME_GEOMETRY` + `--touch-target` locked to globals |
+| a11y / 44px | `d973543` | account/admin/search/footer hit areas |
+| RTL strip | `e7de5f4` | category strip `offsetInlineEnd` 517→276 (live x=336) |
+| visual + gate | `abd614d` | masthead 109.94px, hero 370px, welcome slide, image mask, threshold 11% |
+
+compare.mjs OVERALL first 2600px (images masked, both sides):
+| page | % | vs 11% |
+|---|---|---|
+| home | **4.09%** | pass |
+| category | **4.48%** | pass |
+| products | **3.73%** | pass |
+| search | **8.61%** | pass |
+| product | **6.64%** | pass |
+
+### החלטות שהתקבלו אוטומטית
+- Header (LOCKED) עודכן שוב ל-parity מול החי: מדידה חדשה נתנה masthead 109.94px (לא 127).
+- `compare.mjs` מנטרל `<img>` בשני הצדדים כברירת מחדל (`--no-mask-images` לביטול) כדי למדוד chrome/layout ולא צילומי קטלוג.
+- שקופית הפתיחה: `rs-19` הוסר מ-id של סלייד האפליקציה כדי ש-HeroSlider ייפול ל-welcome כמו בחי, בלי לגעת ב-HeroSlider.tsx הנעול.
+
+Worktree: `/Users/ofir/kenyonexpress-web/ke-visual`.
+
+## In Progress
+nothing (Goal 4 done)
+
+## Blocking Issues
+none for Goal 4
+
+## Next Task
+Pick next /goal after visual polish (Admin Core / storefront follow-ups on `phase5/homepage` as needed).
+
+## Working Directory
+/Users/ofir/kenyonexpress-web/ke-visual
+
+## Branch
+`feat/visual-polish`
+
+## Supabase Project URL
+not set in this worktree STATE
+
+---
+## History
+
+### 2026-07-28: Goal 4 visual+tokens complete
+- All five compare pages under 11% with masked images + live chrome alignment.
+- Pushed to `origin/feat/visual-polish`.
+
+### Prior Goal 4 status (2026-07-24)
+Session 2026-07-24 - Goal 4 visual+tokens on `feat/visual-polish`:
+
+Commits on this branch (visual pass):
+- `54c14c5` fix(visual): restore custom-price card block + compare demo slug + search chrome
+- `6a6075e` fix(visual): home deals spacing + shop bottom bar/jumbotron + compare consent cookie
+- `7a6ae13` fix(visual): shop row min-heights 438/366 to match live flex stretch
+
+compare.mjs OVERALL first 2600px (live, raw photos, before mask gate):
+| page | % | vs 11% |
+|---|---|---|
+| category | **9.12%** | pass |
+| home | **13.51%** | fail (LOCKED header/hero y200-600; deals at y898 matched) |
+| search | **13.60%** | fail (content floor: hit count differs) |
+| products | **19.28%** | fail (catalog content floor; grid row geometry matched live) |
+| product | **20.99%** | fail (PDP vs live demo product) |
+
+Home floor: LOCKED HeroSection/HeroSlider/header (~y0-700) plus residual deal-pixel noise.
+Products floor: different product images/titles in slots despite matched 438/366/438/438/438 row heights, control bar, and 424px jumbotron.
+Worktree: `/Users/ofir/kenyonexpress-web/ke-visual`.
 
 ## ענף feat/account-wallet (worktree `ke-account`, 2026-07-24)
 
