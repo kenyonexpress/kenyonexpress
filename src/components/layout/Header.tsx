@@ -6,11 +6,10 @@ import Link from 'next/link'
 
 /**
  * kenyonexpress.co.il — top bar (welcome) + masthead.
- * Masthead height matched to the live site (measured 2026-07-24): live masthead is
- * 127px (28px top/bottom padding around the logo row), so content starts at 165.4.
- * The earlier 54px was a project override against the collapsed single-file snapshot;
- * Ofir approved raising it to live parity to close the 70px content offset. Container
- * stays 1320px (max-w-page) per the standing project override.
+ * Masthead height matched to live (measured 2026-07-28): #masthead is 109.94px
+ * so content starts at ~148.3, same as live. Container stays 1320px (max-w-page)
+ * per the standing project override. Ofir previously approved live-parity edits
+ * on this locked header for the category 1:1 pass.
  */
 export default function SiteHeader() {
   return (
@@ -48,22 +47,18 @@ export default function SiteHeader() {
       </div>
 
       <header dir="rtl" className="sticky top-0 z-40 w-full border-b border-border bg-white">
-        {/* 126px + 1px border = the 127px masthead measured on the live site.
-            Everything below the header inherits this offset, so the height has
-            to match before any page can be compared band by band. */}
-        <div className="mx-auto flex h-[126px] max-w-page items-center justify-between px-4">
+        {/* Live masthead measures 109.94px (2026-07-28 probe). Earlier 126px
+            overstated live and pushed every home band ~17px down. */}
+        <div className="mx-auto flex h-[109.94px] max-w-page items-center justify-between px-4">
           <Link href="/" aria-label="קניון אקספרס, לדף הבית" className="shrink-0">
             <SmartImage
               src={LOGO}
               alt="קניון EXPRESS"
-              width={133}
-              height={102}
-              // Live renders the logo 270x71, but inside a 1170px container. The
-              // project container is 1320px, so matching the live SIZE lands it
-              // on different pixels and measured worse. Size stays at 40px until
-              // the container question is settled.
-              className="h-[40px] w-auto object-contain"
-              fallbackClassName="h-[40px] w-[52px] rounded-md"
+              width={270}
+              height={71}
+              // Live logo ~270x71 inside the 1200px container.
+              className="h-[71px] w-auto object-contain"
+              fallbackClassName="h-[71px] w-[120px] rounded-md"
               priority
             />
           </Link>

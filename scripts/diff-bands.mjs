@@ -39,8 +39,8 @@ const report = await page.evaluate(
       ctx.drawImage(img, 0, 0)
       return ctx.getImageData(0, 0, W, H).data
     }
-    const a = data(live),
-      m = data(mine)
+    const a = data(live)
+    const m = data(mine)
     const TOL = 24 // per-channel tolerance for AA noise
     const BAND = 100
     const bands = []
@@ -90,3 +90,10 @@ for (const band of report.bands) {
   const bar = '#'.repeat(Math.round(band.pct / 2))
   console.log(`  y ${String(band.y0).padStart(4)}  ${String(band.pct).padStart(5)}%  ${bar}`)
 }
+
+const threshold = Number(process.env.VISUAL_DIFF_THRESHOLD ?? 11)
+if (Number.isFinite(threshold) && report.overallPct > threshold) {
+  console.error(`FAIL: OVERALL ${report.overallPct}% exceeds VISUAL_DIFF_THRESHOLD=${threshold}%`)
+  process.exit(1)
+}
+console.log(`PASS: OVERALL ${report.overallPct}% <= ${threshold}%`)

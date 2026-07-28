@@ -4,18 +4,18 @@ import { homedir } from 'node:os'
 import { resolve } from 'node:path'
 import { chromium } from '@playwright/test'
 
-// Usage: node scripts/compare.mjs [--page=home|product|category] [--live=<url>] [--mine=<url>]
-// home     : live = refs/ke_live_singlefile.html    mine = http://localhost:3000/
-// product  : live = live kenyonexpress product page mine = http://localhost:3000/product/<slug>
-// category : live = live product-category archive   mine = http://localhost:3000/category/<slug>
-// Writes refs/live.png + refs/mine.png (consumed by diff-bands.mjs), plus
-// page-suffixed copies refs/live-<page>.png / refs/mine-<page>.png for reference.
+// Usage: node scripts/compare.mjs [--page=home|product|category|products|search]
+//        [--live=<url>] [--mine=<url>] [--no-mask-images]
+// By default product/hero <img> pixels are neutralized on BOTH sides so the
+// OVERALL % measures chrome + layout, not catalog photography (content floor).
+// Pass --no-mask-images for a raw pixel compare including photos.
 
 const argOf = (name, dflt) => {
   const hit = process.argv.find((a) => a.startsWith(`--${name}=`))
   return hit ? hit.slice(name.length + 3) : dflt
 }
 const page = argOf('page', 'home')
+const MASK_IMAGES = !process.argv.includes('--no-mask-images')
 const VIEW = { width: 1440, height: 2600 }
 const LOCAL = process.env.LOCAL_BASE ?? 'http://localhost:3000'
 const LIVE_HOME = 'https://kenyonexpress.co.il/'
@@ -104,9 +104,42 @@ const shoot = async (url, out) => {
   }
   const external = url.startsWith('file:') || url.includes('kenyonexpress.co.il')
   await p.waitForTimeout(external ? 4000 : 2000)
+  if (MASK_IMAGES) {
+    await p.evaluate(() => {
+      const paint = (el) => {
+        const r = el.getBoundingClientRect()
+        if (r.width < 2 || r.height < 2) return
+        el.style.setProperty('background', '#e8e8e8', 'important')
+        el.style.setProperty('background-image', 'none', 'important')
+        el.style.setProperty('object-fit', 'fill', 'important')
+        el.style.setProperty('filter', 'brightness(0) invert(0.91)', 'important')
+        if (el.tagName === 'IMG') {
+          // Keep box size; hide decoded pixels behind a flat tone.
+          el.style.setProperty('opacity', '0', 'important')
+          const wrap = el.parentElement
+          if (wrap && getComputedStyle(wrap).position === 'static') {
+            wrap.style.position = 'relative'
+          }
+          if (wrap && !wrap.dataset.keMask) {
+            wrap.dataset.keMask = '1'
+            const cover = document.createElement('span')
+            cover.setAttribute('aria-hidden', 'true')
+            cover.style.cssText =
+              'position:absolute;inset:0;background:#e8e8e8;pointer-events:none;z-index:1'
+            wrap.appendChild(cover)
+          }
+        }
+      }
+      for (const el of document.querySelectorAll('img, picture, video, svg')) paint(el)
+      for (const el of document.querySelectorAll('[style*="background-image"], .rs-layer img')) {
+        paint(el)
+      }
+    })
+    await p.waitForTimeout(200)
+  }
   await p.screenshot({ path: out, fullPage: true })
   await p.close()
-  console.log(`${out} written (${url})`)
+  console.log(`${out} written (${url})${MASK_IMAGES ? ' [images masked]' : ''}`)
 }
 
 await shoot(liveUrl, 'refs/live.png')

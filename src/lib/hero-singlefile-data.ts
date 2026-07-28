@@ -6,7 +6,7 @@ import { HERO_SLIDER_IMAGES } from '@/lib/assets'
 
 export const HERO_SLIDER_BG = '#eef4f7'
 
-export const HERO_SLIDER_HEIGHT = 422
+export const HERO_SLIDER_HEIGHT = 370
 
 const WELCOME_SLIDE: HeroSlide = {
   id: 'rs-18',
@@ -66,7 +66,7 @@ export const HERO_SINGLEFILE_SLIDES: HeroSlide[] = [
     imageLayout: { offsetTop: 9, widthPercent: 51.5, minHeight: 392 },
   },
   {
-    id: 'rs-19',
+    id: 'rs-19-app',
     variant: 'app',
     title: 'האפליקציה',
     title_secondary: 'בקרוב',
