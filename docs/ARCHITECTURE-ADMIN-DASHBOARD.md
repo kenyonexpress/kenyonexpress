@@ -4,296 +4,263 @@ KenyonExpress admin dashboard architecture (platform control center).
 
 Status: BINDING for `arch/admin-supplier` (2026-07-28)
 Worktree: `/Users/ofir/kenyonexpress-web/ke-arch` only (docs). No application code in this change.
-Companions: `ADMIN-ARCHITECTURE.md`, `docs/ADMIN-PRODUCT-PAGE-SPEC.md`, `docs/ARCHITECTURE-SUPPLIER-PORTAL.md`
-Supersedes (for admin money UX): coupon-forced `platform_percent = 100` UI hide in older `ADMIN-ARCHITECTURE.md` §2.2 when it conflicts with launch coupon rule below. Launch rule: coupon online charge stays with the platform; physical uses snapshotted `platform_percent`.
-
-Stack: Next.js App Router `src/app/(admin)`, Server Actions `src/server/actions/admin/**`, Supabase Postgres + RLS, Cardcom, service-role after RBAC gate.
+Companions: `docs/ADMIN-PRODUCT-PAGE-SPEC.md`, `docs/ARCHITECTURE-SUPPLIER-PORTAL.md`, root `ADMIN-ARCHITECTURE.md`.
+Stack: Next.js App Router `src/app/(admin)`, Supabase Postgres + RLS, Cardcom, Server Actions + cron Route Handlers.
 Money: **integer agorot** internally. UI shows ₪ with 2 decimals. Never mix units in one column.
-Catalog scope (launch): **coupons only** in production merchandising. Physical type remains in schema and admin UI for readiness.
+
+This document decides. Where older drafts mention fixed commission, Escrow payout of coupon prepaid money, or `vendors` as the live supplier entity, this file wins for admin operations. Catalog launch scope: **coupons only** (physical remains in schema/UI for later).
 
 ---
 
 ## 0. Fixed platform model (admin must enforce)
 
-1. KenyonExpress is a **platform, never a supplier**. No `suppliers` row for the platform; no redeem as merchant.
-2. `products.platform_percent` is **dynamic per product**, set only by admin on the product page. No fixed rate. No DB default. Copied onto `order_items` at purchase.
-3. **No Escrow.** `order_items.escrow_held_agorot` stays 0 under this model.
-4. **Coupon:** customer pays absolute `coupon_price_ils` online; that money stays with the platform. Balance `price_ils - coupon_price_ils` paid at merchant on QR scan. Voucher expires on scan (`vouchers.status = redeemed`).
-5. **Physical:** immediate split by snapshotted `platform_percent`; supplier notified and ships; payout after T+3 + min threshold (see supplier portal doc).
-6. Every PDP shows supplier identity (name, phone, address, logo). Publish gate in `assertPublishable` (`src/lib/commerce/product-money.ts`).
-
----
-
-## 1. Existing surface (grounded)
-
-### 1.1 Routes live today (`src/app/(admin)/`)
-
-| Route | File | Purpose today |
-|---|---|---|
-| `/admin` | `admin/page.tsx` | Panel entry |
-| `/admin/dashboard` | `admin/dashboard/page.tsx` | Ops home |
-| `/admin/products` | `admin/products/page.tsx` | Catalog list |
-| `/admin/products/new` | `admin/products/new/page.tsx` | Create |
-| `/admin/products/[id]/edit` | `admin/products/[id]/edit/page.tsx` | Edit |
-| `/admin/categories` (+ new/id) | `admin/categories/**` | Taxonomy |
-| `/admin/approvals` | `admin/approvals/page.tsx` | Review queue |
-| `/admin/coupons` (+ new/id/codes) | `admin/coupons/**` | Legacy `coupon_deals` UI |
-| `/admin/orders` (+ `[id]`) | `admin/orders/**` | Orders |
-| `/admin/payments` | `admin/payments/page.tsx` | Payments / stuck |
-| `/admin/suppliers` (+ new/id) | `admin/suppliers/**` | Still largely **vendors** legacy |
-| `/admin/users` (+ `[id]`) | `admin/users/**` | Roles |
-| `/admin/affiliates` | `admin/affiliates/**` | Affiliates |
-| `/admin/analytics` | `admin/analytics/page.tsx` | Analytics |
-| `/admin/audit-log` | `admin/audit-log/page.tsx` | Reads `audit_log` |
-| `/admin/payouts` | `admin/payouts/**` | Generate / approve / mark paid |
-
-### 1.2 Server actions live today
-
-`products`, `categories`, `approvals`, `coupon-deals`, `orders`, `users`, `vendors`, `affiliates`, `payouts`, `images`, `upload`.
-
-### 1.3 RBAC code truth
-
-| Helper | File | Who |
-|---|---|---|
-| `requirePanelSession` | `src/lib/admin/rbac.ts` | staff + support |
-| `requireStaffSession` | same | admin, super_admin, content_uploader (catalog writes) |
-| `requireAdminSession` / `requireAdminPage` | same | admin, super_admin |
-| `requireSection(section, read\|write)` | same | matrix in `src/lib/admin/permissions.ts` |
-
-`user_role` enum (003 + 053): `customer | content_uploader | vendor | support | admin | super_admin`.
-
-**Gap:** `AdminSection` today is `dashboard|catalog|orders|users|payments|affiliates|analytics|audit-log|suppliers`. Missing explicit `payouts` and `coupons`/`vouchers` sections in the TypeScript matrix (payouts UI exists; coupons folded into catalog mentally). Binding design adds them (section 10).
-
----
-
-## 2. Product management
-
-### 2.1 Full product editor fields
-
-Canonical table: `public.products` (005 + 048 content + 052 approval + 054 coupon price + 070 split). Discriminator: `type` ∈ `{coupon, physical}` (and/or `is_coupon_enabled` legacy; binding UI uses `type`).
-
-#### Shared (both types)
-
-| Field | Column | Notes |
-|---|---|---|
-| Name HE | `name_he` | required |
-| Name EN | `name_en` | optional |
-| Slug | `slug` | unique; `[a-z0-9-]+` |
-| Short description | `short_description_he` | max 300 |
-| Description | `description_he` | rich text |
-| Gallery | `images` (jsonb/array) | upload via `actions/admin/images` + `upload` |
-| Category | `category_id` | FK categories |
-| Tags / badges | content fields / flags (`is_featured`, condition badges) | |
-| Supplier | `supplier_id` | required to publish; FK `suppliers` |
-| Face / sticker | `price_ils` (or legacy `kenyon_price` / `full_price` until fully renamed) | positive |
-| Status | `status` | `draft \| active \| paused \| archived` (live set) |
-| Approval | `approval_status`, `submitted_at`, `approved_by`, `approved_at`, `approval_note` | 052 |
-| Offer end | `offer_valid_until` | 054 |
-| SEO | `seo_title`, `seo_description`, `seo_keywords` | |
-| Brand, highlights, video, barcode | 048 columns | |
-| Legal / redemption copy | `coupon_terms_he`, `redemption_instructions_he` | coupon-heavy |
-
-#### Admin-only money knobs (never supplier-writable)
-
-| Field | Column | Rule |
-|---|---|---|
-| Platform take % | `platform_percent` | 0..100, no default; required to publish |
-| Supplier share % | `supplier_split_percent` | pair sums to 100 (`products_split_pair_sums_to_100`) |
-| Discount % | `discount_percent` | 0..100; coupon badge derived from prices |
-| Coupon online price | `coupon_price_ils` | coupon only; `0 < x <= price_ils` |
-| Cashback bp | `cashback_bp` (059; was `cashback_percent`) | optional merchandising; wallet internal only |
-
-See `docs/ADMIN-PRODUCT-PAGE-SPEC.md` for normalize/publish/snapshot rules and `src/lib/commerce/product-money.ts`.
-
-#### Coupon-only
-
-| Field | Column | Rule |
-|---|---|---|
-| Online charge | `coupon_price_ils` | absolute; no default |
-| Expiry days | `coupon_expiry_days` (or equivalent) | positive int |
-| Min purchase | `min_purchase_ils` | optional |
-
-Launch economics: platform keeps 100% of online coupon charge (supplier due from platform = 0). Admin may still store `platform_percent = 100` for audit consistency with snapshots.
-
-#### Physical-only
-
-| Field | Column | Rule |
-|---|---|---|
-| Stock | `stock_quantity`, variants in `product_variants` | |
-| Low stock / max per order | `low_stock_threshold`, `max_per_order` | |
-| Shipping | `requires_shipping`, `weight_grams`, `length_cm`, `width_cm`, `height_cm` | |
-| Warranty / condition | `warranty_months`, `condition` | |
-
-### 2.2 Field-level permissions after approval
-
-| Field group | content_uploader | admin / super_admin | supplier (portal) |
-|---|---|---|---|
-| Content / gallery / SEO | yes (may re-queue review) | yes | limited content only |
-| Stock / variants / shipping | yes | yes | manager+ |
-| `supplier_id` | no after live (admin only) | yes | never reassign |
-| Money knobs (`platform_percent`, `supplier_split_percent`, `discount_percent`, `coupon_price_ils`, face) | **no** | **yes only** | **never** |
-| Publish / pause / archive | submit only | yes | submit only |
-
-Enforcement: Server Action allow-list + service role; optional DB trigger reject on money columns when JWT is not service/admin. Audit every money change (`audit_log.action = 'updated'`, `entity_type = 'product'`, `changes` jsonb before/after).
-
-### 2.3 Bulk ops, import, WordPress migration
-
-| Capability | Design | Schema ground |
-|---|---|---|
-| Bulk status pause/archive | Admin action on selected ids | `products.status` |
-| Bulk category assign | Admin action | `category_id` |
-| CSV import (drafts) | Staging table then upsert | needs migration: `product_import_batches` (open: exact columns) |
-| WP migration | `wp_migration_log` (057) | map WP product → `products` + images + redirects |
-
-**Open question:** Is WP import one-shot historical or continuous sync? Do not invent; freeze redirects in `wp_redirects` / Next middleware map before cutting DNS.
-
-### 2.4 Category and taxonomy
-
-Routes: `/admin/categories`. Actions: `src/server/actions/admin/categories.ts`. Table: `categories` (slug, name_he, parent, sort, image). Binding: tree with single parent; soft-delete; products cannot publish without `category_id` when category is required by merchandising (open: is category mandatory on coupons today?).
-
----
-
-## 3. Order and payment operations
-
-### 3.1 Order list and filters
-
-Source: `orders`, `order_items`. Filters: status, date range, supplier_id (via items), product type, payment stuck, has redeemed voucher.
-
-`order_status` (007): `pending | paid | partially_fulfilled | fulfilled | cancelled | refunded`.
-
-`order_item_status` (007): `pending | issued | shipped | delivered | cancelled | refunded`.
-
-### 3.2 Order state machine
-
-```
-pending --payment capture--> paid
-paid --> partially_fulfilled --> fulfilled
-paid|partially_fulfilled|fulfilled --> refunded (policy gated)
-any pre-fulfillment --> cancelled (force-cancel admin)
-```
-
-Transitions via Server Action (`actions/admin/orders.ts`) with service role / definer. Each writes `audit_log` (`status_change`).
-
-### 3.3 Payment reconciliation (Cardcom)
-
-| Screen | Tables | Actions |
-|---|---|---|
-| Payments / stuck | `payments`, webhook/event store if present | reconcile, retry finalize (idempotent) |
-| Order detail | `orders.cardcom_*` / payment FKs | show capture status |
-
-Refunds: if any linked `vouchers.status IN ('redeemed','expired')`, block card refund of that face/prepaid slice; UI must show blocker (ADMIN-ARCHITECTURE §3). Partial captures: **open question** (Cardcom LowProfile capabilities vs full capture only).
-
-### 3.4 Split ledger view (per order, agorot)
-
-For each `order_items` row show immutable snapshots:
-
-| Column | Meaning |
+| Rule | Detail |
 |---|---|
-| `paid_on_site_agorot` | What customer paid online for the line |
+| Platform identity | KenyonExpress is a platform, never a supplier. No `suppliers` row for the platform used in redeem or payout. |
+| `platform_percent` | Dynamic per product. Admin-only write on the product page. No fixed rate. No DB default. Snapshotted onto `order_items` at purchase. |
+| Escrow | None. `escrow_held_agorot` on lines stays 0. |
+| Coupon | Customer pays absolute `coupon_price_ils` online; **that money stays with the platform**. Balance `face - coupon_price` paid at merchant on QR scan. Voucher expires on scan (`redeemed`). |
+| Physical | Immediate split by snapshotted `platform_percent`. Supplier residual after T+3 + min payout. Supplier notified and ships. |
+| PDP | Every product page shows supplier name/phone/address/logo. Publish blocked without them. |
+| Launch catalog | Coupons first. |
+
+**Open question Q-ADMIN-1:** `docs/ADMIN-PRODUCT-PAGE-SPEC.md` allows a coupon split pair other than 100/0. This dashboard doc binds supplier economics to "coupon online charge stays with platform" (aligns with `ARCHITECTURE-SUPPLIER-PORTAL.md` and migration 081: no coupon payout lines). Decide whether admin UI forces `platform_percent = 100` on coupons or allows other values that still do not create supplier payout lines.
+
+---
+
+## 1. Product management
+
+### 1.1 Editor surface
+
+Routes (live): `/admin/products`, `/admin/products/new`, `/admin/products/[id]/edit`.
+Action module: `src/server/actions/admin/products.ts`.
+Form: `src/components/admin/ProductForm.tsx`.
+Pure money gate: `src/lib/commerce/product-money.ts` (`assertPublishable`).
+
+### 1.2 Field inventory (binding labels)
+
+| UI / concept | Column(s) | Type notes | Who writes |
+|---|---|---|---|
+| Type | `products.type` | `'coupon' \| 'physical'` | admin / staff create |
+| Name HE | `name_he` | text | staff |
+| Slug | `slug` | unique URL key | staff |
+| Short / long description | `short_description_he`, `description_he` | | staff |
+| Gallery | `images` jsonb (URLs) | R2/CDN | staff via `admin/images` |
+| Category | `category_id` | FK categories | staff |
+| Badges / featured | `is_featured`, highlights array | | staff |
+| Brand / SEO | `brand`, `seo_title`, `seo_description`, `seo_keywords` | | staff |
+| Supplier assignment | `supplier_id` | FK `suppliers` | admin (required to publish) |
+| Face / list price | `price_ils` / kenyon_price legacy alias | | admin for live |
+| Coupon online price | `coupon_price_ils` | absolute; CHECK within price | **admin only** |
+| Discount badge | `discount_percent` | 0..100; coupon derived from prices | **admin only** |
+| Platform take | `platform_percent` | 0..100; no default | **admin only** |
+| Supplier share (agreement) | `supplier_split_percent` | pair sums to 100 (070) | **admin only** |
+| Coupon expiry | `coupon_expiry_days`, `offer_valid_until` | | admin |
+| Stock | `stock_quantity`, variants | physical | staff |
+| Shipping dims | `weight_grams`, `length_cm`, … | physical | staff |
+| Terms / redemption copy | `coupon_terms_he`, `redemption_instructions_he` | | staff |
+| Status | `status` / `approval_status` | draft → review → live | see §1.3 |
+| Cashback hint | `cashback_bp` (059; was `cashback_percent`) | product-level | admin |
+
+Canonical money rules: `docs/ADMIN-PRODUCT-PAGE-SPEC.md`.
+
+### 1.3 Field-level permissions after approval
+
+| Field group | content_uploader | admin | after `active`/`published` |
+|---|---|---|---|
+| Content, gallery, SEO | write drafts | write | editable; may set `pending_review` again (**open Q-ADMIN-2**: auto re-review or silent publish?) |
+| Stock / variants | write | write | yes |
+| Money knobs (`platform_percent`, `supplier_split_percent`, `discount_percent`, `coupon_price_ils`, face) | **no** | **yes** | admin only; every change → `audit_log` `action=updated` with before/after |
+| `supplier_id` | no after create | yes | rare; audit required |
+| Live status transitions | submit only | publish/pause/archive | admin |
+
+Enforcement: Server Action allow-list strips money columns for non-admin; service-role write after `requireSection('catalog','write')` + role check. Optional DB trigger reject non-service writes to money columns (planned).
+
+### 1.4 Bulk, import, WordPress migration
+
+| Capability | Design | Schema / gap |
+|---|---|---|
+| Bulk status pause/archive | Server Action + selected ids | exists partially via per-row actions |
+| Bulk assign category | Action | PLANNED |
+| CSV import | Admin-only job writing drafts with `approval_status=pending_review`; money columns null until admin fills | Need `product_import_jobs` table (migration PLANNED) |
+| WordPress → products | Map WP product/coupon posts → `products` + images to R2; preserve slugs for redirects (see SEO doc) | Use existing migration scripts under `docs/` / ops; do not invent commission defaults |
+
+**Open Q-ADMIN-3:** Exact WP post types and ACF field map for coupon face vs platform price (live site uses storefront language "מחיר בקניון").
+
+### 1.5 Categories and taxonomy
+
+Routes: `/admin/categories`, `/admin/categories/new`, `/admin/categories/[id]`.
+Action: `src/server/actions/admin/categories.ts`.
+Table: `categories` (slug, name_he, parent, sort, image). Soft delete via `deleted_at` where present.
+Tags: if `product_tags` / join table exists use it; otherwise store in product highlights until migration adds `tags` + `product_tags`.
+
+---
+
+## 2. Order and payment operations
+
+### 2.1 Order list and filters
+
+Route: `/admin/orders`, `/admin/orders/[id]`.
+Sources: `orders`, `order_items`, `payments`, `vouchers`.
+Filters: status, date range, supplier_id (via items), q (order id / email), product type, payment stuck.
+
+`order_status` (007): `'pending' | 'paid' | 'partially_fulfilled' | 'fulfilled' | 'cancelled' | 'refunded'`.
+
+`order_item_status` (007): `'pending' | 'issued' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'`.
+
+### 2.2 Order state machine
+
+```
+pending --(Cardcom capture + finalize)--> paid
+paid --> partially_fulfilled --> fulfilled
+paid|partially_fulfilled --> cancelled   (pre-fulfillment / admin; voucher rules)
+paid|… --> refunded                      (Cardcom refund path; blockers apply)
+```
+
+Transitions via Server Actions / SECURITY DEFINER only. Each writes `audit_log` (`status_change`).
+
+### 2.3 Payment reconciliation (Cardcom)
+
+| Concept | Table / path |
+|---|---|
+| Payment rows | `payments` (046+) |
+| Webhook | `POST /api/payments/cardcom/webhook` (signature verified) |
+| Stuck queue | `/admin/payments` |
+| Reconcile | admin action calling idempotent finalize |
+
+Partial captures: **Open Q-ADMIN-4** whether Cardcom low-profile / J5 flows are in scope for v1 admin UI. Until decided, admin shows captured amount vs order `customer_pays_now_agorot` and flags mismatch.
+
+Refunds: blocked if any related `vouchers.status IN ('redeemed','expired')` for that value (`STATE_INVALID`, `blocker=voucher_consumed`). Disputes: admin opens dispute record (**gap**: `disputes` enum exists in 027 draft; confirm table applied).
+
+### 2.4 Split ledger view (per order)
+
+For each `order_items` row show (agorot integers; UI ÷100):
+
+| Field | Meaning |
+|---|---|
+| `face_value_agorot` | Sticker / face |
+| `paid_on_site_agorot` | Charged on site |
 | `commission_agorot` | Platform take |
-| `supplier_payout_agorot` / `supplier_immediate_agorot` | Residual to supplier (0 on coupon launch model) |
-| `balance_due_agorot` | Till amount (coupon) |
-| `platform_percent`, `supplier_split_percent`, `discount_percent`, `coupon_price_ils` | Snapshots |
+| `supplier_payout_agorot` / `supplier_immediate_agorot` | Residual to supplier (0 for coupon under fixed model) |
+| `balance_due_agorot` | Till collection (coupon) |
+| `platform_percent`, `supplier_split_percent` | Snapshots |
+| `coupon_price_ils` / agorot snapshot | Coupon prepaid |
 | `escrow_held_agorot` | Always 0 |
 
 Never recompute from live `products.platform_percent`.
 
 ---
 
-## 4. Supplier operations
+## 3. Supplier operations
 
 Compose with `docs/ARCHITECTURE-SUPPLIER-PORTAL.md`.
 
-| Admin screen | Source | Actions |
-|---|---|---|
-| Directory | `suppliers` (not legacy `vendors` long-term) | view, suspend, edit verification fields |
-| Applications queue | `supplier_applications` (027 remainder; often unapplied) | approve / reject |
-| Bank verify | `supplier_bank_accounts` | set `verified_by` / `verified_at` |
-| Payouts | `payout_statements` / lines | generate, approve, mark paid (`super_admin` + recent auth) |
+### 3.1 Directory and onboarding
 
-Payout status: `draft → pending_approval → approved → paid` (or `cancelled`). Physical lines only (081). T+3 via `payout_hold_business_days`; min via `min_payout_ils`.
+| UI | Data |
+|---|---|
+| `/admin/suppliers` | Today may still list legacy `vendors`; **binding target** is `suppliers` + `supplier_applications` |
+| Approval queue | `supplier_applications.status = pending` |
+| Approve | creates `suppliers` + `supplier_members(owner)` + `profiles.role='vendor'` |
+| Reject | reason required |
+| Verify bank | `supplier_bank_accounts.verified_by/at` |
+| Suspend | `suppliers.status='suspended'`; deactivate memberships; unpublish products |
 
-**Gap today:** `/admin/suppliers` still talks to `vendors` in places (`actions/admin/vendors.ts`). Migration path: cut over UI to `suppliers` + `supplier_members` (072 live).
+### 3.2 Payouts
 
----
-
-## 5. Coupon / voucher operations
-
-| Concern | Source of truth | Admin UI |
-|---|---|---|
-| Catalog coupon products | `products` where `type = 'coupon'` | `/admin/products` |
-| Legacy deals | `coupon_deals` | `/admin/coupons` (deprecate toward products) |
-| Issued codes | `vouchers` | new `/admin/vouchers` (gap: not a first-class route yet) |
-| Scan audit | `voucher_redemptions` | filter by outcome, supplier, IP (085) |
-
-Lifecycle: `issued → redeemed|expired|cancelled|refunded`. Single-use: conditional UPDATE in `redeem_voucher` + unique success index on redemptions.
-
-Fraud signals (dashboard widgets):
-
-- Burst `rate_limited` / `wrong_supplier` collapsed as `not_found`
-- Same IP many failures (`voucher_redemptions.ip_address`)
-- Redeem after refund attempt
-
-**Open question:** Should admin be able to manually expire a voucher, or only the sweep RPC?
+Route: `/admin/payouts` (live UI partial).
+Tables: `payout_statements`, `payout_statement_lines` (027 remainder; may need additive apply).
+Status: `draft → pending_approval → approved → paid` (+ `cancelled`).
+Generator: `generate_payout_statement` (081): **physical lines only**, T+3, min 100 ILS, rollover.
+Mark paid: `super_admin` + recent auth only.
+Permissions gap: `AdminSection` in `permissions.ts` has no `payouts` key yet; matrix in this doc requires adding it (read admin+, write super_admin for mark-paid).
 
 ---
 
-## 6. Finance and reporting
+## 4. Coupon / voucher operations
 
-### 6.1 Revenue dashboards
+| Concern | Source of truth |
+|---|---|
+| Catalog coupons | `products` where `type='coupon'` (canonical). Legacy `coupon_deals` + `/admin/coupons` is bridge only. |
+| Issued codes | `vouchers` |
+| Scan audit | `voucher_redemptions` |
+| Expiry sweep | `expire_vouchers` cron `/api/cron/expire-vouchers` |
 
-Ground: migration **056** analytics views + `src/app/(admin)/admin/analytics`. Metrics (agorot):
+Admin views: inventory counts by status; redemption timeline; fraud signals (rate_limited bursts, wrong_supplier collapsed attempts, multi-IP same code from 085 `ip_address`).
 
-- Platform take by day/week/month = sum `order_items.commission_agorot` for paid orders
-- Per product / per supplier breakdown from snapshots
-- Coupon prepaid revenue vs physical residual owed
-
-Support role: dashboard without money (`canSeeMoney` in permissions.ts).
-
-### 6.2 Digital wallet oversight
-
-Tables: `wallet_accounts`, `wallet_entries`, views `v_wallet_ledger` (055/046 lineage; 059 agorot renames; repairs in later migrations per STATE). Reasons include `order_cashback`, `order_spend`.
-
-Rules: cashback is **internal only**; never withdraws to bank/card. Admin adjust requires `requireRecentAuth` + audit.
-
-**Open question:** Is manual wallet credit allowed in production, or only automated cashback paths?
-
-### 6.3 Export / accounting
-
-CSV export of statements and order ledger for date range (admin+). No third-party accounting sync in v1. **Open question:** Priority Soft / Hashavshevet / CSV-only?
+Single-use monitoring: alert if >1 success row per voucher (unique index should prevent; alert on constraint violation logs).
 
 ---
 
-## 7. Platform administration
+## 5. Finance and reporting
 
-### 7.1 Users and roles
+### 5.1 Revenue dashboards
 
-`/admin/users`: list profiles, assign roles via `actions/admin/users.ts` + `assignableRoles`. DB trigger (035 lineage) blocks illegal elevation. `super_admin` only may assign `admin` / `super_admin`.
+Route: `/admin/analytics` (056 analytics views where applied).
+Metrics (admin money-visible roles only; `canSeeMoney`):
 
-### 7.2 Audit log
+- Platform take: sum `order_items.commission_agorot` for paid orders in period
+- Coupon prepaid revenue: sum coupon `paid_on_site_agorot`
+- Physical residual owed / paid via statements
+- Breakdown by `product_id`, `supplier_id`, day
 
-Canonical: `public.audit_log` (011; 025 dropped `admin_audit_log`).
+### 5.2 Digital wallet oversight
+
+Internal only. Never withdraws to bank/card.
+
+| Table | Role |
+|---|---|
+| `wallet_accounts` | per-user balance (+ platform codes `platform:revenue`, `platform:cashback_reserve`, `platform:adjustments`) |
+| `wallet_entries` | double-entry; `idempotency_key` UNIQUE; amounts → **agorot** post-059/089 |
+| `v_wallet_ledger` | read model for account UI |
+| `cashback_rules` (052) | rules engine; wire to finalize is open |
+
+Admin: list ledger, adjust via `adminAdjustWallet` (super_admin + recent auth + reason), never negative user balance (`wallet_accounts_user_nonneg_agorot`).
+
+### 5.3 Export / accounting
+
+CSV/JSON export of orders and payout statements for period. PII export: admin+ only; support blocked.
+**Open Q-ADMIN-5:** external accounting system (Hashavshevet / Priority) vs manual CSV only for v1.
+
+---
+
+## 6. Platform administration
+
+### 6.1 Users and RBAC
+
+`user_role`: `customer | content_uploader | vendor | support | admin | super_admin`.
+Guards: `requirePanelSession`, `requireSection`, `requireStaffSession`, `requireAdminSession`, `requireAdminPage` in `src/lib/admin/rbac.ts`.
+Section matrix: `src/lib/admin/permissions.ts` (extend with `payouts`, `approvals`, `coupons` as first-class if not folded into `catalog`).
+
+Sensitive mutations: recent auth window (15 min) for role elevation, wallet adjust, mark payout paid, force refund.
+
+### 6.2 Audit logging
+
+Canonical table `public.audit_log` (011; `admin_audit_log` dropped via 025):
 
 | Column | Type |
 |---|---|
 | `id` | uuid PK |
 | `actor_id` | uuid → auth.users |
 | `actor_role` | text |
-| `action` | `audit_action` enum: created, updated, deleted, restored, login, logout, permission_change, status_change, manual_override |
-| `entity_type` | text |
-| `entity_id` | uuid |
+| `action` | `audit_action` enum |
+| `entity_type` / `entity_id` | text / uuid |
 | `changes` / `metadata` | jsonb |
 | `ip_address` / `user_agent` | inet / text |
 | `created_at` | timestamptz |
 
-Indexes: actor, entity, action, created_at. Writes: SECURITY DEFINER only. RLS: admin SELECT; no client INSERT/UPDATE/DELETE.
+Indexes: actor, entity, action, created_at.
+RLS: `is_admin()` SELECT; INSERT only via SECURITY DEFINER; no UPDATE/DELETE policies for clients.
+UI: `/admin/audit-log`.
 
-### 7.3 Feature flags and settings
+Every money-knob change, role change, refund, payout approve/paid, supplier suspend must write here.
 
-**Gap:** no first-class `feature_flags` table in applied core. Binding design:
+### 6.3 Feature flags and settings
+
+**Gap:** no first-class `feature_flags` table in applied migrations. Binding design:
 
 ```sql
--- MIGRATION NEEDED (proposed name: 09x_feature_flags.sql)
+-- MIGRATION NEEDED
 CREATE TABLE public.feature_flags (
   key text PRIMARY KEY,
   enabled boolean NOT NULL DEFAULT false,
@@ -303,30 +270,30 @@ CREATE TABLE public.feature_flags (
 );
 ```
 
-Until then: env-based flags only. **Open question:** which flags must be runtime-toggleable without deploy?
+Until then, env vars (`NEXT_PUBLIC_*` / server env) are the only flags. Admin settings page: PLANNED.
 
 ---
 
-## 8. Admin-specific / related data model (summary)
+## 7. Admin-specific data model (additions and grounding)
 
-| Table | Role | Migration ground |
-|---|---|---|
-| `profiles.role` | coarse RBAC | 003 |
-| `audit_log` | append-only admin trail | 011/025 |
-| `products` + money cols | catalog | 005/048/052/054/070 |
-| `categories` | taxonomy | catalog migrations |
-| `orders` / `order_items` | commerce + snapshots | 007/042/046/059/070 |
-| `payments` | Cardcom | checkout migrations |
-| `vouchers` / `voucher_redemptions` | coupon ops | 073/074/085 |
-| `suppliers` / `supplier_members` | directory | 005/072 (+027 remainder) |
-| `supplier_applications` / bank / payouts | onboarding + finance | 027/051/081/083 (often draft) |
-| `wallet_accounts` / `wallet_entries` | internal cashback | 046/055/059+ |
-| `wp_migration_log` | WP import | 057 |
-| `feature_flags` | settings | **needed** |
+### 7.1 Already grounded (do not reinvent)
+
+`products`, `product_variants`, `categories`, `orders`, `order_items`, `payments`, `suppliers`, `supplier_members`, `supplier_applications`, `supplier_bank_accounts`, `vouchers`, `voucher_redemptions`, `payout_statements`, `payout_statement_lines`, `wallet_accounts`, `wallet_entries`, `audit_log`, `profiles`, `affiliates` (if present).
+
+### 7.2 Migrations needed for gaps
+
+| Object | Why |
+|---|---|
+| Additive 027 remainder (applications, bank, payouts) without regressing 070 split functions | Onboarding + payouts |
+| `product_import_jobs` | Bulk WP/CSV import tracking |
+| `feature_flags` | Admin toggles |
+| `disputes` table if 027 not applied | Chargebacks / voucher disputes |
+| `AdminSection` + RLS alignment for payouts | Code + policy |
+| Ensure `order_items` agorot columns + snapshots complete (059/070) | Ledger view |
 
 ---
 
-## 9. API surface (admin)
+## 8. Complete API surface (admin)
 
 Envelope:
 
@@ -336,114 +303,113 @@ type ActionResult<T> =
   | { ok: false; error: { code: string; message: string; details?: Record<string, unknown> } }
 ```
 
-| Method | Path / Action | Auth | Payload (shape) |
-|---|---|---|---|
-| RSC | `/admin/**` | `requireSection` | — |
-| Action | `upsertProduct` | staff; money fields admin-only | FormData / zod schema in `products.ts` |
-| Action | `submitProductForReview` / approve / reject | matrix | `{ product_id, note? }` |
-| Action | `upsertCategory` | staff catalog | category fields |
-| Action | `updateOrderStatus` | admin+ | `{ order_id, status }` |
-| Action | `initiateRefund` | admin+ + recent auth | `{ order_id, amount_agorot?, reason }` |
-| Action | `reconcilePayment` | admin+ | `{ payment_id }` |
-| Action | `approveSupplierApplication` | admin+ | `{ application_id }` |
-| Action | `rejectSupplierApplication` | admin+ | `{ application_id, reason }` |
-| Action | `generatePayoutStatement` | admin+ | `{ supplier_id, period_start, period_end }` |
-| Action | `approvePayoutStatement` | admin+ | `{ statement_id }` |
-| Action | `markPayoutPaid` | super_admin + recent auth | `{ statement_id, payment_reference }` |
-| Action | `assignUserRole` | admin+ (bounded) | `{ user_id, role }` |
-| Action | `adjustWallet` | super_admin + recent auth | `{ user_id, amount_agorot, reason }` |
-| Cron | `/api/cron/*` | shared secret | expire vouchers, payouts, notifications |
+### 8.1 Server Actions (`src/server/actions/admin/*`)
 
-Money mutations: service-role after gate; never browser JWT UPDATE on money tables.
+| Action | Auth | Notes | Status |
+|---|---|---|---|
+| `upsertProduct` | staff/admin; money fields admin | EXISTS |
+| `approveProduct` / `rejectProduct` | admin | EXISTS (`approvals.ts`) |
+| `archiveProduct` | admin | PLANNED |
+| `upsertCategory` | staff | EXISTS |
+| `listOrders` / order status actions | support+ / admin | EXISTS partial |
+| `adminCancelOrder` / `adminRefundOrder` | admin + recent | PLANNED |
+| `reconcilePayment` | admin | PARTIAL |
+| vendor/supplier CRUD + approve application | admin | EXISTS on vendors; migrate to suppliers |
+| `updateUserRole` | admin / super_admin rules | EXISTS |
+| `adminAdjustWallet` | super_admin + recent | PLANNED |
+| payout generate / approve / `markPayoutPaid` | admin / super_admin | PARTIAL (`payouts.ts`) |
+| `processAndUploadImage` | staff | EXISTS |
+| coupon-deals bridge | admin | EXISTS legacy |
+
+### 8.2 Route Handlers
+
+| Method | Route | Auth |
+|---|---|---|
+| `POST` | `/api/payments/cardcom/webhook` | Cardcom signature |
+| `POST` | `/api/cron/expire-vouchers` | `CRON_SECRET` |
+| `POST` | `/api/cron/payout-statements` | `CRON_SECRET` |
+| `POST` | `/api/cron/notifications-worker` | `CRON_SECRET` |
+| `POST` | `/api/admin/revalidate` | admin or deploy secret |
+
+No public `/api/admin/*` CRUD.
 
 ---
 
-## 10. RLS for admin access
+## 9. RLS for admin access
 
-Helpers (003/053): `is_admin()`, `has_role(role)`, `is_support()`, `current_user_role()`.
+Helpers: `is_admin()`, `has_role()`, `current_user_role()`, `is_support()` (053).
 
 Pattern:
 
-```sql
--- Staff read example
-CREATE POLICY orders_admin_read ON public.orders
-  FOR SELECT TO authenticated
-  USING (public.is_admin() OR public.has_role('support'));
-
--- Money write: no authenticated UPDATE policy; service role / definer only
-```
-
-`audit_log`: SELECT if `is_admin()`; INSERT policy `WITH CHECK (false)` for authenticated.
-
-**Open question:** Should `support` gain read on `voucher_redemptions` and `payments` without amounts? Align permissions.ts (`payments: none` for support today) with product need.
-
-Extend `AdminSection` with `payouts` and `vouchers`; map support read / admin write explicitly.
+- Staff reads via policies `USING (is_admin() OR is_support())` where support allowed.
+- Money mutations: **no** authenticated UPDATE policies on `order_items` money columns, `payout_statements`, `wallet_entries`. Service role / SECURITY DEFINER after app gate.
+- `audit_log`: SELECT `is_admin()`; INSERT denied to clients.
+- `payments`: admin select; writes from webhook definer only.
+- Prefer `FORCE ROW LEVEL SECURITY` on money tables.
 
 ---
 
-## 11. Security threat model
+## 10. Security threat model
 
 | Attempt | Control |
 |---|---|
-| Escalate to `super_admin` as admin | `assignableRoles` + DB trigger; recent auth |
-| content_uploader sets `platform_percent` | Stripped in action; admin-only path; audit |
-| Supplier JWT edits money via PostgREST | No UPDATE policy; portal allow-list |
-| Tamper `order_items.commission_agorot` after paid | No client UPDATE; immutable snapshot convention + audit on any definer fix |
-| Mark payout paid without oversight | `super_admin` + `requireRecentAuth(15)` |
-| Support exports PII + money | `canSeeMoney` false; analytics no PII export |
-| Replay refund | Idempotent refund keys; voucher redeemed blocker |
-| Delete audit rows | No DELETE policy; FORCE RLS |
-| CSRF on admin actions | Next Server Action tokens + same-site cookies |
+| Privilege escalation to `super_admin` | `canAssignRole` + DB trigger 035; recent auth; audit |
+| Unauthorized `platform_percent` change | Action strip + admin-only; audit before/after; optional trigger |
+| Ledger tampering via PostgREST | No client write policies on `wallet_entries` / payout lines; definer + idempotency keys |
+| Refund after redeem | App blocker + voucher status check |
+| Support exporting PII/money | `canSeeMoney` false; export gated |
+| Mark payout paid without auth | super_admin + `requireRecentAuth` |
+| CSRF / session steal | SameSite cookies; re-auth for sensitive |
+| Supplier posing as admin | Separate shells; membership ≠ `is_admin()` |
 
 ---
 
-## 12. Real-time vs polling
+## 11. Real-time vs polling
 
-| View | Mode | Why |
-|---|---|---|
-| Dashboard queues (stuck payments, pending approvals) | Polling 15–30s or on focus | Simple; low volume |
-| Order detail during support call | Manual refresh + optional Supabase realtime on `orders.id` | Optional |
-| Voucher fraud feed | Polling 30s on redemptions insert time | |
-| Analytics | On demand / cron materialized | 056 views |
-
-Binding v1: **polling**. Realtime only if ops proves lag pain. **Open question:** is realtime required before launch?
+| View | Mode |
+|---|---|
+| Order/payment stuck queues | RSC + 10–30s client poll or `router.refresh` |
+| Redeem fraud signals | Poll redemptions feed 15s on dashboard widget |
+| Payout approval | On-demand refresh after action |
+| Analytics | Pre-aggregated views; refresh on load / manual |
+| True realtime (Supabase channel) | Optional later for payments stuck; not required for coupons-first launch |
 
 ---
 
-## 13. Rollout sequencing
+## 12. Rollout sequencing
 
 1. Freeze money model docs (this + product page + supplier portal).
-2. Align `products.ts` + ProductForm with four knobs + publish gate (070 already in DB).
-3. Cut suppliers admin from `vendors` → `suppliers` / applications.
-4. Apply 027 remainder + 051/081/083 for payouts if missing on host.
-5. Add `/admin/vouchers` over `vouchers` + `voucher_redemptions`.
-6. Extend permissions matrix (`payouts`, `vouchers`).
-7. Wallet admin oversight page grounded on agorot columns (post-059 repairs).
-8. `feature_flags` migration when needed.
-9. Deprecate `coupon_deals` admin toward `products.type = 'coupon'`.
-10. WP redirect freeze before SEO cutover (see SEO doc).
+2. Finish admin product editor money knobs against `product-money.ts` + 070.
+3. Switch `/admin/suppliers` from `vendors` → `suppliers` + applications.
+4. Apply payout additive migrations (051/081/083) safely.
+5. Order detail split ledger UI (read snapshots only).
+6. Voucher admin inventory (replace legacy coupon_deals emphasis).
+7. Wallet adjust + audit completeness.
+8. Feature flags table + settings page.
+9. Exports and analytics money gates.
+10. Physical fulfillment admin (after coupons-stable).
 
 ---
 
-## 14. Open questions (business, not inventable)
+## 13. Open questions (business)
 
-1. Is category mandatory on every coupon before publish?
-2. Exact legal floor for `coupon_expiry_days` (120 mentioned historically)?
-3. Cardcom partial capture / partial refund product policy?
-4. Manual wallet credit in production: yes/no?
-5. Accounting export format and cadence?
-6. Support visibility into payments and redemption IPs?
-7. One-shot vs continuous WP sync?
-8. Runtime feature flags required pre-launch?
-9. When do physical products leave "schema only" and enter merchandising?
+| ID | Question |
+|---|---|
+| Q-ADMIN-1 | Force coupon `platform_percent=100` in UI vs allow other values without payout lines? |
+| Q-ADMIN-2 | Content edit after publish: silent vs forced re-approval? |
+| Q-ADMIN-3 | Exact WP field map for import |
+| Q-ADMIN-4 | Partial capture / dispute UI scope for v1 |
+| Q-ADMIN-5 | Accounting export target system |
+| Q-ADMIN-6 | Support read of voucher PII (customer name on redeem)? |
+| Q-ADMIN-7 | Min coupon expiry floor (architecture mentions 120 days): legal confirmation |
 
 ---
 
-## 15. Related docs
+## 14. Related docs
 
 | Doc | Role |
 |---|---|
-| `docs/ADMIN-PRODUCT-PAGE-SPEC.md` | Money knobs + publish + snapshot |
-| `docs/ARCHITECTURE-SUPPLIER-PORTAL.md` | Supplier side composition |
-| `ADMIN-ARCHITECTURE.md` | Earlier binding notes; defer to this file on conflicts |
-| Migrations 003,007,011,052,053,054,056,059,070,072–074,081,085 | Schema truth |
+| `docs/ADMIN-PRODUCT-PAGE-SPEC.md` | Money fields + publish gate |
+| `docs/ARCHITECTURE-SUPPLIER-PORTAL.md` | Supplier portal composition |
+| `ADMIN-ARCHITECTURE.md` | Earlier binding notes; superseded on Escrow/coupon-take conflicts by this file + product/supplier specs |
+| Migrations 007, 011, 046, 052, 053, 056, 059, 070, 072–074, 081, 085, 089 | Schema truth |
