@@ -4,6 +4,7 @@ import {
   SPLIT_TOTAL,
   assertPublishable,
   buildOrderItemSnapshot,
+  buildProductMoneyWrite,
   completeSplitPair,
   deriveDiscountPercent,
   missingSupplierDetails,
@@ -488,6 +489,167 @@ describe('previewProductMoney', () => {
           2,
         )
       }
+    }
+  })
+})
+
+describe('buildProductMoneyWrite', () => {
+  const physical = {
+    type: 'physical' as const,
+    kenyonPrice: 200,
+    platformPercent: 30,
+    supplierSplitPercent: 70,
+    discountPercent: 10,
+    couponPriceIls: null,
+    couponExpiryDays: null,
+  }
+
+  it('fills the two NOT NULL legacy columns the form never sends', () => {
+    // products.commission_percent and products.price_ils are both NOT NULL with
+    // no default. Before this builder existed the admin action omitted them, so
+    // creating a product through the panel failed on the insert.
+    const result = buildProductMoneyWrite(physical)
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.fields.commission_percent).toBe(30)
+    expect(result.fields.price_ils).toBe(200)
+  })
+
+  it('keeps commission_percent equal to platform_percent', () => {
+    for (const percent of [0, 15, 30, 85, 100]) {
+      const result = buildProductMoneyWrite({
+        ...physical,
+        platformPercent: percent,
+        supplierSplitPercent: 100 - percent,
+      })
+      expect(result.ok, String(percent)).toBe(true)
+      if (!result.ok) return
+      expect(result.fields.commission_percent).toBe(result.fields.platform_percent)
+    }
+  })
+
+  it('completes the split when the admin typed only one half', () => {
+    const result = buildProductMoneyWrite({
+      ...physical,
+      platformPercent: 25,
+      supplierSplitPercent: null,
+    })
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.fields.platform_percent).toBe(25)
+    expect(result.fields.supplier_split_percent).toBe(75)
+  })
+
+  it('refuses a pair that does not sum to 100 instead of picking a winner', () => {
+    const result = buildProductMoneyWrite({
+      ...physical,
+      platformPercent: 30,
+      supplierSplitPercent: 60,
+    })
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.field).toBe('supplier_split_percent')
+  })
+
+  it('refuses to write when no split was given at all, rather than defaulting', () => {
+    const result = buildProductMoneyWrite({
+      ...physical,
+      platformPercent: null,
+      supplierSplitPercent: null,
+    })
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.message).toContain('אין ברירת מחדל')
+  })
+
+  it('refuses a missing or non-positive price', () => {
+    expect(buildProductMoneyWrite({ ...physical, kenyonPrice: null }).ok).toBe(false)
+    expect(buildProductMoneyWrite({ ...physical, kenyonPrice: 0 }).ok).toBe(false)
+    expect(buildProductMoneyWrite({ ...physical, kenyonPrice: -5 }).ok).toBe(false)
+  })
+
+  it('keeps the admin-typed discount on a physical product', () => {
+    const result = buildProductMoneyWrite({ ...physical, discountPercent: 12.5 })
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.fields.discount_percent).toBe(12.5)
+  })
+
+  it('derives the coupon badge from the prices and ignores what was typed', () => {
+    // 200 sticker, 50 online is a 75% saving. A typed 10 must not survive: the
+    // page would advertise a saving checkout does not honour.
+    const result = buildProductMoneyWrite({
+      type: 'coupon',
+      kenyonPrice: 200,
+      platformPercent: 30,
+      supplierSplitPercent: 70,
+      discountPercent: 10,
+      couponPriceIls: 50,
+      couponExpiryDays: 30,
+    })
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.fields.discount_percent).toBe(75)
+    expect(result.fields.coupon_price_ils).toBe(50)
+    expect(result.fields.coupon_expiry_days).toBe(30)
+  })
+
+  it('clears the coupon columns when the product is physical', () => {
+    // Otherwise a stale coupon price sits unread in the column and resurfaces
+    // if the type is ever flipped back.
+    const result = buildProductMoneyWrite({
+      ...physical,
+      couponPriceIls: 50,
+      couponExpiryDays: 30,
+    })
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.fields.coupon_price_ils).toBeNull()
+    expect(result.fields.coupon_expiry_days).toBeNull()
+  })
+
+  it('leaves the coupon badge null when the coupon price is missing', () => {
+    const result = buildProductMoneyWrite({
+      type: 'coupon',
+      kenyonPrice: 200,
+      platformPercent: 30,
+      supplierSplitPercent: 70,
+      discountPercent: 40,
+      couponPriceIls: null,
+      couponExpiryDays: 30,
+    })
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.fields.coupon_price_ils).toBeNull()
+    expect(result.fields.discount_percent).toBeNull()
+  })
+
+  it('never invents a percent: 0 is written only when 0 was given', () => {
+    const zero = buildProductMoneyWrite({ ...physical, discountPercent: 0 })
+    expect(zero.ok).toBe(true)
+    if (!zero.ok) return
+    expect(zero.fields.discount_percent).toBe(0)
+
+    const missing = buildProductMoneyWrite({ ...physical, discountPercent: '' })
+    expect(missing.ok).toBe(true)
+    if (!missing.ok) return
+    expect(missing.fields.discount_percent).toBeNull()
+  })
+
+  it('matches the splits the live catalog actually uses', () => {
+    // Measured 2026-07-28: supplier_split_percent is 70, 75 or 85 across all 61
+    // products. None of them is a constant in the code.
+    for (const supplierSplit of [70, 75, 85]) {
+      const result = buildProductMoneyWrite({
+        ...physical,
+        platformPercent: null,
+        supplierSplitPercent: supplierSplit,
+      })
+      expect(result.ok, String(supplierSplit)).toBe(true)
+      if (!result.ok) return
+      expect(result.fields.supplier_split_percent).toBe(supplierSplit)
+      expect(result.fields.platform_percent).toBe(100 - supplierSplit)
+      expect(result.fields.platform_percent + result.fields.supplier_split_percent).toBe(100)
     }
   })
 })
