@@ -4,16 +4,16 @@
 Admin Dashboard Core (Fable 5). Docs channel open on `arch/admin-supplier`.
 
 ## Last Completed
-2026-07-28: `docs/ARCHITECTURE-ADMIN.md` (Admin Dashboard Core binding entry). Docs only in ke-admin.
+2026-07-28: `docs/ARCHITECTURE-SEO-PERFORMANCE.md` (complete SEO + CWV + R2 + ISR + JSON-LD + migrations plan). Docs only in ke-admin.
 
 ## In Progress
-Admin Dashboard Core goal (architecture → implementation against this file + ADMIN-PRODUCT-PAGE-SPEC).
+Admin Dashboard Core goal (Fable 5). Docs channel continuing on `arch/admin-supplier`.
 
 ## Blocking Issues
 none
 
 ## Next Task
-Implement Core surfaces in order: RBAC shell → product money editor → approvals → order split ledger → payments stuck → suppliers on `suppliers` → dashboard queues.
+Implement Admin Core surfaces (RBAC shell → product money editor → …) while SEO spec is available for storefront/admin revalidate hooks.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-admin
@@ -29,6 +29,10 @@ not set in this worktree STATE
 
 ---
 ## History
+
+### 2026-07-28: ARCHITECTURE-SEO-PERFORMANCE
+- Rewrote `docs/ARCHITECTURE-SEO-PERFORMANCE.md` (meta, sitemap, JSON-LD, R2/next/image, ISR, CWV, Hebrew SEO, MCP migrations ≥077).
+- Worktree: ke-admin. Docs only.
 
 ### 2026-07-28: Admin Dashboard Core opened
 - Storefront goal closed on `phase5/homepage` (`40dae12`).
