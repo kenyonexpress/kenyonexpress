@@ -107,7 +107,7 @@ function DealsProductCard({ product }: { product: Product }) {
               <CartPlusIcon />
             </AddToCartButton>
           ) : (
-            <Link href={`/product/${product.slug}`} aria-label="צפה במוצר">
+            <Link href={`/product/${product.slug}`} aria-label={`צפה במוצר: ${product.name_he}`}>
               <CartPlusIcon />
             </Link>
           )}

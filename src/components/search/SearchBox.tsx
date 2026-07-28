@@ -23,14 +23,14 @@ export default function SearchBox({ defaultValue = '' }: { defaultValue?: string
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="מה בא לך למצוא היום?"
-          className="min-w-0 flex-1 px-4 py-2.5 text-sm text-gray-800 focus:outline-none"
+          className="min-h-11 min-w-0 flex-1 px-4 py-2.5 text-start text-sm text-gray-800 focus:outline-none"
         />
         <button
           type="submit"
           aria-label="חיפוש"
-          className="flex items-center justify-center bg-brand-primary px-5 text-brand-dark transition-colors hover:bg-brand-primary-hover"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center bg-brand-primary px-5 text-brand-dark transition-colors hover:bg-brand-primary-hover"
         >
-          <Search size={18} />
+          <Search size={18} aria-hidden="true" />
         </button>
       </div>
     </form>

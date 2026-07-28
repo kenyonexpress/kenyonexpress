@@ -20,7 +20,8 @@ export default function Header({ fullName }: Props) {
           <button
             type="submit"
             title="יציאה"
-            className="w-9 h-9 rounded-full bg-brand text-white text-sm font-bold flex items-center justify-center hover:bg-brand-dark transition-colors"
+            className="flex h-11 w-11 min-h-11 min-w-11 items-center justify-center rounded-full bg-brand text-sm font-bold text-white transition-colors hover:bg-brand-dark"
+            aria-label="יציאה"
           >
             {initials(fullName)}
           </button>

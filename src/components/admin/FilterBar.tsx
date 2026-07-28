@@ -37,13 +37,13 @@ export default function FilterBar({
           name="q"
           defaultValue={defaultQuery}
           placeholder={searchPlaceholder}
-          className="h-9 w-full rounded-md border border-black/10 bg-[#FFFFFF] ps-9 pe-3 text-sm text-[#000000] outline-none focus-visible:ring-2 focus-visible:ring-[#fed700]"
+          className="h-11 min-h-11 w-full rounded-md border border-black/10 bg-[#FFFFFF] ps-9 pe-3 text-sm text-[#000000] outline-none focus-visible:ring-2 focus-visible:ring-[#fed700]"
         />
       </div>
       {children}
       <button
         type="submit"
-        className="h-9 rounded-md bg-[#333e48] px-4 text-sm font-medium text-white transition-colors hover:bg-black"
+        className="h-11 min-h-11 rounded-md bg-[#333e48] px-4 text-sm font-medium text-white transition-colors hover:bg-black"
       >
         סינון
       </button>

@@ -68,9 +68,9 @@ export default function SiteFooter() {
                   key={label}
                   href={href}
                   aria-label={label}
-                  className="w-9 h-9 rounded-full bg-gray-800 hover:bg-brand flex items-center justify-center transition-colors"
+                  className="flex h-11 w-11 min-h-11 min-w-11 items-center justify-center rounded-full bg-gray-800 transition-colors hover:bg-brand"
                 >
-                  <Icon size={18} strokeWidth={1.8} />
+                  <Icon size={18} strokeWidth={1.8} aria-hidden="true" />
                 </a>
               ))}
             </div>
