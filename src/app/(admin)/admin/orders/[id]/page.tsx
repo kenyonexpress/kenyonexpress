@@ -8,6 +8,7 @@ import { describeRefundBlockers } from '@/server/domain/orders/refund'
 import { AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import OrderAdminActions from './OrderAdminActions'
 import OrderStatusClient from './OrderStatusClient'
 
 export const metadata = { title: 'פרטי הזמנה' }
@@ -234,6 +235,12 @@ export default async function OrderDetailPage({ params }: Props) {
         כל הערכים בטבלאות הם עותק שנשמר ברגע הרכישה. עריכת המוצר או הספק אחרי הרכישה אינה משנה שורה
         קיימת.
       </p>
+
+      <OrderAdminActions
+        orderId={order.id}
+        notes={order.notes ?? null}
+        refundBlockers={blockers.map((b) => b.message)}
+      />
 
       <OrderStatusClient orderId={order.id} currentStatus={order.status} />
     </div>

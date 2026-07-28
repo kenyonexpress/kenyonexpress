@@ -83,3 +83,64 @@ export async function cancelPendingOrder(
   revalidatePath(`/admin/orders/${parsed.data.id}`)
   return { success: 'ההזמנה בוטלה' }
 }
+
+const noteSchema = z.object({
+  id: z.string().uuid({ message: 'מזהה הזמנה לא תקין' }),
+  note: z.string().trim().min(1, 'ההערה ריקה').max(2000, 'ההערה ארוכה מדי'),
+})
+
+/**
+ * Appends a dated, attributed line to `orders.notes`.
+ *
+ * Appends rather than replaces: an order note is a record of what someone
+ * decided and when, and the next admin overwriting it would erase the reason
+ * the previous one acted. The audit_log row carries the same text, so the
+ * history survives even if the column is later edited by hand.
+ */
+export async function addOrderNote(
+  _: OrderActionState,
+  formData: FormData,
+): Promise<OrderActionState> {
+  let session: AdminSessionInfo
+  try {
+    session = await requireAdminSession()
+  } catch {
+    return { error: 'אין הרשאה' }
+  }
+
+  const parsed = noteSchema.safeParse({
+    id: formData.get('id'),
+    note: formData.get('note'),
+  })
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
+  }
+
+  const supabase = await createClient()
+  const { data: order, error: readError } = await supabase
+    .from('orders')
+    .select('notes')
+    .eq('id', parsed.data.id)
+    .single()
+  if (readError) return { error: readError.message }
+
+  // Stamped so a note read months later still says who wrote it and when.
+  const stamp = new Date().toISOString()
+  const line = `[${stamp}] ${session.userId}: ${parsed.data.note}`
+  const next = order?.notes ? `${order.notes}\n${line}` : line
+
+  const { error } = await supabase.from('orders').update({ notes: next }).eq('id', parsed.data.id)
+  if (error) return { error: error.message }
+
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'updated',
+    entityType: 'orders',
+    entityId: parsed.data.id,
+    changes: { note: parsed.data.note },
+  })
+
+  revalidatePath(`/admin/orders/${parsed.data.id}`)
+  return { success: 'ההערה נוספה' }
+}
