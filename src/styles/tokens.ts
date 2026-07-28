@@ -134,6 +134,11 @@ export const THEME_BRAND = {
   '--color-primary': ELECTRO.colors.primary,
 } as const
 
+/** Geometry tokens that must match globals.css @theme (exact string). */
+export const THEME_GEOMETRY = {
+  '--touch-target': ELECTRO.a11y.touchTarget,
+} as const
+
 /** The CSS custom-property name each colour maps to in category-page.css. */
 export const CATALOG_CSS_VARS: Record<string, string> = {
   '--cat-ink': CATALOG.color.ink,

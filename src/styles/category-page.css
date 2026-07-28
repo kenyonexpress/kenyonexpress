@@ -366,8 +366,8 @@
   position: absolute;
   inset-block-start: 50%;
   inset-inline-start: 50%;
-  width: 44px;
-  height: 44px;
+  width: var(--touch-target, 44px);
+  height: var(--touch-target, 44px);
   transform: translate(-50%, -50%);
 }
 

@@ -6,6 +6,7 @@ import {
   CATALOG_CSS_VARS,
   ELECTRO,
   THEME_BRAND,
+  THEME_GEOMETRY,
   TOUCH_TARGET_PX,
 } from './tokens'
 
@@ -115,6 +116,18 @@ describe('brand + a11y tokens', () => {
       expect(match?.[1]?.trim().toLowerCase(), `${name} drifted from tokens.ts`).toBe(
         value.toLowerCase(),
       )
+    }
+  })
+
+  it('keeps globals.css @theme geometry in step with tokens.ts', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/app/globals.css'), 'utf8')
+    const themeStart = css.indexOf('@theme')
+    const themeEnd = css.indexOf('}', themeStart)
+    const block = css.slice(themeStart, themeEnd)
+    for (const [name, value] of Object.entries(THEME_GEOMETRY)) {
+      const match = block.match(new RegExp(`${name}\\s*:\\s*([^;]+);`))
+      expect(match, `${name} missing from globals.css @theme`).not.toBeNull()
+      expect(match?.[1]?.trim(), `${name} drifted from tokens.ts`).toBe(value)
     }
   })
 })
