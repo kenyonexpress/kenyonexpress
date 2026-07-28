@@ -69,7 +69,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   // 2. Locate our payment by the hosted-page id
   const { data: payment } = await admin
     .from('payments')
-    .select('id, order_id, status, amount_ils, cardcom_account_id')
+    .select('id, order_id, status, amount_agorot, cardcom_account_id')
     .eq('cardcom_low_profile_id', payload.lowprofilecode)
     .maybeSingle()
   if (!payment) {
@@ -108,7 +108,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true, verified: false })
   }
 
-  const expectedAgorot = Math.round(Number(payment.amount_ils) * 100)
+  // Agorot are what the column holds since 059. The *100 that stood here read
+  // amount_ils, a column that no longer exists: the select failed with 42703,
+  // `payment` came back null, and the webhook answered "unknown_payment" and
+  // returned 200 for a customer Cardcom had just charged. The order was never
+  // closed and nothing raised.
+  const expectedAgorot = Number(payment.amount_agorot)
   if (verified.amountAgorot !== expectedAgorot) {
     await admin.from('audit_log').insert({
       actor_id: null,

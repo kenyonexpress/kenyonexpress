@@ -1,6 +1,163 @@
 # KenyonExpress — Project State
 
-Updated: 2026-07-28 (דף מוצר מתחת ל-11%; מסך payout באדמין; הרשמה הייתה שבורה)
+Updated: 2026-07-28 (שלב 1 — מימוש קופון מקצה לקצה; חמישה חסמי השקה ברצף הקנייה)
+
+## סבב 2026-07-28 — שלב 1: Coupon Redemption, וחמישה חסמים ששכבו על מסלול הקנייה
+
+המשימה הייתה לבנות מימוש קופון מקצה לקצה. רוב הרכיבים כבר היו בנויים
+(‏`issue.ts`, ‏`qr.ts`, ‏`redeem_voucher()` ב-074, אזור אישי עם QR). מה שהתגלה
+בדרך הוא שהמסלול **לא יכול היה לרוץ בכלל**: חמישה כשלים בלתי תלויים, כולם
+מאותה משפחה — ‏059 שינתה שמות של 45 עמודות כסף, וקוד וטריגרים שלא עודכנו.
+
+### הכלי שחשף את הכל
+‏`tests/sql/voucher_redemption_lifecycle.sql` **לא רץ מאז שהוחלה 059**: ה-fixtures
+שלו מכניסים `products.price_ils`, עמודה שכבר לא קיימת, אז כל ריצה מתה על 42703
+בהכנסה הראשונה. הרנס שלא בונה fixtures לא בודק כלום, ושום דבר לא הכריז על זה.
+אחרי תיקון ה-fixtures הוא התחיל להפיל חסם אחרי חסם.
+
+### חמשת החסמים, לפי סדר הגילוי
+
+**‏🔴 1. אי אפשר היה ליצור הזמנה.** ‏`checkout.ts` מכניס ל-`orders` את
+`subtotal_ils / total_ils / cashback_applied_ils` ול-`order_items` את
+`unit_price_ils / total_price_ils / platform_percent / commission_percent`.
+כולן שונו ב-059. בנוסף שלוש עמודות agorot הן NOT NULL בלי DEFAULT ולא נכתבו
+כלל, כך שגם אילו השמות היו נפתרים השורה הייתה נדחית. **הצעד הראשון של כל
+checkout נכשל.**
+
+**‏🔴 2. אי אפשר היה לכתוב שורת הזמנה — גם עם השמות הנכונים.**
+‏`fn_snapshot_commission_ledger()` (‏042, טריגר על INSERT ל-order_items) קורא
+`NEW.platform_percent` ו-`NEW.cashback_percent`. ‏059 שינתה אותן ל-`platform_bp`
+ו-`cashback_bp`. גוף טריגר לא נבדק כשהעמודה משתנה תחתיו: הוא מתקמפל ונופל
+בזמן ריצה. **`record "new" has no field "platform_percent"` על כל שורה.**
+תוקן ב-**086**, יחד עם היחידות: ‏`platform_percent` החזיקה 30 והוכפלה ב-100
+כדי להגיע ל-3000 bps; ‏`platform_bp` **כבר** מחזיקה 3000. שינוי שם בלי הסרת
+הכפל היה רושם 300000 bps, כלומר עמלה של 3000%.
+
+**‏🔴 3. הזמנה לא יכלה להיסגר כ-paid.** ‏`trg_orders_notification_events()`
+קורא `NEW.total_ils` בענף של שינוי סטטוס. ‏059 שינתה ל-`total_agorot`.
+ה-UPDATE שמעביר הזמנה ל-`paid` זורק. **הלקוח מחויב וההזמנה לא נסגרת** — הכשל
+הגרוע מבין הזמינים. שקט במיוחד: הוא נורה רק במעבר הסטטוס, אז כל בדיקה
+שעוצרת ב"הזמנה נוצרה" עוברת. תוקן ב-**086**.
+
+**‏🔴 4. אי אפשר היה להנפיק שובר.** ‏`issue.ts` מכניס ל-`vouchers` את
+`platform_percent`, ששמה `platform_bp` היום. בנוסף התגלה ש-073 הצהירה על
+העמודה `NOT NULL` ועם `CHECK 0..100` ובכוונה ללא DEFAULT ("שובר בלי פיצול הוא
+באג, לא לקיחה של 100%") — **ושתי ההגנות אבדו בשינוי השם**: ה-CHECK נגרר אל
+`platform_percent_legacy` ושם הוא ריק מתוכן לנצח, וה-NOT NULL לא שרד בכלל.
+תוקן ב-**087** (‏CHECK על 0..10000 ביחידות הנכונות + NOT NULL), ‏`issue.ts`
+כותב `Math.round(percent * 100)`.
+
+**‏🔴 5. שום כסף לא זז בארנק.** ‏`fn_wallet_transfer()` (שני ה-overloads) קורא
+וכותב `wallet_accounts.balance_ils` ו-`wallet_entries.amount_ils`, שתיהן
+`_agorot` היום. כלומר: קאשבק לא נזקף, יתרת ארנק לא ניתנת לשימוש ב-checkout,
+ו-`credit_expired_vouchers()` לא יכולה להחזיר כסף על שובר שפג — **‏C6 ("פקיעה
+אינה חילוט") לא עבד לאף לקוח.** תוקן ב-**089**. ‏`wallet_accounts_user_nonneg`
+נגרר גם הוא לעמודת ה-legacy, כלומר רצפת ה-double-spend הייתה ריקה מתוכן;
+הוחלף ב-`wallet_accounts_user_nonneg_agorot`.
+
+**‏🔴 6 (בונוס). ה-cron של הפקיעה מת.** ‏`expire_vouchers()` מוגדרת פעמיים:
+‏068 עם `p_limit integer DEFAULT 1000` ו-074 בלי ארגומנטים. ברירת מחדל הופכת
+את הצורה החד-פרמטרית למועמדת לקריאה חסרת ארגומנטים, ולכן
+`SELECT expire_vouchers()` מחזיר `42725 function is not unique`. ה-route
+קורא בדיוק כך, תופס את השגיאה, רושם לוג וחוזר — **ו-`credit_expired_vouchers()`
+אחריו לעולם לא רץ.** תוקן ב-**088** בהסרת ה-DEFAULT בלבד: שתי הצורות נחוצות
+(‏חסרת-ארגומנטים ל-cron ולרנס, חסומה ל-batching), ומחיקת אחת מהן שוברת את
+השנייה.
+
+### מה שנבנה לשלב 1 עצמו
+
+**‏(ב) ‏`/redeem/[token]`** — ‏`src/app/redeem/[token]/page.tsx` +
+`RedeemConfirm.tsx`. הטוקן ב-URL הוא ה-QR החתום מההנפקה
+(‏`KEV1.<body>.<HMAC-SHA256>`). הוא **אינו** אסימון הרשאה: החזקה בו לא מציגה
+כלום עד התחברות כחבר בספק שהשובר נמכר עבורו, ו-single-use נקבע ב-UPDATE
+מותנה אחד בתוך `redeem_voucher()`. סדר הבדיקות מכוון — **חתימה קודם, סשן
+אחר כך** — כי בקשת התחברות ראשונה הייתה שולחת טוקן מזויף לסיבוב login
+ומאבדת את הרישום שלו.
+
+**‏(ד) ‏`redemption_events` עם IP** — ‏`voucher_redemptions` תיעדה תוצאה, סורק
+וזמן, אבל לא מאיפה. מיגרציה **085** מוסיפה `ip_address inet` ו-`user_agent`,
+ושתי ה-RPC כותבות אותן בכל ניסיון. בנוסף `log_voucher_scan()` **מקבלת עכשיו
+סורק NULL**: קודם היא חזרה מיד כש-`auth.uid()` ריק, כלומר דווקא הניסיון
+המעניין ביותר — זר שפותח `/redeem/<מזויף>` בלי סשן — לא נרשם. הפתיחה חסומה
+פר-כתובת (‏20 בחלון דקה) כדי שהטבלה לא תהפוך לפרימיטיב כתיבה אנונימי, והיא
+עדיין לא יכולה לייצר שורת `success` בשום מסלול.
+
+**‏`voucher_scan_ip(text)`** מפרסרת כותרת ל-inet ומחזירה NULL על כל דבר לא
+תקין. הכותרת היא טקסט בשליטת התוקף, ו-`::inet` על "not-an-ip" זורק 22P02
+שהיה מתפשט החוצה מ-`redeem_voucher` והופך מימוש לגיטימי בקופה ל-500.
+**נאמנות התיעוד שווה פחות מהמימוש עצמו.**
+
+**‏(ג) מימוש אטומי** — כבר היה נכון ב-074 ונשמר כלשונו. מה שהוסר הוא רגל
+ה-escrow: תחת מודל 035ef8e אין holds, ולכן `WHERE voucher_id = ... AND status
+= 'held'` לא תואם כלום ו-`escrow_held -> escrow_released` על שורת ההזמנה לא
+תואם כלום (שורת קופון היא `split_executed` מרגע התשלום). קוד מת בפונקציית
+כסף נמחק ולא מוער.
+
+**באג נוסף שתוקן בדרך: דף אישור ההזמנה הציג אפס קופונים.**
+‏`checkout/return/page.tsx` קרא מ-`coupon_codes`, טבלת המופעים שלפני
+ה-vouchers, ש**שום קוד לא כותב אליה** מאז ש-`finalize.ts` עבר ל-`vouchers`.
+כלומר כל רכישת קופון אמיתית הגיעה לדף אישור בלי קופון, והדרך היחידה של
+הלקוח ל-QR הייתה למצוא את `/account/vouchers` לבד. (‏הדף גם החזיר 404 בכלל,
+בגלל `orders.total_ils` — חסם 1.)
+
+### אימות
+
+| בדיקה | תוצאה |
+|---|---|
+| ‏`tests/sql/voucher_redemption_lifecycle.sql` | ‏9 מקטעים, **all assertions passed** |
+| ‏`scripts/_voucher-race.mjs` (חדש) | **PASS**, שתי ריצות |
+| ‏`pnpm exec vitest run` | **‏544 ב-44 קבצים** |
+| ‏`pnpm exec tsc --noEmit` | נקי |
+| ‏`pnpm exec biome check src/` | נקי (‏349 קבצים) |
+| ‏`pnpm build` | עובר, ‏`/redeem/[token]` רשום |
+
+**המרוץ המקבילי לא יכול לחיות ב-psql**: סשן אחד הוא חיבור אחד, ומרוץ דורש
+שתי טרנזקציות בו-זמנית. ‏`_voucher-race.mjs` פותח שני חיבורים, שני חברים
+של **אותו ספק** (שתי קופות בעסק אחד — הצורה הריאלית, ובדיוק זו שבדיקת הספק
+לא עוזרת נגדה), ויורה `Promise.all`. התוצאה: מימוש אחד, סירוב אחד
+(`already_redeemed`), ושתי השורות ביומן עם ה-IP.
+
+### ⚠️ מיגרציות 085-089 הוחלו על המסד המקומי בלבד
+
+אף אחת לא הוחלה על הפרודקשן, וההוראה בסבב הזה אוסרת זאת מפורשות.
+**שים לב שהן מניחות ש-059 הוחלה.** הפרודקשן עדיין מחזיק את השמות הישנים
+(`platform_percent`, `total_ils`), ולכן:
+- ‏086 נכתבה **סובלנית לשתי הצורות** דרך `to_jsonb(NEW)`, בדיוק כמו ש-046
+  מסתעפת על שתי צורות `wallet_accounts`. היא בטוחה בשני המסדים.
+- ‏**‏087, ‏088, ‏089 והתיקונים ב-`checkout.ts` / `issue.ts` / `finalize.ts`
+  אינם סובלניים** ומניחים פוסט-059. החלתם על פרודקשן דורשת שהחיתוך של 059
+  יבוצע קודם. זה כבר היה מתועד כ"planned cutover, not a routine migration".
+
+### הסריקה שאיתרה את השאר, ומה שנשאר פתוח
+
+השאילתה שמצאה את הכל (מוצאת גם false positives — פונקציה שמזכירה גם את השם
+הישן וגם את החדש):
+
+```sql
+WITH renamed AS (
+  SELECT replace(column_name,'_legacy','') AS col FROM information_schema.columns
+  WHERE table_schema='public' AND column_name LIKE '%_legacy')
+SELECT DISTINCT p.proname, r.col FROM pg_proc p
+JOIN pg_namespace n ON n.oid=p.pronamespace JOIN renamed r ON p.prosrc ~ ('\m'||r.col||'\M')
+WHERE n.nspname='public' AND p.prosrc !~ ('\m'||r.col||'_legacy\M') ORDER BY 1,2;
+```
+
+**‏פונקציות שעדיין קוראות שמות מלפני 059 ולא תוקנו בסבב הזה** (אינן על מסלול
+קניית קופון, ולכן נדחו במכוון ולא נשכחו):
+‏`fn_reverse_order_item_cashback` (מסלול זיכוי), ‏`reconcile_cardcom_settlement`,
+‏`generate_payout_statement`, ‏`fn_wallet_cashback_amount` / `_percent`,
+‏`fn_agent_kpi_snapshot`, ‏`redeem_coupon` / `fn_redeem_coupon` (מסלול
+`coupon_codes` המיושן), ‏`approve_supplier_application`.
+
+**מסכי אדמין שקוראים עמודות מלפני 059** ולכן ייפלו על 42703:
+‏`admin/orders`, ‏`admin/orders/[id]`, ‏`admin/dashboard`, ‏`admin/payments`,
+‏`admin/users/[id]`, ‏`admin/coupons/codes`, ‏`(store)/checkout/page.tsx`
+(‏`wallet_accounts.balance_ils`), ‏`server/queries/account.ts`.
+
+**‏`src/types/database.ts` מיושן** מול המסד המקומי (חסרות `platform_bp`,
+`amount_agorot`, ‏`voucher_redemptions.ip_address`, החתימות החדשות של ה-RPC).
+‏`tsc` עובר רק כי הטיפוסים רופפים במקומות האלה. לרענן עם `pnpm db:types`.
+
 
 ## סבב 2026-07-28 — Admin: מסך תשלומים לספקים, ושני חסמים שהתגלו בדרך
 

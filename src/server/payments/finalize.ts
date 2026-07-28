@@ -258,7 +258,7 @@ export async function finalizeOrder(input: {
 
   const { data: order } = await admin
     .from('orders')
-    .select('id, user_id, status, paid_at, cashback_applied_ils')
+    .select('id, user_id, status, paid_at, cashback_applied_agorot')
     .eq('id', input.orderId)
     .maybeSingle()
   if (!order) return { ok: false, error: 'order not found', code: 'NOT_FOUND' }
@@ -302,7 +302,10 @@ export async function finalizeOrder(input: {
       return { ok: false, error: `payment update failed: ${payError.message}`, code: 'INTERNAL' }
     }
   } else {
-    walletApplied = Number(order.cashback_applied_ils ?? 0)
+    // spendWallet speaks shekels (fn_wallet_transfer takes p_amount_ils), the
+    // column has held agorot since 059. Reading it as shekels credited a
+    // hundredth of what the customer actually spent from their wallet.
+    walletApplied = Number(order.cashback_applied_agorot ?? 0) / 100
   }
 
   try {

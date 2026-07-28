@@ -114,7 +114,10 @@ describe('issueVoucher', () => {
     expect(id).toBe('voucher-1')
     expect(inserted).toHaveLength(1)
     expect(isValidVoucherCode(row.code)).toBe(true)
-    expect(row.platform_percent).toBe(25)
+    // Basis points since 059 renamed the column and changed its units: 25% is
+    // 2500 bp. Asserting 25 here would pass against a row that records a
+    // quarter of a percent.
+    expect(row.platform_bp).toBe(2500)
     expect(row.face_value_agorot).toBe(20000)
     expect(row.coupon_price_agorot).toBe(5000)
     expect(row.remaining_amount_due_agorot).toBe(15000)
@@ -131,7 +134,7 @@ describe('issueVoucher', () => {
   it('snapshots the caller platform percent rather than a constant', async () => {
     const { client } = fakeClient()
     const { row } = await issueVoucher(client, input({ platformPercent: '15.00' }))
-    expect(row.platform_percent).toBe(15)
+    expect(row.platform_bp).toBe(1500)
   })
 
   it('refuses to issue when the platform percent is out of range', async () => {

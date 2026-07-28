@@ -8,6 +8,7 @@ import {
   waShareLink,
 } from '@/lib/whatsapp'
 import { reconcileOrderReturn } from '@/server/actions/payments/checkout'
+import { formatVoucherCode } from '@/server/domain/vouchers/code'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
@@ -50,49 +51,56 @@ export default async function CheckoutReturnPage({ searchParams }: Props) {
     )
   }
 
-  // Paid: load the order snapshot for display
+  // Paid: load the order snapshot for display.
+  //
+  // The vouchers table is the one finalize.ts issues into. This page used to
+  // read coupon_codes, the pre-voucher instance table, which no code has
+  // written since the voucher subsystem landed: every real coupon purchase
+  // showed a confirmation page with no coupon on it, and the customer's only
+  // route to their QR was to find /account/vouchers unprompted.
   const admin = createAdminClient()
-  const [{ data: order }, { data: coupons }, { data: cashbackEntry }] = await Promise.all([
+  const [{ data: order }, { data: vouchers }, { data: cashbackEntry }] = await Promise.all([
     admin
       .from('orders')
-      .select('id, total_ils, subtotal_ils, paid_at')
+      .select('id, total_agorot, subtotal_agorot, customer_pays_now_agorot, paid_at')
       .eq('id', orderId)
       .maybeSingle(),
     admin
-      .from('coupon_codes')
+      .from('vouchers')
       .select(
-        'id, code, qr_token, expires_at, face_value_ils, collect_amount_ils, products(name_he)',
+        `id, code, qr_payload, expires_at,
+         face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot,
+         products(name_he)`,
       )
-      .in(
-        'order_item_id',
-        (await admin.from('order_items').select('id').eq('order_id', orderId)).data?.map(
-          (r) => r.id,
-        ) ?? [],
-      )
-      .order('created_at', { ascending: true }),
+      .eq('order_id', orderId)
+      .order('issued_at', { ascending: true }),
     admin
       .from('wallet_entries')
-      .select('amount_ils')
+      .select('amount_agorot')
       .eq('idempotency_key', `order:${orderId}:cashback`)
       .maybeSingle(),
   ])
   if (!order) notFound()
 
   const couponsWithQr = await Promise.all(
-    (coupons ?? []).map(async (coupon) => ({
-      ...coupon,
-      qrDataUrl: await QRCode.toDataURL(coupon.qr_token, { margin: 1, width: 264 }),
+    (vouchers ?? []).map(async (voucher) => ({
+      ...voucher,
+      // Agorot are the stored unit (059). The share text and the labels below
+      // speak shekels, so the conversion happens once, here.
+      collect_amount_ils: voucher.remaining_amount_due_agorot / 100,
+      qrDataUrl: await QRCode.toDataURL(voucher.qr_payload, { margin: 1, width: 264 }),
     })),
   )
 
-  const cashback = Number(cashbackEntry?.amount_ils ?? 0)
+  const cashback = Number(cashbackEntry?.amount_agorot ?? 0) / 100
 
   return (
     <div className="checkout-page">
       <div className="checkout-success">
         <h1 className="checkout-success__title">התשלום הצליח!</h1>
         <p className="checkout-success__sub">
-          הזמנה {order.id.slice(0, 8).toUpperCase()} · שולם באתר {shekels(Number(order.total_ils))}
+          הזמנה {order.id.slice(0, 8).toUpperCase()} · שולם באתר{' '}
+          {shekels(Number(order.customer_pays_now_agorot ?? order.total_agorot ?? 0) / 100)}
         </p>
 
         {couponsWithQr.length > 0 && (
@@ -115,7 +123,9 @@ export default async function CheckoutReturnPage({ searchParams }: Props) {
                 <article className="coupon-card" key={coupon.id}>
                   <div>
                     {productName && <div className="coupon-card__collect">{productName}</div>}
-                    <div className="coupon-card__code">{coupon.code}</div>
+                    <div className="coupon-card__code" dir="ltr">
+                      {formatVoucherCode(coupon.code)}
+                    </div>
                     {Number(coupon.collect_amount_ils) > 0 && (
                       <div className="coupon-card__collect">
                         לתשלום בעסק במימוש: {shekels(Number(coupon.collect_amount_ils))}
@@ -155,6 +165,11 @@ export default async function CheckoutReturnPage({ searchParams }: Props) {
                 </article>
               )
             })}
+            <p style={{ marginTop: 12, fontSize: 13 }}>
+              <Link href="/account/vouchers" style={{ fontWeight: 600 }}>
+                השוברים שמורים גם באזור האישי
+              </Link>
+            </p>
           </section>
         )}
 

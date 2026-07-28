@@ -48,7 +48,8 @@ export interface IssuedVoucherRow {
   face_value_agorot: number
   coupon_price_agorot: number
   remaining_amount_due_agorot: number
-  platform_percent: number
+  /** Basis points, not percent. See the write site for why the two differ. */
+  platform_bp: number
   offer_valid_until: string
   expires_at: string
   issued_at: string
@@ -162,7 +163,11 @@ export async function issueVoucher(
       face_value_agorot: faceValue,
       coupon_price_agorot: couponPrice,
       remaining_amount_due_agorot: remainingDue,
-      platform_percent: platformPercent,
+      // 059 renamed vouchers.platform_percent to platform_bp AND changed its
+      // units to basis points. Writing the old name failed the insert outright,
+      // so no voucher could be issued at all; writing 30 into the new column
+      // would have recorded a 0.3 percent split instead of 30 percent.
+      platform_bp: Math.round(platformPercent * 100),
       offer_valid_until: input.offerValidUntil.toISOString(),
       expires_at: expiresAt.toISOString(),
       issued_at: now.toISOString(),

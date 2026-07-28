@@ -2,6 +2,7 @@ import { capturePaymentError } from '@/lib/observability/sentry'
 import { createClient } from '@/lib/supabase/server'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
 import { verifyVoucherQrPayload } from '@/server/domain/vouchers/qr'
+import { readScanContext, recordRefusedScan } from '@/server/domain/vouchers/scan-context'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
@@ -108,6 +109,7 @@ function asOutcome(value: unknown): Outcome {
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const supabase = await createClient()
+  const scanContext = readScanContext(request.headers)
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -128,10 +130,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (qr_payload) {
     const verified = verifyVoucherQrPayload(qr_payload)
     if (!verified) {
-      await supabase.rpc('log_voucher_scan', {
-        p_code_entered: normalizeVoucherCode(code ?? '').slice(0, 32),
-        p_scan_method: method,
-        p_outcome: 'invalid_signature',
+      await recordRefusedScan({
+        codeEntered: normalizeVoucherCode(code ?? ''),
+        outcome: 'invalid_signature',
+        scanMethod: method,
+        context: scanContext,
+        client: supabase,
       })
       return respond({ outcome: 'not_found', message: OUTCOME_MESSAGES.not_found }, 404)
     }
@@ -148,6 +152,8 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     p_code: shortCode,
     p_scan_method: method,
     p_idempotency_key: idempotency_key ?? null,
+    p_ip: scanContext.ip,
+    p_user_agent: scanContext.userAgent,
   })
 
   if (error) {

@@ -407,15 +407,30 @@ export async function beginCheckout(
   const expiresAt = new Date(now.getTime() + ORDER_EXPIRY_MINUTES * 60 * 1000)
 
   // 4. Pending order + items snapshot
+  //
+  // Every money column here is integer agorot. 059 renamed the whole set
+  // (subtotal_ils -> subtotal_agorot, total_ils -> total_agorot, ...) and left
+  // the originals behind as *_ils_legacy. Writing the old names produced
+  // PGRST204 on the very first statement of a checkout, so NO ORDER COULD BE
+  // CREATED AT ALL against a 059 database; three of the agorot columns are also
+  // NOT NULL with no default, so the row would have been rejected even if the
+  // names had resolved.
+  //
+  // wallet_applied_agorot and cashback_applied_agorot are the same number by
+  // construction: 042 derived the first from cashback_applied_ils and 059 then
+  // renamed that same column into the second. Both are written so a reader
+  // cannot pick the one that happens to be empty.
   const { data: order, error: orderError } = await admin
     .from('orders')
     .insert({
       user_id: user.id,
       status: 'pending',
-      subtotal_ils: agorotToIls(settlement.faceValue),
-      discount_ils: 0,
-      cashback_applied_ils: agorotToIls(settlement.walletApplied),
-      total_ils: agorotToIls(settlement.paidOnSite),
+      subtotal_agorot: settlement.faceValue,
+      discount_agorot: 0,
+      wallet_applied_agorot: settlement.walletApplied,
+      cashback_applied_agorot: settlement.walletApplied,
+      customer_pays_now_agorot: settlement.paidOnSite,
+      total_agorot: settlement.paidOnSite,
       currency: 'ILS',
       address_id: input.address_id,
       accepted_terms_at: now.toISOString(),
@@ -455,11 +470,6 @@ export async function beginCheckout(
       supplier: supplierIdentityOf(product, supplierMap),
     })
 
-    // The percent the money was actually billed at, straight off the settlement
-    // result, so the snapshot cannot drift from the arithmetic that produced
-    // commission_agorot even by a rounding step.
-    const billedPercent = line.platformPercentBps / 100
-
     return {
       order_id: order.id,
       product_id: item.product_id,
@@ -467,10 +477,31 @@ export async function beginCheckout(
       product_type: item.type,
       supplier_id: product.supplier_id ?? null,
       quantity: item.quantity,
-      unit_price_ils: item.unit_price,
-      total_price_ils: agorotToIls(line.faceValue),
-      supplier_payout_ils: agorotToIls(line.supplierDue),
-      platform_percent: billedPercent,
+      // Post-059 column names throughout. The percent columns became basis
+      // points in the same migration (platform_percent -> platform_bp), which
+      // is why billedPercent is multiplied by 100 rather than renamed: 30% is
+      // 3000 bp, and writing 30 into a bp column understates the platform's
+      // take by two orders of magnitude on every row.
+      unit_price_agorot: ilsToAgorot(item.unit_price),
+      total_price_agorot: line.faceValue,
+      face_value_agorot: line.faceValue,
+      customer_pays_now_agorot: line.paidOnSite,
+      paid_on_site_agorot: line.paidOnSite,
+      charged_on_site_agorot: line.paidOnSite,
+      platform_fee_agorot: line.commission,
+      commission_agorot: line.commission,
+      supplier_due_agorot: line.supplierDue,
+      supplier_immediate_agorot: line.supplierDue,
+      supplier_payout_agorot: line.supplierDue,
+      balance_due_agorot: line.balanceDueAtBusiness,
+      balance_due_at_business_agorot: line.balanceDueAtBusiness,
+      cashback_amount_agorot: line.cashbackAmount,
+      cashback_earned_agorot: line.cashbackAmount,
+      platform_bp: line.platformPercentBps,
+      commission_bp: line.platformPercentBps,
+      upfront_bp: line.platformPercentBps,
+      commission_snapshot_bp: line.platformPercentBps,
+      cashback_bp: 0,
       supplier_split_percent: snapshot.supplier_split_percent,
       discount_percent: snapshot.discount_percent,
       coupon_price_ils: snapshot.coupon_price_ils,
@@ -478,22 +509,12 @@ export async function beginCheckout(
       supplier_phone: snapshot.supplier_phone,
       supplier_address: snapshot.supplier_address,
       supplier_logo_url: snapshot.supplier_logo_url,
-      commission_percent: billedPercent,
-      cashback_percent: 0,
       item_status: 'pending' as const,
       settlement_status: 'pending' as const,
-      upfront_percent: billedPercent,
-      commission_percent_snapshot: billedPercent,
-      face_value_agorot: line.faceValue,
-      paid_on_site_agorot: line.paidOnSite,
-      commission_agorot: line.commission,
-      supplier_immediate_agorot: line.supplierDue,
       // Legacy 046/047 shape. Always 0: there is no escrow, and "held" was only
       // ever a flag in our own ledger.
       escrow_held_agorot: 0,
       escrow_release_agorot: 0,
-      balance_due_agorot: line.balanceDueAtBusiness,
-      cashback_amount_agorot: line.cashbackAmount,
     }
   })
   const { error: itemsError } = await admin.from('order_items').insert(itemRows)
@@ -559,9 +580,9 @@ export async function beginCheckout(
       order_id: order.id,
       kind: 'charge',
       status: 'initiated',
-      amount_ils: agorotToIls(settlement.cardCharge),
+      amount_agorot: settlement.cardCharge,
       currency: 'ILS',
-      wallet_applied_ils: agorotToIls(settlement.walletApplied),
+      wallet_applied_agorot: settlement.walletApplied,
       idempotency_key: idempotencyKey,
       cardcom_account_id: account.id,
     })
@@ -730,7 +751,7 @@ export async function reconcileOrderReturn(orderId: string): Promise<ReturnRecon
 
   const { data: payment } = await admin
     .from('payments')
-    .select('id, status, amount_ils, cardcom_low_profile_id, cardcom_account_id')
+    .select('id, status, amount_agorot, cardcom_low_profile_id, cardcom_account_id')
     .eq('order_id', order.id)
     .eq('kind', 'charge')
     .order('created_at', { ascending: false })
@@ -756,7 +777,10 @@ export async function reconcileOrderReturn(orderId: string): Promise<ReturnRecon
     return { status: 'failed', order_id: order.id, reason: 'verification failed' }
   }
 
-  const expectedAgorot = Math.round(Number(payment.amount_ils) * 100)
+  // The stored amount IS agorot since 059. Multiplying it by 100 again, as this
+  // did while reading amount_ils, compared a charge against a hundred times
+  // itself and failed every verification as "amount mismatch".
+  const expectedAgorot = Number(payment.amount_agorot)
   if (verified.amountAgorot !== expectedAgorot) {
     return { status: 'pending', order_id: order.id, reason: 'amount mismatch' }
   }

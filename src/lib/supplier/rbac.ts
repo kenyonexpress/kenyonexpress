@@ -1,3 +1,4 @@
+import { safeNextPath } from '@/lib/auth/safe-next'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
@@ -51,9 +52,46 @@ export async function getSupplierSession(): Promise<SupplierSession | null> {
   }
 }
 
-/** Server-component guard: redirects a non-member to /login. */
-export async function requireSupplierMember(): Promise<SupplierSession> {
+/**
+ * Every active supplier the caller staffs, not only the first.
+ *
+ * getSupplierSession answers "which supplier's portal am I in", and takes the
+ * earliest membership to do it. That is the wrong question when deciding
+ * whether a voucher belongs to this scanner: a member of two suppliers would be
+ * refused their second supplier's own vouchers. redeem_voucher() matches
+ * against the full membership set (085), and any check the app performs before
+ * calling it has to agree with the function that actually decides.
+ */
+export async function getSupplierMemberships(): Promise<string[]> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return []
+
+  const { data } = await supabase
+    .from('supplier_members')
+    .select('supplier_id')
+    .eq('user_id', user.id)
+    .eq('is_active', true)
+
+  return (data ?? []).map((row) => row.supplier_id).filter((id): id is string => Boolean(id))
+}
+
+/**
+ * Server-component guard: redirects a non-member to /login.
+ *
+ * `next` is where to land after signing in. It runs through safeNextPath
+ * because a scanned QR puts this value in a URL a stranger controls, and
+ * `//evil.example` is a protocol-relative URL a browser follows off-site.
+ * Anything it rejects lands on the scan screen rather than the site root, which
+ * is where a supplier who just failed a supplier guard wants to be.
+ */
+export async function requireSupplierMember(next = '/supplier/scan'): Promise<SupplierSession> {
   const session = await getSupplierSession()
-  if (!session) redirect('/login?next=/supplier/scan')
+  if (!session) {
+    const safe = safeNextPath(next)
+    redirect(`/login?next=${encodeURIComponent(safe === '/' ? '/supplier/scan' : safe)}`)
+  }
   return session
 }
