@@ -1,5 +1,5 @@
 import { type Page, expect, test } from '@playwright/test'
-import { addOpenProductToCart, openFirstProduct } from './helpers'
+import { addOpenProductToCart, openPurchasableProduct } from './helpers'
 
 /** Reads the item count the header badge advertises via its aria-label. */
 async function navCartCount(page: Page): Promise<number> {
@@ -13,7 +13,7 @@ async function navCartCount(page: Page): Promise<number> {
 
 test.describe('shopping cart (guest)', () => {
   test('add to cart from product page then see it in the cart', async ({ page }) => {
-    await openFirstProduct(page)
+    await openPurchasableProduct(page)
     const productName = (await page.getByRole('heading', { level: 1 }).textContent())?.trim()
     await addOpenProductToCart(page)
 
@@ -27,7 +27,7 @@ test.describe('shopping cart (guest)', () => {
   })
 
   test('shows an order summary with an on-site total in shekels', async ({ page }) => {
-    await openFirstProduct(page)
+    await openPurchasableProduct(page)
     await addOpenProductToCart(page)
 
     await page.goto('/cart')
@@ -38,7 +38,7 @@ test.describe('shopping cart (guest)', () => {
   })
 
   test('raising the quantity updates the header badge', async ({ page }) => {
-    await openFirstProduct(page)
+    await openPurchasableProduct(page)
     await addOpenProductToCart(page)
 
     await page.goto('/cart')
@@ -49,7 +49,7 @@ test.describe('shopping cart (guest)', () => {
   })
 
   test('lowering the quantity puts the badge back', async ({ page }) => {
-    await openFirstProduct(page)
+    await openPurchasableProduct(page)
     await addOpenProductToCart(page)
 
     await page.goto('/cart')
@@ -61,7 +61,7 @@ test.describe('shopping cart (guest)', () => {
   })
 
   test('a guest cart survives a page reload', async ({ page }) => {
-    await openFirstProduct(page)
+    await openPurchasableProduct(page)
     await addOpenProductToCart(page)
 
     await page.goto('/cart')
@@ -73,7 +73,7 @@ test.describe('shopping cart (guest)', () => {
   })
 
   test('emptying the cart shows the empty state again', async ({ page }) => {
-    await openFirstProduct(page)
+    await openPurchasableProduct(page)
     await addOpenProductToCart(page)
 
     await page.goto('/cart')
@@ -84,7 +84,7 @@ test.describe('shopping cart (guest)', () => {
   })
 
   test('adding to the cart opens the drawer, and the header badge reopens it', async ({ page }) => {
-    await openFirstProduct(page)
+    await openPurchasableProduct(page)
     await addOpenProductToCart(page)
 
     // Adding auto-opens the drawer; that is the confirmation the shopper sees.

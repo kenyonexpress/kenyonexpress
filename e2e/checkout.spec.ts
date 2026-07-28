@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { addOpenProductToCart, openFirstProduct } from './helpers'
+import { addOpenProductToCart, openPurchasableProduct } from './helpers'
 
 test.describe('checkout gate (guest)', () => {
   test('anonymous direct visit to /checkout is sent to login with a return path', async ({
@@ -10,7 +10,7 @@ test.describe('checkout gate (guest)', () => {
   })
 
   test('the gate holds even with a populated guest cart', async ({ page }) => {
-    await openFirstProduct(page)
+    await openPurchasableProduct(page)
     await addOpenProductToCart(page)
 
     await page.goto('/checkout')
@@ -18,7 +18,7 @@ test.describe('checkout gate (guest)', () => {
   })
 
   test('the cart CTA offers sign-in rather than a direct checkout link', async ({ page }) => {
-    await openFirstProduct(page)
+    await openPurchasableProduct(page)
     await addOpenProductToCart(page)
 
     await page.goto('/cart')

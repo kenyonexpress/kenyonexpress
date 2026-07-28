@@ -54,8 +54,13 @@ async function loadProductData(items: CartStorageItem[]) {
 
   const admin = createAdminClient()
 
+  // cashback_bp, not cashback_percent: 059 renamed the column and moved it to
+  // basis points. Naming the old one failed the whole select with 42703, so
+  // `products` came back null and every cart line lost its name, its image and
+  // its price - the cart rendered as a list of blanks with a correct item
+  // count, because the count comes from the carts row rather than from here.
   const productSelect =
-    'id, slug, name_he, type, kenyon_price, stock_quantity, status, deleted_at, images, is_coupon_enabled, platform_percent, cashback_percent'
+    'id, slug, name_he, type, kenyon_price, stock_quantity, status, deleted_at, images, is_coupon_enabled, platform_percent, cashback_bp'
 
   const { data: products } = await admin.from('products').select(productSelect).in('id', productIds)
 
@@ -71,6 +76,10 @@ async function loadProductData(items: CartStorageItem[]) {
   const pricedProducts = (products ?? []).map((p) => ({
     ...p,
     coupon_price_ils: coupon054.get(p.id)?.coupon_price_ils ?? null,
+    // The conversion happens here rather than in pricing.ts so the pure pricing
+    // module keeps speaking percent, which is what its invariants are written
+    // in. 250 bp is 2.5 percent.
+    cashback_percent: p.cashback_bp == null ? null : Number(p.cashback_bp) / 100,
   }))
 
   let variants: {
