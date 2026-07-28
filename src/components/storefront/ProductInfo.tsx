@@ -4,7 +4,7 @@ import { useCart } from '@/components/cart/CartProvider'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import CouponPricing from '@/components/storefront/CouponPricing'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
-import { Check, Minus, Plus, ShoppingCart } from 'lucide-react'
+import { Check, ShoppingCart } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
@@ -98,9 +98,6 @@ export default function ProductInfo({
   const discountPct = hasDiscount ? Math.round((1 - price / oldPrice) * 100) : 0
   const maxQty = stock != null && stock > 0 ? stock : 99
   const blocked = outOfStock || needsVariant || couponUnsellable || isPending
-
-  const dec = () => setQty((q) => Math.max(1, q - 1))
-  const inc = () => setQty((q) => Math.min(maxQty, q + 1))
 
   const handleAddToCart = async () => {
     if (blocked) return
@@ -205,27 +202,22 @@ export default function ProductInfo({
       )}
 
       <div className="pdp-buy">
-        <div className="pdp-buy__qty">
-          <button
-            type="button"
-            onClick={dec}
-            disabled={qty <= 1 || outOfStock}
-            aria-label="הפחת כמות"
-            className="pdp-buy__step"
-          >
-            <Minus size={16} />
-          </button>
-          <span className="pdp-buy__count">{qty}</span>
-          <button
-            type="button"
-            onClick={inc}
-            disabled={qty >= maxQty || outOfStock}
-            aria-label="הוסף כמות"
-            className="pdp-buy__step"
-          >
-            <Plus size={16} />
-          </button>
-        </div>
+        {/* Live has no +/- stepper: a single 140x41 number input with the
+            spinner suppressed. Measured 2026-07-28. */}
+        <input
+          type="number"
+          className="pdp-buy__qty"
+          value={qty}
+          min={1}
+          max={maxQty}
+          disabled={outOfStock}
+          aria-label="כמות"
+          onChange={(e) => {
+            const next = Number.parseInt(e.target.value, 10)
+            if (!Number.isFinite(next)) return
+            setQty(Math.min(Math.max(next, 1), maxQty))
+          }}
+        />
 
         <button
           type="button"

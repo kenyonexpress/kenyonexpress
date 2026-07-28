@@ -52,7 +52,7 @@ export default async function RelatedProducts({ categoryId, excludeId }: Props) 
       .is('deleted_at', null)
       .neq('id', excludeId)
       .order('created_at', { ascending: false })
-      .limit(4)
+      .limit(5)
     for (const r of (data ?? []) as Row[]) byId.set(r.id, toProduct(r))
   }
 
@@ -71,7 +71,7 @@ export default async function RelatedProducts({ categoryId, excludeId }: Props) 
     }
   }
 
-  const products = [...byId.values()].slice(0, 4)
+  const products = [...byId.values()].slice(0, 5)
   if (products.length === 0) return null
 
   return (

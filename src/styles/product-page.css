@@ -23,8 +23,8 @@
      change the number in tokens.ts, never in a rule. */
   --pdp-container: 1170px;
   --pdp-gallery: 470px;
-  --pdp-summary: 670px;
-  --pdp-column-gap: 30px;
+  --pdp-summary: 700px;
+  --pdp-column-gap: 15px;
   --pdp-crumb-h: 84px;
   --pdp-eyebrow-size: 11.998px;
   --pdp-eyebrow-line: 17.2771px;
@@ -39,7 +39,7 @@
   --pdp-price-del-size: 21px;
   --pdp-price-del-line: 31.5px;
   --pdp-qty-w: 140px;
-  --pdp-qty-h: 45px;
+  --pdp-qty-h: 41px;
   --pdp-atc-w: 192px;
   --pdp-atc-h: 53px;
   --pdp-buy-h: 46px;
@@ -49,7 +49,7 @@
   --pdp-related-gap: 54px;
   --pdp-summary-tail: 40px;
   --pdp-page-tail: 80px;
-  --pdp-content-h: 1277px;
+  --pdp-content-h: 1329px;
 
   color: var(--pdp-ink);
   font-size: var(--pdp-body-size);
@@ -116,6 +116,8 @@
 }
 
 .pdp-gallery__frame {
+  /* Live: .product-images-wrapper padding: 0 15px. Measured 2026-07-28. */
+  padding: 0 15px;
   position: relative;
   aspect-ratio: 1 / 1;
   overflow: hidden;
@@ -272,16 +274,26 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-top: 25px;
+  margin-top: 101px;
 }
 
 .pdp-buy__qty {
-  display: flex;
-  align-items: center;
   width: var(--pdp-qty-w);
   height: var(--pdp-qty-h);
   border: 1px solid var(--pdp-line);
   background-color: var(--pdp-surface);
+  text-align: center;
+  font-size: var(--pdp-body-size);
+  color: var(--pdp-ink);
+  /* Live suppresses the native spinner; there are no +/- controls at all. */
+  appearance: none;
+  -moz-appearance: textfield;
+}
+
+.pdp-buy__qty::-webkit-outer-spin-button,
+.pdp-buy__qty::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
 }
 
 .pdp-buy__step {
@@ -421,7 +433,9 @@
 /* Recommendations: 25.004px/500 heading over a full-width hairline with a
    233px brand segment on the inline-start end, measured at y937-938. */
 .pdp-related {
-  margin-top: 24px;
+  /* Live opens the recommendations row on y940; the summary column above ends
+     well before that. Measured 2026-07-28. */
+  margin-top: -20px;
 }
 
 .pdp-related__title {
@@ -457,8 +471,14 @@
 }
 
 @media (min-width: 1024px) {
+  /* Live: five 230px cards, no gutter, separated by a 1px rule. */
   .pdp-related__grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, 230px);
+    gap: 0;
+  }
+
+  .pdp-related__grid > * + * {
+    border-inline-start: 1px solid var(--pdp-line);
   }
 }
 

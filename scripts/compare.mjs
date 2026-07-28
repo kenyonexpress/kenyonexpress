@@ -104,7 +104,13 @@ const shoot = async (url, out) => {
     await p.goto(url, { waitUntil: 'domcontentloaded', timeout: 120000 })
   }
   const external = url.startsWith('file:') || url.includes('kenyonexpress.co.il')
-  await p.waitForTimeout(external ? 4000 : 2000)
+  // Local pages proxy remote product images through /_next/image on first
+  // request, which is slower than the 2s this used to allow: cards were being
+  // screenshotted mid-load and their broken-image glyphs scored as layout
+  // difference. Waiting for the network to settle measures the page, not the
+  // optimizer's cold start.
+  await p.waitForTimeout(external ? 4000 : 6000)
+  if (!external) await p.waitForLoadState('networkidle').catch(() => {})
   // The Next dev overlay renders a route badge into <nextjs-portal> and it was
   // being counted as page content: a ~150x45 box in the bottom-left of every
   // local screenshot that has no counterpart on live and does not exist in a

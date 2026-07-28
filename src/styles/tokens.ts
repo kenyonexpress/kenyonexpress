@@ -382,8 +382,8 @@ export const PDP = {
     /** gallery column: x835..1305 */
     gallery: '470px',
     /** summary column: x135..805 */
-    summary: '670px',
-    columnGap: '30px',
+    summary: '700px',
+    columnGap: '15px',
     /** breadcrumb block y165..249 */
     crumbHeight: '84px',
     eyebrowSize: '11.998px',
@@ -400,7 +400,7 @@ export const PDP = {
     priceDelLine: '31.5px',
     /** quantity field x665..805, y548..593 */
     qtyWidth: '140px',
-    qtyHeight: '45px',
+    qtyHeight: '41px',
     /** add-to-cart pill x469..661, y545..598 */
     atcWidth: '192px',
     atcHeight: '53px',
@@ -418,7 +418,7 @@ export const PDP = {
     /** gap between the last section and the footer, y1362..1442 */
     pageTail: '80px',
     /** the content column between header and footer, y165..1442 */
-    contentHeight: '1277px',
+    contentHeight: '1329px',
   },
 } as const
 
