@@ -98,7 +98,7 @@ export const ELECTRO_HERO = {
   categoryStrip: {
     height: 170,
     borderColor: '#e7e7e7',
-    offsetInlineEnd: 517,
+    offsetInlineEnd: 276,
     maxWidth: 728,
     itemPaddingInline: 12,
     itemPaddingTop: 16,
