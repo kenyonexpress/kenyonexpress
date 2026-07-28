@@ -100,7 +100,10 @@ export async function getMyOrders(): Promise<OrderSummary[]> {
   const { data: orders } = await admin
     .from('orders')
     .select(
-      'id, status, created_at, paid_at, total_ils, order_items(quantity, product_type, settlement_status)',
+      // Post-059 names. `total_ils` here took the whole select down with 42703,
+      // so `orders` came back null and every customer's order list rendered as
+      // "you have no orders" rather than as an error.
+      'id, status, created_at, paid_at, total_agorot, customer_pays_now_agorot, order_items(quantity, product_type, settlement_status)',
     )
     .eq('user_id', userId)
     .is('deleted_at', null)
@@ -115,7 +118,7 @@ export async function getMyOrders(): Promise<OrderSummary[]> {
       settlementStatus: deriveOrderStatus(items.map((i) => asSettlementState(i.settlement_status))),
       createdAt: order.created_at,
       paidAt: order.paid_at,
-      totalIls: Number(order.total_ils ?? 0),
+      totalIls: Number(order.total_agorot ?? order.customer_pays_now_agorot ?? 0) / 100,
       itemCount: items.reduce((sum, i) => sum + (i.quantity ?? 0), 0),
       hasVouchers: items.some((i) => i.product_type === 'coupon'),
     }
@@ -131,7 +134,7 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
   const { data: order } = await admin
     .from('orders')
     .select(
-      'id, user_id, status, created_at, paid_at, subtotal_ils, total_ils, cashback_applied_ils, address_id',
+      'id, user_id, status, created_at, paid_at, subtotal_agorot, total_agorot, customer_pays_now_agorot, cashback_applied_agorot, address_id',
     )
     .eq('id', orderId)
     .eq('user_id', userId)
@@ -174,22 +177,26 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
             contact_phone: string | null
           }[],
         }),
+    // `vouchers`, not `coupon_codes`. The latter is the pre-voucher instance
+    // table and nothing has written it since finalize.ts moved to issueVoucher,
+    // so an order detail page showed no coupon for any coupon actually bought.
     itemIds.length > 0
       ? admin
-          .from('coupon_codes')
+          .from('vouchers')
           .select(
-            'code, status, expires_at, collect_amount_ils, face_value_ils, qr_token, used_at, order_item_id',
+            'code, status, expires_at, remaining_amount_due_agorot, face_value_agorot, qr_payload, redeemed_at, order_item_id',
           )
           .in('order_item_id', itemIds)
+          .order('issued_at', { ascending: true })
       : Promise.resolve({
           data: [] as {
             code: string
             status: string
             expires_at: string | null
-            collect_amount_ils: number | null
-            face_value_ils: number | null
-            qr_token: string | null
-            used_at: string | null
+            remaining_amount_due_agorot: number | null
+            face_value_agorot: number | null
+            qr_payload: string | null
+            redeemed_at: string | null
             order_item_id: string | null
           }[],
         }),
@@ -207,10 +214,12 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
     const vouchers: OrderVoucher[] = []
     for (const coupon of itemCoupons) {
       let qrDataUrl: string | null = null
-      if (coupon.qr_token) {
+      if (coupon.qr_payload) {
         try {
-          qrDataUrl = await QRCode.toDataURL(coupon.qr_token, { margin: 1, width: 240 })
+          qrDataUrl = await QRCode.toDataURL(coupon.qr_payload, { margin: 1, width: 240 })
         } catch {
+          // A QR that will not render must not take the order page down; the
+          // short code below it is enough to redeem at a counter.
           qrDataUrl = null
         }
       }
@@ -219,10 +228,12 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
         status: coupon.status,
         expiresAt: coupon.expires_at,
         collectAmountIls:
-          coupon.collect_amount_ils === null ? null : Number(coupon.collect_amount_ils),
-        faceValueIls: coupon.face_value_ils === null ? null : Number(coupon.face_value_ils),
+          coupon.remaining_amount_due_agorot === null
+            ? null
+            : coupon.remaining_amount_due_agorot / 100,
+        faceValueIls: coupon.face_value_agorot === null ? null : coupon.face_value_agorot / 100,
         qrDataUrl,
-        usedAt: coupon.used_at,
+        usedAt: coupon.redeemed_at,
       })
     }
 
@@ -265,9 +276,9 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
     settlementStatus: deriveOrderStatus(lines.map((l) => l.settlementStatus)),
     createdAt: order.created_at,
     paidAt: order.paid_at,
-    subtotalIls: Number(order.subtotal_ils ?? 0),
-    totalIls: Number(order.total_ils ?? 0),
-    walletAppliedIls: Number(order.cashback_applied_ils ?? 0),
+    subtotalIls: Number(order.subtotal_agorot ?? 0) / 100,
+    totalIls: Number(order.total_agorot ?? order.customer_pays_now_agorot ?? 0) / 100,
+    walletAppliedIls: Number(order.cashback_applied_agorot ?? 0) / 100,
     addressId: order.address_id,
     lines,
   }

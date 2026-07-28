@@ -199,14 +199,27 @@ export async function getMyPaymentTokens(): Promise<AccountPaymentToken[]> {
   }))
 }
 
+/**
+ * The customer's coupons, from `vouchers`.
+ *
+ * This read `coupon_codes` until 2026-07-28. That is the pre-voucher instance
+ * table: nothing has written it since finalize.ts moved to issueVoucher, and
+ * 059 renamed the money columns it named on top of that. So it returned nothing
+ * for everybody, and /account and /account/coupons both showed a customer no
+ * coupons at all while /account/vouchers, reading the right table, showed them.
+ *
+ * RLS scopes the rows (073 vouchers_owner_read, user_id = auth.uid()), which is
+ * why there is no user filter here and why the request-scoped client is used
+ * rather than the service role.
+ */
 export async function getMyCoupons(): Promise<AccountCoupon[]> {
   const supabase = await createClient()
   const { data } = await supabase
-    .from('coupon_codes')
+    .from('vouchers')
     .select(
-      'code, status, expires_at, face_value_ils, platform_paid_ils, collect_amount_ils, redeemed_at, products(name_he)',
+      'code, status, expires_at, face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot, redeemed_at, products(name_he)',
     )
-    .order('created_at', { ascending: false })
+    .order('issued_at', { ascending: false })
     .limit(100)
 
   return (data ?? []).map((c) => {
@@ -218,9 +231,12 @@ export async function getMyCoupons(): Promise<AccountCoupon[]> {
       code: c.code,
       status: c.status,
       expiresAt: c.expires_at,
-      faceValueIls: Number(c.face_value_ils ?? 0),
-      platformPaidIls: Number(c.platform_paid_ils ?? 0),
-      collectAmountIls: Number(c.collect_amount_ils ?? 0),
+      faceValueIls: Number(c.face_value_agorot ?? 0) / 100,
+      // What the customer paid us online, which is the whole prepayment under
+      // model 035ef8e.
+      platformPaidIls: Number(c.coupon_price_agorot ?? 0) / 100,
+      // What the business collects in cash at the counter. Never reaches us.
+      collectAmountIls: Number(c.remaining_amount_due_agorot ?? 0) / 100,
       redeemedAt: c.redeemed_at,
       productName,
     }
