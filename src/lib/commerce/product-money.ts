@@ -475,6 +475,44 @@ export interface MoneyPreview {
   discountPercent: number
 }
 
+/**
+ * How this product's commission is expressed, for the admin to see.
+ *
+ * DERIVED, never stored. `docs/CONTRADICTIONS.md` C2 closed the question of a
+ * second commission column ("two percent columns -> one column:
+ * platform_percent"), and section 0.3 already ties the shape to the product
+ * type: a coupon bills an absolute `coupon_price_ils` and splits it, a physical
+ * bills `price_ils` reduced by `discount_percent` and splits that. A stored
+ * `commission_type` would be a third place to say the same thing, and the first
+ * place to disagree with the other two.
+ *
+ * So the admin sees the shape without being able to set it independently of the
+ * type that determines it.
+ */
+export type CommissionShape = 'coupon_absolute' | 'physical_percent'
+
+export interface CommissionTypeView {
+  shape: CommissionShape
+  /** Hebrew, shown next to the money fields. */
+  label: string
+  /** What the platform percent is applied to. */
+  baseLabel: string
+}
+
+export function commissionTypeOf(type: ProductMoneyType): CommissionTypeView {
+  return type === 'coupon'
+    ? {
+        shape: 'coupon_absolute',
+        label: 'מחיר קופון מוחלט',
+        baseLabel: 'הסכום ששולם באתר בלבד. היתרה נגבית בבית העסק ואינה עוברת דרכנו.',
+      }
+    : {
+        shape: 'physical_percent',
+        label: 'אחוז מהמחיר באתר',
+        baseLabel: 'מלוא הסכום שמשולם באתר, אחרי ההנחה.',
+      }
+}
+
 export function previewProductMoney(input: {
   type: ProductMoneyType
   priceIls: number

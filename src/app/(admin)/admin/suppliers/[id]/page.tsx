@@ -1,9 +1,11 @@
 import SupplierForm from '@/components/admin/SupplierForm'
 import { requireSection } from '@/lib/admin/rbac'
+import { summarizeOnboarding } from '@/lib/admin/supplier-onboarding'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { Supplier } from '@/types/database'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import SupplierOnboarding, { type MemberRow } from './SupplierOnboarding'
 
 export const metadata = { title: 'עריכת ספק' }
 
@@ -16,23 +18,55 @@ export default async function EditSupplierPage({ params }: Props) {
   await requireSection('suppliers', 'read')
 
   const admin = createAdminClient()
-  const [{ data: supplier }, { data: products }] = await Promise.all([
-    admin.from('suppliers').select('*').eq('id', id).single(),
-    admin
-      .from('products')
-      .select('id, name_he, status, type')
-      .eq('supplier_id', id)
-      .is('deleted_at', null)
-      .order('name_he', { ascending: true }),
-  ])
+  const [{ data: supplier }, { data: products }, { data: memberRows }, { data: profiles }] =
+    await Promise.all([
+      admin.from('suppliers').select('*').eq('id', id).single(),
+      admin
+        .from('products')
+        .select('id, name_he, status, type')
+        .eq('supplier_id', id)
+        .is('deleted_at', null)
+        .order('name_he', { ascending: true }),
+      admin
+        .from('supplier_members')
+        .select('user_id, member_role, is_active')
+        .eq('supplier_id', id),
+      admin.from('profiles').select('id, email, full_name').order('email'),
+    ])
 
   if (!supplier) notFound()
 
   const productRows = products ?? []
 
+  // Members carry only a user_id; the readable identity comes from profiles.
+  const profileById = new Map(
+    (profiles ?? []).map((p) => [p.id, { email: p.email, full_name: p.full_name }]),
+  )
+  const members: MemberRow[] = ((memberRows ?? []) as MemberRow[]).map((m) => ({
+    ...m,
+    email: profileById.get(m.user_id)?.email ?? null,
+    full_name: profileById.get(m.user_id)?.full_name ?? null,
+  }))
+  const linked = new Set(members.filter((m) => m.is_active).map((m) => m.user_id))
+  const candidates = (profiles ?? []).filter((p) => !linked.has(p.id))
+
+  const summary = summarizeOnboarding({
+    supplier: supplier as Supplier,
+    activeMemberCount: members.filter((m) => m.is_active).length,
+    productCount: productRows.length,
+    publishedProductCount: productRows.filter((p) => p.status === 'active').length,
+  })
+
   return (
     <div className="space-y-4 max-w-3xl">
       <h1 className="text-xl font-bold text-gray-900">עריכת ספק: {(supplier as Supplier).name}</h1>
+
+      <SupplierOnboarding
+        supplierId={id}
+        summary={summary}
+        members={members}
+        candidates={candidates}
+      />
 
       <SupplierForm supplier={supplier as Supplier} productCount={productRows.length} />
 

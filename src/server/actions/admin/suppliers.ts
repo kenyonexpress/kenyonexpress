@@ -166,3 +166,84 @@ export async function softDeleteSupplier(id: string): Promise<{ error?: string }
   revalidatePath('/admin/suppliers')
   return {}
 }
+
+/**
+ * Grants a user access to a supplier.
+ *
+ * `supplier_members` is what the supplier portal reads to decide who may scan a
+ * voucher. Without a row here a supplier can be complete, published and selling
+ * while nobody can honour a voucher at the counter, so this is part of
+ * onboarding rather than an optional extra.
+ */
+export async function addSupplierMember(
+  supplierId: string,
+  userId: string,
+  role: 'owner' | 'manager' | 'scanner',
+): Promise<{ error?: string }> {
+  let session: Awaited<ReturnType<typeof requireSection>>
+  try {
+    session = await requireSection('suppliers', 'write')
+  } catch {
+    return { error: 'אין הרשאה' }
+  }
+
+  const admin = createAdminClient()
+  const { error } = await admin.from('supplier_members').upsert(
+    {
+      supplier_id: supplierId,
+      user_id: userId,
+      member_role: role,
+      is_active: true,
+      invited_by: session.userId,
+    },
+    { onConflict: 'supplier_id,user_id' },
+  )
+  if (error) return { error: error.message }
+
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'permission_change',
+    entityType: 'supplier_members',
+    entityId: supplierId,
+    changes: { user_id: userId, member_role: role, is_active: true },
+  })
+
+  revalidatePath(`/admin/suppliers/${supplierId}`)
+  return {}
+}
+
+/**
+ * Revokes access without deleting the row, so the audit trail keeps who had it.
+ */
+export async function deactivateSupplierMember(
+  supplierId: string,
+  userId: string,
+): Promise<{ error?: string }> {
+  let session: Awaited<ReturnType<typeof requireSection>>
+  try {
+    session = await requireSection('suppliers', 'write')
+  } catch {
+    return { error: 'אין הרשאה' }
+  }
+
+  const admin = createAdminClient()
+  const { error } = await admin
+    .from('supplier_members')
+    .update({ is_active: false })
+    .eq('supplier_id', supplierId)
+    .eq('user_id', userId)
+  if (error) return { error: error.message }
+
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'permission_change',
+    entityType: 'supplier_members',
+    entityId: supplierId,
+    changes: { user_id: userId, is_active: false },
+  })
+
+  revalidatePath(`/admin/suppliers/${supplierId}`)
+  return {}
+}

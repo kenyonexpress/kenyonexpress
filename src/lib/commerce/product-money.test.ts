@@ -5,6 +5,7 @@ import {
   assertPublishable,
   buildOrderItemSnapshot,
   buildProductMoneyWrite,
+  commissionTypeOf,
   completeSplitPair,
   deriveDiscountPercent,
   missingSupplierDetails,
@@ -651,5 +652,25 @@ describe('buildProductMoneyWrite', () => {
       expect(result.fields.platform_percent).toBe(100 - supplierSplit)
       expect(result.fields.platform_percent + result.fields.supplier_split_percent).toBe(100)
     }
+  })
+})
+
+describe('commissionTypeOf', () => {
+  it('reports the absolute model for a coupon', () => {
+    const view = commissionTypeOf('coupon')
+    expect(view.shape).toBe('coupon_absolute')
+    expect(view.baseLabel).toContain('היתרה')
+  })
+
+  it('reports the percent model for a physical product', () => {
+    expect(commissionTypeOf('physical').shape).toBe('physical_percent')
+  })
+
+  it('is a function of the type alone, so it cannot disagree with it', () => {
+    // CONTRADICTIONS C2 closed the second commission column. If this ever took
+    // a stored field it would become a third place to state the split, and the
+    // first to drift from products.type and from the settlement engine.
+    expect(commissionTypeOf('coupon')).toEqual(commissionTypeOf('coupon'))
+    expect(commissionTypeOf('coupon').shape).not.toBe(commissionTypeOf('physical').shape)
   })
 })

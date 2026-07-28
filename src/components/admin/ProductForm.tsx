@@ -3,6 +3,7 @@
 import ImageUploader from '@/components/admin/ImageUploader'
 import { supplierReadiness } from '@/lib/admin/supplier-form'
 import {
+  commissionTypeOf,
   completeSplitPair,
   deriveDiscountPercent,
   normalizeIls,
@@ -96,6 +97,9 @@ export default function ProductForm({
   const error = state && 'error' in state ? state.error : null
 
   const isCouponProduct = productType === 'coupon'
+  // Derived from the type, never stored: see commissionTypeOf and
+  // docs/CONTRADICTIONS.md C2.
+  const commissionType = commissionTypeOf(productType)
 
   const selectedSupplier = suppliers.find((s) => s.id === supplierId)
   const supplierGap = selectedSupplier
@@ -369,6 +373,12 @@ export default function ProductForm({
           <p className="text-xs text-gray-500 mt-0.5">
             כל הערכים נקבעים למוצר הזה בלבד. אין ברירת מחדל ואין אחוז קבוע במערכת. שינוי כאן חל על
             הזמנות עתידיות בלבד.
+          </p>
+          <p className="mt-2 text-xs text-gray-600">
+            <span className="font-medium">סוג העמלה: {commissionType.label}</span>{' '}
+            <span className="text-gray-500">
+              נקבע לפי סוג המוצר, לא נבחר בנפרד. עמלת הפלטפורמה חלה על {commissionType.baseLabel}
+            </span>
           </p>
         </div>
 
