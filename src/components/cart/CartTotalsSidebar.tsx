@@ -19,20 +19,15 @@ export default function CartTotalsSidebar({ cart }: { cart: CartView }) {
           <dd className="tabular-nums">{shekels(cart.subtotal)}</dd>
         </div>
 
-        {cart.platform_fee > 0 && (
-          <div className="cart-sidebar__row">
-            <dt>עמלת פלטפורמה</dt>
-            <dd className="tabular-nums">{shekels(cart.platform_fee)}</dd>
-          </div>
-        )}
-
-        {cart.supplier_due > 0 && (
-          <div className="cart-sidebar__row">
-            <dt>לתשלום לספק</dt>
-            <dd className="tabular-nums">{shekels(cart.supplier_due)}</dd>
-          </div>
-        )}
-
+        {/* platform_fee and supplier_due are deliberately NOT rendered. They are
+            the split of this sale between us and the supplier, an internal
+            agreement that changes nothing about what the customer pays, and
+            showing a shopper "platform commission ₪X" invites the reasonable
+            question of why they are being charged it. They stay on the admin
+            screens, where the audience is the party to that agreement. The
+            balance below is different: the customer really does pay it, in cash
+            at the business, so hiding it would understate what the coupon
+            costs them. */}
         {cart.balance_due_at_business > 0 && (
           <div className="cart-sidebar__row cart-sidebar__row--muted">
             <dt>יתרה לתשלום בחנות</dt>
