@@ -516,6 +516,26 @@ describe('buildProductMoneyWrite', () => {
     expect(result.fields.price_ils).toBe(200)
   })
 
+  it('writes commission_type as the mirror of the product type', () => {
+    // Migration 091 holds the two equal with a CHECK, so a row where they
+    // disagree cannot be inserted. Writing it here is naming the fact type
+    // already decided, not choosing a second time (CONTRADICTIONS C2).
+    const coupon = buildProductMoneyWrite({
+      ...physical,
+      type: 'coupon',
+      couponPriceIls: 50,
+      couponExpiryDays: 30,
+    })
+    expect(coupon.ok).toBe(true)
+    if (!coupon.ok) return
+    expect(coupon.fields.commission_type).toBe('coupon_absolute')
+
+    const result = buildProductMoneyWrite(physical)
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.fields.commission_type).toBe('physical_percent')
+  })
+
   it('keeps commission_percent equal to platform_percent', () => {
     for (const percent of [0, 15, 30, 85, 100]) {
       const result = buildProductMoneyWrite({

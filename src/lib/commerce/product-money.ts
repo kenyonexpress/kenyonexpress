@@ -399,6 +399,12 @@ function trimOrNull(value: string | null | undefined): string | null {
  *   `products_coupon_price_within_price`.
  */
 export interface ProductMoneyWrite {
+  /**
+   * Mirrors products.type. Migration 091 holds the two equal with a CHECK, so
+   * writing it is naming a fact rather than choosing one; a row where the two
+   * disagree cannot be inserted.
+   */
+  commission_type: CommissionShape
   platform_percent: number
   supplier_split_percent: number
   discount_percent: number | null
@@ -456,6 +462,7 @@ export function buildProductMoneyWrite(input: {
       coupon_price_ils: couponPriceIls,
       coupon_expiry_days: couponExpiryDays,
       commission_percent: split.pair.platformPercent,
+      commission_type: commissionTypeOf(input.type).shape,
       price_ils: price,
     },
   }
