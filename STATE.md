@@ -4,7 +4,7 @@
 Architecture docs for admin dashboard + supplier portal.
 
 ## Last Completed
-2026-07-28: docs/ARCHITECTURE-SEO-PERFORMANCE.md. Docs only in ke-arch.
+2026-07-28: docs/ARCHITECTURE-MOBILE-APP.md (Expo super-app design). Docs only in ke-arch.
 
 
 ## In Progress
@@ -14,7 +14,7 @@ nothing
 none
 
 ## Next Task
-docs/ARCHITECTURE-MOBILE-APP.md (commit after).
+Architecture docs queue complete for admin/notifications/SEO/mobile. Next: implement against binding docs on feature branches.
 
 
 ## Working Directory
@@ -45,5 +45,9 @@ docs/ARCHITECTURE-MOBILE-APP.md (commit after).
 
 ### 2026-07-28: ARCHITECTURE-SEO-PERFORMANCE
 - Added docs/ARCHITECTURE-SEO-PERFORMANCE.md.
+- Worktree: ke-arch only.
+
+### 2026-07-28: ARCHITECTURE-MOBILE-APP
+- Added docs/ARCHITECTURE-MOBILE-APP.md.
 - Worktree: ke-arch only.
 
