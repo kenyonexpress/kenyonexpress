@@ -18,9 +18,26 @@ production build    compiled in 6.2s                           PASS
 playwright e2e      41 passed, 12 failed                       BLOCKED
 compare.mjs         category 7.35  product 10.21  search 14.87
                     home 17.28  products 25.75  checkout n/a   FAIL
-lighthouse (prod)   product 96/96   home 75/88                 FAIL
+lighthouse a11y     product 96      home 88 -> 93              PASS
+lighthouse perf     product 96      home 77                    FAIL
 pnpm audit --prod   14 high, 10 moderate, 3 low                FAIL
 ```
+
+`6fdefe2` fixed the three homepage accessibility failures that cost nothing in
+fidelity: an imageless product left `ProductCard`'s image link with no children
+and therefore no accessible name, `CategoryStrip` skipped from `h1` to `h4`, and
+one console error. Accessibility 88 → 93, and the homepage pixel diff moved
+17.28% → 17.33%, which is the live slider changing slides between shoots rather
+than a regression.
+
+`target-size` turned out to be the same kind of conflict as `#7e7e7e`, and that
+is worth recording because it looked like an oversight. The dot buttons are now
+genuinely 24x24 with the extra size handed back as negative margin, and axe still
+fails them: *"partially obscured, smallest space is 16px by 24px"*. The dots are
+8px on an 8px gap, a 16px pitch, and non-overlapping 24px targets at a 16px pitch
+are geometrically impossible. Passing means spreading the dots and leaving the
+live layout. The hit area is four times larger than before either way, and the
+active 30px bar now passes, so the count went 4 → 3.
 
 All 12 E2E failures are cart or checkout and all 12 go through
 `createAdminClient()`, so they are the stock-demo-key blocker rather than broken

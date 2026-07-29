@@ -14,7 +14,8 @@ on others, and two are blocked by one missing credential.
 | Production build | succeeds | compiled in 6.2s | PASS |
 | Playwright E2E | all pass | 41 passed, **12 failed** | BLOCKED |
 | `compare.mjs` all pages | < 11% | 2 of 5 under, 1 unmeasurable | FAIL |
-| Lighthouse | 90+ | product 96/96, **home 75/88** | FAIL |
+| Lighthouse accessibility | 90+ | product 96, home 88 → **93** | PASS |
+| Lighthouse performance | 90+ | product 96, **home 77** | FAIL |
 | `pnpm audit --prod` | no highs | **14 high**, 10 moderate, 3 low | FAIL |
 
 ## The one credential behind two failing gates
@@ -105,7 +106,52 @@ and TBT are excellent; LCP alone is what costs 25 points. The server responded i
 On the product page the shape is inverted: performance 96 with a 1,660ms document
 response, so its cost is server time, not payload.
 
-Accessibility failures on the homepage, in order of how cheap they are to fix:
+### Fixed in `6fdefe2`: accessibility 88 → 93
+
+Three of the five failures had fixes that change no pixels, so they were not
+competing with the compare harness and were simply outstanding. Re-measured on a
+fresh production build:
+
+```
+accessibility   88 -> 93     PASS
+performance     75 -> 77     still short (LCP 5.8s -> 5.3s)
+home pixel diff 17.28% -> 17.33%   unchanged within shoot noise
+```
+
+- **`link-name`** fixed. An imageless product renders `ProductCard`'s image link
+  with no children at all, so the `img` alt cannot name it. `aria-label` on the
+  link survives a missing thumbnail.
+- **`heading-order`** fixed. `CategoryStrip` used `h4` while the outline runs `h1`
+  for hero slides and `h2` per product card. Every visual property on that
+  element is set explicitly, so `h2` renders identically.
+- **`errors-in-console`** cleared on this build.
+
+The 0.05pp move in the pixel diff is the live slider being on a different slide
+between shoots, not a regression: the dots' 24px hit areas are handed back as
+negative margin, so nothing on the page shifted.
+
+### The two that remain are decisions, not oversights
+
+**`target-size` (3 nodes, was 4).** The buttons are now genuinely 24x24, and axe
+still fails them for a different reason:
+
+```
+Target has insufficient size because it is partially obscured
+(smallest space is 16px by 24px, should be at least 24px by 24px)
+```
+
+The visible dots are 8px with an 8px gap, a 16px pitch. Non-overlapping 24px
+targets at a 16px pitch are geometrically impossible. Passing requires spreading
+the dots out, which changes the visible layout and moves away from the live
+reference. The hit area is still four times larger than before, which is a real
+gain for touch even while the audit stays red. The active 30px bar now passes,
+which is why the count dropped from 4 to 3.
+
+**`color-contrast` (40 nodes).** See below. Same shape of conflict, higher stakes.
+
+`bf-cache` also remains and is not worth chasing on a dev-adjacent build.
+
+Original failure list, for reference:
 
 - **`link-name` (1 node).** An anchor with no accessible name:
   `<a class="p_con__image-link" href="/product/reverse-withdrawal-payment">`.
