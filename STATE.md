@@ -1,27 +1,51 @@
 # KenyonExpress — Project State
 
-Updated: 2026-07-28 (storefront closed → Admin Dashboard Core open)
+Updated: 2026-07-29 (integration + checkout/cardcom round)
 
 ## Current Phase
-Admin Dashboard Core (Fable 5). Storefront goal closed.
+Checkout. `feat/admin-core` is merged into `phase5/homepage`; the storefront and
+the admin panel are one branch again.
 
 ## Last Completed
-Storefront / homepage goal complete. Branch `phase5/homepage` includes `40dae12` (STATE) after homepage work (`04dee6a` catalog + hero). Verified pushed.
-
-## In Progress
-Admin Dashboard Core goal (Fable 5). Cursor docs channel: `docs/ARCHITECTURE-ADMIN.md` in worktree `ke-admin` (branch `arch/admin-supplier`).
+Four commits on `phase5/homepage`, all pushed:
+`e4b580f` merge of `feat/admin-core` (9 commits, 3 conflicts, migration
+renumbering decided by the production ledger) · `f6392ed` guest checkout on
+measured Electro geometry · `05a181a` cart discount codes, funded from the
+platform's commission · `1757105` one search suggestions implementation instead
+of two.
 
 ## Blocking Issues
-none
+1. **⛔ `SUPABASE_SECRET_KEY` in `.env.local` is not this project's key.** It
+   decodes to `{"iss":"supabase-demo","role":"service_role"}` — the stock key
+   that ships with a local `supabase start` — and the hosted project answers
+   `Invalid API key`. The anon key in the same file is fine (61 active
+   products). Every `createAdminClient()` path is therefore dead locally: guest
+   add-to-cart, the checkout address write, the wallet balance, the saved-card
+   list. The same demo key sits in `ke-visual/.env.local` and
+   `ke-checkout/.env.local`.
+   **Unblock:** Supabase Dashboard → Project Settings → API Keys → copy the
+   secret key into `SUPABASE_SECRET_KEY`.
+   **What it is holding up:** `node scripts/compare.mjs --page=checkout` cannot
+   produce a number, because both checkouts redirect an empty cart away and the
+   local cart cannot be filled.
+2. **⛔ `093_product_commission_type` is not applied.** `buildProductMoneyWrite`
+   writes `commission_type`, so until the migration lands every product create
+   and edit in the admin fails on a column that does not exist. This was a
+   `feat/admin-core` blocker and is now a `phase5/homepage` one. See GO-LIVE.
 
 ## Next Task
-Admin Dashboard Core implementation against `docs/ARCHITECTURE-ADMIN.md` + `docs/ADMIN-PRODUCT-PAGE-SPEC.md` (product money editor first). PDP visual validation (`compare.mjs` < 11%) remains a parallel storefront polish track if needed.
+1. Apply `093_product_commission_type` (blocks admin product writes) and decide
+   on `094_settlement_events`.
+2. Replace the local secret key, then run `compare.mjs --page=checkout` and
+   close the checkout geometry against the measured reference.
+3. Cardcom iframe: see "what stage 3 did not deliver" below, including the CSP
+   conflict that has to be resolved first.
 
 ## Working Directory
-/Users/ofir/kenyonexpress-web/kenyonexpress (storefront) | `/Users/ofir/kenyonexpress-web/ke-admin` (Admin Core docs/impl)
+/Users/ofir/kenyonexpress-web/kenyonexpress
 
 ## Branch
-`phase5/homepage` (storefront, closed) | `arch/admin-supplier` via `ke-admin` (Admin Core)
+`phase5/homepage` (storefront + admin + checkout, all merged)
 
 ## Models
 Fable 5 (architecture / Admin Core) | Opus (docs/schema) | Sonnet (UI edits)
@@ -30,6 +54,118 @@ Fable 5 (architecture / Admin Core) | Opus (docs/schema) | Sonnet (UI edits)
 not restated here (use env / prior STATE entries)
 
 ---
+
+## סבב 2026-07-29 — Integration, checkout, קופונים וחיפוש
+
+### שלב 1: מיזוג `feat/admin-core` (`e4b580f`)
+
+תשעה קומיטים, שלושה conflicts. השניים המעניינים:
+
+**‏`src/types/database.ts`** — git יישר את הטבלה החדשה `supplier_members` שלנו
+מול הבלוק המורחב `suppliers` שלהם והפיק תשעה conflicts משורגים בקובץ מיוצר.
+לא נפתר ביד: הופעל three-way apply של ה-diff שלהם מבסיס המיזוג על הגרסה שלנו.
+ה-diff הזה הוא **תוספת עמודות בלבד**, ולכן ההפעלה שלו בטוחה בדיוק במידה שבה
+עריכה ידנית של שרשור מיוצר אינה.
+
+**‏`src/server/actions/admin/products.ts`** — נלקח שלהם. הוא מחליף את הגזירה
+הידנית `100 - platform_percent` ב-`buildProductMoneyWrite`, אותו מודול טהור
+שתצוגת המקדימה בטופס ו-checkout כבר קוראים. ‏auto-merge הותיר שני מפתחות
+כפולים (`coupon_expiry_days`, גם ב-schema של zod וגם ב-literal של ה-formData);
+הם ארטיפקט של שני סדרי שדות ולא היו מתקמפלים.
+
+**‏מספור מיגרציות — ההכרעה לא נעשתה לפי ענף.** ‏`ARCHITECTURE-DEPLOYMENT §4.2`
+קרא לזה חוסם המיזוג והורה למספר מחדש **זוג** שלם. קריאת ledger המיגרציות
+בפרודקשן מראה למה זוג הוא היחידה הלא נכונה: ‏`091_supplier_payout_enums`
+(`20260728015905`) ו-`profiles_no_self_role_change` (`20260728142542`) **שניהם
+כבר הוחלו**, אחד מכל צד. מספור מחדש של קובץ שכבר הוחל מנתק אותו מהשם שתחתיו הוא
+רשום, וזו בדיוק הדרך שבה מיגרציה מוחלת פעמיים. לכן מוספר מחדש בכל זוג הקובץ
+**שלא הוחל**: ‏`090_wallet_ledger_view_agorot` → 092, ‏`091_product_commission_type`
+→ 093.
+
+### שלב 2: checkout כ-guest, על גיאומטריה שנמדדה (`f6392ed`)
+
+**‏לא היה שום רפרנס ל-checkout.** ‏`refs/ke_live_singlefile.html` ושלושת
+הקבצים השמורים האחרים אינם מכילים ולו מחרוזת אחת של markup של קופה, מהסיבה
+הפשוטה ש-`/checkout/` החי מפנה עגלה ריקה ל-`/cart/`. כל ניסיון קודם לתפוס את
+הדף תפס את העגלה. ‏`scripts/measure-live-checkout.mjs` מוסיף פריט דרך
+ה-GET ‏`?add-to-cart=` של WooCommerce ורק אז מודד, וכותב
+`refs/live-checkout.png` ו-`refs/checkout-measured.json`.
+
+כל מספר ב-`checkout-page.css` מצטט את הקובץ הזה: מכולה 1165, עמודת חיוב 650
+מימין, פאנל הזמנה 466 משמאל ב-`#f5f5f5` רדיוס 10, פסיעת שורה 102, פקדים 45
+ברדיוס 22, כפתור שליחה 397x64 ברדיוס 50. **המבנה מ-Electro, הצבעים והפונט
+שלנו.** האדום הוא ‏`#dc3545` שנמדד ולא ‏`#E4002B` שבבריף, כי `tokens.ts` כבר
+תיעד שהאחרון מופיע אפס פעמים ברפרנס.
+
+**‏Guest checkout.** ‏`/checkout` יצא מרשימת `needsAuth` ב-`proxy.ts` (תתי
+הנתיבים נשארו בה — `/checkout/return` קורא הזמנה של המשתמש עצמו). התשובות של
+אורח נשמרות ב-`sessionStorage`, הסיבוב דרך Google חוזר ל-`?resume=1`,
+‏`/auth/callback` ממזג את עגלת האורח, והטופס ממלא את עצמו. החשבון נדרש בנקודה
+שבה יש מה להפסיד, לא בכניסה.
+
+**‏העגלה בלעה קריסות שרת.** התגלה תוך כדי המדידה: כל ארבע פעולות העגלה דיווחו
+על `{ok:false}` שחזר ואף אחת לא דיווחה על חריגה. פעולה שזרקה השאירה את הספירה
+האופטימית על המסך, בלי toast ובלי שורה במסד. כך בדיוק מפתח Supabase לא תקין
+שבר הוספה לעגלה של אורח **בשקט מוחלט**. כולן עוטפות עכשיו ב-catch.
+
+### שלב 4: קוד קופון בעגלה (`05a181a`)
+
+הסבב הקודם סירב לבנות שדה שמקבל קוד ולא עושה בו כלום. לכן הוא מגיע עם כל
+המסלול מאחוריו.
+
+**‏מכיסו של מי ההנחה.** מהעמלה של הפלטפורמה, לעולם לא מחלקו של הספק. הספק לא
+הציע את הקוד ולא הסכים לממן אותו, ולכן `supplierDue` וכל פיצול פר-שורה זהים
+בדיוק עם קוד ובלעדיו, ‏`order_items` ממשיך לצלם את ה-`platform_percent` שסוכם
+פר מוצר, וההפחתה נוחתת על `platformNet` חדש. זו גם הסיבה לתקרה בגובה העמלה:
+מעבר לה "הנחה" היא הפלטפורמה שמשלמת לספק מכיסה, כלומר העברה ולא הנחה.
+
+**‏איפה הקוד שמור.** בעוגייה, לא בעמודה ב-`carts`. עמודה דורשת מיגרציה,
+ומיגרציה לא מוחלת על מסלול החיוב היא בדיוק המלכודת ש-GO-LIVE כבר נושא פעם
+אחת. העוגייה בטוחה כי היא מחזיקה **רק את מחרוזת הקוד**: הסכום נקרא מחדש
+מ-`public.coupons` ומתומחר מחדש מול העגלה החיה בכל רינדור, ושוב בתוך
+`beginCheckout` ברגע החיוב.
+
+**‏מה זה לא עושה:** שום דבר לא מקדם את `coupons.used_count`, ולכן `max_uses`
+נאכף כקריאה של מונה שהזרימה הזאת אינה מקדמת.
+
+### שלב 5: הצעות חיפוש (`1757105`)
+
+הקומיט הקודם שלי סחף לתוכו קבצים של סשן מקביל דרך `git add -A`, והענף קיבל
+**שתי** מימושים של type-ahead. שרד שלהם, בזכות טיעון אחד: הוא קורא לאותו
+`searchProductsCached` שדף התוצאות קורא, ולכן ה-dropdown אינו יכול להציע מוצר
+ש-`/search` לא יציג. שלי הריץ שאילתה שנייה שיכולה לסטות ממנו. המפתח נשאר בשרת
+בשני המקרים, ולכן `connect-src 'self'` כבר מכסה את הבקשה ואין צורך לפתוח את
+ה-CSP.
+
+### שלב 3: מה נמצא כבר בנוי, ומה לא נמסר
+
+**‏כבר קיים ולא נבנה מחדש:** ה-webhook של Cardcom כבר עושה dedup על
+‏`(provider, external_event_id)`, אימות server-to-server מול GetLpResult
+כמקור האמת היחיד, בדיקת סכום עם alarm, ורב-חשבונאיות דרך
+`payments.cardcom_account_id`. מכונת המצבים של התשלום קיימת ב-
+`lib/checkout/state-machine.ts` עם בדיוק הסמנטיקה שנדרשה
+(`initiated|redirected` = pending, ‏`succeeded` = settled, ‏`failed`),
+ו-`order_items` כבר מצלם `platform_percent` פר מוצר — ‏`buildOrderItemSnapshot`
+**זורק** במקום לכתוב 100/0 כשאין split.
+
+**‏נכתב:** ‏`094_settlement_events.sql` — יומן append-only של אירועי כסף פר
+שורת הזמנה, שבו כל אירוע נושא את ה-percent שלפיו חושב. ‏`order_items` עונה
+"מה סוכם"; הוא לא עונה "מה קרה, מתי, ובאיזה סדר", וזה ההבדל ברגע שקופון נפדה
+חודשיים אחרי שחויב או שהחזר הופך חלק משורה. **לא מוחל**, ואף קוד לא תלוי בו.
+
+**‏⛔ לא נמסר: ה-iframe של Cardcom.** ‏`frame-src https://secure.cardcom.solutions`
+כבר ב-CSP, אבל `frame-ancestors 'none'` הוא header גלובלי, ולכן `/checkout/return`
+— היעד שאליו Cardcom מפנה את ה-iframe — **ייחסם ברינדור בתוך frame**. המעבר
+ל-iframe מחייב אם כך שינוי CSP על נתיב החזרה מהתשלום. לא ביצעתי אותו: אי אפשר
+לאמת מסלול חיוב מקצה לקצה בסביבה שבה מפתח השרת מת, ושינוי לא מאומת ב-CSP של
+נתיב שדרכו חוזר תשלום הוא בדיוק הסוג של שינוי שלא ראוי לדחוף בלי ריצה אחת
+מוצלחת. המסלול הקיים (redirect ל-LowProfile) עובד ולא נגעתי בו.
+
+### אימות הסבב
+‏**691 vitest ב-53 קבצים** (‏+22 קופון, ‏+19 מיקוד, ‏+7 settlement) · `tsc` נקי ·
+`build` עובר. ‏`compare.mjs --page=checkout` **לא רץ למספר** — ראה Blocking
+Issues 1.
+
 
 ## סבב 2026-07-28 — שלב 5: Hardening
 
