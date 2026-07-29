@@ -44,9 +44,22 @@ still serving stale CSS and answered `126px` for a token the file no longer
 contains. That is the same Turbopack content-hash trap documented at the bottom of
 globals.css, and it is now the second time it has cost a measurement.
 
-`home`'s remaining cost sits entirely in the hero, y200-700 at 24-31%. `products`
-at 28.58% is product ORDER, not layout: live opens with a featured block, ours
-sorts alphabetically, so the grids never line up whatever the CSS does.
+`home`'s remaining cost sits entirely in the hero, y200-700 at 24-31%, and that
+band turned out NOT to be an autoplay artifact. Both sliders report the same
+active index, 0. What differs is what index 0 paints: asked which headlines sit
+between y100 and y700, live answers one slide's text and ours answers all five.
+`ברוכים הבאים`, `PREMIUM PRODUCT`, `ממשק מהיר ונוח` and `תצוגה מושלמת` are all
+laid out and painted in the same box, so whichever wins the stacking order is what
+a screenshot catches. A slide-sync step was added to `compare.mjs` to test the
+autoplay theory and reverted when it changed nothing measurable (12.2% -> 12.45%,
+inside shoot noise); leaving a comment claiming a fix it does not perform is worse
+than not having it. The real fix is in `HeroSlider`: inactive slides must be
+genuinely hidden, not merely underneath.
+
+`products` at 28.58% is product ORDER, not layout: live opens with a featured
+block, ours sorts alphabetically, so the grids never line up whatever the CSS
+does. Changing the catalogue's sort to flatter a pixel metric would be optimising
+the measurement, so it is left as a decision.
 
 **The homepage LCP was one 4.5MB animated GIF.** `1aa0693`, `8b6082f`, `0a06b07`.
 Lighthouse's network table named it: 4,585KB served straight from `/public`

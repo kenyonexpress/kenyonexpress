@@ -100,7 +100,37 @@ card-level defects. Card heights were identical all along, 485px on both sides.
 The first card now lands at 904px against live's 906px, and those two bands are
 gone.
 
-`home`'s remaining cost has moved entirely into the hero, y200-700 at 24-31%.
+`home`'s remaining cost has moved entirely into the hero, y200-700 at 24-31%, and
+that band was investigated next.
+
+### The hero band is not a timing artifact, it is five slides painted at once
+
+The obvious theory was autoplay: both heroes rotate, so the two screenshots land
+on different slides and the diff scores the difference as infidelity. The crop
+supported it, live showing the welcome slide and ours showing PREMIUM PRODUCT.
+
+It is wrong. Both sliders report the same active index, 0, before and after being
+told to go to slide 1. What differs is what index 0 *paints*. Asked which
+headlines are on screen between y100 and y700:
+
+```
+LIVE  ["ברוכים הבאים", "לקניון Express", "SIMPLY THE"]
+MINE  ["ברוכים הבאים לקניון Express", "PREMIUM PRODUCT",
+       "ממשק מהיר ונוח", "תצוגה מושלמת"]
+```
+
+Live has one slide's text in that region. Ours has **all five**. The slides are
+stacked in the same box and the inactive ones are still laid out and painted, so
+whichever one wins the stacking order is what a screenshot catches, and the hero
+can never match a reference that shows exactly one.
+
+A slide-sync step was added to `compare.mjs` to test the autoplay theory and then
+**reverted**, because it measurably changed nothing (12.2% → 12.45%, inside shoot
+noise) and would have left a comment in the harness claiming to fix something it
+does not. The real fix is in `HeroSlider`: inactive slides need to be genuinely
+hidden, not merely underneath. That is a change to how the hero works and it is
+the next thing to do on this page, not a number to be argued with.
+
 `products` at 28.58% is still dominated by product ORDER: live opens with a
 featured block, ours sorts alphabetically, so the grids never line up whatever the
 CSS does.
