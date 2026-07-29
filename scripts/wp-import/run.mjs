@@ -76,6 +76,22 @@ process.stdout.write(run.summary())
 info(`artifacts: ${PATHS.root}`)
 
 if (failed) process.exit(1)
+
+// Failures that were RECORDED rather than thrown. `run.fail()` keeps going on
+// purpose so one bad row does not abandon the rest, which means the only place
+// this can be caught is here.
+//
+// Without this check a dry run in which every stage failed - a wrong service
+// key, for instance, which answers "Invalid API key" to every probe - still
+// printed a green "dry run complete" and exited 0. An operator reads that as
+// permission to pass --apply.
+const recorded = run.failureCount()
+if (recorded > 0) {
+  error(`${recorded} operations failed: ${run.failedStages().join(', ')}`)
+  error('this run did NOT do what it reports; fix the failures before --apply')
+  process.exit(1)
+}
+
 if (report && !report.passed) {
   error('validation gates failed: this migration must not go live')
   process.exit(1)

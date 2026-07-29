@@ -97,6 +97,28 @@ export class Run {
     return row
   }
 
+  /**
+   * How many failures this run RECORDED rather than threw.
+   *
+   * `fail()` deliberately does not throw, so a bad row does not abandon the
+   * other nine thousand. The cost of that choice is that somebody has to ask
+   * this question at the end, and until 2026-07-29 nobody did: a run where
+   * every single stage failed still printed "dry run complete" in green and
+   * exited 0.
+   */
+  failureCount() {
+    return Object.entries(this.counts)
+      .filter(([key]) => key.endsWith('.fail'))
+      .reduce((total, [, n]) => total + n, 0)
+  }
+
+  /** The stages that recorded at least one failure, for the exit message. */
+  failedStages() {
+    return Object.entries(this.counts)
+      .filter(([key]) => key.endsWith('.fail'))
+      .map(([key, n]) => `${key.replace(/\.fail$/, '')} (${n})`)
+  }
+
   /** Convenience: record a failure and keep going. Never throws. */
   fail(stage, entity, wpId, errorCode, err) {
     return this.op({
