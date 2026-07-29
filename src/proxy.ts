@@ -33,6 +33,12 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
+  // The Sentry tunnel. Excluded before anything else touches it: it carries no
+  // session, it is posted to by the browser SDK on a page that may already be
+  // broken, and running the session refresh on it would add a round trip to
+  // every error report.
+  if (pathname.startsWith('/monitoring')) return supabaseResponse
+
   // Route protection.
   //
   // `/checkout` itself is deliberately NOT here. It takes guests: the form is

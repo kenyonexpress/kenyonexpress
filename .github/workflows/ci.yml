@@ -82,8 +82,23 @@ jobs:
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.CI_SUPABASE_ANON_KEY }}
       SUPABASE_SECRET_KEY: ${{ secrets.CI_SUPABASE_SECRET_KEY }}
       NEXT_PUBLIC_APP_URL: http://localhost:3000
+      # Source maps are uploaded to Sentry and then deleted from the output, so
+      # a stack trace from production reads against real source. Without the
+      # auth token the plugin skips the upload silently, which is what keeps a
+      # fork's CI green.
+      SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+      SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      # The release the maps are attached to. Must match what the runtime
+      # reports, or the maps are uploaded against a release nothing references.
+      SENTRY_RELEASE: ${{ github.sha }}
+      NEXT_PUBLIC_SENTRY_RELEASE: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # The Sentry plugin reads git history to associate commits with the
+          # release; a shallow clone gives it one commit and no association.
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:

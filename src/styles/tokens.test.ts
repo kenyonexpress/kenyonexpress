@@ -181,7 +181,14 @@ function tsxFiles(dir = resolve(process.cwd(), 'src'), out: string[] = []): stri
  * token: a KenyonExpress rebrand must leave it alone. It is declared once, in
  * a file whose only job is to be that mark.
  */
-const HEX_ALLOWLIST = new Set(['src/components/shared/GoogleLogo.tsx'])
+// GoogleLogo carries Google's brand hexes, which are not ours to tokenise.
+//
+// global-error.tsx is the root-layout boundary: it renders when the layout
+// itself threw, which includes the case where the stylesheet is what failed to
+// load. It therefore cannot reference a CSS variable for the same reason it
+// supplies its own <html> and <body>, and inline hex is the only thing
+// guaranteed to render at that point.
+const HEX_ALLOWLIST = new Set(['src/components/shared/GoogleLogo.tsx', 'src/app/global-error.tsx'])
 
 describe('site colour tokens', () => {
   it('declares every token from tokens.ts in the @theme block with the same value', () => {
