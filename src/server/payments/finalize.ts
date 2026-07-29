@@ -2,6 +2,11 @@ import { agorot, agorotToIls } from '@/lib/commerce/money'
 import { capturePaymentError } from '@/lib/observability/sentry'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { type VoucherIssueClient, issueVoucher } from '@/server/domain/vouchers/issue'
+import {
+  type SettledLine,
+  buildChargeSettledEvents,
+  recordSettlementEvents,
+} from '@/server/payments/settlement-events'
 import type { Json } from '@/types/database'
 
 export type FinalizeOutcome =
@@ -398,6 +403,20 @@ export async function finalizeOrder(input: {
 
     // Best-effort: the purchased cart is done; leftovers confuse the header badge.
     await admin.from('carts').update({ items: [] }).eq('profile_id', order.user_id)
+
+    // The money journal (migration 094). Deliberately the last thing done and
+    // deliberately incapable of throwing: the card is already charged and the
+    // order already closed, and no journal entry is worth failing a finalize
+    // that succeeded. While 094 is unapplied this logs once and records
+    // nothing, and the system behaves exactly as it did before the journal
+    // existed.
+    await recordSettlementEvents(
+      admin,
+      buildChargeSettledEvents(order.id, items as SettledLine[], now, {
+        paymentId: input.paymentId,
+        cardcomAccountId,
+      }),
+    )
 
     return { ok: true, replay: false, orderId: order.id }
   } catch (error) {

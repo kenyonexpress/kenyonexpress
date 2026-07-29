@@ -4,6 +4,7 @@ import {
   PLATFORM_ACCOUNT_ID,
   SANDBOX_TERMINAL_NUMBER,
   loadCardcomAccounts,
+  selectAccountForSuppliers,
 } from './accounts'
 
 const LIVE_ENV = {
@@ -130,5 +131,63 @@ describe('loadCardcomAccounts', () => {
       ]),
     } as unknown as NodeJS.ProcessEnv
     expect(() => loadCardcomAccounts(env)).toThrowError(/anchor/)
+  })
+})
+
+describe('selectAccountForSuppliers', () => {
+  const registry = loadCardcomAccounts(
+    {
+      CARDCOM_TERMINAL_NUMBER: '55555',
+      CARDCOM_API_NAME: 'platform-api',
+      CARDCOM_ACCOUNTS: JSON.stringify([
+        {
+          id: 'anchor',
+          terminalNumber: '77777',
+          apiName: 'anchor-api',
+          supplierIds: ['sup-a', 'sup-b'],
+        },
+        { id: 'unclaimed', terminalNumber: '88888', apiName: 'other-api' },
+      ]),
+    } as unknown as NodeJS.ProcessEnv,
+    { mock: false },
+  )
+
+  it('routes an order whose every line is one mapped supplier to that terminal', () => {
+    expect(selectAccountForSuppliers(registry, ['sup-a', 'sup-a']).id).toBe('anchor')
+    expect(selectAccountForSuppliers(registry, ['sup-b']).id).toBe('anchor')
+  })
+
+  it('sends a mixed basket to the platform rather than splitting the charge', () => {
+    // Two terminals for one basket is two charges and two hosted pages, and a
+    // customer who can succeed on one and fail on the other.
+    expect(selectAccountForSuppliers(registry, ['sup-a', 'sup-c']).id).toBe(PLATFORM_ACCOUNT_ID)
+  })
+
+  it('sends an unmapped supplier to the platform', () => {
+    expect(selectAccountForSuppliers(registry, ['sup-z']).id).toBe(PLATFORM_ACCOUNT_ID)
+  })
+
+  it('does not route to an account that claims no supplier', () => {
+    // 'unclaimed' is configured with real credentials and no supplierIds, so
+    // nothing may reach it. A configured account is not a routable one.
+    for (const ids of [['sup-z'], [], [null]]) {
+      expect(selectAccountForSuppliers(registry, ids).id).not.toBe('unclaimed')
+    }
+  })
+
+  it('sends a line with no supplier to the platform, which answers for it', () => {
+    expect(selectAccountForSuppliers(registry, [null]).id).toBe(PLATFORM_ACCOUNT_ID)
+    expect(selectAccountForSuppliers(registry, [undefined]).id).toBe(PLATFORM_ACCOUNT_ID)
+    expect(selectAccountForSuppliers(registry, []).id).toBe(PLATFORM_ACCOUNT_ID)
+  })
+
+  it('refuses a partly-attributed basket', () => {
+    // One line without a supplier means the platform is on the hook for part of
+    // the order, so the whole order clears where the platform can see it.
+    expect(selectAccountForSuppliers(registry, ['sup-a', null]).id).toBe(PLATFORM_ACCOUNT_ID)
+  })
+
+  it('leaves the platform account claiming nothing', () => {
+    expect(registry.platform.supplierIds).toEqual([])
   })
 })

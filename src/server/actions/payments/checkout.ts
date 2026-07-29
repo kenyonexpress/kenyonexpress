@@ -15,6 +15,7 @@ import {
   getPaymentProvider,
   loadCardcomEnv,
 } from '@/lib/payments'
+import { selectAccountForSuppliers } from '@/lib/payments/accounts'
 import { isCardTokenExpired } from '@/lib/payments/token-expiry'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
@@ -590,7 +591,24 @@ export async function beginCheckout(
   // The account is recorded before the hosted page exists, because the Low
   // Profile id it returns is only meaningful on this account's terminal: a
   // later GetLpResult or refund has to know where to ask.
-  const account = getCardcomAccounts().platform
+  // WHICH TERMINAL THIS ORDER CLEARS ON.
+  //
+  // This used to be `getCardcomAccounts().platform`, unconditionally. The
+  // multi-account machinery underneath it was already complete — the registry
+  // resolves ids, `payments.cardcom_account_id` records the choice, and the
+  // webhook and the refund path both re-resolve the provider from the stored id
+  // because a Low Profile id only answers on the terminal that minted it — but
+  // nothing ever chose an account other than the platform, so every extra
+  // account in CARDCOM_ACCOUNTS was configuration nothing could reach.
+  //
+  // The choice is made from the suppliers actually in this order, and the rule
+  // is all-or-nothing (see selectAccountForSuppliers). A mixed basket clears on
+  // the platform rather than being split across two terminals, which would mean
+  // two charges the customer can half-succeed at.
+  const account = selectAccountForSuppliers(
+    getCardcomAccounts(),
+    itemRows.map((line) => line.supplier_id),
+  )
   const { data: payment, error: paymentError } = await admin
     .from('payments')
     .insert({

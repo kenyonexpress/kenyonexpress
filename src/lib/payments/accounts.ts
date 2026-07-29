@@ -35,6 +35,16 @@ export type CardcomAccount = {
    * It exists so a sandbox terminal cannot quietly serve real customers.
    */
   sandbox: boolean
+  /**
+   * Suppliers whose sales clear on this terminal. Empty on the platform
+   * account, which is the fallback for everything unclaimed.
+   *
+   * This is config and not a `suppliers` column on purpose: a terminal is a
+   * credential, it is provisioned with the other Cardcom credentials, and an
+   * admin editing a supplier row must not be able to redirect where money
+   * lands by typing an id into a form.
+   */
+  supplierIds: readonly string[]
 }
 
 export class CardcomAccountError extends Error {
@@ -61,6 +71,12 @@ type RawAccount = {
   apiName?: unknown
   apiPassword?: unknown
   sandbox?: unknown
+  supplierIds?: unknown
+}
+
+function idList(value: unknown): readonly string[] {
+  if (!Array.isArray(value)) return []
+  return value.filter((entry): entry is string => typeof entry === 'string' && entry.trim() !== '')
 }
 
 function text(value: unknown): string | null {
@@ -119,7 +135,44 @@ function buildAccount(raw: RawAccount, index: number): CardcomAccount {
     // is legitimately configured without one.
     apiPassword: text(raw.apiPassword) ?? '',
     sandbox: isSandbox(terminalNumber, raw.sandbox),
+    supplierIds: idList(raw.supplierIds),
   }
+}
+
+/**
+ * Which terminal an order clears on.
+ *
+ * The rule is deliberately all-or-nothing: an order goes to a supplier's own
+ * terminal only when EVERY line in it belongs to that supplier. A mixed basket
+ * goes to the platform.
+ *
+ * The alternative — splitting one basket across two terminals — means two
+ * charges, two Low Profile pages, and a customer who can succeed on one and
+ * fail on the other. That is not a checkout, it is two checkouts wearing one
+ * button, and the reconciliation for a half-paid order is worse than the
+ * routing it saves.
+ *
+ * Unmapped suppliers fall through to the platform, which is the merchant of
+ * record. Falling back is the safe direction: the platform account is the one
+ * that definitely exists and definitely has credentials.
+ */
+export function selectAccountForSuppliers(
+  registry: CardcomAccountRegistry,
+  supplierIds: readonly (string | null | undefined)[],
+): CardcomAccount {
+  const present = supplierIds.filter((id): id is string => typeof id === 'string' && id !== '')
+  // A line with no supplier is a line the platform is answering for.
+  if (present.length === 0 || present.length !== supplierIds.length) return registry.platform
+
+  const unique = new Set(present)
+  if (unique.size !== 1) return registry.platform
+
+  const only = [...unique][0]
+  if (!only) return registry.platform
+  const owner = registry
+    .list()
+    .find((account) => account.id !== PLATFORM_ACCOUNT_ID && account.supplierIds.includes(only))
+  return owner ?? registry.platform
 }
 
 /**
@@ -158,6 +211,8 @@ export function loadCardcomAccounts(
     apiName,
     apiPassword: text(source.CARDCOM_API_PASSWORD) ?? (mock ? 'mock-password' : ''),
     sandbox: mock || isSandbox(terminalNumber, source.CARDCOM_SANDBOX),
+    // The platform claims no supplier. It is where everything unclaimed lands.
+    supplierIds: [],
   }
 
   const accounts = new Map<string, CardcomAccount>([[platform.id, platform]])
