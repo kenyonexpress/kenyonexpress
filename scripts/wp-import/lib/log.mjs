@@ -8,9 +8,9 @@
 // The JSONL mirror is what makes a dry run useful: the full plan, row by row,
 // diffable against the next run.
 
+import { randomUUID } from 'node:crypto'
 import { appendFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { randomUUID } from 'node:crypto'
 import { DRY_RUN, PATHS, RUN, ensureDirs } from '../config.mjs'
 
 const LEVEL_COLORS = { info: '\x1b[36m', ok: '\x1b[32m', warn: '\x1b[33m', error: '\x1b[31m' }

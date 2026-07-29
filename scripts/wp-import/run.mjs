@@ -7,13 +7,13 @@
 //
 // See scripts/wp-import/README.md and docs/ARCHITECTURE-WP-DATA-MIGRATION.md.
 
-import { DRY_RUN, HELP, PATHS, RUN, dryRunReason, ensureDirs } from './config.mjs'
 import { extract } from './01-extract.mjs'
 import { transform } from './02-transform.mjs'
 import { loadStaging } from './03-load-staging.mjs'
 import { projectPublic } from './04-project-public.mjs'
-import { mediaSync } from './06-media-sync.mjs'
 import { validate } from './05-validate.mjs'
+import { mediaSync } from './06-media-sync.mjs'
+import { DRY_RUN, HELP, PATHS, RUN, dryRunReason, ensureDirs } from './config.mjs'
 import { Run, error, info, ok, warn } from './lib/log.mjs'
 
 const STAGES = {

@@ -13,10 +13,10 @@
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { DEFAULTS, DRY_RUN, PATHS, RUN, dryRunReason } from './config.mjs'
 import { readNormalized } from './02-transform.mjs'
-import { fetchBytes } from './lib/http.mjs'
+import { DEFAULTS, DRY_RUN, PATHS, RUN, dryRunReason } from './config.mjs'
 import { getDb } from './lib/db.mjs'
+import { fetchBytes } from './lib/http.mjs'
 import { Run, info, ok, warn } from './lib/log.mjs'
 
 // Derivatives we generate per image. `og` is the social card: fixed 1200x630
@@ -71,11 +71,16 @@ async function convert(buffer, derivative) {
   if (!lib) return { buffer, width: null, height: null }
   const pipeline = lib(buffer).rotate() // honour EXIF orientation before stripping it
   if (derivative.height) {
-    pipeline.resize(derivative.width, derivative.height, { fit: derivative.fit, withoutEnlargement: true })
+    pipeline.resize(derivative.width, derivative.height, {
+      fit: derivative.fit,
+      withoutEnlargement: true,
+    })
   } else {
     pipeline.resize({ width: derivative.width, fit: derivative.fit, withoutEnlargement: true })
   }
-  const out = await pipeline.webp({ quality: derivative.quality }).toBuffer({ resolveWithObject: true })
+  const out = await pipeline
+    .webp({ quality: derivative.quality })
+    .toBuffer({ resolveWithObject: true })
   return { buffer: out.data, width: out.info.width, height: out.info.height }
 }
 
@@ -91,7 +96,8 @@ async function upload(db, bucket, key, buffer) {
 
 export async function mediaSync(run) {
   const db = await getDb()
-  if (DRY_RUN) warn(`dry run: bytes will be fetched and converted, nothing uploaded (${dryRunReason()})`)
+  if (DRY_RUN)
+    warn(`dry run: bytes will be fetched and converted, nothing uploaded (${dryRunReason()})`)
   mkdirSync(PATHS.media, { recursive: true })
 
   const media = readNormalized('media')
@@ -112,7 +118,10 @@ export async function mediaSync(run) {
     try {
       if (!item.source_url) {
         run.op({
-          stage: 'media_sync', entity: 'media', wpId: item.wp_attachment_id, action: 'skip',
+          stage: 'media_sync',
+          entity: 'media',
+          wpId: item.wp_attachment_id,
+          action: 'skip',
           errorCode: 'no_source_url',
         })
         results.push({ ...item, status: 'skipped', error: 'no source url' })
@@ -166,9 +175,12 @@ export async function mediaSync(run) {
       }
       results.push(row)
       run.op({
-        stage: 'media_sync', entity: 'media', wpId: item.wp_attachment_id,
+        stage: 'media_sync',
+        entity: 'media',
+        wpId: item.wp_attachment_id,
         action: DRY_RUN ? 'noop' : 'update',
-        targetTable: 'wp_import.media', after: { sha256: hash, storage_path: key },
+        targetTable: 'wp_import.media',
+        after: { sha256: hash, storage_path: key },
         durationMs: Date.now() - started,
       })
     } catch (err) {
@@ -179,14 +191,23 @@ export async function mediaSync(run) {
 
   // The media inventory is rewritten in place so the projection stage picks up
   // new_url and sha256 on its next run without a separate handoff file.
-  writeFileSync(
-    resolve(PATHS.normalized, 'media.json'),
-    `${JSON.stringify(results, null, 2)}\n`,
-  )
+  writeFileSync(resolve(PATHS.normalized, 'media.json'), `${JSON.stringify(results, null, 2)}\n`)
 
   if (!DRY_RUN && db) {
-    const columns = ['wp_attachment_id', 'sha256', 'byte_size', 'mime_type', 'width', 'height',
-      'status', 'bucket', 'storage_path', 'og_storage_path', 'new_url', 'error']
+    const columns = [
+      'wp_attachment_id',
+      'sha256',
+      'byte_size',
+      'mime_type',
+      'width',
+      'height',
+      'status',
+      'bucket',
+      'storage_path',
+      'og_storage_path',
+      'new_url',
+      'error',
+    ]
     const rows = results.map((r) => Object.fromEntries(columns.map((c) => [c, r[c] ?? null])))
     for (let i = 0; i < rows.length; i += 500) {
       const { error: err } = await db
@@ -200,9 +221,13 @@ export async function mediaSync(run) {
   const failed = results.filter((r) => r.status === 'failed').length
   const skipped = results.filter((r) => r.status === 'skipped').length
   const done = results.length - failed - skipped
-  info(`  media         ${String(done).padStart(6)} ${DRY_RUN ? 'fetched + converted' : 'uploaded'}, ${failed} failed, ${skipped} skipped`)
+  info(
+    `  media         ${String(done).padStart(6)} ${DRY_RUN ? 'fetched + converted' : 'uploaded'}, ${failed} failed, ${skipped} skipped`,
+  )
   if (byHash.size < done) {
-    info(`  dedup         ${done - byHash.size} duplicate images collapsed by sha256 (${byHash.size} distinct objects)`)
+    info(
+      `  dedup         ${done - byHash.size} duplicate images collapsed by sha256 (${byHash.size} distinct objects)`,
+    )
   }
 
   await run.flush(db)
