@@ -19,9 +19,37 @@ playwright e2e      41 passed, 12 failed                       BLOCKED
 compare.mjs         category 7.35  product 10.21  search 14.87
                     home 17.28  products 25.75  checkout n/a   FAIL
 lighthouse a11y     product 96      home 88 -> 93              PASS
-lighthouse perf     product 96      home 77                    FAIL
+lighthouse perf     product 96      home 75 -> 88              FAIL by 2
 pnpm audit --prod   14 high, 10 moderate, 3 low                FAIL
 ```
+
+**The homepage LCP was one 4.5MB animated GIF.** `1aa0693`, `8b6082f`, `0a06b07`.
+Lighthouse's network table named it: 4,585KB served straight from `/public`
+rather than through `/_next/image`, which is `next/image` behaving correctly
+because resizing an animated GIF drops the animation. Converted to animated WebP
+with sharp, then authored at exactly 2x its rendered 370x495, since the optimizer
+will never resize it for us. 4.48MB → 776KB, 47 frames throughout, verified
+byte-identical through `/_next/image`. `public/` went 8.9MB → 5.1MB and the GIF
+is deleted rather than left for Vercel to ship.
+
+```
+                 perf   a11y   LCP
+baseline           75     88   5.8s
+after a11y fixes   77     93   5.3s
+hero as WebP       85     93   2.7s
+hero at 2x size    88     93   2.4s
+```
+
+FCP 0.3s, Speed Index 0.5s, TBT 0ms, CLS 0.003 all score a perfect 1. LCP alone
+caps performance at 88, and the LCP element *is* the animation, so the last two
+points mean not making an animation the first paint: a static first frame with
+the animation swapped in after. That changes what the homepage does in its first
+second and belongs to whoever owns the hero, not to a readiness pass.
+
+A latent bug fell out of it: `HeroSlideImage` chose `unoptimized` from
+`src.endsWith('.gif')`, which went silently false when the GIF became a WebP.
+Harmless in outcome, which is why it would have stayed. Animated sources are
+listed explicitly now.
 
 `6fdefe2` fixed the three homepage accessibility failures that cost nothing in
 fidelity: an imageless product left `ProductCard`'s image link with no children

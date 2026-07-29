@@ -15,7 +15,7 @@ on others, and two are blocked by one missing credential.
 | Playwright E2E | all pass | 41 passed, **12 failed** | BLOCKED |
 | `compare.mjs` all pages | < 11% | 2 of 5 under, 1 unmeasurable | FAIL |
 | Lighthouse accessibility | 90+ | product 96, home 88 → **93** | PASS |
-| Lighthouse performance | 90+ | product 96, **home 77** | FAIL |
+| Lighthouse performance | 90+ | product 96, home 75 → **88** | FAIL by 2 |
 | `pnpm audit --prod` | no highs | **14 high**, 10 moderate, 3 low | FAIL |
 
 ## The one credential behind two failing gates
@@ -105,6 +105,54 @@ and TBT are excellent; LCP alone is what costs 25 points. The server responded i
 240ms, so this is not a backend problem, it is what the homepage loads after that.
 On the product page the shape is inverted: performance 96 with a 1,660ms document
 response, so its cost is server time, not payload.
+
+### Fixed: the homepage LCP was one 4.5MB GIF, performance 75 → 88
+
+Lighthouse's own network table named the culprit: 4,585KB from
+
+```
+/images/hero/slider/ios13-iphone-11pro-airpods-pro-setup-animation-steps.gif
+```
+
+served directly rather than through `/_next/image` like every other slide. That
+is `next/image` behaving correctly, not a misconfiguration: resizing an animated
+GIF would drop the animation, so it streams the original bytes through.
+
+Converted to animated WebP with `sharp`, then authored at exactly 2x its rendered
+size, because the optimizer will never resize it for us and the revslider layer
+data renders this slide at 370x495 on desktop:
+
+```
+4.48MB GIF  ->  1.15MB WebP 800x1070  ->  776KB WebP 740x990
+public/     8.9MB -> 5.1MB     (the GIF is deleted, not left for Vercel to ship)
+frames      47 -> 47 -> 47     verified through /_next/image, byte-identical out
+```
+
+Measured across four production builds:
+
+```
+                 perf   a11y   LCP
+baseline           75     88   5.8s
+after a11y fixes   77     93   5.3s
+hero as WebP       85     93   2.7s
+hero at 2x size    88     93   2.4s
+```
+
+Every other performance metric already scores a perfect 1: FCP 0.3s, Speed Index
+0.5s, TBT 0ms, CLS 0.003. LCP alone, at 0.51, is what caps the category at 88.
+
+**The last 2 points cost a design decision, which is why they are not taken
+here.** The LCP element *is* the 776KB animation, and it cannot shrink further
+without dropping frames or visible quality. Reaching 90 means not making an
+animation the first paint: render a static first frame as the LCP image and swap
+the animation in after. That is a legitimate technique and it changes what the
+homepage does in its first second, so it belongs to whoever owns the hero, not to
+a release-readiness pass.
+
+One latent bug fell out of this. `HeroSlideImage` chose `unoptimized` from
+`src.endsWith('.gif')`, which silently went false the moment the GIF became a
+WebP. Harmless in outcome, which is exactly why it would have stayed: animated
+sources are listed explicitly now instead of inferred from an extension.
 
 ### Fixed in `6fdefe2`: accessibility 88 → 93
 
@@ -205,14 +253,16 @@ should be the first thing done when no other session is mid-task, followed by
 4. Investigate `products` at 25.75%, the widest unexplained gap, then `home` at
    17.28% and `search` at 14.87%. Check the harness first: it has now been wrong
    twice, in two different ways.
-5. Homepage LCP 5.8s. CLS and TBT are already excellent, so this is one late,
-   large paint, not general slowness.
-6. Fix `link-name`, `heading-order`, `target-size` and the console 404. Four
-   contained fixes worth roughly the gap between 88 and 90+.
-7. Decide `#7e7e7e` explicitly: accessibility or pixel fidelity. Do not let it be
-   decided by whoever edits a component next.
-8. Remove `reverse-withdrawal-payment` from the catalogue. It is a Dokan internal
-   row, it is on the homepage, and it is one of the two accessibility failures.
+5. Decide the hero's first paint. Performance is 88 and the only metric short of
+   perfect is LCP, which *is* the 776KB animation. 90+ needs a static first frame
+   with the animation swapped in after.
+6. Decide `#7e7e7e` explicitly: accessibility or pixel fidelity. Do not let it be
+   decided by whoever edits a component next. `target-size` is the same shape of
+   conflict and cannot pass at a 16px dot pitch.
+7. Remove `reverse-withdrawal-payment` from the catalogue. It is a Dokan internal
+   row, it renders on the homepage, and it is the row that exposed the
+   `link-name` failure. Removing it needs a working service key, so it is item 1
+   in disguise.
 
 ## How each number was produced
 
