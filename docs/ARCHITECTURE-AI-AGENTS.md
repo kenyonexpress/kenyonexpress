@@ -1,64 +1,64 @@
 # ARCHITECTURE-AI-AGENTS.md
 
-KenyonExpress AI agents architecture (future phase, binding).
+KenyonExpress future AI agents phase (binding).
 
-Status: BINDING for `arch/admin-supplier` (2026-07-29)
+Status: BINDING for `arch/admin-supplier` (2026-07-30)
 Worktree: `/Users/ofir/kenyonexpress-web/ke-arch` only. **Documentation only.**
-SQL / prompts below are specification for later implementation (MCP migrations + server routes). Do not apply from this worktree.
-Companions: `docs/ADMIN-PRODUCT-PAGE-SPEC.md`, `docs/ARCHITECTURE-NOTIFICATIONS.md`, `docs/ARCHITECTURE-SEO-PERFORMANCE.md`, `docs/ARCHITECTURE-WP-MIGRATION.md`, `docs/ARCHITECTURE-CUSTOMER-SUPPORT.md`, `docs/ARCHITECTURE-SECURITY-COMPLIANCE.md`.
+Companions: `docs/ADMIN-PRODUCT-PAGE-SPEC.md`, `docs/ARCHITECTURE-WP-MIGRATION.md`, `docs/ARCHITECTURE-NOTIFICATIONS.md`, `docs/ARCHITECTURE-SEO-PERFORMANCE.md`, `docs/ARCHITECTURE-CUSTOMER-SUPPORT.md`, `docs/ARCHITECTURE-SECURITY-COMPLIANCE.md`.
 
-Primary model provider for generative Hebrew: **Claude API** (Anthropic), server-side keys only. Optional smaller models for classification only.
+Stack intent: Claude API (Hebrew-capable) via server-only keys, Next.js Route Handlers / Server Actions as tool hosts, Supabase Postgres + RLS, audit in `agent_runs` / `agent_run_steps`. SQL below is specification text for later MCP migrations (no `.sql` committed in this docs pass).
 
 ---
 
 ## 0. Money and safety constraints (every agent)
 
-| Constraint | Agent implication |
+| Rule | Agent implication |
 |---|---|
-| Coupon paid **in full on site** (`coupon_price_ils`, absolute) | Copy and support must say "שולם באתר" = coupon price. Never derive charge from a percent of face. |
-| **No Escrow** | Ban Escrow / נאמן / J5 in prompts, drafts, and replies. Coupon prepaid stays with the platform. |
-| Dynamic `platform_percent` | Never invent 5%/10%. Read **snapshots** on `order_items` for past orders. Only humans set percent in admin UI. |
-| Money in tools | Integer **agorot**. Human text: ILS with 2 decimals. |
-| Production writes | **No autonomous writes** to products, prices, redirects, orders, vouchers, wallet, or payouts without **human approval** (draft → review → apply). |
+| Coupon paid **in full on site** | Absolute `coupon_price_ils`. Never invent a percent of face as the charge. |
+| **No Escrow** | Ban Escrow / נאמן / J5 in prompts and replies. Coupon prepaid stays with the platform. |
+| Dynamic `platform_percent` | Admin-set, no default. Snapshotted to `order_items` at purchase (C10). Agents never invent 5%/10%. |
+| Money units | Tools use integer **agorot**. Human text uses ₪ with 2 decimals. |
+| KE is a platform | Never claim KE is the merchant of record; name the supplier from snapshot / draft. |
 
-Global hard bans:
+### 0.1 Global hard bans
 
-1. No Cardcom charge, refund, wallet credit, redeem, or payout mutations by an agent.
-2. No direct UPDATE/INSERT on `products`, `order_items`, `vouchers`, `payments`, `seo_redirects` from the model tool loop.
-3. Mask voucher codes / QR payloads in logs (last 4 only).
-4. Customer-facing tools run as the **caller's JWT** (RLS). Admin tools require `requireAdminSession` / section gates. Never "service role for convenience" on chat tools.
-5. Every run append-only in `agent_runs` / `agent_run_steps`.
+1. **No production writes without human approval.** Agents may propose drafts only. Publish, money edits, redirects go-live, refunds, redeem, wallet credit, payouts require an explicit human action (button / MCP apply / admin confirm).
+2. No Cardcom charge/refund, redeem, or payout tool.
+3. No silent writes to `platform_percent`, `coupon_price_ils`, `order_items`, `payments`, `vouchers` status.
+4. No raw voucher codes / QR HMAC secrets in model traces (mask to last 4).
+5. Customer-facing tools run as the **caller JWT** under RLS. Never “service role for convenience” on support chat.
+6. Every run is append-only audited (`agent_runs` / `agent_run_steps`).
 
 ---
 
 ## 1. Agent catalog
 
-| Agent id | Mission | Model | Writes? |
+| `agent_type` | Mission | Primary model | Write mode |
 |---|---|---|---|
-| `product_copy` | Hebrew PDP description / highlights generator | Claude | Draft only → admin approve |
-| `price_monitor` | Compare KE offers vs Israeli deal sites | Claude + fetch tools | Suggestions only |
-| `wp_migration` | Plan/assist WP → Supabase mapping, R2 media, SEO redirects | Claude + structured jobs | Staging tables + human apply |
-| `support_chat` | Customer Q&A over own orders/coupons | Claude | Tickets/escalations only |
-| `admin_whatsapp_copilot` | Turn supplier WhatsApp text into product draft | Claude | Draft product → admin approve |
-
-Shared runtime:
-
-```
-UI / job trigger
-  → authenticated Route Handler / Server Action
-  → orchestrator (system prompt + tools + budget)
-  → Claude API
-  → tool executors (read RLS / draft tables)
-  → agent_runs (cost_agorot, tokens)
-  → human approval gate before any production apply
-```
+| `product_copy` | Hebrew product description / SEO copy from raw supplier text | Claude API | Draft fields only; human publishes |
+| `price_monitor` | Compare our on-site prices vs allowlisted Israeli deal sites | Claude + fetch worker | Suggestions only; human applies |
+| `wp_migration` | Plan/map WordPress export → Supabase + R2 + SEO redirects | Claude + ETL scripts | Staging tables; human cutover |
+| `support_chat` | Customer help over orders/coupons | Claude | Read via RLS; escalate tickets |
+| `admin_whatsapp_copilot` | Turn supplier WhatsApp messages into product draft proposals | Claude | Draft product rows; human approves money + publish |
 
 ---
 
-## 2. Shared persistence (spec)
+## 2. Shared runtime
+
+```
+Client (admin job / support chat / cron)
+  -> authz (requireAdmin / requireUser / requireSection)
+  -> orchestrator (system prompt + tools + turn cap)
+  -> Claude API (server-only key)
+  -> tool executors (RLS JWT or least-privilege definer)
+  -> agent_runs + agent_run_steps (masked)
+  -> optional draft row / ticket / ntfy
+```
+
+### 2.1 Persistence (spec)
 
 ```sql
--- SPEC ONLY (later MCP apply_migration)
+-- SPEC ONLY (later via MCP apply_migration)
 create table if not exists public.agent_runs (
   id              uuid primary key default gen_random_uuid(),
   agent_type      text not null check (agent_type in (
@@ -73,15 +73,16 @@ create table if not exists public.agent_runs (
   subject_id      uuid,
   model           text not null,
   status          text not null check (status in (
-                    'running', 'succeeded', 'failed', 'needs_approval',
-                    'approved', 'rejected', 'escalated', 'cancelled'
+                    'running', 'succeeded', 'failed', 'awaiting_human',
+                    'escalated', 'cancelled'
                   )),
   input_summary   text,
   output_summary  text,
-  token_in        int not null default 0,
-  token_out       int not null default 0,
+  token_in        int not null default 0 check (token_in >= 0),
+  token_out       int not null default 0 check (token_out >= 0),
   cost_agorot     bigint not null default 0 check (cost_agorot >= 0),
-  approval_user_id uuid references auth.users(id),
+  approval_required boolean not null default true,
+  approved_by     uuid references auth.users(id),
   approved_at     timestamptz,
   error_code      text,
   created_at      timestamptz not null default now(),
@@ -89,35 +90,35 @@ create table if not exists public.agent_runs (
 );
 
 create table if not exists public.agent_run_steps (
-  id            uuid primary key default gen_random_uuid(),
-  run_id        uuid not null references public.agent_runs(id) on delete cascade,
-  step_index    int not null,
-  kind          text not null check (kind in (
-                  'message', 'tool_call', 'tool_result', 'draft', 'escalation'
-                )),
-  tool_name     text,
-  input_masked  jsonb not null default '{}'::jsonb,
-  output_masked jsonb not null default '{}'::jsonb,
-  created_at    timestamptz not null default now(),
+  id              uuid primary key default gen_random_uuid(),
+  run_id          uuid not null references public.agent_runs(id) on delete cascade,
+  step_index      int not null,
+  kind            text not null check (kind in (
+                    'message', 'tool_call', 'tool_result', 'proposal', 'escalation'
+                  )),
+  tool_name       text,
+  input_masked    jsonb not null default '{}'::jsonb,
+  output_masked   jsonb not null default '{}'::jsonb,
+  created_at      timestamptz not null default now(),
   unique (run_id, step_index)
 );
 
-create table if not exists public.agent_drafts (
-  id            uuid primary key default gen_random_uuid(),
-  run_id        uuid not null references public.agent_runs(id) on delete cascade,
-  draft_type    text not null check (draft_type in (
-                  'product_copy', 'product_create', 'price_suggestion',
-                  'wp_row_mapping', 'seo_redirect_batch'
-                )),
-  payload       jsonb not null,
-  status        text not null default 'pending'
-                  check (status in ('pending', 'approved', 'rejected', 'applied')),
-  created_at    timestamptz not null default now(),
-  applied_at    timestamptz
+create table if not exists public.agent_proposals (
+  id              uuid primary key default gen_random_uuid(),
+  run_id          uuid not null references public.agent_runs(id) on delete cascade,
+  proposal_type   text not null,
+  payload         jsonb not null,
+  status          text not null default 'pending'
+                    check (status in ('pending', 'approved', 'rejected', 'expired')),
+  created_at      timestamptz not null default now(),
+  resolved_at     timestamptz,
+  resolved_by     uuid references auth.users(id)
 );
 ```
 
-RLS: actors read own support runs; admin/super_admin read all; support staff read `support_chat` without exporting platform-fee columns; no anon; **no client INSERT** on drafts/runs (server only).
+RLS sketch: actors read own support runs; admin/super_admin read all; no anon access; no client INSERT on proposals (server only).
+
+Kill switch: `AI_AGENTS_ENABLED=false` refuses new runs.
 
 ---
 
@@ -125,44 +126,43 @@ RLS: actors read own support runs; admin/super_admin read all; support staff rea
 
 ### 3.1 Mission
 
-Generate Hebrew RTL product copy (title polish optional, short description, long description, highlights bullets, SEO description) from structured admin fields + optional supplier notes. Output is a **draft**; publish requires human click.
+Claude API turns raw Hebrew (or messy bilingual) supplier/admin input into SEO-ready fields:
 
-### 3.2 Claude usage
+- `name_he` (optional polish)
+- `short_description_he`
+- `description_he` (safe HTML subset)
+- `seo_title`, `seo_description`
+- image `alt` suggestions
 
-- Model: Claude Sonnet-class (Hebrew).
-- Temperature: 0.4 for creative copy; 0.2 for SEO meta.
-- Max tokens capped per job (e.g. 1200 out).
+Must respect `ARCHITECTURE-SEO-PERFORMANCE.md`: Offer price = on-site charge only; seller = supplier; no fabricated ratings.
 
-### 3.3 Hebrew system prompt (template)
-
-```
-אתה כותב תוכן מוצר עבור קניון אקספרס, פלטפורמת מרקטפלייס ישראלית (לא הספק עצמו).
-כתוב בעברית תקנית, RTL, בלי אימוג'ים ובלי הבטחות משפטיות שלא סופקו בקלט.
-מחיר לתשלום באתר לקופון הוא הסכום המוחלט coupon_price בלבד (הלקוח משלם אותו במלואו באתר).
-יתרת העסקה בבית העסק אינה עוברת דרך הפלטפורמה. אסור להזכיר Escrow או נאמן.
-אסור להמציא אחוז עמלה או platform_percent. אם חסר מידע, סמן [חסר] במקום להמציא.
-החזר JSON עם השדות: short_description_he, description_he, highlights_he[], seo_title, seo_description.
-```
-
-### 3.4 User prompt skeleton
+### 3.2 Hebrew system prompt (template)
 
 ```
-סוג מוצר: {coupon|physical}
-שם: {name_he}
-ספק: {supplier_name}
-מחיר רגיל (אגורות): {price_agorot}
-מחיר לתשלום באתר (אגורות, קופון בלבד): {coupon_price_agorot}
-הערות ספק: {notes}
-שפת יעד: עברית
+אתה עורך תוכן בעברית עבור קניון אקספרס, פלטפורמת מרקטפלייס (לא הספק עצמו).
+כתוב עברית טבעית, RTL, בלי הבטחות רפואיות/משפטיות מופרזות.
+מחיר הקופון באתר הוא סכום מוחלט שהלקוח משלם במלואו באתר. אין Escrow.
+אל תמציא מחיר, אחוז עמלה, דירוגים, או תוקף שלא הופיעו בקלט.
+אל תכתוב על platform_percent. אל תציג את קניון אקספרס כחנות המספקת את השירות בעצמה.
+החזר JSON בלבד לפי הסכמה שסופקה.
 ```
 
-### 3.5 Tools (read-only)
+### 3.3 Tools
 
-`get_product_draft_context(product_id)`, `get_supplier_public(supplier_id)`, `list_category_names()`.
+| Tool | Role |
+|---|---|
+| `get_product_draft` | read current draft (staff JWT) |
+| `get_category_name` | breadcrumb language |
+| `list_forbidden_claims` | static policy |
+| `propose_copy` | model output → `agent_proposals` |
+| `apply_copy_draft` | **human-approved only**: write non-money draft fields |
 
-### 3.6 Approval
+### 3.4 Safety
 
-Draft → admin reviews in ProductForm → Apply overwrites text fields only (not money knobs unless admin edits them manually).
+- Zod-validate JSON output.
+- Reject if price/expiry appear and were not in input.
+- Truncate huge pastes (cost + injection).
+- Publish still requires admin money gate (`platform_percent`, `coupon_price_ils`, supplier completeness).
 
 ---
 
@@ -170,35 +170,35 @@ Draft → admin reviews in ProductForm → Apply overwrites text fields only (no
 
 ### 4.1 Mission
 
-Nightly / on-demand compare selected KE published offers against public pages on Israeli deal / coupon sites (allowlisted domains only). Produce **suggestions** (lower coupon_price, change discount badge, flag outlier). Never auto-change prices.
+Nightly/on-demand compare our **on-site** prices vs allowlisted Israeli deal / coupon sites. Produce ranked suggestions for admins. Never auto-write money columns.
 
-### 4.2 Sources
+Allowlist examples (connectors only; ToS-aware): public category pages of major IL deal aggregators the business explicitly approves (**Q-AI-SCRAPE**). No open-web browsing from the chat model.
 
-Allowlist config table `price_monitor_sources` (domain, robots policy, scrape method). Respect robots.txt; prefer official APIs if any; rate-limit fetches; store raw HTML hashed, not indefinitely.
-
-### 4.3 Hebrew system prompt (template)
+### 4.2 Hebrew system prompt (template)
 
 ```
-אתה אנליסט תמחור למרקטפלייס ישראלי. השווה מחירים גלויים בלבד.
-הפלט: המלצות בעברית + מספרים באגורות (integers) וגם תצוגת ₪.
-אסור לעדכן מוצרים. אסור להמציא platform_percent. לקופונים: המחיר באתר הוא coupon_price המוחלט ששולם במלואו.
-אין Escrow. אם מקור לא אמין או חסום, סמן confidence=low.
+אתה אנליסט תמחור לשוק הישראלי עבור קניון אקספרס.
+השווה רק מחיר לתשלום באתר (קופון = coupon_price מוחלט; פיזי = מחיר אחרי הנחה).
+אל תמליץ לשנות platform_percent אוטומטית. אל תמציא מחירי מתחרים בלי ציטוט snapshot_id.
+אין Escrow. הצעות בלבד לאישור אדמין.
 ```
 
-### 4.4 Output draft
+### 4.3 Tools
 
-```json
-{
-  "product_id": "uuid",
-  "ke_on_site_agorot": 900,
-  "competitor_hits": [{"domain": "…", "price_agorot": 850, "url": "…"}],
-  "suggestion": "שקול להוריד את מחיר הקופון באתר ל־₪8.50",
-  "suggested_coupon_price_agorot": 850,
-  "confidence": "medium"
-}
-```
+| Tool | Role |
+|---|---|
+| `category_price_stats` | our medians from analytics marts (agorot) |
+| `fetch_competitor_snapshot` | allowlisted connector |
+| `propose_price_band` | model → proposal |
+| `create_pricing_suggestion` | draft row for admin UI |
 
-Admin must approve before any product money field changes (manual or gated apply).
+### 4.4 Failure modes
+
+| Failure | Handling |
+|---|---|
+| Scrape blocked / stale | Mark `stale_data` |
+| Hallucinated competitor price | Must cite snapshot id |
+| Suggests silent platform % change | Schema/UI forbid; retail discount ideas only |
 
 ---
 
@@ -206,46 +206,58 @@ Admin must approve before any product money field changes (manual or gated apply
 
 ### 5.1 Mission
 
-Assist the one-time (or batched) migration: WordPress / WooCommerce export → staging mapping tables → Supabase `products` / `categories` / media on R2 → `seo_redirects` for SEO equity. Agent proposes mappings; **humans approve apply batches**.
+Plan and assist WordPress → KenyonExpress cutover (see also `ARCHITECTURE-WP-MIGRATION.md`):
 
-### 5.2 Pipeline (agent-assisted)
+1. Parse WordPress export (WXR / DB dump / REST) into staging tables.
+2. Map WP posts/products → `products` / categories / media.
+3. Upload media to **Cloudflare R2**; rewrite URLs.
+4. Build `seo_redirects` (old path → new `/product/{slug}` or category) for equity.
+5. Propose money field mapping: WP sale price → `coupon_price_ils` or physical discount; **never invent** `platform_percent` (admin must fill; publish blocked until set).
+
+### 5.2 Pipeline
 
 ```
-WP export (XML/JSON/CSV)
-  → staging.wp_raw_* (immutable)
-  → agent proposes row maps (agent_drafts.wp_row_mapping)
-  → human approve batch
-  → writers copy into public.products / categories (server job)
-  → media download → R2 keys → product images
-  → seo_redirects (old WP path → /product/{slug}) status 301
+WP export
+  -> staging.wp_raw_*
+  -> agent proposes field map (human edits)
+  -> staging.wp_normalized_*
+  -> media worker -> R2 keys
+  -> staging.seo_redirect_drafts
+  -> human approval
+  -> MCP/migration apply into public tables (dry-run first)
 ```
 
-### 5.3 Mapping rules the agent must obey
+### 5.3 Mapping table sketch (staging)
 
-| WP field | Supabase | Notes |
-|---|---|---|
-| post title | `name_he` | Hebrew preferred |
-| slug | `products.slug` | ASCII stable; collide → suffix |
-| regular price | `price_ils` / agorot convert | |
-| sale / coupon online | `coupon_price_ils` | Absolute; if only % in WP, **do not invent**; flag human |
-| commission | ignore fixed 10% | Set `platform_percent` only if explicit in export; else leave null → needs-pricing |
-| images | R2 objects | Rewrite URLs after upload |
-| old permalink | `seo_redirects.from_path` | 301 to new PDP |
+| Staging column | Target |
+|---|---|
+| `wp_post_id` | external id / migration_log |
+| `title_he` | `products.name_he` |
+| `slug` | `products.slug` (dedupe) |
+| `content_he` | `description_he` |
+| `regular_price_agorot` | `price_ils` (convert) |
+| `sale_price_agorot` | candidate `coupon_price_ils` or discounted physical |
+| `vendor_name` | match/create `suppliers` (human confirm) |
+| `image_urls[]` | R2 objects + gallery |
+| `old_path` | `seo_redirects.from_path` |
 
-Never mark product published if money knobs or supplier gate incomplete (`ADMIN-PRODUCT-PAGE-SPEC`).
+`platform_percent` / `supplier_split_percent` / `discount_percent`: left null until admin completes publish gate. Agent must not default them to 10/90 or 100/0 silently without recording an explicit human choice in the proposal.
 
 ### 5.4 Hebrew system prompt (template)
 
 ```
-אתה סוכן מיגרציית WordPress לקניון אקספרס. הצע מיפוי לשורות staging בלבד.
-כסף באגורות (integers). קופון: מחיר האתר הוא סכום מוחלט ששולם במלואו; אין Escrow.
-אם חסר platform_percent, אל תמלא ברירת מחדל. סמן needs_human=true.
-החזר JSON של מיפויים + רשימת הפניות 301 מוצעת. אסור לכתוב לייצור.
+אתה סוכן מיגרציה מוורדפרס לקניון אקספרס.
+הצע מיפוי שדות, רשימת התנגשויות slug, ורשימת הפניות 301.
+מחיר קופון באתר הוא תשלום מלא באתר (סכום מוחלט). אין Escrow.
+אל תמלא platform_percent אוטומטית. סמן מוצרים שחסרים ספק מלא או מחירי כסף כלא-מוכנים לפרסום.
+כל כתיבה לפרודקשן דורשת אישור אנושי מפורש.
 ```
 
-### 5.5 Apply gate
+### 5.5 Safety
 
-`agent_drafts` status `approved` → migration worker applies N rows → `applied`. Rejected drafts never touch `public`.
+- Dry-run reports only until `agent_proposals.status=approved`.
+- Redirects applied via controlled migration/proxy update, not free-form SQL from the model.
+- Media: virus/size limits; no execute of WP PHP in our runtime.
 
 ---
 
@@ -253,35 +265,38 @@ Never mark product published if money knobs or supplier gate incomplete (`ADMIN-
 
 ### 6.1 Mission
 
-Hebrew RTL chat for logged-in customers over **their** orders, coupons/vouchers, refund policy, shipping status, supplier contact from snapshot. Escalate money disputes to humans.
+Hebrew RTL chat for logged-in customers over **their** orders and coupons/vouchers. Strict RLS: caller JWT only. Escalate money disputes to humans (`ARCHITECTURE-CUSTOMER-SUPPORT.md`).
 
-### 6.2 RLS boundaries (strict)
+### 6.2 Hebrew system prompt (template)
 
-| Tool | Allowed rows |
+```
+אתה נציג תמיכה של קניון אקספרס (פלטפורמה, לא הספק).
+ענה בעברית בלבד. הסתמך רק על תוצאות הכלים.
+קופון: הלקוח שילם באתר את מחיר הקופון במלואו; יתרה נגבית בבית העסק בסריקת QR. אין Escrow.
+פיזי: הפיצול לפי platform_percent צולם בהזמנה; אל תחשוף את אחוז הפלטפורמה ללקוח.
+אל תמציא מספרי מעקב או סטטוסים. בספק או בסכסוך כספי — העבר לנציג אנושי.
+```
+
+### 6.3 Tools (RLS-bound)
+
+| Tool | Authz | Returns |
+|---|---|---|
+| `my_orders` | self | ids, statuses, paid-on-site ILS |
+| `my_order_detail` | owner | lines, supplier snapshot contact, tracking if any |
+| `my_vouchers` | owner | masked code, status, till remainder, expiry |
+| `refund_policy_lookup` | authed | static policy ids |
+| `create_escalation` | customer | support ticket; stop autonomous money advice |
+
+Forbidden: redeem, refund_execute, wallet_adjust, admin mutate, read other users' rows.
+
+### 6.4 Failure modes
+
+| Failure | Handling |
 |---|---|
-| `list_my_orders` | `orders.user_id = auth.uid()` |
-| `get_my_order` | same + `order_items` via parent |
-| `list_my_vouchers` | `vouchers.user_id = auth.uid()` |
-| `get_supplier_public` | active supplier public fields only |
-| `create_escalation` | inserts support ticket for self |
-
-Forbidden tools: any admin list, any other user's order, platform fee export, redeem, refund execute, wallet adjust.
-
-Staff "view as" requires support section + audit; still no mutating money tools.
-
-### 6.3 Hebrew system prompt (template)
-
-```
-אתה נציג תמיכה של קניון אקספרס. ענה בעברית קצרה וברורה.
-החברה היא פלטפורמה, לא הספק. פרטי ספק מגיעים מההזמנה/סנאפשוט.
-קופון: הלקוח שילם באתר את מחיר הקופון המלא; יתרה בבית העסק בעת מימוש QR; אין Escrow.
-לשאלות על עמלה השתמש רק ב־platform_percent שמצולם ב־order_items, אם מוצג ללקוח בכלל (בדרך כלל לא).
-אם אין נתון בכלי, אל תנחש. להסלמה: מחלוקת כסף, חשד הונאה, בקשת החזר מורכבת.
-```
-
-### 6.4 Escalation
-
-Creates ticket (`ARCHITECTURE-CUSTOMER-SUPPORT.md`) + optional Resend to support alias; `agent_runs.status = escalated`.
+| RLS empty / timeout | Say unavailable; escalate |
+| Invented tracking | Validator: only if tool returned URL |
+| Prompt injection in order notes | Treat notes as untrusted data |
+| PII fishing | Refuse; escalate |
 
 ---
 
@@ -289,62 +304,48 @@ Creates ticket (`ARCHITECTURE-CUSTOMER-SUPPORT.md`) + optional Resend to support
 
 ### 7.1 Mission
 
-Paste / forward supplier WhatsApp message (text; optional image OCR later) → structured **product draft** (name, type guess, prices in agorot, category suggestion, copy). Admin reviews and saves via normal ProductForm / `assertPublishable`.
+Admin pastes (or forwards via approved ingest) a supplier WhatsApp thread. Claude extracts a **product draft proposal**: type guess, name, bullets, suggested `coupon_price` / sticker price, missing supplier fields checklist. Human completes `platform_percent` pair and publishes.
 
-### 7.2 Flow
-
-```
-WhatsApp text (admin paste)
-  → Claude extract JSON draft
-  → agent_drafts.product_create (pending)
-  → admin UI diff
-  → Approve → upsertProduct (human session)
-```
-
-Agent must not call `upsertProduct` itself.
-
-### 7.3 Hebrew system prompt (template)
+### 7.2 Hebrew system prompt (template)
 
 ```
-אתה עוזר אדמין שמחלץ טיוטת מוצר מהודעת וואטסאפ של ספק.
-החזר JSON בעברית לשדות: name_he, product_type (coupon|physical|unknown),
-price_agorot, coupon_price_agorot (או null), discount_percent_guess או null,
-platform_percent: תמיד null (האדמין חייב לקבוע; אין ברירת מחדל),
-supplier_name_guess, notes_he, confidence.
-קופון = תשלום מלא באתר של coupon_price. אין Escrow. אל תמציא עמלות.
-אם המחיר לא ברור, null + needs_human=true.
+אתה עוזר אדמין ליצירת טיוטת מוצר מהודעות וואטסאפ של ספק.
+חלץ: שם בעברית, תיאור קצר, סוג (קופון/פיזי), מחיר רגיל, מחיר לתשלום באתר אם צוין, עיר/טלפון אם יש.
+קופון = תשלום מלא באתר בסכום מוחלט. אין Escrow.
+אל תמציא platform_percent. סמן שדות חסרים לפרסום (ספק, לוגו, כתובת, אחוזי פיצול).
+החזר JSON לטיוטה בלבד; אין פרסום אוטומטי.
 ```
 
-### 7.4 Example extraction shape
+### 7.3 Tools
 
-```json
-{
-  "name_he": "עיסוי זוגי 60 דקות",
-  "product_type": "coupon",
-  "price_agorot": 50000,
-  "coupon_price_agorot": 9900,
-  "platform_percent": null,
-  "supplier_name_guess": "ספא הגליל",
-  "confidence": "high",
-  "needs_human": false
-}
-```
+| Tool | Role |
+|---|---|
+| `parse_whatsapp_export` | normalize pasted text (strip UI chrome) |
+| `match_supplier_by_phone_name` | fuzzy suggest existing supplier |
+| `propose_product_draft` | → `agent_proposals` |
+| `create_product_draft` | **human-approved**: insert draft product **without** money defaults; money null until admin form |
+
+### 7.4 Safety
+
+- WhatsApp content is untrusted (prompt injection).
+- Never auto-publish.
+- If message includes bank details, store only in supplier-secure fields after human confirm; do not echo in model logs.
 
 ---
 
 ## 8. Cost controls
 
-| Control | Rule |
-|---|---|
-| Per-run token cap | `product_copy` 2k out; `support_chat` 4k out/turn budget; `price_monitor` batch budget |
-| Daily org ceiling | `agent_cost_daily_agorot` soft then hard stop (config) |
-| Track | `agent_runs.cost_agorot` (provider USD → agorot at fixed FX config) |
-| Prefer rules first | Fraud/rate signals before LLM; SQL before Claude on support intent |
-| Cache | Identical product_copy inputs → return prior draft for 24h unless forced |
-| Model tier | Classification on small model; generation on Claude Sonnet-class |
-| Max tool calls | support 8; copy 3; price_monitor 15/batch; wp 20/batch; whatsapp 4 |
+Track `cost_agorot` per run (USD provider invoice converted at a fixed ops rate, or provider token→agorot table).
 
-Ntfy admin alert when daily cost &gt; 80% ceiling or error rate spikes.
+| Agent | Turn cap | Max input chars | Soft monthly budget (ops) | Hard kill |
+|---|---|---|---|---|
+| `product_copy` | 3 | 12k | configurable | `AI_AGENTS_ENABLED` / per-type flag |
+| `price_monitor` | 10 / batch | N/A (structured) | nightly batch cap | skip batch if over |
+| `wp_migration` | 8 / map pass | chunked export | per migration job | pause job |
+| `support_chat` | 8 | 8k history window | per-user 30 sessions/day | escalate |
+| `admin_whatsapp_copilot` | 4 | 20k paste | per-admin daily cap | refuse |
+
+Prefer rules/SQL before LLM when possible (support classification, price stats). Alert via Ntfy if daily `sum(cost_agorot)` exceeds threshold.
 
 ---
 
@@ -352,66 +353,75 @@ Ntfy admin alert when daily cost &gt; 80% ceiling or error rate spikes.
 
 ### 9.1 Golden sets (Hebrew)
 
-| Agent | Fixtures | Pass criteria |
+| Suite | Cases | Pass criteria |
 |---|---|---|
-| `product_copy` | 30 products (coupon+physical) | No Escrow; coupon price not reinvented; JSON schema valid; toxicity/off-policy = 0 |
-| `price_monitor` | 20 mocked competitor HTML | Correct agorot parse ±1; no auto-write side effects |
-| `wp_migration` | 15 WP rows incl. missing commission | Leaves `platform_percent` null when absent; redirect paths sane |
-| `support_chat` | 40 dialogues with tool stubs | No cross-user data; escalate on refund dispute; snapshot percent only |
-| `admin_whatsapp_copilot` | 25 WhatsApp dumps | `platform_percent` always null in draft; money integers |
+| `eval_product_copy` | 20 messy supplier blurbs | Valid JSON; Hebrew; no invented price; meta length band |
+| `eval_price_monitor` | 10 fixture snapshots | Cites snapshot ids; no platform% write suggestion |
+| `eval_wp_map` | 5 WP product fixtures | Correct slug/price agorot map; flags missing platform% |
+| `eval_support` | 25 tool-grounded dialogues | No cross-user leak; correct coupon paid-in-full copy; escalate on refund fight |
+| `eval_whatsapp` | 15 threads | Draft completeness score; never auto-fills platform% |
 
-### 9.2 Online eval
+### 9.2 Regression
 
-- Sample 2% of support transcripts weekly for human rubric (correctness, tone, policy).
-- Track: escalation rate, approval rate of drafts, apply revert rate, cost_agorot p50/p95.
+- Run golden sets in CI on prompt/tool changes (offline fixtures; no live Claude unless secret + label `ai-eval`).
+- Score: exact schema + rubric LLM-judge optional; money-copy assertions are deterministic string checks.
+- Block merge if support suite leaks another `user_id` or emits Escrow language.
 
-### 9.3 Regression
+### 9.3 Online eval
 
-CI job (docs-gated until agents ship): run golden set against prompt snapshots; fail if policy classifiers detect Escrow / fixed-10% / cross-tenant leakage in outputs.
+Sample 2% of production runs for human thumbs in admin; store on `agent_runs`. High downvote rate → disable that `agent_type`.
 
 ---
 
-## 10. Safety rails (no production writes without human approval)
+## 10. Safety rails (human approval)
 
 ```
 Agent output
-  → agent_drafts.status = pending
-  → Admin / support human reviews in UI
-  → approve | reject
-  → only then server Apply job (same auth as manual admin actions)
+  -> agent_proposals (pending)
+  -> admin UI review (diff)
+  -> approve / reject
+  -> only then Server Action writes draft/staging
+  -> separate human action to publish / apply redirects / set money
 ```
 
-| Action | Allowed without human? |
-|---|---|
-| Read own orders / public catalog | Yes |
-| Create support ticket | Yes |
-| Generate copy / WhatsApp draft / price suggestion / WP map | Yes (draft) |
-| Update `products.*` money or content | **No** |
-| Insert `seo_redirects` | **No** (batch approve) |
-| Refund / redeem / wallet / payout | **Never** (not agent tools) |
+| Action | Who | Agent may do alone? |
+|---|---|---|
+| Propose copy / price / WP map / WhatsApp draft | Agent | yes |
+| Write draft product non-money fields | Admin after approve | no |
+| Set `platform_percent` / `coupon_price_ils` | Admin form | no |
+| Publish product | Admin publish gate | no |
+| Apply SEO redirects to live | Admin / MCP migration | no |
+| Refund / redeem / payout | Existing money paths | no |
+| Support ticket create | Agent | yes (escalation) |
 
-Additional rails:
-
-- Output filter: block phrases Escrow/נאמן/עמלה קבועה 10% before showing to user.
-- Tool allowlists per `agent_type` (cannot call another agent's tools).
-- Idempotency keys on apply jobs: `agent_apply:{draft_id}`.
+`approval_required=true` by default on all write-shaped agents.
 
 ---
 
 ## 11. Acceptance checklist
 
-- [ ] Five agents specified with Hebrew prompts and Claude as generator
-- [ ] Coupon paid-in-full + no Escrow + snapshot `platform_percent` enforced in prompts
-- [ ] Money in tools as integer agorot
-- [ ] WP migration: staging → R2 → redirects, human apply only
-- [ ] Support tools RLS-scoped to caller
-- [ ] WhatsApp copilot never sets `platform_percent` by itself
-- [ ] Cost caps + `cost_agorot` accounting
-- [ ] Golden-set eval + online sampling plan
-- [ ] No production writes without approval gate
+- [ ] All five agents documented with Hebrew prompt templates
+- [ ] Claude API only via server; keys never in client
+- [ ] Support tools are RLS-scoped to caller
+- [ ] No production money/publish/redirect writes without human approval
+- [ ] Coupon copy: paid in full on site; no Escrow; `platform_percent` snapshot-aware
+- [ ] Costs tracked in `cost_agorot`; caps + kill switch
+- [ ] Eval golden sets defined for each agent
+- [ ] WP path includes R2 media + `seo_redirects` drafts
 
 ---
 
-## 12. Related
+## 12. Open questions
 
-`docs/ARCHITECTURE-WP-MIGRATION.md`, `docs/ARCHITECTURE-CUSTOMER-SUPPORT.md`, `docs/ADMIN-PRODUCT-PAGE-SPEC.md`, `docs/ARCHITECTURE-SEO-PERFORMANCE.md`, `docs/ARCHITECTURE-NOTIFICATIONS.md`, `docs/ARCHITECTURE-SECURITY-COMPLIANCE.md`.
+| ID | Question |
+|---|---|
+| Q-AI-MIG | Migration ordinal for `agent_*` tables |
+| Q-AI-MODEL | Exact Claude model SKUs per agent |
+| Q-AI-SCRAPE | Allowlisted IL deal sites + legal review |
+| Q-AI-WA-INGEST | Manual paste only vs WhatsApp Business webhook later |
+
+---
+
+## 13. Related
+
+`docs/ARCHITECTURE-WP-MIGRATION.md`, `docs/ADMIN-PRODUCT-PAGE-SPEC.md`, `docs/ARCHITECTURE-SEO-PERFORMANCE.md`, `docs/ARCHITECTURE-CUSTOMER-SUPPORT.md`, `docs/ARCHITECTURE-NOTIFICATIONS.md`, `docs/ARCHITECTURE-SECURITY-COMPLIANCE.md`.
