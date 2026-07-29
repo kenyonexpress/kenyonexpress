@@ -1,4 +1,20 @@
--- 054_voucher_redemption.sql
+-- 0545_voucher_redemption.sql
+--
+-- RENUMBERED FROM 054. It shared the prefix with
+-- 054_section2_product_coupon_price_fields.sql, and the Supabase CLI derives a
+-- migration's version from exactly those leading digits. Two files claiming
+-- version 054 made `supabase db reset` abort with
+-- `duplicate key value violates unique constraint "schema_migrations_pkey"`,
+-- which meant THE LOCAL DATABASE COULD NOT BE REBUILT AT ALL. Both files are
+-- already applied to the hosted project under separate timestamped ledger
+-- entries, so nothing there is affected by this rename.
+--
+-- 0545 rather than a free number, because the position is load-bearing:
+-- 068_voucher_expiry_sweep needs the tables created here, so this cannot move
+-- to 069, the only free slot below 070. "0545" sorts after "054" and before
+-- "055" under the CLI's version ordering, which is exactly where the file has
+-- always run. The four-digit form already has a precedent in this directory
+-- (0075).
 -- Voucher lifecycle for the absolute-price coupon model (2026-07-24).
 -- Authoritative document: ARCHITECTURE-VOUCHER-REDEMPTION.md
 --

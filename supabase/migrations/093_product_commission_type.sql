@@ -25,7 +25,9 @@
 -- is added. Re-running is a no-op.
 -- Rollback: ALTER TABLE public.products DROP COLUMN IF EXISTS commission_type.
 --
--- NOT APPLIED to the hosted project. Draft only.
+-- APPLIED to the hosted project (ixvwfbuvfxxsjiywhbbb) on 2026-07-29 as migration
+-- 093_product_commission_type. Backfill covered 61 rows: 15 coupon/coupon_absolute,
+-- 46 physical/physical_percent. The CHECK is validated, not NOT VALID.
 
 DO $$
 BEGIN
