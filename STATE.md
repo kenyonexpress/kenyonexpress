@@ -38,27 +38,54 @@ of two.
    and edit in the admin fails on a column that does not exist. This was a
    `feat/admin-core` blocker and is now a `phase5/homepage` one. See GO-LIVE.
 
-## Next Task
-1. **Replace `SUPABASE_SECRET_KEY`**, then run
+## שלוש המשימות הבאות
+
+1. **‏החלף את `SUPABASE_SECRET_KEY`, ואז מדוד את ה-checkout.**
+   ‏Supabase Dashboard -> Project Settings -> API Keys. אחר כך
    `LOCAL_BASE=http://localhost:3200 node scripts/compare.mjs --page=checkout`
-   and close the checkout geometry against `refs/checkout-measured.json`. This
-   is the only thing standing between the checkout and a measured number.
-2. **Apply `093_product_commission_type`.** It blocks every admin product write
-   on the main branch, not just on a feature branch. The file is idempotent,
-   backfills from `products.type` and carries a CHECK that keeps the two
-   spellings equal, so applying it is a decision about timing rather than about
-   risk.
-3. **Verify the Cardcom iframe against a real terminal.** The framing and the
-   return leg are verified against a production build (one CSP per path, the
-   stub reachable without a session, the confirmation still authed), but no
-   payment has actually been taken through it. Then decide on
-   `094_settlement_events`.
+   מול `refs/checkout-measured.json`. זו המשימה היחידה שחוסמת את מספר ה-11%,
+   והיא לוקחת דקה. **הדרך העוקפת דרך Supabase מקומי נבדקה ואינה זמינה:**
+   ‏`supabase db reset` נשבר על `070_product_dynamic_split` עם
+   `column "price_ils" does not exist`, כי 070 נכתבה מול סכימה שבה 059 לא
+   הוחלה. שרשרת המיגרציות אינה ניתנת להרצה מאפס, וזה פרויקט נפרד
+   (‏`ARCHITECTURE-DEPLOYMENT` §4.3).
+
+2. **‏החל את `093_product_commission_type`.**
+   אומת מול הפרויקט המתארח בסבב הזה: `products.commission_type` **אינה קיימת**.
+   ‏`buildProductMoneyWrite` כותב אותה בכל insert ו-update של מוצר, כלומר כל
+   יצירה ועריכה באדמין נכשלת עכשיו על הענף הראשי. הקובץ אידמפוטנטי, עושה
+   backfill מ-`products.type` ונושא CHECK שכובל את השניים, אז זו החלטה על
+   תזמון ולא על סיכון.
+
+3. **‏העבר חיוב אחד אמיתי דרך ה-iframe, ואז החלט על `094_settlement_events`.**
+   המסגור ורגל החזרה אומתו מול build פרודקשן — כותרת CSP אחת לכל נתיב,
+   ה-stub נגיש בלי סשן, דף האישור עדיין דורש סשן — אבל **שום תשלום לא עבר בו
+   בפועל**. אחרי חיוב מוצלח אחד, החלטה על 094: הכותב כבר קיים ב-
+   `server/payments/settlement-events.ts` ורושם `charge_settled` פר שורה, אבל
+   כל עוד הטבלה חסרה הוא מתריע פעם אחת ולא כותב כלום.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
 
 ## Branch
-`phase5/homepage` (storefront + admin + checkout, all merged)
+`phase5/homepage` — the integration branch. Storefront, admin and checkout all
+live here now.
+
+### מצב כל branch מול `phase5/homepage`
+
+| ענף | לפניו | מאחוריו | מה לעשות איתו |
+|---|---|---|---|
+| `phase5/homepage` | — | — | **ענף העבודה.** הכל נדחף. |
+| `feat/admin-core` | 0 | 57 | **מוזג במלואו** (`e4b580f`). אפשר למחוק. |
+| `arch/supplier-portal` | 0 | 78 | מוכל. מסמכים בלבד. אפשר למחוק. |
+| `feat/payments-core` | 0 | 104 | מוכל. אפשר למחוק. |
+| `main` | 0 | 403 | מפגר בלבד. יתעדכן ב-merge של הענף. |
+| `feat/checkout-cardcom` | 1 | 83 | ‏`be47a62` מ-27.07, **לפני** היפוך מודל ה-Escrow. לא למזג כמו שהוא. מה ששווה משם כבר נלקח (`signature.ts`, תור ניסיונות חוזרים). |
+| `feat/checkout-complete` | 1 | 26 | קומיט תיעוד יחיד. אפשר לקטוף או למחוק. |
+| `feat/search-core` | 1 | 100 | ‏pipeline אינדוקס מצטבר. לא מוזג, לא נבדק בסבב הזה. |
+| `feat/ci-foundation` | 4 | 103 | ‏CI. לא מוזג. רלוונטי אחרי שהמפתחות מסודרים, אחרת CI יאדים על אותו חוסם. |
+| `arch/admin-supplier` | 16 | 399 | מסמכים ב-worktree `ke-admin`. מיזוג התיעוד בלבד. |
+| `feat/visual-polish` | 17 | 132 | עבודה ויזואלית ישנה. לבדוק לפני מיזוג. |
 
 ## Models
 Fable 5 (architecture / Admin Core) | Opus (docs/schema) | Sonnet (UI edits)
@@ -2727,3 +2754,42 @@ default, והטופס לא שלח אף אחת מהן. כל `insert` של מוצ�
 
 הערה: 093 לא רשומה בטבלת המיגרציות עם prefix מספרי כמו בקבצים המקומיים.
 היא נרשמה כ-version מבוסס תאריך, כמו כל שאר המיגרציות בפרויקט המאוחסן.
+
+---
+
+### 2026-07-29: Database Audit & Migration Backlog (audit בלבד, בלי נגיעה בקוד)
+
+נוצר `docs/MIGRATION-BACKLOG.md`: מצב כל 89 קבצי המיגרציה מול הפרויקט המאוחסן
+`ixvwfbuvfxxsjiywhbbb`, נמדד בקריאה בלבד מ-`information_schema`, `pg_proc`,
+`pg_constraint`, `pg_views` ו-`schema_migrations`.
+
+הספירה: 48 מוחלים, 5 חלקיים, 32 לא מוחלים, 2 no-op (083/084), 2 מבוטלים (079/080).
+
+**מה שהאודיט הקודם (`docs/DB-DRIFT-AUDIT.md`) פספס.** הוא השווה שמות אובייקטים.
+זה שגוי לכל `CREATE OR REPLACE`, כי שם קיים לא מעיד על גוף עדכני. השוואת גופים
+חשפה חמישה קבצים שנראים מוחלים ואינם: 068, 082, 088, 089, 092. המשמעות הכספית:
+`fn_wallet_transfer` החיה מקבלת `p_amount_ils numeric` ו-`v_wallet_ledger` החי
+מחזיר `amount_ils`, כלומר שכבת הכסף בפרודקשן עדיין ILS ולא אגורות integer.
+
+**שתי מיגרציות שבורות מול הפרודקשן, לא "ממתינות".** 087 מפנה ל-
+`vouchers.platform_bp` ו-`vouchers.platform_percent_legacy` שלא קיימות (הטבלה
+מחזיקה `platform_percent`), ותזרוק `42703`. 064 מפעילה RLS על תשע טבלאות שאף
+אחת לא קיימת.
+
+**החסימה של 050 פגה.** נמדד: 61 מוצרים, 0 בלי `platform_percent`, 0 בלי
+`supplier_split_percent`. ה-backfill של 070 מילא את שתיהן. 050 תעבור עכשיו,
+וזו המיגרציה עם התשואה הגבוהה ביותר ביחס לסיכון.
+
+**תיקונים למסמכים.** `DB-DRIFT-AUDIT`: `product_type.service` כן קיים בפרודקשן
+(ההצהרה של 005 ניצחה, לא של 001), ו-085 לא הוחלה כלל (`log_voucher_scan` הגיע
+מ-0545/073). `CONTRADICTIONS`: 070 כן הוחלה ורשומה כ-`20260727033456`, וספירת
+האחוזים בו התהפכה מאז.
+
+**Drizzle מול הסכימה החיה.** `commerce-managed.ts` מנהל ארבעה אובייקטים בלבד
+(`commissionLedger`, `cashbackReversalDebts` ושני ה-enums), וכולם מוגדרים
+ב-042 שלא הוחלה, כלומר הסכימה המנוהלת מתארת אובייקטים שלא קיימים. בנוסף,
+ההצהרות הלא-מנוהלות מתארות 4 עמודות ב-`orders` ו-8 ב-`order_items` בשמות
+אגורות שאין להם מקבילה בפרודקשן, ו-`products.platform_percent` מוצהר שם
+`NOT NULL DEFAULT '10'` - בדיוק הליטרל ש-C1 אוסר.
+
+לא נגעתי בקוד, בסכימה ובמיגרציות. audit ודוקומנטציה בלבד.
