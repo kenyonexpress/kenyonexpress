@@ -1,351 +1,399 @@
 # ARCHITECTURE-NOTIFICATIONS.md
 
-KenyonExpress notification system architecture (complete binding spec).
+KenyonExpress notifications architecture (binding).
 
-Status: BINDING for `arch/admin-supplier` (2026-07-28)
-Worktree: `/Users/ofir/kenyonexpress-web/ke-arch` only. **Documentation only.** Do not implement from this file inside this worktree.
-Companions: `docs/ADMIN-PRODUCT-PAGE-SPEC.md`, `docs/ARCHITECTURE-SUPPLIER-PORTAL.md`, `docs/ARCHITECTURE-ADMIN-DASHBOARD.md`, `docs/ARCHITECTURE-SECURITY-COMPLIANCE.md`, `docs/ARCHITECTURE-MOBILE-APP.md`.
-Grounding: migrations `029` (outbox + prefs), `031` (templates/events/fanout/dead, often DRAFT), `086` (order paid/refunded emit post-059), voucher redeem `074`/`085`, search DLQ pattern `069_search_index_dlq.sql` on `feat/search-core` (ke-search).
-Authority on money copy: dynamic per-product model below. Where older drafts hardcode fixed commission or Escrow payout of coupon prepaid, this file + product/supplier specs win.
-
-No Make. No Zapier. Approved delivery: **Resend** (transactional email), **Supabase triggers + Edge Function / Vercel cron worker**, **Ntfy.sh** (admin limit / ops alerts), future **in-app** (outbox `channel=inapp`).
+Status: BINDING for `arch/admin-supplier` (2026-07-29)
+Worktree: `/Users/ofir/kenyonexpress-web/ke-arch` only. **Documentation only.**
+Stack: **Resend** (email) + **Supabase Database Trigger** (emit) + **Edge Function / cron worker** (drain). No Make. No Zapier.
+Companions: `docs/ADMIN-PRODUCT-PAGE-SPEC.md`, `docs/ARCHITECTURE-SUPPLIER-PORTAL.md`, `docs/ARCHITECTURE-SECURITY-COMPLIANCE.md`.
 
 ---
 
-## 0. Money model (must appear correctly in payment notifications)
+## 0. Business model constraints (copy and payloads)
 
-| Product type | Customer pays on site | Platform revenue from that charge | Supplier from platform | Snapshot |
-|---|---|---|---|---|
-| **Coupon** | Full **online** price = absolute `coupon_price_ils` (admin-set, no default). Not a percent of face. | Split of that prepaid amount by dynamic **`platform_percent`** (admin per product, no default, snapshotted). Setting 100/0 means platform keeps all prepaid (common). Till balance `face - coupon_price` is cash at merchant on QR scan; coupon **expires on scan**. | Residual of prepaid only if `platform_percent < 100`; **never** the till balance | `order_items` + voucher money fields immutable |
-| **Physical** | On-site charge (discounted sticker). Split **immediately** at purchase by snapshotted `platform_percent` | `platform_percent` of paid-on-site | Residual; payout after T+3 / min threshold | same |
-
-Invariants for templates:
-
-1. Never invent a fixed 5%/10% commission.
-2. Never re-read live `products.platform_percent` for a past order; use snapshot fields (`platform_percent`, `paid_on_site_agorot`, `commission_agorot`, `coupon_price_*`, `balance_due_agorot`).
-3. No Escrow language. No promise that coupon till money flows through KenyonExpress.
-4. Amounts in templates: ILS with 2 decimals for humans; payloads may carry agorot integers.
-
-**Open Q-NOTIF-MONEY-1:** Whether customer-facing paid email shows the platform/supplier split at all, or only "שולם באתר" + "יתרה בבית העסק" for coupons. Default for v1: **do not show split to customers**; show split only on supplier physical order email and admin digests.
-
----
-
-## 1. Event sources
-
-Every domain write that must emit a notification fact. Emit via `fn_emit_notification_event(dedupe_key, event_type, entity_type, entity_id, user_id, payload)` (031) or an equivalent call site inside a SECURITY DEFINER RPC after the money mutation commits.
-
-| Canonical `event_type` | When it fires | Primary table / path | Payload facts (ids + money, no extra PII) |
-|---|---|---|---|
-| `order_created` | `orders` INSERT with `status=pending` (beginCheckout) | `orders` | `order_id`, line summary counts, `product_types[]` (`coupon`/`physical`), `customer_pays_now_agorot` |
-| `order_created_coupon` | Same, if any line `product_type=coupon` (optional specialized emit; or fanout branches on payload) | `order_items` | per line: `coupon_price` snapshot, `balance_due_agorot`, `platform_percent` snapshot |
-| `order_created_physical` | Same, if any physical line | `order_items` | `paid_on_site` intent, `platform_percent`, `supplier_id` |
-| `payment_settled` | Cardcom verified success → order `paid` (alias of today's `order_paid` in 086) | `orders` UPDATE + `payments` | `order_id`, `paid_on_site_agorot` / `total_*`, `invoice_number`, line money snapshots |
-| `payment_failed` | Low Profile / charge failure or pending expiry without pay | `payments` status failed / order cancelled-expired | `order_id`, `payment_id`, `failure_code` (non-sensitive) |
-| `coupon_redeemed` | Successful QR/manual scan (`redeem_voucher` / redeem RPC) | `vouchers` → `redeemed` | `voucher_id`, `code` (masked), `remaining_amount_due_agorot` (till), `supplier_id`, `redeemed_at` |
-| `coupon_expired_after_scan` | Same commit as redeem: terminal used/redeemed (expires-on-scan). **Not** calendar expiry. | same | same as redeemed; template stresses "פג תוקף לאחר מימוש" |
-| `coupon_expired_calendar` | Sweep `expire_vouchers` / time expiry without redeem | vouchers → `expired` | triggers wallet `refund_credit` path notifications separately if credited |
-| `refund_initiated` | Admin/customer refund started (before PSP confirm) | refund request / order flag | `order_id`, `reason_code`, amounts requested |
-| `order_refunded` | Refund finalized (086 already emits) | `orders.status=refunded` | `order_id`, refunded totals |
-| `supplier_new_order` | After `payment_settled`, fanout per distinct `order_items.supplier_id` with physical lines (and coupon lines only if product policy notifies supplier of sale; default **physical required**, coupon optional off) | fanout from paid | `order_id`, `supplier_id`, lines, snapshotted residual / platform_percent |
-| `subscription_renewal` | **Future** Cardcom recurring success | `subscriptions` (not in 026–053 scope) | `subscription_id`, `amount_agorot`, `platform_percent` snapshot | out of coupons-first launch |
-
-Notes:
-
-- Prefer one `payment_settled` fact plus fanout over duplicate emails from both payment and order triggers; dedupe_keys must collide intentionally (`payment_settled:{order_id}` === treat as same as `order_paid:{order_id}`).
-- `coupon_expired_after_scan` may share dedupe with `coupon_redeemed:{voucher_id}` if a single template covers both; otherwise use `coupon_expired_after_scan:{voucher_id}` and skip redundant redeemed mail (**Q-NOTIF-1**).
-
----
-
-## 2. Channels
-
-| Channel | Transport | Use |
-|---|---|---|
-| **email** | Resend API from worker | All customer + supplier transactional mail |
-| **inapp** | `notifications_outbox` row; bell UI via RLS | Customer account notifications; optional supplier home |
-| **push** | Future Expo / FCM via outbox (mobile doc) | Same transactional set when devices registered |
-| **ntfy** | Worker HTTP POST to ntfy topic (not customer outbox, or `audience=admin_ops`) | Admin limit alerts, DLQ depth, webhook failure spikes, fraud bursts |
-| **sms / whatsapp** | Out of coupons-first unless counsel enables | Not required for events below |
-
-### Event → channel map
-
-| Event | Email (Resend) | In-app | Ntfy (admin) | Notes |
-|---|---|---|---|---|
-| `order_created` | optional (usually wait for pay) | optional | no | Default **skip email** until settled to avoid unpaid noise (**Q-NOTIF-2**) |
-| `payment_settled` (coupon and/or physical) | customer: yes | yes | no | Money copy per §0 |
-| `payment_failed` | customer: yes | yes | yes if spike | Soft fail vs systemic |
-| `coupon_redeemed` / `coupon_expired_after_scan` | customer: yes | yes | no | Till amount highlighted |
-| `coupon_expired_calendar` + wallet credit | customer: yes | yes | no | |
-| `refund_initiated` | customer: yes | yes | admin if manual override | |
-| `order_refunded` | customer: yes | yes | no | |
-| `supplier_new_order` | supplier manager+: yes | optional | no | Physical split from **snapshot** `platform_percent` |
-| `subscription_renewal` | customer: yes (future) | yes | no | |
-| Rate limit / redeem fraud / outbox dead / Cardcom verify fail burst | no | no | **yes** | Admin only |
-
----
-
-## 3. Recipients matrix
-
-| Event | Customer | Supplier | Admin | Channel used |
-|---|---|---|---|---|
-| `order_created` | yes (if enabled) | no | no | inapp optional; email optional |
-| `payment_settled` (coupon lines) | yes | no (default) | no | email + inapp |
-| `payment_settled` (physical lines) | yes | yes (`supplier_new_order`) | no | email + inapp (customer); email (supplier) |
-| `payment_failed` | yes | no | on spike | email + inapp; ntfy |
-| `coupon_redeemed` | yes | optional (default off) | fraud ntfy only | email + inapp |
-| `coupon_expired_after_scan` | yes (same or combined template) | no | no | email + inapp |
-| `coupon_expired_calendar` | yes | no | no | email + inapp |
-| `refund_initiated` | yes | if physical unshipped impact | yes if staff-initiated | email + inapp; ntfy optional |
-| `order_refunded` | yes | if their lines affected | no | email + inapp |
-| `supplier_new_order` | no | manager + owner | no | email |
-| `subscription_renewal` | yes | no | no | email + inapp (future) |
-| Outbox `dead` / worker stall | no | no | yes | ntfy |
-| Redeem `rate_limited` burst | no | no | yes | ntfy |
-
-Supplier recipients resolve from `supplier_members` where `is_active` and `member_role IN ('owner','manager')` (scanners do not get new-order email by default).
-
----
-
-## 4. Data flow
-
-### 4.1 Happy path
-
-```
-1. Domain mutation commits (checkout / webhook finalize / redeem_voucher / refund)
-2. AFTER trigger or RPC calls fn_emit_notification_event(...)
-     INSERT notification_events ON CONFLICT (dedupe_key) DO NOTHING
-3. Fan-out (fn_fanout_notification_events cron/trigger, 031):
-     - load prefs + suppressions
-     - INSERT notifications_outbox rows per (user, channel)
-       with dedupe_key UNIQUE (e.g. email:order_paid:{order_id}:{user_id})
-4. Worker drains queue:
-     POST /api/cron/notifications-worker  (Bearer CRON_SECRET)
-     and/or Edge Function notifications-worker (service role + secret)
-5. For channel=email: Resend send with Idempotency-Key = outbox.id
-   For channel=inapp: mark sent (already visible)
-   For admin ntfy: separate send path (not Resend)
-6. Provider webhooks → notification_delivery_events (031)
-7. Mark outbox status=sent, sent_at=now()
-```
-
-**Rule:** Cardcom webhook and redeem RPC must not await Resend. Enqueue only.
-
-### 4.2 Idempotency keys
-
-| Layer | Key |
+| Rule | Consequence for notifications |
 |---|---|
-| Fact | `notification_events.dedupe_key` e.g. `payment_settled:{order_id}` |
-| Outbox | `notifications_outbox.dedupe_key` e.g. `email:payment_settled:{order_id}:{user_id}` |
-| Resend | HTTP `Idempotency-Key: {outbox.id}` |
-| Ntfy coalesce | `ntfy:{kind}:{bucket_5min}` |
+| Coupon is paid **in full on site** (`coupon_price_ils`, absolute, no default) | Customer paid email shows that amount as "שולם באתר". Never invent a percent of face as the charge. |
+| No Escrow | No template, subject, or payload may say "נאמן", "Escrow", "מוחזק אצל צד שלישי", or promise a release of coupon prepaid to the supplier. Coupon prepaid stays with the platform (`platform_settled`). |
+| Dynamic `platform_percent` per product | Never hardcode 5%/10%. Always read the **snapshot** on `order_items` (and voucher money columns), never live `products.platform_percent`. |
+| Till balance on coupons | `price_ils - coupon_price_ils` is collected in cash/card **at the business** on QR scan. Templates may show it as "יתרה בבית העסק". That money never flows through KE. |
+| Physical | Customer pays on site (after `discount_percent`). Platform/supplier split uses snapshotted `platform_percent`. Supplier due appears on supplier alerts and payout mail only. |
 
-### 4.3 Retry logic
+Money in DB / JSON payloads: **integer agorot**. Money in Hebrew email bodies: ILS with exactly 2 decimals and ₪.
 
-Reuse and extend 031 outbox fields (`attempt_count`, `next_attempt_at`, `last_error` where present):
+---
 
-| Attempt | Delay before next |
+## 1. Pipeline (no Make / Zapier)
+
+```
+Domain mutation commits
+  -> AFTER trigger / SECURITY DEFINER RPC
+  -> INSERT notification_events (idempotent dedupe_key)
+  -> fanout -> notification_log (+ optional notifications_outbox)
+  -> Edge Function or Vercel cron worker (Bearer CRON_SECRET)
+  -> Resend (email) | in-app mark | Ntfy.sh (admin only)
+  -> delivery webhook / status update
+  -> on exhaustion: DLQ + Ntfy
+```
+
+Rules:
+
+1. Cardcom webhook, redeem RPC, and payout RPCs **must not await Resend**. Enqueue only inside the same DB transaction as the money fact when possible.
+2. Worker uses service role. Browser never holds Resend or Ntfy secrets.
+3. One worker implementation may run as Supabase Edge Function **or** `POST /api/cron/notifications-worker`. Same drain semantics.
+
+---
+
+## 2. Event catalog (required set)
+
+Canonical `event_type` values. Emit after the money/state mutation is durable.
+
+| `event_type` | When | Emitter (source of truth) | Primary audience |
+|---|---|---|---|
+| `order.paid` | Order becomes `paid` after Cardcom verify / finalize | trigger on `orders` / emit inside finalize | customer |
+| `coupon.issued` | Voucher rows created for paid coupon lines | emit inside finalize after voucher insert | customer |
+| `coupon.redeemed` | Successful QR/manual scan (`redeem_voucher`) | emit inside redeem RPC after success | customer (supplier optional, default off) |
+| `coupon.expired` | Calendar sweep marks voucher `expired` without redeem | `expire_vouchers` / cron | customer |
+| `order.physical_supplier_alert` | Paid order contains physical lines for a supplier | fanout from `order.paid` per `supplier_id` | supplier owner/manager |
+| `payout.sent` | Payout statement marked paid / transfer recorded | admin/super_admin payout path | supplier owner |
+| `order.refunded` | Refund finalized (PSP or wallet credit completed) | refund finalize path | customer (supplier if their lines affected) |
+
+### 2.1 Supporting / optional emits (same pipeline)
+
+| `event_type` | When | Notes |
+|---|---|---|
+| `order.pending` | Checkout created, unpaid | Default: **no email** (avoid unpaid noise). In-app optional. |
+| `payment.failed` | Charge declined / pending expired | Customer email + in-app; Ntfy on spike |
+| `refund.initiated` | Refund requested, not yet settled | Customer email; staff Ntfy if manual override |
+| `coupon.redeem_rate_limited` | Burst of scan rate limits | Ntfy admin only |
+
+### 2.2 Payload facts (ids + agorot only)
+
+Every event payload is JSONB. Include:
+
+- Entity ids: `order_id`, `order_item_id`, `voucher_id`, `supplier_id`, `user_id`, `payout_statement_id` as applicable
+- Money as integers: `paid_on_site_agorot`, `coupon_price_agorot`, `balance_due_agorot`, `platform_fee_agorot`, `supplier_due_agorot`, `refund_agorot`, `payout_agorot`
+- Snapshots: `platform_percent` (numeric as stored on the line), `product_type`, `product_name_he`
+- Never embed full card numbers, raw QR HMAC secrets, or service-role keys
+
+---
+
+## 3. Channels: customer vs supplier vs admin
+
+| Channel | Transport | Who |
+|---|---|---|
+| `email` | Resend | Customer and supplier transactional mail |
+| `inapp` | Row readable under RLS | Customer account bell; optional supplier home |
+| `ntfy` | HTTPS publish to Ntfy topic | **Admin / ops only** (never customers or suppliers) |
+| `push` | Future (Expo/FCM) | Same transactional set when devices exist |
+
+### 3.1 Matrix
+
+| Event | Customer email | Customer in-app | Supplier email | Ntfy admin |
+|---|---|---|---|---|
+| `order.paid` | yes | yes | no (use physical alert) | no |
+| `coupon.issued` | yes (or folded into paid) | yes | no | no |
+| `coupon.redeemed` | yes | yes | default off | fraud/rate only |
+| `coupon.expired` | yes | yes | no | no |
+| `order.physical_supplier_alert` | no | no | yes (owner+manager) | no |
+| `payout.sent` | no | no | yes (owner) | optional |
+| `order.refunded` | yes | yes | if lines affected | no |
+| `payment.failed` | yes | yes | no | on spike |
+| Worker/DLQ depth / Cardcom verify burst | no | no | no | **yes** |
+
+Supplier recipients: `supplier_members` where `is_active` and `member_role IN ('owner','manager')`. Scanners do not get order/payout email by default.
+
+Preferences: `notification_preferences` (per user, per `event_type`, per channel) may disable email but **must not** disable legal/receipt class events without an in-app substitute. v1: paid, issued, refunded are non-disableable for email if the user has an address.
+
+---
+
+## 4. Idempotency keys (per event)
+
+| Layer | Key format | Uniqueness |
+|---|---|---|
+| Fact (`notification_events`) | `{event_type}:{entity_id}` | UNIQUE `dedupe_key` |
+| Per recipient log (`notification_log`) | `{channel}:{event_type}:{entity_id}:{recipient_user_id}` | UNIQUE `idempotency_key` |
+| Resend HTTP | `Idempotency-Key: {notification_log.id}` | Provider-side |
+| Ntfy coalesce | `ntfy:{alert_kind}:{floor(epoch/300)}` | One alert per 5 min bucket |
+
+### 4.1 Concrete keys
+
+| Event | Fact `dedupe_key` | Log `idempotency_key` (email) |
+|---|---|---|
+| `order.paid` | `order.paid:{order_id}` | `email:order.paid:{order_id}:{user_id}` |
+| `coupon.issued` | `coupon.issued:{voucher_id}` | `email:coupon.issued:{voucher_id}:{user_id}` |
+| `coupon.redeemed` | `coupon.redeemed:{voucher_id}` | `email:coupon.redeemed:{voucher_id}:{user_id}` |
+| `coupon.expired` | `coupon.expired:{voucher_id}` | `email:coupon.expired:{voucher_id}:{user_id}` |
+| `order.physical_supplier_alert` | `order.physical_supplier_alert:{order_id}:{supplier_id}` | `email:order.physical_supplier_alert:{order_id}:{supplier_id}:{user_id}` |
+| `payout.sent` | `payout.sent:{payout_statement_id}` | `email:payout.sent:{payout_statement_id}:{user_id}` |
+| `order.refunded` | `order.refunded:{order_id}` | `email:order.refunded:{order_id}:{user_id}` |
+
+`INSERT … ON CONFLICT (dedupe_key) DO NOTHING` on facts. Same for log idempotency keys. Retries of the worker with the same Resend Idempotency-Key must not create duplicate customer mail.
+
+If `coupon.issued` is folded into the paid email, still emit the fact (for audit) but skip a second email by marking log `status='skipped_folded'` with the paid log id as `related_log_id`.
+
+---
+
+## 5. Delivery guarantees, retry, DLQ
+
+### 5.1 Guarantee level
+
+- **At-least-once** enqueue after commit.
+- **Exactly-once effect** at the provider via idempotency keys (duplicate worker runs are safe).
+- Payment and redeem paths never fail the money transaction because Resend is down.
+
+### 5.2 Retry schedule
+
+| Attempt | `next_attempt_at` delay |
 |---|---|
 | 1 | immediate |
-| 2 | 2 min |
-| 3 | 4 min |
-| 4 | 8 min |
-| 5 | 16 min |
-| 6 | 32 min then **dead** |
+| 2 | 2 minutes |
+| 3 | 4 minutes |
+| 4 | 8 minutes |
+| 5 | 16 minutes |
+| 6 | 32 minutes, then `dead` |
 
-Worker selects `status='queued' AND next_attempt_at <= now()` FOR UPDATE SKIP LOCKED (or equivalent) so concurrent crons do not double-send.
+Worker claim: `FOR UPDATE SKIP LOCKED` on due rows (`status IN ('queued','retry') AND next_attempt_at <= now()`).
 
-### 4.4 Dead letter handling (search-core DLQ pattern)
+### 5.3 Dead letter queue
 
-`feat/search-core` parks exhausted jobs in `search_index_dlq` (migration `069_search_index_dlq.sql`): jsonb payload, `status IN ('dead','replayed','discarded')`, RLS on with **zero** policies (service-role only), manual replay via secured route then `status=replayed`.
+After max attempts:
 
-**Notifications adopt the same pattern:**
+1. Set `notification_log.status = 'dead'`.
+2. Insert into `notification_delivery_dlq` (payload snapshot, last error, attempt_count).
+3. Publish Ntfy alert when DLQ insert happens or when depth exceeds threshold (default 25).
+4. Admin replay: requeue to `queued` with `attempt_count` reset policy (keep history), audit_log entry.
+5. Discard only via admin action + audit.
 
-1. Outbox row reaches `status='dead'` after retries (031 meaning).
-2. Mirror insert into `notification_delivery_dlq` (new; §7) with verbatim last error + outbox snapshot jsonb (like search DLQ `callback`/`job`).
-3. Ntfy admin alert on insert / depth threshold.
-4. Admin replay: requeue outbox to `queued` (031 `fn_requeue_dead_*` style) **or** POST worker with `CRON_SECRET`, then mark DLQ `replayed`.
-5. Discard only by admin with audit_log entry.
-
-Do not drop undeliverable customer payment receipts silently.
+Do not silently drop `order.paid`, `coupon.issued`, or `order.refunded`.
 
 ---
 
-## 5. Templates (Hebrew RTL)
+## 6. Rate limits
 
-All email HTML: `dir="rtl"` `lang="he"`. Subjects Hebrew. Variables filled from **snapshots** and ids only.
+| Scope | Limit | Behavior |
+|---|---|---|
+| Resend account | Provider plan cap | Worker backs off; Ntfy if 429 streak |
+| Per user email | 30 / hour transactional | Excess → queue delay, not drop of paid/refund |
+| Per supplier email | 60 / hour | Same |
+| Redeem-related customer mail | 10 / hour / user | Coalesce duplicates via idempotency |
+| Ntfy admin | 1 / kind / 5 min | Coalesce key above |
+| Fanout storm guard | Max N recipient rows per fact (default 50) | Cap + Ntfy if exceeded |
 
-| Template key | Channel | When | Variables |
+Money-path emitters fail **open** on rate-limit check (still enqueue). Worker fail **closed** on repeated 429 from Resend (slow drain, alert).
+
+---
+
+## 7. Hebrew RTL email templates
+
+All HTML emails: `dir="rtl"` `lang="he"`. Plain-text part also Hebrew. Subjects Hebrew. Brand yellow only via approved tokens (no raw ad-hoc hex in new templates without design review).
+
+| Template key | Event | Subject (example) | Required body facts |
 |---|---|---|---|
-| `order.created` | email/inapp | optional pending | `customer_first_name`, `order_id_short`, `pay_url`, `expires_at` |
-| `payment.settled.coupon` | email/inapp | paid with coupon lines | `customer_first_name`, `order_id_short`, `paid_online_ils`, `balance_at_business_ils`, `voucher_list[]` (name, code_hint, expires_at), `voucher_wallet_url` |
-| `payment.settled.physical` | email/inapp | paid with physical lines | `customer_first_name`, `order_id_short`, `paid_online_ils`, `lines[]` (name, qty), `shipping_summary` |
-| `payment.settled.mixed` | email/inapp | both types | union of above |
-| `payment.failed` | email/inapp | pay fail | `customer_first_name`, `order_id_short`, `retry_url`, `support_url` |
-| `coupon.redeemed` | email/inapp | scan success | `customer_first_name`, `product_name`, `redeemed_at`, `till_collected_ils` (remaining_amount_due), `supplier_name` |
-| `coupon.expired_after_scan` | email/inapp | if separate from redeemed | same as redeemed + `expired_reason=scanned` |
-| `coupon.expired_credited` | email/inapp | calendar expiry + wallet credit | `credit_ils`, `wallet_url`, `credit_expires_at` |
-| `refund.initiated` | email/inapp | refund started | `order_id_short`, `amount_ils`, `method_hint` (card/wallet) |
-| `refund.completed` | email/inapp | refunded | `order_id_short`, `amount_ils`, `completed_at` |
-| `supplier.new_order.physical` | email | supplier_new_order | `supplier_business_name`, `order_id_short`, `lines[]`, `paid_on_site_ils`, `platform_percent_snapshot`, `supplier_due_ils`, `ship_by_hint`, `portal_orders_url` |
-| `supplier.new_order.coupon` | email | only if enabled | `product_name`, `qty`, note: prepaid handled by platform; till at scan |
-| `subscription.renewal` | email/inapp | future | `amount_ils`, `period_end`, `manage_url` |
-| `admin.ntfy.payment_fail_spike` | ntfy | ops | short title/body, counts, link to admin payments |
-| `admin.ntfy.redeem_fraud` | ntfy | ops | counts of rate_limited / wrong_supplier |
-| `admin.ntfy.outbox_dead` | ntfy | ops | dead depth, sample outbox ids |
+| `customer.order_paid` | `order.paid` | קיבלנו את התשלום · הזמנה {order_short} | שם, מזהה הזמנה, **שולם באתר ₪X.XX** (מסנאפשוט), לפי סוג: יתרה בבית העסק / פירוט פיזי |
+| `customer.coupon_issued` | `coupon.issued` | הקופון שלך מוכן | שם מוצר, רמז קוד / קישור לארנק, תוקף, שולם באתר, יתרה בבית העסק |
+| `customer.coupon_redeemed` | `coupon.redeemed` | הקופון מומש | שם מוצר, זמן מימוש, שם העסק, יתרה שנגבתה בבית העסק |
+| `customer.coupon_expired` | `coupon.expired` | הקופון פג תוקף | שם מוצר, תאריך פקיעה, האם זוכה ארנק (אם כן: סכום באגורות→₪) |
+| `supplier.physical_order` | `order.physical_supplier_alert` | הזמנה חדשה לפיזי · {order_short} | שם עסק, שורות, שולם באתר, **platform_percent מהסנאפשוט**, יתרת ספק משוערת, קישור לפורטל |
+| `supplier.payout_sent` | `payout.sent` | בוצעה העברה · {statement_short} | סכום, תקופה, מזהה דוח, הערה T+3 כבר סופק |
+| `customer.order_refunded` | `order.refunded` | הזיכוי בוצע · הזמנה {order_short} | סכום זוכה, אמצעי (כרטיס/ארנק), זמן |
 
-Template storage: `notification_templates` (031) with one active version per `(template_key, channel, locale)`.
+Copy bans:
+
+- No "Escrow" / נאמן
+- No fixed commission percent
+- No telling the customer the platform/supplier split on coupon prepaid (v1). Supplier physical mail **does** show snapshotted split.
+- No "הספק יקבל מהפלטפורמה את מקדמת הקופון" (false under no-escrow coupon model)
 
 ---
 
-## 6. Failure handling
+## 8. Ntfy.sh admin alerts
 
-| Failure | Behavior |
-|---|---|
-| **Resend down / 5xx** | Leave outbox `queued`/`failed`; backoff §4.3; do not mark sent; after max attempts → `dead` + DLQ row + ntfy |
-| **Resend 4xx (bad template/address)** | `skipped` or `dead` without endless retry; suppress address via `channel_suppressions` on bounce/complaint webhooks (031) |
-| **Edge Function / worker timeout** | Transactional send must be idempotent (Resend key = outbox id). Cron retries pick same row. Use SKIP LOCKED |
-| **Webhook signature fail (Resend)** | Reject 401; no status flip |
-| **Fan-out crash after event insert** | Event remains `processed_at IS NULL`; fan-out job retries; outbox UNIQUE prevents dupes |
-| **DB trigger error on order paid** | Must not roll back payment: emit in AFTER trigger autonomous or enqueue from finalize in same TX carefully; prefer finalize call site + trigger as belt (**Q-NOTIF-3**) |
-| **Ntfy down** | Log; do not fail customer email path; local metric only |
-| **Partial mixed order** | One customer email (`payment.settled.mixed`); separate supplier emails per supplier_id |
-
-Search-core parallel: exhausted work is **parked visibly** (`search_index_dlq`), never deleted; replay is explicit. Notifications mirror that with `notification_delivery_dlq`.
-
----
-
-## 7. Schema
-
-### 7.1 Already specified (029 / 031)
-
-| Table | Role |
-|---|---|
-| `user_notification_preferences` | per-user channel toggles + `locale` |
-| `notifications_outbox` | queue: `user_id`, `kind`, `channel`, `payload`, `dedupe_key` UNIQUE, `status`, `scheduled_for`, `sent_at`, `read_at`, `error`, (+ 031: attempts, `next_attempt_at`, journey keys) |
-| `notification_events` | append-only facts; `dedupe_key` UNIQUE |
-| `notification_templates` | versioned RTL bodies |
-| `notification_delivery_events` | provider callbacks; ~90 day retention |
-| `consent_events` / `channel_suppressions` | marketing/compliance (031) |
-
-`notification_status`: `queued | sent | failed | cancelled | dead | skipped`.
-
-### 7.2 New / rename alignment
-
-User-facing names `notification_log` and `notification_preferences`:
-
-| Requested name | Binding mapping |
-|---|---|
-| `notification_preferences` | **Use existing** `user_notification_preferences` (029). Do not create a second prefs table. |
-| `notification_log` | **Views + tables:** read model over `notification_events` ⋈ `notifications_outbox` ⋈ `notification_delivery_events`; optional SQL view `v_notification_log` for admin UI. |
-
-### 7.3 `notification_delivery_dlq` (new, search-core analogue)
-
-| Column | Type | Notes |
+| Alert kind | Trigger | Topic payload |
 |---|---|---|
-| `id` | uuid PK | |
-| `outbox_id` | uuid null | FK → `notifications_outbox` ON DELETE SET NULL |
-| `job` | jsonb | reconstructed send intent |
-| `callback` | jsonb NOT NULL | last worker error / provider body (`{"raw":...}` if undecodable) |
-| `last_error` | text | |
-| `status` | text | CHECK `dead\|replayed\|discarded` DEFAULT `dead` |
-| `created_at` | timestamptz | DEFAULT now() |
-| `resolved_at` | timestamptz | |
+| `notif.dlq` | DLQ insert or depth ≥ 25 | count, sample `idempotency_key`, last_error |
+| `notif.worker_stall` | No successful drain for 15 min while queued > 0 | queued count, oldest age |
+| `payments.verify_burst` | Cardcom verify failures ≥ N / 5 min | count |
+| `redeem.rate_burst` | `rate_limited` outcomes ≥ N / 5 min | count |
+| `payout.sent_ops` | optional mirror of payout.sent for ops | statement id, amount_agorot |
 
-Index: `(status, created_at DESC)`.
-RLS: ENABLE with **no** authenticated policies (service-role / admin client only), same as `search_index_dlq`.
-
-### 7.4 Preferred indexes (confirm on apply)
-
-- `notifications_outbox (scheduled_for) WHERE status = 'queued'`
-- `notifications_outbox (next_attempt_at) WHERE status = 'queued'` (031)
-- `notification_events (occurred_at) WHERE processed_at IS NULL`
-- UNIQUE `dedupe_key` on events and outbox
-
-### 7.5 RLS summary
-
-| Table | SELECT | WRITE |
-|---|---|---|
-| `user_notification_preferences` | own | own |
-| `notifications_outbox` | own; `is_admin()` | service/fanout insert; owner UPDATE `read_at` only |
-| `notification_events` | `is_admin()` | definer emit only |
-| `notification_templates` | `is_admin()` | admin activate |
-| `notification_delivery_dlq` | service/admin only | service only |
+Config: `NTFY_BASE_URL`, `NTFY_ADMIN_TOPIC`, optional bearer. Worker publishes with coalesce key. Never put PII beyond order/voucher ids in the title; body may include error strings stripped of emails if needed.
 
 ---
 
-## 8. Migration plan
+## 9. DB schema draft (`notification_log` + support tables)
 
-**Never** `supabase db push` for these objects. Apply only via **Supabase MCP `apply_migration`** (project convention; same as search/catalog docs).
+Money columns are **integer agorot**. Percents on snapshots stay `numeric(5,2)` as on `order_items`.
 
-| Proposed name | Depends on | Contents |
-|---|---|---|
-| Next free number **≥ 076** on the target host (if `076`–`091` already used, take **next unused**, e.g. `092_notification_delivery_dlq.sql`) | 029 outbox exists | Create `notification_delivery_dlq` + indexes + RLS |
-| Following number | 031 or subset | Ensure `dead`/`skipped` on enum; outbox attempt columns; `fn_requeue_dead_notification` |
-| Following number | 086 patterns | Emit `payment_failed`, `order_created` (if approved), redeem success emit from RPC, `supplier_new_order` fanout |
-| Seed migration or admin script | templates table | Hebrew RTL active templates listed in §5 |
+```sql
+-- Fact stream (idempotent emit)
+CREATE TABLE IF NOT EXISTS public.notification_events (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  dedupe_key    text NOT NULL UNIQUE,
+  event_type    text NOT NULL,
+  entity_type   text NOT NULL,
+  entity_id     uuid NOT NULL,
+  user_id       uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  payload       jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at    timestamptz NOT NULL DEFAULT now()
+);
 
-Pre-checks before apply:
+CREATE INDEX IF NOT EXISTS notification_events_type_created_idx
+  ON public.notification_events (event_type, created_at DESC);
 
-1. `to_regclass('public.notifications_outbox')` present.
-2. Do not re-apply full `027` (regressions on `platform_percent`).
-3. Idempotent `IF NOT EXISTS` / `ADD VALUE IF NOT EXISTS`.
-4. Apply-twice harness green on staging.
+-- Per-recipient delivery log (source of truth for worker + audit)
+CREATE TABLE IF NOT EXISTS public.notification_log (
+  id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  idempotency_key    text NOT NULL UNIQUE,
+  event_id           uuid NOT NULL REFERENCES public.notification_events(id) ON DELETE CASCADE,
+  event_type         text NOT NULL,
+  channel            text NOT NULL CHECK (channel IN ('email', 'inapp', 'ntfy', 'push')),
+  recipient_user_id  uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  recipient_email    text,
+  supplier_id        uuid REFERENCES public.suppliers(id) ON DELETE SET NULL,
+  template_key       text,
+  status             text NOT NULL DEFAULT 'queued'
+                       CHECK (status IN (
+                         'queued', 'retry', 'sending', 'sent', 'failed',
+                         'dead', 'skipped', 'skipped_folded'
+                       )),
+  attempt_count      integer NOT NULL DEFAULT 0 CHECK (attempt_count >= 0),
+  next_attempt_at    timestamptz NOT NULL DEFAULT now(),
+  last_error         text,
+  provider_message_id text,
+  -- Money mirrors for support/search (agorot). Nullable when N/A.
+  paid_on_site_agorot     integer CHECK (paid_on_site_agorot IS NULL OR paid_on_site_agorot >= 0),
+  coupon_price_agorot     integer CHECK (coupon_price_agorot IS NULL OR coupon_price_agorot >= 0),
+  balance_due_agorot      integer CHECK (balance_due_agorot IS NULL OR balance_due_agorot >= 0),
+  platform_fee_agorot     integer CHECK (platform_fee_agorot IS NULL OR platform_fee_agorot >= 0),
+  supplier_due_agorot     integer CHECK (supplier_due_agorot IS NULL OR supplier_due_agorot >= 0),
+  refund_agorot           integer CHECK (refund_agorot IS NULL OR refund_agorot >= 0),
+  payout_agorot           integer CHECK (payout_agorot IS NULL OR payout_agorot >= 0),
+  platform_percent_snapshot numeric(5,2),
+  payload            jsonb NOT NULL DEFAULT '{}'::jsonb,
+  related_log_id     uuid REFERENCES public.notification_log(id) ON DELETE SET NULL,
+  sent_at            timestamptz,
+  created_at         timestamptz NOT NULL DEFAULT now(),
+  updated_at         timestamptz NOT NULL DEFAULT now()
+);
 
-**Open Q-NOTIF-4:** Exact first migration ordinal on production journal (076 vs 092+) must be read from hosted `schema_migrations` at apply time, not guessed from this doc.
+CREATE INDEX IF NOT EXISTS notification_log_drain_idx
+  ON public.notification_log (status, next_attempt_at)
+  WHERE status IN ('queued', 'retry');
 
-Rollout order:
+CREATE INDEX IF NOT EXISTS notification_log_recipient_idx
+  ON public.notification_log (recipient_user_id, created_at DESC);
 
-1. Prefs + outbox confirmed (029).
-2. Templates + events + fanout (031 or additive slice).
-3. DLQ table.
-4. Worker cron + Resend + ntfy.
-5. Wire emits on finalize / redeem / refund / fail.
-6. Seed templates; verify coupon vs physical payment emails against §0 snapshots.
+CREATE TABLE IF NOT EXISTS public.notification_delivery_dlq (
+  id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  notification_log_id uuid REFERENCES public.notification_log(id) ON DELETE SET NULL,
+  idempotency_key    text NOT NULL,
+  event_type         text NOT NULL,
+  channel            text NOT NULL,
+  payload            jsonb NOT NULL,
+  last_error         text,
+  attempt_count      integer NOT NULL,
+  status             text NOT NULL DEFAULT 'dead'
+                       CHECK (status IN ('dead', 'replayed', 'discarded')),
+  created_at         timestamptz NOT NULL DEFAULT now(),
+  resolved_at        timestamptz
+);
+
+CREATE TABLE IF NOT EXISTS public.notification_preferences (
+  user_id     uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  event_type  text NOT NULL,
+  channel     text NOT NULL CHECK (channel IN ('email', 'inapp', 'push')),
+  enabled     boolean NOT NULL DEFAULT true,
+  PRIMARY KEY (user_id, event_type, channel)
+);
+
+ALTER TABLE public.notification_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notification_log ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notification_delivery_dlq ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notification_preferences ENABLE ROW LEVEL SECURITY;
+
+-- Clients: read own in-app / prefs only. No client INSERT on log/events/dlq.
+-- Writes: triggers + worker service role only.
+
+CREATE POLICY notification_log_recipient_read
+  ON public.notification_log
+  FOR SELECT
+  TO authenticated
+  USING (
+    channel = 'inapp'
+    AND recipient_user_id = auth.uid()
+  );
+
+CREATE POLICY notification_preferences_own
+  ON public.notification_preferences
+  FOR ALL
+  TO authenticated
+  USING (user_id = auth.uid())
+  WITH CHECK (user_id = auth.uid());
+
+-- DLQ: zero client policies (service role only).
+```
+
+Emit helper (sketch): `fn_emit_notification_event(dedupe_key, event_type, entity_type, entity_id, user_id, payload)` → insert event + fanout rows into `notification_log`.
 
 ---
 
-## 9. Security and abuse
+## 10. Testing strategy
 
-- No Resend from browser.
-- Cron/Edge auth: `CRON_SECRET` or function JWT.
-- Rate-limit worker global send (`RESEND_MAX_PER_MINUTE`).
-- Redact tokens/PII from ntfy bodies (ids only).
-- Audit: template activation, DLQ replay/discard, preference bulk admin edits → `audit_log` (011).
+### 10.1 Unit
+
+- Idempotency key builders (table in §4.1): stable strings, no PII.
+- Template variable mapping from snapshots: agorot → ILS formatting; coupon paid-in-full copy; physical split uses snapshot percent.
+- Preference + non-disableable rules for paid/issued/refunded.
+- Retry delay function and dead transition at attempt 6.
+
+### 10.2 Integration (local Supabase)
+
+1. Insert paid order with coupon line → one `order.paid` fact, one `coupon.issued` per voucher, customer email logs queued with agorot columns filled from snapshots.
+2. Re-run finalize (idempotent) → no second fact / no second Resend key.
+3. Redeem voucher → `coupon.redeemed` once; double redeem → still one log.
+4. Expire sweep → `coupon.expired` once per voucher.
+5. Physical paid order → one `order.physical_supplier_alert` per supplier; scanners not emailed.
+6. Mark payout paid → `payout.sent` once.
+7. Refund finalize → `order.refunded` once; blocked redeem-consumed amounts do not invent refund mail for those lines.
+8. Force Resend 500 ×6 → row `dead`, DLQ row, Ntfy called (mock).
+9. Replay DLQ → single subsequent send with same Resend Idempotency-Key.
+
+### 10.3 Contract / snapshot money
+
+Fixtures must include `order_items.platform_percent` and `coupon_price` snapshots. Assert templates and log columns **ignore** mutated live `products.platform_percent` after purchase.
+
+### 10.4 E2E (optional CI)
+
+With Resend test mode / sandbox API key: place order → assert inbound test mailbox or Resend dashboard message for paid + issued. No real Ntfy in CI unless secret present (skip).
+
+### 10.5 Load
+
+Simulate 1k queued rows: worker with SKIP LOCKED does not double-send (assert unique provider_message_id / idempotency).
 
 ---
 
-## 10. Acceptance checklist
+## 11. Implementation map
 
-- [ ] Paid coupon email shows online `coupon_price` and till balance; no false platform→supplier transfer for till cash
-- [ ] Paid physical supplier email uses **snapshotted** `platform_percent` / residual
-- [ ] Double webhook finalize → one customer email (dedupe)
-- [ ] Resend outage → retries then DLQ + ntfy; no silent drop of `payment_settled`
-- [ ] Redeem success enqueued outside RPC latency budget
-- [ ] `subscription_renewal` documented but not required for coupons-first launch
-- [ ] Migrations applied only via MCP `apply_migration`
-
----
-
-## 11. Open questions
-
-| ID | Question |
+| Piece | Home (target) |
 |---|---|
-| Q-NOTIF-1 | Combined vs separate redeemed / expired-after-scan templates |
-| Q-NOTIF-2 | Email on `order_created` or only after pay |
-| Q-NOTIF-3 | Emit from trigger only vs finalize call site + trigger belt |
-| Q-NOTIF-4 | First free migration number on hosted |
-| Q-NOTIF-MONEY-1 | Show split to customers? (default no) |
-| Q-NOTIF-5 | Notify supplier on coupon sale (default no) |
-| Q-NOTIF-6 | Ntfy cloud vs self-hosted for admin PII |
+| Triggers / emit RPCs | `supabase/migrations/*_notifications*.sql` |
+| Worker | Edge Function `notifications-worker` and/or `src/app/api/cron/notifications-worker/route.ts` |
+| Resend client | `src/server/notifications/resend.ts` |
+| Ntfy client | `src/server/notifications/ntfy.ts` |
+| Templates | `src/server/notifications/templates/*.tsx` or HTML partials (RTL) |
+| Admin DLQ UI | `/admin` support/ops section |
 
 ---
 
-## 12. Related references
+## 12. Acceptance checklist
 
-| Artifact | Role |
-|---|---|
-| `029_accounts.sql` | outbox, prefs |
-| `031_notifications.sql` | events, templates, fanout, dead |
-| `086_triggers_post_059_money_columns.sql` | order paid/refunded emit |
-| `069_search_index_dlq.sql` (feat/search-core) | DLQ pattern to mirror |
-| `docs/ADMIN-PRODUCT-PAGE-SPEC.md` | dynamic money knobs |
-| `MASTER-ARCHITECTURE-v2.md` | system externals (Resend), cron split |
+- [ ] No Make/Zapier in the path
+- [ ] Required seven events emit with stable dedupe keys
+- [ ] Coupon paid email shows full on-site `coupon_price` from snapshot; no Escrow wording
+- [ ] All money in `notification_log` stored as integer agorot
+- [ ] Worker retries then DLQ + Ntfy; paid/issued/refunded never dropped silently
+- [ ] Supplier physical alert uses snapshotted `platform_percent`, not live product
+- [ ] Customer vs supplier vs admin channels match §3
+- [ ] Hebrew RTL templates for every required event
+- [ ] Tests cover idempotency, redeem double-scan, expire, payout, refund, DLQ replay

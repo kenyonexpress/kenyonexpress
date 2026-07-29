@@ -4,15 +4,16 @@
 Admin Dashboard Core (Fable 5). Docs channel on `arch/admin-supplier` (ke-arch).
 
 ## Last Completed
-2026-07-29: `docs/ADMIN-PRODUCT-PAGE-SPEC.md` (docs only in ke-arch):
+2026-07-29: `docs/ARCHITECTURE-NOTIFICATIONS.md` (docs only in ke-arch):
 
-- four dynamic money fields: platform_percent, supplier_split_percent, discount_percent, coupon_price
-- required supplier publish gate
-- order_items snapshot (C10)
-- validation / CHECKs; aligned to CONTRADICTIONS 28.07 (coupon prepayment stays with platform)
+- Resend + Supabase Trigger + Edge Function/cron (no Make/Zapier)
+- Event catalog: order.paid, coupon.issued/redeemed/expired, physical supplier alert, payout.sent, order.refunded
+- Hebrew RTL templates, idempotency keys, retry/DLQ, rate limits, Ntfy admin
+- `notification_log` schema draft with integer agorot; testing strategy
+- Money constraints: coupon paid in full on site, no escrow, `platform_percent` snapshot on `order_items`
 
 ## In Progress
-Docs channel on `arch/admin-supplier` (ke-arch).
+nothing
 
 ## Blocking Issues
 none for this docs pass
@@ -35,15 +36,17 @@ not set in this worktree STATE
 ---
 ## History
 
+### 2026-07-29: ARCHITECTURE-NOTIFICATIONS rewrite
+- Full binding notifications spec under 28.07 money rules. Docs only.
+
 ### 2026-07-29: ADMIN-PRODUCT-PAGE-SPEC
-- Rewrote money/supplier/snapshot/validation spec under 28.07 binding model. Docs only.
+- Money/supplier/snapshot/validation spec under 28.07. Docs only.
 
 ### 2026-07-29: ARCHITECTURE-CUSTOMER-SUPPORT
-- Full support/tickets architecture. Docs only. No application code.
+- Full support/tickets architecture. Docs only.
 
 ### 2026-07-29: ARCHITECTURE-ANALYTICS rewrite (ke-arch)
-- Focused goals, pipeline layers, privacy, RTL, sample queries.
-- Docs only. No application code.
+- Focused goals, pipeline layers, privacy, RTL, sample queries. Docs only.
 
 ### Prior on this branch
-- AI agents, checkout/fulfillment, SEO, coupon redemption, WP migration, admin, notifications, supplier portal.
+- AI agents, checkout/fulfillment, SEO, coupon redemption, WP migration, admin, supplier portal.
