@@ -32,9 +32,17 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
-  // Route protection
-  const needsAuth =
-    pathname.startsWith('/account') || pathname === '/checkout' || pathname.startsWith('/checkout/')
+  // Route protection.
+  //
+  // `/checkout` itself is deliberately NOT here. It takes guests: the form is
+  // fillable without an account and the sign-in happens on the pay press, at
+  // which point /auth/callback merges the guest cart into the account. Bouncing
+  // an anonymous visitor to /login from here made the account the first thing
+  // asked of someone who had not yet seen a price.
+  //
+  // Its sub-routes still need one. `/checkout/return` and `/checkout/failed`
+  // read the shopper's own order, and there is no such thing as a guest's order.
+  const needsAuth = pathname.startsWith('/account') || pathname.startsWith('/checkout/')
 
   if (needsAuth && !user) {
     const loginUrl = request.nextUrl.clone()

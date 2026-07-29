@@ -118,6 +118,27 @@ export function createCartStore(
       })
     }
 
+    /**
+     * A server action that threw instead of returning a result.
+     *
+     * Every operation below reports a returned `{ ok: false }`, and none of
+     * them reported a rejection: the optimistic count stayed on screen, no
+     * toast appeared, and the shopper was left looking at an item that was
+     * never stored. That is what happened when `createAdminClient()` could not
+     * authenticate — the guest add-to-cart threw, `AddToCartButton`'s `finally`
+     * cleared the spinner, and the failure was invisible on both sides. It cost
+     * an afternoon to find precisely because nothing said anything.
+     *
+     * The message is deliberately generic: a thrown action carries only a
+     * digest in production, so there is nothing specific to say. Saying
+     * something is the point. The cart must never look like it accepted an item
+     * it did not.
+     */
+    const crashed = (rollback: CartView): void => {
+      settle(null, rollback)
+      onFeedback({ kind: 'error', message: 'הפעולה נכשלה, נסו שוב' })
+    }
+
     return {
       cart: initialCart,
       serverCart: initialCart,
@@ -130,40 +151,52 @@ export function createCartStore(
 
       addToCart: async (productId, variantId, quantity, productName) => {
         const rollback = begin({ type: 'add', productId, variantId, quantity })
-        const result = await addToCartAction(productId, variantId, quantity)
-        if (result.ok) {
-          settle(result.cart, rollback)
-          onFeedback({
-            kind: 'added',
-            message: productName ? `${productName} נוסף לעגלה` : 'נוסף לעגלה',
-          })
-          set({ drawerOpen: true })
-        } else {
-          settle(null, rollback)
-          onFeedback({ kind: 'error', message: result.error })
+        try {
+          const result = await addToCartAction(productId, variantId, quantity)
+          if (result.ok) {
+            settle(result.cart, rollback)
+            onFeedback({
+              kind: 'added',
+              message: productName ? `${productName} נוסף לעגלה` : 'נוסף לעגלה',
+            })
+            set({ drawerOpen: true })
+          } else {
+            settle(null, rollback)
+            onFeedback({ kind: 'error', message: result.error })
+          }
+        } catch {
+          crashed(rollback)
         }
       },
 
       updateQuantity: async (productId, variantId, quantity) => {
         const rollback = begin({ type: 'setQty', productId, variantId, quantity })
-        const result = await updateCartItemAction(productId, variantId, quantity)
-        if (result.ok) {
-          settle(result.cart, rollback)
-        } else {
-          settle(null, rollback)
-          onFeedback({ kind: 'error', message: result.error })
+        try {
+          const result = await updateCartItemAction(productId, variantId, quantity)
+          if (result.ok) {
+            settle(result.cart, rollback)
+          } else {
+            settle(null, rollback)
+            onFeedback({ kind: 'error', message: result.error })
+          }
+        } catch {
+          crashed(rollback)
         }
       },
 
       removeItem: async (productId, variantId) => {
         const rollback = begin({ type: 'remove', productId, variantId })
-        const result = await removeFromCartAction(productId, variantId)
-        if (result.ok) {
-          settle(result.cart, rollback)
-          onFeedback({ kind: 'removed', message: 'הפריט הוסר מהעגלה' })
-        } else {
-          settle(null, rollback)
-          onFeedback({ kind: 'error', message: result.error })
+        try {
+          const result = await removeFromCartAction(productId, variantId)
+          if (result.ok) {
+            settle(result.cart, rollback)
+            onFeedback({ kind: 'removed', message: 'הפריט הוסר מהעגלה' })
+          } else {
+            settle(null, rollback)
+            onFeedback({ kind: 'error', message: result.error })
+          }
+        } catch {
+          crashed(rollback)
         }
       },
 
@@ -174,12 +207,16 @@ export function createCartStore(
           pendingOps: state.pendingOps + 1,
           isPending: true,
         }))
-        const result = await clearCartAction()
-        if (result.ok) {
-          settle(result.cart, rollback)
-        } else {
-          settle(null, rollback)
-          onFeedback({ kind: 'error', message: result.error })
+        try {
+          const result = await clearCartAction()
+          if (result.ok) {
+            settle(result.cart, rollback)
+          } else {
+            settle(null, rollback)
+            onFeedback({ kind: 'error', message: result.error })
+          }
+        } catch {
+          crashed(rollback)
         }
       },
 

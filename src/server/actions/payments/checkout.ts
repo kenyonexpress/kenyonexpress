@@ -1,5 +1,6 @@
 'use server'
 
+import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-code'
 import { validateCartView } from '@/lib/checkout/validate-cart'
 import { agorot, agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
 import {
@@ -667,11 +668,21 @@ export async function submitCheckout(
     const city = text('city')
     const street = text('street')
     const streetNumber = text('street_number')
-    const fullName = text('full_name')
+    // The form splits the name in two to match the live checkout; the address
+    // table stores one. Falling back to full_name keeps any caller that still
+    // posts the single field working.
+    const fullName =
+      [text('first_name'), text('last_name')].filter(Boolean).join(' ') || text('full_name')
     const phone = text('phone')
     if (!city || !street || !streetNumber || !fullName) {
       return { error: 'יש למלא שם, עיר, רחוב ומספר בית למשלוח' }
     }
+    // The postal code is optional here exactly as it is on the form, but a
+    // present one is checked on the server too: the client check is a courtesy
+    // to the shopper, not a guarantee about what reached this action.
+    const zipCheck = checkOptionalIsraeliPostalCode(text('zip'))
+    if (zipCheck && !zipCheck.ok) return { error: zipCheck.message }
+
     const admin = createAdminClient()
     const { data: created, error: addressError } = await admin
       .from('user_addresses')
@@ -683,7 +694,9 @@ export async function submitCheckout(
         street,
         street_number: streetNumber,
         apartment: text('apartment') || null,
-        zip: text('zip') || null,
+        floor: text('floor') || null,
+        notes_for_courier: text('order_notes') || null,
+        zip: zipCheck?.ok ? zipCheck.normalized : null,
         is_default: true,
       })
       .select('id')

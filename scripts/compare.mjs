@@ -29,6 +29,11 @@ const LIVE_PRODUCTS = 'https://kenyonexpress.co.il/shop/'
 // Live search is a WordPress query string, not a route.
 const COMPARE_QUERY = process.env.COMPARE_SEARCH_Q ?? 'אוזניות'
 const LIVE_SEARCH = `https://kenyonexpress.co.il/?s=${encodeURIComponent(COMPARE_QUERY)}&post_type=product`
+const LIVE_CHECKOUT = 'https://kenyonexpress.co.il/checkout/'
+// WooCommerce's plain add-to-cart GET. Any published product works; this one is
+// the same id refs/checkout-measured.json was measured against, so the order
+// panel holds one line on both runs.
+const LIVE_ATC_ID = process.env.LIVE_ATC_ID ?? '6166'
 // The saved refs/ke_live_singlefile.html renders a collapsed header (masthead 1px,
 // no 110px header row), so it under-represents the real site. Default the home
 // reference to the live site; pass --live=<file url> to use the single-file.
@@ -91,18 +96,97 @@ if (page === 'home') {
 } else if (page === 'search') {
   liveUrl ??= LIVE_SEARCH
   mineUrl ??= `${LOCAL}/search?q=${encodeURIComponent(COMPARE_QUERY)}`
+} else if (page === 'checkout') {
+  // Both checkouts redirect an empty cart away, so neither side can be
+  // screenshotted cold. Each is seeded in its own context first, and the shoot
+  // below refuses anything that did not land on /checkout: a picture of the
+  // cart scored against a picture of the cart is a low number and no
+  // measurement.
+  liveUrl ??= LIVE_CHECKOUT
+  mineUrl ??= `${LOCAL}/checkout`
 } else {
-  console.error(`unknown --page=${page} (use home, product, category, products or search)`)
+  console.error(
+    `unknown --page=${page} (use home, product, category, products, search or checkout)`,
+  )
   process.exit(2)
+}
+
+// Puts one line in the cart the page under test will read. Live takes the
+// WooCommerce GET; ours has no such route, so the local seed drives the real
+// add-to-cart control on a product page, which is also the only way to be sure
+// the button still works.
+const seedCart = async (target) => {
+  const p = await ctx.newPage()
+  try {
+    if (target === 'live') {
+      // 'commit' again, and for a sharper reason here: the only thing this
+      // navigation is for is the cart cookie WooCommerce sets on the response.
+      // Waiting for the 4.5MB homepage behind it to finish loading is waiting
+      // for something the seed does not use, and it was timing out at two
+      // minutes doing exactly that.
+      await p.goto(`https://kenyonexpress.co.il/?add-to-cart=${LIVE_ATC_ID}&quantity=1`, {
+        waitUntil: 'commit',
+        timeout: 60000,
+      })
+      await p.waitForTimeout(3000)
+    } else {
+      // domcontentloaded, not networkidle: the catalogue's remote images are
+      // blocked by our own img-src, so those requests stay pending and the
+      // network never goes idle. Waiting for idle here spent the full timeout
+      // on a page that had finished rendering in a second.
+      // waitUntil 'commit' throughout. Neither 'networkidle' nor even
+      // 'domcontentloaded' resolves reliably on these pages: the catalogue's
+      // remote images are refused by our own img-src and the router's prefetches
+      // abort, so the load milestones never arrive on a page that curl fetches
+      // in a few seconds. 'commit' returns on the first byte and the waits below
+      // are on the elements actually being driven, which is what the seed cares
+      // about.
+      await p.goto(`${LOCAL}/products`, { waitUntil: 'commit', timeout: 60000 })
+      const link = p.locator('a[href*="/product/"]').first()
+      await link.waitFor({ state: 'attached', timeout: 45000 })
+      const href = await link.getAttribute('href')
+      if (!href) throw new Error('no product link on /products to seed the cart with')
+      await p.goto(`${LOCAL}${href.startsWith('/') ? '' : '/'}${href}`, {
+        waitUntil: 'commit',
+        timeout: 60000,
+      })
+      const atc = p.locator('.pdp-buy__atc').first()
+      await atc.waitFor({ state: 'visible', timeout: 45000 })
+      await atc.click({ timeout: 30000 })
+      // The add is a server action; give it a round trip before moving on.
+      await p.waitForTimeout(5000)
+    }
+  } finally {
+    await p.close()
+  }
 }
 
 const shoot = async (url, out) => {
   const p = await ctx.newPage()
-  try {
-    await p.goto(url, { waitUntil: 'networkidle', timeout: 120000 })
-  } catch {
-    await p.goto(url, { waitUntil: 'domcontentloaded', timeout: 120000 })
+  // The live host intermittently drops a navigation into chrome-error, which
+  // used to abort the whole run after the seeding had already been paid for.
+  // A transport flake is not a measurement failure; a page that will not load
+  // after three tries is, and that still aborts.
+  let lastError = null
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      await p.goto(url, { waitUntil: 'networkidle', timeout: 60000 })
+      lastError = null
+      break
+    } catch (networkIdleError) {
+      lastError = networkIdleError
+      try {
+        await p.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 })
+        lastError = null
+        break
+      } catch (domError) {
+        lastError = domError
+        console.log(`  retry ${attempt}/3 for ${url}: ${String(domError.message).split('\n')[0]}`)
+        await p.waitForTimeout(3000 * attempt)
+      }
+    }
   }
+  if (lastError) throw lastError
   const external = url.startsWith('file:') || url.includes('kenyonexpress.co.il')
   // Local pages proxy remote product images through /_next/image on first
   // request, which is slower than the 2s this used to allow: cards were being
@@ -133,9 +217,24 @@ const shoot = async (url, out) => {
       process.exit(3)
     }
   }
+  // Same rule as the not-found guard above, for the redirect this page has:
+  // an empty cart is sent to /cart on both sides, and two cart screenshots
+  // score as an excellent checkout.
+  if (page === 'checkout' && !p.url().includes('/checkout')) {
+    console.error(`REFUSING to measure: ${url} redirected to ${p.url()} (cart did not stick).`)
+    process.exit(3)
+  }
   await p.screenshot({ path: out, fullPage: true })
   await p.close()
   console.log(`${out} written (${url})`)
+}
+
+if (page === 'checkout') {
+  // Local first. Seeding live first left the next navigation in this context
+  // waiting out its full timeout on a page that answers in under a second
+  // cold, and the order costs nothing to get right.
+  await seedCart('mine')
+  await seedCart('live')
 }
 
 await shoot(liveUrl, 'refs/live.png')

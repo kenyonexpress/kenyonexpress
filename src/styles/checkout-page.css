@@ -1,4 +1,14 @@
-/* Checkout + return pages - Electro RTL, values follow MEASURED-LIVE.md */
+/* Checkout + return pages.
+ *
+ * Every number in the checkout block below is measured, not chosen: the source
+ * is refs/checkout-measured.json, written by scripts/measure-live-checkout.mjs
+ * against the live /checkout/ with an item in the cart. The live page redirects
+ * an empty cart to /cart/, which is why the earlier reference for this page was
+ * a picture of the cart and the geometry here used to be invented.
+ *
+ * Live column layout at 1440 (RTL): container 145..1310 (1165 wide), billing on
+ * the right 645..1310, order panel on the left 145..611 (466 wide).
+ */
 
 .checkout-page {
   max-width: 1170px;
@@ -6,111 +16,294 @@
   padding: 1.5rem 15px 3rem;
   color: #333e48;
   font-size: 14px;
+  line-height: 23.996px;
 }
 
 .checkout-page__title {
   font-size: 39.998px;
+  line-height: 47.9976px;
   font-weight: 500;
   color: #333e48;
-  margin-bottom: 40px;
+  margin: 0 0 48px;
+}
+
+/* Guest notice. Live renders the same strip above the form for a visitor with
+   no session, and it is the only place the login offer appears: this checkout
+   does not demand an account to start, only to pay. */
+.checkout-guest-notice {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  background: #fed700;
+  color: #333e48;
+  font-size: 14px;
+  border-radius: 5px;
+  padding: 14px 20px;
+  margin-bottom: 36px;
+}
+
+.checkout-guest-notice__link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-weight: 700;
+  color: #333e48;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .checkout-page__grid {
   display: grid;
-  gap: 2rem;
+  gap: 34px;
 }
 
+/* 665 + 466 + 34 = 1165, the measured container width. In RTL the first track
+   is the rightmost one, so billing leads and the order panel sits left. */
 @media (min-width: 992px) {
   .checkout-page__grid {
-    grid-template-columns: 1fr 380px;
+    grid-template-columns: 665px 466px;
     align-items: start;
   }
 }
 
-.checkout-section {
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 9px;
-  padding: 20px;
-  margin-bottom: 20px;
+.checkout-col-main {
+  padding-inline-end: 15px;
 }
 
+.checkout-section {
+  margin-bottom: 40px;
+}
+
+.checkout-section:last-child {
+  margin-bottom: 0;
+}
+
+/* h3: 25.004/40.0064 weight 500, 10px below the text, 34px below the rule.
+   The yellow accent is the width of the heading text, not a fixed segment
+   (measured 129.906px under a 130px-wide "פרטי חיוב"), so it is drawn as a
+   border on an inline span rather than a positioned pseudo-element. */
 .checkout-section__title {
   font-size: 25.004px;
+  line-height: 40.0064px;
   font-weight: 500;
   color: #333e48;
-  margin: 0 0 16px;
+  margin: 0 0 34.0054px;
+  padding: 0;
+  border-bottom: 1px solid #ddd;
 }
 
-.checkout-item {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding-block: 10px;
-  border-bottom: 1px solid #eee;
-  font-size: 14px;
+.checkout-section__title > span {
+  display: inline-block;
+  padding-bottom: 10.0016px;
+  margin-bottom: -1px;
+  border-bottom: 2px solid #fed700;
 }
 
-.checkout-item:last-child {
-  border-bottom: none;
+/* Field rows. Live pitch is 102px per row: label line 24, 8 to the control,
+   45 control, 25 to the next row. */
+.checkout-fields-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 30px;
+  margin-bottom: 25px;
 }
 
-.checkout-item__name {
-  color: #333e48;
-  font-weight: 400;
-  font-size: 16.996px;
-}
-
-.checkout-item__meta {
-  color: #768b9e;
-  font-size: 12px;
-  margin-top: 2px;
-}
-
-.checkout-item__total {
-  font-weight: 700;
-  white-space: nowrap;
+.checkout-fields-row--single {
+  grid-template-columns: 1fr;
 }
 
 .checkout-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-bottom: 12px;
+  gap: 8px;
 }
 
 .checkout-field label {
   font-size: 14px;
+  line-height: 24px;
   color: #333e48;
 }
 
-.checkout-field input {
-  height: 39.98px;
+.checkout-field__required {
+  color: #dc3545;
+}
+
+.checkout-field input,
+.checkout-field textarea {
+  height: 45px;
   border: 1px solid #ddd;
-  border-radius: 14px;
-  padding: 4px 14px;
+  border-radius: 22px;
+  padding: 9.504px 16px;
   font-size: 14px;
+  font-family: inherit;
   color: #333e48;
   background: #fff;
+  width: 100%;
 }
 
-.checkout-field input:focus {
+.checkout-field textarea {
+  height: 120px;
+  border-radius: 10px;
+  resize: vertical;
+}
+
+.checkout-field input:focus,
+.checkout-field textarea:focus {
   outline: none;
   border-color: #fed700;
 }
 
-.checkout-fields-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+.checkout-field input[aria-invalid="true"] {
+  border-color: #dc3545;
+}
+
+.checkout-field__error {
+  font-size: 12px;
+  line-height: 18px;
+  color: #dc3545;
+}
+
+/* Order panel: #f5f5f5, radius 10, padding 25/15/15/15, measured 466x893. */
+.checkout-review {
+  background: #f5f5f5;
+  border-radius: 10px;
+  padding: 25px 15px 15px;
+}
+
+.checkout-review__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.checkout-review__table th {
+  text-align: start;
+  font-weight: 700;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #ddd;
+  height: 48px;
+  vertical-align: bottom;
+}
+
+.checkout-review__table th:last-child,
+.checkout-review__table td:last-child {
+  text-align: end;
+}
+
+.checkout-review__table td {
+  padding-block: 14px;
+  border-bottom: 1px solid #ddd;
+  vertical-align: top;
+}
+
+.checkout-item__name {
+  color: #333e48;
+  font-size: 14px;
+}
+
+.checkout-item__meta {
+  display: block;
+  color: #768b9e;
+  font-size: 12px;
+  line-height: 18px;
+  margin-top: 4px;
+}
+
+.checkout-item__total {
+  white-space: nowrap;
+}
+
+.checkout-review__row th {
+  height: auto;
+  border-bottom: 1px solid #ddd;
+  padding-block: 12px;
+  font-weight: 400;
+}
+
+.checkout-review__row td {
+  padding-block: 12px;
+}
+
+.checkout-review__row--total th,
+.checkout-review__row--total td {
+  font-weight: 700;
+  font-size: 16.996px;
+}
+
+.checkout-review__row--muted th,
+.checkout-review__row--muted td {
+  color: #768b9e;
+  font-size: 12px;
+}
+
+/* Payment block: live separates it from the table with a 3px rule. */
+.checkout-payment {
+  border-top: 3px solid #ddd;
+  margin-top: 0;
+  padding-top: 20px;
+}
+
+.checkout-payment__method {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #333e48;
+  padding-block: 12px;
+  cursor: pointer;
+}
+
+.checkout-payment__note {
+  background: #ececec;
+  border-radius: 5px;
+  padding: 16px 20px;
+  font-size: 14px;
+  color: #515151;
+  margin-bottom: 16px;
+}
+
+.checkout-wallet {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-block: 12px;
+}
+
+.checkout-wallet label {
+  font-size: 14px;
+}
+
+.checkout-wallet input {
+  height: 45px;
+  border: 1px solid #ddd;
+  border-radius: 22px;
+  padding: 9.504px 16px;
+  font-size: 14px;
+  background: #fff;
+  color: #333e48;
 }
 
 .checkout-terms {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   margin-block: 16px;
   font-size: 14px;
+  line-height: 23.996px;
+}
+
+.checkout-terms input {
+  margin-top: 5px;
+}
+
+.checkout-privacy {
+  font-size: 14px;
+  line-height: 23.996px;
+  color: #333e48;
+  margin: 0 0 8px;
 }
 
 .checkout-error {
@@ -122,19 +315,21 @@
   font-size: 14px;
 }
 
+/* place_order: 397x64, radius 50, #fed700, 19.418/700. */
 .checkout-pay-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 47.52px;
-  padding: 14.504px 29.876px;
+  height: 64px;
+  padding: 14.512px 16px;
   background: #fed700;
   color: #333e48;
-  font-size: 14px;
+  font-size: 19.418px;
+  line-height: 33.2824px;
   font-weight: 700;
-  border-radius: 21.994px;
-  border: none;
+  border-radius: 50px;
+  border: 1px solid #fed700;
   cursor: pointer;
   transition: background 0.15s;
 }
@@ -148,26 +343,31 @@
   cursor: not-allowed;
 }
 
-.checkout-summary-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding-block: 6px;
+.checkout-cards {
+  margin-top: 14px;
+  padding: 0;
+  border: 0;
+}
+
+.checkout-cards__legend {
+  padding: 0;
   font-size: 14px;
+  font-weight: 600;
+  color: var(--color-heading, #333e48);
 }
 
-.checkout-summary-row--muted {
-  color: #768b9e;
-}
-
-.checkout-summary-total {
+.checkout-cards__option {
   display: flex;
-  justify-content: space-between;
-  padding-block: 12px;
+  align-items: center;
+  gap: 8px;
   margin-top: 8px;
-  border-top: 2px solid #333e48;
-  font-size: 16.996px;
-  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-heading, #333e48);
+  cursor: pointer;
+}
+
+.checkout-cards__option input {
+  accent-color: #0062bd;
 }
 
 /* Success (return) page */
@@ -243,33 +443,4 @@
   text-align: center;
   padding-block: 60px;
   color: #333e48;
-}
-
-/* Saved-card picker. Radio list rather than a select: two or three cards is the
-   realistic count, and a native select on mobile hides the choice behind a tap. */
-.checkout-cards {
-  margin-top: 14px;
-  padding: 0;
-  border: 0;
-}
-
-.checkout-cards__legend {
-  padding: 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-heading, #333e48);
-}
-
-.checkout-cards__option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 8px;
-  font-size: 14px;
-  color: var(--color-heading, #333e48);
-  cursor: pointer;
-}
-
-.checkout-cards__option input {
-  accent-color: #0062bd;
 }
