@@ -43,6 +43,14 @@ const DOT_INACTIVE = 'rgba(125, 125, 125, 0.5)'
 const DOT_HEIGHT = 8
 const DOT_WIDTH_CURRENT = 30
 const DOT_WIDTH_IDLE = 8
+/**
+ * Animated WebP files under /public. A file extension cannot tell an animated
+ * WebP from a still one, so the ones we ship animated are listed explicitly.
+ */
+const ANIMATED_WEBP_SOURCES = new Set([
+  '/images/hero/slider/ios13-iphone-11pro-airpods-pro-setup-animation-steps.webp',
+])
+
 /** WCAG 2.2 / Lighthouse minimum tap target. */
 const TAP_MIN = 24
 
@@ -103,7 +111,16 @@ const RS = {
 const HERO_IMAGE_SIZES = `(max-width: 1024px) 100vw, ${SLIDE.width * 2}px`
 
 function HeroSlideImage({ src, priority }: { src: string; priority: boolean }) {
-  const isGif = src.endsWith('.gif')
+  // next/image cannot resize an animated image without dropping the animation,
+  // so it detects one and streams the original bytes through untouched. That is
+  // why the hero slide is authored at exactly 2x its rendered size: the
+  // optimizer will not do it for us. Marking animated sources unoptimized skips
+  // a round trip that provably returns the file unchanged (verified: 47 frames
+  // in, 47 frames and the same byte count out).
+  //
+  // This used to test only `.gif`, which silently stopped matching when the
+  // 4.5MB GIF became an animated WebP.
+  const isAnimated = /\.gif$/i.test(src) || ANIMATED_WEBP_SOURCES.has(src)
 
   return (
     <SmartImage
@@ -113,7 +130,7 @@ function HeroSlideImage({ src, priority }: { src: string; priority: boolean }) {
       priority={priority}
       quality={95}
       sizes={HERO_IMAGE_SIZES}
-      unoptimized={isGif}
+      unoptimized={isAnimated}
       className="min-h-full min-w-full object-contain object-center"
       fallbackClassName="absolute inset-0"
       iconSize={48}
