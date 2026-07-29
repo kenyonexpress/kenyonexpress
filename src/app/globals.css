@@ -116,7 +116,13 @@
      Each was read off the live site; the component that used to inline the
      number carries the provenance comment. `--spacing-*` generates h-/w-/min-w-. */
   --spacing-header-topbar: 37.3px; /* + 1px border = the 38.3px live top bar */
-  --spacing-header-masthead: 126px; /* + 1px border = the 127px live masthead */
+  /* Remeasured 2026-07-30 against the live masthead, which is 110px total
+     including its 1px border, not 127px. The old value shifted every homepage
+     block below the header down by 17px, and because the product grid is 8 rows
+     of 485px cards inside a 2600px compare window, that one offset was showing
+     up as 30-42% band differences that looked like card-level defects. Card
+     heights were identical all along: 485px on both sides. */
+  --spacing-header-masthead: 109px; /* + 1px border = the 110px live masthead */
   --spacing-logo-h: 40px; /* header logo box (not live's 270x71; see Header.tsx) */
   --spacing-logo-w: 52px;
   --spacing-footer-logo-h: 42px;

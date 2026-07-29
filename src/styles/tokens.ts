@@ -184,7 +184,7 @@ export const SITE_CSS_METRICS: Record<string, string> = {
   '--container-deals': '1150px',
 
   '--spacing-header-topbar': '37.3px',
-  '--spacing-header-masthead': '126px',
+  '--spacing-header-masthead': '109px',
   '--spacing-logo-h': '40px',
   '--spacing-logo-w': '52px',
   '--spacing-footer-logo-h': '42px',
