@@ -2701,3 +2701,29 @@ default, והטופס לא שלח אף אחת מהן. כל `insert` של מוצ�
 ### ‏Next Task
 מיזוג `feat/admin-core` ל-phase5, אחרי סקירה של שינויי `src/types/database.ts`
 מול סשנים מקבילים.
+
+---
+
+### 2026-07-29: מיגרציה 093 הוחלה על הפרויקט המאוחסן
+
+`supabase/migrations/093_product_commission_type.sql`
+הוחלה דרך MCP apply_migration על
+`ixvwfbuvfxxsjiywhbbb`
+תחת השם
+`093_product_commission_type`
+
+מה נבדק לפני ההחלה: ה-enum
+`public.product_type`
+מכיל coupon/physical/service, אין שורות עם type ריק, 61 שורות מוצר, והעמודה
+`commission_type`
+לא הייתה קיימת.
+
+מה נבדק אחרי: העמודה NOT NULL, האילוץ
+`products_commission_type_matches_type`
+במצב validated (לא NOT VALID), והפילוח 15 coupon/coupon_absolute מול
+46 physical/physical_percent, כלומר כל 61 השורות מולאו מ-type ואף שורה לא הומצאה.
+
+הערת ה-"NOT APPLIED / Draft only" בראש הקובץ הוחלפה בתיעוד ההחלה.
+
+הערה: 093 לא רשומה בטבלת המיגרציות עם prefix מספרי כמו בקבצים המקומיים.
+היא נרשמה כ-version מבוסס תאריך, כמו כל שאר המיגרציות בפרויקט המאוחסן.
