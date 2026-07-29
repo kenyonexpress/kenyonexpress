@@ -1,69 +1,63 @@
 # ARCHITECTURE-SEO-PERFORMANCE.md
 
-KenyonExpress SEO and performance architecture (binding).
+ארכיטקטורת SEO וביצועים ל-KenyonExpress (מסמך מחייב).
 
-Status: BINDING for `arch/admin-supplier` (2026-07-29)
-Worktree: `/Users/ofir/kenyonexpress-web/ke-arch` only. **Documentation only.**
-Stack: **Next.js 15** App Router (RSC), Hebrew RTL, canonical host `kenyonexpress.co.il`.
-Companions: `docs/ARCHITECTURE-NOTIFICATIONS.md`, `docs/ADMIN-PRODUCT-PAGE-SPEC.md`, `docs/ARCHITECTURE-SUPPLIER-PORTAL.md`, `docs/ARCHITECTURE-MOBILE-APP.md`.
+Status: BINDING for `arch/admin-supplier` (2026-07-30)
+Worktree בלבד: `/Users/ofir/kenyonexpress-web/ke-arch`. **Documentation only.**
+Stack: **Next.js 15** App Router (RSC), עברית RTL, host קנוני `kenyonexpress.co.il`.
+Companions: `docs/ARCHITECTURE-NOTIFICATIONS.md`, `docs/ADMIN-PRODUCT-PAGE-SPEC.md`, `docs/ARCHITECTURE-MOBILE-APP.md`, `docs/ARCHITECTURE-WP-MIGRATION.md`.
 
 ---
 
-## 0. Money rules on SEO surfaces
+## 0. כסף על משטחי SEO
 
-| Product type | Customer-facing Offer / meta price | Never in customer price |
+| סוג | מחיר ב-Offer / meta | אסור |
 |---|---|---|
-| Coupon | Absolute online `coupon_price_ils` (paid **in full on site**) | Live `platform_percent`; Escrow language; inventing a % of face |
-| Physical | On-site charge after `discount_percent` | Later edits of `platform_percent` (use snapshot only after purchase) |
+| קופון | `coupon_price_ils` (תשלום מלא באתר) | לגזור אחוז משווי; Escrow; `platform_percent` ללקוח |
+| פיזי | מחיר אחרי `discount_percent` | לקרוא אחוז חי אחרי קנייה במקום סנאפשוט |
 
-Invariants:
-
-1. Platform ≠ supplier. JSON-LD `seller` = supplier business; home `Organization` = KenyonExpress marketplace.
-2. No fixed commission in meta, schema, or copy.
-3. Every indexable PDP shows supplier identity (publish gate).
-4. Never index `/redeem/[token]`, cart, checkout, account, admin, supplier.
-5. Till remainder (`price_ils - coupon_price_ils`) is cash at the merchant on QR scan; do not imply it flows through KE.
+ארגון ב-JSON-LD של הבית = המרקטפלייס. `seller` ב-PDP = הספק. אין עמלה קבועה בטקסט.
 
 ---
 
-## 1. Next.js 15 App Router: SSR / ISR per page type
+## 1. Next.js 15: SSR / ISR לפי סוג דף
 
-| Page | Route | Mode | `revalidate` / cache | Why |
+| דף | נתיב | מצב | `revalidate` / cache | למה |
 |---|---|---|---|---|
-| Home | `/` | **ISR** | 120s; tag `home` | Fresh deals without per-request DB hit |
-| Category | `/category/[slug]` | **ISR** | 300s; tags `category:{id}`, `catalog` | Catalog churn slower than PDP |
-| Product (coupon + physical) | `/product/[slug]` | **ISR** | 120s; tags `product:{id}`, `catalog` | Price/content change via on-demand revalidate |
-| Products index | `/products` | **ISR** | 180s; tag `catalog` | Listing |
-| Cart | `/cart` | **Dynamic SSR** (private) | `private, no-store` | Session/cookie cart; never CDN-cache HTML |
-| Checkout / account | `/checkout*`, `/account/**` | Dynamic private | `private, no-store` | Auth + money |
-| Search | `/search` | Dynamic | `public, s-maxage=30, stale-while-revalidate=60` | noindex; Meilisearch-backed |
-| Sitemap | `/sitemap.xml` | ISR | 3600s; tag `sitemap` | Built from Supabase reads |
-| Admin / supplier | `/admin/**`, `/supplier/**` | Dynamic private | `private, no-store` | Staff only |
+| בית | `/` | **ISR** | 120s; tag `home` | דילים טריים בלי DB בכל request |
+| קטגוריה | `/category/[slug]` | **ISR** | 300s; `category:{id}`, `catalog` | קטלוג משתנה לאט יותר מ-PDP |
+| מוצר (קופון/פיזי) | `/product/[slug]` | **ISR** | 120s; `product:{id}`, `catalog` | שינוי מחיר/תוכן → on-demand revalidate |
+| אינדקס מוצרים | `/products` | **ISR** | 180s; `catalog` | רשימה |
+| עגלה | `/cart` | **Dynamic SSR** פרטי | `private, no-store` | סשן/קוקי; אסור CDN ציבורי |
+| checkout / account | `/checkout*`, `/account/**` | Dynamic פרטי | `private, no-store` | כסף + auth |
+| חיפוש | `/search` | Dynamic | `s-maxage=30, swr=60` | noindex; Meilisearch |
+| sitemap | `/sitemap.xml` | ISR | 3600s; `sitemap` | קריאה מ-Supabase |
+| admin / supplier | `/admin/**`, `/supplier/**` | Dynamic פרטי | `private, no-store` | צוות |
 
-Rules:
+כללי זהב:
 
-- Public catalog data path uses anon/RLS-safe client with `next: { tags, revalidate }`. **Never** service-role on public HTML.
-- Admin publish / money edit: `revalidateTag('product:'+id)`, `catalog`, `sitemap`, and `home` if featured.
-- Cart is SSR for first paint of empty/shell + client cart hydration; HTML must not be shared across users at the edge.
+- נתיב קטלוג ציבורי: לקוח anon/RLS + `next: { tags, revalidate }`. **בלי** service-role ב-HTML ציבורי.
+- אחרי פרסום באדמין: `revalidateTag` למוצר, catalog, sitemap, ו-home אם featured.
+- HTML של עגלה לא משותף בין משתמשים ב-edge.
 
 ---
 
-## 2. Hebrew RTL SEO
+## 2. SEO עברי RTL
 
-Root layout: `lang="he"` `dir="rtl"`.
+Root: `lang="he"` `dir="rtl"`.
 
 ### 2.1 Meta (`generateMetadata`)
 
-| Meta | Product | Category | Home | Cart |
+| Meta | מוצר | קטגוריה | בית | עגלה |
 |---|---|---|---|---|
-| `title` | `seo_title` or `{name_he} \| קניון אקספרס` | `{name_he} \| קניון אקספרס` | brand + Hebrew value prop | noindex page title |
-| `description` | `seo_description` or 120–160 Hebrew chars | category blurb | Hebrew default | n/a |
-| `canonical` | `/product/{slug}` | `/category/{slug}` | `/` | omit or self + noindex |
+| `title` | `seo_title` או `{name_he} \| קניון אקספרס` | `{name_he} \| קניון אקספרס` | מותג + ערך | כותרת + noindex |
+| `description` | 120–160 תווים עברית | תיאור קטגוריה | ברירת מחדל עברית | n/a |
+| `canonical` | `/product/{slug}` | `/category/{slug}` | `/` | self + noindex |
 | `og:locale` | `he_IL` | `he_IL` | `he_IL` | |
-| `og:image` | first gallery absolute R2 HTTPS | category / site OG | site OG / hero | |
-| `robots` | `index,follow` if published | index if live | index | `noindex,nofollow` |
+| `og:image` | גלריה R2 מוחלט | קטגוריה / OG אתר | OG / hero | |
+| `robots` | index אם published | index | index | `noindex,nofollow` |
 
-Price in description (optional): `₪X.XX` = **on-site charge only** (coupon_price or discounted physical).
+מחיר בתיאור (אופציונלי): רק סכום לתשלום באתר ב-`₪X.XX`.
 
 ### 2.2 hreflang
 
@@ -73,22 +67,21 @@ Price in description (optional): `₪X.XX` = **on-site charge only** (coupon_pri
 <link rel="alternate" hreflang="x-default" href="https://kenyonexpress.co.il/..." />
 ```
 
-No English alternate until an EN storefront exists. Do not invent `/en` URLs.
+בלי חלופה באנגלית עד שתהיה חנות EN.
 
-### 2.3 On-page Hebrew
+### 2.3 On-page
 
-- Single H1 = `name_he`
-- Hebrew breadcrumbs
-- Stable ASCII `slug`; Hebrew in visible titles
-- Supplier name / phone / address / logo on every PDP
+H1 יחיד = `name_he`. פירורי לחם בעברית. slug יציב ASCII. פרטי ספק בכל PDP.
+
+נתיבים פרטיים (`/cart`, `/checkout`, `/account`, `/admin`, `/supplier`, `/redeem`, `/search`): noindex (+ disallow ב-robots לפי הטבלה למטה).
 
 ---
 
-## 3. JSON-LD (Product / Offer / Organization)
+## 3. JSON-LD: Product / Offer / Organization
 
-Emit from RSC as `<script type="application/ld+json">`. Prices: decimal ILS strings. `priceCurrency`: `"ILS"`.
+מחירים: מחרוזת עשרונית ILS. `priceCurrency`: `"ILS"`.
 
-### 3.1 Organization (home + sitewide optional)
+### Organization (בית)
 
 ```json
 {
@@ -96,12 +89,11 @@ Emit from RSC as `<script type="application/ld+json">`. Prices: decimal ILS stri
   "@type": "Organization",
   "name": "קניון אקספרס",
   "url": "https://kenyonexpress.co.il/",
-  "logo": "https://cdn.example/brand/logo.png",
-  "sameAs": []
+  "logo": "https://cdn…/logo.png"
 }
 ```
 
-### 3.2 Product + Offer (PDP)
+### Product + Offer (PDP)
 
 ```json
 {
@@ -109,9 +101,7 @@ Emit from RSC as `<script type="application/ld+json">`. Prices: decimal ILS stri
   "@type": "Product",
   "name": "{name_he}",
   "image": ["https://r2…/…"],
-  "description": "{short Hebrew}",
-  "sku": "{sku or id}",
-  "brand": { "@type": "Brand", "name": "{supplier name}" },
+  "description": "{short}",
   "offers": {
     "@type": "Offer",
     "url": "https://kenyonexpress.co.il/product/{slug}",
@@ -128,177 +118,144 @@ Emit from RSC as `<script type="application/ld+json">`. Prices: decimal ILS stri
 }
 ```
 
-| Type | `offers.price` |
+| סוג | `offers.price` |
 |---|---|
-| Coupon | `coupon_price_ils` (full on-site payment) |
-| Physical | `price_ils * (1 - discount_percent/100)` |
+| קופון | `coupon_price_ils` |
+| פיזי | מחיר אחרי הנחה |
 
-Do not put `platform_percent` in Offer. Do not fabricate `AggregateRating` without real review rows.
-
-### 3.3 BreadcrumbList
-
-Home → category → product on PDP; home → category on category pages.
-
-### 3.4 Pages without JSON-LD Product
-
-Cart, checkout, account, search, redeem, admin, supplier: none (and noindex).
+בלי `AggregateRating` מזויף. בלי `platform_percent` ב-Offer. BreadcrumbList: בית → קטגוריה → מוצר.
 
 ---
 
-## 4. Core Web Vitals and image strategy
+## 4. Core Web Vitals + תמונות (R2 + next/image)
 
-### 4.1 Targets (binding)
+### יעדים (p75 מובייל)
 
-| Metric | Target (p75 mobile CrUX) |
+| מדד | יעד |
 |---|---|
 | LCP | &lt; 2.5s |
 | CLS | &lt; 0.1 |
 | INP | &lt; 200ms |
 
-### 4.2 Per page
+### לפי דף
 
-| Page | LCP | CLS | INP |
+| דף | LCP | CLS | INP |
 |---|---|---|---|
-| Home | Priority hero via `next/image` | Fixed hero aspect; reserved consent | Minimal client; defer analytics |
-| Category | First-row images sized | Card `aspect-ratio` | RSC list; progressive filters |
-| Product | Gallery[0] `priority` | Stable gallery + price block | Small ATC island |
-| Cart | Private; INP over SEO | Stable line items | Client cart; no heavy third parties |
+| בית | hero עם `priority` | יחס קבוע ל-hero | מינימום JS |
+| קטגוריה | שורת כרטיסים ראשונה | `aspect-ratio` לכרטיס | רשימת RSC |
+| מוצר | `gallery[0]` priority | גלריה + בלוק מחיר יציבים | ATC קטן |
+| עגלה | פרטי; INP חשוב מ-SEO | שורות יציבות | בלי צד ג' כבד |
 
-### 4.3 Images: Cloudflare R2 + `next/image`
+### R2 + `next/image`
 
-- Store originals/derivatives on **Cloudflare R2**; public base `R2_PUBLIC_BASE_URL`.
-- `next.config` `images.remotePatterns` allow R2 host.
-- Formats: AVIF → WebP → fallback.
-- Srcset candidates: ~320, 640, 960, 1280, 1920 (full-bleed); cards max ~640.
-- Alt: Hebrew product/category name; never empty on content images.
-- OG uses absolute R2 URL (not the optimizer URL).
-- First viewport only: `priority` / eager. Listing cards: lazy.
+- אחסון ב-Cloudflare R2; `R2_PUBLIC_BASE_URL` ציבורי.
+- `images.remotePatterns` מאפשר את ה-host.
+- AVIF → WebP → fallback.
+- Srcset בערך: 320, 640, 960, 1280, 1920; כרטיסים עד ~640.
+- Alt בעברית; OG = URL מוחלט ל-R2 (לא URL של האופטימייזר).
+- רק first viewport עם `priority`.
 
-Forbidden on catalog: unsized images, client-only title/price, blocking chat widgets above LCP.
+אסור בקטלוג: תמונות בלי מידות, כותרת/מחיר client-only, צ'אט חוסם LCP.
 
 ---
 
-## 5. Sitemap + robots from Supabase
+## 5. Sitemap + robots מ-Supabase
 
-### 5.1 `src/app/sitemap.ts`
+### `src/app/sitemap.ts`
 
-Read published rows from Supabase (RLS-safe or build-time service with published filter only):
+| מקטע | מקור | priority |
+|---|---|---|
+| `/` + משפטי | סטטי | 1.0 / 0.5 |
+| קטגוריות | קטגוריות חיות | 0.8 |
+| מוצרים | published/active בלבד | 0.9 |
 
-| Segment | Source | priority | changeFrequency |
-|---|---|---|---|
-| `/` + legal | static | 1.0 / 0.5 | weekly |
-| Categories | live categories | 0.8 | weekly |
-| Products | `status` published/active, not deleted | 0.9 | daily |
+`lastModified` = `updated_at`. ISR 3600 + tag `sitemap`.
 
-`lastModified` = `updated_at`. ISR `revalidate = 3600` + tag `sitemap`.
+**לא לכלול:** טיוטות, archived, needs-pricing, `/redeem`, `/search`, `/cart`, `/checkout`, `/account`, `/admin`, `/supplier`, API.
 
-**Exclude:** drafts, archived, needs-pricing unpublished, `/redeem/*`, `/search`, `/cart`, `/checkout`, `/account`, `/admin`, `/supplier`, API.
+### `src/app/robots.ts`
 
-### 5.2 `src/app/robots.ts`
-
-- Allow catalog
+- Allow לקטלוג
 - Disallow: `/admin`, `/account`, `/supplier`, `/api`, `/checkout`, `/cart`, `/login`, `/search`, `/redeem`
 - `Sitemap: https://kenyonexpress.co.il/sitemap.xml`
 
-### 5.3 Revalidation
+### Revalidate
 
-| Trigger | Action |
-|---|---|
-| Admin publish / unpublish | `revalidateTag('product:'+id)`, `sitemap`, `catalog` |
-| Category edit | `revalidateTag('category:'+id)`, `sitemap` |
-| Bulk import end | revalidate `sitemap` + affected tags |
-
-Submit sitemap in Google Search Console (Israel). Preserve WP equity via `seo_redirects` 301 at the edge.
+פרסום/הסרה באדמין → tags של מוצר + `sitemap` + `catalog`. ייבוא המוני → בסוף job. GSC ממקד ישראל; 301 מ-`seo_redirects` ב-edge אחרי cutover מ-WP.
 
 ---
 
-## 6. Meilisearch-driven internal linking
+## 6. Meilisearch וקישורים פנימיים
 
-Meilisearch is the **search and related-products** engine; Postgres remains source of truth.
-
-| Surface | Behavior |
+| משטח | התנהגות |
 |---|---|
-| `/search` | Query Meilisearch; `noindex`; Hebrew UI |
-| PDP "מוצרים דומים" | Meilisearch related / filter by category + attributes; render as real `<a href="/product/{slug}">` with Hebrew anchors |
-| Category empty / thin | Suggest sibling categories + top hits from Meilisearch |
-| Home rails | Featured from DB; optional Meilisearch "popular" ids resolved to links |
+| `/search` | שאילתת Meilisearch; noindex |
+| "מוצרים דומים" ב-PDP | related מ-Meili כ-`<a href="/product/{slug}">` עם עוגן עברי |
+| קטגוריה דלה | הצעות sibling + top hits |
+| מסילות בית | featured מ-DB; אופציונלי popular מ-Meili |
 
-Rules:
-
-1. Every internal link is a crawlable `<a href>` (not JS-only navigation for primary related blocks).
-2. Index documents include: `id`, `slug`, `name_he`, `category_ids`, `coupon_price_ils` / display price, `status`, supplier city (optional).
-3. On publish: upsert Meilisearch document + revalidate product HTML (search index lag ≤ worker SLA; HTML must not wait on Meili for ISR).
-4. Do not put unpublished or needs-pricing products in the index.
+מסמך אינדקס: `id`, `slug`, `name_he`, קטגוריות, מחיר לתצוגה, `status`. בפרסום: upsert ל-Meili + revalidate HTML (HTML לא מחכה ל-Meili ל-ISR).
 
 ---
 
-## 7. Caching layers
+## 7. שכבות cache
 
 ```
 Browser
-  -> Vercel Edge CDN (ISR HTML, static, optimized images)
-  -> Next.js data cache / fetch tags
-  -> Upstash Redis (optional hot keys)
-  -> Supabase Postgres / Meilisearch
+  -> Vercel Edge (ISR HTML, static, next/image)
+  -> Next data cache / fetch tags
+  -> Upstash Redis (מפתחות חמים אופציונליים)
+  -> Supabase / Meilisearch
 ```
 
-| Layer | What | TTL / invalidation |
+| שכבה | מה | TTL / ביטול |
 |---|---|---|
-| Vercel Edge | ISR HTML per §1; `/_next/static` immutable; `next/image` long cache | On-demand tags on publish |
-| Next fetch cache | RSC catalog reads with `tags` | `revalidateTag` |
-| Upstash Redis | Hot: category product id lists, Meili result cache for popular queries, rate-limit counters, session-ish non-PII flags | Short TTL (30–300s) + explicit delete on publish |
-| Meilisearch | Search documents | Upsert/delete on product status change |
+| Vercel Edge | ISR לפי §1; static immutable | on-demand tags |
+| Next fetch | קריאות RSC עם tags | `revalidateTag` |
+| Upstash | רשימות קטגוריה חמות, cache לתוצאות חיפוש פופולריות, מוני rate-limit | 30–300s + מחיקה בפרסום |
+| Meilisearch | מסמכי חיפוש | upsert/delete לפי סטטוס |
 
-Do not cache cart/checkout HTML or authenticated account HTML at the edge. Do not store card data or service-role keys in Redis.
-
----
-
-## 8. Lighthouse CI budget (GitHub Actions)
-
-Job on PRs that touch `src/app/**`, `src/components/**`, `public/**`, or SEO config (non-blocking at first; promote to required when stable).
-
-```yaml
-# sketch: .github/workflows/lighthouse.yml
-# pnpm build + start; lhci autorun against /, /category/{demo}, /product/{demo}
-```
-
-### 8.1 Budgets (lab, mobile emulation)
-
-| Path | Performance | LCP | CLS | TBT | Notes |
-|---|---|---|---|---|---|
-| `/` | ≥ 0.85 | ≤ 2500ms | ≤ 0.1 | ≤ 300ms | Hero priority |
-| Category demo | ≥ 0.85 | ≤ 2500ms | ≤ 0.1 | ≤ 300ms | |
-| Product demo | ≥ 0.85 | ≤ 2500ms | ≤ 0.1 | ≤ 350ms | Gallery[0] priority |
-| `/cart` | ≥ 0.80 | n/a SEO | ≤ 0.1 | ≤ 400ms | Private; INP-focused |
-
-Assertions also check: `document` has `lang=he` / `dir=rtl` (custom gather or smoke script alongside LHCI).
-
-Secrets: none beyond public demo URLs. Use seeded local or preview deployment. Fail the gate only on regressions beyond budget (same spirit as diff-scoped lint).
+לא לשמור HTML של cart/checkout/account ב-CDN ציבורי. לא לשמור כרטיסים או service-role ב-Redis.
 
 ---
 
-## 9. Edge redirects and host
+## 8. Lighthouse CI (GitHub Actions)
 
-- `metadataBase` = production canonical host only.
-- `proxy.ts` / middleware: apply `seo_redirects` **301** before render; do not cache those responses as 200 HTML.
-- Prefer edge region close to IL users (often `fra1`).
+Job על PRs שנוגעים ב-`src/app/**` / קומפוננטות / SEO (בהתחלה advisory; אחר כך required).
+
+| נתיב | Performance | LCP | CLS | TBT |
+|---|---|---|---|---|
+| `/` | ≥ 0.85 | ≤ 2500ms | ≤ 0.1 | ≤ 300ms |
+| קטגוריה דמו | ≥ 0.85 | ≤ 2500ms | ≤ 0.1 | ≤ 300ms |
+| מוצר דמו | ≥ 0.85 | ≤ 2500ms | ≤ 0.1 | ≤ 350ms |
+| `/cart` | ≥ 0.80 | n/a SEO | ≤ 0.1 | ≤ 400ms |
+
+בדיקת עשן נוספת: `lang=he` / `dir=rtl` במסמך.
 
 ---
 
-## 10. Acceptance checklist
+## 9. Edge + host
 
-- [ ] Next.js 15 ISR/SSR modes match §1 for home, category, product, cart
-- [ ] Public PDP: Hebrew title/description, canonical, `og:locale=he_IL`, `hreflang=he-IL`
-- [ ] JSON-LD Offer price = on-site charge (ILS); seller = supplier
-- [ ] Sitemap from Supabase published rows only; robots disallow private trees
-- [ ] R2 + `next/image` AVIF/WebP; LCP image prioritized on home/PDP
-- [ ] Meilisearch related/search links are crawlable `<a href>`
-- [ ] Vercel edge + optional Upstash; cart never publicly cached
-- [ ] Lighthouse CI budgets defined and wired in GitHub Actions
-- [ ] No Escrow / fixed-commission copy in meta or schema
+- `metadataBase` = host קנוני בלבד.
+- Middleware/proxy: `seo_redirects` כ-301 לפני render; לא לקשח כ-200.
+- אזור edge קרוב לישראל (לרוב `fra1`).
+
+---
+
+## 10. Acceptance
+
+- [ ] מצבי ISR/SSR לפי §1 לבית/קטגוריה/מוצר/עגלה
+- [ ] Meta עברי + `hreflang=he-IL` + canonical
+- [ ] JSON-LD Offer במחיר תשלום באתר (ILS); seller = ספק
+- [ ] Sitemap מ-Supabase; robots חוסם פרטיים
+- [ ] R2 + next/image; LCP מתועדף
+- [ ] קישורים פנימיים מ-Meilisearch כ-`<a href>`
+- [ ] Edge + Upstash; עגלה לא ב-cache ציבורי
+- [ ] תקציב Lighthouse CI מוגדר
+- [ ] בלי Escrow / עמלה קבועה ב-meta או schema
 
 ---
 
 ## 11. Related
 
-`docs/ADMIN-PRODUCT-PAGE-SPEC.md`, `docs/ARCHITECTURE-NOTIFICATIONS.md`, `docs/ARCHITECTURE-MOBILE-APP.md`, `docs/ARCHITECTURE-WP-MIGRATION.md` (redirect equity).
+`docs/ARCHITECTURE-NOTIFICATIONS.md`, `docs/ARCHITECTURE-WP-MIGRATION.md`, `docs/ADMIN-PRODUCT-PAGE-SPEC.md`, `docs/ARCHITECTURE-MOBILE-APP.md`.
