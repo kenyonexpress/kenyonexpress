@@ -1,4 +1,5 @@
 import { isPaymentFramePath } from '@/lib/security/frame-policy'
+import { lookupRedirect } from '@/lib/seo/redirects'
 import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
 
@@ -6,6 +7,35 @@ import { type NextRequest, NextResponse } from 'next/server'
 // The exported function must be named `proxy` (not `middleware`).
 
 export async function proxy(request: NextRequest) {
+  // Legacy WordPress URLs, resolved BEFORE the session refresh below.
+  //
+  // The order is the point. `supabase.auth.getUser()` is a network round trip
+  // on every request, and an old URL from 2019 needs no session to be told
+  // where it moved to. Googlebot re-crawling a few thousand retired paths
+  // should not cost a few thousand token refreshes, and neither should the
+  // burst of 404-hunting traffic that follows any cutover.
+  //
+  // Only GET and HEAD. A 301 on a POST is a request whose body the browser
+  // may or may not resend, and a payment callback that gets redirected is a
+  // payment we never hear about.
+  if (request.method === 'GET' || request.method === 'HEAD') {
+    const hit = await lookupRedirect(request.nextUrl.pathname)
+    if (hit) {
+      if (hit.status === 410) {
+        // Gone, not missing. A 410 is a decision we made; a 404 is an
+        // oversight, and Search Console treats the two differently.
+        return new NextResponse(null, { status: 410 })
+      }
+      const url = request.nextUrl.clone()
+      url.pathname = hit.target
+      // The query string is dropped on purpose: the targets are canonical
+      // paths, and carrying `?ref=` or a stale WooCommerce `?product=` through
+      // would produce duplicate URLs for one page.
+      url.search = ''
+      return NextResponse.redirect(url, 301)
+    }
+  }
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
