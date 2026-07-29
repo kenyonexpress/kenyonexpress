@@ -151,7 +151,7 @@ Pricing rules (server):
 
 | Type | `unit_charge_agorot` |
 |---|---|
-| Coupon | `ilsToAgorot(coupon_price_ils)` — required non-null |
+| Coupon | `ilsToAgorot(coupon_price_ils)` (required non-null) |
 | Physical | `ilsToAgorot(discounted on-site price)` (variant price if set) |
 
 Block checkout when any line: unpublished, deleted, missing `platform_percent`, coupon missing `coupon_price_ils`, insufficient stock (physical).
@@ -1229,7 +1229,7 @@ export async function createLowProfile(
     CoinId: 1,
     Language: 'he',
   }
-  // POST to Cardcom LowProfile Create — implementation uses fetch + account password
+  // POST to Cardcom LowProfile Create: implementation uses fetch + account password
   void body
   throw new Error('createLowProfile: wire to Cardcom HTTP in implementation branch')
 }
@@ -1572,7 +1572,7 @@ export const runtime = 'nodejs'
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const raw = await request.text()
   const admin = createAdminClient()
-  // verifySignature(raw, headers) — fail closed
+  // verifySignature(raw, headers): fail closed
   const payload = JSON.parse(raw) as {
     LowProfileId?: string
     lowProfileId?: string
