@@ -1,5 +1,6 @@
 'use client'
 
+import CartCouponForm from '@/components/cart/CartCouponForm'
 import type { CartView } from '@/lib/cart/types'
 
 function shekels(value: number): string {
@@ -34,11 +35,20 @@ export default function CartTotalsSidebar({ cart }: { cart: CartView }) {
             <dd className="tabular-nums">{shekels(cart.balance_due_at_business)}</dd>
           </div>
         )}
+
+        {cart.coupon && (
+          <div className="cart-sidebar__row cart-sidebar__row--discount">
+            <dt>הנחה ({cart.coupon.code})</dt>
+            <dd className="tabular-nums">-{shekels(cart.discount)}</dd>
+          </div>
+        )}
       </dl>
+
+      <CartCouponForm coupon={cart.coupon} />
 
       <div className="cart-sidebar__total">
         <span>לתשלום באתר</span>
-        <strong className="tabular-nums">{shekels(cart.subtotal)}</strong>
+        <strong className="tabular-nums">{shekels(cart.total)}</strong>
       </div>
 
       <p className="cart-sidebar__note">המחירים מחושבים בזמן אמת ועשויים להשתנות לפני התשלום</p>

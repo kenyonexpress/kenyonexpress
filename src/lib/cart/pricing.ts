@@ -88,6 +88,12 @@ export function buildCartView(
   storageItems: CartStorageItem[],
   products: ProductRow[],
   variants: VariantRow[],
+  /**
+   * A discount code already evaluated against this cart, in agorot. Passed in
+   * rather than looked up here so this stays a pure function of its inputs and
+   * so the coupon is read once per request instead of once per caller.
+   */
+  coupon: { code: string; label: string; discountAgorot: number } | null = null,
 ): CartView {
   if (storageItems.length === 0) {
     return { ...EMPTY_CART, id: cartId }
@@ -189,13 +195,26 @@ export function buildCartView(
 
   const itemCount = viewItems.reduce((sum, item) => sum + item.quantity, 0)
 
+  // Cap here as well as in the settlement engine. The cart is what the shopper
+  // reads and the settlement is what the card is charged; if only one of them
+  // capped, a large code on a small cart would show one number and bill
+  // another, which is the disagreement this repo keeps paying for.
+  const payableAgorot = agorot(commission.customerPaysNow)
+  const discountAgorot = coupon ? Math.max(0, Math.min(coupon.discountAgorot, payableAgorot)) : 0
+
   return {
     id: cartId,
     items: viewItems,
     item_count: itemCount,
-    subtotal: agorot(commission.customerPaysNow) / 100,
+    subtotal: payableAgorot / 100,
     platform_fee: agorot(commission.platformFee) / 100,
     supplier_due: agorot(commission.supplierDue) / 100,
     balance_due_at_business: agorot(commission.balanceDueAtBusiness) / 100,
+    coupon:
+      coupon && discountAgorot > 0
+        ? { code: coupon.code, label: coupon.label, discount: discountAgorot / 100 }
+        : null,
+    discount: discountAgorot / 100,
+    total: (payableAgorot - discountAgorot) / 100,
   }
 }

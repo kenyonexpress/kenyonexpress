@@ -1,5 +1,6 @@
 'use server'
 
+import { type CouponRecord, evaluateCoupon, normalizeCouponCode } from '@/lib/cart/coupon'
 import {
   GUEST_SESSION_COOKIE,
   ensureGuestSessionId,
@@ -20,6 +21,20 @@ import { revalidatePath } from 'next/cache'
 import { cookies } from 'next/headers'
 
 const CART_EXPIRY_DAYS = 30
+
+/**
+ * The applied discount code lives in a cookie, not in a `carts` column.
+ *
+ * A column would need a migration, and an unapplied migration on the main
+ * branch is the trap GO-LIVE already carries once. The cookie is safe here for
+ * a specific reason: it holds the CODE and nothing else. The discount is
+ * re-read from `public.coupons` and re-evaluated against the live cart on every
+ * render and again at checkout, so a shopper who edits it can only name a
+ * different code, never a different amount, and a code that expires or runs out
+ * stops working the moment it does.
+ */
+const CART_COUPON_COOKIE = 'ke_cart_coupon'
+const COUPON_COOKIE_MAX_AGE = CART_EXPIRY_DAYS * 24 * 60 * 60
 
 function itemKey(item: CartStorageItem): string {
   return `${item.product_id}::${item.variant_id ?? 'null'}`
@@ -103,9 +118,53 @@ async function loadProductData(items: CartStorageItem[]) {
   return { products: pricedProducts, variants }
 }
 
+/**
+ * Reads the cookie's code and prices it against this cart. Returns null for no
+ * code, an unknown code, or a code that has stopped being valid — the cart then
+ * renders as if none were applied, which is the truthful state.
+ */
+async function resolveAppliedCoupon(
+  view: CartView,
+): Promise<{ code: string; label: string; discountAgorot: number } | null> {
+  const cookieStore = await cookies()
+  const code = normalizeCouponCode(cookieStore.get(CART_COUPON_COOKIE)?.value)
+  if (!code) return null
+
+  const admin = createAdminClient()
+  const { data } = await admin
+    .from('coupons')
+    .select(
+      'id, code, discount_type, discount_value, min_purchase, expires_at, is_active, max_uses, used_count, product_id',
+    )
+    .ilike('code', code)
+    .maybeSingle()
+
+  const evaluation = evaluateCoupon(
+    (data as CouponRecord | null) ?? null,
+    {
+      payableAgorot: Math.round(view.subtotal * 100),
+      productIds: view.items.map((item) => item.product_id),
+    },
+    new Date(),
+  )
+
+  if (!evaluation.ok) return null
+  return {
+    code: evaluation.code,
+    label: evaluation.label,
+    discountAgorot: evaluation.discountAgorot,
+  }
+}
+
 async function resolveCartView(cartId: string | null, items: CartStorageItem[]): Promise<CartView> {
   const { products, variants } = await loadProductData(items)
-  return buildCartView(cartId, items, products, variants)
+  const priced = buildCartView(cartId, items, products, variants)
+  if (priced.items.length === 0) return priced
+  // Priced twice on purpose: the coupon needs the payable total to judge a
+  // minimum and to cap itself, and that total is only known after the lines are
+  // priced. The second pass costs no query.
+  const coupon = await resolveAppliedCoupon(priced)
+  return coupon ? buildCartView(cartId, items, products, variants, coupon) : priced
 }
 
 type CartRow = { id: string; items: unknown }
@@ -410,4 +469,102 @@ export async function mergeGuestCart(userId: string, sessionId: string): Promise
 export async function clearGuestSessionCookie(): Promise<void> {
   const cookieStore = await cookies()
   cookieStore.delete(GUEST_SESSION_COOKIE)
+}
+
+// ── Discount codes ──────────────────────────────────────────────────────────
+
+export type CouponActionResult =
+  | { ok: true; cart: CartView }
+  | { ok: false; error: string; code: string }
+
+/**
+ * Applies a discount code to the current cart.
+ *
+ * The cookie is only written after the code has been read from the database and
+ * priced against this exact cart, so an accepted code is one that was worth
+ * something at the moment it was accepted. It is re-checked on every render
+ * afterwards, because "worth something now" is not "worth something later": a
+ * code can expire, run out of uses, or fall below its minimum when the shopper
+ * removes an item, and in each case the cart quietly drops it rather than
+ * showing a discount checkout will not honour.
+ */
+export async function applyCouponCode(rawCode: string): Promise<CouponActionResult> {
+  const code = normalizeCouponCode(rawCode)
+  if (!code) return fail('יש להזין קוד קופון', 'VALIDATION')
+  if (code.length > 64) return fail('קוד הקופון ארוך מדי', 'VALIDATION')
+
+  const ip = await getClientIp()
+  // Same limiter the cart writes use. Without one this endpoint is a code
+  // oracle: unlimited guesses against a table of short codes.
+  const allowed = await checkRateLimit(`coupon:${ip}`)
+  if (!allowed) return fail('יותר מדי ניסיונות — נסו שוב מאוחר יותר', 'RATE_LIMITED')
+
+  const { row } = await getCartRow()
+  const items = parseItems(row?.items)
+  if (items.length === 0) return fail('העגלה ריקה', 'EMPTY_CART')
+
+  const { products, variants } = await loadProductData(items)
+  const priced = buildCartView(row?.id ?? null, items, products, variants)
+
+  const admin = createAdminClient()
+  const { data } = await admin
+    .from('coupons')
+    .select(
+      'id, code, discount_type, discount_value, min_purchase, expires_at, is_active, max_uses, used_count, product_id',
+    )
+    .ilike('code', code)
+    .maybeSingle()
+
+  const evaluation = evaluateCoupon(
+    (data as CouponRecord | null) ?? null,
+    {
+      payableAgorot: Math.round(priced.subtotal * 100),
+      productIds: priced.items.map((item) => item.product_id),
+    },
+    new Date(),
+  )
+  if (!evaluation.ok) return fail(evaluation.message, 'COUPON_INVALID')
+
+  const cookieStore = await cookies()
+  cookieStore.set(CART_COUPON_COOKIE, evaluation.code, {
+    httpOnly: true,
+    sameSite: 'lax',
+    maxAge: COUPON_COOKIE_MAX_AGE,
+    path: '/',
+  })
+
+  revalidateCartPaths()
+  return {
+    ok: true,
+    cart: buildCartView(row?.id ?? null, items, products, variants, {
+      code: evaluation.code,
+      label: evaluation.label,
+      discountAgorot: evaluation.discountAgorot,
+    }),
+  }
+}
+
+export async function removeCouponCode(): Promise<CouponActionResult> {
+  const cookieStore = await cookies()
+  cookieStore.delete(CART_COUPON_COOKIE)
+  revalidateCartPaths()
+  return { ok: true, cart: await getCart() }
+}
+
+/**
+ * What checkout should actually take off the card, in agorot.
+ *
+ * Deliberately NOT read from the cart view the browser was shown. The cart is a
+ * rendering; this is a fresh evaluation at the moment of charging, against the
+ * cart as it stands then. Between the two the code can have expired, the cart
+ * can have shrunk below the minimum, or the last use can have gone to someone
+ * else.
+ */
+export async function resolveCheckoutDiscountAgorot(): Promise<{
+  code: string | null
+  discountAgorot: number
+}> {
+  const cart = await getCart()
+  if (!cart.coupon) return { code: null, discountAgorot: 0 }
+  return { code: cart.coupon.code, discountAgorot: Math.round(cart.coupon.discount * 100) }
 }

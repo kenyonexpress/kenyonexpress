@@ -24,7 +24,7 @@ import {
   type CheckoutActionResult,
   beginCheckoutInputSchema,
 } from '@/lib/validations/checkout'
-import { getCart } from '@/server/actions/cart'
+import { getCart, resolveCheckoutDiscountAgorot } from '@/server/actions/cart'
 import {
   linkAnalyticsIdentity,
   stampOrderAttribution,
@@ -392,12 +392,28 @@ export async function beginCheckout(
     walletAppliedAgorot = ilsToAgorot(input.apply_wallet_ils.toFixed(2))
   }
 
+  // The discount is re-evaluated here, from the coupons table, against the cart
+  // as it stands at this instant. The number the cart rendered is not an input:
+  // between that render and this charge the code can have expired, the last use
+  // can have gone to someone else, or the cart can have dropped below the
+  // code's minimum. Whatever this returns is what the card is reduced by, and
+  // the engine caps it again against the commission.
+  //
+  // The code itself is not stored on the order: `orders` has no column for it,
+  // and adding one would put an unapplied migration on the charging path, which
+  // is the trap GO-LIVE already carries once for commission_type. The
+  // consequence is recorded rather than hidden: nothing increments
+  // `coupons.used_count`, so `max_uses` is enforced as a read of a counter no
+  // part of this flow advances. See STATE, "what the coupon code does not do".
+  const { discountAgorot } = await resolveCheckoutDiscountAgorot()
+
   let settlement: ReturnType<typeof calculateSettlement>
   try {
     settlement = calculateSettlement({
       idempotencyKey: input.client_ref,
       lines: settlementLines,
       walletApplied: walletAppliedAgorot,
+      discountApplied: agorot(discountAgorot),
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'settlement failed'
@@ -427,7 +443,7 @@ export async function beginCheckout(
       user_id: user.id,
       status: 'pending',
       subtotal_agorot: settlement.faceValue,
-      discount_agorot: 0,
+      discount_agorot: settlement.discountApplied,
       wallet_applied_agorot: settlement.walletApplied,
       cashback_applied_agorot: settlement.walletApplied,
       customer_pays_now_agorot: settlement.paidOnSite,

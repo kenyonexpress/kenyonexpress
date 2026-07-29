@@ -372,3 +372,87 @@ describe('calculateSettlement — final business rules', () => {
     expect(result.cashbackAmount).toBe(200)
   })
 })
+
+describe('calculateSettlement — cart discount codes', () => {
+  // A physical line of ₪100 at 5%: paidOnSite 10000, commission 500,
+  // supplierDue 9500. Every case below is read against those numbers.
+
+  it('takes the discount off the card charge', () => {
+    const result = calculateSettlement({
+      idempotencyKey: 'k',
+      lines: [physicalLine()],
+      discountApplied: agorot(300),
+    })
+    expect(result.discountApplied).toBe(300)
+    expect(result.cardCharge).toBe(9700)
+  })
+
+  it('funds the discount from the platform and never from the supplier', () => {
+    // The supplier did not offer the code and never agreed to fund it, so their
+    // share is identical with and without one. Only platformNet moves.
+    const withCode = calculateSettlement({
+      idempotencyKey: 'k',
+      lines: [physicalLine()],
+      discountApplied: agorot(300),
+    })
+    const without = calculateSettlement({ idempotencyKey: 'k', lines: [physicalLine()] })
+
+    expect(withCode.supplierDue).toBe(without.supplierDue)
+    expect(withCode.commission).toBe(without.commission)
+    expect(withCode.platformNet).toBe(without.commission - 300)
+  })
+
+  it('caps the discount at the commission rather than eating into supplier money', () => {
+    // A ₪50 code against a ₪5 commission. Honouring it in full would leave the
+    // platform paying the supplier out of pocket, which is a transfer and not a
+    // discount, so it stops at the commission.
+    const result = calculateSettlement({
+      idempotencyKey: 'k',
+      lines: [physicalLine()],
+      discountApplied: agorot(5000),
+    })
+    expect(result.discountApplied).toBe(500)
+    expect(result.platformNet).toBe(0)
+    expect(result.supplierDue).toBe(9500)
+    expect(result.cardCharge).toBe(9500)
+  })
+
+  it('never drives the card charge below zero when a wallet is also applied', () => {
+    const result = calculateSettlement({
+      idempotencyKey: 'k',
+      lines: [physicalLine()],
+      walletApplied: agorot(9900),
+      discountApplied: agorot(500),
+    })
+    expect(result.cardCharge).toBeGreaterThanOrEqual(0)
+    expect(result.cardCharge).toBe(10000 - 9900 - result.discountApplied)
+  })
+
+  it('defaults to no discount and keeps platformNet equal to commission', () => {
+    const result = calculateSettlement({ idempotencyKey: 'k', lines: [physicalLine()] })
+    expect(result.discountApplied).toBe(0)
+    expect(result.platformNet).toBe(result.commission)
+  })
+
+  it('rejects a negative discount instead of turning it into a surcharge', () => {
+    expect(() =>
+      calculateSettlement({
+        idempotencyKey: 'k',
+        lines: [physicalLine()],
+        discountApplied: agorot(-100),
+      }),
+    ).toThrow(RangeError)
+  })
+
+  it('keeps paidOnSite = commission + supplierDue with a discount applied', () => {
+    // The conservation identity is about what the customer owed on site, which
+    // the discount does not change: it changes who receives it.
+    const result = calculateSettlement({
+      idempotencyKey: 'k',
+      lines: [physicalLine(), couponLine()],
+      discountApplied: agorot(200),
+    })
+    expect(result.paidOnSite).toBe(sumAgorot([result.commission, result.supplierDue]))
+    expect(result.platformNet + result.supplierDue).toBe(result.paidOnSite - 200)
+  })
+})
