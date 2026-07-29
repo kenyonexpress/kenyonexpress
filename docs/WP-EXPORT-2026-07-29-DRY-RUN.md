@@ -11,9 +11,10 @@ rather than the synthetic fixture.
 - result: **BLOCKED**, 4 gates failed. Two of the four are environmental, one is
   a false positive, one is real.
 
-No parser was added. `scripts/wp-import/lib/xml.mjs` already reads WXR with zero
-dependencies, so `fast-xml-parser` would have been a second parser for a job the
-repo already does.
+This first pass used the existing zero-dependency reader,
+`scripts/wp-import/lib/xml.mjs`. A second pass on `fast-xml-parser` was then run
+deliberately as an independent cross-check, and it is what caught the category
+bug below. Both passes are documented here; the second one is the corrected one.
 
 ## What is in the export
 
@@ -35,10 +36,16 @@ repo already does.
 | custom_css | 2 |
 | jet-engine, itsec-dashboard, elementor_snippet, acf-field-group | 1 each |
 
-Plus 28 `product_cat` terms and 2 authors in the channel header. There are
-**zero** `shop_coupon` items: the legacy store had no WooCommerce coupons.
+Plus, in the channel header, 11 `product_cat` terms, 17 `<wp:category>` blog
+terms that are **not** product categories, 43 `product_tag` terms, various `pa_*`
+attribute taxonomies, and 2 authors. There are **zero** `shop_coupon` items: the
+legacy store had no WooCommerce coupons.
 
 ## What the pipeline produced
+
+> **Corrected below.** The category count in this table is wrong, and a second
+> independent parser is what proved it. See "Cross-check with fast-xml-parser".
+> The real product category count is 11, not 28.
 
 | entity | rows |
 | --- | --- |
@@ -165,10 +172,11 @@ migration cannot answer "what did this customer buy from us."
 
 ## Verdict
 
-The catalog side of the migration is in good shape: 46 products, 28 categories,
-66 images, unique slugs, no fake strikethrough prices, no dangling categories,
-no password material, no imported consent. One Dokan bookkeeping row is
-responsible for every product-level failure.
+The catalog side of the migration is in good shape: 45 products, 11 categories,
+65 images, unique slugs, no fake strikethrough prices, no dangling categories, no
+password material, no imported consent. One Dokan bookkeeping row is responsible
+for every product-level failure. The counts in this paragraph are the corrected
+ones; the section below explains why the first pass reported 46, 28 and 66.
 
 Before `--apply`:
 
@@ -180,3 +188,212 @@ Before `--apply`:
 4. Run the `media` stage so 66 images exist before projection writes their URLs.
 5. Decide whether order history is needed. If yes, re-extract from a dump or the
    REST API. WXR will never have line items.
+
+---
+
+# Cross-check with fast-xml-parser
+
+A second, independent reader of the same file:
+
+```
+scripts/wp-import/xml-fxp-dryrun.mjs      # fast-xml-parser 5.10.1
+node scripts/wp-import/xml-fxp-dryrun.mjs --file refs/wp-export/wp-export.xml
+```
+
+The point is not a nicer parser. It is that two implementations reading one file
+either agree, in which case the number is a property of the export, or disagree,
+in which case one of them has a bug and the disagreement is worth more than
+either result alone. Every difference below was chased to a cause.
+
+The script writes nothing to any database. It emits prepared SQL for review.
+
+## Where the two parsers landed
+
+| metric | lib/xml.mjs | fast-xml-parser | correct | why they differ |
+| --- | --- | --- | --- | --- |
+| categories | 28 | **11** | 11 | the existing reader also ingests the blog taxonomy |
+| products | 46 | **45** | 45 | the existing reader imports Dokan's bookkeeping row |
+| media | 66 | **65** | 65 | the existing reader keeps one orphan image |
+| product slugs | identical | identical | | agree on all 45, after two bugs of mine were fixed |
+| users | 0 | 2 | 2 | authors, and they are deliberately not projected |
+| orders | 0 | 41 headers | 41 headers | the XML path ignored them; contents are absent from WXR regardless |
+
+## The existing reader imports 17 categories that are not product categories
+
+`readTaxonomy` in `scripts/wp-import/lib/wxr.mjs` reads `<wp:term>` filtered to
+`product_cat`, **and then also** reads every `<wp:category>`. Those are different
+taxonomies. `<wp:category>` is the blog post taxonomy, and in this export it
+holds 17 leftover Electro theme demo terms:
+
+```
+aside  design  enterprise  enterprise-de  events  events-de  gadgets
+links-quotes  mobile  news  news-de  podcasts  social  technology
+uncategorized  uncategorized-en  videos
+```
+
+There are exactly 11 real `product_cat` terms:
+
+```
+בעלי-מקצוע   hot-deals   טלפונים-מחשבים-ואביזרים   יופי-בריאות-וטיפוח
+uncategorized   מסעדות-ובתי-קפה   עד-99   ציוד-ומזון-לבעלי-חיים
+צימרים-מלונות-ונופש   קורסים-express   תינוקות-וילדים
+```
+
+11 + 17 = 28, which is where the count in the table above came from.
+
+Projecting 28 would put `Podcasts`, `Videos`, `Links & Quotes` and `Gadgets` into
+the navigation of a Hebrew storefront. It gets worse than cosmetic: both
+taxonomies contain a term slugged `uncategorized`, so the collision handler
+renamed one of them, and the earlier run's
+
+```
+warn  slug_collision: uncategorized taken, using uncategorized-2
+```
+
+is the real product category `כללי` being pushed onto `/category/uncategorized-2`
+by a blog term that should never have been read. A gate cannot catch this,
+because `products_with_dangling_category` only ever gets stricter when extra
+categories exist. Reading two taxonomies as one is invisible to every check the
+pipeline has.
+
+## The orphan image
+
+`media` differs by exactly one row, attachment `5324`. It belongs to product
+`6503` (`product-template`, status `private`), which the pipeline correctly
+excludes from the catalog and whose image it nevertheless keeps in the media
+inventory. It would be downloaded, converted to webp and uploaded to storage for
+a product that never gets imported. Attachment ids `8454-8457`, belonging to the
+other excluded product, are correctly dropped, so the media inventory is built
+before status exclusion for at least this one path.
+
+## 18 of 45 products carry a slug that has nothing to do with their title
+
+The largest finding of the cross-check, and it is in the data, not in either
+parser:
+
+| wp_id | slug | title |
+| --- | --- | --- |
+| 6166 | `שעון-אפל-חכם-apple-watch-series-7` | ארוחת בוקר זוגית בקפה גן סיפור |
+| 6561 | `pampers-premium-care-diaper-pants-medium` | מארז מפנק לתינוק |
+| 6591 | `bar-drink` | קמפיין ענק בפייסבוק |
+| 6462 | `barbecue` | מסעדה בשרית |
+| 6604 | `restaurants-meat-3` | מוצר ראשי מאסטר Master Product |
+| 8812 | `מוצר-לדוגמא` | תיק עור JEEP יוקרתי |
+| 6253 | `6253` | חבילת חופשה למאלדיבים - 2 טיסות |
+
+and 11 more, including three slugs ending `-copy` or `-copy-copy`. These are
+recycled WordPress posts: an editor replaced the content and WordPress kept the
+original `post_name`.
+
+**This is not a broken redirect, and the earlier draft of this document had it
+wrong.** WordPress served each product at `/product/<post_name>`, so
+`/product/barbecue` already showed `מסעדה בשרית` on the old site. Carrying the
+slug over preserves the URL exactly, which is what SEO continuity wants.
+
+The cost runs the other way: the new storefront inherits URLs that misdescribe
+their own products, including one product living at `/product/6253` and another
+at a slug advertising an Apple Watch while selling a breakfast. Re-slugging from
+titles reads better and needs a 301 from every old slug, which the pipeline
+already knows how to emit. Either choice is defensible. Neither can be chosen
+about rows nobody counted, which is why they are now counted.
+
+## Two bugs this cross-check found in the new script, before it was trusted
+
+Recorded because they are the reason the agreement above means anything.
+
+1. **Wrong element for product categories.** The first run reported 0 categories
+   and 45 dangling-category errors. `product_cat` lives in `<wp:term>`;
+   `<wp:category>` is the blog taxonomy. Reading the wrong one made every product
+   look orphaned. Ironically, chasing this is what exposed the inverse bug in
+   `lib/wxr.mjs`, which reads both.
+2. **Percent-encoded and unsanitised slugs.** WordPress stores Hebrew slugs
+   percent-encoded, so slugs first came out as
+   `%d7%a9%d7%a2%d7%95%d7%9f-...`, and after decoding one still ended in `₪`.
+   Both would have gone straight into `public.products.slug` and every product
+   URL. Fixed by decoding and then stripping to letters, digits and dashes,
+   Unicode-aware, with a fallback to a slug built from the title rather than to
+   `product-<id>`.
+
+A third difference turned out not to be a bug in either: `content:encoded` and
+`excerpt:encoded` collapse to the same key once namespaces are stripped, which
+returns an array of two rather than a string. Read as a scalar it yields `null`,
+which is how a catalog imports with every description empty and nothing
+complains. Handled explicitly, with `excerpt` mapped to `short_description_he`,
+a field the existing transform does not populate at all.
+
+## Field mapping, as implemented
+
+| WooCommerce | public.products | note |
+| --- | --- | --- |
+| `post_title` | `name_he` | |
+| `post_name` | `slug` | decoded, sanitised, unique |
+| `content:encoded` | `description_he` | raw HTML, see below |
+| `excerpt:encoded` | `short_description_he` | |
+| `_price`, else `_sale_price`, else `_regular_price` | `price_ils` | |
+| `_regular_price` | `compare_at_price_ils` | only when it exceeds the sale price |
+| `_sku` | `sku` | |
+| `_stock` | `stock_quantity` | |
+| `_stock_status` | `status` | `outofstock` projects as `sold_out` |
+| `_thumbnail_id` + `_product_image_gallery` | `images` | legacy URLs until media runs |
+| first `product_cat` term | `category_id` | resolved by slug subselect |
+| none | `platform_percent`, `commission_percent` | from `DEFAULTS`, 10 and 15 |
+
+**`price_ils` is `numeric(10,2)`, not agorot.** The brief asked for
+`_price (cents) -> price_agorot (integer)`, and that mapping does not apply here
+on either side: WooCommerce `_price` is a decimal string in store currency
+(`"199.90"`, not `19990`), and `public.products` has no `price_agorot` column.
+The integer-agorot convention is real but belongs to `order_items` and
+`coupon_deals`, which this file does not feed. Migration `005` defines
+`price_ils numeric(10,2) NOT NULL CHECK (price_ils >= 0)`; the mapping is
+decimal to decimal.
+
+Also worth knowing: `products.title_he` was renamed to `name_he` by migration
+`016_products_code_sync.sql`, so the column name in `005` is not the current one.
+The generated types in `src/types/database.ts` are the reliable source.
+
+## Prepared upsert statements
+
+```
+wp_import/reports/upserts-fxp.sql     154 statements
+wp_import/reports/upserts-fxp.json    machine-readable counts and issues
+```
+
+Contents, in order: 11 category upserts, a second pass for category parents
+(WXR does not order terms parent-first), the legacy supplier row, 45 product
+upserts, 56 `wp_import.id_map` rows, and 41 archive-only inserts into
+`wp_import.orders`.
+
+Every statement keys on the `UNIQUE` slug, so re-running updates rather than
+duplicating, and columns absent from each `DO UPDATE SET` are never clobbered.
+The file opens with `BEGIN;` and closes with `COMMIT;`.
+
+Three things it deliberately does not do:
+
+- **No `auth.users` inserts.** The 2 authors are listed as SQL comments only.
+  Passwords are never migrated, `auth.users` is written through the admin API
+  rather than SQL, and imported people start opted out. Legacy accounts arrive
+  through the password reset flow.
+- **No projection of orders.** They go to `wp_import.orders` and stay there.
+- **No image rewriting.** `products.images` holds legacy `kenyonexpress.co.il`
+  URLs. Applying this file before the `media` stage leaves the new catalog
+  hotlinking the old site, and one product (`6462`) additionally embeds
+  `wp-content` URLs inside its description HTML.
+
+This SQL is a review artifact. The supported way to write is still
+`WP_IMPORT_ALLOW_WRITES=1 node scripts/wp-import/run.mjs --apply`, which also
+maintains the migration log and supports `fn_rollback_batch`.
+
+## Revised blocker list
+
+1. Fix `readTaxonomy` to stop reading `<wp:category>`. Until then a real import
+   creates 17 junk categories and displaces `כללי` to `uncategorized-2`.
+2. Exclude `reverse-withdrawal-payment` at extract.
+3. Build the media inventory after status exclusion, dropping orphan `5324`.
+4. Add the 27 pages to `url_inventory`. `redirect_coverage` currently scores
+   products and categories and reports a total.
+5. Decide the slug question for the 18 recycled products: keep for URL
+   continuity, or re-slug plus 301.
+6. Working Supabase credentials, so `live_count_parity` is measured.
+7. Run `media` before `project`.
+8. Decide whether order line items matter. If yes, the source must be a dump or
+   the REST API.
