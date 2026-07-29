@@ -6,6 +6,51 @@ Updated: 2026-07-30 (product-page verification + WXR dry run round)
 Checkout. `feat/admin-core` is merged into `phase5/homepage`; the storefront and
 the admin panel are one branch again.
 
+## Release candidate, 2026-07-30
+
+Full gate run on `d576017`. Verdict **NOT READY**, written up in
+`RELEASE-READINESS.md` with every command that produced every number.
+
+```
+tsc --noEmit        0 errors                                   PASS
+vitest              56 files, 735 tests                        PASS
+production build    compiled in 6.2s                           PASS
+playwright e2e      41 passed, 12 failed                       BLOCKED
+compare.mjs         category 7.35  product 10.21  search 14.87
+                    home 17.28  products 25.75  checkout n/a   FAIL
+lighthouse (prod)   product 96/96   home 75/88                 FAIL
+pnpm audit --prod   14 high, 10 moderate, 3 low                FAIL
+```
+
+All 12 E2E failures are cart or checkout and all 12 go through
+`createAdminClient()`, so they are the stock-demo-key blocker rather than broken
+code. The purchase → coupon → scan flow cannot be run end to end: its first leg
+fails at add-to-cart. `--page=checkout` refuses to produce a number at all, by
+design, because an empty cart is redirected to `/cart` on both sides.
+
+Lighthouse was measured against `next start` on a clean production build in a
+throwaway worktree, never against the dev server, so the numbers are comparable
+to the 90+ target. Home is the only page below it: LCP 5.8s while CLS is 0.003
+and TBT is 0ms, so it is one late large paint rather than general slowness.
+
+Two things worth carrying forward:
+
+- **`#7e7e7e` is a conflict, not a bug.** 40 contrast failures all resolve to
+  that one grey, which was measured off the live site. Darkening it to pass WCAG
+  AA moves the storefront away from the 1:1 reference the compare harness exists
+  to enforce, and live fails the same check. Accessibility (5568) is the stronger
+  claim, but it has to be decided once in `src/styles/tokens.ts` with the pixel
+  regression accepted in advance, not patched per component.
+- **`reverse-withdrawal-payment` is already in the local catalogue** and renders
+  as a homepage card whose link has no accessible name. It is Dokan's hidden
+  bookkeeping row, the same one the WXR dry run says must never be imported.
+
+`pnpm add next@16.2.12` is the highest-value single fix (it clears most of the 14
+highs, including four App Router middleware bypasses on a codebase that guards
+`/admin` and `/supplier` in that layer). Deliberately not applied: other sessions
+are running dev servers out of this `node_modules`, and swapping the framework
+under them breaks unrelated work in progress.
+
 ## Round of 2026-07-30
 
 **The product page measures 10.21%, and the two reasons the earlier numbers were
