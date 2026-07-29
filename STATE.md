@@ -4,11 +4,12 @@
 Admin Dashboard Core (Fable 5). Docs channel on `arch/admin-supplier` (ke-arch).
 
 ## Last Completed
-2026-07-29: `docs/ARCHITECTURE-CUSTOMER-SUPPORT.md` (docs only in ke-arch):
+2026-07-29: `docs/ADMIN-PRODUCT-PAGE-SPEC.md` (docs only in ke-arch):
 
-- tickets / messages model, statuses, SLA
-- on-site chat, bidirectional Resend email, future WhatsApp Business
-- admin support dashboard RTL; no Escrow / snapshot money context
+- four dynamic money fields: platform_percent, supplier_split_percent, discount_percent, coupon_price
+- required supplier publish gate
+- order_items snapshot (C10)
+- validation / CHECKs; aligned to CONTRADICTIONS 28.07 (coupon prepayment stays with platform)
 
 ## In Progress
 Docs channel on `arch/admin-supplier` (ke-arch).
@@ -33,6 +34,9 @@ not set in this worktree STATE
 
 ---
 ## History
+
+### 2026-07-29: ADMIN-PRODUCT-PAGE-SPEC
+- Rewrote money/supplier/snapshot/validation spec under 28.07 binding model. Docs only.
 
 ### 2026-07-29: ARCHITECTURE-CUSTOMER-SUPPORT
 - Full support/tickets architecture. Docs only. No application code.
