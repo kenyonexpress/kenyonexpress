@@ -38,6 +38,19 @@ const T = ELECTRO_HERO.typography
 const SLIDE = ELECTRO_HERO.slider
 const DOT_ACTIVE = 'var(--color-brand-primary)'
 const DOT_INACTIVE = 'rgba(125, 125, 125, 0.5)'
+
+// Live slider geometry: an 8px round dot, 30x8 rounded bar for the current one.
+const DOT_HEIGHT = 8
+const DOT_WIDTH_CURRENT = 30
+const DOT_WIDTH_IDLE = 8
+/** WCAG 2.2 / Lighthouse minimum tap target. */
+const TAP_MIN = 24
+
+const dotWidth = (isCurrent: boolean) => (isCurrent ? DOT_WIDTH_CURRENT : DOT_WIDTH_IDLE)
+/** The button never shrinks below the tap minimum, and never below the dot. */
+const dotButtonSize = (visible: number) => Math.max(TAP_MIN, visible)
+/** Half the growth, handed back as negative margin so layout does not shift. */
+const dotInset = (visible: number) => (dotButtonSize(visible) - visible) / 2
 const AUTOPLAY_MS = 5000
 
 /**
@@ -376,13 +389,31 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
                 aria-label={`שקופית ${i + 1}`}
                 aria-current={isCurrent ? 'true' : undefined}
                 style={{
-                  width: isCurrent ? 30 : 8,
-                  height: 8,
-                  backgroundColor: isCurrent ? DOT_ACTIVE : DOT_INACTIVE,
-                  borderRadius: isCurrent ? 3 : 9999,
+                  // The dot is 8px because that is what the live slider renders.
+                  // A 24px minimum tap target and an 8px dot are not in conflict
+                  // if the BUTTON is 24px and its extra size is given back as
+                  // negative margin: the hit area grows, the visible dot and
+                  // every neighbour's position stay exactly where they were, so
+                  // the pixel diff against live does not move.
+                  width: dotButtonSize(dotWidth(isCurrent)),
+                  height: dotButtonSize(DOT_HEIGHT),
+                  marginInline: -dotInset(dotWidth(isCurrent)),
+                  marginBlock: -dotInset(DOT_HEIGHT),
+                  background: 'transparent',
                 }}
-                className="shrink-0 border-0 p-0 transition-all duration-200 hover:opacity-80"
-              />
+                className="flex shrink-0 items-center justify-center border-0 p-0"
+              >
+                <span
+                  aria-hidden="true"
+                  style={{
+                    width: dotWidth(isCurrent),
+                    height: DOT_HEIGHT,
+                    backgroundColor: isCurrent ? DOT_ACTIVE : DOT_INACTIVE,
+                    borderRadius: isCurrent ? 3 : 9999,
+                  }}
+                  className="block transition-all duration-200 hover:opacity-80"
+                />
+              </button>
             )
           })}
         </div>

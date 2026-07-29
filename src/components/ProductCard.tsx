@@ -60,7 +60,16 @@ function DealsProductCard({ product }: { product: Product }) {
       </div>
 
       <div className="p_con__image-wrap relative">
-        <Link href={`/product/${product.slug}`} className="p_con__image-link">
+        {/* aria-label, not just the img alt: a product with no thumbnail renders
+            this link with NO children at all, and an empty link has no
+            accessible name. Lighthouse flags exactly one on the homepage today,
+            and the offender is the imageless Dokan bookkeeping row. The label
+            has to survive a missing image, so it lives on the link. */}
+        <Link
+          href={`/product/${product.slug}`}
+          className="p_con__image-link"
+          aria-label={product.name_he}
+        >
           {thumb ? (
             <img src={thumb} alt={product.name_he} className="p_con__image" loading="lazy" />
           ) : null}
