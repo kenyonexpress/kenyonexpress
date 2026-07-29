@@ -6,8 +6,8 @@ Admin Dashboard Core (Fable 5). Docs channel on `arch/admin-supplier` (ke-arch).
 ## Last Completed
 2026-07-29: `docs/ARCHITECTURE-AI-AGENTS.md` (docs only in ke-arch):
 
-- Agents: product_copy, price_monitor, wp_migration, support_chat, admin_whatsapp_copilot
-- Claude API, Hebrew prompt templates, cost caps, eval, human-approval rails
+- Agents: product_copy (Claude Hebrew), price_monitor, wp_migration, support_chat (RLS), admin_whatsapp_copilot
+- Hebrew prompt templates, cost controls (`cost_agorot`), eval golden sets, human-approval write gate
 - Constraints: coupon paid in full on site, no escrow, snapshotted `platform_percent`, money in agorot
 
 ## In Progress
@@ -34,14 +34,14 @@ not set in this worktree STATE
 ---
 ## History
 
-### 2026-07-29: ARCHITECTURE-AI-AGENTS rewrite
-- Full five-agent phase spec. Docs only. No application code.
+### 2026-07-29: ARCHITECTURE-AI-AGENTS
+- Full AI agents phase spec. Docs only. No application code.
 
 ### 2026-07-29: SEO-PERFORMANCE + MOBILE-APP
-- Next.js 15 SEO/perf + Expo super-app on same Supabase. Docs only.
+- Next.js 15 SEO/perf + Expo super-app on shared Supabase. Docs only.
 
 ### 2026-07-29: ARCHITECTURE-NOTIFICATIONS rewrite
-- Resend + triggers + Edge worker; agorot log; no escrow. Docs only.
+- Resend + triggers + Edge worker; agorot log; no escrow coupon rules. Docs only.
 
 ### 2026-07-29: ADMIN-PRODUCT-PAGE-SPEC
 - Money/supplier/snapshot/validation under 28.07. Docs only.
