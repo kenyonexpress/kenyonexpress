@@ -46,7 +46,7 @@ export default async function CouponDealPage({ params }: Props) {
               <Tag size={48} />
             </div>
           )}
-          <div className="absolute top-3 right-3 bg-brand text-white text-sm font-bold px-3 py-1.5 rounded-lg">
+          <div className="absolute top-3 right-3 bg-brand text-heading text-sm font-bold px-3 py-1.5 rounded-lg">
             {discountPct}% הנחה
           </div>
         </div>
@@ -85,7 +85,7 @@ export default async function CouponDealPage({ params }: Props) {
           <button
             type="button"
             disabled
-            className="w-full bg-brand/60 text-white font-semibold rounded-lg px-6 py-3 text-sm cursor-not-allowed"
+            className="w-full bg-brand/60 text-heading/70 font-semibold rounded-lg px-6 py-3 text-sm cursor-not-allowed"
           >
             רכישת קופון — בקרוב
           </button>

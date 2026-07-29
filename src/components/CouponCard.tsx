@@ -44,7 +44,11 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
           </div>
         )}
         {discountPct != null && discountPct > 0 && (
-          <div className="absolute top-2 end-2 bg-brand text-white text-xs font-bold px-2 py-1 rounded-lg">
+          <div // White on brand yellow is 1.41:1. This badge carries the discount
+            // percentage, so an unreadable one loses the single number the card
+            // exists to advertise.
+            className="absolute top-2 end-2 bg-brand text-heading text-xs font-bold px-2 py-1 rounded-lg"
+          >
             {discountPct}% הנחה
           </div>
         )}

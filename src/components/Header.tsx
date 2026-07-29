@@ -20,7 +20,11 @@ export default function Header({ fullName }: Props) {
           <button
             type="submit"
             title="יציאה"
-            className="w-9 h-9 rounded-full bg-brand text-white text-sm font-bold flex items-center justify-center hover:bg-brand-dark transition-colors"
+            // text-heading, not text-white: white on brand yellow measures 1.41:1
+            // against a 4.5:1 requirement, which is illegible rather than
+            // merely non-compliant. The heading token on the same yellow is
+            // 7.76:1. src/lib/a11y/contrast.test.ts pins both numbers.
+            className="w-9 h-9 rounded-full bg-brand text-heading text-sm font-bold flex items-center justify-center hover:bg-brand-dark hover:text-white transition-colors"
           >
             {initials(fullName)}
           </button>

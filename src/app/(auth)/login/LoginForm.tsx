@@ -125,7 +125,7 @@ export default function LoginForm({ next, callbackError, magic }: Props) {
         <button
           type="submit"
           disabled={emailPending}
-          className="w-full bg-brand hover:bg-brand-dark disabled:opacity-60 text-white font-semibold rounded-lg py-2.5 text-sm transition-colors"
+          className="w-full bg-brand text-heading hover:bg-brand-dark hover:text-white disabled:opacity-60 font-semibold rounded-lg py-2.5 text-sm transition-colors"
         >
           {emailPending ? 'מתחברים...' : 'כניסה'}
         </button>
