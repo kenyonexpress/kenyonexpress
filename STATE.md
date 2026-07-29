@@ -16,12 +16,37 @@ tsc --noEmit        0 errors                                   PASS
 vitest              56 files, 735 tests                        PASS
 production build    compiled in 6.2s                           PASS
 playwright e2e      41 passed, 12 failed                       BLOCKED
-compare.mjs         category 7.35  product 10.21  search 14.87
-                    home 17.28  products 25.75  checkout n/a   FAIL
+compare.mjs         category 8.07  product 10.71  home 12.20
+                    search 14.92  products 28.58  checkout n/a  FAIL
 lighthouse a11y     product 96      home 88 -> 93              PASS
 lighthouse perf     product 96      home 75 -> 88              FAIL by 2
 pnpm audit --prod   14 high, 10 moderate, 3 low                FAIL
 ```
+
+**Two homepage defects, 17.28% -> 12.2%.** `687cac0`. Found by cropping the worst
+bands instead of guessing at CSS.
+
+The add-to-cart control was 0x0 on all 32 cards, invisible AND unclickable.
+`product-card-deals.css` styles `.p_con .atc a`, and `ProductCard` renders an `<a>`
+only when a product CANNOT be added to the cart, a `<button>` when it can, so the
+real control matched no rule at all. The fallback link was the only variant that
+ever looked right, which is why it survived review.
+
+The masthead was 127px against live's 110px. `--spacing-header-masthead` carried a
+comment claiming 127 was measured off live; live measures 110 today. One number
+pushed every block below the header down 17px, and since the grid is 8 rows of
+485px cards in a 2600px window it surfaced as 30-42% bands at y1100-1300 that read
+like card defects. Card heights were identical all along, 485px both sides. First
+card now lands at 904px against live's 906px.
+
+Both had to be verified on a clean production build: the dev server on :3001 is
+still serving stale CSS and answered `126px` for a token the file no longer
+contains. That is the same Turbopack content-hash trap documented at the bottom of
+globals.css, and it is now the second time it has cost a measurement.
+
+`home`'s remaining cost sits entirely in the hero, y200-700 at 24-31%. `products`
+at 28.58% is product ORDER, not layout: live opens with a featured block, ours
+sorts alphabetically, so the grids never line up whatever the CSS does.
 
 **The homepage LCP was one 4.5MB animated GIF.** `1aa0693`, `8b6082f`, `0a06b07`.
 Lighthouse's network table named it: 4,585KB served straight from `/public`

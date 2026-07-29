@@ -1,8 +1,8 @@
 # Release readiness, 2026-07-30
 
-Every number here was measured on `phase5/homepage` at `d576017`. Nothing is
-estimated, and a gate that could not be measured says so instead of carrying a
-plausible number.
+Every number here was measured on `phase5/homepage`, first at `d576017` and then
+re-measured after each fix through `687cac0`. Nothing is estimated, and a gate
+that could not be measured says so instead of carrying a plausible number.
 
 **Verdict: NOT READY.** Two gates pass outright, two pass on some pages and fail
 on others, and two are blocked by one missing credential.
@@ -13,7 +13,7 @@ on others, and two are blocked by one missing credential.
 | Vitest | all pass | 56 files, 735 tests, 11.5s | PASS |
 | Production build | succeeds | compiled in 6.2s | PASS |
 | Playwright E2E | all pass | 41 passed, **12 failed** | BLOCKED |
-| `compare.mjs` all pages | < 11% | 2 of 5 under, 1 unmeasurable | FAIL |
+| `compare.mjs` all pages | < 11% | 2 of 5 under, home 17.28% → 12.2% | FAIL |
 | Lighthouse accessibility | 90+ | product 96, home 88 → **93** | PASS |
 | Lighthouse performance | 90+ | product 96, home 75 → **88** | FAIL by 2 |
 | `pnpm audit --prod` | no highs | **14 high**, 10 moderate, 3 low | FAIL |
@@ -60,18 +60,50 @@ end to end. Its first leg fails at add-to-cart.
 ## compare.mjs, every page
 
 ```
-category      7.35%   PASS
-product      10.21%   PASS
-search       14.87%   FAIL
-home         17.28%   FAIL
-products     25.75%   FAIL
-checkout        n/a   REFUSED to measure
+              first run   after fixes
+category          7.35%        8.07%   PASS
+product          10.21%       10.71%   PASS
+home             17.28%       12.20%   FAIL
+search           14.87%       14.92%   FAIL
+products         25.75%       28.58%   FAIL
+checkout            n/a          n/a   REFUSED to measure
 ```
+
+The second column is measured on a clean production build. The first was measured
+against the long-running dev server, which is still serving stale CSS: asked for
+`--spacing-header-masthead` it answered `126px`, a value the file no longer
+contains. Small moves between the columns are that difference plus the live hero
+being on a different slide between shoots; the 5-point drop on `home` is real.
 
 `--page=checkout` refuses on purpose: an empty cart is redirected to `/cart` on
 both sides, and two pictures of a cart score as an excellent checkout. It exits
 rather than print a number. That guard is correct and is the reason there is no
 figure here.
+
+### Fixed on the homepage: 17.28% → 12.2%
+
+Two defects, found by cropping the worst bands rather than guessing at CSS.
+
+**The add-to-cart button was 0x0 on all 32 cards.**
+`product-card-deals.css` styles `.p_con .atc a`, and `ProductCard` renders an
+`<a>` only when a product CANNOT be added to the cart, a `<button>` when it can.
+So the real control matched no rule: measured 0x0 with a 0x0 svg inside, against a
+40px grey circle on live. Invisible *and* unclickable. The fallback link was the
+only variant that ever looked right, which is why it survived review.
+
+**The masthead was 127px against live's 110px.**
+`--spacing-header-masthead` carried a comment claiming 127 was measured off live.
+Live measures 110 today. That single number pushed every block below the header
+down 17px, and because the product grid is 8 rows of 485px cards inside a 2600px
+window, it surfaced as 30-42% band differences at y1100-1300 that read like
+card-level defects. Card heights were identical all along, 485px on both sides.
+The first card now lands at 904px against live's 906px, and those two bands are
+gone.
+
+`home`'s remaining cost has moved entirely into the hero, y200-700 at 24-31%.
+`products` at 28.58% is still dominated by product ORDER: live opens with a
+featured block, ours sorts alphabetically, so the grids never line up whatever the
+CSS does.
 
 Two findings about the harness itself, both fixed in `d576017`:
 
@@ -85,9 +117,10 @@ Two findings about the harness itself, both fixed in `d576017`:
   those `@theme` colours existed serves stale output forever and `touch` does not
   clear it. 10.72% → **10.21%**.
 
-The lesson generalises to the three pages still failing: measure the harness
-before believing the number. `products` at 25.75% is the widest gap and has never
-been investigated.
+The lesson generalises: measure the harness before believing the number. It has
+now been wrong four times in this one pass, in four different ways -- two
+different products, CSS with no brand tokens, a stale masthead token, and a
+selector that styled only the fallback element.
 
 ## Lighthouse, production build, desktop preset
 
