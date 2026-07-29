@@ -133,3 +133,14 @@ body {
   font-family: var(--font-sans), Arial, sans-serif;
   direction: rtl;
 }
+
+/* Turbopack caches this file's compiled output by CONTENT hash, not mtime.
+   A dev server started before a @theme colour was added keeps serving CSS
+   without that colour's utilities, and `touch` does not clear it: on
+   2026-07-30 a server running since an earlier revision served the product
+   page with NO brand utilities at all -- bg-brand-secondary resolved to
+   transparent, so the yellow newsletter bar rendered white -- while
+   `npx @tailwindcss/cli -i src/app/globals.css -o out.css` produced them
+   correctly. Every pixel-diff measured against that server was scoring a page
+   missing its own design tokens. If brand colours are missing in dev, restart
+   the dev server; do not go looking for the bug in a component. */
