@@ -8,6 +8,8 @@ import {
 } from '@/lib/cart/guest-session'
 import { buildCartView } from '@/lib/cart/pricing'
 import type { CartActionResult, CartStorageItem, CartView } from '@/lib/cart/types'
+import { growthClient } from '@/lib/growth/client'
+import { evaluateDiscount } from '@/lib/growth/discount'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   COUPON_054_COLUMNS,
@@ -119,6 +121,38 @@ async function loadProductData(items: CartStorageItem[]) {
 }
 
 /**
+ * Prices a site-wide campaign against this cart, or returns null if the code is
+ * not one. Null is not a failure: the caller falls through to the legacy
+ * supplier coupons table.
+ */
+async function evaluateCampaignCode(
+  code: string,
+  view: CartView,
+): Promise<{ code: string; label: string; discountAgorot: number } | null> {
+  const { data } = await growthClient().campaigns().byCode(code)
+  if (!data) return null
+
+  const evaluation = evaluateDiscount(
+    data,
+    {
+      payableAgorot: Math.round(view.subtotal * 100),
+      // The ceiling. The discount is funded from the platform commission and
+      // never from the supplier's share (05a181a), so the cart may not promise
+      // more than the platform earns on it.
+      commissionAgorot: Math.round(view.platform_fee * 100),
+    },
+    new Date(),
+  )
+
+  if (!evaluation.ok) return null
+  return {
+    code: evaluation.code,
+    label: evaluation.label,
+    discountAgorot: evaluation.discountAgorot,
+  }
+}
+
+/**
  * Reads the cookie's code and prices it against this cart. Returns null for no
  * code, an unknown code, or a code that has stopped being valid — the cart then
  * renders as if none were applied, which is the truthful state.
@@ -129,6 +163,20 @@ async function resolveAppliedCoupon(
   const cookieStore = await cookies()
   const code = normalizeCouponCode(cookieStore.get(CART_COUPON_COOKIE)?.value)
   if (!code) return null
+
+  // Site-wide campaigns first.
+  //
+  // `discount_campaigns` is the platform's own table (096); `public.coupons` is
+  // supplier-scoped and predates it. A code can only be one or the other, and
+  // checking the campaign first means a marketing code is never shadowed by a
+  // legacy row that happens to share its text.
+  //
+  // platform_fee is the commission on this cart, and passing it means the cart
+  // caps the discount at the money that funds it rather than quoting a number
+  // settlement will later cut down. A quote the charge does not honour is the
+  // exact bug coupon-offer.ts already cost this project once.
+  const campaign = await evaluateCampaignCode(code, view)
+  if (campaign) return campaign
 
   const admin = createAdminClient()
   const { data } = await admin
@@ -505,6 +553,23 @@ export async function applyCouponCode(rawCode: string): Promise<CouponActionResu
 
   const { products, variants } = await loadProductData(items)
   const priced = buildCartView(row?.id ?? null, items, products, variants)
+
+  // Site-wide campaign first, same precedence as resolveAppliedCoupon. Without
+  // this the whole of 096 would be unreachable: a campaign code entered in the
+  // cart would fall through to `public.coupons`, miss, and be rejected as
+  // unknown.
+  const campaign = await evaluateCampaignCode(code, priced)
+  if (campaign) {
+    const cookieStore = await cookies()
+    cookieStore.set(CART_COUPON_COOKIE, campaign.code, {
+      httpOnly: true,
+      sameSite: 'lax',
+      maxAge: COUPON_COOKIE_MAX_AGE,
+      path: '/',
+    })
+    revalidateCartPaths()
+    return { ok: true, cart: await getCart() }
+  }
 
   const admin = createAdminClient()
   const { data } = await admin

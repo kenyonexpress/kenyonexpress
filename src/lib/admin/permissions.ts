@@ -20,6 +20,7 @@ export type AdminSection =
   | 'analytics'
   | 'audit-log'
   | 'suppliers'
+  | 'discounts'
 
 export type SectionAccess = 'none' | 'read' | 'write'
 
@@ -33,6 +34,9 @@ const CONTENT_UPLOADER_ACCESS: Record<AdminSection, SectionAccess> = {
   analytics: 'none',
   'audit-log': 'none',
   suppliers: 'none',
+  // A campaign spends the platform's commission. That is money, and money is
+  // not part of the catalog role, however much a discount code looks like content.
+  discounts: 'none',
 }
 
 const SUPPORT_ACCESS: Record<AdminSection, SectionAccess> = {
@@ -45,6 +49,9 @@ const SUPPORT_ACCESS: Record<AdminSection, SectionAccess> = {
   analytics: 'none',
   'audit-log': 'none',
   suppliers: 'read',
+  // Support answers "why did my code not work", so it must see the campaign.
+  // It may not create or edit one: that is spending.
+  discounts: 'read',
 }
 
 export function sectionAccess(
