@@ -182,6 +182,10 @@ export default function CheckoutForm({
   }
 
   const authError = googleState && 'error' in googleState ? googleState.error : null
+  const formError = state && 'error' in state ? state.error : null
+  // The hosted payment page, once beginCheckout has created it. Its presence is
+  // what switches the page from "filling in a form" to "paying".
+  const frame = state && 'frame' in state ? state.frame : null
   const busy = isPending || googlePending
 
   return (
@@ -516,7 +520,7 @@ export default function CheckoutForm({
                 </label>
               )}
 
-              {state?.error && <div className="checkout-error">{state.error}</div>}
+              {formError && <div className="checkout-error">{formError}</div>}
               {authError && <div className="checkout-error">{authError}</div>}
 
               <button type="submit" className="checkout-pay-btn" disabled={busy}>
@@ -532,6 +536,35 @@ export default function CheckoutForm({
           </section>
         </aside>
       </form>
+
+      {frame && (
+        <section className="checkout-frame" aria-label="תשלום מאובטח">
+          <div className="checkout-frame__head">
+            <span className="checkout-frame__title">תשלום מאובטח</span>
+            <span className="checkout-frame__order">הזמנה {frame.orderId.slice(0, 8)}</span>
+          </div>
+          {/*
+            The payment page runs here rather than in place of the site. When it
+            finishes, Cardcom navigates THIS iframe to /checkout/return, and
+            PaymentFrameBreakout on that page moves the top window to itself —
+            which is why lib/security/frame-policy.ts relaxes frame-ancestors to
+            'self' on that one path and nowhere else.
+          */}
+          <iframe
+            src={frame.url}
+            title="דף תשלום מאובטח של Cardcom"
+            className="checkout-frame__iframe"
+            // The payment page needs scripts and same-origin storage against
+            // its OWN origin. allow-same-origin is granted without
+            // allow-top-navigation, so the framed page can work but cannot
+            // move the tab out from under the shopper on its own.
+            sandbox="allow-scripts allow-forms allow-same-origin allow-popups"
+          />
+          <p className="checkout-frame__note">
+            החיוב מתבצע מול Cardcom. אל תסגור את החלון עד לסיום התשלום.
+          </p>
+        </section>
+      )}
     </>
   )
 }

@@ -1,3 +1,4 @@
+import { isPaymentFramePath } from '@/lib/security/frame-policy'
 import { createServerClient } from '@supabase/ssr'
 import { type NextRequest, NextResponse } from 'next/server'
 
@@ -42,7 +43,16 @@ export async function proxy(request: NextRequest) {
   //
   // Its sub-routes still need one. `/checkout/return` and `/checkout/failed`
   // read the shopper's own order, and there is no such thing as a guest's order.
-  const needsAuth = pathname.startsWith('/account') || pathname.startsWith('/checkout/')
+  //
+  // `/checkout/frame-return` is the one sub-route that does NOT need a session,
+  // and it must not: it is where Cardcom navigates the payment iframe, that
+  // navigation is cross-site, and browsers withhold SameSite=Lax cookies on
+  // those. Requiring a session there would show a login form inside the payment
+  // box of a shopper who has just paid. It carries no order data of its own; it
+  // hands the top window a URL and the real confirmation does the authenticating.
+  const needsAuth =
+    pathname.startsWith('/account') ||
+    (pathname.startsWith('/checkout/') && !isPaymentFramePath(pathname))
 
   if (needsAuth && !user) {
     const loginUrl = request.nextUrl.clone()

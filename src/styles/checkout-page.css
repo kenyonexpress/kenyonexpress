@@ -444,3 +444,57 @@
   padding-block: 60px;
   color: #333e48;
 }
+
+/* The Cardcom payment page, framed rather than navigated to.
+   Fixed and centred: once the shopper is paying, the form behind it is no
+   longer the thing to interact with, and a payment box that scrolls away with
+   the page is one the shopper can lose track of mid-charge. */
+.checkout-frame {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px 16px;
+  background: rgba(51, 62, 72, 0.72);
+}
+
+.checkout-frame__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  width: min(560px, 100%);
+  color: #fff;
+}
+
+.checkout-frame__title {
+  font-size: 19.418px;
+  font-weight: 700;
+}
+
+.checkout-frame__order {
+  font-size: 12px;
+  opacity: 0.75;
+  direction: ltr;
+}
+
+.checkout-frame__iframe {
+  width: min(560px, 100%);
+  height: min(680px, 80vh);
+  border: 0;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.checkout-frame__note {
+  width: min(560px, 100%);
+  margin: 0;
+  color: #fff;
+  font-size: 12px;
+  line-height: 18px;
+  text-align: center;
+}

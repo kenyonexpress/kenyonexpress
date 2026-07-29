@@ -1,33 +1,30 @@
 import type { NextConfig } from 'next'
 import createNextIntlPlugin from 'next-intl/plugin'
+import { PAYMENT_FRAME_PATHS, contentSecurityPolicyFor } from './src/lib/security/frame-policy'
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 
-// Security headers applied to every route. See INFRA-AUDIT.md §2.
+// Security headers applied to every route. See INFRA-AUDIT.md section 2.
+//
 // CSP note: a per-request nonce + strict-dynamic cannot live in a static config
 // header; it requires generating a nonce in src/proxy.ts. Until that lands, script
 // and style fall back to 'unsafe-inline'. next/font self-hosts Heebo, so no Google
 // Fonts origin is needed. Allowed externals: Supabase (data/realtime/images),
-// Unsplash (images), Cardcom (payment redirect target).
-const contentSecurityPolicy = [
-  "default-src 'self'",
-  "script-src 'self' 'unsafe-inline'",
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://plus.unsplash.com",
-  "font-src 'self'",
-  "connect-src 'self' https://*.supabase.co",
-  'frame-src https://secure.cardcom.solutions',
-  "frame-ancestors 'none'",
-  "base-uri 'self'",
-  "form-action 'self' https://secure.cardcom.solutions",
-  "object-src 'none'",
-  'upgrade-insecure-requests',
-].join('; ')
-
-const securityHeaders = [
-  { key: 'Content-Security-Policy', value: contentSecurityPolicy },
+// Unsplash (images), Cardcom (the iframe the payment page renders in).
+//
+// The policy itself lives in src/lib/security/frame-policy.ts because ONE of its
+// directives depends on the path: the two routes a Cardcom payment returns
+// through have to be framable by this origin, and everything else must not be.
+// A static header cannot see the path, so it emits the strict default here and
+// src/proxy.ts overwrites both framing headers on those two routes. Overwrites,
+// not adds: two Content-Security-Policy headers are both enforced and the
+// strictest wins, which would undo the exception without saying so.
+const headersWithPolicy = (csp: string, frameOptions: 'DENY' | 'SAMEORIGIN') => [
+  { key: 'Content-Security-Policy', value: csp },
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
-  { key: 'X-Frame-Options', value: 'DENY' },
+  // Moves in step with frame-ancestors. Browsers that honour both enforce both,
+  // so a DENY left behind on a framable path blocks the frame anyway.
+  { key: 'X-Frame-Options', value: frameOptions },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
   { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), payment=(self)' },
@@ -35,7 +32,31 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   async headers() {
-    return [{ source: '/:path*', headers: securityHeaders }]
+    // Two NON-OVERLAPPING sources, which is the whole trick. Next appends the
+    // headers of every entry whose source matches, so two entries that both
+    // matched /checkout/frame-return would emit two Content-Security-Policy
+    // headers; browsers enforce the intersection, the stricter frame-ancestors
+    // would win, and the exception would be undone with nothing to see in the
+    // response. The negative lookahead makes the default entry skip exactly the
+    // paths the second one claims.
+    //
+    // This is also why the relaxation is not done in src/proxy.ts: headers from
+    // this config are applied after middleware and overwrite what it set.
+    const framable = PAYMENT_FRAME_PATHS.map((path) => path.replace(/^\//, '')).join('|')
+    return [
+      {
+        source: `/((?!${framable}).*)`,
+        headers: headersWithPolicy(contentSecurityPolicyFor('/'), 'DENY'),
+      },
+      ...PAYMENT_FRAME_PATHS.map((path) => ({
+        source: `${path}/:path*`,
+        headers: headersWithPolicy(contentSecurityPolicyFor(path), 'SAMEORIGIN'),
+      })),
+      ...PAYMENT_FRAME_PATHS.map((path) => ({
+        source: path,
+        headers: headersWithPolicy(contentSecurityPolicyFor(path), 'SAMEORIGIN'),
+      })),
+    ]
   },
   // Pin the workspace root to this app directory. Without this, Next.js walks up
   // and may infer the parent folder as the root when multiple lockfiles exist,

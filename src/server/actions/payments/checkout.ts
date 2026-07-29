@@ -617,8 +617,12 @@ export async function beginCheckout(
       orderNumber: order.id.slice(0, 8).toUpperCase(),
       amountAgorot: settlement.cardCharge,
       saveToken: input.save_card,
-      successRedirectUrl: `${env.appUrl}/checkout/return?order_id=${order.id}`,
-      failedRedirectUrl: `${env.appUrl}/checkout/failed?order_id=${order.id}`,
+      // Both return into the framable stub, never straight into a page that
+      // needs a session: Cardcom's navigation into our iframe is cross-site and
+      // the Lax session cookie is withheld on it. The stub moves the top window
+      // to the real page, where the cookie is sent. See lib/security/frame-policy.ts.
+      successRedirectUrl: `${env.appUrl}/checkout/frame-return?order_id=${order.id}`,
+      failedRedirectUrl: `${env.appUrl}/checkout/frame-return?order_id=${order.id}&status=failed`,
       // Cardcom does not sign webhooks; the unguessable secret in the URL is the
       // authenticity gate (paired with server-side GetLpResult re-verification).
       webhookUrl: `${env.appUrl}/api/payments/cardcom/webhook?s=${encodeURIComponent(env.webhookSecret)}`,
@@ -656,11 +660,27 @@ export async function beginCheckout(
   }
 }
 
-export type CheckoutFormState = { error: string } | null
+/**
+ * What the checkout form does next.
+ *
+ * `frame` is the Cardcom Low Profile page, to be mounted in an iframe on the
+ * checkout rather than navigated to. Keeping the shopper on our page through
+ * the payment is the whole point of the iframe: the address they just typed is
+ * still behind the box, the site chrome does not disappear mid-purchase, and a
+ * card decline does not read as having been thrown off the site.
+ *
+ * A saved-card charge never produces one. That path is server-to-server and its
+ * response IS the outcome, so it goes straight to the confirmation.
+ */
+export type CheckoutFormState =
+  | { error: string }
+  | { frame: { url: string; orderId: string } }
+  | null
 
 /**
  * Form-facing wrapper: optionally persists a shipping address, then runs
- * beginCheckout and redirects to the provider / return page.
+ * beginCheckout and hands back either the hosted page to frame or a redirect to
+ * the confirmation.
  */
 export async function submitCheckout(
   _prev: CheckoutFormState,
@@ -745,7 +765,10 @@ export async function submitCheckout(
   if (result.data.kind === 'paid') {
     redirect(`/checkout/return?order_id=${result.data.order_id}`)
   }
-  redirect(result.data.redirect_url)
+
+  // Returned rather than redirected to. `redirect()` here would take the whole
+  // tab to Cardcom, which is the flow this replaces.
+  return { frame: { url: result.data.redirect_url, orderId: result.data.order_id } }
 }
 
 export type ReturnReconcileResult =
