@@ -1,0 +1,395 @@
+{
+  "measuredAt": "2026-07-23T00:51:57.299Z",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "live": {
+    "url": "https://kenyonexpress.co.il/product/%D7%9E%D7%95%D7%A6%D7%A8-%D7%9C%D7%93%D7%95%D7%92%D7%9E%D7%90/",
+    "regions": {
+      "breadcrumb": {
+        "matched": ".woocommerce-breadcrumb",
+        "tried": [
+          ".woocommerce-breadcrumb",
+          "nav.woocommerce-breadcrumb",
+          ".breadcrumb",
+          "[class*=\"breadcrumb\"]"
+        ],
+        "rect": {
+          "top": 165.39,
+          "left": 135,
+          "width": 1170,
+          "height": 84.38
+        },
+        "style": {
+          "background-color": "rgba(0, 0, 0, 0)",
+          "color": "rgb(51, 62, 72)",
+          "font-family": "\"Open Sans\"",
+          "font-size": "14px",
+          "font-weight": "400",
+          "line-height": "23.996px",
+          "padding-top": "25.004px",
+          "padding-right": "0px",
+          "padding-bottom": "22.4px",
+          "padding-left": "0px",
+          "margin-top": "0px",
+          "margin-right": "0px",
+          "margin-bottom": "0px",
+          "margin-left": "0px",
+          "border-radius": "0px",
+          "border": "0px none rgb(51, 62, 72)",
+          "box-shadow": "none"
+        }
+      },
+      "productTitle": {
+        "matched": "h1.product_title",
+        "tried": [
+          "h1.product_title",
+          ".product_title",
+          "h1.entry-title",
+          "main h1",
+          "h1"
+        ],
+        "rect": {
+          "top": 279.03,
+          "left": 135,
+          "width": 670,
+          "height": 32
+        },
+        "style": {
+          "background-color": "rgba(0, 0, 0, 0)",
+          "color": "rgb(51, 62, 72)",
+          "font-family": "\"Open Sans\"",
+          "font-size": "25.004px",
+          "font-weight": "500",
+          "line-height": "32.0051px",
+          "padding-top": "0px",
+          "padding-right": "0px",
+          "padding-bottom": "0px",
+          "padding-left": "0px",
+          "margin-top": "0px",
+          "margin-right": "0px",
+          "margin-bottom": "12.0019px",
+          "margin-left": "0px",
+          "border-radius": "0px",
+          "border": "0px none rgb(51, 62, 72)",
+          "box-shadow": "none"
+        }
+      },
+      "gallery": {
+        "matched": ".woocommerce-product-gallery__image img",
+        "tried": [
+          ".woocommerce-product-gallery__image img",
+          ".woocommerce-product-gallery img",
+          ".product-gallery img",
+          "figure.woocommerce-product-gallery__wrapper img",
+          "[class*=\"gallery\"] img"
+        ],
+        "rect": {
+          "top": 249.77,
+          "left": 835,
+          "width": 470,
+          "height": 477.83
+        },
+        "style": {
+          "background-color": "rgba(0, 0, 0, 0)",
+          "color": "rgb(51, 62, 72)",
+          "font-family": "\"Open Sans\"",
+          "font-size": "14px",
+          "font-weight": "400",
+          "line-height": "23.996px",
+          "padding-top": "0px",
+          "padding-right": "0px",
+          "padding-bottom": "0px",
+          "padding-left": "0px",
+          "margin-top": "0px",
+          "margin-right": "0px",
+          "margin-bottom": "0px",
+          "margin-left": "0px",
+          "border-radius": "0px",
+          "border": "0px none rgb(51, 62, 72)",
+          "box-shadow": "none"
+        }
+      },
+      "priceBlock": {
+        "matched": ".summary .price",
+        "tried": [
+          ".summary .price",
+          "p.price",
+          ".product .price",
+          ".price",
+          "[class*=\"price\"]"
+        ],
+        "rect": {
+          "top": 550.84,
+          "left": 135,
+          "width": 670,
+          "height": 45.02
+        },
+        "style": {
+          "background-color": "rgba(0, 0, 0, 0)",
+          "color": "rgb(51, 62, 72)",
+          "font-family": "\"Open Sans\"",
+          "font-size": "35px",
+          "font-weight": "400",
+          "line-height": "45.01px",
+          "padding-top": "0px",
+          "padding-right": "0px",
+          "padding-bottom": "0px",
+          "padding-left": "0px",
+          "margin-top": "0px",
+          "margin-right": "0px",
+          "margin-bottom": "24.99px",
+          "margin-left": "0px",
+          "border-radius": "0px",
+          "border": "0px none rgb(51, 62, 72)",
+          "box-shadow": "none"
+        }
+      },
+      "buyBox": {
+        "matched": "form.cart .single_add_to_cart_button",
+        "tried": [
+          "form.cart .single_add_to_cart_button",
+          ".single_add_to_cart_button",
+          "button[name=\"add-to-cart\"]",
+          "form.cart button",
+          "[class*=\"add-to-cart\"] button",
+          "[class*=\"add-to-cart\"]"
+        ],
+        "rect": {
+          "top": 620.84,
+          "left": 469.33,
+          "width": 192.17,
+          "height": 52.98
+        },
+        "style": {
+          "background-color": "rgb(254, 215, 0)",
+          "color": "rgb(255, 255, 255)",
+          "font-family": "\"Open Sans\"",
+          "font-size": "14px",
+          "font-weight": "700",
+          "line-height": "23.996px",
+          "padding-top": "14.504px",
+          "padding-right": "48.076px",
+          "padding-bottom": "14.504px",
+          "padding-left": "48.076px",
+          "margin-top": "0px",
+          "margin-right": "0px",
+          "margin-bottom": "0px",
+          "margin-left": "0px",
+          "border-radius": "25.2px",
+          "border": "0px solid rgba(0, 0, 0, 0)",
+          "box-shadow": "none"
+        }
+      },
+      "supplierInfo": {
+        "matched": "[class*=\"vendor\"]",
+        "tried": [
+          ".product_meta",
+          ".vendor",
+          ".wcfmmp-store-info",
+          ".product_meta .posted_in",
+          "[class*=\"vendor\"]",
+          "[class*=\"supplier\"]"
+        ],
+        "rect": {
+          "top": 0,
+          "left": 0,
+          "width": 0,
+          "height": 0
+        },
+        "style": {
+          "background-color": "rgba(0, 0, 0, 0)",
+          "color": "rgb(0, 0, 0)",
+          "font-family": "\"Open Sans\", sans-serif",
+          "font-size": "14px",
+          "font-weight": "400",
+          "line-height": "23.996px",
+          "padding-top": "0px",
+          "padding-right": "25px",
+          "padding-bottom": "0px",
+          "padding-left": "25px",
+          "margin-top": "0px",
+          "margin-right": "0px",
+          "margin-bottom": "16px",
+          "margin-left": "0px",
+          "border-radius": "0px",
+          "border": "0px none rgb(0, 0, 0)",
+          "box-shadow": "none"
+        }
+      },
+      "relatedHeading": {
+        "matched": ".related.products > h2",
+        "tried": [
+          ".related.products > h2",
+          ".related.products h2",
+          "section.related h2",
+          ".up-sells h2",
+          "[class*=\"related\"] h2"
+        ],
+        "rect": {
+          "top": 939.8,
+          "left": 135,
+          "width": 1170,
+          "height": 51
+        },
+        "style": {
+          "background-color": "rgba(0, 0, 0, 0)",
+          "color": "rgb(51, 62, 72)",
+          "font-family": "\"Open Sans\"",
+          "font-size": "25.004px",
+          "font-weight": "500",
+          "line-height": "40.0064px",
+          "padding-top": "0px",
+          "padding-right": "0px",
+          "padding-bottom": "10.0016px",
+          "padding-left": "0px",
+          "margin-top": "0px",
+          "margin-right": "0px",
+          "margin-bottom": "34.0054px",
+          "margin-left": "0px",
+          "border-radius": "0px",
+          "border": "0px none rgb(51, 62, 72)",
+          "box-shadow": "none"
+        }
+      }
+    }
+  },
+  "local": {
+    "url": "http://localhost:3000/product/צימר-מאסטר",
+    "regions": {
+      "breadcrumb": {
+        "matched": null,
+        "tried": [
+          ".woocommerce-breadcrumb",
+          "nav.woocommerce-breadcrumb",
+          ".breadcrumb",
+          "[class*=\"breadcrumb\"]"
+        ],
+        "rect": null,
+        "style": null
+      },
+      "productTitle": {
+        "matched": "main h1",
+        "tried": [
+          "h1.product_title",
+          ".product_title",
+          "h1.entry-title",
+          "main h1",
+          "h1"
+        ],
+        "rect": {
+          "top": 247.5,
+          "left": 109.02,
+          "width": 694.16,
+          "height": 33
+        },
+        "style": {
+          "background-color": "rgba(0, 0, 0, 0)",
+          "color": "rgb(26, 26, 26)",
+          "font-family": "Heebo, \"Heebo Fallback\", Arial, sans-serif, Arial, sans-serif",
+          "font-size": "24px",
+          "font-weight": "900",
+          "line-height": "33px",
+          "padding-top": "0px",
+          "padding-right": "0px",
+          "padding-bottom": "0px",
+          "padding-left": "0px",
+          "margin-top": "0px",
+          "margin-right": "0px",
+          "margin-bottom": "0px",
+          "margin-left": "0px",
+          "border-radius": "0px",
+          "border": "0px solid rgb(26, 26, 26)",
+          "box-shadow": "none"
+        }
+      },
+      "gallery": {
+        "matched": null,
+        "tried": [
+          ".woocommerce-product-gallery__image img",
+          ".woocommerce-product-gallery img",
+          ".product-gallery img",
+          "figure.woocommerce-product-gallery__wrapper img",
+          "[class*=\"gallery\"] img"
+        ],
+        "rect": null,
+        "style": null
+      },
+      "priceBlock": {
+        "matched": "[class*=\"price\"]",
+        "tried": [
+          ".summary .price",
+          "p.price",
+          ".product .price",
+          ".price",
+          "[class*=\"price\"]"
+        ],
+        "rect": {
+          "top": 300.5,
+          "left": 676.84,
+          "width": 126.33,
+          "height": 36
+        },
+        "style": {
+          "background-color": "rgba(0, 0, 0, 0)",
+          "color": "rgb(228, 0, 43)",
+          "font-family": "Heebo, \"Heebo Fallback\", Arial, sans-serif, Arial, sans-serif",
+          "font-size": "30px",
+          "font-weight": "900",
+          "line-height": "36px",
+          "padding-top": "0px",
+          "padding-right": "0px",
+          "padding-bottom": "0px",
+          "padding-left": "0px",
+          "margin-top": "0px",
+          "margin-right": "0px",
+          "margin-bottom": "0px",
+          "margin-left": "0px",
+          "border-radius": "0px",
+          "border": "0px solid rgb(228, 0, 43)",
+          "box-shadow": "none"
+        }
+      },
+      "buyBox": {
+        "matched": null,
+        "tried": [
+          "form.cart .single_add_to_cart_button",
+          ".single_add_to_cart_button",
+          "button[name=\"add-to-cart\"]",
+          "form.cart button",
+          "[class*=\"add-to-cart\"] button",
+          "[class*=\"add-to-cart\"]"
+        ],
+        "rect": null,
+        "style": null
+      },
+      "supplierInfo": {
+        "matched": null,
+        "tried": [
+          ".product_meta",
+          ".vendor",
+          ".wcfmmp-store-info",
+          ".product_meta .posted_in",
+          "[class*=\"vendor\"]",
+          "[class*=\"supplier\"]"
+        ],
+        "rect": null,
+        "style": null
+      },
+      "relatedHeading": {
+        "matched": null,
+        "tried": [
+          ".related.products > h2",
+          ".related.products h2",
+          "section.related h2",
+          ".up-sells h2",
+          "[class*=\"related\"] h2"
+        ],
+        "rect": null,
+        "style": null
+      }
+    },
+    "available": true
+  }
+}

@@ -1,0 +1,314 @@
+{
+  "measuredAt": "2026-07-23T00:52:25.995Z",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "electro": {
+    "url": "https://electro.madrasthemes.com/home-v7/",
+    "regions": {
+      "header": {
+        "matched": "#masthead",
+        "tried": [
+          "#masthead",
+          "header.site-header",
+          ".site-header",
+          "header"
+        ],
+        "rect": {
+          "top": 38.37,
+          "left": 0,
+          "width": 1425,
+          "height": 75.99
+        },
+        "style": {
+          "background-color": "rgba(0, 0, 0, 0)",
+          "color": "rgb(51, 62, 72)",
+          "font-family": "Inter, \"Open Sans\", HelveticaNeue-Light, \"Helvetica Neue Light\", \"Helvetica Neue\", Helvetica, Arial, \"Lucida Grande\", sans-serif",
+          "font-size": "14px",
+          "font-weight": "400",
+          "line-height": "23.996px",
+          "padding-top": "0px",
+          "padding-right": "0px",
+          "padding-bottom": "0px",
+          "padding-left": "0px",
+          "margin-top": "0px",
+          "margin-right": "0px",
+          "margin-bottom": "0px",
+          "margin-left": "0px",
+          "border-radius": "0px",
+          "border": "0px none rgb(51, 62, 72)",
+          "box-shadow": "none"
+        }
+      },
+      "hero": {
+        "matched": "rs-module-wrap",
+        "tried": [
+          "rs-module-wrap",
+          ".rev_slider_wrapper",
+          "#rev_slider_1_1_wrapper",
+          ".rev_slider",
+          ".home-v7-slider",
+          ".electro-slider",
+          "[class*=\"hero\"]"
+        ],
+        "rect": {
+          "top": 114.36,
+          "left": 353.75,
+          "width": 742.51,
+          "height": 377
+        },
+        "style": {
+          "background-color": "rgba(0, 0, 0, 0)",
+          "color": "rgb(51, 62, 72)",
+          "font-family": "Inter, \"Open Sans\", HelveticaNeue-Light, \"Helvetica Neue Light\", \"Helvetica Neue\", Helvetica, Arial, \"Lucida Grande\", sans-serif",
+          "font-size": "14px",
+          "font-weight": "400",
+          "line-height": "23.996px",
+          "padding-top": "0px",
+          "padding-right": "0px",
+          "padding-bottom": "0px",
+          "padding-left": "0px",
+          "margin-top": "0px",
+          "margin-right": "0px",
+          "margin-bottom": "0px",
+          "margin-left": "0px",
+          "border-radius": "0px",
+          "border": "0px none rgb(51, 62, 72)",
+          "box-shadow": "none"
+        }
+      },
+      "uspBar": {
+        "matched": null,
+        "tried": [
+          ".electro-advanced-recent-viewed-products",
+          ".home-v7-usps",
+          ".electro-services",
+          ".icon-box-wrapper",
+          ".electro-icon-box-wrapper",
+          "[class*=\"usp\"]",
+          "[class*=\"benefit\"]"
+        ],
+        "rect": null,
+        "style": null
+      },
+      "categoryRow": {
+        "matched": null,
+        "tried": [
+          ".product-categories-carousel",
+          ".electro-product-categories-carousel",
+          ".categories-carousel",
+          ".owl-carousel.product-categories",
+          ".home-v7-categories",
+          ".product-category-thumbnails",
+          "[class*=\"category-strip\"]",
+          "[class*=\"categoryStrip\"]"
+        ],
+        "rect": null,
+        "style": null
+      },
+      "productCard": {
+        "matched": "ul.products li.product",
+        "tried": [
+          "ul.products li.product",
+          ".products .product",
+          "li.product",
+          ".product-inner",
+          ".electro-product",
+          "[class*=\"product-card\"]",
+          "[class*=\"productCard\"]"
+        ],
+        "rect": {
+          "top": 1295.13,
+          "left": 719.5,
+          "width": 192.66,
+          "height": 300.25
+        },
+        "style": {
+          "background-color": "rgba(0, 0, 0, 0)",
+          "color": "rgb(51, 62, 72)",
+          "font-family": "Inter, \"Open Sans\", HelveticaNeue-Light, \"Helvetica Neue Light\", \"Helvetica Neue\", Helvetica, Arial, \"Lucida Grande\", sans-serif",
+          "font-size": "14px",
+          "font-weight": "400",
+          "line-height": "23.996px",
+          "padding-top": "0px",
+          "padding-right": "0px",
+          "padding-bottom": "0px",
+          "padding-left": "0px",
+          "margin-top": "0px",
+          "margin-right": "0px",
+          "margin-bottom": "0px",
+          "margin-left": "0px",
+          "border-radius": "0px",
+          "border": "0px none rgb(51, 62, 72)",
+          "box-shadow": "none"
+        }
+      },
+      "footer": {
+        "matched": "#colophon",
+        "tried": [
+          "#colophon",
+          "footer.site-footer",
+          ".site-footer",
+          "footer"
+        ],
+        "rect": {
+          "top": 4006.73,
+          "left": 0,
+          "width": 1425,
+          "height": 951.87
+        },
+        "style": {
+          "background-color": "rgba(0, 0, 0, 0)",
+          "color": "rgb(51, 62, 72)",
+          "font-family": "Inter, \"Open Sans\", HelveticaNeue-Light, \"Helvetica Neue Light\", \"Helvetica Neue\", Helvetica, Arial, \"Lucida Grande\", sans-serif",
+          "font-size": "14px",
+          "font-weight": "400",
+          "line-height": "23.996px",
+          "padding-top": "0px",
+          "padding-right": "0px",
+          "padding-bottom": "0px",
+          "padding-left": "0px",
+          "margin-top": "0px",
+          "margin-right": "0px",
+          "margin-bottom": "0px",
+          "margin-left": "0px",
+          "border-radius": "0px",
+          "border": "0px none rgb(51, 62, 72)",
+          "box-shadow": "none"
+        }
+      }
+    }
+  },
+  "local": {
+    "url": "http://localhost:3000/",
+    "regions": {
+      "header": {
+        "matched": "header",
+        "tried": [
+          "#masthead",
+          "header.site-header",
+          ".site-header",
+          "header"
+        ],
+        "rect": {
+          "top": 40.53,
+          "left": 0,
+          "width": 1425,
+          "height": 55
+        },
+        "style": {
+          "background-color": "rgb(255, 255, 255)",
+          "color": "rgb(26, 26, 26)",
+          "font-family": "Heebo, \"Heebo Fallback\", Arial, sans-serif, Arial, sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "line-height": "24px",
+          "padding-top": "0px",
+          "padding-right": "0px",
+          "padding-bottom": "0px",
+          "padding-left": "0px",
+          "margin-top": "0px",
+          "margin-right": "0px",
+          "margin-bottom": "0px",
+          "margin-left": "0px",
+          "border-radius": "0px",
+          "border": "0px solid rgb(221, 221, 221)",
+          "box-shadow": "none"
+        }
+      },
+      "hero": {
+        "matched": null,
+        "tried": [
+          "rs-module-wrap",
+          ".rev_slider_wrapper",
+          "#rev_slider_1_1_wrapper",
+          ".rev_slider",
+          ".home-v7-slider",
+          ".electro-slider",
+          "[class*=\"hero\"]"
+        ],
+        "rect": null,
+        "style": null
+      },
+      "uspBar": {
+        "matched": null,
+        "tried": [
+          ".electro-advanced-recent-viewed-products",
+          ".home-v7-usps",
+          ".electro-services",
+          ".icon-box-wrapper",
+          ".electro-icon-box-wrapper",
+          "[class*=\"usp\"]",
+          "[class*=\"benefit\"]"
+        ],
+        "rect": null,
+        "style": null
+      },
+      "categoryRow": {
+        "matched": null,
+        "tried": [
+          ".product-categories-carousel",
+          ".electro-product-categories-carousel",
+          ".categories-carousel",
+          ".owl-carousel.product-categories",
+          ".home-v7-categories",
+          ".product-category-thumbnails",
+          "[class*=\"category-strip\"]",
+          "[class*=\"categoryStrip\"]"
+        ],
+        "rect": null,
+        "style": null
+      },
+      "productCard": {
+        "matched": null,
+        "tried": [
+          "ul.products li.product",
+          ".products .product",
+          "li.product",
+          ".product-inner",
+          ".electro-product",
+          "[class*=\"product-card\"]",
+          "[class*=\"productCard\"]"
+        ],
+        "rect": null,
+        "style": null
+      },
+      "footer": {
+        "matched": "footer",
+        "tried": [
+          "#colophon",
+          "footer.site-footer",
+          ".site-footer",
+          "footer"
+        ],
+        "rect": {
+          "top": 4763.1,
+          "left": 0,
+          "width": 1425,
+          "height": 510.73
+        },
+        "style": {
+          "background-color": "rgba(0, 0, 0, 0)",
+          "color": "rgb(26, 26, 26)",
+          "font-family": "Heebo, \"Heebo Fallback\", Arial, sans-serif",
+          "font-size": "16px",
+          "font-weight": "400",
+          "line-height": "24px",
+          "padding-top": "0px",
+          "padding-right": "0px",
+          "padding-bottom": "0px",
+          "padding-left": "0px",
+          "margin-top": "0px",
+          "margin-right": "0px",
+          "margin-bottom": "0px",
+          "margin-left": "0px",
+          "border-radius": "0px",
+          "border": "0px solid rgb(26, 26, 26)",
+          "box-shadow": "none"
+        }
+      }
+    },
+    "available": true
+  }
+}
