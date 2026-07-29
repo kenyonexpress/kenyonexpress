@@ -491,7 +491,7 @@ function transformCoupons(run, rawCoupons) {
  * decomposed, the two are different byte strings, and a browser and a database
  * will disagree about them forever unless both are normalised.
  */
-function normalizePath(path) {
+export function normalizePath(path) {
   if (!path) return ''
   let out = String(path).split('#')[0].split('?')[0]
   try {
@@ -510,7 +510,7 @@ function toArray(value) {
   return Array.isArray(value) ? value : [value]
 }
 
-function buildUrlInventory(products, categories, excludedProducts = []) {
+export function buildUrlInventory(products, categories, excludedProducts = []) {
   const rows = []
   for (const p of products) {
     if (p.post_type !== 'product') continue

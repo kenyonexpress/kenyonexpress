@@ -1,6 +1,6 @@
 # KenyonExpress — Project State
 
-Updated: 2026-07-29 (integration + checkout/cardcom round)
+Updated: 2026-07-30 (wp-migration: parser + redirect test layer; import gated on the export)
 
 ## Current Phase
 Checkout. `feat/admin-core` is merged into `phase5/homepage`; the storefront and
@@ -37,6 +37,14 @@ of two.
    writes `commission_type`, so until the migration lands every product create
    and edit in the admin fails on a column that does not exist. This was a
    `feat/admin-core` blocker and is now a `phase5/homepage` one. See GO-LIVE.
+3. **⛔ אין ייצוא מהחנות החיה.** ‏`ke-wpmig/ke-export.xml` לא קיים, ואין `WC_*`
+   ב-env. הצינור בן שישה השלבים שלם ובדוק מול fixture, אבל אף שלב לא רץ מול
+   דאטה אמיתית, ולכן אין `wp_import` מאוכלס, אין `seo_redirects` מלא ואין
+   תמונות ב-R2.
+   **Unblock:** ‏wp-admin → Tools → Export → "All content" → הורדה, ושמירה
+   בתור `/Users/ofir/kenyonexpress-web/ke-wpmig/ke-export.xml`.
+   ‏(חלופה: ‏WooCommerce → Products → Export ל-CSV; ה-reader קורא את שניהם,
+   אבל ל-CSV אין slug ואין `_wp_old_slug`, כלומר חצי ממפת ה-301 הולכת לאיבוד.)
 
 ## שלוש המשימות הבאות
 
@@ -2844,3 +2852,54 @@ open redirect על הדומיין שלנו.
 - ‏STAGE 2 של MEGA-5 הגיע חתוך באמצע משפט (`Import real catalog from`).
 - אף שלב עדיין לא רץ מול החנות החיה: אין `WC_*` ואין ייצוא.
 - ‏R2 נבדק מול חותם מיורט ומול שרת תמונות מקומי, לא מול bucket אמיתי.
+
+---
+
+## 2026-07-30 — MEGA-5 שלב 2: שכבת הטסטים של הצינור, וה-gate על הייצוא
+
+‏Branch: `feat/wp-migration`. ‏786 טסטים (‏743 + 43 חדשים), ‏tsc נקי, biome נקי.
+
+### היעד נעצר על תנאי שהוא עצמו הגדיר
+
+היעד אמר: אם `ke-wpmig/ke-export.xml` חסר, לעצור ולבקש מאופיר להוריד אותו.
+הקובץ חסר. נבדק ב-`ke-wpmig/`, בכל עץ ה-worktree, וב-`~/Downloads` — אין שום
+‏XML. אין גם `WC_*` ב-env, כלומר גם המסלול דרך ה-REST סגור. לכן כל מה שדורש
+דאטה אמיתית לא רץ: אין `wp_import` מאוכלס, אין הקרנה ל-`public`, אין העלאה
+ל-R2, ואין `apply_migration` נוסף (095 כבר הוחלה ב-29.07 ולא נגעתי בה).
+
+### מה כן היה חסום ולא היה צריך את הייצוא
+
+הפער האמיתי שנמצא בסבב הזה: **הצינור לא היה מכוסה בטסטים בכלל, וגם לא היה
+יכול להיות.** ‏`vitest.config.ts` הגדיר `include: ['src/**/*.test.ts',
+'src/**/*.test.tsx']` בלבד, ו-`scripts/wp-import/` הוא `.mjs`. המשמעות:
+
+- ‏`log.test.mjs` היה קיים על הענף מאז 29.07 ו**מעולם לא רץ**. הוא כתוב מול
+  `node:test`, ואף סקריפט ב-`package.json` לא מריץ `node --test`. טסט שקיים
+  ולא רץ גרוע מטסט שלא קיים, כי הוא נראה כמו כיסוי.
+- ‏`buildUrlInventory` ו-`normalizePath` ב-`02-transform.mjs` לא היו מיוצאים,
+  כלומר ארבעת הבאגים שההרצה של 29.07 גילתה לא היו ניתנים לנעילה בטסט.
+
+### מה השתנה
+
+- ‏`vitest.config.ts`: הוספת `scripts/wp-import/**/*.test.mjs` ל-`include`.
+- ‏`02-transform.mjs`: `buildUrlInventory` ו-`normalizePath` מיוצאים (test seam
+  בלבד, אפס שינוי התנהגות).
+- ‏`log.test.mjs`: `node:test` → `vitest`. ה-4 טסטים שלו רצים סוף-סוף.
+- ‏`lib/wxr.test.mjs` חדש, ‏24 טסטים מול ה-fixture: עץ הקטגוריות (parent לפי
+  slug → parent id, ‏root=0), slug עברי percent-encoded שנשמר verbatim, כל
+  ‏`_wp_old_slug`, פתרון thumbnail+gallery ל-URLs, פסיק עוקב ב-gallery,
+  ‏`unresolved_categories` ו-`missing_attachments`, ופרסור CSV (מרכאות כפולות,
+  ‏CRLF, ‏BOM, נתיב `Parent > Child`).
+- ‏`redirects.test.mjs` חדש, ‏15 טסטים. ארבעת הבאגים של 29.07 נעולים עכשיו:
+  יעד `/product` ו-`/category` (ולא `/p`,`/c`), `direct_match` שמונע לולאה,
+  יעד מ-`proposed_slug` שאחרי הדה-דופ (המקרה שבו לקוח קונה מוצר אחר), וכל
+  ‏`_wp_old_slug` כשורה. בנוסף: ‏410 למוצר שלא מיובא, dedupe של `old_path`,
+  ודחיית `old_path` מוחלט לפני שה-CHECK של 095 מפיל את כל ה-batch.
+
+### פתוח
+
+- **הייצוא.** זה החסם היחיד לשלבים 3-6. ראה Blocking Issues §3.
+- ‏R2 עדיין נבדק מול חותם מיורט בלבד, לא מול bucket אמיתי.
+- ‏`06-media-sync.mjs` ו-`04-project-public.mjs` נשארו בלי טסטים: שניהם
+  ‏I/O מול Supabase ו-R2, ונעילה שלהם דורשת או את הייצוא או שכבת mock שלא
+  קיימת. לא המצאתי להם כיסוי מדומה.
