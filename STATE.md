@@ -27,19 +27,32 @@ of two.
    secret key into `SUPABASE_SECRET_KEY`.
    **What it is holding up:** `node scripts/compare.mjs --page=checkout` cannot
    produce a number, because both checkouts redirect an empty cart away and the
-   local cart cannot be filled.
+   local cart cannot be filled. A signed-in session does not get around it:
+   `loadProductData` and `validateProductForCart` both go through the admin
+   client, so the cart write fails for guests and members alike.
+   Since `c25c2a0` this at least announces itself — `createAdminClient` logs
+   `[supabase-admin] ...is the stock local-development demo key...` once per
+   process instead of failing silently.
 2. **⛔ `093_product_commission_type` is not applied.** `buildProductMoneyWrite`
    writes `commission_type`, so until the migration lands every product create
    and edit in the admin fails on a column that does not exist. This was a
    `feat/admin-core` blocker and is now a `phase5/homepage` one. See GO-LIVE.
 
 ## Next Task
-1. Apply `093_product_commission_type` (blocks admin product writes) and decide
-   on `094_settlement_events`.
-2. Replace the local secret key, then run `compare.mjs --page=checkout` and
-   close the checkout geometry against the measured reference.
-3. Cardcom iframe: see "what stage 3 did not deliver" below, including the CSP
-   conflict that has to be resolved first.
+1. **Replace `SUPABASE_SECRET_KEY`**, then run
+   `LOCAL_BASE=http://localhost:3200 node scripts/compare.mjs --page=checkout`
+   and close the checkout geometry against `refs/checkout-measured.json`. This
+   is the only thing standing between the checkout and a measured number.
+2. **Apply `093_product_commission_type`.** It blocks every admin product write
+   on the main branch, not just on a feature branch. The file is idempotent,
+   backfills from `products.type` and carries a CHECK that keeps the two
+   spellings equal, so applying it is a decision about timing rather than about
+   risk.
+3. **Verify the Cardcom iframe against a real terminal.** The framing and the
+   return leg are verified against a production build (one CSP per path, the
+   stub reachable without a session, the confirmation still authed), but no
+   payment has actually been taken through it. Then decide on
+   `094_settlement_events`.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
@@ -153,13 +166,34 @@ not restated here (use env / prior STATE entries)
 "מה סוכם"; הוא לא עונה "מה קרה, מתי, ובאיזה סדר", וזה ההבדל ברגע שקופון נפדה
 חודשיים אחרי שחויב או שהחזר הופך חלק משורה. **לא מוחל**, ואף קוד לא תלוי בו.
 
-**‏⛔ לא נמסר: ה-iframe של Cardcom.** ‏`frame-src https://secure.cardcom.solutions`
-כבר ב-CSP, אבל `frame-ancestors 'none'` הוא header גלובלי, ולכן `/checkout/return`
-— היעד שאליו Cardcom מפנה את ה-iframe — **ייחסם ברינדור בתוך frame**. המעבר
-ל-iframe מחייב אם כך שינוי CSP על נתיב החזרה מהתשלום. לא ביצעתי אותו: אי אפשר
-לאמת מסלול חיוב מקצה לקצה בסביבה שבה מפתח השרת מת, ושינוי לא מאומת ב-CSP של
-נתיב שדרכו חוזר תשלום הוא בדיוק הסוג של שינוי שלא ראוי לדחוף בלי ריצה אחת
-מוצלחת. המסלול הקיים (redirect ל-LowProfile) עובד ולא נגעתי בו.
+**‏נמסר: ה-iframe של Cardcom** (`e8ee54c`). ‏`submitCheckout` כבר לא קורא
+`redirect()` במסלול הדף המתארח אלא מחזיר את ה-URL, והטופס מרכיב אותו. מסלול
+הכרטיס השמור לא נגע: הוא server-to-server וה-response שלו **הוא** התוצאה.
+
+רגל החזרה דרשה שני תיקונים, ושניהם מתועדים ב-`lib/security/frame-policy.ts`
+כי שניהם קלים לשבירה חוזרת:
+
+**‏1. הדף שמותר למסגר אינו דף האישור.** ‏`frame-ancestors 'none'` הוא גלובלי,
+אז הפתרון המתבקש הוא לרכך אותו על `/checkout/return`. זה הדף הלא נכון.
+הניווט ש-Cardcom מבצע לתוך ה-iframe שלנו הוא **cross-site subresource
+navigation**, והדפדפן **מונע** עוגיות `SameSite=Lax` בניווט כזה. עוגיית הסשן
+של Supabase היא Lax. כלומר `/checkout/return` היה נטען בלי סשן, ה-proxy היה
+מפנה ל-login, והלקוח היה רואה טופס התחברות בתוך תיבת התשלום **אחרי** ששילם.
+לכן נוצר stub חדש, `/checkout/frame-return`, שאינו דורש סשן כלל: הוא מאמת
+צורת order id, לא מרנדר הזמנה, ומזיז את **חלון העל** לדף האישור. הניווט השני
+הוא top-level, העוגייה נשלחת רגיל, ודף האישור נשאר גם מאומת וגם
+`frame-ancestors 'none'`. בדיוק נתיב אחד באפליקציה ניתן למסגור.
+
+**‏2. הריכוך לא יכול לחיות ב-`proxy.ts`.** נמדד ולא הונח: כותרות מ-`next.config`
+מוחלות **אחרי** ה-middleware ודורסות אותו, והניסיון הראשון החזיר `'none'` בכל
+נתיב. גם שתי רשומות `headers()` על אותו source לא יעבדו, כי Next מוסיף
+ו-הדפדפן אוכף את החיתוך של שתי כותרות CSP — כלומר ה-frame-ancestors המחמיר
+היה מנצח והחריגה הייתה נעלמת בלי שום סימן ב-response. הקונפיג מייצר עכשיו שני
+sources **שאינם חופפים** דרך negative lookahead.
+
+אומת מול build פרודקשן: כותרת CSP אחת בדיוק לכל נתיב, ‏`'self'` רק על ה-stub,
+‏200 בלי סשן על ה-stub ו-307 ל-login על דף האישור. ה-iframe ב-sandbox של
+scripts/forms/same-origin/popups ו**בלי** `allow-top-navigation`.
 
 ### אימות הסבב
 ‏**691 vitest ב-53 קבצים** (‏+22 קופון, ‏+19 מיקוד, ‏+7 settlement) · `tsc` נקי ·
