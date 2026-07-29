@@ -4,12 +4,12 @@
 Admin Dashboard Core (Fable 5). Docs channel open on `arch/admin-supplier`.
 
 ## Last Completed
-2026-07-28: AI agents + admin analytics architecture (docs only):
+2026-07-29: AI agents + admin analytics architecture (docs only, zero code):
 
-1. `docs/ARCHITECTURE-AI-AGENTS.md` (support, product copy, fraud, pricing: models, prompts, tools, RLS, cost, failures)
-2. `docs/ARCHITECTURE-ANALYTICS.md` (sales, coupon funnel, supplier leaderboard, cohorts, events pipeline, aggregates DDL, CSV)
+1. `docs/ARCHITECTURE-AI-AGENTS.md` (support Hebrew RTL, product SEO copy, fraud triage, pricing intel; models, prompts, tools, RLS, costs, failures)
+2. `docs/ARCHITECTURE-ANALYTICS.md` (sales, coupon funnel, supplier leaderboard, cohorts, events vs marts, indexes, CSV, exact table/view DDL as spec)
 
-Money rules aligned with checkout/redeem/supplier: dynamic snapshotted `platform_percent`, no Escrow, coupon till outside platform, ledger-only GMV.
+Money rules unchanged: dynamic `platform_percent`, coupon online + till at scan, physical immediate split, **No Escrow**.
 
 ## In Progress
 Admin Dashboard Core goal (Fable 5). Docs channel on `arch/admin-supplier`.
@@ -18,7 +18,7 @@ Admin Dashboard Core goal (Fable 5). Docs channel on `arch/admin-supplier`.
 none for this docs pass
 
 ## Next Task
-Implement Admin Core surfaces (RBAC shell → product money editor → …); analytics/AI remain later goals fed by these specs.
+Implement Admin Core surfaces (RBAC shell → product money editor → …) with analytics/AI specs available for later goals.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-admin
@@ -35,9 +35,9 @@ not set in this worktree STATE
 ---
 ## History
 
-### 2026-07-28: AI agents + analytics docs
-- Added `ARCHITECTURE-AI-AGENTS.md` and `ARCHITECTURE-ANALYTICS.md`.
-- Worktree: ke-admin. Docs only. Zero application/SQL files.
+### 2026-07-29: AI agents + analytics docs
+- Added `ARCHITECTURE-AI-AGENTS.md`, `ARCHITECTURE-ANALYTICS.md`.
+- Worktree: ke-admin. Docs only (no `.ts`/`.tsx`/`.sql` files).
 
 ### 2026-07-28: Checkout Cardcom + fulfillment workflow
 - Added `ARCHITECTURE-CHECKOUT-CARDCOM.md` and `ARCHITECTURE-FULFILLMENT-SUPPLIER-WORKFLOW.md`.
