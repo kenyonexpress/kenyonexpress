@@ -7,6 +7,8 @@ Scope: **docs only.** No application code in this change.
 Companions: `docs/ARCHITECTURE-CART-CHECKOUT.md` (ke-arch-cart), `docs/ARCHITECTURE-ACCOUNT-IDENTITY.md`, `docs/ARCHITECTURE-ACCOUNT-WALLET.md`, cardcom-payments skill.
 Stack: Next.js App Router route group `(account)`, Server Components + Server Actions, request-scoped Supabase client + RLS, Cardcom tokens (display only), integer **agorot** money.
 
+Includes **Part II** (Auth Google, RLS matrix, Account details, Logout, Order detail full TS, loading shells).
+
 Primary surfaces covered here:
 
 | Route | Job |
@@ -39,7 +41,7 @@ Also in shell nav (brief): `/account/details`, `/account/wallet`. Privacy / noti
 ```
 (account)/layout.tsx          require session + AccountNav + shell
   /account                    overview (wallet chip, last order, active coupons)
-  /account/details            profile name + phone (email read-only)
+  /account/details            profile name + phone (email read-only) + Logout
   /account/orders             order list
   /account/orders/[id]        order detail + lines + vouchers QR
   /account/coupons            voucher wallet (tabs: issued | used | expired)
@@ -1622,3 +1624,883 @@ src/styles/account.css
 1. Should order list paginate server-side beyond 50?
 2. Add-card Low Profile amount: 0 vs 1 agorot (Cardcom constraint)?
 3. Offline IndexedDB for coupons: ship in web v1 or mobile-only?
+
+
+---
+
+# Part II: Expanded binding (Auth, Details, Logout, Order detail, RLS)
+
+This part **supersedes** thinner mentions above where they conflict. Prefer Part II for Auth, Account details, Logout, Order detail TypeScript, and the RLS query matrix.
+
+---
+
+## 16. Auth guard: Supabase Google + session
+
+### 16.1 Product rule
+
+- Browse + guest cart: open.
+- `/account/**` and Pay: require authenticated Supabase user.
+- Primary identity path: **Google OAuth** (`openid email profile`).
+- Secondary: email OTP / password (existing `auth.ts`); account UX still assumes Google-first.
+
+### 16.2 Guard layers (defense in depth)
+
+| Layer | Where | Behavior |
+|---|---|---|
+| 1. Proxy | `src/proxy.ts` | Soft redirect `/account*` → `/login?next=` |
+| 2. Layout | `(account)/layout.tsx` | Hard `getUser()`; redirect if missing |
+| 3. Page | e.g. details `notFound` if no profile | Fail closed |
+| 4. RLS | Postgres | Queries return only `auth.uid()` rows |
+
+**Never** use `getSession()` alone on the server for authorization.
+
+### 16.3 Google sign-in → callback → merge cart
+
+```
+/login?next=/account
+  → signInWithGoogle (Server Action)
+  → Supabase OAuth redirect
+  → /auth/callback?next=/account
+  → exchangeCodeForSession
+  → mergeGuestCart(userId, ke_session_id)
+  → clear guest cookie
+  → redirect(next)
+```
+
+### 16.4 Full TypeScript: Google + logout
+
+```typescript
+// src/server/actions/auth.ts (account-relevant excerpts)
+'use server'
+
+import { safeNextPath } from '@/lib/auth/safe-next'
+import { GUEST_SESSION_COOKIE, getGuestSessionId } from '@/lib/cart/guest-session'
+import { createClient } from '@/lib/supabase/server'
+import { mergeGuestCart } from '@/server/actions/cart'
+import { cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
+
+export type AuthState = { error: string } | { success: string } | null
+
+export async function signInWithGoogle(_: AuthState, formData: FormData): Promise<AuthState> {
+  const next = safeNextPath(formData.get('next'))
+  const supabase = await createClient()
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=${encodeURIComponent(next)}`,
+      scopes: 'openid email profile',
+    },
+  })
+  if (error) return { error: 'התחברות עם Google נכשלה' }
+  if (data.url) redirect(data.url)
+  return null
+}
+
+/** Sign out current browser session only. */
+export async function signOut() {
+  const supabase = await createClient()
+  await supabase.auth.signOut({ scope: 'local' })
+  redirect('/login')
+}
+
+/** Sign out every device (global refresh token revoke). */
+export async function signOutAll() {
+  const supabase = await createClient()
+  await supabase.auth.signOut({ scope: 'global' })
+  redirect('/login')
+}
+```
+
+```typescript
+// src/app/auth/callback/route.ts (contract)
+import { createClient } from '@/lib/supabase/server'
+import { getGuestSessionId, GUEST_SESSION_COOKIE } from '@/lib/cart/guest-session'
+import { mergeGuestCart } from '@/server/actions/cart'
+import { safeNextPath } from '@/lib/auth/safe-next'
+import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
+
+export async function GET(request: Request) {
+  const url = new URL(request.url)
+  const code = url.searchParams.get('code')
+  const next = safeNextPath(url.searchParams.get('next'))
+
+  if (code) {
+    const supabase = await createClient()
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+    if (!error && data.user) {
+      const sessionId = await getGuestSessionId()
+      if (sessionId) {
+        await mergeGuestCart(data.user.id, sessionId)
+        const jar = await cookies()
+        jar.delete(GUEST_SESSION_COOKIE)
+      }
+    }
+  }
+
+  return NextResponse.redirect(new URL(next, url.origin))
+}
+```
+
+```typescript
+// src/app/(auth)/login/page.tsx (minimal account-entry)
+import LoginForm from './LoginForm'
+
+export const metadata = { title: 'התחברות' }
+
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>
+}) {
+  const { next } = await searchParams
+  return (
+    <main dir="rtl" className="login-page">
+      <h1>התחברות</h1>
+      <p>התחברות עם Google נדרשת לאזור האישי ולתשלום.</p>
+      <LoginForm next={next ?? '/account'} />
+    </main>
+  )
+}
+```
+
+```typescript
+// src/app/(auth)/login/LoginForm.tsx
+'use client'
+
+import { type AuthState, signInWithGoogle } from '@/server/actions/auth'
+import { useActionState } from 'react'
+
+const INITIAL: AuthState = null
+
+export default function LoginForm({ next }: { next: string }) {
+  const [state, action, pending] = useActionState(signInWithGoogle, INITIAL)
+  return (
+    <form action={action}>
+      <input type="hidden" name="next" value={next} />
+      {state && 'error' in state ? (
+        <p className="account-alert account-alert--error" role="alert">
+          {state.error}
+        </p>
+      ) : null}
+      <button type="submit" className="account-btn account-btn--primary" disabled={pending}>
+        {pending ? 'מעביר ל-Google…' : 'המשך עם Google'}
+      </button>
+    </form>
+  )
+}
+```
+
+---
+
+## 17. RLS matrix (every account query)
+
+| Query / mutation | Table / view | Policy expectation |
+|---|---|---|
+| `getAccountProfile` | `profiles` | `id = auth.uid()` select/update; `role` frozen on update |
+| `getWalletSummary` | `wallet_accounts` | `user_id = auth.uid()` |
+| ledger | `v_wallet_ledger` | filtered to caller |
+| `getMyAddresses` / save / delete / default | `user_addresses` | owner CRUD; soft-delete visible filter |
+| `getMyPaymentTokens` / delete / default | `payment_tokens` | owner; **no SELECT on `cardcom_token`** |
+| `getMyCoupons` | `vouchers` | `user_id = auth.uid()` |
+| `getMyOrders` | `orders` + `order_items` | `orders.user_id = auth.uid()` |
+| `getOrderDetail` | orders/items/vouchers/products/suppliers | must enforce `user_id` (prefer RLS; if admin client used, **always** `.eq('user_id', userId)` first) |
+| `updateProfileDetails` | `profiles` | owner update only |
+| wallet writes | ledger RPCs | **no** authenticated write policy |
+
+Target: eliminate admin client from customer order detail once RLS joins are sufficient.
+
+---
+
+## 18. Account details (`/account/details`)
+
+### 18.1 Spec
+
+- Editable: `full_name`, `phone` (Israeli validation).
+- Read-only: `email` (from Google / Auth). Change email only via provider / Auth flows, not this form.
+- Avatar: optional future; out of scope for v1 dashboard.
+- Role: never shown; never writable from client.
+
+### 18.2 Page + form (full TypeScript)
+
+```typescript
+// src/app/(account)/account/details/page.tsx
+import ProfileDetailsForm from '@/components/account/ProfileDetailsForm'
+import { getAccountProfile } from '@/server/queries/account'
+import { notFound } from 'next/navigation'
+
+export const metadata = { title: 'הפרטים שלי' }
+
+export default async function DetailsPage() {
+  const profile = await getAccountProfile()
+  if (!profile) notFound()
+
+  return (
+    <>
+      <h1 className="account-title">הפרטים שלי</h1>
+      <p className="account-subtitle">שם וטלפון לשימוש בהזמנות</p>
+
+      <section className="account-card">
+        <ProfileDetailsForm
+          fullName={profile.fullName}
+          phone={profile.phone}
+          email={profile.email}
+        />
+      </section>
+
+      <section className="account-card" style={{ marginTop: 24 }}>
+        <h2 className="account-card__title">יציאה מהחשבון</h2>
+        <p className="account-subtitle">סיום הסשן במכשיר זה או בכל המכשירים.</p>
+        {/* LogoutButtons is a client/server action form island */}
+        <LogoutButtons />
+      </section>
+    </>
+  )
+}
+```
+
+```typescript
+// src/components/account/ProfileDetailsForm.tsx
+'use client'
+
+import type { AccountActionState } from '@/lib/validations/account'
+import { updateProfileDetails } from '@/server/actions/account'
+import { useActionState } from 'react'
+
+const INITIAL: AccountActionState = null
+
+export default function ProfileDetailsForm({
+  fullName,
+  phone,
+  email,
+}: {
+  fullName: string | null
+  phone: string | null
+  email: string
+}) {
+  const [state, action, pending] = useActionState(updateProfileDetails, INITIAL)
+
+  return (
+    <form action={action} className="account-form" dir="rtl">
+      {state && 'error' in state ? (
+        <p className="account-alert account-alert--error" role="alert">
+          {state.error}
+        </p>
+      ) : null}
+      {state && 'success' in state ? (
+        <output className="account-alert account-alert--success">{state.success}</output>
+      ) : null}
+
+      <div className="account-form__row">
+        <div className="account-field">
+          <label className="account-field__label" htmlFor="full_name">
+            שם מלא
+          </label>
+          <input
+            className="account-field__input"
+            id="full_name"
+            name="full_name"
+            defaultValue={fullName ?? ''}
+            required
+            autoComplete="name"
+          />
+        </div>
+
+        <div className="account-field">
+          <label className="account-field__label" htmlFor="phone">
+            טלפון
+          </label>
+          <input
+            className="account-field__input"
+            id="phone"
+            name="phone"
+            type="tel"
+            inputMode="tel"
+            defaultValue={phone ?? ''}
+            required
+            autoComplete="tel"
+            placeholder="050-0000000"
+          />
+        </div>
+      </div>
+
+      <div className="account-field">
+        <label className="account-field__label" htmlFor="email">
+          אימייל
+        </label>
+        <input className="account-field__input" id="email" value={email} disabled readOnly />
+        <p className="account-row__meta">האימייל מגיע מ-Google ולא ניתן לעריכה כאן.</p>
+      </div>
+
+      <button className="account-btn account-btn--primary" type="submit" disabled={pending}>
+        {pending ? 'שומר…' : 'שמירת פרטים'}
+      </button>
+    </form>
+  )
+}
+```
+
+---
+
+## 19. Logout
+
+### 19.1 UX
+
+- Primary: **יציאה** in AccountNav footer + on `/account/details`.
+- Optional secondary: **יציאה מכל המכשירים** (`signOutAll`).
+- After logout: redirect `/login` (not homepage) so re-auth is one click.
+- Guest cart cookie is independent; do not invent a new guest id on logout unless missing.
+- Clear any client `ke_cart_mirror_v1` on logout submit (best-effort).
+
+### 19.2 Full TypeScript
+
+```typescript
+// src/components/account/LogoutButtons.tsx
+import { signOut, signOutAll } from '@/server/actions/auth'
+
+export default function LogoutButtons() {
+  return (
+    <div className="account-row__actions" style={{ justifyContent: 'flex-start', gap: 12 }}>
+      <form action={signOut}>
+        <button className="account-btn account-btn--danger" type="submit">
+          יציאה
+        </button>
+      </form>
+      <form action={signOutAll}>
+        <button className="account-btn" type="submit">
+          יציאה מכל המכשירים
+        </button>
+      </form>
+    </div>
+  )
+}
+```
+
+```typescript
+// src/components/account/AccountNav.tsx (complete, with logout)
+'use client'
+
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { formatIlsFromAgorot } from '@/lib/account/format'
+import { signOut } from '@/server/actions/auth'
+
+const ITEMS = [
+  { href: '/account', label: 'סקירה' },
+  { href: '/account/details', label: 'הפרטים שלי' },
+  { href: '/account/orders', label: 'ההזמנות שלי' },
+  { href: '/account/coupons', label: 'הקופונים שלי' },
+  { href: '/account/wallet', label: 'הארנק שלי' },
+  { href: '/account/addresses', label: 'כתובות' },
+  { href: '/account/tokens', label: 'אמצעי תשלום' },
+] as const
+
+export default function AccountNav({
+  fullName,
+  email,
+  walletBalanceAgorot,
+}: {
+  fullName: string | null
+  email: string
+  walletBalanceAgorot: number
+}) {
+  const pathname = usePathname()
+
+  return (
+    <nav className="account-nav" aria-label="ניווט באזור האישי" dir="rtl">
+      <div className="account-nav__head">
+        <p className="account-nav__name">{fullName || 'שלום'}</p>
+        <p className="account-nav__email">{email}</p>
+      </div>
+      <ul className="account-nav__list">
+        {ITEMS.map((item) => {
+          const isActive =
+            item.href === '/account' ? pathname === '/account' : pathname.startsWith(item.href)
+          return (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                className={`account-nav__link${isActive ? ' is-active' : ''}`}
+                aria-current={isActive ? 'page' : undefined}
+              >
+                <span>{item.label}</span>
+                {item.href === '/account/wallet' ? (
+                  <span className="account-nav__badge">
+                    {formatIlsFromAgorot(walletBalanceAgorot)}
+                  </span>
+                ) : null}
+              </Link>
+            </li>
+          )
+        })}
+      </ul>
+      <form action={signOut} className="account-nav__logout">
+        <button className="account-btn account-btn--danger" type="submit">
+          יציאה
+        </button>
+      </form>
+    </nav>
+  )
+}
+```
+
+---
+
+## 20. Order detail (full route + query)
+
+### 20.1 Types
+
+```typescript
+export type OrderLineSupplier = {
+  id: string
+  name: string
+  address: string | null
+  city: string | null
+  phone: string | null
+}
+
+export type OrderVoucher = {
+  code: string
+  status: string
+  expiresAt: string | null
+  collectAmountAgorot: number | null
+  faceValueAgorot: number | null
+  qrDataUrl: string | null
+  usedAt: string | null
+}
+
+export type OrderLine = {
+  id: string
+  productId: string | null
+  productName: string
+  productSlug: string | null
+  productImage: string | null
+  productType: 'coupon' | 'physical'
+  quantity: number
+  unitPriceAgorot: number
+  totalAgorot: number
+  paidOnSiteAgorot: number
+  balanceDueAgorot: number
+  settlementStatus: string
+  itemStatus: string
+  supplier: OrderLineSupplier | null
+  vouchers: OrderVoucher[]
+}
+
+export type OrderDetail = {
+  id: string
+  status: string
+  settlementStatus: string
+  createdAt: string
+  paidAt: string | null
+  subtotalAgorot: number
+  totalAgorot: number
+  walletAppliedAgorot: number
+  addressId: string | null
+  lines: OrderLine[]
+}
+```
+
+### 20.2 `getOrderDetail` (binding)
+
+```typescript
+import QRCode from 'qrcode'
+import { createClient } from '@/lib/supabase/server'
+import { agorot } from '@/lib/money/agorot'
+import {
+  SETTLEMENT_STATES,
+  type SettlementState,
+  deriveOrderStatus,
+} from '@/server/domain/orders/state-machine'
+import type { OrderDetail, OrderLine, OrderVoucher } from '@/lib/account/types'
+
+function asSettlementState(value: string | null | undefined): SettlementState {
+  const legacy: Record<string, SettlementState> = {
+    escrow_held: 'split_executed',
+    escrow_released: 'split_executed',
+    platform_settled: 'split_executed',
+  }
+  const mapped = legacy[value ?? '']
+  if (mapped) return mapped
+  return SETTLEMENT_STATES.includes(value as SettlementState)
+    ? (value as SettlementState)
+    : 'pending'
+}
+
+function firstImage(images: unknown): string | null {
+  if (!Array.isArray(images) || images.length === 0) return null
+  const first = images[0]
+  return typeof first === 'string' ? first : null
+}
+
+export async function getOrderDetail(orderId: string): Promise<OrderDetail | null> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return null
+
+  // Prefer user-scoped client + RLS. If joins require elevated reads, keep the
+  // user_id filter as the first predicate and never omit it.
+  const { data: order } = await supabase
+    .from('orders')
+    .select(
+      'id, user_id, status, created_at, paid_at, subtotal_agorot, total_agorot, cashback_applied_agorot, address_id',
+    )
+    .eq('id', orderId)
+    .eq('user_id', user.id)
+    .is('deleted_at', null)
+    .maybeSingle()
+  if (!order) return null
+
+  const { data: items } = await supabase
+    .from('order_items')
+    .select(
+      'id, product_id, product_type, supplier_id, quantity, unit_price_agorot, total_price_agorot, paid_on_site_agorot, balance_due_agorot, settlement_status, item_status',
+    )
+    .eq('order_id', order.id)
+
+  const productIds = [...new Set((items ?? []).map((i) => i.product_id).filter(Boolean))] as string[]
+  const supplierIds = [...new Set((items ?? []).map((i) => i.supplier_id).filter(Boolean))] as string[]
+  const itemIds = (items ?? []).map((i) => i.id)
+
+  const [{ data: products }, { data: suppliers }, { data: coupons }] = await Promise.all([
+    productIds.length
+      ? supabase.from('products').select('id, name_he, slug, images').in('id', productIds)
+      : Promise.resolve({ data: [] as { id: string; name_he: string; slug: string | null; images: unknown }[] }),
+    supplierIds.length
+      ? supabase.from('suppliers').select('id, name, address, city, contact_phone').in('id', supplierIds)
+      : Promise.resolve({ data: [] as { id: string; name: string; address: string | null; city: string | null; contact_phone: string | null }[] }),
+    itemIds.length
+      ? supabase
+          .from('vouchers')
+          .select(
+            'code, status, expires_at, remaining_amount_due_agorot, face_value_agorot, qr_payload, redeemed_at, order_item_id',
+          )
+          .in('order_item_id', itemIds)
+          .order('issued_at', { ascending: true })
+      : Promise.resolve({ data: [] as Array<{
+          code: string
+          status: string
+          expires_at: string | null
+          remaining_amount_due_agorot: number | null
+          face_value_agorot: number | null
+          qr_payload: string | null
+          redeemed_at: string | null
+          order_item_id: string | null
+        }> }),
+  ])
+
+  const productMap = new Map((products ?? []).map((p) => [p.id, p]))
+  const supplierMap = new Map((suppliers ?? []).map((s) => [s.id, s]))
+
+  const lines: OrderLine[] = []
+  for (const item of items ?? []) {
+    const product = item.product_id ? productMap.get(item.product_id) : undefined
+    const supplier = item.supplier_id ? supplierMap.get(item.supplier_id) : undefined
+    const itemCoupons = (coupons ?? []).filter((c) => c.order_item_id === item.id)
+
+    const vouchers: OrderVoucher[] = []
+    for (const coupon of itemCoupons) {
+      let qrDataUrl: string | null = null
+      if (coupon.qr_payload) {
+        try {
+          qrDataUrl = await QRCode.toDataURL(coupon.qr_payload, { margin: 1, width: 240 })
+        } catch {
+          qrDataUrl = null
+        }
+      }
+      vouchers.push({
+        code: coupon.code,
+        status: coupon.status,
+        expiresAt: coupon.expires_at,
+        collectAmountAgorot:
+          coupon.remaining_amount_due_agorot == null
+            ? null
+            : Number(coupon.remaining_amount_due_agorot),
+        faceValueAgorot:
+          coupon.face_value_agorot == null ? null : Number(coupon.face_value_agorot),
+        qrDataUrl,
+        usedAt: coupon.redeemed_at,
+      })
+    }
+
+    lines.push({
+      id: item.id,
+      productId: item.product_id,
+      productName: product?.name_he ?? 'מוצר',
+      productSlug: product?.slug ?? null,
+      productImage: firstImage(product?.images),
+      productType: item.product_type === 'physical' ? 'physical' : 'coupon',
+      quantity: item.quantity,
+      unitPriceAgorot: Number(item.unit_price_agorot ?? 0),
+      totalAgorot: Number(item.total_price_agorot ?? 0),
+      paidOnSiteAgorot: Number(item.paid_on_site_agorot ?? 0),
+      balanceDueAgorot: Number(item.balance_due_agorot ?? 0),
+      settlementStatus: asSettlementState(item.settlement_status),
+      itemStatus: item.item_status,
+      supplier: supplier
+        ? {
+            id: supplier.id,
+            name: supplier.name,
+            address: supplier.address,
+            city: supplier.city,
+            phone: supplier.contact_phone,
+          }
+        : null,
+      vouchers,
+    })
+  }
+
+  return {
+    id: order.id,
+    status: order.status,
+    settlementStatus: deriveOrderStatus(lines.map((l) => asSettlementState(l.settlementStatus))),
+    createdAt: order.created_at,
+    paidAt: order.paid_at,
+    subtotalAgorot: Number(order.subtotal_agorot ?? 0),
+    totalAgorot: Number(order.total_agorot ?? 0),
+    walletAppliedAgorot: Number(order.cashback_applied_agorot ?? 0),
+    addressId: order.address_id,
+    lines,
+  }
+}
+```
+
+### 20.3 Order detail page
+
+```typescript
+// src/app/(account)/account/orders/[id]/page.tsx
+import {
+  couponStatusLabel,
+  couponStatusTone,
+  formatDate,
+  formatIlsFromAgorot,
+  orderStatusLabel,
+  orderStatusTone,
+} from '@/lib/account/format'
+import { getOrderDetail } from '@/server/queries/orders'
+import Link from 'next/link'
+import { notFound } from 'next/navigation'
+
+export const metadata = { title: 'פרטי הזמנה' }
+
+type Props = { params: Promise<{ id: string }> }
+
+export default async function OrderDetailPage({ params }: Props) {
+  const { id } = await params
+  const order = await getOrderDetail(id)
+  if (!order) notFound()
+
+  return (
+    <div dir="rtl">
+      <h1 className="account-title">הזמנה מתאריך {formatDate(order.createdAt)}</h1>
+      <p className="account-subtitle">
+        <span className={`account-chip account-chip--${orderStatusTone(order.settlementStatus)}`}>
+          {orderStatusLabel(order.settlementStatus)}
+        </span>
+      </p>
+
+      <section className="account-card">
+        <h2 className="account-card__title">סיכום</h2>
+        <div className="account-row">
+          <div className="account-row__main">
+            <p className="account-row__meta">סכום ביניים</p>
+          </div>
+          <div className="account-row__actions">{formatIlsFromAgorot(order.subtotalAgorot)}</div>
+        </div>
+        {order.walletAppliedAgorot > 0 ? (
+          <div className="account-row">
+            <div className="account-row__main">
+              <p className="account-row__meta">שולם מהארנק</p>
+            </div>
+            <div className="account-row__actions">
+              -{formatIlsFromAgorot(order.walletAppliedAgorot)}
+            </div>
+          </div>
+        ) : null}
+        <div className="account-row">
+          <div className="account-row__main">
+            <p className="account-row__title">סך הכל שולם באתר</p>
+          </div>
+          <div className="account-row__actions">
+            <strong>{formatIlsFromAgorot(order.totalAgorot)}</strong>
+          </div>
+        </div>
+      </section>
+
+      <section className="account-card">
+        <h2 className="account-card__title">פריטים</h2>
+        {order.lines.map((line) => (
+          <div className="account-row" key={line.id}>
+            <div className="account-row__main">
+              <p className="account-row__title">
+                {line.productSlug ? (
+                  <Link href={`/product/${line.productSlug}`}>{line.productName}</Link>
+                ) : (
+                  line.productName
+                )}{' '}
+                <span className="account-chip">
+                  {line.productType === 'coupon' ? 'קופון' : 'פיזי'}
+                </span>
+              </p>
+              <p className="account-row__meta">
+                {line.quantity} יחידות · {formatIlsFromAgorot(line.unitPriceAgorot)} ליחידה
+                {line.productType === 'coupon' && line.balanceDueAgorot > 0
+                  ? ` · ${formatIlsFromAgorot(line.balanceDueAgorot)} לתשלום בבית העסק`
+                  : ''}
+              </p>
+              {line.supplier ? (
+                <p className="account-row__meta">
+                  {line.supplier.name}
+                  {line.supplier.city ? ` · ${line.supplier.city}` : ''}
+                  {line.supplier.phone ? ` · ${line.supplier.phone}` : ''}
+                </p>
+              ) : null}
+
+              {line.vouchers.length > 0 ? (
+                <div style={{ marginTop: 12, display: 'grid', gap: 12 }}>
+                  {line.vouchers.map((voucher) => (
+                    <div className="coupon-card" key={voucher.code}>
+                      {voucher.qrDataUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={voucher.qrDataUrl}
+                          alt={`קוד QR לקופון ${voucher.code}`}
+                          width={120}
+                          height={120}
+                        />
+                      ) : null}
+                      <div>
+                        <p className="coupon-card__code">{voucher.code}</p>
+                        <p className="account-row__meta">
+                          <span
+                            className={`account-chip account-chip--${couponStatusTone(voucher.status)}`}
+                          >
+                            {couponStatusLabel(voucher.status)}
+                          </span>
+                          {voucher.expiresAt ? ` · בתוקף עד ${formatDate(voucher.expiresAt)}` : ''}
+                        </p>
+                        {voucher.collectAmountAgorot != null && voucher.collectAmountAgorot > 0 ? (
+                          <p className="account-row__meta">
+                            לתשלום בבית העסק: {formatIlsFromAgorot(voucher.collectAmountAgorot)}
+                          </p>
+                        ) : null}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+            <div className="account-row__actions">{formatIlsFromAgorot(line.totalAgorot)}</div>
+          </div>
+        ))}
+      </section>
+
+      <p style={{ marginTop: 16 }}>
+        <Link className="account-btn" href="/account/orders">
+          חזרה להזמנות
+        </Link>
+      </p>
+    </div>
+  )
+}
+```
+
+---
+
+## 21. Loading + empty shells (RTL)
+
+```typescript
+// src/app/(account)/account/loading.tsx
+export default function AccountLoading() {
+  return (
+    <div className="account-loading" dir="rtl" aria-busy="true" aria-label="טוען">
+      <div className="account-skeleton account-skeleton--title" />
+      <div className="account-skeleton account-skeleton--card" />
+      <div className="account-skeleton account-skeleton--card" />
+    </div>
+  )
+}
+```
+
+```typescript
+// src/app/(account)/account/orders/loading.tsx
+export default function OrdersLoading() {
+  return (
+    <div dir="rtl" aria-busy="true" aria-label="טוען הזמנות">
+      <div className="account-skeleton account-skeleton--title" />
+      <div className="account-skeleton account-skeleton--row" />
+      <div className="account-skeleton account-skeleton--row" />
+      <div className="account-skeleton account-skeleton--row" />
+    </div>
+  )
+}
+```
+
+---
+
+## 22. RTL / a11y checklist (account)
+
+- Root account shell: Hebrew copy only in customer UI.
+- Forms: `dir="rtl"`, labels associated with `htmlFor`.
+- Alerts: `role="alert"` on errors.
+- Chips: status via text, not color alone.
+- QR images: meaningful `alt` including code.
+- Logout buttons: real `<form action={serverAction}>`, not client-only fetch.
+- Focus order mirrors visual RTL order.
+
+---
+
+## 23. Acceptance (expanded)
+
+- [ ] Unauthenticated `/account` → Google login with `next`
+- [ ] Dashboard: wallet, last order, coupons, order count
+- [ ] Orders list + detail with QR for issued vouchers
+- [ ] Coupons tabs + status labels issued/used/expired
+- [ ] Addresses CRUD soft-delete + single default
+- [ ] Tokens: last4 only, default, delete
+- [ ] Details: name/phone edit, email read-only
+- [ ] Logout local + optional global → `/login`
+- [ ] Every listed query respects RLS / user_id
+- [ ] RTL throughout
+
+---
+
+## 24. File map (complete)
+
+```
+src/app/(account)/layout.tsx
+src/app/(account)/account/page.tsx
+src/app/(account)/account/loading.tsx
+src/app/(account)/account/details/page.tsx
+src/app/(account)/account/orders/page.tsx
+src/app/(account)/account/orders/loading.tsx
+src/app/(account)/account/orders/[id]/page.tsx
+src/app/(account)/account/coupons/page.tsx
+src/app/(account)/account/addresses/page.tsx
+src/app/(account)/account/tokens/page.tsx
+src/app/(account)/account/wallet/page.tsx
+src/app/(auth)/login/page.tsx
+src/app/(auth)/login/LoginForm.tsx
+src/app/auth/callback/route.ts
+src/components/account/AccountNav.tsx
+src/components/account/ProfileDetailsForm.tsx
+src/components/account/LogoutButtons.tsx
+src/components/account/AddressManager.tsx
+src/components/account/TokenManager.tsx
+src/components/account/CouponQr.tsx
+src/server/actions/auth.ts
+src/server/actions/account.ts
+src/server/queries/account.ts
+src/server/queries/orders.ts
+src/lib/validations/account.ts
+src/lib/account/format.ts
+src/lib/account/types.ts
+src/styles/account.css
+```
+
+---
+
+END OF BINDING SPEC

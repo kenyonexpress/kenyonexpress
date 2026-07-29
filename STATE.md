@@ -4,14 +4,12 @@
 Account dashboard architecture (`arch/account`).
 
 ## Last Completed
-2026-07-30: `docs/ARCHITECTURE-ACCOUNT.md` (docs only):
+2026-07-30: expanded `docs/ARCHITECTURE-ACCOUNT.md` (~2506 lines):
 
-- My Account overview dashboard
-- Orders list + detail contract
-- Coupons/vouchers issued→used + QR
-- Addresses CRUD (soft delete, single default)
-- Payment methods (Cardcom tokens, no PAN)
-- Full TypeScript reference, agorot money, RLS, edge cases
+- My Account Dashboard, Orders list + detail, Coupons QR/status
+- Addresses, Payment methods (Token), Account details, Logout
+- Auth guard Supabase Google, RLS matrix, RTL
+- Full TypeScript for components + routes (Part I + Part II)
 
 ## In Progress
 nothing
@@ -20,7 +18,7 @@ nothing
 none for this docs pass
 
 ## Next Task
-Implement gaps on an account feature branch (not this docs worktree).
+Implement on feature branch (not this docs worktree).
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch-account
