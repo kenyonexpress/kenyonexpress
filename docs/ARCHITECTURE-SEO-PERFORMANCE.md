@@ -1,397 +1,304 @@
 # ARCHITECTURE-SEO-PERFORMANCE.md
 
-KenyonExpress SEO and performance architecture (complete binding spec).
+KenyonExpress SEO and performance architecture (binding).
 
-Status: BINDING for worktree `/Users/ofir/kenyonexpress-web/ke-admin` on `arch/admin-supplier` (2026-07-28)
-Scope: **docs only.** No application code, no installs, no edits outside `docs/` and `STATE.md`.
-Companions: `docs/ARCHITECTURE-ADMIN.md`, `docs/ARCHITECTURE-NOTIFICATIONS.md`, `docs/ARCHITECTURE-SUPPLIER-PORTAL.md`, `docs/ADMIN-PRODUCT-PAGE-SPEC.md`, `docs/ARCHITECTURE-WP-MIGRATION.md`.
-Stack: Next.js App Router, Hebrew RTL, Google Israel primary market. Canonical host: `kenyonexpress.co.il`.
+Status: BINDING for `arch/admin-supplier` (2026-07-29)
+Worktree: `/Users/ofir/kenyonexpress-web/ke-arch` only. **Documentation only.**
+Stack: **Next.js 15** App Router (RSC), Hebrew RTL, canonical host `kenyonexpress.co.il`.
+Companions: `docs/ARCHITECTURE-NOTIFICATIONS.md`, `docs/ADMIN-PRODUCT-PAGE-SPEC.md`, `docs/ARCHITECTURE-SUPPLIER-PORTAL.md`, `docs/ARCHITECTURE-MOBILE-APP.md`.
 
 ---
 
-## 0. Money rules that touch SEO surfaces
+## 0. Money rules on SEO surfaces
 
 | Product type | Customer-facing Offer / meta price | Never in customer price |
 |---|---|---|
-| **Coupon** | Absolute online `coupon_price_ils` (admin-set, no default) | `platform_percent` (split only; dynamic; snapshotted at purchase) |
-| **Physical** | On-site charge after `discount_percent` | Later live edits of `platform_percent` |
+| Coupon | Absolute online `coupon_price_ils` (paid **in full on site**) | Live `platform_percent`; Escrow language; inventing a % of face |
+| Physical | On-site charge after `discount_percent` | Later edits of `platform_percent` (use snapshot only after purchase) |
 
 Invariants:
 
-1. KenyonExpress is a **platform**, never a supplier. JSON-LD `seller` = supplier business; Organization on home is the marketplace brand.
-2. No fixed commission in copy, meta, or schema.
-3. Every PDP shows supplier details (name, phone, address, logo). Publish gate enforces this (`ADMIN-PRODUCT-PAGE-SPEC`).
-4. Never index `/redeem/[token]` or other spendable secrets.
-5. Coupon: customer paid full coupon price on site; till remainder is at merchant after QR; voucher expires on scan. Do not imply the till amount flows through the platform.
+1. Platform ≠ supplier. JSON-LD `seller` = supplier business; home `Organization` = KenyonExpress marketplace.
+2. No fixed commission in meta, schema, or copy.
+3. Every indexable PDP shows supplier identity (publish gate).
+4. Never index `/redeem/[token]`, cart, checkout, account, admin, supplier.
+5. Till remainder (`price_ils - coupon_price_ils`) is cash at the merchant on QR scan; do not imply it flows through KE.
 
 ---
 
-## 1. Goals and non-goals
+## 1. Next.js 15 App Router: SSR / ISR per page type
 
-| Goal | Target |
-|---|---|
-| LCP p75 mobile (CrUX) | **&lt; 2.5s** |
-| CLS p75 | **&lt; 0.1** |
-| INP p75 | **&lt; 200ms** |
-| Indexation | Published products, categories, home discoverable |
-| SEO equity | WP URLs preserved via `seo_redirects` + edge proxy (see WP migration doc) |
-
-Non-goals: ranking guarantees; English storefront unless **Q-SEO-EN** opens; indexing account / admin / supplier / checkout / cart / redeem.
-
----
-
-## 2. Dynamic meta tags
-
-Implemented with `generateMetadata` on RSC pages. Public HTML root: `lang="he"` `dir="rtl"`.
-
-### 2.1 Per page type
-
-| Meta | Product `/product/[slug]` | Category `/category/[slug]` | Home `/` | Coupon type PDP |
+| Page | Route | Mode | `revalidate` / cache | Why |
 |---|---|---|---|---|
-| `title` | `seo_title` or `{name_he} \| קניון אקספרס` | `{name_he} \| קניון אקספרס` | brand + short Hebrew value prop | same as product |
-| `description` | `seo_description` or truncated Hebrew body (120–160 chars) | category blurb Hebrew | Hebrew default | emphasize deal; never invent platform % |
-| `canonical` | `https://{host}/product/{slug}` | `https://{host}/category/{slug}` | `https://{host}/` | prefer product slug if dual URL exists |
-| `og:title` / `og:description` | mirror title/description | same | same | same |
-| `og:image` | first gallery (absolute R2 HTTPS) → supplier logo → site OG | category image → site OG | site OG / hero | product image |
-| `og:locale` | `he_IL` | `he_IL` | `he_IL` | `he_IL` |
-| `og:type` | `product` (or `website` if unsupported) | `website` | `website` | `product` |
-| `twitter:card` | `summary_large_image` | same | same | same |
-| `robots` | `index,follow` if published | index if live | index | index if live |
+| Home | `/` | **ISR** | 120s; tag `home` | Fresh deals without per-request DB hit |
+| Category | `/category/[slug]` | **ISR** | 300s; tags `category:{id}`, `catalog` | Catalog churn slower than PDP |
+| Product (coupon + physical) | `/product/[slug]` | **ISR** | 120s; tags `product:{id}`, `catalog` | Price/content change via on-demand revalidate |
+| Products index | `/products` | **ISR** | 180s; tag `catalog` | Listing |
+| Cart | `/cart` | **Dynamic SSR** (private) | `private, no-store` | Session/cookie cart; never CDN-cache HTML |
+| Checkout / account | `/checkout*`, `/account/**` | Dynamic private | `private, no-store` | Auth + money |
+| Search | `/search` | Dynamic | `public, s-maxage=30, stale-while-revalidate=60` | noindex; Meilisearch-backed |
+| Sitemap | `/sitemap.xml` | ISR | 3600s; tag `sitemap` | Built from Supabase reads |
+| Admin / supplier | `/admin/**`, `/supplier/**` | Dynamic private | `private, no-store` | Staff only |
 
-### 2.2 hreflang (he-IL) and RTL
+Rules:
 
-- Emit `hreflang="he-IL"` and `hreflang="he"` → canonical URL.
-- Emit `x-default` → same Hebrew canonical until an EN storefront exists (**Q-SEO-EN**: no `en` alternate).
-- Do not invent English URLs.
-- Social unfurl (`og:*`): image ≥ 1200×630, absolute HTTPS on R2/CDN.
-- Titles readable RTL; Hebrew H1; optional price in description as `₪X.XX` matching **on-site charge only**.
-
-### 2.3 Private surfaces
-
-| Path | robots |
-|---|---|
-| `/search` | `noindex,follow` |
-| `/cart`, `/checkout*`, `/login`, `/account/**` | `noindex,nofollow` |
-| `/admin/**`, `/supplier/**` | `noindex` + robots disallow |
-| `/redeem/[token]` | `noindex` + disallow |
-
-Admin publish / money edit must on-demand revalidate (`revalidateTag('product:'+id)`, `revalidatePath`, sitemap tags) so meta and JSON-LD refresh after `coupon_price_ils` or content changes.
+- Public catalog data path uses anon/RLS-safe client with `next: { tags, revalidate }`. **Never** service-role on public HTML.
+- Admin publish / money edit: `revalidateTag('product:'+id)`, `catalog`, `sitemap`, and `home` if featured.
+- Cart is SSR for first paint of empty/shell + client cart hydration; HTML must not be shared across users at the edge.
 
 ---
 
-## 3. sitemap.xml generation and revalidation
+## 2. Hebrew RTL SEO
 
-### 3.1 Generation
+Root layout: `lang="he"` `dir="rtl"`.
 
-App Router `src/app/sitemap.ts` (split files if URL count grows):
+### 2.1 Meta (`generateMetadata`)
 
-| Segment | Source | `lastModified` | `changeFrequency` | `priority` |
+| Meta | Product | Category | Home | Cart |
 |---|---|---|---|---|
-| Static | `/`, legal/marketing | deploy or CMS `updated_at` | weekly | 1.0 / 0.5 |
-| Categories | live categories, not deleted | `updated_at` | weekly | 0.8 |
-| Products (incl. coupon type) | published/active, `deleted_at IS NULL` | `updated_at` | daily | 0.9 |
-| Legacy `/coupons/[id]` | only while still public; else omit + 301 | `updated_at` | daily | 0.7 |
+| `title` | `seo_title` or `{name_he} \| קניון אקספרס` | `{name_he} \| קניון אקספרס` | brand + Hebrew value prop | noindex page title |
+| `description` | `seo_description` or 120–160 Hebrew chars | category blurb | Hebrew default | n/a |
+| `canonical` | `/product/{slug}` | `/category/{slug}` | `/` | omit or self + noindex |
+| `og:locale` | `he_IL` | `he_IL` | `he_IL` | |
+| `og:image` | first gallery absolute R2 HTTPS | category / site OG | site OG / hero | |
+| `robots` | `index,follow` if published | index if live | index | `noindex,nofollow` |
 
-**Excluded:** drafts, pending_review, archived, needs-pricing unpublished, `/redeem/*`, search, account, admin, supplier, checkout, cart, API.
+Price in description (optional): `₪X.XX` = **on-site charge only** (coupon_price or discounted physical).
 
-### 3.2 robots.txt
+### 2.2 hreflang
 
-`src/app/robots.ts`:
+```html
+<link rel="alternate" hreflang="he-IL" href="https://kenyonexpress.co.il/..." />
+<link rel="alternate" hreflang="he" href="https://kenyonexpress.co.il/..." />
+<link rel="alternate" hreflang="x-default" href="https://kenyonexpress.co.il/..." />
+```
 
-- Allow catalog
-- Disallow: `/admin`, `/account`, `/supplier`, `/api`, `/checkout`, `/cart`, `/login`, `/search`, `/redeem`
-- `Sitemap: https://{canonical-host}/sitemap.xml`
+No English alternate until an EN storefront exists. Do not invent `/en` URLs.
 
-### 3.3 Revalidation
+### 2.3 On-page Hebrew
 
-| Trigger | Action |
-|---|---|
-| Admin publish / unpublish / archive | `revalidateTag('product:'+id)`, `revalidateTag('sitemap')` |
-| Category edit | `revalidateTag('category:'+id)`, sitemap |
-| Cron (optional) | Soft rebuild; sitemap route ISR |
-| Bulk WP import / project | End-of-job revalidate sitemap + affected tags |
-
-Sitemap route: ISR **`revalidate = 3600`** plus on-demand tags. Do not rebuild every request.
-
-Post-cutover: submit sitemap in the **same** Google Search Console property as the legacy WP domain. Monitor coverage vs `seo_redirects` hits.
+- Single H1 = `name_he`
+- Hebrew breadcrumbs
+- Stable ASCII `slug`; Hebrew in visible titles
+- Supplier name / phone / address / logo on every PDP
 
 ---
 
-## 4. Schema.org JSON-LD (exact per page type)
+## 3. JSON-LD (Product / Offer / Organization)
 
-Emit `<script type="application/ld+json">` from RSC. Prices: decimal ILS string for **on-site charge**. `priceCurrency`: `"ILS"`.
+Emit from RSC as `<script type="application/ld+json">`. Prices: decimal ILS strings. `priceCurrency`: `"ILS"`.
 
-### 4.1 Organization (home + optional layout)
+### 3.1 Organization (home + sitewide optional)
 
 ```json
 {
   "@context": "https://schema.org",
   "@type": "Organization",
   "name": "קניון אקספרס",
-  "url": "https://{host}/",
-  "logo": "https://{r2}/brand/logo.png",
+  "url": "https://kenyonexpress.co.il/",
+  "logo": "https://cdn.example/brand/logo.png",
   "sameAs": []
 }
 ```
 
-### 4.2 WebSite + SearchAction (home)
-
-```json
-{
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "name": "קניון אקספרס",
-  "url": "https://{host}/",
-  "inLanguage": "he-IL",
-  "potentialAction": {
-    "@type": "SearchAction",
-    "target": "https://{host}/search?q={search_term_string}",
-    "query-input": "required name=search_term_string"
-  }
-}
-```
-
-### 4.3 BreadcrumbList (category + PDP)
-
-```json
-{
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [
-    { "@type": "ListItem", "position": 1, "name": "בית", "item": "https://{host}/" },
-    { "@type": "ListItem", "position": 2, "name": "{category_name_he}", "item": "https://{host}/category/{cat_slug}" },
-    { "@type": "ListItem", "position": 3, "name": "{product_name_he}", "item": "https://{host}/product/{slug}" }
-  ]
-}
-```
-
-Omit position 3 on category-only pages.
-
-### 4.4 Product + Offer (PDP)
+### 3.2 Product + Offer (PDP)
 
 ```json
 {
   "@context": "https://schema.org",
   "@type": "Product",
   "name": "{name_he}",
-  "description": "{seo_description or short_description_he}",
-  "image": ["https://{r2}/..."],
-  "sku": "{sku or product id}",
-  "brand": { "@type": "Brand", "name": "{brand or supplier_name}" },
+  "image": ["https://r2…/…"],
+  "description": "{short Hebrew}",
+  "sku": "{sku or id}",
+  "brand": { "@type": "Brand", "name": "{supplier name}" },
   "offers": {
     "@type": "Offer",
-    "url": "https://{host}/product/{slug}",
+    "url": "https://kenyonexpress.co.il/product/{slug}",
     "priceCurrency": "ILS",
-    "price": "{coupon_price_ils OR physical_on_site_ils}",
+    "price": "{on_site_charge_ils}",
     "availability": "https://schema.org/InStock",
     "seller": {
       "@type": "Organization",
-      "name": "{supplier_name}"
-    },
-    "priceValidUntil": "{offer_valid_until ISO date if set}"
+      "name": "{supplier.name}",
+      "telephone": "{supplier.phone}",
+      "address": "{supplier.address}"
+    }
   }
 }
 ```
 
-Rules:
-
-- Coupon: `price` = `coupon_price_ils` (2 decimals). Never face value as Offer price.
-- Physical: `price` = discounted on-site amount from `discount_percent`.
-- `seller` = supplier (marketplace disclosure matches PDP).
-- Out of stock: `OutOfStock` / `SoldOut` as applicable.
-
-### 4.5 AggregateRating
-
-Only when real review aggregates exist (**Q-SEO-RATING**). Never fabricate.
-
-```json
-{
-  "@type": "AggregateRating",
-  "ratingValue": "{avg}",
-  "reviewCount": "{n}",
-  "bestRating": "5",
-  "worstRating": "1"
-}
-```
-
-Nest under `Product` when `n >= 1` and source is trusted.
-
-### 4.6 Checklist
-
-| Page | JSON-LD |
+| Type | `offers.price` |
 |---|---|
-| Home | Organization + WebSite |
-| Category | BreadcrumbList (+ optional CollectionPage) |
-| Product / coupon PDP | BreadcrumbList + Product/Offer (+ AggregateRating if real) |
-| Search / cart / checkout / account / redeem | none (noindex) |
+| Coupon | `coupon_price_ils` (full on-site payment) |
+| Physical | `price_ils * (1 - discount_percent/100)` |
+
+Do not put `platform_percent` in Offer. Do not fabricate `AggregateRating` without real review rows.
+
+### 3.3 BreadcrumbList
+
+Home → category → product on PDP; home → category on category pages.
+
+### 3.4 Pages without JSON-LD Product
+
+Cart, checkout, account, search, redeem, admin, supplier: none (and noindex).
 
 ---
 
-## 5. Image pipeline (R2, next/image, AVIF/WebP)
+## 4. Core Web Vitals and image strategy
 
-### 5.1 Storage
+### 4.1 Targets (binding)
 
-- **Cloudflare R2** preferred public HTTPS (`R2_PUBLIC_BASE_URL`). Supabase Storage acceptable until cutover with the same key layout.
-- Admin upload via staff image actions; store keys on `products.images` / `media_assets`.
-- `next.config` `images.remotePatterns` must allow R2 (and Storage) hosts.
-
-### 5.2 next/image rules
-
-| Concern | Rule |
+| Metric | Target (p75 mobile CrUX) |
 |---|---|
-| Formats | Negotiate **AVIF** then **WebP** via Next optimizer |
-| Quality | 75–80 default; hero may 85 |
-| `sizes` cards | `(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw` |
-| `sizes` PDP main | `(max-width: 768px) 100vw, 50vw` |
-| `sizes` home hero | `100vw` |
-| LCP image | `priority` + explicit dimensions or `fill` + aspect wrapper |
-| Below fold | default lazy |
-| Blur | `placeholder="blur"` + `blurDataURL` when media pipeline provides it |
-| Alt | Hebrew product/category name; never empty on content images |
+| LCP | &lt; 2.5s |
+| CLS | &lt; 0.1 |
+| INP | &lt; 200ms |
 
-Srcset candidates roughly: 320, 640, 960, 1280, 1920 for full-bleed; cards max ~640.
-
-### 5.3 Lazy strategy
-
-1. First viewport: hero + first PDP image eager/`priority`.
-2. Listing grids: native lazy; never `priority` on every card.
-3. OG meta uses absolute R2 URL (not next/image).
-
----
-
-## 6. ISR, cache headers, Vercel edge
-
-### 6.1 ISR / revalidate by page type
-
-| Page type | Mode | `revalidate` (s) | Cache tags |
-|---|---|---|---|
-| Home | ISR | **120** | `home` |
-| Category | ISR | **300** | `category:{id}`, `catalog` |
-| Product / coupon PDP | ISR | **120** | `product:{id}`, `catalog` |
-| `/products` | ISR | **180** | `catalog` |
-| Sitemap | ISR | **3600** | `sitemap` |
-| Search | Dynamic | `public, s-maxage=30, stale-while-revalidate=60` | short |
-| Cart / checkout / account / admin / supplier | Dynamic private | `private, no-store` | |
-
-On admin publish: revalidate product, catalog, sitemap, and `home` if featured.
-
-### 6.2 Edge headers
-
-| Asset | Header |
-|---|---|
-| `/_next/static/*` | immutable long cache |
-| Optimized images | long cache + content hash |
-| HTML ISR | CDN TTL aligned with revalidate; SWR OK |
-| API search | short s-maxage |
-
-### 6.3 Vercel edge intent
-
-- Region close to IL users (**Q-SEO-REGION**: often `fra1`).
-- No auth middleware blocking public catalog HTML caching.
-- `proxy.ts` (or middleware): apply `seo_redirects` **301** before render; do not cache those as 200 HTML.
-- `metadataBase` = production canonical host only.
-- Public RSC fetches: anon/RLS-safe client with `next: { tags, revalidate }`. Never service-role on public page data path.
-
----
-
-## 7. Core Web Vitals (per-page strategy)
-
-### 7.1 Binding targets
-
-- **LCP &lt; 2.5s** (p75 mobile)
-- **CLS &lt; 0.1**
-- **INP &lt; 200ms**
-
-### 7.2 By page
+### 4.2 Per page
 
 | Page | LCP | CLS | INP |
 |---|---|---|---|
-| **Home** | Priority hero/`next/image`; limit slide JS; Heebo via `next/font` | Fixed hero aspect; reserved consent height | Minimal client; defer analytics |
-| **Category / products** | First-row images sized | Card `aspect-ratio`; skeleton = card size | RSC list; filters progressive |
-| **PDP / coupon** | Gallery[0] `priority` | Gallery aspect box; stable price block | Small ATC island; no admin widgets |
-| **Search** | Lightweight results (noindex) | Same card geometry | Debounced query |
-| **Checkout** | Private; INP over SEO | Stable forms | Few client islands; Cardcom iframe isolated |
+| Home | Priority hero via `next/image` | Fixed hero aspect; reserved consent | Minimal client; defer analytics |
+| Category | First-row images sized | Card `aspect-ratio` | RSC list; progressive filters |
+| Product | Gallery[0] `priority` | Stable gallery + price block | Small ATC island |
+| Cart | Private; INP over SEO | Stable line items | Client cart; no heavy third parties |
 
-### 7.3 Forbidden on catalog
+### 4.3 Images: Cloudflare R2 + `next/image`
 
-- Unsized images / late ads above LCP
-- Blocking third-party chat on browse templates (**Q-SEO-3P**)
-- Flash of unstyled RTL
-- Client-only product title/price (hurts LCP + SEO)
+- Store originals/derivatives on **Cloudflare R2**; public base `R2_PUBLIC_BASE_URL`.
+- `next.config` `images.remotePatterns` allow R2 host.
+- Formats: AVIF → WebP → fallback.
+- Srcset candidates: ~320, 640, 960, 1280, 1920 (full-bleed); cards max ~640.
+- Alt: Hebrew product/category name; never empty on content images.
+- OG uses absolute R2 URL (not the optimizer URL).
+- First viewport only: `priority` / eager. Listing cards: lazy.
 
-### 7.4 Monitoring
-
-- CrUX / GSC Core Web Vitals (Israel)
-- Lab: Lighthouse on `/`, sample category, sample PDP
-- Alert if LCP p75 mobile &gt; 2.5s for 7 days
+Forbidden on catalog: unsized images, client-only title/price, blocking chat widgets above LCP.
 
 ---
 
-## 8. Hebrew / Google Israel SEO
+## 5. Sitemap + robots from Supabase
 
-1. Primary language `he` / `he-IL` on every public page.
-2. Titles and meta descriptions written in Hebrew.
-3. Single H1 = `name_he`; Hebrew breadcrumbs.
-4. Slugs: stable ASCII `products.slug`; Hebrew in visible titles.
-5. Local signals: supplier name/address/phone/logo on every PDP.
-6. Canonical between `/coupons/[id]` and `/product/[slug]` to kill duplicates.
-7. Internal links with Hebrew anchors from home/category.
-8. Consent banner must not block first paint (CLS + LCP).
-9. GSC property geo-target Israel.
+### 5.1 `src/app/sitemap.ts`
 
----
+Read published rows from Supabase (RLS-safe or build-time service with published filter only):
 
-## 9. Migrations (077+, MCP only)
+| Segment | Source | priority | changeFrequency |
+|---|---|---|---|
+| `/` + legal | static | 1.0 / 0.5 | weekly |
+| Categories | live categories | 0.8 | weekly |
+| Products | `status` published/active, not deleted | 0.9 | daily |
 
-**Never** `supabase db push`. Apply only via Supabase MCP `apply_migration`.
+`lastModified` = `updated_at`. ISR `revalidate = 3600` + tag `sitemap`.
 
-Ordinals **077+** may already be used (supplier RLS). Choose the **next free** ≥ 077 from hosted `schema_migrations` (**Q-SEO-MIG**; may be 093+).
+**Exclude:** drafts, archived, needs-pricing unpublished, `/redeem/*`, `/search`, `/cart`, `/checkout`, `/account`, `/admin`, `/supplier`, API.
 
-| Object | Purpose |
+### 5.2 `src/app/robots.ts`
+
+- Allow catalog
+- Disallow: `/admin`, `/account`, `/supplier`, `/api`, `/checkout`, `/cart`, `/login`, `/search`, `/redeem`
+- `Sitemap: https://kenyonexpress.co.il/sitemap.xml`
+
+### 5.3 Revalidation
+
+| Trigger | Action |
 |---|---|
-| `seo_redirects` | `from_path` / `to_path`, `status_code` default 301, hits, timestamps |
-| UNIQUE `(from_path)` | live redirect map |
-| RLS | admin/service write; no anon PostgREST read required (proxy uses service/edge cache) |
+| Admin publish / unpublish | `revalidateTag('product:'+id)`, `sitemap`, `catalog` |
+| Category edit | `revalidateTag('category:'+id)`, `sitemap` |
+| Bulk import end | revalidate `sitemap` + affected tags |
 
-Sitemap/robots/metadata/JSON-LD are application concerns once `products` / `categories` exist. No money-table changes for SEO.
+Submit sitemap in Google Search Console (Israel). Preserve WP equity via `seo_redirects` 301 at the edge.
+
+---
+
+## 6. Meilisearch-driven internal linking
+
+Meilisearch is the **search and related-products** engine; Postgres remains source of truth.
+
+| Surface | Behavior |
+|---|---|
+| `/search` | Query Meilisearch; `noindex`; Hebrew UI |
+| PDP "מוצרים דומים" | Meilisearch related / filter by category + attributes; render as real `<a href="/product/{slug}">` with Hebrew anchors |
+| Category empty / thin | Suggest sibling categories + top hits from Meilisearch |
+| Home rails | Featured from DB; optional Meilisearch "popular" ids resolved to links |
+
+Rules:
+
+1. Every internal link is a crawlable `<a href>` (not JS-only navigation for primary related blocks).
+2. Index documents include: `id`, `slug`, `name_he`, `category_ids`, `coupon_price_ils` / display price, `status`, supplier city (optional).
+3. On publish: upsert Meilisearch document + revalidate product HTML (search index lag ≤ worker SLA; HTML must not wait on Meili for ISR).
+4. Do not put unpublished or needs-pricing products in the index.
+
+---
+
+## 7. Caching layers
+
+```
+Browser
+  -> Vercel Edge CDN (ISR HTML, static, optimized images)
+  -> Next.js data cache / fetch tags
+  -> Upstash Redis (optional hot keys)
+  -> Supabase Postgres / Meilisearch
+```
+
+| Layer | What | TTL / invalidation |
+|---|---|---|
+| Vercel Edge | ISR HTML per §1; `/_next/static` immutable; `next/image` long cache | On-demand tags on publish |
+| Next fetch cache | RSC catalog reads with `tags` | `revalidateTag` |
+| Upstash Redis | Hot: category product id lists, Meili result cache for popular queries, rate-limit counters, session-ish non-PII flags | Short TTL (30–300s) + explicit delete on publish |
+| Meilisearch | Search documents | Upsert/delete on product status change |
+
+Do not cache cart/checkout HTML or authenticated account HTML at the edge. Do not store card data or service-role keys in Redis.
+
+---
+
+## 8. Lighthouse CI budget (GitHub Actions)
+
+Job on PRs that touch `src/app/**`, `src/components/**`, `public/**`, or SEO config (non-blocking at first; promote to required when stable).
+
+```yaml
+# sketch: .github/workflows/lighthouse.yml
+# pnpm build + start; lhci autorun against /, /category/{demo}, /product/{demo}
+```
+
+### 8.1 Budgets (lab, mobile emulation)
+
+| Path | Performance | LCP | CLS | TBT | Notes |
+|---|---|---|---|---|---|
+| `/` | ≥ 0.85 | ≤ 2500ms | ≤ 0.1 | ≤ 300ms | Hero priority |
+| Category demo | ≥ 0.85 | ≤ 2500ms | ≤ 0.1 | ≤ 300ms | |
+| Product demo | ≥ 0.85 | ≤ 2500ms | ≤ 0.1 | ≤ 350ms | Gallery[0] priority |
+| `/cart` | ≥ 0.80 | n/a SEO | ≤ 0.1 | ≤ 400ms | Private; INP-focused |
+
+Assertions also check: `document` has `lang=he` / `dir=rtl` (custom gather or smoke script alongside LHCI).
+
+Secrets: none beyond public demo URLs. Use seeded local or preview deployment. Fail the gate only on regressions beyond budget (same spirit as diff-scoped lint).
+
+---
+
+## 9. Edge redirects and host
+
+- `metadataBase` = production canonical host only.
+- `proxy.ts` / middleware: apply `seo_redirects` **301** before render; do not cache those responses as 200 HTML.
+- Prefer edge region close to IL users (often `fra1`).
 
 ---
 
 ## 10. Acceptance checklist
 
-- [ ] Every public PDP: unique Hebrew title/description, canonical, `og:image` HTTPS, `og:locale=he_IL`, `hreflang=he-IL`
-- [ ] JSON-LD Offer price = on-site charge (coupon_price or discounted physical); seller = supplier
-- [ ] Sitemap lists only indexable URLs; `/redeem/` absent; robots disallow private trees
-- [ ] R2 → `next/image` AVIF/WebP; LCP image prioritized on home/PDP
-- [ ] ISR TTLs per §6; publish revalidates product + sitemap tags
-- [ ] Field CWV targets monitored; no fabricated AggregateRating
-- [ ] Redirects applied via MCP only after ordinal confirmed
+- [ ] Next.js 15 ISR/SSR modes match §1 for home, category, product, cart
+- [ ] Public PDP: Hebrew title/description, canonical, `og:locale=he_IL`, `hreflang=he-IL`
+- [ ] JSON-LD Offer price = on-site charge (ILS); seller = supplier
+- [ ] Sitemap from Supabase published rows only; robots disallow private trees
+- [ ] R2 + `next/image` AVIF/WebP; LCP image prioritized on home/PDP
+- [ ] Meilisearch related/search links are crawlable `<a href>`
+- [ ] Vercel edge + optional Upstash; cart never publicly cached
+- [ ] Lighthouse CI budgets defined and wired in GitHub Actions
+- [ ] No Escrow / fixed-commission copy in meta or schema
 
 ---
 
-## 11. Open questions
+## 11. Related
 
-| ID | Question |
-|---|---|
-| Q-SEO-EN | English storefront / hreflang en? (default no) |
-| Q-SEO-RATING | Real reviews source for AggregateRating? |
-| Q-SEO-REGION | Vercel region pin for IL |
-| Q-SEO-3P | Third-party scripts on catalog? |
-| Q-SEO-MIG | Exact first free migration number on hosted |
-| Q-SEO-HOST | www vs apex canonical |
-| Q-SEO-COUPON-URL | Retire `/coupons/[id]` to redirect-only when? |
-
----
-
-## 12. Related
-
-| Path / doc | Role |
-|---|---|
-| `(store)/page.tsx` | home |
-| `(store)/product/[slug]/page.tsx` | PDP + metadata |
-| `(store)/category/[slug]/page.tsx` | category |
-| `proxy.ts` | 301 redirects + headers |
-| `docs/ARCHITECTURE-ADMIN.md` | publish → revalidate |
-| `docs/ARCHITECTURE-NOTIFICATIONS.md` | keep redeem tokens out of crawlable mail |
-| `docs/ARCHITECTURE-WP-MIGRATION.md` | `seo_redirects` inventory + cutover |
-| `docs/ADMIN-PRODUCT-PAGE-SPEC.md` | price fields feeding Offer |
+`docs/ADMIN-PRODUCT-PAGE-SPEC.md`, `docs/ARCHITECTURE-NOTIFICATIONS.md`, `docs/ARCHITECTURE-MOBILE-APP.md`, `docs/ARCHITECTURE-WP-MIGRATION.md` (redirect equity).

@@ -1,154 +1,174 @@
 # ARCHITECTURE-MOBILE-APP.md
 
-KenyonExpress Israeli-market mobile super-app architecture (future).
+KenyonExpress future mobile **super-app** plan (binding design).
 
-Status: BINDING design freeze for `arch/admin-supplier` (2026-07-28)
+Status: BINDING for `arch/admin-supplier` (2026-07-29)
 Worktree: `/Users/ofir/kenyonexpress-web/ke-arch` only. **Documentation only.**
-Authority: `MASTER-ARCHITECTURE-v2.md` §1 business model; §6 mobile row (**React Native + Expo monorepo, Phase 6; PWA as bridge**); shared Supabase backend; approved externals only (Cardcom, Resend, Meta, Sentry, Better Stack). No separate app database. No external delivery-network partnership as core design (any delivery is first-party later).
+Premise: one **Supabase** project shared with the Next.js web app. No separate mobile database. No Make/Zapier. Approved externals only (Cardcom, Resend, Meilisearch, R2, Sentry, Ntfy for ops).
 
 ---
 
-## 0. Money model the app must display
+## 0. Goal
 
-Identical to MASTER-ARCHITECTURE-v2 §1 / C1 / C10 / C11:
+Ship an Israeli-market super-app that reuses the same backend contracts as web:
 
-| Type | On-site charge | Platform keeps | Supplier from platform |
+- Catalog browse and PDP (correct on-site prices)
+- Guest browse → login at pay
+- Coupon purchase, wallet, voucher QR
+- Supplier scanner (QR redeem)
+- Push for the same notification events as `docs/ARCHITECTURE-NOTIFICATIONS.md`
+- Later: physical fulfillment UX; optional first-party delivery (not a third-party network partnership)
+
+Web remains the SEO acquisition channel (`docs/ARCHITECTURE-SEO-PERFORMANCE.md`). The app is retention, push, and scan.
+
+---
+
+## 1. Money model (must match web)
+
+| Type | On-site charge | Platform | Supplier from platform |
 |---|---|---|---|
-| Coupon | Absolute `coupon_price` | 100% of prepaid | 0 (balance at merchant on scan) |
-| Physical | Full price | Dynamic **`platform_percent`** (admin per product, **no default**, snapshotted) | Residual after T+3 / min 100 ILS |
+| Coupon | Absolute `coupon_price_ils` (**paid in full on site**) | Keeps prepaid (`platform_settled`); **no Escrow** | 0 from prepaid; till balance collected at merchant on scan |
+| Physical | Discounted sticker | Dynamic `platform_percent` (no default) | Residual after T+3 / min payout |
 
-- App **never** invents a commission. It reads published catalog fields and order/voucher **snapshots**.
-- Changing `platform_percent` on a product later must not rewrite past order screens (immutable snapshots).
-- **Internal wallet only.** Cashback / `refund_credit` spendable only on KenyonExpress checkout. Never cash-out.
-- Expired unredeemed coupon → wallet credit (5 years on `refund_credit`), surfaced in wallet UI.
-- No Escrow messaging anywhere in the app.
+App rules:
+
+1. Never invent commission. Read catalog fields and **order_items / voucher snapshots**.
+2. Changing live `platform_percent` must not rewrite past order screens.
+3. Internal wallet only; no cash-out.
+4. No Escrow wording in UI copy.
 
 ---
 
-## 1. Native vs cross-platform
+## 2. Platform choice
 
-**Decision (v2): React Native + Expo in monorepo, Phase 6. PWA is the bridge until then.**
+**Decision: React Native + Expo in the monorepo (Phase 6). PWA is the bridge until then.**
 
 | Option | Verdict |
 |---|---|
-| Pure native two codebases | Rejected for team size |
-| Flutter | Stack mismatch with TS domain |
-| **Expo + shared TS types/Zod** | **Chosen** |
-| PWA only forever | Insufficient long-term for IL store presence + push; keep as web/PWA channel |
+| Two pure-native codebases | Rejected (team size) |
+| Flutter | Rejected (TS domain mismatch) |
+| **Expo + shared Zod/DTOs** | **Chosen** |
+| PWA forever | Insufficient for store presence + push; keep as web/PWA channel |
 
-Supplier scan: same app role mode **or** separate listing (**Q-MOB-1**). Until Phase 6, supplier scan remains web PWA `/supplier/scan`.
+Shared packages (target): `packages/contracts` (Zod), money helpers (agorot), notification event names. Mobile calls the same Route Handlers / RPCs as web; it does not fork business rules.
 
 ---
 
-## 2. Shared backend and auth
+## 3. Same Supabase backend
 
 | Concern | Mechanism |
 |---|---|
-| Auth | Supabase Auth (same project as web) |
-| Session | Secure storage; refresh; never service-role in the binary |
+| Auth | Supabase Auth (same project) |
+| Session | Secure device storage; refresh; **never** ship service-role |
 | Catalog | RLS read of published `products` / `categories` |
-| Checkout | Backend Route Handlers / Server Actions; Cardcom Low Profile or token charge server-side only (SAQ-A) |
-| Orders / items | Read own rows; show snapshotted money |
-| Vouchers | `vouchers` / legacy `coupon_codes` as deployed; QR display from signed payload |
-| Redeem (supplier) | Same `redeem_*` RPC + JWT membership as web |
-| Wallet | `wallet_accounts`, `wallet_entries`, `v_wallet_ledger`; transfer only via service_role definers |
-| Notifications | `notifications_outbox` + prefs; register `push_subscriptions` (v2 planned table) |
+| Search | Meilisearch via backend proxy (same index as web) |
+| Media | R2 URLs (same as web `next/image` sources) |
+| Checkout | Server-only Cardcom (SAQ-A); app opens Low Profile / awaits webhook state |
+| Orders | Read own rows; display snapshotted money |
+| Vouchers | Same `vouchers` table; signed QR payload |
+| Redeem | Same `redeem_voucher` RPC + `supplier_members` |
+| Wallet | Same `wallet_*` tables; transfers only via SECURITY DEFINER / service role on server |
+| Notifications | Same `notification_events` / `notification_log`; register push device tokens |
 
-Guest browse may mirror web (`ke_session_id` semantics) but **login enforced at pay** (v2 §1.6).
-
----
-
-## 3. Wallet and cashback (end to end)
-
-1. Earn: finalize / rules → debit `platform:cashback_reserve` → credit user (`wallet_earn`).
-2. Spend: checkout `apply_wallet` limited to balance and on-site charge (`wallet_spend`).
-3. Coupon expiry credit: `refund_credit`, 5-year policy (v2 C6).
-4. Benefit expiry: cashback/referral 24 months FIFO per accrual line (v2); **Q-MOB-2** confirm product copy.
-5. UI: balance, ledger, no withdraw button, Hebrew empty states.
-6. Offline: show stale balance labeled; **never** allow offline spend.
-
-Admin adjust remains web/admin only.
+Guest cart may mirror web cookie semantics, but **login is required at pay**.
 
 ---
 
-## 4. Push notifications
+## 4. App surfaces (super-app modules)
+
+| Module | Phase | Notes |
+|---|---|---|
+| Auth (email OTP / Google) | 6.0 | Same providers as web |
+| Home + category + PDP | 6.0 | Prices = on-site charge only |
+| Search | 6.0 | Meilisearch |
+| Cart + checkout handoff | 6.0 | No Cardcom secrets in app |
+| My vouchers + QR | 6.0 | Offline display cache; online status wins |
+| Wallet ledger | 6.0 | Read-only offline |
+| Push inbox | 6.1 | Maps to notification event types |
+| Supplier scan mode | 6.1 | Or separate listing (Q-MOB-1) |
+| Physical order tracking | 6.2 | After coupons stable |
+| First-party delivery | later | Internal only; not DoorDash-style partner |
+
+---
+
+## 5. Coupon and redeem flows
+
+### Customer
+
+1. Pay via shared checkout → `order.paid` + `coupon.issued` (notifications worker may push).
+2. Voucher list: code + QR; show paid online + till remainder + expiry.
+3. After merchant scan: status redeemed; push `coupon.redeemed`.
+4. Calendar expiry: `coupon.expired` (+ wallet credit UI if credited).
+
+### Supplier scanner
+
+- Membership via `supplier_members` (owner/manager/scanner).
+- Same idempotency + rate limit as web PWA.
+- Never trust `supplier_id` from QR body.
+- Till collection UX is offline cash; unrelated to `platform_percent`.
+
+---
+
+## 6. Push notifications
 
 Compose with `docs/ARCHITECTURE-NOTIFICATIONS.md`.
 
-- Customer: Expo push via worker reading `channel=push` outbox + device table (`push_subscriptions` / `push_devices` migration planned in v2).
-- Admin: ntfy / Better Stack, not in customer app.
-- Kinds: `order.paid`, `voucher.issued`, expiry reminders, `voucher.expired_credited`, refunds.
-- Dedup still `notifications_outbox.dedupe_key`.
+- Register device → `push_devices` (planned) bound to `user_id`.
+- Worker sends `channel=push` from the same fanout as email/in-app.
+- Customer kinds: `order.paid`, `coupon.issued`, `coupon.redeemed`, `coupon.expired`, `order.refunded`.
+- Supplier kinds: `order.physical_supplier_alert`, `payout.sent`.
+- Admin stays on Ntfy / ops tools, not in the consumer app.
+- Dedup: same idempotency keys as email layer.
 
 ---
 
-## 5. Offline strategy
+## 7. Offline
 
 | Feature | Policy |
 |---|---|
 | Catalog | Cache last success; mark stale |
 | Pay | Online required |
-| Customer QR | Cache issued vouchers for display; refresh status online |
-| Supplier redeem | Queue with idempotency keys; drain to redeem API (parity with PWA) |
-| Wallet | Cached read-only |
+| Customer QR | Cache issued vouchers for display |
+| Supplier redeem | Queue intents + idempotency keys; drain when online |
+| Wallet | Cached read-only; never offline spend |
 
-Server voucher status always wins.
-
----
-
-## 6. Coupon flows on mobile
-
-### Customer
-
-1. Purchase via shared checkout backend → issued voucher/code.
-2. List and detail: code + signed QR (`Ed25519` / keyed HMAC per security ADR).
-3. Show: paid online (`coupon_price`), balance due at merchant, expiry.
-4. After scan: status used/redeemed; push; **no** "money arriving from KenyonExpress" for the prepaid portion.
-
-### Supplier scanner
-
-Membership via `supplier_members`; rate limit 30/min; conditional single-use UPDATE; wrong shop → external not_found; never trust `supplier_id` from QR body.
-
-Dynamic `platform_percent` is irrelevant to till collection UX; till = face − coupon_price from snapshot.
+Server voucher status always wins over cache.
 
 ---
 
-## 7. Deep linking
+## 8. Deep linking
 
-Universal Links / App Links for:
+Universal Links / App Links:
 
-- `/product/{slug}` or `/products/{slug}` (canonicalize with SEO doc)
-- voucher deep links / `redeem/{token}`
-- custom scheme fallback `kenyonexpress://...`
+- `https://kenyonexpress.co.il/product/{slug}`
+- `https://kenyonexpress.co.il/category/{slug}`
+- voucher / account deep links
+- fallback scheme `kenyonexpress://…`
 
-Must match production host after `seo_redirects` cutover. Web remains SEO acquisition channel (v2 track C); app is retention + scan.
-
----
-
-## 8. First-party delivery (non-goals for Phase 6)
-
-Any logistics module is **internal** tables/jobs later. Not DoorDash-style external integration. **Q-MOB-3:** year-one scope.
+Must respect `seo_redirects` after WP cutover. Deep links never mutate money via GET.
 
 ---
 
 ## 9. Security
 
-No service role in app; single-use server enforce; redact tokens in crash analytics; authenticated push token bind; deep links do not mutate money via GET; biometric lock optional (**Q-MOB-4**).
+- No service-role in the binary
+- Biometric lock optional on voucher screen (Q-MOB-4)
+- Redact tokens in crash analytics
+- Push token bound to authenticated user
+- Certificate pinning optional later; TLS to Supabase/Cardcom only through approved SDKs
 
 ---
 
-## 10. Rollout (web → PWA → Expo)
+## 10. Rollout (web → PWA → Expo super-app)
 
-Aligned with v2 Phase 6:
-
-1. Stabilize web: coupons checkout, vouchers, wallet agorot, redeem, dynamic admin `platform_percent` + `coupon_price`.
-2. PWA bridge (supplier scan already).
-3. Publish versioned read DTOs for mobile.
-4. Expo: auth, catalog, PDP (correct prices), checkout handoff, vouchers, wallet.
-5. Push devices + worker.
-6. Supplier mode or second app.
-7. Store listings (Hebrew).
-8. Physical shipping UX only after coupons-stable; delivery later if ever.
+1. Stabilize web: coupons, checkout, vouchers, wallet agorot, redeem, admin dynamic money fields.
+2. PWA bridge (especially `/supplier/scan`).
+3. Publish versioned read DTOs / Zod contracts for mobile.
+4. Expo app: auth, catalog, PDP, checkout handoff, vouchers, wallet.
+5. Push devices + worker channel.
+6. Supplier mode (in-app) or second store listing.
+7. Hebrew App Store / Play listings.
+8. Physical shipping UX; delivery only if product requires it.
 
 ---
 
@@ -156,17 +176,26 @@ Aligned with v2 Phase 6:
 
 | ID | Question |
 |---|---|
-| Q-MOB-1 | One binary vs supplier app |
-| Q-MOB-2 | Wallet expiry copy for cashback vs refund_credit |
+| Q-MOB-1 | One binary with role switch vs separate supplier app |
+| Q-MOB-2 | Wallet expiry copy (cashback vs refund_credit) |
 | Q-MOB-3 | First-party delivery timeline |
 | Q-MOB-4 | Biometric on voucher screen |
-| Q-MOB-5 | Min iOS/Android versions for IL |
+| Q-MOB-5 | Min iOS / Android versions for IL |
 | Q-MOB-6 | App Store legal entity |
 
 ---
 
-## 12. Related backend objects
+## 12. Acceptance (when Phase 6 starts)
 
-`profiles`, `products` (`platform_percent`, `coupon_price_*`), `orders` / `order_items` (snapshots), `vouchers` / `coupon_codes`, `voucher_redemptions` / scan events, `wallet_*`, `supplier_members`, `notifications_outbox`, `payments`, Cardcom webhook finalize path.
+- [ ] Same Supabase project as web; no shadow DB
+- [ ] PDP shows coupon paid-in-full / physical discounted price; no Escrow copy
+- [ ] Orders screen uses snapshots, not live `platform_percent`
+- [ ] Redeem parity with web RPC + offline queue
+- [ ] Push events align with notifications architecture idempotency keys
+- [ ] SEO web remains canonical for crawl; app links resolve to the same slugs
 
-`MASTER-ARCHITECTURE-v2.md` §1, §4 flows, §6 mobile; `docs/ARCHITECTURE-NOTIFICATIONS.md`; `docs/ARCHITECTURE-SECURITY-COMPLIANCE.md`.
+---
+
+## 13. Related
+
+`docs/ARCHITECTURE-NOTIFICATIONS.md`, `docs/ARCHITECTURE-SEO-PERFORMANCE.md`, `docs/ARCHITECTURE-SUPPLIER-PORTAL.md`, `docs/ADMIN-PRODUCT-PAGE-SPEC.md`, `docs/ARCHITECTURE-SECURITY-COMPLIANCE.md`.

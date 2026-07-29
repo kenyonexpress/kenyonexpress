@@ -4,13 +4,10 @@
 Admin Dashboard Core (Fable 5). Docs channel on `arch/admin-supplier` (ke-arch).
 
 ## Last Completed
-2026-07-29: `docs/ARCHITECTURE-NOTIFICATIONS.md` (docs only in ke-arch):
+2026-07-29: SEO + mobile docs (docs only in ke-arch):
 
-- Resend + Supabase Trigger + Edge Function/cron (no Make/Zapier)
-- Event catalog: order.paid, coupon.issued/redeemed/expired, physical supplier alert, payout.sent, order.refunded
-- Hebrew RTL templates, idempotency keys, retry/DLQ, rate limits, Ntfy admin
-- `notification_log` schema draft with integer agorot; testing strategy
-- Money constraints: coupon paid in full on site, no escrow, `platform_percent` snapshot on `order_items`
+- `docs/ARCHITECTURE-SEO-PERFORMANCE.md`: Next.js 15 SSR/ISR per page, Hebrew RTL SEO, JSON-LD ILS, CWV + R2/next/image, Supabase sitemap/robots, Meilisearch internal links, Vercel edge + Upstash, Lighthouse CI budgets
+- `docs/ARCHITECTURE-MOBILE-APP.md`: Expo super-app plan on the same Supabase backend (PWA bridge → Phase 6)
 
 ## In Progress
 nothing
@@ -36,17 +33,17 @@ not set in this worktree STATE
 ---
 ## History
 
+### 2026-07-29: SEO-PERFORMANCE + MOBILE-APP
+- Rewrote both binding specs. Docs only. No application code.
+
 ### 2026-07-29: ARCHITECTURE-NOTIFICATIONS rewrite
-- Full binding notifications spec under 28.07 money rules. Docs only.
+- Resend + triggers + Edge worker; agorot log; no escrow coupon rules. Docs only.
 
 ### 2026-07-29: ADMIN-PRODUCT-PAGE-SPEC
-- Money/supplier/snapshot/validation spec under 28.07. Docs only.
+- Money/supplier/snapshot/validation under 28.07. Docs only.
 
 ### 2026-07-29: ARCHITECTURE-CUSTOMER-SUPPORT
-- Full support/tickets architecture. Docs only.
-
-### 2026-07-29: ARCHITECTURE-ANALYTICS rewrite (ke-arch)
-- Focused goals, pipeline layers, privacy, RTL, sample queries. Docs only.
+- Support/tickets architecture. Docs only.
 
 ### Prior on this branch
-- AI agents, checkout/fulfillment, SEO, coupon redemption, WP migration, admin, supplier portal.
+- Analytics, AI agents, checkout/fulfillment, coupon redemption, WP migration, admin, supplier portal.
