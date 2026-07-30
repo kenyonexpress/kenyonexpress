@@ -189,9 +189,39 @@ demo-derived numbers may well be right for them and that has not been measured.
 because it means the wrap was not the expensive part. The bands barely shifted
 (30.8/26.9/26.6 → 30.9/26.4/25.5). What is expensive in y200-700 is the slide's
 photograph: a large image whose placement differs produces a big pixel difference
-however correct the text around it is. That is the next measurement, and the
-right one to take is the `rs-layer` image box on live against ours, the same way
-the slider box was done here.
+however correct the text around it is. So that measurement was taken. Live's welcome-slide
+image, the animated iPhone with the AirPods:
+
+```
+slider box   x=336 y=148  728x370
+image box    x=654 y=166  324x434     relative to the slider: x=318 y=18
+```
+
+As fractions of the 728-wide slider, which is how `ELECTRO_HERO.slider.image`
+expresses it: width 44.5%, left edge at 43.7%, and the right edge stops 86px
+(11.8%) short of the slider's right edge. Height 434, top offset 18.
+
+Against the tokens in the repo:
+
+```
+              live    token     note
+width          324      370     token is 46px wider
+height         434      495     token is 61px taller
+offsetTop       18       21
+widthPercent  44.5%    49.8%    and the token box is flush to the inline start
+```
+
+The container is `absolute start-0` inside a `dir="rtl"` slider, so `start` is the
+right edge and the token renders the image flush right in a 362px box. Live's is
+not flush: it sits 86px in from the right. That inset has no token at all today,
+which is why the image lands in a different place even when every declared number
+is honoured.
+
+This is left measured rather than applied. Every number above is exact and was
+read off live the same way the slider box was, so the work is now mechanical;
+what it needs is a build-and-verify cycle per attempt, and the per-slide
+`imageLayout` overrides in `hero-singlefile-data.ts` have to be checked first
+because they can shadow the shared token.
 
 The fix is kept because it is correct on its own terms, verified against live's
 computed styles rather than guessed, and it removes a spurious third line.

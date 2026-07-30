@@ -88,8 +88,29 @@ variants are untouched because the demo-derived numbers may be right for them an
 nobody has measured. It moved the number 0.06pp, 11.99% -> 11.93%, which says
 plainly that the wrap was not the expensive part. The expensive part in y200-700
 is the slide photograph: a large image placed differently costs a lot of pixels
-however correct the text around it is. Measuring the rs-layer image box on live
-against ours is the next step, the same way the slider box was done.
+however correct the text around it is. So it was measured. Live's welcome-slide image,
+the animated iPhone with AirPods:
+
+```
+slider box   x=336 y=148  728x370
+image box    x=654 y=166  324x434    relative to the slider: x=318 y=18
+```
+
+              live    token
+width          324      370
+height         434      495
+offsetTop       18       21
+widthPercent  44.5%    49.8%
+
+The container is `absolute start-0` in a `dir="rtl"` slider, so `start` is the
+right edge and the token renders the image flush right in a 362px box. Live's sits
+86px in from that edge, and there is no token for that inset at all, which is why
+the image lands elsewhere even when every declared number is honoured.
+
+Left measured rather than applied: the numbers are exact and the work is now
+mechanical, but it needs a build-and-verify cycle per attempt, and the per-slide
+`imageLayout` overrides in `hero-singlefile-data.ts` have to be checked first
+because they can shadow the shared token.
 
 Two cautions before touching it. `ELECTRO_HERO.slider` says 743x377 and was
 measured from the electro home-v7 demo, not from kenyonexpress.co.il, which is
