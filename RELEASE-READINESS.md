@@ -13,7 +13,7 @@ on others, and two are blocked by one missing credential.
 | Vitest | all pass | 56 files, 735 tests, 11.5s | PASS |
 | Production build | succeeds | compiled in 6.2s | PASS |
 | Playwright E2E | all pass | 41 passed, **12 failed** | BLOCKED |
-| `compare.mjs` all pages | < 11% | 2 of 5 under; home 17.28% → 11.93%, now stable | FAIL |
+| `compare.mjs` all pages | < 11% | **3 of 5 under**; home 17.28% → 10.92% | FAIL |
 | Lighthouse accessibility | 90+ | product 96, home 88 → **93** | PASS |
 | Lighthouse performance | 90+ | product 96, home 75 → **88** | FAIL by 2 |
 | `pnpm audit --prod` | no highs | **14 high**, 10 moderate, 3 low | FAIL |
@@ -63,7 +63,7 @@ end to end. Its first leg fails at add-to-cart.
               first run   after fixes
 category          7.35%        8.07%   PASS
 product          10.21%       10.71%   PASS
-home             17.28%       11.93%   FAIL  (reproducible)
+home             17.28%       10.92%   PASS  (reproducible)
 search           14.87%       14.92%   FAIL
 products         25.75%       28.58%   FAIL
 checkout            n/a          n/a   REFUSED to measure
@@ -217,11 +217,26 @@ not flush: it sits 86px in from the right. That inset has no token at all today,
 which is why the image lands in a different place even when every declared number
 is honoured.
 
-This is left measured rather than applied. Every number above is exact and was
-read off live the same way the slider box was, so the work is now mechanical;
-what it needs is a build-and-verify cycle per attempt, and the per-slide
-`imageLayout` overrides in `hero-singlefile-data.ts` have to be checked first
-because they can shadow the shared token.
+Applied. `HeroSlideImageLayout` gained an `insetPercent`, defaulting to 0 so no
+other slide changes, and the welcome slide now carries the measured
+`{ offsetTop: 18, widthPercent: 44.5, insetPercent: 11.8, minHeight: 434 }`.
+Each slide already had its own `imageLayout` override, so the shared token was
+never in the way.
+
+**home 11.93% → 10.92%, under the 11% target and reproducible.** Bands y200-300
+fell 30.9 → 24.3 and y300-400 26.4 → 20.5. product and category are unchanged at
+10.71% and 8.07%.
+
+That makes three of the five measurable pages under target:
+
+```
+category      8.07%   PASS
+product      10.71%   PASS
+home         10.92%   PASS
+search       14.92%   FAIL
+products     28.58%   FAIL   product order, not layout
+checkout        n/a   REFUSED to measure
+```
 
 The fix is kept because it is correct on its own terms, verified against live's
 computed styles rather than guessed, and it removes a spurious third line.

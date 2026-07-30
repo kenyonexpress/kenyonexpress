@@ -16,7 +16,7 @@ tsc --noEmit        0 errors                                   PASS
 vitest              56 files, 735 tests                        PASS
 production build    compiled in 6.2s                           PASS
 playwright e2e      41 passed, 12 failed                       BLOCKED
-compare.mjs         category 8.07  product 10.71  home 11.93
+compare.mjs         category 8.07  product 10.71  home 10.92
                     search 14.92  products 28.58  checkout n/a  FAIL
 lighthouse a11y     product 96      home 88 -> 93              PASS
 lighthouse perf     product 96      home 75 -> 88              FAIL by 2
@@ -107,10 +107,14 @@ right edge and the token renders the image flush right in a 362px box. Live's si
 86px in from that edge, and there is no token for that inset at all, which is why
 the image lands elsewhere even when every declared number is honoured.
 
-Left measured rather than applied: the numbers are exact and the work is now
-mechanical, but it needs a build-and-verify cycle per attempt, and the per-slide
-`imageLayout` overrides in `hero-singlefile-data.ts` have to be checked first
-because they can shadow the shared token.
+Applied. `HeroSlideImageLayout` gained an `insetPercent` defaulting to 0, so no
+other slide moves, and the welcome slide carries the measured
+`{ offsetTop: 18, widthPercent: 44.5, insetPercent: 11.8, minHeight: 434 }`. Every
+slide already had its own override, so the shared token was never in the way.
+
+**home 11.93% -> 10.92%, under target and reproducible.** y200-300 fell 30.9 ->
+24.3, y300-400 26.4 -> 20.5. product and category unchanged at 10.71% and 8.07%,
+so three of the five measurable pages are now under 11%.
 
 Two cautions before touching it. `ELECTRO_HERO.slider` says 743x377 and was
 measured from the electro home-v7 demo, not from kenyonexpress.co.il, which is

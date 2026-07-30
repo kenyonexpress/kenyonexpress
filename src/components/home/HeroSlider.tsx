@@ -9,6 +9,16 @@ export type HeroSlideImageLayout = {
   offsetTop: number
   widthPercent: number
   minHeight?: number
+  /**
+   * How far the image box sits in from the slider's inline start, as a percent
+   * of slider width. The slider is `dir="rtl"`, so inline start is the RIGHT
+   * edge, and until this existed the box was always flush against it. Live's
+   * welcome slide is not flush: its image stops 86px short of the right edge in
+   * a 728px slider, 11.8%. Every declared number can be correct and the image
+   * still lands somewhere else without this one. Defaults to 0, so slides that
+   * do not set it render exactly as before.
+   */
+  insetPercent?: number
 }
 
 export type HeroSlide = {
@@ -174,9 +184,10 @@ function SlideImage({
   return (
     <>
       <div
-        className="absolute start-0 hidden overflow-hidden lg:block"
+        className="absolute hidden overflow-hidden lg:block"
         style={{
           top: layout.offsetTop,
+          insetInlineStart: `${layout.insetPercent ?? 0}%`,
           width: `${layout.widthPercent}%`,
           height: SLIDE.height - Math.max(0, layout.offsetTop),
         }}

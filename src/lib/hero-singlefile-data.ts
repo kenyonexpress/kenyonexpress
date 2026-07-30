@@ -19,7 +19,11 @@ const WELCOME_SLIDE: HeroSlide = {
   promo_large: 'BEST',
   image_url: HERO_SLIDER_IMAGES[0],
   link_url: '/products',
-  imageLayout: { offsetTop: 21, widthPercent: 49.8, minHeight: 495 },
+  // Measured on kenyonexpress.co.il 2026-07-30. The slider is 728x370 at x=336
+  // and this slide's image box is 324x434 at x=654, so relative to the slider it
+  // sits at x=318 y=18: width 44.5%, inset 11.8% from the right edge, height 434.
+  // The previous 49.8% / flush-right / 495 came from the electro demo.
+  imageLayout: { offsetTop: 18, widthPercent: 44.5, insetPercent: 11.8, minHeight: 434 },
 }
 
 const PREMIUM_SLIDE: HeroSlide = {
