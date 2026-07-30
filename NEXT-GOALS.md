@@ -23,6 +23,13 @@
    THEN: E2E with the Cardcom sandbox, a real test coupon product with a real supplier, compare.mjs on every
    flow page, the customer account area, the Admin dashboard, and the integration pass.
 
+9. PARTIAL 2026-07-31: mobile polish. Added scripts/measure-mobile.mjs (380/768, compares against BOTH
+   the live site and the electro demo refs). Fixed the homepage being 5px wider than a 380px viewport:
+   the hero copy column and headlines are 1440px measurements that overflowed a phone. Desktop home
+   still 10.92%. REMAINING: a second 5px overflow from a slide-level container (387 inside 378), the
+   110px handheld header against live's ~49px, the 421px hero against live's 193px, and no mobile menu
+   was found at 380px.
+
 8. 059 — REFUSED 2026-07-31, NEEDS YOUR DECISION. Backup taken first:
    ~/Backups/kenyonexpress/db-before-059.sql, 706 rows, 20 tables, plus every column definition.
    Then refused: 059 renames products.platform_percent, commission_percent, cashback_percent,

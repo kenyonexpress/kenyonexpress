@@ -1,0 +1,33 @@
+/* Handheld corrections for the homepage hero.
+ *
+ * The welcome slide's copy column and its two headlines are 1440px
+ * measurements: half the slider width, each headline held on one line. On a
+ * 380px phone that column is about 189px while the headline is about 241px, and
+ * the 52px difference made the DOCUMENT wider than the VIEWPORT. A page wider
+ * than its viewport pans sideways under the finger, which is the one handheld
+ * defect that makes every other measurement on the page meaningless.
+ *
+ * It lives here, in a page-scoped stylesheet imported by the homepage, and NOT
+ * appended to globals.css. Appending this same block to globals.css moved the
+ * homepage pixel diff from 10.92% to 45.45% even with both selectors matching
+ * nothing at all, while a comment-only edit to the same file left it at 10.92%.
+ * That is measured, three times, and unexplained; until somebody understands
+ * it, page CSS belongs in src/styles/ like the rest of this project's.
+ *
+ * The selectors are doubled (`.hero-copy-column.hero-copy-column`) to carry
+ * two-class specificity. Tailwind's `max-w-[50%]` is a single class and its
+ * utilities load AFTER this file, so an equally specific override loses on
+ * source order alone: the first attempt at this rule was correct CSS that
+ * simply never won, and the phone still panned sideways.
+ *
+ * Above the desktop breakpoint nothing here applies.
+ */
+@media (max-width: 1023px) {
+  .hero-copy-column.hero-copy-column {
+    max-width: none;
+  }
+
+  .hero-headline.hero-headline {
+    white-space: normal;
+  }
+}

@@ -2,6 +2,7 @@ import BenefitBar from '@/components/home/BenefitBar'
 import DealsOfTheDay from '@/components/home/DealsOfTheDay'
 import HeroSection from '@/components/home/HeroSection'
 import CategoryStrip from '@/components/store/CategoryStrip'
+import '@/styles/home-handheld.css'
 
 export const metadata = {
   title: 'קניון EXPRESS — מסדרים לך בילוי',

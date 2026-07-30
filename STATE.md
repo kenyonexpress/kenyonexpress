@@ -1,10 +1,63 @@
 # KenyonExpress — Project State
 
-Updated: 2026-07-31 (coupon+scan, cart, order path fixed, 059 refused, coupon email built)
+Updated: 2026-07-31 (coupon+scan, cart, order path, 059 refused, email, handheld hero)
 
 ## Current Phase
 Checkout. `feat/admin-core` is merged into `phase5/homepage`; the storefront and
 the admin panel are one branch again.
+
+## Round of 2026-07-31 — handheld: the hero overflowed the phone, and a measuring trap
+
+Queue task [7]. `scripts/measure-mobile.mjs` is new: it measures header,
+hamburger, logo, hero and product grid at 380 and 768, writes JSON in the same
+shape as `refs/electro-*.json`, and with `--compare` measures the LIVE site too.
+That last part is deliberate. The electro refs were taken off
+`electro.madrasthemes.com`, the theme demo, NOT off kenyonexpress.co.il, and
+this file already records one case of demo numbers being mistaken for live ones.
+
+**The homepage was 5px wider than a 380px phone.** A page wider than its
+viewport pans sideways under the finger, which makes every other handheld
+measurement meaningless. Traced to the welcome slide: `max-w-[50%]` and
+`white-space: nowrap` are 1440px measurements, and at 380px the copy column is
+about 189px while the nowrap 43px Hebrew headline is about 241px.
+
+Fixed in `src/styles/home-handheld.css`, a page-scoped stylesheet imported by
+the homepage exactly as `category-page.css` and the others are. Verified: the
+copy column now computes `max-width: none` at 380px and the headline
+`white-space: normal`, and **the desktop diff is unchanged at 10.92%**.
+
+The selectors are doubled (`.hero-copy-column.hero-copy-column`) for two-class
+specificity. Tailwind's `max-w-[50%]` is one class and its utilities load after
+this file, so an equally specific override loses on source order alone; the
+first version was correct CSS that never won.
+
+**A 5px overflow remains from a second source**, a slide-level container
+measuring 387px inside 378px. Different cause, smaller, and it is the next
+handheld task.
+
+### The trap that cost most of this round
+
+`pnpm build` followed by `pkill -f "next start"` and a restart **left the old
+server running**, and it kept serving the previous build on the same port. Every
+measurement taken against it was of code that was not on disk. That produced,
+in order: 45.41%, 45.43% and 45.45% for a homepage that was fine, then 8.81% and
+8.82% for one that was not better, and an entire false theory that appending any
+`@media` block to `globals.css` corrupts the build. **None of that was real.**
+
+What it looks like from inside: the number moves when you change a file, and
+moves back when you revert it, so causation feels proven. The tell was the
+served HTML not containing a class that the built server chunk did contain.
+
+The fix is to check the port rather than trust the kill:
+
+```
+pkill -f "next start"; pkill -f "next-server"; sleep 2; lsof -ti:3300
+```
+
+`lsof` returning nothing is the only proof the old process is gone. Two
+already-recorded traps in this file, the Turbopack content hash and the dev
+overlay, are the same shape: a measurement taken against something other than
+the thing under test.
 
 ## Round of 2026-07-31 — the coupon email, which did not exist
 
@@ -815,6 +868,9 @@ invented.
   `^[A-Z_]* .env.local`. It was a blind `git commit -am`, not a decision.
 
 ## Last Completed
+The handheld hero overflow, plus scripts/measure-mobile.mjs. Desktop home
+unchanged at 10.92%, verified against a correctly-served build.
+
 The coupon email: transport, template and sender, wired into finalizeOrder.
 It did not exist, so a customer who bought a coupon received nothing.
 

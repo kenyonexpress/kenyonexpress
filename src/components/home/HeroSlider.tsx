@@ -99,7 +99,14 @@ const RS = {
   promoLarge: 'text-[35px] font-bold leading-[35px] lg:text-[50px] lg:leading-[50px]',
   promoLargeWelcome: 'text-[35px] font-bold leading-[40px] lg:text-[45px] lg:leading-[50px]',
   /** copy column: 31px gutter from the slide edge */
-  copyColumn: 'pointer-events-none absolute end-0 top-0 z-10 max-w-[50%] pe-[31px] text-end',
+  /**
+   * `hero-copy-column` and `hero-headline` are hooks for the handheld override
+   * in src/styles/home-handheld.css. The 50% column and the nowrap headlines
+   * are 1440px measurements and overflow a phone viewport; the override
+   * releases both below 1024px and changes nothing above it.
+   */
+  copyColumn:
+    'hero-copy-column pointer-events-none absolute end-0 top-0 z-10 max-w-[50%] pe-[31px] text-end',
   /** headline box reserves its live height so shorter titles do not reflow */
   headBox: 'm-0 min-h-[86px] lg:min-h-[118px]',
   /** headline 2 rides -1px tighter than headline 1 on every variant */
@@ -322,7 +329,7 @@ function WelcomeSlideCopy({ slide }: { slide: HeroSlide }) {
         {slide.title && (
           <span
             style={{ color: T.headline1.color }}
-            className={`block whitespace-nowrap font-light ${WELCOME_HEAD.line1}`}
+            className={`hero-headline block whitespace-nowrap font-light ${WELCOME_HEAD.line1}`}
           >
             {slide.title}
           </span>
@@ -330,7 +337,7 @@ function WelcomeSlideCopy({ slide }: { slide: HeroSlide }) {
         {slide.title_secondary && (
           <span
             style={{ color: T.headline2.color, letterSpacing: RS.h2Tracking }}
-            className={`mt-0.5 block whitespace-nowrap font-light lg:mt-1 ${WELCOME_HEAD.line2} ${
+            className={`hero-headline mt-0.5 block whitespace-nowrap font-light lg:mt-1 ${WELCOME_HEAD.line2} ${
               slide.title_secondary_indent ? RS.indentMd : ''
             }`}
           >
