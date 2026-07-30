@@ -23,6 +23,13 @@
    THEN: E2E with the Cardcom sandbox, a real test coupon product with a real supplier, compare.mjs on every
    flow page, the customer account area, the Admin dashboard, and the integration pass.
 
+10. PARTIAL 2026-07-31: WP data migration. src/lib/wp/wxr.ts reads the export with the three dry-run
+    defects fixed by construction (blog taxonomy never read, Dokan row excluded, images taken only from
+    surviving products), 15 tests. scripts/wp-dry-run.mjs reproduces 11 categories, 17 blog terms ignored
+    and 65 images, and corrects the product count to 44: the doc's 45 counted Dokan's bookkeeping row.
+    REMAINING: field mapping to public.products per docs/ARCHITECTURE-WP-DATA-MIGRATION.md, the image
+    pipeline to R2, the 301s for 27 pages with no redirect, and the load itself, which needs the service key.
+
 9. PARTIAL 2026-07-31: mobile polish. Added scripts/measure-mobile.mjs (380/768, compares against BOTH
    the live site and the electro demo refs). Fixed the homepage being 5px wider than a 380px viewport:
    the hero copy column and headlines are 1440px measurements that overflowed a phone. Desktop home

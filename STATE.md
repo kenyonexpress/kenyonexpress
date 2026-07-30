@@ -1,10 +1,58 @@
 # KenyonExpress — Project State
 
-Updated: 2026-07-31 (coupon+scan, cart, order path, 059 refused, email, handheld hero)
+Updated: 2026-07-31 (coupon+scan, cart, order path, email, handheld hero, WXR reader)
 
 ## Current Phase
 Checkout. `feat/admin-core` is merged into `phase5/homepage`; the storefront and
 the admin panel are one branch again.
+
+## Round of 2026-07-31 — WXR: a reader that reproduces the numbers, and one it corrects
+
+Queue task [8]. The export sits at
+`data-import/wp-backup/kenyonexpress-wxr-2026-07-29.xml` (5.9MB) and the reader
+that understands it was on `feat/wp-migration`, unmerged, carrying the three
+defects the dry run found. `src/lib/wp/wxr.ts` is that reader rewritten on this
+branch with all three fixed BY CONSTRUCTION, each with a test that fails if the
+behaviour returns:
+
+- **it never reads `<wp:category>`.** That is the blog taxonomy. Reading it gave
+  28 categories instead of 11, and since both taxonomies carry a slug
+  `uncategorized`, the collision handler moved the real category `כללי` onto
+  `/category/uncategorized-2`.
+- **Dokan's `reverse-withdrawal-payment` is excluded** and says so in the report.
+- **images are collected from the products that survived filtering**, never from
+  the file at large, which is how a `private` product's image was uploaded.
+
+Slug collisions are REPORTED, never resolved. Renaming silently is what produced
+`uncategorized-2`, and a slug is a URL somebody may already have linked to.
+
+`node scripts/wp-dry-run.mjs` runs it over the real export and writes nothing,
+anywhere. Against the numbers in the dry-run doc:
+
+```
+product categories        11     matches
+blog terms ignored        17     matches (the Electro demo terms)
+images referenced         65     matches
+products (publish)        44     the doc says 45
+```
+
+**The 44 is a correction, not a miss.** A status census of the file gives 45
+`publish`, 2 `private`, 1 `draft`, and one of those 45 published rows IS
+`reverse-withdrawal-payment`. So the merchandise count is 44, and the 45 in the
+doc counts Dokan's bookkeeping row as a product. Everything else agrees.
+
+The reader also reports **20 products whose slug has nothing to do with their
+title** (the doc says 18; the heuristic differs slightly and the list is
+printed): a breakfast served at `/product/שעון-אפל-חכם-apple-watch-series-7`,
+another product at `/product/6253`, `barbecue` and `barbecue-2` for two
+different restaurants. WordPress served those URLs, so keeping them preserves
+continuity and re-slugging needs a 301. Still a decision, so it is surfaced
+rather than taken.
+
+All 11 categories are roots; the export has no category tree to preserve.
+
+15 tests on a fixture that reproduces each defect in miniature. **886 vitest in
+65 files.** Nothing was written to any database.
 
 ## Round of 2026-07-31 — handheld: the hero overflowed the phone, and a measuring trap
 
@@ -868,6 +916,9 @@ invented.
   `^[A-Z_]* .env.local`. It was a blind `git commit -am`, not a decision.
 
 ## Last Completed
+`src/lib/wp/wxr.ts` and `scripts/wp-dry-run.mjs`: the WXR reader on this branch,
+with the three dry-run defects fixed and the counts reproduced.
+
 The handheld hero overflow, plus scripts/measure-mobile.mjs. Desktop home
 unchanged at 10.92%, verified against a correctly-served build.
 
