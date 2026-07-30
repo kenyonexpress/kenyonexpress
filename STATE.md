@@ -1,49 +1,32 @@
-# KenyonExpress State (ke-arch worktree)
+# KenyonExpress State
 
 ## Current Phase
-Admin Dashboard Core (Fable 5). Docs channel on `arch/admin-supplier` (ke-arch).
+Architecture docs queue on `arch/docs-queue` in worktree `ke-arch`.
 
 ## Last Completed
-2026-07-30: Notifications + SEO docs refresh (docs only in ke-arch):
+Added
 
-- `docs/ARCHITECTURE-NOTIFICATIONS.md`: Resend + Trigger + Edge, full event catalog (paid/scan/expire/fail/supplier order/split transfer), RTL templates, retry/DLQ, DB + security
-- `docs/ARCHITECTURE-SEO-PERFORMANCE.md`: Next.js 15 SSR/ISR, Hebrew RTL SEO, JSON-LD ILS, CWV + R2, Supabase sitemap, Meilisearch links, edge/Upstash, Lighthouse CI
+```
+docs/ARCHITECTURE-GO-LIVE-CHECKLIST.md
+```
 
 ## In Progress
-nothing
+Docs queue: SEO-PERFORMANCE, MOBILE-APP, WP-DATA-MIGRATION-EXECUTION, AI-AGENTS-SUPPORT, ANALYTICS-KPI, then gap scan.
 
 ## Blocking Issues
-none for this docs pass
+none
 
 ## Next Task
-Continue architecture docs as queued, or implement Admin Core on the implementation worktree.
+Write and push remaining queue docs without stopping.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
 
-## Branch
-`arch/admin-supplier`
-
-## Models
-Fable 5 (architecture) | Opus (docs/schema) | Sonnet (UI)
-
 ## Supabase Project URL
-not set in this worktree STATE
+not set in this worktree
 
 ---
 ## History
 
-### 2026-07-30: NOTIFICATIONS + SEO refresh
-- Full Hebrew-facing notifications + SEO/performance binding specs. Docs only.
-
-### 2026-07-30: ARCHITECTURE-AI-AGENTS
-- Five agents + eval + approval rails. Docs only.
-
-### 2026-07-29: SEO-PERFORMANCE + MOBILE-APP
-- Next.js 15 SEO/perf + Expo super-app. Docs only.
-
-### 2026-07-29: ARCHITECTURE-NOTIFICATIONS rewrite
-- Resend + triggers + Edge worker. Docs only.
-
-### Prior on this branch
-- Admin product page, customer support, analytics, WP migration, supplier portal.
+### 2026-07-31: docs-queue started
+- GO-LIVE checklist
