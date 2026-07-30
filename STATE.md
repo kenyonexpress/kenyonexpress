@@ -1,10 +1,87 @@
 # KenyonExpress — Project State
 
-Updated: 2026-07-31 (coupon+scan, cart, 085/094 applied, order write path fixed)
+Updated: 2026-07-31 (coupon+scan, cart, 085/094 applied, order path fixed, 059 refused)
 
 ## Current Phase
 Checkout. `feat/admin-core` is merged into `phase5/homepage`; the storefront and
 the admin panel are one branch again.
+
+## Round of 2026-07-31 — 059: backup taken, migration REFUSED, and why
+
+The instruction was: back up, show 059, apply through `apply_migration`, verify,
+roll back on failure. Steps one and two were done. Step three was refused, on
+evidence, and this section is that evidence.
+
+### The backup exists
+
+`~/Backups/kenyonexpress/db-before-059.sql`, 1.35 MB, **706 rows across 20
+non-empty tables**, plus every column definition in schema `public` as it stands.
+Produced through the MCP server, because this machine has no `pg_dump`, no
+`psql`, an unauthenticated CLI and no database password. It restores with
+`json_populate_recordset` and it is honest about what it is NOT: no functions,
+triggers, policies or indexes, so it restores DATA into an existing schema. For
+059, which renames columns and backfills values, data is exactly what a rollback
+needs.
+
+### What 059 actually does to THIS database
+
+`fn_money_col_to_int(table, old, new)` adds the new column, backfills it,
+verifies, then **renames the old one to `<old>_legacy`**. The call list includes:
+
+```
+products      platform_percent   -> platform_bp
+products      commission_percent -> commission_bp
+products      cashback_percent   -> cashback_bp
+products      price_ils          -> price_agorot
+products      coupon_price_ils   -> coupon_price_agorot
+order_items   platform_percent   -> platform_bp
+vouchers      platform_percent   -> platform_bp
+suppliers     commission_percent -> commission_bp
+```
+
+Every one of those five `products` columns is named, today, by code that works:
+
+```
+src/server/actions/cart.ts:85            platform_percent
+src/server/actions/payments/checkout.ts:316
+                                         platform_percent, supplier_split_percent,
+                                         discount_percent, coupon_price_ils, cashback_percent
+src/lib/commerce/product-money.ts:114    buildProductMoneyWrite writes all five
+```
+
+42703 fails the whole statement. So the minute 059 lands: the cart select dies,
+the checkout settlement select dies, admin product create and edit die, and the
+product page loses its price. That is the storefront, not a corner of it.
+
+The CHECK constraints survive the rename (a CHECK whose expression is NULL
+passes, so a NULL `platform_percent_legacy` on a new row is fine) and views
+track renames. **The application does not.** And there is no tested post-059
+code path to switch to: `order-money-columns.ts` carries a post-059 set, but it
+is the old literal preserved unchanged, never run against a real post-059
+schema, and it cannot be run against one from here because the app cannot reach
+the project at all on the demo service key.
+
+### The decision
+
+Applying 059 would take a database whose purchase path was proven working three
+hours ago and break it, with no way to verify the repair from this machine. That
+is the "פרודקשן שבור" case in your own stop rule, so it stops here and asks.
+
+**059 and the 070+ migrations are mutually incompatible in this project.** 070,
+084, 087 and 093 are applied and were authored against the pre-059 shape;
+`order_items` already carries 070's agorot columns beside the original shekel
+ones. This is not "059 is pending", it is "two schema generations were merged
+into one database and the code straddles both". Cutting 059 is therefore not a
+migration, it is a coordinated cutover of about a dozen call sites, and it wants
+a session that can actually run the app against the result.
+
+**The cheaper path, and the recommendation:** do not cut 059 at all. The code now
+resolves which generation each table is (`payment-money-columns.ts`,
+`order-money-columns.ts`, `optional-columns.ts`) and works on the schema that
+exists. Nothing is blocked by 059 any more except tidiness.
+
+**What actually blocks the first sale is one credential**, not this migration:
+`SUPABASE_SECRET_KEY` is the stock `supabase-demo` key.
 
 ## Round of 2026-07-31 — the order write path, proven against production
 
@@ -690,6 +767,10 @@ invented.
   `^[A-Z_]* .env.local`. It was a blind `git commit -am`, not a decision.
 
 ## Last Completed
+Backup of the whole public schema at `~/Backups/kenyonexpress/db-before-059.sql`
+(706 rows, 20 tables) and a REFUSAL to apply 059, with the call list and the
+five code sites it would break. See the round above.
+
 The order write and read paths, proven against production by a rolled-back
 simulation. Checkout could not create an order at all before it.
 

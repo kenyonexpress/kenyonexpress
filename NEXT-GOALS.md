@@ -19,7 +19,17 @@
    THEN: E2E with the Cardcom sandbox, a real test coupon product with a real supplier, compare.mjs on every
    flow page, the customer account area, the Admin dashboard, and the integration pass.
 
-8. THE 059 CUTOVER, still open but no longer urgent: the code now works on the schema production actually has.
+8. 059 — REFUSED 2026-07-31, NEEDS YOUR DECISION. Backup taken first:
+   ~/Backups/kenyonexpress/db-before-059.sql, 706 rows, 20 tables, plus every column definition.
+   Then refused: 059 renames products.platform_percent, commission_percent, cashback_percent,
+   price_ils and coupon_price_ils, and all five are named by working code (cart.ts:85,
+   checkout.ts:316, product-money.ts:114). 42703 fails the whole statement, so the cart, the
+   checkout and admin product save all die the minute it lands, and no post-059 code path has
+   ever been run. 059 and the applied 070/084/087/093 are mutually incompatible here.
+   RECOMMENDATION: do not cut 059. The code now resolves the generation per table and works on
+   the schema that exists. Nothing is blocked by it except tidiness.
+
+8b. THE OLD CUTOVER NOTE, superseded by 8 but no longer urgent: the code now works on the schema production actually has.
    Needs a backup first, and this machine has no pg_dump, no psql, no linked CLI and no DB password:
    brew install libpq && supabase login && supabase link --project-ref ixvwfbuvfxxsjiywhbbb
    && supabase db dump --linked -f ~/Backups/kenyonexpress/db-before-059.sql
