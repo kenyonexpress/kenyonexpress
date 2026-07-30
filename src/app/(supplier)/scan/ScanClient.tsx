@@ -1,20 +1,49 @@
 'use client'
 
+import { formatAgorot, formatCouponCode, formatCouponDate } from '@/lib/vouchers/coupon-view'
+import { parseScanInput } from '@/lib/vouchers/scan-input'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 /**
- * Supplier scan screen. Two explicit steps on purpose: enter/scan a code, then
- * confirm before the single redeem call burns the voucher (a mis-scan is
- * unrecoverable). The balance to collect is shown in the largest type in the
- * result panel, since that is the number the cashier acts on.
+ * The counter's screen. Three steps, and the middle one is the point:
  *
- * Redemption is one POST to /api/supplier/vouchers/redeem carrying a fresh
- * idempotency_key, so a double tap on a flaky connection cannot double redeem.
+ *   input   -> scan a QR or type the code
+ *   confirm -> the platform says what this voucher IS, before anything is spent
+ *   result  -> redeemed, with the balance to collect in the largest type
+ *
+ * The confirm step used to show nothing but the digits the cashier had just
+ * typed. That made the first word the platform said about a voucher arrive
+ * AFTER redeem_voucher() had burned it, and a redemption cannot be undone. It
+ * now calls /api/supplier/vouchers/lookup, which reads and writes nothing, so
+ * a wrong code, a spent voucher or a lapsed one is caught while it still costs
+ * nothing to be wrong.
+ *
+ * Redemption itself is one POST to /api/supplier/vouchers/redeem carrying a
+ * fresh idempotency_key, so a double tap on a flaky till connection cannot
+ * redeem twice.
  */
 
 type Stage = 'input' | 'confirm' | 'result'
 
-type VoucherDetail = {
+type LookupVoucher = {
+  code: string
+  status: string
+  product_name: string | null
+  customer_name: string | null
+  face_value_agorot: number
+  coupon_price_agorot: number
+  remaining_amount_due_agorot: number
+  expires_at: string
+  redeemed_at: string | null
+}
+
+type LookupResponse = {
+  outcome: string
+  message: string
+  voucher?: LookupVoucher
+}
+
+type RedeemVoucher = {
   code: string | null
   product_name: string | null
   customer_name: string | null
@@ -28,24 +57,7 @@ type RedeemResponse = {
   outcome: string
   message: string
   replayed?: boolean
-  voucher?: VoucherDetail
-}
-
-function normalize(input: string): string {
-  return input.replace(/[^0-9A-Za-z]/g, '').toUpperCase()
-}
-
-function formatCode(code: string): string {
-  const clean = normalize(code)
-  return clean.length > 5 ? `${clean.slice(0, 5)}-${clean.slice(5, 10)}` : clean
-}
-
-function formatIls(agorot: number | null): string {
-  if (agorot == null) return '—'
-  return `₪${(agorot / 100).toLocaleString('he-IL', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`
+  voucher?: RedeemVoucher
 }
 
 // BarcodeDetector is not in the TS DOM lib yet.
@@ -57,11 +69,13 @@ type BarcodeDetectorCtor = new (opts?: { formats?: string[] }) => BarcodeDetecto
 export default function ScanClient({ supplierName }: { supplierName: string }) {
   const [stage, setStage] = useState<Stage>('input')
   const [rawInput, setRawInput] = useState('')
-  const [pendingCode, setPendingCode] = useState('')
-  const [pendingQr, setPendingQr] = useState<string | null>(null)
+  const [pendingCode, setPendingCode] = useState<string | null>(null)
+  const [pendingToken, setPendingToken] = useState<string | null>(null)
   const [method, setMethod] = useState<'camera' | 'manual'>('manual')
+  const [checking, setChecking] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [lookup, setLookup] = useState<LookupResponse | null>(null)
   const [result, setResult] = useState<RedeemResponse | null>(null)
 
   const [cameraOn, setCameraOn] = useState(false)
@@ -80,15 +94,46 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
 
   useEffect(() => () => stopCamera(), [stopCamera])
 
-  const goConfirm = useCallback(
-    (code: string, qr: string | null, scanMethod: 'camera' | 'manual') => {
+  /** Verify against the platform, then move to confirm. Nothing is spent here. */
+  const verify = useCallback(
+    async (code: string | null, token: string | null, scanMethod: 'camera' | 'manual') => {
       setPendingCode(code)
-      setPendingQr(qr)
+      setPendingToken(token)
       setMethod(scanMethod)
       setError(null)
-      setStage('confirm')
+      setChecking(true)
+      try {
+        const res = await fetch('/api/supplier/vouchers/lookup', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            code: token ? undefined : code,
+            qr_payload: token ?? undefined,
+            method: scanMethod,
+          }),
+        })
+        const body = (await res.json()) as LookupResponse
+        setLookup(body)
+        setStage('confirm')
+      } catch {
+        setError('שגיאת רשת, נסה שוב')
+      } finally {
+        setChecking(false)
+      }
     },
     [],
+  )
+
+  const handleScanned = useCallback(
+    (raw: string, scanMethod: 'camera' | 'manual') => {
+      const parsed = parseScanInput(raw)
+      if (parsed.kind === 'invalid') {
+        setError('הקוד אינו תקין. קוד שובר הוא 10 תווים, או סרקו את ה-QR של הלקוח.')
+        return
+      }
+      void verify(parsed.code, parsed.token, scanMethod)
+    },
+    [verify],
   )
 
   const startCamera = useCallback(async () => {
@@ -117,11 +162,10 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
           const codes = await detector.detect(video)
           const value = codes[0]?.rawValue
           if (value) {
+            // parseScanInput takes the QR whole: a redeem URL, a bare KEV1
+            // token and a typed code all arrive here.
             stopCamera()
-            const clean = normalize(value)
-            // A KEV1 token stays whole; a bare code is normalized.
-            if (value.startsWith('KEV1.')) goConfirm(clean, value, 'camera')
-            else goConfirm(clean, null, 'camera')
+            handleScanned(value, 'camera')
             return
           }
         } catch {
@@ -134,20 +178,11 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
       setError('לא ניתן לגשת למצלמה')
       stopCamera()
     }
-  }, [stopCamera, goConfirm])
+  }, [stopCamera, handleScanned])
 
   const onManualSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    const clean = normalize(rawInput)
-    if (rawInput.startsWith('KEV1.')) {
-      goConfirm(normalize(rawInput.split('.')[1] ?? ''), rawInput.trim(), 'manual')
-      return
-    }
-    if (clean.length !== 10) {
-      setError('קוד שובר הוא 10 תווים')
-      return
-    }
-    goConfirm(clean, null, 'manual')
+    handleScanned(rawInput, 'manual')
   }
 
   const redeem = async () => {
@@ -162,8 +197,8 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          code: pendingQr ? undefined : pendingCode,
-          qr_payload: pendingQr ?? undefined,
+          code: pendingToken ? undefined : pendingCode,
+          qr_payload: pendingToken ?? undefined,
           method,
           idempotency_key: idempotencyKey,
         }),
@@ -181,40 +216,80 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
   const reset = () => {
     setStage('input')
     setRawInput('')
-    setPendingCode('')
-    setPendingQr(null)
+    setPendingCode(null)
+    setPendingToken(null)
+    setLookup(null)
     setResult(null)
     setError(null)
   }
 
-  if (stage === 'confirm') {
+  if (stage === 'confirm' && lookup) {
+    const v = lookup.voucher
+    const redeemable = lookup.outcome === 'redeemable'
     return (
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-        <p className="text-sm text-gray-500">אשר את הקוד שהוזן</p>
+      <div
+        className={`rounded-2xl border p-5 shadow-sm ${
+          redeemable ? 'border-gray-200 bg-white' : 'border-amber-200 bg-amber-50'
+        }`}
+      >
+        <p className="text-center text-sm text-gray-500">{lookup.message}</p>
         <p dir="ltr" className="my-3 text-center font-mono text-3xl font-bold tracking-widest">
-          {formatCode(pendingCode)}
+          {formatCouponCode(v?.code ?? pendingCode ?? '')}
         </p>
-        <p className="mb-4 text-center text-xs text-gray-400">
-          המימוש סופי ואינו ניתן לביטול. ודא שהקוד תואם למסך של הלקוח.
-        </p>
-        {error && <p className="mb-3 text-center text-sm text-red-600">{error}</p>}
-        <div className="flex gap-3">
+
+        {v ? (
+          <>
+            <div className="rounded-xl bg-gray-50 p-4 text-center">
+              <p className="text-sm text-gray-500">
+                {redeemable ? 'לגבייה מהלקוח אחרי אישור' : 'יתרת השובר'}
+              </p>
+              <p className="mt-1 text-4xl font-extrabold text-gray-900">
+                {formatAgorot(v.remaining_amount_due_agorot)}
+              </p>
+            </div>
+            <dl className="mt-3 space-y-1.5 rounded-xl bg-gray-50 p-4 text-sm">
+              <Row label="מוצר" value={v.product_name ?? '—'} />
+              <Row label="לקוח" value={v.customer_name ?? '—'} />
+              <Row label="שולם באתר" value={formatAgorot(v.coupon_price_agorot)} />
+              <Row label="מחיר מלא" value={formatAgorot(v.face_value_agorot)} />
+              <Row
+                label={v.redeemed_at ? 'מומש ב' : 'בתוקף עד'}
+                value={formatCouponDate(v.redeemed_at ?? v.expires_at)}
+              />
+            </dl>
+          </>
+        ) : (
+          <p className="text-center text-sm text-gray-500">
+            ודאו שהקוד תואם למסך של הלקוח, או בקשו ממנו לפתוח מחדש את הקופון באזור האישי.
+          </p>
+        )}
+
+        {redeemable && (
+          <p className="mt-4 text-center text-xs text-gray-400">
+            המימוש סופי ואינו ניתן לביטול. השובר יפוג מיד עם האישור.
+          </p>
+        )}
+        {error && <p className="mt-3 text-center text-sm text-red-600">{error}</p>}
+
+        <div className="mt-4 flex gap-3">
           <button
             type="button"
             onClick={reset}
             disabled={submitting}
             className="flex-1 rounded-xl border border-gray-300 py-3 text-sm font-medium text-gray-700 disabled:opacity-50"
           >
-            חזרה
+            {redeemable ? 'חזרה' : 'סריקה נוספת'}
           </button>
-          <button
-            type="button"
-            onClick={() => void redeem()}
-            disabled={submitting}
-            className="flex-1 rounded-xl bg-gray-900 py-3 text-sm font-bold text-white disabled:opacity-50"
-          >
-            {submitting ? 'מבצע...' : 'אשר ומַמֵש'}
-          </button>
+          {redeemable && (
+            <button
+              type="button"
+              onClick={() => void redeem()}
+              disabled={submitting}
+              className="flex-1 rounded-xl bg-gray-900 py-3 text-sm font-bold text-white disabled:opacity-50"
+            >
+              {submitting ? 'מבצע...' : 'אשר ומַמֵש'}
+            </button>
+          )}
         </div>
       </div>
     )
@@ -237,14 +312,14 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
             <div className="rounded-xl bg-white p-4 text-center">
               <p className="text-sm text-gray-500">לגבייה מהלקוח עכשיו</p>
               <p className="mt-1 text-4xl font-extrabold text-gray-900">
-                {formatIls(v.remaining_amount_due_agorot)}
+                {formatAgorot(v.remaining_amount_due_agorot)}
               </p>
             </div>
             <dl className="space-y-1.5 rounded-xl bg-white p-4 text-sm">
               <Row label="מוצר" value={v.product_name ?? '—'} />
               <Row label="לקוח" value={v.customer_name ?? '—'} />
-              <Row label="שולם באתר" value={formatIls(v.coupon_price_agorot)} />
-              <Row label="מחיר מלא" value={formatIls(v.face_value_agorot)} />
+              <Row label="שולם באתר" value={formatAgorot(v.coupon_price_agorot)} />
+              <Row label="מחיר מלא" value={formatAgorot(v.face_value_agorot)} />
             </dl>
           </div>
         )}
@@ -282,7 +357,8 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
             <button
               type="button"
               onClick={() => void startCamera()}
-              className="w-full rounded-xl bg-gray-900 py-3 text-sm font-bold text-white"
+              disabled={checking}
+              className="w-full rounded-xl bg-gray-900 py-3 text-sm font-bold text-white disabled:opacity-50"
             >
               סרוק QR במצלמה
             </button>
@@ -311,9 +387,10 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
         {error && <p className="text-center text-sm text-red-600">{error}</p>}
         <button
           type="submit"
-          className="w-full rounded-xl bg-gray-900 py-3 text-sm font-bold text-white"
+          disabled={checking}
+          className="w-full rounded-xl bg-gray-900 py-3 text-sm font-bold text-white disabled:opacity-50"
         >
-          המשך
+          {checking ? 'בודק...' : 'בדוק שובר'}
         </button>
       </form>
 

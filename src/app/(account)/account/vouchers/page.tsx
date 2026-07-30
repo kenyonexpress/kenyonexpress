@@ -1,63 +1,32 @@
 import {
-  type CustomerVoucher,
-  getCustomerVouchers,
-  isVoucherRedeemable,
-} from '@/server/queries/vouchers'
-import QRCode from 'qrcode'
+  COUPON_TONE_CLASS,
+  couponMoneyView,
+  couponStatusView,
+  formatAgorot,
+  formatCouponCode,
+  formatCouponDate,
+} from '@/lib/vouchers/coupon-view'
+import { getCustomerVouchers } from '@/server/queries/vouchers'
+import Link from 'next/link'
+
+/**
+ * The list. Presenting a coupon happens on /coupon/[id], which is why there is
+ * no QR here any more: rendering one per row put every live voucher's QR on a
+ * single screen, made the page as heavy as the number of coupons owned, and
+ * still left the customer holding a phone at a counter scrolling to the right
+ * card. One row, one link, one screen to hold up.
+ *
+ * Status and dates come from the shared presenter, so this page and the counter
+ * cannot disagree about whether a coupon is usable. In particular the deadline
+ * shown is expires_at, not offer_valid_until: the two differ whenever the
+ * rolling per-product window closes first, and this list used to show the later
+ * of the two.
+ */
 
 export const metadata = { title: 'השוברים שלי' }
 
-const STATUS_LABEL: Record<CustomerVoucher['status'], string> = {
-  issued: 'פעיל',
-  redeemed: 'מומש',
-  expired: 'פג תוקף',
-  cancelled: 'בוטל',
-  refunded: 'הוחזר',
-}
-
-const STATUS_CLASS: Record<CustomerVoucher['status'], string> = {
-  issued: 'bg-green-100 text-green-700',
-  redeemed: 'bg-gray-200 text-gray-600',
-  expired: 'bg-amber-100 text-amber-700',
-  cancelled: 'bg-red-100 text-red-700',
-  refunded: 'bg-blue-100 text-blue-700',
-}
-
-function formatIls(agorot: number): string {
-  return `₪${(agorot / 100).toLocaleString('he-IL', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`
-}
-
-function formatCode(code: string): string {
-  return code.length > 5 ? `${code.slice(0, 5)}-${code.slice(5, 10)}` : code
-}
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('he-IL', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-}
-
 export default async function AccountVouchersPage() {
   const vouchers = await getCustomerVouchers()
-
-  // Pre-render QR images server-side, only for vouchers that can still be used.
-  const qrByVoucher = new Map<string, string>()
-  await Promise.all(
-    vouchers
-      .filter((v) => isVoucherRedeemable(v))
-      .map(async (v) => {
-        try {
-          qrByVoucher.set(v.id, await QRCode.toDataURL(v.qr_payload, { margin: 1, width: 240 }))
-        } catch {
-          // A QR failure must not blank the whole page; the code stays usable.
-        }
-      }),
-  )
 
   return (
     <section dir="rtl" className="mx-auto max-w-2xl space-y-4 px-4 py-6">
@@ -71,8 +40,8 @@ export default async function AccountVouchersPage() {
       ) : (
         <ul className="space-y-4">
           {vouchers.map((v) => {
-            const redeemable = isVoucherRedeemable(v)
-            const qr = qrByVoucher.get(v.id)
+            const status = couponStatusView(v)
+            const money = couponMoneyView(v)
             return (
               <li
                 key={v.id}
@@ -84,63 +53,53 @@ export default async function AccountVouchersPage() {
                     {v.supplier?.name && <p className="text-xs text-gray-500">{v.supplier.name}</p>}
                   </div>
                   <span
-                    className={`rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_CLASS[v.status]}`}
+                    className={`rounded-full px-2.5 py-1 text-xs font-medium ${COUPON_TONE_CLASS[status.tone]}`}
                   >
-                    {STATUS_LABEL[v.status]}
+                    {status.label}
                   </span>
                 </div>
 
                 <div className="px-5 py-4">
-                  {redeemable && qr ? (
-                    <div className="flex flex-col items-center gap-3">
-                      {/* eslint-disable-next-line @next/next/no-img-element -- server-rendered data URI */}
-                      <img
-                        src={qr}
-                        alt={`QR של שובר ${formatCode(v.code)}`}
-                        width={200}
-                        height={200}
-                        className="rounded-xl"
-                      />
-                      <p
-                        dir="ltr"
-                        className="font-mono text-2xl font-bold tracking-widest text-gray-900"
-                      >
-                        {formatCode(v.code)}
-                      </p>
-                      <p className="text-xs text-gray-400">הצג קוד זה בבית העסק</p>
-                    </div>
-                  ) : (
-                    <div className="rounded-xl bg-gray-50 py-6 text-center text-sm text-gray-500">
-                      {v.status === 'redeemed'
-                        ? `מומש ב־${v.redeemed_at ? formatDate(v.redeemed_at) : ''}`
-                        : STATUS_LABEL[v.status]}
-                    </div>
-                  )}
+                  <p
+                    dir="ltr"
+                    className="font-mono text-xl font-bold tracking-widest text-gray-900"
+                  >
+                    {formatCouponCode(v.code)}
+                  </p>
 
-                  <dl className="mt-4 space-y-1.5 text-sm">
+                  <dl className="mt-3 space-y-1.5 text-sm">
                     <div className="flex items-center justify-between">
                       <dt className="text-gray-500">שולם באתר</dt>
                       <dd className="font-medium text-gray-900">
-                        {formatIls(v.coupon_price_agorot)}
+                        {formatAgorot(money.paidOnlineAgorot)}
                       </dd>
                     </div>
                     <div className="flex items-center justify-between">
                       <dt className="text-gray-500">לתשלום בבית העסק</dt>
                       <dd className="font-bold text-gray-900">
-                        {formatIls(v.remaining_amount_due_agorot)}
+                        {formatAgorot(money.dueAtBusinessAgorot)}
                       </dd>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <dt className="text-gray-500">מחיר מלא</dt>
-                      <dd className="text-gray-500">{formatIls(v.face_value_agorot)}</dd>
-                    </div>
                     <div className="flex items-center justify-between border-t border-gray-100 pt-1.5">
-                      <dt className="text-gray-500">בתוקף עד</dt>
+                      <dt className="text-gray-500">
+                        {v.status === 'redeemed' ? 'מומש ב' : 'בתוקף עד'}
+                      </dt>
                       <dd className="font-medium text-gray-900">
-                        {formatDate(v.offer_valid_until)}
+                        {formatCouponDate(v.status === 'redeemed' ? v.redeemed_at : v.expires_at)}
                       </dd>
                     </div>
                   </dl>
+
+                  <Link
+                    href={`/coupon/${v.id}`}
+                    className={`mt-4 block rounded-xl py-3 text-center text-sm font-bold ${
+                      status.presentable
+                        ? 'bg-gray-900 text-white'
+                        : 'border border-gray-300 text-gray-600'
+                    }`}
+                  >
+                    {status.presentable ? 'הצג קופון ו-QR' : 'פרטי הקופון'}
+                  </Link>
                 </div>
               </li>
             )

@@ -70,7 +70,7 @@ function Refusal({ title, detail }: { title: string; detail: string }) {
         <h1 className="text-lg font-bold text-gray-900">{title}</h1>
         <p className="mt-2 text-sm text-gray-500">{detail}</p>
         <Link
-          href="/supplier/scan"
+          href="/scan"
           className="mt-6 inline-flex rounded-xl bg-gray-900 px-5 py-2.5 text-sm font-bold text-white"
         >
           למסך הסריקה

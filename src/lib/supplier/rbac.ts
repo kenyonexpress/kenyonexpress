@@ -87,11 +87,11 @@ export async function getSupplierMemberships(): Promise<string[]> {
  * Anything it rejects lands on the scan screen rather than the site root, which
  * is where a supplier who just failed a supplier guard wants to be.
  */
-export async function requireSupplierMember(next = '/supplier/scan'): Promise<SupplierSession> {
+export async function requireSupplierMember(next = '/scan'): Promise<SupplierSession> {
   const session = await getSupplierSession()
   if (!session) {
     const safe = safeNextPath(next)
-    redirect(`/login?next=${encodeURIComponent(safe === '/' ? '/supplier/scan' : safe)}`)
+    redirect(`/login?next=${encodeURIComponent(safe === '/' ? '/scan' : safe)}`)
   }
   return session
 }

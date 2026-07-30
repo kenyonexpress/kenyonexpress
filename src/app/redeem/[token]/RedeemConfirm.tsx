@@ -149,7 +149,7 @@ export default function RedeemConfirm(props: Props) {
 
         {phase === 'done' && (
           <a
-            href="/supplier/scan"
+            href="/scan"
             className="mt-5 block w-full rounded-xl border border-gray-300 py-3 text-center text-sm font-bold text-gray-700"
           >
             סריקה נוספת

@@ -47,6 +47,56 @@ export async function getCustomerVouchers(): Promise<CustomerVoucher[]> {
   return (data ?? []) as unknown as CustomerVoucher[]
 }
 
+/**
+ * One voucher, with everything /coupon/[id] puts on screen: the code and its
+ * QR, the money snapshot, the deadline, and enough about the business for the
+ * customer to find it.
+ *
+ * Read through the user-scoped client, so RLS (051 vouchers_owner_read) is the
+ * boundary; the user_id filter repeats it in code. A voucher id is a UUID and
+ * not a secret worth relying on, so an id belonging to somebody else returns
+ * null here exactly as a made-up one does.
+ */
+export interface CustomerVoucherDetail extends CustomerVoucher {
+  supplier: {
+    name: string | null
+    city: string | null
+    address: string | null
+    contact_phone: string | null
+    whatsapp: string | null
+  } | null
+}
+
+export async function getCustomerVoucher(id: string): Promise<CustomerVoucherDetail | null> {
+  // A malformed id would make Postgres raise 22P02 rather than return nothing.
+  if (!/^[0-9a-fA-F-]{36}$/.test(id)) return null
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return null
+
+  const { data } = await supabase
+    .from('vouchers')
+    .select(
+      // No platform_percent here on purpose: that column is mid-rename to
+      // platform_bp (059) and the hosted project has not been cut over, so
+      // naming it would tie this page to whichever side of the rename it lands
+      // on. The customer's page has no use for the split anyway.
+      `id, code, qr_payload, status,
+       face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot,
+       offer_valid_until, expires_at, issued_at, redeemed_at,
+       product:products(name_he, slug),
+       supplier:suppliers(name, city, address, contact_phone, whatsapp)`,
+    )
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  return (data as unknown as CustomerVoucherDetail | null) ?? null
+}
+
 /** True while a voucher can still be presented at a counter. */
 export function isVoucherRedeemable(v: {
   status: string

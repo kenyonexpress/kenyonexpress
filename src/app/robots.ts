@@ -30,8 +30,10 @@ export default function robots(): MetadataRoute.Robots {
         allow: '/',
         disallow: [
           '/redeem/', // signed voucher tokens
+          '/coupon/', // a customer's own voucher, code and QR on screen
           '/account/',
           '/supplier/',
+          '/scan',
           '/admin/',
           '/checkout',
           '/cart',

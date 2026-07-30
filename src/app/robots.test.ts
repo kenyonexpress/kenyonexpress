@@ -30,9 +30,16 @@ describe('robots', () => {
     expect(disallowList()).toContain('/redeem/')
   })
 
+  it('disallows the customer coupon page', () => {
+    // /coupon/<id> renders a live voucher QR to its owner. The id is not a
+    // secret and the page is session-gated, but a crawler has no business
+    // spending budget on it and an indexed one leaks the product somebody bought.
+    expect(disallowList()).toContain('/coupon/')
+  })
+
   it('disallows every authenticated area', () => {
     const disallow = disallowList()
-    for (const path of ['/account/', '/supplier/', '/admin/', '/checkout', '/cart']) {
+    for (const path of ['/account/', '/supplier/', '/admin/', '/scan', '/checkout', '/cart']) {
       expect(disallow).toContain(path)
     }
   })

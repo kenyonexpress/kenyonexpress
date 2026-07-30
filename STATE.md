@@ -1,10 +1,87 @@
 # KenyonExpress — Project State
 
-Updated: 2026-07-30 (product-page verification + WXR dry run round)
+Updated: 2026-07-31 (customer coupon page + supplier scan round)
 
 ## Current Phase
 Checkout. `feat/admin-core` is merged into `phase5/homepage`; the storefront and
 the admin panel are one branch again.
+
+## Round of 2026-07-31 — `/coupon/[id]` and `/scan`
+
+Goal queue item 1. Both halves of the redemption flow now have a screen, and the
+work that mattered was not the markup.
+
+**The scan screen confirmed against nothing.** It asked the cashier to approve
+the digits the cashier had just typed, so the first thing the platform ever said
+about a voucher arrived AFTER `redeem_voucher()` had burned it, and a redemption
+is not reversible. New read-only route `POST /api/supplier/vouchers/lookup`
+answers "what is this, and will it redeem" first: product, customer, paid
+online, balance to collect, deadline, status. It writes nothing to the voucher,
+it re-uses `getVoucherForRedemption` (which had exactly one caller, the
+`/redeem/[token]` deep link) and `validateVoucherRedemption`, and it records a
+forged QR through `recordRefusedScan` exactly as the redeem route does. It
+decides nothing: `redeem_voucher()` re-derives the supplier and re-checks status
+and expiry inside its own transaction, so a generous answer here cannot produce
+a redemption the RPC would refuse.
+
+**`/coupon/[id]`** is the customer's own voucher: QR, code in XXXXX-XXXXX, what
+was paid on the site, what is owed at the business, the deadline with a
+days-left warning in the last three days, status, and the business's address,
+phone and WhatsApp. It sits outside the `/account` shell on purpose. It is the
+one page opened with a cashier waiting, and the account sidebar, the cart drawer
+and the footer are three things between the customer and the number the cashier
+needs. Session-gated in the page, `noindex`, and `/coupon/` is in the robots
+disallow list with a test that fails if it is dropped.
+
+**The QR now encodes `<origin>/redeem/<token>`, not the bare `KEV1.` token.** A
+phone's own camera has no idea what a KEV1 string is and offers to search the
+web for it; a URL opens the confirm screen. `lib/vouchers/scan-input.ts` accepts
+all three forms a scanner can produce (redeem URL, bare token, typed code) and
+is the module the in-app scanner parses with. A token is taken whole and never
+normalised, because the signature is base64url with dots and the short-code path
+strips punctuation.
+
+**Two display defects found while sharing the presenter.** The account list was
+showing `offer_valid_until` as "בתוקף עד" while the voucher actually dies at
+`expires_at = min(rolling window, offer end)`, so a customer could be promised a
+date the coupon would not survive to and find out at the counter. And a row
+still reading `issued` after its deadline (the expiry sweep is a cron, 088) was
+being drawn as active. Both screens now answer from `lib/vouchers/coupon-view.ts`,
+which resolves those two from the clock, so the page and the counter cannot
+disagree. Money conservation is checked rather than assumed there too, and a
+violation is surfaced instead of thrown: `amountToCollect` throwing is right on
+the redemption path, but a 500 on a page a customer opens tells them their coupon
+is gone.
+
+The account list lost its per-row QR. It rendered one QR per live voucher, made
+the page as heavy as the number of coupons owned, and still left the customer
+scrolling for the right card at a till. One row, one link, one screen to hold up.
+
+**`/supplier/scan` moved to `/scan`** and the old path redirects, so printed
+cards and older QR codes keep working. It is a URL typed into a phone at a till.
+
+Verification: **789 vitest in 59 files** (+54, +3 files: `coupon-view`,
+`scan-input`, the lookup route) · `tsc` clean · `biome` clean · production build
+compiles and registers `/coupon/[id]`, `/scan`, `/supplier/scan` and the lookup
+route · **5 new Playwright specs pass against `next start`**, covering the
+signed-out gate on both screens, the legacy redirect, and that no voucher detail
+leaks from a forged token. `compare.mjs` was not run and is not applicable:
+neither screen exists on the live WordPress site, so there is no reference to
+diff against, and `--page=` has no value that would name them.
+
+Not verified, and it cannot be here: no voucher was rendered or scanned with
+real data. Issuing one needs a paid order, which is the stock-demo-key blocker
+below.
+
+### Found while verifying, not fixed
+**`issueVoucher` writes a column the production database does not have.**
+`IssuedVoucherRow.platform_bp` (issue.ts:52, written at issue.ts:170) is the
+post-059 name; `information_schema` on the hosted project lists
+`vouchers.platform_percent` and no `platform_bp`. So the first voucher ever
+issued against production fails on 42703, and this is the 059 cut showing up on
+the coupon path specifically. Left alone deliberately: it is decided by cutting
+059 or not, which is already the top open decision, and not by editing the
+issuer under it. `getCustomerVoucher` deliberately does not select either name.
 
 ## Release candidate, 2026-07-30
 
@@ -295,7 +372,12 @@ invented.
   `^[A-Z_]* .env.local`. It was a blind `git commit -am`, not a decision.
 
 ## Last Completed
-Four commits on `phase5/homepage`, all pushed:
+Goal queue item 1, `/coupon/[id]` and `/scan`: see the 2026-07-31 round above.
+`src/lib/vouchers/coupon-view.ts`, `src/lib/vouchers/scan-input.ts`,
+`src/app/coupon/[id]/page.tsx`, `src/app/(supplier)/scan/`,
+`src/app/api/supplier/vouchers/lookup/route.ts`, `e2e/coupon-scan.spec.ts`.
+
+Before that, four commits on `phase5/homepage`, all pushed:
 `e4b580f` merge of `feat/admin-core` (9 commits, 3 conflicts, migration
 renumbering decided by the production ledger) · `f6392ed` guest checkout on
 measured Electro geometry · `05a181a` cart discount codes, funded from the
@@ -321,7 +403,13 @@ of two.
    Since `c25c2a0` this at least announces itself — `createAdminClient` logs
    `[supabase-admin] ...is the stock local-development demo key...` once per
    process instead of failing silently.
-2. **⛔ `093_product_commission_type` is not applied.** `buildProductMoneyWrite`
+2. **⛔ `vouchers.platform_bp` does not exist in production.** `issueVoucher`
+   writes it (issue.ts:170) and the hosted project still has
+   `vouchers.platform_percent`, so issuing a voucher fails on 42703 and the
+   purchase → coupon → scan flow cannot complete even once the Supabase key is
+   fixed. Same root cause as the 059 cut decision.
+
+3. **⛔ `093_product_commission_type` is not applied.** `buildProductMoneyWrite`
    writes `commission_type`, so until the migration lands every product create
    and edit in the admin fails on a column that does not exist. This was a
    `feat/admin-core` blocker and is now a `phase5/homepage` one. See GO-LIVE.
