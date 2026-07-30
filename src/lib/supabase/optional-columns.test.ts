@@ -1,7 +1,10 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
+  CASHBACK_PERCENT_CANDIDATES,
   COUPON_054_COLUMNS,
   type Coupon054Row,
+  __resetColumnCandidateCache,
+  readFirstAvailableColumn,
   readOptionalColumns,
   readStickerPriceIls,
 } from './optional-columns'
@@ -140,5 +143,130 @@ describe('readStickerPriceIls', () => {
     for (const s of selects) {
       expect(s.includes('price_ils') && s.includes('price_agorot')).toBe(false)
     }
+  })
+})
+
+describe('readFirstAvailableColumn', () => {
+  beforeEach(() => {
+    __resetColumnCandidateCache()
+  })
+
+  const undefinedColumnError = { code: '42703', message: 'column does not exist' }
+
+  it('reads the first candidate when this database has it', async () => {
+    const run = vi.fn(async () => ({
+      data: [{ id: 'p1', cashback_bp: 250 }],
+      error: null,
+    }))
+    const map = await readFirstAvailableColumn<number>(
+      run as never,
+      CASHBACK_PERCENT_CANDIDATES,
+      ['p1'],
+      'test',
+    )
+    // 250 basis points is 2.5 percent.
+    expect(map.get('p1')).toBe(2.5)
+    expect(run).toHaveBeenCalledTimes(1)
+  })
+
+  it('falls through to the pre-059 spelling and converts it differently', async () => {
+    const run = vi.fn(async (select: string) => {
+      if (select.includes('cashback_bp')) return { data: null, error: undefinedColumnError }
+      return { data: [{ id: 'p1', cashback_percent: 2.5 }], error: null }
+    })
+    const map = await readFirstAvailableColumn<number>(
+      run as never,
+      CASHBACK_PERCENT_CANDIDATES,
+      ['p1'],
+      'test',
+    )
+    expect(map.get('p1')).toBe(2.5)
+  })
+
+  // Naming both spellings in one select is the failure this whole helper exists
+  // to avoid: 42703 fails the WHOLE query, not just the column.
+  it('never names two candidates in one select', async () => {
+    const selects: string[] = []
+    const run = vi.fn(async (select: string) => {
+      selects.push(select)
+      if (select.includes('cashback_bp')) return { data: null, error: undefinedColumnError }
+      return { data: [{ id: 'p1', cashback_percent: 1 }], error: null }
+    })
+    await readFirstAvailableColumn<number>(
+      run as never,
+      CASHBACK_PERCENT_CANDIDATES,
+      ['p1'],
+      'test',
+    )
+    for (const s of selects) {
+      expect(s.includes('cashback_bp') && s.includes('cashback_percent')).toBe(false)
+    }
+  })
+
+  it('remembers the winner so the steady state is one query', async () => {
+    const run = vi.fn(async (select: string) => {
+      if (select.includes('cashback_bp')) return { data: null, error: undefinedColumnError }
+      return { data: [{ id: 'p1', cashback_percent: 3 }], error: null }
+    })
+    await readFirstAvailableColumn<number>(
+      run as never,
+      CASHBACK_PERCENT_CANDIDATES,
+      ['p1'],
+      'test',
+    )
+    const firstRoundCalls = run.mock.calls.length
+    await readFirstAvailableColumn<number>(
+      run as never,
+      CASHBACK_PERCENT_CANDIDATES,
+      ['p1'],
+      'test',
+    )
+    expect(run.mock.calls.length - firstRoundCalls).toBe(1)
+  })
+
+  it('reads an absent value as null rather than zero', async () => {
+    const run = vi.fn(async () => ({ data: [{ id: 'p1', cashback_bp: null }], error: null }))
+    const map = await readFirstAvailableColumn<number>(
+      run as never,
+      CASHBACK_PERCENT_CANDIDATES,
+      ['p1'],
+      'test',
+    )
+    expect(map.get('p1')).toBeNull()
+  })
+
+  it('returns an empty map, and warns, when no candidate exists', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const run = vi.fn(async () => ({ data: null, error: undefinedColumnError }))
+    const map = await readFirstAvailableColumn<number>(
+      run as never,
+      CASHBACK_PERCENT_CANDIDATES,
+      ['p1'],
+      'test-missing',
+    )
+    expect(map.size).toBe(0)
+    expect(warn).toHaveBeenCalled()
+  })
+
+  it('rethrows an error that is not a missing column', async () => {
+    const run = vi.fn(async () => ({ data: null, error: { code: '57P01', message: 'shutdown' } }))
+    await expect(
+      readFirstAvailableColumn<number>(run as never, CASHBACK_PERCENT_CANDIDATES, ['p1'], 'test'),
+    ).rejects.toThrow('shutdown')
+  })
+
+  it('does no query at all for an empty id list', async () => {
+    const run = vi.fn()
+    expect(
+      (
+        await readFirstAvailableColumn<number>(
+          run as never,
+          CASHBACK_PERCENT_CANDIDATES,
+          [],
+          'test',
+        )
+      ).size,
+    ).toBe(0)
+    expect(run).not.toHaveBeenCalled()
   })
 })

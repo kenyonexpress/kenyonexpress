@@ -6,6 +6,42 @@ Updated: 2026-07-31 (coupon page + scan, cart, payments audit, 085/094 applied)
 Checkout. `feat/admin-core` is merged into `phase5/homepage`; the storefront and
 the admin panel are one branch again.
 
+## Round of 2026-07-31 — the cart was blanking every line, and goal 5 verified
+
+Goal queue item 5 turned out to be built already, so this round is one real fix
+found next to it and one verification.
+
+**The cart lost every product name, image and price.** `loadProductData` selected
+`products.cashback_bp`. The hosted project has `cashback_percent` and no
+`cashback_bp`, 42703 fails the WHOLE select, `products` came back null, and every
+line rendered blank while the header still showed a correct item count, because
+the count comes from the `carts` row rather than from the products join.
+
+STATE records that exact symptom for 2026-07-28 with the opposite cause: the
+select then named `cashback_percent` and was "fixed" to `cashback_bp` on the
+belief that 059 had renamed it. 059 is not applied here, so the fix reproduced
+the bug facing the other way. This is the third instance of that pattern tonight,
+after the payments amount column and the two `redeem_voucher` signatures.
+
+Fixed the way this file already fixes it for the sticker price: the cashback
+column is not named in the main select at all. It is read afterwards through a
+new `readFirstAvailableColumn`, which tries `cashback_bp` (basis points, /100)
+then `cashback_percent` (already percent), remembers the winner per process so
+the steady state is one query, and never names both spellings in one select,
+because naming both is the failure it exists to prevent. Cashback is a perk that
+defaults to zero; a cart is not worth losing over it. 8 tests.
+
+**Goal 5, dynamic `platform_percent` per product, was already built and its write
+path matches production.** `ProductForm` carries `platform_percent` and
+`supplier_split_percent` inputs with a live split preview through
+`previewProductMoney`, and `buildProductMoneyWrite` emits eight keys:
+`platform_percent`, `supplier_split_percent`, `discount_percent`,
+`coupon_price_ils`, `coupon_expiry_days`, `commission_percent`,
+`commission_type`, `price_ils`. **All eight exist on `public.products` in the
+hosted project**, checked against `information_schema` this round, so admin
+product create and edit are not carrying a schema mismatch the way the cart and
+the payment path were. Nothing to build.
+
 ## Round of 2026-07-31 — scan hardening: redemption was dead in production
 
 Goal queue item 4. The hardening it asks for (one-time code, race lock, rate
@@ -552,6 +588,9 @@ invented.
   `^[A-Z_]* .env.local`. It was a blind `git commit -am`, not a decision.
 
 ## Last Completed
+Goal queue item 5, verified already built (admin per-product split), and the
+cart's `cashback_bp` select fixed: it was blanking every cart line.
+
 Goal queue item 4, scan hardening: `085_voucher_scan_audit_and_no_escrow`
 applied through apply_migration and verified. Redemption could not be called in
 production before it. See the scan-hardening round above.

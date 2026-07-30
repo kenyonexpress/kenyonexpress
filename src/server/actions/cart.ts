@@ -10,8 +10,10 @@ import { buildCartView } from '@/lib/cart/pricing'
 import type { CartActionResult, CartStorageItem, CartView } from '@/lib/cart/types'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
+  CASHBACK_PERCENT_CANDIDATES,
   COUPON_054_COLUMNS,
   type Coupon054Row,
+  readFirstAvailableColumn,
   readOptionalColumns,
 } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
@@ -69,13 +71,18 @@ async function loadProductData(items: CartStorageItem[]) {
 
   const admin = createAdminClient()
 
-  // cashback_bp, not cashback_percent: 059 renamed the column and moved it to
-  // basis points. Naming the old one failed the whole select with 42703, so
-  // `products` came back null and every cart line lost its name, its image and
-  // its price - the cart rendered as a list of blanks with a correct item
-  // count, because the count comes from the carts row rather than from here.
+  // No cashback column here, under either name. 059 renames cashback_percent
+  // to cashback_bp and moves it to basis points, and it is NOT applied to the
+  // hosted project. Naming the wrong one fails the WHOLE select with 42703:
+  // `products` comes back null and every cart line loses its name, its image
+  // and its price, while the header still shows a correct item count because
+  // the count comes from the carts row rather than from here. That failure is
+  // in STATE for 2026-07-28, where it was then "fixed" to the other name, which
+  // is the same bug facing the other way. It is read below from whichever
+  // column exists, and a cart is not worth losing over a perk that defaults to
+  // zero.
   const productSelect =
-    'id, slug, name_he, type, kenyon_price, stock_quantity, status, deleted_at, images, is_coupon_enabled, platform_percent, cashback_bp'
+    'id, slug, name_he, type, kenyon_price, stock_quantity, status, deleted_at, images, is_coupon_enabled, platform_percent'
 
   const { data: products } = await admin.from('products').select(productSelect).in('id', productIds)
 
@@ -88,13 +95,20 @@ async function loadProductData(items: CartStorageItem[]) {
     productIds,
     'cart',
   )
+  const cashback = await readFirstAvailableColumn<number>(
+    (select, ids) => admin.from('products').select(select).in('id', ids) as never,
+    CASHBACK_PERCENT_CANDIDATES,
+    productIds,
+    'cart cashback',
+  )
+
   const pricedProducts = (products ?? []).map((p) => ({
     ...p,
     coupon_price_ils: coupon054.get(p.id)?.coupon_price_ils ?? null,
-    // The conversion happens here rather than in pricing.ts so the pure pricing
+    // Normalised to percent here rather than in pricing.ts, so the pure pricing
     // module keeps speaking percent, which is what its invariants are written
     // in. 250 bp is 2.5 percent.
-    cashback_percent: p.cashback_bp == null ? null : Number(p.cashback_bp) / 100,
+    cashback_percent: cashback.get(p.id) ?? null,
   }))
 
   let variants: {

@@ -74,6 +74,83 @@ export async function readOptionalColumns<Row extends { id: string }>(
   return new Map((data ?? []).map((row) => [row.id, row]))
 }
 
+/**
+ * A column that exists under one name before a migration and another after it,
+ * with the conversion needed to read either as the same unit.
+ */
+export type ColumnCandidate<T> = {
+  column: string
+  toCanonical: (stored: unknown) => T | null
+}
+
+const winningColumn = new Map<string, string>()
+
+/**
+ * Reads one value per id from whichever of `candidates` this database has.
+ *
+ * The winner is remembered per process under `key`, so the steady state is one
+ * query rather than one per candidate. A miss is not cached: if every candidate
+ * 42703s, the next call probes again rather than pinning the process to an
+ * answer derived from a database that may have been mid-migration.
+ *
+ * Returns an empty map when none of them exist, so the caller reads `null` and
+ * takes its own missing-value path instead of losing the whole query.
+ */
+export async function readFirstAvailableColumn<T>(
+  run: (select: string, ids: string[]) => OptionalColumnsResult<Record<string, unknown>>,
+  candidates: readonly ColumnCandidate<T>[],
+  ids: readonly string[],
+  key: string,
+): Promise<Map<string, T | null>> {
+  if (ids.length === 0) return new Map()
+
+  const remembered = winningColumn.get(key)
+  const ordered = remembered
+    ? [...candidates].sort((a, b) =>
+        a.column === remembered ? -1 : b.column === remembered ? 1 : 0,
+      )
+    : candidates
+
+  for (const candidate of ordered) {
+    const { data, error } = await run(`id, ${candidate.column}`, [...ids])
+    if (error) {
+      if (error.code === UNDEFINED_COLUMN) continue
+      throw new Error(`${key}: ${error.message}`)
+    }
+    winningColumn.set(key, candidate.column)
+    return new Map(
+      (data ?? []).map((row) => [String(row.id), candidate.toCanonical(row[candidate.column])]),
+    )
+  }
+
+  warnOnce(
+    key,
+    `${key}: none of ${candidates.map((c) => c.column).join(', ')} exist in this database; reading the value as absent.`,
+  )
+  return new Map()
+}
+
+/** Test seam. Never called by application code. */
+export function __resetColumnCandidateCache(): void {
+  winningColumn.clear()
+}
+
+/**
+ * Cashback rate on a product, as a percent, from whichever column exists.
+ *
+ * 059 renames `cashback_percent` to `cashback_bp` and moves it to basis points.
+ * It is not applied to the hosted project, which carries `cashback_percent`.
+ * Naming the wrong one fails the WHOLE cart select with 42703, `products` comes
+ * back null, and every line loses its name, image and price while the header
+ * still shows a correct item count, because the count comes from the `carts`
+ * row. That exact failure is recorded in STATE for 2026-07-28 and was then
+ * "fixed" to the other name, which reproduces it in the other direction.
+ */
+export const CASHBACK_PERCENT_CANDIDATES: readonly ColumnCandidate<number>[] = [
+  { column: 'cashback_bp', toCanonical: (v) => (v == null ? null : Number(v) / 100) },
+  { column: 'cashback_percent', toCanonical: (v) => (v == null ? null : Number(v)) },
+]
+
 /** The two columns migration 054 adds to `products`. */
 export const COUPON_054_COLUMNS = ['coupon_price_ils', 'offer_valid_until'] as const
 
