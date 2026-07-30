@@ -1,6 +1,8 @@
 -- 094_settlement_events.sql
 --
--- NOT APPLIED. Additive only. Safe to re-run.
+-- APPLIED TO PRODUCTION 2026-07-31 through apply_migration. Additive only, safe
+-- to re-run. Self-tested there in a rolled-back DO block: insert succeeds,
+-- UPDATE refused, DELETE refused, no row left behind.
 --
 -- An append-only journal of what each order line was worth to each party at the
 -- moment money moved, and under which split.

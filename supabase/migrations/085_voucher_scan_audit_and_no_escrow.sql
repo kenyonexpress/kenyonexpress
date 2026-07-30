@@ -1,7 +1,17 @@
 -- 085_voucher_scan_audit_and_no_escrow.sql
 --
--- LOCAL ONLY. NOT APPLIED TO PRODUCTION. See docs/PRODUCTION-CHANGES-2026-07-27.md
--- for what production actually carries; nothing here has been run there.
+-- APPLIED TO PRODUCTION 2026-07-31 through apply_migration.
+--
+-- It had to be: the app calls redeem_voucher() and log_voucher_scan() with five
+-- named arguments, production carried the three-argument versions, and PostgREST
+-- cannot resolve an RPC by a name set the function does not have. Every scan
+-- answered PGRST202, which the route reported as "שגיאת מערכת". Redemption was
+-- dead in production and looked like an infrastructure error.
+--
+-- Verified after applying: exactly one signature per function (the three-arg
+-- versions are dropped, not overloaded), ip_address and user_agent present, a
+-- session-less call returns {"outcome":"unauthorized"} without writing a row,
+-- and voucher_scan_ip('not-an-ip') returns NULL instead of raising 22P02.
 --
 -- Two things, both about the scan-time path.
 --

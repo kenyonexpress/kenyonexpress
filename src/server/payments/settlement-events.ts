@@ -17,15 +17,17 @@ import type { SupabaseClient } from '@supabase/supabase-js'
  *
  * WHY THIS CANNOT THROW
  *
- * Migration 094 is not applied. Until it is, `settlement_events` does not
- * exist and every insert here fails. That must not cost a customer their order:
- * this runs after the card has already been charged and the order closed, and
- * a journal write is not worth unwinding a payment for. So a failure is logged
- * once and swallowed, and the caller is never told — because there is nothing
- * useful the caller could do with the information at that point in the flow.
+ * Migration 094 was applied to production on 2026-07-31, so the table exists
+ * and `charge_settled` records from the next paid order. The swallowing stays,
+ * and not as a leftover: this runs after the card has been charged and the
+ * order closed, and a journal write is not worth unwinding a payment for. A
+ * failure is logged and never reaches the caller, because there is nothing
+ * useful the caller could do with it at that point in the flow.
  *
- * The trade is stated plainly rather than hidden: until 094 is applied, the
- * journal is empty and the system behaves exactly as it did before it existed.
+ * The 42703 branch below also stays. Deployments run against more than one
+ * database (a preview branch, a fresh local stack), and on one where 094 has
+ * not been applied the right behaviour is still an empty journal rather than a
+ * broken checkout.
  */
 
 export type SettlementEventKind =

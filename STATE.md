@@ -1,10 +1,54 @@
 # KenyonExpress — Project State
 
-Updated: 2026-07-31 (coupon page + scan, cart measurement, payments schema audit)
+Updated: 2026-07-31 (coupon page + scan, cart, payments audit, 085/094 applied)
 
 ## Current Phase
 Checkout. `feat/admin-core` is merged into `phase5/homepage`; the storefront and
 the admin panel are one branch again.
+
+## Round of 2026-07-31 — scan hardening: redemption was dead in production
+
+Goal queue item 4. The hardening it asks for (one-time code, race lock, rate
+limit) turned out to be written and unapplied rather than missing, and the
+unapplied half was load-bearing.
+
+**`redeem_voucher()` could not be called at all.** The app calls it and
+`log_voucher_scan()` with five named arguments, `p_ip` and `p_user_agent` among
+them. Production carried the three-argument versions from 074, and PostgREST
+resolves an RPC by the set of named arguments in the body: there is no such
+function, so every scan answered PGRST202 and the route reported it as
+`שגיאת מערכת`. Redemption was dead in production and looked like an
+infrastructure error rather than a missing migration.
+
+**085 applied** through `apply_migration`, and verified after: exactly one
+signature per function (the three-arg versions are dropped, not overloaded, so
+nothing resolves ambiguously), `ip_address` and `user_agent` present on
+`voucher_redemptions`, a session-less call returns
+`{"outcome":"unauthorized"}` and writes no row, and
+`voucher_scan_ip('not-an-ip')` returns NULL rather than raising 22P02 and
+turning a malformed header into a failed redemption at a counter.
+
+So the three things goal 4 names now hold, and none of them needed new code:
+
+- **one-time code and the race lock** are one conditional `UPDATE ... WHERE
+  status = 'issued' AND expires_at > now() AND supplier_id IN (memberships)
+  RETURNING`. The first transaction locks the row; a concurrent scan
+  re-evaluates the predicate after that commit, matches nothing, and reports
+  `already_redeemed`. There is no read-then-write window to lose. The idempotency
+  key returns the first answer to a retried request instead of a second attempt.
+- **rate limiting** is in three layers: 30 scans per minute per user inside the
+  RPC, 20 anonymous audit rows per minute per address inside
+  `log_voucher_scan`, 60 per hour per address on `/redeem/[token]` before the
+  HMAC is computed, and 300 per hour per user on the new lookup route.
+- **the escrow leg is gone from the redemption path in production**, which is
+  what the rest of 085 was for.
+
+**No per-IP block was added to the authenticated redeem route, deliberately.**
+The per-user 30/minute is already the brute-force bound, and a shared address is
+the normal case at a mall or a food court where twenty suppliers sit behind one
+NAT. A cap there refuses a paying customer at a till to stop an attacker who
+already needs a supplier session, which is the wrong trade and the opposite of
+the one `checkRateLimit` makes by failing open.
 
 ## Round of 2026-07-31 — payments: the money journal is live, and the schema audit
 
@@ -508,6 +552,10 @@ invented.
   `^[A-Z_]* .env.local`. It was a blind `git commit -am`, not a decision.
 
 ## Last Completed
+Goal queue item 4, scan hardening: `085_voucher_scan_audit_and_no_escrow`
+applied through apply_migration and verified. Redemption could not be called in
+production before it. See the scan-hardening round above.
+
 Goal queue item 3, partially: `094_settlement_events` applied through
 apply_migration and self-tested, and the payment path made schema-tolerant
 (`src/lib/payments/payment-money-columns.ts`). The rest of item 3 is blocked on
