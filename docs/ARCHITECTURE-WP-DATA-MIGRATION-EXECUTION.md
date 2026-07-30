@@ -90,7 +90,7 @@ data-import/wp-backup/kenyonexpress-wxr-2026-07-29.xml
 
 ### Phase D: Curation (אנושי + כללים)
 
-חוסמים ידועים (B1–B6 מהמסמך האח) חייבים פתרון או waive חתום:
+חוסמים ידועים (B1 עד B6 מהמסמך האח) חייבים פתרון או waive חתום:
 
 | Blocker | נושא |
 |---|---|
