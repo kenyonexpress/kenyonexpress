@@ -13,7 +13,7 @@ on others, and two are blocked by one missing credential.
 | Vitest | all pass | 56 files, 735 tests, 11.5s | PASS |
 | Production build | succeeds | compiled in 6.2s | PASS |
 | Playwright E2E | all pass | 41 passed, **12 failed** | BLOCKED |
-| `compare.mjs` all pages | < 11% | 2 of 5 under, home 17.28% → 12.2% | FAIL |
+| `compare.mjs` all pages | < 11% | 2 of 5 under; home 17.28% → 12.45%, now stable | FAIL |
 | Lighthouse accessibility | 90+ | product 96, home 88 → **93** | PASS |
 | Lighthouse performance | 90+ | product 96, home 75 → **88** | FAIL by 2 |
 | `pnpm audit --prod` | no highs | **14 high**, 10 moderate, 3 low | FAIL |
@@ -63,7 +63,7 @@ end to end. Its first leg fails at add-to-cart.
               first run   after fixes
 category          7.35%        8.07%   PASS
 product          10.21%       10.71%   PASS
-home             17.28%       12.20%   FAIL
+home             17.28%       12.45%   FAIL  (reproducible)
 search           14.87%       14.92%   FAIL
 products         25.75%       28.58%   FAIL
 checkout            n/a          n/a   REFUSED to measure
@@ -103,33 +103,41 @@ gone.
 `home`'s remaining cost has moved entirely into the hero, y200-700 at 24-31%, and
 that band was investigated next.
 
-### The hero band is not a timing artifact, it is five slides painted at once
+### The hero band, and two wrong theories before the right measurement
 
-The obvious theory was autoplay: both heroes rotate, so the two screenshots land
-on different slides and the diff scores the difference as infidelity. The crop
-supported it, live showing the welcome slide and ours showing PREMIUM PRODUCT.
+Theory one was autoplay putting the two screenshots on different slides. Theory
+two, written into this file and now retracted, was that our slider paints all
+five slides at once: asked which headlines sat between y100 and y700, live
+answered one slide's text and ours answered all five. That probe was wrong. It
+measured bounding boxes, and inactive slides are `opacity-0`, so they are
+transparent rather than painted. They were never visible.
 
-It is wrong. Both sliders report the same active index, 0, before and after being
-told to go to slide 1. What differs is what index 0 *paints*. Asked which
-headlines are on screen between y100 and y700:
+The actual causes were two, and both are fixed:
 
-```
-LIVE  ["ברוכים הבאים", "לקניון Express", "SIMPLY THE"]
-MINE  ["ברוכים הבאים לקניון Express", "PREMIUM PRODUCT",
-       "ממשק מהיר ונוח", "תצוגה מושלמת"]
-```
+- **The slider opened on the wrong slide.** `HeroSlider` initialised `active` by
+  looking up the slide with id `rs-19`, the fifth one, because that was the slide
+  left active inside `refs/ke_live_singlefile.html` when the comparison ran
+  against that snapshot. The reference moved to the live site and the initialiser
+  did not follow, so the hero was deterministically one slide away from its own
+  reference. It now starts on the first slide, like live.
+- **The harness wait outran the autoplay.** `AUTOPLAY_MS` is 5000 and the local
+  wait before a screenshot is 6000, so the local hero had always advanced once
+  more than live's by the time either was captured. `shoot()` now pauses the hero
+  through the pointer-enter pause the component already implements, then returns
+  it to slide 1, then waits out the 700ms opacity transition. Pausing alone was
+  not enough: by 6s the wrong slide was already showing, so pausing held the
+  wrong slide.
 
-Live has one slide's text in that region. Ours has **all five**. The slides are
-stacked in the same box and the inactive ones are still laid out and painted, so
-whichever one wins the stacking order is what a screenshot catches, and the hero
-can never match a reference that shows exactly one.
+Both sides now show `ברוכים הבאים לקניון Express` at capture time, and the
+consequence is that **home became reproducible**: three consecutive runs return
+12.45%, where it previously wandered between 11.99% and 12.45% depending on where
+the slider happened to be. The lower numbers were luck, not fidelity.
 
-A slide-sync step was added to `compare.mjs` to test the autoplay theory and then
-**reverted**, because it measurably changed nothing (12.2% → 12.45%, inside shoot
-noise) and would have left a comment in the harness claiming to fix something it
-does not. The real fix is in `HeroSlider`: inactive slides need to be genuinely
-hidden, not merely underneath. That is a change to how the hero works and it is
-the next thing to do on this page, not a number to be argued with.
+And the honest result: **synchronising the slide did not close the gap.** y200-700
+still sits at 25-35% with both sides on the same slide, so what remains is the
+welcome slide's own rendering against live's, which is real fidelity work on the
+hero rather than a measurement artifact. That is the next thing to do on this
+page, and it is now measurable, which it was not before.
 
 `products` at 28.58% is still dominated by product ORDER: live opens with a
 featured block, ours sorts alphabetically, so the grids never line up whatever the

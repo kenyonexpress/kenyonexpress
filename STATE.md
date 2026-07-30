@@ -16,7 +16,7 @@ tsc --noEmit        0 errors                                   PASS
 vitest              56 files, 735 tests                        PASS
 production build    compiled in 6.2s                           PASS
 playwright e2e      41 passed, 12 failed                       BLOCKED
-compare.mjs         category 8.07  product 10.71  home 12.20
+compare.mjs         category 8.07  product 10.71  home 12.45
                     search 14.92  products 28.58  checkout n/a  FAIL
 lighthouse a11y     product 96      home 88 -> 93              PASS
 lighthouse perf     product 96      home 75 -> 88              FAIL by 2
@@ -44,17 +44,27 @@ still serving stale CSS and answered `126px` for a token the file no longer
 contains. That is the same Turbopack content-hash trap documented at the bottom of
 globals.css, and it is now the second time it has cost a measurement.
 
-`home`'s remaining cost sits entirely in the hero, y200-700 at 24-31%, and that
-band turned out NOT to be an autoplay artifact. Both sliders report the same
-active index, 0. What differs is what index 0 paints: asked which headlines sit
-between y100 and y700, live answers one slide's text and ours answers all five.
-`ברוכים הבאים`, `PREMIUM PRODUCT`, `ממשק מהיר ונוח` and `תצוגה מושלמת` are all
-laid out and painted in the same box, so whichever wins the stacking order is what
-a screenshot catches. A slide-sync step was added to `compare.mjs` to test the
-autoplay theory and reverted when it changed nothing measurable (12.2% -> 12.45%,
-inside shoot noise); leaving a comment claiming a fix it does not perform is worse
-than not having it. The real fix is in `HeroSlider`: inactive slides must be
-genuinely hidden, not merely underneath.
+`home`'s remaining cost sits entirely in the hero, and it took two wrong theories
+to get to the measurement. Autoplay was theory one. Theory two, which I wrote into
+STATE and am retracting here, was that our slider paints all five slides at once;
+that probe measured bounding boxes and inactive slides are `opacity-0`, so they
+were transparent, never painted.
+
+The real causes were two. `HeroSlider` initialised `active` by finding the slide
+with id `rs-19`, the fifth, because that was the one left active in
+`refs/ke_live_singlefile.html` back when the comparison ran against that snapshot;
+the reference moved to the live site and the initialiser did not follow. And
+`AUTOPLAY_MS` is 5000 while the harness waits 6000 before shooting, so the local
+hero had always advanced one slide more than live's. Both fixed: the slider starts
+on slide 1, and `shoot()` pauses through the component's own pointer-enter pause,
+returns to slide 1, then waits out the 700ms transition. Pausing alone held the
+wrong slide.
+
+The payoff is not a lower number, it is a trustworthy one: home returns **12.45%
+three runs in a row**, where it previously wandered between 11.99% and 12.45% with
+the slider. The lower readings were luck. With both sides on the same slide,
+y200-700 still sits at 25-35%, so the remaining gap is the welcome slide's own
+rendering, which is real hero work and is now measurable.
 
 `products` at 28.58% is product ORDER, not layout: live opens with a featured
 block, ours sorts alphabetically, so the grids never line up whatever the CSS

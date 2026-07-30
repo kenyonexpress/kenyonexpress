@@ -340,10 +340,16 @@ function SlideCopy({ slide }: { slide: HeroSlide }) {
 }
 
 export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
-  const [active, setActive] = useState(() => {
-    const appIndex = slides.findIndex((s) => s.id === 'rs-19')
-    return appIndex >= 0 ? appIndex : 0
-  })
+  // Start on the FIRST slide, which is what kenyonexpress.co.il does.
+  //
+  // This used to open on rs-19, the fifth slide, because that was the one left
+  // active inside refs/ke_live_singlefile.html and the pixel comparison ran
+  // against that snapshot. The reference moved to the live site (see the note at
+  // the top of scripts/compare.mjs) and this initialiser did not follow, so the
+  // hero was deterministically one slide apart from its own reference: live
+  // showed `ברוכים הבאים לקניון Express`, we showed the app slide. It read as a
+  // 24-31% band difference across y200-700 and looked like a layout defect.
+  const [active, setActive] = useState(0)
   const [paused, setPaused] = useState(false)
 
   const goTo = useCallback(
@@ -363,8 +369,15 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
   if (slides.length === 0) return null
 
   return (
+    // data-hero-slider is a stable hook for tooling. scripts/compare.mjs has to
+    // hold a slide still before it screenshots, and it does that through the
+    // pointer-enter pause below rather than by reaching into React state. It was
+    // matching on [class*="hero"], which this root does not carry, so the pause
+    // silently never fired and every local screenshot was taken one slide further
+    // along than live's.
     <div
       dir="rtl"
+      data-hero-slider=""
       style={{ backgroundColor: HERO_SLIDER_BG }}
       className="relative h-full min-h-0 w-full min-w-0 flex-1 overflow-hidden border-x border-gray-200 font-sans"
       onMouseEnter={() => setPaused(true)}

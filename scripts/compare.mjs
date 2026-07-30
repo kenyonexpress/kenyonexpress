@@ -224,6 +224,33 @@ const shoot = async (url, out) => {
     console.error(`REFUSING to measure: ${url} redirected to ${p.url()} (cart did not stick).`)
     process.exit(3)
   }
+  // Stop the hero before shooting. Our slider autoplays every 5s and the local
+  // wait above is 6s, so the local screenshot was taken one slide further along
+  // than live's every single time, and a fullPage capture is slow enough to
+  // advance again mid-scroll. HeroSlider pauses on pointer enter, which is the
+  // component's own supported way to hold a slide, so use that rather than
+  // reaching into its state. Pages without a hero match nothing and are
+  // untouched.
+  await p
+    .evaluate(() => {
+      const hero = document.querySelector(
+        '[data-hero-slider], .home-v1-slider, rs-module, [class*="hero"]',
+      )
+      // Pause first. Pausing alone is not enough: the wait above is 6s and
+      // autoplay fires at 5s, so by the time we get here the local hero has
+      // already advanced once and pausing would just hold the wrong slide.
+      hero?.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true, view: window }))
+      const firstSlide =
+        document.querySelector('rs-bullet') ??
+        document.querySelector('button[aria-label="שקופית 1"]')
+      firstSlide?.dispatchEvent(
+        new MouseEvent('click', { bubbles: true, cancelable: true, view: window }),
+      )
+    })
+    .catch(() => {})
+  // 700ms opacity transition on our slider, plus room for live's.
+  await p.waitForTimeout(1200)
+
   await p.screenshot({ path: out, fullPage: true })
   await p.close()
   console.log(`${out} written (${url})`)
