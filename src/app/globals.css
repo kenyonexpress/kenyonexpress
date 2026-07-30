@@ -109,6 +109,18 @@
      the page body. SiteFooter used --container-page and ran 68px wider on each
      side. --container-footer above belongs to home/Footer.tsx, a different
      component; the two are not the same box. */
+  /* The hero row, measured on kenyonexpress.co.il 2026-07-30: the three-column
+     block spans x135..x1305 at a 1440 viewport, so 1170 wide, and the slider
+     between the fixed side columns lands at 728. Ours ran in --container-page
+     (1320), and because the two side columns are fixed widths the whole 150px
+     surplus went to the slider through flex-1: 900 instead of 728, which is most
+     of the homepage's remaining y200-700 band difference.
+
+     Scoped to the hero rather than corrected in --container-page, which is 1320
+     with no provenance comment and is read by ten other components that have not
+     been measured. One of them is the header. Widen the audit before widening
+     the fix. */
+  --container-hero-row: 1170px;
   --container-store-footer: 1200px;
   --container-deals: 1150px;
 

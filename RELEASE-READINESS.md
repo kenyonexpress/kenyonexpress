@@ -13,7 +13,7 @@ on others, and two are blocked by one missing credential.
 | Vitest | all pass | 56 files, 735 tests, 11.5s | PASS |
 | Production build | succeeds | compiled in 6.2s | PASS |
 | Playwright E2E | all pass | 41 passed, **12 failed** | BLOCKED |
-| `compare.mjs` all pages | < 11% | 2 of 5 under; home 17.28% → 12.45%, now stable | FAIL |
+| `compare.mjs` all pages | < 11% | 2 of 5 under; home 17.28% → 11.99%, now stable | FAIL |
 | Lighthouse accessibility | 90+ | product 96, home 88 → **93** | PASS |
 | Lighthouse performance | 90+ | product 96, home 75 → **88** | FAIL by 2 |
 | `pnpm audit --prod` | no highs | **14 high**, 10 moderate, 3 low | FAIL |
@@ -63,7 +63,7 @@ end to end. Its first leg fails at add-to-cart.
               first run   after fixes
 category          7.35%        8.07%   PASS
 product          10.21%       10.71%   PASS
-home             17.28%       12.45%   FAIL  (reproducible)
+home             17.28%       11.99%   FAIL  (reproducible)
 search           14.87%       14.92%   FAIL
 products         25.75%       28.58%   FAIL
 checkout            n/a          n/a   REFUSED to measure
@@ -141,14 +141,35 @@ measures:
 ```
              x     y     w     h
 live       336   148   728   370
-ours       260   148   900   421
+before     260   148   900   421
+after      335   148   729   421
 ```
 
-172px too wide, 51px too tall, starting 76px too far left. The height traces to
-the same root cause as the slide bug: `HERO_SLIDER_HEIGHT` was measured off
-`refs/ke_live_singlefile.html` with the fifth slide active, and its own comment
-says so ("rs-19 active, 422px"). The width is the flanking columns not holding
-their declared widths, so `flex-1` hands the slack to the slider.
+The width and position are now within a pixel, and it took two corrections that
+were both stale measurements rather than layout bugs:
+
+- **The hero row ran in a 1320px container; live's is 1170.** Live's three-column
+  block spans x135..x1305 at a 1440 viewport, which is 1170 centred. Ours used
+  `--container-page`, 1320. Because the two side columns are fixed widths, the
+  entire 150px surplus went to the slider through `flex-1`: 900 instead of 728.
+  Fixed with a `--container-hero-row` scoped to the hero, *not* by correcting
+  `--container-page`, which carries no provenance comment and is read by ten other
+  components including the header. Widen the audit before widening that fix.
+- **`categoryColumn.width` was 220; live measures 241.** The token block says it
+  was measured from "electro home-v7", the theme demo, not from this site. The
+  21px it was short also went to the slider. `sideBanners.width` moved 200 → 201
+  for the same reason.
+
+Height is untouched on purpose. 421 against 370 is internal to the slider: the row
+itself is 422 on both sides, live's `rs-module` simply sits 370 tall inside it with
+whitespace below. Shrinking the row would move everything under it by 51px and
+break the alignment the masthead fix just achieved, where the first product card
+lands at 904 against live's 906.
+
+Result: home **12.45% → 11.99%**, reproducible across runs, with product unchanged
+at 10.71%. The hero bands fell from 34.6/29.5/27 to 30.8/26.9/26.6. What is left
+there is the slide's own contents, the phone image placement and the text block
+inside a now correctly-sized box.
 
 Two cautions for whoever picks this up, both learned the hard way in this pass:
 

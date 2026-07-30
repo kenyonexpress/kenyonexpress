@@ -16,7 +16,7 @@ tsc --noEmit        0 errors                                   PASS
 vitest              56 files, 735 tests                        PASS
 production build    compiled in 6.2s                           PASS
 playwright e2e      41 passed, 12 failed                       BLOCKED
-compare.mjs         category 8.07  product 10.71  home 12.45
+compare.mjs         category 8.07  product 10.71  home 11.99
                     search 14.92  products 28.58  checkout n/a  FAIL
 lighthouse a11y     product 96      home 88 -> 93              PASS
 lighthouse perf     product 96      home 75 -> 88              FAIL by 2
@@ -69,7 +69,8 @@ With both sides pinned to the welcome slide, the slider box measures:
 ```
              x     y     w     h
 live       336   148   728   370
-ours       260   148   900   421
+before     260   148   900   421
+after      335   148   729   421
 ```
 
 172px too wide, 51px too tall, 76px too far left. The height traces to the same

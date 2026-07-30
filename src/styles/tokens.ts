@@ -179,6 +179,7 @@ export const SITE_CSS_METRICS: Record<string, string> = {
 
   '--header-height': '70px',
   '--container-page': '1320px',
+  '--container-hero-row': '1170px',
   '--container-footer': '1430px',
   '--container-store-footer': '1200px',
   '--container-deals': '1150px',

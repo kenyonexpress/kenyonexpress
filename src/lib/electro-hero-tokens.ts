@@ -28,12 +28,18 @@ export const ELECTRO_HERO = {
     },
   },
   categoryColumn: {
-    width: 220,
+    /* 241, not 220. Measured on kenyonexpress.co.il 2026-07-30: the hero row is
+       1170 wide and the slider inside it is 728, so the two fixed side columns
+       account for 442. The left promo column measures 201, leaving 241 here. The
+       old 220 came from the electro home-v7 demo, which is a different site; the
+       21px it was short went to the slider through flex-1. */
+    width: 241,
     height: 512,
     textColor: '#333e48',
   },
   sideBanners: {
-    width: 200,
+    /* 201 measured on live; see the note on categoryColumn.width above. */
+    width: 201,
     blockHeight: 512,
     itemHeight: 99,
     itemWidth: 168,
