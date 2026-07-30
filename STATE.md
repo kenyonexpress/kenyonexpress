@@ -4,24 +4,24 @@
 WordPress data migration architecture (`arch/wp-migration`).
 
 ## Last Completed
-2026-07-31: `docs/ARCHITECTURE-WP-MIGRATION.md` (docs only):
+2026-07-31 (morning): refreshed `docs/ARCHITECTURE-WP-MIGRATION.md` (docs only):
 
-- Clarified "33 tables" = public prod count; import matrix PROJECT/ARCHIVE/UNTOUCHED
-- Field maps: products, coupons/vouchers, images, users
-- mysqldump + uploads extraction; curation gates (`supplier_id`, `platform_percent`)
-- Run order stages 0–7; rollback; DoD gates
-- Money: no Escrow, agorot, coupon on-site full pay
+- Binding input: WXR under `data-import/wp-backup/` (`kenyonexpress-wxr-2026-07-29.xml`)
+- Parse → normalize → stage → curation → project → integrity
+- Map to 33 public tables (PROJECT / CURATION / ARCHIVE / UNTOUCHED)
+- Run order, rollback, integrity checks (incl. dry-run blockers B1–B6)
+- Orders: headers only from WXR; line items require dump/REST
 
-Also (same day, other worktree): pushed `arch/ai-agents` @ `84befe6` (`docs: AI agents architecture`).
+Also placed XML at `kenyonexpress/data-import/wp-backup/` (hardlink from `refs/wp-export/`).
 
 ## In Progress
 nothing
 
 ## Blocking Issues
-none for this docs pass
+none for this docs pass (implementation blockers B1–B6 tracked in the doc)
 
 ## Next Task
-Curation spreadsheet + DEV dry-run of wp-import against live schema.
+Fix WXR category parse (B1) on `feat/wp-migration`; run validate against `data-import/wp-backup/`.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch-wp
@@ -32,4 +32,4 @@ Curation spreadsheet + DEV dry-run of wp-import against live schema.
 ## History
 
 ### 2026-07-31
-Created worktree from `origin/main`, wrote WP migration architecture (docs only).
+Initial WP migration arch commit `e2de030`; morning refresh to WXR-first + integrity suite.

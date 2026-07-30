@@ -1,369 +1,391 @@
 # ARCHITECTURE-WP-MIGRATION.md
 
-מיגרציית נתונים מ-WordPress / WooCommerce אל Supabase (תכנון מחייב, docs בלבד).
+מיגרציית נתונים מ-WordPress / WooCommerce אל Supabase דרך **WXR XML** (תכנון מחייב, docs בלבד).
 
-Status: BINDING for `arch/wp-migration` (2026-07-31)
-Worktree: `/Users/ofir/kenyonexpress-web/ke-arch-wp` only. **Documentation only. No application code in this commit.**
-Canonical host cutover: `kenyonexpress.co.il` (אותו דומיין, DNS אחרי אימות).
+Status: BINDING for `arch/wp-migration` (2026-07-31, morning refresh)
+Worktree: `/Users/ofir/kenyonexpress-web/ke-arch-wp` only. **Documentation only.**
+Canonical host: `kenyonexpress.co.il`.
 
-Companions (hierarchy on conflict):
-
-1. **This document** (arch/wp-migration) for scope, 33-table matrix, run order, rollback.
-2. Repo root `ARCHITECTURE-WP-MIGRATION.md` (2026-07-20) for detailed field tables M/W decisions.
-3. `docs/ARCHITECTURE-WP-DATA-MIGRATION.md` (catalog/REST track) only where not superseded.
-4. Staging schema: `supabase/migrations/032_wp_import_staging.sql`.
-5. Money / no Escrow: BUSINESS-MODEL + LEGAL-COMPLIANCE + recent arch money invariants.
-6. Backups before cutover: `docs/ARCHITECTURE-BACKUP-DR.md` (Pro + offsite dump).
+Companions: `032_wp_import_staging.sql`, `scripts/wp-import/`, `docs/ARCHITECTURE-WP-DATA-MIGRATION.md`, `docs/MIGRATION-BACKLOG.md` (33 public tables), BACKUP-DR, money invariants (no Escrow).
 
 ---
 
-## 0. מה זה "33 טבלאות"
+## 0. מקור האמת לקלט
 
-המספר **33** הוא ספירת טבלאות ב-`public` בפרודקשן (נמדד 2026-07-29 ב-
-`docs/MIGRATION-BACKLOG.md`
-), לא מספר ישויות WordPress.
+| פריט | ערך |
+|---|---|
+| פורמט | WordPress eXtended RSS (**WXR** 1.2) |
+| נתיב מחייב | `data-import/wp-backup/` |
+| קובץ נוכחי | `data-import/wp-backup/kenyonexpress-wxr-2026-07-29.xml` (~5.7MB, נוצר 2026-07-29) |
+| עותק ייחוס ישן | `refs/wp-export/wp-export.xml` (אותו תוכן; להעדיף את נתיב `data-import`) |
+| Generator | WordPress 6.8.1, `he-IL`, base `https://kenyonexpress.co.il` |
 
-| מקור | מספר | משמעות |
+**אין להתחיל parse מנתיב אחר בלי לעדכן מסמך זה.** קבצי XML גדולים לא נכנסים ל-git (להחזיק מקומית / בארכיון מוצפן); המסמך מתעד את הנתיב והגרסה.
+
+### 0.1 מה יש ב-WXR (ספירה מהקובץ החי)
+
+| `wp:post_type` | כמות (בערך) | שימוש בייבוא |
 |---|---|---|
-| `MIGRATION-BACKLOG.md` | **33** | `public` tables בפרודקשן החי |
-| `docs/DB-SCHEMA.md` (2026-07-23) | 28 | תיעוד introspection ישן יותר |
-| `wp_import` staging | 12-14 + views | ארכיון/staging, לא storefront |
+| `attachment` | 404 | תמונות / מדיה |
+| `product` | 48 | קטלוג (אחרי סינון Dokan/hidden) |
+| `shop_order` | 41 | **כותרות בלבד** (אין שורות הזמנה ב-WXR) |
+| `page` | 28 | `url_inventory` + 301 |
+| `nav_menu_item` | 55 | להתעלם |
+| `product_variation` | 2 | וריאציות |
+| `shop_order_refund` | 4 | ארכיון בלבד |
+| אחר (Elementor, ACF, …) | עשרות | להתעלם / ארכיון |
 
-הייבוא **לא** ממלא את כל ה-33. רובן נשארות ריקות או נבנות בריצה חיה אחרי הקאטאובר. סעיף 3 ממפה כל טבלה: `PROJECT` / `SEED_ONLY` / `ARCHIVE_ONLY` / `UNTOUCHED` / `CURATION`.
+Taxonomies: `product_cat`, `product_tag`, `product_type`, `product_visibility`, plus **blog** `<wp:category>` (Electro demo) שאין לייבא כקטגוריות מוצר.
+
+Dry-run מאומת (feat/wp-migration): ~45 מוצרים אחרי סינון, ~11 `product_cat` אמיתיים, ~65 תמונות מוצר. פרטים בסעיף 10.
+
+### 0.2 מגבלת WXR (מחייבת)
+
+1. **הזמנות:** `shop_order` ב-WXR מחזיק meta של חיוב/סכומים **בלי** `order_item` lines (Woo שומר אותם בטבלאות נפרדות). אי אפשר לבנות `order_items` מלאים מ-XML בלבד.
+2. **לקוחות:** רשימת `<wp:author>` חלקית (עורכים/ספק); לקוחות קנייה מלאים דורשים dump/REST אם נדרש ייבוא גורף.
+3. **שוברים מ-plugin:** רק אם יוצאו כ-posts/meta ב-WXR; אחרת מקור משני.
+4. השלמה אופציונלית: `mysqldump` / WC REST ל-orders line items ומשתמשים, **אחרי** שהקטלוג מ-XML יציב.
+
+לקטלוג + מדיה + SEO + מחברים: **WXR הוא המקור הראשי.**
 
 ---
 
 ## 1. עקרונות על
 
-1. **אפס איבוד ארכיון:** כל מה שנשלף נשמר לצמיתות ב-`wp_import` (או ב-mysqldump משפטי). רק תת-קבוצה נקייה מוקרנת ל-`public`.
-2. **ה-DB החדש לא יורש חוב:** שורה שמפרה constraint, כסף, או סמנטיקה של פלטפורמה לא נכנסת ל-`public`.
-3. **Idempotent:** כל הקרנה דרך `wp_import.id_map (entity, wp_id) → new_id`. הרצה חוזרת = upsert, לא כפילות.
-4. **הסכימה החיה גוברת** על קבצי מיגרציה כשיש drift (לאמת מול פרודקשן לפני הרצה).
-5. **חוק הספאם 30א:** אף לקוח מיובא לא נכנס opted-in לדיוור.
-6. **כסף:**
-   - קופון: תשלום מלא באתר (`coupon_price`); הפלטפורמה שומרת את הסכום; יתרה בבית העסק לספק; **אין Escrow**.
-   - `platform_percent` חובה ב-curation (אין DEFAULT שקט); מצולם ל-`order_items` רק בשרשרת שוברים חיים.
-   - המרה: `agorot = round(ils * 100)::int` פעם אחת; מקור עם שברי אגורה = error.
-7. **SEO load-bearing:** כל URL ישן של מוצר/קטגוריה נשמר או מקבל 301 ב-`seo_redirects` (או מנגנון ה-proxy הקנוני). אסור 404 המוני אחרי קאטאובר.
-8. **הזמנות היסטוריות לא מוקרנות ל-ledger חי** (אי אפשר להמציא snapshots של 042 בלי לזהם settlement).
+1. Parse → normalize → stage (`wp_import`) → curation → project → validate. Dry-run ברירת מחדל.
+2. Idempotent דרך `wp_import.id_map (entity, wp_id) → new_id`.
+3. אפס שורות שמפרות constraint / כסף / RLS semantics ל-`public`.
+4. **33** = טבלאות `public` בפרודקשן, לא מספר ישויות XML. רובן `UNTOUCHED`.
+5. כסף: קופון = תשלום מלא באתר; אין Escrow; `platform_percent` חובה ב-curation; `agorot = round(ils*100)`.
+6. 30א: אין opt-in שיווקי מיובא.
+7. SEO: כל URL מוצר/קטגוריה/עמוד ציבורי ישן → slug נשמר או 301.
+8. קטגוריות: רק `product_cat` מ-`<wp:term>`, **לא** `<wp:category>` של הבלוג.
 
 ---
 
-## 2. היקף ישויות (מה כן / מה לא)
+## 2. Pipeline: parse XML
 
-| ישות WP | ל-`wp_import` | ל-`public` |
-|---|---|---|
-| מוצרים + וריאציות | כן | כן (אחרי curation) |
-| קטגוריות מוצר | כן | **מיפוי** לקטגוריות קנוניות (לא ייבוא עיוור) |
-| תמונות / uploads | כן | Storage + `products.images` / `product_images` |
-| לקוחות | כן | `auth.users` + `profiles` (+ כתובות) |
-| שוברים חיים שטרם מומשו | כן | `coupon_codes` / `vouchers` + הזמנת מינימום תומכת |
-| קודי הנחה Woo `shop_coupon` | כן | **ארכיון בלבד** |
-| הזמנות היסטוריות | כן | **ארכיון בלבד** |
-| ביקורות (`wp_comments`) | dump | לא מוקרן (אופציונלי בעתיד) |
-| עמודי תוכן / Elementor | url_inventory | 301 / תוכן ידני |
-| ספקים | אין ב-WC | **CURATION** ידני ל-`suppliers` |
-
-היקף חי ידוע (מדגם 2026-07): עשרות מוצרים (לא אלפים), קטגוריות ספורות, מחירים בשקלים שלמים. מאשר one-shot עם spot-check גבוה.
-
----
-
-## 3. מטריצת 33 טבלאות `public` מול הייבוא
-
-רשימה מבוססת על `DB-SCHEMA.md` + תוספות ידועות בפרודקשן (עד 33). אם בפרודקשן נוספה טבלה אחרי המדידה, לעדכן את המטריצה לפני הרצה.
-
-| טבלה | תפקיד בייבוא | הערות |
-|---|---|---|
-| `products` | **PROJECT** | ליבת הקטלוג; שער `supplier_id` + `platform_percent` |
-| `categories` | **CURATION map** | לא יוצרים עיוור מ-WP; ממפים ל-seed |
-| `product_variants` | **PROJECT** | מ-`product_variation` |
-| `product_images` | **PROJECT** | אם בשימוש לצד jsonb `images` |
-| `suppliers` | **CURATION** | יצירה ידנית לפני הקרנת מוצרים |
-| `vendors` | **UNTOUCHED** | ישן; לא יעד ייבוא |
-| `profiles` | **PROJECT** | אחרי Auth Admin createUser |
-| `user_addresses` | **PROJECT** | מ-billing כשיש city |
-| `orders` | **PROJECT minimal** | רק מעטפת לשובר חי; היסטוריה = ARCHIVE |
-| `order_items` | **PROJECT minimal** | snapshot כספי לשובר חי בלבד |
-| `coupon_codes` / vouchers path | **PROJECT** | שוברים חיים בלבד |
-| `coupons` | **ARCHIVE_ONLY** | קודי הנחה Woo; לא פעילים אוטומטית |
-| `coupon_deals` | **UNTOUCHED / optional** | לא ממלאים מ-WP אלא אם מודל דילים תואם |
-| `payments` | **UNTOUCHED** | אין סליקה ישנה להעברה |
-| `payment_tokens` | **UNTOUCHED** | |
-| `payment_webhook_events` | **UNTOUCHED** | |
-| `carts` | **UNTOUCHED** | עגלות אורח חדשות בלבד |
-| `wallet_accounts` | **SEED via triggers** | נוצרים עם המשתמש; בלי יתרות WP אלא אם plugin מאומת |
-| `wallet_balances` | **UNTOUCHED** (ברירת מחדל) | |
-| `wallet_entries` | **UNTOUCHED** | |
-| `wallet_transactions` | **UNTOUCHED** | |
-| `escrow_holds` | **UNTOUCHED** | מודל בלי Escrow; לא לייבא holds ישנים |
-| `split_executions` | **UNTOUCHED** | |
-| `referrals` | **UNTOUCHED** | |
-| `affiliates` | **UNTOUCHED** | |
-| `audit_log` | **UNTOUCHED** | ריצות ייבוא נרשמות ב-`wp_import` / migration_log |
-| `rate_limits` | **UNTOUCHED** | |
-| `user_rate_limits` | **UNTOUCHED** | |
-| `seo_redirects` | **PROJECT** | חובה ל-SEO (אם הטבלה קיימת בפרודקשן; אחרת blocker) |
-| `media_assets` | **PROJECT optional** | אם הצנרת רושמת assets מעבר ל-jsonb |
-| `payout_statements` (+ lines) | **UNTOUCHED** | |
-| `settlement_events` | **UNTOUCHED** | |
-| `agent_*` / analytics | **UNTOUCHED** | |
-
-`ARCHIVE_ONLY` = נשמר ב-`wp_import.*` לצמיתות, לא ב-ledger חי.
-
----
-
-## 4. חילוץ (Extraction)
-
-### 4.1 שיטה מחייבת
-
-**mysqldump מלא + rsync של `wp-content/uploads`.** לא REST כמקור אמת, לא WXR כמקור הזמנות/לקוחות.
-
-נימוק: snapshot עקבי בזמן אחד, גיבוי משפטי, כיסוי meta מלא. REST יכול לשמש לאימות צולב בלבד.
-
-```bash
-mysqldump --single-transaction --quick --default-character-set=utf8mb4 \
-  --routines --triggers --hex-blob "$DB_NAME" \
-  | gzip > ke-wp-$(date +%Y%m%d).sql.gz
-
-rsync -az user@host:/path/to/wp-content/uploads/ ./wp-uploads/
+```
+data-import/wp-backup/*.xml
+        │
+        ▼
+   [1] parse WXR (stream / DOM)
+        │  authors, terms, items[], postmeta, category links
+        ▼
+   [2] classify items by wp:post_type
+        │
+        ▼
+   [3] normalize → JSON artifacts (wp_import/normalized/)
+        │  products.json, categories.json, media.json,
+        │  pages.json, orders_headers.json, authors.json
+        ▼
+   [4] load → wp_import.* staging (Postgres)
+        │
+        ▼
+   [5] media fetch/convert/upload (Storage/R2)
+        │
+        ▼
+   [6] curation gates (supplier_id, platform_percent, slugs)
+        │
+        ▼
+   [7] project → public.* (subset)
+        │
+        ▼
+   [8] integrity checks + report
 ```
 
-ה-dump נטען ל-MySQL מקומי (Docker `mysql:8`, utf8mb4). הסקריפטים קוראים ממנו אל `wp_import` (מימוש ב-`scripts/wp-import/`, מחוץ לסקופ docs-only הזה).
+### 2.1 חוקי parse
 
-### 4.2 טבלאות WP לחילוץ
-
-| טבלת WP | יעד staging |
+| כלל | פירוט |
 |---|---|
-| `wp_posts` + `wp_postmeta` | products / orders / media / coupons |
-| `wp_terms` + taxonomy + relationships | categories (+ attributes) |
-| `wp_users` + `wp_usermeta` | customers |
-| `wp_woocommerce_order_items` + meta | order_items |
-| `wp_wc_orders*` (HPOS אם פעיל) | orders עם `storage_source=hpos` |
-| טבלאות plugin שוברים | vouchers |
-| `wp_options` | preflight בלבד |
-| `wp_comments` | dump בלבד |
+| Encoding | UTF-8; CDATA כטקסט גולמי |
+| Item identity | `wp:post_id` (לא GUID בלבד) |
+| Status | `publish` מועמד ל-active; `private`/`trash`/`draft` לפי מדיניות (private לא active) |
+| Meta | כל `wp:postmeta` → map / `raw_meta` jsonb |
+| Terms on item | `category domain="product_cat"` וכו׳; לא לערבב blog categories |
+| Attachments | `wp:post_type=attachment` + `wp:attachment_url`; קישור למוצר דרך `_thumbnail_id` / gallery meta / parent |
+| Filter Dokan | לדלג על מוצר `reverse-withdrawal-payment` (bookkeeping) |
+| Category filter | `readTaxonomy`: **רק** `<wp:term>` עם `product_cat`. אסור לקרוא `<wp:category>` כעץ מוצר (באג ידוע: 17 Electro demo terms) |
 
-נספחים: Yoast sitemap, ייצוא GSC (12 חודשים) → `url_inventory` + עדיפות 301.
+### 2.2 שלבי מימוש (מחוץ למסמך, לציון בלבד)
 
----
-
-## 5. מיפוי שדות (מוצרים, קופונים, תמונות, משתמשים)
-
-### 5.1 מוצרים → `public.products`
-
-| מקור WP | יעד | כלל |
-|---|---|---|
-| `ID` | `id_map(product)` | מפתח idempotency |
-| `post_title` | `name_he` | ריק = error, לא מיובא |
-| `post_content` | `description_he` | ניקוי HTML; `<img>` דרך מפת מדיה |
-| `post_name` עברי | לא ל-`slug` | רק `url_inventory` + 301 |
-| slug לטיני חדש (curation) | `slug` | `^[a-z0-9]+(-[a-z0-9]+)*$` |
-| `post_status` | `status` | publish→active; draft/pending→draft; trash→דילוג |
-| `_sku` | `sku` | כפילות = issue + סיומת |
-| `_price` / sale | `price_ils` (+ כתיבה כפולה לעמודות legacy אם עדיין NOT NULL) | ILS; אגורות בנתיב הזמנות בלבד |
-| `_regular_price` | compare / full | רק אם גדול מהאפקטיבי |
-| stock meta | `stock_quantity` | לפי manage stock |
-| `product_cat` | `category_id` | דרך מפת curation |
-| gallery + thumbnail | `images` jsonb + `product_images` | אחרי העלאת Storage |
-| Yoast title/desc | `seo_*` | אם לא תבניתי |
-| היוריסטיקת קופון | `type` / `product_type` | הצעה ב-curation; ברירת מחדל physical; `service` אסור בייבוא |
-| **curation** | `supplier_id` | **שער חוסם** |
-| **curation** | `platform_percent` | **שער חוסם**, אין DEFAULT |
-| קבוע | `cashback_percent` / bp | **0** לכל המיובאים |
-| **curation** | `coupon_expiry_days` | physical=0; coupon=ערך מפורש |
-| `coupon_price_ils` | curation / meta דיל | חובה לסוג coupon; מוחלט, לא % מפנים |
-
-וריאציות → `product_variants` (parent דרך id_map, attributes, sku, stock).
-
-### 5.2 קטגוריות
-
-לא ייבוא עיוור של עץ WP. קובץ curation: `wp_term_id → manual_target_slug` לקטגוריה קנונית קיימת. `create_new=true` רק באישור, עומק מוגבל. כל URL קטגוריה ישן → 301.
-
-### 5.3 תמונות
-
-1. רישום attachments ב-`wp_import.media` עם `source_url` (בלי סיומות resize).
-2. קריאה מ-rsync; fallback HTTP + retry.
-3. המרה: WebP עד 1600px q≈80; OG 1200×630 לתמונה ראשית.
-4. יעד: bucket `product-images` (או R2 עם אותו מפתח לוגי). Path דטרמיניסטי, למשל `wp/<attachment_id>/<basename>.webp`.
-5. דה-דופ לפי `sha256` של המקור.
-6. מפת `source_url → new_url` משכתבת תיאורים ובונה `products.images`.
-7. שער: אפס `pending`/`failed` על מוצרים `active`.
-
-Rollback לא מוחק אובייקטים shared ב-Storage (GC מאוחר).
-
-### 5.4 משתמשים → Auth + `profiles`
-
-| מקור | יעד | כלל |
-|---|---|---|
-| `user_email` | Auth email + profile | lower/trim; לא חוקי = ארכיון בלבד |
-| שם | `profiles.full_name` | |
-| טלפון billing | `profiles.phone` | נרמול ישראלי |
-| כתובת | `user_addresses` | בלי city = לא נוצרת |
-| סיסמה phpass | **לא מועברת** | Google לפי אימייל / magic link תפעולי |
-| opt-in דיוור | staging בלבד | כולם מתחילים opted-out |
-
-יצירה רק דרך **Auth Admin API** (`createUser`, `email_confirm: true`), לעולם לא `INSERT` ישיר ל-`auth.users`. דה-דופ לפי אימייל: משתמש שכבר קיים באתר החדש רק ממופה ב-id_map; לא דורסים שדות מלאים.
-
-### 5.5 קופונים / שוברים
-
-| סוג | Staging | Public |
-|---|---|---|
-| קוד הנחה Woo (`shop_coupon`) | `wp_import.coupons` | לא מופעל אוטומטית |
-| שובר שנמכר וטרם מומש | `wp_import.vouchers` | `coupon_codes` / `vouchers` + הזמנת מינימום |
-| שובר שמומש / פג | staging | לא מוקרן כפעיל |
-
-כללי כסף לשובר חי שמוקרן:
-
-- `paid_on_site` מאגורות התשלום ההיסטורי (או מחיר הדיל); אין להמציא.
-- `platform_percent` מה-curation של מוצר האב; עמלה/ledger רק דרך המנגנון החי (triggers), לא ידנית בסקריפט.
-- אחרי מימוש באתר הישן: נשאר ארכיון; האתר החדש לא מאפשר סריקה כפולה (קוד לא פעיל / לא מיובא).
-
-זיהוי טבלאות ה-plugin: שלב preflight חובה (שם ה-plugin משתנה בין התקנות).
+קיים / מתוכנן תחת `scripts/wp-import/`: extract (wxr), transform, load, media, project, validate. שני מנעולים לכתיבה: dry-run כברירת מחדל + `WP_IMPORT_ALLOW_WRITES=1` ו-`--apply`.
 
 ---
 
-## 6. Staging: `wp_import`
+## 3. מה זה "33 טבלאות" + מטריצת ייבוא
 
-טבלאות ליבה (032):
+מקור המספר: `docs/MIGRATION-BACKLOG.md` (2026-07-29) = **33 טבלאות ב-`public` בפרודקשן**.
 
-- `products`, `categories`, `customers`, `orders`, `order_items`
-- `coupons`, `vouchers`, `media`, `url_inventory`
-- `id_map`, `issues`, `import_batches` (או שקול ב-057)
-
-עקרונות:
-
-- לא חשוף ל-PostgREST ציבורי.
-- כל שגיאת הקרנה → `issues` עם חומרה `error`/`warn`.
-- שער הקרנה ל-`public`: אפס `error` פתוחים על ישויות המיועדות ל-PROJECT.
-
----
-
-## 7. Curation (שער אנושי לפני PROJECT)
-
-קובץ / גיליון curation חייב לכלול לפחות:
-
-| שדה | חובה ל |
+| סטטוס ייבוא | משמעות |
 |---|---|
-| `wp_product_id` | הכל |
-| `supplier_id` (UUID חי) | כל מוצר שמוקרן |
-| `platform_percent` | כל מוצר שמוקרן |
-| `type` = coupon \| physical | הכל |
-| `coupon_price_ils` | coupon |
-| `coupon_expiry_days` | coupon (physical=0) |
-| `slug` לטיני מאושר | הכל |
-| `category_target_slug` | הכל |
+| **PROJECT** | נכתב ל-`public` אחרי curation + שערי integrity |
+| **CURATION** | נוצר ידנית / ממופה, לא אוטומט מ-XML |
+| **ARCHIVE** | נשמר ב-`wp_import` בלבד |
+| **UNTOUCHED** | לא נוגעים בייבוא |
 
-בלי שורה מלאה: המוצר נשאר ב-staging.
+### 3.1 מטריצה (ליבה + עד 33)
 
-ספקים: האדמין יוצר ב-`suppliers` (שם, טלפון, כתובת, לוגו ל-PDP) לפני ההקרנה. אין יצירת ספק אוטומטית מטקסט שיווקי.
+| טבלה | סטטוס | מקור WXR |
+|---|---|---|
+| `products` | PROJECT | `product` (+ curation) |
+| `product_variants` | PROJECT | `product_variation` |
+| `product_images` | PROJECT | `attachment` מקושר |
+| `categories` | CURATION map | `product_cat` terms → seed |
+| `suppliers` | CURATION | אין ב-WXR |
+| `profiles` | PROJECT partial | `<wp:author>` + השלמה מאוחרת |
+| `user_addresses` | PROJECT partial | meta לקוח אם יתווסף מקור |
+| `orders` | ARCHIVE headers / PROJECT minimal לרק שובר חי | `shop_order` (בלי lines) |
+| `order_items` | לא מ-WXR | דורש dump/REST |
+| `coupon_codes` / vouchers | PROJECT אם ב-XML או מקור משני | plugin-dependent |
+| `coupons` | ARCHIVE | `shop_coupon` אם קיים ב-export |
+| `seo_redirects` | PROJECT | slugs ישנים + pages |
+| `media_assets` | PROJECT optional | attachments |
+| `vendors` | UNTOUCHED | |
+| `carts` | UNTOUCHED | |
+| `payments` / tokens / webhooks | UNTOUCHED | |
+| `wallet_*` | SEED via Auth triggers | לא יתרות WP |
+| `escrow_holds` / `split_executions` | UNTOUCHED | אין Escrow במודל |
+| `referrals` / `affiliates` | UNTOUCHED | |
+| `audit_log` / rate_limits | UNTOUCHED | |
+| `payout_*` / `settlement_*` | UNTOUCHED | |
+| `agent_*` / analytics | UNTOUCHED | |
 
----
-
-## 8. סדר הרצה (Runbook)
-
-### שלב 0: גישה וגיבוי
-
-1. SSH / גישת DB ל-WP; הרשאות GSC לקריאת לחיצות.
-2. mysqldump + rsync uploads + שמירת sitemap.
-3. וידוא Supabase **Pro** + `pg_dump` חיצוני עדכני (BACKUP-DR).
-4. Preflight: HPOS כן/לא, plugin שוברים, מטבע ILS, מספר מוצרים.
-
-### שלב 1: Staging
-
-1. החלת `032` (ועזרי log אם 057) על סביבת DEV קודם.
-2. טעינת dump → חילוץ → `wp_import` (idempotent).
-3. בניית `url_inventory` + התחלת הורדת מדיה.
-
-### שלב 2: Curation
-
-1. ייצוא דוח מוצרים חסרים.
-2. יצירת ספקים + מילוי אחוזים + slugs + מיפוי קטגוריות.
-3. ייבוא קובץ curation ל-staging.
-
-### שלב 3: מדיה
-
-1. המרה + העלאה ל-Storage/R2.
-2. שער: אין failed על מועמד ל-active.
-
-### שלב 4: Project ל-DEV
-
-סדר תלויות מחייב:
-
-1. `suppliers` (curation)
-2. מיפוי `categories` (רק id_map / קישור)
-3. `products` + `product_variants`
-4. תמונות / jsonb
-5. `seo_redirects`
-6. לקוחות: Auth → profiles → addresses
-7. שוברים חיים: הזמנת מינימום → order_items → coupon_codes/vouchers
-
-אחרי כל שלב: validate (ספירות, FK, מדגם ידני 10 מוצרים + 5 משתמשים + 5 שוברים).
-
-### שלב 5: תיקון עד אפס error
-
-חזרה על 2-4 עד שער ירוק.
-
-### שלב 6: Prod
-
-1. תחזוקת חלון קצר (אופציונלי) / קפיאת הזמנות חדשות ב-WP אם אפשר.
-2. Dump סופי + diff מול DEV.
-3. אותה שרשרת על prod (אחרי שרשרת מיגרציות כסף/סכימה מעודכנת).
-4. Smoke: בית, PDP, login Google למשתמש מיובא, הצגת שובר, 301 מ-URL ישן.
-5. DNS / Vercel כבר על הדומיין: וידוא proxy ל-301.
-6. WP נשאר חי לקריאה ≥ שבועיים (rollback תעבורה).
-
-### שלב 7: נקודת אל-חזור
-
-ההזמנה האמיתית הראשונה בסטאק החדש = אין purge המוני. תיקונים קדימה דרך id_map וסקריפטי תיקון נקודתיים.
+רשימת 33 המלאה בפרודקשן עשויה לכלול טבלאות נוספות שנמדדו אחרי `DB-SCHEMA` (28). כל טבלה חדשה = `UNTOUCHED` עד להחלטה מפורשת.
 
 ---
 
-## 9. Rollback
+## 4. מיפוי שדות מ-XML
+
+### 4.1 מוצר (`wp:post_type=product`)
+
+| WXR | יעד | כלל |
+|---|---|---|
+| `wp:post_id` | `id_map(product)` | |
+| `title` | `name_he` | trim; ריק = error |
+| `content:encoded` | `description_he` | ניקוי HTML; img דרך media map |
+| `wp:post_name` | url_inventory + 301 | slug עברי לא ל-`products.slug` |
+| curation slug | `products.slug` | לטיני ייחודי |
+| `wp:status` | `status` | publish→מועמד active |
+| `_sku` | `sku` | |
+| `_price` / `_sale_price` / `_regular_price` | מחירים ILS | אגורות רק בנתיב הזמנות |
+| `_stock*` | `stock_quantity` | |
+| `_thumbnail_id` + `_product_image_gallery` | images | אחרי upload |
+| `_yoast_wpseo_*` | seo_* | אם לא תבניתי |
+| domain product_cat | category map | |
+| curation | `supplier_id`, `platform_percent`, `type`, `coupon_price_ils`, `coupon_expiry_days` | שערי חובה |
+
+סינון: לא לייבא `reverse-withdrawal-payment`.
+
+Slug ממוחזר מול כותרת (נמצאו ~18/45): **שומרים URL ישן ל-SEO** + 301 אם מחליפים slug לטיני חדש.
+
+### 4.2 תמונות (`attachment`)
+
+| WXR | יעד |
+|---|---|
+| `wp:post_id` | id_map(media) |
+| `wp:attachment_url` | download source |
+| parent / featured | קישור למוצר |
+| לאחר המרה WebP | Storage path `wp/<attachment_id>/…` + `products.images` |
+
+לא להעלות attachment של מוצר `private` שנפסל מהקטלוג (באג ידוע ב-dry run).
+
+### 4.3 קטגוריות
+
+רק `<wp:term><wp:term_taxonomy>product_cat`. מיפוי ל-slug קנוני ב-curation. 301 מ-URL WP.
+
+### 4.4 משתמשים / מחברים
+
+`<wp:author>` → מועמדים ל-Auth רק אם אימייל לקוח אמיתי; סיסמאות לא מועברות; יצירה ב-Auth Admin API; opted-out.
+
+ייבוא לקוחות מלא (כל רוכש) = שלב משני (dump/REST), לא חובה לקטלוג.
+
+### 4.5 הזמנות
+
+| מ-WXR | אפשר |
+|---|---|
+| order id, status, totals meta, billing email | כן → staging `orders` headers |
+| line items / SKUs / כמות | **לא** |
+
+בלי line items: אין PROJECT ל-ledger. שוברים חיים דורשים מקור שיש בו קוד+מוצר+סטטוס מימוש.
+
+### 4.6 קופונים / שוברים
+
+| סוג | מ-WXR? | ל-public |
+|---|---|---|
+| `shop_coupon` | אם קיים ב-export | ARCHIVE |
+| שובר נמכר חי | תלוי plugin ב-XML | PROJECT אחרי curation כסף |
+| מומש/פג | staging | לא פעיל |
+
+---
+
+## 5. סדר הרצה
+
+| # | שלב | קלט | פלט | כותב public? |
+|---|---|---|---|---|
+| 0 | Preflight | XML path, sha256, wxr_version | דוח | לא |
+| 1 | Parse + classify | `data-import/wp-backup/*.xml` | raw items | לא |
+| 2 | Transform | raw | normalized JSON | לא |
+| 3 | Load staging | normalized | `wp_import.*` | לא |
+| 4 | Media | media list + uploads/HTTP | Storage + media map | לא (bucket כן) |
+| 5 | Curation import | CSV/גיליון | staging flags | לא |
+| 6 | Project catalog | staging + curation | products, variants, images, category links, seo_redirects | **כן** |
+| 7 | Project users (אופציונלי) | authors / customers | auth+profiles | **כן** |
+| 8 | Project live vouchers (אופציונלי) | מקור מלא | coupon_codes + min order | **כן** |
+| 9 | Integrity suite | הכל | דוח pass/fail | לא |
+| 10 | Cutover | DNS / smoke | ייצור | : |
+
+סדר תלויות בתוך project catalog: `suppliers` (ידני) → category map → `products` → variants → images → `seo_redirects` (מוצרים, קטגוריות, **עמודים**).
+
+---
+
+## 6. Rollback
 
 | מצב | פעולה |
 |---|---|
-| לפני נקודת אל-חזור, batch ידוע | מחיקת שורות **שהוכנסו ב-batch** בסדר תלויות הפוך (vouchers → order_items → orders → products…), לפי `id_map` / `fn_rollback_batch` אם קיים |
-| תעבורה רעה אחרי DNS | החזרת DNS ל-WP (TTL נמוך מראש, למשל 300) |
-| קוד אפליקציה רע | Vercel rollback (לא מחזיר DB) |
-| מדיה | לא מוחקים blobs משותפים; ניתוק הפניות בלבד |
-| אחרי הזמנה חיה | אין rollback מלא; תיקון קדימה + תמיכה ידנית |
+| Dry-run | אין מה לגלגל |
+| אחרי load staging בלבד | `TRUNCATE`/`DELETE` ל-batch ב-`wp_import` לפי `import_batches` |
+| אחרי project, לפני הזמנה חיה | מחיקת שורות לפי `id_map` בסדר הפוך: redirects → images → variants → products; משתמשים רק אם נוצרו ב-batch |
+| תעבורה | DNS חזרה ל-WP (TTL נמוך מראש) |
+| קוד | Vercel rollback (לא DB) |
+| Storage | לא מוחקים blobs משותפים; מנתקים הפניות |
+| אחרי הזמנה אמיתית בחדש | אין purge; תיקון קדימה |
 
-תרגיל: להריץ project+rollback פעם אחת על DEV לפני prod (כמו DR drill).
-
----
-
-## 10. שערי איכות (Definition of Done)
-
-- [ ] אפס `issues` ברמת error לישויות PROJECT
-- [ ] כל מוצר active עם `supplier_id`, `platform_percent`, תמונה ראשית, slug לטיני
-- [ ] מדגם 301: לפחות כל מוצר שהיה ב-sitemap
-- [ ] משתמש מיובא מתחבר ב-Google באותו אימייל
-- [ ] שובר חי מוצג בחשבון; קוד שמומש ב-WP לא ניתן למימוש מחדש
-- [ ] אין opt-in שיווקי מיובא
-- [ ] `pg_dump` אחרי הייבוא נשמר offsite
-- [ ] WP dump + uploads נשמרים 7 שנים (ארכיון משפטי)
+נקודת אל-חזור = הזמנה משולמת ראשונה בסטאק החדש.
 
 ---
 
-## 11. סיכונים ופתיחות
+## 7. Integrity checks (חובה לפני PROJECT ל-prod)
 
-| סיכון | הפחתה |
+### 7.1 Pre-parse / parse
+
+| בדיקה | Pass |
 |---|---|
-| Plugin שוברים לא מזוהה | Preflight חוסם הקרנת vouchers |
-| Drift סכימה (agorot / שמות עמודות) | אימות חי לפני שלב 4 |
-| `seo_redirects` חסר בפרודקשן | Blocker; להחיל מיגרציית SEO לפני קאטאובר |
-| כפילות אימייל / משתמש חדש | id_map + never overwrite |
-| מחיר קופון חסר ב-meta | curation ידני; אחרת לא מייבאים כ-coupon |
-| צוות ממלא platform_percent לא נכון | ביקורת אדמין + דוח חריגות אחרי ייבוא |
+| קובץ קיים תחת `data-import/wp-backup/` | כן |
+| `wp:wxr_version` נקרא | 1.2 (או מתועד) |
+| sha256 מתועד בדוח הריצה | כן |
+| מספר `item` > 0 | כן |
+| אין כפילות `wp:post_id` | 0 כפילויות |
+
+### 7.2 Catalog
+
+| בדיקה | Pass |
+|---|---|
+| אפס blog `<wp:category>` בטבלת קטגוריות מוצר | 0 |
+| אין slug `uncategorized-2` שנוצר מקוליזיה מלאכותית | 0 |
+| מוצר Dokan bookkeeping לא ב-normalized products | 0 |
+| כל product מועמד: `name_he` לא ריק | 100% |
+| כל product מועמד ל-active: `supplier_id` + `platform_percent` ב-curation | 100% |
+| coupon: `coupon_price_ils` + `coupon_expiry_days` | 100% |
+| מחיר מקור: אין שברי אגורה לא צפויים | 0 errors |
+| כל thumbnail_id מצביע ל-attachment קיים או issue | 0 orphans ל-active |
+| attachment של private-excluded לא ב-upload set | 0 |
+| ספירת products normalized ≈ 45±ε אחרי פילטרים | תואם dry-run |
+
+### 7.3 SEO / URLs
+
+| בדיקה | Pass |
+|---|---|
+| כל product/category publish ב-`url_inventory` | 100% |
+| כל עמוד ציבורי רלוונטי (`privacy`, `terms`, `shop`, `about`, …) ב-inventory או ברשימת דילוג מאושרת | 100% |
+| `redirect_coverage` לא מדווח 100% על inventory חסר עמודים | ה-gate בודק pages גם כן |
+| אין התנגשות slug לטיני ב-`products` | 0 |
+
+### 7.4 Media
+
+| בדיקה | Pass |
+|---|---|
+| download/upload status ל-active products | אפס pending/failed |
+| כל `products.images[0]` URL מחזיר 200 | מדגם 100% + סריקה מלאה |
+| dedupe sha256 עקבי | אין כפילות מיותרות בדוח |
+
+### 7.5 Users / money (אם רצים)
+
+| בדיקה | Pass |
+|---|---|
+| אין INSERT ישיר ל-`auth.users` | רק Admin API |
+| כל profile חדש: marketing channels false | 100% |
+| אין PROJECT של order_items מ-WXR בלבד | gate נכשל אם מנסים |
+| שובר חי: קוד ייחודי, סטטוס issued, קישור מוצר | 100% |
+
+### 7.6 Post-project SQL smoke
+
+```sql
+-- illustrative checks on target DB
+SELECT count(*) FROM products WHERE status = 'active';
+SELECT count(*) FROM products WHERE supplier_id IS NULL OR platform_percent IS NULL;
+SELECT count(*) FROM products p
+  LEFT JOIN suppliers s ON s.id = p.supplier_id
+  WHERE p.status = 'active' AND s.id IS NULL;
+SELECT slug, count(*) FROM products GROUP BY 1 HAVING count(*) > 1;
+```
+
+Pass: ספירת NULL/orphan/duplicate = 0 למועמדי production.
+
+### 7.7 דוח חובה
+
+כל ריצה כותבת:
+
+- `wp_import/reports/<batch>/summary.json` (ספירות, sha256 של XML, שערי pass/fail)
+- רשימת `issues` (error/warn)
+- בלי `error` פתוחים על ישויות PROJECT → מותר `--apply` ל-prod
 
 ---
 
-## 12. מה במפורש מחוץ למסמך זה
+## 8. Curation (שער אנושי)
 
-- מימוש סקריפטי `scripts/wp-import/*.mjs` (קיימים בנפרד)
-- עיצובי UI של מסכי curation
-- מיגרציית ביקורות / בלוג
-- תרגום EN
+חובה לפני project:
+
+- `wp_post_id`
+- `supplier_id`
+- `platform_percent`
+- `type` (`coupon`|`physical`)
+- `slug` לטיני
+- `category_target_slug`
+- ל-coupon: `coupon_price_ils`, `coupon_expiry_days`
+
+---
+
+## 9. כסף (תזכורת לייבוא)
+
+| כלל | השלכה |
+|---|---|
+| קופון שולם במלואו באתר | לא לחשב מחיר כ-% מפנים |
+| אין Escrow | לא ליצור `escrow_holds` מייבוא |
+| `platform_percent` | curation בלבד; snapshot רק בהזמנה חיה / שובר חי מאושר |
+| הזמנות היסטוריות | ARCHIVE; לא מזהמים settlement |
+
+---
+
+## 10. ממצאי dry-run שחייבים להישאר בבלוקרים
+
+| # | ממצא | פעולת חובה במסמך/קוד |
+|---|---|---|
+| B1 | ערבוב `<wp:category>` → 17 קטגוריות מדומות | parse רק `product_cat` מ-`<wp:term>` |
+| B2 | מוצר Dokan נסתר נספר | filter לפי slug/SKU ידוע |
+| B3 | תמונת private עולה | media set = רק מוצרים שעוברים catalog filter |
+| B4 | inventory בלי pages → coverage מזויף | לכלול pages ב-url_inventory/gate |
+| B5 | orders בלי lines | אסור project order_items מ-WXR |
+| B6 | slugs ממוחזרים מול כותרת | החלטת SEO: שמירה + 301 אם מחליפים |
+
+---
+
+## 11. Definition of Done (לפני DNS)
+
+- [ ] XML תחת `data-import/wp-backup/` עם sha256 בדוח
+- [ ] B1-B6 סגורים או מוחרגים בכתב
+- [ ] Integrity suite ירוק על DEV
+- [ ] מדגם ידני: 10 PDP, 5 301, login לאימייל מיובא (אם יובא)
+- [ ] `pg_dump` אחרי project נשמר offsite
+- [ ] WP נשאר זמין ≥ 14 יום
+
+---
+
+## 12. Out of scope במסמך זה
+
+- מימוש parsers בקוד (קיים ב-`scripts/wp-import`)
+- יישום UI ל-curation
+- ייבוא ביקורות / Elementor כעמודים חיים
 
 ---
 
@@ -371,4 +393,5 @@ Rollback לא מוחק אובייקטים shared ב-Storage (GC מאוחר).
 
 | Date | Change |
 |---|---|
-| 2026-07-31 | מסמך מחייב ב-`arch/wp-migration`: מטריצת 33 טבלאות, מיפוי מוצרים/קופונים/תמונות/משתמשים, סדר הרצה, rollback; docs בלבד |
+| 2026-07-31 | מסמך ראשון (dump-oriented) על `arch/wp-migration` |
+| 2026-07-31 | רענון בוקר: מקור מחייב WXR ב-`data-import/wp-backup/`, parse, מטריצת 33, סדר הרצה, rollback, integrity checks, בלוקרי dry-run |
