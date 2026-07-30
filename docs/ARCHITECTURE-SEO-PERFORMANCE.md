@@ -1,261 +1,190 @@
 # ARCHITECTURE-SEO-PERFORMANCE.md
 
-ארכיטקטורת SEO וביצועים ל-KenyonExpress (מסמך מחייב).
+ארכיטקטורת **SEO + ביצועים** לחנות KenyonExpress (Next.js 15 App Router).
 
-Status: BINDING for `arch/admin-supplier` (2026-07-30)
-Worktree בלבד: `/Users/ofir/kenyonexpress-web/ke-arch`. **Documentation only.**
-Stack: **Next.js 15** App Router (RSC), עברית RTL, host קנוני `kenyonexpress.co.il`.
-Companions: `docs/ARCHITECTURE-NOTIFICATIONS.md`, `docs/ADMIN-PRODUCT-PAGE-SPEC.md`, `docs/ARCHITECTURE-MOBILE-APP.md`, `docs/ARCHITECTURE-WP-MIGRATION.md`.
+Status: BINDING · worktree
 
----
-
-## 0. כסף על משטחי SEO
-
-| סוג | מחיר ב-Offer / meta | אסור |
-|---|---|---|
-| קופון | `coupon_price_ils` (תשלום מלא באתר) | לגזור אחוז משווי; Escrow; `platform_percent` ללקוח |
-| פיזי | מחיר אחרי `discount_percent` | לקרוא אחוז חי אחרי קנייה במקום סנאפשוט |
-
-ארגון ב-JSON-LD של הבית = המרקטפלייס. `seller` ב-PDP = הספק. אין עמלה קבועה בטקסט.
-
----
-
-## 1. Next.js 15: SSR / ISR לפי סוג דף
-
-| דף | נתיב | מצב | `revalidate` / cache | למה |
-|---|---|---|---|---|
-| בית | `/` | **ISR** | 120s; tag `home` | דילים טריים בלי DB בכל request |
-| קטגוריה | `/category/[slug]` | **ISR** | 300s; `category:{id}`, `catalog` | קטלוג משתנה לאט יותר מ-PDP |
-| מוצר (קופון/פיזי) | `/product/[slug]` | **ISR** | 120s; `product:{id}`, `catalog` | שינוי מחיר/תוכן → on-demand revalidate |
-| אינדקס מוצרים | `/products` | **ISR** | 180s; `catalog` | רשימה |
-| עגלה | `/cart` | **Dynamic SSR** פרטי | `private, no-store` | סשן/קוקי; אסור CDN ציבורי |
-| checkout / account | `/checkout*`, `/account/**` | Dynamic פרטי | `private, no-store` | כסף + auth |
-| חיפוש | `/search` | Dynamic | `s-maxage=30, swr=60` | noindex; Meilisearch |
-| sitemap | `/sitemap.xml` | ISR | 3600s; `sitemap` | קריאה מ-Supabase |
-| admin / supplier | `/admin/**`, `/supplier/**` | Dynamic פרטי | `private, no-store` | צוות |
-
-כללי זהב:
-
-- נתיב קטלוג ציבורי: לקוח anon/RLS + `next: { tags, revalidate }`. **בלי** service-role ב-HTML ציבורי.
-- אחרי פרסום באדמין: `revalidateTag` למוצר, catalog, sitemap, ו-home אם featured.
-- HTML של עגלה לא משותף בין משתמשים ב-edge.
-
----
-
-## 2. SEO עברי RTL
-
-Root: `lang="he"` `dir="rtl"`.
-
-### 2.1 Meta (`generateMetadata`)
-
-| Meta | מוצר | קטגוריה | בית | עגלה |
-|---|---|---|---|---|
-| `title` | `seo_title` או `{name_he} \| קניון אקספרס` | `{name_he} \| קניון אקספרס` | מותג + ערך | כותרת + noindex |
-| `description` | 120–160 תווים עברית | תיאור קטגוריה | ברירת מחדל עברית | n/a |
-| `canonical` | `/product/{slug}` | `/category/{slug}` | `/` | self + noindex |
-| `og:locale` | `he_IL` | `he_IL` | `he_IL` | |
-| `og:image` | גלריה R2 מוחלט | קטגוריה / OG אתר | OG / hero | |
-| `robots` | index אם published | index | index | `noindex,nofollow` |
-
-מחיר בתיאור (אופציונלי): רק סכום לתשלום באתר ב-`₪X.XX`.
-
-### 2.2 hreflang
-
-```html
-<link rel="alternate" hreflang="he-IL" href="https://kenyonexpress.co.il/..." />
-<link rel="alternate" hreflang="he" href="https://kenyonexpress.co.il/..." />
-<link rel="alternate" hreflang="x-default" href="https://kenyonexpress.co.il/..." />
+```
+/Users/ofir/kenyonexpress-web/ke-arch
 ```
 
-בלי חלופה באנגלית עד שתהיה חנות EN.
+branch:
 
-### 2.3 On-page
+```
+arch/docs-queue
+```
 
-H1 יחיד = `name_he`. פירורי לחם בעברית. slug יציב ASCII. פרטי ספק בכל PDP.
+Date: 2026-07-31  
+Scope: docs בלבד.  
+Companions: `ARCHITECTURE-PERFORMANCE.md` (ke-arch-performance), `ARCHITECTURE-SEO.md` / sitemap, `refs/` visual gates, Go-Live checklist.
 
-נתיבים פרטיים (`/cart`, `/checkout`, `/account`, `/admin`, `/supplier`, `/redeem`, `/search`): noindex (+ disallow ב-robots לפי הטבלה למטה).
+Stack: Next.js App Router, RSC, Meilisearch (חיפוש), R2/images, Hebrew RTL, Heebo, brand `#fed700`.
 
 ---
 
-## 3. JSON-LD: Product / Offer / Organization
-
-מחירים: מחרוזת עשרונית ILS. `priceCurrency`: `"ILS"`.
-
-### Organization (בית)
-
-```json
-{
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": "קניון אקספרס",
-  "url": "https://kenyonexpress.co.il/",
-  "logo": "https://cdn…/logo.png"
-}
-```
-
-### Product + Offer (PDP)
-
-```json
-{
-  "@context": "https://schema.org",
-  "@type": "Product",
-  "name": "{name_he}",
-  "image": ["https://r2…/…"],
-  "description": "{short}",
-  "offers": {
-    "@type": "Offer",
-    "url": "https://kenyonexpress.co.il/product/{slug}",
-    "priceCurrency": "ILS",
-    "price": "{on_site_charge_ils}",
-    "availability": "https://schema.org/InStock",
-    "seller": {
-      "@type": "Organization",
-      "name": "{supplier.name}",
-      "telephone": "{supplier.phone}",
-      "address": "{supplier.address}"
-    }
-  }
-}
-```
-
-| סוג | `offers.price` |
-|---|---|
-| קופון | `coupon_price_ils` |
-| פיזי | מחיר אחרי הנחה |
-
-בלי `AggregateRating` מזויף. בלי `platform_percent` ב-Offer. BreadcrumbList: בית → קטגוריה → מוצר.
-
----
-
-## 4. Core Web Vitals + תמונות (R2 + next/image)
-
-### יעדים (p75 מובייל)
+## 0. יעדים
 
 | מדד | יעד |
 |---|---|
-| LCP | &lt; 2.5s |
-| CLS | &lt; 0.1 |
-| INP | &lt; 200ms |
+| LCP (mobile, מפתח) | ≤ 2.5s |
+| CLS | ≤ 0.1 |
+| INP | ≤ 200ms |
+| Lighthouse Perf (home/PDP) | ≥ 90 (או חריג מתועד ב-Go-Live) |
+| Lighthouse a11y | ≥ 90 |
+| Core pages indexable | home, category, product, content |
+| Visual diff vs refs | לפי סף `compare.mjs` בדפי מפתח |
 
-### לפי דף
-
-| דף | LCP | CLS | INP |
-|---|---|---|---|
-| בית | hero עם `priority` | יחס קבוע ל-hero | מינימום JS |
-| קטגוריה | שורת כרטיסים ראשונה | `aspect-ratio` לכרטיס | רשימת RSC |
-| מוצר | `gallery[0]` priority | גלריה + בלוק מחיר יציבים | ATC קטן |
-| עגלה | פרטי; INP חשוב מ-SEO | שורות יציבות | בלי צד ג' כבד |
-
-### R2 + `next/image`
-
-- אחסון ב-Cloudflare R2; `R2_PUBLIC_BASE_URL` ציבורי.
-- `images.remotePatterns` מאפשר את ה-host.
-- AVIF → WebP → fallback.
-- Srcset בערך: 320, 640, 960, 1280, 1920; כרטיסים עד ~640.
-- Alt בעברית; OG = URL מוחלט ל-R2 (לא URL של האופטימייזר).
-- רק first viewport עם `priority`.
-
-אסור בקטלוג: תמונות בלי מידות, כותרת/מחיר client-only, צ'אט חוסם LCP.
+עקרון: **Web = ערוץ רכישה SEO.** אפליקציה לא מחליפה אינדוקס.
 
 ---
 
-## 5. Sitemap + robots מ-Supabase
+## 1. SEO טכני
 
-### `src/app/sitemap.ts`
+### 1.1 Metadata
 
-| מקטע | מקור | priority |
-|---|---|---|
-| `/` + משפטי | סטטי | 1.0 / 0.5 |
-| קטגוריות | קטגוריות חיות | 0.8 |
-| מוצרים | published/active בלבד | 0.9 |
+כל דף ציבורי:
 
-`lastModified` = `updated_at`. ISR 3600 + tag `sitemap`.
+- `title` ייחודי בעברית (תבנית: `{שם} | KenyonExpress`)
+- `description` 140–160 תווים, מחיר/ערך בלי לשקר מול `coupon_price`
+- `alternates.canonical` אבסולוטי על דומיין הפרוד
+- Open Graph + Twitter עם תמונה אמיתית של המוצר/קטגוריה
+- `robots`: noindex על `/account/**`, `/checkout/**`, `/admin/**`, `/supplier/**`, APIs
 
-**לא לכלול:** טיוטות, archived, needs-pricing, `/redeem`, `/search`, `/cart`, `/checkout`, `/account`, `/admin`, `/supplier`, API.
+### 1.2 URL
 
-### `src/app/robots.ts`
-
-- Allow לקטלוג
-- Disallow: `/admin`, `/account`, `/supplier`, `/api`, `/checkout`, `/cart`, `/login`, `/search`, `/redeem`
-- `Sitemap: https://kenyonexpress.co.il/sitemap.xml`
-
-### Revalidate
-
-פרסום/הסרה באדמין → tags של מוצר + `sitemap` + `catalog`. ייבוא המוני → בסוף job. GSC ממקד ישראל; 301 מ-`seo_redirects` ב-edge אחרי cutover מ-WP.
-
----
-
-## 6. Meilisearch וקישורים פנימיים
-
-| משטח | התנהגות |
+| ישות | תבנית |
 |---|---|
-| `/search` | שאילתת Meilisearch; noindex |
-| "מוצרים דומים" ב-PDP | related מ-Meili כ-`<a href="/product/{slug}">` עם עוגן עברי |
-| קטגוריה דלה | הצעות sibling + top hits |
-| מסילות בית | featured מ-DB; אופציונלי popular מ-Meili |
+| בית | `/` |
+| קטגוריה | `/category/[slug]` או הקיים בפרויקט |
+| מוצר | `/product/[slug]` |
+| חיפוש | `/search?q=` (noindex או index עם זהירות על פרמטרים) |
 
-מסמך אינדקס: `id`, `slug`, `name_he`, קטגוריות, מחיר לתצוגה, `status`. בפרסום: upsert ל-Meili + revalidate HTML (HTML לא מחכה ל-Meili ל-ISR).
+חוקים: slug יציב בעברית/לטינית; הפניות 301 מ-WP ישן לפי טבלת מיפוי; בלי query כפול לתוכן קנוני.
 
----
-
-## 7. שכבות cache
+### 1.3 Sitemap / robots
 
 ```
-Browser
-  -> Vercel Edge (ISR HTML, static, next/image)
-  -> Next data cache / fetch tags
-  -> Upstash Redis (מפתחות חמים אופציונליים)
-  -> Supabase / Meilisearch
+/robots.txt  → Allow / ; Disallow account, checkout, admin, supplier
+/sitemap.xml → products + categories + static (chunked אם >50k)
 ```
 
-| שכבה | מה | TTL / ביטול |
-|---|---|---|
-| Vercel Edge | ISR לפי §1; static immutable | on-demand tags |
-| Next fetch | קריאות RSC עם tags | `revalidateTag` |
-| Upstash | רשימות קטגוריה חמות, cache לתוצאות חיפוש פופולריות, מוני rate-limit | 30–300s + מחיקה בפרסום |
-| Meilisearch | מסמכי חיפוש | upsert/delete לפי סטטוס |
+רענון sitemap אחרי publish מוצר.  
+`lastmod` מ-`updated_at`.
 
-לא לשמור HTML של cart/checkout/account ב-CDN ציבורי. לא לשמור כרטיסים או service-role ב-Redis.
+### 1.4 Structured data (JSON-LD)
 
----
+| דף | סוג |
+|---|---|
+| מוצר | `Product` + `Offer` (מחיר = מחיר לתשלום באתר לקופון: `coupon_price`) |
+| ארגון | `Organization` בבית |
+| פירורים | `BreadcrumbList` |
 
-## 8. Lighthouse CI (GitHub Actions)
+אסור לשים מחיר מחירון כ-Offer אם הלקוח משלם באתר רק את מחיר הקופון.
 
-Job על PRs שנוגעים ב-`src/app/**` / קומפוננטות / SEO (בהתחלה advisory; אחר כך required).
+### 1.5 תוכן SEO
 
-| נתיב | Performance | LCP | CLS | TBT |
-|---|---|---|---|---|
-| `/` | ≥ 0.85 | ≤ 2500ms | ≤ 0.1 | ≤ 300ms |
-| קטגוריה דמו | ≥ 0.85 | ≤ 2500ms | ≤ 0.1 | ≤ 300ms |
-| מוצר דמו | ≥ 0.85 | ≤ 2500ms | ≤ 0.1 | ≤ 350ms |
-| `/cart` | ≥ 0.80 | n/a SEO | ≤ 0.1 | ≤ 400ms |
-
-בדיקת עשן נוספת: `lang=he` / `dir=rtl` במסמך.
+- H1 יחיד לכל דף
+- תיאור מוצר אמיתי (לא רק ספאם מילות מפתח)
+- תמונות עם `alt` בעברית תיאורי
+- דפי קטגוריה: טקסט קצר מעל/מתחת לגריד (לא חוסם LCP)
 
 ---
 
-## 9. Edge + host
+## 2. ביצועים (App Router)
 
-- `metadataBase` = host קנוני בלבד.
-- Middleware/proxy: `seo_redirects` כ-301 לפני render; לא לקשח כ-200.
-- אזור edge קרוב לישראל (לרוב `fra1`).
+### 2.1 רינדור
+
+| משטח | אסטרטגיה |
+|---|---|
+| Home / category / PDP | RSC + cache tags; revalidate on publish |
+| חיפוש | edge/server עם Meili; לא לגרור את כל הקטלוג לדפדפן |
+| Account / checkout | dynamic, noindex |
+| תמונות | `next/image` או loader ל-R2; sizes נכונים ל-RTL grid |
+
+### 2.2 תקציב JS
+
+- הימנע מ-client components כבדים ב-hero
+- Zustand cart: bundle קטן; לא לגרור את כל עמוד התשלומים ל-home
+- Fonts: Heebo דרך `next/font` עם subset
+- שלישיים: Cardcom רק ב-checkout; אנליטיקה אחרי idle/consent
+
+### 2.3 תמונות ו-LCP
+
+- Hero: עדיפות `priority` / preload לתמונה אחת בלבד
+- שאר הגריד: lazy
+- פורמט AVIF/WebP
+- מימדים שמורים למניעת CLS (חשוב לכרטיסי מוצר 485px וכו' לפי מדידות)
+
+### 2.4 Caching
+
+```
+CDN (Vercel) → RSC payload / static
+Supabase → לא לחשוף service role
+Meilisearch → אינדקס נפרד, לא DB לכל keystroke בלי debounce
+```
+
+Tag invalidation: `product:{id}`, `category:{slug}`, `home`.
 
 ---
 
-## 10. Acceptance
+## 3. מדידה ושערים
 
-- [ ] מצבי ISR/SSR לפי §1 לבית/קטגוריה/מוצר/עגלה
-- [ ] Meta עברי + `hreflang=he-IL` + canonical
-- [ ] JSON-LD Offer במחיר תשלום באתר (ILS); seller = ספק
-- [ ] Sitemap מ-Supabase; robots חוסם פרטיים
-- [ ] R2 + next/image; LCP מתועדף
-- [ ] קישורים פנימיים מ-Meilisearch כ-`<a href>`
-- [ ] Edge + Upstash; עגלה לא ב-cache ציבורי
-- [ ] תקציב Lighthouse CI מוגדר
-- [ ] בלי Escrow / עמלה קבועה ב-meta או schema
+| כלי | שימוש |
+|---|---|
+| Lighthouse CI | PR על home + product |
+| `compare.mjs` | רגרסיה ויזואלית מול `refs/` |
+| Web Vitals (RUM) | אופציונלי אחרי GA |
+| Search Console | אחרי DNS |
+
+שערי Go-Live: ראה `ARCHITECTURE-GO-LIVE-CHECKLIST.md` §7.
 
 ---
 
-## 11. Related
+## 4. RTL / מותג והשפעה על perf
 
-`docs/ARCHITECTURE-NOTIFICATIONS.md`, `docs/ARCHITECTURE-WP-MIGRATION.md`, `docs/ADMIN-PRODUCT-PAGE-SPEC.md`, `docs/ARCHITECTURE-MOBILE-APP.md`.
+- `dir=rtl` ב-`<html>` (לא JS שמחליף אחרי paint)
+- Heebo לא חוסם: `display: swap` / next/font
+- צהוב `#fed700` ב-CSS variables (לא תמונות ענק למותג)
+
+---
+
+## 5. אנטי-דפוסים אסורים
+
+1. מחיר ב-meta/JSON-LD שלא תואם קופה
+2. `adminClient` בנתיב רנדור ציבורי בלי צורך
+3. טעינת כל הסליידר ב-eager (רק slide פעיל ל-LCP)
+4. Index ל-URLs עם session/cart params
+5. Make/Zapier ל-sitemap
+
+---
+
+## 6. מפת קבצים (יעד)
+
+```
+src/app/sitemap.ts / sitemap/*.ts
+src/app/robots.ts
+src/app/(store)/product/[slug]/page.tsx  metadata + JSON-LD
+src/app/(store)/layout.tsx               fonts
+src/lib/seo/*
+next.config.ts                           images remotePatterns
+```
+
+---
+
+## 7. טסטים
+
+| # | בדיקה |
+|---|---|
+| S1 | canonical + title על PDP |
+| S2 | noindex על `/account` |
+| S3 | JSON-LD Offer = coupon_price לקופון |
+| S4 | Lighthouse perf/a11y על preview |
+| S5 | compare.mjs home/product תחת סף |
+
+---
+
+## 8. Revision
+
+| Date | Change |
+|---|---|
+| 2026-07-31 | רענון מחייב SEO+Performance ל-`arch/docs-queue` |

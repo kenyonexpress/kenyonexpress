@@ -4,11 +4,7 @@
 Architecture docs queue on `arch/docs-queue` in worktree `ke-arch`.
 
 ## Last Completed
-Added
-
-```
-docs/ARCHITECTURE-GO-LIVE-CHECKLIST.md
-```
+Pushed `docs/ARCHITECTURE-SEO-PERFORMANCE.md` refresh.
 
 ## In Progress
 Docs queue: SEO-PERFORMANCE, MOBILE-APP, WP-DATA-MIGRATION-EXECUTION, AI-AGENTS-SUPPORT, ANALYTICS-KPI, then gap scan.
