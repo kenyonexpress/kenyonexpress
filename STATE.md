@@ -6,6 +6,29 @@ Updated: 2026-07-31 (coupon page + scan, cart, payments audit, 085/094 applied)
 Checkout. `feat/admin-core` is merged into `phase5/homepage`; the storefront and
 the admin panel are one branch again.
 
+## Round of 2026-07-31 — integration pass: what merges, and what must not
+
+Goal queue item 6. Counts are `git rev-list --left-right --count
+phase5/homepage...<branch>`, taken this round; the second number is the branch's
+own commits that are not here.
+
+| branch | its own commits | verdict |
+|---|---|---|
+| `feat/admin-core` | 0 | **contained.** Deletable. |
+| `arch/supplier-portal` | 0 | **contained.** Deletable. |
+| `feat/payments-core` | 0 | **contained.** Deletable. |
+| `main` | 1 | **do not merge.** `8474fbd` "checkpoint before checking out phase5/homepage" is a dump of session artefacts, `.md` and `.png` files under a cache path. Same family as `8dd678d`. `main` is 431 commits behind. |
+| `feat/checkout-complete` | 1 | **do not merge, superseded.** Cherry-picked and aborted this round: `395b3c7` is a STATE entry recording the product page at 10.96% measured against `demo-prod-03`, and the 2026-07-30 round proved that run compared two DIFFERENT products. The current number is 10.21%. Merging it would re-import a measurement this file already retracts. |
+| `feat/wp-migration` | 9 | **the one worth merging, and not tonight.** Real code: the WXR and CSV readers, R2 media upload, migration 095, and 301 resolution inside `proxy.ts`. Note that **095 is already applied in production** (`20260729043016`), so the table exists while the code that writes it sits on a branch. A proxy change is on the request path of every page, and it needs its own verify cycle rather than the tail end of a long pass. |
+| `feat/search-core` | 1 | incremental indexing. Not reviewed. |
+| `feat/ci-foundation` | 4 | **merge after the 059 cutover, not before.** CI would go red immediately on the schema drift below, and a red pipeline that is red for a known reason teaches everyone to ignore it. |
+| `arch/admin-supplier` | 28 | docs from the `ke-admin` worktree. |
+| `feat/visual-polish` | 17 | predates the measured masthead and hero fixes that took home to 10.92%. Re-measure before merging or it silently regresses that number. |
+
+Nothing was merged and nothing was deleted. Three branches are fully contained
+and can be deleted whenever somebody is sure no worktree has them checked out;
+the rest each carry a reason above.
+
 ## Round of 2026-07-31 — the cart was blanking every line, and goal 5 verified
 
 Goal queue item 5 turned out to be built already, so this round is one real fix
@@ -588,6 +611,9 @@ invented.
   `^[A-Z_]* .env.local`. It was a blind `git commit -am`, not a decision.
 
 ## Last Completed
+Goal queue item 6, the integration pass: every branch triaged with a reason,
+nothing merged (see the integration round above for why each one waits).
+
 Goal queue item 5, verified already built (admin per-product split), and the
 cart's `cashback_bp` select fixed: it was blanking every cart line.
 

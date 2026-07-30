@@ -7,4 +7,6 @@
 3b. THE CUTOVER: decide 059 (apply + fix every shekel-named call site, or align the code to pre-059). Everything in the purchase flow waits on this.
 4. DONE 2026-07-31: scan hardening. Applied 085 via MCP (production carried the 3-arg redeem_voucher while the app calls 5 args, so every scan answered PGRST202). One-time code + race lock are the conditional UPDATE; rate limits at 4 layers. No per-IP block on the authenticated redeem route, on purpose (shared NAT at a mall).
 5. DONE 2026-07-31: already built (ProductForm split inputs + live preview, buildProductMoneyWrite). Verified all 8 written keys exist in production. Found and fixed next to it: the cart selected products.cashback_bp, which this DB does not have, blanking every cart line.
-6. Integration pass: rebase all branches on main, merge by dependency order, push
+6. DONE 2026-07-31: every branch triaged in STATE with a reason. Nothing merged: 3 are fully contained, main's 1 commit is an artefact dump, checkout-complete's is a superseded measurement, ci-foundation waits for the cutover, wp-migration is the one worth merging and needs its own verify cycle (it changes proxy.ts).
+
+NEXT UP: 3b, the 059 cutover. It is the only thing standing between this code and a working purchase flow.
