@@ -16,6 +16,11 @@ import {
   loadCardcomEnv,
 } from '@/lib/payments'
 import { selectAccountForSuppliers } from '@/lib/payments/accounts'
+import {
+  paymentMoneyWrite,
+  readAmountAgorot,
+  resolvePaymentMoneySchema,
+} from '@/lib/payments/payment-money-columns'
 import { isCardTokenExpired } from '@/lib/payments/token-expiry'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
@@ -609,17 +614,30 @@ export async function beginCheckout(
     getCardcomAccounts(),
     itemRows.map((line) => line.supplier_id),
   )
+  // The money columns are resolved, not named: this database is pre-059 and has
+  // amount_ils / wallet_applied_ils, and an insert naming the agorot columns
+  // raises 42703, so no payment row could be created and checkout could not
+  // start at all. See lib/payments/payment-money-columns.ts.
+  const money = await resolvePaymentMoneySchema((column) =>
+    admin
+      .from('payments')
+      .select(column)
+      .limit(0)
+      .then(({ error }) => ({ error })),
+  )
   const { data: payment, error: paymentError } = await admin
     .from('payments')
     .insert({
       order_id: order.id,
       kind: 'charge',
       status: 'initiated',
-      amount_agorot: settlement.cardCharge,
       currency: 'ILS',
-      wallet_applied_agorot: settlement.walletApplied,
       idempotency_key: idempotencyKey,
       cardcom_account_id: account.id,
+      ...paymentMoneyWrite(money, {
+        amountAgorot: settlement.cardCharge,
+        walletAppliedAgorot: settlement.walletApplied,
+      }),
     })
     .select('id')
     .single()
@@ -819,14 +837,29 @@ export async function reconcileOrderReturn(orderId: string): Promise<ReturnRecon
     return { status: 'failed', order_id: order.id, reason: `order ${order.status}` }
   }
 
-  const { data: payment } = await admin
+  const money = await resolvePaymentMoneySchema((column) =>
+    admin
+      .from('payments')
+      .select(column)
+      .limit(0)
+      .then(({ error }) => ({ error })),
+  )
+  // Runtime-built select: the client cannot infer the row shape, hence the cast.
+  const paymentSelect = `id, status, ${money.amountColumn}, cardcom_low_profile_id, cardcom_account_id`
+  const { data: paymentRow } = await admin
     .from('payments')
-    .select('id, status, amount_agorot, cardcom_low_profile_id, cardcom_account_id')
+    .select(paymentSelect)
     .eq('order_id', order.id)
     .eq('kind', 'charge')
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle()
+  const payment = paymentRow as unknown as {
+    id: string
+    status: string
+    cardcom_low_profile_id: string | null
+    cardcom_account_id: string | null
+  } | null
   if (!payment) {
     return { status: 'pending', order_id: order.id }
   }
@@ -847,11 +880,11 @@ export async function reconcileOrderReturn(orderId: string): Promise<ReturnRecon
     return { status: 'failed', order_id: order.id, reason: 'verification failed' }
   }
 
-  // The stored amount IS agorot since 059. Multiplying it by 100 again, as this
-  // did while reading amount_ils, compared a charge against a hundred times
-  // itself and failed every verification as "amount mismatch".
-  const expectedAgorot = Number(payment.amount_agorot)
-  if (verified.amountAgorot !== expectedAgorot) {
+  // Normalised to agorot from whichever column this database has, so a charge
+  // is never compared against a hundred times itself (pre-059 read as agorot)
+  // nor against nothing (post-059 column named on a pre-059 database).
+  const expectedAgorot = readAmountAgorot(money, payment as Record<string, unknown>)
+  if (expectedAgorot === null || verified.amountAgorot !== expectedAgorot) {
     return { status: 'pending', order_id: order.id, reason: 'amount mismatch' }
   }
 

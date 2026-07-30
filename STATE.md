@@ -1,10 +1,99 @@
 # KenyonExpress — Project State
 
-Updated: 2026-07-31 (coupon page + scan round, then cart measurement round)
+Updated: 2026-07-31 (coupon page + scan, cart measurement, payments schema audit)
 
 ## Current Phase
 Checkout. `feat/admin-core` is merged into `phase5/homepage`; the storefront and
 the admin panel are one branch again.
+
+## Round of 2026-07-31 — payments: the money journal is live, and the schema audit
+
+Goal queue item 3, partially. Two things happened: one migration went in, and an
+audit of the hosted schema found why the purchase path cannot work end to end.
+
+### `094_settlement_events` applied
+
+Applied through `apply_migration` (the goal's rule), and self-tested in a rolled
+back DO block against the real project: an insert succeeds, an UPDATE is
+refused, a DELETE is refused, and no row was left behind. `finalizeOrder`
+already calls `recordSettlementEvents`, so `charge_settled` starts recording on
+the next paid order. The writer had been warning once per process and writing
+nothing since the table did not exist.
+
+Applying it before the first real charge rather than after is the point: a
+journal that starts recording on the SECOND charge is missing the one everybody
+will want to read.
+
+### The payment path names columns this database does not have
+
+`payments` carries `amount_ils` and `wallet_applied_ils`. It has no
+`amount_agorot`, verified by probing `information_schema` and again by an
+`EXECUTE` in a DO block. The code named the agorot columns in three places, and
+42703 fails the WHOLE statement, so:
+
+- **checkout could not start.** The `payments` INSERT in `beginCheckout` named
+  both agorot columns, so no payment row could be created at all.
+- **the webhook answered 200 for a charged customer.** The lookup select named
+  `amount_agorot`, came back null, and the route returned
+  `{ok:true, unknown_payment:true}`. The order stays open and nothing raises.
+- **the reconcile read on the return page** did the same, which is the last
+  chance to close that order.
+
+Fixed by resolving the schema instead of assuming it:
+`lib/payments/payment-money-columns.ts` probes once per process, remembers the
+answer, and normalises to integer agorot at the boundary. It works on both
+schemas, so it survives the 059 cutover in either direction, and it says once in
+the log which schema it found. 15 tests.
+
+This line has now been "fixed" in both directions by different sessions, each
+time as the fix for the other, and both times the comment left behind asserted a
+schema nobody had checked. `lib/supabase/optional-columns.ts` reached the same
+conclusion for `products.price_ils` on 2026-07-28. Probing is the pattern.
+
+### The audit: what else the code names and the database does not have
+
+Everything below was read from `information_schema` on the hosted project this
+round. It is one root cause, migrations **042, 059 and 065 are not applied**,
+and it is bigger than any one of these call sites:
+
+| what the code names | what the project has | where |
+|---|---|---|
+| `orders.total_agorot`, `subtotal_agorot`, `customer_pays_now_agorot`, `cashback_applied_agorot` | `total_ils`, `subtotal_ils`, `discount_ils`, `cashback_applied_ils` | `(store)/checkout/return/page.tsx:65`, `server/queries/orders.ts:106,137` |
+| `wallet_entries.amount_agorot` | `amount_ils` | `(store)/checkout/return/page.tsx:79` |
+| `fn_post_journal()` RPC | does not exist | `lib/ledger.ts` `postJournal` |
+| `vouchers.platform_bp` | `platform_percent` | `server/domain/vouchers/issue.ts:170` |
+| `payments.amount_agorot`, `wallet_applied_agorot` | `amount_ils`, `wallet_applied_ils` | **fixed this round** |
+
+So a customer who pays today gets a 404 on `/checkout/return` even once the
+payment rows write, `/account/orders` reads nothing, no voucher can be issued,
+and the ledger cannot post. **This, not the Supabase key, is the real blocker on
+the purchase → coupon → scan flow**, and the key blocks the local reproduction
+of it.
+
+**Not cut this round, deliberately.** 059 adds the new column, backfills,
+verifies, then renames the old one to `*_legacy`; it destroys nothing except two
+GENERATED columns on `coupon_deals` that are recomputable. But the rename breaks
+every site still reading the shekel names, and there are many: the admin
+payments and dashboard pages, `finalize.ts:290`, `refund.ts:66`, every
+`wallet_*` table. Cutting it is a coordinated cutover with a checklist, on a live
+project with real rows, and doing it at the end of a long unattended pass is how
+a money system gets a bad night. The table above IS the checklist.
+
+### On `feat/checkout-cardcom`
+Still not merged, and the reason has not changed: `be47a62` predates the escrow
+reversal and would put `HOLD_ESCROW` / `RELEASE_ESCROW` and `order_escrow_holds`
+back. Its webhook HMAC (`lib/payments/signature.ts`) is clean and worth taking,
+but its only real callers are the branch's own Upstash retry queue and its E2E
+simulator: Cardcom does not sign. Taking the signature without the queue adds a
+gate nothing goes through, and taking the queue adds an Upstash dependency
+nobody has configured, when `payment_webhook_events` already stores the payload
+and `processed_at` and could drive the same repair from the database. Left for
+the round that does the 059 cutover, because a retry that replays a webhook into
+a broken schema replays a failure.
+
+**The only `5%` left in the code is the legal one**: the cancellation fee in
+`server/domain/orders/refund.ts:8` is the Israeli distance-selling cap (the
+lower of 5% and ₪100). It is not the abolished 5% commission and must stay.
 
 ## Round of 2026-07-31 — cart: the measurement and the tests it never had
 
@@ -419,6 +508,11 @@ invented.
   `^[A-Z_]* .env.local`. It was a blind `git commit -am`, not a decision.
 
 ## Last Completed
+Goal queue item 3, partially: `094_settlement_events` applied through
+apply_migration and self-tested, and the payment path made schema-tolerant
+(`src/lib/payments/payment-money-columns.ts`). The rest of item 3 is blocked on
+the 042/059/065 cutover, audited in the payments round above.
+
 Goal queue item 2, the cart: `compare.mjs --page=cart` (9.95% empty) and
 `src/lib/cart/store.test.ts` (18 tests). See the cart round above.
 
@@ -459,10 +553,19 @@ of two.
    purchase → coupon → scan flow cannot complete even once the Supabase key is
    fixed. Same root cause as the 059 cut decision.
 
-3. **⛔ `093_product_commission_type` is not applied.** `buildProductMoneyWrite`
-   writes `commission_type`, so until the migration lands every product create
-   and edit in the admin fails on a column that does not exist. This was a
-   `feat/admin-core` blocker and is now a `phase5/homepage` one. See GO-LIVE.
+3. **⛔ 042, 059 and 065 are not applied, and the code assumes all three.**
+   The full inventory with file and line for every call site is in the
+   2026-07-31 payments round above. Short version: `orders` has no `*_agorot`
+   columns, `wallet_entries` has no `amount_agorot`, and `fn_post_journal()`
+   does not exist, so a paying customer 404s on `/checkout/return`,
+   `/account/orders` reads nothing, and the ledger cannot post. This is the
+   blocker the purchase flow actually dies on; the Supabase key blocks
+   reproducing it locally.
+
+4. ~~`093_product_commission_type` is not applied.~~ **Retracted 2026-07-31:
+   `products.commission_type` EXISTS.** The migration ledger shows 093 applied
+   twice, `20260729031546` and `20260729032538`, and `information_schema`
+   confirms the column. Admin product create and edit are not blocked on this.
 
 ## שלוש המשימות הבאות
 

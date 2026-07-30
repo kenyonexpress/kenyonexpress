@@ -2,6 +2,7 @@ import { timingSafeEqual } from 'node:crypto'
 import { cardcomWebhookPayloadSchema, isCardcomSuccess } from '@/lib/contracts/webhooks'
 import { capturePaymentAlarm } from '@/lib/observability/sentry'
 import { getPaymentProvider, loadCardcomEnv } from '@/lib/payments'
+import { readAmountAgorot, resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { finalizeOrder } from '@/server/payments/finalize'
 import type { Json } from '@/types/database'
@@ -66,12 +67,34 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
   const payload = parsed.data
 
-  // 2. Locate our payment by the hosted-page id
-  const { data: payment } = await admin
+  // 2. Locate our payment by the hosted-page id.
+  //
+  //    The money column is resolved rather than named. This database is pre-059
+  //    and carries `amount_ils`; naming `amount_agorot` raised 42703, which
+  //    fails the whole select, so `payment` came back null and this route
+  //    answered `{ok:true, unknown_payment:true}` with a 200 for a customer
+  //    Cardcom had just charged. See lib/payments/payment-money-columns.ts.
+  const money = await resolvePaymentMoneySchema((column) =>
+    admin
+      .from('payments')
+      .select(column)
+      .limit(0)
+      .then(({ error }) => ({ error })),
+  )
+  // The select string is built at runtime, so the client cannot infer the row
+  // shape from it; the cast is what that costs and is confined to this line.
+  const paymentSelect = `id, order_id, status, ${money.amountColumn}, cardcom_account_id`
+  const { data: paymentRow } = await admin
     .from('payments')
-    .select('id, order_id, status, amount_agorot, cardcom_account_id')
+    .select(paymentSelect)
     .eq('cardcom_low_profile_id', payload.lowprofilecode)
     .maybeSingle()
+  const payment = paymentRow as unknown as {
+    id: string
+    order_id: string
+    status: string
+    cardcom_account_id: string | null
+  } | null
   if (!payment) {
     return NextResponse.json({ ok: true, unknown_payment: true })
   }
@@ -108,12 +131,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true, verified: false })
   }
 
-  // Agorot are what the column holds since 059. The *100 that stood here read
-  // amount_ils, a column that no longer exists: the select failed with 42703,
-  // `payment` came back null, and the webhook answered "unknown_payment" and
-  // returned 200 for a customer Cardcom had just charged. The order was never
-  // closed and nothing raised.
-  const expectedAgorot = Number(payment.amount_agorot)
+  // Normalised to agorot from whichever column this database has. The history
+  // here is worth keeping: this line has been "fixed" in both directions, once
+  // by multiplying shekels by 100 and once by dropping the multiplication for a
+  // column 059 was going to introduce and never did. Neither is a fix while the
+  // schema is unknown, which is why the schema is now resolved rather than
+  // assumed.
+  const expectedAgorot = readAmountAgorot(money, payment as Record<string, unknown>)
+  if (expectedAgorot === null) {
+    capturePaymentAlarm('payment row carries no readable amount', {
+      stage: 'cardcom_webhook_amount',
+      orderId: payment.order_id,
+      paymentId: payment.id,
+      detail: { column: money.amountColumn },
+    })
+    return NextResponse.json({ ok: true, amount_unreadable: true })
+  }
   if (verified.amountAgorot !== expectedAgorot) {
     await admin.from('audit_log').insert({
       actor_id: null,
