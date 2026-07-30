@@ -16,7 +16,7 @@ tsc --noEmit        0 errors                                   PASS
 vitest              56 files, 735 tests                        PASS
 production build    compiled in 6.2s                           PASS
 playwright e2e      41 passed, 12 failed                       BLOCKED
-compare.mjs         category 8.07  product 10.71  home 11.99
+compare.mjs         category 8.07  product 10.71  home 11.93
                     search 14.92  products 28.58  checkout n/a  FAIL
 lighthouse a11y     product 96      home 88 -> 93              PASS
 lighthouse perf     product 96      home 75 -> 88              FAIL by 2
@@ -78,6 +78,18 @@ root cause as the slide bug: `HERO_SLIDER_HEIGHT` came off the single-file
 snapshot with the fifth slide active, and its own comment says "rs-19 active,
 422px". The width is the flanking columns not holding their declared widths, so
 `flex-1` hands the slack to the slider.
+
+The welcome headline was measurably wrong once the box was right: live runs
+51px/45px weight 300 with `white-space: nowrap`, ours ran the shared RS ramp at
+58/51 with no nowrap, and at that size the second line stopped fitting the 50%
+copy column and wrapped to a third line, pushing the tagline and SIMPLY THE/BEST
+down a full line. The welcome slide now carries its own measured ramp; other
+variants are untouched because the demo-derived numbers may be right for them and
+nobody has measured. It moved the number 0.06pp, 11.99% -> 11.93%, which says
+plainly that the wrap was not the expensive part. The expensive part in y200-700
+is the slide photograph: a large image placed differently costs a lot of pixels
+however correct the text around it is. Measuring the rs-layer image box on live
+against ours is the next step, the same way the slider box was done.
 
 Two cautions before touching it. `ELECTRO_HERO.slider` says 743x377 and was
 measured from the electro home-v7 demo, not from kenyonexpress.co.il, which is

@@ -108,6 +108,24 @@ const RS = {
   indentLg: 'pe-[70px]',
 } as const
 
+/**
+ * The welcome slide's own headline ramp, measured on kenyonexpress.co.il
+ * 2026-07-30, not on the electro demo the shared RS ramp came from:
+ *
+ *   ברוכים הבאים   51px / 51px / weight 300 / white-space: nowrap
+ *   לקניון Express 45px / 45px / weight 300 / white-space: nowrap
+ *
+ * At the shared 58/51 the second line no longer fits the 50% copy column and
+ * wrapped to a third line, which pushed the tagline, SIMPLY THE and BEST down
+ * by a whole line and was most of what was left of the y200-700 band difference
+ * once the slider box itself matched. nowrap is what live uses; without it the
+ * wrap comes back at any size the column cannot hold.
+ */
+const WELCOME_HEAD = {
+  line1: 'text-[43px] leading-[43px] lg:text-[51px] lg:leading-[51px]',
+  line2: 'text-[38px] leading-[38px] lg:text-[45px] lg:leading-[45px]',
+} as const
+
 const HERO_IMAGE_SIZES = `(max-width: 1024px) 100vw, ${SLIDE.width * 2}px`
 
 function HeroSlideImage({ src, priority }: { src: string; priority: boolean }) {
@@ -291,14 +309,17 @@ function WelcomeSlideCopy({ slide }: { slide: HeroSlide }) {
     >
       <h1 className={RS.headBox}>
         {slide.title && (
-          <span style={{ color: T.headline1.color }} className={`block ${RS.h1} leading-[1.08]`}>
+          <span
+            style={{ color: T.headline1.color }}
+            className={`block whitespace-nowrap font-light ${WELCOME_HEAD.line1}`}
+          >
             {slide.title}
           </span>
         )}
         {slide.title_secondary && (
           <span
             style={{ color: T.headline2.color, letterSpacing: RS.h2Tracking }}
-            className={`mt-0.5 block ${RS.h2} leading-[1.08] lg:mt-1 ${
+            className={`mt-0.5 block whitespace-nowrap font-light lg:mt-1 ${WELCOME_HEAD.line2} ${
               slide.title_secondary_indent ? RS.indentMd : ''
             }`}
           >

@@ -13,7 +13,7 @@ on others, and two are blocked by one missing credential.
 | Vitest | all pass | 56 files, 735 tests, 11.5s | PASS |
 | Production build | succeeds | compiled in 6.2s | PASS |
 | Playwright E2E | all pass | 41 passed, **12 failed** | BLOCKED |
-| `compare.mjs` all pages | < 11% | 2 of 5 under; home 17.28% → 11.99%, now stable | FAIL |
+| `compare.mjs` all pages | < 11% | 2 of 5 under; home 17.28% → 11.93%, now stable | FAIL |
 | Lighthouse accessibility | 90+ | product 96, home 88 → **93** | PASS |
 | Lighthouse performance | 90+ | product 96, home 75 → **88** | FAIL by 2 |
 | `pnpm audit --prod` | no highs | **14 high**, 10 moderate, 3 low | FAIL |
@@ -63,7 +63,7 @@ end to end. Its first leg fails at add-to-cart.
               first run   after fixes
 category          7.35%        8.07%   PASS
 product          10.21%       10.71%   PASS
-home             17.28%       11.99%   FAIL  (reproducible)
+home             17.28%       11.93%   FAIL  (reproducible)
 search           14.87%       14.92%   FAIL
 products         25.75%       28.58%   FAIL
 checkout            n/a          n/a   REFUSED to measure
@@ -167,9 +167,34 @@ break the alignment the masthead fix just achieved, where the first product card
 lands at 904 against live's 906.
 
 Result: home **12.45% → 11.99%**, reproducible across runs, with product unchanged
-at 10.71%. The hero bands fell from 34.6/29.5/27 to 30.8/26.9/26.6. What is left
-there is the slide's own contents, the phone image placement and the text block
-inside a now correctly-sized box.
+at 10.71%. The hero bands fell from 34.6/29.5/27 to 30.8/26.9/26.6.
+
+### The welcome headline, and where the remaining hero cost actually is
+
+With the box the right size, the headline was measurably wrong. Live:
+
+```
+ברוכים הבאים    51px / 51px / weight 300 / white-space: nowrap
+לקניון Express  45px / 45px / weight 300 / white-space: nowrap
+```
+
+Ours ran the shared `RS` ramp, 58/51 and no `nowrap`, which the token block says
+was measured on the electro demo rather than on this site. At 58/51 the second
+line no longer fits the 50% copy column and wrapped to a **third** line, pushing
+the tagline, SIMPLY THE and BEST down by a full line. The welcome slide now
+carries its own measured ramp; the other variants are untouched, because the
+demo-derived numbers may well be right for them and that has not been measured.
+
+**It moved the number by 0.06pp: 11.99% → 11.93%.** Worth recording plainly,
+because it means the wrap was not the expensive part. The bands barely shifted
+(30.8/26.9/26.6 → 30.9/26.4/25.5). What is expensive in y200-700 is the slide's
+photograph: a large image whose placement differs produces a big pixel difference
+however correct the text around it is. That is the next measurement, and the
+right one to take is the `rs-layer` image box on live against ours, the same way
+the slider box was done here.
+
+The fix is kept because it is correct on its own terms, verified against live's
+computed styles rather than guessed, and it removes a spurious third line.
 
 Two cautions for whoever picks this up, both learned the hard way in this pass:
 
