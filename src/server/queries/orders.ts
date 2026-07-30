@@ -1,3 +1,9 @@
+import {
+  moneyColumnProbe,
+  orderMoneySelect,
+  readOrderMoney,
+  resolveOrderGeneration,
+} from '@/lib/commerce/order-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import {
@@ -97,18 +103,33 @@ export async function getMyOrders(): Promise<OrderSummary[]> {
   if (!userId) return []
 
   const admin = createAdminClient()
-  const { data: orders } = await admin
+  // Which money columns exist is resolved rather than named. Getting it wrong
+  // takes the WHOLE select down with 42703, `orders` comes back null, and every
+  // customer's order list renders as "you have no orders" instead of as an
+  // error. It has been wrong in both directions; see order-money-columns.ts.
+  const generation = await resolveOrderGeneration(moneyColumnProbe(admin as never))
+  // The select string is built at runtime, so the client cannot infer the row
+  // shape from it. The cast is confined to this one read.
+  const { data: rows } = await admin
     .from('orders')
     .select(
-      // Post-059 names. `total_ils` here took the whole select down with 42703,
-      // so `orders` came back null and every customer's order list rendered as
-      // "you have no orders" rather than as an error.
-      'id, status, created_at, paid_at, total_agorot, customer_pays_now_agorot, order_items(quantity, product_type, settlement_status)',
+      `id, status, created_at, paid_at, ${orderMoneySelect(generation)}, order_items(quantity, product_type, settlement_status)`,
     )
     .eq('user_id', userId)
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
     .limit(50)
+
+  type OrderListRow = Record<string, unknown> & {
+    id: string
+    status: OrderSummary['status']
+    created_at: string
+    paid_at: string | null
+    order_items:
+      | { quantity: number | null; product_type: string; settlement_status: string }[]
+      | null
+  }
+  const orders = rows as unknown as OrderListRow[] | null
 
   return (orders ?? []).map((order) => {
     const items = order.order_items ?? []
@@ -118,7 +139,7 @@ export async function getMyOrders(): Promise<OrderSummary[]> {
       settlementStatus: deriveOrderStatus(items.map((i) => asSettlementState(i.settlement_status))),
       createdAt: order.created_at,
       paidAt: order.paid_at,
-      totalIls: Number(order.total_agorot ?? order.customer_pays_now_agorot ?? 0) / 100,
+      totalIls: readOrderMoney(generation, order).totalAgorot / 100,
       itemCount: items.reduce((sum, i) => sum + (i.quantity ?? 0), 0),
       hasVouchers: items.some((i) => i.product_type === 'coupon'),
     }
@@ -131,16 +152,25 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
   if (!userId) return null
 
   const admin = createAdminClient()
-  const { data: order } = await admin
+  const generation = await resolveOrderGeneration(moneyColumnProbe(admin as never))
+  const { data: orderRow } = await admin
     .from('orders')
-    .select(
-      'id, user_id, status, created_at, paid_at, subtotal_agorot, total_agorot, customer_pays_now_agorot, cashback_applied_agorot, address_id',
-    )
+    .select(`id, user_id, status, created_at, paid_at, ${orderMoneySelect(generation)}, address_id`)
     .eq('id', orderId)
     .eq('user_id', userId)
     .is('deleted_at', null)
     .maybeSingle()
+  const order = orderRow as unknown as
+    | (Record<string, unknown> & {
+        id: string
+        status: OrderDetail['status']
+        created_at: string
+        paid_at: string | null
+        address_id: string | null
+      })
+    | null
   if (!order) return null
+  const money = readOrderMoney(generation, order)
 
   const { data: items } = await admin
     .from('order_items')
@@ -276,9 +306,9 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
     settlementStatus: deriveOrderStatus(lines.map((l) => l.settlementStatus)),
     createdAt: order.created_at,
     paidAt: order.paid_at,
-    subtotalIls: Number(order.subtotal_agorot ?? 0) / 100,
-    totalIls: Number(order.total_agorot ?? order.customer_pays_now_agorot ?? 0) / 100,
-    walletAppliedIls: Number(order.cashback_applied_agorot ?? 0) / 100,
+    subtotalIls: money.subtotalAgorot / 100,
+    totalIls: money.totalAgorot / 100,
+    walletAppliedIls: money.walletAppliedAgorot / 100,
     addressId: order.address_id,
     lines,
   }

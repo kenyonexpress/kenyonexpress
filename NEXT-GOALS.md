@@ -9,4 +9,17 @@
 5. DONE 2026-07-31: already built (ProductForm split inputs + live preview, buildProductMoneyWrite). Verified all 8 written keys exist in production. Found and fixed next to it: the cart selected products.cashback_bp, which this DB does not have, blanking every cart line.
 6. DONE 2026-07-31: every branch triaged in STATE with a reason. Nothing merged: 3 are fully contained, main's 1 commit is an artefact dump, checkout-complete's is a superseded measurement, ci-foundation waits for the cutover, wp-migration is the one worth merging and needs its own verify cycle (it changes proxy.ts).
 
-NEXT UP: 3b, the 059 cutover. It is the only thing standing between this code and a working purchase flow.
+7. IN PROGRESS 2026-07-31: close the coupon sale flow end to end.
+   DONE: the order write path (orders + order_items) and the read path (/checkout/return, /account/orders,
+   wallet_entries, finalize) now resolve which money columns the database has. The exact INSERT pair was
+   simulated against production inside a rolled-back DO block and accepted. 849 tests.
+   BLOCKED, one credential: SUPABASE_SECRET_KEY is the stock supabase-demo key, so nothing local can add to a
+   cart, run a checkout, exercise the Cardcom sandbox, or create the test coupon product. Replace it from
+   Supabase Dashboard > Project Settings > API Keys and the remaining steps become runnable.
+   THEN: E2E with the Cardcom sandbox, a real test coupon product with a real supplier, compare.mjs on every
+   flow page, the customer account area, the Admin dashboard, and the integration pass.
+
+8. THE 059 CUTOVER, still open but no longer urgent: the code now works on the schema production actually has.
+   Needs a backup first, and this machine has no pg_dump, no psql, no linked CLI and no DB password:
+   brew install libpq && supabase login && supabase link --project-ref ixvwfbuvfxxsjiywhbbb
+   && supabase db dump --linked -f ~/Backups/kenyonexpress/db-before-059.sql

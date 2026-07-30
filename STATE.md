@@ -1,10 +1,89 @@
 # KenyonExpress — Project State
 
-Updated: 2026-07-31 (coupon page + scan, cart, payments audit, 085/094 applied)
+Updated: 2026-07-31 (coupon+scan, cart, 085/094 applied, order write path fixed)
 
 ## Current Phase
 Checkout. `feat/admin-core` is merged into `phase5/homepage`; the storefront and
 the admin panel are one branch again.
+
+## Round of 2026-07-31 — the order write path, proven against production
+
+The purchase flow could not create an order. Not "failed sometimes": the first
+INSERT of every checkout raised 42703 and returned.
+
+`orders` was written with six columns the hosted project does not have
+(`subtotal_agorot`, `discount_agorot`, `wallet_applied_agorot`,
+`cashback_applied_agorot`, `customer_pays_now_agorot`, `total_agorot`) and
+without the two it declares NOT NULL with no default (`subtotal_ils`,
+`total_ils`). `order_items` was written with fourteen more that do not exist.
+
+The literal also wrote several aliases of one number at a time,
+`commission_agorot` AND `platform_fee_agorot`, `supplier_due_agorot` AND
+`supplier_immediate_agorot` AND `supplier_payout_agorot`, which reads as an
+attempt to satisfy every schema this project has ever had by naming all of them
+at once. That cannot work in Postgres: one missing name fails the whole
+statement, so naming more spellings makes failure MORE likely, not less.
+
+`lib/commerce/order-money-columns.ts` replaces it. One sentinel probe per table
+per process decides the generation (`orders.total_agorot`,
+`order_items.platform_bp`), and one explicit column set is written for it. The
+pre-059 set is verified against `information_schema`; the post-059 set is
+character for character the literal that was there before, so a database that
+HAS been cut over keeps its behaviour and nothing is invented for a schema that
+cannot be tested from here. Money goes in as agorot and rates as basis points;
+the shekel and percent columns divide by 100 on the way out.
+
+`order_items` is a hybrid and that is why no single rule works: 070 added agorot
+columns beside original shekel ones (`unit_price_ils`, `total_price_ils`,
+`supplier_payout_ils`, `cashback_earned_ils`) on a table whose rates are still
+whole percents. The set is listed rather than derived.
+
+**The read side was the half that hit the customer.** `/checkout/return`
+selected `total_agorot`, the select failed, the row came back null and the page
+called `notFound()`: somebody who had just been charged was shown a 404.
+`/account/orders` was empty for the same reason. Both now resolve the
+generation. `wallet_entries.amount_ils` gets the same treatment through
+`readFirstAvailableColumn`, and `finalize.ts` no longer hard-names
+`wallet_applied_ils` either.
+
+**Proven, not assumed.** The exact INSERT pair the new code builds was run
+against the production database inside a DO block that raises at the end:
+
+```
+SIMULATION OK order=f2319c67-... item=0dac879b-...
+```
+
+Both rows were accepted by the real schema and the exception rolled the whole
+block back. Verified after: zero new rows in `orders` and `order_items`. 19
+tests assert every written column against the column lists read from
+`information_schema`, so a future edit that reintroduces a phantom column fails
+in CI rather than at a customer's checkout.
+
+**Still blocked, and it is one key.** `SUPABASE_SECRET_KEY` is the stock
+`supabase-demo` service key, so `createAdminClient()` cannot reach this project
+from the app. Nothing local can add to a cart, run a checkout, or exercise the
+Cardcom sandbox end to end. The write path is now correct and proven at the SQL
+level; what cannot be done from here is drive it through the app.
+
+**Migration 059 was not applied, and the reason is procedural.** The instruction
+was backup first, apply only after. There is no `pg_dump` and no `psql` on this
+machine, the Supabase CLI is not authenticated (`supabase projects list` answers
+"Access token not provided"), the project is not linked, and no database
+password or connection string exists in any env file. The MCP server exposes
+`apply_migration` and `execute_sql` but nothing that produces a dump. A backup
+was therefore impossible, so 059 was not touched. To unblock:
+
+```
+brew install libpq
+supabase login
+supabase link --project-ref ixvwfbuvfxxsjiywhbbb
+supabase db dump --linked -f ~/Backups/kenyonexpress/db-before-059.sql
+```
+
+**A parallel session overwrote this file mid-round** with a reformatted copy of
+the 2026-07-30 version, deleting all five rounds above. Restored from the
+commit. Check `git status` on STATE.md before editing it; the hazard is real
+and this is the second time it has been recorded.
 
 ## Round of 2026-07-31 — integration pass: what merges, and what must not
 
@@ -611,6 +690,9 @@ invented.
   `^[A-Z_]* .env.local`. It was a blind `git commit -am`, not a decision.
 
 ## Last Completed
+The order write and read paths, proven against production by a rolled-back
+simulation. Checkout could not create an order at all before it.
+
 Goal queue item 6, the integration pass: every branch triaged with a reason,
 nothing merged (see the integration round above for why each one waits).
 

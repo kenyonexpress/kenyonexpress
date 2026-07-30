@@ -1,5 +1,12 @@
 import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
+import {
+  moneyColumnProbe,
+  orderMoneySelect,
+  readOrderMoney,
+  resolveOrderGeneration,
+} from '@/lib/commerce/order-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { WALLET_AMOUNT_CANDIDATES, readFirstAvailableColumn } from '@/lib/supabase/optional-columns'
 import {
   buildCouponShareText,
   buildOrderInquiryText,
@@ -59,10 +66,14 @@ export default async function CheckoutReturnPage({ searchParams }: Props) {
   // showed a confirmation page with no coupon on it, and the customer's only
   // route to their QR was to find /account/vouchers unprompted.
   const admin = createAdminClient()
-  const [{ data: order }, { data: vouchers }, { data: cashbackEntry }] = await Promise.all([
+  // Naming the post-059 money columns on a database that does not have them
+  // failed the WHOLE select with 42703, `order` came back null, and this page
+  // called notFound() on somebody who had just been charged. Resolved instead.
+  const generation = await resolveOrderGeneration(moneyColumnProbe(admin as never, 'orders'))
+  const [{ data: orderRow }, { data: vouchers }, cashbackAgorot] = await Promise.all([
     admin
       .from('orders')
-      .select('id, total_agorot, subtotal_agorot, customer_pays_now_agorot, paid_at')
+      .select(`id, paid_at, ${orderMoneySelect(generation)}`)
       .eq('id', orderId)
       .maybeSingle(),
     admin
@@ -74,13 +85,19 @@ export default async function CheckoutReturnPage({ searchParams }: Props) {
       )
       .eq('order_id', orderId)
       .order('issued_at', { ascending: true }),
-    admin
-      .from('wallet_entries')
-      .select('amount_agorot')
-      .eq('idempotency_key', `order:${orderId}:cashback`)
-      .maybeSingle(),
+    // wallet_entries carries amount_ils here and amount_agorot after 059, and
+    // the same 42703 rule applies, so it is read through the candidate reader.
+    readFirstAvailableColumn<number>(
+      (select, ids) =>
+        admin.from('wallet_entries').select(select).in('idempotency_key', ids) as never,
+      WALLET_AMOUNT_CANDIDATES,
+      [`order:${orderId}:cashback`],
+      'checkout return cashback',
+    ).then((rows) => [...rows.values()][0] ?? 0),
   ])
+  const order = orderRow as unknown as (Record<string, unknown> & { id: string }) | null
   if (!order) notFound()
+  const orderMoney = readOrderMoney(generation, order)
 
   const couponsWithQr = await Promise.all(
     (vouchers ?? []).map(async (voucher) => ({
@@ -92,7 +109,7 @@ export default async function CheckoutReturnPage({ searchParams }: Props) {
     })),
   )
 
-  const cashback = Number(cashbackEntry?.amount_agorot ?? 0) / 100
+  const cashback = (cashbackAgorot ?? 0) / 100
 
   return (
     <div className="checkout-page">
@@ -100,7 +117,7 @@ export default async function CheckoutReturnPage({ searchParams }: Props) {
         <h1 className="checkout-success__title">התשלום הצליח!</h1>
         <p className="checkout-success__sub">
           הזמנה {order.id.slice(0, 8).toUpperCase()} · שולם באתר{' '}
-          {shekels(Number(order.customer_pays_now_agorot ?? order.total_agorot ?? 0) / 100)}
+          {shekels(orderMoney.totalAgorot / 100)}
         </p>
 
         {couponsWithQr.length > 0 && (

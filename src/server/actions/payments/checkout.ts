@@ -4,6 +4,13 @@ import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-co
 import { validateCartView } from '@/lib/checkout/validate-cart'
 import { agorot, agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
 import {
+  buildOrderItemMoneyRow,
+  buildOrderMoneyRow,
+  moneyColumnProbe,
+  resolveOrderGeneration,
+  resolveOrderItemGeneration,
+} from '@/lib/commerce/order-money-columns'
+import {
   type SupplierIdentity,
   buildOrderItemSnapshot,
   completeSplitPair,
@@ -136,9 +143,17 @@ async function chargeSavedToken(args: {
       order_id: orderId,
       kind: 'charge',
       status: 'initiated',
-      amount_ils: agorotToIls(amountAgorot),
       currency: 'ILS',
-      wallet_applied_ils: agorotToIls(walletAppliedAgorot),
+      ...paymentMoneyWrite(
+        await resolvePaymentMoneySchema((column) =>
+          admin
+            .from('payments')
+            .select(column)
+            .limit(0)
+            .then(({ error }) => ({ error })),
+        ),
+        { amountAgorot, walletAppliedAgorot },
+      ),
       idempotency_key: args.idempotencyKey,
       cardcom_account_id: token.cardcom_account_id,
     })
@@ -443,17 +458,22 @@ export async function beginCheckout(
   // construction: 042 derived the first from cashback_applied_ils and 059 then
   // renamed that same column into the second. Both are written so a reader
   // cannot pick the one that happens to be empty.
+  // Which money columns this database has is resolved, not assumed. The six
+  // agorot names below existed only in the post-059 schema; the hosted project
+  // has subtotal_ils and total_ils, both NOT NULL with no default, so this
+  // INSERT failed with 42703 and no order could be created at all.
+  const orderGeneration = await resolveOrderGeneration(moneyColumnProbe(admin as never, 'orders'))
   const { data: order, error: orderError } = await admin
     .from('orders')
     .insert({
       user_id: user.id,
       status: 'pending',
-      subtotal_agorot: settlement.faceValue,
-      discount_agorot: settlement.discountApplied,
-      wallet_applied_agorot: settlement.walletApplied,
-      cashback_applied_agorot: settlement.walletApplied,
-      customer_pays_now_agorot: settlement.paidOnSite,
-      total_agorot: settlement.paidOnSite,
+      ...buildOrderMoneyRow(orderGeneration, {
+        faceValueAgorot: settlement.faceValue,
+        discountAgorot: settlement.discountApplied,
+        walletAppliedAgorot: settlement.walletApplied,
+        paidOnSiteAgorot: settlement.paidOnSite,
+      }),
       currency: 'ILS',
       address_id: input.address_id,
       accepted_terms_at: now.toISOString(),
@@ -465,6 +485,9 @@ export async function beginCheckout(
     return { ok: false, error: `יצירת הזמנה נכשלה: ${orderError?.message}`, code: 'INTERNAL' }
   }
 
+  const itemGeneration = await resolveOrderItemGeneration(
+    moneyColumnProbe(admin as never, 'order_items'),
+  )
   const itemRows = cart.items.map((item) => {
     const line = settlement.lines.find(
       (l) => l.id === `${item.product_id}::${item.variant_id ?? 'null'}`,
@@ -500,31 +523,22 @@ export async function beginCheckout(
       product_type: item.type,
       supplier_id: product.supplier_id ?? null,
       quantity: item.quantity,
-      // Post-059 column names throughout. The percent columns became basis
-      // points in the same migration (platform_percent -> platform_bp), which
-      // is why billedPercent is multiplied by 100 rather than renamed: 30% is
-      // 3000 bp, and writing 30 into a bp column understates the platform's
-      // take by two orders of magnitude on every row.
-      unit_price_agorot: ilsToAgorot(item.unit_price),
-      total_price_agorot: line.faceValue,
-      face_value_agorot: line.faceValue,
-      customer_pays_now_agorot: line.paidOnSite,
-      paid_on_site_agorot: line.paidOnSite,
-      charged_on_site_agorot: line.paidOnSite,
-      platform_fee_agorot: line.commission,
-      commission_agorot: line.commission,
-      supplier_due_agorot: line.supplierDue,
-      supplier_immediate_agorot: line.supplierDue,
-      supplier_payout_agorot: line.supplierDue,
-      balance_due_agorot: line.balanceDueAtBusiness,
-      balance_due_at_business_agorot: line.balanceDueAtBusiness,
-      cashback_amount_agorot: line.cashbackAmount,
-      cashback_earned_agorot: line.cashbackAmount,
-      platform_bp: line.platformPercentBps,
-      commission_bp: line.platformPercentBps,
-      upfront_bp: line.platformPercentBps,
-      commission_snapshot_bp: line.platformPercentBps,
-      cashback_bp: 0,
+      // The money and rate columns come from the resolver: this table is a
+      // hybrid on the hosted project (070 added agorot columns beside original
+      // shekel ones, and the rates are still whole percents), so naming the
+      // post-059 set failed the whole INSERT with 42703. Rates go in as basis
+      // points and are converted per generation, because writing 30 into a bp
+      // column understates the platform's take by two orders of magnitude.
+      ...buildOrderItemMoneyRow(itemGeneration, {
+        unitPriceAgorot: ilsToAgorot(item.unit_price),
+        faceValueAgorot: line.faceValue,
+        paidOnSiteAgorot: line.paidOnSite,
+        commissionAgorot: line.commission,
+        supplierDueAgorot: line.supplierDue,
+        balanceDueAgorot: line.balanceDueAtBusiness,
+        cashbackAgorot: line.cashbackAmount,
+        platformBasisPoints: line.platformPercentBps,
+      }),
       supplier_split_percent: snapshot.supplier_split_percent,
       discount_percent: snapshot.discount_percent,
       coupon_price_ils: snapshot.coupon_price_ils,
@@ -534,10 +548,6 @@ export async function beginCheckout(
       supplier_logo_url: snapshot.supplier_logo_url,
       item_status: 'pending' as const,
       settlement_status: 'pending' as const,
-      // Legacy 046/047 shape. Always 0: there is no escrow, and "held" was only
-      // ever a flag in our own ledger.
-      escrow_held_agorot: 0,
-      escrow_release_agorot: 0,
     }
   })
   const { error: itemsError } = await admin.from('order_items').insert(itemRows)

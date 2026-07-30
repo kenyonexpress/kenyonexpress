@@ -1,5 +1,6 @@
 import { agorot, agorotToIls } from '@/lib/commerce/money'
 import { capturePaymentError } from '@/lib/observability/sentry'
+import { resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { type VoucherIssueClient, issueVoucher } from '@/server/domain/vouchers/issue'
 import {
@@ -285,13 +286,32 @@ export async function finalizeOrder(input: {
   let walletApplied = 0
   let cardcomAccountId: string | null = null
   if (input.paymentId) {
-    const { data: payment } = await admin
+    // The wallet column is amount-in-shekels before 059 and agorot after it,
+    // and naming the wrong one fails this select outright, which would abort a
+    // finalize for a card that has already been charged.
+    const money = await resolvePaymentMoneySchema((column) =>
+      admin
+        .from('payments')
+        .select(column)
+        .limit(0)
+        .then(({ error }) => ({ error })),
+    )
+    const { data: paymentRow } = await admin
       .from('payments')
-      .select('id, status, wallet_applied_ils, cardcom_account_id')
+      .select(`id, status, ${money.walletAppliedColumn}, cardcom_account_id`)
       .eq('id', input.paymentId)
       .maybeSingle()
+    const payment = paymentRow as unknown as
+      | (Record<string, unknown> & {
+          id: string
+          status: string
+          cardcom_account_id: string | null
+        })
+      | null
     if (!payment) return { ok: false, error: 'payment not found', code: 'NOT_FOUND' }
-    walletApplied = Number(payment.wallet_applied_ils ?? 0)
+    // walletApplied is spent downstream in shekels, which is what this
+    // variable has always held.
+    walletApplied = (money.toAgorot(payment[money.walletAppliedColumn]) ?? 0) / 100
     cardcomAccountId = payment.cardcom_account_id
 
     const { error: payError } = await admin

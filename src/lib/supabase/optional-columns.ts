@@ -151,6 +151,21 @@ export const CASHBACK_PERCENT_CANDIDATES: readonly ColumnCandidate<number>[] = [
   { column: 'cashback_percent', toCanonical: (v) => (v == null ? null : Number(v)) },
 ]
 
+/**
+ * A wallet entry's amount, in agorot, from whichever column exists.
+ *
+ * `wallet_entries.amount_ils` is what the hosted project has; 059 renames it to
+ * `amount_agorot`. The confirmation page reads it to show the cashback a
+ * purchase earned, and naming the wrong one failed that read outright.
+ *
+ * Keyed by idempotency_key rather than id at the only call site, which is why
+ * the row identity is read from that column here.
+ */
+export const WALLET_AMOUNT_CANDIDATES: readonly ColumnCandidate<number>[] = [
+  { column: 'amount_agorot', toCanonical: (v) => (v == null ? null : Math.round(Number(v))) },
+  { column: 'amount_ils', toCanonical: (v) => (v == null ? null : Math.round(Number(v) * 100)) },
+]
+
 /** The two columns migration 054 adds to `products`. */
 export const COUPON_054_COLUMNS = ['coupon_price_ils', 'offer_valid_until'] as const
 
