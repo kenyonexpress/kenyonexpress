@@ -134,10 +134,31 @@ consequence is that **home became reproducible**: three consecutive runs return
 the slider happened to be. The lower numbers were luck, not fidelity.
 
 And the honest result: **synchronising the slide did not close the gap.** y200-700
-still sits at 25-35% with both sides on the same slide, so what remains is the
-welcome slide's own rendering against live's, which is real fidelity work on the
-hero rather than a measurement artifact. That is the next thing to do on this
-page, and it is now measurable, which it was not before.
+still sits at 25-35% with both sides on the same slide, so what remains is real
+fidelity work. With both heroes pinned to the welcome slide, the slider box
+measures:
+
+```
+             x     y     w     h
+live       336   148   728   370
+ours       260   148   900   421
+```
+
+172px too wide, 51px too tall, starting 76px too far left. The height traces to
+the same root cause as the slide bug: `HERO_SLIDER_HEIGHT` was measured off
+`refs/ke_live_singlefile.html` with the fifth slide active, and its own comment
+says so ("rs-19 active, 422px"). The width is the flanking columns not holding
+their declared widths, so `flex-1` hands the slack to the slider.
+
+Two cautions for whoever picks this up, both learned the hard way in this pass:
+
+- `ELECTRO_HERO.slider` says 743x377 and its comment says it was measured from
+  "electro home-v7", the theme demo, not from kenyonexpress.co.il. Live is 728x370.
+  Do not treat those tokens as the reference without re-measuring.
+- My own attempt to measure the flanking columns matched different elements on the
+  two sides (a 220x24 title bar locally against a 1170x613 container on live), so
+  those numbers are not in this table. Only the slider box above was measured
+  comparably. Re-measure the columns before changing them.
 
 `products` at 28.58% is still dominated by product ORDER: live opens with a
 featured block, ours sorts alphabetically, so the grids never line up whatever the

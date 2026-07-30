@@ -62,9 +62,30 @@ wrong slide.
 
 The payoff is not a lower number, it is a trustworthy one: home returns **12.45%
 three runs in a row**, where it previously wandered between 11.99% and 12.45% with
-the slider. The lower readings were luck. With both sides on the same slide,
-y200-700 still sits at 25-35%, so the remaining gap is the welcome slide's own
-rendering, which is real hero work and is now measurable.
+the slider. The lower readings were luck.
+
+With both sides pinned to the welcome slide, the slider box measures:
+
+```
+             x     y     w     h
+live       336   148   728   370
+ours       260   148   900   421
+```
+
+172px too wide, 51px too tall, 76px too far left. The height traces to the same
+root cause as the slide bug: `HERO_SLIDER_HEIGHT` came off the single-file
+snapshot with the fifth slide active, and its own comment says "rs-19 active,
+422px". The width is the flanking columns not holding their declared widths, so
+`flex-1` hands the slack to the slider.
+
+Two cautions before touching it. `ELECTRO_HERO.slider` says 743x377 and was
+measured from the electro home-v7 demo, not from kenyonexpress.co.il, which is
+728x370; those tokens are not the reference. And my attempt to measure the flanking
+columns matched different elements on the two sides, a 220x24 title bar locally
+against a 1170x613 container on live, so those numbers are deliberately absent
+above. Only the slider box was measured comparably. This is left as the next task
+rather than changed at the end of a long pass, because a flex restructure of the
+hero row needs a verify cycle it would not have got.
 
 `products` at 28.58% is product ORDER, not layout: live opens with a featured
 block, ours sorts alphabetically, so the grids never line up whatever the CSS
