@@ -10,6 +10,10 @@
 6. DONE 2026-07-31: every branch triaged in STATE with a reason. Nothing merged: 3 are fully contained, main's 1 commit is an artefact dump, checkout-complete's is a superseded measurement, ci-foundation waits for the cutover, wp-migration is the one worth merging and needs its own verify cycle (it changes proxy.ts).
 
 7. IN PROGRESS 2026-07-31: close the coupon sale flow end to end.
+   DONE: the coupon email leg, which did not exist at all (lib/email/resend.ts, lib/email/voucher-email.ts,
+   server/payments/voucher-email.ts, called last in finalizeOrder). Never throws, honours email_suppressions,
+   deduplicated per order, no embedded QR because mail clients strip data: URIs. 22 tests. Needs RESEND_API_KEY
+   in the environment to actually send.
    DONE: the order write path (orders + order_items) and the read path (/checkout/return, /account/orders,
    wallet_entries, finalize) now resolve which money columns the database has. The exact INSERT pair was
    simulated against production inside a rolled-back DO block and accepted. 849 tests.

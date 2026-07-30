@@ -1,10 +1,58 @@
 # KenyonExpress — Project State
 
-Updated: 2026-07-31 (coupon+scan, cart, 085/094 applied, order path fixed, 059 refused)
+Updated: 2026-07-31 (coupon+scan, cart, order path fixed, 059 refused, coupon email built)
 
 ## Current Phase
 Checkout. `feat/admin-core` is merged into `phase5/homepage`; the storefront and
 the admin panel are one branch again.
+
+## Round of 2026-07-31 — the coupon email, which did not exist
+
+Queue task [2], the part of it that is not blocked by the service key. A
+customer who bought a coupon received **nothing**: there was no mail transport
+in the codebase at all, no template, and no call site. The flow spec has
+`קופון+QR → מייל` in it and the arrow went nowhere.
+
+Three modules, and the reasoning that shaped them:
+
+`lib/email/resend.ts` is the transport. It **never throws**, because its only
+caller runs after the card is charged and the order is closed, and a provider
+outage must not turn a completed purchase into a failed one. An absent
+`RESEND_API_KEY` is reported as `skipped`, not as an error: local development
+and CI have no key and should not have one, and a checkout that fails because
+nobody configured mail on a laptop teaches people to ignore the failure.
+
+`lib/email/voucher-email.ts` is the template, pure, so what the customer reads
+is testable without a transport or a database. Two decisions worth keeping:
+
+- **No QR image is embedded.** The obvious move is a `data:` URI, and Gmail,
+  Outlook and most corporate filters strip exactly those, which puts a
+  broken-image icon where the coupon should be. The mail carries the CODE, which
+  a counter can always type, and a button to `/coupon/<id>`, which is where the
+  QR is rendered and the page the customer should be holding up anyway. Useful
+  with images off beats beautiful with images on.
+- **Both amounts, in this order:** what was paid on the site, then what is still
+  owed at the business. The second is what the customer will actually be asked
+  for, and a coupon email that only says "you paid ₪20" sets up an argument at a
+  till.
+
+`server/payments/voucher-email.ts` joins them and is called last in
+`finalizeOrder`, next to the settlement journal and under the same rule. It
+consults `email_suppressions` first, because writing to an address that already
+bounced is how a sending domain loses its reputation, and it passes
+`voucher-email:<orderId>` as the Resend idempotency key, so the replayed
+finalize the webhook and the return page both perform sends one mail rather than
+two.
+
+22 tests: the template (money, expiry, escaping of supplier-controlled names,
+RTL on the elements rather than a wrapper, no embedded image) and the sender
+(suppression, no vouchers, no address, transport failure, a database throw that
+must not escape, joined rows arriving as arrays).
+
+**871 vitest in 64 files**, `tsc` clean, `biome` clean, build compiles.
+
+Still not sendable end to end from here: no `RESEND_API_KEY`, and the flow that
+would trigger it cannot run on the demo Supabase key.
 
 ## Round of 2026-07-31 — 059: backup taken, migration REFUSED, and why
 
@@ -767,6 +815,9 @@ invented.
   `^[A-Z_]* .env.local`. It was a blind `git commit -am`, not a decision.
 
 ## Last Completed
+The coupon email: transport, template and sender, wired into finalizeOrder.
+It did not exist, so a customer who bought a coupon received nothing.
+
 Backup of the whole public schema at `~/Backups/kenyonexpress/db-before-059.sql`
 (706 rows, 20 tables) and a REFUSAL to apply 059, with the call list and the
 five code sites it would break. See the round above.

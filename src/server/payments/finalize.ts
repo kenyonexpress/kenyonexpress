@@ -8,6 +8,7 @@ import {
   buildChargeSettledEvents,
   recordSettlementEvents,
 } from '@/server/payments/settlement-events'
+import { sendVoucherEmail } from '@/server/payments/voucher-email'
 import type { Json } from '@/types/database'
 
 export type FinalizeOutcome =
@@ -437,6 +438,19 @@ export async function finalizeOrder(input: {
         cardcomAccountId,
       }),
     )
+
+    // The customer's coupons, by email. Last, and incapable of failing the
+    // finalize for the same reason the journal above cannot: the card is
+    // charged and the order is closed. Deduplicated by the provider on the
+    // order id, so a replayed finalize does not send twice.
+    await sendVoucherEmail(admin, {
+      orderId: order.id,
+      userId: order.user_id,
+      siteUrl: (process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il').replace(
+        /\/+$/,
+        '',
+      ),
+    })
 
     return { ok: true, replay: false, orderId: order.id }
   } catch (error) {
