@@ -1,10 +1,57 @@
 # KenyonExpress — Project State
 
-Updated: 2026-07-31 (customer coupon page + supplier scan round)
+Updated: 2026-07-31 (coupon page + scan round, then cart measurement round)
 
 ## Current Phase
 Checkout. `feat/admin-core` is merged into `phase5/homepage`; the storefront and
 the admin panel are one branch again.
+
+## Round of 2026-07-31 — cart: the measurement and the tests it never had
+
+Goal queue item 2. The cart itself was already built and did not need building
+again: a zustand store with optimistic writes and rollback (`lib/cart/store.ts`),
+a guest cart keyed on the `ke_session_id` cookie, a drawer, and `/cart`. What
+was missing was the two things the goal names as its acceptance criteria.
+
+**`compare.mjs --page=cart` did not exist, so the page had never been scored.**
+It does now, and **the empty cart measures 9.95%**, under the 11% target.
+
+The whole 9.95% is the empty-state panel and what it pushes down. Live prints a
+full-width yellow banner reading `סל הקניות שלך ריק כרגע.` with a small grey
+`חזור לחנות` pill; ours is a bordered card with a cart glyph, a large heading, a
+line of encouragement and a yellow CTA. That accounts for y300-500 (81% and 53%)
+directly, and y700-800 (61%) is the newsletter bar sitting lower because our
+panel is taller. Both pages render correctly; this is a design difference, not a
+defect, and adopting live's banner is a decision rather than a fix. Below y1300
+the two pages are identical to the pixel.
+
+The page needed its own guard and it is the reason the first run refused. A cart
+does NOT redirect when it is empty, unlike checkout, so a filled live cart
+against an empty local one produces a number that means nothing. The script now
+reads the empty-state wording on both sides and refuses to score two different
+states, the same rule as the existing not-found and checkout-redirect guards.
+`COMPARE_CART_EMPTY=1` skips seeding and measures the empty state deliberately,
+which is the only run available while the local add-to-cart is dead on the stock
+demo key. **The filled cart is still unmeasured**, and it is blocked on Blocking
+Issue 1, not on this script.
+
+**The store had no tests at all**, which is where the money path meets a
+shopper's optimistic view. 18 added, and the ones that matter are the failure
+shapes: a returned `{ ok: false }` AND a thrown action both have to roll the
+count back and say something, because a thrown action leaving the count on
+screen with no toast is exactly what the demo key produced in July and it cost
+an afternoon. Also asserted: rollback goes to the last SERVER-confirmed cart
+rather than the optimistic one, `isPending` survives until the last of several
+in-flight writes settles (it drives every quantity control's disabled state),
+variants of one product are separate rows, and each mount gets its own store
+(module state on the server is shared between requests).
+
+Deliberately NOT changed: `CartProvider` still ignores later `initialCart` props
+and only `/cart` re-syncs from the server through `setCart`. Adopting the prop
+on every render would clobber a confirmed optimistic cart with an RSC payload
+that started before the mutation, and the case it would fix (another tab, a
+server-side change) does not arise within one tab, since every mutation goes
+through the store and every full navigation remounts the provider.
 
 ## Round of 2026-07-31 — `/coupon/[id]` and `/scan`
 
@@ -372,6 +419,9 @@ invented.
   `^[A-Z_]* .env.local`. It was a blind `git commit -am`, not a decision.
 
 ## Last Completed
+Goal queue item 2, the cart: `compare.mjs --page=cart` (9.95% empty) and
+`src/lib/cart/store.test.ts` (18 tests). See the cart round above.
+
 Goal queue item 1, `/coupon/[id]` and `/scan`: see the 2026-07-31 round above.
 `src/lib/vouchers/coupon-view.ts`, `src/lib/vouchers/scan-input.ts`,
 `src/app/coupon/[id]/page.tsx`, `src/app/(supplier)/scan/`,

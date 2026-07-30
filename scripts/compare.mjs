@@ -4,7 +4,8 @@ import { homedir } from 'node:os'
 import { resolve } from 'node:path'
 import { chromium } from '@playwright/test'
 
-// Usage: node scripts/compare.mjs [--page=home|product|category] [--live=<url>] [--mine=<url>]
+// Usage: node scripts/compare.mjs [--page=home|product|category|products|search|cart|checkout]
+//                                 [--live=<url>] [--mine=<url>]
 // home     : live = refs/ke_live_singlefile.html    mine = http://localhost:3000/
 // product  : live = live kenyonexpress product page mine = http://localhost:3000/product/<slug>
 // category : live = live product-category archive   mine = http://localhost:3000/category/<slug>
@@ -30,6 +31,7 @@ const LIVE_PRODUCTS = 'https://kenyonexpress.co.il/shop/'
 const COMPARE_QUERY = process.env.COMPARE_SEARCH_Q ?? 'אוזניות'
 const LIVE_SEARCH = `https://kenyonexpress.co.il/?s=${encodeURIComponent(COMPARE_QUERY)}&post_type=product`
 const LIVE_CHECKOUT = 'https://kenyonexpress.co.il/checkout/'
+const LIVE_CART = 'https://kenyonexpress.co.il/cart/'
 // WooCommerce's plain add-to-cart GET. Any published product works; this one is
 // the same id refs/checkout-measured.json was measured against, so the order
 // panel holds one line on both runs.
@@ -104,12 +106,24 @@ if (page === 'home') {
   // measurement.
   liveUrl ??= LIVE_CHECKOUT
   mineUrl ??= `${LOCAL}/checkout`
+} else if (page === 'cart') {
+  // Unlike checkout, neither cart REDIRECTS when it is empty: both render an
+  // empty-cart panel. That is what makes this page the trap it is. A filled
+  // live cart scored against an empty local one produces a number, and the
+  // number is meaningless. Both sides are seeded, and the guard below refuses
+  // to score the two states against each other. COMPARE_CART_EMPTY=1 measures
+  // the empty state on purpose, which is the only run available while the
+  // local add-to-cart is blocked by the stock Supabase demo key.
+  liveUrl ??= LIVE_CART
+  mineUrl ??= `${LOCAL}/cart`
 } else {
   console.error(
-    `unknown --page=${page} (use home, product, category, products, search or checkout)`,
+    `unknown --page=${page} (use home, product, category, products, search, cart or checkout)`,
   )
   process.exit(2)
 }
+
+const CART_EMPTY_ONLY = process.env.COMPARE_CART_EMPTY === '1'
 
 // Puts one line in the cart the page under test will read. Live takes the
 // WooCommerce GET; ours has no such route, so the local seed drives the real
@@ -224,6 +238,18 @@ const shoot = async (url, out) => {
     console.error(`REFUSING to measure: ${url} redirected to ${p.url()} (cart did not stick).`)
     process.exit(3)
   }
+  // The cart page answers whether it is empty in words rather than by
+  // redirecting, so the state is read off the rendered text on both sides and
+  // reconciled after both shots.
+  if (page === 'cart') {
+    cartEmptiness[external ? 'live' : 'mine'] = await p.evaluate(() => {
+      const text = document.body?.innerText ?? ''
+      // Live says "סל הקניות שלך ריק כרגע", ours says "העגלה שלך ריקה", and the
+      // theme also prints "אין מוצרים בסל הקניות" in the header widget. Match
+      // the shape rather than any one wording.
+      return /(סל|עגל)[^.]{0,20}ריק|אין מוצרים בסל|cart is currently empty/i.test(text)
+    })
+  }
   // Stop the hero before shooting. Our slider autoplays every 5s and the local
   // wait above is 6s, so the local screenshot was taken one slide further along
   // than live's every single time, and a fullPage capture is slow enough to
@@ -256,7 +282,9 @@ const shoot = async (url, out) => {
   console.log(`${out} written (${url})`)
 }
 
-if (page === 'checkout') {
+const cartEmptiness = { live: null, mine: null }
+
+if (page === 'checkout' || (page === 'cart' && !CART_EMPTY_ONLY)) {
   // Local first. Seeding live first left the next navigation in this context
   // waiting out its full timeout on a page that answers in under a second
   // cold, and the order costs nothing to get right.
@@ -266,6 +294,23 @@ if (page === 'checkout') {
 
 await shoot(liveUrl, 'refs/live.png')
 await shoot(mineUrl, 'refs/mine.png')
+
+// Two carts in different states are not a comparison. This is the same rule as
+// the not-found and the checkout-redirect guards: refuse rather than print a
+// percentage nobody can act on.
+if (page === 'cart' && cartEmptiness.live !== cartEmptiness.mine) {
+  const describe = (v) => (v ? 'empty' : 'filled')
+  console.error(
+    `REFUSING to measure: live cart is ${describe(cartEmptiness.live)} and the local cart is ${describe(cartEmptiness.mine)}.`,
+  )
+  console.error(
+    'Seed both, or run with COMPARE_CART_EMPTY=1 to compare the empty state deliberately.',
+  )
+  process.exit(3)
+}
+if (page === 'cart' && cartEmptiness.mine) {
+  console.log('cart: measuring the EMPTY state on both sides.')
+}
 copyFileSync('refs/live.png', `refs/live-${page}.png`)
 copyFileSync('refs/mine.png', `refs/mine-${page}.png`)
 
