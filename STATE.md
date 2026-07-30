@@ -6,6 +6,26 @@ Updated: 2026-07-31 (coupon+scan, cart, order path, email, handheld, WXR, go-liv
 Checkout. `feat/admin-core` is merged into `phase5/homepage`; the storefront and
 the admin panel are one branch again.
 
+## Round of 2026-07-31 — the checkout gate now fails closed, and a new queue
+
+`CHECKOUT_ENABLED` read `!== 'false'`, so a MISSING or empty variable ENABLED
+checkout. GO-LIVE lists that as a launch blocker and the reason is
+one-directional: the one deployment where somebody forgets to set it is the one
+taking real cards, and the failure is silent in the direction that charges
+people. In production it now requires the exact string `true`; outside
+production the default stays open, because a developer on the mock provider
+should not need a variable to see a checkout and no real card can be charged
+there. 9 tests, including that `TRUE`, `1` and `yes` do NOT open it.
+
+The nine-task queue is fully addressed and `NEXT-GOALS.md` carries a new one,
+ordered by what stands between this code and a first real sale, with the old
+queue's remainders folded in and its history kept at the bottom.
+
+**Item 1 is not mine to do.** Two keys, `SUPABASE_SECRET_KEY` (currently the
+stock `supabase-demo` key) and `RESEND_API_KEY`. Everything for the sale exists
+and is unit-tested; not one line of it has been driven through the app, because
+the app cannot reach the database at all.
+
 ## Round of 2026-07-31 — go-live: the cron that owes customers money
 
 Queue task [9], against `GO-LIVE.md`. Four checklist lines moved, and one of
@@ -952,6 +972,8 @@ invented.
   `^[A-Z_]* .env.local`. It was a blind `git commit -am`, not a decision.
 
 ## Last Completed
+`CHECKOUT_ENABLED` made fail-closed in production, and a new NEXT-GOALS queue.
+
 `vercel.json` and `docs/VERCEL-CRON.md`: the voucher expiry cron had nowhere to
 run, and its second leg is the customer's refund. Four GO-LIVE lines verified.
 

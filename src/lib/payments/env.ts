@@ -24,7 +24,20 @@ export function loadCardcomEnv(source: NodeJS.ProcessEnv = process.env): Cardcom
     source.NODE_ENV === 'test' ||
     (!source.CARDCOM_TERMINAL_NUMBER && source.NODE_ENV !== 'production')
 
-  const checkoutEnabled = source.CHECKOUT_ENABLED !== 'false'
+  // Fail closed in production, open everywhere else.
+  //
+  // This read `!== 'false'`, so a MISSING or empty variable enabled checkout.
+  // GO-LIVE lists that as a launch blocker for the obvious reason: the one
+  // deployment where somebody forgets to set it is the one taking real cards,
+  // and the failure is silent in the direction that charges people.
+  //
+  // Outside production the default stays open, because a developer running the
+  // mock provider should not have to set a variable to see a checkout, and no
+  // real card can be charged there.
+  const checkoutEnabled =
+    source.NODE_ENV === 'production'
+      ? source.CHECKOUT_ENABLED === 'true'
+      : source.CHECKOUT_ENABLED !== 'false'
 
   if (useMock) {
     return {

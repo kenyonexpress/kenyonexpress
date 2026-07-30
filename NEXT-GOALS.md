@@ -1,60 +1,67 @@
 # Goal Queue - run in order, one at a time, never parallel
 # After each goal: commit + push + update STATE.md + start next from this list
+#
+# The nine tasks of the previous queue are all addressed; what each one left
+# behind is folded into the tasks below. Ordered by what stands between this
+# code and a first real coupon sale. History is at the bottom.
 
-1. DONE 2026-07-31: coupon customer view /coupon/[id] + supplier scan view /scan
-2. DONE 2026-07-31: cart (store+guest+drawer+/cart already built; added compare.mjs --page=cart at 9.95% empty, 18 store tests). Filled-cart compare still blocked on SUPABASE_SECRET_KEY
-3. PARTIAL 2026-07-31: applied 094_settlement_events via MCP, payment path now schema-tolerant (payments.amount_ils vs amount_agorot). BLOCKED on the 042/059/065 cutover: orders/wallet_entries/fn_post_journal are all missing in production, see STATE payments round for the per-call-site checklist. feat/checkout-cardcom still not merged (escrow), 5% left in code is only the legal cancellation fee.
-3b. THE CUTOVER: decide 059 (apply + fix every shekel-named call site, or align the code to pre-059). Everything in the purchase flow waits on this.
-4. DONE 2026-07-31: scan hardening. Applied 085 via MCP (production carried the 3-arg redeem_voucher while the app calls 5 args, so every scan answered PGRST202). One-time code + race lock are the conditional UPDATE; rate limits at 4 layers. No per-IP block on the authenticated redeem route, on purpose (shared NAT at a mall).
-5. DONE 2026-07-31: already built (ProductForm split inputs + live preview, buildProductMoneyWrite). Verified all 8 written keys exist in production. Found and fixed next to it: the cart selected products.cashback_bp, which this DB does not have, blanking every cart line.
-6. DONE 2026-07-31: every branch triaged in STATE with a reason. Nothing merged: 3 are fully contained, main's 1 commit is an artefact dump, checkout-complete's is a superseded measurement, ci-foundation waits for the cutover, wp-migration is the one worth merging and needs its own verify cycle (it changes proxy.ts).
+1. THE TWO KEYS, and everything that unlocks. OFIR'S ACTION, then mine.
+   SUPABASE_SECRET_KEY is the stock supabase-demo key, so nothing local can reach the project:
+   no add-to-cart, no checkout, no test product, no Cardcom sandbox run. RESEND_API_KEY is unset,
+   so the coupon email is built and tested but has never left the process.
+   Supabase Dashboard > Project Settings > API Keys, and a Resend key.
+   THE MOMENT THEY LAND: the end-to-end sale. product -> cart -> Cardcom sandbox -> full coupon
+   price charged -> voucher + QR -> email -> /coupon/[id] -> /scan -> redeemed and expired. Every
+   piece of that is written and unit-tested; none of it has been driven through the app once.
 
-7. IN PROGRESS 2026-07-31: close the coupon sale flow end to end.
-   DONE: the coupon email leg, which did not exist at all (lib/email/resend.ts, lib/email/voucher-email.ts,
-   server/payments/voucher-email.ts, called last in finalizeOrder). Never throws, honours email_suppressions,
-   deduplicated per order, no embedded QR because mail clients strip data: URIs. 22 tests. Needs RESEND_API_KEY
-   in the environment to actually send.
-   DONE: the order write path (orders + order_items) and the read path (/checkout/return, /account/orders,
-   wallet_entries, finalize) now resolve which money columns the database has. The exact INSERT pair was
-   simulated against production inside a rolled-back DO block and accepted. 849 tests.
-   BLOCKED, one credential: SUPABASE_SECRET_KEY is the stock supabase-demo key, so nothing local can add to a
-   cart, run a checkout, exercise the Cardcom sandbox, or create the test coupon product. Replace it from
-   Supabase Dashboard > Project Settings > API Keys and the remaining steps become runnable.
-   THEN: E2E with the Cardcom sandbox, a real test coupon product with a real supplier, compare.mjs on every
-   flow page, the customer account area, the Admin dashboard, and the integration pass.
+2. Handheld, the rest of it. Measured 2026-07-31 at 380px with scripts/measure-mobile.mjs:
+   a second 5px document overflow from a slide-level container (387 inside 378), our header at
+   110px against live's ~49px, our hero at 421px against live's 193px, and NO mobile menu found
+   at all, which means category navigation is unreachable on a phone. Re-measure with --compare
+   after each fix; the desktop number must stay at 10.92%.
 
-11. PARTIAL 2026-07-31: go-live prep. Created vercel.json (the voucher expiry cron had nowhere to run;
-    its second leg credits customers for coupons that expired unused) + docs/VERCEL-CRON.md. Verified no
-    secret reaches the client bundle. Ticked two checklist blockers that were already closed (migration
-    numbering, 093). GO-LIVE stage 2 independently corroborates the 059 refusal.
-    REMAINING: 11 suppliers with no address/logo (content, needs decisions), CHECKOUT_ENABLED defaults
-    open so a missing var enables checkout, a signed release tag, and the E2E gate which needs the keys.
+3. The customer account area, per docs/ARCHITECTURE-ACCOUNT-IDENTITY.md and -WALLET.md.
+   Never started. /account/vouchers now links to /coupon/[id] and the orders queries were fixed
+   this session, so the area is closer than the docs suggest. compare.mjs has no --page=account
+   and live requires a session on both sides, so decide first whether that number is obtainable
+   at all rather than assuming it.
 
-10. PARTIAL 2026-07-31: WP data migration. src/lib/wp/wxr.ts reads the export with the three dry-run
-    defects fixed by construction (blog taxonomy never read, Dokan row excluded, images taken only from
-    surviving products), 15 tests. scripts/wp-dry-run.mjs reproduces 11 categories, 17 blog terms ignored
-    and 65 images, and corrects the product count to 44: the doc's 45 counted Dokan's bookkeeping row.
-    REMAINING: field mapping to public.products per docs/ARCHITECTURE-WP-DATA-MIGRATION.md, the image
-    pipeline to R2, the 301s for 27 pages with no redirect, and the load itself, which needs the service key.
+4. The 11 suppliers with no address, logo or phone. GO-LIVE blocker. 61 active products show a
+   supplier panel with an empty Waze link and an empty WhatsApp link. The publish gate only
+   enforces this on new writes, so the existing rows slipped through. Needs content decisions,
+   so start by producing the report and the admin surface that makes the gap visible.
 
-9. PARTIAL 2026-07-31: mobile polish. Added scripts/measure-mobile.mjs (380/768, compares against BOTH
-   the live site and the electro demo refs). Fixed the homepage being 5px wider than a 380px viewport:
-   the hero copy column and headlines are 1440px measurements that overflowed a phone. Desktop home
-   still 10.92%. REMAINING: a second 5px overflow from a slide-level container (387 inside 378), the
-   110px handheld header against live's ~49px, the 421px hero against live's 193px, and no mobile menu
-   was found at 380px.
+5. WP import, the half that is not a load: field mapping to public.products per
+   docs/ARCHITECTURE-WP-DATA-MIGRATION.md, the image pipeline to R2, and the 301s for the 27
+   published pages that have no redirect. src/lib/wp/wxr.ts already reads the export correctly
+   (11 categories, 65 images, 44 products) and 20 products carry a slug unrelated to their title,
+   which is a decision about continuity before it is code.
 
-8. 059 — REFUSED 2026-07-31, NEEDS YOUR DECISION. Backup taken first:
-   ~/Backups/kenyonexpress/db-before-059.sql, 706 rows, 20 tables, plus every column definition.
-   Then refused: 059 renames products.platform_percent, commission_percent, cashback_percent,
-   price_ils and coupon_price_ils, and all five are named by working code (cart.ts:85,
-   checkout.ts:316, product-money.ts:114). 42703 fails the whole statement, so the cart, the
-   checkout and admin product save all die the minute it lands, and no post-059 code path has
-   ever been run. 059 and the applied 070/084/087/093 are mutually incompatible here.
-   RECOMMENDATION: do not cut 059. The code now resolves the generation per table and works on
-   the schema that exists. Nothing is blocked by it except tidiness.
+6. Merge feat/wp-migration, minus what src/lib/wp/wxr.ts supersedes. Migration 095 is ALREADY
+   APPLIED in production while the code that writes that table sits on the branch. It also changes
+   proxy.ts, which is on the request path of every page, so it needs its own verify cycle.
 
-8b. THE OLD CUTOVER NOTE, superseded by 8 but no longer urgent: the code now works on the schema production actually has.
-   Needs a backup first, and this machine has no pg_dump, no psql, no linked CLI and no DB password:
-   brew install libpq && supabase login && supabase link --project-ref ixvwfbuvfxxsjiywhbbb
-   && supabase db dump --linked -f ~/Backups/kenyonexpress/db-before-059.sql
+7. 059, only if you decide to cut it. Refused 2026-07-31 with the evidence in STATE and the backup
+   at ~/Backups/kenyonexpress/db-before-059.sql. GO-LIVE stage 2 independently says not to apply
+   the 058-065 family before a code cutover. Doing it means converting about a dozen call sites and
+   verifying each against the new schema, in a session that can run the app.
+
+---
+
+## History, 2026-07-31
+
+1. DONE: coupon customer view /coupon/[id] + supplier scan view /scan.
+2. DONE: cart. compare.mjs --page=cart at 9.95% empty, 18 store tests.
+3. PARTIAL: checkout+Cardcom. 094 applied, payment path and order path made schema-tolerant and
+   proven against production with a rolled-back simulation. feat/checkout-cardcom still unmerged
+   (escrow). The only 5% left in the code is the legal cancellation fee.
+4. DONE: scan hardening. 085 applied; production carried the 3-arg redeem_voucher while the app
+   calls 5 args, so every scan answered PGRST202.
+5. DONE: admin per-product fields were already built; all 8 written keys verified to exist.
+6. DONE: integration pass, every branch triaged in STATE with a reason.
+7. PARTIAL: mobile polish. measure-mobile.mjs added, the 380px document overflow fixed.
+8. PARTIAL: WP data migration. wxr.ts + wp-dry-run.mjs, three dry-run defects fixed by construction.
+9. PARTIAL: go-live prep. vercel.json created, client bundle verified secret-free, two stale
+   blockers ticked.
+Also done outside the queue: the coupon email, which did not exist at all, and CHECKOUT_ENABLED
+made fail-closed in production.
