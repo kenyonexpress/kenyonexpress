@@ -23,6 +23,13 @@
    THEN: E2E with the Cardcom sandbox, a real test coupon product with a real supplier, compare.mjs on every
    flow page, the customer account area, the Admin dashboard, and the integration pass.
 
+11. PARTIAL 2026-07-31: go-live prep. Created vercel.json (the voucher expiry cron had nowhere to run;
+    its second leg credits customers for coupons that expired unused) + docs/VERCEL-CRON.md. Verified no
+    secret reaches the client bundle. Ticked two checklist blockers that were already closed (migration
+    numbering, 093). GO-LIVE stage 2 independently corroborates the 059 refusal.
+    REMAINING: 11 suppliers with no address/logo (content, needs decisions), CHECKOUT_ENABLED defaults
+    open so a missing var enables checkout, a signed release tag, and the E2E gate which needs the keys.
+
 10. PARTIAL 2026-07-31: WP data migration. src/lib/wp/wxr.ts reads the export with the three dry-run
     defects fixed by construction (blog taxonomy never read, Dokan row excluded, images taken only from
     surviving products), 15 tests. scripts/wp-dry-run.mjs reproduces 11 categories, 17 blog terms ignored

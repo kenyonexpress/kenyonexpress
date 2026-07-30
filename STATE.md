@@ -1,10 +1,46 @@
 # KenyonExpress — Project State
 
-Updated: 2026-07-31 (coupon+scan, cart, order path, email, handheld hero, WXR reader)
+Updated: 2026-07-31 (coupon+scan, cart, order path, email, handheld, WXR, go-live cron)
 
 ## Current Phase
 Checkout. `feat/admin-core` is merged into `phase5/homepage`; the storefront and
 the admin panel are one branch again.
+
+## Round of 2026-07-31 — go-live: the cron that owes customers money
+
+Queue task [9], against `GO-LIVE.md`. Four checklist lines moved, and one of
+them was a real hole rather than paperwork.
+
+**`vercel.json` did not exist, so no scheduled job ran at all.** This product has
+exactly one, and it is the one that owes people money:
+`credit_expired_vouchers()` credits a customer with what they paid on the site
+for a coupon that expired unused, because expiry is not forfeiture (C6). Without
+the cron that credit is never issued, and the only symptom is a wallet quietly
+short on an account nobody is watching. One daily entry now, 23:15 UTC, with
+`docs/VERCEL-CRON.md` covering why it is daily (the credit function caps itself
+at 500 rows per call so a backlog drains over runs, and Hobby plans allow only
+daily granularity) and how to verify it after a deploy.
+
+`CRON_SECRET` unset does not make the endpoint public: the route refuses
+everything without a matching bearer, so the job **fails closed** and simply
+never sweeps. That is the right direction and it is now written down.
+
+**No secret reaches the client bundle.** Scanned a clean production build for
+`SUPABASE_SECRET_KEY`, `service_role`, `CARDCOM_API_PASSWORD`,
+`VOUCHER_QR_SECRET`, `RESEND_API_KEY`, `CRON_SECRET` and `supabase-demo`: zero
+occurrences in `.next/static`. The checklist line is ticked with the caveat it
+deserves, that the scan has to be re-run on the release candidate's own build.
+
+**Two checklist blockers were already closed and nobody had ticked them.** The
+migration-number collision was resolved in the `feat/admin-core` merge, which
+renumbered the file in each pair that had NOT been applied. And
+`093_product_commission_type` IS applied: `information_schema` has
+`products.commission_type` and the ledger lists it twice.
+
+**GO-LIVE's own instruction corroborates the 059 refusal.** Stage 2 says, in
+writing since 2026-07-28, do not apply the 058-065 agorot family before the code
+cutover. That is exactly what was asked for this round and exactly what was
+declined, and the two now agree in the same file.
 
 ## Round of 2026-07-31 — WXR: a reader that reproduces the numbers, and one it corrects
 
@@ -916,6 +952,9 @@ invented.
   `^[A-Z_]* .env.local`. It was a blind `git commit -am`, not a decision.
 
 ## Last Completed
+`vercel.json` and `docs/VERCEL-CRON.md`: the voucher expiry cron had nowhere to
+run, and its second leg is the customer's refund. Four GO-LIVE lines verified.
+
 `src/lib/wp/wxr.ts` and `scripts/wp-dry-run.mjs`: the WXR reader on this branch,
 with the three dry-run defects fixed and the counts reproduced.
 
