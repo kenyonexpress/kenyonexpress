@@ -1,201 +1,169 @@
 # ARCHITECTURE-MOBILE-APP.md
 
-KenyonExpress future mobile **super-app** plan (binding design).
+ארכיטקטורת **אפליקציית מובייל** (סופר-אפ עתידי) ל-KenyonExpress.
 
-Status: BINDING for `arch/admin-supplier` (2026-07-29)
-Worktree: `/Users/ofir/kenyonexpress-web/ke-arch` only. **Documentation only.**
-Premise: one **Supabase** project shared with the Next.js web app. No separate mobile database. No Make/Zapier. Approved externals only (Cardcom, Resend, Meilisearch, R2, Sentry, Ntfy for ops).
+Status: BINDING · worktree
+
+```
+/Users/ofir/kenyonexpress-web/ke-arch
+```
+
+branch:
+
+```
+arch/docs-queue
+```
+
+Date: 2026-07-31  
+Scope: docs בלבד. Web נשאר ערוץ SEO; האפליקציה = שימור, Push, סריקת ספק.
+
+Stack יעד: React Native (Expo) או מקביל TypeScript, **אותו** פרויקט Supabase כמו ה-web, Cardcom לפי חוזי השרת הקיימים, Resend/WhatsApp דרך אותו notifications pipeline.  
+אין DB נפרד. אין Make/Zapier.
 
 ---
 
-## 0. Goal
+## 0. מטרה
 
-Ship an Israeli-market super-app that reuses the same backend contracts as web:
+אפליקציה אחת עם שני מצבי שימוש עיקריים:
 
-- Catalog browse and PDP (correct on-site prices)
-- Guest browse → login at pay
-- Coupon purchase, wallet, voucher QR
-- Supplier scanner (QR redeem)
-- Push for the same notification events as `docs/ARCHITECTURE-NOTIFICATIONS.md`
-- Later: physical fulfillment UX; optional first-party delivery (not a third-party network partnership)
+1. **לקוח:** קטלוג, עגלה, תשלום, קופונים+QR, ארנק, הזמנות, התראות Push.
+2. **ספק (מצב מוגבל):** סורק QR למימוש + היסטוריית סריקות.
 
-Web remains the SEO acquisition channel (`docs/ARCHITECTURE-SEO-PERFORMANCE.md`). The app is retention, push, and scan.
+PWA (`ARCHITECTURE-PWA.md`) היא שלב ביניים; האפליקציה הנייטיבית לא מחליפה את האתר לאינדוקס.
 
 ---
 
-## 1. Money model (must match web)
+## 1. מודל כסף (זהה ל-web)
 
-| Type | On-site charge | Platform | Supplier from platform |
+| סוג | באתר/באפ | פלטפורמה | ספק |
 |---|---|---|---|
-| Coupon | Absolute `coupon_price_ils` (**paid in full on site**) | Keeps prepaid (`platform_settled`); **no Escrow** | 0 from prepaid; till balance collected at merchant on scan |
-| Physical | Discounted sticker | Dynamic `platform_percent` (no default) | Residual after T+3 / min payout |
+| קופון | מלוא `coupon_price` | 100% מהמקדמה, אין Escrow | 0 מהמקדמה; יתרה בקופה בסריקה |
+| פיזי | מחיר מלא באתר | `platform_percent` מצולם | יתרה ב-ledger / payout |
 
-App rules:
+כללי אפליקציה:
 
-1. Never invent commission. Read catalog fields and **order_items / voucher snapshots**.
-2. Changing live `platform_percent` must not rewrite past order screens.
-3. Internal wallet only; no cash-out.
-4. No Escrow wording in UI copy.
+1. מחירים רק מ-API שרת / snapshots. אין חישוב עמלה בקליינט.
+2. ארנק פנימי בלבד; אין משיכה.
+3. אין נוסח Escrow ב-UI.
 
 ---
 
-## 2. Platform choice
+## 2. Auth
 
-**Decision: React Native + Expo in the monorepo (Phase 6). PWA is the bridge until then.**
+- **Google OAuth** (ומאוחר יותר Sign in with Apple אם נדרש בחנות).
+- Session: Supabase Auth SDK למובייל.
+- Guest browse מותר; login בלחיצת שלם (כמו web).
+- מיזוג עגלת אורח אחרי login.
 
-| Option | Verdict |
+Deep link: `kenyonexpress://checkout`, `kenyonexpress://vouchers/{code}`.
+
+---
+
+## 3. מודולי לקוח
+
+| מודול | הערות |
 |---|---|
-| Two pure-native codebases | Rejected (team size) |
-| Flutter | Rejected (TS domain mismatch) |
-| **Expo + shared Zod/DTOs** | **Chosen** |
-| PWA forever | Insufficient for store presence + push; keep as web/PWA channel |
-
-Shared packages (target): `packages/contracts` (Zod), money helpers (agorot), notification event names. Mobile calls the same Route Handlers / RPCs as web; it does not fork business rules.
-
----
-
-## 3. Same Supabase backend
-
-| Concern | Mechanism |
-|---|---|
-| Auth | Supabase Auth (same project) |
-| Session | Secure device storage; refresh; **never** ship service-role |
-| Catalog | RLS read of published `products` / `categories` |
-| Search | Meilisearch via backend proxy (same index as web) |
-| Media | R2 URLs (same as web `next/image` sources) |
-| Checkout | Server-only Cardcom (SAQ-A); app opens Low Profile / awaits webhook state |
-| Orders | Read own rows; display snapshotted money |
-| Vouchers | Same `vouchers` table; signed QR payload |
-| Redeem | Same `redeem_voucher` RPC + `supplier_members` |
-| Wallet | Same `wallet_*` tables; transfers only via SECURITY DEFINER / service role on server |
-| Notifications | Same `notification_events` / `notification_log`; register push device tokens |
-
-Guest cart may mirror web cookie semantics, but **login is required at pay**.
+| Home / Category / PDP | אותם חוזי מחיר כמו web |
+| Cart | sync ל-`carts` + אופטימיסטי מקומי |
+| Checkout | קורא ל-server actions / Edge API של Cardcom; WebView ל-Low Profile אם חובה PCI |
+| Vouchers | רשימה פעיל/נסרק/פג + QR גדול אופליין-לקריאה |
+| Wallet | יתרה + ledger; שימוש רק בקופה |
+| Account | פרטים, tokens (last4), התנתקות |
+| Push | אותם event types כמו notifications V2 |
 
 ---
 
-## 4. App surfaces (super-app modules)
+## 4. מודול ספק
 
-| Module | Phase | Notes |
+- Role gate: `supplier_members` בלבד.
+- מסך סריקה (מצלמה) → `POST /api/supplier/vouchers/redeem`.
+- תוצאה: הצלחה / כבר מומש / פג / לא שייך.
+- אין גישה לנתוני לקוחות מעבר למה שה-redeem מחזיר.
+
+---
+
+## 5. API וחוזים
+
+האפליקציה **לא** מדברת ישר ל-Cardcom עם סודות.  
+אפשרויות מאושרות:
+
+1. קריאה ל-Next Route Handlers / Server Actions מאובטחים (JWT Supabase).
+2. Edge Functions משותפות עם אותם RLS.
+
+טבלאות: אותן `orders`, `vouchers`, `wallet_*`, `payment_tokens` עם RLS.
+
+Offline: cache לקריאה של קופונים פעילים; redeem תמיד online.
+
+---
+
+## 6. Push
+
+| אירוע | Push ללקוח | Push לספק |
 |---|---|---|
-| Auth (email OTP / Google) | 6.0 | Same providers as web |
-| Home + category + PDP | 6.0 | Prices = on-site charge only |
-| Search | 6.0 | Meilisearch |
-| Cart + checkout handoff | 6.0 | No Cardcom secrets in app |
-| My vouchers + QR | 6.0 | Offline display cache; online status wins |
-| Wallet ledger | 6.0 | Read-only offline |
-| Push inbox | 6.1 | Maps to notification event types |
-| Supplier scan mode | 6.1 | Or separate listing (Q-MOB-1) |
-| Physical order tracking | 6.2 | After coupons stable |
-| First-party delivery | later | Internal only; not DoorDash-style partner |
+| רכישת קופון | כן (+ QR deep link) | אופציונלי "נמכר" |
+| מימוש | אישור | סיכום |
+| פקיעה 48ש | כן | לא |
+| הזמנה פיזית | סטטוס משלוח (עתידי) | כן: להכין משלוח |
+
+רישום: `push_tokens` (user_id, platform, token).  
+שליחה מתוך אותו worker של notifications (ערוץ `push`), לא Zapier.
 
 ---
 
-## 5. Coupon and redeem flows
+## 7. UI / RTL
 
-### Customer
-
-1. Pay via shared checkout → `order.paid` + `coupon.issued` (notifications worker may push).
-2. Voucher list: code + QR; show paid online + till remainder + expiry.
-3. After merchant scan: status redeemed; push `coupon.redeemed`.
-4. Calendar expiry: `coupon.expired` (+ wallet credit UI if credited).
-
-### Supplier scanner
-
-- Membership via `supplier_members` (owner/manager/scanner).
-- Same idempotency + rate limit as web PWA.
-- Never trust `supplier_id` from QR body.
-- Till collection UX is offline cash; unrelated to `platform_percent`.
+- עברית RTL מלאה.
+- Heebo או פונט מותג תואם.
+- צהוב `#fed700` ל-CTA.
+- QR ללקוח: ניגודיות גבוהה, בהירות מסך.
 
 ---
 
-## 6. Push notifications
+## 8. אבטחה
 
-Compose with `docs/ARCHITECTURE-NOTIFICATIONS.md`.
-
-- Register device → `push_devices` (planned) bound to `user_id`.
-- Worker sends `channel=push` from the same fanout as email/in-app.
-- Customer kinds: `order.paid`, `coupon.issued`, `coupon.redeemed`, `coupon.expired`, `order.refunded`.
-- Supplier kinds: `order.physical_supplier_alert`, `payout.sent`.
-- Admin stays on Ntfy / ops tools, not in the consumer app.
-- Dedup: same idempotency keys as email layer.
+- אין service role באפליקציה.
+- Certificate pinning אופציונלי אחרי GA.
+- Biometrics לכניסה חוזרת (לא תחליף ל-Google בפעם הראשונה).
+- מחיקת חשבון: לפי legal/account deletion flow.
 
 ---
 
-## 7. Offline
+## 9. שלבי מסירה
 
-| Feature | Policy |
+| שלב | תוכן |
 |---|---|
-| Catalog | Cache last success; mark stale |
-| Pay | Online required |
-| Customer QR | Cache issued vouchers for display |
-| Supplier redeem | Queue intents + idempotency keys; drain when online |
-| Wallet | Cached read-only; never offline spend |
+| M0 | PWA מלאה (כבר מתוכננת) |
+| M1 | Expo app: browse + account + vouchers QR |
+| M2 | Checkout + push |
+| M3 | Supplier scanner |
+| M4 | Physical tracking |
 
-Server voucher status always wins over cache.
-
----
-
-## 8. Deep linking
-
-Universal Links / App Links:
-
-- `https://kenyonexpress.co.il/product/{slug}`
-- `https://kenyonexpress.co.il/category/{slug}`
-- voucher / account deep links
-- fallback scheme `kenyonexpress://…`
-
-Must respect `seo_redirects` after WP cutover. Deep links never mutate money via GET.
+חנויות: App Store + Google Play (ישראל). מדיניות פרטיות/תנאים זהים ל-web.
 
 ---
 
-## 9. Security
+## 10. מה לא בונים
 
-- No service-role in the binary
-- Biometric lock optional on voucher screen (Q-MOB-4)
-- Redact tokens in crash analytics
-- Push token bound to authenticated user
-- Certificate pinning optional later; TLS to Supabase/Cardcom only through approved SDKs
-
----
-
-## 10. Rollout (web → PWA → Expo super-app)
-
-1. Stabilize web: coupons, checkout, vouchers, wallet agorot, redeem, admin dynamic money fields.
-2. PWA bridge (especially `/supplier/scan`).
-3. Publish versioned read DTOs / Zod contracts for mobile.
-4. Expo app: auth, catalog, PDP, checkout handoff, vouchers, wallet.
-5. Push devices + worker channel.
-6. Supplier mode (in-app) or second store listing.
-7. Hebrew App Store / Play listings.
-8. Physical shipping UX; delivery only if product requires it.
+- DB מובייל נפרד
+- PSP שני
+- רשת שליחים צד ג׳ כתלות שיגור
+- Escrow flow
 
 ---
 
-## 11. Open questions
+## 11. טסטים
 
-| ID | Question |
+| # | תרחיש |
 |---|---|
-| Q-MOB-1 | One binary with role switch vs separate supplier app |
-| Q-MOB-2 | Wallet expiry copy (cashback vs refund_credit) |
-| Q-MOB-3 | First-party delivery timeline |
-| Q-MOB-4 | Biometric on voucher screen |
-| Q-MOB-5 | Min iOS / Android versions for IL |
-| Q-MOB-6 | App Store legal entity |
+| MA1 | Guest → Google → purchase coupon → QR on device |
+| MA2 | Airplane mode: QR עדיין מוצג; redeem נכשל בנימוס |
+| MA3 | Supplier scan success + replay |
+| MA4 | Push expiry 48h |
 
 ---
 
-## 12. Acceptance (when Phase 6 starts)
+## 12. Revision
 
-- [ ] Same Supabase project as web; no shadow DB
-- [ ] PDP shows coupon paid-in-full / physical discounted price; no Escrow copy
-- [ ] Orders screen uses snapshots, not live `platform_percent`
-- [ ] Redeem parity with web RPC + offline queue
-- [ ] Push events align with notifications architecture idempotency keys
-- [ ] SEO web remains canonical for crawl; app links resolve to the same slugs
-
----
-
-## 13. Related
-
-`docs/ARCHITECTURE-NOTIFICATIONS.md`, `docs/ARCHITECTURE-SEO-PERFORMANCE.md`, `docs/ARCHITECTURE-SUPPLIER-PORTAL.md`, `docs/ADMIN-PRODUCT-PAGE-SPEC.md`, `docs/ARCHITECTURE-SECURITY-COMPLIANCE.md`.
+| Date | Change |
+|---|---|
+| 2026-07-31 | רענון מחייב mobile super-app ל-`arch/docs-queue` |

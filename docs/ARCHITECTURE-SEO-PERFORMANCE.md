@@ -45,7 +45,7 @@ Stack: Next.js App Router, RSC, Meilisearch (חיפוש), R2/images, Hebrew RTL,
 כל דף ציבורי:
 
 - `title` ייחודי בעברית (תבנית: `{שם} | KenyonExpress`)
-- `description` 140–160 תווים, מחיר/ערך בלי לשקר מול `coupon_price`
+- `description` 140 עד 160 תווים, מחיר/ערך בלי לשקר מול `coupon_price`
 - `alternates.canonical` אבסולוטי על דומיין הפרוד
 - Open Graph + Twitter עם תמונה אמיתית של המוצר/קטגוריה
 - `robots`: noindex על `/account/**`, `/checkout/**`, `/admin/**`, `/supplier/**`, APIs
