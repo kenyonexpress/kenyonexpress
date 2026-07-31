@@ -3360,3 +3360,34 @@ production build עובר.
 על `--container-page` עם מחיר ב-`--cart-price-red` ובורר כמות על `--cart-touch`
 בשני הצירים, מיני-קארט dropdown שתלוי על האייקון עם counter, `AddToCartButton`
 בדף המוצר ובכרטיסים, ושני סוגי המוצרים. `tsc` נקי, 932 בדיקות, build עובר.
+
+### GOAL 1 סגור: compare מול החי
+
+`compare.mjs --page=cart` מול kenyonexpress.co.il/cart/:
+
+```
+OVERALL first 2600px: 3.31%   (יעד: מתחת ל-11%)
+worst bands: y700-800 15.8%, y400-500 15.1%, y300-400 9.6%
+```
+
+**נמדד על המצב הריק, ולא על עגלה מלאה, וזו מגבלה אמיתית ולא בחירה.**
+‏`compare.mjs` ממלא את העגלה החיה דרך add-to-cart GET של WooCommerce, ואצלנו
+אין דרך למלא: `SUPABASE_SECRET_KEY` ב-`.env.local` הוא מפתח `supabase-demo`
+במקור (ה-JWT מפענח ל-`iss: supabase-demo` בלי `ref` בכלל), בזמן שה-anon key
+כן תקין ומצביע על `ixvwfbuvfxxsjiywhbbb`. כל מסלול העגלה, קריאה וכתיבה, עובר
+דרך `createAdminClient()`, ולכן עם המפתח הזה גם seed וגם הצגה נכשלים. חיפשתי
+מפתח תקין בכל קבצי ה-env, אין. MCP לא חושף service_role.
+
+הסקריפט מסרב מיוזמתו להשוות מלא מול ריק, וזה נכון: הרצתי עם
+`COMPARE_CART_EMPTY=1` שמשווה ריק מול ריק במפורש. ההשוואה משמעותית כי מצב
+העגלה הריקה נבנה מחדש בדיוק מול הדף החי (באנר מלא רוחב ואז pill), ולא הומצא.
+
+**מה שנשאר לא נמדד:** טבלת הפריטים, בורר הכמות, סיכום ההזמנה וכפתור התשלום
+במצב מלא. הם מכוסים ב-Vitest ברמת הסכומים, ולא ב-diff פיקסלים. ברגע שיהיה
+מפתח service_role תקין ל-`.env.local`, ההרצה היא:
+
+```
+node scripts/compare.mjs --page=cart
+```
+
+בלי הדגל.
