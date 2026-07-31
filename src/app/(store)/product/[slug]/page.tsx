@@ -6,6 +6,7 @@ import RelatedProducts from '@/components/storefront/RelatedProducts'
 import ShippingInfo from '@/components/storefront/ShippingInfo'
 import SupplierInfo from '@/components/storefront/SupplierInfo'
 import { type CouponOffer, buildCouponOffer } from '@/lib/commerce/coupon-offer'
+import { buildBreadcrumbJsonLd, buildProductJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   COUPON_054_COLUMNS,
@@ -26,13 +27,32 @@ export async function generateMetadata({ params }: Props) {
   const supabase = await createClient()
   const { data } = await supabase
     .from('products')
-    .select('name_he, description_he, short_description_he, seo_title, seo_description')
+    .select('name_he, description_he, short_description_he, seo_title, seo_description, images')
     .eq('slug', slug)
     .single()
+
+  const title = data?.seo_title ?? data?.name_he ?? 'מוצר'
+  const description =
+    data?.seo_description ?? data?.short_description_he ?? data?.description_he ?? undefined
+
+  // A canonical, because the same product is reachable through more than one
+  // path (category trails, search, share links with tracking parameters) and
+  // without one those all compete as separate pages.
+  const path = `/product/${encodeURIComponent(slug)}`
+  const images = Array.isArray(data?.images) ? (data.images as string[]).filter(Boolean) : []
+
   return {
-    title: data?.seo_title ?? data?.name_he ?? 'מוצר',
-    description:
-      data?.seo_description ?? data?.short_description_he ?? data?.description_he ?? undefined,
+    title,
+    description,
+    alternates: { canonical: path },
+    openGraph: {
+      title,
+      description,
+      url: path,
+      type: 'website',
+      locale: 'he_IL',
+      ...(images.length > 0 ? { images: [images[0] as string] } : {}),
+    },
   }
 }
 
@@ -158,9 +178,51 @@ export default async function ProductPage({ params }: Props) {
     value: product.type === 'coupon' ? 'קופון' : 'מוצר פיזי',
   })
 
+  // Structured data, built from the values this page already resolved and never
+  // from a second calculation: a JSON-LD price is a public claim about what
+  // something costs, and this page has previously rendered a price the cart
+  // disagreed with. `couponOffer` is the object the commission engine bills
+  // from, so the advertised price and the charged price cannot diverge.
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
+  const productLd = buildProductJsonLd({
+    name: product.name_he,
+    description: product.description_he ?? null,
+    slug: product.slug,
+    sku: product.sku ?? null,
+    images: Array.isArray(product.images) ? (product.images as string[]) : [],
+    siteUrl,
+    supplierName: supplier?.name ?? null,
+    categoryName: category?.name_he ?? null,
+    priceIls: isCoupon ? null : basePrice,
+    fullPriceIls: isCoupon ? null : oldPrice,
+    couponOffer,
+    stockQuantity: product.stock_quantity ?? null,
+  })
+  const breadcrumbLd = buildBreadcrumbJsonLd(
+    [
+      { name: 'בית', path: '/' },
+      ...(category ? [{ name: category.name_he, path: `/category/${category.slug}` }] : []),
+      { name: product.name_he, path: `/product/${product.slug}` },
+    ],
+    siteUrl,
+  )
+
   return (
     <div data-pdp="container" className="pdp">
       <div className="pdp__inner">
+        {/* Both nodes, one script each, mirroring the visible breadcrumb below. */}
+        <script
+          type="application/ld+json"
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD has no
+          // other insertion point, and jsonLdScript escapes every angle bracket
+          // so catalogue text cannot close the tag.
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(productLd) }}
+        />
+        <script
+          type="application/ld+json"
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: same as above.
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbLd) }}
+        />
         <ViewTracker
           event="view_product"
           props={{

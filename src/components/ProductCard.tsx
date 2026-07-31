@@ -1,6 +1,7 @@
 'use client'
 
 import AddToCartButton from '@/components/cart/AddToCartButton'
+import Image from 'next/image'
 import Link from 'next/link'
 import '@/styles/product-card-deals.css'
 
@@ -70,8 +71,19 @@ function DealsProductCard({ product }: { product: Product }) {
           className="p_con__image-link"
           aria-label={product.name_he}
         >
+          {/* Left as a raw img on purpose. This card's box comes from
+              `p_con__image-wrap` in the Electro stylesheet rather than from a
+              utility class here, and `fill` against a box whose height I have
+              not measured is how a grid starts shifting. `decoding="async"`
+              costs nothing and applies either way. */}
           {thumb ? (
-            <img src={thumb} alt={product.name_he} className="p_con__image" loading="lazy" />
+            <img
+              src={thumb}
+              alt={product.name_he}
+              className="p_con__image"
+              loading="lazy"
+              decoding="async"
+            />
           ) : null}
         </Link>
 
@@ -161,8 +173,18 @@ function DefaultProductCard({ product }: { product: Product }) {
           href={`/product/${product.slug}`}
           className="relative flex aspect-square items-center justify-center overflow-hidden bg-gray-50"
         >
+          {/* next/image here and not on the deals card: this wrapper reserves
+              the box itself with aspect-square, so `fill` cannot shift the
+              layout. `sizes` is what stops the browser fetching a full-width
+              image for a card that is at most a third of the row. */}
           {thumb ? (
-            <img src={thumb} alt={product.name_he} className="h-full w-full object-cover" />
+            <Image
+              src={thumb}
+              alt={product.name_he}
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              className="object-cover"
+            />
           ) : (
             <span className="text-5xl">📦</span>
           )}
