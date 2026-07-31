@@ -1,19 +1,19 @@
 # KenyonExpress State (ke-arch)
 
 ## Current Phase
-docs-queue: ANALYTICS rev C done; next CUSTOMER-SUPPORT.
+docs-queue: CUSTOMER-SUPPORT rev C done; next MASTER + contradiction sweep.
 
 ## Last Completed
-ARCHITECTURE-ANALYTICS.md rev C (GA4, conversions, sales dashboard)
+ARCHITECTURE-CUSTOMER-SUPPORT.md rev C
 
 ## In Progress
-CUSTOMER-SUPPORT, MASTER-v2, contradiction sweep
+MASTER-v2 push, contradiction sweep
 
 ## Blocking Issues
 none
 
 ## Next Task
-CUSTOMER-SUPPORT refunds/cancel policy
+MASTER then sweep docs for Escrow/percent/coupon contradictions
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
