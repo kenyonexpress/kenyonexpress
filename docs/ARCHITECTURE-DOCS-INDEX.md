@@ -56,9 +56,12 @@ Date: 2026-07-31 · docs only.
 - `ARCHITECTURE-SECURITY-COMPLIANCE.md`
 - `ARCHITECTURE-SECURITY-AUDIT.md` (תוכנית ביקורת: RLS probes, סריקות, רישום ממצאים)
 - `ARCHITECTURE-LEGAL.md`
+- `ARCHITECTURE-LEGAL-PAGES.md` (מפרט תקנון, ביטולים לפי חוק הגנת הצרכן, פרטיות, נגישות)
 
 ## Data
 - `ARCHITECTURE-WP-MIGRATION.md`
+- `ARCHITECTURE-WP-MIGRATION-PLAN.md` (חוזה מיפוי שדה-מול-שדה, סדר ייבוא, rollback)
+- `ARCHITECTURE-LAUNCH-MARKETING.md` (‏301 מ-WP, Google Merchant, קמפיין השקה)
 - `ARCHITECTURE-WP-DATA-MIGRATION-EXECUTION.md`
 
 ## Still deeper elsewhere (worktrees)

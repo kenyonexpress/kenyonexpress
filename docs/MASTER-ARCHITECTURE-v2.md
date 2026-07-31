@@ -121,7 +121,9 @@ Scope: docs בלבד.
 | `docs/ARCHITECTURE-ACCOUNT-AREA.md` | אזור אישי |
 | `docs/ARCHITECTURE-NOTIFICATIONS-V2.md` | Resend + Edge |
 | `docs/ARCHITECTURE-MOBILE-APP.md` | אפליקציה עתידית |
-| `docs/ARCHITECTURE-WP-MIGRATION.md` + `WP-DATA-MIGRATION-EXECUTION.md` | ייבוא WP |
+| `docs/ARCHITECTURE-WP-MIGRATION.md` + `WP-MIGRATION-PLAN.md` + `WP-DATA-MIGRATION-EXECUTION.md` | ייבוא WP |
+| `docs/ARCHITECTURE-LEGAL-PAGES.md` | עמודים משפטיים באתר |
+| `docs/ARCHITECTURE-LAUNCH-MARKETING.md` | שיווק השקה, 301, Merchant |
 | `docs/ARCHITECTURE-DESIGN-SYSTEM.md` / `ACCESSIBILITY.md` / `COOKIE-CONSENT.md` | UX / פרטיות |
 | `docs/ARCHITECTURE-DOCS-INDEX.md` | אינדקס מלא |
 
