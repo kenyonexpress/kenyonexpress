@@ -1,36 +1,38 @@
-# KenyonExpress State
+# KenyonExpress State (ke-arch worktree)
 
 ## Current Phase
-Architecture docs queue complete on `arch/docs-queue` in worktree `ke-arch`.
+Architecture docs queue on `arch/docs-queue` (continuous write → commit → push).
 
 ## Last Completed
-Pushed full docs queue + gap fill to
+Rev B expand + push:
 
 ```
-origin/arch/docs-queue
+docs/ARCHITECTURE-GO-LIVE-CHECKLIST.md
 ```
-
-Tip includes GO-LIVE, SEO-PERFORMANCE, MOBILE-APP, WP-DATA-MIGRATION-EXECUTION, AI-AGENTS-SUPPORT, ANALYTICS-KPI, plus gap docs (cart, account, testing, observability, backup-DR, legal, PWA, search, wishlist, invoicing, referrals, media, notifications-v2, fraud, category, docs-index).
 
 ## In Progress
-nothing
+Queue remaining: SEO-PERFORMANCE, MOBILE-APP, WP-DATA-MIGRATION-EXECUTION, AI-AGENTS-SUPPORT, ANALYTICS-KPI, then gap scan.
 
 ## Blocking Issues
 none
 
 ## Next Task
-Optional: open PR from `arch/docs-queue` into the integration branch. Implement P0 items from GO-LIVE on app branches when asked.
+Write/expand SEO-PERFORMANCE and commit+push.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
 
+## Branch
+`arch/docs-queue`
+
 ## Supabase Project URL
-not set in this worktree
+not set in this worktree STATE
 
 ---
 ## History
 
-### 2026-07-31: docs-queue continuous run
-- 6 requested architecture docs committed+pushed each
-- Gap scan: added missing domain docs in same worktree, commit+push each
-- Index: `docs/ARCHITECTURE-DOCS-INDEX.md`
+### 2026-07-31: GO-LIVE-CHECKLIST rev B
+- Escrow/Cardcom/QR/KPI gates; evidence rule
+
+### Prior
+- Continuous docs-queue through DOCS-INDEX and domain arch files
