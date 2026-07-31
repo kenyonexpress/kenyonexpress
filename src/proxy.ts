@@ -7,6 +7,19 @@ import { type NextRequest, NextResponse } from 'next/server'
 // The exported function must be named `proxy` (not `middleware`).
 
 export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  // The Sentry tunnel. First, before the redirect lookup and before the session
+  // refresh: it carries no session, it is posted to by the browser SDK on a page
+  // that may already be broken, and it is never a legacy WordPress path.
+  //
+  // This guard arrived from feat/observability written to run first and merged
+  // into a position BELOW `supabase.auth.getUser()`, where its own comment had
+  // stopped describing it: every error report was paying for a token refresh.
+  // Neither branch was wrong on its own, which is how the two of them produced
+  // it.
+  if (pathname.startsWith('/monitoring')) return NextResponse.next({ request })
+
   // Legacy WordPress URLs, resolved BEFORE the session refresh below.
   //
   // The order is the point. `supabase.auth.getUser()` is a network round trip
@@ -19,7 +32,7 @@ export async function proxy(request: NextRequest) {
   // may or may not resend, and a payment callback that gets redirected is a
   // payment we never hear about.
   if (request.method === 'GET' || request.method === 'HEAD') {
-    const hit = await lookupRedirect(request.nextUrl.pathname)
+    const hit = await lookupRedirect(pathname)
     if (hit) {
       if (hit.status === 410) {
         // Gone, not missing. A 410 is a decision we made; a 404 is an
@@ -60,14 +73,6 @@ export async function proxy(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-
-  const { pathname } = request.nextUrl
-
-  // The Sentry tunnel. Excluded before anything else touches it: it carries no
-  // session, it is posted to by the browser SDK on a page that may already be
-  // broken, and running the session refresh on it would add a round trip to
-  // every error report.
-  if (pathname.startsWith('/monitoring')) return supabaseResponse
 
   // Route protection.
   //
