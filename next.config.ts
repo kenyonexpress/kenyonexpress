@@ -1,3 +1,4 @@
+import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 import createNextIntlPlugin from 'next-intl/plugin'
 import { PAYMENT_FRAME_PATHS, contentSecurityPolicyFor } from './src/lib/security/frame-policy'
@@ -87,4 +88,46 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default withNextIntl(nextConfig)
+/**
+ * Sentry wraps LAST, outside next-intl.
+ *
+ * withSentryConfig only adds webpack/turbopack plugins and a source-map upload
+ * step; it does not touch `headers()`, so the CSP work above (and in
+ * src/lib/security/frame-policy.ts) is unaffected. The order still matters:
+ * wrapping the other way round would hand Sentry a config next-intl had not
+ * finished building.
+ */
+export default withSentryConfig(withNextIntl(nextConfig), {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+
+  // Absent auth token means no upload attempt at all, so a local build and a
+  // fork's CI both work with no credential rather than failing at the last step.
+  silent: !process.env.CI,
+
+  // Uploaded and then DELETED from the deployed output. A .map served publicly
+  // hands anyone the unminified source of the checkout, including every
+  // client-side guard and every route name.
+  sourcemaps: { deleteSourcemapsAfterUpload: true },
+
+  // Routes the browser SDK's own requests through our origin, so an ad blocker
+  // (which most Israeli shoppers run) cannot silently drop error reports. The
+  // cost is that this path must stay out of the proxy's auth matcher.
+  tunnelRoute: '/monitoring',
+
+  // Both of these moved under `webpack` in @sentry/nextjs 10, and the branch
+  // was written against the older flat names. Left as they were, the build
+  // printed two DEPRECATION WARNINGs per run and the options would stop being
+  // read on the next major without anything failing — the quiet kind of
+  // regression, where the debug logger returns to the client bundle and nobody
+  // notices until a performance budget does.
+  webpack: {
+    // The tree-shaken debug logger is a meaningful chunk of the client bundle,
+    // and the performance budgets in ARCHITECTURE-SEO-SITEMAP are already tight.
+    treeshake: { removeDebugLogging: true },
+
+    // Vercel's cron and uptime pings would otherwise be reported as transactions.
+    automaticVercelMonitors: false,
+  },
+})

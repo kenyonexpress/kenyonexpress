@@ -1,52 +1,90 @@
 import type { Instrumentation } from 'next'
 
 /**
- * Server instrumentation (Next 16 file convention: `register` runs once per
- * server instance, before the first request is served).
+ * Server and edge instrumentation. Next 16 calls `register` once per server
+ * instance, before the first request is served. This file lives in `src/`
+ * because the project uses a src folder: a copy at the repository root is
+ * silently ignored, not merged.
  *
- * Sentry is initialised here rather than through `withSentryConfig` in
- * next.config, because the payment path this exists for is entirely
- * server-side. The config wrapper's job is client bundling and source-map
- * upload, neither of which is needed to alert on a charge that failed to
- * settle, and both of which change how the whole app builds.
+ * WHAT CHANGED, AND WHY THE OLD REASONING STILL HOLDS.
  *
- * Everything below is inert without SENTRY_DSN.
+ * This used to forward only money-path errors, on the grounds that "an alert
+ * channel that also carries catalogue render errors is one nobody reads". That
+ * is correct about an ALERT CHANNEL and it is now enforced where it belongs:
+ * lib/observability/alert.ts pushes to a phone, and only for money.
+ *
+ * Sentry is not that channel. It is a searchable record you consult when
+ * something is already known to be wrong, and a record with the catalogue
+ * missing is a record that cannot answer "was this only the checkout, or was
+ * the whole site throwing". So capture is broad here and the interrupt stays
+ * narrow.
  */
 export async function register(): Promise<void> {
-  // The Edge runtime gets its own module instance; the proxy runs there and
-  // touches no money, so only the Node runtime is wired up.
-  if (process.env.NEXT_RUNTIME !== 'nodejs') return
+  if (process.env.NEXT_RUNTIME === 'nodejs') {
+    // First, deliberately. Environment validation exists so a misconfigured
+    // deploy never becomes a request; loading it after Sentry would report the
+    // failure from a process that should not have started.
+    await import('@/lib/env')
+    await import('../sentry.server.config')
+  }
 
-  const { initSentry } = await import('@/lib/observability/sentry')
-  initSentry()
+  // The edge runtime gets its own module instance. src/proxy.ts runs there, and
+  // since the redirect lookup landed it is no longer true that the edge touches
+  // nothing that matters: a throw there takes down every request on the site.
+  if (process.env.NEXT_RUNTIME === 'edge') {
+    await import('../sentry.edge.config')
+  }
 }
 
-/**
- * Server errors Next caught for us. Only the money path is forwarded: an alert
- * channel that also carries catalogue render errors is one nobody reads, and
- * the whole point of this one is that an event in it always means a customer
- * may have been charged.
- */
-export const onRequestError: Instrumentation.onRequestError = async (error, request, context) => {
-  const path = request.path ?? ''
-  const onMoneyPath =
+/** Paths where a failure means a customer may have been charged. */
+function isMoneyPath(path: string): boolean {
+  return (
     path.startsWith('/api/payments/') ||
     path.startsWith('/api/supplier/vouchers/') ||
     path.startsWith('/api/cron/expire-vouchers') ||
     path.startsWith('/checkout')
+  )
+}
 
-  if (!onMoneyPath) return
+/**
+ * Every server-side error Next catches, including ones thrown inside a Server
+ * Component where React has already replaced the instance; `digest` is the only
+ * stable handle on those, which is why it is tagged rather than logged.
+ */
+export const onRequestError: Instrumentation.onRequestError = async (error, request, context) => {
+  const rawPath = request.path ?? ''
 
-  const { capturePaymentError } = await import('@/lib/observability/sentry')
-  capturePaymentError(error, {
-    stage: `request:${context.routeType}`,
-    detail: {
-      path,
-      method: request.method,
-      route: context.routePath,
-      // `digest` is Next's id for the error the client saw; it is what ties a
-      // customer's "something went wrong" screenshot to this event.
-      digest: (error as { digest?: string }).digest,
-    },
+  // A voucher token lives in the PATH of /redeem/<token>, where a key-based
+  // scrubber cannot see it. Redacted before it reaches an event (SEC-SCRUB).
+  const path = rawPath
+    .replace(/\/redeem\/[^/?#]+/, '/redeem/[redacted]')
+    .replace(/([?&])(token|code|secret)=[^&]*/gi, '$1$2=[redacted]')
+
+  const digest = (error as { digest?: string }).digest
+
+  if (isMoneyPath(rawPath)) {
+    const [{ capturePaymentError }, { alertMoneyFailure }] = await Promise.all([
+      import('@/lib/observability/sentry'),
+      import('@/lib/observability/alert'),
+    ])
+
+    capturePaymentError(error, {
+      stage: `request:${context.routeType}`,
+      detail: { path, method: request.method, route: context.routePath, digest },
+    })
+
+    // The phone. Only here, and only for money.
+    await alertMoneyFailure({ stage: `${context.routeType} ${path}`, error })
+    return
+  }
+
+  const Sentry = await import('@sentry/nextjs')
+  Sentry.withScope((scope) => {
+    scope.setTag('route_type', context.routeType)
+    scope.setTag('router', context.routerKind)
+    scope.setTag('route_path', context.routePath)
+    if (digest) scope.setTag('digest', digest)
+    scope.setContext('request', { path, method: request.method })
+    Sentry.captureException(error)
   })
 }

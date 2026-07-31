@@ -1,4 +1,9 @@
-import * as Sentry from '@sentry/node'
+import * as Sentry from '@sentry/nextjs'
+import { redact } from './scrub'
+
+// Re-exported so the scrubber keeps its existing test and its existing callers
+// after moving to scrub.ts, where the edge runtime can also reach it.
+export { redact }
 
 /**
  * Sentry, scoped to the money path.
@@ -17,75 +22,14 @@ import * as Sentry from '@sentry/node'
 const DSN = process.env.SENTRY_DSN ?? process.env.NEXT_PUBLIC_SENTRY_DSN
 
 /**
- * Keys whose values must never leave the server. `cardcom_token` is a
- * chargeable instrument, `webhook_secret` authenticates callbacks, and the
- * JWT/service keys are total account access. Matched by substring so
- * `p_idempotency_key` and `CARDCOM_API_PASSWORD` are caught by the same rule.
+ * Kept as a no-op so existing callers do not break.
+ *
+ * Initialisation moved to sentry.server.config.ts / sentry.edge.config.ts,
+ * which instrumentation.ts loads per runtime. Calling Sentry.init() a second
+ * time from application code would replace the configured client and silently
+ * drop the scrubber with it.
  */
-const REDACT_PATTERNS = [
-  'token',
-  'secret',
-  'password',
-  'authorization',
-  'cookie',
-  // Deliberately the bare word rather than 'api_key'. It also catches
-  // `idempotency_key`, which is not itself a credential - but the cost of
-  // losing one from an error report is nothing, and the cost of a field named
-  // `*_key` being added later and quietly shipping out is a great deal more.
-  'key',
-  'card',
-  'cvv',
-  'jwt',
-]
-
-function shouldRedact(key: string): boolean {
-  const lower = key.toLowerCase()
-  return REDACT_PATTERNS.some((pattern) => lower.includes(pattern))
-}
-
-/**
- * Recursive redaction. Depth-limited because an unbounded walk over an
- * attacker-influenced payload is its own denial of service, and because the
- * Cardcom `raw` blobs that end up in these contexts are shallow anyway.
- */
-export function redact(value: unknown, depth = 0): unknown {
-  if (depth > 4) return '[truncated]'
-  if (value === null || typeof value !== 'object') return value
-  if (Array.isArray(value)) return value.map((entry) => redact(entry, depth + 1))
-
-  const output: Record<string, unknown> = {}
-  for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
-    output[key] = shouldRedact(key) ? '[redacted]' : redact(entry, depth + 1)
-  }
-  return output
-}
-
-let initialised = false
-
-/** Called once from instrumentation.register(). Safe to call again. */
-export function initSentry(): void {
-  if (initialised || !DSN) return
-  initialised = true
-
-  Sentry.init({
-    dsn: DSN,
-    environment: process.env.SENTRY_ENVIRONMENT ?? process.env.NODE_ENV,
-    // The money path is low-volume by nature; sampling it would mean losing
-    // the one event that mattered. Performance tracing stays off, since that
-    // IS high-volume and is not what this is for.
-    tracesSampleRate: 0,
-    sendDefaultPii: false,
-    beforeSend(event) {
-      if (event.request?.headers) event.request.headers = {}
-      if (event.request?.cookies) event.request.cookies = {}
-      if (event.extra) event.extra = redact(event.extra) as Record<string, unknown>
-      if (event.contexts?.payment) {
-        event.contexts.payment = redact(event.contexts.payment) as Record<string, unknown>
-      }
-      return event
-    },
-  })
-}
+export function initSentry(): void {}
 
 export type PaymentErrorContext = {
   /** Where in the money path this happened, e.g. 'cardcom_webhook'. */
