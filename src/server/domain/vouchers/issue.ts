@@ -1,4 +1,5 @@
 import { type Agorot, agorot, ilsToAgorot } from '@/lib/commerce/money'
+import type { VoucherRateColumn } from '@/lib/commerce/order-money-columns'
 import { computeVoucherExpiry, generateUniqueVoucherCode } from './code'
 import { signVoucherQrPayload } from './qr'
 
@@ -32,6 +33,14 @@ export interface VoucherIssueInput {
   platformPercent: string | number
   couponExpiryDays: number
   offerValidUntil: Date
+  /**
+   * Which rate column this database actually has, from probing it. Required
+   * and with no default on purpose: the previous code assumed `platform_bp`,
+   * the hosted project never received the migration that creates it, and the
+   * silent result was that no voucher could be issued in production at all.
+   * A default here would restore exactly that failure for the next caller.
+   */
+  rateColumn: VoucherRateColumn
   now?: Date
 }
 
@@ -48,8 +57,13 @@ export interface IssuedVoucherRow {
   face_value_agorot: number
   coupon_price_agorot: number
   remaining_amount_due_agorot: number
-  /** Basis points, not percent. See the write site for why the two differ. */
-  platform_bp: number
+  /**
+   * Exactly one of these is ever set, chosen from `rateColumn`. Naming both at
+   * once is not a safer hedge: one column that does not exist fails the whole
+   * INSERT, so spelling more of them makes failure more likely, not less.
+   */
+  platform_bp?: number
+  platform_percent?: number
   offer_valid_until: string
   expires_at: string
   issued_at: string
@@ -163,11 +177,13 @@ export async function issueVoucher(
       face_value_agorot: faceValue,
       coupon_price_agorot: couponPrice,
       remaining_amount_due_agorot: remainingDue,
-      // 059 renamed vouchers.platform_percent to platform_bp AND changed its
-      // units to basis points. Writing the old name failed the insert outright,
-      // so no voucher could be issued at all; writing 30 into the new column
-      // would have recorded a 0.3 percent split instead of 30 percent.
-      platform_bp: Math.round(platformPercent * 100),
+      // 059 renames vouchers.platform_percent to platform_bp AND changes its
+      // units to basis points, so the name and the number have to move
+      // together: 30 written into platform_bp is a 0.3 percent split, and 3000
+      // written into platform_percent violates the 0..100 check constraint.
+      ...(input.rateColumn === 'platform_bp'
+        ? { platform_bp: Math.round(platformPercent * 100) }
+        : { platform_percent: platformPercent }),
       offer_valid_until: input.offerValidUntil.toISOString(),
       expires_at: expiresAt.toISOString(),
       issued_at: now.toISOString(),

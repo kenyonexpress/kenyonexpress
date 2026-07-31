@@ -1,4 +1,9 @@
 import { agorot, agorotToIls } from '@/lib/commerce/money'
+import {
+  type VoucherRateColumn,
+  moneyColumnProbe,
+  resolveVoucherRateColumn,
+} from '@/lib/commerce/order-money-columns'
 import { capturePaymentError } from '@/lib/observability/sentry'
 import { resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -63,6 +68,7 @@ async function issueVouchersForItem(
   userId: string,
   product: { couponExpiryDays: number | null; offerValidUntil: Date | null },
   now: Date,
+  rateColumn: VoucherRateColumn,
 ): Promise<void> {
   if (!item.product_id || !item.supplier_id) {
     throw new Error(`coupon order item ${item.id} is missing product or supplier`)
@@ -113,6 +119,7 @@ async function issueVouchersForItem(
       platformPercent: item.platform_percent,
       couponExpiryDays: expiryDays,
       offerValidUntil,
+      rateColumn,
       now,
     })
     issuedIds.push(issued.id)
@@ -357,13 +364,18 @@ export async function finalizeOrder(input: {
       }
     }
 
+    // Asked once for the whole order rather than per voucher; the probe caches
+    // per table per process, but a coupon order issues one voucher per unit and
+    // the intent is clearer resolved next to the loop that consumes it.
+    const rateColumn = await resolveVoucherRateColumn(moneyColumnProbe(admin as never, 'vouchers'))
+
     for (const item of items as OrderItemRow[]) {
       if (item.product_type === 'coupon') {
         const info = (item.product_id ? productInfo.get(item.product_id) : undefined) ?? {
           couponExpiryDays: null,
           offerValidUntil: null,
         }
-        await issueVouchersForItem(admin, item, order.user_id, info, now)
+        await issueVouchersForItem(admin, item, order.user_id, info, now, rateColumn)
         // The coupon line is settled the moment it is paid: everything charged
         // online is ours, nothing is deferred, and scanning the voucher moves
         // no money. It shares split_executed with physical lines because the

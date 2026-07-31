@@ -4,6 +4,7 @@ import {
   buildOrderMoneyRow,
   resolveOrderGeneration,
   resolveOrderItemGeneration,
+  resolveVoucherRateColumn,
 } from '@/lib/commerce/order-money-columns'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -256,5 +257,20 @@ describe('generation resolution', () => {
     expect(await resolveOrderGeneration(thrower)).toBe('agorot')
     const real = vi.fn().mockResolvedValue(missing)
     expect(await resolveOrderGeneration(real)).toBe('ils')
+  })
+
+  // vouchers straddles the rename: its money is integer agorot on both
+  // lineages and only the rate column moved, so this answers with a column
+  // name rather than a generation. The hosted project is the second case.
+  it('names platform_bp when the vouchers table has it', async () => {
+    const probe = vi.fn().mockResolvedValue({ error: null })
+    expect(await resolveVoucherRateColumn(probe)).toBe('platform_bp')
+    expect(probe).toHaveBeenCalledWith('platform_bp')
+  })
+
+  it('falls back to platform_percent when vouchers has no platform_bp', async () => {
+    expect(await resolveVoucherRateColumn(vi.fn().mockResolvedValue(missing))).toBe(
+      'platform_percent',
+    )
   })
 })
