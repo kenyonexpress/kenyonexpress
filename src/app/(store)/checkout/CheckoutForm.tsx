@@ -4,6 +4,18 @@ import { track } from '@/lib/analytics/tracker'
 import { shekels } from '@/lib/cart/format'
 import type { CartView } from '@/lib/cart/types'
 import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-code'
+import {
+  CHECKOUT_STEPS,
+  type CheckoutStep,
+  STEP_TITLES,
+  type StepErrors,
+  type StepValues,
+  classifyCheckoutFailure,
+  isLastStep,
+  nextStep,
+  previousStep,
+  validateStep,
+} from '@/lib/checkout/steps'
 import { type Agorot, parseIls, sumAgorot } from '@/lib/money'
 import { type AuthState, signInWithGoogle } from '@/server/actions/auth'
 import { type CheckoutFormState, submitCheckout } from '@/server/actions/payments/checkout'
@@ -98,6 +110,71 @@ export default function CheckoutForm({
   const usingSavedCard = paymentChoice !== 'new'
   const [zipError, setZipError] = useState<string | null>(null)
 
+  const [step, setStep] = useState<CheckoutStep>('details')
+  const [stepErrors, setStepErrors] = useState<StepErrors>({})
+
+  /**
+   * A saved address is submitted by id, so its fields are never rendered. With
+   * nothing in the DOM to read, the address rules would report three missing
+   * required fields and trap the shopper on a step that shows only a summary.
+   */
+  const addressStepIsAutomatic = Boolean(address.id)
+
+  /** Current values straight off the form, so the gate reads what is really there. */
+  const readValues = (): StepValues => {
+    const form = formRef.current
+    if (!form) return {}
+    const data = new FormData(form)
+    const values: StepValues = {}
+    for (const [key, value] of data.entries()) {
+      if (typeof value === 'string') values[key] = value
+    }
+    return values
+  }
+
+  const checkStep = (target: CheckoutStep): StepErrors => {
+    if (target === 'address' && addressStepIsAutomatic) return {}
+    return validateStep(target, readValues())
+  }
+
+  const goNext = () => {
+    const errors = checkStep(step)
+    setStepErrors(errors)
+    if (Object.keys(errors).length > 0) return
+    setStep(nextStep(step))
+  }
+
+  const goBack = () => {
+    setStepErrors({})
+    setStep(previousStep(step))
+  }
+
+  /**
+   * Jumping straight to a step from the indicator is allowed backwards and
+   * only as far forwards as the filled fields justify, so the stepper cannot
+   * be used to skip the address.
+   */
+  const goToStep = (target: CheckoutStep) => {
+    const targetIndex = CHECKOUT_STEPS.indexOf(target)
+    if (targetIndex <= CHECKOUT_STEPS.indexOf(step)) {
+      setStepErrors({})
+      setStep(target)
+      return
+    }
+    for (const between of CHECKOUT_STEPS.slice(0, targetIndex)) {
+      const errors = checkStep(between)
+      if (Object.keys(errors).length > 0) {
+        setStepErrors(errors)
+        setStep(between)
+        return
+      }
+    }
+    setStepErrors({})
+    setStep(target)
+  }
+
+  const errorFor = (field: string): string | undefined => stepErrors[field]
+
   const balanceAtBusiness = cart.balance_due_at_business
   const itemsTotal = sumAgorot(cart.items.map((item) => item.line_total))
 
@@ -167,6 +244,20 @@ export default function CheckoutForm({
       return
     }
 
+    // Every step, not just the visible one. The fields stay mounted across
+    // steps so the submission is whole, and the flip side of that is that a
+    // shopper who edited step 1 into an invalid state and walked forward would
+    // otherwise reach the card with it. Land them back on the step that broke.
+    for (const candidate of CHECKOUT_STEPS) {
+      const errors = checkStep(candidate)
+      if (Object.keys(errors).length > 0) {
+        event.preventDefault()
+        setStepErrors(errors)
+        setStep(candidate)
+        return
+      }
+    }
+
     if (!isAuthenticated) {
       event.preventDefault()
       const data = new FormData(form)
@@ -190,6 +281,8 @@ export default function CheckoutForm({
 
   const authError = googleState && 'error' in googleState ? googleState.error : null
   const formError = state && 'error' in state ? state.error : null
+  const failureCode = state && 'code' in state ? state.code : null
+  const failureKind = formError ? classifyCheckoutFailure(failureCode) : null
   // The hosted payment page, once beginCheckout has created it. Its presence is
   // what switches the page from "filling in a form" to "paying".
   const frame = state && 'frame' in state ? state.frame : null
@@ -217,11 +310,45 @@ export default function CheckoutForm({
         <input type="hidden" name="next" value="/checkout?resume=1" />
       </form>
 
+      <ol className="checkout-steps" aria-label="שלבי ההזמנה">
+        {CHECKOUT_STEPS.map((entry, index) => {
+          const current = entry === step
+          const done = CHECKOUT_STEPS.indexOf(entry) < CHECKOUT_STEPS.indexOf(step)
+          return (
+            <li
+              key={entry}
+              className="checkout-steps__item"
+              data-state={current ? 'current' : done ? 'done' : 'upcoming'}
+              aria-current={current ? 'step' : undefined}
+            >
+              <button
+                type="button"
+                className="checkout-steps__btn"
+                onClick={() => goToStep(entry)}
+                disabled={busy}
+              >
+                <span className="checkout-steps__index" aria-hidden="true">
+                  {index + 1}
+                </span>
+                <span className="checkout-steps__label">{STEP_TITLES[entry]}</span>
+              </button>
+            </li>
+          )
+        })}
+      </ol>
+
+      {/*
+        One form across every step, and no step is unmounted: only hidden. A
+        step rendered conditionally would drop its fields from `FormData`, and
+        the server action would reject an order for missing a name the shopper
+        typed two screens ago.
+      */}
       <form
         action={formAction}
         onSubmit={handleSubmit}
         ref={formRef}
         className="checkout-page__grid"
+        data-step={step}
         noValidate
       >
         <input type="hidden" name="client_ref" value={clientRef} />
@@ -229,181 +356,246 @@ export default function CheckoutForm({
         {address.id && <input type="hidden" name="address_id" value={address.id} />}
 
         <div className="checkout-col-main">
-          <section className="checkout-section" aria-label="פרטי חיוב">
-            <h2 className="checkout-section__title">
-              <span>פרטי חיוב</span>
-            </h2>
+          <div className="checkout-step" hidden={step !== 'details'}>
+            <section className="checkout-section" aria-label="פרטים אישיים">
+              <h2 className="checkout-section__title">
+                <span>פרטים אישיים</span>
+              </h2>
 
-            {address.id ? (
-              <p>
-                {address.full_name}, {address.street} {address.street_number}, {address.city}
-              </p>
-            ) : (
-              <>
-                <div className="checkout-fields-row">
-                  <div className="checkout-field">
-                    <label htmlFor="co-first-name">
-                      שם פרטי <span className="checkout-field__required">*</span>
-                    </label>
-                    <input
-                      id="co-first-name"
-                      name="first_name"
-                      defaultValue={prefill.first_name}
-                      autoComplete="given-name"
-                      required
-                    />
+              {address.id ? (
+                <p>{address.full_name}</p>
+              ) : (
+                <>
+                  <div className="checkout-fields-row">
+                    <div className="checkout-field">
+                      <label htmlFor="co-first-name">
+                        שם פרטי <span className="checkout-field__required">*</span>
+                      </label>
+                      <input
+                        id="co-first-name"
+                        name="first_name"
+                        defaultValue={prefill.first_name}
+                        autoComplete="given-name"
+                        aria-invalid={errorFor('first_name') ? 'true' : undefined}
+                      />
+                      {errorFor('first_name') && (
+                        <span className="checkout-field__error" role="alert">
+                          {errorFor('first_name')}
+                        </span>
+                      )}
+                    </div>
+                    <div className="checkout-field">
+                      <label htmlFor="co-last-name">
+                        שם משפחה <span className="checkout-field__required">*</span>
+                      </label>
+                      <input
+                        id="co-last-name"
+                        name="last_name"
+                        defaultValue={prefill.last_name}
+                        autoComplete="family-name"
+                        aria-invalid={errorFor('last_name') ? 'true' : undefined}
+                      />
+                      {errorFor('last_name') && (
+                        <span className="checkout-field__error" role="alert">
+                          {errorFor('last_name')}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div className="checkout-field">
-                    <label htmlFor="co-last-name">
-                      שם משפחה <span className="checkout-field__required">*</span>
-                    </label>
-                    <input
-                      id="co-last-name"
-                      name="last_name"
-                      defaultValue={prefill.last_name}
-                      autoComplete="family-name"
-                      required
-                    />
-                  </div>
-                </div>
 
-                <div className="checkout-fields-row checkout-fields-row--single">
-                  <div className="checkout-field">
-                    <label htmlFor="co-city">
-                      עיר <span className="checkout-field__required">*</span>
-                    </label>
-                    <input
-                      id="co-city"
-                      name="city"
-                      defaultValue={prefill.city}
-                      autoComplete="address-level2"
-                      required
-                    />
+                  <div className="checkout-fields-row">
+                    <div className="checkout-field">
+                      <label htmlFor="co-phone">
+                        טלפון <span className="checkout-field__required">*</span>
+                      </label>
+                      <input
+                        id="co-phone"
+                        name="phone"
+                        defaultValue={prefill.phone}
+                        inputMode="tel"
+                        autoComplete="tel"
+                        placeholder="05XXXXXXXX"
+                        aria-invalid={errorFor('phone') ? 'true' : undefined}
+                      />
+                      {errorFor('phone') && (
+                        <span className="checkout-field__error" role="alert">
+                          {errorFor('phone')}
+                        </span>
+                      )}
+                    </div>
+                    <div />
                   </div>
-                </div>
 
-                <div className="checkout-fields-row">
-                  <div className="checkout-field">
-                    <label htmlFor="co-street">
-                      רחוב <span className="checkout-field__required">*</span>
-                    </label>
-                    <input
-                      id="co-street"
-                      name="street"
-                      defaultValue={prefill.street}
-                      autoComplete="address-line1"
-                      required
-                    />
+                  <div className="checkout-fields-row">
+                    <div className="checkout-field">
+                      <label htmlFor="co-email">
+                        כתובת אימייל <span className="checkout-field__required">*</span>
+                      </label>
+                      <input
+                        id="co-email"
+                        name="email"
+                        type="email"
+                        defaultValue={prefill.email}
+                        autoComplete="email"
+                        aria-invalid={errorFor('email') ? 'true' : undefined}
+                      />
+                      {errorFor('email') && (
+                        <span className="checkout-field__error" role="alert">
+                          {errorFor('email')}
+                        </span>
+                      )}
+                    </div>
+                    <div />
                   </div>
-                  <div />
-                </div>
+                </>
+              )}
+            </section>
+          </div>
 
-                <div className="checkout-fields-row">
-                  <div className="checkout-field">
-                    <label htmlFor="co-apartment">מספר דירה (אופציונלי)</label>
-                    <input
-                      id="co-apartment"
-                      name="apartment"
-                      defaultValue={prefill.apartment}
-                      autoComplete="address-line2"
-                    />
-                  </div>
-                  <div />
-                </div>
+          <div className="checkout-step" hidden={step !== 'address'}>
+            <section className="checkout-section" aria-label="כתובת למשלוח">
+              <h2 className="checkout-section__title">
+                <span>כתובת למשלוח</span>
+              </h2>
 
-                <div className="checkout-fields-row">
-                  <div className="checkout-field">
-                    <label htmlFor="co-zip">מיקוד / תא דואר (אופציונלי)</label>
-                    <input
-                      id="co-zip"
-                      name="zip"
-                      defaultValue={prefill.zip}
-                      inputMode="numeric"
-                      autoComplete="postal-code"
-                      aria-invalid={zipError ? 'true' : undefined}
-                      aria-describedby={zipError ? 'co-zip-error' : undefined}
-                      onBlur={(event) => validateZip(event.currentTarget.value)}
-                    />
-                    {zipError && (
-                      <span className="checkout-field__error" id="co-zip-error" role="alert">
-                        {zipError}
-                      </span>
-                    )}
+              {address.id ? (
+                <p>
+                  {address.street} {address.street_number}, {address.city}
+                </p>
+              ) : (
+                <>
+                  <div className="checkout-fields-row checkout-fields-row--single">
+                    <div className="checkout-field">
+                      <label htmlFor="co-city">
+                        עיר <span className="checkout-field__required">*</span>
+                      </label>
+                      <input
+                        id="co-city"
+                        name="city"
+                        defaultValue={prefill.city}
+                        autoComplete="address-level2"
+                        aria-invalid={errorFor('city') ? 'true' : undefined}
+                      />
+                      {errorFor('city') && (
+                        <span className="checkout-field__error" role="alert">
+                          {errorFor('city')}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div className="checkout-field">
-                    <label htmlFor="co-floor">קומה (אופציונלי)</label>
-                    <input id="co-floor" name="floor" defaultValue={prefill.floor} />
-                  </div>
-                </div>
 
-                <div className="checkout-fields-row checkout-fields-row--single">
-                  <div className="checkout-field">
-                    <label htmlFor="co-number">
-                      מספר בית <span className="checkout-field__required">*</span>
-                    </label>
-                    <input
-                      id="co-number"
-                      name="street_number"
-                      defaultValue={prefill.street_number}
-                      required
-                    />
+                  <div className="checkout-fields-row">
+                    <div className="checkout-field">
+                      <label htmlFor="co-street">
+                        רחוב <span className="checkout-field__required">*</span>
+                      </label>
+                      <input
+                        id="co-street"
+                        name="street"
+                        defaultValue={prefill.street}
+                        autoComplete="address-line1"
+                        aria-invalid={errorFor('street') ? 'true' : undefined}
+                      />
+                      {errorFor('street') && (
+                        <span className="checkout-field__error" role="alert">
+                          {errorFor('street')}
+                        </span>
+                      )}
+                    </div>
+                    <div className="checkout-field">
+                      <label htmlFor="co-number">
+                        מספר בית <span className="checkout-field__required">*</span>
+                      </label>
+                      <input
+                        id="co-number"
+                        name="street_number"
+                        defaultValue={prefill.street_number}
+                        aria-invalid={errorFor('street_number') ? 'true' : undefined}
+                      />
+                      {errorFor('street_number') && (
+                        <span className="checkout-field__error" role="alert">
+                          {errorFor('street_number')}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                <div className="checkout-fields-row">
-                  <div className="checkout-field">
-                    <label htmlFor="co-phone">
-                      טלפון <span className="checkout-field__required">*</span>
-                    </label>
-                    <input
-                      id="co-phone"
-                      name="phone"
-                      defaultValue={prefill.phone}
-                      inputMode="tel"
-                      autoComplete="tel"
-                      placeholder="05XXXXXXXX"
-                      required
-                    />
+                  <div className="checkout-fields-row">
+                    <div className="checkout-field">
+                      <label htmlFor="co-apartment">מספר דירה (אופציונלי)</label>
+                      <input
+                        id="co-apartment"
+                        name="apartment"
+                        defaultValue={prefill.apartment}
+                        autoComplete="address-line2"
+                      />
+                    </div>
+                    <div className="checkout-field">
+                      <label htmlFor="co-floor">קומה (אופציונלי)</label>
+                      <input id="co-floor" name="floor" defaultValue={prefill.floor} />
+                    </div>
                   </div>
-                  <div />
-                </div>
 
-                <div className="checkout-fields-row">
-                  <div className="checkout-field">
-                    <label htmlFor="co-email">
-                      כתובת אימייל <span className="checkout-field__required">*</span>
-                    </label>
-                    <input
-                      id="co-email"
-                      name="email"
-                      type="email"
-                      defaultValue={prefill.email}
-                      autoComplete="email"
-                      required
-                    />
+                  <div className="checkout-fields-row">
+                    <div className="checkout-field">
+                      <label htmlFor="co-zip">מיקוד / תא דואר (אופציונלי)</label>
+                      <input
+                        id="co-zip"
+                        name="zip"
+                        defaultValue={prefill.zip}
+                        inputMode="numeric"
+                        autoComplete="postal-code"
+                        aria-invalid={zipError || errorFor('zip') ? 'true' : undefined}
+                        aria-describedby={zipError ? 'co-zip-error' : undefined}
+                        onBlur={(event) => validateZip(event.currentTarget.value)}
+                      />
+                      {(zipError || errorFor('zip')) && (
+                        <span className="checkout-field__error" id="co-zip-error" role="alert">
+                          {zipError ?? errorFor('zip')}
+                        </span>
+                      )}
+                    </div>
+                    <div />
                   </div>
-                  <div />
-                </div>
-              </>
-            )}
-          </section>
+                </>
+              )}
+            </section>
 
-          <section className="checkout-section" aria-label="מידע נוסף">
-            <h2 className="checkout-section__title">
-              <span>מידע נוסף</span>
-            </h2>
-            <div className="checkout-field">
-              <label htmlFor="co-notes">הערות להזמנה (אופציונלי)</label>
-              <textarea
-                id="co-notes"
-                name="order_notes"
-                placeholder="הערות על ההזמנה, לדוגמה, הערות מיוחדות למסירה."
-              />
+            <section className="checkout-section" aria-label="מידע נוסף">
+              <h2 className="checkout-section__title">
+                <span>מידע נוסף</span>
+              </h2>
+              <div className="checkout-field">
+                <label htmlFor="co-notes">הערות להזמנה (אופציונלי)</label>
+                <textarea
+                  id="co-notes"
+                  name="order_notes"
+                  placeholder="הערות על ההזמנה, לדוגמה, הערות מיוחדות למסירה."
+                />
+              </div>
+            </section>
+          </div>
+
+          {!isLastStep(step) && (
+            <div className="checkout-nav">
+              {step !== 'details' && (
+                <button
+                  type="button"
+                  className="checkout-nav__back"
+                  onClick={goBack}
+                  disabled={busy}
+                >
+                  חזרה
+                </button>
+              )}
+              <button type="button" className="checkout-nav__next" onClick={goNext} disabled={busy}>
+                המשך
+              </button>
             </div>
-          </section>
+          )}
         </div>
 
-        <aside>
+        <aside className="checkout-step" hidden={step !== 'review'}>
           <section className="checkout-review" aria-label="ההזמנה שלך">
             <h2 className="checkout-section__title">
               <span>ההזמנה שלך</span>
@@ -513,12 +705,21 @@ export default function CheckoutForm({
               </p>
 
               <label className="checkout-terms">
-                <input type="checkbox" name="accept_terms" required />
+                <input
+                  type="checkbox"
+                  name="accept_terms"
+                  aria-invalid={errorFor('accept_terms') ? 'true' : undefined}
+                />
                 <span>
                   קראתי ואני מסכים לאתר תנאי שימוש{' '}
                   <span className="checkout-field__required">*</span>
                 </span>
               </label>
+              {errorFor('accept_terms') && (
+                <span className="checkout-field__error" role="alert">
+                  {errorFor('accept_terms')}
+                </span>
+              )}
 
               {!usingSavedCard && (
                 <label className="checkout-terms">
@@ -527,8 +728,32 @@ export default function CheckoutForm({
                 </label>
               )}
 
-              {formError && <div className="checkout-error">{formError}</div>}
-              {authError && <div className="checkout-error">{authError}</div>}
+              {formError && (
+                <div className="checkout-error" role="alert">
+                  <span>{formError}</span>
+                  {/*
+                    Only offered when the code says another press could work.
+                    A retry on a disabled checkout or a missing address walks
+                    the shopper into the same refusal, which reads as the site
+                    being broken rather than as an answer.
+                  */}
+                  {failureKind === 'retryable' && (
+                    <button
+                      type="button"
+                      className="checkout-error__retry"
+                      onClick={() => formRef.current?.requestSubmit()}
+                      disabled={busy}
+                    >
+                      {busy ? 'שולח שוב...' : 'נסו שוב'}
+                    </button>
+                  )}
+                </div>
+              )}
+              {authError && (
+                <div className="checkout-error" role="alert">
+                  {authError}
+                </div>
+              )}
 
               <button type="submit" className="checkout-pay-btn" disabled={busy}>
                 {busy
@@ -538,6 +763,15 @@ export default function CheckoutForm({
                       ? 'מחייב את הכרטיס השמור...'
                       : 'מעביר לדף תשלום מאובטח...'
                   : 'שליחת הזמנה'}
+              </button>
+
+              <button
+                type="button"
+                className="checkout-nav__back checkout-nav__back--review"
+                onClick={goBack}
+                disabled={busy}
+              >
+                חזרה לעריכת הכתובת
               </button>
             </div>
           </section>

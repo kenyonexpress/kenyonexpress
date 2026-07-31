@@ -719,9 +719,13 @@ export async function beginCheckout(
  * response IS the outcome, so it goes straight to the confirmation.
  */
 export type CheckoutFormState =
-  | { error: string }
-  | { frame: { url: string; orderId: string } }
-  | null
+  /**
+   * `code` is beginCheckout's own failure code, carried through rather than
+   * dropped. The form uses it to decide whether "try again" is honest: a
+   * provider timeout can be repeated, a disabled checkout cannot, and without
+   * the code the page could only guess from the Hebrew message.
+   */
+  { error: string; code?: string } | { frame: { url: string; orderId: string } } | null
 
 /**
  * Form-facing wrapper: optionally persists a shipping address, then runs
@@ -806,7 +810,7 @@ export async function submitCheckout(
     token_id: savedTokenId,
   })
 
-  if (!result.ok) return { error: result.error }
+  if (!result.ok) return { error: result.error, code: result.code }
 
   if (result.data.kind === 'paid') {
     redirect(`/checkout/return?order_id=${result.data.order_id}`)

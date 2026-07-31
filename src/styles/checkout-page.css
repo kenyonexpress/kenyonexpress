@@ -11,7 +11,10 @@
  */
 
 .checkout-page {
-  max-width: 1170px;
+  /* Was a hardcoded 1170, the old Bootstrap width. The site container is
+     declared once in globals.css and the cart already moved onto it; leaving
+     checkout behind put a 150px step between the two pages of one flow. */
+  max-width: var(--container-page, 1320px);
   margin-inline: auto;
   padding: 1.5rem 15px 3rem;
   color: #333e48;
@@ -497,4 +500,190 @@
   font-size: 12px;
   line-height: 18px;
   text-align: center;
+}
+
+/* ── Multi step ──────────────────────────────────────────────────────────
+   The step indicator and the controls that move between steps.
+
+   `--cart-touch` (44px) is declared in mini-cart.css, which the root layout
+   loads on every page. It is reused rather than redeclared so the checkout
+   stepper, the cart stepper and the mini cart cannot drift to three different
+   idea of a comfortable thumb target. */
+
+.checkout-steps {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  max-width: var(--container-page, 1320px);
+  margin: 0 auto 28px;
+  padding: 0 15px;
+  list-style: none;
+  counter-reset: none;
+}
+
+.checkout-steps__item {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.checkout-steps__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: var(--cart-touch, 44px);
+  padding: 10px 12px;
+  background: #f7f7f7;
+  color: #7a7a7a;
+  font-size: 14px;
+  font-weight: 700;
+  border: none;
+  /* The state line sits on the bottom edge, which is the side the eye tracks
+     along a row of steps. Colour alone would not survive a greyscale print or
+     a shopper who cannot separate yellow from grey, so the numeral badge
+     changes too. */
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.checkout-steps__btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.checkout-steps__index {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  border-radius: 50%;
+  background: #e4e4e4;
+  color: #7a7a7a;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.checkout-steps__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.checkout-steps__item[data-state="current"] .checkout-steps__btn {
+  background: #fff;
+  color: #333e48;
+  border-bottom-color: #fed700;
+}
+
+.checkout-steps__item[data-state="current"] .checkout-steps__index {
+  background: #fed700;
+  color: #333e48;
+}
+
+.checkout-steps__item[data-state="done"] .checkout-steps__btn {
+  background: #fff;
+  color: #333e48;
+  border-bottom-color: #e4e4e4;
+}
+
+.checkout-steps__item[data-state="done"] .checkout-steps__index {
+  background: #333e48;
+  color: #fff;
+}
+
+/* Under 560px the three labels cannot share a row without truncating to
+   nothing useful, so the numeral carries the step and the label steps out. */
+@media (max-width: 560px) {
+  .checkout-steps__label {
+    display: none;
+  }
+
+  .checkout-steps__btn {
+    justify-content: center;
+  }
+}
+
+.checkout-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.checkout-nav__next {
+  min-height: var(--cart-touch, 44px);
+  padding: 12px 38px;
+  margin-inline-start: auto;
+  background: #fed700;
+  color: #333e48;
+  font-size: 15px;
+  font-weight: 700;
+  border: 1px solid #fed700;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.checkout-nav__next:hover:not(:disabled) {
+  background: #fedd26;
+}
+
+.checkout-nav__next:disabled,
+.checkout-nav__back:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.checkout-nav__back {
+  min-height: var(--cart-touch, 44px);
+  padding: 12px 26px;
+  background: transparent;
+  color: #333e48;
+  font-size: 14px;
+  font-weight: 700;
+  border: 1px solid #ddd;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.checkout-nav__back:hover:not(:disabled) {
+  border-color: #333e48;
+}
+
+.checkout-nav__back--review {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+}
+
+.checkout-error__retry {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--cart-touch, 44px);
+  margin-top: 10px;
+  padding: 10px 28px;
+  background: #fed700;
+  color: #333e48;
+  font-size: 14px;
+  font-weight: 700;
+  border: 1px solid #fed700;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.checkout-error__retry:hover:not(:disabled) {
+  background: #fedd26;
+}
+
+.checkout-error__retry:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
