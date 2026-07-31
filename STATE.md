@@ -1,6 +1,6 @@
 # KenyonExpress — Project State
 
-Updated: 2026-07-31 (NEXT-GOALS: שלב 1 Cart אומת מחדש וסומן ✅)
+Updated: 2026-07-31 (שלב 4 Coupon redemption: ההנפקה הייתה שבורה בפרוד, תוקנה ואומתה)
 
 ## תור NEXT-GOALS: שלב 1 (Cart) ✅, 2026-07-31 ערב
 
@@ -3698,3 +3698,71 @@ tsc --noEmit   0 שגיאות
 vitest         75 קבצים, 1009 בדיקות
 build          עובר, כולל /account/coupons ו-/account/vouchers
 ```
+
+## שלב 4 (Coupon redemption): הליבה לא עבדה, 2026-07-31 לילה
+
+הסשן המקביל סגר את שלב 4 וכתב שהליבה "אומתה מול ה-DB החי". היא לא. מה
+שאומת שם היה שכבת התצוגה. הבדיקה מול הסכימה בפועל מצאה שההנפקה עצמה שבורה.
+
+**אף שובר לא יכול היה להיווצר.** `issue.ts:170` כתב `platform_bp`, השם ש-059
+נותן לעמודת העמלה. הפרויקט המתארח מעולם לא קיבל את 059 (ראו `list_migrations`:
+יש 074, 076, 085, 091, אין 059/062/079/081/087), והוא יושב על
+`platform_percent`. Postgres עונה 42703 ומפיל את כל ה-INSERT, כלומר כל קנייה
+של קופון שהגיעה ל-finalize מתה בהנפקה. לכן `vouchers` מחזיקה 0 שורות.
+
+הוכח מול הפרויקט החי ב-DO block עם rollback:
+
+```
+app insert FAILED sqlstate=42703 msg=column "platform_bp" of relation "vouchers" does not exist
+```
+
+ואחרי התיקון, אותה שורה בדיוק שהקוד בונה עכשיו:
+
+```
+1 issue insert      -> accepted, platform_percent=25.00
+2 scan at counter   -> success collect=15000 status=redeemed
+3 rescan            -> already_redeemed
+```
+
+**למה זה נשאר סמוי.** `VoucherIssueClient` הוא interface מינימלי מקומי ולא
+הטיפוסים המחוללים, ולכן tsc לא בדק את שם העמודה מול הסכימה. ב-
+`src/types/database.ts`, שמחולל מהפרויקט המתארח, המחרוזת `platform_bp` לא
+מופיעה אף פעם. בנוסף `queries/vouchers.ts:84` כבר תיעד שהמתארח לא עבר cutover
+ונמנע מהעמודה, אז הידע היה בריפו, רק לא במקום שכותב.
+
+**התיקון.** `resolveVoucherRateColumn` שואל את ה-DB במקום להניח, על אותו probe
+שנתיב ההזמנות כבר משתמש בו. הוא מחזיר שם עמודה ולא `MoneySchemaGeneration`
+בכוונה: `vouchers` יושבת על שני צדי השינוי בבת אחת, הכסף שלה אגורות integer
+בשתי השושלות ורק העמלה זזה, ולקרוא לטבלה המתארחת "ils" היה משקר על
+`face_value_agorot`. השם והיחידות זזים יחד: 30 בתוך `platform_bp` הוא פיצול של
+0.3 אחוז, ו-3000 בתוך `platform_percent` נופל על ה-check של 0..100.
+`rateColumn` חובה ובלי ברירת מחדל, כי ברירת מחדל היא בדיוק מה שהשתיק את הבאג.
+
+### מה כן אומת מול ה-DB החי
+
+עשרה תרחישים של `redeem_voucher`, כולם ב-DO block עם rollback (0 שורות שרדו):
+סריקה ראשונה מצליחה ומדווחת 7000 לגבייה, השורה עוברת ל-`redeemed` עם
+`redeemed_at`, replay עם אותו idempotency key מחזיר את התשובה הראשונה בלי
+לפעול שוב, סריקה שנייה עם מפתח חדש נדחית ב-`already_redeemed`, קוד עם
+פיסוק ואותיות קטנות מתנרמל, שובר שפג נדחה, ספק אחר מקבל `not_found`,
+משתמש בלי חברות מקבל `unauthorized`, ואנונימי מקבל `unauthorized`.
+‏RLS: `vouchers` ו-`voucher_redemptions` עם RLS פעיל, קריאה לבעלים, לאדמין,
+ולספק רק אחרי מימוש. אין policy כתיבה בכלל, הכתיבה עוברת רק דרך RPC
+‏SECURITY DEFINER.
+
+‏`wrong_supplier` נרשם ביומן כעצמו אבל חוזר לקורא כ-`not_found`. זה מכוון
+ומתועד ב-074 שורה 114 וב-`redemption.ts:65`, אנטי-אנומרציה. לא באג.
+
+## Blocking Issues
+
+‏`tests/sql/voucher_redemption_lifecycle.sql` לא יכול לרוץ מול הפרויקט
+המתארח: הוא מכניס `vouchers.platform_bp` ו-`order_items.platform_bp`, שתי
+עמודות שלא קיימות שם. זו בדיוק הנפילה שה-header של הקובץ עצמו מתאר שכבר
+קרתה לו פעם (42703 על fixture). הוא נכתב לשושלת המלאה של המיגרציות, שקיימת
+אולי מקומית אבל לא בפרוד. עד שיוכרע איזו שושלת מחייבת, הכיסוי של נתיב
+המימוש מול פרוד הוא ה-DO block המתועד למעלה ולא הקובץ הזה.
+
+## Next Task
+
+שלב 5: אזור אישי `/account` (פרופיל, היסטוריית הזמנות, הקופונים שלי עם QR,
+ארנק פנימי). חלק ניכר כבר נבנה בסשן המקביל ב-`db33a4c`.
