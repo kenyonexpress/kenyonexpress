@@ -1,687 +1,11 @@
 # KenyonExpress — Project State
 
-Updated: 2026-07-31 (coupon+scan, cart, order path, email, handheld, WXR, go-live cron)
+Updated: 2026-07-30 (product-page verification + WXR dry run round)
 
 ## Current Phase
+
 Checkout. `feat/admin-core` is merged into `phase5/homepage`; the storefront and
 the admin panel are one branch again.
-
-## Round of 2026-07-31 — the checkout gate now fails closed, and a new queue
-
-`CHECKOUT_ENABLED` read `!== 'false'`, so a MISSING or empty variable ENABLED
-checkout. GO-LIVE lists that as a launch blocker and the reason is
-one-directional: the one deployment where somebody forgets to set it is the one
-taking real cards, and the failure is silent in the direction that charges
-people. In production it now requires the exact string `true`; outside
-production the default stays open, because a developer on the mock provider
-should not need a variable to see a checkout and no real card can be charged
-there. 9 tests, including that `TRUE`, `1` and `yes` do NOT open it.
-
-The nine-task queue is fully addressed and `NEXT-GOALS.md` carries a new one,
-ordered by what stands between this code and a first real sale, with the old
-queue's remainders folded in and its history kept at the bottom.
-
-**Item 1 is not mine to do.** Two keys, `SUPABASE_SECRET_KEY` (currently the
-stock `supabase-demo` key) and `RESEND_API_KEY`. Everything for the sale exists
-and is unit-tested; not one line of it has been driven through the app, because
-the app cannot reach the database at all.
-
-## Round of 2026-07-31 — go-live: the cron that owes customers money
-
-Queue task [9], against `GO-LIVE.md`. Four checklist lines moved, and one of
-them was a real hole rather than paperwork.
-
-**`vercel.json` did not exist, so no scheduled job ran at all.** This product has
-exactly one, and it is the one that owes people money:
-`credit_expired_vouchers()` credits a customer with what they paid on the site
-for a coupon that expired unused, because expiry is not forfeiture (C6). Without
-the cron that credit is never issued, and the only symptom is a wallet quietly
-short on an account nobody is watching. One daily entry now, 23:15 UTC, with
-`docs/VERCEL-CRON.md` covering why it is daily (the credit function caps itself
-at 500 rows per call so a backlog drains over runs, and Hobby plans allow only
-daily granularity) and how to verify it after a deploy.
-
-`CRON_SECRET` unset does not make the endpoint public: the route refuses
-everything without a matching bearer, so the job **fails closed** and simply
-never sweeps. That is the right direction and it is now written down.
-
-**No secret reaches the client bundle.** Scanned a clean production build for
-`SUPABASE_SECRET_KEY`, `service_role`, `CARDCOM_API_PASSWORD`,
-`VOUCHER_QR_SECRET`, `RESEND_API_KEY`, `CRON_SECRET` and `supabase-demo`: zero
-occurrences in `.next/static`. The checklist line is ticked with the caveat it
-deserves, that the scan has to be re-run on the release candidate's own build.
-
-**Two checklist blockers were already closed and nobody had ticked them.** The
-migration-number collision was resolved in the `feat/admin-core` merge, which
-renumbered the file in each pair that had NOT been applied. And
-`093_product_commission_type` IS applied: `information_schema` has
-`products.commission_type` and the ledger lists it twice.
-
-**GO-LIVE's own instruction corroborates the 059 refusal.** Stage 2 says, in
-writing since 2026-07-28, do not apply the 058-065 agorot family before the code
-cutover. That is exactly what was asked for this round and exactly what was
-declined, and the two now agree in the same file.
-
-## Round of 2026-07-31 — WXR: a reader that reproduces the numbers, and one it corrects
-
-Queue task [8]. The export sits at
-`data-import/wp-backup/kenyonexpress-wxr-2026-07-29.xml` (5.9MB) and the reader
-that understands it was on `feat/wp-migration`, unmerged, carrying the three
-defects the dry run found. `src/lib/wp/wxr.ts` is that reader rewritten on this
-branch with all three fixed BY CONSTRUCTION, each with a test that fails if the
-behaviour returns:
-
-- **it never reads `<wp:category>`.** That is the blog taxonomy. Reading it gave
-  28 categories instead of 11, and since both taxonomies carry a slug
-  `uncategorized`, the collision handler moved the real category `כללי` onto
-  `/category/uncategorized-2`.
-- **Dokan's `reverse-withdrawal-payment` is excluded** and says so in the report.
-- **images are collected from the products that survived filtering**, never from
-  the file at large, which is how a `private` product's image was uploaded.
-
-Slug collisions are REPORTED, never resolved. Renaming silently is what produced
-`uncategorized-2`, and a slug is a URL somebody may already have linked to.
-
-`node scripts/wp-dry-run.mjs` runs it over the real export and writes nothing,
-anywhere. Against the numbers in the dry-run doc:
-
-```
-product categories        11     matches
-blog terms ignored        17     matches (the Electro demo terms)
-images referenced         65     matches
-products (publish)        44     the doc says 45
-```
-
-**The 44 is a correction, not a miss.** A status census of the file gives 45
-`publish`, 2 `private`, 1 `draft`, and one of those 45 published rows IS
-`reverse-withdrawal-payment`. So the merchandise count is 44, and the 45 in the
-doc counts Dokan's bookkeeping row as a product. Everything else agrees.
-
-The reader also reports **20 products whose slug has nothing to do with their
-title** (the doc says 18; the heuristic differs slightly and the list is
-printed): a breakfast served at `/product/שעון-אפל-חכם-apple-watch-series-7`,
-another product at `/product/6253`, `barbecue` and `barbecue-2` for two
-different restaurants. WordPress served those URLs, so keeping them preserves
-continuity and re-slugging needs a 301. Still a decision, so it is surfaced
-rather than taken.
-
-All 11 categories are roots; the export has no category tree to preserve.
-
-15 tests on a fixture that reproduces each defect in miniature. **886 vitest in
-65 files.** Nothing was written to any database.
-
-## Round of 2026-07-31 — handheld: the hero overflowed the phone, and a measuring trap
-
-Queue task [7]. `scripts/measure-mobile.mjs` is new: it measures header,
-hamburger, logo, hero and product grid at 380 and 768, writes JSON in the same
-shape as `refs/electro-*.json`, and with `--compare` measures the LIVE site too.
-That last part is deliberate. The electro refs were taken off
-`electro.madrasthemes.com`, the theme demo, NOT off kenyonexpress.co.il, and
-this file already records one case of demo numbers being mistaken for live ones.
-
-**The homepage was 5px wider than a 380px phone.** A page wider than its
-viewport pans sideways under the finger, which makes every other handheld
-measurement meaningless. Traced to the welcome slide: `max-w-[50%]` and
-`white-space: nowrap` are 1440px measurements, and at 380px the copy column is
-about 189px while the nowrap 43px Hebrew headline is about 241px.
-
-Fixed in `src/styles/home-handheld.css`, a page-scoped stylesheet imported by
-the homepage exactly as `category-page.css` and the others are. Verified: the
-copy column now computes `max-width: none` at 380px and the headline
-`white-space: normal`, and **the desktop diff is unchanged at 10.92%**.
-
-The selectors are doubled (`.hero-copy-column.hero-copy-column`) for two-class
-specificity. Tailwind's `max-w-[50%]` is one class and its utilities load after
-this file, so an equally specific override loses on source order alone; the
-first version was correct CSS that never won.
-
-**A 5px overflow remains from a second source**, a slide-level container
-measuring 387px inside 378px. Different cause, smaller, and it is the next
-handheld task.
-
-### The trap that cost most of this round
-
-`pnpm build` followed by `pkill -f "next start"` and a restart **left the old
-server running**, and it kept serving the previous build on the same port. Every
-measurement taken against it was of code that was not on disk. That produced,
-in order: 45.41%, 45.43% and 45.45% for a homepage that was fine, then 8.81% and
-8.82% for one that was not better, and an entire false theory that appending any
-`@media` block to `globals.css` corrupts the build. **None of that was real.**
-
-What it looks like from inside: the number moves when you change a file, and
-moves back when you revert it, so causation feels proven. The tell was the
-served HTML not containing a class that the built server chunk did contain.
-
-The fix is to check the port rather than trust the kill:
-
-```
-pkill -f "next start"; pkill -f "next-server"; sleep 2; lsof -ti:3300
-```
-
-`lsof` returning nothing is the only proof the old process is gone. Two
-already-recorded traps in this file, the Turbopack content hash and the dev
-overlay, are the same shape: a measurement taken against something other than
-the thing under test.
-
-## Round of 2026-07-31 — the coupon email, which did not exist
-
-Queue task [2], the part of it that is not blocked by the service key. A
-customer who bought a coupon received **nothing**: there was no mail transport
-in the codebase at all, no template, and no call site. The flow spec has
-`קופון+QR → מייל` in it and the arrow went nowhere.
-
-Three modules, and the reasoning that shaped them:
-
-`lib/email/resend.ts` is the transport. It **never throws**, because its only
-caller runs after the card is charged and the order is closed, and a provider
-outage must not turn a completed purchase into a failed one. An absent
-`RESEND_API_KEY` is reported as `skipped`, not as an error: local development
-and CI have no key and should not have one, and a checkout that fails because
-nobody configured mail on a laptop teaches people to ignore the failure.
-
-`lib/email/voucher-email.ts` is the template, pure, so what the customer reads
-is testable without a transport or a database. Two decisions worth keeping:
-
-- **No QR image is embedded.** The obvious move is a `data:` URI, and Gmail,
-  Outlook and most corporate filters strip exactly those, which puts a
-  broken-image icon where the coupon should be. The mail carries the CODE, which
-  a counter can always type, and a button to `/coupon/<id>`, which is where the
-  QR is rendered and the page the customer should be holding up anyway. Useful
-  with images off beats beautiful with images on.
-- **Both amounts, in this order:** what was paid on the site, then what is still
-  owed at the business. The second is what the customer will actually be asked
-  for, and a coupon email that only says "you paid ₪20" sets up an argument at a
-  till.
-
-`server/payments/voucher-email.ts` joins them and is called last in
-`finalizeOrder`, next to the settlement journal and under the same rule. It
-consults `email_suppressions` first, because writing to an address that already
-bounced is how a sending domain loses its reputation, and it passes
-`voucher-email:<orderId>` as the Resend idempotency key, so the replayed
-finalize the webhook and the return page both perform sends one mail rather than
-two.
-
-22 tests: the template (money, expiry, escaping of supplier-controlled names,
-RTL on the elements rather than a wrapper, no embedded image) and the sender
-(suppression, no vouchers, no address, transport failure, a database throw that
-must not escape, joined rows arriving as arrays).
-
-**871 vitest in 64 files**, `tsc` clean, `biome` clean, build compiles.
-
-Still not sendable end to end from here: no `RESEND_API_KEY`, and the flow that
-would trigger it cannot run on the demo Supabase key.
-
-## Round of 2026-07-31 — 059: backup taken, migration REFUSED, and why
-
-The instruction was: back up, show 059, apply through `apply_migration`, verify,
-roll back on failure. Steps one and two were done. Step three was refused, on
-evidence, and this section is that evidence.
-
-### The backup exists
-
-`~/Backups/kenyonexpress/db-before-059.sql`, 1.35 MB, **706 rows across 20
-non-empty tables**, plus every column definition in schema `public` as it stands.
-Produced through the MCP server, because this machine has no `pg_dump`, no
-`psql`, an unauthenticated CLI and no database password. It restores with
-`json_populate_recordset` and it is honest about what it is NOT: no functions,
-triggers, policies or indexes, so it restores DATA into an existing schema. For
-059, which renames columns and backfills values, data is exactly what a rollback
-needs.
-
-### What 059 actually does to THIS database
-
-`fn_money_col_to_int(table, old, new)` adds the new column, backfills it,
-verifies, then **renames the old one to `<old>_legacy`**. The call list includes:
-
-```
-products      platform_percent   -> platform_bp
-products      commission_percent -> commission_bp
-products      cashback_percent   -> cashback_bp
-products      price_ils          -> price_agorot
-products      coupon_price_ils   -> coupon_price_agorot
-order_items   platform_percent   -> platform_bp
-vouchers      platform_percent   -> platform_bp
-suppliers     commission_percent -> commission_bp
-```
-
-Every one of those five `products` columns is named, today, by code that works:
-
-```
-src/server/actions/cart.ts:85            platform_percent
-src/server/actions/payments/checkout.ts:316
-                                         platform_percent, supplier_split_percent,
-                                         discount_percent, coupon_price_ils, cashback_percent
-src/lib/commerce/product-money.ts:114    buildProductMoneyWrite writes all five
-```
-
-42703 fails the whole statement. So the minute 059 lands: the cart select dies,
-the checkout settlement select dies, admin product create and edit die, and the
-product page loses its price. That is the storefront, not a corner of it.
-
-The CHECK constraints survive the rename (a CHECK whose expression is NULL
-passes, so a NULL `platform_percent_legacy` on a new row is fine) and views
-track renames. **The application does not.** And there is no tested post-059
-code path to switch to: `order-money-columns.ts` carries a post-059 set, but it
-is the old literal preserved unchanged, never run against a real post-059
-schema, and it cannot be run against one from here because the app cannot reach
-the project at all on the demo service key.
-
-### The decision
-
-Applying 059 would take a database whose purchase path was proven working three
-hours ago and break it, with no way to verify the repair from this machine. That
-is the "פרודקשן שבור" case in your own stop rule, so it stops here and asks.
-
-**059 and the 070+ migrations are mutually incompatible in this project.** 070,
-084, 087 and 093 are applied and were authored against the pre-059 shape;
-`order_items` already carries 070's agorot columns beside the original shekel
-ones. This is not "059 is pending", it is "two schema generations were merged
-into one database and the code straddles both". Cutting 059 is therefore not a
-migration, it is a coordinated cutover of about a dozen call sites, and it wants
-a session that can actually run the app against the result.
-
-**The cheaper path, and the recommendation:** do not cut 059 at all. The code now
-resolves which generation each table is (`payment-money-columns.ts`,
-`order-money-columns.ts`, `optional-columns.ts`) and works on the schema that
-exists. Nothing is blocked by 059 any more except tidiness.
-
-**What actually blocks the first sale is one credential**, not this migration:
-`SUPABASE_SECRET_KEY` is the stock `supabase-demo` key.
-
-## Round of 2026-07-31 — the order write path, proven against production
-
-The purchase flow could not create an order. Not "failed sometimes": the first
-INSERT of every checkout raised 42703 and returned.
-
-`orders` was written with six columns the hosted project does not have
-(`subtotal_agorot`, `discount_agorot`, `wallet_applied_agorot`,
-`cashback_applied_agorot`, `customer_pays_now_agorot`, `total_agorot`) and
-without the two it declares NOT NULL with no default (`subtotal_ils`,
-`total_ils`). `order_items` was written with fourteen more that do not exist.
-
-The literal also wrote several aliases of one number at a time,
-`commission_agorot` AND `platform_fee_agorot`, `supplier_due_agorot` AND
-`supplier_immediate_agorot` AND `supplier_payout_agorot`, which reads as an
-attempt to satisfy every schema this project has ever had by naming all of them
-at once. That cannot work in Postgres: one missing name fails the whole
-statement, so naming more spellings makes failure MORE likely, not less.
-
-`lib/commerce/order-money-columns.ts` replaces it. One sentinel probe per table
-per process decides the generation (`orders.total_agorot`,
-`order_items.platform_bp`), and one explicit column set is written for it. The
-pre-059 set is verified against `information_schema`; the post-059 set is
-character for character the literal that was there before, so a database that
-HAS been cut over keeps its behaviour and nothing is invented for a schema that
-cannot be tested from here. Money goes in as agorot and rates as basis points;
-the shekel and percent columns divide by 100 on the way out.
-
-`order_items` is a hybrid and that is why no single rule works: 070 added agorot
-columns beside original shekel ones (`unit_price_ils`, `total_price_ils`,
-`supplier_payout_ils`, `cashback_earned_ils`) on a table whose rates are still
-whole percents. The set is listed rather than derived.
-
-**The read side was the half that hit the customer.** `/checkout/return`
-selected `total_agorot`, the select failed, the row came back null and the page
-called `notFound()`: somebody who had just been charged was shown a 404.
-`/account/orders` was empty for the same reason. Both now resolve the
-generation. `wallet_entries.amount_ils` gets the same treatment through
-`readFirstAvailableColumn`, and `finalize.ts` no longer hard-names
-`wallet_applied_ils` either.
-
-**Proven, not assumed.** The exact INSERT pair the new code builds was run
-against the production database inside a DO block that raises at the end:
-
-```
-SIMULATION OK order=f2319c67-... item=0dac879b-...
-```
-
-Both rows were accepted by the real schema and the exception rolled the whole
-block back. Verified after: zero new rows in `orders` and `order_items`. 19
-tests assert every written column against the column lists read from
-`information_schema`, so a future edit that reintroduces a phantom column fails
-in CI rather than at a customer's checkout.
-
-**Still blocked, and it is one key.** `SUPABASE_SECRET_KEY` is the stock
-`supabase-demo` service key, so `createAdminClient()` cannot reach this project
-from the app. Nothing local can add to a cart, run a checkout, or exercise the
-Cardcom sandbox end to end. The write path is now correct and proven at the SQL
-level; what cannot be done from here is drive it through the app.
-
-**Migration 059 was not applied, and the reason is procedural.** The instruction
-was backup first, apply only after. There is no `pg_dump` and no `psql` on this
-machine, the Supabase CLI is not authenticated (`supabase projects list` answers
-"Access token not provided"), the project is not linked, and no database
-password or connection string exists in any env file. The MCP server exposes
-`apply_migration` and `execute_sql` but nothing that produces a dump. A backup
-was therefore impossible, so 059 was not touched. To unblock:
-
-```
-brew install libpq
-supabase login
-supabase link --project-ref ixvwfbuvfxxsjiywhbbb
-supabase db dump --linked -f ~/Backups/kenyonexpress/db-before-059.sql
-```
-
-**A parallel session overwrote this file mid-round** with a reformatted copy of
-the 2026-07-30 version, deleting all five rounds above. Restored from the
-commit. Check `git status` on STATE.md before editing it; the hazard is real
-and this is the second time it has been recorded.
-
-## Round of 2026-07-31 — integration pass: what merges, and what must not
-
-Goal queue item 6. Counts are `git rev-list --left-right --count
-phase5/homepage...<branch>`, taken this round; the second number is the branch's
-own commits that are not here.
-
-| branch | its own commits | verdict |
-|---|---|---|
-| `feat/admin-core` | 0 | **contained.** Deletable. |
-| `arch/supplier-portal` | 0 | **contained.** Deletable. |
-| `feat/payments-core` | 0 | **contained.** Deletable. |
-| `main` | 1 | **do not merge.** `8474fbd` "checkpoint before checking out phase5/homepage" is a dump of session artefacts, `.md` and `.png` files under a cache path. Same family as `8dd678d`. `main` is 431 commits behind. |
-| `feat/checkout-complete` | 1 | **do not merge, superseded.** Cherry-picked and aborted this round: `395b3c7` is a STATE entry recording the product page at 10.96% measured against `demo-prod-03`, and the 2026-07-30 round proved that run compared two DIFFERENT products. The current number is 10.21%. Merging it would re-import a measurement this file already retracts. |
-| `feat/wp-migration` | 9 | **the one worth merging, and not tonight.** Real code: the WXR and CSV readers, R2 media upload, migration 095, and 301 resolution inside `proxy.ts`. Note that **095 is already applied in production** (`20260729043016`), so the table exists while the code that writes it sits on a branch. A proxy change is on the request path of every page, and it needs its own verify cycle rather than the tail end of a long pass. |
-| `feat/search-core` | 1 | incremental indexing. Not reviewed. |
-| `feat/ci-foundation` | 4 | **merge after the 059 cutover, not before.** CI would go red immediately on the schema drift below, and a red pipeline that is red for a known reason teaches everyone to ignore it. |
-| `arch/admin-supplier` | 28 | docs from the `ke-admin` worktree. |
-| `feat/visual-polish` | 17 | predates the measured masthead and hero fixes that took home to 10.92%. Re-measure before merging or it silently regresses that number. |
-
-Nothing was merged and nothing was deleted. Three branches are fully contained
-and can be deleted whenever somebody is sure no worktree has them checked out;
-the rest each carry a reason above.
-
-## Round of 2026-07-31 — the cart was blanking every line, and goal 5 verified
-
-Goal queue item 5 turned out to be built already, so this round is one real fix
-found next to it and one verification.
-
-**The cart lost every product name, image and price.** `loadProductData` selected
-`products.cashback_bp`. The hosted project has `cashback_percent` and no
-`cashback_bp`, 42703 fails the WHOLE select, `products` came back null, and every
-line rendered blank while the header still showed a correct item count, because
-the count comes from the `carts` row rather than from the products join.
-
-STATE records that exact symptom for 2026-07-28 with the opposite cause: the
-select then named `cashback_percent` and was "fixed" to `cashback_bp` on the
-belief that 059 had renamed it. 059 is not applied here, so the fix reproduced
-the bug facing the other way. This is the third instance of that pattern tonight,
-after the payments amount column and the two `redeem_voucher` signatures.
-
-Fixed the way this file already fixes it for the sticker price: the cashback
-column is not named in the main select at all. It is read afterwards through a
-new `readFirstAvailableColumn`, which tries `cashback_bp` (basis points, /100)
-then `cashback_percent` (already percent), remembers the winner per process so
-the steady state is one query, and never names both spellings in one select,
-because naming both is the failure it exists to prevent. Cashback is a perk that
-defaults to zero; a cart is not worth losing over it. 8 tests.
-
-**Goal 5, dynamic `platform_percent` per product, was already built and its write
-path matches production.** `ProductForm` carries `platform_percent` and
-`supplier_split_percent` inputs with a live split preview through
-`previewProductMoney`, and `buildProductMoneyWrite` emits eight keys:
-`platform_percent`, `supplier_split_percent`, `discount_percent`,
-`coupon_price_ils`, `coupon_expiry_days`, `commission_percent`,
-`commission_type`, `price_ils`. **All eight exist on `public.products` in the
-hosted project**, checked against `information_schema` this round, so admin
-product create and edit are not carrying a schema mismatch the way the cart and
-the payment path were. Nothing to build.
-
-## Round of 2026-07-31 — scan hardening: redemption was dead in production
-
-Goal queue item 4. The hardening it asks for (one-time code, race lock, rate
-limit) turned out to be written and unapplied rather than missing, and the
-unapplied half was load-bearing.
-
-**`redeem_voucher()` could not be called at all.** The app calls it and
-`log_voucher_scan()` with five named arguments, `p_ip` and `p_user_agent` among
-them. Production carried the three-argument versions from 074, and PostgREST
-resolves an RPC by the set of named arguments in the body: there is no such
-function, so every scan answered PGRST202 and the route reported it as
-`שגיאת מערכת`. Redemption was dead in production and looked like an
-infrastructure error rather than a missing migration.
-
-**085 applied** through `apply_migration`, and verified after: exactly one
-signature per function (the three-arg versions are dropped, not overloaded, so
-nothing resolves ambiguously), `ip_address` and `user_agent` present on
-`voucher_redemptions`, a session-less call returns
-`{"outcome":"unauthorized"}` and writes no row, and
-`voucher_scan_ip('not-an-ip')` returns NULL rather than raising 22P02 and
-turning a malformed header into a failed redemption at a counter.
-
-So the three things goal 4 names now hold, and none of them needed new code:
-
-- **one-time code and the race lock** are one conditional `UPDATE ... WHERE
-  status = 'issued' AND expires_at > now() AND supplier_id IN (memberships)
-  RETURNING`. The first transaction locks the row; a concurrent scan
-  re-evaluates the predicate after that commit, matches nothing, and reports
-  `already_redeemed`. There is no read-then-write window to lose. The idempotency
-  key returns the first answer to a retried request instead of a second attempt.
-- **rate limiting** is in three layers: 30 scans per minute per user inside the
-  RPC, 20 anonymous audit rows per minute per address inside
-  `log_voucher_scan`, 60 per hour per address on `/redeem/[token]` before the
-  HMAC is computed, and 300 per hour per user on the new lookup route.
-- **the escrow leg is gone from the redemption path in production**, which is
-  what the rest of 085 was for.
-
-**No per-IP block was added to the authenticated redeem route, deliberately.**
-The per-user 30/minute is already the brute-force bound, and a shared address is
-the normal case at a mall or a food court where twenty suppliers sit behind one
-NAT. A cap there refuses a paying customer at a till to stop an attacker who
-already needs a supplier session, which is the wrong trade and the opposite of
-the one `checkRateLimit` makes by failing open.
-
-## Round of 2026-07-31 — payments: the money journal is live, and the schema audit
-
-Goal queue item 3, partially. Two things happened: one migration went in, and an
-audit of the hosted schema found why the purchase path cannot work end to end.
-
-### `094_settlement_events` applied
-
-Applied through `apply_migration` (the goal's rule), and self-tested in a rolled
-back DO block against the real project: an insert succeeds, an UPDATE is
-refused, a DELETE is refused, and no row was left behind. `finalizeOrder`
-already calls `recordSettlementEvents`, so `charge_settled` starts recording on
-the next paid order. The writer had been warning once per process and writing
-nothing since the table did not exist.
-
-Applying it before the first real charge rather than after is the point: a
-journal that starts recording on the SECOND charge is missing the one everybody
-will want to read.
-
-### The payment path names columns this database does not have
-
-`payments` carries `amount_ils` and `wallet_applied_ils`. It has no
-`amount_agorot`, verified by probing `information_schema` and again by an
-`EXECUTE` in a DO block. The code named the agorot columns in three places, and
-42703 fails the WHOLE statement, so:
-
-- **checkout could not start.** The `payments` INSERT in `beginCheckout` named
-  both agorot columns, so no payment row could be created at all.
-- **the webhook answered 200 for a charged customer.** The lookup select named
-  `amount_agorot`, came back null, and the route returned
-  `{ok:true, unknown_payment:true}`. The order stays open and nothing raises.
-- **the reconcile read on the return page** did the same, which is the last
-  chance to close that order.
-
-Fixed by resolving the schema instead of assuming it:
-`lib/payments/payment-money-columns.ts` probes once per process, remembers the
-answer, and normalises to integer agorot at the boundary. It works on both
-schemas, so it survives the 059 cutover in either direction, and it says once in
-the log which schema it found. 15 tests.
-
-This line has now been "fixed" in both directions by different sessions, each
-time as the fix for the other, and both times the comment left behind asserted a
-schema nobody had checked. `lib/supabase/optional-columns.ts` reached the same
-conclusion for `products.price_ils` on 2026-07-28. Probing is the pattern.
-
-### The audit: what else the code names and the database does not have
-
-Everything below was read from `information_schema` on the hosted project this
-round. It is one root cause, migrations **042, 059 and 065 are not applied**,
-and it is bigger than any one of these call sites:
-
-| what the code names | what the project has | where |
-|---|---|---|
-| `orders.total_agorot`, `subtotal_agorot`, `customer_pays_now_agorot`, `cashback_applied_agorot` | `total_ils`, `subtotal_ils`, `discount_ils`, `cashback_applied_ils` | `(store)/checkout/return/page.tsx:65`, `server/queries/orders.ts:106,137` |
-| `wallet_entries.amount_agorot` | `amount_ils` | `(store)/checkout/return/page.tsx:79` |
-| `fn_post_journal()` RPC | does not exist | `lib/ledger.ts` `postJournal` |
-| `vouchers.platform_bp` | `platform_percent` | `server/domain/vouchers/issue.ts:170` |
-| `payments.amount_agorot`, `wallet_applied_agorot` | `amount_ils`, `wallet_applied_ils` | **fixed this round** |
-
-So a customer who pays today gets a 404 on `/checkout/return` even once the
-payment rows write, `/account/orders` reads nothing, no voucher can be issued,
-and the ledger cannot post. **This, not the Supabase key, is the real blocker on
-the purchase → coupon → scan flow**, and the key blocks the local reproduction
-of it.
-
-**Not cut this round, deliberately.** 059 adds the new column, backfills,
-verifies, then renames the old one to `*_legacy`; it destroys nothing except two
-GENERATED columns on `coupon_deals` that are recomputable. But the rename breaks
-every site still reading the shekel names, and there are many: the admin
-payments and dashboard pages, `finalize.ts:290`, `refund.ts:66`, every
-`wallet_*` table. Cutting it is a coordinated cutover with a checklist, on a live
-project with real rows, and doing it at the end of a long unattended pass is how
-a money system gets a bad night. The table above IS the checklist.
-
-### On `feat/checkout-cardcom`
-Still not merged, and the reason has not changed: `be47a62` predates the escrow
-reversal and would put `HOLD_ESCROW` / `RELEASE_ESCROW` and `order_escrow_holds`
-back. Its webhook HMAC (`lib/payments/signature.ts`) is clean and worth taking,
-but its only real callers are the branch's own Upstash retry queue and its E2E
-simulator: Cardcom does not sign. Taking the signature without the queue adds a
-gate nothing goes through, and taking the queue adds an Upstash dependency
-nobody has configured, when `payment_webhook_events` already stores the payload
-and `processed_at` and could drive the same repair from the database. Left for
-the round that does the 059 cutover, because a retry that replays a webhook into
-a broken schema replays a failure.
-
-**The only `5%` left in the code is the legal one**: the cancellation fee in
-`server/domain/orders/refund.ts:8` is the Israeli distance-selling cap (the
-lower of 5% and ₪100). It is not the abolished 5% commission and must stay.
-
-## Round of 2026-07-31 — cart: the measurement and the tests it never had
-
-Goal queue item 2. The cart itself was already built and did not need building
-again: a zustand store with optimistic writes and rollback (`lib/cart/store.ts`),
-a guest cart keyed on the `ke_session_id` cookie, a drawer, and `/cart`. What
-was missing was the two things the goal names as its acceptance criteria.
-
-**`compare.mjs --page=cart` did not exist, so the page had never been scored.**
-It does now, and **the empty cart measures 9.95%**, under the 11% target.
-
-The whole 9.95% is the empty-state panel and what it pushes down. Live prints a
-full-width yellow banner reading `סל הקניות שלך ריק כרגע.` with a small grey
-`חזור לחנות` pill; ours is a bordered card with a cart glyph, a large heading, a
-line of encouragement and a yellow CTA. That accounts for y300-500 (81% and 53%)
-directly, and y700-800 (61%) is the newsletter bar sitting lower because our
-panel is taller. Both pages render correctly; this is a design difference, not a
-defect, and adopting live's banner is a decision rather than a fix. Below y1300
-the two pages are identical to the pixel.
-
-The page needed its own guard and it is the reason the first run refused. A cart
-does NOT redirect when it is empty, unlike checkout, so a filled live cart
-against an empty local one produces a number that means nothing. The script now
-reads the empty-state wording on both sides and refuses to score two different
-states, the same rule as the existing not-found and checkout-redirect guards.
-`COMPARE_CART_EMPTY=1` skips seeding and measures the empty state deliberately,
-which is the only run available while the local add-to-cart is dead on the stock
-demo key. **The filled cart is still unmeasured**, and it is blocked on Blocking
-Issue 1, not on this script.
-
-**The store had no tests at all**, which is where the money path meets a
-shopper's optimistic view. 18 added, and the ones that matter are the failure
-shapes: a returned `{ ok: false }` AND a thrown action both have to roll the
-count back and say something, because a thrown action leaving the count on
-screen with no toast is exactly what the demo key produced in July and it cost
-an afternoon. Also asserted: rollback goes to the last SERVER-confirmed cart
-rather than the optimistic one, `isPending` survives until the last of several
-in-flight writes settles (it drives every quantity control's disabled state),
-variants of one product are separate rows, and each mount gets its own store
-(module state on the server is shared between requests).
-
-Deliberately NOT changed: `CartProvider` still ignores later `initialCart` props
-and only `/cart` re-syncs from the server through `setCart`. Adopting the prop
-on every render would clobber a confirmed optimistic cart with an RSC payload
-that started before the mutation, and the case it would fix (another tab, a
-server-side change) does not arise within one tab, since every mutation goes
-through the store and every full navigation remounts the provider.
-
-## Round of 2026-07-31 — `/coupon/[id]` and `/scan`
-
-Goal queue item 1. Both halves of the redemption flow now have a screen, and the
-work that mattered was not the markup.
-
-**The scan screen confirmed against nothing.** It asked the cashier to approve
-the digits the cashier had just typed, so the first thing the platform ever said
-about a voucher arrived AFTER `redeem_voucher()` had burned it, and a redemption
-is not reversible. New read-only route `POST /api/supplier/vouchers/lookup`
-answers "what is this, and will it redeem" first: product, customer, paid
-online, balance to collect, deadline, status. It writes nothing to the voucher,
-it re-uses `getVoucherForRedemption` (which had exactly one caller, the
-`/redeem/[token]` deep link) and `validateVoucherRedemption`, and it records a
-forged QR through `recordRefusedScan` exactly as the redeem route does. It
-decides nothing: `redeem_voucher()` re-derives the supplier and re-checks status
-and expiry inside its own transaction, so a generous answer here cannot produce
-a redemption the RPC would refuse.
-
-**`/coupon/[id]`** is the customer's own voucher: QR, code in XXXXX-XXXXX, what
-was paid on the site, what is owed at the business, the deadline with a
-days-left warning in the last three days, status, and the business's address,
-phone and WhatsApp. It sits outside the `/account` shell on purpose. It is the
-one page opened with a cashier waiting, and the account sidebar, the cart drawer
-and the footer are three things between the customer and the number the cashier
-needs. Session-gated in the page, `noindex`, and `/coupon/` is in the robots
-disallow list with a test that fails if it is dropped.
-
-**The QR now encodes `<origin>/redeem/<token>`, not the bare `KEV1.` token.** A
-phone's own camera has no idea what a KEV1 string is and offers to search the
-web for it; a URL opens the confirm screen. `lib/vouchers/scan-input.ts` accepts
-all three forms a scanner can produce (redeem URL, bare token, typed code) and
-is the module the in-app scanner parses with. A token is taken whole and never
-normalised, because the signature is base64url with dots and the short-code path
-strips punctuation.
-
-**Two display defects found while sharing the presenter.** The account list was
-showing `offer_valid_until` as "בתוקף עד" while the voucher actually dies at
-`expires_at = min(rolling window, offer end)`, so a customer could be promised a
-date the coupon would not survive to and find out at the counter. And a row
-still reading `issued` after its deadline (the expiry sweep is a cron, 088) was
-being drawn as active. Both screens now answer from `lib/vouchers/coupon-view.ts`,
-which resolves those two from the clock, so the page and the counter cannot
-disagree. Money conservation is checked rather than assumed there too, and a
-violation is surfaced instead of thrown: `amountToCollect` throwing is right on
-the redemption path, but a 500 on a page a customer opens tells them their coupon
-is gone.
-
-The account list lost its per-row QR. It rendered one QR per live voucher, made
-the page as heavy as the number of coupons owned, and still left the customer
-scrolling for the right card at a till. One row, one link, one screen to hold up.
-
-**`/supplier/scan` moved to `/scan`** and the old path redirects, so printed
-cards and older QR codes keep working. It is a URL typed into a phone at a till.
-
-Verification: **789 vitest in 59 files** (+54, +3 files: `coupon-view`,
-`scan-input`, the lookup route) · `tsc` clean · `biome` clean · production build
-compiles and registers `/coupon/[id]`, `/scan`, `/supplier/scan` and the lookup
-route · **5 new Playwright specs pass against `next start`**, covering the
-signed-out gate on both screens, the legacy redirect, and that no voucher detail
-leaks from a forged token. `compare.mjs` was not run and is not applicable:
-neither screen exists on the live WordPress site, so there is no reference to
-diff against, and `--page=` has no value that would name them.
-
-Not verified, and it cannot be here: no voucher was rendered or scanned with
-real data. Issuing one needs a paid order, which is the stock-demo-key blocker
-below.
-
-### Found while verifying, not fixed
-**`issueVoucher` writes a column the production database does not have.**
-`IssuedVoucherRow.platform_bp` (issue.ts:52, written at issue.ts:170) is the
-post-059 name; `information_schema` on the hosted project lists
-`vouchers.platform_percent` and no `platform_bp`. So the first voucher ever
-issued against production fails on 42703, and this is the 059 cut showing up on
-the coupon path specifically. Left alone deliberately: it is decided by cutting
-059 or not, which is already the top open decision, and not by editing the
-issuer under it. `getCustomerVoucher` deliberately does not select either name.
 
 ## Release candidate, 2026-07-30
 
@@ -774,10 +98,11 @@ image box    x=654 y=166  324x434    relative to the slider: x=318 y=18
 ```
 
               live    token
-width          324      370
-height         434      495
-offsetTop       18       21
-widthPercent  44.5%    49.8%
+
+width 324 370
+height 434 495
+offsetTop 18 21
+widthPercent 44.5% 49.8%
 
 The container is `absolute start-0` in a `dir="rtl"` slider, so `start` is the
 right edge and the token renders the image flush right in a 362px box. Live's sits
@@ -825,7 +150,7 @@ hero at 2x size    88     93   2.4s
 ```
 
 FCP 0.3s, Speed Index 0.5s, TBT 0ms, CLS 0.003 all score a perfect 1. LCP alone
-caps performance at 88, and the LCP element *is* the animation, so the last two
+caps performance at 88, and the LCP element _is_ the animation, so the last two
 points mean not making an animation the first paint: a static first frame with
 the animation swapped in after. That changes what the homepage does in its first
 second and belongs to whoever owns the hero, not to a readiness pass.
@@ -845,7 +170,7 @@ than a regression.
 `target-size` turned out to be the same kind of conflict as `#7e7e7e`, and that
 is worth recording because it looked like an oversight. The dot buttons are now
 genuinely 24x24 with the extra size handed back as negative margin, and axe still
-fails them: *"partially obscured, smallest space is 16px by 24px"*. The dots are
+fails them: _"partially obscured, smallest space is 16px by 24px"_. The dots are
 8px on an 8px gap, a 16px pitch, and non-overlapping 24px targets at a 16px pitch
 are geometrically impossible. Passing means spreading the dots and leaving the
 live layout. The hit area is four times larger than before either way, and the
@@ -890,7 +215,7 @@ its CSS had changed; the harness and the dev server were both wrong, in differen
 ways.
 
 1. **It was comparing two different products.** `--page=product` hard-codes the
-   live URL to `/product/מוצר-לדוגמא/` and *discovers* the local slug from
+   live URL to `/product/מוצר-לדוגמא/` and _discovers_ the local slug from
    `/products`, which returned `צימר-מאסטר`. Pointing both sides at
    `מוצר-לדוגמא`, which exists on both, took 15.64% to 10.72% without touching a
    line of code. Every product-page percentage recorded before this was scored
@@ -922,7 +247,7 @@ A second parser on `fast-xml-parser` was added as a cross-check and disagreed
 with `lib/xml.mjs` three times, each one a defect in the older reader:
 
 - **28 categories against 11.** `readTaxonomy` reads `<wp:term>` filtered to
-  `product_cat` and then *also* reads every `<wp:category>`, which is the blog
+  `product_cat` and then _also_ reads every `<wp:category>`, which is the blog
   taxonomy. The 17 extras are Electro demo terms (Aside, Design, Podcasts,
   Videos). Both taxonomies contain a slug `uncategorized`, so the collision
   handler pushed the real category `כללי` onto `/category/uncategorized-2`. No
@@ -958,6 +283,7 @@ a real click nor a dispatched one makes anything visible, so no width was
 invented.
 
 ### Decided automatically this round
+
 - Compared on port **3001**, the dev server already serving this directory,
   instead of starting a second one. Next 16 refuses a second dev server for the
   same directory, and ports 3000 and 3001 belong to other sessions. Nothing was
@@ -972,51 +298,8 @@ invented.
   `^[A-Z_]* .env.local`. It was a blind `git commit -am`, not a decision.
 
 ## Last Completed
-`CHECKOUT_ENABLED` made fail-closed in production, and a new NEXT-GOALS queue.
 
-`vercel.json` and `docs/VERCEL-CRON.md`: the voucher expiry cron had nowhere to
-run, and its second leg is the customer's refund. Four GO-LIVE lines verified.
-
-`src/lib/wp/wxr.ts` and `scripts/wp-dry-run.mjs`: the WXR reader on this branch,
-with the three dry-run defects fixed and the counts reproduced.
-
-The handheld hero overflow, plus scripts/measure-mobile.mjs. Desktop home
-unchanged at 10.92%, verified against a correctly-served build.
-
-The coupon email: transport, template and sender, wired into finalizeOrder.
-It did not exist, so a customer who bought a coupon received nothing.
-
-Backup of the whole public schema at `~/Backups/kenyonexpress/db-before-059.sql`
-(706 rows, 20 tables) and a REFUSAL to apply 059, with the call list and the
-five code sites it would break. See the round above.
-
-The order write and read paths, proven against production by a rolled-back
-simulation. Checkout could not create an order at all before it.
-
-Goal queue item 6, the integration pass: every branch triaged with a reason,
-nothing merged (see the integration round above for why each one waits).
-
-Goal queue item 5, verified already built (admin per-product split), and the
-cart's `cashback_bp` select fixed: it was blanking every cart line.
-
-Goal queue item 4, scan hardening: `085_voucher_scan_audit_and_no_escrow`
-applied through apply_migration and verified. Redemption could not be called in
-production before it. See the scan-hardening round above.
-
-Goal queue item 3, partially: `094_settlement_events` applied through
-apply_migration and self-tested, and the payment path made schema-tolerant
-(`src/lib/payments/payment-money-columns.ts`). The rest of item 3 is blocked on
-the 042/059/065 cutover, audited in the payments round above.
-
-Goal queue item 2, the cart: `compare.mjs --page=cart` (9.95% empty) and
-`src/lib/cart/store.test.ts` (18 tests). See the cart round above.
-
-Goal queue item 1, `/coupon/[id]` and `/scan`: see the 2026-07-31 round above.
-`src/lib/vouchers/coupon-view.ts`, `src/lib/vouchers/scan-input.ts`,
-`src/app/coupon/[id]/page.tsx`, `src/app/(supplier)/scan/`,
-`src/app/api/supplier/vouchers/lookup/route.ts`, `e2e/coupon-scan.spec.ts`.
-
-Before that, four commits on `phase5/homepage`, all pushed:
+Four commits on `phase5/homepage`, all pushed:
 `e4b580f` merge of `feat/admin-core` (9 commits, 3 conflicts, migration
 renumbering decided by the production ledger) · `f6392ed` guest checkout on
 measured Electro geometry · `05a181a` cart discount codes, funded from the
@@ -1024,6 +307,7 @@ platform's commission · `1757105` one search suggestions implementation instead
 of two.
 
 ## Blocking Issues
+
 1. **⛔ `SUPABASE_SECRET_KEY` in `.env.local` is not this project's key.** It
    decodes to `{"iss":"supabase-demo","role":"service_role"}` — the stock key
    that ships with a local `supabase start` — and the hosted project answers
@@ -1042,25 +326,10 @@ of two.
    Since `c25c2a0` this at least announces itself — `createAdminClient` logs
    `[supabase-admin] ...is the stock local-development demo key...` once per
    process instead of failing silently.
-2. **⛔ `vouchers.platform_bp` does not exist in production.** `issueVoucher`
-   writes it (issue.ts:170) and the hosted project still has
-   `vouchers.platform_percent`, so issuing a voucher fails on 42703 and the
-   purchase → coupon → scan flow cannot complete even once the Supabase key is
-   fixed. Same root cause as the 059 cut decision.
-
-3. **⛔ 042, 059 and 065 are not applied, and the code assumes all three.**
-   The full inventory with file and line for every call site is in the
-   2026-07-31 payments round above. Short version: `orders` has no `*_agorot`
-   columns, `wallet_entries` has no `amount_agorot`, and `fn_post_journal()`
-   does not exist, so a paying customer 404s on `/checkout/return`,
-   `/account/orders` reads nothing, and the ledger cannot post. This is the
-   blocker the purchase flow actually dies on; the Supabase key blocks
-   reproducing it locally.
-
-4. ~~`093_product_commission_type` is not applied.~~ **Retracted 2026-07-31:
-   `products.commission_type` EXISTS.** The migration ledger shows 093 applied
-   twice, `20260729031546` and `20260729032538`, and `information_schema`
-   confirms the column. Admin product create and edit are not blocked on this.
+2. **⛔ `093_product_commission_type` is not applied.** `buildProductMoneyWrite`
+   writes `commission_type`, so until the migration lands every product create
+   and edit in the admin fails on a column that does not exist. This was a
+   `feat/admin-core` blocker and is now a `phase5/homepage` one. See GO-LIVE.
 
 ## שלוש המשימות הבאות
 
@@ -1089,32 +358,36 @@ of two.
    כל עוד הטבלה חסרה הוא מתריע פעם אחת ולא כותב כלום.
 
 ## Working Directory
+
 /Users/ofir/kenyonexpress-web/kenyonexpress
 
 ## Branch
+
 `phase5/homepage` — the integration branch. Storefront, admin and checkout all
 live here now.
 
 ### מצב כל branch מול `phase5/homepage`
 
-| ענף | לפניו | מאחוריו | מה לעשות איתו |
-|---|---|---|---|
-| `phase5/homepage` | — | — | **ענף העבודה.** הכל נדחף. |
-| `feat/admin-core` | 0 | 57 | **מוזג במלואו** (`e4b580f`). אפשר למחוק. |
-| `arch/supplier-portal` | 0 | 78 | מוכל. מסמכים בלבד. אפשר למחוק. |
-| `feat/payments-core` | 0 | 104 | מוכל. אפשר למחוק. |
-| `main` | 0 | 403 | מפגר בלבד. יתעדכן ב-merge של הענף. |
-| `feat/checkout-cardcom` | 1 | 83 | ‏`be47a62` מ-27.07, **לפני** היפוך מודל ה-Escrow. לא למזג כמו שהוא. מה ששווה משם כבר נלקח (`signature.ts`, תור ניסיונות חוזרים). |
-| `feat/checkout-complete` | 1 | 26 | קומיט תיעוד יחיד. אפשר לקטוף או למחוק. |
-| `feat/search-core` | 1 | 100 | ‏pipeline אינדוקס מצטבר. לא מוזג, לא נבדק בסבב הזה. |
-| `feat/ci-foundation` | 4 | 103 | ‏CI. לא מוזג. רלוונטי אחרי שהמפתחות מסודרים, אחרת CI יאדים על אותו חוסם. |
-| `arch/admin-supplier` | 16 | 399 | מסמכים ב-worktree `ke-admin`. מיזוג התיעוד בלבד. |
-| `feat/visual-polish` | 17 | 132 | עבודה ויזואלית ישנה. לבדוק לפני מיזוג. |
+| ענף                      | לפניו | מאחוריו | מה לעשות איתו                                                                                                                    |
+| ------------------------ | ----- | ------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `phase5/homepage`        | —     | —       | **ענף העבודה.** הכל נדחף.                                                                                                        |
+| `feat/admin-core`        | 0     | 57      | **מוזג במלואו** (`e4b580f`). אפשר למחוק.                                                                                         |
+| `arch/supplier-portal`   | 0     | 78      | מוכל. מסמכים בלבד. אפשר למחוק.                                                                                                   |
+| `feat/payments-core`     | 0     | 104     | מוכל. אפשר למחוק.                                                                                                                |
+| `main`                   | 0     | 403     | מפגר בלבד. יתעדכן ב-merge של הענף.                                                                                               |
+| `feat/checkout-cardcom`  | 1     | 83      | ‏`be47a62` מ-27.07, **לפני** היפוך מודל ה-Escrow. לא למזג כמו שהוא. מה ששווה משם כבר נלקח (`signature.ts`, תור ניסיונות חוזרים). |
+| `feat/checkout-complete` | 1     | 26      | קומיט תיעוד יחיד. אפשר לקטוף או למחוק.                                                                                           |
+| `feat/search-core`       | 1     | 100     | ‏pipeline אינדוקס מצטבר. לא מוזג, לא נבדק בסבב הזה.                                                                              |
+| `feat/ci-foundation`     | 4     | 103     | ‏CI. לא מוזג. רלוונטי אחרי שהמפתחות מסודרים, אחרת CI יאדים על אותו חוסם.                                                         |
+| `arch/admin-supplier`    | 16    | 399     | מסמכים ב-worktree `ke-admin`. מיזוג התיעוד בלבד.                                                                                 |
+| `feat/visual-polish`     | 17    | 132     | עבודה ויזואלית ישנה. לבדוק לפני מיזוג.                                                                                           |
 
 ## Models
+
 Fable 5 (architecture / Admin Core) | Opus (docs/schema) | Sonnet (UI edits)
 
 ## Supabase Project URL
+
 not restated here (use env / prior STATE entries)
 
 ---
@@ -1247,14 +520,15 @@ sources **שאינם חופפים** דרך negative lookahead.
 scripts/forms/same-origin/popups ו**בלי** `allow-top-navigation`.
 
 ### אימות הסבב
+
 ‏**691 vitest ב-53 קבצים** (‏+22 קופון, ‏+19 מיקוד, ‏+7 settlement) · `tsc` נקי ·
 `build` עובר. ‏`compare.mjs --page=checkout` **לא רץ למספר** — ראה Blocking
 Issues 1.
 
-
 ## סבב 2026-07-28 — שלב 5: Hardening
 
 ### מה שנבדק ונמצא כבר תקין — ולכן לא נגעתי
+
 - **‏RLS על כל הטבלאות.** נסרקו כל טבלאות `public`: ‏**אפס טבלאות בלי RLS**.
   תשע טבלאות מפעילות RLS **בלי אף policy** — ‏`cardcom_accounts`,
   ‏`idempotency_keys`, ‏`rate_limits`, ‏`user_rate_limits` ומחיצות
@@ -1293,20 +567,23 @@ Issues 1.
 כאן: מגביל קצב שנפל לא יעצור לקוח משלם שעומד בקופה.
 
 ### אימות שלב 5
+
 ‏**‏549 vitest ב-45 קבצים** (‏+5 חדשות) · `tsc` נקי · `biome` נקי (‏353 קבצים) ·
 `build` עובר, ו-`/robots.txt`, ‏`/sitemap.xml` ו-`/_not-found` רשומים.
 
 ## סבב 2026-07-28 — שלב 4: Integration Pass
 
 ### מיזוג הענפים
-| ענף | מצב | פעולה |
-|---|---|---|
-| ‏`phase5/homogepage`, `feat/admin-core`, `arch/supplier-portal` | מוכלים במלואם | אין מה למזג |
-| ‏`cursor/add-supabase-3c830` (בסיס ה-PR) | ‏315 קומיטים מאחור, ‏0 לפנים | אין מה למזג |
-| ‏`arch/admin-supplier` | ‏4 קומיטים, **מסמכים בלבד** | **מוזג** |
-| ‏`feat/checkout-cardcom` | ‏1 קומיט | **לא מוזג — ראה למטה** |
+
+| ענף                                                             | מצב                          | פעולה                  |
+| --------------------------------------------------------------- | ---------------------------- | ---------------------- |
+| ‏`phase5/homogepage`, `feat/admin-core`, `arch/supplier-portal` | מוכלים במלואם                | אין מה למזג            |
+| ‏`cursor/add-supabase-3c830` (בסיס ה-PR)                        | ‏315 קומיטים מאחור, ‏0 לפנים | אין מה למזג            |
+| ‏`arch/admin-supplier`                                          | ‏4 קומיטים, **מסמכים בלבד**  | **מוזג**               |
+| ‏`feat/checkout-cardcom`                                        | ‏1 קומיט                     | **לא מוזג — ראה למטה** |
 
 **‏שני conflicts ב-add/add, שניהם הוכרעו לפי מה כל מסמך מתאר:**
+
 - ‏`STATE.md` — **שלנו**. שלהם הוא ה-STATE של worktree אחר (`ke-arch`, מסמכים
   בלבד). זו לא גרסה חדשה יותר של הקובץ הזה, זה קובץ אחר עם אותו שם.
 - ‏`docs/ARCHITECTURE-SUPPLIER-PORTAL.md` — **שלהם**. מ-28.07 מול 27.07,
@@ -1315,15 +592,17 @@ Issues 1.
   המבוטל, כך שלקיחת שלהם היא ההכרעה שכלל 035ef8e מחייב ולא מקריות של תאריכים.
 
 ### ⛔ למה `feat/checkout-cardcom` לא מוזג
+
 הקומיט `be47a62` הוא מ-**27.07, לפני היפוך המודל**, וכותרתו כוללת
 "escrow flow". הוא מחזיר `HOLD_ESCROW` / `RELEASE_ESCROW` ל-`state-machine.ts`
 שמהם נוקה במכוון ב-28.07, ומוסיף `order_escrow_holds`. מיזוגו הוא בדיוק
 הסכנה ש-STATE כבר תיעד עבור מיגרציות 079/080.
 **העבודה הרב-חשבונאית שבו כבר קיימת אצלנו** בדרך אחרת (`lib/payments/accounts.ts`
-+ מיגרציה 075).
-**מה שכן שווה לקטוף משם בנפרד, בלי רגל ה-escrow:** `lib/payments/signature.ts`
-(‏HMAC פר-חשבון), ‏`lib/queue/webhook-retry.ts` (תור ניסיונות חוזרים + DLQ),
-יומן `payment_events` עם טריגר שחוסם שינוי, ו-route ה-cron לניקוז התור.
+
+- מיגרציה 075).
+  **מה שכן שווה לקטוף משם בנפרד, בלי רגל ה-escrow:** `lib/payments/signature.ts`
+  (‏HMAC פר-חשבון), ‏`lib/queue/webhook-retry.ts` (תור ניסיונות חוזרים + DLQ),
+  יומן `payment_events` עם טריגר שחוסם שינוי, ו-route ה-cron לניקוז התור.
 
 ### ‏E2E: מ-16 כשלים ל-8, ושני באגים אמיתיים בדרך
 
@@ -1355,6 +634,7 @@ breadcrumb" במקום כ"קישור מת". ‏**הבאנרים המתים נש�
 הוא ממתין למונה בהדר, שנגזר ממצב העגלה ולא מטיימר.
 
 ### ‏8 הכשלים שנשארו — לא באג במוצר, ואומת בדפדפן
+
 כולם באשכול אחד (`cart` ‏4, ‏`checkout` ‏1, ‏`purchase-flow` ‏1 ועוד), ועוברים
 בבידוד. **אומת ידנית מול דפדפן אמיתי ב-localhost:** הוספה לעגלה כאורח עובדת,
 המונה מציג `עגלת קניות, 1 פריטים, ₪219` **גם בדף המוצר וגם אחרי ניווט מלא
@@ -1369,6 +649,7 @@ breadcrumb" במקום כ"קישור מת". ‏**הבאנרים המתים נש�
 אם צריך: ‏`allowedDevOrigins: ['127.0.0.1']` ב-`next.config`.
 
 ### אימות שלב 4
+
 ‏`tsc` נקי · `biome` נקי · **‏544 vitest** · `build` עובר ·
 **‏3 רנסי SQL ירוקים** (‏voucher lifecycle, checkout lifecycle, RLS ×2 חטיבות) ·
 `_voucher-race.mjs` ירוק · **Playwright 44 עוברות, 8 נכשלות, 1 מדולגת**
@@ -1396,18 +677,19 @@ breadcrumb" במקום כ"קישור מת". ‏**הבאנרים המתים נש�
 בדיקה סעיף-סעיף מול מה שקיים. **כל ששת הסעיפים של שלב 2 כבר מומשו בקוד**, וזה
 מה שאומת:
 
-| סעיף | מצב |
-|---|---|
-| ‏(א) עגלת אורח + badge | קיים. ‏`carts` בשרת עם `session_id` חתום בקוקי — **עמיד יותר מ-localStorage**, שורד החלפת מכשיר ולא נמחק בניקוי דפדפן. ‏`CartNavLink` מציג מונה וסכום. |
-| ‏(ב) דף עגלה RTL, אגורות כשקלים | קיים. |
+| סעיף                                  | מצב                                                                                                                                                                     |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ‏(א) עגלת אורח + badge                | קיים. ‏`carts` בשרת עם `session_id` חתום בקוקי — **עמיד יותר מ-localStorage**, שורד החלפת מכשיר ולא נמחק בניקוי דפדפן. ‏`CartNavLink` מציג מונה וסכום.                  |
+| ‏(ב) דף עגלה RTL, אגורות כשקלים       | קיים.                                                                                                                                                                   |
 | ‏(ג) "שלם" ← Google ← חזרה ל-checkout | קיים ב-`CartCheckoutButton`: ‏`signInWithGoogle` עם `next=/checkout`. **וגם המיזוג קיים** — ‏`auth/callback` קורא ל-`mergeGuestCart`, כך שהעגלה שורדת את סיבוב ה-OAuth. |
-| ‏(ד) ‏checkout: פרטים, סיכום, תשלום | קיים. |
-| ‏(ה) ‏Cardcom sandbox + webhook | קיים. |
-| ‏(ו) הנפקת קופון אוטומטית אחרי תשלום | קיים ב-`finalize.ts`. |
+| ‏(ד) ‏checkout: פרטים, סיכום, תשלום   | קיים.                                                                                                                                                                   |
+| ‏(ה) ‏Cardcom sandbox + webhook       | קיים.                                                                                                                                                                   |
+| ‏(ו) הנפקת קופון אוטומטית אחרי תשלום  | קיים ב-`finalize.ts`.                                                                                                                                                   |
 
 **מה שלא עבד היה שכבת הכסף מתחת לכולם**, וזה מה שתוקן בסבב הזה ובזה שלפניו.
 
 ### על "webhook עם אימות חתימה" — אין חתימה לאמת, וזה בסדר
+
 ההוראה ביקשה אימות חתימה. ‏Cardcom ב-API ה-legacy **לא חותם webhooks בכלל**.
 מה שקיים במקומו חזק יותר ולא הומצא כאן: סוד משותף ב-query string
 (‏`secretMatches`) **ואימות שרת-לשרת** מול `GetLpResult` שממנו נלקח הסכום
@@ -1441,6 +723,7 @@ breadcrumb" במקום כ"קישור מת". ‏**הבאנרים המתים נש�
 ולא הכרטיס של לקוח.
 
 ### שני הרנסים הישנים תוקנו גם הם
+
 ‏`voucher_account_rls.sql` נשא את אותם fixtures מלפני 059 ולכן לא רץ מאז.
 תוקן, ושתי החטיבות שלו ירוקות (‏RLS של לקוח, ו-scoping של ספק לפי 078).
 ‏`account_wallet_rls.sql` דורש uuid חיצוני (`-v owner=`) ואינו רץ עצמאית —
@@ -1448,14 +731,13 @@ breadcrumb" במקום כ"קישור מת". ‏**הבאנרים המתים נש�
 
 ### אימות שלב 2
 
-| בדיקה | תוצאה |
-|---|---|
-| ‏`checkout_order_lifecycle.sql` (חדש) | **all assertions passed** |
-| ‏`voucher_redemption_lifecycle.sql` | **all assertions passed** |
-| ‏`voucher_account_rls.sql` | **‏2 חטיבות, all assertions passed** |
-| ‏`_voucher-race.mjs` | **PASS** |
-| ‏`vitest` / `tsc` / `biome` / `build` | ‏544 ירוקות / נקי / נקי / עובר |
-
+| בדיקה                                 | תוצאה                                |
+| ------------------------------------- | ------------------------------------ |
+| ‏`checkout_order_lifecycle.sql` (חדש) | **all assertions passed**            |
+| ‏`voucher_redemption_lifecycle.sql`   | **all assertions passed**            |
+| ‏`voucher_account_rls.sql`            | **‏2 חטיבות, all assertions passed** |
+| ‏`_voucher-race.mjs`                  | **PASS**                             |
+| ‏`vitest` / `tsc` / `biome` / `build` | ‏544 ירוקות / נקי / נקי / עובר       |
 
 ## סבב 2026-07-28 — שלב 1: Coupon Redemption, וחמישה חסמים ששכבו על מסלול הקנייה
 
@@ -1465,6 +747,7 @@ breadcrumb" במקום כ"קישור מת". ‏**הבאנרים המתים נש�
 מאותה משפחה — ‏059 שינתה שמות של 45 עמודות כסף, וקוד וטריגרים שלא עודכנו.
 
 ### הכלי שחשף את הכל
+
 ‏`tests/sql/voucher_redemption_lifecycle.sql` **לא רץ מאז שהוחלה 059**: ה-fixtures
 שלו מכניסים `products.price_ils`, עמודה שכבר לא קיימת, אז כל ריצה מתה על 42703
 בהכנסה הראשונה. הרנס שלא בונה fixtures לא בודק כלום, ושום דבר לא הכריז על זה.
@@ -1557,14 +840,14 @@ checkout נכשל.**
 
 ### אימות
 
-| בדיקה | תוצאה |
-|---|---|
+| בדיקה                                         | תוצאה                                |
+| --------------------------------------------- | ------------------------------------ |
 | ‏`tests/sql/voucher_redemption_lifecycle.sql` | ‏9 מקטעים, **all assertions passed** |
-| ‏`scripts/_voucher-race.mjs` (חדש) | **PASS**, שתי ריצות |
-| ‏`pnpm exec vitest run` | **‏544 ב-44 קבצים** |
-| ‏`pnpm exec tsc --noEmit` | נקי |
-| ‏`pnpm exec biome check src/` | נקי (‏349 קבצים) |
-| ‏`pnpm build` | עובר, ‏`/redeem/[token]` רשום |
+| ‏`scripts/_voucher-race.mjs` (חדש)            | **PASS**, שתי ריצות                  |
+| ‏`pnpm exec vitest run`                       | **‏544 ב-44 קבצים**                  |
+| ‏`pnpm exec tsc --noEmit`                     | נקי                                  |
+| ‏`pnpm exec biome check src/`                 | נקי (‏349 קבצים)                     |
+| ‏`pnpm build`                                 | עובר, ‏`/redeem/[token]` רשום        |
 
 **המרוץ המקבילי לא יכול לחיות ב-psql**: סשן אחד הוא חיבור אחד, ומרוץ דורש
 שתי טרנזקציות בו-זמנית. ‏`_voucher-race.mjs` פותח שני חיבורים, שני חברים
@@ -1577,6 +860,7 @@ checkout נכשל.**
 אף אחת לא הוחלה על הפרודקשן, וההוראה בסבב הזה אוסרת זאת מפורשות.
 **שים לב שהן מניחות ש-059 הוחלה.** הפרודקשן עדיין מחזיק את השמות הישנים
 (`platform_percent`, `total_ils`), ולכן:
+
 - ‏086 נכתבה **סובלנית לשתי הצורות** דרך `to_jsonb(NEW)`, בדיוק כמו ש-046
   מסתעפת על שתי צורות `wallet_accounts`. היא בטוחה בשני המסדים.
 - ‏**‏087, ‏088, ‏089 והתיקונים ב-`checkout.ts` / `issue.ts` / `finalize.ts`
@@ -1613,13 +897,13 @@ WHERE n.nspname='public' AND p.prosrc !~ ('\m'||r.col||'_legacy\M') ORDER BY 1,2
 `amount_agorot`, ‏`voucher_redemptions.ip_address`, החתימות החדשות של ה-RPC).
 ‏`tsc` עובר רק כי הטיפוסים רופפים במקומות האלה. לרענן עם `pnpm db:types`.
 
-
 ## סבב 2026-07-28 — Admin: מסך תשלומים לספקים, ושני חסמים שהתגלו בדרך
 
 ‏`/admin/payouts` נבנה: מריץ `generate_payout_statement`, מציג ריצות שהתגלגלו
 מתחת למינימום, ומאשר ומסלק דרך ה-RPCs הקיימים.
 
 ### עיקרון: המסך לא מחשב כסף
+
 כל ארבע הפעולות הן עטיפה דקה של RPC בכוונה. כללי הכסף (‏T+3 ימי עסקים,
 מינימום 100 ש"ח עם גלגול, ושרק ה-snapshot מזמן ההזמנה נקרא — C10) חיים
 במיגרציה 081 ובטריגרים סביבה. מימוש שני כאן היה **דעה שנייה** על מה מגיע
@@ -1631,6 +915,7 @@ WHERE n.nspname='public' AND p.prosrc !~ ('\m'||r.col||'_legacy\M') ORDER BY 1,2
 חייב וייאסף בריצה הבאה.
 
 ### אומת כאדמין אמיתי, לא רק ב-tsc
+
 נוצר משתמש dev מקומי, נעשתה התחברות דרך טופס הלוגין האמיתי
 (`scripts/_admin-shot.mjs`), והמסך צולם ותופעל בו ריצה. שני חסמים צצו,
 שניהם שוחזרו ותוקנו:
@@ -1656,6 +941,7 @@ WHERE n.nspname='public' AND p.prosrc !~ ('\m'||r.col||'_legacy\M') ORDER BY 1,2
 ולא צעד אחד הלאה.
 
 ### אחרי שתי המיגרציות — הריצה עובדת מקצה לקצה
+
 ‏`PS-000003`, ‏0.00 ש"ח מול מינימום 100, בלי שורות, מסומן `rolled_over`,
 ומופיע במסך תחת "מתגלגלים" בלי כפתורי פעולה (נכון: אין מה לאשר).
 
@@ -1663,6 +949,7 @@ WHERE n.nspname='public' AND p.prosrc !~ ('\m'||r.col||'_legacy\M') ORDER BY 1,2
 הפרודקשן.** ‏081 החליפה מקומית את 079 (גרסת ה-escrow) שהייתה מותקנת שם.
 
 ### סריקה שיטתית: כמה עוד ערכי enum "נבלעו"?
+
 ‏083 תיקן ערך אחד שמיגרציה חשבה שהצהירה עליו ואף מסד לא החזיק. השומר שהסתיר
 אותו הוא **האידיום הסטנדרטי של הפרויקט**, אז נסרק כל העץ:
 ‏`src/lib/db/enum-declarations.ts` + 8 בדיקות.
@@ -1672,14 +959,15 @@ WHERE n.nspname='public' AND p.prosrc !~ ('\m'||r.col||'_legacy\M') ORDER BY 1,2
 בולעת אותה. בלי הכלל הזה הסריקה מחזירה 10 התרעות שווא. איתו — בדיוק שתיים,
 ושתיהן אומתו מול המסד המקומי:
 
-| ערך | מצב |
-|---|---|
-| `product_status.sold_out` | **חסר באמת. תוקן ב-084.** יש לו תווית עברית ב-`labels.ts` וטיפוס ב-`database.ts`, כלומר מערכת הטיפוסים כבר מאמינה שמוצר יכול לאזול. שום קוד לא כותב אותו היום רק כי ה-Zod בטופס האדמין מונה במקרה את ארבעת הערכים הקיימים. הוספת "אזל" לטופס — שינוי UI תמים — הייתה נופלת במסד בלי רמז למה. |
-| `product_type.service` | **חסר בכוונה, ב-allowlist.** ‏066 הוסיפה `subscription` במקומו ו-067 מעבירה שורות ישנות, עם שומר על `pg_enum` בדיוק כי "מסדים חדשים בונים את ה-enum בלי service". אוצר מילים שיצא משימוש. ש-`types/database.ts` ו-`db/schema/commerce.ts` עדיין מזכירים אותו הוא **פלט מיושן**, לא סיבה להחזיר. |
+| ערך                       | מצב                                                                                                                                                                                                                                                                                             |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `product_status.sold_out` | **חסר באמת. תוקן ב-084.** יש לו תווית עברית ב-`labels.ts` וטיפוס ב-`database.ts`, כלומר מערכת הטיפוסים כבר מאמינה שמוצר יכול לאזול. שום קוד לא כותב אותו היום רק כי ה-Zod בטופס האדמין מונה במקרה את ארבעת הערכים הקיימים. הוספת "אזל" לטופס — שינוי UI תמים — הייתה נופלת במסד בלי רמז למה.    |
+| `product_type.service`    | **חסר בכוונה, ב-allowlist.** ‏066 הוסיפה `subscription` במקומו ו-067 מעבירה שורות ישנות, עם שומר על `pg_enum` בדיוק כי "מסדים חדשים בונים את ה-enum בלי service". אוצר מילים שיצא משימוש. ש-`types/database.ts` ו-`db/schema/commerce.ts` עדיין מזכירים אותו הוא **פלט מיושן**, לא סיבה להחזיר. |
 
 הבדיקה `enum-declarations.test.ts` נכשלת מעכשיו על כל מקרה חדש מהסוג הזה.
 
 ### מה נשאר פתוח מהתור
+
 - ‏`fn_post_journal` עדיין לא מחווט למסלול הקופון.
 - החלת המיגרציות התלויות על המרוחק (‏050, 051, 070, 081, 082, 083, 084) —
   דורש מעבר על הקטלוג באדמין קודם, ו-082/083 הן כעת **תנאי מקדים להשקה**:
@@ -1687,26 +975,27 @@ WHERE n.nspname='public' AND p.prosrc !~ ('\m'||r.col||'_legacy\M') ORDER BY 1,2
 - ‏`src/types/database.ts` ו-`src/db/schema/commerce.ts` מיושנים מול המסד
   (‏`service` מול `subscription`). לרענן עם `pnpm db:types`.
 
-
 ## סבב 2026-07-28 — דף המוצר נבנה מחדש על הרשת המדודה של האתר החי
 
 **‏compare.mjs --page=product: ‏16.56% ← 10.96%. הסף (‏11%) עבר.**
 
 ### מה שהתברר במדידה
+
 הפער לא היה עניין של עיצוב אלא של **רשת**: הדף היה בנוי על מיכל אחר לגמרי.
 נמדד החי ב-1440x2600 עם שני כלים חדשים, ‏`scripts/_pdp-probe.mjs`
 ו-`scripts/_pdp-summary-probe.mjs`, וכל מספר למטה הוא מדידה, לא הערכה.
 
-| | חי | לפני | אחרי |
-|---|---|---|---|
-| מיכל | 1170 | 1320 (‏`max-w-page`) | **1170** |
-| גלריה / סיכום | 470 / 670, רווח 30 | 496 / 694, רווח 32 | **470 / 670 / 30** |
-| שורת breadcrumb | 84px | 20px | **84px** |
-| תחילת העמודות | y250 | y274 | **y249** |
-| ‏h1 | ‏25.004/32.0051 משקל 500 | משקל 900 | **500** |
-| תחתית ה-footer | y1442 | y1672 | **y1442** |
+|                 | חי                       | לפני                 | אחרי               |
+| --------------- | ------------------------ | -------------------- | ------------------ |
+| מיכל            | 1170                     | 1320 (‏`max-w-page`) | **1170**           |
+| גלריה / סיכום   | 470 / 670, רווח 30       | 496 / 694, רווח 32   | **470 / 670 / 30** |
+| שורת breadcrumb | 84px                     | 20px                 | **84px**           |
+| תחילת העמודות   | y250                     | y274                 | **y249**           |
+| ‏h1             | ‏25.004/32.0051 משקל 500 | משקל 900             | **500**            |
+| תחתית ה-footer  | y1442                    | y1672                | **y1442**          |
 
 ### מה שונה
+
 1. **‏`src/styles/product-page.css` + טוקני `PDP` ב-`tokens.ts`.** אותו חוזה
    כמו גיליון הקטלוג: כל צבע וכל מספר מוצהרים פעם אחת על `.pdp`,
    ו-`tokens.test.ts` נכשל על סטייה (‏4 בדיקות חדשות).
@@ -1723,6 +1012,7 @@ WHERE n.nspname='public' AND p.prosrc !~ ('\m'||r.col||'_legacy\M') ORDER BY 1,2
    ‏#dddddd עם מקטע צהוב 233px בצד ה-inline-start, כמדוד ב-y937-938.
 
 ### ה-footer: אותו סוג באג, בקומפוננטה משותפת
+
 ‏`layout/SiteFooter.tsx` היה על `--container-page` (‏1320) ולכן רץ 68px רחב
 מדי בכל צד. נמדד עם `scripts/_footer-probe.mjs` ותוקן ל-**1200 עם ריפוד 15px**,
 מה שמנחית את תוכן ה-footer על אותם קצוות x135..x1305 של גוף העמוד. בנוסף:
@@ -1753,7 +1043,9 @@ WHERE n.nspname='public' AND p.prosrc !~ ('\m'||r.col||'_legacy\M') ORDER BY 1,2
 ומגלה slug קטגוריה מקומי אמיתי כשהמועדף לא קיים.
 
 ### מה שנשאר בפער, ולמה
+
 ההפרש שנותר מרוכז במה שאי אפשר להתאים:
+
 - **תמונת המוצר** (‏470x479 ב-y250-729) ≈ 4.5%. במסד המקומי אין ולו תמונה
   אחת, ובכל מקרה תמונה אחרת אינה תמונה זהה.
 - **‏`demo-prod-03` אזל מהמלאי** (‏`stock_quantity = 0`), אז שני כפתורי הקנייה
@@ -1766,17 +1058,20 @@ WHERE n.nspname='public' AND p.prosrc !~ ('\m'||r.col||'_legacy\M') ORDER BY 1,2
   אחת בלבד (‏x1071-1305) על רקע לבן. אין שם פריסה אמיתית להתאים אליה.
 
 ### באג שנמצא ולא תוקן (מכוון)
+
 ‏`.p_con__image-wrap` ב-`product-card-deals.css` **לא שומר מקום לתמונה**: כרטיס
 בלי תמונה קצר ב-245px משכניו, כך שגריד מעורב מרנדר משונן וכל שורה מתחת לתמונה
 שטרם נטענה קופצת (‏CLS). ‏`min-height: 245px` מתקן את זה, נבדק, **והוחזר**:
 הכרטיס הזה משותף לקרוסלות של דף הבית ולא מדדתי את ההשפעה שם. **משימה נפרדת.**
 
 ### אימות
+
 ‏`pnpm exec tsc --noEmit` נקי. ‏**510 בדיקות ב-41 קבצים, ירוקות** (‏505 + 4
 בדיקות טוקני PDP + 1). ‏`compare.mjs --page=product` = **10.96%**,
 `--page=category` = 9.29%.
 
 ## Current Phase
+
 ‏**המודל המחייב הוא של 28.07: קופון = הכל לפלטפורמה, בלי Escrow.**
 ההוראה מ-28.07 דרסה את הכרעת 27.07 והחזירה את C11 לגרסה (א). הקוד כבר תואם
 (‏`commission.ts`, ‏`finalize.ts`, ‏`split.ts`, ‏`state-machine.ts`, ומחיקת
@@ -1821,6 +1116,7 @@ WHERE n.nspname='public' AND p.prosrc !~ ('\m'||r.col||'_legacy\M') ORDER BY 1,2
 `coupon_redemption` ב-027/051 הוא באג כספי שמשלם לספק אפס.
 
 ### מה שנשאר תקף מ-24.07
+
 אין Escrow חיצוני ואין J5 — ה-held הוא רישום פנימי ב-ledger שלנו בלבד.
 העמלה מחושבת על המקדמה בלבד. Cardcom בלבד. האחוזים מצולמים ל-`order_items`.
 ‏`coupon_price_ils` נשאר הערך הקנוני שהמנוע מחייב לפיו, וההנחה נגזרת ממנו
@@ -1832,6 +1128,7 @@ WHERE n.nspname='public' AND p.prosrc !~ ('\m'||r.col||'_legacy\M') ORDER BY 1,2
 על מודל ה-Escrow. הסבב הזה סגר את הפער, בלי DDL.
 
 ### הסכנה שנמצאה
+
 ‏`Next Task` הורתה להחיל על הפרודקשן את **‏079 ו-080** — שתי מיגרציות שכל
 תוכנן הוא מודל ה-Escrow שבוטל. החלה שלהן הייתה מחזירה את המודל המבוטל
 ל-DB יומיים אחרי שנמחק מהקוד. שתיהן סומנו עכשיו `⛔ CANCELLED ... DO NOT
@@ -1839,6 +1136,7 @@ APPLY` בראש הקובץ, עם ההסבר איך לחזור אליהן אם ה
 מרשימת ההחלה. **אף אחת מהן לא הוחלה מעולם, אז אין דריפט מול פרודקשן.**
 
 ### מה שכמעט נזרק יחד איתן
+
 ‏079 ארזה שני תיקונים בלתי תלויים. אחד מהם שורד את ההיפוך: ‏051 קוראת שמות
 עמודות מלפני 059, ולכן `generate_payout_statement` מרימה `undefined_column`
 בכל קריאה — כלומר מנוע ה-payout **מת גם למוצרים פיזיים**, שלהיפוך אין איתם
@@ -1848,6 +1146,7 @@ APPLY` בראש הקובץ, עם ההסבר איך לחזור אליהן אם ה
 כמו כל DDL בסבב הזה.
 
 ### מסמכים שיושרו למודל המחייב
+
 - ‏`Current Phase` הפכה לקבוע: קופון = הכל לפלטפורמה. הסעיף של 27.07 נשאר
   בקובץ אבל מסומן במפורש כבוטל, כדי שלא ייקרא שוב כמחייב.
 - ‏`Business Rules` תוקנו: אין Escrow בכלל, הספק מקבל 0 על קופון, ו-payout
@@ -1857,6 +1156,7 @@ APPLY` בראש הקובץ, עם ההסבר איך לחזור אליהן אם ה
 - משימה 3 בתור (חיווט `fn_post_journal` ל-`escrow_held`) בוטלה במפורש.
 
 ### מה שנבדק ונמצא כבר תקין
+
 - **‏`CouponDealForm.tsx` ו-`CouponsTable.tsx`** — הפריט שנשאר בתור כבר בוצע
   בקומיט `217089a`. ‏`platform_price` הוא סכום מוחלט, ההנחה נגזרת ממנו
   לתצוגה, ובטבלה אין fallback של 10% אלא "לא הוגדר".
@@ -1873,6 +1173,7 @@ APPLY` בראש הקובץ, עם ההסבר איך לחזור אליהן אם ה
 נוסחים של המודל שבוטל ב-24.07 שסתרו את המחייב.
 
 ### מה נמצא מיושם כבר
+
 - **`platform_percent` בלי ברירת מחדל:** ‏050 מסירה DEFAULT ומחייבת NOT NULL,
   ‏070 מוסיפה את זוג האחוזים עם CHECK שסכומם 100, וכל מסלולי הקוד
   (`commission.ts`, `settlement.ts`, `finalize.ts`, `issue.ts`, `pricing.ts`)
@@ -1884,6 +1185,7 @@ APPLY` בראש הקובץ, עם ההסבר איך לחזור אליהן אם ה
   ו-trigger שחוסם תשלום מוקדם.
 
 ### מה לא היה מיושם, ותוקן עכשיו
+
 1. **הבאג הכספי של C11(ב).** ‏`generate_payout_statement` שילמה `payout_ils = 0`
    על קופון שמומש, כלומר תת-תשלום לספק בדיוק בגובה ה-hold המשוחרר. בדרך התגלה
    שהיא גם קוראת שמות עמודות מלפני 059 (`total_price_ils`, `supplier_payout_ils`,
@@ -1915,12 +1217,14 @@ APPLY` בראש הקובץ, עם ההסבר איך לחזור אליהן אם ה
    שום קוד Stripe / Payoneer / Cloudways בשום שכבה.
 
 ### אימות
+
 `pnpm exec tsc --noEmit` נקי, `pnpm exec vitest run` — 523 בדיקות ב-42 קבצים,
 כולן עוברות.
 
 ## סבב 2026-07-28 (לילה) — באג ה-404 בדפי מוצר + מחיקת שאריות escrow
 
 ### הבאג שחסם הכל: כל דף מוצר החזיר 404
+
 `src/app/(store)/product/[slug]/page.tsx` בחר `price_ils` ב-select. מיגרציה
 059 שינתה את שם העמודה ל-`price_agorot` (הישנה הפכה ל-`price_ils_legacy`),
 ולכן ה-select נכשל, המוצר חזר null ו-`notFound()` רץ על **כל** מוצר בכל DB
@@ -1929,12 +1233,14 @@ APPLY` בראש הקובץ, עם ההסבר איך לחזור אליהן אם ה
 **16.56%** — עדיין מעל הסף של 11%, וזה הבסיס הנכון להמשך.
 
 תוקנו באותו כיוון עוד שני מסלולים שקראו עמודות מלפני 059:
+
 - ‏`finalize.ts`: ‏`unit_price_ils` -> `unit_price_agorot`, והוסרו
   `escrow_held_agorot` / `escrow_release_agorot` מה-select ומטיפוס השורה.
 - ‏`server/queries/orders.ts`: ‏`unit_price_ils` / `total_price_ils` ->
   `unit_price_agorot` / `total_price_agorot`, עם המרה ב-/100 במקום `Number()`.
 
 ### מחיקת שאריות ה-escrow (המודל הנעול: 035ef8e)
+
 - **`state-machine.ts`**: הסטטוסים `escrow_held`, `escrow_released`
   ו-`platform_settled` נמחקו, וגם האירועים `HOLD_ESCROW` / `RELEASE_ESCROW`.
   נשארו שישה מצבים. שני סוגי המוצר עוברים דרך אותו `EXECUTE_SPLIT`: פיזי
@@ -1962,6 +1268,7 @@ APPLY` בראש הקובץ, עם ההסבר איך לחזור אליהן אם ה
 בראש הקובץ.
 
 ### מה שונה בקוד
+
 - **`commission.ts`**: שורת קופון = כל המקדמה `platformFee`, `supplierDue = 0`.
   ‏`escrowHeld` הוסר מ-`CommissionLineResult` ומ-`CommissionResult`.
   שורה פיזית ללא שינוי: פיצול דינמי לפי `platform_percent`, והשארית מחושבת
@@ -1978,6 +1285,7 @@ APPLY` בראש הקובץ, עם ההסבר איך לחזור אליהן אם ה
   full-price, פיזי split דינמי, snapshot אמין). **523 ירוקות, tsc נקי.**
 
 ### מה נשאר מ-שלב 2 ולמה
+
 - ‏`redeem_voucher()` ב-074 עדיין משחררת hold. מאחר שהקוד כבר לא יוצר holds
   זה no-op בפועל, אבל הפונקציה עצמה עדיין מכילה את הלוגיקה.
 - ‏`src/server/domain/vouchers/escrow.ts` + הבדיקות שלו עדיין קיימים ולא
@@ -1990,6 +1298,7 @@ APPLY` בראש הקובץ, עם ההסבר איך לחזור אליהן אם ה
 ## סבב 2026-07-28 — MEGA-GOAL שלב 1 (Verify Storefront) + עצירה מתועדת
 
 ### שלב 1: מה אומת בפועל
+
 - **דפי מוצר וקטלוג קיימים.** ה-build מייצר `/product/[slug]`, `/category/[slug]`,
   `/products`, `/search`, `/cart`, `/checkout`, `/coupons`, `/supplier/scan`.
 - **עגלה Zustand:** ‏`src/lib/cart/store.ts` על `zustand/vanilla`, ‏zustand 5.0.14.
@@ -2001,6 +1310,7 @@ APPLY` בראש הקובץ, עם ההסבר איך לחזור אליהן אם ה
 - **‏compare.mjs — דף מוצר: 12.04%. נכשל את הסף.**
 
 ### למה דף המוצר לא נמדד נכון בהתחלה, ומה כן חסר
+
 המדידה הראשונה נתנה 11.89% על דף **ריק לגמרי**: ‏`.env.local` מצביע ל-Supabase
 מקומי (`127.0.0.1:54321`) שלא רץ, ו-Docker לא היה מופעל. הופעל Docker,
 ‏`supabase start`, והתגלה שה-DB המקומי עצר במיגרציה **058**. הוחלו מקומית
@@ -2016,6 +1326,7 @@ APPLY` בראש הקובץ, עם ההסבר איך לחזור אליהן אם ה
 ב-docker volume ולא אבד.
 
 הערות סביבה שנתקלתי בהן ולא תיקנתי (לא בהיקף):
+
 - ‏`supabase migration up` נכשל על אי-התאמת היסטוריה (`0075` כגרסה חריגה).
   ההחלה בוצעה ישירות ב-psql.
 - ‏070, 073 ו-076 נופלות מקומית על עמודות מלפני 059 (`price_ils`,
@@ -2023,6 +1334,7 @@ APPLY` בראש הקובץ, עם ההסבר איך לחזור אליהן אם ה
 - ‏`pmset -a disablesleep 1` דורש root. להריץ ידנית: `! sudo pmset -a disablesleep 1`.
 
 ### שלב 2 (Purge Escrow) — לא בוצע, בכוונה. סתירה ישירה להכרעה מחייבת
+
 ה-MEGA-GOAL מגדיר: "קופון: הלקוח משלם באתר את כל מחיר הקופון (הכל לפלטפורמה)"
 ו-"מחק כל Escrow מה-codebase".
 
@@ -2033,6 +1345,7 @@ APPLY` בראש הקובץ, עם ההסבר איך לחזור אליהן אם ה
 בשורת קופון הוא **באג כספי**.
 
 מחיקת ה-Escrow הייתה:
+
 1. מוחקת את 073, 074, 079, 080 ואת `escrowHeld` ב-`commission.ts` — כולם נכתבו
    כדי לממש את הכרעת 27.07;
 2. מחזירה לספקים תשלום 0 על קופון שמומש, כלומר מחזירה את הבאג הכספי;
@@ -2046,6 +1359,7 @@ APPLY` בראש הקובץ, עם ההסבר איך לחזור אליהן אם ה
 כבר מאומתים ועומדים.
 
 ### שלבים 3-5 — לא התחילו
+
 תלויים בהכרעת שלב 2: ‏Admin Core וה-Coupon Redemption נבנים מעל מודל הכסף,
 ובנייתם לפני שההכרעה נסגרת מבטיחה עבודה כפולה.
 
@@ -2070,6 +1384,7 @@ APPLY` בראש הקובץ, עם ההסבר איך לחזור אליהן אם ה
 ## סבב 2026-07-27 (מאוחר) — מימוש מודל ה-Escrow + חיפוש במאסטהד
 
 ### מה נבנה
+
 1. **מנוע העמלות** (`src/lib/commerce/commission.ts`): קופון מפצל את המקדמה
    לפי `platform_percent`. חדש: `escrowHeld` (חלק הספק, מוחזק עד מימוש) מול
    `supplierImmediate` (פיזי, מסולק מיד). בסיס העמלה שונה לפי סוג — פיזי על
@@ -2085,6 +1400,7 @@ APPLY` בראש הקובץ, עם ההסבר איך לחזור אליהן אם ה
    **אומת: גובה ה-header נשאר 127px** בדיוק, ואין גלילה אופקית.
 
 ### מה אומת
+
 `tsc` נקי, **436/436 vitest**, biome נקי. דף מוצר, קטלוג, עגלה וחיפוש
 מחזירים 200 והעגלה מתמחרת נכון (‏5% מ-1,290 = 64.50 לעמלה, 1,225.50 לספק).
 
@@ -2109,7 +1425,9 @@ APPLY` בראש הקובץ, עם ההסבר איך לחזור אליהן אם ה
 **מה שנותר: להזין אחוז לכל מוצר.** זו החלטה מסחרית שלך, לא משהו שאמציא.
 
 ### ✅ אימות מקצה לקצה של הקופון (מה שחסר קודם)
+
 נמדד מול הדב-סרבר על `קופון-טסט` (מחירון ‏100, מחיר קופון ‏50):
+
 - **דף המוצר**: `מחיר רגיל` ₪100 מחוק, `מחיר בקניון` ₪50, טבלת פיצול
   ‏"לתשלום באתר עכשיו ₪50 / יתרה לתשלום בבית העסק ₪50 / סה"כ שווי ₪100",
   כפתור `קנה עכשיו`, ו-`פרטי הספק`. כל סעיף (1) ביעד מאומת על קופון אמיתי.
@@ -2123,9 +1441,9 @@ APPLY` בראש הקובץ, עם ההסבר איך לחזור אליהן אם ה
 שאחוז הספק **נגזר ולא נשמר**, בנימוק ש"עמודה שנייה שחייבת להיות המשלים
 של הראשונה היא יתירות שאין לה תועלת". **הקביעה בוטלה.** מה שהפיל אותה:
 
-| עמודה בפרודקשן | שורות מאוכלסות מתוך 61 |
-|---|---|
-| `platform_percent` | **0** |
+| עמודה בפרודקשן           | שורות מאוכלסות מתוך 61             |
+| ------------------------ | ---------------------------------- |
+| `platform_percent`       | **0**                              |
 | `supplier_split_percent` | **61** (‏70%×31, ‏75%×15, ‏85%×15) |
 
 הטענה על "יתירות" נאמרה על העמודה שמחזיקה את **כל** נתוני הפיצול של
@@ -2154,18 +1472,18 @@ APPLY` בראש הקובץ, עם ההסבר איך לחזור אליהן אם ה
 
 **התוצאה תאמה את התחזית בדיוק:**
 
-| | לפני | אחרי |
-|---|---|---|
-| `platform_percent` מאוכלס | 0/61 | **61/61** |
-| `supplier_split_percent` | 61/61 | 61/61 (ללא שינוי) |
-| `discount_percent` | העמודה לא קיימת | **16** (כולן 50.00%) |
-| זוגות שלא מסתכמים ב-100 | — | **0** |
+|                           | לפני            | אחרי                 |
+| ------------------------- | --------------- | -------------------- |
+| `platform_percent` מאוכלס | 0/61            | **61/61**            |
+| `supplier_split_percent`  | 61/61           | 61/61 (ללא שינוי)    |
+| `discount_percent`        | העמודה לא קיימת | **16** (כולן 50.00%) |
+| זוגות שלא מסתכמים ב-100   | —               | **0**                |
 
-| עמלה שנגזרה | אחוז ספק | מוצרים |
-|---|---|---|
-| 15% | 85% | 15 (פיזיים) |
-| 25% | 75% | 15 (קופונים) |
-| 30% | 70% | 31 (‏5 קופונים, ‏26 פיזיים) |
+| עמלה שנגזרה | אחוז ספק | מוצרים                      |
+| ----------- | -------- | --------------------------- |
+| 15%         | 85%      | 15 (פיזיים)                 |
+| 25%         | 75%      | 15 (קופונים)                |
+| 30%         | 70%      | 31 (‏5 קופונים, ‏26 פיזיים) |
 
 **כל שש ה-constraints עברו `VALIDATE` בהצלחה** (`convalidated=true`), כלומר
 אף שורה קיימת לא מפרה אותן. המיגרציה הוסיפה אותן NOT VALID מתוך זהירות
@@ -2186,6 +1504,7 @@ NULL ויצטרך לסרב למכירה במקום להמציא קבוע.
 להפוך את `platform_percent` ל-NOT NULL בזמן שכל 61 השורות ריקות בו.
 
 ### הבדל סביבות שכדאי לדעת עליו
+
 הדב-סרבר והטסטים עובדים מול **Supabase מקומי** (127.0.0.1:54321), לא מול
 הפרויקט המאוחסן. הדאטה שונה לגמרי: מקומי = 14 `demo-prod-*` פיזיים
 (‏percent=5) + `קופון-טסט` אחד; פרודקשן = `barbecue` + 15 `demo-coupon-*`,
@@ -2197,6 +1516,7 @@ NULL ויצטרך לסרב למכירה במקום להמציא קבוע.
 ## Last Completed — סבב שכבת המוצר
 
 ### הבאג שנמצא ותוקן: הלקוח קיבל ציטוט אחד וחויב באחר
+
 דף המוצר הציג
 `price * 0.1`
 עם הכיתוב "שלם 10% עכשיו (10%) ואת השאר בחנות", וכרטיס הקופון הציג
@@ -2212,8 +1532,9 @@ NULL ויצטרך לסרב למכירה במקום להמציא קבוע.
 כאילו העסק חייב כסף ללקוח.
 
 ### (א) דף קופון
+
 - כותרת מחירים בשפה של האתר החי (`מחיר רגיל` / `מחיר בקניון`) לפי
-docs/coupon-page-measured.md
+  docs/coupon-page-measured.md
 - טבלת פיצול: לתשלום באתר עכשיו / יתרה לתשלום בבית העסק / סה"כ שווי.
   **זו סטייה מכוונת מ-1:1** — לאתר החי אין את הפיצול הזה, אבל תחת הכללים
   הסופיים התשלום באתר הוא מקדמה, ולקוח שלא נאמר לו על היתרה מגלה אותה בקופה.
@@ -2222,22 +1543,27 @@ docs/coupon-page-measured.md
 - `SupplierInfo` כבר הופיע בכל דף מוצר; נשאר.
 
 ### (ב) דף מוצר פיזי
+
 `ShippingInfo` חדש: זמן אספקה, אופן משלוח, משקל, אחריות.
 **הפיצול נסתר מהלקוח בכוונה** — הוא קובע איך הכסף מתחלק אחרי המכירה, הלקוח
 משלם אותו מחיר כך או כך, וחשיפתו מגלה את המרווח של הספק בלי תועלת לקונה.
 
 ### (ג) קטגוריה וקטלוג — כבר היו בנויים
+
 גריד RTL, פילטר קטגוריה, טווח מחיר (min/max), מיון, pagination.
 ‏7 קומפוננטות ב-`src/components/category/`. לא נדרשה עבודה.
 
 ### (ד) עגלה — כבר הייתה בנויה
+
 Zustand ב-`src/lib/cart/store.ts`, הוספה/עדכון כמות/מחיקה, סיכום עם עמלה
 ויתרה בבית העסק, מחוברת ל-checkout. התמחור ב-`src/lib/cart/pricing.ts`
 כבר היה על המודל הנכון.
 
 ### (ה) Meilisearch — הוגדר מאפס ואומת חי
+
 לאינדקס לא הייתה שום קונפיגורציה. עכשיו:
 `src/lib/search/meili-settings.ts` + `scripts/setup-meilisearch.mjs`
+
 - **typo tolerance מכוונן לעברית**: שגיאה אחת מ-4 תווים במקום 5, שתיים מ-7
   במקום 9. עברית נכתבת בלי ניקוד ומילותיה קצרות שיטתית — בברירת המחדל
   ‏`מסעדה` (5) ו-`ספא` (3) לא מקבלות תקציב שגיאות בכלל.
@@ -2251,6 +1577,7 @@ Zustand ב-`src/lib/cart/store.ts`, הוספה/עדכון כמות/מחיקה, �
   ו-SKU לא קיים החזיר ריק.
 
 ### (ו) טסטים
+
 - ‏`coupon-offer.test.ts` (10) — כולל הרגרסיה עצמה: שהמחיר אינו 10%.
 - ‏`meili-settings.test.ts` (11) — הספים לעברית, סדר ה-ranking, הפאסטים.
 - ‏`e2e/purchase-flow.spec.ts` — הזרימה המלאה חיפוש ← מוצר ← עגלה ← checkout
@@ -2260,16 +1587,19 @@ Zustand ב-`src/lib/cart/store.ts`, הוספה/עדכון כמות/מחיקה, �
 - **סה"כ: 433 טסטים ב-37 קבצים** (המספר 428 שהופיע כאן קודם היה שגוי).
 
 ## אימות
+
 ‏`tsc --noEmit` נקי, ‏**433/433 vitest** (37 קבצים), ‏**53/53 E2E, 0 דולגו**.
 אומת מחדש 2026-07-27 08:0x — ראה "אימות מלא מול המציאות" בתחתית הקובץ.
 
 ### מה ה-E2E תפס
+
 הטיוטה הראשונה של `purchase-flow.spec.ts` קבעה ש-checkout פתוח לאורח,
 ונפלה מול שלוש בדיקות קיימות שעוברות. **הקביעה שלי הייתה שגויה, לא האפליקציה.**
 החוזה הוא **עגלת אורח + checkout מאומת**: `src/proxy.ts` חוסם את כל תת-העץ
 ‏`/checkout` כדי שנתוני הזמנה לא יגיעו למבקר אנונימי. הספק תוקן לחוזה האמיתי.
 
 ## ⚠️ שינויים שנעשו ישירות בפרודקשן — עם rollback
+
 שני שינויים בוצעו ב-DB המאוחסן בסשן הזה, מתועדים במלואם ב-
 docs/PRODUCTION-CHANGES-2026-07-27.md
 כולל SQL להחזרה לאחור. שניהם אדיטיביים והפיכים, ואף ערך קיים לא נדרס
@@ -2314,6 +1644,7 @@ docs/PRODUCTION-CHANGES-2026-07-27.md
 ## מה אומת בפועל בסבב הזה (לא רק נכתב)
 
 ### 🐞 באג latent שההשוואה חשפה: embed דו-משמעי
+
 כדי להשוות תפוח לתפוח שחזרתי את ה-DB **המקומי** לסכמה שהקוד מכוון אליה
 (‏001-058, בלי 059 שמשנה שמות עמודות) וזרעתי בו את `קופון-טסט` עם הערכים
 החיים. הדף החזיר **404**.
@@ -2330,6 +1661,7 @@ docs/PRODUCTION-CHANGES-2026-07-27.md
 מתפוצץ ברגע שהטבלה נוחתת**. תוקן בכל 8 המקומות.
 
 ### השוואה מול האתר החי — בוצעה, תפוח מול תפוח
+
 `scripts/compare-coupon-live.mjs`
 משווה גאומטריה וטיפוגרפיה מחושבות, לא פיקסלים: הקופון החי (`קופון-טסט`)
 לא קיים ב-DB הזה, אז diff של צילומי מסך היה מודד **תוכן** ולא פריסה.
@@ -2353,6 +1685,7 @@ docs/PRODUCTION-CHANGES-2026-07-27.md
 הממוצע ירד מ-33.7% ל-**24.3%**. הטיפוגרפיה תואמת בדיוק.
 
 ### ✅ נמדד: ה-override של 1320 **אינו** מקור הפער
+
 היה נראה שהפרשי הרוחב נובעים מה-override המכוון 1320 מול 1200, אז מדדתי
 במקום לנחש: הורדתי את `--container-page` ל-1200 מקומית, בניתי, והשוויתי שוב.
 
@@ -2370,6 +1703,7 @@ docs/PRODUCTION-CHANGES-2026-07-27.md
 הוחזר ל-1320.
 
 ### ניסיתי גם את יחס הגריד — גם הוא מחמיר
+
 שיניתי את `md:grid-cols-[5fr_7fr]` ל-`[470fr_700fr]` (היחס של החי).
 הממוצע עלה ל-**30.5%**, ורוחב ה-summary **לא זז** מ-636.3px.
 
@@ -2383,6 +1717,7 @@ docs/PRODUCTION-CHANGES-2026-07-27.md
 הנאמנות, לא עוד כוונון עיוור.**
 
 ### ✅ פער ה-facet — תוקן
+
 ‏`/products?type=coupon` סינן על עמודת `type` בלבד, בעוד שדף המוצר, העגלה
 ומנוע העמלות מתייחסים גם ל-`is_coupon_enabled`. התוצאה: `barbecue` נמכר
 כקופון, מתומחר כקופון ומסולק כקופון — ולא הופיע בפאסט.
@@ -2391,6 +1726,7 @@ docs/PRODUCTION-CHANGES-2026-07-27.md
 **אומת**: `barbecue` מופיע ב-`?type=coupon` (1) ולא ב-`?type=physical` (0).
 
 ### ✅ המודל שבוטל — הוסר מהאדמין
+
 - ‏`CouponDealForm`: `platform_price` היה **נגזר** כ-10% מהמחיר. עכשיו זה
   שדה קלט לסכום מוחלט, מחווט דרך ה-server action עם שתי הגנות: מחיר מעל
   המחיר המקורי נדחה (אחרת היתרה בבית העסק שלילית), ומבצע לא יכול לעבור
@@ -2399,12 +1735,15 @@ docs/PRODUCTION-CHANGES-2026-07-27.md
 - ‏`CouponsTable`: הפסיק להמציא 10% למבצע לא מתומחר; מציג "לא הוגדר".
 
 ### Meilisearch — סונכרן, לא רק הוגדר
+
 ‏**61 מוצרים אמיתיים באינדקס.** typo tolerance אומת על הקטלוג האמיתי:
+
 - `מסעדח` ו-`מסעדע` -> אותם 13 תוצאות כמו `מסעדה`
 - `בשרות` -> מוצא את `ארוחה בשרית`
 - פאסט `type=coupon` -> 20, ‏`in_stock` -> 61, ג'יבריש -> 0
 
 ## מה עדיין חסר להשקה
+
 1. **להריץ את 027 ואז את שאר 054** — תת-מערכת הוואוצ'רים (טבלאות וואוצ'רים,
    ‏`redeem_voucher`). בלעדיה אפשר לקנות קופון אבל לא לממש אותו בסריקה.
 2. ✅ **בוצע** — המודל שבוטל הוסר מהאדמין.
@@ -2417,18 +1756,19 @@ docs/PRODUCTION-CHANGES-2026-07-27.md
    זה cutover שצריך לתכנן, לא להריץ בטעות.
 
 ## Branch Status
+
 אומת מול `git` ב-2026-07-27 08:0x. **כל ששת הענפים המקומיים דחופים ומסונכרנים
 מול origin (ahead=0, behind=0).** העמודה שקובעת עכשיו היא מה טרם מוזג ל-phase5.
 
-| branch | origin | מוזג ל-phase5 | מצב | הבא |
-| --- | --- | --- | --- | --- |
-| `phase5/homepage` | מסונכרן | — | הענף הפעיל; טוקנים + שכבת מוצר | ראה Next Task |
-| `feat/ci-foundation` | מסונכרן | **לא** (קומיט 1) | ‏CI מתוקן: trigger, lint gate, coverage | לפתוח PR ולמזג |
-| `feat/payments-core` | מסונכרן | ✅ כן (0 קומיטים בפיגור) | merged בפועל | שאריות 5%+Escrow ב-`src/server/payments/` |
-| `feat/search-core` | מסונכרן | **לא** (קומיט 1) | worktree ב-`../ke-search`; ‏1170 שורות: webhook חתום, תור QStash, ‏DLQ, מיגרציה 069 | לבדוק ולמזג |
-| `feat/visual-polish` | מסונכרן | **לא** (‏10 קומיטים) | worktree ב-`../ke-visual`; ‏a11y, ‏RTL logical props, טוקנים, גאומטריה | הפער הגדול ביותר; למזג |
-| `arch/admin-supplier` | מסונכרן | **לא** (קומיט 1) | worktree ב-`../ke-arch`; מסמכים בלבד (‏ADMIN + SUPPLIER-PORTAL ארכיטקטורה) | למזג, נמוך סיכון |
-| `cursor/add-supabase-3c830` | ברירת מחדל ב-origin | — | קודם לאפליקציה | להחליף ברירת מחדל ל-phase5 |
+| branch                      | origin              | מוזג ל-phase5            | מצב                                                                                 | הבא                                       |
+| --------------------------- | ------------------- | ------------------------ | ----------------------------------------------------------------------------------- | ----------------------------------------- |
+| `phase5/homepage`           | מסונכרן             | —                        | הענף הפעיל; טוקנים + שכבת מוצר                                                      | ראה Next Task                             |
+| `feat/ci-foundation`        | מסונכרן             | **לא** (קומיט 1)         | ‏CI מתוקן: trigger, lint gate, coverage                                             | לפתוח PR ולמזג                            |
+| `feat/payments-core`        | מסונכרן             | ✅ כן (0 קומיטים בפיגור) | merged בפועל                                                                        | שאריות 5%+Escrow ב-`src/server/payments/` |
+| `feat/search-core`          | מסונכרן             | **לא** (קומיט 1)         | worktree ב-`../ke-search`; ‏1170 שורות: webhook חתום, תור QStash, ‏DLQ, מיגרציה 069 | לבדוק ולמזג                               |
+| `feat/visual-polish`        | מסונכרן             | **לא** (‏10 קומיטים)     | worktree ב-`../ke-visual`; ‏a11y, ‏RTL logical props, טוקנים, גאומטריה              | הפער הגדול ביותר; למזג                    |
+| `arch/admin-supplier`       | מסונכרן             | **לא** (קומיט 1)         | worktree ב-`../ke-arch`; מסמכים בלבד (‏ADMIN + SUPPLIER-PORTAL ארכיטקטורה)          | למזג, נמוך סיכון                          |
+| `cursor/add-supabase-3c830` | ברירת מחדל ב-origin | —                        | קודם לאפליקציה                                                                      | להחליף ברירת מחדל ל-phase5                |
 
 ## Blocking Issues
 
@@ -2447,10 +1787,11 @@ docs/PRODUCTION-CHANGES-2026-07-27.md
 כדאי לחדש עם `pnpm db:types`.
 
 ### ✅ נסגרו
+
 - **תת-מערכת הוואוצ'רים** — `supplier_members` + `vouchers` +
   `voucher_redemptions` הוחלו 2026-07-27. **אומת על הפרודקשן**: הזמנת קופון
   נסגרת מקצה לקצה (`order=paid, settlement=platform_settled, item=issued,
-  voucher=issued`), והכסף מתחלק נכון — על `barbecue` (‏₪99 מחירון, ‏₪49.50
+voucher=issued`), והכסף מתחלק נכון — על `barbecue` (‏₪99 מחירון, ‏₪49.50
   מקדמה, ‏30% עמלה): **₪14.85 לפלטפורמה, ₪34.65 מוחזק לספק, ₪49.50 נגבה
   בבית העסק.** תחת המודל שבוטל חלק הספק היה 0.
   ⚠️ **המספרים האלה מתארים את מודל 27.07 שבוטל ב-28.07.** אותה קנייה היום:
@@ -2469,15 +1810,18 @@ docs/PRODUCTION-CHANGES-2026-07-27.md
 - **המיגרציה בלי קובץ** — `054_section2_product_coupon_price_fields` נכתבה
   לריפו ואומתה מול ה-DB החי.
 - **‏`platform_percent` ריק בכל המוצרים** — נסגר ב-070, ‏61/61 מאוכלסים.
+
 4. ‏`feat/search-core` **כן קיים** — הקביעה הקודמת כאן ("לא קיים, אין worktree,
    אין ענף, אין קומיט") הייתה שגויה לחלוטין. הענף, ה-worktree והקומיט
    ‏`6e0fdca` כולם קיימים ודחופים.
 
 ## שים לב: סשן מקביל פעיל על הריפו
+
 סשן Cursor אחר עשה `git reset` פעמיים וקומיט שינויים משותפים בעצמו.
 כדאי לבדוק `git log` לפני שמסתמכים על מצב העץ.
 
 ## Next Task
+
 **החוסם שהיה כאן הוסר.** הסתירה בין ה-MEGA-GOAL ל-C11(ב) הוכרעה ב-28.07 לטובת
 "הכל לפלטפורמה", והקוד כבר תואם. שלוש המשימות הבאות, לפי הסדר:
 
@@ -2496,25 +1840,29 @@ docs/PRODUCTION-CHANGES-2026-07-27.md
    בלבד, בלי חשבון ביניים.
 
 ### למה נוצרה 081 (‏2026-07-28)
+
 ‏079 ארזה יחד שני תיקונים, ורק אחד מהם מת עם ה-Escrow:
+
 - **מת:** תשלום ה-hold המשוחרר לספק על קופון שמומש.
 - **חי ועדיין שבור:** ‏`generate_payout_statement` של 051 קוראת שמות עמודות
   מלפני 059 (‏`total_price_ils`, ‏`supplier_payout_ils`, ‏`platform_percent`),
   ולכן מרימה `undefined_column` בכל קריאה על DB אחרי 059. זה מפיל גם payout
   של מוצרים **פיזיים**, שההיפוך לא נגע בהם.
-‏`081_payout_no_escrow.sql` לוקחת את התיקון החי בלבד: שמות עמודות נכונים,
-שורות פיזיות בלבד, ‏T+3 והמינימום של C8 ללא שינוי. שורות
-‏`coupon_redemption` בסכום 0 שנכתבו ב-051 **ירדו** ולא נשארו כאפס, כי דוח
-payout הוא רשומה של כסף שאנחנו חייבים, ושורת אפס בו נקראת כחוב שסולק בכלום.
+  ‏`081_payout_no_escrow.sql` לוקחת את התיקון החי בלבד: שמות עמודות נכונים,
+  שורות פיזיות בלבד, ‏T+3 והמינימום של C8 ללא שינוי. שורות
+  ‏`coupon_redemption` בסכום 0 שנכתבו ב-051 **ירדו** ולא נשארו כאפס, כי דוח
+  payout הוא רשומה של כסף שאנחנו חייבים, ושורת אפס בו נקראת כחוב שסולק בכלום.
 
 **נותר מהתור הקודם: כלום.** ניקוי המודל שבוטל מ-`CouponDealForm.tsx`
 ומ-`CouponsTable.tsx` כבר בוצע בקומיט `217089a` (‏`platform_price` הוא סכום
 מוחלט, ההנחה נגזרת ממנו, ובטבלה אין fallback של 10% אלא "לא הוגדר").
 
 ## Working Directory
+
 /Users/ofir/kenyonexpress-web/kenyonexpress
 
 ## Business Rules (final, מעודכן 2026-07-28)
+
 - קופון: הלקוח משלם באתר את `coupon_price_ils` (סכום מוחלט). **כל הסכום הזה
   נשאר בפלטפורמה**, והשורה מקבלת `settlement_status = 'platform_settled'`
   מיד בתשלום. היתרה מול המחירון נגבית בבית העסק בסריקה, ישירות לספק, ואינה
@@ -2532,8 +1880,9 @@ payout הוא רשומה של כסף שאנחנו חייבים, ושורת אפ�
 - כרגע: רק קופונים.
 
 ## Next Phase
+
 1. דף קופון (1:1 מול האתר החי): מדידות חי הושלמו ב-
-docs/coupon-page-measured.md
+   docs/coupon-page-measured.md
    (מקור: קופון טסט). הבא: מימוש UI מול הטבלה.
 2. דף עגלה + checkout end-to-end
 3. ~~תקן את קוד התשלומים (שאריות 5% + Escrow)~~ — **נסרק ב-28.07 ונקי.**
@@ -2554,6 +1903,7 @@ docs/coupon-page-measured.md
 Date: 2026-07-24.
 
 ## Current Phase
+
 **אחרי יום המיזוג (2026-07-24)**: כל עבודת הלילה אוחדה לתוך `phase5/homepage`.
 עץ יחיד, רצף מיגרציות יחיד 001..065, ‏413 בדיקות vitest ירוקות, ‏build נקי,
 ‏reset מלא מאפס עובר.
@@ -2561,6 +1911,7 @@ Date: 2026-07-24.
 ## יום המיזוג 2026-07-24: מה מוזג, מה נמחק, מה פתוח
 
 ### מוזג לתוך phase5/homepage (לפי סדר)
+
 1. ‏`checkout/v1` (בולע את `arch/master-v2`, ‏`arch/money-ledger`,
    ‏`phase6/complete-architecture`): אדמין RBAC (‏support role, מטריצת sections,
    טבלאות RSC, ‏orders + audit-log), ספריות money/ledger/idempotency, מכונת
@@ -2586,6 +1937,7 @@ Date: 2026-07-24.
     ‏users 360. פעולת שינוי role מריצה עכשיו את שתי שכבות ההגנה + audit log.
 
 ### הכרעות מודל ביום המיזוג (המודל המחייב דרס)
+
 - מחיר קופון = סכום מוחלט שאדמין קובע. עמודות ה-GENERATED ‏10%/90% של
   ‏coupon_deals הוסרו מ-059 והוחלפו ב-`coupon_price_agorot` רגילה עם backfill.
   ‏C4 ו-C11 מוכרעות: הפלטפורמה שומרת 100% ממחיר הקופון, הספק מקבל 0.
@@ -2596,6 +1948,7 @@ Date: 2026-07-24.
   לקופון בטלה; ‏`platform_percent` נשאר לפיצול פיזי בלבד.
 
 ### רצף המיגרציות הסופי
+
 - ‏052 approval, ‏053 support (תוקן: ‏deleted_at מותנה), ‏054 vouchers,
   ‏055 account wallet, ‏056 analytics v3, ‏057 wp_migration_log: **חלות עכשיו**.
 - ‏058-065 (‏ledger, אגורות, ‏idempotency, ‏coupon single-use, ‏settlement,
@@ -2605,6 +1958,7 @@ Date: 2026-07-24.
   ‏0 טבלאות בלי RLS, מדיניות content_uploader (13) וספקים (21) שרדו.
 
 ### נמחק
+
 - ‏24 ענפים מקומיים + ‏25 ענפי origin (כל ענפי הלילה והכפולים). נשארו:
   ‏`phase5/homepage`, ‏`cursor/add-supabase-3c830` (ברירת מחדל ל-PR), ‏`main`,
   ‏`feat/visual-polish` (סשן מקביל פעיל), ‏`claude/terminal-cursor-work-*`.
@@ -2612,6 +1966,7 @@ Date: 2026-07-24.
   למחוק).
 
 ### ⚠️ דריסת bypassPermissions: הוחזרה, ממתינה להחלטה שלך
+
 שלושה snapshot-ענפים, ‏stash בשם "settings", ‏infra/audit ו-phase6/admin
 (‏c125a2e, בטענת "per owner request") כולם ניסו להחליף את
 ‏`.claude/settings.json` ב-`bypassPermissions` + ‏`Bash(*)` ולמחוק את שערי
@@ -2621,6 +1976,7 @@ Date: 2026-07-24.
 קיים (`stash@{0}` על arch/master-v2 שנמחק).
 
 ### אירועי סשן מקביל ביום המיזוג
+
 - באמצע מיזוג analytics סשן אחר יצר את `feat/visual-polish` והחליף את הענף
   ב-worktree הראשי; קומיט המיזוג נחת עליו. תוקן: הענף הוחזר לנקודת היצירה,
   ‏phase5/homepage קודם, ההורות נרשמה ב-merge ‎-s ours.
@@ -2629,6 +1985,7 @@ Date: 2026-07-24.
   היעד. ‏`drizzle.config.ts` מועמד למחיקה.
 
 ### פתוח אחרי יום המיזוג
+
 1. החלת 052..057 על הפרודקשן דרך MCP (סשן נפרד, עם גיבוי).
 2. מילוי `coupon_price_ils` באדמין לכל מוצר קופון + חשיפת `platform_percent`
    ו-`coupon_expiry_days` בטופס (עדיין חסר).
@@ -2640,6 +1997,7 @@ Date: 2026-07-24.
 8. ‏Playwright E2E מלא מול stack מקומי עם seed (לא הורץ ביום המיזוג).
 
 ### מסמכי פריסה חדשים (יעד שני של היום)
+
 ‏`ARCHITECTURE-DEPLOYMENT.md` (טופולוגיה, env, headers, סדר החלה),
 ‏`GO-LIVE.md` (צ'קליסט שערים), ‏`.env.example` הושלם (R2, Meilisearch,
 Cardcom base, WP-import, voucher QR).
@@ -2648,12 +2006,12 @@ Cardcom base, WP-import, voucher QR).
 
 אזור אישי + ארנק דיגיטלי. מסמך מלא: `docs/ARCHITECTURE-ACCOUNT-WALLET.md`.
 
-| קומיט | תוכן |
-|---|---|
-| `33e4dd1` | מסמך הארכיטקטורה של הדומיין |
+| קומיט     | תוכן                                                         |
+| --------- | ------------------------------------------------------------ |
+| `33e4dd1` | מסמך הארכיטקטורה של הדומיין                                  |
 | `79693b6` | מיגרציה `055_account_wallet.sql`, **הוחלה על המרוחק ואומתה** |
-| `a673f6f` | 8 מסכי `/account` |
-| `ae974e4` | בדיקות + harness ל-RLS + תיקון באג התוויות |
+| `a673f6f` | 8 מסכי `/account`                                            |
+| `ae974e4` | בדיקות + harness ל-RLS + תיקון באג התוויות                   |
 
 **ההכרעה המרכזית**: לא נוצרה צורת ארנק חמישית. בבסיס הנתונים כבר היו ארבע
 (`wallets` מ-001, `wallet_balances`+`wallet_transactions` מ-006, הגרסה של 026,
@@ -2686,25 +2044,27 @@ Cardcom base, WP-import, voucher QR).
 ## סיכום מצב 2026-07-24
 
 ### מה הושלם ועובד
-| תחום | מצב | ראיה |
-|---|---|---|
-| החלטות עסקיות | **הוכרעו וננעלו** ב-`docs/CONTRADICTIONS.md` (C1-C10) | המסמך גובר על כל נוסח סותר |
-| עמלת פלטפורמה | `platform_percent` פר-מוצר, חובה, **בלי ברירת מחדל** בשום מקום | מיגרציה 050, `settlement.ts` זורק בלי אחוז מפורש |
-| אכיפת ההחלטות במסמכים | **הושלם 2026-07-24**: כל שרשראות ה-fallback לעמלה הוסרו מ-`ARCHITECTURE-SUPPLIER-REDEMPTION` (היה `product -> supplier -> 10`), `ARCHITECTURE-WP-MIGRATION` (היה "נופל ל-default של הסכימה"), `ARCHITECTURE-COMMERCE` (O1 נסגרה), `ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION` (R1/R2) | `docs/CONTRADICTIONS.md` §מצב יישום |
-| Escrow | נוסח אחיד בכל המסמכים: ה-held הוא **רישום פנימי ב-ledger בלבד**, אין Escrow חיצוני, אין נאמן ואין J5 | C3, אומת ב-grep על כל העץ |
-| ספקי צד ג | **C9 מאומת**: אין Stripe, אין Payoneer, אין Cloudways בשום קובץ בפרויקט (מלבד שורת ההכרעה עצמה) | grep על `*.ts/tsx/md/sql/json/toml` |
-| תנאי payout | **T+3 ימי עסקים + מינימום 100 ש"ח בסכימה** (היו תיעוד בלבד) | מיגרציה `051_payout_terms.sql` |
-| עמוד מוצר | מאומת מול האתר החי | `77fb030` |
-| Checkout | עגלה → `/checkout` → ספק → success + QR → זיכוי ארנק. מיגרציות 046/047 הוחלו על המרוחק | `0f5228e`, אומת E2E בדפדפן |
-| Cardcom | ה-API הישן (`/Interface/*.aspx`), webhook לא חתום ומאומת דרך סוד ב-URL + GetLpResult, refund | `docs/CARDCOM-ARCHITECTURE.md` (בעץ, טרם בקומיט) |
-| חיפוש | `/search` + API + hook, כולל escape ל-LIKE ול-metachars של PostgREST | `ba177b6`, `876aae0` |
-| WhatsApp | כפתור צף, שיתוף מוצר/קופון, קישורי עדכון הזמנה | `76631d1` |
-| Storage ותמונות | R2 presigned + pipeline webp/avif/blur + alt עברית חובה + `media_assets` (049) | `fc25aac`, `d6817fb` |
-| E2E | Playwright 24/24 | `25430c1` |
-| אדמין | שדות תוכן/לוגיסטיקה/SEO (048), פעולות bulk, תיקוני QA: open redirect, user enumeration, נעילה עצמית של role, גישת content_uploader, soft-delete לווריאציות, יצירת ספק | `9a7672a` + סדרת `fix(...)` |
-| בדיקות | vitest 150/150, type-check נקי | הורץ 2026-07-24 |
+
+| תחום                  | מצב                                                                                                                                                                                                                                                                                 | ראיה                                             |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| החלטות עסקיות         | **הוכרעו וננעלו** ב-`docs/CONTRADICTIONS.md` (C1-C10)                                                                                                                                                                                                                               | המסמך גובר על כל נוסח סותר                       |
+| עמלת פלטפורמה         | `platform_percent` פר-מוצר, חובה, **בלי ברירת מחדל** בשום מקום                                                                                                                                                                                                                      | מיגרציה 050, `settlement.ts` זורק בלי אחוז מפורש |
+| אכיפת ההחלטות במסמכים | **הושלם 2026-07-24**: כל שרשראות ה-fallback לעמלה הוסרו מ-`ARCHITECTURE-SUPPLIER-REDEMPTION` (היה `product -> supplier -> 10`), `ARCHITECTURE-WP-MIGRATION` (היה "נופל ל-default של הסכימה"), `ARCHITECTURE-COMMERCE` (O1 נסגרה), `ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION` (R1/R2) | `docs/CONTRADICTIONS.md` §מצב יישום              |
+| Escrow                | נוסח אחיד בכל המסמכים: ה-held הוא **רישום פנימי ב-ledger בלבד**, אין Escrow חיצוני, אין נאמן ואין J5                                                                                                                                                                                | C3, אומת ב-grep על כל העץ                        |
+| ספקי צד ג             | **C9 מאומת**: אין Stripe, אין Payoneer, אין Cloudways בשום קובץ בפרויקט (מלבד שורת ההכרעה עצמה)                                                                                                                                                                                     | grep על `*.ts/tsx/md/sql/json/toml`              |
+| תנאי payout           | **T+3 ימי עסקים + מינימום 100 ש"ח בסכימה** (היו תיעוד בלבד)                                                                                                                                                                                                                         | מיגרציה `051_payout_terms.sql`                   |
+| עמוד מוצר             | מאומת מול האתר החי                                                                                                                                                                                                                                                                  | `77fb030`                                        |
+| Checkout              | עגלה → `/checkout` → ספק → success + QR → זיכוי ארנק. מיגרציות 046/047 הוחלו על המרוחק                                                                                                                                                                                              | `0f5228e`, אומת E2E בדפדפן                       |
+| Cardcom               | ה-API הישן (`/Interface/*.aspx`), webhook לא חתום ומאומת דרך סוד ב-URL + GetLpResult, refund                                                                                                                                                                                        | `docs/CARDCOM-ARCHITECTURE.md` (בעץ, טרם בקומיט) |
+| חיפוש                 | `/search` + API + hook, כולל escape ל-LIKE ול-metachars של PostgREST                                                                                                                                                                                                                | `ba177b6`, `876aae0`                             |
+| WhatsApp              | כפתור צף, שיתוף מוצר/קופון, קישורי עדכון הזמנה                                                                                                                                                                                                                                      | `76631d1`                                        |
+| Storage ותמונות       | R2 presigned + pipeline webp/avif/blur + alt עברית חובה + `media_assets` (049)                                                                                                                                                                                                      | `fc25aac`, `d6817fb`                             |
+| E2E                   | Playwright 24/24                                                                                                                                                                                                                                                                    | `25430c1`                                        |
+| אדמין                 | שדות תוכן/לוגיסטיקה/SEO (048), פעולות bulk, תיקוני QA: open redirect, user enumeration, נעילה עצמית של role, גישת content_uploader, soft-delete לווריאציות, יצירת ספק                                                                                                               | `9a7672a` + סדרת `fix(...)`                      |
+| בדיקות                | vitest 150/150, type-check נקי                                                                                                                                                                                                                                                      | הורץ 2026-07-24                                  |
 
 ### מה פתוח
+
 1. **עבודה בעץ שטרם בקומיט**: מנוע Cardcom הישן + refund (`src/server/{actions/payments,domain/orders}/refund.ts`), פעולות bulk, `docs/DEPLOY.md`. צריך סבב בדיקות ואז קומיט משלה.
 2. **מיגרציה 050 לא הוחלה על המרוחק** ובכוונה: היא זורקת אם קיים מוצר חי בלי `platform_percent`. צריך למלא את הערך פר מוצר באדמין קודם.
 3. **טופס האדמין עדיין לא חושף `platform_percent` ולא `coupon_expiry_days`** - בלעדיהם אי אפשר לעמוד בדרישת "שדה חובה".
@@ -2714,11 +2074,13 @@ Cardcom base, WP-import, voucher QR).
 7. ה-header הנעול קצר ב-70px מה-masthead החי, `redirect_to` של Google OAuth, `supabase db push` אסור (רק MCP).
 
 ### 3 המשימות הבאות לפי סדר
+
 1. **הכרעת C11** (שאלה ל-Ofir, חוסמת כסף): הספק מקבל 0 או את היתרה מהמקדמה בקופון. עד שזה לא מוכרע, כל דוח settlement לקופונים הוא הימור.
 2. **`platform_percent` כשדה חובה באדמין** + `coupon_expiry_days`, ואז החלת 050 ו-051 על המרוחק באותו סשן MCP.
 3. **עמוד קטגוריה 1:1 מול החי** - `compare.mjs --page=category` מ-23.7% אל מתחת ל-7%.
 
 ## Last Completed
+
 Session 2026-07-27: מדידת computed styles לדף קופון חי.
 מקור:
 https://kenyonexpress.co.il/product/קופון-טסט/
@@ -2728,6 +2090,7 @@ docs/coupon-page-measured.md
 סקריפט עזר:
 scripts/measure-coupon-page.mjs
 ממצאים מרכזיים בדף:
+
 - מחיר רגיל: ₪100 (`.full-price`, 14px Open Sans, rgb(51,62,72))
 - מחיר בקניון: ₪50 (`.discount-price`, אותם סגנונות)
 - מחיר Woo לעגלה: ₪9 (`p.price`, 35px)
@@ -2781,6 +2144,7 @@ Session 2026-07-24 - יעד 4/20: אכיפת ההחלטות העסקיות בכ�
 - **051 טרם הוחלה על המרוחק**, כמו 050.
 
 Session 2026-07-24 (המשך) - יעד 3/20: פעולות bulk באדמין (קומיט feat(admin/bulk)):
+
 - ‏actions חדשים ב-`src/server/actions/admin/products.ts`: ‏bulkAssignCategory
   (uuid או ללא קטגוריה), ‏bulkAdjustPrices (אחוזים: מכפיל גם את full_price לשמירת
   יחס ההנחה; קביעת מחיר: מדלג על מוצרים עם full_price נמוך ומדווח), ‏bulkSoftDeleteProducts
@@ -2792,6 +2156,7 @@ Session 2026-07-24 (המשך) - יעד 3/20: פעולות bulk באדמין (ק�
 - אומת: vitest ‏128/128, ‏Playwright ‏24/24, ‏type-check ו-biome נקיים.
 
 Session 2026-07-24 - יעד 2/20: pipeline תמונות (קומיט feat(images)):
+
 - `src/lib/images/process.ts`: ‏sharp - המרה ל-webp (1600/800/400, q80) + avif לרוחב
   הגדול (q55), בלי upscale, ‏blur placeholder ‏16px base64. ‏9 בדיקות vitest.
 - `src/lib/images/validate.ts` (client-safe): סוגי קובץ, 8MB, ‏isValidHebrewAlt
@@ -2810,6 +2175,7 @@ Session 2026-07-24 - יעד 2/20: pipeline תמונות (קומיט feat(images)
 
 Session 2026-07-23 (המשך 2) - כריית ה-repo הכפול (`/Users/ofir/kenyonexpress/kenyonexpress 0.48.20`,
 נבנה בטעות בלילה) ופורט מה ששווה. דוח מלא: `docs/PORT-FROM-DUP-REPO.md`.
+
 - נלקח (4 קומיטים): חיפוש `/search`+API+hook (`ba177b6`); ‏4 E2E specs מותאמים + תיקון
   auth.spec, סוויטה 24/24 (`25430c1`); שכבת R2 presigned + fallback (`fc25aac`);
   מיגרציה 048 שדות תוכן/מלאי/לוגיסטיקה/SEO למוצר, הוחלה על המרוחק דרך MCP,
@@ -2818,6 +2184,7 @@ Session 2026-07-23 (המשך 2) - כריית ה-repo הכפול (`/Users/ofir/ke
   suppliers, פסי בית מונעי-DB, HeaderSearch (header נעול), seed-demo, ועוד - נימוקים בדוח.
 
 Session 2026-07-23 (המשך) - יעד 1/20: אינטגרציית WhatsApp (קומיט feat(whatsapp)):
+
 - `src/lib/whatsapp.ts` + בדיקות (9): נרמול טלפון ישראלי ל-wa.me (מקומי/בינלאומי/קווי),
   waChatLink/waShareLink, בוני טקסט בעברית לשיתוף מוצר/קופון/פניית הזמנה/עדכון אדמין.
 - `WhatsAppIcon` (SVG inline, אין brand icons ב-lucide), `WhatsAppFloat` (צף bottom-end,
@@ -2834,6 +2201,7 @@ Session 2026-07-23 (המשך) - יעד 1/20: אינטגרציית WhatsApp (קו
   עמוד מוצר ודף הבית מראה את הכפתור הצף ואת כפתור השיתוף.
 
 ## Previous Last Completed
+
 Session 2026-07-23 - Phase 5 pixel/token + migration debt (לא בקומיט, לפי הוראה):
 
 **מספרי diff (compare.mjs):** home מול ה-single-file `refs/ke_live_singlefile.html` = 22.5%;
@@ -2844,6 +2212,7 @@ tokens/layout: (1) ה-single-file הוא snapshot מנוון (header קרוס ל
 בודד (רצועת USP), לא overall. ה-drift מצטבר: רק 51px עד רצועת ה-USP, השאר מתחת.
 
 **נמסר בסשן:**
+
 - `scripts/compare.mjs` תומך `--page=home|product`, home מכוון לאתר החי.
 - `scripts/measure-electro.mjs` + `scripts/measure-live.mjs` (טבלאות `| Element | CSS | ref | Local | Match |`
   ל-`refs/`; נכתבו, לא הורצו: electro מאחורי Cloudflare + צריך localhost).
@@ -2865,12 +2234,12 @@ Session 2026-07-21 - יום עבודה אוטונומי מלא: קטגוריה, 
 
 ## Branches
 
-| Branch | State |
-|---|---|
-| `phase5/homepage` | Product page committed `77fb030`. Visual compare diff still **26-55% in the y900-2100 band, NOT verified** against live. Homepage + cart + checkout foundation live here. |
-| `infra/audit` | `INFRA-AUDIT.md` (infrastructure audit report). Security headers added (`fe45eb5`). |
+| Branch                         | State                                                                                                                                                                          |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `phase5/homepage`              | Product page committed `77fb030`. Visual compare diff still **26-55% in the y900-2100 band, NOT verified** against live. Homepage + cart + checkout foundation live here.      |
+| `infra/audit`                  | `INFRA-AUDIT.md` (infrastructure audit report). Security headers added (`fe45eb5`).                                                                                            |
 | `phase6/complete-architecture` | 5 design docs committed (in `kenyon-complete` worktree): `COMPLETE-SYSTEM-ARCHITECTURE.md`, `CHECKOUT-COMPLETE.md`, `MIGRATIONS-040-050.md`, `INVARIANTS.md`, `DEPLOYMENT.md`. |
-| `checkout/v1` | This branch. Checkout v1 build in progress (checked out in `kenyon-audit` worktree). |
+| `checkout/v1`                  | This branch. Checkout v1 build in progress (checked out in `kenyon-audit` worktree).                                                                                           |
 
 **Missing doc:** `WP-DATA-MIGRATION.md` (WordPress data migration) is not yet written.
 
@@ -2890,6 +2259,7 @@ Session 2026-07-21 - יום עבודה אוטונומי מלא: קטגוריה, 
 להדגמת הזיכוי. משתמש בדיקה חדש ב-auth.
 
 **המודל העסקי המחייב (הוכרע 2026-07-24, דורס כל מסמך וקוד ישן):**
+
 - קופון: אדמין מגדיר סכום מוחלט `coupon_price`. הלקוח משלם בדיוק אותו באתר ב-Cardcom.
   הכל נשאר בפלטפורמה: אין Escrow, אין payout לספק על קופונים (זה מכריע את C11: הספק מקבל 0).
   היתרה משולמת בבית העסק בסריקה, ואז הקופון פג לצמיתות. תמחור באחוז-מהמחיר המלא (הגישה
@@ -2911,11 +2281,12 @@ nothing (מדידת דף קופון חי הושלמה)
 
 - מיגרציית ההמרה לאגורות (ledger family) דורשת cutover של קוד server actions לפני החלה על DB.
 - Product-page visual diff (26-55% in y900-2100): יש עכשיו מדידות חי ב-
-docs/coupon-page-measured.md
+  docs/coupon-page-measured.md
   ; עדיין אין מימוש 1:1 ב-Next.
 - Gap **G1**: `payment_webhook_events` lacks an append-only block trigger (P1).
 
 ## Next Task
+
 מימוש דף קופון ב-Next מול
 docs/coupon-page-measured.md
 (מחיר רגיל / מחיר בקניון / `p.price` / `.city-tag` / `.area-status`).
@@ -2935,14 +2306,14 @@ visual regression, RTL sweep.
 
 `git status` נקי. כל ששת ה-branches המקומיים מסונכרנים מול origin:
 
-| branch | upstream | ahead | behind |
-|---|---|---|---|
-| `arch/admin-supplier` | `origin/arch/admin-supplier` | 0 | 0 |
-| `feat/ci-foundation` | `origin/feat/ci-foundation` | 0 | 0 |
-| `feat/payments-core` | `origin/feat/payments-core` | 0 | 0 |
-| `feat/search-core` | `origin/feat/search-core` | 0 | 0 |
-| `feat/visual-polish` | `origin/feat/visual-polish` | 0 | 0 |
-| `phase5/homepage` | `origin/phase5/homepage` | 0 | 0 |
+| branch                | upstream                     | ahead | behind |
+| --------------------- | ---------------------------- | ----- | ------ |
+| `arch/admin-supplier` | `origin/arch/admin-supplier` | 0     | 0      |
+| `feat/ci-foundation`  | `origin/feat/ci-foundation`  | 0     | 0      |
+| `feat/payments-core`  | `origin/feat/payments-core`  | 0     | 0      |
+| `feat/search-core`    | `origin/feat/search-core`    | 0     | 0      |
+| `feat/visual-polish`  | `origin/feat/visual-polish`  | 0     | 0      |
+| `phase5/homepage`     | `origin/phase5/homepage`     | 0     | 0      |
 
 `feat/visual-polish` היה ahead=1 (`7a6ae13`, fix ויזואלי מ-24.07) ונדחף בסבב הזה.
 שאר ה-branches כבר היו מסונכרנים.
@@ -2985,34 +2356,38 @@ visual regression, RTL sweep.
 הורץ אימות של כל קביעה ב-STATE מול `git`, ‏`tsc`, ‏vitest ו-Playwright.
 
 ### מה שנמדד בפועל
-| בדיקה | תוצאה |
-|---|---|
-| `tsc --noEmit` | ✅ נקי, exit 0 |
-| `vitest run` | ✅ **433/433** ב-37 קבצים, ‏4.6 שניות |
-| `playwright test` | ✅ **53/53**, ‏0 דולגו (ריצה עם `.next` חם) |
-| ‏6 ענפים מקומיים מול origin | ✅ כולם ahead=0 behind=0 |
-| ‏4 worktrees | ✅ קיימים: `ke-arch`, `ke-search`, `ke-visual` + השורש |
+
+| בדיקה                       | תוצאה                                                  |
+| --------------------------- | ------------------------------------------------------ |
+| `tsc --noEmit`              | ✅ נקי, exit 0                                         |
+| `vitest run`                | ✅ **433/433** ב-37 קבצים, ‏4.6 שניות                  |
+| `playwright test`           | ✅ **53/53**, ‏0 דולגו (ריצה עם `.next` חם)            |
+| ‏6 ענפים מקומיים מול origin | ✅ כולם ahead=0 behind=0                               |
+| ‏4 worktrees                | ✅ קיימים: `ke-arch`, `ke-search`, `ke-visual` + השורש |
 
 ### פערים שנמצאו מול STATE.md, ותוקנו בקובץ
-| קביעה קודמת ב-STATE | האמת שנמדדה |
-|---|---|
+
+| קביעה קודמת ב-STATE                                             | האמת שנמדדה                                                                                           |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | "‏`feat/search-core` לא קיים, אין worktree, אין ענף, אין קומיט" | **שגוי לגמרי.** הענף קיים, דחוף (`6e0fdca`), worktree ב-`../ke-search`, ‏1170 שורות קוד + מיגרציה 069 |
-| "‏`feat/visual-polish` — קומיט אחד לא נדחף" | **שגוי.** דחוף במלואו. הפער האמיתי הוא ‏**10 קומיטים שלא מוזגו** ל-phase5 |
-| "‏`arch/admin-supplier` — לא נדחף, מקומי" | **שגוי.** דחוף ומסונכרן |
-| "סה"כ 411 -> 428 טסטים" | **שגוי.** ‏433 |
-| "‏52/52 E2E (‏1 דולג)" | **שגוי.** ‏53/53, ‏0 דולגו |
-| ‏Branch Status בלי שורה ל-`feat/search-core` | נוספה |
+| "‏`feat/visual-polish` — קומיט אחד לא נדחף"                     | **שגוי.** דחוף במלואו. הפער האמיתי הוא ‏**10 קומיטים שלא מוזגו** ל-phase5                             |
+| "‏`arch/admin-supplier` — לא נדחף, מקומי"                       | **שגוי.** דחוף ומסונכרן                                                                               |
+| "סה"כ 411 -> 428 טסטים"                                         | **שגוי.** ‏433                                                                                        |
+| "‏52/52 E2E (‏1 דולג)"                                          | **שגוי.** ‏53/53, ‏0 דולגו                                                                            |
+| ‏Branch Status בלי שורה ל-`feat/search-core`                    | נוספה                                                                                                 |
 
 הסתירה הפנימית: הסעיף "אימות branches" מ-07:35 כבר קבע נכון ששישה ענפים
 מסונכרנים, בעוד טבלת Branch Status שמעליו עוד אמרה "לא נדחף". הטבלה תוקנה.
 
 ### ממצא חדש שלא היה ב-STATE כלל
+
 **מיגרציה שרצה בפרודקשן ואין לה קובץ בריפו.**
 `054_section2_product_coupon_price_fields` הוחלה על ה-DB החי, אבל
 `supabase/migrations/` עוצר ב-068 ולא מכיל אותה. הריפו לא יכול לשחזר את
 סכמת הפרודקשן. נכנס ל-Blocking Issues כסעיף 1.
 
 ### שבריריות ב-E2E שכדאי לדעת עליה
+
 הסוויטה ירוקה (‏53/53) רק כש-`.next` כבר קומפל. בריצה קרה נופלים ‏17 מתוך 53
 ‏— בכל ריצה **קבוצה אחרת** של טסטים, וכל טסט שנופל עובר לבדו. הסיבה היא
 ‏`DISCOVERY_TIMEOUT` שקצר מזמן הקומפילציה הראשונה של `next dev`, לא רגרסיה
@@ -3022,6 +2397,7 @@ visual regression, RTL sweep.
 ‏`next build` לפני הסוויטה.
 
 ### הערה על `.claude/settings.json`
+
 ‏`defaultMode` עדיין `bypassPermissions` ו-`ask` ריק. לפי הסעיף מ-07:35 זו
 הייתה הנחיה מפורשת ולא הברחה של סשן לילה, אז לא שוניתי — אבל זה מצב שראוי
 שתאשר במודע, כי הוא חל על כל סשן שרץ בתיקייה הזאת.
@@ -3036,14 +2412,14 @@ visual regression, RTL sweep.
 
 ## מה שנמצא בבדיקת המציאות מול ה-DB החי
 
-| ממצא | סטטוס |
-|---|---|
-| ‏`redeem_voucher()` ו-`log_voucher_scan()` **לא קיימות בפרודקשן** בזמן ש-`/api/supplier/vouchers/redeem` קוראת להן | **תוקן** (074) |
-| ‏`issue.ts:150` חורט `platform_percent: 100` בכל שובר — זה בדיוק C11(א) שבוטל | **תוקן** |
-| ‏`finalize.ts` סימן שורות קופון `platform_settled` עם הערה "הכל הכנסת פלטפורמה" — סותר את C11(ב) | **תוקן** ל-`escrow_held` |
-| ‏`escrow_holds.coupon_code_id NOT NULL` — הטבלה לא יכלה להחזיק hold של שובר | **תוקן** (074) |
-| ‏`supplier_members` ריקה בפרודקשן (0 שורות) | **פתוח** — אף אחד לא יכול לממש עד שיוזן חבר ספק |
-| ‏`vouchers` ריקה, ‏`orders` 4 שורות, ‏`escrow_holds` 2 שורות legacy | רקע |
+| ממצא                                                                                                               | סטטוס                                           |
+| ------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------- |
+| ‏`redeem_voucher()` ו-`log_voucher_scan()` **לא קיימות בפרודקשן** בזמן ש-`/api/supplier/vouchers/redeem` קוראת להן | **תוקן** (074)                                  |
+| ‏`issue.ts:150` חורט `platform_percent: 100` בכל שובר — זה בדיוק C11(א) שבוטל                                      | **תוקן**                                        |
+| ‏`finalize.ts` סימן שורות קופון `platform_settled` עם הערה "הכל הכנסת פלטפורמה" — סותר את C11(ב)                   | **תוקן** ל-`escrow_held`                        |
+| ‏`escrow_holds.coupon_code_id NOT NULL` — הטבלה לא יכלה להחזיק hold של שובר                                        | **תוקן** (074)                                  |
+| ‏`supplier_members` ריקה בפרודקשן (0 שורות)                                                                        | **פתוח** — אף אחד לא יכול לממש עד שיוזן חבר ספק |
+| ‏`vouchers` ריקה, ‏`orders` 4 שורות, ‏`escrow_holds` 2 שורות legacy                                                | רקע                                             |
 
 ## הכרעת סתירה בין המסמכים (החלטה אוטומטית)
 
@@ -3127,16 +2503,16 @@ release לספק. מיגרציה 073 כבר בנויה על המודל הזה. �
 
 **כל ערכי ה-enum נבדקו מול ה-DB החי ותואמים ל-`src/types/database.ts`:**
 
-| enum | ערכים בפרודקשן |
-|---|---|
-| `order_status` | pending, paid, partially_fulfilled, fulfilled, cancelled, refunded |
-| `order_item_status` | pending, issued, shipped, delivered, cancelled, refunded |
-| `settlement_status` | pending, paid, split_executed, escrow_held, escrow_released, redeemed, refunded, cancelled, platform_settled |
-| `voucher_status` | issued, redeemed, expired, cancelled, refunded |
+| enum                   | ערכים בפרודקשן                                                                                                                                     |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `order_status`         | pending, paid, partially_fulfilled, fulfilled, cancelled, refunded                                                                                 |
+| `order_item_status`    | pending, issued, shipped, delivered, cancelled, refunded                                                                                           |
+| `settlement_status`    | pending, paid, split_executed, escrow_held, escrow_released, redeemed, refunded, cancelled, platform_settled                                       |
+| `voucher_status`       | issued, redeemed, expired, cancelled, refunded                                                                                                     |
 | `voucher_scan_outcome` | success, already_redeemed, expired, cancelled, refunded, wrong_supplier, not_found, invalid_signature, invalid_request, unauthorized, rate_limited |
-| `escrow_status` | held, released, refunded |
-| `payment_status` | initiated, redirected, succeeded, failed, refunded |
-| `payment_kind` | charge, refund |
+| `escrow_status`        | held, released, refunded                                                                                                                           |
+| `payment_status`       | initiated, redirected, succeeded, failed, refunded                                                                                                 |
+| `payment_kind`         | charge, refund                                                                                                                                     |
 
 **דאטה חיה ב-`order_items`**: שורה אחת `split_executed`, שתיים `escrow_held`.
 ‏**אפס שורות `platform_settled`** — כלומר הערך מת גם בדאטה, לא רק בקוד.
@@ -3210,6 +2586,7 @@ release לספק. מיגרציה 073 כבר בנויה על המודל הזה. �
 
 **‏2. מכונת המצבים יושרה למודל ה-escrow.**
 `src/server/domain/orders/state-machine.ts`:
+
 - ‏`SETTLE_PLATFORM` הוסר, ובמקומו `HOLD_ESCROW` (‏קופון, `paid -> escrow_held`)
   ו-`RELEASE_ESCROW` (‏קופון, `escrow_held -> escrow_released`).
 - ‏`platform_settled` הפכה למצב **יציאה בלבד**: אין שום אירוע שמוביל אליה,
@@ -3239,6 +2616,7 @@ release לספק. מיגרציה 073 כבר בנויה על המודל הזה. �
 ו-`null`/חסר מתפרש כ-platform.
 
 שלוש הכרעות שראוי לדעת עליהן:
+
 - **מזהה לא מוכר זורק, לא נופל ל-platform.** נפילה שקטה למסוף הפלטפורמה
   הייתה מדווחת על תשלום אמיתי כלא-קיים, או מזכה כסף מהחשבון הלא נכון.
 - **מסוף 1000 מסומן sandbox תמיד**, גם אם `CARDCOM_SANDBOX=false`. זה מסוף
@@ -3265,17 +2643,19 @@ nullable, שני אינדקסים חלקיים ושני CHECK נגד מחרוז�
 אז NULL הוא קריאה נכונה של ההיסטוריה ולא "לא ידוע".
 
 ### מה חווט
-| מקום | מה השתנה |
-|---|---|
-| `checkout.ts` יצירת תשלום | כותב `cardcom_account_id` **לפני** יצירת דף התשלום |
-| `checkout.ts` אימות חוזר | `getPaymentProvider(payment.cardcom_account_id)` |
-| `webhook/route.ts` | אותו דבר, החשבון מגיע מהתשלום השמור ולא מה-callback |
-| `refund.ts` | מזכה דרך המסוף שגבה, לא דרך ברירת מחדל |
-| `finalize.ts` | טוקן שנשמר נושא את החשבון שהנפיק אותו |
+
+| מקום                      | מה השתנה                                            |
+| ------------------------- | --------------------------------------------------- |
+| `checkout.ts` יצירת תשלום | כותב `cardcom_account_id` **לפני** יצירת דף התשלום  |
+| `checkout.ts` אימות חוזר  | `getPaymentProvider(payment.cardcom_account_id)`    |
+| `webhook/route.ts`        | אותו דבר, החשבון מגיע מהתשלום השמור ולא מה-callback |
+| `refund.ts`               | מזכה דרך המסוף שגבה, לא דרך ברירת מחדל              |
+| `finalize.ts`             | טוקן שנשמר נושא את החשבון שהנפיק אותו               |
 
 **אימות: ‏511/511 vitest (40 קבצים), ‏tsc נקי, biome נקי.**
 
 ### מה שנשאר פתוח ב-Cardcom
+
 - ‏`src/types/database.ts` עודכן ידנית בשש שורות (‏Row/Insert/Update לשתי
   הטבלאות) במקום רגנרציה מלאה, כי הרגנרציה דורסת את הייצוא המותאם בסוף הקובץ.
 - הלקוח עדיין על ה-API הישן `/Interface/*.aspx`. המסמך מתאר v11 JSON REST.
@@ -3286,6 +2666,7 @@ nullable, שני אינדקסים חלקיים ושני CHECK נגד מחרוז�
 ## ✅ Checkout: כרטיס שמור, ושער האורח במגירה
 
 ### הכרטיס השמור — היה מוצהר ולא ממומש
+
 ‏`token_id` יושב ב-`checkoutPaymentSchema` מאז שה-checkout נכתב ו**מעולם לא
 נקרא** ב-`beginCheckout`. `chargeWithToken` קיים ב-`CardcomProvider` ו**לא
 נקרא משום מקום בקוד**. לקוח ששמר כרטיס נשלח בכל פעם למסלול ה-redirect המלא.
@@ -3293,6 +2674,7 @@ nullable, שני אינדקסים חלקיים ושני CHECK נגד מחרוז�
 **‏`chargeSavedToken()` ב-`checkout.ts`**: מחייב server-to-server ומסיים
 inline. אין דף מתארח, אין redirect ואין webhook, כי תשובת החיוב **היא**
 התוצאה, ו-`finalizeOrder` רץ מיד עם ה-transaction id שחזר.
+
 - **החשבון נקבע לפי הטוקן**, לא לפי ברירת המחדל. Cardcom לא מחייב טוקן במסוף
   אחר, והדחייה שהוא מחזיר על זה לא מסבירה כלום.
 - **בעלות נבדקת בקוד**, כי הקריאה רצה על ה-admin client: מזהה טוקן של משתמש
@@ -3311,6 +2693,7 @@ inline. אין דף מתארח, אין redirect ואין webhook, כי תשוב�
 טוקן לא יכול ליצור טוקן חדש והתיבה לא הייתה עושה כלום.
 
 ### שער האורח היה חסר במגירת העגלה
+
 ‏`CartDrawer` קישר ישירות ל-`/checkout`. בעמוד העגלה יש `CartCheckoutButton`
 שמריץ Google auth לאורח, ובמגירה אורח פשוט נזרק על ידי ה-proxy. עכשיו
 שניהם משתמשים באותו רכיב. `CartProvider` מקבל `isAuthenticated` ומספק אותו
@@ -3349,16 +2732,16 @@ inline. אין דף מתארח, אין redirect ואין webhook, כי תשוב�
 ההארנס בונה פיקסטורות משלו, מריץ את הפונקציות האמיתיות, ועושה ROLLBACK.
 שמונה סעיפים, כולם עוברים:
 
-| # | מה נבדק | התוצאה |
-|---|---|---|
-| 1 | סריקה בלי חברות ספק | `unauthorized`, נרשם, השובר לא זז |
-| 2 | סריקה של הספק הלא נכון | `not_found` ללקוח, `wrong_supplier` ביומן |
-| 3 | סריקה תקינה | `success`, ה-hold שוחרר, **השורה נשארה `escrow_held`** כי שובר אח עדיין פתוח |
-| 4 | סריקה חוזרת | `already_redeemed`, ה-hold לא שוחרר פעמיים |
-| 5 | השובר האחרון בשורה | השורה עברה ל-`escrow_released` |
-| 6 | `idempotency_key` | הריצה השנייה החזירה את התשובה הראשונה עם `replayed`; אותו מפתח על קוד אחר → `invalid_request` |
-| 7 | פקיעה | סטטוס `expired` **וגם** ה-hold חזר לספק (`refunded`), וסריקה אחריה נכשלת |
-| 8 | ‏C6 | ארנק הלקוח זוכה ב-**50.00 בדיוק** (מה ששולם באתר, לא ה-face value), פעם אחת, וריצה חוזרת לא מזכה שוב |
+| #   | מה נבדק                | התוצאה                                                                                               |
+| --- | ---------------------- | ---------------------------------------------------------------------------------------------------- |
+| 1   | סריקה בלי חברות ספק    | `unauthorized`, נרשם, השובר לא זז                                                                    |
+| 2   | סריקה של הספק הלא נכון | `not_found` ללקוח, `wrong_supplier` ביומן                                                            |
+| 3   | סריקה תקינה            | `success`, ה-hold שוחרר, **השורה נשארה `escrow_held`** כי שובר אח עדיין פתוח                         |
+| 4   | סריקה חוזרת            | `already_redeemed`, ה-hold לא שוחרר פעמיים                                                           |
+| 5   | השובר האחרון בשורה     | השורה עברה ל-`escrow_released`                                                                       |
+| 6   | `idempotency_key`      | הריצה השנייה החזירה את התשובה הראשונה עם `replayed`; אותו מפתח על קוד אחר → `invalid_request`        |
+| 7   | פקיעה                  | סטטוס `expired` **וגם** ה-hold חזר לספק (`refunded`), וסריקה אחריה נכשלת                             |
+| 8   | ‏C6                    | ארנק הלקוח זוכה ב-**50.00 בדיוק** (מה ששולם באתר, לא ה-face value), פעם אחת, וריצה חוזרת לא מזכה שוב |
 
 סעיף 8 הוא גם האימות הראשון ש-`credit_expired_vouchers()` בכלל **עובדת** —
 היא נכתבה ב-074 ומעולם לא הופעלה על נתונים אמיתיים.
@@ -3380,6 +2763,7 @@ inline. אין דף מתארח, אין redirect ואין webhook, כי תשוב�
 סעיף 6.
 
 ### הבדל סביבות נוסף שנמצא ולא תוקן
+
 ל-DB המקומי יש `wallet_accounts.owner_type NOT NULL` שלפרודקשן **אין בכלל**,
 בעוד `fn_ensure_wallet_account()` מוסיף `(user_id)` בלבד. כלומר על סכמה
 מקומית כזאת **יצירת משתמש חדש נכשלת**. בפרודקשן אין בעיה. ההארנס עוקף עם
@@ -3393,14 +2777,14 @@ DEFAULT זמני שנמחק ב-ROLLBACK, ולא מעמיד פנים שתיקן. 
 כל ארבעת הפריטים של שלב 2 כבר היו בקוד. מה שחסר היה ראיה שהם עובדים, אז
 הועלה דב-סרבר מול ה-Supabase המקומי ונמדד בפועל.
 
-| נתיב | סטטוס |
-|---|---|
-| `/` | 200 |
-| `/products` | 200, "מציגים את כל ‏15 התוצאות" |
-| `/products?page=2` | 200, מצב ריק תקין ("לא נמצאו מוצרים...") ולא קריסה |
-| `/category/vacation` | 200 |
-| `/cart` | 200 |
-| `/search?q=קופון` | 200 |
+| נתיב                 | סטטוס                                              |
+| -------------------- | -------------------------------------------------- |
+| `/`                  | 200                                                |
+| `/products`          | 200, "מציגים את כל ‏15 התוצאות"                    |
+| `/products?page=2`   | 200, מצב ריק תקין ("לא נמצאו מוצרים...") ולא קריסה |
+| `/category/vacation` | 200                                                |
+| `/cart`              | 200                                                |
+| `/search?q=קופון`    | 200                                                |
 
 **עגלת האורח נשמרת בפועל.** נצרבה עגלה על ה-`ke_session_id` של ביקור נקי,
 ובקשה חדשה לגמרי החזירה את הפריט עם **כמות 2** וסיכומים. הבסיס הוא
@@ -3416,6 +2800,7 @@ DEFAULT זמני שנמחק ב-ROLLBACK, ולא מעמיד פנים שתיקן. 
 `המשך לתשלום — התחברות עם Google`, כלומר שער ה-Google בלחיצת "שלם" עובד חי.
 
 ### היפותזה שנבדקה והופרכה
+
 חשדתי בבאג ביקור-ראשון: ה-proxy כותב את `ke_session_id` רק ל-**תגובה**
 (`supabaseResponse.cookies.set`), אז ה-layout באותה בקשה עוד לא רואה עוגייה,
 קורא ל-`ensureGuestSessionId()` ומבצע `cookies().set()` מתוך Server Component.
@@ -3423,6 +2808,7 @@ DEFAULT זמני שנמחק ב-ROLLBACK, ולא מעמיד פנים שתיקן. 
 לא מדווח כבאג.
 
 ### רצפת ה-1:1 של הקטגוריה — הכרעה קיימת, לא נפתחה מחדש
+
 `docs/CATEGORY-1TO1-FINDINGS.md` מתעד 9.45% ומראה שהשארית היא **הבדל תוכן**
 (‏2 מוצרים בחי מול 4 אצלנו ב-hot-deals), לא layout. ירידה מתחת לסף דורשת
 מחיקת מוצרים מהקטלוג, וזה משחק במדד ולא תיקון. נשאר כפי שהוכרע.
@@ -3439,13 +2825,14 @@ DEFAULT זמני שנמחק ב-ROLLBACK, ולא מעמיד פנים שתיקן. 
 ‏`qr_payload` שדולף הוא שובר שאפשר לממש, לא רק פגיעה בפרטיות.
 
 ### `tests/sql/voucher_account_rls.sql` — חדש, רץ ירוק
-| מה נבדק | התוצאה |
-|---|---|
-| הקונה רואה את שני השוברים שלו | ✅ |
-| זר רואה 0 שוברים ו-0 הזמנות | ✅ |
-| ספק רואה שובר **שמומש** אצלו | ✅ |
-| ספק **לא** רואה שובר שטרם מומש | ✅ הקוד עוד ניתן להוצאה עד שהוצג בקופה |
-| זר לא רואה `escrow_holds`, הבעלים כן | ✅ |
+
+| מה נבדק                                       | התוצאה                                              |
+| --------------------------------------------- | --------------------------------------------------- |
+| הקונה רואה את שני השוברים שלו                 | ✅                                                  |
+| זר רואה 0 שוברים ו-0 הזמנות                   | ✅                                                  |
+| ספק רואה שובר **שמומש** אצלו                  | ✅                                                  |
+| ספק **לא** רואה שובר שטרם מומש                | ✅ הקוד עוד ניתן להוצאה עד שהוצג בקופה              |
+| זר לא רואה `escrow_holds`, הבעלים כן          | ✅                                                  |
 | לקוח לא יכול UPDATE / DELETE / INSERT על שובר | ✅ אחרת אפשר להחזיר שובר שמומש ל-`issued` ולממש שוב |
 
 ## 🔴 באג RLS שההארנס חשף: `orders` לא ניתנת לקריאה **לאף אחד**
@@ -3480,13 +2867,13 @@ order_items_user_read  USING (order_id IN (SELECT id FROM orders WHERE user_id =
 
 ## שלב 4 (הקשחה) — מצב מאומת
 
-| דרישה | מצב |
-|---|---|
-| ‏RLS על הטבלאות החדשות | ✅ נבדק בפרודקשן: `vouchers`, `voucher_redemptions`, `escrow_holds`, `supplier_members`, `payments`, `payment_tokens` — כולן `rowsecurity=true` עם מדיניות בעלים/ספק/אדמין |
-| ‏rate limiting על redemption | ✅ קיים בתוך `redeem_voucher()`: `check_user_rate_limit(uid,'voucher_scan',30,60)` |
-| אינדקסים | ✅ ‏074 הוסיפה `escrow_holds_status_supplier_idx` ו-`escrow_holds_voucher_id_key`; ‏075 שני אינדקסים חלקיים לחשבון Cardcom |
-| ‏Sentry על נתיב התשלום | ⛔ **לא קיים.** אין תלות Sentry ב-`package.json`. זו ההתקנה היחידה שנשארה משלב 4 |
-| ‏`payment_webhook_events` | ⚠️ ‏RLS מופעל ו-**אפס מדיניות**, כלומר סגור לכולם חוץ מ-service role. זו התנהגות נכונה לטבלת webhook, אבל שווה לדעת שזה מכוון ולא פספוס |
+| דרישה                        | מצב                                                                                                                                                                        |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ‏RLS על הטבלאות החדשות       | ✅ נבדק בפרודקשן: `vouchers`, `voucher_redemptions`, `escrow_holds`, `supplier_members`, `payments`, `payment_tokens` — כולן `rowsecurity=true` עם מדיניות בעלים/ספק/אדמין |
+| ‏rate limiting על redemption | ✅ קיים בתוך `redeem_voucher()`: `check_user_rate_limit(uid,'voucher_scan',30,60)`                                                                                         |
+| אינדקסים                     | ✅ ‏074 הוסיפה `escrow_holds_status_supplier_idx` ו-`escrow_holds_voucher_id_key`; ‏075 שני אינדקסים חלקיים לחשבון Cardcom                                                 |
+| ‏Sentry על נתיב התשלום       | ⛔ **לא קיים.** אין תלות Sentry ב-`package.json`. זו ההתקנה היחידה שנשארה משלב 4                                                                                           |
+| ‏`payment_webhook_events`    | ⚠️ ‏RLS מופעל ו-**אפס מדיניות**, כלומר סגור לכולם חוץ מ-service role. זו התנהגות נכונה לטבלת webhook, אבל שווה לדעת שזה מכוון ולא פספוס                                    |
 
 ## ✅ שלב 4 הושלם — Sentry על נתיב הכסף
 
@@ -3507,15 +2894,16 @@ source maps דרך `withSentryConfig`, שממילא לא בשימוש כאן, א
 לכן טסטים, CI ופיתוח מקומי לא צריכים שום קונפיגורציה.
 
 ### איפה זה מחובר
-| נקודה | מה מדווח |
-|---|---|
-| `webhook/route.ts` | ‏Cardcom אמר הצלחה ו-`GetLpResult` לא מסכים |
-| `webhook/route.ts` | סכום שחויב שונה ממה שביקשנו |
-| `webhook/route.ts` | התשלום אומת ו-`finalizeOrder` נכשל — **המצב הגרוע ביותר במערכת** |
-| `finalize.ts` | כל זריקה אחרי שהכרטיס כבר חויב |
-| `checkout.ts` | ספק הסליקה לא נגיש (עוצר כל checkout בבת אחת) |
-| `refund.ts` | זיכוי שנדחה — הלקוח נשאר חייב כסף שהרשומות שלנו אולי כבר סימנו כמוחזר |
-| `vouchers/redeem/route.ts` | ה-RPC נכשל בזמן שהלקוח עומד בקופה |
+
+| נקודה                      | מה מדווח                                                              |
+| -------------------------- | --------------------------------------------------------------------- |
+| `webhook/route.ts`         | ‏Cardcom אמר הצלחה ו-`GetLpResult` לא מסכים                           |
+| `webhook/route.ts`         | סכום שחויב שונה ממה שביקשנו                                           |
+| `webhook/route.ts`         | התשלום אומת ו-`finalizeOrder` נכשל — **המצב הגרוע ביותר במערכת**      |
+| `finalize.ts`              | כל זריקה אחרי שהכרטיס כבר חויב                                        |
+| `checkout.ts`              | ספק הסליקה לא נגיש (עוצר כל checkout בבת אחת)                         |
+| `refund.ts`                | זיכוי שנדחה — הלקוח נשאר חייב כסף שהרשומות שלנו אולי כבר סימנו כמוחזר |
+| `vouchers/redeem/route.ts` | ה-RPC נכשל בזמן שהלקוח עומד בקופה                                     |
 
 **‏`src/instrumentation.ts`** (‏file convention של Next 16, נקרא מ-
 `node_modules/next/dist/docs` לפי AGENTS.md): `register()` מאתחל בצד השרת,
@@ -3527,6 +2915,7 @@ source maps דרך `withSentryConfig`, שממילא לא בשימוש כאן, א
 ושניהם משנים איך כל האפליקציה נבנית.
 
 ### הצנזור, וטסטים עליו (‏6)
+
 כל מה שמגיע ל-reporter **יוצא מהשרת**, והנתיב הזה נושא אמצעי חיוב.
 ‏`redact()` מוחק לפי מחרוזת-חלקית בשם המפתח: `token`, `secret`, `password`,
 `authorization`, `cookie`, `key`, `card`, `cvv`, `jwt`. מוגבל לעומק 4, כי
@@ -3537,6 +2926,7 @@ source maps דרך `withSentryConfig`, שממילא לא בשימוש כאן, א
 בעתיד וידלוף בשקט גדול בהרבה.
 
 ### אימות
+
 **‏523/523 vitest (42 קבצים), ‏tsc נקי, biome נקי (337 קבצים),
 ‏`next build` עובר, והדב-סרבר מחזיר 200 עם Sentry מותקן ובלי DSN.**
 ‏`.env.example` עודכן עם `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `CARDCOM_ACCOUNTS`,
@@ -3549,11 +2939,11 @@ source maps דרך `withSentryConfig`, שממילא לא בשימוש כאן, א
 שמכילות את המוצרים שלו, רק אותן, ובלי מידע אישי של לקוח מעבר למה שהמשלוח
 מחייב. ‏078 היא ההכרעה הזאת.
 
-| מדיניות | נותנת | מונעת |
-|---|---|---|
-| `order_items_supplier_read` | שורות עם ה-`supplier_id` שלו | שורה של ספק אחר באותה הזמנה |
-| `orders_supplier_read` | שורת ההזמנה, מ-`paid` והלאה | עגלות pending, מבוטלות, מוחזרות, והזמנות שהוא לא בהן |
-| `user_addresses_supplier_read` | הכתובת, רק אם יש לו שורה **פיזית** חיה | כל כתובת לספק שמוכר קופונים בלבד |
+| מדיניות                        | נותנת                                  | מונעת                                                |
+| ------------------------------ | -------------------------------------- | ---------------------------------------------------- |
+| `order_items_supplier_read`    | שורות עם ה-`supplier_id` שלו           | שורה של ספק אחר באותה הזמנה                          |
+| `orders_supplier_read`         | שורת ההזמנה, מ-`paid` והלאה            | עגלות pending, מבוטלות, מוחזרות, והזמנות שהוא לא בהן |
+| `user_addresses_supplier_read` | הכתובת, רק אם יש לו שורה **פיזית** חיה | כל כתובת לספק שמוכר קופונים בלבד                     |
 
 כל השלוש הן `FOR SELECT` בלבד. אין לספק שום הרשאת כתיבה.
 
@@ -3569,6 +2959,7 @@ source maps דרך `withSentryConfig`, שממילא לא בשימוש כאן, א
 עמודת שם, אימייל או טלפון, רק `user_id` (מזהה אטום) ו-`address_id`.
 
 ### אימות
+
 - הגדרות המדיניות נקראו מ-`pg_policy` אחרי ההחלה ותואמות למיגרציה מילה במילה.
 - שלושת ה-helpers הם `SECURITY DEFINER`, וזה מה שמונע מהמעגל
   ‏`orders` ↔ `order_items` להיווצר מחדש.
@@ -3581,6 +2972,7 @@ source maps דרך `withSentryConfig`, שממילא לא בשימוש כאן, א
   אף אחד לא קורא את פרופיל הלקוח, וניסיון כתיבה על שורת הזמנה לא משנה כלום.
 
 ### רדיוס ההשפעה ביום ההחלה
+
 ‏`supplier_members` מכילה **0 שורות** בפרודקשן, אז כל פרדיקט עובר דרך
 `is_supplier_member()` ושקרי לכל קורא. המדיניות לא תופסות כלום עד שייווצר
 חבר ספק — כלומר השינוי נכנס לתוקף במודע ולא מיידית.
@@ -3615,6 +3007,7 @@ reconciliation) ו-057 (‏`migration_log`, ‏`validation_reports`, ‏3 views,
 ל-PostgREST, אז היא בלתי נגישה מכל קליינט supabase-js בלי קשר להרשאות.
 
 ### סתירה שהוכרעה במקום להיעצר עליה
+
 הכותרת של 032 אמרה `DRAFT, DO NOT APPLY`, בעוד ששורה 22 באותו קובץ מסבירה
 **איך** להחיל אותה ("Apply only via Supabase MCP apply_migration"), והיא מוחלת
 על ה-DB המקומי מאז 24.07. הכותרת הייתה מיושנת ולא הוראה בתוקף: שום דבר אחר
@@ -3622,7 +3015,9 @@ reconciliation) ו-057 (‏`migration_log`, ‏`validation_reports`, ‏3 views,
 ומפנה עכשיו ל-`docs/PRODUCTION-CHANGES-2026-07-27.md` סעיף 9.
 
 ### הצעד הבא במיגרציית WP
+
 יש עכשיו לאן לכתוב. מה שחסר כדי להריץ באמת:
+
 1. **dump של WooCommerce** — `01-extract.mjs` צריך מקור. אין קובץ dump בריפו.
 2. **`WP_SITE_URL` ופרטי גישה** ב-env (ראה `scripts/wp-import/config.mjs`).
 3. הרצת `run.mjs` ב-dry-run מול הפרודקשן, ואז קריאת `wp_import.v_open_issues`
@@ -3635,6 +3030,7 @@ reconciliation) ו-057 (‏`migration_log`, ‏`validation_reports`, ‏3 views,
 ‏Branch: `phase5/homepage`. שלוש המשימות נבדקו מול המערכת הרצה, לא מול הזיכרון.
 
 ### 1. קטגוריה — עבר
+
 ‏`compare.mjs --page=category` מול ארכיון hot-deals החי: **8.62%**, מתחת ליעד 11%.
 ‏grid כרטיסים, sidebar סינון RTL, בורר מיון ו-pagination (‏24 לעמוד, 61 מוצרים,
 ‏6 קישורי עמוד, עמוד 2 מחזיר 200) — כולם מרונדרים. ב-hot-deals אין pagination
@@ -3645,6 +3041,7 @@ reconciliation) ו-057 (‏`migration_log`, ‏`validation_reports`, ‏3 views,
 מול kenyonexpress.co.il, שזה גם מה ש-`compare.mjs` מכוון אליו ממילא.
 
 ### 2. עגלה — תוקן חלקית, נותר פער
+
 עובד: Zustand ‏(`createStore` מ-`zustand/vanilla`), עגלת אורח בלי שער התחברות,
 מצב ריק, שורות, כמות, סיכום הזמנה.
 
@@ -3657,6 +3054,7 @@ reconciliation) ו-057 (‏`migration_log`, ‏`validation_reports`, ‏3 views,
 הוספת השדה לבדה תהיה קישוט: צריך טבלת קודים, אימות, והחלה על הסכומים.
 
 ### 3. חיפוש — עובד, בלי suggestions
+
 ‏`HeaderSearch` דוחף ל-`/search?q=`. ‏`/search` קורא ל-`searchProductsCached`
 ב-`src/lib/search-server.ts`, שמשתמש ב-Meilisearch כש-`MEILISEARCH_HOST` ו-
 `MEILISEARCH_API_KEY` מוגדרים, ונופל ל-Postgres אחרת. נבדק: `?q=אוזניות`
@@ -3667,15 +3065,18 @@ reconciliation) ו-057 (‏`migration_log`, ‏`validation_reports`, ‏3 views,
 שיגיע לדפדפן, אז dropdown יצטרך route handler משלנו ולא קריאה ישירה למנוע.
 
 ### החלטות שהתקבלו אוטומטית
+
 - לא בניתי input קופון חצי-עובד. שדה שמקבל קוד ולא עושה בו כלום גרוע
   מהיעדרו, כי הוא נראה כמו תכונה שנשברה ולא כמו תכונה שחסרה.
 - לא פתחתי `connect-src` ל-Meilisearch ב-CSP. ראה `ARCHITECTURE-DEPLOYMENT.md` §3.1.
+
 ## 2026-07-28 — פאנל האדמין: ארבעה מסכים שקראו טבלאות מתות
 
 ‏Branch: `feat/admin-core`. חמישה קומיטים. ‏483 -> 546 טסטים, ‏38 -> 42 קבצים.
 ‏tsc נקי.
 
 ### הדפוס שחזר ארבע פעמים
+
 מסך באדמין קרא או ערך טבלה שאף אחד במסלול הרכישה לא נוגע בה. בכל פעם
 המסמך כבר תיאר את המצב הנכון, ורשימת ה-acceptance שלו כבר סימנה ‏[x]. הקוד
 אמר אחרת. השיטה שעבדה: לשאול את ה-DB החי איזו טבלה מקבלת את הכתיבות, ולא
@@ -3693,6 +3094,7 @@ reconciliation) ו-057 (‏`migration_log`, ‏`validation_reports`, ‏3 views,
 4. אותו מסך קרא `coupon_codes` לשוברים, כלומר רשימת שוברים ריקה בכל הזמנת קופון אמיתית.
 
 ### באג שחסם יצירת מוצר לגמרי
+
 ‏`products.commission_percent` ו-`products.price_ils` שתיהן `NOT NULL` בלי
 default, והטופס לא שלח אף אחת מהן. כל `insert` של מוצר חדש דרך הפאנל נכשל.
 ‏`commission_percent` מוחזקת שווה ל-`platform_percent` (זה השם הישן שלה,
@@ -3701,6 +3103,7 @@ default, והטופס לא שלח אף אחת מהן. כל `insert` של מוצ�
 מאחורי עריכה ומרפה בשקט את `products_coupon_price_within_price`.
 
 ### ארבעת הכפתורים חוברו
+
 הטופס חשף רק `platform_percent`. ל-`supplier_split_percent`, `discount_percent`,
 ‏`coupon_price_ils` ו-`coupon_expiry_days` לא היה שדה ולא מסלול כתיבה, ו-
 ‏`assertPublishable` נכתבה, נבדקה, ומעולם לא נקראה. עכשיו: שני חצאי הפיצול
@@ -3708,6 +3111,7 @@ default, והטופס לא שלח אף אחת מהן. כל `insert` של מוצ�
 פרטים חסרים ומקשר לעמוד הספק.
 
 ### החלטות שהתקבלו אוטומטית
+
 - **אין `packages/payments/money.ts`.** היעד ביקש את הנתיב הזה, אבל אין
   ‏`packages/` בריפו ואין workspace. הכסף כבר יושב במודול יחיד:
   ‏`src/lib/commerce/money.ts` עם `src/lib/money.ts` כחזית שמייצאת אותו מחדש.
@@ -3727,6 +3131,7 @@ default, והטופס לא שלח אף אחת מהן. כל `insert` של מוצ�
   עושה `as unknown as VoucherIssueClient`.
 
 ### באג ה-enum: כבר לא קיים
+
 היעד תיאר את `finalize.ts:312` ככותב `platform_settled` ל-enum שלא מכיר אותו.
 נבדק מול ה-DB החי: `public.settlement_status` כן מכיל את הערך. הטיוטה קיימת
 כ-`071_settlement_status_platform_settled.sql`, אידמפוטנטית, והוחלה ב-27.07.
@@ -3734,12 +3139,14 @@ default, והטופס לא שלח אף אחת מהן. כל `insert` של מוצ�
 שהקוד כותב וה-DB לא מכיר.
 
 ### פערי אבטחה שנסגרו דרך אגב
+
 שלושת עמודי המוצר (`page`, `new`, `[id]/edit`) לא קראו ל-`requireSection`.
 ‏layout הפאנל שומר על הכניסה בלבד, אז משתמש `support` (הרשאת catalog: none)
 יכול היה לפתוח את עורך הקטלוג ולראות את כפתורי הכסף. הכתיבה כבר נחסמה
 ב-action; זו שכבה 3 מתוך 4 שהייתה חסרה.
 
 ### Blocking Issues שנמצאו ולא נפתרו (מחוץ לגבולות המשימה)
+
 1. **שתי טבלאות שוברים.** `public.vouchers` (‏26 עמודות, 0 שורות, מסלול חי)
    ו-`public.coupon_codes` (‏16 עמודות, 2 שורות, קריאה בלבד). איחודן הוא
    מיגרציית נתונים.
@@ -3750,6 +3157,7 @@ default, והטופס לא שלח אף אחת מהן. כל `insert` של מוצ�
    כרגע, אז זה לא חוסם, אבל 067 (שמעביר שורות `service`) תלוי בה.
 
 ### ‏Next Task
+
 מיזוג `feat/admin-core` ל-phase5, אחרי סקירה של שינויי `src/types/database.ts`
 מול סשנים מקבילים.
 

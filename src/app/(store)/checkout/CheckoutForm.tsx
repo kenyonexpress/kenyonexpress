@@ -1,15 +1,13 @@
 'use client'
 
 import { track } from '@/lib/analytics/tracker'
+import { shekels } from '@/lib/cart/format'
 import type { CartView } from '@/lib/cart/types'
 import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-code'
+import { type Agorot, parseIls, sumAgorot } from '@/lib/money'
 import { type AuthState, signInWithGoogle } from '@/server/actions/auth'
 import { type CheckoutFormState, submitCheckout } from '@/server/actions/payments/checkout'
 import { useActionState, useEffect, useRef, useState } from 'react'
-
-function shekels(value: number): string {
-  return `₪${value.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-}
 
 export type CheckoutAddressPrefill = {
   id: string | null
@@ -101,7 +99,16 @@ export default function CheckoutForm({
   const [zipError, setZipError] = useState<string | null>(null)
 
   const balanceAtBusiness = cart.balance_due_at_business
-  const itemsTotal = cart.items.reduce((sum, item) => sum + item.line_total, 0)
+  const itemsTotal = sumAgorot(cart.items.map((item) => item.line_total))
+
+  // `walletBalance` and the `apply_wallet_ils` field are the one place on this
+  // page still denominated in shekels: the wallet column is `balance_ils` and
+  // the server action parses the field back out in shekels. It is lifted to
+  // agorot here so the cap below compares like with like. Comparing the raw
+  // shekel balance against the agorot subtotal would have offered a wallet
+  // ceiling a hundred times the cart.
+  const walletBalanceAgorot: Agorot = parseIls(walletBalance.toFixed(2))
+  const walletMaxIls = Math.min(walletBalanceAgorot, cart.subtotal) / 100
 
   const [firstName, ...restName] = (address.full_name ?? '').split(' ')
   const prefill = {
@@ -485,7 +492,7 @@ export default function CheckoutForm({
               {walletBalance > 0 && (
                 <div className="checkout-wallet">
                   <label htmlFor="co-wallet">
-                    שימוש ביתרת ארנק (זמין: {shekels(walletBalance)})
+                    שימוש ביתרת ארנק (זמין: {shekels(walletBalanceAgorot)})
                   </label>
                   <input
                     id="co-wallet"
@@ -493,7 +500,7 @@ export default function CheckoutForm({
                     type="number"
                     inputMode="decimal"
                     min={0}
-                    max={Math.min(walletBalance, cart.subtotal)}
+                    max={walletMaxIls}
                     step="0.01"
                     defaultValue={0}
                   />

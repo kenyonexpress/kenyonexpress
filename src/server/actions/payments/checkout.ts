@@ -380,7 +380,7 @@ export async function beginCheckout(
       settlementLines.push({
         id: `${item.product_id}::${item.variant_id ?? 'null'}`,
         productType: item.type,
-        unitPrice: ilsToAgorot(item.unit_price.toFixed(2)),
+        unitPrice: item.unit_price,
         quantity: item.quantity,
         couponPriceUnit: ilsToAgorot(couponPrice.toFixed(2)),
         platformPercent: split.pair.platformPercent,
@@ -390,7 +390,7 @@ export async function beginCheckout(
       settlementLines.push({
         id: `${item.product_id}::${item.variant_id ?? 'null'}`,
         productType: item.type,
-        unitPrice: ilsToAgorot(item.unit_price.toFixed(2)),
+        unitPrice: item.unit_price,
         quantity: item.quantity,
         platformPercent: split.pair.platformPercent,
         cashbackPercent: product.cashback_percent ?? 0,
@@ -530,7 +530,7 @@ export async function beginCheckout(
       // points and are converted per generation, because writing 30 into a bp
       // column understates the platform's take by two orders of magnitude.
       ...buildOrderItemMoneyRow(itemGeneration, {
-        unitPriceAgorot: ilsToAgorot(item.unit_price),
+        unitPriceAgorot: item.unit_price,
         faceValueAgorot: line.faceValue,
         paidOnSiteAgorot: line.paidOnSite,
         commissionAgorot: line.commission,

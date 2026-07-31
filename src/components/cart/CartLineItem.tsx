@@ -2,14 +2,11 @@
 
 import { useCart } from '@/components/cart/CartProvider'
 import SmartImage from '@/components/ui/SmartImage'
+import { shekels } from '@/lib/cart/format'
 import type { CartViewItem } from '@/lib/cart/types'
 import { Check, Minus, Plus, ShoppingCart, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-
-function shekels(value: number): string {
-  return `₪${value.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-}
 
 export default function CartLineItem({ item }: { item: CartViewItem }) {
   const { updateQuantity, removeItem, isPending } = useCart()

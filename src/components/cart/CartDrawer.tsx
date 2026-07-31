@@ -3,27 +3,13 @@
 import CartCheckoutButton from '@/components/cart/CartCheckoutButton'
 import { useCart, useCartAuth } from '@/components/cart/CartProvider'
 import SmartImage from '@/components/ui/SmartImage'
+import { shekels } from '@/lib/cart/format'
+import type { CartViewItem } from '@/lib/cart/types'
 import { Minus, Plus, ShoppingCart, X } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect } from 'react'
 
-function shekels(value: number): string {
-  return `₪${value.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-}
-
-function DrawerLineItem({
-  item,
-}: {
-  item: {
-    product_id: string
-    variant_id: string | null
-    quantity: number
-    name_he: string
-    slug: string
-    image_url: string | null
-    line_total: number
-  }
-}) {
+function DrawerLineItem({ item }: { item: CartViewItem }) {
   const { updateQuantity, removeItem, isPending } = useCart()
 
   return (

@@ -1,11 +1,8 @@
 'use client'
 
 import CartCouponForm from '@/components/cart/CartCouponForm'
+import { shekels } from '@/lib/cart/format'
 import type { CartView } from '@/lib/cart/types'
-
-function shekels(value: number): string {
-  return `₪${value.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-}
 
 export default function CartTotalsSidebar({ cart }: { cart: CartView }) {
   return (

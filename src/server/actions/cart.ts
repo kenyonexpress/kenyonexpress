@@ -42,15 +42,35 @@ function itemKey(item: CartStorageItem): string {
   return `${item.product_id}::${item.variant_id ?? 'null'}`
 }
 
+/** A stored percent is only believed if it is a finite number in 0..100. */
+function parsePercentSnapshot(raw: unknown): number | null {
+  if (raw == null) return null
+  const value = Number(raw)
+  if (!Number.isFinite(value) || value < 0 || value > 100) return null
+  return value
+}
+
 function parseItems(raw: unknown): CartStorageItem[] {
   if (!Array.isArray(raw)) return []
-  return raw.filter(
-    (item): item is CartStorageItem =>
-      typeof item === 'object' &&
-      item !== null &&
-      typeof (item as CartStorageItem).product_id === 'string' &&
-      typeof (item as CartStorageItem).quantity === 'number',
-  )
+  return raw
+    .filter(
+      (item): item is CartStorageItem =>
+        typeof item === 'object' &&
+        item !== null &&
+        typeof (item as CartStorageItem).product_id === 'string' &&
+        typeof (item as CartStorageItem).quantity === 'number',
+    )
+    .map((item) => ({
+      product_id: item.product_id,
+      variant_id: item.variant_id ?? null,
+      quantity: item.quantity,
+      // Rebuilt field by field rather than spread. The `items` column is JSONB
+      // and whatever is in it is what comes back; copying it wholesale would
+      // carry any key a past version (or a stray write) left behind into
+      // everything downstream. The percent in particular is re-validated here
+      // rather than trusted, so a hand-edited row cannot name its own rate.
+      platform_percent_snapshot: parsePercentSnapshot(item.platform_percent_snapshot),
+    }))
 }
 
 function expiresAt(): string {
@@ -156,7 +176,7 @@ async function resolveAppliedCoupon(
   const evaluation = evaluateCoupon(
     (data as CouponRecord | null) ?? null,
     {
-      payableAgorot: Math.round(view.subtotal * 100),
+      payableAgorot: view.subtotal,
       productIds: view.items.map((item) => item.product_id),
     },
     new Date(),
@@ -267,22 +287,37 @@ async function saveCartItems(
   return data
 }
 
+/**
+ * Availability gate for one line, and the source of the percent snapshot.
+ *
+ * `platformPercent` comes back on the success branch because this function
+ * already holds the product row: reading it here costs nothing, and it means
+ * the snapshot written into the cart is always a value the server read from
+ * `public.products` in the same breath as it approved the line. The browser
+ * never gets a say in it. Null when the admin has not set one — the cart then
+ * stores no snapshot and `pricing.ts` marks the line unpriceable, which is the
+ * behaviour C1 requires and is not the same thing as a percent of zero.
+ */
 async function validateProductForCart(
   productId: string,
   variantId: string | null,
   quantity: number,
-): Promise<{ ok: true } | { ok: false; error: string; code: string }> {
+): Promise<
+  { ok: true; platformPercent: number | null } | { ok: false; error: string; code: string }
+> {
   const admin = createAdminClient()
 
   const { data: product } = await admin
     .from('products')
-    .select('id, status, deleted_at, stock_quantity, type, is_coupon_enabled')
+    .select('id, status, deleted_at, stock_quantity, type, is_coupon_enabled, platform_percent')
     .eq('id', productId)
     .maybeSingle()
 
   if (!product || product.status !== 'active' || product.deleted_at) {
     return { ok: false, error: 'המוצר לא זמין', code: 'NOT_FOUND' }
   }
+
+  const platformPercent = parsePercentSnapshot(product.platform_percent)
 
   if (variantId) {
     const { data: variant } = await admin
@@ -299,7 +334,7 @@ async function validateProductForCart(
     if (stock != null && stock < quantity) {
       return { ok: false, error: 'אין מספיק במלאי', code: 'INSUFFICIENT_STOCK' }
     }
-    return { ok: true }
+    return { ok: true, platformPercent }
   }
 
   const stock = product.stock_quantity
@@ -307,7 +342,7 @@ async function validateProductForCart(
     return { ok: false, error: 'אין מספיק במלאי', code: 'INSUFFICIENT_STOCK' }
   }
 
-  return { ok: true }
+  return { ok: true, platformPercent }
 }
 
 function revalidateCartPaths() {
@@ -362,9 +397,28 @@ export async function addToCart(
   )
   if (!stockCheck.ok) return stockCheck
 
+  // The snapshot is refreshed on every add, including an add onto an existing
+  // line. The alternative — writing it once and leaving it — would mean the
+  // percent shown against a line was the one that applied to its FIRST unit,
+  // while every unit after it was quoted under whatever the catalogue says now.
+  // Re-stamping keeps the stored percent describing the whole line as it
+  // currently stands, which is what checkout will read anyway.
+  const percentSnapshot = stockCheck.platformPercent
   const nextItems = existing
-    ? items.map((i) => (itemKey(i) === key ? { ...i, quantity: nextQty } : i))
-    : [...items, { ...parsed.data, quantity: nextQty }]
+    ? items.map((i) =>
+        itemKey(i) === key
+          ? { ...i, quantity: nextQty, platform_percent_snapshot: percentSnapshot }
+          : i,
+      )
+    : [
+        ...items,
+        {
+          product_id: parsed.data.product_id,
+          variant_id: parsed.data.variant_id,
+          quantity: nextQty,
+          platform_percent_snapshot: percentSnapshot,
+        },
+      ]
 
   const saved = await saveCartItems(nextItems, isGuest, userId, row?.id ?? null)
   const cart = await resolveCartView(saved.id, parseItems(saved.items))
@@ -532,7 +586,7 @@ export async function applyCouponCode(rawCode: string): Promise<CouponActionResu
   const evaluation = evaluateCoupon(
     (data as CouponRecord | null) ?? null,
     {
-      payableAgorot: Math.round(priced.subtotal * 100),
+      payableAgorot: priced.subtotal,
       productIds: priced.items.map((item) => item.product_id),
     },
     new Date(),
@@ -580,5 +634,7 @@ export async function resolveCheckoutDiscountAgorot(): Promise<{
 }> {
   const cart = await getCart()
   if (!cart.coupon) return { code: null, discountAgorot: 0 }
-  return { code: cart.coupon.code, discountAgorot: Math.round(cart.coupon.discount * 100) }
+  // Already agorot. This used to multiply a shekel float back up by 100 and
+  // round it, which is the round trip the whole cart is now built to avoid.
+  return { code: cart.coupon.code, discountAgorot: cart.coupon.discount }
 }

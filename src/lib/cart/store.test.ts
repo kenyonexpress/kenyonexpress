@@ -1,4 +1,5 @@
 import { type CartView, type CartViewItem, EMPTY_CART } from '@/lib/cart/types'
+import { agorot } from '@/lib/money'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 /**
@@ -35,14 +36,17 @@ function item(overrides: Partial<CartViewItem> = {}): CartViewItem {
     name_he: 'מוצר',
     slug: 'p1',
     image_url: null,
-    unit_price: 100,
-    line_total: 200,
+    unit_price: agorot(100),
+    line_total: agorot(200),
     type: 'physical',
     available: true,
-    platform_fee: 10,
-    supplier_due: 90,
-    customer_pays_now: 100,
-    balance_due_at_business: 0,
+    platform_fee: agorot(10),
+    supplier_due: agorot(90),
+    customer_pays_now: agorot(100),
+    balance_due_at_business: agorot(0),
+    platform_percent_bp: 500,
+    platform_percent_snapshot: 5,
+    coupon_price_unit: null,
     ...overrides,
   }
 }
@@ -53,7 +57,7 @@ function cart(items: CartViewItem[]): CartView {
     id: 'cart-1',
     items,
     item_count: items.reduce((sum, i) => sum + i.quantity, 0),
-    subtotal: items.reduce((sum, i) => sum + i.line_total, 0),
+    subtotal: agorot(items.reduce((sum, i) => sum + i.line_total, 0)),
   }
 }
 

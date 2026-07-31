@@ -1,18 +1,14 @@
 'use client'
 
 import { useCart } from '@/components/cart/CartProvider'
+import { shekelsRounded } from '@/lib/cart/format'
 import { ShoppingCart } from 'lucide-react'
 
 const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
 
-function formatBadgeTotal(value: number): string {
-  if (value <= 0) return '₪0'
-  return `₪${value.toLocaleString('he-IL', { maximumFractionDigits: 0 })}`
-}
-
 export default function CartNavLink() {
   const { cart, isPending, openDrawer } = useCart()
-  const label = `עגלת קניות, ${cart.item_count} פריטים, ${formatBadgeTotal(cart.subtotal)}`
+  const label = `עגלת קניות, ${cart.item_count} פריטים, ${shekelsRounded(cart.subtotal)}`
 
   return (
     <button
@@ -35,7 +31,7 @@ export default function CartNavLink() {
         )}
       </span>
       <span className="text-sm font-semibold text-black tabular-nums">
-        {formatBadgeTotal(cart.subtotal)}
+        {shekelsRounded(cart.subtotal)}
       </span>
     </button>
   )
