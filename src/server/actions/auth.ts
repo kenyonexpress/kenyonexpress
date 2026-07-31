@@ -75,7 +75,7 @@ export async function signInWithEmail(_: AuthState, formData: FormData): Promise
 
   const sessionId = await getGuestSessionId()
   if (signInData.user && sessionId) {
-    await mergeGuestCart(signInData.user.id, sessionId)
+    await mergeGuestCart(supabase, signInData.user.id, sessionId)
     const cookieStore = await cookies()
     cookieStore.delete(GUEST_SESSION_COOKIE)
   }

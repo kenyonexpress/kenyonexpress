@@ -32,14 +32,24 @@ test.describe('checkout gate (guest)', () => {
     await expect(page.getByRole('heading', { name: 'קופה' })).toBeVisible()
   })
 
-  test('the cart CTA offers sign-in rather than a direct checkout link', async ({ page }) => {
+  /**
+   * This one asserted the opposite: a sign-in button, and zero `a[href="/checkout"]`
+   * on the page, on the grounds that "a guest must not be handed a bare
+   * /checkout link that would bounce them." Nothing bounces them any more — the
+   * test directly above proves a guest reaches the form — so the assertion had
+   * outlived its reason and contradicted its own neighbour in the same file. It
+   * never said so out loud only because it failed earlier, on an empty cart.
+   */
+  test('the cart CTA hands a guest straight to checkout', async ({ page }) => {
     await openPurchasableProduct(page)
     await addOpenProductToCart(page)
 
     await page.goto('/cart')
-    await expect(page.getByRole('button', { name: /המשך לתשלום/ })).toBeVisible()
-    // A guest must not be handed a bare /checkout link that would bounce them.
-    await expect(page.locator('a[href="/checkout"]')).toHaveCount(0)
+    const cta = page.getByRole('link', { name: /המשך לתשלום/ })
+    await expect(cta.first()).toBeVisible()
+    await cta.first().click()
+    await expect(page).toHaveURL(/\/checkout/, { timeout: 15000 })
+    await expect(page.getByRole('heading', { name: 'קופה' })).toBeVisible()
   })
 
   /**

@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       const cookieStore = await cookies()
       const sessionId = parseGuestSessionToken(cookieStore.get(GUEST_SESSION_COOKIE)?.value)
       if (sessionId) {
-        await mergeGuestCart(session.user.id, sessionId)
+        await mergeGuestCart(supabase, session.user.id, sessionId)
         // Before the cookie is cleared: this is the last moment the guest id
         // and the user id are both known.
         await linkAnalyticsIdentity(session.user.id, sessionId)

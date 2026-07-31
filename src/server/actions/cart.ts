@@ -9,7 +9,7 @@ import {
 import { buildCartView } from '@/lib/cart/pricing'
 import { parsePercentSnapshot } from '@/lib/cart/snapshot'
 import type { CartActionResult, CartStorageItem, CartView } from '@/lib/cart/types'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createGuestCartClient, createPublicClient } from '@/lib/supabase/anon'
 import {
   CASHBACK_PERCENT_CANDIDATES,
   COUPON_054_COLUMNS,
@@ -82,7 +82,7 @@ async function loadProductData(items: CartStorageItem[]) {
   const productIds = [...new Set(items.map((i) => i.product_id))]
   const variantIds = [...new Set(items.map((i) => i.variant_id).filter((id): id is string => !!id))]
 
-  const admin = createAdminClient()
+  const catalogue = createPublicClient()
 
   // No cashback column here, under either name. 059 renames cashback_percent
   // to cashback_bp and moves it to basis points, and it is NOT applied to the
@@ -97,19 +97,22 @@ async function loadProductData(items: CartStorageItem[]) {
   const productSelect =
     'id, slug, name_he, type, kenyon_price, stock_quantity, status, deleted_at, images, is_coupon_enabled, platform_percent'
 
-  const { data: products } = await admin.from('products').select(productSelect).in('id', productIds)
+  const { data: products } = await catalogue
+    .from('products')
+    .select(productSelect)
+    .in('id', productIds)
 
   // coupon_price_ils arrives with migration 054, which is not applied to every
   // deployment. Naming it above would fail the whole cart query with 42703 and
   // leave the shopper with an empty cart rather than an unpriced coupon line.
   const coupon054 = await readOptionalColumns<Coupon054Row>(
-    (select, ids) => admin.from('products').select(select).in('id', ids) as never,
+    (select, ids) => catalogue.from('products').select(select).in('id', ids) as never,
     COUPON_054_COLUMNS,
     productIds,
     'cart',
   )
   const cashback = await readFirstAvailableColumn<number>(
-    (select, ids) => admin.from('products').select(select).in('id', ids) as never,
+    (select, ids) => catalogue.from('products').select(select).in('id', ids) as never,
     CASHBACK_PERCENT_CANDIDATES,
     productIds,
     'cart cashback',
@@ -135,7 +138,7 @@ async function loadProductData(items: CartStorageItem[]) {
   }[] = []
 
   if (variantIds.length > 0) {
-    const { data } = await admin
+    const { data } = await catalogue
       .from('product_variants')
       .select('id, product_id, price, price_modifier, stock_quantity, is_active, deleted_at')
       .in('id', variantIds)
@@ -157,8 +160,10 @@ async function resolveAppliedCoupon(
   const code = normalizeCouponCode(cookieStore.get(CART_COUPON_COOKIE)?.value)
   if (!code) return null
 
-  const admin = createAdminClient()
-  const { data } = await admin
+  // `coupons` is readable by anon only where `is_active`, so a deactivated code
+  // arrives here as null rather than as an inactive row. `evaluateCoupon`
+  // rejects both, and this function returns null either way.
+  const { data } = await createPublicClient()
     .from('coupons')
     .select(
       'id, code, discount_type, discount_value, min_purchase, expires_at, is_active, max_uses, used_count, product_id',
@@ -216,8 +221,7 @@ async function getCartRow(): Promise<{
   }
 
   const sessionId = (await getGuestSessionId()) ?? (await ensureGuestSessionId())
-  const admin = createAdminClient()
-  const { data } = await admin
+  const { data } = await createGuestCartClient(sessionId)
     .from('carts')
     .select('id, items')
     .eq('session_id', sessionId)
@@ -237,10 +241,13 @@ async function saveCartItems(
 
   if (isGuest) {
     const sessionId = await ensureGuestSessionId()
-    const admin = createAdminClient()
+    const guest = createGuestCartClient(sessionId)
 
     if (existingId) {
-      const { data, error } = await admin
+      // Filtered by id, but reached under the policy's USING clause, which still
+      // demands the cookie match this row's session_id. One shopper cannot write
+      // another's cart by naming its id.
+      const { data, error } = await guest
         .from('carts')
         .update({ items, expires_at: expiry })
         .eq('id', existingId)
@@ -250,7 +257,7 @@ async function saveCartItems(
       return data
     }
 
-    const { data, error } = await admin
+    const { data, error } = await guest
       .from('carts')
       .insert({ session_id: sessionId, items, expires_at: expiry })
       .select('id, items')
@@ -298,9 +305,9 @@ async function validateProductForCart(
 ): Promise<
   { ok: true; platformPercent: number | null } | { ok: false; error: string; code: string }
 > {
-  const admin = createAdminClient()
+  const catalogue = createPublicClient()
 
-  const { data: product } = await admin
+  const { data: product } = await catalogue
     .from('products')
     .select('id, status, deleted_at, stock_quantity, type, is_coupon_enabled, platform_percent')
     .eq('id', productId)
@@ -313,7 +320,7 @@ async function validateProductForCart(
   const platformPercent = parsePercentSnapshot(product.platform_percent)
 
   if (variantId) {
-    const { data: variant } = await admin
+    const { data: variant } = await catalogue
       .from('product_variants')
       .select('id, product_id, stock_quantity, is_active, deleted_at')
       .eq('id', variantId)
@@ -486,17 +493,35 @@ export async function clearCart(): Promise<CartActionResult> {
 
 // ── Guest cart merge (login) ────────────────────────────────────────────────
 
-export async function mergeGuestCart(userId: string, sessionId: string): Promise<void> {
-  const admin = createAdminClient()
+/**
+ * Moves the guest cart onto the account at login.
+ *
+ * Takes the caller's already-authenticated client rather than building one. Both
+ * call sites reach here in the same breath as `signInWithPassword` /
+ * `exchangeCodeForSession`, and that client holds the new session in memory. A
+ * fresh client would have to find it by re-reading cookies that were written
+ * moments earlier in the same request, and if it missed, RLS would hide the
+ * account's own cart and the merge would silently drop the shopper's items.
+ *
+ * The two halves run under two different identities on purpose: the guest row is
+ * reached with the session cookie, the account row with the user's token.
+ * Neither client can touch a cart that is not one of those two.
+ */
+export async function mergeGuestCart(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  sessionId: string,
+): Promise<void> {
+  const guest = createGuestCartClient(sessionId)
 
   const [{ data: guestCart }, { data: userCart }] = await Promise.all([
-    admin
+    guest
       .from('carts')
       .select('id, items')
       .eq('session_id', sessionId)
       .is('profile_id', null)
       .maybeSingle(),
-    admin.from('carts').select('id, items').eq('profile_id', userId).maybeSingle(),
+    supabase.from('carts').select('id, items').eq('profile_id', userId).maybeSingle(),
   ])
 
   if (!guestCart || !Array.isArray(guestCart.items) || guestCart.items.length === 0) return
@@ -521,9 +546,9 @@ export async function mergeGuestCart(userId: string, sessionId: string): Promise
 
   await Promise.all([
     userCart?.id
-      ? admin.from('carts').update({ items: mergedItems }).eq('id', userCart.id)
-      : admin.from('carts').insert({ profile_id: userId, items: mergedItems }),
-    admin.from('carts').delete().eq('id', guestCart.id),
+      ? supabase.from('carts').update({ items: mergedItems }).eq('id', userCart.id)
+      : supabase.from('carts').insert({ profile_id: userId, items: mergedItems }),
+    guest.from('carts').delete().eq('id', guestCart.id),
   ])
 }
 
@@ -567,8 +592,7 @@ export async function applyCouponCode(rawCode: string): Promise<CouponActionResu
   const { products, variants } = await loadProductData(items)
   const priced = buildCartView(row?.id ?? null, items, products, variants)
 
-  const admin = createAdminClient()
-  const { data } = await admin
+  const { data } = await createPublicClient()
     .from('coupons')
     .select(
       'id, code, discount_type, discount_value, min_purchase, expires_at, is_active, max_uses, used_count, product_id',

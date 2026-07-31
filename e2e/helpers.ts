@@ -148,6 +148,22 @@ async function headerCartCount(page: Page): Promise<number> {
  * The header badge is the durable version of the same fact: it is derived from
  * cart state rather than from a timer, so it stays true for as long as the item
  * is in the cart.
+ *
+ * The badge ALONE was still not enough, and this is the second half of the same
+ * bug. `createCartStore` is optimistic: `begin()` raises the count and sets
+ * `isPending` in the same tick as the click, and `settle()` only later replaces
+ * it with what the server confirmed — or rolls it back if the server refused.
+ * Measured, the badge reached 1 in **2 ms** while the row took another second or
+ * so to exist. A spec that navigated on the badge alone therefore asked the
+ * server for `/cart` before the insert had landed and was told, correctly, that
+ * the cart was empty. Seven cart specs, two checkout specs and the purchase
+ * flow failed that way, and the app was never wrong.
+ *
+ * So this waits for the count to be up AND the button to have come back out of
+ * its pending state, which is the moment `settle()` ran. The two together are
+ * the server's answer rather than the browser's guess: on a refusal the button
+ * re-enables too, but `settle()` has put the count back to `before`, so the
+ * condition stays false and the spec fails as it should.
  */
 export async function addOpenProductToCart(page: Page): Promise<void> {
   const before = await headerCartCount(page)
@@ -156,6 +172,8 @@ export async function addOpenProductToCart(page: Page): Promise<void> {
   await expect(addButton).toBeEnabled()
   await addButton.click()
   await expect
-    .poll(() => headerCartCount(page), { timeout: DISCOVERY_TIMEOUT })
-    .toBeGreaterThan(before)
+    .poll(async () => (await addButton.isEnabled()) && (await headerCartCount(page)) > before, {
+      timeout: DISCOVERY_TIMEOUT,
+    })
+    .toBe(true)
 }

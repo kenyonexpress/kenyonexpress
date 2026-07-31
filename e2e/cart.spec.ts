@@ -22,8 +22,11 @@ test.describe('shopping cart (guest)', () => {
     if (productName) {
       await expect(page.getByText(productName, { exact: false }).first()).toBeVisible()
     }
-    // Guest checkout CTA routes through Google sign-in
-    await expect(page.getByRole('button', { name: /המשך לתשלום/ })).toBeVisible()
+    // A link to /checkout, not a button that signs the shopper in first.
+    // CartCheckoutButton stopped being a sign-in gate in GOAL 2: checkout takes
+    // guests and the identity is demanded on the pay press. checkout.spec.ts
+    // pins the destination; this only pins that the cart hands them on.
+    await expect(page.getByRole('link', { name: /המשך לתשלום/ })).toBeVisible()
   })
 
   test('shows an order summary with an on-site total in shekels', async ({ page }) => {
@@ -88,22 +91,31 @@ test.describe('shopping cart (guest)', () => {
     await addOpenProductToCart(page)
 
     // Adding auto-opens the drawer; that is the confirmation the shopper sees.
+    //
+    // At this viewport the open panel is MiniCartDropdown, not CartDrawer. The
+    // two share `drawerOpen` and the label "עגלת קניות", and CSS picks between
+    // them by width, so `getByRole('dialog')` resolves to whichever one is
+    // actually on screen — here the dropdown, because Desktop Chrome is 1280px
+    // wide. The dropdown has no "סגור" button; it is closed by the header
+    // control that opened it, which is what this spec is named after anyway.
     const drawer = page.getByRole('dialog', { name: 'עגלת קניות' })
     await expect(drawer).toBeVisible()
 
-    await page.getByRole('button', { name: 'סגור', exact: true }).click()
+    const headerCart = page.getByRole('button', { name: /עגלת קניות, \d+ פריטים/ }).first()
+    await headerCart.click()
     await expect(drawer).toBeHidden()
 
-    await page
-      .getByRole('button', { name: /עגלת קניות, \d+ פריטים/ })
-      .first()
-      .click()
+    await headerCart.click()
     await expect(drawer).toBeVisible()
   })
 
-  test('an empty cart offers no checkout button', async ({ page }) => {
+  // `button` here, matching the CTA's old shape, asserted the absence of
+  // something that can no longer exist under any cart state, so it passed on an
+  // empty cart and would have passed on a full one too. `link` is the role the
+  // CTA has now, which makes the assertion mean what its name says.
+  test('an empty cart offers no checkout CTA', async ({ page }) => {
     await page.goto('/cart')
     await expect(page.getByRole('heading', { name: 'סל הקניות' })).toBeVisible()
-    await expect(page.getByRole('button', { name: /המשך לתשלום/ })).toBeHidden()
+    await expect(page.getByRole('link', { name: /המשך לתשלום/ })).toBeHidden()
   })
 })
