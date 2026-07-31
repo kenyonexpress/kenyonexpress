@@ -3288,3 +3288,10 @@ production build עובר.
 על `--container-page` עם מחיר ב-`--cart-price-red` ובורר כמות על `--cart-touch`
 בשני הצירים, מיני-קארט dropdown שתלוי על האייקון עם counter, `AddToCartButton`
 בדף המוצר ובכרטיסים, ושני סוגי המוצרים. `tsc` נקי, 932 בדיקות, build עובר.
+
+## Auto-Resume — $(date)
+- Terminal: Claude Code active (Fable 5), /goal queued
+- Chrome: Agent running (Opus 4.8 High), measuring started
+- Cursor: ke-arch worktree, docs in progress
+- Next: GOAL 2 (Checkout UI) → GOAL 3 (Cardcom) → ...
+- Ntfy: alert on token refresh
