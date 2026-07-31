@@ -4,7 +4,7 @@
 docs-queue gap fill
 
 ## Last Completed
-ARCHITECTURE-SUPPLIER-ONBOARDING.md
+ARCHITECTURE-INCIDENT-RESPONSE.md
 
 ## In Progress
 gap docs / index
