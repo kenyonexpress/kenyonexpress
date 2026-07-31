@@ -54,6 +54,7 @@ Date: 2026-07-31 · docs only.
 - `ARCHITECTURE-ANALYTICS-KPI.md`
 - `ARCHITECTURE-REFERRALS.md`
 - `ARCHITECTURE-SECURITY-COMPLIANCE.md`
+- `ARCHITECTURE-SECURITY-AUDIT.md` (תוכנית ביקורת: RLS probes, סריקות, רישום ממצאים)
 - `ARCHITECTURE-LEGAL.md`
 
 ## Data

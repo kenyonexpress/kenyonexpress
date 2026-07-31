@@ -25,7 +25,7 @@ Scope: docs בלבד.
 ## 0. סדר סמכות
 
 1. **המודל העסקי** (סעיף 1 כאן)
-2. אבטחה / ציות (`ARCHITECTURE-SECURITY-COMPLIANCE.md`, `ARCHITECTURE-LEGAL.md`)
+2. אבטחה / ציות (`ARCHITECTURE-SECURITY-COMPLIANCE.md`, `ARCHITECTURE-SECURITY-AUDIT.md`, `ARCHITECTURE-LEGAL.md`)
 3. Go-Live / ops (`ARCHITECTURE-GO-LIVE-CHECKLIST.md`)
 4. מסמכי דומיין ב-`docs/ARCHITECTURE-*.md`
 5. טיוטות ישנות ב-main repo / worktrees אחרים (רק אם לא סותרות)
