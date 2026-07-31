@@ -3472,3 +3472,59 @@ build          עובר
 שתי דרכים לפתוח את זה: דפדפן לא-headless עם פרופיל אמיתי שעובר את האתגר, או
 לוותר על Electro ולמדוד מול `kenyonexpress.co.il/checkout/`, שאינו חסום
 ושהוא בפועל המוצר שנבנה מחדש. `compare.mjs` כבר מכוון לשם.
+
+
+### 2026-07-31: GOAL 3, Cardcom
+
+רוב GOAL 3 כבר היה בנוי. מה שמצאתי כשבדקתי כל סעיף מול הקוד ומול ה-DB החי:
+
+| סעיף ביעד | מצב |
+|---|---|
+| multi-account client | קיים, `src/lib/payments/accounts.ts` + `getPaymentProvider` |
+| יצירת עסקה | קיים, `cardcom.ts` + `beginCheckout` |
+| webhook signature verification | ראה למטה, Cardcom לא חותם בכלל |
+| order state machine | קיים, `src/server/domain/orders/state-machine.ts` |
+| payment_events journal | קיים כ-`payment_webhook_events` עם UNIQUE לדדופ |
+| retry / DLQ | **היה חסר, נבנה עכשיו** |
+| split מיידי לפיזי | קיים, מכוסה בבדיקות מ-GOAL 1 |
+| קופון = גבייה מלאה | קיים, מכוסה בבדיקות מ-GOAL 1 |
+| תיקון finalize.ts:312 | **הבאג לא קיים, ראה למטה** |
+
+### הבאג של ה-DLQ
+
+‏`processed_at` נכתב **שורה אחת לפני** `finalizeOrder`. כלומר כשה-finalize
+נכשל, השורה טענה שטופלה. הזכר היחיד היה alarm, ושום דבר לא יכול היה למנות
+את הנזק בדיעבד, קל וחומר לשחזר אותו. האירוע שהכי דחוף לחזור אליו (חויב,
+אומת, ההזמנה עדיין פתוחה, מה שהקוד עצמו מכנה המצב הגרוע במערכת) היה בדיוק זה
+שמובטח שייראה גמור.
+
+עכשיו `processed_at` נכתב רק אחרי שההזמנה באמת נסגרת, ולכן הצמד
+‏`verified_against_api = true AND processed_at IS NULL` בר-השגה ומשמעותו אחת:
+Cardcom לקח את הכסף, Cardcom אישר לנו את זה ישירות, וה-finalize שלנו לא
+הושלם. הצמד הזה **הוא** התור. בלי טבלה חדשה, כי השורות כבר היו קיימות ורק
+סומנו לא נכון. `src/server/payments/webhook-dlq.ts` קורא ומשחזר, ותיקה קודם.
+‏11 בדיקות.
+
+### שני סעיפים שהפרמיסה שלהם לא מתקיימת
+
+**‏`finalize.ts:312` לא שובר enum.** נבדק מול ה-DB החי דרך MCP:
+
+```
+payment_status:     initiated, redirected, succeeded, failed, refunded, platform_settled
+settlement_status:  pending, paid, split_executed, escrow_held, escrow_released,
+                    redeemed, refunded, cancelled, platform_settled
+```
+
+הערך קיים בשניהם. לא הרצתי `ALTER TYPE ADD VALUE` ולא החלתי מיגרציה: DDL
+מיותר על פרודקשן הוא בדיוק הקטגוריה ההרסנית שהכללים אומרים לעצור בה. זה גם
+מאשר שוב את מה שכבר תועד כאן ב-27.07.
+
+**מיגרציות 027 ו-054 לא קשורות.** בפועל הן
+‏`027_suppliers.sql` ו-`054_section2_product_coupon_price_fields.sql`, ספקים
+ושדות מחיר קופון. אין ביניהן לבין enum כלום.
+
+**Cardcom לא חותם על callbacks.** אין HMAC ואין signature header, וזה מתועד
+בקוד עצמו. האותנטיות נשענת על secret לא-ניחוש ב-URL של ה-callback ועל
+re-verify שרת-לשרת מול `GetLpResult`, שהוא המקור היחיד שנסמך עליו לסכום,
+לסטטוס ולטוקן. זו הגישה הנכונה והיחידה האפשרית מול ה-API הזה; "signature
+verification" כפשוטו אינו בר-מימוש כאן.
