@@ -6,6 +6,14 @@
 `ixvwfbuvfxxsjiywhbbb`
 ‏(eu-north-1, ‏Postgres 17.6.1).
 
+**אומת מחדש 2026-07-29 בסבב שני, עצמאי.** כל 89 הקבצים נקראו שוב וכל שורה
+בטבלה נבדקה מול ה-DB החי בקריאה נפרדת. הסבב השני לא סתר אף קביעה של הראשון,
+והוסיף שלושה דברים שלא היו בו: עמודות תלויות וסיכון בטבלה, אימות מפורש של
+`order_status`
+מול
+`platform_settled`,
+ומיפוי הקוד שקורא לטבלאות שלא קיימות.
+
 **דוקומנטציה בלבד. לא הורץ שום DDL.** כל הממצאים כאן מבוססים על קריאה בלבד מתוך
 `information_schema`,
 `pg_type`,
@@ -61,97 +69,188 @@
 `CANCELLED` בוטל רשמית, אסור להחיל.
 `NO-OP` הוחל בפועל דרך מיגרציה אחרת, הקובץ עצמו מיותר.
 
-| קובץ | סטטוס | מה חסר / הערה |
+עמודת **תלויות** היא מה שחייב להיות מוחל *לפני* הקובץ, נגזר מהתוכן ולא ממספרי
+הקבצים. עמודת **סיכון** היא סיכון ההחלה היום למי שמוחל, ולא סיכון ההמתנה, אלא
+אם כתוב אחרת: `אפס`, `נמוך`, `בינוני`, `גבוה`, `ייכשל`.
+
+| קובץ | סטטוס | תלויות | סיכון | מה חסר / הערה |
+|---|---|---|---|---|
+| `001_initial_schema.sql` | PARTIAL | אין | גבוה | חסרים `wallets`, enum `vendor_status`, `generate_order_number`. החלה חוזרת של הקובץ המלא תדרוס 005/007 |
+| `002_auth_rate_limits.sql` | APPLIED | אין | אפס | |
+| `003_rbac.sql` | PARTIAL | 001 | בינוני | חסרה `admin_audit_log`. ‏025 העבירה את ה-trigger ל-`audit_log` במקומה |
+| `004_storage_buckets.sql` | APPLIED | אין | אפס | 6 buckets קיימים |
+| `005_products_schema.sql` | APPLIED | 001 | אפס | ההצהרה שלה על `product_type` היא זו שניצחה בפרודקשן |
+| `006_wallet_schema.sql` | APPLIED | 001 | אפס | |
+| `0075_categories_icon_url.sql` | APPLIED | 005 | אפס | העמודה קיימת, 0 שורות מאוכלסות |
+| `007_orders_schema.sql` | APPLIED | 005 | אפס | |
+| `008_coupons_schema.sql` | APPLIED | 007 | אפס | |
+| `009_addresses_schema.sql` | APPLIED | 001 | אפס | |
+| `010_referrals_affiliates_schema.sql` | APPLIED | 001 | אפס | |
+| `011_audit_log_schema.sql` | APPLIED | 001 | אפס | |
+| `012_categories_v2.sql` | MISSING | 005 | נמוך | אין `categories.deleted_at`, אין `set_categories_updated_at`. עצמאית לחלוטין |
+| `013_vendors_v2.sql` | APPLIED | 001 | אפס | |
+| `014_products_v2.sql` | APPLIED | 005 | אפס | |
+| `015_coupon_deals.sql` | APPLIED | 013 | אפס | 8 שורות |
+| `016_products_code_sync.sql` | APPLIED | 005 | אפס | |
+| `017_hero_slides.sql` | MISSING | אין | נמוך | אין `hero_slides`. עצמאית. אף קוד לא קורא לה |
+| `018_seed_categories.sql` | APPLIED | 005 | אפס | seed, 12 קטגוריות |
+| `019_user_rate_limits.sql` | APPLIED | 001 | אפס | 027 דורשת אותה |
+| `020_storage_product_images_admin.sql` | APPLIED | 004 | אפס | |
+| `021_products_coupons_buckets.sql` | APPLIED | 004 | אפס | |
+| `022_seed_demo_coupons_vendors.sql` | APPLIED | 015 | אפס | seed |
+| `023_fix_new_user_wallet_and_seed_vendors.sql` | APPLIED | 006 | אפס | |
+| `024_seed_demo_products.sql` | APPLIED | 005 | אפס | seed |
+| `025_consolidation.sql` | APPLIED | 003, 011 | אפס | |
+| `026_commerce.sql` | PARTIAL | 007, 019 | גבוה | **DRAFT.** חסרים `cart_items`, `coupon_redemptions`, `supplier_payouts`, `supplier_payout_items`, enum `wallet_reason`, `fn_redeem_coupon`. החלקים הקיימים הגיעו מ-046, וההצהרות מתנגשות (ראה "שני enums שחסרים להם ערך") |
+| `027_suppliers.sql` | PARTIAL | 016, 019, 005 | גבוה | **DRAFT.** 19 אובייקטים חסרים, מנוע ה-payout כולו. מגדירה מחדש `product_platform_percent` עם הליטרל 10 ותדרוס את 070. פירוט למטה |
+| `028_agents.sql` | MISSING | 027 | בינוני | **DRAFT.** 13 אובייקטים. תת-מערכת נפרדת, אף קוד חי לא נוגע בה |
+| `029_accounts.sql` | MISSING | 026, 001 | בינוני | **DRAFT.** 13 אובייקטים |
+| `030_catalog.sql` | MISSING | 005 | בינוני | **DRAFT.** 14 אובייקטים |
+| `031_notifications.sql` | MISSING | 029 | בינוני | **DRAFT.** 27 אובייקטים. ‏086 תלויה בה |
+| `032_wp_import_staging.sql` | APPLIED | אין | אפס | schema `wp_import`, ‏12 טבלאות |
+| `033_analytics.sql` | MISSING | 007, 026 | בינוני | **DRAFT.** 21 אובייקטים. `fn_ingest_analytics_events` חסרה, והקוד קורא לה (ראה "הקוד שמדבר אל טבלאות שלא קיימות") |
+| `034_analytics_bi.sql` | MISSING | 033, 027 | בינוני | **DRAFT.** 11 אובייקטים |
+| `035_security_hardening.sql` | MISSING | אין (כל משפט עטוף בבדיקת קיום) | נמוך | 7 אובייקטים. בטוחה גם כשהטיוטות 026-034 חסרות |
+| `041_seed_suppliers_link_products.sql` | APPLIED | 005 | אפס | seed, ‏11 ספקים |
+| `042_commerce_core.sql` | MISSING | 007, 026 | גבוה | 10 אובייקטים. **זה מה ש-Drizzle מנהל**, וזו הסיבה שהסכימה המנוהלת מתארת טבלאות שלא קיימות |
+| `044_link_products_to_vendors.sql` | APPLIED | 013 | אפס | seed. הכותרת אומרת NOT APPLIED, והנתונים אומרים אחרת: 0 מוצרים בלי ספק |
+| `045_restore_carts.sql` | APPLIED | 001 | אפס | |
+| `046_checkout_runtime.sql` | APPLIED | 007, 008 | אפס | היא שסיפקה `payments` ו-`wallet_accounts` במקום 026 |
+| `047_checkout_settlement.sql` | APPLIED | 046 | אפס | |
+| `048_products_content_fields.sql` | APPLIED | 005 | אפס | |
+| `049_media_assets.sql` | APPLIED | אין | אפס | |
+| `050_platform_percent_required.sql` | PARTIAL | 070 (הוחלה) | נמוך | הפונקציה תואמת (הגיעה מ-070). **חסר**: `platform_percent` עדיין nullable, `commission_percent` עדיין עם DEFAULT. החסימה ההיסטורית פגה: 0 מתוך 61 מוצרים ריקים |
+| `051_payout_terms.sql` | MISSING | **027** | גבוה | 4 פונקציות. חסומה לחלוטין: מגדירה מחדש `generate_payout_statement` שלא קיימת |
+| `052_product_approval_workflow.sql` | APPLIED | 005 | אפס | |
+| `053_admin_rbac_support.sql` | APPLIED | 003 | אפס | |
+| `0545_voucher_redemption.sql` | APPLIED | 072, 047 | אפס | הוחלה כ-`054_vouchers_tables_escrow_model` |
+| `054_section2_product_coupon_price_fields.sql` | APPLIED | 005 בלבד | אפס | סעיף 2 של 054 בלבד, במכוון. ראה "שלושה קבצים תובעים את המספר 054" |
+| `055_account_wallet.sql` | APPLIED | 046 | אפס | |
+| `056_analytics_v3.sql` | MISSING | **033, 034** | בינוני | 7 אובייקטים |
+| `057_wp_migration_log.sql` | APPLIED | 032 | אפס | 0 שורות |
+| `058_ledger_core.sql` | MISSING | 001 | בינוני | 10 אובייקטים. עצמאית מבנית, אבל 065 ו-064 תלויות בה |
+| `059_money_integer_units.sql` | MISSING | 042 (לגיבוי backfill) | **גבוה** | אין `fn_money_col_to_int`, אין `product_platform_bp`, אין `coupon_deals.coupon_price_agorot`. נקודת אל-חזור: משנה שם כל עמודת כסף |
+| `060_idempotency_keys.sql` | MISSING | אין | נמוך | אין `idempotency_keys`. עצמאית. יש קוד שמניח אותה ואף אחד לא קורא לו |
+| `061_coupon_single_use.sql` | MISSING | 026 (`coupon_redemptions`) | בינוני | הטבלה שהיא משנה לא קיימת |
+| `062_settlement_batches.sql` | MISSING | 047, 059 | בינוני | 5 אובייקטים |
+| `063_reconciliation.sql` | MISSING | 062 | בינוני | 4 אובייקטים |
+| `064_money_rls.sql` | MISSING | **058, 060, 061, 062, 063** | **ייכשל** | נוגע ב-9 טבלאות שאף אחת מהן לא קיימת |
+| `065_fn_post_journal.sql` | MISSING | **058** | בינוני | חסומה |
+| `066_coupon_layer_types.sql` | MISSING | אין | נמוך | `product_type` החי הוא coupon/physical/service, בלי subscription. אף קוד לא כותב subscription |
+| `067_coupon_layer_data.sql` | MISSING | **066** | בינוני | מעביר שורות `service`. חסום |
+| `068_voucher_expiry_sweep.sql` | MISSING | 0545 | נמוך | הגוף החי הוא הגרסה חסרת-הארגומנט מ-0545. העומס `(integer)` לא קיים |
+| `070_product_dynamic_split.sql` | APPLIED | 005, 054 | אפס | כל 4 ה-constraints במצב validated |
+| `071_settlement_status_platform_settled.sql` | APPLIED | 047 | אפס | הערך קיים ב-`settlement_status`. ראה "אימות ה-enum" |
+| `072_027subset_supplier_members.sql` | APPLIED | 070 (חייבת לרוץ אחריה) | אפס | תת-קבוצה מכוונת של 027 |
+| `073_vouchers_escrow_model.sql` | APPLIED | 072, 054 | אפס | |
+| `074_voucher_redemption_rpcs.sql` | APPLIED | 073 | אפס | |
+| `075_cardcom_account_id.sql` | APPLIED | 046 | אפס | |
+| `076_vouchers_reconcile_054_constraints.sql` | APPLIED | 073 | אפס | |
+| `077_orders_supplier_read_no_recursion.sql` | APPLIED | 072 | אפס | |
+| `078_supplier_scoped_order_read.sql` | APPLIED | 077 | אפס | |
+| `079_payout_escrow_release.sql` | CANCELLED | -- | **אסור** | בוטל 28.07 |
+| `080_ledger_escrow_held_account.sql` | CANCELLED | -- | **אסור** | בוטל 28.07 |
+| `081_payout_no_escrow.sql` | MISSING | **027, 051** | גבוה | הצורה המחייבת של `generate_payout_statement`. חסומה |
+| `082_fix_wallet_account_provisioning.sql` | MISSING | 055 | אפס | הגוף החי הוא הגרסה הפשוטה בלי הענף. **התנהגותית זהה** כי `wallet_accounts.owner_type` לא קיים |
+| `083_payout_status_pending_approval.sql` | NO-OP | 091 | אפס | הערך קיים דרך 091 |
+| `084_product_status_sold_out.sql` | NO-OP | -- | אפס | הערך קיים |
+| `085_voucher_scan_audit_and_no_escrow.sql` | MISSING | 074 | נמוך | אין `voucher_redemptions.ip_address`, אין `voucher_scan_ip` |
+| `086_triggers_post_059_money_columns.sql` | MISSING | **042, 031, 059** | גבוה | מגדירה מחדש שני triggers שאחד מהם שייך למערכת שלא קיימת |
+| `087_vouchers_platform_bp_guard.sql` | MISSING | **059** | **ייכשל** | מפנה ל-`vouchers.platform_bp` ול-`platform_percent_legacy`, שתיהן לא קיימות |
+| `088_expire_vouchers_unambiguous.sql` | MISSING | **068** | נמוך | חסומה |
+| `089_wallet_transfer_agorot.sql` | MISSING | **059** | גבוה | החתימה החיה היא `p_amount_ils numeric`. החלפה בלי 059 שוברת את כל קוראי הארנק |
+| `090_profiles_no_self_role_change.sql` | APPLIED | 001 | אפס | |
+| `091_supplier_payout_enums.sql` | APPLIED | אין | אפס | 6 enums מ-027 בלי הטבלאות שלהם |
+| `092_wallet_ledger_view_agorot.sql` | MISSING | **059, 089** | בינוני | ה-view החי הוא גרסת ה-ILS מ-055 |
+| `093_product_commission_type.sql` | APPLIED | 005, 070 | אפס | 61 שורות: 15 coupon/coupon_absolute, ‏46 physical/physical_percent. ה-CHECK במצב validated |
+| `094_settlement_events.sql` | MISSING | 047, 059 | נמוך (להחלה), בינוני (להמתנה) | אין `settlement_events`. יש קוד חי שכותב אליה ובולע את השגיאה |
+
+## אימות ה-enum: ‏`platform_settled` נמצא, אבל לא ב-`order_status`
+
+זו הבדיקה שהתבקשה במפורש, וזו התשובה המדויקת. שלושה enums שונים בפרודקשן
+מעורבים כאן, ורק לשניים מהם יש
+`platform_settled`:
+
+| enum | ערכים בפרודקשן | `platform_settled` |
 |---|---|---|
-| `001_initial_schema.sql` | PARTIAL | חסרים `wallets`, enum `vendor_status`, `generate_order_number` |
-| `002_auth_rate_limits.sql` | APPLIED | |
-| `003_rbac.sql` | PARTIAL | חסרה `admin_audit_log` |
-| `004_storage_buckets.sql` | APPLIED | 6 buckets קיימים |
-| `005_products_schema.sql` | APPLIED | |
-| `006_wallet_schema.sql` | APPLIED | |
-| `0075_categories_icon_url.sql` | APPLIED | |
-| `007_orders_schema.sql` | APPLIED | |
-| `008_coupons_schema.sql` | APPLIED | |
-| `009_addresses_schema.sql` | APPLIED | |
-| `010_referrals_affiliates_schema.sql` | APPLIED | |
-| `011_audit_log_schema.sql` | APPLIED | |
-| `012_categories_v2.sql` | MISSING | אין `categories.deleted_at`, אין `set_categories_updated_at` |
-| `013_vendors_v2.sql` | APPLIED | |
-| `014_products_v2.sql` | APPLIED | |
-| `015_coupon_deals.sql` | APPLIED | |
-| `016_products_code_sync.sql` | APPLIED | |
-| `017_hero_slides.sql` | MISSING | אין `hero_slides` |
-| `018_seed_categories.sql` | APPLIED | seed |
-| `019_user_rate_limits.sql` | APPLIED | |
-| `020_storage_product_images_admin.sql` | APPLIED | |
-| `021_products_coupons_buckets.sql` | APPLIED | |
-| `022_seed_demo_coupons_vendors.sql` | APPLIED | seed |
-| `023_fix_new_user_wallet_and_seed_vendors.sql` | APPLIED | |
-| `024_seed_demo_products.sql` | APPLIED | seed |
-| `025_consolidation.sql` | APPLIED | |
-| `026_commerce.sql` | PARTIAL | **DRAFT.** חסרים `cart_items`, `coupon_redemptions`, `supplier_payouts`, `supplier_payout_items`, enum `wallet_reason`, `fn_redeem_coupon` |
-| `027_suppliers.sql` | PARTIAL | **DRAFT.** 19 אובייקטים חסרים. מנוע ה-payout כולו. פירוט למטה |
-| `028_agents.sql` | MISSING | **DRAFT.** 13 אובייקטים |
-| `029_accounts.sql` | MISSING | **DRAFT.** 13 אובייקטים |
-| `030_catalog.sql` | MISSING | **DRAFT.** 14 אובייקטים |
-| `031_notifications.sql` | MISSING | **DRAFT.** 27 אובייקטים |
-| `032_wp_import_staging.sql` | APPLIED | schema `wp_import` |
-| `033_analytics.sql` | MISSING | **DRAFT.** 21 אובייקטים |
-| `034_analytics_bi.sql` | MISSING | **DRAFT.** 11 אובייקטים |
-| `035_security_hardening.sql` | MISSING | 7 אובייקטים |
-| `041_seed_suppliers_link_products.sql` | APPLIED | seed |
-| `042_commerce_core.sql` | MISSING | 10 אובייקטים. **זה מה ש-Drizzle מנהל** |
-| `044_link_products_to_vendors.sql` | APPLIED | seed |
-| `045_restore_carts.sql` | APPLIED | |
-| `046_checkout_runtime.sql` | APPLIED | |
-| `047_checkout_settlement.sql` | APPLIED | |
-| `048_products_content_fields.sql` | APPLIED | |
-| `049_media_assets.sql` | APPLIED | |
-| `050_platform_percent_required.sql` | PARTIAL | הפונקציה תואמת (הגיעה מ-070). **חסר**: `platform_percent` עדיין nullable, `commission_percent` עדיין עם DEFAULT |
-| `051_payout_terms.sql` | MISSING | 4 פונקציות. חסום על 027 |
-| `052_product_approval_workflow.sql` | APPLIED | |
-| `053_admin_rbac_support.sql` | APPLIED | |
-| `0545_voucher_redemption.sql` | APPLIED | |
-| `054_section2_product_coupon_price_fields.sql` | APPLIED | |
-| `055_account_wallet.sql` | APPLIED | |
-| `056_analytics_v3.sql` | MISSING | 7 אובייקטים. חסום על 033/034 |
-| `057_wp_migration_log.sql` | APPLIED | |
-| `058_ledger_core.sql` | MISSING | 10 אובייקטים |
-| `059_money_integer_units.sql` | MISSING | אין `fn_money_col_to_int`, אין `product_platform_bp`, אין `coupon_deals.coupon_price_agorot` |
-| `060_idempotency_keys.sql` | MISSING | אין `idempotency_keys` |
-| `061_coupon_single_use.sql` | MISSING | אין `coupon_redemptions` |
-| `062_settlement_batches.sql` | MISSING | 5 אובייקטים |
-| `063_reconciliation.sql` | MISSING | 4 אובייקטים |
-| `064_money_rls.sql` | MISSING | **ייכשל כרגע.** נוגע ב-9 טבלאות שאף אחת מהן לא קיימת |
-| `065_fn_post_journal.sql` | MISSING | חסום על 058 |
-| `066_coupon_layer_types.sql` | MISSING | `product_type` החי הוא coupon/physical/service, בלי subscription |
-| `067_coupon_layer_data.sql` | MISSING | חסום על 066 |
-| `068_voucher_expiry_sweep.sql` | MISSING | הגוף החי הוא הגרסה חסרת-הארגומנט מ-0545. העומס `(integer)` לא קיים |
-| `070_product_dynamic_split.sql` | APPLIED | כל 4 ה-constraints במצב validated |
-| `071_settlement_status_platform_settled.sql` | APPLIED | |
-| `072_027subset_supplier_members.sql` | APPLIED | |
-| `073_vouchers_escrow_model.sql` | APPLIED | |
-| `074_voucher_redemption_rpcs.sql` | APPLIED | |
-| `075_cardcom_account_id.sql` | APPLIED | |
-| `076_vouchers_reconcile_054_constraints.sql` | APPLIED | |
-| `077_orders_supplier_read_no_recursion.sql` | APPLIED | |
-| `078_supplier_scoped_order_read.sql` | APPLIED | |
-| `079_payout_escrow_release.sql` | CANCELLED | בוטל 28.07. אסור להחיל |
-| `080_ledger_escrow_held_account.sql` | CANCELLED | בוטל 28.07. אסור להחיל |
-| `081_payout_no_escrow.sql` | MISSING | חסום על 027 |
-| `082_fix_wallet_account_provisioning.sql` | MISSING | הגוף החי הוא הגרסה הפשוטה בלי הענף. **התנהגותית זהה** כי `wallet_accounts.owner_type` לא קיים |
-| `083_payout_status_pending_approval.sql` | NO-OP | הערך קיים דרך 091 |
-| `084_product_status_sold_out.sql` | NO-OP | הערך קיים |
-| `085_voucher_scan_audit_and_no_escrow.sql` | MISSING | אין `voucher_redemptions.ip_address`, אין `voucher_scan_ip` |
-| `086_triggers_post_059_money_columns.sql` | MISSING | חסום על 042 ו-031 |
-| `087_vouchers_platform_bp_guard.sql` | MISSING | **ייכשל כרגע.** מפנה ל-`vouchers.platform_bp` ו-`vouchers.platform_percent_legacy`, שתיהן לא קיימות |
-| `088_expire_vouchers_unambiguous.sql` | MISSING | חסום על 068 |
-| `089_wallet_transfer_agorot.sql` | MISSING | החתימה החיה היא `p_amount_ils numeric` |
-| `090_profiles_no_self_role_change.sql` | APPLIED | |
-| `091_supplier_payout_enums.sql` | APPLIED | |
-| `092_wallet_ledger_view_agorot.sql` | MISSING | ה-view החי הוא גרסת ה-ILS מ-055 |
-| `093_product_commission_type.sql` | APPLIED | 61 שורות: 15 coupon, 46 physical. ה-CHECK במצב validated |
-| `094_settlement_events.sql` | MISSING | אין `settlement_events` |
+| `order_status` | pending, paid, partially_fulfilled, fulfilled, cancelled, refunded | **לא קיים** |
+| `settlement_status` | pending, paid, split_executed, escrow_held, escrow_released, redeemed, refunded, cancelled, platform_settled | **קיים** |
+| `payment_status` | initiated, redirected, succeeded, failed, refunded, platform_settled | **קיים** |
+
+**‏`order_status` בלי `platform_settled` הוא לא באג, וזה לא פער.**
+`platform_settled`
+מעולם לא היה מצב של הזמנה. הוא מצב של *שורת* הזמנה
+(`order_items.settlement_status`)
+ושל *תשלום*
+(`payments.status`).
+נבדקו כל מסלולי הכתיבה: אף אחד לא כותב
+`platform_settled`
+לתוך
+`orders.status`.
+המקום היחיד שבו הערך מופיע במסלול הזמנה הוא קריאה, ב-
+`src/server/queries/orders.ts`,
+שממפה שורות ישנות מ-
+`platform_settled`
+ל-
+`split_executed`.
+‏`state-machine.ts` אומר את אותו הדבר בקוד: אין אירוע שמוביל *אל* המצב הזה.
+
+**מקור הערך:** ‏`071_settlement_status_platform_settled.sql`, שהוחלה 27.07.
+‏066 מכריזה על אותו ערך בדיוק ולכן הסעיף הזה שלה הוא no-op, אבל 066 עדיין
+חסרה בגלל הסעיף השני שלה (`subscription` ב-`product_type`).
+
+**מספר השורות שנושאות את הערך: אפס.** נמדד ב-
+`order_items`
+וב-
+`payments`
+גם יחד. הערך קיים בסכימה, ריק בנתונים, ומטופל בקוד. אין כאן מה לתקן.
+
+## שלושה קבצים תובעים את המספר 054
+
+זה מקור בלבול חוזר ולכן הוא כתוב כאן במפורש:
+
+| קובץ | מה הוא | סטטוס |
+|---|---|---|
+| `054_section2_product_coupon_price_fields.sql` | סעיף 2 בלבד: `products.coupon_price_ils` ו-`offer_valid_until` | APPLIED, רשום כ-`20260727002415` |
+| `0545_voucher_redemption.sql` | תת-מערכת השוברים | APPLIED, רשום כ-`054_vouchers_tables_escrow_model` |
+| `073_vouchers_escrow_model.sql` | ההצהרה המחייבת של `vouchers` | APPLIED, רשום כ-`20260727034852` |
+
+הפיצול היה נכון. סעיף 2 הוחל לבדו כי הוא תלוי ב-005 בלבד, בעוד ששאר 054
+נשען על
+`supplier_members`
+מ-027 שלא הייתה קיימת. שם הקובץ
+`0545`
+נבחר כדי שמיון מחרוזות לא יתנגש עם
+`054`,
+ולכן
+`ls`
+ממיין אותו לפני
+`054`.
+כל סקריפט שסורק את התיקייה חייב למיין לפי ה-version של ה-CLI.
+
+## הקוד שמדבר אל טבלאות שלא קיימות
+
+זו העמודה שחסרה מכל אודיט קודם: לא מה חסר ב-DB, אלא מה נשבר בגללו. נסרק כל
+`src/`
+מול רשימת 41 האובייקטים החסרים.
+
+| טבלה / פונקציה חסרה | מי קורא לה | מה קורה בפועל |
+|---|---|---|
+| `payout_statements`, `generate_payout_statement`, `approve_payout_statement` | `src/app/(admin)/admin/payouts/page.tsx`, `src/server/actions/admin/payouts.ts` | **מסך האדמין של התשלומים לספקים מציג רשימה ריקה לנצח.** הדף לא קורס: הוא קורא `const { data, count } = await query` בלי לקרוא ל-`error`, ו-`supabase-js` לא זורק על `42P01`, ולכן `data ?? []` הופך שגיאת סכימה למסך "אין תוצאות". ה-action כן בודק `error` ומחזיר הודעה לאדמין. זה הפער החי היחיד שמשתמש רואה |
+| `suppliers.min_payout_ils` (מ-051) | אותו מסך | ה-select השני על `suppliers` נכשל מאותה סיבה ובאותה שקיפות, ולכן גם רשימת הספקים בטופס ריקה |
+| `fn_ingest_analytics_events` | `src/server/analytics/track.ts`, `src/app/api/a/route.ts` | נבלע. הקובץ מצהיר במפורש שאסור לו לזרוק, וה-route מחזיר 204 בכל מקרה. אנליטיקה פשוט לא נאספת |
+| `settlement_events` | `src/server/payments/settlement-events.ts` | נבלע במכוון ומתועד בראש הקובץ: הכתיבה רצה אחרי שהכרטיס כבר חויב, ולכן כישלון נרשם ללוג ולא מוחזר לקורא |
+| `commission_ledger`, `cashback_reversal_debts` | `src/db/schema/commerce.ts` | הצהרת Drizzle בלבד. אין קוד ריצה שקורא להן, אבל `drizzle-kit push` היה מנסה ליצור אותן |
+| `idempotency_keys` | `src/lib/idempotency.ts` | **קוד מת.** אפס קוראים בכל הריפו. בנוסף ה-docstring שלו מפנה ל"מיגרציה 052", והטבלה מוגדרת ב-060 |
+
+**המסקנה המעשית:** מתוך 32 הקבצים החסרים, בדיוק אחד גורם לתקלה שמשתמש רואה,
+והוא 027 (עם 051 מעליו). שאר הפערים או נבלעים במכוון או נוגעים בקוד שאיש לא
+קורא לו. זה משנה את סדר העדיפויות: 027 אינה "החוב הגדול", היא **התקלה היחידה**.
+
+**הדפוס המסוכן שחוזר בשלושה מהחמישה:** שגיאת סכימה שנראית כמו נתונים ריקים.
+מסך התשלומים מציג "אין תוצאות", האנליטיקה מציגה אפס אירועים, ויומן הסליקה ריק.
+בכל שלושת המקרים ההסבר האמיתי הוא שהטבלה לא קיימת, ואף אחד מהמסכים לא אומר
+זאת. מי שיסתכל על המסכים האלה בלי המסמך הזה יסיק שאין פעילות, לא שאין סכימה.
 
 ## חמש המיגרציות שסריקת-שמות משקרת עליהן
 
