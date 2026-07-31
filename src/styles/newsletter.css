@@ -1,0 +1,53 @@
+/* Newsletter signup. Logical properties throughout: this renders inside an
+   RTL document, and a physical `margin-left` here is the bug docs/rtl-violations.md
+   catalogues. */
+.ke-newsletter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 26rem;
+}
+.ke-newsletter__label {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.ke-newsletter__row {
+  display: flex;
+  gap: 0.5rem;
+}
+.ke-newsletter__input {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  border: 1px solid var(--color-border, #d4d4d4);
+  border-radius: 0.5rem;
+  padding-block: 0.5rem;
+  padding-inline: 0.75rem;
+  font-size: 0.875rem;
+}
+.ke-newsletter__button {
+  border-radius: 0.5rem;
+  background: #000;
+  color: #fff;
+  padding-block: 0.5rem;
+  padding-inline: 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.ke-newsletter__button:disabled {
+  opacity: 0.5;
+}
+.ke-newsletter__consent {
+  font-size: 0.75rem;
+  color: #666;
+  line-height: 1.5;
+}
+.ke-newsletter__error {
+  font-size: 0.75rem;
+  color: #b91c1c;
+}
+.ke-newsletter__success {
+  display: block;
+  font-size: 0.75rem;
+  color: #15803d;
+}

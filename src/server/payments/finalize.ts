@@ -437,6 +437,26 @@ export async function finalizeOrder(input: {
     // Best-effort: the purchased cart is done; leftovers confuse the header badge.
     await admin.from('carts').update({ items: [] }).eq('profile_id', order.user_id)
 
+    // Closes the abandoned-cart loop (098). The function has been in the hosted
+    // project since the growth migrations landed and nothing had ever called
+    // it, so `v_abandoned_cart_recovery` reported a recovery rate of 0% no
+    // matter how many nudged shoppers came back and paid. It is the order that
+    // proves the recovery, so this is the only place that knows.
+    //
+    // Called before the cart is considered settled and wrapped so it cannot
+    // throw: attribution is a reporting fact, and the card is already charged.
+    // It attributes at most one open nudge inside a 72 hour window, and a
+    // replayed finalize re-runs it as a no-op because the row it would claim
+    // already has a recovered_order_id.
+    try {
+      await admin.rpc('fn_attribute_cart_recovery' as never, {
+        p_order_id: order.id,
+        p_user_id: order.user_id,
+      } as never)
+    } catch {
+      // Deliberately silent, for the reason above.
+    }
+
     // The money journal (migration 094). Deliberately the last thing done and
     // deliberately incapable of throwing: the card is already charged and the
     // order already closed, and no journal entry is worth failing a finalize

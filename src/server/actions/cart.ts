@@ -6,17 +6,13 @@ import {
   ensureGuestSessionId,
   getGuestSessionId,
 } from '@/lib/cart/guest-session'
+import { loadCartProductData } from '@/lib/cart/load-products'
 import { buildCartView } from '@/lib/cart/pricing'
 import { parsePercentSnapshot } from '@/lib/cart/snapshot'
 import type { CartActionResult, CartStorageItem, CartView } from '@/lib/cart/types'
+import { growthClient } from '@/lib/growth/client'
+import { evaluateDiscount } from '@/lib/growth/discount'
 import { createGuestCartClient, createPublicClient } from '@/lib/supabase/anon'
-import {
-  CASHBACK_PERCENT_CANDIDATES,
-  COUPON_054_COLUMNS,
-  type Coupon054Row,
-  readFirstAvailableColumn,
-  readOptionalColumns,
-} from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import { addToCartSchema, updateCartItemSchema } from '@/lib/validations/cart'
@@ -76,76 +72,40 @@ async function checkCartWriteRateLimit(userId: string | null): Promise<boolean> 
   return checkRateLimit(`cart_write:ip:${ip}`, 120, 3600)
 }
 
-async function loadProductData(items: CartStorageItem[]) {
-  if (items.length === 0) return { products: [], variants: [] }
+/**
+ * Prices a site-wide campaign against this cart, or returns null if the code is
+ * not one. Null is not a failure: the caller falls through to the legacy
+ * supplier coupons table.
+ */
+async function evaluateCampaignCode(
+  code: string,
+  view: CartView,
+): Promise<{ code: string; label: string; discountAgorot: number } | null> {
+  const { data } = await growthClient().campaigns().byCode(code)
+  if (!data) return null
 
-  const productIds = [...new Set(items.map((i) => i.product_id))]
-  const variantIds = [...new Set(items.map((i) => i.variant_id).filter((id): id is string => !!id))]
-
-  const catalogue = createPublicClient()
-
-  // No cashback column here, under either name. 059 renames cashback_percent
-  // to cashback_bp and moves it to basis points, and it is NOT applied to the
-  // hosted project. Naming the wrong one fails the WHOLE select with 42703:
-  // `products` comes back null and every cart line loses its name, its image
-  // and its price, while the header still shows a correct item count because
-  // the count comes from the carts row rather than from here. That failure is
-  // in STATE for 2026-07-28, where it was then "fixed" to the other name, which
-  // is the same bug facing the other way. It is read below from whichever
-  // column exists, and a cart is not worth losing over a perk that defaults to
-  // zero.
-  const productSelect =
-    'id, slug, name_he, type, kenyon_price, stock_quantity, status, deleted_at, images, is_coupon_enabled, platform_percent'
-
-  const { data: products } = await catalogue
-    .from('products')
-    .select(productSelect)
-    .in('id', productIds)
-
-  // coupon_price_ils arrives with migration 054, which is not applied to every
-  // deployment. Naming it above would fail the whole cart query with 42703 and
-  // leave the shopper with an empty cart rather than an unpriced coupon line.
-  const coupon054 = await readOptionalColumns<Coupon054Row>(
-    (select, ids) => catalogue.from('products').select(select).in('id', ids) as never,
-    COUPON_054_COLUMNS,
-    productIds,
-    'cart',
-  )
-  const cashback = await readFirstAvailableColumn<number>(
-    (select, ids) => catalogue.from('products').select(select).in('id', ids) as never,
-    CASHBACK_PERCENT_CANDIDATES,
-    productIds,
-    'cart cashback',
+  const evaluation = evaluateDiscount(
+    data,
+    {
+      // Both already agorot. This branch was written against the pre-GOAL-1
+      // cart, where the view carried shekel floats, and multiplied each one by
+      // 100 on the way in. It is the same round trip `resolveCheckoutDiscountAgorot`
+      // below already dropped, and it is why this merge waited.
+      payableAgorot: view.subtotal,
+      // The ceiling. The discount is funded from the platform commission and
+      // never from the supplier's share (05a181a), so the cart may not promise
+      // more than the platform earns on it.
+      commissionAgorot: view.platform_fee,
+    },
+    new Date(),
   )
 
-  const pricedProducts = (products ?? []).map((p) => ({
-    ...p,
-    coupon_price_ils: coupon054.get(p.id)?.coupon_price_ils ?? null,
-    // Normalised to percent here rather than in pricing.ts, so the pure pricing
-    // module keeps speaking percent, which is what its invariants are written
-    // in. 250 bp is 2.5 percent.
-    cashback_percent: cashback.get(p.id) ?? null,
-  }))
-
-  let variants: {
-    id: string
-    product_id: string
-    price: number | null
-    price_modifier: number
-    stock_quantity: number | null
-    is_active: boolean
-    deleted_at: string | null
-  }[] = []
-
-  if (variantIds.length > 0) {
-    const { data } = await catalogue
-      .from('product_variants')
-      .select('id, product_id, price, price_modifier, stock_quantity, is_active, deleted_at')
-      .in('id', variantIds)
-    variants = data ?? []
+  if (!evaluation.ok) return null
+  return {
+    code: evaluation.code,
+    label: evaluation.label,
+    discountAgorot: evaluation.discountAgorot,
   }
-
-  return { products: pricedProducts, variants }
 }
 
 /**
@@ -159,6 +119,20 @@ async function resolveAppliedCoupon(
   const cookieStore = await cookies()
   const code = normalizeCouponCode(cookieStore.get(CART_COUPON_COOKIE)?.value)
   if (!code) return null
+
+  // Site-wide campaigns first.
+  //
+  // `discount_campaigns` is the platform's own table (096); `public.coupons` is
+  // supplier-scoped and predates it. A code can only be one or the other, and
+  // checking the campaign first means a marketing code is never shadowed by a
+  // legacy row that happens to share its text.
+  //
+  // platform_fee is the commission on this cart, and passing it means the cart
+  // caps the discount at the money that funds it rather than quoting a number
+  // settlement will later cut down. A quote the charge does not honour is the
+  // exact bug coupon-offer.ts already cost this project once.
+  const campaign = await evaluateCampaignCode(code, view)
+  if (campaign) return campaign
 
   // `coupons` is readable by anon only where `is_active`, so a deactivated code
   // arrives here as null rather than as an inactive row. `evaluateCoupon`
@@ -189,7 +163,7 @@ async function resolveAppliedCoupon(
 }
 
 async function resolveCartView(cartId: string | null, items: CartStorageItem[]): Promise<CartView> {
-  const { products, variants } = await loadProductData(items)
+  const { products, variants } = await loadCartProductData(items)
   const priced = buildCartView(cartId, items, products, variants)
   if (priced.items.length === 0) return priced
   // Priced twice on purpose: the coupon needs the payable total to judge a
@@ -589,8 +563,25 @@ export async function applyCouponCode(rawCode: string): Promise<CouponActionResu
   const items = parseItems(row?.items)
   if (items.length === 0) return fail('העגלה ריקה', 'EMPTY_CART')
 
-  const { products, variants } = await loadProductData(items)
+  const { products, variants } = await loadCartProductData(items)
   const priced = buildCartView(row?.id ?? null, items, products, variants)
+
+  // Site-wide campaign first, same precedence as resolveAppliedCoupon. Without
+  // this the whole of 096 would be unreachable: a campaign code entered in the
+  // cart would fall through to `public.coupons`, miss, and be rejected as
+  // unknown.
+  const campaign = await evaluateCampaignCode(code, priced)
+  if (campaign) {
+    const cookieStore = await cookies()
+    cookieStore.set(CART_COUPON_COOKIE, campaign.code, {
+      httpOnly: true,
+      sameSite: 'lax',
+      maxAge: COUPON_COOKIE_MAX_AGE,
+      path: '/',
+    })
+    revalidateCartPaths()
+    return { ok: true, cart: await getCart() }
+  }
 
   const { data } = await createPublicClient()
     .from('coupons')
