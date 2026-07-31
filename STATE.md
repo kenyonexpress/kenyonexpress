@@ -1,19 +1,19 @@
 # KenyonExpress State (ke-arch)
 
 ## Current Phase
-docs-queue: SUPPLIER-ONBOARDING rev B done; next ANALYTICS.
+docs-queue: ANALYTICS rev C done; next CUSTOMER-SUPPORT.
 
 ## Last Completed
-ARCHITECTURE-SUPPLIER-ONBOARDING.md rev B
+ARCHITECTURE-ANALYTICS.md rev C (GA4, conversions, sales dashboard)
 
 ## In Progress
-ANALYTICS, CUSTOMER-SUPPORT, MASTER-v2, contradiction sweep
+CUSTOMER-SUPPORT, MASTER-v2, contradiction sweep
 
 ## Blocking Issues
 none
 
 ## Next Task
-ANALYTICS GA4 expand
+CUSTOMER-SUPPORT refunds/cancel policy
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
