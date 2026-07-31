@@ -197,8 +197,8 @@ Smoke אחרי deploy: יצירת שגיאה מבוקרת ב-preview/staging ק�
 |---|---|---|
 | N1 | Resend key רק בשרת; מייל רכישת קופון | P0 |
 | N2 | אין Make/Zapier בייצור | P0 |
-| Q1–Q4 | tsc / vitest / build / playwright cart-checkout | P0 |
-| S1–S7 | אין service role בדפדפן; rate limits; legal pages; RBAC | P0 |
+| Q1 עד Q4 | tsc / vitest / build / playwright cart-checkout | P0 |
+| S1 עד S7 | אין service role בדפדפן; rate limits; legal pages; RBAC | P0 |
 
 ---
 
