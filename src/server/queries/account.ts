@@ -1,3 +1,4 @@
+import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
 
 /**
@@ -109,17 +110,18 @@ export async function getWalletSummary(): Promise<WalletSummary> {
   } = await supabase.auth.getUser()
   if (!user) return { balanceIls: 0, accountId: null }
 
-  const { data } = await supabase
-    .from('wallet_accounts')
-    // balance_agorot since 059; the old name took the whole select down with
-    // 42703 and the account page reported an empty wallet to everybody.
-    .select('id, balance_agorot')
-    .eq('user_id', user.id)
-    .maybeSingle()
+  // Probed, not named. This selected `balance_agorot`, which the hosted project
+  // does not have, so the select 42703'd and the account area showed every
+  // customer an empty wallet. Naming `balance_ils` instead would just move the
+  // same failure onto a migrated database.
+  const { accountId, balanceAgorot } = await readWalletAccountAgorot(
+    (select, ids) => supabase.from('wallet_accounts').select(select).eq('user_id', ids[0]) as never,
+    user.id,
+  )
 
   return {
-    balanceIls: Number(data?.balance_agorot ?? 0) / 100,
-    accountId: data?.id ?? null,
+    balanceIls: balanceAgorot / 100,
+    accountId,
   }
 }
 

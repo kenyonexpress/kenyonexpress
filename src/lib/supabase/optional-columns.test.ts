@@ -7,6 +7,7 @@ import {
   readFirstAvailableColumn,
   readOptionalColumns,
   readStickerPriceIls,
+  readWalletAccountAgorot,
 } from './optional-columns'
 
 const UNDEFINED_COLUMN = {
@@ -268,5 +269,84 @@ describe('readFirstAvailableColumn', () => {
       ).size,
     ).toBe(0)
     expect(run).not.toHaveBeenCalled()
+  })
+})
+
+/**
+ * The wallet balance, which four call sites used to name by guess and guessed
+ * two different ways. Verified against the live database on 2026-07-31:
+ * `balance_agorot` does not exist there, so the two readers that named it
+ * returned nothing and reported an empty wallet to every customer.
+ */
+describe('readWalletAccountAgorot', () => {
+  beforeEach(() => {
+    __resetColumnCandidateCache()
+  })
+
+  const undefinedColumn = { code: '42703', message: 'column does not exist' }
+
+  it('reads a post-059 database in agorot, unconverted', async () => {
+    const run = vi.fn(async () => ({
+      data: [{ id: 'acct-1', balance_agorot: 12345 }],
+      error: null,
+    }))
+    expect(await readWalletAccountAgorot(run as never, 'user-1')).toEqual({
+      accountId: 'acct-1',
+      balanceAgorot: 12345,
+    })
+  })
+
+  // The production shape. ₪123.45 is 12345 agorot, and a caller must never get
+  // the shekel figure back believing it is agorot.
+  it('converts the hosted project shekel column to agorot', async () => {
+    const run = vi.fn(async (select: string) => {
+      if (select.includes('balance_agorot')) return { data: null, error: undefinedColumn }
+      return { data: [{ id: 'acct-1', balance_ils: 123.45 }], error: null }
+    })
+    expect(await readWalletAccountAgorot(run as never, 'user-1')).toEqual({
+      accountId: 'acct-1',
+      balanceAgorot: 12345,
+    })
+  })
+
+  it('rounds a stored shekel fraction rather than carrying a float into money', async () => {
+    const run = vi.fn(async (select: string) => {
+      if (select.includes('balance_agorot')) return { data: null, error: undefinedColumn }
+      return { data: [{ id: 'acct-1', balance_ils: 0.1 + 0.2 }], error: null }
+    })
+    expect((await readWalletAccountAgorot(run as never, 'user-1')).balanceAgorot).toBe(30)
+  })
+
+  it('reads a customer with no wallet row as an empty wallet, not as an error', async () => {
+    const run = vi.fn(async () => ({ data: [], error: null }))
+    expect(await readWalletAccountAgorot(run as never, 'user-1')).toEqual({
+      accountId: null,
+      balanceAgorot: 0,
+    })
+  })
+
+  // Both spellings in one select is the failure the helper exists to avoid: a
+  // 42703 takes down the whole query, so naming more columns makes it likelier.
+  it('never names both spellings in one select', async () => {
+    const selects: string[] = []
+    const run = vi.fn(async (select: string) => {
+      selects.push(select)
+      if (select.includes('balance_agorot')) return { data: null, error: undefinedColumn }
+      return { data: [{ id: 'acct-1', balance_ils: 1 }], error: null }
+    })
+    await readWalletAccountAgorot(run as never, 'user-1')
+    expect(selects.length).toBeGreaterThan(1)
+    for (const s of selects) {
+      expect(s.includes('balance_agorot') && s.includes('balance_ils')).toBe(false)
+    }
+  })
+
+  it('passes the user id through as the filter argument, not as a row id', async () => {
+    const run = vi.fn(async (_select: string, ids: string[]) => {
+      expect(ids).toEqual(['user-1'])
+      return { data: [{ id: 'acct-1', balance_agorot: 500 }], error: null }
+    })
+    await readWalletAccountAgorot(run as never, 'user-1')
+    expect(run).toHaveBeenCalled()
   })
 })

@@ -166,6 +166,53 @@ export const WALLET_AMOUNT_CANDIDATES: readonly ColumnCandidate<number>[] = [
   { column: 'amount_ils', toCanonical: (v) => (v == null ? null : Math.round(Number(v) * 100)) },
 ]
 
+/**
+ * A wallet account's balance, in agorot, from whichever column exists.
+ *
+ * Same rename as the entry amount: the hosted project carries
+ * `wallet_accounts.balance_ils` and 059 replaces it with integer
+ * `balance_agorot`. `fn_wallet_transfer` in production reads and writes
+ * `balance_ils`, so that is the live truth there.
+ */
+export const WALLET_BALANCE_CANDIDATES: readonly ColumnCandidate<number>[] = [
+  { column: 'balance_agorot', toCanonical: (v) => (v == null ? null : Math.round(Number(v))) },
+  { column: 'balance_ils', toCanonical: (v) => (v == null ? null : Math.round(Number(v) * 100)) },
+]
+
+/**
+ * The customer's wallet account, by user, in agorot.
+ *
+ * Every reader of the balance goes through here, because the codebase had
+ * settled into naming the column by guess and had guessed differently in four
+ * places: the account area and the checkout page named `balance_agorot`, which
+ * does not exist in production, so both 42703'd and reported a balance of zero
+ * to every customer, while the action that actually debits the wallet and the
+ * admin user page named `balance_ils` and worked. Verified against the live
+ * database on 2026-07-31: `select id, balance_agorot from wallet_accounts`
+ * answers `42703: column "balance_agorot" does not exist`.
+ *
+ * The consequence was one-directional and worth stating: the debit authority
+ * was the one reading the right name, so nobody was overcharged and no credit
+ * was lost. The money was simply invisible and therefore unspendable.
+ *
+ * Agorot is the return unit whichever column won, so a caller can never be
+ * handed shekels it believes are agorot. The account id is returned alongside
+ * because the two callers that need it would otherwise select the row twice.
+ */
+export async function readWalletAccountAgorot(
+  run: (select: string, ids: string[]) => OptionalColumnsResult<Record<string, unknown>>,
+  userId: string,
+): Promise<{ accountId: string | null; balanceAgorot: number }> {
+  const rows = await readFirstAvailableColumn<number>(
+    run,
+    WALLET_BALANCE_CANDIDATES,
+    [userId],
+    'wallet_accounts.balance',
+  )
+  const [accountId, balanceAgorot] = [...rows][0] ?? []
+  return { accountId: accountId ?? null, balanceAgorot: balanceAgorot ?? 0 }
+}
+
 /** The two columns migration 054 adds to `products`. */
 export const COUPON_054_COLUMNS = ['coupon_price_ils', 'offer_valid_until'] as const
 

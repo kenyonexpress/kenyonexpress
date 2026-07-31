@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { validateCartView } from '@/lib/checkout/validate-cart'
 import { isCardTokenExpired } from '@/lib/payments/token-expiry'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
 import { getCart } from '@/server/actions/cart'
 import type { Metadata } from 'next'
@@ -52,33 +53,33 @@ export default async function CheckoutPage({
 
   if (user) {
     const admin = createAdminClient()
-    const [{ data: walletAccount }, { data: defaultAddress }, { data: tokens }] = await Promise.all(
-      [
-        // balance_agorot since 059. Selecting the old name failed with 42703, so
-        // walletAccount came back null and every customer was shown a wallet
-        // balance of zero: the money was there and could never be spent.
-        admin
-          .from('wallet_accounts')
-          .select('balance_agorot')
-          .eq('user_id', user.id)
-          .maybeSingle(),
-        admin
-          .from('user_addresses')
-          .select('id, full_name, phone, city, street, street_number, apartment, floor, zip')
-          .eq('user_id', user.id)
-          .is('deleted_at', null)
-          .order('is_default', { ascending: false })
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle(),
-        admin
-          .from('payment_tokens')
-          .select('id, last_4, card_brand, expiry_month, expiry_year, is_default')
-          .eq('profile_id', user.id)
-          .order('is_default', { ascending: false })
-          .order('created_at', { ascending: false }),
-      ],
-    )
+    const [wallet, { data: defaultAddress }, { data: tokens }] = await Promise.all([
+      // Probed rather than named. The comment that stood here said
+      // `balance_agorot` was correct since 059 and that the old name had
+      // failed with 42703; the hosted project never received 059, so it was
+      // the new name that failed there, and the effect described was exactly
+      // the one being caused: the money was there and could never be spent.
+      readWalletAccountAgorot(
+        (select, ids) =>
+          admin.from('wallet_accounts').select(select).eq('user_id', ids[0]) as never,
+        user.id,
+      ),
+      admin
+        .from('user_addresses')
+        .select('id, full_name, phone, city, street, street_number, apartment, floor, zip')
+        .eq('user_id', user.id)
+        .is('deleted_at', null)
+        .order('is_default', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      admin
+        .from('payment_tokens')
+        .select('id, last_4, card_brand, expiry_month, expiry_year, is_default')
+        .eq('profile_id', user.id)
+        .order('is_default', { ascending: false })
+        .order('created_at', { ascending: false }),
+    ])
 
     address = {
       id: defaultAddress?.id ?? null,
@@ -92,7 +93,7 @@ export default async function CheckoutPage({
       zip: defaultAddress?.zip ?? '',
       email: user.email ?? '',
     }
-    walletBalance = Number(walletAccount?.balance_agorot ?? 0) / 100
+    walletBalance = wallet.balanceAgorot / 100
     savedCards = (tokens ?? [])
       // An expired card is still listed in /account so the customer can delete
       // it, but offering it here only buys a guaranteed decline.

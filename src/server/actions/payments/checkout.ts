@@ -30,6 +30,7 @@ import {
 } from '@/lib/payments/payment-money-columns'
 import { isCardTokenExpired } from '@/lib/payments/token-expiry'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import {
@@ -401,16 +402,20 @@ export async function beginCheckout(
   // Wallet: cap at balance and at the on-site charge
   let walletAppliedAgorot = agorot(0)
   if (input.apply_wallet_ils > 0) {
-    const { data: account } = await admin
-      .from('wallet_accounts')
-      .select('id, balance_ils')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    const balance = Number(account?.balance_ils ?? 0)
-    if (input.apply_wallet_ils > balance) {
+    // This is the authority that decides whether the customer may spend it, so
+    // it compares in agorot and not in floats. It named `balance_ils`, which is
+    // right for the hosted project and 42703 on a database that has 059; there
+    // the read failed, the balance read as zero, and every wallet application
+    // was refused. Same probe as every other reader now.
+    const { balanceAgorot } = await readWalletAccountAgorot(
+      (select, ids) => admin.from('wallet_accounts').select(select).eq('user_id', ids[0]) as never,
+      user.id,
+    )
+    const requestedAgorot = ilsToAgorot(input.apply_wallet_ils.toFixed(2))
+    if (requestedAgorot > balanceAgorot) {
       return { ok: false, error: 'יתרת הארנק אינה מספיקה', code: 'INSUFFICIENT_WALLET' }
     }
-    walletAppliedAgorot = ilsToAgorot(input.apply_wallet_ils.toFixed(2))
+    walletAppliedAgorot = requestedAgorot
   }
 
   // The discount is re-evaluated here, from the coupons table, against the cart
