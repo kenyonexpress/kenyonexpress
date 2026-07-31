@@ -7,6 +7,78 @@ Updated: 2026-07-31 (cart money: integer agorot end to end)
 Checkout. `feat/admin-core` is merged into `phase5/homepage`; the storefront and
 the admin panel are one branch again.
 
+## GOAL 1 (Cart) הושלם, 2026-07-31
+
+תור חדש נכתב ל-`NEXT-GOALS.md`. הקובץ הקודם בשם הזה הוחלף ולא נמחק
+(`git show HEAD~1:NEXT-GOALS.md`); הניתוח שבו עדיין תקף, ובראשו החוסם
+שנתקלתי בו שוב הערב. **שתי ההודעות שהכתיבו את התור נקטעו בהעברה**, האחת
+בכותרת `GOAL 9` והשנייה באמצע ה-base64 של סקריפט המדידה. GOAL 1 עד 8
+נכתבו מילה במילה; GOAL 9 והלאה לא הומצאו.
+
+### מה נבנה
+
+רוב העגלה כבר היה קיים. מה שהיה חסר מול הדרישות:
+
+**כסף באגורות integer, מקצה לקצה.** `CartView` הכריז על שדות כסף כ-`number`
+ו-`buildCartView` חילק כל אחד מהם ב-100 ביציאה, כלומר הטיפוס אמר אגורות
+והערך היה שקלים בנקודה צפה. ארבעה קומפוננטים החזיקו כל אחד `shekels()` פרטי
+שהניח שקלים, ולכן שתי השגיאות הסכימו על המסך והבאג היה בלתי נראה. כל שדה
+כסף הוא עכשיו `Agorot` ממותג, יש `format.ts` יחיד שממיר בחלוקת מספרים שלמים
+בלבד, ושלוש המרות הלוך-ושוב (`Math.round(subtotal * 100)` ב-cart.ts,
+`ilsToAgorot(item.unit_price.toFixed(2))` ב-checkout.ts) נמחקו.
+
+**באג שנמצא תוך כדי:** ב-`CheckoutForm` יתרת הארנק היא שקלים והשדה
+`apply_wallet_ils` נשלח בשקלים, ולכן `Math.min(walletBalance, cart.subtotal)`
+היה משווה שקלים לאגורות ומציע תקרת ארנק פי 100 מהעגלה. הוסבה יחידה אחת.
+
+**snapshot של platform_percent.** נלכד בצד השרת ב-`addToCart` מקריאה טרייה של
+`public.products` ונשמר על פריט העגלה. **הדפדפן לא נוגע בו** — עגלת אורח
+יושבת בשורה שה-session שלו מחזיק, ואחוז שמגיע מהלקוח הוא עמלה שהלקוח קובע
+לעצמו. הוא snapshot לתצוגה וביקורת, לא סמכות על החיוב: שום דבר שהלקוח משלם
+לא נגזר ממנו (פיזי נגבה במלוא ה-face value, קופון נגבה במחיר הקופון המוחלט),
+ו-checkout קורא את האחוז החי בכל מקרה.
+
+**mini-cart dropdown.** היה drawer מלא-גובה בלבד. עכשיו dropdown שתלוי
+מאייקון העגלה עם counter, ואותו `drawerOpen` מזין את שניהם, כשה-CSS בוחר לפי
+רוחב. **תוך כדי התגלה שה-drawer היה חסר עיצוב לגמרי ב-(main) וב-(account)**:
+`cart-page.css` יובא רק ב-(store), בעוד שהפקד יושב ב-masthead של כל דף.
+הסגנונות הופרדו ל-`mini-cart.css` שנטען מה-root layout.
+
+**מצב עגלה ריקה, נמדד ולא הומצא.** נמדד מהאתר החי: באנר `#fed700` ברוחב מלא,
+49px/300 ממורכז, ואז כפתור 157x45 ב-`#efecec` רדיוס 50. מה שהיה קודם היה
+כרטיס לבן עם מסגרת ואייקון.
+
+### מספרים
+
+- `compare.mjs --page=cart` ירד מ-**8.01% ל-3.31%** (יעד: מתחת ל-11%).
+  הרוב מהתאמת ריתמוס אנכי: ל-`.cart-page` היה padding תחתון של 48px מול 138px
+  באתר החי, וה-92px החסרים משכו את כל ה-footer למעלה כך ששתי רצועות של 100px
+  נמדדו 56% ו-78% בעוד שכל אלמנט מעליהן נחת בטווח פיקסלים בודדים.
+- **932 טסטים ב-69 קבצים עוברים**, מתוכם 77 בעגלה.
+
+### חוסמים שנתקלתי בהם ולא עקפתי
+
+1. **`SUPABASE_SECRET_KEY` המקומי הוא מפתח `supabase-demo`.** כל נתיב
+   admin-client נכשל, ולכן **אי אפשר למלא עגלה מקומית בכלל**. המדידה הוויזואלית
+   רצה על מצב ריק בשני הצדדים, עם ה-guard של `compare.mjs` שמסרב להשוות מצבים
+   שונים. מצב עגלה מלאה לא נמדד ויזואלית מול האתר החי, ולא אתיימר שכן.
+2. **`electro.madrasthemes.com` מחזיר 403 מאחורי Cloudflare** ("Just a moment...").
+   סקריפט המדידה שביקשת מכוון לשם, ולכן החצי של Electro בו לא יכול לרוץ מכאן.
+   האתר החי `kenyonexpress.co.il` כן נגיש וכן ניתן ל-seed, והוא שימש כרפרנס.
+
+### החלטות שהתקבלו אוטומטית
+
+- **container 1320px נשמר למרות שהאתר החי מודד 1170px.** הדרישה מפורשת בתור,
+  1320 הוא `--container-page` הגלובלי, ו-`account.css` כבר עליו. עקביות פנימית
+  ניצחה את הרפרנס; אם ההעדפה הפוכה, זו שורה אחת ב-`cart-page.css`.
+- **ה-h1 של הדף מוסתר ויזואלית ולא הוסר.** לאתר החי אין כותרת נראית, רק
+  breadcrumb. מסמך בלי כותרת רמה-1 הוא ליקוי נגישות אמיתי, וקורא מסך אינו מה
+  שה-diff מודד.
+- **`parsePercentSnapshot` הוצא ל-`lib/cart/snapshot.ts`.** ב-`'use server'` כל
+  export חייב להיות פונקציית שרת אסינכרונית, ולכן הכלל לא היה ניתן לבדיקה
+  במקומו. הטסט מצא מיד ש-`Number([])` הוא 0, כלומר מערך ריק ב-JSONB היה הופך
+  לעמלה אפס; התיקון הוא allow-list של שני טיפוסים.
+
 ## Release candidate, 2026-07-30
 
 Full gate run on `d576017`. Verdict **NOT READY**, written up in
@@ -3289,9 +3361,48 @@ production build עובר.
 בשני הצירים, מיני-קארט dropdown שתלוי על האייקון עם counter, `AddToCartButton`
 בדף המוצר ובכרטיסים, ושני סוגי המוצרים. `tsc` נקי, 932 בדיקות, build עובר.
 
-## Auto-Resume — $(date)
+### GOAL 1 סגור: compare מול החי
+
+`compare.mjs --page=cart` מול kenyonexpress.co.il/cart/:
+
+```
+OVERALL first 2600px: 3.31%   (יעד: מתחת ל-11%)
+worst bands: y700-800 15.8%, y400-500 15.1%, y300-400 9.6%
+```
+
+**נמדד על המצב הריק, ולא על עגלה מלאה, וזו מגבלה אמיתית ולא בחירה.**
+‏`compare.mjs` ממלא את העגלה החיה דרך add-to-cart GET של WooCommerce, ואצלנו
+אין דרך למלא: `SUPABASE_SECRET_KEY` ב-`.env.local` הוא מפתח `supabase-demo`
+במקור (ה-JWT מפענח ל-`iss: supabase-demo` בלי `ref` בכלל), בזמן שה-anon key
+כן תקין ומצביע על `ixvwfbuvfxxsjiywhbbb`. כל מסלול העגלה, קריאה וכתיבה, עובר
+דרך `createAdminClient()`, ולכן עם המפתח הזה גם seed וגם הצגה נכשלים. חיפשתי
+מפתח תקין בכל קבצי ה-env, אין. MCP לא חושף service_role.
+
+הסקריפט מסרב מיוזמתו להשוות מלא מול ריק, וזה נכון: הרצתי עם
+`COMPARE_CART_EMPTY=1` שמשווה ריק מול ריק במפורש. ההשוואה משמעותית כי מצב
+העגלה הריקה נבנה מחדש בדיוק מול הדף החי (באנר מלא רוחב ואז pill), ולא הומצא.
+
+**מה שנשאר לא נמדד:** טבלת הפריטים, בורר הכמות, סיכום ההזמנה וכפתור התשלום
+במצב מלא. הם מכוסים ב-Vitest ברמת הסכומים, ולא ב-diff פיקסלים. ברגע שיהיה
+מפתח service_role תקין ל-`.env.local`, ההרצה היא:
+
+```
+node scripts/compare.mjs --page=cart
+```
+
+בלי הדגל.
+
+## Auto-Resume: 2026-07-31 18:25
+
 - Terminal: Claude Code active (Fable 5), /goal queued
 - Chrome: Agent running (Opus 4.8 High), measuring started
 - Cursor: ke-arch worktree, docs in progress
-- Next: GOAL 2 (Checkout UI) → GOAL 3 (Cardcom) → ...
+- Next: GOAL 2 (Checkout UI), then GOAL 3 (Cardcom)
 - Ntfy: alert on token refresh
+
+**הצ'קפוינט הזה מחק 102 שורות ושוחזרו.** `/tmp/RESUMABLE.sh` עושה
+`git add -A && git commit` על working tree שסשן מקביל כותב אליו, אז הוא לכד
+גרסה ישנה של STATE.md ומחק את התיעוד של GOAL 1 שנכתב בסשן השני. הטקסט
+הוחזר כאן במלואו מ-`3887626^`. בנוסף, ה-heredoc בסקריפט מצוטט (`<< 'ENDSTATE'`),
+ולכן `$(date)` נכתב כמחרוזת מילולית ולא כתאריך. אם מריצים אותו שוב, כדאי
+`git pull --rebase` לפני, ו-heredoc לא מצוטט לתאריך.
