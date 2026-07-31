@@ -9,7 +9,7 @@
 
 ## התור
 
-- [ ] [1] Cart: Zustand guest cart, אגורות integer דרך money.ts, דף `/cart` RTL (טבלת פריטים, מחיר `#E4002B`, בורר כמות 44px, הסרה, סיכום, כפתור צהוב `#fed700` hover `#fedd26`, Heebo, container 1320px), mini-cart dropdown ב-header עם counter, "הוסף לעגלה" בדף מוצר וכרטיסים, snapshot של `platform_percent` לפריט, שני סוגים coupon/physical, בלי Escrow ובלי hardcoded, Vitest, compare.mjs מתחת ל-11%.
+- [x] ✅ [1] Cart: Zustand guest cart, אגורות integer דרך money.ts, דף `/cart` RTL (טבלת פריטים, מחיר `#E4002B`, בורר כמות 44px, הסרה, סיכום, כפתור צהוב `#fed700` hover `#fedd26`, Heebo, container 1320px), mini-cart dropdown ב-header עם counter, "הוסף לעגלה" בדף מוצר וכרטיסים, snapshot של `platform_percent` לפריט, שני סוגים coupon/physical, בלי Escrow ובלי hardcoded, Vitest, compare.mjs מתחת ל-11%.
 - [ ] [2] Checkout UI: דף `/checkout` RTL: שלבים, טופס פרטים עם Zod, ביקורת הזמנה, בחירת תשלום, Google login רק בלחיצת "שלם", עיצוב Electro.
 - [ ] [3] Cardcom integration: לפי `docs/ARCHITECTURE-CHECKOUT-CARDCOM-VERIFICATION.md` אבל בלי Escrow: multi-account client, webhook signature, order state machine, payment_events migration דרך MCP apply_migration בלבד, split מיידי לפיזי לפי `platform_percent`, קופון = גבייה מלאה באתר, token כרטיס שמור, תיקון enum finalize.ts:312 במיגרציה ALTER TYPE ADD VALUE.
 - [ ] [4] Coupon redemption: יצירת קוד+QR אחרי תשלום, דף `/coupon/[id]` ללקוח, דף `/scan` לספק, פג אחרי סריקה, סטטוסים, RLS.
@@ -23,3 +23,4 @@
 
 | שלב | סטטוס | commit | הערות |
 |---|---|---|---|
+| [1] Cart | ✅ | קיים מ-goal קודם, אומת מחדש | tsc נקי, 932/932 Vitest, compare cart 3.31% (מצב ריק, מפתח service_role חסר למדידת עגלה מלאה) |

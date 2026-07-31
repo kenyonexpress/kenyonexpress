@@ -1,6 +1,20 @@
 # KenyonExpress — Project State
 
-Updated: 2026-07-31 (cart money: integer agorot end to end)
+Updated: 2026-07-31 (NEXT-GOALS: שלב 1 Cart אומת מחדש וסומן ✅)
+
+## תור NEXT-GOALS: שלב 1 (Cart) ✅, 2026-07-31 ערב
+
+התור המלא (9 שלבים) נכתב מחדש ל-`NEXT-GOALS.md` ונדחף (`41aff9c`).
+שלב 1 היה כבר ממומש מה-goal הקודם; אומת מחדש עכשיו לפני הסימון:
+
+- `pnpm tsc --noEmit` נקי.
+- ‏Vitest מלא: 69 קבצים, **932/932 עוברים**.
+- ‏`compare.mjs --page=cart` = **3.31%** (מתחת ליעד 11%), על המצב הריק.
+  מדידת עגלה מלאה עדיין חסומה על מפתח `SUPABASE_SECRET_KEY` לא תקין
+  ב-`.env.local` (ה-JWT הוא `supabase-demo`). ברגע שיהיה מפתח:
+  `node scripts/compare.mjs --page=cart` בלי דגלים.
+
+ממשיך לשלב 2 (Checkout UI).
 
 ## Current Phase
 
