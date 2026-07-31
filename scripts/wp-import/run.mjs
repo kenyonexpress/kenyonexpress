@@ -7,13 +7,13 @@
 //
 // See scripts/wp-import/README.md and docs/ARCHITECTURE-WP-DATA-MIGRATION.md.
 
-import { DRY_RUN, HELP, PATHS, RUN, dryRunReason, ensureDirs } from './config.mjs'
 import { extract } from './01-extract.mjs'
 import { transform } from './02-transform.mjs'
 import { loadStaging } from './03-load-staging.mjs'
 import { projectPublic } from './04-project-public.mjs'
-import { mediaSync } from './06-media-sync.mjs'
 import { validate } from './05-validate.mjs'
+import { mediaSync } from './06-media-sync.mjs'
+import { DRY_RUN, HELP, PATHS, RUN, dryRunReason, ensureDirs } from './config.mjs'
 import { Run, error, info, ok, warn } from './lib/log.mjs'
 
 const STAGES = {
@@ -76,6 +76,22 @@ process.stdout.write(run.summary())
 info(`artifacts: ${PATHS.root}`)
 
 if (failed) process.exit(1)
+
+// Failures that were RECORDED rather than thrown. `run.fail()` keeps going on
+// purpose so one bad row does not abandon the rest, which means the only place
+// this can be caught is here.
+//
+// Without this check a dry run in which every stage failed - a wrong service
+// key, for instance, which answers "Invalid API key" to every probe - still
+// printed a green "dry run complete" and exited 0. An operator reads that as
+// permission to pass --apply.
+const recorded = run.failureCount()
+if (recorded > 0) {
+  error(`${recorded} operations failed: ${run.failedStages().join(', ')}`)
+  error('this run did NOT do what it reports; fix the failures before --apply')
+  process.exit(1)
+}
+
 if (report && !report.passed) {
   error('validation gates failed: this migration must not go live')
   process.exit(1)

@@ -26,9 +26,40 @@ import { PATHS } from '../config.mjs'
 const enc = (s) => encodeURIComponent(s).toLowerCase()
 
 const categories = [
-  { id: 10, name: 'מסעדות', slug: enc('מסעדות'), parent: 0, description: 'קופונים למסעדות', count: 3, menu_order: 1, image: { id: 900, src: 'https://kenyonexpress.co.il/wp-content/uploads/2024/01/rest-300x200.jpg', alt: 'מסעדות' } },
-  { id: 11, name: 'סושי', slug: enc('סושי'), parent: 10, description: '', count: 2, menu_order: 2, image: null },
-  { id: 12, name: 'Electronics', slug: 'electronics', parent: 0, description: '<p>Gadgets</p>', count: 1, menu_order: 3, image: null },
+  {
+    id: 10,
+    name: 'מסעדות',
+    slug: enc('מסעדות'),
+    parent: 0,
+    description: 'קופונים למסעדות',
+    count: 3,
+    menu_order: 1,
+    image: {
+      id: 900,
+      src: 'https://kenyonexpress.co.il/wp-content/uploads/2024/01/rest-300x200.jpg',
+      alt: 'מסעדות',
+    },
+  },
+  {
+    id: 11,
+    name: 'סושי',
+    slug: enc('סושי'),
+    parent: 10,
+    description: '',
+    count: 2,
+    menu_order: 2,
+    image: null,
+  },
+  {
+    id: 12,
+    name: 'Electronics',
+    slug: 'electronics',
+    parent: 0,
+    description: '<p>Gadgets</p>',
+    count: 1,
+    menu_order: 3,
+    image: null,
+  },
 ]
 
 const image = (id, name) => ({
@@ -50,7 +81,8 @@ const products = [
     permalink: `https://kenyonexpress.co.il/product/${enc('שובר-לסושי')}/`,
     type: 'simple',
     status: 'publish',
-    description: '<!-- wp:paragraph --><div class="vc_row"><p>ארוחה זוגית <b>מלאה</b> במסעדת הסושי.</p></div><!-- /wp:paragraph -->[vc_button]<script>track()</script>',
+    description:
+      '<!-- wp:paragraph --><div class="vc_row"><p>ארוחה זוגית <b>מלאה</b> במסעדת הסושי.</p></div><!-- /wp:paragraph -->[vc_button]<script>track()</script>',
     short_description: '<p>ארוחה זוגית</p>',
     sku: 'SUSHI-01',
     price: '99',
@@ -60,7 +92,10 @@ const products = [
     stock_quantity: 50,
     manage_stock: 'yes',
     virtual: 'yes',
-    categories: [{ id: 11, name: 'סושי', slug: enc('סושי') }, { id: 10, name: 'מסעדות', slug: enc('מסעדות') }],
+    categories: [
+      { id: 11, name: 'סושי', slug: enc('סושי') },
+      { id: 10, name: 'מסעדות', slug: enc('מסעדות') },
+    ],
     tags: [{ name: 'זוגי' }],
     images: [image(901, 'sushi-main'), image(902, 'sushi-gallery')],
     total_sales: 240,
@@ -226,7 +261,16 @@ const orders = [
     billing: { email: 'dana@example.co.il', phone: '0541234567', first_name: 'דנה' },
     shipping: {},
     line_items: [
-      { id: 70001, type: 'line_item', name: 'שובר לסושי בר', product_id: 101, quantity: 1, subtotal: '199.00', total: '199.00', tax: '0' },
+      {
+        id: 70001,
+        type: 'line_item',
+        name: 'שובר לסושי בר',
+        product_id: 101,
+        quantity: 1,
+        subtotal: '199.00',
+        total: '199.00',
+        tax: '0',
+      },
     ],
     refunds: [],
     meta_data: [],
@@ -234,7 +278,17 @@ const orders = [
 ]
 
 const coupons = [
-  { id: 8001, code: 'WELCOME10', status: 'publish', discount_type: 'percent', amount: '10', usage_limit: null, usage_count: 42, date_expires: '2025-12-31T00:00:00', meta_data: [] },
+  {
+    id: 8001,
+    code: 'WELCOME10',
+    status: 'publish',
+    discount_type: 'percent',
+    amount: '10',
+    usage_limit: null,
+    usage_count: 42,
+    date_expires: '2025-12-31T00:00:00',
+    meta_data: [],
+  },
 ]
 
 function writePage(entity, rows) {
@@ -243,7 +297,9 @@ function writePage(entity, rows) {
     file,
     `${JSON.stringify({ entity, page: 1, fetched_at: '2026-07-24T00:00:00.000Z', source: { fixture: true }, rows }, null, 2)}\n`,
   )
-  process.stdout.write(`  ${entity.padEnd(10)} ${String(rows.length).padStart(3)} rows -> ${file}\n`)
+  process.stdout.write(
+    `  ${entity.padEnd(10)} ${String(rows.length).padStart(3)} rows -> ${file}\n`,
+  )
 }
 
 for (const dir of Object.values(PATHS)) mkdirSync(dir, { recursive: true })

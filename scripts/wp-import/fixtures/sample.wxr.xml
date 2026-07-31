@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- This is a WordPress eXtended RSS file generated as an export of your site. -->
+<rss version="2.0"
+  xmlns:excerpt="http://wordpress.org/export/1.2/excerpt/"
+  xmlns:content="http://purl.org/rss/1.0/modules/content/"
+  xmlns:wfw="http://wellformedweb.org/CommentAPI/"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:wp="http://wordpress.org/export/1.2/"
+>
+<channel>
+  <title>Kenyon Express</title>
+  <link>https://kenyonexpress.co.il</link>
+  <wp:wxr_version>1.2</wp:wxr_version>
+  <wp:base_site_url>https://kenyonexpress.co.il</wp:base_site_url>
+
+  <wp:term>
+    <wp:term_id>21</wp:term_id>
+    <wp:term_taxonomy>product_cat</wp:term_taxonomy>
+    <wp:term_slug><![CDATA[restaurants]]></wp:term_slug>
+    <wp:term_parent><![CDATA[]]></wp:term_parent>
+    <wp:term_name><![CDATA[מסעדות]]></wp:term_name>
+    <wp:term_description><![CDATA[כל המסעדות &amp; בתי הקפה]]></wp:term_description>
+  </wp:term>
+  <wp:term>
+    <wp:term_id>22</wp:term_id>
+    <wp:term_taxonomy>product_cat</wp:term_taxonomy>
+    <wp:term_slug><![CDATA[sushi]]></wp:term_slug>
+    <wp:term_parent><![CDATA[restaurants]]></wp:term_parent>
+    <wp:term_name><![CDATA[סושי]]></wp:term_name>
+    <wp:term_description><![CDATA[]]></wp:term_description>
+  </wp:term>
+  <wp:term>
+    <wp:term_id>23</wp:term_id>
+    <wp:term_taxonomy>product_tag</wp:term_taxonomy>
+    <wp:term_slug><![CDATA[hot]]></wp:term_slug>
+    <wp:term_name><![CDATA[חם]]></wp:term_name>
+  </wp:term>
+
+  <item>
+    <title>ארוחה זוגית &amp; יין</title>
+    <link>https://kenyonexpress.co.il/product/%d7%90%d7%a8%d7%95%d7%97%d7%94-%d7%96%d7%95%d7%92%d7%99%d7%aa/</link>
+    <dc:creator><![CDATA[admin]]></dc:creator>
+    <content:encoded><![CDATA[<!-- wp:paragraph --><p>ארוחה זוגית הכוללת מנה ראשונה, עיקרית &amp; קינוח. [contact-form id="4"]</p><!-- /wp:paragraph --><img src="https://kenyonexpress.co.il/wp-content/uploads/2024/03/meal-300x200.jpg" />]]></content:encoded>
+    <excerpt:encoded><![CDATA[ארוחה זוגית במסעדה]]></excerpt:encoded>
+    <wp:post_id>101</wp:post_id>
+    <wp:post_date_gmt><![CDATA[2024-03-11 08:00:00]]></wp:post_date_gmt>
+    <wp:post_modified_gmt><![CDATA[2026-01-04 10:30:00]]></wp:post_modified_gmt>
+    <wp:post_name><![CDATA[%d7%90%d7%a8%d7%95%d7%97%d7%94-%d7%96%d7%95%d7%92%d7%99%d7%aa]]></wp:post_name>
+    <wp:status><![CDATA[publish]]></wp:status>
+    <wp:post_parent>0</wp:post_parent>
+    <wp:post_type><![CDATA[product]]></wp:post_type>
+    <category domain="product_cat" nicename="sushi"><![CDATA[סושי]]></category>
+    <category domain="product_tag" nicename="hot"><![CDATA[חם]]></category>
+    <wp:postmeta><wp:meta_key><![CDATA[_regular_price]]></wp:meta_key><wp:meta_value><![CDATA[250]]></wp:meta_value></wp:postmeta>
+    <wp:postmeta><wp:meta_key><![CDATA[_sale_price]]></wp:meta_key><wp:meta_value><![CDATA[189.90]]></wp:meta_value></wp:postmeta>
+    <wp:postmeta><wp:meta_key><![CDATA[_price]]></wp:meta_key><wp:meta_value><![CDATA[189.90]]></wp:meta_value></wp:postmeta>
+    <wp:postmeta><wp:meta_key><![CDATA[_sku]]></wp:meta_key><wp:meta_value><![CDATA[KE-MEAL-2]]></wp:meta_value></wp:postmeta>
+    <wp:postmeta><wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key><wp:meta_value><![CDATA[900]]></wp:meta_value></wp:postmeta>
+    <wp:postmeta><wp:meta_key><![CDATA[_product_image_gallery]]></wp:meta_key><wp:meta_value><![CDATA[901,902,]]></wp:meta_value></wp:postmeta>
+    <wp:postmeta><wp:meta_key><![CDATA[_stock_status]]></wp:meta_key><wp:meta_value><![CDATA[instock]]></wp:meta_value></wp:postmeta>
+    <wp:postmeta><wp:meta_key><![CDATA[_virtual]]></wp:meta_key><wp:meta_value><![CDATA[yes]]></wp:meta_value></wp:postmeta>
+    <wp:postmeta><wp:meta_key><![CDATA[_downloadable]]></wp:meta_key><wp:meta_value><![CDATA[yes]]></wp:meta_value></wp:postmeta>
+    <wp:postmeta><wp:meta_key><![CDATA[_wp_old_slug]]></wp:meta_key><wp:meta_value><![CDATA[meal-for-two]]></wp:meta_value></wp:postmeta>
+    <wp:postmeta><wp:meta_key><![CDATA[_wp_old_slug]]></wp:meta_key><wp:meta_value><![CDATA[dinner-deal]]></wp:meta_value></wp:postmeta>
+    <wp:postmeta><wp:meta_key><![CDATA[_yoast_wpseo_title]]></wp:meta_key><wp:meta_value><![CDATA[ארוחה זוגית במחיר מיוחד]]></wp:meta_value></wp:postmeta>
+  </item>
+
+  <item>
+    <title>מוצר בלי מחיר</title>
+    <link>https://kenyonexpress.co.il/product/no-price/</link>
+    <content:encoded><![CDATA[]]></content:encoded>
+    <wp:post_id>102</wp:post_id>
+    <wp:post_name><![CDATA[no-price]]></wp:post_name>
+    <wp:status><![CDATA[publish]]></wp:status>
+    <wp:post_type><![CDATA[product]]></wp:post_type>
+    <category domain="product_cat" nicename="ghost-category"><![CDATA[קטגוריה שלא הוגדרה]]></category>
+    <wp:postmeta><wp:meta_key><![CDATA[_thumbnail_id]]></wp:meta_key><wp:meta_value><![CDATA[999]]></wp:meta_value></wp:postmeta>
+  </item>
+
+  <item>
+    <title>מוצר במחיר מבצע שגוי</title>
+    <link>https://kenyonexpress.co.il/product/bad-sale/</link>
+    <wp:post_id>103</wp:post_id>
+    <wp:post_name><![CDATA[bad-sale]]></wp:post_name>
+    <wp:status><![CDATA[draft]]></wp:status>
+    <wp:post_type><![CDATA[product]]></wp:post_type>
+    <category domain="product_cat" nicename="restaurants"><![CDATA[מסעדות]]></category>
+    <wp:postmeta><wp:meta_key><![CDATA[_regular_price]]></wp:meta_key><wp:meta_value><![CDATA[50]]></wp:meta_value></wp:postmeta>
+    <wp:postmeta><wp:meta_key><![CDATA[_sale_price]]></wp:meta_key><wp:meta_value><![CDATA[80]]></wp:meta_value></wp:postmeta>
+  </item>
+
+  <item>
+    <title>מוצר במחזור</title>
+    <wp:post_id>104</wp:post_id>
+    <wp:post_name><![CDATA[trashed]]></wp:post_name>
+    <wp:status><![CDATA[trash]]></wp:status>
+    <wp:post_type><![CDATA[product]]></wp:post_type>
+  </item>
+
+  <item>
+    <title>meal.jpg</title>
+    <wp:post_id>900</wp:post_id>
+    <wp:post_parent>101</wp:post_parent>
+    <wp:post_type><![CDATA[attachment]]></wp:post_type>
+    <wp:attachment_url><![CDATA[https://kenyonexpress.co.il/wp-content/uploads/2024/03/meal.jpg]]></wp:attachment_url>
+    <wp:postmeta><wp:meta_key><![CDATA[_wp_attached_file]]></wp:meta_key><wp:meta_value><![CDATA[2024/03/meal.jpg]]></wp:meta_value></wp:postmeta>
+    <wp:postmeta><wp:meta_key><![CDATA[_wp_attachment_image_alt]]></wp:meta_key><wp:meta_value><![CDATA[ארוחה זוגית מוגשת]]></wp:meta_value></wp:postmeta>
+  </item>
+
+  <item>
+    <title>side.jpg</title>
+    <wp:post_id>901</wp:post_id>
+    <wp:post_parent>101</wp:post_parent>
+    <wp:post_type><![CDATA[attachment]]></wp:post_type>
+    <wp:attachment_url><![CDATA[https://kenyonexpress.co.il/wp-content/uploads/2024/03/side.jpg]]></wp:attachment_url>
+    <wp:postmeta><wp:meta_key><![CDATA[_wp_attached_file]]></wp:meta_key><wp:meta_value><![CDATA[2024/03/side.jpg]]></wp:meta_value></wp:postmeta>
+  </item>
+</channel>
+</rss>

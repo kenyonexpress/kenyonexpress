@@ -9,8 +9,8 @@
 
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { DEFAULTS, PATHS, RUN, WC, ensureDirs } from './config.mjs'
 import { readRaw } from './01-extract.mjs'
+import { DEFAULTS, PATHS, ROUTES, RUN, WC, ensureDirs } from './config.mjs'
 import {
   applyStockStatus,
   cleanHtml,
@@ -74,12 +74,25 @@ function transformCategories(run, rawCategories) {
     const name = cleanText(raw.name)
     const base = normalizeSlug(raw.slug, name)
     if (!base) {
-      issue('category', raw.id, 'error', 'unslugable', `category ${raw.id} has neither slug nor name`)
-      run.op({ stage: 'transform', entity: 'category', wpId: raw.id, action: 'skip', errorCode: 'unslugable' })
+      issue(
+        'category',
+        raw.id,
+        'error',
+        'unslugable',
+        `category ${raw.id} has neither slug nor name`,
+      )
+      run.op({
+        stage: 'transform',
+        entity: 'category',
+        wpId: raw.id,
+        action: 'skip',
+        errorCode: 'unslugable',
+      })
       continue
     }
     const { slug, collided } = dedupeSlug(base, taken)
-    if (collided) issue('category', raw.id, 'warn', 'slug_collision', `${base} taken, using ${slug}`)
+    if (collided)
+      issue('category', raw.id, 'warn', 'slug_collision', `${base} taken, using ${slug}`)
 
     rows.push({
       wp_term_id: raw.id,
@@ -123,19 +136,29 @@ function transformProducts(run, rawProducts, categoryBySlugId) {
         permalink: pathOf(raw.permalink) ?? `/product/${raw.slug ?? raw.id}`,
         status_raw: raw.status ?? null,
       })
-      run.op({ stage: 'transform', entity: 'product', wpId: raw.id, action: 'skip', errorCode: 'status_excluded' })
+      run.op({
+        stage: 'transform',
+        entity: 'product',
+        wpId: raw.id,
+        action: 'skip',
+        errorCode: 'status_excluded',
+      })
       continue
     }
 
     const base = normalizeSlug(raw.slug, name)
     if (!base && postType === 'product') {
       issue('product', raw.id, 'error', 'unslugable', `product ${raw.id} has neither slug nor name`)
-      run.op({ stage: 'transform', entity: 'product', wpId: raw.id, action: 'fail', errorCode: 'unslugable' })
+      run.op({
+        stage: 'transform',
+        entity: 'product',
+        wpId: raw.id,
+        action: 'fail',
+        errorCode: 'unslugable',
+      })
       continue
     }
-    const { slug, collided } = base
-      ? dedupeSlug(base, taken)
-      : { slug: null, collided: false }
+    const { slug, collided } = base ? dedupeSlug(base, taken) : { slug: null, collided: false }
     if (collided) issue('product', raw.id, 'warn', 'slug_collision', `${base} taken, using ${slug}`)
 
     const { price, compareAt } = derivePrice({
@@ -149,7 +172,13 @@ function transformProducts(run, rawProducts, categoryBySlugId) {
     let effectiveStatus = applyStockStatus(status, raw.stock_status)
     if (price === null || price <= 0) {
       if (postType === 'product') {
-        issue('product', raw.id, 'error', 'missing_price', `no parseable price (regular=${raw.regular_price}, sale=${raw.sale_price}, price=${raw.price})`)
+        issue(
+          'product',
+          raw.id,
+          'error',
+          'missing_price',
+          `no parseable price (regular=${raw.regular_price}, sale=${raw.sale_price}, price=${raw.price})`,
+        )
         effectiveStatus = 'draft'
       }
     }
@@ -163,9 +192,7 @@ function transformProducts(run, rawProducts, categoryBySlugId) {
       issue('product', raw.id, 'error', 'no_category', 'product has no product_cat term')
     }
 
-    const categorySlugs = categoryIds
-      .map((id) => categoryBySlugId.get(String(id)))
-      .filter(Boolean)
+    const categorySlugs = categoryIds.map((id) => categoryBySlugId.get(String(id))).filter(Boolean)
 
     const galleryIds = raw.images
       ? raw.images.map((img) => img.id).filter(Boolean)
@@ -190,9 +217,10 @@ function transformProducts(run, rawProducts, categoryBySlugId) {
       currency: DEFAULTS.currency,
       manage_stock: toBool(raw.manage_stock),
       stock_status_raw: raw.stock_status ?? null,
-      stock_quantity: raw.stock_quantity === null || raw.stock_quantity === undefined
-        ? null
-        : Number.parseInt(raw.stock_quantity, 10) || null,
+      stock_quantity:
+        raw.stock_quantity === null || raw.stock_quantity === undefined
+          ? null
+          : Number.parseInt(raw.stock_quantity, 10) || null,
       is_virtual: toBool(raw.virtual) ?? false,
       product_type_raw: raw.type ?? raw.product_type ?? null,
       total_sales: Number.parseInt(raw.total_sales, 10) || 0,
@@ -202,7 +230,9 @@ function transformProducts(run, rawProducts, categoryBySlugId) {
       featured_image_wp_id: featuredId,
       gallery_wp_ids: galleryIds,
       seo_title_raw: cleanText(raw.seo_title ?? meta._yoast_wpseo_title ?? meta.rank_math_title),
-      seo_description_raw: cleanText(raw.seo_description ?? meta._yoast_wpseo_metadesc ?? meta.rank_math_description),
+      seo_description_raw: cleanText(
+        raw.seo_description ?? meta._yoast_wpseo_metadesc ?? meta.rank_math_description,
+      ),
       created_at_wp: toIso(raw.date_created_gmt),
       modified_at_wp: toIso(raw.date_modified_gmt),
       // curation columns: the proposal, for a human to approve before projection
@@ -213,7 +243,12 @@ function transformProducts(run, rawProducts, categoryBySlugId) {
       raw_meta: meta,
       raw_post: raw,
     })
-    run.op({ stage: 'transform', entity: postType === 'product' ? 'product' : 'variant', wpId: raw.id, action: 'insert' })
+    run.op({
+      stage: 'transform',
+      entity: postType === 'product' ? 'product' : 'variant',
+      wpId: raw.id,
+      action: 'insert',
+    })
   }
   return { rows, excluded }
 }
@@ -285,7 +320,13 @@ function transformCustomers(run, rawCustomers) {
     const meta = metaMap(raw.meta_data)
     const email = normalizeEmail(raw.email || raw.billing?.email)
     if (!email) {
-      issue('customer', raw.id, 'warn', 'invalid_email', `user ${raw.id} has no usable email; not importable`)
+      issue(
+        'customer',
+        raw.id,
+        'warn',
+        'invalid_email',
+        `user ${raw.id} has no usable email; not importable`,
+      )
     }
     const phone = normalizePhoneIL(raw.billing?.phone)
 
@@ -311,7 +352,12 @@ function transformCustomers(run, rawCustomers) {
       newsletter_optin_raw: pickOptInEvidence(meta),
       raw_meta: stripSecrets(meta),
     })
-    run.op({ stage: 'transform', entity: 'customer', wpId: raw.id, action: email ? 'insert' : 'skip' })
+    run.op({
+      stage: 'transform',
+      entity: 'customer',
+      wpId: raw.id,
+      action: email ? 'insert' : 'skip',
+    })
   }
   return rows
 }
@@ -328,7 +374,14 @@ function pickOptInEvidence(meta) {
 
 // Password hashes, session tokens and reset keys must not reach staging even
 // inside a raw blob. If they are never extracted they can never leak.
-const SECRET_KEYS = ['user_pass', 'password', 'session_tokens', 'activation_key', 'wp_user-settings', 'auth_key']
+const SECRET_KEYS = [
+  'user_pass',
+  'password',
+  'session_tokens',
+  'activation_key',
+  'wp_user-settings',
+  'auth_key',
+]
 
 function stripSecrets(meta) {
   const out = {}
@@ -368,7 +421,8 @@ function transformOrders(run, rawOrders) {
       shipping_total: parsePrice(raw.shipping_total),
       tax_total: parsePrice(raw.total_tax),
       total,
-      refunded_total: (raw.refunds || []).reduce((sum, r) => sum + Math.abs(parsePrice(r.total) ?? 0), 0) || null,
+      refunded_total:
+        (raw.refunds || []).reduce((sum, r) => sum + Math.abs(parsePrice(r.total) ?? 0), 0) || null,
       payment_method: cleanText(raw.payment_method),
       payment_method_title: cleanText(raw.payment_method_title),
       transaction_id: cleanText(raw.transaction_id),
@@ -395,7 +449,8 @@ function transformOrders(run, rawOrders) {
       })
     }
 
-    if (total === null) issue('order', raw.id, 'warn', 'missing_total', 'order has no parseable total')
+    if (total === null)
+      issue('order', raw.id, 'warn', 'missing_total', 'order has no parseable total')
     run.op({ stage: 'transform', entity: 'order', wpId: raw.id, action: 'insert' })
   }
   return { orders, items }
@@ -426,21 +481,83 @@ function transformCoupons(run, rawCoupons) {
 // url_inventory: every old path and where it should land
 // ---------------------------------------------------------------------------
 
-function buildUrlInventory(products, categories, excludedProducts = []) {
+/**
+ * The comparison form of a path. Must stay identical to the normalisation the
+ * proxy applies to an incoming request, or a row written here will never match
+ * the request it was written for.
+ *
+ * Lowercased, percent-decoded, NFC-normalised, no trailing slash, no query.
+ * NFC matters for Hebrew specifically: the same word can be encoded composed or
+ * decomposed, the two are different byte strings, and a browser and a database
+ * will disagree about them forever unless both are normalised.
+ */
+export function normalizePath(path) {
+  if (!path) return ''
+  let out = String(path).split('#')[0].split('?')[0]
+  try {
+    out = decodeURIComponent(out)
+  } catch {
+    // A malformed percent sequence is left as-is rather than throwing: a bad
+    // legacy URL should still get a row.
+  }
+  out = out.normalize('NFC').toLowerCase().replace(/\/+$/, '')
+  return out || '/'
+}
+
+/** meta values arrive as a scalar for one occurrence and an array for several. */
+function toArray(value) {
+  if (value === undefined || value === null) return []
+  return Array.isArray(value) ? value : [value]
+}
+
+export function buildUrlInventory(products, categories, excludedProducts = []) {
   const rows = []
   for (const p of products) {
-    if (p.post_type !== 'product' || !p.slug_decoded) continue
-    const oldPath = p.permalink || `/product/${p.slug_raw ?? p.slug_decoded}`
+    if (p.post_type !== 'product') continue
+    // The target is the slug we are ACTUALLY going to store, which is the
+    // deduped one. Using slug_decoded here sent a collided product's old URL to
+    // the slug the winner took, so a customer following a two-year-old link
+    // landed on a different product's page and could buy the wrong thing.
+    const finalSlug = p.proposed_slug || p.slug_decoded
+    if (!finalSlug) continue
+    const newPath = `${ROUTES.product}/${finalSlug}`
+    const oldPath = p.permalink || `${ROUTES.product}/${p.slug_raw ?? p.slug_decoded}`
+
     rows.push({
       old_path: oldPath,
       sources: ['crawl'],
       entity: 'product',
       entity_wp_id: p.wp_post_id,
-      mapped_new_path: `/p/${p.slug_decoded}`,
-      direct_match: false,
+      mapped_new_path: newPath,
+      // A path that already equals its target needs no redirect row at all.
+      // Emitting one produces /product/x -> /product/x, which is a redirect
+      // loop and takes the page down rather than moving it.
+      direct_match: normalizePath(oldPath) === normalizePath(newPath),
       gone_410: false,
       mapping_rule: 'product_slug',
     })
+
+    // Every slug this post ever had. WordPress records them in _wp_old_slug and
+    // each one is a URL that is still indexed and still receives clicks; they
+    // are the single largest source of recoverable traffic in a migration, and
+    // they are invisible in both the sitemap and the current permalink.
+    const oldSlugs = new Set([
+      ...(p.raw_post?.old_slugs ?? []),
+      ...toArray(p.raw_meta?._wp_old_slug),
+    ])
+    for (const old of oldSlugs) {
+      if (!old || old === finalSlug) continue
+      rows.push({
+        old_path: `${ROUTES.product}/${old}`,
+        sources: ['wp_old_slug'],
+        entity: 'product',
+        entity_wp_id: p.wp_post_id,
+        mapped_new_path: newPath,
+        direct_match: false,
+        gone_410: false,
+        mapping_rule: 'wp_old_slug',
+      })
+    }
   }
   // A product we chose not to import must 410, not 404: an explicit "this is
   // gone" is a decision, a 404 is an oversight, and Search Console tells the
@@ -458,14 +575,17 @@ function buildUrlInventory(products, categories, excludedProducts = []) {
     })
   }
   for (const c of categories) {
+    const finalSlug = c.proposed_slug || c.slug_decoded
+    if (!finalSlug) continue
+    const newPath = `${ROUTES.category}/${finalSlug}`
     const oldPath = c.permalink || `/product-category/${c.slug_raw ?? c.slug_decoded}`
     rows.push({
       old_path: oldPath,
       sources: ['crawl'],
       entity: 'category',
       entity_wp_id: c.wp_term_id,
-      mapped_new_path: `/c/${c.slug_decoded}`,
-      direct_match: false,
+      mapped_new_path: newPath,
+      direct_match: normalizePath(oldPath) === normalizePath(newPath),
       gone_410: false,
       mapping_rule: 'category_slug',
     })
@@ -484,7 +604,9 @@ function buildUrlInventory(products, categories, excludedProducts = []) {
 function writeNormalized(name, rows) {
   const file = resolve(PATHS.normalized, `${name}.json`)
   writeFileSync(file, `${JSON.stringify(rows, null, 2)}\n`)
-  info(`  ${name.padEnd(14)} ${String(rows.length).padStart(6)} rows -> ${file.replace(`${PATHS.root}/`, '')}`)
+  info(
+    `  ${name.padEnd(14)} ${String(rows.length).padStart(6)} rows -> ${file.replace(`${PATHS.root}/`, '')}`,
+  )
   return rows.length
 }
 
@@ -514,7 +636,11 @@ export async function transform(run) {
 
   const categories = transformCategories(run, limit(rawCategories))
   const categoryBySlugId = new Map(categories.map((c) => [String(c.wp_term_id), c.slug_decoded]))
-  const { rows: products, excluded: excludedProducts } = transformProducts(run, limit(rawProducts), categoryBySlugId)
+  const { rows: products, excluded: excludedProducts } = transformProducts(
+    run,
+    limit(rawProducts),
+    categoryBySlugId,
+  )
   const media = transformMedia(run, limit(rawProducts), limit(rawCategories))
   const customers = transformCustomers(run, limit(rawCustomers))
   const { orders, items } = transformOrders(run, limit(rawOrders))

@@ -8,8 +8,8 @@
 
 import { mkdirSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
-import { parseArgs } from 'node:util'
 import { fileURLToPath } from 'node:url'
+import { parseArgs } from 'node:util'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 export const REPO_ROOT = resolve(HERE, '../..')
@@ -21,7 +21,8 @@ export const REPO_ROOT = resolve(HERE, '../..')
 const OPTIONS = {
   apply: { type: 'boolean', default: false },
   stage: { type: 'string' },
-  source: { type: 'string', default: 'rest' }, // rest | dump
+  source: { type: 'string', default: 'rest' }, // rest | dump | xml | csv
+  file: { type: 'string' }, // WXR .xml or WooCommerce .csv, for --source xml|csv
   entity: { type: 'string' }, // restrict to one entity, for spot re-runs
   limit: { type: 'string' }, // cap rows per entity; debugging aid
   batch: { type: 'string' }, // resume into an existing import_batches id
@@ -133,6 +134,24 @@ export const DEFAULTS = {
   batchSize: 200,
 }
 
+/**
+ * The route shapes this app actually serves. Every redirect target is built
+ * from here, and from nowhere else.
+ *
+ * These were `/p/` and `/c/` until 2026-07-29, which no route in the app has
+ * ever answered: src/app/(store)/product/[slug] and (store)/category/[slug]
+ * are the live ones, and src/app/sitemap.ts has been emitting /product/ and
+ * /category/ to Google the whole time. Every redirect the pipeline computed
+ * pointed at a 404. A prefix is one string in one file precisely so that a
+ * route rename is a config edit rather than a silent catalogue-wide 404.
+ */
+export const ROUTES = {
+  product: '/product',
+  category: '/category',
+  productList: '/products',
+  couponList: '/coupons',
+}
+
 /** Optional operator-supplied overrides, loaded by whoever needs them. */
 export const OVERRIDE_FILES = {
   vendorMap: resolve(PATHS.root, 'vendor_map.csv'), // wp_vendor_id,supplier_id
@@ -144,9 +163,22 @@ export const OVERRIDE_FILES = {
 // Derived run config
 // ---------------------------------------------------------------------------
 
+const SOURCES = ['rest', 'dump', 'xml', 'csv']
+if (!SOURCES.includes(argv.source)) {
+  console.error(`unknown --source ${argv.source} (expected one of: ${SOURCES.join(', ')})`)
+  process.exit(2)
+}
+// A file source with no file is a run that would silently extract nothing and
+// report success, which is the failure mode this pipeline exists to avoid.
+if ((argv.source === 'xml' || argv.source === 'csv') && !argv.file) {
+  console.error(`--source ${argv.source} requires --file <path>`)
+  process.exit(2)
+}
+
 export const RUN = {
   stage: argv.stage || positionals[0] || 'all',
   source: argv.source,
+  file: argv.file ? resolve(process.cwd(), argv.file) : null,
   entity: argv.entity || null,
   limit: argv.limit ? Number.parseInt(argv.limit, 10) : null,
   batchId: argv.batch || null,
@@ -171,7 +203,12 @@ Stages (default: all)
 
 Options
   --apply             actually write. Requires WP_IMPORT_ALLOW_WRITES=1 too.
-  --source rest|dump  extraction source (default: rest)
+  --source <src>      rest | dump | xml | csv   (default: rest)
+                        rest  live WooCommerce REST API
+                        dump  JSON exported from a restored mysqldump
+                        xml   a WordPress WXR export (Tools > Export)
+                        csv   a WooCommerce product CSV export
+  --file <path>       the .xml or .csv file. Required by --source xml|csv.
   --entity <name>     restrict to one entity (product, category, media, ...)
   --limit <n>         cap rows per entity (debugging)
   --batch <uuid>      attach to an existing import_batches row
