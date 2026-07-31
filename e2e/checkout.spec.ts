@@ -1,20 +1,35 @@
 import { expect, test } from '@playwright/test'
 import { addOpenProductToCart, openPurchasableProduct } from './helpers'
 
+/**
+ * These asserted the OLD gate: that an anonymous visit to /checkout bounced to
+ * /login. It does not any more, and that is a decision rather than a
+ * regression. `src/proxy.ts` says so where it lists the protected paths:
+ * /checkout takes guests, the form is fillable without an account, and the
+ * sign-in happens on the pay press, at which point /auth/callback merges the
+ * guest cart into the account. Bouncing an anonymous visitor made the account
+ * the first thing asked and the address the second.
+ *
+ * A test that still demanded the bounce would hold the product to a design it
+ * deliberately left, so these now pin what the gate actually is: the /checkout
+ * SUBTREE is still closed, and /checkout itself is open with the cart deciding
+ * where an empty-handed visitor goes.
+ */
 test.describe('checkout gate (guest)', () => {
-  test('anonymous direct visit to /checkout is sent to login with a return path', async ({
+  test('an anonymous visitor with nothing in the cart is sent to the cart, not to login', async ({
     page,
   }) => {
     await page.goto('/checkout')
-    await expect(page).toHaveURL(/\/login\?next=%2Fcheckout/, { timeout: 15000 })
+    await expect(page).toHaveURL(/\/cart/, { timeout: 15000 })
   })
 
-  test('the gate holds even with a populated guest cart', async ({ page }) => {
+  test('an anonymous visitor with a populated cart reaches the checkout form', async ({ page }) => {
     await openPurchasableProduct(page)
     await addOpenProductToCart(page)
 
     await page.goto('/checkout')
-    await expect(page).toHaveURL(/\/login\?next=%2Fcheckout/, { timeout: 15000 })
+    await expect(page).toHaveURL(/\/checkout/, { timeout: 15000 })
+    await expect(page.getByRole('heading', { name: 'קופה' })).toBeVisible()
   })
 
   test('the cart CTA offers sign-in rather than a direct checkout link', async ({ page }) => {
