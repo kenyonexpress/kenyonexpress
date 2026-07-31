@@ -170,12 +170,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true, amount_mismatch: true })
   }
 
+  // Record what re-verification established, and NOTHING about the outcome.
+  // `processed_at` deliberately stays null until the order actually closes:
+  // it used to be stamped here, one statement before finalizeOrder, so the
+  // event that most needs replaying (charged, verified, order still open, the
+  // state the alarm below calls the worst in the system) was the one marked
+  // handled. The dead letters were invisible by construction.
   await admin
     .from('payment_webhook_events')
     .update({
       verified_against_api: true,
       payment_id: payment.id,
-      processed_at: new Date().toISOString(),
     })
     .eq('provider', 'cardcom')
     .eq('external_event_id', externalEventId)
@@ -190,14 +195,23 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   if (!result.ok) {
     // The card was charged and verified; the order did not close. This is the
-    // single worst state in the system, so it alerts unconditionally.
+    // single worst state in the system, so it alerts unconditionally. The row
+    // keeps processed_at null, which is what puts it in the dead-letter queue
+    // that `server/payments/webhook-dlq.ts` replays.
     capturePaymentAlarm('payment verified but finalize failed', {
       stage: 'cardcom_webhook_finalize',
       orderId: payment.order_id,
       paymentId: payment.id,
       detail: { error: result.error, code: result.code },
     })
+    return NextResponse.json({ ok: false })
   }
 
-  return NextResponse.json({ ok: result.ok })
+  await admin
+    .from('payment_webhook_events')
+    .update({ processed_at: new Date().toISOString() })
+    .eq('provider', 'cardcom')
+    .eq('external_event_id', externalEventId)
+
+  return NextResponse.json({ ok: true })
 }
