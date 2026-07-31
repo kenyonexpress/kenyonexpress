@@ -1,19 +1,19 @@
 # KenyonExpress State (ke-arch)
 
 ## Current Phase
-docs-queue continuous: GO-LIVE rev C done; next SUPPLIER-ONBOARDING.
+docs-queue: SUPPLIER-ONBOARDING rev B done; next ANALYTICS.
 
 ## Last Completed
-docs/ARCHITECTURE-GO-LIVE-CHECKLIST.md rev C (domain, Vercel, env, Cardcom, Sentry, backups)
+ARCHITECTURE-SUPPLIER-ONBOARDING.md rev B
 
 ## In Progress
-SUPPLIER-ONBOARDING, ANALYTICS, CUSTOMER-SUPPORT, MASTER-v2, contradiction sweep
+ANALYTICS, CUSTOMER-SUPPORT, MASTER-v2, contradiction sweep
 
 ## Blocking Issues
 none
 
 ## Next Task
-SUPPLIER-ONBOARDING expand + push
+ANALYTICS GA4 expand
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
