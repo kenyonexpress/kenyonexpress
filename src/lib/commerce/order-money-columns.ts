@@ -36,6 +36,13 @@
 /** Which generation of money columns a table carries. */
 export type MoneySchemaGeneration = 'agorot' | 'ils'
 
+/**
+ * Where `vouchers` keeps its platform split, which decides the units too:
+ * `platform_bp` is integer basis points (post-059), `platform_percent` is a
+ * whole-percent numeric (pre-059, and what the hosted project has).
+ */
+export type VoucherRateColumn = 'platform_bp' | 'platform_percent'
+
 /** Postgres: undefined_column. */
 const UNDEFINED_COLUMN = '42703'
 
@@ -59,7 +66,7 @@ type ProbeableClient = {
 /** `select <column> limit 0`: planned, so 42703 is raised without reading a row. */
 export function moneyColumnProbe(
   client: ProbeableClient,
-  table: 'orders' | 'order_items' = 'orders',
+  table: 'orders' | 'order_items' | 'vouchers' = 'orders',
 ): ColumnProbe {
   return (column: string) =>
     client
@@ -312,6 +319,26 @@ export function resolveOrderGeneration(probe: ColumnProbe): Promise<MoneySchemaG
 /** Sentinel `platform_bp`: 059 moves the rate to basis points under this name. */
 export function resolveOrderItemGeneration(probe: ColumnProbe): Promise<MoneySchemaGeneration> {
   return resolveGeneration('order_items', 'platform_bp', probe)
+}
+
+/**
+ * Which column `vouchers` keeps its split rate in, and therefore in which units.
+ *
+ * `vouchers` straddles the rename rather than sitting on one side of it: its
+ * money has been integer agorot since 073 on both lineages, and only the rate
+ * column moved. So this deliberately does NOT return a MoneySchemaGeneration —
+ * calling the hosted table "ils" would be a lie about `face_value_agorot` and
+ * would invite a caller to divide it by 100.
+ *
+ * Asking matters because the issuer used to assume the post-059 answer. The
+ * hosted project never received 059, so every INSERT raised 42703 and no
+ * voucher could be issued at all; `vouchers` held zero rows for it. The probe
+ * is the same one the orders path already uses, so the answer is cached per
+ * table per process.
+ */
+export async function resolveVoucherRateColumn(probe: ColumnProbe): Promise<VoucherRateColumn> {
+  const generation = await resolveGeneration('vouchers', 'platform_bp', probe)
+  return generation === 'agorot' ? 'platform_bp' : 'platform_percent'
 }
 
 /** Test seam. Never called by application code. */
