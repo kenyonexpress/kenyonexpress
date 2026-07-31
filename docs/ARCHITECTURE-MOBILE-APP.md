@@ -162,8 +162,32 @@ Offline: cache לקריאה של קופונים פעילים; redeem תמיד on
 
 ---
 
-## 12. Revision
+## 12. Phased delivery
+
+| Phase | Scope | Exit |
+|---|---|---|
+| M0 | Design locked (this doc) | owner signoff |
+| M1 | Expo app: catalog + PDP + guest cart + Google auth | TestFlight / internal track |
+| M2 | Checkout via Cardcom (WebView/SDK) + vouchers QR + wallet read | paid test coupon |
+| M3 | Supplier scanner + push (purchase, redeem, 48h) | redeem e2e |
+| M4 | Physical ship status + deep polish | soft public |
+
+Web stays SEO acquisition. App never forks money rules.
+
+---
+
+## 13. Offline / security notes
+
+- Cache voucher codes + QR bitmaps for issued only; wipe on logout.
+- Biometric lock optional for account tab; not a substitute for Supabase JWT.
+- Certificate pinning: evaluate after M2; not a day-0 blocker.
+- No Escrow screens; prepaid copy matches web.
+
+---
+
+## 14. Revision
 
 | Date | Change |
 |---|---|
 | 2026-07-31 | רענון מחייב mobile super-app ל-`arch/docs-queue` |
+| 2026-07-31 | rev B: phased M0–M4, offline/security notes |
