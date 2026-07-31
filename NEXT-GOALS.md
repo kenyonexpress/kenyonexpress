@@ -14,7 +14,7 @@
 - [x] ✅ [3] Cardcom integration: לפי `docs/ARCHITECTURE-CHECKOUT-CARDCOM-VERIFICATION.md` אבל בלי Escrow: multi-account client, webhook signature, order state machine, payment_events migration דרך MCP apply_migration בלבד, split מיידי לפיזי לפי `platform_percent`, קופון = גבייה מלאה באתר, token כרטיס שמור, תיקון enum finalize.ts:312 במיגרציה ALTER TYPE ADD VALUE.
 - [x] ✅ [4] Coupon redemption: יצירת קוד+QR אחרי תשלום, דף `/coupon/[id]` ללקוח, דף `/scan` לספק, פג אחרי סריקה, סטטוסים, RLS.
 - [x] ✅ [5] אזור אישי `/account`: פרופיל, היסטוריית הזמנות, הקופונים שלי עם QR, ארנק פנימי (קאשבק לשימוש באתר בלבד).
-- [ ] [6] Notifications: Resend + Supabase Trigger + Edge Function: אישור הזמנה ללקוח, התראת מכירה לספק, קופון נסרק.
+- [x] ✅ [6] Notifications: Resend + Supabase Trigger + Edge Function: אישור הזמנה ללקוח, התראת מכירה לספק, קופון נסרק.
 - [ ] [7] SEO+Performance: sitemap, meta RTL hebrew, JSON-LD products, next/image, Lighthouse 90+.
 - [ ] [8] E2E Playwright: קנייה מלאה קופון+פיזי, סריקה, guest cart.
 - [ ] [9] Integration pass: rebase כל ה-branches על main לפי סדר תלויות, טסטים ירוקים, merge, push.
@@ -28,3 +28,4 @@
 | [3] Cardcom | ✅ | `21a348e`, `e184f42` | רובו היה בנוי; DLQ תוקן ונבנה, ה-enum של finalize.ts:312 קיים ב-DB החי ולא נדרש DDL, Cardcom לא חותם על callbacks ולכן re-verify מול GetLpResult הוא האימות |
 | [4] Coupon redemption | ✅ | `db33a4c`, `78c752c` | תוקנו ה-QR שלושה מסכים קידדו לא נכון והרשימה שלא הובילה אליו. **הליבה לא הייתה תקינה**: `issueVoucher` כתב `platform_bp`, עמודה שאין בפרויקט המתארח (059 מעולם לא הוחלה שם), ולכן כל INSERT נפל על 42703 ו**אף שובר לא יכול היה להיווצר** - הטבלה ריקה. תוקן בעזרת probe. אומת מול ה-DB החי ב-DO block עם rollback: הנפקה מתקבלת, סריקה מצליחה, סריקה חוזרת נדחית, וכל 10 תרחישי redeem_voucher נכונים. tsc נקי, 1013/1013 |
 | [5] אזור אישי | ✅ | `76a631f` | כל הדפים היו קיימים. הארנק הוצג **אפס לכל לקוח**: `balance_agorot` לא קיים בפרודקשן ושני קוראים נקבו בו, כולל הקופה שמחליטה כמה קרדיט אפשר להפעיל. עכשיו probe יחיד לארבעת הקוראים. `fn_wallet_transfer` מוענק ל-service_role בלבד, אין דרך לקוח להזיז כסף. tsc נקי, 1019/1019, build עובר |
+| [6] Notifications | ✅ | `9a0ed6e` | מיגרציה 095 הוחלה: `notification_outbox` + טריגר על `orders.paid_at` (אישור ללקוח + התראה לכל ספק) וטריגר על `vouchers.status` (קופון נסרק). שני הטריגרים בולעים שגיאות ולכן לא יכולים להפיל חיוב או מימוש. ניקוז ב-`/api/cron/notifications` דרך Resend, backoff ו-dead אחרי 5. **בלי Edge Function**: `pg_net` לא מותקן, וה-outbox הוא מה שנותן את העמידות. אומת בפרודקשן ב-DO block עם rollback. tsc נקי, 1038/1038, build עובר |
