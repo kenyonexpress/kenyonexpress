@@ -13,7 +13,13 @@
      which showed up as a 150px inset against every other route. */
   max-width: var(--container-page, 1320px);
   margin-inline: auto;
-  padding: 1.5rem 15px 3rem;
+  /* 138px of bottom padding, not 3rem. Measured: the live page leaves 138px
+     between the last control and the newsletter band, ours left 48, and the
+     92px shortfall pulled the whole footer up the page. Everything below it
+     then scored against the wrong rows of the reference, which is why two
+     100px bands read 56% and 78% while every element above them was landing
+     within a handful of pixels. */
+  padding: 1.5rem 15px 138px;
   color: #333e48;
   font-size: 14px;
 }
