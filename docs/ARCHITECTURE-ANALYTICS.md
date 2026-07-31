@@ -14,7 +14,7 @@ branch:
 arch/docs-queue
 ```
 
-Date: 2026-07-31 (rev C)  
+Date: 2026-07-31 (rev D)  
 Scope: docs בלבד.  
 Companions: `ARCHITECTURE-ANALYTICS-KPI.md`, `ARCHITECTURE-COOKIE-CONSENT.md`, admin dashboard, Go-Live, `MASTER-ARCHITECTURE-v2.md`.
 
@@ -82,6 +82,16 @@ Admin dashboard:
 | `refund` | server | transaction_id, value |
 | `generate_lead` | אופציונלי | supplier interest |
 | `login` | client אחרי Google | method=Google |
+| `view_cart` | client `/cart` | value, items[] |
+| `checkout_step` | client | step: identity \| address \| guest_login \| payment_redirect |
+
+`checkout_step` כבר נורה בקוד ה-checkout הקיים דרך:
+
+```
+src/lib/analytics/tracker.ts
+```
+
+והקטלוג כאן מחייב את שמות ה-step האלה; step חדש = עדכון המסמך.
 
 `value` ב-GA4 לקופון = מחיר ששולם באתר בלבד (לא face value).
 
@@ -116,6 +126,26 @@ item_brand // supplier display name ok
 
 Envelope: event_id, occurred_at, session_id, user_id uuid optional, props jsonb בלי PII.
 
+### 3.1 Mart יומי (מקור הדשבורד)
+
+טבלה מחושבת פעם ביום (cron) או view חומרני, לא שאילתה חיה על orders בכל טעינת דשבורד:
+
+```sql
+-- mart_daily_sales: שורה ליום, Asia/Jerusalem
+create materialized view if not exists mart_daily_sales as
+select
+  (paid_at at time zone 'Asia/Jerusalem')::date as day,
+  count(*)                                      as paid_orders,
+  sum(total_agorot)                             as gmv_on_site_agorot,
+  sum(platform_revenue_agorot)                  as platform_revenue_agorot,
+  count(*) filter (where has_coupon_line)       as orders_with_coupon,
+  count(*) filter (where has_physical_line)     as orders_with_physical
+from orders_money_rollup
+group by 1;
+```
+
+‏`orders_money_rollup` הוא view עזר שמסכם order_items לפי המודל בסעיף 0 (קופון: `paid_on_site_agorot`; פיזי: `commission_agorot`). refresh דרך cron מאובטח ב-`CRON_SECRET`.
+
 ---
 
 ## 4. דשבורד מכירות (`/admin/analytics`)
@@ -149,6 +179,17 @@ NOT included: balance_due_at_business, escrow_*, wishful % of face
 
 CSV לטווח תאריכים; RBAC admin; לוג audit.
 
+### 4.4 התראות אנומליה (Ntfy לבעלים)
+
+| תנאי | חלון | פעולה |
+|---|---|---|
+| 0 רכישות בשעות פעילות (10:00-22:00) | 4 שעות רצופות | בדיקת checkout חי + Cardcom status |
+| purchase ב-GA4 בלי order תואם (או להפך) | דוח יומי | חקירת discrepancy לפני שסומכים על מספרי שיווק |
+| refunds מעל 10% מהזמנות היום | יומי | עצירה ובדיקת מוצר/ספק חריג |
+| redeem fail rate מעל 20% | יומי | בדיקת שעון/HMAC בסורק |
+
+הסְפים ניתנים לכוונון בקובץ config, לא hardcoded בקוד ההתראות.
+
 ---
 
 ## 5. סנכרון GA4 ↔ שרת
@@ -158,6 +199,7 @@ CSV לטווח תאריכים; RBAC admin; לוג audit.
 | Idempotency | `purchase` פעם אחת ל-order_id (finalize guard) |
 | Bot traffic | סנן ב-ingest; אל תאמן KPI כסף מ-GA4 בלבד |
 | Discrepancy | דוח שבועי: GA4 purchases count מול count(orders.paid) |
+| UTM | utm_source/medium/campaign נקלטים ב-session ראשון ומוצמדים ל-begin_checkout ו-purchase כ-props; בלי לשמור אותם על שורת ה-order עצמה |
 
 ---
 
@@ -195,3 +237,4 @@ CSV לטווח תאריכים; RBAC admin; לוג audit.
 |---|---|
 | 2026-07-29 | Analytics marts + goals ראשוני |
 | 2026-07-31 | rev C: GA4, conversion events, sales dashboard, money rules |
+| 2026-07-31 | rev D: יישור קטלוג לאירועי checkout_step הקיימים בקוד, mart יומי, התראות אנומליה, UTM |
