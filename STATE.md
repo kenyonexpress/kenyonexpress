@@ -1,13 +1,7 @@
 # KenyonExpress State (ke-arch)
 
 ## Last Completed
-ARCHITECTURE-SUPPLIER-ONBOARDING.md rev C
-
-## In Progress
-ANALYTICS, CUSTOMER-SUPPORT, MASTER-v2, contradiction sweep
-
-## Working Directory
-/Users/ofir/kenyonexpress-web/ke-arch
+ARCHITECTURE-ANALYTICS.md rev C
 
 ## Branch
 `arch/docs-queue`
