@@ -197,7 +197,7 @@ rg -n "SUPABASE_SECRET|SERVICE_ROLE|CARDCOM_PASSWORD|RESEND_API_KEY" src/ --glob
 | N1 | Resend מאומת; מפתח לא בדפדפן | P0 |
 | N2 | מייל לקוח אחרי רכישת קופון | P0 |
 | N4 | אין Make/Zapier בייצור | P0 |
-| Q1–Q4 | tsc / vitest / build / playwright checkout | P0 |
+| Q1 עד Q4 | tsc / vitest / build / playwright checkout | P0 |
 | S1 | אין service role ב-`NEXT_PUBLIC_` | P0 |
 | S3 | Rate limits: login, checkout, redeem | P0 |
 | S4 | תנאי שימוש + פרטיות + ביטול מפורסמים | P0 |
