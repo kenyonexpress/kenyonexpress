@@ -3,6 +3,9 @@ import ConsentBanner from '@/components/analytics/ConsentBanner'
 import type { Metadata } from 'next'
 import { Heebo } from 'next/font/google'
 import './globals.css'
+// The header cart is in the masthead on every route, so its styles load here
+// rather than with the /cart page. See the note at the top of the file.
+import '@/styles/mini-cart.css'
 
 // Heebo drives ALL text site-wide (Hebrew + Latin). Exposed as --font-heebo and
 // wired to --font-sans in globals.css.

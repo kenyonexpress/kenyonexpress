@@ -1,0 +1,543 @@
+/* Header cart: the mini-cart dropdown that hangs off the masthead icon, and
+   the full-height drawer it becomes on a phone.
+
+   This file is imported by the ROOT layout, not by the cart route. The control
+   it styles lives in the masthead, which is on every page; while these rules
+   sat in cart-page.css they only reached the (store) segment, so opening the
+   cart from the homepage or an account page produced an unstyled drawer.
+
+   It also owns the two cart-wide custom properties, for the same reason: the
+   cart page can count on this file being present, and this file cannot count
+   on the cart page. */
+
+:root {
+  /* The red every cart price is printed in, on the page and in the dropdown. */
+  --cart-price-red: #e4002b;
+  /* 44px, the minimum comfortable touch target: the quantity stepper, the
+     remove control, and the dropdown's two footer buttons. */
+  --cart-touch: 44px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Mini-cart drawer (header sidebar)                                   */
+/* ------------------------------------------------------------------ */
+
+.cart-drawer-root {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+.cart-drawer__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgb(0 0 0 / 45%);
+  border: none;
+  cursor: pointer;
+}
+
+.cart-drawer {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  width: min(100%, 380px);
+  max-width: 100%;
+  max-height: 100%;
+  margin: 0;
+  margin-inline-start: auto;
+  padding: 0;
+  border: none;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -4px 0 24px rgb(0 0 0 / 12%);
+  animation: cart-drawer-in 0.22s ease-out;
+}
+
+@keyframes cart-drawer-in {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.cart-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #eee;
+}
+
+.cart-drawer__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: #0062bd;
+}
+
+.cart-drawer__count {
+  font-weight: 600;
+  color: #666;
+  font-size: 0.9375rem;
+}
+
+.cart-drawer__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  color: #515151;
+  border-radius: 0.375rem;
+  transition: background 0.15s;
+}
+
+.cart-drawer__close:hover {
+  background: #f5f5f5;
+}
+
+.cart-drawer__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem 0;
+}
+
+.cart-drawer__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.cart-drawer__item {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.cart-drawer__thumb {
+  display: block;
+  width: 64px;
+  height: 64px;
+  border: 1px solid #eee;
+  border-radius: 0.375rem;
+  overflow: hidden;
+}
+
+.cart-drawer__item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  min-width: 0;
+}
+
+.cart-drawer__item-name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0062bd;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cart-drawer__item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.cart-drawer__qty {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  border: 1px solid #ddd;
+  border-radius: 0.375rem;
+  padding: 0.125rem;
+}
+
+.cart-drawer__qty-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #515151;
+}
+
+.cart-drawer__qty-btn:disabled {
+  opacity: 0.35;
+}
+
+.cart-drawer__item-price {
+  font-weight: 800;
+  color: #e4002b;
+  font-size: 0.9375rem;
+}
+
+.cart-drawer__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: #666;
+}
+
+.cart-drawer__shop-link {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  background: #fed700;
+  color: #333e48;
+  font-weight: 700;
+  border-radius: 0.375rem;
+}
+
+.cart-drawer__shop-link:hover {
+  background: #fedd26;
+}
+
+.cart-drawer__footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.cart-drawer__subtotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-weight: 700;
+  color: #333e48;
+}
+
+.cart-drawer__subtotal strong {
+  font-size: 1.25rem;
+  color: #e4002b;
+}
+
+.cart-drawer__view-cart {
+  text-align: center;
+  font-size: 0.875rem;
+  color: #0062bd;
+  text-decoration: underline;
+  padding: 0.25rem;
+}
+
+.cart-drawer__checkout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  background: #fed700;
+  color: #333e48;
+  font-weight: 800;
+  border-radius: 0.375rem;
+  transition: background 0.15s;
+}
+
+.cart-drawer__checkout:hover {
+  background: #fedd26;
+}
+
+/* ------------------------------------------------------------------ */
+/* Mini-cart dropdown (masthead cart icon)                             */
+/* ------------------------------------------------------------------ */
+
+/* The anchor. The panel is positioned against this, which is why the icon and
+   the dropdown are wrapped together in HeaderCart rather than mounted at
+   opposite ends of the tree. */
+.mini-cart {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.mini-cart__panel {
+  position: absolute;
+  top: calc(100% + 14px);
+  /* Anchored to the inline START, which in this RTL document is the right.
+     Using `left` here pinned the panel to the wrong edge and pushed it off
+     screen on the one layout the site actually ships in. */
+  inset-inline-start: 0;
+  z-index: 60;
+  width: 340px;
+  max-width: calc(100vw - 30px);
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 14%);
+  font-size: 14px;
+  color: #333e48;
+  animation: mini-cart-in 0.16s ease-out;
+  /* The panel is a <dialog open>, so the UA sheet is in play: it supplies its
+     own margin (auto, which would centre the panel), padding and a 2px inset
+     border, and it forces `display: block` over the block layout above. Each
+     is reset explicitly rather than left to chance, the same way .cart-drawer
+     does it. `display: block` also has to be restated because the UA rule for
+     dialog:not([open]) is what our conditional render replaces. */
+  display: block;
+  margin: 0;
+  padding: 0;
+  color-scheme: light;
+}
+
+/* The little arrow pointing back up at the cart icon. Drawn as a rotated
+   square with only the two exposed borders inked, so it inherits the panel's
+   border colour and needs no image. */
+.mini-cart__panel::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  inset-inline-start: 22px;
+  width: 11px;
+  height: 11px;
+  background: #fff;
+  border-inline-start: 1px solid #e5e5e5;
+  border-block-start: 1px solid #e5e5e5;
+  transform: rotate(45deg);
+}
+
+@keyframes mini-cart-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mini-cart__panel--pending {
+  opacity: 0.7;
+}
+
+.mini-cart__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.mini-cart__item {
+  display: grid;
+  grid-template-columns: 56px 1fr auto;
+  gap: 10px;
+  align-items: start;
+  padding: 12px 14px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.mini-cart__thumb {
+  display: block;
+  width: 56px;
+  height: 56px;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.mini-cart__thumb-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: #bbb;
+}
+
+.mini-cart__item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.mini-cart__item-name {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #333e48;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.mini-cart__item-name:hover {
+  color: #0062bd;
+}
+
+.mini-cart__item-meta {
+  font-size: 12px;
+  color: #768b9e;
+}
+
+.mini-cart__item-note {
+  font-size: 11px;
+  color: #768b9e;
+}
+
+.mini-cart__item-end {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.mini-cart__item-price {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--cart-price-red);
+  white-space: nowrap;
+}
+
+.mini-cart__item-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  color: #a7a7a7;
+  transition: color 0.15s, background 0.15s;
+}
+
+.mini-cart__item-remove:hover:not(:disabled) {
+  color: var(--cart-price-red);
+  background: #fef2f2;
+}
+
+.mini-cart__item-remove:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.mini-cart__footer {
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mini-cart__subtotal {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-weight: 700;
+}
+
+.mini-cart__subtotal strong {
+  font-size: 18px;
+  color: var(--cart-price-red);
+}
+
+.mini-cart__balance {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #768b9e;
+}
+
+.mini-cart__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.mini-cart__view,
+.mini-cart__checkout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--cart-touch);
+  border-radius: 22px;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  transition: background 0.15s;
+}
+
+.mini-cart__view {
+  background: #efecec;
+  color: #333e48;
+}
+
+.mini-cart__view:hover {
+  background: #e2dede;
+}
+
+.mini-cart__checkout {
+  background: #fed700;
+  color: #333e48;
+}
+
+.mini-cart__checkout:hover {
+  background: #fedd26;
+}
+
+.mini-cart__checkout[aria-disabled="true"] {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.mini-cart__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 28px 16px;
+  text-align: center;
+  color: #768b9e;
+}
+
+.mini-cart__empty svg {
+  color: #ccc;
+}
+
+.mini-cart__empty-cta {
+  padding: 10px 22px;
+  min-height: var(--cart-touch);
+  display: inline-flex;
+  align-items: center;
+  background: #fed700;
+  color: #333e48;
+  font-weight: 700;
+  border-radius: 22px;
+}
+
+.mini-cart__empty-cta:hover {
+  background: #fedd26;
+}
+
+/* One feature, two widths. Below 768px a 340px panel hanging off an icon is
+   unusable, so the full-height drawer takes over; above it the drawer would be
+   a sheet covering a page that had room for a dropdown. Both read the same
+   `drawerOpen` flag, so whichever one is visible is already in the right
+   state. */
+@media (max-width: 767px) {
+  .mini-cart__panel {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .cart-drawer-root {
+    display: none;
+  }
+}

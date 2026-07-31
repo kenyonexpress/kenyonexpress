@@ -1,0 +1,177 @@
+'use client'
+
+import CartCheckoutButton from '@/components/cart/CartCheckoutButton'
+import { useCart, useCartAuth } from '@/components/cart/CartProvider'
+import SmartImage from '@/components/ui/SmartImage'
+import { shekels } from '@/lib/cart/format'
+import type { CartViewItem } from '@/lib/cart/types'
+import { ShoppingCart, X } from 'lucide-react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useEffect, useRef } from 'react'
+
+/**
+ * The Electro mini-cart: a panel that hangs off the masthead's cart icon.
+ *
+ * It shares `drawerOpen` with `CartDrawer` rather than holding a second flag.
+ * The two are one feature at two widths — a dropdown where there is room beside
+ * the icon, a full-height sheet where there is not — and CSS decides which is
+ * visible. A separate piece of state would mean `addToCart`'s auto-open had to
+ * know which viewport it was running in, which is exactly the sort of thing
+ * that works until someone resizes the window.
+ */
+function MiniCartLine({ item, onNavigate }: { item: CartViewItem; onNavigate: () => void }) {
+  const { removeItem, isPending } = useCart()
+
+  return (
+    <li className="mini-cart__item">
+      <Link href={`/product/${item.slug}`} className="mini-cart__thumb" onClick={onNavigate}>
+        {item.image_url ? (
+          <SmartImage
+            src={item.image_url}
+            alt={item.name_he}
+            width={64}
+            height={64}
+            className="h-full w-full object-contain"
+            fallbackClassName="h-full w-full"
+          />
+        ) : (
+          <span className="mini-cart__thumb-empty" aria-hidden="true">
+            —
+          </span>
+        )}
+      </Link>
+
+      <div className="mini-cart__item-body">
+        <Link href={`/product/${item.slug}`} className="mini-cart__item-name" onClick={onNavigate}>
+          {item.name_he}
+        </Link>
+        <span className="mini-cart__item-meta tabular-nums">
+          {item.quantity} × {shekels(item.unit_price)}
+        </span>
+        {item.type === 'coupon' && item.balance_due_at_business > 0 && (
+          <span className="mini-cart__item-note">
+            יתרה בחנות: {shekels(item.balance_due_at_business)}
+          </span>
+        )}
+      </div>
+
+      <div className="mini-cart__item-end">
+        <span className="mini-cart__item-price tabular-nums">
+          {shekels(item.customer_pays_now)}
+        </span>
+        <button
+          type="button"
+          className="mini-cart__item-remove"
+          onClick={() => void removeItem(item.product_id, item.variant_id)}
+          disabled={isPending}
+          aria-label={`הסר ${item.name_he} מהעגלה`}
+        >
+          <X size={14} aria-hidden="true" />
+        </button>
+      </div>
+    </li>
+  )
+}
+
+export default function MiniCartDropdown() {
+  const { cart, drawerOpen, closeDrawer, isPending } = useCart()
+  const isAuthenticated = useCartAuth()
+  const panelRef = useRef<HTMLDialogElement | null>(null)
+  const pathname = usePathname()
+
+  // Close on route change. Without this the panel survives a click on one of
+  // its own product links and hangs over the page it just navigated to.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: pathname is the trigger, not a value this effect reads.
+  useEffect(() => {
+    closeDrawer()
+  }, [pathname, closeDrawer])
+
+  useEffect(() => {
+    if (!drawerOpen) return
+
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeDrawer()
+    }
+    // Pointerdown rather than click: a click listener fires after the button's
+    // own handler has already toggled the panel back open, so pressing the cart
+    // icon while the panel was open closed and reopened it in one gesture.
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node | null
+      if (!target) return
+      if (panelRef.current?.contains(target)) return
+      // The trigger lives outside the panel and owns its own toggle.
+      if ((target as Element).closest?.('[data-mini-cart-trigger]')) return
+      closeDrawer()
+    }
+
+    document.addEventListener('keydown', onKey)
+    document.addEventListener('pointerdown', onPointerDown)
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.removeEventListener('pointerdown', onPointerDown)
+    }
+  }, [drawerOpen, closeDrawer])
+
+  if (!drawerOpen) return null
+
+  const isEmpty = cart.items.length === 0
+
+  return (
+    // A real <dialog open>, not a div with role="dialog". Open-but-not-modal is
+    // exactly what a dropdown is: it keeps the semantics without the top-layer
+    // promotion and focus trap that showModal() would bring, and the panel has
+    // to stay anchored under the icon rather than centred over the page.
+    <dialog
+      ref={panelRef}
+      open
+      className={`mini-cart__panel ${isPending ? 'mini-cart__panel--pending' : ''}`}
+      aria-label="עגלת קניות"
+    >
+      {isEmpty ? (
+        <div className="mini-cart__empty">
+          <ShoppingCart size={32} aria-hidden="true" />
+          <p>אין מוצרים בסל הקניות</p>
+          <Link href="/products" className="mini-cart__empty-cta" onClick={closeDrawer}>
+            המשך לקניות
+          </Link>
+        </div>
+      ) : (
+        <>
+          <ul className="mini-cart__list">
+            {cart.items.map((item) => (
+              <MiniCartLine
+                key={`${item.product_id}::${item.variant_id ?? 'null'}`}
+                item={item}
+                onNavigate={closeDrawer}
+              />
+            ))}
+          </ul>
+
+          <div className="mini-cart__footer">
+            <div className="mini-cart__subtotal">
+              <span>סה"כ לתשלום באתר</span>
+              <strong className="tabular-nums">{shekels(cart.subtotal)}</strong>
+            </div>
+            {cart.balance_due_at_business > 0 && (
+              <div className="mini-cart__balance">
+                <span>יתרה לתשלום בחנות</span>
+                <span className="tabular-nums">{shekels(cart.balance_due_at_business)}</span>
+              </div>
+            )}
+            <div className="mini-cart__actions">
+              <Link href="/cart" className="mini-cart__view" onClick={closeDrawer}>
+                צפייה בעגלה
+              </Link>
+              <CartCheckoutButton
+                isAuthenticated={isAuthenticated}
+                className="mini-cart__checkout"
+                onNavigate={closeDrawer}
+              />
+            </div>
+          </div>
+        </>
+      )}
+    </dialog>
+  )
+}

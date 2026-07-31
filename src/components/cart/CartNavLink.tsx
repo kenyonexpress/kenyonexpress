@@ -7,15 +7,20 @@ import { ShoppingCart } from 'lucide-react'
 const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
 
 export default function CartNavLink() {
-  const { cart, isPending, openDrawer } = useCart()
+  const { cart, isPending, drawerOpen, toggleDrawer } = useCart()
   const label = `עגלת קניות, ${cart.item_count} פריטים, ${shekelsRounded(cart.subtotal)}`
 
   return (
     <button
       type="button"
-      onClick={openDrawer}
+      // Toggle, not open. As a plain opener the icon could only ever open the
+      // mini-cart, so the obvious way to dismiss it -- press the thing you
+      // pressed to get it -- did nothing.
+      onClick={toggleDrawer}
       aria-label={label}
       aria-haspopup="dialog"
+      aria-expanded={drawerOpen}
+      data-mini-cart-trigger=""
       className={`flex items-center gap-1.5 transition-opacity hover:opacity-70 ${isPending ? 'opacity-70' : ''}`}
       style={{ color: ICON.color }}
     >

@@ -7,6 +7,7 @@ import {
   getGuestSessionId,
 } from '@/lib/cart/guest-session'
 import { buildCartView } from '@/lib/cart/pricing'
+import { parsePercentSnapshot } from '@/lib/cart/snapshot'
 import type { CartActionResult, CartStorageItem, CartView } from '@/lib/cart/types'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
@@ -40,14 +41,6 @@ const COUPON_COOKIE_MAX_AGE = CART_EXPIRY_DAYS * 24 * 60 * 60
 
 function itemKey(item: CartStorageItem): string {
   return `${item.product_id}::${item.variant_id ?? 'null'}`
-}
-
-/** A stored percent is only believed if it is a finite number in 0..100. */
-function parsePercentSnapshot(raw: unknown): number | null {
-  if (raw == null) return null
-  const value = Number(raw)
-  if (!Number.isFinite(value) || value < 0 || value > 100) return null
-  return value
 }
 
 function parseItems(raw: unknown): CartStorageItem[] {

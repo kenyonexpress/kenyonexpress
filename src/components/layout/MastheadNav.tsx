@@ -1,4 +1,4 @@
-import CartNavLink from '@/components/cart/CartNavLink'
+import HeaderCart from '@/components/cart/HeaderCart'
 import HeaderSearch from '@/components/search/HeaderSearch'
 import { Heart, User } from 'lucide-react'
 import Link from 'next/link'
@@ -40,7 +40,7 @@ export default function MastheadNav() {
           <User size={ICON.size} strokeWidth={ICON.strokeWidth} aria-hidden="true" />
         </Link>
 
-        <CartNavLink />
+        <HeaderCart />
       </nav>
     </div>
   )

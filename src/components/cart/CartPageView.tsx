@@ -5,6 +5,7 @@ import CartLineItem, { CartEmptyState } from '@/components/cart/CartLineItem'
 import { useCart } from '@/components/cart/CartProvider'
 import CartTotalsSidebar from '@/components/cart/CartTotalsSidebar'
 import type { CartView } from '@/lib/cart/types'
+import Link from 'next/link'
 import { useEffect } from 'react'
 
 export default function CartPageView({
@@ -25,6 +26,15 @@ export default function CartPageView({
 
   return (
     <div className="cart-page">
+      {/* The live page names this route in a breadcrumb and has no visible
+          heading at all. The h1 is kept and hidden rather than dropped: a
+          document with no level-one heading is a real accessibility defect,
+          and screen readers are not what the pixel diff is measuring. */}
+      <nav className="cart-page__breadcrumb" aria-label="פירורי לחם">
+        <Link href="/">עמוד הבית</Link>
+        <span aria-hidden="true">›</span>
+        <span aria-current="page">סל הקניות</span>
+      </nav>
       <h1 className="cart-page__title">סל הקניות</h1>
 
       {isEmpty ? (
