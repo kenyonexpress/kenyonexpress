@@ -71,18 +71,22 @@ function DealsProductCard({ product }: { product: Product }) {
           className="p_con__image-link"
           aria-label={product.name_he}
         >
-          {/* Left as a raw img on purpose. This card's box comes from
-              `p_con__image-wrap` in the Electro stylesheet rather than from a
-              utility class here, and `fill` against a box whose height I have
-              not measured is how a grid starts shifting. `decoding="async"`
-              costs nothing and applies either way. */}
+          {/* Measured, not assumed. This was left as a raw img because the box
+              comes from `p_con__image-wrap` in the Electro stylesheet and
+              `fill` against an unmeasured height can shift a grid. Lighthouse
+              then showed what that cost: every card image was fetched at its
+              source size, up to 1334x1367 for a box that renders 367x245, and
+              those ~24 images were the single largest weight on the home page.
+              The wrap is already `relative` and already reserves the height, so
+              `fill` has nothing to shift, and `sizes` is what makes the
+              optimizer emit the small rendition. */}
           {thumb ? (
-            <img
+            <Image
               src={thumb}
               alt={product.name_he}
-              className="p_con__image"
-              loading="lazy"
-              decoding="async"
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 400px"
+              className="p_con__image object-contain"
             />
           ) : null}
         </Link>
