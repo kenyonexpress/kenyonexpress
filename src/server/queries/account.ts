@@ -60,17 +60,6 @@ export interface AccountPaymentToken {
   createdAt: string
 }
 
-export interface AccountCoupon {
-  code: string
-  status: string
-  expiresAt: string
-  faceValueIls: number
-  platformPaidIls: number
-  collectAmountIls: number
-  redeemedAt: string | null
-  productName: string | null
-}
-
 /**
  * Hebrew labels for the ledger `reason` codes.
  *
@@ -200,45 +189,10 @@ export async function getMyPaymentTokens(): Promise<AccountPaymentToken[]> {
 }
 
 /**
- * The customer's coupons, from `vouchers`.
- *
- * This read `coupon_codes` until 2026-07-28. That is the pre-voucher instance
- * table: nothing has written it since finalize.ts moved to issueVoucher, and
- * 059 renamed the money columns it named on top of that. So it returned nothing
- * for everybody, and /account and /account/coupons both showed a customer no
- * coupons at all while /account/vouchers, reading the right table, showed them.
- *
- * RLS scopes the rows (073 vouchers_owner_read, user_id = auth.uid()), which is
- * why there is no user filter here and why the request-scoped client is used
- * rather than the service role.
+ * `getMyCoupons` used to live here, as the second read of `vouchers` in the
+ * codebase. It backed /account/coupons and the overview tile while
+ * `getCustomerVouchers` in queries/vouchers.ts backed /account/vouchers, and
+ * the two selected different columns and mapped them to different units. Both
+ * screens now use `getCustomerVouchers`, which is the one that carries the
+ * voucher id, and therefore the one that can link to /coupon/[id].
  */
-export async function getMyCoupons(): Promise<AccountCoupon[]> {
-  const supabase = await createClient()
-  const { data } = await supabase
-    .from('vouchers')
-    .select(
-      'code, status, expires_at, face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot, redeemed_at, products(name_he)',
-    )
-    .order('issued_at', { ascending: false })
-    .limit(100)
-
-  return (data ?? []).map((c) => {
-    const product = c.products as { name_he: string } | { name_he: string }[] | null
-    const productName = Array.isArray(product)
-      ? (product[0]?.name_he ?? null)
-      : (product?.name_he ?? null)
-    return {
-      code: c.code,
-      status: c.status,
-      expiresAt: c.expires_at,
-      faceValueIls: Number(c.face_value_agorot ?? 0) / 100,
-      // What the customer paid us online, which is the whole prepayment under
-      // model 035ef8e.
-      platformPaidIls: Number(c.coupon_price_agorot ?? 0) / 100,
-      // What the business collects in cash at the counter. Never reaches us.
-      collectAmountIls: Number(c.remaining_amount_due_agorot ?? 0) / 100,
-      redeemedAt: c.redeemed_at,
-      productName,
-    }
-  })
-}

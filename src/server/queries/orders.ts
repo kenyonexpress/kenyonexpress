@@ -6,12 +6,12 @@ import {
 } from '@/lib/commerce/order-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { voucherQrDataUrl } from '@/lib/vouchers/qr-image'
 import {
   SETTLEMENT_STATES,
   type SettlementState,
   deriveOrderStatus,
 } from '@/server/domain/orders/state-machine'
-import QRCode from 'qrcode'
 
 export interface OrderSummary {
   id: string
@@ -243,16 +243,9 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
 
     const vouchers: OrderVoucher[] = []
     for (const coupon of itemCoupons) {
-      let qrDataUrl: string | null = null
-      if (coupon.qr_payload) {
-        try {
-          qrDataUrl = await QRCode.toDataURL(coupon.qr_payload, { margin: 1, width: 240 })
-        } catch {
-          // A QR that will not render must not take the order page down; the
-          // short code below it is enough to redeem at a counter.
-          qrDataUrl = null
-        }
-      }
+      // A QR that will not render must not take the order page down; the short
+      // code below it is enough to redeem at a counter.
+      const qrDataUrl = await voucherQrDataUrl(coupon.qr_payload, { width: 240 })
       vouchers.push({
         code: coupon.code,
         status: coupon.status,

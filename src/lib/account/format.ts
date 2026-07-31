@@ -45,21 +45,11 @@ export function orderStatusTone(status: string): 'ok' | 'warn' | 'dead' {
   return 'ok'
 }
 
-const COUPON_STATUS_LABELS: Record<string, string> = {
-  issued: 'פעיל',
-  active: 'פעיל',
-  used: 'מומש',
-  redeemed: 'מומש',
-  expired: 'פג תוקף',
-  refunded: 'זוכה',
-}
-
-export function couponStatusLabel(status: string): string {
-  return COUPON_STATUS_LABELS[status] ?? status
-}
-
-export function couponStatusTone(status: string): 'ok' | 'warn' | 'dead' {
-  if (status === 'issued' || status === 'active') return 'ok'
-  if (status === 'used' || status === 'redeemed') return 'warn'
-  return 'dead'
-}
+/**
+ * Coupon status used to be presented from here too, with its own label table.
+ * It answered from the stored column, so a coupon past its deadline read `פעיל`
+ * until the expiry sweep ran, and it had no entry for `cancelled` at all, which
+ * put the literal string `cancelled` in front of a Hebrew reader. Both screens
+ * that used it now go through `lib/vouchers/coupon-view.ts`, which answers from
+ * the clock and is the same module the counter uses.
+ */

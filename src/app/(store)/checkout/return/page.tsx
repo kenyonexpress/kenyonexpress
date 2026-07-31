@@ -7,6 +7,7 @@ import {
 } from '@/lib/commerce/order-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { WALLET_AMOUNT_CANDIDATES, readFirstAvailableColumn } from '@/lib/supabase/optional-columns'
+import { voucherQrDataUrl } from '@/lib/vouchers/qr-image'
 import {
   buildCouponShareText,
   buildOrderInquiryText,
@@ -19,7 +20,6 @@ import { formatVoucherCode } from '@/server/domain/vouchers/code'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import QRCode from 'qrcode'
 import AutoRefresh from './AutoRefresh'
 import '@/styles/checkout-page.css'
 
@@ -105,7 +105,7 @@ export default async function CheckoutReturnPage({ searchParams }: Props) {
       // Agorot are the stored unit (059). The share text and the labels below
       // speak shekels, so the conversion happens once, here.
       collect_amount_ils: voucher.remaining_amount_due_agorot / 100,
-      qrDataUrl: await QRCode.toDataURL(voucher.qr_payload, { margin: 1, width: 264 }),
+      qrDataUrl: await voucherQrDataUrl(voucher.qr_payload, { width: 264 }),
     })),
   )
 
@@ -176,15 +176,17 @@ export default async function CheckoutReturnPage({ searchParams }: Props) {
                       שתפו את הקופון בוואטסאפ
                     </a>
                   </div>
-                  <div className="coupon-card__qr">
-                    <img src={coupon.qrDataUrl} alt={`קוד QR לקופון ${coupon.code}`} />
-                  </div>
+                  {coupon.qrDataUrl && (
+                    <div className="coupon-card__qr">
+                      <img src={coupon.qrDataUrl} alt={`קוד QR לקופון ${coupon.code}`} />
+                    </div>
+                  )}
                 </article>
               )
             })}
             <p style={{ marginTop: 12, fontSize: 13 }}>
-              <Link href="/account/vouchers" style={{ fontWeight: 600 }}>
-                השוברים שמורים גם באזור האישי
+              <Link href="/account/coupons" style={{ fontWeight: 600 }}>
+                הקופונים שמורים גם באזור האישי
               </Link>
             </p>
           </section>

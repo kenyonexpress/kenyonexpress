@@ -7,13 +7,11 @@ import {
   formatCouponCode,
   formatCouponDate,
 } from '@/lib/vouchers/coupon-view'
-import { buildRedeemUrl } from '@/lib/vouchers/scan-input'
+import { voucherQrDataUrl } from '@/lib/vouchers/qr-image'
 import { getCustomerVoucher } from '@/server/queries/vouchers'
 import type { Metadata } from 'next'
-import { headers } from 'next/headers'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
-import QRCode from 'qrcode'
 
 /**
  * The coupon a customer holds up at the counter.
@@ -39,20 +37,6 @@ export const metadata: Metadata = {
 
 type Props = { params: Promise<{ id: string }> }
 
-/**
- * Where the QR points. The configured public URL wins; the request host is the
- * fallback so a coupon opened on a phone against a dev server still produces a
- * scannable link instead of one pointing at production.
- */
-async function origin(): Promise<string> {
-  const configured = process.env.NEXT_PUBLIC_APP_URL
-  if (configured) return configured
-  const h = await headers()
-  const host = h.get('x-forwarded-host') ?? h.get('host') ?? 'kenyonexpress.co.il'
-  const proto = h.get('x-forwarded-proto') ?? (host.startsWith('localhost') ? 'http' : 'https')
-  return `${proto}://${host}`
-}
-
 export default async function CouponPage({ params }: Props) {
   const { id } = await params
 
@@ -74,16 +58,7 @@ export default async function CouponPage({ params }: Props) {
   // Rendered only for a voucher that can still be scanned. A QR beside a spent
   // or lapsed coupon invites a cashier to try, and it then fails in front of
   // the customer.
-  let qrDataUrl: string | null = null
-  if (status.presentable) {
-    try {
-      const url = buildRedeemUrl(await origin(), voucher.qr_payload)
-      qrDataUrl = await QRCode.toDataURL(url, { margin: 1, width: 320 })
-    } catch {
-      // The code below it is the fallback, and it is the one that gets typed in
-      // anyway when a screen will not scan. A QR failure must not blank the page.
-    }
-  }
+  const qrDataUrl = status.presentable ? await voucherQrDataUrl(voucher.qr_payload) : null
 
   const supplier = voucher.supplier
   const address = [supplier?.address, supplier?.city].filter(Boolean).join(', ')
@@ -91,8 +66,8 @@ export default async function CouponPage({ params }: Props) {
   return (
     <main dir="rtl" className="mx-auto min-h-screen max-w-md bg-gray-50 px-4 py-6">
       <nav className="mb-4 text-sm text-gray-500">
-        <Link href="/account/vouchers" className="hover:text-gray-900">
-          ← לכל השוברים שלי
+        <Link href="/account/coupons" className="hover:text-gray-900">
+          ← לכל הקופונים שלי
         </Link>
       </nav>
 

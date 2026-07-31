@@ -1,13 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  couponStatusLabel,
-  couponStatusTone,
-  formatDate,
-  formatDateTime,
-  formatIls,
-  orderStatusLabel,
-  orderStatusTone,
-} from './format'
+import { formatDate, formatDateTime, formatIls, orderStatusLabel, orderStatusTone } from './format'
 
 describe('formatIls', () => {
   it('always shows two decimals', () => {
@@ -55,18 +47,8 @@ describe('order status', () => {
   })
 })
 
-describe('coupon status', () => {
-  // coupon_status enum from 008: issued / used / expired / refunded.
-  it('covers every value of the coupon_status enum', () => {
-    for (const status of ['issued', 'used', 'expired', 'refunded']) {
-      expect(couponStatusLabel(status)).not.toBe(status)
-    }
-  })
-
-  it('treats an issued coupon as live and an expired one as dead', () => {
-    expect(couponStatusTone('issued')).toBe('ok')
-    expect(couponStatusTone('used')).toBe('warn')
-    expect(couponStatusTone('expired')).toBe('dead')
-    expect(couponStatusTone('refunded')).toBe('dead')
-  })
-})
+// Coupon status is no longer presented from this module. The cases that were
+// here tested `coupon_status` from 008 (issued / used / expired / refunded),
+// which is not the enum the live database has: `voucher_status` is issued,
+// redeemed, expired, cancelled, refunded. Both are now covered against the real
+// enum in lib/vouchers/coupon-view.test.ts, by the module the counter uses.

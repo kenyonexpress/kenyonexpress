@@ -1,7 +1,9 @@
 import { formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
 import { formatDate } from '@/lib/account/format'
-import { getMyCoupons, getWalletSummary } from '@/server/queries/account'
+import { isCouponPresentable } from '@/lib/vouchers/coupon-view'
+import { getWalletSummary } from '@/server/queries/account'
 import { getMyOrders } from '@/server/queries/orders'
+import { getCustomerVouchers } from '@/server/queries/vouchers'
 import Link from 'next/link'
 
 export const metadata = { title: 'האזור האישי' }
@@ -10,13 +12,15 @@ export default async function AccountOverviewPage() {
   const [wallet, orders, coupons] = await Promise.all([
     getWalletSummary(),
     getMyOrders(),
-    getMyCoupons(),
+    getCustomerVouchers(),
   ])
 
   const lastOrder = orders[0] ?? null
-  const activeCoupons = coupons.filter(
-    (c) => (c.status === 'issued' || c.status === 'active') && new Date(c.expiresAt) > new Date(),
-  )
+  // Counted through the shared presenter, so this tile, the list and the counter
+  // agree. The condition here used to accept a status of `active`, which is not
+  // in the voucher_status enum at all: it was left over from coupon_codes and
+  // could only ever be false.
+  const activeCoupons = coupons.filter((c) => isCouponPresentable(c))
 
   return (
     <>

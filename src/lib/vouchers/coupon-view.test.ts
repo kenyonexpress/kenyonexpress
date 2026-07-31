@@ -1,5 +1,7 @@
 import {
   COUPON_STATUS_LABELS,
+  COUPON_TONE_CHIP,
+  COUPON_TONE_CLASS,
   type CouponStatus,
   couponMoneyView,
   couponStatusView,
@@ -120,6 +122,43 @@ describe('couponStatusView', () => {
     const view = couponStatusView(voucher({ expires_at: '' }), NOW)
     expect(view.presentable).toBe(false)
     expect(view.label).toBe('פג תוקף')
+  })
+})
+
+/**
+ * The account area used to present coupon status from lib/account/format.ts,
+ * off the stored column and off the wrong enum. These pin the replacement over
+ * `voucher_status` as the live database actually declares it.
+ */
+describe('the account chip vocabulary', () => {
+  const VOUCHER_STATUS: CouponStatus[] = ['issued', 'redeemed', 'expired', 'cancelled', 'refunded']
+
+  it('has a Hebrew label for every value of voucher_status', () => {
+    for (const status of VOUCHER_STATUS) {
+      const label = COUPON_STATUS_LABELS[status]
+      expect(label).toBeTruthy()
+      expect(label).not.toBe(status)
+    }
+  })
+
+  it('gives every tone both a chip class and a tailwind class', () => {
+    for (const tone of Object.keys(COUPON_TONE_CLASS) as Array<keyof typeof COUPON_TONE_CLASS>) {
+      expect(COUPON_TONE_CHIP[tone]).toBeTruthy()
+    }
+    expect(Object.keys(COUPON_TONE_CHIP).sort()).toEqual(Object.keys(COUPON_TONE_CLASS).sort())
+  })
+
+  it('marks only a live coupon ok, and a lapsed one dead rather than warn', () => {
+    expect(COUPON_TONE_CHIP.live).toBe('ok')
+    expect(COUPON_TONE_CHIP.used).toBe('warn')
+    // The counter refuses it. A warning chip suggests it is still worth a trip.
+    expect(COUPON_TONE_CHIP.lapsed).toBe('dead')
+    expect(COUPON_TONE_CHIP.void).toBe('dead')
+  })
+
+  it('gives a lapsed-but-unswept coupon the dead chip, not the live one', () => {
+    const view = couponStatusView(voucher({ expires_at: '2026-07-30T10:00:00.000Z' }), NOW)
+    expect(COUPON_TONE_CHIP[view.tone]).toBe('dead')
   })
 })
 

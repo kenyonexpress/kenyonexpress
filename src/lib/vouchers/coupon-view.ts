@@ -39,6 +39,22 @@ export const COUPON_TONE_CLASS: Record<CouponTone, string> = {
   void: 'bg-red-100 text-red-700',
 }
 
+/**
+ * The same four tones in the account shell's vocabulary (`account-chip--*`).
+ *
+ * It lives here rather than in `lib/account/format.ts` so a screen inside the
+ * account area and a screen outside it cannot end up with two different ideas
+ * of what a status means. `lapsed` reads `dead` and not `warn`: a coupon past
+ * its deadline is refused at the counter, and a chip that looks like a warning
+ * suggests it is still worth a trip.
+ */
+export const COUPON_TONE_CHIP: Record<CouponTone, 'ok' | 'warn' | 'dead'> = {
+  live: 'ok',
+  used: 'warn',
+  lapsed: 'dead',
+  void: 'dead',
+}
+
 const MS_PER_DAY = 24 * 60 * 60 * 1000
 
 export interface CouponSnapshot {

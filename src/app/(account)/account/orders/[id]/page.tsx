@@ -1,11 +1,5 @@
-import {
-  couponStatusLabel,
-  couponStatusTone,
-  formatDate,
-  formatIls,
-  orderStatusLabel,
-  orderStatusTone,
-} from '@/lib/account/format'
+import { formatDate, formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
+import { COUPON_TONE_CHIP, couponStatusView } from '@/lib/vouchers/coupon-view'
 import { getOrderDetail } from '@/server/queries/orders'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -84,34 +78,48 @@ export default async function OrderDetailPage({ params }: Props) {
 
               {line.vouchers.length > 0 && (
                 <div style={{ marginTop: 12, display: 'grid', gap: 12 }}>
-                  {line.vouchers.map((voucher) => (
-                    <div className="coupon-card" key={voucher.code}>
-                      {voucher.qrDataUrl && (
-                        <img
-                          src={voucher.qrDataUrl}
-                          alt={`קוד QR לקופון ${voucher.code}`}
-                          width={120}
-                          height={120}
-                        />
-                      )}
-                      <div>
-                        <p className="coupon-card__code">{voucher.code}</p>
-                        <p className="account-row__meta">
-                          <span
-                            className={`account-chip account-chip--${couponStatusTone(voucher.status)}`}
-                          >
-                            {couponStatusLabel(voucher.status)}
-                          </span>
-                          {voucher.expiresAt ? ` · בתוקף עד ${formatDate(voucher.expiresAt)}` : ''}
-                        </p>
-                        {voucher.collectAmountIls != null && voucher.collectAmountIls > 0 && (
-                          <p className="account-row__meta">
-                            לתשלום בבית העסק: {formatIls(voucher.collectAmountIls)}
-                          </p>
+                  {line.vouchers.map((voucher) => {
+                    // Through the shared presenter, so this chip cannot say
+                    // `פעיל` about a coupon the counter has already stopped
+                    // accepting: the expiry sweep is a cron, and a lapsed row
+                    // sits at `issued` until it runs. A missing deadline reads
+                    // as expired for the same reason.
+                    const status = couponStatusView({
+                      status: voucher.status,
+                      expires_at: voucher.expiresAt ?? '',
+                      redeemed_at: voucher.usedAt,
+                    })
+                    return (
+                      <div className="coupon-card" key={voucher.code}>
+                        {voucher.qrDataUrl && (
+                          <img
+                            src={voucher.qrDataUrl}
+                            alt={`קוד QR לקופון ${voucher.code}`}
+                            width={120}
+                            height={120}
+                          />
                         )}
+                        <div>
+                          <p className="coupon-card__code">{voucher.code}</p>
+                          <p className="account-row__meta">
+                            <span
+                              className={`account-chip account-chip--${COUPON_TONE_CHIP[status.tone]}`}
+                            >
+                              {status.label}
+                            </span>
+                            {voucher.expiresAt
+                              ? ` · בתוקף עד ${formatDate(voucher.expiresAt)}`
+                              : ''}
+                          </p>
+                          {voucher.collectAmountIls != null && voucher.collectAmountIls > 0 && (
+                            <p className="account-row__meta">
+                              לתשלום בבית העסק: {formatIls(voucher.collectAmountIls)}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               )}
             </div>
