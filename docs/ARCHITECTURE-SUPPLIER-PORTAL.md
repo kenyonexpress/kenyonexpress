@@ -525,7 +525,7 @@ Money columns below are **integer agorot** unless noted as legacy `numeric` stil
 | `whatsapp` | `text` | |
 | `status` | `supplier_status` / text | NOT NULL DEFAULT `active` |
 | `commission_percent` | `numeric(5,2)` | legacy suggestion only; **never** read at checkout |
-| `default_split_percent` | `numeric(5,2)` | form prefill only |
+| `default_split_percent` | `numeric(5,2)` | form prefill for new products only; **never** checkout/settlement; not a platform default rate |
 | `min_payout_ils` | `numeric(12,2)` | NOT NULL DEFAULT 100; `>= 0` |
 | `payout_hold_business_days` | `int` | NOT NULL DEFAULT 3 |
 | `payout_terms_days` | `int` | legacy; prefer hold_business_days |
