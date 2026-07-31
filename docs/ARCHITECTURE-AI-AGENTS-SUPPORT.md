@@ -188,8 +188,44 @@ Shadow mode שבוע לפני הפעלה מלאה: הסוכן מציע, אדם �
 
 ---
 
-## 11. Revision
+## 11. Tool allowlists (binding)
+
+### CS Agent tools
+
+| Tool | Read/Write | Notes |
+|---|---|---|
+| `get_my_orders` | R | JWT user only |
+| `get_my_vouchers` | R | includes status; no other users |
+| `get_order_detail` | R | ownership check |
+| `explain_coupon_money` | R | prepaid stays on platform; till due at merchant |
+| `request_human_handoff` | W | creates support ticket |
+| `start_refund_request` | W | **human approve** before money moves |
+
+### Supplier Agent tools
+
+| Tool | Read/Write | Notes |
+|---|---|---|
+| `list_my_open_physical_orders` | R | supplier_members scope |
+| `get_voucher_for_scan_context` | R | only after valid scan session / code presented |
+| `explain_payout_physical` | R | snapshot percent; coupons payout 0 |
+| `update_ship_status` | W | physical lines only; audited |
+| `request_human_handoff` | W | supplier support queue |
+
+Forbidden tools for both: raw SQL, `adminClient` unscoped, Cardcom charge, wallet transfer, `platform_percent` update.
+
+---
+
+## 12. Cost controls
+
+- Cap tokens/day per agent; hard stop + Ntfy.
+- Cache FAQ answers; do not re-call LLM for identical policy questions within TTL.
+- Log `cost_agorot` estimate per turn for owner dashboard.
+
+---
+
+## 13. Revision
 
 | Date | Change |
 |---|---|
 | 2026-07-31 | סוכן CS + סוכן ספקים, tools, guardrails (`arch/docs-queue`) |
+| 2026-07-31 | rev B: tool allowlists + cost controls |
