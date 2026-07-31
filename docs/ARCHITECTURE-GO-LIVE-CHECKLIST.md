@@ -330,3 +330,4 @@ Rollback: `CHECKOUT_ENABLED=false` → revert deploy → בלי down-migrations 
 | 2026-07-31 | צ'קליסט Go-Live P0/P1/P2 |
 | 2026-07-31 | rev B: escrow gates, Cardcom, QR, KPI |
 | 2026-07-31 | rev C: Domain, Vercel prod, env matrix, Cardcom creds, Sentry, backups |
+| 2026-07-31 | rev D: הרחבת דומיין/DNS/SSL + Vercel Domains/Deploy/Rollback (שערי dig/curl) |
