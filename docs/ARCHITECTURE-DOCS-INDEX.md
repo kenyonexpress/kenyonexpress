@@ -4,6 +4,8 @@
 
 Date: 2026-07-31 · docs only.
 
+**Master (money-first):** `MASTER-ARCHITECTURE-v2.md`
+
 ## Go-Live / ops
 - `ARCHITECTURE-GO-LIVE-CHECKLIST.md`
 - `ARCHITECTURE-BACKUP-DR.md`
@@ -66,3 +68,4 @@ Full-length versions may live under `ke-arch-*` (cart, account-area, notificatio
 |---|---|
 | 2026-07-31 | Index after docs-queue continuous run |
 | 2026-07-31 | Gap docs: env, flags, shipping, reconcile, onboarding, incident, a11y, design, cookies |
+| 2026-07-31 | Link MASTER-ARCHITECTURE-v2; GO-LIVE/ONBOARDING/ANALYTICS/SUPPORT rev C |

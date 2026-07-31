@@ -128,7 +128,7 @@ Transitions via Server Actions / SECURITY DEFINER only. Each writes `audit_log` 
 | Stuck queue | `/admin/payments` |
 | Reconcile | admin action calling idempotent finalize |
 
-Partial captures: **Open Q-ADMIN-4** whether Cardcom low-profile / J5 flows are in scope for v1 admin UI. Until decided, admin shows captured amount vs order `customer_pays_now_agorot` and flags mismatch.
+Partial captures: admin shows captured amount vs order `customer_pays_now_agorot` and flags mismatch. **J5 / authorization-hold Escrow is out of scope and forbidden** (final money model). Low Profile capture + GetLpResult only.
 
 Refunds: blocked if any related `vouchers.status IN ('redeemed','expired')` for that value (`STATE_INVALID`, `blocker=voucher_consumed`). Disputes: admin opens dispute record (**gap**: `disputes` enum exists in 027 draft; confirm table applied).
 

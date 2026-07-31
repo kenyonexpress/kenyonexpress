@@ -14,7 +14,7 @@ Money: integer **agorot** internally; UI shows ₪ with 2 decimals (`he-IL`).
 
 | Product type | Customer pays on site | After payment | Platform / supplier |
 |---|---|---|---|
-| **Coupon** | Full absolute **`coupon_price_ils`** (admin-set, no default) | Voucher issued; till remainder `face - coupon_price` collected **at supplier** on QR scan; voucher expires on scan | `platform_percent` (dynamic, admin-only, snapshotted) applies to **prepaid only**. Common 100/0. **No third-party Escrow.** Internal ledger may mark prepaid as `held` until redeem/calendar expiry for accounting only |
+| **Coupon** | Full absolute **`coupon_price_ils`** (admin-set, no default) | Voucher issued; till remainder `face - coupon_price` collected **at supplier** on QR scan; voucher expires on scan | **100% of on-site charge stays with the platform** at pay time (`platform_settled`). Supplier payout from prepaid = 0. **No Escrow**, no held-until-redeem release to supplier. `platform_percent` on coupon lines is reporting-only (not a customer price). |
 | **Physical** | Full discounted on-site charge | Supplier notified to ship | **Immediate split** by snapshotted `platform_percent`: `platformFee = round_once(paid * percent / 100)`, `supplierDue = paid - platformFee`. Payout after T+3 + min threshold. **Not** “Escrow until delivery” |
 
 Invariants:
@@ -25,12 +25,13 @@ Invariants:
 4. Snapshots on `order_items` at order create / pay are immutable. Never recompute historical money from live `products`.
 5. No Escrow agent, no J5 hold, no “release Escrow on delivery” for physical. Delivery confirmation is a **fulfillment** signal, not a money-release gate for the Cardcom charge.
 
-### החלטה אוטומטית (Escrow wording)
+### החלטה מחייבת (אין Escrow)
 
-User prompts sometimes say “balance escrow until QR” / “Escrow released on delivery”. Binding companions forbid third-party Escrow. This doc maps:
+נוסחים ישנים ("held until QR", "Escrow released on delivery") **בטלים**.
 
-- Coupon “held balance” → internal ledger label on **prepaid**; till remainder never enters platform custody.
-- Physical “release” → payout eligibility / shipping status only; split already recorded at `payment_settled`.
+- קופון: ב-`finalize` הסטטוס הוא `platform_settled`; אין `order_escrow_holds` / שחרור לספק.
+- יתרת הקופון בבית העסק אף פעם לא נכנסת למשמורת הפלטפורמה.
+- פיזי: פיצול ב-`payment_settled` / `split_executed`; משלוח הוא fulfillment בלבד, לא שער כסף.
 
 ---
 
