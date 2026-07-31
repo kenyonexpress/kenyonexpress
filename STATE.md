@@ -1,19 +1,19 @@
 # KenyonExpress State (ke-arch)
 
 ## Current Phase
-docs-queue: CUSTOMER-SUPPORT rev C done; next MASTER + contradiction sweep.
+docs-queue: MASTER-v2 rev C done; contradiction sweep next.
 
 ## Last Completed
-ARCHITECTURE-CUSTOMER-SUPPORT.md rev C
+MASTER-ARCHITECTURE-v2.md rev C references
 
 ## In Progress
-MASTER-v2 push, contradiction sweep
+contradiction sweep across docs/
 
 ## Blocking Issues
 none
 
 ## Next Task
-MASTER then sweep docs for Escrow/percent/coupon contradictions
+Scan and fix Escrow / fixed percent / coupon charge contradictions
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch

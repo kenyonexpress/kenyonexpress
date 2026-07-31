@@ -14,7 +14,7 @@ branch:
 arch/docs-queue
 ```
 
-Date: 2026-07-31  
+Date: 2026-07-31 (rev C)  
 Scope: docs בלבד.  
 זהות: מאחד ומפנה למסמכי `docs/` ב-worktree זה. בסתירת כסף, **סעיף 1 כאן דורס**.
 
@@ -72,12 +72,13 @@ Scope: docs בלבד.
 
 | מסמך | תפקיד |
 |---|---|
-| `docs/ARCHITECTURE-GO-LIVE-CHECKLIST.md` | דומיין, Vercel prod, env, Cardcom creds, Sentry, גיבויים |
+| `docs/ARCHITECTURE-GO-LIVE-CHECKLIST.md` | **rev C:** דומיין, Vercel prod, env, Cardcom prod creds, Sentry, גיבויים |
 | `docs/ARCHITECTURE-ENV-SECRETS.md` | מטריצת סודות |
-| `docs/ARCHITECTURE-FEATURE-FLAGS.md` | Kill switches |
+| `docs/ARCHITECTURE-FEATURE-FLAGS.md` | Kill switches (`CHECKOUT_ENABLED`; Escrow תמיד כבוי) |
 | `docs/ARCHITECTURE-BACKUP-DR.md` | PITR / restore |
 | `docs/ARCHITECTURE-OBSERVABILITY.md` | מדדים/לוגים |
 | `docs/ARCHITECTURE-INCIDENT-RESPONSE.md` | SEV playbooks |
+| `docs/ARCHITECTURE-PAYMENT-RECONCILIATION.md` | התאמת Cardcom ↔ orders |
 | `docs/ARCHITECTURE-PAYMENT-RECONCILIATION.md` | התאמת Cardcom↔orders |
 | `docs/ARCHITECTURE-TESTING-CICD.md` | CI |
 
@@ -96,7 +97,7 @@ Scope: docs בלבד.
 
 | מסמך | תפקיד |
 |---|---|
-| `docs/ARCHITECTURE-SUPPLIER-ONBOARDING.md` | צירוף ספק, מסמכים, `platform_percent` |
+| `docs/ARCHITECTURE-SUPPLIER-ONBOARDING.md` | **rev B:** צירוף ספק, מסמכים, הגדרת `platform_percent` + `coupon_price` |
 | `docs/ARCHITECTURE-SUPPLIER-PORTAL.md` | פורטל + סורק |
 | `docs/ARCHITECTURE-ADMIN.md` / `ADMIN-DASHBOARD.md` | אדמין |
 | `docs/ADMIN-PRODUCT-PAGE-SPEC.md` | טופס מוצר |
@@ -106,9 +107,9 @@ Scope: docs בלבד.
 
 | מסמך | תפקיד |
 |---|---|
-| `docs/ARCHITECTURE-ANALYTICS.md` | **GA4**, אירועי המרה, דשבורד מכירות |
+| `docs/ARCHITECTURE-ANALYTICS.md` | **rev C:** GA4, אירועי המרה, דשבורד מכירות |
 | `docs/ARCHITECTURE-ANALYTICS-KPI.md` | מילון KPI לבעלים |
-| `docs/ARCHITECTURE-CUSTOMER-SUPPORT.md` | **החזרים, ביטול קופון, מדיניות** |
+| `docs/ARCHITECTURE-CUSTOMER-SUPPORT.md` | **rev C:** החזרים, ביטול קופון, מדיניות |
 | `docs/ARCHITECTURE-AI-AGENTS-SUPPORT.md` | סוכן CS + סוכן ספקים |
 | `docs/ARCHITECTURE-AI-AGENTS.md` | סוכני תוכן/מיגרציה וכו' |
 
@@ -160,4 +161,5 @@ Support: ticket → policy matrix → refund/cancel only if issued → audit
 | Date | Change |
 |---|---|
 | 2026-07-24 | MASTER v2 מקור ב-main (business-model-first) |
-| 2026-07-31 | עותק מחייב ב-`ke-arch`: הפניות ל-GO-LIVE/ONBOARDING/ANALYTICS/SUPPORT החדשים; C11א בלי Escrow held-לספק |
+| 2026-07-31 | עותק מחייב ב-`ke-arch`: הפניות ל-GO-LIVE/ONBOARDING/ANALYTICS/SUPPORT; C11א בלי Escrow |
+| 2026-07-31 | rev C: סימון גרסאות GO-LIVE/ONBOARDING/ANALYTICS/SUPPORT + reconciliation |
