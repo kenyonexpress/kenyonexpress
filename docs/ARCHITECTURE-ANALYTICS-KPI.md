@@ -222,8 +222,38 @@ RLS על views דרך security invoker + `is_admin()`.
 
 ---
 
-## 10. Revision
+## 10. Owner daily report (binding layout)
+
+One screen `/admin` (or `/admin/analytics`) answering:
+
+1. **היום:** הזמנות, GMV on-site, הכנסת פלטפורמה, refunds
+2. **Funnel 7י:** view → cart → begin_checkout → purchase (CVR לכל שלב)
+3. **פיצול:** % הזמנות קופון מול פיזי
+4. **איכות:** webhook fails, notification DLQ, redeem fails
+5. **Top 10** מוצרים בהכנסת פלטפורמה (לא רק GMV)
+
+Export CSV (admin only) לטווח תאריכים. שעון `Asia/Jerusalem`.
+
+---
+
+## 11. Event schema (server)
+
+| event | when | props (no PII) |
+|---|---|---|
+| `page_view` | RSC/client | path, type |
+| `add_to_cart` | cart action | product_type, qty |
+| `begin_checkout` | beginCheckout | order_id hash, item_count, total_agorot |
+| `purchase` | finalize once | order_id, coupon_lines, physical_lines, platform_revenue_agorot |
+| `coupon_redeem` | redeem success | supplier_id, product_id |
+| `refund` | refund path | order_id, amount_agorot |
+
+`purchase.platform_revenue_agorot`: coupon = paid_on_site; physical = commission snapshot.
+
+---
+
+## 12. Revision
 
 | Date | Change |
 |---|---|
 | 2026-07-31 | KPI + דוחות בעלים + funnel (`arch/docs-queue`) |
+| 2026-07-31 | rev B: owner daily report layout + event schema |

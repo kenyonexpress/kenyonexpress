@@ -4,16 +4,16 @@
 Architecture docs queue on `arch/docs-queue`.
 
 ## Last Completed
-AI-AGENTS-SUPPORT rev B (committing).
+ANALYTICS-KPI rev B (committing).
 
 ## In Progress
-ANALYTICS-KPI, gap scan.
+Gap scan + missing domain docs.
 
 ## Blocking Issues
 none
 
 ## Next Task
-Continue queue commits.
+Scan missing domains and write gap docs.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
@@ -28,5 +28,5 @@ not set
 ## History
 
 ### 2026-07-31 continuous queue
-- GO-LIVE, SEO-PERFORMANCE, MOBILE-APP, WP-EXECUTION, AI-AGENTS-SUPPORT rev B
+- Completed queued six: GO-LIVE, SEO-PERFORMANCE, MOBILE-APP, WP-EXECUTION, AI-AGENTS-SUPPORT, ANALYTICS-KPI (rev B)
 
