@@ -4,10 +4,10 @@
 Architecture docs queue on `arch/docs-queue`.
 
 ## Last Completed
-MOBILE-APP rev B (committing).
+WP-DATA-MIGRATION-EXECUTION rev B (committing).
 
 ## In Progress
-WP-DATA-MIGRATION-EXECUTION, AI-AGENTS-SUPPORT, ANALYTICS-KPI, gap scan.
+AI-AGENTS-SUPPORT, ANALYTICS-KPI, gap scan.
 
 ## Blocking Issues
 none
@@ -28,5 +28,5 @@ not set
 ## History
 
 ### 2026-07-31 continuous queue
-- GO-LIVE, SEO-PERFORMANCE, MOBILE-APP rev B
+- GO-LIVE, SEO-PERFORMANCE, MOBILE-APP, WP-EXECUTION rev B
 

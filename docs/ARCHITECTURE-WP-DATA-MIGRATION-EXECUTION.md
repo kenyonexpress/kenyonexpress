@@ -208,8 +208,39 @@ pnpm search:reindex
 
 ---
 
-## 8. Revision
+## 8. Cutover day (hour-by-hour)
+
+```
+T-24h  backup prod + freeze WP catalog edits
+T-4h   final WXR export → stage refresh → dry-run
+T-2h   curation signoff checklist complete
+T-1h   Meili reindex staging; spot-check 20 SKUs
+T0     project to prod (batched); enable 301 map
+T+30m  smoke: home, category, PDP price, search, cart
+T+2h   Search Console submit sitemap; watch 404s
+T+24h  integrity job; fix orphans; declare cutover done
+```
+
+Rollback: keep old WP read-only; revert DNS only if storefront deploy failed (data project rollback is restore-from-backup, not "undo WXR").
+
+---
+
+## 9. Blockers B1–B6 (must clear before prod project)
+
+| ID | Blocker | Clear when |
+|---|---|---|
+| B1 | Live products missing `platform_percent` | curation fill + constraint |
+| B2 | Coupons missing `coupon_price_ils` | absolute prices set |
+| B3 | Orphan supplier links | map or quarantine |
+| B4 | Image URLs unreachable | R2 upload / rewrite |
+| B5 | Slug collisions | disambiguation table |
+| B6 | Order money rows treated as live Cardcom | headers-only confirmed |
+
+---
+
+## 10. Revision
 
 | Date | Change |
 |---|---|
 | 2026-07-31 | Runbook ביצוע WXR-first ל-`arch/docs-queue` |
+| 2026-07-31 | rev B: cutover timeline + blockers B1–B6 |
