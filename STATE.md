@@ -1,19 +1,19 @@
-# KenyonExpress State (ke-arch worktree)
+# KenyonExpress State (ke-arch)
 
 ## Current Phase
-Architecture docs queue on `arch/docs-queue`.
+docs-queue gap fill
 
 ## Last Completed
-ANALYTICS-KPI rev B (committing).
+ARCHITECTURE-ENV-SECRETS.md
 
 ## In Progress
-Gap scan + missing domain docs.
+remaining gap docs
 
 ## Blocking Issues
 none
 
 ## Next Task
-Scan missing domains and write gap docs.
+continue gap commits
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
@@ -23,10 +23,4 @@ Scan missing domains and write gap docs.
 
 ## Supabase Project URL
 not set
-
----
-## History
-
-### 2026-07-31 continuous queue
-- Completed queued six: GO-LIVE, SEO-PERFORMANCE, MOBILE-APP, WP-EXECUTION, AI-AGENTS-SUPPORT, ANALYTICS-KPI (rev B)
 

@@ -225,7 +225,7 @@ Rollback: keep old WP read-only; revert DNS only if storefront deploy failed (da
 
 ---
 
-## 9. Blockers B1–B6 (must clear before prod project)
+## 9. Blockers B1 עד B6 (must clear before prod project)
 
 | ID | Blocker | Clear when |
 |---|---|---|
@@ -243,4 +243,4 @@ Rollback: keep old WP read-only; revert DNS only if storefront deploy failed (da
 | Date | Change |
 |---|---|
 | 2026-07-31 | Runbook ביצוע WXR-first ל-`arch/docs-queue` |
-| 2026-07-31 | rev B: cutover timeline + blockers B1–B6 |
+| 2026-07-31 | rev B: cutover timeline + blockers B1 עד B6 |

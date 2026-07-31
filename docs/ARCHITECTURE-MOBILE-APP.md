@@ -190,4 +190,4 @@ Web stays SEO acquisition. App never forks money rules.
 | Date | Change |
 |---|---|
 | 2026-07-31 | רענון מחייב mobile super-app ל-`arch/docs-queue` |
-| 2026-07-31 | rev B: phased M0–M4, offline/security notes |
+| 2026-07-31 | rev B: phased M0 עד M4, offline/security notes |
