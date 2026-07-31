@@ -163,3 +163,4 @@ Support: ticket → policy matrix → refund/cancel only if issued → audit
 | 2026-07-24 | MASTER v2 מקור ב-main (business-model-first) |
 | 2026-07-31 | עותק מחייב ב-`ke-arch`: הפניות ל-GO-LIVE/ONBOARDING/ANALYTICS/SUPPORT; C11א בלי Escrow |
 | 2026-07-31 | rev C: סימון גרסאות GO-LIVE/ONBOARDING/ANALYTICS/SUPPORT + reconciliation |
+| 2026-07-31 | Contradiction sweep: fulfillment coupon row + supplier prefill wording aligned to §1 |

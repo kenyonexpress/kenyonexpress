@@ -2,7 +2,7 @@
 
 KenyonExpress post-purchase fulfillment and supplier workflow architecture (complete binding spec).
 
-Status: BINDING for worktree `/Users/ofir/kenyonexpress-web/ke-admin` · branch `arch/admin-supplier` (2026-07-28)
+Status: BINDING for worktree `/Users/ofir/kenyonexpress-web/ke-arch` · branch `arch/docs-queue` (2026-07-31)
 Scope: **docs only.** No application code in this change.
 Companions: `docs/ARCHITECTURE-CHECKOUT-CARDCOM.md`, `docs/ARCHITECTURE-COUPON-REDEMPTION.md`, `docs/ARCHITECTURE-SUPPLIER-PORTAL.md`, `docs/ARCHITECTURE-NOTIFICATIONS.md`, `docs/ARCHITECTURE-ADMIN.md`, `docs/ADMIN-PRODUCT-PAGE-SPEC.md`.
 Stack: Supabase triggers + notification outbox + Resend, Supplier Portal (`src/app/(supplier)`), Server Actions, optional cron.
@@ -14,7 +14,7 @@ Money: integer **agorot**; snapshots only.
 
 | Product type | After `payment_settled` | Supplier money from platform | Customer still owes |
 |---|---|---|---|
-| **Coupon** | Issue voucher (QR + code); optional notify supplier of sale (default **off**) | Prepaid split by snapshotted `platform_percent` only (often 100% platform). **No coupon payout line for till** | Till remainder at merchant on QR scan; voucher **expires on scan** |
+| **Coupon** | Issue voucher (QR + code); optional notify supplier of sale (default **off**) | **100% of on-site prepaid stays with the platform** (`platform_settled`). Supplier payout from prepaid = 0. **No Escrow**, no split of coupon prepaid by `platform_percent`. | Till remainder at merchant on QR scan; voucher **expires on scan** |
 | **Physical** | Notify supplier; ship workflow | **Immediate split** recorded at settle; payout after T+3 + min threshold | 0 on-site |
 
 Invariants:
@@ -290,3 +290,12 @@ Never `supabase db push`. Use next free ordinal (**Q-FUL-MIG**).
 | `ARCHITECTURE-NOTIFICATIONS.md` | Resend outbox |
 | `/supplier/orders` | UI |
 | `redeem_voucher` | coupon completion |
+
+---
+
+## 15. Revision
+
+| Date | Change |
+|---|---|
+| 2026-07-28 | Fulfillment workflow binding |
+| 2026-07-31 | Money lock: coupon prepaid 100% platform, no Escrow split language |

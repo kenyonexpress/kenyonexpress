@@ -1,19 +1,19 @@
 # KenyonExpress State (ke-arch)
 
 ## Current Phase
-docs-queue: MASTER-v2 rev C done; contradiction sweep next.
+docs-queue complete on `arch/docs-queue`.
 
 ## Last Completed
-MASTER-ARCHITECTURE-v2.md rev C references
+Contradiction sweep across docs/ (no Escrow, dynamic platform_percent, coupon full on-site charge). Fixed FULFILLMENT coupon economics row and SUPPLIER-PORTAL prefill wording.
 
 ## In Progress
-contradiction sweep across docs/
+nothing
 
 ## Blocking Issues
 none
 
 ## Next Task
-Scan and fix Escrow / fixed percent / coupon charge contradictions
+Implement from docs on app branches when asked.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
@@ -23,4 +23,11 @@ Scan and fix Escrow / fixed percent / coupon charge contradictions
 
 ## Supabase Project URL
 not set
+
+---
+## History
+
+### 2026-07-31 queue batch
+- GO-LIVE rev C, SUPPLIER-ONBOARDING rev B, ANALYTICS rev C, CUSTOMER-SUPPORT rev C, MASTER-v2 rev C
+- Contradiction sweep committed
 
