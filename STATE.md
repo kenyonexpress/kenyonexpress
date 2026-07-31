@@ -1,7 +1,10 @@
 # KenyonExpress State (ke-arch)
 
 ## Last Completed
-ARCHITECTURE-CUSTOMER-SUPPORT.md rev C
+MASTER-ARCHITECTURE-v2.md with refs to new docs
+
+## In Progress
+contradiction sweep
 
 ## Branch
 `arch/docs-queue`
