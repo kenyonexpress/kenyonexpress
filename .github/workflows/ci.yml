@@ -1,10 +1,16 @@
 name: CI
 
 on:
+  # Deliberately unfiltered: every pull request runs typecheck, tests and build,
+  # whatever it targets. The previous filter listed only the two branches nobody
+  # actually opens PRs against, so a PR into phase5/homepage - the branch all the
+  # work happens on - got no CI at all. A gate that does not run on the branch
+  # under development is not a gate.
   pull_request:
-    branches: [cursor/add-supabase-3c830, main]
   push:
-    branches: [cursor/add-supabase-3c830, main, phase5/homepage]
+    branches: [cursor/add-supabase-3c830, main, phase5/homepage, feat/ci-foundation]
+  # So a branch can be checked before its PR exists.
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -14,44 +20,60 @@ env:
   NODE_VERSION: '22'
 
 jobs:
-  # Diff-scoped on purpose. A repo-wide `pnpm lint` reports 45 pre-existing
-  # errors; blocking on those would make every PR red on arrival and the gate
-  # would be routed around within a week. New violations block, the backlog
-  # gets paid down on its own schedule.
+  # Diff-scoped gates. Default range is HEAD~1..HEAD (tip commit only).
+  # Repo-wide lint debt and docs/hardcoded-audit.md hits do not block;
+  # only NEW diagnostics / hardcoded values in the changed file set do.
   lint:
-    name: Lint (changed files)
+    name: Diff-scoped lint gates
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # merge-base needs history
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Lint files this branch touched
+      - name: Resolve CI_DIFF_RANGE
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "CI_DIFF_RANGE=origin/${{ github.base_ref }}...HEAD" >> "$GITHUB_ENV"
+          else
+            echo "CI_DIFF_RANGE=HEAD~1..HEAD" >> "$GITHUB_ENV"
+          fi
+      - name: Biome check (changed files)
         run: pnpm lint:changed
-
-      # Informational only: the size of the backlog, so it stays visible
-      # without gating anyone.
+      - name: tsc --strict (changed files)
+        run: pnpm typecheck:changed
+      - name: Hardcoded hex/px (new vs docs/hardcoded-audit.md)
+        run: pnpm gate:hardcoded
       - name: Repo-wide lint (non-blocking)
         continue-on-error: true
         run: pnpm lint
 
   typecheck:
-    name: Typecheck
+    name: Typecheck (changed files)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm type-check
+      - name: Resolve CI_DIFF_RANGE
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "CI_DIFF_RANGE=origin/${{ github.base_ref }}...HEAD" >> "$GITHUB_ENV"
+          else
+            echo "CI_DIFF_RANGE=HEAD~1..HEAD" >> "$GITHUB_ENV"
+          fi
+      - run: pnpm typecheck:changed
 
   test:
     name: Unit tests + money coverage floors
@@ -99,7 +121,7 @@ jobs:
 
   # E2E drives a real browser against a real database, so it needs a Supabase
   # project. Until CI_SUPABASE_URL exists as a repository secret this job skips
-  # rather than failing — a permanently red required check teaches people to
+  # rather than failing - a permanently red required check teaches people to
   # ignore red checks. Promote it to a required check once the secret is set.
   e2e:
     name: E2E (Playwright)

@@ -117,3 +117,33 @@ describe('settlement state machine (the coupon prepayment stays with the platfor
     expect(SETTLEMENT_STATES).toHaveLength(6)
   })
 })
+
+describe('isSettled covers every state where the platform owes nobody', () => {
+  // This block arrived from feat/ci-foundation naming `escrow_released` and
+  // `escrow_held`, two states the model no longer has: the branch was cut on
+  // 2026-07-27, before the no-escrow rule removed them. Left as written it did
+  // not fail as a wrong assertion, it failed as a type error, which is a
+  // coverage test that never ran. Rewritten against the six states that exist.
+  //
+  // These arms decide whether a line still shows up in the payout run. A false
+  // negative pays a supplier twice, a false positive strands the money.
+  it('reports the split, refund and cancellation outcomes as settled', () => {
+    for (const state of ['split_executed', 'refunded', 'cancelled'] as const) {
+      expect(isSettled(state), `${state} should be settled`).toBe(true)
+    }
+  })
+
+  it('reports every state with money still in flight as unsettled', () => {
+    for (const state of ['pending', 'paid', 'redeemed'] as const) {
+      expect(isSettled(state), `${state} should not be settled`).toBe(false)
+    }
+  })
+
+  it('classifies all six states and invents no seventh', () => {
+    // The guard that makes the two lists above exhaustive rather than a
+    // sample: adding a state without deciding its payout side fails here.
+    const settled = SETTLEMENT_STATES.filter(isSettled)
+    expect(settled).toEqual(['split_executed', 'refunded', 'cancelled'])
+    expect(SETTLEMENT_STATES).toHaveLength(6)
+  })
+})
