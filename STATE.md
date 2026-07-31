@@ -4,7 +4,7 @@
 docs-queue gap fill
 
 ## Last Completed
-ARCHITECTURE-DESIGN-SYSTEM.md
+ARCHITECTURE-COOKIE-CONSENT.md
 
 ## In Progress
 gap docs / index
