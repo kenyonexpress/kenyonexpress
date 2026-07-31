@@ -14,7 +14,7 @@ branch:
 arch/docs-queue
 ```
 
-Date: 2026-07-31  
+Date: 2026-07-31 (rev B)  
 Scope: docs בלבד.  
 Companions: `ARCHITECTURE-PERFORMANCE.md` (ke-arch-performance), `ARCHITECTURE-SEO.md` / sitemap, `refs/` visual gates, Go-Live checklist.
 
@@ -171,7 +171,58 @@ next.config.ts                           images remotePatterns
 
 ---
 
-## 7. טסטים
+## 7. ISR / cache matrix (Next.js 15)
+
+| Page | Mode | `revalidate` / tags | Notes |
+|---|---|---|---|
+| `/` | ISR | 120s; tag `home` | Hero LCP only |
+| `/category/[slug]` | ISR | 300s; `category:{id}`, `catalog` | |
+| `/product/[slug]` | ISR | 120s; `product:{id}`, `catalog` | on-demand on publish |
+| `/products` | ISR | 180s; `catalog` | |
+| `/cart`, `/checkout*`, `/account/**` | dynamic private | `no-store` | never CDN HTML |
+| `/search` | dynamic | short SWR; **noindex** | Meilisearch |
+| `/sitemap.xml` | ISR | 3600s; `sitemap` | |
+
+On-demand: after admin publish/unpublish call `revalidateTag` for product + category + sitemap.
+
+---
+
+## 8. Core Web Vitals budgets
+
+| Metric | Budget (mobile) | How |
+|---|---|---|
+| LCP | ≤ 2.5s | one priority image; Heebo via `next/font`; no blocking third parties on home |
+| CLS | ≤ 0.1 | reserved image boxes; no late-injected hero badges |
+| INP | ≤ 200ms | avoid heavy client on first paint; defer analytics |
+| TTFB | ≤ 800ms (p75) | ISR/CDN for public catalog |
+
+Lighthouse CI on PR: home + coupon PDP + category. Fail if a11y < 90 or perf regresses > 5 points vs baseline without justification.
+
+---
+
+## 9. Images / R2
+
+- Remote patterns only for approved hosts (R2 / Supabase storage).
+- PDP: main image `priority` when above fold; gallery lazy.
+- Coupon cards: same aspect as Electro grid; do not stretch.
+- Never serve 4000px originals to mobile cards.
+
+---
+
+## 10. WP URL redirects
+
+Migration map table (from WP execution doc) drives 301s:
+
+```
+/product-category/... → /category/...
+/product/... → /product/...
+```
+
+Broken map = soft-404 risk. Monitor Search Console after cutover.
+
+---
+
+## 11. טסטים
 
 | # | בדיקה |
 |---|---|
@@ -180,11 +231,14 @@ next.config.ts                           images remotePatterns
 | S3 | JSON-LD Offer = coupon_price לקופון |
 | S4 | Lighthouse perf/a11y על preview |
 | S5 | compare.mjs home/product תחת סף |
+| S6 | revalidateTag אחרי publish מעדכן PDP תוך דקה |
+| S7 | robots Disallow ל-checkout/admin/supplier |
 
 ---
 
-## 8. Revision
+## 12. Revision
 
 | Date | Change |
 |---|---|
 | 2026-07-31 | רענון מחייב SEO+Performance ל-`arch/docs-queue` |
+| 2026-07-31 | rev B: ISR matrix, CWV budgets, R2 images, WP redirects |

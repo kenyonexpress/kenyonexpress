@@ -4,20 +4,16 @@
 Architecture docs queue on `arch/docs-queue` (continuous write → commit → push).
 
 ## Last Completed
-Rev B expand + push:
-
-```
-docs/ARCHITECTURE-GO-LIVE-CHECKLIST.md
-```
+Rev B expand + push queue item SEO-PERFORMANCE (pending commit).
 
 ## In Progress
-Queue remaining: SEO-PERFORMANCE, MOBILE-APP, WP-DATA-MIGRATION-EXECUTION, AI-AGENTS-SUPPORT, ANALYTICS-KPI, then gap scan.
+MOBILE-APP, WP-DATA-MIGRATION-EXECUTION, AI-AGENTS-SUPPORT, ANALYTICS-KPI, gap scan.
 
 ## Blocking Issues
 none
 
 ## Next Task
-Write/expand SEO-PERFORMANCE and commit+push.
+Commit SEO-PERFORMANCE; continue MOBILE-APP.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
@@ -31,8 +27,11 @@ not set in this worktree STATE
 ---
 ## History
 
+### 2026-07-31: SEO-PERFORMANCE rev B
+- ISR matrix, CWV, R2, WP redirects
+
 ### 2026-07-31: GO-LIVE-CHECKLIST rev B
-- Escrow/Cardcom/QR/KPI gates; evidence rule
+- Escrow/Cardcom/QR/KPI gates
 
 ### Prior
-- Continuous docs-queue through DOCS-INDEX and domain arch files
+- Continuous docs-queue through DOCS-INDEX
