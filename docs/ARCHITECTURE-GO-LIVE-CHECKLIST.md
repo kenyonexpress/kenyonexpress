@@ -14,7 +14,7 @@ branch:
 arch/docs-queue
 ```
 
-Date: 2026-07-31 (rev D)  
+Date: 2026-07-31 (rev E)  
 Scope: **docs בלבד** בקובץ זה. הביצוע בשערי CI/ops לפי הצ'קליסט.  
 Worktree בלבד:
 
@@ -264,28 +264,83 @@ Smoke אחרי deploy: יצירת שגיאה מבוקרת ב-preview/staging ק�
 
 ## 8. Auth / עגלה / Checkout / קופונים
 
-| # | בדיקה | P |
-|---|---|---|
-| A1 | Guest cart בלי login | P0 |
-| A2 | שלם → Google → merge → checkout | P0 |
-| A3 | `/account` דורש session | P0 |
-| A4 | RLS חוצה-משתמשים | P0 |
-| A5 | PDP קופון == עגלה == Cardcom (`coupon_price_ils` מלא) | P0 |
-| V1 | הנפקה + QR | P0 |
-| V2 | סריקה חד-פעמית; יתרה בעסק | P0 |
-| V3 | ספק payout מקופון prepaid = 0 | P0 |
-| V4 | HMAC QR שגוי נדחה | P0 |
+| # | בדיקה | P | סטטוס | ראיה |
+|---|---|---|---|---|
+| A1 | Guest cart בלי login: הוספה, כמות, הסרה, מיני-קארט | P0 | | |
+| A2 | לחיצת "שלם" כאורח → Google OAuth → חזרה ל-`/checkout?resume=1` → העגלה נשמרה (merge) והטופס מולא מחדש | P0 | | |
+| A3 | `/account` בלי session מפנה ללוגין; עם session מציג נתוני המשתמש בלבד | P0 | | |
+| A4 | RLS חוצה-משתמשים: משתמש A לא רואה orders/vouchers/wallet/tokens של B (בדיקה עם שני חשבונות אמיתיים) | P0 | | SQL כ-authenticated |
+| A5 | מחיר קופון זהה בשלוש נקודות: PDP == עגלה == סכום חיוב Cardcom (`coupon_price_ils` מלא) | P0 | | צילומי מסך + שורת payment |
+| A6 | עגלה עם מוצר שנמחק / אזל מלאי: השורה מסומנת לא זמינה ולא נחסמת כל העגלה | P1 | | |
+| V1 | תשלום קופון מייצר voucher עם קוד + QR תוך שניות, נראה ב-`/account` | P0 | | |
+| V2 | סריקה ראשונה מצליחה; סריקה שנייה של אותו QR נדחית עם הודעה ברורה | P0 | | |
+| V3 | קופון prepaid: שורת settlement לספק = 0; אין רשומת payout חדשה | P0 | | ledger query |
+| V4 | QR עם HMAC שגוי / voucher זר נדחה ב-`/scan` בלי לחשוף פרטים | P0 | | |
+| V5 | תוקף: voucher שפג לא נסרק; תזכורת 48ש נשלחת (אם notifications חיות) | P1 | | |
+
+### 8.1 סקריפט smoke ידני (יום שיגור, לפני פתיחת קהל)
+
+```
+1. גלישה אנונימית: home → PDP קופון → הוסף לעגלה → /cart
+2. "שלם" → Google (חשבון טסט) → חזרה עם עגלה מלאה וטופס מולא
+3. תשלום Cardcom prod בסכום מינימלי (כרטיס אמיתי של הבעלים)
+4. /checkout/return מציג הצלחה; ההזמנה paid; voucher נוצר
+5. /account: הקופון מופיע עם QR
+6. /scan (חשבון ספק): סריקה מצליחה; סריקה חוזרת נדחית
+7. בדיקת מייל: אישור רכישה התקבל (Resend logs)
+8. Refund על הזמנת הטסט ותיעוד שהיתרות חזרו
+```
 
 ---
 
 ## 9. התראות / איכות / אבטחה
 
-| # | בדיקה | P |
+### 9.1 התראות (שערים)
+
+| # | בדיקה | P | סטטוס |
+|---|---|---|---|
+| N1 | `RESEND_API_KEY` רק בשרת/Edge; לא נגיש בדפדפן | P0 | |
+| N2 | מייל רכישת קופון נשלח בפועל על הזמנת הטסט (סעיף 8.1 שלב 7) | P0 | |
+| N3 | אין Make/Zapier בשום מסלול ייצור | P0 | |
+| N4 | Webhook/Trigger כושל נכנס ל-DLQ ולא נעלם בשקט | P1 | |
+| N5 | Unsubscribe עובד ולא שובר הודעות תפעוליות (אישורי רכישה נשלחים תמיד) | P1 | |
+| N6 | התראת ספק על מכירה נשלחת (אם החלק הזה חי בשיגור) | P1 | |
+
+### 9.2 איכות (שערים)
+
+| # | בדיקה | P | סטטוס |
+|---|---|---|---|
+| Q1 | `tsc --noEmit` נקי על ה-tip המשוגר | P0 | |
+| Q2 | Vitest מלא ירוק (כולל money, split, state machine, cart) | P0 | |
+| Q3 | `next build` production מצליח בלי שגיאות | P0 | |
+| Q4 | Playwright: מסלול guest cart → checkout ירוק על preview | P0 | |
+| Q5 | Lighthouse על home + PDP: performance ו-SEO לא מתחת ליעד המתועד | P1 | |
+
+### 9.3 אבטחה (שערים)
+
+| # | בדיקה | P | סטטוס |
+|---|---|---|---|
+| S1 | אין service role / סוד Cardcom ב-client bundle (חיפוש ב-`.next/static`) | P0 | |
+| S2 | Rate limit על checkout, scan, ו-auth endpoints | P0 | |
+| S3 | RBAC: admin routes דורשים role אמיתי, לא רק session | P0 | |
+| S4 | עמודי מדיניות: תקנון, פרטיות, החזרים נגישים מה-footer | P0 | |
+| S5 | Headers: frame-ancestors מוגבל חוץ מ-return של Cardcom; אין CORS פרוץ | P1 | |
+| S6 | לוגים לא מכילים PAN / token / סיסמאות | P0 | |
+| S7 | Dependency audit: אין CVE קריטי פתוח בחבילות כסף | P1 | |
+| S8 | גישת Supabase Dashboard מוגבלת לבעלים (2FA) | P0 | |
+
+---
+
+## 9.4 72 השעות הראשונות
+
+| מתי | פעולה | אחראי |
 |---|---|---|
-| N1 | Resend key רק בשרת; מייל רכישת קופון | P0 |
-| N2 | אין Make/Zapier בייצור | P0 |
-| Q1 עד Q4 | tsc / vitest / build / playwright cart-checkout | P0 |
-| S1 עד S7 | אין service role בדפדפן; rate limits; legal pages; RBAC | P0 |
+| שעה 0-1 | מעקב חי: Sentry, Ntfy, Vercel logs; אין deploy חדש | הנדסה |
+| שעה 1-24 | בדיקת reconciliation ראשונה: Cardcom מול orders מול ledger | בעלים+הנדסה |
+| יום 2 | סריקת DLQ notifications; טיפול בכל הודעה תקועה | הנדסה |
+| יום 3 | סיכום: שגיאות, המרות, החלטה על הרחבת קהל | בעלים |
+
+כלל: כל אנומליית כסף (סכום לא תואם, voucher בלי תשלום, webhook כפול שנקלט פעמיים) = עצירת `CHECKOUT_ENABLED` עד הסבר מלא.
 
 ---
 
@@ -331,3 +386,4 @@ Rollback: `CHECKOUT_ENABLED=false` → revert deploy → בלי down-migrations 
 | 2026-07-31 | rev B: escrow gates, Cardcom, QR, KPI |
 | 2026-07-31 | rev C: Domain, Vercel prod, env matrix, Cardcom creds, Sentry, backups |
 | 2026-07-31 | rev D: הרחבת דומיין/DNS/SSL + Vercel Domains/Deploy/Rollback (שערי dig/curl) |
+| 2026-07-31 | rev E: פירוק סעיפים 8-9 לשערים מלאים (A/V/N/Q/S), סקריפט smoke ידני, סעיף 72 שעות ראשונות |
