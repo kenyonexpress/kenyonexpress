@@ -3,6 +3,7 @@
 import { track } from '@/lib/analytics/tracker'
 import { shekels } from '@/lib/cart/format'
 import type { CartView } from '@/lib/cart/types'
+import { sectionsFromElectro } from '@/lib/checkout/electro-content'
 import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-code'
 import {
   CHECKOUT_STEPS,
@@ -174,6 +175,9 @@ export default function CheckoutForm({
   }
 
   const errorFor = (field: string): string | undefined => stepErrors[field]
+
+  /** Derived from the committed Electro capture, not hardcoded here. */
+  const confirmSections = sectionsFromElectro()
 
   const balanceAtBusiness = cart.balance_due_at_business
   const itemsTotal = sumAgorot(cart.items.map((item) => item.line_total))
@@ -595,184 +599,212 @@ export default function CheckoutForm({
           )}
         </div>
 
-        <aside className="checkout-step" hidden={step !== 'review'}>
+        <aside className="checkout-step" hidden={step !== 'review' && step !== 'confirm'}>
           <section className="checkout-review" aria-label="ההזמנה שלך">
             <h2 className="checkout-section__title">
               <span>ההזמנה שלך</span>
             </h2>
 
-            <table className="checkout-review__table">
-              <thead>
-                <tr>
-                  <th scope="col">מוצר</th>
-                  <th scope="col">מחיר</th>
-                </tr>
-              </thead>
-              <tbody>
-                {cart.items.map((item) => (
-                  <tr key={`${item.product_id}::${item.variant_id ?? 'null'}`}>
-                    <td>
-                      <span className="checkout-item__name">
-                        {item.name_he} × {item.quantity}
-                      </span>
-                      {item.type === 'coupon' && item.balance_due_at_business > 0 && (
-                        <span className="checkout-item__meta">
-                          תשלום באתר: {shekels(item.customer_pays_now)} · יתרה בעסק:{' '}
-                          {shekels(item.balance_due_at_business)}
+            <div className="checkout-step" hidden={step === 'confirm'}>
+              <table className="checkout-review__table">
+                <thead>
+                  <tr>
+                    <th scope="col">מוצר</th>
+                    <th scope="col">מחיר</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cart.items.map((item) => (
+                    <tr key={`${item.product_id}::${item.variant_id ?? 'null'}`}>
+                      <td>
+                        <span className="checkout-item__name">
+                          {item.name_he} × {item.quantity}
                         </span>
-                      )}
-                    </td>
-                    <td className="checkout-item__total">{shekels(item.customer_pays_now)}</td>
+                        {item.type === 'coupon' && item.balance_due_at_business > 0 && (
+                          <span className="checkout-item__meta">
+                            תשלום באתר: {shekels(item.customer_pays_now)} · יתרה בעסק:{' '}
+                            {shekels(item.balance_due_at_business)}
+                          </span>
+                        )}
+                      </td>
+                      <td className="checkout-item__total">{shekels(item.customer_pays_now)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="checkout-review__row">
+                    <th scope="row">מחיר</th>
+                    <td>{shekels(itemsTotal)}</td>
                   </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="checkout-review__row">
-                  <th scope="row">מחיר</th>
-                  <td>{shekels(itemsTotal)}</td>
-                </tr>
-                {balanceAtBusiness > 0 && (
-                  <tr className="checkout-review__row checkout-review__row--muted">
-                    <th scope="row">יתרה לתשלום בעסק (בקופון)</th>
-                    <td>{shekels(balanceAtBusiness)}</td>
+                  {balanceAtBusiness > 0 && (
+                    <tr className="checkout-review__row checkout-review__row--muted">
+                      <th scope="row">יתרה לתשלום בעסק (בקופון)</th>
+                      <td>{shekels(balanceAtBusiness)}</td>
+                    </tr>
+                  )}
+                  <tr className="checkout-review__row checkout-review__row--total">
+                    <th scope="row">סה&quot;כ</th>
+                    <td>{shekels(cart.subtotal)}</td>
                   </tr>
-                )}
-                <tr className="checkout-review__row checkout-review__row--total">
-                  <th scope="row">סה&quot;כ</th>
-                  <td>{shekels(cart.subtotal)}</td>
-                </tr>
-              </tfoot>
-            </table>
+                </tfoot>
+              </table>
+            </div>
 
             <div className="checkout-payment">
-              <div className="checkout-payment__method">
-                <input type="radio" checked readOnly id="co-pay-card" />
-                <label htmlFor="co-pay-card">תשלום בעזרת כרטיס אשראי</label>
-              </div>
-              <p className="checkout-payment__note">תשלום מאובטח באשראי, באמצעות Cardcom.</p>
+              <div className="checkout-step" hidden={step !== 'confirm'}>
+                {/*
+                Sourced from refs/electro-checkout-text.json, captured with a
+                real browser against Electro's own checkout. Electro has no
+                stepper, so what it contributes is the CONTENT of this block and
+                its order, not a step of its own. Its body copy is theme filler
+                (Lorem ipsum, a Stripe test card) and is deliberately not shipped.
+              */}
+                <ol className="checkout-confirm__sections">
+                  {confirmSections.map((section) => (
+                    <li key={section.id}>{section.title}</li>
+                  ))}
+                </ol>
 
-              {savedCards.length > 0 && (
-                <fieldset className="checkout-cards">
-                  <legend className="checkout-cards__legend">אמצעי תשלום</legend>
-                  {savedCards.map((card) => (
-                    <label className="checkout-cards__option" key={card.id}>
+                <div className="checkout-payment__method">
+                  <input type="radio" checked readOnly id="co-pay-card" />
+                  <label htmlFor="co-pay-card">תשלום בעזרת כרטיס אשראי</label>
+                </div>
+                <p className="checkout-payment__note">תשלום מאובטח באשראי, באמצעות Cardcom.</p>
+
+                {step !== 'confirm' && savedCards.length > 0 && (
+                  <fieldset className="checkout-cards">
+                    <legend className="checkout-cards__legend">אמצעי תשלום</legend>
+                    {savedCards.map((card) => (
+                      <label className="checkout-cards__option" key={card.id}>
+                        <input
+                          type="radio"
+                          name="token_id"
+                          value={card.id}
+                          checked={paymentChoice === card.id}
+                          onChange={() => setPaymentChoice(card.id)}
+                        />
+                        <span>
+                          {card.brand ?? 'כרטיס'} המסתיים ב-{card.last4 ?? '****'}
+                        </span>
+                      </label>
+                    ))}
+                    <label className="checkout-cards__option">
                       <input
                         type="radio"
                         name="token_id"
-                        value={card.id}
-                        checked={paymentChoice === card.id}
-                        onChange={() => setPaymentChoice(card.id)}
+                        value="new"
+                        checked={paymentChoice === 'new'}
+                        onChange={() => setPaymentChoice('new')}
                       />
-                      <span>
-                        {card.brand ?? 'כרטיס'} המסתיים ב-{card.last4 ?? '****'}
-                      </span>
+                      <span>כרטיס אחר</span>
                     </label>
-                  ))}
-                  <label className="checkout-cards__option">
+                  </fieldset>
+                )}
+
+                {step !== 'confirm' && walletBalance > 0 && (
+                  <div className="checkout-wallet">
+                    <label htmlFor="co-wallet">
+                      שימוש ביתרת ארנק (זמין: {shekels(walletBalanceAgorot)})
+                    </label>
                     <input
-                      type="radio"
-                      name="token_id"
-                      value="new"
-                      checked={paymentChoice === 'new'}
-                      onChange={() => setPaymentChoice('new')}
+                      id="co-wallet"
+                      name="apply_wallet_ils"
+                      type="number"
+                      inputMode="decimal"
+                      min={0}
+                      max={walletMaxIls}
+                      step="0.01"
+                      defaultValue={0}
                     />
-                    <span>כרטיס אחר</span>
-                  </label>
-                </fieldset>
-              )}
+                  </div>
+                )}
 
-              {walletBalance > 0 && (
-                <div className="checkout-wallet">
-                  <label htmlFor="co-wallet">
-                    שימוש ביתרת ארנק (זמין: {shekels(walletBalanceAgorot)})
-                  </label>
-                  <input
-                    id="co-wallet"
-                    name="apply_wallet_ils"
-                    type="number"
-                    inputMode="decimal"
-                    min={0}
-                    max={walletMaxIls}
-                    step="0.01"
-                    defaultValue={0}
-                  />
-                </div>
-              )}
+                <p className="checkout-privacy">
+                  הפרטים האישיים ישמשו לצורך ביצוע הרכישה, ולא יועברו לגורם שאינו מורשה בהתאם
+                  למדיניות הפרטיות.
+                </p>
 
-              <p className="checkout-privacy">
-                הפרטים האישיים ישמשו לצורך ביצוע הרכישה, ולא יועברו לגורם שאינו מורשה בהתאם למדיניות
-                הפרטיות.
-              </p>
-
-              <label className="checkout-terms">
-                <input
-                  type="checkbox"
-                  name="accept_terms"
-                  aria-invalid={errorFor('accept_terms') ? 'true' : undefined}
-                />
-                <span>
-                  קראתי ואני מסכים לאתר תנאי שימוש{' '}
-                  <span className="checkout-field__required">*</span>
-                </span>
-              </label>
-              {errorFor('accept_terms') && (
-                <span className="checkout-field__error" role="alert">
-                  {errorFor('accept_terms')}
-                </span>
-              )}
-
-              {!usingSavedCard && (
                 <label className="checkout-terms">
-                  <input type="checkbox" name="save_card" defaultChecked />
-                  <span>שמירת כרטיס לתשלום מהיר בפעם הבאה</span>
+                  <input
+                    type="checkbox"
+                    name="accept_terms"
+                    aria-invalid={errorFor('accept_terms') ? 'true' : undefined}
+                  />
+                  <span>
+                    קראתי ואני מסכים לאתר תנאי שימוש{' '}
+                    <span className="checkout-field__required">*</span>
+                  </span>
                 </label>
-              )}
+                {errorFor('accept_terms') && (
+                  <span className="checkout-field__error" role="alert">
+                    {errorFor('accept_terms')}
+                  </span>
+                )}
 
-              {formError && (
-                <div className="checkout-error" role="alert">
-                  <span>{formError}</span>
-                  {/*
+                {!usingSavedCard && (
+                  <label className="checkout-terms">
+                    <input type="checkbox" name="save_card" defaultChecked />
+                    <span>שמירת כרטיס לתשלום מהיר בפעם הבאה</span>
+                  </label>
+                )}
+
+                {formError && (
+                  <div className="checkout-error" role="alert">
+                    <span>{formError}</span>
+                    {/*
                     Only offered when the code says another press could work.
                     A retry on a disabled checkout or a missing address walks
                     the shopper into the same refusal, which reads as the site
                     being broken rather than as an answer.
                   */}
-                  {failureKind === 'retryable' && (
-                    <button
-                      type="button"
-                      className="checkout-error__retry"
-                      onClick={() => formRef.current?.requestSubmit()}
-                      disabled={busy}
-                    >
-                      {busy ? 'שולח שוב...' : 'נסו שוב'}
-                    </button>
-                  )}
-                </div>
-              )}
-              {authError && (
-                <div className="checkout-error" role="alert">
-                  {authError}
-                </div>
-              )}
+                    {failureKind === 'retryable' && (
+                      <button
+                        type="button"
+                        className="checkout-error__retry"
+                        onClick={() => formRef.current?.requestSubmit()}
+                        disabled={busy}
+                      >
+                        {busy ? 'שולח שוב...' : 'נסו שוב'}
+                      </button>
+                    )}
+                  </div>
+                )}
+                {authError && (
+                  <div className="checkout-error" role="alert">
+                    {authError}
+                  </div>
+                )}
 
-              <button type="submit" className="checkout-pay-btn" disabled={busy}>
-                {busy
-                  ? googlePending
-                    ? 'מעביר להתחברות...'
-                    : usingSavedCard
-                      ? 'מחייב את הכרטיס השמור...'
-                      : 'מעביר לדף תשלום מאובטח...'
-                  : 'שליחת הזמנה'}
-              </button>
+                <button type="submit" className="checkout-pay-btn" disabled={busy}>
+                  {busy
+                    ? googlePending
+                      ? 'מעביר להתחברות...'
+                      : usingSavedCard
+                        ? 'מחייב את הכרטיס השמור...'
+                        : 'מעביר לדף תשלום מאובטח...'
+                    : 'שליחת הזמנה'}
+                </button>
 
-              <button
-                type="button"
-                className="checkout-nav__back checkout-nav__back--review"
-                onClick={goBack}
-                disabled={busy}
-              >
-                חזרה לעריכת הכתובת
-              </button>
+                <button
+                  type="button"
+                  className="checkout-nav__back checkout-nav__back--review"
+                  onClick={goBack}
+                  disabled={busy}
+                >
+                  חזרה לעריכת הכתובת
+                </button>
+              </div>
+
+              {step === 'review' && (
+                <button
+                  type="button"
+                  className="checkout-nav__next"
+                  onClick={goNext}
+                  disabled={busy}
+                >
+                  המשך לאישור
+                </button>
+              )}
             </div>
           </section>
         </aside>

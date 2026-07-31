@@ -10,6 +10,7 @@ import {
   previousStep,
   stepsBefore,
   validateAddressStep,
+  validateConfirmStep,
   validateDetailsStep,
   validateReviewStep,
   validateStep,
@@ -137,33 +138,43 @@ describe('validateAddressStep', () => {
 })
 
 describe('validateReviewStep', () => {
-  it('requires the terms checkbox', () => {
-    expect(validateReviewStep({ accept_terms: 'on' })).toEqual({})
-    expect(validateReviewStep({}).accept_terms).toBe('יש לאשר את תנאי השימוש')
-    expect(validateReviewStep({ accept_terms: 'off' }).accept_terms).toBeTruthy()
+  it('asks nothing: reading the totals is not something to get wrong', () => {
+    expect(validateReviewStep({})).toEqual({})
+    expect(validateReviewStep(complete)).toEqual({})
+  })
+})
+
+describe('validateConfirmStep', () => {
+  it('requires the terms checkbox, the act immediately before paying', () => {
+    expect(validateConfirmStep({ accept_terms: 'on' })).toEqual({})
+    expect(validateConfirmStep({}).accept_terms).toBe('יש לאשר את תנאי השימוש')
+    expect(validateConfirmStep({ accept_terms: 'off' }).accept_terms).toBeTruthy()
   })
 })
 
 describe('step order', () => {
-  it('runs details, address, review', () => {
-    expect(CHECKOUT_STEPS).toEqual(['details', 'address', 'review'])
+  it('runs details, address, review, confirm', () => {
+    expect(CHECKOUT_STEPS).toEqual(['details', 'address', 'review', 'confirm'])
   })
 
   it('reports what has to be clear before a step', () => {
     expect(stepsBefore('details')).toEqual([])
     expect(stepsBefore('address')).toEqual(['details'])
     expect(stepsBefore('review')).toEqual(['details', 'address'])
+    expect(stepsBefore('confirm')).toEqual(['details', 'address', 'review'])
   })
 
   it('clamps at both ends instead of running off the array', () => {
-    expect(nextStep('review')).toBe('review')
+    expect(nextStep('confirm')).toBe('confirm')
     expect(previousStep('details')).toBe('details')
     expect(nextStep('details')).toBe('address')
-    expect(previousStep('review')).toBe('address')
+    expect(nextStep('review')).toBe('confirm')
+    expect(previousStep('confirm')).toBe('review')
   })
 
   it('knows the last step', () => {
-    expect(isLastStep('review')).toBe(true)
+    expect(isLastStep('confirm')).toBe(true)
+    expect(isLastStep('review')).toBe(false)
     expect(isLastStep('details')).toBe(false)
   })
 })
@@ -175,7 +186,7 @@ describe('furthestReachableStep', () => {
   })
 
   it('reaches the last step on a complete form', () => {
-    expect(furthestReachableStep(complete)).toBe('review')
+    expect(furthestReachableStep(complete)).toBe('confirm')
   })
 
   it('reopens where the form broke, not at the end', () => {
@@ -183,8 +194,8 @@ describe('furthestReachableStep', () => {
     expect(furthestReachableStep({ ...complete, phone: '' })).toBe('details')
   })
 
-  it('holds at review when only the terms are unticked', () => {
-    expect(furthestReachableStep({ ...complete, accept_terms: undefined })).toBe('review')
+  it('holds at confirm when only the terms are unticked', () => {
+    expect(furthestReachableStep({ ...complete, accept_terms: undefined })).toBe('confirm')
   })
 })
 
@@ -193,6 +204,7 @@ describe('validateStep dispatch', () => {
     expect(validateStep('details', complete)).toEqual({})
     expect(validateStep('address', complete)).toEqual({})
     expect(validateStep('review', complete)).toEqual({})
+    expect(validateStep('confirm', complete)).toEqual({})
     expect(validateStep('details', {}).phone).toBeTruthy()
   })
 })

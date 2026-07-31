@@ -14,14 +14,21 @@ import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-co
  * without a browser and cannot drift from what the inputs actually hold.
  */
 
-export const CHECKOUT_STEPS = ['details', 'address', 'review'] as const
+export const CHECKOUT_STEPS = ['details', 'address', 'review', 'confirm'] as const
 
 export type CheckoutStep = (typeof CHECKOUT_STEPS)[number]
 
 export const STEP_TITLES: Record<CheckoutStep, string> = {
   details: 'פרטים אישיים',
   address: 'כתובת למשלוח',
-  review: 'ביקורת ותשלום',
+  review: 'ביקורת הזמנה',
+  /**
+   * The final block Electro really shows below its order review: payment
+   * notices, privacy, terms, then the order button. Electro has no stepper of
+   * its own (see lib/checkout/electro-content.ts), so this step takes its
+   * CONTENT from Electro and its shape from us.
+   */
+  confirm: 'אישור ותשלום',
 }
 
 /** Field name to message. Empty object means the step is clear. */
@@ -98,10 +105,20 @@ export function validateAddressStep(values: StepValues): StepErrors {
 }
 
 /**
- * The last step. Terms are the only gate: payment method has a default, and the
- * wallet field is capped by the input itself.
+ * Reviewing the order asks nothing of the shopper: the payment method has a
+ * default and the wallet field is capped by the input itself. It is a step so
+ * the totals get a screen of their own before money moves.
  */
-export function validateReviewStep(values: StepValues): StepErrors {
+export function validateReviewStep(_values: StepValues): StepErrors {
+  return {}
+}
+
+/**
+ * The last step. Terms are the only gate, and they sit here rather than on the
+ * review because accepting them is the act immediately before paying, which is
+ * also where Electro puts its tickbox.
+ */
+export function validateConfirmStep(values: StepValues): StepErrors {
   const errors: StepErrors = {}
   if (values.accept_terms !== 'on') errors.accept_terms = 'יש לאשר את תנאי השימוש'
   return errors
@@ -111,6 +128,7 @@ const VALIDATORS: Record<CheckoutStep, (values: StepValues) => StepErrors> = {
   details: validateDetailsStep,
   address: validateAddressStep,
   review: validateReviewStep,
+  confirm: validateConfirmStep,
 }
 
 export function validateStep(step: CheckoutStep, values: StepValues): StepErrors {

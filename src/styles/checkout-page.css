@@ -687,3 +687,23 @@
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+/* The fourth step's section list. Electro shows a payment notice, a privacy
+   sentence and a terms tickbox below its order review; this names them so the
+   shopper can see what is left before the money moves. */
+.checkout-confirm__sections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  color: #7a7a7a;
+}
+
+.checkout-confirm__sections li {
+  padding: 4px 12px;
+  background: #f7f7f7;
+  border-radius: 50px;
+}
