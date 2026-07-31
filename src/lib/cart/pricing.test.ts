@@ -86,7 +86,7 @@ function allMoney(cart: CartView): number[] {
   ]
 }
 
-describe('buildCartView — physical lines', () => {
+describe('buildCartView: physical lines', () => {
   it('prices a physical line in agorot, not shekels', () => {
     const cart = buildCartView('cart-1', [stored({ quantity: 2 })], [product()], [])
 
@@ -115,7 +115,7 @@ describe('buildCartView — physical lines', () => {
   })
 })
 
-describe('buildCartView — coupon lines', () => {
+describe('buildCartView: coupon lines', () => {
   const couponProduct = product({
     id: 'c1',
     slug: 'c1',
@@ -157,7 +157,7 @@ describe('buildCartView — coupon lines', () => {
   })
 })
 
-describe('buildCartView — unpriceable lines', () => {
+describe('buildCartView: unpriceable lines', () => {
   it('marks a product with no platform percent unavailable and keeps it out of the money', () => {
     const cart = buildCartView(
       'cart-1',
@@ -198,7 +198,7 @@ describe('buildCartView — unpriceable lines', () => {
   })
 })
 
-describe('buildCartView — discounts', () => {
+describe('buildCartView: discounts', () => {
   it('takes the discount off the on-site charge', () => {
     const cart = buildCartView('cart-1', [stored()], [product()], [], {
       code: 'SAVE10',
@@ -224,7 +224,7 @@ describe('buildCartView — discounts', () => {
   })
 })
 
-describe('buildCartView — the agorot invariant', () => {
+describe('buildCartView: the agorot invariant', () => {
   it('returns integers for every money field on a mixed cart', () => {
     const cart = buildCartView(
       'cart-1',
@@ -257,7 +257,7 @@ describe('buildCartView — the agorot invariant', () => {
   })
 })
 
-describe('buildCartView — line identity', () => {
+describe('buildCartView: line identity', () => {
   it('carries the stored platform percent snapshot through untouched', () => {
     const cart = buildCartView(
       'cart-1',
@@ -292,7 +292,7 @@ describe('buildCartView — line identity', () => {
   })
 })
 
-describe('buildCartView — variants', () => {
+describe('buildCartView: variants', () => {
   function variant(overrides: Partial<VariantRow> = {}): VariantRow {
     return {
       id: 'v1',
@@ -337,7 +337,7 @@ describe('buildCartView — variants', () => {
   })
 })
 
-describe('buildCartView — empty', () => {
+describe('buildCartView: empty', () => {
   it('returns the empty cart with its id when nothing is stored', () => {
     const cart = buildCartView('cart-1', [], [], [])
     expect(cart.id).toBe('cart-1')
