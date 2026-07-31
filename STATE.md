@@ -4,7 +4,7 @@
 docs-queue gap fill
 
 ## Last Completed
-ARCHITECTURE-PAYMENT-RECONCILIATION.md
+ARCHITECTURE-SUPPLIER-ONBOARDING.md
 
 ## In Progress
 gap docs / index
