@@ -19,7 +19,7 @@
 - [x] ✅ [8] E2E Playwright: קנייה מלאה קופון+פיזי, סריקה, guest cart. **58/58**.
 - [x] ✅ [9] Integration pass: rebase כל ה-branches על main לפי סדר תלויות, טסטים ירוקים, merge, push.
 - [x] ✅ [10] `feat/growth-core`: תיקון באג ה-x100 ומיזוג. קמפייני הנחה, ניוזלטר double opt-in, referrals, עגלה נטושה. נמצאו ותוקנו עוד שלושה: build שבור, ושני חצאים מתים של משפך ההחזרה.
-- [ ] [11] `feat/search-core`: חסום. דורש Upstash QStash שלא הוקם, ומיגרציה 069 שמעולם לא הוחלה.
+- [x] ✅ [11] `feat/search-core`: **לא היה חסום**. QStash נופל ל-inline כשהוא לא מוגדר, בדיוק כמו Resend/Sentry/Meili כאן, ומיגרציה 069 הוחלה דרך MCP. נשארה הגדרה בלבד: `SEARCH_WEBHOOK_SECRET` + Database Webhook.
 - [x] ✅ [12] Reaper לעגלות שפג תוקפן: מיגרציה 101 + `/api/cron/reap-carts`. ה-CASCADE של תזכורות העגלה הנטושה שונה ל-SET NULL כדי שה-reaper לא ימחק את היסטוריית ההחזרה.
 
 ## החלטות שהתקבלו אוטומטית: מה נשאר מ-[9]
@@ -41,7 +41,7 @@
 | `feat/checkout-cardcom` | ❌ לא | מביא `escrow.ts`, בניגוד לכלל הקבוע. מתנגש ב-11 קבצי ליבת תשלומים ש-GOAL 3 בנה מחדש |
 | `feat/visual-polish` | ❌ לא | 44 קבצי UI מ-28.07 שידרסו עיצוב שנמדד מול האתר החי (compare מתחת ל-11%, Electro 18/18) |
 | `feat/growth-core` | ✅ מוזג ב-[10] | הבאג תוקן ונחסם בבדיקה. ראה [10] |
-| `feat/search-core` | ❌ לא, עדיין | דורש Upstash QStash שלא הוקם, ומיגרציה 069 שמעולם לא הוחלה |
+| `feat/search-core` | ✅ מוזג ב-[11] | ההנחה שחסמה אותו נבדקה ולא החזיקה. ראה [11] |
 
 ## לוג התקדמות
 
@@ -56,6 +56,7 @@
 | [7] SEO+Performance | ✅ | `1ed4f18`, `019ac3e` | sitemap ו-robots כבר היו, וכך גם `lang="he" dir="rtl"`. **JSON-LD לא היה בכלל** ונבנה: Product+Offer ו-BreadcrumbList במוצר, Organization+WebSite בבית. המחיר נגזר מ-`CouponOffer`, אותו אובייקט שמנוע העמלות מחייב לפיו. נוסף canonical ו-OpenGraph. Lighthouse על ה-build, desktop: בית **90/93/96/100**, מוצר **97/97/96/92**. הביצועים עלו מ-86 אחרי שהמדידה הראתה שכרטיסי הדילים מושכים כל תמונה בגודל המקור |
 | [8] E2E Playwright | ✅ | `18a48f7` | **58/58**, פעמיים: worker אחד, ואז 2 workers מול `pnpm start` טרי. היה 48/10. החוסם לא היה המפתח החסר אלא **מי שדרש אותו**: העגלה רצה על `createAdminClient()` כדי לקרוא קטלוג ציבורי ולגעת בשורת עגלה אחת, ולשניהם כבר יש מדיניות. הועברה ל-anon, כולל `Cookie: session_id` שעליו המדיניות של `carts` בנויה. אומת מול פרודקשן לפני שנכתבה שורה, והשורות נמחקו. בנוסף 4 ספקים שהיו שגויים ולא ביש-מזל |
 | [8] E2E Playwright (סבב קודם) | ⚠️ | `1d09184` | הסוויטה קיימת ומכסה את הנדרש (purchase-flow, coupon-scan, cart). תוקנו 4 ספקים שעדיין דרשו את שער ה-checkout שהוסר בכוונה ב-GOAL 2. **48 עוברים, 10 נופלים מסיבה אחת שאינה הקוד**: ה-`SUPABASE_SECRET_KEY` ב-`.env.local` מחזיר 401, וכל כתיבת עגלת אורח עוברת דרך admin client. שוחזר ישירות מול ה-REST API. חסום עד שיוחלף מפתח. **01.08:** הורץ מחדש מול ה-build אחרי 3 המיזוגים, שוב 48/10 בדיוק, כלומר אפס רגרסיה. כל 10 הנופלים דורשים עגלת אורח מלאה. חיפוש מפתח תקין ב-4 דרכים (MCP, `.env.local`, `.env.test`, CLI/Vercel) העלה חרס: `.env.test` מחזיק מפתח של ref אחר לגמרי וגם פג |
+| [11] search-core | ✅ | `2870ae7` | **ההנחה שחסמה אותו הייתה שגויה, ונבדקה ישירות.** `enqueueSearchIndexJob` קורא `QSTASH_TOKEN` ובהיעדרו מריץ inline ומחזיר `{transport:'inline'}` - אותה צורה בדיוק שבה Resend, Sentry ו-Meilisearch כבר עובדים כאן. QStash קונה retry, backoff ו-DLQ לפרודקשן; הוא לא תלות. גם ה-indexer מדלג בשקט בלי Meilisearch, ו-`/search` ממשיך לענות מה-ILIKE. מיגרציה 069 היא 34 שורות idempotent של טבלה תפעולית אחת בלי שום תלות, והוחלה דרך MCP: 7 עמודות, RLS דלוק, 0 policies בכוונה. מה שבאמת חסר הוא **הגדרה ולא קוד**: `SEARCH_WEBHOOK_SECRET` ו-Database Webhook על `public.products`. tsc נקי, 1220 בדיקות (היו 1175), build נקי |
 | [12] cart reaper | ✅ | `452b8b0` | `expires_at` קיים מההתחלה ואף אחד לא מחק לפיו. הממצא האמיתי: `abandoned_cart_nudges.cart_id` היה `ON DELETE CASCADE`, ולכן reaper היה מוחק בשקט את ראיית ההחזרה של עגלה שנשלחה עליה תזכורת וחזרה ושילמה - בדיוק הדוח שתוקן ב-[10]. שונה ל-SET NULL. אומת בפרודקשן ושורות הבדיקה נמחקו. נתיב המחיקה היחיד באפליקציה, וה-cron הראשון עם בדיקות. tsc נקי, 1175 בדיקות, build נקי |
 | [10] growth-core | ✅ | `bb7bc5f` | הבאג שהחזיק את ה-branch תוקן, ונחסם ב-`cart-units.test.ts` שקורא את אתר הקריאה עצמו (אומת שהוא נכשל כשמחזירים את הכפל). נמצאו שלושה נוספים: `newsletter.ts` הוא `'use server'` וייצא קבוע, מה שמאפס את **כל** הייצוא בקובץ ומפיל את ה-build של שני דפי הניוזלטר; `fn_attribute_cart_recovery` חי בפרודקשן ומעולם לא נקרא; `cart_value_agorot` מעולם לא נכתב. שני האחרונים הפכו את דוח ההחזרה באדמין לאפס קבוע. אומת בפרודקשן: קריאה ראשונה משייכת 1, חוזרת 0, הדוח מראה 100.0%. שורות הבדיקה נמחקו. tsc נקי, 1167 בדיקות (היו 1142), build נקי |
 | [9] Integration pass | ✅ | `06bfc33` ואחורה | שתי ההחלטות הוכרעו: `main` מוזג ב-`-s ours` (אפס קבצים ירדו ממנו), ו-3 מתוך 7 `feat/*` מוזגו (ci-foundation, observability, wp-migration). 4 לא, כל אחד עם ראיה נמדדת. 1132 בדיקות, tsc נקי, build נקי |

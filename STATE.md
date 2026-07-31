@@ -4457,3 +4457,61 @@ commit `452b8b0`.
 **[11] הוא היחיד שנשאר, והוא לא חסום בגללי:** הוא דורש Upstash QStash
 שלא הוקם (חשבון וסודות שאין לי דרך ליצור) ומיגרציה 069 שמעולם לא הוחלה.
 שני אלה הם החלטות תשתית של אופיר, לא קוד שאפשר לכתוב. כל השאר סגור.
+
+## GOAL 11 (search-core) נסגר, 2026-08-01
+
+**ההנחה שחסמה אותו הייתה שגויה.** היא נרשמה ב-[9] ונשאה הלאה בלי
+שנבדקה. שתי הטענות נבדקו ישירות, ואף אחת לא החזיקה.
+
+### "דורש Upstash QStash שלא הוקם"
+
+לא נכון. `enqueueSearchIndexJob` קורא `QSTASH_TOKEN`, ובהיעדרו מריץ את
+העבודה **inline** ומחזיר `{transport: 'inline'}`. זו בדיוק הצורה שבה
+Resend, Sentry ו-Meilisearch כבר עובדים בפרויקט הזה: נעדר-אז-כבוי, לא
+נעדר-אז-נופל. QStash קונה retry, backoff ונתיב dead-letter לפרצי
+פרודקשן; הוא אינו תלות. `runInline` אפילו מוזרק ולא מיובא, בדיוק כדי
+שהתעבורה לא תגרור אחריה את תלות ה-Supabase של ה-indexer.
+
+ה-indexer מתנהג אותו דבר: בלי `MEILISEARCH_HOST` הוא מחזיר
+`skipped: meilisearch not configured` במקום לזרוק, ו-`/search` ממשיך
+לענות מנפילת ה-ILIKE של Postgres שהוא משתמש בה היום ממילא.
+
+### "מיגרציה 069 מעולם לא הוחלה"
+
+נכון, וזו הייתה הסיבה **להחיל** אותה ולא סיבה להמתין. אלה 34 שורות
+idempotent שמגדירות טבלה תפעולית אחת בלי תלות בכלום: `search_index_dlq`,
+עם RLS דלוק ו**אפס policies בכוונה**, כך ש-anon ו-authenticated נדחים
+לגמרי ורק ה-admin client מגיע אליה. הוחלה דרך MCP `apply_migration` לפי
+כלל הפרויקט, ואומתה על הפרויקט המתארח: 7 עמודות, RLS דלוק, 0 policies.
+
+### מה באמת חסר, וזו הגדרה ולא קוד
+
+`SEARCH_WEBHOOK_SECRET`, ו-Database Webhook של Supabase על
+`public.products` שמצביע ל-`/api/webhooks/products`. עד אז הצנרת בנויה,
+בדוקה ורדומה, וזה המצב שבו כל אינטגרציה אופציונלית אחרת כאן נשלחת.
+
+**המצב:** tsc נקי, 1220 בדיקות Vitest (היו 1175), build נקי כולל
+`/api/search/index-job`, `/api/search/index-dlq` ו-`/api/webhooks/products`.
+commit `2870ae7`.
+
+## התור הושלם, 2026-08-01
+
+12 מתוך 12. אין פריט פתוח.
+
+| שלב | סטטוס |
+|---|---|
+| [1]-[9] | ✅ |
+| [10] growth-core | ✅ `bb7bc5f` |
+| [11] search-core | ✅ `2870ae7` |
+| [12] cart reaper | ✅ `452b8b0` |
+
+**שבעת ה-`feat/*` הוכרעו סופית:** חמישה מוזגו (ci-foundation,
+observability, wp-migration, growth-core, search-core). שניים לא, ושניהם
+מסיבה שהיא כלל ולא נוחות: `feat/checkout-cardcom` מביא `escrow.ts` בניגוד
+לכלל הקבוע ומתנגש ב-11 קבצי ליבת תשלומים ש-GOAL 3 בנה מחדש, ו-
+`feat/visual-polish` ידרוס עיצוב שנמדד מול האתר החי.
+
+**מה שנשאר לאופיר, והכל הגדרה ולא קוד:** `SEARCH_WEBHOOK_SECRET`
+ו-Database Webhook לחיפוש; `QSTASH_*` ו-`MEILISEARCH_*` אם רוצים אינדוקס
+אמיתי; `RESEND_API_KEY` ו-`CONSENT_IP_SALT` לדיוור; ומפתח service_role
+תקין ל-`.env.local`, שעדיין אינו של הפרויקט הזה.
