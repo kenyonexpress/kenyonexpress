@@ -1,19 +1,19 @@
 # KenyonExpress State (ke-arch)
 
 ## Current Phase
-docs-queue complete on `arch/docs-queue`.
+Autonomous docs queue on `arch/docs-queue` (ke-arch only).
 
 ## Last Completed
-Contradiction sweep across docs/ (no Escrow, dynamic platform_percent, coupon full on-site charge). Fixed FULFILLMENT coupon economics row and SUPPLIER-PORTAL prefill wording.
+ARCHITECTURE-GO-LIVE-CHECKLIST.md rev D: domain DNS/SSL + Vercel production gates.
 
 ## In Progress
-nothing
+Await next queue item if message continues; otherwise idle.
 
 ## Blocking Issues
 none
 
 ## Next Task
-Implement from docs on app branches when asked.
+Continue queue when specified; never touch main repo folder for these docs.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
@@ -23,11 +23,4 @@ Implement from docs on app branches when asked.
 
 ## Supabase Project URL
 not set
-
----
-## History
-
-### 2026-07-31 queue batch
-- GO-LIVE rev C, SUPPLIER-ONBOARDING rev B, ANALYTICS rev C, CUSTOMER-SUPPORT rev C, MASTER-v2 rev C
-- Contradiction sweep committed
 

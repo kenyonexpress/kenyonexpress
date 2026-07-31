@@ -14,8 +14,15 @@ branch:
 arch/docs-queue
 ```
 
-Date: 2026-07-31 (rev C)  
-Scope: **docs בלבד** בקובץ זה. הביצוע בשערי CI/ops לפי הצ'קליסט.
+Date: 2026-07-31 (rev D)  
+Scope: **docs בלבד** בקובץ זה. הביצוע בשערי CI/ops לפי הצ'קליסט.  
+Worktree בלבד:
+
+```
+/Users/ofir/kenyonexpress-web/ke-arch
+```
+
+(אסור לגעת בתיקייה הראשית לשינויי docs האלה.)
 
 Companions: `MASTER-ARCHITECTURE-v2.md`, `ARCHITECTURE-ENV-SECRETS.md`, `ARCHITECTURE-BACKUP-DR.md`, `ARCHITECTURE-FEATURE-FLAGS.md`, checkout-cardcom, notifications V2, analytics.
 
@@ -44,33 +51,113 @@ ESCROW_FLOW_ENABLED   # חייב unset/false; אסור true
 
 ---
 
-## 1. דומיין ו-DNS / TLS
+## 1. דומיין, DNS ו-SSL/TLS
+
+Host קנוני לייצור:
+
+```
+https://kenyonexpress.co.il
+```
+
+(או `www` אם נבחר כקנוני; חייבת להיות בחירה אחת בלבד.)
+
+### 1.1 רשומות DNS (שער)
+
+| # | רשומה | יעד | P | סטטוס | ראיה |
+|---|---|---|---|---|---|
+| DOM1 | `A` / `ALIAS` ל-apex `@` | כתובות Vercel (לפי UI Domains) | P0 | | `dig kenyonexpress.co.il A +short` |
+| DOM2 | `CNAME` ל-`www` | `cname.vercel-dns.com` (או הערך ש-Vercel מציג) | P0 | | `dig www.kenyonexpress.co.il CNAME +short` |
+| DOM3 | אין רשומות ישנות ל-WP/שרת קודם על אותו host בלי 301 מתוכנן | P0 | | |
+| DOM4 | TTL סביר אחרי cutover (לא לשכוח להוריד לפני מעבר) | P1 | | |
+
+### 1.2 SSL / TLS (שער)
 
 | # | בדיקה | P | סטטוס | ראיה |
 |---|---|---|---|---|
-| DOM1 | Apex + www: `kenyonexpress.co.il` מצביעים ל-Vercel prod | P0 | | dig / Vercel domains |
-| DOM2 | TLS תקף (HTTPS בלבד, HSTS אופציונלי אחרי יציבות) | P0 | | browser / SSL labs |
-| DOM3 | Canonical host אחד (הפניית www↔apex עקבית) | P0 | | curl -I |
-| DOM4 | Supabase Auth redirect allowlist כולל `https://kenyonexpress.co.il/auth/callback` | P0 | | dashboard screenshot |
-| DOM5 | Google OAuth client: redirect URIs prod בלבד (בלי localhost ב-prod client) | P0 | | |
-| DOM6 | Resend: דומיין שולח מאומת (SPF/DKIM) על דומיין האתר או subdomain | P0 | | Resend DNS |
-| DOM7 | Cardcom Success/Fail/Webhook URLs על host הפרוד | P0 | | |
-| DOM8 | אין תעודת staging על דומיין הפרוד | P0 | | |
+| SSL1 | תעודת HTTPS תקפה ל-apex ו-www (Vercel auto / Let's Encrypt) | P0 | | דפדפן מנעול / `curl -vI https://…` |
+| SSL2 | אין mixed content בדפי מפתח (home, PDP, cart, checkout) | P0 | | DevTools |
+| SSL3 | HTTP → HTTPS redirect 301/308 | P0 | | `curl -I http://kenyonexpress.co.il` |
+| SSL4 | Host לא-קנוני מפנה לקנוני (www↔apex עקבי) | P0 | | `curl -I` |
+| SSL5 | שרשרת תעודה מלאה; לא self-signed / staging cert על הדומיין החי | P0 | | |
+| SSL6 | TLS 1.2+ בלבד (ברירת Vercel מקובלת) | P1 | | |
+| SSL7 | HSTS: אופציונלי אחרי שבוע יציב ב-HTTPS; לא להפעיל preload ביום 1 בלי החלטה | P2 | | |
+| SSL8 | תאריך תפוגת cert / חידוש אוטומטי של Vercel תקין | P1 | | Domains UI |
+
+### 1.3 דומיין מול שירותים חיצוניים
+
+| # | בדיקה | P | סטטוס | ראיה |
+|---|---|---|---|---|
+| DOM5 | Supabase Auth redirect allowlist כולל `https://kenyonexpress.co.il/auth/callback` (ו-www אם בשימוש) | P0 | | |
+| DOM6 | Google OAuth: redirect URIs prod בלבד (בלי localhost ב-client של prod) | P0 | | |
+| DOM7 | Resend: SPF + DKIM על דומיין השליחה (`kenyonexpress.co.il` או `mail.` / `send.`) | P0 | | Resend DNS green |
+| DOM8 | Cardcom Success / Fail / Webhook URLs על `https://kenyonexpress.co.il/...` | P0 | | |
+| DOM9 | `NEXT_PUBLIC_*` URLs / canonical metadata מצביעים ל-host הקנוני | P0 | | |
+| DOM10 | Sitemap / robots על HTTPS הקנוני | P1 | | |
+
+### 1.4 פקודות ראיה (Terminal)
+
+מריצים ממחשב מקומי (לא חובה מתוך ה-worktree):
+
+```
+dig kenyonexpress.co.il A +short
+dig www.kenyonexpress.co.il CNAME +short
+curl -sI http://kenyonexpress.co.il | head -n 5
+curl -sI https://kenyonexpress.co.il | head -n 10
+curl -sI https://www.kenyonexpress.co.il | head -n 10
+```
+
+צפי: HTTPS 200/308 תקין; HTTP מפנה ל-HTTPS; host משני מפנה לקנוני.
 
 ---
 
 ## 2. Vercel production
 
+### 2.1 פרויקט ו-Git
+
 | # | בדיקה | P | סטטוס | ראיה |
 |---|---|---|---|---|
-| VCL1 | Project מחובר ל-repo הנכון; Production branch מאושר (לא preview בטעות) | P0 | | |
-| VCL2 | Production deployment האחרון GREEN; build = `pnpm` / Next 15 | P0 | | deploy URL |
-| VCL3 | Environment = Production מופרד מ-Preview / Development | P0 | | |
-| VCL4 | Preview **לא** מצביע על Supabase prod / Cardcom prod | P0 | | env diff |
-| VCL5 | Cron routes מוגנים ב-`CRON_SECRET` (expire vouchers, notifications, webhook retry) | P0 | | |
-| VCL6 | Region / edge config יציב; אין ניסויי flag פתוחים ב-prod | P1 | | |
-| VCL7 | Rollback: יודעים איך לקדם deployment קודם תוך דקות | P0 | | runbook note |
-| VCL8 | `CHECKOUT_ENABLED` ניתן לשינוי ב-Production env בלי redeploy קוד ארוך (או redeploy מהיר) | P0 | | |
+| VCL1 | Project מחובר ל-repo `kenyonexpress/kenyonexpress` (או ה-remote המאושר) | P0 | | |
+| VCL2 | Production Branch מאושר ומתועד (לא branch ניסוי) | P0 | | Settings → Git |
+| VCL3 | Root Directory = שורש האפליקציה (לא worktree docs) | P0 | | |
+| VCL4 | Framework Preset = Next.js; Node/pnpm תואמים ל-`package.json` | P0 | | |
+| VCL5 | Ignored Build Step לא מדלג על שינויי כסף/checkout בטעות | P1 | | |
+
+### 2.2 Domains ב-Vercel
+
+| # | בדיקה | P | סטטוס | ראיה |
+|---|---|---|---|---|
+| VCL6 | `kenyonexpress.co.il` + `www` מחוברים ל-**Production** של הפרויקט הנכון | P0 | | Domains |
+| VCL7 | סטטוס Domain = Valid Configuration (לא Invalid Configuration) | P0 | | |
+| VCL8 | אין דומיין prod שמחובר לפרויקט preview/אחר | P0 | | |
+| VCL9 | Certificate State = Valid עבור שני ה-hosts | P0 | | סעיף 1.2 |
+
+### 2.3 Deployments ו-Environments
+
+| # | בדיקה | P | סטטוס | ראיה |
+|---|---|---|---|---|
+| VCL10 | Production deployment אחרון **Ready** / GREEN | P0 | | Deployments |
+| VCL11 | Build: `pnpm` + Next 15 מצליח; אין warnings קריטיים שבורים runtime | P0 | | build log |
+| VCL12 | Environment variables: Production / Preview / Development מופרדים | P0 | | |
+| VCL13 | Preview **לא** מצביע על Supabase prod / Cardcom prod | P0 | | השוואת ערכים (אדוםacted) |
+| VCL14 | `CHECKOUT_ENABLED` קיים ב-Production; ניתן לכבות ל-kill switch | P0 | | |
+| VCL15 | `ESCROW_FLOW_ENABLED` לא true ב-Production | P0 | | |
+| VCL16 | Cron / scheduled hits ל-`/api/...` עם `Authorization: Bearer $CRON_SECRET` | P0 | | |
+| VCL17 | Rollback: Instant Rollback או קידום deployment קודם תוך דקות (מתועד) | P0 | | |
+| VCL18 | Protection: Deployment Protection לא חוסם webhooks של Cardcom/Resend בטעות על prod URL | P0 | | |
+| VCL19 | Region יציב; אין ניסויי Edge Config פתוחים בלי דגל | P1 | | |
+| VCL20 | Speed Insights / Analytics של Vercel אופציונלי; לא תחליף ל-Sentry/GA4 | P2 | | |
+
+### 2.4 Runbook Vercel (יום שיגור)
+
+```
+1. Domains + SSL = Valid (סעיפים 1 ו-2.2)
+2. Env Production מלא (סעיף 3) כולל Cardcom prod
+3. Deploy Production מה-branch המאושר
+4. Smoke על https://kenyonexpress.co.il (home, PDP מחיר קופון, cart)
+5. אם כשל: CHECKOUT_ENABLED=false ואז Instant Rollback
+```
+
+אסור: לשייך דומיין חי ל-Preview; לשים service role תחת `NEXT_PUBLIC_`; להפעיל Escrow.
 
 ---
 
@@ -82,13 +169,13 @@ ESCROW_FLOW_ENABLED   # חייב unset/false; אסור true
 |---|---|---|---|
 | ENV1 | `NEXT_PUBLIC_SUPABASE_URL` + anon | P0 | תואם פרויקט prod |
 | ENV2 | `SUPABASE_SECRET_KEY` (service role) | P0 | **לא** `NEXT_PUBLIC_`; לא demo |
-| ENV3 | Cardcom prod set (§4) | P0 | |
+| ENV3 | Cardcom prod set (סעיף 4) | P0 | |
 | ENV4 | `RESEND_API_KEY` + `RESEND_FROM` | P0 | |
 | ENV5 | `CRON_SECRET` | P0 | |
 | ENV6 | `VOUCHER_QR_SECRET` (+ optional PREVIOUS) | P0 | |
 | ENV7 | Meilisearch host + key | P1 | חיפוש |
 | ENV8 | R2 credentials | P1 | מדיה |
-| ENV9 | `SENTRY_DSN` (+ auth token ל-source maps אם בשימוש) | P0 | §5 |
+| ENV9 | `SENTRY_DSN` (+ auth token ל-source maps אם בשימוש) | P0 | סעיף 5 |
 | ENV10 | `CHECKOUT_ENABLED=true` רק אחרי P0 כסף | P0 | |
 | ENV11 | `ESCROW_FLOW_ENABLED` unset או false | P0 | |
 | ENV12 | `UNSUBSCRIBE_SIGNING_SECRET` | P1 | notifications |
@@ -103,7 +190,7 @@ ESCROW_FLOW_ENABLED   # חייב unset/false; אסור true
 | # | בדיקה | P |
 |---|---|---|
 | ENV14 | אף סוד כסף לא תחת `NEXT_PUBLIC_` | P0 |
-| ENV15 | רשימת Production env ב-Vercel תואמת §3 (צילום / export אדוםacted) | P0 |
+| ENV15 | רשימת Production env ב-Vercel תואמת סעיף 3 (צילום / export מושחר) | P0 |
 
 ---
 
