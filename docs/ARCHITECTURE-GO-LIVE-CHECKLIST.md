@@ -17,7 +17,7 @@ arch/docs-queue
 Date: 2026-07-31 (rev C)  
 Scope: **docs בלבד** בקובץ זה. הביצוע בשערי CI/ops לפי הצ'קליסט.
 
-Companions: `ARCHITECTURE-ENV-SECRETS.md`, `ARCHITECTURE-BACKUP-DR.md`, `ARCHITECTURE-FEATURE-FLAGS.md`, `ARCHITECTURE-INCIDENT-RESPONSE.md`, checkout-cardcom, notifications V2, analytics KPI, `MASTER-ARCHITECTURE-v2.md`.
+Companions: `MASTER-ARCHITECTURE-v2.md`, `ARCHITECTURE-ENV-SECRETS.md`, `ARCHITECTURE-BACKUP-DR.md`, `ARCHITECTURE-FEATURE-FLAGS.md`, checkout-cardcom, notifications V2, analytics.
 
 ---
 
@@ -33,13 +33,9 @@ P2 לא חוסמים soft-launch מוגבל.
 | P1 | חוסם שיגור ציבורי מלא, לא soft-launch סגור |
 | P2 | איכות / חוב טכני |
 
-**מודל כסף בשיגור:**
+**מודל כסף בשיגור:** קופון = מלוא `coupon_price_ils` באתר, נשאר בפלטפורמה, **אין Escrow**. פיזי = פיצול לפי `platform_percent` דינמי מצולם ב-`order_items`. אין Make/Zapier בייצור. אין עמלת 5% קבועה.
 
-- קופון: גבייה מלאה של `coupon_price_ils` באתר; הכסף נשאר בפלטפורמה; אין Escrow; ספק מקבל 0 מהאתר.
-- פיזי: פיצול לפי `platform_percent` דינמי מצולם ב-`order_items` (בלי ברירת מחדל, בלי 5% קבוע).
-- אין Make/Zapier בייצור.
-
-Kill switches (מוכנים לפני C3):
+Kill switches (חובה מוכנים לפני C3):
 
 ```
 CHECKOUT_ENABLED=false
@@ -48,17 +44,17 @@ ESCROW_FLOW_ENABLED   # חייב unset/false; אסור true
 
 ---
 
-## 1. דומיין ו-DNS
+## 1. דומיין ו-DNS / TLS
 
 | # | בדיקה | P | סטטוס | ראיה |
 |---|---|---|---|---|
-| DOM1 | Apex `kenyonexpress.co.il` מצביע ל-Vercel (A/CNAME לפי הנחיית Vercel) | P0 | | dig + screenshot DNS |
-| DOM2 | `www` → apex (301) או להפך; canonical יחיד ב-SEO | P0 | | curl -I |
-| DOM3 | TLS תקף (Let's Encrypt / Vercel); אין mixed content | P0 | | browser padlock |
-| DOM4 | Supabase Auth redirect allowlist כולל `https://kenyonexpress.co.il/auth/callback` | P0 | | dashboard |
-| DOM5 | Google OAuth client: Authorized redirect URIs ל-prod בלבד (לא localhost ב-client החי) | P0 | | Google Cloud console |
-| DOM6 | Resend: דומיין מאומת (SPF/DKIM/DMARC) על שם השולח | P0 | | Resend domain status |
-| DOM7 | Cardcom Success/Fail/Webhook URLs על host הפרוד | P0 | | Cardcom terminal settings |
+| DOM1 | Apex + www: `kenyonexpress.co.il` מצביעים ל-Vercel prod | P0 | | dig / Vercel domains |
+| DOM2 | TLS תקף (HTTPS בלבד, HSTS אופציונלי אחרי יציבות) | P0 | | browser / SSL labs |
+| DOM3 | Canonical host אחד (הפניית www↔apex עקבית) | P0 | | curl -I |
+| DOM4 | Supabase Auth redirect allowlist כולל `https://kenyonexpress.co.il/auth/callback` | P0 | | dashboard screenshot |
+| DOM5 | Google OAuth client: redirect URIs prod בלבד (בלי localhost ב-prod client) | P0 | | |
+| DOM6 | Resend: דומיין שולח מאומת (SPF/DKIM) על דומיין האתר או subdomain | P0 | | Resend DNS |
+| DOM7 | Cardcom Success/Fail/Webhook URLs על host הפרוד | P0 | | |
 | DOM8 | אין תעודת staging על דומיין הפרוד | P0 | | |
 
 ---
@@ -67,45 +63,47 @@ ESCROW_FLOW_ENABLED   # חייב unset/false; אסור true
 
 | # | בדיקה | P | סטטוס | ראיה |
 |---|---|---|---|---|
-| VCL1 | Project מקושר ל-repo הנכון; Production branch מאושר (לא preview בטעות) | P0 | | Vercel settings |
-| VCL2 | Production deployment האחרון `Ready`; build log בלי errors | P0 | | deployment URL |
-| VCL3 | Environment: Production מופרד מ-Preview / Development | P0 | | env scope screenshot |
-| VCL4 | Preview **לא** משתמש ב-Supabase prod / Cardcom prod | P0 | | compare project refs |
-| VCL5 | Domains: `kenyonexpress.co.il` + www משויכים ל-Production | P0 | | |
-| VCL6 | Cron / scheduled hits ל-`/api/cron/*` עם `Authorization: Bearer CRON_SECRET` | P0 | | |
-| VCL7 | Protection: Deployment Protection לא חוסם webhooks של Cardcom (או bypass ייעודי) | P0 | | webhook test |
-| VCL8 | `CHECKOUT_ENABLED` מוגדר במפורש ב-Production | P0 | | |
+| VCL1 | Project מחובר ל-repo הנכון; Production branch מאושר (לא preview בטעות) | P0 | | |
+| VCL2 | Production deployment האחרון GREEN; build = `pnpm` / Next 15 | P0 | | deploy URL |
+| VCL3 | Environment = Production מופרד מ-Preview / Development | P0 | | |
+| VCL4 | Preview **לא** מצביע על Supabase prod / Cardcom prod | P0 | | env diff |
+| VCL5 | Cron routes מוגנים ב-`CRON_SECRET` (expire vouchers, notifications, webhook retry) | P0 | | |
+| VCL6 | Region / edge config יציב; אין ניסויי flag פתוחים ב-prod | P1 | | |
+| VCL7 | Rollback: יודעים איך לקדם deployment קודם תוך דקות | P0 | | runbook note |
+| VCL8 | `CHECKOUT_ENABLED` ניתן לשינוי ב-Production env בלי redeploy קוד ארוך (או redeploy מהיר) | P0 | | |
 
 ---
 
 ## 3. Env vars (Production)
 
-רשימה מלאה + כללים: `ARCHITECTURE-ENV-SECRETS.md`.  
-כאן: שערי PASS חובה.
+מקור מחייב לפירוט: `ARCHITECTURE-ENV-SECRETS.md`. סיכום שערי שיגור:
 
-| # | Variable / קבוצה | P | סטטוס |
+| # | Variable / קבוצה | P | חובה |
 |---|---|---|---|
-| ENV1 | `NEXT_PUBLIC_SUPABASE_URL` + anon key של **prod** | P0 |
-| ENV2 | `SUPABASE_SECRET_KEY` (service role) של אותו project; לא demo | P0 |
-| ENV3 | Cardcom prod set (ראה §4) | P0 |
-| ENV4 | `RESEND_API_KEY` + `RESEND_FROM` | P0 |
-| ENV5 | `CRON_SECRET` (ארוך, ייחודי ל-prod) | P0 |
-| ENV6 | `VOUCHER_QR_SECRET` (+ optional PREVIOUS) | P0 |
-| ENV7 | Meilisearch host + key | P1 |
-| ENV8 | R2 credentials (אם מדיה ב-R2) | P1 |
-| ENV9 | `SENTRY_DSN` (+ auth token ל-source maps אם בשימוש) | P0 |
-| ENV10 | `NTFY_*` או ערוץ alert מקביל ל-SEV | P1 |
-| ENV11 | `CHECKOUT_ENABLED=true` רק אחרי שאר P0 התשלום | P0 |
-| ENV12 | `ESCROW_FLOW_ENABLED` **לא** מוגדר או `false` | P0 |
-| ENV13 | אין `NEXT_PUBLIC_*` שמכיל service role / Cardcom password / Resend key | P0 |
+| ENV1 | `NEXT_PUBLIC_SUPABASE_URL` + anon | P0 | תואם פרויקט prod |
+| ENV2 | `SUPABASE_SECRET_KEY` (service role) | P0 | **לא** `NEXT_PUBLIC_`; לא demo |
+| ENV3 | Cardcom prod set (§4) | P0 | |
+| ENV4 | `RESEND_API_KEY` + `RESEND_FROM` | P0 | |
+| ENV5 | `CRON_SECRET` | P0 | |
+| ENV6 | `VOUCHER_QR_SECRET` (+ optional PREVIOUS) | P0 | |
+| ENV7 | Meilisearch host + key | P1 | חיפוש |
+| ENV8 | R2 credentials | P1 | מדיה |
+| ENV9 | `SENTRY_DSN` (+ auth token ל-source maps אם בשימוש) | P0 | §5 |
+| ENV10 | `CHECKOUT_ENABLED=true` רק אחרי P0 כסף | P0 | |
+| ENV11 | `ESCROW_FLOW_ENABLED` unset או false | P0 | |
+| ENV12 | `UNSUBSCRIBE_SIGNING_SECRET` | P1 | notifications |
+| ENV13 | Ntfy / admin alert vars | P1 | |
 
-אימות:
+בדיקת דליפה:
 
 ```
-# Terminal מהשורש (אחרי pull לטיפ השיגור)
-# ודא שאין דליפת סודות לקליינט
-rg -n "SUPABASE_SECRET|SERVICE_ROLE|CARDCOM_PASSWORD|RESEND_API_KEY" src/ --glob '*.tsx' | head
+# Terminal (repo root): אין service role / Cardcom password ב-client bundle
 ```
+
+| # | בדיקה | P |
+|---|---|---|
+| ENV14 | אף סוד כסף לא תחת `NEXT_PUBLIC_` | P0 |
+| ENV15 | רשימת Production env ב-Vercel תואמת §3 (צילום / export אדוםacted) | P0 |
 
 ---
 
@@ -113,65 +111,67 @@ rg -n "SUPABASE_SECRET|SERVICE_ROLE|CARDCOM_PASSWORD|RESEND_API_KEY" src/ --glob
 
 | # | בדיקה | P | סטטוס | ראיה |
 |---|---|---|---|---|
-| CC1 | מסוף **ייצור** (לא sandbox) פעיל לפלטפורמה | P0 | | terminal id |
-| CC2 | API username/password / Low Profile credentials ב-Vercel Production בלבד | P0 | | |
-| CC3 | Webhook URL: `https://kenyonexpress.co.il/api/payments/cardcom/webhook?...` | P0 | | |
-| CC4 | URL secret / אימות GetLpResult חובה לפני finalize | P0 | | e2e log |
-| CC5 | Success/Fail redirect ל-`/checkout/return` ו-`/checkout/failed` | P0 | | |
-| CC6 | חיוב טסט אמיתי בסכום מינימלי → `payments.succeeded` + `orders.paid_at` | P0 | | order id |
-| CC7 | סכום ב-Cardcom == `paid_on_site` (קופון = מלוא `coupon_price`) | P0 | | |
-| CC8 | קופון אחרי תשלום: `platform_settled`; **אין** שורת `order_escrow_holds` | P0 | | SQL |
-| CC9 | Tokenization (אם פעיל): טוקן נשמר ב-`payment_tokens` בלי PAN | P1 | | |
-| CC10 | Multi-account: `cardcom_account_key` נשמר; refund על אותו חשבון | P1 | | |
-| CC11 | מסמכי התקשרות / אישור סליקה מהספק שמורים אצל הבעלים | P0 | | |
+| CC1 | מסוף **Production** (לא sandbox) משויך לחשבון הפלטפורמה | P0 | | |
+| CC2 | Terminal number + API name/password ב-Vercel Production בלבד | P0 | | |
+| CC3 | Low Profile / CreateAndCharge מוגדר עם Success/Fail/Webhook ל-prod host | P0 | | |
+| CC4 | Webhook: URL secret + אימות GetLpResult חובה בשרת | P0 | | |
+| CC5 | טבלת `cardcom_accounts` (אם multi-account): שורת platform + keys תקינים | P0 | | |
+| CC6 | רכישת קופון טסט חיה בסכום מינימלי: charge → finalize → voucher+QR | P0 | | order id |
+| CC7 | Replay webhook = no-op (בלי כפילות שוברים) | P0 | | |
+| CC8 | סכום ב-Cardcom == `paid_on_site` (מלוא `coupon_price` לקופון) | P0 | | |
+| CC9 | קופון אחרי תשלום: `platform_settled`; אין `order_escrow_holds` חדשים | P0 | | |
+| CC10 | Refund path על הזמנת טסט מתועד | P1 | | |
+| CC11 | Token שמור: יצירה + חיוב חוזר על אותו `cardcom_account_key` | P1 | | |
+| CC12 | כשל תשלום לא משאיר `orders.paid_at` | P0 | | |
 
-אסור: להשאיר credentials של sandbox ב-Production env.
+אסור: להשאיר סיסמאות Cardcom ב-git, ב-Notion ציבורי, או ב-Make/Zapier.
 
 ---
 
 ## 5. מוניטורינג Sentry
 
-| # | בדיקה | P | סטטוס | ראיה |
-|---|---|---|---|---|
-| SEN1 | פרויקט Sentry ייעודי ל-KenyonExpress prod | P0 | | project URL |
-| SEN2 | `SENTRY_DSN` ב-Vercel Production; SDK ב-Next (server + client לפי מדיניות) | P0 | | |
-| SEN3 | Source maps מועלים ב-deploy (או החלטה מתועדת לוותר) | P1 | | |
-| SEN4 | Alert: spike ב-error rate / checkout failures → Ntfy או email | P0 | | alert rule |
-| SEN5 | תגיות: `environment=production`, release = git sha | P1 | | event sample |
-| SEN6 | אין PII (PAN, full card, tokens) ב-breadcrumbs | P0 | | scrubbing config |
-| SEN7 | בדיקת smoke: throw מבוקר ב-preview/staging ואז כיבוי | P1 | | |
+| # | בדיקה | P | סטטוס |
+|---|---|---|---|
+| SEN1 | פרויקט Sentry ל-prod (Next.js) מחובר; `SENTRY_DSN` ב-Production | P0 |
+| SEN2 | Source maps / release name תואמים deployment | P1 |
+| SEN3 | Alert: error spike על checkout / payments routes | P0 |
+| SEN4 | Alert: unhandled exceptions ב-Edge notifications / webhook | P1 |
+| SEN5 | אין PII (PAN, tokens, service role) ב-Sentry breadcrumbs | P0 |
+| SEN6 | תגובה ל-SEV: קישור ל-`ARCHITECTURE-INCIDENT-RESPONSE.md` | P0 |
+| SEN7 | Ntfy/admin מקבל גם DLQ תשלומים והתראות (משלים ל-Sentry) | P1 |
 
-ראה גם: `ARCHITECTURE-OBSERVABILITY.md`, `ARCHITECTURE-INCIDENT-RESPONSE.md`.
+Smoke אחרי deploy: יצירת שגיאה מבוקרת ב-preview/staging קודם; ב-prod רק אם יש flag בטוח.
 
 ---
 
 ## 6. גיבויים (Backup / DR)
 
-| # | בדיקה | P | סטטוס | ראיה |
-|---|---|---|---|---|
-| BK1 | Supabase PITR / daily backups מאופשרים על פרויקט ה-prod | P0 | | dashboard |
-| BK2 | נקודת שחזור אחרונה < 24ש (או לפי SLA כתוב) | P0 | | |
-| BK3 | תרגול restore מתועד לפחות פעם אחת ל-staging (תאריך) | P1 | | runbook note |
-| BK4 | לפני cutover / שיגור: snapshot ידני + שם/timestamp | P0 | | |
-| BK5 | R2 / מדיה: גרסאות או bucket backup מדיניות כתובה | P1 | | |
-| BK6 | סודות לא מגובים ב-git; רק ב-Vercel/password manager | P0 | | |
-| BK7 | Runbook DR נגיש (קישור ל-`ARCHITECTURE-BACKUP-DR.md`) | P0 | | |
+פירוט מלא: `ARCHITECTURE-BACKUP-DR.md`. שערי שיגור:
+
+| # | בדיקה | P | סטטוס |
+|---|---|---|---|
+| BAK1 | Supabase PITR / automated backups מופעלים על פרויקט prod | P0 |
+| BAK2 | נקודת שחזור אחרונה < 24ש (או לפי מסמך DR) | P0 |
+| BAK3 | תרגול restore מתועד (staging) לפחות פעם אחת לפני כסף חי | P1 |
+| BAK4 | לפני cutover גדול (WP/migrate): snapshot ידני + חתימה | P0 |
+| BAK5 | R2 / מדיה: גרסת bucket או מדיניות retention מתועדת | P2 |
+| BAK6 | סודות לא רק ב-Vercel בלי export מוצפן לבעלים | P1 |
+| BAK7 | Runbook: מי מריץ restore ב-SEV1 | P0 |
 
 ---
 
 ## 7. מיגרציות וסכימה
 
-| # | בדיקה | P | סטטוס |
-|---|---|---|---|
-| M1 | כל המיגרציות עד הטיפ המאושר הוחלו ב-prod (תהליך מאושר; לא `db push` פראי) | P0 |
-| M2 | `platform_percent` NOT NULL על מוצרים פיזיים חיים | P0 |
+| # | בדיקה | P |
+|---|---|---|
+| M1 | מיגרציות עד טיפ מאושר הוחלו ב-prod (תהליך מאושר; לא `db push` פראי) | P0 |
+| M2 | `platform_percent` NOT NULL על מוצרים חיים | P0 |
 | M3 | `coupon_price_ils` תקין לכל קופון חי | P0 |
-| M4 | RLS דולק על orders, vouchers, wallet, payment_tokens, carts, profiles | P0 |
-| M5 | אין `ESCROW_FLOW_ENABLED=true` ב-prod | P0 |
-| M6 | vouchers / payment_events / cardcom_accounts קיימות | P0 |
-| M7 | Backup/PITR (§6) | P0 |
-| M8 | מסלול escrow hold/release לא פעיל בקוד ה-tip | P0 |
-| M9 | `payment_tokens.cardcom_token` לא ב-SELECT ל-`authenticated` | P0 |
+| M4 | RLS על orders, vouchers, wallet, payment_tokens, carts, profiles | P0 |
+| M5 | אין `ESCROW_FLOW_ENABLED=true` | P0 |
+| M6 | vouchers / payment_events / cardcom_accounts קיימים אם checkout ממוזג | P0 |
+| M7 | קוד `escrow` hold/release לא פעיל ב-tip | P0 |
+| M8 | `cardcom_token` לא ב-SELECT ל-authenticated | P0 |
 
 ---
 
@@ -182,11 +182,12 @@ rg -n "SUPABASE_SECRET|SERVICE_ROLE|CARDCOM_PASSWORD|RESEND_API_KEY" src/ --glob
 | A1 | Guest cart בלי login | P0 |
 | A2 | שלם → Google → merge → checkout | P0 |
 | A3 | `/account` דורש session | P0 |
-| A4 | RLS: אין דליפת הזמנות בין משתמשים | P0 |
-| A5 | PDP קופון == עגלה == חיוב (`coupon_price_ils`) | P0 |
-| V1 | הנפקה + QR אחרי תשלום | P0 |
+| A4 | RLS חוצה-משתמשים | P0 |
+| A5 | PDP קופון == עגלה == Cardcom (`coupon_price_ils` מלא) | P0 |
+| V1 | הנפקה + QR | P0 |
 | V2 | סריקה חד-פעמית; יתרה בעסק | P0 |
-| V6 | ספק לא מקבל payout מקופון prepaid | P0 |
+| V3 | ספק payout מקופון prepaid = 0 | P0 |
+| V4 | HMAC QR שגוי נדחה | P0 |
 
 ---
 
@@ -194,39 +195,38 @@ rg -n "SUPABASE_SECRET|SERVICE_ROLE|CARDCOM_PASSWORD|RESEND_API_KEY" src/ --glob
 
 | # | בדיקה | P |
 |---|---|---|
-| N1 | Resend מאומת; מפתח לא בדפדפן | P0 |
-| N2 | מייל לקוח אחרי רכישת קופון | P0 |
-| N4 | אין Make/Zapier בייצור | P0 |
-| Q1 עד Q4 | tsc / vitest / build / playwright checkout | P0 |
-| S1 | אין service role ב-`NEXT_PUBLIC_` | P0 |
-| S3 | Rate limits: login, checkout, redeem | P0 |
-| S4 | תנאי שימוש + פרטיות + ביטול מפורסמים | P0 |
+| N1 | Resend key רק בשרת; מייל רכישת קופון | P0 |
+| N2 | אין Make/Zapier בייצור | P0 |
+| Q1–Q4 | tsc / vitest / build / playwright cart-checkout | P0 |
+| S1–S7 | אין service role בדפדפן; rate limits; legal pages; RBAC | P0 |
 
 ---
 
-## 10. Soft-launch / יום שיגור / Rollback
+## 10. Soft-launch מול GA
 
-Soft: כל P0 PASS. GA: P0+P1.
+| שלב | תנאי | קהל |
+|---|---|---|
+| Soft | כל P0 PASS | ספקים + קונים מבוקרים |
+| GA | P0+P1 PASS + KPI בסיסי | ציבור |
 
-יום השיגור:
+יום שיגור:
 
 ```
-1. Freeze מיזוגים לא קשורים
-2. Backup/snapshot DB (BK4)
-3. Deploy Production ב-Vercel
-4. Smoke: DNS, home, PDP price, cart, Google pay, Cardcom charge, voucher, redeem
-5. Verify webhook + Resend + Sentry receiving
-6. Watch 60 דק׳
-7. הכרזת soft-launch
+1. Freeze מיזוגים
+2. Backup/snapshot (BAK)
+3. Deploy Vercel Production
+4. Smoke: domain, PDP price, cart, Google pay, Cardcom, voucher, redeem
+5. Sentry + Ntfy ירוקים 60 דק׳
+6. Soft-launch
 ```
 
-Rollback: `CHECKOUT_ENABLED=false` → revert deploy → לא down-migration הרסני בלי DR.
+Rollback: `CHECKOUT_ENABLED=false` → revert deploy → בלי down-migrations הרסניים.
 
 ---
 
 ## 11. ראיות וחתימות
 
-לכל P0: פקודה+timestamp / URL לוג / צילום עם שעון. בלי ראיה = לא PASS.
+לכל P0: פקודה+timestamp / לוג / צילום. בלי ראיה = לא PASS.
 
 | תפקיד | שם | תאריך | חתימה |
 |---|---|---|---|
@@ -240,6 +240,6 @@ Rollback: `CHECKOUT_ENABLED=false` → revert deploy → לא down-migration ה�
 
 | Date | Change |
 |---|---|
-| 2026-07-31 | צ'קליסט Go-Live ראשוני |
-| 2026-07-31 | rev B: escrow/Cardcom/QR |
-| 2026-07-31 | rev C: דומיין, Vercel prod, env, Cardcom creds, Sentry, גיבויים |
+| 2026-07-31 | צ'קליסט Go-Live P0/P1/P2 |
+| 2026-07-31 | rev B: escrow gates, Cardcom, QR, KPI |
+| 2026-07-31 | rev C: Domain, Vercel prod, env matrix, Cardcom creds, Sentry, backups |

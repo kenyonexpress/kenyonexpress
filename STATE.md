@@ -1,21 +1,19 @@
 # KenyonExpress State (ke-arch)
 
 ## Current Phase
-docs-queue complete (rev C + MASTER + contradiction sweep)
+docs-queue continuous: GO-LIVE rev C done; next SUPPLIER-ONBOARDING.
 
 ## Last Completed
-- GO-LIVE / SUPPLIER-ONBOARDING / ANALYTICS / CUSTOMER-SUPPORT rev C
-- MASTER-ARCHITECTURE-v2.md
-- Contradiction fixes: CHECKOUT-CARDCOM, ADMIN-DASHBOARD; index link to MASTER
+docs/ARCHITECTURE-GO-LIVE-CHECKLIST.md rev C (domain, Vercel, env, Cardcom, Sentry, backups)
 
 ## In Progress
-nothing
+SUPPLIER-ONBOARDING, ANALYTICS, CUSTOMER-SUPPORT, MASTER-v2, contradiction sweep
 
 ## Blocking Issues
 none
 
 ## Next Task
-Implement from docs when asked
+SUPPLIER-ONBOARDING expand + push
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
@@ -25,10 +23,4 @@ Implement from docs when asked
 
 ## Supabase Project URL
 not set
-
----
-## History
-
-### 2026-07-31 rev C queue
-GO-LIVE (domain/Vercel/env/Cardcom/Sentry/backups), SUPPLIER-ONBOARDING, ANALYTICS (GA4), CUSTOMER-SUPPORT (refunds/cancel), MASTER-v2, money-model contradiction sweep
 
