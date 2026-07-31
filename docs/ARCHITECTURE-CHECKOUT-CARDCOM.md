@@ -76,7 +76,7 @@ Required for any **physical** line. Coupon-only carts skip shipping; capture bil
 
 | Field | Validation |
 |---|---|
-| `full_name` | non-empty Hebrew/Latin, 2–80 chars |
+| `full_name` | non-empty Hebrew/Latin, 2-80 chars |
 | `phone` | Israeli mobile/landline normalize (`05x…` / `0x…`); E.164 storage optional |
 | `city` | non-empty; optionally match Israel cities list |
 | `street` + `house_number` | required |
@@ -213,7 +213,7 @@ Double-charge prevention: UI disables Pay after submit; server rejects second `b
 | Webhook timeout / missing webhook | Indicator may show success: run **verify pull** from Cardcom API by deal id (reconcile cron / on thank-you page). Never trust browser alone |
 | Webhook before order commit | Rare: buffer event keyed by deal id; reconcile job attaches when order appears; or create payment first always before iframe |
 | Webhook race (two success events) | UNIQUE event + conditional paid update |
-| Abandoned iframe | Cron expires `pending` orders after N minutes (**Q-CHK-TTL**, default 30–60); release stock holds |
+| Abandoned iframe | Cron expires `pending` orders after N minutes (**Q-CHK-TTL**, default 30-60); release stock holds |
 | Partial multi-line failure | N/A: single charge for whole order; all-or-nothing pay |
 
 Retry logic:
@@ -319,7 +319,7 @@ Never `supabase db push`. Next free ordinal ≥ 077 from hosted journal (**Q-CHK
 - [ ] Cardcom account selection server-side and snapshotted
 - [ ] Webhook verify + idempotent finalize; no double-charge
 - [ ] `settlement_events` one row per line on settle with snapshotted `platform_percent`
-- [ ] Failure + retry + webhook timeout reconcile covered by tests T4–T7
+- [ ] Failure + retry + webhook timeout reconcile covered by tests T4-T7
 - [ ] Physical split immediate; coupon till outside platform
 
 ---

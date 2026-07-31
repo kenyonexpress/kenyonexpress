@@ -368,7 +368,7 @@ Pattern:
 
 | View | Mode |
 |---|---|
-| Order/payment stuck queues | RSC + 10–30s client poll or `router.refresh` |
+| Order/payment stuck queues | RSC + 10-30s client poll or `router.refresh` |
 | Redeem fraud signals | Poll redemptions feed 15s on dashboard widget |
 | Payout approval | On-demand refresh after action |
 | Analytics | Pre-aggregated views; refresh on load / manual |
@@ -412,4 +412,4 @@ Pattern:
 | `docs/ADMIN-PRODUCT-PAGE-SPEC.md` | Money fields + publish gate |
 | `docs/ARCHITECTURE-SUPPLIER-PORTAL.md` | Supplier portal composition |
 | `ADMIN-ARCHITECTURE.md` | Earlier binding notes; superseded on Escrow/coupon-take conflicts by this file + product/supplier specs |
-| Migrations 007, 011, 046, 052, 053, 056, 059, 070, 072–074, 081, 085, 089 | Schema truth |
+| Migrations 007, 011, 046, 052, 053, 056, 059, 070, 072-074, 081, 085, 089 | Schema truth |
