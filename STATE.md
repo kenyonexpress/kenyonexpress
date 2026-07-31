@@ -4,16 +4,16 @@
 docs-queue gap fill
 
 ## Last Completed
-ARCHITECTURE-ENV-SECRETS.md
+ARCHITECTURE-FEATURE-FLAGS.md
 
 ## In Progress
-remaining gap docs
+gap docs / index
 
 ## Blocking Issues
 none
 
 ## Next Task
-continue gap commits
+continue
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
