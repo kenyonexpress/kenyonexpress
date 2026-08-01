@@ -2,18 +2,14 @@
 
 import {
   CONSENT_COOKIE,
+  CONSENT_DECIDED_ATTRIBUTE,
+  CONSENT_DECIDED_VALUE,
   CONSENT_MAX_AGE_SECONDS,
   CONSENT_WORDING_VERSION,
   type ConsentDecision,
-  needsConsentDecision,
   serializeConsent,
 } from '@/lib/analytics/consent'
-import { useEffect, useState } from 'react'
-
-function readConsentCookie(): string | null {
-  const match = document.cookie.match(new RegExp(`(?:^|; )${CONSENT_COOKIE}=([^;]*)`))
-  return match?.[1] ? decodeURIComponent(match[1]) : null
-}
+import { useState } from 'react'
 
 function writeConsentCookie(decision: ConsentDecision): void {
   const value = serializeConsent({ decision, wordingVersion: CONSENT_WORDING_VERSION })
@@ -26,25 +22,33 @@ function writeConsentCookie(decision: ConsentDecision): void {
  * visual weight on purpose: a decline that is harder to click than an accept is
  * not a free choice, and the privacy regulator reads it that way too.
  *
- * Rendered only after mount, so the server-rendered HTML is identical for every
- * visitor and stays cacheable.
+ * The markup ships in the server response for EVERY visitor, and the visitors
+ * who already decided have it hidden by CSS at first paint, off an attribute
+ * that `CONSENT_PREPAINT_SCRIPT` puts on <html> before the parser gets here.
+ * See the long note on that constant for why: gating this on a useEffect made
+ * the banner's paragraph the homepage's LCP element AND made it wait for
+ * hydration, which is the whole of what held mobile at 80.
+ *
+ * `dismissed` covers only the click, which is necessarily after hydration.
+ * There is no mount-time state, so server and client render the same tree.
  */
 export default function ConsentBanner() {
-  const [visible, setVisible] = useState(false)
+  const [dismissed, setDismissed] = useState(false)
 
-  useEffect(() => {
-    setVisible(needsConsentDecision(readConsentCookie()))
-  }, [])
-
-  if (!visible) return null
+  if (dismissed) return null
 
   const decide = (decision: ConsentDecision) => {
     writeConsentCookie(decision)
-    setVisible(false)
+    // Also set the attribute the pre-paint snippet would have set, so a
+    // client-side route change cannot bring the banner back before the next
+    // full load reads the cookie.
+    document.documentElement.setAttribute(CONSENT_DECIDED_ATTRIBUTE, CONSENT_DECIDED_VALUE)
+    setDismissed(true)
   }
 
   return (
     <section
+      data-consent-banner=""
       aria-label="הסכמה לאיסוף נתוני שימוש"
       className="fixed inset-x-0 bottom-0 z-50 border-t border-black/10 bg-white p-4 shadow-lg"
     >

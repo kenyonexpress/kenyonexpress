@@ -1,4 +1,7 @@
 import { expect, test } from '@playwright/test'
+// Relative, not the `@/` alias: no other spec uses the alias, and this import
+// only has to reach one dependency-free module.
+import { CONSENT_PREPAINT_SCRIPT } from '../src/lib/analytics/consent'
 
 test.describe('homepage', () => {
   test('loads with RTL layout and the Hebrew locale', async ({ page }) => {
@@ -141,6 +144,78 @@ test.describe('homepage', () => {
       // fails at 640 on a dpr-1 run and at 750 on a phone.
       expect(w, `hero slide fetched at w=${w} for a 193px paint`).toBeLessThanOrEqual(384)
     }
+  })
+
+  /**
+   * The consent banner's paragraph is 382x91 on a 412px phone: the largest
+   * element in the viewport, so it IS the homepage's LCP element. While it was
+   * gated on a useEffect it could not paint until hydration finished, and
+   * Lighthouse mobile put LCP at 5.1s against a 1.7s first paint - the whole
+   * gap was the JS wait, and LCP was the only metric holding the page at 80.
+   *
+   * Both halves are asserted, because either one alone can be true while the
+   * banner is still broken: present in the HTML but shown to someone who
+   * already answered, or hidden correctly but only after JS runs.
+   */
+  test('consent banner paints from the HTML, without JavaScript', async ({ browser, baseURL }) => {
+    // A context of its own: `javaScriptEnabled` is a context-level option, and
+    // it is the whole point here - it is the difference between "in the
+    // response" and "rendered by React after hydration".
+    const context = await browser.newContext({ baseURL, javaScriptEnabled: false })
+    const page = await context.newPage()
+    await page.goto('/')
+
+    await expect(page.locator('[data-consent-banner]')).toBeVisible()
+    await context.close()
+  })
+
+  /**
+   * The pre-paint snippet has to reach the browser AS WRITTEN.
+   *
+   * This is not paranoia about a string. The first build of this change shipped
+   * a snippet with three chunks of its source silently missing, because it was
+   * authored as four template literals joined by `+` and the production build
+   * folds that by OVERWRITING each operand's trailing text with the next
+   * operand's leading text instead of joining them. What arrived was still
+   * valid-looking JavaScript, it was served with a 200, and it threw at parse
+   * time in every visitor's browser - so the banner was simply never hidden and
+   * nothing anywhere reported a problem. Written as ONE template literal it
+   * compiles intact (verified against .next/server/chunks on both shapes).
+   *
+   * Comparing the served bytes to the module constant is the only assertion
+   * that can catch that class of failure: every other test in this file runs
+   * the shipped code, so a snippet that is mangled but still parses passes them
+   * all.
+   */
+  test('the pre-paint consent snippet survives the build byte for byte', async ({ request }) => {
+    const html = await (await request.get('/')).text()
+
+    expect(html, 'pre-paint snippet is not in the response as written').toContain(
+      CONSENT_PREPAINT_SCRIPT,
+    )
+  })
+
+  test('consent banner is hidden at first paint for a visitor who decided', async ({
+    browser,
+    baseURL,
+  }) => {
+    const context = await browser.newContext({ baseURL, javaScriptEnabled: false })
+    await context.addCookies([
+      {
+        name: 'ke_consent',
+        value: 'granted.1',
+        domain: new URL(baseURL as string).hostname,
+        path: '/',
+      },
+    ])
+    const page = await context.newPage()
+    await page.goto('/')
+
+    // Attached but not visible: the markup is the same for every visitor, so
+    // the response stays cacheable, and CSS - not React - does the hiding.
+    await expect(page.locator('[data-consent-banner]')).toBeAttached()
+    await expect(page.locator('[data-consent-banner]')).toBeHidden()
+    await context.close()
   })
 
   test('offers category navigation into the archives', async ({ page }) => {

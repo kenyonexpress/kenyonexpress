@@ -152,6 +152,17 @@ body {
   direction: rtl;
 }
 
+/* The consent banner ships in every response so it paints with the HTML rather
+   than after hydration - it is the largest element in a phone viewport, so it
+   IS the homepage's LCP element and it used to arrive 3.4s after first paint.
+   Visitors who already answered get it hidden here, at first paint, off the
+   attribute src/lib/analytics/consent.ts's pre-paint snippet sets on <html>.
+   display:none and not opacity/visibility on purpose: only display:none keeps
+   it out of the LCP candidate set and out of the accessibility tree. */
+html[data-consent="decided"] [data-consent-banner] {
+  display: none;
+}
+
 /* Turbopack caches this file's compiled output by CONTENT hash, not mtime.
    A dev server started before a @theme colour was added keeps serving CSS
    without that colour's utilities, and `touch` does not clear it: on
