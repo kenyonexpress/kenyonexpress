@@ -25,6 +25,9 @@ const LIVE_PRODUCT = 'https://kenyonexpress.co.il/product/מוצר-לדוגמא/
 // were extracted from, so measurements and the pixel diff describe one page.
 const LIVE_CATEGORY = 'https://kenyonexpress.co.il/product-category/hot-deals/'
 const LOCAL_CATEGORY_SLUG = process.env.COMPARE_CATEGORY_SLUG ?? 'hot-deals'
+// Which local product the product run screenshots. Unset means "discover one",
+// which is reproducible only for as long as the catalogue keeps its order.
+const COMPARE_PRODUCT_SLUG = process.env.COMPARE_PRODUCT_SLUG ?? ''
 // /products is our rebuild of the live /shop/ archive.
 const LIVE_PRODUCTS = 'https://kenyonexpress.co.il/shop/'
 // Live search is a WordPress query string, not a route.
@@ -58,16 +61,33 @@ if (page === 'home') {
   liveUrl ??= LIVE_PRODUCT
   if (!mineUrl) {
     const probe = await ctx.newPage()
-    await probe.goto(`${LOCAL}/products`, { waitUntil: 'networkidle' }).catch(() => {})
-    const href = await probe
-      .evaluate(() => {
-        const a = document.querySelector('a[href*="/product/"]')
-        return a ? a.getAttribute('href') : null
-      })
-      .catch(() => null)
+    // Pin the local product, the way the category run pins its slug. Falling
+    // straight to "first product link on /products" makes this run compare two
+    // UNRELATED products and call the difference a fidelity score: the number
+    // moves whenever the catalogue reorders, with nothing in the page changed.
+    // That is not hypothetical. On 2026-08-01 it read 16.59% against 10.71% on
+    // record, and the whole delta was the pick: live's reference is a sample
+    // product with no image at all, and the local side had landed on a room
+    // listing with a large photo.
+    const preferred = COMPARE_PRODUCT_SLUG ? `${LOCAL}/product/${COMPARE_PRODUCT_SLUG}` : null
+    const res = preferred
+      ? await probe.goto(preferred, { waitUntil: 'domcontentloaded' }).catch(() => null)
+      : null
+    if (res?.ok()) {
+      mineUrl = preferred
+    } else {
+      if (preferred) console.log(`product: ${COMPARE_PRODUCT_SLUG} did not resolve, discovering`)
+      await probe.goto(`${LOCAL}/products`, { waitUntil: 'networkidle' }).catch(() => {})
+      const href = await probe
+        .evaluate(() => {
+          const a = document.querySelector('a[href*="/product/"]')
+          return a ? a.getAttribute('href') : null
+        })
+        .catch(() => null)
+      mineUrl = href ? `${LOCAL}${href.startsWith('/') ? '' : '/'}${href}` : `${LOCAL}/product/`
+      console.log(`product: discovered local slug -> ${mineUrl}`)
+    }
     await probe.close()
-    mineUrl = href ? `${LOCAL}${href.startsWith('/') ? '' : '/'}${href}` : `${LOCAL}/product/`
-    console.log(`product: discovered local slug -> ${mineUrl}`)
   }
 } else if (page === 'category') {
   liveUrl ??= LIVE_CATEGORY
