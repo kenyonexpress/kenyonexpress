@@ -71,22 +71,37 @@ function DealsProductCard({ product }: { product: Product }) {
           className="p_con__image-link"
           aria-label={product.name_he}
         >
-          {/* Measured, not assumed. This was left as a raw img because the box
-              comes from `p_con__image-wrap` in the Electro stylesheet and
-              `fill` against an unmeasured height can shift a grid. Lighthouse
-              then showed what that cost: every card image was fetched at its
-              source size, up to 1334x1367 for a box that renders 367x245, and
-              those ~24 images were the single largest weight on the home page.
-              The wrap is already `relative` and already reserves the height, so
-              `fill` has nothing to shift, and `sizes` is what makes the
-              optimizer emit the small rendition. */}
+          {/* IN FLOW, not `fill`, and the distinction is the whole card.
+              `.p_con__image-wrap` sets no height of its own - it is a bare flex
+              box that takes the height of the image inside it, which
+              `.p_con__image` fixes at live's 245px. `fill` makes next/image
+              write `position:absolute` as an INLINE style, which beats the
+              class: the image leaves the flow, the wrap has nothing in-flow
+              left to measure, and it collapses. Then `height:100%` of a zero
+              box is zero.
+
+              That is not a theory. It shipped: every one of the 32 deal cards
+              on the homepage rendered with NO IMAGE, measured at 239x0 with a
+              naturalWidth of 459, so the bytes were fetched and thrown away.
+              The homepage came out 3504px tall against live's 5492px and the
+              pixel gate read 22.4% instead of 10.92%. Nothing errored, and the
+              Lighthouse score it was traded for went UP, which is why it
+              survived two rounds of measurement.
+
+              The optimizer is still doing its job here - that was the point of
+              the change that introduced `fill`, and it is worth keeping. It
+              needs `sizes`, not `fill`. Width and height are next/image's
+              required intrinsic hint and nothing renders at them: `.p_con__image`
+              pins the height to 245 and leaves the width auto, which is how
+              live keeps a narrow image narrow instead of stretching it. */}
           {thumb ? (
             <Image
               src={thumb}
               alt={product.name_he}
-              fill
+              width={400}
+              height={245}
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 400px"
-              className="p_con__image object-contain"
+              className="p_con__image"
             />
           ) : null}
         </Link>
