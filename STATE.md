@@ -4541,3 +4541,61 @@ E2E_PORT=3210 E2E_WEB_COMMAND='pnpm start -p 3210' npx playwright test
 **המסקנה:** תוצאה של `playwright test` חשוף אינה אות רגרסיה עד שהיא
 חוזרת מול build פרודקשן טרי על פורט פנוי. ה-dev server מקמפל נתיבים לפי
 דרישה, ולכן תמונות עצלות ומקטעי "מוצרים דומים" מתייצבים בתזמון אחר.
+
+## אימות חוזר בסשן נקי, 2026-08-01
+
+התור נקרא מחדש מ-`NEXT-GOALS.md` ו-`STATE.md`, ולא נמצא פריט שאינו
+מסומן. במקום לקבל את התיעוד כנתון, כל ארבע הטענות נמדדו מחדש מאפס:
+
+| בדיקה | תוצאה |
+|---|---|
+| `git status` ומול `origin` | עץ נקי, 0 קומיטים לא דחופים, HEAD `e067e0b` |
+| `pnpm tsc --noEmit` | נקי |
+| Vitest | **1220/1220**, 92 קבצים |
+| `pnpm build` | נקי |
+| Playwright | **58/58** בדקה אחת |
+
+ה-E2E הורץ בשיטה המתועדת בלבד, כלומר מול build טרי על פורט פנוי:
+
+```
+E2E_PORT=3210 E2E_WEB_COMMAND='pnpm start -p 3210' npx playwright test
+```
+
+אפס רגרסיה מול המספרים שנרשמו ב-`e067e0b`. אין קוד לכתוב.
+
+## Current Phase
+
+התור סגור, 12 מתוך 12. אין פריט פתוח ואין חוסם בקוד.
+
+## Last Completed
+
+אימות חוזר מלא של המצב (tsc, 1220 Vitest, build, 58/58 E2E) בסשן נקי,
+בלי שינוי קוד.
+
+## In Progress
+
+כלום.
+
+## Blocking Issues
+
+אין חוסם בקוד. מה שנשאר הוא **הגדרה בלבד**, ואין לי דרך ליצור אף אחד
+מהם:
+
+- `SEARCH_WEBHOOK_SECRET` ו-Database Webhook על `public.products`
+  שמצביע ל-`/api/webhooks/products`. עד אז החיפוש עונה מה-ILIKE.
+- `QSTASH_TOKEN` ו-`MEILISEARCH_HOST` אם רוצים אינדוקס אמיתי. בלעדיהם
+  התור רץ inline וה-indexer מדלג בשקט, וזו התנהגות מכוונת.
+- `RESEND_API_KEY` ו-`CONSENT_IP_SALT` לדיוור.
+- `VOUCHER_QR_SECRET`, שנופל בלוג של ה-E2E כשנתיב המימוש נטען. הבדיקה
+  שמכסה אותו עוברת כי היא בודקת בדיוק את הסירוב הזה, אבל בפרודקשן בלי
+  המשתנה הזה **אי אפשר להנפיק או לאמת QR של שובר**.
+- מפתח `service_role` תקין ל-`.env.local`. הקיים אינו של הפרויקט הזה.
+
+## Next Task
+
+אין. התור הושלם. המשימה הבאה תגיע מאופיר, או תיפתח מהגדרת אחד
+המשתנים למעלה.
+
+## Working Directory
+
+/Users/ofir/kenyonexpress-web/kenyonexpress
