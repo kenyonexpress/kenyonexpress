@@ -149,23 +149,46 @@ test.describe('homepage', () => {
   /**
    * The consent banner's paragraph is 382x91 on a 412px phone: the largest
    * element in the viewport, so it IS the homepage's LCP element. While it was
-   * gated on a useEffect it could not paint until hydration finished, and
-   * Lighthouse mobile put LCP at 5.1s against a 1.7s first paint - the whole
-   * gap was the JS wait, and LCP was the only metric holding the page at 80.
+   * gated on a useEffect it could not paint until hydration finished, which on
+   * an emulated slow-4G link with 4x CPU throttling put it at 3.7-3.9s against
+   * a 1.0s first paint. It now paints AT first paint, in all three runs.
    *
-   * Both halves are asserted, because either one alone can be true while the
-   * banner is still broken: present in the HTML but shown to someone who
-   * already answered, or hidden correctly but only after JS runs.
+   * Asserted on the RESPONSE BYTES rather than on the rendered page, because
+   * the rendered page cannot tell the two apart: React puts the same section in
+   * the DOM either way, a few hundred milliseconds later. What changed is that
+   * it is in the document the server sent.
    */
-  test('consent banner paints from the HTML, without JavaScript', async ({ browser, baseURL }) => {
-    // A context of its own: `javaScriptEnabled` is a context-level option, and
-    // it is the whole point here - it is the difference between "in the
-    // response" and "rendered by React after hydration".
+  test('consent banner ships in the HTML, not built by React', async ({ request }) => {
+    const html = await (await request.get('/')).text()
+
+    expect(html, 'banner is not in the server response').toContain('data-consent-banner')
+    expect(html, 'banner text is not in the server response').toContain('אנחנו אוספים נתוני שימוש')
+  })
+
+  test('consent banner is visible to a visitor who has not decided', async ({ page }) => {
+    await page.goto('/')
+
+    await expect(page.locator('[data-consent-banner]')).toBeVisible()
+  })
+
+  /**
+   * With script off the banner has to be gone, and that is not the same rule as
+   * the one above.
+   *
+   * The decision lives in a cookie only script can read, so a no-script visitor
+   * cannot be recognised as having answered and would be shown the banner on
+   * every page with two buttons that do nothing. There is also nothing to
+   * consent to: the analytics it gates is itself script. A <noscript> style in
+   * the layout hides it. This test asserted the opposite when it was written,
+   * and the E2E run is what said so.
+   */
+  test('consent banner is absent when script is off', async ({ browser, baseURL }) => {
     const context = await browser.newContext({ baseURL, javaScriptEnabled: false })
     const page = await context.newPage()
     await page.goto('/')
 
-    await expect(page.locator('[data-consent-banner]')).toBeVisible()
+    await expect(page.locator('[data-consent-banner]')).toBeAttached()
+    await expect(page.locator('[data-consent-banner]')).toBeHidden()
     await context.close()
   })
 
@@ -195,11 +218,7 @@ test.describe('homepage', () => {
     )
   })
 
-  test('consent banner is hidden at first paint for a visitor who decided', async ({
-    browser,
-    baseURL,
-  }) => {
-    const context = await browser.newContext({ baseURL, javaScriptEnabled: false })
+  test('consent banner is hidden for a visitor who decided', async ({ context, page, baseURL }) => {
     await context.addCookies([
       {
         name: 'ke_consent',
@@ -208,14 +227,15 @@ test.describe('homepage', () => {
         path: '/',
       },
     ])
-    const page = await context.newPage()
     await page.goto('/')
 
     // Attached but not visible: the markup is the same for every visitor, so
-    // the response stays cacheable, and CSS - not React - does the hiding.
+    // the response stays cacheable, and CSS - not React - does the hiding. The
+    // attribute is asserted too, because `display:none` from any other source
+    // would satisfy toBeHidden and say nothing about the snippet having run.
+    await expect(page.locator('html')).toHaveAttribute('data-consent', 'decided')
     await expect(page.locator('[data-consent-banner]')).toBeAttached()
     await expect(page.locator('[data-consent-banner]')).toBeHidden()
-    await context.close()
   })
 
   test('offers category navigation into the archives', async ({ page }) => {

@@ -97,9 +97,25 @@ if (hasFlag('consent')) {
 const page = await context.newPage()
 await page.addInitScript(INSTALL)
 
-if (cpuThrottle > 1) {
+if (cpuThrottle > 1 || hasFlag('slow4g')) {
   const cdp = await context.newCDPSession(page)
-  await cdp.send('Emulation.setCPUThrottlingRate', { rate: cpuThrottle })
+  if (cpuThrottle > 1) await cdp.send('Emulation.setCPUThrottlingRate', { rate: cpuThrottle })
+  // Lighthouse's own mobile numbers: 1.6Mbps down, 750Kbps up, 150ms RTT.
+  //
+  // This matters more than it looks. Lighthouse SIMULATES this link over a
+  // graph it builds from an unthrottled run, and on localhost every resource
+  // arrives inside the first half second, so the graph it charges LCP for
+  // contains the whole page. Emulating the link for real is the only way to
+  // measure whether a paint actually waits on the JS bundle or merely appears
+  // to in the simulation.
+  if (hasFlag('slow4g')) {
+    await cdp.send('Network.emulateNetworkConditions', {
+      offline: false,
+      latency: 150,
+      downloadThroughput: (1.6 * 1024 * 1024) / 8,
+      uploadThroughput: (750 * 1024) / 8,
+    })
+  }
 }
 
 await page.goto(url, { waitUntil: 'load', timeout: 60000 })
@@ -114,8 +130,14 @@ const bannerBox = await page.evaluate(() => {
   return { w: Math.round(r.width), h: Math.round(r.height), top: Math.round(r.top) }
 })
 
+// The header states every condition the run was given, including the ones that
+// did nothing. An unrecognised flag is silently ignored by argv parsing, so a
+// run that was never throttled prints exactly like one that was, and two of
+// those side by side read as a before/after.
 console.log(
-  `\n=== ${url}  ${width}x${height} dpr ${dpr}${cpuThrottle > 1 ? ` cpu/${cpuThrottle}` : ''}${hasFlag('consent') ? '  [consent set]' : ''} ===`,
+  `\n=== ${url}  ${width}x${height} dpr ${dpr}  cpu/${cpuThrottle}  net ${
+    hasFlag('slow4g') ? 'slow4g 1.6Mbps/150ms' : 'unthrottled'
+  }${hasFlag('consent') ? '  [consent set]' : ''} ===`,
 )
 for (const p of paint) console.log(`${String(p.t).padStart(8)}ms  ${p.name}`)
 console.log('')

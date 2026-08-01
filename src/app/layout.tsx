@@ -44,6 +44,17 @@ export default function RootLayout({
         */}
         {/* biome-ignore lint/security/noDangerouslySetInnerHtml: fixed string built from two module constants, no input reaches it */}
         <script dangerouslySetInnerHTML={{ __html: CONSENT_PREPAINT_SCRIPT }} />
+        {/*
+          The decision lives in a cookie that only script can read, so with
+          script off nobody can be identified as having answered and the banner
+          would show on every page with two buttons that do nothing. There is
+          also nothing to consent TO: the analytics it gates is itself script.
+          Caught by the E2E run, not by reading - the JS-disabled test asserted
+          the opposite and failed.
+        */}
+        <noscript>
+          <style>{'[data-consent-banner]{display:none}'}</style>
+        </noscript>
         {children}
         <AnalyticsProvider />
         <ConsentBanner />
