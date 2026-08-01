@@ -295,4 +295,31 @@ test.describe('homepage', () => {
 
     expect(sheets, `homepage stylesheets: ${sheets.join(', ')}`).toHaveLength(1)
   })
+
+  /**
+   * Nothing the homepage asks for may 404, INCLUDING what it prefetches.
+   *
+   * The footer and the masthead carry six links copied over from the live
+   * WordPress theme, four of which have no page in this app. next prefetches a
+   * link when it scrolls into view, so reaching the bottom of any page on the
+   * site fired six 404s - six full renders on a `no-store` app, per page view,
+   * for links nobody clicked. Two of the six were simply pointing at the
+   * WordPress path for a page that does exist here.
+   *
+   * The scroll is the test: without it the footer never enters the viewport and
+   * the prefetches never happen, which is exactly why this was invisible.
+   */
+  test('reaching the footer costs no 404s', async ({ page }) => {
+    const failed: string[] = []
+    page.on('response', (r) => {
+      if (r.status() >= 400) failed.push(`${r.status()} ${new URL(r.url()).pathname}`)
+    })
+
+    await page.goto('/')
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
+    // Prefetch is queued off the intersection observer, not awaited by anything.
+    await page.waitForTimeout(3000)
+
+    expect(failed, failed.join(', ')).toEqual([])
+  })
 })

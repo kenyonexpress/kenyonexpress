@@ -22,8 +22,12 @@ export default function MastheadNav() {
       <HeaderSearch />
 
       <nav className="flex shrink-0 items-center gap-5" aria-label="פעולות חשבון ועגלה">
+        {/* No /wishlist page exists in this app; the href came over with the
+            masthead markup. Prefetch off so the 404 is not fetched on every
+            page view of the site. See the note in SiteFooter.tsx. */}
         <Link
           href="/wishlist"
+          prefetch={false}
           aria-label="מועדפים"
           className="transition-opacity hover:opacity-70"
           style={{ color: ICON.color }}

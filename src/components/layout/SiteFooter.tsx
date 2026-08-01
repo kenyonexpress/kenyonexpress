@@ -14,17 +14,36 @@ import Link from 'next/link'
  *  - copyright bar bg = bottom-bar
  */
 
-const PERSONAL_LINKS = [
-  { label: 'החשבון שלי', href: '/profile' },
+/**
+ * `built: false` means the href has NO page in this app and returns 404.
+ *
+ * These hrefs came over from the live WordPress footer with the rest of the
+ * markup, and four of them point at pages the theme had and this app does not.
+ * Two DID have a home here and were simply pointing at the WordPress path:
+ * `/profile` is `/account`, `/orders` is `/account/orders`. Those two are now
+ * correct.
+ *
+ * The remaining four keep their href and lose their prefetch. Measured before
+ * the flag: next prefetches every footer link, all four answer 404, and that is
+ * SIX wasted server round trips on every page view of the site (the two account
+ * ones were part of it) - on a `no-store` app where each one is a full render.
+ * A wrong destination is a product decision and stays visible; paying for it
+ * six times a page view is not, and stops here.
+ *
+ * When one of these pages is built, delete its `built: false` and the prefetch
+ * comes back. Tracked in GO-LIVE.md.
+ */
+const PERSONAL_LINKS: { label: string; href: string; built?: false }[] = [
+  { label: 'החשבון שלי', href: '/account' },
   { label: 'סל הקניות', href: '/cart' },
-  { label: 'מועדפים', href: '/wishlist' },
-  { label: 'הסטוריה', href: '/recently-viewed' },
-  { label: 'הזמנות', href: '/orders' },
+  { label: 'מועדפים', href: '/wishlist', built: false },
+  { label: 'הסטוריה', href: '/recently-viewed', built: false },
+  { label: 'הזמנות', href: '/account/orders' },
 ]
 
-const SERVICE_LINKS = [
-  { label: 'צור קשר', href: '/contact' },
-  { label: 'תקנון', href: '/terms-and-conditions' },
+const SERVICE_LINKS: { label: string; href: string; built?: false }[] = [
+  { label: 'צור קשר', href: '/contact', built: false },
+  { label: 'תקנון', href: '/terms-and-conditions', built: false },
 ]
 
 // lucide-react (this project) ships no brand icons — inline simple-icons glyphs.
@@ -151,6 +170,7 @@ export default function SiteFooter() {
             <p className="m-0 text-sm text-heading/80">יש לך שאלות, הצעות או הערות ?</p>
             <Link
               href="/contact"
+              prefetch={false}
               className="mt-1.5 inline-flex items-center gap-2 text-lg font-bold text-heading transition-opacity hover:opacity-70"
             >
               <Headphones
@@ -180,6 +200,7 @@ export default function SiteFooter() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
+                    prefetch={link.built === false ? false : undefined}
                     className="text-sm text-heading/80 transition-colors hover:text-heading"
                   >
                     {link.label}
@@ -197,6 +218,7 @@ export default function SiteFooter() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
+                    prefetch={link.built === false ? false : undefined}
                     className="text-sm text-heading/80 transition-colors hover:text-heading"
                   >
                     {link.label}
