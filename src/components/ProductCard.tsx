@@ -3,7 +3,7 @@
 import AddToCartButton from '@/components/cart/AddToCartButton'
 import Image from 'next/image'
 import Link from 'next/link'
-import '@/styles/product-card-deals.css'
+// product-card-deals.css is imported by the root layout. See the note there.
 
 export type Product = {
   id: string

@@ -3,7 +3,8 @@ import DealsOfTheDay from '@/components/home/DealsOfTheDay'
 import HeroSection from '@/components/home/HeroSection'
 import CategoryStrip from '@/components/store/CategoryStrip'
 import { buildSiteJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
-import '@/styles/home-handheld.css'
+// home-handheld.css is imported by the root layout (see the note there): as a
+// page-level import it was a 125-byte stylesheet costing a full round trip.
 
 export const metadata = {
   title: 'קניון EXPRESS — מסדרים לך בילוי',

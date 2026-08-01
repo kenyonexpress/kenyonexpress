@@ -268,4 +268,31 @@ test.describe('homepage', () => {
       await expect(page.getByRole('heading', { name: /תוצאות חיפוש/ })).toBeVisible()
     }
   })
+
+  /**
+   * The homepage ships ONE stylesheet.
+   *
+   * Every stylesheet imported by a route segment becomes its own chunk and its
+   * own render-blocking <link>. This page had four; three of them carried 8.6KB
+   * between them and Lighthouse mobile charged 304ms for each, 870ms in total.
+   * They now live in the root layout (see the note there) and arrive in one
+   * request.
+   *
+   * The count is the assertion, not the bytes: nothing warns when a new
+   * `import '@/styles/x.css'` inside a page or a component adds a round trip to
+   * the critical path, and it is invisible in the diff that adds it.
+   */
+  test('the homepage costs one render-blocking stylesheet', async ({ page }) => {
+    await page.goto('/')
+
+    const sheets = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+        .map((l) => (l as HTMLLinkElement).getAttribute('href') ?? '')
+        // next/font injects its own <link> for the self-hosted Heebo; this is
+        // about the CSS chunks the app's own imports produce.
+        .filter((href) => href.endsWith('.css')),
+    )
+
+    expect(sheets, `homepage stylesheets: ${sheets.join(', ')}`).toHaveLength(1)
+  })
 })

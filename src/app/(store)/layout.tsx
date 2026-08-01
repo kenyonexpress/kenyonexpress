@@ -6,7 +6,8 @@ import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
 import { Toaster } from '@/components/ui/sonner'
 import { createClient } from '@/lib/supabase/server'
 import { getCart } from '@/server/actions/cart'
-import '@/styles/cart-page.css'
+// cart-page.css is imported by the root layout, one request for the whole
+// site. See the note there before moving it back down here.
 
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()

@@ -94,7 +94,56 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: '*.r2.dev' },
     ],
   },
+  compiler: {
+    /**
+     * Sentry's own tree-shaking flags, delivered by the bundler that actually
+     * runs here.
+     *
+     * `withSentryConfig({ webpack: { treeshake: ... } })` implements every one
+     * of these as a `webpack.DefinePlugin` (@sentry/nextjs/build/cjs/config/
+     * webpack.js:553). This project builds with Turbopack, which never loads
+     * that plugin, so the option below the fold was inert: measured at
+     * 1801237 bytes of client JS with it on and 1801237 with it off. Same
+     * finding as the `bundleSizeOptimizations` flags tried in [21].
+     *
+     * `compiler.define` is the bundler-native equivalent, and it does reach
+     * node_modules. Measured on the same build, total client JS:
+     *
+     *   nothing set                  1802668   (largest chunk 436747)
+     *   __SENTRY_DEBUG__ alone       1797197   (largest chunk 434316)
+     *   + __SENTRY_TRACING__         1743875   (largest chunk 381140)
+     *
+     * The three `__RRWEB_*` / replay-worker flags were measured too and moved
+     * ZERO bytes, because no replay integration is imported anywhere; they are
+     * left out rather than kept as decoration.
+     *
+     * `__SENTRY_TRACING__: false` is safe because tracing is off by decision in
+     * all three runtimes: `tracesSampleRate: 0` in instrumentation-client.ts,
+     * sentry.server.config.ts and sentry.edge.config.ts. Turn any of those up
+     * and this flag has to come out first, or the spans are shaken out of the
+     * build and the sample rate silently governs nothing.
+     */
+    define: {
+      __SENTRY_DEBUG__: false,
+      __SENTRY_TRACING__: false,
+    },
+  },
   experimental: {
+    /**
+     * `inlineCss: true` was tried here for the 870ms of render-blocking CSS and
+     * REVERTED on measurement. It does what it says - the render-blocking audit
+     * goes to zero and FCP drops 1.7s -> 1.15s - but this site's CSS is not the
+     * compact atomic bundle the trade-off assumes. The document went from
+     * 267631 to 542125 bytes (34132 -> 89668 gzipped) because the styles are
+     * emitted twice, once in <style> and once in the RSC payload, and every
+     * store route is `no-store`, so that lands on every navigation. Measured
+     * over 3 mobile runs: score 85/85/80 -> 84/82/80, TTFB 360-460ms ->
+     * 1140-4930ms, Speed Index 1.7s -> 2.2-7.5s. Net negative.
+     *
+     * What did work for the same audit is upstream of the bundler: the three
+     * small route stylesheets moved into the root layout, so the browser makes
+     * one CSS request instead of four. See src/app/layout.tsx.
+     */
     serverActions: {
       // The image pipeline posts original files (up to 8MB) to a server action
       // for sharp processing before upload to R2/Supabase.
@@ -131,17 +180,13 @@ export default withSentryConfig(withNextIntl(nextConfig), {
   // cost is that this path must stay out of the proxy's auth matcher.
   tunnelRoute: '/monitoring',
 
-  // Both of these moved under `webpack` in @sentry/nextjs 10, and the branch
-  // was written against the older flat names. Left as they were, the build
-  // printed two DEPRECATION WARNINGs per run and the options would stop being
-  // read on the next major without anything failing — the quiet kind of
-  // regression, where the debug logger returns to the client bundle and nobody
-  // notices until a performance budget does.
   webpack: {
-    // The tree-shaken debug logger is a meaningful chunk of the client bundle,
-    // and the performance budgets in ARCHITECTURE-SEO-SITEMAP are already tight.
-    treeshake: { removeDebugLogging: true },
-
+    // `treeshake.removeDebugLogging` used to sit here, and it never removed a
+    // byte: it is a webpack DefinePlugin and this project builds with
+    // Turbopack. It now lives in `compiler.define` above, where it was measured
+    // doing the work. Left here it would have gone on reading like a budget
+    // that was already being enforced.
+    //
     // Vercel's cron and uptime pings would otherwise be reported as transactions.
     automaticVercelMonitors: false,
   },

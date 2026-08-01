@@ -7,6 +7,25 @@ import './globals.css'
 // The header cart is in the masthead on every route, so its styles load here
 // rather than with the /cart page. See the note at the top of the file.
 import '@/styles/mini-cart.css'
+/**
+ * The three below are imported HERE, not by the segment that uses them, and the
+ * reason is the number of requests rather than the number of bytes.
+ *
+ * A stylesheet imported by a route segment gets its own chunk, and every chunk
+ * is a render-blocking <link>. The homepage was shipping four: the root bundle
+ * (84707 B) plus cart-page (5776), product-card-deals (2763) and home-handheld
+ * (125). Lighthouse mobile charged 454ms for the first and 304ms for EACH of
+ * the other three - 870ms total to deliver 8.6KB. Merged into the root bundle
+ * they cost one request and no extra round trip.
+ *
+ * This is only safe because all three are page-scoped BEM (`.cart-page__*`,
+ * `.jet-listing-grid-deals*`, `.hero-copy-column`): loading them on a route
+ * that has none of those elements matches nothing. A file with bare element or
+ * utility selectors does NOT belong here - it would now apply site-wide.
+ */
+import '@/styles/cart-page.css'
+import '@/styles/home-handheld.css'
+import '@/styles/product-card-deals.css'
 
 // Heebo drives ALL text site-wide (Hebrew + Latin). Exposed as --font-heebo and
 // wired to --font-sans in globals.css.

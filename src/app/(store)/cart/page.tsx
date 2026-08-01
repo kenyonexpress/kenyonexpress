@@ -2,7 +2,7 @@ import CartPageView from '@/components/cart/CartPageView'
 import { createClient } from '@/lib/supabase/server'
 import { getCart } from '@/server/actions/cart'
 import type { Metadata } from 'next'
-import '@/styles/cart-page.css'
+// cart-page.css is imported by the root layout. See the note there.
 
 export const metadata: Metadata = {
   title: 'סל הקניות',
