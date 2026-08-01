@@ -142,8 +142,16 @@ const RS = {
   /** app slide: headline starts 52px down, badge is a fixed 46x286 box */
   appHeadOffset: 'mt-[52px]',
   badgeBox: 'h-[46px] w-[286px]',
-  /** 2x the badge width, so the 2x raster is the one that gets fetched */
-  badgeSizes: '572px',
+  /**
+   * The badge slot in CSS pixels. It used to say 572px, "2x the badge width so
+   * the 2x raster is fetched", which double-counts: `sizes` is the CSS width of
+   * the slot and the browser multiplies by devicePixelRatio itself, so a 2x
+   * value asks a 2x screen for 4x. Byte-neutral for this one asset - the source
+   * is 537px wide, so both 1080 and 640 come back as the same 537px file - and
+   * corrected anyway, because the next badge that ships larger than 537px would
+   * pay for the mistake with no signal.
+   */
+  badgeSizes: '286px',
   /** welcome slide insets its two promo lines by different amounts */
   promoSmallInset: 'ps-[11px]',
   promoLargeInset: 'ps-[10px]',
@@ -171,7 +179,22 @@ const WELCOME_HEAD = {
   line2: 'text-[38px] leading-[38px] lg:text-[45px] lg:leading-[45px]',
 } as const
 
-const HERO_IMAGE_SIZES = `(max-width: 1024px) 100vw, ${SLIDE.width * 2}px`
+/**
+ * What the four non-animated slides paint, which is not the 100vw they used to
+ * declare. They sit in the same handheld box as the still - full width but only
+ * `h-[42%]` of the slider - and the frames are near-square under
+ * `object-contain`, so HEIGHT is the constraint here too.
+ *
+ * Measured on this build at 320/360/390/412/768/1023: the box is 177px tall at
+ * every one of them, so the painted width is CONSTANT - 193px for three of the
+ * frames and 174px for the fourth. The number below is the widest of the four,
+ * so the narrow one is over-served by 19px rather than any of them under-served.
+ *
+ * At 100vw a 412px phone at dpr 1.75 asked for 750px to paint 193.
+ */
+const HERO_SLIDE_HANDHELD_WIDTH = 193
+
+const HERO_IMAGE_SIZES = `(max-width: 1024px) ${HERO_SLIDE_HANDHELD_WIDTH}px, ${SLIDE.width * 2}px`
 
 /**
  * What the still actually occupies, which is nothing like the 100vw the shared
@@ -179,19 +202,22 @@ const HERO_IMAGE_SIZES = `(max-width: 1024px) 100vw, ${SLIDE.width * 2}px`
  * slider, and the frame is portrait (740x990) under `object-contain`, so HEIGHT
  * is the constraint and the painted image is far narrower than the viewport.
  *
- * Measured against this build at five widths: the box comes out 177px tall at
- * every one of them, so the painted image is a CONSTANT 132px wide from 360px
- * through 1023px. Expressed as a fraction that is 36.7vw on a 360px phone and
- * 12.9vw at 1023px, so the number below is the constant stated against the
- * narrowest viewport worth supporting (132/320) and every wider one gets more
- * pixels than it paints rather than fewer.
+ * Measured against this build at six widths: the box comes out 177px tall at
+ * every one of them, so the painted image is a CONSTANT 132px wide from 320px
+ * through 1023px.
  *
- * It is a vw and not a flat `132px` on purpose: next/image only widens its
- * candidate ramp to the small `imageSizes` rungs when `sizes` carries a vw
- * unit. With a flat px value the ramp is `deviceSizes`, whose smallest rung is
- * 640, and a 132px box would be handed a 640px file.
+ * This said 42vw, on the reasoning that next/image only opens its small
+ * `imageSizes` rungs when `sizes` carries a vw unit and that a flat px would be
+ * held to `deviceSizes`, whose smallest rung is 640. **That is the opposite of
+ * what this version does.** In next 16.2.4, `getWidths` in
+ * next/dist/shared/lib/get-img-props.js returns the FULL ramp for a `sizes`
+ * with no vw in it, and filters it to `>= deviceSizes[0] * smallestRatio` when
+ * there is one - so 42vw was the thing cutting 256 off the ramp (640 * 0.42 =
+ * 268.8) and handing a 132px box a 384px file. Stated flat, it gets 256.
  */
-const HERO_STILL_SIZES = `(min-width: 1024px) ${SLIDE.width * 2}px, 42vw`
+const HERO_STILL_HANDHELD_WIDTH = 132
+
+const HERO_STILL_SIZES = `(min-width: 1024px) ${SLIDE.width * 2}px, ${HERO_STILL_HANDHELD_WIDTH}px`
 
 const HERO_IMAGE_CLASS = 'min-h-full min-w-full object-contain object-center'
 

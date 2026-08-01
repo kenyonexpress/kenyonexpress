@@ -56,6 +56,45 @@ test.describe('homepage', () => {
     expect(painted.width).toBeGreaterThan(100)
   })
 
+  /**
+   * A phone must not be handed the desktop hero raster.
+   *
+   * The five slide images sit in a full-bleed box that is only `h-[42%]` of the
+   * slider, and the frames are near-square under `object-contain`, so height is
+   * the constraint: measured at 320/360/390/412/768/1023 the painted width is a
+   * constant 174-193px at every one of them. They declared `100vw` anyway, so a
+   * 412px phone at dpr 1.75 asked the optimizer for 750px - four slides at
+   * 55-96KB each to paint 193px.
+   *
+   * The assertion is on the `w` the browser actually picked out of the srcset,
+   * because that is the byte count. A viewport is set explicitly rather than
+   * inherited from the desktop project: this only means anything below 1024px.
+   */
+  test('the hero serves a phone-sized raster to a phone', async ({ page }) => {
+    await page.setViewportSize({ width: 412, height: 823 })
+    await page.goto('/')
+    await page.waitForTimeout(2500)
+
+    const picked = await page.evaluate(() =>
+      [...document.querySelectorAll('img')]
+        // The app slide's store badge lives in the copy column and is a
+        // different box with its own sizes, so it is not one of these five.
+        .filter((el) => !el.closest('.hero-copy-column'))
+        .map((el) => (el as HTMLImageElement).currentSrc)
+        .filter((src) => /hero(%2F|\/)slider/.test(src))
+        .map((src) => Number(new URL(src, location.href).searchParams.get('w')))
+        .filter((w) => Number.isFinite(w) && w > 0),
+    )
+
+    expect(picked.length, 'no hero slide image resolved').toBeGreaterThan(0)
+    for (const w of picked) {
+      // 384 is the rung above 193 * 1.75, and 256 is what a dpr-1 run picks.
+      // Verified to separate the two states: with `100vw` back in place this
+      // fails at 640 on a dpr-1 run and at 750 on a phone.
+      expect(w, `hero slide fetched at w=${w} for a 193px paint`).toBeLessThanOrEqual(384)
+    }
+  })
+
   test('offers category navigation into the archives', async ({ page }) => {
     await page.goto('/')
     await expect(page.locator('a[href^="/category/"]').first()).toBeAttached({ timeout: 15000 })

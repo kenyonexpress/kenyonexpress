@@ -296,10 +296,30 @@
 
 /* Image: measured 186x186 centered inside 234 card */
 /* Measured: image top sits var(--cat-thumb-gap) below the title box (margins collapse) */
+/**
+ * The box is a fixed 186px tall whether an image has arrived or not.
+ *
+ * Without the height it took its height from the loaded image, so every
+ * non-square thumb shrank its own card the moment the bytes landed and pushed
+ * everything below it up. Measured on mobile Lighthouse: CLS 0.197 on
+ * /category and 0.361 on /products, and it got worse - 0.414 and 0.394 - as
+ * soon as the thumbs started going through the optimizer and rendering at all,
+ * because a blocked image never shifts anything.
+ *
+ * 186.03 is not a new number: `.category-skeleton--thumb` already reserves
+ * exactly this height while the card loads. The card was simply not honouring
+ * the reservation its own skeleton makes.
+ *
+ * `line-height` and not flex, because the image is already
+ * `display:inline-block; vertical-align:middle` - it centres in the line box,
+ * which is what those two declarations were there for.
+ */
 .category-card__thumb {
   position: relative;
   display: block;
   text-align: center;
+  height: var(--cat-thumb-max);
+  line-height: var(--cat-thumb-max);
   margin-top: var(--cat-thumb-gap);
 }
 

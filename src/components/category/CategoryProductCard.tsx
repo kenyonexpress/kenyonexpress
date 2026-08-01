@@ -1,7 +1,26 @@
 'use client'
 
 import AddToCartButton from '@/components/cart/AddToCartButton'
+import Image from 'next/image'
 import Link from 'next/link'
+
+/**
+ * The thumb never paints wider than the 186px `.category-card__thumb img` caps
+ * it to, so that is the whole of the slot. Flat px and not a vw: the box is a
+ * fixed size at every viewport, and in next 16.2.4 a `sizes` with no vw in it
+ * gets the full candidate ramp (`getWidths` in get-img-props.js), so 256 and
+ * 384 are both reachable - which is the point, since 186 at dpr 1.75 wants 326.
+ *
+ * Measured before this existed: /products handed a phone 604KB of 600x600
+ * originals to paint 186px boxes, because the card rendered a raw <img> and
+ * never touched the optimizer at all.
+ *
+ * The number is the whole of `--cat-thumb-max` in category-page.css, rounded:
+ * a `sizes` attribute is a static string and cannot read a custom property, so
+ * this is the one place the two have to be kept in step by hand.
+ */
+const THUMB_MAX_PX = 186
+const THUMB_SIZES = `${THUMB_MAX_PX}px`
 
 export type CategoryProduct = {
   id: string
@@ -88,7 +107,20 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
               </span>
             )}
             {thumb ? (
-              <img src={thumb} alt={product.name_he} loading="lazy" width={186} height={186} />
+              // width/height stay the 186 square the raw <img> declared: they are
+              // the pre-load reservation, and the CSS is width:auto/height:auto
+              // under a 186 max on both axes, so the real aspect takes over the
+              // moment the file lands. `fill` is what collapsed the deal cards on
+              // the homepage - it writes position:absolute inline and the wrapper
+              // that takes its height from the image drops to 0.
+              <Image
+                src={thumb}
+                alt={product.name_he}
+                width={186}
+                height={186}
+                sizes={THUMB_SIZES}
+                loading="lazy"
+              />
             ) : null}
           </span>
         </Link>
