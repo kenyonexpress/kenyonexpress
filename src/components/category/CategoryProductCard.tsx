@@ -5,22 +5,32 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 /**
- * The thumb never paints wider than the 186px `.category-card__thumb img` caps
- * it to, so that is the whole of the slot. Flat px and not a vw: the box is a
- * fixed size at every viewport, and in next 16.2.4 a `sizes` with no vw in it
- * gets the full candidate ramp (`getWidths` in get-img-props.js), so 256 and
- * 384 are both reachable - which is the point, since 186 at dpr 1.75 wants 326.
+ * 186px is the CAP, not the width, and the two are only the same above 497px.
  *
- * Measured before this existed: /products handed a phone 604KB of 600x600
+ * `.category-card__thumb img` is `max-width: min(--cat-thumb-max, 100%)`. Above
+ * 576px the card is a fixed 234 with a 186 content box, so the cap binds and
+ * the slot is a flat 186. Below 576 the column is half the row and the content
+ * box is what binds; measured at four widths, exactly `50vw - 63px`:
+ *
+ *   360 -> 117   412 -> 143   480 -> 177   575 -> 225 (capped back to 186)
+ *
+ * so the two meet at 497px, which is the breakpoint below.
+ *
+ * This used to be a flat `186px` at every width, which over-ordered by 59% on a
+ * 360px phone AND described a box the image was painting outside of. Measured
+ * before any of this existed: /products handed a phone 604KB of 600x600
  * originals to paint 186px boxes, because the card rendered a raw <img> and
  * never touched the optimizer at all.
  *
- * The number is the whole of `--cat-thumb-max` in category-page.css, rounded:
- * a `sizes` attribute is a static string and cannot read a custom property, so
- * this is the one place the two have to be kept in step by hand.
+ * `--cat-thumb-max` lives in category-page.css and a `sizes` attribute cannot
+ * read a custom property, so this is the one place the two are kept in step by
+ * hand. `calc()` also keeps the whole candidate ramp reachable: next only
+ * matches a bare `NNvw` after whitespace or the string start
+ * (get-img-props.js:54), so `calc(50vw - 63px)` matches nothing and 256 and 384
+ * both stay available - which is the point, since 186 at dpr 1.75 wants 326.
  */
 const THUMB_MAX_PX = 186
-const THUMB_SIZES = `${THUMB_MAX_PX}px`
+const THUMB_SIZES = `(max-width: 497px) calc(50vw - 63px), ${THUMB_MAX_PX}px`
 
 export type CategoryProduct = {
   id: string

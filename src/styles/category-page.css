@@ -323,9 +323,24 @@
   margin-top: var(--cat-thumb-gap);
 }
 
+/**
+ * `min(..., 100%)`, and the second half is not decoration.
+ *
+ * `--cat-thumb-max` is 186.03px, measured off the live desktop card, where the
+ * content box inside the 234px column is exactly that. Below 576px the column
+ * is 50% of the row and the content box is much smaller: 143px on a 412px
+ * phone, 117px on a 360px one. A flat 186px max let the image paint 186
+ * REGARDLESS, so on every phone the two thumbs in a row met in the middle with
+ * no gutter, spilled over their own cards, the discount badge landed on the
+ * neighbour's image, and the document came out 4px wider than the viewport -
+ * a horizontal scroll on /products, /category and /search.
+ *
+ * The height stays a flat `--cat-thumb-max` on the wrapper: that is the CLS
+ * reservation from [18] and it does not depend on how wide the image ends up.
+ */
 .category-card__thumb img {
   width: auto;
-  max-width: var(--cat-thumb-max);
+  max-width: min(var(--cat-thumb-max), 100%);
   max-height: var(--cat-thumb-max);
   height: auto;
   display: inline-block;

@@ -147,3 +147,50 @@ test.describe('category archive', () => {
     }
   })
 })
+
+test.describe('catalogue on a phone', () => {
+  test.use({ viewport: { width: 412, height: 915 } })
+
+  /**
+   * The thumb is capped at 186px because that is the content box of the 234px
+   * card measured on the live DESKTOP. Below 576px the column is half the row
+   * and the content box is 143px on this viewport, so a flat 186px cap had the
+   * image paint outside its own card: the two thumbs in a row met with no
+   * gutter, the discount badge landed on the neighbour's image, and the
+   * document came out 4px wider than the viewport.
+   *
+   * Two assertions because they fail for different reasons - a thumb wider than
+   * its card is the cause, a document wider than the viewport is what the user
+   * feels.
+   */
+  for (const path of ['/products', '/search?q=%D7%A6%D7%99%D7%9E%D7%A8']) {
+    test(`no thumb paints outside its card on ${path}`, async ({ page }) => {
+      await page.goto(path)
+      await expect(page.locator('.category-card__thumb img').first()).toBeVisible({
+        timeout: 15000,
+      })
+
+      const spills = await page.locator('.category-card').evaluateAll((cards) =>
+        cards
+          .map((card) => {
+            const img = card.querySelector('.category-card__thumb img')
+            if (!img) return null
+            const cs = getComputedStyle(card)
+            const content =
+              card.getBoundingClientRect().width -
+              Number.parseFloat(cs.paddingLeft) -
+              Number.parseFloat(cs.paddingRight)
+            const w = img.getBoundingClientRect().width
+            return w > content + 0.5 ? { w: Math.round(w), content: Math.round(content) } : null
+          })
+          .filter(Boolean),
+      )
+      expect(spills, JSON.stringify(spills)).toEqual([])
+
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth,
+      )
+      expect(overflow, 'the page scrolls sideways on a phone').toBeLessThanOrEqual(0)
+    })
+  }
+})
