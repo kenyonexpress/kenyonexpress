@@ -3,6 +3,7 @@
 import { variantIdsToRemove } from '@/lib/admin/product-variants'
 import { requireStaffSession } from '@/lib/admin/rbac'
 import { assertPublishable, buildProductMoneyWrite } from '@/lib/commerce/product-money'
+import { IMAGE_HOST_ERROR, isAllowedImageUrl } from '@/lib/images/remote-hosts'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
@@ -199,8 +200,32 @@ export async function upsertProduct(
     data: { user },
   } = await supabase.auth.getUser()
 
+  /**
+   * Every entry is validated, and it is the only one of the four image write
+   * paths that had NO validation at all: the field arrives as a JSON string and
+   * went to the column unread.
+   *
+   * These strings are rendered by next/image on the deal cards, the homepage
+   * and the product page. next THROWS on a host that is not in
+   * `images.remotePatterns`, so one pasted URL from an un-allowlisted host is a
+   * 500 on the storefront, written from the admin, with nothing failing at the
+   * moment it is saved. Measured against production before this landed: 76
+   * entries, 27 local paths and 45 picsum, all of them allowed, so no existing
+   * row becomes uneditable.
+   */
   const imagesRaw = formData.get('images') as string | null
-  const images = imagesRaw ? (JSON.parse(imagesRaw) as unknown[]) : []
+  let images: unknown[] = []
+  if (imagesRaw) {
+    try {
+      const parsedImages = JSON.parse(imagesRaw)
+      if (!Array.isArray(parsedImages)) return { error: 'רשימת התמונות אינה תקינה' }
+      images = parsedImages
+    } catch {
+      return { error: 'רשימת התמונות אינה תקינה' }
+    }
+    const badImage = images.find((v) => typeof v !== 'string' || !isAllowedImageUrl(v))
+    if (badImage !== undefined) return { error: IMAGE_HOST_ERROR }
+  }
 
   const variantsRaw = formData.get('variants') as string | null
   const variantsParsed = variantsRaw

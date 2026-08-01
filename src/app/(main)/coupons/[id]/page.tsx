@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { MapPin, Tag } from 'lucide-react'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 
 interface Props {
@@ -40,7 +41,18 @@ export default async function CouponDealPage({ params }: Props) {
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
         <div className="relative h-56 bg-gray-100">
           {deal.image_url ? (
-            <img src={deal.image_url} alt={deal.title_he} className="w-full h-full object-cover" />
+            /* Optimizer, not a raw <img>: same CSP reason as CouponCard, and
+               `fill` is safe because the parent is `relative h-56`. The box is
+               the full width of the page column - the viewport minus the 32px
+               page padding below lg, and the middle column of the three-column
+               grid above it, capped at 766px by max-w-7xl. */
+            <Image
+              src={deal.image_url}
+              alt={deal.title_he}
+              fill
+              sizes="(max-width: 1023px) calc(100vw - 32px), (max-width: 1279px) calc(100vw - 514px), 766px"
+              className="object-cover"
+            />
           ) : (
             <div className="flex items-center justify-center h-full text-gray-300">
               <Tag size={48} />

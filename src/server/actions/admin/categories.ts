@@ -1,6 +1,7 @@
 'use server'
 
 import { requireAdminSession } from '@/lib/admin/rbac'
+import { IMAGE_HOST_ERROR, isAllowedImageUrl } from '@/lib/images/remote-hosts'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -15,7 +16,9 @@ const schema = z.object({
   name_en: z.string().min(1, 'שם באנגלית נדרש'),
   description_he: z.string().nullable().optional(),
   parent_id: z.string().uuid().nullable().optional(),
-  icon_url: z.string().nullable().optional(),
+  // Same gate as coupon_deals.image_url: this URL is rendered on the category
+  // tree and an un-allowlisted host is a throw, not a broken image.
+  icon_url: z.string().refine(isAllowedImageUrl, IMAGE_HOST_ERROR).nullable().optional(),
   sort_order: z.coerce.number().int().min(0).default(0),
   is_active: z.coerce.boolean().default(true),
 })

@@ -1,6 +1,7 @@
 'use server'
 
 import { requireAdminSession } from '@/lib/admin/rbac'
+import { IMAGE_HOST_ERROR, isAllowedImageUrl } from '@/lib/images/remote-hosts'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
@@ -24,7 +25,13 @@ const schema = z.object({
   location_he: z.string().nullable().optional(),
   lat: z.coerce.number().nullable().optional(),
   lng: z.coerce.number().nullable().optional(),
-  image_url: z.string().nullable().optional(),
+  /**
+   * Validated, because this string is rendered by next/image on two customer
+   * pages and an un-allowlisted host makes next THROW - a 500, not a broken
+   * image. Free text here is how that row gets written. See
+   * src/lib/images/remote-hosts.ts.
+   */
+  image_url: z.string().refine(isAllowedImageUrl, IMAGE_HOST_ERROR).nullable().optional(),
   status: z.enum(['draft', 'active', 'paused', 'archived']).default('draft'),
 })
 

@@ -1,6 +1,7 @@
 import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 import createNextIntlPlugin from 'next-intl/plugin'
+import { REMOTE_IMAGE_PATTERNS } from './src/lib/images/remote-hosts'
 import { PAYMENT_FRAME_PATHS, contentSecurityPolicyFor } from './src/lib/security/frame-policy'
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
@@ -82,17 +83,13 @@ const nextConfig: NextConfig = {
      * 384 still gets 384.
      */
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 288, 384],
-    remotePatterns: [
-      { protocol: 'https', hostname: '*.supabase.co' },
-      { protocol: 'https', hostname: 'images.unsplash.com' },
-      { protocol: 'https', hostname: 'plus.unsplash.com' },
-      // Seed/demo product images (024_seed_demo_products). Without this host in
-      // the allowlist, next/image throws and every demo product page 500s.
-      { protocol: 'https', hostname: 'picsum.photos' },
-      // R2 public CDN (image pipeline renditions)
-      { protocol: 'https', hostname: '*.kenyonexpress.co.il' },
-      { protocol: 'https', hostname: '*.r2.dev' },
-    ],
+    /**
+     * Built from `src/lib/images/remote-hosts.ts`, which is also what the admin
+     * forms validate against. Two copies of this list is how a URL gets stored
+     * that next/image will throw on, and a throw here is a 500 on a
+     * customer-facing page rather than a broken image.
+     */
+    remotePatterns: [...REMOTE_IMAGE_PATTERNS],
   },
   compiler: {
     /**
