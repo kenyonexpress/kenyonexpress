@@ -58,4 +58,57 @@ test.describe('product page', () => {
     expect(response?.status()).toBe(200)
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   })
+
+  /**
+   * The related-products cards must not order more pixels than their box has.
+   *
+   * `sizes` on this card used to name the grid COLUMN (50vw / 33vw / 25vw) and
+   * not the image, ignoring the page gutter, the grid gap and the card padding.
+   * The cards paint 204px at desktop widths and were fetching w=384; on a
+   * 412px phone at dpr 2 the page pulled 236.3KB of images where 117.0KB
+   * covers every box.
+   *
+   * The rule, not the number: a candidate wider than 1.5x the device pixels the
+   * box actually has is over-ordering. At this project's 1280px default that is
+   * 204 device pixels, so 256 passes and 384 - the old value - does not.
+   */
+  test('related-product thumbnails do not over-order pixels', async ({ page }) => {
+    await openFirstProduct(page)
+
+    const grid = page.locator('.pdp-related__grid')
+    await expect(grid.locator('img').first()).toBeAttached({ timeout: 15000 })
+    // The grid is below the fold and the thumbnails are lazy, so without the
+    // scroll `currentSrc` is the empty string and every assertion below passes
+    // on nothing. That is exactly how the first version of this test passed
+    // against the bug it was written for.
+    await grid.scrollIntoViewIfNeeded()
+    await page.waitForFunction(
+      () =>
+        Array.from(document.querySelectorAll('.pdp-related__grid img')).every(
+          (el) => (el as HTMLImageElement).currentSrc !== '',
+        ),
+      undefined,
+      { timeout: 15000 },
+    )
+
+    const shots = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('.pdp-related__grid img')).map((el) => {
+        const img = el as HTMLImageElement
+        const painted = img.getBoundingClientRect().width
+        const w = new URL(img.currentSrc, location.href).searchParams.get('w')
+        return { painted, ordered: Number(w), src: img.currentSrc.slice(-60) }
+      }),
+    )
+    const dpr = await page.evaluate(() => window.devicePixelRatio)
+
+    expect(shots.length).toBeGreaterThan(0)
+    for (const s of shots) {
+      // A candidate of 0 means currentSrc carried no `w`, i.e. the image never
+      // went through the optimizer. That is a failure, not a pass.
+      expect(s.ordered, `${s.src}: no w= in currentSrc`).toBeGreaterThan(0)
+      expect(s.ordered, `${s.src}: painted ${s.painted} at dpr ${dpr}`).toBeLessThanOrEqual(
+        s.painted * dpr * 1.5,
+      )
+    }
+  })
 })

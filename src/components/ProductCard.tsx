@@ -257,7 +257,32 @@ function DefaultProductCard({ product }: { product: Product }) {
               src={thumb}
               alt={product.name_he}
               fill
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              /**
+               * MEASURED, not declared. The only live consumer of this variant
+               * is `RelatedProducts` on the product page, whose grid is
+               * `.pdp-related__grid`: 2 columns below 640, 3 below 1024, then 5
+               * fixed 230px cards. The painted image width was read at 14
+               * viewport widths and each branch is an exact linear fit on 5 or
+               * more of them, residual 0:
+               *
+               *   360 -> 133   390 -> 148   412 -> 159   480 -> 193   600 -> 253
+               *   640 -> 169.33   768 -> 212   900 -> 256   1023 -> 297
+               *   1024 and up -> 204, fixed
+               *
+               * The old value claimed 50vw / 33vw / 25vw, which is the GRID
+               * COLUMN and not the image: it ignored the page gutter, the 12px
+               * grid gap and the card's own 12px padding. At 412/dpr1.75 that
+               * asked for 384 where 288 covers the 278 device pixels the box
+               * actually has (11028 bytes against 7530 on a 600x600 source),
+               * and at 1440 it asked for 384 to paint 204.
+               *
+               * `calc()` is deliberate, and it also widens the srcset: next only
+               * matches a bare `NNvw` token when it follows whitespace or the
+               * start of the string (get-img-props.js:54), so `calc(50vw - 47px)`
+               * matches nothing and the whole size ramp stays available instead
+               * of being floored at 640 * smallest-ratio.
+               */
+              sizes="(max-width: 639px) calc(50vw - 47px), (max-width: 1023px) calc(33.33vw - 44px), 204px"
               className="object-cover"
             />
           ) : (
