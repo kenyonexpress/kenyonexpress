@@ -1,7 +1,23 @@
 allowBuilds:
   '@biomejs/biome': true
   '@parcel/watcher': true
-  '@sentry/cli': set this to true or false
+  # Never approved, and left unapproved: the postinstall downloads a release
+  # binary that only the sourcemap upload needs, and nothing here runs it. It
+  # was a literal 'set this to true or false' placeholder, which pnpm now exits
+  # 1 on, so `pnpm start` could not even reach the deps check.
+  '@sentry/cli': false
   '@swc/core': true
   esbuild: true
   sharp: true
+
+# One sharp for the whole tree.
+#
+# next declares `sharp: ^0.34.5` and pnpm gave it its own copy, while the app
+# resolved the 0.35.3 it asks for directly. The image optimizer runs on next's
+# copy, and 0.34.5 (libvips 8.17.3 / libheif 1.20.2) cannot decode this repo's
+# AVIF product images: sharp throws `source: bad seek`, next catches it, and
+# `optimizeImage` falls back to serving the ORIGINAL bytes. Silently - the
+# fallback path does not log. Every AVIF on the site was therefore delivered at
+# full source size no matter what `w` the browser asked for.
+overrides:
+  sharp: ^0.35.3

@@ -16,6 +16,62 @@ export type Product = {
   category?: { name_he: string; slug: string } | null
 }
 
+/**
+ * What a deal card image paints, measured at eighteen viewport/dpr pairs on a
+ * running build (scripts/_deal-card-paint.mjs). Each branch states the WIDEST
+ * card the branch can produce, not the average one.
+ *
+ *   320  112px  35.0vw    575  240px  41.7vw    1024  208px  20.3vw
+ *   360  132px  36.7vw    640  272px  42.5vw    1280  240px  18.8vw
+ *   412  158px  38.3vw    768  335px  43.6vw    1440  240px  16.7vw
+ *   440  172px  39.1vw    900  401px  44.6vw    1920  240px  12.5vw
+ *   480  192px  40.0vw   1023  463px  45.3vw
+ *
+ * Below 1024 that is exactly `50vw - 48px` at every width measured, which is
+ * the row's fixed gutter. It is NOT written as `calc(50vw - 48px)`, even though
+ * `sizes` accepts calc: next/image reads the vw out with a regex and filters
+ * its candidate ramp to `>= deviceSizes[0] * smallestRatio`, so a literal 50vw
+ * would cut everything below 320 off the ramp and the exact-fit rung would
+ * become unreachable. Discrete branches keep the ramp open.
+ *
+ * The old string said `50vw / 33vw / 400px` and was wrong in BOTH directions:
+ *
+ *   OVER, on desktop. At 1440 dpr 1 the widest card paints 240px and asked for
+ *   a 640px file - the `400px` branch is 2.67x what any card there renders.
+ *
+ *   UNDER, between 641 and 1023, which is the half nobody looks for. One card
+ *   in the row grows to 45vw there, so at 900 dpr 2 it needs 802 device pixels
+ *   and `33vw` asked for 594. It was served a 640 and quietly upscaled. A
+ *   `sizes` that is too small does not error, it just renders soft.
+ *
+ * 430 is where `39vw` stops covering `50vw - 48px` (0.11 * W = 48). It exists
+ * because 39vw is what puts a 412px phone on the 288 rung - 158 painted, 277
+ * device pixels at dpr 1.75 - and 43vw, which the 640 end of the range needs,
+ * declares 177 there and rounds it up to a 384. That one rung across 32 cards
+ * is the 400KiB Lighthouse reports on this page.
+ *
+ * The top breakpoint is 1023 and not 1024 because the layout switches AT 1024
+ * (`min-width: 1024px`), and the old `(max-width: 1024px)` put that one pixel
+ * in the wrong branch.
+ */
+const DEAL_SIZE_STOPS = {
+  /** where 39vw stops covering `50vw - 48px`: 0.11 * W = 48 */
+  narrow: 430,
+  /** the row's own two-up boundary */
+  handheld: 640,
+  /** one below the `min-width: 1024px` the layout switches at */
+  wide: 1023,
+  /** the widest card any viewport >= 1024 paints */
+  desktopPaint: 240,
+} as const
+
+const DEAL_IMAGE_SIZES = [
+  `(max-width: ${DEAL_SIZE_STOPS.narrow}px) 39vw`,
+  `(max-width: ${DEAL_SIZE_STOPS.handheld}px) 43vw`,
+  `(max-width: ${DEAL_SIZE_STOPS.wide}px) 46vw`,
+  `${DEAL_SIZE_STOPS.desktopPaint}px`,
+].join(', ')
+
 function shekels(value: number): string {
   return `₪${Math.round(value)}`
 }
@@ -100,7 +156,7 @@ function DealsProductCard({ product }: { product: Product }) {
               alt={product.name_he}
               width={400}
               height={245}
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 400px"
+              sizes={DEAL_IMAGE_SIZES}
               className="p_con__image"
             />
           ) : null}

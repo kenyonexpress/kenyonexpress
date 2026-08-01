@@ -67,6 +67,21 @@ const nextConfig: NextConfig = {
   },
   images: {
     qualities: [75, 90, 95],
+    /**
+     * Next's default, plus one rung at 288.
+     *
+     * The gap between 256 and 384 is where this site's two densest grids land.
+     * A homepage deal card paints 157px on a 412px phone, which at dpr 1.75
+     * needs 277 device pixels: 256 is too small, so every one of the 32 cards
+     * gets a 384 - 39% more pixels than it renders, and Lighthouse mobile puts
+     * the bill at 400KiB on that page alone. 288 covers 277 exactly.
+     *
+     * This is global, so it adds one candidate to the srcset of every image
+     * whose `sizes` reaches this part of the ramp. That is the intent: the rung
+     * is only ever chosen by a box that actually wants it, and a box that wants
+     * 384 still gets 384.
+     */
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 288, 384],
     remotePatterns: [
       { protocol: 'https', hostname: '*.supabase.co' },
       { protocol: 'https', hostname: 'images.unsplash.com' },

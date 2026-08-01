@@ -57,6 +57,54 @@ test.describe('homepage', () => {
   })
 
   /**
+   * The optimizer has to actually optimize, not fall back to the source.
+   *
+   * `optimizeImage` in next/dist/server/image-optimizer.js wraps its work in a
+   * try/catch whose catch returns the ORIGINAL bytes with the original content
+   * type, and it does not log. So a sharp that cannot decode an input produces
+   * a response that is a valid image, has a 200, and is byte-for-byte the
+   * source file - identical at every `w` the browser could ask for.
+   *
+   * That is exactly what shipped. pnpm gave next its own sharp 0.34.5 while the
+   * app resolved the 0.35.3 it declares, and 0.34.5 (libvips 8.17.3) throws
+   * `source: bad seek` on this repo's AVIF product images. Every AVIF was
+   * delivered at its full 2048px source: 93KB per deal card, 32 of them, to
+   * paint 157px boxes on a phone. Measured 93264 -> 4176 bytes at w=288 once
+   * one sharp was pinned for the whole tree.
+   *
+   * Compares the optimizer's answer against the source it was given, rather
+   * than against a fixed byte count, so it keeps meaning something when the
+   * artwork is replaced.
+   */
+  test('the image optimizer returns something smaller than the source', async ({
+    page,
+    request,
+  }) => {
+    await page.goto('/')
+    const img = page.locator('.p_con__image').first()
+    await expect(img).toBeVisible({ timeout: 15000 })
+
+    const optimizedUrl = await img.evaluate((el: HTMLImageElement) => el.currentSrc)
+    expect(optimizedUrl, 'deal card is not going through the optimizer').toContain('/_next/image')
+
+    const sourceUrl = new URL(optimizedUrl).searchParams.get('url')
+    expect(sourceUrl, 'optimizer URL carries no source').toBeTruthy()
+
+    const [optimized, source] = await Promise.all([
+      request.get(optimizedUrl),
+      request.get(sourceUrl as string),
+    ])
+    const optimizedBytes = (await optimized.body()).length
+    const sourceBytes = (await source.body()).length
+
+    expect(sourceBytes, 'source image did not load').toBeGreaterThan(0)
+    expect(
+      optimizedBytes,
+      `optimizer returned ${optimizedBytes}B for a ${sourceBytes}B source - a pass-through fallback looks exactly like this`,
+    ).toBeLessThan(sourceBytes / 2)
+  })
+
+  /**
    * A phone must not be handed the desktop hero raster.
    *
    * The five slide images sit in a full-bleed box that is only `h-[42%]` of the
