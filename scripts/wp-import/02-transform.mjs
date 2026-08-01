@@ -10,7 +10,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { readRaw } from './01-extract.mjs'
-import { DEFAULTS, PATHS, ROUTES, RUN, WC, ensureDirs } from './config.mjs'
+import { DEFAULTS, PAGE_REDIRECTS, PATHS, ROUTES, RUN, WC, ensureDirs } from './config.mjs'
 import {
   applyStockStatus,
   cleanHtml,
@@ -60,6 +60,27 @@ function pathOf(url) {
   } catch {
     return null
   }
+}
+
+/**
+ * The permalink of a post that actually has one, or null.
+ *
+ * A post with no pretty URL - a draft, a private copy, anything WordPress links
+ * as `/?p=123` or `/?post_type=product&p=123` - exports a `link` whose entire
+ * path is the site root, because the identity lives in the query string and
+ * `pathOf` drops query strings by design.
+ *
+ * Treating that as a permalink is not a cosmetic error. The 2026-07-29 export
+ * has one such product, wp_id 6810, a private copy of a Pampers listing, and it
+ * put a row in url_inventory that redirected `/` to
+ * `/product/חיתולי-פמפרס-העתק`. That row shipped: every visitor arriving at the
+ * old site root on cutover day would have been sent to a duplicate nappies page
+ * instead of the homepage, and the redirect_coverage gate counted it as covered.
+ * The slug-derived fallback is always the safer answer, so root means null here.
+ */
+function permalinkPath(url) {
+  const path = pathOf(url)
+  return path && path !== '/' ? path : null
 }
 
 // ---------------------------------------------------------------------------
@@ -133,8 +154,9 @@ function transformProducts(run, rawProducts, categoryBySlugId) {
       // trashed / private / auto-draft: intentionally out of the catalog
       excluded.push({
         wp_post_id: raw.id,
-        permalink: pathOf(raw.permalink) ?? `/product/${raw.slug ?? raw.id}`,
+        permalink: permalinkPath(raw.permalink) ?? `/product/${raw.slug ?? raw.id}`,
         status_raw: raw.status ?? null,
+        rule: `excluded_status:${raw.status ?? 'unknown'}`,
       })
       run.op({
         stage: 'transform',
@@ -142,6 +164,26 @@ function transformProducts(run, rawProducts, categoryBySlugId) {
         wpId: raw.id,
         action: 'skip',
         errorCode: 'status_excluded',
+      })
+      continue
+    }
+
+    // A plugin's bookkeeping product is `publish`, so status alone never catches
+    // it. It carries no price, no category and no image, and would otherwise
+    // arrive as a draft in the new catalog and fail three gates on its own.
+    if (DEFAULTS.excludeProductSlugs.includes(raw.slug)) {
+      excluded.push({
+        wp_post_id: raw.id,
+        permalink: permalinkPath(raw.permalink) ?? `/product/${raw.slug ?? raw.id}`,
+        status_raw: raw.status ?? null,
+        rule: 'excluded_plugin_product',
+      })
+      run.op({
+        stage: 'transform',
+        entity: 'product',
+        wpId: raw.id,
+        action: 'skip',
+        errorCode: 'excluded_plugin_product',
       })
       continue
     }
@@ -205,7 +247,7 @@ function transformProducts(run, rawProducts, categoryBySlugId) {
       wp_parent_id: raw.parent_id || null,
       slug_raw: raw.slug ?? null,
       slug_decoded: slug,
-      permalink: pathOf(raw.permalink) ?? (slug ? `/product/${slug}` : null),
+      permalink: permalinkPath(raw.permalink) ?? (slug ? `/product/${slug}` : null),
       title_he: name,
       description_html: cleanHtml(raw.description),
       excerpt_html: cleanHtml(raw.short_description),
@@ -510,7 +552,7 @@ function toArray(value) {
   return Array.isArray(value) ? value : [value]
 }
 
-export function buildUrlInventory(products, categories, excludedProducts = []) {
+export function buildUrlInventory(products, categories, excludedProducts = [], pages = []) {
   const rows = []
   for (const p of products) {
     if (p.post_type !== 'product') continue
@@ -521,7 +563,8 @@ export function buildUrlInventory(products, categories, excludedProducts = []) {
     const finalSlug = p.proposed_slug || p.slug_decoded
     if (!finalSlug) continue
     const newPath = `${ROUTES.product}/${finalSlug}`
-    const oldPath = p.permalink || `${ROUTES.product}/${p.slug_raw ?? p.slug_decoded}`
+    const oldPath =
+      permalinkPath(p.permalink) || `${ROUTES.product}/${p.slug_raw ?? p.slug_decoded}`
 
     rows.push({
       old_path: oldPath,
@@ -571,14 +614,15 @@ export function buildUrlInventory(products, categories, excludedProducts = []) {
       mapped_new_path: null,
       direct_match: false,
       gone_410: true,
-      mapping_rule: `excluded_status:${x.status_raw}`,
+      mapping_rule: x.rule ?? `excluded_status:${x.status_raw}`,
     })
   }
   for (const c of categories) {
     const finalSlug = c.proposed_slug || c.slug_decoded
     if (!finalSlug) continue
     const newPath = `${ROUTES.category}/${finalSlug}`
-    const oldPath = c.permalink || `/product-category/${c.slug_raw ?? c.slug_decoded}`
+    const oldPath =
+      permalinkPath(c.permalink) || `/product-category/${c.slug_raw ?? c.slug_decoded}`
     rows.push({
       old_path: oldPath,
       sources: ['crawl'],
@@ -590,6 +634,36 @@ export function buildUrlInventory(products, categories, excludedProducts = []) {
       mapping_rule: 'category_slug',
     })
   }
+  // Pages carry no slug rule, so each one is looked up in PAGE_REDIRECTS. A page
+  // with no entry there still gets a row, with no target and no 410, which is
+  // exactly what redirect_coverage fails on. An old path missing from the
+  // inventory is invisible; an old path in it with no decision is a name on a
+  // failing gate.
+  for (const p of pages) {
+    // The one place a root path is real rather than a missing permalink: the
+    // page WordPress served as the front page. It maps to the new front page, so
+    // it is a direct match and emits no redirect. A NON-published page at the
+    // root is the other case - a draft linked as `/?page_id=6653` - and it was
+    // never indexed, so it gets no row at all.
+    const isRoot = pathOf(p.link) === '/'
+    if (isRoot && p.status !== 'publish') continue
+    const oldPath = isRoot ? '/' : (permalinkPath(p.link) ?? (p.slug ? `/${p.slug}` : null))
+    if (!oldPath) continue
+    const rule = isRoot ? { to: '/' } : PAGE_REDIRECTS[normalizePath(oldPath)]
+    rows.push({
+      old_path: oldPath,
+      sources: ['crawl'],
+      entity: 'page',
+      entity_wp_id: p.id,
+      mapped_new_path: rule?.to ?? null,
+      // A page whose old path already equals its new one (/cart, /checkout)
+      // needs no redirect row: emitting /cart -> /cart is a loop.
+      direct_match: rule?.to ? normalizePath(oldPath) === normalizePath(rule.to) : false,
+      gone_410: rule?.gone === true,
+      mapping_rule: rule ? (rule.gone ? 'page_gone_410' : 'page_redirect') : 'page_unmapped',
+    })
+  }
+
   // one row per old path; a parent and child term can collide on permalink
   const seen = new Set()
   return rows.filter((r) => {
@@ -627,6 +701,7 @@ export async function transform(run) {
   const rawCustomers = readRaw('customer')
   const rawOrders = readRaw('order')
   const rawCoupons = readRaw('coupon')
+  const rawPages = readRaw('page')
 
   if (rawProducts.length === 0 && rawCategories.length === 0) {
     warn('nothing in wp_import/raw/ - run the extract stage first')
@@ -645,7 +720,7 @@ export async function transform(run) {
   const customers = transformCustomers(run, limit(rawCustomers))
   const { orders, items } = transformOrders(run, limit(rawOrders))
   const coupons = transformCoupons(run, limit(rawCoupons))
-  const urls = buildUrlInventory(products, categories, excludedProducts)
+  const urls = buildUrlInventory(products, categories, excludedProducts, limit(rawPages))
 
   info('transform output')
   writeNormalized('categories', categories)

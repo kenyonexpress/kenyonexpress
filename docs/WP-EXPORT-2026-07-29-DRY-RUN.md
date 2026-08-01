@@ -397,3 +397,117 @@ maintains the migration log and supports `fn_rollback_batch`.
 7. Run `media` before `project`.
 8. Decide whether order line items matter. If yes, the source must be a dump or
    the REST API.
+
+---
+
+# Rerun 2026-08-01: blockers 2 and 4 closed, and a redirect that pointed the homepage at nappies
+
+The same export file, rerun from an empty `wp_import/` after the fixes below.
+Still a dry run: nothing was written anywhere.
+
+```bash
+node scripts/wp-import/run.mjs extract --source xml \
+  --file data-import/wp-backup/kenyonexpress-wxr-2026-07-29.xml
+node scripts/wp-import/run.mjs transform
+node scripts/wp-import/run.mjs validate
+```
+
+The 2026-07-29 baseline reproduced exactly before anything was changed (4 failed
+gates, `no_blocking_issues` 2, `url_inventory` 76), so the numbers below are a
+comparison and not two different runs.
+
+## Blocker 2: the Dokan bookkeeping product
+
+`DEFAULTS.excludeProductSlugs` in `config.mjs` now carries
+`reverse-withdrawal-payment`, and `transformProducts` drops it by slug the way
+it already dropped rows by status. Status alone never caught it: the row is
+`publish`.
+
+`count_parity_products` had to learn about the new exclusion in the same commit.
+Its own comment says source rows we choose to drop are subtracted explicitly, so
+it now subtracts by slug as well as by status. Without that half the fix trades a
+false pass for a false failure on every future run.
+
+Three gates moved: `products_without_category` 1 to 0, `products_without_image`
+1 to 0, `no_blocking_issues` 2 to 0.
+
+## Blocker 4: 27 pages that were not in the set being scored
+
+`redirect_coverage` reported 76/76 while no `page` item was in `url_inventory` at
+all. A gate that passes by leaving rows out is worse than one that fails, because
+it certifies a cutover that is about to start 404ing `/privacy-policy/`.
+
+The WXR reader now collects `page` items, extract emits them, and
+`buildUrlInventory` looks each one up in a new `PAGE_REDIRECTS` table in
+`config.mjs`. Pages carry no slug rule, so the table is hand written: 11 storefront
+paths get a 301 to a route that exists today (`/shop` to `/products`, `/my-account`
+to `/account`, `/coupon-scanner` to `/scan`), and 11 plugin features that the new
+store does not carry get an explicit 410 rather than a redirect to the homepage,
+which would be a soft 404.
+
+`url_inventory` went 76 to 103 and `redirect_coverage` now **fails at 98/103**.
+That failure is the point of the change. The five it names are unmapped on
+purpose:
+
+```
+/about   /contact   /privacy-policy   /terms-and-conditions   /refund_returns
+```
+
+No route in the new app answers any of them (`find src/app -name page.tsx`), and
+two are legal documents that customers and card processors expect to find. A
+target invented here would turn a missing page into a silent redirect to the
+wrong content, so they stay unmapped and the gate names them on every run until
+the pages exist. This is content work, not pipeline work.
+
+## The bug the page work uncovered: `/` redirected to a copy of a nappies product
+
+While checking which page rows survived the dedupe, one row in the inventory
+turned out to be:
+
+```
+old_path  /
+target    /product/חיתולי-פמפרס-העתק
+rule      product_slug
+```
+
+wp_id 6810 is a private copy of a Pampers listing. WordPress links a post with no
+pretty URL as `/?post_type=product&p=6810`, and `pathOf` drops query strings by
+design, so the whole permalink collapsed to `/`. Every visitor arriving at the old
+site root on cutover day would have been sent to a duplicate nappies page, and
+`redirect_coverage` counted the row as covered.
+
+This was in the shipped 76 rows. It predates the page work and had nothing to do
+with it.
+
+Fixed at the root: `permalinkPath()` treats a path of `/` as "this post has no
+permalink" and returns null, so products and categories fall back to their
+slug derived path. The single place a root path is real is the page WordPress
+served as the front page, which maps to the new front page as a direct match and
+emits no redirect. A non published page at the root is the other case, a draft
+linked as `/?page_id=6653`, and it gets no row because it was never indexed.
+
+Pinned by 9 new cases in `scripts/wp-import/redirects.test.mjs`. The two root
+path cases were confirmed to fail against the unfixed code before the fix was
+kept.
+
+## Gates now
+
+| gate | 2026-07-29 | 2026-08-01 |
+| --- | --- | --- |
+| `count_parity_products` | 46/46 | 45/45 |
+| `products_without_category` | **1** | 0 |
+| `products_without_image` | **1** | 0 |
+| `no_blocking_issues` | **2** | 0 |
+| `redirect_coverage` | 76/76, scoring a subset | **98/103**, scoring everything |
+| `media_uploaded` | **0/66** | 0/66, stage not run |
+| `live_count_parity` | **unknown** | unknown, no credentials |
+
+Three gates still block, and none of the three is a data defect in the export:
+
+1. `redirect_coverage`, waiting on five pages that have to be written.
+2. `media_uploaded`, waiting on the `media` stage, which needs `sharp` and a
+   storage target.
+3. `live_count_parity`, waiting on a working `SUPABASE_SECRET_KEY`. See the
+   standing blocker in STATE.md.
+
+Blockers 1, 3, 5 and 8 from the list above are untouched and still open.

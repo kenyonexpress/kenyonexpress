@@ -223,14 +223,18 @@ async function extractFile(run) {
     return
   }
 
-  const { categories, products, variations, attachments, itemsSeen } = await readWxr(RUN.file, {
-    onProgress: (n) => info(`  ...${n} items read`),
-  })
+  const { categories, products, variations, attachments, pages, itemsSeen } = await readWxr(
+    RUN.file,
+    { onProgress: (n) => info(`  ...${n} items read`) },
+  )
   const meta = { wxr: RUN.file, itemsSeen }
   emit('category', categories, meta)
   emit('product', products, meta)
   if (variations.length) emit('product_variation', variations, meta)
   emit('attachment', attachments, meta)
+  // Pages are extracted for their URLs only, never for their content. Without
+  // them url_inventory scores a subset and reports a total.
+  if (pages.length) emit('page', pages, meta)
 
   const orphanCats = products.filter((p) => p._wxr.unresolved_categories.length).length
   if (orphanCats) {

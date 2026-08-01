@@ -192,7 +192,25 @@ function readTaxonomy(preambleXml) {
 }
 
 /**
- * Read a WXR file into { categories, products, variations, attachments }.
+ * A `page` item. Pages are never imported as content - the new store's pages
+ * are hand-built - so only what a redirect needs is read: the old path, and
+ * enough identity to report the row.
+ */
+function itemToPage(item) {
+  const link = childText(item, 'link')
+  const slug = childText(item, 'wp:post_name')
+  return {
+    id: Number.parseInt(childText(item, 'wp:post_id'), 10),
+    slug,
+    title: childText(item, 'title'),
+    link,
+    status: childText(item, 'wp:status'),
+    post_type: 'page',
+  }
+}
+
+/**
+ * Read a WXR file into { categories, products, variations, attachments, pages }.
  *
  * Two passes over the file, both streaming. The first reads only the preamble
  * (taxonomy); the second reads items. Two passes because an item names its
@@ -206,6 +224,7 @@ export async function readWxr(filePath, { onProgress } = {}) {
   const products = []
   const variations = []
   const attachments = []
+  const pages = []
   const counts = { skipped: 0 }
   let seen = 0
 
@@ -220,6 +239,8 @@ export async function readWxr(filePath, { onProgress } = {}) {
       variations.push(itemToProduct(item, index))
     } else if (postType === 'attachment') {
       attachments.push(itemToAttachment(item))
+    } else if (postType === 'page') {
+      pages.push(itemToPage(item))
     } else {
       counts.skipped += 1
     }
@@ -254,7 +275,7 @@ export async function readWxr(filePath, { onProgress } = {}) {
   }
   for (const c of categories) c.count = countBySlug.get(c.id) ?? 0
 
-  return { categories, products, variations, attachments, itemsSeen: seen, counts }
+  return { categories, products, variations, attachments, pages, itemsSeen: seen, counts }
 }
 
 // ---------------------------------------------------------------------------

@@ -1,6 +1,80 @@
 # KenyonExpress — Project State
 
-Updated: 2026-07-31 (שלב 4 Coupon redemption: ההנפקה הייתה שבורה בפרוד, תוקנה ואומתה)
+Updated: 2026-08-01 ([14] ריצת WP import ביבש: שני חוסמים נסגרו, ושורה אחת ניתבה את דף הבית לחיתולים)
+
+## סבב 2026-08-01 — [14] WP import ביבש, ושער שעבר בזכות זה שלא ספר
+
+התור של NEXT-GOALS סגור 13/13, ולכן השער הבא הוא `GO-LIVE.md`. הסעיף
+הפתוח הראשון בו שניתן לביצוע הוא ריצת ה-WP import ביבש.
+
+### מה שנוסה קודם ולא הלך: reset מקומי מאפס
+
+זה הסעיף הפתוח הראשון בשלב 0, והוא נחסם פעמיים.
+‏Docker Desktop לא עולה בסשן הזה: שלוש דרכים נוסו (`open -a Docker`, המתנה
+של 10 דקות, ו-`docker desktop start` שמדווח "already running" בזמן
+ש-`docker info` נכשל על ה-socket).
+
+אבל החסם האמיתי אינו Docker. נמדד דרך MCP: **פנקס המיגרציות בפרודקשן מחזיק
+45 רשומות בשמות אחרים לגמרי מ-95 הקבצים, ו-059 מעולם לא הוחלה שם.**
+‏`products.price_ils` ו-`platform_percent` חיות, אין אף עמודת `_agorot`.
+ריצה מאפס על `supabase/migrations/` כן מחילה את 059, מייצרת סכימה שהקוד
+החי לא יודע לקרוא, ונשברת ב-070. הסעיף הזה אינו הרצת פקודה אלא יישור
+שושלת, וזה פרויקט נפרד. תועד ב-GO-LIVE ולא נגעתי בו.
+
+### הריצה עצמה
+
+‏`WP_IMPORT_ALLOW_WRITES` לא הוגדר ואף שורה לא נכתבה. הבסיס מ-29.07 שוחזר
+בדיוק לפני שנגעתי במשהו (4 שערים אדומים, `url_inventory` 76), ולכן
+המספרים הם השוואה ולא שתי ריצות שונות.
+
+1. **מוצר הנהלת החשבונות של Dokan** מוחרג לפי slug דרך
+   `DEFAULTS.excludeProductSlugs`. הוא `publish`, ולכן סינון הסטטוס הקיים
+   מעולם לא תפס אותו. שלושה שערים ירקו בבת אחת.
+   ‏`count_parity_products` נדרש ללמוד על ההחרגה באותו commit, אחרת התיקון
+   מחליף שער ירוק שקרי בשער אדום שקרי בכל ריצה עתידית.
+2. **‏27 העמודים נכנסו ל-`url_inventory`** דרך `PAGE_REDIRECTS`, טבלה חדשה
+   ב-`config.mjs`. ‏11 מקבלים 301 לראוט שקיים היום, ‏11 מקבלים 410 מפורש
+   (תוסף שאין לו המשך), וחמישה **בכוונה בלי מיפוי**.
+
+### הממצא: `redirect_coverage` עבר 76/76 כי לא ספר את מה שנשבר
+
+לפני השינוי אף `page` לא היה במלאי בכלל, אז השער דיווח כיסוי מלא על
+תת-קבוצה. עכשיו הוא **נופל ב-98/103**, וזו המטרה. חמשת השמות שהוא מוציא:
+`/about`, `/contact`, `/privacy-policy`, `/terms-and-conditions`,
+`/refund_returns`. אין ראוט שעונה לאף אחד מהם. יעד מומצא כאן הופך עמוד חסר
+לניתוב שקט לתוכן לא נכון, ולכן הם נשארים פתוחים. זו עבודת תוכן.
+
+### הבאג שנחשף בדרך: `/` ניתב לעותק של מוצר חיתולים
+
+בבדיקה אילו שורות עמוד שרדו את ה-dedupe התגלתה שורה קיימת מתוך ה-76:
+
+```
+old_path  /
+target    /product/חיתולי-פמפרס-העתק
+rule      product_slug
+```
+
+‏wp_id 6810 הוא עותק פרטי של מוצר פמפרס. ‏WordPress מקשר פוסט בלי permalink
+יפה כ-`/?post_type=product&p=6810`, ו-`pathOf` מוריד query string בכוונה,
+אז כל הכתובת התכווצה ל-`/`. **ביום המעבר כל מי שמגיע לשורש האתר הישן היה
+מנותב לעמוד חיתולים כפול**, והשער ספר את השורה כמכוסה. הבאג קדם לעבודת
+העמודים ולא נבע ממנה.
+
+תוקן בשורש: `permalinkPath()` מחזיר null על נתיב `/`, ומוצרים וקטגוריות
+נופלים חזרה לנתיב שנגזר מה-slug. המקום היחיד שבו שורש הוא אמיתי הוא עמוד
+הבית של האתר הישן, שממופה לדף הבית החדש כ-`direct_match` ולא מייצר ניתוב
+בכלל. עמוד לא מפורסם בשורש (טיוטה עם `/?page_id=6653`) לא מקבל שורה, כי
+מעולם לא היה מאונדקס.
+
+### אימות
+
+- ‏52 בדיקות ב-`scripts/wp-import` (היו 43). שתי בדיקות השורש **אומתו
+  שנכשלות מול הקוד הלא מתוקן** לפני שהתיקון נשמר.
+- ‏Vitest מלא: **1229/1229** (היו 1220).
+- ‏`tsc --noEmit` נקי, ‏`biome check` נקי.
+- שלושה שערים עדיין חוסמים, ואף אחד אינו פגם בנתוני הייצוא: חמשת העמודים,
+  שלב ה-`media` שלא רץ, ו-`live_count_parity` שחסום על אותו
+  `SUPABASE_SECRET_KEY` ישן.
 
 ## תור NEXT-GOALS: שלב 1 (Cart) ✅, 2026-07-31 ערב
 
@@ -412,10 +486,12 @@ of two.
    Since `c25c2a0` this at least announces itself — `createAdminClient` logs
    `[supabase-admin] ...is the stock local-development demo key...` once per
    process instead of failing silently.
-2. **⛔ `093_product_commission_type` is not applied.** `buildProductMoneyWrite`
-   writes `commission_type`, so until the migration lands every product create
-   and edit in the admin fails on a column that does not exist. This was a
-   `feat/admin-core` blocker and is now a `phase5/homepage` one. See GO-LIVE.
+2. ~~**⛔ `093_product_commission_type` is not applied.**~~ **Stale, closed.**
+   Re-measured against the hosted project through MCP on 2026-08-01:
+   `products.commission_type` **exists** (`USER-DEFINED`, the enum), and the
+   migration ledger records it twice, `20260729031546` and `20260729032538`.
+   Product create and edit in the admin are not blocked by this. GO-LIVE has
+   said so since 31.07; this entry was never updated to match.
 
 ## שלוש המשימות הבאות
 

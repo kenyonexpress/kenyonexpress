@@ -178,3 +178,108 @@ describe('the inventory is safe to load into a unique-keyed table', () => {
     expect(find(rows, '/product/meal-raw')).toBeDefined()
   })
 })
+
+describe('no post may claim the site root', () => {
+  // The 2026-07-29 export carries wp_id 6810, a private copy of a Pampers
+  // listing whose permalink is `/?post_type=product&p=6810`. Query strings are
+  // stripped, so its old path became `/` and the shipped inventory redirected
+  // the old homepage to a duplicate nappies page. The counts all looked right.
+  it('falls back to the slug when a permalink is only the site root', () => {
+    const rows = buildUrlInventory(
+      [product({ permalink: 'https://kenyonexpress.co.il/', slug_raw: 'nappies-copy' })],
+      [],
+    )
+    expect(find(rows, '/')).toBeUndefined()
+    expect(find(rows, '/product/nappies-copy').mapped_new_path).toBe('/product/meal')
+  })
+
+  it('does the same for a category', () => {
+    const rows = buildUrlInventory([], [category({ permalink: 'https://kenyonexpress.co.il/' })])
+    expect(find(rows, '/')).toBeUndefined()
+    expect(find(rows, '/product-category/restaurants')).toBeDefined()
+  })
+})
+
+/** A WXR page item, in the shape lib/wxr emits. */
+const page = (over = {}) => ({
+  id: 3134,
+  slug: 'cart',
+  title: 'סל הקניות',
+  link: 'https://kenyonexpress.co.il/cart/',
+  status: 'publish',
+  post_type: 'page',
+  ...over,
+})
+
+describe('pages are in the inventory, not omitted from it', () => {
+  // Until 2026-08-01 buildUrlInventory took products and categories only, so
+  // redirect_coverage scored 76/76 while 27 published pages sat outside the set
+  // being counted. A gate that passes by leaving rows out is worse than one that
+  // fails: it says the site is safe to cut over while /privacy-policy/ is about
+  // to start 404ing.
+  it('maps a page listed in PAGE_REDIRECTS', () => {
+    const rows = buildUrlInventory([], [], [], [page({ id: 3853, slug: 'shop', link: '/shop/' })])
+    expect(find(rows, '/shop').mapped_new_path).toBe('/products')
+    expect(find(rows, '/shop').mapping_rule).toBe('page_redirect')
+  })
+
+  it('gives a page whose feature is gone an explicit 410, not a redirect home', () => {
+    // A 301 to the homepage is a soft 404: the old URL stays indexed and the
+    // customer lands somewhere that does not answer them.
+    const rows = buildUrlInventory([], [], [], [page({ id: 307, slug: 'blog', link: '/blog/' })])
+    expect(find(rows, '/blog').gone_410).toBe(true)
+    expect(find(rows, '/blog').mapped_new_path).toBeNull()
+  })
+
+  it('flags a page nobody has mapped instead of quietly covering it', () => {
+    const rows = buildUrlInventory(
+      [],
+      [],
+      [],
+      [page({ id: 3, slug: 'privacy-policy', link: '/privacy-policy/' })],
+    )
+    const row = find(rows, '/privacy-policy')
+    expect(row.mapping_rule).toBe('page_unmapped')
+    // This is what redirect_coverage counts as unresolved.
+    expect(row.mapped_new_path).toBeNull()
+    expect(row.direct_match).toBe(false)
+    expect(row.gone_410).toBe(false)
+  })
+
+  it('treats a page whose path already matches as a direct match', () => {
+    const rows = buildUrlInventory([], [], [], [page()])
+    expect(find(rows, '/cart').direct_match).toBe(true)
+  })
+
+  it('matches a percent-encoded Hebrew page slug against the map', () => {
+    const rows = buildUrlInventory(
+      [],
+      [],
+      [],
+      [
+        page({
+          id: 6655,
+          slug: 'דף-בית-טסט',
+          link: '/%d7%93%d7%a3-%d7%91%d7%99%d7%aa-%d7%98%d7%a1%d7%98/',
+        }),
+      ],
+    )
+    expect(rows[0].mapped_new_path).toBe('/')
+  })
+
+  it('keeps the published front page as a direct match at the root', () => {
+    const rows = buildUrlInventory([], [], [], [page({ id: 5202, slug: 'home-v7-el', link: '/' })])
+    expect(find(rows, '/').direct_match).toBe(true)
+    expect(find(rows, '/').mapped_new_path).toBe('/')
+  })
+
+  it('drops a draft page whose only link is /?page_id=, which was never indexed', () => {
+    const rows = buildUrlInventory(
+      [],
+      [],
+      [],
+      [page({ id: 6653, slug: 'דף-הבית-7', link: '/?page_id=6653', status: 'draft' })],
+    )
+    expect(rows).toHaveLength(0)
+  })
+})

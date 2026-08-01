@@ -132,6 +132,13 @@ export const DEFAULTS = {
   marketingOptIn: false,
   imageBucket: 'product-images',
   batchSize: 200,
+  // Products a WooCommerce plugin creates for its own bookkeeping. They are not
+  // catalogue rows and must never become drafts in the new store. Dokan's
+  // reverse-withdrawal product has price 0, no product_cat and no image, which
+  // is why one row tripped three separate gates in the 2026-07-29 dry run.
+  // Listed by slug here rather than sniffed for in transform logic, so the
+  // exclusion is a reviewable decision in one place.
+  excludeProductSlugs: ['reverse-withdrawal-payment'],
 }
 
 /**
@@ -150,6 +157,69 @@ export const ROUTES = {
   category: '/category',
   productList: '/products',
   couponList: '/coupons',
+}
+
+/**
+ * Where each old WordPress `page` lands. Products and categories derive their
+ * targets from a slug rule; pages cannot, because a page is a hand-made thing
+ * whose replacement is a product decision.
+ *
+ * Until 2026-08-01 `url_inventory` held products and categories only, so
+ * `redirect_coverage` reported 76/76 while 27 published pages were not in the
+ * set being scored at all. A gate that passes by omitting rows is worse than a
+ * gate that fails: it reports the site is safe to cut over while
+ * /privacy-policy/ and /terms-and-conditions/ are about to start 404ing.
+ *
+ * Keys are normalized paths (see `normalizePath` in 02-transform): lowercased,
+ * percent-decoded, NFC, no trailing slash. A page absent from this table gets an
+ * inventory row with no target, which fails `redirect_coverage` by name. That is
+ * deliberate: an unmapped page is an open decision, not a default.
+ *
+ * `gone: true` means an explicit 410. It is for features the new store does not
+ * have and is not going to grow back (Dokan vendor dashboards, the YITH
+ * compare/wishlist plugins, a dead PayPlus error page). 410 rather than a 301 to
+ * the homepage, because redirecting a missing feature to the front page is a
+ * soft 404: Google keeps the old URL indexed and the customer lands somewhere
+ * that does not answer their question.
+ */
+export const PAGE_REDIRECTS = {
+  // Storefront plumbing: the same job, on a route that exists today.
+  '/shop': { to: ROUTES.productList },
+  '/store-directory': { to: ROUTES.productList },
+  '/cart': { to: '/cart' },
+  '/checkout': { to: '/checkout' },
+  '/my-account': { to: '/account' },
+  '/my-orders': { to: '/account/orders' },
+  '/track-your-order': { to: '/account/orders' },
+  '/coupon-scanner': { to: '/scan' },
+
+  // Three homepage builds that were all live at once on the old site.
+  '/home-v7-el': { to: '/' },
+  '/דף-בית-טסט': { to: '/' },
+  '/דף-הבית-7': { to: '/' },
+  '/קניון-אקספרס-דף-הבית-מסדרים-לך-בילוי': { to: '/' },
+
+  // Plugin features the new store does not carry.
+  '/blog': { gone: true },
+  '/affiliate-area': { gone: true },
+  '/dashboard': { gone: true },
+  '/store-listing': { gone: true },
+  '/compare': { gone: true },
+  '/yith-compare': { gone: true },
+  '/recently-viewed': { gone: true },
+  '/wishlist': { gone: true },
+  '/my-wishlist': { gone: true },
+  '/wishlist-archive': { gone: true },
+  '/error-payment-payplus': { gone: true },
+
+  // NOT mapped, deliberately: /about, /contact, /privacy-policy,
+  // /terms-and-conditions, /refund_returns. The new app has no route for any of
+  // them (`find src/app -name page.tsx` confirms it), and these are the five old
+  // paths where a wrong answer costs the most: two are legal documents customers
+  // and card processors expect to find, and all five are indexed. Inventing a
+  // target here would turn a missing page into a silent redirect to the wrong
+  // content. They stay unmapped so `redirect_coverage` names them on every run
+  // until the pages exist.
 }
 
 /** Optional operator-supplied overrides, loaded by whoever needs them. */

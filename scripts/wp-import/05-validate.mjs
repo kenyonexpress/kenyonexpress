@@ -11,7 +11,7 @@ import { writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { readRaw } from './01-extract.mjs'
 import { readNormalized } from './02-transform.mjs'
-import { DRY_RUN, PATHS, ensureDirs } from './config.mjs'
+import { DEFAULTS, DRY_RUN, PATHS, ensureDirs } from './config.mjs'
 import { countRows, getDb } from './lib/db.mjs'
 import { Run, error, info, ok, warn } from './lib/log.mjs'
 
@@ -68,17 +68,24 @@ export async function validate(run) {
   // ------------------------------------------------------------------
 
   const excludedStatuses = new Set(['trash', 'private', 'auto-draft', 'inherit'])
-  const sourceProducts = rawProducts.filter(
+  const excludedSlugs = new Set(DEFAULTS.excludeProductSlugs)
+  const byStatus = rawProducts.filter(
     (p) =>
       (p.post_type ?? 'product') === 'product' &&
       !excludedStatuses.has(String(p.status).toLowerCase()),
   )
+  // Plugin bookkeeping products are dropped by slug, not by status, so they have
+  // to be subtracted here too. Leaving them in the expected count would turn a
+  // deliberate exclusion into a parity failure on every run, and a gate that
+  // cries wolf is a gate an operator learns to wave through.
+  const sourceProducts = byStatus.filter((p) => !excludedSlugs.has(p.slug))
+  const bySlug = byStatus.length - sourceProducts.length
   gates.add({
     gate: 'count_parity_products',
     expected: sourceProducts.length,
     actual: products.length,
     passed: sourceProducts.length === products.length,
-    detail: `${rawProducts.length} raw rows, ${rawProducts.length - sourceProducts.length} excluded by status`,
+    detail: `${rawProducts.length} raw rows, ${rawProducts.length - byStatus.length} excluded by status, ${bySlug} excluded by slug`,
     offenders: sourceProducts
       .filter((s) => !products.some((p) => p.wp_post_id === s.id))
       .map((s) => ({ wp_id: s.id, slug: s.slug, status: s.status })),
