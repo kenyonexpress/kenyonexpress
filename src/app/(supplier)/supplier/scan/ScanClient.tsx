@@ -211,7 +211,7 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
             type="button"
             onClick={() => void redeem()}
             disabled={submitting}
-            className="flex-1 rounded-xl bg-[#333e48] py-3 text-sm font-bold text-white disabled:opacity-50"
+            className="flex-1 rounded-xl bg-heading py-3 text-sm font-bold text-white disabled:opacity-50"
           >
             {submitting ? 'מבצע...' : 'אשר ומַמֵש'}
           </button>
@@ -254,7 +254,7 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
         <button
           type="button"
           onClick={reset}
-          className="mt-5 w-full rounded-xl bg-[#333e48] py-3 text-sm font-bold text-white"
+          className="mt-5 w-full rounded-xl bg-heading py-3 text-sm font-bold text-white"
         >
           סריקה נוספת
         </button>
@@ -282,7 +282,7 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
             <button
               type="button"
               onClick={() => void startCamera()}
-              className="w-full rounded-xl bg-[#333e48] py-3 text-sm font-bold text-white"
+              className="w-full rounded-xl bg-heading py-3 text-sm font-bold text-white"
             >
               סרוק QR במצלמה
             </button>
@@ -311,7 +311,7 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
         {error && <p className="text-center text-sm text-red-600">{error}</p>}
         <button
           type="submit"
-          className="w-full rounded-xl bg-[#333e48] py-3 text-sm font-bold text-white"
+          className="w-full rounded-xl bg-heading py-3 text-sm font-bold text-white"
         >
           המשך
         </button>
