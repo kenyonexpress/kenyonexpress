@@ -2,7 +2,7 @@
 
 ארכיטקטורת SEO וביצועים לחנות KenyonExpress (Next.js App Router).
 
-Status: **BINDING** · Updated: 2026-08-03  
+Status: **BINDING** · Updated: 2026-08-03 (rev B)  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה ב-worktree הראשי (`kenyonexpress`).
 
@@ -319,31 +319,45 @@ Canonical: URL אבסולוטי על דומיין הפרוד, בלי query של 
 
 ---
 
-## 6. ביצועים תפעוליים
+## 6. Core Web Vitals (מחייב)
 
-### 6.1 LCP
+שלושת מדדי השדה של Google. יעדי lab (Lighthouse) ו-field (CrUX / RUM) זהים בספיים למטה. חריגה מתועדת רק ב-Go-Live checklist.
 
-- תמונת hero אחת עם `priority` / preload; השאר lazy  
-- Heebo לא חוסם render  
-- אין third-party כבד ב-home לפני idle/consent  
-- Cardcom רק ב-checkout  
+### 6.1 תקציבים
 
-### 6.2 CLS
+| Vital | יעד (mobile, p75) | איך נמדוד | פעולות מחייבות |
+|---|---|---|---|
+| **LCP** | ≤ 2.5s | LH CI + CrUX אחרי DNS | תמונת LCP יחידה עם `priority`; Heebo `next/font` + `display: swap`; ISR HTML על home/PDP |
+| **CLS** | ≤ 0.1 | LH CI + CrUX | width/height או aspect-ratio על תמונות כרטיס/hero; בלי badges/fonts שדוחפים layout אחרי paint |
+| **INP** | ≤ 200ms | CrUX / RUM (lab: TBT כפרוקסי חלש) | מינימום client ב-first paint; cart קטן; analytics/consent אחרי idle; בלי Cardcom ב-home |
 
-- מימדי תמונה שמורים (כרטיסי מוצר לפי מדידות / `refs`)  
-- בלי badges שמוזרקים מאוחר על ה-hero  
+TTFB (לא CWV רשמי אבל חוסם LCP): catalog ציבורי p75 ≤ 800ms דרך ISR/CDN.
 
-### 6.3 INP
+### 6.2 מיפוי דף → סיכון
 
-- מינימום client components ב-first paint  
-- Zustand cart קטן; לא לגרור checkout ל-home  
-- אנליטיקה אחרי idle + consent  
+| דף | סיכון עיקרי | הקלה |
+|---|---|---|
+| Home | LCP מסליידר / CSS חוסם | slide פעיל בלבד ל-LCP; איחוד CSS |
+| PDP | LCP מתמונה + CLS מגלריה | `priority` על ראשית; lazy לגלריה; מימדים שמורים |
+| Category | INP מפילטרים + TTFB מ-filters | force-dynamic לדף; cache לנתונים; hydrate מאוחר לפילטרים |
 
-### 6.4 Images / R2
+### 6.3 RUM / שערים
+
+| כלי | שימוש |
+|---|---|
+| Lighthouse CI | PR: home + coupon PDP + category (lab) |
+| CrUX / Search Console | אחרי DNS: field LCP/CLS/INP |
+| Web Vitals RUM | אופציונלי אחרי consent; דיווח ל-Sentry/analytics |
+| `compare.mjs` | רגרסיה ויזואלית (לא מחליף CWV) |
+
+כשל PR: ירידת Performance > 5 נקודות מול baseline בלי הצדקה, או LCP/CLS מחוץ ליעד על דף המדגם.
+
+### 6.4 Images / R2 (תמיכה ב-LCP/CLS)
 
 - `remotePatterns` רק ל-hosts מאושרים  
 - AVIF/WebP; לא מקור 4000px לכרטיס מובייל  
 - PDP: תמונה ראשית priority מעל הקיפול; גלריה lazy  
+- Cardcom רק ב-checkout (לא ב-critical path של catalog)
 
 ---
 
@@ -408,3 +422,4 @@ docs/ARCHITECTURE-WP-DATA-MIGRATION.md
 | 2026-07-31 | Binding + ISR matrix ראשוני |
 | 2026-08-02 | Lighthouse targets, JSON-LD, Hebrew metadata |
 | 2026-08-03 | Lighthouse 90+ strategy, ISR מחייבת, sitemap דינמי, schema.org מוצרים בעברית RTL; docs-only ב-`ke-arch` |
+| 2026-08-03 | rev B: סעיף Core Web Vitals מחייב (LCP/CLS/INP, מיפוי דפים, RUM/שערים) |
