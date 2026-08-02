@@ -2,8 +2,6 @@ import ReferralQueueRow from '@/components/admin/ReferralQueueRow'
 import { requireSection } from '@/lib/admin/rbac'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-export const dynamic = 'force-dynamic'
-
 const ils = (agorot: number) =>
   new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS' }).format(agorot / 100)
 

@@ -81,6 +81,21 @@ export interface CartStoreState {
   removeItem: (productId: string, variantId: string | null) => Promise<void>
   clear: () => Promise<void>
   setCart: (cart: CartView) => void
+  /**
+   * Whether the visitor is signed in, for the parts of the cart UI that send a
+   * guest through Google before checkout.
+   *
+   * It lives in the store rather than in a React context because it arrives at
+   * the same moment the cart does, and from the same place: a streamed hole in
+   * the layout, after the shell has already been sent. A context value set by
+   * the provider cannot be corrected by a child that resolves later.
+   *
+   * `false` until that hole resolves. Treating an unknown visitor as a guest
+   * costs one extra sign-in prompt; the other default sends them to a route the
+   * proxy bounces.
+   */
+  isAuthenticated: boolean
+  setAuthenticated: (isAuthenticated: boolean) => void
 }
 
 export type CartStoreApi = ReturnType<typeof createCartStore>
@@ -93,6 +108,7 @@ export type CartStoreApi = ReturnType<typeof createCartStore>
 export function createCartStore(
   initialCart: CartView,
   onFeedback: (feedback: CartFeedback) => void = () => undefined,
+  initialAuthenticated = false,
 ) {
   return createStore<CartStoreState>()((set, get) => {
     const begin = (action: CartOptimisticAction): CartView => {
@@ -142,6 +158,7 @@ export function createCartStore(
     return {
       cart: initialCart,
       serverCart: initialCart,
+      isAuthenticated: initialAuthenticated,
       pendingOps: 0,
       isPending: false,
       drawerOpen: false,
@@ -221,6 +238,7 @@ export function createCartStore(
       },
 
       setCart: (cart) => set({ cart, serverCart: cart }),
+      setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
     }
   })
 }

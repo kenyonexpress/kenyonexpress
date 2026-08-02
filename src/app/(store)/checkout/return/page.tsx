@@ -20,6 +20,7 @@ import { formatVoucherCode } from '@/server/domain/vouchers/code'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
+import { Suspense } from 'react'
 import AutoRefresh from './AutoRefresh'
 import '@/styles/checkout-page.css'
 
@@ -35,7 +36,33 @@ type Props = {
   searchParams: Promise<{ order_id?: string }>
 }
 
-export default async function CheckoutReturnPage({ searchParams }: Props) {
+/**
+ * The shell is the pending state this page already renders while the settlement
+ * is being verified, minus the auto-refresh. That is the right fallback and not
+ * a placeholder chosen to fill space: the first thing a shopper who has just
+ * paid sees is "we are verifying", whether the verification takes 30ms or two
+ * seconds, instead of a blank tab for the length of `reconcileOrderReturn`.
+ */
+export default function CheckoutReturnPage(props: Props) {
+  return (
+    <Suspense
+      fallback={
+        <div className="checkout-page">
+          <div className="checkout-pending">
+            <h1 className="checkout-success__title">מאמתים את התשלום...</h1>
+            <p className="checkout-success__sub">
+              ההזמנה נקלטה ואנחנו ממתינים לאישור הסליקה. העמוד יתעדכן אוטומטית.
+            </p>
+          </div>
+        </div>
+      }
+    >
+      <CheckoutReturnBody {...props} />
+    </Suspense>
+  )
+}
+
+async function CheckoutReturnBody({ searchParams }: Props) {
   const sp = await searchParams
   const orderId = sp.order_id
   if (!orderId) notFound()

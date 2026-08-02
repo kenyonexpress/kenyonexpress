@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Suspense } from 'react'
 import FrameReturnBreakout from './FrameReturnBreakout'
 
 export const metadata: Metadata = {
@@ -30,7 +31,28 @@ export const metadata: Metadata = {
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
-export default async function CheckoutFrameReturnPage({
+export default function CheckoutFrameReturnPage(props: {
+  searchParams: Promise<{ order_id?: string; status?: string }>
+}) {
+  return (
+    // The "מעבד את התשלום..." line is the whole visible page, so it is the
+    // shell: a shopper who has just paid sees it at once, and the breakout
+    // script arrives with the resolved target a moment later.
+    <Suspense
+      fallback={
+        <div className="checkout-page">
+          <div className="checkout-pending">
+            <p>מעבד את התשלום...</p>
+          </div>
+        </div>
+      }
+    >
+      <FrameReturnBody {...props} />
+    </Suspense>
+  )
+}
+
+async function FrameReturnBody({
   searchParams,
 }: {
   searchParams: Promise<{ order_id?: string; status?: string }>
@@ -64,5 +86,3 @@ export default async function CheckoutFrameReturnPage({
     </div>
   )
 }
-
-export const dynamic = 'force-dynamic'

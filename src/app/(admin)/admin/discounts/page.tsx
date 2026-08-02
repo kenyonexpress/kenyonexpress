@@ -3,8 +3,6 @@ import { requireSection } from '@/lib/admin/rbac'
 import { growthClient } from '@/lib/growth/client'
 import Link from 'next/link'
 
-export const dynamic = 'force-dynamic'
-
 const ils = (agorot: number) =>
   new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS' }).format(agorot / 100)
 

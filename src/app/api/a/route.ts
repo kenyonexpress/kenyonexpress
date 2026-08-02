@@ -6,8 +6,6 @@ import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { type NextRequest, NextResponse } from 'next/server'
 
-export const runtime = 'nodejs'
-
 // Behavioral event ingest. Deliberately silent: every outcome that is not a
 // programming error returns 204, because a browser has nothing useful to do
 // with an analytics error and the SDK must never retry into a loop.

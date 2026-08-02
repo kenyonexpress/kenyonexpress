@@ -1,8 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { type NextRequest, NextResponse } from 'next/server'
 
-export const runtime = 'nodejs'
-
 /**
  * Nightly voucher lifecycle job. Two steps, in this order and never merged:
  *

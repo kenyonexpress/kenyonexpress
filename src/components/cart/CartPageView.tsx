@@ -2,24 +2,25 @@
 
 import CartCheckoutButton from '@/components/cart/CartCheckoutButton'
 import CartLineItem, { CartEmptyState } from '@/components/cart/CartLineItem'
-import { useCart } from '@/components/cart/CartProvider'
+import { useCart, useCartAuth } from '@/components/cart/CartProvider'
 import CartTotalsSidebar from '@/components/cart/CartTotalsSidebar'
-import type { CartView } from '@/lib/cart/types'
 import Link from 'next/link'
-import { useEffect } from 'react'
 
-export default function CartPageView({
-  initialCart,
-  isAuthenticated,
-}: {
-  initialCart: CartView
-  isAuthenticated: boolean
-}) {
-  const { cart, setCart, clear, isPending } = useCart()
-
-  useEffect(() => {
-    setCart(initialCart)
-  }, [initialCart, setCart])
+/**
+ * Takes no props, which is what makes /cart a prerendered page.
+ *
+ * It used to receive `initialCart` and `isAuthenticated` from a server
+ * component that awaited `getCart()` and `auth.getUser()`, and then wrote the
+ * cart into the store from an effect - the same store the layout's
+ * `<CartBootstrap>` now fills, from the same two reads. Two servers reads for
+ * one cart, and the page could not be static because of the second one.
+ *
+ * Reading both straight off the store deletes the duplicate and leaves this
+ * whole route in the static shell.
+ */
+export default function CartPageView() {
+  const { cart, clear, isPending } = useCart()
+  const isAuthenticated = useCartAuth()
 
   const hasUnavailable = cart.items.some((item) => !item.available)
   const isEmpty = cart.items.length === 0

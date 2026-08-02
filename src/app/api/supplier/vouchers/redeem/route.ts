@@ -6,8 +6,6 @@ import { readScanContext, recordRefusedScan } from '@/server/domain/vouchers/sca
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
-export const runtime = 'nodejs'
-
 /**
  * Supplier-side voucher redemption. The atomic work happens in the
  * public.redeem_voucher() RPC (051), which is SECURITY DEFINER and derives the

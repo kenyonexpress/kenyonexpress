@@ -1,8 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { type NextRequest, NextResponse } from 'next/server'
 
-export const runtime = 'nodejs'
-
 /** Batches per invocation. 10 x 500 is 5,000 carts, far above any real day. */
 const MAX_BATCHES = 10
 
@@ -39,9 +37,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   let reaped = 0
 
   for (let batch = 0; batch < MAX_BATCHES; batch += 1) {
-    const { data, error } = await admin.rpc('fn_reap_expired_carts' as never, {
-      p_limit: 500,
-    } as never)
+    const { data, error } = await admin.rpc(
+      'fn_reap_expired_carts' as never,
+      {
+        p_limit: 500,
+      } as never,
+    )
 
     if (error) {
       // Report what was already deleted. Each batch commits on its own, so a

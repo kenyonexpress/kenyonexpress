@@ -6,6 +6,7 @@ import {
   type CartStoreState,
   createCartStore,
 } from '@/lib/cart/store'
+import { EMPTY_CART } from '@/lib/cart/types'
 import type { CartView } from '@/lib/cart/types'
 import { type ReactNode, createContext, useContext, useRef } from 'react'
 import { toast } from 'sonner'
@@ -22,36 +23,37 @@ function showFeedback(feedback: CartFeedback): void {
 const CartStoreContext = createContext<CartStoreApi | null>(null)
 
 /**
- * Whether the visitor is signed in, for the parts of the cart UI that have to
- * send a guest through Google before checkout. Defaults to false: treating an
- * unknown visitor as a guest costs one extra sign-in prompt, while the other
- * default sends them to a route the proxy bounces.
+ * Holds the cart store for a route group's chrome.
+ *
+ * `initialCart` and `isAuthenticated` are OPTIONAL, and the layouts that mount
+ * this pass neither. That is deliberate and it is the whole reason the store
+ * front can be prerendered: reading the cart means reading a cookie, and a
+ * layout that awaits a cookie before it renders makes every route beneath it
+ * uncacheable. The values arrive instead from `<CartBootstrap>`, a streamed
+ * hole, which calls `setCart` / `setAuthenticated` once it resolves.
+ *
+ * Passing them here still works and is what the tests do; it just costs the
+ * static shell of everything below.
  */
-const CartAuthContext = createContext<boolean>(false)
-
 export function CartProvider({
   children,
-  initialCart,
+  initialCart = EMPTY_CART,
   isAuthenticated = false,
 }: {
   children: ReactNode
-  initialCart: CartView
+  initialCart?: CartView
   isAuthenticated?: boolean
 }) {
   const storeRef = useRef<CartStoreApi | null>(null)
   if (storeRef.current === null) {
-    storeRef.current = createCartStore(initialCart, showFeedback)
+    storeRef.current = createCartStore(initialCart, showFeedback, isAuthenticated)
   }
 
-  return (
-    <CartStoreContext.Provider value={storeRef.current}>
-      <CartAuthContext.Provider value={isAuthenticated}>{children}</CartAuthContext.Provider>
-    </CartStoreContext.Provider>
-  )
+  return <CartStoreContext.Provider value={storeRef.current}>{children}</CartStoreContext.Provider>
 }
 
 export function useCartAuth(): boolean {
-  return useContext(CartAuthContext)
+  return useStore(useCartStoreApi(), (s) => s.isAuthenticated)
 }
 
 export function useCartStoreApi(): CartStoreApi {

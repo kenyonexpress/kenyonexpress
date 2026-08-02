@@ -1,20 +1,23 @@
 import LeftSidebar from '@/components/LeftSidebar'
 import RightSidebar from '@/components/RightSidebar'
 import SiteFooter from '@/components/SiteFooter'
+import CartBootstrap from '@/components/cart/CartBootstrap'
 import CartDrawer from '@/components/cart/CartDrawer'
 import { CartProvider } from '@/components/cart/CartProvider'
 import Header from '@/components/layout/Header'
 import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
 import { Toaster } from '@/components/ui/sonner'
-import { createClient } from '@/lib/supabase/server'
-import { getCart } from '@/server/actions/cart'
+import { Suspense } from 'react'
 
-export default async function MainLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient()
-  const [cart, { data: auth }] = await Promise.all([getCart(), supabase.auth.getUser()])
-
+// Synchronous for the same reason as the store group's layout: the cart's two
+// cookie reads are isolated in <CartBootstrap> so they are the only thing that
+// waits. See src/app/(store)/layout.tsx.
+export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
-    <CartProvider initialCart={cart} isAuthenticated={auth.user !== null}>
+    <CartProvider>
+      <Suspense fallback={null}>
+        <CartBootstrap />
+      </Suspense>
       <div className="min-h-screen flex flex-col">
         <Header />
         <div className="flex-1 bg-gray-50">

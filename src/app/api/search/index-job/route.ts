@@ -3,8 +3,6 @@ import { searchIndexJobSchema } from '@/lib/search/pipeline-contracts'
 import { verifyQstashSignature } from '@/lib/search/qstash'
 import { type NextRequest, NextResponse } from 'next/server'
 
-export const runtime = 'nodejs'
-
 /**
  * Queue worker: QStash delivers one search-index job per request.
  *

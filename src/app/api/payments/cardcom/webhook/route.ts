@@ -8,8 +8,6 @@ import { finalizeOrder } from '@/server/payments/finalize'
 import type { Json } from '@/types/database'
 import { type NextRequest, NextResponse } from 'next/server'
 
-export const runtime = 'nodejs'
-
 /** Constant-time string compare; false on any length/format mismatch. */
 function secretMatches(provided: string, expected: string): boolean {
   if (!provided || !expected) return false

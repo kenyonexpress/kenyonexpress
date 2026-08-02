@@ -18,6 +18,7 @@ import { createClient } from '@/lib/supabase/server'
 import '@/styles/product-page.css'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -56,7 +57,40 @@ export async function generateMetadata({ params }: Props) {
   }
 }
 
-export default async function ProductPage({ params }: Props) {
+/**
+ * The static shell of a product page.
+ *
+ * Every visible thing here is the product, and the product is `params.slug`, so
+ * there is nothing to prerender but the frame. That frame is worth more than it
+ * looks: `.pdp__inner` already carries `min-height: var(--pdp-content-h)`, the
+ * measured height of live's content column, so the footer lands on its final
+ * line before the product has been read and does not move when it arrives.
+ *
+ * Making the product itself static is `generateStaticParams` plus `use cache`
+ * on a catalogue client that does not read cookies. That is the next step, and
+ * deliberately not this one.
+ */
+function ProductPageFallback() {
+  return (
+    <div data-pdp="container" className="pdp">
+      <div className="pdp__inner">
+        <nav className="pdp-breadcrumb" aria-label="נתיב ניווט">
+          <Link href="/">בית</Link>
+        </nav>
+      </div>
+    </div>
+  )
+}
+
+export default function ProductPage(props: Props) {
+  return (
+    <Suspense fallback={<ProductPageFallback />}>
+      <ProductPageBody {...props} />
+    </Suspense>
+  )
+}
+
+async function ProductPageBody({ params }: Props) {
   const { slug: rawSlug } = await params
   const slug = decodeURIComponent(rawSlug)
   const supabase = await createClient()

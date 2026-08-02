@@ -129,7 +129,58 @@ async function ResultGrid({
   )
 }
 
-export default async function CategoryPage({ params, searchParams }: Props) {
+/**
+ * The static shell of a category page.
+ *
+ * Unlike /products, there is no part of this route that is knowable without the
+ * URL: the breadcrumb, the H1 and the sidebar's current-category marker all
+ * come out of `params.slug`. So the shell is the page's FRAME at its real
+ * dimensions - the same wrappers, the same grid skeleton the body already used
+ * - and the whole body streams into it.
+ *
+ * `category-page__title--pending` holds one line of H1 so the grid does not
+ * start high and drop. Making these fully static instead of framed is a
+ * `generateStaticParams` + `use cache` job on the catalogue queries, which is
+ * the next step and not this one: every read below still goes through the
+ * cookie-bound Supabase client.
+ */
+function CategoryPageFallback() {
+  return (
+    <div className="category-page">
+      <div className="category-page__inner">
+        <CategoryBreadcrumb items={[defaultHomeCrumb()]} />
+        <header className="category-page__header">
+          {/* A div, not an empty <h1>. The heading's text is the category name
+              and the category name is the URL, so there is nothing to put in it
+              yet - and a document that briefly carries a heading with no
+              accessible name is worse for a screen reader than one that briefly
+              carries no heading. Same classes, so the same line box. */}
+          <div className="category-page__title category-page__title--pending" aria-hidden="true" />
+        </header>
+        {/* The bar's box, not the bar: `CategoryControlBar` calls
+            `useSearchParams`, and a prerendered fallback cannot read the
+            request. Same class, so the same measured 45.89px. */}
+        <div className="category-control-bar" aria-hidden="true" />
+        <div className="category-page__body">
+          <div className="category-page__main">
+            <CategoryGridSkeleton count={CATEGORY_PAGE_SIZE} />
+          </div>
+          <div className="category-sidebar" aria-hidden="true" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function CategoryPage(props: Props) {
+  return (
+    <Suspense fallback={<CategoryPageFallback />}>
+      <CategoryPageBody {...props} />
+    </Suspense>
+  )
+}
+
+async function CategoryPageBody({ params, searchParams }: Props) {
   const { slug } = await params
   const sp = await searchParams
   const sort = parseSort(sp.sort)

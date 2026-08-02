@@ -50,9 +50,32 @@ test.describe('category archive', () => {
     await expect(page.getByLabel('מיון מוצרים')).toHaveValue('menu_order')
   })
 
-  test('an unknown category slug is a 404, not a blank page', async ({ page }) => {
-    const response = await page.goto('/category/no-such-category-slug-12345')
-    expect(response?.status()).toBe(404)
+  /**
+   * This asserted `status() === 404` until the route started streaming.
+   *
+   * Under `cacheComponents` the category page sends a prerendered shell before
+   * it knows whether the slug exists, so by the time `notFound()` runs the
+   * status line is already on the wire and cannot be changed. Next documents
+   * this exactly (file-conventions/loading, "Status Codes") and compensates by
+   * injecting `<meta name="robots" content="noindex">` into the streamed HTML,
+   * which is what actually keeps the URL out of the index - Google's own
+   * guidance is that a `noindex` page is not indexed whatever the status.
+   *
+   * So the assertion moved to the thing that does the work, and it is a
+   * STRICTER test than the one it replaces: a status check would have passed a
+   * response that 404'd without the meta tag, and this one does not. It is
+   * checked in the served HTML rather than the DOM, because a crawler that
+   * does not run scripts sees only the former.
+   */
+  test('an unknown category slug is noindex and shows the not-found page', async ({
+    page,
+    request,
+  }) => {
+    const html = await (await request.get('/category/no-such-category-slug-12345')).text()
+    expect(html).toContain('<meta name="robots" content="noindex"/>')
+
+    await page.goto('/category/no-such-category-slug-12345')
+    await expect(page.getByRole('heading', { name: 'הדף שחיפשתם לא נמצא' })).toBeVisible()
   })
 
   test('an out-of-range page number clamps instead of erroring', async ({ page }) => {

@@ -2,6 +2,7 @@
 
 import CartNavLink from '@/components/cart/CartNavLink'
 import MiniCartDropdown from '@/components/cart/MiniCartDropdown'
+import { Suspense } from 'react'
 
 /**
  * The masthead's cart control: the icon with its counter, and the mini-cart
@@ -16,7 +17,19 @@ export default function HeaderCart() {
   return (
     <div className="mini-cart">
       <CartNavLink />
-      <MiniCartDropdown />
+      {/*
+        The panel calls `usePathname`, and under `cacheComponents` that is
+        runtime data on any route with a dynamic param - the pathname is not
+        knowable at build time. Without this boundary the masthead takes
+        /product/[slug], /category/[slug] and every admin and account [id] route
+        out of the static shell, which is the whole site.
+
+        A null fallback costs nothing to look at: the panel is closed until the
+        cart icon is pressed, and it renders nothing until then either.
+      */}
+      <Suspense fallback={null}>
+        <MiniCartDropdown />
+      </Suspense>
     </div>
   )
 }

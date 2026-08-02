@@ -33,6 +33,7 @@ const headersWithPolicy = (csp: string, frameOptions: 'DENY' | 'SAMEORIGIN') => 
 ]
 
 const nextConfig: NextConfig = {
+  cacheComponents: true,
   async headers() {
     // Two NON-OVERLAPPING sources, which is the whole trick. Next appends the
     // headers of every entry whose source matches, so two entries that both

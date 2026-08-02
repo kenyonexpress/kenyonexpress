@@ -4,8 +4,6 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import type { Json } from '@/types/database'
 import { type NextRequest, NextResponse } from 'next/server'
 
-export const runtime = 'nodejs'
-
 /**
  * QStash failure callback: fires once per message after every delivery retry
  * to /api/search/index-job has failed. Parks the dead job in

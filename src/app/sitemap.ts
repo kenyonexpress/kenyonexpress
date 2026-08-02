@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { MetadataRoute } from 'next'
+import { cacheLife } from 'next/cache'
 
 /**
  * Sitemap over the pages that are worth indexing: the static entry points, the
@@ -17,14 +18,28 @@ import type { MetadataRoute } from 'next'
  * products. Only columns that are already public are selected.
  */
 
-export const revalidate = 3600
-
 function siteUrl(): string {
   const raw = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
   return raw.replace(/\/+$/, '')
 }
 
+/**
+ * `use cache` + `cacheLife('hours')` replaces `export const revalidate = 3600`,
+ * which `cacheComponents` does not accept as a route segment config. Same hour,
+ * expressed where the caching happens rather than as a property of the file.
+ *
+ * The profile also buys an `expire` of a day: if the catalogue read fails or
+ * this is not requested for a while, the last good sitemap keeps being served
+ * instead of a fresh empty one. A sitemap that briefly lists nothing is a
+ * deindexing request.
+ *
+ * `new Date()` is legal inside a cached scope; outside one, under this flag, it
+ * is an error - see src/components/CopyrightYear.tsx.
+ */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  'use cache'
+  cacheLife('hours')
+
   const base = siteUrl()
   const now = new Date()
 

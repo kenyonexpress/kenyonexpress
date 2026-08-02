@@ -3,8 +3,6 @@ import { sendEmail } from '@/lib/email/resend'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { type NextRequest, NextResponse } from 'next/server'
 
-export const runtime = 'nodejs'
-
 /**
  * Drains `notification_outbox` through Resend.
  *

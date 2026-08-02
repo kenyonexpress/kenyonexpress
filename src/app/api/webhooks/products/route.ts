@@ -4,8 +4,6 @@ import { dbChangePayloadSchema, jobForChange } from '@/lib/search/pipeline-contr
 import { enqueueSearchIndexJob } from '@/lib/search/qstash'
 import { type NextRequest, NextResponse } from 'next/server'
 
-export const runtime = 'nodejs'
-
 /**
  * Receiver for the Supabase Database Webhook on `public.products`
  * (INSERT / UPDATE / DELETE). Translates the change into a search-index job

@@ -109,6 +109,18 @@
   color: var(--cat-ink);
 }
 
+/*
+ * The title's line box, held open while the title itself is still streaming.
+ *
+ * Worn by a div and not by an empty heading (an unnamed <h1> is an a11y defect
+ * biome fails the build on, and rightly). Without the height the element
+ * collapses to zero and the control bar, the grid and everything under them
+ * start one title-line too high, then drop when the name arrives.
+ */
+.category-page__title--pending {
+  min-height: var(--cat-title-line);
+}
+
 .category-page__count {
   margin: 0;
   font-size: 14px;

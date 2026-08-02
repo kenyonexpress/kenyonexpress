@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getCart } from '@/server/actions/cart'
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 import CheckoutForm, { type CheckoutAddressPrefill } from './CheckoutForm'
 import '@/styles/checkout-page.css'
 
@@ -27,7 +28,29 @@ const EMPTY_ADDRESS: CheckoutAddressPrefill = {
   email: '',
 }
 
-export default async function CheckoutPage({
+/**
+ * Everything on this page is the shopper: their cart, their address, their
+ * saved cards, their wallet. The shell is the heading, and that is honest -
+ * there is nothing else here that is the same for two people.
+ *
+ * It still buys the thing that was missing: the response starts immediately
+ * instead of after `auth.getUser()`, `getCart()` and three admin queries.
+ */
+export default function CheckoutPage(props: { searchParams: Promise<{ resume?: string }> }) {
+  return (
+    <Suspense
+      fallback={
+        <div className="checkout-page">
+          <h1 className="checkout-page__title">קופה</h1>
+        </div>
+      }
+    >
+      <CheckoutPageBody {...props} />
+    </Suspense>
+  )
+}
+
+async function CheckoutPageBody({
   searchParams,
 }: {
   searchParams: Promise<{ resume?: string }>

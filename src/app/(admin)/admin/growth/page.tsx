@@ -2,8 +2,6 @@ import { requireSection } from '@/lib/admin/rbac'
 import { createAdminClient } from '@/lib/supabase/admin'
 import Link from 'next/link'
 
-export const dynamic = 'force-dynamic'
-
 const ils = (agorot: number) =>
   new Intl.NumberFormat('he-IL', {
     style: 'currency',

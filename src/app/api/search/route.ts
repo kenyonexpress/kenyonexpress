@@ -6,8 +6,6 @@ import { type NextRequest, NextResponse } from 'next/server'
 // description_he. Moves to Meilisearch past ~1,000 products. Returns a compact
 // product list for the search dropdown / results page.
 
-export const runtime = 'nodejs'
-
 export type SearchResult = {
   id: string
   slug: string

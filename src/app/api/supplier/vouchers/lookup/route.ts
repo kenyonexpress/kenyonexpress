@@ -9,8 +9,6 @@ import { getVoucherForRedemption } from '@/server/queries/vouchers'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
-export const runtime = 'nodejs'
-
 /**
  * Read-only verification of a scanned voucher, for the confirm step of /scan.
  *

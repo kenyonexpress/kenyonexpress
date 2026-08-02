@@ -3,8 +3,6 @@ import { requireSection } from '@/lib/admin/rbac'
 import { growthClient } from '@/lib/growth/client'
 import { notFound } from 'next/navigation'
 
-export const dynamic = 'force-dynamic'
-
 export default async function EditDiscountPage({ params }: { params: Promise<{ id: string }> }) {
   await requireSection('discounts', 'write')
   const { id } = await params

@@ -16,8 +16,6 @@ import { NextResponse } from 'next/server'
  * show. Fewer rows, same query.
  */
 
-export const runtime = 'nodejs'
-
 const MAX_SUGGESTIONS = 6
 const MIN_QUERY = 2
 

@@ -44,9 +44,24 @@ test.describe('product page', () => {
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   })
 
-  test('an unknown product slug is a 404, not a blank page', async ({ page }) => {
-    const response = await page.goto('/product/no-such-product-slug-12345')
-    expect(response?.status()).toBe(404)
+  /**
+   * See the twin of this test in category.spec.ts for the full reasoning.
+   *
+   * Short version: the product page now streams a prerendered shell before it
+   * knows whether the slug exists, so `notFound()` can no longer change the
+   * status line. Next injects `<meta name="robots" content="noindex">` instead,
+   * and that tag - not the status - is what keeps a dead slug out of the index.
+   * Asserting the tag is stricter than asserting the status was.
+   */
+  test('an unknown product slug is noindex and shows the not-found page', async ({
+    page,
+    request,
+  }) => {
+    const html = await (await request.get('/product/no-such-product-slug-12345')).text()
+    expect(html).toContain('<meta name="robots" content="noindex"/>')
+
+    await page.goto('/product/no-such-product-slug-12345')
+    await expect(page.getByRole('heading', { name: 'הדף שחיפשתם לא נמצא' })).toBeVisible()
   })
 
   test('a product page is reachable directly by URL, not only by clicking through', async ({

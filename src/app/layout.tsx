@@ -3,6 +3,7 @@ import ConsentBanner from '@/components/analytics/ConsentBanner'
 import { CONSENT_PREPAINT_SCRIPT } from '@/lib/analytics/consent'
 import type { Metadata } from 'next'
 import { Heebo } from 'next/font/google'
+import { Suspense } from 'react'
 import './globals.css'
 // The header cart is in the masthead on every route, so its styles load here
 // rather than with the /cart page. See the note at the top of the file.
@@ -75,7 +76,18 @@ export default function RootLayout({
           <style>{'[data-consent-banner]{display:none}'}</style>
         </noscript>
         {children}
-        <AnalyticsProvider />
+        {/*
+          `AnalyticsProvider` calls `usePathname`, which under `cacheComponents`
+          is runtime data on any route carrying a dynamic param. Unwrapped, it
+          pulls /product/[slug], /category/[slug] and every [id] route in the
+          admin and account areas out of the static shell - from the root
+          layout, so there is no route it does not reach.
+
+          It renders null, so the fallback is exact rather than approximate.
+        */}
+        <Suspense fallback={null}>
+          <AnalyticsProvider />
+        </Suspense>
         <ConsentBanner />
       </body>
     </html>

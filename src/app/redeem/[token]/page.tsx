@@ -8,6 +8,7 @@ import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 import RedeemConfirm from './RedeemConfirm'
 
 /**
@@ -30,8 +31,6 @@ import RedeemConfirm from './RedeemConfirm'
  *
  * Authoritative document: ARCHITECTURE-VOUCHER-REDEMPTION.md sections 4, 7.1.
  */
-
-export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'מימוש שובר',
@@ -80,7 +79,21 @@ function Refusal({ title, detail }: { title: string; detail: string }) {
   )
 }
 
-export default async function RedeemTokenPage({ params }: Props) {
+/**
+ * The shell is the column this page renders every outcome into, and nothing
+ * else. The token in the path decides between a voucher, a refusal and a rate
+ * limit, and the rate limit is keyed on the caller's address, so there is no
+ * shared answer to prerender.
+ */
+export default function RedeemTokenPage(props: Props) {
+  return (
+    <Suspense fallback={<main dir="rtl" className="mx-auto max-w-md px-4 py-10" />}>
+      <RedeemTokenBody {...props} />
+    </Suspense>
+  )
+}
+
+async function RedeemTokenBody({ params }: Props) {
   const { token } = await params
   const scanContext = readScanContext(await headers())
 

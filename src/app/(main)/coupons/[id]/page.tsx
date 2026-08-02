@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { MapPin, Tag } from 'lucide-react'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -18,7 +19,28 @@ export async function generateMetadata({ params }: Props) {
   return { title: data ? `${data.title_he} — ${data.business_name}` : 'קופון' }
 }
 
-export default async function CouponDealPage({ params }: Props) {
+/**
+ * The deal IS `params.id`, so the shell is the card's outline: the 224px image
+ * box (`h-56`) and the rounded frame around it, which is what holds the page
+ * height while the row is read.
+ */
+export default function CouponDealPage(props: Props) {
+  return (
+    <Suspense
+      fallback={
+        <article className="space-y-4">
+          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+            <div className="relative h-56 bg-gray-100" />
+          </div>
+        </article>
+      }
+    >
+      <CouponDealBody {...props} />
+    </Suspense>
+  )
+}
+
+async function CouponDealBody({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
 

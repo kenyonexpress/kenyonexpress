@@ -5,8 +5,6 @@ import { sendEmail } from '@/lib/growth/resend'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { type NextRequest, NextResponse } from 'next/server'
 
-export const runtime = 'nodejs'
-
 /**
  * Abandoned cart nudge. One email, once, per cart.
  *
@@ -78,7 +76,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
    */
   async function cartValueAgorot(cartId: string): Promise<number | null> {
     try {
-      const { data: cart } = await admin.from('carts').select('items').eq('id', cartId).maybeSingle()
+      const { data: cart } = await admin
+        .from('carts')
+        .select('items')
+        .eq('id', cartId)
+        .maybeSingle()
       const items = (Array.isArray(cart?.items) ? cart.items : []) as CartStorageItem[]
       if (items.length === 0) return null
       const { products, variants } = await loadCartProductData(items)
