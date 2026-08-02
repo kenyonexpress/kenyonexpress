@@ -1,9 +1,10 @@
 'use server'
 
 import { requireAdminSession } from '@/lib/admin/rbac'
+import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { IMAGE_HOST_ERROR, isAllowedImageUrl } from '@/lib/images/remote-hosts'
 import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
 import { z } from 'zod'
 
 const schema = z.object({
@@ -64,6 +65,7 @@ export async function upsertCategory(
   }
 
   revalidatePath('/admin/categories')
+  updateTag(CATALOGUE_TAG)
   return { success: id ? 'קטגוריה עודכנה' : 'קטגוריה נוצרה' }
 }
 
@@ -82,6 +84,7 @@ export async function softDeleteCategory(id: string): Promise<{ error?: string }
   if (error) return { error: error.message }
 
   revalidatePath('/admin/categories')
+  updateTag(CATALOGUE_TAG)
   return {}
 }
 
@@ -97,6 +100,7 @@ export async function deleteCategory(id: string): Promise<{ error?: string }> {
   if (error) return { error: error.message }
 
   revalidatePath('/admin/categories')
+  updateTag(CATALOGUE_TAG)
   return {}
 }
 
@@ -115,5 +119,6 @@ export async function updateCategorySortOrder(
   if (error) return { error: error.message }
 
   revalidatePath('/admin/categories')
+  updateTag(CATALOGUE_TAG)
   return {}
 }

@@ -2,8 +2,9 @@
 
 import { writeAuditLog } from '@/lib/admin/audit'
 import { type AdminSessionInfo, requireAdminSession } from '@/lib/admin/rbac'
+import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
 import { z } from 'zod'
 
 // Admin decisions on content-uploader submissions. Both actions write an
@@ -57,6 +58,7 @@ export async function approveProduct(id: string): Promise<{ error?: string }> {
 
   revalidatePath('/admin/approvals')
   revalidatePath('/admin/products')
+  updateTag(CATALOGUE_TAG)
   return {}
 }
 
@@ -104,5 +106,6 @@ export async function rejectProduct(id: string, reason: string): Promise<{ error
 
   revalidatePath('/admin/approvals')
   revalidatePath('/admin/products')
+  updateTag(CATALOGUE_TAG)
   return {}
 }
