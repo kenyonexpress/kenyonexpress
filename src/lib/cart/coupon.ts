@@ -11,11 +11,24 @@
 //    it holds shekels for a fixed discount and a percentage for a percentage
 //    one, so it is converted on the way in and never used raw.
 //
+//    That conversion goes through `src/lib/commerce/money.ts` and nowhere else.
+//    This module used to do it with `Math.round(value * 100)`, which is not the
+//    same thing: it converts anything at all. Measured against the code that
+//    shipped, a `discount_type: 'percent'` row with `discount_value: 150`
+//    evaluated to `ok: true` and discounted the **entire cart**, and a
+//    `discount_value` of NaN evaluated to `ok: true` with `discountAgorot: NaN`
+//    (`NaN <= 0` is false, so the zero-check below waved it through). Both
+//    reached `applyCouponCode`, which sets the cookie the charge is built from.
+//    `ilsToAgorot` and `percentToBasisPoints` reject all three, so a row the
+//    admin typed wrong now fails the code instead of the cart total.
+//
 // 2. NO ESCROW ON COUPON PRODUCTS. A coupon product is charged in part on the
 //    site and in part at the business, and only the first part is ours to
 //    discount. `balance_due_at_business` is therefore excluded from the
 //    discountable base: discounting it would hand the shopper money out of the
 //    supplier's till, which is not a discount, it is a transfer.
+
+import { agorot, ilsToAgorot, percentToBasisPoints, percentageOf } from '@/lib/commerce/money'
 
 export type CouponRecord = {
   id: string
@@ -42,6 +55,7 @@ export type CouponFailure =
   | 'below-minimum'
   | 'not-in-cart'
   | 'nothing-to-discount'
+  | 'invalid'
 
 const MESSAGES: Record<CouponFailure, string> = {
   unknown: 'קוד הקופון לא נמצא',
@@ -51,6 +65,24 @@ const MESSAGES: Record<CouponFailure, string> = {
   'below-minimum': 'הסכום בעגלה נמוך מהמינימום לקוד הזה',
   'not-in-cart': 'הקוד תקף למוצר שאינו בעגלה',
   'nothing-to-discount': 'אין סכום לחיוב באתר שעליו אפשר להחיל את הקוד',
+  invalid: 'קוד הקופון מוגדר שגוי ואינו ניתן להחלה',
+}
+
+/**
+ * Every reading of a shekel or a percentage out of the `coupons` row.
+ *
+ * money.ts throws on anything it cannot represent exactly, and a coupon row is
+ * admin-entered free numeric, so "cannot represent" is a reachable state and
+ * not a programmer error. Turning the throw into `null` here is what lets the
+ * caller reject the code; letting it propagate would take down the whole cart
+ * read for one bad row.
+ */
+function money<T>(read: () => T): T | null {
+  try {
+    return read()
+  } catch {
+    return null
+  }
 }
 
 /**
@@ -107,11 +139,15 @@ export function evaluateCoupon(
   if (cart.payableAgorot <= 0) return fail('nothing-to-discount')
 
   if (coupon.min_purchase != null) {
-    const minimumAgorot = Math.round(coupon.min_purchase * 100)
+    const minimumAgorot = money(() => ilsToAgorot(coupon.min_purchase as number))
+    // An unreadable minimum fails the code rather than being skipped: ignoring
+    // it would honour a threshold nobody can state.
+    if (minimumAgorot === null) return fail('invalid')
     if (cart.payableAgorot < minimumAgorot) return fail('below-minimum')
   }
 
   const discountAgorot = discountFor(coupon, cart.payableAgorot)
+  if (discountAgorot === null) return fail('invalid')
   if (discountAgorot <= 0) return fail('nothing-to-discount')
 
   return {
@@ -128,13 +164,21 @@ export function evaluateCoupon(
  * discount. Rounding is half-up on the agora, which is where a percentage
  * lands, and the cap is applied after rounding so the total can never go
  * negative by a single agora.
+ *
+ * `null` means the row cannot be read as money at all, which is a different
+ * answer from "worth nothing" and gets a different message.
  */
-function discountFor(coupon: CouponRecord, payableAgorot: number): number {
+function discountFor(coupon: CouponRecord, payableAgorot: number): number | null {
   const type = (coupon.discount_type ?? 'fixed').toLowerCase()
-  const raw =
+  const raw = money(() =>
     type === 'percent' || type === 'percentage'
-      ? Math.round((payableAgorot * coupon.discount_value) / 100)
-      : Math.round(coupon.discount_value * 100)
+      ? // percentToBasisPoints is what bounds a percentage to 0..100. The cap
+        // below is not a substitute for it: it would silently turn any percent
+        // over 100 into "the whole cart" instead of rejecting the row.
+        percentageOf(agorot(payableAgorot), percentToBasisPoints(coupon.discount_value))
+      : ilsToAgorot(coupon.discount_value),
+  )
+  if (raw === null) return null
   return Math.max(0, Math.min(raw, payableAgorot))
 }
 

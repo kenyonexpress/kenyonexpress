@@ -26,7 +26,9 @@ vi.mock('@/server/actions/cart', () => ({
   clearCart: () => clearCart(),
 }))
 
-const { applyOptimistic, createCartStore } = await import('@/lib/cart/store')
+const { CART_MIRROR_KEY, applyOptimistic, createCartStore, displayItemCount } = await import(
+  '@/lib/cart/store'
+)
 
 function item(overrides: Partial<CartViewItem> = {}): CartViewItem {
   return {
@@ -63,6 +65,7 @@ function cart(items: CartViewItem[]): CartView {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  localStorage.clear()
 })
 
 describe('applyOptimistic', () => {
@@ -278,6 +281,91 @@ describe('cart store', () => {
     expect(store.getState().drawerOpen).toBe(false)
     store.getState().toggleDrawer()
     expect(store.getState().drawerOpen).toBe(true)
+  })
+
+  /**
+   * The mirror exists because no store layout awaits the cart any more: the
+   * real one arrives from `<CartBootstrap>` a round trip after hydration, and
+   * until then a returning shopper was shown an empty badge over a full cart.
+   *
+   * Its danger is the opposite one -- a number in `localStorage` outliving the
+   * truth -- so the tests below are mostly about when it must SHUT UP.
+   */
+  describe('the localStorage mirror', () => {
+    it('stores the count and nothing else, so no stale price can come out of it', async () => {
+      const store = createCartStore(EMPTY_CART)
+      addToCart.mockResolvedValue({ ok: true, cart: cart([item({ quantity: 3 })]) })
+      await store.getState().addToCart('p1', null, 3)
+
+      const raw = localStorage.getItem(CART_MIRROR_KEY)
+      expect(raw).not.toBeNull()
+      expect(JSON.parse(raw as string).state).toEqual({ mirrorCount: 3 })
+      // Named explicitly: the contract is a shape, not a comment.
+      expect(raw).not.toMatch(/subtotal|unit_price|line_total|platform_fee/)
+    })
+
+    it('speaks for the badge until the server answers', () => {
+      localStorage.setItem(
+        CART_MIRROR_KEY,
+        JSON.stringify({ state: { mirrorCount: 4 }, version: 0 }),
+      )
+      const store = createCartStore(EMPTY_CART)
+      store.persist.rehydrate()
+
+      expect(store.getState().cart.item_count).toBe(0)
+      expect(displayItemCount(store.getState())).toBe(4)
+    })
+
+    it('goes quiet the moment the server answers, even when the server says less', () => {
+      // The other tab emptied the cart. A mirror that kept insisting on 4 would
+      // be showing a badge for items that are gone.
+      localStorage.setItem(
+        CART_MIRROR_KEY,
+        JSON.stringify({ state: { mirrorCount: 4 }, version: 0 }),
+      )
+      const store = createCartStore(EMPTY_CART)
+      store.persist.rehydrate()
+      expect(displayItemCount(store.getState())).toBe(4)
+
+      store.getState().setCart(EMPTY_CART)
+      expect(displayItemCount(store.getState())).toBe(0)
+    })
+
+    it('does not let the mirror outrank a cart the layout already resolved', () => {
+      localStorage.setItem(
+        CART_MIRROR_KEY,
+        JSON.stringify({ state: { mirrorCount: 9 }, version: 0 }),
+      )
+      // A layout that passes a real cart has read the cookie on the server, so
+      // that cart is the server's answer and the mirror has nothing to add.
+      const store = createCartStore(cart([item({ quantity: 2 })]))
+      store.persist.rehydrate()
+      expect(displayItemCount(store.getState())).toBe(2)
+    })
+
+    it('follows the optimistic count, so a reload mid-add keeps the badge', () => {
+      const store = createCartStore(EMPTY_CART)
+      let release: (value: unknown) => void = () => undefined
+      addToCart.mockReturnValue(
+        new Promise((r) => {
+          release = r
+        }),
+      )
+
+      void store.getState().addToCart('p1', null, 2)
+      expect(store.getState().mirrorCount).toBe(2)
+      expect(JSON.parse(localStorage.getItem(CART_MIRROR_KEY) as string).state.mirrorCount).toBe(2)
+      release({ ok: true, cart: cart([item({ quantity: 2 })]) })
+    })
+
+    it('rolls the mirror back with the cart when the write fails', async () => {
+      const store = createCartStore(EMPTY_CART)
+      addToCart.mockResolvedValue({ ok: false, error: 'אזל המלאי' })
+      await store.getState().addToCart('p1', null, 5)
+
+      expect(store.getState().cart.item_count).toBe(0)
+      expect(store.getState().mirrorCount).toBe(0)
+    })
   })
 
   // Module state on the server is shared across requests, so a singleton store

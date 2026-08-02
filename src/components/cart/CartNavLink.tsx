@@ -1,14 +1,21 @@
 'use client'
 
-import { useCart } from '@/components/cart/CartProvider'
+import { useCart, useCartStoreApi } from '@/components/cart/CartProvider'
 import { shekelsRounded } from '@/lib/cart/format'
+import { displayItemCount } from '@/lib/cart/store'
 import { ShoppingCart } from 'lucide-react'
+import { useStore } from 'zustand'
 
 const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
 
 export default function CartNavLink() {
   const { cart, isPending, drawerOpen, toggleDrawer } = useCart()
-  const label = `עגלת קניות, ${cart.item_count} פריטים, ${shekelsRounded(cart.subtotal)}`
+  // The badge, and only the badge, may come from the mirror: it is a count, and
+  // a count is the one thing the mirror holds. The price beside it stays on the
+  // server cart, so a returning shopper sees "3" over ₪0 for the round trip
+  // rather than a total that was true yesterday.
+  const itemCount = useStore(useCartStoreApi(), displayItemCount)
+  const label = `עגלת קניות, ${itemCount} פריטים, ${shekelsRounded(cart.subtotal)}`
 
   return (
     <button
@@ -26,12 +33,12 @@ export default function CartNavLink() {
     >
       <span className="relative">
         <ShoppingCart size={ICON.size} strokeWidth={ICON.strokeWidth} aria-hidden="true" />
-        {cart.item_count > 0 && (
+        {itemCount > 0 && (
           <span
             className="absolute -top-1.5 -start-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand-primary px-1 text-nano font-bold text-brand-dark"
             aria-hidden="true"
           >
-            {cart.item_count > 99 ? '99+' : cart.item_count}
+            {itemCount > 99 ? '99+' : itemCount}
           </span>
         )}
       </span>

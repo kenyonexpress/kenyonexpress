@@ -5,7 +5,39 @@ import {
   removeFromCart as removeFromCartAction,
   updateCartItem as updateCartItemAction,
 } from '@/server/actions/cart'
+import { createJSONStorage, persist } from 'zustand/middleware'
 import { createStore } from 'zustand/vanilla'
+
+/**
+ * `localStorage` key of the cart mirror, named by
+ * `docs/ARCHITECTURE-CART-CHECKOUT.md`.
+ *
+ * WHAT IS IN IT: one integer, the item count. Nothing else, and specifically no
+ * price and no line. The doc's rule is "optimistic UX only, never trusted for
+ * price or checkout", and the way to keep a rule like that is to make the
+ * stored shape incapable of breaking it rather than to write it down. There is
+ * no money in this key, so no stale money can come out of it.
+ *
+ * WHAT IT IS FOR: since the `cacheComponents` work, no store layout awaits the
+ * cart -- reading the cookie would make every route below it uncacheable -- so
+ * `initialCart` is empty and the real one arrives from `<CartBootstrap>`, a
+ * streamed hole, one network round trip after hydration. Until then a returning
+ * shopper saw an empty badge over a cart that has things in it. The mirror
+ * covers exactly that window and is overwritten by the first server answer.
+ */
+export const CART_MIRROR_KEY = 'ke_cart_mirror_v1'
+
+/**
+ * What the badge should show right now.
+ *
+ * Before the server has answered, the mirror is allowed to speak. After it has,
+ * the server is the only voice: an item removed in another tab must not be kept
+ * alive on this one by a number in `localStorage`.
+ */
+export function displayItemCount(state: CartStoreState): number {
+  if (state.serverConfirmed) return state.cart.item_count
+  return Math.max(state.cart.item_count, state.mirrorCount)
+}
 
 export type CartOptimisticAction =
   | { type: 'add'; productId: string; variantId: string | null; quantity: number }
@@ -96,6 +128,13 @@ export interface CartStoreState {
    */
   isAuthenticated: boolean
   setAuthenticated: (isAuthenticated: boolean) => void
+  /**
+   * The persisted item count. The only field written to `localStorage`.
+   * Read through `displayItemCount`, never on its own.
+   */
+  mirrorCount: number
+  /** Whether a server cart has landed. Never persisted: it is about this tab. */
+  serverConfirmed: boolean
 }
 
 export type CartStoreApi = ReturnType<typeof createCartStore>
@@ -110,14 +149,27 @@ export function createCartStore(
   onFeedback: (feedback: CartFeedback) => void = () => undefined,
   initialAuthenticated = false,
 ) {
-  return createStore<CartStoreState>()((set, get) => {
+  const creator = (
+    set: (
+      partial: Partial<CartStoreState> | ((state: CartStoreState) => Partial<CartStoreState>),
+    ) => void,
+    get: () => CartStoreState,
+  ): CartStoreState => {
     const begin = (action: CartOptimisticAction): CartView => {
       const rollback = get().serverCart
-      set((state) => ({
-        cart: applyOptimistic(state.cart, action),
-        pendingOps: state.pendingOps + 1,
-        isPending: true,
-      }))
+      set((state) => {
+        const cart = applyOptimistic(state.cart, action)
+        return {
+          cart,
+          // The mirror follows the optimistic view, not just the confirmed one.
+          // Reloading in the second between pressing "add" and the action
+          // returning is a real thing shoppers do, and the badge should survive
+          // it; the server answer that follows corrects it either way.
+          mirrorCount: cart.item_count,
+          pendingOps: state.pendingOps + 1,
+          isPending: true,
+        }
+      })
       return rollback
     }
 
@@ -128,6 +180,8 @@ export function createCartStore(
         return {
           cart: next,
           serverCart: confirmed ?? state.serverCart,
+          mirrorCount: next.item_count,
+          serverConfirmed: confirmed !== null ? true : state.serverConfirmed,
           pendingOps,
           isPending: pendingOps > 0,
         }
@@ -159,6 +213,11 @@ export function createCartStore(
       cart: initialCart,
       serverCart: initialCart,
       isAuthenticated: initialAuthenticated,
+      mirrorCount: initialCart.item_count,
+      // A layout that passes a real `initialCart` has already read the cookie
+      // on the server, so that cart IS the server's answer and the mirror has
+      // nothing to add. The layouts pass `EMPTY_CART`; the tests pass a cart.
+      serverConfirmed: initialCart.item_count > 0,
       pendingOps: 0,
       isPending: false,
       drawerOpen: false,
@@ -237,8 +296,23 @@ export function createCartStore(
         }
       },
 
-      setCart: (cart) => set({ cart, serverCart: cart }),
+      setCart: (cart) =>
+        set({ cart, serverCart: cart, mirrorCount: cart.item_count, serverConfirmed: true }),
       setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
     }
-  })
+  }
+
+  return createStore<CartStoreState>()(
+    persist(creator, {
+      name: CART_MIRROR_KEY,
+      storage: createJSONStorage(() => localStorage),
+      // The whole contract of this key, in one line.
+      partialize: (state) => ({ mirrorCount: state.mirrorCount }) as CartStoreState,
+      // Rehydrating during render would paint a badge the server-rendered HTML
+      // does not have, which is a hydration mismatch. `CartProvider` calls
+      // `rehydrate()` from an effect instead: still instant, still ahead of the
+      // `CartBootstrap` round trip, and after React has matched the trees.
+      skipHydration: true,
+    }),
+  )
 }

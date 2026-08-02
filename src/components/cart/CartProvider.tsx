@@ -8,7 +8,7 @@ import {
 } from '@/lib/cart/store'
 import { EMPTY_CART } from '@/lib/cart/types'
 import type { CartView } from '@/lib/cart/types'
-import { type ReactNode, createContext, useContext, useRef } from 'react'
+import { type ReactNode, createContext, useContext, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 import { useStore } from 'zustand'
 
@@ -48,8 +48,17 @@ export function CartProvider({
   if (storeRef.current === null) {
     storeRef.current = createCartStore(initialCart, showFeedback, isAuthenticated)
   }
+  const store = storeRef.current
 
-  return <CartStoreContext.Provider value={storeRef.current}>{children}</CartStoreContext.Provider>
+  // The cart mirror is created with `skipHydration`, so this is what reads it.
+  // It runs after React has matched the server and client trees, which is the
+  // point: rehydrating during render would put a badge on screen that the
+  // server-rendered HTML does not have.
+  useEffect(() => {
+    void store.persist.rehydrate()
+  }, [store])
+
+  return <CartStoreContext.Provider value={store}>{children}</CartStoreContext.Provider>
 }
 
 export function useCartAuth(): boolean {

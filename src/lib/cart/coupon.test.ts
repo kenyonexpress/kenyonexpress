@@ -138,6 +138,80 @@ describe('evaluateCoupon', () => {
     expect(percent.ok && percent.label).toBe('10% הנחה')
   })
 
+  // Everything in this block was measured against the arithmetic that shipped
+  // before money.ts was wired in. Each one returned `ok: true`.
+  describe('rows the raw arithmetic accepted and money.ts does not', () => {
+    it('refuses a percentage above 100 instead of discounting the whole cart', () => {
+      // Measured before the fix: { ok: true, discountAgorot: 5000 } on a 5000
+      // agorot cart. One extra digit in the admin form gave the cart away, and
+      // the cap could not catch it because "the whole cart" is what the cap is.
+      const result = evaluateCoupon(
+        coupon({ discount_type: 'percent', discount_value: 150 }),
+        cart(5000),
+        NOW,
+      )
+      expect(result.ok).toBe(false)
+      expect(!result.ok && result.reason).toBe('invalid')
+    })
+
+    it('refuses a discount_value that is not a number', () => {
+      // Measured before the fix: { ok: true, discountAgorot: NaN }. The
+      // zero-check let it through because `NaN <= 0` is false, and the NaN went
+      // on into the cart total.
+      const result = evaluateCoupon(coupon({ discount_value: Number.NaN }), cart(5000), NOW)
+      expect(result.ok).toBe(false)
+      expect(!result.ok && result.reason).toBe('invalid')
+    })
+
+    it('refuses a shekel amount finer than an agora', () => {
+      // Measured before the fix: 10.005 became 1001 agorot, silently rounded.
+      const result = evaluateCoupon(coupon({ discount_value: 10.005 }), cart(500000), NOW)
+      expect(result.ok).toBe(false)
+      expect(!result.ok && result.reason).toBe('invalid')
+    })
+
+    it('refuses a minimum finer than an agora rather than ignoring it', () => {
+      // Measured before the fix: the minimum was rounded away and the coupon
+      // applied. A threshold nobody can state is not a threshold.
+      const result = evaluateCoupon(coupon({ min_purchase: 50.004 }), cart(5000), NOW)
+      expect(result.ok).toBe(false)
+      expect(!result.ok && result.reason).toBe('invalid')
+    })
+
+    it('refuses a negative percentage', () => {
+      const result = evaluateCoupon(
+        coupon({ discount_type: 'percent', discount_value: -5 }),
+        cart(5000),
+        NOW,
+      )
+      expect(result.ok).toBe(false)
+    })
+
+    it('carries a Hebrew message on the invalid rejection too', () => {
+      const result = evaluateCoupon(
+        coupon({ discount_type: 'percent', discount_value: 150 }),
+        cart(5000),
+        NOW,
+      )
+      expect(!result.ok && /[֐-׿]/.test(result.message)).toBe(true)
+    })
+
+    it('still accepts the boundary: exactly 100 percent', () => {
+      // 100 is legal and means "free". Only above it is a typo.
+      const result = evaluateCoupon(
+        coupon({ discount_type: 'percent', discount_value: 100 }),
+        cart(5000),
+        NOW,
+      )
+      expect(result).toMatchObject({ ok: true, discountAgorot: 5000 })
+    })
+
+    it('still accepts an ordinary two-decimal shekel amount', () => {
+      const result = evaluateCoupon(coupon({ discount_value: 10.05 }), cart(500000), NOW)
+      expect(result).toMatchObject({ ok: true, discountAgorot: 1005 })
+    })
+  })
+
   it('treats an unrecognised discount_type as a fixed shekel amount', () => {
     // The column is free text. Reading an unknown value as a percentage would
     // turn a ₪10 code into a 10% one silently, which is a pricing bug on every
