@@ -3,7 +3,7 @@
 ארכיטקטורת SEO וביצועים לחנות KenyonExpress (Next.js App Router).
 
 Status: **BINDING** · Updated: 2026-08-02  
-Scope: docs only.
+Scope: docs + implementation on `feat/seo-performance`.
 
 Companions:
 
@@ -265,16 +265,16 @@ next.config.ts                       images remotePatterns
 
 ## 8. טסטים
 
-| # | בדיקה |
-|---|---|
-| S1 | canonical + title עברי על PDP |
-| S2 | noindex על `/account` |
-| S3 | JSON-LD `Offer.price` = מחיר קופון באתר |
-| S4 | Lighthouse perf ≥ 90 / a11y ≥ 90 על preview |
-| S5 | compare.mjs home/product תחת סף |
-| S6 | `revalidateTag` אחרי publish מעדכן PDP תוך דקה |
-| S7 | robots Disallow ל-checkout/admin/supplier |
-| S8 | `<html lang="he" dir="rtl">` בלי flash LTR |
+| # | בדיקה | סטטוס על `feat/seo-performance` |
+|---|---|---|
+| S1 | canonical + title עברי על PDP | Vitest + `generateMetadata` |
+| S2 | noindex על `/account` | `(account)/layout` robots |
+| S3 | JSON-LD `Offer.price` = מחיר קופון באתר | `json-ld.test.ts` |
+| S4 | Lighthouse perf ≥ 90 / a11y ≥ 90 על preview | `pnpm lighthouse:smoke` + `.lighthouserc.cjs` |
+| S5 | compare.mjs home/product תחת סף | קיים (`scripts/compare.mjs`) |
+| S6 | invalidation אחרי publish מעדכן PDP | `revalidateStorefrontCatalogue` באדמין |
+| S7 | robots Disallow ל-checkout/admin/supplier | `robots.test.ts` |
+| S8 | `<html lang="he" dir="rtl">` בלי flash LTR | root layout |
 
 ---
 
@@ -284,3 +284,4 @@ next.config.ts                       images remotePatterns
 |---|---|
 | 2026-07-31 | Binding ב-`ke-arch` + rev B: ISR matrix, CWV, R2, WP redirects |
 | 2026-08-02 | הועתק/עודכן ל-repo: Lighthouse targets, ISR, JSON-LD, Hebrew metadata כחוזה מחייב |
+| 2026-08-02 | יישום: sitemap/robots, JSON-LD, Hebrew OG, ISR PDP, next/image cards, analyze + lighthouse smoke |

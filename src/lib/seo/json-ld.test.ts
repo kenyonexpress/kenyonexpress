@@ -161,6 +161,12 @@ describe('buildSiteJsonLd', () => {
     expect(target.urlTemplate).toBe('https://kenyonexpress.co.il/search?q={search_term_string}')
   })
 
+  it('names the site in Hebrew with he-IL language', () => {
+    const website = buildSiteJsonLd(SITE).find((node) => node['@type'] === 'WebSite')
+    expect(website?.name).toBe('קניון אקספרס')
+    expect(website?.inLanguage).toBe('he-IL')
+  })
+
   it('does not produce a double slash from a trailing slash in the origin', () => {
     for (const node of buildSiteJsonLd('https://kenyonexpress.co.il/')) {
       expect(JSON.stringify(node)).not.toContain('.co.il//')

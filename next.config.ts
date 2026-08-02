@@ -1,14 +1,14 @@
+import withBundleAnalyzer from '@next/bundle-analyzer'
 import type { NextConfig } from 'next'
 import createNextIntlPlugin from 'next-intl/plugin'
+import { REMOTE_IMAGE_PATTERNS } from './src/lib/images/remote-hosts'
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
+const withAnalyzer = withBundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+})
 
 // Security headers applied to every route. See INFRA-AUDIT.md §2.
-// CSP note: a per-request nonce + strict-dynamic cannot live in a static config
-// header; it requires generating a nonce in src/proxy.ts. Until that lands, script
-// and style fall back to 'unsafe-inline'. next/font self-hosts Heebo, so no Google
-// Fonts origin is needed. Allowed externals: Supabase (data/realtime/images),
-// Unsplash (images), Cardcom (payment redirect target).
 const contentSecurityPolicy = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline'",
@@ -37,33 +37,20 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }]
   },
-  // Pin the workspace root to this app directory. Without this, Next.js walks up
-  // and may infer the parent folder as the root when multiple lockfiles exist,
-  // emitting a "inferred your workspace root" warning. pnpm-lock.yaml lives here.
   turbopack: {
     root: __dirname,
   },
   images: {
     qualities: [75, 90, 95],
-    remotePatterns: [
-      { protocol: 'https', hostname: '*.supabase.co' },
-      { protocol: 'https', hostname: 'images.unsplash.com' },
-      { protocol: 'https', hostname: 'plus.unsplash.com' },
-      // Seed/demo product images (024_seed_demo_products). Without this host in
-      // the allowlist, next/image throws and every demo product page 500s.
-      { protocol: 'https', hostname: 'picsum.photos' },
-      // R2 public CDN (image pipeline renditions)
-      { protocol: 'https', hostname: '*.kenyonexpress.co.il' },
-      { protocol: 'https', hostname: '*.r2.dev' },
-    ],
+    // 288 is the deal-card paint width at common mobile DPR (Lighthouse LCP).
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 288, 384],
+    remotePatterns: [...REMOTE_IMAGE_PATTERNS],
   },
   experimental: {
     serverActions: {
-      // The image pipeline posts original files (up to 8MB) to a server action
-      // for sharp processing before upload to R2/Supabase.
       bodySizeLimit: '10mb',
     },
   },
 }
 
-export default withNextIntl(nextConfig)
+export default withAnalyzer(withNextIntl(nextConfig))

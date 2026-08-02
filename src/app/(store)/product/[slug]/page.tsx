@@ -6,38 +6,80 @@ import RelatedProducts from '@/components/storefront/RelatedProducts'
 import ShippingInfo from '@/components/storefront/ShippingInfo'
 import SupplierInfo from '@/components/storefront/SupplierInfo'
 import { type CouponOffer, buildCouponOffer } from '@/lib/commerce/coupon-offer'
+import { buildBreadcrumbJsonLd, buildProductJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   COUPON_054_COLUMNS,
   type Coupon054Row,
   readOptionalColumns,
 } from '@/lib/supabase/optional-columns'
-import { createClient } from '@/lib/supabase/server'
+import { createPublicClient } from '@/lib/supabase/public'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 type Props = { params: Promise<{ slug: string }> }
 
-export async function generateMetadata({ params }: Props) {
+/** ISR: product pages refresh at most every 2 minutes (SEO-PERFORMANCE §1.1). */
+export const revalidate = 120
+
+export async function generateStaticParams() {
+  const admin = createAdminClient()
+  const { data } = await admin
+    .from('products')
+    .select('slug')
+    .eq('status', 'active')
+    .is('deleted_at', null)
+    .not('slug', 'is', null)
+    .limit(500)
+  return (data ?? []).map((row) => ({ slug: row.slug as string }))
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug: rawSlug } = await params
   const slug = decodeURIComponent(rawSlug)
-  const supabase = await createClient()
+  const supabase = createPublicClient()
   const { data } = await supabase
     .from('products')
-    .select('name_he, description_he, short_description_he, seo_title, seo_description')
+    .select(
+      'name_he, description_he, short_description_he, seo_title, seo_description, images, kenyon_price, type, is_coupon_enabled',
+    )
     .eq('slug', slug)
     .single()
+
+  const name = data?.name_he ?? 'מוצר'
+  const onSite = Number(data?.kenyon_price ?? 0)
+  const priceTitle = data?.seo_title ?? (onSite > 0 ? `${name} ב-${onSite.toFixed(0)} ש"ח` : name)
+  const description =
+    data?.seo_description ?? data?.short_description_he ?? data?.description_he ?? undefined
+  const path = `/product/${encodeURIComponent(slug)}`
+  const images = Array.isArray(data?.images) ? (data.images as string[]).filter(Boolean) : []
+
   return {
-    title: data?.seo_title ?? data?.name_he ?? 'מוצר',
-    description:
-      data?.seo_description ?? data?.short_description_he ?? data?.description_he ?? undefined,
+    title: priceTitle,
+    description,
+    alternates: { canonical: path },
+    openGraph: {
+      title: priceTitle,
+      description,
+      url: path,
+      type: 'website',
+      locale: 'he_IL',
+      siteName: 'קניון אקספרס',
+      ...(images[0] ? { images: [{ url: images[0] as string }] } : {}),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: priceTitle,
+      description,
+    },
   }
 }
 
 export default async function ProductPage({ params }: Props) {
   const { slug: rawSlug } = await params
   const slug = decodeURIComponent(rawSlug)
-  const supabase = await createClient()
+  const supabase = createPublicClient()
 
   const { data: product } = await supabase
     .from('products')
@@ -145,8 +187,43 @@ export default async function ProductPage({ params }: Props) {
     value: product.type === 'coupon' ? 'קופון' : 'מוצר פיזי',
   })
 
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
+  const productLd = buildProductJsonLd({
+    name: product.name_he,
+    description: product.description_he ?? null,
+    slug: product.slug,
+    sku: product.sku,
+    images,
+    siteUrl,
+    supplierName: supplier?.name ?? null,
+    categoryName: category?.name_he ?? null,
+    priceIls: isCoupon ? null : basePrice,
+    fullPriceIls: isCoupon ? null : oldPrice,
+    couponOffer,
+    stockQuantity: product.stock_quantity,
+  })
+  const breadcrumbLd = buildBreadcrumbJsonLd(
+    [
+      { name: 'בית', path: '/' },
+      ...(category ? [{ name: category.name_he, path: `/category/${category.slug}` }] : []),
+      { name: product.name_he, path: `/product/${encodeURIComponent(product.slug)}` },
+    ],
+    siteUrl,
+  )
+
   return (
     <div data-pdp="container" className="max-w-page mx-auto px-4 py-6 space-y-8">
+      {/* biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD; jsonLdScript escapes < */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(productLd) }}
+      />
+      {/* biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD; jsonLdScript escapes < */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbLd) }}
+      />
+
       <ViewTracker
         event="view_product"
         props={{

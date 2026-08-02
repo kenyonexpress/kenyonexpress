@@ -8,9 +8,14 @@ import { Toaster } from '@/components/ui/sonner'
 import { createClient } from '@/lib/supabase/server'
 import { getCart } from '@/server/actions/cart'
 import { getAccountProfile, getWalletSummary } from '@/server/queries/account'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import '@/styles/account.css'
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+}
 
 /**
  * Every /account route is behind a server-side session check. The guest cart is
