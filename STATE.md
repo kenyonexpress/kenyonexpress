@@ -8,6 +8,8 @@ Updated: 2026-08-02 (goal: Coupon redemption + QR on feat/coupon-redemption)
 ## Last Completed
 Goal Coupon redemption + QR על
 feat/coupon-redemption
+commit
+966b468
 :
 
 1. נוצר
@@ -29,7 +31,7 @@ mark-order-item-redeemed
 .
 6. compare.mjs תומך
 --page=coupon
-.
+(ריצת פיקסל מול WP דורשת שרת מקומי + live).
 
 ## In Progress
 nothing
@@ -1085,6 +1087,15 @@ default, והטופס לא שלח אף אחת מהן. כל `insert` של מוצ�
 ---
 
 ## History
+
+### 2026-08-02: feat/coupon-redemption (Coupon + QR)
+- Branch
+feat/coupon-redemption
+pushed (
+966b468
+).
+- UX+arch docs, `/supplier/scan` polish, `/coupon/[id]` QR, migration 092, mark-order-item belt, Vitest 93/93, compare `--page=coupon`.
+- חסימה: 092 לא הוחלה על DB חי (אין Supabase MCP).
 
 ### 2026-08-02: docs notifications architecture (binding)
 - עודכן
