@@ -95,7 +95,9 @@ export async function drainNotificationOutbox(
     }
 
     const attempts = row.attempts + 1
-    const isDead = attempts >= NOTIFICATION_MAX_ATTEMPTS
+    // Non-retryable 4xx (bad address / refused body) will fail identically on
+    // every attempt, so park immediately rather than burning the backoff ladder.
+    const isDead = !result.retryable || attempts >= NOTIFICATION_MAX_ATTEMPTS
     if (isDead) dead++
     else failed++
 
