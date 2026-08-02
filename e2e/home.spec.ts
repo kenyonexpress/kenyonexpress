@@ -7,7 +7,12 @@ test.describe('homepage', () => {
   test('loads with RTL layout and the Hebrew locale', async ({ page }) => {
     await page.goto('/')
 
-    await expect(page).toHaveTitle(/KenyonExpress/)
+    // Hebrew, not the Latin brand name. The SEO pass made every customer-facing
+    // title Hebrew on purpose (`src/app/layout.tsx` serves
+    // "קניון אקספרס | קופונים ומבצעים"); this assertion was left behind and
+    // failed against the title the page actually serves. Carried over from the
+    // ke-verify worktree, which held it uncommitted.
+    await expect(page).toHaveTitle(/קניון אקספרס/)
     const html = page.locator('html')
     await expect(html).toHaveAttribute('dir', 'rtl')
     await expect(html).toHaveAttribute('lang', 'he')
