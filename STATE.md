@@ -1,69 +1,38 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-02 (goal: Integration pass verified)
+Updated: 2026-08-02 (goal: Supplier portal on feat/supplier-portal)
 
 ## Current Phase
-‏**main** @
-552bfe0
-. GOALS-QUEUE 1–6 סגור. כל feat tip זהה ל-main.
+‏**feat/supplier-portal.** כניסת ספק, סריקה, לוח מכירות, תשלומים לפי עמלת פלטפורמה.
 
 ## Last Completed
-Integration pass (אימות מלא):
-
-1. מיזוג סדרתי ל-
-main
-(קודם): coupon-redemption → personal-area → notifications → seo-performance → e2e.
-2. Rebase/FF של כל feat על
-origin/main
-בסדר תלות; כל tip =
-552bfe0
-.
-3. לכל branch:
-pnpm type-check
-+
-pnpm test
-→ 714/714.
-4. Push לכל feat +
-main
-. בלי נגיעה ב-DB פרודקשן.
-5. תיקון נלווה על
-main
+Supplier portal לפי
+docs/ARCHITECTURE-SUPPLIER-PORTAL.md
 :
-force-dynamic
-ב-
-/products
-ו-
-/category/[slug]
-(ISR + searchParams שבר DYNAMIC_SERVER_USAGE / RTL).
+
+1. RBAC: scanner/manager/owner + requireSupplierRole.
+2. /supplier/login landing → /login?next=/supplier.
+3. /supplier לוח בקרה (מימושים היום, לגבייה, עמלה, אסקראו).
+4. /supplier/scan + alias POST /api/supplier/redeem.
+5. /supplier/redemptions, /supplier/payouts (owner) לפי platform_percent מ-order_items.
+6. Nav RTL, touch ≥44px. Vitest src/lib/supplier: 10. Full suite 724.
 
 ## In Progress
 nothing
 
 ## Blocking Issues
--
-pnpm seed:test
-מקומי:
-Invalid API key
-. E2E ב-Actions דורש
-CI_SUPABASE_*
-.
-- מיגרציות מה-stack עלולות להיות לא מוחלות על DB חי (לא נגענו ב-DB).
+- טבלאות payout_statements מ-027 עדיין לא מוחלות; תצוגת תשלומים נבנית מ-order_items עד אז.
+- בלי נגיעה ב-DB פרודקשן בסבב הזה.
 
 ## Next Task
-תור ריק. מטרה חדשה, או החלת מיגרציות חסרות +
-CI_SUPABASE_*
-.
+מיזוג feat/supplier-portal ל-main אחרי סקירה, או מטרה חדשה.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
 
-## החלטות שהתקבלו אוטומטית (integration)
-- Stack לינארי כבר היה בתוך
-main
-; אחרי המיזוג, "rebase" = FF של tip כל feat ל-
-main
-(אין commits יתומים).
-- Google OAuth לא ב-CI; Cardcom mock בלבד.
+## החלטות שהתקבלו אוטומטית (supplier-portal)
+- כניסת ספק = אותו /login (Google/אימייל) עם next=/supplier; לא OAuth נפרד.
+- Payout view מחושב משורות הזמנה/פיצול עד שמיגרציית דוחות התשלום תוחל.
 
 ## אימות שערים אחרי מטרות 3 ו-4 (סבב נפרד)
 
@@ -1196,6 +1165,10 @@ default, והטופס לא שלח אף אחת מהן. כל `insert` של מוצ�
 ---
 
 ## History
+
+### 2026-08-02: feat/supplier-portal
+- Branch feat/supplier-portal: login landing, dashboard, scan, redemptions, payouts by platform_percent, RBAC, /api/supplier/redeem alias. Vitest +10 (724 total).
+- Soft block: payout_statements migration not applied; view uses order_items.
 
 ### 2026-08-02: Integration pass → main
 - מיזוג סדרתי של feat/coupon-redemption → personal-area → notifications → seo-performance → e2e ל-main.

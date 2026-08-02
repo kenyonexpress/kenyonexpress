@@ -27,12 +27,18 @@ const redeemRequestSchema = z
   .object({
     code: z.string().trim().max(64).optional(),
     qr_payload: z.string().trim().max(2048).optional(),
-    method: z.enum(['camera', 'manual']).default('manual'),
+    method: z.enum(['camera', 'manual']).optional(),
+    // Docs / offline drain name this scan_method; accept either.
+    scan_method: z.enum(['camera', 'manual']).optional(),
     idempotency_key: z.string().trim().min(8).max(128).optional(),
   })
   .refine((data) => Boolean(data.code || data.qr_payload), {
     message: 'code or qr_payload required',
   })
+  .transform((data) => ({
+    ...data,
+    method: (data.method ?? data.scan_method ?? 'manual') as 'camera' | 'manual',
+  }))
 
 type Outcome =
   | 'success'

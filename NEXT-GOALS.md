@@ -3,26 +3,16 @@
 תור על branch:
 
 ```
-main
-```
-
-tip:
-
-```
-552bfe0
+feat/supplier-portal
 ```
 
 ## התור
 
-- [x] ✅ Integration pass: מיזוג סדרתי, rebase/FF של כל feat על main, tsc+Vitest 714 לכל branch, push. בלי DB פרודקשן.
+- [x] ✅ Supplier portal: login landing, scan, sales dashboard, payouts by platform_percent, RBAC roles.
 
 ## לוג
 
-| שלב | סטטוס | tip |
+| שלב | סטטוס | הערות |
 |---|---|---|
-| feat/coupon-redemption | ✅ = main | 552bfe0 |
-| feat/personal-area | ✅ = main | 552bfe0 |
-| feat/notifications | ✅ = main | 552bfe0 |
-| feat/seo-performance | ✅ = main | 552bfe0 |
-| feat/e2e | ✅ = main | 552bfe0 |
-| main | ✅ pushed | 552bfe0 |
+| Integration pass | ✅ | tip משותף על main |
+| Supplier portal | ✅ | /supplier + scan + redemptions + payouts |

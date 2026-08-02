@@ -33,11 +33,13 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Route protection
+  const supplierPublic = pathname === '/supplier/login' || pathname === '/supplier/access-denied'
   const needsAuth =
     pathname.startsWith('/account') ||
     pathname.startsWith('/coupon/') ||
     pathname === '/checkout' ||
-    pathname.startsWith('/checkout/')
+    pathname.startsWith('/checkout/') ||
+    (pathname.startsWith('/supplier') && !supplierPublic)
 
   if (needsAuth && !user) {
     const loginUrl = request.nextUrl.clone()
