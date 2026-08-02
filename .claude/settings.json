@@ -20,6 +20,6 @@
       "Write"
     ],
     "ask": [],
-    "defaultMode": "bypassPermissions"
+    "defaultMode": "default"
   }
 }
