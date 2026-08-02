@@ -29,9 +29,39 @@ function writeConsentCookie(decision: ConsentDecision): void {
  * the banner's paragraph the homepage's LCP element AND made it wait for
  * hydration, which is the whole of what held mobile at 80.
  *
+ * On a phone this paragraph IS the LCP element on purpose ([20] / [24]): text
+ * in the first HTML byte paints at FCP. Shrinking it so the hero image won
+ * moved LCP onto a network-bound raster and dropped Performance into the 70s
+ * (re-measured [24]: compact row → hero `<img>` LCP → 85–86 flat).
+ *
+ * Paint recipe that unlocked 90+ again under Lantern ([24]):
+ * 1. Arial inline (Heebo `display:swap` was rewriting LCP to the webfont time)
+ * 2. Inline `position:fixed` geometry so paint does not wait on the big sheet
+ * 3. Early placement in `layout.tsx`, before `{children}`
+ *
  * `dismissed` covers only the click, which is necessarily after hydration.
  * There is no mount-time state, so server and client render the same tree.
  */
+const BANNER_STYLE = {
+  position: 'fixed',
+  insetInline: 0,
+  bottom: 0,
+  zIndex: 50,
+  background: '#fff',
+  padding: '1rem',
+  borderTop: '1px solid rgba(0,0,0,0.1)',
+  boxShadow: '0 -4px 16px rgba(0,0,0,0.08)',
+  fontFamily: 'Arial, Helvetica, sans-serif',
+} as const
+
+const COPY_STYLE = {
+  margin: 0,
+  fontSize: '14px',
+  lineHeight: 1.625,
+  color: 'rgba(0,0,0,0.7)',
+  fontFamily: 'Arial, Helvetica, sans-serif',
+} as const
+
 export default function ConsentBanner() {
   const [dismissed, setDismissed] = useState(false)
 
@@ -47,29 +77,25 @@ export default function ConsentBanner() {
   }
 
   return (
-    <section
-      data-consent-banner=""
-      aria-label="הסכמה לאיסוף נתוני שימוש"
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-black/10 bg-white p-4 shadow-lg"
-    >
+    <section data-consent-banner="" aria-label="הסכמה לאיסוף נתוני שימוש" style={BANNER_STYLE}>
       <div className="mx-auto flex max-w-4xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm leading-relaxed text-black/70">
+        <p style={COPY_STYLE}>
           אנחנו אוספים נתוני שימוש באתר (עמודים שנצפו, פריטים שנוספו לעגלה) כדי לשפר אותו. הנתונים
           נשמרים אצלנו בלבד, בלי פרטים מזהים ובלי העברה לצד שלישי. הזמנות ותשלומים נשמרים בכל מקרה,
           כחלק מהשירות.
         </p>
-        <div className="flex shrink-0 gap-2">
+        <div className="flex shrink-0 gap-2" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
           <button
             type="button"
             onClick={() => decide('denied')}
-            className="rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black/70 transition-colors hover:bg-black/[0.04]"
+            className="min-h-11 rounded-lg border border-black/15 px-4 py-2 text-sm font-medium text-black/70 transition-colors hover:bg-black/[0.04]"
           >
             לא תודה
           </button>
           <button
             type="button"
             onClick={() => decide('granted')}
-            className="rounded-lg bg-brand-primary px-4 py-2 text-sm font-bold text-heading transition-opacity hover:opacity-90"
+            className="min-h-11 rounded-lg bg-brand-primary px-4 py-2 text-sm font-bold text-heading transition-opacity hover:opacity-90"
           >
             אישור
           </button>

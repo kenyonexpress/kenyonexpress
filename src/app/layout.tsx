@@ -32,6 +32,8 @@ const heebo = Heebo({
   variable: '--font-heebo',
   subsets: ['latin', 'hebrew'],
   display: 'swap',
+  // LCP paragraph is Arial on purpose ([24]); do not preload Heebo onto that path.
+  preload: false,
 })
 
 const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
@@ -91,6 +93,13 @@ export default function RootLayout({
         <noscript>
           <style>{'[data-consent-banner]{display:none}'}</style>
         </noscript>
+        {/*
+          Before `{children}` on purpose ([24]): the banner is the phone LCP
+          element and used to ship after the whole homepage HTML. With inline
+          fixed positioning it can paint as soon as the parser reaches it,
+          without waiting for the rest of the document or the big stylesheet.
+        */}
+        <ConsentBanner />
         {children}
         {/*
           `AnalyticsProvider` calls `usePathname`, which under `cacheComponents`
@@ -104,7 +113,6 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <AnalyticsProvider />
         </Suspense>
-        <ConsentBanner />
       </body>
     </html>
   )

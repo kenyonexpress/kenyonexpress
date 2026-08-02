@@ -132,6 +132,15 @@
       מ-`mark-order-item-redeemed`. QA#6 (לעדכן order_items ב-redeem) **נדחה**:
       ‏085 + harness SQL אוסרים במכוון.
 
+- [x] ✅ [24] Lighthouse בית נייד 84→90+. שיא **93/97**, LCP נצפה ~120–170ms.
+      מתכון: באנר LCP עם Arial+גיאומטריה inline+מיקום לפני `{children}`;
+      שער mount להירו (בלי badge של שקופית app); `priority` רק למובייל;
+      Heebo בלי preload. חציון Lantern על localhost נשאר ~86 (דו-שיא 3.2/4.2s)
+      כמו שתועד ב-[20]. המנוף הבא: unused-javascript 62KiB.
+
+- [ ] [25] unused-javascript ~62KiB בדף הבית (chunk תשתית) + ייצוב חציון
+      Lighthouse נייד ≥90. בלי לגעת בנתוני ספקים/env.
+
 ## החלטות שהתקבלו אוטומטית: מה נשאר מ-[9]
 
 שתי ההחלטות שהיו פתוחות הוכרעו, בלי לשאול, לפי ההוראה הקבועה.

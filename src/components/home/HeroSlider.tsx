@@ -385,6 +385,13 @@ function SlideImage({
 
   return (
     <>
+      {/*
+        Two boxes, one per breakpoint. Never mark BOTH priority: a `hidden`
+        ancestor does not cancel an eager fetch, so a phone was downloading the
+        desktop raster (and a desktop the phone one) for the same slide. The
+        visible box gets `priority`; the other stays lazy and typically does not
+        fetch while `display:none`.
+      */}
       <div
         className="absolute hidden overflow-hidden lg:block"
         style={{
@@ -395,7 +402,7 @@ function SlideImage({
         }}
       >
         <div className="relative h-full w-full" style={{ minHeight: layout.minHeight }}>
-          <HeroSlideImage src={slide.image_url} priority={priority} />
+          <HeroSlideImage src={slide.image_url} priority={false} />
         </div>
       </div>
       <div className="absolute end-0 bottom-0 h-[42%] w-full overflow-hidden lg:hidden">
@@ -405,7 +412,7 @@ function SlideImage({
   )
 }
 
-function AppSlideCopy({ slide }: { slide: HeroSlide }) {
+function AppSlideCopy({ slide, mountMedia }: { slide: HeroSlide; mountMedia: boolean }) {
   return (
     <div className={`${RS.copyColumn} w-1/2`}>
       {slide.title && (
@@ -426,7 +433,12 @@ function AppSlideCopy({ slide }: { slide: HeroSlide }) {
           {slide.title_secondary}
         </span>
       )}
-      {slide.badge_image_url && (
+      {/*
+        Same mount gate as SlideImage: the app badge lived in the copy tree, so
+        opacity-0 on inactive slides still fetched Screen-Shot (~8KB) on every
+        phone load and contended with the LCP still.
+      */}
+      {mountMedia && slide.badge_image_url ? (
         <div className={`relative ms-auto mt-16 max-w-full lg:mt-24 ${RS.badgeBox}`}>
           <SmartImage
             src={slide.badge_image_url}
@@ -438,7 +450,7 @@ function AppSlideCopy({ slide }: { slide: HeroSlide }) {
             fallbackClassName="absolute inset-0"
           />
         </div>
-      )}
+      ) : null}
     </div>
   )
 }
@@ -567,8 +579,8 @@ function WelcomeSlideCopy({ slide }: { slide: HeroSlide }) {
   )
 }
 
-function SlideCopy({ slide }: { slide: HeroSlide }) {
-  if (slide.variant === 'app') return <AppSlideCopy slide={slide} />
+function SlideCopy({ slide, mountMedia }: { slide: HeroSlide; mountMedia: boolean }) {
+  if (slide.variant === 'app') return <AppSlideCopy slide={slide} mountMedia={mountMedia} />
   if (slide.variant === 'welcome') return <WelcomeSlideCopy slide={slide} />
   return <ProductSlideCopy slide={slide} />
 }
@@ -669,6 +681,10 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
     >
       {slides.map((slide, i) => {
         const isActive = i === active
+        // Until the visitor engages, only the first slide mounts its images.
+        // Mounting every slide's <Image> (desktop + mobile boxes) still fetched
+        // four extra rasters on a phone and contended with the LCP still.
+        const mountMedia = isActive || engaged
 
         return (
           <div
@@ -678,9 +694,9 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
               isActive ? 'z-10 opacity-100' : 'pointer-events-none z-0 opacity-0'
             }`}
           >
-            <SlideImage slide={slide} priority={isActive && i === 0} />
+            {mountMedia ? <SlideImage slide={slide} priority={isActive && i === 0} /> : null}
             <div className="[&_*]:!animate-none [&_*]:!transition-none">
-              <SlideCopy slide={slide} />
+              <SlideCopy slide={slide} mountMedia={mountMedia} />
             </div>
           </div>
         )
