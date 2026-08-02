@@ -2,6 +2,7 @@
 
 import { variantIdsToRemove } from '@/lib/admin/product-variants'
 import { requireStaffSession } from '@/lib/admin/rbac'
+import { revalidateStorefrontCatalogue } from '@/lib/catalogue-cache'
 import { assertPublishable, buildProductMoneyWrite } from '@/lib/commerce/product-money'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
@@ -301,6 +302,7 @@ export async function upsertProduct(
   }
 
   revalidatePath('/admin/products')
+  revalidateStorefrontCatalogue()
   redirect('/admin/products')
 }
 
@@ -319,6 +321,7 @@ export async function deleteProduct(id: string): Promise<{ error?: string }> {
   if (error) return { error: error.message }
 
   revalidatePath('/admin/products')
+  revalidateStorefrontCatalogue()
   return {}
 }
 
@@ -337,6 +340,7 @@ export async function bulkUpdateProductStatus(
   if (error) return { error: error.message }
 
   revalidatePath('/admin/products')
+  revalidateStorefrontCatalogue()
   return {}
 }
 
@@ -362,6 +366,7 @@ export async function bulkAssignCategory(
   if (error) return { error: error.message }
 
   revalidatePath('/admin/products')
+  revalidateStorefrontCatalogue()
   return {}
 }
 
@@ -435,6 +440,7 @@ export async function bulkAdjustPrices(
   }
 
   revalidatePath('/admin/products')
+  revalidateStorefrontCatalogue()
   return { updated, skipped }
 }
 
@@ -454,6 +460,7 @@ export async function bulkSoftDeleteProducts(ids: string[]): Promise<{ error?: s
   if (error) return { error: error.message }
 
   revalidatePath('/admin/products')
+  revalidateStorefrontCatalogue()
   return {}
 }
 

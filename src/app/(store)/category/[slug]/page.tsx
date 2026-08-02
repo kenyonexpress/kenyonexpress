@@ -17,10 +17,15 @@ import {
   parseProductType,
 } from '@/lib/category-page'
 import { type SortValue, parseSort } from '@/lib/category-tokens'
-import { createClient } from '@/lib/supabase/server'
+import { buildBreadcrumbJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
+import { createPublicClient } from '@/lib/supabase/public'
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
+
+/** ISR: category archives refresh at most every 5 minutes. */
+export const revalidate = 300
 
 type Props = {
   params: Promise<{ slug: string }>
@@ -45,18 +50,31 @@ function resultCountText(total: number, from: number, to: number): string {
   return `מציג ${from}–${to} מתוך ${total} תוצאות`
 }
 
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const supabase = await createClient()
+  const supabase = createPublicClient()
   const { data } = await supabase
     .from('categories')
-    .select('name_he, description_he')
+    .select('name_he, description_he, image_url')
     .eq('slug', slug)
     .eq('is_active', true)
     .single()
+  const title = data?.name_he ?? 'קטגוריה'
+  const description = data?.description_he ?? undefined
+  const path = `/category/${encodeURIComponent(slug)}`
   return {
-    title: data?.name_he ?? 'קטגוריה',
-    description: data?.description_he ?? undefined,
+    title,
+    description,
+    alternates: { canonical: path },
+    openGraph: {
+      title,
+      description,
+      url: path,
+      locale: 'he_IL',
+      siteName: 'קניון אקספרס',
+      type: 'website',
+      ...(data?.image_url ? { images: [{ url: data.image_url }] } : {}),
+    },
   }
 }
 
@@ -172,8 +190,23 @@ export default async function CategoryPage({ params, searchParams }: Props) {
     { label: category.name_he },
   ]
 
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
+  const breadcrumbLd = buildBreadcrumbJsonLd(
+    [
+      { name: 'בית', path: '/' },
+      ...(parent ? [{ name: parent.name_he, path: `/category/${parent.slug}` }] : []),
+      { name: category.name_he, path: pathname },
+    ],
+    siteUrl,
+  )
+
   return (
     <div className="category-page">
+      {/* biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD; jsonLdScript escapes < */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbLd) }}
+      />
       <ViewTracker event="view_category" props={{ category_id: category.id }} />
       <div className="category-page__inner">
         <CategoryBreadcrumb items={crumbs} />

@@ -1,4 +1,5 @@
 import { MapPin, Tag } from 'lucide-react'
+import Image from 'next/image'
 import Link from 'next/link'
 
 export type Coupon = {
@@ -33,10 +34,28 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
     >
       <div className="relative h-32 bg-gray-100">
         {coupon.image_url ? (
-          <img
+          /**
+           * Through the optimizer, not a raw <img>, and the reason is CSP
+           * before it is bytes: `img-src` allows self, data, blob, Supabase and
+           * Unsplash only, so a raw tag pointed at any other allowed host - R2,
+           * picsum - renders a BROKEN IMAGE. `/_next/image` is same-origin, so
+           * `'self'` covers whatever the upstream host is. Same fix as [18].
+           *
+           * `fill` is safe here only because the parent is `relative h-32`: it
+           * has its own height, so an out-of-flow image cannot collapse it.
+           *
+           * `sizes` is measured on the rendered grid, not guessed from the
+           * column: 360 -> 158, 412 -> 184, 480 -> 218, 640 -> 298, 767 ->
+           * 361.5 (= 50vw - 22px), 768 -> 237.33, 900 -> 281.33 (= 33.33vw -
+           * 18.67px), then the lg middle column, 1024 -> 162 and 1280 and up ->
+           * 247.33, capped by max-w-7xl.
+           */
+          <Image
             src={coupon.image_url}
             alt={coupon.title_he}
-            className="w-full h-full object-cover"
+            fill
+            sizes="(max-width: 767px) calc(50vw - 22px), (max-width: 1023px) calc(33.33vw - 18.67px), (max-width: 1279px) calc(33.33vw - 179.33px), 248px"
+            className="object-cover"
           />
         ) : (
           <div className="flex items-center justify-center h-full text-gray-300">
@@ -44,7 +63,11 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
           </div>
         )}
         {discountPct != null && discountPct > 0 && (
-          <div className="absolute top-2 end-2 bg-brand text-white text-xs font-bold px-2 py-1 rounded-lg">
+          <div // White on brand yellow is 1.41:1. This badge carries the discount
+            // percentage, so an unreadable one loses the single number the card
+            // exists to advertise.
+            className="absolute top-2 end-2 bg-brand text-heading text-xs font-bold px-2 py-1 rounded-lg"
+          >
             {discountPct}% הנחה
           </div>
         )}

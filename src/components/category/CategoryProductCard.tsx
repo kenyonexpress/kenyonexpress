@@ -1,7 +1,36 @@
 'use client'
 
 import AddToCartButton from '@/components/cart/AddToCartButton'
+import Image from 'next/image'
 import Link from 'next/link'
+
+/**
+ * 186px is the CAP, not the width, and the two are only the same above 497px.
+ *
+ * `.category-card__thumb img` is `max-width: min(--cat-thumb-max, 100%)`. Above
+ * 576px the card is a fixed 234 with a 186 content box, so the cap binds and
+ * the slot is a flat 186. Below 576 the column is half the row and the content
+ * box is what binds; measured at four widths, exactly `50vw - 63px`:
+ *
+ *   360 -> 117   412 -> 143   480 -> 177   575 -> 225 (capped back to 186)
+ *
+ * so the two meet at 497px, which is the breakpoint below.
+ *
+ * This used to be a flat `186px` at every width, which over-ordered by 59% on a
+ * 360px phone AND described a box the image was painting outside of. Measured
+ * before any of this existed: /products handed a phone 604KB of 600x600
+ * originals to paint 186px boxes, because the card rendered a raw <img> and
+ * never touched the optimizer at all.
+ *
+ * `--cat-thumb-max` lives in category-page.css and a `sizes` attribute cannot
+ * read a custom property, so this is the one place the two are kept in step by
+ * hand. `calc()` also keeps the whole candidate ramp reachable: next only
+ * matches a bare `NNvw` after whitespace or the string start
+ * (get-img-props.js:54), so `calc(50vw - 63px)` matches nothing and 256 and 384
+ * both stay available - which is the point, since 186 at dpr 1.75 wants 326.
+ */
+const THUMB_MAX_PX = 186
+const THUMB_SIZES = `(max-width: 497px) calc(50vw - 63px), ${THUMB_MAX_PX}px`
 
 export type CategoryProduct = {
   id: string
@@ -88,7 +117,20 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
               </span>
             )}
             {thumb ? (
-              <img src={thumb} alt={product.name_he} loading="lazy" width={186} height={186} />
+              // width/height stay the 186 square the raw <img> declared: they are
+              // the pre-load reservation, and the CSS is width:auto/height:auto
+              // under a 186 max on both axes, so the real aspect takes over the
+              // moment the file lands. `fill` is what collapsed the deal cards on
+              // the homepage - it writes position:absolute inline and the wrapper
+              // that takes its height from the image drops to 0.
+              <Image
+                src={thumb}
+                alt={product.name_he}
+                width={186}
+                height={186}
+                sizes={THUMB_SIZES}
+                loading="lazy"
+              />
             ) : null}
           </span>
         </Link>

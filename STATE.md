@@ -1,51 +1,57 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-02 (goal: Notifications on feat/notifications)
+Updated: 2026-08-02 (goal: SEO + Performance on feat/seo-performance)
 
 ## Current Phase
-‏**feat/notifications.** Resend + outbox + Edge + QStash + RTL Hebrew templates.
+‏**feat/seo-performance.** Hebrew SEO, ISR, next/image, JSON-LD, sitemap/robots, bundle analyze.
 
 ## Last Completed
-Goal Notifications על
-feat/notifications
+Goal SEO + Performance על
+feat/seo-performance
 :
 
-1. מיגרציות
-095_notification_outbox.sql
-+
-096_notification_voucher_issued.sql
-(triggers + kind
-voucher_issued
-).
-2. Resend adapter + builders:
-order_paid
-,
-supplier_sale
-,
-voucher_redeemed
-,
-voucher_issued
-(RTL
-lang=he
-, קופון בלי QR מוטמע).
-3. Drain משותף + cron GET/POST + DLQ; QStash wake מ-
-finalize
+1. Root + pages: metadata/OG עברית
+קניון אקספרס
 .
-4. Edge Function
-notifications-worker
-(proxy ל-cron עם אותו חוזה).
-5. Vitest: email builders + notifications qstash.
+2.
+sitemap.ts
++
+robots.ts
+(+ tests).
+3. JSON-LD Product/Offer/Breadcrumb/Organization+WebSite.
+4. ISR:
+revalidate
+120/300/180/3600 +
+createPublicClient
+ל-PDP +
+revalidateStorefrontCatalogue
+באדמין.
+5. next/image בכרטיסי מוצר; remote-hosts; imageSizes 288.
+6.
+pnpm analyze
++
+lighthouse:smoke
++
+.lighthouserc.cjs
+.
+7. Vitest seo/images/robots/catalogue: 54.
 
 ## In Progress
 nothing
 
 ## Blocking Issues
-095/096 עדיין לא הוחלו על DB חי (MCP apply_migration). בלי זה ה-triggers לא כותבים outbox.
+ציון Lighthouse 90+ דורש הרצה מול
+pnpm build && pnpm start
+(לא רץ בסשן הזה מול שרת חי).
 
 ## Next Task
-החלת 095+096, deploy Edge
-notifications-worker
-, smoke: paid → outbox → Resend.
+ריצת
+pnpm lighthouse:smoke
+מול production build מקומי, או מעבר ל-
+feat/e2e
+לפי
+GOALS-QUEUE.md
+.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
@@ -1091,6 +1097,12 @@ default, והטופס לא שלח אף אחת מהן. כל `insert` של מוצ�
 ---
 
 ## History
+
+### 2026-08-02: feat/seo-performance (SEO + Performance)
+- Branch
+feat/seo-performance
+: Hebrew OG/metadata, sitemap/robots, JSON-LD, ISR PDP, next/image cards, analyze + lighthouse smoke, Vitest 45+.
+- חסימה רכה: Lighthouse score מול build מקומי לא נמדד בסשן.
 
 ### 2026-08-02: feat/notifications (Resend + Edge + QStash)
 - Branch

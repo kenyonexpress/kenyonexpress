@@ -1,6 +1,7 @@
 'use server'
 
 import { requireAdminSession } from '@/lib/admin/rbac'
+import { revalidateStorefrontCatalogue } from '@/lib/catalogue-cache'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -61,6 +62,7 @@ export async function upsertCategory(
   }
 
   revalidatePath('/admin/categories')
+  revalidateStorefrontCatalogue()
   return { success: id ? 'קטגוריה עודכנה' : 'קטגוריה נוצרה' }
 }
 
@@ -79,6 +81,7 @@ export async function softDeleteCategory(id: string): Promise<{ error?: string }
   if (error) return { error: error.message }
 
   revalidatePath('/admin/categories')
+  revalidateStorefrontCatalogue()
   return {}
 }
 
@@ -94,6 +97,7 @@ export async function deleteCategory(id: string): Promise<{ error?: string }> {
   if (error) return { error: error.message }
 
   revalidatePath('/admin/categories')
+  revalidateStorefrontCatalogue()
   return {}
 }
 
@@ -112,5 +116,6 @@ export async function updateCategorySortOrder(
   if (error) return { error: error.message }
 
   revalidatePath('/admin/categories')
+  revalidateStorefrontCatalogue()
   return {}
 }

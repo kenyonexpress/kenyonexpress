@@ -3,15 +3,15 @@
 תור על branch:
 
 ```
-feat/notifications
+feat/seo-performance
 ```
 
 ## התור
 
-- [x] ✅ Notifications: Resend, outbox 095/096, Edge worker, payment + coupon QR emails (RTL), QStash retry + DLQ, Vitest.
+- [x] ✅ SEO + Performance: Hebrew metadata+OG, sitemap/robots, JSON-LD Product, ISR product/home/category, next/image cards, bundle analyze, Lighthouse smoke.
 
 ## לוג
 
 | שלב | סטטוס | הערות |
 |---|---|---|
-| Notifications | ✅ | voucher_issued outbox, drain, QStash, Edge proxy twin |
+| SEO + Performance | ✅ | ISR + JSON-LD + analyze + lighthouse smoke |

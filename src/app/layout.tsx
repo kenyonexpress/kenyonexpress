@@ -3,22 +3,44 @@ import ConsentBanner from '@/components/analytics/ConsentBanner'
 import type { Metadata } from 'next'
 import { Heebo } from 'next/font/google'
 import './globals.css'
+/**
+ * Merged into the root CSS chunk so the homepage does not pay three extra
+ * render-blocking stylesheet round-trips (ARCHITECTURE-PERFORMANCE Lighthouse).
+ * Selectors are page-scoped BEM; unused routes match nothing.
+ */
+import '@/styles/product-card-deals.css'
 
-// Heebo drives ALL text site-wide (Hebrew + Latin). Exposed as --font-heebo and
-// wired to --font-sans in globals.css.
 const heebo = Heebo({
   variable: '--font-heebo',
   subsets: ['latin', 'hebrew'],
   display: 'swap',
 })
 
+const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
-    default: 'KenyonExpress',
-    template: '%s | KenyonExpress',
+    default: 'קניון אקספרס | קופונים ומבצעים',
+    template: '%s | קניון אקספרס',
   },
-  description: 'קופונים, מבצעים ומוצרים במחיר הכי טוב',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'),
+  description: 'קופונים, מבצעים ומוצרים במחיר הכי טוב. בפריסה ארצית.',
+  openGraph: {
+    type: 'website',
+    locale: 'he_IL',
+    siteName: 'קניון אקספרס',
+    title: 'קניון אקספרס | קופונים ומבצעים',
+    description: 'קופונים, מבצעים ומוצרים במחיר הכי טוב. בפריסה ארצית.',
+    url: '/',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'קניון אקספרס | קופונים ומבצעים',
+    description: 'קופונים, מבצעים ומוצרים במחיר הכי טוב. בפריסה ארצית.',
+  },
+  alternates: {
+    canonical: '/',
+  },
 }
 
 export default function RootLayout({

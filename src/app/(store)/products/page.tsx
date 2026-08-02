@@ -14,15 +14,28 @@ import {
   parseProductType,
 } from '@/lib/category-page'
 import { type SortValue, parseSort } from '@/lib/category-tokens'
+import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
 
 /* Live equivalent: kenyonexpress.co.il/shop/ - h1 "חנות", 24 per page */
 const PAGE_TITLE = 'חנות'
 
-export const metadata = {
+/** ISR: shop archive refreshes at most every 3 minutes. */
+export const revalidate = 180
+
+export const metadata: Metadata = {
   title: PAGE_TITLE,
-  description: 'כל המוצרים, הדילים והקופונים של קניון Express במקום אחד.',
+  description: 'כל המוצרים, הדילים והקופונים של קניון אקספרס במקום אחד.',
+  alternates: { canonical: '/products' },
+  openGraph: {
+    title: PAGE_TITLE,
+    description: 'כל המוצרים, הדילים והקופונים של קניון אקספרס במקום אחד.',
+    url: '/products',
+    locale: 'he_IL',
+    siteName: 'קניון אקספרס',
+    type: 'website',
+  },
 }
 
 type Props = {
