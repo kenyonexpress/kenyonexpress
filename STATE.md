@@ -4,13 +4,19 @@
 Docs on branch `arch/docs-queue` (worktree only).
 
 ## Last Completed
-Four architecture docs written in sequence (2026-08-03), each committed and
+Ten architecture docs written in order (2026-08-03), each committed and
 pushed to `arch/docs-queue`. Main worktree untouched.
 
-1. `docs/ARCHITECTURE-NOTIFICATIONS.md` (de2df1d)
-2. `docs/ARCHITECTURE-SEO-PERFORMANCE.md` (fbc3a9c)
-3. `docs/ARCHITECTURE-MOBILE-APP.md` (5295e05)
-4. `docs/ARCHITECTURE-E2E-TESTING.md` (this commit / next)
+1. ARCHITECTURE-SUPPLIER-ONBOARDING.md
+2. ARCHITECTURE-REFUNDS-DISPUTES.md
+3. ARCHITECTURE-ANALYTICS.md
+4. ARCHITECTURE-ADMIN-REPORTS.md
+5. ARCHITECTURE-WALLET-CASHBACK.md
+6. ARCHITECTURE-SEARCH-DISCOVERY.md
+7. ARCHITECTURE-CONTENT-LEGAL.md
+8. ARCHITECTURE-CUSTOMER-SUPPORT.md
+9. ARCHITECTURE-SCALING.md
+10. ARCHITECTURE-MOBILE-APP-V2.md
 
 ## In Progress
 nothing
@@ -31,24 +37,17 @@ Continue docs queue when specified.
 not set in this worktree
 
 ## החלטות שהתקבלו אוטומטית
-- Docs queue for this sprint lands on `arch/docs-queue`, not main worktree.
-- Notifications kinds (target): order_confirmation, coupon_purchased,
-  coupon_redeemed, supplier_new_order, refund.
-- Mobile is future Expo super-app on the same Supabase project as web.
-- E2E: Playwright; full Cardcom/redeem only under `@staging` with seed.
+- Docs queue lands on `arch/docs-queue` only; never edit main worktree for docs sprints.
+- Escrow internal model 2026-07-27 wording used across onboarding/support/refunds.
+- `claude_PRIVACY-POLICY-DRAFT.md` was not present in this worktree; CONTENT-LEGAL
+  bases privacy on LEGAL-CHECKLIST until the draft is merged in.
 
 ---
 
 ## History
 
+### 2026-08-03: 10-doc architecture sprint
+- Onboarding through Mobile V2 pushed individually to arch/docs-queue.
+
 ### 2026-08-03: docs queue (notifications, SEO, mobile, e2e)
 - Four binding architecture docs pushed to `arch/docs-queue`.
-
-### 2026-08-03: ARCHITECTURE-NOTIFICATIONS full catalog
-- Five core events + QR + refund + idempotency section.
-
-### 2026-08-03: cart-measurements
-- New `refs/cart-measurements.md` from Electro home-v7 DevTools extract.
-
-### 2026-08-03: LAUNCH-DAY
-- New Hebrew runbook for cutover day.
