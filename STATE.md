@@ -1,13 +1,16 @@
 # KenyonExpress State (ke-docs-pack)
 
 ## Current Phase
-Docs on branch `docs/final-pack` (worktree only).
+Docs on branch `arch/docs-queue` (worktree only).
 
 ## Last Completed
-Expanded `docs/ARCHITECTURE-NOTIFICATIONS.md` (2026-08-03): full
-transactional catalog (order confirmation, coupon+QR, redeemed, supplier
-new-order, refund), Resend + Edge triggers, Hebrew RTL templates, retry,
-DLQ, idempotency keys. Docs only in ke-docs-pack. Main worktree untouched.
+Four architecture docs written in sequence (2026-08-03), each committed and
+pushed to `arch/docs-queue`. Main worktree untouched.
+
+1. `docs/ARCHITECTURE-NOTIFICATIONS.md` (de2df1d)
+2. `docs/ARCHITECTURE-SEO-PERFORMANCE.md` (fbc3a9c)
+3. `docs/ARCHITECTURE-MOBILE-APP.md` (5295e05)
+4. `docs/ARCHITECTURE-E2E-TESTING.md` (this commit / next)
 
 ## In Progress
 nothing
@@ -16,39 +19,33 @@ nothing
 none
 
 ## Next Task
-Continue docs queue when specified. No push unless asked.
+Continue docs queue when specified.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-docs-pack
 
 ## Branch
-`docs/final-pack`
+`arch/docs-queue`
 
 ## Supabase Project URL
 not set in this worktree
 
 ## החלטות שהתקבלו אוטומטית
-- Launch day starts with `CHECKOUT_ENABLED=false` until test purchase PASS.
-- Canonical host documented as apex `https://kenyonexpress.co.il`.
-- Cardcom secrets only in Vercel Production (four `CARDCOM_*` vars from `.env.example`).
-- Mini-cart dropdown on Electro home-v7 is not painted below Bootstrap `xl`
-  (~1200px); at 380/768 cart entry is header/footer link to `/cart/`. Computed
-  styles of `.dropdown-menu-mini-cart` still recorded as the design contract.
-- Notifications target drain = Edge `notifications-worker`; Vercel cron
-  `/api/cron/notifications` is an allowed bridge while `pg_net` is absent.
-- Canonical notification kinds (target): `order_confirmation`,
-  `coupon_purchased`, `coupon_redeemed`, `supplier_new_order`, `refund`.
-  Live 095 bridge kinds remain `order_paid`, `supplier_sale`, `voucher_redeemed`.
+- Docs queue for this sprint lands on `arch/docs-queue`, not main worktree.
+- Notifications kinds (target): order_confirmation, coupon_purchased,
+  coupon_redeemed, supplier_new_order, refund.
+- Mobile is future Expo super-app on the same Supabase project as web.
+- E2E: Playwright; full Cardcom/redeem only under `@staging` with seed.
 
 ---
 
 ## History
 
+### 2026-08-03: docs queue (notifications, SEO, mobile, e2e)
+- Four binding architecture docs pushed to `arch/docs-queue`.
+
 ### 2026-08-03: ARCHITECTURE-NOTIFICATIONS full catalog
 - Five core events + QR + refund + idempotency section.
-
-### 2026-08-03: ARCHITECTURE-NOTIFICATIONS rewrite
-- Canonical notifications architecture rewritten for final-pack.
 
 ### 2026-08-03: cart-measurements
 - New `refs/cart-measurements.md` from Electro home-v7 DevTools extract.
