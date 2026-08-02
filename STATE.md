@@ -1,47 +1,50 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-02 (goal: Coupon redemption + QR on feat/coupon-redemption)
+Updated: 2026-08-02 (goal: Personal area on feat/personal-area)
 
 ## Current Phase
-‏**feat/coupon-redemption.** מודל Escrow מ-27.07 עדיין מחייב ברקע האדמין; מסמך המימוש אומר אין Escrow חיצוני (held פנימי בלבד).
+‏**feat/personal-area.** אזור אישי: הזמנות, קופונים+QR, ארנק קאשבק פנימי, פרופיל Google.
 
 ## Last Completed
-Goal Coupon redemption + QR על
-feat/coupon-redemption
-commit
-966b468
+Goal Personal area על
+feat/personal-area
 :
 
-1. נוצר
-docs/ARCHITECTURE-COUPON-REDEMPTION-UX.md
-(+ הועתק
-ARCHITECTURE-COUPON-REDEMPTION.md
-מ-
-arch/coupon-redemption
-).
-2. `/supplier/scan` RTL עם פס מותג `#fed700`.
-3. `/coupon/[id]` ללקוח עם QR מ-`qr_payload`.
-4. מיגרציה
-092_redeem_voucher_order_item.sql
-: RPC redeem + עדכון
-order_items.settlement_status=redeemed
-(להחיל ב-MCP apply_migration; אין Supabase MCP בסשן הזה).
-5. Vitest vouchers: 93/93 כולל
-mark-order-item-redeemed
+1. `/account/coupons` מ-
+vouchers
+עם טאבים + QR מ-
+qr_payload
+; `/account/vouchers` → redirect.
+2. הזמנות: כסף באגורות דרך
+money.ts
+; שורות קופון מ-
+vouchers
+(שולם באתר / יתרה בעסק + QR).
+3. ארנק: יתרה+ledger באגורות; עותק closed-loop; אין משיכה.
+4. פרופיל Google: avatar, email read-only, logout ב-nav וב-details.
+5. Vitest
+src/lib/account
++ labels; compare
+--page=account
 .
-6. compare.mjs תומך
---page=coupon
-(ריצת פיקסל מול WP דורשת שרת מקומי + live).
+6. proxy שומר session גם על
+/coupon/
+.
 
 ## In Progress
 nothing
 
 ## Blocking Issues
-מיגרציה 092 עדיין לא הוחלה על הפרויקט החי (אין MCP apply_migration בסשן). בלי זה הסריקה נכשלת אם ה-RPC חסר.
+compare חשבון דורש
+COMPARE_STORAGE_STATE
+לסשן מחובר (אחרת נלכד /login). עמודות wallet/orders עדיין
+*_ils
+ב-DB עד החלת 059 (ההמרה ל-Agorot בגבול השאילתה).
 
 ## Next Task
-החלת 092 דרך MCP apply_migration, ואז smoke: הנפקה → `/coupon/[id]` → scan → already_redeemed.
-
+ריצת compare עם storage state מאומת, או מיזוג
+feat/personal-area
+אחרי סקירה.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
@@ -1088,14 +1091,19 @@ default, והטופס לא שלח אף אחת מהן. כל `insert` של מוצ�
 
 ## History
 
-### 2026-08-02: feat/coupon-redemption (Coupon + QR)
+### 2026-08-02: feat/personal-area (Personal area)
 - Branch
-feat/coupon-redemption
-pushed (
-966b468
-).
-- UX+arch docs, `/supplier/scan` polish, `/coupon/[id]` QR, migration 092, mark-order-item belt, Vitest 93/93, compare `--page=coupon`.
-- חסימה: 092 לא הוחלה על DB חי (אין Supabase MCP).
+feat/personal-area
+: coupons מ-
+vouchers
++ tabs/QR, orders agorot+vouchers, wallet closed-loop via
+money.ts
+, Google avatar/logout, compare
+--page=account
+, Vitest account format.
+- חסימה רכה: compare דורש storage state; DB עדיין
+*_ils
+עד 059.
 
 ### 2026-08-02: docs notifications architecture (binding)
 - עודכן
@@ -1104,15 +1112,3 @@ docs/ARCHITECTURE-NOTIFICATIONS.md
 - Docs only. בלי שינוי קוד. בלי
 git push
 (לבקשה מפורשת בסשן).
-
-### 2026-08-02: docs personal / mobile / DDL / SEO-PERFORMANCE
-- נוצרו/עודכנו:
-docs/ARCHITECTURE-PERSONAL-AREA.md
-,
-docs/ARCHITECTURE-MOBILE-APP.md
-,
-docs/DDL-FIXES.md
-,
-docs/ARCHITECTURE-SEO-PERFORMANCE.md
-.
-- Docs only.

@@ -261,11 +261,11 @@ Action: `updateProfileDetails` תחת RLS; `role` קפוא.
 
 | ID | פער | חומרה |
 |---|---|---|
-| G1 | `/account/coupons` עדיין קורא `coupon_codes` במקומות; צריך `vouchers` + QR + טאבים | P0 |
-| G2 | `/coupon/[id]` חי על `phase5/homepage`; חסר בחלק מה-branches | P0 |
-| G3 | Account reads עם admin client במקום RLS user client | P1 |
-| G4 | UI עדיין מציג `*_ils` במקום agorot מקצה לקצה | P1 |
-| G5 | Logout חסר ב-nav בחלק מה-branches | P1 |
+| G1 | ~~`coupon_codes`~~ → `vouchers` + QR + טאבים על `feat/personal-area` | נסגר |
+| G2 | `/coupon/[id]`: `noindex`, `/login`, CTA ל-`/account/coupons` | נסגר |
+| G3 | הזמנות עדיין admin client + filter `user_id` (ארנק/פרופיל/קופונים: RLS) | P1 |
+| G4 | תצוגה דרך `money.ts` (Agorot); עמודות wallet/orders עדיין `*_ils` עד 059 | P1 (חלקי) |
+| G5 | Logout ב-nav וב-`/account/details` | נסגר |
 | G6 | Privacy / notifications routes מה-Identity draft לא מחוברים | P2 |
 
 ---
@@ -281,12 +281,12 @@ Action: `updateProfileDetails` תחת RLS; `role` קפוא.
 
 ## 9. Acceptance
 
-- [ ] Session gate על כל `/account/**`
-- [ ] הזמנות: רשימה + פרט, בלי כתיבת לקוח
-- [ ] קופונים מ-`vouchers` עם QR לפעילים בלבד
-- [ ] ארנק: יתרה + ledger; עותק "לא יוצא מהמערכת"; אין כפתור משיכה
-- [ ] פרטים: Google email read-only; שם/טלפון נשמרים
-- [ ] כסף מוצג מ-agorot בלבד
+- [x] Session gate על כל `/account/**` (+ proxy על `/coupon/`)
+- [x] הזמנות: רשימה + פרט, בלי כתיבת לקוח
+- [x] קופונים מ-`vouchers` עם QR לפעילים בלבד
+- [x] ארנק: יתרה + ledger; עותק "לא יוצא מהמערכת"; אין כפתור משיכה
+- [x] פרטים: Google email read-only; שם/טלפון נשמרים; avatar
+- [x] כסף מוצג מ-agorot דרך `money.ts` (המרה מ-`*_ils` בגבול השאילתה עד 059)
 
 ---
 
@@ -295,3 +295,4 @@ Action: `updateProfileDetails` תחת RLS; `role` קפוא.
 | Date | Change |
 |---|---|
 | 2026-08-02 | מסמך מחייב: הזמנות, ארנק קופונים, כללי ארנק agorot/closed-loop, פרופיל Google |
+| 2026-08-02 | יישום על `feat/personal-area`: G1/G2/G5 נסגרו, acceptance מסומן |

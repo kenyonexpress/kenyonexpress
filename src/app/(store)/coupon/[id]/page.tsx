@@ -1,3 +1,4 @@
+import { formatDate, formatIls, formatVoucherCode } from '@/lib/account/format'
 import { createClient } from '@/lib/supabase/server'
 import { getCustomerVoucherById, isVoucherRedeemable } from '@/server/queries/vouchers'
 import type { Metadata } from 'next'
@@ -7,6 +8,7 @@ import QRCode from 'qrcode'
 
 export const metadata: Metadata = {
   title: 'הקופון שלי',
+  robots: { index: false, follow: false },
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -15,25 +17,6 @@ const STATUS_LABEL: Record<string, string> = {
   expired: 'פג תוקף',
   cancelled: 'בוטל',
   refunded: 'הוחזר',
-}
-
-function formatIls(agorot: number): string {
-  return `₪${(agorot / 100).toLocaleString('he-IL', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`
-}
-
-function formatCode(code: string): string {
-  return code.length > 5 ? `${code.slice(0, 5)}-${code.slice(5, 10)}` : code
-}
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('he-IL', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
 }
 
 export default async function CustomerCouponPage({
@@ -46,7 +29,7 @@ export default async function CustomerCouponPage({
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) redirect(`/auth/login?next=/coupon/${id}`)
+  if (!user) redirect(`/login?next=${encodeURIComponent(`/coupon/${id}`)}`)
 
   const voucher = await getCustomerVoucherById(id)
   if (!voucher) notFound()
@@ -67,8 +50,8 @@ export default async function CustomerCouponPage({
   return (
     <main dir="rtl" className="coupon-page mx-auto max-w-[480px] px-4 py-8">
       <p className="mb-2 text-sm text-black/50">
-        <Link href="/account/vouchers" className="underline-offset-2 hover:underline">
-          ← כל השוברים
+        <Link href="/account/coupons" className="underline-offset-2 hover:underline">
+          לכל הקופונים שלי
         </Link>
       </p>
       <h1 className="text-2xl font-bold text-[#333e48]">{productName}</h1>
@@ -80,7 +63,7 @@ export default async function CustomerCouponPage({
 
       <section className="mt-6 rounded-2xl border border-black/10 bg-white p-5 text-center shadow-sm">
         <p className="font-mono text-2xl tracking-widest text-[#333e48]" dir="ltr">
-          {formatCode(voucher.code)}
+          {formatVoucherCode(voucher.code)}
         </p>
         {qrDataUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
