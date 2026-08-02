@@ -1,138 +1,176 @@
-# ARCHITECTURE: Mobile App (Expo)
+# ARCHITECTURE: Mobile Super-App (Expo / React Native)
 
-ארכיטקטורת אפליקציית מובייל ל-KenyonExpress.
+ארכיטקטורת אפליקציית מובייל עתידית ל-KenyonExpress: **Expo + React Native** על **אותו backend Supabase** כמו ה-web.
 
-Status: **BINDING** · Updated: 2026-08-02  
-Scope: docs only.  
-Web נשאר ערוץ SEO; האפליקציה = שימור, Push, ארנק קופונים אופליין-לתצוגה, סריקת ספק.
+Status: **BINDING** · Updated: 2026-08-03  
+Scope: **docs only** · branch `arch/docs-queue`  
+אין שינוי קוד. אין נגיעה ב-worktree הראשי. זה מסמך יעד (future), לא מחייב שיגור day-0.
 
 Companions:
 
 ```
-docs/ARCHITECTURE-MOBILE-SUPERAPP.md
 docs/ARCHITECTURE-PERSONAL-AREA.md
 docs/ARCHITECTURE-NOTIFICATIONS.md
+docs/ARCHITECTURE-SEO-PERFORMANCE.md
 docs/ARCHITECTURE-PWA.md
+docs/ARCHITECTURE-FRAUD-PREVENTION.md
 ```
 
-Stack יעד:
+עקרון: **Web = SEO ורכישה ראשונית.** האפ = שימור, Push, ארנק קופונים (תצוגת QR אופליין), סריקת ספק. אין DB נפרד. אין Auth נפרד. אין PSP שני.
+
+---
+
+## 0. הכרעות מחייבות
+
+| # | הכרעה |
+|---|---|
+| M1 | Client: **Expo** (React Native) + TypeScript + Expo Router. |
+| M2 | Backend: **אותו** פרויקט Supabase (Auth, Postgres, RLS, Storage) כמו ה-web. |
+| M3 | כסף ו-redeem רק דרך Server Actions / Route Handlers / RPC קיימים. אין service role באפ. |
+| M4 | תשלומים: Cardcom דרך שרת Next/Edge בלבד (WebView Low Profile אם נדרש PCI). |
+| M5 | ארנק פנימי לא יוצא מהמערכת (אין משיכה / P2P). |
+| M6 | קופון: Escrow פנימי 2026-07-27 (שולם באתר + יתרה בעסק; held עד מימוש). |
+| M7 | PWA (M0) היא שלב ביניים; לא מחליפה חנויות אפ. |
+| M8 | אין Make/Zapier. Push דרך אותו pipeline התראות. |
+
+---
+
+## 1. Super-app: שני מצבים, אפ אחת
+
+| מצב | קהל | יכולות |
+|---|---|---|
+| Customer | קונים | קטלוג, עגלה, checkout, קופונים+QR, ארנק, הזמנות, Push, פרופיל Google |
+| Supplier | `supplier_members` | סורק QR למימוש, היסטוריית סריקות, התראות מכירה (מוגבל; לא פורטל מלא day-1) |
+
+מעבר מצב: אחרי login, אם למשתמש יש חברות ספק פעילה → כניסה למודול Scan. אחרת רק Customer shell.
+
+---
+
+## 2. Stack
 
 | רכיב | בחירה |
 |---|---|
-| Client | **Expo** (React Native) + TypeScript |
-| Auth / DB | **אותו** פרויקט Supabase כמו ה-web |
-| Payments | Cardcom דרך שרת Next/Edge בלבד (לא סודות באפ) |
-| Notifications | אותו pipeline (Resend/WhatsApp/push) |
-| QR | `react-native-qrcode-svg` / מצלמה לספק |
+| Runtime | Expo (managed / CNG) + EAS Build |
+| Navigation | Expo Router (file-based), מקביל לוגית ל-`(store)` / `(account)` |
+| Server state | TanStack Query |
+| Cart local | store קטן + sync ל-`carts` |
+| Auth | `@supabase/supabase-js` + Secure Store לרענון טוקנים |
+| QR customer | `react-native-qrcode-svg` על `qr_payload` |
+| QR supplier | מצלמה → redeem API |
+| Payments | Next/Edge + Cardcom; לא SDK אשראי ילידי עם PAN |
+| Push | אותם אירועים כמו notifications; רישום `push_tokens` |
+| Brand | ink `#333e48`, yellow `#fed700`, RTL native (`I18nManager`) |
 
-אין DB נפרד. אין Make/Zapier. אין PSP שני.
+Secrets אסורים באפ:
+
+```
+SUPABASE_SERVICE_ROLE_KEY
+RESEND_API_KEY
+CARDCOM_*
+CRON_SECRET
+VOUCHER_QR_SECRET (שימוש חתימה רק בשרת)
+```
+
+מותרים באפ (ציבוריים):
+
+```
+EXPO_PUBLIC_SUPABASE_URL
+EXPO_PUBLIC_SUPABASE_ANON_KEY
+EXPO_PUBLIC_APP_URL
+```
 
 ---
 
-## 0. מטרה ושני מצבים
-
-1. **לקוח:** קטלוג, עגלה, תשלום, קופונים+QR, ארנק, הזמנות, Push.
-2. **ספק (מוגבל):** סורק QR למימוש + היסטוריית סריקות (`supplier_members` בלבד).
-
-PWA היא שלב ביניים (M0). האפליקציה הנייטיבית לא מחליפה אינדוקס.
-
----
-
-## 1. מודל כסף (זהה ל-web)
-
-מודל Escrow 2026-07-27:
+## 3. מודל כסף (זהה ל-web)
 
 | סוג | באתר / באפ | פלטפורמה | ספק |
 |---|---|---|---|
-| קופון | `coupon_price` (אגורות) | `platform_percent` מהמקדמה; יתרת המקדמה ב-held עד מימוש | יתרת face בקופה בסריקה |
-| פיזי | מחיר מלא באתר | `platform_percent` מצולם | יתרה ב-ledger / payout |
+| קופון | `coupon_price` (אגורות) | `%` מהמקדמה; יתרת מקדמה ב-held עד מימוש | יתרת face בקופה בסריקה |
+| פיזי | מחיר מלא | `%` מצולם ב-`order_items` | ledger / payout |
 
-כללי אפליקציה:
+כללי אפ:
 
 1. מחירים רק מ-API שרת / snapshots. אין חישוב עמלה בקליינט.
-2. ארנק פנימי בלבד; **לא יוצא מהמערכת** (אין משיכה).
-3. כסף: integer agorot בחוזים; תצוגה ₪.
+2. כסף בחוזים: integer agorot; תצוגה ₪ `he-IL`.
+3. אין מסלול תשלום שמעקף את `finalizeOrder` / webhook.
 
 ---
 
-## 2. Expo + React Native
-
-### 2.1 בחירת פלטפורמה
-
-- Expo managed (או CNG) עם EAS Build ל-iOS/Android.
-- ניווט: Expo Router (file-based), מקביל לוגית ל-`(account)` / store routes.
-- State: TanStack Query לשרת; store קטן לעגלה מקומית.
-- RTL: כפיית RTL ברמת ה-native (`I18nManager` / config), לא רק CSS אחרי paint.
-- פונט: Heebo או מותג תואם; CTA `#fed700`, ink `#333e48`.
-
-### 2.2 מבנה מודולים
-
-| מודול | הערות |
-|---|---|
-| Home / Category / PDP | אותם חוזי מחיר כמו web |
-| Cart | sync ל-`carts` + אופטימיסטי מקומי |
-| Checkout | Server Actions / Route Handlers; WebView ל-Cardcom Low Profile אם נדרש PCI |
-| Vouchers | רשימה + QR גדול (אופליין לתצוגה) |
-| Wallet | יתרה + ledger (קריאה בלבד) |
-| Account | Google profile, tokens (last4), התנתקות |
-| Supplier scan | מצלמה → redeem API |
-| Push | רישום token + deep links |
-
-### 2.3 Deep links
-
-```
-kenyonexpress://checkout
-kenyonexpress://coupons
-kenyonexpress://coupon/{voucherId}
-kenyonexpress://orders/{orderId}
-```
-
-Universal Links / App Links לאותם נתיבי web כשאפשר.
-
----
-
-## 3. Shared Supabase Auth
-
-עקרון: **פרויקט Auth אחד** ל-web ולמובייל. אין טבלת users נפרדת.
+## 4. Shared Supabase Auth
 
 | נושא | חוזה |
 |---|---|
-| Provider | Google OAuth (Sign in with Apple בהמשך אם חנות דורשת) |
-| SDK | `@supabase/supabase-js` + Secure Store לרענון טוקנים |
-| Session | JWT של אותו project URL / anon key כמו web |
-| Gate | מסכי account/checkout דורשים session; browse לאורח מותר |
-| מיזוג עגלה | אחרי login, כמו `mergeGuestCart` ב-web |
-| RLS | אותן policies; האפליקציה אף פעם לא מחזיקה service role |
+| Project | URL + anon key זהים ל-web |
+| Provider | Google OAuth (Sign in with Apple בהמשך אם החנות דורשת) |
+| Session | JWT של אותו project; RLS זהה |
+| Gate | account/checkout דורשים session; browse לאורח מותר |
+| Cart merge | אחרי login, כמו `mergeGuestCart` ב-web |
 | Logout | מוחק session + cache קופונים מקומי |
-
-זרימה:
 
 ```text
 Google sign-in (Expo Auth Session / native)
   → Supabase session
-  → אותם profiles / wallet_accounts / vouchers
+  → אותם profiles / wallet_accounts / vouchers / orders
   → קריאות עם user JWT תחת RLS
 ```
 
-אין סיסמה כמסלול ראשי באפ (legacy web לסגירה ב-UX).
+אין טבלת users נפרדת. אין סיסמה כמסלול ראשי באפ.
 
 ---
 
-## 4. Coupon QR wallet (offline)
+## 5. מפת מסכים (IA)
 
-### 4.1 מטרה
+### 5.1 Customer
 
-לקוח בקופה בלי קליטה עדיין יכול **להציג** QR/קוד. המימוש עצמו תמיד אונליין אצל הספק.
+```text
+/(app)
+  /                 Home
+  /category/[slug]  Category
+  /product/[slug]   PDP
+  /cart             Cart
+  /checkout         Checkout (server-backed)
+  /account          Overview
+  /account/orders
+  /account/coupons  QR wallet
+  /account/wallet
+  /account/details
+```
 
-### 4.2 מודל נתונים מקומי
+### 5.2 Supplier (מוגבל)
 
-Cache (MMKV / SecureStore + SQLite קל) לרשומות `issued` בלבד:
+```text
+/(supplier)
+  /scan             Camera redeem
+  /scan/history     Recent redemptions
+```
+
+Deep links:
+
+```text
+kenyonexpress://checkout
+kenyonexpress://coupons
+kenyonexpress://coupon/{voucherId}
+kenyonexpress://orders/{orderId}
+kenyonexpress://scan
+```
+
+Universal Links / App Links לאותם נתיבי web כשאפשר (SEO נשאר ב-web).
+
+---
+
+## 6. Coupon QR wallet (offline display)
+
+### 6.1 מטרה
+
+לקוח בקופה בלי קליטה יכול **להציג** QR/קוד. המימוש עצמו תמיד אונליין אצל הספק.
+
+### 6.2 Cache מקומי (`issued` בלבד)
 
 | שדה | מקור |
 |---|---|
 | `voucher_id` | `vouchers.id` |
 | `code` | קוד קריא |
-| `qr_payload` | מחרוזת לחתימה / רינדור |
+| `qr_payload` | מחרוזת לרינדור |
 | `product_name_he` | snapshot |
 | `supplier_name` | snapshot |
 | `coupon_price_agorot` | שולם באתר |
@@ -142,22 +180,16 @@ Cache (MMKV / SecureStore + SQLite קל) לרשומות `issued` בלבד:
 
 Wipe: logout, או כשהסטטוס בשרת כבר לא `issued`.
 
-### 4.3 רינדור
+### 6.3 רינדור ו-sync
 
-- `react-native-qrcode-svg` על `qr_payload` (לא URL תמונה משרת).
-- בהירות מסך מוגברת בזמן הצגת QR.
-- באנר "מצב לא מקוון" כשאין רשת; הנתונים מרגע הסנכרון האחרון.
+- `react-native-qrcode-svg` על `qr_payload` (לא URL תמונה משרת כמקור אמת)
+- בהירות מסך מוגברת בזמן הצגת QR
+- באנר "מצב לא מקוון" כשאין רשת
+- Foreground / Push `coupon.issued` → delta sync
+- Redeem הצלחה → מסיר QR מקומית
+- אין redeem מהאפ של הלקוח
 
-### 4.4 Sync
-
-| אירוע | פעולה |
-|---|---|
-| Foreground / פתיחת ארנק | delta sync מ-`vouchers` של המשתמש |
-| Push `coupon.issued` / `coupon_delivered` | משוך את השובר החדש |
-| Redeem הצלחה (אונליין) | מסמן מקומית נסרק; מסיר QR |
-| Airplane + Redeem | האפ מסרבת בנימוס; הסורק של הספק הוא האמת |
-
-אין redeem מהאפ של הלקוח. ספק בלבד קורא ל-
+ספק קורא ל-
 
 ```
 POST /api/supplier/vouchers/redeem
@@ -167,56 +199,71 @@ POST /api/supplier/vouchers/redeem
 
 ---
 
-## 5. Push notifications
+## 7. Checkout באפ
 
-### 5.1 ערוץ
+```text
+Cart (local + server carts)
+  → begin_checkout (server)
+  → Cardcom Low Profile (WebView / system browser)
+  → return URL / deep link
+  → finalize / webhook (server, זהה ל-web)
+  → vouchers issued → sync QR wallet + Push
+```
 
-אותו worker של notifications (ערוץ `push`), לא Zapier/Make.  
+האפ לא מאשרת תשלום לבד. אין כפל `finalizeOrder`.
+
+---
+
+## 8. Push notifications
+
 רישום:
 
-```
+```text
 push_tokens (user_id, platform ios|android, token, updated_at)
+UNIQUE (user_id, token) או (user_id, platform)
 ```
 
-UNIQUE על `(user_id, token)` או `(user_id, platform)`.
-
-### 5.2 אירועים
-
-| אירוע | Push ללקוח | Push לספק | Deep link |
+| אירוע | לקוח | ספק | Deep link |
 |---|---|---|---|
-| רכישת קופון / הנפקה | כן | אופציונלי "נמכר" | `kenyonexpress://coupon/{id}` |
-| מימוש | אישור | סיכום סריקה | הזמנות / היסטוריית סריקות |
-| פקיעה 48ש | כן | לא | ארנק קופונים |
-| הזמנה פיזית | סטטוס (עתידי) | להכין משלוח | פורטל ספק |
+| רכישת קופון | כן | אופציונלי "נמכר" | `kenyonexpress://coupon/{id}` |
+| מימוש | אישור | סיכום סריקה | coupons / scan history |
+| פקיעה 48ש | כן | לא | coupons |
+| הזמנה פיזית | סטטוס (עתידי) | להכין משלוח | supplier |
 
-Transactional push לא תלוי ב-marketing opt-in; עדיין מכבד suppression / העדפות expiry.
+Transactional push לא תלוי ב-marketing opt-in. בקשת הרשאה אחרי ערך (אחרי רכישה / כניסה לארנק), לא ב-cold start אגרסיבי.
 
-### 5.3 הרשאות UX
+Pipeline: אותו worker כמו
 
-- בקשת הרשאה אחרי ערך (אחרי רכישה ראשונה / כניסה לארנק), לא ב-cold start האגרסיבי.
-- כבוי מערכת → אין crash; in-app bell יכול להישען על `notifications_outbox` channel `inapp` כשקיים.
-
----
-
-## 6. מודול ספק (תמצית)
-
-- Gate: `supplier_members.is_active` + role `owner|manager|scanner`.
-- מסך מצלמה → payload/code → redeem.
-- תוצאות: הצלחה / כבר מומש / פג / לא שייך / rate limited.
-- אין גישה לנתוני לקוח מעבר למה שה-redeem מחזיר.
+```
+docs/ARCHITECTURE-NOTIFICATIONS.md
+```
 
 ---
 
-## 7. אבטחה
+## 9. מודול ספק
 
-- אין service role / Resend / Cardcom secrets באפ.
-- Biometrics לכניסה חוזרת (אופציונלי); לא תחליף ל-Google בפעם הראשונה.
-- Certificate pinning: הערכה אחרי M2, לא חוסם day-0.
-- מחיקת חשבון: לפי legal / account deletion ב-web.
+- Gate: `supplier_members.is_active` + role `owner|manager|scanner`
+- מצלמה → payload/code → redeem
+- תוצאות: הצלחה / כבר מומש / פג / לא שייך / rate limited
+- אין גישה לנתוני לקוח מעבר למה שה-redeem מחזיר
+- אטומיות ו-replay: לפי Fraud Prevention
 
 ---
 
-## 8. שלבי מסירה
+## 10. אבטחה
+
+| כלל | פירוט |
+|---|---|
+| RLS | גבול יחיד; anon key בלבד בקליינט |
+| Secrets | אין service/Cardcom/Resend באפ |
+| Biometrics | אופציונלי לכניסה חוזרת; לא תחליף ל-Google בפעם הראשונה |
+| Pinning | הערכה אחרי M2; לא חוסם day-0 |
+| Account deletion | לפי legal / web flow |
+| Offline | תצוגת QR בלבד; לא redeem מקומי |
+
+---
+
+## 11. שלבי מסירה
 
 | Phase | Scope | Exit |
 |---|---|---|
@@ -230,31 +277,46 @@ Transactional push לא תלוי ב-marketing opt-in; עדיין מכבד suppre
 
 ---
 
-## 9. טסטים
+## 12. טסטים
 
 | # | תרחיש |
 |---|---|
 | MA1 | Guest → Google → purchase coupon → QR על המכשיר |
 | MA2 | Airplane: QR מוצג; redeem מהספק נכשל בנימוס בלי רשת |
 | MA3 | אותו Supabase user רואה אותם vouchers ב-web ובאפ |
-| MA4 | Supplier scan success + replay |
+| MA4 | Supplier scan success + replay → `already_used` |
 | MA5 | Push expiry 48h + deep link לארנק |
+| MA6 | אין service role / Cardcom secret ב-binary (בדיקת סריקה) |
 
 ---
 
-## 10. מה לא בונים
+## 13. מה לא בונים
 
 - DB מובייל נפרד / Auth נפרד
 - חישוב עמלה בקליינט
 - משיכת ארנק
 - Make/Zapier ל-push
 - רשת שליחים כתלות שיגור
+- החלפת ה-web כערוץ SEO
 
 ---
 
-## 11. Revision
+## 14. Related
+
+```
+docs/ARCHITECTURE-NOTIFICATIONS.md
+docs/ARCHITECTURE-PERSONAL-AREA.md
+docs/ARCHITECTURE-SEO-PERFORMANCE.md
+docs/ARCHITECTURE-E2E-TESTING.md
+docs/ARCHITECTURE-FRAUD-PREVENTION.md
+```
+
+---
+
+## 15. Revision
 
 | Date | Change |
 |---|---|
-| 2026-07-31 | רענון מחייב + rev B (M0 עד M4) ב-`ke-arch` |
-| 2026-08-02 | עדכון מחייב: Expo RN, shared Supabase auth, QR wallet offline, push; מודל Escrow 2026-07-27 |
+| 2026-07-31 | רענון + שלבי M0–M4 |
+| 2026-08-02 | Expo RN, shared Supabase, QR offline, push; Escrow 2026-07-27 |
+| 2026-08-03 | Super-app framing על `arch/docs-queue`; docs only |
