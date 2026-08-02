@@ -1,28 +1,35 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-02 (docs: ARCHITECTURE-NOTIFICATIONS מחייב)
+Updated: 2026-08-02 (goal: Admin dashboard dynamic fields + ADMIN-ARCHITECTURE)
 
 ## Current Phase
-‏**admin-core + docs.** מודל Escrow מ-27.07 עדיין מחייב (ראה למטה).
-סבב אחרון: עדכון מסמך התראות בלבד (בלי קוד, בלי push).
+‏**feat/admin-core.** מודל Escrow מ-27.07 עדיין מחייב (ראה למטה).
 
 ## Last Completed
-עודכן
-docs/ARCHITECTURE-NOTIFICATIONS.md
-למסמך מחייב: Resend API, Supabase Trigger + Edge worker, QStash retry,
-תבניות RTL עברית, וזרימת משלוח QR לקופון (קישור ל-
-/coupon/{id}
-בלי הטמעת QR במייל). מיושר למודל Escrow 2026-07-27 ול-
-095_notification_outbox.sql
-/ קוד המייל ב-
-phase5/homepage
-.
+Goal Admin dashboard על
+feat/admin-core
+:
+
+1. שדות כסף דינמיים פר-מוצר כבר חיו ב-
+ProductForm
++
+product-money
++ מיגרציה 070 (אין עמלה קבועה).
+2. רשימת
+/admin/products
+מציגה עכשיו
+platform_percent
+ומחיר קופון באתר.
+3. עודכן
+docs/ADMIN-ARCHITECTURE.md
+(§3.0 חוזה UI, §4 מלאי מסכים, acceptance + revision).
+4. NEXT-GOALS.md מסומן ✅ לשלב הזה.
 
 ## In Progress
 nothing
 
 ## Blocking Issues
-none מהסבב הזה (docs only)
+none
 
 ## Next Task
 מיזוג
@@ -31,7 +38,9 @@ feat/admin-core
 phase5/homepage
 אחרי סקירת
 src/types/database.ts
-, או המשך תור האדמין לפי הצורך.
+, או מסכי settlements / redemptions לפי
+ADMIN-ARCHITECTURE
+.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress

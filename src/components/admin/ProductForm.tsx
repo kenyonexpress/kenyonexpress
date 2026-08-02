@@ -533,7 +533,7 @@ export default function ProductForm({
                 אחוז ההנחה לתצוגה
               </span>
               <div className="w-full border border-gray-200 bg-gray-50 rounded-lg px-3 py-2 text-sm text-gray-600">
-                {couponBadgePercent === null ? '—' : `${couponBadgePercent}%`}
+                {couponBadgePercent === null ? '-' : `${couponBadgePercent}%`}
               </div>
               <p className="mt-1 text-xs text-gray-500">מחושב מהמחירים, לא נקבע ידנית</p>
             </div>

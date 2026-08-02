@@ -41,7 +41,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
   let query = supabase
     .from('products')
     .select(
-      'id, name_he, slug, status, kenyon_price, type, is_featured, created_at, categories!products_category_id_fkey(name_he)',
+      'id, name_he, slug, status, kenyon_price, type, is_featured, platform_percent, coupon_price_ils, created_at, categories!products_category_id_fkey(name_he)',
       { count: 'exact' },
     )
     .is('deleted_at', null)
@@ -67,6 +67,8 @@ export default async function AdminProductsPage({ searchParams }: Props) {
       type: p.type,
       is_featured: p.is_featured,
       category_name: category?.name_he ?? null,
+      platform_percent: p.platform_percent,
+      coupon_price_ils: p.coupon_price_ils,
     }
   })
 

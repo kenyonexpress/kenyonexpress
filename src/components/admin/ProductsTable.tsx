@@ -25,6 +25,10 @@ export type ProductRow = {
   type: string
   is_featured: boolean | null
   category_name: string | null
+  /** Per-product platform commission. Null means unpublished / incomplete money. */
+  platform_percent: number | null
+  /** Coupon absolute on-site price. Null for physical or unset coupons. */
+  coupon_price_ils: number | null
 }
 
 interface Props {
@@ -144,7 +148,7 @@ export default function ProductsTable({ products, categories }: Props) {
       header: 'קטגוריה',
       sortable: true,
       accessor: (p) => p.category_name ?? '',
-      cell: (p) => <span className="text-black/70">{p.category_name ?? '—'}</span>,
+      cell: (p) => <span className="text-black/70">{p.category_name ?? 'ללא'}</span>,
     },
     {
       id: 'price',
@@ -152,7 +156,22 @@ export default function ProductsTable({ products, categories }: Props) {
       sortable: true,
       accessor: (p) => p.kenyon_price ?? 0,
       cell: (p) => (
-        <span className="text-black/80">₪{(p.kenyon_price ?? 0).toLocaleString('he-IL')}</span>
+        <span className="text-black/80" dir="ltr">
+          {p.type === 'coupon' && p.coupon_price_ils != null
+            ? `₪${Number(p.coupon_price_ils).toLocaleString('he-IL')} באתר`
+            : `₪${(p.kenyon_price ?? 0).toLocaleString('he-IL')}`}
+        </span>
+      ),
+    },
+    {
+      id: 'platform_percent',
+      header: 'עמלת פלטפורמה',
+      sortable: true,
+      accessor: (p) => p.platform_percent ?? -1,
+      cell: (p) => (
+        <span className="text-black/80" dir="ltr">
+          {p.platform_percent == null ? 'לא הוגדר' : `${Number(p.platform_percent)}%`}
+        </span>
       ),
     },
     {
