@@ -1,9 +1,45 @@
 # KenyonExpress — Project State
 
-Updated: 2026-07-27 (שינוי מודל: הקופון חוזר ל-Escrow)
+Updated: 2026-08-02 (docs: ARCHITECTURE-NOTIFICATIONS מחייב)
 
 ## Current Phase
-‏**שינוי מודל פעיל.** Ofir הכריע ב-27.07 שהקופון חוזר ל-Escrow, וזה דורס
+‏**admin-core + docs.** מודל Escrow מ-27.07 עדיין מחייב (ראה למטה).
+סבב אחרון: עדכון מסמך התראות בלבד (בלי קוד, בלי push).
+
+## Last Completed
+עודכן
+docs/ARCHITECTURE-NOTIFICATIONS.md
+למסמך מחייב: Resend API, Supabase Trigger + Edge worker, QStash retry,
+תבניות RTL עברית, וזרימת משלוח QR לקופון (קישור ל-
+/coupon/{id}
+בלי הטמעת QR במייל). מיושר למודל Escrow 2026-07-27 ול-
+095_notification_outbox.sql
+/ קוד המייל ב-
+phase5/homepage
+.
+
+## In Progress
+nothing
+
+## Blocking Issues
+none מהסבב הזה (docs only)
+
+## Next Task
+מיזוג
+feat/admin-core
+ל-
+phase5/homepage
+אחרי סקירת
+src/types/database.ts
+, או המשך תור האדמין לפי הצורך.
+
+## Working Directory
+/Users/ofir/kenyonexpress-web/kenyonexpress
+
+---
+
+## Current Phase (רקע מודל)
+‏**שינוי מודל פעיל.** הכריע ב-27.07 שהקופון חוזר ל-Escrow, וזה דורס
 את הכרעת 24.07. ראה "המודל המחייב 2026-07-27" מיד למטה.
 
 ## ⚠️ המודל המחייב 2026-07-27 — דורס את 24.07
@@ -1037,3 +1073,15 @@ default, והטופס לא שלח אף אחת מהן. כל `insert` של מוצ�
 ### ‏Next Task
 מיזוג `feat/admin-core` ל-phase5, אחרי סקירה של שינויי `src/types/database.ts`
 מול סשנים מקבילים.
+
+---
+
+## History
+
+### 2026-08-02: docs notifications architecture (binding)
+- עודכן
+docs/ARCHITECTURE-NOTIFICATIONS.md
+: Resend API, Edge Function + DB triggers, QStash retry, RTL Hebrew templates, coupon QR delivery flow.
+- Docs only. בלי שינוי קוד. בלי
+git push
+(לבקשה מפורשת בסשן).
