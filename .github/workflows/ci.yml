@@ -149,6 +149,16 @@ jobs:
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       # Production build, not dev: RTL, caching and server actions all differ.
       E2E_WEB_COMMAND: pnpm start
+      # Never hit a real Cardcom terminal from PR CI. The mock provider returns
+      # a same-origin return URL; reconcileOrderReturn finalizes against it.
+      CARDCOM_USE_MOCK: 'true'
+      CARDCOM_WEBHOOK_SECRET: mock-webhook-secret
+      CHECKOUT_ENABLED: 'true'
+      # Fixture users created by pnpm seed:test. Disposable CI DB only.
+      E2E_CUSTOMER_EMAIL: e2e-customer@test.kenyonexpress.local
+      E2E_CUSTOMER_PASSWORD: E2eCustomer!pass1
+      E2E_SUPPLIER_EMAIL: e2e-supplier@test.kenyonexpress.local
+      E2E_SUPPLIER_PASSWORD: E2eSupplier!pass1
     steps:
       - uses: actions/checkout@v4
 
@@ -177,6 +187,10 @@ jobs:
         with:
           name: next-build
           path: .next/
+
+      - name: Seed E2E fixtures (catalogue + auth users)
+        if: steps.creds.outputs.present == 'true'
+        run: pnpm seed:test
 
       - name: Install Chromium
         if: steps.creds.outputs.present == 'true'

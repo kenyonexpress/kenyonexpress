@@ -22,6 +22,8 @@
     "test:e2e": "playwright test",
     "seed:test": "node scripts/seed-test-data.mjs",
     "db:types": "supabase gen types typescript --linked --schema public > src/types/database.ts",
+    "analyze": "ANALYZE=true next build",
+    "lighthouse:smoke": "node scripts/lighthouse-smoke.mjs",
     "prepare": "husky || true"
   },
   "dependencies": {
@@ -62,6 +64,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
+    "@next/bundle-analyzer": "^16.2.12",
     "@playwright/test": "^1.50.1",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.6.3",
@@ -76,6 +79,7 @@
     "fast-xml-parser": "^5.10.1",
     "husky": "^9.1.7",
     "jsdom": "^25.0.1",
+    "lighthouse": "^13.4.1",
     "lint-staged": "^15.3.0",
     "tailwindcss": "^4",
     "typescript": "^5",

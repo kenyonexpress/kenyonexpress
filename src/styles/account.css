@@ -82,6 +82,21 @@
   border-bottom: 1px solid var(--account-line);
 }
 
+.account-nav__identity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.account-nav__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #eee;
+}
+
 .account-nav__name {
   font-size: 16px;
   font-weight: 700;
@@ -93,6 +108,41 @@
   color: var(--account-muted);
   margin: 2px 0 0;
   word-break: break-all;
+}
+
+.account-nav__logout {
+  border-top: 1px solid var(--account-line);
+  padding: 12px 20px;
+}
+
+.account-nav__logout-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--account-red);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.account-nav__logout-btn:hover {
+  text-decoration: underline;
+}
+
+.account-profile-avatar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.account-profile-avatar img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--account-yellow);
 }
 
 .account-nav__list {
@@ -418,6 +468,49 @@
 }
 
 /* Coupons */
+.account-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.account-tabs__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--account-line);
+  border-radius: 4px;
+  color: var(--account-ink);
+  text-decoration: none;
+  font-size: 14px;
+  background: #fff;
+}
+
+.account-tabs__link.is-active {
+  background: var(--account-yellow);
+  border-color: var(--account-yellow);
+  font-weight: 700;
+}
+
+.account-tabs__count {
+  font-size: 12px;
+  color: var(--account-muted);
+}
+
+.account-tabs__link.is-active .account-tabs__count {
+  color: var(--account-ink);
+}
+
+.coupon-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+}
+
 .coupon-card {
   border: 1px solid var(--account-line);
   border-radius: 4px;
@@ -425,6 +518,56 @@
   display: flex;
   gap: 16px;
   align-items: center;
+}
+
+.coupon-card--stack {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.coupon-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.coupon-card__qr,
+.coupon-card__stamp {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+  text-align: center;
+}
+
+.coupon-card__amounts {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  font-size: 14px;
+}
+
+.coupon-card__amounts > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.coupon-card__amounts dt {
+  margin: 0;
+  color: var(--account-muted);
+}
+
+.coupon-card__amounts dd {
+  margin: 0;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.coupon-card__link {
+  margin: 4px 0 0;
 }
 
 .coupon-card__code {

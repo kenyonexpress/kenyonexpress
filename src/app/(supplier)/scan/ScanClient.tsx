@@ -329,7 +329,7 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
         <button
           type="button"
           onClick={reset}
-          className="mt-5 w-full rounded-xl bg-gray-900 py-3 text-sm font-bold text-white"
+          className="mt-5 w-full rounded-xl bg-heading py-3 text-sm font-bold text-white"
         >
           סריקה נוספת
         </button>
@@ -394,7 +394,7 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
         </button>
       </form>
 
-      <p className="text-center text-xs text-gray-400">מחובר כ־{supplierName}</p>
+      <p className="text-center text-xs text-gray-400">מחובר כ-{supplierName}</p>
     </div>
   )
 }

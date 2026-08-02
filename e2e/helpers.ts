@@ -8,6 +8,13 @@ import { type Page, expect } from '@playwright/test'
 
 const DISCOVERY_TIMEOUT = 15_000
 
+/** Assert the document root is Hebrew RTL (dir + lang). */
+export async function expectHebrewRtl(page: Page): Promise<void> {
+  const html = page.locator('html')
+  await expect(html).toHaveAttribute('dir', 'rtl')
+  await expect(html).toHaveAttribute('lang', 'he')
+}
+
 export async function firstProductHref(page: Page): Promise<string> {
   await page.goto('/products')
   const link = page.locator('a[href^="/product/"]').first()

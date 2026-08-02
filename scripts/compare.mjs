@@ -9,6 +9,8 @@ import { chromium } from '@playwright/test'
 // home     : live = refs/ke_live_singlefile.html    mine = http://localhost:3000/
 // product  : live = live kenyonexpress product page mine = http://localhost:3000/product/<slug>
 // category : live = live product-category archive   mine = http://localhost:3000/category/<slug>
+// coupon   : live coupon PDP vs local coupon product (QR customer page needs auth; PDP is the public surface)
+// account  : live WP /my-account/ vs local /account (set COMPARE_STORAGE_STATE for an authed session)
 // Writes refs/live.png + refs/mine.png (consumed by diff-bands.mjs), plus
 // page-suffixed copies refs/live-<page>.png / refs/mine-<page>.png for reference.
 
@@ -48,8 +50,14 @@ if (!process.env.PLAYWRIGHT_BROWSERS_PATH) {
   if (existsSync(cache)) process.env.PLAYWRIGHT_BROWSERS_PATH = cache
 }
 
+const STORAGE_STATE = process.env.COMPARE_STORAGE_STATE ?? null
+
 const b = await chromium.launch()
-const ctx = await b.newContext({ viewport: VIEW, deviceScaleFactor: 1 })
+const ctx = await b.newContext({
+  viewport: VIEW,
+  deviceScaleFactor: 1,
+  ...(STORAGE_STATE && existsSync(STORAGE_STATE) ? { storageState: STORAGE_STATE } : {}),
+})
 
 let liveUrl = argOf('live', null)
 let mineUrl = argOf('mine', null)

@@ -408,13 +408,13 @@ src/lib/notifications/qstash.ts                           # יעד (חוזה כ�
 
 ## 10. Acceptance
 
-- [ ] Triggers כותבים outbox בטרנזקציית paid/redeem בלי לחכות ל-Resend
-- [ ] Worker (Edge או cron twin) שולח דרך Resend עם Idempotency-Key
-- [ ] QStash retries על non-2xx; אחרי תקרה: DLQ + outbox `dead`
-- [ ] כל מייל ללקוח: `dir=rtl`, עברית, סכומים מ-agorot
-- [ ] מייל קופון: קוד + לינק `/coupon/{id}`, בלי תמונת QR מוטמעת
-- [ ] אין כפילות order_paid + voucher email לאותה הזמנה
-- [ ] אין Make/Zapier במסלול ייצור
+- [x] Triggers כותבים outbox בטרנזקציית paid/redeem בלי לחכות ל-Resend (095+096)
+- [x] Worker (Edge `notifications-worker` + cron twin) שולח דרך Resend עם Idempotency-Key
+- [x] QStash retries על non-2xx; אחרי תקרה: DLQ + outbox `dead`
+- [x] כל מייל ללקוח: `lang=he` + `dir=rtl`, עברית, סכומים מ-agorot
+- [x] מייל קופון: קוד + לינק `/coupon/{id}`, בלי תמונת QR מוטמעת (`voucher_issued`)
+- [x] אין כפילות order_paid + voucher email לאותה הזמנה
+- [x] אין Make/Zapier במסלול ייצור
 
 ---
 
@@ -426,3 +426,4 @@ src/lib/notifications/qstash.ts                           # יעד (חוזה כ�
 | 2026-07-29 | V1 binding: Resend + Trigger + Edge (ללא Make/Zapier) |
 | 2026-07-31 | V2 events / WhatsApp / unsubscribe (ראה גם `ARCHITECTURE-NOTIFICATIONS-V2.md`) |
 | 2026-08-02 | איחוד מחייב ב-`ARCHITECTURE-NOTIFICATIONS.md`: Resend API, Edge+triggers, QStash retry, RTL, זרימת QR לקופון; מודל Escrow 2026-07-27 בנוסח הסכומים |
+| 2026-08-02 | יישום על `feat/notifications`: 096 voucher_issued, drain+QStash+DLQ, Edge twin, RTL `lang=he` |

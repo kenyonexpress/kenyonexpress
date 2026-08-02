@@ -9,7 +9,7 @@ import Link from 'next/link'
 export const metadata = { title: 'האזור האישי' }
 
 export default async function AccountOverviewPage() {
-  const [wallet, orders, coupons] = await Promise.all([
+  const [wallet, orders, vouchers] = await Promise.all([
     getWalletSummary(),
     getMyOrders(),
     getCustomerVouchers(),
@@ -24,13 +24,15 @@ export default async function AccountOverviewPage() {
 
   return (
     <>
-      <h1 className="account-title">האזור האישי</h1>
+      <h1 className="account-title">סקירה</h1>
       <p className="account-subtitle">סקירה מהירה של החשבון שלך</p>
 
       <div className="wallet-balance">
         <p className="wallet-balance__label">יתרת הארנק</p>
-        <p className="wallet-balance__amount">{formatIls(wallet.balanceIls)}</p>
-        <p className="wallet-balance__note">קרדיט לשימוש באתר בלבד. לא ניתן למשיכה.</p>
+        <p className="wallet-balance__amount">{formatIls(wallet.balanceAgorot)}</p>
+        <p className="wallet-balance__note">
+          הארנק משמש לתשלום חלקי או מלא באתר. אין משיכה למזומן ואין העברה למשתמש אחר.
+        </p>
       </div>
 
       <div className="account-grid">
@@ -39,7 +41,7 @@ export default async function AccountOverviewPage() {
           {lastOrder ? (
             <>
               <p className="account-row__title">
-                {formatIls(lastOrder.totalIls)}{' '}
+                {formatIls(lastOrder.totalAgorot)}{' '}
                 <span
                   className={`account-chip account-chip--${orderStatusTone(lastOrder.settlementStatus)}`}
                 >

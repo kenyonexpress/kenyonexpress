@@ -14,15 +14,37 @@ import {
   parseProductType,
 } from '@/lib/category-page'
 import { type SortValue, parseSort } from '@/lib/category-tokens'
+import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
 
 /* Live equivalent: kenyonexpress.co.il/shop/ - h1 "חנות", 24 per page */
 const PAGE_TITLE = 'חנות'
 
-export const metadata = {
+/**
+ * NOT ISR. This page reads `searchParams` - page number, sort, filters - which
+ * makes it dynamic by definition: there is no single HTML for `/products` to
+ * cache, there is one per combination a shopper picks. Declaring `revalidate`
+ * here asked Next to prerender it anyway, and every request then failed the
+ * render with DYNAMIC_SERVER_USAGE. In production that is not a slow page, it
+ * is an error page with no `dir="rtl"` on `<html>`, which is how the E2E suite
+ * found it: 31 specs failing on a missing RTL attribute that the layout does
+ * set. Caching for this route belongs in the data layer, not the route segment.
+ */
+export const dynamic = 'force-dynamic'
+
+export const metadata: Metadata = {
   title: PAGE_TITLE,
-  description: 'כל המוצרים, הדילים והקופונים של קניון Express במקום אחד.',
+  description: 'כל המוצרים, הדילים והקופונים של קניון אקספרס במקום אחד.',
+  alternates: { canonical: '/products' },
+  openGraph: {
+    title: PAGE_TITLE,
+    description: 'כל המוצרים, הדילים והקופונים של קניון אקספרס במקום אחד.',
+    url: '/products',
+    locale: 'he_IL',
+    siteName: 'קניון אקספרס',
+    type: 'website',
+  },
 }
 
 type Props = {

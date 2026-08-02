@@ -6,8 +6,11 @@ import { buildSiteJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 // home-handheld.css is imported by the root layout (see the note there): as a
 // page-level import it was a 125-byte stylesheet costing a full round trip.
 
-export const metadata = {
-  title: 'קניון EXPRESS — מסדרים לך בילוי',
+/** ISR: home refreshes at most every 2 minutes. */
+export const revalidate = 120
+
+export const metadata: Metadata = {
+  title: { absolute: 'קניון אקספרס | קופונים ומבצעים' },
   description: 'קופונים, דילים ומוצרים במחיר הכי טוב. בפריסה ארצית.',
   alternates: { canonical: '/' },
 }

@@ -14,7 +14,8 @@ interface Variant {
   price: number | null
   price_modifier: number
   stock_quantity: number | null
-  sku: string
+  /** Nullable in the table, and `effectiveSku` already falls back to the product's. */
+  sku: string | null
 }
 
 interface Attribute {

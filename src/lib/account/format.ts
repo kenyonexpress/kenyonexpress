@@ -1,7 +1,22 @@
 /** Shared formatting for the account area. Hebrew locale, ILS, Israel timezone. */
 
-export function formatIls(value: number): string {
-  return `₪${value.toFixed(2)}`
+import { type Agorot, agorot, formatAgorot, parseIls } from '@/lib/money'
+
+/**
+ * Format integer agorot as ₪ via money.ts.
+ * Callers must pass Agorot (or a raw integer agorot count), never a float ILS.
+ */
+export function formatIls(value: Agorot | number): string {
+  return formatAgorot(agorot(value))
+}
+
+/** Convert a legacy decimal ILS DB column into integer Agorot for display. */
+export function ilsColumnToAgorot(value: number | string | null | undefined): Agorot {
+  if (value == null || value === '') return agorot(0)
+  if (typeof value === 'number') {
+    return parseIls(value.toFixed(2))
+  }
+  return parseIls(value)
 }
 
 export function formatDate(iso: string | null): string {

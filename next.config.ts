@@ -5,6 +5,9 @@ import { REMOTE_IMAGE_PATTERNS } from './src/lib/images/remote-hosts'
 import { PAYMENT_FRAME_PATHS, contentSecurityPolicyFor } from './src/lib/security/frame-policy'
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
+const withAnalyzer = withBundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+})
 
 // Security headers applied to every route. See INFRA-AUDIT.md section 2.
 //
@@ -61,9 +64,13 @@ const nextConfig: NextConfig = {
       })),
     ]
   },
-  // Pin the workspace root to this app directory. Without this, Next.js walks up
-  // and may infer the parent folder as the root when multiple lockfiles exist,
-  // emitting a "inferred your workspace root" warning. pnpm-lock.yaml lives here.
+  async redirects() {
+    return [
+      // Printed QR cards and older docs name /scan; the live screen is under
+      // the supplier portal. Keep the short path as a permanent alias.
+      { source: '/scan', destination: '/supplier/scan', permanent: true },
+    ]
+  },
   turbopack: {
     root: __dirname,
   },
@@ -143,8 +150,6 @@ const nextConfig: NextConfig = {
      * one CSS request instead of four. See src/app/layout.tsx.
      */
     serverActions: {
-      // The image pipeline posts original files (up to 8MB) to a server action
-      // for sharp processing before upload to R2/Supabase.
       bodySizeLimit: '10mb',
     },
   },

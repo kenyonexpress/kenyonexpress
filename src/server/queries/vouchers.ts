@@ -23,6 +23,12 @@ export interface CustomerVoucher {
   supplier: { name: string | null } | null
 }
 
+const VOUCHER_SELECT = `id, code, qr_payload, status,
+       face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot,
+       offer_valid_until, expires_at, issued_at, redeemed_at,
+       product:products(name_he, slug),
+       supplier:suppliers(name)`
+
 export async function getCustomerVouchers(): Promise<CustomerVoucher[]> {
   const supabase = await createClient()
   const {
@@ -32,13 +38,7 @@ export async function getCustomerVouchers(): Promise<CustomerVoucher[]> {
 
   const { data } = await supabase
     .from('vouchers')
-    .select(
-      `id, code, qr_payload, status,
-       face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot,
-       offer_valid_until, expires_at, issued_at, redeemed_at,
-       product:products(name_he, slug),
-       supplier:suppliers(name)`,
-    )
+    .select(VOUCHER_SELECT)
     .eq('user_id', user.id)
     // active vouchers first, then most recent
     .order('status', { ascending: true })
