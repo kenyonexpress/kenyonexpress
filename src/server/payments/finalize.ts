@@ -361,6 +361,12 @@ export async function finalizeOrder(input: {
     // Best-effort: the purchased cart is done; leftovers confuse the header badge.
     await admin.from('carts').update({ items: [] }).eq('profile_id', order.user_id)
 
+    // Wake the outbox drain. Triggers already enqueued rows in the paid_at
+    // transaction; this must never fail finalize (QStash / cron are backups).
+    void import('@/lib/notifications/qstash')
+      .then(({ wakeNotificationsDrain }) => wakeNotificationsDrain(`order:${order.id}`))
+      .catch(() => {})
+
     return { ok: true, replay: false, orderId: order.id }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'finalize failed'

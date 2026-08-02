@@ -3,15 +3,15 @@
 תור על branch:
 
 ```
-feat/personal-area
+feat/notifications
 ```
 
 ## התור
 
-- [x] ✅ Personal area: הזמנות, קופונים+QR מ-`vouchers`, ארנק קאשבק (agorot via money.ts, closed-loop), פרופיל Google, RTL, Vitest, compare `--page=account`.
+- [x] ✅ Notifications: Resend, outbox 095/096, Edge worker, payment + coupon QR emails (RTL), QStash retry + DLQ, Vitest.
 
 ## לוג
 
 | שלב | סטטוס | הערות |
 |---|---|---|
-| Personal area | ✅ | coupons tabs+QR, wallet agorot display, logout, orders→vouchers |
+| Notifications | ✅ | voucher_issued outbox, drain, QStash, Edge proxy twin |
