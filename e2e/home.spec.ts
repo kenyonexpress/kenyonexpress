@@ -322,4 +322,41 @@ test.describe('homepage', () => {
 
     expect(failed, failed.join(', ')).toEqual([])
   })
+
+  /**
+   * The hero must NOT advance on its own before the visitor has interacted, and
+   * must advance after.
+   *
+   * Both halves are the test, and the second half is the reason it exists.
+   * Revealing a slide is a late paint of a large element, and on a 412px phone
+   * over real slow 4G that is what set the homepage's LCP: 9096ms against a
+   * 900ms first paint, for an element 1% larger than the one already on screen
+   * (see the note on the autoplay effect in HeroSlider.tsx). Gating the
+   * interval on input takes LCP to 884-904ms. But a gate that never opens is a
+   * carousel that is quietly broken, and nothing else in this suite would say
+   * so, because every other assertion here is about the FIRST slide.
+   *
+   * 7 seconds is deliberately longer than one 5000ms interval, so a slider that
+   * still autoplays fails rather than races.
+   */
+  test('the hero holds its first slide until the visitor interacts, then rotates', async ({
+    page,
+  }) => {
+    await page.goto('/')
+    const slider = page.locator('[data-hero-slider]')
+    await expect(slider).toBeVisible()
+
+    const activeDot = () => slider.locator('button[aria-current="true"]').getAttribute('aria-label')
+
+    expect(await activeDot()).toBe('שקופית 1')
+    await page.waitForTimeout(7000)
+    expect(await activeDot(), 'hero advanced without any interaction').toBe('שקופית 1')
+
+    // A press anywhere, not on the slider: the gate is on the document, because
+    // what closes the LCP window is any input on the page.
+    await page.locator('body').click({ position: { x: 5, y: 5 } })
+    await expect
+      .poll(activeDot, { timeout: 12000, message: 'hero never rotated after interaction' })
+      .not.toBe('שקופית 1')
+  })
 })

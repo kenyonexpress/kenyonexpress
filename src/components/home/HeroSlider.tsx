@@ -565,6 +565,7 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
   // 24-31% band difference across y200-700 and looked like a layout defect.
   const [active, setActive] = useState(0)
   const [paused, setPaused] = useState(false)
+  const [engaged, setEngaged] = useState(false)
 
   const goTo = useCallback(
     (index: number) => {
@@ -574,11 +575,58 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
     [slides.length],
   )
 
+  /**
+   * Autoplay waits for the visitor to press something. This is the home page's
+   * LCP, and the reason is specific enough to be worth writing down in full.
+   *
+   * MEASURED on a 412px phone, real slow 4G + cpu/4 (scripts/_lcp-probe.mjs,
+   * scripts/_hero-timing-probe.mjs), before this change:
+   *
+   *   900ms   banner paragraph paints. size 33553. LCP so far: 900ms.
+   *   2451ms  slide 2's image finishes downloading. Nothing paints.
+   *   9096ms  first autoplay tick reveals slide 2. size 33891. LCP: 9096ms.
+   *
+   * The image was ready six and a half seconds before it was shown. Nothing
+   * was slow. The page simply revealed a larger element late, and LCP is
+   * defined as the largest element's paint time, so the whole metric moved -
+   * for a margin of 338 square pixels, ONE PERCENT, over the element that was
+   * already on screen. Every configuration measured did the same thing:
+   * 8992-9096ms for a new visitor, 9268ms for a returning one, 11440ms on a
+   * 1440px desktop.
+   *
+   * Preloading cannot fix it, because the image was never the delay. Nor can a
+   * longer interval: without user input LCP keeps accepting new candidates for
+   * as long as the page lives, so any delay just moves the number. The only
+   * thing that closes the window is input - LCP is final at the first click,
+   * tap or key press, by definition - and that is exactly what this waits for.
+   *
+   * So: a visitor who lands and reads sees the slide the page was built around
+   * and a fast LCP. A visitor who touches anything gets the carousel, starting
+   * from the moment their interaction has already sealed the metric. There is
+   * no arrangement in which both a rotating carousel and a fast LCP are true
+   * for someone who never interacts, because the rotation IS a late large
+   * paint; this picks which visitor pays, rather than pretending otherwise.
+   *
+   * `pointerdown`/`keydown` and not `scroll`: scrolling does NOT finalise LCP,
+   * so starting on scroll would move the paint without closing the window and
+   * would measure exactly as badly.
+   */
   useEffect(() => {
-    if (slides.length <= 1 || paused) return
+    if (engaged) return
+    const onInput = () => setEngaged(true)
+    window.addEventListener('pointerdown', onInput, { passive: true })
+    window.addEventListener('keydown', onInput, { passive: true })
+    return () => {
+      window.removeEventListener('pointerdown', onInput)
+      window.removeEventListener('keydown', onInput)
+    }
+  }, [engaged])
+
+  useEffect(() => {
+    if (!engaged || slides.length <= 1 || paused) return
     const t = setInterval(() => goTo(active + 1), AUTOPLAY_MS)
     return () => clearInterval(t)
-  }, [active, goTo, paused, slides.length])
+  }, [engaged, active, goTo, paused, slides.length])
 
   if (slides.length === 0) return null
 

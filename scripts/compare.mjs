@@ -270,21 +270,28 @@ const shoot = async (url, out) => {
       return /(סל|עגל)[^.]{0,20}ריק|אין מוצרים בסל|cart is currently empty/i.test(text)
     })
   }
-  // Stop the hero before shooting. Our slider autoplays every 5s and the local
-  // wait above is 6s, so the local screenshot was taken one slide further along
-  // than live's every single time, and a fullPage capture is slow enough to
-  // advance again mid-scroll. HeroSlider pauses on pointer enter, which is the
-  // component's own supported way to hold a slide, so use that rather than
-  // reaching into its state. Pages without a hero match nothing and are
-  // untouched.
+  // Stop the hero before shooting.
+  //
+  // OUR slider no longer autoplays unless the visitor has pressed something
+  // (see the autoplay effect in HeroSlider.tsx - revealing a slide was setting
+  // the homepage's LCP), and the synthetic events below are not trusted input,
+  // so locally this is already holding slide 1 by the time we arrive. It stays
+  // because LIVE still autoplays every 5s against our 6s wait, and because a
+  // fullPage capture is slow enough to advance mid-scroll: without this the
+  // reference moves under us even when our side is frozen.
+  //
+  // Pointer-enter is the component's own supported way to hold a slide, so use
+  // that rather than reaching into its state. Pages without a hero match
+  // nothing and are untouched.
   await p
     .evaluate(() => {
       const hero = document.querySelector(
         '[data-hero-slider], .home-v1-slider, rs-module, [class*="hero"]',
       )
-      // Pause first. Pausing alone is not enough: the wait above is 6s and
-      // autoplay fires at 5s, so by the time we get here the local hero has
-      // already advanced once and pausing would just hold the wrong slide.
+      // Pause first, then put slide 1 back. Pausing alone is not enough for the
+      // live reference: its wait above is 6s and its autoplay fires at 5s, so
+      // by the time we get here it has already advanced once and pausing would
+      // just hold the wrong slide.
       hero?.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true, view: window }))
       const firstSlide =
         document.querySelector('rs-bullet') ??
