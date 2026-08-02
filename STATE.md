@@ -1109,3 +1109,14 @@ docs/ARCHITECTURE-NOTIFICATIONS.md
 - Docs only. בלי שינוי קוד. בלי
 git push
 (לבקשה מפורשת בסשן).
+
+### 2026-08-03: docs lifecycle pack in ke-arch
+- Branch
+arch/docs-lifecycle
+ב-worktree
+ke-arch
+בלבד.
+- Commits: notifications (multi-channel + wallet push), SEO-PERFORMANCE (Lighthouse 90+ / ISR / sitemap / schema.org), MOBILE-APP (Expo + Wallet CTA).
+- אין שינוי קוד. אין נגיעה ב-
+/Users/ofir/kenyonexpress-web/kenyonexpress
+.
