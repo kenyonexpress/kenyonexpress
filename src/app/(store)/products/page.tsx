@@ -21,8 +21,17 @@ import '@/styles/category-page.css'
 /* Live equivalent: kenyonexpress.co.il/shop/ - h1 "חנות", 24 per page */
 const PAGE_TITLE = 'חנות'
 
-/** ISR: shop archive refreshes at most every 3 minutes. */
-export const revalidate = 180
+/**
+ * NOT ISR. This page reads `searchParams` - page number, sort, filters - which
+ * makes it dynamic by definition: there is no single HTML for `/products` to
+ * cache, there is one per combination a shopper picks. Declaring `revalidate`
+ * here asked Next to prerender it anyway, and every request then failed the
+ * render with DYNAMIC_SERVER_USAGE. In production that is not a slow page, it
+ * is an error page with no `dir="rtl"` on `<html>`, which is how the E2E suite
+ * found it: 31 specs failing on a missing RTL attribute that the layout does
+ * set. Caching for this route belongs in the data layer, not the route segment.
+ */
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: PAGE_TITLE,

@@ -24,8 +24,13 @@ import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
 
-/** ISR: category archives refresh at most every 5 minutes. */
-export const revalidate = 300
+/**
+ * NOT ISR, for the same reason as `/products`: this route reads `searchParams`
+ * (page, sort, price and brand filters), so it is dynamic by definition and
+ * cannot have one cached HTML. `revalidate` here produced a
+ * DYNAMIC_SERVER_USAGE render failure on every request instead of a cache hit.
+ */
+export const dynamic = 'force-dynamic'
 
 type Props = {
   params: Promise<{ slug: string }>
