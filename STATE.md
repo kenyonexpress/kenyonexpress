@@ -1,6 +1,6 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-03 (docs-only in ke-arch: notifications + SEO + mobile)
+Updated: 2026-08-03 (docs-only ke-arch: 6-doc pack on arch/docs-lifecycle)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,21 +8,28 @@ ke-arch
 . Docs only. אין נגיעה ב-worktree הראשי.
 
 ## Last Completed
-שלושה מסמכי ארכיטקטורה ב-
+שישה מסמכים ב-
 ke-arch
-, commit נפרד לכל אחד על
-arch/docs-lifecycle
-:
+, commit נפרד לכל אחד:
 
 1.
 docs/ARCHITECTURE-NOTIFICATIONS.md
-: Resend + Edge, WhatsApp/SMS למחזור קופון (הונפק/מומש/פג), Wallet push.
+(rev B + SLA)
 2.
 docs/ARCHITECTURE-SEO-PERFORMANCE.md
-: Lighthouse 90+, ISR, sitemap דינמי, schema.org מוצרים בעברית RTL.
+(CWV + ISR + sitemap + schema.org)
 3.
 docs/ARCHITECTURE-MOBILE-APP.md
-: Expo RN על shared Supabase, QR offline, push, Wallet pass CTA.
+(Expo מול PWA מנומק)
+4.
+docs/ARCHITECTURE-ADMIN-DASHBOARD.md
+(platform_percent פר מוצר, ספקים, דוחות)
+5.
+docs/ARCHITECTURE-FRAUD-PREVENTION.md
+(מימוש כפול, chargebacks, צילומי QR)
+6.
+docs/RUNBOOK-PRODUCTION.md
+(deploy, rollback, migrations)
 
 ## In Progress
 nothing
@@ -33,11 +40,7 @@ none (docs only)
 ## Next Task
 המשך תור docs ב-
 ke-arch
-לפי הצורך, או יישום על
-feat/notifications
-/
-feat/seo-performance
-מחוץ לסקופ הזה.
+או יישום על ענפי feat מחוץ לסקופ docs-only.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
@@ -1119,4 +1122,17 @@ ke-arch
 - Commits: notifications (multi-channel + wallet push), SEO-PERFORMANCE (Lighthouse 90+ / ISR / sitemap / schema.org), MOBILE-APP (Expo + Wallet CTA).
 - אין שינוי קוד. אין נגיעה ב-
 /Users/ofir/kenyonexpress-web/kenyonexpress
+.
+
+### 2026-08-03: docs pack 2 (admin / fraud / runbook)
+- NOTIFICATIONS rev B (SLA), SEO CWV, MOBILE Expo-vs-PWA.
+- חדשים:
+docs/ARCHITECTURE-ADMIN-DASHBOARD.md
+,
+docs/ARCHITECTURE-FRAUD-PREVENTION.md
+,
+docs/RUNBOOK-PRODUCTION.md
+.
+- Docs only ב-
+ke-arch
 .
