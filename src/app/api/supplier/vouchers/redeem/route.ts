@@ -1,5 +1,7 @@
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
+import { markOrderItemRedeemed } from '@/server/domain/vouchers/mark-order-item-redeemed'
 import { verifyVoucherQrPayload } from '@/server/domain/vouchers/qr'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -162,6 +164,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const replayed = result.replayed === true
 
   if (outcome === 'success') {
+    // 092 updates order_items inside the RPC. This belt-and-suspenders write
+    // covers older RPC installs that still lack that UPDATE.
+    const orderItemId = typeof result.order_item_id === 'string' ? result.order_item_id : null
+    if (orderItemId && !replayed) {
+      try {
+        await markOrderItemRedeemed(createAdminClient(), orderItemId)
+      } catch (err) {
+        console.error('markOrderItemRedeemed failed:', err)
+      }
+    }
+
     return respond(
       {
         outcome,

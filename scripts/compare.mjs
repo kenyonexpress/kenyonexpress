@@ -4,10 +4,11 @@ import { homedir } from 'node:os'
 import { resolve } from 'node:path'
 import { chromium } from '@playwright/test'
 
-// Usage: node scripts/compare.mjs [--page=home|product|category] [--live=<url>] [--mine=<url>]
+// Usage: node scripts/compare.mjs [--page=home|product|category|products|search|coupon]
 // home     : live = refs/ke_live_singlefile.html    mine = http://localhost:3000/
 // product  : live = live kenyonexpress product page mine = http://localhost:3000/product/<slug>
 // category : live = live product-category archive   mine = http://localhost:3000/category/<slug>
+// coupon   : live coupon PDP vs local coupon product (QR customer page needs auth; PDP is the public surface)
 // Writes refs/live.png + refs/mine.png (consumed by diff-bands.mjs), plus
 // page-suffixed copies refs/live-<page>.png / refs/mine-<page>.png for reference.
 
@@ -71,8 +72,26 @@ if (page === 'home') {
 } else if (page === 'search') {
   liveUrl ??= LIVE_SEARCH
   mineUrl ??= `${LOCAL}/search?q=${encodeURIComponent(COMPARE_QUERY)}`
+} else if (page === 'coupon') {
+  // Public coupon product page (not the authed /coupon/[id] voucher view).
+  liveUrl ??= LIVE_PRODUCT
+  if (!mineUrl) {
+    const probe = await ctx.newPage()
+    await probe.goto(`${LOCAL}/products`, { waitUntil: 'networkidle' }).catch(() => {})
+    const href = await probe
+      .evaluate(() => {
+        const cards = Array.from(document.querySelectorAll('a[href*="/product/"]'))
+        const coupon = cards.find((a) => /קופון|coupon/i.test(a.textContent ?? ''))
+        const a = coupon ?? cards[0]
+        return a ? a.getAttribute('href') : null
+      })
+      .catch(() => null)
+    await probe.close()
+    mineUrl = href ? `${LOCAL}${href.startsWith('/') ? '' : '/'}${href}` : `${LOCAL}/product/`
+    console.log(`coupon: discovered local slug -> ${mineUrl}`)
+  }
 } else {
-  console.error(`unknown --page=${page} (use home, product, category, products or search)`)
+  console.error(`unknown --page=${page} (use home, product, category, products, search or coupon)`)
   process.exit(2)
 }
 

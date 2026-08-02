@@ -1,46 +1,45 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-02 (goal: Admin dashboard dynamic fields + ADMIN-ARCHITECTURE)
+Updated: 2026-08-02 (goal: Coupon redemption + QR on feat/coupon-redemption)
 
 ## Current Phase
-‏**feat/admin-core.** מודל Escrow מ-27.07 עדיין מחייב (ראה למטה).
+‏**feat/coupon-redemption.** מודל Escrow מ-27.07 עדיין מחייב ברקע האדמין; מסמך המימוש אומר אין Escrow חיצוני (held פנימי בלבד).
 
 ## Last Completed
-Goal Admin dashboard על
-feat/admin-core
+Goal Coupon redemption + QR על
+feat/coupon-redemption
 :
 
-1. שדות כסף דינמיים פר-מוצר כבר חיו ב-
-ProductForm
-+
-product-money
-+ מיגרציה 070 (אין עמלה קבועה).
-2. רשימת
-/admin/products
-מציגה עכשיו
-platform_percent
-ומחיר קופון באתר.
-3. עודכן
-docs/ADMIN-ARCHITECTURE.md
-(§3.0 חוזה UI, §4 מלאי מסכים, acceptance + revision).
-4. NEXT-GOALS.md מסומן ✅ לשלב הזה.
+1. נוצר
+docs/ARCHITECTURE-COUPON-REDEMPTION-UX.md
+(+ הועתק
+ARCHITECTURE-COUPON-REDEMPTION.md
+מ-
+arch/coupon-redemption
+).
+2. `/supplier/scan` RTL עם פס מותג `#fed700`.
+3. `/coupon/[id]` ללקוח עם QR מ-`qr_payload`.
+4. מיגרציה
+092_redeem_voucher_order_item.sql
+: RPC redeem + עדכון
+order_items.settlement_status=redeemed
+(להחיל ב-MCP apply_migration; אין Supabase MCP בסשן הזה).
+5. Vitest vouchers: 93/93 כולל
+mark-order-item-redeemed
+.
+6. compare.mjs תומך
+--page=coupon
+.
 
 ## In Progress
 nothing
 
 ## Blocking Issues
-none
+מיגרציה 092 עדיין לא הוחלה על הפרויקט החי (אין MCP apply_migration בסשן). בלי זה הסריקה נכשלת אם ה-RPC חסר.
 
 ## Next Task
-מיזוג
-feat/admin-core
-ל-
-phase5/homepage
-אחרי סקירת
-src/types/database.ts
-, או מסכי settlements / redemptions לפי
-ADMIN-ARCHITECTURE
-.
+החלת 092 דרך MCP apply_migration, ואז smoke: הנפקה → `/coupon/[id]` → scan → already_redeemed.
+
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress

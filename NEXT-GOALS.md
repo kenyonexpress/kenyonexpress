@@ -3,15 +3,15 @@
 תור על branch:
 
 ```
-feat/admin-core
+feat/coupon-redemption
 ```
 
 ## התור
 
-- [x] ✅ Admin dashboard + feat/admin-core: שדות דינמיים למוצר (עמלת פלטפורמה / אחוז ספק / הנחה / מחיר קופון פר-מוצר, בלי hardcoded), רשימת מוצרים מציגה עמלה, `docs/ADMIN-ARCHITECTURE.md` מחייב.
+- [x] ✅ Coupon redemption + QR: מסמך UX, scan RTL, `/coupon/[id]` עם QR, מיגרציה 092 (redeem + order_items.settlement_status=redeemed), Vitest, compare `--page=coupon`.
 
 ## לוג
 
 | שלב | סטטוס | הערות |
 |---|---|---|
-| Dynamic product fields + ADMIN-ARCHITECTURE | ✅ | ProductForm + product-money + 070; עמודה בטבלה; מסמך מעודכן |
+| Coupon redemption | ✅ | docs UX+arch, scan polish, coupon page, 092, mark-order-item tests |
