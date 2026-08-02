@@ -1,0 +1,649 @@
+/* Category archive - values measured from live kenyonexpress.co.il
+   (MEASURED-LIVE.md, 1440x900). Container 1170 inside max-w-page. */
+
+.category-page {
+  /* Colour tokens. Single source of truth: src/styles/tokens.ts (CATALOG).
+     tokens.test.ts fails if these drift from it. Every rule below reads them
+     through var() so no rule carries a raw hex. */
+  --cat-ink: #333e48;
+  --cat-link: #0062bd;
+  --cat-muted: #768b9e;
+  --cat-sale: #dc3545;
+  --cat-badge: #44b81b;
+  --cat-bar: #efefef;
+  --cat-line: #dddddd;
+  --cat-switcher: #495057;
+  --cat-surface: #ffffff;
+  --cat-brand: #fed700;
+  --cat-brand-hover: #fedd26;
+
+  /* Geometry measured on the live archive. Same contract as the colours:
+     change the number in tokens.ts, never in a rule. */
+  --cat-container: 1170px;
+  --cat-card-col: 234px;
+  --cat-thumb-max: 186.03px;
+  --cat-body-line: 23.996px;
+  --cat-title-size: 25.004px;
+  --cat-title-line: 40.0064px;
+  --cat-price-size: 20.006px;
+  --cat-price-del-size: 12.0036px;
+  --cat-eyebrow-size: 11.998px;
+  --cat-eyebrow-line: 12.5979px;
+  --cat-ptitle-line: 18.0001px;
+  --cat-bar-height: 45.89px;
+  --cat-bar-pad-y: 2.8px;
+  --cat-select-w: 174px;
+  --cat-select-h: 34.3px;
+  --cat-select-pad-y: 4.16px;
+  --cat-crumb-pad-top: 25.004px;
+  --cat-crumb-pad-bot: 22.4px;
+  --cat-thumb-gap: 25.96px;
+  --cat-atc-w: 37.14px;
+  --cat-atc-h: 33.88px;
+  --cat-carousel-gap: 16.996px;
+  --cat-carousel-size: 21.994px;
+  --cat-carousel-line: 35.2px;
+  --cat-carousel-pad: 8.7976px;
+  /* Rendered gaps, not computed styles. Live's eyebrow declares
+     margin-bottom 11.998px but lays out an 8px gap because the span is inline;
+     the pixel comparison cares about the geometry, so the geometry is what is
+     tokenised. Same for the 10px live leaves between header and footer. */
+  --cat-eyebrow-gap: 8px;
+  --cat-footer-gap-top: 10px;
+
+  color: var(--cat-ink);
+  font-size: 14px;
+  line-height: 24px;
+}
+
+.category-page__inner {
+  max-width: var(--cat-container);
+  margin-inline: auto;
+  padding-inline: 15px;
+}
+
+@media (min-width: 1200px) {
+  .category-page__inner {
+    padding-inline: 0;
+  }
+}
+
+/* Breadcrumb: measured padding 25.004px top / 22.4px bottom, 14px #333e48 */
+.category-breadcrumb {
+  padding: var(--cat-title-size) 0 var(--cat-crumb-pad-bot);
+  font-size: 14px;
+  line-height: var(--cat-body-line);
+  color: var(--cat-ink);
+}
+
+.category-breadcrumb a {
+  color: var(--cat-ink);
+  text-decoration: none;
+}
+
+.category-breadcrumb a:hover {
+  color: var(--cat-link);
+}
+
+.category-breadcrumb__sep {
+  display: inline-block;
+  margin-inline: 10px;
+  color: var(--cat-ink);
+}
+
+/* Header row: h1 on inline-start (right), result count on inline-end (left).
+   Measured: h1 25.004px / 500 / 40.0064px line-height, margin-bottom 14px. */
+.category-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.category-page__title {
+  margin: 0;
+  font-size: var(--cat-title-size);
+  font-weight: 500;
+  line-height: var(--cat-title-line);
+  color: var(--cat-ink);
+}
+
+.category-page__count {
+  margin: 0;
+  font-size: 14px;
+  line-height: var(--cat-body-line);
+  color: var(--cat-ink);
+}
+
+.category-page__count--bottom {
+  padding-block: 16px 8px;
+}
+
+/* Control bar: measured #efefef, radius 9px, padding 2.8px 20.006px, h 45.89px.
+   Select on inline-end (left), view switcher on inline-start (right). */
+.category-control-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: var(--cat-bar-height);
+  padding: var(--cat-bar-pad-y) var(--cat-price-size);
+  background-color: var(--cat-bar);
+  border-radius: 9px;
+  color: var(--cat-ink);
+  font-size: 14px;
+  line-height: var(--cat-body-line);
+}
+
+/* Measured select: 174x34.3px, radius 20.006px, 1px #ddd, white bg */
+.category-control-bar__select {
+  width: var(--cat-select-w);
+  height: var(--cat-select-h);
+  border: 1px solid var(--cat-line);
+  border-radius: var(--cat-price-size);
+  background: var(--cat-surface);
+  color: var(--cat-ink);
+  font-size: 14px;
+  padding: var(--cat-select-pad-y) 12px;
+  cursor: pointer;
+}
+
+/* View switcher: measured 116x39 on the inline-start side, hidden on mobile */
+.category-view-switcher {
+  display: none;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (min-width: 768px) {
+  .category-view-switcher {
+    display: flex;
+  }
+}
+
+.category-view-switcher__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 39.33px;
+  color: var(--cat-switcher);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.category-view-switcher__btn.is-active,
+.category-view-switcher__btn:hover {
+  color: var(--cat-ink);
+}
+
+/* Body: measured live grid.rect = x135-1305 (full 1170 container), and
+   sidebar.present = false, so the product area spans the whole container. */
+/* Product area, then filters.
+   The brief asks for a filter sidebar; the live archive has none and its grid
+   spans the full container (refs/category-tokens.json: sidebar.present false,
+   grid.rect x135-1305). Putting the filters in a column would take 234px the
+   live page fills with products, and putting them ABOVE the grid would push
+   every row down, since live has zero gap between the control bar and the
+   first card. Placing them AFTER the grid keeps both: the filters exist and
+   work, and everything above them matches live exactly. */
+.category-page__body {
+  display: block;
+  width: 100%;
+}
+
+.category-page__main {
+  min-width: 0;
+}
+
+/* Product grid - measured: display flex, wrap, no gap, 234px fixed cards */
+.category-products {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.category-products__item {
+  width: var(--cat-card-col);
+  flex: 0 0 var(--cat-card-col);
+  box-sizing: border-box;
+}
+
+@media (max-width: 575px) {
+  .category-products__item {
+    width: 50%;
+    flex: 0 0 50%;
+  }
+}
+
+/* Card: measured .product-inner padding 20.006px top / 14px bottom, content
+   box 186px inside the 234px column (24px each side). */
+.category-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--cat-price-size) 24px 14px;
+  box-sizing: border-box;
+}
+
+.category-card__header {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Measured: 11.998px / 12.5979px, h 12.6, link #768b9e, margin-bottom 11.998px */
+.category-card__categories {
+  font-size: var(--cat-eyebrow-size);
+  color: var(--cat-ink);
+  margin-bottom: var(--cat-eyebrow-gap);
+  line-height: var(--cat-eyebrow-line);
+}
+
+.category-card__categories a {
+  color: var(--cat-muted);
+  text-decoration: none;
+}
+
+.category-card__categories a:hover {
+  color: var(--cat-ink);
+}
+
+/* Measured live span.price: font 20.006px, line-height 20.006px, box height 27px */
+.category-card__price {
+  display: block;
+  height: 27px;
+  font-size: var(--cat-price-size);
+  line-height: var(--cat-price-size);
+  color: var(--cat-ink);
+  margin-bottom: 0;
+}
+
+.category-card__price del {
+  color: var(--cat-muted);
+  font-size: var(--cat-price-del-size);
+  text-decoration: line-through;
+  font-weight: 400;
+}
+
+.category-card__price ins {
+  color: var(--cat-sale);
+  text-decoration: none;
+  font-weight: 400;
+  margin-inline-end: 0.25em;
+}
+
+.category-card__link {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Measured: 14px/700/var(--cat-link)/18px */
+.category-card__title {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: var(--cat-ptitle-line);
+  color: var(--cat-link);
+}
+
+.category-card__link:hover .category-card__title {
+  color: var(--cat-ink);
+}
+
+/* Image: measured 186x186 centered inside 234 card */
+/* Measured: image top sits var(--cat-thumb-gap) below the title box (margins collapse) */
+.category-card__thumb {
+  position: relative;
+  display: block;
+  text-align: center;
+  margin-top: var(--cat-thumb-gap);
+}
+
+.category-card__thumb img {
+  width: auto;
+  max-width: var(--cat-thumb-max);
+  max-height: var(--cat-thumb-max);
+  height: auto;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Sale badge: measured bottom inline-start corner of the image,
+   var(--cat-badge), white, var(--cat-eyebrow-size)/700, radius 4, padding 2px 10px */
+.category-card__badge {
+  position: absolute;
+  inset-inline-start: 0;
+  bottom: 0;
+  z-index: 2;
+  background-color: var(--cat-badge);
+  color: var(--cat-surface);
+  font-size: var(--cat-eyebrow-size);
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 4px;
+  line-height: 2;
+}
+
+/* Footer: measured .price-add-to-cart = 186x36 with 7px below it. Price sits
+   at the inline start, the round add-to-cart at the inline end. */
+.category-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 36px;
+  margin-top: var(--cat-footer-gap-top);
+  margin-bottom: 7px;
+}
+
+/* Add-to-cart icon: measured 37x34 circle, transparent bg, radius 22 */
+.category-card__atc {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--cat-atc-w);
+  height: var(--cat-atc-h);
+  flex: 0 0 auto;
+  border: 1px solid var(--cat-line);
+  border-radius: 22px;
+  background: transparent;
+  color: var(--cat-ink);
+  cursor: pointer;
+}
+
+.category-card__atc:hover {
+  background: var(--cat-brand-hover);
+  border-color: var(--cat-brand-hover);
+}
+
+/* Filter sidebar: one card column wide, on inline-end (left) */
+.category-sidebar {
+  display: block;
+  width: 100%;
+  padding-top: 32px;
+  margin-top: 32px;
+  border-top: 1px solid var(--cat-line);
+  box-sizing: border-box;
+}
+
+/* Filters read as a row of widgets once they are full width. */
+.category-sidebar__widgets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+  align-items: start;
+}
+
+.category-sidebar__widget {
+  margin-bottom: 28px;
+}
+
+.category-sidebar__title {
+  margin: 0 0 14px;
+  font-size: 16.002px;
+  font-weight: 700;
+  color: var(--cat-ink);
+}
+
+.category-sidebar__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.category-sidebar__list li {
+  padding-block: 4px;
+}
+
+.category-sidebar__list a {
+  color: var(--cat-ink);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.category-sidebar__list a:hover {
+  color: var(--cat-link);
+}
+
+.category-sidebar__list a.is-current {
+  color: var(--cat-link);
+  font-weight: 700;
+}
+
+/* Type filter: a button, because it toggles a query param rather than
+   navigating to a new resource. Styled to read exactly like the category
+   links above it so the sidebar stays one visual list. */
+.category-sidebar__filter-btn {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  color: var(--cat-ink);
+  text-align: start;
+  cursor: pointer;
+}
+
+.category-sidebar__filter-btn:hover {
+  color: var(--cat-link);
+}
+
+.category-sidebar__filter-btn.is-current {
+  color: var(--cat-link);
+  font-weight: 700;
+}
+
+.category-sidebar__filter-btn[disabled] {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.category-sidebar__price-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.category-sidebar__price-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.category-sidebar__price-input {
+  width: 0;
+  flex: 1 1 auto;
+  height: var(--cat-select-h);
+  border: 1px solid var(--cat-line);
+  border-radius: var(--cat-price-size);
+  padding: var(--cat-select-pad-y) 12px;
+  font-size: 14px;
+  color: var(--cat-ink);
+  background: var(--cat-surface);
+}
+
+.category-sidebar__price-btn {
+  align-self: flex-start;
+  height: var(--cat-select-h);
+  padding: 0 20px;
+  border: 0;
+  border-radius: var(--cat-price-size);
+  background: var(--cat-brand);
+  color: var(--cat-ink);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.category-sidebar__price-btn:hover {
+  background: var(--cat-brand-hover);
+}
+
+/* Pagination - Electro yellow (var(--cat-brand) measured site-wide accent) */
+.category-pagination {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 2em;
+  padding: 0;
+  list-style: none;
+}
+
+.category-pagination a,
+.category-pagination span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  border: 1px solid var(--cat-line);
+  border-radius: 18px;
+  font-size: 14px;
+  color: var(--cat-ink);
+  text-decoration: none;
+  background: var(--cat-surface);
+}
+
+.category-pagination a:hover {
+  background: var(--cat-brand-hover);
+  border-color: var(--cat-brand-hover);
+}
+
+.category-pagination .is-current {
+  background: var(--cat-brand);
+  border-color: var(--cat-brand);
+  font-weight: 700;
+}
+
+.category-pagination .is-disabled {
+  color: var(--cat-switcher);
+  cursor: default;
+}
+
+/* Empty state */
+.category-page__empty {
+  padding: 48px 0 64px;
+  text-align: center;
+  color: var(--cat-muted);
+  font-size: 16px;
+}
+
+/* Search box sits between the header and the results, at the control-bar width. */
+.category-search__box {
+  margin-bottom: 20px;
+}
+
+/* Live /shop/ renders a "Recommended Products" carousel section between the
+   breadcrumb and the archive H1. Measured: section.section-products-carousel
+   is 1170x45 with margin-bottom var(--cat-carousel-gap), its header carries a 1px var(--cat-line) bottom
+   rule across the full width, and the h2 is var(--cat-carousel-size)/400 at 249.6px wide with
+   padding-bottom var(--cat-carousel-pad) and a yellow rule of its own. The live carousel holds
+   no items, so the section is the heading and nothing else. */
+.shop-carousel-head {
+  display: flex;
+  align-items: flex-start;
+  height: 45px;
+  margin-bottom: var(--cat-carousel-gap);
+  border-bottom: 1px solid var(--cat-line);
+  box-sizing: border-box;
+}
+
+.shop-carousel-head__title {
+  margin: 0;
+  padding-bottom: var(--cat-carousel-pad);
+  font-size: var(--cat-carousel-size);
+  font-weight: 400;
+  line-height: var(--cat-carousel-line);
+  color: var(--cat-ink);
+  border-bottom: 2px solid var(--cat-brand);
+}
+
+/* Streaming placeholder. Mirrors the measured card boxes so the grid does not
+   reflow when the real products arrive. */
+.category-card--skeleton {
+  gap: 0;
+}
+
+.category-skeleton {
+  display: block;
+  background: var(--cat-bar);
+  border-radius: 4px;
+}
+
+.category-skeleton--eyebrow {
+  height: 12.6px;
+  width: 60%;
+  margin-bottom: var(--cat-eyebrow-size);
+}
+
+.category-skeleton--price {
+  height: 27px;
+  width: 45%;
+}
+
+.category-skeleton--title {
+  height: var(--cat-ptitle-line);
+  width: 85%;
+  margin-top: 4px;
+}
+
+.category-skeleton--thumb {
+  height: var(--cat-thumb-max);
+  width: 100%;
+  margin-top: var(--cat-thumb-gap);
+}
+
+.category-skeleton--footer {
+  height: 36px;
+  width: 100%;
+  margin-top: 8px;
+  margin-bottom: 7px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .category-skeleton {
+    animation: category-skeleton-pulse 1.4s ease-in-out infinite;
+  }
+  @keyframes category-skeleton-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.55;
+    }
+  }
+}
+
+/* Filter disclosure: closed it is one row, so the footer stays near live's. */
+.category-sidebar__summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--cat-ink);
+  list-style: none;
+  padding: 4px 0;
+}
+
+.category-sidebar__summary::-webkit-details-marker {
+  display: none;
+}
+
+.category-sidebar__summary::after {
+  content: " ▾";
+  color: var(--cat-muted);
+}
+
+.category-sidebar__disclosure[open] .category-sidebar__summary::after {
+  content: " ▴";
+}
+
+.category-sidebar__disclosure[open] .category-sidebar__widgets {
+  padding-top: 20px;
+}

@@ -1,0 +1,207 @@
+/* refs/ke_live_singlefile.html — elementor-9175 / jet-listing-grid */
+
+.jet-listing-grid-deals {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+/* live: item box 287.5px (1150/4) x 501px; 8px vertical padding around the
+   485px card, no horizontal gutters; dividers via border only */
+.jet-listing-grid-deals__item {
+  box-sizing: border-box;
+  padding: 8px 0;
+  max-width: 50%;
+  flex: 0 0 50%;
+}
+
+@media (min-width: 1024px) {
+  .jet-listing-grid-deals__item {
+    max-width: 25%;
+    flex: 0 0 25%;
+  }
+}
+
+/* live: divider on the LEFT edge (inline-end in RTL) of every item except the
+   last one in each row (nth-child(4n)) — lines at x 433 / 721 / 1009 */
+.jet-listing-grid-deals__item .p_con {
+  border-inline-end: 1px solid #ddd;
+  height: 100%;
+}
+
+@media (min-width: 1024px) {
+  .jet-listing-grid-deals__item:nth-child(4n) .p_con {
+    border-inline-end: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .jet-listing-grid-deals__item .p_con {
+    border-inline-end: 1px solid #ddd;
+  }
+
+  .jet-listing-grid-deals__item:first-child .p_con,
+  .jet-listing-grid-deals__item:last-child .p_con {
+    border-inline-end: none;
+  }
+}
+
+.jet-listing-grid-deals__item:has(.p_con:hover) {
+  position: relative;
+  z-index: 999;
+}
+
+.p_con {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px;
+  background: #fff;
+  transition: box-shadow 0.3s;
+}
+
+.p_con:hover {
+  position: relative;
+  z-index: 999;
+  box-shadow: 0 3px 16px 0 rgba(0, 0, 0, 0.1);
+}
+
+.p_con__category {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 24px; /* live: category row is 24px tall */
+  color: #768b9e;
+}
+
+.p_con__category:hover {
+  color: #333e48;
+}
+
+.p_con__title-wrap {
+  display: flex;
+  min-height: 64px;
+  justify-content: flex-start;
+}
+
+.p_con__title,
+.jet-listing-grid-deals h2.p_con__title {
+  color: #0062bd;
+  font-size: 22px;
+  line-height: 32px; /* live: 2 clamped lines = 64px */
+  margin: 0;
+  font-weight: inherit;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.p_con__image-wrap {
+  display: flex;
+  overflow: hidden;
+}
+
+.p_con__image-link {
+  display: flex;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+/* live: natural aspect ratio at 245px height, aligned to inline-start (right
+   in RTL); narrow images (e.g. 480x600) do NOT stretch to full width */
+.p_con__image {
+  width: auto;
+  max-width: 100%;
+  height: 245px;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+
+/* live: badge pinned to the LEFT edge (inline-end in RTL) of the image area */
+.p_con__badge {
+  position: absolute;
+  inset-inline-end: 0;
+  z-index: 2;
+  background-color: #e00;
+  padding: 2px 10px;
+  border-radius: 4px;
+}
+
+.discount_per {
+  direction: ltr;
+  color: #fff;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  font-size: 0.857em;
+  line-height: 2em;
+  font-weight: 700;
+}
+
+.p_con__footer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.p_con__prices {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  text-align: end;
+}
+
+.p_con__strike {
+  color: #2d2d2d;
+  font-size: 14px;
+  font-weight: 400;
+  text-decoration: line-through;
+  flex-grow: 1;
+}
+
+.p_con__sale {
+  color: #c93636;
+  font-size: 16px;
+  font-weight: 700;
+  flex-grow: 1;
+}
+
+.p_con__single-price {
+  color: #2d2d2d;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.p_con .atc {
+  flex-shrink: 0;
+}
+
+.p_con .atc a {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  width: 40px;
+  background-color: #eaeaea;
+  padding: 10px 11px 10px 10px;
+  border: none;
+  border-radius: 200px;
+  transition: background-color 0.3s;
+}
+
+.p_con .atc a svg {
+  width: 20px;
+  height: 20px;
+  fill: #fff;
+}
+
+.p_con:hover .atc a {
+  background: #fed700 !important;
+}

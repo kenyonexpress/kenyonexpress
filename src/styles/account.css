@@ -1,0 +1,418 @@
+/* Account area. Electro home-v7 palette, Heebo comes from the root layout,
+   container 1320px, primary #fed700. RTL is the default direction. */
+
+.account-page {
+  --account-yellow: #fed700;
+  --account-ink: #333e48;
+  --account-muted: #768b9e;
+  --account-line: #e4e4e4;
+  --account-blue: #0062bd;
+  --account-red: #e4002b;
+  --account-green: #44b81b;
+
+  width: 100%;
+  padding-block: 24px 56px;
+  color: var(--account-ink);
+}
+
+.account-page__inner {
+  max-width: 1320px;
+  margin-inline: auto;
+  padding-inline: 15px;
+}
+
+.account-page__crumb {
+  font-size: 14px;
+  color: var(--account-muted);
+  margin-bottom: 16px;
+}
+
+.account-page__crumb a {
+  color: var(--account-muted);
+  text-decoration: none;
+}
+
+.account-page__crumb a:hover {
+  color: var(--account-ink);
+}
+
+.account-shell {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 30px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .account-shell {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Nav */
+.account-nav {
+  border: 1px solid var(--account-line);
+  border-radius: 4px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.account-nav__head {
+  background: #f7f7f7;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--account-line);
+}
+
+.account-nav__name {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.account-nav__email {
+  font-size: 13px;
+  color: var(--account-muted);
+  margin: 2px 0 0;
+  word-break: break-all;
+}
+
+.account-nav__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.account-nav__link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 20px;
+  font-size: 14px;
+  color: var(--account-ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--account-line);
+}
+
+.account-nav__list li:last-child .account-nav__link {
+  border-bottom: 0;
+}
+
+.account-nav__link:hover {
+  background: #fffbe6;
+}
+
+.account-nav__link.is-active {
+  background: var(--account-yellow);
+  font-weight: 700;
+}
+
+.account-nav__badge {
+  font-size: 12px;
+  color: var(--account-muted);
+}
+
+.account-nav__link.is-active .account-nav__badge {
+  color: var(--account-ink);
+}
+
+/* Content */
+.account-content {
+  min-width: 0;
+}
+
+.account-title {
+  font-size: 25px;
+  font-weight: 500;
+  line-height: 40px;
+  margin: 0 0 4px;
+}
+
+.account-subtitle {
+  font-size: 14px;
+  color: var(--account-muted);
+  margin: 0 0 20px;
+}
+
+.account-card {
+  border: 1px solid var(--account-line);
+  border-radius: 4px;
+  background: #fff;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.account-card__title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 14px;
+}
+
+.account-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+/* Wallet */
+.wallet-balance {
+  background: var(--account-yellow);
+  border-radius: 4px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.wallet-balance__label {
+  font-size: 14px;
+  margin: 0 0 4px;
+}
+
+.wallet-balance__amount {
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.wallet-balance__note {
+  font-size: 13px;
+  margin: 8px 0 0;
+  opacity: 0.75;
+}
+
+.wallet-ledger {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.wallet-ledger th,
+.wallet-ledger td {
+  text-align: start;
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--account-line);
+}
+
+.wallet-ledger th {
+  font-weight: 700;
+  background: #f7f7f7;
+  white-space: nowrap;
+}
+
+.wallet-ledger__amount {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.wallet-ledger__amount--credit {
+  color: var(--account-green);
+}
+
+.wallet-ledger__amount--debit {
+  color: var(--account-red);
+}
+
+/* Generic list rows */
+.account-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--account-line);
+}
+
+.account-row:last-child {
+  border-bottom: 0;
+}
+
+.account-row__main {
+  min-width: 0;
+}
+
+.account-row__title {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.account-row__meta {
+  font-size: 13px;
+  color: var(--account-muted);
+  margin: 0;
+}
+
+.account-row__actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Buttons */
+.account-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 16px;
+  border-radius: 4px;
+  border: 1px solid var(--account-line);
+  background: #fff;
+  color: var(--account-ink);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.account-btn:hover {
+  background: #f7f7f7;
+}
+
+.account-btn--primary {
+  background: var(--account-yellow);
+  border-color: var(--account-yellow);
+}
+
+.account-btn--primary:hover {
+  filter: brightness(0.95);
+  background: var(--account-yellow);
+}
+
+.account-btn--danger:hover {
+  background: #fdeaee;
+  border-color: var(--account-red);
+  color: var(--account-red);
+}
+
+.account-btn[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Forms */
+.account-form {
+  display: grid;
+  gap: 14px;
+}
+
+.account-form__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+.account-field {
+  display: grid;
+  gap: 6px;
+}
+
+.account-field__label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.account-field__input {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--account-line);
+  border-radius: 4px;
+  font: inherit;
+  font-size: 14px;
+  background: #fff;
+  color: var(--account-ink);
+}
+
+.account-field__input:focus-visible {
+  outline: 2px solid var(--account-yellow);
+  outline-offset: 1px;
+}
+
+.account-field__input:disabled {
+  background: #f7f7f7;
+  color: var(--account-muted);
+}
+
+.account-field--check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Status chips */
+.account-chip {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.account-chip--ok {
+  background: #e8f7e2;
+  color: #2c7a13;
+}
+
+.account-chip--warn {
+  background: #fff4d6;
+  color: #8a6100;
+}
+
+.account-chip--dead {
+  background: #f1f1f1;
+  color: var(--account-muted);
+}
+
+.account-chip--default {
+  background: var(--account-yellow);
+  color: var(--account-ink);
+}
+
+/* Feedback */
+.account-alert {
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+
+.account-alert--error {
+  background: #fdeaee;
+  color: #9b0020;
+}
+
+.account-alert--success {
+  background: #e8f7e2;
+  color: #2c7a13;
+}
+
+.account-empty {
+  padding: 32px 0;
+  text-align: center;
+  color: var(--account-muted);
+  font-size: 14px;
+}
+
+/* Coupons */
+.coupon-card {
+  border: 1px solid var(--account-line);
+  border-radius: 4px;
+  padding: 16px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.coupon-card__code {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  unicode-bidi: isolate;
+}

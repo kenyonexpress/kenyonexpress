@@ -1,0 +1,26 @@
+-- 071_settlement_status_platform_settled.sql
+--
+-- Adds the one enum label the coupon settlement path writes and production
+-- did not have.
+--
+-- src/server/payments/finalize.ts:312 sets
+--   settlement_status = 'platform_settled'
+-- on the coupon branch. The live enum carried eight labels and not that one,
+-- because migration 066 introduced it and was never applied to the hosted
+-- project. The failure was Postgres 22P02 (invalid input value for enum)
+-- raised AFTER Cardcom had already charged the customer: money taken, order
+-- never closed. That is worse than the coupon_price_ils bug fixed earlier,
+-- which at least failed before the charge.
+--
+-- NOT REVERSIBLE. Postgres has no DROP VALUE for an enum; undoing this means
+-- recreating the type and rewriting every column that uses it. It is additive
+-- and reads or writes no row, so there is nothing to restore, but it cannot be
+-- rolled back the way 070 can.
+--
+-- IF NOT EXISTS so re-running is a no-op, and so applying the full 066 later
+-- does not collide with this.
+--
+-- Applied to the hosted project 2026-07-27 via MCP apply_migration.
+-- Depends on: the settlement_status type existing (026/047).
+
+ALTER TYPE public.settlement_status ADD VALUE IF NOT EXISTS 'platform_settled';

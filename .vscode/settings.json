@@ -1,0 +1,17 @@
+{
+  "git.ignoreLimitWarning": true,
+  "rtlForVsCodeAgents.autoInject": true,
+  "rtlForVsCodeAgents.autoConfigureCustomCss": true,
+  "rtlForVsCodeAgents.autoCheckUpdates": true,
+  "rtlForVsCodeAgents.userMessageBorder": true,
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}

@@ -12,6 +12,10 @@
 
 # testing
 /coverage
+/playwright-report
+/test-results
+/blob-report
+/.playwright
 
 # next.js
 /.next/
@@ -30,8 +34,13 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files (secrets — never commit)
+.env
+.env.local
+.env*.local
+.env.development
+.env.production
+# .env.example IS committed — it documents required variables
 
 # vercel
 .vercel
@@ -39,3 +48,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+refs/
+
+# WordPress import run artifacts (raw payloads, normalized rows, reports, logs)
+wp_import/

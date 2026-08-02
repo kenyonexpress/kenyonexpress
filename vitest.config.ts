@@ -1,0 +1,53 @@
+import { resolve } from 'node:path'
+import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vitest/config'
+
+/**
+ * Coverage policy (docs/ARCHITECTURE-TESTING-CICD.md §1.5):
+ * money-path modules carry a hard per-file floor; everything else is reported
+ * for information only. A global percentage is deliberately NOT a merge gate —
+ * the closed invariant list is what actually protects the money path.
+ */
+const MONEY_MODULE_FLOOR = {
+  lines: 95,
+  branches: 95,
+  functions: 95,
+  statements: 95,
+}
+
+export default defineConfig({
+  plugins: [react()],
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['./vitest.setup.ts'],
+    globals: true,
+    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+    exclude: ['node_modules', '.next', 'e2e'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text-summary', 'json-summary', 'lcov'],
+      reportsDirectory: './coverage',
+      // Only the money path is instrumented for floors. Including all of src
+      // would let report noise drown the signal.
+      include: [
+        'src/lib/commerce/**/*.ts',
+        'src/lib/checkout/split.ts',
+        'src/server/domain/orders/**/*.ts',
+      ],
+      exclude: ['**/*.test.ts', '**/*.test.tsx'],
+      thresholds: {
+        'src/lib/commerce/money.ts': MONEY_MODULE_FLOOR,
+        'src/lib/commerce/commission.ts': MONEY_MODULE_FLOOR,
+        'src/lib/checkout/split.ts': MONEY_MODULE_FLOOR,
+        'src/server/domain/orders/settlement.ts': MONEY_MODULE_FLOOR,
+        'src/server/domain/orders/escrow.ts': MONEY_MODULE_FLOOR,
+        'src/server/domain/orders/state-machine.ts': MONEY_MODULE_FLOOR,
+      },
+    },
+  },
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src'),
+    },
+  },
+})
