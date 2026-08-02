@@ -1,6 +1,9 @@
+import { ilsColumnToAgorot } from '@/lib/account/format'
+import { type Agorot, agorot } from '@/lib/money'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { type SettlementState, deriveOrderStatus } from '@/server/domain/orders/state-machine'
+import { isVoucherRedeemable } from '@/server/queries/vouchers'
 import QRCode from 'qrcode'
 
 export interface OrderSummary {
@@ -9,17 +12,20 @@ export interface OrderSummary {
   settlementStatus: SettlementState
   createdAt: string
   paidAt: string | null
-  totalIls: number
+  /** Paid-on-site total in integer agorot. */
+  totalAgorot: Agorot
   itemCount: number
   hasVouchers: boolean
 }
 
 export interface OrderVoucher {
+  id: string
   code: string
   status: string
   expiresAt: string | null
-  collectAmountIls: number | null
-  faceValueIls: number | null
+  paidOnSiteAgorot: Agorot
+  remainingDueAgorot: Agorot
+  faceValueAgorot: Agorot
   qrDataUrl: string | null
   usedAt: string | null
 }
@@ -40,10 +46,10 @@ export interface OrderLine {
   productImage: string | null
   productType: 'coupon' | 'physical'
   quantity: number
-  unitPriceIls: number
-  totalIls: number
-  paidOnSiteIls: number
-  balanceDueIls: number
+  unitPriceAgorot: Agorot
+  totalAgorot: Agorot
+  paidOnSiteAgorot: Agorot
+  balanceDueAgorot: Agorot
   settlementStatus: SettlementState
   itemStatus: string
   supplier: OrderLineSupplier | null
@@ -56,9 +62,9 @@ export interface OrderDetail {
   settlementStatus: SettlementState
   createdAt: string
   paidAt: string | null
-  subtotalIls: number
-  totalIls: number
-  walletAppliedIls: number
+  subtotalAgorot: Agorot
+  totalAgorot: Agorot
+  walletAppliedAgorot: Agorot
   addressId: string | null
   lines: OrderLine[]
 }
@@ -109,7 +115,7 @@ export async function getMyOrders(): Promise<OrderSummary[]> {
       settlementStatus: deriveOrderStatus(items.map((i) => asSettlementState(i.settlement_status))),
       createdAt: order.created_at,
       paidAt: order.paid_at,
-      totalIls: Number(order.total_ils ?? 0),
+      totalAgorot: ilsColumnToAgorot(order.total_ils ?? 0),
       itemCount: items.reduce((sum, i) => sum + (i.quantity ?? 0), 0),
       hasVouchers: items.some((i) => i.product_type === 'coupon'),
     }
@@ -148,7 +154,7 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
   ]
   const itemIds = (items ?? []).map((i) => i.id)
 
-  const [{ data: products }, { data: suppliers }, { data: coupons }] = await Promise.all([
+  const [{ data: products }, { data: suppliers }, { data: voucherRows }] = await Promise.all([
     productIds.length > 0
       ? admin.from('products').select('id, name_he, slug, images').in('id', productIds)
       : Promise.resolve({
@@ -170,21 +176,23 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
         }),
     itemIds.length > 0
       ? admin
-          .from('coupon_codes')
+          .from('vouchers')
           .select(
-            'code, status, expires_at, collect_amount_ils, face_value_ils, qr_token, used_at, order_item_id',
+            'id, code, status, expires_at, coupon_price_agorot, remaining_amount_due_agorot, face_value_agorot, qr_payload, redeemed_at, order_item_id',
           )
           .in('order_item_id', itemIds)
       : Promise.resolve({
           data: [] as {
+            id: string
             code: string
             status: string
-            expires_at: string | null
-            collect_amount_ils: number | null
-            face_value_ils: number | null
-            qr_token: string | null
-            used_at: string | null
-            order_item_id: string | null
+            expires_at: string
+            coupon_price_agorot: number
+            remaining_amount_due_agorot: number
+            face_value_agorot: number
+            qr_payload: string
+            redeemed_at: string | null
+            order_item_id: string
           }[],
         }),
   ])
@@ -196,27 +204,29 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
   for (const item of items ?? []) {
     const product = item.product_id ? productMap.get(item.product_id) : undefined
     const supplier = item.supplier_id ? supplierMap.get(item.supplier_id) : undefined
-    const itemCoupons = (coupons ?? []).filter((c) => c.order_item_id === item.id)
+    const itemVouchers = (voucherRows ?? []).filter((v) => v.order_item_id === item.id)
 
     const vouchers: OrderVoucher[] = []
-    for (const coupon of itemCoupons) {
+    for (const voucher of itemVouchers) {
       let qrDataUrl: string | null = null
-      if (coupon.qr_token) {
+      const redeemable = isVoucherRedeemable(voucher)
+      if (redeemable && voucher.qr_payload) {
         try {
-          qrDataUrl = await QRCode.toDataURL(coupon.qr_token, { margin: 1, width: 240 })
+          qrDataUrl = await QRCode.toDataURL(voucher.qr_payload, { margin: 1, width: 240 })
         } catch {
           qrDataUrl = null
         }
       }
       vouchers.push({
-        code: coupon.code,
-        status: coupon.status,
-        expiresAt: coupon.expires_at,
-        collectAmountIls:
-          coupon.collect_amount_ils === null ? null : Number(coupon.collect_amount_ils),
-        faceValueIls: coupon.face_value_ils === null ? null : Number(coupon.face_value_ils),
+        id: voucher.id,
+        code: voucher.code,
+        status: voucher.status,
+        expiresAt: voucher.expires_at,
+        paidOnSiteAgorot: agorot(voucher.coupon_price_agorot),
+        remainingDueAgorot: agorot(voucher.remaining_amount_due_agorot),
+        faceValueAgorot: agorot(voucher.face_value_agorot),
         qrDataUrl,
-        usedAt: coupon.used_at,
+        usedAt: voucher.redeemed_at,
       })
     }
 
@@ -232,10 +242,10 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
       productImage: firstImage,
       productType: item.product_type === 'coupon' ? 'coupon' : 'physical',
       quantity: item.quantity,
-      unitPriceIls: Number(item.unit_price_ils ?? 0),
-      totalIls: Number(item.total_price_ils ?? 0),
-      paidOnSiteIls: (item.paid_on_site_agorot ?? 0) / 100,
-      balanceDueIls: (item.balance_due_agorot ?? 0) / 100,
+      unitPriceAgorot: ilsColumnToAgorot(item.unit_price_ils ?? 0),
+      totalAgorot: ilsColumnToAgorot(item.total_price_ils ?? 0),
+      paidOnSiteAgorot: agorot(item.paid_on_site_agorot ?? 0),
+      balanceDueAgorot: agorot(item.balance_due_agorot ?? 0),
       settlementStatus: asSettlementState(item.settlement_status),
       itemStatus: item.item_status,
       supplier: supplier
@@ -257,9 +267,9 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
     settlementStatus: deriveOrderStatus(lines.map((l) => l.settlementStatus)),
     createdAt: order.created_at,
     paidAt: order.paid_at,
-    subtotalIls: Number(order.subtotal_ils ?? 0),
-    totalIls: Number(order.total_ils ?? 0),
-    walletAppliedIls: Number(order.cashback_applied_ils ?? 0),
+    subtotalAgorot: ilsColumnToAgorot(order.subtotal_ils ?? 0),
+    totalAgorot: ilsColumnToAgorot(order.total_ils ?? 0),
+    walletAppliedAgorot: ilsColumnToAgorot(order.cashback_applied_ils ?? 0),
     addressId: order.address_id,
     lines,
   }

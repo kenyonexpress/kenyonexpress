@@ -1,3 +1,5 @@
+import { ilsColumnToAgorot } from '@/lib/account/format'
+import { type Agorot, agorot } from '@/lib/money'
 import { createClient } from '@/lib/supabase/server'
 
 /**
@@ -8,6 +10,10 @@ import { createClient } from '@/lib/supabase/server'
  * remembered to write. Migration 052 added the owner policies that make this
  * possible (wallet_entries and payment_tokens were previously unreadable or
  * undeletable by their own owner).
+ *
+ * Money leaves this module as integer Agorot. Live wallet/order columns are
+ * still decimal `*_ils` until migration 059; conversion happens here via
+ * ilsColumnToAgorot so the UI never does float money math.
  */
 
 export interface AccountProfile {
@@ -19,7 +25,8 @@ export interface AccountProfile {
 }
 
 export interface WalletSummary {
-  balanceIls: number
+  /** Cached balance as integer agorot (via money.ts). */
+  balanceAgorot: Agorot
   accountId: string | null
 }
 
@@ -28,8 +35,8 @@ export type WalletDirection = 'credit' | 'debit'
 export interface WalletLedgerRow {
   id: string
   direction: WalletDirection
-  signedAmountIls: number
-  amountIls: number
+  signedAmountAgorot: Agorot
+  amountAgorot: Agorot
   reason: string
   orderId: string | null
   createdAt: string
@@ -58,17 +65,6 @@ export interface AccountPaymentToken {
   expiryYear: number | null
   isDefault: boolean
   createdAt: string
-}
-
-export interface AccountCoupon {
-  code: string
-  status: string
-  expiresAt: string
-  faceValueIls: number
-  platformPaidIls: number
-  collectAmountIls: number
-  redeemedAt: string | null
-  productName: string | null
 }
 
 /**
@@ -118,7 +114,7 @@ export async function getWalletSummary(): Promise<WalletSummary> {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { balanceIls: 0, accountId: null }
+  if (!user) return { balanceAgorot: agorot(0), accountId: null }
 
   const { data } = await supabase
     .from('wallet_accounts')
@@ -127,7 +123,7 @@ export async function getWalletSummary(): Promise<WalletSummary> {
     .maybeSingle()
 
   return {
-    balanceIls: Number(data?.balance_ils ?? 0),
+    balanceAgorot: ilsColumnToAgorot(data?.balance_ils ?? 0),
     accountId: data?.id ?? null,
   }
 }
@@ -143,8 +139,8 @@ export async function getWalletLedger(limit = 100): Promise<WalletLedgerRow[]> {
   return (data ?? []).map((row) => ({
     id: row.id,
     direction: row.direction === 'credit' ? 'credit' : 'debit',
-    signedAmountIls: Number(row.signed_amount_ils ?? 0),
-    amountIls: Number(row.amount_ils ?? 0),
+    signedAmountAgorot: ilsColumnToAgorot(row.signed_amount_ils ?? 0),
+    amountAgorot: ilsColumnToAgorot(row.amount_ils ?? 0),
     reason: row.reason,
     orderId: row.order_id,
     createdAt: row.created_at,
@@ -195,32 +191,4 @@ export async function getMyPaymentTokens(): Promise<AccountPaymentToken[]> {
     isDefault: t.is_default,
     createdAt: t.created_at,
   }))
-}
-
-export async function getMyCoupons(): Promise<AccountCoupon[]> {
-  const supabase = await createClient()
-  const { data } = await supabase
-    .from('coupon_codes')
-    .select(
-      'code, status, expires_at, face_value_ils, platform_paid_ils, collect_amount_ils, redeemed_at, products(name_he)',
-    )
-    .order('created_at', { ascending: false })
-    .limit(100)
-
-  return (data ?? []).map((c) => {
-    const product = c.products as { name_he: string } | { name_he: string }[] | null
-    const productName = Array.isArray(product)
-      ? (product[0]?.name_he ?? null)
-      : (product?.name_he ?? null)
-    return {
-      code: c.code,
-      status: c.status,
-      expiresAt: c.expires_at,
-      faceValueIls: Number(c.face_value_ils ?? 0),
-      platformPaidIls: Number(c.platform_paid_ils ?? 0),
-      collectAmountIls: Number(c.collect_amount_ils ?? 0),
-      redeemedAt: c.redeemed_at,
-      productName,
-    }
-  })
 }

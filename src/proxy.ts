@@ -34,7 +34,10 @@ export async function proxy(request: NextRequest) {
 
   // Route protection
   const needsAuth =
-    pathname.startsWith('/account') || pathname === '/checkout' || pathname.startsWith('/checkout/')
+    pathname.startsWith('/account') ||
+    pathname.startsWith('/coupon/') ||
+    pathname === '/checkout' ||
+    pathname.startsWith('/checkout/')
 
   if (needsAuth && !user) {
     const loginUrl = request.nextUrl.clone()

@@ -3,15 +3,15 @@
 תור על branch:
 
 ```
-feat/coupon-redemption
+feat/personal-area
 ```
 
 ## התור
 
-- [x] ✅ Coupon redemption + QR: מסמך UX, scan RTL, `/coupon/[id]` עם QR, מיגרציה 092 (redeem + order_items.settlement_status=redeemed), Vitest, compare `--page=coupon`.
+- [x] ✅ Personal area: הזמנות, קופונים+QR מ-`vouchers`, ארנק קאשבק (agorot via money.ts, closed-loop), פרופיל Google, RTL, Vitest, compare `--page=account`.
 
 ## לוג
 
 | שלב | סטטוס | הערות |
 |---|---|---|
-| Coupon redemption | ✅ | docs UX+arch, scan polish, coupon page, 092, mark-order-item tests |
+| Personal area | ✅ | coupons tabs+QR, wallet agorot display, logout, orders→vouchers |

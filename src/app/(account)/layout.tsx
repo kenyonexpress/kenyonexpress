@@ -50,7 +50,8 @@ export default async function AccountLayout({ children }: { children: React.Reac
                 <AccountNav
                   fullName={profile?.fullName ?? null}
                   email={profile?.email ?? user.email ?? ''}
-                  walletBalanceIls={wallet.balanceIls}
+                  avatarUrl={profile?.avatarUrl ?? null}
+                  walletBalanceAgorot={wallet.balanceAgorot}
                 />
                 <div className="account-content">{children}</div>
               </div>

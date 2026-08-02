@@ -4,11 +4,12 @@ import { homedir } from 'node:os'
 import { resolve } from 'node:path'
 import { chromium } from '@playwright/test'
 
-// Usage: node scripts/compare.mjs [--page=home|product|category|products|search|coupon]
+// Usage: node scripts/compare.mjs [--page=home|product|category|products|search|coupon|account]
 // home     : live = refs/ke_live_singlefile.html    mine = http://localhost:3000/
 // product  : live = live kenyonexpress product page mine = http://localhost:3000/product/<slug>
 // category : live = live product-category archive   mine = http://localhost:3000/category/<slug>
 // coupon   : live coupon PDP vs local coupon product (QR customer page needs auth; PDP is the public surface)
+// account  : live WP /my-account/ vs local /account (set COMPARE_STORAGE_STATE for an authed session)
 // Writes refs/live.png + refs/mine.png (consumed by diff-bands.mjs), plus
 // page-suffixed copies refs/live-<page>.png / refs/mine-<page>.png for reference.
 
@@ -39,8 +40,14 @@ if (!process.env.PLAYWRIGHT_BROWSERS_PATH) {
   if (existsSync(cache)) process.env.PLAYWRIGHT_BROWSERS_PATH = cache
 }
 
+const STORAGE_STATE = process.env.COMPARE_STORAGE_STATE ?? null
+
 const b = await chromium.launch()
-const ctx = await b.newContext({ viewport: VIEW, deviceScaleFactor: 1 })
+const ctx = await b.newContext({
+  viewport: VIEW,
+  deviceScaleFactor: 1,
+  ...(STORAGE_STATE && existsSync(STORAGE_STATE) ? { storageState: STORAGE_STATE } : {}),
+})
 
 let liveUrl = argOf('live', null)
 let mineUrl = argOf('mine', null)
@@ -90,8 +97,18 @@ if (page === 'home') {
     mineUrl = href ? `${LOCAL}${href.startsWith('/') ? '' : '/'}${href}` : `${LOCAL}/product/`
     console.log(`coupon: discovered local slug -> ${mineUrl}`)
   }
+} else if (page === 'account') {
+  // WP WooCommerce my-account twin of /account. Pass COMPARE_STORAGE_STATE so
+  // the local capture is the authed overview rather than /login.
+  liveUrl ??= 'https://kenyonexpress.co.il/my-account/'
+  mineUrl ??= `${LOCAL}/account`
+  if (!STORAGE_STATE) {
+    console.warn('account: COMPARE_STORAGE_STATE unset; local capture may be the login page')
+  }
 } else {
-  console.error(`unknown --page=${page} (use home, product, category, products, search or coupon)`)
+  console.error(
+    `unknown --page=${page} (use home, product, category, products, search, coupon or account)`,
+  )
   process.exit(2)
 }
 

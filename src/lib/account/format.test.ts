@@ -1,3 +1,4 @@
+import { agorot } from '@/lib/money'
 import { describe, expect, it } from 'vitest'
 import {
   couponStatusLabel,
@@ -5,20 +6,30 @@ import {
   formatDate,
   formatDateTime,
   formatIls,
+  formatVoucherCode,
+  ilsColumnToAgorot,
   orderStatusLabel,
   orderStatusTone,
+  voucherTab,
 } from './format'
 
-describe('formatIls', () => {
-  it('always shows two decimals', () => {
-    expect(formatIls(0)).toBe('₪0.00')
-    expect(formatIls(5)).toBe('₪5.00')
-    expect(formatIls(12.5)).toBe('₪12.50')
-    expect(formatIls(12.345)).toBe('₪12.35')
+describe('formatIls (agorot via money.ts)', () => {
+  it('formats integer agorot as shekels', () => {
+    expect(formatIls(agorot(0))).toMatch(/0\.00/)
+    expect(formatIls(agorot(500))).toMatch(/5\.00/)
+    expect(formatIls(agorot(1250))).toMatch(/12\.50/)
   })
 
-  it('keeps the sign for a negative balance', () => {
-    expect(formatIls(-3.2)).toBe('₪-3.20')
+  it('rejects non-integer float ILS masquerading as agorot', () => {
+    expect(() => formatIls(12.5)).toThrow()
+  })
+})
+
+describe('ilsColumnToAgorot', () => {
+  it('converts a decimal ILS column into integer agorot', () => {
+    expect(ilsColumnToAgorot(12.5)).toBe(1250)
+    expect(ilsColumnToAgorot(0)).toBe(0)
+    expect(ilsColumnToAgorot(null)).toBe(0)
   })
 })
 
@@ -56,9 +67,8 @@ describe('order status', () => {
 })
 
 describe('coupon status', () => {
-  // coupon_status enum from 008: issued / used / expired / refunded.
-  it('covers every value of the coupon_status enum', () => {
-    for (const status of ['issued', 'used', 'expired', 'refunded']) {
+  it('covers voucher + legacy coupon_status values', () => {
+    for (const status of ['issued', 'used', 'redeemed', 'expired', 'refunded']) {
       expect(couponStatusLabel(status)).not.toBe(status)
     }
   })
@@ -66,7 +76,32 @@ describe('coupon status', () => {
   it('treats an issued coupon as live and an expired one as dead', () => {
     expect(couponStatusTone('issued')).toBe('ok')
     expect(couponStatusTone('used')).toBe('warn')
+    expect(couponStatusTone('redeemed')).toBe('warn')
     expect(couponStatusTone('expired')).toBe('dead')
     expect(couponStatusTone('refunded')).toBe('dead')
+  })
+})
+
+describe('voucherTab', () => {
+  const future = '2099-01-01T00:00:00Z'
+  const past = '2020-01-01T00:00:00Z'
+
+  it('puts issued+valid under active', () => {
+    expect(voucherTab({ status: 'issued', expires_at: future })).toBe('active')
+  })
+
+  it('puts redeemed under redeemed', () => {
+    expect(voucherTab({ status: 'redeemed', expires_at: future })).toBe('redeemed')
+  })
+
+  it('puts expired status or past expiry under expired', () => {
+    expect(voucherTab({ status: 'expired', expires_at: future })).toBe('expired')
+    expect(voucherTab({ status: 'issued', expires_at: past })).toBe('expired')
+  })
+})
+
+describe('formatVoucherCode', () => {
+  it('inserts a dash after five characters', () => {
+    expect(formatVoucherCode('ABCDE12345')).toBe('ABCDE-12345')
   })
 })

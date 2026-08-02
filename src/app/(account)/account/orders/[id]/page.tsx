@@ -3,6 +3,7 @@ import {
   couponStatusTone,
   formatDate,
   formatIls,
+  formatVoucherCode,
   orderStatusLabel,
   orderStatusTone,
 } from '@/lib/account/format'
@@ -36,14 +37,14 @@ export default async function OrderDetailPage({ params }: Props) {
           <div className="account-row__main">
             <p className="account-row__meta">סכום ביניים</p>
           </div>
-          <div className="account-row__actions">{formatIls(order.subtotalIls)}</div>
+          <div className="account-row__actions">{formatIls(order.subtotalAgorot)}</div>
         </div>
-        {order.walletAppliedIls > 0 && (
+        {order.walletAppliedAgorot > 0 && (
           <div className="account-row">
             <div className="account-row__main">
               <p className="account-row__meta">שולם מהארנק</p>
             </div>
-            <div className="account-row__actions">-{formatIls(order.walletAppliedIls)}</div>
+            <div className="account-row__actions">-{formatIls(order.walletAppliedAgorot)}</div>
           </div>
         )}
         <div className="account-row">
@@ -51,7 +52,7 @@ export default async function OrderDetailPage({ params }: Props) {
             <p className="account-row__title">סך הכל שולם באתר</p>
           </div>
           <div className="account-row__actions">
-            <strong>{formatIls(order.totalIls)}</strong>
+            <strong>{formatIls(order.totalAgorot)}</strong>
           </div>
         </div>
       </section>
@@ -69,9 +70,12 @@ export default async function OrderDetailPage({ params }: Props) {
                 )}
               </p>
               <p className="account-row__meta">
-                {line.quantity} יחידות · {formatIls(line.unitPriceIls)} ליחידה
-                {line.productType === 'coupon' && line.balanceDueIls > 0
-                  ? ` · ${formatIls(line.balanceDueIls)} לתשלום בבית העסק`
+                {line.quantity} יחידות · {formatIls(line.unitPriceAgorot)} ליחידה
+                {line.productType === 'coupon'
+                  ? ` · שולם באתר ${formatIls(line.paidOnSiteAgorot)}`
+                  : ''}
+                {line.productType === 'coupon' && line.balanceDueAgorot > 0
+                  ? ` · ${formatIls(line.balanceDueAgorot)} לתשלום בבית העסק`
                   : ''}
               </p>
               {line.supplier && (
@@ -85,8 +89,9 @@ export default async function OrderDetailPage({ params }: Props) {
               {line.vouchers.length > 0 && (
                 <div style={{ marginTop: 12, display: 'grid', gap: 12 }}>
                   {line.vouchers.map((voucher) => (
-                    <div className="coupon-card" key={voucher.code}>
+                    <div className="coupon-card" key={voucher.id}>
                       {voucher.qrDataUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element -- server QR data URI
                         <img
                           src={voucher.qrDataUrl}
                           alt={`קוד QR לקופון ${voucher.code}`}
@@ -95,7 +100,7 @@ export default async function OrderDetailPage({ params }: Props) {
                         />
                       )}
                       <div>
-                        <p className="coupon-card__code">{voucher.code}</p>
+                        <p className="coupon-card__code">{formatVoucherCode(voucher.code)}</p>
                         <p className="account-row__meta">
                           <span
                             className={`account-chip account-chip--${couponStatusTone(voucher.status)}`}
@@ -104,18 +109,24 @@ export default async function OrderDetailPage({ params }: Props) {
                           </span>
                           {voucher.expiresAt ? ` · בתוקף עד ${formatDate(voucher.expiresAt)}` : ''}
                         </p>
-                        {voucher.collectAmountIls != null && voucher.collectAmountIls > 0 && (
-                          <p className="account-row__meta">
-                            לתשלום בבית העסק: {formatIls(voucher.collectAmountIls)}
-                          </p>
-                        )}
+                        <p className="account-row__meta">
+                          שולם באתר {formatIls(voucher.paidOnSiteAgorot)}
+                          {voucher.remainingDueAgorot > 0
+                            ? ` · לתשלום בבית העסק ${formatIls(voucher.remainingDueAgorot)}`
+                            : ''}
+                        </p>
+                        <p style={{ marginTop: 8 }}>
+                          <Link className="account-btn" href={`/coupon/${voucher.id}`}>
+                            הצגת קופון
+                          </Link>
+                        </p>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
             </div>
-            <div className="account-row__actions">{formatIls(line.totalIls)}</div>
+            <div className="account-row__actions">{formatIls(line.totalAgorot)}</div>
           </div>
         ))}
       </section>
