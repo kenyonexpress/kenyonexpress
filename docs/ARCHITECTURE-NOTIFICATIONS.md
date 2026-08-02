@@ -2,7 +2,7 @@
 
 ארכיטקטורת התראות טרנזקציוניות של KenyonExpress.
 
-Status: **BINDING** · Updated: 2026-08-03  
+Status: **BINDING** · Updated: 2026-08-03 (rev B)  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה ב-worktree הראשי (`kenyonexpress`).
 
@@ -576,7 +576,22 @@ src/lib/notifications/qstash.ts
 
 ---
 
-## 15. Out of scope
+## 15. SLA תפעולי (מחזור קופון)
+
+| מדד | יעד |
+|---|---|
+| Enqueue אחרי paid / redeem | באותה טרנזקציה (או מיד אחרי commit דומיין) |
+| Drain ראשון (email) | ≤ 60 שניות ב-p95 כש-cron/QStash חיים |
+| WhatsApp utility | ≤ 2 דקות אחרי email (או במקביל אחרי claim) |
+| SMS fallback | רק כשאין email/WA; ≤ 3 דקות |
+| Wallet push | ≤ 2 דקות אחרי שינוי סטטוס pass |
+| DLQ alert | מיידי על `coupon_issued` dead |
+
+אין לחכות לספק הודעות לפני תשובת webhook/redeem ללקוח.
+
+---
+
+## 16. Out of scope
 
 - קמפיינים שיווקיים (ראה MARKETING)
 - שינוי מודל כסף / ledger / Escrow
@@ -584,7 +599,7 @@ src/lib/notifications/qstash.ts
 
 ---
 
-## 16. Revision
+## 17. Revision
 
 | Date | Change |
 |---|---|
@@ -593,3 +608,4 @@ src/lib/notifications/qstash.ts
 | 2026-07-31 | V2: WhatsApp, QR, 48h, unsubscribe |
 | 2026-08-02 | איחוד מחייב + QStash + QR דרך `/coupon/{id}` |
 | 2026-08-03 | מחזור קופון מלא (issued/redeemed/expired) על email+WA+SMS; Wallet push (Apple/Google); app push לארנק; docs-only ב-`ke-arch` |
+| 2026-08-03 | rev B: SLA תפעולי לערוצים + אישור מחייב Resend/Edge/WA/SMS/Wallet push |
