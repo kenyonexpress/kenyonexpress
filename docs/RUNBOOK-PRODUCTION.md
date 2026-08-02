@@ -15,6 +15,8 @@ docs/ARCHITECTURE-PRODUCTION-OPS.md
 docs/ARCHITECTURE-BACKUP-DR.md
 docs/ARCHITECTURE-FRAUD-PREVENTION.md
 docs/ARCHITECTURE-ADMIN-DASHBOARD.md
+docs/ARCHITECTURE-NOTIFICATIONS.md
+docs/ARCHITECTURE-SUPPLIER-PORTAL.md
 ```
 
 כלל ברזל: עד שרכישת הטסט עוברת, `CHECKOUT_ENABLED=false`.  
@@ -28,6 +30,11 @@ docs/ARCHITECTURE-ADMIN-DASHBOARD.md
 
 Package manager: **pnpm** בלבד.
 
+מודל כסף בזמן שיגור (תזכורת תפעולית):
+
+- קופון: שולם באתר נשאר בפלטפורמה; יתרה בבית העסק; **אין Escrow / held**
+- פיזי: פיצול לפי `platform_percent` דינמי פר מוצר (snapshot ב-`order_items`)
+
 ---
 
 ## 0. סדר ביצוע (שיגור / שינוי גדול)
@@ -39,7 +46,7 @@ Package manager: **pnpm** בלבד.
 | 3 | Vercel env Production | כל P0 ממולא |
 | 4 | Deploy Production | Deployment Ready |
 | 5 | Smoke בלי תשלום | home / PDP / cart / login |
-| 6 | רכישת טסט (אם checkout נפתח) | paid + voucher + outbox |
+| 6 | רכישת טסט (אם checkout נפתח) | paid + voucher + outbox email |
 | 7 | Soft-open | `CHECKOUT_ENABLED=true` רק אחרי PASS |
 | 8 | Rollback | רק בכשל, לפי §2 |
 
@@ -80,10 +87,12 @@ Instant Rollback חייב להיות מובן למי שבתורן לפני כל 
 | בדיקה | צפי |
 |---|---|
 | `/` | 200, RTL, בלי שגיאת JS קריטית |
-| PDP קופון | מחיר אתר תואם UI |
+| PDP קופון | מחיר אתר + יתרה בעסק תואמים UI; בלי טקסט Escrow/held |
 | `/cart` | הוספה/הסרה |
 | Google login | session ל-`/account` |
 | `/admin` | RBAC חוסם לא-staff |
+| `/admin/products` | מציג `platform_percent` פר מוצר (לא ערך גלובלי) |
+| `/supplier` | סורק/דשבורד בלי כרטיסי Escrow held/released |
 
 ### 1.4 Env P0 (Production)
 
@@ -98,17 +107,28 @@ Instant Rollback חייב להיות מובן למי שבתורן לפני כל 
 | `CARDCOM_API_PASSWORD` | |
 | `CARDCOM_WEBHOOK_PASSWORD` / `CARDCOM_WEBHOOK_SECRET` | תואם למסוף |
 | `CHECKOUT_ENABLED` | התחלה: `false` |
-| `CRON_SECRET` | Bearer ל-crons |
+| `CRON_SECRET` | Bearer ל-crons + Edge notifications-worker |
 | `RESEND_API_KEY` + `EMAIL_FROM` / `RESEND_FROM` | דומיין מאומת |
 | `VOUCHER_QR_SECRET` | אם בשימוש לחתימת QR |
+| `QSTASH_TOKEN` (+ signing keys) | אופציונלי; בלי זה degrade ל-cron |
 
 אחרי שינוי env מהותי: Redeploy.
 
 ### 1.5 Cardcom prod (תמצית)
 
-1. מסוף Production: terminal + API + webhook URL על הדומיין החי  
-2. Success/Error/Indicator לא על localhost  
-3. אסור לאשר `paid` ידני ב-SQL כתחליף ל-webhook  
+1. מסוף Production: terminal + API + webhook URL על הדומיין החי
+2. Success/Error/Indicator לא על localhost
+3. אסור לאשר `paid` ידני ב-SQL כתחליף ל-webhook
+
+### 1.6 Notifications smoke (אחרי רכישת טסט)
+
+| בדיקה | צפי |
+|---|---|
+| Outbox | שורת `coupon_issued` + channel email |
+| Resend | מייל RTL עם קוד + לינק `/coupon/{id}` |
+| Edge/cron | drain תוך ≤ 60ש (p95) עם `CRON_SECRET` |
+
+כשל מייל **לא** חוסם soft-open אם הזמנה+voucher תקינים; מתקנים outbox בנפרד.
 
 ---
 
@@ -147,8 +167,8 @@ Instant Rollback חייב להיות מובן למי שבתורן לפני כל 
 
 אסור:
 
-- `supabase db reset` על production  
-- מחיקת ידנית מ-`supabase_migrations.schema_migrations` כדי "להריץ שוב"  
+- `supabase db reset` על production
+- מחיקה ידנית מ-`supabase_migrations.schema_migrations` כדי "להריץ שוב"
 - שינוי קובץ מיגרציה שכבר הוחל על prod (רק קובץ חדש)
 
 ---
@@ -167,7 +187,8 @@ idempotent ככל האפשר (ראה skill המיגרציות).
 2. סדר לפי שם הקובץ.  
 3. Enums / CHECK / RLS לפי הדפוסים בריפו.  
 4. אף פעם לא להמציא default ל-`platform_percent` בייבוא או ב-backfill בלי תיעוד מודל.  
-5. אחרי החלה על prod: לרשום ב-
+5. לא להחזיר מסלול Escrow/held-until-redeem לקופונים במיגרציה חדשה.  
+6. אחרי החלה על prod: לרשום ב-
 
 ```
 STATE.md
@@ -205,6 +226,7 @@ supabase db push
 |---|---|
 | Schema | `\d vouchers` / עמודות כסף ב-`products` |
 | Constraint | `platform_percent + supplier_split_percent = 100` |
+| Money model | אין חובת held על קופון; redeem לא משחרר payout קופון |
 | RLS | משתמש anon לא כותב outbox / ledger |
 | App | deploy תואם ל-SHA שמצפה לסכמה החדשה |
 | Smoke כסף | checkout כבוי עד אישור; אחרי פתיחה: רכישת טסט |
@@ -226,11 +248,11 @@ Rollback אפליקציה אחרי מיגרציה שמוחקת/משנה משמע
 
 כשעוברים מ-WordPress:
 
-1. לצלם A/CNAME/MX/TXT הקיימים  
-2. לא לשבור MX  
-3. apex + www → Vercel  
-4. `dig` + Certificate Valid  
-5. WP נשאר על hostname פנימי עד אחרי smoke + רכישת טסט  
+1. לצלם A/CNAME/MX/TXT הקיימים
+2. לא לשבור MX
+3. apex + www → Vercel
+4. `dig` + Certificate Valid
+5. WP נשאר על hostname פנימי עד אחרי smoke + רכישת טסט
 
 פרטים מורחבים: `DEPLOY.md` / מסמכי launch ב-docs-pack.
 
@@ -250,12 +272,13 @@ Rollback אפליקציה אחרי מיגרציה שמוחקת/משנה משמע
 
 ## 6. Acceptance
 
-- [ ] Checklist env P0 מלא ב-Production  
-- [ ] Deploy עם CI ירוק + smoke  
-- [ ] תוכנית rollback ידועה (Vercel + כיבוי checkout)  
-- [ ] מיגרציות רק forward + תיעוד ב-`STATE.md`  
-- [ ] אין `db reset` / מחיקת `schema_migrations` על prod  
-- [ ] `CHECKOUT_ENABLED` נפתח רק אחרי רכישת טסט PASS  
+- [ ] Checklist env P0 מלא ב-Production
+- [ ] Deploy עם CI ירוק + smoke (כולל PDP בלי Escrow UI)
+- [ ] תוכנית rollback ידועה (Vercel + כיבוי checkout)
+- [ ] מיגרציות רק forward + תיעוד ב-`STATE.md`
+- [ ] אין `db reset` / מחיקת `schema_migrations` על prod
+- [ ] `CHECKOUT_ENABLED` נפתח רק אחרי רכישת טסט PASS
+- [ ] Resend/outbox smoke אחרי רכישת טסט (לא חוסם soft-open אם הכסף תקין)
 
 ---
 
@@ -267,6 +290,8 @@ docs/ARCHITECTURE-PRODUCTION-OPS.md
 docs/ARCHITECTURE-BACKUP-DR.md
 docs/ARCHITECTURE-FRAUD-PREVENTION.md
 docs/ARCHITECTURE-ADMIN-DASHBOARD.md
+docs/ARCHITECTURE-NOTIFICATIONS.md
+docs/ARCHITECTURE-SUPPLIER-PORTAL.md
 ```
 
 ---
@@ -275,4 +300,5 @@ docs/ARCHITECTURE-ADMIN-DASHBOARD.md
 
 | Date | Change |
 |---|---|
-| 2026-08-03 | מסמך מחייב ב-`ke-arch`: deploy, rollback, migrations; docs only |
+| 2026-08-03 | מסמך מחייב ב-`ke-arch`: deploy, rollback, migrations |
+| 2026-08-03 | ke-arch docs-lifecycle: soft-open smoke ל-No Escrow + platform_percent + Resend |
