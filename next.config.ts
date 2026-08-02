@@ -37,6 +37,13 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }]
   },
+  async redirects() {
+    return [
+      // Printed QR cards and older docs name /scan; the live screen is under
+      // the supplier portal. Keep the short path as a permanent alias.
+      { source: '/scan', destination: '/supplier/scan', permanent: true },
+    ]
+  },
   turbopack: {
     root: __dirname,
   },

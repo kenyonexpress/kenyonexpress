@@ -1,43 +1,89 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-02 (goal: SEO + Performance on feat/seo-performance)
+Updated: 2026-08-02 (goal: Playwright E2E on feat/e2e)
 
 ## Current Phase
-‏**feat/seo-performance.** Hebrew SEO, ISR, next/image, JSON-LD, sitemap/robots, bundle analyze.
+‏**feat/e2e.** Playwright full purchase→redeem flow, RTL/mobile, CI mock Cardcom.
 
 ## Last Completed
-Goal SEO + Performance על
-feat/seo-performance
+Goal Playwright E2E על
+feat/e2e
 :
 
-1. Root + pages: metadata/OG עברית
-קניון אקספרס
+1.
+playwright.config.ts
+: chromium +
+mobile-chrome
+(Pixel 5),
+CARDCOM_USE_MOCK
+ב-
+webServer
 .
 2.
-sitemap.ts
-+
-robots.ts
-(+ tests).
-3. JSON-LD Product/Offer/Breadcrumb/Organization+WebSite.
-4. ISR:
-revalidate
-120/300/180/3600 +
-createPublicClient
-ל-PDP +
-revalidateStorefrontCatalogue
-באדמין.
-5. next/image בכרטיסי מוצר; remote-hosts; imageSizes 288.
-6.
-pnpm analyze
-+
-lighthouse:smoke
-+
-.lighthouserc.cjs
+e2e/full-purchase-redeem.spec.ts
+: guest cart → Google gate → email login (CI) → mock pay → coupon/QR → supplier scan redeem.
+3.
+e2e/rtl-mobile.spec.ts
+,
+e2e/coupon-scan.spec.ts
+,
+e2e/coupons.spec.ts
+,
+e2e/auth-session.ts
 .
-7. Vitest seo/images/robots/catalogue: 54.
+4. Seed:
+scripts/seed-test-data.mjs
+(coupon_price_ils + customer/supplier users +
+supplier_members
+).
+5. Fix:
+checkout/return
+קורא מ-
+vouchers
+(לא
+coupon_codes
+);
+(main)/layout
+responsive;
+/scan
+→
+/supplier/scan
+.
+6. CI: seed +
+CARDCOM_USE_MOCK
+לפני
+playwright test
+.
 
 ## In Progress
 nothing
+
+## Blocking Issues
+ריצת
+pnpm seed:test
+מקומית נכשלה:
+Invalid API key
+על הפרויקט ב-
+.env.local
+. ה-suite המלא דורש DB עם service role תקין +
+CI_SUPABASE_*
+ב-GitHub.
+
+## Next Task
+Integration pass לפי
+GOALS-QUEUE.md
+: rebase של feat branches על main, בדיקות, מיזוג סדרתי. בלי נגיעה ב-DB פרודקשן.
+
+## Working Directory
+/Users/ofir/kenyonexpress-web/kenyonexpress
+
+## החלטות שהתקבלו אוטומטית (feat/e2e)
+- Google OAuth לא רץ ב-CI. נבדק שהכפתור מופיע בשער התשלום; הזרימה בתשלום משתמשת באימייל/סיסמה של פיקסצ׳ר (אותו
+mergeGuestCart
+כמו אחרי callback של Google).
+- Cardcom ב-CI הוא mock בלבד (
+CARDCOM_USE_MOCK=true
+), לא sandbox אמיתי.
 
 ## אימות שערים אחרי מטרות 3 ו-4 (סבב נפרד)
 
@@ -1170,6 +1216,12 @@ default, והטופס לא שלח אף אחת מהן. כל `insert` של מוצ�
 ---
 
 ## History
+
+### 2026-08-02: feat/e2e (Playwright E2E)
+- Branch
+feat/e2e
+: full guest→pay→voucher→redeem flow, RTL + Pixel 5 project, seed users, CI mock Cardcom, checkout return on vouchers, mobile (main) layout fix.
+- Soft block: local seed failed (Invalid API key); needs valid CI_SUPABASE_* to run suite in Actions.
 
 ### 2026-08-02: feat/seo-performance (SEO + Performance)
 - Branch
