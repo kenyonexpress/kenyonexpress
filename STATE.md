@@ -1094,3 +1094,15 @@ docs/ARCHITECTURE-NOTIFICATIONS.md
 - Docs only. בלי שינוי קוד. בלי
 git push
 (לבקשה מפורשת בסשן).
+
+### 2026-08-02: docs personal / mobile / DDL / SEO-PERFORMANCE
+- נוצרו/עודכנו:
+docs/ARCHITECTURE-PERSONAL-AREA.md
+,
+docs/ARCHITECTURE-MOBILE-APP.md
+,
+docs/DDL-FIXES.md
+,
+docs/ARCHITECTURE-SEO-PERFORMANCE.md
+.
+- Docs only.
