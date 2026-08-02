@@ -1,20 +1,20 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-03 (autonomous: [24] Lighthouse home)
+Updated: 2026-08-03 (autonomous: [25] home JS)
 
 ## המשך מ:
-[25] unused-javascript ~62KiB בדף הבית + ייצוב חציון Lighthouse נייד ≥90.
+[26] Lighthouse SEO בדף מוצר נייד (נמדד 58).
 
 ## Current Phase
-‏**main.** תור [1]-[24] סגור. מודל כסף נעול: אין Escrow.
+‏**main.** תור [1]-[25] סגור. מודל כסף נעול: אין Escrow.
 
 ## Last Completed
-[24] Lighthouse בית נייד: שיא 93/97 (מ-84). LCP נצפה ~120–170ms. באנר LCP
-(Arial inline + fixed inline + לפני children), שער mount להירו/badge, Heebo
-בלי preload. חציון Lantern ~86 (דו-שיא מדומה).
+[25] ConsentBanner → Server Action; ProductDealCard בשרת; DeferredStoreChrome;
+optimizePackageImports(lucide). unused-js 62←58KiB. חציון LH ~86, שיא 92.
+[24] שיא LH בית 93/97.
 
 ## In Progress
-[25] unused-javascript + ייצוב חציון ≥90
+[26] PDP SEO נייד
 
 ## Blocking Issues
 חוסמי deploy (קונפיג/נתונים, לא קוד): VOUCHER_QR_SECRET, Cardcom prod, DNS, 11 ספקים בלי כתובת/לוגו.
@@ -22,7 +22,7 @@ Updated: 2026-08-03 (autonomous: [24] Lighthouse home)
 QA#6 (order_items ב-redeem) נדחה: מודל 085.
 
 ## Next Task
-[25] חיתוך unused-javascript בדף הבית וייצוב חציון Lighthouse נייד ≥90.
+[26] אבחון Lighthouse SEO=58 בדף מוצר נייד ותיקון.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
@@ -31,6 +31,7 @@ QA#6 (order_items ב-redeem) נדחה: מודל 085.
 - 2026-08-03: מודל Escrow מ-27.07 **נדחה**. נעול: אין Escrow; מקדמת קופון לפלטפורמה; יתרה בקופה; platform_percent מצולם.
 - 2026-08-03: לא לשנות redeem_voucher לכתוב order_items (סותר 085 + SQL harness).
 - 2026-08-03: [24] באנר נשאר LCP מכוון (לא לכווץ ללוגו/הירו). כיווץ החזיר 85–86.
+- 2026-08-03: [25] 62KiB unused הוא בעיקר chunk תשתית Next; פוצל מה שאפשר מגרף הלקוח.
 
 ---
 

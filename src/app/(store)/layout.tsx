@@ -1,10 +1,9 @@
 import CartBootstrap from '@/components/cart/CartBootstrap'
-import CartDrawer from '@/components/cart/CartDrawer'
 import { CartProvider } from '@/components/cart/CartProvider'
 import SiteFooter from '@/components/layout/SiteFooter'
 import SiteHeader from '@/components/layout/SiteHeader'
 import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
-import { Toaster } from '@/components/ui/sonner'
+import DeferredStoreChrome from '@/components/store/DeferredStoreChrome'
 // cart-page.css is imported by the root layout, one request for the whole
 // site. See the note there before moving it back down here.
 
@@ -40,9 +39,8 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
         <main className="w-full">{children}</main>
         <SiteFooter />
       </div>
-      <CartDrawer />
       <WhatsAppFloat />
-      <Toaster position="top-center" dir="rtl" richColors closeButton />
+      <DeferredStoreChrome />
     </CartProvider>
   )
 }

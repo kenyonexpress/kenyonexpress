@@ -138,8 +138,13 @@
       Heebo בלי preload. חציון Lantern על localhost נשאר ~86 (דו-שיא 3.2/4.2s)
       כמו שתועד ב-[20]. המנוף הבא: unused-javascript 62KiB.
 
-- [ ] [25] unused-javascript ~62KiB בדף הבית (chunk תשתית) + ייצוב חציון
-      Lighthouse נייד ≥90. בלי לגעת בנתוני ספקים/env.
+- [x] ✅ [25] unused-javascript + פיצול client בדף הבית. ‏62←58KiB unused;
+      JS xfer ~307←303KB. ConsentBanner = Server Component + `decideConsent`;
+      ProductDealCard בשרת; CartDrawer/Toaster ב-dynamic ssr:false;
+      optimizePackageImports ל-lucide. חציון Lantern נשאר ~86 (דו-שיא LCP);
+      שיא 92. תקרת localhost כמו [20]/[24].
+
+- [ ] [26] Lighthouse SEO בדף מוצר נייד (נמדד 58) + יישור. בלי env/ספקים.
 
 ## החלטות שהתקבלו אוטומטית: מה נשאר מ-[9]
 

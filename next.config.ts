@@ -153,6 +153,11 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: '10mb',
     },
+    /**
+     * lucide-react is a barrel. Without this, SiteHeader/SiteFooter pull the
+     * whole icon set into the client graph for a handful of icons ([25]).
+     */
+    optimizePackageImports: ['lucide-react'],
   },
 }
 
