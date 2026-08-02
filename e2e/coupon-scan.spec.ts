@@ -34,6 +34,15 @@ test.describe('supplier scan screen', () => {
     await page.goto('/scan')
     await page.waitForURL(/\/login/)
     await expect(page.getByRole('heading', { name: 'כניסה לחשבון' })).toBeVisible()
+    expect(new URL(page.url()).searchParams.get('next')).toMatch(/\/supplier/)
+  })
+
+  test('supplier login landing sends strangers to shared login', async ({ page }) => {
+    await page.goto('/supplier/login')
+    await expect(page.getByRole('heading', { name: 'כניסה לאזור הספקים' })).toBeVisible()
+    await page.getByRole('link', { name: 'התחברות לספקים' }).click()
+    await page.waitForURL(/\/login/)
+    expect(new URL(page.url()).searchParams.get('next')).toBe('/supplier')
   })
 
   test('keeps the old /supplier/scan address working', async ({ page }) => {

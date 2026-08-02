@@ -193,13 +193,14 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
         ? crypto.randomUUID()
         : `${Date.now()}-${Math.round(Math.random() * 1e9)}`
     try {
-      const res = await fetch('/api/supplier/vouchers/redeem', {
+      const res = await fetch('/api/supplier/redeem', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           code: pendingToken ? undefined : pendingCode,
           qr_payload: pendingToken ?? undefined,
           method,
+          scan_method: method,
           idempotency_key: idempotencyKey,
         }),
       })

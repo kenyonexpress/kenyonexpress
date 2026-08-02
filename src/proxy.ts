@@ -91,9 +91,20 @@ export async function proxy(request: NextRequest) {
   // those. Requiring a session there would show a login form inside the payment
   // box of a shopper who has just paid. It carries no order data of its own; it
   // hands the top window a URL and the real confirmation does the authenticating.
+  //
+  // The supplier area is the portal's, and its two public doors are excluded by
+  // name so a supplier can actually reach a login form.
+  //
+  // NOT taken from the portal branch: it also listed `pathname === '/checkout'`
+  // and a bare `/checkout/` prefix. The first breaks guest checkout outright,
+  // which is the whole point of the paragraph above, and the second would catch
+  // `/checkout/frame-return` and put a login form inside Cardcom's iframe.
+  const supplierPublic = pathname === '/supplier/login' || pathname === '/supplier/access-denied'
   const needsAuth =
     pathname.startsWith('/account') ||
-    (pathname.startsWith('/checkout/') && !isPaymentFramePath(pathname))
+    pathname.startsWith('/coupon/') ||
+    (pathname.startsWith('/checkout/') && !isPaymentFramePath(pathname)) ||
+    (pathname.startsWith('/supplier') && !supplierPublic)
 
   if (needsAuth && !user) {
     const loginUrl = request.nextUrl.clone()

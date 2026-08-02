@@ -1,24 +1,37 @@
 import { safeNextPath } from '@/lib/auth/safe-next'
 import { createClient } from '@/lib/supabase/server'
+import { type SupplierMemberRole, hasMinRole, normalizeMemberRole } from '@/lib/supplier/roles'
 import { redirect } from 'next/navigation'
 
 /**
  * Supplier-portal guard. Membership in an active supplier_members row is the
- * only authorization signal, matching the RLS in 027/051. There is no
- * tenant_id and no reliance on profiles.role.
+ * only authorization signal (ARCHITECTURE-SUPPLIER-PORTAL.md §1). profiles.role
+ * is a routing hint only.
  */
 
 export interface SupplierSession {
   userId: string
   supplierId: string
   supplierName: string
-  memberRole: string
+  memberRole: SupplierMemberRole
+}
+
+type MembershipRow = {
+  supplier_id: string
+  member_role: string | null
+  suppliers?: { name?: string } | { name?: string }[] | null
+}
+
+function supplierNameFrom(row: MembershipRow): string {
+  const linked = row.suppliers
+  if (!linked) return ''
+  if (Array.isArray(linked)) return linked[0]?.name ?? ''
+  return linked.name ?? ''
 }
 
 /**
  * Returns the caller's first active supplier membership, or null. Uses the
- * user-scoped client so RLS applies; supplier_members exposes members to
- * members via is_supplier_member.
+ * user-scoped client so RLS applies.
  */
 export async function getSupplierSession(): Promise<SupplierSession | null> {
   const supabase = await createClient()
@@ -36,19 +49,14 @@ export async function getSupplierSession(): Promise<SupplierSession | null> {
     .limit(1)
     .maybeSingle()
 
-  if (!membership?.supplier_id) return null
-
-  const supplierName =
-    (membership as { suppliers?: { name?: string } | { name?: string }[] | null }).suppliers &&
-    !Array.isArray((membership as { suppliers?: unknown }).suppliers)
-      ? ((membership as { suppliers?: { name?: string } }).suppliers?.name ?? '')
-      : ((membership as { suppliers?: { name?: string }[] }).suppliers?.[0]?.name ?? '')
+  const row = membership as MembershipRow | null
+  if (!row?.supplier_id) return null
 
   return {
     userId: user.id,
-    supplierId: membership.supplier_id,
-    supplierName,
-    memberRole: (membership as { member_role?: string }).member_role ?? 'staff',
+    supplierId: row.supplier_id,
+    supplierName: supplierNameFrom(row),
+    memberRole: normalizeMemberRole(row.member_role),
   }
 }
 
@@ -79,19 +87,41 @@ export async function getSupplierMemberships(): Promise<string[]> {
 }
 
 /**
- * Server-component guard: redirects a non-member to /login.
+ * Server-component guard.
  *
- * `next` is where to land after signing in. It runs through safeNextPath
- * because a scanned QR puts this value in a URL a stranger controls, and
- * `//evil.example` is a protocol-relative URL a browser follows off-site.
- * Anything it rejects lands on the scan screen rather than the site root, which
- * is where a supplier who just failed a supplier guard wants to be.
+ * Merged from two versions that each had a piece the other needed. From the
+ * portal branch: a signed-in non-member lands on `/supplier/access-denied`
+ * rather than back at a login form they have already satisfied, which is the
+ * distinction between "who are you" and "you are not staff here". From this
+ * branch: `next` goes through safeNextPath, because a scanned QR puts that
+ * value in a URL a stranger controls and `//evil.example` is a
+ * protocol-relative URL a browser follows off-site.
  */
-export async function requireSupplierMember(next = '/scan'): Promise<SupplierSession> {
+export async function requireSupplierMember(next = '/supplier'): Promise<SupplierSession> {
+  const safe = safeNextPath(next)
+  const target = safe === '/' ? '/supplier' : safe
+
   const session = await getSupplierSession()
   if (!session) {
-    const safe = safeNextPath(next)
-    redirect(`/login?next=${encodeURIComponent(safe === '/' ? '/scan' : safe)}`)
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    // Signed out is a different answer from signed in without a membership.
+    if (!user) redirect(`/login?next=${encodeURIComponent(target)}`)
+    redirect('/supplier/access-denied')
+  }
+  return session
+}
+
+/** Role gate on top of membership. */
+export async function requireSupplierRole(
+  minimum: SupplierMemberRole,
+  nextPath = '/supplier',
+): Promise<SupplierSession> {
+  const session = await requireSupplierMember(nextPath)
+  if (!hasMinRole(session.memberRole, minimum)) {
+    redirect('/supplier?denied=role')
   }
   return session
 }
