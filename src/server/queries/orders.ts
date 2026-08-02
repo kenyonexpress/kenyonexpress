@@ -4,6 +4,7 @@ import {
   readOrderMoney,
   resolveOrderGeneration,
 } from '@/lib/commerce/order-money-columns'
+import { type Agorot, agorot } from '@/lib/money'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { voucherQrDataUrl } from '@/lib/vouchers/qr-image'
@@ -19,7 +20,8 @@ export interface OrderSummary {
   settlementStatus: SettlementState
   createdAt: string
   paidAt: string | null
-  totalIls: number
+  /** Paid-on-site total in integer agorot. */
+  totalAgorot: Agorot
   itemCount: number
   hasVouchers: boolean
 }
@@ -28,8 +30,9 @@ export interface OrderVoucher {
   code: string
   status: string
   expiresAt: string | null
-  collectAmountIls: number | null
-  faceValueIls: number | null
+  /** Still to collect at the counter, integer agorot. */
+  collectAmountAgorot: Agorot | null
+  faceValueAgorot: Agorot | null
   qrDataUrl: string | null
   usedAt: string | null
 }
@@ -50,10 +53,10 @@ export interface OrderLine {
   productImage: string | null
   productType: 'coupon' | 'physical'
   quantity: number
-  unitPriceIls: number
-  totalIls: number
-  paidOnSiteIls: number
-  balanceDueIls: number
+  unitPriceAgorot: Agorot
+  totalAgorot: Agorot
+  paidOnSiteAgorot: Agorot
+  balanceDueAgorot: Agorot
   settlementStatus: SettlementState
   itemStatus: string
   supplier: OrderLineSupplier | null
@@ -66,9 +69,9 @@ export interface OrderDetail {
   settlementStatus: SettlementState
   createdAt: string
   paidAt: string | null
-  subtotalIls: number
-  totalIls: number
-  walletAppliedIls: number
+  subtotalAgorot: Agorot
+  totalAgorot: Agorot
+  walletAppliedAgorot: Agorot
   addressId: string | null
   lines: OrderLine[]
 }
@@ -139,7 +142,7 @@ export async function getMyOrders(): Promise<OrderSummary[]> {
       settlementStatus: deriveOrderStatus(items.map((i) => asSettlementState(i.settlement_status))),
       createdAt: order.created_at,
       paidAt: order.paid_at,
-      totalIls: readOrderMoney(generation, order).totalAgorot / 100,
+      totalAgorot: agorot(readOrderMoney(generation, order).totalAgorot),
       itemCount: items.reduce((sum, i) => sum + (i.quantity ?? 0), 0),
       hasVouchers: items.some((i) => i.product_type === 'coupon'),
     }
@@ -250,11 +253,12 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
         code: coupon.code,
         status: coupon.status,
         expiresAt: coupon.expires_at,
-        collectAmountIls:
+        collectAmountAgorot:
           coupon.remaining_amount_due_agorot === null
             ? null
-            : coupon.remaining_amount_due_agorot / 100,
-        faceValueIls: coupon.face_value_agorot === null ? null : coupon.face_value_agorot / 100,
+            : agorot(coupon.remaining_amount_due_agorot),
+        faceValueAgorot:
+          coupon.face_value_agorot === null ? null : agorot(coupon.face_value_agorot),
         qrDataUrl,
         usedAt: coupon.redeemed_at,
       })
@@ -274,10 +278,10 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
       quantity: item.quantity,
       // Integer agorot is the only money unit in the database since 059; the
       // shekel columns it renamed away are not read anywhere.
-      unitPriceIls: (item.unit_price_agorot ?? 0) / 100,
-      totalIls: (item.total_price_agorot ?? 0) / 100,
-      paidOnSiteIls: (item.paid_on_site_agorot ?? 0) / 100,
-      balanceDueIls: (item.balance_due_agorot ?? 0) / 100,
+      unitPriceAgorot: agorot(item.unit_price_agorot ?? 0),
+      totalAgorot: agorot(item.total_price_agorot ?? 0),
+      paidOnSiteAgorot: agorot(item.paid_on_site_agorot ?? 0),
+      balanceDueAgorot: agorot(item.balance_due_agorot ?? 0),
       settlementStatus: asSettlementState(item.settlement_status),
       itemStatus: item.item_status,
       supplier: supplier
@@ -299,9 +303,9 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
     settlementStatus: deriveOrderStatus(lines.map((l) => l.settlementStatus)),
     createdAt: order.created_at,
     paidAt: order.paid_at,
-    subtotalIls: money.subtotalAgorot / 100,
-    totalIls: money.totalAgorot / 100,
-    walletAppliedIls: money.walletAppliedAgorot / 100,
+    subtotalAgorot: agorot(money.subtotalAgorot),
+    totalAgorot: agorot(money.totalAgorot),
+    walletAppliedAgorot: agorot(money.walletAppliedAgorot),
     addressId: order.address_id,
     lines,
   }

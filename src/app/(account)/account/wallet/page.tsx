@@ -14,7 +14,7 @@ export default async function WalletPage() {
 
       <div className="wallet-balance">
         <p className="wallet-balance__label">היתרה שלך</p>
-        <p className="wallet-balance__amount">{formatIls(wallet.balanceIls)}</p>
+        <p className="wallet-balance__amount">{formatIls(wallet.balanceAgorot)}</p>
         <p className="wallet-balance__note">
           הארנק משמש לתשלום חלקי או מלא באתר. אין משיכה למזומן ואין העברה למשתמש אחר.
         </p>
@@ -43,7 +43,7 @@ export default async function WalletPage() {
                     <td>{walletReasonLabel(row.reason)}</td>
                     <td className={`wallet-ledger__amount wallet-ledger__amount--${row.direction}`}>
                       {row.direction === 'credit' ? '+' : '-'}
-                      {formatIls(row.amountIls)}
+                      {formatIls(row.amountAgorot)}
                     </td>
                     <td>
                       {row.orderId ? (

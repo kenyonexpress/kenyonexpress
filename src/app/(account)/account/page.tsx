@@ -29,7 +29,7 @@ export default async function AccountOverviewPage() {
 
       <div className="wallet-balance">
         <p className="wallet-balance__label">יתרת הארנק</p>
-        <p className="wallet-balance__amount">{formatIls(wallet.balanceIls)}</p>
+        <p className="wallet-balance__amount">{formatIls(wallet.balanceAgorot)}</p>
         <p className="wallet-balance__note">קרדיט לשימוש באתר בלבד. לא ניתן למשיכה.</p>
       </div>
 
@@ -39,7 +39,7 @@ export default async function AccountOverviewPage() {
           {lastOrder ? (
             <>
               <p className="account-row__title">
-                {formatIls(lastOrder.totalIls)}{' '}
+                {formatIls(lastOrder.totalAgorot)}{' '}
                 <span
                   className={`account-chip account-chip--${orderStatusTone(lastOrder.settlementStatus)}`}
                 >

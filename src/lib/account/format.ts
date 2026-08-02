@@ -1,7 +1,34 @@
 /** Shared formatting for the account area. Hebrew locale, ILS, Israel timezone. */
 
-export function formatIls(value: number): string {
-  return `₪${value.toFixed(2)}`
+import { type Agorot, agorot, formatAgorot, parseIls } from '@/lib/money'
+
+/**
+ * Render integer agorot as shekels, through money.ts and nothing else.
+ *
+ * This used to be `₪${value.toFixed(2)}` over a float, and the whole account
+ * area fed it floats: `getWalletSummary` returned `balanceAgorot / 100` and the
+ * ledger returned `Number(row.amount_ils)`. So the one screen that shows a
+ * customer their own money was the one place in the app doing float money math,
+ * against a project rule that says otherwise.
+ *
+ * The parameter is branded, so a caller holding shekels cannot reach this
+ * function without saying so: it has to go through `ilsColumnToAgorot` first,
+ * and that conversion parses the decimal rather than multiplying it.
+ */
+export function formatIls(value: Agorot): string {
+  return formatAgorot(value)
+}
+
+/**
+ * A legacy decimal `*_ils` column, read as integer agorot.
+ *
+ * Parses rather than multiplies. `Number('8.20') * 100` is 819.9999999999999,
+ * and while Math.round rescues most two-decimal values it also silently accepts
+ * a third decimal and NaN. `parseIls` refuses both.
+ */
+export function ilsColumnToAgorot(value: number | string | null | undefined): Agorot {
+  if (value == null || value === '') return agorot(0)
+  return parseIls(typeof value === 'number' ? value.toFixed(2) : value)
 }
 
 export function formatDate(iso: string | null): string {

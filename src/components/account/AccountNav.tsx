@@ -1,5 +1,7 @@
 'use client'
 
+import { formatIls } from '@/lib/account/format'
+import type { Agorot } from '@/lib/money'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -13,18 +15,18 @@ const ITEMS = [
   { href: '/account/tokens', label: 'אמצעי תשלום' },
 ] as const
 
-function formatIls(value: number): string {
-  return `₪${value.toFixed(2)}`
-}
-
+// This file carried its OWN copy of `formatIls`, a second
+// `₪${value.toFixed(2)}` over a float, so the wallet badge in the nav and the
+// wallet figure on the page were formatted by two different functions. One
+// formatter, in format.ts, over integer agorot.
 export default function AccountNav({
   fullName,
   email,
-  walletBalanceIls,
+  walletBalanceAgorot,
 }: {
   fullName: string | null
   email: string
-  walletBalanceIls: number
+  walletBalanceAgorot: Agorot
 }) {
   const pathname = usePathname()
 
@@ -48,7 +50,7 @@ export default function AccountNav({
               >
                 <span>{item.label}</span>
                 {item.href === '/account/wallet' && (
-                  <span className="account-nav__badge">{formatIls(walletBalanceIls)}</span>
+                  <span className="account-nav__badge">{formatIls(walletBalanceAgorot)}</span>
                 )}
               </Link>
             </li>

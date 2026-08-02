@@ -1,3 +1,5 @@
+import { ilsColumnToAgorot } from '@/lib/account/format'
+import { type Agorot, agorot } from '@/lib/money'
 import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
 
@@ -20,7 +22,8 @@ export interface AccountProfile {
 }
 
 export interface WalletSummary {
-  balanceIls: number
+  /** Integer agorot. The wallet is internal credit and never leaves the system. */
+  balanceAgorot: Agorot
   accountId: string | null
 }
 
@@ -29,8 +32,10 @@ export type WalletDirection = 'credit' | 'debit'
 export interface WalletLedgerRow {
   id: string
   direction: WalletDirection
-  signedAmountIls: number
-  amountIls: number
+  /** Integer agorot, signed: negative for a debit. */
+  signedAmountAgorot: Agorot
+  /** Integer agorot, unsigned magnitude. */
+  amountAgorot: Agorot
   reason: string
   orderId: string | null
   createdAt: string
@@ -108,7 +113,7 @@ export async function getWalletSummary(): Promise<WalletSummary> {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { balanceIls: 0, accountId: null }
+  if (!user) return { balanceAgorot: agorot(0), accountId: null }
 
   // Probed, not named. This selected `balance_agorot`, which the hosted project
   // does not have, so the select 42703'd and the account area showed every
@@ -120,7 +125,7 @@ export async function getWalletSummary(): Promise<WalletSummary> {
   )
 
   return {
-    balanceIls: balanceAgorot / 100,
+    balanceAgorot: agorot(balanceAgorot),
     accountId,
   }
 }
@@ -136,8 +141,9 @@ export async function getWalletLedger(limit = 100): Promise<WalletLedgerRow[]> {
   return (data ?? []).map((row) => ({
     id: row.id,
     direction: row.direction === 'credit' ? 'credit' : 'debit',
-    signedAmountIls: Number(row.signed_amount_ils ?? 0),
-    amountIls: Number(row.amount_ils ?? 0),
+    // `v_wallet_ledger` still exposes decimal `*_ils`; parsed, not multiplied.
+    signedAmountAgorot: ilsColumnToAgorot(row.signed_amount_ils),
+    amountAgorot: ilsColumnToAgorot(row.amount_ils),
     reason: row.reason,
     orderId: row.order_id,
     createdAt: row.created_at,

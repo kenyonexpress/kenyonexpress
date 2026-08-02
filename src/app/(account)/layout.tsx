@@ -48,7 +48,7 @@ async function AccountSideNav() {
     <AccountNav
       fullName={profile?.fullName ?? null}
       email={profile?.email ?? user.email ?? ''}
-      walletBalanceIls={wallet.balanceIls}
+      walletBalanceAgorot={wallet.balanceAgorot}
     />
   )
 }

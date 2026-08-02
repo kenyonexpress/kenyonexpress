@@ -20,7 +20,7 @@ export default async function OrdersPage() {
             <div className="account-row" key={order.id}>
               <div className="account-row__main">
                 <p className="account-row__title">
-                  {formatIls(order.totalIls)}{' '}
+                  {formatIls(order.totalAgorot)}{' '}
                   <span
                     className={`account-chip account-chip--${orderStatusTone(order.settlementStatus)}`}
                   >
