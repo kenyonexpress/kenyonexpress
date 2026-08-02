@@ -4,10 +4,10 @@
 Docs on branch `docs/final-pack` (worktree only).
 
 ## Last Completed
-Rewrote `docs/ARCHITECTURE-NOTIFICATIONS.md` (2026-08-03): Resend +
-Supabase Edge Functions, three core events (order_paid, supplier_sale,
-voucher_redeemed), Hebrew RTL templates, retry + DLQ, Escrow 2026-07-27
-wording. Updated V2 pointer. Docs only. No code. No git push.
+Expanded `docs/ARCHITECTURE-NOTIFICATIONS.md` (2026-08-03): full
+transactional catalog (order confirmation, coupon+QR, redeemed, supplier
+new-order, refund), Resend + Edge triggers, Hebrew RTL templates, retry,
+DLQ, idempotency keys. Docs only in ke-docs-pack. Main worktree untouched.
 
 ## In Progress
 nothing
@@ -36,11 +36,16 @@ not set in this worktree
   styles of `.dropdown-menu-mini-cart` still recorded as the design contract.
 - Notifications target drain = Edge `notifications-worker`; Vercel cron
   `/api/cron/notifications` is an allowed bridge while `pg_net` is absent.
-  Live kinds from migration 095: `order_paid`, `supplier_sale`, `voucher_redeemed`.
+- Canonical notification kinds (target): `order_confirmation`,
+  `coupon_purchased`, `coupon_redeemed`, `supplier_new_order`, `refund`.
+  Live 095 bridge kinds remain `order_paid`, `supplier_sale`, `voucher_redeemed`.
 
 ---
 
 ## History
+
+### 2026-08-03: ARCHITECTURE-NOTIFICATIONS full catalog
+- Five core events + QR + refund + idempotency section.
 
 ### 2026-08-03: ARCHITECTURE-NOTIFICATIONS rewrite
 - Canonical notifications architecture rewritten for final-pack.

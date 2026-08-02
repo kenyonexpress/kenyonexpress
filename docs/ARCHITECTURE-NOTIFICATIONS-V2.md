@@ -12,24 +12,24 @@ docs/ARCHITECTURE-NOTIFICATIONS.md
 
 ## Stack (final)
 
-**Resend + Supabase Trigger + Edge Function worker.**  
-No Make. No Zapier.  
-גשר זמני מותר: Vercel cron עם אותה סמנטיקת outbox.
+**Resend + Supabase DB Trigger + Edge Function worker.**  
+No Make. No Zapier.
 
 ## Events (must)
 
-1. אישור הזמנה ללקוח (`order_paid`)
-2. הודעת מכירה/קופון לספק (`supplier_sale`)
-3. אישור סריקה ללקוח (`voucher_redeemed`)
+1. `order_confirmation` (לקוח)
+2. `coupon_purchased` (לקוח + QR)
+3. `coupon_redeemed` (לקוח; ספק משני)
+4. `supplier_new_order` (ספק)
+5. `refund` (לקוח)
 
 ## Also required
 
-תבניות עברית RTL · retry + DLQ · suppression/unsubscribe · מסלול כסף לא מחכה ל-provider.
+תבניות עברית RTL · retry + DLQ · `dedupe_key` + Resend `Idempotency-Key` · מסלול כסף לא מחכה ל-provider.
 
 ## Revision
 
 | Date | Change |
 |---|---|
 | 2026-07-31 | V2 summary |
-| 2026-08-02 | מצביע לטקסט המלא |
-| 2026-08-03 | מצביע מעודכן אחרי rewrite ב-`docs/final-pack` |
+| 2026-08-03 | מצביע ל-5 אירועי ליבה + idempotency |

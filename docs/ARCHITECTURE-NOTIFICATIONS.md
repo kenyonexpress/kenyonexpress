@@ -1,9 +1,11 @@
 # ARCHITECTURE: Notifications
 
-ארכיטקטורת התראות טרנזקציונליות ל-KenyonExpress: Resend + Supabase Edge Functions, תור outbox, תבניות עברית RTL, retry ו-DLQ.
+ארכיטקטורת התראות טרנזקציונליות ל-KenyonExpress.
 
 Status: **BINDING** · Updated: 2026-08-03  
-Scope: docs only (worktree `docs/final-pack`).  
+Scope: **docs only** · worktree `docs/final-pack`  
+אין שינוי קוד. אין נגיעה ב-worktree הראשי (`kenyonexpress` / `phase5/homepage`).
+
 Companions:
 
 ```
@@ -16,7 +18,7 @@ docs/RUNBOOK-OPERATIONS.md
 docs/LAUNCH-DAY.md
 ```
 
-עקרון: מסלול כסף לעולם לא מחכה לספק הודעות. Trigger/emit כותבים שורה; worker שולח אסינכרונית.
+**עקרון עליון:** מסלול כסף לעולם לא מחכה ל-Resend. Trigger כותב שורת outbox באותה טרנזקציה (או מיד אחרי commit דומיין); Edge Function שולח אסינכרונית.
 
 ---
 
@@ -24,16 +26,17 @@ docs/LAUNCH-DAY.md
 
 | # | הכרעה |
 |---|---|
-| N1 | Email: **Resend**. אין SMTP מהדפדפן. אין Make/Zapier בייצור. |
-| N2 | Emit: **Database Trigger** (או `SECURITY DEFINER` אחרי commit דומיין) → outbox. לא קריאה סינכרונית ל-Resend מ-`finalizeOrder` / redeem. |
-| N3 | Drain יעד: **Supabase Edge Function** `notifications-worker`. גשר זמני מותר: Vercel cron לאותה סמנטיקה (`/api/cron/notifications`) עד ש-`pg_net` / schedule Edge יציב. |
-| N4 | At-least-once enqueue; אפקט exactly-once ללקוח דרך `dedupe_key` UNIQUE + Resend `Idempotency-Key`. |
+| N1 | Email: **Resend** בלבד. אין SMTP מהדפדפן. אין Make/Zapier/n8n בייצור. |
+| N2 | Emit: **Supabase Database Trigger** (`SECURITY DEFINER`) → outbox. לא קריאה סינכרונית ל-Resend מ-`finalizeOrder`, webhook Cardcom, או redeem. |
+| N3 | Drain: **Supabase Edge Function** `notifications-worker` (Bearer `CRON_SECRET`). גשר זמני מותר: אותו חוזה על Vercel cron עד ש-schedule Edge / `pg_net` יציב. |
+| N4 | At-least-once enqueue; אפקט exactly-once לנמען דרך `dedupe_key` UNIQUE + Resend `Idempotency-Key`. |
 | N5 | תבניות **עברית RTL** (`lang=he`, `dir=rtl`). מותג: ink `#333e48`, yellow `#fed700`. |
 | N6 | כסף ב-payload: **integer agorot**. בגוף המייל: ₪ עם `he-IL` ושתי ספרות. |
-| N7 | קופון (Escrow פנימי 2026-07-27): במייל מופיעים **שולם באתר** + **יתרה בבית העסק**. אין נוסח "Escrow" / "נאמן" ללקוח. חלק המקדמה לספק ב-held עד מימוש; לא לכתוב לספק "קיבלתם payout". |
-| N8 | Transactional לא דורש opt-in שיווקי. עדיין מכבדים suppression (bounce/complaint). שיווק = מסמך Marketing נפרד. |
-| N9 | טבלת שוברים: `vouchers`. Trigger על שגיאה **בולע** (`EXCEPTION`) כדי לא להפיל תשלום או סריקה. |
-| N10 | אחרי max attempts → סטטוס `dead` + שורת DLQ + התראת ops. אין drop שקט על אישור הזמנה / מכירת קופון / אישור סריקה. |
+| N7 | קופון (Escrow פנימי 2026-07-27): במייל ללקוח: **שולם באתר** + **יתרה בבית העסק** + QR/קוד. אין נוסח "Escrow"/"נאמן". לספק: אין נוסח payout. |
+| N8 | Transactional לא דורש opt-in שיווקי. Suppression (bounce/complaint) תמיד מכבדים. |
+| N9 | טבלת שוברים: `vouchers`. Trigger על שגיאה **בולע** כדי לא להפיל תשלום, סריקה או refund. |
+| N10 | אחרי max attempts → `dead` + שורת DLQ + התראת ops. אין drop שקט על חמשת האירועים בליבה. |
+| N11 | מייל קופון עם QR **הוא** אישור הרכישה לקופון. לא לשלוח גם `order_confirmation` גנרי על אותה הזמנה. |
 
 ---
 
@@ -41,12 +44,12 @@ docs/LAUNCH-DAY.md
 
 | רכיב | בחירה | אסור |
 |---|---|---|
-| Provider email | Resend API | SendGrid כברירת מחדל, SMTP מלקוח |
-| Queue | `notification_outbox` (יעד יישור: `notifications_outbox` מ-031 אם/כשמיישרים) | שליחה בלי שורה עמידה |
-| Emit | Trigger על `orders.paid_at` / `vouchers.status` | קריאה חוסמת מ-webhook Cardcom |
-| Worker | Edge Function `notifications-worker` | Make, Zapier, n8n בייצור |
-| WhatsApp (אופציונלי) | Meta Cloud API + templates מאושרים | גוף חופשי מחוץ לחלון שיחה |
-| Secrets | Edge / Vercel server בלבד | `RESEND_API_KEY` בדפדפן |
+| Provider | Resend API (`POST /emails`) | SendGrid כברירת מחדל, SMTP מלקוח |
+| Emit | DB Trigger על `orders` / `vouchers` / refund path | קריאה חוסמת מנתיב כסף |
+| Queue | `notification_outbox` (יישור עתידי ל-`notifications_outbox` מ-031) | שליחה בלי שורה עמידה |
+| Worker | Edge Function `notifications-worker` | Make, Zapier |
+| Templates | HTML+text בעברית, render ב-worker | עריכת תוכן ב-DB בלי גרסה |
+| Secrets | Edge / server בלבד | `RESEND_API_KEY` בדפדפן |
 
 סודות:
 
@@ -56,8 +59,6 @@ RESEND_FROM
 CRON_SECRET
 SUPABASE_SERVICE_ROLE_KEY
 UNSUBSCRIBE_SIGNING_SECRET
-WHATSAPP_TOKEN
-WHATSAPP_PHONE_NUMBER_ID
 ```
 
 From מאומת (יעד):
@@ -68,161 +69,272 @@ KenyonExpress <noreply@kenyonexpress.co.il>
 
 ---
 
-## 2. Pipeline
+## 2. Pipeline (Trigger → Outbox → Edge → Resend)
 
 ```text
 Domain commit
-  (paid_at set / voucher → redeemed / expiry job)
+  orders.paid_at set
+  vouchers issued / status → redeemed
+  refund finalized
         │
         ▼
-Trigger SECURITY DEFINER (swallows errors)
-  → fn_enqueue_notification / fn_emit_notification_event
-  → notification_outbox row (dedupe_key UNIQUE)
+AFTER TRIGGER (SECURITY DEFINER, EXCEPTION swallowed)
+  → fn_enqueue_notification(kind, email, dedupe_key, payload)
+  → notification_outbox INSERT … ON CONFLICT (dedupe_key) DO NOTHING
         │
         ▼
-Edge Function notifications-worker
+Edge Function: notifications-worker  (every ~1 min)
   Authorization: Bearer CRON_SECRET
-  → claim due batch (FOR UPDATE SKIP LOCKED)
-  → prefs + suppressions
-  → render RTL template
-  → Resend (Idempotency-Key = dedupe_key)
+  → claim due rows (FOR UPDATE SKIP LOCKED)
+  → check suppressions
+  → render Hebrew RTL template
+  → Resend + Idempotency-Key = dedupe_key
         │
-        ├─ ok     → status = sent, sent_at
-        ├─ 429/5xx → pending + next_attempt_at (backoff)
-        ├─ permanent 4xx / no template → dead (+ DLQ)
-        └─ suppressed → skipped (לא שורפים attempts)
+        ├─ 2xx        → status = sent
+        ├─ 429 / 5xx  → pending + backoff next_attempt_at
+        ├─ permanent  → dead + DLQ
+        └─ suppressed → skipped (no attempt burn)
 ```
 
 כללים:
 
-1. Cardcom webhook, `finalizeOrder`, ו-`redeem_voucher` מחזירים ללקוח/קופה מיד אחרי commit דומיין.
+1. Webhook Cardcom / `finalizeOrder` / redeem / refund admin מחזירים ללקוח מיד אחרי commit דומיין.
 2. Worker רץ עם service role. הדפדפן לא מחזיק מפתחות.
-3. Drain אחד מבחינה לוגית: Edge הוא היעד; cron Next הוא אותו חוזה עד מעבר מלא.
+3. Drain אחד לוגית: Edge הוא היעד; cron Next הוא גשר עם אותה סמנטיקה בלבד.
 
-### 2.1 גשר as-built (לא מחליף את היעד)
+### 2.1 גשר as-built (תיעוד מצב, לא יעד סופי)
 
-בפרודקשן כיום (מיגרציה `095_notification_outbox.sql`):
-
-| פריט | מצב |
+| פריט | מצב חי (מיגרציה 095) |
 |---|---|
 | טבלה | `notification_outbox` |
-| kinds | `order_paid`, `supplier_sale`, `voucher_redeemed` |
-| Drain | `GET /api/cron/notifications` + Bearer `CRON_SECRET` |
-| למה לא Edge עדיין | `pg_net` לא מותקן; העמידות באה מה-outbox, לא מה-transport |
-| Retry | עד 5 ניסיונות; backoff `2 * 4^(attempts-1)` דקות; אז `dead` |
+| kinds חיים | `order_paid`, `supplier_sale`, `voucher_redeemed` |
+| Drain חי | `GET /api/cron/notifications` |
+| למה לא Edge עדיין | `pg_net` לא מותקן; העמידות באה מה-outbox |
+| פער מול מסמך זה | חסרים kinds מפורשים ל-`coupon_purchased` (QR), `refund`; חלק מהלוגיקה ב-`voucher-email` סינכרוני |
 
-המסמך הזה מגדיר את **החוזה הארכיטקטוני**. יישור שמות (`notifications_outbox`, Edge schedule) הוא עבודת מיגרציה/ops נפרדת, לא שינוי כסף.
+החוזה במסמך זה הוא **יעד ארכיטקטוני**. מימוש הקוד: מחוץ לסקופ.
 
 ---
 
-## 3. קטלוג אירועים (ליבה)
+## 3. קטלוג אירועים (חמשת הליבה)
 
-שלושת האירועים המחייבים ל-MVP התראות:
-
-### 3.1 אישור הזמנה ללקוח
+### 3.1 אישור הזמנה ללקוח (`order_confirmation`)
 
 | שדה | ערך |
 |---|---|
-| Event | `order.paid` / kind חי: `order_paid` |
-| נמען | לקוח (`profiles.email`) |
-| ערוץ | email (חובה); WhatsApp אופציונלי לפי prefs |
+| kind (יעד) | `order_confirmation` |
+| kind חי (גשר) | `order_paid` |
+| נמען | `profiles.email` של `orders.user_id` |
 | Emit | `AFTER UPDATE OF paid_at` כש-`paid_at` עובר מ-null לערך |
-| Dedupe | `order_paid:{order_id}` |
+| תנאי | ההזמנה **לא** הנפיקה `vouchers` (אחרת ראה §3.2) |
+| Dedupe | `order_confirmation:{order_id}` |
 
 תוכן חובה:
 
-- מספר הזמנה קצר (8 תווים ראשונים של id, uppercase)
-- סך שולם באתר (agorot → ₪)
-- קישור ל-`/account/orders`
-- אם ההזמנה הנפיקה קופונים: **לא** לשלוח מייל אישור גנרי בנוסף למייל קופון/QR (כפילות). מייל הקופון הוא האישור.
+- מספר הזמנה קצר (8 תווים ראשונים, uppercase)
+- סך שולם באתר
+- מספר פריטים (אופציונלי)
+- CTA ל-`/account/orders`
 
-נושא לדוגמה:
+Subject:
 
 ```
 ההזמנה שלך התקבלה · {ORDER_REF}
 ```
 
-### 3.2 הודעת קופון / מכירה לספק
+### 3.2 רכישת קופון עם QR (`coupon_purchased`)
 
 | שדה | ערך |
 |---|---|
-| Event | `supplier.sale` / kind חי: `supplier_sale` |
-| נמען | `suppliers.contact_email` (או בעלים/מנהלים מ-`supplier_members`; לא scanner כברירת מחדל) |
-| ערוץ | email |
-| Emit | אותו trigger של `paid_at`: **שורה אחת לספק להזמנה**, לא לכל שורה |
-| Dedupe | `supplier_sale:{order_id}:{supplier_id}` |
+| kind (יעד) | `coupon_purchased` |
+| נמען | לקוח |
+| Emit | אחרי הנפקת `vouchers` תחת הזמנה `paid` (trigger על insert voucher `issued`, או fan-out מ-`paid_at` כשיש vouchers) |
+| Dedupe | `coupon_purchased:{voucher_id}:customer:email` |
+| ערוץ | email (חובה) |
 
 תוכן חובה:
 
-- "מכירה חדשה" / "נמכר קופון" לפי `product_type`
-- שם מוצר/ים + כמות
-- מזהה הזמנה קצר
-- קישור לפורטל ספק (`/supplier/orders`)
+- שם מוצר בעברית
+- קוד קופון (מוצג; `dir=ltr`)
+- **QR**: PNG מצורף / `cid`, או קישור חתום קצר ל-`/account/coupons` (או `/coupon/{id}`)
+- שולם באתר (`coupon_price` / paid online, agorot → ₪)
+- יתרה לתשלום בבית העסק
+- תוקף (`expires_at` בעברית)
+- CTA לאזור הקופונים
 
 איסורים:
 
-- אין "קיבלתם תשלום מהפלטפורמה" / סכום payout
-- אין הבטחת תאריך העברה
-- מותר "סכום ההזמנה אצלכם" כערך שורות (לא עמלה, לא held)
-- לקופון: להזכיר שמימוש ב-QR ושיתרה נגבית בקופה
+- לא לשלוח גם `order_confirmation` על אותה הזמנה
+- לא לכלול `VOUCHER_QR_SECRET` או raw HMAC secret בגוף/URL פתוח
+- לא נוסח Escrow/נאמן
 
-נושא לדוגמה:
-
-```
-מכירה חדשה ב-KenyonExpress · הזמנה {ORDER_REF}
-```
-
-או לקטלוג תבניות מורחב:
+Subject:
 
 ```
-נמכר קופון · {PRODUCT_NAME_HE}
+הקופון שלך מוכן · {PRODUCT_NAME_HE}
 ```
 
-### 3.3 אישור סריקה (מימוש קופון)
+Payload מינימלי:
+
+```json
+{
+  "voucher_id": "…",
+  "order_id": "…",
+  "order_ref": "A1B2C3D4",
+  "product_name": "…",
+  "code": "ABCD-1234",
+  "coupon_price_agorot": 5000,
+  "remaining_due_agorot": 15000,
+  "expires_at": "2026-12-31T21:59:59+02:00",
+  "qr_url": "https://kenyonexpress.co.il/account/coupons?v=…"
+}
+```
+
+### 3.3 מימוש קופון / אישור סריקה (`coupon_redeemed`)
 
 | שדה | ערך |
 |---|---|
-| Event | `coupon.redeemed` / kind חי: `voucher_redeemed` |
-| נמען ליבה | **לקוח** (אבטחה: לדעת שהקופון מומש) |
-| נמען משני | ספק (סיכום סריקה; יעד מלא; חי כיום: לקוח בלבד מ-095) |
-| Emit | `AFTER UPDATE OF status` על `vouchers` כשסטטוס עובר ל-`redeemed` |
-| Dedupe לקוח | `voucher_redeemed:{voucher_id}` |
-| Dedupe ספק (יעד) | `voucher_redeemed:{voucher_id}:supplier:email` |
+| kind (יעד) | `coupon_redeemed` |
+| kind חי (גשר) | `voucher_redeemed` |
+| נמען ראשי | לקוח (אבטחה: לדעת שהקופון מומש) |
+| נמען משני | ספק (סיכום סריקה) |
+| Emit | `AFTER UPDATE OF status` על `vouchers` → `redeemed` |
+| Dedupe לקוח | `coupon_redeemed:{voucher_id}:customer:email` |
+| Dedupe ספק | `coupon_redeemed:{voucher_id}:supplier:email` |
 
-תוכן ללקוח (חובה):
+תוכן ללקוח:
 
-- שם מוצר
-- שם בית העסק
-- תאריך/שעה בעברית (`he-IL`, `Asia/Jerusalem`)
-- קוד (מעוצב/מרווח; לא לשלוח סוד חתימת QR)
+- שם מוצר, שם בית עסק, תאריך/שעה `he-IL`
+- קוד (מעוצב)
 - סכום שנגבה בבית העסק אם > 0
 - משפט: אם לא אתם מימשתם, פנו מיד
-- קישור ל-`/account/coupons`
+- CTA ל-`/account/coupons`
 
-נושא:
+Subject לקוח:
 
 ```
 הקופון מומש · {PRODUCT_NAME}
 ```
 
-תוכן לספק (יעד):
+תוכן לספק:
 
-- מוצר, קוד מקוצר, שעת סריקה, `collected_agorot` שהעסק גבה
+- מוצר, קוד מקוצר, שעת סריקה, `collected_agorot`
 - בלי PII מיותר של הלקוח
+
+Subject ספק:
+
+```
+קופון נסרק · {PRODUCT_NAME}
+```
+
+### 3.4 התראת הזמנה חדשה לספק (`supplier_new_order`)
+
+| שדה | ערך |
+|---|---|
+| kind (יעד) | `supplier_new_order` |
+| kind חי (גשר) | `supplier_sale` |
+| נמען | `suppliers.contact_email` או `supplier_members` עם תפקיד owner/manager (לא scanner כברירת מחדל) |
+| Emit | אותו `paid_at` trigger: **שורה אחת לספק להזמנה**, לא לכל line |
+| Dedupe | `supplier_new_order:{order_id}:{supplier_id}:email` |
+
+תוכן:
+
+- "התקבלה אצלכם הזמנה/מכירה חדשה"
+- רשימת שורות (שם, כמות, האם קופון)
+- מזהה הזמנה קצר
+- להזמנה פיזית: כתובת משלוח + קישור פורטל
+- לקופון: תזכורת שמימוש ב-QR ושיתרה נגבית בקופה
+- CTA ל-`/supplier/orders`
+
+איסורים:
+
+- אין "קיבלתם תשלום מהפלטפורמה"
+- אין סכום payout / תאריך העברה
+- מותר "סכום ההזמנה אצלכם" כסכום שורות בלבד
+- `platform_percent` רק מסנאפשוט `order_items` (אם מוצג בכלל; לא ללקוח)
+
+Subject:
+
+```
+הזמנה חדשה ב-KenyonExpress · {ORDER_REF}
+```
+
+### 3.5 החזר (`refund`)
+
+| שדה | ערך |
+|---|---|
+| kind (יעד) | `refund` |
+| נמען | לקוח (חובה); ספק (אופציונלי אם ההחזר מבטל התחייבות אצלו) |
+| Emit | אחרי שה-refund מאושר בדומיין (סטטוס הזמנה/ledger/Cardcom refund id קיימים). לא לפני. |
+| Dedupe | `refund:{refund_id}:customer:email` או `refund:{order_id}:{refund_id}:customer:email` |
+
+תוכן ללקוח:
+
+- מספר הזמנה
+- סכום שזוכה (agorot → ₪)
+- האם קופון בוטל / לא ניתן למימוש
+- זמן צפוי להופעה בכרטיס (נוסח כללי, לא הבטחת ימים מדויקת אלא אם Cardcom נותן)
+- CTA ל-`/account/orders/{id}`
+- לינק תמיכה אם קיים
+
+Subject:
+
+```
+בוצע זיכוי להזמנה · {ORDER_REF}
+```
+
+איסורים:
+
+- לא לשלוח לפני שהזיכוי באמת נרשם
+- לא להבטיח "הכסף חזר תוך X ימים" אם אין מקור אמת
+- קופון שכבר `redeemed`: מדיניות נפרדת (אין הבטחת החזר מלא אוטומטי; ראה LEGAL / RUNBOOK)
 
 ---
 
-## 4. אירועים משניים (לא חוסמים MVP)
+## 4. Idempotency keys
 
-| אירוע | נמען | הערה |
-|---|---|---|
-| `customer.coupon_issued` | לקוח | קוד + QR + שולם באתר + יתרה בעסק + תוקף (מסלול `voucher-email` / תבנית ייעודית) |
-| `coupon.expiry_48h` | לקוח | תזכורת לפני `expires_at`; מכבד prefs |
-| `order.physical_supplier_alert` | ספק | שורות פיזיות + כתובת; `platform_percent` רק מסנאפשוט `order_items` |
-| `order.refunded` | לקוח | אחרי זיכוי מאושר |
-| marketing | לקוח | רק עם consent; ראה Marketing |
+שתי שכבות חובה. שתיהן משתמשות באותו מחרוזת לוגית כשאפשר.
 
-תזכורת 48ש: job שעתי `fn_enqueue_coupon_expiry_48h()` על `vouchers` בסטטוס `issued` בחלון 48ש, dedupe `coupon.expiry_48h:{voucher_id}`.
+### 4.1 שכבת DB: `dedupe_key`
+
+| כלל | פירוט |
+|---|---|
+| UNIQUE | `notification_outbox.dedupe_key` UNIQUE |
+| Insert | `ON CONFLICT (dedupe_key) DO NOTHING` |
+| יציבות | נגזר מזהות דומיין בלבד (order_id, voucher_id, supplier_id, refund_id), לא מ-timestamp |
+| Replay | `finalizeOrder` / webhook / redeem חוזרים לא יוצרים שורה שנייה |
+
+מפתחות קנוניים:
+
+| אירוע | dedupe_key |
+|---|---|
+| אישור הזמנה | `order_confirmation:{order_id}` |
+| קופון + QR | `coupon_purchased:{voucher_id}:customer:email` |
+| סריקה ללקוח | `coupon_redeemed:{voucher_id}:customer:email` |
+| סריקה לספק | `coupon_redeemed:{voucher_id}:supplier:email` |
+| הזמנה לספק | `supplier_new_order:{order_id}:{supplier_id}:email` |
+| החזר | `refund:{refund_id}:customer:email` |
+
+### 4.2 שכבת Resend: `Idempotency-Key`
+
+```http
+POST https://api.resend.com/emails
+Authorization: Bearer {RESEND_API_KEY}
+Idempotency-Key: {dedupe_key}
+```
+
+| כלל | פירוט |
+|---|---|
+| ערך | זהה ל-`dedupe_key` של שורת ה-outbox |
+| מטרה | אם ה-worker נפל אחרי ש-Resend קיבל אבל לפני `status=sent`, שליחה חוזרת לא יוצרת מייל כפול |
+| אורך | לשמור מתחת למגבלת Resend; המפתחות למעלה קצרים ויציבים |
+
+### 4.3 Claim אטומי
+
+שני workers במקביל:
+
+1. `FOR UPDATE SKIP LOCKED` או מעבר `pending → sending` מותנה
+2. Resend Idempotency-Key כרשת ביטחון שנייה
 
 ---
 
@@ -232,54 +344,48 @@ Edge Function notifications-worker
 
 | טבלה | תפקיד |
 |---|---|
-| `notification_outbox` (חי) / `notifications_outbox` (יעד 031) | תור שליחה |
-| `notification_events` (יעד) | עובדות דומיין append-only לפני fan-out |
-| `notification_templates` (יעד) | גרסאות RTL לפי `template_key, channel, locale` |
-| `notification_delivery_events` | webhooks Resend/Meta |
+| `notification_outbox` | תור שליחה (חי) |
+| `notification_events` | עובדות דומיין append-only לפני fan-out (יעד) |
+| `notification_templates` | גרסאות RTL לפי template_key/channel/locale (יעד) |
+| `notification_delivery_events` | webhooks Resend |
 | `notification_delivery_dlq` | עותק סופי אחרי `dead` |
-| `email_suppressions` / `channel_suppressions` | bounce, complaint, stop |
+| `email_suppressions` | bounce / complaint |
 | `user_notification_preferences` | דגלי ערוץ/נושא |
-| `consent_events` | ראיות unsubscribe / 30א |
+| `consent_events` | ראיות unsubscribe |
 
-### 5.2 עמודות outbox קריטיות
+### 5.2 עמודות outbox
 
 ```text
 id                  uuid PK
-kind                text   -- order_paid | supplier_sale | voucher_redeemed | …
+kind                text
 recipient_email     text
-payload             jsonb  -- קפוא ברגע ה-emit
+payload             jsonb      -- קפוא ברגע ה-emit
 dedupe_key          text UNIQUE
-status              text   -- pending | sent | failed | dead | skipped
+status              text       -- pending | sending | sent | dead | skipped
 attempts            int
 last_error          text
 next_attempt_at     timestamptz
+provider_message_id text
 created_at          timestamptz
 sent_at             timestamptz
-provider_message_id text   -- יעד
 ```
 
-Payload כסף (agorot), דוגמאות:
+סטטוסים:
 
-```json
-{
-  "order_id": "…",
-  "order_ref": "A1B2C3D4",
-  "total_agorot": 20900,
-  "amount_agorot": 15900,
-  "collected_agorot": 5000,
-  "product_name": "…",
-  "lines": [{ "product_name": "…", "quantity": 1, "product_type": "coupon" }]
-}
+```text
+pending → sending → sent
+                 → pending (retry, next_attempt_at בעתיד)
+                 → dead    (max attempts / permanent)
+                 → skipped (suppressed / no recipient)
 ```
 
 ### 5.3 RLS
 
 | אובייקט | authenticated | admin | service |
 |---|---|---|---|
-| outbox | אין | SELECT | ALL (drain) |
+| outbox | אין | SELECT | ALL |
 | DLQ | אין | SELECT | ALL |
 | prefs | own R/W | ALL | ALL |
-| templates | אין | ALL | ALL |
 
 Outbox מחזיק כתובות של אחרים: אין policy ללקוח/ספק.
 
@@ -294,61 +400,42 @@ POST /functions/v1/notifications-worker
 Authorization: Bearer {CRON_SECRET}
 ```
 
-Schedule: כל דקה (Supabase cron או מתזמן חיצוני).  
-גשר מקביל מותר:
+Schedule: כל דקה.  
+גשר:
 
 ```
 GET /api/cron/notifications
 ```
 
-אותה סמנטיקת claim/send/retry. לא שני תורים.
-
 ### 6.2 אלגוריתם
 
 ```text
-1. assertAuth Bearer CRON_SECRET → else 401
-2. claim batch (limit 25–50): status=pending AND next_attempt_at <= now()
-   העדפה: fn_claim_notification_batch + FOR UPDATE SKIP LOCKED
+1. assertAuth → else 401
+2. claim batch (25–50): status pending AND next_attempt_at <= now()
 3. לכל שורה:
-   a. אין template ל-kind → dead + last_error (בלי לבזבז 5 ניסיונות)
-   b. suppression על האימייל → skipped
-   c. render RTL (html + text)
-   d. POST Resend עם Idempotency-Key = dedupe_key
-   e. ok → sent
-   f. skipped (אין API key בסביבה) → לא להעלות attempts
+   a. אין template → dead מיידי
+   b. suppression → skipped
+   c. render RTL (html + text); ל-coupon_purchased: צרף QR אם זמין
+   d. Resend + Idempotency-Key = dedupe_key
+   e. ok → sent + provider_message_id
+   f. אין API key בסביבה → skipped (לא שורפים attempts על כל התור)
    g. כשל זמני → attempts++, next_attempt_at = now + backoff
-   h. attempts >= MAX → dead + insert DLQ + ops alert
-4. החזר JSON: { claimed, sent, failed, dead, skipped }
+   h. attempts >= MAX → dead + DLQ + ops alert
+4. return { claimed, sent, failed, dead, skipped }
 ```
 
-### 6.3 Resend
+### 6.3 Resend webhook (יעד)
 
-```http
-POST https://api.resend.com/emails
-Authorization: Bearer {RESEND_API_KEY}
-Idempotency-Key: {dedupe_key}
-```
-
-Body: `from`, `to`, `subject`, `html`, `text`.  
-Webhook Resend → `delivered` / `bounced` / `complained` → עדכון delivery + suppression.
-
-### 6.4 למה Edge (יעד) ולא רק cron
-
-| יתרון | משמעות |
-|---|---|
-| קרוב ל-DB | latency נמוך על claim |
-| Schedule עצמאי | לא תלוי בפריסת Vercel בלבד |
-| Secrets ב-Supabase | הפרדה מ-Next runtime |
-
-העמידות האמיתית נשארת ב-outbox: תהליך שמת בזמן שליחה משאיר שורה `pending` לניסיון הבא.
+`delivered` / `bounced` / `complained` → `notification_delivery_events` → עדכון suppression.  
+Webhook replay: idempotent על `provider_event_id` UNIQUE.
 
 ---
 
-## 7. Retry + DLQ
+## 7. Retry policy + DLQ
 
-### 7.1 מדיניות retry
+### 7.1 Retry
 
-| ניסיון (attempts אחרי כשל) | השהיה עד next_attempt_at |
+| ניסיון אחרי כשל | השהיה |
 |---|---|
 | 1 | 2 דקות |
 | 2 | 8 דקות |
@@ -356,7 +443,7 @@ Webhook Resend → `delivered` / `bounced` / `complained` → עדכון deliver
 | 4 | 128 דקות |
 | 5 | `dead` (אין ניסיון שישי אוטומטי) |
 
-נוסחה (as-built):
+נוסחה:
 
 ```text
 backoff_minutes = 2 * 4^(attempts - 1)
@@ -368,33 +455,32 @@ MAX_ATTEMPTS = 5
 | סוג | פעולה |
 |---|---|
 | 429, 5xx, timeout, network | retry + backoff |
-| 400 כתובת לא חוקית, domain rejected | `dead` מיידי (או `skipped`) |
-| אין API key | `skipped` ברמת ריצה; לא שורפים attempts על כל התור |
+| 400 כתובת לא חוקית / domain rejected | `dead` מיידי |
 | kind לא ידוע | `dead` מיידי |
+| אין `RESEND_API_KEY` | skip ריצה; לא להעלות attempts |
 
 ### 7.2 DLQ
 
-אחרי מעבר ל-`dead`:
+אחרי `dead`:
 
-1. Insert ל-`notification_delivery_dlq` (עותק: outbox_id, kind, recipient, payload, last_error, attempts, failed_at).
-2. התראת ops (Ntfy / Sentry): כל insert, או כשעומק DLQ ≥ 25.
-3. Replay ידני מאדמין: איפוס ל-`pending`, `attempts=0`, `next_attempt_at=now()`, כתיבת `audit_log`.
-4. אסור למחוק שורות DLQ של `order_paid` / `supplier_sale` / `voucher_redeemed` בלי אישור ops.
+1. Insert ל-`notification_delivery_dlq` (outbox_id, kind, recipient, payload, last_error, attempts, failed_at).
+2. התראת ops (Ntfy / Sentry): כל insert, או כשעומק ≥ 25.
+3. Replay ידני מאדמין: `pending`, `attempts=0`, `next_attempt_at=now()`, + `audit_log`.
+4. אסור למחוק DLQ של חמשת האירועים בליבה בלי אישור ops.
 
-### 7.3 Claim בטוח
+עדיפות ops ל-DLQ:
 
-שני workers במקביל לא שולחים את אותה שורה פעמיים:
-
-- `FOR UPDATE SKIP LOCKED` ב-claim, או
-- עדכון אטומי `pending → sending` עם תנאי `WHERE status = 'pending'`
-
-Resend Idempotency-Key = רשת ביטחון שנייה אם שליחה כפולה בכל זאת קרתה.
+1. `coupon_purchased` (לקוח בלי QR)
+2. `refund`
+3. `order_confirmation`
+4. `coupon_redeemed`
+5. `supplier_new_order`
 
 ---
 
 ## 8. תבניות עברית RTL
 
-### 8.1 מעטפת מייל
+### 8.1 מעטפת
 
 ```html
 <!DOCTYPE html>
@@ -434,24 +520,24 @@ Resend Idempotency-Key = רשת ביטחון שנייה אם שליחה כפול
 
 כללים:
 
-- תמיד `dir="rtl"` על מעטפת ועל בלוק התוכן.
-- מספרי הזמנה וקודי קופון ב-`dir="ltr"` בתוך הקשר RTL.
-- CTA: רקע `#fed700`, טקסט `#333e48`, או הפוך (רקע ink, טקסט צהוב) לפי מסך; עקביות בתוך אותו מייל.
-- אין כרטיסי צל מרובי שכבות; מבנה table למיילים.
-- QR: PNG מצורף / `cid` או קישור חתום ל-`/account/coupons`. לא לשלוח `VOUCHER_QR_SECRET`.
-- Escape לכל מחרוזת דינמית ב-HTML.
+- תמיד `dir="rtl"` ו-`lang="he"`.
+- קודים ומספרי הזמנה ב-`dir="ltr"` בתוך הקשר RTL.
+- CTA: רקע `#fed700`, טקסט `#333e48` (או הפוך בעקביות באותו מייל).
+- מבנה table למיילים; בלי צללים מרובי שכבות.
+- Escape לכל מחרוזת דינמית.
+- QR: `alt="קוד QR למימוש הקופון"`.
 
-### 8.2 נושאים (subjects)
+### 8.2 Subjects
 
-| kind / template | subject |
+| kind | subject |
 |---|---|
-| `order_paid` | ההזמנה שלך התקבלה · {{order_ref}} |
-| `supplier_sale` | מכירה חדשה ב-KenyonExpress · הזמנה {{order_ref}} |
-| `voucher_redeemed` | הקופון מומש · {{product_name}} |
-| `customer.coupon_issued` (יעד) | הקופון שלך מוכן |
-| `customer.coupon_expiry_48h` (יעד) | תזכורת: הקופון שלך פג תוך 48 שעות |
+| `order_confirmation` | ההזמנה שלך התקבלה · {{order_ref}} |
+| `coupon_purchased` | הקופון שלך מוכן · {{product_name}} |
+| `coupon_redeemed` | הקופון מומש · {{product_name}} |
+| `supplier_new_order` | הזמנה חדשה ב-KenyonExpress · {{order_ref}} |
+| `refund` | בוצע זיכוי להזמנה · {{order_ref}} |
 
-### 8.3 גוף: אישור הזמנה (לקוח)
+### 8.3 גוף: אישור הזמנה
 
 ```text
 שלום {{customer_name}},
@@ -464,25 +550,25 @@ Resend Idempotency-Key = רשת ביטחון שנייה אם שליחה כפול
 לפרטי ההזמנה: {{account_orders_url}}
 ```
 
-### 8.4 גוף: הודעה לספק
+### 8.4 גוף: קופון + QR
 
 ```text
-שלום {{supplier_name}},
+שלום {{customer_name}},
 
-התקבלה אצלכם מכירה חדשה.
+הקופון "{{product_name}}" מוכן למימוש.
 
-{{lines}}
-סכום ההזמנה אצלכם: {{amount_ils}}
-מספר הזמנה: {{order_ref}}
+קוד: {{code}}
+[QR image]
 
-{{#if has_coupon}}
-קופון נפדה בבית העסק בסריקת ה-QR, והיתרה נגבית מהלקוח במקום.
-{{/if}}
+שולם באתר: {{paid_ils}}
+יתרה לתשלום בבית העסק: {{due_ils}}
+בתוקף עד: {{expires_at_he}}
 
-לניהול ההזמנות: {{supplier_orders_url}}
+הציגו את הקוד או את ה-QR בבית העסק.
+לצפייה באזור האישי: {{account_coupons_url}}
 ```
 
-### 8.5 גוף: אישור סריקה (לקוח)
+### 8.5 גוף: מימוש
 
 ```text
 שלום,
@@ -497,42 +583,77 @@ Resend Idempotency-Key = רשת ביטחון שנייה אם שליחה כפול
 לכל הקופונים שלך: {{account_coupons_url}}
 ```
 
-### 8.6 איסורי נוסח
+### 8.6 גוף: הזמנה לספק
+
+```text
+שלום {{supplier_name}},
+
+התקבלה אצלכם הזמנה חדשה.
+
+{{lines}}
+סכום ההזמנה אצלכם: {{amount_ils}}
+מספר הזמנה: {{order_ref}}
+
+{{#if has_coupon}}
+קופון נפדה בבית העסק בסריקת ה-QR, והיתרה נגבית מהלקוח במקום.
+{{/if}}
+
+{{#if physical}}
+כתובת למשלוח:
+{{address_block}}
+{{/if}}
+
+לניהול ההזמנות: {{supplier_orders_url}}
+```
+
+### 8.7 גוף: החזר
+
+```text
+שלום {{customer_name}},
+
+בוצע זיכוי עבור הזמנה {{order_ref}}.
+
+סכום הזיכוי: {{refund_ils}}
+{{#if coupon_voided}}הקופון הקשור להזמנה בוטל ואינו ניתן למימוש.{{/if}}
+
+הזיכוי יופיע בחשבון/בכרטיס לפי לוחות הזמנים של חברת האשראי.
+
+לפרטי ההזמנה: {{order_url}}
+```
+
+### 8.8 איסורי נוסח
 
 - Escrow, נאמן, "הכסף אצלנו עד…"
-- עמלה קבועה (5%/10%) כטקסט שיווקי
+- עמלה קבועה כטקסט שיווקי
 - הבטחת payout לספק
 - חשיפת `platform_percent` ללקוח
 - PAN / token / קישור עם service role
 
+פוטר טרנזקציוני:
+
+```text
+הודעה זו קשורה לרכישה או לחשבון שלך ב-KenyonExpress.
+להסרה מדיוור שיווקי: {{unsubscribe_marketing_url}}
+```
+
 ---
 
-## 9. העדפות, suppression, unsubscribe
+## 9. העדפות ו-suppression
 
 | נושא | ברירת מחדל | התנהגות |
 |---|---|---|
-| אישור הזמנה / קופון / סריקה | on | Transactional; נשלח גם בלי marketing opt-in |
-| תזכורת פקיעה | on (email) | מכבד כיבוי מפורש |
-| Marketing | off | רק עם consent + suppression נקי |
+| חמשת האירועים בליבה | on | Transactional; נשלחים גם בלי marketing opt-in |
+| תזכורת פקיעה (משני) | on | מכבד כיבוי מפורש |
+| Marketing | off | רק עם consent |
 
-Suppression נבדק ב-enqueue (לא לכתוב שורה לכתובת מתה) ושוב ב-drain.
-
-Unsubscribe (יעד):
+Suppression נבדק ב-enqueue וב-drain.  
+Unsubscribe חתום (יעד):
 
 ```
 /api/notifications/unsubscribe?u=…&t=…&sig=…&exp=…
 ```
 
-Topics: `marketing`, `coupon_expiry` (לא חוסם אישור רכישה/סריקה אלא אם opt-out טרנזקציונלי מפורש ונדיר).  
-כל פעולה → `consent_events`.
-
-פוטר:
-
-```text
-הודעה זו קשורה לרכישה או לחשבון שלך.
-להסרה מתזכורות קופון: {{unsubscribe_expiry_url}}
-להסרה מדיוור שיווקי: {{unsubscribe_marketing_url}}
-```
+Topics: `marketing`, `coupon_expiry`. לא חוסמים אישור רכישה/סריקה/החזר אלא אם opt-out טרנזקציונלי מפורש ונדיר.
 
 ---
 
@@ -541,32 +662,32 @@ Topics: `marketing`, `coupon_expiry` (לא חוסם אישור רכישה/סרי
 | כלל | פירוט |
 |---|---|
 | Secrets | רק Edge / server |
-| Auth worker | Bearer `CRON_SECRET`; בלי זה 401 |
+| Auth worker | Bearer `CRON_SECRET` → אחרת 401 |
 | Payload | בלי `cardcom_token`, PAN, CVV |
-| PII | מינימום; קוד קופון מלא רק לנמען הלגיטימי |
-| Trigger errors | `RAISE WARNING` + return NEW; לא rollback דומיין |
-| Ntfy / Sentry | DLQ insert, worker stall (אין drain 15 דק' ויש תור), Resend 429 מתמשך |
+| QR | לינק חתום או attachment; לא secret גולמי |
+| Trigger errors | `RAISE WARNING` + return NEW |
+| Ntfy/Sentry | DLQ insert, worker stall (אין drain 15 דק' ויש תור), Resend 429 מתמשך |
 
-בדיקת בריאות יומית (ראה RUNBOOK): עומק `pending`, מספר `dead`, bounce ב-Resend.
+בריאות יומית (RUNBOOK): עומק `pending`, מספר `dead`, bounce ב-Resend.
 
 ---
 
-## 11. מפת קבצים
-
-### 11.1 יעד
+## 11. מפת קבצים (יעד בלבד; לא ליישם במסמך זה)
 
 ```text
 supabase/functions/notifications-worker/index.ts
 supabase/functions/notifications-worker/templates/_layout.ts
-supabase/functions/notifications-worker/templates/order-paid.ts
-supabase/functions/notifications-worker/templates/supplier-sale.ts
-supabase/functions/notifications-worker/templates/voucher-redeemed.ts
+supabase/functions/notifications-worker/templates/order-confirmation.ts
+supabase/functions/notifications-worker/templates/coupon-purchased.ts
+supabase/functions/notifications-worker/templates/coupon-redeemed.ts
+supabase/functions/notifications-worker/templates/supplier-new-order.ts
+supabase/functions/notifications-worker/templates/refund.ts
 supabase/functions/notifications-worker/channels/resend.ts
 supabase/migrations/0xx_notifications_align.sql
 src/app/api/notifications/unsubscribe/route.ts
 ```
 
-### 11.2 As-built (לייחוס; לא לשנות במסמך זה)
+As-built לייחוס (main worktree; לא לערוך מכאן):
 
 ```text
 supabase/migrations/095_notification_outbox.sql
@@ -582,27 +703,30 @@ src/server/payments/voucher-email.ts
 
 | # | בדיקה | צפי |
 |---|---|---|
-| T1 | הזמנה פיזית `paid_at` → outbox `order_paid` + `supplier_sale` | dedupe יציב ב-replay |
-| T2 | הזמנת קופון → אין כפילות `order_paid` אם נשלח מייל QR | לקוח מקבל אישור אחד |
-| T3 | redeem → `voucher_redeemed` ללקוח | אין כפילות ב-replay |
-| T4 | Resend 500 × 5 → `dead` + DLQ | |
-| T5 | bounce → suppression; enqueue הבא לא נכתב / drain skipped | |
-| T6 | Edge/cron בלי Bearer → 401 | |
-| T7 | HTML: `dir=rtl`, `lang=he`, בלי מילת Escrow | |
-| T8 | Trigger זורק בתוך הבלוק → הזמנה/redeem עדיין מצליחים | |
+| T1 | הזמנה פיזית paid → `order_confirmation` + `supplier_new_order` | dedupe יציב ב-replay |
+| T2 | הזמנת קופון → `coupon_purchased` עם QR; **בלי** `order_confirmation` כפול | |
+| T3 | redeem → `coupon_redeemed` ללקוח (+ ספק) | אין כפילות ב-replay |
+| T4 | refund מאושר → `refund` פעם אחת | |
+| T5 | Resend 500 × 5 → `dead` + DLQ | |
+| T6 | אותו `Idempotency-Key` פעמיים → מייל אחד אצל Resend | |
+| T7 | bounce → suppression; enqueue הבא לא נשלח | |
+| T8 | worker בלי Bearer → 401 | |
+| T9 | HTML: `dir=rtl`, `lang=he`, בלי מילת Escrow | |
+| T10 | Trigger זורק → הזמנה/redeem/refund עדיין מצליחים | |
 
 ---
 
 ## 13. Acceptance
 
-- [ ] Resend + Trigger + Edge worker (או cron גשר עם אותה סמנטיקה), בלי Make/Zapier
-- [ ] אישור הזמנה ללקוח על הזמנה בלי כפילות מול מייל קופון
-- [ ] הודעת מכירה/קופון לספק בלי נוסח payout
-- [ ] אישור סריקה ללקוח (וספק ביעד)
-- [ ] תבניות עברית RTL עם מותג `#fed700` / `#333e48`
-- [ ] Retry עם backoff + `dead` + DLQ + התראת ops
-- [ ] Idempotency: `dedupe_key` + Resend Idempotency-Key
-- [ ] Suppression / unsubscribe מכבדים; transactional רכישה/סריקה לא נחסם על ידי marketing off
+- [ ] Resend + DB Trigger + Edge worker (או cron גשר זהה), בלי Make/Zapier
+- [ ] אישור הזמנה ללקוח (בלי כפילות מול קופון+QR)
+- [ ] רכישת קופון עם קוד + QR + שולם באתר + יתרה בעסק
+- [ ] מימוש: אישור ללקוח (+ סיכום לספק)
+- [ ] התראת הזמנה חדשה לספק בלי נוסח payout
+- [ ] מייל החזר אחרי refund מאושר
+- [ ] תבניות עברית RTL עם `#fed700` / `#333e48`
+- [ ] Retry עם backoff + `dead` + DLQ + ops alert
+- [ ] Idempotency: `dedupe_key` UNIQUE + Resend `Idempotency-Key`
 - [ ] מסלול כסף לא מחכה ל-Resend
 
 ---
@@ -610,9 +734,10 @@ src/server/payments/voucher-email.ts
 ## 14. Out of scope
 
 - קמפיינים שיווקיים (Marketing)
-- Push native באפליקציה (Mobile App)
+- Push native / WhatsApp כחובה ל-MVP (אופציונלי בהמשך)
 - SMS כערוץ ראשי
 - שינוי מודל כסף / ledger / Escrow
+- שינוי קוד ב-worktree הראשי
 
 ---
 
@@ -634,7 +759,8 @@ docs/LAUNCH-DAY.md
 
 | Date | Change |
 |---|---|
-| 2026-07-30 | V1: Resend + Trigger + Edge, קטלוג בסיסי |
+| 2026-07-30 | V1: Resend + Trigger + Edge |
 | 2026-07-31 | V2: WhatsApp, QR, 48h, unsubscribe |
-| 2026-08-02 | מיזוג V2 לקובץ קנוני (worktree קודם) |
-| 2026-08-03 | כתיבה מחדש ב-`docs/final-pack`: ליבת 3 אירועים, Escrow 2026-07-27, retry/DLQ, Edge יעד + גשר cron 095 |
+| 2026-08-02 | מיזוג V2 לקובץ קנוני |
+| 2026-08-03 | Rewrite: 3 ליבות + Escrow wording |
+| 2026-08-03 | Full catalog: order confirmation, coupon+QR, redeemed, supplier new-order, refund; idempotency keys; retry/DLQ; RTL; docs-only in `docs/final-pack` |
