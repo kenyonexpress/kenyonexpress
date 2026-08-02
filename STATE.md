@@ -1,11 +1,32 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-02 (supplier portal merged to main)
+Updated: 2026-08-03 (בילד פרודקשן ירוק, מוכן ל-Vercel)
 
 ## Current Phase
-‏**main.** ‏feat/supplier-portal מוזג ל-main אחרי סקירה ואימות. התור ב-NEXT-GOALS.md הושלם.
+‏**FINAL BUILD TO VERCEL.** ‏בילד פרודקשן ירוק על feat/supplier-portal. פריסה ל-Vercel טרם בוצעה (בהוראה מפורשת).
 
 ## Last Completed
+בילד פרודקשן ירוק (2026-08-03):
+
+1. תוקן import שבור ב:
+   src/app/api/supplier/redeem/route.ts
+   העריכה בעץ העבודה הצביעה על מודול לא קיים
+   (@/app/api/supplier/voucher). הוחזר re-export מ:
+   src/app/api/supplier/vouchers/redeem/route.ts
+   עם runtime מוצהר מקומית בקובץ (nodejs), כנדרש. גם בקובץ המימוש
+   runtime מוצהר מקומית.
+2. נוצר
+   .env.production
+   (ב-gitignore, לא בקומיט) עם CHECKOUT_ENABLED=true. הקוד ב:
+   src/lib/payments/env.ts
+   מפעיל checkout כברירת מחדל אלא אם 'false', עכשיו זה מפורש.
+3. ‏pnpm build ירוק פעמיים (Compiled successfully, ‏40/40 עמודים).
+   שני נתיבי ה-redeem מופיעים בטבלת הראוטים כ-dynamic.
+4. ‏pnpm type-check נקי, ‏pnpm test: ‏724/724 ב-58 קבצים.
+5. קומיט 410c249 נדחף ל-origin/feat/supplier-portal.
+6. נשלחה התראת ntfy: ‏PRODUCTION BUILD GREEN.
+
+## Previous Completed
 מיזוג feat/supplier-portal ל-main (2026-08-02):
 
 1. סקירה: rbac.ts (חברות ב-supplier_members היא אות ההרשאה היחיד),
@@ -32,9 +53,10 @@ nothing
 - ה-push ל-main עקף branch protection ("Changes must be made through a pull request", עקיפה בהרשאת החשבון). אם רוצים אכיפת PR אמיתית, לסגור את חריגת ה-bypass ב-GitHub.
 
 ## Next Task
-אין מטרה פתוחה. התור ב-NEXT-GOALS.md הושלם ומוזג. ממתין למטרה חדשה מאופיר.
-מועמדים מה-backlog הקיים: החלת 027 המלא (payout_statements), רענון
-src/types/database.ts עם pnpm db:types, תכנון cutover של 059.
+פריסה ל-Vercel (הבילד ירוק ומוכן, ממתין לאישור מפורש). לוודא ששם
+CHECKOUT_ENABLED=true מוגדר גם במשתני הסביבה של Vercel, כי
+.env.production
+מקומי ולא בקומיט.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
