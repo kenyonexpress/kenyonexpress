@@ -3,17 +3,35 @@
 תור על branch:
 
 ```
-feat/e2e
+main
 ```
 
 ## התור
 
-- [x] ✅ Playwright E2E: guest cart → Google gate (email in CI) → Cardcom mock → coupon + QR → supplier redeem. RTL + mobile project. CI seed + mock.
-- [ ] Integration pass: rebase feat branches → main, tests, merge sequentially.
+- [x] ✅ Playwright E2E על
+feat/e2e
+.
+- [x] ✅ Integration pass: מיזוג סדרתי של
+feat/coupon-redemption
+→
+personal-area
+→
+notifications
+→
+seo-performance
+→
+e2e
+ל-
+main
+. tsc + Vitest 714 ירוק. בלי נגיעה ב-DB פרודקשן.
 
 ## לוג
 
 | שלב | סטטוס | הערות |
 |---|---|---|
-| SEO + Performance | ✅ | ISR + JSON-LD + analyze + lighthouse smoke |
-| Playwright E2E | ✅ | full-purchase-redeem + mobile-chrome + CI CARDCOM_USE_MOCK |
+| Coupon redemption | ✅ | מוזג ל-main |
+| Personal area | ✅ | מוזג ל-main |
+| Notifications | ✅ | מוזג ל-main |
+| SEO + Performance | ✅ | מוזג ל-main |
+| Playwright E2E | ✅ | מוזג ל-main |
+| Integration pass | ✅ | main ahead, tests green |

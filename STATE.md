@@ -1,89 +1,78 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-02 (goal: Playwright E2E on feat/e2e)
+Updated: 2026-08-02 (goal: Integration pass → main)
 
 ## Current Phase
-‏**feat/e2e.** Playwright full purchase→redeem flow, RTL/mobile, CI mock Cardcom.
+‏**main.** GOALS-QUEUE (1–6) הושלם. stack של feat מוזג ל-main.
 
 ## Last Completed
-Goal Playwright E2E על
-feat/e2e
-:
+Integration pass:
 
-1.
-playwright.config.ts
-: chromium +
-mobile-chrome
-(Pixel 5),
-CARDCOM_USE_MOCK
-ב-
-webServer
-.
-2.
-e2e/full-purchase-redeem.spec.ts
-: guest cart → Google gate → email login (CI) → mock pay → coupon/QR → supplier scan redeem.
-3.
-e2e/rtl-mobile.spec.ts
-,
-e2e/coupon-scan.spec.ts
-,
-e2e/coupons.spec.ts
-,
-e2e/auth-session.ts
-.
-4. Seed:
-scripts/seed-test-data.mjs
-(coupon_price_ils + customer/supplier users +
-supplier_members
-).
-5. Fix:
-checkout/return
-קורא מ-
-vouchers
-(לא
-coupon_codes
-);
-(main)/layout
-responsive;
-/scan
+1. מיזוג סדרתי ל-
+main
+:
+feat/coupon-redemption
 →
-/supplier/scan
+feat/personal-area
+→
+feat/notifications
+→
+feat/seo-performance
+→
+feat/e2e
 .
-6. CI: seed +
+2. לפני מיזוג על
+feat/e2e
+: tsc ירוק, Vitest 714/714.
+3. אחרי מיזוג על
+main
+: tsc ירוק, Vitest 714/714.
+4. בלי נגיעה ב-DB פרודקשן. בלי
+db push
+.
+
+Playwright E2E (כבר על tip):
+
+-
+e2e/full-purchase-redeem.spec.ts
++
+mobile-chrome
++ RTL + CI
 CARDCOM_USE_MOCK
-לפני
-playwright test
-.
++ seed users.
 
 ## In Progress
 nothing
 
 ## Blocking Issues
-ריצת
+-
 pnpm seed:test
-מקומית נכשלה:
+מקומי:
 Invalid API key
-על הפרויקט ב-
+ב-
 .env.local
-. ה-suite המלא דורש DB עם service role תקין +
+. E2E ב-Actions דורש
 CI_SUPABASE_*
-ב-GitHub.
+.
+- מיגרציות 092/095/096 (ואחרות מה-stack) עלולות עדיין להיות לא מוחלות על DB חי; לא נגענו ב-DB בסבב הזה.
 
 ## Next Task
-Integration pass לפי
+תור
 GOALS-QUEUE.md
-: rebase של feat branches על main, בדיקות, מיזוג סדרתי. בלי נגיעה ב-DB פרודקשן.
+ריק (1–6 ✅). המתנה למטרה חדשה, או החלת מיגרציות חסרות +
+CI_SUPABASE_*
+להפעלת job ה-E2E.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
 
-## החלטות שהתקבלו אוטומטית (feat/e2e)
-- Google OAuth לא רץ ב-CI. נבדק שהכפתור מופיע בשער התשלום; הזרימה בתשלום משתמשת באימייל/סיסמה של פיקסצ׳ר (אותו
-mergeGuestCart
-כמו אחרי callback של Google).
-- Cardcom ב-CI הוא mock בלבד (
-CARDCOM_USE_MOCK=true
-), לא sandbox אמיתי.
+## החלטות שהתקבלו אוטומטית (integration)
+- ה-feat branches היו stack לינארי שכבר הכיל את
+main
+; rebase על main היה no-op. בוצע מיזוג סדרתי (FF כשאפשר,
+--no-ff
+כש-ort נדרש בגלל merge commits קודמים).
+- Google OAuth לא ב-CI; כפתור Google נבדק בשער, תשלום ב-CI באימייל פיקסצ׳ר + Cardcom mock.
 
 ## אימות שערים אחרי מטרות 3 ו-4 (סבב נפרד)
 
@@ -1216,6 +1205,11 @@ default, והטופס לא שלח אף אחת מהן. כל `insert` של מוצ�
 ---
 
 ## History
+
+### 2026-08-02: Integration pass → main
+- מיזוג סדרתי של feat/coupon-redemption → personal-area → notifications → seo-performance → e2e ל-main.
+- tsc + Vitest 714 ירוק לפני ואחרי. בלי DB פרודקשן.
+- GOALS-QUEUE פריטים 1–6 הושלמו.
 
 ### 2026-08-02: feat/e2e (Playwright E2E)
 - Branch
