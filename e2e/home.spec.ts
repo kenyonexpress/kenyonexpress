@@ -80,11 +80,11 @@ test.describe('homepage', () => {
    * paint 157px boxes on a phone. Measured 93264 -> 4176 bytes at w=288 once
    * one sharp was pinned for the whole tree.
    *
-   * Compares the optimizer's answer against the source it was given, rather
-   * than against a fixed byte count, so it keeps meaning something when the
-   * artwork is replaced.
+   * Compares the optimizer's answer AT TWO WIDTHS, rather than against the
+   * source's byte count, so it keeps meaning something when the artwork is
+   * replaced and when the codec changes. See the note on the assertion.
    */
-  test('the image optimizer returns something smaller than the source', async ({
+  test('the image optimizer re-encodes per width instead of passing the source through', async ({
     page,
     request,
   }) => {
@@ -104,12 +104,35 @@ test.describe('homepage', () => {
     ])
     const optimizedBytes = (await optimized.body()).length
     const sourceBytes = (await source.body()).length
-
     expect(sourceBytes, 'source image did not load').toBeGreaterThan(0)
+
+    // The bug this test exists for is the pass-through: when sharp cannot
+    // decode the source, next catches the throw and serves the ORIGINAL bytes
+    // with a 200 and no log, identically at every `w`. So identical bytes
+    // across two widths is the actual signature, and that is what is asserted.
+    //
+    // It used to assert `optimized < source / 2` instead, which is not an
+    // invariant of a working optimizer. The sources here are AVIF and the
+    // output is WebP; on a phone the deal card legitimately asks for a rung
+    // where WebP is LARGER than the AVIF it came from. Measured on this build:
+    // w=256 -> 9304B, w=384 -> 16808B, w=640 -> 27952B against a 22062B source.
+    // The optimizer was working correctly and the old assertion called it a
+    // failure the moment the mobile project started running this file.
+    const twoWidths = await Promise.all(
+      [256, 640].map(async (w) => {
+        const u = new URL(optimizedUrl)
+        u.searchParams.set('w', String(w))
+        return (await (await request.get(u.toString())).body()).length
+      }),
+    )
+
     expect(
-      optimizedBytes,
-      `optimizer returned ${optimizedBytes}B for a ${sourceBytes}B source - a pass-through fallback looks exactly like this`,
-    ).toBeLessThan(sourceBytes / 2)
+      twoWidths[0],
+      `optimizer returned ${twoWidths[0]}B at w=256 and ${twoWidths[1]}B at w=640 - identical bytes at different widths is exactly what a pass-through fallback looks like`,
+    ).not.toBe(twoWidths[1])
+    const [small, large] = twoWidths as [number, number]
+    expect(small, 'w=256 should be cheaper than w=640').toBeLessThan(large)
+    expect(optimizedBytes, 'optimizer returned nothing').toBeGreaterThan(0)
   })
 
   /**
@@ -143,11 +166,30 @@ test.describe('homepage', () => {
     )
 
     expect(picked.length, 'no hero slide image resolved').toBeGreaterThan(0)
+
+    // The bound is DERIVED from the device pixel ratio, not hardcoded.
+    //
+    // It used to be a flat 384, which is the rung above 193 * 1.75 -- correct
+    // for the 412px dpr-1.75 phone this test was written against, and wrong the
+    // moment it also ran under the `mobile-chrome` project, whose Pixel 5 is
+    // dpr 2.75. There 193 * 2.75 is 531 and the smallest rung that covers it is
+    // 640, so the browser was doing exactly the right thing and the assertion
+    // called it a regression. Setting a viewport does not change the ratio; it
+    // comes from the project.
+    //
+    // What this actually guards is unchanged: that the slide asks for the rung
+    // its 193px paint needs and not one above it. With `100vw` back in place
+    // the request goes to the full viewport width and still fails.
+    const dpr = await page.evaluate(() => window.devicePixelRatio)
+    const RUNGS = [16, 32, 48, 64, 96, 128, 256, 288, 384, 640, 750, 828, 1080, 1200, 1920, 2048]
+    const needed = 193 * dpr
+    const allowed = (RUNGS.find((r) => r >= needed) ?? RUNGS[RUNGS.length - 1]) as number
+
     for (const w of picked) {
-      // 384 is the rung above 193 * 1.75, and 256 is what a dpr-1 run picks.
-      // Verified to separate the two states: with `100vw` back in place this
-      // fails at 640 on a dpr-1 run and at 750 on a phone.
-      expect(w, `hero slide fetched at w=${w} for a 193px paint`).toBeLessThanOrEqual(384)
+      expect(
+        w,
+        `hero slide fetched at w=${w} for a 193px paint at dpr ${dpr} (rung ${allowed} covers it)`,
+      ).toBeLessThanOrEqual(allowed)
     }
   })
 

@@ -116,14 +116,27 @@ test.describe('product page', () => {
     )
     const dpr = await page.evaluate(() => window.devicePixelRatio)
 
+    // The bound is the smallest RUNG that covers the paint, not a linear
+    // multiple of it. `painted * dpr * 1.5` assumes the browser can request any
+    // width; it cannot, it picks from next's ladder. On a Pixel 5 a 149.5px
+    // thumbnail at dpr 2.75 needs 411 device pixels, and the ladder goes
+    // 384 -> 640 with nothing between, so 640 is the only correct choice and
+    // the old tolerance of 616 called the right answer a regression. The
+    // over-ordering this guards against is picking a rung ABOVE the one that
+    // covers the paint, which is still caught.
+    const RUNGS = [16, 32, 48, 64, 96, 128, 256, 288, 384, 640, 750, 828, 1080, 1200, 1920, 2048]
+    const rungFor = (devicePx: number) => RUNGS.find((r) => r >= devicePx) ?? RUNGS.at(-1)
+
     expect(shots.length).toBeGreaterThan(0)
     for (const s of shots) {
       // A candidate of 0 means currentSrc carried no `w`, i.e. the image never
       // went through the optimizer. That is a failure, not a pass.
       expect(s.ordered, `${s.src}: no w= in currentSrc`).toBeGreaterThan(0)
-      expect(s.ordered, `${s.src}: painted ${s.painted} at dpr ${dpr}`).toBeLessThanOrEqual(
-        s.painted * dpr * 1.5,
-      )
+      const allowed = rungFor(s.painted * dpr) as number
+      expect(
+        s.ordered,
+        `${s.src}: painted ${s.painted} at dpr ${dpr} needs ${Math.ceil(s.painted * dpr)}px, rung ${allowed} covers it`,
+      ).toBeLessThanOrEqual(allowed)
     }
   })
 })

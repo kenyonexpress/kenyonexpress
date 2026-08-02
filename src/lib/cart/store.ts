@@ -21,7 +21,7 @@ import { createStore } from 'zustand/vanilla'
  * WHAT IT IS FOR: since the `cacheComponents` work, no store layout awaits the
  * cart -- reading the cookie would make every route below it uncacheable -- so
  * `initialCart` is empty and the real one arrives from `<CartBootstrap>`, a
- * streamed hole, one network round trip after hydration. Until then a returning
+ * client fetch of `/api/cart`, one network round trip after hydration. Until then a returning
  * shopper saw an empty badge over a cart that has things in it. The mirror
  * covers exactly that window and is overwritten by the first server answer.
  */

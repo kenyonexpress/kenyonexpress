@@ -7,17 +7,14 @@ import { CartProvider } from '@/components/cart/CartProvider'
 import Header from '@/components/layout/Header'
 import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
 import { Toaster } from '@/components/ui/sonner'
-import { Suspense } from 'react'
 
 // Synchronous for the same reason as the store group's layout: the cart's two
-// cookie reads are isolated in <CartBootstrap> so they are the only thing that
-// waits. See src/app/(store)/layout.tsx.
+// cookie reads live in /api/cart, fetched client-side by <CartBootstrap>, so
+// nothing here waits at request time. See src/app/(store)/layout.tsx.
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
     <CartProvider>
-      <Suspense fallback={null}>
-        <CartBootstrap />
-      </Suspense>
+      <CartBootstrap />
       <div className="min-h-screen flex flex-col">
         <Header />
         <div className="flex-1 bg-gray-50">

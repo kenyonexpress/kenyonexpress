@@ -163,6 +163,32 @@ html[data-consent="decided"] [data-consent-banner] {
   display: none;
 }
 
+/* The banner is `fixed bottom-0`, so it OVERLAYS whatever is at the bottom of
+   the page, and on a phone it is tall: the paragraph and the two buttons stack.
+   Measured on a Pixel 5 at /login, the "כניסה ללא סיסמה" toggle was visible,
+   enabled, and unclickable -- elementFromPoint at its centre returned the
+   banner's paragraph. Playwright timed out on the click, which is precisely
+   what a thumb does.
+
+   Reserved here in CSS rather than by measuring in an effect, for two reasons
+   the rest of this file has already paid for: an effect would move content
+   after hydration and this project holds CLS at 0 on all three pages, and
+   [20] deliberately removed every mount-time state from the banner so the
+   server and client render one tree. Keyed off the same attribute as the rule
+   above, so a visitor who already answered reserves nothing.
+
+   Two values because the layout has two shapes: `sm:flex-row` puts the text and
+   the buttons on one line from 640px up. */
+html:not([data-consent="decided"]) body {
+  padding-bottom: 12rem;
+}
+
+@media (min-width: 640px) {
+  html:not([data-consent="decided"]) body {
+    padding-bottom: 6rem;
+  }
+}
+
 /* Turbopack caches this file's compiled output by CONTENT hash, not mtime.
    A dev server started before a @theme colour was added keeps serving CSS
    without that colour's utilities, and `touch` does not clear it: on

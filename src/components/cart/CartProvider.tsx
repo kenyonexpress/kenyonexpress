@@ -29,8 +29,9 @@ const CartStoreContext = createContext<CartStoreApi | null>(null)
  * this pass neither. That is deliberate and it is the whole reason the store
  * front can be prerendered: reading the cart means reading a cookie, and a
  * layout that awaits a cookie before it renders makes every route beneath it
- * uncacheable. The values arrive instead from `<CartBootstrap>`, a streamed
- * hole, which calls `setCart` / `setAuthenticated` once it resolves.
+ * uncacheable. The values arrive instead from `<CartBootstrap>`, a client
+ * fetch of `/api/cart` after hydration, which calls `setCart` /
+ * `setAuthenticated` once it resolves.
  *
  * Passing them here still works and is what the tests do; it just costs the
  * static shell of everything below.

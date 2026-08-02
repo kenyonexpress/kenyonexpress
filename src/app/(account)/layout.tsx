@@ -56,9 +56,7 @@ async function AccountSideNav() {
 export default function AccountLayout({ children }: { children: React.ReactNode }) {
   return (
     <CartProvider>
-      <Suspense fallback={null}>
-        <CartBootstrap />
-      </Suspense>
+      <CartBootstrap />
       <div className="min-h-screen flex flex-col bg-white">
         <SiteHeader />
         <main className="flex-1 w-full">

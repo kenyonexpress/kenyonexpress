@@ -86,7 +86,29 @@ test.describe('shopping cart (guest)', () => {
     await expect.poll(() => navCartCount(page), { timeout: 10_000 }).toBe(0)
   })
 
-  test('adding to the cart opens the drawer, and the header badge reopens it', async ({ page }) => {
+  // Desktop only, and it always was -- the comment inside already said so. The
+  // panel that opens is chosen by CSS width: above the breakpoint it is
+  // MiniCartDropdown, which has no close button and is dismissed by the header
+  // control this test is named after; below it, it is CartDrawer, which has its
+  // own "סגור". When `mobile-chrome` arrived this file started running at
+  // 393px, where `headerCart.click()` reaches for an affordance that is not the
+  // one on screen, and timed out.
+  //
+  // Scoped rather than made width-agnostic on purpose: the two panels are
+  // different components with different dismissal, so one test asserting both
+  // would assert neither. The phone panel needs its own spec, and does not have
+  // one yet.
+  test('adding to the cart opens the drawer, and the header badge reopens it', async ({
+    page,
+    viewport,
+  }) => {
+    // Inside the test, not at describe scope: at describe scope this skipped
+    // all eight cart specs on a phone, which is eight fewer assertions for one
+    // test's problem.
+    test.skip(
+      (viewport?.width ?? 0) < 1024,
+      'mini-cart dropdown is the desktop panel; the phone gets CartDrawer',
+    )
     await openPurchasableProduct(page)
     await addOpenProductToCart(page)
 
