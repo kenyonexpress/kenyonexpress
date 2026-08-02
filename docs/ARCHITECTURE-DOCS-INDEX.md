@@ -42,8 +42,8 @@ Date: 2026-07-31 · docs only.
 - `ARCHITECTURE-CUSTOMER-SUPPORT.md`
 - `ARCHITECTURE-AI-AGENTS-SUPPORT.md`
 - `ARCHITECTURE-AI-AGENTS.md`
-- `ARCHITECTURE-NOTIFICATIONS.md`
-- `ARCHITECTURE-NOTIFICATIONS-V2.md`
+- `ARCHITECTURE-NOTIFICATIONS.md` (V2 מלא: Resend+Trigger+Edge, WhatsApp, QR, 48h, unsubscribe)
+- `ARCHITECTURE-NOTIFICATIONS-V2.md` (מצביע לקנוני למעלה)
 
 ## Admin / suppliers / growth
 - `ARCHITECTURE-ADMIN.md`
