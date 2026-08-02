@@ -1,50 +1,51 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-02 (goal: Personal area on feat/personal-area)
+Updated: 2026-08-02 (goal: Notifications on feat/notifications)
 
 ## Current Phase
-‏**feat/personal-area.** אזור אישי: הזמנות, קופונים+QR, ארנק קאשבק פנימי, פרופיל Google.
+‏**feat/notifications.** Resend + outbox + Edge + QStash + RTL Hebrew templates.
 
 ## Last Completed
-Goal Personal area על
-feat/personal-area
+Goal Notifications על
+feat/notifications
 :
 
-1. `/account/coupons` מ-
-vouchers
-עם טאבים + QR מ-
-qr_payload
-; `/account/vouchers` → redirect.
-2. הזמנות: כסף באגורות דרך
-money.ts
-; שורות קופון מ-
-vouchers
-(שולם באתר / יתרה בעסק + QR).
-3. ארנק: יתרה+ledger באגורות; עותק closed-loop; אין משיכה.
-4. פרופיל Google: avatar, email read-only, logout ב-nav וב-details.
-5. Vitest
-src/lib/account
-+ labels; compare
---page=account
+1. מיגרציות
+095_notification_outbox.sql
++
+096_notification_voucher_issued.sql
+(triggers + kind
+voucher_issued
+).
+2. Resend adapter + builders:
+order_paid
+,
+supplier_sale
+,
+voucher_redeemed
+,
+voucher_issued
+(RTL
+lang=he
+, קופון בלי QR מוטמע).
+3. Drain משותף + cron GET/POST + DLQ; QStash wake מ-
+finalize
 .
-6. proxy שומר session גם על
-/coupon/
-.
+4. Edge Function
+notifications-worker
+(proxy ל-cron עם אותו חוזה).
+5. Vitest: email builders + notifications qstash.
 
 ## In Progress
 nothing
 
 ## Blocking Issues
-compare חשבון דורש
-COMPARE_STORAGE_STATE
-לסשן מחובר (אחרת נלכד /login). עמודות wallet/orders עדיין
-*_ils
-ב-DB עד החלת 059 (ההמרה ל-Agorot בגבול השאילתה).
+095/096 עדיין לא הוחלו על DB חי (MCP apply_migration). בלי זה ה-triggers לא כותבים outbox.
 
 ## Next Task
-ריצת compare עם storage state מאומת, או מיזוג
-feat/personal-area
-אחרי סקירה.
+החלת 095+096, deploy Edge
+notifications-worker
+, smoke: paid → outbox → Resend.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
@@ -1091,19 +1092,17 @@ default, והטופס לא שלח אף אחת מהן. כל `insert` של מוצ�
 
 ## History
 
-### 2026-08-02: feat/personal-area (Personal area)
+### 2026-08-02: feat/notifications (Resend + Edge + QStash)
 - Branch
-feat/personal-area
-: coupons מ-
-vouchers
-+ tabs/QR, orders agorot+vouchers, wallet closed-loop via
-money.ts
-, Google avatar/logout, compare
---page=account
-, Vitest account format.
-- חסימה רכה: compare דורש storage state; DB עדיין
-*_ils
-עד 059.
+feat/notifications
+: 095/096 outbox,
+voucher_issued
+, drain, QStash+DLQ, Edge
+notifications-worker
+, RTL
+lang=he
+templates, Vitest 76.
+- חסימה: מיגרציות לא הוחלו על DB חי.
 
 ### 2026-08-02: docs notifications architecture (binding)
 - עודכן
