@@ -1,6 +1,6 @@
-# KenyonExpress — Project State
+# KenyonExpress: Project State
 
-Updated: 2026-08-03 (docs-only ke-arch: 6-doc pack on arch/docs-lifecycle)
+Updated: 2026-08-03 (docs-only ke-arch: 4-doc No-Escrow pack on arch/docs-lifecycle)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,28 +8,26 @@ ke-arch
 . Docs only. אין נגיעה ב-worktree הראשי.
 
 ## Last Completed
-שישה מסמכים ב-
+ארבעה מסמכים ב-
 ke-arch
-, commit נפרד לכל אחד:
+, commit נפרד לכל אחד (No Escrow):
 
 1.
-docs/ARCHITECTURE-NOTIFICATIONS.md
-(rev B + SLA)
+docs/ARCHITECTURE-SUPPLIER-PORTAL.md
+(בלי Escrow: קופון שולם באתר נשאר בפלטפורמה; יתרה בבית העסק)
 2.
-docs/ARCHITECTURE-SEO-PERFORMANCE.md
-(CWV + ISR + sitemap + schema.org)
+docs/ARCHITECTURE-NOTIFICATIONS.md
+(Resend + Edge Functions, תבניות RTL)
 3.
-docs/ARCHITECTURE-MOBILE-APP.md
-(Expo מול PWA מנומק)
-4.
 docs/ARCHITECTURE-ADMIN-DASHBOARD.md
-(platform_percent פר מוצר, ספקים, דוחות)
-5.
-docs/ARCHITECTURE-FRAUD-PREVENTION.md
-(מימוש כפול, chargebacks, צילומי QR)
-6.
+(platform_percent דינמי פר מוצר; דוחות בלי held)
+4.
 docs/RUNBOOK-PRODUCTION.md
-(deploy, rollback, migrations)
+(deploy, rollback, migrations + smoke No Escrow)
+
+Commits:
+`904ae34`, `bc30683`, `f746f34`, `a702656` על
+`arch/docs-lifecycle`.
 
 ## In Progress
 nothing
@@ -45,8 +43,10 @@ ke-arch
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
 
----
+## החלטות שהתקבלו אוטומטית
+- 2026-08-03: מודל קופון מחייב ל-docs ב-ke-arch = **No Escrow** (תואם main `c7bf96f` ו-`docs/BUSINESS-MODEL.md`): תשלום קופון באתר נשאר בפלטפורמה; לספק 0 מהפלטפורמה; יתרה נגבית בבית העסק. דורס את קריאת Escrow/held של 2026-07-27 במסמכי החבילה הזו.
 
+---
 ## Current Phase (רקע מודל)
 ‏**שינוי מודל פעיל.** הכריע ב-27.07 שהקופון חוזר ל-Escrow, וזה דורס
 את הכרעת 24.07. ראה "המודל המחייב 2026-07-27" מיד למטה.
@@ -1136,3 +1136,10 @@ docs/RUNBOOK-PRODUCTION.md
 - Docs only ב-
 ke-arch
 .
+
+### 2026-08-03 : ke-arch 4-doc No-Escrow pack (arch/docs-lifecycle)
+- docs/ARCHITECTURE-SUPPLIER-PORTAL.md (904ae34)
+- docs/ARCHITECTURE-NOTIFICATIONS.md (bc30683)
+- docs/ARCHITECTURE-ADMIN-DASHBOARD.md (f746f34)
+- docs/RUNBOOK-PRODUCTION.md (a702656)
+- Binding money model for these docs: No Escrow; platform keeps coupon prepaid; till balance at merchant
