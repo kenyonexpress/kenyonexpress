@@ -41,7 +41,12 @@ test.describe('supplier scan screen', () => {
     await page.goto('/supplier/login')
     await expect(page.getByRole('heading', { name: 'כניסה לאזור הספקים' })).toBeVisible()
     await page.getByRole('link', { name: 'התחברות לספקים' }).click()
-    await page.waitForURL(/\/login/)
+    // NOT /\/login/: that also matches `/supplier/login`, the page the browser
+    // is already on, so waitForURL returned instantly and the assertion below
+    // read the params of the landing page instead of the login page. The href
+    // was always right (`/login?next=/supplier`, verified in the served HTML);
+    // the wait was the thing that never waited.
+    await page.waitForURL(/\/login\?/)
     expect(new URL(page.url()).searchParams.get('next')).toBe('/supplier')
   })
 
