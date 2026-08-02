@@ -2,7 +2,7 @@
 
 ארכיטקטורת אפליקציית מובייל ל-KenyonExpress: **Expo + React Native** על **אותו backend Supabase** כמו ה-web.
 
-Status: **BINDING** · Updated: 2026-08-03  
+Status: **BINDING** · Updated: 2026-08-03 (rev B)  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה ב-worktree הראשי (`kenyonexpress`).  
 זה מסמך יעד (future). PWA היא שלב ביניים; ה-web נשאר ערוץ SEO.
@@ -38,7 +38,56 @@ docs/ARCHITECTURE-PWA.md
 
 ---
 
-## 1. שני מצבים, אפ אחת
+## 1. המלצה מנומקת: Expo / React Native מול PWA
+
+### 1.1 הכרעה
+
+| שלב | בחירה | תפקיד |
+|---|---|---|
+| עכשיו עד soft-open | **PWA על ה-web הקיים** (M0) | ארנק קופונים בדפדפן, install prompt, בלי חנות |
+| יעד מוצר (שימור + ספק) | **Expo + React Native** (M1+) | אפ בחנויות, Push אמין, מצלמת ספק, Wallet passes |
+| תמיד | **Web Next.js** | SEO, רכישה ראשונית, אינדוקס |
+
+**אין לבחור PWA כתחליף קבוע לאפ.** PWA היא גשר. האפ הנייטיבית היא היעד לשימור ולסריקת ספק.
+
+### 1.2 למה לא PWA בלבד
+
+| דרישה עסקית | PWA | Expo RN |
+|---|---|---|
+| SEO / שיתוף לינקים | מצוין (זה ה-web) | חלש כערוץ ראשי; לא מחליף |
+| Push ב-iOS | מוגבל/שביר לפי גרסת Safari והתקנה | APNs יציב דרך Expo |
+| מצלמת ספק ל-redeem בקופה | הרשאות דפדפן לא אמינות בשטח | הרשאות native + UX סריקה |
+| QR בהיר מסך / offline cache | אפשרי חלקית (SW) | MMKV/SQLite + brightness API |
+| Apple/Google Wallet | קישורי web | אותו שרת + UX התקנה טוב יותר באפ |
+| נוכחות ב-App Store / Play (ישראל) | אין | חובה לשיווק/אמון אצל ספקים רבים |
+| עלות time-to-market | נמוכה (כבר יש Next) | גבוהה יותר (EAS, חנויות, ביקורת) |
+
+מסקנה: PWA נותנת 80% מארנק הלקוח בזול, ונכשלת בדיוק במה שהספק והשימור דורשים (סריקה + push + חנויות).
+
+### 1.3 למה Expo ולא RN "נקי" / Flutter
+
+1. אותו אקוסיסטם React כמו ה-web; שיתוף חוזי TypeScript / validation קל יותר.  
+2. EAS Build + OTA לעדכוני JS בלי מחזור חנות מלא לכל תיקון UI.  
+3. Auth Session / Secure Store / Camera מודולים בשלים ל-Google + QR.  
+4. אין DB שני ואין Auth שני: אותו Supabase project.
+
+Flutter נדחה: צוות ושפה נפרדים בלי יתרון כספי ברור למוצר קופונים.
+
+### 1.4 סדר מסירה (מחייב)
+
+```text
+M0  PWA (web)     → ארנק קופונים בדפדפן, בלי לחסום SEO
+M1  Expo customer → catalog + Google + QR offline
+M2  Checkout      → Cardcom WebView + push registration
+M3  Supplier scan → מצלמה + push lifecycle
+M4  Soft public   → חנויות + polish
+```
+
+כל עוד M0 לא חי, אין להתחיל M3. אין לבנות אפ שכפולת קטלוג SEO במקום ה-web.
+
+---
+
+## 2. שני מצבים, אפ אחת
 
 | מצב | קהל | יכולות |
 |---|---|---|
@@ -49,7 +98,7 @@ docs/ARCHITECTURE-PWA.md
 
 ---
 
-## 2. Stack
+## 3. Stack
 
 | רכיב | בחירה |
 |---|---|
@@ -88,7 +137,7 @@ EXPO_PUBLIC_APP_URL
 
 ---
 
-## 3. מודל כסף (זהה ל-web)
+## 4. מודל כסף (זהה ל-web)
 
 | סוג | באתר / באפ | פלטפורמה | ספק |
 |---|---|---|---|
@@ -104,7 +153,7 @@ EXPO_PUBLIC_APP_URL
 
 ---
 
-## 4. Shared Supabase Auth
+## 5. Shared Supabase Auth
 
 | נושא | חוזה |
 |---|---|
@@ -126,9 +175,9 @@ Google sign-in (Expo Auth Session / native)
 
 ---
 
-## 5. מפת מסכים (IA)
+## 6. מפת מסכים (IA)
 
-### 5.1 Customer
+### 6.1 Customer
 
 ```text
 /(app)
@@ -144,7 +193,7 @@ Google sign-in (Expo Auth Session / native)
   /account/details
 ```
 
-### 5.2 Supplier (מוגבל)
+### 6.2 Supplier (מוגבל)
 
 ```text
 /(supplier)
@@ -167,13 +216,13 @@ Universal Links / App Links לאותם נתיבי web כשאפשר (SEO נשאר
 
 ---
 
-## 6. Coupon QR wallet (offline display)
+## 7. Coupon QR wallet (offline display)
 
-### 6.1 מטרה
+### 7.1 מטרה
 
 לקוח בקופה בלי קליטה יכול **להציג** QR/קוד. המימוש עצמו תמיד אונליין אצל הספק.
 
-### 6.2 Cache מקומי (`issued` בלבד)
+### 7.2 Cache מקומי (`issued` בלבד)
 
 | שדה | מקור |
 |---|---|
@@ -191,7 +240,7 @@ Wipe: logout, או כשהסטטוס בשרת כבר לא `issued`.
 
 Storage: MMKV / SecureStore + SQLite קל לפי רגישות. `qr_payload` לא נשלח ללוגים.
 
-### 6.3 רינדור ו-sync
+### 7.3 רינדור ו-sync
 
 - `react-native-qrcode-svg` על `qr_payload` (לא URL תמונה משרת כמקור אמת)  
 - בהירות מסך מוגברת בזמן הצגת QR  
@@ -208,7 +257,7 @@ POST /api/supplier/vouchers/redeem
 
 (או RPC מקביל) עם JWT של חבר ספק.
 
-### 6.4 הוספה לארנק המכשיר
+### 7.4 הוספה לארנק המכשיר
 
 CTA באפ: "הוסף ל-Apple Wallet / Google Wallet".  
 האפ פותחת URL חתום מהשרת (PassKit / Google Save).  
@@ -216,7 +265,7 @@ CTA באפ: "הוסף ל-Apple Wallet / Google Wallet".
 
 ---
 
-## 7. Checkout באפ
+## 8. Checkout באפ
 
 ```text
 Cart (local + server carts)
@@ -231,7 +280,7 @@ Cart (local + server carts)
 
 ---
 
-## 8. Push notifications
+## 9. Push notifications
 
 רישום:
 
@@ -261,7 +310,7 @@ docs/ARCHITECTURE-NOTIFICATIONS.md
 
 ---
 
-## 9. ארנק כסף פנימי (קריאה)
+## 10. ארנק כסף פנימי (קריאה)
 
 - מסך יתרה + ledger (קריאה בלבד תחת RLS)  
 - אין משיכה, אין העברה למשתמש אחר  
@@ -270,7 +319,7 @@ docs/ARCHITECTURE-NOTIFICATIONS.md
 
 ---
 
-## 10. מודול ספק
+## 11. מודול ספק
 
 - Gate: `supplier_members.is_active` + role `owner|manager|scanner`  
 - מצלמה → payload/code → redeem  
@@ -280,7 +329,7 @@ docs/ARCHITECTURE-NOTIFICATIONS.md
 
 ---
 
-## 11. אבטחה
+## 12. אבטחה
 
 | כלל | פירוט |
 |---|---|
@@ -293,7 +342,7 @@ docs/ARCHITECTURE-NOTIFICATIONS.md
 
 ---
 
-## 12. שלבי מסירה
+## 13. שלבי מסירה
 
 | Phase | Scope | Exit |
 |---|---|---|
@@ -307,7 +356,7 @@ docs/ARCHITECTURE-NOTIFICATIONS.md
 
 ---
 
-## 13. טסטים
+## 14. טסטים
 
 | # | תרחיש |
 |---|---|
@@ -321,7 +370,7 @@ docs/ARCHITECTURE-NOTIFICATIONS.md
 
 ---
 
-## 14. מה לא בונים
+## 15. מה לא בונים
 
 - DB מובייל נפרד / Auth נפרד  
 - חישוב עמלה בקליינט  
@@ -333,7 +382,7 @@ docs/ARCHITECTURE-NOTIFICATIONS.md
 
 ---
 
-## 15. Related
+## 16. Related
 
 ```
 docs/ARCHITECTURE-NOTIFICATIONS.md
@@ -345,10 +394,11 @@ docs/ARCHITECTURE-ACCOUNT-WALLET.md
 
 ---
 
-## 16. Revision
+## 17. Revision
 
 | Date | Change |
 |---|---|
 | 2026-07-31 | רענון + שלבי M0 עד M4 |
 | 2026-08-02 | Expo RN, shared Supabase, QR offline, push; Escrow 2026-07-27 |
 | 2026-08-03 | יישור ל-notifications lifecycle + Wallet pass CTA; docs-only ב-`ke-arch` |
+| 2026-08-03 | rev B: המלצה מנומקת Expo/RN מול PWA (PWA=M0 גשר; Expo=יעד שימור+ספק) |
