@@ -125,18 +125,14 @@ export default async function ProductPage({ params }: Props) {
     ? (product.images as unknown[]).filter((u): u is string => typeof u === 'string')
     : []
 
-  // Pipeline metadata (blur placeholder + mandatory Hebrew alt) for images
-  // uploaded through the media pipeline; legacy URLs simply get no entry.
-  let galleryAssets: Record<string, { alt: string | null; blurDataURL: string | null }> = {}
-  if (images.length > 0) {
-    const { data: assetRows } = await supabase
-      .from('media_assets')
-      .select('url, alt_he, blur_data_url')
-      .in('url', images)
-    galleryAssets = Object.fromEntries(
-      (assetRows ?? []).map((a) => [a.url, { alt: a.alt_he, blurDataURL: a.blur_data_url }]),
-    )
-  }
+  // Pipeline metadata (blur placeholder + mandatory Hebrew alt) would come from
+  // a `media_assets` table keyed by image URL. That table does not exist: it is
+  // in no migration this database has run and it appears nowhere in the
+  // generated types, so the query it was written against fails to compile and
+  // would 400 at runtime. Creating it is DDL, which this queue may not apply
+  // without approval, so the gallery falls back to what it did before - no blur
+  // placeholder, alt derived from the product name. Recorded in STATE.md.
+  const galleryAssets: Record<string, { alt: string | null; blurDataURL: string | null }> = {}
 
   const category = Array.isArray(product.categories)
     ? null

@@ -62,7 +62,11 @@ export default async function CustomerCouponPage({
       </div>
 
       <section className="mt-6 rounded-2xl border border-black/10 bg-white p-5 text-center shadow-sm">
-        <p className="font-mono text-2xl tracking-widest text-heading" dir="ltr">
+        <p
+          className="font-mono text-2xl tracking-widest text-heading"
+          dir="ltr"
+          data-testid="coupon-code"
+        >
           {formatVoucherCode(voucher.code)}
         </p>
         {qrDataUrl ? (
@@ -73,6 +77,7 @@ export default async function CustomerCouponPage({
             className="mx-auto mt-4 h-[280px] w-[280px]"
             width={280}
             height={280}
+            data-testid="coupon-qr"
           />
         ) : (
           <p className="mt-6 text-sm text-black/50">

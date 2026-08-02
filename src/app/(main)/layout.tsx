@@ -17,10 +17,23 @@ export default async function MainLayout({ children }: { children: React.ReactNo
         <Header />
         <div className="flex-1 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4 py-4">
-            <div className="grid grid-cols-[200px_1fr_250px] gap-4 items-start">
-              <RightSidebar />
-              <main className="min-w-0 space-y-4">{children}</main>
-              <LeftSidebar />
+            {/*
+              Three columns from lg up. Below that the sidebars are hidden, not
+              stacked: stacking put category lists and English promo banners
+              above the page on phones.
+
+              The previous grid was grid-cols-[200px_1fr_250px] at every width.
+              Fixed columns + gaps = 482px, so on a 412px phone the middle 1fr
+              column (the page) resolved to ~2px. That made /coupons unusable.
+            */}
+            <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[200px_1fr_250px]">
+              <div className="hidden lg:block">
+                <RightSidebar />
+              </div>
+              <main className="order-first min-w-0 space-y-4 lg:order-none">{children}</main>
+              <div className="hidden lg:block">
+                <LeftSidebar />
+              </div>
             </div>
           </div>
         </div>

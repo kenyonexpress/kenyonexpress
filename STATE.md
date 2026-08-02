@@ -39,10 +39,83 @@ lighthouse:smoke
 ## In Progress
 nothing
 
+## אימות שערים אחרי מטרות 3 ו-4 (סבב נפרד)
+
+הקומיטים של מטרות 3 ו-4 נכתבו בלי להריץ
+type-check
+, ושלושתם נפלו. תוקן ואומת:
+
+1.
+tsc
+סרק את
+supabase/functions
+, שהוא מקור Deno עם סביבת globals אחרת, ודיווח
+Deno
+כשם לא מוכר. נוסף
+exclude
+.
+2.
+src/lib/search/qstash.ts
+הגיע בלי
+pipeline-catalogue
+, כלומר בלי
+src/lib/search/pipeline-contracts.ts
+שהוא ה-import היחיד שלו. המודול שעליו נשען
+src/lib/notifications/qstash.ts
+לא הידר כלל. שוחזר מ-
+6e0fdca
+.
+3.
+next.config.ts
+ייבא
+@next/bundle-analyzer
+בלי שהחבילה הותקנה. נוספה כ-devDependency.
+4. דף הקופון ומסך הסריקה נשאו 15 hex גולמיים ושברו את
+tokens.test.ts
+. מופו לטוקנים:
+#333e48
+לְ-
+heading
+,
+#fed700
+לְ-
+brand-primary
+. אדום המבצע הפך ל-
+text-price
+לפי
+tokens.ts
+, שמתעד ש-
+#E4002B
+קיים בבריף ולא נמדד באתר החי.
+
+מצב אחרי התיקונים:
+type-check
+נקי,
+714
+טסטים עוברים ב-56 קבצים.
+
+## ⛔ DDL שנדחה — media_assets
+
+הקוד ב-
+src/app/(store)/product/[slug]/page.tsx
+נכתב מול טבלה
+media_assets
+עם
+url, alt_he, blur_data_url
+, שאמורה לספק blur placeholder ו-alt עברי לגלריה. **הטבלה לא קיימת.** אין לה מיגרציה שרצה על הבסיס הזה והיא לא מופיעה ולו פעם אחת ב-
+src/types/database.ts
+, ולכן השאילתה לא הידרה והייתה מחזירה 400 בזמן ריצה.
+
+יצירת הטבלה היא DDL, והתור אוסר להריץ DDL בלי אישור. השאילתה הוסרה והגלריה חזרה להתנהגות הקודמת: בלי blur, alt נגזר משם המוצר. כשיהיה אישור, זה דורש מיגרציה שיוצרת
+media_assets
+ואז החזרת השאילתה.
+
 ## Blocking Issues
 ציון Lighthouse 90+ דורש הרצה מול
 pnpm build && pnpm start
-(לא רץ בסשן הזה מול שרת חי).
+(לא רץ בסשן הזה מול שרת חי). מדידה על הלפטופ הזה ממילא מטעה: ה-LCP ש-Lighthouse מדווח על
+localhost
+הוא סימולציית Lantern, לא זמן אמיתי. הציון הקובע הוא PageSpeed Insights על הדומיין אחרי deploy.
 
 ## Next Task
 ריצת
