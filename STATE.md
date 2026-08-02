@@ -1,45 +1,40 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-02 (goal: Integration pass → main)
+Updated: 2026-08-02 (goal: Integration pass verified)
 
 ## Current Phase
-‏**main.** GOALS-QUEUE (1–6) הושלם. stack של feat מוזג ל-main.
+‏**main** @
+552bfe0
+. GOALS-QUEUE 1–6 סגור. כל feat tip זהה ל-main.
 
 ## Last Completed
-Integration pass:
+Integration pass (אימות מלא):
 
 1. מיזוג סדרתי ל-
 main
-:
-feat/coupon-redemption
-→
-feat/personal-area
-→
-feat/notifications
-→
-feat/seo-performance
-→
-feat/e2e
+(קודם): coupon-redemption → personal-area → notifications → seo-performance → e2e.
+2. Rebase/FF של כל feat על
+origin/main
+בסדר תלות; כל tip =
+552bfe0
 .
-2. לפני מיזוג על
-feat/e2e
-: tsc ירוק, Vitest 714/714.
-3. אחרי מיזוג על
-main
-: tsc ירוק, Vitest 714/714.
-4. בלי נגיעה ב-DB פרודקשן. בלי
-db push
-.
-
-Playwright E2E (כבר על tip):
-
--
-e2e/full-purchase-redeem.spec.ts
+3. לכל branch:
+pnpm type-check
 +
-mobile-chrome
-+ RTL + CI
-CARDCOM_USE_MOCK
-+ seed users.
+pnpm test
+→ 714/714.
+4. Push לכל feat +
+main
+. בלי נגיעה ב-DB פרודקשן.
+5. תיקון נלווה על
+main
+:
+force-dynamic
+ב-
+/products
+ו-
+/category/[slug]
+(ISR + searchParams שבר DYNAMIC_SERVER_USAGE / RTL).
 
 ## In Progress
 nothing
@@ -49,30 +44,26 @@ nothing
 pnpm seed:test
 מקומי:
 Invalid API key
-ב-
-.env.local
 . E2E ב-Actions דורש
 CI_SUPABASE_*
 .
-- מיגרציות 092/095/096 (ואחרות מה-stack) עלולות עדיין להיות לא מוחלות על DB חי; לא נגענו ב-DB בסבב הזה.
+- מיגרציות מה-stack עלולות להיות לא מוחלות על DB חי (לא נגענו ב-DB).
 
 ## Next Task
-תור
-GOALS-QUEUE.md
-ריק (1–6 ✅). המתנה למטרה חדשה, או החלת מיגרציות חסרות +
+תור ריק. מטרה חדשה, או החלת מיגרציות חסרות +
 CI_SUPABASE_*
-להפעלת job ה-E2E.
+.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
 
 ## החלטות שהתקבלו אוטומטית (integration)
-- ה-feat branches היו stack לינארי שכבר הכיל את
+- Stack לינארי כבר היה בתוך
 main
-; rebase על main היה no-op. בוצע מיזוג סדרתי (FF כשאפשר,
---no-ff
-כש-ort נדרש בגלל merge commits קודמים).
-- Google OAuth לא ב-CI; כפתור Google נבדק בשער, תשלום ב-CI באימייל פיקסצ׳ר + Cardcom mock.
+; אחרי המיזוג, "rebase" = FF של tip כל feat ל-
+main
+(אין commits יתומים).
+- Google OAuth לא ב-CI; Cardcom mock בלבד.
 
 ## אימות שערים אחרי מטרות 3 ו-4 (סבב נפרד)
 
@@ -1208,8 +1199,10 @@ default, והטופס לא שלח אף אחת מהן. כל `insert` של מוצ�
 
 ### 2026-08-02: Integration pass → main
 - מיזוג סדרתי של feat/coupon-redemption → personal-area → notifications → seo-performance → e2e ל-main.
-- tsc + Vitest 714 ירוק לפני ואחרי. בלי DB פרודקשן.
-- GOALS-QUEUE פריטים 1–6 הושלמו.
+- Rebase/FF: כל חמשת ה-feat tips על origin/main @ 552bfe0; tsc + Vitest 714 לכל branch; push.
+- fix(storefront): force-dynamic על /products ו-/category (חיפוש searchParams).
+- בלי DB פרודקשן. GOALS-QUEUE 1–6 הושלמו.
+
 
 ### 2026-08-02: feat/e2e (Playwright E2E)
 - Branch

@@ -6,32 +6,23 @@
 main
 ```
 
+tip:
+
+```
+552bfe0
+```
+
 ## התור
 
-- [x] ✅ Playwright E2E על
-feat/e2e
-.
-- [x] ✅ Integration pass: מיזוג סדרתי של
-feat/coupon-redemption
-→
-personal-area
-→
-notifications
-→
-seo-performance
-→
-e2e
-ל-
-main
-. tsc + Vitest 714 ירוק. בלי נגיעה ב-DB פרודקשן.
+- [x] ✅ Integration pass: מיזוג סדרתי, rebase/FF של כל feat על main, tsc+Vitest 714 לכל branch, push. בלי DB פרודקשן.
 
 ## לוג
 
-| שלב | סטטוס | הערות |
+| שלב | סטטוס | tip |
 |---|---|---|
-| Coupon redemption | ✅ | מוזג ל-main |
-| Personal area | ✅ | מוזג ל-main |
-| Notifications | ✅ | מוזג ל-main |
-| SEO + Performance | ✅ | מוזג ל-main |
-| Playwright E2E | ✅ | מוזג ל-main |
-| Integration pass | ✅ | main ahead, tests green |
+| feat/coupon-redemption | ✅ = main | 552bfe0 |
+| feat/personal-area | ✅ = main | 552bfe0 |
+| feat/notifications | ✅ = main | 552bfe0 |
+| feat/seo-performance | ✅ = main | 552bfe0 |
+| feat/e2e | ✅ = main | 552bfe0 |
+| main | ✅ pushed | 552bfe0 |
