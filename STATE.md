@@ -4,28 +4,24 @@
 Docs on branch `arch/docs-queue` (worktree only).
 
 ## Last Completed
-Ten architecture docs written in order (2026-08-03), each committed and
-pushed to `arch/docs-queue`. Main worktree untouched.
+Five architecture docs from the truncated "10 docs" request (items 1–5
+only; item 6+ were empty in the prompt). Each committed and pushed.
+Main worktree untouched.
 
-1. ARCHITECTURE-SUPPLIER-ONBOARDING.md
-2. ARCHITECTURE-REFUNDS-DISPUTES.md
-3. ARCHITECTURE-ANALYTICS.md
-4. ARCHITECTURE-ADMIN-REPORTS.md
-5. ARCHITECTURE-WALLET-CASHBACK.md
-6. ARCHITECTURE-SEARCH-DISCOVERY.md
-7. ARCHITECTURE-CONTENT-LEGAL.md
-8. ARCHITECTURE-CUSTOMER-SUPPORT.md
-9. ARCHITECTURE-SCALING.md
-10. ARCHITECTURE-MOBILE-APP-V2.md
+1. `docs/ARCHITECTURE-EMAIL-DELIVERABILITY.md` (fc191ec)
+2. `docs/ARCHITECTURE-CARDCOM-EDGE-CASES.md` (6d5c340)
+3. `docs/ARCHITECTURE-QR-SECURITY.md` (0189fb8)
+4. `docs/ARCHITECTURE-ACCESSIBILITY-IL.md` (1124495)
+5. `docs/ARCHITECTURE-IMAGE-PIPELINE.md` (this push)
 
 ## In Progress
-nothing
+nothing (await items 6–10 if resent)
 
 ## Blocking Issues
 none
 
 ## Next Task
-Continue docs queue when specified.
+Continue docs queue when the remaining titles (6–10) are provided.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-docs-pack
@@ -37,17 +33,16 @@ Continue docs queue when specified.
 not set in this worktree
 
 ## החלטות שהתקבלו אוטומטית
-- Docs queue lands on `arch/docs-queue` only; never edit main worktree for docs sprints.
-- Escrow internal model 2026-07-27 wording used across onboarding/support/refunds.
-- `claude_PRIVACY-POLICY-DRAFT.md` was not present in this worktree; CONTENT-LEGAL
-  bases privacy on LEGAL-CHECKLIST until the draft is merged in.
+- When a numbered list is truncated mid-item, complete only the fully
+  specified documents and continue without inventing titles.
+- Docs-only sprints never modify `/Users/ofir/kenyonexpress-web/kenyonexpress`.
 
 ---
 
 ## History
 
-### 2026-08-03: 10-doc architecture sprint
-- Onboarding through Mobile V2 pushed individually to arch/docs-queue.
+### 2026-08-03: email / Cardcom / QR / a11y / images
+- Five binding docs pushed to arch/docs-queue.
 
-### 2026-08-03: docs queue (notifications, SEO, mobile, e2e)
-- Four binding architecture docs pushed to `arch/docs-queue`.
+### 2026-08-03: 10-doc architecture sprint (earlier)
+- Onboarding through Mobile V2 and ops runbooks on arch/docs-queue.
