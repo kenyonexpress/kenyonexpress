@@ -1,4 +1,5 @@
 import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
+import { formatIls, formatVoucherCode } from '@/lib/account/format'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   buildCouponShareText,
@@ -50,25 +51,21 @@ export default async function CheckoutReturnPage({ searchParams }: Props) {
     )
   }
 
-  // Paid: load the order snapshot for display
+  // Paid: load the order snapshot for display. Issued codes live in `vouchers`
+  // (finalizeOrder); `coupon_codes` is a legacy read-only table.
   const admin = createAdminClient()
-  const [{ data: order }, { data: coupons }, { data: cashbackEntry }] = await Promise.all([
+  const [{ data: order }, { data: vouchers }, { data: cashbackEntry }] = await Promise.all([
     admin
       .from('orders')
       .select('id, total_ils, subtotal_ils, paid_at')
       .eq('id', orderId)
       .maybeSingle(),
     admin
-      .from('coupon_codes')
+      .from('vouchers')
       .select(
-        'id, code, qr_token, expires_at, face_value_ils, collect_amount_ils, products(name_he)',
+        'id, code, qr_payload, expires_at, face_value_agorot, remaining_amount_due_agorot, products(name_he)',
       )
-      .in(
-        'order_item_id',
-        (await admin.from('order_items').select('id').eq('order_id', orderId)).data?.map(
-          (r) => r.id,
-        ) ?? [],
-      )
+      .eq('order_id', orderId)
       .order('created_at', { ascending: true }),
     admin
       .from('wallet_entries')
@@ -78,52 +75,54 @@ export default async function CheckoutReturnPage({ searchParams }: Props) {
   ])
   if (!order) notFound()
 
-  const couponsWithQr = await Promise.all(
-    (coupons ?? []).map(async (coupon) => ({
-      ...coupon,
-      qrDataUrl: await QRCode.toDataURL(coupon.qr_token, { margin: 1, width: 264 }),
+  const vouchersWithQr = await Promise.all(
+    (vouchers ?? []).map(async (voucher) => ({
+      ...voucher,
+      qrDataUrl: await QRCode.toDataURL(voucher.qr_payload, { margin: 1, width: 264 }),
     })),
   )
 
   const cashback = Number(cashbackEntry?.amount_ils ?? 0)
 
   return (
-    <div className="checkout-page">
+    <div className="checkout-page" dir="rtl">
       <div className="checkout-success">
         <h1 className="checkout-success__title">התשלום הצליח!</h1>
         <p className="checkout-success__sub">
           הזמנה {order.id.slice(0, 8).toUpperCase()} · שולם באתר {shekels(Number(order.total_ils))}
         </p>
 
-        {couponsWithQr.length > 0 && (
+        {vouchersWithQr.length > 0 && (
           <section aria-label="הקופונים שלך" style={{ maxWidth: 640, marginInline: 'auto' }}>
             <h2 className="checkout-section__title">הקופונים שלך</h2>
-            {couponsWithQr.map((coupon) => {
-              const productName = Array.isArray(coupon.products)
-                ? coupon.products[0]?.name_he
-                : (coupon.products as { name_he: string } | null)?.name_he
+            {vouchersWithQr.map((voucher) => {
+              const productName = Array.isArray(voucher.products)
+                ? voucher.products[0]?.name_he
+                : (voucher.products as { name_he: string } | null)?.name_he
               const shareHref = waShareLink(
                 buildCouponShareText({
                   productName: productName ?? null,
-                  code: coupon.code,
-                  collectAmountIls: Number(coupon.collect_amount_ils),
-                  expiresAt: coupon.expires_at,
+                  code: voucher.code,
+                  collectAmountIls: voucher.remaining_amount_due_agorot / 100,
+                  expiresAt: voucher.expires_at,
                   siteUrl: process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il',
                 }),
               )
               return (
-                <article className="coupon-card" key={coupon.id}>
+                <article className="coupon-card" key={voucher.id}>
                   <div>
                     {productName && <div className="coupon-card__collect">{productName}</div>}
-                    <div className="coupon-card__code">{coupon.code}</div>
-                    {Number(coupon.collect_amount_ils) > 0 && (
+                    <div className="coupon-card__code" data-testid="coupon-code">
+                      {formatVoucherCode(voucher.code)}
+                    </div>
+                    {voucher.remaining_amount_due_agorot > 0 && (
                       <div className="coupon-card__collect">
-                        לתשלום בעסק במימוש: {shekels(Number(coupon.collect_amount_ils))}
+                        לתשלום בעסק במימוש: {formatIls(voucher.remaining_amount_due_agorot)}
                       </div>
                     )}
                     <div className="coupon-card__note">
                       בתוקף עד{' '}
-                      {new Date(coupon.expires_at).toLocaleDateString('he-IL', {
+                      {new Date(voucher.expires_at).toLocaleDateString('he-IL', {
                         day: '2-digit',
                         month: '2-digit',
                         year: 'numeric',
@@ -150,7 +149,11 @@ export default async function CheckoutReturnPage({ searchParams }: Props) {
                     </a>
                   </div>
                   <div className="coupon-card__qr">
-                    <img src={coupon.qrDataUrl} alt={`קוד QR לקופון ${coupon.code}`} />
+                    <img
+                      src={voucher.qrDataUrl}
+                      alt={`קוד QR לקופון ${voucher.code}`}
+                      data-testid="coupon-qr"
+                    />
                   </div>
                 </article>
               )

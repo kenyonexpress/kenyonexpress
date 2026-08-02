@@ -44,6 +44,13 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
+    {
+      // Phone viewport for RTL + layout regressions. Paid money flow stays on
+      // desktop chromium only (tagged via grep invert) so CI time stays bounded.
+      name: 'mobile-chrome',
+      use: { ...devices['Pixel 5'] },
+      testIgnore: [/full-purchase-redeem\.spec\.ts/],
+    },
   ],
   // An externally supplied base URL means the app is already running somewhere
   // we do not manage (a preview deploy), so Playwright must not start one.
@@ -54,6 +61,16 @@ export default defineConfig({
         url: BASE_URL,
         reuseExistingServer: !process.env.CI,
         timeout: 180_000,
-        env: { PORT },
+        env: {
+          // Explicit env replaces the default inherit; keep process.env so
+          // Supabase keys from .env.local / CI still reach Next.
+          ...process.env,
+          PORT,
+          // Production builds need an explicit mock flag (see loadCardcomEnv).
+          CARDCOM_USE_MOCK: process.env.CARDCOM_USE_MOCK ?? 'true',
+          CARDCOM_WEBHOOK_SECRET: process.env.CARDCOM_WEBHOOK_SECRET ?? 'mock-webhook-secret',
+          NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL ?? BASE_URL,
+          CHECKOUT_ENABLED: process.env.CHECKOUT_ENABLED ?? 'true',
+        },
       },
 })
