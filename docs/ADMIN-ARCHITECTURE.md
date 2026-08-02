@@ -2,9 +2,14 @@
 
 KenyonExpress production admin dashboard architecture.
 
-Status: BINDING for `feat/admin-core` (2026-07-27)
+Status: BINDING for `feat/admin-core` (2026-08-02)
 Stack: Next.js App Router (`src/app/(admin)`), Supabase Postgres + RLS, Cardcom, Server Actions + Route Handlers
 Money: agorot integers internally; ILS with 2 decimals on the wire (`*_ils`)
+Branch:
+
+```
+feat/admin-core
+```
 
 This document decides. Where it conflicts with older drafts that mention a fixed
 10% or 5% commission, a coupon `platform_percent` pinned at 100, or external
@@ -174,6 +179,37 @@ on the product page, and can fill them there.
 
 ## 3. Product management
 
+### 3.0 Dynamic money fields (UI contract)
+
+The product edit form (`src/components/admin/ProductForm.tsx`) is the only place
+an admin sets commission. There is no global default and no vendor-level override
+that wins at purchase time.
+
+| UI label (Hebrew) | Column | Behavior |
+|---|---|---|
+| עמלת פלטפורמה (%) | `platform_percent` | Required. Editing it auto-fills `supplier_split_percent = 100 - value`. |
+| אחוז לספק (%) | `supplier_split_percent` | Required pair half. Editing it auto-fills the platform side. |
+| אחוז הנחה (%) | `discount_percent` | Physical: reduces on-site charge. Coupon: derived badge only. |
+| מחיר הקופון באתר (₪) | `coupon_price_ils` | Coupon only. Absolute. Required to publish. |
+| תוקף השובר (ימים) | `coupon_expiry_days` | Coupon only. From purchase day. |
+
+Server path:
+
+```
+FormData
+  → src/server/actions/admin/products.ts (Zod)
+  → buildProductMoneyWrite / assertPublishable (src/lib/commerce/product-money.ts)
+  → products row update
+```
+
+Live preview on the form uses the same pure functions as checkout
+(`completeSplitPair`, coupon-offer helpers), so the admin never sees a split
+that the money engine will refuse.
+
+Products list (`/admin/products`) shows `platform_percent` and, for coupons, the
+on-site `coupon_price_ils` in the price column, so incomplete money is visible
+without opening each row.
+
 ### 3.1 Shared fields (both types)
 
 - Identity: `name_he`, `name_en`, `slug`, `short_description_he`, `description_he`, gallery
@@ -226,13 +262,32 @@ first one.
 
 ---
 
-## 4. Orders, payments, vouchers (admin views)
+## 4. Admin screens (route inventory)
+
+| Route | Purpose | Money-sensitive |
+|---|---|---|
+| `/admin` / `/admin/dashboard` | Queues, KPIs, stuck payments | yes |
+| `/admin/products` | Catalog table + filters; shows `platform_percent` | yes |
+| `/admin/products/new`, `/admin/products/[id]/edit` | Dynamic money fields (§3.0) | yes |
+| `/admin/categories` | Taxonomy | no |
+| `/admin/suppliers` | Canonical supplier CRUD (not legacy vendors) | publish gate |
+| `/admin/vendors` | Legacy bridge only | read / migrate |
+| `/admin/orders` | Orders, notes, refunds | yes |
+| `/admin/payments` | Reconciliation (charged without closed order) | yes |
+| `/admin/coupons` | Codes / vouchers read path | yes |
+| `/admin/approvals` | Content approval | no |
+| `/admin/users` | Staff roles | yes (RBAC) |
+| `/admin/analytics` | Sales views | yes (read) |
+| `/admin/affiliates` | Affiliate ops | no |
+| `/admin/audit-log` | Append-only audit | yes (read) |
+
+### 4.1 Orders, payments, vouchers (detail)
 
 | Screen | Source of truth | Admin actions |
 |---|---|---|
 | Orders list / detail | `orders`, `order_items` | filter, note, force cancel pre-fulfillment, initiate refund |
 | Payments / stuck | `payments`, webhook events | reconcile, retry finalize (idempotent) |
-| Voucher codes | `coupon_codes` | read-only status, expiry sweep status |
+| Voucher codes | `coupon_codes` / `vouchers` | read-only status, expiry sweep status |
 
 Order detail shows the snapshotted knobs from `order_items`, never a live join
 back to `products`. A line bought at 70/30 keeps reading 70/30 after the product
@@ -315,3 +370,13 @@ in migrations `053` and `064`.
 - [x] `/admin/suppliers` edits the table `products` actually reference
 - [x] Full CRUD: products, categories, suppliers, orders, coupons
 - [x] Publish gate reports every failing reason at once, in Hebrew
+- [x] Products list shows `platform_percent` (and coupon on-site price when type=coupon)
+
+---
+
+## 10. Revision
+
+| Date | Change |
+|---|---|
+| 2026-07-27 | Binding admin architecture: per-product split pair, publish gate, snapshot rules |
+| 2026-08-02 | §3.0 UI contract for dynamic money fields; §4 screen inventory; products list shows commission |
