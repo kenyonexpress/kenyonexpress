@@ -359,4 +359,57 @@ test.describe('homepage', () => {
       .poll(activeDot, { timeout: 12000, message: 'hero never rotated after interaction' })
       .not.toBe('שקופית 1')
   })
+
+  /**
+   * The desktop hero paints the optimized still first and swaps the animation
+   * in only after the animated file has fully arrived.
+   *
+   * Both halves are the test, for the same reason the autoplay test above
+   * guards both of its halves. The first half is the LCP fix of [22](ד): with
+   * the animated `<source>` in the initial markup plus its head preload, the
+   * desktop's first hero paint waited for all 794404 bytes and LCP was
+   * 12.1-12.9s on slow 4G + cpu/4 against a ~1s FCP. The second half is [16]'s
+   * measured trade - desktop gets the animation - which the swap must still
+   * honour; without this assertion, deleting the swap effect would pass every
+   * other test in the suite and quietly serve desktops a still forever.
+   *
+   * The animated file is held on the wire because localhost cannot show the
+   * pre-swap state otherwise: download and swap land inside the first second.
+   * Holding the request is the slow connection, made deterministic.
+   */
+  test('the desktop hero paints the still first, then swaps in the animation once it arrives', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 })
+
+    let releaseAnimation = () => {}
+    const gate = new Promise<void>((resolve) => {
+      releaseAnimation = resolve
+    })
+    await page.route('**/*animation-steps.webp', async (route) => {
+      await gate
+      await route.continue()
+    })
+
+    await page.goto('/')
+
+    const heroImg = page.locator('[data-hero-slider] picture img').first()
+    await expect
+      .poll(() => heroImg.evaluate((el: HTMLImageElement) => el.currentSrc), {
+        message: 'hero never painted the optimized still',
+      })
+      .toContain('animation-still')
+    expect(
+      await page.locator('[data-hero-slider] picture source').count(),
+      'animated <source> mounted before its file arrived',
+    ).toBe(0)
+
+    releaseAnimation()
+    await expect
+      .poll(() => heroImg.evaluate((el: HTMLImageElement) => el.currentSrc), {
+        timeout: 15000,
+        message: 'desktop never swapped the animation in - the [16] trade was silently reversed',
+      })
+      .toContain('animation-steps')
+  })
 })

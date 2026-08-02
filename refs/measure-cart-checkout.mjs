@@ -217,16 +217,52 @@ async function electroAddToCart(page) {
   return false;
 }
 
+/**
+ * Seeds the local cart by driving the real add-to-cart control.
+ *
+ * The previous version guessed at `/product/1`, `/products/1`, `/p/1` and
+ * `/shop`. None of those is a route here: the catalogue is `/products` and a
+ * product is `/product/<slug>`, so every candidate 404'd, the function returned
+ * false, and the whole local measurement then ran against `cart-empty` and
+ * reported every element MISSING. It failed silently because the caller
+ * ignored the return value.
+ *
+ * `commit` rather than a load milestone: the catalogue's remote images are
+ * refused by our own CSP, so the network never goes idle and `domcontentloaded`
+ * does not resolve reliably either. This mirrors `scripts/compare.mjs`, which
+ * is the seed that is known to work.
+ */
 async function localAddToCart(page, base) {
-  const candidates = ['/product/1', '/products/1', '/p/1', '/shop'];
-  for (const c of candidates) {
-    try {
-      await page.goto(base + c, { waitUntil: 'domcontentloaded', timeout: 20000 });
-      const btn = await page.$('[data-testid="add-to-cart"], button[aria-label*="cart" i], button:has-text("הוסף לעגלה"), button:has-text("Add to cart")');
-      if (btn) { await btn.click({ timeout: 4000 }).catch(()=>{}); await page.waitForTimeout(1500); return true; }
-    } catch {}
+  await page.goto(`${base}/products`, { waitUntil: 'commit', timeout: 60000 });
+  const link = page.locator('a[href*="/product/"]').first();
+  await link.waitFor({ state: 'attached', timeout: 45000 });
+  const href = await link.getAttribute('href');
+  if (!href) throw new Error('no product link on /products to seed the cart with');
+  await page.goto(`${base}${href.startsWith('/') ? '' : '/'}${href}`, {
+    waitUntil: 'commit',
+    timeout: 60000,
+  });
+  const atc = page.locator('.pdp-buy__atc').first();
+  await atc.waitFor({ state: 'visible', timeout: 45000 });
+
+  // Visible is not the same as wired up. The button paints in the static shell
+  // and only starts calling the server action once React has hydrated, so a
+  // click on the first frame is swallowed and the seed silently produces an
+  // empty cart -- which is what made the whole local column read MISSING on
+  // one run and pass on the next. The badge is the acknowledgement, so wait
+  // for it rather than for a fixed number of seconds, and retry the click.
+  const badge = page.locator('[data-mini-cart-trigger]').first();
+  const seeded = async () =>
+    /,\s*[1-9]\d*\s*פריטים/.test((await badge.getAttribute('aria-label')) ?? '');
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    await atc.click({ timeout: 30000 }).catch(() => {});
+    for (let waited = 0; waited < 12000; waited += 500) {
+      await page.waitForTimeout(500);
+      if (await seeded()) return true;
+    }
   }
-  return false;
+  throw new Error('local cart seed: the badge never reported an item after 3 clicks');
 }
 
 async function measurePage(page, url, type, width, shotPrefix, spec = SPEC) {
@@ -288,6 +324,16 @@ function gaps(electro, local) {
   if (localArg) {
     console.log('→ Local: מוסיף לעגלה…');
     await localAddToCart(page, localArg);
+
+    // Warm /cart before the loop measures it. `/cart` is a static shell whose
+    // lines arrive from <CartBootstrap> after hydration, and on the very first
+    // hit that round trip outran the 9s settle: the 380px pass (which runs
+    // first) read 0/16 while the 768px pass, on a warm route, read 16/16 with
+    // the same cookie and the same cart. Measuring a cold route is measuring
+    // the warm-up.
+    await page.goto(`${localArg}/cart`, { waitUntil: 'commit', timeout: 60000 });
+    await page.locator('.cart-line, .cart-empty').first().waitFor({ state: 'visible', timeout: 45000 }).catch(() => {});
+    await page.waitForTimeout(3000);
     for (const bp of BREAKPOINTS) {
       console.log(`→ Local cart @${bp}px`);
       result.local.cart[bp] = await measurePage(page, `${localArg}/cart`, 'cart', bp, 'local-cart', LOCAL_SPEC);
