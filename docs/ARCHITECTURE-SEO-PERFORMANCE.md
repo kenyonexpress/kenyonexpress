@@ -2,25 +2,27 @@
 
 ארכיטקטורת SEO וביצועים ל-KenyonExpress (Next.js App Router).
 
-Status: **BINDING** · Updated: 2026-08-02  
-Scope: docs only.  
+Status: **BINDING** · Updated: 2026-08-03  
+Scope: **docs only** · branch `arch/docs-queue`  
+אין שינוי קוד. אין נגיעה ב-worktree הראשי.
+
 Companions:
 
 ```
 docs/ARCHITECTURE-MARKETING.md
-docs/ARCHITECTURE-GROWTH-SEO.md
-docs/ARCHITECTURE-CATALOG-SEARCH-SEO.md
-docs/ARCHITECTURE-BACKUP-DR.md
+docs/ARCHITECTURE-NOTIFICATIONS.md
+docs/ARCHITECTURE-MOBILE-APP.md
+docs/LAUNCH-DAY.md
 ```
 
-Stack: Next.js App Router, RSC, `next/font` (Heebo + hebrew subset), R2 images, Meilisearch לחיפוש, RTL `lang="he" dir="rtl"`.  
-יישום ייחוס ב-branch:
+Stack: Next.js App Router, RSC, `next/font` (Heebo + hebrew), R2 images, Meilisearch, RTL `lang="he" dir="rtl"`.  
+יישום ייחוס:
 
 ```
 feat/seo-performance
 ```
 
-קבצים:
+קבצים מרכזיים:
 
 ```
 src/lib/seo/json-ld.ts
@@ -32,7 +34,7 @@ src/app/(store)/product/[slug]/page.tsx
 src/app/(store)/category/[slug]/page.tsx
 ```
 
-עקרון: **Web = ערוץ SEO ורכישה.** האפליקציה לא מחליפה אינדוקס.
+עקרון: **Web = ערוץ SEO ורכישה.** האפליקציה הנייטיבית לא מחליפה אינדוקס.
 
 ---
 
@@ -42,112 +44,128 @@ src/app/(store)/category/[slug]/page.tsx
 |---|---|
 | SEO1 | Metadata ו-JSON-LD נגזרים מאותם ערכים שהעמוד מציג ושהקופה גובה. אין חישוב מחיר שני. |
 | SEO2 | קופון ב-Offer: `price` = שולם באתר (`paidOnlineIls` / `coupon_price`). לא מחירון כ-Offer יחיד. |
-| SEO3 | עמודים עם `searchParams` (קטגוריה מסוננת, חיפוש) = dynamic; לא ISR HTML אחד. |
+| SEO3 | עמודים עם `searchParams` משתנים (קטגוריה מסוננת, חיפוש) = dynamic; לא ISR HTML אחד. |
 | SEO4 | `noindex` + `robots.txt` Disallow על account/checkout/admin/supplier/coupon/redeem. |
 | SEO5 | עברית בכל metadata ציבורי; `locale: he_IL`; `inLanguage: he-IL` ב-JSON-LD. |
+| SEO6 | יעד Lighthouse Performance / Accessibility / SEO ≥ **90** על home + PDP קופון + category (mobile). |
 
 ---
 
-## 1. Lighthouse targets
+## 1. Lighthouse 90+ strategy
 
 ### 1.1 תקציבים (mobile, מפתח)
 
-| מדד | יעד | איך |
+| מדד | יעד | אכיפה |
 |---|---|---|
-| Performance (Lighthouse) | ≥ 90 על home + PDP קופון + category | CI על PR; רגרסיה > 5 נקודות בלי הצדקה = כשל |
-| Accessibility | ≥ 90 | אותו CI |
+| Performance | ≥ 90 | CI על PR; רגרסיה > 5 נקודות בלי הצדקה = כשל |
+| Accessibility | ≥ 90 | CI |
 | Best Practices | ≥ 90 | אזהרה ב-PR |
 | SEO (LH category) | ≥ 90 | canonical, title, robots |
-| LCP | ≤ 2.5s | תמונת hero/PDP אחת עם `priority`; Heebo ב-`next/font` + `display: swap`; בלי third-party חוסם ב-home |
+| LCP | ≤ 2.5s | hero/PDP `priority` יחיד; Heebo `next/font` + `display: swap` |
 | CLS | ≤ 0.1 | מימדי תמונה שמורים; בלי badges מאוחרים על ה-hero |
 | INP | ≤ 200ms | מינימום client ב-first paint; analytics אחרי idle/consent |
-| TTFB (p75, catalog) | ≤ 800ms | ISR/CDN על home + PDP |
+| TTFB p75 (catalog) | ≤ 800ms | ISR/CDN על home + PDP |
 
-### 1.2 משטחי מדידה
+### 1.2 משטחי מדידה חובה
 
-| עמוד | חובה ב-CI |
+| עמוד | CI |
 |---|---|
 | `/` | כן |
 | `/product/{slug}` (קופון מייצג) | כן |
 | `/category/{slug}` | כן (או מדגם) |
-| `/checkout` | לא (dynamic, noindex; רק smoke) |
+| `/checkout` | לא (dynamic, noindex; smoke בלבד) |
 
-### 1.3 שערי Go-Live
+### 1.3 אסטרטגיה להגעה ל-90+
 
-- LCP/CLS/INP עומדים ביעד או חריג מתועד ב-Go-Live checklist.
-- Visual diff מול `refs/` תחת סף `compare.mjs` בדפי מפתח.
-- Search Console מחובר אחרי DNS.
+| שכבה | פעולה |
+|---|---|
+| Fonts | Heebo מ-`next/font`, subsets `latin`+`hebrew`, `display: swap`; בלי Google Fonts חוסם |
+| Images | R2 + `next/image`; רוחב מתאים למובייל; רק LCP image עם `priority` |
+| JS | בלי Cardcom / analytics ב-bundle של הבית; dynamic import אחרי אינטראקציה/consent |
+| CSS | איחוד chunks חוסמים ב-home; בלי החלפת `dir` ב-JS אחרי paint |
+| HTML | ISR על home/PDP (`revalidate = 120`); category עם filters נשאר dynamic |
+| Third-party | defer / partytown / אחרי idle; לא ב-critical path |
+| RTL | `dir="rtl"` ב-HTML הראשוני מהשרת |
 
 ### 1.4 אנטי-דפוסים ששוברים Lighthouse
 
-1. שלושה CSS chunks חוסמים ב-home (לאחד ל-root chunk כשאפשר).
-2. Eager על כל סליידר ה-hero (רק slide פעיל ל-LCP).
-3. Cardcom / אנליטיקה ב-bundle של הבית.
-4. תמונות 4000px לכרטיסי מובייל.
-5. החלפת `dir` ב-JS אחרי paint.
+1. שלושה CSS chunks חוסמים ב-home
+2. Eager על כל סליידר ה-hero (רק slide פעיל ל-LCP)
+3. Cardcom / אנליטיקה ב-bundle של הבית
+4. תמונות 4000px לכרטיסי מובייל
+5. החלפת `dir` ב-JS אחרי paint
+6. מחיר ב-meta/JSON-LD שלא תואם קופה (SEO category נכשל אמון)
+
+### 1.5 שערי Go-Live
+
+- LCP/CLS/INP עומדים ביעד או חריג מתועד ב-LAUNCH-DAY / Go-Live checklist
+- Visual diff מול `refs/` תחת סף `compare.mjs` בדפי מפתח
+- Search Console מחובר אחרי DNS
 
 ---
 
-## 2. ISR strategy
+## 2. Metadata (עברית)
 
-### 2.1 מטריצה (מול הקוד ב-`feat/seo-performance`)
+### 2.1 Root (`src/app/layout.tsx`)
 
-| Page | Mode | `revalidate` / dynamic | Tags / הערות |
-|---|---|---|---|
-| `/` | ISR | `revalidate = 120` | tag יעד: `home` |
-| `/product/[slug]` | ISR + partial static | `revalidate = 120`; `generateStaticParams` עד ~500 slugs פעילים | tags יעד: `product:{id}`, `catalog` |
-| `/products` | dynamic או ISR קצר | אם יש filters ב-query → dynamic | `catalog` |
-| `/category/[slug]` | **force-dynamic** | קורא `searchParams` (page/sort/price/brand) | לא ניתן ל-HTML ISR אחד; cache ברמת data (`getCategoryProductsCached`) |
-| `/search` | dynamic | short SWR בצד שרת | **noindex** |
-| `/cart`, `/checkout*`, `/account/**`, `/admin/**`, `/supplier/**` | dynamic private | `no-store` | לעולם לא CDN HTML מלא |
-| `/sitemap.xml` | ISR | `revalidate = 3600` | tag יעד: `sitemap` |
-| `/coupon/[id]`, `/redeem/**` | dynamic | | noindex; לא ב-sitemap |
+| שדה | חוזה |
+|---|---|
+| `<html>` | `lang="he"` `dir="rtl"` |
+| `metadataBase` | `NEXT_PUBLIC_APP_URL` או `https://kenyonexpress.co.il` |
+| title.default | `קניון אקספרס \| קופונים ומבצעים` |
+| title.template | `%s \| קניון אקספרס` |
+| description | עברית, ערך אמיתי, בלי הבטחת אחוז קבוע |
+| openGraph.locale | `he_IL` |
+| openGraph.siteName | `קניון אקספרס` |
+| twitter.card | `summary_large_image` |
 
-### 2.2 On-demand revalidation
+### 2.2 תבניות לפי סוג דף
 
-אחרי publish / unpublish / שינוי מחיר מהותי באדמין:
+| דף | title | description / robots |
+|---|---|---|
+| Home | absolute: `קניון אקספרס \| קופונים ומבצעים` | משפט ערך ארצי |
+| PDP | `seo_title` או `{name} ב-{price} ש"ח` (מחיר אתר) | `seo_description` → short → description |
+| Category | שם הקטגוריה בעברית | טקסט קטגוריה קצר |
+| Search | לפי הצורך | **robots noindex** |
+| Account / Checkout / Admin | עברית תפעולית | **noindex** |
 
-```text
-revalidatePath('/product/{slug}')
-revalidatePath('/category/{slug}')  // אם רלוונטי
-revalidatePath('/')                 // אם מופיע בhome
-revalidateTag('catalog')            // יעד
-revalidateTag('sitemap')            // יעד
-```
+Canonical: path יחסי תחת `metadataBase` (למשל `/product/{slug}`), בלי query של מיון/עמוד כקנוניכשתוכן זהה.
 
-Endpoint מתוכנן:
+### 2.3 Open Graph / Twitter
 
-```
-POST /api/admin/revalidate
-```
+- תמונה אמיתית של המוצר/קטגוריה (R2); לא לוגו כברירת מחדל ב-PDP אם יש גלריה
+- `locale: he_IL` תמיד במשטחים ציבוריים
+- מחיר ב-OG לא סותר את ה-Offer ב-JSON-LD
 
-(admin session או deploy secret; rate limit). עד שחי: `revalidatePath` מ-server actions של מוצרים מספיק לנתיבי אדמין; חובה להרחיב לנתיבי storefront ב-publish.
+### 2.4 robots / sitemap
 
-### 2.3 כללי בחירה
-
-1. אם העמוד תלוי ב-`searchParams` משתנים → **לא** ISR של דף שלם.
-2. אם העמוד ציבורי, יציב, בלי session → ISR עם `revalidate` קצר (120 עד 300 שניות).
-3. כסף/חשבון → תמיד dynamic.
-4. אחרי מיגרציית WP: 301 לפני רנדור כבד (middleware / `redirects`).
-
-### 2.4 Caching stack
+`src/app/robots.ts` Disallow:
 
 ```text
-CDN (Vercel) → ISR HTML / RSC payload
-Data cache → fetch/Supabase עם tags
-Meilisearch → אינדקס חיפוש; לא DB לכל keystroke בלי debounce
+/redeem/ /coupon/ /account/ /supplier/ /scan
+/admin/ /checkout /cart /auth/ /api/
+/reset-password /forgot-password
 ```
 
-אין service role בדפדפן. `createPublicClient` לנתיבי קטלוג ציבוריים; שם ספק בלבד דרך server אם RLS חוסם.
+`sitemap.xml`: `/`, `/products`, `/coupons`, categories, active products.  
+לא לכלול voucher URLs. `lastmod` מ-`updated_at`.  
+`revalidate` יעד ל-sitemap: 3600.
+
+### 2.5 תוכן on-page
+
+- H1 יחיד בעברית
+- `alt` בעברית תיאורי
+- טקסט קטגוריה קצר שלא דוחה LCP
+- הפניות 301 מ-WP לפי מפת המיגרציה (בלי שרשור)
 
 ---
 
-## 3. JSON-LD schemas
+## 3. JSON-LD
 
 מימוש: `src/lib/seo/json-ld.ts`.  
-פלט דרך `<script type="application/ld+json">` עם `jsonLdScript` (בריחת `<` → `\u003c`).
+פלט: `<script type="application/ld+json">` עם `jsonLdScript` (בריחת `<` → `\u003c`).
 
-### 3.1 Home: `Organization` + `WebSite`
+### 3.1 Home: Organization + WebSite
 
 מ-`buildSiteJsonLd(siteUrl)`:
 
@@ -183,9 +201,9 @@ Meilisearch → אינדקס חיפוש; לא DB לכל keystroke בלי debounc
 - מחיר מחירון כ-Offer יחיד לקופון
 - `qr_payload` / קודי שובר / קישורי `/coupon/{id}`
 - דירוגי AggregateRating מזויפים
-- מחיר באגורות כמספר שלם בלי המרה (Schema מצפה ליחידות המטבע, שני עשרונים כמחרוזת מספר)
+- מחיר באגורות כמספר שלם בלי המרה (Schema מצפה ליחידות המטבע)
 
-### 3.5 הטמעה בעמוד
+### 3.5 הטמעה
 
 ```tsx
 <script
@@ -198,59 +216,57 @@ Meilisearch → אינדקס חיפוש; לא DB לכל keystroke בלי debounc
 
 ---
 
-## 4. Hebrew metadata
+## 4. ISR strategy
 
-### 4.1 Root (`src/app/layout.tsx`)
+### 4.1 מטריצה
 
-| שדה | חוזה |
-|---|---|
-| `<html>` | `lang="he"` `dir="rtl"` |
-| `metadataBase` | `NEXT_PUBLIC_APP_URL` או `https://kenyonexpress.co.il` |
-| title.default | `קניון אקספרס \| קופונים ומבצעים` |
-| title.template | `%s \| קניון אקספרס` |
-| description | עברית, ערך אמיתי, בלי הבטחת אחוז קבוע |
-| openGraph.locale | `he_IL` |
-| openGraph.siteName | `קניון אקספרס` |
-| twitter.card | `summary_large_image` |
-| Font | Heebo, `subsets: ['latin','hebrew']`, `display: 'swap'` |
+| Page | Mode | `revalidate` / dynamic | Tags / הערות |
+|---|---|---|---|
+| `/` | ISR | `revalidate = 120` | tag יעד: `home` |
+| `/product/[slug]` | ISR + partial static | `revalidate = 120`; `generateStaticParams` עד ~500 slugs פעילים | tags: `product:{id}`, `catalog` |
+| `/products` | dynamic או ISR קצר | filters ב-query → dynamic | `catalog` |
+| `/category/[slug]` | **force-dynamic** | קורא `searchParams` (page/sort/price/brand) | cache ברמת data (`getCategoryProductsCached`) |
+| `/search` | dynamic | short SWR בצד שרת | **noindex** |
+| `/cart`, `/checkout*`, `/account/**`, `/admin/**`, `/supplier/**` | dynamic private | `no-store` | לעולם לא CDN HTML מלא |
+| `/sitemap.xml` | ISR | `revalidate = 3600` | tag: `sitemap` |
+| `/coupon/[id]`, `/redeem/**` | dynamic | | noindex; לא ב-sitemap |
 
-### 4.2 תבניות לפי סוג דף
+### 4.2 On-demand revalidation
 
-| דף | title | description |
-|---|---|---|
-| Home | absolute: `קניון אקספרס \| קופונים ומבצעים` | משפט ערך ארצי בעברית |
-| PDP | `seo_title` או `{name} ב-{price} ש"ח` (מחיר אתר) | `seo_description` → short → description |
-| Category | שם הקטגוריה בעברית + מותג לפי template | טקסט קטגוריה קצר אם קיים |
-| Search | לפי הצורך | **robots noindex** |
-| Account / Checkout / Admin | עברית תפעולית | **noindex** |
+אחרי publish / unpublish / שינוי מחיר מהותי באדמין:
 
-Canonical: path יחסי תחת `metadataBase` (למשל `/product/{slug}`), בלי query של מיון/עמוד כקנוניכשתוכן זהה.
-
-### 4.3 Open Graph / Twitter
-
-- תמונה אמיתית של המוצר/קטגוריה (R2), לא לוגו כברירת מחדל ב-PDP אם יש גלריה.
-- `locale: he_IL` תמיד במשטחים ציבוריים.
-- לא לשים מחיר ב-OG שסותר את ה-Offer ב-JSON-LD.
-
-### 4.4 robots / sitemap (עברית-first indexation)
-
-`src/app/robots.ts` Disallow:
-
-```
-/redeem/ /coupon/ /account/ /supplier/ /scan
-/admin/ /checkout /cart /auth/ /api/
-/reset-password /forgot-password
+```text
+revalidatePath('/product/{slug}')
+revalidatePath('/category/{slug}')  // אם רלוונטי
+revalidatePath('/')                 // אם מופיע בhome
+revalidateTag('catalog')
+revalidateTag('sitemap')
 ```
 
-`sitemap.xml`: `/`, `/products`, `/coupons`, categories, active products.  
-לא לכלול voucher URLs. `lastmod` מ-`updated_at`.
+Endpoint מתוכנן:
 
-### 4.5 תוכן on-page
+```
+POST /api/admin/revalidate
+```
 
-- H1 יחיד בעברית
-- `alt` בעברית תיאורי לתמונות
-- טקסט קטגוריה קצר שלא דוחה LCP
-- הפניות 301 מ-WP לפי מפת המיגרציה (בלי שרשור)
+(admin session או deploy secret; rate limit).
+
+### 4.3 כללי בחירה
+
+1. אם העמוד תלוי ב-`searchParams` משתנים → **לא** ISR של דף שלם
+2. אם העמוד ציבורי, יציב, בלי session → ISR עם `revalidate` 120 עד 300 שניות
+3. כסף/חשבון → תמיד dynamic
+4. אחרי מיגרציית WP: 301 לפני רנדור כבד
+
+### 4.4 Caching stack
+
+```text
+CDN (Vercel) → ISR HTML / RSC payload
+Data cache → fetch/Supabase עם tags
+Meilisearch → אינדקס חיפוש; לא DB לכל keystroke בלי debounce
+```
+
+אין service role בדפדפן. `createPublicClient` לנתיבי קטלוג ציבוריים.
 
 ---
 
@@ -261,7 +277,7 @@ Canonical: path יחסי תחת `metadataBase` (למשל `/product/{slug}`), ב�
 | Lighthouse CI | PR: home + coupon PDP + category |
 | `compare.mjs` | רגרסיה ויזואלית מול `refs/` |
 | Web Vitals RUM | אופציונלי אחרי consent |
-| Search Console | אחרי DNS; מעקב Coverage / 404 |
+| Search Console | אחרי DNS; Coverage / 404 |
 
 ---
 
@@ -282,16 +298,28 @@ Canonical: path יחסי תחת `metadataBase` (למשל `/product/{slug}`), ב�
 ## 7. אנטי-דפוסים אסורים
 
 1. מחיר ב-meta/JSON-LD שלא תואם קופה
-2. ISR על דף עם `searchParams` משתנים (גורם ל-DYNAMIC_SERVER_USAGE / HTML שגוי)
+2. ISR על דף עם `searchParams` משתנים
 3. Index ל-URLs עם session/cart params
 4. Make/Zapier ל-sitemap
 5. Metadata באנגלית כברירת מחדל ללקוח ישראלי
 
 ---
 
-## 8. Revision
+## 8. Related
+
+```
+docs/ARCHITECTURE-MARKETING.md
+docs/ARCHITECTURE-MOBILE-APP.md
+docs/ARCHITECTURE-E2E-TESTING.md
+docs/LAUNCH-DAY.md
+```
+
+---
+
+## 9. Revision
 
 | Date | Change |
 |---|---|
-| 2026-07-31 | רענון מחייב + rev B (ISR matrix ראשוני) |
-| 2026-08-02 | הרחבה מחייבת: Lighthouse targets, ISR מול הקוד (category dynamic), JSON-LD schemas, Hebrew metadata |
+| 2026-07-31 | רענון מחייב + ISR matrix ראשוני |
+| 2026-08-02 | Lighthouse targets, ISR מול הקוד, JSON-LD, Hebrew metadata |
+| 2026-08-03 | Lighthouse 90+ strategy section; refresh על `arch/docs-queue`; docs only |
