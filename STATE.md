@@ -41,7 +41,54 @@ Updated: 2026-08-03 (Integration Pass: שישה branches שהם שניים, וש
 | ‏096 `voucher_issued` | ❌ | ל-`vouchers` יש `set_updated_at` ו-`trg_vouchers_notify_redeemed` בלבד, אין טריגר על הנפקה |
 
 שתיהן **לא הוחלו כאן במכוון**: הן משנות את ה-RPC החי של המימוש ומוסיפות
-טריגר, וזו החלטת נתיב-כסף ולא מיזוג. זה הפריט הפתוח הבא.
+טריגר, וזו החלטת נתיב-כסף ולא מיזוג.
+
+### המיזוג המלא בוצע בכל זאת, נמדד, ובוטל
+
+ההסתייגות למעלה נדחתה, ולכן המיזוג הורץ במלואו ולא נשאר כהערכה. ‏tag
+`pre-integration-pass` על `7ae90ea` היה רשת הביטחון.
+
+‏`git merge feat/coupon-redemption` נתן **45 קונפליקטים**. הורץ מחדש עם
+`-X ours` (שלנו מנצח בכל התנגשות, תוספות בלעדיות של main נכנסות), והתוצאה
+נראתה טובה: ‏53 קבצים, ‏3143 שורות, וביניהן בדיוק מה שחסר —
+`092`, `096`, ‏`notifications-worker`, ‏`mark-order-item-redeemed`,
+`drain.ts`, `qstash.ts`.
+
+**ואז זה לא עבר קומפילציה: ‏63 שגיאות טיפוס בעץ שהיה נקי.** הסיבה היא
+המנגנון ולא רשלנות: ‏`-X ours` שומר את המימושים שלנו ובכל זאת מכניס קבצים
+חדשים של main, שקוראים ל-API של main:
+
+```
+src/app/(store)/coupon/[id]/page.tsx
+  has no exported member 'formatVoucherCode'
+  no exported member named 'getCustomerVoucherById'
+src/server/queries/orders.ts   16 שגיאות, 'Agorot' לא מוגדר
+```
+
+גם ה-lockfile נשבר (‏`package.json` קיבל `@next/bundle-analyzer` ו-
+`lighthouse`), ו-`next.config.ts` קרא ל-`withBundleAnalyzer` שאינו קיים אצלנו.
+לתקן 63 שגיאות כאלה זה לבחור, סמל אחרי סמל, איזה משני המימושים המקבילים
+מנצח, באזור החשבון, בשאילתות ההזמנות ובשוברים. זו כתיבה מחדש ולא מיזוג.
+בוטל ל-`pre-integration-pass`, והעץ נקי.
+
+### ‏092 היה **מזיק** כאן, וזה הממצא החשוב מהניסיון
+
+הועתקו שני קבצי המיגרציה לבדם, בלי הקוד. ואז נמדד מול הפרודקשן:
+
+```
+live      redeem_voucher(p_code, p_scan_method, p_idempotency_key, p_ip, p_user_agent)   5 ארגומנטים
+092       redeem_voucher(p_code, p_scan_method, p_idempotency_key)                       3 ארגומנטים
+האפליקציה  supabase.rpc('redeem_voucher', {p_code, p_scan_method, p_idempotency_key, p_ip, p_user_agent})
+```
+
+‏092 היה יוצר **עומס יתר שני** של ה-RPC החי של המימוש לצד הקיים, ו-
+`voucher_success_payload` ו-`log_voucher_scan` כבר קיימים בפרודקשן. כלומר
+‏092 מתאר את הסכימה של השושלת השנייה, לא של זו. הקבצים הוסרו.
+
+**הפער עצמו נשאר אמיתי**: הפונקציה החיה בת 5 הארגומנטים באמת לא נוגעת ב-
+`order_items`. התיקון הנכון הוא **להוסיף את הכתיבה ל-`order_items` לפונקציה
+שלנו**, לא להתקין מתחרה בת 3 ארגומנטים. זה הפריט הפתוח הבא, והוא עכשיו מוגדר
+במדויק במקום "להחיל את 092".
 
 ### הקונפליקטים, ולמה לא הוכרעו לפי גיל
 
