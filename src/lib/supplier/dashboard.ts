@@ -39,9 +39,10 @@ export type SupplierDashboardStats = {
   salesPaidCount: number
   salesGrossAgorot: number
   platformFeeAgorot: number
+  /** Physical lines only under the no-Escrow model (coupon prepaid stays with the platform). */
   supplierDueAgorot: number
-  escrowHeldAgorot: number
-  escrowReleasedAgorot: number
+  /** Lifetime successful coupon scans for this supplier (not a money hold). */
+  couponRedemptionsTotal: number
 }
 
 export type PayoutBreakdownLine = {
@@ -74,12 +75,16 @@ export function isRedeemedToday(redeemedAt: string | null | undefined, now = new
   return at.getTime() >= startOfIsraelDay(now).getTime()
 }
 
-/** supplierDue = immediate (physical) + held (coupon escrow share). */
+/**
+ * Supplier due from the platform = immediate physical split only.
+ * Coupon prepaid stays with the platform; till cash never enters our ledger.
+ * Legacy `escrowHeldAgorot` columns are ignored (always 0 under 085).
+ */
 export function supplierDueAgorot(line: {
   supplierImmediateAgorot: number
-  escrowHeldAgorot: number
+  escrowHeldAgorot?: number
 }): number {
-  return Math.max(0, line.supplierImmediateAgorot) + Math.max(0, line.escrowHeldAgorot)
+  return Math.max(0, line.supplierImmediateAgorot)
 }
 
 export function aggregateDashboard(input: {
@@ -90,8 +95,10 @@ export function aggregateDashboard(input: {
   const now = input.now ?? new Date()
   let redemptionsToday = 0
   let tillCollectedTodayAgorot = 0
+  let couponRedemptionsTotal = 0
   for (const r of input.redemptions) {
     if (r.status !== 'redeemed') continue
+    couponRedemptionsTotal += 1
     if (!isRedeemedToday(r.redeemedAt, now)) continue
     redemptionsToday += 1
     tillCollectedTodayAgorot += Math.max(0, r.remainingAmountDueAgorot)
@@ -100,14 +107,10 @@ export function aggregateDashboard(input: {
   let salesGrossAgorot = 0
   let platformFeeAgorot = 0
   let supplierDue = 0
-  let escrowHeldAgorot = 0
-  let escrowReleasedAgorot = 0
   for (const s of input.sales) {
     salesGrossAgorot += Math.max(0, s.faceValueAgorot)
     platformFeeAgorot += Math.max(0, s.platformFeeAgorot)
     supplierDue += supplierDueAgorot(s)
-    escrowHeldAgorot += Math.max(0, s.escrowHeldAgorot - s.escrowReleaseAgorot)
-    escrowReleasedAgorot += Math.max(0, s.escrowReleaseAgorot)
   }
 
   return {
@@ -117,8 +120,7 @@ export function aggregateDashboard(input: {
     salesGrossAgorot,
     platformFeeAgorot,
     supplierDueAgorot: supplierDue,
-    escrowHeldAgorot: Math.max(0, escrowHeldAgorot),
-    escrowReleasedAgorot,
+    couponRedemptionsTotal,
   }
 }
 
@@ -160,8 +162,8 @@ export const SETTLEMENT_LABEL_HE: Record<string, string> = {
   paid: 'שולם באתר',
   split_executed: 'פוצל',
   platform_settled: 'סולק לפלטפורמה',
-  escrow_held: 'מוחזק (קופון)',
-  escrow_released: 'שוחרר לתשלום',
+  escrow_held: 'סולק (מיושן)',
+  escrow_released: 'סולק (מיושן)',
   redeemed: 'מומש',
   refunded: 'זוכה',
   cancelled: 'בוטל',

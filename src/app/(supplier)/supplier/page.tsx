@@ -75,19 +75,14 @@ export default async function SupplierHomePage({
           hint="מתוך הזמנות ששולמו"
         />
         <StatCard
-          label="מגיע לספק"
+          label="מגיע לספק (פיזי)"
           value={formatIls(agorot(stats.supplierDueAgorot))}
-          hint="מיידי + מוחזק לשחרור"
+          hint="סליקה מיידית אחרי תשלום באתר"
         />
         <StatCard
-          label="מוחזק (אסקראו)"
-          value={formatIls(agorot(stats.escrowHeldAgorot))}
-          hint="ממתין למימוש קופון"
-        />
-        <StatCard
-          label="שוחרר לתשלום"
-          value={formatIls(agorot(stats.escrowReleasedAgorot))}
-          hint="אחרי סריקה מוצלחת"
+          label="מימושי קופון"
+          value={String(stats.couponRedemptionsTotal)}
+          hint="סריקות מוצלחות (יתרה נגבית בקופה)"
         />
       </div>
 

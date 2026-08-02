@@ -1,6 +1,36 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-03 (Final QA Sweep: ‏main מאוחד, ו-GO/NO-GO מדוד)
+Updated: 2026-08-03 (autonomous: no-Escrow lock + [22]/[23])
+
+## המשך מ:
+[24] Lighthouse בית נייד 84→90+ (אחרי e0bddad), בלי לגעת בנתוני ספקים/env.
+
+## Current Phase
+‏**main.** תור [1]-[23] סגור. מודל כסף נעול: אין Escrow.
+
+## Last Completed
+[23] הסרת Escrow מ-UI ספק + dashboard + mark-order-item-redeemed.
+[22] נסגר (א-ה + E2E mobile). e0bddad כבר דחף את תיקון הבאנר/assertions.
+
+## In Progress
+[24] Lighthouse home mobile 84→90+
+
+## Blocking Issues
+חוסמי deploy (קונפיג/נתונים, לא קוד): VOUCHER_QR_SECRET, Cardcom prod, DNS, 11 ספקים בלי כתובת/לוגו.
+‏096 ממתין לאישור apply_migration.
+QA#6 (order_items ב-redeem) נדחה: מודל 085.
+
+## Next Task
+[24] מדידת Lighthouse בית נייד אחרי e0bddad וסגירת הפער ל-90.
+
+## Working Directory
+/Users/ofir/kenyonexpress-web/kenyonexpress
+
+## החלטות שהתקבלו אוטומטית
+- 2026-08-03: מודל Escrow מ-27.07 **נדחה**. נעול: אין Escrow; מקדמת קופון לפלטפורמה; יתרה בקופה; platform_percent מצולם.
+- 2026-08-03: לא לשנות redeem_voucher לכתוב order_items (סותר 085 + SQL harness).
+
+---
 
 ## ‏2026-08-03 — Final QA Sweep, ו-GO/NO-GO לפרודקשן
 

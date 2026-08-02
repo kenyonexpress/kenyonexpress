@@ -1,13 +1,21 @@
 /**
- * After a voucher burns, the order line must show the redemption in
- * settlement_status. The RPC in 092 does this inside the same transaction;
- * this helper is the TypeScript contract + a belt-and-suspenders path the
- * redeem route can call when the payload includes order_item_id.
+ * After a voucher burns, the order line's settlement is NOT flipped.
  *
- * item_status has no `redeemed` label (007 enum), so it stays `issued`.
+ * Under the locked no-Escrow model (migration 085 / commission.ts): the whole
+ * on-site coupon prepayment settles at payment time (`split_executed` /
+ * `platform_settled`). The scan only burns the voucher; cash at the till never
+ * enters the platform, and there is nothing to "release".
+ *
+ * This helper exists for a belt-and-suspenders path that may stamp
+ * `settlement_status = redeemed` when that enum value is in use for display.
+ * It must never accept or invent `escrow_held`.
  */
 
-export const REDEEMABLE_SETTLEMENT_STATUSES = ['platform_settled', 'paid', 'escrow_held'] as const
+export const REDEEMABLE_SETTLEMENT_STATUSES = [
+  'platform_settled',
+  'paid',
+  'split_executed',
+] as const
 
 export type RedeemableSettlementStatus = (typeof REDEEMABLE_SETTLEMENT_STATUSES)[number]
 
