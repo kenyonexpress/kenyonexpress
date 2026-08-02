@@ -1,60 +1,46 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-02 (goal: SEO + Performance on feat/seo-performance)
+Updated: 2026-08-03 (docs-only in ke-arch: notifications + SEO + mobile)
 
 ## Current Phase
-‏**feat/seo-performance.** Hebrew SEO, ISR, next/image, JSON-LD, sitemap/robots, bundle analyze.
+‏**arch/docs-lifecycle** ב-worktree
+ke-arch
+. Docs only. אין נגיעה ב-worktree הראשי.
 
 ## Last Completed
-Goal SEO + Performance על
-feat/seo-performance
+שלושה מסמכי ארכיטקטורה ב-
+ke-arch
+, commit נפרד לכל אחד על
+arch/docs-lifecycle
 :
 
-1. Root + pages: metadata/OG עברית
-קניון אקספרס
-.
+1.
+docs/ARCHITECTURE-NOTIFICATIONS.md
+: Resend + Edge, WhatsApp/SMS למחזור קופון (הונפק/מומש/פג), Wallet push.
 2.
-sitemap.ts
-+
-robots.ts
-(+ tests).
-3. JSON-LD Product/Offer/Breadcrumb/Organization+WebSite.
-4. ISR:
-revalidate
-120/300/180/3600 +
-createPublicClient
-ל-PDP +
-revalidateStorefrontCatalogue
-באדמין.
-5. next/image בכרטיסי מוצר; remote-hosts; imageSizes 288.
-6.
-pnpm analyze
-+
-lighthouse:smoke
-+
-.lighthouserc.cjs
-.
-7. Vitest seo/images/robots/catalogue: 54.
+docs/ARCHITECTURE-SEO-PERFORMANCE.md
+: Lighthouse 90+, ISR, sitemap דינמי, schema.org מוצרים בעברית RTL.
+3.
+docs/ARCHITECTURE-MOBILE-APP.md
+: Expo RN על shared Supabase, QR offline, push, Wallet pass CTA.
 
 ## In Progress
 nothing
 
 ## Blocking Issues
-ציון Lighthouse 90+ דורש הרצה מול
-pnpm build && pnpm start
-(לא רץ בסשן הזה מול שרת חי).
+none (docs only)
 
 ## Next Task
-ריצת
-pnpm lighthouse:smoke
-מול production build מקומי, או מעבר ל-
-feat/e2e
-לפי
-GOALS-QUEUE.md
-.
+המשך תור docs ב-
+ke-arch
+לפי הצורך, או יישום על
+feat/notifications
+/
+feat/seo-performance
+מחוץ לסקופ הזה.
 
 ## Working Directory
-/Users/ofir/kenyonexpress-web/kenyonexpress
+/Users/ofir/kenyonexpress-web/ke-arch
 
 ---
 

@@ -349,6 +349,6 @@ docs/ARCHITECTURE-ACCOUNT-WALLET.md
 
 | Date | Change |
 |---|---|
-| 2026-07-31 | רענון + שלבי M0–M4 |
+| 2026-07-31 | רענון + שלבי M0 עד M4 |
 | 2026-08-02 | Expo RN, shared Supabase, QR offline, push; Escrow 2026-07-27 |
 | 2026-08-03 | יישור ל-notifications lifecycle + Wallet pass CTA; docs-only ב-`ke-arch` |
