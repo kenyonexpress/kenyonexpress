@@ -30,14 +30,14 @@ export default async function OrderDetailPage({ params }: Props) {
           <div className="account-row__main">
             <p className="account-row__meta">סכום ביניים</p>
           </div>
-          <div className="account-row__actions">{formatIls(order.subtotalAgorot)}</div>
+          <div className="account-row__actions">{formatIls(order.subtotalIls)}</div>
         </div>
-        {order.walletAppliedAgorot > 0 && (
+        {order.walletAppliedIls > 0 && (
           <div className="account-row">
             <div className="account-row__main">
               <p className="account-row__meta">שולם מהארנק</p>
             </div>
-            <div className="account-row__actions">-{formatIls(order.walletAppliedAgorot)}</div>
+            <div className="account-row__actions">-{formatIls(order.walletAppliedIls)}</div>
           </div>
         )}
         <div className="account-row">
@@ -45,7 +45,7 @@ export default async function OrderDetailPage({ params }: Props) {
             <p className="account-row__title">סך הכל שולם באתר</p>
           </div>
           <div className="account-row__actions">
-            <strong>{formatIls(order.totalAgorot)}</strong>
+            <strong>{formatIls(order.totalIls)}</strong>
           </div>
         </div>
       </section>
@@ -63,12 +63,9 @@ export default async function OrderDetailPage({ params }: Props) {
                 )}
               </p>
               <p className="account-row__meta">
-                {line.quantity} יחידות · {formatIls(line.unitPriceAgorot)} ליחידה
-                {line.productType === 'coupon'
-                  ? ` · שולם באתר ${formatIls(line.paidOnSiteAgorot)}`
-                  : ''}
-                {line.productType === 'coupon' && line.balanceDueAgorot > 0
-                  ? ` · ${formatIls(line.balanceDueAgorot)} לתשלום בבית העסק`
+                {line.quantity} יחידות · {formatIls(line.unitPriceIls)} ליחידה
+                {line.productType === 'coupon' && line.balanceDueIls > 0
+                  ? ` · ${formatIls(line.balanceDueIls)} לתשלום בבית העסק`
                   : ''}
               </p>
               {line.supplier && (
@@ -126,7 +123,7 @@ export default async function OrderDetailPage({ params }: Props) {
                 </div>
               )}
             </div>
-            <div className="account-row__actions">{formatIls(line.totalAgorot)}</div>
+            <div className="account-row__actions">{formatIls(line.totalIls)}</div>
           </div>
         ))}
       </section>

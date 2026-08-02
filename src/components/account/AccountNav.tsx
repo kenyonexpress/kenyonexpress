@@ -1,54 +1,38 @@
 'use client'
 
-import { formatIls } from '@/lib/account/format'
-import type { Agorot } from '@/lib/money'
-import { signOut } from '@/server/actions/auth'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const ITEMS = [
   { href: '/account', label: 'סקירה' },
+  { href: '/account/details', label: 'הפרטים שלי' },
   { href: '/account/orders', label: 'ההזמנות שלי' },
   { href: '/account/coupons', label: 'הקופונים שלי' },
   { href: '/account/wallet', label: 'הארנק שלי' },
-  { href: '/account/details', label: 'הפרטים שלי' },
   { href: '/account/addresses', label: 'כתובות' },
   { href: '/account/tokens', label: 'אמצעי תשלום' },
 ] as const
 
+function formatIls(value: number): string {
+  return `₪${value.toFixed(2)}`
+}
+
 export default function AccountNav({
   fullName,
   email,
-  avatarUrl,
-  walletBalanceAgorot,
+  walletBalanceIls,
 }: {
   fullName: string | null
   email: string
-  avatarUrl: string | null
-  walletBalanceAgorot: Agorot
+  walletBalanceIls: number
 }) {
   const pathname = usePathname()
 
   return (
     <nav className="account-nav" aria-label="ניווט באזור האישי">
       <div className="account-nav__head">
-        <div className="account-nav__identity">
-          {avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element -- Google avatar URL
-            <img
-              className="account-nav__avatar"
-              src={avatarUrl}
-              alt=""
-              width={40}
-              height={40}
-              referrerPolicy="no-referrer"
-            />
-          ) : null}
-          <div>
-            <p className="account-nav__name">{fullName || 'שלום'}</p>
-            <p className="account-nav__email">{email}</p>
-          </div>
-        </div>
+        <p className="account-nav__name">{fullName || 'שלום'}</p>
+        <p className="account-nav__email">{email}</p>
       </div>
       <ul className="account-nav__list">
         {ITEMS.map((item) => {
@@ -64,18 +48,13 @@ export default function AccountNav({
               >
                 <span>{item.label}</span>
                 {item.href === '/account/wallet' && (
-                  <span className="account-nav__badge">{formatIls(walletBalanceAgorot)}</span>
+                  <span className="account-nav__badge">{formatIls(walletBalanceIls)}</span>
                 )}
               </Link>
             </li>
           )
         })}
       </ul>
-      <form action={signOut} className="account-nav__logout">
-        <button type="submit" className="account-nav__logout-btn">
-          התנתקות
-        </button>
-      </form>
     </nav>
   )
 }

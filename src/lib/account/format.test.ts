@@ -1,24 +1,16 @@
-import { agorot } from '@/lib/money'
 import { describe, expect, it } from 'vitest'
 import { formatDate, formatDateTime, formatIls, orderStatusLabel, orderStatusTone } from './format'
 
-describe('formatIls (agorot via money.ts)', () => {
-  it('formats integer agorot as shekels', () => {
-    expect(formatIls(agorot(0))).toMatch(/0\.00/)
-    expect(formatIls(agorot(500))).toMatch(/5\.00/)
-    expect(formatIls(agorot(1250))).toMatch(/12\.50/)
+describe('formatIls', () => {
+  it('always shows two decimals', () => {
+    expect(formatIls(0)).toBe('₪0.00')
+    expect(formatIls(5)).toBe('₪5.00')
+    expect(formatIls(12.5)).toBe('₪12.50')
+    expect(formatIls(12.345)).toBe('₪12.35')
   })
 
-  it('rejects non-integer float ILS masquerading as agorot', () => {
-    expect(() => formatIls(12.5)).toThrow()
-  })
-})
-
-describe('ilsColumnToAgorot', () => {
-  it('converts a decimal ILS column into integer agorot', () => {
-    expect(ilsColumnToAgorot(12.5)).toBe(1250)
-    expect(ilsColumnToAgorot(0)).toBe(0)
-    expect(ilsColumnToAgorot(null)).toBe(0)
+  it('keeps the sign for a negative balance', () => {
+    expect(formatIls(-3.2)).toBe('₪-3.20')
   })
 })
 

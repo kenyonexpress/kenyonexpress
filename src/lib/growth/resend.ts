@@ -56,7 +56,9 @@ export async function sendEmail(args: SendArgs): Promise<SendResult> {
   // hardcoded address nobody verified. RESEND_FROM stays as the override for
   // when marketing wants its own sender identity.
   const from =
-    process.env.RESEND_FROM ?? process.env.EMAIL_FROM ?? 'KenyonExpress <noreply@kenyonexpress.co.il>'
+    process.env.RESEND_FROM ??
+    process.env.EMAIL_FROM ??
+    'KenyonExpress <noreply@kenyonexpress.co.il>'
 
   // List-Unsubscribe is not optional on marketing mail. Without it Gmail and
   // Yahoo route bulk senders to spam outright, and the person who wanted out

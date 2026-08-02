@@ -45,24 +45,6 @@ export default async function CouponsPage() {
       <h1 className="account-title">הקופונים שלי</h1>
       <p className="account-subtitle">הצגת הקוד או ה-QR בבית העסק. היתרה משולמת שם בזמן הסריקה.</p>
 
-      <nav className="account-tabs" aria-label="סינון קופונים">
-        {TABS.map((t) => {
-          const count = grouped[t.id].length
-          const href = t.id === 'active' ? '/account/coupons' : `/account/coupons?tab=${t.id}`
-          return (
-            <Link
-              key={t.id}
-              href={href}
-              className={`account-tabs__link${tab === t.id ? ' is-active' : ''}`}
-              aria-current={tab === t.id ? 'page' : undefined}
-            >
-              {t.label}
-              <span className="account-tabs__count">{count}</span>
-            </Link>
-          )
-        })}
-      </nav>
-
       <section className="account-card">
         {vouchers.length === 0 ? (
           <p className="account-empty">עדיין לא רכשת קופונים.</p>

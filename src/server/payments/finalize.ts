@@ -449,10 +449,13 @@ export async function finalizeOrder(input: {
     // replayed finalize re-runs it as a no-op because the row it would claim
     // already has a recovered_order_id.
     try {
-      await admin.rpc('fn_attribute_cart_recovery' as never, {
-        p_order_id: order.id,
-        p_user_id: order.user_id,
-      } as never)
+      await admin.rpc(
+        'fn_attribute_cart_recovery' as never,
+        {
+          p_order_id: order.id,
+          p_user_id: order.user_id,
+        } as never,
+      )
     } catch {
       // Deliberately silent, for the reason above.
     }

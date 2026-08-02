@@ -8,15 +8,10 @@ import WhatsAppFloat from '@/components/shared/WhatsAppFloat'
 import { Toaster } from '@/components/ui/sonner'
 import { createClient } from '@/lib/supabase/server'
 import { getAccountProfile, getWalletSummary } from '@/server/queries/account'
-import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import '@/styles/account.css'
-
-export const metadata: Metadata = {
-  robots: { index: false, follow: false },
-}
 
 /**
  * The session check and the identity the side nav shows, together, because both

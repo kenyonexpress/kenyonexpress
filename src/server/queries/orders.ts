@@ -19,20 +19,17 @@ export interface OrderSummary {
   settlementStatus: SettlementState
   createdAt: string
   paidAt: string | null
-  /** Paid-on-site total in integer agorot. */
-  totalAgorot: Agorot
+  totalIls: number
   itemCount: number
   hasVouchers: boolean
 }
 
 export interface OrderVoucher {
-  id: string
   code: string
   status: string
   expiresAt: string | null
-  paidOnSiteAgorot: Agorot
-  remainingDueAgorot: Agorot
-  faceValueAgorot: Agorot
+  collectAmountIls: number | null
+  faceValueIls: number | null
   qrDataUrl: string | null
   usedAt: string | null
 }
@@ -53,10 +50,10 @@ export interface OrderLine {
   productImage: string | null
   productType: 'coupon' | 'physical'
   quantity: number
-  unitPriceAgorot: Agorot
-  totalAgorot: Agorot
-  paidOnSiteAgorot: Agorot
-  balanceDueAgorot: Agorot
+  unitPriceIls: number
+  totalIls: number
+  paidOnSiteIls: number
+  balanceDueIls: number
   settlementStatus: SettlementState
   itemStatus: string
   supplier: OrderLineSupplier | null
@@ -69,9 +66,9 @@ export interface OrderDetail {
   settlementStatus: SettlementState
   createdAt: string
   paidAt: string | null
-  subtotalAgorot: Agorot
-  totalAgorot: Agorot
-  walletAppliedAgorot: Agorot
+  subtotalIls: number
+  totalIls: number
+  walletAppliedIls: number
   addressId: string | null
   lines: OrderLine[]
 }
@@ -190,7 +187,7 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
   ]
   const itemIds = (items ?? []).map((i) => i.id)
 
-  const [{ data: products }, { data: suppliers }, { data: voucherRows }] = await Promise.all([
+  const [{ data: products }, { data: suppliers }, { data: coupons }] = await Promise.all([
     productIds.length > 0
       ? admin.from('products').select('id, name_he, slug, images').in('id', productIds)
       : Promise.resolve({
@@ -223,7 +220,6 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
           .order('issued_at', { ascending: true })
       : Promise.resolve({
           data: [] as {
-            id: string
             code: string
             status: string
             expires_at: string | null
@@ -243,7 +239,7 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
   for (const item of items ?? []) {
     const product = item.product_id ? productMap.get(item.product_id) : undefined
     const supplier = item.supplier_id ? supplierMap.get(item.supplier_id) : undefined
-    const itemVouchers = (voucherRows ?? []).filter((v) => v.order_item_id === item.id)
+    const itemCoupons = (coupons ?? []).filter((c) => c.order_item_id === item.id)
 
     const vouchers: OrderVoucher[] = []
     for (const coupon of itemCoupons) {

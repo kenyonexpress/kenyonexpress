@@ -139,7 +139,7 @@ async function CheckoutReturnBody({ searchParams }: Props) {
   const cashback = (cashbackAgorot ?? 0) / 100
 
   return (
-    <div className="checkout-page" dir="rtl">
+    <div className="checkout-page">
       <div className="checkout-success">
         <h1 className="checkout-success__title">התשלום הצליח!</h1>
         <p className="checkout-success__sub">
@@ -147,24 +147,24 @@ async function CheckoutReturnBody({ searchParams }: Props) {
           {shekels(orderMoney.totalAgorot / 100)}
         </p>
 
-        {vouchersWithQr.length > 0 && (
+        {couponsWithQr.length > 0 && (
           <section aria-label="הקופונים שלך" style={{ maxWidth: 640, marginInline: 'auto' }}>
             <h2 className="checkout-section__title">הקופונים שלך</h2>
-            {vouchersWithQr.map((voucher) => {
-              const productName = Array.isArray(voucher.products)
-                ? voucher.products[0]?.name_he
-                : (voucher.products as { name_he: string } | null)?.name_he
+            {couponsWithQr.map((coupon) => {
+              const productName = Array.isArray(coupon.products)
+                ? coupon.products[0]?.name_he
+                : (coupon.products as { name_he: string } | null)?.name_he
               const shareHref = waShareLink(
                 buildCouponShareText({
                   productName: productName ?? null,
-                  code: voucher.code,
-                  collectAmountIls: voucher.remaining_amount_due_agorot / 100,
-                  expiresAt: voucher.expires_at,
+                  code: coupon.code,
+                  collectAmountIls: Number(coupon.collect_amount_ils),
+                  expiresAt: coupon.expires_at,
                   siteUrl: process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il',
                 }),
               )
               return (
-                <article className="coupon-card" key={voucher.id}>
+                <article className="coupon-card" key={coupon.id}>
                   <div>
                     {productName && <div className="coupon-card__collect">{productName}</div>}
                     <div className="coupon-card__code" dir="ltr">
@@ -172,12 +172,12 @@ async function CheckoutReturnBody({ searchParams }: Props) {
                     </div>
                     {Number(coupon.collect_amount_ils) > 0 && (
                       <div className="coupon-card__collect">
-                        לתשלום בעסק במימוש: {formatIls(voucher.remaining_amount_due_agorot)}
+                        לתשלום בעסק במימוש: {shekels(Number(coupon.collect_amount_ils))}
                       </div>
                     )}
                     <div className="coupon-card__note">
                       בתוקף עד{' '}
-                      {new Date(voucher.expires_at).toLocaleDateString('he-IL', {
+                      {new Date(coupon.expires_at).toLocaleDateString('he-IL', {
                         day: '2-digit',
                         month: '2-digit',
                         year: 'numeric',

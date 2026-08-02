@@ -9,10 +9,6 @@ import { createClient } from '@/lib/supabase/server'
  * remembered to write. Migration 052 added the owner policies that make this
  * possible (wallet_entries and payment_tokens were previously unreadable or
  * undeletable by their own owner).
- *
- * Money leaves this module as integer Agorot. Live wallet/order columns are
- * still decimal `*_ils` until migration 059; conversion happens here via
- * ilsColumnToAgorot so the UI never does float money math.
  */
 
 export interface AccountProfile {
@@ -24,8 +20,7 @@ export interface AccountProfile {
 }
 
 export interface WalletSummary {
-  /** Cached balance as integer agorot (via money.ts). */
-  balanceAgorot: Agorot
+  balanceIls: number
   accountId: string | null
 }
 
@@ -34,8 +29,8 @@ export type WalletDirection = 'credit' | 'debit'
 export interface WalletLedgerRow {
   id: string
   direction: WalletDirection
-  signedAmountAgorot: Agorot
-  amountAgorot: Agorot
+  signedAmountIls: number
+  amountIls: number
   reason: string
   orderId: string | null
   createdAt: string
@@ -113,7 +108,7 @@ export async function getWalletSummary(): Promise<WalletSummary> {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) return { balanceAgorot: agorot(0), accountId: null }
+  if (!user) return { balanceIls: 0, accountId: null }
 
   // Probed, not named. This selected `balance_agorot`, which the hosted project
   // does not have, so the select 42703'd and the account area showed every
@@ -141,8 +136,8 @@ export async function getWalletLedger(limit = 100): Promise<WalletLedgerRow[]> {
   return (data ?? []).map((row) => ({
     id: row.id,
     direction: row.direction === 'credit' ? 'credit' : 'debit',
-    signedAmountAgorot: ilsColumnToAgorot(row.signed_amount_ils ?? 0),
-    amountAgorot: ilsColumnToAgorot(row.amount_ils ?? 0),
+    signedAmountIls: Number(row.signed_amount_ils ?? 0),
+    amountIls: Number(row.amount_ils ?? 0),
     reason: row.reason,
     orderId: row.order_id,
     createdAt: row.created_at,

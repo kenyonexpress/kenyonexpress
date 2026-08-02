@@ -22,25 +22,10 @@ import { Suspense } from 'react'
 
 type Props = { params: Promise<{ slug: string }> }
 
-/** ISR: product pages refresh at most every 2 minutes (SEO-PERFORMANCE §1.1). */
-export const revalidate = 120
-
-export async function generateStaticParams() {
-  const admin = createAdminClient()
-  const { data } = await admin
-    .from('products')
-    .select('slug')
-    .eq('status', 'active')
-    .is('deleted_at', null)
-    .not('slug', 'is', null)
-    .limit(500)
-  return (data ?? []).map((row) => ({ slug: row.slug as string }))
-}
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params }: Props) {
   const { slug: rawSlug } = await params
   const slug = decodeURIComponent(rawSlug)
-  const supabase = createPublicClient()
+  const supabase = await createClient()
   const { data } = await supabase
     .from('products')
     .select('name_he, description_he, short_description_he, seo_title, seo_description, images')
@@ -108,7 +93,7 @@ export default function ProductPage(props: Props) {
 async function ProductPageBody({ params }: Props) {
   const { slug: rawSlug } = await params
   const slug = decodeURIComponent(rawSlug)
-  const supabase = createPublicClient()
+  const supabase = await createClient()
 
   const { data: product } = await supabase
     .from('products')
@@ -154,14 +139,18 @@ async function ProductPageBody({ params }: Props) {
     ? (product.images as unknown[]).filter((u): u is string => typeof u === 'string')
     : []
 
-  // Pipeline metadata (blur placeholder + mandatory Hebrew alt) would come from
-  // a `media_assets` table keyed by image URL. That table does not exist: it is
-  // in no migration this database has run and it appears nowhere in the
-  // generated types, so the query it was written against fails to compile and
-  // would 400 at runtime. Creating it is DDL, which this queue may not apply
-  // without approval, so the gallery falls back to what it did before - no blur
-  // placeholder, alt derived from the product name. Recorded in STATE.md.
-  const galleryAssets: Record<string, { alt: string | null; blurDataURL: string | null }> = {}
+  // Pipeline metadata (blur placeholder + mandatory Hebrew alt) for images
+  // uploaded through the media pipeline; legacy URLs simply get no entry.
+  let galleryAssets: Record<string, { alt: string | null; blurDataURL: string | null }> = {}
+  if (images.length > 0) {
+    const { data: assetRows } = await supabase
+      .from('media_assets')
+      .select('url, alt_he, blur_data_url')
+      .in('url', images)
+    galleryAssets = Object.fromEntries(
+      (assetRows ?? []).map((a) => [a.url, { alt: a.alt_he, blurDataURL: a.blur_data_url }]),
+    )
+  }
 
   const category = Array.isArray(product.categories)
     ? null
