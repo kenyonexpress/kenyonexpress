@@ -90,6 +90,67 @@ const SPEC = {
   ],
 };
 
+/**
+ * The same roles, addressed in OUR markup.
+ *
+ * Until this existed the local side of every run was measured with the
+ * WooCommerce selectors above -- `table.cart`, `tr.cart_item`, `input.qty`,
+ * `#coupon_code` -- against a rebuild that deliberately uses its own BEM
+ * classes and does not use a table at all. The local column could therefore
+ * only ever be zero, and `GAP-CART-CHECKOUT.md` reported "36 פערים" on a cart
+ * that renders correctly. A gate that cannot pass is not a gate.
+ *
+ * `null` means the role is deliberately absent from this design, which is a
+ * different statement from "not found" and is reported as its own row.
+ */
+const LOCAL_SPEC = {
+  cart: [
+    { label: 'cart-table',    sel: '.cart-page__items' },
+    { label: 'cart-row',      sel: '.cart-line' },
+    { label: 'col-thumbnail', sel: '.cart-line__thumb' },
+    { label: 'thumbnail-img', sel: '.cart-line__thumb img' },
+    { label: 'col-name',      sel: '.cart-line__name' },
+    // Electro prints a unit price and a line subtotal in separate columns.
+    // This design prints the line total only, next to the quantity stepper
+    // that produced it, so there is no unit-price cell to measure.
+    { label: 'col-price',     sel: null },
+    { label: 'col-qty',       sel: '.cart-line__qty' },
+    // A stepper, not a text input: the value is a span between two buttons.
+    { label: 'qty-input',     sel: '.cart-line__qty-value' },
+    { label: 'col-subtotal',  sel: '.cart-line__price' },
+    { label: 'remove-btn',    sel: '.cart-line__remove' },
+    // No "update cart" button by design: a quantity change is a server action
+    // that applies immediately, so there is nothing to submit.
+    { label: 'update-btn',    sel: null },
+    { label: 'coupon-field',  sel: '.cart-coupon__input' },
+    { label: 'coupon-btn',    sel: '.cart-coupon__submit' },
+    { label: 'cart-totals',   sel: '.cart-sidebar' },
+    { label: 'subtotal-row',  sel: '.cart-sidebar__row' },
+    { label: 'total-row',     sel: '.cart-sidebar__total' },
+    { label: 'total-amount',  sel: '.cart-sidebar__total' },
+    { label: 'checkout-btn',  sel: '.cart-checkout-btn' },
+  ],
+  checkout: [
+    { label: 'checkout-form', sel: '.checkout-col-main form, form.checkout-form' },
+    { label: 'billing-block', sel: '.checkout-section' },
+    { label: 'field-row',     sel: '.checkout-fields-row' },
+    { label: 'field-input',   sel: '.checkout-field input' },
+    { label: 'field-label',   sel: '.checkout-field label' },
+    { label: 'field-select',  sel: '.checkout-field select' },
+    { label: 'order-review',  sel: '.checkout-confirm__sections' },
+    { label: 'review-table',  sel: '.checkout-item__name' },
+    { label: 'review-total',  sel: '.checkout-item__total' },
+    { label: 'payment-box',   sel: '.checkout-payment' },
+    { label: 'place-order',   sel: '.checkout-pay-btn' },
+    { label: 'checkout-steps',sel: '.checkout-nav' },
+  ],
+  // Not remapped: these two pages are a different information architecture
+  // here (a Hebrew account area and a Cardcom return page), not a restyled
+  // WooCommerce one, so a role-for-role table would be inventing equivalences.
+  account: [],
+  orderReceived: [],
+}
+
 // כל ה-computed props שרלוונטיים ל-UI פיקסל-פרפקט
 const FULL_PROPS = [
   'display','position','width','height','min-height','max-width',
@@ -111,6 +172,9 @@ const EXTRACT = ([specs, props]) => {
   const q = (s) => document.querySelector(s);
   const out = {};
   for (const item of specs) {
+    // A null selector is "this design does not have that role", which must not
+    // be reported as a missing element.
+    if (!item.sel) { out[item.label] = 'N/A'; continue; }
     const el = q(item.sel);
     if (!el) { out[item.label] = null; continue; }
     const cs = getComputedStyle(el);
@@ -165,12 +229,12 @@ async function localAddToCart(page, base) {
   return false;
 }
 
-async function measurePage(page, url, type, width, shotPrefix) {
+async function measurePage(page, url, type, width, shotPrefix, spec = SPEC) {
   await page.setViewportSize({ width, height: 1200 });
   const resp = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 }).catch(e => ({ err: e.message.split('\n')[0] }));
   if (resp && resp.err) return { __error: resp.err };
   await page.waitForTimeout(9000);
-  const data = await page.evaluate(EXTRACT, [SPEC[type], FULL_PROPS]);
+  const data = await page.evaluate(EXTRACT, [spec[type], FULL_PROPS]);
   // Screenshots deliberately skipped: the brief asks for text only.
   data.__status = resp && resp.status ? resp.status() : 0;
   data.__url = url;
@@ -226,13 +290,13 @@ function gaps(electro, local) {
     await localAddToCart(page, localArg);
     for (const bp of BREAKPOINTS) {
       console.log(`→ Local cart @${bp}px`);
-      result.local.cart[bp] = await measurePage(page, `${localArg}/cart`, 'cart', bp, 'local-cart');
+      result.local.cart[bp] = await measurePage(page, `${localArg}/cart`, 'cart', bp, 'local-cart', LOCAL_SPEC);
       console.log(`→ Local checkout @${bp}px`);
-      result.local.checkout[bp] = await measurePage(page, `${localArg}/checkout`, 'checkout', bp, 'local-checkout');
+      result.local.checkout[bp] = await measurePage(page, `${localArg}/checkout`, 'checkout', bp, 'local-checkout', LOCAL_SPEC);
       console.log(`→ Local account @${bp}px`);
-      result.local.account[bp] = await measurePage(page, `${localArg}/account`, 'account', bp, 'local-account');
+      result.local.account[bp] = await measurePage(page, `${localArg}/account`, 'account', bp, 'local-account', LOCAL_SPEC);
       console.log(`→ Local order-received @${bp}px`);
-      result.local.orderReceived[bp] = await measurePage(page, `${localArg}/order-received`, 'orderReceived', bp, 'local-order-received');
+      result.local.orderReceived[bp] = await measurePage(page, `${localArg}/order-received`, 'orderReceived', bp, 'local-order-received', LOCAL_SPEC);
     }
     const cartGaps = gaps(result.electro.cart, result.local.cart);
     const coGaps   = gaps(result.electro.checkout, result.local.checkout);
