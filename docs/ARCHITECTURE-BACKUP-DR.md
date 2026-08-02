@@ -1,37 +1,38 @@
-# ARCHITECTURE: Backup & Disaster Recovery
+# ARCHITECTURE: Backup and Disaster Recovery
 
-גיבוי Supabase PITR, אסטרטגיית גיבוי R2, ו-runbook לשחזור.
+גיבוי ו-DR: Supabase PITR, גיבוי נכסי R2, יעדי RTO/RPO, checklist תרגיל שחזור רבעוני.
 
-Status: **BINDING** · Updated: 2026-08-02  
-Scope: docs only.  
+Status: **BINDING** · Updated: 2026-08-03  
+Scope: **docs only** · branch `arch/docs-queue`  
+אין שינוי קוד. אין נגיעה ב-worktree הראשי.
+
 Companions:
 
 ```
-docs/ARCHITECTURE-PRODUCTION-OPS.md
-docs/ARCHITECTURE-OBSERVABILITY.md
-docs/DDL-FIXES.md
+docs/RUNBOOK-INCIDENTS.md
+docs/RUNBOOK-PRODUCTION-DEPLOY.md
 docs/RUNBOOK-OPERATIONS.md
-```
-
-פרויקט prod (דוגמה):
-
-```
-ixvwfbuvfxxsjiywhbbb
+docs/ARCHITECTURE-OBSERVABILITY.md
+docs/LAUNCH-DAY.md
 ```
 
 ---
 
-## 0. יעדי שירות
+## 0. יעדי RTO / RPO
 
-| מדד | יעד |
-|---|---|
-| RPO (DB) | ≤ 1 שעה (PITR) |
-| RTO storefront לקריאה | ≤ 4 שעות |
-| RTO checkout / כסף | ≤ 8 שעות כולל reconcile מול Cardcom |
-| RPO מדיה (R2) | ≤ 24 שעות (גרסה/שכפול) |
-| RTO DNS / Vercel | ≤ 1 שעה (rollback deploy) |
+| מדד | יעד | הערה |
+|---|---|---|
+| RPO (DB) | ≤ 1 שעה | PITR / WAL |
+| RTO storefront לקריאה | ≤ 4 שעות | CDN/ISR + DB קריאה |
+| RTO checkout / כסף | ≤ 8 שעות | כולל reconcile Cardcom |
+| RPO מדיה (R2) | ≤ 24 שעות | versioning + שכפול |
+| RTO DNS / Vercel app | ≤ 1 שעה | Instant Rollback |
 
-Kill switch checkout: `CHECKOUT_ENABLED=false` ב-Vercel בכל אירוע שחזור כסף.
+Kill switch בכל אירוע כסף/שחזור:
+
+```
+CHECKOUT_ENABLED=false
+```
 
 ---
 
@@ -41,53 +42,54 @@ Kill switch checkout: `CHECKOUT_ENABLED=false` ב-Vercel בכל אירוע שח�
 
 1. תוכנית עם **Point-in-Time Recovery** פעילה (Pro+).
 2. גיבויים יומיים אוטומטיים + WAL לפי המנוי.
-3. שמירת חלון PITR לפי מדיניות ספק (לוודא Dashboard ≥ יעד RPO).
-4. גישה ל-restore רק ל-owner/ops; לא לכל חבר צוות.
+3. חלון PITR ≥ יעד RPO (לוודא ב-Dashboard).
+4. הרשאת restore: owner/ops בלבד.
 
-### 1.2 מה משחזרים קודם (סדר עדיפות)
+### 1.2 סדר עדיפות שחזור לוגי
 
 | עדיפות | מחלקה | דוגמאות |
 |---|---|---|
 | P0 | כסף + זהות | `orders`, `order_items`, `payments`, `vouchers`, `wallet_*`, `ledger_*`, `auth`/`profiles` |
-| P1 | קטלוג | `products`, `categories`, `suppliers`, refs לתמונות |
-| P2 | תפעול | `notifications_*`, outbox, prefs |
+| P1 | קטלוג | `products`, `categories`, `suppliers`, מפתחות מדיה |
+| P2 | תפעול | `notification_outbox`, prefs, support |
 | P3 | אנליטיקה | `analytics_events` (מותר לאבד חלקית) |
 
-### 1.3 תרגיל רבעוני
+### 1.3 נוהל restore (תמצית)
+
+ראה גם `RUNBOOK-INCIDENTS.md` §5.
 
 ```text
-1. בחירת timestamp (לפני migration מסוכנת מדומה)
-2. Restore ל-project staging / branch DB נפרד (לא דריסה עיוורת של prod)
-3. אימות: ספירת שורות P0, הזמנת דוגמה, voucher דוגמה, יתרת ארנק
-4. תיעוד זמן בפועל מול RTO/RPO
-5. עדכון המסמך אם היעד לא עמד
+CHECKOUT_ENABLED=false → stop crons → pick PITR timestamp
+  → restore to staging first → verify P0
+  → Cardcom reconcile → promote
+  → rotate secrets if breach → smoke → open checkout
 ```
+
+אסור: `supabase db push` כתיקון; סימון `paid` ידני.
 
 ---
 
-## 2. אסטרטגיית גיבוי R2 (מדיה)
+## 2. R2 asset backup
 
-### 2.1 מה ב-R2
+### 2.1 מה ב-bucket
 
-- תמונות מוצר / OG / נכסי ספק
-- מפתחות content-addressed (dedup)
-- אין סודות / dumps DB ב-R2 ציבורי
+תמונות מוצר / OG / נכסי ספק. אין dumps DB או סודות ב-bucket ציבורי.
 
-### 2.2 הגנות
+### 2.2 בקרות
 
 | בקרה | פרט |
 |---|---|
-| Versioning | הפעלת object versioning ב-bucket הפרוד |
-| Object Lock / retention | לפי יכולת התוכנית; מינימום מניעת מחיקה מקרית ל-30 יום |
-| שכפול | העתקה תקופתית ל-bucket שני (חשבון/אזור אחר) או sync יומי |
-| גישה | כתיבה רק מ-presigned PUT שרת; אין כתיבה מאנונימי |
-| GC | מחיקת יתומים רק אחרי job יבש + אישור; לא ביום אירוע |
+| Versioning | חובה על bucket הפרוד |
+| Retention | מניעת מחיקה מקרית ≥ 30 יום אם זמין |
+| Replication | bucket משני (אזור/חשבון אחר) או sync יומי |
+| Access | כתיבה רק מ-presigned PUT שרת |
+| GC | מחיקת יתומים רק אחרי dry-run + אישור |
 
 ### 2.3 שחזור מדיה
 
-1. אם אובייקט נמחק: שחזור מ-versioning.
-2. אם bucket אבוד: restore מה-bucket המשני + עדכון DNS/public base URL אם צריך.
-3. DB מחזיק URLs/keys: אחרי שחזור DB ישן מול מדיה חדשה, להריץ בדיקת 404 על מדגם תמונות.
+1. אובייקט נמחק → versioning.
+2. bucket אבוד → bucket משני + עדכון base URL אם צריך.
+3. אחרי restore DB ישן: מדגם 404 על תמונות קטלוג.
 
 ---
 
@@ -95,70 +97,77 @@ Kill switch checkout: `CHECKOUT_ENABLED=false` ב-Vercel בכל אירוע שח�
 
 | שכבה | תפקיד |
 |---|---|
-| Vercel deploy rollback | החזרת אפליקציה ל-deploy קודם תוך דקות |
-| Logical dump מוצפן (אופציונלי) | dump שבועי offsite (age/gpg), לא ב-git |
-| Secrets | רק Dashboard / vault; רוטציה אחרי חשד דליפה |
-| Cardcom | מקור אמת לתשלומים שנלכדו; אחרי restore DB חובה reconcile ב-`GetLpResult` |
-
-אין לסמוך על מחשב מקומי של מפתח כגיבוי.
+| Vercel Instant Rollback | אפליקציה תוך דקות |
+| Logical dump מוצפן (אופציונלי) | שבועי offsite; לא ב-git |
+| Secrets vault/Dashboard | רוטציה אחרי חשד דליפה |
+| Cardcom | מקור אמת לחיובים שנלכדו אחרי restore |
 
 ---
 
-## 4. Runbook: אירוע הרסני
+## 4. Quarterly restore drill checklist
 
-### 4.1 מיגרציה רעה / מחיקת נתונים
+מריצים **פעם ברבעון**. מתעדים תאריך + זמנים בפועל מול RTO/RPO.
 
-```text
-1. CHECKOUT_ENABLED=false
-2. הכרזת SEV (ops + owner)
-3. עצירת jobs: cron notifications, search index, agents
-4. בחירת timestamp PITR לפני הנזק
-5. Restore ל-staging → אימות מדגמי P0
-6. Cutover ל-DB המשוחזר לפי נוהל ספק (או promote)
-7. Reconcile Cardcom: הזמנות pending עם חיוב בכרטיס
-8. Replay/verify webhooks חסרים (לא סימון paid ידני ב-SQL)
-9. בדיקת R2: תמונות קטלוג במדגם
-10. פתיחת checkout רק אחרי smoke: login, PDP, cart, test charge/refund policy
-```
-
-### 4.2 Ransomware / פריצה
-
-1. רוטציית כל הסודות (Supabase service, Resend, QStash, Cardcom, R2).
-2. השבתת מפתחות ישנים.
-3. Restore מ-PITR לנקודה לפני החשד.
-4. Audit `auth.users` / members חדשים.
-5. אין לשלם כופר כחלק מהנוהל הטכני.
-
-### 4.3 אובדן אזור R2
-
-1. הצבעת CDN/public URL ל-bucket המשני.
-2. עדכון `NEXT_PUBLIC` / image loader אם צריך.
-3. אימות מדגם מוצרים.
-4. בלי לגעת ב-DB אם המטא-דאטה תקינה.
-
-### 4.4 מה אסור
-
-- `supabase db push` כ"תיקון" באירוע.
-- להחיל down-migrations הרסניות בלי PITR מוכן.
-- לסמן `orders.status = paid` ידנית בלי Cardcom verify.
-- למחוק bucket R2 כדי "לנקות" באמצע אירוע.
-
----
-
-## 5. Checklist מוכנות (חודשי)
+### 4.1 לפני התרגיל
 
 - [ ] PITR פעיל; חלון ≥ RPO
-- [ ] תרגיל רבעוני מתועד עם תאריך אחרון
+- [ ] יש פרויקט/ענף staging ל-restore (לא דריסת prod)
+- [ ] רשימת order_id / voucher_id לדוגמה לאימות
+- [ ] בעל תפקיד restore זמין
+- [ ] Cardcom test/read access ל-reconcile מדומה
+
+### 4.2 במהלך התרגיל
+
+- [ ] בחירת timestamp (למשל "לפני מיגרציה מדומה")
+- [ ] Stop crons על סביבת התרגיל
+- [ ] Restore ל-staging
+- [ ] מדידת זמן עד DB זמין (RTO חלקי)
+- [ ] אימות ספירות P0 (orders, payments, vouchers, wallet)
+- [ ] פתיחת הזמנת דוגמה + קופון דוגמה ב-UI staging
+- [ ] בדיקת מדגם תמונות R2 (version restore מדומה אם אפשר)
+- [ ] תרגול `CHECKOUT_ENABLED=false` על staging/preview
+- [ ] תיעוד פערים (חסר אינדקס, הרשאות, סודות)
+
+### 4.3 אחרי התרגיל
+
+- [ ] רישום תאריך + משך בפועל במסמך זה / STATE
+- [ ] אם RTO/RPO לא עמדו: פעולת שיפור אחת (תוכנית Supabase, סקריפט אימות, הרשאות)
+- [ ] עדכון runbook אם הצעדים השתנו
+- [ ] מחיקת/בידוד DB תרגיל כדי לא לבלבל עם prod
+
+| רבעון | תאריך | RPO נמדד | RTO נמדד | Pass? | הערות |
+|---|---|---|---|---|---|
+| 2026-Q3 | | | | | |
+| 2026-Q4 | | | | | |
+| 2027-Q1 | | | | | |
+| 2027-Q2 | | | | | |
+
+---
+
+## 5. Checklist מוכנות חודשי
+
+- [ ] PITR פעיל
+- [ ] תרגיל רבעוני אחרון < 90 יום או מתוזמן
 - [ ] R2 versioning + יעד שכפול ידוע
-- [ ] בעלי תפקידים ל-restore מוגדרים (שמות)
-- [ ] Kill switch checkout מתועד ובדוק
+- [ ] שמות בעלי restore מעודכנים
+- [ ] Kill switch checkout בדוק
 - [ ] רשימת סודות לרוטציה מעודכנת
 
 ---
 
-## 6. Revision
+## 6. מה אסור
+
+- דריסת prod בלי staging verify
+- Down-migrations הרסניות בלי PITR מוכן
+- מחיקת bucket R2 באמצע אירוע
+- להסתמך על לפטופ מפתח כגיבוי
+
+---
+
+## 7. Revision
 
 | Date | Change |
 |---|---|
 | 2026-07-31 | טיוטת PITR + drills |
-| 2026-08-02 | הרחבה: PITR, R2 backup/versioning/replicate, runbook DR מלא |
+| 2026-08-02 | R2 + runbook DR |
+| 2026-08-03 | RTO/RPO table + quarterly restore checklist מורחב |
