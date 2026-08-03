@@ -303,3 +303,4 @@ docs/ARCHITECTURE-SUPPLIER-PORTAL.md
 | 2026-08-03 | מסמך מחייב ב-`ke-arch`: deploy, rollback, migrations |
 | 2026-08-03 | ke-arch docs-lifecycle: soft-open smoke ל-No Escrow + platform_percent + Resend |
 | 2026-08-03 | rev C: נעילת deploy / rollback / migrations + No Escrow smoke |
+| 2026-08-03 | pack-20: runbook deploy/rollback/migrations refresh for 20-doc queue |
