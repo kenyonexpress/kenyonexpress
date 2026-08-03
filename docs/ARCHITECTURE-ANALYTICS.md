@@ -1,8 +1,8 @@
 # ARCHITECTURE: Analytics
 
-סכימת אירועי אנליטיקה התנהגותית. בלי PII. כסף עסקי לא נסכם מאירועים.
+סכימת אירועים, משפכים, ובחירת כלי: **GA4 מול PostHog**.
 
-Status: **BINDING** · Updated: 2026-08-03  
+Status: **BINDING** · Updated: 2026-08-03 (pack-20)  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה ב-worktree הראשי (`kenyonexpress`).
 
@@ -12,29 +12,39 @@ Companions:
 docs/ARCHITECTURE-ANALYTICS-BI.md
 docs/ARCHITECTURE-ADMIN-DASHBOARD.md
 docs/ARCHITECTURE-SECURITY-RLS.md
-docs/ARCHITECTURE-SEARCH.md
+docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 ```
 
-Stack: edge ingest → `analytics.fn_ingest_analytics_events` (service_role), טבלאות `analytics_events` / definitions / daily rollups.  
-כסף לדוחות GMV/עמלה: **רק** מ-`orders` / `order_items` / `payments` / vouchers (ledger), לא מ-`sum(props)`.
+עקרון: אירועים התנהגותיים לניתוח משפך; **כסף עסקי רק מה-ledger** (`orders` / `order_items` / `payments` / vouchers). אין PII ב-payloads.
 
 ---
 
-## 0. הכרעות מחייבות
+## 0. הכרעת כלי (GA4 מול PostHog)
 
-| # | הכרעה |
-|---|---|
-| A1 | אירועים התנהגותיים ב-`analytics_events`; כסף עסקי מה-ledger בלבד. |
-| A2 | **אין PII** בשום payload (סעיף 3). |
-| A3 | כסף ב-props: **integer agorot** בלבד, עותק לתצוגת משפך; לא מקור אמת. |
-| A4 | שמות אירועים: `snake_case`. |
-| A5 | `purchase` ו-`coupon_redeemed` הם **derived** מהשרת/ledger, לא מהדפדפן בלבד. |
-| A6 | Ingest רק service_role אחרי edge validation. |
-| A7 | Consent נשמר על האירוע; בלי consent מתאים לא אוספים שיווק/לא-הכרחי. |
+| קריטריון | GA4 | PostHog |
+|---|---|---|
+| עלות התחלה | חינם עד ספים גבוהים | חינם/cloud; self-host אפשרי |
+| משפך מוצר (product analytics) | חלש/מסורבל | חזק (funnels, paths, feature flags) |
+| SEO / Ads / Google ecosystem | חזק (חיבור Ads, Search Console) | חלש כמקור מרקטינג גוגל |
+| פרטיות / שליטה | Google מעבד נתונים | שליטה טובה יותר; אפשר EU/self-host |
+| RTL / עברית במוצר | לא רלוונטי לאיסוף | לא רלוונטי לאיסוף |
+| תלות ב-consent (חוק 30א / GDPR-style) | דורש Consent Mode | דורש consent גם כן |
+| כסף GMV | לא מקור אמת | לא מקור אמת |
+
+### הכרעה מחייבת
+
+| שכבה | כלי | תפקיד |
+|---|---|---|
+| מקור אמת פנימי | `analytics_events` ב-Postgres (+ rollups) | משפך מוצר, audit, בלי PII |
+| Product analytics UI | **PostHog** (cloud או self-host בהמשך) | funnels, retention, session replay **רק אחרי consent** ובלי PII בשדות מותאמים |
+| Marketing / Ads | **GA4** | תנועה, קמפיינים, חיבור Google Ads; Consent Mode חובה |
+| כסף / עמלה | Admin reports מה-ledger | אף פעם לא `sum()` מ-GA4/PostHog |
+
+אין Make/Zapier כגשר אנליטיקה. אין לשלוח email/phone/שם ל-GA4 או PostHog.
 
 ---
 
-## 1. Envelope
+## 1. Envelope אירוע (פנימי)
 
 ```json
 {
@@ -44,152 +54,84 @@ Stack: edge ingest → `analytics.fn_ingest_analytics_events` (service_role), ט
   "occurred_at": "2026-08-03T00:00:00.000Z",
   "session_id": "uuid",
   "user_id": "uuid-or-null",
-  "consent": {
-    "analytics": true,
-    "marketing": false
-  },
+  "consent": { "analytics": true, "marketing": false },
   "context": {
     "locale": "he-IL",
     "path": "/product/example",
     "referrer_host": "www.google.com",
     "viewport": "mobile",
-    "app_version": "web",
     "ip_trunc": "1.2.3.0"
   },
   "props": {}
 }
 ```
 
-| שדה | כללים |
-|---|---|
-| `event_id` | UUID; idempotent upsert |
-| `user_id` | רק Supabase auth uuid או null; לא email |
-| `path` | בלי query string |
-| `ip_trunc` | IPv4 `/24` או IPv6 `/48` בלבד |
-| `props` | לפי definition; בלי מפתחות חופשיים עם טקסט משתמש גולמי |
+כסף ב-props: **integer agorot** בלבד, עותק לתצוגת משפך.
 
 ---
 
-## 2. קטלוג אירועים
+## 2. קטלוג אירועים + משפכים
 
 ### 2.1 Primary
 
-| event_name | מקור | derived? | props חובה (עיקריים) |
-|---|---|---|---|
-| `view_product` | client | no | `product_id`, `product_type`, `supplier_id`, `list_price_agorot` |
-| `add_to_cart` | client | no | `product_id`, `supplier_id`, `quantity`, `unit_price_agorot` |
-| `begin_checkout` | client | no | `cart_id`, `item_count`, `cart_value_agorot` |
-| `purchase` | server/ledger | **yes** | `order_id`, `order_gross_agorot`, `onsite_charged_agorot`, `platform_commission_agorot` |
-| `coupon_redeemed` | server/ledger | **yes** | `voucher_id` / redemption id, `supplier_id`, `amount_collected_agorot` |
+| event_name | מקור | derived? |
+|---|---|---|
+| `view_product` | client | no |
+| `add_to_cart` | client | no |
+| `begin_checkout` | client | no |
+| `purchase` | server/ledger | **yes** |
+| `coupon_redeemed` | server/ledger | **yes** |
 
 ### 2.2 Secondary
 
-| event_name | מקור | props |
-|---|---|---|
-| `remove_from_cart` | client | `product_id`, `quantity` |
-| `search` | client | `query_hash`, `result_count`, `filters_fingerprint` (**לא** מחרוזת q גולמית) |
-| `login` | client/server | `method` (`google`/`otp`); בלי email |
-| `sign_up` | server | `method`; בלי email |
+`remove_from_cart`, `search` (`query_hash` בלבד), `login`, `sign_up`, `referral_click`, `cashback_earned` (server).
 
-### 2.3 דוגמאות props
+### 2.3 משפכים מחייבים
 
-`view_product`:
-
-```json
-{
-  "product_id": "uuid",
-  "product_type": "coupon",
-  "supplier_id": "uuid",
-  "list_price_agorot": 12000,
-  "coupon_price_agorot": 900
-}
-```
-
-`purchase` (server):
-
-```json
-{
-  "order_id": "uuid",
-  "order_gross_agorot": 12000,
-  "onsite_charged_agorot": 900,
-  "platform_commission_agorot": 900,
-  "item_count": 1,
-  "has_coupon": true
-}
-```
-
-לקופון תחת No Escrow: `platform_commission_agorot` על המקדמה באתר = סכום ששולם באתר (או לפי snapshot). אין שדה `escrow_held`.
-
----
-
-## 3. No PII (מחייב)
-
-**אסור** בכל event / context / props / metadata:
-
-| אסור | חלופה |
+| משפך | שלבים |
 |---|---|
-| email, phone, שם מלא, ת.ז. | `user_id` בלבד |
-| כתובת מגורים מלאה | לא באירוע; רק בטבלאות account תחת RLS |
-| IP מלא | `ip_trunc` בלבד |
-| מחרוזת חיפוש גולמית | `query_hash` (HMAC/sha עם מלח שרת) |
-| PAN / token כרטיס | לעולם לא |
-| תוכן הודעות / הערות חופשיות | לא |
-| query string מלא עם PII | `path` בלי query |
+| רכישה | `view_product` → `add_to_cart` → `begin_checkout` → `purchase` |
+| מימוש קופון | `purchase` (has_coupon) → open coupon → `coupon_redeemed` |
+| הפניה | `referral_click` → `sign_up`/`login` → `purchase` (qualifying) |
 
-בדיקת CI/lint מומלצת: deny-list על מפתחות `email`, `phone`, `full_name`, `card`, `raw_query`.
+GMV / take rate: רק מ-SQL על ledger, לא ממשפך PostHog.
 
 ---
 
-## 4. Definitions + ingest
+## 3. No PII
 
-```text
-analytics_event_definitions (
-  event_name, schema_version,
-  is_derived boolean,
-  required_props text[],
-  description
-)
-```
-
-Ingest:
-
-```text
-Edge / Route Handler
-  → validate envelope + consent + deny-list PII
-  → service_role: fn_ingest_analytics_events(batch)
-  → ON CONFLICT (event_id) DO NOTHING
-```
-
-Derived events נכתבים רק משרת אחרי commit דומיין (paid / redeem).
+אסור: email, phone, שם, ת.ז., IP מלא, מחרוזת חיפוש גולמית, PAN, כתובת מלאה.  
+מותר: `user_id` (uuid), `query_hash`, `ip_trunc` `/24` או `/48`, path בלי query.
 
 ---
 
-## 5. Rollups
+## 4. מיפוי ל-GA4 / PostHog
 
-`analytics_daily` (או מקביל):
+| אירוע פנימי | GA4 | PostHog |
+|---|---|---|
+| `view_product` | `view_item` | `view_product` |
+| `add_to_cart` | `add_to_cart` | `add_to_cart` |
+| `begin_checkout` | `begin_checkout` | `begin_checkout` |
+| `purchase` | `purchase` (value = on-site ILS בלבד) | `purchase` |
+| `coupon_redeemed` | custom / לא חובה | `coupon_redeemed` |
 
-```text
-(day, event_name, product_type, supplier_id) → event_count, session_count
-```
-
-שימוש: משפך, לא GMV.  
-דוחות כסף באדמין: `ARCHITECTURE-ADMIN-DASHBOARD.md` / BI doc.
-
----
-
-## 6. Acceptance
-
-- [ ] Envelope אחיד + schema_version
-- [ ] Primary events כולל purchase/redeem derived
-- [ ] Deny-list PII מתועד ונאכף ב-ingest
-- [ ] כסף ב-props באגורות; דוחות כסף מה-ledger
-- [ ] `search` בלי raw query
-- [ ] אין `escrow_*` בסכימה החדשה
+Client SDKs נטענים רק אחרי consent. Server-side `purchase`/`coupon_redeemed` מועדפים לדיוק.
 
 ---
 
-## 7. Revision
+## 5. Acceptance
+
+- [ ] הכרעת PostHog (מוצר) + GA4 (מרקטינג) מתועדת
+- [ ] Envelope + deny-list PII
+- [ ] משפכי רכישה / מימוש / הפניה מוגדרים
+- [ ] כסף מדוחות ledger בלבד
+- [ ] Consent Mode / העדפות לפני טעינת SDKs
+
+---
+
+## 6. Revision
 
 | Date | Change |
 |---|---|
-| 2026-08-03 | ke-arch docs-lifecycle: סכימת אירועים מחייבת, בלי PII |
+| 2026-08-03 | סכימת אירועים בלי PII |
+| 2026-08-03 | pack-20: משפכים + הכרעת GA4 מול PostHog |
