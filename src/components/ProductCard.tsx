@@ -157,6 +157,7 @@ function DealsProductCard({ product }: { product: Product }) {
               width={400}
               height={245}
               sizes={DEAL_IMAGE_SIZES}
+              quality={50}
               className="p_con__image"
             />
           ) : null}

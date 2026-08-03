@@ -1,20 +1,19 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-03 (autonomous: [32] home LH median)
+Updated: 2026-08-03 (autonomous: [33] deal image quality)
 
 ## המשך מ:
-[33] image-delivery כרטיסי דילים בבית (~10KiB ב-LH).
+[34] Playwright: ספירת כשלונות אחרי השינויים האחרונים.
 
 ## Current Phase
-‏**main.** תור [1]-[32] סגור. מודל כסף נעול: אין Escrow.
+‏**main.** תור [1]-[33] סגור. מודל כסף נעול: אין Escrow.
 
 ## Last Completed
-[32] חציון LH בית 87 (שיא 94); polyfill alias מנקה legacy-javascript;
-DeferredHeaderSearch למובייל. תקרת Lantern FCP נשארת.
-[31] 102 voucher_issued ממתין לאישור + תבנית drain.
+[33] דילים quality=50; חיסכון בייטים מדוד; LH image-delivery עדיין רועש על צילום.
+[32] חציון LH 87, legacy JS נקי. [31] 102 ממתין לאישור.
 
 ## In Progress
-[33] deal card image-delivery
+[34] Playwright
 
 ## Blocking Issues
 חוסמי deploy (קונפיג/נתונים, לא קוד): VOUCHER_QR_SECRET, Cardcom prod, DNS, 11 ספקים בלי כתובת/לוגו.
@@ -23,7 +22,7 @@ QA#6 (order_items ב-redeem) נדחה: מודל 085.
 terms: תוכן משפטי, לא קוד.
 
 ## Next Task
-[33] לתקן image-delivery על דילים אם sizes/quality שגויים.
+[34] הרצת Playwright מול build טרי ותיקון כשלונות אפליקציה.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
@@ -39,6 +38,7 @@ terms: תוכן משפטי, לא קוד.
 - 2026-08-03: [29] contact בלי outbox (אין kind, RLS חוסם); Resend ישיר + replyTo.
 - 2026-08-03: [31] שני 096_* התנגשו; voucher_issued → 102 ממתין לאישור. תבנית מייל לפני ההחלה.
 - 2026-08-03: [32] alias polyfill-module ריק (קהל מודרני=baseline של Next). חציון LH 87 נשאר תקרת Lantern.
+- 2026-08-03: [33] לא לרדוף q מתחת ל-50 על דילים (LH נשאר אדום על צילום; sizes כבר נכונים).
 
 ---
 

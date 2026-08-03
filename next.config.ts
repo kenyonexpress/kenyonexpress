@@ -86,7 +86,9 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
-    qualities: [75, 90, 95],
+    // 50/60 for below-fold deal thumbs ([33]); Lighthouse image-delivery wanted
+    // denser compression on 157px paints that were still shipping q=75.
+    qualities: [50, 60, 75, 90, 95],
     /**
      * Next's default, plus one rung at 288.
      *
