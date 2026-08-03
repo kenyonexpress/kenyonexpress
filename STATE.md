@@ -1,19 +1,19 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-03 (autonomous: [33] deal image quality)
+Updated: 2026-08-03 (autonomous: [34]/[35] e2e + image warn)
 
 ## המשך מ:
-[34] Playwright: ספירת כשלונות אחרי השינויים האחרונים.
+חוסמי deploy/תוכן (102 ממתין לאישור, סודות, ספקים, תקנון). אין באג קוד פתוח מהתור.
 
 ## Current Phase
-‏**main.** תור [1]-[33] סגור. מודל כסף נעול: אין Escrow.
+‏**main.** תור [1]-[35] סגור. מודל כסף נעול: אין Escrow.
 
 ## Last Completed
-[33] דילים quality=50; חיסכון בייטים מדוד; LH image-delivery עדיין רועש על צילום.
-[32] חציון LH 87, legacy JS נקי. [31] 102 ממתין לאישור.
+[35] דילים: style width/height auto (אזהרת next/image).
+[34] Playwright 169/5/0. [33] q=50. [32] LH median 87 + polyfill alias.
 
 ## In Progress
-[34] Playwright
+nothing
 
 ## Blocking Issues
 חוסמי deploy (קונפיג/נתונים, לא קוד): VOUCHER_QR_SECRET, Cardcom prod, DNS, 11 ספקים בלי כתובת/לוגו.
@@ -22,7 +22,7 @@ QA#6 (order_items ב-redeem) נדחה: מודל 085.
 terms: תוכן משפטי, לא קוד.
 
 ## Next Task
-[34] הרצת Playwright מול build טרי ותיקון כשלונות אפליקציה.
+החלת 102 אחרי אישור, או באג קוד חדש.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
@@ -39,6 +39,7 @@ terms: תוכן משפטי, לא קוד.
 - 2026-08-03: [31] שני 096_* התנגשו; voucher_issued → 102 ממתין לאישור. תבנית מייל לפני ההחלה.
 - 2026-08-03: [32] alias polyfill-module ריק (קהל מודרני=baseline של Next). חציון LH 87 נשאר תקרת Lantern.
 - 2026-08-03: [33] לא לרדוף q מתחת ל-50 על דילים (LH נשאר אדום על צילום; sizes כבר נכונים).
+- 2026-08-03: [34]/[35] E2E ירוק; תור קוד שוב על חוסמי deploy בלבד.
 
 ---
 

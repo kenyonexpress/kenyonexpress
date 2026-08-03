@@ -178,8 +178,9 @@
       ‏~14.5KB←~8.7–11KB. ביקורת image-delivery עדיין ~7KiB על תמונת צילום
       (היוריסטיקה של LH, לא sizes שגוי).
 
-- [ ] [34] Playwright: לאמת כמה נופלות אחרי השינויים האחרונים ולתקן באגי
-      אפליקציה בלבד (לא assertions שגויים ל-dpr).
+- [x] ✅ [34] Playwright מול build: **169 passed / 5 skipped / 0 failed**.
+
+- [x] ✅ [35] דילים: `style={{ width: 'auto', height: 'auto' }}` על Image.
 
 ## החלטות שהתקבלו אוטומטית: מה נשאר מ-[9]
 

@@ -99,6 +99,9 @@ export default function ProductDealCard({ product }: { product: Product }) {
               sizes={DEAL_IMAGE_SIZES}
               quality={50}
               className="p_con__image"
+              // CSS pins height and leaves width auto (live aspect). Next warns
+              // unless both axes are marked auto when only one is overridden.
+              style={{ width: 'auto', height: 'auto' }}
             />
           ) : null}
         </Link>

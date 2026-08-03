@@ -159,6 +159,7 @@ function DealsProductCard({ product }: { product: Product }) {
               sizes={DEAL_IMAGE_SIZES}
               quality={50}
               className="p_con__image"
+              style={{ width: 'auto', height: 'auto' }}
             />
           ) : null}
         </Link>
