@@ -489,3 +489,9 @@ scrub, applications שנדחו) מתווספות ל-`fn_execute_account_deletion
 (אחרי 036, לפי משמעת R31), והם expand-only: אף אחד מהם לא משנה אובייקט קיים, ולכן אין
 השפעה על סדר ההחלה 026-036 הקיים. עדכון מסמך האב (רישום 037 בטבלת 0.1/2.1) ייעשה על ידי
 בעלי docs/ באותו commit שבו ייכתב הקובץ.
+
+## Revision
+
+| Date | Change |
+|---|---|
+| 2026-08-03 | pack-20: legal compliance binding refresh |
