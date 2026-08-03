@@ -1,6 +1,6 @@
 import HeaderCart from '@/components/cart/HeaderCart'
 import HeaderSearch from '@/components/search/HeaderSearch'
-import { Heart, User } from 'lucide-react'
+import { User } from 'lucide-react'
 import Link from 'next/link'
 
 const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
@@ -15,6 +15,10 @@ const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
  *
  * The wrapper grows into the space the logo leaves; the icon row stays
  * `shrink-0` so a long placeholder can never squeeze it.
+ *
+ * The live WP heart → /wishlist was removed in [28]: there is no wishlist
+ * route here, and a header icon that 404s is worse than a small geometry gap
+ * against the live masthead. Re-add with the feature, not before.
  */
 export default function MastheadNav() {
   return (
@@ -22,19 +26,6 @@ export default function MastheadNav() {
       <HeaderSearch />
 
       <nav className="flex shrink-0 items-center gap-5" aria-label="פעולות חשבון ועגלה">
-        {/* No /wishlist page exists in this app; the href came over with the
-            masthead markup. Prefetch off so the 404 is not fetched on every
-            page view of the site. See the note in SiteFooter.tsx. */}
-        <Link
-          href="/wishlist"
-          prefetch={false}
-          aria-label="מועדפים"
-          className="transition-opacity hover:opacity-70"
-          style={{ color: ICON.color }}
-        >
-          <Heart size={ICON.size} strokeWidth={ICON.strokeWidth} aria-hidden="true" />
-        </Link>
-
         <Link
           href="/login"
           aria-label="החשבון שלי"

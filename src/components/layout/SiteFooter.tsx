@@ -17,27 +17,16 @@ import Link from 'next/link'
 /**
  * `built: false` means the href has NO page in this app and returns 404.
  *
- * These hrefs came over from the live WordPress footer with the rest of the
- * markup, and four of them point at pages the theme had and this app does not.
- * Two DID have a home here and were simply pointing at the WordPress path:
- * `/profile` is `/account`, `/orders` is `/account/orders`. Those two are now
- * correct.
+ * Wishlist and recently-viewed were WP leftovers. They are not features here
+ * (import maps both to 410), so the labels were removed in [28] rather than
+ * kept as visible 404s. Contact and terms stay listed with prefetch off until
+ * real copy exists; inventing a תקנון is not a code task. Tracked in GO-LIVE.md.
  *
- * The remaining four keep their href and lose their prefetch. Measured before
- * the flag: next prefetches every footer link, all four answer 404, and that is
- * SIX wasted server round trips on every page view of the site (the two account
- * ones were part of it) - on a `no-store` app where each one is a full render.
- * A wrong destination is a product decision and stays visible; paying for it
- * six times a page view is not, and stops here.
- *
- * When one of these pages is built, delete its `built: false` and the prefetch
- * comes back. Tracked in GO-LIVE.md.
+ * When a `built: false` page ships, delete the flag and prefetch comes back.
  */
 const PERSONAL_LINKS: { label: string; href: string; built?: false }[] = [
   { label: 'החשבון שלי', href: '/account' },
   { label: 'סל הקניות', href: '/cart' },
-  { label: 'מועדפים', href: '/wishlist', built: false },
-  { label: 'הסטוריה', href: '/recently-viewed', built: false },
   { label: 'הזמנות', href: '/account/orders' },
 ]
 

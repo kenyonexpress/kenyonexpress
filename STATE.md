@@ -1,28 +1,28 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-03 (autonomous: [27] sitemap anon)
+Updated: 2026-08-03 (autonomous: [28] dead chrome links)
 
 ## המשך מ:
-[28] הסרת קישורי מועדפים/הסטוריה מהשלד (פיצ'ר לא קיים).
+[29] עמוד /contact מינימלי (טופס + שליחה), בלי תקנון מומצא.
 
 ## Current Phase
-‏**main.** תור [1]-[27] סגור. מודל כסף נעול: אין Escrow.
+‏**main.** תור [1]-[28] סגור. מודל כסף נעול: אין Escrow.
 
 ## Last Completed
-[27] sitemap על createPublicClient + CATALOGUE_TAG: מקומית 3←76 URLs.
-[26] PDP SEO 58→92. [25] unused-js 58KiB. [24] שיא LH בית 93.
+[28] הוסרו מועדפים/הסטוריה מהפוטר והלב מ-masthead.
+[27] sitemap 3←76. [26] PDP SEO 92. [25]/[24] LH בית.
 
 ## In Progress
-[28] ניקוי קישורים מתים בפוטר/masthead
+[29] /contact
 
 ## Blocking Issues
 חוסמי deploy (קונפיג/נתונים, לא קוד): VOUCHER_QR_SECRET, Cardcom prod, DNS, 11 ספקים בלי כתובת/לוגו.
 ‏096 ממתין לאישור apply_migration.
 QA#6 (order_items ב-redeem) נדחה: מודל 085.
-contact/terms: תוכן, לא קוד.
+terms: תוכן משפטי, לא קוד.
 
 ## Next Task
-[28] הסר wishlist + recently-viewed מהפוטר וה-masthead.
+[29] עמוד /contact עם טופס עובד.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
@@ -33,6 +33,8 @@ contact/terms: תוכן, לא קוד.
 - 2026-08-03: [24] באנר נשאר LCP מכוון (לא לכווץ ללוגו/הירו). כיווץ החזיר 85–86.
 - 2026-08-03: [25] 62KiB unused הוא בעיקר chunk תשתית Next; פוצל מה שאפשר מגרף הלקוח.
 - 2026-08-03: [26] לא htmlLimitedBots=/.* (SEO 100 אבל שבירת PPR resume). נשארים עם SEO 92 + streaming metadata.
+- 2026-08-03: [27] sitemap על anon ולא admin (מפתח demo מקומי השתיק את הקטלוג ל-3 URLs).
+- 2026-08-03: [28] מועדפים/הסטוריה הוסרו מהשלד (לא לבנות פיצ'ר; WP=410). contact/terms נשארים.
 
 ---
 
