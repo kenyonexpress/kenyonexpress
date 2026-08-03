@@ -53,7 +53,11 @@ const probe = async (label, url) => {
       .map((x) => r(x.el))
     return {
       docHeight: document.documentElement.scrollHeight,
-      breadcrumb: pick('.woocommerce-breadcrumb', '.category-breadcrumb', 'nav[aria-label*="breadcrumb" i]'),
+      breadcrumb: pick(
+        '.woocommerce-breadcrumb',
+        '.category-breadcrumb',
+        'nav[aria-label*="breadcrumb" i]',
+      ),
       title: pick('h1.page-title', 'h1'),
       controlBar: pick('.electro-sort-bar', '.category-page__control-bar', '.woocommerce-ordering'),
       sidebar: pick('#sidebar', '.sidebar-shop', 'aside', '.category-filter-sidebar'),
@@ -61,7 +65,8 @@ const probe = async (label, url) => {
       firstCard: pick('ul.products li.product', '.category-products__item'),
       footer: pick('footer', '.site-footer'),
       newsletter: pick('.newsletter', '.footer-newsletter', '[class*="newsletter" i]'),
-      productCount: document.querySelectorAll('ul.products li.product, .category-products__item').length,
+      productCount: document.querySelectorAll('ul.products li.product, .category-products__item')
+        .length,
       tall,
     }
   })

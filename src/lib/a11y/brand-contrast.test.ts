@@ -21,15 +21,6 @@ const YELLOW = '#fed700'
 const WHITE = '#ffffff'
 
 /**
- * Classes that paint the brand YELLOW as a background.
- *
- * The trailing `(?![\w-])` is load-bearing. Without it `bg-brand` matches
- * inside `bg-brand-dark`, which is #333e48: white on that is correct and
- * flagging it made the first version of this test report 11 offenders of which
- * several were fine. A guard that cries wolf is a guard someone deletes.
- */
-const YELLOW_BG = /\bbg-(?:brand|brand-primary|brand-secondary|primary)(?![\w-])/
-/**
  * A colour pairing only matters WITHIN one variant.
  *
  * `bg-footer-bg text-white hover:bg-brand-secondary hover:text-heading` is
@@ -44,6 +35,14 @@ function classesFor(line: string, variant: '' | 'hover:'): string[] {
     .map((c) => c.replace(/^hover:/, ''))
 }
 
+/**
+ * Classes that paint the brand YELLOW as a background.
+ *
+ * The anchors are load-bearing. An unanchored `bg-brand` matches inside
+ * `bg-brand-dark`, which is #333e48: white on that is correct, and flagging it
+ * made the first version of this test report 11 offenders of which several were
+ * fine. A guard that cries wolf is a guard someone deletes.
+ */
 const isYellowBg = (classes: string[]) =>
   classes.some((c) => /^bg-(?:brand|brand-primary|brand-secondary|primary)(?:\/\d+)?$/.test(c))
 

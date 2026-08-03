@@ -21,9 +21,9 @@
 // Note: only @playwright/test is installed (there is no bare "playwright"
 // package), so we import chromium from '@playwright/test'.
 
-import { mkdirSync, writeFileSync, existsSync } from 'node:fs'
-import { resolve, dirname } from 'node:path'
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
+import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { chromium } from '@playwright/test'
 
@@ -160,7 +160,12 @@ function collectInPage(regions) {
     result[name] = {
       matched,
       tried: selectors,
-      rect: { top: round(r.top), left: round(r.left), width: round(r.width), height: round(r.height) },
+      rect: {
+        top: round(r.top),
+        left: round(r.left),
+        width: round(r.width),
+        height: round(r.height),
+      },
       style: styleOf(el),
     }
   }
@@ -216,7 +221,8 @@ async function measurePage(ctx, url, { challenge } = {}) {
       cleared = await page.evaluate(() => !!document.querySelector('#masthead, header.site-header'))
       if (cleared) break
     }
-    if (!cleared) console.error('WARNING: theme markup never appeared, page may still be challenged')
+    if (!cleared)
+      console.error('WARNING: theme markup never appeared, page may still be challenged')
   }
   // Let sliders and lazy content settle.
   await page.waitForTimeout(challenge ? 5000 : 2500)
@@ -262,14 +268,16 @@ async function main() {
   lines.push(`Local build: ${LOCAL_URL}`)
   lines.push(`Viewport: ${VIEWPORT.width}x${VIEWPORT.height}`)
   lines.push(`Measured at: ${new Date().toISOString()}`)
-  lines.push(`Tool: Playwright (@playwright/test) chromium, getComputedStyle + getBoundingClientRect`)
+  lines.push(
+    'Tool: Playwright (@playwright/test) chromium, getComputedStyle + getBoundingClientRect',
+  )
   lines.push('')
   lines.push('| Element | CSS Property | Electro | Local | Match? |')
   lines.push('|---------|--------------|---------|-------|--------|')
 
   for (const name of Object.keys(REGIONS)) {
-    const eFlat = flatten(electro && electro[name])
-    const lFlat = local === null ? null : flatten(local && local[name])
+    const eFlat = flatten(electro?.[name])
+    const lFlat = local === null ? null : flatten(local?.[name])
     for (const prop of PROP_ORDER) {
       const eVal = eFlat ? (eFlat[prop] ?? '(missing)') : '(not found)'
       const lVal = local === null ? 'n/a' : lFlat ? (lFlat[prop] ?? '(missing)') : '(not found)'

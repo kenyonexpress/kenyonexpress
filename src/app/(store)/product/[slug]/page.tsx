@@ -172,9 +172,10 @@ async function ProductPageBody({ params }: Props) {
         {/* Both nodes, one script each, mirroring the visible breadcrumb below. */}
         <script
           type="application/ld+json"
-          // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD has no
-          // other insertion point, and jsonLdScript escapes every angle bracket
-          // so catalogue text cannot close the tag.
+          // One line, deliberately: a biome-ignore only suppresses the line
+          // directly after it, so wrapping the reason onto a second `//` line
+          // silently disarms it.
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD has no other insertion point, and jsonLdScript escapes every angle bracket so catalogue text cannot close the tag.
           dangerouslySetInnerHTML={{ __html: jsonLdScript(productLd) }}
         />
         <script

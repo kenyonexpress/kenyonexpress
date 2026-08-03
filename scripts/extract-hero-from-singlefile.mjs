@@ -1,5 +1,5 @@
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
 const html = fs.readFileSync('refs/ke_live_singlefile.html', 'utf8')
 
@@ -58,15 +58,15 @@ function rewriteUrls(fragment) {
       mapImage(u),
     )
     .replace(/\/\/kenyonexpress\.co\.il\/wp-content\/uploads\/[^"'\s)]+/g, (u) =>
-      mapImage('https:' + u),
+      mapImage(`https:${u}`),
     )
     .replace(/data-lazyload="\/\/[^"]+"/g, (m) => {
       const u = m.match(/data-lazyload="([^"]+)"/)[1]
-      return `data-lazyload="${mapImage(u.startsWith('//') ? 'https:' + u : u)}"`
+      return `data-lazyload="${mapImage(u.startsWith('//') ? `https:${u}` : u)}"`
     })
     .replace(/src="\/\/kenyonexpress\.co\.il\/wp-content\/uploads\/[^"]+"/g, (m) => {
       const u = m.match(/src="([^"]+)"/)[1]
-      return `src="${mapImage('https:' + u)}"`
+      return `src="${mapImage(`https:${u}`)}"`
     })
 }
 
@@ -128,15 +128,15 @@ fs.writeFileSync(
 
 console.log('hero bytes:', hero.length)
 console.log('slides:', slides.length)
-slides.forEach((s) =>
+for (const s of slides) {
   console.log(
     s.key,
     s.layers
       .filter((l) => l.type === 'text')
       .map((l) => `${l.text}@${l.fontSize}`)
       .join(' | '),
-  ),
-)
+  )
+}
 console.log(
   'banners:',
   banners.length,

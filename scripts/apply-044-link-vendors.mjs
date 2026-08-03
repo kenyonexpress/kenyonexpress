@@ -1,7 +1,7 @@
+import { readFileSync } from 'node:fs'
 // Applies the DML of supabase/migrations/044_link_products_to_vendors.sql
 // through PostgREST (service role). Mirrors the SQL exactly.
 import { createClient } from '@supabase/supabase-js'
-import { readFileSync } from 'node:fs'
 
 const env = Object.fromEntries(
   readFileSync('.env.local', 'utf8')

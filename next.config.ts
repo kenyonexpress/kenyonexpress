@@ -1,4 +1,3 @@
-import withBundleAnalyzer from '@next/bundle-analyzer'
 import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 import createNextIntlPlugin from 'next-intl/plugin'
@@ -6,9 +5,19 @@ import { REMOTE_IMAGE_PATTERNS } from './src/lib/images/remote-hosts'
 import { PAYMENT_FRAME_PATHS, contentSecurityPolicyFor } from './src/lib/security/frame-policy'
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
-const withAnalyzer = withBundleAnalyzer({
-  enabled: process.env.ANALYZE === 'true',
-})
+
+/*
+ * `@next/bundle-analyzer` used to be built here and then never applied to the
+ * exported config, so `pnpm analyze` produced no report and said nothing about
+ * it. Applying it would not have helped: the package installs a webpack
+ * BundleAnalyzerPlugin, and on a TURBOPACK build it returns the config
+ * untouched (@next/bundle-analyzer/index.js:8). This project builds with
+ * Turbopack, same class of inert option as the Sentry `webpack.treeshake`
+ * flags found in [21].
+ *
+ * The analyzer that does run here is the CLI's own: `next experimental-analyze`,
+ * which is Turbopack-only. That is what `pnpm analyze` now calls.
+ */
 
 // Security headers applied to every route. See INFRA-AUDIT.md section 2.
 //

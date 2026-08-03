@@ -40,7 +40,7 @@ const probe = async (label, url, cardSel) => {
           lh: cs.lineHeight,
           m: `${cs.marginTop}/${cs.marginBottom}`,
           p: `${cs.paddingTop}/${cs.paddingBottom}`,
-          txt: (el.childElementCount === 0 ? el.textContent.trim().slice(0, 24) : ''),
+          txt: el.childElementCount === 0 ? el.textContent.trim().slice(0, 24) : '',
         })
       }
       if (depth < 4) for (const c of el.children) walk(c, depth + 1)
@@ -57,6 +57,10 @@ const probe = async (label, url, cardSel) => {
   if (out.error) console.log(out.error)
 }
 
-await probe('LIVE', 'https://kenyonexpress.co.il/product-category/hot-deals/', 'ul.products li.product')
+await probe(
+  'LIVE',
+  'https://kenyonexpress.co.il/product-category/hot-deals/',
+  'ul.products li.product',
+)
 await probe('MINE', 'http://localhost:3000/category/hot-deals', '.category-products__item')
 await b.close()

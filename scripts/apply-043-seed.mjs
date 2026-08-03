@@ -1,8 +1,8 @@
+import { readFileSync } from 'node:fs'
 // Applies the DML of supabase/migrations/043_seed_suppliers_link_products.sql
 // through PostgREST (service role). Mirrors the SQL exactly; the migration
 // file itself becomes a no-op once this has run.
 import { createClient } from '@supabase/supabase-js'
-import { readFileSync } from 'node:fs'
 
 const env = Object.fromEntries(
   readFileSync('.env.local', 'utf8')

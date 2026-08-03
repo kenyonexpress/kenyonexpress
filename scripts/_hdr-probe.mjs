@@ -42,13 +42,16 @@ const probe = async (label, url, sels) => {
       return null
     }
     const firstContent =
-      document.querySelector('.woocommerce-breadcrumb, .category-breadcrumb, nav.category-breadcrumb') ||
-      document.querySelector('main')
+      document.querySelector(
+        '.woocommerce-breadcrumb, .category-breadcrumb, nav.category-breadcrumb',
+      ) || document.querySelector('main')
     return {
       topbar: pick(sels.topbar),
       masthead: pick(sels.masthead),
       headerWhole: pick(sels.header),
-      firstContentTop: firstContent ? +(firstContent.getBoundingClientRect().top + scrollY).toFixed(1) : null,
+      firstContentTop: firstContent
+        ? +(firstContent.getBoundingClientRect().top + scrollY).toFixed(1)
+        : null,
     }
   }, sels)
   await p.close()

@@ -26,8 +26,11 @@ export default function HomePage() {
         <script
           key={node['@type'] as string}
           type="application/ld+json"
-          // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD has no
-          // other insertion point; jsonLdScript escapes every angle bracket.
+          // The reason has to be ONE line: a biome-ignore suppresses the line
+          // that follows it, so a second `//` line consumes the suppression and
+          // the rule fires anyway, with nothing to see but a comment that reads
+          // like it works.
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD has no other insertion point; jsonLdScript escapes every angle bracket.
           dangerouslySetInnerHTML={{ __html: jsonLdScript(node) }}
         />
       ))}

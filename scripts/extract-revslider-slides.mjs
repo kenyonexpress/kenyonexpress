@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'node:fs'
 
 const html = fs.readFileSync('refs/ke_live_home.html', 'utf8')
 
@@ -39,8 +39,7 @@ const slides = slideBlocks.map((m) => {
   const bg = block.match(/data-bg="([^"]*)"/)?.[1] ?? null
   const layers = []
   const re = /<(rs-layer|span)(\s[\s\S]*?)>([\s\S]*?)<\/\1>/g
-  let lm
-  while ((lm = re.exec(block))) {
+  for (const lm of block.matchAll(re)) {
     const attrs = lm[2]
     const inner = lm[3]
     const rawText = inner
@@ -82,9 +81,10 @@ const EN_LTR = [
   'slider-6-slide-33-layer-7',
 ]
 
-let out = `/** Auto-extracted from refs/ke_live_home.html (753KB) */\n\n`
-out += `export type RevLayer = {\n  id: string\n  type: string\n  text: string\n  dataColor: string | null\n  dataText: string | null\n  dataXy: string | null\n  dataDim: string | null\n  image: string | null\n  zIndex: string | null\n}\n\n`
-out += `export type RevSlide = { key: string; bg: string | null; layers: RevLayer[] }\n\n`
+let out = '/** Auto-extracted from refs/ke_live_home.html (753KB) */\n\n'
+out +=
+  'export type RevLayer = {\n  id: string\n  type: string\n  text: string\n  dataColor: string | null\n  dataText: string | null\n  dataXy: string | null\n  dataDim: string | null\n  image: string | null\n  zIndex: string | null\n}\n\n'
+out += 'export type RevSlide = { key: string; bg: string | null; layers: RevLayer[] }\n\n'
 out += `export const RS_PREMIUM_SLIDE_KEY = 'rs-35'\n\n`
 out += `export const REV_LAYER_TEXT_OVERRIDES: Record<string, string> = ${JSON.stringify(REV_LAYER_TEXT_OVERRIDES, null, 2)}\n\n`
 out += `export const REV_LAYER_TEXT_OVERRIDES_OTHER: Record<string, string> = ${JSON.stringify(TEXT_OVERRIDES_OTHER, null, 2)}\n\n`
