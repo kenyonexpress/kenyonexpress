@@ -29,6 +29,7 @@ docs/BUSINESS-MODEL.md
 | Templates | עברית **RTL** (`lang="he"`, `dir="rtl"`) | LTR / אנגלית כברירת מחדל ללקוח |
 | WhatsApp | Meta Cloud API (utility templates, מאחורי flag) | שליחה חופשית בלי template |
 | SMS | אגרגטור ישראלי, fallback בלבד | SMS שיווקי כערוץ ראשי |
+| Wallet push | Apple Wallet / Google Wallet pass update (`wallet_push`) | Zapier / עדכון pass מהדפדפן עם מפתח פרטי |
 
 סודות רק ב-Edge / Vercel server:
 
@@ -43,6 +44,11 @@ QSTASH_NEXT_SIGNING_KEY
 META_WA_TOKEN
 META_WA_PHONE_NUMBER_ID
 SMS_PROVIDER_API_KEY
+APPLE_WALLET_PASS_TYPE_ID
+APPLE_WALLET_TEAM_ID
+APPLE_WALLET_CERT_PEM
+GOOGLE_WALLET_ISSUER_ID
+GOOGLE_WALLET_SERVICE_ACCOUNT_JSON
 UNSUBSCRIBE_SIGNING_SECRET
 ```
 
@@ -72,6 +78,7 @@ src/app/api/cron/notifications/route.ts
 | N8 | QR **לא** מוטמע כ-`data:` URI בגוף המייל. המייל נושא קוד קריא + קישור ל-`/coupon/{id}`. |
 | N9 | Transactional לא דורש opt-in שיווקי. Suppression / STOP תמיד מכבדים. |
 | N10 | אין Make / Zapier בייצור. טבלת שוברים קנונית: `vouchers`. |
+| N11 | **Wallet push** (Apple/Google) הוא עדכון/הנפקת pass; לא מחליף מייל; רץ ב-Edge worker על `channel=wallet_push`. |
 
 ---
 
@@ -95,8 +102,8 @@ Edge Function notifications-worker
   (twin מותר: POST /api/cron/notifications עם Bearer CRON_SECRET)
         │
         ├─ claim due rows (FOR UPDATE SKIP LOCKED)
-        ├─ route by channel: email | whatsapp | sms | push
-        ├─ render Hebrew RTL template
+        ├─ route by channel: email | whatsapp | sms | push | wallet_push
+        ├─ render Hebrew RTL template / Meta vars / pass update
         │
         ├─ 2xx → status=sent, provider_message_id
         ├─ 429/5xx/network → QStash retry + outbox backoff
@@ -107,7 +114,7 @@ Edge Function notifications-worker
 |---|---|---|
 | Emit | Triggers על `orders.paid_at` ו-`vouchers.status` | + expiry cron + multi-channel |
 | Drain | `GET /api/cron/notifications` | Edge `notifications-worker` + twin זהה |
-| Channels | email בלבד | email + WhatsApp + SMS (+ push אופציונלי) |
+| Channels | email בלבד | email + WhatsApp + SMS + push + **wallet_push** |
 | Retry | outbox backoff | outbox + **QStash** + DLQ |
 
 `pg_net` אינו מותקן. Trigger **לא** קורא HTTP ישירות.
@@ -187,7 +194,7 @@ Authorization: Bearer $CRON_SECRET
 
 1. אימות Bearer.
 2. Claim עד 50 שורות due.
-3. לפי `channel`: Resend / Meta WA / SMS / push.
+3. לפי `channel`: Resend / Meta WA / SMS / push / Wallet pass update.
 4. הצלחה → `sent`. כשל זמני → backoff + QStash. תקרה → `dead` + DLQ.
 5. kind בלי תבנית → `dead` מיידי.
 
@@ -237,12 +244,12 @@ Outbox backoff: `2 * 4^(attempts-1)` דקות, מקס 5 attempts.
 
 ### 5.1 מטריצת ערוצים
 
-| אירוע | kind | Email | WhatsApp | SMS |
-|---|---|---|---|---|
-| הונפק אחרי תשלום | `coupon_issued` | חובה | utility אם opt-in + template | fallback בלבד |
-| מומש בסריקה | `coupon_redeemed` | חובה | utility קצר | לא כברירת מחדל |
-| תזכורת 48ש לפני פקיעה | `coupon_expiry_48h` | חובה (ניתן לכיבוי) | utility אם פעיל | מותר (קצר) |
-| פג בפועל | `coupon_expired` | כן | אופציונלי | לא |
+| אירוע | kind | Email (Resend) | WhatsApp | SMS | Wallet push |
+|---|---|---|---|---|---|
+| הונפק אחרי תשלום | `coupon_issued` | חובה | utility אם opt-in + template | fallback בלבד | הנפקה/עדכון pass אם המשתמש הוסיף לארנק |
+| מומש בסריקה | `coupon_redeemed` | חובה | utility קצר | לא כברירת מחדל | void / redeemed על ה-pass |
+| תזכורת 48ש לפני פקיעה | `coupon_expiry_48h` | חובה (ניתן לכיבוי) | utility אם פעיל | מותר (קצר) | עדכון שדה תוקף על ה-pass |
+| פג בפועל | `coupon_expired` | כן | אופציונלי | לא | void pass |
 
 כלל: מייל קופון שהונפק **הוא** אישור הרכישה. לא לשלוח גם `order_paid` גנרי על אותה הזמנה כשיש vouchers.
 
@@ -394,11 +401,71 @@ a[href="{{coupon_url}}"] { … }  <!-- CTA: הצג קופון -->
 
 ```text
 1. email (תמיד אם יש כתובת ולא suppressed)
-2. whatsapp (אם flag + template + טלפון)
-3. sms (רק אם אין email ולא נשלח WA)
+2. wallet_push (אם יש pass רשום או CTA "הוסף לארנק" הופעל)
+3. push (אם push_token קיים)
+4. whatsapp (אם flag + template + טלפון)
+5. sms (רק אם אין email ולא נשלח WA)
 ```
 
 כל ערוץ = שורת outbox נפרדת עם `dedupe_key` נפרד.
+
+---
+
+## 8a. Wallet push (Apple Wallet / Google Wallet)
+
+### 8a.1 מטרה
+
+הלקוח שומר קופון בארנק המכשיר. כשהסטטוס משתנה (הונפק / מומש / פג), ה-Edge worker דוחף עדכון ל-pass בלי לפתוח את האפ.
+
+זה **לא** ארנק הקאשבק הפנימי (`wallet_accounts`). לארנק הכסף ראה:
+
+```
+docs/ARCHITECTURE-WALLET-LEDGER.md
+```
+
+### 8a.2 מודל
+
+| פלטפורמה | מנגנון |
+|---|---|
+| Apple Wallet | PassKit web service: register device, push על שינוי pass, הורדת `.pkpass` מעודכן |
+| Google Wallet | Google Wallet API: create/update object; push לתצוגה |
+
+טבלה יעד:
+
+```text
+wallet_passes (
+  id, user_id, voucher_id,
+  platform apple|google,
+  pass_serial / object_id,
+  auth_token,
+  status active|redeemed|expired|void,
+  updated_at
+)
+```
+
+### 8a.3 אירועים → wallet_push
+
+| אירוע | פעולת pass |
+|---|---|
+| `coupon_issued` | יצירת pass (אחרי "הוסף לארנק") או עדכון שדות |
+| `coupon_redeemed` | redeemed / void + הודעת עדכון |
+| `coupon_expiry_48h` | עדכון תוקף / באנר תזכורת |
+| `coupon_expired` | void |
+
+```text
+channel = wallet_push
+dedupe  = {kind}:{voucher_id}:customer:wallet_push:{platform}
+```
+
+### 8a.4 תוכן על ה-pass
+
+- שם מוצר בעברית
+- קוד + QR (מ-`qr_payload` שנוצר בשרת)
+- שולם באתר / יתרה בבית העסק (בלי נוסח Escrow)
+- תוקף
+- מותג צהוב בגבולות מדריכי Apple/Google
+
+סודות חתימה רק בשרת/Edge. המייל מציע CTA "הוסף לארנק"; לא מטמיע QR כ-`data:` URI.
 
 ---
 
@@ -440,9 +507,11 @@ supabase/functions/notifications-worker/index.ts
 supabase/functions/notifications-worker/channels/resend.ts
 supabase/functions/notifications-worker/channels/whatsapp.ts
 supabase/functions/notifications-worker/channels/sms.ts
+supabase/functions/notifications-worker/channels/wallet-push.ts
 supabase/functions/notifications-worker/templates/*
 src/app/api/cron/notifications/route.ts
 src/app/api/cron/notifications-dlq/route.ts
+src/app/api/wallet/passes/[voucherId]/route.ts
 src/lib/notifications/qstash.ts
 src/lib/email/resend.ts
 ```
@@ -457,6 +526,7 @@ src/lib/email/resend.ts
 | Drain ראשון (email) | ≤ 60 שניות ב-p95 כש-cron/QStash חיים |
 | WhatsApp utility | ≤ 2 דקות אחרי email (או במקביל אחרי claim) |
 | SMS fallback | רק כשאין email/WA; ≤ 3 דקות |
+| Wallet push | ≤ 2 דקות אחרי שינוי סטטוס pass |
 | DLQ alert | מיידי על `coupon_issued` dead |
 
 אין לחכות לספק הודעות לפני תשובת webhook/redeem ללקוח.
@@ -466,7 +536,8 @@ src/lib/email/resend.ts
 ## 13. Acceptance
 
 - [ ] Resend + Trigger + Edge worker (או cron twin), בלי Make/Zapier
-- [ ] מחזור קופון: issued / redeemed / expiry+expired
+- [ ] מחזור קופון: issued / redeemed / expiry+expired על email + WhatsApp + SMS
+- [ ] Wallet push מעדכן pass ב-issued/redeemed/expired
 - [ ] מייל RTL: `lang=he` `dir=rtl`, קוד + לינק `/coupon/{id}`, בלי QR מוטמע
 - [ ] נוסח כסף: שולם באתר + יתרה בעסק; בלי Escrow/held
 - [ ] QStash retries + DLQ; מסלול כסף לא מחכה לספקים
@@ -492,3 +563,4 @@ src/lib/email/resend.ts
 | 2026-08-02 | איחוד מחייב + QStash + QR דרך `/coupon/{id}` |
 | 2026-08-03 | rev B: SLA + multi-channel |
 | 2026-08-03 | ke-arch docs-lifecycle: נעילת No Escrow בנוסח; דגש Resend + Edge + תבניות RTL |
+| 2026-08-03 | rev C: מחזור קופון email/WA/SMS + Wallet push מחייב ב-Edge worker |
