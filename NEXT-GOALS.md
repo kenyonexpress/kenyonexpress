@@ -158,8 +158,12 @@
 - [x] ✅ [28] הוסרו מועדפים + הסטוריה מהפוטר והלב מ-masthead. contact/terms
       נשארים `built: false` (תוכן).
 
-- [ ] [29] עמוד `/contact` מינימלי שעובד (טופס → Resend/outbox אם קיים), בלי
-      להמציא תקנון. terms נשאר חסום לתוכן משפטי אמיתי.
+- [x] ✅ [29] `/contact`: טופס + `submitContactForm` → Resend transactional עם
+      replyTo, honeypot, rate limit 5/שעה, `CONTACT_TO`. תקנון נשאר חסום.
+
+- [ ] [30] חוסמי deploy שאינם קוד נשארים (VOUCHER_QR_SECRET, Cardcom, DNS,
+      11 ספקים, 096, תקנון). אין עבודת קוד פתוחה מהתור; רק מדידה/תיעוד אם
+      מתגלה באג.
 
 ## החלטות שהתקבלו אוטומטית: מה נשאר מ-[9]
 

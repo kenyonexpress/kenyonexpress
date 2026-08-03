@@ -31,7 +31,7 @@ const PERSONAL_LINKS: { label: string; href: string; built?: false }[] = [
 ]
 
 const SERVICE_LINKS: { label: string; href: string; built?: false }[] = [
-  { label: 'צור קשר', href: '/contact', built: false },
+  { label: 'צור קשר', href: '/contact' },
   { label: 'תקנון', href: '/terms-and-conditions', built: false },
 ]
 
@@ -159,7 +159,6 @@ export default function SiteFooter() {
             <p className="m-0 text-sm text-heading/80">יש לך שאלות, הצעות או הערות ?</p>
             <Link
               href="/contact"
-              prefetch={false}
               className="mt-1.5 inline-flex items-center gap-2 text-lg font-bold text-heading transition-opacity hover:opacity-70"
             >
               <Headphones

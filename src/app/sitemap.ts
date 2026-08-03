@@ -52,6 +52,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/`, lastModified: now, changeFrequency: 'daily', priority: 1 },
     { url: `${base}/products`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
     { url: `${base}/coupons`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
+    { url: `${base}/contact`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
   ]
 
   const supabase = createPublicClient()
