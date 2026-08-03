@@ -2,7 +2,7 @@
 
 ארכיטקטורת לוח הבקרה של הפלטפורמה: ניהול מוצרים (כולל `platform_percent` דינמי פר מוצר), ספקים, ודוחות כסף.
 
-Status: **BINDING** · Updated: 2026-08-03  
+Status: **BINDING** · Updated: 2026-08-03 (rev C)  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה ב-worktree הראשי (`kenyonexpress`).
 
@@ -41,7 +41,7 @@ Stack: Next.js App Router `src/app/(admin)`, Supabase Postgres + RLS, Cardcom, S
 
 ---
 
-## 1. ניהול מוצרים + `platform_percent` דינמי פר מוצר
+## 1. ניהול מוצרים (חובה: `platform_percent` פר מוצר)
 
 ### 1.1 משטחים
 
@@ -123,7 +123,7 @@ CSV או מיגרציית WP יוצרים טיוטות עם כסף **null** עד
 
 ---
 
-## 2. ניהול ספקים
+## 2. ניהול ספקים (אישור, חברים, בנק, payout פיזי)
 
 ### 2.1 מדריך וישויות
 
@@ -188,7 +188,7 @@ Refund: חסום אם voucher קשור `redeemed`/`expired` לפי מדיניו�
 
 ---
 
-## 4. דוחות
+## 4. דוחות (snapshots בלבד; בלי held/Escrow)
 
 ### 4.1 משטחים
 
@@ -305,3 +305,4 @@ docs/RUNBOOK-PRODUCTION.md
 | 2026-08-02 | יישור ל-feat/admin-core |
 | 2026-08-03 | Binding ב-`ke-arch`: platform_percent פר מוצר (גרסת Escrow) |
 | 2026-08-03 | ke-arch docs-lifecycle: No Escrow; `platform_percent` דינמי פר מוצר; דוחות בלי held |
+| 2026-08-03 | rev C: נעילת מוצרים/ספקים/דוחות עם platform_percent פר מוצר |
