@@ -1,21 +1,20 @@
-# ARCHITECTURE: Search UX
+# ארכיטקטורה: חוויית חיפוש
 
-חוויית חיפוש: **Meilisearch**, השלמות בעברית, פילטרים ותוצאות RTL.
+**Meilisearch**, השלמות בעברית, **סינונים**, ותיקון **טעויות כתיב**.
 
-Status: **BINDING** · Updated: 2026-08-03 (pack-20)  
+Status: **BINDING** · עודכן: 2026-08-03  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
-אין שינוי קוד. אין נגיעה ב-worktree הראשי (`kenyonexpress`).
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
-Companions:
+מסמכים קשורים:
 
 ```
 docs/ARCHITECTURE-SEARCH.md
-docs/ARCHITECTURE-CATALOG-SEARCH-SEO.md
 docs/ARCHITECTURE-CATEGORIES-TAXONOMY.md
 docs/ARCHITECTURE-SEO-PERFORMANCE.md
 ```
 
-מקור אמת דירוג ב-MVP: Postgres FTS (ראה SEARCH). Meilisearch = UX מהיר + typo + facets כשסף מדיד נחצה, או כ-cache קריאה.
+MVP דירוג: Postgres FTS. Meilisearch = שכבת UX (typo, facets, מהירות) + אינדוקס עם DLQ.
 
 ---
 
@@ -23,71 +22,83 @@ docs/ARCHITECTURE-SEO-PERFORMANCE.md
 
 | # | הכרעה |
 |---|---|
-| U1 | תיבת חיפוש גלובלית בעברית RTL; placeholder: "חיפוש דילים ועסקים". |
-| U2 | Autocomplete מדקה **150ms**, מינימום **2** תווים, abort in-flight. |
-| U3 | תוצאות: אותה מעטפת listing כמו קטגוריה (electro chrome): כותרת, ספירה, פילטרים, גריד. |
-| U4 | `/search` = `noindex`. |
-| U5 | Meilisearch: typo tolerance לעברית (ללא stemming); facets על type/city/category/price. |
-| U6 | הדגשת התאמות בתוצאות (`ts_headline` או Meili `_formatted`). |
-| U7 | Zero results: הצעות הסרת פילטר + קטגוריות פופולריות; בלי לירות PII ללוגים. |
+| U1 | תיבה גלובלית RTL; placeholder: "חיפוש דילים ועסקים". |
+| U2 | Autocomplete: debounce 150ms, מינימום 2 תווים, abort in-flight. |
+| U3 | Meilisearch: typo tolerance לעברית; בלי stemming חובה. |
+| U4 | סינונים מטבלת `search_synonyms` (דו-כיווני כשאפשר). |
+| U5 | טעויות כתיב: Meili typo + fallback `pg_trgm` ב-Postgres. |
+| U6 | `/search` = noindex. |
+| U7 | תוצאות באותה מעטפת listing כמו קטגוריה. |
 
 ---
 
-## 1. Autocomplete (השלמות עברית)
+## 1. השלמות בעברית
 
 ```text
-input ≥ 2 chars → debounce 150ms → GET /api/search/suggest?q=
-  → עד 8 הצעות: מוצרים + קטגוריות + מותגים/ספקים ציבוריים
-  → תצוגה RTL; מחיר on-site ב-₪; אייקון סוג (קופון/פיזי)
+≥2 תווים → 150ms → GET /api/search/suggest?q=
+  → עד 8 הצעות: מוצרים / קטגוריות / שמות עסקים ציבוריים
+  → מחיר on-site ב-₪ · סוג קופון/פיזי
 ```
 
-כללים:
-
-1. נרמול: הסרת ניקוד אופציונלי, trim, lowercase לוגי רק לתווים לטיניים.  
-2. מילות עצירה קצרות בעברית לא לבד (`של`, `את`, `על`).  
-3. Synonyms מ-`search_synonyms` (למשל "מסעדה" ↔ "אוכל").  
-4. מקלדת עברית/אנגלית: ניסיון תיקון כיוון (optional later); לא חוסם MVP.  
-5. לחיצה על הצעה → PDP או `/search?q=…` לפי סוג.
+נרמול: trim, הסרת רווחים כפולים, התעלמות ממילות עצירה לבד (`של`, `את`).  
+לחיצה על הצעה → PDP או `/search?q=…`.
 
 ---
 
-## 2. Meilisearch (UX layer)
+## 2. סינונים
+
+```text
+search_synonyms (term_he, aliases text[], is_active)
+```
+
+דוגמאות:
+
+| מונח | כינויים |
+|---|---|
+| מסעדה | אוכל, בית קפה, פיצה |
+| ספא | עיסוי, ג'קוזי, טיפול |
+| אטרקציה | כרטיס, חוויה, פעילות |
+
+הרחבה ב-query לפני FTS/Meili. עדכון סינונים: admin בלבד.
+
+---
+
+## 3. טעויות כתיב
+
+| שכבה | מנגנון |
+|---|---|
+| Meilisearch | typoTolerance לפי `meili-settings` |
+| Postgres | אם FTS < 3 תוצאות → `word_similarity` / trigram על `name_he` |
+| UX | "התכוונת ל־…?" כשיש תיקון בטוח |
+
+לא מתקנים אוטומטית שאילתה שכבר מחזירה תוצאות טובות.
+
+---
+
+## 4. Meilisearch
 
 | נושא | חוזה |
 |---|---|
-| Index | `products` documents בלי PII |
 | Searchable | `name_he`, `description_he`, `city_he`, `supplier_name_he`, keywords |
-| Filterable | `product_type`, `category_ids`, `price_agorot`, `city_he`, `published` |
-| Ranking | words → typo → proximity → attribute → exactness; boost freshness משני |
-| Typo | enabled; min word size לפי meili-settings הקיים |
-| RTL | UI RTL; אין דרישה מיוחדת מ-Meili על כיוון |
+| Filterable | type, category, price_agorot, city, published |
+| מסמך | בלי PII |
+| אינדוקס | webhook → QStash → index-job → DLQ (ראה SEARCH) |
 
-Pipeline אינדוקס + DLQ: `ARCHITECTURE-SEARCH.md` §4.
-
-עד סף (zero-results / latency / 30k products): UI יכול לקרוא Postgres; החוזה ה-UX זהה.
+כשל Meili לא חוסם קטלוג; degrade ל-Postgres.
 
 ---
 
-## 3. פילטרים ותוצאות
+## 5. Acceptance
 
-URL state: `q`, `type`, `price_min/max`, `f_*`, `sort`, `page`.  
-מיון: רלוונטיות (ברירת מחדל) / מחיר / חדש.  
-Empty state בעברית: "לא מצאנו דילים ל־…".
-
----
-
-## 4. Acceptance
-
-- [ ] Suggest 150ms / 2 chars / RTL
-- [ ] Results shell תואם category listing
-- [ ] Meili settings לעברית מתועדים; DLQ לא חוסם קטלוג
-- [ ] noindex על `/search`
-- [ ] אין raw query ב-analytics
+- [ ] Suggest RTL 150ms / 2 תווים  
+- [ ] סינונים פעילים  
+- [ ] Typo path מתועד (Meili + trigram)  
+- [ ] noindex על `/search`  
 
 ---
 
-## 5. Revision
+## 6. Revision
 
-| Date | Change |
+| תאריך | שינוי |
 |---|---|
-| 2026-08-03 | pack-20: Search UX Meilisearch + השלמות עברית |
+| 2026-08-03 | Meilisearch + השלמות + סינונים + טעויות כתיב |
