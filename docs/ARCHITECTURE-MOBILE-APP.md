@@ -403,3 +403,4 @@ docs/ARCHITECTURE-ACCOUNT-WALLET.md
 | 2026-08-03 | יישור ל-notifications lifecycle + Wallet pass CTA; docs-only ב-`ke-arch` |
 | 2026-08-03 | rev B: המלצה מנומקת Expo/RN מול PWA (PWA=M0 גשר; Expo=יעד שימור+ספק) |
 | 2026-08-03 | rev C: No Escrow במובייל; חיזוק המלצת Expo מול PWA |
+| 2026-08-03 | pack-20: mobile Expo vs PWA binding refresh for 20-doc queue |
