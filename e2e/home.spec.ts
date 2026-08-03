@@ -65,6 +65,42 @@ test.describe('homepage', () => {
   })
 
   /**
+   * ...and it has to be the SAME box on every card.
+   *
+   * The test above deliberately asserts "not collapsed" rather than a number,
+   * and that looseness is what let the next one through. [35] put
+   * `style={{ width: 'auto', height: 'auto' }}` on the card image to silence
+   * next/image's "width or height modified, but not the other" console line.
+   * An inline style beats a class, so `.p_con__image`'s `height: 245px` stopped
+   * applying and every thumb rendered at its own source aspect: measured 31 of
+   * 31 off the pin, from 124px to 361px. Nothing collapsed, so the guard above
+   * stayed green, and the homepage pixel gate went 11.26-11.62% -> 24.16%.
+   *
+   * The warning that bought is dev-only (guarded by NODE_ENV in
+   * next/dist/client/image-component.js:84) and cannot be avoided here anyway:
+   * rendering at live's aspect means the rendered width is not the declared 400.
+   *
+   * Every card, not the first: a rule that stops applying stops applying
+   * everywhere, but a single sample happens to look right whenever the source
+   * artwork is near 245 tall.
+   */
+  test('every deal card image is pinned to the same 245px height', async ({ page }) => {
+    await page.goto('/')
+    await expect(page.locator('.p_con__image').first()).toBeVisible({ timeout: 15000 })
+
+    const heights = await page
+      .locator('.p_con__image')
+      .evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().height)))
+
+    expect(heights.length, 'no deal cards on the homepage to measure').toBeGreaterThan(10)
+    const offPin = heights.filter((h) => h !== 245)
+    expect(
+      offPin,
+      `deal thumbs off the 245px pin in src/styles/product-card-deals.css: ${offPin.join(', ')}`,
+    ).toHaveLength(0)
+  })
+
+  /**
    * The optimizer has to actually optimize, not fall back to the source.
    *
    * `optimizeImage` in next/dist/server/image-optimizer.js wraps its work in a

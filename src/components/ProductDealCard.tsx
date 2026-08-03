@@ -98,10 +98,11 @@ export default function ProductDealCard({ product }: { product: Product }) {
               height={245}
               sizes={DEAL_IMAGE_SIZES}
               quality={50}
+              // `.p_con__image` pins the height to 245px and leaves the width
+              // auto, which is live's aspect. No inline style: see the note in
+              // ProductCard.tsx - an inline `height:auto` beats the class and
+              // took all 31 homepage thumbs off the pin.
               className="p_con__image"
-              // CSS pins height and leaves width auto (live aspect). Next warns
-              // unless both axes are marked auto when only one is overridden.
-              style={{ width: 'auto', height: 'auto' }}
             />
           ) : null}
         </Link>
