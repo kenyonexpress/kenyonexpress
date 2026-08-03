@@ -1,14 +1,13 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-03 (autonomous: [36] goal 9 security sweep)
+Updated: 2026-08-03 (autonomous: [41] goal 19 load suite)
 
 ## המשך מ:
 תור goals 9-20 מ-03.08. ‏[36] = goal 9, ‏[37] = goal 10, ‏[38] = goal 11.
 ‏12, ‏13, ‏14 ו-16 אומתו כקיימים ומסומנים ב-NEXT-GOALS.md עם הראיה.
 ‏**goal 15 (Wallet) חסום**: הארנק בשקלים numeric, וההמרה לאגורות היא
 ‏`PENDING-money-integer-fix.sql` שאסור להריץ. ‏[39] = goal 17 (PWA),
-‏[40] = goal 18 (a11y). הבא בתור: **goal 19 (Load: k6 + ISR + CDN headers)**,
-ואחריו goal 20 (Final).
+‏[40] = goal 18 (a11y), ‏[41] = goal 19 (Load). הבא בתור: **goal 20 (Final)**.
 **דילוג מתועד:** התורים הליליים שנשלחו ב-03.08 חוזרים על Cart / Checkout /
 Coupon / אזור אישי / Notifications / SEO / E2E / Integration, וכולם סגורים
 ב-[1]-[35]. הפריט "סגירת checkout-cardcom" **לא יבוצע**: ה-branch מביא
@@ -19,6 +18,8 @@ Coupon / אזור אישי / Notifications / SEO / E2E / Integration, וכולם
 מודל כסף נעול: אין Escrow.
 
 ## Last Completed
+[41] goal 19 Load: ‏k6, ששת התרחישים של סעיף 5, ספי 5.3 כקוד, פרודקשן חסום
+ב-init בלי דגל עוקף. ‏L6 עובר; **‏L1 נופל על דף המוצר, 1.2-1.9s חם**.
 [36] goal 9 security: 7 views עוקפי-RLS חשופים ל-anon ב-REST הציבורי. מיגרציה 103
 ממתינה לאישור + probe שמשחזר.
 [35] דילים: style width/height auto (אזהרת next/image).
@@ -34,17 +35,35 @@ goal 10 (Observability).
 ‏**103 (נעילת views ו-RPCs) ממתין לאישור apply_migration. דליפת PII חיה עד להחלה.**
 ‏`PENDING-money-integer-fix.sql` ממתין לאישור. **לא להריץ** (הוראה מפורשת, 03.08).
 QA#6 (order_items ב-redeem) נדחה: מודל 085.
+‏**דף המוצר נופל בשער העומס: ‏1.2-1.9s חם מול תקציב 800ms של סעיף 5.3.**
+נמדד ב-[41], לא cold cache ולא המכונה (בית 6ms). התיקון מוגדר וכתוב בעץ:
+‏`product/[slug]/page.tsx:83`, ‏`generateStaticParams` + `use cache`.
+‏**שתי ספריות עומס במקביל:** `load/` (‏L1-L6) ו-`k6/checkout-read-path.js`
+מסשן מקביל. צריך איחוד תחת `load/`.
 ‏**שער compare של `home` עומד על 23% מול תקרה של 11%.** נמדד לפני ואחרי
 ‏[40] ולא נובע ממנו (23.07% ← 23.06%). ‏`category` תקין ב-9.09%. לבדיקה.
 terms: תוכן משפטי, לא קוד.
 
 ## Next Task
-goal 10. במקביל: החלת 102 ו-103 אחרי אישור.
+goal 20 (Final). לפניו הליד המדוד של [41]: להפוך את דף המוצר לסטטי
+(‏`generateStaticParams` + `use cache`) ואז להריץ שוב `k6 run load/browse.js`,
+שהוא כבר השער. במקביל: החלת 102 ו-103 אחרי אישור.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
 
 ## החלטות שהתקבלו אוטומטית
+- 2026-08-03: [41] שער הפרודקשן ב-`load/lib/guard.js` **בלי דגל עוקף**, גם לא
+  לתרחישים קוראים בלבד. סעיף 5.4 מוחלט, ומי שמריץ סקריפט עומס לפני שיגור לא
+  קורא את הסביבה שלו. רשימת המארחים קשיחה ולא נקראת מ-env, כי allowlist שהקורא
+  יכול לערוך אינו שער.
+- 2026-08-03: [41] ‏L2 לא מזייף את `beginCheckout`. הוא server action עם מזהה
+  שהוא hash של הבנייה, ומוגבל ל-10 בדקה פר משתמש, ולכן "50 במקביל" הוא 50
+  חשבונות מזורעים. הסקריפט מקבל מזהה ועוגיות כקלט, ובלעדיהם **אומר בפלט
+  שהחצי שכותב כסף לא נמדד** במקום לדווח p95 ירוק על מה שלא רץ.
+- 2026-08-03: [41] לא לתקן את דף המוצר בתוך goal 19. המדידה היא התוצר, והתיקון
+  (`generateStaticParams` + `use cache`) הוא שינוי ארכיטקטוני שכבר מתועד בעץ
+  כשלב הבא. הוא הליד של goal 20.
 - 2026-08-03: מודל Escrow מ-27.07 **נדחה**. נעול: אין Escrow; מקדמת קופון לפלטפורמה; יתרה בקופה; platform_percent מצולם.
 - 2026-08-03: לא לשנות redeem_voucher לכתוב order_items (סותר 085 + SQL harness).
 - 2026-08-03: [24] באנר נשאר LCP מכוון (לא לכווץ ללוגו/הירו). כיווץ החזיר 85–86.
@@ -65,6 +84,38 @@ goal 10. במקביל: החלת 102 ו-103 אחרי אישור.
   ה-RPC הוא fail-open. שלילה הייתה מכבה את הרייט-לימיט במקום להדק אותו.
 - 2026-08-03: [36] תשע פונקציות ה-RLS predicate (`is_admin`, `has_role`, ...)
   נשארות עם EXECUTE: ביטוי policy מוערך בהרשאות התפקיד השואל, ושלילה שוברת RLS.
+
+---
+
+## ‏2026-08-03 — [41] goal 19: העומס נמדד, וכל התקציב יושב בקריאה אחת
+
+‏ISR, ‏caching וכותרות CDN **כבר היו**, ונבדקו במדידה ולא בקריאה. ‏`cacheComponents`
+דלוק, ‏`use cache` + `cacheLife('hours')` + `cacheTag(CATALOGUE_TAG)` בקטלוג
+וב-SEO. הכותרות שמוגשות בפועל מול `pnpm start`:
+
+| נתיב | Cache-Control | הערה |
+|---|---|---|
+| `/`, `/cart`, `/offline` | `s-maxage=31536000` | ‏`x-nextjs-cache: HIT` |
+| `/_next/static/*` | `public, max-age=31536000, immutable` | תקין |
+| `/api/cart` | `no-store` | פר-לקוח, נכון |
+| `/products` | `no-store` | נושא `x-nextjs-postponed`, החור של PPR שתועד ב-[21] |
+
+**מה שחסר היה k6 בלבד**, ונוסף ב-`k6/checkout-read-path.js` (`pnpm load:checkout`).
+הוא **לא שולח תשלום ולא סוגר הזמנה** בכוונה: הרצת עומס על מסלול הכסף הייתה
+כותבת הזמנות ושוברים אמיתיים לאותו DB שהחנות קוראת ממנו, ו-Cardcom הוא צד
+שלישי. הוא מריץ את כל הקריאות עד לרינדור הצ'קאאוט, כולל שער ה-auth שמפנה אורח.
+
+‏20 VU, ‏72 שניות, ‏305 איטרציות, **1525/1525 checks עוברות, אפס שגיאות**.
+כל הספים עברו. הממצא האמיתי הוא הפער:
+
+- ‏`document_latency` ‏**p95 = 30.81ms**, ‏`prerender_cache_hits` ‏**100%**
+- ‏`cart_api_latency` ‏**p95 = 413ms**, ‏avg 335ms, זנב עד 2.05s
+
+כלומר **המסמכים ה-prerendered מהירים פי 13 מהקריאה היחידה שלא נשמרת בקאש**,
+וכמעט כל תקציב ההשהיה תחת עומס הוא `/api/cart` שפוגע ב-Postgres בכל hit.
+זו גם אישוש למדידה של [21]: הדפים באמת יוצאים מהקאש. אם משהו כאן יתקלקל
+בעתיד, `prerender_cache_hits` ייפול לפני ש-`document_latency` יזוז, כי הכשל
+הוא נפילה מהשלד הסטטי ולא האטה.
 
 ---
 
