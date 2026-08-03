@@ -1,7 +1,10 @@
 import AnalyticsProvider from '@/components/analytics/AnalyticsProvider'
 import ConsentBanner from '@/components/analytics/ConsentBanner'
+import InstallPrompt from '@/components/pwa/InstallPrompt'
+import ServiceWorkerRegistrar from '@/components/pwa/ServiceWorkerRegistrar'
 import { CONSENT_PREPAINT_SCRIPT } from '@/lib/analytics/consent'
-import type { Metadata } from 'next'
+import { SITE } from '@/styles/tokens'
+import type { Metadata, Viewport } from 'next'
 import { Heebo } from 'next/font/google'
 import { Suspense } from 'react'
 import './globals.css'
@@ -61,6 +64,30 @@ export const metadata: Metadata = {
   alternates: {
     canonical: '/',
   },
+  // iOS reads none of the manifest's icons and looks only for this link tag.
+  // Without it Safari screenshots the page and uses that as the home-screen
+  // icon, which on this site is a yellow banner.
+  appleWebApp: {
+    capable: true,
+    title: 'Kenyon',
+    statusBarStyle: 'default',
+  },
+  icons: {
+    apple: '/icons/apple-touch-icon.png',
+  },
+}
+
+/**
+ * Separate from `metadata` because Next 16 rejects `themeColor` inside it.
+ *
+ * Read from `SITE.brand.primary` rather than written as a literal: the raw-hex
+ * sweep in tokens.test.ts rejects a literal here, and rightly so -- this value
+ * has to stay equal to `theme_color` in app/manifest.ts and to
+ * --color-brand-primary. If the three drift, the splash screen flashes one
+ * colour and the browser chrome settles on another.
+ */
+export const viewport: Viewport = {
+  themeColor: SITE.brand.primary,
 }
 
 export default function RootLayout({
@@ -113,6 +140,14 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <AnalyticsProvider />
         </Suspense>
+        {/*
+          Both are client components that render nothing until the browser
+          says so, and both are last in the body for the same reason the
+          analytics provider is: nothing here may compete with the LCP paint
+          that [15]-[21] spent five goals recovering.
+        */}
+        <ServiceWorkerRegistrar />
+        <InstallPrompt />
       </body>
     </html>
   )
