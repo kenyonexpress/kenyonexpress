@@ -1,28 +1,29 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-03 (autonomous: [31] voucher_issued outbox)
+Updated: 2026-08-03 (autonomous: [32] home LH median)
 
 ## המשך מ:
-[32] חציון Lighthouse בית נייד ~86: מנוף מדוד מעבר לתקרת Lantern.
+[33] image-delivery כרטיסי דילים בבית (~10KiB ב-LH).
 
 ## Current Phase
-‏**main.** תור [1]-[31] סגור. מודל כסף נעול: אין Escrow.
+‏**main.** תור [1]-[32] סגור. מודל כסף נעול: אין Escrow.
 
 ## Last Completed
-[31] 096_notification → 102 (ממתין לאישור apply_migration); תבנית
-voucher_issued ב-drain; GO-LIVE מסונכרן על sitemap/CategoryProductCard.
+[32] חציון LH בית 87 (שיא 94); polyfill alias מנקה legacy-javascript;
+DeferredHeaderSearch למובייל. תקרת Lantern FCP נשארת.
+[31] 102 voucher_issued ממתין לאישור + תבנית drain.
 
 ## In Progress
-[32] home LH median
+[33] deal card image-delivery
 
 ## Blocking Issues
 חוסמי deploy (קונפיג/נתונים, לא קוד): VOUCHER_QR_SECRET, Cardcom prod, DNS, 11 ספקים בלי כתובת/לוגו.
-‏102 (לשעבר 096 voucher_issued) ממתין לאישור apply_migration.
+‏102 (voucher_issued) ממתין לאישור apply_migration.
 QA#6 (order_items ב-redeem) נדחה: מודל 085.
 terms: תוכן משפטי, לא קוד.
 
 ## Next Task
-[32] מדידת חציון LH בית + מנוף אם קיים בלי לשבור LCP banner.
+[33] לתקן image-delivery על דילים אם sizes/quality שגויים.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
@@ -37,6 +38,7 @@ terms: תוכן משפטי, לא קוד.
 - 2026-08-03: [28] מועדפים/הסטוריה הוסרו מהשלד (לא לבנות פיצ'ר; WP=410). contact/terms נשארים.
 - 2026-08-03: [29] contact בלי outbox (אין kind, RLS חוסם); Resend ישיר + replyTo.
 - 2026-08-03: [31] שני 096_* התנגשו; voucher_issued → 102 ממתין לאישור. תבנית מייל לפני ההחלה.
+- 2026-08-03: [32] alias polyfill-module ריק (קהל מודרני=baseline של Next). חציון LH 87 נשאר תקרת Lantern.
 
 ---
 

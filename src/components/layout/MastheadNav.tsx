@@ -1,5 +1,5 @@
 import HeaderCart from '@/components/cart/HeaderCart'
-import HeaderSearch from '@/components/search/HeaderSearch'
+import DeferredHeaderSearch from '@/components/search/DeferredHeaderSearch'
 import { User } from 'lucide-react'
 import Link from 'next/link'
 
@@ -19,11 +19,14 @@ const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
  * The live WP heart → /wishlist was removed in [28]: there is no wishlist
  * route here, and a header icon that 404s is worse than a small geometry gap
  * against the live masthead. Re-add with the feature, not before.
+ *
+ * Search is deferred ([32]): it is CSS-hidden on phones, so mobile Lighthouse
+ * must not download or hydrate its suggest/router client graph.
  */
 export default function MastheadNav() {
   return (
     <div className="flex min-w-0 flex-1 items-center justify-end gap-5 ps-6">
-      <HeaderSearch />
+      <DeferredHeaderSearch />
 
       <nav className="flex shrink-0 items-center gap-5" aria-label="פעולות חשבון ועגלה">
         <Link

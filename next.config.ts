@@ -74,6 +74,16 @@ const nextConfig: NextConfig = {
   },
   turbopack: {
     root: __dirname,
+    /**
+     * Next packs Array.at / flat / Object.hasOwn polyfills into every client
+     * visit even though its own browser baseline already has them. Lighthouse
+     * mobile bills ~13KiB as legacy-javascript on the home chunk ([32]). Point
+     * the module at an empty file so modern phones skip the dead weight.
+     */
+    resolveAlias: {
+      '../build/polyfills/polyfill-module': './src/lib/modern-polyfill.js',
+      'next/dist/build/polyfills/polyfill-module': './src/lib/modern-polyfill.js',
+    },
   },
   images: {
     qualities: [75, 90, 95],

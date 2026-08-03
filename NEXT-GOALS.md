@@ -168,8 +168,14 @@
       ב-`notifications.ts` (reuse של `buildVoucherEmail`) כדי שה-drain לא יהרוג
       שורות אחרי ההחלה. GO-LIVE עודכן על CategoryProductCard + sitemap.
 
-- [ ] [32] חציון Lighthouse בית נייד עדיין ~86 (שיא 90+). למצוא מנוף מדוד
-      מעבר לתקרת Lantern שתועדה ב-[20]/[24]/[25].
+- [x] ✅ [32] מדידת חציון בית: **87** (5 ריצות: 87/87/87/87/94). שיא 94.
+      הוסרו polyfills מיושנים של Next (alias ל-`modern-polyfill.js`); ביקורת
+      legacy-javascript נעלמה. חיפוש masthead נטען רק מ-md ומעלה. חציון עדיין
+      על תקרת Lantern (FCP דו-שיא 0.9/1.5s על אותו CSS); `inlineCss` כבר נמדד
+      כשלילי ב-[21].
+
+- [ ] [33] image-delivery על כרטיסי דילים בבית (~10KiB ב-LH) + בדיקת
+      `sizes`/איכות אחרי defer החיפוש.
 
 ## החלטות שהתקבלו אוטומטית: מה נשאר מ-[9]
 
