@@ -1,22 +1,19 @@
-# ARCHITECTURE: Cashback Wallet
+# ארכיטקטורה: ארנק קאשבק
 
-ארנק קאשבק **פנימי בלבד**: ledger כפול-רישום באגורות integer, בלי משיכה החוצה.
+ארנק **פנימי בלבד** שלא יוצא מהמערכת: ledger כפול-רישום, צבירה, ומימוש בקנייה הבאה.
 
-Status: **BINDING** · Updated: 2026-08-03 (pack-20)  
+Status: **BINDING** · עודכן: 2026-08-03  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
-אין שינוי קוד. אין נגיעה ב-worktree הראשי (`kenyonexpress`).
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
-Companions:
+מסמכים קשורים:
 
 ```
 docs/ARCHITECTURE-WALLET-LEDGER.md
 docs/ARCHITECTURE-REFERRAL.md
 docs/ARCHITECTURE-NOTIFICATIONS.md
-docs/ARCHITECTURE-SECURITY-RLS.md
-docs/BUSINESS-MODEL.md
+docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 ```
-
-מסמך זה הוא החוזה המוצרי ל-cashback. פירוט טכני של `fn_wallet_transfer`: ראה `ARCHITECTURE-WALLET-LEDGER.md`.
 
 ---
 
@@ -25,69 +22,93 @@ docs/BUSINESS-MODEL.md
 | # | הכרעה |
 |---|---|
 | C1 | הארנק הוא אשראי פנימי לשימוש באתר/באפ בלבד. |
-| C2 | **אין משיכה החוצה**, אין P2P, אין cash-out. |
-| C3 | יתרות ותנועות: **integer agorot**. |
+| C2 | **אין משיכה החוצה**, אין P2P, אין cash-out לבנק/כרטיס. |
+| C3 | יתרות ותנועות: integer **agorot**. |
 | C4 | כל תנועה = journal כפול-רישום דרך `fn_wallet_transfer`. |
-| C5 | קאשבק מחושב מ-`paid_on_site_agorot` (מה שנגבה באתר), לא מ-face של קופון. |
-| C6 | מקדמת קופון עצמה **אינה** נכנסת לארנק הלקוח כ-escrow; No Escrow. |
-| C7 | זיכוי referral משתמש באותו ledger (`reason=referral_bonus`). |
+| C5 | צבירה מ-`paid_on_site_agorot` לפי `cashback_rules`. |
+| C6 | מימוש: הפחתה מסכום החיוב באתר בקנייה הבאה (לפני Cardcom). |
+| C7 | מקדמת קופון עצמה לא נכנסת לארנק כ-escrow (No Escrow). |
 
 ---
 
-## 1. זרימת earn
+## 1. צבירה (earn)
 
 ```text
-order paid (finalize / webhook)
-  → rule = active cashback_rules for product_type
+הזמנה paid
   → cashback_agorot = floor(paid_on_site_agorot * percent / 100)
   → fn_wallet_transfer(
-       from: platform:cashback_reserve,
-       to: user available,
+       from: platform:cashback_reserve → to: user available,
        reason: order_cashback,
        idempotency: cashback:{order_id}
      )
-  → optional notify wallet_activity
+  → הודעה wallet_activity (אופציונלי)
 ```
 
-כשל העברה אחרי paid: retry עם אותו idempotency; לא מבטל paid.
+כשל אחרי paid → retry עם אותו מפתח; לא מבטל תשלום.
 
 ---
 
-## 2. Spend (עתידי / כשמופעל)
+## 2. מימוש בקנייה הבאה (spend)
 
 | כלל | פירוט |
 |---|---|
-| מקסימום | לא יותר מיתרה; לא יותר מאחוז מ-order on-site (אם מוגדר cap) |
-| יישום | לפני Cardcom charge: הפחתה מ-`amount_to_charge`; journal `order_spend` |
-| קופון | מותר רק על החלק שמשולם באתר |
-| Refund | החזר יחסי ליתרה פנימית (`order_refund_credit`) לפי מדיניות |
+| מתי | ב-checkout, לפני יצירת חיוב Cardcom |
+| מקסימום | `min(יתרה, סכום_לתשלום_באתר, cap_אם_מוגדר)` |
+| יומן | `order_spend`: user available → platform |
+| קופון | ניתן לממש רק על חלק האתר (`coupon_price`), לא על יתרת העסק |
+| פיזי | ניתן לממש על סכום העגלה באתר |
+| כשל Cardcom אחרי spend | reverse journal או hold+release לפי idempotency; לא לאבד יתרה בשקט |
+| תצוגה | "ימומש מהארנק: ₪X · לתשלום בכרטיס: ₪Y" בעברית RTL |
+
+```text
+cart on-site total = T
+wallet apply = W  (0 ≤ W ≤ balance, W ≤ T)
+charge Cardcom = T - W
+if paid:
+  confirm order_spend journal (idempotency spend:{order_id})
+```
 
 ---
 
-## 3. UI
+## 3. Ledger (תמצית)
+
+| טבלה | תפקיד |
+|---|---|
+| `wallet_accounts` | חשבון משתמש + חשבונות פלטפורמה |
+| `wallet_entries` | שורות debit/credit append-only |
+| `cashback_rules` | אחוז/סכום פעיל לפי סוג מוצר |
+
+יתרה = sum(credit) − sum(debit). איסור יתרה שלילית ב-available.
+
+פירוט מלא:
+
+```
+docs/ARCHITECTURE-WALLET-LEDGER.md
+```
+
+---
+
+## 4. UI
 
 | מקום | תוכן |
 |---|---|
-| `/account/wallet` | יתרה ₪, היסטוריה, משפט "לשימוש באתר בלבד" |
-| Checkout | הצגת יתרה למימוש (אם flag) |
-| Admin | adjust רק super_admin + recent auth + reason + audit |
-
-אין כפתור משיכה.
+| `/account/wallet` | יתרה, היסטוריה, "לשימוש באתר בלבד · לא ניתן למשיכה" |
+| Checkout | בחירת סכום למימוש / מתג "השתמש ביתרה" |
+| Admin | adjust רק super_admin + recent auth + reason |
 
 ---
 
-## 4. Acceptance
+## 5. Acceptance
 
-- [ ] Earn אחרי paid עם idempotency
-- [ ] Double-entry בלבד
-- [ ] אין API משיכה
-- [ ] UI מציג ₪; DB agorot
-- [ ] קשר ל-referral מתועד
+- [ ] Earn אחרי paid עם idempotency  
+- [ ] Spend מפחית חיוב Cardcom בקנייה הבאה  
+- [ ] אין API משיכה  
+- [ ] קופון: ארנק לא מכסה יתרת בית העסק  
 
 ---
 
-## 5. Revision
+## 6. Revision
 
-| Date | Change |
+| תאריך | שינוי |
 |---|---|
-| 2026-08-03 | pack-20: cashback wallet פנימי + ledger binding |
+| 2026-08-03 | צבירה + מימוש בקנייה הבאה; ארנק פנימי בלבד |
