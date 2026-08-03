@@ -1,28 +1,35 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-03 (autonomous: [34]/[35] e2e + image warn)
+Updated: 2026-08-03 (autonomous: [36] goal 9 security sweep)
 
 ## המשך מ:
-חוסמי deploy/תוכן (102 ממתין לאישור, סודות, ספקים, תקנון). אין באג קוד פתוח מהתור.
+תור goals 9-20 מ-03.08. ‏[36] = goal 9 הושלם. הבא בתור: **goal 10 (Observability:
+‏Sentry + structured logging)**, ואחריו 11-20 לפי הסדר, תוך דילוג על מה ש-[1]-[35]
+כבר סגרו.
 
 ## Current Phase
-‏**main.** תור [1]-[35] סגור. מודל כסף נעול: אין Escrow.
+‏**main.** תור [1]-[35] סגור. תור goals 9-20 פתוח, ‏[36] סגר את goal 9.
+מודל כסף נעול: אין Escrow.
 
 ## Last Completed
+[36] goal 9 security: 7 views עוקפי-RLS חשופים ל-anon ב-REST הציבורי. מיגרציה 103
+ממתינה לאישור + probe שמשחזר.
 [35] דילים: style width/height auto (אזהרת next/image).
 [34] Playwright 169/5/0. [33] q=50. [32] LH median 87 + polyfill alias.
 
 ## In Progress
-nothing
+goal 10 (Observability).
 
 ## Blocking Issues
 חוסמי deploy (קונפיג/נתונים, לא קוד): VOUCHER_QR_SECRET, Cardcom prod, DNS, 11 ספקים בלי כתובת/לוגו.
 ‏102 (voucher_issued) ממתין לאישור apply_migration.
+‏**103 (נעילת views ו-RPCs) ממתין לאישור apply_migration. דליפת PII חיה עד להחלה.**
+‏`PENDING-money-integer-fix.sql` ממתין לאישור. **לא להריץ** (הוראה מפורשת, 03.08).
 QA#6 (order_items ב-redeem) נדחה: מודל 085.
 terms: תוכן משפטי, לא קוד.
 
 ## Next Task
-החלת 102 אחרי אישור, או באג קוד חדש.
+goal 10. במקביל: החלת 102 ו-103 אחרי אישור.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
@@ -40,6 +47,49 @@ terms: תוכן משפטי, לא קוד.
 - 2026-08-03: [32] alias polyfill-module ריק (קהל מודרני=baseline של Next). חציון LH 87 נשאר תקרת Lantern.
 - 2026-08-03: [33] לא לרדוף q מתחת ל-50 על דילים (LH נשאר אדום על צילום; sizes כבר נכונים).
 - 2026-08-03: [34]/[35] E2E ירוק; תור קוד שוב על חוסמי deploy בלבד.
+- 2026-08-03: [36] ה-views נסגרים ב-`security_invoker=on` ולא בהסרת ה-view: כל
+  הקוראים הם `createAdminClient()` ‏(service_role עוקף RLS), ולכן אף מסך אדמין
+  או cron לא נשבר.
+- 2026-08-03: [36] `check_rate_limit` **לא** נשלל מ-anon למרות אזהרת ה-advisor:
+  server actions של אורחים קוראים לו תחת anon, וב-`rate-limit.ts:24` כישלון
+  ה-RPC הוא fail-open. שלילה הייתה מכבה את הרייט-לימיט במקום להדק אותו.
+- 2026-08-03: [36] תשע פונקציות ה-RLS predicate (`is_admin`, `has_role`, ...)
+  נשארות עם EXECUTE: ביטוי policy מוערך בהרשאות התפקיד השואל, ושלילה שוברת RLS.
+
+---
+
+## ‏2026-08-03 — [36] goal 9: סריקת אבטחה, ודליפה חיה ב-REST הציבורי
+
+הבקשה הייתה "‏RLS לכל 44 הטבלאות + rate limiting + security headers". שניים
+מהשלושה כבר היו: ‏`next.config.ts` מגיש CSP, ‏HSTS ו-X-Frame-Options לכל נתיב,
+ו-`src/lib/utils/rate-limit.ts` בשימוש ב-11 מסלולים. ‏**כל 44 הטבלאות אכן עם
+‏RLS מופעל**, כולל השש עם אפס policies, שהן נעילה מכוונת לטבלאות service-role.
+
+**החור לא היה בטבלאות אלא בשבעה views.** הם רצים כ-`postgres`, כלומר עוקפים
+‏RLS, ומחזיקים grant מלא ל-anon ול-authenticated. נמדד מול ה-REST החי עם המפתח
+הפומבי בלבד: **שישה החזירו 200**. ‏`v_referral_review_queue` בוחר
+‏`referrer_email` ו-`referred_email`, ו-`v_wallet_balance_drift` בוחר `user_id`
+עם היתרות. הם החזירו `[]` **רק כי הטבלאות ריקות כרגע** — מפנה אחד או ארנק אחד
+הופכים כתובות מייל ויתרות אמיתיות לקריאות לכל העולם.
+
+**המלכודת שכמעט הפילה את התיקון:** כל ACL מתחיל ב-`=X/postgres`, שהוא grant ל-
+‏PUBLIC. ‏`REVOKE ... FROM anon, authenticated` לבדו לא היה משנה כלום, כי שני
+התפקידים יורשים EXECUTE דרך PUBLIC. כל revoke במיגרציה נוקב ב-PUBLIC ראשון.
+
+עוד שני ממצאים: שמונה trigger functions ושתי פונקציות cron ניתנות לקריאה כ-RPC
+(‏firing של trigger לא בודק EXECUTE, ולכן שלילה בטוחה), ו-`check_user_rate_limit`
+בוטח ב-`p_user_id` מהקורא, כלומר anon יכול לשרוף מכסה של קורבן נקוב ולנעול אותו.
+היא **קוד מת** (אפס קוראים; `checkUserRateLimit` לא נקרא משום מקום), ולכן נשללה
+לגמרי. בנוסף 4 פונקציות עם search_path פריץ, ביניהן `handle_new_user`.
+
+‏**`supabase/migrations/103_lock_definer_views_and_rpcs.sql` נכתב ולא הוחל,
+ממתין לאישור אופיר דרך MCP `apply_migration` בלבד.** כל 27 המזהים שהוא נוקב
+בהם אומתו כקיימים מול הפרודקשן, כך שהוא לא ייפול באמצע.
+
+‏`scripts/security-probe-views.mjs` שואל את אותו endpoint שתוקף היה שואל, ונכשל
+עם exit 1 כל עוד יש 200. הוא הריץ עכשיו 6/7 ומשחזר את הממצא. **להריץ אותו שוב
+אחרי כל מיגרציה שבונה view מחדש** — view מחודש לא יורש `security_invoker`,
+ו-`PENDING-money-integer-fix.sql` בונה מחדש בדיוק את `v_wallet_balance_drift`.
 
 ---
 

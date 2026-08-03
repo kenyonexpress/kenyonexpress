@@ -1,5 +1,30 @@
 # NEXT-GOALS.md
 
+## תור goals 9-20 (נמסר 03.08.2026)
+
+- [x] ✅ **goal 9 Security** — ‏`103` ממתין לאישור + probe. ראה [36] ב-STATE.md.
+      **תיקון להנחה בבקשה:** לא "רובן 0 policies". נמדד מול הפרודקשן:
+      ‏**44/44 טבלאות עם RLS מופעל**, ‏38 מהן עם policies (עד 11 ב-`products`),
+      ורק 6 עם אפס policies — וזו נעילה מכוונת של טבלאות service-role בלבד
+      (`payment_webhook_events`, `rate_limits`, `user_rate_limits`,
+      `referral_signals`, `search_index_dlq`, `settlement_events`).
+      אפס policies + RLS דלוק = דחייה מוחלטת לכל מי שאינו service_role, כלומר
+      המצב המהודק ביותר האפשרי, לא פער.
+      החור האמיתי היה במקום אחר לגמרי: שבעה **views** עוקפי-RLS חשופים ל-anon.
+- [ ] goal 10 Observability
+- [ ] goal 11 Supplier portal
+- [ ] goal 12 Admin dashboard
+- [ ] goal 13 Notifications
+- [ ] goal 14 Search
+- [ ] goal 15 Wallet
+- [ ] goal 16 Analytics
+- [ ] goal 17 PWA
+- [ ] goal 18 Accessibility
+- [ ] goal 19 Load
+- [ ] goal 20 Final
+
+---
+
 תור ביצוע סדרתי (עדכון אחרי כל שלב: סימון ✅ + commit+push + עדכון STATE.md).
 
 כללים: בלי Escrow, בלי אחוז hardcoded, `platform_percent` דינמי מצולם, קופון = גבייה מלאה של מחיר הקופון באתר, כסף באגורות integer דרך
