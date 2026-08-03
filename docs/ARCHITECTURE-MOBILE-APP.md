@@ -2,7 +2,7 @@
 
 ארכיטקטורת אפליקציית מובייל ל-KenyonExpress: **Expo + React Native** על **אותו backend Supabase** כמו ה-web.
 
-Status: **BINDING** · Updated: 2026-08-03 (rev B)  
+Status: **BINDING** · Updated: 2026-08-03 (rev C)  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה ב-worktree הראשי (`kenyonexpress`).  
 זה מסמך יעד (future). PWA היא שלב ביניים; ה-web נשאר ערוץ SEO.
@@ -31,7 +31,7 @@ docs/ARCHITECTURE-PWA.md
 | M3 | כסף ו-redeem רק דרך Server Actions / Route Handlers / RPC. אין service role באפ. |
 | M4 | תשלומים: Cardcom דרך שרת Next/Edge בלבד (WebView Low Profile אם נדרש PCI). |
 | M5 | ארנק כסף פנימי לא יוצא מהמערכת (אין משיכה / P2P). |
-| M6 | קופון: Escrow פנימי 2026-07-27 (שולם באתר + יתרה בעסק; held עד מימוש). |
+| M6 | קופון: **No Escrow** (שולם באתר נשאר בפלטפורמה; יתרה בבית העסק; לספק 0 מהפלטפורמה). |
 | M7 | PWA (M0) היא שלב ביניים; לא מחליפה חנויות אפ. |
 | M8 | Push + Wallet pass updates דרך אותו pipeline ב-`ARCHITECTURE-NOTIFICATIONS.md`. אין Make/Zapier. |
 | M9 | RTL native מההתחלה (`I18nManager` / config), לא רק סטייל אחרי paint. |
@@ -399,6 +399,7 @@ docs/ARCHITECTURE-ACCOUNT-WALLET.md
 | Date | Change |
 |---|---|
 | 2026-07-31 | רענון + שלבי M0 עד M4 |
-| 2026-08-02 | Expo RN, shared Supabase, QR offline, push; Escrow 2026-07-27 |
+| 2026-08-02 | Expo RN, shared Supabase, QR offline, push; No Escrow 2026-08-03 |
 | 2026-08-03 | יישור ל-notifications lifecycle + Wallet pass CTA; docs-only ב-`ke-arch` |
 | 2026-08-03 | rev B: המלצה מנומקת Expo/RN מול PWA (PWA=M0 גשר; Expo=יעד שימור+ספק) |
+| 2026-08-03 | rev C: No Escrow במובייל; חיזוק המלצת Expo מול PWA |
