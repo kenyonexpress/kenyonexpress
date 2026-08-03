@@ -80,10 +80,26 @@ export default function MiniCartDropdown() {
   const panelRef = useRef<HTMLDialogElement | null>(null)
   const pathname = usePathname()
 
-  // Close on route change. Without this the panel survives a click on one of
-  // its own product links and hangs over the page it just navigated to.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: pathname is the trigger, not a value this effect reads.
+  // Close on route CHANGE, and the distinction is the fix.
+  //
+  // Without this the panel survives a click on one of its own product links and
+  // hangs over the page it just navigated to. But an effect keyed on `pathname`
+  // also runs on MOUNT, and `usePathname` settles after hydration, so this used
+  // to fire once on a page the shopper had not navigated anywhere from. That
+  // was harmless only because it was always over long before anyone could
+  // click: on a request-time product page the first paint cost a Supabase round
+  // trip. [46] took that page to a prerendered 2ms, and the same effect started
+  // landing AFTER add-to-cart had set `drawerOpen`, so adding an item settled
+  // the real cart, updated the badge to its real total, and then silently shut
+  // the panel that is the shopper's only confirmation. Reproduced 5/5, and the
+  // panel still opened from the header control, which is what named the culprit
+  // as this effect and not the mutation.
+  //
+  // The ref makes it close on a real navigation only. Do not "simplify" it back.
+  const lastPathname = useRef(pathname)
   useEffect(() => {
+    if (lastPathname.current === pathname) return
+    lastPathname.current = pathname
     closeDrawer()
   }, [pathname, closeDrawer])
 

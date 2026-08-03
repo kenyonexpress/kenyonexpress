@@ -11,13 +11,13 @@ import {
   CATEGORY_PAGE_SIZE,
   type ProductTypeFilter,
   getAllCategories,
+  getAllCategorySlugs,
   getCategoryBySlug,
   getCategoryParent,
   getCategoryProductsCached,
   parseProductType,
 } from '@/lib/category-page'
 import { type SortValue, parseSort } from '@/lib/category-tokens'
-import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
@@ -45,19 +45,37 @@ function resultCountText(total: number, from: number, to: number): string {
   return `מציג ${from}–${to} מתוך ${total} תוצאות`
 }
 
+/**
+ * Reads through `getCategoryBySlug`, NOT a fresh `createClient()`.
+ *
+ * It used to run its own `categories` query on the request-scoped client, and
+ * that single line was the whole of this route's per-request cost: measured on
+ * a clean build, TTFB is 4ms and the full response was 273-327ms, against a
+ * warm keep-alive round trip to this Supabase project of 266-313ms. One query,
+ * not the PPR hole. `getCategoryBySlug` is `use cache` and already selects
+ * these exact two columns behind the same `is_active` filter, so this is the
+ * same answer off the same cache entry the body below reads.
+ */
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params
-  const supabase = await createClient()
-  const { data } = await supabase
-    .from('categories')
-    .select('name_he, description_he')
-    .eq('slug', slug)
-    .eq('is_active', true)
-    .single()
+  const category = await getCategoryBySlug(slug)
   return {
-    title: data?.name_he ?? 'קטגוריה',
-    description: data?.description_he ?? undefined,
+    title: category?.name_he ?? 'קטגוריה',
+    description: category?.description_he ?? undefined,
   }
+}
+
+/**
+ * The 12 active categories, prerendered.
+ *
+ * Uncapped on purpose, unlike the product page's 200: this table is the site's
+ * navigation, it is twelve rows, and it does not grow with the catalogue. The
+ * helper has existed in `category-page.ts` since that file was written and had
+ * no caller.
+ */
+export async function generateStaticParams() {
+  const slugs = await getAllCategorySlugs()
+  return slugs.map((slug) => ({ slug }))
 }
 
 type QueryArgs = {
@@ -139,10 +157,16 @@ async function ResultGrid({
  * - and the whole body streams into it.
  *
  * `category-page__title--pending` holds one line of H1 so the grid does not
- * start high and drop. Making these fully static instead of framed is a
- * `generateStaticParams` + `use cache` job on the catalogue queries, which is
- * the next step and not this one: every read below still goes through the
- * cookie-bound Supabase client.
+ * start high and drop.
+ *
+ * The `use cache` half of that note is DONE: every read below now goes through
+ * `lib/category-page.ts` on `createPublicClient`, and `generateMetadata` was
+ * the last cookie-bound query on the route. The response still carries
+ * `x-nextjs-postponed`, and it has to -- `CategoryPageBody` awaits
+ * `searchParams` for sort, page and the price filter, which is per-request by
+ * definition. What changed is what the hole COSTS: the full response went from
+ * 273-327ms to 6-14ms, because the hole no longer contains a round trip.
+ * Locked by `lib/catalogue-render-path.test.ts`.
  */
 function CategoryPageFallback() {
   return (

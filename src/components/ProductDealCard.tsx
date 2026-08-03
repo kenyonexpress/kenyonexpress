@@ -78,8 +78,35 @@ export default function ProductDealCard({ product }: { product: Product }) {
         </Link>
       )}
 
+      {/*
+        `prefetch={false}` on every product link in this card, and it is a fix
+        with a number behind it.
+
+        This card renders ONLY `KE_LIVE_DEALS` (via `DealsOfTheDay`, its single
+        caller), which is a verbatim mirror of the live site's 32 deal hrefs -
+        the file says so at the top, "including live's own mismatched slugs".
+        Measured against this catalogue: **8 of those 32 slugs have no product
+        here at all** (`reverse-withdrawal-payment`, `קופון-טסט`,
+        `צימר-מאסטר-copy-copy`, `מלון-4-כוכבים-פלוס-ארוחת-בוקר`,
+        `מלון-5-כוכבים-בטבריה`, `ארוחת-בוקר-זוגית-בקפה-קפה`,
+        `עוזרת-אישית-שירותי-משרד`,
+        `תספורת-לגבר-ילד-או-סידור-זקן-בפתח-תקווה`), and all 8 answer 404.
+
+        Next prefetches a Link when it scrolls into view, so a quarter of this
+        grid fired a full server render that came back 404 on every homepage
+        view. That was invisible while the product page was a PPR shell: a
+        prefetch got the static frame with a 200 and never ran the body that
+        calls `notFound()`. Now that the page is fully static per slug ([46]),
+        the prefetch resolves the real thing and the 404 surfaces - which is
+        how `home.spec.ts` "reaching the footer costs no 404s" caught it.
+
+        The links stay, because the cards are pixel-matched to live and this is
+        a DATA gap (those products are not imported yet - recorded in
+        GO-LIVE.md), not a markup one. Same shape as the `built: false` footer
+        links from [21]: the href remains, the speculative fetch does not.
+      */}
       <div className="p_con__title-wrap">
-        <Link href={`/product/${product.slug}`} className="hover:underline">
+        <Link href={`/product/${product.slug}`} className="hover:underline" prefetch={false}>
           <h2 className="p_con__title">{product.name_he}</h2>
         </Link>
       </div>
@@ -89,6 +116,7 @@ export default function ProductDealCard({ product }: { product: Product }) {
           href={`/product/${product.slug}`}
           className="p_con__image-link"
           aria-label={product.name_he}
+          prefetch={false}
         >
           {thumb ? (
             <Image
@@ -148,7 +176,7 @@ export default function ProductDealCard({ product }: { product: Product }) {
               <CartPlusIcon />
             </AddToCartButton>
           ) : (
-            <Link href={`/product/${product.slug}`} aria-label="צפה במוצר">
+            <Link href={`/product/${product.slug}`} aria-label="צפה במוצר" prefetch={false}>
               <CartPlusIcon />
             </Link>
           )}

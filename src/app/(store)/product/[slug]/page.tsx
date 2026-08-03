@@ -11,7 +11,6 @@ import { buildBreadcrumbJsonLd, buildProductJsonLd, jsonLdScript } from '@/lib/s
 import '@/styles/product-page.css'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Suspense } from 'react'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -72,40 +71,30 @@ export async function generateStaticParams() {
 }
 
 /**
- * The static shell of a product page.
+ * NO `<Suspense>` WRAPPER, and removing it is a fix rather than a cleanup.
  *
- * Every visible thing here is the product, and the product is `params.slug`, so
- * there is nothing to prerender but the frame. That frame is worth more than it
- * looks: `.pdp__inner` already carries `min-height: var(--pdp-content-h)`, the
- * measured height of live's content column, so the footer lands on its final
- * line before the product has been read and does not move when it arrives.
+ * This page used to render `<Suspense fallback={<ProductPageFallback/>}>` round
+ * its whole body, which was right while the body was a request-time hole: the
+ * frame streamed first and the product arrived after it. Once the last
+ * uncached read left this tree (`RelatedProducts`, see `lib/related-products.ts`)
+ * the page became fully static -- `x-nextjs-prerender: 1`, `s-maxage=3600`, no
+ * `x-nextjs-postponed` -- and the wrapper stopped being free.
  *
- * The product itself is now static too: `generateStaticParams` above plus
- * `use cache` in `lib/product-detail.ts`, on a catalogue client that does not
- * read cookies. This fallback still matters for a long-tail slug past the
- * prerender cap, which renders on first request.
+ * MEASURED, because it is not obvious: with the wrapper still in place, a
+ * DOCUMENT request served the complete product (94338 bytes, correct HTML) but
+ * an RSC request served the fallback shell instead -- byte-identical for every
+ * slug, 31852 bytes, containing no product name and ending on unresolved
+ * `$W` slots. So every CLIENT-SIDE navigation into a product died on
+ * "Connection closed." and rendered the error boundary, while every direct load
+ * and every curl looked perfect. Six products, Hebrew and ASCII slugs alike,
+ * from `/products` and from a category page: 6/6. That is 11 Playwright
+ * failures and nothing in the server log.
+ *
+ * A long-tail slug past the 200 of `generateStaticParams` now renders on first
+ * request instead of showing a frame first. That costs one round trip on one
+ * view of one uncached product, and `loadProductBySlug` caches it from there.
  */
-function ProductPageFallback() {
-  return (
-    <div data-pdp="container" className="pdp">
-      <div className="pdp__inner">
-        <nav className="pdp-breadcrumb" aria-label="נתיב ניווט">
-          <Link href="/">בית</Link>
-        </nav>
-      </div>
-    </div>
-  )
-}
-
-export default function ProductPage(props: Props) {
-  return (
-    <Suspense fallback={<ProductPageFallback />}>
-      <ProductPageBody {...props} />
-    </Suspense>
-  )
-}
-
-async function ProductPageBody({ params }: Props) {
+export default async function ProductPage({ params }: Props) {
   const { slug: rawSlug } = await params
   const slug = decodeURIComponent(rawSlug)
 
