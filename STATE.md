@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-03 (docs-only ke-arch: 7-doc pack SECURITY/SEARCH/WALLET/ANALYTICS/PWA/TEST/CHANGELOG)
+Updated: 2026-08-03 (docs-only ke-arch: 6-doc notifications/SEO/mobile/admin/fraud/runbook rev C)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,17 +8,16 @@ ke-arch
 . Docs only. אין נגיעה ב-worktree הראשי.
 
 ## Last Completed
-שבעה מסמכים ב-
+שישה מסמכים ב-
 ke-arch
-, commit נפרד לכל אחד:
+, commit נפרד לכל אחד (rev C):
 
-1. docs/ARCHITECTURE-SECURITY-RLS.md (`bb241cc`)
-2. docs/ARCHITECTURE-SEARCH.md (`0d1fd47`)
-3. docs/ARCHITECTURE-WALLET-LEDGER.md (`847a45a`)
-4. docs/ARCHITECTURE-ANALYTICS.md (`6bb9455`)
-5. docs/ARCHITECTURE-PWA.md (`af7a6d8`)
-6. docs/TEST-STRATEGY.md (`d68d81c`)
-7. docs/CHANGELOG.md (`8a97594` + SHA table fix)
+1. docs/ARCHITECTURE-NOTIFICATIONS.md (`4eaf815`) Resend + Edge + email/WA/SMS + Wallet push
+2. docs/ARCHITECTURE-SEO-PERFORMANCE.md (`b277760`) ISR + sitemap + schema.org RTL + CWV
+3. docs/ARCHITECTURE-MOBILE-APP.md (`85a7807` / `fb5d6d4`) Expo מול PWA + No Escrow
+4. docs/ARCHITECTURE-ADMIN-DASHBOARD.md (`7056f6b`) platform_percent פר מוצר, ספקים, דוחות
+5. docs/ARCHITECTURE-FRAUD-PREVENTION.md (`81976bd`) מימוש כפול, chargebacks, צילומי QR
+6. docs/RUNBOOK-PRODUCTION.md (`c27ee32`) deploy, rollback, migrations
 
 ## In Progress
 nothing
@@ -33,11 +32,6 @@ ke-arch
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
-
-## החלטות שהתקבלו אוטומטית
-- 2026-08-03: מטריצת RLS מכסה 44 טבלאות ליבה (live DB-SCHEMA 28 + 16 קריטיות). טבלאות agents/analytics-partitions/ledger_core מחוץ לספירה עד מסמך נפרד.
-- 2026-08-03: חיפוש: Postgres FTS ראשוני; Meili+QStash+DLQ לאינדוקס משני.
-- 2026-08-03: ארנק: כפול-רישום באגורות; אין משיכה החוצה.
 
 ---
 ## Current Phase (רקע מודל)
@@ -1145,3 +1139,11 @@ ke-arch
 - PWA af7a6d8
 - TEST-STRATEGY d68d81c
 - CHANGELOG 8a97594
+
+### 2026-08-03 : ke-arch 6-doc rev C (notifications/SEO/mobile/admin/fraud/runbook)
+- NOTIFICATIONS 4eaf815
+- SEO-PERFORMANCE b277760
+- MOBILE-APP 85a7807/fb5d6d4
+- ADMIN-DASHBOARD 7056f6b
+- FRAUD-PREVENTION 81976bd
+- RUNBOOK-PRODUCTION c27ee32

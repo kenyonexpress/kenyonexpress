@@ -17,7 +17,15 @@ STATE.md
 
 ### Docs
 
-- (ריק: רשום כאן לפני merge הבא)
+### Docs (rev C pack)
+
+- ARCHITECTURE-NOTIFICATIONS.md: Wallet push + email/WA/SMS lifecycle (`4eaf815`)
+- ARCHITECTURE-SEO-PERFORMANCE.md: ISR/sitemap/schema/CWV (`b277760`)
+- ARCHITECTURE-MOBILE-APP.md: Expo vs PWA, No Escrow (`85a7807`)
+- ARCHITECTURE-ADMIN-DASHBOARD.md: platform_percent / suppliers / reports (`7056f6b`)
+- ARCHITECTURE-FRAUD-PREVENTION.md: double-redeem / chargebacks / QR screenshots (`81976bd`)
+- RUNBOOK-PRODUCTION.md: deploy/rollback/migrations (`c27ee32`)
+
 
 ---
 
