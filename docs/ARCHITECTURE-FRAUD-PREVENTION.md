@@ -241,3 +241,4 @@ docs/RUNBOOK-PRODUCTION.md
 | 2026-08-02 | Duplicate QR, RL, chargeback (טיוטות) |
 | 2026-08-03 | Binding ב-`ke-arch`: מימוש כפול אטומי, chargebacks, צילומי מסך QR; docs only |
 | 2026-08-03 | rev C: הסרת Escrow release מ-redeem; No Escrow ב-chargeback |
+| 2026-08-03 | pack-20: fraud prevention binding refresh for 20-doc queue |
