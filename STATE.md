@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-03 (docs-only ke-arch: 4-doc No-Escrow pack on arch/docs-lifecycle)
+Updated: 2026-08-03 (docs-only ke-arch: 7-doc pack SECURITY/SEARCH/WALLET/ANALYTICS/PWA/TEST/CHANGELOG)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,26 +8,17 @@ ke-arch
 . Docs only. אין נגיעה ב-worktree הראשי.
 
 ## Last Completed
-ארבעה מסמכים ב-
+שבעה מסמכים ב-
 ke-arch
-, commit נפרד לכל אחד (No Escrow):
+, commit נפרד לכל אחד:
 
-1.
-docs/ARCHITECTURE-SUPPLIER-PORTAL.md
-(בלי Escrow: קופון שולם באתר נשאר בפלטפורמה; יתרה בבית העסק)
-2.
-docs/ARCHITECTURE-NOTIFICATIONS.md
-(Resend + Edge Functions, תבניות RTL)
-3.
-docs/ARCHITECTURE-ADMIN-DASHBOARD.md
-(platform_percent דינמי פר מוצר; דוחות בלי held)
-4.
-docs/RUNBOOK-PRODUCTION.md
-(deploy, rollback, migrations + smoke No Escrow)
-
-Commits:
-`904ae34`, `bc30683`, `f746f34`, `a702656` על
-`arch/docs-lifecycle`.
+1. docs/ARCHITECTURE-SECURITY-RLS.md (`bb241cc`)
+2. docs/ARCHITECTURE-SEARCH.md (`0d1fd47`)
+3. docs/ARCHITECTURE-WALLET-LEDGER.md (`847a45a`)
+4. docs/ARCHITECTURE-ANALYTICS.md (`6bb9455`)
+5. docs/ARCHITECTURE-PWA.md (`af7a6d8`)
+6. docs/TEST-STRATEGY.md (`d68d81c`)
+7. docs/CHANGELOG.md (`8a97594` + SHA table fix)
 
 ## In Progress
 nothing
@@ -44,7 +35,9 @@ ke-arch
 /Users/ofir/kenyonexpress-web/ke-arch
 
 ## החלטות שהתקבלו אוטומטית
-- 2026-08-03: מודל קופון מחייב ל-docs ב-ke-arch = **No Escrow** (תואם main `c7bf96f` ו-`docs/BUSINESS-MODEL.md`): תשלום קופון באתר נשאר בפלטפורמה; לספק 0 מהפלטפורמה; יתרה נגבית בבית העסק. דורס את קריאת Escrow/held של 2026-07-27 במסמכי החבילה הזו.
+- 2026-08-03: מטריצת RLS מכסה 44 טבלאות ליבה (live DB-SCHEMA 28 + 16 קריטיות). טבלאות agents/analytics-partitions/ledger_core מחוץ לספירה עד מסמך נפרד.
+- 2026-08-03: חיפוש: Postgres FTS ראשוני; Meili+QStash+DLQ לאינדוקס משני.
+- 2026-08-03: ארנק: כפול-רישום באגורות; אין משיכה החוצה.
 
 ---
 ## Current Phase (רקע מודל)
@@ -1143,3 +1136,12 @@ ke-arch
 - docs/ARCHITECTURE-ADMIN-DASHBOARD.md (f746f34)
 - docs/RUNBOOK-PRODUCTION.md (a702656)
 - Binding money model for these docs: No Escrow; platform keeps coupon prepaid; till balance at merchant
+
+### 2026-08-03 : ke-arch 7-doc SECURITY/SEARCH/WALLET/ANALYTICS/PWA/TEST/CHANGELOG
+- SECURITY-RLS bb241cc
+- SEARCH 0d1fd47
+- WALLET-LEDGER 847a45a
+- ANALYTICS 6bb9455
+- PWA af7a6d8
+- TEST-STRATEGY d68d81c
+- CHANGELOG 8a97594

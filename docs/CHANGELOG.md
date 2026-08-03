@@ -73,8 +73,8 @@ arch/docs-lifecycle
 | `847a45a` | ARCHITECTURE-WALLET-LEDGER |
 | `6bb9455` | ARCHITECTURE-ANALYTICS |
 | `af7a6d8` | ARCHITECTURE-PWA |
-
-(TEST-STRATEGY + CHANGELOG: ה-SHA יתווסף ב-commit שלהם.)
+| `d68d81c` | TEST-STRATEGY |
+| `8a97594` | CHANGELOG |
 
 ---
 
