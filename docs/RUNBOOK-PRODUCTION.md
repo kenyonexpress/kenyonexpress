@@ -2,7 +2,7 @@
 
 מדריך תפעול ייצור ל-KenyonExpress: פריסה, חזרה לאחור, והחלת מיגרציות.
 
-Status: **BINDING** · Updated: 2026-08-03  
+Status: **BINDING** · Updated: 2026-08-03 (rev C)  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה ב-worktree הראשי במסמך זה.  
 המסמך מתאר פקודות; ההרצה עצמה היא מחוץ לסקופ docs-only.
@@ -302,3 +302,4 @@ docs/ARCHITECTURE-SUPPLIER-PORTAL.md
 |---|---|
 | 2026-08-03 | מסמך מחייב ב-`ke-arch`: deploy, rollback, migrations |
 | 2026-08-03 | ke-arch docs-lifecycle: soft-open smoke ל-No Escrow + platform_percent + Resend |
+| 2026-08-03 | rev C: נעילת deploy / rollback / migrations + No Escrow smoke |
