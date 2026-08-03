@@ -564,3 +564,4 @@ src/lib/email/resend.ts
 | 2026-08-03 | rev B: SLA + multi-channel |
 | 2026-08-03 | ke-arch docs-lifecycle: נעילת No Escrow בנוסח; דגש Resend + Edge + תבניות RTL |
 | 2026-08-03 | rev C: מחזור קופון email/WA/SMS + Wallet push מחייב ב-Edge worker |
+| 2026-08-03 | pack-20: notifications binding refresh for 20-doc queue |
