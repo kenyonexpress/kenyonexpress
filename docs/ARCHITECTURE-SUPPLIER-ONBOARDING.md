@@ -1,12 +1,12 @@
-# ARCHITECTURE: Supplier Onboarding
+# ארכיטקטורה: הצטרפות ספק
 
-הצטרפות ספק: בקשה, מסמכים, אישור אדמין, כניסה לפורטל.
+הצטרפות ספק: מסמכים, פרטי בנק ל-payout, אישור אדמין, **סניפים ועובדים**.
 
-Status: **BINDING** · Updated: 2026-08-03 (pack-20)
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
-אין שינוי קוד. אין נגיעה ב-worktree הראשי (`kenyonexpress`).
+Status: **BINDING** · עודכן: 2026-08-03  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
-Companions:
+מסמכים קשורים:
 
 ```
 docs/ARCHITECTURE-SUPPLIER-PORTAL.md
@@ -21,61 +21,99 @@ docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 
 | # | הכרעה |
 |---|---|
-| O1 | ספק לא מוכר בלי `supplier_applications` מאושרת + שורת `suppliers` + `supplier_members(owner)`. |
-| O2 | מסמכים מינימום: עוסק/ח.פ או עוסק מורשה, אישור ניהול חשבון (לבנק ל-payout פיזי), טלפון, כתובת, לוגו. |
-| O3 | אישור/דחייה: admin בלבד; דחייה עם סיבה חובה. |
-| O4 | אחרי אישור: `profiles.role` יכול להיות `vendor` לניתוב; הרשאות אמיתיות מ-membership. |
-| O5 | Suspend חוסם redeem ו-publish. |
-| O6 | UI הצטרפות בעברית RTL; אין תשלום הצטרפות ב-MVP. |
+| O1 | אין מכירה בלי בקשה מאושרת + `suppliers` + `supplier_members(owner)`. |
+| O2 | מסמכים מינימום לפני אישור: פרטי עוסק, טלפון, כתובת, לוגו. |
+| O3 | פרטי בנק נדרשים לפני **payout פיזי**; לא חוסמים סריקת קופונים. |
+| O4 | אישור/דחייה: admin בלבד; דחייה עם סיבה. |
+| O5 | סניפים = ישויות משנה תחת אותו ספק (כתובת/טלפון/שעות). |
+| O6 | עובדים = `supplier_members` עם תפקיד owner / manager / scanner. |
+| O7 | UI הצטרפות בעברית RTL. |
 
 ---
 
-## 1. State machine
+## 1. מכונת מצבים
 
 ```text
-submit → pending → approved → suppliers.active + owner membership
-                 ↘ rejected (reason) → optional re-apply after cooldown
+הגשת בקשה → pending
+  → approved → יצירת suppliers + owner membership + מייל welcome
+  → rejected (סיבה) → אפשרות הגשה מחדש אחרי cooldown
 ```
 
-Partial unique: בקשה `pending` אחת למשתמש.
+בקשה `pending` אחת למשתמש (partial unique).
 
 ---
 
 ## 2. מסמכים ושדות
 
-| שדה | חובה לאישור |
+| שדה | חובה לאישור | חובה ל-payout |
+|---|---|---|
+| שם עסק בעברית | כן | |
+| ח.פ / עוסק מורשה | כן | |
+| טלפון + אימייל | כן | |
+| כתובת + עיר + lat/lng | כן ל-publish | |
+| לוגו | כן ל-publish | |
+| אישור ניהול חשבון / פרטי בנק | | כן לפני payout פיזי |
+| קבצים סרוקים | Storage פרטי; גישת admin/owner | |
+
+---
+
+## 3. סניפים
+
+```text
+supplier_branches (
+  id, supplier_id,
+  name_he, address, city, phone,
+  lat, lng, hours_json,
+  is_active, created_at
+)
+```
+
+| כלל | פירוט |
 |---|---|
-| `business_name_he` | כן |
-| `business_id` (ח.פ/עוסק) | כן |
-| `phone`, `email` | כן |
-| `address`, `city`, `lat/lng` | כן ל-publish מוצרים |
-| `logo_url` | כן ל-publish |
-| `bank_*` | כן לפני payout פיזי (לא חוסם סריקת קופונים) |
-| קבצים (אישורים) | Storage פרטי; גישה admin/owner |
+| סניף ראשי | נוצר מכתובת הבקשה באישור |
+| מוצר | יכול להצביע על סניף ברירת מחדל לתצוגת PDP / ניווט |
+| Redeem | לפי `supplier_id` (העסק), לא חובה סניף ב-MVP; סניף נשמר ב-audit אם נבחר |
+| הרשאה | owner/manager מנהלים סניפים; scanner רק קורא |
 
 ---
 
-## 3. זרימת אדמין
+## 4. עובדים (חברי צוות)
 
-1. `/admin/suppliers` תור pending  
-2. בדיקת מסמכים + פרטי קשר  
-3. Approve → RPC/action יוצר supplier + owner  
-4. מייל `supplier` welcome (Resend)  
-5. הספק נכנס ל-`/supplier`
-
----
-
-## 4. Acceptance
-
-- [ ] אין redeem בלי membership פעיל
-- [ ] Reject עם סיבה
-- [ ] Bank verify לפני payout
-- [ ] RTL onboarding
-
----
-
-## 5. Revision
-
-| Date | Change |
+| member_role | הרשאות |
 |---|---|
-| 2026-08-03 | pack-20: supplier onboarding |
+| `scanner` | סריקה + היסטוריית מימושים |
+| `manager` | scanner + הזמנות פיזיות + סניפים מוגבל |
+| `owner` | manager + הזמנות עובדים + בנק + הגדרות |
+
+זרימה:
+
+1. Owner מזמין במייל/טלפון → שורת `supplier_members` (pending/active).  
+2. המשתמש מתחבר ב-Google/OTP → מצטרף.  
+3. Deactivate = `is_active=false` (חוסם redeem).  
+4. Admin רואה את כל החברים במסך הספק.
+
+---
+
+## 5. אחרי אישור
+
+1. הספק נכנס ל-`/supplier`.  
+2. מוסיף סניפים ועובדים.  
+3. אדמין משייך מוצרים / מאשר publish עם `platform_percent`.  
+4. בנק מאומת → זכאות ל-payout פיזי.
+
+---
+
+## 6. Acceptance
+
+- [ ] Approve יוצר owner membership  
+- [ ] בנק לפני payout בלבד  
+- [ ] סניפים מנוהלים בעברית  
+- [ ] scanner/manager/owner מוגדרים וחוסמים ב-deactivate  
+
+---
+
+## 7. Revision
+
+| תאריך | שינוי |
+|---|---|
+| 2026-08-03 | הצטרפות + בנק + סניפים + עובדים |
