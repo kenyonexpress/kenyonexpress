@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-03 (docs-only ke-arch: 6-doc notifications/SEO/mobile/admin/fraud/runbook rev C)
+Updated: 2026-08-03 (docs-only ke-arch: pack-20 twenty-doc architecture queue)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,16 +8,28 @@ ke-arch
 . Docs only. אין נגיעה ב-worktree הראשי.
 
 ## Last Completed
-שישה מסמכים ב-
-ke-arch
-, commit נפרד לכל אחד (rev C):
+עשרים מסמכים ב-ke-arch, commit נפרד לכל אחד (pack-20):
 
-1. docs/ARCHITECTURE-NOTIFICATIONS.md (`4eaf815`) Resend + Edge + email/WA/SMS + Wallet push
-2. docs/ARCHITECTURE-SEO-PERFORMANCE.md (`b277760`) ISR + sitemap + schema.org RTL + CWV
-3. docs/ARCHITECTURE-MOBILE-APP.md (`85a7807` / `fb5d6d4`) Expo מול PWA + No Escrow
-4. docs/ARCHITECTURE-ADMIN-DASHBOARD.md (`7056f6b`) platform_percent פר מוצר, ספקים, דוחות
-5. docs/ARCHITECTURE-FRAUD-PREVENTION.md (`81976bd`) מימוש כפול, chargebacks, צילומי QR
-6. docs/RUNBOOK-PRODUCTION.md (`c27ee32`) deploy, rollback, migrations
+1. docs/ARCHITECTURE-NOTIFICATIONS.md (`b099c4f`)
+2. docs/ARCHITECTURE-SEO-PERFORMANCE.md (`544e522`)
+3. docs/ARCHITECTURE-MOBILE-APP.md (`2ae544d`)
+4. docs/ARCHITECTURE-ADMIN-DASHBOARD.md (`2805eb0`)
+5. docs/ARCHITECTURE-FRAUD-PREVENTION.md (`5fbda92`)
+6. docs/RUNBOOK-PRODUCTION.md (`87f622d`)
+7. docs/ARCHITECTURE-ANALYTICS.md (`c5c68d5`)
+8. docs/ARCHITECTURE-CASHBACK-WALLET.md (`284ba76`)
+9. docs/ARCHITECTURE-SEARCH-UX.md (`fb25cbd`)
+10. docs/ARCHITECTURE-REFERRAL.md (`38147a3`)
+11. docs/ARCHITECTURE-CATEGORIES-TAXONOMY.md (`313c17c`)
+12. docs/ARCHITECTURE-EMAIL-TEMPLATES.md (`a0566f8`)
+13. docs/ARCHITECTURE-SUPPLIER-ONBOARDING.md (`b3ca26c`)
+14. docs/ARCHITECTURE-INVENTORY.md (`1c15687`)
+15. docs/ARCHITECTURE-PRICING-RULES.md (`bf5e8c3`)
+16. docs/ARCHITECTURE-CUSTOMER-SUPPORT.md (`f6f0d93`)
+17. docs/ARCHITECTURE-LEGAL-COMPLIANCE.md (`2f5ff17`)
+18. docs/ARCHITECTURE-BACKUP-DR.md (`ca9dbcf`)
+19. docs/ARCHITECTURE-OBSERVABILITY.md (`1037986`)
+20. docs/ROADMAP-V2.md (`c1a36b7`)
 
 ## In Progress
 nothing
@@ -26,12 +38,13 @@ nothing
 none (docs only)
 
 ## Next Task
-המשך תור docs ב-
-ke-arch
-או יישום על ענפי feat מחוץ לסקופ docs-only.
+יישום לפי docs/ROADMAP-V2.md Phase A מחוץ לסקופ docs-only, או תור docs נוסף.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
+
+## החלטות שהתקבלו אוטומטית
+- pack-20: PostHog למוצר + GA4 למרקטינג; ארנק פנימי בלבד; Meili ל-UX חיפוש; taxonomy ישראלי עומק 2; No Escrow נשאר מחייב.
 
 ---
 ## Current Phase (רקע מודל)
@@ -1147,3 +1160,24 @@ ke-arch
 - ADMIN-DASHBOARD 7056f6b
 - FRAUD-PREVENTION 81976bd
 - RUNBOOK-PRODUCTION c27ee32
+### 2026-08-03 : ke-arch pack-20 (20 docs)
+- ARCHITECTURE-NOTIFICATIONS.md b099c4f
+- ARCHITECTURE-SEO-PERFORMANCE.md 544e522
+- ARCHITECTURE-MOBILE-APP.md 2ae544d
+- ARCHITECTURE-ADMIN-DASHBOARD.md 2805eb0
+- ARCHITECTURE-FRAUD-PREVENTION.md 5fbda92
+- RUNBOOK-PRODUCTION.md 87f622d
+- ARCHITECTURE-ANALYTICS.md c5c68d5
+- ARCHITECTURE-CASHBACK-WALLET.md 284ba76
+- ARCHITECTURE-SEARCH-UX.md fb25cbd
+- ARCHITECTURE-REFERRAL.md 38147a3
+- ARCHITECTURE-CATEGORIES-TAXONOMY.md 313c17c
+- ARCHITECTURE-EMAIL-TEMPLATES.md a0566f8
+- ARCHITECTURE-SUPPLIER-ONBOARDING.md b3ca26c
+- ARCHITECTURE-INVENTORY.md 1c15687
+- ARCHITECTURE-PRICING-RULES.md bf5e8c3
+- ARCHITECTURE-CUSTOMER-SUPPORT.md f6f0d93
+- ARCHITECTURE-LEGAL-COMPLIANCE.md 2f5ff17
+- ARCHITECTURE-BACKUP-DR.md ca9dbcf
+- ARCHITECTURE-OBSERVABILITY.md 1037986
+- ROADMAP-V2.md c1a36b7
