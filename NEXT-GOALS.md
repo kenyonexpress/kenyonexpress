@@ -13,11 +13,11 @@
       החור האמיתי היה במקום אחר לגמרי: שבעה **views** עוקפי-RLS חשופים ל-anon.
 - [x] ✅ **goal 10 Observability** — ראה [37]. הפער האמיתי: `capturePaymentAlarm` היה no-op בלי DSN, ו-`alertMoneyFailure` היה עם אפס קוראים. נוסף `/api/health`. **נשאר פתוח:** structured logging עם request-id.
 - [x] ✅ **goal 11 Supplier portal** — ראה [38]. חסר היה רק "המוצרים שלי"; נבנה. ממצא נלווה: מיגרציה `104` (מדיניות RLS כפולה שביטלה את בדיקת ה-soft delete) **ממתינה לאישור**.
-- [ ] goal 12 Admin dashboard
-- [ ] goal 13 Notifications
-- [ ] goal 14 Search
-- [ ] goal 15 Wallet
-- [ ] goal 16 Analytics
+- [x] ✅ **goal 12 Admin dashboard** — כבר קיים במלואו. אומת: `ProductForm.tsx:443` חושף `platform_percent` פר מוצר ו-`ProductsTable.tsx:167` מציג אותו (`לא הוגדר` כשהוא null), ‏CRUD ספקים, דוחות (`analytics`, `payments`, `payouts`, `growth`), ‏RBAC עם `permissions.ts` + בדיקות.
+- [x] ✅ **goal 13 Notifications** — [6]. ‏`supabase/functions/notifications-worker`, ‏`notification_outbox`, ‏`api/cron/notifications` (drain + retry), ‏`voucher-email.ts`. מיגרציה `102` (voucher_issued) ממתינה לאישור.
+- [x] ✅ **goal 14 Search** — [11]. ‏`lib/search/` (indexer, meili, qstash), ‏`search_index_dlq` + `api/search/index-dlq`. נוסף ב-[36]: רייט-לימיט לשני המסלולים הציבוריים.
+- [ ] ⛔ **goal 15 Wallet — חסום, לא ניתן לביצוע כעת.** הארנק קיים (`lib/ledger.ts`, ‏`wallet_accounts/entries/balances/transactions`, ‏`fn_wallet_transfer`) אבל **בשקלים numeric**, למשל `orders.wallet_applied_ils`. הדרישה "ledger כפול-רישום באגורות integer" **היא** `PENDING-money-integer-fix.sql`, שאסור להריץ (הוראה מפורשת 03.08) ו-52 קבצי אפליקציה קוראים את השמות הישנים כשקלים. שינוי צד-קוד לפני הסכימה מכפיל כל מחיר פי 100. ממתין לאישור.
+- [x] ✅ **goal 16 Analytics** — `api/a/route.ts` (עם רייט-לימיט), ‏`AnalyticsProvider`, ‏`ViewTracker`, ‏`lib/analytics/` (aggregate + consent + attribution), ‏`admin/analytics`, ‏`ConsentBanner`. בלי כלים חיצוניים.
 - [ ] goal 17 PWA
 - [ ] goal 18 Accessibility
 - [ ] goal 19 Load

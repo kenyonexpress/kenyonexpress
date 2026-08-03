@@ -4,7 +4,10 @@ Updated: 2026-08-03 (autonomous: [36] goal 9 security sweep)
 
 ## המשך מ:
 תור goals 9-20 מ-03.08. ‏[36] = goal 9, ‏[37] = goal 10, ‏[38] = goal 11.
-הבא בתור: **goal 12 (Admin dashboard)**, ואחריו 13-20 לפי הסדר.
+‏12, ‏13, ‏14 ו-16 אומתו כקיימים ומסומנים ב-NEXT-GOALS.md עם הראיה.
+‏**goal 15 (Wallet) חסום**: הארנק בשקלים numeric, וההמרה לאגורות היא
+‏`PENDING-money-integer-fix.sql` שאסור להריץ. הבא בתור: **goal 17 (PWA)**,
+ואחריו 18, ‏19, ‏20.
 **דילוג מתועד:** התורים הליליים שנשלחו ב-03.08 חוזרים על Cart / Checkout /
 Coupon / אזור אישי / Notifications / SEO / E2E / Integration, וכולם סגורים
 ב-[1]-[35]. הפריט "סגירת checkout-cardcom" **לא יבוצע**: ה-branch מביא
