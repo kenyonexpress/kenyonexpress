@@ -3,9 +3,12 @@
 Updated: 2026-08-03 (autonomous: [36] goal 9 security sweep)
 
 ## המשך מ:
-תור goals 9-20 מ-03.08. ‏[36] = goal 9 הושלם. הבא בתור: **goal 10 (Observability:
-‏Sentry + structured logging)**, ואחריו 11-20 לפי הסדר, תוך דילוג על מה ש-[1]-[35]
-כבר סגרו.
+תור goals 9-20 מ-03.08. ‏[36] = goal 9, ‏[37] = goal 10, שניהם הושלמו.
+הבא בתור: **goal 11 (Supplier portal)**, ואחריו 12-20 לפי הסדר.
+**דילוג מתועד:** התורים הליליים שנשלחו ב-03.08 חוזרים על Cart / Checkout /
+Coupon / אזור אישי / Notifications / SEO / E2E / Integration, וכולם סגורים
+ב-[1]-[35]. הפריט "סגירת checkout-cardcom" **לא יבוצע**: ה-branch מביא
+‏`escrow.ts`, בסתירה למודל הנעול, וזו עצירה לפי כלל (4).
 
 ## Current Phase
 ‏**main.** תור [1]-[35] סגור. תור goals 9-20 פתוח, ‏[36] סגר את goal 9.
@@ -55,6 +58,38 @@ goal 10. במקביל: החלת 102 ו-103 אחרי אישור.
   ה-RPC הוא fail-open. שלילה הייתה מכבה את הרייט-לימיט במקום להדק אותו.
 - 2026-08-03: [36] תשע פונקציות ה-RLS predicate (`is_admin`, `has_role`, ...)
   נשארות עם EXECUTE: ביטוי policy מוערך בהרשאות התפקיד השואל, ושלילה שוברת RLS.
+
+---
+
+## ‏2026-08-03 — [37] goal 10: ההתראה על מסלול הכסף לא הייתה יורה
+
+‏Sentry client/server/edge קיימים, ‏error boundaries קיימים
+(`error.tsx`, `global-error.tsx`, `not-found.tsx`), ו-`alert.ts` קיים ומתועד
+היטב. הבעיה הייתה החיבור ביניהם.
+
+‏`capturePaymentAlarm` נפתח ב-**`if (!DSN) return`**, ו-`SENTRY_DSN` רשום
+ב-`GO-LIVE.md` כלא מוגדר. ארבעת אתרי הקריאה שלו ב-webhook של Cardcom היו
+לכן **no-op בפרודקשן**, וביניהם `payment verified but finalize failed` —
+הכרטיס חויב, אומת, וההזמנה לא נסגרה, המצב הגרוע ביותר במערכת.
+במקביל `alertMoneyFailure`, שנכתב בדיוק בשביל זה, היה עם **אפס קוראים**.
+כלומר שני הערוצים היו ריקים: לא Sentry ולא הטלפון.
+
+התיקון: ה-push נשלח **לפני** שער ה-DSN ולא אחריו, כי כל ערכו הוא לעבוד כשהשאר
+לא עובד (`sendAlert` לא צריך DSN, לא SDK, ולא auth, ויש לו topic ברירת מחדל).
+הוא **נאסף ב-await** ולא מרחף: ב-serverless סיום התשובה הורג fetch מרחף,
+והתראה שאיש לא מקבל שקולה לאין התראה. ‏`sendAlert` לא זורק ויש לו timeout של
+‏4 שניות, ולכן ה-await לא יכול להפיל webhook או להחזיק אותו פתוח.
+‏`capturePaymentAlarm` הפך ל-async וארבעת אתרי הקריאה מחכים לו.
+
+נוסף `/api/health`: ‏liveness + בדיקת DB אחת (`head:true` על `categories`,
+דרך admin client כדי שלא נמדוד RLS במקום זמינות), **‏503 ולא 200-עם-דגל** כדי
+שמוניטור שקורא רק את שורת הסטטוס יתריע, ובלי גרסה, שם env או טקסט שגיאה —
+הנתיב לא מאומת מעצם טבעו, וכל מה שהוא מחזיר פומבי.
+
+‏10 בדיקות חדשות. אומת שנכשלות בלי התיקון: החזרת ה-`if (!DSN) return` המוקדם
+הפכה בדיוק 2 מהן לאפס fetch. ‏tsc נקי, ‏**1324/1324**, build עובר.
+
+**נשאר פתוח מ-goal 10:** structured logging עם request-id לא קיים ולא נוסף.
 
 ---
 

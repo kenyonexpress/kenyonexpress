@@ -120,7 +120,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Cardcom said the deal succeeded and the re-verify disagrees. Someone is
     // wrong about whether the customer was charged, and it is not resolvable
     // from here.
-    capturePaymentAlarm('cardcom webhook reported success but GetLpResult did not', {
+    await capturePaymentAlarm('cardcom webhook reported success but GetLpResult did not', {
       stage: 'cardcom_webhook_verify',
       orderId: payment.order_id,
       paymentId: payment.id,
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   // assumed.
   const expectedAgorot = readAmountAgorot(money, payment as Record<string, unknown>)
   if (expectedAgorot === null) {
-    capturePaymentAlarm('payment row carries no readable amount', {
+    await capturePaymentAlarm('payment row carries no readable amount', {
       stage: 'cardcom_webhook_amount',
       orderId: payment.order_id,
       paymentId: payment.id,
@@ -159,7 +159,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         got_agorot: verified.amountAgorot,
       } as unknown as Json,
     })
-    capturePaymentAlarm('cardcom charged an amount we did not ask for', {
+    await capturePaymentAlarm('cardcom charged an amount we did not ask for', {
       stage: 'cardcom_webhook_amount',
       orderId: payment.order_id,
       paymentId: payment.id,
@@ -196,7 +196,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // single worst state in the system, so it alerts unconditionally. The row
     // keeps processed_at null, which is what puts it in the dead-letter queue
     // that `server/payments/webhook-dlq.ts` replays.
-    capturePaymentAlarm('payment verified but finalize failed', {
+    await capturePaymentAlarm('payment verified but finalize failed', {
       stage: 'cardcom_webhook_finalize',
       orderId: payment.order_id,
       paymentId: payment.id,

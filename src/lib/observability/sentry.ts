@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/nextjs'
+import { alertMoneyFailure } from './alert'
 import { redact } from './scrub'
 
 // Re-exported so the scrubber keeps its existing test and its existing callers
@@ -72,8 +73,34 @@ export function capturePaymentError(error: unknown, context: PaymentErrorContext
  * A money-path condition that is not an exception but still must not pass
  * silently: an amount that does not match, a verification that came back
  * negative for a payment we believe succeeded.
+ *
+ * WHY THIS IS ASYNC, AND WHY THE PUSH COMES FIRST. This function used to open
+ * with `if (!DSN) return`, and `SENTRY_DSN` is listed unset in GO-LIVE.md. All
+ * four call sites -- including "the card was charged and the order did not
+ * close", the worst state the system has -- were therefore no-ops in
+ * production. `alertMoneyFailure` was written for exactly this and had zero
+ * callers, so neither channel was carrying anything.
+ *
+ * The push is sent outside the DSN guard because its whole value is working
+ * when the rest does not: `sendAlert` needs no DSN, no SDK and no auth, and
+ * defaults its topic. It is awaited rather than floated because on a
+ * serverless runtime the response ends the invocation, and a floating fetch
+ * dies with it -- an alert nobody receives is the same as no alert.
+ * `sendAlert` never throws and carries its own 4s timeout, so awaiting it
+ * cannot fail a webhook or hold it open.
  */
-export function capturePaymentAlarm(message: string, context: PaymentErrorContext): void {
+export async function capturePaymentAlarm(
+  message: string,
+  context: PaymentErrorContext,
+): Promise<void> {
+  await alertMoneyFailure({
+    stage: context.stage,
+    orderId: context.orderId,
+    paymentId: context.paymentId,
+    voucherId: context.voucherId,
+    error: message,
+  })
+
   if (!DSN) return
   try {
     Sentry.withScope((scope) => {

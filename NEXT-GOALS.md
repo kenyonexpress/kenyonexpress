@@ -11,7 +11,7 @@
       אפס policies + RLS דלוק = דחייה מוחלטת לכל מי שאינו service_role, כלומר
       המצב המהודק ביותר האפשרי, לא פער.
       החור האמיתי היה במקום אחר לגמרי: שבעה **views** עוקפי-RLS חשופים ל-anon.
-- [ ] goal 10 Observability
+- [x] ✅ **goal 10 Observability** — ראה [37]. הפער האמיתי: `capturePaymentAlarm` היה no-op בלי DSN, ו-`alertMoneyFailure` היה עם אפס קוראים. נוסף `/api/health`. **נשאר פתוח:** structured logging עם request-id.
 - [ ] goal 11 Supplier portal
 - [ ] goal 12 Admin dashboard
 - [ ] goal 13 Notifications
