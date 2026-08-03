@@ -161,9 +161,8 @@
 - [x] ✅ [29] `/contact`: טופס + `submitContactForm` → Resend transactional עם
       replyTo, honeypot, rate limit 5/שעה, `CONTACT_TO`. תקנון נשאר חסום.
 
-- [ ] [30] חוסמי deploy שאינם קוד נשארים (VOUCHER_QR_SECRET, Cardcom, DNS,
-      11 ספקים, 096, תקנון). אין עבודת קוד פתוחה מהתור; רק מדידה/תיעוד אם
-      מתגלה באג.
+- [x] ✅ [30] תור הקוד נסגר. נשארו רק חוסמי deploy/תוכן (VOUCHER_QR_SECRET,
+      Cardcom, DNS, 11 ספקים, 096 ממתין לאישור, תקנון). בלי עבודת קוד פתוחה.
 
 ## החלטות שהתקבלו אוטומטית: מה נשאר מ-[9]
 

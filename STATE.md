@@ -1,19 +1,19 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-03 (autonomous: [29] /contact)
+Updated: 2026-08-03 (autonomous: תור קוד סגור)
 
 ## המשך מ:
-[30] אין עבודת קוד פתוחה מהתור; חוסמי deploy/תוכן בלבד.
+תור הקוד הושלם. חוסמי deploy/תוכן בלבד (לא להמשיך בלי סודות/נתונים/096).
 
 ## Current Phase
-‏**main.** תור [1]-[29] סגור. מודל כסף נעול: אין Escrow.
+‏**main.** תור [1]-[30] סגור. מודל כסף נעול: אין Escrow.
 
 ## Last Completed
-[29] `/contact` עם טופס Resend (CONTACT_TO, honeypot, rate limit).
-[28] הוסרו wishlist chrome. [27] sitemap 76. [26] PDP SEO 92.
+[30] סגירת תור הקוד. [29] `/contact`. [28] wishlist chrome. [27] sitemap 76.
+[26] PDP SEO 92. [25]/[24] LH בית.
 
 ## In Progress
-nothing (תור קוד סגור; נשארו חוסמי deploy/תוכן)
+nothing
 
 ## Blocking Issues
 חוסמי deploy (קונפיג/נתונים, לא קוד): VOUCHER_QR_SECRET, Cardcom prod, DNS, 11 ספקים בלי כתובת/לוגו.
@@ -22,7 +22,7 @@ QA#6 (order_items ב-redeem) נדחה: מודל 085.
 terms: תוכן משפטי, לא קוד.
 
 ## Next Task
-[30] רק אם מתגלה באג קוד; אחרת עצירה על חוסמי נתונים/סודות.
+חידוש רק אחרי סודות/נתונים/אישור 096, או באג קוד חדש.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
