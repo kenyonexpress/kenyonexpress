@@ -6,6 +6,7 @@ import RelatedProducts from '@/components/storefront/RelatedProducts'
 import ShippingInfo from '@/components/storefront/ShippingInfo'
 import SupplierInfo from '@/components/storefront/SupplierInfo'
 import { type CouponOffer, buildCouponOffer } from '@/lib/commerce/coupon-offer'
+import { getProductSeoBySlug } from '@/lib/product-seo'
 import { buildBreadcrumbJsonLd, buildProductJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
@@ -25,22 +26,35 @@ type Props = { params: Promise<{ slug: string }> }
 export async function generateMetadata({ params }: Props) {
   const { slug: rawSlug } = await params
   const slug = decodeURIComponent(rawSlug)
-  const supabase = await createClient()
-  const { data } = await supabase
-    .from('products')
-    .select('name_he, description_he, short_description_he, seo_title, seo_description, images')
-    .eq('slug', slug)
-    .single()
+  const data = await getProductSeoBySlug(slug)
 
-  const title = data?.seo_title ?? data?.name_he ?? 'מוצר'
+  // Missing / inactive / soft-deleted: the body calls notFound(), which already
+  // emits noindex via app/not-found.tsx. State it here too so a crawler that
+  // only reads metadata never treats an empty shell as indexable ([26]).
+  if (!data || data.status !== 'active' || data.deleted_at) {
+    return {
+      title: 'מוצר לא נמצא',
+      robots: { index: false, follow: true },
+      description: 'המוצר לא נמצא או שאינו זמין בקניון אקספרס.',
+    }
+  }
+
+  const title = data.seo_title?.trim() || data.name_he || 'מוצר'
+  // Most catalogue rows ship with null seo/short/body copy. Lighthouse SEO
+  // fails the whole page when <meta name="description"> is absent ([26] scored
+  // 58 on those). Fall back to a short Hebrew line from the product name so
+  // every active PDP has a description without inventing marketing copy.
   const description =
-    data?.seo_description ?? data?.short_description_he ?? data?.description_he ?? undefined
+    data.seo_description?.trim() ||
+    data.short_description_he?.trim() ||
+    data.description_he?.trim() ||
+    `${title} בקניון אקספרס. קופונים, מבצעים ומשלוחים.`
 
   // A canonical, because the same product is reachable through more than one
   // path (category trails, search, share links with tracking parameters) and
   // without one those all compete as separate pages.
   const path = `/product/${encodeURIComponent(slug)}`
-  const images = Array.isArray(data?.images) ? (data.images as string[]).filter(Boolean) : []
+  const images = Array.isArray(data.images) ? (data.images as string[]).filter(Boolean) : []
 
   return {
     title,

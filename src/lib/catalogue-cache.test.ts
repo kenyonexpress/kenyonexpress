@@ -76,14 +76,20 @@ describe('catalogue cache invalidation', () => {
    * nothing. Both halves of the contract fail silently on their own.
    */
   it('tags every cached catalogue read', () => {
-    const src = code('src/lib/category-page.ts')
-    const cachedScopes = src.match(/'use cache'/g) ?? []
-    const tagged = src.match(/cacheTag\(CATALOGUE_TAG\)/g) ?? []
-    const lifed = src.match(/cacheLife\('hours'\)/g) ?? []
+    for (const file of ['src/lib/category-page.ts', 'src/lib/product-seo.ts']) {
+      const src = code(file)
+      const cachedScopes = src.match(/'use cache'/g) ?? []
+      const tagged = src.match(/cacheTag\(CATALOGUE_TAG\)/g) ?? []
+      const lifed = src.match(/cacheLife\('hours'\)/g) ?? []
 
-    expect(cachedScopes.length, 'no cached reads found - did the file move?').toBeGreaterThan(0)
-    expect(tagged.length, 'a `use cache` read carries no cacheTag').toBe(cachedScopes.length)
-    expect(lifed.length, 'a `use cache` read carries no cacheLife').toBe(cachedScopes.length)
+      expect(cachedScopes.length, `${file}: no cached reads`).toBeGreaterThan(0)
+      expect(tagged.length, `${file}: a use cache read carries no cacheTag`).toBe(
+        cachedScopes.length,
+      )
+      expect(lifed.length, `${file}: a use cache read carries no cacheLife`).toBe(
+        cachedScopes.length,
+      )
+    }
   })
 
   /**
@@ -94,10 +100,10 @@ describe('catalogue cache invalidation', () => {
    * every page view, which is the state this replaced.
    */
   it('reads the catalogue with the anon client and never the cookie-bound one', () => {
-    expect(code('src/lib/category-page.ts')).toContain('createPublicClient')
-    expect(code('src/lib/category-page.ts'), 'category-page.ts calls createClient()').not.toMatch(
-      /await createClient\(\)/,
-    )
+    for (const file of ['src/lib/category-page.ts', 'src/lib/product-seo.ts']) {
+      expect(code(file)).toContain('createPublicClient')
+      expect(code(file), `${file} calls createClient()`).not.toMatch(/await createClient\(\)/)
+    }
   })
 
   it('exposes a tag string that is a valid cache tag', () => {

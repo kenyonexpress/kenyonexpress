@@ -1,20 +1,21 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-03 (autonomous: [25] home JS)
+Updated: 2026-08-03 (autonomous: [26] PDP SEO)
 
 ## המשך מ:
-[26] Lighthouse SEO בדף מוצר נייד (נמדד 58).
+[27] sitemap: createPublicClient במקום admin (3 כתובות מקומית).
 
 ## Current Phase
-‏**main.** תור [1]-[25] סגור. מודל כסף נעול: אין Escrow.
+‏**main.** תור [1]-[26] סגור. מודל כסף נעול: אין Escrow.
 
 ## Last Completed
-[25] ConsentBanner → Server Action; ProductDealCard בשרת; DeferredStoreChrome;
-optimizePackageImports(lucide). unused-js 62←58KiB. חציון LH ~86, שיא 92.
-[24] שיא LH בית 93/97.
+[26] PDP SEO נייד 58→92 (מוצר פעיל). fallback description + noindex ללא-פעיל;
+`getProductSeoBySlug` (use cache + anon). streaming metadata משאיר ביקורת
+meta-description אדומה; htmlLimitedBots=/.* בוטל (שובר PPR).
+[25] unused-js 62←58KiB; שיא LH בית 92. [24] שיא 93/97.
 
 ## In Progress
-[26] PDP SEO נייד
+[27] sitemap על anon/cache
 
 ## Blocking Issues
 חוסמי deploy (קונפיג/נתונים, לא קוד): VOUCHER_QR_SECRET, Cardcom prod, DNS, 11 ספקים בלי כתובת/לוגו.
@@ -22,7 +23,7 @@ optimizePackageImports(lucide). unused-js 62←58KiB. חציון LH ~86, שיא 
 QA#6 (order_items ב-redeem) נדחה: מודל 085.
 
 ## Next Task
-[26] אבחון Lighthouse SEO=58 בדף מוצר נייד ותיקון.
+[27] sitemap מקומי: createPublicClient + CATALOGUE_TAG, מדידת מספר URLs.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
@@ -32,6 +33,7 @@ QA#6 (order_items ב-redeem) נדחה: מודל 085.
 - 2026-08-03: לא לשנות redeem_voucher לכתוב order_items (סותר 085 + SQL harness).
 - 2026-08-03: [24] באנר נשאר LCP מכוון (לא לכווץ ללוגו/הירו). כיווץ החזיר 85–86.
 - 2026-08-03: [25] 62KiB unused הוא בעיקר chunk תשתית Next; פוצל מה שאפשר מגרף הלקוח.
+- 2026-08-03: [26] לא htmlLimitedBots=/.* (SEO 100 אבל שבירת PPR resume). נשארים עם SEO 92 + streaming metadata.
 
 ---
 

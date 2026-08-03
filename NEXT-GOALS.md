@@ -144,7 +144,16 @@
       optimizePackageImports ל-lucide. חציון Lantern נשאר ~86 (דו-שיא LCP);
       שיא 92. תקרת localhost כמו [20]/[24].
 
-- [ ] [26] Lighthouse SEO בדף מוצר נייד (נמדד 58) + יישור. בלי env/ספקים.
+- [x] ✅ [26] Lighthouse SEO בדף מוצר נייד 58→**92** על מוצר פעיל. גורמים:
+      ‏404/לא פעיל בלי noindex ב-metadata, ורוב הקטלוג בלי seo/short/body.
+      ‏fallback תיאור עברי + robots noindex ללא-פעיל; קריאה ב-
+      ‏`getProductSeoBySlug` (use cache + anon). ביקורת `meta-description` עדיין
+      נכשלת תחת streaming metadata (התג אחרי `</head>` הראשון); ‏`htmlLimitedBots: /.*/`
+      נמדד והחזיר SEO 100 אבל שבר PPR resume, ולכן בוטל. slug חסר נשאר 58
+      (noindex מכוון).
+
+- [ ] [27] sitemap מקומי מחזיר 3 כתובות כי `createAdminClient` נכשל על מפתח
+      demo: להעביר ל-`createPublicClient` + `CATALOGUE_TAG`, למדוד >3 URLs.
 
 ## החלטות שהתקבלו אוטומטית: מה נשאר מ-[9]
 
