@@ -1,4 +1,16 @@
-# ARCHITECTURE-OBSERVABILITY: ניטור, התראות ותגובה לתקריות
+# ARCHITECTURE: Observability
+
+Sentry, לוגים מובנים, והתראות תפעוליות.
+
+Status: **BINDING** · Updated: 2026-08-03 (pack-20)
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
+אין שינוי קוד. אין נגיעה ב-worktree הראשי (`kenyonexpress`).
+
+עמודי תווך: **Sentry** (errors), **structured logs**, **alerts** (Better Stack / Ntfy).
+
+המסמך המלא להלן נשאר בתוקף; הבאנר מעדכן סמכות ו-worktree.
+
+---
 
 תאריך: 2026-07-17 | סטטוס: **מסמך הכרעות מחייב, design only** (לא נכתב קוד, לא נוצרה מיגרציה, לא הותקן שירות חיצוני)
 מחבר: ארכיטקט observability ותגובה לתקריות
@@ -534,3 +546,9 @@ docs/incidents/                          <- נפתח בתקרית הראשונה
 ---
 
 *מסמך זה נכתב בסשן 2026-07-17 על בסיס קריאת כל docs/ + כל המיגרציות 001-035 + קונבנציות Next 16.2.4 מהתיעוד המקומי. שום קוד, מיגרציה או שירות חיצוני לא הופעלו.*
+
+## Revision (pack-20)
+
+| Date | Change |
+|---|---|
+| 2026-08-03 | pack-20: binding refresh Sentry/logs/alerts in ke-arch |
