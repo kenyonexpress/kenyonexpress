@@ -48,7 +48,7 @@ export default function SupplierLoginPage() {
       <Suspense fallback={null}>
         <SupplierLoginRedirect />
       </Suspense>
-      <p className="text-sm font-semibold text-brand">KenyonExpress לספקים</p>
+      <p className="text-sm font-semibold text-heading">KenyonExpress לספקים</p>
       <h1 className="mt-2 text-3xl font-bold text-heading">כניסה לאזור הספקים</h1>
       <p className="mt-3 text-sm leading-relaxed text-gray-600">
         סריקת קופונים, לוח מכירות ופירוט תשלומים לפי עמלת הפלטפורמה. ההתחברות זהה לחשבון Google או

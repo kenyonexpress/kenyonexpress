@@ -246,7 +246,7 @@ export default function SiteFooter() {
             {['Visa', 'Mastercard', 'Discover', 'American Express'].map((label) => (
               <li
                 key={label}
-                className="rounded border border-black/15 bg-white px-2 py-1 text-micro font-semibold text-heading/70"
+                className="rounded border border-black/15 bg-white px-2 py-1 text-micro font-semibold text-heading/80"
               >
                 {label}
               </li>

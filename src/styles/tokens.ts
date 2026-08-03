@@ -36,7 +36,12 @@ export const SITE = {
     success: '#5cb85c',
     link: '#0062bd',
     heading: '#333e48',
-    saleBadge: '#44b81b',
+    /* WCAG AA ([40]): the live green is #44b81b and white text on it is
+       2.58:1 -- it fails even the 3:1 large-text floor. Darkened by the
+       minimum that clears 4.5:1 in both directions (white on it, and it as
+       text on white), hue kept. The one place goal 18 overrides
+       match-the-live-site, because here the live site is what is wrong. */
+    saleBadge: '#328614',
   },
   /** Neutrals: hairlines, muted text, icon greys. */
   neutral: {
@@ -44,8 +49,11 @@ export const SITE = {
     borderAlt: '#e7e7e7',
     /** Section-header rule under a tab strip. */
     rule: '#ededed',
-    muted: '#7e7e7e',
-    muted2: '#768b9e',
+    /* WCAG AA ([40]): #7e7e7e was 4.06:1 on white and #768b9e was 3.53:1, both
+       below the 4.5:1 floor for body text. Darkened by the minimum that clears
+       it, keeping the hue -- measured, not eyeballed. */
+    muted: '#767676',
+    muted2: '#657888',
     icon: '#515151',
     /** Large empty-state glyphs (empty cart, no results). */
     iconEmpty: '#cccccc',
@@ -225,11 +233,11 @@ export const CATALOG = {
     /** product titles */
     link: '#0062bd',
     /** struck-through original price, category eyebrow */
-    muted: '#768b9e',
+    muted: '#657888',
     /** sale price. Measured on live; NOT the #E4002B in the brief. */
     sale: '#dc3545',
     /** discount badge background */
-    badge: '#44b81b',
+    badge: '#328614',
     /** control bar background */
     bar: '#efefef',
     /** hairlines: select border, card bottom rule, carousel rule */
@@ -358,7 +366,7 @@ export const PDP = {
     /** body and heading text */
     ink: '#333e48',
     /** category eyebrow links */
-    muted: '#768b9e',
+    muted: '#657888',
     /** secondary actions (the stock line sits where live puts its wishlist) */
     action: '#5d7184',
     /** sale price */

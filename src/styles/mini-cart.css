@@ -385,12 +385,12 @@
 
 .mini-cart__item-meta {
   font-size: 12px;
-  color: #768b9e;
+  color: #657888;
 }
 
 .mini-cart__item-note {
   font-size: 11px;
-  color: #768b9e;
+  color: #657888;
 }
 
 .mini-cart__item-end {
@@ -451,7 +451,7 @@
   display: flex;
   justify-content: space-between;
   font-size: 12px;
-  color: #768b9e;
+  color: #657888;
 }
 
 .mini-cart__actions {
@@ -503,7 +503,7 @@
   gap: 10px;
   padding: 28px 16px;
   text-align: center;
-  color: #768b9e;
+  color: #657888;
 }
 
 .mini-cart__empty svg {

@@ -93,7 +93,7 @@ export const ELECTRO_HERO = {
       strokeWidth: 1.5,
     },
     title: { size: 15, weight: 700, color: '#333e48' },
-    subtitle: { size: 13, weight: 400, color: '#7e7e7e', marginBlockStart: 2 },
+    subtitle: { size: 13, weight: 400, color: '#767676', marginBlockStart: 2 },
   },
   /**
    * Top categories row (below the hero, above the USP bar). Matches ke_live /

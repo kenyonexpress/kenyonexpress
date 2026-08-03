@@ -26,14 +26,14 @@
   --color-success: #5cb85c; /* confirmation, in-stock */
   --color-link: #0062bd; /* product names + links (distinct from red price) */
   --color-heading: #333e48; /* hero + section headings (electro home-v7) */
-  --color-sale-badge: #44b81b; /* on-sale badge green (live measured) */
+  --color-sale-badge: #328614; /* on-sale badge green; darkened from live #44b81b for WCAG AA */
 
   /* --- Neutrals / borders / muted text (live measured) ----------------------- */
   --color-border: #dddddd; /* default hairline borders / dividers */
   --color-border-alt: #e7e7e7; /* secondary borders (category strips) */
   --color-rule: #ededed; /* rule under a section-header tab strip */
-  --color-muted: #7e7e7e; /* muted secondary text */
-  --color-muted-2: #768b9e; /* muted slate-blue text (product meta) */
+  --color-muted: #767676; /* muted secondary text */
+  --color-muted-2: #657888; /* muted slate-blue text (product meta) */
   --color-icon: #515151; /* nav / masthead icon gray */
   --color-icon-empty: #cccccc; /* large empty-state glyphs */
 

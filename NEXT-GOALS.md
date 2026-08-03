@@ -19,7 +19,7 @@
 - [ ] ⛔ **goal 15 Wallet — חסום, לא ניתן לביצוע כעת.** הארנק קיים (`lib/ledger.ts`, ‏`wallet_accounts/entries/balances/transactions`, ‏`fn_wallet_transfer`) אבל **בשקלים numeric**, למשל `orders.wallet_applied_ils`. הדרישה "ledger כפול-רישום באגורות integer" **היא** `PENDING-money-integer-fix.sql`, שאסור להריץ (הוראה מפורשת 03.08) ו-52 קבצי אפליקציה קוראים את השמות הישנים כשקלים. שינוי צד-קוד לפני הסכימה מכפיל כל מחיר פי 100. ממתין לאישור.
 - [x] ✅ **goal 16 Analytics** — `api/a/route.ts` (עם רייט-לימיט), ‏`AnalyticsProvider`, ‏`ViewTracker`, ‏`lib/analytics/` (aggregate + consent + attribution), ‏`admin/analytics`, ‏`ConsentBanner`. בלי כלים חיצוניים.
 - [x] ✅ **goal 17 PWA** — ראה [39]. manifest, service worker, offline shell, install prompt, אייקונים בסקריפט. לא היה כלום קודם.
-- [ ] goal 18 Accessibility
+- [x] ✅ **goal 18 Accessibility** — ראה [40]. axe מול הבניה: הליקוי היחיד בכל 6 הדפים היה קונטרסט, 5 זוגות תוקנו בהכהיה מינימלית. 18 בדיקות. **פתוח בנפרד:** שער compare של home אדום ב-23% ולא מ-goal 18 (נמדד לפני ואחרי).
 - [ ] goal 19 Load
 - [ ] goal 20 Final
 

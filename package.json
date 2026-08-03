@@ -63,6 +63,7 @@
     "onlyBuiltDependencies": ["@biomejs/biome", "@parcel/watcher", "@swc/core", "esbuild", "sharp"]
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@biomejs/biome": "^1.9.4",
     "@next/bundle-analyzer": "^16.2.12",
     "@playwright/test": "^1.50.1",

@@ -7,7 +7,7 @@
      tokens.test.ts fails if these drift from it. Every rule below reads them
      through var() so no rule carries a raw hex. */
   --pdp-ink: #333e48;
-  --pdp-muted: #768b9e;
+  --pdp-muted: #657888;
   --pdp-action: #5d7184;
   --pdp-sale: #dc3545;
   --pdp-strike: #848484;

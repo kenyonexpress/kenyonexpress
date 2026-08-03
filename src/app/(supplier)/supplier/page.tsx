@@ -118,7 +118,10 @@ export default async function SupplierHomePage({
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-bold text-heading">מימושים אחרונים</h2>
-          <Link href="/supplier/redemptions" className="text-sm font-semibold text-brand">
+          <Link
+            href="/supplier/redemptions"
+            className="text-sm font-semibold text-heading underline"
+          >
             לכל המימושים
           </Link>
         </div>

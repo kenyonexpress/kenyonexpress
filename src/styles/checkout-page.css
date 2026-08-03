@@ -209,7 +209,7 @@
 
 .checkout-item__meta {
   display: block;
-  color: #768b9e;
+  color: #657888;
   font-size: 12px;
   line-height: 18px;
   margin-top: 4px;
@@ -238,7 +238,7 @@
 
 .checkout-review__row--muted th,
 .checkout-review__row--muted td {
-  color: #768b9e;
+  color: #657888;
   font-size: 12px;
 }
 
@@ -388,7 +388,7 @@
 }
 
 .checkout-success__sub {
-  color: #768b9e;
+  color: #657888;
   margin-bottom: 28px;
 }
 
@@ -422,7 +422,7 @@
 
 .coupon-card__note {
   font-size: 14px;
-  color: #768b9e;
+  color: #657888;
 }
 
 .coupon-card__collect {

@@ -229,7 +229,7 @@
 }
 
 .cart-sidebar__row--muted {
-  color: #768b9e;
+  color: #657888;
   font-size: 0.875rem;
 }
 
@@ -441,7 +441,7 @@
 }
 
 .cart-coupon__label {
-  color: #768b9e;
+  color: #657888;
   font-size: 12px;
 }
 
@@ -456,6 +456,6 @@
 }
 
 .cart-sidebar__row--discount {
-  color: #44b81b;
+  color: #328614;
   font-weight: 700;
 }
