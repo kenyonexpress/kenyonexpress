@@ -152,8 +152,11 @@
       נמדד והחזיר SEO 100 אבל שבר PPR resume, ולכן בוטל. slug חסר נשאר 58
       (noindex מכוון).
 
-- [ ] [27] sitemap מקומי מחזיר 3 כתובות כי `createAdminClient` נכשל על מפתח
-      demo: להעביר ל-`createPublicClient` + `CATALOGUE_TAG`, למדוד >3 URLs.
+- [x] ✅ [27] sitemap: `createAdminClient` ← `createPublicClient` + `CATALOGUE_TAG`.
+      מקומית **3 ← 76** URLs (קטגוריות + מוצרים). בדיקת מקור ב-`sitemap.test.ts`.
+
+- [ ] [28] קישורים מתים בפוטר/masthead: להסיר מועדפים + הסטוריה (פיצ'ר לא
+      קיים); contact/terms נשארים תוכן (לא להמציא תקנון).
 
 ## החלטות שהתקבלו אוטומטית: מה נשאר מ-[9]
 

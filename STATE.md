@@ -1,29 +1,28 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-03 (autonomous: [26] PDP SEO)
+Updated: 2026-08-03 (autonomous: [27] sitemap anon)
 
 ## המשך מ:
-[27] sitemap: createPublicClient במקום admin (3 כתובות מקומית).
+[28] הסרת קישורי מועדפים/הסטוריה מהשלד (פיצ'ר לא קיים).
 
 ## Current Phase
-‏**main.** תור [1]-[26] סגור. מודל כסף נעול: אין Escrow.
+‏**main.** תור [1]-[27] סגור. מודל כסף נעול: אין Escrow.
 
 ## Last Completed
-[26] PDP SEO נייד 58→92 (מוצר פעיל). fallback description + noindex ללא-פעיל;
-`getProductSeoBySlug` (use cache + anon). streaming metadata משאיר ביקורת
-meta-description אדומה; htmlLimitedBots=/.* בוטל (שובר PPR).
-[25] unused-js 62←58KiB; שיא LH בית 92. [24] שיא 93/97.
+[27] sitemap על createPublicClient + CATALOGUE_TAG: מקומית 3←76 URLs.
+[26] PDP SEO 58→92. [25] unused-js 58KiB. [24] שיא LH בית 93.
 
 ## In Progress
-[27] sitemap על anon/cache
+[28] ניקוי קישורים מתים בפוטר/masthead
 
 ## Blocking Issues
 חוסמי deploy (קונפיג/נתונים, לא קוד): VOUCHER_QR_SECRET, Cardcom prod, DNS, 11 ספקים בלי כתובת/לוגו.
 ‏096 ממתין לאישור apply_migration.
 QA#6 (order_items ב-redeem) נדחה: מודל 085.
+contact/terms: תוכן, לא קוד.
 
 ## Next Task
-[27] sitemap מקומי: createPublicClient + CATALOGUE_TAG, מדידת מספר URLs.
+[28] הסר wishlist + recently-viewed מהפוטר וה-masthead.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress

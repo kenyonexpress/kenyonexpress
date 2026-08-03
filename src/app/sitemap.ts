@@ -1,6 +1,7 @@
-import { createAdminClient } from '@/lib/supabase/admin'
+import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
+import { createPublicClient } from '@/lib/supabase/anon'
 import type { MetadataRoute } from 'next'
-import { cacheLife } from 'next/cache'
+import { cacheLife, cacheTag } from 'next/cache'
 
 /**
  * Sitemap over the pages that are worth indexing: the static entry points, the
@@ -13,9 +14,12 @@ import { cacheLife } from 'next/cache'
  * paid for. The redeem page also sets robots noindex of its own, so it is
  * refused twice.
  *
- * The service-role client reads the catalog because a sitemap is generated
- * without a session and must not depend on anonymous RLS happening to expose
- * products. Only columns that are already public are selected.
+ * Reads go through `createPublicClient` (anon), not the service-role admin
+ * client. Locally the demo secret key makes admin fail silently and the
+ * sitemap collapsed to the three static URLs ([15]/[27]). Anon is the same
+ * catalogue the storefront already caches, and only columns that are already
+ * public are selected. Tagged with `CATALOGUE_TAG` so an admin save that
+ * calls `updateTag` refreshes this list too.
  */
 
 function siteUrl(): string {
@@ -39,6 +43,7 @@ function siteUrl(): string {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   'use cache'
   cacheLife('hours')
+  cacheTag(CATALOGUE_TAG)
 
   const base = siteUrl()
   const now = new Date()
@@ -49,10 +54,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/coupons`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
   ]
 
-  const admin = createAdminClient()
+  const supabase = createPublicClient()
 
   const [{ data: products }, { data: categories }] = await Promise.all([
-    admin
+    supabase
       .from('products')
       .select('slug, updated_at')
       .eq('status', 'active')
@@ -61,7 +66,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       // Google caps a single sitemap file at 50,000 URLs; staying well inside
       // that keeps this one file rather than needing an index.
       .limit(45_000),
-    admin.from('categories').select('slug, updated_at').not('slug', 'is', null),
+    supabase
+      .from('categories')
+      .select('slug, updated_at')
+      .eq('is_active', true)
+      .not('slug', 'is', null),
   ])
 
   const categoryEntries: MetadataRoute.Sitemap = (categories ?? []).map((c) => ({
