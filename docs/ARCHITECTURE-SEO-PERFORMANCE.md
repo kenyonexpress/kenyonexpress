@@ -427,3 +427,4 @@ docs/ARCHITECTURE-WP-DATA-MIGRATION.md
 | 2026-08-03 | Lighthouse 90+ strategy, ISR מחייבת, sitemap דינמי, schema.org מוצרים בעברית RTL; docs-only ב-`ke-arch` |
 | 2026-08-03 | rev B: סעיף Core Web Vitals מחייב (LCP/CLS/INP, מיפוי דפים, RUM/שערים) |
 | 2026-08-03 | rev C: נעילת עמודי תווך ISR + sitemap + schema.org RTL + CWV; מחיר Offer = on-site בלבד |
+| 2026-08-03 | pack-20: SEO-PERFORMANCE binding refresh for 20-doc queue |
