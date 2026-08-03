@@ -2,9 +2,11 @@
 
 מניעת הונאה ב-KenyonExpress: מימוש כפול של קופון, chargebacks, וצילומי מסך / שיתוף QR.
 
-Status: **BINDING** · Updated: 2026-08-03  
+Status: **BINDING** · Updated: 2026-08-03 (rev C)  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה ב-worktree הראשי (`kenyonexpress`).
+
+עמודי תווך: **מימוש כפול**, **chargebacks**, **צילומי מסך / שיתוף QR**.
 
 Companions:
 
@@ -56,7 +58,7 @@ POST /api/supplier/vouchers/redeem  (supplier JWT)
        WHERE id=:id AND status='issued'
       IF rowcount = 0 THEN already_used
       INSERT redemption audit (member, ip truncated, result)
-      ledger release (held → supplier)  -- Escrow 2026-07-27
+      -- No Escrow: אין שחרור held לספק מקופון; יתרה נגבית בקופה מחוץ לפלטפורמה
   → COMMIT
   → enqueue coupon_redeemed (outbox; לא חוסם)
 ```
@@ -126,10 +128,10 @@ Cardcom / bank notice / admin flag
 | העדפות / התראות | delivery events (בלי להבטיח שהלקוח קרא) |
 | Audit אדמין | refunds, freezes, wallet adjusts |
 
-### 2.5 קשר ל-Escrow
+### 2.5 קשר למודל קופון (No Escrow)
 
-Chargeback על מקדמת קופון לפני מימוש: held לא משוחרר לספק; הפלטפורמה מטפלת בחשיפה.  
-אחרי מימוש: ה-held כבר שוחרר; הטיפול הוא הפסד/חוב תפעולי, לא מחיקת redeem מההיסטוריה.
+Chargeback על מקדמת קופון: החשיפה היא על הפלטפורמה (שמרה את תשלום האתר). אין "held לספק" לביטול.  
+לפני מימוש: freeze ל-voucher. אחרי מימוש: אין מחיקת redeem; טיפול ידני / write-off + audit.
 
 ---
 
@@ -238,3 +240,4 @@ docs/RUNBOOK-PRODUCTION.md
 |---|---|
 | 2026-08-02 | Duplicate QR, RL, chargeback (טיוטות) |
 | 2026-08-03 | Binding ב-`ke-arch`: מימוש כפול אטומי, chargebacks, צילומי מסך QR; docs only |
+| 2026-08-03 | rev C: הסרת Escrow release מ-redeem; No Escrow ב-chargeback |
