@@ -1,4 +1,5 @@
 import { searchProductsCached } from '@/lib/search-server'
+import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import { NextResponse } from 'next/server'
 
 /**
@@ -27,6 +28,15 @@ export async function GET(request: Request) {
   // matches most of the catalogue, which is noise rather than a suggestion.
   if (q.length < MIN_QUERY) {
     return NextResponse.json({ results: [], engine: null })
+  }
+
+  // Typeahead fires far more often than the results page, so the ceiling is
+  // higher -- but it still needs one, because a distinct `q` misses
+  // `searchProductsCached` and reaches the engine (or the ILIKE fallback)
+  // every time. Per IP, since this route has no session. Fails open.
+  const ip = await getClientIp()
+  if (!(await checkRateLimit(`search-suggest:${ip}`, 300, 300))) {
+    return NextResponse.json({ results: [], engine: null, error: 'rate_limited' }, { status: 429 })
   }
 
   try {

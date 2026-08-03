@@ -91,6 +91,34 @@ goal 10. במקביל: החלת 102 ו-103 אחרי אישור.
 אחרי כל מיגרציה שבונה view מחדש** — view מחודש לא יורש `security_invoker`,
 ו-`PENDING-money-integer-fix.sql` בונה מחדש בדיוק את `v_wallet_balance_drift`.
 
+### שאר goal 9: מה נבדק ומה תוקן בקוד
+
+‏**CSRF: אין חשיפה.** כל 15 מסלולי ה-API נסרקו; שלושת הציבוריים ללא authz
+(`/api/search`, `/api/search/suggest`, `/api/cart`) מייצאים **GET בלבד**, ו-
+‏CSRF נוגע לבקשות משנות-מצב. השאר מוגנים ב-cron secret, webhook secret או
+‏`getUser()`. ‏`/api/supplier/redeem` נראה חשוף בסריקה והוא alias בלבד
+ל-`/api/supplier/vouchers/redeem`, שכן מאמת.
+
+‏**Sanitization: תקין, נבדק ולא הונח.** ‏`jsonLdScript()` מחליף `<` ב-
+‏`<` (`json-ld.ts:228`), ולכן שם מוצר עם `</script>` לא פורץ מה-`<script>`.
+קלט החיפוש עובר `sanitizeOrTerm` לפני שהוא נכנס ל-`.or()` של PostgREST.
+ארבעת השימושים ב-`dangerouslySetInnerHTML` הם JSON-LD וסניפט ההסכמה בלבד.
+
+‏**Rate limiting: נמצא פער אמיתי ותוקן.** שני מסלולי החיפוש הציבוריים רצו בלי
+תקרה כלל. ‏`/api/search` מריץ ILIKE לא מאונדקס על `name_he` + `description_he`,
+ו-`/api/search/suggest` מחטיא את הקאש בכל `q` ייחודי, כלומר זו הדרך הזולה ביותר
+לזר להעסיק את ה-DB. נוספה תקרה פר-IP (‏120/5דק ו-300/5דק), **אחרי** רצפת שני
+התווים כדי שה-typeahead הריק לא ישלם round-trip. ‏7 בדיקות, ואומת שהן נכשלות
+בלי התיקון (הסרת השער הפכה בדיוק 2 מהן ל-200).
+
+‏**גייט אדום שנמצא בדרך ולא היה קשור:** ‏`main` היה **אדום** ב-
+‏`tokens.test.ts` לפני שנגעתי בו. ‏`ConsentBanner.tsx:25` נשא `#fff` גולמי
+מקומיט `f266df7`. הוחלף ב-`var(--color-surface)`. הניסיון הראשון עדיין נכשל
+כי **הסריקה תופסת hex גם בתוך הערה**, וההערה שהסבירה את התיקון נקבה בערך.
+
+גייטים אחרי goal 9: ‏tsc נקי, ‏**1314/1314** (היו 1307 לפני הבדיקות החדשות),
+‏build עובר, ‏biome נקי.
+
 ---
 
 ## ‏2026-08-03 — Final QA Sweep, ו-GO/NO-GO לפרודקשן

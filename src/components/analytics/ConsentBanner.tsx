@@ -22,7 +22,13 @@ const BANNER_STYLE = {
   insetInline: 0,
   bottom: 0,
   zIndex: 50,
-  background: '#fff',
+  // The token, not the literal. `--color-surface` is the white paper token in
+  // the @theme block, and the raw-hex gate in tokens.test.ts rejects a literal
+  // here -- including one written inside a comment, which is how the first
+  // attempt at this line failed. Safe for an element that paints before
+  // hydration: globals.css is a single render-blocking request ([21]), so the
+  // variable is already resolved at first paint.
+  background: 'var(--color-surface)',
   padding: '1rem',
   borderTop: '1px solid rgba(0,0,0,0.1)',
   boxShadow: '0 -4px 16px rgba(0,0,0,0.08)',

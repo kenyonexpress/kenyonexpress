@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import { sanitizeOrTerm } from '@/lib/utils/search-escape'
 import { type NextRequest, NextResponse } from 'next/server'
 
@@ -31,6 +32,19 @@ export async function GET(request: NextRequest) {
   const limit = Math.min(Number(searchParams.get('limit')) || 12, 40)
 
   if (q.length < 2) return NextResponse.json({ query: q, results: [] })
+
+  // Unauthenticated and uncached: every distinct `q` is an ILIKE over
+  // name_he + description_he with no index behind it, so this is the cheapest
+  // way for a stranger to make the database work. The ceiling is per IP and
+  // deliberately generous -- a shopper refining a query is nowhere near it.
+  // The check itself costs one round-trip, and it is placed after the
+  // two-character floor so the common empty-typeahead case never pays for it.
+  // checkRateLimit fails open by design (rate-limit.ts:22), so a limiter
+  // outage degrades to today's behaviour rather than breaking search.
+  const ip = await getClientIp()
+  if (!(await checkRateLimit(`search:${ip}`, 120, 300))) {
+    return NextResponse.json({ query: q, results: [], error: 'rate_limited' }, { status: 429 })
+  }
 
   const supabase = await createClient()
   let query = supabase
