@@ -3,8 +3,8 @@
 Updated: 2026-08-03 (autonomous: [36] goal 9 security sweep)
 
 ## המשך מ:
-תור goals 9-20 מ-03.08. ‏[36] = goal 9, ‏[37] = goal 10, שניהם הושלמו.
-הבא בתור: **goal 11 (Supplier portal)**, ואחריו 12-20 לפי הסדר.
+תור goals 9-20 מ-03.08. ‏[36] = goal 9, ‏[37] = goal 10, ‏[38] = goal 11.
+הבא בתור: **goal 12 (Admin dashboard)**, ואחריו 13-20 לפי הסדר.
 **דילוג מתועד:** התורים הליליים שנשלחו ב-03.08 חוזרים על Cart / Checkout /
 Coupon / אזור אישי / Notifications / SEO / E2E / Integration, וכולם סגורים
 ב-[1]-[35]. הפריט "סגירת checkout-cardcom" **לא יבוצע**: ה-branch מביא
@@ -26,6 +26,7 @@ goal 10 (Observability).
 ## Blocking Issues
 חוסמי deploy (קונפיג/נתונים, לא קוד): VOUCHER_QR_SECRET, Cardcom prod, DNS, 11 ספקים בלי כתובת/לוגו.
 ‏102 (voucher_issued) ממתין לאישור apply_migration.
+‏**104 (מדיניות products כפולה, soft delete לא נאכף) ממתין לאישור.**
 ‏**103 (נעילת views ו-RPCs) ממתין לאישור apply_migration. דליפת PII חיה עד להחלה.**
 ‏`PENDING-money-integer-fix.sql` ממתין לאישור. **לא להריץ** (הוראה מפורשת, 03.08).
 QA#6 (order_items ב-redeem) נדחה: מודל 085.
@@ -58,6 +59,37 @@ goal 10. במקביל: החלת 102 ו-103 אחרי אישור.
   ה-RPC הוא fail-open. שלילה הייתה מכבה את הרייט-לימיט במקום להדק אותו.
 - 2026-08-03: [36] תשע פונקציות ה-RLS predicate (`is_admin`, `has_role`, ...)
   נשארות עם EXECUTE: ביטוי policy מוערך בהרשאות התפקיד השואל, ושלילה שוברת RLS.
+
+---
+
+## ‏2026-08-03 — [38] goal 11: הפורטל היה שלם חוץ ממסך אחד, ומדיניות RLS כפולה
+
+‏5 מתוך 6 הפריטים כבר היו: התחברות, סריקה, דוח מימושים, יתרות (`payouts`),
+ו-RLS מלא (`is_supplier_member`, ‏`supplier_members`, ומדיניות
+‏`products: supplier member read own` שכבר קיימת בפרודקשן). חסר **"המוצרים
+שלי"** בלבד, ונבנה.
+
+**ממצא נלווה, מיגרציה 104:** ל-`public.products` שתי מדיניות SELECT ציבוריות
+חופפות. ‏`products: public read` בודקת `status='active' AND deleted_at IS NULL`,
+אבל `products_public_read` בודקת `status='active'` בלבד. מדיניות לאותה פקודה
+מחוברות ב-OR, **ולכן החלשה מכריעה ובדיקת ה-soft delete מעולם לא פעלה**. נמדד:
+‏61 מוצרים פעילים, ‏0 עם `deleted_at`, כלומר סמוי ולא דולף כרגע, ויורה ברגע
+שמישהו ימחק מוצר רכות ויאמין שהוא נעלם. הקובץ **נכתב ולא הוחל, ממתין לאישור**.
+
+המסך עצמו: ‏`getSupplierProducts` ממיר מחירים ב-`parseIls` בגבול, כי מחירי
+‏`products` הם עדיין numeric שקלים בפרודקשן (ה-rename לאגורות תלוי ב-PENDING),
+ולכן שום float לא ממשיך פנימה. החישוב ב-`productEconomics` עובר
+‏`percentToBp` + `applyBp`, אותו מסלול שהצ'קאאוט עובר, כדי שהמסך לא יצטט מספר
+שהצ'קאאוט יעגל אחרת. שתי חלוקות שונות: בקופון כל הגבייה באתר היא של הפלטפורמה
+והספק גובה את היתרה בקופה, ובפיזי `platform_percent` פר מוצר.
+‏`platform_percent` שהוא null **אינו אפס** אלא מוצר לא מוגדר, והמסך אומר זאת
+במקום להראות "אתם מקבלים 100%" שהצ'קאאוט לא יכבד.
+
+המסך נעול ב-`manager` ולא ב-`scanner`: סורק הוא אדם עם הטלפון של החנות ליד
+הקופה, ותנאי העמלה אינם שלו. קריאה בלבד, כי עריכת `platform_percent` היא
+פעולת אדמין עם שער אישור, וכפתור עריכה כאן היה עוקף אותו.
+
+‏13 בדיקות ל-`products.ts`. ‏tsc נקי, ‏**1337/1337**, build עובר.
 
 ---
 
