@@ -2,6 +2,7 @@ import {
   buildNotification,
   buildOrderPaidEmail,
   buildSupplierSaleEmail,
+  buildVoucherIssuedEmail,
   buildVoucherRedeemedEmail,
 } from '@/lib/email/notifications'
 import { describe, expect, it } from 'vitest'
@@ -147,9 +148,44 @@ describe('buildVoucherRedeemedEmail', () => {
   })
 })
 
+describe('buildVoucherIssuedEmail', () => {
+  const payload = {
+    order_id: '79f488aa-549a-40dd-af80-eb66d886668f',
+    order_ref: '79F488AA',
+    customer_name: 'דנה',
+    vouchers: [
+      {
+        id: '57002c6d-f917-4adc-804e-65e6c4bde594',
+        code: 'PRQBE23456',
+        product_name: 'ארוחה בשרית',
+        supplier_name: 'טעמים גורמה',
+        supplier_address: 'תל אביב',
+        supplier_phone: '0500000000',
+        face_value_agorot: 40_000,
+        coupon_price_agorot: 22_000,
+        remaining_amount_due_agorot: 18_000,
+        expires_at: '2026-12-31T00:00:00.000Z',
+      },
+    ],
+  }
+
+  it('states both amounts in the locked coupon money order', () => {
+    const mail = buildVoucherIssuedEmail(payload, SITE)
+    expect(mail.text).toContain('שולם באתר: ₪220.00')
+    expect(mail.text).toContain('לתשלום בבית העסק: ₪180.00')
+    expect(mail.html).toContain('/coupon/57002c6d-f917-4adc-804e-65e6c4bde594')
+  })
+
+  it('survives an empty voucher list rather than throwing at drain time', () => {
+    const mail = buildVoucherIssuedEmail({ ...payload, vouchers: [] }, SITE)
+    expect(mail.subject).toContain('0 קופונים')
+    expect(mail.text).toContain('0 הקופונים שלך מוכנים')
+  })
+})
+
 describe('buildNotification', () => {
-  it('dispatches each kind the outbox CHECK constraint allows', () => {
-    for (const kind of ['order_paid', 'supplier_sale', 'voucher_redeemed']) {
+  it('dispatches each kind the outbox CHECK constraint allows after 102', () => {
+    for (const kind of ['order_paid', 'supplier_sale', 'voucher_redeemed', 'voucher_issued']) {
       expect(buildNotification(kind, {}, SITE)).not.toBeNull()
     }
   })

@@ -1,11 +1,14 @@
--- 096_notification_voucher_issued.sql
+-- 102_notification_voucher_issued.sql
 --
 -- Move coupon delivery email onto the outbox path.
 -- When paid_at is set and the order already has vouchers, enqueue
 -- kind=voucher_issued (one email per order) instead of relying on
 -- finalizeOrder → Resend. order_paid stays only for physical-only orders.
 --
--- Idempotent. Apply via MCP apply_migration only.
+-- Renumbered from 096: that number collided with 096_discount_campaigns.sql
+-- (growth). Apply via MCP apply_migration only.
+--
+-- STATUS: ממתין לאישור (do not apply_migration until approved).
 
 -- Widen the kind CHECK to include voucher_issued.
 ALTER TABLE public.notification_outbox

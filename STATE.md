@@ -1,28 +1,28 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-03 (autonomous: תור קוד סגור)
+Updated: 2026-08-03 (autonomous: [31] voucher_issued outbox)
 
 ## המשך מ:
-תור הקוד הושלם. חוסמי deploy/תוכן בלבד (לא להמשיך בלי סודות/נתונים/096).
+[32] חציון Lighthouse בית נייד ~86: מנוף מדוד מעבר לתקרת Lantern.
 
 ## Current Phase
-‏**main.** תור [1]-[30] סגור. מודל כסף נעול: אין Escrow.
+‏**main.** תור [1]-[31] סגור. מודל כסף נעול: אין Escrow.
 
 ## Last Completed
-[30] סגירת תור הקוד. [29] `/contact`. [28] wishlist chrome. [27] sitemap 76.
-[26] PDP SEO 92. [25]/[24] LH בית.
+[31] 096_notification → 102 (ממתין לאישור apply_migration); תבנית
+voucher_issued ב-drain; GO-LIVE מסונכרן על sitemap/CategoryProductCard.
 
 ## In Progress
-nothing
+[32] home LH median
 
 ## Blocking Issues
 חוסמי deploy (קונפיג/נתונים, לא קוד): VOUCHER_QR_SECRET, Cardcom prod, DNS, 11 ספקים בלי כתובת/לוגו.
-‏096 ממתין לאישור apply_migration.
+‏102 (לשעבר 096 voucher_issued) ממתין לאישור apply_migration.
 QA#6 (order_items ב-redeem) נדחה: מודל 085.
 terms: תוכן משפטי, לא קוד.
 
 ## Next Task
-חידוש רק אחרי סודות/נתונים/אישור 096, או באג קוד חדש.
+[32] מדידת חציון LH בית + מנוף אם קיים בלי לשבור LCP banner.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
@@ -36,6 +36,7 @@ terms: תוכן משפטי, לא קוד.
 - 2026-08-03: [27] sitemap על anon ולא admin (מפתח demo מקומי השתיק את הקטלוג ל-3 URLs).
 - 2026-08-03: [28] מועדפים/הסטוריה הוסרו מהשלד (לא לבנות פיצ'ר; WP=410). contact/terms נשארים.
 - 2026-08-03: [29] contact בלי outbox (אין kind, RLS חוסם); Resend ישיר + replyTo.
+- 2026-08-03: [31] שני 096_* התנגשו; voucher_issued → 102 ממתין לאישור. תבנית מייל לפני ההחלה.
 
 ---
 

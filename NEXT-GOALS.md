@@ -161,8 +161,15 @@
 - [x] ✅ [29] `/contact`: טופס + `submitContactForm` → Resend transactional עם
       replyTo, honeypot, rate limit 5/שעה, `CONTACT_TO`. תקנון נשאר חסום.
 
-- [x] ✅ [30] תור הקוד נסגר. נשארו רק חוסמי deploy/תוכן (VOUCHER_QR_SECRET,
-      Cardcom, DNS, 11 ספקים, 096 ממתין לאישור, תקנון). בלי עבודת קוד פתוחה.
+- [x] ✅ [30] תור הקוד נסגר זמנית. נפתח מחדש אחרי מציאת פערים מדודים.
+
+- [x] ✅ [31] התנגשות שני קבצי `096_*`: `notification_voucher_issued` הועבר ל-
+      ‏`102_…` (ממתין לאישור apply_migration). נוסף תבנית `voucher_issued`
+      ב-`notifications.ts` (reuse של `buildVoucherEmail`) כדי שה-drain לא יהרוג
+      שורות אחרי ההחלה. GO-LIVE עודכן על CategoryProductCard + sitemap.
+
+- [ ] [32] חציון Lighthouse בית נייד עדיין ~86 (שיא 90+). למצוא מנוף מדוד
+      מעבר לתקרת Lantern שתועדה ב-[20]/[24]/[25].
 
 ## החלטות שהתקבלו אוטומטית: מה נשאר מ-[9]
 

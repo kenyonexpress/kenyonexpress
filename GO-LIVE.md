@@ -274,15 +274,11 @@
       ברירת המחדל לא שונתה: נעיצה היא opt-in, כדי לא לקבע מספר מחמיא.
       **להריץ את השער כך:**
       `COMPARE_PRODUCT_SLUG=airpods-pro-2 LOCAL_BASE=http://localhost:<port> node scripts/compare.mjs --page=product`
-- [ ] **‏`CategoryProductCard` מגיש `<img>` גולמי**, ולכן `/category`,
-      ‏`/products` ו-`/search` **עוקפים את אופטימייזר התמונות לחלוטין**. אין לזה
-      השפעה על הפיקסלים (הקטגוריה בדיוק על הבסיס שלה), רק על משקל העמוד.
-- [ ] **‏sitemap מקומי מחזיר 3 כתובות בלבד, ושותק על זה.** נמדד באותה ריצה:
-      `src/app/sitemap.ts:37` בנוי על `createAdminClient()`, שמת מקומית בגלל
-      מפתח ה-`SUPABASE_SECRET_KEY` הישן, ולכן ה-sitemap יוצא בלי אף מוצר ובלי
-      אף קטגוריה **בלי שגיאה אחת**. בפרודקשן עם מפתח תקין הוא מלא. הסיכון הוא
-      שאם המפתח שגוי גם שם, גוגל מקבל sitemap כמעט ריק בשקט. שווה לוודא אחרי
-      הפריסה שה-sitemap החי מחזיר את 61 המוצרים.
+- [x] ✅ **‏`CategoryProductCard` כבר על `next/image`.** השורה ב-GO-LIVE הייתה
+      מיושנת אחרי [18]; הקובץ מייבא `Image` עם `sizes` מדוד.
+- [x] ✅ **‏sitemap מקומי מלא ([27]).** עבר ל-`createPublicClient` +
+      ‏`CATALOGUE_TAG`; נמדד **76** URLs מקומית. עדיין לוודא אחרי פריסה שהחי
+      מחזיר את המוצרים הפעילים.
 - [ ] מעקב לוגים: ‏webhooks, ‏4xx/5xx, ‏RLS denials, שגיאות cron.
 - [ ] ‏`SENTRY_DSN` מוגדר, אחרת מסלול הכסף אינרטי ולא ידווח על כלום.
 - [ ] ‏DNS + HSTS preload רק אחרי 48 שעות יציבות. ‏`preload` הוא מסלול חד-כיווני

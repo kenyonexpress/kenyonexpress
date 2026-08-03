@@ -1,7 +1,8 @@
+import { buildVoucherEmail } from '@/lib/email/voucher-email'
 import { formatAgorot, formatCouponCode } from '@/lib/vouchers/coupon-view'
 
 /**
- * The three notifications GOAL 6 names, as pure builders.
+ * Outbox notification builders for GOAL 6 (+ voucher_issued for migration 102).
  *
  * Same shape and the same reasoning as `voucher-email.ts`: a subject and two
  * bodies, no transport, no database, no network, so what a person reads can be
@@ -28,7 +29,11 @@ export interface BuiltNotification {
   text: string
 }
 
-export type NotificationKind = 'order_paid' | 'supplier_sale' | 'voucher_redeemed'
+export type NotificationKind =
+  | 'order_paid'
+  | 'supplier_sale'
+  | 'voucher_redeemed'
+  | 'voucher_issued'
 
 function escapeHtml(value: string): string {
   return value
@@ -267,6 +272,49 @@ export function buildVoucherRedeemedEmail(
   return { subject, html, text }
 }
 
+/**
+ * Coupon delivery after pay. Payload shape is frozen by
+ * `tg_orders_notify_paid` in migration 102 (snake_case voucher rows).
+ * Reuses `buildVoucherEmail` so the transitional finalize sender and the
+ * outbox drain cannot drift apart on copy or amounts.
+ */
+export function buildVoucherIssuedEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification {
+  const orderId = asText(payload.order_id) ?? 'unknown'
+  const raw = Array.isArray(payload.vouchers) ? payload.vouchers : []
+  const vouchers = raw.flatMap((row) => {
+    if (!row || typeof row !== 'object') return []
+    const v = row as Record<string, unknown>
+    const id = asText(v.id)
+    const code = asText(v.code)
+    const expiresAt = asText(v.expires_at)
+    if (!id || !code || !expiresAt) return []
+    return [
+      {
+        id,
+        code,
+        productName: asText(v.product_name),
+        supplierName: asText(v.supplier_name),
+        supplierAddress: asText(v.supplier_address),
+        supplierPhone: asText(v.supplier_phone),
+        faceValueAgorot: asNumber(v.face_value_agorot),
+        couponPriceAgorot: asNumber(v.coupon_price_agorot),
+        remainingDueAgorot: asNumber(v.remaining_amount_due_agorot),
+        expiresAt,
+      },
+    ]
+  })
+
+  return buildVoucherEmail({
+    customerName: asText(payload.customer_name),
+    orderId,
+    vouchers,
+    siteUrl: trimSite(siteUrl),
+  })
+}
+
 /** Dispatch by queued kind. Unknown kinds return null so the drain can park them. */
 export function buildNotification(
   kind: string,
@@ -280,6 +328,8 @@ export function buildNotification(
       return buildSupplierSaleEmail(payload, siteUrl)
     case 'voucher_redeemed':
       return buildVoucherRedeemedEmail(payload, siteUrl)
+    case 'voucher_issued':
+      return buildVoucherIssuedEmail(payload, siteUrl)
     default:
       return null
   }
