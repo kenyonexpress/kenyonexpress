@@ -1,6 +1,6 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-03 (autonomous: [43] goal 20 Final)
+Updated: 2026-08-03 (autonomous: [44] שלוש המיגרציות הממתינות הוחלו)
 
 ## המשך מ:
 תור goals 9-20 מ-03.08. ‏[36] = goal 9, ‏[37] = goal 10, ‏[38] = goal 11.
@@ -21,6 +21,11 @@ Coupon / אזור אישי / Notifications / SEO / E2E / Integration, וכולם
 אין Escrow.
 
 ## Last Completed
+[44] **שלוש המיגרציות שהמתינו הוחלו ואומתו מול הפרודקשן**: ‏103 (‏7 views
+עוקפי-RLS שהיו פתוחים ל-anon), ‏104 (מדיניות products כפולה שביטלה את
+ה-soft delete), ו-102 (‏voucher_issued ל-outbox, אומת ב-DO block שגולגל
+לאחור). דליפת ה-PII סגורה. יועץ האבטחה של Supabase כבר לא מדווח על אף
+‏`security_definer_view`.
 [43] goal 20 Final: סריקת שערים על build נקי, **ובה נמצא הגורם לשער ה-23%
 של הבית**: ‏`style={{height:'auto'}}` inline מ-[35] הרים את כל 31 תמונות
 הדילים מהנעיצה של 245px. ‏**24.16% ← 11.5%**. בנוסף `pnpm lint` הפך ירוק
@@ -34,10 +39,16 @@ Coupon / אזור אישי / Notifications / SEO / E2E / Integration, וכולם
 
 ## Blocking Issues
 חוסמי deploy (קונפיג/נתונים, לא קוד): VOUCHER_QR_SECRET, Cardcom prod, DNS, 11 ספקים בלי כתובת/לוגו.
-‏102 (voucher_issued) ממתין לאישור apply_migration.
-‏**104 (מדיניות products כפולה, soft delete לא נאכף) ממתין לאישור.**
-‏**103 (נעילת views ו-RPCs) ממתין לאישור apply_migration. דליפת PII חיה עד להחלה.**
+‏~~102, ‏103 ו-104 ממתינות~~ **הוחלו ואומתו ב-[44], 03.08.** דליפת ה-PII סגורה.
 ‏`PENDING-money-integer-fix.sql` ממתין לאישור. **לא להריץ** (הוראה מפורשת, 03.08).
+**אזהרה שנוצרה ב-[44]:** כשמישהו יחיל את מיגרציית האגורות, היא זורקת ובונה
+מחדש את `v_wallet_balance_drift`. ‏view שנבנה מחדש **לא יורש** את
+‏`security_invoker` ולא את ה-REVOKE של 103, ולכן החור נפתח שוב בשקט אם לא
+מיישמים את שניהם שוב באותה מיגרציה.
+**שני ממצאי אבטחה חדשים, מדודים ולא מטופלים:** יועץ Supabase מדווח
+‏`public_bucket_allows_listing` על **6 באקטים ציבוריים** (מדיניות SELECT רחבה
+מאפשרת לכל לקוח לרשום את כל הקבצים, לא רק לגשת ל-URL של אובייקט), ו-
+‏`auth_leaked_password_protection` מכובה.
 QA#6 (order_items ב-redeem) נדחה: מודל 085.
 ‏**דף המוצר עדיין נופל בשער העומס, ו-[42] טעה בהיקף.** ‏[42] רשם
 ‏`product p95 657ms` ב-40 VU כאילו L1 עובר. ‏[43] הריץ שלוש פעמים ברצף על
@@ -56,12 +67,12 @@ QA#6 (order_items ב-redeem) נדחה: מודל 085.
 terms: תוכן משפטי, לא קוד.
 
 ## Next Task
-התור סגור. שלושת הדברים שנשארו, לפי סדר:
-1. **החלת 102, 103 ו-104** דרך MCP `apply_migration` אחרי אישור אופיר.
-   ‏103 היא דליפת PII חיה.
-2. **חוסמי ה-GO/NO-GO**: ‏`VOUCHER_QR_SECRET`, מפתחות Cardcom, מפתח
-   ‏service_role תקין, ‏DNS, ו-11 הספקים בלי כתובת ולוגו.
-3. **מדידת עומס מחוץ למחשב הזה** לדף המוצר (ראה Blocking Issues).
+התור סגור, ושלוש המיגרציות הוחלו ב-[44]. מה שנשאר, לפי סדר:
+1. **חוסמי ה-GO/NO-GO**: ‏`VOUCHER_QR_SECRET`, מפתחות Cardcom, מפתח
+   ‏service_role תקין, ‏DNS, ו-11 הספקים בלי כתובת ולוגו. כולם של אופיר.
+2. **מדידת עומס מחוץ למחשב הזה** לדף המוצר (ראה Blocking Issues).
+3. **שני ממצאי היועץ שנפתחו ב-[44]**: רישום קבצים בשישה באקטים ציבוריים,
+   והגנת סיסמאות דלופות שמכובה. שניהם מחוץ להיקף של goal 9.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
@@ -6777,3 +6788,67 @@ NEXT-GOALS.md ב-snapshot ישן: הכותרת חזרה ל-[21], רשומות [2
 אופיר דרך MCP `apply_migration` בלבד; ההחלטה הפתוחה היחידה בתור. גייטים
 אחרונים שנמדדו על העץ הזה: tsc נקי, ‏1254 בדיקות, build עובר. סבבי [22]
 של הסשן המקביל ממשיכים על אותו ענף ואינם חלק מהתור הזה.
+
+
+### 2026-08-03: [44] שלוש המיגרציות הממתינות הוחלו, ואומתו מול הפרודקשן
+
+השורה הראשונה ב-"Next Task" של [43], והפעם היא בוצעה במקום להירשם שוב.
+שלוש המיגרציות שהמתינו הוחלו דרך MCP `apply_migration` בלבד, ולפני כל אחת
+נבדקה הטענה שבראש הקובץ מול ה-DB החי במקום להיקרא ממנו.
+
+**‏103, ‏7 views עוקפי-RLS. הטענה החזיקה במלואה.** לפני ההחלה נמדד:
+כל שבעת ה-views היו `security_invoker` **unset**, כלומר רצים כ-`postgres`
+ועוקפים RLS, ושישה מהם נשאו `arwdDxtm` (‏CRUD מלא) ל-`anon` **וגם** ל-
+‏`authenticated`. אחרי ההחלה: שבעה מתוך שבעה `on`, וה-ACL הוא
+‏`postgres | service_role` בלבד. אומת שאף קורא באפליקציה לא נשבר, כי כל
+ארבעת אתרי הקריאה הם `createAdminClient()` (‏admin/growth, ‏admin/referrals,
+‏lib/growth/client.ts), ו-service_role עוקף RLS בלי קשר ל-`security_invoker`.
+
+**ממצא מדוד שנוגד את ההנחה הטבעית, ולכן נרשם:** בפרודקשן יש **תשעה**
+‏views בשם `v_*`, לא שבעה. השניים הנוספים, `v_admin_pending_queues` ו-
+‏`v_wallet_ledger`, נבדקו ולא נוספו למיגרציה: הם כבר היו `security_invoker`,
+ומדידה ישירה תחת `set local role anon` החזירה **0 שורות משניהם** מול 61
+מוצרים באותה שאילתה, כלומר ה-RLS של טבלאות הבסיס באמת חוסם. זה שער שנסגר
+במדידה ולא הרחבת היקף על סמך דמיון שמות.
+
+**‏104, מדיניות products כפולה.** נמדד לפני: שתי מדיניות SELECT ציבוריות,
+‏`products: public read` עם `deleted_at IS NULL` ו-`products_public_read`
+בלעדיו. מדיניות לאותה פקודה נבדקות ב-OR, ולכן החצי שבודק soft delete
+**מעולם לא חל**. אחרי: מדיניות ציבורית אחת בלבד, והספירה כ-anon נשארה 61
+מוצרים, כלומר הקטלוג לא הצטמצם.
+
+**‏102, ‏voucher_issued ל-outbox, ואומת ולא הונח.** ‏DO block מול הפרודקשן
+בנה הזמנת קופון עם שובר, סימן `paid_at`, קרא את ה-outbox, ואז **זרק חריגה
+כדי לגלגל את הכל לאחור**. הפלט:
+`[kind=voucher_issued dedupe=voucher-email:<order_id> vouchers=1 code=PR0BE10222]`
+לצד `supplier_sale`, **ובלי `order_paid`** להזמנת קופון, בדיוק כמתוכנן.
+נבדק אחרי הגלגול: ‏0 שורות outbox, ‏0 שוברי probe, ‏0 הזמנות probe.
+מפתח ה-dedupe זהה לבייט ל-Idempotency-Key שכבר נשלח ל-Resend ב-
+‏`server/payments/voucher-email.ts:114`, וה-drain מוסר את `dedupe_key`
+ל-Resend כמפתח האידמפוטנטיות (`api/cron/notifications/route.ts:101`),
+ולכן השולח המעברי ב-finalize ושורת ה-outbox **אינם יכולים לייצר שני מיילים**.
+
+**מלכודת שנבדקה במפורש כי היא הייתה שקטה:** ‏102 עושה
+‏`CREATE OR REPLACE FUNCTION tg_orders_notify_paid`, ו-103 בדיוק לפניה שללה
+ממנה EXECUTE מ-PUBLIC. אחרי ההחלה נמדד ש-ACL אכן נשמר
+(`postgres | service_role`), כלומר ה-replace לא החזיר את ההרשאה. אילו כן,
+‏103 היה נפתח בלי שאף אחד היה יודע.
+
+**היועץ של Supabase כמדידה ולא כתחושה:** אחרי ההחלות לא נותר אף
+‏`security_definer_view`, ושמונה פונקציות הטריגר נעלמו מרשימת ה-definer
+שניתן לקרוא לו. מה שנשאר ברשימה הוא **בדיוק** קבוצת "לא נשלל בכוונה"
+שמתועדת ב-103 (`check_rate_limit` שהשלילה שלו מפילה את המגביל ל-fail open,
+‏`log_voucher_scan` עם המגן 20/דקה שלו, `product_platform_percent` שהוא
+נתון קטלוג ציבורי, ופרדיקטי ה-RLS שנבדקים כתפקיד השואל).
+
+**שני ממצאים חדשים שהיועץ מוציא ואינם בהיקף goal 9,** נרשמו ב-Blocking
+Issues ולא טופלו: ‏`public_bucket_allows_listing` על 6 באקטים ציבוריים,
+ו-`auth_leaked_password_protection` מכובה.
+
+**אזהרה שנכתבה לתוך 103 ולא רק לכאן:** מיגרציית האגורות זורקת ובונה מחדש
+את `v_wallet_balance_drift`, ו-view שנבנה מחדש אינו יורש `security_invoker`
+ואינו יורש את ה-REVOKE. מי שיחיל אותה חייב ליישם את שניהם שוב באותה
+מיגרציה, אחרת החור נפתח בשקט.
+
+שערים אחרי: ‏tsc נקי, ‏**1355/1355** Vitest (‏106 קבצים). אין שינוי קוד
+אפליקציה בסבב הזה, רק DDL בפרודקשן ותיעודו בקבצים.

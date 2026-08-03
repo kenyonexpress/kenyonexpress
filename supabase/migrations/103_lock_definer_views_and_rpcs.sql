@@ -50,6 +50,25 @@
 -- trigger on auth.users that writes public.profiles.
 --
 -- Idempotent: ALTER/REVOKE/GRANT are all safe to re-run.
+--
+-- STATUS: APPLIED 2026-08-03 via MCP apply_migration (version 20260803_103).
+-- Re-measured after: all seven views read `security_invoker = on` and their
+-- ACL is `postgres | service_role` only. The Supabase security advisor no
+-- longer reports a single `security_definer_view`, and the trigger functions
+-- are gone from the definer-executable lints. What the advisor still lists is
+-- exactly the "deliberately NOT revoked" set below plus two items outside this
+-- migration: `public_bucket_allows_listing` on six storage buckets, and
+-- leaked-password protection disabled in Auth.
+--
+-- MEASURED NEGATIVE, so nobody re-opens it: the two remaining `v_` views,
+-- `v_admin_pending_queues` and `v_wallet_ledger`, were already
+-- `security_invoker` and were never part of this hole. Confirmed as the anon
+-- role: 0 rows from v_wallet_ledger, 0 from the pending queues, 61 products.
+-- Their base tables all carry RLS with policies.
+--
+-- Also confirmed after applying 102 on top of this: `CREATE OR REPLACE
+-- FUNCTION` preserves the ACL, so replacing `tg_orders_notify_paid` did not
+-- hand its EXECUTE back to PUBLIC.
 
 begin;
 

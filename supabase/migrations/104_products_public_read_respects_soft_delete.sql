@@ -21,6 +21,11 @@
 -- correctly and in full.
 --
 -- Idempotent: DROP POLICY IF EXISTS, and the CREATE is guarded the same way.
+--
+-- STATUS: APPLIED 2026-08-03 via MCP apply_migration (version 20260803_104).
+-- Re-measured after: `products` now has exactly one public SELECT policy,
+-- `products: public read`, with `status = 'active' AND deleted_at IS NULL`.
+-- The anon role still counts 61 products, so the catalogue did not narrow.
 
 begin;
 

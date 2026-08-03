@@ -8,7 +8,20 @@
 -- Renumbered from 096: that number collided with 096_discount_campaigns.sql
 -- (growth). Apply via MCP apply_migration only.
 --
--- STATUS: ממתין לאישור (do not apply_migration until approved).
+-- STATUS: APPLIED 2026-08-03 via MCP apply_migration (version 20260803_102).
+--
+-- Verified end to end against production inside a DO block that was rolled
+-- back, so no row survives: a coupon order with one voucher enqueued
+--   kind=voucher_issued  dedupe=voucher-email:<order_id>  vouchers=1
+-- and NOT order_paid, while supplier_sale still fired alongside it. The dedupe
+-- key is byte-identical to the Resend Idempotency-Key that
+-- `server/payments/voucher-email.ts:114` already sends, and the drain in
+-- `api/cron/notifications/route.ts:101` hands `dedupe_key` to Resend as its
+-- idempotency key, so the transitional finalize sender and this outbox row
+-- cannot produce two mails.
+--
+-- Note from the same probe: `supplier_address` came back NULL, which is the
+-- known data blocker (11 suppliers with no address), not a defect here.
 
 -- Widen the kind CHECK to include voucher_issued.
 ALTER TABLE public.notification_outbox
