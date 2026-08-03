@@ -2,9 +2,11 @@
 
 ארכיטקטורת SEO וביצועים לחנות KenyonExpress (Next.js App Router).
 
-Status: **BINDING** · Updated: 2026-08-03 (rev B)  
+Status: **BINDING** · Updated: 2026-08-03 (rev C)  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה ב-worktree הראשי (`kenyonexpress`).
+
+עמודי תווך במסמך זה: **ISR**, **sitemap דינמי**, **schema.org בעברית RTL**, **Core Web Vitals**.
 
 Companions:
 
@@ -234,9 +236,10 @@ src/lib/seo/json-ld.ts
 | `image` | URLs אמיתיים מ-R2 |
 | `brand` | שם הספק בעברית (לא שם הפלטפורמה כברירת מחדל) |
 | `offers.@type` | `Offer` |
-| `offers.price` | מה שהלקוח משלם **באתר** (agorot/100), מחרוזת/מספר עשרוני במטבע |
+| `offers.price` | מה שהלקוח משלם **באתר** (agorot/100), מחרוזת/מספר עשרוני במטבע. לקופון: `coupon_price` בלבד (לא face מלא) |
 | `offers.priceCurrency` | `ILS` |
 | `offers.availability` | לפי מלאי/סטטוס אמיתי (`InStock` / `OutOfStock`) |
+| HTML page | `lang="he"` + `dir="rtl"` על המסמך; JSON-LD עם `inLanguage: he-IL` תואם לתצוגה |
 | `offers.url` | אותו URL מוצר |
 
 קופון:
@@ -423,3 +426,4 @@ docs/ARCHITECTURE-WP-DATA-MIGRATION.md
 | 2026-08-02 | Lighthouse targets, JSON-LD, Hebrew metadata |
 | 2026-08-03 | Lighthouse 90+ strategy, ISR מחייבת, sitemap דינמי, schema.org מוצרים בעברית RTL; docs-only ב-`ke-arch` |
 | 2026-08-03 | rev B: סעיף Core Web Vitals מחייב (LCP/CLS/INP, מיפוי דפים, RUM/שערים) |
+| 2026-08-03 | rev C: נעילת עמודי תווך ISR + sitemap + schema.org RTL + CWV; מחיר Offer = on-site בלבד |
