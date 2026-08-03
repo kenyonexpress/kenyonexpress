@@ -306,3 +306,4 @@ docs/RUNBOOK-PRODUCTION.md
 | 2026-08-03 | Binding ב-`ke-arch`: platform_percent פר מוצר (גרסת Escrow) |
 | 2026-08-03 | ke-arch docs-lifecycle: No Escrow; `platform_percent` דינמי פר מוצר; דוחות בלי held |
 | 2026-08-03 | rev C: נעילת מוצרים/ספקים/דוחות עם platform_percent פר מוצר |
+| 2026-08-03 | pack-20: admin dashboard binding refresh for 20-doc queue |
