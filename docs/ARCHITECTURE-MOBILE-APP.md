@@ -141,8 +141,8 @@ EXPO_PUBLIC_APP_URL
 
 | סוג | באתר / באפ | פלטפורמה | ספק |
 |---|---|---|---|
-| קופון | `coupon_price` (אגורות) | `%` מהמקדמה; יתרת מקדמה ב-held עד מימוש | יתרת face בקופה בסריקה |
-| פיזי | מחיר מלא | `%` מצולם ב-`order_items` | ledger / payout |
+| קופון | `coupon_price` (אגורות) | **100%** מתשלום האתר (No Escrow) | 0 מהפלטפורמה; יתרת face בקופה בסריקה |
+| פיזי | מחיר מלא | `platform_percent` מצולם ב-`order_items` | residual ב-payout |
 
 כללי אפ:
 
