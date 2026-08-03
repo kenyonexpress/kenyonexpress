@@ -1,3 +1,4 @@
+import { log } from '@/lib/observability/log'
 import { checkAdminKey } from '@/lib/supabase/admin-key'
 import { createClient } from '@supabase/supabase-js'
 
@@ -7,7 +8,7 @@ let warned = false
 function warnOnce(message: string): void {
   if (warned) return
   warned = true
-  console.error(`[supabase-admin] ${message}`)
+  log.error('supabase.admin_key_invalid', { detail: message })
 }
 
 // Server-only admin client — bypasses RLS. Never import in client components.

@@ -1,5 +1,6 @@
 import { sendEmail } from '@/lib/email/resend'
 import { type VoucherEmailLine, buildVoucherEmail } from '@/lib/email/voucher-email'
+import { log } from '@/lib/observability/log'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 /**
@@ -117,9 +118,7 @@ export async function sendVoucherEmail(
     if (!result.ok) return { sent: false, reason: result.reason }
     return { sent: true }
   } catch (error) {
-    console.error(
-      `[voucher-email] not sent: ${error instanceof Error ? error.message : String(error)}`,
-    )
+    log.error('email.voucher_send_failed', { err: error })
     return { sent: false, reason: 'exception' }
   }
 }

@@ -1,3 +1,4 @@
+import { log } from '@/lib/observability/log'
 import 'server-only'
 
 import type { FunnelRow, SaleLine } from '@/lib/analytics/aggregate'
@@ -75,7 +76,7 @@ export async function loadSalesLines(days: number): Promise<SalesLoad> {
     .limit(MAX_LINES)
 
   if (error || !data) {
-    console.error('loadSalesLines failed:', error?.message)
+    log.error('analytics.sales_lines_failed', { reason: error?.message })
     return { lines: [], truncated: false }
   }
 

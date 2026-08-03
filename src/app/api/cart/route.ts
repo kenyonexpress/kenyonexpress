@@ -1,3 +1,4 @@
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createClient } from '@/lib/supabase/server'
 import { getCart } from '@/server/actions/cart'
 import { NextResponse } from 'next/server'
@@ -19,7 +20,7 @@ import { NextResponse } from 'next/server'
  * legal in a route handler, which is one more reason this read cannot go back
  * into a server component.
  */
-export async function GET() {
+async function handleGET() {
   const supabase = await createClient()
   const [cart, { data: auth }] = await Promise.all([getCart(), supabase.auth.getUser()])
 
@@ -28,3 +29,5 @@ export async function GET() {
     { headers: { 'cache-control': 'no-store' } },
   )
 }
+
+export const GET = withRequestLog('/api/cart', handleGET)

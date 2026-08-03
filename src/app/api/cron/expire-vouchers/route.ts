@@ -1,3 +1,5 @@
+import { log } from '@/lib/observability/log'
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { type NextRequest, NextResponse } from 'next/server'
 
@@ -27,7 +29,7 @@ import { type NextRequest, NextResponse } from 'next/server'
  *
  * Auth: Vercel Cron sends Authorization: Bearer CRON_SECRET.
  */
-export async function GET(request: NextRequest): Promise<NextResponse> {
+async function handleGET(request: NextRequest): Promise<NextResponse> {
   const secret = process.env.CRON_SECRET
   if (!secret || request.headers.get('authorization') !== `Bearer ${secret}`) {
     return NextResponse.json({ ok: false }, { status: 401 })
@@ -37,7 +39,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   const { data: expired, error: expireError } = await admin.rpc('expire_vouchers')
   if (expireError) {
-    console.error('expire_vouchers failed:', expireError.message)
+    log.error('vouchers.expire_failed', { reason: expireError.message })
     return NextResponse.json({ ok: false, error: expireError.message }, { status: 500 })
   }
 
@@ -45,7 +47,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   if (creditError) {
     // The sweep already committed. Say so, so a 500 here is not read as
     // "nothing happened" and the vouchers are not swept a second time.
-    console.error('credit_expired_vouchers failed:', creditError.message)
+    log.error('vouchers.expiry_credit_failed', { reason: creditError.message, expired })
     return NextResponse.json(
       { ok: false, expired, credited: 0, error: creditError.message },
       { status: 500 },
@@ -54,3 +56,5 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   return NextResponse.json({ ok: true, expired, credited })
 }
+
+export const GET = withRequestLog('/api/cron/expire-vouchers', handleGET)

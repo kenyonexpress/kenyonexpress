@@ -1,6 +1,7 @@
 import { timingSafeEqual } from 'node:crypto'
 import { cardcomWebhookPayloadSchema, isCardcomSuccess } from '@/lib/contracts/webhooks'
 import { capturePaymentAlarm } from '@/lib/observability/sentry'
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import { getPaymentProvider, loadCardcomEnv } from '@/lib/payments'
 import { readAmountAgorot, resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -28,7 +29,7 @@ function secretMatches(provided: string, expected: string): boolean {
  * Plus: log every event first, dedup on (provider, external_event_id), replays
  * are 200 no-ops.
  */
-export async function POST(request: NextRequest): Promise<NextResponse> {
+async function handlePOST(request: NextRequest): Promise<NextResponse> {
   const rawBody = await request.text()
   const env = loadCardcomEnv()
   const admin = createAdminClient()
@@ -213,3 +214,5 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   return NextResponse.json({ ok: true })
 }
+
+export const POST = withRequestLog('/api/payments/cardcom/webhook', handlePOST)

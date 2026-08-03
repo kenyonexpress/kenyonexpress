@@ -1,5 +1,7 @@
 'use server'
 
+import { log } from '@/lib/observability/log'
+
 import { passwordResetResult } from '@/lib/auth/password-reset'
 import { safeNextPath } from '@/lib/auth/safe-next'
 import { GUEST_SESSION_COOKIE, getGuestSessionId } from '@/lib/cart/guest-session'
@@ -169,7 +171,7 @@ export async function sendPasswordReset(_: AuthState, formData: FormData): Promi
 
   // Never let the reply reveal whether the address is registered. Failures are
   // logged for operators; the caller always sees the same message.
-  if (error) console.error('[auth] password reset failed:', error.message)
+  if (error) log.error('auth.password_reset_failed', { reason: error.message })
   return passwordResetResult(error)
 }
 

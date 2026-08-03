@@ -1,3 +1,4 @@
+import { REQUEST_ID_HEADER, resolveRequestId } from '@/lib/observability/request-id'
 import { isPaymentFramePath } from '@/lib/security/frame-policy'
 import { lookupRedirect } from '@/lib/seo/redirects'
 import { createServerClient } from '@supabase/ssr'
@@ -6,8 +7,39 @@ import { type NextRequest, NextResponse } from 'next/server'
 // Next.js 16: middleware.ts is deprecated — this file replaces it.
 // The exported function must be named `proxy` (not `middleware`).
 
+/**
+ * Continue routing, with the correlation id attached in both directions.
+ *
+ * The header set is read back off the request by `withRequestLog`, which is how
+ * a route handler four hops downstream logs the same id. `request.headers` is
+ * re-read on every call rather than captured once, because `request.cookies.set`
+ * below rewrites the cookie header in place and a snapshot taken before the
+ * Supabase session refresh would forward the pre-refresh cookies upstream.
+ */
+function forward(request: NextRequest, requestId: string): NextResponse {
+  const headers = new Headers(request.headers)
+  headers.set(REQUEST_ID_HEADER, requestId)
+  const response = NextResponse.next({ request: { headers } })
+  response.headers.set(REQUEST_ID_HEADER, requestId)
+  return response
+}
+
+/** The id on a response this file produces itself: a redirect, a 410. */
+function withRequestId<T extends Response>(response: T, requestId: string): T {
+  response.headers.set(REQUEST_ID_HEADER, requestId)
+  return response
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
+
+  // Minted here and nowhere else, so one visitor request is one id no matter
+  // how many handlers, actions and modules it passes through. An inbound
+  // `x-request-id` wins when it is well formed: a trace that started at a load
+  // balancer or an uptime monitor stays one trace. This is a string operation
+  // and one header read, so it does not disturb the ordering the tunnel guard
+  // below depends on.
+  const requestId = resolveRequestId(request.headers)
 
   // The Sentry tunnel. First, before the redirect lookup and before the session
   // refresh: it carries no session, it is posted to by the browser SDK on a page
@@ -18,7 +50,7 @@ export async function proxy(request: NextRequest) {
   // stopped describing it: every error report was paying for a token refresh.
   // Neither branch was wrong on its own, which is how the two of them produced
   // it.
-  if (pathname.startsWith('/monitoring')) return NextResponse.next({ request })
+  if (pathname.startsWith('/monitoring')) return forward(request, requestId)
 
   // Legacy WordPress URLs, resolved BEFORE the session refresh below.
   //
@@ -37,7 +69,7 @@ export async function proxy(request: NextRequest) {
       if (hit.status === 410) {
         // Gone, not missing. A 410 is a decision we made; a 404 is an
         // oversight, and Search Console treats the two differently.
-        return new NextResponse(null, { status: 410 })
+        return withRequestId(new NextResponse(null, { status: 410 }), requestId)
       }
       const url = request.nextUrl.clone()
       url.pathname = hit.target
@@ -45,11 +77,11 @@ export async function proxy(request: NextRequest) {
       // paths, and carrying `?ref=` or a stale WooCommerce `?product=` through
       // would produce duplicate URLs for one page.
       url.search = ''
-      return NextResponse.redirect(url, 301)
+      return withRequestId(NextResponse.redirect(url, 301), requestId)
     }
   }
 
-  let supabaseResponse = NextResponse.next({ request })
+  let supabaseResponse = forward(request, requestId)
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -61,7 +93,7 @@ export async function proxy(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           for (const { name, value } of cookiesToSet) request.cookies.set(name, value)
-          supabaseResponse = NextResponse.next({ request })
+          supabaseResponse = forward(request, requestId)
           for (const { name, value, options } of cookiesToSet)
             supabaseResponse.cookies.set(name, value, options)
         },
@@ -110,7 +142,7 @@ export async function proxy(request: NextRequest) {
     const loginUrl = request.nextUrl.clone()
     loginUrl.pathname = '/login'
     loginUrl.searchParams.set('next', pathname)
-    return NextResponse.redirect(loginUrl)
+    return withRequestId(NextResponse.redirect(loginUrl), requestId)
   }
 
   if (pathname.startsWith('/admin')) {
@@ -118,7 +150,7 @@ export async function proxy(request: NextRequest) {
       const loginUrl = request.nextUrl.clone()
       loginUrl.pathname = '/login'
       loginUrl.searchParams.set('next', pathname)
-      return NextResponse.redirect(loginUrl)
+      return withRequestId(NextResponse.redirect(loginUrl), requestId)
     }
     // Role is authoritative in the profiles table, not app_metadata (which may be stale).
     const { data: profile } = await supabase
@@ -135,7 +167,7 @@ export async function proxy(request: NextRequest) {
       profile?.role === 'content_uploader' ||
       profile?.role === 'support'
     if (!isPanel) {
-      return NextResponse.redirect(new URL('/', request.url))
+      return withRequestId(NextResponse.redirect(new URL('/', request.url)), requestId)
     }
   }
 

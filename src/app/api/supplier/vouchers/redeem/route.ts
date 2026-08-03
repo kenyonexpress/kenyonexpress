@@ -1,4 +1,6 @@
+import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createClient } from '@/lib/supabase/server'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
 import { verifyVoucherQrPayload } from '@/server/domain/vouchers/qr'
@@ -111,7 +113,7 @@ function asOutcome(value: unknown): Outcome {
   return known.includes(value as Outcome) ? (value as Outcome) : 'not_found'
 }
 
-export async function POST(request: NextRequest): Promise<NextResponse> {
+async function handlePOST(request: NextRequest): Promise<NextResponse> {
   const supabase = await createClient()
   const scanContext = readScanContext(request.headers)
   const {
@@ -163,7 +165,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (error) {
     // The RPC only raises on infrastructure failure; a redemption refusal is a
     // normal jsonb result, not an error.
-    console.error('redeem_voucher rpc failed:', error.message)
+    log.error('voucher.redeem_rpc_failed', { reason: error.message })
     // The customer is standing at the counter with a voucher the platform
     // cannot decide about. Under the no-Escrow model a scan does not move
     // money on our ledger; it only burns the voucher.
@@ -210,3 +212,5 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     status,
   )
 }
+
+export const POST = withRequestLog('/api/supplier/vouchers/redeem', handlePOST)

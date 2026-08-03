@@ -1,4 +1,5 @@
 import { parseIls } from '@/lib/money'
+import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { SupplierRedemptionRow, SupplierSaleLine } from '@/lib/supplier/dashboard'
 import type { SupplierProductRow } from '@/lib/supplier/products'
@@ -68,7 +69,7 @@ export async function getSupplierSales(supplierId: string): Promise<SupplierSale
     .limit(200)
 
   if (error) {
-    console.error('[supplier] getSupplierSales', error.message)
+    log.error('supplier.sales_query_failed', { reason: error.message })
     return []
   }
 
@@ -117,7 +118,7 @@ export async function getSupplierRedemptions(supplierId: string): Promise<Suppli
     .limit(100)
 
   if (error) {
-    console.error('[supplier] getSupplierRedemptions', error.message)
+    log.error('supplier.redemptions_query_failed', { reason: error.message })
     return []
   }
 
@@ -190,7 +191,7 @@ export async function getSupplierProducts(supplierId: string): Promise<SupplierP
     .limit(200)
 
   if (error) {
-    console.error('[supplier] getSupplierProducts', error.message)
+    log.error('supplier.products_query_failed', { reason: error.message })
     return []
   }
 

@@ -1,3 +1,4 @@
+import { log } from '@/lib/observability/log'
 /**
  * Reads columns that may not exist yet in the target database.
  *
@@ -28,7 +29,7 @@ const warned = new Set<string>()
 function warnOnce(key: string, message: string): void {
   if (warned.has(key)) return
   warned.add(key)
-  console.warn(`[optional-columns] ${message}`)
+  log.warn('db.optional_column_missing', { detail: message })
 }
 
 /**

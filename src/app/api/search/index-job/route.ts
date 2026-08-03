@@ -1,3 +1,5 @@
+import { log } from '@/lib/observability/log'
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import { runSearchIndexJob } from '@/lib/search/indexer'
 import { searchIndexJobSchema } from '@/lib/search/pipeline-contracts'
 import { verifyQstashSignature } from '@/lib/search/qstash'
@@ -23,7 +25,7 @@ function callerAuthorized(request: NextRequest, rawBody: string): boolean {
   return verifyQstashSignature(request.headers.get('upstash-signature'), rawBody, target)
 }
 
-export async function POST(request: NextRequest): Promise<NextResponse> {
+async function handlePOST(request: NextRequest): Promise<NextResponse> {
   const rawBody = await request.text()
 
   if (!callerAuthorized(request, rawBody)) {
@@ -47,7 +49,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const outcome = await runSearchIndexJob(parsed.data)
     return NextResponse.json({ ok: true, outcome })
   } catch (error) {
-    console.error('search index job failed:', (error as Error).message)
+    log.error('search.index_job_failed', { err: error })
     return NextResponse.json({ ok: false, error: (error as Error).message }, { status: 500 })
   }
 }
+
+export const POST = withRequestLog('/api/search/index-job', handlePOST)

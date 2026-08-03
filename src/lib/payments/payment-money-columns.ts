@@ -1,3 +1,4 @@
+import { log } from '@/lib/observability/log'
 /**
  * Which money columns `public.payments` actually has in the database this
  * process is talking to.
@@ -141,10 +142,10 @@ export async function resolvePaymentMoneySchema(
 
   if (!warned) {
     warned = true
-    console.warn(
-      '[payments] this database is pre-059: payments carries amount_ils / wallet_applied_ils. ' +
-        'Reading and writing shekels and converting at the boundary. Apply 059 to move to agorot.',
-    )
+    log.warn('payments.pre_059_money_columns', {
+      detail:
+        'payments carries amount_ils / wallet_applied_ils. Reading and writing shekels and converting at the boundary. Apply 059 to move to agorot.',
+    })
   }
   cached = ILS_SCHEMA
   return cached

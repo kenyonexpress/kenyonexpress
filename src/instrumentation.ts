@@ -20,6 +20,17 @@ import type { Instrumentation } from 'next'
  * narrow.
  */
 export async function register(): Promise<void> {
+  // The request-id storage, before anything that might want to log.
+  //
+  // This is the only place a Server Function can get one from. `'use server'`
+  // modules are walked by the client bundler (Turbopack emits a client chunk
+  // item for the action reference), so they cannot import `node:async_hooks`
+  // themselves -- lib/observability/request-context.ts carries the build error
+  // that established that. Importing the store here installs it on globalThis
+  // once per server instance, before the first request, and every action then
+  // reaches it through the handle.
+  await import('@/lib/observability/request-store')
+
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     // First, deliberately. Environment validation exists so a misconfigured
     // deploy never becomes a request; loading it after Sentry would report the

@@ -1,4 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
+import { log } from '@/lib/observability/log'
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import { runSearchIndexJob } from '@/lib/search/indexer'
 import { dbChangePayloadSchema, jobForChange } from '@/lib/search/pipeline-contracts'
 import { enqueueSearchIndexJob } from '@/lib/search/qstash'
@@ -37,7 +39,7 @@ function senderAuthorized(request: NextRequest, rawBody: string): boolean {
   return constantTimeEqual(request.headers.get('x-webhook-secret') ?? '', secret)
 }
 
-export async function POST(request: NextRequest): Promise<NextResponse> {
+async function handlePOST(request: NextRequest): Promise<NextResponse> {
   const rawBody = await request.text()
 
   if (!senderAuthorized(request, rawBody)) {
@@ -67,7 +69,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true, queued: true, transport: outcome.transport })
   } catch (error) {
     // Non-2xx so Supabase's webhook retry (and our monitoring) sees the miss.
-    console.error('search webhook enqueue failed:', (error as Error).message)
+    log.error('search.webhook_enqueue_failed', { err: error })
     return NextResponse.json({ ok: false, error: 'enqueue failed' }, { status: 500 })
   }
 }
+
+export const POST = withRequestLog('/api/webhooks/products', handlePOST)

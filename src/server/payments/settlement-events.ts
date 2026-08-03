@@ -1,3 +1,4 @@
+import { log } from '@/lib/observability/log'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 /**
@@ -144,13 +145,14 @@ export async function recordSettlementEvents(
       // because anything else is a surprise.
       const undefinedTable = error.code === '42P01'
       if (!undefinedTable || !missingTableReported) {
-        console.error(`[settlement-events] not recorded: ${error.message}`)
+        log.error('settlement.not_recorded', {
+          reason: error.message,
+          undefined_table: undefinedTable,
+        })
         if (undefinedTable) missingTableReported = true
       }
     }
   } catch (error) {
-    console.error(
-      `[settlement-events] not recorded: ${error instanceof Error ? error.message : String(error)}`,
-    )
+    log.error('settlement.not_recorded', { err: error })
   }
 }

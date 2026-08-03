@@ -1,3 +1,4 @@
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import { searchProductsCached } from '@/lib/search-server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import { NextResponse } from 'next/server'
@@ -20,7 +21,7 @@ import { NextResponse } from 'next/server'
 const MAX_SUGGESTIONS = 6
 const MIN_QUERY = 2
 
-export async function GET(request: Request) {
+async function handleGET(request: Request) {
   const { searchParams } = new URL(request.url)
   const q = (searchParams.get('q') ?? '').trim()
 
@@ -65,3 +66,5 @@ export async function GET(request: Request) {
     return NextResponse.json({ results: [], engine: null }, { status: 200 })
   }
 }
+
+export const GET = withRequestLog('/api/search/suggest', handleGET)

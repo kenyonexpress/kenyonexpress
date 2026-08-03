@@ -1,3 +1,4 @@
+import { log } from '@/lib/observability/log'
 /**
  * Outbound email through Resend.
  *
@@ -46,7 +47,7 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
   if (!apiKey) {
     if (!missingKeyReported) {
       missingKeyReported = true
-      console.warn('[email] RESEND_API_KEY is not set; outbound email is disabled in this process.')
+      log.warn('email.disabled', { reason: 'RESEND_API_KEY is not set' })
     }
     return { ok: false, skipped: true, reason: 'no_api_key' }
   }
@@ -73,14 +74,14 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
 
     if (!response.ok) {
       const detail = await response.text().catch(() => '')
-      console.error(`[email] resend refused ${response.status}: ${detail.slice(0, 300)}`)
+      log.error('email.refused', { status: response.status, detail: detail.slice(0, 300) })
       return { ok: false, reason: `http_${response.status}` }
     }
 
     const body = (await response.json().catch(() => null)) as { id?: string } | null
     return { ok: true, id: body?.id ?? null }
   } catch (error) {
-    console.error(`[email] send failed: ${error instanceof Error ? error.message : String(error)}`)
+    log.error('email.send_failed', { err: error })
     return { ok: false, reason: 'network' }
   }
 }

@@ -1,3 +1,4 @@
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { NextResponse } from 'next/server'
 
@@ -20,7 +21,7 @@ import { NextResponse } from 'next/server'
  *
  * Never cached: a cached health check is a lie with a timestamp.
  */
-export async function GET() {
+async function handleGET() {
   const startedAt = performance.now()
 
   let database: 'ok' | 'down' = 'ok'
@@ -51,3 +52,5 @@ export async function GET() {
     },
   )
 }
+
+export const GET = withRequestLog('/api/health', handleGET)

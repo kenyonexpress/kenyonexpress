@@ -1,5 +1,7 @@
 import { buildNotification } from '@/lib/email/notifications'
 import { sendEmail } from '@/lib/email/resend'
+import { log } from '@/lib/observability/log'
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { type NextRequest, NextResponse } from 'next/server'
 
@@ -52,7 +54,7 @@ type OutboxRow = {
   attempts: number
 }
 
-export async function GET(request: NextRequest): Promise<NextResponse> {
+async function handleGET(request: NextRequest): Promise<NextResponse> {
   const secret = process.env.CRON_SECRET
   if (!secret || request.headers.get('authorization') !== `Bearer ${secret}`) {
     return NextResponse.json({ ok: false }, { status: 401 })
@@ -70,7 +72,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     .limit(BATCH)
 
   if (error) {
-    console.error('notification outbox read failed:', error.message)
+    log.error('notifications.outbox_read_failed', { reason: error.message })
     return NextResponse.json({ ok: false, error: error.message }, { status: 500 })
   }
 
@@ -141,3 +143,5 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   return NextResponse.json({ ok: true, considered: rows.length, sent, skipped, failed, dead })
 }
+
+export const GET = withRequestLog('/api/cron/notifications', handleGET)

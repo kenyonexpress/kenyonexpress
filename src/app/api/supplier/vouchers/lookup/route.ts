@@ -1,3 +1,4 @@
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createClient } from '@/lib/supabase/server'
 import { getSupplierMemberships } from '@/lib/supplier/rbac'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
@@ -94,7 +95,7 @@ function respond(body: LookupResponse, status: number): NextResponse {
   return NextResponse.json(body, { status })
 }
 
-export async function POST(request: NextRequest): Promise<NextResponse> {
+async function handlePOST(request: NextRequest): Promise<NextResponse> {
   const supabase = await createClient()
   const scanContext = readScanContext(request.headers)
 
@@ -193,3 +194,5 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     HTTP_STATUS[outcome],
   )
 }
+
+export const POST = withRequestLog('/api/supplier/vouchers/lookup', handlePOST)

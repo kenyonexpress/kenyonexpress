@@ -1,3 +1,4 @@
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import { sanitizeOrTerm } from '@/lib/utils/search-escape'
@@ -25,7 +26,7 @@ function firstImage(images: unknown): string | null {
 // Escape PostgREST ILIKE wildcards / commas so user input can't alter the filter.
 const sanitize = sanitizeOrTerm
 
-export async function GET(request: NextRequest) {
+async function handleGET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const q = sanitize(searchParams.get('q') ?? '')
   const category = searchParams.get('category')?.trim() || null
@@ -89,3 +90,5 @@ export async function GET(request: NextRequest) {
     { headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60' } },
   )
 }
+
+export const GET = withRequestLog('/api/search', handleGET)

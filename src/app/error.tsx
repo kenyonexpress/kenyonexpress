@@ -38,6 +38,13 @@ export default function AppError({
     // @sentry/node and tag everything area=payments, so importing them into a
     // client boundary would both fail to bundle and mislabel every UI error as
     // a money-path one. Wiring a browser SDK is a separate decision.
+    //
+    // The same reasoning now covers `lib/observability/log.ts`, which took over
+    // the other 33 console call sites in src/ and deliberately did not take
+    // this one: it reads its request id from node:async_hooks, which is a build
+    // error in a client bundle. This line runs in the browser, where there is
+    // no server request to correlate to and `digest` is the only handle that
+    // ties it to the server-side event anyway.
     console.error('app error boundary:', error.digest ?? '', error)
   }, [error])
 

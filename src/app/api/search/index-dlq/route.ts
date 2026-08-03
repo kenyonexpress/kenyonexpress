@@ -1,3 +1,5 @@
+import { log } from '@/lib/observability/log'
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import { searchIndexJobSchema } from '@/lib/search/pipeline-contracts'
 import { verifyQstashSignature } from '@/lib/search/qstash'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -34,7 +36,7 @@ function decodeJob(sourceBody: string | undefined): Json | null {
   }
 }
 
-export async function POST(request: NextRequest): Promise<NextResponse> {
+async function handlePOST(request: NextRequest): Promise<NextResponse> {
   const rawBody = await request.text()
 
   const target = `${(process.env.NEXT_PUBLIC_APP_URL ?? '').replace(/\/$/, '')}/api/search/index-dlq`
@@ -58,10 +60,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     last_error: callback.error ?? `worker responded ${callback.status ?? 'unknown'}`,
   })
   if (error) {
-    console.error('search DLQ insert failed:', error.message)
+    log.error('search.dlq_insert_failed', { reason: error.message })
     // Non-2xx: QStash retries the callback; better twice than lost.
     return NextResponse.json({ ok: false }, { status: 500 })
   }
 
   return NextResponse.json({ ok: true })
 }
+
+export const POST = withRequestLog('/api/search/index-dlq', handlePOST)

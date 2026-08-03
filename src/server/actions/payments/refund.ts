@@ -2,6 +2,7 @@
 
 import { requireAdminSession } from '@/lib/admin/rbac'
 import { agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
+import { withActionContext } from '@/lib/observability/action-context'
 import { capturePaymentError } from '@/lib/observability/sentry'
 import { getPaymentProvider } from '@/lib/payments'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -32,13 +33,15 @@ type ProductType = 'physical' | 'coupon'
  * @param input.partialAmountIls optional partial refund (no cancellation fee)
  * @param input.isDefectClaim    defect/non-conformity => zero cancellation fee
  */
-export async function refundOrder(input: {
+type RefundInput = {
   orderId: string
   reason: string
   isDefectClaim?: boolean
   partialAmountIls?: number
   now?: Date
-}): Promise<RefundOutcome> {
+}
+
+async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
   try {
     await requireAdminSession()
   } catch {
@@ -214,4 +217,8 @@ export async function refundOrder(input: {
     const message = error instanceof Error ? error.message : 'refund persistence failed'
     return { ok: false, error: message, code: 'INTERNAL' }
   }
+}
+
+export async function refundOrder(input: RefundInput): Promise<RefundOutcome> {
+  return withActionContext('order.refund', () => runRefundOrder(input))
 }

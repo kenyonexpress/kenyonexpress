@@ -1,3 +1,4 @@
+import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
@@ -78,6 +79,6 @@ export async function recordRefusedScan(params: {
       p_user_agent: params.context.userAgent,
     })
   } catch (error) {
-    console.error('log_voucher_scan failed:', error)
+    log.error('voucher.scan_log_failed', { err: error })
   }
 }

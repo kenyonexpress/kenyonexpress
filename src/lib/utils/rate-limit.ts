@@ -1,3 +1,4 @@
+import { log } from '@/lib/observability/log'
 import { createClient } from '@/lib/supabase/server'
 import { headers } from 'next/headers'
 
@@ -20,7 +21,7 @@ export async function checkRateLimit(
   })
   if (error) {
     // Fail open — don't block legitimate users if rate limit RPC is unavailable
-    console.error('Rate limit check failed:', error.message)
+    log.error('rate_limit.check_failed', { reason: error.message })
     return true
   }
   return data === true
@@ -41,7 +42,7 @@ export async function checkUserRateLimit(
   })
   if (error) {
     // Fail open — don't block legitimate users if rate limit RPC is unavailable
-    console.error('User rate limit check failed:', error.message)
+    log.error('rate_limit.user_check_failed', { reason: error.message })
     return true
   }
   return data === true

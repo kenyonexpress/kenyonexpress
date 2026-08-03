@@ -1,3 +1,4 @@
+import { log } from '@/lib/observability/log'
 import { z } from 'zod'
 
 /**
@@ -104,9 +105,10 @@ if (!parsed.success) {
 // Loud, because a silent waiver is the same hole this file was written to
 // close. It is one line at boot, not per request.
 if (parsed.data.NODE_ENV === 'production' && parsed.data.ALLOW_INCOMPLETE_ENV === 'true') {
-  console.warn(
-    '[env] ALLOW_INCOMPLETE_ENV=true — production env checks skipped. Correct for a local `next start`; wrong anywhere a customer can reach.',
-  )
+  log.warn('env.checks_skipped', {
+    detail:
+      'ALLOW_INCOMPLETE_ENV=true. Correct for a local `next start`; wrong anywhere a customer can reach.',
+  })
 }
 
 export const env = parsed.data

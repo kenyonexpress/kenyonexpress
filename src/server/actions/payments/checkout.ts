@@ -15,6 +15,7 @@ import {
   buildOrderItemSnapshot,
   completeSplitPair,
 } from '@/lib/commerce/product-money'
+import { withActionContext } from '@/lib/observability/action-context'
 import { capturePaymentError } from '@/lib/observability/sentry'
 import {
   type PaymentProvider,
@@ -223,7 +224,7 @@ async function chargeSavedToken(args: {
  * Money amounts are computed server-side only; the client contributes ids and
  * consent, never prices.
  */
-export async function beginCheckout(
+async function runBeginCheckout(
   rawInput: unknown,
 ): Promise<CheckoutActionResult<BeginCheckoutOutput>> {
   const env = loadCardcomEnv()
@@ -737,7 +738,7 @@ export type CheckoutFormState =
  * beginCheckout and hands back either the hosted page to frame or a redirect to
  * the confirmation.
  */
-export async function submitCheckout(
+async function runSubmitCheckout(
   _prev: CheckoutFormState,
   formData: FormData,
 ): Promise<CheckoutFormState> {
@@ -837,7 +838,7 @@ export type ReturnReconcileResult =
  * comes only from a server-to-server verify against the provider (same rules
  * as the webhook), then the idempotent finalize.
  */
-export async function reconcileOrderReturn(orderId: string): Promise<ReturnReconcileResult> {
+async function runReconcileOrderReturn(orderId: string): Promise<ReturnReconcileResult> {
   const supabase = await createClient()
   const {
     data: { user },
@@ -917,4 +918,21 @@ export async function reconcileOrderReturn(orderId: string): Promise<ReturnRecon
     return { status: 'pending', order_id: order.id, reason: finalized.error }
   }
   return { status: 'paid', order_id: order.id }
+}
+
+export async function beginCheckout(
+  rawInput: unknown,
+): Promise<CheckoutActionResult<BeginCheckoutOutput>> {
+  return withActionContext('checkout.begin', () => runBeginCheckout(rawInput))
+}
+
+export async function submitCheckout(
+  prev: CheckoutFormState,
+  formData: FormData,
+): Promise<CheckoutFormState> {
+  return withActionContext('checkout.submit', () => runSubmitCheckout(prev, formData))
+}
+
+export async function reconcileOrderReturn(orderId: string): Promise<ReturnReconcileResult> {
+  return withActionContext('checkout.reconcile_return', () => runReconcileOrderReturn(orderId))
 }
