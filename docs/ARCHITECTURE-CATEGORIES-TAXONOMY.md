@@ -2,7 +2,7 @@
 
 עץ קטגוריות לשוק הישראלי (קופונים ומוצרים פיזיים).
 
-Status: **BINDING** · עודכן: 2026-08-06  
+Status: **BINDING** · עודכן: 2026-08-06 · QA: PASS  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -13,6 +13,7 @@ docs/ARCHITECTURE-SEARCH-UX.md
 docs/ARCHITECTURE-SEO-PERFORMANCE.md
 docs/ARCHITECTURE-ADMIN-DASHBOARD.md
 docs/ARCHITECTURE-CATALOG-SEARCH-SEO.md
+docs/ARCHITECTURE-SEASONAL-CAMPAIGNS.md
 ```
 
 ---
@@ -88,3 +89,4 @@ product_categories (product_id, category_id, is_primary)
 | תאריך | שינוי |
 |---|---|
 | 2026-08-06 | עץ קטגוריות לשוק הישראלי (עומק 2) |
+| 2026-08-06 | QA: קישור SEASONAL; RTL עברית |
