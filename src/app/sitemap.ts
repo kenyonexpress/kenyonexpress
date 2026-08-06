@@ -1,4 +1,6 @@
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
+import { newestTimestamp } from '@/lib/seo/lastmod'
+import { siteUrl } from '@/lib/site-url'
 import { createPublicClient } from '@/lib/supabase/anon'
 import type { MetadataRoute } from 'next'
 import { cacheLife, cacheTag } from 'next/cache'
@@ -22,11 +24,6 @@ import { cacheLife, cacheTag } from 'next/cache'
  * calls `updateTag` refreshes this list too.
  */
 
-function siteUrl(): string {
-  const raw = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
-  return raw.replace(/\/+$/, '')
-}
-
 /**
  * `use cache` + `cacheLife('hours')` replaces `export const revalidate = 3600`,
  * which `cacheComponents` does not accept as a route segment config. Same hour,
@@ -47,13 +44,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const base = siteUrl()
   const now = new Date()
-
-  const staticEntries: MetadataRoute.Sitemap = [
-    { url: `${base}/`, lastModified: now, changeFrequency: 'daily', priority: 1 },
-    { url: `${base}/products`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
-    { url: `${base}/coupons`, lastModified: now, changeFrequency: 'daily', priority: 0.9 },
-    { url: `${base}/contact`, lastModified: now, changeFrequency: 'monthly', priority: 0.5 },
-  ]
 
   const supabase = createPublicClient()
 
@@ -87,6 +77,39 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: 'weekly' as const,
     priority: 0.7,
   }))
+
+  // The listing pages change when the CATALOGUE changes, so their lastmod is
+  // the newest thing on them — not `new Date()`.
+  //
+  // The clock was what this used, and a lastmod that is always "now" is a
+  // lastmod that carries no information: every fetch of the sitemap claims all
+  // four pages changed since the last one, so a crawler either re-fetches
+  // pages that did not move or, having learned the value is noise, stops
+  // reading it. Google says as much explicitly — an inaccurate lastmod is
+  // ignored, and it is ignored for the whole file, not per URL.
+  const catalogueTouched = newestTimestamp(
+    [...(products ?? []), ...(categories ?? [])].map((row) => row.updated_at),
+  )
+
+  const staticEntries: MetadataRoute.Sitemap = [
+    { url: `${base}/`, lastModified: catalogueTouched, changeFrequency: 'daily', priority: 1 },
+    {
+      url: `${base}/products`,
+      lastModified: catalogueTouched,
+      changeFrequency: 'daily',
+      priority: 0.9,
+    },
+    {
+      url: `${base}/coupons`,
+      lastModified: catalogueTouched,
+      changeFrequency: 'daily',
+      priority: 0.9,
+    },
+    // No lastModified at all. `/contact` changes when the code changes, and
+    // there is no signal here for that; omitting it says "I do not know", which
+    // is both true and better than a date that is wrong every time.
+    { url: `${base}/contact`, changeFrequency: 'monthly', priority: 0.5 },
+  ]
 
   return [...staticEntries, ...categoryEntries, ...productEntries]
 }

@@ -63,6 +63,14 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: '/',
+    // How a reader finds the feed at all. `robots.txt` advertises the sitemap
+    // and has no field for a feed, and nothing on the page links to one, so
+    // without this tag `/feed.xml` exists and is undiscoverable. Deliberately
+    // NOT the Merchant feed: that one is pulled by a URL configured inside
+    // Merchant Center and has no business being offered to browsers.
+    types: {
+      'application/rss+xml': [{ url: '/feed.xml', title: 'קניון אקספרס — דילים חדשים' }],
+    },
   },
   // iOS reads none of the manifest's icons and looks only for this link tag.
   // Without it Safari screenshots the page and uses that as the home-screen
