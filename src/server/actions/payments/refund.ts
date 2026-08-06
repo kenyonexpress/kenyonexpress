@@ -3,24 +3,49 @@
 import { requireAdminSession } from '@/lib/admin/rbac'
 import { agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
 import { withActionContext } from '@/lib/observability/action-context'
+import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
 import { getPaymentProvider } from '@/lib/payments'
+import {
+  paymentMoneyWrite,
+  readAmountAgorot,
+  resolvePaymentMoneySchema,
+} from '@/lib/payments/payment-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
 import {
   RefundError,
   type RefundLineInput,
   type RefundVoucherInput,
+  describeRefundBlockers,
   planOrderRefund,
 } from '@/server/domain/orders/refund'
 import type { SettlementState } from '@/server/domain/orders/state-machine'
+import {
+  type SettlementEventRow,
+  recordSettlementEvents,
+} from '@/server/payments/settlement-events'
 import type { Json } from '@/types/database'
 
 export type RefundOutcome =
-  | { ok: true; replay: boolean; orderId: string; refundedIls: number; feeIls: number }
+  | {
+      ok: true
+      replay: boolean
+      orderId: string
+      refundedIls: number
+      feeIls: number
+      /** The deal was cancelled before transmission rather than credited. */
+      cancelOnly: boolean
+    }
   | {
       ok: false
       error: string
-      code: 'NOT_FOUND' | 'STATE_INVALID' | 'PROVIDER_ERROR' | 'FORBIDDEN' | 'INTERNAL'
+      code:
+        | 'NOT_FOUND'
+        | 'STATE_INVALID'
+        | 'PROVIDER_ERROR'
+        | 'FORBIDDEN'
+        | 'INTERNAL'
+        | 'MANUAL_RESOLUTION'
     }
 
 type ProductType = 'physical' | 'coupon'
@@ -58,28 +83,61 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
     .maybeSingle()
   if (!order) return { ok: false, error: 'הזמנה לא נמצאה', code: 'NOT_FOUND' }
   if (order.status === 'refunded') {
-    return { ok: true, replay: true, orderId: order.id, refundedIls: 0, feeIls: 0 }
+    return {
+      ok: true,
+      replay: true,
+      orderId: order.id,
+      refundedIls: 0,
+      feeIls: 0,
+      cancelOnly: false,
+    }
   }
   if (order.status !== 'paid') {
     return { ok: false, error: `לא ניתן לזכות הזמנה במצב ${order.status}`, code: 'STATE_INVALID' }
   }
 
+  // WHICH MONEY COLUMNS THIS DATABASE HAS. The hosted project is pre-059 and
+  // carries `amount_ils`; naming `amount_agorot` here raises 42703 and takes
+  // down the whole select, which returns null data and reads as "no payment to
+  // refund" — the refund then fails with NOT_FOUND on an order that has a
+  // perfectly good charge against it. Probed once per process, same as the
+  // three other money-path call sites.
+  const money = await resolvePaymentMoneySchema((column) =>
+    admin
+      .from('payments')
+      .select(column)
+      .limit(0)
+      .then(({ error }) => ({ error })),
+  )
+
   const { data: payment } = await admin
     .from('payments')
-    .select('id, amount_ils, cardcom_transaction_id, status, cardcom_account_id')
+    .select(
+      // `succeeded_at` and NOT `paid_at`: `paid_at` is a column of `orders`.
+      // `payments` records when the charge succeeded, which is the timestamp
+      // the same-day cancellation decision turns on.
+      `id, ${money.amountColumn}, cardcom_transaction_id, status, cardcom_account_id, succeeded_at`,
+    )
     .eq('order_id', order.id)
     .eq('kind', 'charge')
     .order('created_at', { ascending: false })
     .limit(1)
-    .maybeSingle()
+    .maybeSingle<Record<string, unknown>>()
   if (!payment) return { ok: false, error: 'לא נמצא תשלום לזיכוי', code: 'NOT_FOUND' }
-  if (!payment.cardcom_transaction_id) {
+  const paymentId = String(payment.id)
+  const transactionId = payment.cardcom_transaction_id
+  if (typeof transactionId !== 'string' || transactionId.length === 0) {
     return { ok: false, error: 'לתשלום אין מזהה עסקה ב-Cardcom', code: 'STATE_INVALID' }
+  }
+
+  const cardChargedAgorot = readAmountAgorot(money, payment)
+  if (cardChargedAgorot === null) {
+    return { ok: false, error: 'לתשלום אין סכום קריא', code: 'STATE_INVALID' }
   }
 
   const { data: items } = await admin
     .from('order_items')
-    .select('id, product_type, settlement_status')
+    .select('id, product_type, settlement_status, supplier_id, supplier_immediate_agorot')
     .eq('order_id', order.id)
   if (!items || items.length === 0) {
     return { ok: false, error: 'להזמנה אין פריטים', code: 'STATE_INVALID' }
@@ -90,16 +148,36 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
     .select('id, status')
     .eq('order_id', order.id)
 
-  const cardChargedAgorot = Math.round(Number(payment.amount_ils) * 100)
   const lines: RefundLineInput[] = items.map((i) => ({
     orderItemId: i.id,
     productType: i.product_type as ProductType,
     settlementStatus: i.settlement_status as SettlementState,
+    supplierId: i.supplier_id,
+    supplierReleasedAgorot: Number(i.supplier_immediate_agorot ?? 0),
   }))
   const voucherInputs: RefundVoucherInput[] = (voucherRows ?? []).map((v) => ({
     voucherId: v.id,
     status: v.status,
   }))
+
+  // A voucher that has been redeemed or has expired is not a refund the code
+  // can decide. The value left the platform at the counter (or lapsed as
+  // breakage), so pulling the card money back would return value that was
+  // consumed. That is a commercial decision — goodwill wallet credit, a claim
+  // against the supplier, or nothing — and it gets its own code so the admin
+  // screen can say so instead of showing the generic "illegal state".
+  const consumed = voucherInputs.filter((v) => v.status === 'redeemed' || v.status === 'expired')
+  if (consumed.length > 0) {
+    const blocker = describeRefundBlockers({ lines, vouchers: voucherInputs })[0]
+    return {
+      ok: false,
+      error: blocker?.message ?? 'שוברים שכבר מומשו או פגו דורשים טיפול ידני',
+      code: 'MANUAL_RESOLUTION',
+    }
+  }
+
+  const chargedAt =
+    typeof payment.succeeded_at === 'string' ? new Date(payment.succeeded_at) : undefined
 
   let plan: ReturnType<typeof planOrderRefund>
   try {
@@ -109,6 +187,10 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
       vouchers: voucherInputs,
       isDefectClaim: input.isDefectClaim ?? false,
       now,
+      // Omitted when the charge never recorded a success time, which reads as
+      // "not the same day" and takes the credit path. Erring the other way
+      // would ask Cardcom to cancel a deal that has already been transmitted.
+      chargedAt: chargedAt && !Number.isNaN(chargedAt.getTime()) ? chargedAt : undefined,
       partialAmountAgorot:
         input.partialAmountIls !== undefined
           ? ilsToAgorot(input.partialAmountIls.toFixed(2))
@@ -121,13 +203,23 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
     throw error
   }
 
+  // A zero credit is not a refund, and `payments.amount_ils` carries a
+  // CHECK (> 0), so it would be a provider round trip followed by a constraint
+  // violation with the money already moved.
+  if (plan.refundAmountAgorot <= 0) {
+    return { ok: false, error: 'סכום הזיכוי הוא אפס', code: 'STATE_INVALID' }
+  }
+
   // Cardcom refund (money moves back to the card). Refunding through any
   // terminal other than the one that took the money would either be rejected or
   // debit the wrong account, so the id is read off the original charge.
-  const provider = getPaymentProvider(payment.cardcom_account_id)
+  const provider = getPaymentProvider(
+    typeof payment.cardcom_account_id === 'string' ? payment.cardcom_account_id : null,
+  )
   const refund = await provider.refundByTransactionId({
-    transactionId: payment.cardcom_transaction_id,
+    transactionId,
     amountAgorot: plan.refundAmountAgorot,
+    cancelOnly: plan.cancelOnly,
     description: `זיכוי הזמנה ${order.id.slice(0, 8)}: ${input.reason}`,
   })
   if (!refund.success) {
@@ -136,8 +228,8 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
     capturePaymentError(new Error(refund.failureMessage ?? 'cardcom refund declined'), {
       stage: 'cardcom_refund',
       orderId: order.id,
-      paymentId: payment.id,
-      detail: { failure_code: refund.failureCode },
+      paymentId,
+      detail: { failure_code: refund.failureCode, cancel_only: plan.cancelOnly },
     })
     return {
       ok: false,
@@ -148,16 +240,25 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
 
   try {
     // Refund payment row (idempotency_key blocks a double refund of the same charge).
+    //
+    // `as never` for the same reason `recordSettlementEvents` uses it: the money
+    // columns are chosen at runtime by the probe above, and `src/types/database.ts`
+    // is a snapshot that predates 106 (and, measured on 2026-08-06, differs from
+    // production by ~1200 lines in total). The shape is asserted in the tests
+    // instead, against the payload this actually sends.
     await admin.from('payments').insert({
       order_id: order.id,
       kind: 'refund',
       status: 'refunded',
-      amount_ils: agorotToIls(plan.refundAmountAgorot),
+      ...paymentMoneyWrite(money, {
+        amountAgorot: plan.refundAmountAgorot,
+        walletAppliedAgorot: 0,
+      }),
       currency: 'ILS',
       cardcom_transaction_id: refund.refundTransactionId,
-      refund_of_payment_id: payment.id,
-      idempotency_key: `refund:${payment.id}`,
-    })
+      refund_of_payment_id: paymentId,
+      idempotency_key: `refund:${paymentId}`,
+    } as never)
 
     if (plan.voucherRefunds.length > 0) {
       // Conditional update mirrors the voucher state machine: REFUND is legal
@@ -180,14 +281,16 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
     await admin
       .from('payments')
       .update({ status: 'refunded' })
-      .eq('id', payment.id)
-      .eq('status', payment.status)
+      .eq('id', paymentId)
+      .eq('status', payment.status as string)
 
     await admin
       .from('orders')
       .update({ status: 'refunded' })
       .eq('id', order.id)
       .eq('status', 'paid')
+
+    await recordSettlementEvents(admin, buildRefundEvents(order.id, paymentId, plan, now))
 
     await admin.from('audit_log').insert({
       actor_id: null,
@@ -198,10 +301,12 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
       changes: { status: { from: 'paid', to: 'refunded' } } as unknown as Json,
       metadata: {
         source: 'refund_order',
-        payment_id: payment.id,
+        payment_id: paymentId,
         refund_transaction_id: refund.refundTransactionId,
         refunded_agorot: plan.refundAmountAgorot,
         cancellation_fee_agorot: plan.cancellationFeeAgorot,
+        cancel_only: plan.cancelOnly,
+        supplier_debits_agorot: plan.supplierDebits.reduce((sum, d) => sum + d.amountAgorot, 0),
         reason: input.reason,
       } as unknown as Json,
     })
@@ -212,11 +317,84 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
       orderId: order.id,
       refundedIls: agorotToIls(plan.refundAmountAgorot),
       feeIls: agorotToIls(plan.cancellationFeeAgorot),
+      cancelOnly: plan.cancelOnly,
     }
   } catch (error) {
+    // The card has already been credited at this point. Everything below the
+    // provider call is bookkeeping that has now diverged from the money, which
+    // is the one failure on this path that has to reach a human.
+    capturePaymentError(error instanceof Error ? error : new Error('refund persistence failed'), {
+      stage: 'refund_persist',
+      orderId: order.id,
+      paymentId,
+      detail: { refund_transaction_id: refund.refundTransactionId },
+    })
     const message = error instanceof Error ? error.message : 'refund persistence failed'
+    log.error('refund.persist_failed', { order_id: order.id, payment_id: paymentId, err: message })
     return { ok: false, error: message, code: 'INTERNAL' }
   }
+}
+
+/**
+ * The journal rows a refund produces, per 094 and 106.
+ *
+ * One `refund_issued` for the order and one `supplier_debit` per supplier share
+ * that was already released. Both carry POSITIVE amounts: 094's CHECK refuses
+ * negatives on all four money columns on purpose, so the direction lives in the
+ * `kind`, which is the column that is constrained to a known set.
+ *
+ * Keyed per payment and per line rather than per call, because this whole
+ * action is replay-safe by design and `recordSettlementEvents` upserts on the
+ * key — a second attempt adds nothing instead of double-counting a claw-back.
+ */
+function buildRefundEvents(
+  orderId: string,
+  paymentId: string,
+  plan: ReturnType<typeof planOrderRefund>,
+  occurredAt: Date,
+): SettlementEventRow[] {
+  const occurred = occurredAt.toISOString()
+  const events: SettlementEventRow[] = [
+    {
+      order_id: orderId,
+      order_item_id: null,
+      supplier_id: null,
+      kind: 'refund_issued',
+      paid_on_site_agorot: plan.refundAmountAgorot,
+      commission_agorot: 0,
+      supplier_due_agorot: 0,
+      discount_agorot: 0,
+      platform_percent_snapshot: null,
+      supplier_split_percent_snapshot: null,
+      metadata: {
+        payment_id: paymentId,
+        cancellation_fee_agorot: plan.cancellationFeeAgorot,
+        cancel_only: plan.cancelOnly,
+      },
+      idempotency_key: `refund_issued:${paymentId}`,
+      occurred_at: occurred,
+    },
+  ]
+
+  for (const debit of plan.supplierDebits) {
+    events.push({
+      order_id: orderId,
+      order_item_id: debit.orderItemId,
+      supplier_id: debit.supplierId,
+      kind: 'supplier_debit',
+      paid_on_site_agorot: 0,
+      commission_agorot: 0,
+      supplier_due_agorot: debit.amountAgorot,
+      discount_agorot: 0,
+      platform_percent_snapshot: null,
+      supplier_split_percent_snapshot: null,
+      metadata: { payment_id: paymentId, reason: 'refund' },
+      idempotency_key: `supplier_debit:${debit.orderItemId}`,
+      occurred_at: occurred,
+    })
+  }
+
+  return events
 }
 
 export async function refundOrder(input: RefundInput): Promise<RefundOutcome> {

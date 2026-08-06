@@ -38,6 +38,14 @@ export type SettlementEventKind =
   | 'refund_issued'
   | 'discount_funded'
   | 'payout_settled'
+  /**
+   * A supplier share that was already released and is being clawed back by a
+   * refund. Added by migration 106. The amount sits POSITIVE in
+   * `supplier_due_agorot` and the direction is the kind, because 094's amount
+   * CHECK refuses negatives on all four money columns on purpose: widening it
+   * would let any event carry a negative by accident.
+   */
+  | 'supplier_debit'
 
 export type SettlementEventRow = {
   order_id: string

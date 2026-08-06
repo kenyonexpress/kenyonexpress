@@ -146,6 +146,11 @@ export class CardcomProvider implements PaymentProvider {
     // Legacy credit/refund. ApiPassword is mandatory for money-moving-back calls.
     // TODO(cardcom): confirm the exact legacy refund endpoint + field names against
     // the live terminal before go-live; kept legacy to match the rest of this client.
+    //
+    // CancelOnly is sent as a field rather than a different endpoint. Cardcom's
+    // v11 doc models it that way (`RefundByTransactionId` + `CancelOnly: true`)
+    // and the legacy interface takes the same flag; the amount still has to go
+    // with it, because a cancellation is a cancellation OF a specific deal.
     const raw = await this.postForm('/Interface/RefundDeal.aspx', {
       TerminalNumber: this.account.terminalNumber,
       ApiName: this.account.apiName,
@@ -154,6 +159,7 @@ export class CardcomProvider implements PaymentProvider {
       Amount: this.ilsFromAgorot(amountAgorot),
       CoinId: '1',
       Codepage: '65001',
+      ...(input.cancelOnly ? { CancelOnly: 'true' } : {}),
     })
 
     const responseCode = asNumber(raw.ResponseCode ?? raw.responsecode) ?? -1

@@ -141,13 +141,17 @@ export class MockCardcomProvider implements PaymentProvider {
       }
     }
     const refunded = input.partialAmountAgorot ?? input.amountAgorot
+    // `cancelOnly` is echoed into `raw` on purpose: it is the only way a test
+    // can assert that the same-day path asked for a cancellation rather than a
+    // credit, and getting that backwards costs a clearing commission per order
+    // without changing a single visible number.
     return {
       success: true,
-      refundTransactionId: `mock-refund-${this.sequence}`,
+      refundTransactionId: `mock-${input.cancelOnly ? 'cancel' : 'refund'}-${this.sequence}`,
       refundedAgorot: agorot(refunded),
       failureCode: null,
       failureMessage: null,
-      raw: { mock: true, refundedAgorot: refunded },
+      raw: { mock: true, refundedAgorot: refunded, cancelOnly: input.cancelOnly === true },
     }
   }
 

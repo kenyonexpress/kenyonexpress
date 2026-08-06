@@ -52,6 +52,13 @@ export interface RefundInput {
   amountAgorot: Agorot
   /** Partial refund in agorot; omit for a full refund of `amountAgorot`. */
   partialAmountAgorot?: Agorot
+  /**
+   * Cancel the deal before it is transmitted to the clearing house instead of
+   * crediting it. Same money back to the customer, but no money movement on the
+   * clearing side and therefore no clearing commission. Only legal on the day of
+   * the charge; the caller decides, not this client.
+   */
+  cancelOnly?: boolean
   description: string
 }
 
