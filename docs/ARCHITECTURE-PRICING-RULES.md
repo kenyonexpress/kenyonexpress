@@ -2,7 +2,7 @@
 
 `platform_percent` דינמי פר מוצר, מבצעי בזק, והנחות תצוגה.
 
-Status: **BINDING** · עודכן: 2026-08-06  
+Status: **BINDING** · עודכן: 2026-08-06 · QA: PASS  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -13,6 +13,8 @@ docs/ARCHITECTURE-ADMIN-DASHBOARD.md
 docs/ARCHITECTURE-INVENTORY.md
 docs/BUSINESS-MODEL.md
 docs/ARCHITECTURE-FRAUD-PREVENTION.md
+docs/ARCHITECTURE-SEASONAL-CAMPAIGNS.md
+docs/ARCHITECTURE-B2B-SALES.md
 ```
 
 ---
@@ -82,3 +84,4 @@ else:
 | תאריך | שינוי |
 |---|---|
 | 2026-08-06 | platform_percent + בזק + הנחות |
+| 2026-08-06 | QA: קישור SEASONAL/B2B; חיזוק No Escrow |
