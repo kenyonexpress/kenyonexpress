@@ -29,30 +29,33 @@ docs/BUSINESS-MODEL.md
 
 ## סטטוס QA לחבילת 20 (ROADMAP-V2)
 
-QA final: **2026-08-07**. כל שורה = **QA-PASS** אחרי יישור ל-No Escrow + `platform_percent` + קישורים הדדיים + RTL (בלי em/en-dash).
+QA audit: **2026-08-07** (אחרי QA final). כל שורה = **QA-PASS**.
+מודל מחייב: **No Escrow** (אין נאמן/J5 של חברת אשראי; אין held לספק) + `platform_percent` דינמי פר מוצר (בלי default) + קישורים הדדיים + RTL (בלי em/en-dash / minus יוניקוד).
 
 | # | מסמך | סטטוס | כסף | קישורים | RTL |
 |---:|---|---|---|---|---|
-| 1 | `ARCHITECTURE-SUPPLIER-ONBOARDING.md` | **QA-PASS** | No Escrow + `platform_percent` (O8) | PASS (+ CONTRADICTIONS) | PASS |
-| 2 | `ARCHITECTURE-ANALYTICS.md` | **QA-PASS** | ledger בלבד; לא GA4 | PASS (+ OBSERVABILITY + CONTRADICTIONS) | PASS |
-| 3 | `ARCHITECTURE-LEGAL-COMPLIANCE.md` | **QA-PASS** | L8 No Escrow; 5%/100 = דמי ביטול בלבד | PASS (+ CONTRADICTIONS) | PASS |
-| 4 | `ARCHITECTURE-SEARCH-UX.md` | **QA-PASS** | בלי boost עמלה קבועה | PASS (+ CONTRADICTIONS) | PASS |
-| 5 | `RUNBOOK-PRODUCTION.md` | **QA-PASS** | smoke: No Escrow + percent | PASS (+ CONTRADICTIONS) | PASS |
-| 6 | `ARCHITECTURE-EMAIL-TEMPLATES.md` | **QA-PASS** | אסור נוסח Escrow/נאמן | PASS (+ SEASONAL + CONTRADICTIONS) | PASS |
+| 1 | `ARCHITECTURE-SUPPLIER-ONBOARDING.md` | **QA-PASS** | O8 No Escrow + percent | PASS (+ PRICING + CONTRADICTIONS) | PASS |
+| 2 | `ARCHITECTURE-ANALYTICS.md` | **QA-PASS** | ledger + percent; לא GA4 | PASS (+ OBSERVABILITY + CONTRADICTIONS) | PASS |
+| 3 | `ARCHITECTURE-LEGAL-COMPLIANCE.md` | **QA-PASS** | L8 No Escrow; 5%/100 = דמי ביטול בלבד | PASS (+ PRICING + GDPR + CONTRADICTIONS) | PASS |
+| 4 | `ARCHITECTURE-SEARCH-UX.md` | **QA-PASS** | בלי boost עמלה קבועה | PASS (+ PRICING + CONTRADICTIONS) | PASS |
+| 5 | `RUNBOOK-PRODUCTION.md` | **QA-PASS** | smoke: No Escrow + percent | PASS (+ PRICING + CONTRADICTIONS) | PASS |
+| 6 | `ARCHITECTURE-EMAIL-TEMPLATES.md` | **QA-PASS** | אסור Escrow/נאמן/J5 | PASS (+ SEASONAL + PRICING + CONTRADICTIONS) | PASS |
 | 7 | `ARCHITECTURE-INVENTORY.md` | **QA-PASS** | I6/I7 No Escrow + מכסת מתנה | PASS (+ GIFT + CONTRADICTIONS) | PASS |
 | 8 | `ARCHITECTURE-REFERRAL.md` | **QA-PASS** | R7 ארנק פנימי; לא Escrow | PASS (+ PRICING + CONTRADICTIONS) | PASS |
-| 9 | `ARCHITECTURE-OBSERVABILITY.md` | **QA-PASS** | N/A (תפעול) | PASS (+ ANALYTICS + CONTRADICTIONS) | PASS |
-| 10 | `ROADMAP-V2.md` | **QA-PASS** | No Escrow מפורש | PASS (+ CONTRADICTIONS) | PASS |
-| 11 | `ARCHITECTURE-CATEGORIES-TAXONOMY.md` | **QA-PASS** | N/A (קטלוג) | PASS (+ CONTRADICTIONS) | PASS |
-| 12 | `ARCHITECTURE-PRICING-RULES.md` | **QA-PASS** | מקור האמת ל-percent | PASS (+ SUPPORT + REFERRAL + CONTRADICTIONS) | PASS |
+| 9 | `ARCHITECTURE-OBSERVABILITY.md` | **QA-PASS** | OBS8: אסור מדדי Escrow | PASS (+ ANALYTICS + CONTRADICTIONS) | PASS |
+| 10 | `ROADMAP-V2.md` | **QA-PASS** | No Escrow מפורש | PASS (+ MASTER-INDEX + CONTRADICTIONS) | PASS |
+| 11 | `ARCHITECTURE-CATEGORIES-TAXONOMY.md` | **QA-PASS** | T7: קטגוריה בלי עמלה/Escrow | PASS (+ PRICING + CONTRADICTIONS) | PASS |
+| 12 | `ARCHITECTURE-PRICING-RULES.md` | **QA-PASS** | מקור האמת ל-percent (P1-P3) | PASS (+ SUPPORT + REFERRAL + EMAIL + CONTRADICTIONS) | PASS |
 | 13 | `ARCHITECTURE-CUSTOMER-SUPPORT.md` | **QA-PASS** | S7 No Escrow + יישור LEGAL | PASS (+ PRICING + CONTRADICTIONS) | PASS |
-| 14 | `ARCHITECTURE-BACKUP-DR.md` | **QA-PASS** | N/A (DR) | PASS (+ CONTRADICTIONS) | PASS |
-| 15 | `ARCHITECTURE-APP-STORE-LAUNCH.md` | **QA-PASS** | דחיית מסכי Escrow/held | PASS (+ CONTRADICTIONS) | PASS |
+| 14 | `ARCHITECTURE-BACKUP-DR.md` | **QA-PASS** | B6: שחזור בלי Escrow | PASS (+ RUNBOOK + CONTRADICTIONS) | PASS |
+| 15 | `ARCHITECTURE-APP-STORE-LAUNCH.md` | **QA-PASS** | AS7 No Escrow + percent | PASS (+ PRICING + CONTRADICTIONS) | PASS |
 | 16 | `ARCHITECTURE-GIFT-COUPONS.md` | **QA-PASS** | G1/G8 No Escrow | PASS (+ INVENTORY + CONTRADICTIONS) | PASS |
-| 17 | `ARCHITECTURE-B2B-SALES.md` | **QA-PASS** | B4/B7 percent + No Escrow | PASS (+ CONTRADICTIONS) | PASS |
+| 17 | `ARCHITECTURE-B2B-SALES.md` | **QA-PASS** | B4/B7 percent + No Escrow | PASS (+ PRICING + CONTRADICTIONS) | PASS |
 | 18 | `ARCHITECTURE-SEASONAL-CAMPAIGNS.md` | **QA-PASS** | S7 percent + No Escrow | PASS (+ EMAIL + CONTRADICTIONS) | PASS |
-| 19 | `ARCHITECTURE-DATA-EXPORT-GDPR.md` | **QA-PASS** | N/A (פרטיות) | PASS (+ CONTRADICTIONS) | PASS |
+| 19 | `ARCHITECTURE-DATA-EXPORT-GDPR.md` | **QA-PASS** | D8 ייצוא snapshots בלי Escrow | PASS (+ PRICING + LEGAL + CONTRADICTIONS) | PASS |
 | 20 | `MASTER-INDEX.md` | **QA-PASS** | מודל מחייב למעלה | PASS | PASS |
+
+תיקוני audit (07.08): P3 ASCII; AS7; OBS8; B6; T7; D8; EMAIL↔PRICING.
 
 תיקון סתירה מחוץ לחבילה (QA 06.08): `ARCHITECTURE-PERSONAL-AREA.md` P7 מ-Escrow/held ל-No Escrow.
 
@@ -193,3 +196,4 @@ docs/ROADMAP-V2.md
 | 2026-08-07 | QA re-pass חבילת 20: CONTRADICTIONS→No Escrow; קישורים הדדיים; en-dash; סטטוס מעודכן |
 | 2026-08-07 | QA verify: S7 SUPPORT; קישור הדדי PRICING↔SUPPORT; סטטוס #12/#13 מעודכן |
 | 2026-08-07 | QA final חבילת 20: קישורים הדדיים + סטטוס מעודכן לכל #1 עד 20 |
+| 2026-08-07 | QA audit: P3/AS7/OBS8/B6/T7/D8 + EMAIL↔PRICING; סטטוס לכל #1 עד 20 |
