@@ -15,6 +15,7 @@ docs/ARCHITECTURE-CUSTOMER-SUPPORT.md
 docs/ARCHITECTURE-FRAUD-PREVENTION.md
 docs/ARCHITECTURE-DATA-EXPORT-GDPR.md
 docs/ARCHITECTURE-PRICING-RULES.md
+docs/CONTRADICTIONS.md
 ```
 
 אזהרה: חוזה מוצר/הנדסה. לא מחליף ייעוץ משפטי.
@@ -97,3 +98,4 @@ refund = amount_agorot - fee_agorot
 |---|---|
 | 2026-08-06 | 14 יום, 5%/100 ₪, תוקף שוברים, נגישות ישראלית |
 | 2026-08-06 | QA: L8 No Escrow + `platform_percent`; קישור GDPR/PRICING |
+| 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
