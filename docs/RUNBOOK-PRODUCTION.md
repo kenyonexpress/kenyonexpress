@@ -2,7 +2,7 @@
 
 Deploy ל-Vercel, rollback, ומיגרציות **דרך MCP בלבד**.
 
-Status: **BINDING** · עודכן: 2026-08-06  
+Status: **BINDING** · עודכן: 2026-08-06 · QA: PASS  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד במסמך זה. אין נגיעה בתיקייה הראשית.
 
@@ -12,7 +12,9 @@ Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 docs/ARCHITECTURE-BACKUP-DR.md
 docs/ARCHITECTURE-OBSERVABILITY.md
 docs/ARCHITECTURE-FRAUD-PREVENTION.md
+docs/ARCHITECTURE-PRICING-RULES.md
 docs/DEPLOY.md
+docs/ROADMAP-V2.md
 ```
 
 Package manager: **pnpm** בלבד.  
@@ -123,3 +125,4 @@ Local בלבד מותר `supabase db reset`.
 | תאריך | שינוי |
 |---|---|
 | 2026-08-06 | Deploy/rollback + מיגרציות MCP בלבד |
+| 2026-08-06 | QA: smoke No Escrow + `platform_percent`; קישור PRICING/ROADMAP |
