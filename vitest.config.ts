@@ -23,8 +23,14 @@ export default defineConfig({
     globals: true,
     // The wp-import pipeline is plain .mjs run by node, not by Next, so it
     // needs its own pattern. Without it the pipeline's tests exist but never
-    // run, which is worse than having none.
-    include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'scripts/wp-import/**/*.test.mjs'],
+    // run, which is worse than having none. The seed data module is the same
+    // shape and the same trap.
+    include: [
+      'src/**/*.test.ts',
+      'src/**/*.test.tsx',
+      'scripts/wp-import/**/*.test.mjs',
+      'scripts/seed/**/*.test.ts',
+    ],
     exclude: ['node_modules', '.next', 'e2e'],
     coverage: {
       provider: 'v8',
