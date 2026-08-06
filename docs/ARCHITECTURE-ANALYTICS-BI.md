@@ -1,8 +1,11 @@
 # Architecture: Analytics and BI
 
-> **גובר עליו `docs/CONTRADICTIONS.md` (2026-07-24).** כל מספר עמלה, ברירת מחדל
-> (10%/5%) או נוסח Escrow במסמך הזה הוא שריד. ההכרעה: `platform_percent`
-> פר-מוצר, חובה, בלי ברירת מחדל בשום מקום; ה-held הוא רישום פנימי ב-ledger בלבד.
+> **QA 2026-08-06.** הבאנר הקודם הסתפק בהכרזה שכל מספר עמלה במסמך הוא שריד,
+> והשאיר את המספר השגוי עומד בגוף המסמך. **תוקן במקום, לא בהערת שוליים:**
+> פסקת מודל הכסף למטה קבעה "‏10 אחוז באתר, ‏90 אחוז בעסק", וזה **לא המודל**.
+> אין ברירת מחדל, ומחיר הקופון באתר אינו אחוז כלשהו מהערך הנקוב אלא שדה חופשי
+> פר מוצר (‏C4). ‏**מסמך אנליטיקה הוא המקום שבו טעות כזו הכי יקרה:** שאילתת BI
+> שמחשבת הכנסה כ-10% מהערך הנקוב תיתן מספר סביר, יציב, ושגוי בכל שורה.
 
 Status: authoritative spec. Scope: event taxonomy, Supabase event storage, BI dashboard queries, and privacy controls for the KenyonExpress marketplace.
 
@@ -12,7 +15,8 @@ The marketplace runs on Supabase Postgres. Products have a `product_type` of `co
 
 Money model by product type:
 
-- `coupon`: the customer pays 10 percent on-site at checkout, and the remaining 90 percent in-store when the coupon is scanned. There is no escrow. In-store collection is recorded in `coupon_redemptions.amount_collected`.
+- `coupon`: the customer pays that product's `coupon_price` on-site at checkout, and the remainder of the face value in-store when the coupon is scanned. `coupon_price` is a free per-product field, NOT a percentage of the face value (C4), so there is no ratio to hard-code in a query. There is no escrow. In-store collection is recorded in `coupon_redemptions.amount_collected`.
+  - **For BI**: platform revenue on a coupon line is `charged_on_site`, read from the line, never derived. The in-store remainder is the supplier's and was never platform revenue, so it must not appear in a revenue total.
 - `physical`: the customer pays 100 percent on-site.
 
 All money is stored as integer agorot (1 shekel = 100 agorot). Never use floats for money.
