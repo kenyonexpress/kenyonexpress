@@ -87,6 +87,74 @@ export function israelMonth(iso: string): string | null {
   return israelDay(iso)?.slice(0, 7) ?? null
 }
 
+/**
+ * The UTC window that covers a range of ISRAEL days, for the `occurred_at`
+ * filter the query sends to Postgres.
+ *
+ * The buckets above are Israel days, so the fetch has to be too, and the two
+ * cannot be assumed to line up: filtering `occurred_at >= '2026-08-01T00:00:00Z'`
+ * drops every sale made between midnight and 03:00 Israel time on the first of
+ * the month — the rows are simply not fetched, the report renders, and the
+ * missing money looks like a quiet day rather than like a bug.
+ *
+ * The offset is derived from the instant rather than hard-coded at +02:00 or
+ * +03:00, because Israel observes DST and the range routinely spans the switch.
+ * The second pass is the DST edge itself: the offset used to place local
+ * midnight is the offset at UTC midnight, which is the wrong one on the two days
+ * a year the clock moves, so it is recomputed at the candidate instant.
+ */
+const ZONE_PARTS = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'Asia/Jerusalem',
+  hour12: false,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+})
+
+function israelOffsetMs(instant: Date): number {
+  const parts = ZONE_PARTS.formatToParts(instant)
+  const get = (type: Intl.DateTimeFormatPartTypes) =>
+    Number(parts.find((p) => p.type === type)?.value ?? '0')
+  // `hour` is 00-23 under hour12:false in every ICU we run on except for the
+  // 24-for-midnight quirk, which %24 normalises.
+  const asUtc = Date.UTC(
+    get('year'),
+    get('month') - 1,
+    get('day'),
+    get('hour') % 24,
+    get('minute'),
+    get('second'),
+  )
+  return asUtc - instant.getTime()
+}
+
+/** The instant at which the given Israel day begins. */
+export function israelMidnightUtc(day: string): Date {
+  const naive = new Date(`${day}T00:00:00Z`)
+  if (Number.isNaN(naive.getTime())) return naive
+  const firstGuess = new Date(naive.getTime() - israelOffsetMs(naive))
+  const settled = new Date(naive.getTime() - israelOffsetMs(firstGuess))
+  return settled
+}
+
+/**
+ * `[startUtc, endUtc)` covering `from`..`to` inclusive as Israel days.
+ *
+ * Half-open at the end: the boundary instant belongs to the day after `to`, and
+ * an inclusive `<=` would pull one row of the next day in whenever a sale landed
+ * exactly on local midnight.
+ */
+export function israelDayRangeUtc(from: string, to: string): { startUtc: string; endUtc: string } {
+  const start = israelMidnightUtc(from)
+  const endDay = new Date(`${to}T00:00:00Z`)
+  endDay.setUTCDate(endDay.getUTCDate() + 1)
+  const end = israelMidnightUtc(endDay.toISOString().slice(0, 10))
+  return { startUtc: start.toISOString(), endUtc: end.toISOString() }
+}
+
 function emptyPeriod(period: string): PeriodTotals {
   return {
     period,
@@ -138,6 +206,69 @@ export function aggregate(
   }
 
   return [...buckets.values()].sort((a, b) => a.period.localeCompare(b.period))
+}
+
+export type ReportGranularity = 'day' | 'month'
+
+export interface ReportRange {
+  from: string
+  to: string
+  granularity: ReportGranularity
+}
+
+const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+/** The same 366 the chart is capped at, so the fetch cannot outrun the render. */
+const MAX_SPAN_DAYS = 366
+const DEFAULT_SPAN_DAYS = 30
+
+function addDays(day: string, delta: number): string {
+  const date = new Date(`${day}T00:00:00Z`)
+  date.setUTCDate(date.getUTCDate() + delta)
+  return date.toISOString().slice(0, 10)
+}
+
+function validDay(raw: string | undefined): string | null {
+  if (!raw || !DAY_PATTERN.test(raw)) return null
+  // A shape-valid date can still be nonsense: 2026-02-31 parses to 3 March in
+  // Date, so the round trip is the check.
+  const parsed = new Date(`${raw}T00:00:00Z`)
+  if (Number.isNaN(parsed.getTime())) return null
+  return parsed.toISOString().slice(0, 10) === raw ? raw : null
+}
+
+/**
+ * The range the page and the CSV export both resolve from the query string.
+ *
+ * Shared rather than duplicated, and that is the whole reason it exists: the
+ * export link carries the same parameters the page was rendered with, so any
+ * disagreement between the two parsers produces a CSV that does not match the
+ * table it was downloaded from — the one failure of an export that nobody
+ * notices until the numbers are in a bank reconciliation.
+ *
+ * Every input is untrusted. Anything unparseable falls back rather than
+ * throwing: this is a URL an admin edits by hand.
+ */
+export function resolveReportRange(
+  raw: { from?: string; to?: string; granularity?: string },
+  today: string,
+): ReportRange {
+  const granularity: ReportGranularity = raw.granularity === 'month' ? 'month' : 'day'
+
+  let to = validDay(raw.to) ?? today
+  let from = validDay(raw.from) ?? addDays(to, -(DEFAULT_SPAN_DAYS - 1))
+  if (from > to) [from, to] = [to, from]
+
+  // Clamped from the RECENT end: an admin who typed a decade wants this year,
+  // not the year the catalogue opened.
+  const earliest = addDays(to, -(MAX_SPAN_DAYS - 1))
+  if (from < earliest) from = earliest
+
+  return { from, to, granularity }
+}
+
+/** Today, on the calendar the buckets use. */
+export function todayInIsrael(now: Date = new Date()): string {
+  return ISRAEL_DAY.format(now)
 }
 
 export interface SupplierObligation {

@@ -57,16 +57,34 @@ describe('quoting', () => {
 })
 
 describe('the formula guard', () => {
-  it.each(['=1+1', '+1', '-1', '@SUM(A1)'])('defuses a field starting with %s', (value) => {
-    // A spreadsheet treats these as formulas. `=cmd|...` is the classic CSV
-    // injection, and this export is opened by an administrator on their own
-    // machine — the one reader with the most to lose.
-    const csv = rows({ name: value, amount: 1 })
-    expect(csv).toContain(`"\t${value}"`)
-  })
+  it.each(['=1+1', '+1e', '-1+cmd|/c calc', '@SUM(A1)'])(
+    'defuses a field starting with %s',
+    (value) => {
+      // A spreadsheet treats these as formulas. `=cmd|...` is the classic CSV
+      // injection, and this export is opened by an administrator on their own
+      // machine — the one reader with the most to lose.
+      const csv = rows({ name: value, amount: 1 })
+      expect(csv).toContain(`"\t${value}"`)
+    },
+  )
 
   it('leaves a Hebrew name that merely contains a minus alone', () => {
     expect(rows({ name: 'קפה-שקד', amount: 1 })).toContain('קפה-שקד')
+  })
+
+  it('does NOT defuse a negative number, which is not a formula', () => {
+    // An open obligation that went negative is a supplier who owes the platform
+    // money — the one case supplierObligations refuses to clamp, because it is
+    // the one an admin opens the report to find. Guarding it would make Excel
+    // store it as text: it would not sum, would not sort against the positives,
+    // and would sit at the wrong end of the column.
+    const csv = rows({ name: 'x', amount: -1250.5 })
+    expect(csv).toContain('x,-1250.5')
+    expect(csv).not.toContain('\t-1250.5')
+  })
+
+  it.each([-1, -0.5, 1, 0])('leaves the plain number %s alone', (value) => {
+    expect(rows({ name: 'x', amount: value })).toContain(`x,${value}`)
   })
 })
 

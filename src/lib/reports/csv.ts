@@ -22,6 +22,19 @@
 const BOM = '﻿'
 const CRLF = '\r\n'
 const FORMULA_LEAD = /^[=+\-@\t\r]/
+/**
+ * A plain number, which is never a formula and must not be guarded.
+ *
+ * The guard's `-` is what makes this necessary: `-1250.00` is a legitimate cell
+ * in these exports — an `openAgorot` that went negative is a supplier who owes
+ * the platform money, which is the single case `supplierObligations` refuses to
+ * clamp because it is the one an admin opens the report to find. Prefixing it
+ * with a tab makes Excel store it as TEXT, so it will not sum, will not sort
+ * against the positives, and lands at the wrong end of the column. A bare
+ * numeric literal cannot be interpreted as a formula by any spreadsheet, so
+ * exempting it costs nothing.
+ */
+const PLAIN_NUMBER = /^-?\d+(\.\d+)?$/
 
 export interface CsvColumn<Row> {
   /** Header text, Hebrew. */
@@ -34,7 +47,7 @@ function cell(raw: string | number | null | undefined): string {
   let text = String(raw)
 
   // Formula guard first: the tab it prepends is itself a reason to quote.
-  if (FORMULA_LEAD.test(text)) text = `\t${text}`
+  if (FORMULA_LEAD.test(text) && !PLAIN_NUMBER.test(text)) text = `\t${text}`
 
   const needsQuotes = /[",\r\n]/.test(text) || text !== text.trim()
   if (!needsQuotes) return text

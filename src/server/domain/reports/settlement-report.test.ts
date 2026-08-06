@@ -4,9 +4,13 @@ import {
   aggregate,
   fillDays,
   israelDay,
+  israelDayRangeUtc,
+  israelMidnightUtc,
   israelMonth,
+  resolveReportRange,
   summarise,
   supplierObligations,
+  todayInIsrael,
 } from './settlement-report'
 
 function event(overrides: Partial<ReportEvent> = {}): ReportEvent {
@@ -192,5 +196,96 @@ describe('fillDays', () => {
   it('returns the input untouched when the range is unparseable', () => {
     const periods = aggregate([event()], 'day')
     expect(fillDays(periods, 'nonsense', '2026-08-07')).toEqual(periods)
+  })
+})
+
+describe('israelDayRangeUtc, the window the query actually asks for', () => {
+  it('starts three hours before UTC midnight in summer', () => {
+    // Israel is UTC+3 in August. A range that started at 2026-08-01T00:00:00Z
+    // would drop every sale made between midnight and 03:00 local on the 1st:
+    // the rows are never fetched, the report renders, and the missing money
+    // reads as a quiet morning.
+    const { startUtc } = israelDayRangeUtc('2026-08-01', '2026-08-31')
+    expect(startUtc).toBe('2026-07-31T21:00:00.000Z')
+  })
+
+  it('is two hours in winter, because the offset is derived and not assumed', () => {
+    expect(israelMidnightUtc('2026-01-15').toISOString()).toBe('2026-01-14T22:00:00.000Z')
+  })
+
+  it('ends at the start of the day AFTER `to`, half-open', () => {
+    const { endUtc } = israelDayRangeUtc('2026-08-01', '2026-08-31')
+    // Start of 1 September in Israel, not the end of 31 August: an inclusive
+    // bound would pull in a sale landing exactly on local midnight.
+    expect(endUtc).toBe('2026-08-31T21:00:00.000Z')
+  })
+
+  it('round-trips: the first instant of the range buckets to `from`', () => {
+    for (const day of ['2026-01-15', '2026-03-27', '2026-08-01', '2026-10-25']) {
+      const { startUtc } = israelDayRangeUtc(day, day)
+      expect(israelDay(startUtc)).toBe(day)
+      // And one millisecond earlier belongs to the day before, which is what
+      // makes the bound exact rather than merely close.
+      expect(israelDay(new Date(new Date(startUtc).getTime() - 1).toISOString())).not.toBe(day)
+    }
+  })
+
+  it('crosses the DST switch without losing or duplicating an hour', () => {
+    // Israel moves the clock forward on the last Friday of March. The offset at
+    // UTC midnight is the pre-switch one, so a single-pass conversion places
+    // local midnight an hour off on exactly this day.
+    const { startUtc } = israelDayRangeUtc('2026-03-28', '2026-03-28')
+    expect(israelDay(startUtc)).toBe('2026-03-28')
+  })
+})
+
+describe('resolveReportRange, which the page and the CSV both go through', () => {
+  const today = '2026-08-06'
+
+  it('defaults to the last 30 days ending today', () => {
+    expect(resolveReportRange({}, today)).toEqual({
+      from: '2026-07-08',
+      to: '2026-08-06',
+      granularity: 'day',
+    })
+  })
+
+  it('takes a range the admin typed', () => {
+    expect(resolveReportRange({ from: '2026-01-01', to: '2026-01-31' }, today)).toMatchObject({
+      from: '2026-01-01',
+      to: '2026-01-31',
+    })
+  })
+
+  it('swaps a backwards range instead of fetching nothing', () => {
+    expect(resolveReportRange({ from: '2026-01-31', to: '2026-01-01' }, today)).toMatchObject({
+      from: '2026-01-01',
+      to: '2026-01-31',
+    })
+  })
+
+  it('rejects a date that is only shaped like one', () => {
+    // 2026-02-31 survives the regex and parses to 3 March in Date, which would
+    // silently move the boundary three days.
+    expect(resolveReportRange({ from: '2026-02-31' }, today).from).toBe('2026-07-08')
+    expect(resolveReportRange({ to: 'yesterday' }, today).to).toBe(today)
+  })
+
+  it('clamps a decade from the RECENT end', () => {
+    // An admin who typed a decade wants this year, not the year the catalogue
+    // opened, and the cap matches the one fillDays renders at.
+    const range = resolveReportRange({ from: '2016-01-01', to: '2026-08-06' }, today)
+    expect(range.from).toBe('2025-08-06')
+  })
+
+  it('takes month granularity only when it is asked for by name', () => {
+    expect(resolveReportRange({ granularity: 'month' }, today).granularity).toBe('month')
+    expect(resolveReportRange({ granularity: 'quarter' }, today).granularity).toBe('day')
+  })
+})
+
+describe('todayInIsrael', () => {
+  it('is the Israeli date, not the UTC one, just after local midnight', () => {
+    expect(todayInIsrael(new Date('2026-08-05T21:30:00Z'))).toBe('2026-08-06')
   })
 })
