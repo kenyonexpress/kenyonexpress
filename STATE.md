@@ -167,6 +167,38 @@ terms: תוכן משפטי, לא קוד.
       `refund_of_payment_id`, `escrow_holds.status='refunded'`,
       `coupon_codes.status='refunded'` ואירוע `REFUND` במכונת המצבים כבר קיימים.
 
+      **נמדד מול הפרודקשן 06.08 ‏10:35, וסותר את השורה שמעליו. הקביעה
+      "אין צורך במיגרציה" שגויה:**
+      ‏`information_schema` על `public.payments` בפרודקשן מחזיר 18 עמודות,
+      ‏**ואין ביניהן `refund_of_payment_id`, אין `amount_agorot` ואין `paid_at`.**
+      יש `amount_ils` ו-`wallet_applied_ils` (שתיהן `numeric`), כלומר זו שוב
+      שושלת ה-pre-059 ש-`lib/payments/payment-money-columns.ts` כבר מתעדת.
+      **‏`refund.ts` דורש את שלוש העמודות החסרות.** ה-SELECT שלו הורץ מילה
+      במילה מול הפרודקשן והחזיר:
+      ```
+      ERROR: 42703: column "amount_agorot" does not exist
+      ```
+      עמודה שאין לה קיום מפילה את **כל** המשפט, ולכן `data` הוא null,
+      ולכן **כל refund בפרודקשן מחזיר היום `NOT_FOUND` ("לא נמצא תשלום
+      לזיכוי")**, על כל הזמנה, לפני שהוא מגיע ל-Cardcom. אותה תקלה בדיוק
+      ב-INSERT, שנוקב ב-`refund_of_payment_id`.
+      בנוסף השורה קוראת `payment.amount_ils` שהיא כלל לא ביקשה ב-SELECT.
+      **מה שכן אומת כקיים:** `payment_kind` = `charge,refund`;
+      ‏`escrow_status` = `held,released,refunded`; ‏`voucher_status` ו-
+      ‏`settlement_status` מכילות `refunded`; ‏`vouchers` מחזיקה `refunded_at`
+      ו-`status_reason`; ‏`order_items` מחזיקה `settlement_status` ו-`item_status`.
+      **‏`supplier_debit` אין לו איפה לשבת:** אין בפרודקשן שום טבלה בשם
+      ‏`%payout%` או `%debit%`. היחידה שקיימת היא `settlement_events`.
+      זה גם מה שעומד מאחורי "ה-payouts הקיים שבור בפרודקשן" ב-[54].
+      **מסקנה: [48] דורש קובץ מיגרציה ב-`migrations/pending`** (עמודת
+      ‏`refund_of_payment_id` ומקום ל-supplier debit), ולא רק קוד.
+
+      **שכבת ה-domain שלמה ואינה הבעיה.** `server/domain/orders/refund.ts`
+      כבר מחזיק את דמי הביטול כ-`min(5%, ₪10000 אגורות)`, אפס בתביעת פגם,
+      ‏`isSameClearingDay` על שעון ישראל ל-`CancelOnly`, חסימה על שובר
+      ‏`redeemed`/`expired`, ו-`supplierDebits`. גם הספק כבר תומך:
+      ‏`cardcom.ts` שולח `CancelOnly` כשדה. **הפער כולו בשכבת ה-action.**
+
 - [ ] **[49] Wallet passes.** Apple Wallet `.pkpass` ו-Google Wallet לקופון,
       QR **זהה** לזה שבדף הקופון (אותו `qr_payload`), ועדכון push בשינוי סטטוס
       ל-`redeemed`/`expired`.
