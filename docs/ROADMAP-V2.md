@@ -13,6 +13,7 @@ Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 
 ```
 docs/MASTER-INDEX.md
+docs/CONTRADICTIONS.md
 docs/RUNBOOK-PRODUCTION.md
 docs/ARCHITECTURE-APP-STORE-LAUNCH.md
 docs/ARCHITECTURE-PRICING-RULES.md
@@ -82,8 +83,8 @@ docs/ARCHITECTURE-PRICING-RULES.md
 | A4 | מיילים RTL | A2 | NOTIFICATIONS, EMAIL-TEMPLATES |
 | A5 | אדמין + onboarding | A1 | ADMIN, ONBOARDING |
 | A6 | Legal `/cancel` + נגישות | A2 | LEGAL |
-| A7 | Observability | A0–A6 | OBSERVABILITY |
-| A8 | רכישת טסט → soft-open | A2–A7 | RUNBOOK |
+| A7 | Observability | A0 עד A6 | OBSERVABILITY |
+| A8 | רכישת טסט → soft-open | A2 עד A7 | RUNBOOK |
 
 ### שלב B: צמיחה
 
@@ -129,6 +130,7 @@ Escrow לקופון · משיכת ארנק החוצה · `supabase db push` לי
 | תאריך | שינוי |
 |---|---|
 | 2026-08-06 | ROADMAP-V2 עם 10 מסמכי החבילה + שלבים A/B/C |
-| 2026-08-06 | הוספת docs 11–15 (taxonomy/pricing/support/backup/app-store) |
-| 2026-08-06 | הוספת docs 16–20 (gift/B2B/seasonal/GDPR/index) |
+| 2026-08-06 | הוספת docs 11 עד 15 (taxonomy/pricing/support/backup/app-store) |
+| 2026-08-06 | הוספת docs 16 עד 20 (gift/B2B/seasonal/GDPR/index) |
 | 2026-08-06 | QA: חיזוק No Escrow + `platform_percent`; קישורים הדדיים |
+| 2026-08-07 | QA re-pass: הסרת en-dash; יישור מול CONTRADICTIONS No Escrow |
