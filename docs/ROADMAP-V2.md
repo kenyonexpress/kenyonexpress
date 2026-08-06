@@ -2,11 +2,21 @@
 
 סיכום מסמכי הארכיטקטורה לתוכנית שלבים עם תלויות.
 
-Status: **BINDING (תכנון)** · עודכן: 2026-08-06  
+Status: **BINDING (תכנון)** · עודכן: 2026-08-06 · QA: PASS  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
 מודל כסף: **No Escrow** לקופון; `platform_percent` דינמי פר מוצר לפיזי; ארנק פנימי בלי משיכה; מיגרציות prod **רק MCP**.
+אין נאמן/J5 של חברת אשראי. אין עמלה גלובלית.
+
+מסמכים קשורים:
+
+```
+docs/MASTER-INDEX.md
+docs/RUNBOOK-PRODUCTION.md
+docs/ARCHITECTURE-APP-STORE-LAUNCH.md
+docs/ARCHITECTURE-PRICING-RULES.md
+```
 
 ---
 
@@ -121,3 +131,4 @@ Escrow לקופון · משיכת ארנק החוצה · `supabase db push` לי
 | 2026-08-06 | ROADMAP-V2 עם 10 מסמכי החבילה + שלבים A/B/C |
 | 2026-08-06 | הוספת docs 11–15 (taxonomy/pricing/support/backup/app-store) |
 | 2026-08-06 | הוספת docs 16–20 (gift/B2B/seasonal/GDPR/index) |
+| 2026-08-06 | QA: חיזוק No Escrow + `platform_percent`; קישורים הדדיים |
