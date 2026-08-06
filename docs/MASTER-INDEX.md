@@ -29,7 +29,8 @@ docs/BUSINESS-MODEL.md
 
 ## סטטוס QA לחבילת 20 (ROADMAP-V2)
 
-Re-pass: **2026-08-07**. כל שורה = QA-PASS אחרי יישור ל-No Escrow + `platform_percent` + קישורים + RTL.
+Re-pass: **2026-08-07**. Verify נוסף באותו יום אחרי סריקה מסמך-מסמך.
+כל שורה = QA-PASS אחרי יישור ל-No Escrow + `platform_percent` + קישורים + RTL.
 
 | # | מסמך | סטטוס | כסף | קישורים | RTL |
 |---:|---|---|---|---|---|
@@ -44,8 +45,8 @@ Re-pass: **2026-08-07**. כל שורה = QA-PASS אחרי יישור ל-No Escro
 | 9 | `ARCHITECTURE-OBSERVABILITY.md` | **QA-PASS** | N/A (תפעול) | PASS (+ CONTRADICTIONS) | PASS |
 | 10 | `ROADMAP-V2.md` | **QA-PASS** | No Escrow מפורש | PASS (+ CONTRADICTIONS) | PASS |
 | 11 | `ARCHITECTURE-CATEGORIES-TAXONOMY.md` | **QA-PASS** | N/A (קטלוג) | PASS (+ CONTRADICTIONS) | PASS |
-| 12 | `ARCHITECTURE-PRICING-RULES.md` | **QA-PASS** | מקור האמת ל-percent | PASS (+ CONTRADICTIONS) | PASS |
-| 13 | `ARCHITECTURE-CUSTOMER-SUPPORT.md` | **QA-PASS** | יישור LEGAL | PASS (+ CONTRADICTIONS) | PASS |
+| 12 | `ARCHITECTURE-PRICING-RULES.md` | **QA-PASS** | מקור האמת ל-percent | PASS (+ SUPPORT + CONTRADICTIONS) | PASS |
+| 13 | `ARCHITECTURE-CUSTOMER-SUPPORT.md` | **QA-PASS** | S7 No Escrow + יישור LEGAL | PASS (+ PRICING + CONTRADICTIONS) | PASS |
 | 14 | `ARCHITECTURE-BACKUP-DR.md` | **QA-PASS** | N/A (DR) | PASS (+ CONTRADICTIONS) | PASS |
 | 15 | `ARCHITECTURE-APP-STORE-LAUNCH.md` | **QA-PASS** | דחיית מסכי Escrow/held | PASS (+ CONTRADICTIONS) | PASS |
 | 16 | `ARCHITECTURE-GIFT-COUPONS.md` | **QA-PASS** | G1 No Escrow | PASS (+ CONTRADICTIONS) | PASS |
@@ -57,6 +58,8 @@ Re-pass: **2026-08-07**. כל שורה = QA-PASS אחרי יישור ל-No Escro
 תיקון סתירה מחוץ לחבילה (QA 06.08): `ARCHITECTURE-PERSONAL-AREA.md` P7 מ-Escrow/held ל-No Escrow.
 
 תיקון סתירה קריטי (QA 07.08): `CONTRADICTIONS.md` עודכן מ-C11ב (Escrow) ל-**C11א / No Escrow**, כדי שלא ידרוס את חבילת ה-20.
+
+Verify (QA 07.08): סריקה חוזרת על כל ה-20; תיקון יחיד: S7 ב-CUSTOMER-SUPPORT + קישור הדדי ל-PRICING.
 
 ~~מסמכים ישנים עם באנר CONTRADICTIONS / עמלה קבועה 10%/5% נשארים **STALE** עד ריענון נפרד~~
 **הריענון הזה בוצע 2026-08-06. אין יותר מסמך STALE.**
@@ -187,3 +190,4 @@ docs/ROADMAP-V2.md
 | 2026-08-07 | QA למסלול הכסף: Cardcom (v11 מול legacy), ו-`voucher_redemptions` בשלושה מסמכים |
 | 2026-08-07 | תפעול ותוכן: playbook, טיוטת הסכם, שגרה יומית. **G3 בוטל כממצא שגוי** |
 | 2026-08-07 | QA re-pass חבילת 20: CONTRADICTIONS→No Escrow; קישורים הדדיים; en-dash; סטטוס מעודכן |
+| 2026-08-07 | QA verify: S7 SUPPORT; קישור הדדי PRICING↔SUPPORT; סטטוס #12/#13 מעודכן |
