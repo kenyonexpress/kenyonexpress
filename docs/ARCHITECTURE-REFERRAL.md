@@ -13,6 +13,7 @@ docs/ARCHITECTURE-CASHBACK-WALLET.md
 docs/ARCHITECTURE-WALLET-LEDGER.md
 docs/ARCHITECTURE-FRAUD-PREVENTION.md
 docs/ARCHITECTURE-ANALYTICS.md
+docs/CONTRADICTIONS.md
 ```
 
 ---
@@ -76,3 +77,4 @@ A משתף /r/CODE
 |---|---|
 | 2026-08-06 | חבר מביא חבר עם קאשבק פנימי |
 | 2026-08-06 | QA: קישור ANALYTICS; בונוס ארנק פנימי בלבד (לא Escrow) |
+| 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
