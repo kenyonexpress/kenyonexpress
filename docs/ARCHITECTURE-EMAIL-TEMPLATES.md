@@ -13,6 +13,7 @@ docs/ARCHITECTURE-NOTIFICATIONS.md
 docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 docs/ARCHITECTURE-CASHBACK-WALLET.md
 docs/ARCHITECTURE-GIFT-COUPONS.md
+docs/CONTRADICTIONS.md
 ```
 
 ---
@@ -85,3 +86,4 @@ docs/ARCHITECTURE-GIFT-COUPONS.md
 |---|---|
 | 2026-08-06 | תבניות RTL לכל אירוע קופון כולל הוחזר |
 | 2026-08-06 | QA: קישור GIFT; אסור נוסח Escrow/נאמן |
+| 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
