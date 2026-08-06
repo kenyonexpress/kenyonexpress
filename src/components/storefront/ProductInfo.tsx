@@ -1,9 +1,11 @@
 'use client'
 
 import { useCart } from '@/components/cart/CartProvider'
+import FacebookShareButton from '@/components/shared/FacebookShareButton'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import CouponPricing from '@/components/storefront/CouponPricing'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
+import { buildShareMessage } from '@/lib/share/message'
 import { Check, ShoppingCart } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -255,10 +257,17 @@ export default function ProductInfo({
             ? `${attributes.map((a) => a.value).join(', ')}`
             : (categoryName ?? '')}
         </span>
-        <WhatsAppShareButton
-          message={`מצאתי משהו שווה ב-KenyonExpress: ${name} ב-${shekels(price)}`}
-          appendCurrentUrl
-        />
+        {/* The message is built from the OFFER, not from `price`. For a
+            coupon, `price` is the sticker price of the goods at the business,
+            and this line used to send a friend "₪200" for a deal the page
+            beside it quotes at ₪80. See lib/share/message.ts. */}
+        <span className="inline-flex items-center gap-4">
+          <WhatsAppShareButton
+            message={buildShareMessage({ name, priceIls: price, offer: couponOffer })}
+            appendCurrentUrl
+          />
+          <FacebookShareButton />
+        </span>
       </div>
     </div>
   )

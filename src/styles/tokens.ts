@@ -98,6 +98,14 @@ export const SITE = {
     ink: '#128c7e',
     inkHover: '#075e54',
   },
+  /**
+   * Facebook's own brand blue, used by the share button on the product page.
+   * Same rule as `whatsapp` above: a third-party mark, tokenised so no
+   * component repeats it, and never rebranded along with `brand.*`.
+   */
+  facebook: {
+    base: '#1877f2',
+  },
 } as const
 
 /**
@@ -147,6 +155,7 @@ export const SITE_CSS_VARS: Record<string, string> = {
   '--color-whatsapp': SITE.whatsapp.base,
   '--color-whatsapp-ink': SITE.whatsapp.ink,
   '--color-whatsapp-ink-hover': SITE.whatsapp.inkHover,
+  '--color-facebook': SITE.facebook.base,
 
   // Semantic + backward-compat aliases.
   '--color-background': SITE.surface.page,

@@ -45,8 +45,19 @@ export async function generateMetadata({ params }: Props) {
   // path (category trails, search, share links with tracking parameters) and
   // without one those all compete as separate pages.
   const path = `/product/${encodeURIComponent(slug)}`
-  const images = Array.isArray(data.images) ? (data.images as string[]).filter(Boolean) : []
 
+  // NO `openGraph.images` HERE, and its absence is the whole point.
+  //
+  // MEASURED: with `images: [data.images[0]]` set, the served page carried
+  // `<meta property="og:image" content=".../rm5-600x600.webp">` and the
+  // `opengraph-image.tsx` beside this file was never used. Next's file
+  // convention only fills the field when metadata has not already claimed it,
+  // so the generated card existed, built, appeared in the route list, and
+  // reached nothing. It would have shipped looking done.
+  //
+  // The generated card is also the better image: the product photo is a 600x600
+  // square, which WhatsApp crops to a thumbnail beside the link, and it shows no
+  // price — which is the only reason anyone forwards a deal.
   return {
     title,
     description,
@@ -57,7 +68,6 @@ export async function generateMetadata({ params }: Props) {
       url: path,
       type: 'website',
       locale: 'he_IL',
-      ...(images.length > 0 ? { images: [images[0] as string] } : {}),
     },
   }
 }
