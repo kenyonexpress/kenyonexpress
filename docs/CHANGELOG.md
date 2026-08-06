@@ -17,6 +17,13 @@ STATE.md
 
 ### Docs
 
+### Docs (2026-08-07 QA final חבילת 20)
+
+- קישורים הדדיים: GIFT↔INVENTORY, EMAIL↔SEASONAL, ANALYTICS↔OBSERVABILITY, REFERRAL↔PRICING
+- I7/G8/R7: מכסת מתנה + No Escrow מפורש
+- `MASTER-INDEX.md`: סטטוס QA-PASS לכל #1 עד 20
+- בוטל working-tree שגוי שמחק O8/L8/S7
+
 ### Docs (2026-08-07 QA verify חבילת 20)
 
 - `ARCHITECTURE-CUSTOMER-SUPPORT.md`: S7 No Escrow מפורש
