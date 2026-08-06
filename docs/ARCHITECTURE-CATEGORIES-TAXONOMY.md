@@ -14,6 +14,7 @@ docs/ARCHITECTURE-SEO-PERFORMANCE.md
 docs/ARCHITECTURE-ADMIN-DASHBOARD.md
 docs/ARCHITECTURE-CATALOG-SEARCH-SEO.md
 docs/ARCHITECTURE-SEASONAL-CAMPAIGNS.md
+docs/CONTRADICTIONS.md
 ```
 
 ---
@@ -90,3 +91,4 @@ product_categories (product_id, category_id, is_primary)
 |---|---|
 | 2026-08-06 | עץ קטגוריות לשוק הישראלי (עומק 2) |
 | 2026-08-06 | QA: קישור SEASONAL; RTL עברית |
+| 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
