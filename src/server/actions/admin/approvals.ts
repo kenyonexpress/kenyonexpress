@@ -3,6 +3,7 @@
 import { writeAuditLog } from '@/lib/admin/audit'
 import { type AdminSessionInfo, requireAdminSession } from '@/lib/admin/rbac'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
+import { withActionContext } from '@/lib/observability/action-context'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath, updateTag } from 'next/cache'
 import { z } from 'zod'
@@ -17,7 +18,7 @@ const rejectSchema = z.object({
 
 export type ApprovalActionState = { error: string } | { success: string } | null
 
-export async function approveProduct(id: string): Promise<{ error?: string }> {
+async function runApproveProduct(id: string): Promise<{ error?: string }> {
   let session: AdminSessionInfo
   try {
     session = await requireAdminSession()
@@ -62,7 +63,7 @@ export async function approveProduct(id: string): Promise<{ error?: string }> {
   return {}
 }
 
-export async function rejectProduct(id: string, reason: string): Promise<{ error?: string }> {
+async function runRejectProduct(id: string, reason: string): Promise<{ error?: string }> {
   let session: AdminSessionInfo
   try {
     session = await requireAdminSession()
@@ -108,4 +109,12 @@ export async function rejectProduct(id: string, reason: string): Promise<{ error
   revalidatePath('/admin/products')
   updateTag(CATALOGUE_TAG)
   return {}
+}
+
+export async function approveProduct(id: string): Promise<{ error?: string }> {
+  return withActionContext('admin.product.approve', () => runApproveProduct(id))
+}
+
+export async function rejectProduct(id: string, reason: string): Promise<{ error?: string }> {
+  return withActionContext('admin.product.reject', () => runRejectProduct(id, reason))
 }

@@ -1,5 +1,6 @@
 'use server'
 
+import { withActionContext } from '@/lib/observability/action-context'
 import { createClient } from '@/lib/supabase/server'
 import {
   type AccountActionState,
@@ -31,7 +32,7 @@ function emptyToNull(value: FormDataEntryValue | null): string | null {
   return s === '' ? null : s
 }
 
-export async function updateProfileDetails(
+async function runUpdateProfileDetails(
   _prev: AccountActionState,
   formData: FormData,
 ): Promise<AccountActionState> {
@@ -60,7 +61,7 @@ export async function updateProfileDetails(
   return { success: 'הפרטים נשמרו' }
 }
 
-export async function saveAddress(
+async function runSaveAddress(
   _prev: AccountActionState,
   formData: FormData,
 ): Promise<AccountActionState> {
@@ -122,7 +123,7 @@ export async function saveAddress(
   return { success: parsed.data.id ? 'הכתובת עודכנה' : 'הכתובת נוספה' }
 }
 
-export async function deleteAddress(
+async function runDeleteAddress(
   _prev: AccountActionState,
   formData: FormData,
 ): Promise<AccountActionState> {
@@ -145,7 +146,7 @@ export async function deleteAddress(
   return { success: 'הכתובת נמחקה' }
 }
 
-export async function setDefaultAddress(
+async function runSetDefaultAddress(
   _prev: AccountActionState,
   formData: FormData,
 ): Promise<AccountActionState> {
@@ -173,7 +174,7 @@ export async function setDefaultAddress(
   return { success: 'הכתובת נקבעה כברירת מחדל' }
 }
 
-export async function deletePaymentToken(
+async function runDeletePaymentToken(
   _prev: AccountActionState,
   formData: FormData,
 ): Promise<AccountActionState> {
@@ -193,7 +194,7 @@ export async function deletePaymentToken(
   return { success: 'הכרטיס הוסר' }
 }
 
-export async function setDefaultPaymentToken(
+async function runSetDefaultPaymentToken(
   _prev: AccountActionState,
   formData: FormData,
 ): Promise<AccountActionState> {
@@ -215,4 +216,52 @@ export async function setDefaultPaymentToken(
 
   revalidatePath('/account/tokens')
   return { success: 'הכרטיס נקבע כברירת מחדל' }
+}
+
+export async function updateProfileDetails(
+  _prev: AccountActionState,
+  formData: FormData,
+): Promise<AccountActionState> {
+  return withActionContext('account.update_profile', () => runUpdateProfileDetails(_prev, formData))
+}
+
+export async function saveAddress(
+  _prev: AccountActionState,
+  formData: FormData,
+): Promise<AccountActionState> {
+  return withActionContext('account.save_address', () => runSaveAddress(_prev, formData))
+}
+
+export async function deleteAddress(
+  _prev: AccountActionState,
+  formData: FormData,
+): Promise<AccountActionState> {
+  return withActionContext('account.delete_address', () => runDeleteAddress(_prev, formData))
+}
+
+export async function setDefaultAddress(
+  _prev: AccountActionState,
+  formData: FormData,
+): Promise<AccountActionState> {
+  return withActionContext('account.set_default_address', () =>
+    runSetDefaultAddress(_prev, formData),
+  )
+}
+
+export async function deletePaymentToken(
+  _prev: AccountActionState,
+  formData: FormData,
+): Promise<AccountActionState> {
+  return withActionContext('account.delete_payment_token', () =>
+    runDeletePaymentToken(_prev, formData),
+  )
+}
+
+export async function setDefaultPaymentToken(
+  _prev: AccountActionState,
+  formData: FormData,
+): Promise<AccountActionState> {
+  return withActionContext('account.set_default_payment_token', () =>
+    runSetDefaultPaymentToken(_prev, formData),
+  )
 }

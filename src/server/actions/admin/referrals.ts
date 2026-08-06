@@ -1,6 +1,7 @@
 'use server'
 
 import { requireSection } from '@/lib/admin/rbac'
+import { withActionContext } from '@/lib/observability/action-context'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
@@ -12,7 +13,7 @@ import { revalidatePath } from 'next/cache'
 
 export type ReferralActionState = { ok: boolean; error?: string }
 
-export async function approveReferral(id: string): Promise<ReferralActionState> {
+async function runApproveReferral(id: string): Promise<ReferralActionState> {
   const session = await requireSection('discounts', 'write')
   const admin = createAdminClient()
 
@@ -34,7 +35,7 @@ export async function approveReferral(id: string): Promise<ReferralActionState> 
   return { ok: true }
 }
 
-export async function rejectReferral(id: string, reason: string): Promise<ReferralActionState> {
+async function runRejectReferral(id: string, reason: string): Promise<ReferralActionState> {
   const session = await requireSection('discounts', 'write')
   if (!reason.trim()) return { ok: false, error: 'נדרשת סיבת דחייה' }
 
@@ -54,4 +55,12 @@ export async function rejectReferral(id: string, reason: string): Promise<Referr
 
   revalidatePath('/admin/referrals')
   return { ok: true }
+}
+
+export async function approveReferral(id: string): Promise<ReferralActionState> {
+  return withActionContext('admin.referral.approve', () => runApproveReferral(id))
+}
+
+export async function rejectReferral(id: string, reason: string): Promise<ReferralActionState> {
+  return withActionContext('admin.referral.reject', () => runRejectReferral(id, reason))
 }

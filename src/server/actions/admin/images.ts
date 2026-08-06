@@ -3,6 +3,7 @@
 import { requireStaffSession } from '@/lib/admin/rbac'
 import { processImage } from '@/lib/images/process'
 import { ALLOWED_IMAGE_TYPES, MAX_ORIGINAL_BYTES, isValidHebrewAlt } from '@/lib/images/validate'
+import { withActionContext } from '@/lib/observability/action-context'
 import { createR2PresignedPutUrl, isR2Configured, r2PublicUrl } from '@/lib/storage/r2'
 import { createAdminClient } from '@/lib/supabase/admin'
 
@@ -35,7 +36,7 @@ async function putToR2(key: string, buffer: Buffer, contentType: string): Promis
  * (or Supabase Storage when R2 is not configured), and registers the asset
  * with its mandatory Hebrew alt text in media_assets.
  */
-export async function processAndUploadImage(formData: FormData): Promise<UploadImageResult> {
+async function runProcessAndUploadImage(formData: FormData): Promise<UploadImageResult> {
   let userId: string
   try {
     const session = await requireStaffSession()
@@ -121,4 +122,10 @@ export async function processAndUploadImage(formData: FormData): Promise<UploadI
     width: processed.width,
     height: processed.height,
   }
+}
+
+export async function processAndUploadImage(formData: FormData): Promise<UploadImageResult> {
+  return withActionContext('admin.image.process_and_upload', () =>
+    runProcessAndUploadImage(formData),
+  )
 }

@@ -1,6 +1,7 @@
 'use server'
 
 import { requireStaffSession } from '@/lib/admin/rbac'
+import { withActionContext } from '@/lib/observability/action-context'
 import { createR2PresignedPutUrl, isR2Configured, r2PublicUrl } from '@/lib/storage/r2'
 
 // Returned to the client so it knows how to upload a single file. When R2 is
@@ -20,7 +21,7 @@ function extOf(fileName: string): string {
  * Ask the server for a place to upload one image. Staff only.
  * `folder` is the R2 / bucket key prefix, e.g. "products".
  */
-export async function requestUploadUrl(folder: string, fileName: string): Promise<UploadTarget> {
+async function runRequestUploadUrl(folder: string, fileName: string): Promise<UploadTarget> {
   try {
     await requireStaffSession()
   } catch {
@@ -39,4 +40,8 @@ export async function requestUploadUrl(folder: string, fileName: string): Promis
     // If signing fails for any reason, degrade to Supabase rather than blocking uploads.
     return { provider: 'supabase' }
   }
+}
+
+export async function requestUploadUrl(folder: string, fileName: string): Promise<UploadTarget> {
+  return withActionContext('admin.upload.request_url', () => runRequestUploadUrl(folder, fileName))
 }

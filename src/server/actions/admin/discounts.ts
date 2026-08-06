@@ -2,6 +2,7 @@
 
 import { requireSection } from '@/lib/admin/rbac'
 import { normalizeDiscountCode } from '@/lib/growth/discount'
+import { withActionContext } from '@/lib/observability/action-context'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -87,7 +88,7 @@ export type DiscountActionState = {
 const toAgorot = (ils: number | null | undefined): number | null =>
   ils === null || ils === undefined ? null : Math.round(ils * 100)
 
-export async function saveDiscountCampaign(
+async function runSaveDiscountCampaign(
   _prev: DiscountActionState,
   formData: FormData,
 ): Promise<DiscountActionState> {
@@ -159,7 +160,7 @@ export async function saveDiscountCampaign(
  * campaign that money was discounted under would erase the record of why an
  * order was cheaper than its lines.
  */
-export async function archiveDiscountCampaign(id: string): Promise<DiscountActionState> {
+async function runArchiveDiscountCampaign(id: string): Promise<DiscountActionState> {
   await requireSection('discounts', 'write')
   const admin = createAdminClient()
 
@@ -180,7 +181,7 @@ export async function archiveDiscountCampaign(id: string): Promise<DiscountActio
  * act from retiring one that ran its course. Deactivating leaves it in the list
  * with its history intact.
  */
-export async function setDiscountCampaignActive(
+async function runSetDiscountCampaignActive(
   id: string,
   isActive: boolean,
 ): Promise<DiscountActionState> {
@@ -195,4 +196,26 @@ export async function setDiscountCampaignActive(
 
   revalidatePath('/admin/discounts')
   return { ok: true }
+}
+
+export async function saveDiscountCampaign(
+  _prev: DiscountActionState,
+  formData: FormData,
+): Promise<DiscountActionState> {
+  return withActionContext('admin.discount_campaign.save', () =>
+    runSaveDiscountCampaign(_prev, formData),
+  )
+}
+
+export async function archiveDiscountCampaign(id: string): Promise<DiscountActionState> {
+  return withActionContext('admin.discount_campaign.archive', () => runArchiveDiscountCampaign(id))
+}
+
+export async function setDiscountCampaignActive(
+  id: string,
+  isActive: boolean,
+): Promise<DiscountActionState> {
+  return withActionContext('admin.discount_campaign.set_active', () =>
+    runSetDiscountCampaignActive(id, isActive),
+  )
 }

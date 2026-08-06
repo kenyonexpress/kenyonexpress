@@ -1,6 +1,7 @@
 'use server'
 
 import { sendEmail } from '@/lib/email/resend'
+import { withActionContext } from '@/lib/observability/action-context'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import { z } from 'zod'
 
@@ -33,7 +34,7 @@ function escapeHtml(value: string): string {
     .replaceAll("'", '&#39;')
 }
 
-export async function submitContactForm(
+async function runSubmitContactForm(
   _prev: ContactState,
   formData: FormData,
 ): Promise<ContactState> {
@@ -80,4 +81,11 @@ export async function submitContactForm(
   }
 
   return { ok: true, message: 'תודה. ההודעה התקבלה ונחזור אליך בהקדם.' }
+}
+
+export async function submitContactForm(
+  _prev: ContactState,
+  formData: FormData,
+): Promise<ContactState> {
+  return withActionContext('contact.submit', () => runSubmitContactForm(_prev, formData))
 }

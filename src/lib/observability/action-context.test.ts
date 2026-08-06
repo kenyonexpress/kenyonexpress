@@ -17,10 +17,14 @@ import { getRequestContext } from './request-context'
  * helper never reaches the caller.
  */
 
-const headerStore = { value: null as string | null }
+const headerStore = { value: null as string | null, outsideRequest: false }
 
 vi.mock('next/headers', () => ({
   headers: async () => {
+    // What Next actually does off a request, rather than returning empty.
+    if (headerStore.outsideRequest) {
+      throw new Error('`headers` was called outside a request scope.')
+    }
     const headers = new Headers()
     if (headerStore.value !== null) headers.set('x-request-id', headerStore.value)
     return headers
@@ -32,6 +36,7 @@ describe('withActionContext', () => {
 
   beforeEach(() => {
     headerStore.value = null
+    headerStore.outsideRequest = false
     error = vi.spyOn(console, 'error').mockImplementation(() => {})
   })
 
@@ -116,6 +121,24 @@ describe('withActionContext', () => {
 
     log.error('after.action', {})
     expect(JSON.parse((error.mock.calls[0] as [string])[0]).request_id).toBeNull()
+  })
+
+  it('still runs the action when there is no request to read an id from', async () => {
+    // `headers()` throws outside a request scope rather than returning empty.
+    // Four contact.ts unit tests failed on this line, on the wrapper and not on
+    // anything they were testing, the moment that action was wrapped. A script
+    // or a seeder calling an action reaches the same throw.
+    headerStore.outsideRequest = true
+
+    const seen = await withActionContext('contact.submit', async () => ({
+      ran: true,
+      context: getRequestContext(),
+    }))
+
+    expect(seen.ran).toBe(true)
+    // No id rather than a wrong one, which is the same answer getRequestId
+    // gives outside a request.
+    expect(seen.context).toBeUndefined()
   })
 
   it('keeps two overlapping actions apart', async () => {

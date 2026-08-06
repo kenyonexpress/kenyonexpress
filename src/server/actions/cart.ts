@@ -12,6 +12,7 @@ import { parsePercentSnapshot } from '@/lib/cart/snapshot'
 import type { CartActionResult, CartStorageItem, CartView } from '@/lib/cart/types'
 import { growthClient } from '@/lib/growth/client'
 import { evaluateDiscount } from '@/lib/growth/discount'
+import { withActionContext } from '@/lib/observability/action-context'
 import { createGuestCartClient, createPublicClient } from '@/lib/supabase/anon'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
@@ -328,13 +329,13 @@ function fail(error: string, code: string): CartActionResult {
   return { ok: false, error, code }
 }
 
-export async function getCart(): Promise<CartView> {
+async function runGetCart(): Promise<CartView> {
   const { row } = await getCartRow()
   const items = parseItems(row?.items)
   return resolveCartView(row?.id ?? null, items)
 }
 
-export async function addToCart(
+async function runAddToCart(
   productId: string,
   variantId: string | null = null,
   quantity = 1,
@@ -400,7 +401,7 @@ export async function addToCart(
   return { ok: true, cart }
 }
 
-export async function updateCartItem(
+async function runUpdateCartItem(
   productId: string,
   variantId: string | null,
   quantity: number,
@@ -445,14 +446,14 @@ export async function updateCartItem(
   return { ok: true, cart }
 }
 
-export async function removeFromCart(
+async function runRemoveFromCart(
   productId: string,
   variantId: string | null = null,
 ): Promise<CartActionResult> {
-  return updateCartItem(productId, variantId, 0)
+  return runUpdateCartItem(productId, variantId, 0)
 }
 
-export async function clearCart(): Promise<CartActionResult> {
+async function runClearCart(): Promise<CartActionResult> {
   const { row, isGuest, userId } = await getCartRow()
   if (!row) return { ok: true, cart: await resolveCartView(null, []) }
 
@@ -481,7 +482,7 @@ export async function clearCart(): Promise<CartActionResult> {
  * reached with the session cookie, the account row with the user's token.
  * Neither client can touch a cart that is not one of those two.
  */
-export async function mergeGuestCart(
+async function runMergeGuestCart(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
   sessionId: string,
@@ -526,7 +527,7 @@ export async function mergeGuestCart(
   ])
 }
 
-export async function clearGuestSessionCookie(): Promise<void> {
+async function runClearGuestSessionCookie(): Promise<void> {
   const cookieStore = await cookies()
   cookieStore.delete(GUEST_SESSION_COOKIE)
 }
@@ -548,7 +549,7 @@ export type CouponActionResult =
  * removes an item, and in each case the cart quietly drops it rather than
  * showing a discount checkout will not honour.
  */
-export async function applyCouponCode(rawCode: string): Promise<CouponActionResult> {
+async function runApplyCouponCode(rawCode: string): Promise<CouponActionResult> {
   const code = normalizeCouponCode(rawCode)
   if (!code) return fail('יש להזין קוד קופון', 'VALIDATION')
   if (code.length > 64) return fail('קוד הקופון ארוך מדי', 'VALIDATION')
@@ -580,7 +581,7 @@ export async function applyCouponCode(rawCode: string): Promise<CouponActionResu
       path: '/',
     })
     revalidateCartPaths()
-    return { ok: true, cart: await getCart() }
+    return { ok: true, cart: await runGetCart() }
   }
 
   const { data } = await createPublicClient()
@@ -620,11 +621,11 @@ export async function applyCouponCode(rawCode: string): Promise<CouponActionResu
   }
 }
 
-export async function removeCouponCode(): Promise<CouponActionResult> {
+async function runRemoveCouponCode(): Promise<CouponActionResult> {
   const cookieStore = await cookies()
   cookieStore.delete(CART_COUPON_COOKIE)
   revalidateCartPaths()
-  return { ok: true, cart: await getCart() }
+  return { ok: true, cart: await runGetCart() }
 }
 
 /**
@@ -636,13 +637,75 @@ export async function removeCouponCode(): Promise<CouponActionResult> {
  * can have shrunk below the minimum, or the last use can have gone to someone
  * else.
  */
-export async function resolveCheckoutDiscountAgorot(): Promise<{
+async function runResolveCheckoutDiscountAgorot(): Promise<{
   code: string | null
   discountAgorot: number
 }> {
-  const cart = await getCart()
+  const cart = await runGetCart()
   if (!cart.coupon) return { code: null, discountAgorot: 0 }
   // Already agorot. This used to multiply a shekel float back up by 100 and
   // round it, which is the round trip the whole cart is now built to avoid.
   return { code: cart.coupon.code, discountAgorot: cart.coupon.discount }
+}
+
+export async function getCart(): Promise<CartView> {
+  return withActionContext('cart.get', () => runGetCart())
+}
+
+export async function addToCart(
+  productId: string,
+  variantId: string | null = null,
+  quantity = 1,
+): Promise<CartActionResult> {
+  return withActionContext('cart.add', () => runAddToCart(productId, variantId, quantity))
+}
+
+export async function updateCartItem(
+  productId: string,
+  variantId: string | null,
+  quantity: number,
+): Promise<CartActionResult> {
+  return withActionContext('cart.update_item', () =>
+    runUpdateCartItem(productId, variantId, quantity),
+  )
+}
+
+export async function removeFromCart(
+  productId: string,
+  variantId: string | null = null,
+): Promise<CartActionResult> {
+  return withActionContext('cart.remove_item', () => runRemoveFromCart(productId, variantId))
+}
+
+export async function clearCart(): Promise<CartActionResult> {
+  return withActionContext('cart.clear', () => runClearCart())
+}
+
+export async function mergeGuestCart(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  sessionId: string,
+): Promise<void> {
+  return withActionContext('cart.merge_guest', () => runMergeGuestCart(supabase, userId, sessionId))
+}
+
+export async function clearGuestSessionCookie(): Promise<void> {
+  return withActionContext('cart.clear_guest_cookie', () => runClearGuestSessionCookie())
+}
+
+export async function applyCouponCode(rawCode: string): Promise<CouponActionResult> {
+  return withActionContext('cart.apply_coupon', () => runApplyCouponCode(rawCode))
+}
+
+export async function removeCouponCode(): Promise<CouponActionResult> {
+  return withActionContext('cart.remove_coupon', () => runRemoveCouponCode())
+}
+
+export async function resolveCheckoutDiscountAgorot(): Promise<{
+  code: string | null
+  discountAgorot: number
+}> {
+  return withActionContext('cart.resolve_checkout_discount', () =>
+    runResolveCheckoutDiscountAgorot(),
+  )
 }

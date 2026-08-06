@@ -5,6 +5,7 @@ import { requireStaffSession } from '@/lib/admin/rbac'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { assertPublishable, buildProductMoneyWrite } from '@/lib/commerce/product-money'
 import { IMAGE_HOST_ERROR, isAllowedImageUrl } from '@/lib/images/remote-hosts'
+import { withActionContext } from '@/lib/observability/action-context'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath, updateTag } from 'next/cache'
@@ -137,7 +138,7 @@ const variantSchema = z.object({
 
 export type ProductFormState = { error: string } | { success: string } | null
 
-export async function upsertProduct(
+async function runUpsertProduct(
   _: ProductFormState,
   formData: FormData,
 ): Promise<ProductFormState> {
@@ -349,7 +350,7 @@ export async function upsertProduct(
   redirect('/admin/products')
 }
 
-export async function deleteProduct(id: string): Promise<{ error?: string }> {
+async function runDeleteProduct(id: string): Promise<{ error?: string }> {
   try {
     await requireStaffSession()
   } catch {
@@ -368,7 +369,7 @@ export async function deleteProduct(id: string): Promise<{ error?: string }> {
   return {}
 }
 
-export async function bulkUpdateProductStatus(
+async function runBulkUpdateProductStatus(
   ids: string[],
   status: 'draft' | 'active' | 'paused' | 'archived',
 ): Promise<{ error?: string }> {
@@ -387,7 +388,7 @@ export async function bulkUpdateProductStatus(
   return {}
 }
 
-export async function bulkAssignCategory(
+async function runBulkAssignCategory(
   ids: string[],
   categoryId: string | null,
 ): Promise<{ error?: string }> {
@@ -432,7 +433,7 @@ function round2(n: number): number {
  * set mode writes kenyon_price and skips products whose full_price would fall
  * below it (those are reported back, not silently broken).
  */
-export async function bulkAdjustPrices(
+async function runBulkAdjustPrices(
   ids: string[],
   input: BulkPriceInput,
 ): Promise<{ error?: string; updated?: number; skipped?: string[] }> {
@@ -487,7 +488,7 @@ export async function bulkAdjustPrices(
   return { updated, skipped }
 }
 
-export async function bulkSoftDeleteProducts(ids: string[]): Promise<{ error?: string }> {
+async function runBulkSoftDeleteProducts(ids: string[]): Promise<{ error?: string }> {
   try {
     await requireStaffSession()
   } catch {
@@ -507,7 +508,7 @@ export async function bulkSoftDeleteProducts(ids: string[]): Promise<{ error?: s
   return {}
 }
 
-export async function deleteVariant(id: string): Promise<{ error?: string }> {
+async function runDeleteVariant(id: string): Promise<{ error?: string }> {
   try {
     await requireStaffSession()
   } catch {
@@ -522,4 +523,50 @@ export async function deleteVariant(id: string): Promise<{ error?: string }> {
   if (error) return { error: error.message }
 
   return {}
+}
+
+export async function upsertProduct(
+  _: ProductFormState,
+  formData: FormData,
+): Promise<ProductFormState> {
+  return withActionContext('admin.product.upsert', () => runUpsertProduct(_, formData))
+}
+
+export async function deleteProduct(id: string): Promise<{ error?: string }> {
+  return withActionContext('admin.product.delete', () => runDeleteProduct(id))
+}
+
+export async function bulkUpdateProductStatus(
+  ids: string[],
+  status: 'draft' | 'active' | 'paused' | 'archived',
+): Promise<{ error?: string }> {
+  return withActionContext('admin.product.bulk_update_status', () =>
+    runBulkUpdateProductStatus(ids, status),
+  )
+}
+
+export async function bulkAssignCategory(
+  ids: string[],
+  categoryId: string | null,
+): Promise<{ error?: string }> {
+  return withActionContext('admin.product.bulk_assign_category', () =>
+    runBulkAssignCategory(ids, categoryId),
+  )
+}
+
+export async function bulkAdjustPrices(
+  ids: string[],
+  input: BulkPriceInput,
+): Promise<{ error?: string; updated?: number; skipped?: string[] }> {
+  return withActionContext('admin.product.bulk_adjust_prices', () =>
+    runBulkAdjustPrices(ids, input),
+  )
+}
+
+export async function bulkSoftDeleteProducts(ids: string[]): Promise<{ error?: string }> {
+  return withActionContext('admin.product.bulk_soft_delete', () => runBulkSoftDeleteProducts(ids))
+}
+
+export async function deleteVariant(id: string): Promise<{ error?: string }> {
+  return withActionContext('admin.variant.delete', () => runDeleteVariant(id))
 }

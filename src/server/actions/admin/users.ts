@@ -4,6 +4,7 @@ import { writeAuditLog } from '@/lib/admin/audit'
 import { canAssignRole } from '@/lib/admin/permissions'
 import { type AdminSessionInfo, isAdminRole, requireAdminSession } from '@/lib/admin/rbac'
 import { authorizeRoleChange } from '@/lib/admin/role-change'
+import { withActionContext } from '@/lib/observability/action-context'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
@@ -16,10 +17,7 @@ const updateRoleSchema = z.object({
 
 export type UserActionState = { error: string } | { success: string } | null
 
-export async function updateUserRole(
-  _: UserActionState,
-  formData: FormData,
-): Promise<UserActionState> {
+async function runUpdateUserRole(_: UserActionState, formData: FormData): Promise<UserActionState> {
   let session: AdminSessionInfo
   try {
     session = await requireAdminSession()
@@ -90,4 +88,11 @@ export async function updateUserRole(
   revalidatePath('/admin/users')
   revalidatePath(`/admin/users/${targetUserId}`)
   return { success: 'תפקיד עודכן בהצלחה' }
+}
+
+export async function updateUserRole(
+  _: UserActionState,
+  formData: FormData,
+): Promise<UserActionState> {
+  return withActionContext('admin.user.update_role', () => runUpdateUserRole(_, formData))
 }

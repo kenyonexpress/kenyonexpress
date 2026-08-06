@@ -7,6 +7,7 @@ import {
   type ConsentDecision,
   serializeConsent,
 } from '@/lib/analytics/consent'
+import { withActionContext } from '@/lib/observability/action-context'
 import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 
@@ -18,7 +19,7 @@ import { redirect } from 'next/navigation'
  * server action + full navigation lets the pre-paint snippet hide the banner
  * on the next response with no client JS on the critical path ([25]).
  */
-export async function decideConsent(formData: FormData): Promise<void> {
+async function runDecideConsent(formData: FormData): Promise<void> {
   const raw = formData.get('decision')
   if (raw !== 'granted' && raw !== 'denied') return
   const decision = raw as ConsentDecision
@@ -46,4 +47,8 @@ export async function decideConsent(formData: FormData): Promise<void> {
     }
   }
   redirect(path)
+}
+
+export async function decideConsent(formData: FormData): Promise<void> {
+  return withActionContext('consent.decide', () => runDecideConsent(formData))
 }

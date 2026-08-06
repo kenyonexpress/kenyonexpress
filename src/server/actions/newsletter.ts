@@ -2,6 +2,7 @@
 
 import { createHash, randomBytes } from 'node:crypto'
 import { sendEmail, syncAudienceContact } from '@/lib/growth/resend'
+import { withActionContext } from '@/lib/observability/action-context'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
@@ -42,7 +43,7 @@ function hashIp(ip: string): string {
 const siteUrl = () =>
   (process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il').replace(/\/+$/, '')
 
-export async function subscribeToNewsletter(
+async function runSubscribeToNewsletter(
   _prev: NewsletterState,
   formData: FormData,
 ): Promise<NewsletterState> {
@@ -117,7 +118,7 @@ export async function subscribeToNewsletter(
 }
 
 /** The click. This is what subscribes, and the timestamp is the evidence. */
-export async function confirmNewsletter(token: string): Promise<NewsletterState> {
+async function runConfirmNewsletter(token: string): Promise<NewsletterState> {
   if (!token) return { ok: false, error: 'קישור לא תקין' }
   const admin = createAdminClient()
 
@@ -144,7 +145,7 @@ export async function confirmNewsletter(token: string): Promise<NewsletterState>
   return { ok: true, message: 'ההרשמה אושרה. תודה!' }
 }
 
-export async function unsubscribeByToken(token: string, reason?: string): Promise<NewsletterState> {
+async function runUnsubscribeByToken(token: string, reason?: string): Promise<NewsletterState> {
   const admin = createAdminClient()
   const { error } = await admin.rpc(
     'fn_unsubscribe_by_token' as never,
@@ -170,4 +171,19 @@ export async function unsubscribeByToken(token: string, reason?: string): Promis
   }
 
   return { ok: true, message: 'הוסרת מרשימת הדיוור.' }
+}
+
+export async function subscribeToNewsletter(
+  _prev: NewsletterState,
+  formData: FormData,
+): Promise<NewsletterState> {
+  return withActionContext('newsletter.subscribe', () => runSubscribeToNewsletter(_prev, formData))
+}
+
+export async function confirmNewsletter(token: string): Promise<NewsletterState> {
+  return withActionContext('newsletter.confirm', () => runConfirmNewsletter(token))
+}
+
+export async function unsubscribeByToken(token: string, reason?: string): Promise<NewsletterState> {
+  return withActionContext('newsletter.unsubscribe', () => runUnsubscribeByToken(token, reason))
 }

@@ -3,6 +3,7 @@
 import { requireAdminSession } from '@/lib/admin/rbac'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { IMAGE_HOST_ERROR, isAllowedImageUrl } from '@/lib/images/remote-hosts'
+import { withActionContext } from '@/lib/observability/action-context'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath, updateTag } from 'next/cache'
 import { z } from 'zod'
@@ -26,7 +27,7 @@ const schema = z.object({
 
 export type CategoryFormState = { error: string } | { success: string } | null
 
-export async function upsertCategory(
+async function runUpsertCategory(
   _: CategoryFormState,
   formData: FormData,
 ): Promise<CategoryFormState> {
@@ -69,7 +70,7 @@ export async function upsertCategory(
   return { success: id ? 'קטגוריה עודכנה' : 'קטגוריה נוצרה' }
 }
 
-export async function softDeleteCategory(id: string): Promise<{ error?: string }> {
+async function runSoftDeleteCategory(id: string): Promise<{ error?: string }> {
   try {
     await requireAdminSession()
   } catch {
@@ -88,7 +89,7 @@ export async function softDeleteCategory(id: string): Promise<{ error?: string }
   return {}
 }
 
-export async function deleteCategory(id: string): Promise<{ error?: string }> {
+async function runDeleteCategory(id: string): Promise<{ error?: string }> {
   try {
     await requireAdminSession()
   } catch {
@@ -104,7 +105,7 @@ export async function deleteCategory(id: string): Promise<{ error?: string }> {
   return {}
 }
 
-export async function updateCategorySortOrder(
+async function runUpdateCategorySortOrder(
   id: string,
   sort_order: number,
 ): Promise<{ error?: string }> {
@@ -121,4 +122,28 @@ export async function updateCategorySortOrder(
   revalidatePath('/admin/categories')
   updateTag(CATALOGUE_TAG)
   return {}
+}
+
+export async function upsertCategory(
+  _: CategoryFormState,
+  formData: FormData,
+): Promise<CategoryFormState> {
+  return withActionContext('admin.category.upsert', () => runUpsertCategory(_, formData))
+}
+
+export async function softDeleteCategory(id: string): Promise<{ error?: string }> {
+  return withActionContext('admin.category.soft_delete', () => runSoftDeleteCategory(id))
+}
+
+export async function deleteCategory(id: string): Promise<{ error?: string }> {
+  return withActionContext('admin.category.delete', () => runDeleteCategory(id))
+}
+
+export async function updateCategorySortOrder(
+  id: string,
+  sort_order: number,
+): Promise<{ error?: string }> {
+  return withActionContext('admin.category.update_sort_order', () =>
+    runUpdateCategorySortOrder(id, sort_order),
+  )
 }

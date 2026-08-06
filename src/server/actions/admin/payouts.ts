@@ -3,6 +3,7 @@
 import { writeAuditLog } from '@/lib/admin/audit'
 import { generatePayoutSchema, markPaidSchema } from '@/lib/admin/payouts'
 import { type AdminSessionInfo, requireSection } from '@/lib/admin/rbac'
+import { withActionContext } from '@/lib/observability/action-context'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -54,7 +55,7 @@ function readableError(message: string): string {
   return message
 }
 
-export async function generatePayoutStatement(input: {
+async function runGeneratePayoutStatement(input: {
   supplierId: string
   periodStart: string
   periodEnd: string
@@ -113,7 +114,7 @@ export async function generatePayoutStatement(input: {
   return { success: `נוצר דוח ${row?.statement_number ?? ''} להמתנה לאישור` }
 }
 
-export async function approvePayoutStatement(statementId: string): Promise<ActionResult> {
+async function runApprovePayoutStatement(statementId: string): Promise<ActionResult> {
   const session = await guard()
   if (!session) return { error: 'אין הרשאה' }
 
@@ -139,7 +140,7 @@ export async function approvePayoutStatement(statementId: string): Promise<Actio
   return { success: 'הדוח אושר לתשלום' }
 }
 
-export async function markPayoutStatementPaid(input: {
+async function runMarkPayoutStatementPaid(input: {
   statementId: string
   reference: string
 }): Promise<ActionResult> {
@@ -172,7 +173,7 @@ export async function markPayoutStatementPaid(input: {
   return { success: 'הדוח סומן כשולם' }
 }
 
-export async function cancelPayoutStatement(statementId: string): Promise<ActionResult> {
+async function runCancelPayoutStatement(statementId: string): Promise<ActionResult> {
   const session = await guard()
   if (!session) return { error: 'אין הרשאה' }
 
@@ -196,4 +197,35 @@ export async function cancelPayoutStatement(statementId: string): Promise<Action
 
   refresh()
   return { success: 'הדוח בוטל והשורות שוחררו לריצה הבאה' }
+}
+
+export async function generatePayoutStatement(input: {
+  supplierId: string
+  periodStart: string
+  periodEnd: string
+}): Promise<ActionResult> {
+  return withActionContext('admin.payout.generate_statement', () =>
+    runGeneratePayoutStatement(input),
+  )
+}
+
+export async function approvePayoutStatement(statementId: string): Promise<ActionResult> {
+  return withActionContext('admin.payout.approve_statement', () =>
+    runApprovePayoutStatement(statementId),
+  )
+}
+
+export async function markPayoutStatementPaid(input: {
+  statementId: string
+  reference: string
+}): Promise<ActionResult> {
+  return withActionContext('admin.payout.mark_statement_paid', () =>
+    runMarkPayoutStatementPaid(input),
+  )
+}
+
+export async function cancelPayoutStatement(statementId: string): Promise<ActionResult> {
+  return withActionContext('admin.payout.cancel_statement', () =>
+    runCancelPayoutStatement(statementId),
+  )
 }

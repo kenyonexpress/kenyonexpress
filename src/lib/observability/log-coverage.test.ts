@@ -81,6 +81,49 @@ describe('the request-id storage', () => {
   })
 })
 
+describe('Server Functions', () => {
+  const actionModules = ALL.filter((file) => /^'use server'/.test(readFileSync(file, 'utf8')))
+
+  it('exist to be checked', () => {
+    expect(actionModules.length).toBeGreaterThan(20)
+  })
+
+  it('each export goes through withActionContext exactly once', () => {
+    // The delegate pattern is one wrapper call per exported action, so the two
+    // counts move together. This catches both halves of the regression: a new
+    // action added without a wrapper, and a body function that was left
+    // exported next to its own delegate (which is what a client would then
+    // bind to, running with no context at all).
+    //
+    // A module that only re-exports another's actions (app/actions/auth.ts)
+    // has none of either and inherits the wrapping, so it passes unremarked.
+    const mismatched = actionModules
+      .map((file) => ({
+        file: rel(file),
+        exported: readFileSync(file, 'utf8').match(/^export async function /gm)?.length ?? 0,
+        wrapped: readFileSync(file, 'utf8').match(/withActionContext\(/g)?.length ?? 0,
+      }))
+      .filter((m) => m.exported !== m.wrapped)
+
+    expect(mismatched).toEqual([])
+  })
+
+  it('name themselves distinctly', () => {
+    // Two actions sharing a label is not a build error and not a runtime one.
+    // It is only ever discovered while reading logs, at which point the two are
+    // already indistinguishable.
+    const labels = actionModules.flatMap((file) =>
+      [...readFileSync(file, 'utf8').matchAll(/withActionContext\(\s*'([^']+)'/g)].map(
+        (match) => match[1],
+      ),
+    )
+    const duplicates = labels.filter((label, i) => labels.indexOf(label) !== i)
+
+    expect(duplicates).toEqual([])
+    expect(labels.length).toBeGreaterThan(70)
+  })
+})
+
 describe('route handlers', () => {
   const routes = ALL.filter((file) => /(^|\/)app\/api\/.*\/route\.ts$/.test(rel(file)))
 
