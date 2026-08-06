@@ -199,9 +199,20 @@ balance_due_at_business_ils numeric(12,2) NOT NULL DEFAULT 0    -- coupon remain
   - coupon: `supplier_due_ils = 0` (supplier collects at the business directly),
     `charged_on_site_ils = platform_fee_ils`.
 
-### 2.5 `coupon_redemptions`
+### 2.5 `coupon_redemptions` → **בפועל `voucher_redemptions`**
 
-One row per successful scan. The UNIQUE on `coupon_code_id` is the hard replay guard.
+> **QA 2026-08-07.** הטבלה בפרודקשן נקראת **`voucher_redemptions`**, המפתח הוא
+> ‏`voucher_id` ולא `coupon_code_id`, והסכום הוא `amount_collected_agorot`
+> ‏(integer אגורות) ולא `numeric` בשקלים. ה-DDL שלמטה הוא הטיוטה של 026 שלא
+> הוחלה, ולא מה שרץ. נשמר כטיוטה, לא כתיאור.
+>
+> **הפרש אחד מהותי ולא רק שמי: הטבלה החיה מתעדת גם סריקות שנכשלו.** יש בה
+> עמודת `outcome` מסוג `voucher_scan_outcome`, ונכתבת שורה גם לקוד שכבר מומש,
+> לקוד שפג, ולסורק בלי הרשאה. לכן "‏One row per successful scan" **אינו נכון**,
+> וכל שאילתה כספית חייבת לסנן `WHERE outcome = 'success'`.
+
+‏(טיוטה 026, לא הוחלה) שורה אחת לכל סריקה. ‏`UNIQUE` על `coupon_code_id` הוא
+מחסום ה-replay.
 
 ```sql
 coupon_redemptions (
@@ -498,7 +509,18 @@ re-processed webhook cannot double-credit or double-debit.
 
 ### T1: Coupon scan replay (same code scanned twice)
 - Atomic compare-and-set on `status='issued'` (single UPDATE, no read-then-write).
-- `coupon_redemptions.coupon_code_id UNIQUE` as second, independent barrier.
+- **In production**: a *partial* unique index, which is the stronger form:
+
+  ```sql
+  CREATE UNIQUE INDEX voucher_redemptions_one_success_per_voucher
+    ON public.voucher_redemptions (voucher_id)
+    WHERE outcome = 'success' AND voucher_id IS NOT NULL;
+  ```
+
+  One success per voucher, unlimited failed attempts still recorded. The
+  unconditional `UNIQUE(coupon_code_id)` this document drafted would have
+  rejected the second *failed* scan, discarding precisely the row that shows
+  someone trying a code repeatedly.
 - Supplier binding in the WHERE clause: a code can only be redeemed by staff of
   the supplier it belongs to; a leaked code is useless at another business.
 - Rate limiting on scan attempts (019 infra) kills 8-digit brute force
