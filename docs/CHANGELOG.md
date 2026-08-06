@@ -17,6 +17,12 @@ STATE.md
 
 ### Docs
 
+### Docs (2026-08-07 QA verify חבילת 20)
+
+- `ARCHITECTURE-CUSTOMER-SUPPORT.md`: S7 No Escrow מפורש
+- קישור הדדי PRICING ↔ SUPPORT
+- `MASTER-INDEX.md`: סטטוס #12/#13 מעודכן אחרי סריקה חוזרת
+
 ### Docs (2026-08-07 QA re-pass חבילת 20)
 
 - `CONTRADICTIONS.md`: C11ב Escrow בוטל; C11א / No Escrow מחייב
