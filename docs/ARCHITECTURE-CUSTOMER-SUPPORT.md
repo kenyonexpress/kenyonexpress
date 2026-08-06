@@ -2,7 +2,7 @@
 
 פניות לקוח, בעיות מימוש קופון, ו-SLA.
 
-Status: **BINDING** · עודכן: 2026-08-06  
+Status: **BINDING** · עודכן: 2026-08-06 · QA: PASS  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -13,6 +13,7 @@ docs/ARCHITECTURE-FRAUD-PREVENTION.md
 docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 docs/ARCHITECTURE-ADMIN-DASHBOARD.md
 docs/ARCHITECTURE-NOTIFICATIONS.md
+docs/ARCHITECTURE-DATA-EXPORT-GDPR.md
 ```
 
 ---
@@ -76,3 +77,4 @@ docs/ARCHITECTURE-NOTIFICATIONS.md
 | תאריך | שינוי |
 |---|---|
 | 2026-08-06 | פניות, מימוש, SLA מפורש |
+| 2026-08-06 | QA: קישור DATA-EXPORT-GDPR |
