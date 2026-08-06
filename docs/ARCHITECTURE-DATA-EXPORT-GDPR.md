@@ -2,7 +2,7 @@
 
 ייצוא ומחיקת נתוני משתמש (זכויות נושא מידע; יישור לדין הישראלי + עקרונות GDPR כשיחולו).
 
-Status: **BINDING** · עודכן: 2026-08-06  
+Status: **BINDING** · עודכן: 2026-08-06 · QA: PASS  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -14,6 +14,7 @@ docs/ARCHITECTURE-ACCOUNT-IDENTITY.md
 docs/ARCHITECTURE-SECURITY-RLS.md
 docs/ARCHITECTURE-OBSERVABILITY.md
 docs/ARCHITECTURE-CASHBACK-WALLET.md
+docs/ARCHITECTURE-CUSTOMER-SUPPORT.md
 ```
 
 אזהרה: חוזה הנדסי. לא מחליף ייעוץ משפטי / רשם מאגרי מידע.
@@ -105,3 +106,4 @@ account_deletion_requests
 | תאריך | שינוי |
 |---|---|
 | 2026-08-06 | ייצוא ומחיקת נתוני משתמש (GDPR-aligned) |
+| 2026-08-06 | QA: קישור CUSTOMER-SUPPORT; RTL עברית |
