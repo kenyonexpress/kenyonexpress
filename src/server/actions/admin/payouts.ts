@@ -4,6 +4,7 @@ import { writeAuditLog } from '@/lib/admin/audit'
 import { generatePayoutSchema, markPaidSchema } from '@/lib/admin/payouts'
 import { type AdminSessionInfo, requireSection } from '@/lib/admin/rbac'
 import { withActionContext } from '@/lib/observability/action-context'
+import { log } from '@/lib/observability/log'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -39,10 +40,40 @@ function refresh() {
 }
 
 /**
- * Postgres errors from the payout RPCs are written for an operator, not a
- * shopper, and they carry the actual reason. Translating the ones we raise
- * ourselves keeps the screen readable without hiding anything unexpected.
+ * Postgres: undefined_function / undefined_table.
+ *
+ * MEASURED against production on 2026-08-06: `information_schema` returns ZERO
+ * tables matching `%payout%` and ZERO functions matching `%payout%`. Migration
+ * 081 was never applied here, so `generate_payout_statement` does not exist and
+ * neither does `payout_statements`. Every use of this screen fails, and it used
+ * to fail by showing the raw Postgres text to an administrator — which reads as
+ * a transient glitch worth retrying rather than as a feature that is not
+ * installed.
  */
+const UNDEFINED_FUNCTION = '42883'
+const UNDEFINED_TABLE = '42P01'
+
+const NOT_INSTALLED =
+  'מסך התשלומים לספקים אינו מותקן בבסיס הנתונים הזה: מיגרציה 081 לא הוחלה, ולכן ' +
+  'הפונקציה generate_payout_statement והטבלה payout_statements אינן קיימות. ' +
+  'עד להחלתה, ההתחייבויות הפתוחות לספקים מוצגות בדוחות מתוך יומן ה-settlement_events.'
+
+/**
+ * The one place all four RPCs report a failure.
+ *
+ * Postgres errors from these are written for an operator and carry the actual
+ * reason, so anything unexpected is passed through rather than hidden. The two
+ * codes above are the exception: they do not mean the operation failed, they
+ * mean the FEATURE is absent, and every one of the four hits them here today.
+ */
+function reportError(error: { code?: string; message: string }, rpc: string): string {
+  if (error.code === UNDEFINED_FUNCTION || error.code === UNDEFINED_TABLE) {
+    log.error('payouts.not_installed', { rpc, code: error.code, reason: error.message })
+    return NOT_INSTALLED
+  }
+  return readableError(error.message)
+}
+
 function readableError(message: string): string {
   if (message.includes('live statement already exists')) {
     return 'כבר קיים דוח פעיל לספק הזה בתקופה הזו. בטל אותו או בחר תקופה אחרת.'
@@ -74,7 +105,7 @@ async function runGeneratePayoutStatement(input: {
     p_period_start: parsed.data.periodStart,
     p_period_end: parsed.data.periodEnd,
   })
-  if (error) return { error: readableError(error.message) }
+  if (error) return { error: reportError(error, 'generate_payout_statement') }
 
   const statementId = typeof data === 'string' ? data : null
 
@@ -125,7 +156,7 @@ async function runApprovePayoutStatement(statementId: string): Promise<ActionRes
   const { error } = await supabase.rpc('approve_payout_statement', {
     p_statement_id: parsed.data.statementId,
   })
-  if (error) return { error: readableError(error.message) }
+  if (error) return { error: reportError(error, 'approve_payout_statement') }
 
   await writeAuditLog({
     actorId: session.userId,
@@ -157,7 +188,7 @@ async function runMarkPayoutStatementPaid(input: {
     p_statement_id: parsed.data.statementId,
     p_payment_reference: parsed.data.reference,
   })
-  if (error) return { error: readableError(error.message) }
+  if (error) return { error: reportError(error, 'mark_payout_statement_paid') }
 
   await writeAuditLog({
     actorId: session.userId,
@@ -184,7 +215,7 @@ async function runCancelPayoutStatement(statementId: string): Promise<ActionResu
   const { error } = await supabase.rpc('cancel_payout_statement', {
     p_statement_id: parsed.data.statementId,
   })
-  if (error) return { error: readableError(error.message) }
+  if (error) return { error: reportError(error, 'cancel_payout_statement') }
 
   await writeAuditLog({
     actorId: session.userId,
