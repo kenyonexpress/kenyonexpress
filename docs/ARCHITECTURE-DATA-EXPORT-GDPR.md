@@ -15,6 +15,7 @@ docs/ARCHITECTURE-SECURITY-RLS.md
 docs/ARCHITECTURE-OBSERVABILITY.md
 docs/ARCHITECTURE-CASHBACK-WALLET.md
 docs/ARCHITECTURE-CUSTOMER-SUPPORT.md
+docs/CONTRADICTIONS.md
 ```
 
 אזהרה: חוזה הנדסי. לא מחליף ייעוץ משפטי / רשם מאגרי מידע.
@@ -107,3 +108,4 @@ account_deletion_requests
 |---|---|
 | 2026-08-06 | ייצוא ומחיקת נתוני משתמש (GDPR-aligned) |
 | 2026-08-06 | QA: קישור CUSTOMER-SUPPORT; RTL עברית |
+| 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
