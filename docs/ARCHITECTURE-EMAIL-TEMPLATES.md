@@ -14,6 +14,7 @@ docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 docs/ARCHITECTURE-CASHBACK-WALLET.md
 docs/ARCHITECTURE-GIFT-COUPONS.md
 docs/ARCHITECTURE-SEASONAL-CAMPAIGNS.md
+docs/ARCHITECTURE-PRICING-RULES.md
 docs/CONTRADICTIONS.md
 ```
 ---
@@ -89,3 +90,4 @@ docs/CONTRADICTIONS.md
 | 2026-08-06 | QA: קישור GIFT; אסור נוסח Escrow/נאמן |
 | 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
 | 2026-08-07 | QA: קישור הדדי ל-SEASONAL-CAMPAIGNS |
+| 2026-08-07 | QA audit: קישור PRICING (No Escrow / בלי עמלה קבועה בתבניות) |
