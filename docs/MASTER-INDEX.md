@@ -139,6 +139,7 @@ CONTRADICTIONS, כל מספר עמלה כאן הוא שריד") הוסר מכו�
 | `CARDCOM-ARCHITECTURE.md` | ארכיטקטורת Cardcom. | BINDING |
 | `CHANGELOG.md` | יומן שינויים. | LIVE |
 | `MASTER-ARCHITECTURE.md` | מסמך ההכרעות; 1.4 ו-1.11 מסומנות כבוטלות. | QA-PASS (06.08) |
+| `GAPS-CODE-VS-DOCS.md` | ביקורת קוד מול מסמכים: payments/coupons/refund. | AUDIT (07.08) |
 | `ROADMAP-V2.md` | שלבים ותלויות לחבילת docs. | QA-PASS (#10) |
 | `RUNBOOK-PRODUCTION.md` | Deploy Vercel, rollback, MCP migrations. | QA-PASS (#5) |
 | `TEST-STRATEGY.md` | פירמידת טסטים (כסף קודם). | BINDING |
@@ -167,3 +168,4 @@ docs/ROADMAP-V2.md
 | 2026-08-06 | יצירת MASTER-INDEX לכל מסמכי הארכיטקטורה |
 | 2026-08-06 | QA pass: סטטוס לכל 20; מודל No Escrow + platform_percent; קישורים הדדיים |
 | 2026-08-06 | סבב STALE: שבעה מסמכים + GROWTH-SEO. אין יותר STALE ב-`docs/` |
+| 2026-08-07 | `GAPS-CODE-VS-DOCS.md`: ביקורת קוד מול מסמכים, שמונה פערים |
