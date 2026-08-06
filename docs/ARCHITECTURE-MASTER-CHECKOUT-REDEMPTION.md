@@ -1,8 +1,28 @@
 # MASTER ARCHITECTURE: Checkout, Commission, Coupon Redemption, Personal Area, Supplier Dashboard
 
-Status: DESIGN (print before code). Verified against live DB `ixvwfbuvfxxsjiywhbbb` on 2026-07-23.
+Status: **REFRESHED 2026-08-06** (was STALE). Originally written 2026-07-23 against live DB `ixvwfbuvfxxsjiywhbbb`.
 Money rule: agorot integers only, zero floats past the ILS/agorot boundary.
 Scope: reconciles the authoritative business rules with the applied live schema (007 + 044 + 045 + 046 + 047) and the unapplied drafts (026, 027, 042).
+
+> **מה תוקן בריענון הזה, ולמה המסמך היה STALE.**
+>
+> הנוסחה בסעיף 1 הייתה נכונה כל הזמן: הכנסת הפלטפורמה היא `platform_percent`
+> של ערך הנקוב, **בשני סוגי המוצרים**. מה שהפך את המסמך למטעה היו ההערות
+> שלצידה, שכינו את אותו ערך "the 10%" ואת יתרת הספק "the 90%", כאילו קיימת
+> ברירת מחדל. **אין ברירת מחדל כלל** (הכרעת `docs/CONTRADICTIONS.md` C1/C2,
+> 2026-07-24): `products.platform_percent` הוא שדה חובה פר מוצר, `NOT NULL`
+> בלי `DEFAULT`, ומיגרציה 050 הסירה כל default והוציאה את `commission_percent`
+> מתפקיד מפתח הפיצול. קורא שלקח את "10%" כמספר אמיתי היה בונה חישוב כסף שגוי
+> על מסמך שנוסחתו נכונה.
+>
+> **סעיף 14 (שער ההכרעה) היה החצי השני של הבעיה:** שש שאלות פתוחות שכולן
+> הוכרעו מאז, כולל אחת שהוכרעה **הפוך** ממה שהיא ניסחה. שאלה שנענתה ונשארה
+> כתובה כשאלה היא הדרך המהירה ביותר שמסמך הופך לשקר. הסעיף נכתב מחדש כיומן
+> הכרעות.
+>
+> **מודל הכסף המחייב:** אין Escrow חיצוני ואין J5; `platform_percent` דינמי
+> פר מוצר עם snapshot ל-`order_items`; ארנק פנימי בלי משיכה החוצה; מיגרציות
+> פרודקשן דרך MCP בלבד. ראה `docs/MASTER-INDEX.md`.
 
 ---
 
@@ -20,7 +40,7 @@ The business rules below are authoritative. Where the live code disagrees, the c
 | R5 | QR must be signed, tamper-proof, single-use, offline-verifiable. | `coupon-issue.ts` uses an **unkeyed SHA-256 hash** (forgeable, no secret). | **Replace with keyed HMAC-SHA256 now, Ed25519 for offline verify.** |
 | R6 | Merchant scan: validate, atomic redeem (one scan wins), then coupon expires. | Route exists and is race-safe via `UNIQUE(coupon_code_id)`, but `coupon_redemptions`, `coupon_scan_events`, `supplier_members` **do not exist on remote**. | Ship the DDL (048) so the route works. |
 
-These six are the decision gate before implementation (see section 14).
+These six were the decision gate. All six have since been decided; section 14 carries the answers, including D1 and D2, which were decided differently from how they are worded above.
 
 ---
 
@@ -41,8 +61,8 @@ platformCut      = percentageOf(faceValue, platform_percent_bps)   -- platform r
 supplierShare    = faceValue - platformCut
 
 COUPON  (no escrow):
-  paidOnSite       = platformCut          -- the 10%; charged to platform terminal, platform keeps it all
-  collectInStore   = supplierShare        -- the 90%; merchant collects in person, never touches platform
+  paidOnSite       = platformCut          -- per-product platform_percent; platform terminal, platform keeps it all
+  collectInStore   = supplierShare        -- the remainder; merchant collects in person, never touches platform
   platform->supplier payout = 0
 
 PHYSICAL:
@@ -127,8 +147,8 @@ The live model already separates them. `coupon_deals` / product config is the de
 --   platform_percent, face_value_ils, platform_paid_ils, collect_amount_ils, redeemed_at.
 ALTER TABLE public.coupon_codes
   ADD COLUMN IF NOT EXISTS face_value_agorot   integer,
-  ADD COLUMN IF NOT EXISTS platform_paid_agorot integer,   -- the 10% paid on site
-  ADD COLUMN IF NOT EXISTS collect_amount_agorot integer,  -- the 90% collected in-store
+  ADD COLUMN IF NOT EXISTS platform_paid_agorot integer,   -- the platform cut paid on site
+  ADD COLUMN IF NOT EXISTS collect_amount_agorot integer,  -- the remainder collected in-store
   ADD COLUMN IF NOT EXISTS qr_key_id           text,       -- which signing key signed qr_token (rotation)
   ADD COLUMN IF NOT EXISTS used_at             timestamptz, -- route writes this; column is missing on remote
   ADD COLUMN IF NOT EXISTS used_by_supplier_user_id uuid REFERENCES auth.users(id),
@@ -146,7 +166,7 @@ CREATE TABLE IF NOT EXISTS public.coupon_redemptions (
   supplier_id          uuid NOT NULL REFERENCES public.suppliers(id),
   scanned_by           uuid NOT NULL REFERENCES auth.users(id),
   method               text NOT NULL CHECK (method IN ('camera','manual')),
-  amount_collected_agorot integer NOT NULL,   -- the 90% the merchant collected
+  amount_collected_agorot integer NOT NULL,   -- the remainder the merchant collected
   redeemed_at          timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT coupon_redemptions_once UNIQUE (coupon_code_id)   -- the race arbiter: one scan wins
 );
@@ -253,7 +273,7 @@ CREATE TABLE IF NOT EXISTS public.supplier_members (
 
 ### 4.2 Target: multi-account split for PHYSICAL only
 
-Per the `cardcom-payments` skill, physical products split 90% to the supplier at transaction time (no manual payout). Coupons never split (platform charges only its 10%).
+Physical products split the supplier share to the supplier at transaction time (no manual payout). The share is `faceValue - percentageOf(faceValue, platform_percent)` for THAT product; there is no fixed 90/10. Coupons never split: the platform charges only its own cut on site, and the supplier collects the rest at the counter.
 
 ```
 LowProfile physical payload adds a per-account allocation (Cardcom "Multi-Account" / פיצול חשבונות):
@@ -295,7 +315,7 @@ Live enum `coupon_status = issued | used | expired | refunded`. The requested `i
  (scanned: validate, guards below)
    |  all guards pass + UNIQUE(coupon_code_id) insert wins
    v
-  used  (terminal; merchant collected the 90%)
+  used  (terminal; merchant collected the remainder)
 
  refunded (terminal): order refunded before scan -> status=refunded, no in-store collection.
 ```
@@ -339,7 +359,7 @@ Merchant opens /supplier/scan (mobile web, camera)
     10. respond { outcome, coupon: { code, collect_amount, product_name } }
 ```
 
-The merchant UI shows the 90% to collect (`collect_amount`), success/failure in Hebrew, and a manual-code entry fallback. No escrow release step (R1).
+The merchant UI shows the balance to collect (`collect_amount`), which is the largest number on the success screen, success/failure in Hebrew, and a manual-code entry fallback. No escrow release step (R1).
 
 ---
 
@@ -415,7 +435,7 @@ Guest browses -> adds to cart (carts jsonb, no login)            [R: guest cart 
       |
       v
  Cardcom LowProfile (hosted page / iframe redirect)
-   physical: multi-account split payload | coupon: charge 10% only
+   physical: multi-account split payload | coupon: charge the platform cut only
    Operation=ChargeAndCreateToken (save card token first time)
       |
       v
@@ -477,15 +497,18 @@ Tokenize (no visual change, drift prevention): `#333e48` (72 uses) -> `text-head
 
 ---
 
-## 14. Decision gate before implementation
+## 14. Decision log (was: decision gate)
 
-These change live production money/security behavior, so they need explicit sign-off (per project rule: commit only on approval; do not push):
+כל שש השאלות של 23.07 הוכרעו. הן נשמרות כאן עם התשובה, ולא נמחקות: מסמך
+שמוחק את השאלה משאיר את מי שקורא אותו בלי הדרך להבין למה המודל נראה כך.
 
-- D1 (R1): Remove escrow entirely from the coupon path. Confirm coupons are pure 10%-on-site / 90%-in-store with no platform-held funds.
-- D2 (R2/R3): Unify on `platform_percent` as THE per-product split knob; retire `commission_percent` (default 5). Confirm the default is 10%.
-- D3 (R4): Migrate orders/order_items/payments/coupon_codes/wallet money columns to agorot integers (drop `*_ils` after cutover).
-- D4 (R5): Replace the forgeable unkeyed-SHA256 QR with keyed HMAC (online) + Ed25519 (offline). This is a security fix; recommend doing it regardless.
-- D5 (R6): Ship 048 (coupon_redemptions, coupon_scan_events, supplier_members) so the existing redeem route stops erroring on remote.
-- D6 (section 4.2): Physical settlement mechanism: Cardcom Multi-Account split at transaction time (needs per-supplier Cardcom sub-accounts) VS single-terminal charge + `supplier_payouts` batch.
+| # | מה נשאל ב-23.07 | ההכרעה | מתי, ואיפה היא חיה |
+|---|---|---|---|
+| D1 | להוציא Escrow ממסלול הקופון, ולאשר "10% באתר / 90% בעסק" | **הוצא**, אבל **לא** כפי שנוסח. אין Escrow חיצוני ואין J5; `escrow_holds` נשארת כרשומת ledger פנימית בלבד עד מימוש. **ה-10/90 נדחה במפורש** | C3 + C1/C2, 24.07 |
+| D2 | לאחד על `platform_percent` ולאשר ברירת מחדל 10% | אוחד. **ברירת המחדל בוטלה ולא הוחלפה:** `NOT NULL` בלי `DEFAULT`, ערך חובה פר מוצר | מיגרציה 050 |
+| D3 | להעביר את עמודות הכסף לאגורות integer | **מאושר כיעד, לא הורץ.** יושב כ-`PENDING-money-integer-fix.sql` וממתין לאישור מפורש; 52 קבצי אפליקציה עדיין קוראים את השמות הישנים כשקלים, ולכן שינוי צד-קוד לפני הסכימה מכפיל כל מחיר פי 100 | פתוח |
+| D4 | להחליף QR של SHA-256 בלי מפתח ב-HMAC עם מפתח | **בוצע.** `VOUCHER_QR_SECRET` הוא חוסם deploy פתוח בדיוק בגלל זה | GO-LIVE |
+| D5 | לשלוח 048 כדי שמסלול המימוש יפסיק לשגות | **בוצע** | 048 |
+| D6 | פיצול Multi-Account בזמן העסקה מול payout batch | פיצול בזמן העסקה לפיזי. **הערה מדודה 06.08:** צד ה-payout עדיין לא קיים בפרודקשן, לא `payout_statements` ולא ה-RPC `generate_payout_statement` | חלקי |
 
-Implementation proceeds after these are confirmed.
+**מה שנשאר פתוח מהרשימה הזו הוא D3 בלבד**, ועוד הזנב של D6. השאר סגור.
