@@ -2,7 +2,7 @@
 
 תבניות **RTL** לכל אירוע במחזור חיי קופון (Resend).
 
-Status: **BINDING** · עודכן: 2026-08-06  
+Status: **BINDING** · עודכן: 2026-08-06 · QA: PASS  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -12,6 +12,7 @@ Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 docs/ARCHITECTURE-NOTIFICATIONS.md
 docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 docs/ARCHITECTURE-CASHBACK-WALLET.md
+docs/ARCHITECTURE-GIFT-COUPONS.md
 ```
 
 ---
@@ -83,3 +84,4 @@ docs/ARCHITECTURE-CASHBACK-WALLET.md
 | תאריך | שינוי |
 |---|---|
 | 2026-08-06 | תבניות RTL לכל אירוע קופון כולל הוחזר |
+| 2026-08-06 | QA: קישור GIFT; אסור נוסח Escrow/נאמן |
