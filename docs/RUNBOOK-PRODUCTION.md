@@ -15,6 +15,7 @@ docs/ARCHITECTURE-FRAUD-PREVENTION.md
 docs/ARCHITECTURE-PRICING-RULES.md
 docs/DEPLOY.md
 docs/ROADMAP-V2.md
+docs/CONTRADICTIONS.md
 ```
 
 Package manager: **pnpm** בלבד.  
@@ -126,3 +127,4 @@ Local בלבד מותר `supabase db reset`.
 |---|---|
 | 2026-08-06 | Deploy/rollback + מיגרציות MCP בלבד |
 | 2026-08-06 | QA: smoke No Escrow + `platform_percent`; קישור PRICING/ROADMAP |
+| 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
