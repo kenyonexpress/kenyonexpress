@@ -32,7 +32,14 @@ const PERSONAL_LINKS: { label: string; href: string; built?: false }[] = [
 
 const SERVICE_LINKS: { label: string; href: string; built?: false }[] = [
   { label: 'צור קשר', href: '/contact' },
-  { label: 'תקנון', href: '/terms-and-conditions', built: false },
+  { label: 'שאלות נפוצות', href: '/faq' },
+  // The flag is gone from all four because the pages exist now ([58]). The two
+  // long ones are the site's OWN published Hebrew text, migrated out of the
+  // WordPress export rather than rewritten.
+  { label: 'תקנון', href: '/terms-and-conditions' },
+  { label: 'מדיניות פרטיות', href: '/privacy-policy' },
+  { label: 'ביטולים והחזרות', href: '/refund_returns' },
+  { label: 'הצהרת נגישות', href: '/accessibility' },
 ]
 
 // lucide-react (this project) ships no brand icons — inline simple-icons glyphs.

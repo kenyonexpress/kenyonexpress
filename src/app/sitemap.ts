@@ -1,3 +1,4 @@
+import { LEGAL_PAGE_SLUGS, getLegalPage } from '@/content/legal'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { newestTimestamp } from '@/lib/seo/lastmod'
 import { siteUrl } from '@/lib/site-url'
@@ -109,6 +110,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // there is no signal here for that; omitting it says "I do not know", which
     // is both true and better than a date that is wrong every time.
     { url: `${base}/contact`, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${base}/faq`, changeFrequency: 'monthly', priority: 0.5 },
+    // The legal pages DO carry a date, because they have one: `updatedAt` is a
+    // field of the document, so unlike `/contact` there is a real signal to
+    // publish. They are also the four addresses the old site already has
+    // indexed, which is why they are listed rather than left to be found.
+    ...LEGAL_PAGE_SLUGS.map((slug) => ({
+      url: `${base}/${slug}`,
+      lastModified: new Date(getLegalPage(slug).updatedAt),
+      changeFrequency: 'yearly' as const,
+      priority: 0.3,
+    })),
   ]
 
   return [...staticEntries, ...categoryEntries, ...productEntries]
