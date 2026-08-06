@@ -38,7 +38,7 @@ The business rules below are authoritative. Where the live code disagrees, the c
 | R3 | `platform_percent` is dynamic per product and MUST be snapshotted into `order_items` at purchase. | Snapshotted as `order_items.platform_percent` (046) plus `commission_percent_snapshot` (047). | Keep the snapshot; collapse to one column. |
 | R4 | Money is agorot integers, zero floats. | `orders`/`order_items`/`payments`/`coupon_codes` headers are ILS `numeric`; only settlement columns are agorot. | Migrate money columns to agorot integers (matches the unapplied 042 direction). |
 | R5 | QR must be signed, tamper-proof, single-use, offline-verifiable. | `coupon-issue.ts` uses an **unkeyed SHA-256 hash** (forgeable, no secret). | **Replace with keyed HMAC-SHA256 now, Ed25519 for offline verify.** |
-| R6 | Merchant scan: validate, atomic redeem (one scan wins), then coupon expires. | Route exists and is race-safe via `UNIQUE(coupon_code_id)`, but `coupon_redemptions`, `coupon_scan_events`, `supplier_members` **do not exist on remote**. | Ship the DDL (048) so the route works. |
+| R6 | Merchant scan: validate, atomic redeem (one scan wins), then coupon expires. | ~~`coupon_redemptions`, `coupon_scan_events`, `supplier_members` do not exist on remote~~ **נסגר, אך לא בשמות האלה** (נמדד 07.08). קיימים בפרודקשן: `voucher_redemptions` ו-`supplier_members`. **אין** `coupon_redemptions` ואין `coupon_scan_events`; טבלת המימוש היחידה סופגת גם את תפקיד ה-audit דרך עמודת `outcome`, ולכן גם סריקה שנכשלה נשמרת בה. | **בוצע.** ראה 2.5 המתוקן |
 
 These six were the decision gate. All six have since been decided; section 14 carries the answers, including D1 and D2, which were decided differently from how they are worded above.
 
@@ -156,7 +156,26 @@ ALTER TABLE public.coupon_codes
 -- code is UNIQUE. qr_token is the signed payload (see section 6). No escrow columns.
 ```
 
-### 2.5 coupon_redemptions (single-use arbiter) - MISSING ON REMOTE, create in 048
+### 2.5 coupon_redemptions (single-use arbiter) - **הוחלף בפועל ב-`voucher_redemptions`**
+
+> **QA 07.08, נמדד מול הפרודקשן.** ה-DDL שלמטה מעולם לא רץ בשם הזה. הטבלה
+> החיה היא **`voucher_redemptions`**, המפתח הוא `voucher_id`, הסכום הוא
+> `amount_collected_agorot` (אגורות integer), ויש בה עמודת `outcome`.
+>
+> **מחסום ה-replay שונה ממה שנכתב כאן, ולטובה:**
+>
+> ```sql
+> CREATE UNIQUE INDEX voucher_redemptions_one_success_per_voucher
+>   ON public.voucher_redemptions (voucher_id)
+>   WHERE outcome = 'success' AND voucher_id IS NOT NULL;
+> ```
+>
+> אינדקס חלקי. מימוש מוצלח אחד לשובר, וכמה סריקות כושלות שרוצים, כולן נשמרות.
+> ה-`UNIQUE (coupon_code_id)` הלא-מותנה שלמטה היה **דוחה את הסריקה הכושלת
+> השנייה**, ובכך מוחק בדיוק את השורה שמראה שמישהו מנסה קוד שוב ושוב. זו גם
+> הסיבה שאין `coupon_scan_events` נפרדת: תפקיד ה-audit נבלע באותה טבלה.
+>
+> ה-DDL שלמטה נשמר כטיוטה היסטורית בלבד.
 
 ```sql
 CREATE TABLE IF NOT EXISTS public.coupon_redemptions (
