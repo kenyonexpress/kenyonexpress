@@ -2,7 +2,7 @@
 
 מכירת קופונים בכמות לחברות וועדי עובדים.
 
-Status: **BINDING** · עודכן: 2026-08-06  
+Status: **BINDING** · עודכן: 2026-08-06 · QA: PASS  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -14,6 +14,7 @@ docs/ARCHITECTURE-INVENTORY.md
 docs/ARCHITECTURE-PRICING-RULES.md
 docs/ARCHITECTURE-GIFT-COUPONS.md
 docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
+docs/ARCHITECTURE-SUPPLIER-ONBOARDING.md
 docs/BUSINESS-MODEL.md
 ```
 
@@ -111,3 +112,4 @@ b2b_allocations (
 | תאריך | שינוי |
 |---|---|
 | 2026-08-06 | B2B bulk + ועדי עובדים |
+| 2026-08-06 | QA: קישור ONBOARDING; No Escrow + `platform_percent` |
