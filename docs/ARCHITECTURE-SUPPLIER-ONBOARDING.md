@@ -2,7 +2,7 @@
 
 הצטרפות ספק: מסמכים, פרטי בנק ל-payout, אישור אדמין, סניפים ועובדים.
 
-Status: **BINDING** · עודכן: 2026-08-06  
+Status: **BINDING** · עודכן: 2026-08-06 · QA: PASS  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -13,6 +13,8 @@ docs/ARCHITECTURE-SUPPLIER-PORTAL.md
 docs/ARCHITECTURE-ADMIN-DASHBOARD.md
 docs/ARCHITECTURE-SECURITY-RLS.md
 docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
+docs/ARCHITECTURE-B2B-SALES.md
+docs/ARCHITECTURE-PRICING-RULES.md
 ```
 
 ---
@@ -28,6 +30,7 @@ docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 | O5 | סניפים = ישויות משנה תחת אותו ספק. |
 | O6 | עובדים = `supplier_members` עם `owner` / `manager` / `scanner`. |
 | O7 | UI הצטרפות בעברית RTL. |
+| O8 | **No Escrow:** קופון = אין payout מהפלטפורמה לספק; יתרה משולמת בבית העסק. פיזי = פיצול לפי `platform_percent` (פר מוצר, בלי default). אין נאמן/J5 של חברת אשראי. |
 
 ---
 
