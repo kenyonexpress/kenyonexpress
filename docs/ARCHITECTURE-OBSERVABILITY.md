@@ -32,6 +32,7 @@ docs/CONTRADICTIONS.md
 | OBS5 | התראות: Better Stack / Ntfy לפי SEV. |
 | OBS6 | `/api/health` רדוד ופומבי; בדיקות עומק ב-cron מאומת. |
 | OBS7 | Kill switch checkout לפני rollback ארוך. |
+| OBS8 | מדדים/התראות כסף: ledger + snapshot של `platform_percent` בלבד. אסור מדד Escrow/held/J5 או "שחרור מקדמה לספק" על קופון (CONTRADICTIONS C11א). |
 
 ---
 
@@ -84,3 +85,4 @@ Retention: runtime קצר + drain (יעד ~30 יום).
 | 2026-08-06 | QA: קישור MASTER-INDEX; RTL/עברית תקינים |
 | 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
 | 2026-08-07 | QA: קישור הדדי ל-ANALYTICS |
+| 2026-08-07 | QA audit: OBS8 איסור מדדי Escrow; כסף מ-ledger + `platform_percent` |
