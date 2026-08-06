@@ -1,8 +1,20 @@
 # MASTER ARCHITECTURE: מסמך האב המאוחד (v3, מהדורת 2026-07-17 ערב)
 
-> **גובר עליו `docs/CONTRADICTIONS.md` (2026-07-24).** כל מספר עמלה, ברירת מחדל
-> (10%/5%) או נוסח Escrow במסמך הזה הוא שריד. ההכרעה: `platform_percent`
-> פר-מוצר, חובה, בלי ברירת מחדל בשום מקום; ה-held הוא רישום פנימי ב-ledger בלבד.
+> **QA 2026-08-06: שתי הכרעות בגוף המסמך בוטלו מאז, והן עדיין היו כתובות
+> כהכרעות.** מסמך שכותרתו "מסמך ההכרעות המחייב" חייב לשאת את הביטול, לא באנר
+> שמבקש מהקורא לנחש איזו שורה מתה.
+>
+> **‏1.4** קבעה ש-`products.platform_percent` הוא `nullable` עם ‏fallback דרך
+> ‏`product_platform_percent()`. ‏**בוטל:** ‏C1/‏C2 ומיגרציה 050 עשו אותו
+> ‏`NOT NULL` בלי `DEFAULT` ובלי fallback. ‏nullable עם fallback הוא בדיוק
+> המנגנון שמאפשר למוצר בלי אחוז להימכר בשקט.
+> **‏1.11** קבעה "ברירת מחדל לעמלה: `suppliers.commission_percent` בלבד".
+> ‏**בוטל: אין ברירת מחדל בכלל.** ‏`suppliers.commission_percent` הוא הצעה
+> שמוצגת בטופס יצירת מוצר, ולא נקרא ב-checkout ולא ב-settlement.
+>
+> שאר המסמך נבדק מול המודל: ‏1.3 (‏`commission_percent`/`supplier_payout_ils`
+> כתאומים deprecated), ‏1.40, ודמי הביטול בסעיף 274 (‏5% או 100 ש"ח לפי הנמוך)
+> תואמים ונשארים. אחוזי הקאשבק ב-R40 הם מנגנון אחר ולא עמלה.
 
 מסמך ההכרעות המחייב של KenyonExpress. מהדורה זו מחליפה במלואה את מהדורות
 2026-07-09 ו-v2 (2026-07-17 בוקר). ענף: `phase5/homepage`. סדר הסמכות בסתירה:
@@ -82,9 +94,11 @@
    (`platform_percent`, `platform_fee_ils`, `supplier_due_ils`, `charged_on_site_ils`,
    `balance_due_at_business_ils`); `commission_percent`/`supplier_payout_ils` (007)
    תאומים deprecated שנכתבים במקביל; `generate_payout_statement` קוראת COALESCE.
-4. **1.4 `products.platform_percent`:** הצורה של 027 (nullable + fallback דרך
-   `product_platform_percent()`) קנונית; הבעלים היחיד: 026 המתוקנת; הבלוקים נמחקים
-   מ-027 ומ-030.
+4. **1.4 `products.platform_percent`:** ~~הצורה של 027 (nullable + fallback דרך
+   `product_platform_percent()`) קנונית~~ **בוטל 2026-07-24 (C1/C2), הוחל
+   במיגרציה 050:** העמודה היא `NOT NULL` **בלי `DEFAULT` ובלי fallback**, ומוצר
+   בלי ערך אינו ניתן לתמחור ולא ניתן למכירה. הבעלים היחיד: 026 המתוקנת; הבלוקים
+   נמחקים מ-027 ומ-030.
 5. **1.5 `coupon_deals`:** `platform_price` ו-`discount_percentage` מומרות מ-GENERATED
    לעמודות רגילות; ראו גם 1.40 (מודל coupon_price).
 6. **1.6 שתי פונקציות מימוש:** `redeem_coupon` (027) היא נקודת המימוש היחידה, בתוספת
@@ -98,7 +112,7 @@
 10. **1.10 זהות עסקת Cardcom:** `payments.cardcom_transaction_id` (UNIQUE) היא הרשומה
     הקנונית; `reconcile_cardcom_settlement` משוכתבת להתאים דרכה; `orders.cardcom_payment_id`
     נשאר write-through בלבד.
-11. **1.11 ברירת מחדל לעמלה:** `suppliers.commission_percent` בלבד. `vendors.commission_rate` מת.
+11. **1.11 ברירת מחדל לעמלה:** ~~`suppliers.commission_percent` בלבד~~ **בוטל 2026-07-24 (C1/C2): אין ברירת מחדל לעמלה בשום מקום.** `suppliers.commission_percent` הוא הצעה שמוצגת בעת יצירת מוצר, ואינו נקרא ב-checkout או ב-settlement; הערך היחיד שמשמעותו "חלק הפלטפורמה" הוא `products.platform_percent`. `vendors.commission_rate` מת.
 12. **1.12 `vendors` מול `suppliers`:** `suppliers` קנונית. מיגרציית איחוד ייעודית:
     **`036_vendors_unification.sql`** (סעיף 2.9; המספר עודכן, ראו 0.2). `vendors`
     מוקפאת לקריאה עד מחיקה עתידית. האיחוד מוחל לפני בניית UI הפורטל.
