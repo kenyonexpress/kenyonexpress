@@ -14,9 +14,9 @@ docs/ARCHITECTURE-ADMIN-DASHBOARD.md
 docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 docs/ARCHITECTURE-REFERRAL.md
 docs/ARCHITECTURE-PRICING-RULES.md
+docs/ARCHITECTURE-OBSERVABILITY.md
 docs/CONTRADICTIONS.md
 ```
-
 עקרון: משפך התנהגותי באירועים; כסף עסקי רק מה-ledger. בלי PII.
 עמלה/GMV: לפי snapshot של `platform_percent` ו-No Escrow (לא מ-GA4/PostHog).
 
@@ -108,3 +108,4 @@ SDKs רק אחרי consent.
 | 2026-08-06 | משפך צפייה→מימוש + המלצת GA4/PostHog |
 | 2026-08-06 | QA: קישור REFERRAL/PRICING; כסף מ-ledger + `platform_percent` |
 | 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
+| 2026-08-07 | QA: קישור הדדי ל-OBSERVABILITY |
