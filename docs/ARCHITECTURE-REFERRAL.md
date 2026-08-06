@@ -1,17 +1,16 @@
-# ARCHITECTURE: Referral (חבר מביא חבר)
+# ארכיטקטורה: חבר מביא חבר
 
-תוכנית הפניות עם **קאשבק פנימי** לשני הצדדים (לפי כללים).
+תוכנית הפניות עם **קאשבק פנימי** (בלי משיכה החוצה).
 
-Status: **BINDING** · Updated: 2026-08-03 (pack-20)
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
-אין שינוי קוד. אין נגיעה ב-worktree הראשי (`kenyonexpress`).
+Status: **BINDING** · עודכן: 2026-08-06  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
-Companions:
+מסמכים קשורים:
 
 ```
 docs/ARCHITECTURE-CASHBACK-WALLET.md
 docs/ARCHITECTURE-WALLET-LEDGER.md
-docs/ARCHITECTURE-GROWTH-SEO.md
 docs/ARCHITECTURE-FRAUD-PREVENTION.md
 ```
 
@@ -21,62 +20,57 @@ docs/ARCHITECTURE-FRAUD-PREVENTION.md
 
 | # | הכרעה |
 |---|---|
-| R1 | קישור אישי: `/r/{code}` מ-`profiles.affiliate_code` / referral code קבוע למשתמש. |
-| R2 | שיוך: **last-touch**, חלון **30 יום** מ-click עד qualifying purchase. |
-| R3 | בונוס רק אחרי הזמנה **paid** שעומדת בסף (מינימום on-site agorot מוגדר באדמין). |
-| R4 | זיכוי דרך wallet ledger בלבד (`referral_bonus`); אין משיכה החוצה. |
-| R5 | Idempotency: `referral_referrer:{id}` ו-`referral_referred:{id}`. |
-| R6 | Anti-fraud: rate limit על יצירת/שיתוף קישורים; חסימת self-referral; חשד velocity → manual_review. |
-| R7 | תקרת בונוסים חודשית למשתמש (יעד: לא לעבור ~12% מ-GMV אישי בלי review). |
+| R1 | קישור: `/r/{code}` קבוע למשתמש. |
+| R2 | שיוך last-touch, חלון 30 יום. |
+| R3 | בונוס רק אחרי הזמנה paid שעומדת בסף. |
+| R4 | זיכוי רק בארנק פנימי (`referral_bonus`). |
+| R5 | Idempotency: `referral_referrer:{id}` / `referral_referred:{id}`. |
+| R6 | אין self-referral; rate limit + manual_review על abuse. |
 
 ---
 
 ## 1. זרימה
 
 ```text
-A shares /r/CODE
-  → B lands; cookie/local referral_code + clicked_at
-  → B signs up / logs in (link user_id ≠ A)
-  → B completes paid order within 30d
-  → cron/finalize:
-       referrals.status pending → completed
-       wallet transfer referrer + referred (amounts from config)
+A משתף /r/CODE
+  → B נוחת; נשמר referral_code + clicked_at
+  → B נרשם/מתחבר (≠ A)
+  → B משלם תוך 30 יום
+  → זיכוי ארנק ל-A ול-B (לפי קונפיג)
+  → referrals.status = completed
 ```
-
-טבלה: `referrals` (unique pair, status pending/completed/rejected).
 
 ---
 
 ## 2. סכומים
 
-| צד | ברירת תצורה (יעד) | יחידה |
+| צד | תצורה | יחידה |
 |---|---|---|
-| מפנה (A) | סכום קבוע או % מ-on-site | agorot |
-| מופנה (B) | סכום קבוע לקנייה ראשונה | agorot |
+| מפנה | סכום קבוע או % מ-on-site | agorot |
+| מופנה | סכום לקנייה ראשונה | agorot |
 
-שינוי סכומים: admin only + audit. Snapshot לתנועת ה-wallet בזמן הזיכוי.
+שינוי סכומים: admin + audit. אין הבטחת "כסף בבנק".
 
 ---
 
 ## 3. UX
 
-- אזור אישי: "הזמינו חבר" + העתקת קישור + שיתוף WhatsApp.
-- הודעת זיכוי: notification `wallet_activity` / מייל קצר.
-- אין הבטחת "כסף בחשבון בנק".
+אזור אישי: "הזמינו חבר" + העתקה + WhatsApp.  
+הודעת זיכוי: `wallet_activity` / מייל קצר.
 
 ---
 
 ## 4. Acceptance
 
-- [ ] Self-referral נחסם
-- [ ] כפל זיכוי נחסם ב-idempotency
-- [ ] חלון 30 יום + last-touch
-- [ ] בונוס רק בארנק פנימי
+- [ ] Self-referral נחסם  
+- [ ] כפל זיכוי נחסם  
+- [ ] חלון 30 יום + last-touch  
+- [ ] בונוס רק בארנק פנימי  
 
 ---
 
 ## 5. Revision
 
-| Date | Change |
+| תאריך | שינוי |
 |---|---|
-| 2026-08-03 | pack-20: referral עם קאשבק פנימי |
+| 2026-08-06 | חבר מביא חבר עם קאשבק פנימי |
