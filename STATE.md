@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-06 (docs-only ke-arch: QA pass על חבילת 20)
+Updated: 2026-08-07 (docs-only ke-arch: QA re-pass חבילת 20)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,14 +8,14 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-QA pass על כל 20 מסמכי ROADMAP-V2:
+QA re-pass על כל 20 מסמכי ROADMAP-V2:
 
-- סתירות כסף מיושרות ל-**No Escrow** + `platform_percent` דינמי פר מוצר
-- קישורים הדדיים בין מסמכים קשורים
-- חותמת QA-PASS ב-`docs/MASTER-INDEX.md`
-- תיקון סתירה ב-`ARCHITECTURE-PERSONAL-AREA.md` (P7)
+- סתירה קריטית: `docs/CONTRADICTIONS.md` עודכן מ-C11ב (Escrow) ל-**C11א / No Escrow**
+- קישורים הדדיים ל-`CONTRADICTIONS.md` בכל החבילה
+- en-dash הוחלף בעברית (`עד`) ב-ROADMAP / SUPPORT / SEASONAL / MASTER-INDEX
+- `docs/MASTER-INDEX.md`: טבלת סטטוס QA-PASS מעודכנת ל-2026-08-07
 
-Commit אחרי כל תיקון; tip: `2144654` (MASTER-INDEX).
+Commit אחרי כל תיקון; tip אחרי MASTER-INDEX + EMAIL: ראה `git log`.
 
 ## In Progress
 nothing
@@ -25,13 +25,13 @@ none (docs only)
 
 ## Next Task
 יישום לפי docs/ROADMAP-V2.md / docs/MASTER-INDEX.md מחוץ לסקופ docs-only.
-מסמכי STALE (MASTER-CHECKOUT, COMMERCE, וכו') לריענון נפרד אם נדרש.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
 
 ## החלטות שהתקבלו אוטומטית
 - **2026-08-06 QA:** המודל המחייב ל-docs הוא **No Escrow** לקופון (מקדמה לפלטפורמה; יתרה בבית העסק; אין held לספק; אין נאמן/J5 של חברת אשראי) + `platform_percent` פר מוצר בלי default. זה **דורס** את נוסח Escrow/held של 2026-07-27 בסעיף ההיסטורי למטה (נשמר לתיעוד בלבד).
+- **2026-08-07 QA re-pass:** `docs/CONTRADICTIONS.md` עצמו עודכן בהתאם (C11א). בלי זה המסמך "הגובר" סתר את חבילת ה-20.
 
 ---
 ## Current Phase (רקע מודל) [היסטורי; דורס ב-QA 2026-08-06]
