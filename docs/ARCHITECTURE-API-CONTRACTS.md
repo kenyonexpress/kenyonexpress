@@ -1,8 +1,12 @@
 # ARCHITECTURE-API-CONTRACTS.md
 
-> **גובר עליו `docs/CONTRADICTIONS.md` (2026-07-24).** כל מספר עמלה, ברירת מחדל
-> (10%/5%) או נוסח Escrow במסמך הזה הוא שריד. ההכרעה: `platform_percent`
-> פר-מוצר, חובה, בלי ברירת מחדל בשום מקום; ה-held הוא רישום פנימי ב-ledger בלבד.
+> **QA 2026-08-06.** ‏API-11 כבר אמר את הדבר הנכון - שמספרים קבועים אינם חלק
+> מהחוזה - **ואז ניסח בעצמו שרשרת נפילה לברירת מחדל של 10**. שני הסכמות
+> ב-I5 עשו את אותו הדבר עם `.default(10)`. זו לא הערת שוליים אלא חוזה: סכמת
+> ‏zod עם `default` **ממציאה את הערך** כשהשדה חסר, ולכן מוצר בלי אחוז היה
+> נשמר בשקט עם 10 במקום להיפסל. ‏**אין ברירת מחדל בשום מקום** (‏C1/‏C2,
+> מיגרציה 050: ‏`NOT NULL` בלי `DEFAULT`), ומוצר בלי `platform_percent` לא
+> ניתן לתמחור ולא ניתן למכירה. תוקן בשני המקומות.
 
 Status: BINDING draft v1.0 (2026-07-17)
 Owner: API contracts architect
@@ -29,7 +33,7 @@ This document DECIDES. No options are left open. Each endpoint carries: transpor
 | API-8 | No `/v1` URL versioning today. Contracts evolve additively (section 5). The only payloads that carry explicit schema versions are those that outlive a deploy: the QR token (`v` field, `qr_key_id` rotation), the analytics envelope (`schema_version`), and the offline coupon wallet IndexedDB record. If a true non-web native client ever ships, the then-current `src/contracts/` is frozen and exposed as `/api/v1/*` route handlers generated from the same schemas. |
 | API-9 | Rate limiting uses exactly the MASTER 5.4 table, expressed as 4 named tiers (section 2.5). Money-path limiters fail CLOSED, everything else fails OPEN. Client-side entry point is only `check_my_rate_limit`; `check_rate_limit` (IP) runs in route handlers and auth actions; `check_user_rate_limit` only inside SECURITY DEFINER functions and service-role code. |
 | API-10 | The supplier redeem endpoint is a Route Handler (`POST /api/supplier/redeem`), not a Server Action, because the scanner PWA drains an offline `redeem_intents` queue via plain `fetch` from a service worker context where Server Actions are unavailable. |
-| API-11 | Business rules that were stated as fixed numbers in early material (10 percent commission, 10/90 coupon split, 5 percent cashback every 5th purchase, first-purchase 10 percent discount plus tokenization) are NOT hard-coded in contracts. Contracts expose the generic mechanisms that already exist in the schema: per-line `platform_percent` snapshot with `products.platform_percent -> suppliers.commission_percent -> 10` fallback, `coupon_price` / `total_deal_price` pricing, a server-side cashback qualification rule evaluated inside the webhook transaction, and a server-side promotion rule at `beginCheckout`. The fixed numbers are the launch configuration of those mechanisms, never part of the wire contract. |
+| API-11 | Business rules that were stated as fixed numbers in early material (10 percent commission, 10/90 coupon split, 5 percent cashback every 5th purchase, first-purchase 10 percent discount plus tokenization) are NOT hard-coded in contracts. Contracts expose the generic mechanisms that already exist in the schema: a per-line `platform_percent` snapshot read from `products.platform_percent` with **no fallback chain and no default** (C1/C2; migration 050 made it `NOT NULL` with no `DEFAULT`, and a product without it cannot be priced or sold), `coupon_price` / `total_deal_price` pricing, a server-side cashback qualification rule evaluated inside the webhook transaction, and a server-side promotion rule at `beginCheckout`. The fixed numbers are the launch configuration of those mechanisms, never part of the wire contract. |
 | API-12 | Everything valuable (order paid, coupon codes issued, wallet moves, cashback, tokens saved) is created ONLY inside the webhook transaction after server-to-server verification against Cardcom. The client redirect return page is purely cosmetic and reads state via RLS. |
 
 ---
@@ -976,7 +980,7 @@ export const rejectApplicationInput = z.object({ application_id: uuid, reason: z
 
 #### I5 Suppliers CRUD (PARTIAL)
 
-`admin/vendors.ts` currently writes the LEGACY `vendors` table with `commission_rate` default 90 (a leftover of the inverted split). Target: rewrite against `suppliers` with `commission_percent` = PLATFORM share, default 10, plus `payout_terms_days`. The `vendors` actions freeze until 036 and are deleted with it. New schema:
+`admin/vendors.ts` currently writes the LEGACY `vendors` table with `commission_rate` default 90 (a leftover of the inverted split). Target: rewrite against `suppliers` with `commission_percent` = PLATFORM share and `payout_terms_days`. **`suppliers.commission_percent` is a suggestion shown while creating a product, never read at checkout or settlement** (C1/C2, and section 2.1 of `ARCHITECTURE-COMMERCE.md`); the only value that means 'platform share' is `products.platform_percent`. The `vendors` actions freeze until 036 and are deleted with it. New schema:
 
 ```ts
 export const supplierUpsertInput = z.object({
@@ -988,7 +992,10 @@ export const supplierUpsertInput = z.object({
   contact_phone: z.string().nullable().default(null),
   city: z.string().nullable().default(null), address: z.string().nullable().default(null),
   logo_url: z.string().url().nullable().default(null),
-  commission_percent: z.number().min(0).max(100).default(10),   // platform share
+  // NO .default(): a zod default invents the number when the field is absent,
+  // which is how a product with no platform share gets silently saved as 10.
+  // This is a suggestion for the product form, never the settlement input.
+  commission_percent: z.number().min(0).max(100).nullable().default(null),   // suggested platform share
   payout_terms_days: z.number().int().min(0).max(90).default(15),
   status: z.enum(['active','suspended','closed']).default('active'),
 })
