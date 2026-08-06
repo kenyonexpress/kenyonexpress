@@ -16,6 +16,7 @@ docs/ARCHITECTURE-GIFT-COUPONS.md
 docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 docs/ARCHITECTURE-SUPPLIER-ONBOARDING.md
 docs/BUSINESS-MODEL.md
+docs/CONTRADICTIONS.md
 ```
 
 ---
@@ -113,3 +114,4 @@ b2b_allocations (
 |---|---|
 | 2026-08-06 | B2B bulk + ועדי עובדים |
 | 2026-08-06 | QA: קישור ONBOARDING; No Escrow + `platform_percent` |
+| 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
