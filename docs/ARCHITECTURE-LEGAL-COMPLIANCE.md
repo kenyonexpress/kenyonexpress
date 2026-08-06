@@ -2,7 +2,7 @@
 
 הגנת הצרכן, ביטול 14 יום, דמי ביטול 5% או 100 ₪, תוקף שוברים, נגישות ישראלית.
 
-Status: **BINDING** · עודכן: 2026-08-06  
+Status: **BINDING** · עודכן: 2026-08-06 · QA: PASS  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -13,6 +13,8 @@ docs/ARCHITECTURE-NOTIFICATIONS.md
 docs/ARCHITECTURE-CASHBACK-WALLET.md
 docs/ARCHITECTURE-CUSTOMER-SUPPORT.md
 docs/ARCHITECTURE-FRAUD-PREVENTION.md
+docs/ARCHITECTURE-DATA-EXPORT-GDPR.md
+docs/ARCHITECTURE-PRICING-RULES.md
 ```
 
 אזהרה: חוזה מוצר/הנדסה. לא מחליף ייעוץ משפטי.
@@ -30,6 +32,7 @@ docs/ARCHITECTURE-FRAUD-PREVENTION.md
 | L5 | נגישות ישראלית: ת"י 5568 / WCAG + תקנות התאמות נגישות לשירות; RTL. |
 | L6 | גילוי: שולם באתר + יתרה בבית העסק; לא להציג face כאילו שולם במלואו. |
 | L7 | ביטול מקוון חובה: `/cancel` + קישור ב-footer. |
+| L8 | **No Escrow:** אין נאמן/החזקה של חברת אשראי על מקדמת קופון; המקדמה לפלטפורמה; יתרה בבית העסק. פיזי לפי `platform_percent` פר מוצר (בלי default). דמי ביטול 5%/100 ₪ אינם עמלת פלטפורמה. |
 
 ---
 
@@ -93,3 +96,4 @@ refund = amount_agorot - fee_agorot
 | תאריך | שינוי |
 |---|---|
 | 2026-08-06 | 14 יום, 5%/100 ₪, תוקף שוברים, נגישות ישראלית |
+| 2026-08-06 | QA: L8 No Escrow + `platform_percent`; קישור GDPR/PRICING |
