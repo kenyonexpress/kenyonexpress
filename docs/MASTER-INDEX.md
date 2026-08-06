@@ -2,7 +2,7 @@
 
 אינדקס כל מסמכי הארכיטקטורה ב-`docs/` עם שורת תקציר לכל אחד.
 
-Status: **BINDING (index)** · עודכן: 2026-08-07 · QA: PASS
+Status: **BINDING (index)** · עודכן: 2026-08-07 · QA: PASS (final)
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -29,29 +29,28 @@ docs/BUSINESS-MODEL.md
 
 ## סטטוס QA לחבילת 20 (ROADMAP-V2)
 
-Re-pass: **2026-08-07**. Verify נוסף באותו יום אחרי סריקה מסמך-מסמך.
-כל שורה = QA-PASS אחרי יישור ל-No Escrow + `platform_percent` + קישורים + RTL.
+QA final: **2026-08-07**. כל שורה = **QA-PASS** אחרי יישור ל-No Escrow + `platform_percent` + קישורים הדדיים + RTL (בלי em/en-dash).
 
 | # | מסמך | סטטוס | כסף | קישורים | RTL |
 |---:|---|---|---|---|---|
 | 1 | `ARCHITECTURE-SUPPLIER-ONBOARDING.md` | **QA-PASS** | No Escrow + `platform_percent` (O8) | PASS (+ CONTRADICTIONS) | PASS |
-| 2 | `ARCHITECTURE-ANALYTICS.md` | **QA-PASS** | ledger בלבד; לא GA4 | PASS (+ CONTRADICTIONS) | PASS |
+| 2 | `ARCHITECTURE-ANALYTICS.md` | **QA-PASS** | ledger בלבד; לא GA4 | PASS (+ OBSERVABILITY + CONTRADICTIONS) | PASS |
 | 3 | `ARCHITECTURE-LEGAL-COMPLIANCE.md` | **QA-PASS** | L8 No Escrow; 5%/100 = דמי ביטול בלבד | PASS (+ CONTRADICTIONS) | PASS |
 | 4 | `ARCHITECTURE-SEARCH-UX.md` | **QA-PASS** | בלי boost עמלה קבועה | PASS (+ CONTRADICTIONS) | PASS |
 | 5 | `RUNBOOK-PRODUCTION.md` | **QA-PASS** | smoke: No Escrow + percent | PASS (+ CONTRADICTIONS) | PASS |
-| 6 | `ARCHITECTURE-EMAIL-TEMPLATES.md` | **QA-PASS** | אסור נוסח Escrow/נאמן | PASS (+ CONTRADICTIONS) | PASS |
-| 7 | `ARCHITECTURE-INVENTORY.md` | **QA-PASS** | I6 No Escrow | PASS (+ CONTRADICTIONS) | PASS |
-| 8 | `ARCHITECTURE-REFERRAL.md` | **QA-PASS** | ארנק פנימי בלבד | PASS (+ CONTRADICTIONS) | PASS |
-| 9 | `ARCHITECTURE-OBSERVABILITY.md` | **QA-PASS** | N/A (תפעול) | PASS (+ CONTRADICTIONS) | PASS |
+| 6 | `ARCHITECTURE-EMAIL-TEMPLATES.md` | **QA-PASS** | אסור נוסח Escrow/נאמן | PASS (+ SEASONAL + CONTRADICTIONS) | PASS |
+| 7 | `ARCHITECTURE-INVENTORY.md` | **QA-PASS** | I6/I7 No Escrow + מכסת מתנה | PASS (+ GIFT + CONTRADICTIONS) | PASS |
+| 8 | `ARCHITECTURE-REFERRAL.md` | **QA-PASS** | R7 ארנק פנימי; לא Escrow | PASS (+ PRICING + CONTRADICTIONS) | PASS |
+| 9 | `ARCHITECTURE-OBSERVABILITY.md` | **QA-PASS** | N/A (תפעול) | PASS (+ ANALYTICS + CONTRADICTIONS) | PASS |
 | 10 | `ROADMAP-V2.md` | **QA-PASS** | No Escrow מפורש | PASS (+ CONTRADICTIONS) | PASS |
 | 11 | `ARCHITECTURE-CATEGORIES-TAXONOMY.md` | **QA-PASS** | N/A (קטלוג) | PASS (+ CONTRADICTIONS) | PASS |
-| 12 | `ARCHITECTURE-PRICING-RULES.md` | **QA-PASS** | מקור האמת ל-percent | PASS (+ SUPPORT + CONTRADICTIONS) | PASS |
+| 12 | `ARCHITECTURE-PRICING-RULES.md` | **QA-PASS** | מקור האמת ל-percent | PASS (+ SUPPORT + REFERRAL + CONTRADICTIONS) | PASS |
 | 13 | `ARCHITECTURE-CUSTOMER-SUPPORT.md` | **QA-PASS** | S7 No Escrow + יישור LEGAL | PASS (+ PRICING + CONTRADICTIONS) | PASS |
 | 14 | `ARCHITECTURE-BACKUP-DR.md` | **QA-PASS** | N/A (DR) | PASS (+ CONTRADICTIONS) | PASS |
 | 15 | `ARCHITECTURE-APP-STORE-LAUNCH.md` | **QA-PASS** | דחיית מסכי Escrow/held | PASS (+ CONTRADICTIONS) | PASS |
-| 16 | `ARCHITECTURE-GIFT-COUPONS.md` | **QA-PASS** | G1 No Escrow | PASS (+ CONTRADICTIONS) | PASS |
+| 16 | `ARCHITECTURE-GIFT-COUPONS.md` | **QA-PASS** | G1/G8 No Escrow | PASS (+ INVENTORY + CONTRADICTIONS) | PASS |
 | 17 | `ARCHITECTURE-B2B-SALES.md` | **QA-PASS** | B4/B7 percent + No Escrow | PASS (+ CONTRADICTIONS) | PASS |
-| 18 | `ARCHITECTURE-SEASONAL-CAMPAIGNS.md` | **QA-PASS** | S7 percent + No Escrow | PASS (+ CONTRADICTIONS) | PASS |
+| 18 | `ARCHITECTURE-SEASONAL-CAMPAIGNS.md` | **QA-PASS** | S7 percent + No Escrow | PASS (+ EMAIL + CONTRADICTIONS) | PASS |
 | 19 | `ARCHITECTURE-DATA-EXPORT-GDPR.md` | **QA-PASS** | N/A (פרטיות) | PASS (+ CONTRADICTIONS) | PASS |
 | 20 | `MASTER-INDEX.md` | **QA-PASS** | מודל מחייב למעלה | PASS | PASS |
 
@@ -59,7 +58,9 @@ Re-pass: **2026-08-07**. Verify נוסף באותו יום אחרי סריקה �
 
 תיקון סתירה קריטי (QA 07.08): `CONTRADICTIONS.md` עודכן מ-C11ב (Escrow) ל-**C11א / No Escrow**, כדי שלא ידרוס את חבילת ה-20.
 
-Verify (QA 07.08): סריקה חוזרת על כל ה-20; תיקון יחיד: S7 ב-CUSTOMER-SUPPORT + קישור הדדי ל-PRICING.
+Verify (QA 07.08): סריקה חוזרת על כל ה-20; S7 ב-CUSTOMER-SUPPORT + קישור הדדי ל-PRICING.
+
+QA final (07.08): קישורים הדדיים GIFT↔INVENTORY, EMAIL↔SEASONAL, ANALYTICS↔OBSERVABILITY, REFERRAL↔PRICING; בוטל working-tree שגוי שמחק O8/L8/S7.
 
 ~~מסמכים ישנים עם באנר CONTRADICTIONS / עמלה קבועה 10%/5% נשארים **STALE** עד ריענון נפרד~~
 **הריענון הזה בוצע 2026-08-06. אין יותר מסמך STALE.**
@@ -191,3 +192,4 @@ docs/ROADMAP-V2.md
 | 2026-08-07 | תפעול ותוכן: playbook, טיוטת הסכם, שגרה יומית. **G3 בוטל כממצא שגוי** |
 | 2026-08-07 | QA re-pass חבילת 20: CONTRADICTIONS→No Escrow; קישורים הדדיים; en-dash; סטטוס מעודכן |
 | 2026-08-07 | QA verify: S7 SUPPORT; קישור הדדי PRICING↔SUPPORT; סטטוס #12/#13 מעודכן |
+| 2026-08-07 | QA final חבילת 20: קישורים הדדיים + סטטוס מעודכן לכל #1 עד 20 |
