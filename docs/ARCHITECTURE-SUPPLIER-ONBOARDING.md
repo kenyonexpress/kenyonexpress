@@ -15,6 +15,7 @@ docs/ARCHITECTURE-SECURITY-RLS.md
 docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 docs/ARCHITECTURE-B2B-SALES.md
 docs/ARCHITECTURE-PRICING-RULES.md
+docs/CONTRADICTIONS.md
 ```
 
 ---
@@ -110,3 +111,4 @@ supplier_branches (
 |---|---|
 | 2026-08-06 | חידוד הצטרפות: מסמכים, בנק, סניפים, עובדים |
 | 2026-08-06 | QA: O8 No Escrow + `platform_percent`; קישורים B2B/PRICING |
+| 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
