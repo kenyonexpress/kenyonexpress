@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-07 (docs-only ke-arch: QA final חבילת 20)
+Updated: 2026-08-07 (docs-only ke-arch: QA audit חבילת 20)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,13 +8,12 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-QA final על כל 20 מסמכי ROADMAP-V2:
+QA audit על כל 20 מסמכי ROADMAP-V2 (אחרי QA final):
 
-- סריקה מסמך-מסמך: No Escrow + `platform_percent`; RTL בלי em/en-dash
-- קישורים הדדיים: GIFT↔INVENTORY, EMAIL↔SEASONAL, ANALYTICS↔OBSERVABILITY, REFERRAL↔PRICING
-- I7 / G8 / R7 לחיזוק מודל הכסף
+- סריקה מסמך-מסמך מול No Escrow (אין נאמן/J5) + `platform_percent` פר מוצר
+- תיקונים: P3, AS7, OBS8, B6, T7, D8, EMAIL↔PRICING
+- RTL: הוסר מינוס יוניקוד מ-PRICING; בלי em/en-dash בחבילה
 - `MASTER-INDEX.md`: סטטוס **QA-PASS** לכל #1 עד 20
-- בוטל working-tree שגוי שמחק O8/L8/S7 (לא נכנס ל-commit)
 
 Commit אחרי כל תיקון; tip: ראה `git log`.
 
