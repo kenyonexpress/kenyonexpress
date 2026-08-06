@@ -38,6 +38,12 @@ Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 | 13 | `ARCHITECTURE-CUSTOMER-SUPPORT.md` | פניות, מימוש, SLA |
 | 14 | `ARCHITECTURE-BACKUP-DR.md` | גיבוי/שחזור Supabase |
 | 15 | `ARCHITECTURE-APP-STORE-LAUNCH.md` | הכנה לחנויות אפ |
+| 16 | `ARCHITECTURE-GIFT-COUPONS.md` | קופון מתנה, בעלות, ברכות |
+| 17 | `ARCHITECTURE-B2B-SALES.md` | מכירה בכמות, ועדי עובדים |
+| 18 | `ARCHITECTURE-SEASONAL-CAMPAIGNS.md` | חגים ישראליים, בזק |
+| 19 | `ARCHITECTURE-DATA-EXPORT-GDPR.md` | ייצוא ומחיקת נתונים |
+| 20 | `MASTER-INDEX.md` | אינדקס כל מסמכי הארכיטקטורה |
+
 
 
 ---
@@ -114,3 +120,4 @@ Escrow לקופון · משיכת ארנק החוצה · `supabase db push` לי
 |---|---|
 | 2026-08-06 | ROADMAP-V2 עם 10 מסמכי החבילה + שלבים A/B/C |
 | 2026-08-06 | הוספת docs 11–15 (taxonomy/pricing/support/backup/app-store) |
+| 2026-08-06 | הוספת docs 16–20 (gift/B2B/seasonal/GDPR/index) |

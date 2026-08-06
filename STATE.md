@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-06 (docs-only ke-arch: docs 11–15 appended)
+Updated: 2026-08-06 (docs-only ke-arch: docs 16–20)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,13 +8,13 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-חמישה מסמכים נוספים (11–15), commit נפרד לכל אחד:
+חמישה מסמכים (16–20), commit נפרד לכל אחד:
 
-11. docs/ARCHITECTURE-CATEGORIES-TAXONOMY.md (`e34f6a3`)
-12. docs/ARCHITECTURE-PRICING-RULES.md (`9364c80`)
-13. docs/ARCHITECTURE-CUSTOMER-SUPPORT.md (`61ba9fd`)
-14. docs/ARCHITECTURE-BACKUP-DR.md (`345522d`)
-15. docs/ARCHITECTURE-APP-STORE-LAUNCH.md (`e71e3ac`)
+16. docs/ARCHITECTURE-GIFT-COUPONS.md (`df22194`)
+17. docs/ARCHITECTURE-B2B-SALES.md (`bfb9319`)
+18. docs/ARCHITECTURE-SEASONAL-CAMPAIGNS.md (`d808c6c`)
+19. docs/ARCHITECTURE-DATA-EXPORT-GDPR.md (`84df64a`)
+20. docs/MASTER-INDEX.md (`1e5b291`)
 
 ## In Progress
 nothing
@@ -23,7 +23,7 @@ nothing
 none (docs only)
 
 ## Next Task
-יישום לפי docs/ROADMAP-V2.md שלב A מחוץ לסקופ docs-only.
+יישום לפי docs/ROADMAP-V2.md / docs/MASTER-INDEX.md מחוץ לסקופ docs-only.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
@@ -1191,3 +1191,9 @@ ke-arch
 - ARCHITECTURE-CUSTOMER-SUPPORT.md 61ba9fd
 - ARCHITECTURE-BACKUP-DR.md 345522d
 - ARCHITECTURE-APP-STORE-LAUNCH.md e71e3ac
+### 2026-08-06 : ke-arch docs 16–20
+- ARCHITECTURE-GIFT-COUPONS.md df22194
+- ARCHITECTURE-B2B-SALES.md bfb9319
+- ARCHITECTURE-SEASONAL-CAMPAIGNS.md d808c6c
+- ARCHITECTURE-DATA-EXPORT-GDPR.md 84df64a
+- MASTER-INDEX.md 1e5b291
