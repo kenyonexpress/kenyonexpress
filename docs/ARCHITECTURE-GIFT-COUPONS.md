@@ -16,6 +16,7 @@ docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 docs/ARCHITECTURE-CASHBACK-WALLET.md
 docs/ARCHITECTURE-B2B-SALES.md
 docs/ARCHITECTURE-PRICING-RULES.md
+docs/ARCHITECTURE-INVENTORY.md
 docs/CONTRADICTIONS.md
 ```
 
@@ -25,13 +26,14 @@ docs/CONTRADICTIONS.md
 
 | # | הכרעה |
 |---|---|
-| G1 | קופון מתנה = voucher רגיל עם `gift` metadata; אותו מודל כסף (No Escrow). |
+| G1 | קופון מתנה = voucher רגיל עם `gift` metadata; אותו מודל כסף (**No Escrow**: מקדמה לפלטפורמה; יתרה בעסק; אין נאמן/J5). |
 | G2 | הרוכש משלם באתר; המקבל מקבל בעלות על ה-voucher אחרי העברה. |
 | G3 | העברת בעלות מותרת רק לסטטוס `issued` (לא redeemed/expired/refunded/frozen). |
 | G4 | העברה אחת בלבד כברירת מחדל (או N מוגבל באדמין); כל העברה ב-audit. |
 | G5 | ברכה = טקסט קצר בעברית + אופציונלי שם השולח; בלי PII מיותר בלוגים. |
 | G6 | אחרי העברה: המקבל רואה את הקופון באזור האישי; השולח רואה "נשלח כמתנה". |
 | G7 | ביטול/החזר: לפי LEGAL מול הרוכש המקורי; אחרי redeem אצל מקבל אין החזר אוטומטי. |
+| G8 | הנפקה ב-checkout צורכת מכסת INVENTORY; העברת בעלות לא משנה `quota_issued` ולא יוצרת payout לספק. |
 
 ---
 
@@ -115,3 +117,4 @@ Ownership על `vouchers.user_id` משתנה רק ב-RPC `transfer_gift_voucher`
 | 2026-08-06 | קופון מתנה: בעלות, ברכות, claim |
 | 2026-08-06 | QA: קישור B2B/PRICING; No Escrow מחוזק |
 | 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
+| 2026-08-07 | QA: קישור INVENTORY + G8 (מכסה; חיזוק No Escrow ב-G1) |
