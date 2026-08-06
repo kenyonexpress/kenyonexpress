@@ -48,6 +48,23 @@ export default async function OrderDetailPage({ params }: Props) {
             <strong>{formatIls(order.totalAgorot)}</strong>
           </div>
         </div>
+        {order.invoice && (
+          <div className="account-row">
+            <div className="account-row__main">
+              <p className="account-row__meta">
+                חשבונית מס / קבלה
+                {order.invoice.documentNumber ? ` ${order.invoice.documentNumber}` : ''}
+              </p>
+            </div>
+            <div className="account-row__actions">
+              {/* The href is this route, never the provider's URL: the document
+                  is served only after the session is re-checked. */}
+              <Link className="account-btn" href={`/account/orders/${order.id}/invoice`}>
+                הורדת חשבונית
+              </Link>
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="account-card">

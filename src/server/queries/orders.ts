@@ -74,6 +74,21 @@ export interface OrderDetail {
   walletAppliedAgorot: Agorot
   addressId: string | null
   lines: OrderLine[]
+  /**
+   * The issued tax document, or null while it is still queued.
+   *
+   * Read through the service client, like everything else on this page, and not
+   * because it is convenient: `invoices` has RLS on with zero policies (107),
+   * so a request-bound client gets `200 []` rather than an error - the exact
+   * silent-empty failure [54] measured on `settlement_events`. The ownership
+   * check is the `user_id` filter on the order above, which has already run.
+   */
+  invoice: OrderInvoice | null
+}
+
+export interface OrderInvoice {
+  documentNumber: string | null
+  issuedAt: string | null
 }
 
 function asSettlementState(value: string | null | undefined): SettlementState {
@@ -308,5 +323,33 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
     walletAppliedAgorot: agorot(money.walletAppliedAgorot),
     addressId: order.address_id,
     lines,
+    invoice: await getOrderInvoiceSummary(admin, order.id),
   }
+}
+
+/**
+ * The order's issued invoice, or null.
+ *
+ * The URL is deliberately NOT returned to the page. It points at the provider
+ * (or at the R2 mirror), and handing it to the browser makes a tax document
+ * readable by anyone who ever sees the link. The page links to
+ * `/account/orders/<id>/invoice`, which re-checks ownership per request and
+ * then redirects.
+ */
+async function getOrderInvoiceSummary(
+  admin: ReturnType<typeof createAdminClient>,
+  orderId: string,
+): Promise<OrderInvoice | null> {
+  const { data, error } = await admin
+    .from('invoices')
+    .select('document_number, issued_at')
+    .eq('order_id', orderId)
+    .eq('document_type', 'tax_invoice_receipt')
+    .eq('status', 'issued')
+    .maybeSingle()
+  // A database without 107 has no invoices and no invoice link, which is what
+  // this page did before the feature existed.
+  if (error || !data) return null
+  const row = data as unknown as { document_number: string | null; issued_at: string | null }
+  return { documentNumber: row.document_number, issuedAt: row.issued_at }
 }

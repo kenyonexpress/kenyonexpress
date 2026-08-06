@@ -3,6 +3,8 @@ import { loadCardcomEnv } from '@/lib/payments/env'
 import type {
   ChargeWithTokenInput,
   ChargeWithTokenResult,
+  CreateDocumentInput,
+  CreateDocumentResult,
   CreateLowProfileInput,
   CreateLowProfileResult,
   PaymentProvider,
@@ -35,6 +37,7 @@ export class MockCardcomProvider implements PaymentProvider {
     this.deals.clear()
     this.failNextCharge = false
     this.sequence = 0
+    this.documents.length = 0
   }
 
   async createLowProfile(input: CreateLowProfileInput): Promise<CreateLowProfileResult> {
@@ -152,6 +155,38 @@ export class MockCardcomProvider implements PaymentProvider {
       failureCode: null,
       failureMessage: null,
       raw: { mock: true, refundedAgorot: refunded, cancelOnly: input.cancelOnly === true },
+    }
+  }
+
+  /**
+   * Documents issued by this instance, newest last. Kept so a test can assert
+   * WHAT was asked for, not merely that something was: a receipt whose lines do
+   * not add up to the charge is the failure this feature exists to prevent.
+   */
+  readonly documents: CreateDocumentInput[] = []
+
+  async createDocument(input: CreateDocumentInput): Promise<CreateDocumentResult> {
+    this.sequence += 1
+    if (this.failNextCharge) {
+      this.failNextCharge = false
+      return {
+        success: false,
+        documentNumber: null,
+        documentUrl: null,
+        failureCode: 'DOCUMENT_REJECTED',
+        failureMessage: 'Mock document decline',
+        raw: { mock: true, declined: true },
+      }
+    }
+    this.documents.push(input)
+    const documentNumber = `mock-doc-${this.sequence}`
+    return {
+      success: true,
+      documentNumber,
+      documentUrl: `https://mock.cardcom.invalid/documents/${documentNumber}.pdf`,
+      failureCode: null,
+      failureMessage: null,
+      raw: { mock: true, documentNumber, totalAgorot: input.totalAgorot },
     }
   }
 

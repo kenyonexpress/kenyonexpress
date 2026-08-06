@@ -20,6 +20,7 @@ import {
   planOrderRefund,
 } from '@/server/domain/orders/refund'
 import type { SettlementState } from '@/server/domain/orders/state-machine'
+import { enqueueRefundCreditNote, issueQueuedInvoice } from '@/server/payments/invoices'
 import {
   type SettlementEventRow,
   recordSettlementEvents,
@@ -246,19 +247,26 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
     // is a snapshot that predates 106 (and, measured on 2026-08-06, differs from
     // production by ~1200 lines in total). The shape is asserted in the tests
     // instead, against the payload this actually sends.
-    await admin.from('payments').insert({
-      order_id: order.id,
-      kind: 'refund',
-      status: 'refunded',
-      ...paymentMoneyWrite(money, {
-        amountAgorot: plan.refundAmountAgorot,
-        walletAppliedAgorot: 0,
-      }),
-      currency: 'ILS',
-      cardcom_transaction_id: refund.refundTransactionId,
-      refund_of_payment_id: paymentId,
-      idempotency_key: `refund:${paymentId}`,
-    } as never)
+    // The id comes back because the credit note below is keyed on the REFUND
+    // payment, not the charge: it is the row that records the money that moved
+    // back, and it is what the document must be attributable to.
+    const { data: refundPaymentRow } = await admin
+      .from('payments')
+      .insert({
+        order_id: order.id,
+        kind: 'refund',
+        status: 'refunded',
+        ...paymentMoneyWrite(money, {
+          amountAgorot: plan.refundAmountAgorot,
+          walletAppliedAgorot: 0,
+        }),
+        currency: 'ILS',
+        cardcom_transaction_id: refund.refundTransactionId,
+        refund_of_payment_id: paymentId,
+        idempotency_key: `refund:${paymentId}`,
+      } as never)
+      .select('id')
+      .maybeSingle()
 
     if (plan.voucherRefunds.length > 0) {
       // Conditional update mirrors the voucher state machine: REFUND is legal
@@ -291,6 +299,24 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
       .eq('status', 'paid')
 
     await recordSettlementEvents(admin, buildRefundEvents(order.id, paymentId, plan, now))
+
+    // The credit note. A tax invoice is never edited or deleted, so reversing
+    // one is a second document, not an undo of the first. Queued rather than
+    // called for the same reason the sale's invoice is: the card has already
+    // been credited by the time this line runs, and a provider that is down is
+    // not a reason to fail a refund that succeeded.
+    const refundPaymentId = (refundPaymentRow as { id: string } | null)?.id ?? null
+    if (refundPaymentId) {
+      const queued = await enqueueRefundCreditNote(admin, {
+        orderId: order.id,
+        refundPaymentId,
+        refundedAgorot: plan.refundAmountAgorot,
+        reason: input.reason,
+      })
+      if (queued.enqueued && !queued.replay) await issueQueuedInvoice(admin, queued.invoiceId)
+    } else {
+      log.warn('refund.credit_note_not_queued', { order_id: order.id, payment_id: paymentId })
+    }
 
     await admin.from('audit_log').insert({
       actor_id: null,

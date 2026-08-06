@@ -1,6 +1,7 @@
 import { sendEmail } from '@/lib/email/resend'
 import { type VoucherEmailLine, buildVoucherEmail } from '@/lib/email/voucher-email'
 import { log } from '@/lib/observability/log'
+import { getOrderInvoice } from '@/server/payments/invoices'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 /**
@@ -100,11 +101,18 @@ export async function sendVoucherEmail(
       }
     })
 
+    // finalize issues the invoice before it sends this, so in the ordinary case
+    // the number is already here. When it is not - provider down, credentials
+    // not set - the block is simply absent, rather than a link to a document
+    // that does not exist yet.
+    const invoice = await getOrderInvoice(admin, context.orderId)
+
     const email = buildVoucherEmail({
       customerName: (profile as { full_name?: string | null } | null)?.full_name ?? null,
       orderId: context.orderId,
       vouchers: lines,
       siteUrl: context.siteUrl,
+      invoiceNumber: invoice?.documentNumber ?? null,
     })
 
     const result = await sendEmail({

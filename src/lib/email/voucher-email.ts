@@ -46,6 +46,15 @@ export interface VoucherEmailInput {
   vouchers: readonly VoucherEmailLine[]
   /** Origin with no trailing slash, e.g. https://kenyonexpress.co.il */
   siteUrl: string
+  /**
+   * The tax document's number, when one was issued before this email went out.
+   *
+   * Only the number travels. The link in the mail points at the account route,
+   * which re-checks the session and then redirects, so a forwarded email does
+   * not hand a stranger a tax document. An invoice still in the queue means no
+   * block at all rather than a link that 404s.
+   */
+  invoiceNumber?: string | null
 }
 
 export interface BuiltEmail {
@@ -130,11 +139,16 @@ export function buildVoucherEmail(input: VoucherEmailInput): BuiltEmail {
       </div>`
   })
 
+  const invoiceUrl = `${input.siteUrl.replace(/\/+$/, '')}/account/orders/${encodeURIComponent(input.orderId)}/invoice`
+
   textLines.push(
     'את ה-QR מציגים בעמוד הקופון עצמו. אם המסך לא נסרק, אפשר להקריא את הקוד לקופאי.',
     '',
-    `הזמנה ${input.orderId.slice(0, 8).toUpperCase()}`,
   )
+  if (input.invoiceNumber) {
+    textLines.push(`חשבונית מס / קבלה ${input.invoiceNumber}: ${invoiceUrl}`, '')
+  }
+  textLines.push(`הזמנה ${input.orderId.slice(0, 8).toUpperCase()}`)
 
   const html = `
     <div dir="rtl" style="background:#f5f5f5;padding:24px 12px;font-family:Arial,Helvetica,sans-serif">
@@ -148,6 +162,13 @@ export function buildVoucherEmail(input: VoucherEmailInput): BuiltEmail {
           את ה-QR מציגים בעמוד הקופון עצמו, כדי שהוא ייסרק גם כשהמייל חוסם תמונות.
           אם המסך לא נסרק, אפשר להקריא את הקוד לקופאי.
         </div>
+        ${
+          input.invoiceNumber
+            ? `<div style="font-size:13px;color:${MUTED};margin-top:14px">חשבונית מס / קבלה ${escapeHtml(
+                input.invoiceNumber,
+              )} — <a href="${escapeHtml(invoiceUrl)}" style="color:${INK}">צפייה והורדה</a></div>`
+            : ''
+        }
         <div style="font-size:12px;color:${MUTED};margin-top:14px">הזמנה ${escapeHtml(
           input.orderId.slice(0, 8).toUpperCase(),
         )}</div>

@@ -8,6 +8,7 @@ import { capturePaymentError } from '@/lib/observability/sentry'
 import { resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { type VoucherIssueClient, issueVoucher } from '@/server/domain/vouchers/issue'
+import { enqueueOrderInvoice, issueQueuedInvoice } from '@/server/payments/invoices'
 import {
   type SettledLine,
   buildChargeSettledEvents,
@@ -473,6 +474,19 @@ export async function finalizeOrder(input: {
         cardcomAccountId,
       }),
     )
+
+    // The tax document, queued and attempted at once. Before the email on
+    // purpose: the email carries a link to the invoice, and an invoice issued
+    // after it has gone out is an invoice the customer is told about and cannot
+    // open. Neither call can throw - the queue row is the durability, the cron
+    // is the retry - so this cannot fail a finalize whose card has been charged.
+    const queued = await enqueueOrderInvoice(admin, {
+      orderId: order.id,
+      paymentId: input.paymentId,
+    })
+    if (queued.enqueued && !queued.replay) {
+      await issueQueuedInvoice(admin, queued.invoiceId)
+    }
 
     // The customer's coupons, by email. Last, and incapable of failing the
     // finalize for the same reason the journal above cannot: the card is

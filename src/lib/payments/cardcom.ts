@@ -3,6 +3,8 @@ import { type CardcomAccount, loadCardcomAccounts } from '@/lib/payments/account
 import type {
   ChargeWithTokenInput,
   ChargeWithTokenResult,
+  CreateDocumentInput,
+  CreateDocumentResult,
   CreateLowProfileInput,
   CreateLowProfileResult,
   PaymentProvider,
@@ -182,6 +184,109 @@ export class CardcomProvider implements PaymentProvider {
       success: true,
       refundTransactionId: refundTxId,
       refundedAgorot: agorot(amountAgorot),
+      failureCode: null,
+      failureMessage: null,
+      raw,
+    }
+  }
+
+  /**
+   * Cardcom's document module: a tax invoice/receipt, or the credit note that
+   * reverses one.
+   *
+   * WHAT IS VERIFIED HERE AND WHAT IS NOT. Everything ABOUT the document - the
+   * lines, the VAT split, the total it must match - is computed and tested in
+   * `lib/invoices/document.ts`. This method is only the wire format, and the
+   * wire format is the one part of [55] that could not be measured: there is no
+   * `CARDCOM_*` in this environment (it is a listed GO/NO-GO item, Ofir's
+   * keys), `InvoiceHead`/`InvoiceLines` appear nowhere in `docs/`, `refs/` or
+   * `src/`, and section 1.4 of `docs/CARDCOM-ARCHITECTURE.md` documents the v11
+   * JSON endpoints (`/Documents/CreateDocument`) while this client is legacy
+   * `/Interface/*.aspx` by a decision from 23.07.
+   *
+   * So the field names below are the legacy `BillGoldPost` shape and they are
+   * NOT confirmed against a live terminal. They are kept in this one method,
+   * built from one `field()` helper, so correcting them is a single edit rather
+   * than a search. The caller's contract does not depend on them.
+   *
+   * TODO(cardcom): confirm endpoint + field names against the live terminal
+   * before go-live, exactly as the refund path above still says.
+   *
+   * WHY A WRONG GUESS HERE IS NOT A SILENT WRONG DOCUMENT. A response is only
+   * treated as success when `ResponseCode` is 0 AND a document number comes
+   * back. Anything else returns `success: false` with the raw body, the
+   * `invoices` row stays unissued with the reason on it, and `orders
+   * .invoice_number` is not written. The failure mode is a visible queue, not
+   * an invoice that says the wrong thing.
+   */
+  async createDocument(input: CreateDocumentInput): Promise<CreateDocumentResult> {
+    const fields: Record<string, string> = {
+      TerminalNumber: this.account.terminalNumber,
+      UserName: this.account.apiName,
+      Codepage: '65001',
+      'InvoiceHead.CustName': input.customerName ?? 'לקוח',
+      'InvoiceHead.Language': 'he',
+      'InvoiceHead.CoinID': '1',
+      // The document is a receipt for money already taken, so it is issued
+      // against the deal rather than as a standalone demand for payment.
+      'InvoiceHead.IsAutoCreateUpdateAccount': 'true',
+      'InvoiceHead.Comments': input.reference,
+    }
+
+    if (input.customerEmail) {
+      fields['InvoiceHead.Email'] = input.customerEmail
+      fields['InvoiceHead.SendByEmail'] = input.sendByEmail ? 'true' : 'false'
+    }
+    if (input.customerPhone) fields['InvoiceHead.CustAddresLine1'] = input.customerPhone
+    if (input.transactionId) fields.InternalDealNumber = input.transactionId
+    if (input.documentType === 'credit_note') fields['InvoiceHead.InvoiceType'] = '3'
+
+    input.lines.forEach((line, index) => {
+      // Cardcom's legacy line fields are 1-indexed and flat.
+      const n = index + 1
+      fields[`InvoiceLines${n}.Description`] = line.description
+      fields[`InvoiceLines${n}.Price`] = this.ilsFromAgorot(line.unitPriceAgorot)
+      fields[`InvoiceLines${n}.Quantity`] = String(line.quantity)
+      // Catalogue prices are VAT-inclusive, which is what the builder computed
+      // the split from. Telling Cardcom otherwise would add VAT a second time.
+      fields[`InvoiceLines${n}.IsPriceIncludeVAT`] = 'true'
+    })
+
+    const raw = await this.postForm('/Interface/BillGoldPost.aspx', fields)
+
+    const responseCode = asNumber(raw.ResponseCode ?? raw.responsecode) ?? -1
+    const documentNumber = asString(
+      raw.InvoiceResponse_InvoiceNumber ??
+        raw.invoiceresponse_invoicenumber ??
+        raw.InvoiceNumber ??
+        raw.invoicenumber,
+    )
+    const documentUrl = asString(
+      raw.InvoiceResponse_DocumentUrl ??
+        raw.invoiceresponse_documenturl ??
+        raw.DocumentUrl ??
+        raw.documenturl ??
+        raw.InvoiceResponse_Url ??
+        raw.url,
+    )
+
+    if (responseCode !== 0 || !documentNumber) {
+      return {
+        success: false,
+        documentNumber: null,
+        documentUrl: null,
+        failureCode: String(responseCode),
+        failureMessage:
+          asString(raw.Description ?? raw.description) ??
+          (documentNumber ? 'Cardcom document failed' : 'Cardcom returned no document number'),
+        raw,
+      }
+    }
+
+    return {
+      success: true,
+      documentNumber,
+      documentUrl,
       failureCode: null,
       failureMessage: null,
       raw,
