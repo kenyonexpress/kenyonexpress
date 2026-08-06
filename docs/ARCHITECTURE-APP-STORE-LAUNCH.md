@@ -16,6 +16,7 @@ docs/ARCHITECTURE-NOTIFICATIONS.md
 docs/ARCHITECTURE-CASHBACK-WALLET.md
 docs/ARCHITECTURE-PRICING-RULES.md
 docs/ROADMAP-V2.md
+docs/CONTRADICTIONS.md
 ```
 
 עקרון: Web נשאר ערוץ SEO ורכישה ראשונית. האפ (Expo) = שימור, Push, ארנק קופונים, סריקת ספק.  
@@ -117,3 +118,4 @@ PWA היא גשר עד שהאפ בחנויות; לא תחליף קבוע.
 |---|---|
 | 2026-08-06 | מסמך הכנה להשקה ב-App Store / Google Play |
 | 2026-08-06 | QA: איסור Escrow/held ב-store; קישור PRICING |
+| 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
