@@ -13,10 +13,10 @@ docs/RUNBOOK-PRODUCTION.md
 docs/ARCHITECTURE-BACKUP-DR.md
 docs/ARCHITECTURE-FRAUD-PREVENTION.md
 docs/ARCHITECTURE-SECURITY.md
+docs/ARCHITECTURE-ANALYTICS.md
 docs/MASTER-INDEX.md
 docs/CONTRADICTIONS.md
 ```
-
 הקשר: מפעיל יחיד עם טלפון. אין NOC.
 
 ---
@@ -83,3 +83,4 @@ Retention: runtime קצר + drain (יעד ~30 יום).
 | 2026-08-06 | Sentry + לוגים + התראות (מסמך ממוקד בעברית) |
 | 2026-08-06 | QA: קישור MASTER-INDEX; RTL/עברית תקינים |
 | 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
+| 2026-08-07 | QA: קישור הדדי ל-ANALYTICS |
