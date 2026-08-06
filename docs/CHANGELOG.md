@@ -17,10 +17,16 @@ STATE.md
 
 ### Docs
 
+### Docs (2026-08-07 QA re-pass חבילת 20)
+
+- `CONTRADICTIONS.md`: C11ב Escrow בוטל; C11א / No Escrow מחייב
+- קישורים הדדיים ל-`CONTRADICTIONS.md` בכל 20 המסמכים
+- en-dash הוחלף; `MASTER-INDEX.md` סטטוס QA-PASS מעודכן לכל #1 עד 20
+
 ### Docs (2026-08-06 QA pass חבילת 20)
 
 - QA על כל 20 מסמכי ROADMAP-V2: No Escrow + `platform_percent`, קישורים הדדיים, RTL
-- `MASTER-INDEX.md`: טבלת סטטוס QA-PASS לכל #1–20 (`2144654`)
+- `MASTER-INDEX.md`: טבלת סטטוס QA-PASS לכל #1 עד 20
 - `ARCHITECTURE-PERSONAL-AREA.md`: P7 מיושר ל-No Escrow (מחוץ לחבילה)
 
 ### Docs (2026-08-06 docs 16–20)
