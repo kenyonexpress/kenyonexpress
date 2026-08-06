@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-03 (docs-only ke-arch: 10-doc Hebrew RTL binding pack)
+Updated: 2026-08-06 (docs-only ke-arch: 10-doc binding refresh)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,18 +8,18 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-עשרה מסמכים בעברית RTL, commit נפרד לכל אחד:
+עשרה מסמכים, commit נפרד לכל אחד (בלי PR):
 
-1. docs/ARCHITECTURE-NOTIFICATIONS.md (`9a4b4c6`)
-2. docs/ARCHITECTURE-ADMIN-DASHBOARD.md (`f7c0b45`)
-3. docs/ARCHITECTURE-FRAUD-PREVENTION.md (`03685e1`)
-4. docs/ARCHITECTURE-CASHBACK-WALLET.md (`e24e60a`)
-5. docs/ARCHITECTURE-SUPPLIER-ONBOARDING.md (`24baec5`)
-6. docs/ARCHITECTURE-ANALYTICS.md (`2a96670`)
-7. docs/ARCHITECTURE-LEGAL-COMPLIANCE.md (`88a05b3`)
-8. docs/ARCHITECTURE-SEARCH-UX.md (`e4f7924`)
-9. docs/RUNBOOK-PRODUCTION.md (`16b7f66`)
-10. docs/ROADMAP-V2.md (`f9daa4b`)
+1. docs/ARCHITECTURE-SUPPLIER-ONBOARDING.md (`ee34dc3`)
+2. docs/ARCHITECTURE-ANALYTICS.md (`48f2be4`)
+3. docs/ARCHITECTURE-LEGAL-COMPLIANCE.md (`a99adfe`)
+4. docs/ARCHITECTURE-SEARCH-UX.md (`625bc27`)
+5. docs/RUNBOOK-PRODUCTION.md (`f975d2e`)
+6. docs/ARCHITECTURE-EMAIL-TEMPLATES.md (`2bf1b2b`)
+7. docs/ARCHITECTURE-INVENTORY.md (`6f7467d`)
+8. docs/ARCHITECTURE-REFERRAL.md (`77ced4f`)
+9. docs/ARCHITECTURE-OBSERVABILITY.md (`8b86e57`)
+10. docs/ROADMAP-V2.md (`fa7889f`)
 
 ## In Progress
 nothing
@@ -28,15 +28,10 @@ nothing
 none (docs only)
 
 ## Next Task
-יישום לפי docs/ROADMAP-V2.md שלב A (מחוץ לסקופ docs-only).
+יישום לפי docs/ROADMAP-V2.md שלב A מחוץ לסקופ docs-only.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
-
-## החלטות שהתקבלו אוטומטית
-- מיגרציות prod רק דרך MCP (RUNBOOK).
-- דמי ביטול = min(5%, 100 ₪); ביטול 14 יום.
-- ארנק: צבירה + מימוש בקנייה הבאה; בלי משיכה החוצה.
 
 ---
 ## Current Phase (רקע מודל)
@@ -1184,3 +1179,14 @@ ke-arch
 - ARCHITECTURE-SEARCH-UX.md e4f7924
 - RUNBOOK-PRODUCTION.md 16b7f66
 - ROADMAP-V2.md f9daa4b
+### 2026-08-06 : ke-arch 10-doc refresh
+- ARCHITECTURE-SUPPLIER-ONBOARDING.md ee34dc3
+- ARCHITECTURE-ANALYTICS.md 48f2be4
+- ARCHITECTURE-LEGAL-COMPLIANCE.md a99adfe
+- ARCHITECTURE-SEARCH-UX.md 625bc27
+- RUNBOOK-PRODUCTION.md f975d2e
+- ARCHITECTURE-EMAIL-TEMPLATES.md 2bf1b2b
+- ARCHITECTURE-INVENTORY.md 6f7467d
+- ARCHITECTURE-REFERRAL.md 77ced4f
+- ARCHITECTURE-OBSERVABILITY.md 8b86e57
+- ROADMAP-V2.md fa7889f
