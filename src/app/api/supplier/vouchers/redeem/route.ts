@@ -2,6 +2,7 @@ import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createClient } from '@/lib/supabase/server'
+import { expireWalletPasses } from '@/lib/wallet/notify'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
 import { verifyVoucherQrPayload } from '@/server/domain/vouchers/qr'
 import { readScanContext, recordRefusedScan } from '@/server/domain/vouchers/scan-context'
@@ -182,6 +183,15 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   const replayed = result.replayed === true
 
   if (outcome === 'success') {
+    // The voucher is already burned in the database. Awaited rather than fired
+    // and forgotten, because a serverless invocation can be frozen the moment
+    // the response is returned and the push would never leave. It cannot throw
+    // and it cannot change the answer; a replay skips it, since the pass was
+    // expired the first time round.
+    if (!replayed) {
+      await expireWalletPasses([(result.code as string) ?? shortCode])
+    }
+
     return respond(
       {
         outcome,

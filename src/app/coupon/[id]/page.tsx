@@ -1,3 +1,4 @@
+import WalletButtons from '@/components/coupon/WalletButtons'
 import { createClient } from '@/lib/supabase/server'
 import {
   COUPON_TONE_CLASS,
@@ -142,6 +143,8 @@ async function CouponPageBody({ params }: Props) {
               </p>
             </div>
           )}
+
+          <WalletButtons voucher={voucher} presentable={status.presentable} />
 
           {status.presentable && status.expiringSoon && (
             <p className="mt-4 rounded-xl bg-amber-50 px-4 py-2.5 text-center text-sm font-medium text-amber-800">
