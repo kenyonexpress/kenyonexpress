@@ -27,7 +27,7 @@ Stack: Next.js App Router route group `(account)`, Server Components + Server Ac
 | P4 | קופונים בתצוגה חדשה = טבלת `vouchers` (לא `coupon_codes`). Alias: `/account/vouchers` → `/account/coupons`. |
 | P5 | ארנק = קרדיט פנימי בלבד. **לא יוצא מהמערכת** (אין משיכה, אין P2P, אין זיכוי כרטיס מהארנק). |
 | P6 | כסף ב-DB/domain: **integer agorot**. UI: ₪ ב-`he-IL`, `Asia/Jerusalem`. |
-| P7 | קופון (Escrow 2026-07-27): במייל ובמסך מופיעים שולם באתר + יתרה בבית העסק. החלק לספק מהמקדמה מוחזק ב-held עד מימוש. |
+| P7 | קופון (**No Escrow**): במייל ובמסך מופיעים שולם באתר + יתרה בבית העסק. מקדמת האתר נשארת אצל הפלטפורמה; אין held לספק ואין נאמן אשראי. פיזי לפי `platform_percent` פר מוצר. |
 | P8 | אין PAN/CVV. `payment_tokens.cardcom_token` לא ב-SELECT ל-`authenticated`. |
 | P9 | התנתקות בניווט וב-`/account/details`. אחרי logout → `/login`. |
 
@@ -98,7 +98,7 @@ src/styles/account.css
 | מצב נגזר | תווית |
 |---|---|
 | `pending` | ממתינה לתשלום |
-| `paid` / escrow held / split | שולמה |
+| `paid` / paid on site + balance at merchant | שולמה |
 | הושלם / שוחרר | הושלמה |
 | קופון נסרק | מומשה |
 | `refunded` | זוכתה |
