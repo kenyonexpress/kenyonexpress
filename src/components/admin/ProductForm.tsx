@@ -1101,6 +1101,8 @@ export default function ProductForm({
           value={images}
           onChange={setImages}
           maxFiles={8}
+          altKind="product"
+          altSubject={nameHe}
         />
       </div>
 

@@ -289,6 +289,8 @@ export default function CouponDealForm({ deal, vendors }: Props) {
               value={imageUrl}
               onChange={(urls) => setImageUrl(urls.slice(-1))}
               maxFiles={1}
+              altKind="deal"
+              altSubject={titleHe}
             />
           </div>
 
