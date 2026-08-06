@@ -17,6 +17,7 @@ docs/ARCHITECTURE-SEASONAL-CAMPAIGNS.md
 docs/ARCHITECTURE-B2B-SALES.md
 docs/ARCHITECTURE-CUSTOMER-SUPPORT.md
 docs/ARCHITECTURE-REFERRAL.md
+docs/ARCHITECTURE-EMAIL-TEMPLATES.md
 docs/CONTRADICTIONS.md
 ```
 ---
@@ -27,7 +28,7 @@ docs/CONTRADICTIONS.md
 |---|---|
 | P1 | אין עמלה גלובלית. `platform_percent` **פר מוצר**, בלי default, admin only. |
 | P2 | `platform_percent + supplier_split_percent = 100`. |
-| P3 | קופון: `coupon_price_ils` מוחלט באתר; יתרה בעסק = face − coupon; **No Escrow**. |
+| P3 | קופון: `coupon_price_ils` מוחלט באתר; יתרה בעסק = face - coupon; **No Escrow** (אין נאמן/J5 של חברת אשראי; אין held לספק). |
 | P4 | פיזי: פיצול on-site לפי snapshot ב-`order_items`. |
 | P5 | `discount_percent` לתצוגה בלבד; לא מקור חיוב. |
 | P6 | מבצע בזק = חלון זמן + מחיר חלופי לפי שעון שרת. |
@@ -90,3 +91,5 @@ else:
 | 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
 | 2026-08-07 | QA verify: קישור הדדי ל-CUSTOMER-SUPPORT |
 | 2026-08-07 | QA: קישור הדדי ל-REFERRAL |
+| 2026-08-07 | QA audit: מינוס יוניקוד → ASCII; חיזוק איסור J5/held ב-P3 |
+| 2026-08-07 | QA audit: קישור הדדי ל-EMAIL-TEMPLATES |
