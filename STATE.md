@@ -16,7 +16,7 @@ Coupon / אזור אישי / Notifications / SEO / E2E / Integration, וכולם
 ב-[1]-[35]. הפריט "סגירת checkout-cardcom" **לא יבוצע**: ה-branch מביא
 ‏`escrow.ts`, בסתירה למודל הנעול, וזו עצירה לפי כלל (4).
 
-**נוסף 2026-08-06:** התור מסתיים עכשיו ב-[48] Refund, [49] Wallet passes, [50] Security hardening, [51] Sitemap/feeds, [52] Open Graph + share, [53] Data seeding, רשומים במלואם תחת `## Next Task`. כולם נוספו לסוף התור ולא קטעו את מה שרץ. **ה-goal הפעיל עכשיו: [48].**
+**נוסף 2026-08-06:** התור סגור ומסתיים ב-[48] Refund, [49] Wallet passes, [50] Security hardening, [51] Sitemap/feeds, [52] Open Graph + share, [53] Data seeding, [54] Admin reports, [55] Invoices, [56] Image pipeline, ו-[57] Integration pass סופי. כולם רשומים במלואם תחת `## Next Task`, נוספו לסוף התור ולא קטעו את מה שרץ. **ה-goal הפעיל עכשיו: [48].**
 
 ## Current Phase
 ‏**main.** תור [1]-[35] סגור, ותור goals 9-20 סגור ב-[43]. מודל כסף נעול:
@@ -214,6 +214,44 @@ terms: תוכן משפטי, לא קוד.
       שמניח מפתח מקומי תקין. קיימים כבר `scripts/seed-test-data.mjs`
       ו-`scripts/apply-043-seed.mjs`, וייבדקו לפני כתיבת שלישי.
       **זו כתיבה לנתונים, לא מחיקה**, ולכן אינה נופלת תחת כלל העצירה (2).
+
+- [ ] **[54] Admin reports.** מכירות יומי/חודשי, עמלות פלטפורמה, payouts
+      לספקים, יתרות escrow פתוחות, ייצוא CSV לכל דוח, גרפים ב-recharts, RTL.
+      **שני ממצאים שנמדדו מול הפרודקשן לפני שהסעיף נרשם:**
+      **(א) אין טבלת payouts בפרודקשן.** `src/server/actions/admin/payouts.ts`
+      קורא ל-RPC `generate_payout_statement` ואז קורא מ-`payout_statements`,
+      ושניהם **לא קיימים** ב-DB (`information_schema` מחזיר רק
+      `settlement_events` ו-`v_wallet_ledger` בחיפוש payout/ledger). מסך
+      ה-payouts הקיים שבור בפרודקשן, וזה חוסם את הדוח לפני שהוא נכתב.
+      **(ב) "יתרות escrow פתוחות" מתנגש במודל הנעול.** אין Escrow חיצוני ואין
+      J5 (הכרעת C3); `escrow_holds` הוא רשומת ledger פנימית בלבד עד מימוש.
+      הדוח ייכתב כ**התחייבות פתוחה לספקים** מתוך `settlement_events`, בלי
+      המילה "נאמן" ובלי "Escrow" ב-UI.
+      `recharts` אינו מותקן; יתווסף ב-`pnpm add` (לא `npm`).
+
+- [ ] **[55] Invoices.** חשבונית מס/קבלה אוטומטית דרך מודול Document של
+      Cardcom לכל עסקה, PDF שנשמר, ולינק באזור האישי ובמייל האישור.
+      **אותה אי-התאמה של [48]:** הנתיב `claude/CARDCOM-ARCHITECTURE.md` לא
+      קיים; הקיים הוא `docs/`. סעיף 1.4 שלו מתאר `/Documents/CreateDocument`
+      ו-`/Documents/CancelDoc`, שהם **v11**, בזמן שהלקוח החי הוא legacy
+      `/Interface/*.aspx`. שמות ה-endpoint יימדדו מול הקוד ומול Cardcom לפני
+      כתיבה, ולא יועתקו מהמסמך.
+      **R2 כבר קיים ולא ייבנה מחדש:** `src/lib/storage/r2.ts` עם
+      `isR2Configured()` ונפילה חזרה ל-Supabase Storage כשאינו מוגדר, וכבר
+      בשימוש ב-`admin/upload.ts`. החשבוניות ייכנסו לאותו מסלול.
+
+- [ ] **[56] Image pipeline.** העלאת תמונות מוצר באדמין עם דחיסה ל-webp,
+      גדלים מרובים, אחסון ב-R2, `next/image` עם placeholder blur, ו-alt
+      אוטומטי בעברית. **התוספת האחרונה לתור.**
+      **מה שכבר קיים:** `sharp` 0.35.3 בתלויות, `admin/upload.ts` עם presigned
+      PUT ל-R2 ונפילה ל-Supabase, ו-`ImageUploader.tsx` באדמין.
+      **מלכודת מדודה שחלה ישירות כאן:** מיטוב התמונות של Next **בולע שגיאות
+      sharp** ומגיש את קובץ המקור בייט-בבייט עם 200 ובלי לוג. כל טענה על
+      דחיסה תיבדק בספירת בייטים בפועל ולא לפי היעדר שגיאה.
+
+- [ ] **[57] Integration pass סופי — סוגר את התור.** אחרי [56]: rebase ומיזוג
+      של מה שנפתח, `pnpm test` + `type-check` + `lint` ירוקים, שער compare
+      מתחת ל-11%, וסקירת GO-LIVE מחודשת מול הפרודקשן ולא מול המסמך.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/kenyonexpress
