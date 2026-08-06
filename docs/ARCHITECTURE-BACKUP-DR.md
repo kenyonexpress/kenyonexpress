@@ -28,6 +28,7 @@ docs/CONTRADICTIONS.md
 | B3 | גם ב-Pro: גיבוי offsite (`pg_dump` מוצפן) בנוסף לגיבויי הפלטפורמה. |
 | B4 | גיבויים מכילים PII וכסף: הצפנה, IAM מצומצם, לא ב-git של האפ. |
 | B5 | שחזור אמיתי רק אחרי תרגיל רבעוני על פרויקט scratch. |
+| B6 | שחזור משחזר ledger ו-snapshots כפי שנשמרו. **לא** ממציאים Escrow/held/J5. כסף קופון = No Escrow; פיזי לפי `platform_percent` ב-`order_items` (CONTRADICTIONS). |
 | B6 | Vercel Instant Rollback משחזר **קוד**, לא DB. |
 | B7 | מיגרציות prod רק דרך MCP (ראה RUNBOOK); שחזור לא מחליף מיגרציה שגויה בלי תוכנית. |
 
@@ -113,3 +114,4 @@ docs/CONTRADICTIONS.md
 | 2026-08-06 | גיבוי/שחזור Supabase ממוקד (Pro, PITR, offsite, DR) |
 | 2026-08-06 | QA: קישור GDPR; יישור ל-RUNBOOK MCP |
 | 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
+| 2026-08-07 | QA audit: B6 שחזור בלי Escrow; שמירת `platform_percent` snapshots |
