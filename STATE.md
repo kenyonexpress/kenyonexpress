@@ -3,9 +3,12 @@
 Updated: 2026-08-03 (autonomous: [47] לוגים מובנים עם request-id; שתי הנחות שהבנייה הפריכה)
 
 ## המשך מ:
-‏**‏07.08 ‏05:30 — התור נעול. אין להוסיף goals חדשים** (הוראת אופיר, ‏07.08).
-נותר בתור פריט אחד: **[62] Integration pass**, שרץ אחרי [61] ולא לפניו.
-‏**[61] ביקורת עצמית: בוצעה.** התוצאה למטה תחת Last Completed.
+‏**‏07.08 ‏05:40 — התור נעול וסגור. אין goal פעיל ואין להוסיף goals חדשים**
+(הוראת אופיר, ‏07.08). ‏[61] ביקורת עצמית, ‏[62] CI hardening + Integration
+pass: שניהם בוצעו ונדחפו. התוצאות תחת Last Completed.
+**מה שנשאר פתוח אינו קוד ואינו במחשב הזה**, ובראשו עכשיו גם
+‏`docs/GITHUB-SETTINGS.md`: הגנת branch, ה-checks הנדרשים וה-secrets של CI,
+כולם בממשק של GitHub ואף commit לא יכול להחיל אותם.
 
 ‏**‏07.08 ‏01:45 — התור בן 13 ה-goals ([48]-[60] כולל [57]) סגור במלואו.**
 אין goal פעיל. מה שנשאר פתוח הוא **קונפיגורציה, נתונים ומדידה מחוץ למחשב
@@ -68,6 +71,34 @@ Coupon / אזור אישי / Notifications / SEO / E2E / Integration, וכולם
 אין Escrow.
 
 ## Last Completed
+‏**[62] CI hardening + Integration pass, 2026-08-07 — התור נסגר.**
+‏**מה שלא החזיק בדרישה "כל push מריץ type-check, lint, Vitest, build":**
+‏**(א)** ‏`push:` ב-`ci.yml` נקב בארבעה branches בשם. מאז נעשתה עבודה על
+‏`arch/*` ו-`feat/*` שאינם ברשימה, **וכולם נדחפו בלי שום CI**. הרשימה הוסרה.
+‏**(ב)** ‏lint ו-typecheck היו **diff-scoped בלבד**. ‏`lint:changed`
+ו-`typecheck:changed` פותרים `HEAD~1..HEAD` ב-push, כלומר push של חמישה
+קומיטים בודק את החמישי ומעביר את הארבעה. הם נשארו כמשוב מהיר, אבל אינם
+עוד הטענה כולה. ‏**(ג)** ‏`pnpm lint` על כל הריפו רץ עם
+‏`continue-on-error: true`, כלומר דיווח ולא חסם. **הוא חוסם עכשיו**,
+ו-`pnpm type-check` נוסף לצדו. שניהם נמדדו נקיים **לפני** שהדגל הוסר.
+‏**‏`docs/GITHUB-SETTINGS.md`** הוא מה ששום commit לא יכול להחיל. הוא נפתח
+בסיבה שהוא קיים: כל push ל-`main` עד היום הדפיס
+‏`Bypassed rule violations ... Changes must be made through a pull request`.
+**כלל שמכריז שעקפו אותו אינו אוכף דבר.** שתי מלכודות נרשמו בו מראש:
+ה-default branch הוא `cursor/add-supabase-3c830` ולא `main` (וזה מה שקובע
+מה Vercel בונה כפרודקשן), ו-**אסור להפוך את `E2E (Playwright)` ל-check
+נדרש** לפני ש-`CI_SUPABASE_URL` קיים, כי בלעדיו הוא מדלג את עצמו,
+ו-check נדרש שמדלג לעולם לא מדווח הצלחה: כל PR נתקע כבלתי-ניתן למיזוג.
+‏**‏Integration pass, נמדד על build נקי:** ‏**1833/1833** vitest,
+‏**191 עברו / 3 דילוגים / 0 נכשלו** ב-Playwright מול `pnpm start`,
+‏type-check ו-lint נקיים, ושער compare **home 9.76%** ו-**category 9.1%**,
+שניהם מתחת ל-11%.
+‏**סריקת ה-branches (חלק מ-[61]):** שלושה branches נושאים שינויי `src/`
+שאינם ב-main. ‏`feat/supplier-portal` ו-`feat/visual-polish` **נקיים**
+בשלושת הכללים. ‏`feat/checkout-cardcom` נושא **`platform_percent: 10`
+קשיח**, שש פגיעות float כספיות והשוואת Bearer בזמן משתנה. זו ראיה נוספת
+להחלטה הקיימת לא למזג אותו (הוא גם מביא `escrow.ts` בסתירה למודל הנעול).
+
 ‏**[61] ביקורת עצמית, 2026-08-07 — שלוש בדיקות, שתיים נקיות ואחת מצאה משהו
 שאף טסט לא היה תופס.**
 
