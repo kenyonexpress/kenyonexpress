@@ -182,6 +182,11 @@ export default function CheckoutForm({
   const balanceAtBusiness = cart.balance_due_at_business
   const itemsTotal = sumAgorot(cart.items.map((item) => item.line_total))
 
+  // Gift fields are mounted only while the box is ticked, so an unticked box
+  // cannot post a half-typed address, and the server forwards the fields only
+  // when both the flag and the email are present.
+  const [isGift, setIsGift] = useState(false)
+
   // `walletBalance` and the `apply_wallet_ils` field are the one place on this
   // page still denominated in shekels: the wallet column is `balance_ils` and
   // the server action parses the field back out in shekels. It is lifted to
@@ -577,6 +582,61 @@ export default function CheckoutForm({
                   placeholder="הערות על ההזמנה, לדוגמה, הערות מיוחדות למסירה."
                 />
               </div>
+
+              {/*
+                Offered only when there is a coupon to give. A gift here is a
+                voucher that changes hands; a physical line ships to an address
+                and has nothing to transfer, so showing the fields for one would
+                promise something the order cannot do.
+              */}
+              {cart.items.some((item) => item.type === 'coupon') && (
+                <div className="checkout-field">
+                  <label className="checkout-terms">
+                    <input
+                      type="checkbox"
+                      name="gift"
+                      checked={isGift}
+                      onChange={(e) => setIsGift(e.target.checked)}
+                    />
+                    <span>הקופון מיועד למישהו אחר (מתנה)</span>
+                  </label>
+
+                  {isGift && (
+                    <div style={{ marginTop: 12, display: 'grid', gap: 12 }}>
+                      <div className="checkout-field">
+                        <label htmlFor="co-gift-email">
+                          מייל המקבל <span className="checkout-field__required">*</span>
+                        </label>
+                        <input
+                          id="co-gift-email"
+                          name="gift_recipient_email"
+                          type="email"
+                          required={isGift}
+                          dir="ltr"
+                          placeholder="name@example.com"
+                        />
+                      </div>
+                      <div className="checkout-field">
+                        <label htmlFor="co-gift-name">שם המקבל</label>
+                        <input id="co-gift-name" name="gift_recipient_name" maxLength={80} />
+                      </div>
+                      <div className="checkout-field">
+                        <label htmlFor="co-gift-message">ברכה אישית</label>
+                        <textarea
+                          id="co-gift-message"
+                          name="gift_message"
+                          maxLength={500}
+                          placeholder="מזל טוב! בקיצור, תיהנו."
+                        />
+                      </div>
+                      <p className="checkout-privacy">
+                        אחרי התשלום יישלח למקבל מייל עם קישור אישי לקבלת הקופון. עד שהוא ייאסף
+                        הקופון נשאר בחשבון שלכם.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
             </section>
           </div>
 

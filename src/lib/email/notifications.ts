@@ -34,6 +34,8 @@ export type NotificationKind =
   | 'supplier_sale'
   | 'voucher_redeemed'
   | 'voucher_issued'
+  /** A coupon bought for somebody else. Added by migration 108. */
+  | 'voucher_gifted'
 
 function escapeHtml(value: string): string {
   return value
@@ -315,6 +317,75 @@ export function buildVoucherIssuedEmail(
   })
 }
 
+/**
+ * A coupon somebody bought for somebody else (108).
+ *
+ * The one email on this system sent to an address that never registered, so it
+ * says who it is from before it says anything else - an unexplained coupon from
+ * a store you have not heard of is indistinguishable from a phishing mail.
+ *
+ * It carries the CLAIM link, not the coupon code, and that is the whole design:
+ * the voucher belongs to the buyer until the recipient claims it, because the
+ * buyer paid and a refund belongs to them. A code in this email would be
+ * redeemable by whoever forwards it, with no record of who now owns it.
+ *
+ * The greeting is the buyer's own words, so it is escaped like every other
+ * value here and never interpolated raw.
+ */
+export function buildVoucherGiftedEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification {
+  const product = asText(payload.product_name) ?? 'קופון'
+  const sender = asText(payload.sender_name)
+  const recipient = asText(payload.recipient_name)
+  const message = asText(payload.gift_message)
+  const token = asText(payload.claim_token) ?? ''
+  const expires = hebrewDateTime(payload.expires_at)
+  const url = `${trimSite(siteUrl)}/gift/${encodeURIComponent(token)}`
+
+  const subject = sender ? `${sender} שלח לך מתנה: ${product}` : `קיבלת מתנה: ${product}`
+  const greeting = recipient ? `שלום ${recipient},` : 'שלום,'
+
+  const text = [
+    greeting,
+    '',
+    sender ? `${sender} קנה עבורך קופון ב-KenyonExpress:` : 'קנו עבורך קופון ב-KenyonExpress:',
+    product,
+    '',
+    message ? `"${message}"` : '',
+    '',
+    'כדי לקבל את הקופון לחשבון שלך:',
+    url,
+    '',
+    expires ? `הקופון בתוקף עד ${expires}.` : '',
+    'הקישור אישי. אל תעבירו אותו הלאה.',
+  ]
+    .filter((line) => line !== '')
+    .join('\n')
+
+  const html = shell(
+    `<div dir="rtl" style="background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+        <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(
+          sender ? `${sender} שלח לך מתנה` : 'קיבלת מתנה',
+        )}</div>
+        <div style="font-size:15px;color:${INK};margin-top:10px">${escapeHtml(greeting)}</div>
+        <div style="font-size:16px;font-weight:700;color:${INK};margin-top:12px">${escapeHtml(product)}</div>
+        ${
+          message
+            ? `<div style="font-size:14px;color:${INK};line-height:1.9;margin-top:14px;padding:14px;background:#f9fafb;border-radius:10px;border:1px solid #e5e7eb">${escapeHtml(message)}</div>`
+            : ''
+        }
+        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">קבלת הקופון</a>
+        ${expires ? `<div style="font-size:13px;color:${MUTED};margin-top:12px">הקופון בתוקף עד ${escapeHtml(expires)}.</div>` : ''}
+        <div style="font-size:13px;color:${MUTED};margin-top:6px">הקישור אישי. אל תעבירו אותו הלאה.</div>
+      </div>`,
+    'קיבלת את המייל הזה כי מישהו קנה עבורך קופון ב-KenyonExpress.',
+  )
+
+  return { subject, html, text }
+}
+
 /** Dispatch by queued kind. Unknown kinds return null so the drain can park them. */
 export function buildNotification(
   kind: string,
@@ -330,6 +401,8 @@ export function buildNotification(
       return buildVoucherRedeemedEmail(payload, siteUrl)
     case 'voucher_issued':
       return buildVoucherIssuedEmail(payload, siteUrl)
+    case 'voucher_gifted':
+      return buildVoucherGiftedEmail(payload, siteUrl)
     default:
       return null
   }

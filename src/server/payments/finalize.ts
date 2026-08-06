@@ -8,6 +8,7 @@ import { capturePaymentError } from '@/lib/observability/sentry'
 import { resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { type VoucherIssueClient, issueVoucher } from '@/server/domain/vouchers/issue'
+import { readGiftIntent, sendOrderGifts } from '@/server/payments/gift-vouchers'
 import { enqueueOrderInvoice, issueQueuedInvoice } from '@/server/payments/invoices'
 import {
   type SettledLine,
@@ -474,6 +475,36 @@ export async function finalizeOrder(input: {
         cardcomAccountId,
       }),
     )
+
+    // The gift, if this order was bought for somebody else (108).
+    //
+    // Read in its OWN select rather than added to the order read at the top of
+    // this function, and that is not caution for its own sake: a column the
+    // database does not have raises 42703 and takes down the WHOLE statement,
+    // so naming three new columns up there would mean a finalize that cannot
+    // read the order at all on any database where 108 has not been applied -
+    // with the card already charged. Exactly the failure 106 documents for
+    // `payments.refund_of_payment_id`. Here the worst case is no gift.
+    const { data: giftRow } = await admin
+      .from('orders')
+      .select('gift_recipient_name, gift_recipient_email, gift_message')
+      .eq('id', order.id)
+      .maybeSingle()
+    const intent = giftRow ? readGiftIntent(giftRow as Record<string, string | null>) : null
+    if (intent) {
+      const { data: buyer } = await admin
+        .from('profiles')
+        .select('full_name')
+        .eq('id', order.user_id)
+        .maybeSingle()
+      await sendOrderGifts(admin, {
+        orderId: order.id,
+        buyerUserId: order.user_id,
+        intent,
+        buyerName: (buyer as { full_name: string | null } | null)?.full_name ?? null,
+        now,
+      })
+    }
 
     // The tax document, queued and attempted at once. Before the email on
     // purpose: the email carries a link to the invoice, and an invoice issued

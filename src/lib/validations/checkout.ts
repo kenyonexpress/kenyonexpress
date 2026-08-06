@@ -110,12 +110,36 @@ export const checkoutPaymentSchema = z.object({
   token_id: uuid.optional(),
 })
 
+/**
+ * Buying the coupons of this order for somebody else (108).
+ *
+ * One recipient per ORDER, not per line. A gift purchase is one order for one
+ * person, and a per-line recipient would have to be agreed on by the cart row,
+ * the order line, the settlement snapshot and the voucher - four places, for
+ * something no screen asks for.
+ *
+ * The email is the only required field: without it there is nobody to send to.
+ * The greeting is capped because it is reproduced verbatim in an email, and an
+ * unbounded field there is a payload, not a message.
+ */
+export const giftSchema = z.object({
+  gift_recipient_email: z
+    .string()
+    .trim()
+    .email('כתובת המייל של המקבל אינה תקינה')
+    .max(200)
+    .optional(),
+  gift_recipient_name: z.string().trim().max(80).optional(),
+  gift_message: z.string().trim().max(500, 'הברכה ארוכה מדי').optional(),
+})
+
 export const beginCheckoutInputSchema = checkoutPaymentSchema
   .merge(
     z.object({
       address_id: uuid.nullable().default(null),
     }),
   )
+  .merge(giftSchema)
   .superRefine((data, ctx) => {
     // address_id requirement depends on cart composition; enforced in the action.
     if (data.apply_wallet_ils < 0) {

@@ -16,6 +16,7 @@ import {
   completeSplitPair,
 } from '@/lib/commerce/product-money'
 import { withActionContext } from '@/lib/observability/action-context'
+import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
 import {
   type PaymentProvider,
@@ -491,6 +492,26 @@ async function runBeginCheckout(
     return { ok: false, error: `יצירת הזמנה נכשלה: ${orderError?.message}`, code: 'INTERNAL' }
   }
 
+  // The gift intent (108), written in its OWN statement and not added to the
+  // insert above. This whole module exists because naming a column the hosted
+  // database does not have failed the entire orders INSERT with 42703, and NO
+  // ORDER COULD BE CREATED AT ALL (see order-money-columns.ts). Three new
+  // columns in that literal would put the purchase flow back behind a
+  // migration; here the worst case is an order that is not marked as a gift.
+  if (input.gift_recipient_email) {
+    const { error: giftError } = await admin
+      .from('orders')
+      .update({
+        gift_recipient_email: input.gift_recipient_email,
+        gift_recipient_name: input.gift_recipient_name ?? null,
+        gift_message: input.gift_message ?? null,
+      } as never)
+      .eq('id', order.id)
+    if (giftError) {
+      log.warn('checkout.gift_not_recorded', { order_id: order.id, err: giftError.message })
+    }
+  }
+
   const itemGeneration = await resolveOrderItemGeneration(
     moneyColumnProbe(admin as never, 'order_items'),
   )
@@ -814,6 +835,15 @@ async function runSubmitCheckout(
     save_card: savedTokenId ? false : formData.get('save_card') === 'on',
     address_id: addressId,
     token_id: savedTokenId,
+    // Only forwarded when the shopper actually ticked "this is a gift"; an
+    // empty string would fail zod's email check and reject the whole checkout.
+    ...(text('gift') === 'on' && text('gift_recipient_email')
+      ? {
+          gift_recipient_email: text('gift_recipient_email'),
+          gift_recipient_name: text('gift_recipient_name') || undefined,
+          gift_message: text('gift_message') || undefined,
+        }
+      : {}),
   })
 
   if (!result.ok) return { error: result.error, code: result.code }
