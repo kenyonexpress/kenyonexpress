@@ -2,77 +2,121 @@
 
 אינדקס כל מסמכי הארכיטקטורה ב-`docs/` עם שורת תקציר לכל אחד.
 
-Status: **BINDING (index)** · עודכן: 2026-08-06
+Status: **BINDING (index)** · עודכן: 2026-08-06 · QA: PASS
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
-מודל כסף מחייב בכל המסמכים הרלוונטיים: No Escrow לקופון; platform_percent דינמי פר מוצר לפיזי; ארנק פנימי בלי משיכה; מיגרציות prod דרך MCP בלבד.
+מודל כסף מחייב בכל המסמכים הרלוונטיים:
+
+- **No Escrow** לקופון (מקדמה באתר לפלטפורמה; יתרה בבית העסק; אין נאמן/J5 של חברת אשראי; אין held לספק)
+- **`platform_percent` דינמי פר מוצר** לפיזי (בלי default גלובלי; snapshot ב-`order_items`)
+- ארנק פנימי בלי משיכה החוצה
+- מיגרציות prod דרך MCP בלבד
+
+מסמכים קשורים:
+
+```
+docs/ROADMAP-V2.md
+docs/ARCHITECTURE-PRICING-RULES.md
+docs/RUNBOOK-PRODUCTION.md
+```
 
 ---
 
-## טבלת אינדקס
+## סטטוס QA לחבילת 20 (ROADMAP-V2)
 
-| מסמך | תקציר |
-|---|---|
-| `ADMIN-ARCHITECTURE.md` | KenyonExpress production admin dashboard architecture. |
-| `ARCHITECTURE-ACCOUNT-IDENTITY.md` | מסמך תכנון. מיגרציה נלווית (טיוטה, לא הוחלה): |
-| `ARCHITECTURE-ACCOUNT-WALLET.md` | סטטוס: DESIGN + IMPLEMENTATION. ענף feat/account-wallet, worktree ke-account. |
-| `ARCHITECTURE-ADMIN-DASHBOARD.md` | ניהול מוצרים עם platform_percent דינמי פר מוצר, מחיר קופון, יתרה אצל הספק (בבית העסק), ניהול ספקים, ודוחות מכירות. |
-| `ARCHITECTURE-AI-AGENTS-RUNTIME.md` | סטטוס: טיוטה מחייבת v2.0 (2026-07-17). בעלים: ארכיטקט פלטפורמת ה-AI. |
-| `ARCHITECTURE-AI-AGENTS.md` | five planned AI agents, the shared infrastructure they run on, and the |
-| `ARCHITECTURE-ANALYTICS-BI.md` | > גובר עליו docs/CONTRADICTIONS.md (2026-07-24). כל מספר עמלה, ברירת מחדל |
-| `ARCHITECTURE-ANALYTICS.md` | משפך מצפייה בדיל עד מימוש. המלצה: PostHog (מוצר) + GA4 (מרקטינג). |
-| `ARCHITECTURE-API-CONTRACTS.md` | > גובר עליו docs/CONTRADICTIONS.md (2026-07-24). כל מספר עמלה, ברירת מחדל |
-| `ARCHITECTURE-APP-STORE-LAUNCH.md` | הכנה לפרסום אפליקציית KenyonExpress ב-App Store ו-Google Play. |
-| `ARCHITECTURE-B2B-SALES.md` | מכירת קופונים בכמות לחברות וועדי עובדים. |
-| `ARCHITECTURE-BACKUP-DR.md` | גיבויים, PITR, ושחזור לפרויקט Supabase של KenyonExpress. |
-| `ARCHITECTURE-CASHBACK-WALLET.md` | ארנק פנימי בלבד שלא יוצא מהמערכת: ledger כפול-רישום, צבירה, ומימוש בקנייה הבאה. |
-| `ARCHITECTURE-CATALOG-SEARCH-SEO.md` | > גובר עליו docs/CONTRADICTIONS.md (2026-07-24). כל מספר עמלה, ברירת מחדל |
-| `ARCHITECTURE-CATEGORIES-TAXONOMY.md` | עץ קטגוריות לשוק הישראלי (קופונים ומוצרים פיזיים). |
-| `ARCHITECTURE-COMMERCE.md` | > גובר עליו docs/CONTRADICTIONS.md (2026-07-24). כל מספר עמלה, ברירת מחדל |
-| `ARCHITECTURE-COUPON-REDEMPTION-UX.md` | מפרט UX מחייב למימוש קופון (ספק + לקוח). |
-| `ARCHITECTURE-COUPON-REDEMPTION.md` | KenyonExpress supplier coupon / voucher redemption architecture (binding scan spec). |
-| `ARCHITECTURE-CUSTOMER-SUPPORT.md` | פניות לקוח, בעיות מימוש קופון, ו-SLA. |
-| `ARCHITECTURE-DATA-EXPORT-GDPR.md` | ייצוא ומחיקת נתוני משתמש (זכויות נושא מידע; יישור לדין הישראלי + עקרונות GDPR כשיחולו). |
-| `ARCHITECTURE-EMAIL-TEMPLATES.md` | תבניות RTL לכל אירוע במחזור חיי קופון (Resend). |
-| `ARCHITECTURE-FRAUD-PREVENTION.md` | מימוש כפול, צילומי מסך QR, chargebacks, בדיקות velocity, וחסימת קופון. |
-| `ARCHITECTURE-GIFT-COUPONS.md` | קופון מתנה: רכישה, העברת בעלות, וברכות. |
-| `ARCHITECTURE-GROWTH-SEO.md` | מסמך הכרעות. תאריך: 2026-07-17. ענף: phase5/homepage. |
-| `ARCHITECTURE-INVENTORY.md` | מלאי קופונים ומכסות פר דיל (ומלאי פיזי בסיסי). |
-| `ARCHITECTURE-LEGAL-COMPLIANCE.md` | הגנת הצרכן, ביטול 14 יום, דמי ביטול 5% או 100 ₪, תוקף שוברים, נגישות ישראלית. |
-| `ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md` | Money rule: agorot integers only, zero floats past the ILS/agorot boundary. |
-| `ARCHITECTURE-MOBILE-APP.md` | ארכיטקטורת אפליקציית מובייל ל-KenyonExpress: Expo + React Native על אותו backend Supabase כמו ה-web. |
-| `ARCHITECTURE-MOBILE-SUPERAPP.md` | מסמך תכנון מחייב. תאריך: 2026-07-17. ענף: phase5/homepage. |
-| `ARCHITECTURE-NOTIFICATIONS-MARKETING.md` | מסמך תכנון. מיגרציה נלווית (טיוטה, לא הוחלה): |
-| `ARCHITECTURE-NOTIFICATIONS.md` | התראות טרנזקציוניות למחזור חיי קופון: Resend + Supabase Edge Functions, מייל / וואטסאפ / SMS, ו-Wallet push. |
-| `ARCHITECTURE-OBSERVABILITY.md` | Sentry, לוגים מובנים, והתראות תפעוליות. |
-| `ARCHITECTURE-PERFORMANCE.md` | Owner: Performance Architect |
-| `ARCHITECTURE-PERSONAL-AREA.md` | ארכיטקטורת האזור האישי של KenyonExpress. |
-| `ARCHITECTURE-PRICING-RULES.md` | platform_percent דינמי פר מוצר, מבצעי בזק, והנחות תצוגה. |
-| `ARCHITECTURE-PRODUCTION-OPS.md` | מסמך תכנון תשתית. סטטוס: DESIGN. אין בו מיגרציות ואין בו קוד להחלה. |
-| `ARCHITECTURE-PWA.md` | ארכיטקטורת Progressive Web App: manifest, Service Worker, push. |
-| `ARCHITECTURE-REFERRAL.md` | תוכנית הפניות עם קאשבק פנימי (בלי משיכה החוצה). |
-| `ARCHITECTURE-SEARCH-UX.md` | Meilisearch, השלמות בעברית, ותיקון טעויות כתיב. |
-| `ARCHITECTURE-SEARCH.md` | ארכיטקטורת חיפוש קטלוג בעברית: שאילתות, פילטרים, אינדוקס, ו-DLQ. |
-| `ARCHITECTURE-SEASONAL-CAMPAIGNS.md` | חגים ישראליים, מבצעי בזק, וראש השנה / פסח. |
-| `ARCHITECTURE-SECURITY-RLS.md` | מטריצת RLS מחייבת ל-44 טבלאות ב-public (ליבה פרודקשן + קטלוג/כסף/ספק/ארנק). |
-| `ARCHITECTURE-SECURITY.md` | KenyonExpress security architecture. This document is the binding security decision record: where it conflicts with a… |
-| `ARCHITECTURE-SEO-PERFORMANCE.md` | ארכיטקטורת SEO וביצועים לחנות KenyonExpress (Next.js App Router). |
-| `ARCHITECTURE-SEO.md` | מסמך תכנון מלא, מוכן ליישום. תאריך: 2026-07-23. ענף: phase5/homepage. |
-| `ARCHITECTURE-SUPPLIER-ONBOARDING.md` | הצטרפות ספק: מסמכים, פרטי בנק ל-payout, אישור אדמין, סניפים ועובדים. |
-| `ARCHITECTURE-SUPPLIER-PORTAL.md` | KenyonExpress supplier-facing portal architecture. |
-| `ARCHITECTURE-SUPPLIER-REDEMPTION.md` | מסמך תכנון מלא. מיגרציה נלווית (טיוטה, לא הוחלה): |
-| `ARCHITECTURE-TESTING-CICD.md` | > גובר עליו docs/CONTRADICTIONS.md (2026-07-24). כל מספר עמלה, ברירת מחדל |
-| `ARCHITECTURE-WALLET-LEDGER.md` | ארנק קאשבק פנימי: ledger כפול-רישום באגורות integer, בלי משיכה החוצה. |
-| `ARCHITECTURE-WP-DATA-MIGRATION.md` | Source of truth for extraction, field mapping, image pipeline, SEO |
-| `BUSINESS-MODEL.md` | - אני מגדיר בדף המוצר את סכום הקופון שהלקוח משלם באתר (למשל: דיל 100 שח → קופון 10 שח באתר) |
-| `CARDCOM-ARCHITECTURE.md` | > מסמך ארכיטקטורה מלא. מבוסס על מחקר תיעוד רשמי: Swagger v11 של Cardcom |
-| `CHANGELOG.md` | כל השינויים המתועדים למוצר ול-docs מנקודה זו והלאה. |
-| `MASTER-ARCHITECTURE.md` | > גובר עליו docs/CONTRADICTIONS.md (2026-07-24). כל מספר עמלה, ברירת מחדל |
-| `ROADMAP-V2.md` | סיכום מסמכי הארכיטקטורה לתוכנית שלבים עם תלויות. |
-| `RUNBOOK-PRODUCTION.md` | Deploy ל-Vercel, rollback, ומיגרציות דרך MCP בלבד. |
-| `TEST-STRATEGY.md` | פירמידת טסטים מלאה ל-KenyonExpress: כסף קודם, UI אחר כך. |
-| `MASTER-INDEX.md` | אינדקס כל מסמכי הארכיטקטורה עם שורת תקציר לכל אחד. |
+| # | מסמך | סטטוס | כסף | קישורים | RTL |
+|---:|---|---|---|---|---|
+| 1 | `ARCHITECTURE-SUPPLIER-ONBOARDING.md` | **QA-PASS** | No Escrow + `platform_percent` (O8) | PASS | PASS |
+| 2 | `ARCHITECTURE-ANALYTICS.md` | **QA-PASS** | ledger בלבד; לא GA4 | PASS | PASS |
+| 3 | `ARCHITECTURE-LEGAL-COMPLIANCE.md` | **QA-PASS** | L8 No Escrow; 5%/100 = דמי ביטול בלבד | PASS | PASS |
+| 4 | `ARCHITECTURE-SEARCH-UX.md` | **QA-PASS** | בלי boost עמלה קבועה | PASS | PASS |
+| 5 | `RUNBOOK-PRODUCTION.md` | **QA-PASS** | smoke: No Escrow + percent | PASS | PASS |
+| 6 | `ARCHITECTURE-EMAIL-TEMPLATES.md` | **QA-PASS** | אסור נוסח Escrow/נאמן | PASS | PASS |
+| 7 | `ARCHITECTURE-INVENTORY.md` | **QA-PASS** | I6 No Escrow | PASS | PASS |
+| 8 | `ARCHITECTURE-REFERRAL.md` | **QA-PASS** | ארנק פנימי בלבד | PASS | PASS |
+| 9 | `ARCHITECTURE-OBSERVABILITY.md` | **QA-PASS** | N/A (תפעול) | PASS | PASS |
+| 10 | `ROADMAP-V2.md` | **QA-PASS** | No Escrow מפורש | PASS | PASS |
+| 11 | `ARCHITECTURE-CATEGORIES-TAXONOMY.md` | **QA-PASS** | N/A (קטלוג) | PASS | PASS |
+| 12 | `ARCHITECTURE-PRICING-RULES.md` | **QA-PASS** | מקור האמת ל-percent | PASS | PASS |
+| 13 | `ARCHITECTURE-CUSTOMER-SUPPORT.md` | **QA-PASS** | יישור LEGAL | PASS | PASS |
+| 14 | `ARCHITECTURE-BACKUP-DR.md` | **QA-PASS** | N/A (DR) | PASS | PASS |
+| 15 | `ARCHITECTURE-APP-STORE-LAUNCH.md` | **QA-PASS** | דחיית מסכי Escrow/held | PASS | PASS |
+| 16 | `ARCHITECTURE-GIFT-COUPONS.md` | **QA-PASS** | G1 No Escrow | PASS | PASS |
+| 17 | `ARCHITECTURE-B2B-SALES.md` | **QA-PASS** | B4/B7 percent + No Escrow | PASS | PASS |
+| 18 | `ARCHITECTURE-SEASONAL-CAMPAIGNS.md` | **QA-PASS** | S7 percent + No Escrow | PASS | PASS |
+| 19 | `ARCHITECTURE-DATA-EXPORT-GDPR.md` | **QA-PASS** | N/A (פרטיות) | PASS | PASS |
+| 20 | `MASTER-INDEX.md` | **QA-PASS** | מודל מחייב למעלה | PASS | PASS |
+
+תיקון סתירה מחוץ לחבילה (באותו QA): `ARCHITECTURE-PERSONAL-AREA.md` P7 עודכן מ-Escrow/held ל-No Escrow.
+
+מסמכים ישנים עם באנר CONTRADICTIONS / עמלה קבועה 10%/5% נשארים **STALE** עד ריענון נפרד (לא חלק מחבילת 20).
+
+---
+
+## טבלת אינדקס מלאה
+
+| מסמך | תקציר | סטטוס |
+|---|---|---|
+| `ADMIN-ARCHITECTURE.md` | KenyonExpress production admin dashboard architecture. | LEGACY |
+| `ARCHITECTURE-ACCOUNT-IDENTITY.md` | מסמך תכנון. מיגרציה נלווית (טיוטה, לא הוחלה). | DESIGN |
+| `ARCHITECTURE-ACCOUNT-WALLET.md` | סטטוס: DESIGN + IMPLEMENTATION. ענף feat/account-wallet. | DESIGN |
+| `ARCHITECTURE-ADMIN-DASHBOARD.md` | ניהול מוצרים עם platform_percent דינמי פר מוצר, מחיר קופון, יתרה אצל הספק (בבית העסק). | BINDING |
+| `ARCHITECTURE-AI-AGENTS-RUNTIME.md` | טיוטה מחייבת v2.0 (2026-07-17). | DESIGN |
+| `ARCHITECTURE-AI-AGENTS.md` | five planned AI agents and shared infrastructure. | DESIGN |
+| `ARCHITECTURE-ANALYTICS-BI.md` | גובר עליו CONTRADICTIONS.md (עמלות ישנות). | STALE |
+| `ARCHITECTURE-ANALYTICS.md` | משפך מצפייה בדיל עד מימוש. PostHog + GA4. | QA-PASS (#2) |
+| `ARCHITECTURE-API-CONTRACTS.md` | גובר עליו CONTRADICTIONS.md. | STALE |
+| `ARCHITECTURE-APP-STORE-LAUNCH.md` | הכנה לפרסום ב-App Store ו-Google Play. | QA-PASS (#15) |
+| `ARCHITECTURE-B2B-SALES.md` | מכירת קופונים בכמות לחברות וועדי עובדים. | QA-PASS (#17) |
+| `ARCHITECTURE-BACKUP-DR.md` | גיבויים, PITR, ושחזור Supabase. | QA-PASS (#14) |
+| `ARCHITECTURE-CASHBACK-WALLET.md` | ארנק פנימי בלבד; ledger כפול-רישום באגורות. | BINDING |
+| `ARCHITECTURE-CATALOG-SEARCH-SEO.md` | גובר עליו CONTRADICTIONS.md. | STALE |
+| `ARCHITECTURE-CATEGORIES-TAXONOMY.md` | עץ קטגוריות לשוק הישראלי. | QA-PASS (#11) |
+| `ARCHITECTURE-COMMERCE.md` | גובר עליו CONTRADICTIONS.md. | STALE |
+| `ARCHITECTURE-COUPON-REDEMPTION-UX.md` | מפרט UX מחייב למימוש קופון. | BINDING |
+| `ARCHITECTURE-COUPON-REDEMPTION.md` | Supplier coupon / voucher redemption (scan). | BINDING |
+| `ARCHITECTURE-CUSTOMER-SUPPORT.md` | פניות לקוח, מימוש, SLA. | QA-PASS (#13) |
+| `ARCHITECTURE-DATA-EXPORT-GDPR.md` | ייצוא ומחיקת נתוני משתמש. | QA-PASS (#19) |
+| `ARCHITECTURE-EMAIL-TEMPLATES.md` | תבניות RTL לכל אירוע קופון (Resend). | QA-PASS (#6) |
+| `ARCHITECTURE-FRAUD-PREVENTION.md` | מימוש כפול, QR, chargebacks, velocity. | BINDING |
+| `ARCHITECTURE-GIFT-COUPONS.md` | קופון מתנה: בעלות, ברכות, claim. | QA-PASS (#16) |
+| `ARCHITECTURE-GROWTH-SEO.md` | הכרעות SEO/צמיחה (ייתכן cashback ישן). | REVIEW |
+| `ARCHITECTURE-INVENTORY.md` | מלאי קופונים ומכסות פר דיל. | QA-PASS (#7) |
+| `ARCHITECTURE-LEGAL-COMPLIANCE.md` | הגנת הצרכן, 14 יום, דמי ביטול, נגישות. | QA-PASS (#3) |
+| `ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md` | טיוטת checkout ישנה (10%/escrow). | STALE |
+| `ARCHITECTURE-MOBILE-APP.md` | Expo + React Native על אותו backend. | BINDING |
+| `ARCHITECTURE-MOBILE-SUPERAPP.md` | תכנון מחייב 2026-07-17. | DESIGN |
+| `ARCHITECTURE-NOTIFICATIONS-MARKETING.md` | מסמך תכנון שיווק. | DESIGN |
+| `ARCHITECTURE-NOTIFICATIONS.md` | התראות טרנזקציוניות (Resend/Edge/WA/SMS). | BINDING |
+| `ARCHITECTURE-OBSERVABILITY.md` | Sentry, לוגים, התראות תפעול. | QA-PASS (#9) |
+| `ARCHITECTURE-PERFORMANCE.md` | Owner: Performance Architect | DESIGN |
+| `ARCHITECTURE-PERSONAL-AREA.md` | אזור אישי (P7 מיושר ל-No Escrow ב-QA). | BINDING |
+| `ARCHITECTURE-PRICING-RULES.md` | platform_percent דינמי פר מוצר, בזק, הנחות. | QA-PASS (#12) |
+| `ARCHITECTURE-PRODUCTION-OPS.md` | תכנון תשתית. | DESIGN |
+| `ARCHITECTURE-PWA.md` | PWA: manifest, SW, push. | BINDING |
+| `ARCHITECTURE-REFERRAL.md` | חבר מביא חבר + קאשבק פנימי. | QA-PASS (#8) |
+| `ARCHITECTURE-SEARCH-UX.md` | Meilisearch, השלמות, טעויות כתיב. | QA-PASS (#4) |
+| `ARCHITECTURE-SEARCH.md` | חיפוש קטלוג בעברית + DLQ. | BINDING |
+| `ARCHITECTURE-SEASONAL-CAMPAIGNS.md` | חגים ישראליים, בזק, ראש השנה/פסח. | QA-PASS (#18) |
+| `ARCHITECTURE-SECURITY-RLS.md` | מטריצת RLS ל-44 טבלאות. | BINDING |
+| `ARCHITECTURE-SECURITY.md` | Security decision record. | BINDING |
+| `ARCHITECTURE-SEO-PERFORMANCE.md` | SEO וביצועים (App Router). | BINDING |
+| `ARCHITECTURE-SEO.md` | תכנון SEO מלא 2026-07-23. | DESIGN |
+| `ARCHITECTURE-SUPPLIER-ONBOARDING.md` | הצטרפות ספק, בנק, סניפים, עובדים. | QA-PASS (#1) |
+| `ARCHITECTURE-SUPPLIER-PORTAL.md` | פורטל ספק (No Escrow). | BINDING |
+| `ARCHITECTURE-SUPPLIER-REDEMPTION.md` | תכנון מימוש ספק. | DESIGN |
+| `ARCHITECTURE-TESTING-CICD.md` | גובר עליו CONTRADICTIONS.md. | STALE |
+| `ARCHITECTURE-WALLET-LEDGER.md` | ledger כפול-רישום באגורות. | BINDING |
+| `ARCHITECTURE-WP-DATA-MIGRATION.md` | מיגרציית WordPress. | DESIGN |
+| `BUSINESS-MODEL.md` | מודל עסקי: מחיר קופון באתר + יתרה בעסק. | BINDING |
+| `CARDCOM-ARCHITECTURE.md` | ארכיטקטורת Cardcom. | BINDING |
+| `CHANGELOG.md` | יומן שינויים. | LIVE |
+| `MASTER-ARCHITECTURE.md` | גובר עליו CONTRADICTIONS.md. | STALE |
+| `ROADMAP-V2.md` | שלבים ותלויות לחבילת docs. | QA-PASS (#10) |
+| `RUNBOOK-PRODUCTION.md` | Deploy Vercel, rollback, MCP migrations. | QA-PASS (#5) |
+| `TEST-STRATEGY.md` | פירמידת טסטים (כסף קודם). | BINDING |
+| `MASTER-INDEX.md` | אינדקס זה. | QA-PASS (#20) |
 
 ---
 
@@ -80,16 +124,19 @@ Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 
 | # | מסמך |
 |---:|---|
-| 16 | `ARCHITECTURE-GIFT-COUPONS.md` |
-| 17 | `ARCHITECTURE-B2B-SALES.md` |
-| 18 | `ARCHITECTURE-SEASONAL-CAMPAIGNS.md` |
-| 19 | `ARCHITECTURE-DATA-EXPORT-GDPR.md` |
-| 20 | `MASTER-INDEX.md` |
+| 1–10 | onboarding → ROADMAP-V2 |
+| 11–15 | taxonomy → app-store |
+| 16–20 | gift → MASTER-INDEX |
 
-ראה גם: `ROADMAP-V2.md` לשלבי ביצוע ותלויות.
+ראה גם:
+
+```
+docs/ROADMAP-V2.md
+```
 
 ## Revision
 
 | תאריך | שינוי |
 |---|---|
 | 2026-08-06 | יצירת MASTER-INDEX לכל מסמכי הארכיטקטורה |
+| 2026-08-06 | QA pass: סטטוס לכל 20; מודל No Escrow + platform_percent; קישורים הדדיים |
