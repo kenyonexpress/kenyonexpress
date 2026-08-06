@@ -50,7 +50,33 @@ docs/RUNBOOK-PRODUCTION.md
 
 תיקון סתירה מחוץ לחבילה (באותו QA): `ARCHITECTURE-PERSONAL-AREA.md` P7 עודכן מ-Escrow/held ל-No Escrow.
 
-מסמכים ישנים עם באנר CONTRADICTIONS / עמלה קבועה 10%/5% נשארים **STALE** עד ריענון נפרד (לא חלק מחבילת 20).
+~~מסמכים ישנים עם באנר CONTRADICTIONS / עמלה קבועה 10%/5% נשארים **STALE** עד ריענון נפרד~~
+**הריענון הזה בוצע 2026-08-06. אין יותר מסמך STALE.**
+
+## סבב STALE, 2026-08-06
+
+שבעת המסמכים שנשארו מחוץ לחבילת 20. הבאנר האחיד שלהם ("גובר עליו
+CONTRADICTIONS, כל מספר עמלה כאן הוא שריד") הוסר מכולם, כי הוא ביקש מהקורא
+לנחש איזו שורה מתה במקום לומר. מה שנמצא בפועל:
+
+| מסמך | מה היה | מה נעשה |
+|---|---|---|
+| `ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md` | הנוסחה נכונה, ההערות שלצידה קראו לה "the 10%" / "the 90%"; סעיף 14 החזיק שש שאלות פתוחות שכולן הוכרעו, שתיים מהן **הפוך** | ההערות תוקנו; סעיף 14 נכתב מחדש כיומן הכרעות, עם D3 וזנב D6 כפתוחים היחידים |
+| `ARCHITECTURE-COMMERCE.md` | **לא היה STALE.** C1-C10 כבר משולבים בגוף, O1 מסומן CLOSED | הבאנר השגוי הוסר; נרשם הפער האמיתי היחיד: כל ה-DDL ב-`numeric(12,2)` שקלים מול כלל האגורות |
+| `ARCHITECTURE-ANALYTICS-BI.md` | "הלקוח משלם 10 אחוז באתר ו-90 בעסק" | תוקן ל-`coupon_price` פר מוצר; נוסף שהכנסת פלטפורמה נקראת מהשורה ולא נגזרת |
+| `ARCHITECTURE-TESTING-CICD.md` | ‏10/90; תרחיש E2E שדורש **גוף webhook חתום** (אין חתימה ל-Cardcom); "escrow is held" בסיום; רצפת כיסוי 95% על `escrow.ts` **שאינו קיים** | ארבעתם תוקנו |
+| `ARCHITECTURE-API-CONTRACTS.md` | ‏API-11 שולל מספרים קבועים ואז מנסח שרשרת נפילה ל-10; שתי סכמות zod עם `.default(10)` | השרשרת הוסרה; ה-default הוחלף בשדה הצעה nullable |
+| `MASTER-ARCHITECTURE.md` | ‏1.4 (`platform_percent` nullable + fallback) ו-1.11 ("ברירת מחדל: `suppliers.commission_percent`") כתובות כהכרעות תקפות | שתיהן סומנו כבוטלות במקום, עם ההכרעה והמיגרציה שנשאה אותה |
+| `ARCHITECTURE-CATALOG-SEARCH-SEO.md` | דירוג לפי `0.10 * margin` עם `coalesce(platform_percent, 10)` | **סתירה חזיתית מול `ARCHITECTURE-SEARCH-UX.md` (QA-PASS #4)**; הוכרעה לטובת ה-UX, איבר המרג'ין הוסר |
+
+בנוסף, מחוץ לשבעה: `ARCHITECTURE-GROWTH-SEO.md` (היה REVIEW) - נימוק הקאשבק
+לפיזי נשען על פיצול 10/90 שאינו קיים; תוקן, והתקרה של 25% מהעמלה נרשמה כמגן
+היחיד בפועל.
+
+**שני ממצאים שהם קוד ולא תיעוד**, נרשמים כאן ושייכים לסוכן שעל main:
+‏`vitest.config.ts` מחזיק רצפת כיסוי על `src/server/domain/orders/escrow.ts`
+שאינו קיים, ו-`payout_statements` + ה-RPC `generate_payout_statement` אינם
+קיימים בפרודקשן בזמן ש-`admin/payouts.ts` קורא לשניהם.
 
 ---
 
@@ -64,16 +90,16 @@ docs/RUNBOOK-PRODUCTION.md
 | `ARCHITECTURE-ADMIN-DASHBOARD.md` | ניהול מוצרים עם platform_percent דינמי פר מוצר, מחיר קופון, יתרה אצל הספק (בבית העסק). | BINDING |
 | `ARCHITECTURE-AI-AGENTS-RUNTIME.md` | טיוטה מחייבת v2.0 (2026-07-17). | DESIGN |
 | `ARCHITECTURE-AI-AGENTS.md` | five planned AI agents and shared infrastructure. | DESIGN |
-| `ARCHITECTURE-ANALYTICS-BI.md` | גובר עליו CONTRADICTIONS.md (עמלות ישנות). | STALE |
+| `ARCHITECTURE-ANALYTICS-BI.md` | משפך ואחסון אירועים; הכנסת פלטפורמה נקראת מהשורה. | QA-PASS (06.08) |
 | `ARCHITECTURE-ANALYTICS.md` | משפך מצפייה בדיל עד מימוש. PostHog + GA4. | QA-PASS (#2) |
-| `ARCHITECTURE-API-CONTRACTS.md` | גובר עליו CONTRADICTIONS.md. | STALE |
+| `ARCHITECTURE-API-CONTRACTS.md` | חוזי API; בלי ברירת מחדל לעמלה בשום סכמה. | QA-PASS (06.08) |
 | `ARCHITECTURE-APP-STORE-LAUNCH.md` | הכנה לפרסום ב-App Store ו-Google Play. | QA-PASS (#15) |
 | `ARCHITECTURE-B2B-SALES.md` | מכירת קופונים בכמות לחברות וועדי עובדים. | QA-PASS (#17) |
 | `ARCHITECTURE-BACKUP-DR.md` | גיבויים, PITR, ושחזור Supabase. | QA-PASS (#14) |
 | `ARCHITECTURE-CASHBACK-WALLET.md` | ארנק פנימי בלבד; ledger כפול-רישום באגורות. | BINDING |
-| `ARCHITECTURE-CATALOG-SEARCH-SEO.md` | גובר עליו CONTRADICTIONS.md. | STALE |
+| `ARCHITECTURE-CATALOG-SEARCH-SEO.md` | קטלוג וחיפוש; דירוג בלי מרג'ין (יושר ל-SEARCH-UX). | QA-PASS (06.08) |
 | `ARCHITECTURE-CATEGORIES-TAXONOMY.md` | עץ קטגוריות לשוק הישראלי. | QA-PASS (#11) |
-| `ARCHITECTURE-COMMERCE.md` | גובר עליו CONTRADICTIONS.md. | STALE |
+| `ARCHITECTURE-COMMERCE.md` | כללי מסחר; C1-C10 משולבים. DDL עדיין בשקלים. | QA-PASS (06.08) |
 | `ARCHITECTURE-COUPON-REDEMPTION-UX.md` | מפרט UX מחייב למימוש קופון. | BINDING |
 | `ARCHITECTURE-COUPON-REDEMPTION.md` | Supplier coupon / voucher redemption (scan). | BINDING |
 | `ARCHITECTURE-CUSTOMER-SUPPORT.md` | פניות לקוח, מימוש, SLA. | QA-PASS (#13) |
@@ -81,10 +107,10 @@ docs/RUNBOOK-PRODUCTION.md
 | `ARCHITECTURE-EMAIL-TEMPLATES.md` | תבניות RTL לכל אירוע קופון (Resend). | QA-PASS (#6) |
 | `ARCHITECTURE-FRAUD-PREVENTION.md` | מימוש כפול, QR, chargebacks, velocity. | BINDING |
 | `ARCHITECTURE-GIFT-COUPONS.md` | קופון מתנה: בעלות, ברכות, claim. | QA-PASS (#16) |
-| `ARCHITECTURE-GROWTH-SEO.md` | הכרעות SEO/צמיחה (ייתכן cashback ישן). | REVIEW |
+| `ARCHITECTURE-GROWTH-SEO.md` | הכרעות SEO/צמיחה; נימוק הקאשבק תוקן. | QA-PASS (06.08) |
 | `ARCHITECTURE-INVENTORY.md` | מלאי קופונים ומכסות פר דיל. | QA-PASS (#7) |
 | `ARCHITECTURE-LEGAL-COMPLIANCE.md` | הגנת הצרכן, 14 יום, דמי ביטול, נגישות. | QA-PASS (#3) |
-| `ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md` | טיוטת checkout ישנה (10%/escrow). | STALE |
+| `ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md` | checkout/מימוש; יומן הכרעות D1-D6. | QA-PASS (06.08) |
 | `ARCHITECTURE-MOBILE-APP.md` | Expo + React Native על אותו backend. | BINDING |
 | `ARCHITECTURE-MOBILE-SUPERAPP.md` | תכנון מחייב 2026-07-17. | DESIGN |
 | `ARCHITECTURE-NOTIFICATIONS-MARKETING.md` | מסמך תכנון שיווק. | DESIGN |
@@ -106,13 +132,13 @@ docs/RUNBOOK-PRODUCTION.md
 | `ARCHITECTURE-SUPPLIER-ONBOARDING.md` | הצטרפות ספק, בנק, סניפים, עובדים. | QA-PASS (#1) |
 | `ARCHITECTURE-SUPPLIER-PORTAL.md` | פורטל ספק (No Escrow). | BINDING |
 | `ARCHITECTURE-SUPPLIER-REDEMPTION.md` | תכנון מימוש ספק. | DESIGN |
-| `ARCHITECTURE-TESTING-CICD.md` | גובר עליו CONTRADICTIONS.md. | STALE |
+| `ARCHITECTURE-TESTING-CICD.md` | פירמידת טסטים ו-CI; בלי webhook חתום ובלי escrow. | QA-PASS (06.08) |
 | `ARCHITECTURE-WALLET-LEDGER.md` | ledger כפול-רישום באגורות. | BINDING |
 | `ARCHITECTURE-WP-DATA-MIGRATION.md` | מיגרציית WordPress. | DESIGN |
 | `BUSINESS-MODEL.md` | מודל עסקי: מחיר קופון באתר + יתרה בעסק. | BINDING |
 | `CARDCOM-ARCHITECTURE.md` | ארכיטקטורת Cardcom. | BINDING |
 | `CHANGELOG.md` | יומן שינויים. | LIVE |
-| `MASTER-ARCHITECTURE.md` | גובר עליו CONTRADICTIONS.md. | STALE |
+| `MASTER-ARCHITECTURE.md` | מסמך ההכרעות; 1.4 ו-1.11 מסומנות כבוטלות. | QA-PASS (06.08) |
 | `ROADMAP-V2.md` | שלבים ותלויות לחבילת docs. | QA-PASS (#10) |
 | `RUNBOOK-PRODUCTION.md` | Deploy Vercel, rollback, MCP migrations. | QA-PASS (#5) |
 | `TEST-STRATEGY.md` | פירמידת טסטים (כסף קודם). | BINDING |
@@ -140,3 +166,4 @@ docs/ROADMAP-V2.md
 |---|---|
 | 2026-08-06 | יצירת MASTER-INDEX לכל מסמכי הארכיטקטורה |
 | 2026-08-06 | QA pass: סטטוס לכל 20; מודל No Escrow + platform_percent; קישורים הדדיים |
+| 2026-08-06 | סבב STALE: שבעה מסמכים + GROWTH-SEO. אין יותר STALE ב-`docs/` |
