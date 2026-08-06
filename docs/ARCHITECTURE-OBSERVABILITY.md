@@ -2,7 +2,7 @@
 
 Sentry, לוגים מובנים, והתראות תפעוליות.
 
-Status: **BINDING** · עודכן: 2026-08-06  
+Status: **BINDING** · עודכן: 2026-08-06 · QA: PASS  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -13,6 +13,7 @@ docs/RUNBOOK-PRODUCTION.md
 docs/ARCHITECTURE-BACKUP-DR.md
 docs/ARCHITECTURE-FRAUD-PREVENTION.md
 docs/ARCHITECTURE-SECURITY.md
+docs/MASTER-INDEX.md
 ```
 
 הקשר: מפעיל יחיד עם טלפון. אין NOC.
@@ -79,3 +80,4 @@ Retention: runtime קצר + drain (יעד ~30 יום).
 | תאריך | שינוי |
 |---|---|
 | 2026-08-06 | Sentry + לוגים + התראות (מסמך ממוקד בעברית) |
+| 2026-08-06 | QA: קישור MASTER-INDEX; RTL/עברית תקינים |
