@@ -13,6 +13,7 @@ docs/ARCHITECTURE-SEARCH.md
 docs/ARCHITECTURE-CATEGORIES-TAXONOMY.md
 docs/ARCHITECTURE-SEO-PERFORMANCE.md
 docs/ARCHITECTURE-PRICING-RULES.md
+docs/CONTRADICTIONS.md
 ```
 
 MVP דירוג: Postgres FTS. Meilisearch = UX (typo, facets, מהירות) + אינדוקס עם DLQ.
@@ -87,3 +88,4 @@ MVP דירוג: Postgres FTS. Meilisearch = UX (typo, facets, מהירות) + א
 |---|---|
 | 2026-08-06 | Meilisearch + השלמות עברית + טעויות כתיב |
 | 2026-08-06 | QA: בלי boost עמלה קבועה; קישור PRICING |
+| 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
