@@ -2,7 +2,7 @@
 
 מלאי קופונים ומכסות פר דיל (ומלאי פיזי בסיסי).
 
-Status: **BINDING** · עודכן: 2026-08-06  
+Status: **BINDING** · עודכן: 2026-08-06 · QA: PASS  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -12,6 +12,8 @@ Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 docs/ARCHITECTURE-PRICING-RULES.md
 docs/ARCHITECTURE-ADMIN-DASHBOARD.md
 docs/ARCHITECTURE-COUPON-REDEMPTION.md
+docs/ARCHITECTURE-B2B-SALES.md
+docs/ARCHITECTURE-SEASONAL-CAMPAIGNS.md
 ```
 
 ---
@@ -25,6 +27,7 @@ docs/ARCHITECTURE-COUPON-REDEMPTION.md
 | I3 | פיזי: `stock_qty` על variant; oversell אסור. |
 | I4 | `unlimited` רק במפורש; אחרת מספר חובה. |
 | I5 | תצוגת "נשארו X" רק מתחת לסף הצגה. |
+| I6 | מלאי לא משנה מודל כסף: קופון **No Escrow**; פיזי לפי `platform_percent` פר מוצר. |
 
 ---
 
@@ -69,3 +72,4 @@ Webhook/finalize חייב אותה בדיקה או reserve מוקדם.
 | תאריך | שינוי |
 |---|---|
 | 2026-08-06 | מלאי קופונים ומכסות פר דיל |
+| 2026-08-06 | QA: I6 No Escrow + `platform_percent`; קישורים B2B/SEASONAL |
