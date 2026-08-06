@@ -8,8 +8,8 @@ clean production build, not quoted from an earlier session.
 
 ## The one-line version
 
-The code is done. **Nothing that remains is code.** What is left is six
-configuration values, one DNS cutover, one database migration, and a set of
+The code is done. **Nothing that remains is code.** What is left is eight
+configuration values, one DNS cutover, two database migrations, and a set of
 GitHub settings, all of which need a human with credentials.
 
 ---
@@ -34,7 +34,7 @@ a production build.
 
 ## What was completed
 
-The numbered queue `[1]`–`[63]` is closed. The last stretch:
+The numbered queue `[1]`–`[64]` is closed. The last stretch:
 
 - **[48]–[54]** refund flow, wallet passes, security hardening, sitemap and
   feeds, Open Graph, data seeding, admin reports.
@@ -49,6 +49,8 @@ The numbered queue `[1]`–`[63]` is closed. The last stretch:
 - **[61]** self-audit. See below.
 - **[62]** CI hardening and the second integration pass.
 - **[63]** system checks, backup, secret sweep.
+- **[64]** final integration pass, this report, and the `revoke_anon_writes`
+  migration written to pending.
 
 ### Observability, finished in this run
 
@@ -208,16 +210,49 @@ So this is not "DNS is unconfigured". It is a cutover: point the domain at
 Vercel when you are ready to switch, and confirm first which branch Vercel
 treats as production (see item 1).
 
-### 5. Pending migration — do not run it blind
+### 5. Pending migrations — two of them, neither applied
 
-`PENDING-money-integer-fix.sql` converts the wallet balance from `numeric`
+Both live in `supabase/migrations/` under a `PENDING-` prefix. There is no
+`migrations/pending/` directory in this repo; the prefix is the convention.
+Everything numbered, including `106`–`108`, is already applied in production.
+
+#### `PENDING-revoke_anon_writes.sql` — defence in depth, written this run
+
+`anon` currently holds DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE
+and UPDATE on **all 46 tables** in `public`, and RLS is enabled on all 46, so
+RLS is the only layer between an anonymous caller and a write.
+
+**TRUNCATE is not a missing second layer, it is a missing first one.** RLS does
+not apply to TRUNCATE at all; no policy is consulted. `anon` holding it on 46
+tables is an unguarded path to emptying any of them.
+
+It is deliberately **not** the blanket `REVOKE ... FROM anon` it looks like,
+because that breaks the guest cart. The policy `carts: owner all` identifies a
+guest by session cookie and explicitly permits `profile_id IS NULL`, and
+`cart.ts` writes `carts` through the request-scoped anon-key client, so a
+logged-out visitor's writes execute as `anon`. `carts` is re-granted and is the
+only such table: newsletter and the `/api/a` beacon were both checked and go
+through `service_role`.
+
+The file carries its own verification query, the guest-cart check to run after,
+and a rollback.
+
+#### `PENDING-money-integer-fix.sql` — blocked, do not run it blind
+
+Converts the wallet balance from `numeric`
 shekels to integer agorot. It is **blocked by explicit instruction** and is
 what blocks the wallet goal.
 
-**A warning recorded when migration 103 was applied:** that migration drops and
-rebuilds `v_wallet_balance_drift`. A rebuilt view does **not** inherit
-`security_invoker` and does not inherit 103's `REVOKE`. If both are not
-reapplied in the same migration, the RLS hole 103 closed reopens silently.
+It performs **41 column conversions across 16 tables** (`products` 8,
+`order_items` 5, `orders` 4, `wallet_balances`/`product_variants`/`coupon_codes`
+3 each, and so on), rewrites `fn_wallet_transfer` from `numeric` to `bigint`,
+plus `fn_pay_referral` and both cashback functions.
+
+**A warning was recorded when migration 103 was applied, and reading this file
+confirms it still applies:** it drops and rebuilds `v_wallet_balance_drift` and
+`v_wallet_ledger`, and the file contains **no `security_invoker` and no
+`REVOKE`** for either. A rebuilt view inherits neither. Run as written, it
+silently reopens the RLS hole that 103 closed.
 
 Also note `payments` in production is the **pre-059 lineage**: it has
 `amount_ils` and `wallet_applied_ils`, and no `amount_agorot`, no `paid_at` and
