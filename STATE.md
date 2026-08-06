@@ -1202,3 +1202,8 @@ ke-arch
 - ARCHITECTURE-SEASONAL-CAMPAIGNS.md d808c6c
 - ARCHITECTURE-DATA-EXPORT-GDPR.md 84df64a
 - MASTER-INDEX.md 1e5b291
+### 2026-08-06 : ke-arch QA pass חבילת 20
+- יישור No Escrow + platform_percent בכל 20
+- קישורים הדדיים + QA-PASS ב-MASTER-INDEX (`2144654`)
+- PERSONAL-AREA P7: ביטול Escrow/held
+- STATE: סעיף Escrow 2026-07-27 מסומן כארכיון (דורס)
