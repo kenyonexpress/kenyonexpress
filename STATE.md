@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-07 (docs-only ke-arch: QA re-pass חבילת 20)
+Updated: 2026-08-07 (docs-only ke-arch: QA verify חבילת 20)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,14 +8,14 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-QA re-pass על כל 20 מסמכי ROADMAP-V2:
+QA verify על כל 20 מסמכי ROADMAP-V2 (אחרי re-pass):
 
-- סתירה קריטית: `docs/CONTRADICTIONS.md` עודכן מ-C11ב (Escrow) ל-**C11א / No Escrow**
-- קישורים הדדיים ל-`CONTRADICTIONS.md` בכל החבילה
-- en-dash הוחלף בעברית (`עד`) ב-ROADMAP / SUPPORT / SEASONAL / MASTER-INDEX
-- `docs/MASTER-INDEX.md`: טבלת סטטוס QA-PASS מעודכנת ל-2026-08-07
+- סריקה מסמך-מסמך: No Escrow + `platform_percent`; קישורים הדדיים; RTL
+- תיקון יחיד: `ARCHITECTURE-CUSTOMER-SUPPORT.md` S7 + קישור PRICING
+- `MASTER-INDEX.md`: סטטוס QA-PASS לכל #1 עד 20 (מעודכן #12/#13)
+- בוטל working-tree שגוי שהחזיר Escrow ל-`CONTRADICTIONS.md` (לא נכנס ל-commit)
 
-Commit אחרי כל תיקון; tip אחרי MASTER-INDEX + EMAIL: ראה `git log`.
+Commit אחרי כל תיקון; tip: ראה `git log`.
 
 ## In Progress
 nothing
