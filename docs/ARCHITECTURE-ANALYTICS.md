@@ -2,7 +2,7 @@
 
 משפך מצפייה בדיל עד מימוש. המלצה: **PostHog** (מוצר) + **GA4** (מרקטינג).
 
-Status: **BINDING** · עודכן: 2026-08-06  
+Status: **BINDING** · עודכן: 2026-08-06 · QA: PASS  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -12,9 +12,12 @@ Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 docs/ARCHITECTURE-ANALYTICS-BI.md
 docs/ARCHITECTURE-ADMIN-DASHBOARD.md
 docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
+docs/ARCHITECTURE-REFERRAL.md
+docs/ARCHITECTURE-PRICING-RULES.md
 ```
 
 עקרון: משפך התנהגותי באירועים; כסף עסקי רק מה-ledger. בלי PII.
+עמלה/GMV: לפי snapshot של `platform_percent` ו-No Escrow (לא מ-GA4/PostHog).
 
 ---
 
@@ -102,3 +105,4 @@ SDKs רק אחרי consent.
 | תאריך | שינוי |
 |---|---|
 | 2026-08-06 | משפך צפייה→מימוש + המלצת GA4/PostHog |
+| 2026-08-06 | QA: קישור REFERRAL/PRICING; כסף מ-ledger + `platform_percent` |
