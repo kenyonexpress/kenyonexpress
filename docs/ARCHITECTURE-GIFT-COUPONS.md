@@ -16,6 +16,7 @@ docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 docs/ARCHITECTURE-CASHBACK-WALLET.md
 docs/ARCHITECTURE-B2B-SALES.md
 docs/ARCHITECTURE-PRICING-RULES.md
+docs/CONTRADICTIONS.md
 ```
 
 ---
@@ -113,3 +114,4 @@ Ownership על `vouchers.user_id` משתנה רק ב-RPC `transfer_gift_voucher`
 |---|---|
 | 2026-08-06 | קופון מתנה: בעלות, ברכות, claim |
 | 2026-08-06 | QA: קישור B2B/PRICING; No Escrow מחוזק |
+| 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
