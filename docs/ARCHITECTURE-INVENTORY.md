@@ -14,6 +14,7 @@ docs/ARCHITECTURE-ADMIN-DASHBOARD.md
 docs/ARCHITECTURE-COUPON-REDEMPTION.md
 docs/ARCHITECTURE-B2B-SALES.md
 docs/ARCHITECTURE-SEASONAL-CAMPAIGNS.md
+docs/CONTRADICTIONS.md
 ```
 
 ---
@@ -73,3 +74,4 @@ Webhook/finalize חייב אותה בדיקה או reserve מוקדם.
 |---|---|
 | 2026-08-06 | מלאי קופונים ומכסות פר דיל |
 | 2026-08-06 | QA: I6 No Escrow + `platform_percent`; קישורים B2B/SEASONAL |
+| 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
