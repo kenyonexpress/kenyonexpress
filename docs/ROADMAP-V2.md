@@ -33,6 +33,12 @@ Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 | 8 | `ARCHITECTURE-REFERRAL.md` | חבר מביא חבר + קאשבק |
 | 9 | `ARCHITECTURE-OBSERVABILITY.md` | Sentry, לוגים, התראות |
 | 10 | `ROADMAP-V2.md` | מסמך זה |
+| 11 | `ARCHITECTURE-CATEGORIES-TAXONOMY.md` | עץ קטגוריות ישראלי |
+| 12 | `ARCHITECTURE-PRICING-RULES.md` | platform_percent, בזק, הנחות |
+| 13 | `ARCHITECTURE-CUSTOMER-SUPPORT.md` | פניות, מימוש, SLA |
+| 14 | `ARCHITECTURE-BACKUP-DR.md` | גיבוי/שחזור Supabase |
+| 15 | `ARCHITECTURE-APP-STORE-LAUNCH.md` | הכנה לחנויות אפ |
+
 
 ---
 
@@ -107,3 +113,4 @@ Escrow לקופון · משיכת ארנק החוצה · `supabase db push` לי
 | תאריך | שינוי |
 |---|---|
 | 2026-08-06 | ROADMAP-V2 עם 10 מסמכי החבילה + שלבים A/B/C |
+| 2026-08-06 | הוספת docs 11–15 (taxonomy/pricing/support/backup/app-store) |
