@@ -13,6 +13,7 @@ docs/ARCHITECTURE-CASHBACK-WALLET.md
 docs/ARCHITECTURE-WALLET-LEDGER.md
 docs/ARCHITECTURE-FRAUD-PREVENTION.md
 docs/ARCHITECTURE-ANALYTICS.md
+docs/ARCHITECTURE-PRICING-RULES.md
 docs/CONTRADICTIONS.md
 ```
 
@@ -28,6 +29,7 @@ docs/CONTRADICTIONS.md
 | R4 | זיכוי רק בארנק פנימי (`referral_bonus`). |
 | R5 | Idempotency: `referral_referrer:{id}` / `referral_referred:{id}`. |
 | R6 | אין self-referral; rate limit + manual_review על abuse. |
+| R7 | בונוס לא משנה `platform_percent` ולא יוצר Escrow/held; מקטין חיוב on-site בקופה בלבד (PRICING). |
 
 ---
 
@@ -78,3 +80,4 @@ A משתף /r/CODE
 | 2026-08-06 | חבר מביא חבר עם קאשבק פנימי |
 | 2026-08-06 | QA: קישור ANALYTICS; בונוס ארנק פנימי בלבד (לא Escrow) |
 | 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
+| 2026-08-07 | QA: קישור PRICING + R7 (ארנק פנימי; לא Escrow) |
