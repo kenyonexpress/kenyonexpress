@@ -14,6 +14,7 @@ docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 docs/ARCHITECTURE-ADMIN-DASHBOARD.md
 docs/ARCHITECTURE-NOTIFICATIONS.md
 docs/ARCHITECTURE-DATA-EXPORT-GDPR.md
+docs/ARCHITECTURE-PRICING-RULES.md
 docs/CONTRADICTIONS.md
 ```
 
@@ -25,10 +26,11 @@ docs/CONTRADICTIONS.md
 |---|---|
 | S1 | תמיכה בעברית: טופס/מייל; טלפון אופציונלי בהמשך. |
 | S2 | Role `support`: קריאה רחבה; כסף מוגבל בלי mark payout/refund מלא. |
-| S3 | בעיית מימוש: קודם voucher status + redemption log; לא "שחרור" בלי audit. |
+| S3 | בעיית מימוש: קודם voucher status + redemption log; בלי פעולת כסף בלי audit. |
 | S4 | צילום מסך / מימוש כפול: מדיניות FRAUD + תסריט קבוע. |
 | S5 | Chargeback/refund: העברה ל-admin/super_admin. |
 | S6 | SLA: מענה ראשון ≤ **1 יום עסקים** ב-MVP; דחוף מימוש ≤ **4 שעות עסקים**. |
+| S7 | **No Escrow:** לתמיכה אסור להבטיח "שחרור מקדמה לספק" / נאמן / J5. קופון = שולם באתר לפלטפורמה + יתרה בעסק. פיזי = `platform_percent` פר מוצר (ראה PRICING / CONTRADICTIONS). |
 
 ---
 
@@ -80,3 +82,4 @@ docs/CONTRADICTIONS.md
 | 2026-08-06 | פניות, מימוש, SLA מפורש |
 | 2026-08-06 | QA: קישור DATA-EXPORT-GDPR |
 | 2026-08-07 | QA re-pass: en-dash בשעות; קישור CONTRADICTIONS |
+| 2026-08-07 | QA verify: S7 No Escrow מפורש; קישור PRICING-RULES |
