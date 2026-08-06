@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-06 (docs-only ke-arch: 10-doc binding refresh)
+Updated: 2026-08-06 (docs-only ke-arch: docs 11–15 appended)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,18 +8,13 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-עשרה מסמכים, commit נפרד לכל אחד (בלי PR):
+חמישה מסמכים נוספים (11–15), commit נפרד לכל אחד:
 
-1. docs/ARCHITECTURE-SUPPLIER-ONBOARDING.md (`ee34dc3`)
-2. docs/ARCHITECTURE-ANALYTICS.md (`48f2be4`)
-3. docs/ARCHITECTURE-LEGAL-COMPLIANCE.md (`a99adfe`)
-4. docs/ARCHITECTURE-SEARCH-UX.md (`625bc27`)
-5. docs/RUNBOOK-PRODUCTION.md (`f975d2e`)
-6. docs/ARCHITECTURE-EMAIL-TEMPLATES.md (`2bf1b2b`)
-7. docs/ARCHITECTURE-INVENTORY.md (`6f7467d`)
-8. docs/ARCHITECTURE-REFERRAL.md (`77ced4f`)
-9. docs/ARCHITECTURE-OBSERVABILITY.md (`8b86e57`)
-10. docs/ROADMAP-V2.md (`fa7889f`)
+11. docs/ARCHITECTURE-CATEGORIES-TAXONOMY.md (`e34f6a3`)
+12. docs/ARCHITECTURE-PRICING-RULES.md (`9364c80`)
+13. docs/ARCHITECTURE-CUSTOMER-SUPPORT.md (`61ba9fd`)
+14. docs/ARCHITECTURE-BACKUP-DR.md (`345522d`)
+15. docs/ARCHITECTURE-APP-STORE-LAUNCH.md (`e71e3ac`)
 
 ## In Progress
 nothing
@@ -1190,3 +1185,9 @@ ke-arch
 - ARCHITECTURE-REFERRAL.md 77ced4f
 - ARCHITECTURE-OBSERVABILITY.md 8b86e57
 - ROADMAP-V2.md fa7889f
+### 2026-08-06 : ke-arch docs 11–15
+- ARCHITECTURE-CATEGORIES-TAXONOMY.md e34f6a3
+- ARCHITECTURE-PRICING-RULES.md 9364c80
+- ARCHITECTURE-CUSTOMER-SUPPORT.md 61ba9fd
+- ARCHITECTURE-BACKUP-DR.md 345522d
+- ARCHITECTURE-APP-STORE-LAUNCH.md e71e3ac
