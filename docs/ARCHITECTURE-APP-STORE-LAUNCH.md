@@ -35,6 +35,7 @@ PWA היא גשר עד שהאפ בחנויות; לא תחליף קבוע.
 | AS4 | ארנק פנימי: אין משיכה החוצה; יש לנסח במדיניות פרטיות ותנאי שימוש. |
 | AS5 | לפני Soft Launch בחנויות: soft-open web יציב + רכישת טסט + redeem טסט. |
 | AS6 | חשבונות מפתח: Apple Developer + Google Play Console על שם העוסק. |
+| AS7 | **No Escrow:** אין מסכי נאמן/held/J5. קופון = שולם באתר לפלטפורמה + יתרה בעסק. פיזי = `platform_percent` פר מוצר (בלי default; ראה PRICING / CONTRADICTIONS). |
 
 ---
 
@@ -119,3 +120,4 @@ PWA היא גשר עד שהאפ בחנויות; לא תחליף קבוע.
 | 2026-08-06 | מסמך הכנה להשקה ב-App Store / Google Play |
 | 2026-08-06 | QA: איסור Escrow/held ב-store; קישור PRICING |
 | 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
+| 2026-08-07 | QA audit: AS7 No Escrow + `platform_percent` פר מוצר |
