@@ -1,8 +1,8 @@
 # ארכיטקטורה: אנליטיקה
 
-אירועי משפך **מצפייה בדיל עד מימוש**, והמלצה: **PostHog** (מוצר) + **GA4** (מרקטינג).
+משפך מצפייה בדיל עד מימוש. המלצה: **PostHog** (מוצר) + **GA4** (מרקטינג).
 
-Status: **BINDING** · עודכן: 2026-08-03  
+Status: **BINDING** · עודכן: 2026-08-06  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -14,21 +14,18 @@ docs/ARCHITECTURE-ADMIN-DASHBOARD.md
 docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 ```
 
-עקרון: משפך התנהגותי באירועים; **כסף עסקי רק מה-ledger**. בלי PII ב-payloads.
+עקרון: משפך התנהגותי באירועים; כסף עסקי רק מה-ledger. בלי PII.
 
 ---
 
-## 0. המלצה: GA4 מול PostHog
+## 0. GA4 מול PostHog (המלצה)
 
 | קריטריון | GA4 | PostHog |
 |---|---|---|
 | משפכי מוצר | מסורבל | חזק |
 | Google Ads / Search Console | חזק | חלש |
 | פרטיות / שליטה | מעבד Google | שליטה טובה יותר |
-| Session replay | מוגבל | חזק (רק אחרי consent, בלי PII) |
-| עלות התחלה | חינם עד סף | חינם/cloud; self-host אפשרי |
-
-### הכרעה
+| Session replay | מוגבל | חזק (אחרי consent, בלי PII) |
 
 | שכבה | כלי |
 |---|---|
@@ -39,38 +36,31 @@ docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 
 ---
 
-## 1. משפך מחייב: צפייה בדיל → מימוש
+## 1. משפך: צפייה → מימוש
 
 ```text
-view_product
-  → add_to_cart
-  → begin_checkout
-  → purchase          (server / ledger derived)
-  → coupon_view       (פתיחת דף/אפ קופון; אופציונלי)
-  → coupon_redeemed   (server / ledger derived)
+view_product → add_to_cart → begin_checkout → purchase → coupon_redeemed
 ```
 
 | שלב | event_name | מקור |
 |---|---|---|
 | צפייה בדיל | `view_product` | client |
-| הוספה לעגלה | `add_to_cart` | client |
-| התחלת קופה | `begin_checkout` | client |
-| תשלום | `purchase` | server |
-| מימוש | `coupon_redeemed` | server |
+| עגלה | `add_to_cart` | client |
+| קופה | `begin_checkout` | client |
+| תשלום | `purchase` | server (derived) |
+| מימוש | `coupon_redeemed` | server (derived) |
 
-מדדי משפך ב-PostHog: conversion בין השלבים.  
-מדדי כסף ב-SQL: on-site GMV, take, redemptions.
+אופציונלי: `coupon_view` בפתיחת דף הקופון.
 
 ---
 
-## 2. Envelope (בלי PII)
+## 2. Envelope בלי PII
 
 ```json
 {
   "event_id": "uuid",
   "event_name": "view_product",
   "schema_version": 1,
-  "occurred_at": "…",
   "session_id": "uuid",
   "user_id": "uuid-or-null",
   "consent": { "analytics": true, "marketing": false },
@@ -79,7 +69,8 @@ view_product
 }
 ```
 
-אסור: email, phone, שם, IP מלא, מחרוזת חיפוש גולמית, PAN.
+אסור: email, phone, שם, IP מלא, מחרוזת חיפוש גולמית, PAN.  
+כסף ב-props: אגורות integer בלבד.
 
 ---
 
@@ -93,16 +84,16 @@ view_product
 | `purchase` | `purchase` (value = on-site) | `purchase` |
 | `coupon_redeemed` | custom אופציונלי | `coupon_redeemed` |
 
-SDKs נטענים רק אחרי consent.
+SDKs רק אחרי consent.
 
 ---
 
 ## 4. Acceptance
 
-- [ ] משפף מלא עד מימוש מתועד  
-- [ ] המלצת PostHog+GA4 מפורשת  
+- [ ] משפף עד מימוש מתועד  
+- [ ] המלצת PostHog + GA4 מפורשת  
 - [ ] Deny-list PII  
-- [ ] כסף לא מ-`sum` ב-GA4/PostHog  
+- [ ] כסף לא מ-sum ב-GA4/PostHog  
 
 ---
 
@@ -110,4 +101,4 @@ SDKs נטענים רק אחרי consent.
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-03 | משפך צפייה→מימוש + המלצת GA4/PostHog |
+| 2026-08-06 | משפך צפייה→מימוש + המלצת GA4/PostHog |
