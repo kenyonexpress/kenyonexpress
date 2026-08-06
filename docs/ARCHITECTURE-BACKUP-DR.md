@@ -14,6 +14,7 @@ docs/ARCHITECTURE-OBSERVABILITY.md
 docs/ARCHITECTURE-PRODUCTION-OPS.md
 docs/ARCHITECTURE-SECURITY.md
 docs/ARCHITECTURE-DATA-EXPORT-GDPR.md
+docs/CONTRADICTIONS.md
 ```
 
 ---
@@ -111,3 +112,4 @@ docs/ARCHITECTURE-DATA-EXPORT-GDPR.md
 |---|---|
 | 2026-08-06 | גיבוי/שחזור Supabase ממוקד (Pro, PITR, offsite, DR) |
 | 2026-08-06 | QA: קישור GDPR; יישור ל-RUNBOOK MCP |
+| 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
