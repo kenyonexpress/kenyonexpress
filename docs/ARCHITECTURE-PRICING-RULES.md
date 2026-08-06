@@ -16,9 +16,9 @@ docs/ARCHITECTURE-FRAUD-PREVENTION.md
 docs/ARCHITECTURE-SEASONAL-CAMPAIGNS.md
 docs/ARCHITECTURE-B2B-SALES.md
 docs/ARCHITECTURE-CUSTOMER-SUPPORT.md
+docs/ARCHITECTURE-REFERRAL.md
 docs/CONTRADICTIONS.md
 ```
-
 ---
 
 ## 0. הכרעות
@@ -89,3 +89,4 @@ else:
 | 2026-08-06 | QA: קישור SEASONAL/B2B; חיזוק No Escrow |
 | 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
 | 2026-08-07 | QA verify: קישור הדדי ל-CUSTOMER-SUPPORT |
+| 2026-08-07 | QA: קישור הדדי ל-REFERRAL |
