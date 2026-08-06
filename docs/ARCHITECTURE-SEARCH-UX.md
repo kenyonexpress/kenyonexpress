@@ -2,7 +2,7 @@
 
 Meilisearch, השלמות בעברית, ותיקון טעויות כתיב.
 
-Status: **BINDING** · עודכן: 2026-08-06  
+Status: **BINDING** · עודכן: 2026-08-06 · QA: PASS  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -12,9 +12,11 @@ Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 docs/ARCHITECTURE-SEARCH.md
 docs/ARCHITECTURE-CATEGORIES-TAXONOMY.md
 docs/ARCHITECTURE-SEO-PERFORMANCE.md
+docs/ARCHITECTURE-PRICING-RULES.md
 ```
 
 MVP דירוג: Postgres FTS. Meilisearch = UX (typo, facets, מהירות) + אינדוקס עם DLQ.
+דירוג לא משתמש בעמלה קבועה; אין boost לפי 10%/5%. `platform_percent` אינו גורם מיון ב-UX.
 
 ---
 
@@ -84,3 +86,4 @@ MVP דירוג: Postgres FTS. Meilisearch = UX (typo, facets, מהירות) + א
 | תאריך | שינוי |
 |---|---|
 | 2026-08-06 | Meilisearch + השלמות עברית + טעויות כתיב |
+| 2026-08-06 | QA: בלי boost עמלה קבועה; קישור PRICING |
