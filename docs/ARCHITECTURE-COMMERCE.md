@@ -1,10 +1,23 @@
 # KenyonExpress Commerce Architecture
 
-> **גובר עליו `docs/CONTRADICTIONS.md` (2026-07-24).** כל מספר עמלה, ברירת מחדל
-> (10%/5%) או נוסח Escrow במסמך הזה הוא שריד. ההכרעה: `platform_percent`
-> פר-מוצר, חובה, בלי ברירת מחדל בשום מקום; ה-held הוא רישום פנימי ב-ledger בלבד.
+> **QA 2026-08-06: הבאנר הקודם כאן היה שגוי, והוסר.** הוא הכריז שכל מספר עמלה
+> ונוסח Escrow במסמך הוא שריד שגובר עליו `CONTRADICTIONS.md`. **זה לא נכון
+> יותר, ולא היה נכון כשנבדק:** הגוף של המסמך כבר מיישם את ההכרעות במפורש -
+> ‏C1/C2 בסעיף 0.1 ובסעיף 2.1 (אין ברירת מחדל בשום מקום, `commission_percent`
+> יצא מתפקיד מפתח הפיצול), ‏C3 בסעיף 0.3 (אין נאמן, אין J5, ה-held הוא רישום
+> פנימי בלבד), ‏C4, ‏C6, ‏C7, ‏C8 ו-C10 כל אחד במקומו, ו-O1 מסומן CLOSED.
+> באנר שאומר "אל תסמוך על המסמך הזה" מעל מסמך שכן מדויק גורם לקורא ללכת לחפש
+> את האמת במקום גרוע יותר.
+>
+> **מה כן נשאר לא מיושר, וזה אמיתי:** כל ה-DDL כאן ב-`numeric(12,2)` שקלים
+> (`charged_on_site_ils`, `platform_fee_ils`, `supplier_due_ils`,
+> `balance_due_at_business_ils`), בזמן שכלל הכסף המחייב הוא **אגורות integer
+> בלבד**. זה אותו פער בדיוק שרשום כ-D3 ב-`ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md`
+> וכ-`PENDING-money-integer-fix.sql` שממתין לאישור ואסור להריץ. המיגרציה
+> הנלווית `026_commerce.sql` **לא הוחלה**, ולכן הפער הזה עדיין תיאורטי: הוא
+> יהפוך לאמיתי ברגע שמישהו יחיל אותה כפי שהיא.
 
-Status: DESIGN. Companion draft migration: `supabase/migrations/026_commerce.sql` (NOT applied).
+Status: **DESIGN, QA-PASS 2026-08-06** (הוסר סימון STALE). Companion draft migration: `supabase/migrations/026_commerce.sql` (NOT applied).
 Date: 2026-07-08. Supersedes the fixed-10% commission model documented in
 `.claude/skills/cardcom-payments` wherever the two conflict. This document also
 absorbs the earlier commerce stub (which mislabeled the commerce migration as
