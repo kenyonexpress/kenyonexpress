@@ -2,7 +2,7 @@
 
 קופון מתנה: רכישה, העברת בעלות, וברכות.
 
-Status: **BINDING** · עודכן: 2026-08-06  
+Status: **BINDING** · עודכן: 2026-08-06 · QA: PASS  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -14,6 +14,8 @@ docs/ARCHITECTURE-EMAIL-TEMPLATES.md
 docs/ARCHITECTURE-FRAUD-PREVENTION.md
 docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 docs/ARCHITECTURE-CASHBACK-WALLET.md
+docs/ARCHITECTURE-B2B-SALES.md
+docs/ARCHITECTURE-PRICING-RULES.md
 ```
 
 ---
@@ -110,3 +112,4 @@ Ownership על `vouchers.user_id` משתנה רק ב-RPC `transfer_gift_voucher`
 | תאריך | שינוי |
 |---|---|
 | 2026-08-06 | קופון מתנה: בעלות, ברכות, claim |
+| 2026-08-06 | QA: קישור B2B/PRICING; No Escrow מחוזק |
