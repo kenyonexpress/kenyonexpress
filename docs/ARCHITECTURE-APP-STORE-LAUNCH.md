@@ -2,7 +2,7 @@
 
 הכנה לפרסום אפליקציית KenyonExpress ב-App Store ו-Google Play.
 
-Status: **BINDING** · עודכן: 2026-08-06  
+Status: **BINDING** · עודכן: 2026-08-06 · QA: PASS  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -14,10 +14,12 @@ docs/ARCHITECTURE-PWA.md
 docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 docs/ARCHITECTURE-NOTIFICATIONS.md
 docs/ARCHITECTURE-CASHBACK-WALLET.md
+docs/ARCHITECTURE-PRICING-RULES.md
 docs/ROADMAP-V2.md
 ```
 
 עקרון: Web נשאר ערוץ SEO ורכישה ראשונית. האפ (Expo) = שימור, Push, ארנק קופונים, סריקת ספק.  
+Store copy בעברית RTL. אסור מסכי Escrow/held לקופון; חובה שולם באתר + יתרה בעסק. 
 PWA היא גשר עד שהאפ בחנויות; לא תחליף קבוע.
 
 ---
@@ -114,3 +116,4 @@ PWA היא גשר עד שהאפ בחנויות; לא תחליף קבוע.
 | תאריך | שינוי |
 |---|---|
 | 2026-08-06 | מסמך הכנה להשקה ב-App Store / Google Play |
+| 2026-08-06 | QA: איסור Escrow/held ב-store; קישור PRICING |
