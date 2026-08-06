@@ -14,8 +14,11 @@ docs/ARCHITECTURE-SEO-PERFORMANCE.md
 docs/ARCHITECTURE-ADMIN-DASHBOARD.md
 docs/ARCHITECTURE-CATALOG-SEARCH-SEO.md
 docs/ARCHITECTURE-SEASONAL-CAMPAIGNS.md
+docs/ARCHITECTURE-PRICING-RULES.md
 docs/CONTRADICTIONS.md
 ```
+
+עקרון כסף: קטגוריה **לא** קובעת עמלה. `platform_percent` רק במוצר (פר מוצר, בלי default). אין Escrow.
 
 ---
 
@@ -29,6 +32,7 @@ docs/CONTRADICTIONS.md
 | T4 | כל מוצר חייב קטגוריית taxonomy ראשית ל-breadcrumb/canonical. |
 | T5 | Collections ("עד 99", "חדש") לא מחליפות taxonomy ב-SEO. |
 | T6 | עץ התחלתי מותאם שוק ישראלי. |
+| T7 | קטגוריה לא קובעת `platform_percent` ולא יוצרת Escrow (PRICING / CONTRADICTIONS). |
 
 ---
 
@@ -92,3 +96,4 @@ product_categories (product_id, category_id, is_primary)
 | 2026-08-06 | עץ קטגוריות לשוק הישראלי (עומק 2) |
 | 2026-08-06 | QA: קישור SEASONAL; RTL עברית |
 | 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
+| 2026-08-07 | QA audit: T7 + קישור PRICING; קטגוריה בלי עמלה/Escrow |
