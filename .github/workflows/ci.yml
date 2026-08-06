@@ -7,8 +7,11 @@ on:
   # work happens on - got no CI at all. A gate that does not run on the branch
   # under development is not a gate.
   pull_request:
+  # Also deliberately unfiltered, for the same reason one line up. The list here
+  # named four branches, and work has since happened on branches that were not
+  # among them (arch/*, feat/*), every one of which pushed with no CI at all.
+  # A branch list has to be maintained to keep being true, and it was not.
   push:
-    branches: [cursor/add-supabase-3c830, main, phase5/homepage, feat/ci-foundation]
   # So a branch can be checked before its PR exists.
   workflow_dispatch:
 
@@ -49,9 +52,23 @@ jobs:
         run: pnpm typecheck:changed
       - name: Hardcoded hex/px (new vs docs/hardcoded-audit.md)
         run: pnpm gate:hardcoded
-      - name: Repo-wide lint (non-blocking)
-        continue-on-error: true
+      # BLOCKING as of [62], and the two steps below are the reason the
+      # diff-scoped ones above are not enough.
+      #
+      # `lint:changed` and `typecheck:changed` resolve HEAD~1..HEAD on a push,
+      # so a push of five commits gates the fifth and waves through the other
+      # four. They are fast feedback on what changed, not a statement about the
+      # repo, and treating them as one is how a repo-wide error survives a green
+      # run.
+      #
+      # This was non-blocking (`continue-on-error: true`) because the repo
+      # carried lint debt. It does not any more: `pnpm lint` and
+      # `tsc --noEmit` are both clean, measured before this line was changed.
+      # Blocking it now is what stops the debt coming back.
+      - name: Repo-wide lint
         run: pnpm lint
+      - name: Repo-wide typecheck
+        run: pnpm type-check
 
   typecheck:
     name: Typecheck (changed files)
