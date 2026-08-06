@@ -15,6 +15,7 @@ docs/ARCHITECTURE-SECURITY-RLS.md
 docs/ARCHITECTURE-OBSERVABILITY.md
 docs/ARCHITECTURE-CASHBACK-WALLET.md
 docs/ARCHITECTURE-CUSTOMER-SUPPORT.md
+docs/ARCHITECTURE-PRICING-RULES.md
 docs/CONTRADICTIONS.md
 ```
 
@@ -33,6 +34,7 @@ docs/CONTRADICTIONS.md
 | D5 | בקשות דרך טבלה + SLA יעד 30 יום (יעד פנימי: 14 יום עסקים). |
 | D6 | Admin/support מבצעים אחרי אימות זהות; פעולה ב-`audit_log`. |
 | D7 | Analytics: מחיקת/ניתוק `user_id`; אירועים אגרגטיביים נשארים בלי PII. |
+| D8 | ייצוא כסף = snapshots כפי שנשמרו (`platform_percent`, סכומי on-site). **אין** שדות Escrow/held/J5. מודל: No Escrow (CONTRADICTIONS / PRICING). |
 
 ---
 
@@ -109,3 +111,4 @@ account_deletion_requests
 | 2026-08-06 | ייצוא ומחיקת נתוני משתמש (GDPR-aligned) |
 | 2026-08-06 | QA: קישור CUSTOMER-SUPPORT; RTL עברית |
 | 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
+| 2026-08-07 | QA audit: D8 ייצוא בלי Escrow; קישור PRICING |
