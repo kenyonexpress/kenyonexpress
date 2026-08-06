@@ -1,17 +1,17 @@
-# ARCHITECTURE: Pricing Rules
+# ארכיטקטורה: כללי תמחור
 
-`platform_percent` דינמי פר מוצר, הנחות, ומבצעי בזק.
+`platform_percent` דינמי פר מוצר, מבצעי בזק, והנחות תצוגה.
 
-Status: **BINDING** · Updated: 2026-08-03 (pack-20)
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
-אין שינוי קוד. אין נגיעה ב-worktree הראשי (`kenyonexpress`).
+Status: **BINDING** · עודכן: 2026-08-06  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
-Companions:
+מסמכים קשורים:
 
 ```
 docs/ARCHITECTURE-ADMIN-DASHBOARD.md
-docs/BUSINESS-MODEL.md
 docs/ARCHITECTURE-INVENTORY.md
+docs/BUSINESS-MODEL.md
 docs/ARCHITECTURE-FRAUD-PREVENTION.md
 ```
 
@@ -21,13 +21,13 @@ docs/ARCHITECTURE-FRAUD-PREVENTION.md
 
 | # | הכרעה |
 |---|---|
-| P1 | אין עמלה גלובלית קבועה. `platform_percent` **פר מוצר**, בלי default, admin only. |
+| P1 | אין עמלה גלובלית. `platform_percent` **פר מוצר**, בלי default, admin only. |
 | P2 | `platform_percent + supplier_split_percent = 100`. |
-| P3 | קופון: מחיר אתר = `coupon_price_ils` מוחלט; יתרה בעסק = face − coupon; **No Escrow** (כל המקדמה לפלטפורמה). |
+| P3 | קופון: `coupon_price_ils` מוחלט באתר; יתרה בעסק = face − coupon; **No Escrow**. |
 | P4 | פיזי: פיצול on-site לפי snapshot ב-`order_items`. |
-| P5 | הנחת תצוגה (`discount_percent`) לא מקור חיוב. |
-| P6 | מבצע בזק = חלון זמן + מחיר/קופון חלופי; נגמר לפי שעון שרת. |
-| P7 | אחרי paid: snapshots לא משתנים כשמעדכנים מוצר. |
+| P5 | `discount_percent` לתצוגה בלבד; לא מקור חיוב. |
+| P6 | מבצע בזק = חלון זמן + מחיר חלופי לפי שעון שרת. |
+| P7 | אחרי paid: snapshots לא משתנים. |
 
 ---
 
@@ -35,13 +35,13 @@ docs/ARCHITECTURE-FRAUD-PREVENTION.md
 
 | שדה | תפקיד |
 |---|---|
-| `price_ils` / face | מחירון |
+| `price_ils` | מחירון / שווי דיל |
 | `coupon_price_ils` | תשלום באתר לקופון |
-| `platform_percent` | עמלת פלטפורמה (פיזי; בקופון לביקורת/עקביות) |
+| `platform_percent` | עמלת פלטפורמה (פיזי; בקופון לביקורת) |
 | `supplier_split_percent` | משלים ל-100 |
-| `flash_price_ils` / `flash_starts_at` / `flash_ends_at` | מבצע בזק אופציונלי |
-
-Checkout בוחר מחיר אפקטיבי לפי עכשיו ∈ חלון הבזק.
+| `discount_percent` | תווית הנחה לתצוגה |
+| `flash_price_ils` | מחיר בזק אופציונלי |
+| `flash_starts_at` / `flash_ends_at` | חלון הבזק |
 
 ---
 
@@ -49,26 +49,36 @@ Checkout בוחר מחיר אפקטיבי לפי עכשיו ∈ חלון הבז�
 
 ```text
 if now() in [flash_starts_at, flash_ends_at) and flash_price set:
-  charge_price = flash_price
+  charge = flash_price
 else:
-  charge_price = coupon_price or physical price
+  charge = coupon_price (קופון) או price (פיזי)
 ```
 
-כללים: לא מאריך אוטומטית; admin יכול להאריך עם audit; מלאי/מכסה עדיין חלים.
+כללים: לא מאריך אוטומטית; הארכה = admin + audit; מכסת מלאי עדיין חלה.
 
 ---
 
-## 3. Acceptance
+## 3. הנחות
 
-- [ ] Publish נכשל בלי platform_percent
-- [ ] Flash לא שובר snapshots ישנים
-- [ ] קופון: platform keeps on-site; till balance נפרד
-- [ ] UI אדמין מציג זוג אחוזים = 100
-
----
-
-## 4. Revision
-
-| Date | Change |
+| סוג | התנהגות |
 |---|---|
-| 2026-08-03 | pack-20: pricing rules + flash deals |
+| תווית הנחה על PDP | מ-`discount_percent` או נגזרת ממחירון מול קופון |
+| קופון ארנק / referral | לא משנים `platform_percent`; מפחיתים חיוב on-site בקופה |
+| קופון קוד הנחה עתידי | snapshot בזמן checkout; לא רטרואקטיבי |
+
+---
+
+## 4. Acceptance
+
+- [ ] Publish נכשל בלי `platform_percent`  
+- [ ] Flash לא שובר snapshots ישנים  
+- [ ] קופון: platform keeps on-site; יתרה בעסק נפרדת  
+- [ ] UI אדמין: זוג אחוזים = 100  
+
+---
+
+## 5. Revision
+
+| תאריך | שינוי |
+|---|---|
+| 2026-08-06 | platform_percent + בזק + הנחות |
