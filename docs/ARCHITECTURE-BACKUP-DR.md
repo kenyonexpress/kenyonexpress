@@ -2,7 +2,7 @@
 
 גיבויים, PITR, ושחזור לפרויקט Supabase של KenyonExpress.
 
-Status: **BINDING** · עודכן: 2026-08-06  
+Status: **BINDING** · עודכן: 2026-08-06 · QA: PASS  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -13,6 +13,7 @@ docs/RUNBOOK-PRODUCTION.md
 docs/ARCHITECTURE-OBSERVABILITY.md
 docs/ARCHITECTURE-PRODUCTION-OPS.md
 docs/ARCHITECTURE-SECURITY.md
+docs/ARCHITECTURE-DATA-EXPORT-GDPR.md
 ```
 
 ---
@@ -109,3 +110,4 @@ docs/ARCHITECTURE-SECURITY.md
 | תאריך | שינוי |
 |---|---|
 | 2026-08-06 | גיבוי/שחזור Supabase ממוקד (Pro, PITR, offsite, DR) |
+| 2026-08-06 | QA: קישור GDPR; יישור ל-RUNBOOK MCP |
