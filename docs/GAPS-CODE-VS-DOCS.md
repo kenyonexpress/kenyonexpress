@@ -108,16 +108,40 @@ CREATE UNIQUE INDEX voucher_redemptions_one_success_per_voucher
 `ARCHITECTURE-COUPON-REDEMPTION-UX.md` סעיף 1 קיימים כולם על הדיסק. הפער הוא
 בשמות שהמסמכים נותנים לאחסון, לא במסלול.
 
-### G3. מיגרציה 108 לא הוחלה
+### ~~G3. מיגרציה 108 לא הוחלה~~ — **בוטל 07.08. הממצא היה שלי, והוא היה שגוי.**
+
+מה שנכתב כאן ב-07.08 בבוקר:
 
 ```
 supabase/migrations/108_gift_vouchers.sql   קיים בעץ
-to_regclass('public.gift_vouchers')         -> null
+to_regclass('public.gift_vouchers')         -> null   ⇒ "המיגרציה לא הוחלה"
 ```
 
-‏`ARCHITECTURE-GIFT-COUPONS.md` הוא QA-PASS (#16) ומתאר בעלות, ברכות ו-claim.
-כל קוד שייכתב מולו ייפול עד שהמיגרציה תרוץ. לשם השוואה, 106 ו-107 **כן** הוחלו:
-‏`invoices` קיימת, ו-`settlement_events_kind_known` כבר מכיל `supplier_debit`.
+**המסקנה לא נובעת מהמדידה.** ‏`108_gift_vouchers.sql` **אינו יוצר טבלה בשם
+`gift_vouchers`.** הוא מוסיף שבע עמודות ל-`vouchers` ושלוש ל-`order_items`:
+
+```sql
+ALTER TABLE public.vouchers
+  ADD COLUMN IF NOT EXISTS gift_recipient_name  text,
+  ADD COLUMN IF NOT EXISTS gift_recipient_email text,
+  ADD COLUMN IF NOT EXISTS gift_message         text,
+  ADD COLUMN IF NOT EXISTS gift_claim_token_hash text,
+  ADD COLUMN IF NOT EXISTS gift_sent_at         timestamptz,
+  ADD COLUMN IF NOT EXISTS gift_claimed_at      timestamptz,
+  ADD COLUMN IF NOT EXISTS gifted_by_user_id    uuid ...;
+```
+
+**כל שבע העמודות קיימות בפרודקשן.** המיגרציה **כן הוחלה**, ו-`gift_vouchers`
+לא היה אמור להתקיים מעולם.
+
+**מה שכשל כאן הוא שיטת המדידה, לא הכלי.** ניחשתי את שם האובייקט משם הקובץ
+במקום לקרוא מה הקובץ יוצר, ואז התייחסתי ל-`null` כראיה. ‏`to_regclass` החזיר
+בדיוק את האמת: אין טבלה כזו. המסקנה "לכן לא הוחלה" הייתה שלי.
+
+**הכלל שנגזר מזה, והוא חל על כל שאר הקובץ:** ‏**קרא את המיגרציה לפני שאתה
+בודק אם היא רצה.** ‏106 ו-107 אומתו נכון, אבל דרך האובייקט שהן באמת יוצרות
+(`settlement_events_kind_known` מכיל `supplier_debit`; ‏`invoices` קיימת), ולא
+דרך שם הקובץ.
 
 ---
 
@@ -234,3 +258,4 @@ src/lib/payments/cardcom.ts    /Interface/LowProfile.aspx, /Interface/ChargeToke
 |---|---|
 | 2026-08-07 | ביקורת ראשונה: payments / coupons / refund. שמונה פערים, שלושה מהם חוסמים |
 | 2026-08-07 | G2 נסגר בשלושת המסמכים; ‏G8 מתועד בגוף `CARDCOM-ARCHITECTURE.md` |
+| 2026-08-07 | **G3 בוטל: ממצא שגוי שלי.** ‏108 מוסיפה עמודות ל-`vouchers`, לא יוצרת טבלה, והיא הוחלה |
