@@ -17,6 +17,17 @@ STATE.md
 
 ### Docs
 
+### Docs (2026-08-07 QA audit חבילת 20)
+
+- `ARCHITECTURE-PRICING-RULES.md`: מינוס יוניקוד → ASCII; P3 איסור J5/held
+- `ARCHITECTURE-APP-STORE-LAUNCH.md`: AS7 No Escrow + `platform_percent`
+- `ARCHITECTURE-OBSERVABILITY.md`: OBS8 אסור מדדי Escrow
+- `ARCHITECTURE-BACKUP-DR.md`: B6 שחזור בלי Escrow
+- `ARCHITECTURE-CATEGORIES-TAXONOMY.md`: T7 + קישור PRICING
+- `ARCHITECTURE-DATA-EXPORT-GDPR.md`: D8 ייצוא snapshots בלי Escrow
+- `ARCHITECTURE-EMAIL-TEMPLATES.md` ↔ PRICING
+- `MASTER-INDEX.md`: סטטוס QA-PASS מעודכן לכל #1 עד 20
+
 ### Docs (2026-08-07 QA final חבילת 20)
 
 - קישורים הדדיים: GIFT↔INVENTORY, EMAIL↔SEASONAL, ANALYTICS↔OBSERVABILITY, REFERRAL↔PRICING
