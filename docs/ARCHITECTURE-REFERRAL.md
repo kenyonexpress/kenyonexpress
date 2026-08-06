@@ -2,7 +2,7 @@
 
 תוכנית הפניות עם **קאשבק פנימי** (בלי משיכה החוצה).
 
-Status: **BINDING** · עודכן: 2026-08-06  
+Status: **BINDING** · עודכן: 2026-08-06 · QA: PASS  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -12,6 +12,7 @@ Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 docs/ARCHITECTURE-CASHBACK-WALLET.md
 docs/ARCHITECTURE-WALLET-LEDGER.md
 docs/ARCHITECTURE-FRAUD-PREVENTION.md
+docs/ARCHITECTURE-ANALYTICS.md
 ```
 
 ---
@@ -74,3 +75,4 @@ A משתף /r/CODE
 | תאריך | שינוי |
 |---|---|
 | 2026-08-06 | חבר מביא חבר עם קאשבק פנימי |
+| 2026-08-06 | QA: קישור ANALYTICS; בונוס ארנק פנימי בלבד (לא Escrow) |
