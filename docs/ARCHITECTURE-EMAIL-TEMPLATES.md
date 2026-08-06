@@ -29,7 +29,8 @@ docs/CONTRADICTIONS.md
 - Escape לכל משתנה  
 - CTA ראשי אחד  
 
-אסור: QR כ-`data:` URI; נוסח Escrow/נאמן; הבטחת העברה לבנק.
+אסור: QR כ-`data:` URI; נוסח Escrow/נאמן/J5/held; הבטחת העברה לבנק.
+מודל: **No Escrow** (שולם באתר + יתרה בעסק). אין עמלה קבועה בתבניות.
 
 ---
 
