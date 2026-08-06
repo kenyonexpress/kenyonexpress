@@ -15,7 +15,7 @@ The marketplace runs on Supabase Postgres. Products have a `product_type` of `co
 
 Money model by product type:
 
-- `coupon`: the customer pays that product's `coupon_price` on-site at checkout, and the remainder of the face value in-store when the coupon is scanned. `coupon_price` is a free per-product field, NOT a percentage of the face value (C4), so there is no ratio to hard-code in a query. There is no escrow. In-store collection is recorded in `coupon_redemptions.amount_collected`.
+- `coupon`: the customer pays that product's `coupon_price` on-site at checkout, and the remainder of the face value in-store when the coupon is scanned. `coupon_price` is a free per-product field, NOT a percentage of the face value (C4), so there is no ratio to hard-code in a query. There is no escrow. In-store collection is recorded in **`voucher_redemptions.amount_collected_agorot`** (integer agorot). See the schema note below: the table is not called `coupon_redemptions` and the column is not shekels.
   - **For BI**: platform revenue on a coupon line is `charged_on_site`, read from the line, never derived. The in-store remainder is the supplier's and was never platform revenue, so it must not appear in a revenue total.
 - `physical`: the customer pays 100 percent on-site.
 
@@ -23,7 +23,36 @@ All money is stored as integer agorot (1 shekel = 100 agorot). Never use floats 
 
 ### The one principle that governs this whole document
 
-Money numbers come ONLY from ledger tables: `orders`, `order_items`, `payments`, `coupon_codes`, `coupon_redemptions`. Money is NEVER summed from analytics events.
+Money numbers come ONLY from ledger tables: `orders`, `order_items`, `payments`, `coupon_codes`, `voucher_redemptions`. Money is NEVER summed from analytics events.
+
+> **QA 2026-08-07: the table this document kept naming does not exist.**
+> Measured against production: `to_regclass('public.coupon_redemptions')`
+> returns null, and `coupon_redemptions` appears nowhere in `src`. The real
+> table is **`voucher_redemptions`**, and three things about it change the
+> queries below, not just their spelling:
+>
+> - the foreign key is **`voucher_id`**, not `coupon_code_id`;
+> - the amount is **`amount_collected_agorot`**, an integer in agorot, not
+>   `amount_collected` in shekels. A sum that treats it as shekels reports
+>   revenue a hundred times too large;
+> - **the table logs failed scans too.** It has an `outcome` column of type
+>   `voucher_scan_outcome`. A row is written for an already-redeemed code, an
+>   expired one, and an unauthorised scanner. **Every query and every trigger
+>   below must filter `WHERE outcome = 'success'`**, or it counts attempts as
+>   redemptions and sums money that was never collected.
+>
+> The uniqueness barrier is also stronger than described elsewhere, and
+> deliberately so:
+>
+> ```
+> CREATE UNIQUE INDEX voucher_redemptions_one_success_per_voucher
+>   ON public.voucher_redemptions (voucher_id)
+>   WHERE outcome = 'success' AND voucher_id IS NOT NULL;
+> ```
+>
+> A partial index. One success per voucher, unlimited failed attempts kept for
+> the audit trail. A plain `UNIQUE(voucher_id)` would have blocked recording
+> the second failed scan, which is exactly the event fraud review needs.
 
 Behavioral events measure intent and funnel behavior (views, adds to cart, checkout starts). They are lossy by nature: ad blockers, bots, consent opt-outs, and network failures all drop events. Ledger rows are transactional and complete. If GMV or commission were summed from `purchase` events, the totals would silently drift from what suppliers are actually owed. So the split is strict:
 
@@ -152,7 +181,7 @@ Source: server-side, emitted by a trigger AFTER an `orders` row reaches a paid s
 
 #### coupon_redeemed (derived from ledger)
 
-Source: server-side, emitted by a trigger AFTER a `coupon_redemptions` row is inserted (the in-store scan). Not a client event.
+Source: server-side, emitted by a trigger AFTER a `voucher_redemptions` row is inserted **with `outcome = 'success'`** (the in-store scan). Not a client event. Without that condition the trigger fires on every rejected scan and reports a redemption that never happened.
 
 ```json
 {
@@ -166,7 +195,7 @@ Source: server-side, emitted by a trigger AFTER a `coupon_redemptions` row is in
 }
 ```
 
-- `amount_collected_agorot`: read-through copy of `coupon_redemptions.amount_collected`. Authoritative value stays in the ledger.
+- `amount_collected_agorot`: read-through copy of `voucher_redemptions.amount_collected_agorot`. Same unit, agorot, on both sides. Authoritative value stays in the ledger.
 - `days_since_issue`: convenience integer, recomputable from `coupon_codes.issued_at` and the redemption time.
 
 ### 1.4 Secondary events (behavioral)
@@ -206,7 +235,7 @@ Source: server-side, emitted by a trigger AFTER a `coupon_redemptions` row is in
 | add_to_cart | client | n/a | yes |
 | begin_checkout | client | n/a | yes |
 | purchase | server (ledger trigger) | orders / order_items / payments | yes |
-| coupon_redeemed | server (ledger trigger) | coupon_redemptions | yes |
+| coupon_redeemed | server (ledger trigger) | voucher_redemptions (outcome='success') | yes |
 | search | client | n/a | no |
 | remove_from_cart | client | n/a | no |
 
@@ -502,7 +531,7 @@ Automate rollup and drop via `pg_cron` or a scheduled edge function. Never DELET
 
 ## 3. BI dashboard queries (ledger only)
 
-Every query in this section reads the money tables. None sums an analytics event. Assumed ledger shape (from ground truth): `orders(id, status, created_at, ...)`, `order_items(order_id, supplier_id, product_id, product_type, platform_percent, face_value_agorot, ...)`, `payments(order_id, amount_captured_agorot, ...)`, `coupon_codes(id, order_item_id, supplier_id, issued_at, status, ...)`, `coupon_redemptions(coupon_code_id, amount_collected, redeemed_at, ...)`. Column names below match this shape; adjust to the live column names where they differ, keeping the logic identical.
+Every query in this section reads the money tables. None sums an analytics event. Assumed ledger shape (from ground truth): `orders(id, status, created_at, ...)`, `order_items(order_id, supplier_id, product_id, product_type, platform_percent, face_value_agorot, ...)`, `payments(order_id, amount_captured_agorot, ...)`, `coupon_codes(id, order_item_id, supplier_id, issued_at, status, ...)`, `voucher_redemptions(voucher_id, outcome, amount_collected_agorot, created_at, ...)`. **This shape is measured against production, not assumed**, and the queries below must filter `outcome = 'success'`.
 
 ### 3.1 GMV (sum of face value)
 
