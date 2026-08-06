@@ -1,4 +1,3 @@
-import { timingSafeEqual } from 'node:crypto'
 import { cardcomWebhookPayloadSchema, isCardcomSuccess } from '@/lib/contracts/webhooks'
 import { log } from '@/lib/observability/log'
 import { capturePaymentAlarm } from '@/lib/observability/sentry'
@@ -6,19 +5,11 @@ import { withRequestLog } from '@/lib/observability/with-request-log'
 import { getPaymentProvider, loadCardcomEnv } from '@/lib/payments'
 import { acceptedWebhookSecrets } from '@/lib/payments/env'
 import { readAmountAgorot, resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
+import { secretEquals } from '@/lib/security/constant-time'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { finalizeOrder } from '@/server/payments/finalize'
 import type { Json } from '@/types/database'
 import { type NextRequest, NextResponse } from 'next/server'
-
-/** Constant-time string compare; false on any length/format mismatch. */
-function secretMatches(provided: string, expected: string): boolean {
-  if (!provided || !expected) return false
-  const a = Buffer.from(provided)
-  const b = Buffer.from(expected)
-  if (a.length !== b.length) return false
-  return timingSafeEqual(a, b)
-}
 
 /**
  * True when the callback presents the current secret OR the one being retired.
@@ -30,7 +21,7 @@ function secretMatches(provided: string, expected: string): boolean {
 function anySecretMatches(provided: string, accepted: readonly string[]): boolean {
   let matched = false
   for (const secret of accepted) {
-    if (secretMatches(provided, secret)) matched = true
+    if (secretEquals(provided, secret)) matched = true
   }
   return matched
 }

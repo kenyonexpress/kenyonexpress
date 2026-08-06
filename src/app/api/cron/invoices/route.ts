@@ -1,5 +1,6 @@
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { bearerMatches } from '@/lib/security/constant-time'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { issueInvoice, loadDueInvoices } from '@/server/payments/invoices'
 import { type NextRequest, NextResponse } from 'next/server'
@@ -26,7 +27,7 @@ const BATCH = 25
 
 async function handleGET(request: NextRequest): Promise<NextResponse> {
   const secret = process.env.CRON_SECRET
-  if (!secret || request.headers.get('authorization') !== `Bearer ${secret}`) {
+  if (!bearerMatches(request.headers.get('authorization'), secret ?? '')) {
     return NextResponse.json({ ok: false }, { status: 401 })
   }
 

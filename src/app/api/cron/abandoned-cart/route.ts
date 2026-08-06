@@ -3,6 +3,7 @@ import { buildCartView } from '@/lib/cart/pricing'
 import type { CartStorageItem } from '@/lib/cart/types'
 import { sendEmail } from '@/lib/growth/resend'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { bearerMatches } from '@/lib/security/constant-time'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { type NextRequest, NextResponse } from 'next/server'
 
@@ -30,7 +31,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 async function handleGET(request: NextRequest): Promise<NextResponse> {
   const secret = process.env.CRON_SECRET
   // `!secret` closes the route in the absence of a secret rather than opening it.
-  if (!secret || request.headers.get('authorization') !== `Bearer ${secret}`) {
+  if (!bearerMatches(request.headers.get('authorization'), secret ?? '')) {
     return NextResponse.json({ ok: false }, { status: 401 })
   }
 

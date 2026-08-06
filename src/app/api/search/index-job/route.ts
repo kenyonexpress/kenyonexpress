@@ -3,6 +3,7 @@ import { withRequestLog } from '@/lib/observability/with-request-log'
 import { runSearchIndexJob } from '@/lib/search/indexer'
 import { searchIndexJobSchema } from '@/lib/search/pipeline-contracts'
 import { verifyQstashSignature } from '@/lib/search/qstash'
+import { bearerMatches } from '@/lib/security/constant-time'
 import { type NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -18,7 +19,7 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 function callerAuthorized(request: NextRequest, rawBody: string): boolean {
   const cronSecret = process.env.CRON_SECRET
-  if (cronSecret && request.headers.get('authorization') === `Bearer ${cronSecret}`) {
+  if (cronSecret && bearerMatches(request.headers.get('authorization'), cronSecret)) {
     return true
   }
   const target = `${(process.env.NEXT_PUBLIC_APP_URL ?? '').replace(/\/$/, '')}/api/search/index-job`
