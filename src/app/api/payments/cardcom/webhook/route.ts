@@ -1,8 +1,10 @@
 import { timingSafeEqual } from 'node:crypto'
 import { cardcomWebhookPayloadSchema, isCardcomSuccess } from '@/lib/contracts/webhooks'
+import { log } from '@/lib/observability/log'
 import { capturePaymentAlarm } from '@/lib/observability/sentry'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { getPaymentProvider, loadCardcomEnv } from '@/lib/payments'
+import { acceptedWebhookSecrets } from '@/lib/payments/env'
 import { readAmountAgorot, resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { finalizeOrder } from '@/server/payments/finalize'
@@ -17,6 +19,24 @@ function secretMatches(provided: string, expected: string): boolean {
   if (a.length !== b.length) return false
   return timingSafeEqual(a, b)
 }
+
+/**
+ * True when the callback presents the current secret OR the one being retired.
+ *
+ * Both are checked, always — no short circuit on the first match. Bailing early
+ * would make the response time say which secret was presented, and the whole
+ * point of `timingSafeEqual` above is that this comparison leaks nothing.
+ */
+function anySecretMatches(provided: string, accepted: readonly string[]): boolean {
+  let matched = false
+  for (const secret of accepted) {
+    if (secretMatches(provided, secret)) matched = true
+  }
+  return matched
+}
+
+/** Postgres: unique_violation. The only insert failure here that means "replay". */
+const UNIQUE_VIOLATION = '23505'
 
 /**
  * Cardcom webhook (IndicatorUrl). Cardcom does NOT sign its callbacks — there is
@@ -34,7 +54,10 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   const env = loadCardcomEnv()
   const admin = createAdminClient()
 
-  const secretOk = secretMatches(request.nextUrl.searchParams.get('s') ?? '', env.webhookSecret)
+  const secretOk = anySecretMatches(
+    request.nextUrl.searchParams.get('s') ?? '',
+    acceptedWebhookSecrets(env),
+  )
 
   let payloadJson: Json
   try {
@@ -57,11 +80,55 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     payload: payloadJson,
   })
   if (eventError) {
-    // duplicate => replay; anything else we still answer 200 and rely on reconcile
-    return NextResponse.json({ ok: true, replay: true })
+    // A UNIQUE violation is the dedup working: Cardcom delivered this event
+    // twice, the second one is a no-op, and 200 is the right answer.
+    //
+    // ANYTHING ELSE IS NOT A REPLAY, and this used to say it was. A connection
+    // reset, a changed policy, a full disk — every one of them answered
+    // `{ok:true, replay:true}` with a 200, which tells Cardcom the callback was
+    // received and stops it retrying. The card is charged, GetLpResult is never
+    // called, the order stays open, and the row that `webhook-dlq.ts` replays
+    // was never written, so nothing knows. A 5xx here is the whole recovery
+    // mechanism: Cardcom retries it.
+    if (eventError.code === UNIQUE_VIOLATION) {
+      return NextResponse.json({ ok: true, replay: true })
+    }
+    await capturePaymentAlarm('cardcom webhook could not be journalled', {
+      stage: 'cardcom_webhook_persist',
+      detail: { code: eventError.code, reason: eventError.message },
+    })
+    return NextResponse.json({ ok: false, error: 'event_not_recorded' }, { status: 503 })
   }
 
-  if (!secretOk || !parsed.success) {
+  if (!secretOk) {
+    // Two very different things arrive here, and only one is worth waking
+    // somebody for.
+    //
+    // A body that does NOT parse as a Cardcom callback is a scanner. The row is
+    // already written with `signature_valid: false`, which is the record, and a
+    // 200 tells it nothing about whether the secret was close.
+    //
+    // A body that DOES parse is Cardcom itself, calling with a secret this
+    // deployment does not accept. That is a misconfiguration — a rotation done
+    // on one side only — and it is invisible in every other way: the endpoint
+    // answers 200, Cardcom is satisfied, and EVERY paid order silently stays
+    // open. It is also exactly what the two-secret window exists to prevent, so
+    // it must be loud enough that the window is noticed while it is open.
+    if (parsed.success) {
+      await capturePaymentAlarm('cardcom callback rejected: no accepted secret matched', {
+        stage: 'cardcom_webhook_secret',
+        detail: {
+          low_profile_id: parsed.data.lowprofilecode,
+          accepted_secrets: acceptedWebhookSecrets(env).length,
+        },
+      })
+    } else {
+      log.warn('cardcom.webhook_unauthenticated', { parsed: false })
+    }
+    return NextResponse.json({ ok: true })
+  }
+
+  if (!parsed.success) {
     return NextResponse.json({ ok: true })
   }
   const payload = parsed.data

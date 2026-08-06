@@ -1,3 +1,7 @@
+// Relative, not `@/`: `next.config.ts` imports this module directly, and the
+// config is loaded before the tsconfig path aliases are in play.
+import { REMOTE_IMAGE_PATTERNS } from '../images/remote-hosts'
+
 // The two framing decisions this site makes, in one place.
 //
 // THE PROBLEM THIS SOLVES
@@ -46,6 +50,29 @@ export function isPaymentFramePath(pathname: string): boolean {
 }
 
 /**
+ * `img-src`, DERIVED from the one image-host allowlist instead of restated.
+ *
+ * It used to be a hand-written list of three hosts beside a six-host
+ * `REMOTE_IMAGE_PATTERNS`, and the three that were missing included
+ * `picsum.photos` — which is exactly the [18] finding, where 45 catalogue rows
+ * pointed at a host the CSP did not allow and three pages rendered BROKEN
+ * IMAGES with nothing but a console violation to show for it. Two lists of
+ * hosts that must agree, maintained separately, is that bug waiting to be
+ * written again; `next.config.ts` already builds `remotePatterns` from the same
+ * array, so this is the third reader and the last hand-copied one.
+ *
+ * This LOOSENS the header, and that is the right trade here. `img-src` already
+ * carries `data:` and `blob:`, which are broader than any host list: an
+ * injected script that wanted to exfiltrate through an image has both. What the
+ * named hosts change is not what an attacker can reach, it is whether a legit
+ * image renders — and a blocked image on a catalogue page is silent.
+ */
+const IMG_SRC = [
+  "img-src 'self' data: blob:",
+  ...REMOTE_IMAGE_PATTERNS.map((pattern) => `${pattern.protocol}://${pattern.hostname}`),
+].join(' ')
+
+/**
  * The CSP directives that never vary. `frame-ancestors` is deliberately absent:
  * it is the one directive that depends on the path, and appending it here as
  * well would produce it twice, where the strictest wins and the exception is
@@ -55,7 +82,7 @@ const BASE_DIRECTIVES = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline'",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com https://plus.unsplash.com",
+  IMG_SRC,
   "font-src 'self'",
   "connect-src 'self' https://*.supabase.co",
   'frame-src https://secure.cardcom.solutions',

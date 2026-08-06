@@ -1,3 +1,4 @@
+import { GUEST_SESSION_COOKIE, guestSessionCookieOptions } from '@/lib/cart/guest-session-cookie'
 import { REQUEST_ID_HEADER, resolveRequestId } from '@/lib/observability/request-id'
 import { isPaymentFramePath } from '@/lib/security/frame-policy'
 import { lookupRedirect } from '@/lib/seo/redirects'
@@ -171,14 +172,19 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // Generate a guest session ID for unauthenticated users (cart tracking)
-  if (!user && !request.cookies.get('ke_session_id')) {
-    supabaseResponse.cookies.set('ke_session_id', crypto.randomUUID(), {
-      httpOnly: true,
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 30,
-      path: '/',
-    })
+  // Generate a guest session ID for unauthenticated users (cart tracking).
+  //
+  // The options are the shared builder's, not a second copy. This block and
+  // `ensureGuestSessionId` each used to spell them out, and `secure` was absent
+  // from both — neither looked wrong, because each matched the other.
+  if (!user && !request.cookies.get(GUEST_SESSION_COOKIE)) {
+    supabaseResponse.cookies.set(
+      GUEST_SESSION_COOKIE,
+      crypto.randomUUID(),
+      guestSessionCookieOptions(
+        request.headers.get('x-forwarded-proto') ?? request.nextUrl.protocol,
+      ),
+    )
   }
 
   return supabaseResponse

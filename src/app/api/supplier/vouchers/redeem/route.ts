@@ -2,6 +2,7 @@ import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createClient } from '@/lib/supabase/server'
+import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { expireWalletPasses } from '@/lib/wallet/notify'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
 import { verifyVoucherQrPayload } from '@/server/domain/vouchers/qr'
@@ -122,6 +123,21 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   } = await supabase.auth.getUser()
   if (!user) {
     return respond({ outcome: 'unauthorized', message: OUTCOME_MESSAGES.unauthorized }, 401)
+  }
+
+  // The lookup route next door has had a ceiling since it was written, and this
+  // one did not — which made the ceiling decorative. An attacker walking the
+  // code space would use whichever endpoint is not limited, and this is the one
+  // that BURNS the voucher rather than describing it. It is also the one whose
+  // effect cannot be undone.
+  //
+  // Tighter than lookup's 300 because of that asymmetry, and still far above a
+  // real till: 120 redemptions an hour from one member is a scan every thirty
+  // seconds, without pause, for an hour. `checkRateLimit` fails open, which is
+  // the right direction with a customer waiting at the counter.
+  const allowed = await checkRateLimit(`voucher-redeem:${user.id}`, 120, 3600)
+  if (!allowed) {
+    return respond({ outcome: 'rate_limited', message: OUTCOME_MESSAGES.rate_limited }, 429)
   }
 
   const parsed = redeemRequestSchema.safeParse(await request.json().catch(() => null))

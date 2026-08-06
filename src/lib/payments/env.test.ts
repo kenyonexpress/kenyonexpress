@@ -1,4 +1,4 @@
-import { loadCardcomEnv } from '@/lib/payments/env'
+import { acceptedWebhookSecrets, loadCardcomEnv } from '@/lib/payments/env'
 import { describe, expect, it } from 'vitest'
 
 /**
@@ -73,5 +73,41 @@ describe('provider selection', () => {
         CARDCOM_API_PASSWORD: '',
       } as never),
     ).toThrow(/CARDCOM_API_PASSWORD/)
+  })
+})
+
+describe('webhook secret rotation', () => {
+  it('accepts only the current secret when no previous one is set', () => {
+    expect(acceptedWebhookSecrets(prod())).toEqual(['whs'])
+  })
+
+  it('accepts both during a rotation window, current first', () => {
+    // Payment pages already open in shoppers' browsers carry the OLD secret in
+    // the IndicatorUrl Cardcom will call back on. Without the second value, a
+    // rotation drops every one of those callbacks.
+    expect(acceptedWebhookSecrets(prod({ CARDCOM_WEBHOOK_SECRET_PREVIOUS: 'old' }))).toEqual([
+      'whs',
+      'old',
+    ])
+  })
+
+  it('never treats whitespace as a secret', () => {
+    // The direction that matters: an accidental `CARDCOM_WEBHOOK_SECRET_PREVIOUS=" "`
+    // must not become a value a caller could present.
+    expect(acceptedWebhookSecrets(prod({ CARDCOM_WEBHOOK_SECRET_PREVIOUS: '   ' }))).toEqual([
+      'whs',
+    ])
+  })
+
+  it('trims a pasted value rather than accepting only the untrimmed form', () => {
+    expect(acceptedWebhookSecrets(prod({ CARDCOM_WEBHOOK_SECRET_PREVIOUS: ' old\n' }))).toEqual([
+      'whs',
+      'old',
+    ])
+  })
+
+  it('leaves the previous secret null in dev, where the mock supplies the current one', () => {
+    expect(dev().webhookSecretPrevious).toBeNull()
+    expect(acceptedWebhookSecrets(dev())).toEqual(['mock-webhook-secret'])
   })
 })

@@ -1,3 +1,4 @@
+import { REMOTE_IMAGE_PATTERNS } from '@/lib/images/remote-hosts'
 import { describe, expect, it } from 'vitest'
 import {
   DEFAULT_CONTENT_SECURITY_POLICY,
@@ -90,5 +91,42 @@ describe('frameOptionsFor', () => {
     expect(frameOptionsFor('/')).toBe('DENY')
     expect(frameOptionsFor('/checkout')).toBe('DENY')
     expect(frameOptionsFor('/checkout/return')).toBe('DENY')
+  })
+})
+
+describe('img-src stays tied to the one image-host allowlist', () => {
+  it('allows every host next/image is configured to fetch from', () => {
+    // The [18] failure, as a guard. Three of the six hosts used to be missing
+    // from a hand-written img-src, `picsum.photos` among them, and 45 catalogue
+    // rows pointed at it: three pages drew BROKEN IMAGES with nothing but a
+    // console violation. Adding a seventh host to `remote-hosts.ts` and
+    // forgetting this header is the same bug, so it is not possible to forget.
+    const csp = contentSecurityPolicyFor('/')
+    const imgSrc = csp.split('; ').find((d) => d.startsWith('img-src')) as string
+    for (const pattern of REMOTE_IMAGE_PATTERNS) {
+      expect(imgSrc).toContain(`${pattern.protocol}://${pattern.hostname}`)
+    }
+  })
+
+  it('keeps self, data and blob, which the QR and the uploader need', () => {
+    // The voucher QR is a data URL in a raw <img>; dropping `data:` blanks the
+    // one screen a customer opens at a counter.
+    const imgSrc = contentSecurityPolicyFor('/')
+      .split('; ')
+      .find((d) => d.startsWith('img-src')) as string
+    expect(imgSrc).toContain("'self'")
+    expect(imgSrc).toContain('data:')
+    expect(imgSrc).toContain('blob:')
+  })
+
+  it('names no host that is not on the allowlist', () => {
+    const imgSrc = contentSecurityPolicyFor('/')
+      .split('; ')
+      .find((d) => d.startsWith('img-src')) as string
+    const hosts = imgSrc
+      .split(' ')
+      .slice(1)
+      .filter((token) => token.startsWith('https://'))
+    expect(hosts).toEqual(REMOTE_IMAGE_PATTERNS.map((p) => `${p.protocol}://${p.hostname}`))
   })
 })
