@@ -17,6 +17,12 @@ STATE.md
 
 ### Docs
 
+### Docs (2026-08-06 QA pass חבילת 20)
+
+- QA על כל 20 מסמכי ROADMAP-V2: No Escrow + `platform_percent`, קישורים הדדיים, RTL
+- `MASTER-INDEX.md`: טבלת סטטוס QA-PASS לכל #1–20 (`2144654`)
+- `ARCHITECTURE-PERSONAL-AREA.md`: P7 מיושר ל-No Escrow (מחוץ לחבילה)
+
 ### Docs (2026-08-06 docs 16–20)
 
 - `ARCHITECTURE-GIFT-COUPONS.md` (`df22194`)

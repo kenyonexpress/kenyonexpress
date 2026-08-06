@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-06 (docs-only ke-arch: docs 16–20)
+Updated: 2026-08-06 (docs-only ke-arch: QA pass על חבילת 20)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,13 +8,14 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-חמישה מסמכים (16–20), commit נפרד לכל אחד:
+QA pass על כל 20 מסמכי ROADMAP-V2:
 
-16. docs/ARCHITECTURE-GIFT-COUPONS.md (`df22194`)
-17. docs/ARCHITECTURE-B2B-SALES.md (`bfb9319`)
-18. docs/ARCHITECTURE-SEASONAL-CAMPAIGNS.md (`d808c6c`)
-19. docs/ARCHITECTURE-DATA-EXPORT-GDPR.md (`84df64a`)
-20. docs/MASTER-INDEX.md (`1e5b291`)
+- סתירות כסף מיושרות ל-**No Escrow** + `platform_percent` דינמי פר מוצר
+- קישורים הדדיים בין מסמכים קשורים
+- חותמת QA-PASS ב-`docs/MASTER-INDEX.md`
+- תיקון סתירה ב-`ARCHITECTURE-PERSONAL-AREA.md` (P7)
+
+Commit אחרי כל תיקון; tip: `2144654` (MASTER-INDEX).
 
 ## In Progress
 nothing
@@ -24,16 +25,20 @@ none (docs only)
 
 ## Next Task
 יישום לפי docs/ROADMAP-V2.md / docs/MASTER-INDEX.md מחוץ לסקופ docs-only.
+מסמכי STALE (MASTER-CHECKOUT, COMMERCE, וכו') לריענון נפרד אם נדרש.
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
 
----
-## Current Phase (רקע מודל)
-‏**שינוי מודל פעיל.** הכריע ב-27.07 שהקופון חוזר ל-Escrow, וזה דורס
-את הכרעת 24.07. ראה "המודל המחייב 2026-07-27" מיד למטה.
+## החלטות שהתקבלו אוטומטית
+- **2026-08-06 QA:** המודל המחייב ל-docs הוא **No Escrow** לקופון (מקדמה לפלטפורמה; יתרה בבית העסק; אין held לספק; אין נאמן/J5 של חברת אשראי) + `platform_percent` פר מוצר בלי default. זה **דורס** את נוסח Escrow/held של 2026-07-27 בסעיף ההיסטורי למטה (נשמר לתיעוד בלבד).
 
-## ⚠️ המודל המחייב 2026-07-27 — דורס את 24.07
+---
+## Current Phase (רקע מודל) [היסטורי; דורס ב-QA 2026-08-06]
+‏**ארכיון.** הכריע ב-27.07 שהקופון חוזר ל-Escrow (פנימי). **בוטל לטובת No Escrow** בחבילת docs + QA pass.
+ראה "החלטות שהתקבלו אוטומטית" למעלה, ו-`docs/MASTER-INDEX.md` / `docs/ARCHITECTURE-PRICING-RULES.md`.
+
+## ⚠️ ארכיון: המודל 2026-07-27 (Escrow): דורס את 24.07; עצמו דורס ב-2026-08-06
 
 הנוסח כפי שנמסר:
 
