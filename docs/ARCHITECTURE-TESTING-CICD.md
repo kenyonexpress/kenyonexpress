@@ -1,8 +1,20 @@
 # Architecture: Testing and CI/CD (KenyonExpress)
 
-> **גובר עליו `docs/CONTRADICTIONS.md` (2026-07-24).** כל מספר עמלה, ברירת מחדל
-> (10%/5%) או נוסח Escrow במסמך הזה הוא שריד. ההכרעה: `platform_percent`
-> פר-מוצר, חובה, בלי ברירת מחדל בשום מקום; ה-held הוא רישום פנימי ב-ledger בלבד.
+> **QA 2026-08-06: ארבעה תיקונים, וכולם כאלה שהיו מייצרים טסט ירוק על התנהגות
+> שאינה קיימת.** מסמך טסטים שגוי גרוע ממסמך תכנון שגוי, כי הוא מייצר ראיה.
+>
+> **(א)** מודל הקופון תואר כ-"‏10 אחוז באתר, ‏90 בעסק". אין ברירת מחדל, ומחיר
+> הקופון הוא שדה חופשי פר מוצר ולא אחוז (‏C4).
+> **(ב)** תרחיש ה-E2E דרש לפרסם ל-webhook **גוף חתום**. ‏**ל-Cardcom אין חתימת
+> webhook**, לא HMAC ולא כותרת. ‏`hmac.ts` הקודם המציא בדיקת HMAC-SHA256
+> שנכשלה תמיד, ולכן ה-webhook לא סגר כלום בפרודקשן, והוא נמחק. טסט שבונה גוף
+> חתום בודק מנגנון שלא קיים. האותנטיות היא `?s=<secret>` באי-נחישות פלוס אימות
+> חוזר שרת-לשרת ב-`GetLpResult`.
+> **(ג)** אותו תרחיש קבע ש-"‏escrow is held" בסיום ההזמנה. אין Escrow (‏C3).
+> **(ד)** ‏`escrow.ts` ו-`escrow.test.ts` **אינם קיימים ב-src**, אבל
+> ‏`vitest.config.ts` עדיין מחזיק רצפת כיסוי של 95% על
+> ‏`src/server/domain/orders/escrow.ts`. רצפת כיסוי על קובץ שאינו קיים היא שער
+> שאינו מודד דבר, והיא נראית בדיוק כמו שער שעובר.
 
 Status: FINAL DESIGN. Branch: `phase5/homepage`. Target branch for PRs: `cursor/add-supabase-3c830` (the current default branch, renamed to `main` at cutover).
 
@@ -12,7 +24,7 @@ Ground truth for this document:
 
 - Next.js App Router (Next 16.2.4, React 19.2), Supabase (Postgres, RLS), Hebrew RTL.
 - Payments via Cardcom, single terminal, webhook verified with HMAC-SHA256 (`src/lib/payments/hmac.ts`) and then verified against the Cardcom API before finalize.
-- Products are `coupon` or `physical`. Commission: the platform keeps `platform_percent` per product. For a coupon: 10 percent is charged on-site and 90 percent is paid in-store (no escrow of the in-store part). For a physical product: 100 percent is charged on-site.
+- Products are `coupon` or `physical`. Commission: the platform keeps `platform_percent` per product, mandatory, with no default anywhere. For a coupon: that product's `coupon_price` is charged on-site and the remainder of the face value is paid in-store (no escrow of the in-store part); `coupon_price` is a free field, not a percentage (C4). For a physical product: 100 percent is charged on-site.
 - All money is agorot as integers (`src/lib/commerce/money.ts`). Never floats for money.
 - Merchant coupon scan is `POST /api/supplier/redeem`, made race-safe by a `UNIQUE(coupon_code_id)` constraint on `coupon_redemptions` (the DB is the final arbiter, the app gate is `validateRedemption`).
 - A manual visual diff tool exists at `scripts/compare.mjs` (referenced in git history: "verified vs live via compare.mjs").
@@ -23,7 +35,7 @@ Current repo facts (verified):
 |---|---|
 | Unit runner | Vitest 3.x, jsdom env, `src/**/*.test.ts(x)`, setup `vitest.setup.ts`, alias `@ -> src` |
 | E2E runner | Playwright 1.50, chromium only, `locale he-IL`, `baseURL http://localhost:3000`, `webServer: pnpm dev` |
-| Existing tests | `money.test.ts`, `commission.test.ts`, `settlement.test.ts`, `redemption.test.ts`, `escrow.test.ts`, `state-machine.test.ts`, `checkout-flow.test.ts`, plus `src/__tests__/*` and two e2e specs (`auth.spec.ts`, `homepage.spec.ts`) |
+| Existing tests | `money.test.ts`, `commission.test.ts`, `settlement.test.ts`, `redemption.test.ts`, `state-machine.test.ts` (`escrow.test.ts` is listed in older revisions and no longer exists), `checkout-flow.test.ts`, plus `src/__tests__/*` and two e2e specs (`auth.spec.ts`, `homepage.spec.ts`) |
 | CI | None. No `.github/workflows`. Only husky pre-commit + lint-staged (biome on staged) |
 | Lint/format | Biome 1.9 (`pnpm lint`, `pnpm check`) |
 | Typecheck | `tsc --noEmit` (`pnpm type-check`), strict + `noUncheckedIndexedAccess` |
@@ -88,7 +100,7 @@ Note an open model decision recorded in STATE.md: the merged settlement uses a 5
 
 Invariants to pin:
 
-- Coupon line: `charged_on_site = coupon upfront amount` (10 percent by the current model), `balance_due_at_business = total_deal_price - charged_on_site`, `supplier_due_on_site = 0` (no escrow of the in-store 90 percent), `platform_fee = charged_on_site` (the platform keeps the whole on-site slice for a coupon).
+- Coupon line: `charged_on_site = coupon upfront amount` (the product's own `coupon_price`; there is no percentage to assert against), `balance_due_at_business = total_deal_price - charged_on_site`, `supplier_due_on_site = 0` (no escrow of the in-store remainder), `platform_fee = charged_on_site` (the platform keeps the whole on-site slice for a coupon). A test that hard-codes a ratio here passes on the fixture and fails on production data.
 - Physical line: `charged_on_site = full price`, `platform_fee = platform_percent of full price`, `supplier_due = charged_on_site - platform_fee`.
 - Mixed cart (coupon line plus physical line) sums per line, never on the blended total. The STATE.md worked example is the golden case: coupon 18/162 split plus physical 230 gives on-site total 248, platform fee 41, supplier due 207.
 - Every split satisfies the allocation invariant: the sum of `platform_fee + supplier_due + balance_due_at_business` reconstructs the deal total for that line.
@@ -272,7 +284,7 @@ Steps:
 3. Authenticate as a seeded test user via email and password (not Google OAuth). The guest cart merges into the user cart; assert quantities merged correctly (this is the observable side of the T3 race fix).
 4. Fill the shipping address for the physical line (writes `user_addresses`).
 5. Begin checkout. The Cardcom Low Profile call is intercepted by the stub (section 2.3) and returns a hosted-page redirect that the stub short-circuits back to the app's return URL.
-6. The Cardcom webhook fires (the test posts a signed webhook body to the webhook route, see 2.3). The order finalizes: coupon codes are issued with QR, escrow is held for the coupon in-store balance model, cashback is credited to the wallet, the cart is cleared.
+6. The Cardcom webhook fires. The test posts the webhook body with the unguessable `?s=<secret>` the IndicatorUrl carries, and the route re-verifies server-to-server via `GetLpResult`, which is the only trusted source. **There is no signature to construct**: Cardcom does not sign webhooks, and the invented HMAC check that used to be here always failed. The order finalizes: coupon codes are issued with QR, the on-site charge is recorded as an internal ledger entry (no escrow), cashback is credited to the wallet, the cart is cleared.
 7. Assert the success page: coupon card with an 8 digit code, a QR image, the amount to pay in store, and the expiry. Assert the order appears as confirmed and the cart is empty.
 
 Tag: `@checkout @money`. This is a blocking smoke flow.
@@ -584,7 +596,7 @@ plan; this one is the ground truth. Where the two disagree, believe this one.
 
 | Piece | Where | Notes |
 |---|---|---|
-| Coverage floors | `vitest.config.ts` | v8 provider, per-file 95% floors on `money.ts`, `commission.ts`, `split.ts`, `settlement.ts`, `escrow.ts`, `state-machine.ts`. No global gate, by design (§1.1). |
+| Coverage floors | `vitest.config.ts` | v8 provider, per-file 95% floors on `money.ts`, `commission.ts`, `split.ts`, `settlement.ts`, `state-machine.ts`. **The config still names `escrow.ts`, which does not exist in `src`; that floor measures nothing and should be removed.** No global gate, by design (§1.1). |
 | `calculateSplit` suite | `src/lib/checkout/split.test.ts` (new) | The wire-facing engine had zero tests. 14 cases. |
 | Money invariants | `src/lib/commerce/money.test.ts` | Allocation invariant, round trips, overflow guards, edge percents. |
 | Engine guards | `commission.test.ts`, `settlement.test.ts` | The input guards were passing through uncovered. |
