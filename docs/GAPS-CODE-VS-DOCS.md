@@ -82,6 +82,27 @@ grep -rl coupon_redemptions src/          -> אין תוצאות
 ב-QA של 06.08. תיקנתי שם את מודל ה-10/90 והשארתי את שם הטבלה עומד בלי לבדוק
 אותו מול הסכימה. תיקון של חצי משפט אינו אימות של המשפט.
 
+**‏07.08: תוקן בשלושת המסמכים** (`3666c85`, `66eec29`, `0e7de02`). בדרך התגלו
+שני הפרשים שהם התנהגות ולא שם, ושניהם לטובת הפרודקשן:
+
+**(א) הטבלה החיה מתעדת גם סריקות שנכשלו.** יש בה `outcome` מסוג
+`voucher_scan_outcome`, ונכתבת שורה גם לקוד שכבר מומש, לקוד שפג, ולסורק בלי
+הרשאה. לכן ההגדרה "שורה אחת לכל סריקה מוצלחת" שהופיעה בשני מסמכים **אינה
+נכונה**, וכל שאילתה כספית או טריגר חייבים `WHERE outcome = 'success'`. בלי זה
+הטריגר יורה על סריקה שנדחתה, והמשפך סופר ניסיונות כמימושים.
+
+**(ב) מחסום ה-replay חזק ממה שהמסמכים תכננו:**
+
+```sql
+CREATE UNIQUE INDEX voucher_redemptions_one_success_per_voucher
+  ON public.voucher_redemptions (voucher_id)
+  WHERE outcome = 'success' AND voucher_id IS NOT NULL;
+```
+
+אינדקס **חלקי**. ה-`UNIQUE (coupon_code_id)` הלא-מותנה שתוכנן בשני המסמכים היה
+דוחה את הסריקה הכושלת השנייה, כלומר מוחק בדיוק את השורה שסקירת הונאה צריכה.
+זו גם הסיבה שאין `coupon_scan_events` נפרדת: תפקיד ה-audit נבלע באותה טבלה.
+
 **מה שכן עובד:** מסלול המימוש עצמו חי ותקין. `supplier_members` קיימת בפרודקשן,
 ‏`/api/supplier/vouchers/redeem` קיים, וארבעת המסלולים של
 `ARCHITECTURE-COUPON-REDEMPTION-UX.md` סעיף 1 קיימים כולם על הדיסק. הפער הוא
@@ -212,3 +233,4 @@ src/lib/payments/cardcom.ts    /Interface/LowProfile.aspx, /Interface/ChargeToke
 | תאריך | שינוי |
 |---|---|
 | 2026-08-07 | ביקורת ראשונה: payments / coupons / refund. שמונה פערים, שלושה מהם חוסמים |
+| 2026-08-07 | G2 נסגר בשלושת המסמכים; ‏G8 מתועד בגוף `CARDCOM-ARCHITECTURE.md` |

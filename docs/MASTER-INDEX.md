@@ -136,7 +136,7 @@ CONTRADICTIONS, כל מספר עמלה כאן הוא שריד") הוסר מכו�
 | `ARCHITECTURE-WALLET-LEDGER.md` | ledger כפול-רישום באגורות. | BINDING |
 | `ARCHITECTURE-WP-DATA-MIGRATION.md` | מיגרציית WordPress. | DESIGN |
 | `BUSINESS-MODEL.md` | מודל עסקי: מחיר קופון באתר + יתרה בעסק. | BINDING |
-| `CARDCOM-ARCHITECTURE.md` | ארכיטקטורת Cardcom. | BINDING |
+| `CARDCOM-ARCHITECTURE.md` | ארכיטקטורת Cardcom. מחקר v11; הקוד legacy. | BINDING + QA (07.08) |
 | `CHANGELOG.md` | יומן שינויים. | LIVE |
 | `MASTER-ARCHITECTURE.md` | מסמך ההכרעות; 1.4 ו-1.11 מסומנות כבוטלות. | QA-PASS (06.08) |
 | `GAPS-CODE-VS-DOCS.md` | ביקורת קוד מול מסמכים: payments/coupons/refund. | AUDIT (07.08) |
@@ -172,3 +172,4 @@ docs/ROADMAP-V2.md
 | 2026-08-06 | סבב STALE: שבעה מסמכים + GROWTH-SEO. אין יותר STALE ב-`docs/` |
 | 2026-08-07 | `GAPS-CODE-VS-DOCS.md`: ביקורת קוד מול מסמכים, שמונה פערים |
 | 2026-08-07 | `GITHUB-SETTINGS.md` ו-`LAUNCH-CHECKLIST.md`: מה שאינו קוד |
+| 2026-08-07 | QA למסלול הכסף: Cardcom (v11 מול legacy), ו-`voucher_redemptions` בשלושה מסמכים |
