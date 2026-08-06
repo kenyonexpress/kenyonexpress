@@ -14,6 +14,7 @@ docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 docs/ARCHITECTURE-ADMIN-DASHBOARD.md
 docs/ARCHITECTURE-NOTIFICATIONS.md
 docs/ARCHITECTURE-DATA-EXPORT-GDPR.md
+docs/CONTRADICTIONS.md
 ```
 
 ---
@@ -51,7 +52,7 @@ docs/ARCHITECTURE-DATA-EXPORT-GDPR.md
 | P2 | בעיית מימוש ביום העסקה | 4 שעות עסקים | 1 יום עסקים |
 | P3 | שאלה כללית / הנחיה | 1 יום עסקים | 3 ימי עסקים |
 
-שעות עסקים יעד: א'-ה' 09:00–18:00 שעון ישראל. חריגה → אסקלציה לבעלים + תיעוד ב-`STATE.md` אם סיסטמי.
+שעות עסקים יעד: א'-ה' 09:00 עד 18:00 שעון ישראל. חריגה → אסקלציה לבעלים + תיעוד ב-`STATE.md` אם סיסטמי.
 
 ---
 
@@ -78,3 +79,4 @@ docs/ARCHITECTURE-DATA-EXPORT-GDPR.md
 |---|---|
 | 2026-08-06 | פניות, מימוש, SLA מפורש |
 | 2026-08-06 | QA: קישור DATA-EXPORT-GDPR |
+| 2026-08-07 | QA re-pass: en-dash בשעות; קישור CONTRADICTIONS |
