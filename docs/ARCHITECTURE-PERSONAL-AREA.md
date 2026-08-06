@@ -296,3 +296,4 @@ Action: `updateProfileDetails` תחת RLS; `role` קפוא.
 |---|---|
 | 2026-08-02 | מסמך מחייב: הזמנות, ארנק קופונים, כללי ארנק agorot/closed-loop, פרופיל Google |
 | 2026-08-02 | יישום על `feat/personal-area`: G1/G2/G5 נסגרו, acceptance מסומן |
+| 2026-08-06 | QA (מחוץ לחבילת 20): P7 ל-No Escrow; ביטול held לספק |
