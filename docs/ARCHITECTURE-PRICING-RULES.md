@@ -15,6 +15,7 @@ docs/BUSINESS-MODEL.md
 docs/ARCHITECTURE-FRAUD-PREVENTION.md
 docs/ARCHITECTURE-SEASONAL-CAMPAIGNS.md
 docs/ARCHITECTURE-B2B-SALES.md
+docs/ARCHITECTURE-CUSTOMER-SUPPORT.md
 docs/CONTRADICTIONS.md
 ```
 
@@ -87,3 +88,4 @@ else:
 | 2026-08-06 | platform_percent + בזק + הנחות |
 | 2026-08-06 | QA: קישור SEASONAL/B2B; חיזוק No Escrow |
 | 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
+| 2026-08-07 | QA verify: קישור הדדי ל-CUSTOMER-SUPPORT |
