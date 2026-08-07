@@ -1,6 +1,6 @@
-import { chromium } from '@playwright/test'
-import { writeFileSync, mkdirSync } from 'node:fs'
+import { mkdirSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { chromium } from '@playwright/test'
 
 // Measures electro home-v7 sections 1-4 (hero, deals, category tiles,
 // products carousel) and prints markdown tables of computed styles.
@@ -52,10 +52,24 @@ await page.waitForTimeout(5000)
 
 const data = await page.evaluate(() => {
   const PROPS = [
-    'width', 'height', 'padding', 'margin', 'gap',
-    'font-family', 'font-size', 'font-weight', 'line-height', 'letter-spacing',
-    'color', 'background-color', 'border', 'border-radius', 'text-transform',
-    'display', '-webkit-line-clamp', 'overflow',
+    'width',
+    'height',
+    'padding',
+    'margin',
+    'gap',
+    'font-family',
+    'font-size',
+    'font-weight',
+    'line-height',
+    'letter-spacing',
+    'color',
+    'background-color',
+    'border',
+    'border-radius',
+    'text-transform',
+    'display',
+    '-webkit-line-clamp',
+    'overflow',
   ]
   const pick = (el) => {
     if (!el) return null
@@ -66,20 +80,28 @@ const data = await page.evaluate(() => {
       const v = cs.getPropertyValue(p)
       if (v && v !== 'normal' && v !== 'none' && v !== 'auto') out[p] = v
     }
-    out._sel = el.tagName.toLowerCase() + (el.className ? '.' + String(el.className).trim().split(/\s+/).slice(0, 3).join('.') : '')
+    out._sel =
+      el.tagName.toLowerCase() +
+      (el.className ? `.${String(el.className).trim().split(/\s+/).slice(0, 3).join('.')}` : '')
     return out
   }
-  const hover = (el, prop) => {
+  const hover = (el, _prop) => {
     // computed hover styles are not queryable; read the matching :hover rule text instead
     if (!el) return null
     const found = []
     for (const sheet of document.styleSheets) {
       let rules
-      try { rules = sheet.cssRules } catch { continue }
+      try {
+        rules = sheet.cssRules
+      } catch {
+        continue
+      }
       for (const rule of rules || []) {
-        if (rule.selectorText && rule.selectorText.includes(':hover')) {
+        if (rule.selectorText?.includes(':hover')) {
           const base = rule.selectorText.replace(/:hover.*$/, '')
-          try { if (el.matches(base)) found.push(rule.cssText) } catch {}
+          try {
+            if (el.matches(base)) found.push(rule.cssText)
+          } catch {}
         }
       }
     }
@@ -89,13 +111,18 @@ const data = await page.evaluate(() => {
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT)
     while (walker.nextNode()) {
       const el = walker.currentNode
-      if (el.children.length === 0 && el.textContent.trim().toLowerCase().includes(txt.toLowerCase())) return el
+      if (
+        el.children.length === 0 &&
+        el.textContent.trim().toLowerCase().includes(txt.toLowerCase())
+      )
+        return el
     }
     return null
   }
   const gapBetween = (a, b) => {
     if (!a || !b) return null
-    const ra = a.getBoundingClientRect(); const rb = b.getBoundingClientRect()
+    const ra = a.getBoundingClientRect()
+    const rb = b.getBoundingClientRect()
     return Math.round(rb.left - ra.right)
   }
 
@@ -118,23 +145,34 @@ const data = await page.evaluate(() => {
 
   // 2. deals section (Catch Big Deals)
   const dealsHead = byText('Catch Big Deals')
-  const dealsSection = dealsHead ? dealsHead.closest('section, .container > div, [class*="deal"]') || dealsHead.parentElement.parentElement : null
+  const dealsSection = dealsHead
+    ? dealsHead.closest('section, .container > div, [class*="deal"]') ||
+      dealsHead.parentElement.parentElement
+    : null
   out.deals = {
     headingEl: pick(dealsHead),
     section: pick(dealsSection),
-    banners: dealsSection ? [...dealsSection.querySelectorAll('a, .banner, img')].slice(0, 6).map(pick) : [],
-    shopNow: pick(dealsSection && ([...dealsSection.querySelectorAll('a')].find((a) => /shop now/i.test(a.textContent)) || null)),
+    banners: dealsSection
+      ? [...dealsSection.querySelectorAll('a, .banner, img')].slice(0, 6).map(pick)
+      : [],
+    shopNow: pick(
+      dealsSection &&
+        ([...dealsSection.querySelectorAll('a')].find((a) => /shop now/i.test(a.textContent)) ||
+          null),
+    ),
     images: dealsSection ? [...dealsSection.querySelectorAll('img')].slice(0, 4).map(pick) : [],
   }
 
   // 3. category tiles row
-  const catTile = document.querySelector('.product-category, [class*="category-item"], .cat-item, .categories-list li')
+  const catTile = document.querySelector(
+    '.product-category, [class*="category-item"], .cat-item, .categories-list li',
+  )
   const catRow = catTile ? catTile.parentElement : null
   out.categories = {
     row: pick(catRow),
     tile: pick(catTile),
-    icon: pick(catTile && catTile.querySelector('img, svg, i')),
-    label: pick(catTile && catTile.querySelector('h3, h4, .title, a, span')),
+    icon: pick(catTile?.querySelector('img, svg, i')),
+    label: pick(catTile?.querySelector('h3, h4, .title, a, span')),
     tileGap: catRow ? gapBetween(catRow.children[0], catRow.children[1]) : null,
     hoverRules: hover(catTile, 'all'),
   }
@@ -143,10 +181,12 @@ const data = await page.evaluate(() => {
   const card = document.querySelector('.product.type-product, li.product, .product-item')
   out.carousel = {
     card: pick(card),
-    imageArea: pick(card && card.querySelector('.product-thumbnail, .woocommerce-LoopProduct-link img, img')),
-    title: pick(card && card.querySelector('.woocommerce-loop-product__title, h2, h3, .product-title')),
-    price: pick(card && card.querySelector('.price, .amount')),
-    cardGap: card && card.parentElement ? gapBetween(card, card.nextElementSibling) : null,
+    imageArea: pick(
+      card?.querySelector('.product-thumbnail, .woocommerce-LoopProduct-link img, img'),
+    ),
+    title: pick(card?.querySelector('.woocommerce-loop-product__title, h2, h3, .product-title')),
+    price: pick(card?.querySelector('.price, .amount')),
+    cardGap: card?.parentElement ? gapBetween(card, card.nextElementSibling) : null,
   }
 
   return out
@@ -161,7 +201,7 @@ console.error('Raw JSON written to refs/electro-section-measurements.json')
 const row = (label, o) => {
   if (!o) return `| ${label} | (not found) |  |  |  |  |`
   const f = (k) => o[k] || ''
-  return `| ${label} | ${o.rect ? o.rect.w + 'x' + o.rect.h : ''} | ${f('font-size')} ${f('font-weight')} | ${f('color')} | ${f('padding')} | ${f('background-color')} |`
+  return `| ${label} | ${o.rect ? `${o.rect.w}x${o.rect.h}` : ''} | ${f('font-size')} ${f('font-weight')} | ${f('color')} | ${f('padding')} | ${f('background-color')} |`
 }
 const table = (title, entries) => {
   console.log(`\n### ${title}\n`)

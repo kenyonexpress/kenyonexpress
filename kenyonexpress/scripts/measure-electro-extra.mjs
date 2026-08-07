@@ -1,7 +1,7 @@
-import { chromium } from '@playwright/test'
 import { writeFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { homedir } from 'node:os'
+import { join } from 'node:path'
+import { chromium } from '@playwright/test'
 
 // Five extra measurement reports from electro.madrasthemes.com into ~/Downloads:
 //   measurements-badges-sale.md       sale/percent badges on product cards
@@ -17,12 +17,39 @@ const BASE = 'https://electro.madrasthemes.com'
 const OUT = join(homedir(), 'Downloads')
 
 const PROPS = [
-  'width', 'height', 'max-width', 'min-height', 'top', 'left', 'right',
-  'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
-  'margin-top', 'margin-right', 'margin-bottom', 'margin-left', 'gap',
-  'font-family', 'font-size', 'font-weight', 'line-height', 'letter-spacing', 'text-transform',
-  'color', 'background-color', 'border', 'border-bottom', 'border-radius',
-  'box-shadow', 'transition', 'position', 'z-index', 'display', 'opacity',
+  'width',
+  'height',
+  'max-width',
+  'min-height',
+  'top',
+  'left',
+  'right',
+  'padding-top',
+  'padding-right',
+  'padding-bottom',
+  'padding-left',
+  'margin-top',
+  'margin-right',
+  'margin-bottom',
+  'margin-left',
+  'gap',
+  'font-family',
+  'font-size',
+  'font-weight',
+  'line-height',
+  'letter-spacing',
+  'text-transform',
+  'color',
+  'background-color',
+  'border',
+  'border-bottom',
+  'border-radius',
+  'box-shadow',
+  'transition',
+  'position',
+  'z-index',
+  'display',
+  'opacity',
 ]
 
 const browser = await chromium.launch({
@@ -71,7 +98,8 @@ const DUMP_FN = `(sel, props) => {
   }
   return out
 }`
-const dump = (sel) => page.evaluate(`(${DUMP_FN})(${JSON.stringify(sel)}, ${JSON.stringify(PROPS)})`)
+const dump = (sel) =>
+  page.evaluate(`(${DUMP_FN})(${JSON.stringify(sel)}, ${JSON.stringify(PROPS)})`)
 async function dumpMany(pairs) {
   const rows = []
   for (const [label, sel] of pairs) rows.push([label, await dump(sel)])
@@ -79,12 +107,21 @@ async function dumpMany(pairs) {
 }
 
 function md(title, rows, extra = '') {
-  const lines = [`# ${title}`, '', `Source: ${BASE}, measured ${new Date().toISOString().slice(0, 10)}, headed Chrome computed styles at 1440px.`, '']
+  const lines = [
+    `# ${title}`,
+    '',
+    `Source: ${BASE}, measured ${new Date().toISOString().slice(0, 10)}, headed Chrome computed styles at 1440px.`,
+    '',
+  ]
   for (const [label, o] of rows) {
     lines.push(`## ${label}`, '')
-    if (!o) { lines.push('_not found_', ''); continue }
+    if (!o) {
+      lines.push('_not found_', '')
+      continue
+    }
     lines.push('| property | value |', '|---|---|')
-    for (const [k, v] of Object.entries(o)) lines.push(`| ${k === '_rect' ? 'rect @ x,y' : k} | ${v} |`)
+    for (const [k, v] of Object.entries(o))
+      lines.push(`| ${k === '_rect' ? 'rect @ x,y' : k} | ${v} |`)
     lines.push('')
   }
   return lines.join('\n') + extra
@@ -106,19 +143,25 @@ function save(name, content) {
   ])
   await open(`${BASE}/shop/`)
   await page.waitForTimeout(2000)
-  rows.push(...await dumpMany([
-    ['onsale badge (shop card)', 'li.product .onsale'],
-    ['sale price (ins)', 'li.product .price ins .amount, li.product .price ins'],
-    ['old price (del)', 'li.product .price del .amount, li.product .price del'],
-  ]))
+  rows.push(
+    ...(await dumpMany([
+      ['onsale badge (shop card)', 'li.product .onsale'],
+      ['sale price (ins)', 'li.product .price ins .amount, li.product .price ins'],
+      ['old price (del)', 'li.product .price del .amount, li.product .price del'],
+    ])),
+  )
   const badgeOffset = await page.evaluate(() => {
     const b = document.querySelector('li.product .onsale')
     if (!b) return null
     const card = b.closest('li.product')
-    const rb = b.getBoundingClientRect(); const rc = card.getBoundingClientRect()
+    const rb = b.getBoundingClientRect()
+    const rc = card.getBoundingClientRect()
     return `top ${Math.round(rb.top - rc.top)}px, right ${Math.round(rc.right - rb.right)}px relative to card`
   })
-  save('measurements-badges-sale.md', md('Sale / discount badges', rows, `\nbadge offset inside card: ${badgeOffset}\n`))
+  save(
+    'measurements-badges-sale.md',
+    md('Sale / discount badges', rows, `\nbadge offset inside card: ${badgeOffset}\n`),
+  )
 }
 
 // ---------- 2. product tabs ----------
@@ -143,7 +186,9 @@ function save(name, content) {
     await page.click('.wc-tabs li:not(.active) a', { timeout: 5000 })
     await page.waitForTimeout(800)
     rows.push(['tab after switch (new active)', await dump('.wc-tabs li.active a')])
-  } catch { rows.push(['tab switch', null]) }
+  } catch {
+    rows.push(['tab switch', null])
+  }
   save('measurements-tabs-product.md', md('Product page tabs', rows))
 }
 
@@ -168,10 +213,14 @@ function save(name, content) {
   const gap = await page.evaluate(() => {
     const items = document.querySelectorAll('.woocommerce-pagination li, .page-numbers li')
     if (items.length < 2) return null
-    const a = items[0].getBoundingClientRect(); const b = items[1].getBoundingClientRect()
-    return Math.round(b.left - a.right) + 'px'
+    const a = items[0].getBoundingClientRect()
+    const b = items[1].getBoundingClientRect()
+    return `${Math.round(b.left - a.right)}px`
   })
-  save('measurements-pagination.md', md('Pagination (shop)', rows, `\ngap between page items: ${gap}\n`))
+  save(
+    'measurements-pagination.md',
+    md('Pagination (shop)', rows, `\ngap between page items: ${gap}\n`),
+  )
 }
 
 // ---------- 4. newsletter in footer ----------
@@ -182,16 +231,24 @@ function save(name, content) {
   await page.waitForTimeout(1200)
   const rows = await dumpMany([
     ['newsletter block', '.footer-newsletter, footer .newsletter, [class*="newsletter"]'],
-    ['newsletter title', '.footer-newsletter .newsletter-title, [class*="newsletter"] h5, [class*="newsletter"] h4'],
+    [
+      'newsletter title',
+      '.footer-newsletter .newsletter-title, [class*="newsletter"] h5, [class*="newsletter"] h4',
+    ],
     ['newsletter subtitle', '[class*="newsletter"] p, .newsletter-marketing-text'],
     ['email input', '[class*="newsletter"] input[type="email"], footer input[type="email"]'],
     ['submit button', '[class*="newsletter"] button, [class*="newsletter"] input[type="submit"]'],
     ['social icons row (if adjacent)', '.footer-social, [class*="social"]'],
   ])
   try {
-    await page.click('[class*="newsletter"] input[type="email"], footer input[type="email"]', { timeout: 5000 })
+    await page.click('[class*="newsletter"] input[type="email"], footer input[type="email"]', {
+      timeout: 5000,
+    })
     await page.waitForTimeout(400)
-    rows.push(['email input :focus', await dump('[class*="newsletter"] input[type="email"], footer input[type="email"]')])
+    rows.push([
+      'email input :focus',
+      await dump('[class*="newsletter"] input[type="email"], footer input[type="email"]'),
+    ])
   } catch {}
   save('measurements-newsletter-footer.md', md('Footer newsletter', rows))
 }
@@ -211,16 +268,36 @@ function save(name, content) {
     await page.click(inputSel, { timeout: 6000 })
     await page.type(inputSel, 'laptop', { delay: 120 })
     await page.waitForTimeout(3000)
-    rows.push(...await dumpMany([
-      ['suggestions dropdown', '.autocomplete-suggestions, .search-suggestions, .dgwt-wcas-suggestions-wrapp, [class*="suggest"], [class*="autocomplete"]'],
-      ['single suggestion row', '.autocomplete-suggestion, .dgwt-wcas-suggestion, [class*="suggest"] li'],
-      ['suggestion image', '[class*="suggest"] img, .dgwt-wcas-si img'],
-      ['suggestion title', '[class*="suggest"] [class*="title"], .dgwt-wcas-st'],
-      ['suggestion price', '[class*="suggest"] .price, .dgwt-wcas-sp'],
-      ['highlighted / hovered row', '.autocomplete-suggestion.selected, .dgwt-wcas-suggestion-focused'],
-    ]))
-  } catch { rows.push(['live suggestions', null]) }
-  save('measurements-search-dropdown.md', md('Search bar + live suggestions dropdown', rows, '\nIf the dropdown rows above are _not found_, the demo may not ship live search; the plain form specs above still apply.\n'))
+    rows.push(
+      ...(await dumpMany([
+        [
+          'suggestions dropdown',
+          '.autocomplete-suggestions, .search-suggestions, .dgwt-wcas-suggestions-wrapp, [class*="suggest"], [class*="autocomplete"]',
+        ],
+        [
+          'single suggestion row',
+          '.autocomplete-suggestion, .dgwt-wcas-suggestion, [class*="suggest"] li',
+        ],
+        ['suggestion image', '[class*="suggest"] img, .dgwt-wcas-si img'],
+        ['suggestion title', '[class*="suggest"] [class*="title"], .dgwt-wcas-st'],
+        ['suggestion price', '[class*="suggest"] .price, .dgwt-wcas-sp'],
+        [
+          'highlighted / hovered row',
+          '.autocomplete-suggestion.selected, .dgwt-wcas-suggestion-focused',
+        ],
+      ])),
+    )
+  } catch {
+    rows.push(['live suggestions', null])
+  }
+  save(
+    'measurements-search-dropdown.md',
+    md(
+      'Search bar + live suggestions dropdown',
+      rows,
+      '\nIf the dropdown rows above are _not found_, the demo may not ship live search; the plain form specs above still apply.\n',
+    ),
+  )
 }
 
 await browser.close()

@@ -1,7 +1,7 @@
-import { chromium } from '@playwright/test'
 import { writeFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { homedir } from 'node:os'
+import { join } from 'node:path'
+import { chromium } from '@playwright/test'
 
 // Measures electro.madrasthemes.com with real computed styles and writes
 // one markdown file per topic into ~/Downloads:
@@ -19,12 +19,37 @@ const BASE = 'https://electro.madrasthemes.com'
 const OUT = join(homedir(), 'Downloads')
 
 const PROPS = [
-  'width', 'height', 'max-width', 'min-height',
-  'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
-  'margin-top', 'margin-right', 'margin-bottom', 'margin-left', 'gap',
-  'font-family', 'font-size', 'font-weight', 'line-height', 'letter-spacing', 'text-transform',
-  'color', 'background-color', 'border', 'border-top', 'border-bottom', 'border-radius',
-  'box-shadow', 'transition', 'display', 'flex-direction', 'justify-content', 'align-items',
+  'width',
+  'height',
+  'max-width',
+  'min-height',
+  'padding-top',
+  'padding-right',
+  'padding-bottom',
+  'padding-left',
+  'margin-top',
+  'margin-right',
+  'margin-bottom',
+  'margin-left',
+  'gap',
+  'font-family',
+  'font-size',
+  'font-weight',
+  'line-height',
+  'letter-spacing',
+  'text-transform',
+  'color',
+  'background-color',
+  'border',
+  'border-top',
+  'border-bottom',
+  'border-radius',
+  'box-shadow',
+  'transition',
+  'display',
+  'flex-direction',
+  'justify-content',
+  'align-items',
 ]
 
 const browser = await chromium.launch({
@@ -83,10 +108,18 @@ async function dump(page, sel) {
 }
 
 function md(title, rows) {
-  const lines = [`# ${title}`, '', `Source: ${BASE} (electro home-v7 demo), measured ${new Date().toISOString().slice(0, 10)} via headed Chrome computed styles.`, '']
+  const lines = [
+    `# ${title}`,
+    '',
+    `Source: ${BASE} (electro home-v7 demo), measured ${new Date().toISOString().slice(0, 10)} via headed Chrome computed styles.`,
+    '',
+  ]
   for (const [label, o] of rows) {
     lines.push(`## ${label}`, '')
-    if (!o) { lines.push('_not found_', ''); continue }
+    if (!o) {
+      lines.push('_not found_', '')
+      continue
+    }
     lines.push('| property | value |', '|---|---|')
     for (const [k, v] of Object.entries(o)) lines.push(`| ${k === '_rect' ? 'rect' : k} | ${v} |`)
     lines.push('')
@@ -119,11 +152,15 @@ function save(name, content) {
     ['newsletter block', '.footer-newsletter, footer .newsletter'],
     ['bottom bar', '.copyright-bar, .site-info, .footer-bottom'],
     ['payment icons row', '.footer-payment, .payment-methods'],
-  ]) footerRows.push([label, await dump(page, sel)])
+  ])
+    footerRows.push([label, await dump(page, sel)])
   const colCount = await page.evaluate(
     () => document.querySelectorAll('.footer-widgets [class*="col-"]').length,
   )
-  save('measurements-footer.md', md('Footer (home-v7, 1440px)', footerRows) + `\ncolumn count: ${colCount}\n`)
+  save(
+    'measurements-footer.md',
+    `${md('Footer (home-v7, 1440px)', footerRows)}\ncolumn count: ${colCount}\n`,
+  )
 
   // product card + real hover state
   await page.evaluate(() => window.scrollTo(0, 900))
@@ -140,15 +177,22 @@ function save(name, content) {
     await page.hover(cardSel, { timeout: 5000 })
     await page.waitForTimeout(600)
     cardRows.push(['card :hover (after 600ms)', await dump(page, cardSel)])
-    cardRows.push(['button :hover state', await dump(page, 'li.product .add_to_cart_button, li.product .button')])
-  } catch { cardRows.push(['card :hover', null]) }
+    cardRows.push([
+      'button :hover state',
+      await dump(page, 'li.product .add_to_cart_button, li.product .button'),
+    ])
+  } catch {
+    cardRows.push(['card :hover', null])
+  }
   save('measurements-product-card.md', md('Product card (home-v7, 1440px)', cardRows))
 
   // ---------- 3. cart: add a product first, then measure ----------
   try {
     await page.click('li.product .add_to_cart_button', { timeout: 8000 })
     await page.waitForTimeout(2500)
-  } catch { console.error('  add-to-cart click failed, cart may be empty') }
+  } catch {
+    console.error('  add-to-cart click failed, cart may be empty')
+  }
   await open(page, `${BASE}/cart/`)
   await page.waitForTimeout(2000)
   const cartRows = []
@@ -168,7 +212,8 @@ function save(name, content) {
     ['totals heading', '.cart_totals h2'],
     ['totals table row', '.cart_totals table tr'],
     ['checkout button', '.checkout-button, a.checkout-button'],
-  ]) cartRows.push([label, await dump(page, sel)])
+  ])
+    cartRows.push([label, await dump(page, sel)])
   save('measurements-cart-page.md', md('Cart page (1440px)', cartRows))
 
   // ---------- 4. checkout: fields, widths, then trigger errors ----------
@@ -186,14 +231,20 @@ function save(name, content) {
     ['textarea', '#order_comments'],
     ['order table', 'table.shop_table.woocommerce-checkout-review-order-table'],
     ['place order button', '#place_order'],
-  ]) coRows.push([label, await dump(page, sel)])
+  ])
+    coRows.push([label, await dump(page, sel)])
   try {
     await page.click('#place_order', { timeout: 8000 })
     await page.waitForTimeout(3500)
-    coRows.push(['error banner', await dump(page, '.woocommerce-error, .woocommerce-NoticeGroup .woocommerce-error')])
+    coRows.push([
+      'error banner',
+      await dump(page, '.woocommerce-error, .woocommerce-NoticeGroup .woocommerce-error'),
+    ])
     coRows.push(['error list item', await dump(page, '.woocommerce-error li')])
     coRows.push(['invalid field row', await dump(page, '.form-row.woocommerce-invalid input')])
-  } catch { coRows.push(['error states', null]) }
+  } catch {
+    coRows.push(['error states', null])
+  }
   save('measurements-checkout-page.md', md('Checkout page (1440px)', coRows))
 
   // ---------- 5. category sidebar (shop page) ----------
@@ -213,14 +264,19 @@ function save(name, content) {
     ['price slider range', '.ui-slider-range'],
     ['price filter button', '.price_slider_amount .button'],
     ['price label', '.price_slider_amount .price_label'],
-  ]) sbRows.push([label, await dump(page, sel)])
+  ])
+    sbRows.push([label, await dump(page, sel)])
   const widgetGap = await page.evaluate(() => {
     const ws = document.querySelectorAll('#secondary .widget')
     if (ws.length < 2) return null
-    const a = ws[0].getBoundingClientRect(); const b = ws[1].getBoundingClientRect()
-    return Math.round(b.top - a.bottom) + 'px'
+    const a = ws[0].getBoundingClientRect()
+    const b = ws[1].getBoundingClientRect()
+    return `${Math.round(b.top - a.bottom)}px`
   })
-  save('measurements-category-sidebar.md', md('Category sidebar (shop, 1440px)', sbRows) + `\ngap between widgets: ${widgetGap}\n`)
+  save(
+    'measurements-category-sidebar.md',
+    `${md('Category sidebar (shop, 1440px)', sbRows)}\ngap between widgets: ${widgetGap}\n`,
+  )
   await page.close()
 }
 
@@ -234,10 +290,14 @@ function save(name, content) {
     ['header (mobile)', '.handheld-header, header.site-header'],
     ['header inner row', '.handheld-header .container, header .container'],
     ['logo', '.site-branding, .header-logo, .custom-logo-link'],
-    ['hamburger toggle', '.navbar-toggler, .menu-toggle, .handheld-header .off-canvas-navigation-wrapper button'],
+    [
+      'hamburger toggle',
+      '.navbar-toggler, .menu-toggle, .handheld-header .off-canvas-navigation-wrapper button',
+    ],
     ['search toggle / bar', '.handheld-header .search, .header-search'],
     ['cart icon block', '.handheld-header .cart, .site-header-cart'],
-  ]) mRows.push([label, await dump(page, sel)])
+  ])
+    mRows.push([label, await dump(page, sel)])
   try {
     await page.click('.navbar-toggler, .menu-toggle', { timeout: 6000 })
     await page.waitForTimeout(1200)
@@ -246,8 +306,11 @@ function save(name, content) {
       ['menu item', '.off-canvas-navigation li, .handheld-navigation li'],
       ['menu link', '.off-canvas-navigation a, .handheld-navigation a'],
       ['submenu expander', '.dropdown-toggle, .off-canvas-navigation .expand'],
-    ]) mRows.push([label, await dump(page, sel)])
-  } catch { mRows.push(['open menu', null]) }
+    ])
+      mRows.push([label, await dump(page, sel)])
+  } catch {
+    mRows.push(['open menu', null])
+  }
   save('measurements-header-mobile.md', md('Header mobile (390px)', mRows))
   await page.close()
 }

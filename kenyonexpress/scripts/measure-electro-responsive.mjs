@@ -1,7 +1,7 @@
-import { chromium } from '@playwright/test'
 import { writeFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { homedir } from 'node:os'
+import { join } from 'node:path'
+import { chromium } from '@playwright/test'
 
 // Four site-wide reports from electro home-v7 into ~/Downloads:
 //   electro-mobile-full.md   every section at 390px: order, heights, what hides
@@ -40,7 +40,9 @@ async function openPage(width, height) {
   }
   for (let i = 0; i < 20; i++) {
     await page.waitForTimeout(1500)
-    const ok = await page.evaluate(() => !!document.querySelector('#masthead, header.site-header, .site-content'))
+    const ok = await page.evaluate(
+      () => !!document.querySelector('#masthead, header.site-header, .site-content'),
+    )
     if (ok) break
   }
   await page.waitForTimeout(3000)
@@ -58,7 +60,16 @@ async function openPage(width, height) {
 
 // Walk every meaningful block: header children, main sections, footer blocks.
 const WALK = () => {
-  const name = (el) => (el.tagName + (el.id ? '#' + el.id : '') + (el.className && typeof el.className === 'string' ? '.' + el.className.trim().split(/\s+/).slice(0, 3).join('.') : '')).toLowerCase().slice(0, 90)
+  const name = (el) =>
+    (
+      el.tagName +
+      (el.id ? `#${el.id}` : '') +
+      (el.className && typeof el.className === 'string'
+        ? `.${el.className.trim().split(/\s+/).slice(0, 3).join('.')}`
+        : '')
+    )
+      .toLowerCase()
+      .slice(0, 90)
   const roots = [
     document.querySelector('header.site-header, #masthead'),
     document.querySelector('#main, .site-main, #content') || document.body,
@@ -84,18 +95,25 @@ const WALK = () => {
 }
 
 function sectionMd(title, data, hiddenVs) {
-  const L = [`# ${title}`, '', `Source: ${BASE}/home-v7/, viewport ${data.width}px, total page height ${data.totalHeight}px, measured ${new Date().toISOString().slice(0, 10)}.`, '']
+  const L = [
+    `# ${title}`,
+    '',
+    `Source: ${BASE}/home-v7/, viewport ${data.width}px, total page height ${data.totalHeight}px, measured ${new Date().toISOString().slice(0, 10)}.`,
+    '',
+  ]
   L.push('| # | section | y | height | display | hidden here |', '|---|---|---|---|---|---|')
   let i = 0
   for (const r of data.rows) {
     i += 1
-    L.push(`| ${i} | ${r.section} | ${r.top}px | ${r.height}px | ${r.display} | ${r.hidden ? 'YES' : ''} |`)
+    L.push(
+      `| ${i} | ${r.section} | ${r.top}px | ${r.height}px | ${r.display} | ${r.hidden ? 'YES' : ''} |`,
+    )
   }
-  if (hiddenVs && hiddenVs.length) {
+  if (hiddenVs?.length) {
     L.push('', `## Visible at 1440px but hidden at ${data.width}px`, '')
     for (const s of hiddenVs) L.push(`- ${s}`)
   }
-  return L.join('\n') + '\n'
+  return `${L.join('\n')}\n`
 }
 
 // ---- 1440 baseline for the hidden-diff ----
@@ -107,9 +125,14 @@ const animations = await base.evaluate(() => {
   const out = { rules: [], keyframes: [], hoverRules: [] }
   for (const sheet of document.styleSheets) {
     let rules
-    try { rules = sheet.cssRules } catch { continue }
+    try {
+      rules = sheet.cssRules
+    } catch {
+      continue
+    }
     for (const rule of rules || []) {
-      if (rule.type === 7) { // keyframes
+      if (rule.type === 7) {
+        // keyframes
         out.keyframes.push(rule.name)
         continue
       }
@@ -118,9 +141,13 @@ const animations = await base.evaluate(() => {
       const tr = st.getPropertyValue('transition') || st.getPropertyValue('transition-duration')
       const an = st.getPropertyValue('animation') || st.getPropertyValue('animation-duration')
       if (tr || an) {
-        out.rules.push({ selector: (rule.selectorText || '').slice(0, 120), transition: tr || '', animation: an || '' })
+        out.rules.push({
+          selector: (rule.selectorText || '').slice(0, 120),
+          transition: tr || '',
+          animation: an || '',
+        })
       }
-      if (rule.selectorText && rule.selectorText.includes(':hover')) {
+      if (rule.selectorText?.includes(':hover')) {
         const t = rule.cssText
         if (t.length < 400) out.hoverRules.push(t)
       }
@@ -134,7 +161,7 @@ const colors = await base.evaluate(() => {
   const toHex = (rgb) => {
     const m = rgb.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/)
     if (!m) return rgb
-    const hex = '#' + [m[1], m[2], m[3]].map((n) => (+n).toString(16).padStart(2, '0')).join('')
+    const hex = `#${[m[1], m[2], m[3]].map((n) => (+n).toString(16).padStart(2, '0')).join('')}`
     return m[4] !== undefined && +m[4] < 1 ? `${hex} @ alpha ${m[4]}` : hex
   }
   const tally = new Map()
@@ -145,7 +172,10 @@ const colors = await base.evaluate(() => {
     const t = tally.get(key)
     t.count += 1
     t.props.add(prop)
-    if (!t.example) t.example = (el.tagName + '.' + String(el.className).trim().split(/\s+/)[0]).toLowerCase().slice(0, 50)
+    if (!t.example)
+      t.example = `${el.tagName}.${String(el.className).trim().split(/\s+/)[0]}`
+        .toLowerCase()
+        .slice(0, 50)
   }
   const els = document.querySelectorAll('*')
   const step = Math.max(1, Math.floor(els.length / 4000))
@@ -170,7 +200,9 @@ for (const [width, height, file, title] of [
   const page = await openPage(width, height)
   const walk = await page.evaluate(WALK)
   const visibleHere = new Set(walk.rows.filter((r) => !r.hidden).map((r) => r.section))
-  const hiddenVs = walk1440.rows.filter((r) => !r.hidden && !visibleHere.has(r.section)).map((r) => r.section)
+  const hiddenVs = walk1440.rows
+    .filter((r) => !r.hidden && !visibleHere.has(r.section))
+    .map((r) => r.section)
   writeFileSync(join(OUT, file), sectionMd(title, walk, hiddenVs))
   console.error(`✓ ${join(OUT, file)}`)
   await page.close()
@@ -178,23 +210,39 @@ for (const [width, height, file, title] of [
 
 // ---- write animations report ----
 {
-  const L = ['# electro: transitions, animations, hover', '', `Source: ${BASE}/home-v7/ stylesheets, measured ${new Date().toISOString().slice(0, 10)}.`, '']
-  L.push('## Transition / animation rules (exact durations)', '', '| selector | transition | animation |', '|---|---|---|')
-  for (const r of animations.rules) L.push(`| ${r.selector.replace(/\|/g, '\\|')} | ${r.transition} | ${r.animation} |`)
+  const L = [
+    '# electro: transitions, animations, hover',
+    '',
+    `Source: ${BASE}/home-v7/ stylesheets, measured ${new Date().toISOString().slice(0, 10)}.`,
+    '',
+  ]
+  L.push(
+    '## Transition / animation rules (exact durations)',
+    '',
+    '| selector | transition | animation |',
+    '|---|---|---|',
+  )
+  for (const r of animations.rules)
+    L.push(`| ${r.selector.replace(/\|/g, '\\|')} | ${r.transition} | ${r.animation} |`)
   L.push('', `## @keyframes defined (${animations.keyframes.length})`, '')
   for (const k of animations.keyframes) L.push(`- ${k}`)
   L.push('', `## :hover rules (${animations.hoverRules.length})`, '')
   for (const h of animations.hoverRules) L.push('```css', h, '```')
-  writeFileSync(join(OUT, 'electro-animations.md'), L.join('\n') + '\n')
+  writeFileSync(join(OUT, 'electro-animations.md'), `${L.join('\n')}\n`)
   console.error(`✓ ${join(OUT, 'electro-animations.md')}`)
 }
 
 // ---- write colors report ----
 {
-  const L = ['# electro: every color in use', '', `Source: ${BASE}/home-v7/ computed styles (sampled site-wide), measured ${new Date().toISOString().slice(0, 10)}.`, '']
+  const L = [
+    '# electro: every color in use',
+    '',
+    `Source: ${BASE}/home-v7/ computed styles (sampled site-wide), measured ${new Date().toISOString().slice(0, 10)}.`,
+    '',
+  ]
   L.push('| hex | uses | as | example element |', '|---|---|---|---|')
   for (const c of colors) L.push(`| ${c.hex} | ${c.count} | ${c.props} | ${c.example} |`)
-  writeFileSync(join(OUT, 'electro-colors-full.md'), L.join('\n') + '\n')
+  writeFileSync(join(OUT, 'electro-colors-full.md'), `${L.join('\n')}\n`)
   console.error(`✓ ${join(OUT, 'electro-colors-full.md')}`)
 }
 
