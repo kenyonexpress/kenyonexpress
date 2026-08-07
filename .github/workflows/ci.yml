@@ -117,8 +117,11 @@ jobs:
     needs: [lint, typecheck, test]
     runs-on: ubuntu-latest
     env:
-      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.CI_SUPABASE_URL }}
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.CI_SUPABASE_ANON_KEY }}
+      # The URL and anon key are publishable values by design (they ship in the
+      # browser bundle of the public site), so a plaintext fallback here leaks
+      # nothing. Repository secrets, once set, still win.
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.CI_SUPABASE_URL || 'https://ixvwfbuvfxxsjiywhbbb.supabase.co' }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.CI_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml4dndmYnV2Znh4c2ppeXdoYmJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4Mzg3MTEsImV4cCI6MjA5MzQxNDcxMX0.bAMZp6yuPdBB5QV8jW9E-2Ex-ggkJYgWMuIWewtTZYo' }}
       SUPABASE_SECRET_KEY: ${{ secrets.CI_SUPABASE_SECRET_KEY }}
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       # Source maps are uploaded to Sentry and then deleted from the output, so
