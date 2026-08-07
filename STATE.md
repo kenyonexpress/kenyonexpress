@@ -9,11 +9,45 @@ Updated: 2026-08-03 (autonomous: [47] לוגים מובנים עם request-id; �
 
 ‏[65] ‏Product type selector ← **נסגר 07.08 ‏07:26** (קומיטים `53c5f7d`,
 ‏`ecfdcf3`). ‏1880/1880 טסטים, ‏type-check ו-lint נקיים.
-‏[66] ‏WP import ← **ה-goal הפעיל עכשיו**
-‏[67] ‏Geo
+‏[66] ‏WP import ← **נסגר 07.08 ‏07:43** (קומיט `8404118`). ‏61→80 מוצרים,
+כולם draft. ‏`status='active'` נשאר 61: הלקוחות לא ראו שינוי.
+דוח מלא: `docs/WP-IMPORT-2026-08-07-MAPPING.md`.
+‏[67] ‏Geo ← **ה-goal הפעיל עכשיו**
 ‏[68] ‏WhatsApp
 ‏[69] ‏Trust icons
 ‏[70] ‏Integration pass + עדכון FINAL-REPORT
+
+### החלטות שהתקבלו לבד ב-[66]
+
+1. **לא הרצתי את `run.mjs project --apply`.** שתי סיבות שנמדדו: ‏(א) המפתח
+   ב-`.env.local` מחזיר `401 Invalid API key`, ואין מפתח service תקין במכונה
+   הזאת, אין `psql` ואין `DATABASE_URL`. ‏MCP הוא הנתיב היחיד למסד. ‏(ב) חמור
+   יותר: ‏`04-project-public.mjs` כותב `platform_percent: 10`,
+   ‏`commission_percent: 15` ו-`couponExpiryDays: 365` מ-`config.mjs`, ותולה כל
+   מוצר על ספק מומצא בלי טלפון, כתובת ולוגו. אחוז עמלה קבוע הוא בדיוק הדבר
+   שהפרויקט אוסר (‏CONTRADICTIONS C1). הרצה שם הייתה כותבת עמלה שאיש לא סיכם
+   על 45 מוצרים.
+2. **כתבתי `scripts/wp-import/emit-missing-products.mjs` במקום.** הוא פולט רק
+   מה שיש בייצוא, ומשאיר כל מספר נגזר ריק.
+3. **הכול נכנס כ-`draft` בלי ספק ובלי `platform_percent`.** זה בדיוק המצב
+   ש-`assertPublishable` מסרב להפעיל, ולכן אדם חייב לקבוע עמלה אמיתית וספק
+   אמיתי לפני שמשהו נמכר. ‏`commission_percent = 0` רק כי העמודה NOT NULL בלי
+   default; העמודה שהשער קורא היא `platform_percent` והיא NULL.
+4. **סימון במקום מחיקה.** ‏34 שורות ה-demo קיבלו `attributes.demo = true`.
+   מחיקה היא עצירה לפי הכלל, וסימון הפיך ולא מאבד כלום. אין עמודת `demo`
+   ואין צורך במיגרציה: ‏`attributes` היא jsonb קיימת.
+5. **שתי שורות הוצאו כפיגומים** ולא כסחורה: ‏`קופון-טסט` ו-`product-template`.
+   יש להן מחיר ותמונה, אז שום שער אוטומטי לא תופס אותן. רק קריאת הכותרת.
+6. **תיאורים הומרו מ-HTML לטקסט.** ‏`description_he` מרונדר כטקסט
+   ב-`product/[slug]/page.tsx:254` ומזין את ה-meta description.
+7. **5 שורות סומנו `slug_title_mismatch`.** ‏WordPress ממחזר slugים, ולכן
+   ‏`שעון-אפל-חכם-apple-watch-series-7` הוא דיל ארוחת בוקר. **לא שיניתי slug
+   לאף אחד**: slug הוא זהות בכתובת, ושינוי שקט שובר כל קישור אליו.
+8. **הוספתי את `kenyonexpress.co.il` (הדומיין העירום) ל-`REMOTE_IMAGE_PATTERNS`.**
+   ‏`*.kenyonexpress.co.il` תופס תווית אחת בדיוק ולכן **לא** תופס את הדומיין
+   העירום, וכל 66 התמונות בייצוא נמצאות עליו. בלי זה כל מוצר מיובא היה זורק
+   ב-next/image. **זו תלות באתר ה-WordPress הישן שיישאר חי**, עד שאפשר יהיה
+   להעלות את התמונות ל-Storage. **פריט לאופיר.**
 
 ### החלטות שהתקבלו לבד ב-[65]
 
