@@ -694,3 +694,123 @@ describe('commissionTypeOf', () => {
     expect(commissionTypeOf('coupon').shape).not.toBe(commissionTypeOf('physical').shape)
   })
 })
+
+describe('the recurring type', () => {
+  const recurringBase = {
+    type: 'recurring' as const,
+    priceIls: 49.9,
+    platformPercent: 15,
+    supplierSplitPercent: 85,
+    discountPercent: null,
+    couponPriceIls: null,
+    couponExpiryDays: null,
+    recurringAmountAgorot: 4990,
+    billingInterval: 'monthly',
+    supplier: completeSupplier,
+  }
+
+  it('shares the physical_percent shape, which is what the live CHECK requires', () => {
+    // products_commission_type_matches_type says type <> 'coupon' implies
+    // commission_type = 'physical_percent'. Measured against production
+    // 2026-08-07. A third shape here would make every recurring insert fail.
+    expect(commissionTypeOf('recurring').shape).toBe('physical_percent')
+    expect(commissionTypeOf('recurring').label).not.toBe(commissionTypeOf('physical').label)
+  })
+
+  it('previews the cycle amount, not the sticker price minus a discount', () => {
+    const preview = previewProductMoney({
+      type: 'recurring',
+      priceIls: 199,
+      platformPercent: 15,
+      recurringAmountIls: 49.9,
+    })
+    expect(preview.paidOnlineIls).toBe(49.9)
+    expect(preview.balanceAtBusinessIls).toBe(0)
+    expect(preview.discountPercent).toBe(0)
+    expect(preview.platformKeepsIls + preview.supplierGetsIls).toBeCloseTo(49.9, 2)
+  })
+
+  it('publishes when the amount and the interval are both set', () => {
+    expect(assertPublishable(recurringBase).ok).toBe(true)
+  })
+
+  it('refuses to publish without an amount, and does not invent one', () => {
+    const result = assertPublishable({ ...recurringBase, recurringAmountAgorot: null })
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.blockers.map((b) => b.field)).toContain('recurring_amount_agorot')
+    }
+  })
+
+  it('refuses an unknown billing interval', () => {
+    const result = assertPublishable({ ...recurringBase, billingInterval: 'weekly' })
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.blockers.map((b) => b.field)).toContain('billing_interval')
+    }
+  })
+
+  it('does not demand a discount percent the way the other two types do', () => {
+    // A subscription has no sticker saving to state. Requiring one would force
+    // the admin to type a meaningless 0 before the product could go live.
+    const result = assertPublishable({ ...recurringBase, discountPercent: null })
+    expect(result.ok).toBe(true)
+  })
+
+  it('emits the three new columns ONLY for a recurring product', () => {
+    // PENDING-109 has not been applied. Emitting these as null on a physical
+    // write would send unknown columns on every product save in the system.
+    const physical = buildProductMoneyWrite({
+      type: 'physical',
+      kenyonPrice: 100,
+      platformPercent: 15,
+      supplierSplitPercent: 85,
+      discountPercent: 10,
+      couponPriceIls: null,
+      couponExpiryDays: null,
+    })
+    expect(physical.ok).toBe(true)
+    if (physical.ok) {
+      expect('recurring_amount_agorot' in physical.fields).toBe(false)
+      expect('billing_interval' in physical.fields).toBe(false)
+      expect('billing_interval_count' in physical.fields).toBe(false)
+    }
+
+    const recurring = buildProductMoneyWrite({
+      type: 'recurring',
+      kenyonPrice: 49.9,
+      platformPercent: 15,
+      supplierSplitPercent: 85,
+      discountPercent: null,
+      couponPriceIls: null,
+      couponExpiryDays: null,
+      recurringAmountAgorot: 4990,
+      billingInterval: 'monthly',
+      billingIntervalCount: 1,
+    })
+    expect(recurring.ok).toBe(true)
+    if (recurring.ok) {
+      expect(recurring.fields.recurring_amount_agorot).toBe(4990)
+      expect(recurring.fields.billing_interval).toBe('monthly')
+      expect(recurring.fields.billing_interval_count).toBe(1)
+      expect(recurring.fields.commission_type).toBe('physical_percent')
+      expect(recurring.fields.coupon_price_ils).toBeNull()
+      expect(recurring.fields.discount_percent).toBeNull()
+    }
+  })
+
+  it('refuses a fractional agora, because the column is integer', () => {
+    const result = buildProductMoneyWrite({
+      type: 'recurring',
+      kenyonPrice: 49.9,
+      platformPercent: 15,
+      supplierSplitPercent: 85,
+      discountPercent: null,
+      couponPriceIls: null,
+      couponExpiryDays: null,
+      recurringAmountAgorot: 4990.5,
+      billingInterval: 'monthly',
+    })
+    expect(result.ok).toBe(false)
+  })
+})

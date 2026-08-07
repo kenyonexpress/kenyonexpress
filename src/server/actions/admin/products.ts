@@ -3,7 +3,9 @@
 import { variantIdsToRemove } from '@/lib/admin/product-variants'
 import { requireStaffSession } from '@/lib/admin/rbac'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
+import { ilsToAgorot } from '@/lib/commerce/money'
 import { assertPublishable, buildProductMoneyWrite } from '@/lib/commerce/product-money'
+import { recurringSchemaError } from '@/lib/commerce/recurring-schema-error'
 import { IMAGE_HOST_ERROR, isAllowedImageUrl } from '@/lib/images/remote-hosts'
 import { withActionContext } from '@/lib/observability/action-context'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -24,7 +26,15 @@ const schema = z
     name_he: z.string().min(2, 'שם חייב להכיל לפחות 2 תווים'),
     name_en: z.string().nullable().optional(),
     description_he: z.string().nullable().optional(),
-    type: z.enum(['physical', 'coupon']),
+    type: z.enum(['physical', 'coupon', 'recurring']),
+    // Recurring only. The form types shekels; the column stores agorot, and the
+    // conversion happens once, below, through money.ts. These three are named
+    // for the form and are stripped from the row spread - `recurring_amount_ils`
+    // is not a column at all, and the other two reach the row only through
+    // buildProductMoneyWrite.
+    recurring_amount_ils: z.coerce.number().positive().nullable().optional(),
+    billing_interval: z.enum(['monthly', 'yearly']).nullable().optional(),
+    billing_interval_count: z.coerce.number().int().min(1).nullable().optional(),
     kenyon_price: z.coerce.number().min(0, 'מחיר בקניון נדרש'),
     full_price: z.coerce.number().min(0).nullable().optional(),
     // CONTRADICTIONS C1: no default exists anywhere, on purpose. It is the only
@@ -113,6 +123,24 @@ const schema = z
         message: 'מחיר הקופון לא יכול לעלות על המחיר הרגיל',
         path: ['coupon_price_ils'],
       })
+    }
+    // A subscription with no amount is not free, it is unconfigured. Refusing
+    // here is the same rule that keeps platform_percent from defaulting.
+    if (data.type === 'recurring') {
+      if (data.recurring_amount_ils == null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'סכום החיוב התקופתי נדרש למוצר עם חיוב חודשי קבוע',
+          path: ['recurring_amount_ils'],
+        })
+      }
+      if (data.billing_interval == null) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'תדירות חיוב נדרשת למוצר עם חיוב חודשי קבוע',
+          path: ['billing_interval'],
+        })
+      }
     }
     if (data.supplier_split_percent != null) {
       const sum = Math.round((data.platform_percent + data.supplier_split_percent) * 100) / 100
@@ -241,7 +269,29 @@ async function runUpsertProduct(
 
   const variants = variantsParsed.filter((v) => v.success).map((v) => v.data)
 
-  const { id, ...fields } = parsed.data
+  /**
+   * The three recurring inputs leave `fields` here and never reach the row
+   * spread. `recurring_amount_ils` is not a column at any point - the column is
+   * `recurring_amount_agorot` - and the other two arrive on the row only via
+   * `money.fields`, which omits them entirely unless the type is recurring.
+   *
+   * This is what keeps PENDING-109 optional for every other product: a physical
+   * save sends no column that the un-migrated database has never heard of.
+   */
+  const {
+    id,
+    recurring_amount_ils: recurringAmountIls,
+    billing_interval: billingInterval,
+    billing_interval_count: billingIntervalCount,
+    ...fields
+  } = parsed.data
+
+  // Shekels to agorot, once, at the edge, through money.ts. Nothing downstream
+  // ever sees a float on this path.
+  const recurringAmountAgorot =
+    fields.type === 'recurring' && recurringAmountIls != null
+      ? ilsToAgorot(recurringAmountIls.toFixed(2))
+      : null
 
   // Every money column this write must set, derived once by the same pure
   // module the form preview and checkout use.
@@ -253,6 +303,9 @@ async function runUpsertProduct(
     discountPercent: fields.discount_percent,
     couponPriceIls: fields.coupon_price_ils,
     couponExpiryDays: fields.coupon_expiry_days,
+    recurringAmountAgorot,
+    billingInterval,
+    billingIntervalCount: billingIntervalCount ?? 1,
   })
   if (!money.ok) return { error: money.message }
 
@@ -277,6 +330,8 @@ async function runUpsertProduct(
       discountPercent: money.fields.discount_percent,
       couponPriceIls: money.fields.coupon_price_ils,
       couponExpiryDays: money.fields.coupon_expiry_days,
+      recurringAmountAgorot,
+      billingInterval,
       supplier: supplier
         ? {
             id: supplier.id,
@@ -302,14 +357,14 @@ async function runUpsertProduct(
       .from('products')
       .update({ ...fields, ...money.fields, images })
       .eq('id', id)
-    if (error) return { error: error.message }
+    if (error) return { error: recurringSchemaError(error.message) ?? error.message }
   } else {
     const { data, error } = await supabase
       .from('products')
       .insert({ ...fields, ...money.fields, images, created_by: user!.id })
       .select('id')
       .single()
-    if (error) return { error: error.message }
+    if (error) return { error: recurringSchemaError(error.message) ?? error.message }
     productId = data.id
   }
 
