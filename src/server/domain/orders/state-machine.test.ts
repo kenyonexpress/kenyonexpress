@@ -6,6 +6,7 @@ import {
   type SettlementState,
   type SettlementTransitionError,
   canTransition,
+  deriveOrderStatus,
   isSettled,
   isTerminal,
   transition,
@@ -145,5 +146,34 @@ describe('isSettled covers every state where the platform owes nobody', () => {
     const settled = SETTLEMENT_STATES.filter(isSettled)
     expect(settled).toEqual(['split_executed', 'refunded', 'cancelled'])
     expect(SETTLEMENT_STATES).toHaveLength(6)
+  })
+})
+
+describe('isSettled', () => {
+  const settled: readonly SettlementState[] = ['split_executed', 'refunded', 'cancelled']
+
+  it('classifies every state exactly once', () => {
+    for (const state of SETTLEMENT_STATES) {
+      expect(isSettled(state), state).toBe(settled.includes(state))
+    }
+  })
+})
+
+describe('deriveOrderStatus', () => {
+  it('treats an empty order as pending', () => {
+    expect(deriveOrderStatus([])).toBe('pending')
+  })
+
+  it('shows the least-advanced active line', () => {
+    expect(deriveOrderStatus(['pending', 'split_executed'])).toBe('pending')
+    expect(deriveOrderStatus(['paid', 'split_executed'])).toBe('paid')
+    expect(deriveOrderStatus(['redeemed', 'split_executed'])).toBe('redeemed')
+  })
+
+  it('resolves fully-settled orders by dominant outcome', () => {
+    expect(deriveOrderStatus(['cancelled', 'cancelled'])).toBe('cancelled')
+    expect(deriveOrderStatus(['refunded', 'cancelled'])).toBe('refunded')
+    expect(deriveOrderStatus(['split_executed', 'refunded'])).toBe('split_executed')
+    expect(deriveOrderStatus(['split_executed', 'split_executed'])).toBe('split_executed')
   })
 })

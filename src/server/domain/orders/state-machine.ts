@@ -136,6 +136,7 @@ export function transition(
   if (!rule) {
     throw new SettlementTransitionError('ILLEGAL_TRANSITION', from, event)
   }
+  /* v8 ignore next 3 -- defensive guard: no rule in the current TRANSITIONS table sets productType, so this is unreachable until a type-scoped rule returns */
   if (rule.productType !== undefined && rule.productType !== productType) {
     throw new SettlementTransitionError('WRONG_PRODUCT_TYPE', from, event)
   }
