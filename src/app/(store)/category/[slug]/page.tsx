@@ -7,6 +7,7 @@ import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
 import Pagination from '@/components/category/Pagination'
+import CityTags from '@/components/geo/CityTags'
 import {
   CATEGORY_PAGE_SIZE,
   type ProductTypeFilter,
@@ -15,9 +16,11 @@ import {
   getCategoryBySlug,
   getCategoryParent,
   getCategoryProductsCached,
+  parseCity,
   parseProductType,
 } from '@/lib/category-page'
 import { type SortValue, parseSort } from '@/lib/category-tokens'
+import { type Coordinates, parseNear, sortByDistance } from '@/lib/geo/distance'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
@@ -86,6 +89,27 @@ type QueryArgs = {
   priceMin?: number
   priceMax?: number
   productType?: ProductTypeFilter
+  city?: string
+  /**
+   * Nearest-first origin. NOT part of the cached query key: the cache is keyed
+   * by everything else and the distance sort is applied to the result, so two
+   * customers standing in different places share one cached page instead of
+   * minting a cache entry per coordinate.
+   */
+  near?: Coordinates | null
+}
+
+/**
+ * The cache key: everything except `near`.
+ *
+ * `near` is a per-customer coordinate. Letting it reach the cached read would
+ * mint a separate cache entry for every distinct pair of coordinates on earth,
+ * which is the same as having no cache at all. The distance sort is applied to
+ * the cached result instead.
+ */
+function cacheableArgs(args: QueryArgs) {
+  const { near: _near, ...rest } = args
+  return rest
 }
 
 function pageWindow(total: number, page: number) {
@@ -98,7 +122,7 @@ function pageWindow(total: number, page: number) {
 
 /** Header count. Shares one query with the grid via getCategoryProductsCached. */
 async function ResultCount({ args }: { args: QueryArgs }) {
-  const { total } = await getCategoryProductsCached(args)
+  const { total } = await getCategoryProductsCached(cacheableArgs(args))
   if (total === 0) return null
   const { from, to } = pageWindow(total, args.page)
   return <p className="category-page__count">{resultCountText(total, from, to)}</p>
@@ -113,7 +137,11 @@ async function ResultGrid({
   pathname: string
   linkParams: Record<string, string | undefined>
 }) {
-  const { items, total } = await getCategoryProductsCached(args)
+  const { items, total } = await getCategoryProductsCached(cacheableArgs(args))
+
+  // Nearest first, applied after the cached read. `sortByDistance` returns the
+  // list unchanged when there is no origin, so the default page is untouched.
+  const ordered = args.near ? sortByDistance(items, args.near) : items
 
   if (items.length === 0) {
     return (
@@ -128,7 +156,7 @@ async function ResultGrid({
   return (
     <>
       <ul className="category-products">
-        {items.map((product) => (
+        {ordered.map((product) => (
           <li key={product.id} className="category-products__item">
             <CategoryProductCard product={product as CategoryProduct} />
           </li>
@@ -212,6 +240,8 @@ async function CategoryPageBody({ params, searchParams }: Props) {
   const priceMin = parsePrice(sp.min)
   const priceMax = parsePrice(sp.max)
   const productType = parseProductType(sp.type)
+  const city = parseCity(sp.city)
+  const near = parseNear(sp.near)
 
   const category = await getCategoryBySlug(slug)
   if (!category) notFound()
@@ -231,6 +261,8 @@ async function CategoryPageBody({ params, searchParams }: Props) {
     priceMin,
     priceMax,
     productType,
+    city,
+    near,
   }
 
   const pathname = `/category/${category.slug}`
@@ -261,6 +293,12 @@ async function CategoryPageBody({ params, searchParams }: Props) {
         </header>
 
         <CategoryControlBar value={sort} />
+
+        {/* The city picker. Same component as the row under the hero, so the
+            two cannot drift apart in behaviour or in what "one city" means. */}
+        <Suspense fallback={null}>
+          <CityTags className="mt-3" />
+        </Suspense>
 
         <div className="category-page__body">
           <div className="category-page__main">

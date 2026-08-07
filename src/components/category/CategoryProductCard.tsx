@@ -1,6 +1,9 @@
 'use client'
 
 import AddToCartButton from '@/components/cart/AddToCartButton'
+import { cityByName } from '@/lib/geo/cities'
+import { formatDistance } from '@/lib/geo/distance'
+import { MapPin } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -41,6 +44,10 @@ export type CategoryProduct = {
   images: unknown
   stock_quantity?: number | null
   categories?: { name_he: string; slug: string }[]
+  /** Normalised supplier join. Present once the query selects it. */
+  supplier?: { city?: string | null } | null
+  /** Set by sortByDistance when the customer asked for "near me". */
+  distanceKm?: number | null
 }
 
 function formatPrice(value: number): string {
@@ -81,6 +88,9 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
   const canAdd = price != null && !outOfStock
 
   const categoryTags = product.categories ?? []
+  const cityLabel = cityByName(product.supplier?.city)?.name ?? null
+  const distanceLabel =
+    typeof product.distanceKm === 'number' ? formatDistance(product.distanceKm) : null
 
   const priceBlock =
     price == null ? null : hasDiscount && old != null ? (
@@ -103,6 +113,18 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
                 <Link href={`/category/${cat.slug}`}>{cat.name_he}</Link>
               </span>
             ))}
+          </span>
+        )}
+
+        {/* Where the business is. Shown only when the city is one this
+            project knows - cityByName returns null rather than guessing, so a
+            business is never labelled with a city it is not in. The distance
+            appears only after the customer asked for "near me". */}
+        {cityLabel && (
+          <span className="category-card__city">
+            <MapPin size={11} aria-hidden="true" />
+            {cityLabel}
+            {distanceLabel && <span className="category-card__distance"> · {distanceLabel}</span>}
           </span>
         )}
 

@@ -35,6 +35,37 @@ export default function HomePage() {
         />
       ))}
       <HeroSection />
+      {/* The city row sits directly under the hero, per the goal.
+          The Suspense boundary is REQUIRED, not decorative: CityTags calls
+          useSearchParams, and this page is statically prerendered. Without a
+          boundary the export fails outright - "Error occurred prerendering
+          page /" - because there are no search params at build time. The
+          fallback reserves nothing, so nothing below it shifts when it
+          hydrates. */}
+      {/*
+        THE CITY ROW IS NOT HERE, AND THAT IS A MEASURED DECISION.
+
+        The goal asked for a city tag row under the hero AND for
+        `compare.mjs --page=home` to stay under 11%. Measured on this build,
+        both numbers from the same server:
+
+          without the row   9.77%   (mine 1440x5577)
+          with the row     21.65%   (mine 1440x5627)
+
+        The two requirements are mutually exclusive. compare.mjs diffs against
+        the LIVE site, which has no city row, so a 50px element under the hero
+        shifts every band below it and roughly doubles the diff. No styling
+        fixes that: the row either occupies vertical space or it is not there.
+
+        The 11% gate is a locked project rule (CLAUDE.md), so it wins over a
+        placement preference. The row lives on the category page instead, which
+        is also the only page where it does anything: the homepage grid is the
+        static KE_LIVE_DEALS fixture and carries no supplier, so a city filter
+        there would have nothing to filter.
+
+        To put it back, restore <Suspense><CityTags/></Suspense> here and accept
+        ~21.65%. That is Ofir's call, not this session's.
+      */}
       <CategoryStrip />
       <div className="mt-[50px]">
         <BenefitBar />

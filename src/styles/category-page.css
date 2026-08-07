@@ -694,3 +694,22 @@
 .category-sidebar__disclosure[open] .category-sidebar__widgets {
   padding-top: 20px;
 }
+
+/* City and distance on a card. Sits with the category tags above the title,
+   at the same weight, so it reads as provenance and not as a promotion. */
+.category-card__city {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--cat-muted);
+}
+
+.category-card__distance {
+  /* The same muted grey, stepped back. The distance is secondary to the city:
+     the city is a fact about the business, the distance is a fact about where
+     the customer happens to be standing. */
+  color: var(--cat-muted);
+  opacity: 0.75;
+}
