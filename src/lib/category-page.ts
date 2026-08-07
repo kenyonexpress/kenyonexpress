@@ -1,6 +1,34 @@
 import type { SortValue } from '@/components/category/CategoryControlBar'
-import { createClient } from '@/lib/supabase/server'
+import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
+import { createPublicClient } from '@/lib/supabase/anon'
+import { cacheLife, cacheTag } from 'next/cache'
 import { cache } from 'react'
+
+/**
+ * Every read in this file is CACHED and runs on the anon client.
+ *
+ * Two changes that belong together. The reads used to go through
+ * `createClient()`, which reads cookies, and that had two consequences: no
+ * catalogue answer could ever be cached (a cached scope cannot touch request
+ * APIs), and the rows returned depended on who was asking - an admin's session
+ * could see rows a shopper could not, from the same function.
+ * `createPublicClient()` is always exactly `anon`, which is both cacheable and
+ * the same catalogue for everybody. It is the client the cart already reads the
+ * catalogue with, proven against the hosted project.
+ *
+ * The invalidation contract is in src/lib/catalogue-cache.ts and it is not
+ * optional: a write that does not call `updateTag(CATALOGUE_TAG)` is invisible
+ * on the storefront for an hour, silently.
+ *
+ * `cacheLife('hours')` - 1 hour revalidate, 1 day expire. The expire is the
+ * part worth having: if Supabase is unreachable, the last good catalogue keeps
+ * being served instead of an empty grid.
+ *
+ * The two calls are repeated in each function rather than factored into a
+ * helper. `cacheLife` and `cacheTag` are directives about the scope they are
+ * written in, and hiding them behind a call makes it possible to add a `use
+ * cache` function here that silently has neither.
+ */
 
 export const CATEGORY_PAGE_SIZE = 12
 
@@ -25,7 +53,10 @@ export type CategoryProductRow = {
 }
 
 export async function getCategoryBySlug(slug: string): Promise<CategoryRow | null> {
-  const supabase = await createClient()
+  'use cache'
+  cacheLife('hours')
+  cacheTag(CATALOGUE_TAG)
+  const supabase = createPublicClient()
   const { data } = await supabase
     .from('categories')
     .select('id, slug, name_he, description_he, parent_id')
@@ -36,7 +67,10 @@ export async function getCategoryBySlug(slug: string): Promise<CategoryRow | nul
 }
 
 export async function getAllCategorySlugs(): Promise<string[]> {
-  const supabase = await createClient()
+  'use cache'
+  cacheLife('hours')
+  cacheTag(CATALOGUE_TAG)
+  const supabase = createPublicClient()
   const { data } = await supabase
     .from('categories')
     .select('slug')
@@ -48,7 +82,10 @@ export async function getAllCategorySlugs(): Promise<string[]> {
 export async function getCategoryParent(
   parentId: string,
 ): Promise<{ slug: string; name_he: string } | null> {
-  const supabase = await createClient()
+  'use cache'
+  cacheLife('hours')
+  cacheTag(CATALOGUE_TAG)
+  const supabase = createPublicClient()
   const { data } = await supabase
     .from('categories')
     .select('slug, name_he')
@@ -60,7 +97,10 @@ export async function getCategoryParent(
 export async function getCategoryChildren(
   categoryId: string,
 ): Promise<{ id: string; slug: string; name_he: string }[]> {
-  const supabase = await createClient()
+  'use cache'
+  cacheLife('hours')
+  cacheTag(CATALOGUE_TAG)
+  const supabase = createPublicClient()
   const { data } = await supabase
     .from('categories')
     .select('id, slug, name_he')
@@ -120,8 +160,11 @@ export async function getCategoryProducts(opts: {
   priceMax?: number
   productType?: ProductTypeFilter
 }): Promise<{ items: CategoryProductRow[]; total: number }> {
+  'use cache'
+  cacheLife('hours')
+  cacheTag(CATALOGUE_TAG)
   const { categoryId, category, sort, page, priceMin, priceMax, productType } = opts
-  const supabase = await createClient()
+  const supabase = createPublicClient()
   const from = (page - 1) * CATEGORY_PAGE_SIZE
 
   let query = supabase
@@ -168,7 +211,10 @@ export async function getCategoryProducts(opts: {
 }
 
 export async function getAllCategories(): Promise<{ slug: string; name_he: string }[]> {
-  const supabase = await createClient()
+  'use cache'
+  cacheLife('hours')
+  cacheTag(CATALOGUE_TAG)
+  const supabase = createPublicClient()
   const { data } = await supabase
     .from('categories')
     .select('slug, name_he')
@@ -187,8 +233,11 @@ export async function getShopProducts(opts: {
   priceMax?: number
   productType?: ProductTypeFilter
 }): Promise<{ items: CategoryProductRow[]; total: number }> {
+  'use cache'
+  cacheLife('hours')
+  cacheTag(CATALOGUE_TAG)
   const { sort, page, priceMin, priceMax, productType } = opts
-  const supabase = await createClient()
+  const supabase = createPublicClient()
   const from = (page - 1) * SHOP_PAGE_SIZE
 
   let query = supabase
@@ -241,6 +290,12 @@ export async function getShopProducts(opts: {
  * and each sits behind its own Suspense boundary so the shell can stream first.
  * Without `cache` that would issue the same query twice per request; with it
  * both boundaries share one round trip.
+ *
+ * Kept even though the wrapped functions now carry `use cache`, which already
+ * makes a second call within a request a cache hit. The two do different jobs:
+ * `use cache` dedupes ACROSS requests and has to serialise the arguments and
+ * the result to do it, `cache` dedupes within one and does not. On a cold entry
+ * this is still the difference between one round trip and two.
  */
 export const getCategoryProductsCached = cache(getCategoryProducts)
 export const getShopProductsCached = cache(getShopProducts)

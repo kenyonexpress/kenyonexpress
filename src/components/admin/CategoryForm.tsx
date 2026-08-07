@@ -145,6 +145,9 @@ export default function CategoryForm({ category, parentOptions }: Props) {
           value={iconUrl}
           onChange={(urls) => setIconUrl(urls.slice(-1))}
           maxFiles={1}
+          altKind="category"
+          // Uncontrolled name field; see VendorForm.
+          altSubject={category?.name_he ?? null}
         />
       </div>
 

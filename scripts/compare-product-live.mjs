@@ -62,8 +62,8 @@ const report = await page.evaluate(
       ctx.drawImage(img, 0, 0)
       return ctx.getImageData(0, 0, W, H).data
     }
-    const a = data(liveImg),
-      m = data(mineImg)
+    const a = data(liveImg)
+    const m = data(mineImg)
     const TOL = 24
     const BAND = 100
     const bands = []

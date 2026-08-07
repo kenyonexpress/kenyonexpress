@@ -1,10 +1,18 @@
-import { ilsColumnToAgorot } from '@/lib/account/format'
+import {
+  moneyColumnProbe,
+  orderMoneySelect,
+  readOrderMoney,
+  resolveOrderGeneration,
+} from '@/lib/commerce/order-money-columns'
 import { type Agorot, agorot } from '@/lib/money'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
-import { type SettlementState, deriveOrderStatus } from '@/server/domain/orders/state-machine'
-import { isVoucherRedeemable } from '@/server/queries/vouchers'
-import QRCode from 'qrcode'
+import { voucherQrDataUrl } from '@/lib/vouchers/qr-image'
+import {
+  SETTLEMENT_STATES,
+  type SettlementState,
+  deriveOrderStatus,
+} from '@/server/domain/orders/state-machine'
 
 export interface OrderSummary {
   id: string
@@ -19,13 +27,12 @@ export interface OrderSummary {
 }
 
 export interface OrderVoucher {
-  id: string
   code: string
   status: string
   expiresAt: string | null
-  paidOnSiteAgorot: Agorot
-  remainingDueAgorot: Agorot
-  faceValueAgorot: Agorot
+  /** Still to collect at the counter, integer agorot. */
+  collectAmountAgorot: Agorot | null
+  faceValueAgorot: Agorot | null
   qrDataUrl: string | null
   usedAt: string | null
 }
@@ -67,20 +74,37 @@ export interface OrderDetail {
   walletAppliedAgorot: Agorot
   addressId: string | null
   lines: OrderLine[]
+  /**
+   * The issued tax document, or null while it is still queued.
+   *
+   * Read through the service client, like everything else on this page, and not
+   * because it is convenient: `invoices` has RLS on with zero policies (107),
+   * so a request-bound client gets `200 []` rather than an error - the exact
+   * silent-empty failure [54] measured on `settlement_events`. The ownership
+   * check is the `user_id` filter on the order above, which has already run.
+   */
+  invoice: OrderInvoice | null
+}
+
+export interface OrderInvoice {
+  documentNumber: string | null
+  issuedAt: string | null
 }
 
 function asSettlementState(value: string | null | undefined): SettlementState {
-  const states: readonly string[] = [
-    'pending',
-    'paid',
-    'split_executed',
-    'escrow_held',
-    'escrow_released',
-    'redeemed',
-    'refunded',
-    'cancelled',
-  ]
-  return states.includes(value ?? '') ? (value as SettlementState) : 'pending'
+  // Rows written before the escrow model was removed can still carry
+  // escrow_held / escrow_released / platform_settled. All three meant "the
+  // money question for this line is closed", which is split_executed now.
+  const legacy: Record<string, SettlementState> = {
+    escrow_held: 'split_executed',
+    escrow_released: 'split_executed',
+    platform_settled: 'split_executed',
+  }
+  const mapped = legacy[value ?? '']
+  if (mapped) return mapped
+  return SETTLEMENT_STATES.includes(value as SettlementState)
+    ? (value as SettlementState)
+    : 'pending'
 }
 
 async function requireUserId(): Promise<string | null> {
@@ -97,15 +121,33 @@ export async function getMyOrders(): Promise<OrderSummary[]> {
   if (!userId) return []
 
   const admin = createAdminClient()
-  const { data: orders } = await admin
+  // Which money columns exist is resolved rather than named. Getting it wrong
+  // takes the WHOLE select down with 42703, `orders` comes back null, and every
+  // customer's order list renders as "you have no orders" instead of as an
+  // error. It has been wrong in both directions; see order-money-columns.ts.
+  const generation = await resolveOrderGeneration(moneyColumnProbe(admin as never))
+  // The select string is built at runtime, so the client cannot infer the row
+  // shape from it. The cast is confined to this one read.
+  const { data: rows } = await admin
     .from('orders')
     .select(
-      'id, status, created_at, paid_at, total_ils, order_items(quantity, product_type, settlement_status)',
+      `id, status, created_at, paid_at, ${orderMoneySelect(generation)}, order_items(quantity, product_type, settlement_status)`,
     )
     .eq('user_id', userId)
     .is('deleted_at', null)
     .order('created_at', { ascending: false })
     .limit(50)
+
+  type OrderListRow = Record<string, unknown> & {
+    id: string
+    status: OrderSummary['status']
+    created_at: string
+    paid_at: string | null
+    order_items:
+      | { quantity: number | null; product_type: string; settlement_status: string }[]
+      | null
+  }
+  const orders = rows as unknown as OrderListRow[] | null
 
   return (orders ?? []).map((order) => {
     const items = order.order_items ?? []
@@ -115,7 +157,7 @@ export async function getMyOrders(): Promise<OrderSummary[]> {
       settlementStatus: deriveOrderStatus(items.map((i) => asSettlementState(i.settlement_status))),
       createdAt: order.created_at,
       paidAt: order.paid_at,
-      totalAgorot: ilsColumnToAgorot(order.total_ils ?? 0),
+      totalAgorot: agorot(readOrderMoney(generation, order).totalAgorot),
       itemCount: items.reduce((sum, i) => sum + (i.quantity ?? 0), 0),
       hasVouchers: items.some((i) => i.product_type === 'coupon'),
     }
@@ -128,21 +170,30 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
   if (!userId) return null
 
   const admin = createAdminClient()
-  const { data: order } = await admin
+  const generation = await resolveOrderGeneration(moneyColumnProbe(admin as never))
+  const { data: orderRow } = await admin
     .from('orders')
-    .select(
-      'id, user_id, status, created_at, paid_at, subtotal_ils, total_ils, cashback_applied_ils, address_id',
-    )
+    .select(`id, user_id, status, created_at, paid_at, ${orderMoneySelect(generation)}, address_id`)
     .eq('id', orderId)
     .eq('user_id', userId)
     .is('deleted_at', null)
     .maybeSingle()
+  const order = orderRow as unknown as
+    | (Record<string, unknown> & {
+        id: string
+        status: OrderDetail['status']
+        created_at: string
+        paid_at: string | null
+        address_id: string | null
+      })
+    | null
   if (!order) return null
+  const money = readOrderMoney(generation, order)
 
   const { data: items } = await admin
     .from('order_items')
     .select(
-      'id, product_id, product_type, supplier_id, quantity, unit_price_ils, total_price_ils, paid_on_site_agorot, balance_due_agorot, settlement_status, item_status',
+      'id, product_id, product_type, supplier_id, quantity, unit_price_agorot, total_price_agorot, paid_on_site_agorot, balance_due_agorot, settlement_status, item_status',
     )
     .eq('order_id', order.id)
 
@@ -154,7 +205,7 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
   ]
   const itemIds = (items ?? []).map((i) => i.id)
 
-  const [{ data: products }, { data: suppliers }, { data: voucherRows }] = await Promise.all([
+  const [{ data: products }, { data: suppliers }, { data: coupons }] = await Promise.all([
     productIds.length > 0
       ? admin.from('products').select('id, name_he, slug, images').in('id', productIds)
       : Promise.resolve({
@@ -174,25 +225,27 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
             contact_phone: string | null
           }[],
         }),
+    // `vouchers`, not `coupon_codes`. The latter is the pre-voucher instance
+    // table and nothing has written it since finalize.ts moved to issueVoucher,
+    // so an order detail page showed no coupon for any coupon actually bought.
     itemIds.length > 0
       ? admin
           .from('vouchers')
           .select(
-            'id, code, status, expires_at, coupon_price_agorot, remaining_amount_due_agorot, face_value_agorot, qr_payload, redeemed_at, order_item_id',
+            'code, status, expires_at, remaining_amount_due_agorot, face_value_agorot, qr_payload, redeemed_at, order_item_id',
           )
           .in('order_item_id', itemIds)
+          .order('issued_at', { ascending: true })
       : Promise.resolve({
           data: [] as {
-            id: string
             code: string
             status: string
-            expires_at: string
-            coupon_price_agorot: number
-            remaining_amount_due_agorot: number
-            face_value_agorot: number
-            qr_payload: string
+            expires_at: string | null
+            remaining_amount_due_agorot: number | null
+            face_value_agorot: number | null
+            qr_payload: string | null
             redeemed_at: string | null
-            order_item_id: string
+            order_item_id: string | null
           }[],
         }),
   ])
@@ -204,29 +257,25 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
   for (const item of items ?? []) {
     const product = item.product_id ? productMap.get(item.product_id) : undefined
     const supplier = item.supplier_id ? supplierMap.get(item.supplier_id) : undefined
-    const itemVouchers = (voucherRows ?? []).filter((v) => v.order_item_id === item.id)
+    const itemCoupons = (coupons ?? []).filter((c) => c.order_item_id === item.id)
 
     const vouchers: OrderVoucher[] = []
-    for (const voucher of itemVouchers) {
-      let qrDataUrl: string | null = null
-      const redeemable = isVoucherRedeemable(voucher)
-      if (redeemable && voucher.qr_payload) {
-        try {
-          qrDataUrl = await QRCode.toDataURL(voucher.qr_payload, { margin: 1, width: 240 })
-        } catch {
-          qrDataUrl = null
-        }
-      }
+    for (const coupon of itemCoupons) {
+      // A QR that will not render must not take the order page down; the short
+      // code below it is enough to redeem at a counter.
+      const qrDataUrl = await voucherQrDataUrl(coupon.qr_payload, { width: 240 })
       vouchers.push({
-        id: voucher.id,
-        code: voucher.code,
-        status: voucher.status,
-        expiresAt: voucher.expires_at,
-        paidOnSiteAgorot: agorot(voucher.coupon_price_agorot),
-        remainingDueAgorot: agorot(voucher.remaining_amount_due_agorot),
-        faceValueAgorot: agorot(voucher.face_value_agorot),
+        code: coupon.code,
+        status: coupon.status,
+        expiresAt: coupon.expires_at,
+        collectAmountAgorot:
+          coupon.remaining_amount_due_agorot === null
+            ? null
+            : agorot(coupon.remaining_amount_due_agorot),
+        faceValueAgorot:
+          coupon.face_value_agorot === null ? null : agorot(coupon.face_value_agorot),
         qrDataUrl,
-        usedAt: voucher.redeemed_at,
+        usedAt: coupon.redeemed_at,
       })
     }
 
@@ -242,8 +291,10 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
       productImage: firstImage,
       productType: item.product_type === 'coupon' ? 'coupon' : 'physical',
       quantity: item.quantity,
-      unitPriceAgorot: ilsColumnToAgorot(item.unit_price_ils ?? 0),
-      totalAgorot: ilsColumnToAgorot(item.total_price_ils ?? 0),
+      // Integer agorot is the only money unit in the database since 059; the
+      // shekel columns it renamed away are not read anywhere.
+      unitPriceAgorot: agorot(item.unit_price_agorot ?? 0),
+      totalAgorot: agorot(item.total_price_agorot ?? 0),
       paidOnSiteAgorot: agorot(item.paid_on_site_agorot ?? 0),
       balanceDueAgorot: agorot(item.balance_due_agorot ?? 0),
       settlementStatus: asSettlementState(item.settlement_status),
@@ -267,10 +318,38 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
     settlementStatus: deriveOrderStatus(lines.map((l) => l.settlementStatus)),
     createdAt: order.created_at,
     paidAt: order.paid_at,
-    subtotalAgorot: ilsColumnToAgorot(order.subtotal_ils ?? 0),
-    totalAgorot: ilsColumnToAgorot(order.total_ils ?? 0),
-    walletAppliedAgorot: ilsColumnToAgorot(order.cashback_applied_ils ?? 0),
+    subtotalAgorot: agorot(money.subtotalAgorot),
+    totalAgorot: agorot(money.totalAgorot),
+    walletAppliedAgorot: agorot(money.walletAppliedAgorot),
     addressId: order.address_id,
     lines,
+    invoice: await getOrderInvoiceSummary(admin, order.id),
   }
+}
+
+/**
+ * The order's issued invoice, or null.
+ *
+ * The URL is deliberately NOT returned to the page. It points at the provider
+ * (or at the R2 mirror), and handing it to the browser makes a tax document
+ * readable by anyone who ever sees the link. The page links to
+ * `/account/orders/<id>/invoice`, which re-checks ownership per request and
+ * then redirects.
+ */
+async function getOrderInvoiceSummary(
+  admin: ReturnType<typeof createAdminClient>,
+  orderId: string,
+): Promise<OrderInvoice | null> {
+  const { data, error } = await admin
+    .from('invoices')
+    .select('document_number, issued_at')
+    .eq('order_id', orderId)
+    .eq('document_type', 'tax_invoice_receipt')
+    .eq('status', 'issued')
+    .maybeSingle()
+  // A database without 107 has no invoices and no invoice link, which is what
+  // this page did before the feature existed.
+  if (error || !data) return null
+  const row = data as unknown as { document_number: string | null; issued_at: string | null }
+  return { documentNumber: row.document_number, issuedAt: row.issued_at }
 }

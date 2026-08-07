@@ -10,7 +10,7 @@ export default function HeroSection() {
       aria-label="אזור ראשי"
       dir="rtl"
       style={{ minHeight: HERO_SLIDER_HEIGHT, height: HERO_SLIDER_HEIGHT }}
-      className="mx-auto flex w-full max-w-page flex-col border-b border-gray-200 font-sans lg:flex-row lg:items-stretch"
+      className="mx-auto flex w-full max-w-hero-row flex-col border-b border-gray-200 font-sans lg:flex-row lg:items-stretch"
     >
       <HeroCategorySidebar />
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">

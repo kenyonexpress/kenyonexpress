@@ -14,37 +14,15 @@ import {
   parseProductType,
 } from '@/lib/category-page'
 import { type SortValue, parseSort } from '@/lib/category-tokens'
-import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
 
 /* Live equivalent: kenyonexpress.co.il/shop/ - h1 "חנות", 24 per page */
 const PAGE_TITLE = 'חנות'
 
-/**
- * NOT ISR. This page reads `searchParams` - page number, sort, filters - which
- * makes it dynamic by definition: there is no single HTML for `/products` to
- * cache, there is one per combination a shopper picks. Declaring `revalidate`
- * here asked Next to prerender it anyway, and every request then failed the
- * render with DYNAMIC_SERVER_USAGE. In production that is not a slow page, it
- * is an error page with no `dir="rtl"` on `<html>`, which is how the E2E suite
- * found it: 31 specs failing on a missing RTL attribute that the layout does
- * set. Caching for this route belongs in the data layer, not the route segment.
- */
-export const dynamic = 'force-dynamic'
-
-export const metadata: Metadata = {
+export const metadata = {
   title: PAGE_TITLE,
-  description: 'כל המוצרים, הדילים והקופונים של קניון אקספרס במקום אחד.',
-  alternates: { canonical: '/products' },
-  openGraph: {
-    title: PAGE_TITLE,
-    description: 'כל המוצרים, הדילים והקופונים של קניון אקספרס במקום אחד.',
-    url: '/products',
-    locale: 'he_IL',
-    siteName: 'קניון אקספרס',
-    type: 'website',
-  },
+  description: 'כל המוצרים, הדילים והקופונים של קניון Express במקום אחד.',
 }
 
 type Props = {
@@ -82,6 +60,36 @@ function pageWindow(total: number, page: number) {
   const from = (currentPage - 1) * SHOP_PAGE_SIZE + 1
   const to = Math.min(currentPage * SHOP_PAGE_SIZE, total)
   return { totalPages, currentPage, from, to }
+}
+
+/**
+ * Everything this page reads out of the URL, in one place.
+ *
+ * Takes the PROMISE, not the resolved object. `searchParams` is request-time
+ * data, and awaiting it in the page body puts the whole route behind it: under
+ * `cacheComponents` that is the "Uncached data was accessed outside of
+ * <Suspense>" build error, and before the flag it was one more reason every
+ * storefront response was `no-store`. Handing the promise to the components
+ * that actually need it keeps the breadcrumb, the heading and the page frame in
+ * the static shell. React dedupes it, so the four callers below are one await.
+ */
+async function shopArgs(searchParams: Props['searchParams']) {
+  const sp = await searchParams
+  const sort = parseSort(sp.sort)
+  const args: QueryArgs = {
+    sort,
+    page: parsePage(sp.page),
+    priceMin: parsePrice(sp.min),
+    priceMax: parsePrice(sp.max),
+    productType: parseProductType(sp.type),
+  }
+  const linkParams = {
+    sort: sort === 'menu_order' ? undefined : sort,
+    min: args.priceMin != null ? String(args.priceMin) : undefined,
+    max: args.priceMax != null ? String(args.priceMax) : undefined,
+    type: args.productType,
+  }
+  return { args, linkParams }
 }
 
 /** Header count. Shares one query with the grid via getShopProductsCached. */
@@ -133,27 +141,34 @@ async function ResultGrid({
   )
 }
 
-export default async function ProductsPage({ searchParams }: Props) {
-  const sp = await searchParams
-  const sort = parseSort(sp.sort)
-  const page = parsePage(sp.page)
-  const priceMin = parsePrice(sp.min)
-  const priceMax = parsePrice(sp.max)
-  const productType = parseProductType(sp.type)
+async function ShopResultCount({ searchParams }: Props) {
+  const { args } = await shopArgs(searchParams)
+  return <ResultCount args={args} />
+}
 
-  // Cheap shell data only. The product query is deferred to the boundaries
-  // below so the breadcrumb, title, control bar and sidebar can stream first.
-  const allCategories = await getAllCategories()
+async function ShopControlBar({ searchParams }: Props) {
+  const { args } = await shopArgs(searchParams)
+  return <CategoryControlBar value={args.sort} />
+}
 
-  const args: QueryArgs = { sort, page, priceMin, priceMax, productType }
+async function ShopGrid({ searchParams }: Props) {
+  const { args, linkParams } = await shopArgs(searchParams)
+  return <ResultGrid args={args} linkParams={linkParams} />
+}
 
-  const linkParams = {
-    sort: sort === 'menu_order' ? undefined : sort,
-    min: priceMin != null ? String(priceMin) : undefined,
-    max: priceMax != null ? String(priceMax) : undefined,
-    type: productType,
-  }
+async function ShopSidebar({ searchParams }: Props) {
+  const [{ args }, allCategories] = await Promise.all([shopArgs(searchParams), getAllCategories()])
+  return (
+    <CategoryFilterSidebar
+      categories={allCategories}
+      priceMin={args.priceMin}
+      priceMax={args.priceMax}
+      productType={args.productType}
+    />
+  )
+}
 
+export default function ProductsPage({ searchParams }: Props) {
   return (
     <div className="category-page">
       <div className="category-page__inner">
@@ -169,25 +184,30 @@ export default async function ProductsPage({ searchParams }: Props) {
         <header className="category-page__header">
           <h1 className="category-page__title">{PAGE_TITLE}</h1>
           <Suspense fallback={null}>
-            <ResultCount args={args} />
+            <ShopResultCount searchParams={searchParams} />
           </Suspense>
         </header>
 
-        <CategoryControlBar value={sort} />
+        {/* The bar itself cannot be the fallback: it is a client component that
+            calls `useSearchParams`, which is request data, and a fallback has to
+            be prerenderable. So the shell holds the bar's BOX - same class, so
+            the same measured 45.89px min-height, radius and `--cat-bar` fill -
+            and the controls land in it. Rendering `<CategoryControlBar>` here
+            instead type-checks and then fails the build. */}
+        <Suspense fallback={<div className="category-control-bar" aria-hidden="true" />}>
+          <ShopControlBar searchParams={searchParams} />
+        </Suspense>
 
         <div className="category-page__body">
           <div className="category-page__main">
             <Suspense fallback={<CategoryGridSkeleton count={SHOP_PAGE_SIZE} />}>
-              <ResultGrid args={args} linkParams={linkParams} />
+              <ShopGrid searchParams={searchParams} />
             </Suspense>
           </div>
 
-          <CategoryFilterSidebar
-            categories={allCategories}
-            priceMin={priceMin}
-            priceMax={priceMax}
-            productType={productType}
-          />
+          <Suspense fallback={<div className="category-sidebar" aria-hidden="true" />}>
+            <ShopSidebar searchParams={searchParams} />
+          </Suspense>
         </div>
       </div>
     </div>

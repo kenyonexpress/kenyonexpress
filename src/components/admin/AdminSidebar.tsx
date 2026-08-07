@@ -5,9 +5,11 @@ import { cn } from '@/lib/utils'
 import type { UserRole } from '@/types/database'
 import {
   BadgeCheck,
+  Banknote,
   BarChart3,
   ClipboardList,
   CreditCard,
+  FileSpreadsheet,
   FileText,
   LayoutDashboard,
   Package,
@@ -61,6 +63,11 @@ const NAV_ITEMS: NavItem[] = [
   // path references it (docs/ADMIN-ARCHITECTURE.md section 2).
   { href: '/admin/vendors', label: 'ספקים (מערכת ישנה)', icon: Store, section: 'suppliers' },
   { href: '/admin/payments', label: 'תשלומים', icon: CreditCard, section: 'payments' },
+  { href: '/admin/payouts', label: 'תשלומים לספקים', icon: Banknote, section: 'payments' },
+  // Reads settlement_events, which is the journal that actually exists here.
+  // Separate from תשלומים לספקים above, which reads payout_statements (081,
+  // never applied to this database).
+  { href: '/admin/reports', label: 'דוחות כספיים', icon: FileSpreadsheet, section: 'payments' },
   { href: '/admin/affiliates', label: 'שותפים והפניות', icon: Share2, section: 'affiliates' },
   { href: '/admin/analytics', label: 'אנליטיקה', icon: BarChart3, section: 'analytics' },
   { href: '/admin/audit-log', label: 'לוג פעילות', icon: ClipboardList, section: 'audit-log' },

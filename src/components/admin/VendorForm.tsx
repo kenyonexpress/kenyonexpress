@@ -194,6 +194,10 @@ export default function VendorForm({ vendor, profiles = [] }: Props) {
           value={logoUrl}
           onChange={(urls) => setLogoUrl(urls.slice(-1))}
           maxFiles={1}
+          altKind="supplier"
+          // Uncontrolled name field, so this is the saved name: an existing
+          // vendor gets a suggestion, a brand new one gets an empty field.
+          altSubject={vendor?.business_name ?? null}
         />
       </section>
 

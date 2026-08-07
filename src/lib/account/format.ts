@@ -3,20 +3,32 @@
 import { type Agorot, agorot, formatAgorot, parseIls } from '@/lib/money'
 
 /**
- * Format integer agorot as ₪ via money.ts.
- * Callers must pass Agorot (or a raw integer agorot count), never a float ILS.
+ * Render integer agorot as shekels, through money.ts and nothing else.
+ *
+ * This used to be `₪${value.toFixed(2)}` over a float, and the whole account
+ * area fed it floats: `getWalletSummary` returned `balanceAgorot / 100` and the
+ * ledger returned `Number(row.amount_ils)`. So the one screen that shows a
+ * customer their own money was the one place in the app doing float money math,
+ * against a project rule that says otherwise.
+ *
+ * The parameter is branded, so a caller holding shekels cannot reach this
+ * function without saying so: it has to go through `ilsColumnToAgorot` first,
+ * and that conversion parses the decimal rather than multiplying it.
  */
-export function formatIls(value: Agorot | number): string {
-  return formatAgorot(agorot(value))
+export function formatIls(value: Agorot): string {
+  return formatAgorot(value)
 }
 
-/** Convert a legacy decimal ILS DB column into integer Agorot for display. */
+/**
+ * A legacy decimal `*_ils` column, read as integer agorot.
+ *
+ * Parses rather than multiplies. `Number('8.20') * 100` is 819.9999999999999,
+ * and while Math.round rescues most two-decimal values it also silently accepts
+ * a third decimal and NaN. `parseIls` refuses both.
+ */
 export function ilsColumnToAgorot(value: number | string | null | undefined): Agorot {
   if (value == null || value === '') return agorot(0)
-  if (typeof value === 'number') {
-    return parseIls(value.toFixed(2))
-  }
-  return parseIls(value)
+  return parseIls(typeof value === 'number' ? value.toFixed(2) : value)
 }
 
 export function formatDate(iso: string | null): string {
@@ -44,9 +56,7 @@ export function formatDateTime(iso: string | null): string {
 const ORDER_STATUS_LABELS: Record<string, string> = {
   pending: 'ממתינה לתשלום',
   paid: 'שולמה',
-  split_executed: 'שולמה',
-  escrow_held: 'שולמה',
-  escrow_released: 'הושלמה',
+  split_executed: 'הושלמה',
   redeemed: 'מומשה',
   refunded: 'זוכתה',
   cancelled: 'בוטלה',
@@ -62,38 +72,11 @@ export function orderStatusTone(status: string): 'ok' | 'warn' | 'dead' {
   return 'ok'
 }
 
-const COUPON_STATUS_LABELS: Record<string, string> = {
-  issued: 'פעיל',
-  active: 'פעיל',
-  used: 'מומש',
-  redeemed: 'מומש',
-  expired: 'פג תוקף',
-  cancelled: 'בוטל',
-  refunded: 'זוכה',
-}
-
-export function couponStatusLabel(status: string): string {
-  return COUPON_STATUS_LABELS[status] ?? status
-}
-
-export function couponStatusTone(status: string): 'ok' | 'warn' | 'dead' {
-  if (status === 'issued' || status === 'active') return 'ok'
-  if (status === 'used' || status === 'redeemed') return 'warn'
-  return 'dead'
-}
-
-export type CouponTab = 'active' | 'redeemed' | 'expired'
-
-/** Map a voucher row onto the coupons-page tabs (פעיל / נסרק / פג תוקף). */
-export function voucherTab(v: { status: string; expires_at: string }, now = Date.now()): CouponTab {
-  if (v.status === 'redeemed' || v.status === 'used') return 'redeemed'
-  if (v.status === 'expired' || v.status === 'cancelled' || v.status === 'refunded') {
-    return 'expired'
-  }
-  if (v.status === 'issued' && new Date(v.expires_at).getTime() <= now) return 'expired'
-  return 'active'
-}
-
-export function formatVoucherCode(code: string): string {
-  return code.length > 5 ? `${code.slice(0, 5)}-${code.slice(5, 10)}` : code
-}
+/**
+ * Coupon status used to be presented from here too, with its own label table.
+ * It answered from the stored column, so a coupon past its deadline read `פעיל`
+ * until the expiry sweep ran, and it had no entry for `cancelled` at all, which
+ * put the literal string `cancelled` in front of a Hebrew reader. Both screens
+ * that used it now go through `lib/vouchers/coupon-view.ts`, which answers from
+ * the clock and is the same module the counter uses.
+ */

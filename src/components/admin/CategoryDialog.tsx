@@ -219,6 +219,8 @@ export default function CategoryDialog({ open, onClose, category, parentOptions 
                 value={iconUrl}
                 onChange={(urls) => setIconUrl(urls.slice(-1))}
                 maxFiles={1}
+                altKind="category"
+                altSubject={nameHe}
               />
             </div>
 

@@ -1,12 +1,12 @@
 import { CONSENT_COOKIE, isTrackingAllowed } from '@/lib/analytics/consent'
 import { ingestBatchSchema } from '@/lib/analytics/events'
 import { GUEST_SESSION_COOKIE, parseGuestSessionToken } from '@/lib/cart/guest-session'
+import { log } from '@/lib/observability/log'
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { type NextRequest, NextResponse } from 'next/server'
-
-export const runtime = 'nodejs'
 
 // Behavioral event ingest. Deliberately silent: every outcome that is not a
 // programming error returns 204, because a browser has nothing useful to do
@@ -39,7 +39,7 @@ function clientIp(request: NextRequest): string | null {
   return ip || null
 }
 
-export async function POST(request: NextRequest): Promise<NextResponse> {
+async function handlePOST(request: NextRequest): Promise<NextResponse> {
   if (!originAllowed(request)) return noContent()
 
   // sendBeacon sends a Blob typed application/json; fetch sets it explicitly.
@@ -85,8 +85,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   if (error) {
     // Worth a server log (it means the pipeline is down), never a client error.
-    console.error('analytics ingest failed:', error.message)
+    log.error('analytics.ingest_failed', { reason: error.message })
   }
 
   return noContent()
 }
+
+export const POST = withRequestLog('/api/a', handlePOST)

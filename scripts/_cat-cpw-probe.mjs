@@ -13,7 +13,9 @@ if (!process.env.PLAYWRIGHT_BROWSERS_PATH) {
 const b = await chromium.launch()
 const ctx = await b.newContext({ viewport: { width: 1440, height: 2600 }, deviceScaleFactor: 1 })
 const p = await ctx.newPage()
-await p.goto('https://kenyonexpress.co.il/product-category/hot-deals/', { waitUntil: 'networkidle' })
+await p.goto('https://kenyonexpress.co.il/product-category/hot-deals/', {
+  waitUntil: 'networkidle',
+})
 await p.waitForTimeout(4000)
 
 const out = await p.evaluate(() => {

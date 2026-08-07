@@ -3,16 +3,29 @@ import { requireSupplierMember } from '@/lib/supplier/rbac'
 import { ROLE_LABEL_HE } from '@/lib/supplier/roles'
 import { signOut } from '@/server/actions/auth'
 import { LogOut, Store } from 'lucide-react'
+import { Suspense } from 'react'
 
 export const metadata = {
   title: { template: '%s | ספקים KenyonExpress', default: 'אזור ספקים' },
 }
 
-export default async function SupplierGroupLayout({ children }: { children: React.ReactNode }) {
+/**
+ * Same shape as the admin group's frame, and for the same reason: `children` is
+ * a pass-through slot, so the boundary this sits behind also covers the supplier
+ * pages, which run their own guard. See src/app/(admin)/layout.tsx.
+ *
+ * The portal branch wrote this as the default export and awaited the session at
+ * the top of the layout itself. That is the exact shape [21] removed from every
+ * route group: a layout that awaits before it renders makes everything beneath
+ * it uncacheable and put 78 prerender errors in the build. Its markup is kept --
+ * the role label, the truncation, the shrink-0 icon are all improvements -- and
+ * it is kept HERE, behind the Suspense boundary below.
+ */
+async function SupplierFrame({ children }: { children: React.ReactNode }) {
   const session = await requireSupplierMember('/supplier')
 
   return (
-    <div dir="rtl" className="min-h-screen bg-gray-50 font-sans text-gray-900">
+    <>
       <header className="sticky top-0 z-20 border-b border-gray-200 bg-white">
         <div className="mx-auto flex max-w-2xl items-center justify-between px-4 py-3">
           <div className="flex min-w-0 items-center gap-2">
@@ -35,6 +48,23 @@ export default async function SupplierGroupLayout({ children }: { children: Reac
         <SupplierNav memberRole={session.memberRole} />
       </header>
       <main className="mx-auto max-w-2xl px-4 py-6">{children}</main>
+    </>
+  )
+}
+
+export default function SupplierGroupLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div dir="rtl" className="min-h-screen bg-gray-50 font-sans text-gray-900">
+      {/* Reserves the sticky header's box. 49.5px measured against the real
+          markup by scripts/_panel-header-height.mjs, not derived from the class
+          names - doing that gave 53 and was wrong. */}
+      <Suspense
+        fallback={
+          <div className="h-[49.5px] border-b border-gray-200 bg-white" aria-hidden="true" />
+        }
+      >
+        <SupplierFrame>{children}</SupplierFrame>
+      </Suspense>
     </div>
   )
 }

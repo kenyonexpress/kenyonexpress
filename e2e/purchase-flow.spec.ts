@@ -58,17 +58,21 @@ test.describe('search to checkout', () => {
 
     // 5. And the cart must hand the shopper on to checkout.
     //
-    // The contract is a GUEST CART with an AUTHENTICATED CHECKOUT: src/proxy.ts
-    // gates the whole /checkout subtree so order data never reaches an
-    // anonymous visitor, and checkout.spec.ts pins that in both directions.
-    // The first draft of this spec asserted guest checkout and failed against
-    // three passing tests — the assertion was wrong, not the app. What this
-    // step actually proves is that the journey arrives at the gate carrying a
-    // return path, rather than dead-ending or losing the cart.
-    await expect(page.getByRole('button', { name: /המשך לתשלום/ })).toBeVisible()
+    // The contract is a GUEST CART with a GUEST CHECKOUT: /checkout itself is
+    // open and the sign-in is demanded on the pay press, where there is
+    // something to lose by walking away. Only the /checkout SUBTREE — the
+    // payment-outcome pages — stays behind the proxy's gate; checkout.spec.ts
+    // pins both halves.
+    //
+    // This step asserted the older shape, a button here and a bounce to
+    // /login at /checkout, and went on saying so unchallenged because it never
+    // got this far: the add above left the cart empty, so the run died four
+    // lines earlier every time.
+    await expect(page.getByRole('link', { name: /המשך לתשלום/ }).first()).toBeVisible()
 
     await page.goto('/checkout')
-    await expect(page).toHaveURL(/\/login\?next=%2Fcheckout/, { timeout: 15000 })
+    await expect(page).toHaveURL(/\/checkout/, { timeout: 15000 })
+    await expect(page.getByRole('heading', { name: 'קופה' })).toBeVisible()
   })
 
   test('a coupon page quotes the on-site charge and the balance at the business', async ({

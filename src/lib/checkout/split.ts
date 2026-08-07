@@ -18,7 +18,6 @@ export type SplitLineView = {
   /** Physical: transferred with the settlement. Zero on coupons. */
   supplierImmediateIls: number
   /** Coupon: held internally, released to the supplier at redemption. */
-  escrowHeldIls: number
   supplierDueIls: number
   cashbackPercent: number
   cashbackAmountIls: number
@@ -32,7 +31,6 @@ export type SplitResultView = {
   balanceDueAtBusinessIls: number
   platformFeeIls: number
   supplierImmediateIls: number
-  escrowHeldIls: number
   supplierDueIls: number
   cashbackAmountIls: number
   walletAppliedIls: number
@@ -84,7 +82,6 @@ export function toSplitView(result: CommissionResult): SplitResultView {
       platformPercent: line.platformPercentBps / 100,
       platformFeeIls: agorotToIls(line.platformFee),
       supplierImmediateIls: agorotToIls(line.supplierImmediate),
-      escrowHeldIls: agorotToIls(line.escrowHeld),
       supplierDueIls: agorotToIls(line.supplierDue),
       cashbackPercent: line.cashbackPercentBps / 100,
       cashbackAmountIls: agorotToIls(line.cashbackAmount),
@@ -94,7 +91,6 @@ export function toSplitView(result: CommissionResult): SplitResultView {
     balanceDueAtBusinessIls: agorotToIls(result.balanceDueAtBusiness),
     platformFeeIls: agorotToIls(result.platformFee),
     supplierImmediateIls: agorotToIls(result.supplierImmediate),
-    escrowHeldIls: agorotToIls(result.escrowHeld),
     supplierDueIls: agorotToIls(result.supplierDue),
     cashbackAmountIls: agorotToIls(result.cashbackAmount),
     walletAppliedIls: agorotToIls(result.walletApplied),

@@ -67,7 +67,8 @@ export const KE_LIVE_REV_SLIDES: RevSlide[] = [
         dataText: 'l:22;a:inherit;',
         dataXy: 'xo:364px,484px,361px,325px;y:t,m,m,m;yo:21px,0,0,-23px;',
         dataDim: 'w:370px,200px,200px,170px;h:495px,268px,268px,227px;',
-        image: '/images/hero/slider/ios13-iphone-11pro-airpods-pro-setup-animation-steps.gif',
+        // animated WebP, same frames, a quarter of the bytes; see assets.ts
+        image: '/images/hero/slider/ios13-iphone-11pro-airpods-pro-setup-animation-steps.webp',
         zIndex: '5',
       },
       {

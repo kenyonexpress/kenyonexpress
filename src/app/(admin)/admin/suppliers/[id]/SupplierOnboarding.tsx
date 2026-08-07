@@ -39,12 +39,7 @@ interface Props {
  * already paid for, so "team access" is a blocking step here rather than an
  * optional extra.
  */
-export default function SupplierOnboarding({
-  supplierId,
-  summary,
-  members,
-  candidates,
-}: Props) {
+export default function SupplierOnboarding({ supplierId, summary, members, candidates }: Props) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)

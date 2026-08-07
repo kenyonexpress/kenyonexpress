@@ -1,0 +1,56 @@
+{
+  "stepLike": [],
+  "headings": [
+    "Billing details",
+    "Shipping Details",
+    "Ship to a different address?",
+    "Your order",
+    "Your order"
+  ],
+  "labels": [
+    "Email address *",
+    "First name *",
+    "Last name *",
+    "Company name (optional)",
+    "Country / Region *",
+    "Street address *",
+    "Apartment, suite, unit, etc. (optional)",
+    "Town / City *",
+    "State *",
+    "ZIP Code *",
+    "Phone *",
+    "Create an account?",
+    "Account username *",
+    "Create account password *",
+    "Ship to a different address?",
+    "First name *",
+    "Last name *",
+    "Company name (optional)",
+    "Country / Region *",
+    "Street address *",
+    "Apartment, suite, unit, etc. (optional)",
+    "Town / City *",
+    "State *",
+    "ZIP Code *",
+    "Phone *",
+    "Order notes (optional)",
+    "Flat rate: $50.00",
+    "Direct bank transfer",
+    "Credit / Debit Card",
+    "I have read and agree to the website terms and conditions *"
+  ],
+  "paymentTitles": [
+    "Direct bank transfer",
+    "Credit / Debit Card",
+    "I have read and agree to the website terms and conditions *"
+  ],
+  "notices": [
+    "Returning customer? Click here to login",
+    "Returning customer? Click here to login",
+    "Have a coupon? Click here to enter your code",
+    "Make your payment directly into our bank account. Please use your Order ID as the payment reference. Your order will not be shipped until the funds have cleared in our account.",
+    "Test mode: use card 4242 4242 4242 4242 with any expiry and CVC. More test cards."
+  ],
+  "placeOrder": "Place order",
+  "terms": "Your personal data will be used to process your order, support your experience throughout this website, and for other purposes described in our privacy policy. Intellectual Propertly Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam quis diam erat. Duis velit lectus, posuere a blandit sit amet, tempor at lorem. Donec ultricies, lorem sed ultrices interdum. Leo metus luctus sem, vel vulputate diam ipsum sed lorem. Donec tempor arcu nisl, et molestie massa scelerisque ut. Nunc at rutrum leo. Mauris metus mauris, tristique quis sapien eu, rutrum vulputate enim. Mauris tempus erat laoreet turpis lobortis, eu tincidunt erat fermentum. Aliquam non tincidunt urna. Integer tincidunt nec nisl vitae ullamcorper. Proin sed ultrices erat. Praesent varius ultrices massa at faucibus. Aenean dignissim, orci sed faucibus pharetra, dui mi dignissim tortor, sit amet condimentum mi ligula sit amet augue. Pellentesque vitae eros eget enim mollis placerat. Termination Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam quis diam erat. Duis velit lectus, posuere a blandit sit amet, tempor at lorem. Donec ultricies, lorem sed ultrices interdum. Leo metus luctus sem, vel vulputate diam ipsum sed lorem. Donec tempor arcu nisl, et molestie massa scelerisque ut. Nunc at rutrum leo. Mauris metus mauris, tristique quis sapien eu, rutrum vulputate enim. Mauris tempus erat laoreet turpis lobortis, eu tincidunt erat fermentum. Aliquam non tincidunt urna. Integer tincidunt nec nisl vitae ullamcorper. Proin sed ultrices erat. Praesent varius ultrices massa at faucibus. Aenean dignissim, orci sed faucibus pharetra, dui mi dignissim tortor, sit amet condimentum mi ligula sit amet augue. Pellentesque vitae eros eget enim mollis placerat. Changes To This Agreement We reserve the right, at our sole discretion, to modify or replace these Terms and Conditions by posting the updated terms on the Site. Your continued use of the Site after any such changes constitutes your acceptance of the new Terms and Conditions. Contact Us If you have any questions about this Agreement, please contact us filling this contact form I have read and agree to the website terms and conditions *"
+}

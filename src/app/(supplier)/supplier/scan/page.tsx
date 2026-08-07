@@ -1,19 +1,10 @@
-import { requireSupplierMember } from '@/lib/supplier/rbac'
-import ScanClient from './ScanClient'
+import { redirect } from 'next/navigation'
 
-export const metadata = { title: 'סריקת שובר' }
-
-export default async function SupplierScanPage() {
-  const session = await requireSupplierMember('/supplier/scan')
-  return (
-    <div className="mx-auto max-w-[480px] space-y-4 px-1">
-      <div className="rounded-xl bg-brand-primary px-4 py-3">
-        <h1 className="text-xl font-bold text-heading">סריקת שובר</h1>
-        <p className="mt-1 text-sm text-heading/90">
-          סרוק QR או הקלד את הקוד, אשר, וגבה את היתרה מהלקוח בקופה.
-        </p>
-      </div>
-      <ScanClient supplierName={session.supplierName} />
-    </div>
-  )
+/**
+ * The scan screen moved to /scan, which is short enough to type on a phone at a
+ * till. This redirect is what keeps every printed card, bookmark and older QR
+ * that names /supplier/scan working.
+ */
+export default function LegacySupplierScanPage() {
+  redirect('/scan')
 }

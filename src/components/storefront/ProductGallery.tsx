@@ -26,11 +26,8 @@ export default function ProductGallery({ images, name, assets = {} }: Props) {
 
   if (images.length === 0) {
     return (
-      <div
-        data-pdp="gallery"
-        className="aspect-square bg-gray-50 rounded-xl border border-gray-200 flex items-center justify-center text-7xl"
-      >
-        📦
+      <div data-pdp="gallery">
+        <div className="pdp-gallery__frame pdp-gallery__frame--empty">📦</div>
       </div>
     )
   }
@@ -39,9 +36,11 @@ export default function ProductGallery({ images, name, assets = {} }: Props) {
   const activeAsset = assets[activeUrl]
 
   return (
-    <div data-pdp="gallery" className="space-y-3">
-      {/* Main image */}
-      <div className="relative aspect-square bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <div data-pdp="gallery">
+      {/* Main image. Live's frame is 470px square with no border or radius, so
+          neither is drawn here: an outline where live has bare photo is a
+          contour the pixel comparison sees on every edge. */}
+      <div className="pdp-gallery__frame">
         <Image
           src={activeUrl}
           alt={activeAsset?.alt ?? name}
@@ -56,7 +55,7 @@ export default function ProductGallery({ images, name, assets = {} }: Props) {
 
       {/* Thumbnails */}
       {images.length > 1 && (
-        <div className="flex flex-wrap gap-2 pb-1">
+        <div className="pdp-gallery__thumbs">
           {images.map((url, i) => (
             <button
               type="button"
@@ -64,9 +63,7 @@ export default function ProductGallery({ images, name, assets = {} }: Props) {
               onClick={() => setActive(i)}
               aria-label={assets[url]?.alt ?? `תמונה ${i + 1}`}
               aria-current={i === active}
-              className={`relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 bg-white transition-colors ${
-                i === active ? 'border-brand-primary' : 'border-gray-200 hover:border-gray-300'
-              }`}
+              className="pdp-gallery__thumb"
             >
               <Image
                 src={url}

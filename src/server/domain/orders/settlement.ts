@@ -85,6 +85,11 @@ export interface SettlementInput {
   idempotencyKey: string
   lines: readonly SettlementLineInput[]
   walletApplied?: Agorot
+  /**
+   * A cart discount code, in agorot. See the note on `discountApplied` in
+   * SettlementResult for whose money it is.
+   */
+  discountApplied?: Agorot
 }
 
 export interface SettlementResult {
@@ -97,6 +102,23 @@ export interface SettlementResult {
   supplierDue: Agorot
   cashbackAmount: Agorot
   walletApplied: Agorot
+  /**
+   * A cart discount code, in agorot.
+   *
+   * IT COMES OUT OF THE PLATFORM'S SHARE, NOT THE SUPPLIER'S. A discount code
+   * is our marketing decision; the supplier did not offer it and never agreed
+   * to fund it. So `supplierDue` and every per-line split are left exactly as
+   * they were, `order_items` still snapshots the platform_percent that was
+   * agreed for each product, and the whole reduction lands on `platformNet`.
+   *
+   * That is also why it is capped at `commission`: past that point the discount
+   * would start eating money owed to the supplier, and a discount that puts the
+   * platform in debt to a supplier is not a discount, it is a transfer. The cap
+   * is applied here rather than trusted from the caller.
+   */
+  discountApplied: Agorot
+  /** What the platform actually keeps: commission less the discount it funded. */
+  platformNet: Agorot
   cardCharge: Agorot
 }
 
@@ -216,7 +238,9 @@ function calculateLine(line: SettlementLineInput): SettlementLineResult {
  * - faceValue = paidOnSite + balanceDueAtBusiness
  * - paidOnSite = commission + supplierDue, on BOTH product types
  * - coupon: the per-unit snapshots sum exactly to the line totals
- * - cardCharge = paidOnSite - walletApplied
+ * - cardCharge = paidOnSite - walletApplied - discountApplied
+ * - platformNet = commission - discountApplied, and never negative
+ * - supplierDue is untouched by wallet or discount
  */
 export function calculateSettlement(input: SettlementInput): SettlementResult {
   if (!input.idempotencyKey.trim()) {
@@ -244,6 +268,15 @@ export function calculateSettlement(input: SettlementInput): SettlementResult {
     throw new RangeError('wallet applied must not exceed the on-site charge')
   }
 
+  const requestedDiscount = input.discountApplied ?? agorot(0)
+  assertNonNegative(requestedDiscount, 'discount applied')
+  // Two ceilings, both real. The discount cannot exceed what is still owed
+  // after the wallet, or the card charge would go negative; and it cannot
+  // exceed the commission, or it would be funded from the supplier's share.
+  const discountApplied = agorot(
+    Math.min(requestedDiscount, commission, Math.max(0, paidOnSite - walletApplied)),
+  )
+
   return {
     idempotencyKey: input.idempotencyKey,
     lines,
@@ -254,6 +287,8 @@ export function calculateSettlement(input: SettlementInput): SettlementResult {
     supplierDue,
     cashbackAmount,
     walletApplied,
-    cardCharge: agorot(paidOnSite - walletApplied),
+    discountApplied,
+    platformNet: agorot(commission - discountApplied),
+    cardCharge: agorot(paidOnSite - walletApplied - discountApplied),
   }
 }

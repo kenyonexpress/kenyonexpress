@@ -3,6 +3,7 @@
 import { writeAuditLog } from '@/lib/admin/audit'
 import { reconcile } from '@/lib/admin/payment-reconciliation'
 import { requireSection } from '@/lib/admin/rbac'
+import { withActionContext } from '@/lib/observability/action-context'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { finalizeOrder } from '@/server/payments/finalize'
 import { revalidatePath } from 'next/cache'
@@ -19,7 +20,7 @@ import { revalidatePath } from 'next/cache'
  * the client. A stale page offering "retry" on a row that has since settled must
  * not be able to drive a finalize that the classifier would refuse.
  */
-export async function retryFinalizePayment(
+async function runRetryFinalizePayment(
   paymentId: string,
 ): Promise<{ ok: true; replay: boolean } | { ok: false; error: string }> {
   let session: Awaited<ReturnType<typeof requireSection>>
@@ -82,4 +83,10 @@ export async function retryFinalizePayment(
 
   if (!result.ok) return { ok: false, error: result.error }
   return { ok: true, replay: result.replay === true }
+}
+
+export async function retryFinalizePayment(
+  paymentId: string,
+): Promise<{ ok: true; replay: boolean } | { ok: false; error: string }> {
+  return withActionContext('admin.payment.retry_finalize', () => runRetryFinalizePayment(paymentId))
 }

@@ -1,0 +1,35 @@
+-- 083_payout_status_pending_approval.sql
+--
+-- The payout engine cannot complete a single run. Reproduced today on the
+-- fully-migrated local stack by calling the RPC as an admin:
+--
+--   22P02  invalid input value for enum payout_status: "pending_approval"
+--
+-- 026_commerce.sql creates the enum with four values:
+--
+--   ('draft', 'approved', 'paid', 'cancelled')
+--
+-- 027_suppliers.sql creates it again with five, adding 'pending_approval', and
+-- guards the statement with `EXCEPTION WHEN duplicate_object THEN null`. That
+-- guard makes the migration idempotent, which is the house rule, but it also
+-- makes "a type of this name already exists with DIFFERENT values" look exactly
+-- like "already applied". 026 runs first, so on every database built in order
+-- 027's five-value version is silently discarded and 'pending_approval' has
+-- never existed.
+--
+-- generate_payout_statement (051, and unchanged through 079 and 081) finishes by
+-- setting status = 'pending_approval'. The insert of the lines succeeds, the
+-- UPDATE raises, the whole function rolls back, and the admin gets a 400 with a
+-- Postgres enum error. This is a SECOND independent reason the payout engine was
+-- dead code, on top of the pre-059 column names 081 fixed: repairing the column
+-- names alone gets the run as far as its last statement and no further.
+--
+-- ALTER TYPE ... ADD VALUE IF NOT EXISTS is the only safe repair. Recreating the
+-- enum would need every dependent column dropped and rebuilt, and
+-- payout_statements.status already holds live rows.
+--
+-- Idempotent, forward-only. The new value is deliberately NOT read anywhere in
+-- this file: Postgres refuses to use an enum value added in the same
+-- transaction that added it.
+
+ALTER TYPE public.payout_status ADD VALUE IF NOT EXISTS 'pending_approval' AFTER 'draft';

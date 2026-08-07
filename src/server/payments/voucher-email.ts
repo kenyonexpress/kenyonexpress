@@ -1,19 +1,26 @@
 import { sendEmail } from '@/lib/email/resend'
 import { type VoucherEmailLine, buildVoucherEmail } from '@/lib/email/voucher-email'
+import { log } from '@/lib/observability/log'
+import { getOrderInvoice } from '@/server/payments/invoices'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 /**
- * Transitional direct sender for coupon mail.
+ * Sends the customer their coupons, once, after they are issued.
  *
- * Production path (096+): `tg_orders_notify_paid` enqueues `voucher_issued`
- * into `notification_outbox`; the cron / Edge / QStash drain sends via Resend.
- * This helper remains for tests and manual re-sends. Do not call it from
- * finalizeOrder (money path must not talk to Resend).
+ * Runs at the end of `finalizeOrder` and is incapable of failing it: the card
+ * has been charged and the order closed by the time this runs, and an email
+ * that will not send is not a reason to unwind a purchase. Every failure is
+ * logged and swallowed, exactly like the settlement journal next to it.
  *
- * IDEMPOTENCY. The Resend key is `voucher-email:<orderId>`, matching the
- * outbox dedupe_key so a transitional double path still yields one email.
+ * IDEMPOTENCY. finalize is replay-safe by design (the webhook and the return
+ * page both reconcile the same order), so this can run more than once for one
+ * order. The Resend idempotency key is `voucher-email:<orderId>`, so the second
+ * run is deduplicated by the provider rather than by a flag we would have to
+ * store and keep correct.
  *
- * SUPPRESSIONS. `email_suppressions` is consulted first.
+ * SUPPRESSIONS. `email_suppressions` is consulted first. An address that
+ * bounced or complained must not be written to again, and sending anyway is how
+ * a sending domain gets its reputation burned.
  */
 
 export interface VoucherEmailContext {
@@ -94,11 +101,18 @@ export async function sendVoucherEmail(
       }
     })
 
+    // finalize issues the invoice before it sends this, so in the ordinary case
+    // the number is already here. When it is not - provider down, credentials
+    // not set - the block is simply absent, rather than a link to a document
+    // that does not exist yet.
+    const invoice = await getOrderInvoice(admin, context.orderId)
+
     const email = buildVoucherEmail({
       customerName: (profile as { full_name?: string | null } | null)?.full_name ?? null,
       orderId: context.orderId,
       vouchers: lines,
       siteUrl: context.siteUrl,
+      invoiceNumber: invoice?.documentNumber ?? null,
     })
 
     const result = await sendEmail({
@@ -112,9 +126,7 @@ export async function sendVoucherEmail(
     if (!result.ok) return { sent: false, reason: result.reason }
     return { sent: true }
   } catch (error) {
-    console.error(
-      `[voucher-email] not sent: ${error instanceof Error ? error.message : String(error)}`,
-    )
+    log.error('email.voucher_send_failed', { err: error })
     return { sent: false, reason: 'exception' }
   }
 }

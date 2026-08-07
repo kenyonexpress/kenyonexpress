@@ -151,6 +151,62 @@ export type Database = {
           },
         ]
       }
+      cashback_rules: {
+        Row: {
+          category_id: string | null
+          created_at: string
+          ends_at: string | null
+          every_nth_order: number | null
+          id: string
+          is_active: boolean
+          max_cashback_ils: number | null
+          min_order_ils: number
+          name_he: string
+          percent: number
+          priority: number
+          starts_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string
+          ends_at?: string | null
+          every_nth_order?: number | null
+          id?: string
+          is_active?: boolean
+          max_cashback_ils?: number | null
+          min_order_ils?: number
+          name_he: string
+          percent: number
+          priority?: number
+          starts_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string
+          ends_at?: string | null
+          every_nth_order?: number | null
+          id?: string
+          is_active?: boolean
+          max_cashback_ils?: number | null
+          min_order_ils?: number
+          name_he?: string
+          percent?: number
+          priority?: number
+          starts_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cashback_rules_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           created_at: string
@@ -441,7 +497,7 @@ export type Database = {
       escrow_holds: {
         Row: {
           commission_agorot: number
-          coupon_code_id: string
+          coupon_code_id: string | null
           created_at: string
           held_agorot: number
           held_at: string
@@ -455,10 +511,11 @@ export type Database = {
           status: Database["public"]["Enums"]["escrow_status"]
           supplier_id: string
           updated_at: string
+          voucher_id: string | null
         }
         Insert: {
           commission_agorot: number
-          coupon_code_id: string
+          coupon_code_id?: string | null
           created_at?: string
           held_agorot: number
           held_at?: string
@@ -472,10 +529,11 @@ export type Database = {
           status?: Database["public"]["Enums"]["escrow_status"]
           supplier_id: string
           updated_at?: string
+          voucher_id?: string | null
         }
         Update: {
           commission_agorot?: number
-          coupon_code_id?: string
+          coupon_code_id?: string | null
           created_at?: string
           held_agorot?: number
           held_at?: string
@@ -489,6 +547,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["escrow_status"]
           supplier_id?: string
           updated_at?: string
+          voucher_id?: string | null
         }
         Relationships: [
           {
@@ -519,7 +578,62 @@ export type Database = {
             referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "escrow_holds_voucher_id_fkey"
+            columns: ["voucher_id"]
+            isOneToOne: false
+            referencedRelation: "vouchers"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      media_assets: {
+        Row: {
+          alt_he: string
+          base_path: string | null
+          blur_data_url: string | null
+          bucket: string | null
+          created_at: string
+          created_by: string | null
+          height: number | null
+          id: string
+          provider: string
+          renditions: Json
+          updated_at: string
+          url: string
+          width: number | null
+        }
+        Insert: {
+          alt_he: string
+          base_path?: string | null
+          blur_data_url?: string | null
+          bucket?: string | null
+          created_at?: string
+          created_by?: string | null
+          height?: number | null
+          id?: string
+          provider?: string
+          renditions?: Json
+          updated_at?: string
+          url: string
+          width?: number | null
+        }
+        Update: {
+          alt_he?: string
+          base_path?: string | null
+          blur_data_url?: string | null
+          bucket?: string | null
+          created_at?: string
+          created_by?: string | null
+          height?: number | null
+          id?: string
+          provider?: string
+          renditions?: Json
+          updated_at?: string
+          url?: string
+          width?: number | null
+        }
+        Relationships: []
       }
       order_items: {
         Row: {
@@ -750,6 +864,7 @@ export type Database = {
       payment_tokens: {
         Row: {
           card_brand: string | null
+          cardcom_account_id: string | null
           cardcom_token: string
           created_at: string
           expiry_month: number | null
@@ -761,6 +876,7 @@ export type Database = {
         }
         Insert: {
           card_brand?: string | null
+          cardcom_account_id?: string | null
           cardcom_token: string
           created_at?: string
           expiry_month?: number | null
@@ -772,6 +888,7 @@ export type Database = {
         }
         Update: {
           card_brand?: string | null
+          cardcom_account_id?: string | null
           cardcom_token?: string
           created_at?: string
           expiry_month?: number | null
@@ -838,6 +955,7 @@ export type Database = {
       payments: {
         Row: {
           amount_ils: number
+          cardcom_account_id: string | null
           cardcom_low_profile_id: string | null
           cardcom_transaction_id: string | null
           created_at: string
@@ -857,6 +975,7 @@ export type Database = {
         }
         Insert: {
           amount_ils: number
+          cardcom_account_id?: string | null
           cardcom_low_profile_id?: string | null
           cardcom_transaction_id?: string | null
           created_at?: string
@@ -876,6 +995,7 @@ export type Database = {
         }
         Update: {
           amount_ils?: number
+          cardcom_account_id?: string | null
           cardcom_low_profile_id?: string | null
           cardcom_transaction_id?: string | null
           created_at?: string
@@ -1067,7 +1187,7 @@ export type Database = {
           cashback_enabled?: boolean
           cashback_percent?: number
           category_id?: string | null
-          commission_percent?: number
+          commission_percent: number
           compare_at_price?: number | null
           compare_at_price_ils?: number | null
           condition?: string | null
@@ -1386,6 +1506,47 @@ export type Database = {
           },
         ]
       }
+      supplier_members: {
+        Row: {
+          created_at: string
+          id: string
+          invited_by: string | null
+          is_active: boolean
+          member_role: Database["public"]["Enums"]["supplier_member_role"]
+          supplier_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          is_active?: boolean
+          member_role?: Database["public"]["Enums"]["supplier_member_role"]
+          supplier_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invited_by?: string | null
+          is_active?: boolean
+          member_role?: Database["public"]["Enums"]["supplier_member_role"]
+          supplier_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_members_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppliers: {
         Row: {
           address: string | null
@@ -1616,6 +1777,63 @@ export type Database = {
           },
         ]
       }
+      voucher_redemptions: {
+        Row: {
+          amount_collected_agorot: number | null
+          code_entered: string
+          created_at: string
+          id: string
+          idempotency_key: string | null
+          metadata: Json
+          outcome: Database["public"]["Enums"]["voucher_scan_outcome"]
+          scan_method: string | null
+          scanned_by: string | null
+          supplier_id: string | null
+          voucher_id: string | null
+        }
+        Insert: {
+          amount_collected_agorot?: number | null
+          code_entered: string
+          created_at?: string
+          id?: string
+          idempotency_key?: string | null
+          metadata?: Json
+          outcome: Database["public"]["Enums"]["voucher_scan_outcome"]
+          scan_method?: string | null
+          scanned_by?: string | null
+          supplier_id?: string | null
+          voucher_id?: string | null
+        }
+        Update: {
+          amount_collected_agorot?: number | null
+          code_entered?: string
+          created_at?: string
+          id?: string
+          idempotency_key?: string | null
+          metadata?: Json
+          outcome?: Database["public"]["Enums"]["voucher_scan_outcome"]
+          scan_method?: string | null
+          scanned_by?: string | null
+          supplier_id?: string | null
+          voucher_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voucher_redemptions_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voucher_redemptions_voucher_id_fkey"
+            columns: ["voucher_id"]
+            isOneToOne: false
+            referencedRelation: "vouchers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vouchers: {
         Row: {
           cancelled_at: string | null
@@ -1659,7 +1877,7 @@ export type Database = {
           order_item_id: string
           platform_percent: number
           product_id: string
-          qr_key_id: string
+          qr_key_id?: string
           qr_payload: string
           redeemed_amount_collected_agorot?: number | null
           redeemed_at?: string | null
@@ -1701,7 +1919,43 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "vouchers_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vouchers_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vouchers_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vouchers_redeemed_by_supplier_id_fkey"
+            columns: ["redeemed_by_supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vouchers_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wallet_accounts: {
         Row: {
@@ -1807,8 +2061,22 @@ export type Database = {
             foreignKeyName: "wallet_entries_credit_account_fkey"
             columns: ["credit_account"]
             isOneToOne: false
+            referencedRelation: "v_wallet_balance_drift"
+            referencedColumns: ["account_id"]
+          },
+          {
+            foreignKeyName: "wallet_entries_credit_account_fkey"
+            columns: ["credit_account"]
+            isOneToOne: false
             referencedRelation: "wallet_accounts"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wallet_entries_debit_account_fkey"
+            columns: ["debit_account"]
+            isOneToOne: false
+            referencedRelation: "v_wallet_balance_drift"
+            referencedColumns: ["account_id"]
           },
           {
             foreignKeyName: "wallet_entries_debit_account_fkey"
@@ -1903,8 +2171,59 @@ export type Database = {
         }
         Relationships: []
       }
+      v_wallet_balance_drift: {
+        Row: {
+          account_id: string | null
+          cached_balance_ils: number | null
+          code: string | null
+          drift_ils: number | null
+          ledger_balance_ils: number | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_accounts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      v_wallet_ledger: {
+        Row: {
+          amount_ils: number | null
+          created_at: string | null
+          direction: string | null
+          id: string | null
+          order_id: string | null
+          reason: string | null
+          signed_amount_ils: number | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_accounts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wallet_entries_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      cancel_vouchers_for_order: {
+        Args: { p_order_id: string; p_reason?: string }
+        Returns: number
+      }
       check_rate_limit: {
         Args: {
           p_key: string
@@ -1924,9 +2243,28 @@ export type Database = {
       }
       cleanup_rate_limits: { Args: never; Returns: undefined }
       cleanup_user_rate_limits: { Args: never; Returns: undefined }
+      credit_expired_vouchers: { Args: never; Returns: number }
+      current_supplier_id: { Args: never; Returns: string }
       current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
+      }
+      expire_vouchers: { Args: never; Returns: number }
+      fn_wallet_cashback_amount: {
+        Args: {
+          p_category_ids?: string[]
+          p_order_total_ils: number
+          p_user_id: string
+        }
+        Returns: number
+      }
+      fn_wallet_cashback_percent: {
+        Args: {
+          p_category_ids?: string[]
+          p_order_total_ils: number
+          p_user_id: string
+        }
+        Returns: number
       }
       fn_wallet_transfer: {
         Args: {
@@ -1942,7 +2280,36 @@ export type Database = {
       has_role: { Args: { required_role: string }; Returns: boolean }
       is_admin: { Args: never; Returns: boolean }
       is_supplier_member: { Args: { p_supplier_id: string }; Returns: boolean }
+      is_supplier_owner: { Args: { p_supplier_id: string }; Returns: boolean }
       is_support: { Args: never; Returns: boolean }
+      log_voucher_scan: {
+        Args: {
+          p_code_entered: string
+          p_outcome?: string
+          p_scan_method?: string
+        }
+        Returns: undefined
+      }
+      product_platform_percent: {
+        Args: { p_product_id: string }
+        Returns: number
+      }
+      redeem_voucher: {
+        Args: {
+          p_code: string
+          p_idempotency_key?: string
+          p_scan_method?: string
+        }
+        Returns: Json
+      }
+      refund_vouchers_for_order: {
+        Args: { p_order_id: string; p_reason?: string }
+        Returns: number
+      }
+      voucher_success_payload: {
+        Args: { v: Database["public"]["Tables"]["vouchers"]["Row"] }
+        Returns: Json
+      }
     }
     Enums: {
       affiliate_status: "pending_review" | "approved" | "rejected" | "suspended"
@@ -1981,18 +2348,19 @@ export type Database = {
         | "refunded"
       product_approval_status: "draft" | "pending" | "approved" | "rejected"
       product_status: "draft" | "active" | "paused" | "sold_out" | "archived"
-      product_type: "coupon" | "physical" | "service" | "subscription"
+      product_type: "coupon" | "physical" | "service"
       referral_status: "pending" | "completed" | "rejected"
       settlement_status:
         | "pending"
         | "paid"
         | "split_executed"
-        | "platform_settled"
         | "escrow_held"
         | "escrow_released"
         | "redeemed"
         | "refunded"
         | "cancelled"
+        | "platform_settled"
+      supplier_member_role: "owner" | "manager" | "scanner"
       user_role:
         | "customer"
         | "content_uploader"
@@ -2000,7 +2368,24 @@ export type Database = {
         | "admin"
         | "super_admin"
         | "support"
-      voucher_status: "issued" | "redeemed" | "expired" | "cancelled" | "refunded"
+      voucher_scan_outcome:
+        | "success"
+        | "already_redeemed"
+        | "expired"
+        | "cancelled"
+        | "refunded"
+        | "wrong_supplier"
+        | "not_found"
+        | "invalid_signature"
+        | "invalid_request"
+        | "unauthorized"
+        | "rate_limited"
+      voucher_status:
+        | "issued"
+        | "redeemed"
+        | "expired"
+        | "cancelled"
+        | "refunded"
       wallet_tx_source: "cashback" | "referral" | "manual"
       wallet_tx_type: "earn" | "redeem" | "expire" | "refund"
     }
@@ -2170,19 +2555,20 @@ export const Constants = {
       ],
       product_approval_status: ["draft", "pending", "approved", "rejected"],
       product_status: ["draft", "active", "paused", "sold_out", "archived"],
-      product_type: ["coupon", "physical", "service", "subscription"],
+      product_type: ["coupon", "physical", "service"],
       referral_status: ["pending", "completed", "rejected"],
       settlement_status: [
         "pending",
         "paid",
         "split_executed",
-        "platform_settled",
         "escrow_held",
         "escrow_released",
         "redeemed",
         "refunded",
         "cancelled",
+        "platform_settled",
       ],
+      supplier_member_role: ["owner", "manager", "scanner"],
       user_role: [
         "customer",
         "content_uploader",
@@ -2191,15 +2577,32 @@ export const Constants = {
         "super_admin",
         "support",
       ],
-      voucher_status: ["issued", "redeemed", "expired", "cancelled", "refunded"],
+      voucher_scan_outcome: [
+        "success",
+        "already_redeemed",
+        "expired",
+        "cancelled",
+        "refunded",
+        "wrong_supplier",
+        "not_found",
+        "invalid_signature",
+        "invalid_request",
+        "unauthorized",
+        "rate_limited",
+      ],
+      voucher_status: [
+        "issued",
+        "redeemed",
+        "expired",
+        "cancelled",
+        "refunded",
+      ],
       wallet_tx_source: ["cashback", "referral", "manual"],
       wallet_tx_type: ["earn", "redeem", "expire", "refund"],
     },
   },
 } as const
 
-// Row shorthands (the generic Tables/TablesInsert/TablesUpdate/Enums helpers
-// are emitted by the Supabase codegen above; Tables<> also covers views)
 export type Profile = Tables<'profiles'>
 export type Vendor = Tables<'vendors'>
 export type Category = Tables<'categories'>

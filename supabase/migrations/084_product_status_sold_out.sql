@@ -1,0 +1,37 @@
+-- 084_product_status_sold_out.sql
+--
+-- Third instance of the shadowed-enum bug, found by the static scan added
+-- alongside this migration (src/lib/db/enum-declarations.ts).
+--
+-- 001_initial_schema.sql declares
+--
+--   product_status AS ENUM ('draft', 'active', 'paused', 'archived')
+--
+-- and 005_products_schema.sql re-declares it with 'sold_out' added, under the
+-- same `EXCEPTION WHEN duplicate_object THEN null` guard that hid
+-- payout_status.pending_approval (see 083). 001 runs first and 005 does not drop
+-- the type before recreating it -- which is exactly what 006, 007 and 008 do to
+-- win the same race for their own enums -- so 'sold_out' has never existed on
+-- any database built in order. Confirmed on the local stack:
+--
+--   product_status = draft, active, paused, archived
+--
+-- The value is not dead vocabulary. src/lib/admin/labels.ts carries a Hebrew
+-- label for it and the generated src/types/database.ts declares it, so the
+-- application's type system already believes a product can be sold out. Nothing
+-- writes it today, which is the only reason this has not raised 22P02 yet: the
+-- admin product form's Zod enum happens to list the four values the database
+-- really has. Adding "sold out" to that form -- an obviously safe UI change --
+-- would have failed at the database with no hint as to why.
+--
+-- Distinct from product_type.service, which the scan also flags and which is
+-- deliberately absent: 066 added 'subscription' to replace it and 067 migrates
+-- any legacy 'service' rows over, guarding on pg_enum precisely because fresh
+-- databases build the enum without it. That one is retired vocabulary and is
+-- allowlisted in the test rather than restored here.
+--
+-- Idempotent, forward-only, purely additive. The new value is deliberately NOT
+-- read in this file: Postgres refuses to use an enum value added in the same
+-- transaction that added it.
+
+ALTER TYPE public.product_status ADD VALUE IF NOT EXISTS 'sold_out' AFTER 'paused';

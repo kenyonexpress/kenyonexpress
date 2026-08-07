@@ -2,9 +2,9 @@
  * Pixel-compare hero: refs/ke_live_singlefile.html vs localhost:3000 @ 1440px.
  * Writes refs/live.png (singlefile) and refs/mine.png (localhost).
  */
-import fs from 'fs'
+import fs from 'node:fs'
+import path from 'node:path'
 import { pathToFileURL } from 'node:url'
-import path from 'path'
 import { chromium } from '@playwright/test'
 import sharp from 'sharp'
 

@@ -1,3 +1,4 @@
+import CopyrightYear from '@/components/CopyrightYear'
 import { AtSign, Music2, Send, Share2 } from 'lucide-react'
 
 type FooterLink = { label: string; href: string }
@@ -78,7 +79,7 @@ export default function SiteFooter() {
         </div>
 
         <div className="border-t border-gray-800 mt-8 pt-4 text-center text-xs text-gray-500">
-          © {new Date().getFullYear()} קניון EXPRESS. כל הזכויות שמורות.
+          © <CopyrightYear /> קניון EXPRESS. כל הזכויות שמורות.
         </div>
       </div>
     </footer>

@@ -4,11 +4,11 @@
 .account-page {
   --account-yellow: #fed700;
   --account-ink: #333e48;
-  --account-muted: #768b9e;
+  --account-muted: #657888;
   --account-line: #e4e4e4;
   --account-blue: #0062bd;
   --account-red: #e4002b;
-  --account-green: #44b81b;
+  --account-green: #328614;
 
   width: 100%;
   padding-block: 24px 56px;
@@ -55,6 +55,25 @@
   border-radius: 4px;
   overflow: hidden;
   background: #fff;
+}
+
+/*
+ * The nav's box while its one request-time read is still streaming.
+ *
+ * MEASURED, not chosen - scripts/_account-nav-height.mjs renders the real
+ * markup against this file and reports 401.5px at both 1440px and 412px. The
+ * column is a fixed 260px so the width never changes it, and the list is seven
+ * fixed rows, so the only thing that does is an email long enough to wrap:
+ * 401.5px for a normal one, 421px for a 56-character address. The short case is
+ * the number here, because guessing high leaves a permanent gap under the nav
+ * for everyone and guessing low costs one shift for the few.
+ *
+ * Without it the box is 0 and the footer starts 401px up the page, then drops
+ * when the nav arrives - and on the single-column mobile layout that moves the
+ * page content, not just the footer.
+ */
+.account-nav--pending {
+  min-height: 401.5px;
 }
 
 .account-nav__head {

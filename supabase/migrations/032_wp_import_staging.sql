@@ -1,5 +1,11 @@
--- Migration 032: WordPress/WooCommerce import staging (DRAFT, DO NOT APPLY)
+-- Migration 032: WordPress/WooCommerce import staging
 -- Companion doc: docs/ARCHITECTURE-WP-DATA-MIGRATION.md
+--
+-- APPLIED to the hosted project 2026-07-27 via MCP apply_migration. The header
+-- previously read "DRAFT, DO NOT APPLY", which contradicted line 22 of this
+-- same file telling you how to apply it, and contradicted the fact that it had
+-- been applied locally since 2026-07-24. The draft label was stale, not a
+-- standing instruction. See docs/PRODUCTION-CHANGES-2026-07-27.md section 9.
 --
 -- Staging + permanent archive for the kenyonexpress.co.il WooCommerce data.
 -- Creates ONLY the wp_import schema. Touches nothing in public.

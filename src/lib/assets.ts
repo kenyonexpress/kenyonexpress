@@ -7,7 +7,11 @@ export const LOGO_FOOTER = '/images/logo-footer.webp'
 
 /** Homepage hero slider — refs/content-map.md block 4 */
 export const HERO_SLIDER_IMAGES = [
-  '/images/hero/slider/ios13-iphone-11pro-airpods-pro-setup-animation-steps.gif',
+  // Animated WebP, not the original 4.48MB GIF. next/image passes animated GIFs
+  // through unoptimised, so that one file was the homepage's largest-contentful
+  // paint at 5.3s on a server that answered in 240ms. Same 800x1070, same 47
+  // frames, 1.15MB. Lighthouse performance 77 -> see RELEASE-READINESS.md.
+  '/images/hero/slider/ios13-iphone-11pro-airpods-pro-setup-animation-steps.webp',
   '/images/hero/slider/redPhone-1-1.png',
   '/images/hero/slider/Smartwatches1.png',
   '/images/hero/slider/iapdlap.png',

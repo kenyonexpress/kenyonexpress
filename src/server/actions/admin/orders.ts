@@ -2,6 +2,7 @@
 
 import { writeAuditLog } from '@/lib/admin/audit'
 import { type AdminSessionInfo, requireAdminSession } from '@/lib/admin/rbac'
+import { withActionContext } from '@/lib/observability/action-context'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -21,7 +22,7 @@ const cancelSchema = z.object({
 // finalize, redemption). The ONLY manual admin transition is
 // pending -> cancelled, with a mandatory reason and an audit row.
 // Refunds of paid orders belong to the refund console (037, not built yet).
-export async function cancelPendingOrder(
+async function runCancelPendingOrder(
   _: OrderActionState,
   formData: FormData,
 ): Promise<OrderActionState> {
@@ -97,10 +98,7 @@ const noteSchema = z.object({
  * the previous one acted. The audit_log row carries the same text, so the
  * history survives even if the column is later edited by hand.
  */
-export async function addOrderNote(
-  _: OrderActionState,
-  formData: FormData,
-): Promise<OrderActionState> {
+async function runAddOrderNote(_: OrderActionState, formData: FormData): Promise<OrderActionState> {
   let session: AdminSessionInfo
   try {
     session = await requireAdminSession()
@@ -143,4 +141,18 @@ export async function addOrderNote(
 
   revalidatePath(`/admin/orders/${parsed.data.id}`)
   return { success: 'ההערה נוספה' }
+}
+
+export async function cancelPendingOrder(
+  _: OrderActionState,
+  formData: FormData,
+): Promise<OrderActionState> {
+  return withActionContext('admin.order.cancel_pending', () => runCancelPendingOrder(_, formData))
+}
+
+export async function addOrderNote(
+  _: OrderActionState,
+  formData: FormData,
+): Promise<OrderActionState> {
+  return withActionContext('admin.order.add_note', () => runAddOrderNote(_, formData))
 }

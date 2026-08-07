@@ -42,7 +42,19 @@ export default function OrderAdminActions({ orderId, notes, refundBlockers }: Pr
     startTransition(async () => {
       const result = await refundOrder({ orderId, reason, isDefectClaim: defect })
       if (result.ok) {
-        setRefundOk('ההחזר יצא לביצוע')
+        // Which of the two things happened is worth saying, because they are
+        // not the same event on the statement: a cancellation never reaches the
+        // clearing house, so the customer sees the charge disappear rather than
+        // a separate credit landing days later, and no fee was taken.
+        setRefundOk(
+          result.replay
+            ? 'ההזמנה כבר זוכתה קודם. לא בוצעה פעולה נוספת.'
+            : result.cancelOnly
+              ? `העסקה בוטלה לפני שידור לסליקה. ${result.refundedIls.toFixed(2)} ש״ח חוזרים במלואם, בלי דמי ביטול.`
+              : `ההחזר יצא לביצוע: ${result.refundedIls.toFixed(2)} ש״ח לכרטיס${
+                  result.feeIls > 0 ? `, אחרי ${result.feeIls.toFixed(2)} ש״ח דמי ביטול` : ''
+                }.`,
+        )
         setConfirming(false)
         router.refresh()
       } else {

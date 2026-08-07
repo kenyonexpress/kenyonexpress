@@ -3,37 +3,34 @@ import DealsOfTheDay from '@/components/home/DealsOfTheDay'
 import HeroSection from '@/components/home/HeroSection'
 import CategoryStrip from '@/components/store/CategoryStrip'
 import { buildSiteJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
-import type { Metadata } from 'next'
+// home-handheld.css is imported by the root layout (see the note there): as a
+// page-level import it was a 125-byte stylesheet costing a full round trip.
 
-/** ISR: home refreshes at most every 2 minutes. */
-export const revalidate = 120
-
-export const metadata: Metadata = {
-  title: { absolute: 'קניון אקספרס | קופונים ומבצעים' },
+export const metadata = {
+  title: 'קניון EXPRESS — מסדרים לך בילוי',
   description: 'קופונים, דילים ומוצרים במחיר הכי טוב. בפריסה ארצית.',
   alternates: { canonical: '/' },
-  openGraph: {
-    title: 'קניון אקספרס | קופונים ומבצעים',
-    description: 'קופונים, דילים ומוצרים במחיר הכי טוב. בפריסה ארצית.',
-    url: '/',
-    locale: 'he_IL',
-    siteName: 'קניון אקספרס',
-    type: 'website',
-  },
 }
 
 /** refs/ke_live_singlefile.html section order: hero → categories → features → product grid */
 export default function HomePage() {
-  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
-  const siteLd = buildSiteJsonLd(siteUrl)
+  // Organization and WebSite belong on the home page and nowhere else. Emitting
+  // them from the root layout would repeat the same two nodes on the checkout,
+  // the account area and every product, which says nothing new and dilutes the
+  // one page that should carry the site's identity.
+  const siteLd = buildSiteJsonLd(process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il')
 
   return (
     <>
       {siteLd.map((node) => (
-        // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD; jsonLdScript escapes <
         <script
-          key={String(node['@type'])}
+          key={node['@type'] as string}
           type="application/ld+json"
+          // The reason has to be ONE line: a biome-ignore suppresses the line
+          // that follows it, so a second `//` line consumes the suppression and
+          // the rule fires anyway, with nothing to see but a comment that reads
+          // like it works.
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD has no other insertion point; jsonLdScript escapes every angle bracket.
           dangerouslySetInnerHTML={{ __html: jsonLdScript(node) }}
         />
       ))}

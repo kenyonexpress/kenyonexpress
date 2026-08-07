@@ -1,9 +1,11 @@
 'use server'
 
 import { requireAdminSession } from '@/lib/admin/rbac'
-import { revalidateStorefrontCatalogue } from '@/lib/catalogue-cache'
+import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
+import { IMAGE_HOST_ERROR, isAllowedImageUrl } from '@/lib/images/remote-hosts'
+import { withActionContext } from '@/lib/observability/action-context'
 import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
 import { z } from 'zod'
 
 const schema = z.object({
@@ -16,14 +18,16 @@ const schema = z.object({
   name_en: z.string().min(1, 'שם באנגלית נדרש'),
   description_he: z.string().nullable().optional(),
   parent_id: z.string().uuid().nullable().optional(),
-  icon_url: z.string().nullable().optional(),
+  // Same gate as coupon_deals.image_url: this URL is rendered on the category
+  // tree and an un-allowlisted host is a throw, not a broken image.
+  icon_url: z.string().refine(isAllowedImageUrl, IMAGE_HOST_ERROR).nullable().optional(),
   sort_order: z.coerce.number().int().min(0).default(0),
   is_active: z.coerce.boolean().default(true),
 })
 
 export type CategoryFormState = { error: string } | { success: string } | null
 
-export async function upsertCategory(
+async function runUpsertCategory(
   _: CategoryFormState,
   formData: FormData,
 ): Promise<CategoryFormState> {
@@ -62,11 +66,11 @@ export async function upsertCategory(
   }
 
   revalidatePath('/admin/categories')
-  revalidateStorefrontCatalogue()
+  updateTag(CATALOGUE_TAG)
   return { success: id ? 'קטגוריה עודכנה' : 'קטגוריה נוצרה' }
 }
 
-export async function softDeleteCategory(id: string): Promise<{ error?: string }> {
+async function runSoftDeleteCategory(id: string): Promise<{ error?: string }> {
   try {
     await requireAdminSession()
   } catch {
@@ -81,11 +85,11 @@ export async function softDeleteCategory(id: string): Promise<{ error?: string }
   if (error) return { error: error.message }
 
   revalidatePath('/admin/categories')
-  revalidateStorefrontCatalogue()
+  updateTag(CATALOGUE_TAG)
   return {}
 }
 
-export async function deleteCategory(id: string): Promise<{ error?: string }> {
+async function runDeleteCategory(id: string): Promise<{ error?: string }> {
   try {
     await requireAdminSession()
   } catch {
@@ -97,11 +101,11 @@ export async function deleteCategory(id: string): Promise<{ error?: string }> {
   if (error) return { error: error.message }
 
   revalidatePath('/admin/categories')
-  revalidateStorefrontCatalogue()
+  updateTag(CATALOGUE_TAG)
   return {}
 }
 
-export async function updateCategorySortOrder(
+async function runUpdateCategorySortOrder(
   id: string,
   sort_order: number,
 ): Promise<{ error?: string }> {
@@ -116,6 +120,30 @@ export async function updateCategorySortOrder(
   if (error) return { error: error.message }
 
   revalidatePath('/admin/categories')
-  revalidateStorefrontCatalogue()
+  updateTag(CATALOGUE_TAG)
   return {}
+}
+
+export async function upsertCategory(
+  _: CategoryFormState,
+  formData: FormData,
+): Promise<CategoryFormState> {
+  return withActionContext('admin.category.upsert', () => runUpsertCategory(_, formData))
+}
+
+export async function softDeleteCategory(id: string): Promise<{ error?: string }> {
+  return withActionContext('admin.category.soft_delete', () => runSoftDeleteCategory(id))
+}
+
+export async function deleteCategory(id: string): Promise<{ error?: string }> {
+  return withActionContext('admin.category.delete', () => runDeleteCategory(id))
+}
+
+export async function updateCategorySortOrder(
+  id: string,
+  sort_order: number,
+): Promise<{ error?: string }> {
+  return withActionContext('admin.category.update_sort_order', () =>
+    runUpdateCategorySortOrder(id, sort_order),
+  )
 }

@@ -1,14 +1,38 @@
 'use server'
 
+import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-code'
 import { validateCartView } from '@/lib/checkout/validate-cart'
 import { agorot, agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
+import {
+  buildOrderItemMoneyRow,
+  buildOrderMoneyRow,
+  moneyColumnProbe,
+  resolveOrderGeneration,
+  resolveOrderItemGeneration,
+} from '@/lib/commerce/order-money-columns'
 import {
   type SupplierIdentity,
   buildOrderItemSnapshot,
   completeSplitPair,
 } from '@/lib/commerce/product-money'
-import { getPaymentProvider, loadCardcomEnv } from '@/lib/payments'
+import { withActionContext } from '@/lib/observability/action-context'
+import { log } from '@/lib/observability/log'
+import { capturePaymentError } from '@/lib/observability/sentry'
+import {
+  type PaymentProvider,
+  getCardcomAccounts,
+  getPaymentProvider,
+  loadCardcomEnv,
+} from '@/lib/payments'
+import { selectAccountForSuppliers } from '@/lib/payments/accounts'
+import {
+  paymentMoneyWrite,
+  readAmountAgorot,
+  resolvePaymentMoneySchema,
+} from '@/lib/payments/payment-money-columns'
+import { isCardTokenExpired } from '@/lib/payments/token-expiry'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import {
@@ -16,7 +40,7 @@ import {
   type CheckoutActionResult,
   beginCheckoutInputSchema,
 } from '@/lib/validations/checkout'
-import { getCart } from '@/server/actions/cart'
+import { getCart, resolveCheckoutDiscountAgorot } from '@/server/actions/cart'
 import {
   linkAnalyticsIdentity,
   stampOrderAttribution,
@@ -75,11 +99,133 @@ function supplierIdentityOf(
 }
 
 /**
+ * Charges a saved card token and finalizes in one server-to-server call. No
+ * hosted page, so no redirect and no webhook: the charge response IS the
+ * outcome, and `finalizeOrder` runs inline with the transaction id it returned.
+ *
+ * The token decides the account, not the platform default. Cardcom will not
+ * charge a token on a terminal other than the one that minted it, and the
+ * decline it returns for that says nothing about why.
+ *
+ * A decline leaves the order `pending` on purpose rather than cancelling it:
+ * the customer is still on the checkout page and the ordinary next move is to
+ * try another card, which reuses this same order.
+ */
+async function chargeSavedToken(args: {
+  admin: ReturnType<typeof createAdminClient>
+  tokenId: string
+  userId: string
+  orderId: string
+  amountAgorot: ReturnType<typeof agorot>
+  walletAppliedAgorot: ReturnType<typeof agorot>
+  idempotencyKey: string
+  now: Date
+}): Promise<CheckoutActionResult<BeginCheckoutOutput>> {
+  const { admin, tokenId, userId, orderId, amountAgorot, walletAppliedAgorot, now } = args
+
+  const { data: token } = await admin
+    .from('payment_tokens')
+    .select('id, cardcom_token, cardcom_account_id, expiry_month, expiry_year, profile_id')
+    .eq('id', tokenId)
+    .maybeSingle()
+  // Ownership is checked here rather than by RLS because this runs on the admin
+  // client: a token id from another account must not be chargeable by guessing.
+  if (!token || token.profile_id !== userId) {
+    return { ok: false, error: 'הכרטיס השמור לא נמצא', code: 'NOT_FOUND' }
+  }
+
+  // Cardcom would decline an expired card anyway; refusing here keeps a
+  // pointless decline off the customer's record and out of the terminal's.
+  if (isCardTokenExpired(token.expiry_month, token.expiry_year, now)) {
+    return { ok: false, error: 'תוקף הכרטיס השמור פג', code: 'VALIDATION' }
+  }
+
+  const { data: payment, error: paymentError } = await admin
+    .from('payments')
+    .insert({
+      order_id: orderId,
+      kind: 'charge',
+      status: 'initiated',
+      currency: 'ILS',
+      ...paymentMoneyWrite(
+        await resolvePaymentMoneySchema((column) =>
+          admin
+            .from('payments')
+            .select(column)
+            .limit(0)
+            .then(({ error }) => ({ error })),
+        ),
+        { amountAgorot, walletAppliedAgorot },
+      ),
+      idempotency_key: args.idempotencyKey,
+      cardcom_account_id: token.cardcom_account_id,
+    })
+    .select('id')
+    .single()
+  if (paymentError || !payment) {
+    return { ok: false, error: `יצירת תשלום נכשלה: ${paymentError?.message}`, code: 'INTERNAL' }
+  }
+
+  let charged: Awaited<ReturnType<PaymentProvider['chargeWithToken']>>
+  try {
+    const provider = getPaymentProvider(token.cardcom_account_id)
+    charged = await provider.chargeWithToken({
+      paymentId: payment.id,
+      orderId,
+      amountAgorot,
+      cardcomToken: token.cardcom_token,
+      description: `הזמנה ${orderId.slice(0, 8)}`,
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'payment provider error'
+    await admin
+      .from('payments')
+      .update({ status: 'failed', failure_message: message, failed_at: now.toISOString() })
+      .eq('id', payment.id)
+    capturePaymentError(error, {
+      stage: 'charge_saved_token',
+      orderId,
+      paymentId: payment.id,
+      detail: { message },
+    })
+    return { ok: false, error: 'שגיאה בחיבור לספק הסליקה', code: 'PAYMENT_PROVIDER_ERROR' }
+  }
+
+  if (!charged.success) {
+    await admin
+      .from('payments')
+      .update({
+        status: 'failed',
+        failure_code: charged.failureCode,
+        failure_message: charged.failureMessage,
+        failed_at: now.toISOString(),
+      })
+      .eq('id', payment.id)
+    return {
+      ok: false,
+      error: charged.failureMessage ?? 'החיוב נדחה',
+      code: 'PAYMENT_PROVIDER_ERROR',
+    }
+  }
+
+  const finalized = await finalizeOrder({
+    orderId,
+    paymentId: payment.id,
+    transactionId: charged.transactionId,
+    now,
+  })
+  if (!finalized.ok) {
+    return { ok: false, error: finalized.error, code: 'INTERNAL' }
+  }
+  return { ok: true, data: { kind: 'paid', order_id: orderId } }
+}
+
+/**
  * Creates the pending order snapshot and hands off to the payment provider.
  * Money amounts are computed server-side only; the client contributes ids and
  * consent, never prices.
  */
-export async function beginCheckout(
+async function runBeginCheckout(
   rawInput: unknown,
 ): Promise<CheckoutActionResult<BeginCheckoutOutput>> {
   const env = loadCardcomEnv()
@@ -237,7 +383,7 @@ export async function beginCheckout(
       settlementLines.push({
         id: `${item.product_id}::${item.variant_id ?? 'null'}`,
         productType: item.type,
-        unitPrice: ilsToAgorot(item.unit_price.toFixed(2)),
+        unitPrice: item.unit_price,
         quantity: item.quantity,
         couponPriceUnit: ilsToAgorot(couponPrice.toFixed(2)),
         platformPercent: split.pair.platformPercent,
@@ -247,7 +393,7 @@ export async function beginCheckout(
       settlementLines.push({
         id: `${item.product_id}::${item.variant_id ?? 'null'}`,
         productType: item.type,
-        unitPrice: ilsToAgorot(item.unit_price.toFixed(2)),
+        unitPrice: item.unit_price,
         quantity: item.quantity,
         platformPercent: split.pair.platformPercent,
         cashbackPercent: product.cashback_percent ?? 0,
@@ -258,17 +404,36 @@ export async function beginCheckout(
   // Wallet: cap at balance and at the on-site charge
   let walletAppliedAgorot = agorot(0)
   if (input.apply_wallet_ils > 0) {
-    const { data: account } = await admin
-      .from('wallet_accounts')
-      .select('id, balance_ils')
-      .eq('user_id', user.id)
-      .maybeSingle()
-    const balance = Number(account?.balance_ils ?? 0)
-    if (input.apply_wallet_ils > balance) {
+    // This is the authority that decides whether the customer may spend it, so
+    // it compares in agorot and not in floats. It named `balance_ils`, which is
+    // right for the hosted project and 42703 on a database that has 059; there
+    // the read failed, the balance read as zero, and every wallet application
+    // was refused. Same probe as every other reader now.
+    const { balanceAgorot } = await readWalletAccountAgorot(
+      (select, ids) => admin.from('wallet_accounts').select(select).eq('user_id', ids[0]) as never,
+      user.id,
+    )
+    const requestedAgorot = ilsToAgorot(input.apply_wallet_ils.toFixed(2))
+    if (requestedAgorot > balanceAgorot) {
       return { ok: false, error: 'יתרת הארנק אינה מספיקה', code: 'INSUFFICIENT_WALLET' }
     }
-    walletAppliedAgorot = ilsToAgorot(input.apply_wallet_ils.toFixed(2))
+    walletAppliedAgorot = requestedAgorot
   }
+
+  // The discount is re-evaluated here, from the coupons table, against the cart
+  // as it stands at this instant. The number the cart rendered is not an input:
+  // between that render and this charge the code can have expired, the last use
+  // can have gone to someone else, or the cart can have dropped below the
+  // code's minimum. Whatever this returns is what the card is reduced by, and
+  // the engine caps it again against the commission.
+  //
+  // The code itself is not stored on the order: `orders` has no column for it,
+  // and adding one would put an unapplied migration on the charging path, which
+  // is the trap GO-LIVE already carries once for commission_type. The
+  // consequence is recorded rather than hidden: nothing increments
+  // `coupons.used_count`, so `max_uses` is enforced as a read of a counter no
+  // part of this flow advances. See STATE, "what the coupon code does not do".
+  const { discountAgorot } = await resolveCheckoutDiscountAgorot()
 
   let settlement: ReturnType<typeof calculateSettlement>
   try {
@@ -276,6 +441,7 @@ export async function beginCheckout(
       idempotencyKey: input.client_ref,
       lines: settlementLines,
       walletApplied: walletAppliedAgorot,
+      discountApplied: agorot(discountAgorot),
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'settlement failed'
@@ -286,15 +452,35 @@ export async function beginCheckout(
   const expiresAt = new Date(now.getTime() + ORDER_EXPIRY_MINUTES * 60 * 1000)
 
   // 4. Pending order + items snapshot
+  //
+  // Every money column here is integer agorot. 059 renamed the whole set
+  // (subtotal_ils -> subtotal_agorot, total_ils -> total_agorot, ...) and left
+  // the originals behind as *_ils_legacy. Writing the old names produced
+  // PGRST204 on the very first statement of a checkout, so NO ORDER COULD BE
+  // CREATED AT ALL against a 059 database; three of the agorot columns are also
+  // NOT NULL with no default, so the row would have been rejected even if the
+  // names had resolved.
+  //
+  // wallet_applied_agorot and cashback_applied_agorot are the same number by
+  // construction: 042 derived the first from cashback_applied_ils and 059 then
+  // renamed that same column into the second. Both are written so a reader
+  // cannot pick the one that happens to be empty.
+  // Which money columns this database has is resolved, not assumed. The six
+  // agorot names below existed only in the post-059 schema; the hosted project
+  // has subtotal_ils and total_ils, both NOT NULL with no default, so this
+  // INSERT failed with 42703 and no order could be created at all.
+  const orderGeneration = await resolveOrderGeneration(moneyColumnProbe(admin as never, 'orders'))
   const { data: order, error: orderError } = await admin
     .from('orders')
     .insert({
       user_id: user.id,
       status: 'pending',
-      subtotal_ils: agorotToIls(settlement.faceValue),
-      discount_ils: 0,
-      cashback_applied_ils: agorotToIls(settlement.walletApplied),
-      total_ils: agorotToIls(settlement.paidOnSite),
+      ...buildOrderMoneyRow(orderGeneration, {
+        faceValueAgorot: settlement.faceValue,
+        discountAgorot: settlement.discountApplied,
+        walletAppliedAgorot: settlement.walletApplied,
+        paidOnSiteAgorot: settlement.paidOnSite,
+      }),
       currency: 'ILS',
       address_id: input.address_id,
       accepted_terms_at: now.toISOString(),
@@ -306,6 +492,29 @@ export async function beginCheckout(
     return { ok: false, error: `יצירת הזמנה נכשלה: ${orderError?.message}`, code: 'INTERNAL' }
   }
 
+  // The gift intent (108), written in its OWN statement and not added to the
+  // insert above. This whole module exists because naming a column the hosted
+  // database does not have failed the entire orders INSERT with 42703, and NO
+  // ORDER COULD BE CREATED AT ALL (see order-money-columns.ts). Three new
+  // columns in that literal would put the purchase flow back behind a
+  // migration; here the worst case is an order that is not marked as a gift.
+  if (input.gift_recipient_email) {
+    const { error: giftError } = await admin
+      .from('orders')
+      .update({
+        gift_recipient_email: input.gift_recipient_email,
+        gift_recipient_name: input.gift_recipient_name ?? null,
+        gift_message: input.gift_message ?? null,
+      } as never)
+      .eq('id', order.id)
+    if (giftError) {
+      log.warn('checkout.gift_not_recorded', { order_id: order.id, err: giftError.message })
+    }
+  }
+
+  const itemGeneration = await resolveOrderItemGeneration(
+    moneyColumnProbe(admin as never, 'order_items'),
+  )
   const itemRows = cart.items.map((item) => {
     const line = settlement.lines.find(
       (l) => l.id === `${item.product_id}::${item.variant_id ?? 'null'}`,
@@ -334,11 +543,6 @@ export async function beginCheckout(
       supplier: supplierIdentityOf(product, supplierMap),
     })
 
-    // The percent the money was actually billed at, straight off the settlement
-    // result, so the snapshot cannot drift from the arithmetic that produced
-    // commission_agorot even by a rounding step.
-    const billedPercent = line.platformPercentBps / 100
-
     return {
       order_id: order.id,
       product_id: item.product_id,
@@ -346,10 +550,22 @@ export async function beginCheckout(
       product_type: item.type,
       supplier_id: product.supplier_id ?? null,
       quantity: item.quantity,
-      unit_price_ils: item.unit_price,
-      total_price_ils: agorotToIls(line.faceValue),
-      supplier_payout_ils: agorotToIls(line.supplierDue),
-      platform_percent: billedPercent,
+      // The money and rate columns come from the resolver: this table is a
+      // hybrid on the hosted project (070 added agorot columns beside original
+      // shekel ones, and the rates are still whole percents), so naming the
+      // post-059 set failed the whole INSERT with 42703. Rates go in as basis
+      // points and are converted per generation, because writing 30 into a bp
+      // column understates the platform's take by two orders of magnitude.
+      ...buildOrderItemMoneyRow(itemGeneration, {
+        unitPriceAgorot: item.unit_price,
+        faceValueAgorot: line.faceValue,
+        paidOnSiteAgorot: line.paidOnSite,
+        commissionAgorot: line.commission,
+        supplierDueAgorot: line.supplierDue,
+        balanceDueAgorot: line.balanceDueAtBusiness,
+        cashbackAgorot: line.cashbackAmount,
+        platformBasisPoints: line.platformPercentBps,
+      }),
       supplier_split_percent: snapshot.supplier_split_percent,
       discount_percent: snapshot.discount_percent,
       coupon_price_ils: snapshot.coupon_price_ils,
@@ -357,22 +573,8 @@ export async function beginCheckout(
       supplier_phone: snapshot.supplier_phone,
       supplier_address: snapshot.supplier_address,
       supplier_logo_url: snapshot.supplier_logo_url,
-      commission_percent: billedPercent,
-      cashback_percent: 0,
       item_status: 'pending' as const,
       settlement_status: 'pending' as const,
-      upfront_percent: billedPercent,
-      commission_percent_snapshot: billedPercent,
-      face_value_agorot: line.faceValue,
-      paid_on_site_agorot: line.paidOnSite,
-      commission_agorot: line.commission,
-      supplier_immediate_agorot: line.supplierDue,
-      // Legacy 046/047 shape. Always 0: there is no escrow, and "held" was only
-      // ever a flag in our own ledger.
-      escrow_held_agorot: 0,
-      escrow_release_agorot: 0,
-      balance_due_agorot: line.balanceDueAtBusiness,
-      cashback_amount_agorot: line.cashbackAmount,
     }
   })
   const { error: itemsError } = await admin.from('order_items').insert(itemRows)
@@ -410,17 +612,69 @@ export async function beginCheckout(
     return { ok: true, data: { kind: 'paid', order_id: order.id } }
   }
 
-  // 6. Payment row + hosted page
+  // 5b. Saved card: charge the stored token server-to-server, no hosted page.
+  // `token_id` has been in the input schema since checkout was written and was
+  // never read, so a customer with a saved card was still sent through the full
+  // redirect every time.
+  if (input.token_id) {
+    return await chargeSavedToken({
+      admin,
+      tokenId: input.token_id,
+      userId: user.id,
+      orderId: order.id,
+      amountAgorot: settlement.cardCharge,
+      walletAppliedAgorot: settlement.walletApplied,
+      idempotencyKey,
+      now,
+    })
+  }
+
+  // 6. Payment row + hosted page.
+  // The account is recorded before the hosted page exists, because the Low
+  // Profile id it returns is only meaningful on this account's terminal: a
+  // later GetLpResult or refund has to know where to ask.
+  // WHICH TERMINAL THIS ORDER CLEARS ON.
+  //
+  // This used to be `getCardcomAccounts().platform`, unconditionally. The
+  // multi-account machinery underneath it was already complete — the registry
+  // resolves ids, `payments.cardcom_account_id` records the choice, and the
+  // webhook and the refund path both re-resolve the provider from the stored id
+  // because a Low Profile id only answers on the terminal that minted it — but
+  // nothing ever chose an account other than the platform, so every extra
+  // account in CARDCOM_ACCOUNTS was configuration nothing could reach.
+  //
+  // The choice is made from the suppliers actually in this order, and the rule
+  // is all-or-nothing (see selectAccountForSuppliers). A mixed basket clears on
+  // the platform rather than being split across two terminals, which would mean
+  // two charges the customer can half-succeed at.
+  const account = selectAccountForSuppliers(
+    getCardcomAccounts(),
+    itemRows.map((line) => line.supplier_id),
+  )
+  // The money columns are resolved, not named: this database is pre-059 and has
+  // amount_ils / wallet_applied_ils, and an insert naming the agorot columns
+  // raises 42703, so no payment row could be created and checkout could not
+  // start at all. See lib/payments/payment-money-columns.ts.
+  const money = await resolvePaymentMoneySchema((column) =>
+    admin
+      .from('payments')
+      .select(column)
+      .limit(0)
+      .then(({ error }) => ({ error })),
+  )
   const { data: payment, error: paymentError } = await admin
     .from('payments')
     .insert({
       order_id: order.id,
       kind: 'charge',
       status: 'initiated',
-      amount_ils: agorotToIls(settlement.cardCharge),
       currency: 'ILS',
-      wallet_applied_ils: agorotToIls(settlement.walletApplied),
       idempotency_key: idempotencyKey,
+      cardcom_account_id: account.id,
+      ...paymentMoneyWrite(money, {
+        amountAgorot: settlement.cardCharge,
+        walletAppliedAgorot: settlement.walletApplied,
+      }),
     })
     .select('id')
     .single()
@@ -429,15 +683,19 @@ export async function beginCheckout(
   }
 
   try {
-    const provider = getPaymentProvider()
+    const provider = getPaymentProvider(account.id)
     const created = await provider.createLowProfile({
       paymentId: payment.id,
       orderId: order.id,
       orderNumber: order.id.slice(0, 8).toUpperCase(),
       amountAgorot: settlement.cardCharge,
       saveToken: input.save_card,
-      successRedirectUrl: `${env.appUrl}/checkout/return?order_id=${order.id}`,
-      failedRedirectUrl: `${env.appUrl}/checkout/failed?order_id=${order.id}`,
+      // Both return into the framable stub, never straight into a page that
+      // needs a session: Cardcom's navigation into our iframe is cross-site and
+      // the Lax session cookie is withheld on it. The stub moves the top window
+      // to the real page, where the cookie is sent. See lib/security/frame-policy.ts.
+      successRedirectUrl: `${env.appUrl}/checkout/frame-return?order_id=${order.id}`,
+      failedRedirectUrl: `${env.appUrl}/checkout/frame-return?order_id=${order.id}&status=failed`,
       // Cardcom does not sign webhooks; the unguessable secret in the URL is the
       // authenticity gate (paired with server-side GetLpResult re-verification).
       webhookUrl: `${env.appUrl}/api/payments/cardcom/webhook?s=${encodeURIComponent(env.webhookSecret)}`,
@@ -463,17 +721,45 @@ export async function beginCheckout(
       .from('payments')
       .update({ status: 'failed', failure_message: message, failed_at: new Date().toISOString() })
       .eq('id', payment.id)
+    // A declined card is ordinary; the provider being unreachable is not, and
+    // it stops every checkout at once.
+    capturePaymentError(error, {
+      stage: 'create_low_profile',
+      orderId: order.id,
+      paymentId: payment.id,
+      detail: { message },
+    })
     return { ok: false, error: 'שגיאה בחיבור לספק הסליקה', code: 'PAYMENT_PROVIDER_ERROR' }
   }
 }
 
-export type CheckoutFormState = { error: string } | null
+/**
+ * What the checkout form does next.
+ *
+ * `frame` is the Cardcom Low Profile page, to be mounted in an iframe on the
+ * checkout rather than navigated to. Keeping the shopper on our page through
+ * the payment is the whole point of the iframe: the address they just typed is
+ * still behind the box, the site chrome does not disappear mid-purchase, and a
+ * card decline does not read as having been thrown off the site.
+ *
+ * A saved-card charge never produces one. That path is server-to-server and its
+ * response IS the outcome, so it goes straight to the confirmation.
+ */
+export type CheckoutFormState =
+  /**
+   * `code` is beginCheckout's own failure code, carried through rather than
+   * dropped. The form uses it to decide whether "try again" is honest: a
+   * provider timeout can be repeated, a disabled checkout cannot, and without
+   * the code the page could only guess from the Hebrew message.
+   */
+  { error: string; code?: string } | { frame: { url: string; orderId: string } } | null
 
 /**
  * Form-facing wrapper: optionally persists a shipping address, then runs
- * beginCheckout and redirects to the provider / return page.
+ * beginCheckout and hands back either the hosted page to frame or a redirect to
+ * the confirmation.
  */
-export async function submitCheckout(
+async function runSubmitCheckout(
   _prev: CheckoutFormState,
   formData: FormData,
 ): Promise<CheckoutFormState> {
@@ -495,11 +781,21 @@ export async function submitCheckout(
     const city = text('city')
     const street = text('street')
     const streetNumber = text('street_number')
-    const fullName = text('full_name')
+    // The form splits the name in two to match the live checkout; the address
+    // table stores one. Falling back to full_name keeps any caller that still
+    // posts the single field working.
+    const fullName =
+      [text('first_name'), text('last_name')].filter(Boolean).join(' ') || text('full_name')
     const phone = text('phone')
     if (!city || !street || !streetNumber || !fullName) {
       return { error: 'יש למלא שם, עיר, רחוב ומספר בית למשלוח' }
     }
+    // The postal code is optional here exactly as it is on the form, but a
+    // present one is checked on the server too: the client check is a courtesy
+    // to the shopper, not a guarantee about what reached this action.
+    const zipCheck = checkOptionalIsraeliPostalCode(text('zip'))
+    if (zipCheck && !zipCheck.ok) return { error: zipCheck.message }
+
     const admin = createAdminClient()
     const { data: created, error: addressError } = await admin
       .from('user_addresses')
@@ -511,7 +807,9 @@ export async function submitCheckout(
         street,
         street_number: streetNumber,
         apartment: text('apartment') || null,
-        zip: text('zip') || null,
+        floor: text('floor') || null,
+        notes_for_courier: text('order_notes') || null,
+        zip: zipCheck?.ok ? zipCheck.normalized : null,
         is_default: true,
       })
       .select('id')
@@ -522,20 +820,41 @@ export async function submitCheckout(
     addressId = created.id
   }
 
+  // 'new' is the radio value for "charge a fresh card", which is the hosted
+  // page. Anything else is a saved token id, and beginCheckout re-checks that
+  // it belongs to this user before charging it.
+  const tokenChoice = text('token_id')
+  const savedTokenId = tokenChoice && tokenChoice !== 'new' ? tokenChoice : undefined
+
   const result = await beginCheckout({
     client_ref: text('client_ref'),
     accept_terms: formData.get('accept_terms') === 'on',
     apply_wallet_ils: text('apply_wallet_ils') || 0,
-    save_card: formData.get('save_card') === 'on',
+    // Saving is a hosted-page operation; charging an existing token cannot mint
+    // another one, so the checkbox is meaningless on that path.
+    save_card: savedTokenId ? false : formData.get('save_card') === 'on',
     address_id: addressId,
+    token_id: savedTokenId,
+    // Only forwarded when the shopper actually ticked "this is a gift"; an
+    // empty string would fail zod's email check and reject the whole checkout.
+    ...(text('gift') === 'on' && text('gift_recipient_email')
+      ? {
+          gift_recipient_email: text('gift_recipient_email'),
+          gift_recipient_name: text('gift_recipient_name') || undefined,
+          gift_message: text('gift_message') || undefined,
+        }
+      : {}),
   })
 
-  if (!result.ok) return { error: result.error }
+  if (!result.ok) return { error: result.error, code: result.code }
 
   if (result.data.kind === 'paid') {
     redirect(`/checkout/return?order_id=${result.data.order_id}`)
   }
-  redirect(result.data.redirect_url)
+
+  // Returned rather than redirected to. `redirect()` here would take the whole
+  // tab to Cardcom, which is the flow this replaces.
+  return { frame: { url: result.data.redirect_url, orderId: result.data.order_id } }
 }
 
 export type ReturnReconcileResult =
@@ -549,7 +868,7 @@ export type ReturnReconcileResult =
  * comes only from a server-to-server verify against the provider (same rules
  * as the webhook), then the idempotent finalize.
  */
-export async function reconcileOrderReturn(orderId: string): Promise<ReturnReconcileResult> {
+async function runReconcileOrderReturn(orderId: string): Promise<ReturnReconcileResult> {
   const supabase = await createClient()
   const {
     data: { user },
@@ -568,14 +887,29 @@ export async function reconcileOrderReturn(orderId: string): Promise<ReturnRecon
     return { status: 'failed', order_id: order.id, reason: `order ${order.status}` }
   }
 
-  const { data: payment } = await admin
+  const money = await resolvePaymentMoneySchema((column) =>
+    admin
+      .from('payments')
+      .select(column)
+      .limit(0)
+      .then(({ error }) => ({ error })),
+  )
+  // Runtime-built select: the client cannot infer the row shape, hence the cast.
+  const paymentSelect = `id, status, ${money.amountColumn}, cardcom_low_profile_id, cardcom_account_id`
+  const { data: paymentRow } = await admin
     .from('payments')
-    .select('id, status, amount_ils, cardcom_low_profile_id')
+    .select(paymentSelect)
     .eq('order_id', order.id)
     .eq('kind', 'charge')
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle()
+  const payment = paymentRow as unknown as {
+    id: string
+    status: string
+    cardcom_low_profile_id: string | null
+    cardcom_account_id: string | null
+  } | null
   if (!payment) {
     return { status: 'pending', order_id: order.id }
   }
@@ -583,7 +917,9 @@ export async function reconcileOrderReturn(orderId: string): Promise<ReturnRecon
   if (payment.status === 'failed') return { status: 'failed', order_id: order.id }
   if (!payment.cardcom_low_profile_id) return { status: 'pending', order_id: order.id }
 
-  const provider = getPaymentProvider()
+  // Verify against the terminal that issued this Low Profile id; any other one
+  // reports not_found for a payment that may well have gone through.
+  const provider = getPaymentProvider(payment.cardcom_account_id)
   const verified = await provider.verifyLowProfile(payment.cardcom_low_profile_id)
   if (!verified.success || verified.amountAgorot === null) {
     await admin
@@ -594,8 +930,11 @@ export async function reconcileOrderReturn(orderId: string): Promise<ReturnRecon
     return { status: 'failed', order_id: order.id, reason: 'verification failed' }
   }
 
-  const expectedAgorot = Math.round(Number(payment.amount_ils) * 100)
-  if (verified.amountAgorot !== expectedAgorot) {
+  // Normalised to agorot from whichever column this database has, so a charge
+  // is never compared against a hundred times itself (pre-059 read as agorot)
+  // nor against nothing (post-059 column named on a pre-059 database).
+  const expectedAgorot = readAmountAgorot(money, payment as Record<string, unknown>)
+  if (expectedAgorot === null || verified.amountAgorot !== expectedAgorot) {
     return { status: 'pending', order_id: order.id, reason: 'amount mismatch' }
   }
 
@@ -609,4 +948,21 @@ export async function reconcileOrderReturn(orderId: string): Promise<ReturnRecon
     return { status: 'pending', order_id: order.id, reason: finalized.error }
   }
   return { status: 'paid', order_id: order.id }
+}
+
+export async function beginCheckout(
+  rawInput: unknown,
+): Promise<CheckoutActionResult<BeginCheckoutOutput>> {
+  return withActionContext('checkout.begin', () => runBeginCheckout(rawInput))
+}
+
+export async function submitCheckout(
+  prev: CheckoutFormState,
+  formData: FormData,
+): Promise<CheckoutFormState> {
+  return withActionContext('checkout.submit', () => runSubmitCheckout(prev, formData))
+}
+
+export async function reconcileOrderReturn(orderId: string): Promise<ReturnReconcileResult> {
+  return withActionContext('checkout.reconcile_return', () => runReconcileOrderReturn(orderId))
 }

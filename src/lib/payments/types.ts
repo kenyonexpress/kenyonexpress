@@ -52,6 +52,13 @@ export interface RefundInput {
   amountAgorot: Agorot
   /** Partial refund in agorot; omit for a full refund of `amountAgorot`. */
   partialAmountAgorot?: Agorot
+  /**
+   * Cancel the deal before it is transmitted to the clearing house instead of
+   * crediting it. Same money back to the customer, but no money movement on the
+   * clearing side and therefore no clearing commission. Only legal on the day of
+   * the charge; the caller decides, not this client.
+   */
+  cancelOnly?: boolean
   description: string
 }
 
@@ -81,10 +88,54 @@ export interface VerifyLowProfileResult {
   raw: Record<string, unknown>
 }
 
+export interface CreateDocumentLine {
+  description: string
+  quantity: number
+  /** VAT-inclusive price of one unit, agorot. */
+  unitPriceAgorot: Agorot
+  /** VAT-inclusive amount for the whole line, agorot. Negative on a credit line. */
+  totalAgorot: Agorot
+}
+
+export interface CreateDocumentInput {
+  /** A sale receipt, or the credit note that reverses one. */
+  documentType: 'tax_invoice_receipt' | 'credit_note'
+  customerName: string | null
+  customerEmail: string | null
+  customerPhone: string | null
+  lines: readonly CreateDocumentLine[]
+  /** VAT-inclusive document total, agorot, always positive. */
+  totalAgorot: Agorot
+  /** The rate the lines were priced at, whole percent. */
+  vatPercent: number
+  /**
+   * The deal this document belongs to, when there is one. A document tied to
+   * the transaction reconciles against the terminal's own report; a free
+   * standing one has to be matched by hand.
+   */
+  transactionId: string | null
+  /** Printed on the document so a human can find the order it belongs to. */
+  reference: string
+  /** Ask the provider to email the document to the customer. */
+  sendByEmail: boolean
+}
+
+export interface CreateDocumentResult {
+  success: boolean
+  /** The provider's document number, which is what goes on `orders.invoice_number`. */
+  documentNumber: string | null
+  /** Where the PDF can be fetched, if the provider returned one. */
+  documentUrl: string | null
+  failureCode: string | null
+  failureMessage: string | null
+  raw: Record<string, unknown>
+}
+
 export interface PaymentProvider {
   readonly name: PaymentProviderKind
   createLowProfile(input: CreateLowProfileInput): Promise<CreateLowProfileResult>
   chargeWithToken(input: ChargeWithTokenInput): Promise<ChargeWithTokenResult>
   verifyLowProfile(lowProfileId: string): Promise<VerifyLowProfileResult>
   refundByTransactionId(input: RefundInput): Promise<RefundResult>
+  createDocument(input: CreateDocumentInput): Promise<CreateDocumentResult>
 }

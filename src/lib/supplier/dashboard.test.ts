@@ -19,10 +19,11 @@ const sale = (partial: Partial<SupplierSaleLine>): SupplierSaleLine => ({
   paidOnSiteAgorot: 4000,
   platformFeeAgorot: 400,
   supplierImmediateAgorot: 0,
-  escrowHeldAgorot: 3600,
+  // Legacy column; ignored under no-Escrow (always 0 in live rows post-085).
+  escrowHeldAgorot: 0,
   escrowReleaseAgorot: 0,
-  supplierDueAgorot: 3600,
-  settlementStatus: 'escrow_held',
+  supplierDueAgorot: 0,
+  settlementStatus: 'platform_settled',
   paidAt: '2026-08-01T10:00:00Z',
   ...partial,
 })
@@ -41,13 +42,17 @@ const redemption = (partial: Partial<SupplierRedemptionRow>): SupplierRedemption
 })
 
 describe('supplierDueAgorot', () => {
-  it('sums immediate and held', () => {
-    expect(supplierDueAgorot({ supplierImmediateAgorot: 9000, escrowHeldAgorot: 3600 })).toBe(12600)
+  it('counts only the immediate physical split (ignores legacy held)', () => {
+    expect(supplierDueAgorot({ supplierImmediateAgorot: 9000, escrowHeldAgorot: 3600 })).toBe(9000)
+  })
+
+  it('is zero on a coupon line', () => {
+    expect(supplierDueAgorot({ supplierImmediateAgorot: 0, escrowHeldAgorot: 3600 })).toBe(0)
   })
 })
 
 describe('aggregateDashboard', () => {
-  it('counts today redemptions and till collect', () => {
+  it('counts today redemptions and till collect without inventing escrow', () => {
     const stats = aggregateDashboard({
       sales: [sale({})],
       redemptions: [
@@ -63,17 +68,17 @@ describe('aggregateDashboard', () => {
     expect(stats.redemptionsToday).toBe(1)
     expect(stats.tillCollectedTodayAgorot).toBe(36000)
     expect(stats.platformFeeAgorot).toBe(400)
-    expect(stats.supplierDueAgorot).toBe(3600)
-    expect(stats.escrowHeldAgorot).toBe(3600)
+    expect(stats.supplierDueAgorot).toBe(0)
+    expect(stats.couponRedemptionsTotal).toBe(2)
   })
 })
 
 describe('toPayoutBreakdown', () => {
-  it('uses on-site prepayment as gross for coupons', () => {
+  it('uses on-site prepayment as gross for coupons and pays the supplier nothing from us', () => {
     const [line] = toPayoutBreakdown([sale({})])
     expect(line?.grossAgorot).toBe(4000)
     expect(line?.platformFeeAgorot).toBe(400)
-    expect(line?.supplierPayoutAgorot).toBe(3600)
+    expect(line?.supplierPayoutAgorot).toBe(0)
     expect(line?.platformPercent).toBe(10)
   })
 
@@ -86,6 +91,7 @@ describe('toPayoutBreakdown', () => {
         platformFeeAgorot: 1000,
         supplierImmediateAgorot: 9000,
         escrowHeldAgorot: 0,
+        supplierDueAgorot: 9000,
       }),
     ])
     expect(line?.grossAgorot).toBe(10000)
@@ -103,12 +109,13 @@ describe('toPayoutBreakdown', () => {
         platformFeeAgorot: 1000,
         supplierImmediateAgorot: 9000,
         escrowHeldAgorot: 0,
+        supplierDueAgorot: 9000,
       }),
     ])
     expect(sumPayoutBreakdown(lines)).toEqual({
       grossAgorot: 14000,
       platformFeeAgorot: 1400,
-      supplierPayoutAgorot: 12600,
+      supplierPayoutAgorot: 9000,
     })
   })
 })

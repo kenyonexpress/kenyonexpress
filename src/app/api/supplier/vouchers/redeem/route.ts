@@ -1,12 +1,14 @@
-import { createAdminClient } from '@/lib/supabase/admin'
+import { log } from '@/lib/observability/log'
+import { capturePaymentError } from '@/lib/observability/sentry'
+import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createClient } from '@/lib/supabase/server'
+import { checkRateLimit } from '@/lib/utils/rate-limit'
+import { expireWalletPasses } from '@/lib/wallet/notify'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
-import { markOrderItemRedeemed } from '@/server/domain/vouchers/mark-order-item-redeemed'
 import { verifyVoucherQrPayload } from '@/server/domain/vouchers/qr'
+import { readScanContext, recordRefusedScan } from '@/server/domain/vouchers/scan-context'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-
-export const runtime = 'nodejs'
 
 /**
  * Supplier-side voucher redemption. The atomic work happens in the
@@ -113,13 +115,29 @@ function asOutcome(value: unknown): Outcome {
   return known.includes(value as Outcome) ? (value as Outcome) : 'not_found'
 }
 
-export async function POST(request: NextRequest): Promise<NextResponse> {
+async function handlePOST(request: NextRequest): Promise<NextResponse> {
   const supabase = await createClient()
+  const scanContext = readScanContext(request.headers)
   const {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) {
     return respond({ outcome: 'unauthorized', message: OUTCOME_MESSAGES.unauthorized }, 401)
+  }
+
+  // The lookup route next door has had a ceiling since it was written, and this
+  // one did not — which made the ceiling decorative. An attacker walking the
+  // code space would use whichever endpoint is not limited, and this is the one
+  // that BURNS the voucher rather than describing it. It is also the one whose
+  // effect cannot be undone.
+  //
+  // Tighter than lookup's 300 because of that asymmetry, and still far above a
+  // real till: 120 redemptions an hour from one member is a scan every thirty
+  // seconds, without pause, for an hour. `checkRateLimit` fails open, which is
+  // the right direction with a customer waiting at the counter.
+  const allowed = await checkRateLimit(`voucher-redeem:${user.id}`, 120, 3600)
+  if (!allowed) {
+    return respond({ outcome: 'rate_limited', message: OUTCOME_MESSAGES.rate_limited }, 429)
   }
 
   const parsed = redeemRequestSchema.safeParse(await request.json().catch(() => null))
@@ -135,10 +153,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (qr_payload) {
     const verified = verifyVoucherQrPayload(qr_payload)
     if (!verified) {
-      await supabase.rpc('log_voucher_scan', {
-        p_code_entered: normalizeVoucherCode(code ?? '').slice(0, 32),
-        p_scan_method: method,
-        p_outcome: 'invalid_signature',
+      await recordRefusedScan({
+        codeEntered: normalizeVoucherCode(code ?? ''),
+        outcome: 'invalid_signature',
+        scanMethod: method,
+        context: scanContext,
+        client: supabase,
       })
       return respond({ outcome: 'not_found', message: OUTCOME_MESSAGES.not_found }, 404)
     }
@@ -155,12 +175,21 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     p_code: shortCode,
     p_scan_method: method,
     p_idempotency_key: idempotency_key ?? null,
+    p_ip: scanContext.ip,
+    p_user_agent: scanContext.userAgent,
   })
 
   if (error) {
     // The RPC only raises on infrastructure failure; a redemption refusal is a
     // normal jsonb result, not an error.
-    console.error('redeem_voucher rpc failed:', error.message)
+    log.error('voucher.redeem_rpc_failed', { reason: error.message })
+    // The customer is standing at the counter with a voucher the platform
+    // cannot decide about. Under the no-Escrow model a scan does not move
+    // money on our ledger; it only burns the voucher.
+    capturePaymentError(new Error(error.message), {
+      stage: 'redeem_voucher_rpc',
+      detail: { code: error.code, scan_method: method },
+    })
     return respond({ outcome: 'invalid_request', message: 'שגיאת מערכת, נסה שוב' }, 500)
   }
 
@@ -170,15 +199,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const replayed = result.replayed === true
 
   if (outcome === 'success') {
-    // 092 updates order_items inside the RPC. This belt-and-suspenders write
-    // covers older RPC installs that still lack that UPDATE.
-    const orderItemId = typeof result.order_item_id === 'string' ? result.order_item_id : null
-    if (orderItemId && !replayed) {
-      try {
-        await markOrderItemRedeemed(createAdminClient(), orderItemId)
-      } catch (err) {
-        console.error('markOrderItemRedeemed failed:', err)
-      }
+    // The voucher is already burned in the database. Awaited rather than fired
+    // and forgotten, because a serverless invocation can be frozen the moment
+    // the response is returned and the push would never leave. It cannot throw
+    // and it cannot change the answer; a replay skips it, since the pass was
+    // expired the first time round.
+    if (!replayed) {
+      await expireWalletPasses([(result.code as string) ?? shortCode])
     }
 
     return respond(
@@ -211,3 +238,5 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     status,
   )
 }
+
+export const POST = withRequestLog('/api/supplier/vouchers/redeem', handlePOST)

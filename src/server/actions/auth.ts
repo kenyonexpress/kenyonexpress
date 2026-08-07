@@ -1,5 +1,8 @@
 'use server'
 
+import { withActionContext } from '@/lib/observability/action-context'
+import { log } from '@/lib/observability/log'
+
 import { passwordResetResult } from '@/lib/auth/password-reset'
 import { safeNextPath } from '@/lib/auth/safe-next'
 import { GUEST_SESSION_COOKIE, getGuestSessionId } from '@/lib/cart/guest-session'
@@ -40,7 +43,7 @@ const safeNext = safeNextPath
 // ──────────────────────────────────────────────
 // Google OAuth
 // ──────────────────────────────────────────────
-export async function signInWithGoogle(_: AuthState, formData: FormData): Promise<AuthState> {
+async function runSignInWithGoogle(_: AuthState, formData: FormData): Promise<AuthState> {
   const next = safeNext(formData.get('next'))
   const supabase = await createClient()
   const { data, error } = await supabase.auth.signInWithOAuth({
@@ -58,7 +61,7 @@ export async function signInWithGoogle(_: AuthState, formData: FormData): Promis
 // ──────────────────────────────────────────────
 // Email / Password sign-in
 // ──────────────────────────────────────────────
-export async function signInWithEmail(_: AuthState, formData: FormData): Promise<AuthState> {
+async function runSignInWithEmail(_: AuthState, formData: FormData): Promise<AuthState> {
   const ip = await getClientIp()
   const allowed = await checkRateLimit(`login:${ip}`)
   if (!allowed) return { error: 'יותר מדי ניסיונות כניסה — נסו שוב בעוד שעה' }
@@ -75,7 +78,7 @@ export async function signInWithEmail(_: AuthState, formData: FormData): Promise
 
   const sessionId = await getGuestSessionId()
   if (signInData.user && sessionId) {
-    await mergeGuestCart(signInData.user.id, sessionId)
+    await mergeGuestCart(supabase, signInData.user.id, sessionId)
     const cookieStore = await cookies()
     cookieStore.delete(GUEST_SESSION_COOKIE)
   }
@@ -86,7 +89,7 @@ export async function signInWithEmail(_: AuthState, formData: FormData): Promise
 // ──────────────────────────────────────────────
 // Email / Password sign-up (phone required)
 // ──────────────────────────────────────────────
-export async function signUpWithEmail(_: AuthState, formData: FormData): Promise<AuthState> {
+async function runSignUpWithEmail(_: AuthState, formData: FormData): Promise<AuthState> {
   const ip = await getClientIp()
   const allowed = await checkRateLimit(`signup:${ip}`, 5, 3600)
   if (!allowed) return { error: 'יותר מדי ניסיונות הרשמה — נסו שוב בעוד שעה' }
@@ -114,7 +117,7 @@ export async function signUpWithEmail(_: AuthState, formData: FormData): Promise
 // ──────────────────────────────────────────────
 // Magic link (OTP email)
 // ──────────────────────────────────────────────
-export async function sendMagicLink(_: AuthState, formData: FormData): Promise<AuthState> {
+async function runSendMagicLink(_: AuthState, formData: FormData): Promise<AuthState> {
   const ip = await getClientIp()
   const allowed = await checkRateLimit(`magic:${ip}`, 5, 3600)
   if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
@@ -136,7 +139,7 @@ export async function sendMagicLink(_: AuthState, formData: FormData): Promise<A
 // ──────────────────────────────────────────────
 // Sign out (current device)
 // ──────────────────────────────────────────────
-export async function signOut() {
+async function runSignOut() {
   const supabase = await createClient()
   await supabase.auth.signOut({ scope: 'local' })
   redirect('/login')
@@ -145,7 +148,7 @@ export async function signOut() {
 // ──────────────────────────────────────────────
 // Sign out (all devices)
 // ──────────────────────────────────────────────
-export async function signOutAll() {
+async function runSignOutAll() {
   const supabase = await createClient()
   await supabase.auth.signOut({ scope: 'global' })
   redirect('/login')
@@ -154,7 +157,7 @@ export async function signOutAll() {
 // ──────────────────────────────────────────────
 // Password reset request
 // ──────────────────────────────────────────────
-export async function sendPasswordReset(_: AuthState, formData: FormData): Promise<AuthState> {
+async function runSendPasswordReset(_: AuthState, formData: FormData): Promise<AuthState> {
   const ip = await getClientIp()
   const allowed = await checkRateLimit(`reset:${ip}`, 5, 3600)
   if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
@@ -169,14 +172,14 @@ export async function sendPasswordReset(_: AuthState, formData: FormData): Promi
 
   // Never let the reply reveal whether the address is registered. Failures are
   // logged for operators; the caller always sees the same message.
-  if (error) console.error('[auth] password reset failed:', error.message)
+  if (error) log.error('auth.password_reset_failed', { reason: error.message })
   return passwordResetResult(error)
 }
 
 // ──────────────────────────────────────────────
 // Update password (after recovery flow)
 // ──────────────────────────────────────────────
-export async function updatePassword(_: AuthState, formData: FormData): Promise<AuthState> {
+async function runUpdatePassword(_: AuthState, formData: FormData): Promise<AuthState> {
   const parsed = newPasswordSchema.safeParse({
     password: formData.get('password'),
     confirm_password: formData.get('confirm_password'),
@@ -187,4 +190,36 @@ export async function updatePassword(_: AuthState, formData: FormData): Promise<
   const { error } = await supabase.auth.updateUser({ password: parsed.data.password })
   if (error) return { error: toHebrew(error.message) }
   redirect('/')
+}
+
+export async function signInWithGoogle(_: AuthState, formData: FormData): Promise<AuthState> {
+  return withActionContext('auth.sign_in_google', () => runSignInWithGoogle(_, formData))
+}
+
+export async function signInWithEmail(_: AuthState, formData: FormData): Promise<AuthState> {
+  return withActionContext('auth.sign_in_email', () => runSignInWithEmail(_, formData))
+}
+
+export async function signUpWithEmail(_: AuthState, formData: FormData): Promise<AuthState> {
+  return withActionContext('auth.sign_up_email', () => runSignUpWithEmail(_, formData))
+}
+
+export async function sendMagicLink(_: AuthState, formData: FormData): Promise<AuthState> {
+  return withActionContext('auth.send_magic_link', () => runSendMagicLink(_, formData))
+}
+
+export async function signOut() {
+  return withActionContext('auth.sign_out', () => runSignOut())
+}
+
+export async function signOutAll() {
+  return withActionContext('auth.sign_out_all', () => runSignOutAll())
+}
+
+export async function sendPasswordReset(_: AuthState, formData: FormData): Promise<AuthState> {
+  return withActionContext('auth.send_password_reset', () => runSendPasswordReset(_, formData))
+}
+
+export async function updatePassword(_: AuthState, formData: FormData): Promise<AuthState> {
+  return withActionContext('auth.update_password', () => runUpdatePassword(_, formData))
 }

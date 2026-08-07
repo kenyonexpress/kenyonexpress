@@ -1,5 +1,7 @@
-import { formatDate, formatIls, formatVoucherCode } from '@/lib/account/format'
+import { formatDate, formatIls } from '@/lib/account/format'
+import { agorot } from '@/lib/money'
 import { requireSupplierMember } from '@/lib/supplier/rbac'
+import { formatVoucherCode } from '@/server/domain/vouchers/code'
 import { getSupplierRedemptions } from '@/server/queries/supplier'
 
 export const metadata = { title: 'מימושים' }
@@ -42,11 +44,11 @@ export default async function SupplierRedemptionsPage() {
                 <div className="shrink-0 text-end">
                   <p className="text-xs text-gray-500">לגבייה בעסק</p>
                   <p className="text-lg font-extrabold text-heading" dir="ltr">
-                    {formatIls(row.remainingAmountDueAgorot)}
+                    {formatIls(agorot(row.remainingAmountDueAgorot))}
                   </p>
                   <p className="mt-1 text-xs text-gray-400">
                     עמלה {row.platformPercent}% · שולם באתר{' '}
-                    <span dir="ltr">{formatIls(row.couponPriceAgorot)}</span>
+                    <span dir="ltr">{formatIls(agorot(row.couponPriceAgorot))}</span>
                   </p>
                 </div>
               </div>

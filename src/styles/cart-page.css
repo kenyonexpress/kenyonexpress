@@ -1,18 +1,55 @@
-/* Cart page — tokens from ke_live_singlefile / KE_LIVE_SPEC overrides */
+/* Cart page — tokens from ke_live_singlefile / KE_LIVE_SPEC overrides.
+   Heebo is not set here: globals.css drives it site-wide from the root layout,
+   and re-declaring the family per page is how one page ends up a version
+   behind the others. */
+
+/* --cart-price-red and --cart-touch are declared in mini-cart.css, which the
+   root layout loads on every page. They are shared with the header cart, and a
+   second declaration here would be the copy that goes stale. */
 
 .cart-page {
-  max-width: 1170px;
+  /* Was a hardcoded 1170. The site container is 1320 and is declared once in
+     globals.css; the cart was the page still carrying the old Bootstrap width,
+     which showed up as a 150px inset against every other route. */
+  max-width: var(--container-page, 1320px);
   margin-inline: auto;
-  padding: 1.5rem 15px 3rem;
+  /* 138px of bottom padding, not 3rem. Measured: the live page leaves 138px
+     between the last control and the newsletter band, ours left 48, and the
+     92px shortfall pulled the whole footer up the page. Everything below it
+     then scored against the wrong rows of the reference, which is why two
+     100px bands read 56% and 78% while every element above them was landing
+     within a handful of pixels. */
+  padding: 1.5rem 15px 138px;
   color: #333e48;
   font-size: 14px;
 }
 
-.cart-page__title {
-  font-size: 39.998px;
-  font-weight: 500;
+/* Measured off the live cart: 14px, padding 25.004px 0 22.4px. */
+.cart-page__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 25.004px 0 22.4px;
+  font-size: 14px;
   color: #333e48;
-  margin-bottom: 40px;
+}
+
+.cart-page__breadcrumb a:hover {
+  color: #0062bd;
+}
+
+/* Present for the document outline, absent from the layout. See the note in
+   CartPageView for why this is hidden rather than removed. */
+.cart-page__title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 .cart-page__grid {
@@ -101,17 +138,20 @@
   display: flex;
   align-items: center;
   border: 1px solid #ddd;
-  border-radius: 14px;
+  border-radius: 22px;
   overflow: hidden;
-  height: 39.98px;
+  height: var(--cart-touch);
 }
 
 .cart-line__qty-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  /* Both axes at the full touch target. The control used to be 36x36 inside a
+     40px pill, which reads fine on a desktop pointer and is under the 44px
+     minimum for the thumb this page is mostly used with. */
+  width: var(--cart-touch);
+  height: var(--cart-touch);
   color: #515151;
   transition: background 0.15s;
 }
@@ -135,7 +175,9 @@
 .cart-line__price {
   font-size: 16.996px;
   font-weight: 700;
-  color: #333e48;
+  /* The price is the one thing on the row that has to be findable at a glance,
+     and on Electro it is the accent red rather than the body slate. */
+  color: var(--cart-price-red);
   margin-inline-start: auto;
 }
 
@@ -143,8 +185,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: var(--cart-touch);
+  height: var(--cart-touch);
   color: #a7a7a7;
   border-radius: 0.375rem;
   transition: color 0.15s, background 0.15s;
@@ -187,7 +229,7 @@
 }
 
 .cart-sidebar__row--muted {
-  color: #768b9e;
+  color: #657888;
   font-size: 0.875rem;
 }
 
@@ -258,50 +300,44 @@
   pointer-events: none;
 }
 
+/* The empty-cart banner, measured off the live page: #fed700, 49px/300,
+   centred, padding 49px 79.282px, margin 98px 0 36.75px, radius 2px. */
 .cart-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 4rem 1.5rem;
-  border: 1px solid #ddd;
-  border-radius: 0.75rem;
-  background: #fff;
-}
-
-.cart-empty__icon {
-  color: #ccc;
-  margin-bottom: 1.5rem;
-}
-
-.cart-empty__title {
-  font-size: 49px;
-  font-weight: 400;
+  background: #fed700;
   color: #333e48;
-  margin-bottom: 0.5rem;
+  font-size: 49px;
+  font-weight: 300;
+  line-height: 1.4;
+  text-align: center;
+  padding: 49px 79.282px;
+  margin: 98px 0 36.75px;
+  border-radius: 2px;
 }
 
-.cart-empty__text {
-  color: #666;
-  margin-bottom: 1.5rem;
+.cart-empty__actions {
+  text-align: center;
+  margin: 0;
 }
 
+/* 157x45 at 14px/400 on #efecec, radius 50. Not the yellow CTA it used to be:
+   on the live page the primary yellow is spent on the banner above, and a
+   second yellow directly under it competes with it. */
 .cart-empty__cta {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 14.504px 29.876px;
-  background: #fed700;
+  justify-content: center;
+  min-height: var(--cart-touch);
+  padding: 9.504px 48px;
+  background: #efecec;
   color: #333e48;
-  font-weight: 700;
+  font-weight: 400;
   font-size: 14px;
-  border-radius: 21.994px;
+  border-radius: 50px;
   transition: background 0.15s;
 }
 
 .cart-empty__cta:hover {
-  background: #fedd26;
+  background: #e2dede;
 }
 
 .cart-page__clear {
@@ -324,236 +360,102 @@
   cursor: not-allowed;
 }
 
-/* ------------------------------------------------------------------ */
-/* Mini-cart drawer (header sidebar)                                   */
-/* ------------------------------------------------------------------ */
-
-.cart-drawer-root {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
+/* Discount code. Sits between the rows and the total because that is the order
+   it is read in: what the items cost, what the code takes off, what is left. */
+.cart-coupon {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-block: 16px;
+  border-top: 1px solid #ddd;
+  font-size: 14px;
 }
 
-.cart-drawer__overlay {
-  position: absolute;
-  inset: 0;
-  background: rgb(0 0 0 / 45%);
+.cart-coupon__row {
+  display: flex;
+  gap: 8px;
+}
+
+.cart-coupon__input {
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  padding: 0 16px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #333e48;
+  background: #fff;
+}
+
+.cart-coupon__input:focus {
+  outline: none;
+  border-color: #fed700;
+}
+
+.cart-coupon__input[aria-invalid="true"] {
+  border-color: #dc3545;
+}
+
+.cart-coupon__submit {
+  height: 40px;
+  padding: 0 22px;
+  border: 1px solid #fed700;
+  border-radius: 20px;
+  background: #fed700;
+  color: #333e48;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.cart-coupon__submit:hover:not(:disabled) {
+  background: #fedd26;
+}
+
+.cart-coupon__submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cart-coupon__error {
+  margin: 0;
+  color: #dc3545;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.cart-coupon--applied {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cart-coupon__applied-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.cart-coupon__label {
+  color: #657888;
+  font-size: 12px;
+}
+
+.cart-coupon__remove {
+  background: none;
   border: none;
+  padding: 0;
+  font: inherit;
+  color: #0062bd;
+  text-decoration: underline;
   cursor: pointer;
 }
 
-.cart-drawer {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-end: 0;
-  width: min(100%, 380px);
-  max-width: 100%;
-  max-height: 100%;
-  margin: 0;
-  margin-inline-start: auto;
-  padding: 0;
-  border: none;
-  background: #fff;
-  display: flex;
-  flex-direction: column;
-  box-shadow: -4px 0 24px rgb(0 0 0 / 12%);
-  animation: cart-drawer-in 0.22s ease-out;
-}
-
-@keyframes cart-drawer-in {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-
-.cart-drawer__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.25rem;
-  border-bottom: 1px solid #eee;
-}
-
-.cart-drawer__title {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1.125rem;
-  font-weight: 800;
-  color: #0062bd;
-}
-
-.cart-drawer__count {
-  font-weight: 600;
-  color: #666;
-  font-size: 0.9375rem;
-}
-
-.cart-drawer__close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  color: #515151;
-  border-radius: 0.375rem;
-  transition: background 0.15s;
-}
-
-.cart-drawer__close:hover {
-  background: #f5f5f5;
-}
-
-.cart-drawer__body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0.75rem 0;
-}
-
-.cart-drawer__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.cart-drawer__item {
-  display: grid;
-  grid-template-columns: 64px 1fr;
-  gap: 0.75rem;
-  padding: 0.75rem 1.25rem;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.cart-drawer__thumb {
-  display: block;
-  width: 64px;
-  height: 64px;
-  border: 1px solid #eee;
-  border-radius: 0.375rem;
-  overflow: hidden;
-}
-
-.cart-drawer__item-body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-  min-width: 0;
-}
-
-.cart-drawer__item-name {
-  font-size: 0.875rem;
+.cart-sidebar__row--discount {
+  color: #328614;
   font-weight: 700;
-  color: #0062bd;
-  line-height: 1.35;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.cart-drawer__item-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
-.cart-drawer__qty {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  border: 1px solid #ddd;
-  border-radius: 0.375rem;
-  padding: 0.125rem;
-}
-
-.cart-drawer__qty-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.5rem;
-  height: 1.5rem;
-  color: #515151;
-}
-
-.cart-drawer__qty-btn:disabled {
-  opacity: 0.35;
-}
-
-.cart-drawer__item-price {
-  font-weight: 800;
-  color: #e4002b;
-  font-size: 0.9375rem;
-}
-
-.cart-drawer__empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  padding: 3rem 1.5rem;
-  text-align: center;
-  color: #666;
-}
-
-.cart-drawer__shop-link {
-  margin-top: 0.5rem;
-  padding: 0.5rem 1.25rem;
-  background: #fed700;
-  color: #333e48;
-  font-weight: 700;
-  border-radius: 0.375rem;
-}
-
-.cart-drawer__shop-link:hover {
-  background: #fedd26;
-}
-
-.cart-drawer__footer {
-  padding: 1rem 1.25rem;
-  border-top: 1px solid #eee;
-  display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
-}
-
-.cart-drawer__subtotal {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  font-weight: 700;
-  color: #333e48;
-}
-
-.cart-drawer__subtotal strong {
-  font-size: 1.25rem;
-  color: #e4002b;
-}
-
-.cart-drawer__view-cart {
-  text-align: center;
-  font-size: 0.875rem;
-  color: #0062bd;
-  text-decoration: underline;
-  padding: 0.25rem;
-}
-
-.cart-drawer__checkout {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 2.75rem;
-  background: #fed700;
-  color: #333e48;
-  font-weight: 800;
-  border-radius: 0.375rem;
-  transition: background 0.15s;
-}
-
-.cart-drawer__checkout:hover {
-  background: #fedd26;
 }

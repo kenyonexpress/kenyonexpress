@@ -2,11 +2,13 @@
 
 import { variantIdsToRemove } from '@/lib/admin/product-variants'
 import { requireStaffSession } from '@/lib/admin/rbac'
-import { revalidateStorefrontCatalogue } from '@/lib/catalogue-cache'
+import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { assertPublishable, buildProductMoneyWrite } from '@/lib/commerce/product-money'
+import { IMAGE_HOST_ERROR, isAllowedImageUrl } from '@/lib/images/remote-hosts'
+import { withActionContext } from '@/lib/observability/action-context'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
@@ -44,9 +46,18 @@ const schema = z
     // Absolute shekel amount charged on this site for a coupon. Not a percent,
     // and no default: see lib/commerce/coupon-offer.ts for the bug that caused.
     coupon_price_ils: z.coerce.number().positive().nullable().optional(),
-    coupon_expiry_days: z.coerce.number().int().positive().nullable().optional(),
     offer_valid_until: z.string().nullable().optional(),
     is_coupon_enabled: z.coerce.boolean().default(false),
+    // CONTRADICTIONS C7: coupon validity is a per-product field, 30/60/90 or any
+    // other integer. No default: an unset value used to become a silent 90 days
+    // in finalize, which is a consumer-facing promise nobody made. Required on a
+    // coupon product, meaningless on a physical one.
+    coupon_expiry_days: z.coerce
+      .number({ invalid_type_error: 'תוקף קופון בימים נדרש' })
+      .int('תוקף חייב להיות מספר שלם של ימים')
+      .min(1, 'תוקף חייב להיות לפחות יום אחד')
+      .nullable()
+      .optional(),
     sku: z.string().nullable().optional(),
     stock_quantity: z.coerce.number().int().min(0).nullable().optional(),
     is_featured: z.coerce.boolean().default(false),
@@ -78,6 +89,15 @@ const schema = z
     seo_keywords: z.string().nullable().optional(),
   })
   .superRefine((data, ctx) => {
+    // A coupon cannot be sold without a validity period (C7). Checked here
+    // rather than in the field schema because it depends on the product type.
+    if ((data.type === 'coupon' || data.is_coupon_enabled) && data.coupon_expiry_days == null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'תוקף קופון בימים נדרש למוצר קופון',
+        path: ['coupon_expiry_days'],
+      })
+    }
     if (data.full_price != null && data.full_price < data.kenyon_price) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -118,7 +138,7 @@ const variantSchema = z.object({
 
 export type ProductFormState = { error: string } | { success: string } | null
 
-export async function upsertProduct(
+async function runUpsertProduct(
   _: ProductFormState,
   formData: FormData,
 ): Promise<ProductFormState> {
@@ -182,8 +202,32 @@ export async function upsertProduct(
     data: { user },
   } = await supabase.auth.getUser()
 
+  /**
+   * Every entry is validated, and it is the only one of the four image write
+   * paths that had NO validation at all: the field arrives as a JSON string and
+   * went to the column unread.
+   *
+   * These strings are rendered by next/image on the deal cards, the homepage
+   * and the product page. next THROWS on a host that is not in
+   * `images.remotePatterns`, so one pasted URL from an un-allowlisted host is a
+   * 500 on the storefront, written from the admin, with nothing failing at the
+   * moment it is saved. Measured against production before this landed: 76
+   * entries, 27 local paths and 45 picsum, all of them allowed, so no existing
+   * row becomes uneditable.
+   */
   const imagesRaw = formData.get('images') as string | null
-  const images = imagesRaw ? (JSON.parse(imagesRaw) as unknown[]) : []
+  let images: unknown[] = []
+  if (imagesRaw) {
+    try {
+      const parsedImages = JSON.parse(imagesRaw)
+      if (!Array.isArray(parsedImages)) return { error: 'רשימת התמונות אינה תקינה' }
+      images = parsedImages
+    } catch {
+      return { error: 'רשימת התמונות אינה תקינה' }
+    }
+    const badImage = images.find((v) => typeof v !== 'string' || !isAllowedImageUrl(v))
+    if (badImage !== undefined) return { error: IMAGE_HOST_ERROR }
+  }
 
   const variantsRaw = formData.get('variants') as string | null
   const variantsParsed = variantsRaw
@@ -302,11 +346,11 @@ export async function upsertProduct(
   }
 
   revalidatePath('/admin/products')
-  revalidateStorefrontCatalogue()
+  updateTag(CATALOGUE_TAG)
   redirect('/admin/products')
 }
 
-export async function deleteProduct(id: string): Promise<{ error?: string }> {
+async function runDeleteProduct(id: string): Promise<{ error?: string }> {
   try {
     await requireStaffSession()
   } catch {
@@ -321,11 +365,11 @@ export async function deleteProduct(id: string): Promise<{ error?: string }> {
   if (error) return { error: error.message }
 
   revalidatePath('/admin/products')
-  revalidateStorefrontCatalogue()
+  updateTag(CATALOGUE_TAG)
   return {}
 }
 
-export async function bulkUpdateProductStatus(
+async function runBulkUpdateProductStatus(
   ids: string[],
   status: 'draft' | 'active' | 'paused' | 'archived',
 ): Promise<{ error?: string }> {
@@ -340,11 +384,11 @@ export async function bulkUpdateProductStatus(
   if (error) return { error: error.message }
 
   revalidatePath('/admin/products')
-  revalidateStorefrontCatalogue()
+  updateTag(CATALOGUE_TAG)
   return {}
 }
 
-export async function bulkAssignCategory(
+async function runBulkAssignCategory(
   ids: string[],
   categoryId: string | null,
 ): Promise<{ error?: string }> {
@@ -366,7 +410,7 @@ export async function bulkAssignCategory(
   if (error) return { error: error.message }
 
   revalidatePath('/admin/products')
-  revalidateStorefrontCatalogue()
+  updateTag(CATALOGUE_TAG)
   return {}
 }
 
@@ -389,7 +433,7 @@ function round2(n: number): number {
  * set mode writes kenyon_price and skips products whose full_price would fall
  * below it (those are reported back, not silently broken).
  */
-export async function bulkAdjustPrices(
+async function runBulkAdjustPrices(
   ids: string[],
   input: BulkPriceInput,
 ): Promise<{ error?: string; updated?: number; skipped?: string[] }> {
@@ -440,11 +484,11 @@ export async function bulkAdjustPrices(
   }
 
   revalidatePath('/admin/products')
-  revalidateStorefrontCatalogue()
+  updateTag(CATALOGUE_TAG)
   return { updated, skipped }
 }
 
-export async function bulkSoftDeleteProducts(ids: string[]): Promise<{ error?: string }> {
+async function runBulkSoftDeleteProducts(ids: string[]): Promise<{ error?: string }> {
   try {
     await requireStaffSession()
   } catch {
@@ -460,11 +504,11 @@ export async function bulkSoftDeleteProducts(ids: string[]): Promise<{ error?: s
   if (error) return { error: error.message }
 
   revalidatePath('/admin/products')
-  revalidateStorefrontCatalogue()
+  updateTag(CATALOGUE_TAG)
   return {}
 }
 
-export async function deleteVariant(id: string): Promise<{ error?: string }> {
+async function runDeleteVariant(id: string): Promise<{ error?: string }> {
   try {
     await requireStaffSession()
   } catch {
@@ -479,4 +523,50 @@ export async function deleteVariant(id: string): Promise<{ error?: string }> {
   if (error) return { error: error.message }
 
   return {}
+}
+
+export async function upsertProduct(
+  _: ProductFormState,
+  formData: FormData,
+): Promise<ProductFormState> {
+  return withActionContext('admin.product.upsert', () => runUpsertProduct(_, formData))
+}
+
+export async function deleteProduct(id: string): Promise<{ error?: string }> {
+  return withActionContext('admin.product.delete', () => runDeleteProduct(id))
+}
+
+export async function bulkUpdateProductStatus(
+  ids: string[],
+  status: 'draft' | 'active' | 'paused' | 'archived',
+): Promise<{ error?: string }> {
+  return withActionContext('admin.product.bulk_update_status', () =>
+    runBulkUpdateProductStatus(ids, status),
+  )
+}
+
+export async function bulkAssignCategory(
+  ids: string[],
+  categoryId: string | null,
+): Promise<{ error?: string }> {
+  return withActionContext('admin.product.bulk_assign_category', () =>
+    runBulkAssignCategory(ids, categoryId),
+  )
+}
+
+export async function bulkAdjustPrices(
+  ids: string[],
+  input: BulkPriceInput,
+): Promise<{ error?: string; updated?: number; skipped?: string[] }> {
+  return withActionContext('admin.product.bulk_adjust_prices', () =>
+    runBulkAdjustPrices(ids, input),
+  )
+}
+
+export async function bulkSoftDeleteProducts(ids: string[]): Promise<{ error?: string }> {
+  return withActionContext('admin.product.bulk_soft_delete', () => runBulkSoftDeleteProducts(ids))
+}
+
+export async function deleteVariant(id: string): Promise<{ error?: string }> {
+  return withActionContext('admin.variant.delete', () => runDeleteVariant(id))
 }

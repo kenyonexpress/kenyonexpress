@@ -12,6 +12,9 @@ const LINKS: Array<{
   { href: '/supplier', label: 'לוח בקרה', minRole: 'scanner' },
   { href: '/supplier/scan', label: 'סריקה', minRole: 'scanner' },
   { href: '/supplier/redemptions', label: 'מימושים', minRole: 'scanner' },
+  // manager, not scanner: the catalogue view shows commission and margin, and
+  // the scanner role exists so the till phone does not carry business terms.
+  { href: '/supplier/products', label: 'המוצרים שלי', minRole: 'manager' },
   { href: '/supplier/payouts', label: 'תשלומים', minRole: 'owner' },
 ]
 

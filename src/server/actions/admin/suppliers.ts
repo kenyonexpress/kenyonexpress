@@ -3,6 +3,7 @@
 import { writeAuditLog } from '@/lib/admin/audit'
 import { requireSection } from '@/lib/admin/rbac'
 import { type SupplierFormFields, parseSupplierForm } from '@/lib/admin/supplier-form'
+import { withActionContext } from '@/lib/observability/action-context'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
@@ -30,7 +31,7 @@ function auditChanges(fields: SupplierFormFields): Record<string, string | null>
   return { ...fields }
 }
 
-export async function upsertSupplier(
+async function runUpsertSupplier(
   _: SupplierActionState,
   formData: FormData,
 ): Promise<SupplierActionState> {
@@ -93,7 +94,7 @@ export async function upsertSupplier(
   return { success: id ? 'הספק עודכן' : 'הספק נוצר' }
 }
 
-export async function setSupplierStatus(
+async function runSetSupplierStatus(
   id: string,
   status: 'active' | 'inactive',
 ): Promise<{ error?: string }> {
@@ -130,7 +131,7 @@ export async function setSupplierStatus(
  * would unpublish those products with no trace of why. The admin is told the
  * count instead.
  */
-export async function softDeleteSupplier(id: string): Promise<{ error?: string }> {
+async function runSoftDeleteSupplier(id: string): Promise<{ error?: string }> {
   let session: Awaited<ReturnType<typeof requireSection>>
   try {
     session = await requireSection('suppliers', 'write')
@@ -175,7 +176,7 @@ export async function softDeleteSupplier(id: string): Promise<{ error?: string }
  * while nobody can honour a voucher at the counter, so this is part of
  * onboarding rather than an optional extra.
  */
-export async function addSupplierMember(
+async function runAddSupplierMember(
   supplierId: string,
   userId: string,
   role: 'owner' | 'manager' | 'scanner',
@@ -216,7 +217,7 @@ export async function addSupplierMember(
 /**
  * Revokes access without deleting the row, so the audit trail keeps who had it.
  */
-export async function deactivateSupplierMember(
+async function runDeactivateSupplierMember(
   supplierId: string,
   userId: string,
 ): Promise<{ error?: string }> {
@@ -246,4 +247,41 @@ export async function deactivateSupplierMember(
 
   revalidatePath(`/admin/suppliers/${supplierId}`)
   return {}
+}
+
+export async function upsertSupplier(
+  _: SupplierActionState,
+  formData: FormData,
+): Promise<SupplierActionState> {
+  return withActionContext('admin.supplier.upsert', () => runUpsertSupplier(_, formData))
+}
+
+export async function setSupplierStatus(
+  id: string,
+  status: 'active' | 'inactive',
+): Promise<{ error?: string }> {
+  return withActionContext('admin.supplier.set_status', () => runSetSupplierStatus(id, status))
+}
+
+export async function softDeleteSupplier(id: string): Promise<{ error?: string }> {
+  return withActionContext('admin.supplier.soft_delete', () => runSoftDeleteSupplier(id))
+}
+
+export async function addSupplierMember(
+  supplierId: string,
+  userId: string,
+  role: 'owner' | 'manager' | 'scanner',
+): Promise<{ error?: string }> {
+  return withActionContext('admin.supplier.add_member', () =>
+    runAddSupplierMember(supplierId, userId, role),
+  )
+}
+
+export async function deactivateSupplierMember(
+  supplierId: string,
+  userId: string,
+): Promise<{ error?: string }> {
+  return withActionContext('admin.supplier.deactivate_member', () =>
+    runDeactivateSupplierMember(supplierId, userId),
+  )
 }

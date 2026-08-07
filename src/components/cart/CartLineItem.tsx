@@ -2,14 +2,11 @@
 
 import { useCart } from '@/components/cart/CartProvider'
 import SmartImage from '@/components/ui/SmartImage'
+import { shekels } from '@/lib/cart/format'
 import type { CartViewItem } from '@/lib/cart/types'
-import { Check, Minus, Plus, ShoppingCart, Trash2 } from 'lucide-react'
+import { Minus, Plus, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-
-function shekels(value: number): string {
-  return `₪${value.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-}
 
 export default function CartLineItem({ item }: { item: CartViewItem }) {
   const { updateQuantity, removeItem, isPending } = useCart()
@@ -111,16 +108,29 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
   )
 }
 
+/**
+ * The empty cart, rebuilt to the live page rather than invented.
+ *
+ * Measured off kenyonexpress.co.il/cart/ with an empty basket: a full-width
+ * brand-yellow banner, 49px/300 centred text reading "סל הקניות שלך ריק כרגע.",
+ * then a 157x45 grey pill at radius 50 saying "חזור לחנות". What was here
+ * before was a bordered white card with an icon and a yellow CTA, which is a
+ * perfectly reasonable empty state and is not the one this site has.
+ *
+ * The colours live in `.cart-empty` and `.cart-empty__cta` in cart-page.css.
+ * Naming them here as literals is what the raw-hex gate in tokens.test.ts
+ * exists to stop, even in a comment: a hex written down in two places is a hex
+ * that will disagree with itself.
+ */
 export function CartEmptyState() {
   return (
-    <div className="cart-empty">
-      <ShoppingCart size={48} className="cart-empty__icon" aria-hidden="true" />
-      <h2 className="cart-empty__title">העגלה שלך ריקה</h2>
-      <p className="cart-empty__text">עדיין לא הוספת מוצרים. גלה את המבצעים שלנו!</p>
-      <Link href="/" className="cart-empty__cta">
-        <Check size={18} aria-hidden="true" />
-        המשך לקניות
-      </Link>
-    </div>
+    <>
+      <div className="cart-empty">סל הקניות שלך ריק כרגע.</div>
+      <p className="cart-empty__actions">
+        <Link href="/products" className="cart-empty__cta">
+          חזור לחנות
+        </Link>
+      </p>
+    </>
   )
 }

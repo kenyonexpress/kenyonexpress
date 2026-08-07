@@ -106,8 +106,11 @@ test.describe('Route protection', () => {
     expect(url.searchParams.get('next')).toBe('/account')
   })
 
-  test('redirects unauthenticated user from /checkout to /login', async ({ page }) => {
-    await page.goto('/checkout')
+  // /checkout itself is deliberately open to guests; see the note in
+  // e2e/checkout.spec.ts and the protected-path list in src/proxy.ts. What is
+  // still gated is the subtree, which is what this pins.
+  test('redirects unauthenticated user from /checkout/return to /login', async ({ page }) => {
+    await page.goto('/checkout/return?order_id=abc')
     await expect(page).toHaveURL(/\/login/)
   })
 })

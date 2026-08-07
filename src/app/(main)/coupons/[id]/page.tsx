@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { MapPin, Tag } from 'lucide-react'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -17,7 +19,28 @@ export async function generateMetadata({ params }: Props) {
   return { title: data ? `${data.title_he} — ${data.business_name}` : 'קופון' }
 }
 
-export default async function CouponDealPage({ params }: Props) {
+/**
+ * The deal IS `params.id`, so the shell is the card's outline: the 224px image
+ * box (`h-56`) and the rounded frame around it, which is what holds the page
+ * height while the row is read.
+ */
+export default function CouponDealPage(props: Props) {
+  return (
+    <Suspense
+      fallback={
+        <article className="space-y-4">
+          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+            <div className="relative h-56 bg-gray-100" />
+          </div>
+        </article>
+      }
+    >
+      <CouponDealBody {...props} />
+    </Suspense>
+  )
+}
+
+async function CouponDealBody({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
 
@@ -40,13 +63,24 @@ export default async function CouponDealPage({ params }: Props) {
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
         <div className="relative h-56 bg-gray-100">
           {deal.image_url ? (
-            <img src={deal.image_url} alt={deal.title_he} className="w-full h-full object-cover" />
+            /* Optimizer, not a raw <img>: same CSP reason as CouponCard, and
+               `fill` is safe because the parent is `relative h-56`. The box is
+               the full width of the page column - the viewport minus the 32px
+               page padding below lg, and the middle column of the three-column
+               grid above it, capped at 766px by max-w-7xl. */
+            <Image
+              src={deal.image_url}
+              alt={deal.title_he}
+              fill
+              sizes="(max-width: 1023px) calc(100vw - 32px), (max-width: 1279px) calc(100vw - 514px), 766px"
+              className="object-cover"
+            />
           ) : (
             <div className="flex items-center justify-center h-full text-gray-300">
               <Tag size={48} />
             </div>
           )}
-          <div className="absolute top-3 right-3 bg-brand text-white text-sm font-bold px-3 py-1.5 rounded-lg">
+          <div className="absolute top-3 right-3 bg-brand text-heading text-sm font-bold px-3 py-1.5 rounded-lg">
             {discountPct}% הנחה
           </div>
         </div>
@@ -85,7 +119,7 @@ export default async function CouponDealPage({ params }: Props) {
           <button
             type="button"
             disabled
-            className="w-full bg-brand/60 text-white font-semibold rounded-lg px-6 py-3 text-sm cursor-not-allowed"
+            className="w-full bg-brand/60 text-heading/70 font-semibold rounded-lg px-6 py-3 text-sm cursor-not-allowed"
           >
             רכישת קופון — בקרוב
           </button>

@@ -31,9 +31,11 @@ describe('planMarkOrderItemRedeemed', () => {
     ).toEqual({ ok: false, reason: 'not_eligible' })
   })
 
-  it('lists the statuses the write may overwrite', () => {
+  it('lists the statuses the write may overwrite (no escrow_held)', () => {
     expect(REDEEMABLE_SETTLEMENT_STATUSES).toContain('platform_settled')
     expect(REDEEMABLE_SETTLEMENT_STATUSES).toContain('paid')
+    expect(REDEEMABLE_SETTLEMENT_STATUSES).toContain('split_executed')
+    expect(REDEEMABLE_SETTLEMENT_STATUSES).not.toContain('escrow_held')
   })
 })
 

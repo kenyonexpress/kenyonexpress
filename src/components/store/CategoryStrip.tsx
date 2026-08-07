@@ -97,7 +97,12 @@ export default function CategoryStrip() {
                     />
                   </div>
                 ) : null}
-                <h4
+                {/* h2, not h4. The homepage outline runs h1 (hero slides) then
+                    this, then h2 per product card, so an h4 here skipped two
+                    levels and failed Lighthouse's heading-order. Every visual
+                    property is set explicitly below, so the level carries no
+                    styling and the rendered pixels are identical. */}
+                <h2
                   className="m-0 whitespace-nowrap leading-snug"
                   style={{
                     fontSize: C.label.size,
@@ -106,7 +111,7 @@ export default function CategoryStrip() {
                   }}
                 >
                   {cat.label}
-                </h4>
+                </h2>
               </Link>
             </li>
           ))}

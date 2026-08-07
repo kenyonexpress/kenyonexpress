@@ -766,6 +766,28 @@ export default function ProductForm({
         <div className="grid grid-cols-3 gap-4">
           <div>
             <label
+              htmlFor="coupon_expiry_days"
+              className="block text-xs font-medium text-gray-700 mb-1"
+            >
+              תוקף הקופון (ימים){isCouponProduct ? ' *' : ''}
+            </label>
+            <input
+              id="coupon_expiry_days"
+              name="coupon_expiry_days"
+              type="number"
+              min="1"
+              step="1"
+              defaultValue={product?.coupon_expiry_days ?? ''}
+              required={isCouponProduct}
+              dir="ltr"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              נספר מרגע הרכישה. אין ברירת מחדל. בפקיעה בלי מימוש הסכום ששולם נזקף לארנק הלקוח
+            </p>
+          </div>
+          <div>
+            <label
               htmlFor="min_purchase_ils"
               className="block text-xs font-medium text-gray-700 mb-1"
             >
@@ -1079,6 +1101,8 @@ export default function ProductForm({
           value={images}
           onChange={setImages}
           maxFiles={8}
+          altKind="product"
+          altSubject={nameHe}
         />
       </div>
 

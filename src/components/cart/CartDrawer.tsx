@@ -1,28 +1,15 @@
 'use client'
 
-import { useCart } from '@/components/cart/CartProvider'
+import CartCheckoutButton from '@/components/cart/CartCheckoutButton'
+import { useCart, useCartAuth } from '@/components/cart/CartProvider'
 import SmartImage from '@/components/ui/SmartImage'
+import { shekels } from '@/lib/cart/format'
+import type { CartViewItem } from '@/lib/cart/types'
 import { Minus, Plus, ShoppingCart, X } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect } from 'react'
 
-function shekels(value: number): string {
-  return `₪${value.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-}
-
-function DrawerLineItem({
-  item,
-}: {
-  item: {
-    product_id: string
-    variant_id: string | null
-    quantity: number
-    name_he: string
-    slug: string
-    image_url: string | null
-    line_total: number
-  }
-}) {
+function DrawerLineItem({ item }: { item: CartViewItem }) {
   const { updateQuantity, removeItem, isPending } = useCart()
 
   return (
@@ -85,6 +72,7 @@ function DrawerLineItem({
 
 export default function CartDrawer() {
   const { cart, drawerOpen, closeDrawer, isPending } = useCart()
+  const isAuthenticated = useCartAuth()
 
   useEffect(() => {
     if (!drawerOpen) return
@@ -157,9 +145,14 @@ export default function CartDrawer() {
             <Link href="/cart" onClick={closeDrawer} className="cart-drawer__view-cart">
               צפייה בעגלה המלאה
             </Link>
-            <Link href="/checkout" onClick={closeDrawer} className="cart-drawer__checkout">
-              המשך לתשלום
-            </Link>
+            {/* Same gate as the cart page. Linking straight to /checkout here
+                sent a guest into a proxy bounce instead of the sign-in they
+                actually need, and lost the drawer's context on the way. */}
+            <CartCheckoutButton
+              isAuthenticated={isAuthenticated}
+              className="cart-drawer__checkout"
+              onNavigate={closeDrawer}
+            />
           </footer>
         )}
       </dialog>

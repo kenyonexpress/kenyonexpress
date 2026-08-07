@@ -1,14 +1,13 @@
-import { type VoucherEmailLine, buildVoucherEmail } from '@/lib/email/voucher-email'
+import { buildVoucherEmail } from '@/lib/email/voucher-email'
 import { formatAgorot, formatCouponCode } from '@/lib/vouchers/coupon-view'
 
 /**
- * Transactional notification builders (pure).
+ * Outbox notification builders for GOAL 6 (+ voucher_issued for migration 102).
  *
  * Same shape and the same reasoning as `voucher-email.ts`: a subject and two
  * bodies, no transport, no database, no network, so what a person reads can be
  * tested directly. The sending half is the drain at
- * `/api/cron/notifications` (and the Edge twin), which takes rows out of
- * `notification_outbox`.
+ * `/api/cron/notifications`, which takes rows out of `notification_outbox`.
  *
  * Each builder takes the queued payload, which the enqueuing trigger froze at
  * the moment of the event. That is deliberate: a supplier alert must describe
@@ -35,6 +34,8 @@ export type NotificationKind =
   | 'supplier_sale'
   | 'voucher_redeemed'
   | 'voucher_issued'
+  /** A coupon bought for somebody else. Added by migration 108. */
+  | 'voucher_gifted'
 
 function escapeHtml(value: string): string {
   return value
@@ -50,8 +51,8 @@ function trimSite(siteUrl: string): string {
 
 function shell(bodyHtml: string, footer: string): string {
   return `
-    <div lang="he" dir="rtl" style="background:#f5f5f5;padding:24px 12px;font-family:Arial,Helvetica,sans-serif;direction:rtl;text-align:right">
-      <div style="max-width:560px;margin:0 auto" dir="rtl">
+    <div dir="rtl" style="background:#f5f5f5;padding:24px 12px;font-family:Arial,Helvetica,sans-serif">
+      <div style="max-width:560px;margin:0 auto">
         <div style="font-size:20px;font-weight:800;color:${INK};margin-bottom:16px">KenyonExpress</div>
         ${bodyHtml}
         <div style="font-size:12px;color:${MUTED};margin-top:18px;text-align:center">${escapeHtml(footer)}</div>
@@ -274,40 +275,115 @@ export function buildVoucherRedeemedEmail(
 }
 
 /**
- * Coupon delivery for the customer (QR lives on /coupon/{id}, not in the mail).
- * Payload is frozen by tg_orders_notify_paid when paid_at is set.
+ * Coupon delivery after pay. Payload shape is frozen by
+ * `tg_orders_notify_paid` in migration 102 (snake_case voucher rows).
+ * Reuses `buildVoucherEmail` so the transitional finalize sender and the
+ * outbox drain cannot drift apart on copy or amounts.
  */
 export function buildVoucherIssuedEmail(
   payload: Record<string, unknown>,
   siteUrl: string,
-): BuiltNotification | null {
-  const orderId = asText(payload.order_id)
-  if (!orderId) return null
-
-  const raw = Array.isArray(payload.vouchers) ? (payload.vouchers as Record<string, unknown>[]) : []
-  const vouchers: VoucherEmailLine[] = raw
-    .map((row) => ({
-      id: asText(row.id) ?? '',
-      code: asText(row.code) ?? '',
-      productName: asText(row.product_name),
-      supplierName: asText(row.supplier_name),
-      supplierAddress: asText(row.supplier_address),
-      supplierPhone: asText(row.supplier_phone),
-      faceValueAgorot: asNumber(row.face_value_agorot),
-      couponPriceAgorot: asNumber(row.coupon_price_agorot),
-      remainingDueAgorot: asNumber(row.remaining_amount_due_agorot),
-      expiresAt: asText(row.expires_at) ?? new Date().toISOString(),
-    }))
-    .filter((v) => v.id && v.code)
-
-  if (vouchers.length === 0) return null
+): BuiltNotification {
+  const orderId = asText(payload.order_id) ?? 'unknown'
+  const raw = Array.isArray(payload.vouchers) ? payload.vouchers : []
+  const vouchers = raw.flatMap((row) => {
+    if (!row || typeof row !== 'object') return []
+    const v = row as Record<string, unknown>
+    const id = asText(v.id)
+    const code = asText(v.code)
+    const expiresAt = asText(v.expires_at)
+    if (!id || !code || !expiresAt) return []
+    return [
+      {
+        id,
+        code,
+        productName: asText(v.product_name),
+        supplierName: asText(v.supplier_name),
+        supplierAddress: asText(v.supplier_address),
+        supplierPhone: asText(v.supplier_phone),
+        faceValueAgorot: asNumber(v.face_value_agorot),
+        couponPriceAgorot: asNumber(v.coupon_price_agorot),
+        remainingDueAgorot: asNumber(v.remaining_amount_due_agorot),
+        expiresAt,
+      },
+    ]
+  })
 
   return buildVoucherEmail({
     customerName: asText(payload.customer_name),
     orderId,
     vouchers,
-    siteUrl,
+    siteUrl: trimSite(siteUrl),
   })
+}
+
+/**
+ * A coupon somebody bought for somebody else (108).
+ *
+ * The one email on this system sent to an address that never registered, so it
+ * says who it is from before it says anything else - an unexplained coupon from
+ * a store you have not heard of is indistinguishable from a phishing mail.
+ *
+ * It carries the CLAIM link, not the coupon code, and that is the whole design:
+ * the voucher belongs to the buyer until the recipient claims it, because the
+ * buyer paid and a refund belongs to them. A code in this email would be
+ * redeemable by whoever forwards it, with no record of who now owns it.
+ *
+ * The greeting is the buyer's own words, so it is escaped like every other
+ * value here and never interpolated raw.
+ */
+export function buildVoucherGiftedEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification {
+  const product = asText(payload.product_name) ?? 'קופון'
+  const sender = asText(payload.sender_name)
+  const recipient = asText(payload.recipient_name)
+  const message = asText(payload.gift_message)
+  const token = asText(payload.claim_token) ?? ''
+  const expires = hebrewDateTime(payload.expires_at)
+  const url = `${trimSite(siteUrl)}/gift/${encodeURIComponent(token)}`
+
+  const subject = sender ? `${sender} שלח לך מתנה: ${product}` : `קיבלת מתנה: ${product}`
+  const greeting = recipient ? `שלום ${recipient},` : 'שלום,'
+
+  const text = [
+    greeting,
+    '',
+    sender ? `${sender} קנה עבורך קופון ב-KenyonExpress:` : 'קנו עבורך קופון ב-KenyonExpress:',
+    product,
+    '',
+    message ? `"${message}"` : '',
+    '',
+    'כדי לקבל את הקופון לחשבון שלך:',
+    url,
+    '',
+    expires ? `הקופון בתוקף עד ${expires}.` : '',
+    'הקישור אישי. אל תעבירו אותו הלאה.',
+  ]
+    .filter((line) => line !== '')
+    .join('\n')
+
+  const html = shell(
+    `<div dir="rtl" style="background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+        <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(
+          sender ? `${sender} שלח לך מתנה` : 'קיבלת מתנה',
+        )}</div>
+        <div style="font-size:15px;color:${INK};margin-top:10px">${escapeHtml(greeting)}</div>
+        <div style="font-size:16px;font-weight:700;color:${INK};margin-top:12px">${escapeHtml(product)}</div>
+        ${
+          message
+            ? `<div style="font-size:14px;color:${INK};line-height:1.9;margin-top:14px;padding:14px;background:#f9fafb;border-radius:10px;border:1px solid #e5e7eb">${escapeHtml(message)}</div>`
+            : ''
+        }
+        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">קבלת הקופון</a>
+        ${expires ? `<div style="font-size:13px;color:${MUTED};margin-top:12px">הקופון בתוקף עד ${escapeHtml(expires)}.</div>` : ''}
+        <div style="font-size:13px;color:${MUTED};margin-top:6px">הקישור אישי. אל תעבירו אותו הלאה.</div>
+      </div>`,
+    'קיבלת את המייל הזה כי מישהו קנה עבורך קופון ב-KenyonExpress.',
+  )
+
+  return { subject, html, text }
 }
 
 /** Dispatch by queued kind. Unknown kinds return null so the drain can park them. */
@@ -325,6 +401,8 @@ export function buildNotification(
       return buildVoucherRedeemedEmail(payload, siteUrl)
     case 'voucher_issued':
       return buildVoucherIssuedEmail(payload, siteUrl)
+    case 'voucher_gifted':
+      return buildVoucherGiftedEmail(payload, siteUrl)
     default:
       return null
   }

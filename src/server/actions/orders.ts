@@ -1,12 +1,13 @@
 'use server'
 
+import { withActionContext } from '@/lib/observability/action-context'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 
 export type OrderPollResult = { found: false } | { found: true; status: string; paid: boolean }
 
 /** Poll target for /checkout/return — read-only, never mutates order state. */
-export async function getOrderPaymentStatus(orderId: string): Promise<OrderPollResult> {
+async function runGetOrderPaymentStatus(orderId: string): Promise<OrderPollResult> {
   const supabase = await createClient()
   const {
     data: { user },
@@ -22,4 +23,8 @@ export async function getOrderPaymentStatus(orderId: string): Promise<OrderPollR
     .maybeSingle()
   if (!order) return { found: false }
   return { found: true, status: order.status, paid: order.paid_at !== null }
+}
+
+export async function getOrderPaymentStatus(orderId: string): Promise<OrderPollResult> {
+  return withActionContext('order.poll_payment_status', () => runGetOrderPaymentStatus(orderId))
 }

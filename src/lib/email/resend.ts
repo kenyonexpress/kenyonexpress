@@ -1,3 +1,4 @@
+import { log } from '@/lib/observability/log'
 /**
  * Outbound email through Resend.
  *
@@ -29,24 +30,10 @@ export interface SendEmailInput {
 
 export type SendEmailResult =
   | { ok: true; id: string | null; skipped?: false }
-  | { ok: false; skipped: true; reason: 'no_api_key'; retryable?: false }
-  | { ok: false; skipped?: false; reason: string; retryable: boolean }
+  | { ok: false; skipped: true; reason: 'no_api_key' }
+  | { ok: false; skipped?: false; reason: string }
 
 const RESEND_ENDPOINT = 'https://api.resend.com/emails'
-
-/**
- * Which failures are worth trying again.
- *
- * 429 is rate limiting and 5xx is Resend having a bad minute: both end on their
- * own, so the row waits and goes back out. Every other 4xx is a statement about
- * this particular message - a malformed address, an unverified sender, a body
- * Resend refused - and it will be refused identically in two minutes and in two
- * hours. Retrying those spends five attempts to arrive at the same answer, and
- * delays the moment an admin sees a `dead` row and fixes the real problem.
- */
-export function isRetryableStatus(status: number): boolean {
-  return status === 429 || status >= 500
-}
 
 /** Verified sender. A domain Resend has not verified will be refused by Resend. */
 export function mailFrom(): string {
@@ -60,7 +47,7 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
   if (!apiKey) {
     if (!missingKeyReported) {
       missingKeyReported = true
-      console.warn('[email] RESEND_API_KEY is not set; outbound email is disabled in this process.')
+      log.warn('email.disabled', { reason: 'RESEND_API_KEY is not set' })
     }
     return { ok: false, skipped: true, reason: 'no_api_key' }
   }
@@ -87,20 +74,15 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
 
     if (!response.ok) {
       const detail = await response.text().catch(() => '')
-      console.error(`[email] resend refused ${response.status}: ${detail.slice(0, 300)}`)
-      return {
-        ok: false,
-        reason: `http_${response.status}`,
-        retryable: isRetryableStatus(response.status),
-      }
+      log.error('email.refused', { status: response.status, detail: detail.slice(0, 300) })
+      return { ok: false, reason: `http_${response.status}` }
     }
 
     const body = (await response.json().catch(() => null)) as { id?: string } | null
     return { ok: true, id: body?.id ?? null }
   } catch (error) {
-    console.error(`[email] send failed: ${error instanceof Error ? error.message : String(error)}`)
-    // A connection that never completed says nothing about the message itself.
-    return { ok: false, reason: 'network', retryable: true }
+    log.error('email.send_failed', { err: error })
+    return { ok: false, reason: 'network' }
   }
 }
 

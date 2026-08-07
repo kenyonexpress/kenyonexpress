@@ -2,6 +2,7 @@
 
 import { writeAuditLog } from '@/lib/admin/audit'
 import { type AdminSessionInfo, requireAdminSession } from '@/lib/admin/rbac'
+import { withActionContext } from '@/lib/observability/action-context'
 import { createClient } from '@/lib/supabase/server'
 import type { AffiliateStatus } from '@/types/database'
 import { revalidatePath } from 'next/cache'
@@ -20,7 +21,7 @@ const DECISION_SUCCESS: Record<'approved' | 'rejected' | 'suspended', string> = 
   suspended: 'השותף הושעה',
 }
 
-export async function decideAffiliate(
+async function runDecideAffiliate(
   _: AffiliateActionState,
   formData: FormData,
 ): Promise<AffiliateActionState> {
@@ -71,4 +72,11 @@ export async function decideAffiliate(
 
   revalidatePath('/admin/affiliates')
   return { success: DECISION_SUCCESS[parsed.data.decision] }
+}
+
+export async function decideAffiliate(
+  _: AffiliateActionState,
+  formData: FormData,
+): Promise<AffiliateActionState> {
+  return withActionContext('admin.affiliate.decide', () => runDecideAffiliate(_, formData))
 }

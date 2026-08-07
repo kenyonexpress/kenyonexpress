@@ -1,6 +1,6 @@
-import { execSync } from 'child_process'
-import fs from 'fs'
-import path from 'path'
+import { execSync } from 'node:child_process'
+import fs from 'node:fs'
+import path from 'node:path'
 
 const heroPath = 'refs/ke_live_singlefile-hero.html'
 const cssPath = 'refs/ke_live_singlefile-hero.css'
@@ -43,7 +43,7 @@ for (const local of urls) {
       'apple-140-new.webp': '2021/11/apple-140-new.webp',
       'home-sl-da-3.webp': '2021/11/home-sl-da-3.webp',
     }
-    remote = `https://kenyonexpress.co.il/wp-content/uploads/${map[base] || '2021/11/' + base}`
+    remote = `https://kenyonexpress.co.il/wp-content/uploads/${map[base] || `2021/11/${base}`}`
   }
   fs.mkdirSync(path.dirname(file), { recursive: true })
   try {
@@ -56,21 +56,19 @@ for (const local of urls) {
 
 // Scope CSS
 let css = fs.readFileSync(cssPath, 'utf8')
-css =
-  `.ke-hero-exact-root {\n  --bs-ec-primary: #fed700;\n  font-family: var(--font-heebo), "Open Sans", Arial, sans-serif;\n}\n` +
-  css
-    .split('\n')
-    .filter(Boolean)
-    .map((rule) => {
-      if (!rule.includes('{')) return rule
-      const [sel, body] = rule.split('{')
-      const scoped = sel
-        .split(',')
-        .map((s) => `.ke-hero-exact-root ${s.trim()}`)
-        .join(',')
-      return `${scoped}{${body}`
-    })
-    .join('\n')
+css = `.ke-hero-exact-root {\n  --bs-ec-primary: #fed700;\n  font-family: var(--font-heebo), "Open Sans", Arial, sans-serif;\n}\n${css
+  .split('\n')
+  .filter(Boolean)
+  .map((rule) => {
+    if (!rule.includes('{')) return rule
+    const [sel, body] = rule.split('{')
+    const scoped = sel
+      .split(',')
+      .map((s) => `.ke-hero-exact-root ${s.trim()}`)
+      .join(',')
+    return `${scoped}{${body}`
+  })
+  .join('\n')}`
 
 fs.mkdirSync('src/styles', { recursive: true })
 fs.writeFileSync('src/styles/hero-exact.css', css)

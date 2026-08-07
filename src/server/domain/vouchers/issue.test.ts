@@ -66,8 +66,12 @@ function input(overrides: Partial<VoucherIssueInput> = {}): VoucherIssueInput {
     userId: 'user-1',
     priceIls: '200.00',
     couponPriceIls: '50.00',
+    platformPercent: '25.00',
     couponExpiryDays: 30,
     offerValidUntil: new Date('2026-12-31T00:00:00.000Z'),
+    // The post-059 lineage, which is what most of these cases assert. The
+    // hosted project is on the other one; see the pair of cases that name it.
+    rateColumn: 'platform_bp',
     now: new Date('2026-07-24T00:00:00.000Z'),
     ...overrides,
   }
@@ -113,7 +117,10 @@ describe('issueVoucher', () => {
     expect(id).toBe('voucher-1')
     expect(inserted).toHaveLength(1)
     expect(isValidVoucherCode(row.code)).toBe(true)
-    expect(row.platform_percent).toBe(100)
+    // Basis points since 059 renamed the column and changed its units: 25% is
+    // 2500 bp. Asserting 25 here would pass against a row that records a
+    // quarter of a percent.
+    expect(row.platform_bp).toBe(2500)
     expect(row.face_value_agorot).toBe(20000)
     expect(row.coupon_price_agorot).toBe(5000)
     expect(row.remaining_amount_due_agorot).toBe(15000)
@@ -122,6 +129,52 @@ describe('issueVoucher', () => {
     expect(parsed?.c).toBe(row.code)
     expect(parsed?.s).toBe('supplier-1')
     expect(parsed?.u).toBe('user-1')
+  })
+
+  // Until 2026-07-27 this issuer stamped a constant 100, which is the abolished
+  // C11(a) rule: the platform keeps the whole prepayment and the supplier gets
+  // nothing. The percent must come from the order line's snapshot.
+  it('snapshots the caller platform percent rather than a constant', async () => {
+    const { client } = fakeClient()
+    const { row } = await issueVoucher(client, input({ platformPercent: '15.00' }))
+    expect(row.platform_bp).toBe(1500)
+  })
+
+  // The hosted project never received 059, so `platform_bp` does not exist on
+  // it and naming that column raised 42703 on every attempt: no voucher could
+  // be issued in production at all, and the table held zero rows. These two
+  // cases pin the name and the units together, because moving one without the
+  // other is the same bug wearing different clothes: 2500 written into
+  // platform_percent trips its 0..100 check constraint.
+  it('writes whole percent into platform_percent on the pre-059 lineage', async () => {
+    const { client } = fakeClient()
+    const { row } = await issueVoucher(client, input({ rateColumn: 'platform_percent' }))
+    expect(row.platform_percent).toBe(25)
+    expect(row).not.toHaveProperty('platform_bp')
+  })
+
+  it('never names both rate columns, since one absent column fails the insert', async () => {
+    const { client } = fakeClient()
+    const { row } = await issueVoucher(client, input({ rateColumn: 'platform_bp' }))
+    expect(row.platform_bp).toBe(2500)
+    expect(row).not.toHaveProperty('platform_percent')
+  })
+
+  it('refuses to issue when the platform percent is out of range', async () => {
+    const { client } = fakeClient()
+    await expect(issueVoucher(client, input({ platformPercent: 101 }))).rejects.toThrow(
+      VoucherIssueError,
+    )
+    await expect(issueVoucher(client, input({ platformPercent: -1 }))).rejects.toThrow(
+      VoucherIssueError,
+    )
+  })
+
+  it('refuses to issue when the platform percent is not a number', async () => {
+    const { client } = fakeClient()
+    await expect(issueVoucher(client, input({ platformPercent: 'not a percent' }))).rejects.toThrow(
+      VoucherIssueError,
+    )
   })
 
   it('clamps expiry to offer_valid_until when the rolling window overshoots', async () => {

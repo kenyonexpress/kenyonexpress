@@ -21,8 +21,8 @@
 // as `dotenv`; this script does not parse .env files itself.
 
 import { writeFile } from 'node:fs/promises'
-import { fileURLToPath } from 'node:url'
 import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import postgres from 'postgres'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -31,9 +31,7 @@ const SCHEMA = 'public'
 
 const connectionString = process.env.SUPABASE_DB_URL
 if (!connectionString) {
-  console.error(
-    'Missing SUPABASE_DB_URL. Set it in your environment (see .env.example) and retry.',
-  )
+  console.error('Missing SUPABASE_DB_URL. Set it in your environment (see .env.example) and retry.')
   process.exit(1)
 }
 
@@ -190,9 +188,7 @@ async function main() {
   for (const { table_name } of tables) {
     out.push(`## ${table_name}`)
     out.push('')
-    out.push(
-      `RLS: ${rlsByTable.get(table_name) ? 'enabled' : 'disabled'}.`,
-    )
+    out.push(`RLS: ${rlsByTable.get(table_name) ? 'enabled' : 'disabled'}.`)
     out.push('')
 
     // Columns.

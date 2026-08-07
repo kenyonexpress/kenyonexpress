@@ -1,32 +1,36 @@
-import { formatDate, formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
+import { formatIls, orderStatusLabel, orderStatusTone } from '@/lib/account/format'
+import { formatDate } from '@/lib/account/format'
+import { isCouponPresentable } from '@/lib/vouchers/coupon-view'
 import { getWalletSummary } from '@/server/queries/account'
 import { getMyOrders } from '@/server/queries/orders'
-import { getCustomerVouchers, isVoucherRedeemable } from '@/server/queries/vouchers'
+import { getCustomerVouchers } from '@/server/queries/vouchers'
 import Link from 'next/link'
 
 export const metadata = { title: 'האזור האישי' }
 
 export default async function AccountOverviewPage() {
-  const [wallet, orders, vouchers] = await Promise.all([
+  const [wallet, orders, coupons] = await Promise.all([
     getWalletSummary(),
     getMyOrders(),
     getCustomerVouchers(),
   ])
 
   const lastOrder = orders[0] ?? null
-  const activeCoupons = vouchers.filter((v) => isVoucherRedeemable(v))
+  // Counted through the shared presenter, so this tile, the list and the counter
+  // agree. The condition here used to accept a status of `active`, which is not
+  // in the voucher_status enum at all: it was left over from coupon_codes and
+  // could only ever be false.
+  const activeCoupons = coupons.filter((c) => isCouponPresentable(c))
 
   return (
     <>
-      <h1 className="account-title">סקירה</h1>
+      <h1 className="account-title">האזור האישי</h1>
       <p className="account-subtitle">סקירה מהירה של החשבון שלך</p>
 
       <div className="wallet-balance">
         <p className="wallet-balance__label">יתרת הארנק</p>
         <p className="wallet-balance__amount">{formatIls(wallet.balanceAgorot)}</p>
-        <p className="wallet-balance__note">
-          הארנק משמש לתשלום חלקי או מלא באתר. אין משיכה למזומן ואין העברה למשתמש אחר.
-        </p>
+        <p className="wallet-balance__note">קרדיט לשימוש באתר בלבד. לא ניתן למשיכה.</p>
       </div>
 
       <div className="account-grid">

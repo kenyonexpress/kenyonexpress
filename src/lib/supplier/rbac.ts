@@ -1,3 +1,4 @@
+import { safeNextPath } from '@/lib/auth/safe-next'
 import { createClient } from '@/lib/supabase/server'
 import { type SupplierMemberRole, hasMinRole, normalizeMemberRole } from '@/lib/supplier/roles'
 import { redirect } from 'next/navigation'
@@ -59,18 +60,57 @@ export async function getSupplierSession(): Promise<SupplierSession | null> {
   }
 }
 
-/** Server-component guard: redirects strangers to login, non-members to denial. */
-export async function requireSupplierMember(nextPath = '/supplier'): Promise<SupplierSession> {
+/**
+ * Every active supplier the caller staffs, not only the first.
+ *
+ * getSupplierSession answers "which supplier's portal am I in", and takes the
+ * earliest membership to do it. That is the wrong question when deciding
+ * whether a voucher belongs to this scanner: a member of two suppliers would be
+ * refused their second supplier's own vouchers. redeem_voucher() matches
+ * against the full membership set (085), and any check the app performs before
+ * calling it has to agree with the function that actually decides.
+ */
+export async function getSupplierMemberships(): Promise<string[]> {
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
-  if (!user) {
-    redirect(`/login?next=${encodeURIComponent(nextPath)}`)
-  }
+  if (!user) return []
+
+  const { data } = await supabase
+    .from('supplier_members')
+    .select('supplier_id')
+    .eq('user_id', user.id)
+    .eq('is_active', true)
+
+  return (data ?? []).map((row) => row.supplier_id).filter((id): id is string => Boolean(id))
+}
+
+/**
+ * Server-component guard.
+ *
+ * Merged from two versions that each had a piece the other needed. From the
+ * portal branch: a signed-in non-member lands on `/supplier/access-denied`
+ * rather than back at a login form they have already satisfied, which is the
+ * distinction between "who are you" and "you are not staff here". From this
+ * branch: `next` goes through safeNextPath, because a scanned QR puts that
+ * value in a URL a stranger controls and `//evil.example` is a
+ * protocol-relative URL a browser follows off-site.
+ */
+export async function requireSupplierMember(next = '/supplier'): Promise<SupplierSession> {
+  const safe = safeNextPath(next)
+  const target = safe === '/' ? '/supplier' : safe
 
   const session = await getSupplierSession()
-  if (!session) redirect('/supplier/access-denied')
+  if (!session) {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    // Signed out is a different answer from signed in without a membership.
+    if (!user) redirect(`/login?next=${encodeURIComponent(target)}`)
+    redirect('/supplier/access-denied')
+  }
   return session
 }
 

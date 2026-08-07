@@ -1,7 +1,21 @@
 # ARCHITECTURE: Voucher Redemption
 
-Status: authoritative for the voucher lifecycle as of 2026-07-24.
-Supersedes every earlier escrow / payout description of the coupon flow
+Status: authoritative for the voucher **lifecycle** (states, scan protocol, RLS)
+as of 2026-07-24, with the **money model corrected on 2026-07-27**.
+
+> **Binding correction (2026-07-27, `docs/CONTRADICTIONS.md` C11 version b).**
+> Everything this document says about money custody was written under the model
+> where the platform kept the whole prepayment. That model is abolished. The
+> coupon is an **escrow**: the platform keeps `platform_percent` of the on-site
+> prepayment and the remainder is **held for the supplier and released when the
+> voucher is scanned**. `platform_percent` is a mandatory per-product field with
+> no default (C1), never a fixed 100. The schema as shipped in
+> `073_vouchers_escrow_model.sql` implements the corrected model: the
+> `platform_percent = 100` CHECK and its `DEFAULT 100` described in section 2
+> below were never created. The lifecycle, scan protocol, error taxonomy and RLS
+> in the rest of this document are unaffected and remain binding.
+
+Supersedes every earlier payout description of the coupon flow
 (`ARCHITECTURE-SUPPLIER-PORTAL.md` sections on escrow, `047_checkout_settlement.sql`
 escrow tables, `docs/ARCHITECTURE-SUPPLIER-REDEMPTION.md`). Those documents stay
 in the tree for the legacy `coupon_codes` path; nothing in this document depends
@@ -16,19 +30,23 @@ on them.
 | `coupon_price` | An absolute shekel amount the admin sets on the product page. Not a percent. |
 | Online charge | The customer pays exactly `coupon_price` on the site through Cardcom. Nothing else is charged online. |
 | Balance | `remaining_amount_due = full_price - coupon_price`. The customer pays it at the business, in cash or on the business terminal, at scan time. The platform never touches it. |
-| Money custody | Everything charged online stays with the platform. There is no escrow, no hold, no payout to the supplier, no split. `platform_percent = 100` for every voucher. |
+| Money custody | The online charge splits by the voucher's snapshotted `platform_percent`: the platform fee is recognised at purchase, the supplier's share sits in an `escrow_holds` row at `held` and is `released` on scan (C11 b). The balance paid at the business never reaches the platform. |
 | Single use | A scan burns the voucher permanently. There is no partial redemption and no re-scan. |
 | `offer_valid_until` | Per product calendar deadline. The voucher expires automatically at that instant and the deadline is displayed to the customer on the product page, at checkout and on the voucher itself (Israeli consumer protection law). |
 | Tenancy | There is no `tenant_id`. Row visibility is decided purely by `auth.uid()`: a customer sees only their own vouchers, a supplier member sees only vouchers redeemed at their own supplier. |
 
 ### 0.1 What is deliberately absent
 
-- No `escrow_holds` row is written for a voucher. The escrow machinery in 047
-  belongs to the legacy `coupon_codes` path only.
-- No `payout_statements` line is generated on redemption.
-- No supplier bank transfer is triggered by a scan.
-- No commission arithmetic at redemption time. The commission question was
-  already answered at purchase time by `platform_percent = 100`.
+- No **external** escrow and no J5 (C3). The hold is a row in our own
+  `escrow_holds`, keyed to the voucher since 074; the money itself sits in our
+  Cardcom account. There is no third-party trustee and no card authorisation
+  freeze on the customer.
+- No supplier bank transfer is triggered by the scan itself. Releasing the hold
+  makes the amount **payable**; the transfer happens on the next payout run past
+  its T+3 business-day hold and above the 100 ILS minimum (C8, migrations 051
+  and 079).
+- No commission **recomputation** at redemption time. The split was decided at
+  purchase from the snapshotted percent and is only read back, never redone.
 
 ### 0.2 Money conservation invariant
 
@@ -109,7 +127,7 @@ separate type so the legacy path cannot drift into the new one.
 | `face_value_agorot` | integer not null | full price at the business, snapshot |
 | `coupon_price_agorot` | integer not null | charged online, snapshot |
 | `remaining_amount_due_agorot` | integer not null | collected at the business |
-| `platform_percent` | numeric(5,2) not null default 100 | `CHECK = 100` |
+| `platform_bp` | integer not null (percent x100 since 059) | `CHECK 0..100` on the percent. **No default**: a voucher issued without a split is a bug, not a silent 100 percent platform take |
 | `offer_valid_until` | timestamptz not null | consumer facing deadline |
 | `expires_at` | timestamptz not null | effective TTL, see 3.3 |
 | `issued_at` | timestamptz not null default now() | |
@@ -125,7 +143,9 @@ separate type so the legacy path cannot drift into the new one.
 Constraints:
 
 - `vouchers_conservation`: `face_value_agorot = coupon_price_agorot + remaining_amount_due_agorot`
-- `vouchers_platform_percent_full`: `platform_percent = 100`
+- `vouchers_platform_percent_range`: `platform_percent BETWEEN 0 AND 100` (the
+  `= 100` constraint named in earlier drafts was never created; it would reject
+  every voucher for the 61 live products, which carry 15 / 25 / 30 percent)
 - `vouchers_code_format`: `code ~ '^[0-9A-HJKMNP-TV-Z]{10}$'`
 - `vouchers_redeemed_fields`: `status = 'redeemed'` implies `redeemed_at`, `redeemed_by_supplier_id` and `redeemed_by_user_id` are all non null, and the converse for non redeemed rows
 - `vouchers_expires_within_offer`: `expires_at <= offer_valid_until`

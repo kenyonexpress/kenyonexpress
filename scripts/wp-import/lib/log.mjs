@@ -8,9 +8,9 @@
 // The JSONL mirror is what makes a dry run useful: the full plan, row by row,
 // diffable against the next run.
 
+import { randomUUID } from 'node:crypto'
 import { appendFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { randomUUID } from 'node:crypto'
 import { DRY_RUN, PATHS, RUN, ensureDirs } from '../config.mjs'
 
 const LEVEL_COLORS = { info: '\x1b[36m', ok: '\x1b[32m', warn: '\x1b[33m', error: '\x1b[31m' }
@@ -95,6 +95,28 @@ export class Run {
       say(action === 'fail' ? 'error' : 'info', `${stage} ${entity}#${wpId} ${action}${target}`)
     }
     return row
+  }
+
+  /**
+   * How many failures this run RECORDED rather than threw.
+   *
+   * `fail()` deliberately does not throw, so a bad row does not abandon the
+   * other nine thousand. The cost of that choice is that somebody has to ask
+   * this question at the end, and until 2026-07-29 nobody did: a run where
+   * every single stage failed still printed "dry run complete" in green and
+   * exited 0.
+   */
+  failureCount() {
+    return Object.entries(this.counts)
+      .filter(([key]) => key.endsWith('.fail'))
+      .reduce((total, [, n]) => total + n, 0)
+  }
+
+  /** The stages that recorded at least one failure, for the exit message. */
+  failedStages() {
+    return Object.entries(this.counts)
+      .filter(([key]) => key.endsWith('.fail'))
+      .map(([key, n]) => `${key.replace(/\.fail$/, '')} (${n})`)
   }
 
   /** Convenience: record a failure and keep going. Never throws. */
