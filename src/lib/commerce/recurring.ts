@@ -13,7 +13,7 @@
  * on the boundary are form input and display only.
  *
  * The split model is unchanged from section 0.3: a recurring product bills
- * `recurring_amount_ils` per cycle and splits THAT, exactly the way a coupon
+ * `recurring_amount_agorot` per cycle and splits THAT, exactly the way a coupon
  * splits its prepayment. There is no separate subscription commission and no
  * default percent, because there is no default percent anywhere in this system.
  */
