@@ -56,6 +56,20 @@ src/lib/db/enum-declarations.ts
 ("‏`generate_payout_statement` קוראת COALESCE"), ו-`ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md`
 ‏D6, שכבר סומן שם כ"חלקי" בסבב 06.08.
 
+**‏07.08: יש עכשיו תכנון סוגר** - `PAYOUT-ARCHITECTURE.md`. הפער **עדיין
+פתוח בפרודקשן** ולכן נשאר בדרגה 1; מה שהשתנה הוא שיש דרך מוגדרת לסגור אותו.
+שני דברים נוספים שהתגלו בזמן התכנון:
+
+**(א) ל-`suppliers` אין ולו עמודה בנקאית אחת.** ‏18 עמודות, ואף אחת מהן אינה
+בנק, סניף, חשבון או שם מוטב. ‏`LAUNCH-CHECKLIST.md` ‏B2 מבקש לאסוף פרטי בנק
+מספקים, וכרגע **אין לאן לשים אותם**.
+
+**(ב) המנוע לא חסר, הוא מת.** בעץ יש **חמש** מיגרציות payout (‏051, ‏079,
+‏081, ‏083, ‏091) ואף אחת לא הוחלה. ‏`src/lib/db/enum-declarations.ts` מתעד
+ש-`generate_payout_statement` נפלה ב-UPDATE האחרון שלה ושזו אחת משתי הסיבות
+ש**"the payout engine was dead code"**. לכן התכנון בונה על `settlement_events`
+(שכבר מכיל `payout_settled` ו-`supplier_debit` באילוץ) ולא מחייה את הישן.
+
 ---
 
 ## דרגה 2
