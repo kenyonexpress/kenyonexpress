@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-10 (docs-only ke-arch: MOBILE-APP + INTEGRATIONS)
+Updated: 2026-08-10 (docs-only ke-arch: ADMIN-USER-GUIDE + SUPPLIER-ONBOARDING)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,10 +8,10 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-‏`docs/ARCHITECTURE-MOBILE-APP.md` + `docs/ARCHITECTURE-INTEGRATIONS.md`:
+‏`docs/ADMIN-USER-GUIDE.md` + `docs/SUPPLIER-ONBOARDING.md`:
 
-- Expo: shared types, deep links לקופונים, push, סריקת QR לספק
-- אינטגרציות עתידיות: ורטיקלי food/rides פנימיים (סגנון Wolt/Gett), webhooks נכנסים, מיפוי הזמנות
+- מדריך אדמין: קופון/פיזי/מנוי, platform_percent, קאשבק, ספקים, החזר, דוחות
+- צירוף ספק: מסמכים, הסכם, הגדרה במערכת, הדרכת סריקה
 - `MASTER-INDEX.md` עודכן
 
 ## In Progress

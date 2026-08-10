@@ -100,6 +100,7 @@ CONTRADICTIONS, כל מספר עמלה כאן הוא שריד") הוסר מכו�
 | מסמך | תקציר | סטטוס |
 |---|---|---|
 | `ADMIN-ARCHITECTURE.md` | KenyonExpress production admin dashboard architecture. | LEGACY |
+| `ADMIN-USER-GUIDE.md` | מדריך אדמין בעברית: מוצרים, percent, קאשבק, החזרים, דוחות. | GUIDE (10.08) |
 | `ARCHITECTURE-ACCOUNT-IDENTITY.md` | מסמך תכנון. מיגרציה נלווית (טיוטה, לא הוחלה). | DESIGN |
 | `ARCHITECTURE-ACCOUNT-WALLET.md` | סטטוס: DESIGN + IMPLEMENTATION. ענף feat/account-wallet. | DESIGN |
 | `ARCHITECTURE-ADMIN-DASHBOARD.md` | ניהול מוצרים עם platform_percent דינמי פר מוצר, מחיר קופון, יתרה אצל הספק (בבית העסק). | BINDING |
@@ -161,6 +162,7 @@ CONTRADICTIONS, כל מספר עמלה כאן הוא שריד") הוסר מכו�
 | `GITHUB-SETTINGS.md` | הגדרות GitHub ידניות: required checks, הסרת bypass. | ACTIONABLE (07.08) |
 | `CONTENT-PLAYBOOK.md` | איך כותבים דיל בעברית; 5 דוגמאות מלאות. | PLAYBOOK (07.08) |
 | `SUPPLIER-AGREEMENT-DRAFT.md` | טיוטת הסכם ספק. **לא ייעוץ משפטי.** | DRAFT (07.08) |
+| `SUPPLIER-ONBOARDING.md` | צירוף ספק: מסמכים, הסכם, מערכת, הדרכת סריקה. | GUIDE (10.08) |
 | `OPS-DAILY-ROUTINE.md` | שגרת בוקר 15 דקות, לפי סדר עלות. | RUNBOOK (07.08) |
 | `PAYOUT-ARCHITECTURE.md` | תכנון ראשוני ל-G1; מחייב עכשיו: `ARCHITECTURE-PAYOUT-MECHANISM.md`. | DESIGN → superseded by BINDING (10.08) |
 | `PRODUCT-FIELDS-RESEARCH.md` | מחקר שדות מוצר: דינמי פר מוצר, No Escrow, סכמה באגורות. | BINDING (10.08, v2) |
@@ -213,3 +215,4 @@ docs/ROADMAP-V2.md
 | 2026-08-10 | ריענון NOTIFICATIONS + SEO-PERFORMANCE (BINDING) |
 | 2026-08-10 | MOBILE-APP + LAUNCH-VALIDATION re-verify + RUNBOOK-LAUNCH-DAY; אינדקס |
 | 2026-08-10 | `ARCHITECTURE-INTEGRATIONS.md` + ריענון MOBILE-APP; אינדקס |
+| 2026-08-10 | `ADMIN-USER-GUIDE.md` + `SUPPLIER-ONBOARDING.md`; אינדקס |
