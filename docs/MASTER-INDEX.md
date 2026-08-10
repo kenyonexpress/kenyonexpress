@@ -165,6 +165,8 @@ CONTRADICTIONS, כל מספר עמלה כאן הוא שריד") הוסר מכו�
 | `PRODUCT-FIELDS-RESEARCH.md` | מחקר שדות מוצר: דינמי פר מוצר, No Escrow, סכמה באגורות. | BINDING (10.08, v2) |
 | `DESIGN-CHECKLIST-FINAL.md` | צ'קליסט עיצוב סופי מול electro home-v7 (6 דפים + tokens). | BINDING (10.08) |
 | `PHASE2-3-SPEC.md` | וריאנטים + SEO + תגיות; agorot; No Escrow. | BINDING (10.08) |
+| `LEGAL-CONTENT.md` | תקנון, ביטולים, נגישות 5568, עוגיות. טיוטה; `[דורש עו"ד]`. | DRAFT (10.08) |
+| `OPS-RUNBOOK.md` | תפעול אחרי השקה: reconcile, החזר, onboarding, קופון תקוע. | RUNBOOK (10.08) |
 | `LAUNCH-CHECKLIST.md` | עלייה לאוויר לפי בעלות: הקוד מול אופיר. | ACTIONABLE (07.08) |
 | `LAUNCH-VALIDATION.md` | אימות 10 דילי השקה: 10× missing מול suppliers. | ACTIONABLE (10.08) |
 | `launch-week-plan.md` | 10 דילי השקה + ספקים (מ-seed). | PLAN (10.08) |
@@ -208,6 +210,7 @@ docs/ROADMAP-V2.md
 | 2026-08-07 | QA audit: P3/AS7/OBS8/B6/T7/D8 + EMAIL↔PRICING; סטטוס לכל #1 עד 20 |
 | 2026-08-10 | `ARCHITECTURE-PAYOUT-MECHANISM.md`: מנגנון payout פיזי מחייב (באצ' + העברה ידנית) |
 | 2026-08-10 | `DESIGN-CHECKLIST-FINAL.md` + `PHASE2-3-SPEC.md` + אינדקס |
+| 2026-08-10 | `LEGAL-CONTENT.md` + `OPS-RUNBOOK.md` |
 | 2026-08-10 | `LAUNCH-VALIDATION.md` + `launch-week-plan.md`: אימות 10 דילי השקה מול פרוד |
 | 2026-08-10 | ריענון NOTIFICATIONS + SEO-PERFORMANCE (BINDING) |
 | 2026-08-10 | MOBILE-APP + LAUNCH-VALIDATION re-verify + RUNBOOK-LAUNCH-DAY; אינדקס |
