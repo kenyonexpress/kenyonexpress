@@ -171,6 +171,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `DESIGN-CHECKLIST-FINAL.md` | צ'קליסט מול electro home-v7. | BINDING (10.08) |
 | `PHASE2-3-SPEC.md` | וריאנטים + SEO + תגיות. | BINDING (10.08) |
 | `CITY-LANDING-CONTENT.md` | SEO ל-15 ערי ישראל: title/meta/פתיחה. | CONTENT (10.08) |
+| `GEO-FEATURES-SPEC.md` | מיקום, עיר, near/radius, פרטיות. | SPEC (11.08) |
 
 ### 4. חשבון לקוח, תמיכה, תוכן
 
