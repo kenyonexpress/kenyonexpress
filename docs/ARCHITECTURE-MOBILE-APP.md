@@ -147,12 +147,43 @@ Transactional push לא תלוי ב-opt-in שיווקי.
 
 ---
 
-## 7. תשלום באפ
+## 7. תשלום באפ (Cardcom WebView)
 
-Cardcom Low Profile ב-WebView מול השרת הקיים.  
-`CHECKOUT_ENABLED` ו-env Cardcom זהים ל-web.  
-אחרי `paid_at`: sync ארנק קופונים + רישום push + (אופציונלי) Wallet pass CTA.  
-מקור האמת לעסקה: webhook / GetLpResult בשרת, לא ה-WebView לבדו.
+### 7.1 עקרון
+
+אין Store IAP לקופונים/פיזי. התשלום הוא **אותו checkout שרת** כמו ב-web, מוצג ב-**WebView** (או Custom Tabs / SFSafariViewController אם נדרש ל-3DS).
+
+```text
+אפ: עגלה → CTA תשלום
+  → קורא ל-API/Server Action ליצירת order + Low Profile URL
+  → פותח WebView ל-URL של Cardcom
+  → Success/Fail redirect ל-URL של האתר (/checkout/return)
+  → האפ מאזינה לניווט / deep link חזרה
+  → שרת מריץ GetLpResult + finalize (כמו web)
+  → האפ מרעננת הזמנות/קופונים מה-API
+```
+
+| כלל | פירוט |
+|---|---|
+| מקור אמת | שרת בלבד; WebView לא מסמן paid |
+| סכום | agorot מאותו validateCart כמו web |
+| זהות | session Supabase באפ לפני LP (קופון) |
+| כשל/retry | אותה טבלה ב-`CHECKOUT-OPTIMIZATION.md` |
+| סגירת WebView | על FailedRedirect / ביטול משתמש בלי LP חדש אוטומטי לולאה |
+| `CHECKOUT_ENABLED` | אם false: CTA כבוי באפ כמו ב-web |
+
+### 7.2 Push (עם checkout)
+
+| אירוע | מתי | Deep link |
+|---|---|---|
+| רישום טוקן | אחרי login + הרשאת OS | (אין deep link) |
+| `voucher_issued` | אחרי paid+הנפקה | `kenyonexpress://coupons/{id}` |
+| `coupon_expiry_48h` | cron | אותו |
+| `wallet_cashback_earned` | אחרי זיכוי | ארנק |
+| `supplier_sale` | לספק אחרי מכירה | פורטל/סריקה |
+
+רישום: Expo Notifications → שורת `push_tokens`. שליחה: outbox `channel=push` (NOTIFICATIONS).  
+Transactional לא תלוי ב-opt-in שיווקי.
 
 ---
 
@@ -174,6 +205,7 @@ M5+ Verticals        לפי ARCHITECTURE-INTEGRATIONS.md (אחרי ליבת הח
 - [ ] אין service role באפ  
 - [ ] מחיר קופון באפ = אותו shared-money כמו web (agorot)  
 - [ ] Deep link למוצר/קופון עובד מ-Safari/Chrome  
+- [ ] Checkout = WebView ל-Cardcom; finalize בשרת  
 - [ ] Push issued + expiry 48h עם deep link לארנק  
 - [ ] ספק סורק ו-redeem נכשל בנימוס בלי רשת  
 - [ ] RTL + עברית בכל מסכי הכסף  
@@ -189,3 +221,4 @@ M5+ Verticals        לפי ARCHITECTURE-INTEGRATIONS.md (אחרי ליבת הח
 | 2026-08-03 | Expo RN, QR offline, push, No Escrow |
 | 2026-08-10 | מיקוד: monorepo shared packages, deep links, supplier QR, push מ-outbox |
 | 2026-08-10 | קישור ל-INTEGRATIONS; M8 agorot; חידוד deep links / redeem |
+| 2026-08-11 | פירוט WebView checkout + טבלת push סביב תשלום |
