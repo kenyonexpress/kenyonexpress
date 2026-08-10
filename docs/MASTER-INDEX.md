@@ -231,6 +231,7 @@ docs/ONBOARDING-DEVELOPER.md
 |---|---|---|
 | `RUNBOOK-PRODUCTION.md` | Deploy, rollback, **MCP migrations**. | QA-PASS (#5) |
 | `RUNBOOK-LAUNCH-DAY.md` | יום השקה. | ACTIONABLE (10.08) |
+| `LAUNCH-WEEK-RUNBOOK.md` | שבוע השקה D-2 עד D+7: שערי עצירה ותפעול. | RUNBOOK (11.08) |
 | `ARCHITECTURE-OBSERVABILITY.md` | Sentry / לוגים. | QA-PASS (#9) |
 | `SLA-MONITORING.md` | זמינות + מי מקבל התראה. | RUNBOOK (10.08) |
 | `INCIDENT-PLAYBOOKS.md` | 6 תקריות תפעול. | RUNBOOK (10.08) |
