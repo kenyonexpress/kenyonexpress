@@ -2,19 +2,11 @@
 # תפעול יומי אחרי השקה
 
 > **עודכן: 2026-08-10.**  
-> מדריך תפעול ליום רגיל אחרי soft-open: reconciliation, החזרים, onboarding ספק, קופון תקוע.  
-> משלים את `OPS-DAILY-ROUTINE.md` (15 דקות בוקר) ואת `RUNBOOK-PRODUCTION.md` (deploy/rollback).
+> Runbook תפעולי ליום רגיל אחרי cutover: reconciliation, החזרים, onboarding ספק, קופון תקוע.  
+> משלים את `OPS-DAILY-ROUTINE.md` (בוקר 15 דקות) ואת `RUNBOOK-PRODUCTION.md` (תקלה/deploy).
 
 Status: **RUNBOOK** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 Scope: **docs only**. אין שינוי קוד ב-worktree הראשי.
-
-שורש אפליקציה מאושר לפקודות (כשמורשה):
-
-```
-/Users/ofir/kenyonexpress-web/kenyonexpress
-```
-
-Package manager: **pnpm** בלבד. מיגרציות prod: **MCP בלבד**.
 
 מסמכים קשורים:
 
@@ -22,32 +14,43 @@ Package manager: **pnpm** בלבד. מיגרציות prod: **MCP בלבד**.
 docs/OPS-DAILY-ROUTINE.md
 docs/RUNBOOK-PRODUCTION.md
 docs/RUNBOOK-LAUNCH-DAY.md
-docs/ARCHITECTURE-SUPPLIER-ONBOARDING.md
-docs/ARCHITECTURE-PAYOUT-MECHANISM.md
 docs/CARDCOM-ARCHITECTURE.md
+docs/ARCHITECTURE-SUPPLIER-ONBOARDING.md
+docs/ARCHITECTURE-CUSTOMER-SUPPORT.md
 docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
+docs/ARCHITECTURE-PAYOUT-MECHANISM.md
 docs/LEGAL-CONTENT.md
+```
+
+עקרון: **Cardcom `GetLpResult` = מקור האמת לתשלום.** אל תסמן `paid` ידנית בלי אימות סליקה.
+
+Package manager: **pnpm**. שורש אפליקציה מאושר לפרוד:
+
+```
+/Users/ofir/kenyonexpress-web/kenyonexpress
 ```
 
 ---
 
-## 0. עקרונות
+## 0. מי עושה מה
 
-| # | כלל |
-|---|---|
-| 1 | מקור האמת לתשלום: **Cardcom `GetLpResult`**, לא ה-webhook לבדו ולא UPDATE ידני ל-`paid`. |
-| 2 | קופון: אחרי תשלום תקין חייב voucher `issued`. בלי voucher = תקלה תפעולית דחופה. |
-| 3 | אין Escrow / held / payout לספק על קופון. |
-| 4 | כסף שבור → `CHECKOUT_ENABLED=false` לפני ניסויים. |
-| 5 | כל פעולת כסף ידנית: תיעוד ב-`audit_log` / הערת אדמין + מזהה הזמנה. |
+| תפקיד | מותר | אסור |
+|---|---|---|
+| Support | קריאת הזמנות/שוברים; פתיחת פנייה; ביטול לפי מדיניות אם הוגדר | mark paid; refund מלא בלי admin; שינוי ledger |
+| Admin | refund מאושר; אישור ספק; reconcile אחרי אימות Cardcom | מיגרציית prod בלי MCP; המצאת עמלה |
+| Super admin | כל האדמין + kill switch checkout | לדלג על גיבוי לפני DDL |
 
 ---
 
 ## 1. בדיקת reconciliation (יומי)
 
-**מטרה:** כל חיוב Cardcom שהצליח משתקף בהזמנה `paid` (+ voucher לקופון). אין כסף בלי שובר / אין שובר בלי כסף.
+### 1.1 מטרה
 
-### 1.1 הזמנות תקועות (חלון 30 דק' עד 48 שעות)
+לוודא שכל חיוב שעלה ב-Cardcom יש לו הזמנה `paid` + payment `succeeded` + (לקופון) voucher `issued`.
+
+### 1.2 שאילתות בוקר (Supabase SQL)
+
+**א. הזמנות תקועות (שולמו כנראה, לא נסגרו):**
 
 ```sql
 select id, status, created_at, now() - created_at as age
@@ -58,53 +61,55 @@ where status not in ('paid', 'refunded', 'cancelled')
 order by created_at desc;
 ```
 
-**צפוי:** 0 שורות.
+צפי: **0 שורות**.
 
-**אם יש שורות:**
-
-1. מצא `payment_intents` / `payments` לפי `order_id`.  
-2. קרא בשרת או בכלי אדמין ל-`GetLpResult` עם `LowProfileId`.  
-3. אם Cardcom = הצלחה וההזמנה לא `paid`: הרץ מסלול reconcile הקיים בקוד (לא SQL `update status`).  
-4. אם Cardcom = כישלון/ביטול: סמן לפי המדיניות (cancelled) בלי להנפיק voucher.
-
-### 1.2 שולם בלי voucher (קופון)
+**ב. payments מול orders:**
 
 ```sql
-select o.id as order_id, o.paid_at, oi.id as item_id, oi.product_type
-from public.orders o
-join public.order_items oi on oi.order_id = o.id
-left join public.vouchers v on v.order_item_id = oi.id
+select p.id, p.status, p.cardcom_transaction_id, p.order_id, o.status as order_status
+from public.payments p
+left join public.orders o on o.id = p.order_id
+where p.created_at > now() - interval '2 days'
+  and (
+    p.status = 'succeeded' and (o.status is distinct from 'paid')
+    or p.status <> 'succeeded' and o.status = 'paid'
+  );
+```
+
+צפי: **0 שורות** (או רשימת חריגים מתועדת).
+
+**ג. קופון ששולם בלי שובר:**
+
+```sql
+select oi.id as order_item_id, oi.order_id, oi.product_type, oi.item_status
+from public.order_items oi
+join public.orders o on o.id = oi.order_id
 where o.status = 'paid'
   and oi.product_type = 'coupon'
-  and o.paid_at > now() - interval '7 days'
-  and v.id is null;
+  and oi.created_at > now() - interval '2 days'
+  and not exists (
+    select 1 from public.vouchers v
+    where v.order_item_id = oi.id
+  );
 ```
 
-**צפוי:** 0.  
-**אם יש:** תקלה קריטית. בדוק לוג finalize / Sentry; הנפק voucher במסלול idempotent הקיים; אל תיצור כפילות.
+(אם הטבלה החייה היא `coupon_codes` בסביבה מסוימת, להריץ מקבילה עליה. יעד: `vouchers`.)
 
-### 1.3 Voucher בלי תשלום
+### 1.3 מה עושים כשיש פער
 
-```sql
-select v.id, v.status, v.order_item_id, o.status as order_status, o.paid_at
-from public.vouchers v
-join public.order_items oi on oi.id = v.order_item_id
-join public.orders o on o.id = oi.order_id
-where o.paid_at is null
-  and v.created_at > now() - interval '7 days';
-```
+1. מצא `cardcom_low_profile_id` / transaction מ-`payments` או מלוג webhook.
+2. קרא **GetLpResult** (או ממשק Cardcom החי). רק אם הסליקה הצליחה:
+3. הרץ מסלול reconcile הרשמי בקוד (לא UPDATE ידני של `orders.status`).
+4. אם הסליקה נכשלה אבל הלקוח חושב ששילם: תיעוד + פנייה ללקוח; אל תנפיק שובר.
+5. רשום ביומן תפעול: order id, tx id, פעולה, מי ביצע.
 
-**צפוי:** 0. אם יש: הקפא מימוש (status) עד בירור; אל תסרוק לספק.
+פירוט kill switch / rollback: `RUNBOOK-PRODUCTION.md`.
 
-### 1.4 התאמה יומית מול Cardcom
+### 1.4 רשימת בדיקה יומית
 
-- ייצוא עסקאות יום קודם ממסוף Cardcom (או `ListTransactions` כשזמין).  
-- השווה לסכום `payments` בסטטוס succeeded לאותו יום (אותו מטבע).  
-- סטייה מעל סף (למשל עסקה אחת): פתח תקלה עם `cardcom_transaction_id` + `order_id`.
-
-### 1.5 Webhook ללא סוד
-
-ראה שאילתת `payment_webhook_events` ב-`OPS-DAILY-ROUTINE.md`. רעש בודד = בוטים; עשרות = החלף סוד IndicatorUrl.
+- [ ] שאילתות א-ג = ריק או מטופל  
+- [ ] Sentry: אין spike ב-webhook / finalize  
+- [ ] Vercel: ה-deploy האחרון ירוק  
 
 ---
 
@@ -112,79 +117,64 @@ where o.paid_at is null
 
 ### 2.1 לפני הכל
 
-| בדיקה | פעולה |
-|---|---|
-| האם בתוך חלון 14 יום / עילת פגם? | לפי `LEGAL-CONTENT.md` §ב (אחרי אישור עו"ד) |
-| קופון: האם `issued` או `redeemed`? | `redeemed` → אין החזר אוטומטי |
-| פיזי: האם נשלח? | מנע משלוח נוסף לפני זיכוי |
-| ארנק שיושם בקופה | החזר ארנק ליתרה פנימית; כרטיס דרך Cardcom |
+1. קרא `LEGAL-CONTENT.md` חלק ב + `ARCHITECTURE-LEGAL-COMPLIANCE.md`.
+2. בדוק מצב voucher: `issued` / `redeemed` / `expired`.
+3. חשב דמי ביטול רק אם הדין מתיר: `min(5%, 100 ₪)` מהסכום ששולם **באתר**. פגם/אי-אספקה → 0.
+4. Support מעביר ל-admin אם נדרש chargeback או חריג.
 
 ### 2.2 זרימה תפעולית
 
 ```text
-בקשת לקוח (/cancel או תמיכה)
-  → אדמין מאשר / דוחה עם סיבה
-  → חישוב דמי ביטול: min(5%, 100₪) כשמותר; 0 בפגם
-  → RefundByTransactionId (או partial) ב-Cardcom
-  → עדכון order/items + ledger reversal
-  → קופון issued → refunded/cancelled; חסימת QR
-  → מייל ללקוח
+בקשת לקוח (/cancel או פנייה)
+  → בדיקת זכאות (14 יום, מצב שובר, סוג מוצר)
+  → אישור admin
+  → RefundByTransactionId / מסלול Cardcom הרשמי בקוד
+  → עדכון payment + order + voucher (refunded) דרך הפעולה בשרת
+  → פיזי בלבד: supplier_debit / קיזוז payout אם כבר payable (ראה PAYOUT-MECHANISM)
 ```
 
-### 2.3 אסור
+אסור:
 
-- זיכוי ב-SQL בלי קריאת Cardcom  
-- השארת voucher `issued` אחרי החזר מלא  
-- "שחרור Escrow" לספק על קופון (לא קיים במודל)  
-- החזר על יתרה ששולמה במזומן בעסק (מחוץ לפלטפורמה) בלי מדיניות נפרדת
+- זיכוי ידני ב-Cardcom בלי רשומת מערכת  
+- סימון `refunded` ב-DB בלי קריאת סליקה  
+- "החזר Escrow לספק" על קופון (אין מסלול כזה)
 
-### 2.4 אחרי החזר פיזי שכבר יצא payout
+### 2.3 אחרי החזר
 
-אם חלק ספק כבר שולם: רשום `supplier_debit` / קיזוז בבאצ' הבא לפי `ARCHITECTURE-PAYOUT-MECHANISM.md`. תעד ידנית אם הבאצ' כבר נסגר.
+- [ ] הלקוח קיבל אימייל / הודעה  
+- [ ] שובר לא ניתן לסריקה  
+- [ ] reconciliation למחרת לא מדווח פער על אותו tx  
 
-### 2.5 אימות
+### 2.4 Chargeback
 
-```sql
-select o.id, o.status, p.kind, p.status, p.amount_ils, p.created_at
-from public.orders o
-left join public.payments p on p.order_id = o.id
-where o.id = '<order_uuid>'
-order by p.created_at;
-```
-
-וודא: לקוח קיבל מייל; Cardcom מציג זיכוי; voucher לא ניתן לסריקה.
+העבר מיד ל-admin/super_admin. שמור צילומי מסך, GetLpResult, ויומן מימוש אם יש. אל תתווכח מול חברת האשראי בלי תיק מסודר.
 
 ---
 
-## 3. ספק חדש (onboarding)
+## 3. ספק חדש: onboarding
 
-לפי `ARCHITECTURE-SUPPLIER-ONBOARDING.md`.
+מקור מחייב: `ARCHITECTURE-SUPPLIER-ONBOARDING.md`.
 
 ### 3.1 צ'קליסט אישור
 
-| שלב | מי | חובה |
+| שלב | בדיקה | Pass |
 |---|---|---|
-| בקשה `pending` | ספק | שם, ח.פ/עוסק, טלפון, אימייל, כתובת |
-| מסמכים | ספק | לוגו + אישור עוסק לפי מדיניות |
-| אישור אדמין | admin | סיבה אם דחייה |
-| יצירת `suppliers` + `supplier_members(owner)` | מערכת | אוטומטי באישור |
-| פרטי בנק | ספק | **לפני payout פיזי בלבד**; לא חוסם סריקת קופונים |
-| מוצר ראשון | ספק/אדמין | `platform_percent` חובה; קופון: `coupon_price` |
-| בדיקת סריקה | ספק | משתמש scanner אחד לפחות |
+| 1 | בקשה `pending` עם עוסק/ח.פ, טלפון, כתובת, לוגו | [ ] |
+| 2 | אין כפילות ספק חשודה | [ ] |
+| 3 | Admin מאשר → נוצרים `suppliers` + `supplier_members(owner)` | [ ] |
+| 4 | מייל welcome נשלח | [ ] |
+| 5 | פרטי בנק הוזנו לפני payout פיזי (לא חוסם סריקת קופונים) | [ ] |
+| 6 | סורק ניסיון (עובד `scanner`) על שובר sandbox/טסט | [ ] |
 
-### 3.2 אחרי אישור (5 דקות)
+### 3.2 מוצר ראשון
 
-1. ודא מייל welcome נשלח.  
-2. התחברות ספק לפורטל.  
-3. צור/אשר מוצר draft → publish רק עם מחיר + percent.  
-4. רכישת טסט בסביבת בדיקות (לא prod) אם אפשר; אחרת דיל פנימי עם מחיר נמוך.  
-5. סריקת QR במצב scanner.
+- חובה `platform_percent` פר מוצר (בלי default).  
+- קופון: `coupon_price` מוחלט; גילוי יתרה בעסק ב-PDP.  
+- אין להבטיח לספק "שחרור מקדמה מהפלטפורמה" על קופון.
 
-### 3.3 דגלים אדומים
+### 3.3 דחייה
 
-- ספק מבקש "נאמן" / payout על קופונים → הסבר מודל No Escrow; אל תשנה קוד.  
-- חסר `platform_percent` → אל תפרסם.  
-- פרטי בנק חסרים → מותר קופונים; חסום באצ' payout פיזי.
+דחייה עם סיבת טקסט חובה + אפשרות הגשה מחדש אחרי cooldown. תעד ב-audit.
 
 ---
 
@@ -192,70 +182,71 @@ order by p.created_at;
 
 ### 4.1 אבחון מהיר
 
-| תסמין | בדיקה | טיפול |
-|---|---|---|
-| שולם, אין QR באזור אישי | §1.2 voucher חסר | הנפקה חוזרת idempotent |
-| יש QR, ספק לא מצליח לסרוק | סטטוס voucher; תוקף; הרשאת scanner | תקן סטטוס / חברות |
-| "כבר מומש" בטעות | `voucher_redemptions` | אם redemption שגוי: ביטול ידני מבוקר + audit (נדיר) |
-| תוקף פג | `expires_at` | אין מימוש; החזר לפי מדיניות בלבד |
-| לקוח רואה יתרה שגויה | `face` מול `coupon_price` | תקן תצוגה; לא לשנות snapshot אחרי paid בלי הליך |
-| ספק דורש כסף מהפלטפורמה על קופון | מודל עסקי | דחה; יתרה נגבית בעסק |
+| סימפטום | בדיקה ראשונה |
+|---|---|
+| שולם, אין QR באזור אישי | האם קיים `vouchers` ל-`order_item`? (§1.2ג) |
+| יש שובר, ספק לא מצליח לסרוק | סטטוס שובר; שייכות ספק; תוקף `expires_at` |
+| "כבר מומש" בטעות | `redeemed_at` + מי סרק; FRAUD אם חשוד |
+| סטטוס `issued` אבל הלקוח רואה שגיאה | קאש/CDN; רענון אזור אישי; השוואת user_id |
 
-### 4.2 שאילתת סטטוס
+### 4.2 תרחיש א: תשלום עבר, שובר לא הונפק
 
-```sql
-select v.id, v.status, v.expires_at, v.face_value_agorot, v.coupon_price_agorot,
-       v.remaining_amount_due_agorot, o.id as order_id, o.status as order_status
-from public.vouchers v
-join public.order_items oi on oi.id = v.order_item_id
-join public.orders o on o.id = oi.order_id
-where v.id = '<voucher_uuid>'
-   or v.code = '<code>';
+1. אמת Cardcom (GetLpResult).  
+2. אם succeeded: הרץ reconcile/finalize הרשמי.  
+3. אם נכשל באמצע issue: בדוק לוג Sentry ל-`issueVoucher`; תקן חוסר טבלה/RLS רק דרך תהליך מיגרציה מאושר (MCP).  
+4. אל תיצור שורת voucher ידנית ב-SQL אלא אם יש נוהל חירום כתוב + אישור super admin.
+
+### 4.3 תרחיש ב: שובר קיים, סריקה נכשלת
+
+1. ודא שהמשתמש הסורק הוא `supplier_member` של אותו `supplier_id`.  
+2. ודא סטטוס `issued` ולא `redeemed`/`expired`/`refunded`.  
+3. בדוק שעון מכשיר / תוקף.  
+4. אם כפל סריקה: ההגנה היא ייחוד הצלחה ב-`voucher_redemptions`; הסבר לספק שהמימוש כבר נרשם.
+
+### 4.4 תרחיש ג: לקוח טוען שלא מומש, ספק טוען שכן
+
+1. הצג לשני הצדדים `redeemed_at` + מזהה סריקה.  
+2. אין "שחזור" שובר ל-`issued` בלי החלטת fraud/admin מתועדת.  
+3. כסף: קופון לא מייצר payout מהפלטפורמה; מחלוקת יתרה בעסק היא בין לקוח לספק.
+
+### 4.5 אחרי תיקון
+
+- [ ] הלקוח רואה QR / סטטוס נכון  
+- [ ] הספק סורק בהצלחה פעם אחת  
+- [ ] אין כפילות voucher לאותו `order_item`  
+
+---
+
+## 5. אזעקות שמחייבות עצירה
+
+עצור מכירות חדשות (`CHECKOUT_ENABLED=false` או הדגל החי) אם:
+
+1. Cardcom מחזיר כשל המוני  
+2. כל ה-webhooks נכשלים > 15 דקות  
+3. finalize יוצר חיוב בלי שובר באופן שיטתי  
+4. חשד דליפת מפתחות  
+
+לאחר מכן: `RUNBOOK-PRODUCTION.md` + הודעה ללקוחות דרך תמיכה.
+
+---
+
+## 6. יומן תפעול (תבנית)
+
+```text
+תאריך:
+משמרת:
+reconciliation: OK / פערים (IDs):
+החזרים שבוצעו (order_id, סכום, דמי ביטול):
+ספקים שאושרו / נדחו:
+קופונים תקועים שטופלו:
+Sentry / Vercel:
+חתימה:
 ```
 
-(התאם שמות עמודות לחי אם עדיין `*_ils`.)
-
-### 4.3 תרחיש: לקוח שילם, finalize נכשל אחרי Cardcom
-
-1. `CHECKOUT_ENABLED` נשאר true אלא אם כשל המוני.  
-2. Reconcile לפי LowProfileId.  
-3. Issue voucher.  
-4. שלח מייל "הקופון שלך" ידני/resend אם נדרש.  
-5. פתח Sentry issue + מניעת הישנות.
-
-### 4.4 תרחיש: סריקה כפולה
-
-- ייחודיות הצלחה אחת ל-`voucher_id` ב-`voucher_redemptions`.  
-- ניסיון שני = כישלון צפוי; אל תמחק redemption ראשון בלי חקירה.
-
 ---
 
-## 5. סדר יום מומלץ (אחרי השקה)
-
-| מתי | מה |
-|---|---|
-| בוקר (15 דק') | `OPS-DAILY-ROUTINE.md` + §1 reconciliation |
-| לפי פנייה | §2 החזר / §4 קופון תקוע |
-| כשמגיעה בקשה | §3 onboarding |
-| סוף שבוע | התאמת Cardcom שבועית; באצ' payout פיזי אם יש (PAYOUT-MECHANISM) |
-| תקרית כסף | כיבוי checkout → `RUNBOOK-PRODUCTION.md` |
-
----
-
-## 6. אנשי קשר / כלים
-
-| כלי | שימוש |
-|---|---|
-| Supabase SQL | שאילתות למעלה |
-| Cardcom מסוף | GetLpResult / Refund / דוחות |
-| Vercel | deploy, env, Instant Rollback |
-| Sentry | שגיאות finalize / webhook |
-| Resend (או מייל) | resend קופון / אישור החזר |
-
----
-
-## 7. Revision
+## Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-10 | Runbook אחרי השקה: reconcile, refund, onboarding, stuck coupon |
+| 2026-08-10 | Runbook אחרי השקה: reconcile, refund, onboarding, קופון תקוע |
