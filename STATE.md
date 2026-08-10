@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-11 (docs batch 1-20 complete: checkout→PROGRESS-REPORT)
+Updated: 2026-08-11 (docs batch 21-29: legal→vendor payout)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,9 +8,10 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-סבב 20 מסמכים ב-docs/ (commit+push לכל קובץ) על arch/docs-lifecycle:
-1-7 checkout→supplier onboarding; 8-19 marketing→launch-week; 20 PROGRESS-REPORT-AUG.
-MASTER-INDEX עודכן לאורך הדרך.
+סבב 21-29 ב-docs/ (commit+push לכל קובץ) על arch/docs-lifecycle:
+LEGAL-TERMS-SUPPLIERS, REFUNDS-CANCELLATION-POLICY, DATA-RETENTION-POLICY,
+INCIDENT-RESPONSE-RUNBOOK, BACKUP-RESTORE-RUNBOOK, EMAIL-TEMPLATES-SPEC,
+COUPON-LIFECYCLE-SPEC, FRAUD-PREVENTION-SPEC, VENDOR-PAYOUT-SPEC.
 
 ## In Progress
 nothing
@@ -27,6 +28,7 @@ nothing
 /Users/ofir/kenyonexpress-web/ke-arch
 
 ## החלטות שהתקבלו אוטומטית
+- **2026-08-11 payout Cardcom:** בקשת VENDOR-PAYOUT "דרך Cardcom" פורשה כך: חיוב הלקוח ב-Cardcom הוא מקור הסליקה; ביצוע payout לספק פיזי נשאר העברה בנקאית ידנית+CSV לפי ARCHITECTURE-PAYOUT-MECHANISM (לא Cardcom Financial ב-MVP). תועד ב-VENDOR-PAYOUT-SPEC.md.
 - **2026-08-06 QA:** המודל המחייב ל-docs הוא **No Escrow** לקופון (מקדמה לפלטפורמה; יתרה בבית העסק; אין held לספק; אין נאמן/J5 של חברת אשראי) + `platform_percent` פר מוצר בלי default. זה **דורס** את נוסח Escrow/held של 2026-07-27 בסעיף ההיסטורי למטה (נשמר לתיעוד בלבד).
 - **2026-08-07 QA re-pass:** `docs/CONTRADICTIONS.md` עצמו עודכן בהתאם (C11א). בלי זה המסמך "הגובר" סתר את חבילת ה-20.
 - **2026-08-10 payout:** ביצוע כסף לספק פיזי = העברה בנקאית ידנית + CSV באצ' אחרי אישור אדמין. לא Cardcom Financial ולא מסה"ב אוטומטי בשלב זה. טריגר = T+N מה-ledger + שער משלוח (לא אישור משלוח לבדו).
