@@ -151,7 +151,8 @@ docs/ONBOARDING-DEVELOPER.md
 
 | מסמך | תקציר | סטטוס |
 |---|---|---|
-| `ARCHITECTURE-CATEGORIES-TAXONOMY.md` | עץ קטגוריות ישראלי. | QA-PASS (#11) |
+| `ARCHITECTURE-CATEGORIES-TAXONOMY.md` | עץ קטגוריות ישראלי (הכרעות; עומק 2 ב-DB). | QA-PASS (#11) |
+| `CATEGORY-TAXONOMY.md` | עץ מלא 3 רמות + מיפוי slugs קיימים ב-DB. | CONTENT (10.08) |
 | `ARCHITECTURE-SEARCH.md` | חיפוש + DLQ. | BINDING |
 | `ARCHITECTURE-SEARCH-UX.md` | Meilisearch, השלמות, כתיב. | QA-PASS (#4) |
 | `ARCHITECTURE-CATALOG-SEARCH-SEO.md` | קטלוג/דירוג בלי מרג'ין. | QA-PASS (06.08) |
@@ -305,3 +306,4 @@ docs/ROADMAP-V2.md
 | 2026-08-10 | `INCIDENT-PLAYBOOKS.md`; אינדקס |
 | 2026-08-10 | `DATA-RETENTION-POLICY.md`; אינדקס (דורש עו״ד) |
 | 2026-08-10 | `ONBOARDING-DEVELOPER.md`; אינדקס סופי ממוין לפי נושא |
+| 2026-08-10 | `CATEGORY-TAXONOMY.md`; אינדקס (עץ 3 רמות + DB) |

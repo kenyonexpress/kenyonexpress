@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-10 (ONBOARDING-DEVELOPER + topic-sorted MASTER-INDEX)
+Updated: 2026-08-10 (CATEGORY-TAXONOMY)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -9,13 +9,9 @@ ke-arch
 
 ## Last Completed
 ```
-docs/ONBOARDING-DEVELOPER.md
+docs/CATEGORY-TAXONOMY.md
 ```
-+ סידור מחדש של
-```
-docs/MASTER-INDEX.md
-```
-לפי נושא (12 קטגוריות). כללי ברזל: agorot, MCP migrations, compare.mjs, worktrees.
+: עץ 3 רמות (מסעדות/יופי/אטרקציות/חופשות/בית/רכב/בריאות) עם slugs EN + שמות HE; מיפוי **E** מול DB; פער depth guard ≤2 מתועד. אינדקס עודכן.
 
 ## In Progress
 nothing
