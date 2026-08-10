@@ -210,6 +210,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `MARKETING-LAUNCH-PLAN.md` | תוכנית השקה שיווקית: קהל, תקציב, שערי עצירה. | PLAN (11.08) |
 | `ARCHITECTURE-NOTIFICATIONS.md` | paid/redeem/abandon + DLQ. | BINDING (10.08) |
 | `WHATSAPP-BUSINESS-SETUP.md` | הקמת WhatsApp Business API + תבניות. | GUIDE (10.08) |
+| `WHATSAPP-COMMERCE-SPEC.md` | מסחר/תמיכה ב-WA: opt-in, תבניות, בלי סליקה בצ׳אט. | SPEC (11.08) |
 | `ARCHITECTURE-NOTIFICATIONS-MARKETING.md` | שיווק התראות. | DESIGN |
 
 ### 7. אבטחה, פרטיות, משפט
