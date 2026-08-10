@@ -7,6 +7,8 @@ import CategoryProductCard, {
 import SearchBox from '@/components/search/SearchBox'
 import { type ProductTypeFilter, getAllCategories, parseProductType } from '@/lib/category-page'
 import { searchProductsCached } from '@/lib/search-server'
+import { recordRecentSearch, recordSearchTerm } from '@/lib/search/record'
+import { createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
@@ -34,6 +36,19 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 /** Count and grid share one search call via searchProductsCached. */
 async function ResultCount({ q, productType }: { q: string; productType?: ProductTypeFilter }) {
   const { total, engine } = await searchProductsCached(q, 48, productType)
+
+  // Recorded HERE, on the results page, and never in the type-ahead route: the
+  // suggest endpoint fires on every keystroke, so recording there would fill
+  // the table with "מ", "מס", "מסע" and bury the real query under its own
+  // prefixes. This component already holds the total, which is the half of the
+  // record that matters - a query with zero results is a customer telling us,
+  // in their own words, what we do not sell.
+  //
+  // Awaited rather than fired and forgotten: a serverless invocation can be
+  // frozen the moment its response is returned. Neither call can throw.
+  await recordSearchTerm(q, total)
+  await recordRecentSearch(await createClient(), q)
+
   return (
     <p className="category-page__count">
       נמצאו {total} מוצרים

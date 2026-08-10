@@ -4,6 +4,7 @@ import {
   INDEX_SETTINGS,
   RANKING_RULES,
   SEARCHABLE_ATTRIBUTES,
+  SORTABLE_ATTRIBUTES,
   TYPO_TOLERANCE,
   toProductDocument,
 } from './meili-settings'
@@ -132,5 +133,59 @@ describe('city and tags in the index', () => {
       null,
     )
     expect(doc.tags).toEqual(['מבצע', 'מתנה'])
+  })
+})
+
+describe('_geo', () => {
+  const base = { id: 'p1', slug: 's', name_he: 'מוצר' }
+
+  it('carries real coordinates as Meilisearch reserved field', () => {
+    const doc = toProductDocument({ ...base, latitude: 32.0853, longitude: 34.7818 } as never)
+    expect(doc._geo).toEqual({ lat: 32.0853, lng: 34.7818 })
+  })
+
+  it('omits the key entirely when there are no coordinates', () => {
+    // Not {0,0}: Null Island is a real point in the Atlantic, and a product
+    // placed there is invisible inside any radius filter rather than merely
+    // last in a distance sort.
+    const doc = toProductDocument(base as never)
+    expect('_geo' in doc).toBe(false)
+  })
+
+  it('refuses a zero pair, which is a missing value wearing a number', () => {
+    const doc = toProductDocument({ ...base, latitude: 0, longitude: 0 } as never)
+    expect('_geo' in doc).toBe(false)
+  })
+
+  it('refuses values outside the coordinate range', () => {
+    // A column holding something that is not a coordinate at all.
+    expect('_geo' in toProductDocument({ ...base, latitude: 999, longitude: 34 } as never)).toBe(
+      false,
+    )
+    expect('_geo' in toProductDocument({ ...base, latitude: 32, longitude: 999 } as never)).toBe(
+      false,
+    )
+  })
+
+  it('refuses a half-filled pair', () => {
+    expect('_geo' in toProductDocument({ ...base, latitude: 32.08 } as never)).toBe(false)
+    expect('_geo' in toProductDocument({ ...base, longitude: 34.78 } as never)).toBe(false)
+  })
+
+  it('is declared both sortable and filterable, because they are separate permissions', () => {
+    expect(SORTABLE_ATTRIBUTES).toContain('_geo')
+    expect(FILTERABLE_ATTRIBUTES).toContain('_geo')
+  })
+})
+
+/** Indexing by a variable keeps biome's literal-key rule happy on Hebrew keys. */
+function at(map: Record<string, string[]>, key: string): string[] {
+  return map[key] ?? []
+}
+
+describe('index settings carry the Hebrew synonyms', () => {
+  it('ships a symmetric map rather than nothing', () => {
+    expect(at(INDEX_SETTINGS.synonyms, 'מסעדה')).toContain('מסעדות')
+    expect(at(INDEX_SETTINGS.synonyms, 'מסעדות')).toContain('מסעדה')
   })
 })

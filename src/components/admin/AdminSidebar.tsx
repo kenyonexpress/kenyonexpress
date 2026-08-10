@@ -14,6 +14,7 @@ import {
   LayoutDashboard,
   Package,
   Plus,
+  Search,
   Share2,
   ShoppingCart,
   Store,
@@ -70,6 +71,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/reports', label: 'דוחות כספיים', icon: FileSpreadsheet, section: 'payments' },
   { href: '/admin/affiliates', label: 'שותפים והפניות', icon: Share2, section: 'affiliates' },
   { href: '/admin/analytics', label: 'אנליטיקה', icon: BarChart3, section: 'analytics' },
+  { href: '/admin/search', label: 'חיפוש', icon: Search, section: 'analytics' },
   { href: '/admin/audit-log', label: 'לוג פעילות', icon: ClipboardList, section: 'audit-log' },
 ]
 

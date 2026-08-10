@@ -50,6 +50,11 @@ async function handleGET(request: Request) {
           // `images` is Json on the row, so it is narrowed here rather than
           // indexed blind.
           image: Array.isArray(r.images) && typeof r.images[0] === 'string' ? r.images[0] : null,
+          // The price is what turns a list of names into something a shopper
+          // can choose from without opening three tabs. Null when the product
+          // has no price - a coupon quotes its own, and printing 0 would be a
+          // claim rather than a gap.
+          price: typeof r.kenyon_price === 'number' && r.kenyon_price > 0 ? r.kenyon_price : null,
         })),
         engine,
       },
