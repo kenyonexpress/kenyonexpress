@@ -86,3 +86,51 @@ describe('toProductDocument', () => {
     expect(toProductDocument(row).supplier_name).toBeNull()
   })
 })
+
+describe('city and tags in the index', () => {
+  const base = { id: 'p1', slug: 's', name_he: 'ארוחה', categories: null }
+
+  it('indexes and facets on both', () => {
+    // The goal names עיר and tags as searchable AND filterable.
+    expect(SEARCHABLE_ATTRIBUTES).toContain('city')
+    expect(SEARCHABLE_ATTRIBUTES).toContain('tags')
+    expect(FILTERABLE_ATTRIBUTES).toContain('city')
+    expect(FILTERABLE_ATTRIBUTES).toContain('tags')
+  })
+
+  it('ranks a city hit above the description', () => {
+    // searchableAttributes is an importance ranking. "מסעדה תל אביב" is a
+    // place-and-thing query, so the city must outrank the same word buried in
+    // marketing copy.
+    const order = SEARCHABLE_ATTRIBUTES as readonly string[]
+    expect(order.indexOf('city')).toBeLessThan(order.indexOf('description_he'))
+  })
+
+  it('falls back to the supplier city, matching productLocation()', () => {
+    const doc = toProductDocument(base as never, 'ספק', 'תל אביב')
+    expect(doc.city).toBe('תל אביב')
+  })
+
+  it("prefers the product's own city over the supplier's", () => {
+    const doc = toProductDocument({ ...base, city: 'אילת' } as never, 'ספק', 'תל אביב')
+    expect(doc.city).toBe('אילת')
+  })
+
+  it('survives the columns being absent entirely', () => {
+    // They reach the row only when the query selects them. An absent column
+    // must index as "no city"/"no tags", never throw and leave the whole
+    // catalogue unsearchable.
+    const doc = toProductDocument(base as never, null, null)
+    expect(doc.city).toBeNull()
+    expect(doc.tags).toEqual([])
+  })
+
+  it('normalises tags to a clean array', () => {
+    const doc = toProductDocument(
+      { ...base, tags: ['מבצע', '', '  ', 7, null, 'מתנה'] } as never,
+      null,
+      null,
+    )
+    expect(doc.tags).toEqual(['מבצע', 'מתנה'])
+  })
+})

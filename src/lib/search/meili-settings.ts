@@ -42,6 +42,11 @@ export const SEARCHABLE_ATTRIBUTES = [
   'name_en',
   'brand',
   'category_name_he',
+  // Above the descriptions on purpose: "מסעדה תל אביב" is a place-and-thing
+  // query, and a city hit is a stronger signal about what the shopper wants
+  // than the same word appearing somewhere in a paragraph of marketing copy.
+  'city',
+  'tags',
   'supplier_name',
   'short_description_he',
   'description_he',
@@ -53,6 +58,11 @@ export const FILTERABLE_ATTRIBUTES = [
   'type',
   'category_id',
   'category_slug',
+  // The effective city: products.city when set, the supplier's otherwise. The
+  // indexer resolves that COALESCE once, so the facet cannot disagree with the
+  // catalogue's own `productLocation()`.
+  'city',
+  'tags',
   'supplier_id',
   'kenyon_price',
   'in_stock',
@@ -116,6 +126,10 @@ export interface ProductDocument {
   category_name_he: string | null
   supplier_id: string | null
   supplier_name: string | null
+  /** Effective city: products.city, else the supplier's. Null when neither. */
+  city: string | null
+  /** Always an array. Absent or NULL in the row reads as no tags. */
+  tags: string[]
   created_at: string | null
 }
 
@@ -147,9 +161,27 @@ type ProductSource = {
  * ranking rule, and Meilisearch can only rank on a stored field. A null stock
  * means "not tracked", which is in stock — the same reading the cart uses.
  */
+/**
+ * `products.city` and `products.tags` reach the row only when the query selects
+ * them, and both are recent columns. Read defensively rather than widening
+ * `ProductSource`: an absent column must index as "no city"/"no tags", never
+ * crash the indexer and leave the whole catalogue unsearchable.
+ */
+function readCity(row: unknown): string | null {
+  const value = (row as Record<string, unknown> | null)?.city
+  return typeof value === 'string' && value.trim() ? value.trim() : null
+}
+
+function readTags(row: unknown): string[] {
+  const value = (row as Record<string, unknown> | null)?.tags
+  if (!Array.isArray(value)) return []
+  return value.filter((t): t is string => typeof t === 'string' && t.trim().length > 0)
+}
+
 export function toProductDocument(
   row: ProductSource,
   supplierName: string | null = null,
+  supplierCity: string | null = null,
 ): ProductDocument {
   const category = Array.isArray(row.categories)
     ? (row.categories[0] ?? null)
@@ -177,6 +209,12 @@ export function toProductDocument(
     category_name_he: category?.name_he ?? null,
     supplier_id: row.supplier_id ?? null,
     supplier_name: supplierName,
+    // The COALESCE is resolved HERE, once, so the search facet and the
+    // catalogue's productLocation() cannot disagree about which city a deal is
+    // in. Read defensively: `city` reaches the row only when the query selects
+    // it, and every one of the 80 products has it NULL today.
+    city: readCity(row) ?? supplierCity ?? null,
+    tags: readTags(row),
     created_at: row.created_at ?? null,
   }
 }

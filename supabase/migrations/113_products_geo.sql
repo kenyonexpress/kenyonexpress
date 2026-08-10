@@ -2,7 +2,19 @@
 -- PENDING: per-product location -- products.city, products.latitude/longitude
 -- ============================================================================
 --
--- STATUS: NOT APPLIED. Apply only through MCP apply_migration, never db push.
+-- APPLIED to production 2026-08-10 through MCP apply_migration.
+--
+-- APPLIED IN REDUCED FORM, and the difference matters. Section 3's
+-- `CREATE EXTENSION cube / earthdistance` and the GiST `products_earth_idx`
+-- were NOT applied: extension creation needs privileges the MCP connection
+-- does not have (the same 42501 class that broke the first
+-- revoke_anon_writes attempt). What landed is the three columns, the three
+-- CHECKs, and `products_city_idx` -- which is what the search facet and the
+-- catalogue actually query today, since zero products carry a coordinate.
+--
+-- To finish it later, run section 3 alone with a privileged connection.
+--
+-- VERIFIED AFTER APPLYING: 80 rows, 0 with a city, 0 with coordinates.
 --
 -- ----------------------------------------------------------------------------
 -- WHY A PRODUCT NEEDS A LOCATION WHEN THE SUPPLIER ALREADY HAS ONE
