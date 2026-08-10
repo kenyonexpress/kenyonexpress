@@ -130,6 +130,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `GUEST-VS-MEMBER-STRATEGY.md` | מתי דוחפים הרשמה ומתי לא. | PLAN (10.08) |
 | `CARDCOM-ARCHITECTURE.md` | Cardcom (מחקר v11; קוד legacy). | BINDING + QA (07.08) |
 | `ARCHITECTURE-PAYOUT-MECHANISM.md` | Payout פיזי: T+N, באצ', CSV ידני. | BINDING (10.08) |
+| `VENDOR-PAYOUT-SPEC.md` | Payout פיזי אחרי Cardcom: באצ'+העברה בנקאית. | SPEC (11.08) |
 | `ARCHITECTURE-CASHBACK-WALLET.md` | ארנק פנימי באגורות. | BINDING |
 | `CASHBACK-WALLET-SPEC.md` | מפרט מוצר לארנק קאשבק (earn/spend UI). | SPEC (11.08) |
 | `ARCHITECTURE-WALLET-LEDGER.md` | ledger כפול-רישום. | BINDING |
