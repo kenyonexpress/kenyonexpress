@@ -162,6 +162,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `ARCHITECTURE-PERFORMANCE.md` | ביצועים. | DESIGN |
 | `DESIGN-CHECKLIST-FINAL.md` | צ'קליסט מול electro home-v7. | BINDING (10.08) |
 | `PHASE2-3-SPEC.md` | וריאנטים + SEO + תגיות. | BINDING (10.08) |
+| `CITY-LANDING-CONTENT.md` | SEO ל-15 ערי ישראל: title/meta/פתיחה. | CONTENT (10.08) |
 
 ### 4. חשבון לקוח, תמיכה, תוכן
 
@@ -309,3 +310,4 @@ docs/ROADMAP-V2.md
 | 2026-08-10 | `ONBOARDING-DEVELOPER.md`; אינדקס סופי ממוין לפי נושא |
 | 2026-08-10 | `CATEGORY-TAXONOMY.md`; אינדקס (עץ 3 רמות + DB) |
 | 2026-08-10 | `EMAIL-TEMPLATES-COPY.md`; אינדקס |
+| 2026-08-10 | `CITY-LANDING-CONTENT.md`; אינדקס |

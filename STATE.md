@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-10 (EMAIL-TEMPLATES-COPY)
+Updated: 2026-08-10 (CITY-LANDING-CONTENT)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -9,9 +9,9 @@ ke-arch
 
 ## Last Completed
 ```
-docs/EMAIL-TEMPLATES-COPY.md
+docs/CITY-LANDING-CONTENT.md
 ```
-: נוסח מלא ל-8 מיילים (אישור הזמנה, קופון+QR, תפוגה, קאשבק, נטישה, ספק, החזר, ברוכים הבאים). אינדקס עודכן.
+: title + meta + פתיחה ~100 מילים ל-15 ערים (ת״א עד אילת). אינדקס עודכן.
 
 ## In Progress
 nothing
