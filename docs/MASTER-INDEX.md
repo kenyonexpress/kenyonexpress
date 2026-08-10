@@ -172,6 +172,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `PHASE2-3-SPEC.md` | וריאנטים + SEO + תגיות. | BINDING (10.08) |
 | `CITY-LANDING-CONTENT.md` | SEO ל-15 ערי ישראל: title/meta/פתיחה. | CONTENT (10.08) |
 | `GEO-FEATURES-SPEC.md` | מיקום, עיר, near/radius, פרטיות. | SPEC (11.08) |
+| `SEO-CONTENT-STRATEGY.md` | אסטרטגיית תוכן SEO בעברית. | STRATEGY (11.08) |
 
 ### 4. חשבון לקוח, תמיכה, תוכן
 
