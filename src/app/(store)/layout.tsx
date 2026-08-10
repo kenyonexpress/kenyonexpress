@@ -1,3 +1,4 @@
+import SkipLink from '@/components/a11y/SkipLink'
 import CartBootstrap from '@/components/cart/CartBootstrap'
 import { CartProvider } from '@/components/cart/CartProvider'
 import SiteFooter from '@/components/layout/SiteFooter'
@@ -34,9 +35,18 @@ export default function StoreLayout({ children }: { children: React.ReactNode })
           stretch main to the viewport and push the footer to the bottom, which is
           the 1218px vertical mismatch in the category compare. Keep min-h-screen
           for the background fill, but let the footer follow the content. */}
+      {/* First focusable element on the page: WCAG 2.4.1, which Israeli
+          standard 5568 adopts. The header is a masthead, a search bar, a
+          category menu and a nav row, and it repeats on every page. */}
+      <SkipLink />
       <div className="min-h-screen flex flex-col bg-white">
         <SiteHeader />
-        <main className="w-full">{children}</main>
+        {/* tabIndex={-1} is load-bearing: without it the browser scrolls but
+            leaves focus on the link, so the next Tab goes back into the header
+            and the skip does nothing for keyboard users. */}
+        <main id="main-content" tabIndex={-1} className="w-full focus:outline-none">
+          {children}
+        </main>
         <SiteFooter />
       </div>
       <WhatsAppFloat />
