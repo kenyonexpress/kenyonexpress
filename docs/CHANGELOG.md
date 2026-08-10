@@ -17,6 +17,11 @@ STATE.md
 
 ### Docs
 
+### Docs (2026-08-10 launch validation)
+
+- `launch-week-plan.md`: 10 דילי השקה + ספקים (שוחזר מ-seed)
+- `LAUNCH-VALIDATION.md`: אימות מול פרוד; 10× missing-supplier; טבלת פערים; 5 פעולות אדמין
+
 ### Docs (2026-08-10 payout mechanism)
 
 - `ARCHITECTURE-PAYOUT-MECHANISM.md`: מנגנון תשלום ספק למוצר פיזי (BINDING)

@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-10 (docs-only ke-arch: ARCHITECTURE-PAYOUT-MECHANISM)
+Updated: 2026-08-10 (docs-only ke-arch: LAUNCH-VALIDATION)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,22 +8,21 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-`docs/ARCHITECTURE-PAYOUT-MECHANISM.md` (BINDING):
+`docs/LAUNCH-VALIDATION.md` + `docs/launch-week-plan.md`:
 
-- פיזי בלבד; קופון No Escrow (0 payout)
-- טריגר: `charge_settled` + T+N ימי עסקים + שער משלוח
-- ביצוע: העברה בנקאית ידנית אחרי אישור אדמין + ייצוא CSV באצ'
-- סכימה: `payout_batches` + `supplier_payouts` + lines באגורות `bigint`
-- Edge: החזר אחרי paid → debit; ספק חסום לא משולם
+- מקורות מחקר/תוכנית חסרו בעץ; שוחזר מ-seed #1-10
+- מדידה מול פרוד: 11 ספקים, 61 מוצרים; 0 התאמות לשמות ספק seed
+- סטטוס: 10× `missing-supplier`
+- 5 פעולות אדמין מדויקות להשקה
 
 ## In Progress
 nothing
 
 ## Blocking Issues
-none (docs only); G1 עדיין פתוח בפרודקשן עד יישום הקוד
+השקת 10 הדילים חסומה: ספקי seed לא קיימים ב-`suppliers` בפרודקשן
 
 ## Next Task
-יישום payout לפי docs/ARCHITECTURE-PAYOUT-MECHANISM.md (מחוץ לסקופ docs-only).
+אדמין: יצירת 10 ספקים + 10 מוצרי קופון לפי LAUNCH-VALIDATION §5
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
@@ -32,6 +31,7 @@ none (docs only); G1 עדיין פתוח בפרודקשן עד יישום הקו
 - **2026-08-06 QA:** המודל המחייב ל-docs הוא **No Escrow** לקופון (מקדמה לפלטפורמה; יתרה בבית העסק; אין held לספק; אין נאמן/J5 של חברת אשראי) + `platform_percent` פר מוצר בלי default. זה **דורס** את נוסח Escrow/held של 2026-07-27 בסעיף ההיסטורי למטה (נשמר לתיעוד בלבד).
 - **2026-08-07 QA re-pass:** `docs/CONTRADICTIONS.md` עצמו עודכן בהתאם (C11א). בלי זה המסמך "הגובר" סתר את חבילת ה-20.
 - **2026-08-10 payout:** ביצוע כסף לספק פיזי = העברה בנקאית ידנית + CSV באצ' אחרי אישור אדמין. לא Cardcom Financial ולא מסה"ב אוטומטי בשלב זה. טריגר = T+N מה-ledger + שער משלוח (לא אישור משלוח לבדו).
+- **2026-08-10 launch:** בהעדר `launch-week-plan.md` ודוח מחקר סוכן, רשימת 10 דילי ההשקה = `scripts/seed/catalogue-data.mjs` מוצרים #1-10.
 
 ---
 ## Current Phase (רקע מודל) [היסטורי; דורס ב-QA 2026-08-06]
