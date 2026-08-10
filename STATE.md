@@ -22,9 +22,6 @@ nothing
 
 ## Next Task
 אחרי login ל-Vercel: להשלים טבלת שמות env + צילום Preview אחרון
-## Working Directory
-/Users/ofir/kenyonexpress-web/ke-arch
-
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
