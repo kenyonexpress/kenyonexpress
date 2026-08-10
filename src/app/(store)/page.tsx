@@ -1,8 +1,10 @@
 import BenefitBar from '@/components/home/BenefitBar'
+import CmsHero from '@/components/home/CmsHero'
 import DealsOfTheDay from '@/components/home/DealsOfTheDay'
 import HeroSection from '@/components/home/HeroSection'
 import CategoryStrip from '@/components/store/CategoryStrip'
 import { buildSiteJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
+import { Suspense } from 'react'
 // home-handheld.css is imported by the root layout (see the note there): as a
 // page-level import it was a 125-byte stylesheet costing a full round trip.
 
@@ -12,7 +14,17 @@ export const metadata = {
   alternates: { canonical: '/' },
 }
 
-/** refs/ke_live_singlefile.html section order: hero → categories → features → product grid */
+/**
+ * refs/ke_live_singlefile.html section order: hero → categories → features →
+ * product grid.
+ *
+ * THE HERO IS NOW CMS-BACKED, AND THE PAGE IS STILL STATIC. `readHomepageContent`
+ * returns the authored constants whenever the CMS tables are absent, empty or
+ * unreadable - which is every deployment until `migrations/pending/005` is
+ * applied - so the prerendered output is byte-identical to what the comparison
+ * gate measured. See lib/homepage/cms.ts for why an editor can change the
+ * CONTENT of a slide and never its measured geometry.
+ */
 export default function HomePage() {
   // Organization and WebSite belong on the home page and nowhere else. Emitting
   // them from the root layout would repeat the same two nodes on the checkout,
@@ -34,7 +46,19 @@ export default function HomePage() {
           dangerouslySetInnerHTML={{ __html: jsonLdScript(node) }}
         />
       ))}
-      <HeroSection />
+      {/*
+        The fallback is the AUTHORED hero, not a skeleton, and that is the
+        whole trick. The static shell therefore paints exactly the markup the
+        comparison gate measured - so a deployment with no CMS rows, which is
+        every deployment until `migrations/pending/005` is applied, is
+        byte-identical to before. The LCP element is never behind a spinner.
+
+        A configured hero streams in and replaces it. That is the only case
+        where anything moves, and it is the case an editor asked for.
+      */}
+      <Suspense fallback={<HeroSection />}>
+        <CmsHero />
+      </Suspense>
       {/* The city row sits directly under the hero, per the goal.
           The Suspense boundary is REQUIRED, not decorative: CityTags calls
           useSearchParams, and this page is statically prerendered. Without a
