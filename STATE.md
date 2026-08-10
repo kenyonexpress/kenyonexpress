@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-10 (SUPPLIER-QUALITY + FEATURED pricing)
+Updated: 2026-08-10 (progress + checkout + support/whatsapp docs)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -9,23 +9,24 @@ ke-arch
 
 ## Last Completed
 ```
-docs/SUPPLIER-QUALITY-PROGRAM.md
+docs/PROGRESS-REPORT-AUG.md
+docs/CHECKOUT-OPTIMIZATION.md
+docs/GUEST-VS-MEMBER-STRATEGY.md
+docs/SUPPORT-SLA-POLICY.md
+docs/WHATSAPP-BUSINESS-SETUP.md
 ```
-+
-```
-docs/FEATURED-DEALS-PRICING.md
-```
-: איכות ספקים (מדדים, השעיה, שימוע, boost חינם) + תמחור Featured עתידי (מופרד מ-platform_percent). אינדקס עודכן.
+(SUPPLIER-QUALITY / FEATURED כבר היו ב-HEAD). MASTER-INDEX עודכן.
 
 ## In Progress
 nothing
 
 ## Blocking Issues
 - השקה: 10 דילי seed עדיין missing מול `suppliers` בפרוד
-- Vercel dashboard: אין סשן מחובר (נדרש login ידני לביקורת env/deployments)
+- Cardcom production + DNS cutover (ראה PROGRESS-REPORT-AUG)
+- Vercel dashboard: אין סשן מחובר
 
 ## Next Task
-המשך תור docs: PROGRESS-REPORT-AUG / CHECKOUT-OPTIMIZATION / SUPPORT-SLA לפי התור
+ביצוע לוח השבוע ב-PROGRESS-REPORT-AUG (דילים → Cardcom → DNS)
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
