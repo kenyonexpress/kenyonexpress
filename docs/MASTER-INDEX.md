@@ -237,6 +237,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `ARCHITECTURE-OBSERVABILITY.md` | Sentry / לוגים. | QA-PASS (#9) |
 | `SLA-MONITORING.md` | זמינות + מי מקבל התראה. | RUNBOOK (10.08) |
 | `INCIDENT-PLAYBOOKS.md` | 6 תקריות תפעול. | RUNBOOK (10.08) |
+| `INCIDENT-RESPONSE-RUNBOOK.md` | מסגרת IR: SEV, kill switch, postmortem. | RUNBOOK (11.08) |
 | `ARCHITECTURE-BACKUP-DR.md` | גיבוי/PITR (מחייב). | QA-PASS (#14) |
 | `BACKUP-RECOVERY.md` | RPO/RTO + תרגול. | RUNBOOK (10.08) |
 | `ARCHITECTURE-PRODUCTION-OPS.md` | תכנון תשתית. | DESIGN |
