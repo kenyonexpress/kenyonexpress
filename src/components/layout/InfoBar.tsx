@@ -1,3 +1,16 @@
+/**
+ * DEAD CODE. Nothing imports this; the trust band the site renders is
+ * `src/components/home/BenefitBar.tsx`, which the homepage mounts and which was
+ * matched 1:1 to the live site on 2026-08-10.
+ *
+ * Left in place rather than deleted because deleting a file is a stop condition
+ * in this project, not because it is worth keeping. It is actively misleading:
+ * the five subtitles below -- "משלוח מהיר", "99%", "זמינים תמיד", "הזולים בארץ"
+ * -- appear NOWHERE on the live site. Four of them are invented claims, and
+ * "99%" and "הזולים בארץ" are the kind a consumer regulator reads as a
+ * quantified promise. Do not revive this file; if a second trust band is ever
+ * needed, copy BenefitBar. **Safe to delete on Ofir's word.**
+ */
 import { HandCoins, Headphones, Tag, ThumbsUp, Truck } from 'lucide-react'
 
 const ITEMS = [
