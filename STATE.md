@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-10 (DATA-RETENTION-POLICY)
+Updated: 2026-08-10 (ONBOARDING-DEVELOPER + topic-sorted MASTER-INDEX)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -9,9 +9,13 @@ ke-arch
 
 ## Last Completed
 ```
-docs/DATA-RETENTION-POLICY.md
+docs/ONBOARDING-DEVELOPER.md
 ```
-: משכי שמירה (הזמנות 7ש׳, לוגים 90י׳, עגלות 30י׳), אנונימיזציה, עוגיות; מיושר לכיוון חוק הגנת הפרטיות + תיקון 13 עם סימון **[דורש עו״ד]** בכל הסעיפים הרגישים. אינדקס עודכן.
++ סידור מחדש של
+```
+docs/MASTER-INDEX.md
+```
+לפי נושא (12 קטגוריות). כללי ברזל: agorot, MCP migrations, compare.mjs, worktrees.
 
 ## In Progress
 nothing
