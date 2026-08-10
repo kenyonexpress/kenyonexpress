@@ -1,14 +1,16 @@
 # דוח מנהלים: אוגוסט 2026
 
-סיכום מה נבנה, מה חסר להשקה, סיכונים, ולוח לשבוע הקרוב.
+סיכום מה נבנה ב-docs, מה חסר להשקה, סיכונים, ולוח לשבוע הקרוב.  
+עודכן אחרי סבב 20 המסמכים (checkout → progress).
 
-Status: **REPORT** · עודכן: 2026-08-10  
+Status: **REPORT** · עודכן: 2026-08-11  
 Scope: **docs only** · worktree `ke-arch` · מקור:
 
 ```
 STATE.md
 docs/MASTER-INDEX.md
 docs/LAUNCH-VALIDATION.md
+docs/LAUNCH-WEEK-RUNBOOK.md
 docs/V2-VISION.md
 ```
 
@@ -16,38 +18,52 @@ docs/V2-VISION.md
 
 ---
 
-## 1. במספרים (נמדד ב-ke-arch, 2026-08-10)
+## 1. במספרים (ke-arch, 2026-08-11)
 
 | מדד | ערך | הערה |
 |---|---:|---|
-| מסמכי `docs/*.md` | **~109** | כולל companions + QA pack |
-| קומיטי docs מאז 01.08 | **~200+** | ענף `arch/docs-lifecycle` ונגזרות |
+| מסמכי `docs/*.md` | **~126** | כולל companions + סבב 20 |
+| קומיטי docs מאז 01.08 | **~248** | ענף `arch/docs-lifecycle` |
 | מיגרציות SQL בריפו | **73** | החלה ל-prod רק MCP |
 | דפי `page.tsx` | **55** | store / account / admin / supplier |
 | טסטי unit (`*.test.ts/x`) | **56** | Vitest; רף כסף בדרך ל-100% |
 | מפרטי E2E | **7** | Playwright |
 | ספקי פרוד פעילים (מדידה) | **11** | LAUNCH-VALIDATION |
 | מוצרים לא מחוקים בפרוד | **61** | אותה מדידה |
-| דילי השקה מול suppliers | **10/10 missing** | חוסם השקה שיווקית |
+| דילי השקה מול suppliers | **10/10 missing** | עדיין חוסם השקה שיווקית |
 
 חבילת ROADMAP-V2 (#1-20): **QA-PASS**. מודל מחייב: **No Escrow** + `platform_percent` פר מוצר.
 
 ---
 
-## 2. מה נבנה החודש (לפי נושא)
+## 2. סבב 20 מסמכים (2026-08-11) — הושלם
 
-| תחום | דוגמאות מוצר/מסמך |
-|---|---|
-| כסף | PAYOUT-MECHANISM, CONTRADICTIONS→No Escrow, Cardcom v2 docs |
-| השקה | LAUNCH-VALIDATION, launch-week-plan, RUNBOOK-LAUNCH-DAY, MARKETING-LAUNCH |
-| תפעול | INCIDENT-PLAYBOOKS, SLA-MONITORING, BACKUP-RECOVERY, DISPUTE-RESOLUTION |
-| איכות קוד | TESTING-STRATEGY, CODE-REVIEW-CHECKLIST, ONBOARDING-DEVELOPER |
-| צמיחה | REFERRAL-PROGRAM, SEASONAL-CAMPAIGNS, CITY-LANDING, EMAIL copy |
-| ספקים | SUPPLIER-QUALITY-PROGRAM, FEATURED-DEALS-PRICING, guides |
-| מובייל | MOBILE-APP refresh, DEEP-LINKS / APP-STORE (ענפים נפרדים) |
-| חזון | V2-VISION (live / מכרזים / ML / גיימיפיקציה) |
+כל קובץ: כתיבה/רענון + commit + push ל-`arch/docs-lifecycle`.
 
-אינדקס ממוין לפי נושא:
+| # | מסמך | תוכן עיקרי |
+|---|---|---|
+| 1 | `CHECKOUT-OPTIMIZATION.md` | זרימת Cardcom, כשלים, retry |
+| 2 | `GUEST-VS-MEMBER-STRATEGY.md` | שערים לאורח/חבר מול checkout |
+| 3 | `SUPPLIER-QUALITY-PROGRAM.md` | איכות ספקים + SLA |
+| 4 | `FEATURED-DEALS-PRICING.md` | קידום דילים מחוץ ל-checkout לקוח |
+| 5 | `ARCHITECTURE-MOBILE-APP.md` | Expo, WebView תשלום, push |
+| 6 | `ADMIN-USER-GUIDE.md` | מדריך אדמין בעברית |
+| 7 | `SUPPLIER-ONBOARDING.md` | צירוף ספק בעברית |
+| 8 | `MARKETING-LAUNCH-PLAN.md` | תוכנית שיווק: תקציב, שערי עצירה |
+| 9 | `ANALYTICS-SPEC.md` | אירועים + KPI מוצר |
+| 10 | `CUSTOMER-SUPPORT-PLAYBOOK.md` | תסריטי מענה מורחבים |
+| 11 | `SECURITY-AUDIT-CHECKLIST.md` | צ׳קליסט אבטחה להשקה |
+| 12 | `PERFORMANCE-BUDGET.md` | תקציבי CWV ומשקל |
+| 13 | `INTEGRATIONS-ROADMAP.md` | Wolt/Gett פנימי V0–V5 |
+| 14 | `CASHBACK-WALLET-SPEC.md` | מפרט ארנק קאשבק |
+| 15 | `SUBSCRIPTIONS-BILLING-SPEC.md` | Cardcom Recurring |
+| 16 | `GEO-FEATURES-SPEC.md` | עיר / near / פרטיות |
+| 17 | `WHATSAPP-COMMERCE-SPEC.md` | WA בלי סליקה בצ׳אט |
+| 18 | `SEO-CONTENT-STRATEGY.md` | אסטרטגיית תוכן SEO |
+| 19 | `LAUNCH-WEEK-RUNBOOK.md` | D-2 עד D+7 |
+| 20 | `PROGRESS-REPORT-AUG.md` | דוח זה |
+
+אינדקס מעודכן:
 
 ```
 docs/MASTER-INDEX.md
@@ -55,68 +71,89 @@ docs/MASTER-INDEX.md
 
 ---
 
-## 3. מה נשאר להשקה (רשימת חסימה)
+## 3. מה נבנה החודש (לפי נושא)
+
+| תחום | דוגמאות |
+|---|---|
+| כסף | Cardcom flow, checkout retry, payout, No Escrow |
+| השקה | VALIDATION, LAUNCH-WEEK-RUNBOOK, MARKETING-LAUNCH-PLAN |
+| תפעול | INCIDENT, SLA, BACKUP, SUPPORT playbook |
+| אבטחה/ביצועים | SECURITY-AUDIT-CHECKLIST, PERFORMANCE-BUDGET |
+| צמיחה | SEO strategy, analytics KPI, referral, seasonal |
+| ספקים | quality, onboarding, featured pricing |
+| מובייל/עתיד | Expo WebView, integrations roadmap, geo, WA, subscriptions, wallet spec |
+| חזון | V2-VISION |
+
+---
+
+## 4. מה נשאר להשקה (רשימת חסימה)
 
 | # | פריט | בעלות | חומרה |
 |---|---|---|---|
 | 1 | קישור 10 דילי seed ל-`suppliers` אמיתיים | אדמין / דאטה | **חוסם** |
-| 2 | Cardcom production (טרמינל חי, webhook, smoke תשלום) | בעלים + סליקה | **חוסם** |
+| 2 | Cardcom production (טרמינל חי, smoke תשלום) | בעלים + סליקה | **חוסם** |
 | 3 | DNS cutover / דומיין סופי מול Vercel | בעלים | **חוסם** לפני מותג |
 | 4 | Login ל-Vercel + אימות env names מול `.env.example` | בעלים | גבוה |
 | 5 | באנר עוגיות / Consent Mode חי | קוד | גבוה למדידה |
 | 6 | Soft-open: `CHECKOUT_ENABLED` + רכישת טסט | בעלים | חוסם מסחרי |
+| 7 | סגירת ממצאי SEC-QR / SEC-WALLET לפני פרוד מלא | קוד | **חוסם** אבטחה |
 
-פירוט דילים: `docs/LAUNCH-VALIDATION.md`.
+פירוט דילים: `LAUNCH-VALIDATION.md`.  
+תפעול שבוע: `LAUNCH-WEEK-RUNBOOK.md`.
 
 ---
 
-## 4. סיכונים פתוחים
+## 5. סיכונים פתוחים
 
-### 4.1 Cardcom production
+### 5.1 Cardcom production
 
 - טרמינל/סודות בפרוד לא אומתו בדשבורד בסשן docs זה.
-- חובה smoke: הזמנה → LP → return → `GetLpResult` → paid, **בלי** לסמוך על HMAC בדיוני.
+- חובה smoke: הזמנה → LP → return → אימות → paid.
 - Kill switch: `CHECKOUT_ENABLED=false` עד ירוק.
 
-### 4.2 DNS cutover
+### 5.2 DNS cutover
 
-- מעבר לדומיין החי דורש TTL נמוך מראש, בדיקת SSL, ו-rollback ל-Vercel.
-- סיכון: חלון שבו מיילים/webhook מצביעים לכתובת ישנה.
+- TTL נמוך מראש, SSL, rollback ל-Vercel.
+- סיכון: webhook/מיילים לכתובת ישנה.
 
-### 4.3 נוספים
+### 5.3 נוספים
 
 | סיכון | מצב |
 |---|---|
 | דילי השקה בלי ספק | 10× missing |
 | Vercel env drift | audit חסום בלוגין |
-| רף coverage money עדיין 95% בקונפיג מול מדיניות 100% | חובת יישור קוד |
-| מפעיל יחיד (אין NOC) | מקובל ל-MVP; SEV1 לטלפון |
+| SEC-QR / SEC-WALLET | פתוחים ב-SECURITY ADR |
+| רף coverage money | ליישור מול מדיניות 100% |
+| מפעיל יחיד | SEV1 לטלפון |
 
 ---
 
-## 5. לוח מוצע: שבוע הקרוב
+## 6. לוח מוצע: שבוע הקרוב
 
 | יום | מיקוד | תוצר |
 |---|---|---|
-| א׳ | דאטה השקה | לפחות 5/10 דילים מקושרים לספק + תמונה/מחיר |
-| ב׳ | Cardcom | אימות env + sandbox/prod smoke מתועד |
-| ג׳ | Vercel/DNS | login, טבלת שמות env, תוכנית cutover כתובה |
-| ד׳ | Consent + soft-open checklist | באנר / מדידה; `LAUNCH-CHECKLIST` מסומן |
-| ה׳ | E2E + compare בית | ירוק על זרימת אורח עד לפני תשלום |
-| ו׳-ש׳ | באפר / תיקון פערים | רק חוסמים |
+| א׳ | דאטה השקה | ≥ 5/10 דילים מקושרים לספק |
+| ב׳ | Cardcom | env + smoke מתועד |
+| ג׳ | Vercel/DNS | login, טבלת env, תוכנית cutover |
+| ד׳ | Consent + security checklist כסף | באנר; סעיפי SECURITY-AUDIT |
+| ה׳ | E2E עד לפני תשלום | ירוק אורח |
+| ו׳–ש׳ | באפר | רק חוסמים |
 
-אחרי השבוע: החלטה Go / No-Go soft-open לפי רשימת החסימה למעלה.
-
----
-
-## 6. המלצת הנהלה (משפט אחד)
-
-**אל תפתחו שיווק ממומן לפני שדילי ההשקה מחוברים לספקים ו-Cardcom production עבר smoke.** המסמכים מוכנים; החסם הוא דאטה + סליקה + DNS, לא חוסר ארכיטקטורה.
+אחרי השבוע: Go / No-Go soft-open לפי שערי `LAUNCH-WEEK-RUNBOOK`.
 
 ---
 
-## 7. Revision
+## 7. המלצת הנהלה
+
+**הארכיטקטורה והמסמכים לשבוע השקה מוכנים.**  
+**אל תפתחו שיווק ממומן לפני דילים מחוברים, Cardcom smoke, וסגירת ממצאי כסף/QR קריטיים.**  
+החסם הוא דאטה + סליקה + DNS + אבטחת כסף, לא חוסר תוכנית.
+
+---
+
+## 8. Revision
 
 | תאריך | שינוי |
 |---|---|
 | 2026-08-10 | דוח מנהלים ראשון לאוגוסט |
+| 2026-08-11 | סיכום סבב 20 מסמכים; מספרים מעודכנים; חסימת SEC |

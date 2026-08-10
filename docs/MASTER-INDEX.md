@@ -108,7 +108,7 @@ docs/ONBOARDING-DEVELOPER.md
 | מסמך | תקציר | סטטוס |
 |---|---|---|
 | `ONBOARDING-DEVELOPER.md` | מדריך מפתח: מבנה, ברזל, הרצה, PR. | GUIDE (10.08) |
-| `PROGRESS-REPORT-AUG.md` | דוח מנהלים אוגוסט: מספרים, חסמים, שבוע קרוב. | REPORT (10.08) |
+| `PROGRESS-REPORT-AUG.md` | דוח מנהלים אוגוסט: סבב 20 מסמכים, חסמים, שבוע קרוב. | REPORT (11.08) |
 | `MASTER-INDEX.md` | אינדקס זה. | QA-PASS (#20) |
 | `CONTRADICTIONS.md` | No Escrow (C11א), `platform_percent` פר מוצר. | BINDING (07.08) |
 | `BUSINESS-MODEL.md` | מחיר קופון באתר + יתרה בעסק. | BINDING |

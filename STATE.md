@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-11 (seven docs refresh: checkout→supplier onboarding)
+Updated: 2026-08-11 (docs batch 1-20 complete: checkout→PROGRESS-REPORT)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,9 +8,9 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-ברצף (כל קובץ commit+push):
-CHECKOUT-OPTIMIZATION, GUEST-VS-MEMBER, SUPPLIER-QUALITY, FEATURED-DEALS,
-ARCHITECTURE-MOBILE-APP (WebView+push), ADMIN-USER-GUIDE, SUPPLIER-ONBOARDING.
+סבב 20 מסמכים ב-docs/ (commit+push לכל קובץ) על arch/docs-lifecycle:
+1-7 checkout→supplier onboarding; 8-19 marketing→launch-week; 20 PROGRESS-REPORT-AUG.
+MASTER-INDEX עודכן לאורך הדרך.
 
 ## In Progress
 nothing
@@ -21,7 +21,7 @@ nothing
 - Vercel dashboard: אין סשן מחובר
 
 ## Next Task
-ביצוע לוח השבוע ב-PROGRESS-REPORT-AUG (דילים → Cardcom → DNS)
+ביצוע שערי LAUNCH-WEEK-RUNBOOK / PROGRESS-REPORT (דילים → Cardcom smoke → DNS → SEC-QR/WALLET)
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
