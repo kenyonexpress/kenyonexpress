@@ -1,6 +1,7 @@
 'use client'
 
 import ImageUploader from '@/components/admin/ImageUploader'
+import { readDimensionMm, readTags, readVatExempt } from '@/lib/admin/product-fields'
 import { supplierReadiness } from '@/lib/admin/supplier-form'
 import {
   type ProductMoneyType,
@@ -1063,6 +1064,47 @@ export default function ProductForm({
             </p>
           </div>
         </div>
+        {/* VAT and tags. Both are admin-only and neither is shown on a coupon:
+            a coupon's money is the prepayment split, not a taxed goods sale,
+            and tagging is for the physical catalogue's merchandising. */}
+        {!isCouponProduct && (
+          <div className="flex items-start gap-3">
+            <input
+              id="vat_exempt"
+              name="vat_exempt"
+              type="checkbox"
+              value="true"
+              defaultChecked={readVatExempt(product)}
+              className="mt-1 w-4 h-4 rounded border-gray-300 text-brand focus:ring-brand"
+            />
+            <div>
+              <label htmlFor="vat_exempt" className="text-sm font-medium text-gray-700">
+                פטור ממע"מ
+              </label>
+              <p className="text-xs text-gray-500 mt-0.5">
+                ברירת המחדל היא שמע"מ חל. סמנו רק כשיש פטור ממשי, למשל אילת.
+              </p>
+            </div>
+          </div>
+        )}
+        {!isCouponProduct && (
+          <div>
+            <label htmlFor="tags" className="block text-xs font-medium text-gray-700 mb-1">
+              תגיות
+            </label>
+            <input
+              id="tags"
+              name="tags"
+              type="text"
+              defaultValue={readTags(product).join(', ')}
+              placeholder="מבצע, חורף, מתנה"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              מופרדות בפסיק. משמשות להתאמת "אולי יעניין אותך" ולקידום, ואינן קטגוריה.
+            </p>
+          </div>
+        )}
         <div className="grid grid-cols-5 gap-4">
           <div>
             <label htmlFor="weight_grams" className="block text-xs font-medium text-gray-700 mb-1">
@@ -1080,46 +1122,46 @@ export default function ProductForm({
             />
           </div>
           <div>
-            <label htmlFor="length_cm" className="block text-xs font-medium text-gray-700 mb-1">
-              אורך (ס"מ)
+            <label htmlFor="length_mm" className="block text-xs font-medium text-gray-700 mb-1">
+              אורך (מ"מ)
             </label>
             <input
-              id="length_cm"
-              name="length_cm"
+              id="length_mm"
+              name="length_mm"
               type="number"
-              min="0"
-              step="0.1"
-              defaultValue={product?.length_cm ?? ''}
+              min="1"
+              step="1"
+              defaultValue={readDimensionMm(product, 'length') ?? ''}
               dir="ltr"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
           <div>
-            <label htmlFor="width_cm" className="block text-xs font-medium text-gray-700 mb-1">
-              רוחב (ס"מ)
+            <label htmlFor="width_mm" className="block text-xs font-medium text-gray-700 mb-1">
+              רוחב (מ"מ)
             </label>
             <input
-              id="width_cm"
-              name="width_cm"
+              id="width_mm"
+              name="width_mm"
               type="number"
-              min="0"
-              step="0.1"
-              defaultValue={product?.width_cm ?? ''}
+              min="1"
+              step="1"
+              defaultValue={readDimensionMm(product, 'width') ?? ''}
               dir="ltr"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
           <div>
-            <label htmlFor="height_cm" className="block text-xs font-medium text-gray-700 mb-1">
-              גובה (ס"מ)
+            <label htmlFor="height_mm" className="block text-xs font-medium text-gray-700 mb-1">
+              גובה (מ"מ)
             </label>
             <input
-              id="height_cm"
-              name="height_cm"
+              id="height_mm"
+              name="height_mm"
               type="number"
-              min="0"
-              step="0.1"
-              defaultValue={product?.height_cm ?? ''}
+              min="1"
+              step="1"
+              defaultValue={readDimensionMm(product, 'height') ?? ''}
               dir="ltr"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />

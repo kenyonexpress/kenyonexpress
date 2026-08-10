@@ -87,9 +87,13 @@ const schema = z
     requires_shipping: z.coerce.boolean().default(true),
     whatsapp_enabled: z.coerce.boolean().default(false),
     weight_grams: z.coerce.number().int().min(0).nullable().optional(),
-    length_cm: z.coerce.number().min(0).nullable().optional(),
-    width_cm: z.coerce.number().min(0).nullable().optional(),
-    height_cm: z.coerce.number().min(0).nullable().optional(),
+    // Millimetres, whole. The cm columns are superseded by migration 112 and
+    // are no longer written; readDimensionMm still converts them for display.
+    length_mm: z.coerce.number().int().positive().nullable().optional(),
+    width_mm: z.coerce.number().int().positive().nullable().optional(),
+    height_mm: z.coerce.number().int().positive().nullable().optional(),
+    vat_exempt: z.coerce.boolean().default(false),
+    tags: z.array(z.string().min(1)).default([]),
     warranty_months: z.coerce.number().int().min(0).nullable().optional(),
     condition: z.enum(['new', 'refurbished', 'used']).nullable().optional(),
     // coupon specifics (048)
@@ -215,9 +219,21 @@ async function runUpsertProduct(
     requires_shipping: formData.get('requires_shipping') === 'true',
     whatsapp_enabled: formData.get('whatsapp_enabled') === 'true',
     weight_grams: formData.get('weight_grams') || null,
-    length_cm: formData.get('length_cm') || null,
-    width_cm: formData.get('width_cm') || null,
-    height_cm: formData.get('height_cm') || null,
+    length_mm: formData.get('length_mm') || null,
+    width_mm: formData.get('width_mm') || null,
+    height_mm: formData.get('height_mm') || null,
+    vat_exempt: formData.get('vat_exempt') === 'true',
+    // One text input, comma separated. Split here rather than in the form so
+    // the server decides what a tag is: trimmed, non-empty, and deduped, so
+    // "מבצע, מבצע" is one tag and a trailing comma is not an empty one.
+    tags: [
+      ...new Set(
+        String(formData.get('tags') ?? '')
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean),
+      ),
+    ],
     warranty_months: formData.get('warranty_months') || null,
     condition: formData.get('condition') || null,
     coupon_terms_he: formData.get('coupon_terms_he') || null,
