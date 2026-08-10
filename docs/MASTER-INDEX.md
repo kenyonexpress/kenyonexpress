@@ -126,6 +126,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `ARCHITECTURE-COMMERCE.md` | כללי מסחר C1-C10. | QA-PASS (06.08) |
 | `ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md` | checkout/מימוש; יומן D1-D6. | QA-PASS (06.08) |
 | `CHECKOUT-OPTIMIZATION.md` | זרימת Cardcom, כשלים, retry + משפך/A/B. | PLAN (11.08) |
+| `SUBSCRIPTIONS-BILLING-SPEC.md` | מנויים + Cardcom Recurring (עתידי). | SPEC (11.08) |
 | `GUEST-VS-MEMBER-STRATEGY.md` | מתי דוחפים הרשמה ומתי לא. | PLAN (10.08) |
 | `CARDCOM-ARCHITECTURE.md` | Cardcom (מחקר v11; קוד legacy). | BINDING + QA (07.08) |
 | `ARCHITECTURE-PAYOUT-MECHANISM.md` | Payout פיזי: T+N, באצ', CSV ידני. | BINDING (10.08) |
