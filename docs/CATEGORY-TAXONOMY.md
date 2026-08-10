@@ -126,10 +126,9 @@ L1 **E** `beauty-health` · יופי בריאות וטיפוח
 
 ## 3. אטרקציות ופנאי
 
-אין שורש `attractions` ב-DB. מוצע L1 חדש; עד אז חוויות יכולות לשבת תחת `courses` / דילים.
+אין שורש אטרקציות ב-DB. מוצע L1 חדש לפי ארכיטקטורה T6.
 
-L1 **P** `attractions` · אטרקציות ופנאי  
-(שם slug לפי ארכיטקטורה T6; אם מעדיפים `attractions`→`attractions` כבר בארכיטקטורה; כאן משתמשים ב-`attractions` הברור יותר ל-URL)
+L1 **P** `attred` · אטרקציות ופנאי
 
 | L2 slug | L2 name_he | L3 slug | L3 name_he | סטטוס |
 |---|---|---|---|---|
@@ -248,7 +247,7 @@ L1 **P** `health` · בריאות ורפואה משלימה
 
 1. להרחיב depth guard ל-3 (מיגרציה MCP).  
 2. להוסיף L2 תחת `restaurants-cafes`, `beauty-health`, `vacation` (הכי חמים).  
-3. L1 חדשים: `home`, `attractions`/`attractions`, `auto` לפי מלאי.  
+3. L1 חדשים: `home`, `attred`, `auto` לפי מלאי.  
 4. L3 רק אחרי שיש מספיק מוצרים בכל ענף.  
 5. Collections נשארות כפי שהן.
 
