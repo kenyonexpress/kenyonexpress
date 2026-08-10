@@ -1,7 +1,11 @@
 import { parseIls } from '@/lib/money'
 import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
-import type { SupplierRedemptionRow, SupplierSaleLine } from '@/lib/supplier/dashboard'
+import {
+  type SupplierRedemptionRow,
+  type SupplierSaleLine,
+  supplierDueAgorot,
+} from '@/lib/supplier/dashboard'
 import type { SupplierProductRow } from '@/lib/supplier/products'
 
 /**
@@ -89,7 +93,21 @@ export async function getSupplierSales(supplierId: string): Promise<SupplierSale
       supplierImmediateAgorot: immediate,
       escrowHeldAgorot: held,
       escrowReleaseAgorot: row.escrow_release_agorot ?? 0,
-      supplierDueAgorot: immediate + held,
+      // The immediate split ONLY. This used to be `immediate + held`, which is
+      // the escrow model Ofir reversed on 2026-07-28 and migration 085 removed
+      // from the database: a coupon's whole prepayment is the platform's at the
+      // moment of payment, the supplier receives nothing from us on it, and
+      // there is no hold to release. Adding `held` told a supplier they were
+      // owed money that was never going to arrive.
+      //
+      // It is delegated rather than reimplemented because it WAS reimplemented,
+      // and the two copies disagreed: `lib/supplier/dashboard.ts` has ignored
+      // the escrow columns since 085 and its aggregate is what the portal
+      // actually prints, so this field was a shadowed second answer waiting for
+      // the first caller to read it. Measured against production: two legacy
+      // escrow_holds rows are still `held`, both against coupon codes, so this
+      // was not hypothetical.
+      supplierDueAgorot: supplierDueAgorot({ supplierImmediateAgorot: immediate }),
       settlementStatus: row.settlement_status,
       paidAt: row.orders?.paid_at ?? null,
     }

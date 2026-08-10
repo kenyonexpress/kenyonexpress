@@ -7,8 +7,15 @@ import { type NextRequest, NextResponse } from 'next/server'
 /**
  * Nightly voucher lifecycle job. Two steps, in this order and never merged:
  *
- *   1. `expire_vouchers()` flips `issued` rows past `expires_at` to `expired`
- *      and refunds the supplier's escrow hold.
+ *   1. `expire_vouchers()` flips `issued` rows past `expires_at` to `expired`.
+ *      It moves no money. The comment here used to say it "refunds the
+ *      supplier's escrow hold", which described the model Ofir reversed on
+ *      2026-07-28: a coupon's whole prepayment is the platform's at payment,
+ *      the supplier is due nothing from us on it, and no hold is ever written.
+ *      The function in production still carries that refund block; it matches
+ *      nothing, because every escrow_holds row has voucher_id NULL, and
+ *      migrations/pending/004 removes it. See 085, which cut the identical
+ *      dead branch out of redeem_voucher() and missed this one.
  *   2. `credit_expired_vouchers()` credits the customer's wallet with what they
  *      paid online for each expired voucher (C6: expiry is not forfeiture).
  *
