@@ -75,15 +75,36 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   if (!scoped) return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 })
   const { client: supabase, identity } = scoped
 
-  // Shares the single-scan ceiling's spirit but counts BATCHES: 40 drains an
-  // hour is a device syncing every 90 seconds without pause. The per-voucher
-  // ceiling that matters is still the one inside redeem_voucher.
+  // How often a device may DRAIN. 40 an hour is a sync every 90 seconds
+  // without pause.
   const allowed = await checkRateLimit(`voucher-redeem-batch:${identity.user.id}`, 40, 3600)
   if (!allowed) return NextResponse.json({ ok: false, error: 'rate_limited' }, { status: 429 })
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => null))
   if (!parsed.success) {
     return NextResponse.json({ ok: false, error: 'invalid_request' }, { status: 400 })
+  }
+
+  // EVERY ITEM COUNTS AGAINST THE SAME CEILING A SINGLE SCAN DOES, and this is
+  // a fix rather than a precaution.
+  //
+  // The batch limit above bounds how often a device syncs, not how many
+  // vouchers it burns. Without this loop, 40 drains of 50 items is 2,000
+  // redemption attempts an hour from one member - against a single-scan
+  // endpoint that allows 120. The batch route would have been the way around
+  // its own sibling's ceiling.
+  //
+  // The shared key is the same `voucher-redeem:<user>` bucket the single-scan
+  // route uses, so a till cannot spend its allowance twice by alternating
+  // between the two endpoints.
+  for (let index = 0; index < parsed.data.items.length; index++) {
+    const withinCeiling = await checkRateLimit(`voucher-redeem:${identity.user.id}`, 120, 3600)
+    if (!withinCeiling) {
+      // Refused BEFORE the loop touches the database, so a batch is either
+      // attempted or not - never half-burned with the rest rejected, which
+      // would leave the queue holding items whose vouchers were already gone.
+      return NextResponse.json({ ok: false, error: 'rate_limited', settled: [] }, { status: 429 })
+    }
   }
 
   const results: ItemOutcome[] = []
