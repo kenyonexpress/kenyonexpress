@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-10 (docs-only ke-arch: ADMIN-USER-GUIDE + SUPPLIER-ONBOARDING)
+Updated: 2026-08-10 (docs-only ke-arch: MARKETING-LAUNCH + ANALYTICS-SPEC)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,10 +8,10 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-‏`docs/ADMIN-USER-GUIDE.md` + `docs/SUPPLIER-ONBOARDING.md`:
+‏`docs/MARKETING-LAUNCH.md` + `docs/ANALYTICS-SPEC.md`:
 
-- מדריך אדמין: קופון/פיזי/מנוי, platform_percent, קאשבק, ספקים, החזר, דוחות
-- צירוף ספק: מסמכים, הסכם, הגדרה במערכת, הדרכת סריקה
+- שיווק השקה: 10 דילים, לוח שבוע ראשון, טקסטים עברית, UTM
+- מדידה: view_product / add_to_cart / purchase / redeem + GA4/Meta + Consent Mode
 - `MASTER-INDEX.md` עודכן
 
 ## In Progress
@@ -21,7 +21,7 @@ nothing
 השקה: 10 דילי seed עדיין missing מול `suppliers` בפרוד
 
 ## Next Task
-הרצת DESIGN-CHECKLIST מול build מקומי; אדמין לפי LAUNCH-VALIDATION §5
+אימות דילים ב-LAUNCH-VALIDATION לפני פרסום ממומן; באנר עוגיות חי
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch

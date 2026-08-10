@@ -108,6 +108,7 @@ CONTRADICTIONS, כל מספר עמלה כאן הוא שריד") הוסר מכו�
 | `ARCHITECTURE-AI-AGENTS.md` | five planned AI agents and shared infrastructure. | DESIGN |
 | `ARCHITECTURE-ANALYTICS-BI.md` | משפך ואחסון אירועים; הכנסת פלטפורמה נקראת מהשורה. | QA-PASS (06.08) |
 | `ARCHITECTURE-ANALYTICS.md` | משפך מצפייה בדיל עד מימוש. PostHog + GA4. | QA-PASS (#2) |
+| `ANALYTICS-SPEC.md` | אירועי מדידה + GA4/Meta Pixel + Consent Mode. | BINDING (10.08) |
 | `ARCHITECTURE-API-CONTRACTS.md` | חוזי API; בלי ברירת מחדל לעמלה בשום סכמה. | QA-PASS (06.08) |
 | `ARCHITECTURE-APP-STORE-LAUNCH.md` | הכנה לפרסום ב-App Store ו-Google Play. | QA-PASS (#15) |
 | `ARCHITECTURE-B2B-SALES.md` | מכירת קופונים בכמות לחברות וועדי עובדים. | QA-PASS (#17) |
