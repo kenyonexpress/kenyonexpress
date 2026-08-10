@@ -235,6 +235,48 @@ const shoot = async (url, out) => {
     }
   }
   if (lastError) throw lastError
+
+  // THE PAGE MUST BE STYLED BEFORE IT IS WORTH PHOTOGRAPHING.
+  //
+  // The retry ladder above falls back to `domcontentloaded`, which fires BEFORE
+  // stylesheets are applied. That fallback is load-bearing for a flaky live
+  // host, but it means a slow run can screenshot a flash of unstyled content
+  // and the diff then reports a number that has nothing to do with the design.
+  //
+  // Measured on 2026-08-10: the same product page, same build, same pinned
+  // slug, three runs -> 9.79%, 15.47%, 95.07%. The 95% capture was the product
+  // gallery image at full 1440x2600 with no layout at all. Nothing had changed
+  // but the timing, and two of those numbers were reported as if they were
+  // fidelity measurements.
+  //
+  // So: wait until a stylesheet has actually parsed into rules, and until web
+  // fonts have settled, before anything is measured. Cross-origin sheets throw
+  // on .cssRules, which is why the probe counts those as "present" rather than
+  // treating a SecurityError as "not ready" and spinning until timeout.
+  await p
+    .waitForFunction(
+      () => {
+        if (document.readyState !== 'complete') return false
+        const sheets = Array.from(document.styleSheets)
+        if (sheets.length === 0) return false
+        return sheets.some((sheet) => {
+          try {
+            return (sheet.cssRules?.length ?? 0) > 0
+          } catch {
+            return true // cross-origin: parsed, just not readable from here
+          }
+        })
+      },
+      { timeout: 30000 },
+    )
+    .catch(() => {
+      // Loud, and it does not abort: a run that cannot confirm styles is still
+      // worth completing, but the number it produces must not be trusted as a
+      // gate result. Silence here is what let 95.07% look like a real answer.
+      console.log(`  WARNING: styles never confirmed for ${url}; treat any diff as unmeasured`)
+    })
+  await p.evaluate(() => document.fonts?.ready).catch(() => {})
+
   const external = url.startsWith('file:') || url.includes('kenyonexpress.co.il')
   // Local pages proxy remote product images through /_next/image on first
   // request, which is slower than the 2s this used to allow: cards were being
