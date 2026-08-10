@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-10 (docs-only ke-arch: mobile + launch-day pack)
+Updated: 2026-08-10 (docs-only ke-arch: CARDCOM v2 No Escrow)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,12 +8,11 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-חבילת docs:
+‏`docs/CARDCOM-ARCHITECTURE.md` מודל עסקי v2 (10.08):
 
-- `ARCHITECTURE-MOBILE-APP.md`: Expo + shared types/logic + deep links + push + QR ספק
-- `LAUNCH-VALIDATION.md`: re-verify מול suppliers; 10× missing
-- `RUNBOOK-LAUNCH-DAY.md`: env / Cardcom / DNS / Sentry / rollback
-- `MASTER-INDEX.md` מעודכן
+- נמחקו סעיפי Escrow/held/שחרור אחרי מימוש לקופונים
+- קופון = `coupon_price` מלא נשאר בפלטפורמה; redeem טרמינלי; אין supplier payout
+- פיזי = פיצול לפי `platform_percent` + PAYOUT-MECHANISM
 
 ## In Progress
 nothing

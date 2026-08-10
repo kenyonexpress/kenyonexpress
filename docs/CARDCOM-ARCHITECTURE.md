@@ -1,11 +1,16 @@
 # CARDCOM-ARCHITECTURE.md
 # ארכיטקטורת סליקה — KenyonExpress × Cardcom
 
-> מסמך ארכיטקטורה מלא. מבוסס על מחקר תיעוד רשמי: Swagger v11 של Cardcom
+> **עודכן: 2026-08-10 · מודל עסקי v2 (No Escrow).**  
+> קופון: הלקוח משלם `coupon_price` באתר; **כל הסכום נשאר בפלטפורמה**; יתרה נגבית בבית העסק; אחרי סריקה הקופון במצב סופי `redeemed` (פג לשימוש חוזר); **אין supplier payout על קופונים**.  
+> פיזי: פיצול לפי `platform_percent` פר מוצר + payout נפרד (ראה `ARCHITECTURE-PAYOUT-MECHANISM.md`).
+
+> מחקר תיעוד רשמי: Swagger v11 של Cardcom
 > (`https://secure.cardcom.solutions/swagger/v11/swagger.json`), מרכז התמיכה
 > `support.cardcom.solutions`, ומרכזי המפתחים `cardcomapi.zendesk.com` /
 > `cardcomapinametovalue.zendesk.com`.
-> תאריך: 2026-07-23. גרסת API: **v11 (JSON REST)**.
+> מחקר מקורי: 2026-07-23. גרסת API במחקר: **v11 (JSON REST)**.
+> הקוד החי היום: legacy `/Interface/*.aspx` (ראה באנר QA למטה).
 
 > ---
 >
@@ -23,10 +28,9 @@
 > ה-`TODO` **היחיד בכל `src`**, ואומר שיש לאמת את שם ה-endpoint ואת שמות
 > השדות של הזיכוי מול טרמינל חי לפני go-live.
 >
-> **(ב) סעיפים 3.1 ו-3.2 מתארים מודל כסף שבוטל.** ‏`escrow_holds` נשארה
-> כרשומת ledger פנימית, אבל **המסגור של "Escrow" ושל "מקדמה באחוזים" מת**:
-> ‏C3 (אין נאמן ואין J5) ו-C4 (מחיר הקופון הוא שדה חופשי פר מוצר, לא אחוז
-> מהעסקה). ראה את התיקון בגוף שני הסעיפים.
+> **(ב) מודל כסף: v2 מ-10.08.** אין Escrow, אין `held` לספק על קופון, אין שחרור
+> אחרי מימוש. סעיפים 3.1 ו-3.2 נכתבו מחדש בהתאם ל-C11א / CONTRADICTIONS.
+> ‏`coupon_price` הוא שדה מוחלט פר מוצר (C4), לא אחוז מהעסקה.
 >
 > **(ג) התשתית. המסמך: Cloudflare Worker + Hono (סעיפים 5.2 ו-7.2).**
 > בפועל ה-webhook הוא route handler של Next.js תחת
@@ -121,7 +125,7 @@ AllowMultipleRefunds boolean  ברירת מחדל false — הגנה מפני ז
 ### 1.3 עסקה מושהית (J5 / SuspendedDeal)
 
 - `Operation: "SuspendedDeal"` ב-Low Profile תופס מסגרת בלי לחייב.
-- **תוקף תפיסת מסגרת: עד שבוע בלבד** (חוץ ממלונאות). זה קריטי למודל Escrow — ראה 3.1.
+- **תוקף תפיסת מסגרת: עד שבוע בלבד** (חוץ ממלונאות). **J5 אסור בכל מסלול KenyonExpress** (C3). ראה 3.1.
 - חיוב/ביטול עסקה מושהית (ממשקי legacy, עדיין פעילים):
   - חיוב: `https://secure.cardcom.solutions/interface/SuspendedDealActivate.aspx` (או `BillGoldService.asmx` → `SuspendedDealActivateOne`) עם `TerminalNumber`, `UserName`, `UserPassword`, `SuspendedDealID`.
   - ביטול: `https://secure.cardcom.solutions/interface/DeleteSuspendedDeal.aspx`.
@@ -207,101 +211,86 @@ Low Profile לכל אינטראקציה עם כרטיס; Transactions API לזי
 
 ## 3. ארכיטקטורה מומלצת
 
-עקרון-על: **Ledger פנימי = מקור אמת. Cardcom = צינור כסף.**
-כל שקל שנכנס נרשם בטבלת `ledger_entries` עם פיצול commission/supplier_share,
-וה-payout לספק הוא פעולה נפרדת ומבוקרת.
+עקרון-על: **Ledger פנימי = מקור אמת. Cardcom = צינור כסף.**  
+קופון: כל חיוב האתר = הכנסת פלטפורמה; אין שורת payout לספק.  
+פיזי: פיצול לפי snapshot של `platform_percent` ב-`order_items`; payout לספק במנגנון נפרד.
 
-### 3.1 החלטת Escrow לקופונים — האמת על J5
+### 3.1 קופון: No Escrow (מודל עסקי v2)
 
-> **QA 07.08: המסקנה של הסעיף הזה החזיקה. המסגור שלה לא.**
-> ‏J5 אכן פסול, ומאותה סיבה בדיוק. אבל C3 (24.07) הלך צעד אחד רחוק יותר:
-> **אין Escrow בכלל, גם לא "חוזי-תפעולי", וגם לא כמילה ב-UI.** מה שנשאר הוא
-> רשומת ledger פנימית, ואת זה אסור לקרוא "נאמן" בשום מסך ובשום מייל.
-> ‏`ARCHITECTURE-EMAIL-TEMPLATES.md` (QA-PASS #6) אוסר את הנוסח במפורש.
+| כלל | פירוט |
+|---|---|
+| חיוב Cardcom | מיידי ומלא של `coupon_price_ils` (ChargeOnly / Do3DS). לא J5. |
+| כסף באתר | **100% נשאר בפלטפורמה**. לספק 0 מ-payout על קופון. |
+| יתרה | `face - coupon` נגבית מהלקוח **בבית העסק** במימוש. |
+| אחרי סריקה | voucher → `redeemed` (טרמינלי). הקופון פג לשימוש חוזר. |
+| אסור | Escrow חיצוני, J5, `held` עד מימוש, שחרור מקדמה לספק, נאמן ב-UI/מייל. |
 
-‏J5 תופס מסגרת **לשבוע בלבד**. מימוש קופון קורה שבועות אחרי הרכישה.
-לכן J5 **פסול**, וזה נשאר נכון.
+‏J5 תופס מסגרת לשבוע בלבד; מימוש קופון קורה שבועות אחרי הרכישה. לכן J5 פסול, ואין תחליף Escrow.
 
-מה שבא במקומו: **חיוב מיידי ומלא של מחיר הקופון במסוף הפלטפורמה.** הסכום הזה
-הוא הכנסת הפלטפורמה במלואה, והספק גובה את היתרה במזומן בבית העסק במימוש.
-‏`escrow_holds` היא רשומה חשבונאית פנימית של המצב הזה **ותו לא**: אין צד שלישי,
-אין נאמן, אין J5, ואין כסף של הספק שמוחזק אצלנו וממתין לשחרור.
+מקור הכרעה: `docs/CONTRADICTIONS.md` (C11א), `docs/ARCHITECTURE-PRICING-RULES.md`.
 
-~~J5 כן שמור אצלנו לתרחיש אחר: הזמנת מוצר פיזי שנשלח תוך ≤ 7 ימים~~
-**בוטל ב-C3.** אין J5 בשום מסלול.
+### 3.2 זרימת קופון (תשלום מלא לפלטפורמה)
 
-### 3.2 זרימת קופון (מקדמה + Escrow)
-
-הלקוח משלם באתר את **`coupon_price` של אותו מוצר**. היתרה משולמת פיזית אצל
-הספק במימוש. פרטי הספק מוצגים בדף המוצר.
-
-> **QA 07.08:** כאן היה כתוב "רק את המקדמה (למשל 20% שמוגדר בדף המוצר)".
-> ‏**מחיר הקופון אינו אחוז** (‏C4): הוא שדה חופשי פר מוצר, ואין שום יחס קבוע
-> בינו לבין הערך הנקוב שאפשר לחשב ממנו. כל קוד או שאילתה שגוזרים אחוז מהעסקה
-> יחזירו מספר סביר ושגוי. הכותרת "מקדמה + Escrow" נשארת כשם היסטורי של הסעיף
-> בלבד.
+הלקוח משלם באתר את **`coupon_price`** של אותו מוצר (סכום מוחלט, לא אחוז).  
+פרטי הספק ויתרה לתשלום בעסק מוצגים בדף המוצר.
 
 ```
 לקוח            Next.js API          Cardcom              Webhook Worker        Ledger/DB
   │  checkout      │                    │                      │                   │
   │───────────────>│                    │                      │                   │
   │                │ INSERT payment_intent (status=created,     │                   │
-  │                │   type=coupon, amount=deposit)             │                   │
-  │                │ POST /LowProfile/Create                    │                   │
-  │                │  Operation=ChargeOnly, Amount=deposit,     │                   │
+  │                │   type=coupon, amount=coupon_price)        │                   │
+  │                │ POST LowProfile Create                     │                   │
+  │                │  Operation=ChargeOnly, Amount=coupon_price │                   │
   │                │  ReturnValue=intent_id, WebHookUrl=...     │                   │
   │                │<──── LowProfileId + Url ────│              │                   │
   │<── redirect ───│  (status=redirected)        │              │                   │
-  │── משלם בדף Cardcom (iframe/redirect) ───────>│              │                   │
+  │── משלם בדף Cardcom ─────────────────────────>│              │                   │
   │                │                    │── POST webhook ─────>│                   │
-  │                │                    │                      │ verify: POST      │
-  │                │                    │<─ GetLpResult ───────│  GetLpResult      │
-  │                │                    │── TranzactionInfo ──>│                   │
+  │                │                    │                      │ verify: GetLpResult│
   │                │                    │                      │ tx (idempotent):  │
   │                │                    │                      │  payment=succeeded│
-  │                │                    │                      │  ledger:          │
-  │                │                    │                      │   commission→earned│
-  │                │                    │                      │   supplier_share→HELD (escrow)
-  │                │                    │                      │  coupon: issue code│
-  │<── SuccessRedirectUrl (מסך "הקופון שלך") ────│              │                   │
+  │                │                    │                      │  platform keeps   │
+  │                │                    │                      │   100% of amount  │
+  │                │                    │                      │  NO supplier_share│
+  │                │                    │                      │  NO held / escrow │
+  │                │                    │                      │  issue voucher    │
+  │<── SuccessRedirectUrl (הקופון שלך) ──────────│              │                   │
   │                │                    │                      │                   │
-  ═══ מאוחר יותר: מימוש אצל הספק (סריקת קוד / אישור אדמין) ═══════════════════════
-  │                │ POST /api/coupons/redeem                   │                   │
-  │                │  → ledger: supplier_share HELD→RELEASED    │                   │
-  │                │  → payout run הבא כולל את הסכום            │                   │
-  ═══ פקיעה ללא מימוש: לפי מדיניות — refund ללקוח או חילוט (breakage) ═══════════
+  ═══ מימוש אצל הספק (סריקת QR) ════════════════════════════════════════════════
+  │                │ POST /api/supplier/vouchers/redeem         │                   │
+  │                │  → voucher status = redeemed (terminal)    │                   │
+  │                │  → לקוח משלם יתרה בעסק; אין payout מהפלטפורמה│                  │
+  ═══ פקיעה ללא מימוש: refund לפי LEGAL / breakage לפי מדיניות ═════════════════
 ```
 
-חלוקת המקדמה (דוגמה: קופון 100 ₪ מקדמה על דיל 500 ₪, עמלה 5% מהמקדמה — הנוסחה
-המדויקת מוגדרת פר מוצר): `commission = 5.00`, `supplier_share_held = 95.00`.
+דוגמה: face ₪200, `coupon_price` ₪49 → חיוב Cardcom ₪49 (הכנסת פלטפורמה).  
+יתרה ₪151 בבית העסק. `platform_percent` מצולם לביקורת בלבד; לא יוצר payout קופון.
 
-### 3.3 זרימת מוצר פיזי (תשלום מלא + פיצול מיידי)
+### 3.3 זרימת מוצר פיזי (תשלום מלא + פיצול לפי platform_percent)
 
 ```
 לקוח            Next.js API          Cardcom              Webhook Worker        Ledger/DB
   │  checkout      │                    │                      │                   │
   │───────────────>│ INSERT payment_intent (type=physical,      │                   │
-  │                │   amount=full, commission_pct מדף המוצר)   │                   │
-  │                │ POST /LowProfile/Create                    │                   │
+  │                │   amount=on_site, platform_percent snapshot)│                  │
+  │                │ POST LowProfile Create                     │                   │
   │                │  Operation=ChargeOnly (או Do3DSAndSubmit)  │                   │
   │                │  Amount=full, ReturnValue=intent_id        │                   │
   │                │  Document={TaxInvoiceAndReceipt,...}       │                   │
   │<── redirect ──>│── תשלום ──────────>│── webhook ──────────>│ verify+record     │
   │                │                    │                      │ ledger:           │
-  │                │                    │                      │  commission (5% או │
-  │                │                    │                      │   pct פר מוצר) →  │
-  │                │                    │                      │   platform_earned │
+  │                │                    │                      │  platform fee =   │
+  │                │                    │                      │   snapshot %      │
   │                │                    │                      │  supplier_share → │
-  │                │                    │                      │   payable (מיידי) │
-  ═══ Payout run (cron יומי/שבועי) ═════════════════════════════════════════════
+  │                │                    │                      │   payable (פיזי)  │
+  ═══ Payout run (רק פיזי; ראה PAYOUT-MECHANISM) ════════════════════════════════
   │                │ סכימת payable per supplier ≥ מינימום       │                   │
-  │                │ POST /Financial/TransferFromDigitalBank    │                   │
-  │                │  (Beneficiary = פרטי בנק הספק)             │                   │
-  │                │ INSERT payout (status=sent) + ledger link  │                   │
+  │                │ העברה בנקאית / CSV באצ' אחרי אישור אדמין   │                   │
+  │                │ INSERT payout (status=paid) + ledger link  │                   │
 ```
 
-"פיצול מיידי" = פיצול **ledger** מיידי בזמן ה-webhook; התנועה הבנקאית לספק
-רצה ב-payout run (מומלץ: יומי, מינימום 100 ₪, עיכוב מגן T+3 ימים נגד chargebacks).
+"פיצול מיידי" = פיצול **ledger** בזמן ה-webhook לפי `platform_percent` מצולם; התנועה הבנקאית לספק רצה ב-payout (T+3, מינימום 100 ₪). **קופון לא נכנס ל-payout.**
 
 ### 3.4 ביטולים והחזרים — חוק הגנת הצרכן
 
@@ -344,10 +333,10 @@ export const ledgerEntryType = pgEnum("ledger_entry_type", [
   "refund", "payout", "breakage",
 ]);
 export const ledgerStatus = pgEnum("ledger_status", [
-  "held",       // escrow — קופון לפני מימוש
-  "payable",    // מוכן ל-payout (פיזי מיידי / קופון אחרי מימוש)
+  "payable",    // מוכן ל-payout (פיזי בלבד)
   "paid",       // שולם לספק
   "reversed",   // בוטל עקב refund
+  // אין status "held" / escrow לקופון במודל v2
 ]);
 export const refundStatus = pgEnum("refund_status", [
   "requested", "approved", "sent_to_cardcom", "succeeded", "failed",
@@ -374,8 +363,8 @@ export const supplierAccounts = pgTable("supplier_accounts", {
   // עתידי — מסוף עצמאי:
   cardcomTerminalNumber: integer("cardcom_terminal_number"),
   cardcomApiName: text("cardcom_api_name"),          // secret ref, לא ערך גלוי
-  defaultCommissionPct: numeric("default_commission_pct", { precision: 5, scale: 2 })
-    .notNull().default("5.00"),
+  defaultCommissionPct: numeric("default_commission_pct", { precision: 5, scale: 2 }),
+  // אין default גלובלי מחייב; platform_percent נקבע פר מוצר באדמין
   payoutHoldDays: integer("payout_hold_days").notNull().default(3),
   minPayoutIls: numeric("min_payout_ils", { precision: 10, scale: 2 })
     .notNull().default("100.00"),
@@ -423,7 +412,7 @@ export const payments = pgTable("payments", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (t) => [uniqueIndex("payments_cardcom_tx_uq").on(t.cardcomTransactionId)]);
 
-// Ledger — מקור האמת לפיצול ול-escrow. append-only, אין UPDATE על סכומים.
+// Ledger — מקור האמת לפיצול פיזי ולראיות כסף. append-only. אין escrow/held לקופון.
 export const ledgerEntries = pgTable("ledger_entries", {
   id: uuid("id").defaultRandom().primaryKey(),
   tenantId: uuid("tenant_id").notNull(),
@@ -770,11 +759,27 @@ async function processCardcomEvent(env: Env, lowProfileId: string) {
       raw: result,
     });
 
-    // 6. Split ledger — commission stays, supplier share held or payable
-    const commission = round2(tx.Amount * (Number(intent.commissionPct) / 100));
-    const supplierShare = round2(tx.Amount - commission);
+    // 6. Ledger: coupon = platform keeps 100%; physical = split by platform_percent
     const isCoupon = intent.kind === "coupon";
+    if (isCoupon) {
+      await dbTx.insertLedgerEntries([
+        {
+          paymentId: payment.id,
+          type: "platform_commission",
+          status: "payable",
+          amount: tx.Amount, // כל תשלום הקופון לפלטפורמה
+          memo: "coupon_no_escrow",
+        },
+      ]);
+      // אין supplier_share, אין held, אין payout על קופון
+      await dbTx.markIntentSucceeded(intentId);
+      await dbTx.issueCouponCode(intent.orderId);
+      return;
+    }
 
+    const platformPct = Number(intent.platformPercent); // snapshot; no global default
+    const commission = round2(tx.Amount * (platformPct / 100));
+    const supplierShare = round2(tx.Amount - commission);
     await dbTx.insertLedgerEntries([
       {
         paymentId: payment.id,
@@ -786,37 +791,31 @@ async function processCardcomEvent(env: Env, lowProfileId: string) {
         paymentId: payment.id,
         supplierId: intent.supplierId,
         type: "supplier_share",
-        status: isCoupon ? "held" : "payable",          // ESCROW for coupons
+        status: "payable",
         amount: supplierShare,
-        availableAt: isCoupon ? null : addDays(new Date(), 3), // T+3 chargeback guard
+        availableAt: addDays(new Date(), 3), // T+3 chargeback guard (physical only)
       },
     ]);
 
     await dbTx.markIntentSucceeded(intentId);
-    if (isCoupon) await dbTx.issueCouponCode(intent.orderId); // voucher issuance
   });
 }
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 ```
 
-### 7.3 שחרור Escrow במימוש קופון
+### 7.3 מימוש קופון (בלי שחרור payout)
 
 ```typescript
-// packages/payments/src/escrow.ts
+// redeem: terminal voucher state only. No ledger release. No supplier payout.
 export async function redeemCoupon(db: DB, couponId: string, redeemedBy: string) {
   return db.transaction(async (tx) => {
     const coupon = await tx.lockCoupon(couponId);
-    if (coupon.status !== "active") throw new Error("coupon not redeemable");
+    if (coupon.status !== "issued") throw new Error("coupon not redeemable");
 
     await tx.updateCouponStatus(couponId, "redeemed", redeemedBy);
-    // held -> payable; enters next payout run
-    await tx.releaseHeldLedgerEntries({
-      paymentId: coupon.paymentId,
-      from: "held",
-      to: "payable",
-      availableAt: new Date(),
-    });
+    // קופון פג לשימוש חוזר. הלקוח משלם יתרה בעסק מחוץ לפלטפורמה.
+    // אסור: releaseHeldLedgerEntries / supplier_share על קופון.
   });
 }
 ```
@@ -831,10 +830,10 @@ export async function redeemCoupon(db: DB, couponId: string, redeemedBy: string)
 | **1. תשתית** | `packages/payments`: CardcomClient + טיפוסים + Zod על תגובות; env secrets ב-Vercel/Worker | 0 |
 | **2. DB** | סכמת Drizzle מסעיף 4 + RLS + migrations | 1 |
 | **3. Happy path פיזי** | checkout → LowProfile/Create → webhook Worker → GetLpResult → payment + ledger split. בדיקות מול מסוף 1000 + ngrok | 2 |
-| **4. קופון + Escrow** | מקדמה בלבד, ledger `held`, הנפקת קוד קופון, מסך מימוש לספק, שחרור ל-`payable` | 3 |
+| **4. קופון (No Escrow v2)** | חיוב `coupon_price` מלא לפלטפורמה, הנפקת voucher, redeem → `redeemed` בלי payout לספק | 3 |
 | **5. Reconciliation** | success-page fallback (GetLpResult סינכרוני), cron 10 דקות ל-intents תקועים, `ListTransactions` יומי מול `payments` | 3 |
-| **6. Refunds** | UI בקשת ביטול ללקוח, חישוב דמי ביטול `min(5%, 100₪)`, אישור אדמין, `RefundByTransactionId`, ledger reversal + `supplier_debit` | 3 |
-| **7. Payouts** | cron יומי: aggregate `payable` per supplier (availableAt < now, סכום ≥ מינימום) → `TransferFromDigitalBank` → `payouts` + סימון `paid`; דוח ספק (Supplier-View) | 4,6 |
+| **6. Refunds** | UI בקשת ביטול ללקוח, חישוב דמי ביטול `min(5%, 100₪)`, אישור אדמין, `RefundByTransactionId`, ledger reversal + `supplier_debit` **לפיזי בלבד** | 3 |
+| **7. Payouts** | פיזי בלבד: לפי `ARCHITECTURE-PAYOUT-MECHANISM.md` (באצ' + אישור אדמין). קופון לא נכנס | 3,6 |
 | **8. חשבוניות** | `Document` בכל עסקה (`CouponDocumentAndReceipt` לקופון), חשבונית זיכוי אוטומטית בהחזר, חשבונית עמלה חודשית לספק | 3 |
 | **9. הקשחה** | 3DS (`Do3DSAndSubmit`), Sentry scrubbing, WAF על ה-webhook path, load test ל-idempotency, runbook ל-chargeback | 3–8 |
 | **10. עתידי** | `clearing_mode = own_terminal` לספקי עוגן; `CompanyOperations/NewCompany` ל-onboarding ספקים אוטומטי אם נכנסים להסדר מאגד | 7 |
@@ -848,7 +847,7 @@ export async function redeemCoupon(db: DB, couponId: string, redeemedBy: string)
 3. הצלחה = `ResponseCode === 0` (וגם 700/701 בעסקאות J2/J5). לבדוק גם את
    ה-`ResponseCode` הפנימי של `TranzactionInfo`, לא רק את החיצוני.
 4. `ApiPassword` נשלח **רק** בזיכויים/מסמכים/פעולות חשבון — לא בחיוב רגיל.
-5. J5 תופס מסגרת לשבוע בלבד ⇒ לא Escrow לקופונים. ביט/Apple Pay/Google Pay לא תומכים J5 בכלל.
+5. J5 תופס מסגרת לשבוע בלבד ⇒ אסור בכל מסלול. קופון = No Escrow (אין held/שחרור/payout לספק).
 6. Webhook לא חתום ⇒ תמיד `GetLpResult` לפני כתיבה ל-DB.
 7. זיכוי דרך Cardcom מוגבל ל-6 חודשים בלי מודול מנויים.
 8. טוקן קשור למסוף שיצר אותו — לא עביר בין מסופים.
