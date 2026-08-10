@@ -79,6 +79,16 @@ const nextConfig: NextConfig = {
       // Printed QR cards and older docs name /scan; the live screen is under
       // the supplier portal. Keep the short path as a permanent alias.
       { source: '/scan', destination: '/supplier/scan', permanent: true },
+      // The cancellation policy is asked for at /cancellation-policy, and it
+      // lives at /refund_returns. A redirect rather than a second page: the
+      // WordPress URL is what existing links, the footer and any indexed search
+      // result point at, and two routes rendering one policy is how they drift
+      // until the site states two different cancellation terms. 308 keeps the
+      // canonical on /refund_returns.
+      { source: '/cancellation-policy', destination: '/refund_returns', permanent: true },
+      // The English spellings the goal and the docs use, for the same reason.
+      { source: '/terms', destination: '/terms-and-conditions', permanent: true },
+      { source: '/privacy', destination: '/privacy-policy', permanent: true },
     ]
   },
   turbopack: {
