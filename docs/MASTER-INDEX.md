@@ -165,6 +165,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `ARCHITECTURE-SEO.md` | תכנון SEO. | DESIGN |
 | `ARCHITECTURE-GROWTH-SEO.md` | צמיחה + SEO. | QA-PASS (06.08) |
 | `ARCHITECTURE-PERFORMANCE.md` | ביצועים. | DESIGN |
+| `PERFORMANCE-BUDGET.md` | תקציבי CWV ומשקל עמוד לחנות. | BINDING (11.08) |
 | `DESIGN-CHECKLIST-FINAL.md` | צ'קליסט מול electro home-v7. | BINDING (10.08) |
 | `PHASE2-3-SPEC.md` | וריאנטים + SEO + תגיות. | BINDING (10.08) |
 | `CITY-LANDING-CONTENT.md` | SEO ל-15 ערי ישראל: title/meta/פתיחה. | CONTENT (10.08) |
