@@ -240,6 +240,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `INCIDENT-RESPONSE-RUNBOOK.md` | מסגרת IR: SEV, kill switch, postmortem. | RUNBOOK (11.08) |
 | `ARCHITECTURE-BACKUP-DR.md` | גיבוי/PITR (מחייב). | QA-PASS (#14) |
 | `BACKUP-RECOVERY.md` | RPO/RTO + תרגול. | RUNBOOK (10.08) |
+| `BACKUP-RESTORE-RUNBOOK.md` | PITR Supabase + dump offsite + scratch. | RUNBOOK (11.08) |
 | `ARCHITECTURE-PRODUCTION-OPS.md` | תכנון תשתית. | DESIGN |
 | `OPS-DAILY-ROUTINE.md` | שגרת בוקר. | RUNBOOK |
 | `GITHUB-SETTINGS.md` | required checks. | ACTIONABLE |
