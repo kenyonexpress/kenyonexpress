@@ -6,6 +6,11 @@ import FacebookShareButton from '@/components/shared/FacebookShareButton'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import CouponPricing from '@/components/storefront/CouponPricing'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
+import {
+  couponStockMessageHebrew,
+  stockDisplay,
+  stockMessageHebrew,
+} from '@/lib/commerce/stock-scarcity'
 import { cityByName } from '@/lib/geo/cities'
 import { buildShareMessage } from '@/lib/share/message'
 import { Check, ShoppingCart } from 'lucide-react'
@@ -34,6 +39,11 @@ interface Props {
   basePrice: number
   oldPrice: number | null
   baseStock: number | null
+  /** `available_stock()`: the level minus live holds. Null when not read. */
+  availableStock?: number | null
+  /** `products.stock_initial`, the denominator for the scarcity fraction. */
+  stockInitial?: number | null
+  lowStockThreshold?: number | null
   sku: string | null
   /** Category name, shown in the eyebrow slot live fills with its category links. */
   categoryName: string | null
@@ -79,6 +89,9 @@ export default function ProductInfo({
   basePrice,
   oldPrice,
   baseStock,
+  availableStock = null,
+  stockInitial = null,
+  lowStockThreshold = null,
   sku,
   categoryName,
   city,
@@ -102,8 +115,18 @@ export default function ProductInfo({
 
   const variant = variants.find((v) => v.id === selected) ?? null
   const price = variant != null ? (variant.price ?? basePrice + variant.price_modifier) : basePrice
-  const stock = variant?.stock_quantity ?? baseStock
+  // `availableStock` is the level MINUS live checkout reservations, so it is
+  // the number a shopper could actually buy right now. It falls back to the raw
+  // level for a variant, which has no reservation of its own (117 holds at
+  // product level), and for any page rendered before the RPC could be read.
+  const stock = variant?.stock_quantity ?? availableStock ?? baseStock
   const outOfStock = stock === 0
+  const scarcity = stockDisplay({
+    available: stock,
+    initial: variant ? null : stockInitial,
+    threshold: variant ? null : lowStockThreshold,
+  })
+  const scarcityLine = isCoupon ? couponStockMessageHebrew(scarcity) : stockMessageHebrew(scarcity)
   const effectiveSku = variant?.sku ?? sku
   const needsVariant = variants.length > 0 && !selected
   // The commission engine refuses a coupon line with no absolute price, so the
@@ -174,8 +197,24 @@ export default function ProductInfo({
           className={`pdp-summary__dot${outOfStock ? '' : ' pdp-summary__dot--in'}`}
           aria-hidden="true"
         />
-        {outOfStock ? 'אזל מהמלאי' : 'במלאי, מוכן למשלוח'}
+        {outOfStock ? (isCoupon ? 'הדיל נסגר' : 'אזל מהמלאי') : 'במלאי, מוכן למשלוח'}
       </p>
+
+      {/*
+        Said only when there is a real number behind it. `stockDisplay` returns
+        null for everything else rather than a vaguer phrase, because Israeli
+        consumer law limits urgency claims to ones the seller can substantiate -
+        the same rule that keeps the deal countdown tied to a real
+        `offer_valid_until` instead of a rolling timer.
+      */}
+      {/*
+        `<output>` rather than `<p role="status">`: it carries the same live
+        region semantics natively, and the count really is a computed result
+        that changes under the reader without a navigation.
+      */}
+      {!outOfStock && scarcityLine ? (
+        <output className="pdp-summary__stock pdp-summary__stock--low">{scarcityLine}</output>
+      ) : null}
 
       {/* A coupon is priced by its own absolute model, so it gets the whole
           pricing block. Everything else shows the ordinary sale price. */}

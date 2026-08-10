@@ -42,6 +42,8 @@ export type NotificationKind =
   | 'cashback_credited'
   /** Operator alert: a tax document gave up after five attempts. Added by 116. */
   | 'invoice_dead'
+  /** Operator alert: a product is at or under its threshold. Added by 117. */
+  | 'low_stock'
 
 function escapeHtml(value: string): string {
   return value
@@ -554,6 +556,60 @@ export function buildInvoiceDeadEmail(
   return { subject, html, text }
 }
 
+/**
+ * Operator alert for a product running out.
+ *
+ * States AVAILABLE and the raw level as two separate numbers when they differ,
+ * because the gap between them is live checkouts - and an operator who sees
+ * only "3 in stock" while all three are inside payment sessions will conclude
+ * the alert is wrong.
+ */
+export function buildLowStockEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification | null {
+  const productId = asText(payload.product_id)
+  if (!productId) return null
+
+  const name = asText(payload.product_name) ?? 'מוצר'
+  const available = Math.round(asNumber(payload.available))
+  const level = Math.round(asNumber(payload.stock_quantity))
+  const threshold = Math.round(asNumber(payload.threshold))
+  const supplier = asText(payload.supplier_name)
+  const url = `${trimSite(siteUrl)}/admin/products/${productId}`
+  const held = level - available
+
+  const subject = available <= 0 ? `אזל המלאי: ${name}` : `מלאי נמוך: ${name}`
+
+  const text = [
+    available <= 0 ? `${name} אזל מהמלאי.` : `${name} ירד ל-${available} יחידות זמינות.`,
+    supplier ? `ספק: ${supplier}` : '',
+    `סף התראה: ${threshold}`,
+    held > 0 ? `${held} יחידות מוחזקות כרגע בתשלומים פעילים.` : '',
+    '',
+    'לעריכת המוצר:',
+    url,
+  ]
+    .filter((line) => line !== '')
+    .join('\n')
+
+  const html = shell(
+    `<div dir="rtl" style="background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+        <div style="font-size:17px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
+        <div style="font-size:14px;color:${INK};line-height:2;margin-top:12px">
+          <div>זמין למכירה: <strong>${available}</strong></div>
+          ${held > 0 ? `<div style="color:${MUTED}">${held} מוחזקות בתשלומים פעילים (מתוך ${level} במלאי)</div>` : ''}
+          <div style="color:${MUTED}">סף התראה: ${threshold}</div>
+          ${supplier ? `<div style="color:${MUTED}">ספק: ${escapeHtml(supplier)}</div>` : ''}
+        </div>
+        <a href="${escapeHtml(url)}" style="display:block;margin-top:16px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:12px 18px;border-radius:10px">עריכת המוצר</a>
+      </div>`,
+    'התראה תפעולית, לא הודעה ללקוח.',
+  )
+
+  return { subject, html, text }
+}
+
 /** Dispatch by queued kind. Unknown kinds return null so the drain can park them. */
 export function buildNotification(
   kind: string,
@@ -577,6 +633,8 @@ export function buildNotification(
       return buildCashbackCreditedEmail(payload, siteUrl)
     case 'invoice_dead':
       return buildInvoiceDeadEmail(payload, siteUrl)
+    case 'low_stock':
+      return buildLowStockEmail(payload, siteUrl)
     default:
       return null
   }

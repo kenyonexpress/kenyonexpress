@@ -148,19 +148,12 @@ async function executeSplitForItem(
     throw new Error(`split execution failed: ${error.message}`)
   }
 
-  if (item.product_id) {
-    const { data: product } = await admin
-      .from('products')
-      .select('stock_quantity')
-      .eq('id', item.product_id)
-      .maybeSingle()
-    if (product && product.stock_quantity != null) {
-      await admin
-        .from('products')
-        .update({ stock_quantity: Math.max(0, product.stock_quantity - item.quantity) })
-        .eq('id', item.product_id)
-    }
-  }
+  // STOCK IS NOT TOUCHED HERE ANY MORE. This used to do a read-modify-write:
+  // SELECT stock_quantity, then UPDATE to `max(0, stock - qty)`. Two concurrent
+  // finalizes read the same number and write the same result, so the second
+  // sale never decremented - and the `max(0, ...)` floor then HID it, leaving
+  // an oversell with no trace. The whole order's stock is now consumed once, in
+  // one statement, by `consume_order_stock` at the end of `finalizeOrder`.
 }
 
 async function getOrCreateUserWalletAccount(
@@ -432,6 +425,25 @@ export async function finalizeOrder(input: {
       0,
     )
     await creditCashback(admin, order.id, order.user_id, cashbackTotal)
+
+    // The stock the checkout held becomes a sale, once, in one statement.
+    //
+    // Idempotent through `consumed_at` on the reservation rather than through
+    // the order's status, which is why a replayed webhook decrements nothing.
+    // It is deliberately NOT allowed to fail the finalize: the card has already
+    // been charged, and refusing to complete an order over a stock counter
+    // would leave a customer paid-for and empty-handed. A failure here is
+    // logged and the level is wrong by that order, which is recoverable; the
+    // alternative is not.
+    const { error: stockError } = await admin.rpc('consume_order_stock', {
+      p_order_id: order.id,
+    })
+    if (stockError) {
+      log.error('finalize.stock_consume_failed', {
+        orderId: order.id,
+        reason: stockError.message,
+      })
+    }
 
     if (input.token) {
       await admin.from('payment_tokens').insert({

@@ -3,6 +3,7 @@
 import { writeAuditLog } from '@/lib/admin/audit'
 import { type AdminSessionInfo, requireAdminSession } from '@/lib/admin/rbac'
 import { withActionContext } from '@/lib/observability/action-context'
+import { log } from '@/lib/observability/log'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -69,6 +70,22 @@ async function runCancelPendingOrder(
     .eq('status', 'pending')
 
   if (error) return { error: error.message }
+
+  // Hand the stock back immediately rather than waiting for the hold to lapse.
+  // An expired reservation stops counting against availability on its own -
+  // `available_stock` filters on `expires_at` - but "on its own" can be up to
+  // fifteen minutes away, and a cancelled order is stock that is known free
+  // now. Best effort: a failure here costs a quarter of an hour of shelf space,
+  // not a cancellation.
+  const { error: releaseError } = await supabase.rpc('release_order_stock', {
+    p_order_id: parsed.data.id,
+  })
+  if (releaseError) {
+    log.warn('admin.order_cancel_stock_release_failed', {
+      orderId: parsed.data.id,
+      reason: releaseError.message,
+    })
+  }
 
   await writeAuditLog({
     actorId: session.userId,

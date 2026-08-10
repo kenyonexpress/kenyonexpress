@@ -205,6 +205,24 @@
   color: var(--pdp-action);
 }
 
+/*
+ * The scarcity line sits under the in-stock line, not instead of it: "in stock"
+ * and "only 3 left" are two different facts and a shopper reads the second as a
+ * qualifier on the first. Tighter top margin than a fresh block so the two read
+ * as one group.
+ *
+ * `min-height` is deliberately NOT inherited from .pdp-summary__stock here.
+ * That 37px exists to stop the buy block jumping while the stock line resolves;
+ * applying it to a line that is usually absent would reserve empty space on
+ * every ordinary product page.
+ */
+.pdp-summary__stock--low {
+  margin-top: 4px;
+  min-height: 0;
+  font-weight: 600;
+  color: var(--color-price);
+}
+
 .pdp-summary__dot {
   width: 8px;
   height: 8px;

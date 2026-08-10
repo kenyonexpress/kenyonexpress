@@ -5,6 +5,7 @@ import ProductInfo from '@/components/storefront/ProductInfo'
 import RelatedProducts from '@/components/storefront/RelatedProducts'
 import ShippingInfo from '@/components/storefront/ShippingInfo'
 import SupplierInfo from '@/components/storefront/SupplierInfo'
+import { readLiveStock } from '@/lib/commerce/stock-live'
 import { productLocation } from '@/lib/geo/distance'
 import { listProductSlugsForPrerender, loadProductBySlug } from '@/lib/product-detail'
 import { getProductSeoBySlug } from '@/lib/product-seo'
@@ -119,6 +120,12 @@ export default async function ProductPage({ params }: Props) {
 
   const { product, images, supplier, variants, galleryAssets, couponOffer } = detail
 
+  // Live, outside the hour-long product cache: availability moves every time
+  // somebody starts or abandons a checkout, and a stale figure would keep
+  // offering a unit another shopper is already holding. Skipped entirely for
+  // untracked products, which is most of the catalogue.
+  const liveStock = await readLiveStock(product.id, product.stock_quantity)
+
   const category = Array.isArray(product.categories)
     ? null
     : (product.categories as { id: string; name_he: string; slug: string } | null)
@@ -221,6 +228,9 @@ export default async function ProductPage({ params }: Props) {
             basePrice={basePrice}
             oldPrice={oldPrice}
             baseStock={product.stock_quantity}
+            availableStock={liveStock.available}
+            stockInitial={liveStock.initial}
+            lowStockThreshold={liveStock.threshold}
             sku={product.sku}
             categoryName={category?.name_he ?? null}
             city={productLocation({ ...product, supplier }).city?.name ?? null}

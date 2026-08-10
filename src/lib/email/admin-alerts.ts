@@ -17,7 +17,7 @@ export function adminAlertRecipient(env: NodeJS.ProcessEnv = process.env): strin
   return (env.CONTACT_TO ?? 'info@kenyonexpress.co.il').trim()
 }
 
-export type AdminAlertKind = 'invoice_dead'
+export type AdminAlertKind = 'invoice_dead' | 'low_stock'
 
 /**
  * The dedupe key an alert is queued under.
@@ -26,6 +26,11 @@ export type AdminAlertKind = 'invoice_dead'
  * invoice cron runs every ten minutes and will keep finding the same dead row;
  * a time-based key would mail an operator every ten minutes about one problem,
  * which is how alerting stops being read.
+ *
+ * `low_stock` deliberately puts the DATE into `subjectId`, and that is not a
+ * contradiction. A dead invoice is one event and is worth saying once ever; a
+ * product sitting under its threshold is an ongoing situation and is worth
+ * saying once a day until somebody restocks it.
  */
 export function adminAlertDedupeKey(kind: AdminAlertKind, subjectId: string): string {
   return `admin:${kind}:${subjectId}`

@@ -53,6 +53,17 @@ import { redirect } from 'next/navigation'
 
 const ORDER_EXPIRY_MINUTES = 30
 
+/**
+ * How long the stock is held while the shopper pays.
+ *
+ * Shorter than `ORDER_EXPIRY_MINUTES` on purpose. A hold that outlives the sale
+ * it was taken for is stock nobody can buy; a hold that dies mid-payment is a
+ * charge with no goods. Fifteen minutes is longer than any real card entry
+ * including a 3-D Secure step, and short enough that a sold-out page corrects
+ * itself within one browse.
+ */
+const STOCK_RESERVATION_MINUTES = 15
+
 type SettlementProductRow = {
   id: string
   type: string
@@ -582,6 +593,47 @@ async function runBeginCheckout(
   if (itemsError) {
     await admin.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
     return { ok: false, error: `שמירת פריטי הזמנה נכשלה: ${itemsError.message}`, code: 'INTERNAL' }
+  }
+
+  // 4b. HOLD THE STOCK, before a single agora is asked for.
+  //
+  // Until 117 the only stock check was at add-to-cart, which is true for the
+  // instant it runs and says nothing about the minutes a shopper then spends on
+  // a hosted payment page. Two people could both reach that page holding the
+  // last unit, and both be charged. The reservation covers exactly that gap.
+  //
+  // It is taken AFTER the items exist, because the RPC reads them, and BEFORE
+  // any payment row, because the one thing worse than refusing a sale is taking
+  // money for goods that are gone.
+  //
+  // A shortfall cancels the order rather than leaving it pending: a pending
+  // order the shopper cannot pay for would sit there until the reaper, and the
+  // shopper's next attempt would build a second one.
+  const { data: shortfalls, error: reserveError } = await admin.rpc('reserve_order_stock', {
+    p_order_id: order.id,
+    p_ttl_minutes: STOCK_RESERVATION_MINUTES,
+  })
+
+  if (reserveError) {
+    // Not treated as "in stock". A reservation system that fails open is a
+    // reservation system that does nothing on the day it matters.
+    log.error('checkout.reserve_failed', { orderId: order.id, reason: reserveError.message })
+    await admin.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
+    return { ok: false, error: 'לא הצלחנו לשריין את המלאי, נסו שוב', code: 'INTERNAL' }
+  }
+
+  const shortfallRows = (shortfalls ?? []) as { product_id: string; available: number }[]
+  if (shortfallRows.length > 0) {
+    // Nothing was reserved - `reserve_order_stock` is all-or-nothing and
+    // returns before inserting when any line is short - so there is nothing to
+    // release here, only an order to close.
+    await admin.from('orders').update({ status: 'cancelled' }).eq('id', order.id)
+    const soldOut = shortfallRows.some((row) => row.available <= 0)
+    return {
+      ok: false,
+      error: soldOut ? 'אחד הפריטים אזל מהמלאי' : 'אין מספיק במלאי לאחד הפריטים',
+      code: 'INSUFFICIENT_STOCK',
+    }
   }
 
   // Analytics: the order now exists, so this is the real "checkout started"
