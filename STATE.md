@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-10 (V2-VISION + DEPRECATED cleanup)
+Updated: 2026-08-10 (SUPPLIER-QUALITY + FEATURED pricing)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -9,11 +9,13 @@ ke-arch
 
 ## Last Completed
 ```
-docs/V2-VISION.md
+docs/SUPPLIER-QUALITY-PROGRAM.md
 ```
-(ML / מכרזים / live deals / גיימיפיקציה + עלות־תועלת + תלויות).  
-באנר DEPRECATED על `PAYOUT-ARCHITECTURE`, `ADMIN-ARCHITECTURE`, `TEST-STRATEGY`.  
-`MASTER-INDEX` סופי: נושאים 0–12 + סעיף 13 ארכיון.
++
+```
+docs/FEATURED-DEALS-PRICING.md
+```
+: איכות ספקים (מדדים, השעיה, שימוע, boost חינם) + תמחור Featured עתידי (מופרד מ-platform_percent). אינדקס עודכן.
 
 ## In Progress
 nothing
@@ -23,7 +25,7 @@ nothing
 - Vercel dashboard: אין סשן מחובר (נדרש login ידני לביקורת env/deployments)
 
 ## Next Task
-אחרי login ל-Vercel: להשלים טבלת שמות env + צילום Preview אחרון
+המשך תור docs: PROGRESS-REPORT-AUG / CHECKOUT-OPTIMIZATION / SUPPORT-SLA לפי התור
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch

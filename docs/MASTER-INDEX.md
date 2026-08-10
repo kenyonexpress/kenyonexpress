@@ -142,6 +142,8 @@ docs/ONBOARDING-DEVELOPER.md
 | `ARCHITECTURE-GIFT-COUPONS.md` | קופון מתנה. | QA-PASS (#16) |
 | `ARCHITECTURE-SUPPLIER-ONBOARDING.md` | הצטרפות ספק (ארכיטקטורה). | QA-PASS (#1) |
 | `SUPPLIER-ONBOARDING.md` | מדריך צירוף ספק. | GUIDE (10.08) |
+| `SUPPLIER-QUALITY-PROGRAM.md` | איכות ספקים: NPS פנימי, השעיה, boost חינם. | PLAN (10.08) |
+| `FEATURED-DEALS-PRICING.md` | תמחור קידום דילים (מודל עתידי). | PLAN (10.08) |
 | `ARCHITECTURE-SUPPLIER-PORTAL.md` | פורטל ספק. | BINDING |
 | `SUPPLIER-AGREEMENT-DRAFT.md` | טיוטת הסכם. לא ייעוץ משפטי. | DRAFT |
 | `ARCHITECTURE-FRAUD-PREVENTION.md` | כפילות, QR, chargeback, velocity. | BINDING |
@@ -320,3 +322,4 @@ docs/ROADMAP-V2.md
 | 2026-08-10 | `EMAIL-TEMPLATES-COPY.md`; אינדקס |
 | 2026-08-10 | `CITY-LANDING-CONTENT.md`; אינדקס |
 | 2026-08-10 | `V2-VISION.md`; ניקוי DEPRECATED באינדקס + באנרים |
+| 2026-08-10 | `SUPPLIER-QUALITY-PROGRAM.md` + `FEATURED-DEALS-PRICING.md`; אינדקס |
