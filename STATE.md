@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-10 (docs-only ke-arch: PRODUCT-FIELDS v2)
+Updated: 2026-08-10 (docs-only ke-arch: design checklist + phase2-3)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,11 +8,11 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-‏`docs/PRODUCT-FIELDS-RESEARCH.md` (נוצר מחדש / יישור v2 מ-10.08):
+‏`docs/DESIGN-CHECKLIST-FINAL.md` + `docs/PHASE2-3-SPEC.md`:
 
-- אין 5% קבוע; `platform_percent` דינמי פר מוצר
-- קופון = תשלום מלא בפלטפורמה; No Escrow; אין payout לספק
-- סכמה מומלצת: integer agorot (לא numeric שקלים)
+- צ'קליסט עיצוב: בית/מוצר/קטגוריה/עגלה/checkout/אזור אישי מול electro-v7
+- Tokens: `#fed700`, `#E4002B`, `#0062bd`, Heebo, 1320px, touch 44px, header לוגו+3 אייקונים
+- Phase 2-3: וריאנטים + SEO + תגיות; דינמי; integer agorot; No Escrow
 - `MASTER-INDEX.md` עודכן
 
 ## In Progress
@@ -22,7 +22,7 @@ nothing
 השקה: 10 דילי seed עדיין missing מול `suppliers` בפרוד
 
 ## Next Task
-אדמין לפי LAUNCH-VALIDATION §5; ביצוע RUNBOOK-LAUNCH-DAY ביום ה-cutover
+הרצת DESIGN-CHECKLIST מול build מקומי; אדמין לפי LAUNCH-VALIDATION §5
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
