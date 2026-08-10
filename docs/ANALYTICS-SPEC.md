@@ -3,14 +3,16 @@
 
 אירועי משפך (`view_product`, `add_to_cart`, `purchase`, `redeem`), מיפוי ל-GA4 ול-Meta Pixel, ו-Consent Mode בהתאם לבאנר העוגיות.
 
-Status: **BINDING (measurement)** · עודכן: 2026-08-10  
+Status: **BINDING (measurement)** · עודכן: 2026-08-11  
 Scope: **docs only** · worktree `ke-arch`
 
 מסמכים קשורים:
 
 ```
 docs/ARCHITECTURE-ANALYTICS.md
+docs/ARCHITECTURE-ANALYTICS-BI.md
 docs/MARKETING-LAUNCH.md
+docs/MARKETING-LAUNCH-PLAN.md
 docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 docs/CONTRADICTIONS.md
 docs/ARCHITECTURE-OBSERVABILITY.md
@@ -176,7 +178,26 @@ HTML shell
 
 ---
 
-## 7. אימות השקה (QA)
+## 7. מדדי מוצר (KPI) מעל האירועים
+
+מחושבים מ-Postgres / BI (לא מ-Ads כמקור אמת כסף).
+
+| KPI | נוסחה | חלון |
+|---|---|---|
+| CTR דיל | `view_product` ייחודי / impressions (אם יש) | יומי |
+| Add-to-cart rate | `add_to_cart` / `view_product` | יומי |
+| Checkout start rate | `begin_checkout` / `add_to_cart` | יומי |
+| Payment conversion | `purchase` / `begin_checkout` | יומי |
+| AOV on-site | `sum(value_agorot)` / `count(purchase)` | שבועי |
+| Redeem lag | median(`redeem_at - paid_at`) | שבועי |
+| Redeem rate | `redeem` / `purchase` (coupon) | 7י / 30י |
+| Platform revenue | ledger עמלה / paid on-site | יומי |
+
+דשבורד אדמין מציג KPI כסף מה-ledger. GA4 לאופטימיזציית קמפיין בלבד.
+
+---
+
+## 8. אימות השקה (QA)
 
 - [ ] בלי לחיצה על באנר: אין בקשות ל-`google-analytics.com` / `facebook.com/tr`  
 - [ ] analytics בלבד: GA4 נטען; Pixel לא  
@@ -184,10 +205,11 @@ HTML shell
 - [ ] `purchase` ב-GA4 מגיע עם `transaction_id` = order_id  
 - [ ] סכום ב-Ads ≈ סכום ledger (סטייה רק מעיגול / refunds)  
 - [ ] `redeem` נרשם אחרי סריקה מוצלחת  
+- [ ] אין email/phone ב-props של אירוע  
 
 ---
 
-## 8. Out of scope ליום ההשקה
+## 9. Out of scope ליום ההשקה
 
 - Session replay מלא (PostHog) בלי הגדרת פרטיות נפרדת  
 - ייחוס רב-מגע מתקדם  
@@ -200,3 +222,4 @@ HTML shell
 | תאריך | שינוי |
 |---|---|
 | 2026-08-10 | מפרט אירועים + GA4/Meta + Consent Mode מול באנר עוגיות |
+| 2026-08-11 | טבלת KPI מוצר מעל אירועים + קישור לתוכנית שיווק |

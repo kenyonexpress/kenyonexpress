@@ -197,7 +197,7 @@ docs/ONBOARDING-DEVELOPER.md
 |---|---|---|
 | `ARCHITECTURE-ANALYTICS.md` | משפך דיל→מימוש. | QA-PASS (#2) |
 | `ARCHITECTURE-ANALYTICS-BI.md` | אחסון אירועים / BI. | QA-PASS (06.08) |
-| `ANALYTICS-SPEC.md` | GA4/Meta + Consent Mode. | BINDING (10.08) |
+| `ANALYTICS-SPEC.md` | אירועים, GA4/Meta, Consent, KPI מוצר. | BINDING (11.08) |
 | `ARCHITECTURE-REFERRAL.md` | חבר מביא חבר (מחייב). | QA-PASS (#8) |
 | `REFERRAL-PROGRAM.md` | אנטי-fraud מעל referral. | PLAN (10.08) |
 | `ARCHITECTURE-SEASONAL-CAMPAIGNS.md` | חגים / בזק (מחייב). | QA-PASS (#18) |
