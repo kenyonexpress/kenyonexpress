@@ -133,7 +133,7 @@ export default function HeaderSearch() {
             aria-expanded={open}
             aria-controls="masthead-search-suggestions"
             placeholder="מה בא לך למצוא היום?"
-            className="min-w-0 flex-1 bg-transparent px-4 text-sm text-heading focus:outline-none"
+            className="min-w-0 flex-1 bg-transparent px-4 text-sm text-heading focus:outline-none focus:ring-2 focus:ring-inset focus:ring-black/40"
           />
           <button
             type="submit"

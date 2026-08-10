@@ -138,7 +138,7 @@ export default function SiteFooter() {
               required
               placeholder="הזן כתובת Email"
               aria-label="כתובת אימייל לניוזלטר"
-              className="min-w-0 flex-1 border-0 bg-white px-5 text-sm text-gray-900 focus:outline-none"
+              className="min-w-0 flex-1 border-0 bg-white px-5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-black/40"
             />
             <button
               type="submit"
