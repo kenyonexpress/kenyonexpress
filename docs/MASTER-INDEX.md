@@ -141,6 +141,7 @@ docs/ONBOARDING-DEVELOPER.md
 | מסמך | תקציר | סטטוס |
 |---|---|---|
 | `ARCHITECTURE-COUPON-REDEMPTION.md` | מימוש אצל ספק (scan). | BINDING |
+| `COUPON-LIFECYCLE-SPEC.md` | מכונת מצבים issued/used/expired/refunded. | SPEC (11.08) |
 | `ARCHITECTURE-COUPON-REDEMPTION-UX.md` | UX מימוש. | BINDING |
 | `ARCHITECTURE-SUPPLIER-REDEMPTION.md` | תכנון מימוש ספק. | DESIGN |
 | `ARCHITECTURE-INVENTORY.md` | מכסות ומלאי קופונים. | QA-PASS (#7) |
