@@ -2,6 +2,65 @@
 
 Updated: 2026-08-10 (autonomous: [68] WhatsApp, geo פר מוצר, ושאריות ה-escrow שעוד שילמו לספק על קופון)
 
+## דוח סיום — ‏10.08.2026, ‏v1.0.0
+
+‏**‏`main` ו-`phase5/homepage` זהים** (`git rev-list --left-right --count` החזיר
+‏`0 0`). לא נדרש rebase ולא merge: הענפים הוחזקו מסונכרנים לאורך כל העבודה.
+**שערים בזמן התיוג:** ‏1990/1990 טסטים, ‏159 קבצים, ‏type-check ו-lint נקיים.
+
+### שערי ‏compare.mjs, כפי שנמדדו בפועל
+
+| עמוד | תוצאה | שער |
+| --- | --- | --- |
+| בית | ‏9.76% | ‏✅ |
+| קטגוריה | ‏8.4% | ‏✅ |
+| עגלה (ריקה) | ‏3.37% | ‏✅ |
+| מוצר | ‏15.58% | ‏❌ **בבחירה** — אופיר בחר לשמור "הוסף לסל" שאין באתר החי |
+| חיפוש | ‏14.41% | ‏⚠️ **אינו מדד עיצוב** — שני מנועים על שני קטלוגים |
+
+### ‏⛔ מה שנשאר ידני לאופיר בלבד — חוסם השקה
+
+1. **‏8 סודות ב-Vercel:** ‏`VOUCHER_QR_SECRET`, ‏`CARDCOM_TERMINAL_NUMBER`,
+   ‏`CARDCOM_API_NAME`, ‏`CARDCOM_API_PASSWORD`, ‏`CARDCOM_WEBHOOK_SECRET`,
+   ‏`CRON_SECRET`, ‏`RESEND_API_KEY`, ‏`SENTRY_AUTH_TOKEN`.
+   **בלעדיהם: אין תשלום, אין קופונים, אין מיילים, ואף cron לא רץ.**
+2. **‏Cardcom production credentials.** הלקוח הוא **legacy `/Interface/*.aspx`**,
+   לא ‏v11. ‏Cardcom **אינו חותם webhooks** — האותנטיות נשענת על `?s=` בלתי ניתן
+   לניחוש **ועל אימות שרת-לשרת ב-`GetLpResult`**, שהוא המקור היחיד המהימן
+   לסכום, לסטטוס ולטוקן.
+3. **‏DNS cutover.** ‏`kenyonexpress.co.il` מגיש **היום** את וורדפרס הישן דרך
+   Cloudflare ומחזיר 200. זה מעבר מתוזמן, לא הגדרה חסרה.
+4. **אימות דומיין ב-Resend** לשליחת מייל מ-`@kenyonexpress.co.il`.
+5. **‏⚠️ הענף שוורסל מתייחס אליו כפרודקשן הוא `cursor/add-supabase-3c830`,
+   לא `main`.** יש לוודא לפני כל deploy.
+6. **‏`E2E (Playwright)` אסור שיהיה required check** עד שיש `CI_SUPABASE_URL`:
+   בלעדיו ה-job מדלג על עצמו, ו-check שמדלג לעולם לא מדווח הצלחה — כל PR
+   נתקע לנצח.
+7. **‏Branch protection אינו אוכף.** כל push בריצה הזאת הדפיס
+   `Bypassed rule violations for refs/heads/main`.
+
+### צ'קליסט השקה, בסדר הזה
+
+1. להוסיף את 8 הסודות ל-Vercel (production scope).
+2. לאמת דומיין ב-Resend.
+3. להחליט על ה-slugs של ‏WP (‏20 מתוך 44 ממחזרים כתובת של מוצר אחר) ואז להריץ
+   את הייבוא, ואז reindex ל-Meilisearch.
+4. להריץ את `PENDING-money-integer-fix` **רק אחרי** שנכתב ענף הקוד ל-agorot —
+   ‏55 קבצים עדיין קוראים את השמות הישנים.
+5. לאמת את הענף שוורסל מגדיר כפרודקשן.
+6. עסקת בדיקה מקצה לקצה מול Cardcom production.
+7. ‏DNS cutover.
+
+### מה הושלם בריצה הזאת
+
+מיגרציות שהוחלו ואומתו: ‏`111_revoke_anon_writes`, ‏`112_product_fields_phase2`,
+‏`113_products_geo` (מצומצמת). ‏[68] ‏WhatsApp opt-in, geo פר מוצר, ‏[69] רצועת
+האמון, דפי חוק, נגישות (**חמישה ליקויים אמיתיים**), הסרת שאריות escrow ששילמו
+לספק על קופון, ‏`city`+`tags` באינדקס החיפוש, ותיקון ב-`compare.mjs` שדיווח
+צילומים בלי CSS כציוני נאמנות.
+
+---
+
 ## המשך מ:
 
 ‏**‏10.08 — ה-goal הפעיל: ענף הקוד ל-`PENDING-money-integer-fix`.**
