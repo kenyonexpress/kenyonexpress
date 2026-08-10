@@ -222,6 +222,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `ARCHITECTURE-SECURITY.md` | Security ADR. | BINDING |
 | `ARCHITECTURE-SECURITY-RLS.md` | מטריצת RLS. | BINDING |
 | `ARCHITECTURE-LEGAL-COMPLIANCE.md` | צרכן, 14 יום, נגישות. | QA-PASS (#3) |
+| `REFUNDS-CANCELLATION-POLICY.md` | מדיניות ביטולים/החזרים (הגנת הצרכן). | DRAFT (11.08) |
 | `ARCHITECTURE-DATA-EXPORT-GDPR.md` | ייצוא/מחיקה. | QA-PASS (#19) |
 | `DATA-RETENTION-POLICY.md` | משכי שמירה; **דורש עו״ד**. | DRAFT (10.08) |
 | `SECURITY-AUDIT-CHECKLIST.md` | צ׳קליסט ביקורת אבטחה לפני/אחרי השקה. | CHECKLIST (11.08) |
