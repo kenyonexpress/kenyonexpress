@@ -154,6 +154,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `SUPPLIER-AGREEMENT-DRAFT.md` | טיוטת הסכם. לא ייעוץ משפטי. | DRAFT |
 | `LEGAL-TERMS-SUPPLIERS.md` | הסכם ספקים בעברית (טיוטה; דורש עו״ד). | DRAFT (11.08) |
 | `ARCHITECTURE-FRAUD-PREVENTION.md` | כפילות, QR, chargeback, velocity. | BINDING |
+| `FRAUD-PREVENTION-SPEC.md` | מפרט הונאה: משטחים, velocity, review. | SPEC (11.08) |
 | `ARCHITECTURE-B2B-SALES.md` | מכירה בכמות לוועדים. | QA-PASS (#17) |
 
 ### 3. קטלוג, חיפוש, SEO, עיצוב חנות
