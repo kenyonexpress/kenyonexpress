@@ -1,406 +1,178 @@
-# ARCHITECTURE: Mobile App (Expo)
+# ארכיטקטורה: אפליקציית מובייל (Expo)
 
-ארכיטקטורת אפליקציית מובייל ל-KenyonExpress: **Expo + React Native** על **אותו backend Supabase** כמו ה-web.
+React Native / Expo על אותו backend כמו ה-web: שיתוף types/logic, deep links לקופונים, push, סריקת QR לספקים.
 
-Status: **BINDING** · Updated: 2026-08-03 (rev C)  
+Status: **BINDING** · עודכן: 2026-08-10  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
-אין שינוי קוד. אין נגיעה ב-worktree הראשי (`kenyonexpress`).  
-זה מסמך יעד (future). PWA היא שלב ביניים; ה-web נשאר ערוץ SEO.
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
-Companions:
+מסמכים קשורים:
 
 ```
-docs/ARCHITECTURE-MOBILE-SUPERAPP.md
-docs/ARCHITECTURE-PERSONAL-AREA.md
-docs/ARCHITECTURE-NOTIFICATIONS.md
-docs/ARCHITECTURE-SEO-PERFORMANCE.md
-docs/ARCHITECTURE-ACCOUNT-WALLET.md
+docs/ARCHITECTURE-APP-STORE-LAUNCH.md
 docs/ARCHITECTURE-PWA.md
+docs/ARCHITECTURE-NOTIFICATIONS.md
+docs/ARCHITECTURE-SUPPLIER-PORTAL.md
+docs/ARCHITECTURE-CASHBACK-WALLET.md
+docs/CONTRADICTIONS.md
 ```
 
-עקרון: **Web = SEO ורכישה ראשונית.** האפ = שימור, Push, ארנק קופונים (תצוגת QR אופליין), Apple/Google Wallet, סריקת ספק. אין DB נפרד. אין Auth נפרד. אין PSP שני.
+עקרון: **Web = SEO + רכישה ראשונית.** האפ = שימור, Push, ארנק קופונים, סריקת ספק. אין DB שני, אין Auth שני, אין PSP שני.
 
 ---
 
-## 0. הכרעות מחייבות
+## 0. המלצה אחת (מחייבת)
+
+**Expo (React Native) + Expo Router + EAS**, עם חבילות TypeScript משותפות מול המונורפו Next.js, על אותו פרויקט Supabase.
+
+PWA היא גשר עד החנויות; לא תחליף קבוע. Flutter ו-RN "נקי" בלי Expo נדחים.
+
+---
+
+## 1. הכרעות
 
 | # | הכרעה |
 |---|---|
-| M1 | Client: **Expo** (React Native) + TypeScript + Expo Router. |
-| M2 | Backend: **אותו** פרויקט Supabase (Auth, Postgres, RLS, Storage) כמו ה-web. |
-| M3 | כסף ו-redeem רק דרך Server Actions / Route Handlers / RPC. אין service role באפ. |
-| M4 | תשלומים: Cardcom דרך שרת Next/Edge בלבד (WebView Low Profile אם נדרש PCI). |
-| M5 | ארנק כסף פנימי לא יוצא מהמערכת (אין משיכה / P2P). |
-| M6 | קופון: **No Escrow** (שולם באתר נשאר בפלטפורמה; יתרה בבית העסק; לספק 0 מהפלטפורמה). |
-| M7 | PWA (M0) היא שלב ביניים; לא מחליפה חנויות אפ. |
-| M8 | Push + Wallet pass updates דרך אותו pipeline ב-`ARCHITECTURE-NOTIFICATIONS.md`. אין Make/Zapier. |
-| M9 | RTL native מההתחלה (`I18nManager` / config), לא רק סטייל אחרי paint. |
+| M1 | Client: Expo + TypeScript + Expo Router. |
+| M2 | Backend: אותו Supabase (Auth, Postgres, RLS, Storage). |
+| M3 | כסף ו-redeem רק דרך Route Handlers / Server Actions / RPC. אין service role באפ. |
+| M4 | תשלום: Cardcom דרך שרת Next (WebView Low Profile). לא Store IAP לקופונים/פיזי. |
+| M5 | קופון: **No Escrow** (שולם באתר לפלטפורמה; יתרה בעסק; payout קופון = 0). |
+| M6 | RTL native מההתחלה (`I18nManager` / expo-localization). |
+| M7 | Push + Wallet updates דרך `ARCHITECTURE-NOTIFICATIONS.md`. אין Make/Zapier. |
 
 ---
 
-## 1. המלצה מנומקת: Expo / React Native מול PWA
+## 2. שיתוף types / logic עם המונורפו
 
-### 1.1 הכרעה
-
-| שלב | בחירה | תפקיד |
-|---|---|---|
-| עכשיו עד soft-open | **PWA על ה-web הקיים** (M0) | ארנק קופונים בדפדפן, install prompt, בלי חנות |
-| יעד מוצר (שימור + ספק) | **Expo + React Native** (M1+) | אפ בחנויות, Push אמין, מצלמת ספק, Wallet passes |
-| תמיד | **Web Next.js** | SEO, רכישה ראשונית, אינדוקס |
-
-**אין לבחור PWA כתחליף קבוע לאפ.** PWA היא גשר. האפ הנייטיבית היא היעד לשימור ולסריקת ספק.
-
-### 1.2 למה לא PWA בלבד
-
-| דרישה עסקית | PWA | Expo RN |
-|---|---|---|
-| SEO / שיתוף לינקים | מצוין (זה ה-web) | חלש כערוץ ראשי; לא מחליף |
-| Push ב-iOS | מוגבל/שביר לפי גרסת Safari והתקנה | APNs יציב דרך Expo |
-| מצלמת ספק ל-redeem בקופה | הרשאות דפדפן לא אמינות בשטח | הרשאות native + UX סריקה |
-| QR בהיר מסך / offline cache | אפשרי חלקית (SW) | MMKV/SQLite + brightness API |
-| Apple/Google Wallet | קישורי web | אותו שרת + UX התקנה טוב יותר באפ |
-| נוכחות ב-App Store / Play (ישראל) | אין | חובה לשיווק/אמון אצל ספקים רבים |
-| עלות time-to-market | נמוכה (כבר יש Next) | גבוהה יותר (EAS, חנויות, ביקורת) |
-
-מסקנה: PWA נותנת 80% מארנק הלקוח בזול, ונכשלת בדיוק במה שהספק והשימור דורשים (סריקה + push + חנויות).
-
-### 1.3 למה Expo ולא RN "נקי" / Flutter
-
-1. אותו אקוסיסטם React כמו ה-web; שיתוף חוזי TypeScript / validation קל יותר.  
-2. EAS Build + OTA לעדכוני JS בלי מחזור חנות מלא לכל תיקון UI.  
-3. Auth Session / Secure Store / Camera מודולים בשלים ל-Google + QR.  
-4. אין DB שני ואין Auth שני: אותו Supabase project.
-
-Flutter נדחה: צוות ושפה נפרדים בלי יתרון כספי ברור למוצר קופונים.
-
-### 1.4 סדר מסירה (מחייב)
+מבנה יעד (packages בתוך אותו repo):
 
 ```text
-M0  PWA (web)     → ארנק קופונים בדפדפן, בלי לחסום SEO
-M1  Expo customer → catalog + Google + QR offline
-M2  Checkout      → Cardcom WebView + push registration
-M3  Supplier scan → מצלמה + push lifecycle
-M4  Soft public   → חנויות + polish
+packages/shared-types     # DB row shapes, enums, API DTOs
+packages/shared-money     # agorot, coupon offer, platform_percent rules
+packages/shared-validation # zod schemas ל-checkout / redeem
+apps/web                  # Next.js (קיים כ-src/)
+apps/mobile               # Expo app
 ```
 
-כל עוד M0 לא חי, אין להתחיל M3. אין לבנות אפ שכפולת קטלוג SEO במקום ה-web.
+| משותף | לא משותף |
+|---|---|
+| חוזי TypeScript, zod, חישובי כסף טהורים | רכיבי UI (React DOM ≠ RN) |
+| פורמט קוד קופון / QR payload parse | ניווט / מסכים |
+| הודעות שגיאה בעברית לדומיין כסף | סגנון / אנימציה |
+
+כלל: לוגיקת כסף אחת. אם ה-web והאפ מחשבים מחיר שונה, זה באג. ייבוא מ-`packages/shared-money` בלבד.
+
+עד שיש monorepo packages: האפ צורכת את אותם חוזים דרך OpenAPI/DTO מתועד מ-
+
+```
+src/lib/commerce/product-money.ts
+src/lib/commerce/coupon-offer.ts
+```
+
+בלי להעתיק נוסחאות.
 
 ---
 
-## 2. שני מצבים, אפ אחת
+## 3. שני מצבים, אפ אחת
 
 | מצב | קהל | יכולות |
 |---|---|---|
-| Customer | קונים | קטלוג, עגלה, checkout, קופונים+QR, ארנק כסף, הזמנות, Push, Wallet passes, פרופיל Google |
-| Supplier | `supplier_members` | סורק QR למימוש, היסטוריית סריקות, התראות מכירה (מוגבל; לא פורטל מלא day-1) |
+| Customer | קונים | קטלוג, עגלה, checkout, ארנק קופונים+QR, ארנק קאשבק (קריאה), הזמנות, Push |
+| Supplier | `supplier_members` פעיל | סורק QR, היסטוריית סריקות, התראת `supplier_sale` |
 
-מעבר מצב: אחרי login, אם יש חברות ספק פעילה → מודול Scan. אחרת רק Customer shell.
+אחרי login: אם יש membership פעיל → טאב Scan. אחרת Customer בלבד.
 
 ---
 
-## 3. Stack
+## 4. Deep links לקופונים
 
-| רכיב | בחירה |
+| סוג | תבנית | התנהגות |
+|---|---|---|
+| מוצר | `https://kenyonexpress.co.il/product/{slug}` | Universal Link / App Link → מסך PDP באפ אם מותקן; אחרת web |
+| קופון בארנק | `https://kenyonexpress.co.il/account/coupons/{voucher_id}` | דורש session; מציג QR |
+| Redeem token | `https://kenyonexpress.co.il/redeem/{token}` | **web בלבד / noindex**; האפ לא פותחת redeem ללקוח |
+| Push deep link | `kenyonexpress://coupons/{voucher_id}` | אחרי הקשת push expiry/issued |
+
+הגדרות: Associated Domains (iOS) + Digital Asset Links (Android) לדומיין הייצור.  
+Scheme מותאם: `kenyonexpress://`.  
+אסור deep link שמכיל service role או PAN.
+
+---
+
+## 5. Push notifications
+
+| פריט | ערך |
 |---|---|
-| Runtime | Expo (managed / CNG) + EAS Build |
-| Navigation | Expo Router (file-based), מקביל לוגית ל-`(store)` / `(account)` |
-| Server state | TanStack Query |
-| Cart local | store קטן + sync ל-`carts` |
-| Auth | `@supabase/supabase-js` + Secure Store לרענון טוקנים |
-| QR customer | `react-native-qrcode-svg` על `qr_payload` |
-| QR supplier | מצלמה → redeem API |
-| Payments | Next/Edge + Cardcom; לא SDK אשראי ילידי עם PAN |
-| Push | APNs/FCM דרך worker ההתראות; טבלת `push_tokens` |
-| Wallet passes | קישורי PassKit / Google Wallet מהשרת (אותם אירועי lifecycle) |
-| Brand | ink `#333e48`, yellow `#fed700`, Heebo או מותג תואם |
+| תשתית | Expo Notifications → APNs / FCM |
+| רישום | אחרי login + הרשאה; שורה ב-`push_tokens (user_id, platform, token, updated_at)` |
+| שליחה | אותו outbox (`channel=push`) מ-`ARCHITECTURE-NOTIFICATIONS.md` |
+| אירועים ללקוח | `voucher_issued`, `voucher_redeemed`, `coupon_expiry_48h`, `wallet_cashback_earned` |
+| אירועים לספק | `supplier_sale` (פיזי) |
 
-Secrets אסורים באפ:
-
-```
-SUPABASE_SERVICE_ROLE_KEY
-RESEND_API_KEY
-CARDCOM_*
-CRON_SECRET
-VOUCHER_QR_SECRET
-APPLE_WALLET_* private keys
-GOOGLE_WALLET_SERVICE_ACCOUNT_JSON
-META_WA_TOKEN
-```
-
-מותרים באפ (ציבוריים):
-
-```
-EXPO_PUBLIC_SUPABASE_URL
-EXPO_PUBLIC_SUPABASE_ANON_KEY
-EXPO_PUBLIC_APP_URL
-```
+Transactional push לא תלוי ב-opt-in שיווקי.  
+נטישת עגלה: רק עם opt-in (מייל קודם; push בהמשך).
 
 ---
 
-## 4. מודל כסף (זהה ל-web)
-
-| סוג | באתר / באפ | פלטפורמה | ספק |
-|---|---|---|---|
-| קופון | `coupon_price` (אגורות) | **100%** מתשלום האתר (No Escrow) | 0 מהפלטפורמה; יתרת face בקופה בסריקה |
-| פיזי | מחיר מלא | `platform_percent` מצולם ב-`order_items` | residual ב-payout |
-
-כללי אפ:
-
-1. מחירים רק מ-API שרת / snapshots. אין חישוב עמלה בקליינט.  
-2. כסף בחוזים: integer agorot; תצוגה ₪ `he-IL`.  
-3. אין מסלול תשלום שמעקף את `finalizeOrder` / webhook.  
-4. תצוגת קופון תמיד מציגה **שולם באתר** + **יתרה בעסק** (בלי נוסח Escrow/נאמן).
-
----
-
-## 5. Shared Supabase Auth
-
-| נושא | חוזה |
-|---|---|
-| Project | URL + anon key זהים ל-web |
-| Provider | Google OAuth (Sign in with Apple בהמשך אם החנות דורשת) |
-| Session | JWT של אותו project; RLS זהה |
-| Gate | account/checkout דורשים session; browse לאורח מותר |
-| Cart merge | אחרי login, כמו `mergeGuestCart` ב-web |
-| Logout | מוחק session + cache קופונים מקומי + tokens מקומיים לא רגישים |
+## 6. סריקת QR לספקים באפ
 
 ```text
-Google sign-in (Expo Auth Session / native)
-  → Supabase session
-  → אותם profiles / wallet_accounts / vouchers / orders
-  → קריאות עם user JWT תחת RLS
+מצלמה (expo-camera)
+  → פענוח KEV1.<payload>.<hmac>
+  → POST /api/supplier/vouchers/redeem
+       { code, scan_method: "camera", idempotency_key }
+  → הצלחה: צליל + מסך ירוק + יתרה לגבייה בעסק
+  → כשל: already_used / wrong_supplier / expired בעברית
 ```
-
-אין טבלת users נפרדת. אין סיסמה כמסלול ראשי באפ.
-
----
-
-## 6. מפת מסכים (IA)
-
-### 6.1 Customer
-
-```text
-/(app)
-  /                 Home
-  /category/[slug]  Category
-  /product/[slug]   PDP
-  /cart             Cart
-  /checkout         Checkout (server-backed)
-  /account          Overview
-  /account/orders
-  /account/coupons  QR wallet (offline display)
-  /account/wallet   Internal cash wallet (read)
-  /account/details
-```
-
-### 6.2 Supplier (מוגבל)
-
-```text
-/(supplier)
-  /scan             Camera redeem
-  /scan/history     Recent redemptions
-```
-
-Deep links:
-
-```text
-kenyonexpress://checkout
-kenyonexpress://coupons
-kenyonexpress://coupon/{voucherId}
-kenyonexpress://orders/{orderId}
-kenyonexpress://wallet
-kenyonexpress://scan
-```
-
-Universal Links / App Links לאותם נתיבי web כשאפשר (SEO נשאר ב-web).
-
----
-
-## 7. Coupon QR wallet (offline display)
-
-### 7.1 מטרה
-
-לקוח בקופה בלי קליטה יכול **להציג** QR/קוד. המימוש עצמו תמיד אונליין אצל הספק.
-
-### 7.2 Cache מקומי (`issued` בלבד)
-
-| שדה | מקור |
-|---|---|
-| `voucher_id` | `vouchers.id` |
-| `code` | קוד קריא |
-| `qr_payload` | מחרוזת לרינדור |
-| `product_name_he` | snapshot |
-| `supplier_name` | snapshot |
-| `coupon_price_agorot` | שולם באתר |
-| `remaining_due_agorot` | יתרה בעסק |
-| `expires_at` | תוקף |
-| `synced_at` | זמן סנכרון |
-
-Wipe: logout, או כשהסטטוס בשרת כבר לא `issued`.
-
-Storage: MMKV / SecureStore + SQLite קל לפי רגישות. `qr_payload` לא נשלח ללוגים.
-
-### 7.3 רינדור ו-sync
-
-- `react-native-qrcode-svg` על `qr_payload` (לא URL תמונה משרת כמקור אמת)  
-- בהירות מסך מוגברת בזמן הצגת QR  
-- באנר "מצב לא מקוון" כשאין רשת  
-- Foreground / Push `coupon_issued` → delta sync  
-- Redeem הצלחה → מסיר QR מקומית  
-- אין redeem מהאפ של הלקוח  
-
-ספק קורא ל-
-
-```
-POST /api/supplier/vouchers/redeem
-```
-
-(או RPC מקביל) עם JWT של חבר ספק.
-
-### 7.4 הוספה לארנק המכשיר
-
-CTA באפ: "הוסף ל-Apple Wallet / Google Wallet".  
-האפ פותחת URL חתום מהשרת (PassKit / Google Save).  
-עדכוני סטטוס (מומש/פג) מגיעים כ-`wallet_push` מה-worker (ראה NOTIFICATIONS). האפ לא חותמת passes בעצמה.
-
----
-
-## 8. Checkout באפ
-
-```text
-Cart (local + server carts)
-  → begin_checkout (server)
-  → Cardcom Low Profile (WebView / system browser)
-  → return URL / deep link
-  → finalize / webhook (server, זהה ל-web)
-  → vouchers issued → sync QR wallet + Push + optional Wallet pass
-```
-
-האפ לא מאשרת תשלום לבד. אין כפל `finalizeOrder`.
-
----
-
-## 9. Push notifications
-
-רישום:
-
-```text
-push_tokens (user_id, platform ios|android, token, updated_at)
-UNIQUE (user_id, token) או (user_id, platform)
-```
-
-| אירוע | לקוח | ספק | Deep link |
-|---|---|---|---|
-| רכישת קופון / הנפקה | כן | אופציונלי "נמכר" | `kenyonexpress://coupon/{id}` |
-| מימוש | אישור | סיכום סריקה | coupons / scan history |
-| פקיעה 48ש | כן | לא | coupons |
-| קופון פג | כן | לא | coupons |
-| פעילות ארנק כסף | לפי prefs | לא | wallet |
-| הזמנה פיזית | סטטוס (עתידי) | להכין משלוח | supplier |
-
-Transactional push לא תלוי ב-marketing opt-in.  
-בקשת הרשאה אחרי ערך (אחרי רכישה / כניסה לארנק), לא ב-cold start אגרסיבי.  
-Pipeline: אותו worker כמו
-
-```
-docs/ARCHITECTURE-NOTIFICATIONS.md
-```
-
-ערוצים נוספים (מייל / WhatsApp / SMS) לא מיושמים באפ; הם בשרת.
-
----
-
-## 10. ארנק כסף פנימי (קריאה)
-
-- מסך יתרה + ledger (קריאה בלבד תחת RLS)  
-- אין משיכה, אין העברה למשתמש אחר  
-- Push `wallet_activity` לפי העדפות  
-- אותם `wallet_accounts` כמו ב-web  
-
----
-
-## 11. מודול ספק
-
-- Gate: `supplier_members.is_active` + role `owner|manager|scanner`  
-- מצלמה → payload/code → redeem  
-- תוצאות: הצלחה / כבר מומש / פג / לא שייך / rate limited  
-- אין גישה לנתוני לקוח מעבר למה שה-redeem מחזיר  
-- אטומיות ו-replay: לפי מדיניות fraud / redemption  
-
----
-
-## 12. אבטחה
 
 | כלל | פירוט |
 |---|---|
-| RLS | גבול יחיד; anon key בלבד בקליינט |
-| Secrets | אין service/Cardcom/Resend/Wallet private keys באפ |
-| Biometrics | אופציונלי לכניסה חוזרת; לא תחליף ל-Google בפעם הראשונה |
-| Pinning | הערכה אחרי M2; לא חוסם day-0 |
-| Account deletion | לפי legal / web flow |
-| Offline | תצוגת QR בלבד; לא redeem מקומי |
+| HMAC | מוכיח הנפקה; **לא** הרשאה. `supplier_id` מה-JWT/membership בלבד |
+| רשת | Redeem תמיד אונליין. בלי רשת: הודעה ברורה, בלי "מימוש אופליין" |
+| אופליין ללקוח | הצגת QR בלבד (בהירות מסך); לא redeem מקומי |
+| קצב | אותם rate limits כמו ב-web redeem RPC |
+| ביקורת | כל סריקה ב-audit / redemption log |
+
+אין מסך Escrow/held לספק. אחרי redeem: הלקוח שילם יתרה בקופה; הפלטפורמה לא מעבירה מקדמת קופון.
 
 ---
 
-## 13. שלבי מסירה
+## 7. תשלום באפ
 
-| Phase | Scope | Exit |
-|---|---|---|
-| M0 | PWA (ביניים) | ארנק קופונים בדפדפן |
-| M1 | Expo: catalog + account + Google + vouchers QR offline cache | TestFlight / internal |
-| M2 | Checkout Cardcom + wallet read + push registration | קניית קופון בדיקה |
-| M3 | Supplier scanner + push (purchase, redeem, 48h) + Wallet pass CTA | redeem e2e |
-| M4 | Physical ship status + polish | soft public |
-
-חנויות: App Store + Google Play (ישראל). מדיניות זהה ל-web.
+Cardcom Low Profile ב-WebView מול השרת הקיים.  
+`CHECKOUT_ENABLED` ו-env Cardcom זהים ל-web.  
+אחרי `paid_at`: sync ארנק קופונים + רישום push + (אופציונלי) Wallet pass CTA.
 
 ---
 
-## 14. טסטים
+## 8. סדר מסירה
 
-| # | תרחיש |
-|---|---|
-| MA1 | Guest → Google → purchase coupon → QR על המכשיר |
-| MA2 | Airplane: QR מוצג; redeem מהספק נכשל בנימוס בלי רשת |
-| MA3 | אותו Supabase user רואה אותם vouchers ב-web ובאפ |
-| MA4 | Supplier scan success + replay → `already_used` |
-| MA5 | Push expiry 48h + deep link לארנק קופונים |
-| MA6 | הוספה ל-Apple/Google Wallet + עדכון אחרי redeem |
-| MA7 | אין service role / Cardcom secret ב-binary (סריקת build) |
-
----
-
-## 15. מה לא בונים
-
-- DB מובייל נפרד / Auth נפרד  
-- חישוב עמלה בקליינט  
-- משיכת ארנק  
-- Make/Zapier ל-push  
-- רשת שליחים כתלות שיגור  
-- החלפת ה-web כערוץ SEO  
-- חתימת PassKit בתוך האפ  
-
----
-
-## 16. Related
-
-```
-docs/ARCHITECTURE-NOTIFICATIONS.md
-docs/ARCHITECTURE-MOBILE-SUPERAPP.md
-docs/ARCHITECTURE-PERSONAL-AREA.md
-docs/ARCHITECTURE-SEO-PERFORMANCE.md
-docs/ARCHITECTURE-ACCOUNT-WALLET.md
+```text
+M0  PWA web          ארנק קופונים בדפדפן
+M1  Expo customer    catalog + auth + QR display + deep links
+M2  Checkout         Cardcom WebView + push registration
+M3  Supplier scan    מצלמה + redeem e2e
+M4  Store soft       TestFlight / internal track (ראה APP-STORE-LAUNCH)
 ```
 
 ---
 
-## 17. Revision
+## 9. Acceptance
 
-| Date | Change |
+- [ ] אין service role באפ  
+- [ ] מחיר קופון באפ = אותו shared-money כמו web  
+- [ ] Deep link למוצר/קופון עובד מ-Safari/Chrome  
+- [ ] Push issued + expiry 48h עם deep link לארנק  
+- [ ] ספק סורק ו-redeem נכשל בנימוס בלי רשת  
+- [ ] RTL + עברית בכל מסכי הכסף  
+- [ ] אין נוסח Escrow/J5  
+
+---
+
+## Revision
+
+| תאריך | שינוי |
 |---|---|
-| 2026-07-31 | רענון + שלבי M0 עד M4 |
-| 2026-08-02 | Expo RN, shared Supabase, QR offline, push; No Escrow 2026-08-03 |
-| 2026-08-03 | יישור ל-notifications lifecycle + Wallet pass CTA; docs-only ב-`ke-arch` |
-| 2026-08-03 | rev B: המלצה מנומקת Expo/RN מול PWA (PWA=M0 גשר; Expo=יעד שימור+ספק) |
-| 2026-08-03 | rev C: No Escrow במובייל; חיזוק המלצת Expo מול PWA |
-| 2026-08-03 | pack-20: mobile Expo vs PWA binding refresh for 20-doc queue |
+| 2026-08-03 | Expo RN, QR offline, push, No Escrow |
+| 2026-08-10 | מיקוד: monorepo shared packages, deep links, supplier QR, push מ-outbox |

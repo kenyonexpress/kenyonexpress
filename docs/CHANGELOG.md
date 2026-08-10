@@ -17,6 +17,13 @@ STATE.md
 
 ### Docs
 
+### Docs (2026-08-10 launch day pack)
+
+- `ARCHITECTURE-MOBILE-APP.md`: Expo, shared packages, deep links, push, QR ספק
+- `LAUNCH-VALIDATION.md`: re-verify 10× missing מול suppliers
+- `RUNBOOK-LAUNCH-DAY.md`: env, Cardcom, DNS, Sentry, rollback
+- `MASTER-INDEX.md`: אינדקס מעודכן
+
 ### Docs (2026-08-10 notifications + SEO)
 
 - `ARCHITECTURE-NOTIFICATIONS.md`: 5 אירועי ליבה, outbox מלא, QStash retry/DLQ

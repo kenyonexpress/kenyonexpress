@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-10 (docs-only ke-arch: notifications + SEO refresh)
+Updated: 2026-08-10 (docs-only ke-arch: mobile + launch-day pack)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,19 +8,21 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-ריענון BINDING:
+חבילת docs:
 
-- `docs/ARCHITECTURE-NOTIFICATIONS.md`: order_paid, voucher_redeemed, supplier_sale, cashback, abandoned_cart; outbox + QStash DLQ
-- `docs/ARCHITECTURE-SEO-PERFORMANCE.md`: metadata עברי, JSON-LD, sitemap, OG, CWV, ISR, Meili מול Google
+- `ARCHITECTURE-MOBILE-APP.md`: Expo + shared types/logic + deep links + push + QR ספק
+- `LAUNCH-VALIDATION.md`: re-verify מול suppliers; 10× missing
+- `RUNBOOK-LAUNCH-DAY.md`: env / Cardcom / DNS / Sentry / rollback
+- `MASTER-INDEX.md` מעודכן
 
 ## In Progress
 nothing
 
 ## Blocking Issues
-none (docs only)
+השקה: 10 דילי seed עדיין missing מול `suppliers` בפרוד
 
 ## Next Task
-יישום לפי ROADMAP / המסמכים המחייבים מחוץ לסקופ docs-only
+אדמין לפי LAUNCH-VALIDATION §5; ביצוע RUNBOOK-LAUNCH-DAY ביום ה-cutover
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch

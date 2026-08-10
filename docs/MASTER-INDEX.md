@@ -126,7 +126,7 @@ CONTRADICTIONS, כל מספר עמלה כאן הוא שריד") הוסר מכו�
 | `ARCHITECTURE-INVENTORY.md` | מלאי קופונים ומכסות פר דיל. | QA-PASS (#7) |
 | `ARCHITECTURE-LEGAL-COMPLIANCE.md` | הגנת הצרכן, 14 יום, דמי ביטול, נגישות. | QA-PASS (#3) |
 | `ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md` | checkout/מימוש; יומן הכרעות D1-D6. | QA-PASS (06.08) |
-| `ARCHITECTURE-MOBILE-APP.md` | Expo + React Native על אותו backend. | BINDING |
+| `ARCHITECTURE-MOBILE-APP.md` | Expo RN: shared packages, deep links, push, סריקת ספק. | BINDING (10.08) |
 | `ARCHITECTURE-MOBILE-SUPERAPP.md` | תכנון מחייב 2026-07-17. | DESIGN |
 | `ARCHITECTURE-NOTIFICATIONS-MARKETING.md` | מסמך תכנון שיווק. | DESIGN |
 | `ARCHITECTURE-NOTIFICATIONS.md` | התראות: paid/redeem/supplier/cashback/abandon + QStash DLQ. | BINDING (10.08) |
@@ -163,9 +163,10 @@ CONTRADICTIONS, כל מספר עמלה כאן הוא שריד") הוסר מכו�
 | `OPS-DAILY-ROUTINE.md` | שגרת בוקר 15 דקות, לפי סדר עלות. | RUNBOOK (07.08) |
 | `PAYOUT-ARCHITECTURE.md` | תכנון ראשוני ל-G1; מחייב עכשיו: `ARCHITECTURE-PAYOUT-MECHANISM.md`. | DESIGN → superseded by BINDING (10.08) |
 | `LAUNCH-CHECKLIST.md` | עלייה לאוויר לפי בעלות: הקוד מול אופיר. | ACTIONABLE (07.08) |
-| `LAUNCH-VALIDATION.md` | אימות 10 דילי השקה מול מאגר (missing-supplier). | ACTIONABLE (10.08) |
+| `LAUNCH-VALIDATION.md` | אימות 10 דילי השקה: 10× missing מול suppliers. | ACTIONABLE (10.08) |
 | `launch-week-plan.md` | 10 דילי השקה + ספקים (מ-seed). | PLAN (10.08) |
 | `ROADMAP-V2.md` | שלבים ותלויות לחבילת docs. | QA-PASS (#10) |
+| `RUNBOOK-LAUNCH-DAY.md` | יום השקה: env, Cardcom, DNS, Sentry, rollback. | ACTIONABLE (10.08) |
 | `RUNBOOK-PRODUCTION.md` | Deploy Vercel, rollback, MCP migrations. | QA-PASS (#5) |
 | `TEST-STRATEGY.md` | פירמידת טסטים (כסף קודם). | BINDING |
 | `MASTER-INDEX.md` | אינדקס זה. | QA-PASS (#20) |
@@ -205,3 +206,4 @@ docs/ROADMAP-V2.md
 | 2026-08-10 | `ARCHITECTURE-PAYOUT-MECHANISM.md`: מנגנון payout פיזי מחייב (באצ' + העברה ידנית) |
 | 2026-08-10 | `LAUNCH-VALIDATION.md` + `launch-week-plan.md`: אימות 10 דילי השקה מול פרוד |
 | 2026-08-10 | ריענון NOTIFICATIONS + SEO-PERFORMANCE (BINDING) |
+| 2026-08-10 | MOBILE-APP + LAUNCH-VALIDATION re-verify + RUNBOOK-LAUNCH-DAY; אינדקס |
