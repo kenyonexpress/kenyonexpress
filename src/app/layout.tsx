@@ -1,9 +1,13 @@
 import AnalyticsProvider from '@/components/analytics/AnalyticsProvider'
 import ConsentBanner from '@/components/analytics/ConsentBanner'
+import ThirdPartyTags from '@/components/analytics/ThirdPartyTags'
 import InstallPrompt from '@/components/pwa/InstallPrompt'
 import ServiceWorkerRegistrar from '@/components/pwa/ServiceWorkerRegistrar'
 import { CONSENT_PREPAINT_SCRIPT } from '@/lib/analytics/consent'
+import { readThirdPartyConfig, validatedConfig } from '@/lib/analytics/third-party'
 import { SITE } from '@/styles/tokens'
+import { Analytics as VercelAnalytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import type { Metadata, Viewport } from 'next'
 import { Heebo } from 'next/font/google'
 import { Suspense } from 'react'
@@ -156,6 +160,26 @@ export default function RootLayout({
         */}
         <ServiceWorkerRegistrar />
         <InstallPrompt />
+        {/*
+          GA4 and the Meta Pixel, and they render NOTHING until the visitor has
+          agreed - no script tag, no stub, no consent-mode-denied bootstrap. See
+          `lib/analytics/third-party.ts` for why that is stricter than Google's
+          own recommended pattern and why the stricter version is the one that
+          can be checked in a network log.
+
+          The config is read on the SERVER and passed down, so a misconfigured
+          id disables the tag rather than loading a Tag Manager container that
+          reports nothing.
+        */}
+        <ThirdPartyTags config={validatedConfig(readThirdPartyConfig())} />
+        {/*
+          Vercel's own two. First-party by design - they are served from this
+          origin through Vercel's rewrite, so no third-party request leaves the
+          page and no cookie is set, which is why they sit outside the consent
+          gate that GA4 and Meta are behind.
+        */}
+        <VercelAnalytics />
+        <SpeedInsights />
       </body>
     </html>
   )

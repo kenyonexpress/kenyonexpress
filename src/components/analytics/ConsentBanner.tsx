@@ -48,9 +48,9 @@ export default function ConsentBanner() {
     <section data-consent-banner="" aria-label="הסכמה לאיסוף נתוני שימוש" style={BANNER_STYLE}>
       <div className="mx-auto flex max-w-4xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p style={COPY_STYLE}>
-          אנחנו אוספים נתוני שימוש באתר (עמודים שנצפו, פריטים שנוספו לעגלה) כדי לשפר אותו. הנתונים
-          נשמרים אצלנו בלבד, בלי פרטים מזהים ובלי העברה לצד שלישי. הזמנות ותשלומים נשמרים בכל מקרה,
-          כחלק מהשירות.
+          אנחנו אוספים נתוני שימוש באתר (עמודים שנצפו, פריטים שנוספו לעגלה) כדי לשפר אותו ולמדוד
+          פרסום. חלק מהנתונים מועברים ל-Google Analytics ול-Meta, בלי שם, מייל או טלפון. בלי אישור
+          שום כלי חיצוני לא נטען כלל. הזמנות ותשלומים נשמרים בכל מקרה, כחלק מהשירות.
         </p>
         <div className="flex shrink-0 gap-2" style={{ fontFamily: 'Arial, Helvetica, sans-serif' }}>
           <form action={decideConsent}>

@@ -1,5 +1,6 @@
 'use client'
 
+import { trackCommerce } from '@/lib/analytics/commerce-client'
 import { track } from '@/lib/analytics/tracker'
 import { shekels } from '@/lib/cart/format'
 import type { CartView } from '@/lib/cart/types'
@@ -99,6 +100,36 @@ export default function CheckoutForm({
    */
   channel?: 'web' | 'app'
 }) {
+  /**
+   * `begin_checkout`, once per mount of the checkout page.
+   *
+   * Fired here rather than from the server action, because the ad platforms
+   * want the moment a shopper REACHED checkout - the top of the funnel step
+   * they optimise against - and not the moment they submitted it. The server
+   * already emits its own first-party `begin_checkout` from `beginCheckout`,
+   * at the later moment, and the two answer different questions.
+   *
+   * A no-op without consent: `trackCommerce` finds neither vendor global.
+   */
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the cart is a fresh object each render; keying on its identity would refire the event on every keystroke.
+  useEffect(() => {
+    trackCommerce('begin_checkout', {
+      // `CartView` is agorot end to end, so nothing is converted here. The
+      // only division on this path is `toCurrencyAmount`, at the vendor
+      // boundary.
+      items: cart.items.map((item) => ({
+        id: item.product_id,
+        name: item.name_he,
+        priceAgorot: item.unit_price,
+        quantity: item.quantity,
+      })),
+      // `total`, not `subtotal`: the amount the card is actually charged, after
+      // a discount code. Reporting the pre-discount figure makes every funnel
+      // report overstate the value of reaching checkout.
+      valueAgorot: cart.total,
+    })
+  }, [])
+
   const [state, formAction, isPending] = useActionState<CheckoutFormState, FormData>(
     submitCheckout,
     null,

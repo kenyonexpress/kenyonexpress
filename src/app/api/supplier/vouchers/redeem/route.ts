@@ -1,3 +1,4 @@
+import { sendGaEvent } from '@/lib/analytics/server-events'
 import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
 import { withRequestLog } from '@/lib/observability/with-request-log'
@@ -155,6 +156,33 @@ async function stampStaff(idempotencyKey: string, staffId: string, userId: strin
   if (error) log.warn('voucher.staff_stamp_failed', { reason: error.message })
 }
 
+/**
+ * The redemption event, for GA4 only. Never throws and never blocks: the
+ * voucher is already burned by the time this runs.
+ */
+async function reportRedemption(result: Record<string, unknown>): Promise<void> {
+  try {
+    const paid = Number(result.coupon_price_agorot ?? 0)
+    if (!Number.isFinite(paid) || paid <= 0) return
+    await sendGaEvent('redeem_coupon', {
+      items: [
+        {
+          id: String(result.product_id ?? result.code ?? 'voucher'),
+          name: String(result.product_name ?? 'קופון'),
+          priceAgorot: Math.round(paid),
+          quantity: 1,
+        },
+      ],
+      valueAgorot: Math.round(paid),
+      transactionId: String(result.code ?? ''),
+    })
+  } catch (error) {
+    log.warn('analytics.redeem_event_threw', {
+      reason: error instanceof Error ? error.message : 'unknown',
+    })
+  }
+}
+
 async function handlePOST(request: NextRequest): Promise<NextResponse> {
   const scanContext = readScanContext(request.headers)
 
@@ -261,6 +289,20 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     // `staff_id` must never be read as "the redemption did not happen".
     if (staff_id && idempotency_key) {
       await stampStaff(idempotency_key, staff_id, user.id)
+    }
+
+    // A redemption is a funnel step worth measuring - it is the moment a coupon
+    // becomes a visit to a business - and it is reported to GA4 ONLY.
+    //
+    // Meta gets nothing, deliberately: the money moved when the coupon was
+    // bought, weeks earlier, and reporting the redemption as a Purchase would
+    // double-count revenue in the platform that sets ad spend against it.
+    // `metaEventFor('redeem_coupon')` returns null for exactly this reason.
+    //
+    // Value is what the customer PAID for the coupon, not its face value: face
+    // value is the business's list price and was never our revenue.
+    if (!replayed) {
+      await reportRedemption(result)
     }
 
     return respond(

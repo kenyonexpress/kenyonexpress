@@ -194,6 +194,17 @@ export default async function ProductPage({ params }: Props) {
             price_ils: product.kenyon_price,
             product_type: product.type,
           }}
+          commerceItem={{
+            id: product.id,
+            name: product.name_he,
+            // Agorot, converted exactly once at the vendor boundary by
+            // `toCurrencyAmount`. `kenyon_price` is still the pre-integer
+            // shekel column, so this is the one rounding on the path.
+            priceAgorot: Math.round(Number(product.kenyon_price ?? 0) * 100),
+            quantity: 1,
+            category: category?.name_he ?? null,
+            supplier: supplier?.name ?? null,
+          }}
         />
 
         {/* Breadcrumb. The row is 84px on live, and that height is what puts

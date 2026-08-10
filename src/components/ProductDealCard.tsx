@@ -169,6 +169,7 @@ export default function ProductDealCard({ product }: { product: Product }) {
             <AddToCartButton
               productId={product.id}
               productName={product.name_he}
+              priceAgorot={Math.round(Number(product.kenyon_price ?? 0) * 100)}
               disabled={outOfStock}
               variant="icon"
               className="flex h-full w-full items-center justify-center"

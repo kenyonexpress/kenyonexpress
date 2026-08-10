@@ -1,3 +1,4 @@
+import { sendServerPurchase } from '@/lib/analytics/server-events'
 import { agorot, agorotToIls } from '@/lib/commerce/money'
 import {
   type VoucherRateColumn,
@@ -154,6 +155,65 @@ async function executeSplitForItem(
   // sale never decremented - and the `max(0, ...)` floor then HID it, leaving
   // an oversell with no trace. The whole order's stock is now consumed once, in
   // one statement, by `consume_order_stock` at the end of `finalizeOrder`.
+}
+
+/**
+ * Gathers what the two ad platforms need and hands it to `sendServerPurchase`.
+ *
+ * NEVER THROWS AND NEVER BLOCKS THE ORDER. It runs after the card is charged;
+ * an analytics failure that propagated would leave a paid order incomplete over
+ * a marketing metric. Awaited rather than fired and forgotten only because a
+ * serverless invocation can be frozen the instant its response is returned.
+ */
+async function reportPurchase(
+  admin: AdminClient,
+  orderId: string,
+  userId: string,
+  items: OrderItemRow[],
+): Promise<void> {
+  try {
+    const productIds = [...new Set(items.map((i) => i.product_id).filter((v): v is string => !!v))]
+    const names = new Map<string, string>()
+    if (productIds.length > 0) {
+      const { data: products } = await admin
+        .from('products')
+        .select('id, name_he')
+        .in('id', productIds)
+      for (const product of (products ?? []) as { id: string; name_he: string | null }[]) {
+        if (product.name_he) names.set(product.id, product.name_he)
+      }
+    }
+
+    const { data: profile } = await admin
+      .from('profiles')
+      .select('email, phone')
+      .eq('id', userId)
+      .maybeSingle()
+
+    // The value is what was CHARGED on site, line by line - not the face value
+    // and not the list price. Reporting anything else makes the ad platforms
+    // optimise against revenue that never arrived.
+    const valueAgorot = items.reduce((sum, item) => sum + (item.paid_on_site_agorot ?? 0), 0)
+    if (valueAgorot <= 0) return
+
+    await sendServerPurchase({
+      orderId,
+      valueAgorot,
+      items: items.map((item) => ({
+        id: item.product_id ?? item.id,
+        name: item.product_id ? (names.get(item.product_id) ?? 'פריט') : 'פריט',
+        priceAgorot: Math.round((item.paid_on_site_agorot ?? 0) / Math.max(1, item.quantity)),
+        quantity: item.quantity,
+      })),
+      email: (profile as { email: string | null } | null)?.email ?? null,
+      phone: (profile as { phone: string | null } | null)?.phone ?? null,
+    })
+  } catch (error) {
+    log.warn('analytics.server_purchase_threw', {
+      orderId,
+      reason: error instanceof Error ? error.message : 'unknown',
+    })
+  }
 }
 
 async function getOrCreateUserWalletAccount(
@@ -444,6 +504,20 @@ export async function finalizeOrder(input: {
         reason: stockError.message,
       })
     }
+
+    // The authoritative purchase event, sent from the server at the moment the
+    // order actually became paid.
+    //
+    // A browser-side purchase is fired on the thank-you page and is lost every
+    // time a shopper closes the tab on the provider's redirect, every time an
+    // ad blocker eats it - which most Israeli shoppers run - and every time the
+    // payment settles by webhook minutes after the browser gave up. Each of
+    // those is a real sale reported as nothing, to platforms that set ad spend
+    // against the number they were given.
+    //
+    // Deduplicated on the ORDER ID, which both vendors key on, so a purchase
+    // seen by a browser that DID survive is still counted once.
+    await reportPurchase(admin, order.id, order.user_id, items as OrderItemRow[])
 
     if (input.token) {
       await admin.from('payment_tokens').insert({

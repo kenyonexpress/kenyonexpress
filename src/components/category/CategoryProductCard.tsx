@@ -166,6 +166,7 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
           <AddToCartButton
             productId={product.id}
             productName={product.name_he}
+            priceAgorot={Math.round(Number(product.kenyon_price ?? 0) * 100)}
             variant="icon"
             className="category-card__atc"
           >
