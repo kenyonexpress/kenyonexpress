@@ -5,6 +5,12 @@
 Status: **DESIGN** · 2026-08-07 · Scope: docs only
 סוגר את `GAPS-CODE-VS-DOCS.md` ‏**G1**, החוסם היחיד בדרגה 1.
 
+מסמך מחייב מעודכן (סכימת באצ' + שער משלוח + ביצוע):
+
+```
+docs/ARCHITECTURE-PAYOUT-MECHANISM.md
+```
+
 ---
 
 ## 0. מה קיים, מה לא, ומה שכבר נכתב פעם אחת ומת
@@ -409,3 +415,4 @@ WHERE e.kind = 'supplier_debit' AND e.supplier_id = $1 AND l.id IS NULL;
 | תאריך | שינוי |
 |---|---|
 | 2026-08-07 | תכנון ראשון. סוגר את G1. נמדד מול הפרודקשן; חמש מיגרציות payout קיימות בעץ ואף אחת לא הוחלה |
+| 2026-08-10 | הפניה ל-`ARCHITECTURE-PAYOUT-MECHANISM.md` כמסמך BINDING |

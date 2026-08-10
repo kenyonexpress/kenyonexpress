@@ -12,6 +12,7 @@ Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 docs/ARCHITECTURE-PRICING-RULES.md
 docs/ARCHITECTURE-SUPPLIER-ONBOARDING.md
 docs/ARCHITECTURE-SUPPLIER-PORTAL.md
+docs/ARCHITECTURE-PAYOUT-MECHANISM.md
 docs/BUSINESS-MODEL.md
 docs/RUNBOOK-PRODUCTION.md
 ```

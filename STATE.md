@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-07 (docs-only ke-arch: QA audit חבילת 20)
+Updated: 2026-08-10 (docs-only ke-arch: ARCHITECTURE-PAYOUT-MECHANISM)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,23 +8,22 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-QA audit על כל 20 מסמכי ROADMAP-V2 (אחרי QA final):
+`docs/ARCHITECTURE-PAYOUT-MECHANISM.md` (BINDING):
 
-- סריקה מסמך-מסמך מול No Escrow (אין נאמן/J5) + `platform_percent` פר מוצר
-- תיקונים: P3, AS7, OBS8, B6, T7, D8, EMAIL↔PRICING
-- RTL: הוסר מינוס יוניקוד מ-PRICING; בלי em/en-dash בחבילה
-- `MASTER-INDEX.md`: סטטוס **QA-PASS** לכל #1 עד 20
-
-Commit אחרי כל תיקון; tip: ראה `git log`.
+- פיזי בלבד; קופון No Escrow (0 payout)
+- טריגר: `charge_settled` + T+N ימי עסקים + שער משלוח
+- ביצוע: העברה בנקאית ידנית אחרי אישור אדמין + ייצוא CSV באצ'
+- סכימה: `payout_batches` + `supplier_payouts` + lines באגורות `bigint`
+- Edge: החזר אחרי paid → debit; ספק חסום לא משולם
 
 ## In Progress
 nothing
 
 ## Blocking Issues
-none (docs only)
+none (docs only); G1 עדיין פתוח בפרודקשן עד יישום הקוד
 
 ## Next Task
-יישום לפי docs/ROADMAP-V2.md / docs/MASTER-INDEX.md מחוץ לסקופ docs-only.
+יישום payout לפי docs/ARCHITECTURE-PAYOUT-MECHANISM.md (מחוץ לסקופ docs-only).
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
@@ -32,6 +31,7 @@ none (docs only)
 ## החלטות שהתקבלו אוטומטית
 - **2026-08-06 QA:** המודל המחייב ל-docs הוא **No Escrow** לקופון (מקדמה לפלטפורמה; יתרה בבית העסק; אין held לספק; אין נאמן/J5 של חברת אשראי) + `platform_percent` פר מוצר בלי default. זה **דורס** את נוסח Escrow/held של 2026-07-27 בסעיף ההיסטורי למטה (נשמר לתיעוד בלבד).
 - **2026-08-07 QA re-pass:** `docs/CONTRADICTIONS.md` עצמו עודכן בהתאם (C11א). בלי זה המסמך "הגובר" סתר את חבילת ה-20.
+- **2026-08-10 payout:** ביצוע כסף לספק פיזי = העברה בנקאית ידנית + CSV באצ' אחרי אישור אדמין. לא Cardcom Financial ולא מסה"ב אוטומטי בשלב זה. טריגר = T+N מה-ledger + שער משלוח (לא אישור משלוח לבדו).
 
 ---
 ## Current Phase (רקע מודל) [היסטורי; דורס ב-QA 2026-08-06]

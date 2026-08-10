@@ -133,6 +133,7 @@ CONTRADICTIONS, כל מספר עמלה כאן הוא שריד") הוסר מכו�
 | `ARCHITECTURE-OBSERVABILITY.md` | Sentry, לוגים, התראות תפעול. | QA-PASS (#9) |
 | `ARCHITECTURE-PERFORMANCE.md` | Owner: Performance Architect | DESIGN |
 | `ARCHITECTURE-PERSONAL-AREA.md` | אזור אישי (P7 מיושר ל-No Escrow ב-QA). | BINDING |
+| `ARCHITECTURE-PAYOUT-MECHANISM.md` | תשלום ספק פיזי: T+N + שער משלוח, באצ', העברה ידנית+CSV. | BINDING (10.08) |
 | `ARCHITECTURE-PRICING-RULES.md` | platform_percent דינמי פר מוצר, בזק, הנחות. | QA-PASS (#12) |
 | `ARCHITECTURE-PRODUCTION-OPS.md` | תכנון תשתית. | DESIGN |
 | `ARCHITECTURE-PWA.md` | PWA: manifest, SW, push. | BINDING |
@@ -160,7 +161,7 @@ CONTRADICTIONS, כל מספר עמלה כאן הוא שריד") הוסר מכו�
 | `CONTENT-PLAYBOOK.md` | איך כותבים דיל בעברית; 5 דוגמאות מלאות. | PLAYBOOK (07.08) |
 | `SUPPLIER-AGREEMENT-DRAFT.md` | טיוטת הסכם ספק. **לא ייעוץ משפטי.** | DRAFT (07.08) |
 | `OPS-DAILY-ROUTINE.md` | שגרת בוקר 15 דקות, לפי סדר עלות. | RUNBOOK (07.08) |
-| `PAYOUT-ARCHITECTURE.md` | תשלום לספק פיזי. סוגר את חוסם G1. | DESIGN (07.08) |
+| `PAYOUT-ARCHITECTURE.md` | תכנון ראשוני ל-G1; מחייב עכשיו: `ARCHITECTURE-PAYOUT-MECHANISM.md`. | DESIGN → superseded by BINDING (10.08) |
 | `LAUNCH-CHECKLIST.md` | עלייה לאוויר לפי בעלות: הקוד מול אופיר. | ACTIONABLE (07.08) |
 | `ROADMAP-V2.md` | שלבים ותלויות לחבילת docs. | QA-PASS (#10) |
 | `RUNBOOK-PRODUCTION.md` | Deploy Vercel, rollback, MCP migrations. | QA-PASS (#5) |
@@ -199,3 +200,4 @@ docs/ROADMAP-V2.md
 | 2026-08-07 | QA verify: S7 SUPPORT; קישור הדדי PRICING↔SUPPORT; סטטוס #12/#13 מעודכן |
 | 2026-08-07 | QA final חבילת 20: קישורים הדדיים + סטטוס מעודכן לכל #1 עד 20 |
 | 2026-08-07 | QA audit: P3/AS7/OBS8/B6/T7/D8 + EMAIL↔PRICING; סטטוס לכל #1 עד 20 |
+| 2026-08-10 | `ARCHITECTURE-PAYOUT-MECHANISM.md`: מנגנון payout פיזי מחייב (באצ' + העברה ידנית) |

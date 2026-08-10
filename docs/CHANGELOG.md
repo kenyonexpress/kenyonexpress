@@ -17,6 +17,13 @@ STATE.md
 
 ### Docs
 
+### Docs (2026-08-10 payout mechanism)
+
+- `ARCHITECTURE-PAYOUT-MECHANISM.md`: מנגנון תשלום ספק למוצר פיזי (BINDING)
+- טריגר: T+N ימי עסקים + שער משלוח; ביצוע: העברה בנקאית ידנית + CSV באצ'
+- סכימה: `payout_batches` + `supplier_payouts` + שורות באגורות `bigint`
+- `PAYOUT-ARCHITECTURE.md` / `MASTER-INDEX.md`: הפניה למסמך המחייב
+
 ### Docs (2026-08-07 QA audit חבילת 20)
 
 - `ARCHITECTURE-PRICING-RULES.md`: מינוס יוניקוד → ASCII; P3 איסור J5/held
