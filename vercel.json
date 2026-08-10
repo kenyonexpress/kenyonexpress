@@ -37,6 +37,10 @@
     {
       "path": "/api/cron/reconcile",
       "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/stranded-payments",
+      "schedule": "*/10 * * * *"
     }
   ]
 }

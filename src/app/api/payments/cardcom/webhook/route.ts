@@ -153,6 +153,28 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     cardcom_account_id: string | null
   } | null
   if (!payment) {
+    // A callback for a Low Profile id we hold no payment for.
+    //
+    // THIS USED TO BE SILENT, and it is the single most expensive thing this
+    // route can see: Cardcom is telling us about a hosted page WE created and
+    // whose payment row is not here. Either the row was never written - the
+    // request died between `createLowProfile` returning and our insert
+    // committing - or it was written against a different deployment. In both
+    // cases a customer may have been charged and has no order, and nobody will
+    // ever open a support ticket about it, because there is no order number to
+    // cite. It is the same `missing_locally` case the daily terminal
+    // reconciliation exists to catch, arriving here HOURS earlier.
+    //
+    // Still a 200: there is nothing Cardcom can do by retrying, and a 5xx would
+    // make it retry an event we will keep failing to place.
+    await capturePaymentAlarm('cardcom callback for a payment that does not exist here', {
+      stage: 'cardcom_webhook_unknown_payment',
+      detail: {
+        low_profile_id: payload.lowprofilecode,
+        deal_number: payload.InternalDealNumber ?? null,
+        succeeded_at_provider: isCardcomSuccess(payload),
+      },
+    })
     return NextResponse.json({ ok: true, unknown_payment: true })
   }
 
