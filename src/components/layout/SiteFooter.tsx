@@ -32,8 +32,14 @@ const PERSONAL_LINKS: { label: string; href: string; built?: false }[] = [
 ]
 
 const SERVICE_LINKS: { label: string; href: string; built?: false }[] = [
+  { label: 'אודות', href: '/about' },
   { label: 'צור קשר', href: '/contact' },
   { label: 'שאלות נפוצות', href: '/faq' },
+  { label: 'הבלוג', href: '/blog' },
+  // Above the legal block on purpose: this is the one link in the footer aimed
+  // at a business rather than a shopper, and burying it under four legal pages
+  // is where it stops being found.
+  { label: 'הצטרפו כספקים', href: '/suppliers' },
   // The flag is gone from all four because the pages exist now ([58]). The two
   // long ones are the site's OWN published Hebrew text, migrated out of the
   // WordPress export rather than rewritten.

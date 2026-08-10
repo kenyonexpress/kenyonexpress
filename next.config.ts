@@ -1,3 +1,4 @@
+import createMDX from '@next/mdx'
 import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 import createNextIntlPlugin from 'next-intl/plugin'
@@ -47,6 +48,17 @@ const headersWithPolicy = (csp: string, frameOptions: 'DENY' | 'SAMEORIGIN') => 
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  /**
+   * `.mdx` joins the page extensions so blog posts can be files rather than
+   * database rows.
+   *
+   * `md` is deliberately NOT included. This repo already carries dozens of
+   * `.md` files at the root and under `docs/`; adding the extension makes Next
+   * scan for them as route candidates, and the only thing standing between
+   * `docs/ARCHITECTURE-OPS.md` and a public URL would be that it happens to sit
+   * outside `src/app`. One extension, one purpose.
+   */
+  pageExtensions: ['ts', 'tsx', 'mdx'],
   async headers() {
     // Two NON-OVERLAPPING sources, which is the whole trick. Next appends the
     // headers of every entry whose source matches, so two entries that both
@@ -201,7 +213,17 @@ const nextConfig: NextConfig = {
  * wrapping the other way round would hand Sentry a config next-intl had not
  * finished building.
  */
-export default withSentryConfig(withNextIntl(nextConfig), {
+/**
+ * MDX with no remark or rehype plugins.
+ *
+ * Every plugin here is another thing that runs over content at build time, and
+ * the posts this serves are written in-house: there is no untrusted markdown to
+ * sanitise and no frontmatter to parse, because each post exports its own typed
+ * metadata. Plugins can be added when a post needs one, not in advance.
+ */
+const withMDX = createMDX({})
+
+export default withSentryConfig(withMDX(withNextIntl(nextConfig)), {
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
   authToken: process.env.SENTRY_AUTH_TOKEN,

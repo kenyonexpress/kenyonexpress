@@ -4,8 +4,8 @@ import ProductGallery from '@/components/storefront/ProductGallery'
 import ProductInfo from '@/components/storefront/ProductInfo'
 import RelatedProducts from '@/components/storefront/RelatedProducts'
 import ShippingInfo from '@/components/storefront/ShippingInfo'
+import StockScarcity from '@/components/storefront/StockScarcity'
 import SupplierInfo from '@/components/storefront/SupplierInfo'
-import { readLiveStock } from '@/lib/commerce/stock-live'
 import { productLocation } from '@/lib/geo/distance'
 import { listProductSlugsForPrerender, loadProductBySlug } from '@/lib/product-detail'
 import { getProductSeoBySlug } from '@/lib/product-seo'
@@ -14,6 +14,7 @@ import { readWhatsAppEnabled } from '@/lib/supplier-contact'
 import '@/styles/product-page.css'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -120,12 +121,6 @@ export default async function ProductPage({ params }: Props) {
 
   const { product, images, supplier, variants, galleryAssets, couponOffer } = detail
 
-  // Live, outside the hour-long product cache: availability moves every time
-  // somebody starts or abandons a checkout, and a stale figure would keep
-  // offering a unit another shopper is already holding. Skipped entirely for
-  // untracked products, which is most of the catalogue.
-  const liveStock = await readLiveStock(product.id, product.stock_quantity)
-
   const category = Array.isArray(product.categories)
     ? null
     : (product.categories as { id: string; name_he: string; slug: string } | null)
@@ -228,9 +223,23 @@ export default async function ProductPage({ params }: Props) {
             basePrice={basePrice}
             oldPrice={oldPrice}
             baseStock={product.stock_quantity}
-            availableStock={liveStock.available}
-            stockInitial={liveStock.initial}
-            lowStockThreshold={liveStock.threshold}
+            /*
+              The one live read on this page, behind its own boundary. The
+              product load is `'use cache'` for an hour, and availability moves
+              with every checkout - reading it in the cached subtree makes the
+              whole route uncacheable, which `next build` refuses outright.
+              No fallback: an empty line is the correct "nothing to say yet",
+              and a skeleton for one short sentence would flash.
+            */
+            scarcitySlot={
+              <Suspense fallback={null}>
+                <StockScarcity
+                  productId={product.id}
+                  trackedLevel={product.stock_quantity}
+                  isCoupon={isCoupon}
+                />
+              </Suspense>
+            }
             sku={product.sku}
             categoryName={category?.name_he ?? null}
             city={productLocation({ ...product, supplier }).city?.name ?? null}

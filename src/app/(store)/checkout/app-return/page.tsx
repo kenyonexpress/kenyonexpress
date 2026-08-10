@@ -2,6 +2,7 @@ import { appReturnDeepLink, parseReturnStatus } from '@/lib/app/deep-links'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 
 export const metadata: Metadata = {
   title: 'חוזרים לאפליקציה',
@@ -38,7 +39,31 @@ type Props = {
  * re-reads the order from the server after it is dismissed. Nothing here is
  * trusted, which is also why it needs no session and holds no secret.
  */
-export default async function AppReturnPage({ searchParams }: Props) {
+/**
+ * `searchParams` is uncached data, and under `cacheComponents` a route that
+ * awaits it at the top level is refused by `next build` with "Uncached data was
+ * accessed outside of <Suspense>". The fallback is the same reassurance the
+ * body shows, so a shopper who arrives mid-stream never sees a blank page with
+ * money already taken - which is the one moment this page exists for.
+ *
+ * Measured, not assumed: the first version of this file had no boundary and
+ * failed the production build on exactly this page.
+ */
+export default function AppReturnPage(props: Props) {
+  return (
+    <Suspense
+      fallback={
+        <div dir="rtl" className="flex min-h-[60vh] items-center justify-center p-6 text-center">
+          <p className="text-[15px] leading-relaxed text-muted">חוזרים לאפליקציה...</p>
+        </div>
+      }
+    >
+      <AppReturnBody {...props} />
+    </Suspense>
+  )
+}
+
+async function AppReturnBody({ searchParams }: Props) {
   const sp = await searchParams
   const orderId = sp.order_id
   if (!orderId) notFound()

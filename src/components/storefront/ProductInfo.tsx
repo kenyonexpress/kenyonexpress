@@ -6,16 +6,11 @@ import FacebookShareButton from '@/components/shared/FacebookShareButton'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import CouponPricing from '@/components/storefront/CouponPricing'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
-import {
-  couponStockMessageHebrew,
-  stockDisplay,
-  stockMessageHebrew,
-} from '@/lib/commerce/stock-scarcity'
 import { cityByName } from '@/lib/geo/cities'
 import { buildShareMessage } from '@/lib/share/message'
 import { Check, ShoppingCart } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { type ReactNode, useState } from 'react'
 
 interface Variant {
   id: string
@@ -39,11 +34,13 @@ interface Props {
   basePrice: number
   oldPrice: number | null
   baseStock: number | null
-  /** `available_stock()`: the level minus live holds. Null when not read. */
-  availableStock?: number | null
-  /** `products.stock_initial`, the denominator for the scarcity fraction. */
-  stockInitial?: number | null
-  lowStockThreshold?: number | null
+  /**
+   * The live "only X left" line, rendered by the page inside its own Suspense
+   * boundary. Passed as a NODE rather than as numbers because reading those
+   * numbers here would drag this component - and with it the whole product
+   * page - out of the cache.
+   */
+  scarcitySlot?: ReactNode
   sku: string | null
   /** Category name, shown in the eyebrow slot live fills with its category links. */
   categoryName: string | null
@@ -89,9 +86,7 @@ export default function ProductInfo({
   basePrice,
   oldPrice,
   baseStock,
-  availableStock = null,
-  stockInitial = null,
-  lowStockThreshold = null,
+  scarcitySlot = null,
   sku,
   categoryName,
   city,
@@ -115,18 +110,17 @@ export default function ProductInfo({
 
   const variant = variants.find((v) => v.id === selected) ?? null
   const price = variant != null ? (variant.price ?? basePrice + variant.price_modifier) : basePrice
-  // `availableStock` is the level MINUS live checkout reservations, so it is
-  // the number a shopper could actually buy right now. It falls back to the raw
-  // level for a variant, which has no reservation of its own (117 holds at
-  // product level), and for any page rendered before the RPC could be read.
-  const stock = variant?.stock_quantity ?? availableStock ?? baseStock
+  // The CACHED level, deliberately. This component renders inside the product
+  // page's hour-long cache, and reading live availability here would make the
+  // whole page uncacheable - `next build` refuses it outright under
+  // `cacheComponents`, which is how the first attempt was caught.
+  //
+  // The live number streams in separately through `<StockScarcity>`, which is
+  // Suspense-wrapped. That split is also the right one on its own terms: the
+  // price and the buy button should paint immediately, and "only 3 left" is
+  // the one line worth waiting a beat for.
+  const stock = variant?.stock_quantity ?? baseStock
   const outOfStock = stock === 0
-  const scarcity = stockDisplay({
-    available: stock,
-    initial: variant ? null : stockInitial,
-    threshold: variant ? null : lowStockThreshold,
-  })
-  const scarcityLine = isCoupon ? couponStockMessageHebrew(scarcity) : stockMessageHebrew(scarcity)
   const effectiveSku = variant?.sku ?? sku
   const needsVariant = variants.length > 0 && !selected
   // The commission engine refuses a coupon line with no absolute price, so the
@@ -208,13 +202,11 @@ export default function ProductInfo({
         `offer_valid_until` instead of a rolling timer.
       */}
       {/*
-        `<output>` rather than `<p role="status">`: it carries the same live
-        region semantics natively, and the count really is a computed result
-        that changes under the reader without a navigation.
+        The live scarcity line, streamed in by the page. Null when the page did
+        not read it (a variant, or an untracked product), which is most of the
+        catalogue.
       */}
-      {!outOfStock && scarcityLine ? (
-        <output className="pdp-summary__stock pdp-summary__stock--low">{scarcityLine}</output>
-      ) : null}
+      {!outOfStock && scarcitySlot}
 
       {/* A coupon is priced by its own absolute model, so it gets the whole
           pricing block. Everything else shows the ordinary sale price. */}

@@ -1,3 +1,4 @@
+import { sortedPosts } from '@/content/blog'
 import { LEGAL_PAGE_SLUGS, getLegalPage } from '@/content/legal'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { newestTimestamp } from '@/lib/seo/lastmod'
@@ -111,6 +112,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // is both true and better than a date that is wrong every time.
     { url: `${base}/contact`, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${base}/faq`, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${base}/about`, changeFrequency: 'monthly', priority: 0.5 },
+    // Higher than the other content pages because it is the page a business
+    // lands on, and a business is worth more than a session.
+    { url: `${base}/suppliers`, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${base}/blog`, changeFrequency: 'weekly', priority: 0.6 },
+    // Each post carries a real `publishedAt`, so unlike `/contact` there IS a
+    // date worth publishing. Driven off the same registry the index renders, so
+    // a post cannot be listed in one and missing from the other.
+    ...sortedPosts().map((post) => ({
+      url: `${base}/blog/${post.slug}`,
+      lastModified: new Date(post.updatedAt ?? post.publishedAt),
+      changeFrequency: 'monthly' as const,
+      priority: 0.5,
+    })),
     // The legal pages DO carry a date, because they have one: `updatedAt` is a
     // field of the document, so unlike `/contact` there is a real signal to
     // publish. They are also the four addresses the old site already has
