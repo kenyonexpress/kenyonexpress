@@ -125,7 +125,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `ARCHITECTURE-PRICING-RULES.md` | מקור האמת ל-percent / בזק / הנחות. | QA-PASS (#12) |
 | `ARCHITECTURE-COMMERCE.md` | כללי מסחר C1-C10. | QA-PASS (06.08) |
 | `ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md` | checkout/מימוש; יומן D1-D6. | QA-PASS (06.08) |
-| `CHECKOUT-OPTIMIZATION.md` | משפך נטישה + יעדים + A/B לפי עלות/תועלת. | PLAN (10.08) |
+| `CHECKOUT-OPTIMIZATION.md` | זרימת Cardcom, כשלים, retry + משפך/A/B. | PLAN (11.08) |
 | `GUEST-VS-MEMBER-STRATEGY.md` | מתי דוחפים הרשמה ומתי לא. | PLAN (10.08) |
 | `CARDCOM-ARCHITECTURE.md` | Cardcom (מחקר v11; קוד legacy). | BINDING + QA (07.08) |
 | `ARCHITECTURE-PAYOUT-MECHANISM.md` | Payout פיזי: T+N, באצ', CSV ידני. | BINDING (10.08) |
@@ -332,3 +332,4 @@ docs/ROADMAP-V2.md
 | 2026-08-10 | `PROGRESS-REPORT-AUG.md`; אינדקס |
 | 2026-08-10 | `CHECKOUT-OPTIMIZATION.md` + `GUEST-VS-MEMBER-STRATEGY.md`; אינדקס |
 | 2026-08-10 | `SUPPORT-SLA-POLICY.md` + `WHATSAPP-BUSINESS-SETUP.md`; אינדקס |
+| 2026-08-11 | `CHECKOUT-OPTIMIZATION.md`: Cardcom flow + failures + retry |
