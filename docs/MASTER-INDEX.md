@@ -127,6 +127,7 @@ CONTRADICTIONS, כל מספר עמלה כאן הוא שריד") הוסר מכו�
 | `ARCHITECTURE-LEGAL-COMPLIANCE.md` | הגנת הצרכן, 14 יום, דמי ביטול, נגישות. | QA-PASS (#3) |
 | `ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md` | checkout/מימוש; יומן הכרעות D1-D6. | QA-PASS (06.08) |
 | `ARCHITECTURE-MOBILE-APP.md` | Expo RN: shared packages, deep links, push, סריקת ספק. | BINDING (10.08) |
+| `ARCHITECTURE-INTEGRATIONS.md` | ורטיקלי food/rides פנימיים (סגנון Wolt/Gett): webhooks + מיפוי הזמנות. | DESIGN (10.08) |
 | `ARCHITECTURE-MOBILE-SUPERAPP.md` | תכנון מחייב 2026-07-17. | DESIGN |
 | `ARCHITECTURE-NOTIFICATIONS-MARKETING.md` | מסמך תכנון שיווק. | DESIGN |
 | `ARCHITECTURE-NOTIFICATIONS.md` | התראות: paid/redeem/supplier/cashback/abandon + QStash DLQ. | BINDING (10.08) |
@@ -211,3 +212,4 @@ docs/ROADMAP-V2.md
 | 2026-08-10 | `LAUNCH-VALIDATION.md` + `launch-week-plan.md`: אימות 10 דילי השקה מול פרוד |
 | 2026-08-10 | ריענון NOTIFICATIONS + SEO-PERFORMANCE (BINDING) |
 | 2026-08-10 | MOBILE-APP + LAUNCH-VALIDATION re-verify + RUNBOOK-LAUNCH-DAY; אינדקס |
+| 2026-08-10 | `ARCHITECTURE-INTEGRATIONS.md` + ריענון MOBILE-APP; אינדקס |

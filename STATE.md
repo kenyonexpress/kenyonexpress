@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-10 (docs-only ke-arch: design checklist + phase2-3)
+Updated: 2026-08-10 (docs-only ke-arch: MOBILE-APP + INTEGRATIONS)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,11 +8,10 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-‏`docs/DESIGN-CHECKLIST-FINAL.md` + `docs/PHASE2-3-SPEC.md`:
+‏`docs/ARCHITECTURE-MOBILE-APP.md` + `docs/ARCHITECTURE-INTEGRATIONS.md`:
 
-- צ'קליסט עיצוב: בית/מוצר/קטגוריה/עגלה/checkout/אזור אישי מול electro-v7
-- Tokens: `#fed700`, `#E4002B`, `#0062bd`, Heebo, 1320px, touch 44px, header לוגו+3 אייקונים
-- Phase 2-3: וריאנטים + SEO + תגיות; דינמי; integer agorot; No Escrow
+- Expo: shared types, deep links לקופונים, push, סריקת QR לספק
+- אינטגרציות עתידיות: ורטיקלי food/rides פנימיים (סגנון Wolt/Gett), webhooks נכנסים, מיפוי הזמנות
 - `MASTER-INDEX.md` עודכן
 
 ## In Progress
