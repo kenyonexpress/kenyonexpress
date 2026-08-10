@@ -174,6 +174,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `FAQ-CONTENT.md` | 20 שאלות לעמוד FAQ. | CONTENT (10.08) |
 | `CONTENT-PLAYBOOK.md` | כתיבת דיל בעברית. | PLAYBOOK |
 | `ARCHITECTURE-EMAIL-TEMPLATES.md` | תבניות Resend RTL. | QA-PASS (#6) |
+| `EMAIL-TEMPLATES-COPY.md` | נוסח מלא בעברית (נושא+גוף+CTA) ל-8 מיילים. | CONTENT (10.08) |
 
 ### 5. אדמין
 
@@ -307,3 +308,4 @@ docs/ROADMAP-V2.md
 | 2026-08-10 | `DATA-RETENTION-POLICY.md`; אינדקס (דורש עו״ד) |
 | 2026-08-10 | `ONBOARDING-DEVELOPER.md`; אינדקס סופי ממוין לפי נושא |
 | 2026-08-10 | `CATEGORY-TAXONOMY.md`; אינדקס (עץ 3 רמות + DB) |
+| 2026-08-10 | `EMAIL-TEMPLATES-COPY.md`; אינדקס |

@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-10 (CATEGORY-TAXONOMY)
+Updated: 2026-08-10 (EMAIL-TEMPLATES-COPY)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -9,9 +9,9 @@ ke-arch
 
 ## Last Completed
 ```
-docs/CATEGORY-TAXONOMY.md
+docs/EMAIL-TEMPLATES-COPY.md
 ```
-: עץ 3 רמות (מסעדות/יופי/אטרקציות/חופשות/בית/רכב/בריאות) עם slugs EN + שמות HE; מיפוי **E** מול DB; פער depth guard ≤2 מתועד. אינדקס עודכן.
+: נוסח מלא ל-8 מיילים (אישור הזמנה, קופון+QR, תפוגה, קאשבק, נטישה, ספק, החזר, ברוכים הבאים). אינדקס עודכן.
 
 ## In Progress
 nothing
