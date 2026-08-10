@@ -1,4 +1,5 @@
 import { SUPABASE_ANON_KEY, SUPABASE_URL, siteUrl } from '@/lib/config'
+import { clearQueue } from '@/lib/supplier/queue'
 import { createClient } from '@supabase/supabase-js'
 import * as SecureStore from 'expo-secure-store'
 import 'react-native-url-polyfill/auto'
@@ -74,8 +75,21 @@ export async function bridgeSessionToWeb(): Promise<boolean> {
   }
 }
 
-/** Clears the web cookie jar too, or the next checkout opens as the last account. */
+/**
+ * Signs out of all three places the session leaves a trace: the website's
+ * cookie jar, the till's pending scan queue, and Supabase itself.
+ *
+ * THE QUEUE IS CLEARED FIRST AND THE ORDER IS NOT ARBITRARY. Queued scans are
+ * unredeemed voucher codes belonging to the business the device was signed in
+ * to; leaving them on a device that has been handed to somebody else means the
+ * next person to sign in drains another supplier's vouchers under their own
+ * membership. The cost is that scans made offline and never synced are lost on
+ * sign-out - which is why the scan screen drains on mount and after every
+ * online scan, and why the history screen shows the pending count in a colour
+ * that is hard to walk past.
+ */
 export async function signOutEverywhere(): Promise<void> {
+  await clearQueue().catch(() => undefined)
   await fetch(siteUrl('/api/app/session'), { method: 'DELETE', credentials: 'include' }).catch(
     () => undefined,
   )

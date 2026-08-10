@@ -6,13 +6,10 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-
     "scheme": "kenyonexpress",
-
     "extra": {
       "siteUrl": "https://kenyonexpress.co.il"
     },
-
     "ios": {
       "bundleIdentifier": "co.il.kenyonexpress.app",
       "supportsTablet": false,
@@ -21,11 +18,13 @@
         "applinks:www.kenyonexpress.co.il"
       ],
       "infoPlist": {
-        "UIBackgroundModes": ["remote-notification"],
-        "NSAllowsArbitraryLoads": false
+        "UIBackgroundModes": [
+          "remote-notification"
+        ],
+        "NSAllowsArbitraryLoads": false,
+        "NSCameraUsageDescription": "המצלמה משמשת לסריקת קודי QR של שוברים בעמדת הקופה."
       }
     },
-
     "android": {
       "package": "co.il.kenyonexpress.app",
       "adaptiveIcon": {
@@ -36,15 +35,33 @@
           "action": "VIEW",
           "autoVerify": true,
           "data": [
-            { "scheme": "https", "host": "kenyonexpress.co.il", "pathPrefix": "/account" },
-            { "scheme": "https", "host": "kenyonexpress.co.il", "pathPrefix": "/checkout" },
-            { "scheme": "https", "host": "kenyonexpress.co.il", "pathPrefix": "/product" }
+            {
+              "scheme": "https",
+              "host": "kenyonexpress.co.il",
+              "pathPrefix": "/account"
+            },
+            {
+              "scheme": "https",
+              "host": "kenyonexpress.co.il",
+              "pathPrefix": "/checkout"
+            },
+            {
+              "scheme": "https",
+              "host": "kenyonexpress.co.il",
+              "pathPrefix": "/product"
+            }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
+      ],
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.VIBRATE"
       ]
     },
-
     "plugins": [
       "expo-router",
       "expo-secure-store",
@@ -53,9 +70,14 @@
         {
           "color": "#f5c518"
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "המצלמה משמשת לסריקת קודי QR של שוברים בעמדת הקופה."
+        }
       ]
     ],
-
     "experiments": {
       "typedRoutes": false
     }

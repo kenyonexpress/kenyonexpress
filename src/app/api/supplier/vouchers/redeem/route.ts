@@ -1,7 +1,8 @@
 import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
 import { withRequestLog } from '@/lib/observability/with-request-log'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { identityScopedClient } from '@/lib/supabase/bearer'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { expireWalletPasses } from '@/lib/wallet/notify'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
@@ -33,6 +34,8 @@ const redeemRequestSchema = z
     // Docs / offline drain name this scan_method; accept either.
     scan_method: z.enum(['camera', 'manual']).optional(),
     idempotency_key: z.string().trim().min(8).max(128).optional(),
+    /** Who was at the till. Attribution only; it grants nothing. See 115. */
+    staff_id: z.string().uuid().optional(),
   })
   .refine((data) => Boolean(data.code || data.qr_payload), {
     message: 'code or qr_payload required',
@@ -115,15 +118,57 @@ function asOutcome(value: unknown): Outcome {
   return known.includes(value as Outcome) ? (value as Outcome) : 'not_found'
 }
 
+/**
+ * Writes `voucher_redemptions.staff_id` for the row the RPC just created.
+ *
+ * The admin client, because the supplier's own RLS on that table is read-only
+ * and must stay that way: a till that could UPDATE its scan log could rewrite
+ * who performed a redemption after the fact, which is the one thing an audit
+ * trail exists to prevent. This narrow, server-side stamp is the only writer.
+ *
+ * The staff row is re-checked against the caller's supplier here rather than
+ * trusted from the body, so a member cannot attribute their scan to a person at
+ * another business.
+ */
+async function stampStaff(idempotencyKey: string, staffId: string, userId: string): Promise<void> {
+  const admin = createAdminClient()
+  const { data: staff } = await admin
+    .from('supplier_staff')
+    .select('id, supplier_id')
+    .eq('id', staffId)
+    .maybeSingle()
+  if (!staff) return
+
+  const { data: membership } = await admin
+    .from('supplier_members')
+    .select('supplier_id')
+    .eq('user_id', userId)
+    .eq('supplier_id', staff.supplier_id)
+    .eq('is_active', true)
+    .maybeSingle()
+  if (!membership) return
+
+  const { error } = await admin
+    .from('voucher_redemptions')
+    .update({ staff_id: staffId })
+    .eq('idempotency_key', idempotencyKey)
+  if (error) log.warn('voucher.staff_stamp_failed', { reason: error.message })
+}
+
 async function handlePOST(request: NextRequest): Promise<NextResponse> {
-  const supabase = await createClient()
   const scanContext = readScanContext(request.headers)
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) {
+
+  // Cookie for the web portal, bearer for the app, and in BOTH cases a client
+  // that carries the caller's identity into Postgres. `redeem_voucher` derives
+  // the supplier from the caller's own `supplier_members` row through
+  // `auth.uid()`, so the service-role client would have no identity at all and
+  // every scan would be refused as unauthorized.
+  const scoped = await identityScopedClient(request)
+  if (!scoped) {
     return respond({ outcome: 'unauthorized', message: OUTCOME_MESSAGES.unauthorized }, 401)
   }
+  const { client: supabase, identity } = scoped
+  const user = identity.user
 
   // The lookup route next door has had a ceiling since it was written, and this
   // one did not — which made the ceiling decorative. An attacker walking the
@@ -145,7 +190,7 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     return respond({ outcome: 'invalid_request', message: OUTCOME_MESSAGES.invalid_request }, 400)
   }
 
-  const { qr_payload, code, method, idempotency_key } = parsed.data
+  const { qr_payload, code, method, idempotency_key, staff_id } = parsed.data
 
   // Resolve the short code. A QR payload must pass the HMAC check first; a bad
   // signature never reaches redeem_voucher and is logged as invalid_signature.
@@ -206,6 +251,16 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     // expired the first time round.
     if (!replayed) {
       await expireWalletPasses([(result.code as string) ?? shortCode])
+    }
+
+    // Attribution is stamped AFTER the atomic redeem, not inside it, and the
+    // ordering is the point: `redeem_voucher` is the money-path RPC and adding
+    // an argument to it to carry a display concern would put a bookkeeping
+    // column on the same failure path as burning the voucher. So a failure here
+    // loses the cashier's name and nothing else - which is why a null
+    // `staff_id` must never be read as "the redemption did not happen".
+    if (staff_id && idempotency_key) {
+      await stampStaff(idempotency_key, staff_id, user.id)
     }
 
     return respond(

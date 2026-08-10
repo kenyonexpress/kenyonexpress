@@ -1,5 +1,5 @@
 import { withRequestLog } from '@/lib/observability/with-request-log'
-import { createClient } from '@/lib/supabase/server'
+import { identityScopedClient } from '@/lib/supabase/bearer'
 import { getSupplierMemberships } from '@/lib/supplier/rbac'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
@@ -96,13 +96,15 @@ function respond(body: LookupResponse, status: number): NextResponse {
 }
 
 async function handlePOST(request: NextRequest): Promise<NextResponse> {
-  const supabase = await createClient()
   const scanContext = readScanContext(request.headers)
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return respond({ outcome: 'unauthorized', message: MESSAGES.unauthorized }, 401)
+  // Cookie for the portal, bearer for the app, and either way a client that
+  // carries the caller into Postgres: the lookup is scoped by the same
+  // membership the redemption is.
+  const scoped = await identityScopedClient(request)
+  if (!scoped) return respond({ outcome: 'unauthorized', message: MESSAGES.unauthorized }, 401)
+  const { client: supabase, identity } = scoped
+  const user = identity.user
 
   // A lookup is cheap and reversible, so the ceiling is generous; it exists
   // because a member with a session could otherwise walk the code space of

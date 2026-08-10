@@ -65,6 +65,18 @@ export default function HomeScreen() {
         <Text style={styles.buttonQuietText}>מעבר לתשלום</Text>
       </Pressable>
 
+      {/*
+        Always shown, never conditional on being a supplier. The gate lives on
+        the screen itself, which can tell "not a supplier" from "scanning is
+        switched off for your business" - hiding the entry point here would turn
+        both into "the button is missing", which is the support call.
+      */}
+      <Link href="/supplier" asChild>
+        <Pressable style={styles.buttonQuiet}>
+          <Text style={styles.buttonQuietText}>מצב ספק (סריקת שוברים)</Text>
+        </Pressable>
+      </Link>
+
       <Pressable
         style={styles.link}
         onPress={async () => {

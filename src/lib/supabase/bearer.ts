@@ -54,5 +54,44 @@ export async function authenticateRequest(request: Request): Promise<RequestIden
   return user ? { user, via: 'bearer' } : null
 }
 
+/**
+ * A client that CARRIES the caller's identity into the database, for the routes
+ * whose work happens inside a `SECURITY DEFINER` function that reads
+ * `auth.uid()`.
+ *
+ * `authenticateRequest` above answers "who is this"; this answers "act as
+ * them". The two are not interchangeable and using the admin client in place of
+ * this one is the bug it exists to prevent: `redeem_voucher` derives the
+ * supplier from the caller's own `supplier_members` row, so a service-role
+ * connection has no `auth.uid()` and every redemption would be refused - or,
+ * worse, a future version that took the supplier as an argument would let a
+ * till burn another business's vouchers.
+ *
+ * Cookie callers already have such a client (`createClient()` from
+ * ./server). This is the bearer equivalent, and it is why the routes below
+ * branch on `via` rather than always using one.
+ */
+export async function identityScopedClient(request: Request) {
+  const identity = await authenticateRequest(request)
+  if (!identity) return null
+
+  if (identity.via === 'cookie') {
+    return { identity, client: await createServerClient() }
+  }
+
+  const token = bearerToken(request.headers.get('authorization')) as string
+  return {
+    identity,
+    client: createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        auth: { persistSession: false, autoRefreshToken: false },
+        global: { headers: { Authorization: `Bearer ${token}` } },
+      },
+    ),
+  }
+}
+
 /** Exported for tests: the header parse is where a malformed value slips through. */
 export const __test = { bearerToken }

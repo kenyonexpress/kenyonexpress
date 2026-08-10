@@ -77,6 +77,17 @@ export default function RootLayout() {
           options={{ title: 'תשלום', presentation: 'modal' }}
         />
         <Stack.Screen name="checkout/return" options={{ title: 'אישור הזמנה' }} />
+        <Stack.Screen name="supplier/index" options={{ title: 'מצב ספק' }} />
+        <Stack.Screen
+          name="supplier/scan"
+          options={{
+            title: 'סריקת שובר',
+            // The camera fills the screen and the verdict overlay has to sit on
+            // top of it, not under a translucent bar.
+            headerTransparent: false,
+          }}
+        />
+        <Stack.Screen name="supplier/history" options={{ title: 'סריקות היום' }} />
       </Stack>
     </>
   )
