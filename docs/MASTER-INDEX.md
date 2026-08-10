@@ -252,6 +252,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `ARCHITECTURE-PWA.md` | manifest / SW / push. | BINDING |
 | `ARCHITECTURE-APP-STORE-LAUNCH.md` | חנויות אפ. | QA-PASS (#15) |
 | `ARCHITECTURE-INTEGRATIONS.md` | ורטיקלים פנימיים. | DESIGN (10.08) |
+| `INTEGRATIONS-ROADMAP.md` | מפת דרכים לורטיקלים פנימיים (Wolt/Gett style). | ROADMAP (11.08) |
 | `ARCHITECTURE-API-CONTRACTS.md` | חוזי API פנימיים. | QA-PASS (06.08) |
 | `API-PUBLIC-SPEC.md` | API ציבורי עתידי לספקים. | DESIGN (10.08) |
 
@@ -317,6 +318,7 @@ docs/ROADMAP-V2.md
 | 2026-08-10 | ריענון NOTIFICATIONS + SEO-PERFORMANCE (BINDING) |
 | 2026-08-10 | MOBILE-APP + LAUNCH-VALIDATION re-verify + RUNBOOK-LAUNCH-DAY; אינדקס |
 | 2026-08-10 | `ARCHITECTURE-INTEGRATIONS.md` + ריענון MOBILE-APP; אינדקס |
+| `INTEGRATIONS-ROADMAP.md` | מפת דרכים לורטיקלים פנימיים (Wolt/Gett style). | ROADMAP (11.08) |
 | 2026-08-10 | `ADMIN-USER-GUIDE.md` + `SUPPLIER-ONBOARDING.md`; אינדקס |
 | 2026-08-10 | `MARKETING-LAUNCH.md` + `ANALYTICS-SPEC.md`; אינדקס |
 | 2026-08-10 | `API-PUBLIC-SPEC.md`; אינדקס + ניקוי כפילויות companion |
