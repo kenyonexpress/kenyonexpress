@@ -21,3 +21,17 @@ allowBuilds:
 # full source size no matter what `w` the browser asked for.
 overrides:
   sharp: ^0.35.3
+
+  # Transitive advisories with no direct dependency to bump, all fixed by a
+  # patch release. Pinned here rather than left, because `pnpm audit` reported
+  # every one of them as high and an audit nobody can get to zero is an audit
+  # nobody reads.
+  #
+  # postcss   arbitrary file read + path traversal via source-map auto-loading
+  # nanoid    non-secure generator loops indefinitely on a negative size
+  # brace-expansion  DoS via unbounded expansion
+  # fast-uri  host confusion via a backslash authority
+  postcss: ^8.5.23
+  nanoid: ^3.3.17
+  brace-expansion: ^5.0.9
+  fast-uri: ^3.1.5
