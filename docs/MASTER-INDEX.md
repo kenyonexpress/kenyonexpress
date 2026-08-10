@@ -176,7 +176,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `ARCHITECTURE-PERSONAL-AREA.md` | אזור אישי (No Escrow). | BINDING |
 | `ARCHITECTURE-ACCOUNT-IDENTITY.md` | זהות חשבון. | DESIGN |
 | `ARCHITECTURE-CUSTOMER-SUPPORT.md` | פניות ו-SLA. | QA-PASS (#13) |
-| `CUSTOMER-SUPPORT-PLAYBOOK.md` | תסריטי מענה בעברית. | PLAYBOOK (10.08) |
+| `CUSTOMER-SUPPORT-PLAYBOOK.md` | תסריטי מענה בעברית (כולל תשלום/אורח). | PLAYBOOK (11.08) |
 | `SUPPORT-SLA-POLICY.md` | מדרג פניות, שעות, אסקלציה, נוסח מחוץ לשעות. | POLICY (10.08) |
 | `DISPUTE-RESOLUTION.md` | מחלוקות מימוש; נטל ראיה אצל ספק. | RUNBOOK (10.08) |
 | `FAQ-CONTENT.md` | 20 שאלות לעמוד FAQ. | CONTENT (10.08) |
