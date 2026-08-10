@@ -165,6 +165,16 @@ export class MockCardcomProvider implements PaymentProvider {
    */
   readonly documents: CreateDocumentInput[] = []
 
+  /**
+   * The mock knows nothing about a terminal, so it reports an empty list rather
+   * than inventing transactions. An invented one would make the reconciliation
+   * report a discrepancy against a charge that never existed - an alert about
+   * fiction is worse than no alert.
+   */
+  async listTransactions(): Promise<{ ok: true; transactions: [] }> {
+    return { ok: true, transactions: [] }
+  }
+
   async createDocument(input: CreateDocumentInput): Promise<CreateDocumentResult> {
     this.sequence += 1
     if (this.failNextCharge) {

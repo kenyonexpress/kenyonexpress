@@ -17,7 +17,7 @@ export function adminAlertRecipient(env: NodeJS.ProcessEnv = process.env): strin
   return (env.CONTACT_TO ?? 'info@kenyonexpress.co.il').trim()
 }
 
-export type AdminAlertKind = 'invoice_dead' | 'low_stock'
+export type AdminAlertKind = 'invoice_dead' | 'low_stock' | 'reconciliation_gap'
 
 /**
  * The dedupe key an alert is queued under.

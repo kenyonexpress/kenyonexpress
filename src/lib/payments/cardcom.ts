@@ -1,5 +1,6 @@
 import { agorot } from '@/lib/commerce/money'
 import { type CardcomAccount, loadCardcomAccounts } from '@/lib/payments/accounts'
+import { terminalAmountToAgorot } from '@/lib/payments/terminal-reconciliation'
 import type {
   ChargeWithTokenInput,
   ChargeWithTokenResult,
@@ -7,9 +8,11 @@ import type {
   CreateDocumentResult,
   CreateLowProfileInput,
   CreateLowProfileResult,
+  ListTransactionsResult,
   PaymentProvider,
   RefundInput,
   RefundResult,
+  TerminalTransactionRow,
   VerifyLowProfileResult,
 } from '@/lib/payments/types'
 
@@ -219,6 +222,79 @@ export class CardcomProvider implements PaymentProvider {
    * .invoice_number` is not written. The failure mode is a visible queue, not
    * an invoice that says the wrong thing.
    */
+  /**
+   * The terminal's own transaction list for a window.
+   *
+   * `BillGoldGetLowProfileIndicator` and friends answer about ONE deal;
+   * `ListTransactions` is the report endpoint on the legacy interface. Its
+   * response is a flat form encoding, so the rows are read defensively by
+   * prefix rather than by a documented schema - the wire format could not be
+   * verified from this machine (no CARDCOM_* credentials here, and the only
+   * doc in the repo describes v11 JSON while this client is legacy .aspx).
+   *
+   * WHAT THAT MEANS IN PRACTICE, said plainly: a terminal that answers in a
+   * shape this parser does not recognise produces an EMPTY list, and an empty
+   * list makes the reconciliation report "everything of ours is missing
+   * remotely" - which is the low-severity bucket on purpose, and not a page.
+   * The first real run against a live terminal is what confirms the field
+   * names; until then this cannot raise a false alarm.
+   */
+  async listTransactions(input: {
+    fromIso: string
+    toIso: string
+  }): Promise<ListTransactionsResult> {
+    const day = (iso: string) => {
+      const date = new Date(iso)
+      if (Number.isNaN(date.getTime())) return ''
+      const dd = String(date.getUTCDate()).padStart(2, '0')
+      const mm = String(date.getUTCMonth() + 1).padStart(2, '0')
+      return `${dd}${mm}${date.getUTCFullYear()}`
+    }
+
+    let raw: CardcomJson
+    try {
+      raw = await this.postForm('/Interface/ListTransactions.aspx', {
+        TerminalNumber: this.account.terminalNumber,
+        UserName: this.account.apiName,
+        FromDate: day(input.fromIso),
+        ToDate: day(input.toIso),
+      })
+    } catch (error) {
+      return { ok: false, reason: error instanceof Error ? error.message : 'network error' }
+    }
+
+    const transactions: TerminalTransactionRow[] = []
+    // Rows come back as `Transaction1.Field`, `Transaction2.Field`, ... The
+    // loop stops at the first index with no deal number rather than trusting a
+    // count field, because a count that disagrees with the rows would silently
+    // truncate the report.
+    for (let index = 1; index <= 5000; index++) {
+      const dealNumber = asString(
+        raw[`Transaction${index}.InternalDealNumber`] ??
+          raw[`transaction${index}.internaldealnumber`],
+      )
+      if (!dealNumber) break
+
+      const amount = asString(raw[`Transaction${index}.Sum`] ?? raw[`transaction${index}.sum`])
+      const type = asString(
+        raw[`Transaction${index}.DealType`] ?? raw[`transaction${index}.dealtype`],
+      )
+
+      transactions.push({
+        transactionId: dealNumber,
+        amountAgorot: terminalAmountToAgorot(amount),
+        occurredAt: asString(raw[`Transaction${index}.Date`] ?? raw[`transaction${index}.date`]),
+        // Cardcom's credit/refund deal type. Unknown types are treated as
+        // charges, which is the conservative direction: a refund misread as a
+        // charge shows up as a discrepancy to look at, while a charge misread
+        // as a refund is silently dropped from the report.
+        isRefund: type === '3' || type?.toLowerCase() === 'credit',
+      })
+    }
+
+    return { ok: true, transactions }
+  }
+
   async createDocument(input: CreateDocumentInput): Promise<CreateDocumentResult> {
     const fields: Record<string, string> = {
       TerminalNumber: this.account.terminalNumber,

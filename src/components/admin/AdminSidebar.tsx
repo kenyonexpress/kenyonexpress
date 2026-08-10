@@ -4,6 +4,7 @@ import { type AdminSection, canReadSection } from '@/lib/admin/permissions'
 import { cn } from '@/lib/utils'
 import type { UserRole } from '@/types/database'
 import {
+  AlertTriangle,
   BadgeCheck,
   Banknote,
   BarChart3,
@@ -72,6 +73,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/affiliates', label: 'שותפים והפניות', icon: Share2, section: 'affiliates' },
   { href: '/admin/analytics', label: 'אנליטיקה', icon: BarChart3, section: 'analytics' },
   { href: '/admin/search', label: 'חיפוש', icon: Search, section: 'analytics' },
+  { href: '/admin/queues', label: 'תורים תקועים', icon: AlertTriangle, section: 'analytics' },
   { href: '/admin/audit-log', label: 'לוג פעילות', icon: ClipboardList, section: 'audit-log' },
 ]
 

@@ -136,6 +136,18 @@ export interface CreateDocumentResult {
   raw: Record<string, unknown>
 }
 
+/** One line of the terminal's own report, normalised. */
+export interface TerminalTransactionRow {
+  transactionId: string
+  amountAgorot: number
+  occurredAt: string | null
+  isRefund: boolean
+}
+
+export type ListTransactionsResult =
+  | { ok: true; transactions: TerminalTransactionRow[] }
+  | { ok: false; reason: string }
+
 export interface PaymentProvider {
   readonly name: PaymentProviderKind
   createLowProfile(input: CreateLowProfileInput): Promise<CreateLowProfileResult>
@@ -143,4 +155,13 @@ export interface PaymentProvider {
   verifyLowProfile(lowProfileId: string): Promise<VerifyLowProfileResult>
   refundByTransactionId(input: RefundInput): Promise<RefundResult>
   createDocument(input: CreateDocumentInput): Promise<CreateDocumentResult>
+  /**
+   * What the TERMINAL thinks happened over a window.
+   *
+   * The only way to see money that moved at the provider and left no row here -
+   * a request that died between the charge being accepted and our transaction
+   * committing. That failure is invisible from inside our own database by
+   * construction, because there is nothing to notice.
+   */
+  listTransactions(input: { fromIso: string; toIso: string }): Promise<ListTransactionsResult>
 }

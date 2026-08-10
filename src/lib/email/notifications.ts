@@ -44,6 +44,8 @@ export type NotificationKind =
   | 'invoice_dead'
   /** Operator alert: a product is at or under its threshold. Added by 117. */
   | 'low_stock'
+  /** Operator alert: our records and the terminal's disagree about money. */
+  | 'reconciliation_gap'
 
 function escapeHtml(value: string): string {
   return value
@@ -610,6 +612,61 @@ export function buildLowStockEmail(
   return { subject, html, text }
 }
 
+/**
+ * Operator alert: the terminal and our database disagree about money.
+ *
+ * The most urgent mail this system sends, and the copy says why in the first
+ * line: `missing_locally` means a customer was charged and has no order, which
+ * no support ticket will ever report because there is no order number to cite.
+ */
+export function buildReconciliationGapEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification | null {
+  const critical = Math.round(asNumber(payload.critical))
+  if (critical <= 0) return null
+
+  const day = asText(payload.day) ?? ''
+  const rows = Array.isArray(payload.rows) ? (payload.rows as Record<string, unknown>[]) : []
+  const url = `${trimSite(siteUrl)}/admin/payments`
+
+  const subject = `⚠️ ${critical} פערי סליקה מול המסוף (${day})`
+
+  const describe = (row: Record<string, unknown>): string => {
+    const kind = asText(row.kind)
+    const tx = asText(row.transactionId) ?? '—'
+    if (kind === 'missing_locally') {
+      return `${tx}: המסוף חייב ${formatAgorot(asNumber(row.terminalAgorot))} ואין אצלנו רישום כלל`
+    }
+    return `${tx}: המסוף ${formatAgorot(asNumber(row.terminalAgorot))} מול ${formatAgorot(asNumber(row.localAgorot))} אצלנו`
+  }
+
+  const text = [
+    `נמצאו ${critical} פערים בין הרישום שלנו לדוח המסוף.`,
+    '',
+    'פער מסוג "אין אצלנו רישום" פירושו לקוח שחויב ואין לו הזמנה. הוא לא ייפתח פנייה,',
+    'כי אין לו מספר הזמנה לצטט.',
+    '',
+    ...rows.map((row) => `— ${describe(row)}`),
+    '',
+    url,
+  ].join('\n')
+
+  const html = shell(
+    `<div dir="rtl" style="background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+        <div style="font-size:17px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
+        <div style="font-size:14px;color:${INK};margin-top:10px">פער מסוג "אין אצלנו רישום" פירושו לקוח שחויב ואין לו הזמנה, והוא לא ייפתח פנייה כי אין לו מספר הזמנה לצטט.</div>
+        <div style="font-size:13px;color:${MUTED};margin-top:12px;line-height:2">
+          ${rows.map((row) => `<div>${escapeHtml(describe(row))}</div>`).join('')}
+        </div>
+        <a href="${escapeHtml(url)}" style="display:block;margin-top:16px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:12px 18px;border-radius:10px">פתיחת התשלומים באדמין</a>
+      </div>`,
+    'התראה תפעולית, לא הודעה ללקוח.',
+  )
+
+  return { subject, html, text }
+}
+
 /** Dispatch by queued kind. Unknown kinds return null so the drain can park them. */
 export function buildNotification(
   kind: string,
@@ -635,6 +692,8 @@ export function buildNotification(
       return buildInvoiceDeadEmail(payload, siteUrl)
     case 'low_stock':
       return buildLowStockEmail(payload, siteUrl)
+    case 'reconciliation_gap':
+      return buildReconciliationGapEmail(payload, siteUrl)
     default:
       return null
   }
