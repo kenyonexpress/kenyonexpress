@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-10 (INCIDENT-PLAYBOOKS)
+Updated: 2026-08-10 (DATA-RETENTION-POLICY)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -9,9 +9,9 @@ ke-arch
 
 ## Last Completed
 ```
-docs/INCIDENT-PLAYBOOKS.md
+docs/DATA-RETENTION-POLICY.md
 ```
-: 6 תרחישים (Cardcom down, Supabase degraded, redeem ארצי, בית 500, דליפת env, bots על checkout) עם זיהוי / עצירת דימום / תקשורת / שחזור. אינדקס עודכן.
+: משכי שמירה (הזמנות 7ש׳, לוגים 90י׳, עגלות 30י׳), אנונימיזציה, עוגיות; מיושר לכיוון חוק הגנת הפרטיות + תיקון 13 עם סימון **[דורש עו״ד]** בכל הסעיפים הרגישים. אינדקס עודכן.
 
 ## In Progress
 nothing
@@ -22,6 +22,9 @@ nothing
 
 ## Next Task
 אחרי login ל-Vercel: להשלים טבלת שמות env + צילום Preview אחרון
+## Working Directory
+/Users/ofir/kenyonexpress-web/ke-arch
+
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch

@@ -125,6 +125,7 @@ CONTRADICTIONS, כל מספר עמלה כאן הוא שריד") הוסר מכו�
 | `CUSTOMER-SUPPORT-PLAYBOOK.md` | תסריטי מענה בעברית (קופון/החזר/ספק/כפל/QR). | PLAYBOOK (10.08) |
 | `FAQ-CONTENT.md` | 20 שאלות נפוצות לעמוד FAQ. | CONTENT (10.08) |
 | `ARCHITECTURE-DATA-EXPORT-GDPR.md` | ייצוא ומחיקת נתוני משתמש. | QA-PASS (#19) |
+| `DATA-RETENTION-POLICY.md` | משכי שמירה + אנונימיזציה + עוגיות; מסומן דורש עו״ד. | DRAFT (10.08) |
 | `ARCHITECTURE-EMAIL-TEMPLATES.md` | תבניות RTL לכל אירוע קופון (Resend). | QA-PASS (#6) |
 | `ARCHITECTURE-FRAUD-PREVENTION.md` | מימוש כפול, QR, chargebacks, velocity. | BINDING |
 | `ARCHITECTURE-GIFT-COUPONS.md` | קופון מתנה: בעלות, ברכות, claim. | QA-PASS (#16) |
@@ -235,3 +236,4 @@ docs/ROADMAP-V2.md
 | 2026-08-10 | `CUSTOMER-SUPPORT-PLAYBOOK.md` + `FAQ-CONTENT.md`; אינדקס |
 | 2026-08-10 | `TESTING-STRATEGY.md` + `CODE-REVIEW-CHECKLIST.md`; אינדקס |
 | 2026-08-10 | `INCIDENT-PLAYBOOKS.md`; אינדקס |
+| 2026-08-10 | `DATA-RETENTION-POLICY.md`; אינדקס (דורש עו״ד) |
