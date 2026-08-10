@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-10 (docs companions + Vercel env audit blocked)
+Updated: 2026-08-10 (TESTING-STRATEGY + CODE-REVIEW-CHECKLIST)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,17 +8,14 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-מסמכי companion חדשים + אינדקס:
-
-- `docs/API-PUBLIC-SPEC.md`
-- `docs/SEASONAL-CAMPAIGNS.md` + `docs/REFERRAL-PROGRAM.md`
-- `docs/SLA-MONITORING.md` + `docs/BACKUP-RECOVERY.md`
-- `docs/CUSTOMER-SUPPORT-PLAYBOOK.md` + `docs/FAQ-CONTENT.md`
-- `docs/MASTER-INDEX.md` עודכן (companion מול ARCHITECTURE-*, בלי כפילות מחייבת)
-
-Vercel env audit (read-only): נחסם בלוגין GitHub/Vercel. דוח:
-`refs/env-audit.md`
-(שמות מ-`.env.example` בלבד; סטטוס Preview אחרון: unknown)
+```
+docs/TESTING-STRATEGY.md
+```
++
+```
+docs/CODE-REVIEW-CHECKLIST.md
+```
++ אינדקס: פירמידה, 100% money/redeem, שערי merge; צ'קליסט agorot/RLS/RTL/compare.mjs
 
 ## In Progress
 nothing

@@ -159,6 +159,8 @@ CONTRADICTIONS, כל מספר עמלה כאן הוא שריד") הוסר מכו�
 | `ARCHITECTURE-SUPPLIER-PORTAL.md` | פורטל ספק (No Escrow). | BINDING |
 | `ARCHITECTURE-SUPPLIER-REDEMPTION.md` | תכנון מימוש ספק. | DESIGN |
 | `ARCHITECTURE-TESTING-CICD.md` | פירמידת טסטים ו-CI; בלי webhook חתום ובלי escrow. | QA-PASS (06.08) |
+| `TESTING-STRATEGY.md` | פירמידה + שערי merge; 100% על money/redeem. | BINDING (10.08) |
+| `CODE-REVIEW-CHECKLIST.md` | צ'קליסט PR: agorot, RLS, RTL, compare.mjs. | BINDING (10.08) |
 | `ARCHITECTURE-WALLET-LEDGER.md` | ledger כפול-רישום באגורות. | BINDING |
 | `ARCHITECTURE-WP-DATA-MIGRATION.md` | מיגרציית WordPress. | DESIGN |
 | `BUSINESS-MODEL.md` | מודל עסקי: מחיר קופון באתר + יתרה בעסק. | BINDING |
@@ -230,3 +232,4 @@ docs/ROADMAP-V2.md
 | 2026-08-10 | `SEASONAL-CAMPAIGNS.md` + `REFERRAL-PROGRAM.md`; אינדקס |
 | 2026-08-10 | `SLA-MONITORING.md` + `BACKUP-RECOVERY.md`; אינדקס |
 | 2026-08-10 | `CUSTOMER-SUPPORT-PLAYBOOK.md` + `FAQ-CONTENT.md`; אינדקס |
+| 2026-08-10 | `TESTING-STRATEGY.md` + `CODE-REVIEW-CHECKLIST.md`; אינדקס |
