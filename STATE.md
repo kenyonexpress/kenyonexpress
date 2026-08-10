@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-10 (progress + checkout + support/whatsapp docs)
+Updated: 2026-08-11 (seven docs refresh: checkout→supplier onboarding)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,14 +8,9 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-```
-docs/PROGRESS-REPORT-AUG.md
-docs/CHECKOUT-OPTIMIZATION.md
-docs/GUEST-VS-MEMBER-STRATEGY.md
-docs/SUPPORT-SLA-POLICY.md
-docs/WHATSAPP-BUSINESS-SETUP.md
-```
-(SUPPLIER-QUALITY / FEATURED כבר היו ב-HEAD). MASTER-INDEX עודכן.
+ברצף (כל קובץ commit+push):
+CHECKOUT-OPTIMIZATION, GUEST-VS-MEMBER, SUPPLIER-QUALITY, FEATURED-DEALS,
+ARCHITECTURE-MOBILE-APP (WebView+push), ADMIN-USER-GUIDE, SUPPLIER-ONBOARDING.
 
 ## In Progress
 nothing
