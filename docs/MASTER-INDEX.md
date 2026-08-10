@@ -189,6 +189,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `CONTENT-PLAYBOOK.md` | כתיבת דיל בעברית. | PLAYBOOK |
 | `ARCHITECTURE-EMAIL-TEMPLATES.md` | תבניות Resend RTL. | QA-PASS (#6) |
 | `EMAIL-TEMPLATES-COPY.md` | נוסח מלא בעברית (נושא+גוף+CTA) ל-8 מיילים. | CONTENT (10.08) |
+| `EMAIL-TEMPLATES-SPEC.md` | מפרט Resend: kind, RTL, acceptance. | SPEC (11.08) |
 
 ### 5. אדמין
 
