@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-10 (CITY-LANDING-CONTENT)
+Updated: 2026-08-10 (V2-VISION + DEPRECATED cleanup)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -9,9 +9,11 @@ ke-arch
 
 ## Last Completed
 ```
-docs/CITY-LANDING-CONTENT.md
+docs/V2-VISION.md
 ```
-: title + meta + פתיחה ~100 מילים ל-15 ערים (ת״א עד אילת). אינדקס עודכן.
+(ML / מכרזים / live deals / גיימיפיקציה + עלות־תועלת + תלויות).  
+באנר DEPRECATED על `PAYOUT-ARCHITECTURE`, `ADMIN-ARCHITECTURE`, `TEST-STRATEGY`.  
+`MASTER-INDEX` סופי: נושאים 0–12 + סעיף 13 ארכיון.
 
 ## In Progress
 nothing

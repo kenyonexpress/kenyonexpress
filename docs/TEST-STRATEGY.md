@@ -1,12 +1,21 @@
 # TEST STRATEGY
 
-פירמידת טסטים מלאה ל-KenyonExpress: כסף קודם, UI אחר כך.
+> **DEPRECATED (2026-08-10).** אל תשתמשו כמקור מחייב.  
+> מקורות עדכניים:
 
-Status: **BINDING** · Updated: 2026-08-03  
+```
+docs/TESTING-STRATEGY.md
+docs/ARCHITECTURE-TESTING-CICD.md
+docs/CODE-REVIEW-CHECKLIST.md
+```
+
+פירמידת טסטים (ארכיון 2026-08-03).
+
+Status: **DEPRECATED** · Updated: 2026-08-10 (banner) / body 2026-08-03  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה ב-worktree הראשי (`kenyonexpress`).
 
-Companions:
+Companions (היסטורי):
 
 ```
 docs/ARCHITECTURE-TESTING-CICD.md

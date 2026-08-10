@@ -1,8 +1,16 @@
 # ADMIN-ARCHITECTURE.md
 
-KenyonExpress production admin dashboard architecture.
+> **DEPRECATED (2026-08-10).** לקריאה היסטורית בלבד.  
+> מקורות עדכניים:
 
-Status: BINDING for `feat/admin-core` (2026-08-02)
+```
+docs/ARCHITECTURE-ADMIN-DASHBOARD.md
+docs/ADMIN-USER-GUIDE.md
+```
+
+KenyonExpress production admin dashboard architecture (ארכיון `feat/admin-core`).
+
+Status: **DEPRECATED** (was BINDING for `feat/admin-core`, 2026-08-02)
 Stack: Next.js App Router (`src/app/(admin)`), Supabase Postgres + RLS, Cardcom, Server Actions + Route Handlers
 Money: agorot integers internally; ILS with 2 decimals on the wire (`*_ils`)
 Branch:
@@ -11,9 +19,9 @@ Branch:
 feat/admin-core
 ```
 
-This document decides. Where it conflicts with older drafts that mention a fixed
-10% or 5% commission, a coupon `platform_percent` pinned at 100, or external
-escrow, the rules in section 0 win.
+This document decided historically. Where it conflicts with
+`ARCHITECTURE-ADMIN-DASHBOARD.md` or CONTRADICTIONS (No Escrow / per-product percent),
+those win.
 
 Origin: this file supersedes `ADMIN-ARCHITECTURE.md` on branch `arch/admin-supplier`
 (commit `0710180`). That draft is kept only as history. Two of its rules are

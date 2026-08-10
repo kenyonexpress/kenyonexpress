@@ -1,9 +1,16 @@
 # PAYOUT-ARCHITECTURE.md
 
-המנגנון החסר: תשלום לספק על מוצר פיזי.
+> **DEPRECATED (2026-08-10).** אל תממשו לפי המסמך הזה.  
+> מקור מחייב:
 
-Status: **DESIGN** · 2026-08-07 · Scope: docs only
-סוגר את `GAPS-CODE-VS-DOCS.md` ‏**G1**, החוסם היחיד בדרגה 1.
+```
+docs/ARCHITECTURE-PAYOUT-MECHANISM.md
+```
+
+המנגנון החסר (היסטורי): תשלום לספק על מוצר פיזי.
+
+Status: **DEPRECATED** · היה DESIGN ב-2026-08-07 · Scope: docs only (ארכיון)  
+סוגר היסטורית את `GAPS-CODE-VS-DOCS.md` G1; ההכרעות עברו ל-PAYOUT-MECHANISM.
 
 מסמך מחייב מעודכן (סכימת באצ' + שער משלוח + ביצוע):
 
