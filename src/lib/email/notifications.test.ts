@@ -207,3 +207,57 @@ describe('buildNotification', () => {
     expect(mail?.html).toContain('&lt;script&gt;')
   })
 })
+
+describe('buildInvoiceDeadEmail', () => {
+  const SITE = 'https://kenyonexpress.co.il'
+
+  it('names the order, the reason and the admin page', () => {
+    const built = buildNotification(
+      'invoice_dead',
+      {
+        order_id: '11111111-2222-3333-4444-555555555555',
+        order_ref: '11111111',
+        document_type: 'קבלה על קופון',
+        reason: 'provider rejected (500)',
+        attempts: 5,
+      },
+      SITE,
+    )
+    expect(built?.subject).toContain('11111111')
+    expect(built?.text).toContain('provider rejected (500)')
+    expect(built?.html).toContain('/admin/orders/11111111-2222-3333-4444-555555555555')
+  })
+
+  it('says out loud that the customer paid and has no receipt', () => {
+    // The line that makes the alert actionable rather than informational.
+    const built = buildNotification('invoice_dead', { order_id: 'o1', reason: 'x' }, SITE)
+    expect(built?.text).toContain('הלקוח שילם ואין לו קבלה')
+  })
+
+  it('renders nothing without an order to point at', () => {
+    // An alert with no subject is a mail an operator cannot act on, and the
+    // drain parks an unrenderable row rather than sending a blank.
+    expect(buildNotification('invoice_dead', { reason: 'x' }, SITE)).toBeNull()
+  })
+})
+
+describe('the order confirmation links a receipt', () => {
+  const SITE = 'https://kenyonexpress.co.il'
+
+  it('links our own ownership-checked route, never a provider URL', () => {
+    // A raw provider link in an email is readable by every forward, screenshot
+    // and shared inbox that mail ever reaches.
+    const built = buildNotification(
+      'order_paid',
+      { order_id: 'order-9', order_ref: 'ORDER9', total_agorot: 5000, item_count: 1 },
+      SITE,
+    )
+    expect(built?.html).toContain('/account/orders/order-9/invoice')
+    expect(built?.text).toContain('/account/orders/order-9/invoice')
+  })
+
+  it('omits the link entirely when there is no order id to build one from', () => {
+    const built = buildNotification('order_paid', { order_ref: 'X', total_agorot: 100 }, SITE)
+    expect(built?.html).not.toContain('/invoice')
+  })
+})

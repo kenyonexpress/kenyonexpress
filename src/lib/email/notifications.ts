@@ -40,6 +40,8 @@ export type NotificationKind =
   | 'voucher_expiring'
   /** Wallet credit, enqueued after the ledger move. Added by 114. */
   | 'cashback_credited'
+  /** Operator alert: a tax document gave up after five attempts. Added by 116. */
+  | 'invoice_dead'
 
 function escapeHtml(value: string): string {
   return value
@@ -110,6 +112,21 @@ export function buildOrderPaidEmail(
   const items = asNumber(payload.item_count)
   const url = `${trimSite(siteUrl)}/account/orders`
 
+  /**
+   * The receipt link points at OUR route, not at the provider's URL, and the
+   * route re-checks ownership before it redirects. A tax document handed out as
+   * a raw provider link is readable by anything that ever sees the mail - a
+   * forward, a screenshot, a shared inbox.
+   *
+   * It is also why the link can be included at all despite the document not
+   * existing yet when this mail is built: the invoice cron and the notification
+   * cron are separate jobs, so the receipt is usually issued minutes after the
+   * confirmation goes out. A link resolved at CLICK time has no race; an
+   * embedded URL would have had to wait for one.
+   */
+  const orderId = asText(payload.order_id)
+  const receiptUrl = orderId ? `${trimSite(siteUrl)}/account/orders/${orderId}/invoice` : null
+
   const subject = `ההזמנה שלך התקבלה · ${ref}`
   const greeting = name ? `שלום ${name},` : 'שלום,'
 
@@ -123,6 +140,7 @@ export function buildOrderPaidEmail(
     items > 0 ? `פריטים: ${items}` : '',
     '',
     `לפרטי ההזמנה: ${url}`,
+    receiptUrl ? `לקבלה: ${receiptUrl}` : '',
   ]
     .filter((line) => line !== '')
     .join('\n')
@@ -137,6 +155,7 @@ export function buildOrderPaidEmail(
           ${items > 0 ? `<div style="color:${MUTED}">${items} פריטים</div>` : ''}
         </div>
         <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לפרטי ההזמנה</a>
+        ${receiptUrl ? `<div style="font-size:13px;color:${MUTED};margin-top:12px;text-align:center"><a href="${escapeHtml(receiptUrl)}" style="color:${MUTED}">להורדת הקבלה</a></div>` : ''}
       </div>`,
     'קיבלת את המייל הזה כי ביצעת רכישה ב-KenyonExpress.',
   )
@@ -485,6 +504,56 @@ export function buildCashbackCreditedEmail(
   return { subject, html, text }
 }
 
+/**
+ * Operator alert for a tax document that has stopped retrying.
+ *
+ * Deliberately plain and deliberately actionable: the order id, the reason the
+ * provider gave, and the admin URL. No branding, because it is not going to a
+ * customer, and adding a hero image to an alert is how it gets skimmed.
+ *
+ * The provider's raw error is included here and NOT shown to customers
+ * anywhere. That asymmetry is the point of an operator channel.
+ */
+export function buildInvoiceDeadEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification | null {
+  const orderId = asText(payload.order_id)
+  if (!orderId) return null
+
+  const ref = asText(payload.order_ref) ?? orderId.slice(0, 8).toUpperCase()
+  const documentType = asText(payload.document_type) ?? 'מסמך'
+  const reason = asText(payload.reason) ?? 'לא ידוע'
+  const attempts = asNumber(payload.attempts)
+  const url = `${trimSite(siteUrl)}/admin/orders/${orderId}`
+
+  const subject = `נכשלה הנפקת מסמך להזמנה ${ref}`
+
+  const text = [
+    `הנפקת ${documentType} להזמנה ${ref} נכשלה ${attempts} פעמים והפסיקה לנסות.`,
+    '',
+    `סיבה אחרונה: ${reason}`,
+    '',
+    'ההזמנה באדמין:',
+    url,
+    '',
+    'המסמך לא הונפק. הלקוח שילם ואין לו קבלה.',
+  ].join('\n')
+
+  const html = shell(
+    `<div dir="rtl" style="background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+        <div style="font-size:17px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
+        <div style="font-size:14px;color:${INK};margin-top:10px">${escapeHtml(`הנפקת ${documentType} נכשלה ${attempts} פעמים והפסיקה לנסות.`)}</div>
+        <div style="font-size:13px;color:${MUTED};margin-top:10px;padding:12px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb">${escapeHtml(reason)}</div>
+        <div style="font-size:14px;color:${INK};margin-top:12px">הלקוח שילם ואין לו קבלה.</div>
+        <a href="${escapeHtml(url)}" style="display:block;margin-top:16px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:12px 18px;border-radius:10px">פתיחת ההזמנה באדמין</a>
+      </div>`,
+    'התראה תפעולית, לא הודעה ללקוח.',
+  )
+
+  return { subject, html, text }
+}
+
 /** Dispatch by queued kind. Unknown kinds return null so the drain can park them. */
 export function buildNotification(
   kind: string,
@@ -506,6 +575,8 @@ export function buildNotification(
       return buildVoucherExpiringEmail(payload, siteUrl)
     case 'cashback_credited':
       return buildCashbackCreditedEmail(payload, siteUrl)
+    case 'invoice_dead':
+      return buildInvoiceDeadEmail(payload, siteUrl)
     default:
       return null
   }

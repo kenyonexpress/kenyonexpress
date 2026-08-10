@@ -344,7 +344,11 @@ async function getOrderInvoiceSummary(
     .from('invoices')
     .select('document_number, issued_at')
     .eq('order_id', orderId)
-    .eq('document_type', 'tax_invoice_receipt')
+    // Both sale documents, never the credit note: a refund has its own number
+    // and must not be shown as the order's receipt. Filtering on
+    // `tax_invoice_receipt` alone, as this did before 116, hid the document for
+    // every coupon-only order - which is most of them.
+    .in('document_type', ['tax_invoice_receipt', 'coupon_receipt'])
     .eq('status', 'issued')
     .maybeSingle()
   // A database without 107 has no invoices and no invoice link, which is what

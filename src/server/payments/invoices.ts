@@ -1,8 +1,11 @@
+import { adminAlertDedupeKey, adminAlertRecipient } from '@/lib/email/admin-alerts'
 import {
   type InvoiceDocument,
+  type InvoiceDocumentType,
   type InvoiceLineInput,
   buildInvoiceDocument,
   buildOrderInvoiceLines,
+  documentTypeForOrder,
   resolveVatPercent,
   splitVatInclusive,
 } from '@/lib/invoices/document'
@@ -57,7 +60,12 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 
 type AdminClient = SupabaseClient
 
-export type InvoiceDocumentType = 'tax_invoice_receipt' | 'credit_note'
+/**
+ * Re-exported rather than re-declared. A second literal union here would drift
+ * from the builder's the first time one of them gained a member - which is
+ * exactly what happened when `coupon_receipt` was added in 116.
+ */
+export type { InvoiceDocumentType }
 
 export interface InvoiceRow {
   id: string
@@ -100,6 +108,10 @@ export function invoiceIdempotencyKey(
   // the order id is the right key there. A refund can happen more than once on
   // one order (partial refunds), and each one is its own credit note, so that
   // side keys on the refund payment.
+  //
+  // The sale's key deliberately does NOT name which of the two sale documents
+  // it is. An order owes exactly ONE, and keying on the type would let a
+  // reclassification queue a second document for the same money.
   return documentType === 'credit_note'
     ? `payment:${ids.paymentId}:credit_note`
     : `order:${ids.orderId}:tax_invoice_receipt`
@@ -114,6 +126,13 @@ interface OrderInvoiceContext {
   paymentId: string | null
   chargedAgorot: number
   lines: InvoiceLineInput[]
+  /**
+   * What the order actually contained, so the DOCUMENT TYPE is decided from the
+   * order rather than assumed. Carried through the context instead of re-read
+   * at enqueue time: two reads of `order_items` could disagree, and the one
+   * that decides the tax document must be the one the lines were built from.
+   */
+  productTypes: string[]
   customer: { name: string | null; email: string | null; phone: string | null }
   transactionId: string | null
   /**
@@ -239,6 +258,7 @@ async function loadOrderContext(
         walletAppliedAgorot,
         discountAgorot,
       }),
+      productTypes: items.map((item) => item.product_type),
       customer: {
         name: customerRow?.full_name ?? null,
         email: customerRow?.email ?? null,
@@ -322,10 +342,15 @@ export async function enqueueOrderInvoice(
     }
 
     const vatPercent = resolveVatPercent()
+    // Decided from what the order CONTAINS, not assumed. A coupon-only order is
+    // an advance and gets a receipt at VAT 0; anything with a physical line is
+    // a taxable sale and gets the tax invoice. See `documentTypeForOrder`.
+    const documentType = documentTypeForOrder(loaded.context.productTypes)
+
     // Built here as well as at issue time, so a document that cannot be built
     // is rejected before a row exists rather than failing five times in a cron.
     const document = buildInvoiceDocument({
-      documentType: 'tax_invoice_receipt',
+      documentType,
       customer: loaded.context.customer,
       lines: loaded.context.lines,
       chargedAgorot: loaded.context.chargedAgorot,
@@ -336,8 +361,8 @@ export async function enqueueOrderInvoice(
     return await insertInvoice(admin, {
       order_id: input.orderId,
       payment_id: input.paymentId,
-      document_type: 'tax_invoice_receipt',
-      idempotency_key: invoiceIdempotencyKey('tax_invoice_receipt', { orderId: input.orderId }),
+      document_type: documentType,
+      idempotency_key: invoiceIdempotencyKey(documentType, { orderId: input.orderId }),
       total_agorot: document.totalAgorot,
       net_agorot: document.netAgorot,
       vat_agorot: document.vatAgorot,
@@ -567,6 +592,60 @@ export function documentIssuingMode(
 }
 
 /**
+ * Tells an operator that a document has stopped retrying.
+ *
+ * WHY THIS IS NOT JUST A LOG LINE. Five failures mean the platform has taken
+ * money and not issued the receipt it owes; that is a legal obligation, not a
+ * degraded feature. `log.error` is read by whoever already knows to look. The
+ * outbox row survives a deploy, retries its own delivery, and lands in a
+ * mailbox.
+ *
+ * Deduped on the INVOICE, not on the moment: the cron runs every ten minutes
+ * and keeps finding the same dead row, so a time-based key would mail every ten
+ * minutes about one problem, which is how alerting stops being read.
+ *
+ * Never throws, and is awaited before the failure is recorded rather than fired
+ * and forgotten - a serverless invocation can be frozen the moment its response
+ * is returned.
+ */
+async function alertAdminInvoiceDead(
+  admin: AdminClient,
+  row: InvoiceRow,
+  reason: string,
+  attempts: number,
+): Promise<void> {
+  // Wrapped, not merely error-checked. This runs inside `fail`, whose ACTUAL
+  // job is to record the failure and set the backoff; an alert that threw would
+  // leave the row un-updated and the queue retrying forever without ever
+  // reaching `dead`. The alert is the least important thing on this path.
+  try {
+    const { error } = await admin.rpc('fn_enqueue_notification', {
+      p_kind: 'invoice_dead',
+      p_email: adminAlertRecipient(),
+      p_dedupe: adminAlertDedupeKey('invoice_dead', row.id),
+      p_payload: {
+        order_id: row.order_id,
+        order_ref: row.order_id.slice(0, 8).toUpperCase(),
+        document_type:
+          row.document_type === 'credit_note'
+            ? 'חשבונית זיכוי'
+            : row.document_type === 'coupon_receipt'
+              ? 'קבלה על קופון'
+              : 'חשבונית מס/קבלה',
+        reason,
+        attempts,
+      },
+    })
+    if (error) log.error('invoices.dead_alert_failed', { invoiceId: row.id, reason: error.message })
+  } catch (error) {
+    log.error('invoices.dead_alert_threw', {
+      invoiceId: row.id,
+      reason: error instanceof Error ? error.message : 'unknown',
+    })
+  }
+}
+
+/**
  * Sends one queued document to the provider and records what came back.
  *
  * `orders.invoice_number` is written here and only here. Until [55] that column
@@ -592,6 +671,7 @@ export async function issueInvoice(
 
   const fail = async (reason: string): Promise<IssueOutcome> => {
     const dead = attempts >= MAX_ATTEMPTS
+    if (dead) await alertAdminInvoiceDead(admin, row, reason, attempts)
     const next = new Date(now.getTime() + backoffMinutes(attempts) * 60_000)
     await admin
       .from('invoices')
@@ -664,7 +744,7 @@ export async function issueInvoice(
     } as never)
     .eq('id', row.id)
 
-  if (row.document_type === 'tax_invoice_receipt') {
+  if (row.document_type === 'tax_invoice_receipt' || row.document_type === 'coupon_receipt') {
     // Only the sale's own document names the order. A credit note has its own
     // number and must not overwrite the invoice number of the sale it reverses.
     await admin

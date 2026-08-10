@@ -3,6 +3,8 @@ import {
   DEFAULT_VAT_PERCENT,
   buildInvoiceDocument,
   buildOrderInvoiceLines,
+  documentTypeForOrder,
+  isTaxableDocument,
   resolveVatPercent,
   splitVatInclusive,
 } from './document'
@@ -225,5 +227,80 @@ describe('buildOrderInvoiceLines', () => {
       reference: 'order-1',
     })
     expect(doc.totalAgorot).toBe(7_500)
+  })
+})
+
+describe('documentTypeForOrder', () => {
+  it('gives a coupon-only order a receipt, not a tax invoice', () => {
+    // The prepayment is an advance for something consumed later at a counter;
+    // a tax invoice would assert a taxable sale that has not happened. Same
+    // reasoning that hides VAT on the coupon product page.
+    expect(documentTypeForOrder(['coupon'])).toBe('coupon_receipt')
+    expect(documentTypeForOrder(['coupon', 'coupon'])).toBe('coupon_receipt')
+  })
+
+  it('gives a physical order the tax invoice', () => {
+    expect(documentTypeForOrder(['physical'])).toBe('tax_invoice_receipt')
+  })
+
+  it('gives a MIXED order one tax invoice rather than two documents', () => {
+    // Splitting a single card charge across two documents leaves the customer
+    // with two numbers and half a statement to reconcile against each.
+    expect(documentTypeForOrder(['coupon', 'physical'])).toBe('tax_invoice_receipt')
+    expect(documentTypeForOrder(['physical', 'coupon'])).toBe('tax_invoice_receipt')
+  })
+
+  it('falls back to the tax invoice when it knows nothing', () => {
+    // An empty list means the classification failed. The stricter document is
+    // the direction that costs nothing if the guess was wrong.
+    expect(documentTypeForOrder([])).toBe('tax_invoice_receipt')
+  })
+})
+
+describe('isTaxableDocument', () => {
+  it('states VAT on both the sale invoice and the credit note', () => {
+    expect(isTaxableDocument('tax_invoice_receipt')).toBe(true)
+    expect(isTaxableDocument('credit_note')).toBe(true)
+  })
+
+  it('states no VAT on a coupon receipt', () => {
+    expect(isTaxableDocument('coupon_receipt')).toBe(false)
+  })
+})
+
+describe('buildInvoiceDocument for a coupon receipt', () => {
+  const base = {
+    customer: { name: 'לקוח', email: 'a@b.test', phone: null },
+    lines: [{ description: 'קופון', quantity: 1, totalAgorot: 10_000 }],
+    chargedAgorot: 10_000,
+    vatPercent: 18,
+    reference: 'order-1',
+  }
+
+  it('carries zero VAT and a net equal to the total', () => {
+    const document = buildInvoiceDocument({ ...base, documentType: 'coupon_receipt' })
+    expect(document.vatAgorot).toBe(0)
+    expect(document.netAgorot).toBe(10_000)
+    // The CHECK on `invoices` is net + vat = total, so this is storable by
+    // construction rather than by luck.
+    expect(document.netAgorot + document.vatAgorot).toBe(document.totalAgorot)
+  })
+
+  it('still records the rate, so a reprint carries the day it was issued at', () => {
+    expect(buildInvoiceDocument({ ...base, documentType: 'coupon_receipt' }).vatPercent).toBe(18)
+  })
+
+  it('splits VAT on the same money when it is a tax invoice', () => {
+    const document = buildInvoiceDocument({ ...base, documentType: 'tax_invoice_receipt' })
+    expect(document.vatAgorot).toBeGreaterThan(0)
+    expect(document.netAgorot + document.vatAgorot).toBe(10_000)
+  })
+
+  it('refuses a coupon receipt whose lines do not match the charge', () => {
+    // The VAT rule changes; the rule that a document must match the money does
+    // not.
+    expect(() =>
+      buildInvoiceDocument({ ...base, documentType: 'coupon_receipt', chargedAgorot: 9_000 }),
+    ).toThrow(/refusing to issue/)
   })
 })

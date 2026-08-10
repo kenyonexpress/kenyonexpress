@@ -98,8 +98,13 @@ export interface CreateDocumentLine {
 }
 
 export interface CreateDocumentInput {
-  /** A sale receipt, or the credit note that reverses one. */
-  documentType: 'tax_invoice_receipt' | 'credit_note'
+  /**
+   * Which document the provider is being asked for. Two of them are sales -
+   * the tax invoice for a physical order, the receipt for a coupon advance -
+   * and the third reverses one. The distinction and its reason live in
+   * `lib/invoices/document.ts`; the adapter only maps it onto a provider code.
+   */
+  documentType: 'tax_invoice_receipt' | 'coupon_receipt' | 'credit_note'
   customerName: string | null
   customerEmail: string | null
   customerPhone: string | null

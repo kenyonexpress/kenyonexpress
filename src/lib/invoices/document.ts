@@ -50,7 +50,47 @@ import { type Agorot, agorot, sumAgorot } from '@/lib/commerce/money'
  * wrong in the direction that costs money.
  */
 
-export type InvoiceDocumentType = 'tax_invoice_receipt' | 'credit_note'
+/**
+ * The three documents this system can owe.
+ *
+ * `coupon_receipt` is not a tax invoice, and that distinction is substantive
+ * rather than cosmetic. A coupon sale takes money now for something consumed
+ * later at a supplier's counter; the project decided on 2026-07-28 that the
+ * prepayment is an ADVANCE, which is also why the product page hides VAT on
+ * coupons. Issuing a tax invoice for it asserts a taxable sale that has not
+ * happened. So a coupon-only order gets a receipt for money received, at VAT 0,
+ * and `isTaxableDocument` is the single place that rule is written down.
+ */
+export type InvoiceDocumentType = 'tax_invoice_receipt' | 'coupon_receipt' | 'credit_note'
+
+/**
+ * Whether VAT is stated on this document.
+ *
+ * VAT 0 on a coupon receipt is NOT a claim of exemption - there is no field in
+ * this schema that could carry an exempt status and inventing one is the kind of
+ * guess that makes a tax document wrong in the expensive direction. It is the
+ * statement that the VAT event has not occurred yet.
+ */
+export function isTaxableDocument(documentType: InvoiceDocumentType): boolean {
+  return documentType !== 'coupon_receipt'
+}
+
+/**
+ * Which document an order is owed, from what it contains.
+ *
+ * A MIXED ORDER GETS THE TAX INVOICE, NOT TWO DOCUMENTS. Splitting one card
+ * charge across two documents gives the customer two numbers and half a
+ * statement to reconcile against each. Choosing the stricter document for the
+ * whole order is also the direction that costs nothing if the classification
+ * turns out to be wrong.
+ */
+export function documentTypeForOrder(
+  productTypes: readonly string[],
+): Extract<InvoiceDocumentType, 'tax_invoice_receipt' | 'coupon_receipt'> {
+  const everyLineIsACoupon =
+    productTypes.length > 0 && productTypes.every((type) => type === 'coupon')
+  return everyLineIsACoupon ? 'coupon_receipt' : 'tax_invoice_receipt'
+}
 
 /** Standard Israeli VAT since 2025-01-01. Overridable via `INVOICE_VAT_PERCENT`. */
 export const DEFAULT_VAT_PERCENT = 18
@@ -189,7 +229,12 @@ export function buildInvoiceDocument(input: InvoiceDocumentInput): InvoiceDocume
     )
   }
 
-  const { netAgorot, vatAgorot } = splitVatInclusive(input.chargedAgorot, vatPercent)
+  // A coupon receipt states no VAT, so net equals total. The CHECK on
+  // `invoices` (net + vat = total) still holds, which is what keeps a zero here
+  // from being storable only by accident.
+  const { netAgorot, vatAgorot } = isTaxableDocument(input.documentType)
+    ? splitVatInclusive(input.chargedAgorot, vatPercent)
+    : { netAgorot: agorot(input.chargedAgorot), vatAgorot: agorot(0) }
 
   return {
     documentType: input.documentType,

@@ -239,7 +239,28 @@ export class CardcomProvider implements PaymentProvider {
     }
     if (input.customerPhone) fields['InvoiceHead.CustAddresLine1'] = input.customerPhone
     if (input.transactionId) fields.InternalDealNumber = input.transactionId
-    if (input.documentType === 'credit_note') fields['InvoiceHead.InvoiceType'] = '3'
+
+    // THE NUMERIC CODES CANNOT BE VERIFIED FROM THIS MACHINE, and that is why
+    // two of the three are env-overridable rather than baked in. There are no
+    // `CARDCOM_*` credentials here and the only document in the repo describes
+    // the v11 JSON API, while this client is the legacy `/Interface/*.aspx` one
+    // by the decision of 23.07. What IS knowable is which of our three
+    // documents is being asked for; the mapping to Cardcom's `InvoiceType` is
+    // the one thing that may need correcting against a live terminal, so it is
+    // in one place and adjustable without a deploy.
+    //
+    // A sale keeps sending NO InvoiceType, which is the behaviour that has been
+    // in this file since [55]: the terminal's own default is the tax invoice +
+    // receipt, and overriding it with a guessed code would be a change in the
+    // wrong direction.
+    if (input.documentType === 'credit_note') {
+      fields['InvoiceHead.InvoiceType'] = process.env.CARDCOM_CREDIT_NOTE_TYPE ?? '3'
+    } else if (input.documentType === 'coupon_receipt') {
+      // A receipt for money received, not a tax invoice: the coupon's payment
+      // is an advance and the VAT event has not happened. Defaults to Cardcom's
+      // receipt code; see `isTaxableDocument` for why the distinction exists.
+      fields['InvoiceHead.InvoiceType'] = process.env.CARDCOM_COUPON_RECEIPT_TYPE ?? '4'
+    }
 
     input.lines.forEach((line, index) => {
       // Cardcom's legacy line fields are 1-indexed and flat.

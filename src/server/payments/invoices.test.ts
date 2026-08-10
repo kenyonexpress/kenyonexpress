@@ -51,6 +51,9 @@ function builder(table: string, op: string, payload?: unknown): never {
   return proxy as never
 }
 
+/** Every RPC the module makes, recorded so the admin alert can be asserted. */
+const rpcCalls: { name: string; args: Record<string, unknown> }[] = []
+
 const adminClient = {
   from: (table: string) => ({
     select: (...args: unknown[]) => builder(table, 'select', args[0]),
@@ -58,6 +61,10 @@ const adminClient = {
     update: (payload: unknown) => builder(table, 'update', payload),
     upsert: (payload: unknown) => builder(table, 'upsert', payload),
   }),
+  rpc: async (name: string, args: Record<string, unknown>) => {
+    rpcCalls.push({ name, args })
+    return { data: null, error: null }
+  },
 }
 
 const createDocument = vi.fn()
@@ -98,7 +105,9 @@ const PAYMENT_ID = '22222222-2222-4222-8222-222222222222'
  * A paid order: two coupons at ₪50 each on the site, ₪10 of wallet credit
  * spent, so the card moved ₪90.
  */
-function scriptPaidOrder(options: { chargedIls?: number; walletIls?: number } = {}): void {
+function scriptPaidOrder(
+  options: { chargedIls?: number; walletIls?: number; productType?: string } = {},
+): void {
   queue('payments.select', NO_AGOROT_COLUMN)
   queue('payments.select', {
     data: {
@@ -118,7 +127,7 @@ function scriptPaidOrder(options: { chargedIls?: number; walletIls?: number } = 
     data: [
       {
         product_id: 'p1',
-        product_type: 'coupon',
+        product_type: options.productType ?? 'coupon',
         quantity: 2,
         paid_on_site_agorot: 10_000,
         balance_due_agorot: 4_000,
@@ -134,6 +143,7 @@ function scriptPaidOrder(options: { chargedIls?: number; walletIls?: number } = 
 }
 
 beforeEach(() => {
+  rpcCalls.length = 0
   calls.length = 0
   queues.clear()
   createDocument.mockReset()
@@ -188,24 +198,49 @@ describe('documentIssuingMode', () => {
 })
 
 describe('enqueueOrderInvoice', () => {
-  it('queues the document for the amount that actually moved, not the order total', () => {
+  it('queues the document for the amount that actually moved, not the order total', async () => {
     // ₪100 of lines, ₪10 wallet, ₪90 charged. A receipt for ₪100 would not
     // match the customer's card statement.
-    scriptPaidOrder()
+    scriptPaidOrder({ productType: 'physical' })
     queue('invoices.insert', { data: { id: 'inv-1' }, error: null })
 
-    return enqueueOrderInvoice(adminClient as never, {
+    const result = await enqueueOrderInvoice(adminClient as never, {
       orderId: ORDER_ID,
       paymentId: PAYMENT_ID,
-    }).then((result) => {
-      expect(result).toEqual({ enqueued: true, invoiceId: 'inv-1', replay: false })
-      const insert = find('invoices', 'insert')?.payload as Record<string, unknown>
-      expect(insert.total_agorot).toBe(9_000)
-      expect(insert.net_agorot).toBe(7_627)
-      expect(insert.vat_agorot).toBe(1_373)
-      expect((insert.net_agorot as number) + (insert.vat_agorot as number)).toBe(9_000)
-      expect(insert.idempotency_key).toBe(`order:${ORDER_ID}:tax_invoice_receipt`)
     })
+    expect(result).toEqual({ enqueued: true, invoiceId: 'inv-1', replay: false })
+    const insert = find('invoices', 'insert')?.payload as Record<string, unknown>
+    expect(insert.total_agorot).toBe(9_000)
+    expect(insert.net_agorot).toBe(7_627)
+    expect(insert.vat_agorot).toBe(1_373)
+    expect((insert.net_agorot as number) + (insert.vat_agorot as number)).toBe(9_000)
+    expect(insert.idempotency_key).toBe(`order:${ORDER_ID}:tax_invoice_receipt`)
+  })
+
+  it('classifies a coupon-only order as a receipt with no VAT stated', async () => {
+    // 116: the coupon payment is an ADVANCE for something consumed later at a
+    // counter, so no VAT event has occurred. Same money, same total, different
+    // document - and the CHECK net + vat = total still holds.
+    scriptPaidOrder({ productType: 'coupon' })
+    queue('invoices.insert', { data: { id: 'inv-2' }, error: null })
+
+    await enqueueOrderInvoice(adminClient as never, { orderId: ORDER_ID, paymentId: PAYMENT_ID })
+    const insert = find('invoices', 'insert')?.payload as Record<string, unknown>
+    expect(insert.document_type).toBe('coupon_receipt')
+    expect(insert.total_agorot).toBe(9_000)
+    expect(insert.vat_agorot).toBe(0)
+    expect(insert.net_agorot).toBe(9_000)
+  })
+
+  it('keys both sale documents the same, so a reclassification cannot queue two', async () => {
+    // An order owes exactly ONE sale document. A key that named the type would
+    // let a coupon receipt and a tax invoice both exist for one card charge.
+    scriptPaidOrder({ productType: 'coupon' })
+    queue('invoices.insert', { data: { id: 'inv-3' }, error: null })
+
+    await enqueueOrderInvoice(adminClient as never, { orderId: ORDER_ID, paymentId: PAYMENT_ID })
+    const insert = find('invoices', 'insert')?.payload as Record<string, unknown>
+    expect(insert.idempotency_key).toBe(`order:${ORDER_ID}:tax_invoice_receipt`)
   })
 
   it('treats a unique violation as the replay it is', async () => {
@@ -358,6 +393,60 @@ describe('issueInvoice', () => {
       raw: {},
     })
     const outcome = await issueInvoice(adminClient as never, { ...row, attempts: 4 })
+    expect(outcome).toMatchObject({ ok: false, dead: true })
+    expect((find('invoices', 'update')?.payload as Record<string, unknown>).status).toBe('dead')
+  })
+
+  it('mails an operator when a document gives up, and only then', async () => {
+    // A dead row means money was taken and the receipt it owes does not exist.
+    // That is a legal obligation, not a degraded feature, so it must reach a
+    // person rather than a log line.
+    scriptPaidOrder()
+    createDocument.mockResolvedValue({
+      success: false,
+      documentNumber: null,
+      documentUrl: null,
+      failureCode: '500',
+      failureMessage: 'nope',
+      raw: {},
+    })
+
+    await issueInvoice(adminClient as never, { ...row, attempts: 1 })
+    expect(rpcCalls.filter((call) => call.args.p_kind === 'invoice_dead')).toHaveLength(0)
+
+    rpcCalls.length = 0
+    calls.length = 0
+    scriptPaidOrder()
+    await issueInvoice(adminClient as never, { ...row, attempts: 4 })
+    const alert = rpcCalls.find((call) => call.args.p_kind === 'invoice_dead')
+    expect(alert).toBeDefined()
+    // Deduped on the INVOICE, not the moment: the cron re-finds the same dead
+    // row every ten minutes, and a time-based key would mail every ten minutes
+    // about one problem.
+    expect(alert?.args.p_dedupe).toBe('admin:invoice_dead:inv-1')
+    expect((alert?.args.p_payload as Record<string, unknown>).reason).toContain('nope')
+  })
+
+  it('records the failure even when the alert cannot be queued', async () => {
+    // The alert runs inside `fail`, whose actual job is to set the status and
+    // the backoff. An alert that threw would leave the row retrying forever
+    // without ever reaching `dead`.
+    scriptPaidOrder()
+    createDocument.mockResolvedValue({
+      success: false,
+      documentNumber: null,
+      documentUrl: null,
+      failureCode: '500',
+      failureMessage: 'nope',
+      raw: {},
+    })
+    const broken = {
+      ...adminClient,
+      rpc: async () => {
+        throw new Error('rpc unavailable')
+      },
+    }
+    const outcome = await issueInvoice(broken as never, { ...row, attempts: 4 })
     expect(outcome).toMatchObject({ ok: false, dead: true })
     expect((find('invoices', 'update')?.payload as Record<string, unknown>).status).toBe('dead')
   })
