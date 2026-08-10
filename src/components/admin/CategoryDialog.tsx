@@ -85,7 +85,11 @@ export default function CategoryDialog({ open, onClose, category, parentOptions 
               {category ? 'ערוך את פרטי הקטגוריה הקיימת' : 'מלא את הפרטים ליצירת קטגוריה חדשה'}
             </Dialog.Description>
             <Dialog.Close asChild>
-              <button type="button" className="text-gray-400 hover:text-gray-700 transition-colors">
+              <button
+                type="button"
+                aria-label="סגירת החלון"
+                className="text-gray-400 hover:text-gray-700 transition-colors"
+              >
                 <X size={20} />
               </button>
             </Dialog.Close>

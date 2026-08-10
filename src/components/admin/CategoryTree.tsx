@@ -142,6 +142,7 @@ function CategoryNode({ node, allFlat, depth, onEdit, onAddChild }: NodeProps) {
           <button
             type="button"
             onClick={handleDelete}
+            aria-label="מחיקת קטגוריה"
             className="p-1 text-gray-400 hover:text-red-600"
           >
             <Trash2 size={13} />
