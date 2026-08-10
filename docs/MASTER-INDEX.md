@@ -161,8 +161,6 @@ CONTRADICTIONS, כל מספר עמלה כאן הוא שריד") הוסר מכו�
 | `CONTENT-PLAYBOOK.md` | איך כותבים דיל בעברית; 5 דוגמאות מלאות. | PLAYBOOK (07.08) |
 | `SUPPLIER-AGREEMENT-DRAFT.md` | טיוטת הסכם ספק. **לא ייעוץ משפטי.** | DRAFT (07.08) |
 | `OPS-DAILY-ROUTINE.md` | שגרת בוקר 15 דקות, לפי סדר עלות. | RUNBOOK (07.08) |
-| `OPS-RUNBOOK.md` | תפעול יומי אחרי השקה: reconcile, החזר, ספק, קופון תקוע. | RUNBOOK (10.08) |
-| `LEGAL-CONTENT.md` | טיוטת תקנון/ביטולים/נגישות/עוגיות בעברית. **דורש עו"ד.** | DRAFT (10.08) |
 | `PAYOUT-ARCHITECTURE.md` | תכנון ראשוני ל-G1; מחייב עכשיו: `ARCHITECTURE-PAYOUT-MECHANISM.md`. | DESIGN → superseded by BINDING (10.08) |
 | `PRODUCT-FIELDS-RESEARCH.md` | מחקר שדות מוצר: דינמי פר מוצר, No Escrow, סכמה באגורות. | BINDING (10.08, v2) |
 | `DESIGN-CHECKLIST-FINAL.md` | צ'קליסט עיצוב סופי מול electro home-v7 (6 דפים + tokens). | BINDING (10.08) |
@@ -210,7 +208,6 @@ docs/ROADMAP-V2.md
 | 2026-08-07 | QA audit: P3/AS7/OBS8/B6/T7/D8 + EMAIL↔PRICING; סטטוס לכל #1 עד 20 |
 | 2026-08-10 | `ARCHITECTURE-PAYOUT-MECHANISM.md`: מנגנון payout פיזי מחייב (באצ' + העברה ידנית) |
 | 2026-08-10 | `DESIGN-CHECKLIST-FINAL.md` + `PHASE2-3-SPEC.md` + אינדקס |
-| 2026-08-10 | `LEGAL-CONTENT.md` + `OPS-RUNBOOK.md` + אינדקס |
 | 2026-08-10 | `LAUNCH-VALIDATION.md` + `launch-week-plan.md`: אימות 10 דילי השקה מול פרוד |
 | 2026-08-10 | ריענון NOTIFICATIONS + SEO-PERFORMANCE (BINDING) |
 | 2026-08-10 | MOBILE-APP + LAUNCH-VALIDATION re-verify + RUNBOOK-LAUNCH-DAY; אינדקס |

@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-10 (docs-only ke-arch: LEGAL-CONTENT + OPS-RUNBOOK)
+Updated: 2026-08-10 (docs-only ke-arch: design checklist + phase2-3)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,11 +8,11 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-‏`docs/LEGAL-CONTENT.md` + `docs/OPS-RUNBOOK.md`:
+‏`docs/DESIGN-CHECKLIST-FINAL.md` + `docs/PHASE2-3-SPEC.md`:
 
-- תקנון (פלטפורמה לא ספק), ביטולים לפי חוק הגנת הצרכן תשמ"א, נגישות 5568, עוגיות
-- סימון `[דורש עו"ד]` בסעיפים רגישים
-- תפעול יומי: reconciliation, החזר, onboarding ספק, קופון תקוע
+- צ'קליסט עיצוב: בית/מוצר/קטגוריה/עגלה/checkout/אזור אישי מול electro-v7
+- Tokens: `#fed700`, `#E4002B`, `#0062bd`, Heebo, 1320px, touch 44px, header לוגו+3 אייקונים
+- Phase 2-3: וריאנטים + SEO + תגיות; דינמי; integer agorot; No Escrow
 - `MASTER-INDEX.md` עודכן
 
 ## In Progress
@@ -22,7 +22,7 @@ nothing
 השקה: 10 דילי seed עדיין missing מול `suppliers` בפרוד
 
 ## Next Task
-אישור עו"ד ל-LEGAL-CONTENT לפני פרסום באתר; הרצת OPS-RUNBOOK אחרי cutover
+הרצת DESIGN-CHECKLIST מול build מקומי; אדמין לפי LAUNCH-VALIDATION §5
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
