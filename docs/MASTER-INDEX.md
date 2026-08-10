@@ -129,7 +129,7 @@ CONTRADICTIONS, כל מספר עמלה כאן הוא שריד") הוסר מכו�
 | `ARCHITECTURE-MOBILE-APP.md` | Expo + React Native על אותו backend. | BINDING |
 | `ARCHITECTURE-MOBILE-SUPERAPP.md` | תכנון מחייב 2026-07-17. | DESIGN |
 | `ARCHITECTURE-NOTIFICATIONS-MARKETING.md` | מסמך תכנון שיווק. | DESIGN |
-| `ARCHITECTURE-NOTIFICATIONS.md` | התראות טרנזקציוניות (Resend/Edge/WA/SMS). | BINDING |
+| `ARCHITECTURE-NOTIFICATIONS.md` | התראות: paid/redeem/supplier/cashback/abandon + QStash DLQ. | BINDING (10.08) |
 | `ARCHITECTURE-OBSERVABILITY.md` | Sentry, לוגים, התראות תפעול. | QA-PASS (#9) |
 | `ARCHITECTURE-PERFORMANCE.md` | Owner: Performance Architect | DESIGN |
 | `ARCHITECTURE-PERSONAL-AREA.md` | אזור אישי (P7 מיושר ל-No Escrow ב-QA). | BINDING |
@@ -143,7 +143,7 @@ CONTRADICTIONS, כל מספר עמלה כאן הוא שריד") הוסר מכו�
 | `ARCHITECTURE-SEASONAL-CAMPAIGNS.md` | חגים ישראליים, בזק, ראש השנה/פסח. | QA-PASS (#18) |
 | `ARCHITECTURE-SECURITY-RLS.md` | מטריצת RLS ל-44 טבלאות. | BINDING |
 | `ARCHITECTURE-SECURITY.md` | Security decision record. | BINDING |
-| `ARCHITECTURE-SEO-PERFORMANCE.md` | SEO וביצועים (App Router). | BINDING |
+| `ARCHITECTURE-SEO-PERFORMANCE.md` | SEO+ביצועים: metadata, JSON-LD, sitemap, CWV, ISR. | BINDING (10.08) |
 | `ARCHITECTURE-SEO.md` | תכנון SEO מלא 2026-07-23. | DESIGN |
 | `ARCHITECTURE-SUPPLIER-ONBOARDING.md` | הצטרפות ספק, בנק, סניפים, עובדים. | QA-PASS (#1) |
 | `ARCHITECTURE-SUPPLIER-PORTAL.md` | פורטל ספק (No Escrow). | BINDING |
@@ -204,3 +204,4 @@ docs/ROADMAP-V2.md
 | 2026-08-07 | QA audit: P3/AS7/OBS8/B6/T7/D8 + EMAIL↔PRICING; סטטוס לכל #1 עד 20 |
 | 2026-08-10 | `ARCHITECTURE-PAYOUT-MECHANISM.md`: מנגנון payout פיזי מחייב (באצ' + העברה ידנית) |
 | 2026-08-10 | `LAUNCH-VALIDATION.md` + `launch-week-plan.md`: אימות 10 דילי השקה מול פרוד |
+| 2026-08-10 | ריענון NOTIFICATIONS + SEO-PERFORMANCE (BINDING) |

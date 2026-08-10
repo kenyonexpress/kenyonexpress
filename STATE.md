@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-10 (docs-only ke-arch: LAUNCH-VALIDATION)
+Updated: 2026-08-10 (docs-only ke-arch: notifications + SEO refresh)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,21 +8,19 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-`docs/LAUNCH-VALIDATION.md` + `docs/launch-week-plan.md`:
+ריענון BINDING:
 
-- מקורות מחקר/תוכנית חסרו בעץ; שוחזר מ-seed #1-10
-- מדידה מול פרוד: 11 ספקים, 61 מוצרים; 0 התאמות לשמות ספק seed
-- סטטוס: 10× `missing-supplier`
-- 5 פעולות אדמין מדויקות להשקה
+- `docs/ARCHITECTURE-NOTIFICATIONS.md`: order_paid, voucher_redeemed, supplier_sale, cashback, abandoned_cart; outbox + QStash DLQ
+- `docs/ARCHITECTURE-SEO-PERFORMANCE.md`: metadata עברי, JSON-LD, sitemap, OG, CWV, ISR, Meili מול Google
 
 ## In Progress
 nothing
 
 ## Blocking Issues
-השקת 10 הדילים חסומה: ספקי seed לא קיימים ב-`suppliers` בפרודקשן
+none (docs only)
 
 ## Next Task
-אדמין: יצירת 10 ספקים + 10 מוצרי קופון לפי LAUNCH-VALIDATION §5
+יישום לפי ROADMAP / המסמכים המחייבים מחוץ לסקופ docs-only
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch

@@ -17,6 +17,11 @@ STATE.md
 
 ### Docs
 
+### Docs (2026-08-10 notifications + SEO)
+
+- `ARCHITECTURE-NOTIFICATIONS.md`: 5 אירועי ליבה, outbox מלא, QStash retry/DLQ
+- `ARCHITECTURE-SEO-PERFORMANCE.md`: metadata/JSON-LD/sitemap/OG/CWV/ISR/MeilivsGoogle
+
 ### Docs (2026-08-10 launch validation)
 
 - `launch-week-plan.md`: 10 דילי השקה + ספקים (שוחזר מ-seed)
