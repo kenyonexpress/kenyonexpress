@@ -26,7 +26,7 @@ docs/APP-STORE-SUBMISSION.md
 | L1 | **שתי משפחות קישורים, ולא ניתן להחליף ביניהן.** ‏https = ציבורי ושמיש, סכמה = ערוץ פנימי בלבד. |
 | L2 | **כל מה שאדם עלול לראות או לשתף הוא https.** מיילים, ‏push, שיתוף, ‏QR. |
 | L3 | **הסכמה משמשת לשניים בלבד:** חזרה מעמוד תשלום, ו-redirect של OAuth. |
-| L4 | **כתובת החזרה שנמסרת ל-Cardcom היא https תמיד.** ראה §3 : זו לא בחירת סגנון. |
+| L4 | **כתובת החזרה שנמסרת ל-Cardcom היא https תמיד.** ראה §3. זו לא בחירת סגנון. |
 | L5 | **קופון לא משותף בקישור.** ‏D9 במסמך המובייל. |
 | L6 | כל universal link חייב להיות **עמוד אמיתי באתר**. אין קישור שמניח שהאפליקציה מותקנת. |
 
@@ -34,15 +34,15 @@ docs/APP-STORE-SUBMISSION.md
 
 ## 1. שתי המשפחות
 
-### 1.1 Universal links : `https://kenyonexpress.co.il/...`
+### 1.1 Universal links, כלומר `https://kenyonexpress.co.il/...`
 
 זה מה שהולך למיילים, ל-push, לשיתוף ולכל דבר שאדם עלול לראות. הקישור נפתח
-באפליקציה כשהיא מותקנת, ובאתר כשלא : ולכן **לקוח בלי האפליקציה לעולם לא רואה
+באפליקציה כשהיא מותקנת, ובאתר כשלא, ולכן **לקוח בלי האפליקציה לעולם לא רואה
 קישור מת**.
 
 זו הסיבה ל-L6: אם כתובת כזאת אינה עמוד אמיתי, מי שאין לו את האפליקציה מקבל 404.
 
-### 1.2 הסכמה : `kenyonexpress://`
+### 1.2 הסכמה `kenyonexpress://`
 
 ערוץ פנימי. **טלפון בלי האפליקציה מציג שגיאה** על קישור כזה, ולכן הוא לעולם לא
 נשלח במייל ולא ניתן לשיתוף.
@@ -64,7 +64,7 @@ docs/APP-STORE-SUBMISSION.md
 | ארנק | `/account/wallet` | `kenyonexpress://wallet` |
 | הזמנה | `/account/orders/<id>` | `kenyonexpress://orders/<id>` |
 | חזרה מתשלום | `/checkout/app-return?order_id=&status=` | `kenyonexpress://checkout/return?order_id=&status=` |
-| מוצר | `/product/<slug>` | : |
+| מוצר | `/product/<slug>` | אין |
 
 **‏`push` נושא שניהם:** ‏`data.path` הוא נתיב האפליקציה, ‏`data.url` הוא ה-
 universal link. אפליקציה שקיבלה התראה משתמשת ב-`path`; אותו תוכן במייל משתמש
@@ -90,7 +90,7 @@ universal link. אפליקציה שקיבלה התראה משתמשת ב-`path`;
 | 1 | ה-WebView מזהה את **הקידומת** `/checkout/app-return` וסוגר את הגיליון | המסלול הרגיל. העמוד בדרך כלל אפילו לא מצויר |
 | 2 | העמוד עצמו קופץ ל-`kenyonexpress://checkout/return` | כש-3-D Secure העיף את המשתמש לדפדפן המערכת ואיש לא צופה בניווט |
 
-בנוסף יש **כפתור ידני** בעמוד, למקרה ששני המנגנונים נחסמו : אחרת המשתמש נתקע
+בנוסף יש **כפתור ידני** בעמוד, למקרה ששני המנגנונים נחסמו. אחרת המשתמש נתקע
 על עמוד ריק אחרי שחויב.
 
 ### ‏`status` בכתובת החזרה הוא קישוט
@@ -103,7 +103,7 @@ universal link. אפליקציה שקיבלה התראה משתמשת ב-`path`;
 
 ## 4. הגדרות פלטפורמה
 
-### iOS : Universal Links
+### iOS, Universal Links
 
 ```
 associatedDomains: ["applinks:kenyonexpress.co.il", "applinks:www.kenyonexpress.co.il"]
@@ -111,9 +111,9 @@ associatedDomains: ["applinks:kenyonexpress.co.il", "applinks:www.kenyonexpress.
 
 חובה: קובץ `apple-app-site-association` ב-`/.well-known/`, **ללא סיומת**,
 מוגש כ-`application/json`, **בלי redirect**. ‏iOS מוריד אותו דרך שרתי CDN של
-אפל : שינוי בו אינו מיידי.
+אפל, ולכן שינוי בו אינו מיידי.
 
-### Android : App Links
+### Android, App Links
 
 ```
 intentFilters: autoVerify: true, pathPrefix: /account, /checkout, /product
