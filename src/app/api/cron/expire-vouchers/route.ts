@@ -62,7 +62,22 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     )
   }
 
-  return NextResponse.json({ ok: true, expired, credited })
+  // Step 3, added by 114, and last for the same reason step 2 is second: it
+  // moves no money and it must not be able to stop the two legs that do.
+  //
+  // It runs AFTER the sweep on purpose. `enqueue_expiring_voucher_notices` only
+  // looks at `issued` rows, so anything the sweep just expired is already out
+  // of its way and nobody is reminded about a coupon that died an hour ago.
+  const { data: reminders, error: reminderError } = await admin.rpc(
+    'enqueue_expiring_voucher_notices',
+    { p_buckets: [7, 1] },
+  )
+  if (reminderError) {
+    log.error('vouchers.expiry_reminders_failed', { reason: reminderError.message })
+    return NextResponse.json({ ok: true, expired, credited, reminders: 0 })
+  }
+
+  return NextResponse.json({ ok: true, expired, credited, reminders: reminders ?? 0 })
 }
 
 export const GET = withRequestLog('/api/cron/expire-vouchers', handleGET)

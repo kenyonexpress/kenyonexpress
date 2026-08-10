@@ -38,5 +38,5 @@
     ".next-qa/types/**/*.ts",
     ".next-qa/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "supabase/functions"]
+  "exclude": ["node_modules", "supabase/functions", "apps"]
 }

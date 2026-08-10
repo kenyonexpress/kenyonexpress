@@ -36,7 +36,9 @@ const EMPTY_ADDRESS: CheckoutAddressPrefill = {
  * It still buys the thing that was missing: the response starts immediately
  * instead of after `auth.getUser()`, `getCart()` and three admin queries.
  */
-export default function CheckoutPage(props: { searchParams: Promise<{ resume?: string }> }) {
+export default function CheckoutPage(props: {
+  searchParams: Promise<{ resume?: string; channel?: string }>
+}) {
   return (
     <Suspense
       fallback={
@@ -53,7 +55,7 @@ export default function CheckoutPage(props: { searchParams: Promise<{ resume?: s
 async function CheckoutPageBody({
   searchParams,
 }: {
-  searchParams: Promise<{ resume?: string }>
+  searchParams: Promise<{ resume?: string; channel?: string }>
 }) {
   const supabase = await createClient()
   const {
@@ -129,7 +131,7 @@ async function CheckoutPageBody({
       }))
   }
 
-  const { resume } = await searchParams
+  const { resume, channel } = await searchParams
 
   return (
     <div className="checkout-page">
@@ -143,6 +145,7 @@ async function CheckoutPageBody({
         savedCards={savedCards}
         isAuthenticated={Boolean(user)}
         resuming={resume === '1'}
+        channel={channel === 'app' ? 'app' : 'web'}
       />
     </div>
   )

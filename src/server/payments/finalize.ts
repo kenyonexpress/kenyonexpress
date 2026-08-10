@@ -4,6 +4,7 @@ import {
   moneyColumnProbe,
   resolveVoucherRateColumn,
 } from '@/lib/commerce/order-money-columns'
+import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
 import { resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -218,6 +219,35 @@ async function creditCashback(
     p_order_id: orderId,
   })
   if (error) throw new Error(`cashback credit failed: ${error.message}`)
+
+  // Queued only after the ledger move committed. Enqueuing before it would
+  // promise money `fn_wallet_transfer` might still refuse, and the promise is
+  // the part the customer remembers.
+  //
+  // Best-effort on purpose: the credit is the money and it has already landed.
+  // A queue insert that fails must not roll back a wallet the customer can
+  // already spend from, so it is logged and dropped. The dedupe key is derived
+  // from the order, so a replayed finalize cannot produce a second notice.
+  const { data: profile } = await admin
+    .from('profiles')
+    .select('email')
+    .eq('id', userId)
+    .maybeSingle()
+
+  const { error: notifyError } = await admin.rpc('fn_enqueue_notification', {
+    p_kind: 'cashback_credited',
+    p_email: profile?.email ?? '',
+    p_dedupe: `cashback:${orderId}`,
+    p_payload: {
+      order_id: orderId,
+      order_ref: orderId.slice(0, 8).toUpperCase(),
+      amount_agorot: cashbackAgorot,
+    },
+    p_user_id: userId,
+  })
+  if (notifyError) {
+    log.warn('finalize.cashback_notify_failed', { orderId, reason: notifyError.message })
+  }
 }
 
 async function spendWallet(

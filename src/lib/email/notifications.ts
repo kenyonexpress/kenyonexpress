@@ -36,6 +36,10 @@ export type NotificationKind =
   | 'voucher_issued'
   /** A coupon bought for somebody else. Added by migration 108. */
   | 'voucher_gifted'
+  /** Fixed days-remaining reminder. Queued by 114's sweep. */
+  | 'voucher_expiring'
+  /** Wallet credit, enqueued after the ledger move. Added by 114. */
+  | 'cashback_credited'
 
 function escapeHtml(value: string): string {
   return value
@@ -386,6 +390,101 @@ export function buildVoucherGiftedEmail(
   return { subject, html, text }
 }
 
+/**
+ * The expiry reminder. Queued by `enqueue_expiring_voucher_notices` at fixed
+ * days-remaining buckets, so a customer sees it at 7 days and again at 1.
+ *
+ * It carries a real deadline or it is not sent. A reminder without a date is a
+ * nag; the caller keeps the day count in the payload precisely so this can
+ * refuse to render without one, and the drain then parks the row rather than
+ * mailing a blank. Same rule the push template applies.
+ */
+export function buildVoucherExpiringEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification | null {
+  const days = Math.round(asNumber(payload.days_remaining))
+  const expires = hebrewDateTime(payload.expires_at)
+  if (days <= 0 && !expires) return null
+
+  const product = asText(payload.product_name) ?? 'הקופון שלך'
+  const supplier = asText(payload.supplier_name)
+  const url = `${trimSite(siteUrl)}/account/coupons`
+  const when = days === 1 ? 'מחר' : days === 2 ? 'בעוד יומיים' : `בעוד ${days} ימים`
+
+  const subject = days === 1 ? `${product} פג מחר` : `${product} פג ${when}`
+
+  const text = [
+    'שלום,',
+    '',
+    `${product}${supplier ? ` ב${supplier}` : ''} עדיין לא מומש, והתוקף שלו נגמר ${when}.`,
+    expires ? `תאריך התפוגה: ${expires}.` : '',
+    '',
+    'הקופונים שלך:',
+    url,
+  ]
+    .filter((line) => line !== '')
+    .join('\n')
+
+  const html = shell(
+    `<div dir="rtl" style="background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+        <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(`הקופון פג ${when}`)}</div>
+        <div style="font-size:16px;font-weight:700;color:${INK};margin-top:12px">${escapeHtml(product)}</div>
+        ${supplier ? `<div style="font-size:14px;color:${MUTED};margin-top:4px">${escapeHtml(supplier)}</div>` : ''}
+        ${expires ? `<div style="font-size:13px;color:${MUTED};margin-top:12px">בתוקף עד ${escapeHtml(expires)}.</div>` : ''}
+        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לצפייה בקופון</a>
+      </div>`,
+    'קיבלת את המייל הזה כי יש לך קופון פעיל ב-KenyonExpress.',
+  )
+
+  return { subject, html, text }
+}
+
+/**
+ * Cashback landing in the wallet. Enqueued by `finalizeOrder` after the credit
+ * has actually moved through `fn_wallet_transfer`, never before: an email that
+ * promises money the ledger does not hold is a support ticket.
+ */
+export function buildCashbackCreditedEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification | null {
+  const amountAgorot = Math.round(asNumber(payload.amount_agorot))
+  if (amountAgorot <= 0) return null
+
+  const whole = Math.trunc(amountAgorot / 100)
+  const fraction = amountAgorot % 100
+  const amount =
+    fraction === 0
+      ? `₪${whole.toLocaleString('he-IL')}`
+      : `₪${whole.toLocaleString('he-IL')}.${String(fraction).padStart(2, '0')}`
+
+  const ref = asText(payload.order_ref)
+  const url = `${trimSite(siteUrl)}/account/wallet`
+  const subject = `נכנס לך קאשבק של ${amount}`
+
+  const text = [
+    'שלום,',
+    '',
+    `זיכינו את הארנק שלך ב-${amount}${ref ? ` על הזמנה ${ref}` : ''}.`,
+    'אפשר להשתמש בסכום בקנייה הבאה.',
+    '',
+    'הארנק שלך:',
+    url,
+  ].join('\n')
+
+  const html = shell(
+    `<div dir="rtl" style="background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+        <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
+        <div style="font-size:15px;color:${INK};margin-top:10px">זיכינו את הארנק שלך${ref ? ` על הזמנה ${escapeHtml(ref)}` : ''}. אפשר להשתמש בסכום בקנייה הבאה.</div>
+        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לארנק שלי</a>
+      </div>`,
+    'קיבלת את המייל הזה כי נכנס קאשבק לארנק שלך ב-KenyonExpress.',
+  )
+
+  return { subject, html, text }
+}
+
 /** Dispatch by queued kind. Unknown kinds return null so the drain can park them. */
 export function buildNotification(
   kind: string,
@@ -403,6 +502,10 @@ export function buildNotification(
       return buildVoucherIssuedEmail(payload, siteUrl)
     case 'voucher_gifted':
       return buildVoucherGiftedEmail(payload, siteUrl)
+    case 'voucher_expiring':
+      return buildVoucherExpiringEmail(payload, siteUrl)
+    case 'cashback_credited':
+      return buildCashbackCreditedEmail(payload, siteUrl)
     default:
       return null
   }

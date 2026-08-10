@@ -9,6 +9,7 @@
     "ignoreUnknown": false,
     "ignore": [
       "node_modules",
+      "apps",
       ".next",
       "out",
       "build",

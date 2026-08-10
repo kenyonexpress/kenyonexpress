@@ -1,5 +1,6 @@
 'use server'
 
+import { appReturnUrl } from '@/lib/app/deep-links'
 import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-code'
 import { validateCartView } from '@/lib/checkout/validate-cart'
 import { agorot, agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
@@ -694,8 +695,17 @@ async function runBeginCheckout(
       // needs a session: Cardcom's navigation into our iframe is cross-site and
       // the Lax session cookie is withheld on it. The stub moves the top window
       // to the real page, where the cookie is sent. See lib/security/frame-policy.ts.
-      successRedirectUrl: `${env.appUrl}/checkout/frame-return?order_id=${order.id}`,
-      failedRedirectUrl: `${env.appUrl}/checkout/frame-return?order_id=${order.id}&status=failed`,
+      // In the app the iframe does not exist and the cookie problem does not
+      // either; what has to happen instead is a handoff back to native. Same
+      // provider call, different landing pad. See lib/app/deep-links.ts.
+      successRedirectUrl:
+        input.channel === 'app'
+          ? appReturnUrl(env.appUrl, order.id, 'success')
+          : `${env.appUrl}/checkout/frame-return?order_id=${order.id}`,
+      failedRedirectUrl:
+        input.channel === 'app'
+          ? appReturnUrl(env.appUrl, order.id, 'failed')
+          : `${env.appUrl}/checkout/frame-return?order_id=${order.id}&status=failed`,
       // Cardcom does not sign webhooks; the unguessable secret in the URL is the
       // authenticity gate (paired with server-side GetLpResult re-verification).
       webhookUrl: `${env.appUrl}/api/payments/cardcom/webhook?s=${encodeURIComponent(env.webhookSecret)}`,
@@ -829,6 +839,10 @@ async function runSubmitCheckout(
   const result = await beginCheckout({
     client_ref: text('client_ref'),
     accept_terms: formData.get('accept_terms') === 'on',
+    // Set by a hidden field the checkout page renders only when it was reached
+    // with `?channel=app`. Anything else, including a forged value, falls back
+    // to 'web' at the schema. It steers the return URL and nothing else.
+    channel: text('channel') === 'app' ? 'app' : 'web',
     apply_wallet_ils: text('apply_wallet_ils') || 0,
     // Saving is a hosted-page operation; charging an existing token cannot mint
     // another one, so the checkbox is meaningless on that path.

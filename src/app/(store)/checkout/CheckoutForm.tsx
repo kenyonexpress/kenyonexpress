@@ -82,6 +82,7 @@ export default function CheckoutForm({
   savedCards = [],
   isAuthenticated,
   resuming = false,
+  channel = 'web',
 }: {
   cart: CartView
   clientRef: string
@@ -92,6 +93,11 @@ export default function CheckoutForm({
   isAuthenticated: boolean
   /** True when we are back from Google and the form should refill itself. */
   resuming?: boolean
+  /**
+   * 'app' only when this page was opened inside the native app's WebView. It
+   * changes where Cardcom sends the browser back to, and nothing else.
+   */
+  channel?: 'web' | 'app'
 }) {
   const [state, formAction, isPending] = useActionState<CheckoutFormState, FormData>(
     submitCheckout,
@@ -361,6 +367,7 @@ export default function CheckoutForm({
         noValidate
       >
         <input type="hidden" name="client_ref" value={clientRef} />
+        <input type="hidden" name="channel" value={channel} />
         <input type="hidden" name="needs_address" value={needsAddress ? 'true' : 'false'} />
         {address.id && <input type="hidden" name="address_id" value={address.id} />}
 

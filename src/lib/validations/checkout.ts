@@ -133,10 +133,28 @@ export const giftSchema = z.object({
   gift_message: z.string().trim().max(500, 'הברכה ארוכה מדי').optional(),
 })
 
+/**
+ * Which surface the shopper is on. It changes exactly one thing: where Cardcom
+ * sends the browser when its hosted page finishes.
+ *
+ * `web` returns into `/checkout/frame-return`, the framable stub that breaks
+ * the iframe out to the top window so the Lax session cookie is sent.
+ * `app` returns into `/checkout/app-return`, which hands control back to the
+ * native app. The app has no iframe and no cookie problem, and the web stub's
+ * top-window break would leave the customer stranded in a WebView showing our
+ * desktop checkout.
+ *
+ * It decides nothing about money, and nothing downstream of the redirect reads
+ * it: both paths settle through the same webhook and the same `GetLpResult`
+ * verification.
+ */
+export const checkoutChannelSchema = z.enum(['web', 'app']).default('web')
+
 export const beginCheckoutInputSchema = checkoutPaymentSchema
   .merge(
     z.object({
       address_id: uuid.nullable().default(null),
+      channel: checkoutChannelSchema,
     }),
   )
   .merge(giftSchema)
