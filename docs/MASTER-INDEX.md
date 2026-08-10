@@ -151,6 +151,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `FEATURED-DEALS-PRICING.md` | תמחור קידום דילים (מודל עתידי). | PLAN (10.08) |
 | `ARCHITECTURE-SUPPLIER-PORTAL.md` | פורטל ספק. | BINDING |
 | `SUPPLIER-AGREEMENT-DRAFT.md` | טיוטת הסכם. לא ייעוץ משפטי. | DRAFT |
+| `LEGAL-TERMS-SUPPLIERS.md` | הסכם ספקים בעברית (טיוטה; דורש עו״ד). | DRAFT (11.08) |
 | `ARCHITECTURE-FRAUD-PREVENTION.md` | כפילות, QR, chargeback, velocity. | BINDING |
 | `ARCHITECTURE-B2B-SALES.md` | מכירה בכמות לוועדים. | QA-PASS (#17) |
 
