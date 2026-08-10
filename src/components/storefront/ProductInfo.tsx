@@ -1,10 +1,12 @@
 'use client'
 
 import { useCart } from '@/components/cart/CartProvider'
+import CityTag from '@/components/geo/CityTag'
 import FacebookShareButton from '@/components/shared/FacebookShareButton'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import CouponPricing from '@/components/storefront/CouponPricing'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
+import { cityByName } from '@/lib/geo/cities'
 import { buildShareMessage } from '@/lib/share/message'
 import { Check, ShoppingCart } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -35,6 +37,11 @@ interface Props {
   sku: string | null
   /** Category name, shown in the eyebrow slot live fills with its category links. */
   categoryName: string | null
+  /**
+   * Free text: the product's own city once 002-products-geo is applied, the
+   * supplier's until then. Unrecognised values render nothing at all.
+   */
+  city: string | null
   attributes: Attribute[]
   variants: Variant[]
   isCoupon: boolean
@@ -74,12 +81,18 @@ export default function ProductInfo({
   baseStock,
   sku,
   categoryName,
+  city,
   attributes,
   variants,
   isCoupon,
   couponOffer,
 }: Props) {
   const { addToCart, isPending } = useCart()
+
+  // Resolved once here rather than inside CityTag, because the href needs the
+  // slug and the tag needs the canonical name, and resolving twice invites the
+  // two to disagree.
+  const knownCity = cityByName(city)
   const router = useRouter()
   const [selected, setSelected] = useState<string | null>(
     variants.length === 1 ? (variants[0]?.id ?? null) : null,
@@ -131,6 +144,18 @@ export default function ProductInfo({
       {categoryName && <p className="pdp-summary__eyebrow">{categoryName}</p>}
 
       <h1 className="pdp-summary__title">{name}</h1>
+
+      {/* Where the deal is, directly under the title, so it is answered before
+          the price rather than at the bottom of the page next to the supplier
+          block. It links into the city-filtered catalogue: a customer who cares
+          which city this is in is the customer who wants the others in it.
+          `knownCity` is null for free text the city table does not recognise,
+          and the whole line disappears rather than printing it raw. */}
+      {knownCity && (
+        <p className="pdp-summary__city">
+          <CityTag city={knownCity.name} href={`/products?city=${knownCity.slug}`} />
+        </p>
+      )}
 
       <p className="pdp-summary__meta" dir={effectiveSku ? 'rtl' : 'ltr'}>
         {effectiveSku ? (

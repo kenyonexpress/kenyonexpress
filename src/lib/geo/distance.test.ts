@@ -6,6 +6,7 @@ import {
   formatDistance,
   isValidCoordinates,
   parseNear,
+  productLocation,
   sortByDistance,
   supplierLocation,
 } from './distance'
@@ -208,5 +209,79 @@ describe('parseNear', () => {
     expect(parseNear('abc,def')).toBeNull()
     expect(parseNear('')).toBeNull()
     expect(parseNear(undefined)).toBeNull()
+  })
+})
+
+describe('productLocation', () => {
+  const telAviv = { lat: 32.0853, lng: 34.7818 }
+
+  it('falls back to the supplier when the product says nothing', () => {
+    // The behaviour every one of the 80 existing rows keeps: the columns from
+    // 002-products-geo are unapplied, so `city` is undefined on every item.
+    const location = productLocation({ supplier: { city: 'תל אביב' } })
+    expect(location.city?.slug).toBe('tel-aviv')
+    expect(location.precision).toBe('city')
+  })
+
+  it('lets the product override the supplier city', () => {
+    // A spa weekend sold in Eilat by a Tel Aviv business.
+    const location = productLocation({ city: 'אילת', supplier: { city: 'תל אביב' } })
+    expect(location.city?.slug).toBe('eilat')
+  })
+
+  it('does not let an inherited coordinate drag the deal back to the supplier', () => {
+    // The trap this exists for: the supplier has an exact coordinate and the
+    // product only names a different city. Taking the coordinate because it is
+    // "more precise" puts the Eilat deal in Tel Aviv. Specificity beats
+    // precision when they disagree.
+    const location = productLocation({
+      city: 'אילת',
+      supplier: { city: 'תל אביב', latitude: telAviv.lat, longitude: telAviv.lng },
+    })
+    expect(location.city?.slug).toBe('eilat')
+    expect(location.precision).toBe('city')
+    expect(location.coordinates?.lat).not.toBeCloseTo(telAviv.lat, 3)
+  })
+
+  it('prefers the product own coordinate over everything', () => {
+    const location = productLocation({
+      city: 'אילת',
+      latitude: 29.5581,
+      longitude: 34.9482,
+      supplier: { city: 'תל אביב', latitude: telAviv.lat, longitude: telAviv.lng },
+    })
+    expect(location.precision).toBe('exact')
+    expect(location.coordinates?.lat).toBeCloseTo(29.5581, 4)
+  })
+
+  it('never builds a point from two different sources', () => {
+    // Half a product coordinate is not partial data, it is a point in the
+    // Atlantic. The pair comes from one source or the supplier answers.
+    const location = productLocation({
+      latitude: 29.5581,
+      supplier: { city: 'תל אביב', latitude: telAviv.lat, longitude: telAviv.lng },
+    })
+    expect(location.coordinates?.lat).toBeCloseTo(telAviv.lat, 4)
+    expect(location.coordinates?.lng).toBeCloseTo(telAviv.lng, 4)
+  })
+
+  it('reports unknown when neither side knows', () => {
+    expect(productLocation({ supplier: null }).precision).toBe('unknown')
+    expect(productLocation(null).precision).toBe('unknown')
+  })
+
+  it('filters and sorts on the overridden city', () => {
+    const items = [
+      { id: 'a', city: 'אילת', supplier: { city: 'תל אביב' } },
+      { id: 'b', supplier: { city: 'תל אביב' } },
+    ]
+    expect(filterByCity(items, 'eilat').map((i) => i.id)).toEqual(['a'])
+    expect(filterByCity(items, 'tel-aviv').map((i) => i.id)).toEqual(['b'])
+
+    // Nearest-first from Eilat puts the overridden deal ahead of its supplier.
+    expect(sortByDistance(items, { lat: 29.5581, lng: 34.9482 }).map((i) => i.id)).toEqual([
+      'a',
+      'b',
+    ])
   })
 })

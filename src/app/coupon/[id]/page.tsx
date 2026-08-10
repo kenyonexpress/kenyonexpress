@@ -1,5 +1,6 @@
 import WalletButtons from '@/components/coupon/WalletButtons'
 import { createClient } from '@/lib/supabase/server'
+import { buildSupplierContact } from '@/lib/supplier-contact'
 import {
   COUPON_TONE_CLASS,
   couponMoneyView,
@@ -9,6 +10,7 @@ import {
   formatCouponDate,
 } from '@/lib/vouchers/coupon-view'
 import { voucherQrDataUrl } from '@/lib/vouchers/qr-image'
+import { buildRedemptionInquiryText } from '@/lib/whatsapp'
 import { getCustomerVoucher } from '@/server/queries/vouchers'
 import type { Metadata } from 'next'
 import Link from 'next/link'
@@ -76,8 +78,13 @@ async function CouponPageBody({ params }: Props) {
   // the customer.
   const qrDataUrl = status.presentable ? await voucherQrDataUrl(voucher.qr_payload) : null
 
-  const supplier = voucher.supplier
-  const address = [supplier?.address, supplier?.city].filter(Boolean).join(', ')
+  // Same builder as the product page. The links used to be assembled inline
+  // here, and `wa.me/${whatsapp.replace(/[^0-9]/g, '')}` keeps the leading zero
+  // of a local number: `wa.me/0524635550` opens WhatsApp's "not on WhatsApp"
+  // screen with the cashier waiting. See lib/supplier-contact.ts.
+  const contact = buildSupplierContact(voucher.supplier, {
+    whatsappMessage: buildRedemptionInquiryText(voucher.product?.name_he ?? null),
+  })
 
   return (
     <main dir="rtl" className="mx-auto min-h-screen max-w-md bg-gray-50 px-4 py-6">
@@ -93,7 +100,7 @@ async function CouponPageBody({ params }: Props) {
             <h1 className="text-lg font-bold leading-snug text-gray-900">
               {voucher.product?.name_he ?? 'שובר'}
             </h1>
-            {supplier?.name && <p className="mt-0.5 text-sm text-gray-500">{supplier.name}</p>}
+            {contact.name && <p className="mt-0.5 text-sm text-gray-500">{contact.name}</p>}
           </div>
           <span
             className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${COUPON_TONE_CLASS[status.tone]}`}
@@ -176,38 +183,56 @@ async function CouponPageBody({ params }: Props) {
           )}
         </div>
 
-        {(supplier?.name || address || supplier?.contact_phone) && (
+        {contact.hasAny && (
           <footer className="border-t border-gray-100 bg-gray-50 px-5 py-4">
             <h2 className="mb-2 text-sm font-semibold text-gray-900">פרטי בית העסק</h2>
             <dl className="space-y-1.5 text-sm">
-              {supplier?.name && <Row label="שם" value={supplier.name} />}
-              {address && <Row label="כתובת" value={address} />}
-              {supplier?.contact_phone && (
+              {contact.name && <Row label="שם" value={contact.name} />}
+              {contact.addressLine && (
+                <div className="flex items-center justify-between gap-3">
+                  <dt className="text-gray-500">כתובת</dt>
+                  <dd className="text-end font-medium text-gray-900">
+                    {contact.addressLine}
+                    {/* Navigation only when a street address exists: the
+                        alternative sends a customer to a city centre. */}
+                    {contact.wazeHref && (
+                      <a
+                        href={contact.wazeHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ms-2 font-semibold text-gray-900 underline"
+                      >
+                        ניווט ב-Waze
+                      </a>
+                    )}
+                  </dd>
+                </div>
+              )}
+              {contact.telHref && (
                 <div className="flex items-center justify-between">
                   <dt className="text-gray-500">טלפון</dt>
                   <dd>
                     <a
                       dir="ltr"
-                      href={`tel:${supplier.contact_phone}`}
+                      href={contact.telHref}
                       className="font-medium text-gray-900 underline"
                     >
-                      {supplier.contact_phone}
+                      {contact.phoneDisplay}
                     </a>
                   </dd>
                 </div>
               )}
-              {supplier?.whatsapp && (
+              {contact.whatsappHref && (
                 <div className="flex items-center justify-between">
                   <dt className="text-gray-500">וואטסאפ</dt>
                   <dd>
                     <a
-                      dir="ltr"
-                      href={`https://wa.me/${supplier.whatsapp.replace(/[^0-9]/g, '')}`}
+                      href={contact.whatsappHref}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-medium text-gray-900 underline"
                     >
-                      {supplier.whatsapp}
+                      שליחת הודעה
                     </a>
                   </dd>
                 </div>

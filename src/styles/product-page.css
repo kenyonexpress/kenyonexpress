@@ -488,3 +488,26 @@
 .pdp-coupon {
   margin-top: 24px;
 }
+
+/* City tag: the product page and the home card. The catalogue card keeps its
+   own `.category-card__city`, which also carries a distance and is sized for
+   that card's tag row.
+
+   Muted and small on purpose. Where a business is, is provenance, not a
+   promotion, so it must not compete with the price for attention. */
+.city-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--pdp-muted);
+}
+
+.city-tag--link {
+  text-decoration: none;
+}
+
+.city-tag--link:hover {
+  text-decoration: underline;
+}

@@ -1,16 +1,18 @@
 import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
-import { storeWhatsAppNumber, waChatLink } from '@/lib/whatsapp'
+import { storeWhatsAppLink } from '@/lib/whatsapp'
 
 /**
- * Floating "talk to us on WhatsApp" button. Renders nothing when
- * NEXT_PUBLIC_WHATSAPP_PHONE is not configured.
+ * Floating "talk to us on WhatsApp" button, per `KE_LIVE_SPEC.md`.
  * Sits at the bottom-end corner (bottom-left in RTL), above the content.
+ *
+ * The number resolves through `storeWhatsAppLink`, which falls back to the
+ * published one when `NEXT_PUBLIC_WHATSAPP_PHONE` is unset. Before [68] this
+ * button was the ONLY one of the three store-number surfaces that read the env
+ * var, so a deployment without it lost the button while the footer icon and the
+ * contact page carried on working -- a failure with no symptom anyone reports.
  */
 export default function WhatsAppFloat() {
-  const phone = storeWhatsAppNumber()
-  if (!phone) return null
-
-  const href = waChatLink(phone, 'שלום, אשמח לעזרה עם הזמנה באתר KenyonExpress')
+  const href = storeWhatsAppLink('שלום, אשמח לעזרה עם הזמנה באתר KenyonExpress')
   if (!href) return null
 
   return (

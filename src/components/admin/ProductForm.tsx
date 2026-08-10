@@ -21,6 +21,7 @@ import {
   previewRecurringMoney,
   readRecurringProductFields,
 } from '@/lib/commerce/recurring'
+import { readWhatsAppEnabled } from '@/lib/supplier-contact'
 import { slugify } from '@/lib/utils/slugify'
 import { type ProductFormState, upsertProduct } from '@/server/actions/admin/products'
 import type { Category, Product, ProductVariant } from '@/types/database'
@@ -1037,6 +1038,30 @@ export default function ProductForm({
           <label htmlFor="requires_shipping" className="text-sm font-medium text-gray-700">
             דורש משלוח פיזי
           </label>
+        </div>
+        {/* The WhatsApp opt-in. Default false and no fallback to true: ticking
+            this publishes a link that opens a chat with a real business, so it
+            is the admin's statement that this supplier answers WhatsApp for
+            this deal. The hint is not decoration -- six of eleven suppliers
+            have no number at all, and without it a ticked box that renders
+            nothing looks like a bug rather than missing supplier data. */}
+        <div className="flex items-start gap-3">
+          <input
+            id="whatsapp_enabled"
+            name="whatsapp_enabled"
+            type="checkbox"
+            value="true"
+            defaultChecked={readWhatsAppEnabled(product)}
+            className="mt-1 w-4 h-4 rounded border-gray-300 text-brand focus:ring-brand"
+          />
+          <div>
+            <label htmlFor="whatsapp_enabled" className="text-sm font-medium text-gray-700">
+              הצג כפתור וואטסאפ בדף המוצר
+            </label>
+            <p className="text-xs text-gray-500 mt-0.5">
+              מוצג רק אם לספק יש מספר נייד. מספר קווי אינו נתמך בוואטסאפ.
+            </p>
+          </div>
         </div>
         <div className="grid grid-cols-5 gap-4">
           <div>

@@ -5,9 +5,11 @@ import ProductInfo from '@/components/storefront/ProductInfo'
 import RelatedProducts from '@/components/storefront/RelatedProducts'
 import ShippingInfo from '@/components/storefront/ShippingInfo'
 import SupplierInfo from '@/components/storefront/SupplierInfo'
+import { productLocation } from '@/lib/geo/distance'
 import { listProductSlugsForPrerender, loadProductBySlug } from '@/lib/product-detail'
 import { getProductSeoBySlug } from '@/lib/product-seo'
 import { buildBreadcrumbJsonLd, buildProductJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
+import { readWhatsAppEnabled } from '@/lib/supplier-contact'
 import '@/styles/product-page.css'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -221,6 +223,7 @@ export default async function ProductPage({ params }: Props) {
             baseStock={product.stock_quantity}
             sku={product.sku}
             categoryName={category?.name_he ?? null}
+            city={productLocation({ ...product, supplier }).city?.name ?? null}
             attributes={attributes}
             variants={variants ?? []}
             isCoupon={isCoupon}
@@ -263,8 +266,15 @@ export default async function ProductPage({ params }: Props) {
             />
           )}
 
-          {/* Supplier details: rendered for every product (coupon and physical) */}
-          <SupplierInfo supplier={supplier} productType={product.type} />
+          {/* Supplier details: rendered for every product (coupon and physical).
+              The name is passed through so the WhatsApp message names the deal:
+              a business selling forty of them cannot answer "יש פרטים?". */}
+          <SupplierInfo
+            supplier={supplier}
+            productType={product.type}
+            productName={product.name_he}
+            whatsappEnabled={readWhatsAppEnabled(product)}
+          />
         </div>
 
         {/* Related products */}

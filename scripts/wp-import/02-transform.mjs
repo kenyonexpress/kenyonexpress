@@ -279,7 +279,7 @@ function transformProducts(run, rawProducts, categoryBySlugId) {
       modified_at_wp: toIso(raw.date_modified_gmt),
       // curation columns: the proposal, for a human to approve before projection
       proposed_slug: slug,
-      target_type: mapType(categorySlugs, DEFAULTS, meta),
+      target_type: mapType(categorySlugs, DEFAULTS, meta, raw.type ?? raw.product_type ?? null),
       compare_at_price: compareAt,
       projected_status: effectiveStatus,
       raw_meta: meta,

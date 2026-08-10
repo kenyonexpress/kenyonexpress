@@ -84,7 +84,7 @@ export async function loadProductBySlug(slug: string) {
   // Three independent reads, so they go together rather than in sequence. On
   // a cache miss this is the difference between one round trip and three.
   const [supplier, variants, galleryAssets, coupon054, stickerPriceIls] = await Promise.all([
-    loadSupplierName(product.supplier_id),
+    loadSupplierPublicContact(product.supplier_id),
     supabase
       .from('product_variants')
       .select('id, name_he, price, price_modifier, stock_quantity, sku')
@@ -136,15 +136,29 @@ export async function loadProductBySlug(slug: string) {
 }
 
 /**
- * `suppliers` RLS is admin-only, so the public-safe name comes through the
- * service client. Only id and name are selected: no contact details reach the
- * page, and nothing that is not already printed on it enters this cache.
+ * `suppliers` RLS is admin-only, so the public-safe columns come through the
+ * service client.
+ *
+ * WHICH COLUMNS ARE PUBLIC-SAFE, AND WHY THIS LIST GREW. It used to select id
+ * and name only, on the reasoning that "no contact details reach the page".
+ * `docs/BUSINESS-MODEL.md` §2 requires the opposite for these five: name,
+ * address, city, phone and WhatsApp are mandatory on EVERY product page,
+ * because a coupon is redeemed at a counter and a shopper who cannot see where
+ * or ask a question before paying is the reason the block exists. They are the
+ * business's shopfront details, the same ones the voucher page has always
+ * printed after the sale.
+ *
+ * What stays out is exactly what stayed out before: `contact_name`,
+ * `contact_email`, `business_id`, `notes`, `commission_percent`,
+ * `default_split_percent`. The margin in particular is the one field that must
+ * never reach a shopper (`ShippingInfo.tsx` makes the same call), so this is a
+ * named list and not `select('*')`.
  */
-async function loadSupplierName(supplierId: string | null) {
+async function loadSupplierPublicContact(supplierId: string | null) {
   if (!supplierId) return null
   const { data } = await createAdminClient()
     .from('suppliers')
-    .select('id, name')
+    .select('id, name, city, address, contact_phone, whatsapp')
     .eq('id', supplierId)
     .maybeSingle()
   return data

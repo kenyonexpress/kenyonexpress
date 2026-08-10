@@ -27,9 +27,15 @@ const LIVE_PRODUCT = 'https://kenyonexpress.co.il/product/מוצר-לדוגמא/
 // were extracted from, so measurements and the pixel diff describe one page.
 const LIVE_CATEGORY = 'https://kenyonexpress.co.il/product-category/hot-deals/'
 const LOCAL_CATEGORY_SLUG = process.env.COMPARE_CATEGORY_SLUG ?? 'hot-deals'
-// Which local product the product run screenshots. Unset means "discover one",
-// which is reproducible only for as long as the catalogue keeps its order.
-const COMPARE_PRODUCT_SLUG = process.env.COMPARE_PRODUCT_SLUG ?? ''
+// Which local product the product run screenshots. It defaults to the SAME slug
+// as LIVE_PRODUCT above, because the live reference and our copy of it are the
+// only pair whose difference is a fidelity score at all. The default used to be
+// "discover one", which is reproducible only while the catalogue keeps its
+// order -- and [66] imported 19 products and changed it. Measured on 2026-08-07
+// against one build and one server: discovery picked `צימר-מאסטר` and reported
+// 18.73%, the pinned reference product reported 14.08%. Nothing in the page
+// differed; 4.65 points were the pick.
+const COMPARE_PRODUCT_SLUG = process.env.COMPARE_PRODUCT_SLUG ?? 'מוצר-לדוגמא'
 // /products is our rebuild of the live /shop/ archive.
 const LIVE_PRODUCTS = 'https://kenyonexpress.co.il/shop/'
 // Live search is a WordPress query string, not a route.

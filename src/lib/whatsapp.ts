@@ -49,9 +49,51 @@ export function waShareLink(text: string): string {
   return `https://wa.me/?text=${encodeURIComponent(text)}`
 }
 
-/** The store's WhatsApp business number, from env. Null disables WhatsApp UI. */
+/**
+ * The store's own WhatsApp number, as published by the live site.
+ *
+ * `KE_LIVE_SPEC.md` ("כפתור WhatsApp צף: מספר 972524635550") is the source, and
+ * this exact string was already pasted into `SiteFooter.tsx` and into the
+ * `/contact` page as a literal `https://wa.me/972524635550`. Three copies of one
+ * number, and only one of them read the env var -- so on a deployment that never
+ * set `NEXT_PUBLIC_WHATSAPP_PHONE`, the footer icon and the contact page kept
+ * working while the floating button silently rendered nothing, which is the one
+ * failure nobody would report. The constant is the default and the env var is an
+ * override, not the other way round.
+ */
+export const PUBLISHED_STORE_WHATSAPP = '972524635550'
+
+/** The store's WhatsApp business number: env override, else the published one. */
 export function storeWhatsAppNumber(): string | null {
-  return normalizeIsraeliPhone(process.env.NEXT_PUBLIC_WHATSAPP_PHONE)
+  return (
+    normalizeIsraeliPhone(process.env.NEXT_PUBLIC_WHATSAPP_PHONE) ??
+    normalizeIsraeliPhone(PUBLISHED_STORE_WHATSAPP)
+  )
+}
+
+/**
+ * International digits back to the local form an Israeli reads: 972524635550 ->
+ * 052-463-5550. Printing the international form to a customer is technically
+ * correct and reads as a foreign number.
+ */
+export function formatIsraeliPhoneDisplay(raw: string | null | undefined): string | null {
+  const intl = normalizeIsraeliPhone(raw)
+  if (!intl) return null
+  const local = `0${intl.slice(3)}`
+  // Mobile 05X-XXX-XXXX (10 digits); everything else 0X-XXXXXXX.
+  return local.length === 10
+    ? `${local.slice(0, 3)}-${local.slice(3, 6)}-${local.slice(6)}`
+    : `${local.slice(0, 2)}-${local.slice(2)}`
+}
+
+/**
+ * Chat link to the store's own number. Every place that talks to the shop --
+ * the floating button, the footer icon, the contact page -- goes through here,
+ * so the number cannot drift between them again.
+ */
+export function storeWhatsAppLink(text?: string): string | null {
+  const phone = storeWhatsAppNumber()
+  return phone ? waChatLink(phone, text) : null
 }
 
 export function buildProductShareText(name: string, priceIls: number, url: string): string {
@@ -89,6 +131,30 @@ export function buildCouponShareText(input: {
   )
   lines.push(input.siteUrl)
   return lines.join('\n')
+}
+
+/**
+ * The message pre-filled when a shopper taps the supplier's WhatsApp from a
+ * product page. It names the product, because a business that sells forty deals
+ * cannot answer "היי, יש פרטים?".
+ */
+export function buildSupplierInquiryText(productName: string | null, url?: string): string {
+  const subject = productName ? `על "${productName}"` : 'על דיל שראיתי'
+  const lines = [`שלום, ראיתי ב-KenyonExpress ואשמח לפרטים ${subject}`]
+  if (url) lines.push(url)
+  return lines.join('\n')
+}
+
+/**
+ * The message pre-filled when the holder of a voucher messages the business.
+ *
+ * It deliberately does NOT carry the voucher code. The code is what redeems the
+ * coupon; a pre-filled message is one forward away from being somebody else's,
+ * and the customer shows the code at the counter anyway.
+ */
+export function buildRedemptionInquiryText(productName: string | null): string {
+  const subject = productName ? ` על "${productName}"` : ''
+  return `שלום, יש לי קופון מ-KenyonExpress${subject} ואשמח לתאם מימוש`
 }
 
 export function buildOrderInquiryText(orderShortId: string): string {

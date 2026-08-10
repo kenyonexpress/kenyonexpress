@@ -1,10 +1,35 @@
--- PENDING: revoke_anon_writes
--- Defence in depth above RLS. NOT APPLIED. Do not run without reading the
--- "before you run this" section at the bottom.
+-- 111_revoke_anon_writes
+-- Defence in depth above RLS.
 --
--- Filename follows the convention already in this directory: the one other
--- unapplied file is PENDING-money-integer-fix.sql. There is no
--- migrations/pending/ directory in this repo.
+-- APPLIED to production 2026-08-10 on Ofir's explicit approval, through MCP
+-- apply_migration. Renamed from PENDING-revoke_anon_writes.sql at that point.
+--
+-- MEASURED AFTER APPLYING, not assumed:
+--   * anon grants: SELECT on 46 tables, INSERT/UPDATE/DELETE on exactly 1
+--     (carts). No TRUNCATE, REFERENCES or TRIGGER row at all -- which is the
+--     "expected after" at the bottom of this file, met exactly.
+--   * guest cart: insert + update + delete as `anon` on carts all succeeded
+--     inside a rolled-back DO block, with request.cookies set the way PostgREST
+--     sets it. The policy below is untouched; this file changes grants only.
+--
+-- ONE THING THIS DID NOT ACHIEVE, and it is a real residual gap.
+-- Section 4 tries to close default privileges for BOTH creating roles. The
+-- connection MCP applies migrations through runs as `postgres`, and a role may
+-- alter only its OWN default privileges, so the supabase_admin branch failed
+-- with 42501. On the first attempt that error rolled the ENTIRE migration back
+-- (verified: grants were still 46x7 afterwards), so each branch is now wrapped
+-- in its own exception handler and allowed to fail without taking the revokes
+-- with it.
+--
+-- Measured state of pg_default_acl for schema public after applying:
+--   for postgres        -> anon=rm/postgres          (writes revoked, good)
+--   for supabase_admin  -> anon=arwdDxtm/supabase_admin  (UNCHANGED)
+--
+-- So a table created by `supabase_admin` -- that is, through the Supabase
+-- dashboard or the CLI, rather than through a migration run as postgres --
+-- still hands anon the full stock grant, and nothing reports it. Closing that
+-- needs a connection with more privilege than MCP has. Until then: after
+-- creating any table from the dashboard, re-run the revokes in section 2.
 --
 --
 -- WHAT IS TRUE TODAY, MEASURED AND NOT ASSUMED
@@ -83,19 +108,29 @@ grant insert, update, delete on public.carts to anon;
 --    table created by the dashboard/CLI and a table created by a migration do
 --    not necessarily have the same owner. Naming a role that does not exist
 --    raises an error rather than being skipped, so each is guarded.
+--    Each branch carries its OWN exception handler rather than an existence
+--    check. The role existing was never the failure mode: `supabase_admin`
+--    exists and the statement still fails with 42501, because a role may alter
+--    only its own default privileges. Without these handlers that one error
+--    rolls back the revokes above -- which is exactly what happened on the
+--    first apply attempt.
 do $$
 begin
-  if exists (select 1 from pg_roles where rolname = 'postgres') then
+  begin
     execute 'alter default privileges for role postgres in schema public
              revoke insert, update, delete, truncate, references, trigger
              on tables from anon';
-  end if;
+  exception when insufficient_privilege then
+    raise notice 'default privileges for postgres not changed: %', sqlerrm;
+  end;
 
-  if exists (select 1 from pg_roles where rolname = 'supabase_admin') then
+  begin
     execute 'alter default privileges for role supabase_admin in schema public
              revoke insert, update, delete, truncate, references, trigger
              on tables from anon';
-  end if;
+  exception when insufficient_privilege then
+    raise notice 'default privileges for supabase_admin not changed: %', sqlerrm;
+  end;
 end
 $$;
 

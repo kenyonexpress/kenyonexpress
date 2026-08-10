@@ -102,8 +102,65 @@ export function supplierLocation(supplier: SupplierLocationInput | null): Suppli
   return { coordinates: null, city: null, precision: 'unknown' }
 }
 
-export interface Locatable {
+/**
+ * A product row that may carry its own location.
+ *
+ * Every field is optional and every one is absent today: `migrations/pending/
+ * 002-products-geo.sql` adds `products.city`, `.latitude` and `.longitude` and
+ * has NOT been applied, so no query selects them and no row has them. They are
+ * typed optional rather than added to `Product` for the same reason
+ * `readRecurringProductFields` exists - `src/types/database.ts` is generated
+ * from production, and widening it to a schema that does not exist turns a
+ * missing column into `undefined` several frames from the cause.
+ *
+ * Selecting these columns before the migration lands is the failure STATE.md
+ * recorded for [67]: PostgREST answers 42703 and the WHOLE category query
+ * fails, emptying every category grid. So nothing selects them yet; this
+ * interface is what starts working, per field, the moment they exist.
+ */
+export interface ProductLocationOverride {
+  city?: string | null
+  latitude?: number | null
+  longitude?: number | null
+}
+
+export interface Locatable extends ProductLocationOverride {
   supplier?: SupplierLocationInput | null
+}
+
+/**
+ * Where a deal actually is: the product's own location when it has one, the
+ * supplier's otherwise.
+ *
+ * The override is per FIELD, matching the COALESCE the migration documents. A
+ * product may name a branch city without anyone having typed a coordinate for
+ * it, and in that case the city must win over the supplier's registered
+ * coordinate - otherwise a spa weekend sold in Eilat by a Tel Aviv business
+ * sorts as a Tel Aviv deal because the more precise source was the wrong one.
+ * Precision does not outrank specificity.
+ */
+export function productLocation(item: Locatable | null): SupplierLocation {
+  const supplier = item?.supplier ?? null
+
+  const city = item?.city ?? supplier?.city ?? null
+
+  // A coordinate is taken as a pair from ONE source. Mixing a product latitude
+  // with a supplier longitude would build a point that exists on neither.
+  const hasOwnPoint = item?.latitude != null && item?.longitude != null
+  const latitude = hasOwnPoint ? item?.latitude : supplier?.latitude
+  const longitude = hasOwnPoint ? item?.longitude : supplier?.longitude
+
+  // When the product names a city of its own, an inherited SUPPLIER coordinate
+  // must not answer: it points at the other city. The product's own coordinate
+  // still does.
+  const cityIsOverridden = Boolean(item?.city) && item?.city !== supplier?.city
+  const useInheritedPoint = !cityIsOverridden || hasOwnPoint
+
+  return supplierLocation({
+    city,
+    latitude: useInheritedPoint ? latitude : null,
+    longitude: useInheritedPoint ? longitude : null,
+  })
 }
 
 export type WithDistance<T> = T & {
@@ -124,7 +181,7 @@ export function withDistances<T extends Locatable>(
   origin: Coordinates | null,
 ): WithDistance<T>[] {
   return items.map((item) => {
-    const location = supplierLocation(item.supplier ?? null)
+    const location = productLocation(item)
     return {
       ...item,
       cityName: location.city?.name ?? null,
@@ -168,7 +225,7 @@ export function filterByCity<T extends Locatable>(
   citySlug: string | null,
 ): T[] {
   if (!citySlug) return [...items]
-  return items.filter((item) => supplierLocation(item.supplier ?? null).city?.slug === citySlug)
+  return items.filter((item) => productLocation(item).city?.slug === citySlug)
 }
 
 /**

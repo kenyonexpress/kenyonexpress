@@ -6,10 +6,12 @@ import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { ilsToAgorot } from '@/lib/commerce/money'
 import { assertPublishable, buildProductMoneyWrite } from '@/lib/commerce/product-money'
 import { recurringSchemaError } from '@/lib/commerce/recurring-schema-error'
+import { whatsappSchemaError } from '@/lib/commerce/whatsapp-schema-error'
 import { IMAGE_HOST_ERROR, isAllowedImageUrl } from '@/lib/images/remote-hosts'
 import { withActionContext } from '@/lib/observability/action-context'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import type { PostgrestError } from '@supabase/supabase-js'
 import { revalidatePath, updateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
@@ -83,6 +85,7 @@ const schema = z
     max_per_order: z.coerce.number().int().min(1).nullable().optional(),
     // logistics (048)
     requires_shipping: z.coerce.boolean().default(true),
+    whatsapp_enabled: z.coerce.boolean().default(false),
     weight_grams: z.coerce.number().int().min(0).nullable().optional(),
     length_cm: z.coerce.number().min(0).nullable().optional(),
     width_cm: z.coerce.number().min(0).nullable().optional(),
@@ -210,6 +213,7 @@ async function runUpsertProduct(
     low_stock_threshold: formData.get('low_stock_threshold') || 5,
     max_per_order: formData.get('max_per_order') || null,
     requires_shipping: formData.get('requires_shipping') === 'true',
+    whatsapp_enabled: formData.get('whatsapp_enabled') === 'true',
     weight_grams: formData.get('weight_grams') || null,
     length_cm: formData.get('length_cm') || null,
     width_cm: formData.get('width_cm') || null,
@@ -283,8 +287,47 @@ async function runUpsertProduct(
     recurring_amount_ils: recurringAmountIls,
     billing_interval: billingInterval,
     billing_interval_count: billingIntervalCount,
+    whatsapp_enabled: whatsappEnabled,
     ...fields
   } = parsed.data
+
+  /**
+   * The row always carries `whatsapp_enabled`; the WRITE drops it if the column
+   * turns out not to exist yet.
+   *
+   * The column arrives with `migrations/pending/003-products-whatsapp-enabled
+   * .sql`, which is not applied. Three cheaper-looking options were rejected:
+   *
+   *  - Always send it. PostgREST answers PGRST204 for EVERY product an admin
+   *    edits: the whole admin broken by a feature nobody switched on.
+   *  - Send it only when ticked. Then un-ticking a previously ticked box sends
+   *    nothing and the flag silently stays on -- the one direction that matters,
+   *    because it is how a supplier withdraws consent.
+   *  - Read the row first to see whether it has the column. An extra round trip
+   *    on every save, and the read itself fails on the un-migrated database.
+   *
+   * So the write is attempted with the column and retried without it, once,
+   * only on the missing-column error. On a migrated database there is no retry
+   * and no extra call. On an un-migrated one an untouched toggle costs one
+   * retry and saves correctly, while a DELIBERATELY ticked box is reported
+   * through `whatsappSchemaError` with the filename, rather than being written
+   * nowhere and reported as success.
+   */
+  const whatsappFields = { whatsapp_enabled: whatsappEnabled }
+
+  async function writeWithWhatsAppFallback<T>(
+    run: (
+      extra: Record<string, unknown>,
+    ) => Promise<{ data: T | null; error: PostgrestError | null }>,
+  ) {
+    const first = await run(whatsappFields)
+    if (!first.error) return first
+
+    // Only the missing-column case is retried, and only when the admin did not
+    // ask for the feature. Anything else is a real error and must surface.
+    if (whatsappEnabled || whatsappSchemaError(first.error.message) === null) return first
+    return run({})
+  }
 
   // Shekels to agorot, once, at the edge, through money.ts. Nothing downstream
   // ever sees a float on this path.
@@ -353,18 +396,39 @@ async function runUpsertProduct(
   let productId = id
 
   if (id) {
-    const { error } = await supabase
-      .from('products')
-      .update({ ...fields, ...money.fields, images })
-      .eq('id', id)
-    if (error) return { error: recurringSchemaError(error.message) ?? error.message }
+    const { error } = await writeWithWhatsAppFallback(async (extra) =>
+      supabase
+        .from('products')
+        .update({ ...fields, ...money.fields, ...extra, images })
+        .eq('id', id)
+        .select('id')
+        .maybeSingle(),
+    )
+    if (error) {
+      return {
+        error:
+          whatsappSchemaError(error.message) ??
+          recurringSchemaError(error.message) ??
+          error.message,
+      }
+    }
   } else {
-    const { data, error } = await supabase
-      .from('products')
-      .insert({ ...fields, ...money.fields, images, created_by: user!.id })
-      .select('id')
-      .single()
-    if (error) return { error: recurringSchemaError(error.message) ?? error.message }
+    const { data, error } = await writeWithWhatsAppFallback<{ id: string }>(async (extra) =>
+      supabase
+        .from('products')
+        .insert({ ...fields, ...money.fields, ...extra, images, created_by: user!.id })
+        .select('id')
+        .single(),
+    )
+    if (error || !data) {
+      return {
+        error:
+          whatsappSchemaError(error?.message) ??
+          recurringSchemaError(error?.message) ??
+          error?.message ??
+          'שמירת המוצר נכשלה',
+      }
+    }
     productId = data.id
   }
 

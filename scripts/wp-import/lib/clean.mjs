@@ -219,9 +219,48 @@ export function applyStockStatus(status, stockStatusRaw) {
   return status
 }
 
-/** Map a product onto the product_type enum using the configured category sets. */
-export function mapType(categorySlugs, { couponCategorySlugs, serviceCategorySlugs }, meta = {}) {
+/**
+ * WooCommerce Subscriptions product types, and the meta it writes alongside
+ * them. Either signal alone is enough: a `variable-subscription` parent carries
+ * the type but keeps the price on its variations, and an extension that only
+ * half-migrated leaves the meta behind on a `simple` row.
+ */
+const WOO_SUBSCRIPTION_TYPES = new Set(['subscription', 'variable-subscription'])
+const WOO_SUBSCRIPTION_META = ['_subscription_price', '_subscription_period']
+
+/**
+ * Map a product onto the product_type enum using the configured category sets.
+ *
+ * `recurring` is checked FIRST, ahead of every category rule, because it is the
+ * only branch where being wrong charges a card on a schedule. Measured against
+ * `data-import/wp-backup/kenyonexpress-wxr-2026-07-29.xml` on 2026-08-10, the
+ * export holds 47 `simple` and 1 `variable` product and not one
+ * `_subscription_*` meta key, so today this branch never fires. It exists
+ * because of what happens when it should have: without it a WooCommerce
+ * Subscriptions row falls through to `physical` and a monthly subscription is
+ * sold, once, as a boxed item that someone then expects to post. Nothing
+ * downstream would have caught it -- the row has a title, a price and an image,
+ * so every gate in `emit-missing-products.mjs` passes it.
+ *
+ * The caller is responsible for refusing to WRITE a `recurring` row until
+ * PENDING-109 adds the enum member; see the skip in `emit-missing-products.mjs`.
+ */
+export function mapType(
+  categorySlugs,
+  { couponCategorySlugs, serviceCategorySlugs },
+  meta = {},
+  productTypeRaw = null,
+) {
   const slugs = new Set(categorySlugs || [])
+
+  const wooType = String(productTypeRaw ?? '')
+    .trim()
+    .toLowerCase()
+  if (WOO_SUBSCRIPTION_TYPES.has(wooType)) return 'recurring'
+  if (WOO_SUBSCRIPTION_META.some((key) => meta[key] !== undefined && meta[key] !== '')) {
+    return 'recurring'
+  }
+
   if (meta._is_coupon === 'yes' || meta._is_coupon === true) return 'coupon'
   if (couponCategorySlugs.some((s) => slugs.has(s))) return 'coupon'
   if (serviceCategorySlugs.some((s) => slugs.has(s))) return 'service'
