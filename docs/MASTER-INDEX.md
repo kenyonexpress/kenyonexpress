@@ -170,6 +170,7 @@ CONTRADICTIONS, כל מספר עמלה כאן הוא שריד") הוסר מכו�
 | `DESIGN-CHECKLIST-FINAL.md` | צ'קליסט עיצוב סופי מול electro home-v7 (6 דפים + tokens). | BINDING (10.08) |
 | `PHASE2-3-SPEC.md` | וריאנטים + SEO + תגיות; agorot; No Escrow. | BINDING (10.08) |
 | `LAUNCH-CHECKLIST.md` | עלייה לאוויר לפי בעלות: הקוד מול אופיר. | ACTIONABLE (07.08) |
+| `MARKETING-LAUNCH.md` | שיווק השקה: 10 דילים, לוח שבוע, טקסטים, UTM. | PLAN (10.08) |
 | `LAUNCH-VALIDATION.md` | אימות 10 דילי השקה: 10× missing מול suppliers. | ACTIONABLE (10.08) |
 | `launch-week-plan.md` | 10 דילי השקה + ספקים (מ-seed). | PLAN (10.08) |
 | `ROADMAP-V2.md` | שלבים ותלויות לחבילת docs. | QA-PASS (#10) |
@@ -217,3 +218,4 @@ docs/ROADMAP-V2.md
 | 2026-08-10 | MOBILE-APP + LAUNCH-VALIDATION re-verify + RUNBOOK-LAUNCH-DAY; אינדקס |
 | 2026-08-10 | `ARCHITECTURE-INTEGRATIONS.md` + ריענון MOBILE-APP; אינדקס |
 | 2026-08-10 | `ADMIN-USER-GUIDE.md` + `SUPPLIER-ONBOARDING.md`; אינדקס |
+| 2026-08-10 | `MARKETING-LAUNCH.md` + `ANALYTICS-SPEC.md`; אינדקס |
