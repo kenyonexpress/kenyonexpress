@@ -139,6 +139,7 @@ CONTRADICTIONS, כל מספר עמלה כאן הוא שריד") הוסר מכו�
 | `ARCHITECTURE-NOTIFICATIONS.md` | התראות: paid/redeem/supplier/cashback/abandon + QStash DLQ. | BINDING (10.08) |
 | `ARCHITECTURE-OBSERVABILITY.md` | Sentry, לוגים, התראות תפעול (מחייב). | QA-PASS (#9) |
 | `SLA-MONITORING.md` | יעדי זמינות + מי מקבל התראת Sentry/Vercel. | RUNBOOK (10.08) |
+| `INCIDENT-PLAYBOOKS.md` | 6 תקריות: Cardcom/Supabase/redeem/בית 500/env/bots. | RUNBOOK (10.08) |
 | `ARCHITECTURE-PERFORMANCE.md` | Owner: Performance Architect | DESIGN |
 | `ARCHITECTURE-PERSONAL-AREA.md` | אזור אישי (P7 מיושר ל-No Escrow ב-QA). | BINDING |
 | `ARCHITECTURE-PAYOUT-MECHANISM.md` | תשלום ספק פיזי: T+N + שער משלוח, באצ', העברה ידנית+CSV. | BINDING (10.08) |
@@ -233,3 +234,4 @@ docs/ROADMAP-V2.md
 | 2026-08-10 | `SLA-MONITORING.md` + `BACKUP-RECOVERY.md`; אינדקס |
 | 2026-08-10 | `CUSTOMER-SUPPORT-PLAYBOOK.md` + `FAQ-CONTENT.md`; אינדקס |
 | 2026-08-10 | `TESTING-STRATEGY.md` + `CODE-REVIEW-CHECKLIST.md`; אינדקס |
+| 2026-08-10 | `INCIDENT-PLAYBOOKS.md`; אינדקס |

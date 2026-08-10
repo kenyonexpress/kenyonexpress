@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-10 (TESTING-STRATEGY + CODE-REVIEW-CHECKLIST)
+Updated: 2026-08-10 (INCIDENT-PLAYBOOKS)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -9,13 +9,9 @@ ke-arch
 
 ## Last Completed
 ```
-docs/TESTING-STRATEGY.md
+docs/INCIDENT-PLAYBOOKS.md
 ```
-+
-```
-docs/CODE-REVIEW-CHECKLIST.md
-```
-+ אינדקס: פירמידה, 100% money/redeem, שערי merge; צ'קליסט agorot/RLS/RTL/compare.mjs
+: 6 תרחישים (Cardcom down, Supabase degraded, redeem ארצי, בית 500, דליפת env, bots על checkout) עם זיהוי / עצירת דימום / תקשורת / שחזור. אינדקס עודכן.
 
 ## In Progress
 nothing
