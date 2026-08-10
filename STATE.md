@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-10 (docs-only ke-arch: CARDCOM v2 No Escrow)
+Updated: 2026-08-10 (docs-only ke-arch: PRODUCT-FIELDS v2)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,11 +8,12 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-‏`docs/CARDCOM-ARCHITECTURE.md` מודל עסקי v2 (10.08):
+‏`docs/PRODUCT-FIELDS-RESEARCH.md` (נוצר מחדש / יישור v2 מ-10.08):
 
-- נמחקו סעיפי Escrow/held/שחרור אחרי מימוש לקופונים
-- קופון = `coupon_price` מלא נשאר בפלטפורמה; redeem טרמינלי; אין supplier payout
-- פיזי = פיצול לפי `platform_percent` + PAYOUT-MECHANISM
+- אין 5% קבוע; `platform_percent` דינמי פר מוצר
+- קופון = תשלום מלא בפלטפורמה; No Escrow; אין payout לספק
+- סכמה מומלצת: integer agorot (לא numeric שקלים)
+- `MASTER-INDEX.md` עודכן
 
 ## In Progress
 nothing
