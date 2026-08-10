@@ -2,7 +2,7 @@
 
 כמה זמן שומרים מה, ומה קורה במחיקת חשבון. מסמך הנדסי/תפעולי.
 
-Status: **DRAFT POLICY** · עודכן: 2026-08-10  
+Status: **DRAFT POLICY** · עודכן: 2026-08-11  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -17,6 +17,8 @@ docs/ARCHITECTURE-OBSERVABILITY.md
 docs/ARCHITECTURE-ACCOUNT-IDENTITY.md
 docs/ANALYTICS-SPEC.md
 docs/CONTRADICTIONS.md
+docs/BACKUP-RESTORE-RUNBOOK.md
+docs/INCIDENT-RESPONSE-RUNBOOK.md
 ```
 
 ---
@@ -127,6 +129,10 @@ Audit על ביצוע המחיקה: חובה.
 
 ---
 
+## 6.5 ראיות תקרית
+
+עותקי לוגים/ייצוא לצורך IR נשמרים ב-audit מאובטח מעבר ל-90 יום **רק** לתיק תקרית סגור עם תאריך מחיקה. לא להאריך את כל stream הלוגים.
+
 ## 7. Acceptance לפני "חי"
 
 - [ ] עו״ד אישר טבלת משכים + ניסוח ללקוח **[דורש עו״ד]**
@@ -142,3 +148,4 @@ Audit על ביצוע המחיקה: חובה.
 | תאריך | שינוי |
 |---|---|
 | 2026-08-10 | טיוטה: 7ש׳ הזמנות, 90י׳ לוגים, 30י׳ עגלות, אנונימיזציה, עוגיות; סימון עו״ד |
+| 2026-08-11 | קישור ל-BACKUP-RESTORE / IR; רענון תאריך |
