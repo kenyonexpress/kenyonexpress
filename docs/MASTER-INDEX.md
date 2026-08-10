@@ -203,6 +203,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `ARCHITECTURE-SEASONAL-CAMPAIGNS.md` | חגים / בזק (מחייב). | QA-PASS (#18) |
 | `SEASONAL-CAMPAIGNS.md` | באנרים, קולקציות, countdown. | PLAN (10.08) |
 | `MARKETING-LAUNCH.md` | שיווק השקה + UTM. | PLAN (10.08) |
+| `MARKETING-LAUNCH-PLAN.md` | תוכנית השקה שיווקית: קהל, תקציב, שערי עצירה. | PLAN (11.08) |
 | `ARCHITECTURE-NOTIFICATIONS.md` | paid/redeem/abandon + DLQ. | BINDING (10.08) |
 | `WHATSAPP-BUSINESS-SETUP.md` | הקמת WhatsApp Business API + תבניות. | GUIDE (10.08) |
 | `ARCHITECTURE-NOTIFICATIONS-MARKETING.md` | שיווק התראות. | DESIGN |
