@@ -16,11 +16,15 @@ docs/ARCHITECTURE-FRAUD-PREVENTION.md
 docs/ARCHITECTURE-CUSTOMER-SUPPORT.md
 docs/DISPUTE-RESOLUTION.md
 docs/FEATURED-DEALS-PRICING.md
+docs/SUPPORT-SLA-POLICY.md
+docs/INCIDENT-PLAYBOOKS.md
 docs/V2-VISION.md
 docs/CONTRADICTIONS.md
 ```
 
 עקרון: איכות ≠ עמלה. `platform_percent` נשאר פר מוצר. תמריץ חשיפה הוא **boost** נפרד, לא הנחת עמלה אוטומטית.
+
+כשל סריקה ארצי (לא ספק בודד): ראה INCIDENT-PLAYBOOKS; לא להוריד ציון לכל הספקים אוטומטית.
 
 ---
 
@@ -110,3 +114,4 @@ docs/FEATURED-DEALS-PRICING.md
 | תאריך | שינוי |
 |---|---|
 | 2026-08-10 | תוכנית איכות ראשונית + boost חינם |
+| 2026-08-11 | קישור ל-SUPPORT-SLA-POLICY; הדגשת מדד redeem failures ארצי מול INCIDENT |
