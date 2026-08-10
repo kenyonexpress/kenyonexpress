@@ -59,6 +59,29 @@ export const newPasswordSchema = z
 
 export type LoginInput = z.infer<typeof loginSchema>
 export type SignupInput = z.infer<typeof signupSchema>
+/**
+ * The phone the customer typed, before normalisation. Kept permissive on
+ * purpose: the shape check that matters is `isSmsCapableIsraeli`, which knows
+ * about mobile prefixes, and duplicating a regex here would let the two
+ * disagree about what a valid number is.
+ */
+export const phoneOtpSchema = z.object({
+  phone: z.string().min(9, 'מספר טלפון נדרש').max(20, 'מספר טלפון לא תקין'),
+})
+
+export const phoneVerifySchema = z.object({
+  phone: z.string().min(9, 'מספר טלפון נדרש').max(20, 'מספר טלפון לא תקין'),
+  // Supabase issues six digits; the range is wider so a project configured for
+  // a different length does not fail here with a message about the wrong thing.
+  token: z
+    .string()
+    .trim()
+    .regex(/^\d{4,10}$/, 'הקוד מורכב מספרות בלבד'),
+})
+
+export type PhoneOtpInput = z.infer<typeof phoneOtpSchema>
+export type PhoneVerifyInput = z.infer<typeof phoneVerifySchema>
+
 export type MagicLinkInput = z.infer<typeof magicLinkSchema>
 export type PasswordResetInput = z.infer<typeof passwordResetSchema>
 export type NewPasswordInput = z.infer<typeof newPasswordSchema>

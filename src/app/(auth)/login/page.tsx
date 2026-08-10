@@ -1,3 +1,4 @@
+import { phoneAuthEnabled } from '@/lib/auth/phone-otp'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import LoginForm from './LoginForm'
@@ -27,5 +28,10 @@ async function LoginPageBody({
   searchParams: Promise<{ next?: string; error?: string; magic?: string }>
 }) {
   const { next, error, magic } = await searchParams
-  return <LoginForm next={next} callbackError={error} magic={magic} />
+  // Read on the server so the switch is one variable, not two that can
+  // disagree: a NEXT_PUBLIC copy would be inlined at build time and would keep
+  // showing the option after the provider was turned off.
+  return (
+    <LoginForm next={next} callbackError={error} magic={magic} phoneEnabled={phoneAuthEnabled()} />
+  )
 }

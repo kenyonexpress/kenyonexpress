@@ -89,8 +89,42 @@ export default function HomeScreen() {
   )
 }
 
+/**
+ * Sign-in, by email code or by SMS.
+ *
+ * THE PHONE OPTION IS BEHIND THE SAME FLAG AS THE WEBSITE'S. Supabase only
+ * sends an SMS when a provider is wired into the project, which is a dashboard
+ * action; showing the tab without one gives a customer a button that always
+ * fails. On the app the flag is `EXPO_PUBLIC_PHONE_AUTH_ENABLED`, which is
+ * baked into the bundle - so turning the provider off means shipping an update,
+ * and that is the trade for not making a network call before rendering a login
+ * screen.
+ *
+ * NORMALISATION IS DELIBERATELY DUPLICATED HERE and nowhere else in the app.
+ * The website's `toE164Israeli` is server code the bundle cannot import, and
+ * sending Supabase a local '0501234567' fails with "invalid phone" rather than
+ * with anything a customer could act on.
+ */
+const PHONE_AUTH_ENABLED =
+  process.env.EXPO_PUBLIC_PHONE_AUTH_ENABLED === 'true' ||
+  process.env.EXPO_PUBLIC_PHONE_AUTH_ENABLED === '1'
+
+function toE164Israeli(raw: string): string | null {
+  const digits = raw.replace(/\D/g, '')
+  if (digits.startsWith('972')) {
+    const rest = digits.slice(3).replace(/^0/, '')
+    return rest.length >= 8 && rest.length <= 9 ? `+972${rest}` : null
+  }
+  if (digits.startsWith('0') && digits.length >= 9 && digits.length <= 10) {
+    return `+972${digits.slice(1)}`
+  }
+  return null
+}
+
 function SignIn() {
+  const [mode, setMode] = useState<'email' | 'phone'>('email')
   const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [code, setCode] = useState('')
   const [sent, setSent] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -99,6 +133,23 @@ function SignIn() {
   async function sendCode() {
     setBusy(true)
     setError(null)
+
+    if (mode === 'phone') {
+      const e164 = toE164Israeli(phone)
+      // Mobile only: a landline is accepted by the provider and then the SMS is
+      // simply never delivered, which looks like our bug.
+      if (!e164 || !e164.startsWith('+9725') || e164.length !== 13) {
+        setBusy(false)
+        setError('יש להזין מספר טלפון נייד ישראלי (05X).')
+        return
+      }
+      const { error: smsError } = await supabase.auth.signInWithOtp({ phone: e164 })
+      setBusy(false)
+      if (smsError) setError('לא הצלחנו לשלוח קוד. נסו שוב בעוד רגע.')
+      else setSent(true)
+      return
+    }
+
     const { error: sendError } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       // No account is created from the app. Sign-up runs on the website, where
@@ -113,11 +164,13 @@ function SignIn() {
   async function verify() {
     setBusy(true)
     setError(null)
-    const { error: verifyError } = await supabase.auth.verifyOtp({
-      email: email.trim(),
-      token: code.trim(),
-      type: 'email',
-    })
+
+    const e164 = mode === 'phone' ? toE164Israeli(phone) : null
+    const { error: verifyError } = await supabase.auth.verifyOtp(
+      mode === 'phone'
+        ? { phone: e164 as string, token: code.trim(), type: 'sms' }
+        : { email: email.trim(), token: code.trim(), type: 'email' },
+    )
     setBusy(false)
     if (verifyError) {
       setError('הקוד שגוי או שפג תוקפו.')
@@ -132,29 +185,64 @@ function SignIn() {
   return (
     <ScrollView contentContainerStyle={styles.page}>
       <Text style={styles.title}>התחברות</Text>
-      <Text style={styles.body}>נשלח קוד בן שש ספרות לכתובת המייל שלך.</Text>
 
-      <TextInput
-        style={styles.input}
-        value={email}
-        onChangeText={setEmail}
-        placeholder="כתובת מייל"
-        autoCapitalize="none"
-        keyboardType="email-address"
-        textContentType="emailAddress"
-        editable={!sent}
-      />
+      {PHONE_AUTH_ENABLED && !sent ? (
+        <View style={styles.tabs}>
+          <Pressable
+            style={[styles.tab, mode === 'email' && styles.tabActive]}
+            onPress={() => setMode('email')}
+          >
+            <Text style={styles.tabText}>מייל</Text>
+          </Pressable>
+          <Pressable
+            style={[styles.tab, mode === 'phone' && styles.tabActive]}
+            onPress={() => setMode('phone')}
+          >
+            <Text style={styles.tabText}>SMS</Text>
+          </Pressable>
+        </View>
+      ) : null}
+
+      <Text style={styles.body}>
+        {mode === 'phone'
+          ? 'נשלח קוד ב-SMS למספר שלך.'
+          : 'נשלח קוד בן שש ספרות לכתובת המייל שלך.'}
+      </Text>
+
+      {mode === 'phone' ? (
+        <TextInput
+          style={styles.input}
+          value={phone}
+          onChangeText={setPhone}
+          placeholder="050-1234567"
+          keyboardType="phone-pad"
+          textContentType="telephoneNumber"
+          editable={!sent}
+        />
+      ) : (
+        <TextInput
+          style={styles.input}
+          value={email}
+          onChangeText={setEmail}
+          placeholder="כתובת מייל"
+          autoCapitalize="none"
+          keyboardType="email-address"
+          textContentType="emailAddress"
+          editable={!sent}
+        />
+      )}
 
       {sent ? (
         <TextInput
           style={styles.input}
           value={code}
           onChangeText={setCode}
-          placeholder="קוד מהמייל"
+          placeholder={mode === 'phone' ? 'הקוד מה-SMS' : 'קוד מהמייל'}
           keyboardType="number-pad"
-          // Lets iOS offer the code straight from the notification banner.
+          // Lets iOS offer the code straight from the SMS or mail banner,
+          // which is the difference between one tap and switching apps.
           textContentType="oneTimeCode"
-          maxLength={8}
+          maxLength={10}
         />
       ) : null}
 
@@ -162,7 +250,14 @@ function SignIn() {
 
       <Pressable
         style={[styles.button, busy && styles.buttonBusy]}
-        disabled={busy || (sent ? code.length < 4 : email.trim().length < 5)}
+        disabled={
+          busy ||
+          (sent
+            ? code.length < 4
+            : mode === 'phone'
+              ? phone.trim().length < 9
+              : email.trim().length < 5)
+        }
         onPress={sent ? verify : sendCode}
       >
         <Text style={styles.buttonText}>{sent ? 'אישור' : 'שליחת קוד'}</Text>
@@ -170,7 +265,9 @@ function SignIn() {
 
       {sent ? (
         <Pressable style={styles.link} onPress={() => setSent(false)}>
-          <Text style={styles.linkText}>שינוי כתובת מייל</Text>
+          <Text style={styles.linkText}>
+            {mode === 'phone' ? 'שינוי מספר טלפון' : 'שינוי כתובת מייל'}
+          </Text>
         </Pressable>
       ) : null}
     </ScrollView>
@@ -211,4 +308,15 @@ const styles = StyleSheet.create({
   link: { alignItems: 'center', paddingVertical: 10 },
   linkText: { fontSize: 14, color: '#4b5563' },
   error: { color: '#b91c1c', fontSize: 14, textAlign: 'right', writingDirection: 'rtl' },
+  tabs: { flexDirection: 'row', gap: 8 },
+  tab: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    alignItems: 'center',
+  },
+  tabActive: { backgroundColor: '#fef3c7', borderColor: '#f5c518' },
+  tabText: { fontSize: 15, fontWeight: '600', color: '#1a1a1a' },
 })

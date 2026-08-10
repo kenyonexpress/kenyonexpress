@@ -4,8 +4,16 @@ import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 
 import { passwordResetResult } from '@/lib/auth/password-reset'
+import { decidePhoneMerge } from '@/lib/auth/phone-merge'
+import {
+  isSmsCapableIsraeli,
+  phoneAuthEnabled,
+  phoneAuthErrorHebrew,
+  toE164Israeli,
+} from '@/lib/auth/phone-otp'
 import { safeNextPath } from '@/lib/auth/safe-next'
 import { GUEST_SESSION_COOKIE, getGuestSessionId } from '@/lib/cart/guest-session'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
 import {
@@ -13,6 +21,8 @@ import {
   magicLinkSchema,
   newPasswordSchema,
   passwordResetSchema,
+  phoneOtpSchema,
+  phoneVerifySchema,
   signupSchema,
 } from '@/lib/validations/auth'
 import { mergeGuestCart } from '@/server/actions/cart'
@@ -137,6 +147,158 @@ async function runSendMagicLink(_: AuthState, formData: FormData): Promise<AuthS
 }
 
 // ──────────────────────────────────────────────
+// Phone OTP (SMS)
+// ──────────────────────────────────────────────
+
+/**
+ * Attaches the number to the account that already carries it in `profiles`,
+ * BEFORE the SMS goes out, so a successful code opens the customer's real
+ * account instead of minting an empty new one.
+ *
+ * The whole decision is in `lib/auth/phone-merge.ts` and is tested there; this
+ * only fetches what that function needs and performs what it decided. It never
+ * throws: a merge that could not be attempted must still let the customer
+ * receive a code and sign in - worst case into a new account, which is what
+ * would have happened without any of this.
+ */
+async function attachPhoneToExistingAccount(e164: string): Promise<void> {
+  const admin = createAdminClient()
+
+  // `profiles.phone` holds whatever the signup form was given - '050-1234567',
+  // '+972 50 123 4567', '0501234567' - so the comparison has to be on the
+  // NORMALISED value, which SQL cannot do. The suffix filter narrows the rows
+  // the database returns (the last seven digits are identical in every one of
+  // those spellings); the exact match is then made in TypeScript by the same
+  // normaliser the rest of the flow uses. Fetching every profile with a phone
+  // and filtering here would work today and stop working at scale.
+  const suffix = e164.slice(-7)
+  const { data: profiles } = await admin
+    .from('profiles')
+    .select('id, phone, email')
+    .ilike('phone', `%${suffix}`)
+    .limit(50)
+  const candidates = (profiles ?? []).filter((row) => toE164Israeli(row.phone) === e164)
+
+  let authUser: { id: string; phone: string | null } | null = null
+  if (candidates.length === 1) {
+    const sole = candidates[0]
+    if (sole) {
+      const { data: found } = await admin.auth.admin.getUserById(sole.id)
+      // Supabase stores the phone WITHOUT the leading '+'. Comparing the two
+      // forms directly is how this silently decides every account already has a
+      // different phone and never merges anything.
+      authUser = found?.user
+        ? { id: found.user.id, phone: found.user.phone ? `+${found.user.phone}` : null }
+        : null
+    }
+  }
+
+  // Deliberately NOT a scan of the user table for this number. Paging through
+  // `listUsers` to find out whether somebody else holds it is both unbounded
+  // and pointless: `phone` is unique in `auth.users`, so an attach onto a taken
+  // number fails with a constraint error, which is logged below. The check that
+  // is worth making locally is the idempotent one - this account already has
+  // it, so there is nothing to do.
+  const alreadyAttachedToSomeone = authUser?.phone === e164
+
+  const decision = decidePhoneMerge({ e164, candidates, authUser, alreadyAttachedToSomeone })
+  if (decision.action !== 'attach') {
+    log.info('auth.phone_merge_skipped', { reason: decision.reason })
+    return
+  }
+
+  const { error } = await admin.auth.admin.updateUserById(decision.userId, {
+    phone: e164,
+    // Confirmed here because the OTP that follows is what actually proves
+    // possession; leaving it unconfirmed would make Supabase demand a second
+    // verification of the same number.
+    phone_confirm: true,
+  })
+  if (error) log.error('auth.phone_merge_failed', { reason: error.message })
+}
+
+async function runSendPhoneOtp(_: AuthState, formData: FormData): Promise<AuthState> {
+  if (!phoneAuthEnabled()) return { error: 'כניסה בטלפון אינה זמינה כרגע' }
+
+  const ip = await getClientIp()
+  // Every SMS costs money and lands on somebody's handset. Tighter than the
+  // magic link's five because an unwanted email is ignored and an unwanted text
+  // at 2am is a complaint.
+  const allowed = await checkRateLimit(`phone-otp:${ip}`, 5, 3600)
+  if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
+
+  const parsed = phoneOtpSchema.safeParse({ phone: formData.get('phone') })
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
+
+  const e164 = toE164Israeli(parsed.data.phone)
+  if (!e164 || !isSmsCapableIsraeli(parsed.data.phone)) {
+    return { error: 'יש להזין מספר טלפון נייד ישראלי (05X)' }
+  }
+
+  // Per-number as well as per-IP: the IP ceiling alone lets one attacker on a
+  // rotating connection text the same person repeatedly.
+  const numberAllowed = await checkRateLimit(`phone-otp-number:${e164}`, 5, 3600)
+  if (!numberAllowed) return { error: 'יותר מדי בקשות למספר הזה — נסו שוב בעוד שעה' }
+
+  await attachPhoneToExistingAccount(e164)
+
+  const supabase = await createClient()
+  const { error } = await supabase.auth.signInWithOtp({ phone: e164 })
+  if (error) {
+    log.error('auth.phone_otp_send_failed', { reason: error.message })
+    return { error: phoneAuthErrorHebrew(error.message) }
+  }
+
+  return { success: e164 }
+}
+
+async function runVerifyPhoneOtp(_: AuthState, formData: FormData): Promise<AuthState> {
+  if (!phoneAuthEnabled()) return { error: 'כניסה בטלפון אינה זמינה כרגע' }
+
+  const ip = await getClientIp()
+  // Six digits is a million codes; without a ceiling here the SMS gate is
+  // decorative. Twenty an hour leaves room for fat fingers and nothing else.
+  const allowed = await checkRateLimit(`phone-verify:${ip}`, 20, 3600)
+  if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
+
+  const parsed = phoneVerifySchema.safeParse({
+    phone: formData.get('phone'),
+    token: formData.get('token'),
+  })
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
+
+  const e164 = toE164Israeli(parsed.data.phone)
+  if (!e164) return { error: 'מספר הטלפון אינו תקין' }
+
+  const supabase = await createClient()
+  const { data, error } = await supabase.auth.verifyOtp({
+    phone: e164,
+    token: parsed.data.token,
+    type: 'sms',
+  })
+  if (error) return { error: phoneAuthErrorHebrew(error.message) }
+
+  const sessionId = await getGuestSessionId()
+  if (data.user && sessionId) {
+    await mergeGuestCart(supabase, data.user.id, sessionId)
+    const cookieStore = await cookies()
+    cookieStore.delete(GUEST_SESSION_COOKIE)
+  }
+
+  // A phone-only account has no profile row, because the trigger that creates
+  // one keys off the email. Written here so the rest of the site - which reads
+  // `profiles`, not `auth.users` - can see the customer at all.
+  if (data.user) {
+    const admin = createAdminClient()
+    await admin
+      .from('profiles')
+      .upsert({ id: data.user.id, phone: e164 }, { onConflict: 'id', ignoreDuplicates: true })
+  }
+
+  redirect(safeNext(formData.get('next')))
+}
+
+// ──────────────────────────────────────────────
 // Sign out (current device)
 // ──────────────────────────────────────────────
 async function runSignOut() {
@@ -206,6 +368,14 @@ export async function signUpWithEmail(_: AuthState, formData: FormData): Promise
 
 export async function sendMagicLink(_: AuthState, formData: FormData): Promise<AuthState> {
   return withActionContext('auth.send_magic_link', () => runSendMagicLink(_, formData))
+}
+
+export async function sendPhoneOtp(_: AuthState, formData: FormData): Promise<AuthState> {
+  return withActionContext('auth.send_phone_otp', () => runSendPhoneOtp(_, formData))
+}
+
+export async function verifyPhoneOtp(_: AuthState, formData: FormData): Promise<AuthState> {
+  return withActionContext('auth.verify_phone_otp', () => runVerifyPhoneOtp(_, formData))
 }
 
 export async function signOut() {
