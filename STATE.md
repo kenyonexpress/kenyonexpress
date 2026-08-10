@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-10 (docs-only ke-arch: MARKETING-LAUNCH + ANALYTICS-SPEC)
+Updated: 2026-08-10 (docs companions + Vercel env audit blocked)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,20 +8,27 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-‏`docs/MARKETING-LAUNCH.md` + `docs/ANALYTICS-SPEC.md`:
+מסמכי companion חדשים + אינדקס:
 
-- שיווק השקה: 10 דילים, לוח שבוע ראשון, טקסטים עברית, UTM
-- מדידה: view_product / add_to_cart / purchase / redeem + GA4/Meta + Consent Mode
-- `MASTER-INDEX.md` עודכן
+- `docs/API-PUBLIC-SPEC.md`
+- `docs/SEASONAL-CAMPAIGNS.md` + `docs/REFERRAL-PROGRAM.md`
+- `docs/SLA-MONITORING.md` + `docs/BACKUP-RECOVERY.md`
+- `docs/CUSTOMER-SUPPORT-PLAYBOOK.md` + `docs/FAQ-CONTENT.md`
+- `docs/MASTER-INDEX.md` עודכן (companion מול ARCHITECTURE-*, בלי כפילות מחייבת)
+
+Vercel env audit (read-only): נחסם בלוגין GitHub/Vercel. דוח:
+`refs/env-audit.md`
+(שמות מ-`.env.example` בלבד; סטטוס Preview אחרון: unknown)
 
 ## In Progress
 nothing
 
 ## Blocking Issues
-השקה: 10 דילי seed עדיין missing מול `suppliers` בפרוד
+- השקה: 10 דילי seed עדיין missing מול `suppliers` בפרוד
+- Vercel dashboard: אין סשן מחובר (נדרש login ידני לביקורת env/deployments)
 
 ## Next Task
-אימות דילים ב-LAUNCH-VALIDATION לפני פרסום ממומן; באנר עוגיות חי
+אחרי login ל-Vercel: להשלים טבלת שמות env + צילום Preview אחרון
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch

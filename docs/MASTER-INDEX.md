@@ -110,16 +110,20 @@ CONTRADICTIONS, כל מספר עמלה כאן הוא שריד") הוסר מכו�
 | `ARCHITECTURE-ANALYTICS.md` | משפך מצפייה בדיל עד מימוש. PostHog + GA4. | QA-PASS (#2) |
 | `ANALYTICS-SPEC.md` | אירועי מדידה + GA4/Meta Pixel + Consent Mode. | BINDING (10.08) |
 | `ARCHITECTURE-API-CONTRACTS.md` | חוזי API; בלי ברירת מחדל לעמלה בשום סכמה. | QA-PASS (06.08) |
+| `API-PUBLIC-SPEC.md` | API ציבורי עתידי לספקים: sales read + inventory, API keys, rate limits. | DESIGN (10.08) |
 | `ARCHITECTURE-APP-STORE-LAUNCH.md` | הכנה לפרסום ב-App Store ו-Google Play. | QA-PASS (#15) |
 | `ARCHITECTURE-B2B-SALES.md` | מכירת קופונים בכמות לחברות וועדי עובדים. | QA-PASS (#17) |
-| `ARCHITECTURE-BACKUP-DR.md` | גיבויים, PITR, ושחזור Supabase. | QA-PASS (#14) |
+| `ARCHITECTURE-BACKUP-DR.md` | גיבויים, PITR, ושחזור Supabase (מחייב). | QA-PASS (#14) |
+| `BACKUP-RECOVERY.md` | מדיניות תפעול RPO/RTO + תרגול; מעל BACKUP-DR (לא כפילות מחייבת). | RUNBOOK (10.08) |
 | `ARCHITECTURE-CASHBACK-WALLET.md` | ארנק פנימי בלבד; ledger כפול-רישום באגורות. | BINDING |
 | `ARCHITECTURE-CATALOG-SEARCH-SEO.md` | קטלוג וחיפוש; דירוג בלי מרג'ין (יושר ל-SEARCH-UX). | QA-PASS (06.08) |
 | `ARCHITECTURE-CATEGORIES-TAXONOMY.md` | עץ קטגוריות לשוק הישראלי. | QA-PASS (#11) |
 | `ARCHITECTURE-COMMERCE.md` | כללי מסחר; C1-C10 משולבים. DDL עדיין בשקלים. | QA-PASS (06.08) |
 | `ARCHITECTURE-COUPON-REDEMPTION-UX.md` | מפרט UX מחייב למימוש קופון. | BINDING |
 | `ARCHITECTURE-COUPON-REDEMPTION.md` | Supplier coupon / voucher redemption (scan). | BINDING |
-| `ARCHITECTURE-CUSTOMER-SUPPORT.md` | פניות לקוח, מימוש, SLA. | QA-PASS (#13) |
+| `ARCHITECTURE-CUSTOMER-SUPPORT.md` | פניות לקוח, מימוש, SLA (מחייב). | QA-PASS (#13) |
+| `CUSTOMER-SUPPORT-PLAYBOOK.md` | תסריטי מענה בעברית (קופון/החזר/ספק/כפל/QR). | PLAYBOOK (10.08) |
+| `FAQ-CONTENT.md` | 20 שאלות נפוצות לעמוד FAQ. | CONTENT (10.08) |
 | `ARCHITECTURE-DATA-EXPORT-GDPR.md` | ייצוא ומחיקת נתוני משתמש. | QA-PASS (#19) |
 | `ARCHITECTURE-EMAIL-TEMPLATES.md` | תבניות RTL לכל אירוע קופון (Resend). | QA-PASS (#6) |
 | `ARCHITECTURE-FRAUD-PREVENTION.md` | מימוש כפול, QR, chargebacks, velocity. | BINDING |
@@ -133,17 +137,20 @@ CONTRADICTIONS, כל מספר עמלה כאן הוא שריד") הוסר מכו�
 | `ARCHITECTURE-MOBILE-SUPERAPP.md` | תכנון מחייב 2026-07-17. | DESIGN |
 | `ARCHITECTURE-NOTIFICATIONS-MARKETING.md` | מסמך תכנון שיווק. | DESIGN |
 | `ARCHITECTURE-NOTIFICATIONS.md` | התראות: paid/redeem/supplier/cashback/abandon + QStash DLQ. | BINDING (10.08) |
-| `ARCHITECTURE-OBSERVABILITY.md` | Sentry, לוגים, התראות תפעול. | QA-PASS (#9) |
+| `ARCHITECTURE-OBSERVABILITY.md` | Sentry, לוגים, התראות תפעול (מחייב). | QA-PASS (#9) |
+| `SLA-MONITORING.md` | יעדי זמינות + מי מקבל התראת Sentry/Vercel. | RUNBOOK (10.08) |
 | `ARCHITECTURE-PERFORMANCE.md` | Owner: Performance Architect | DESIGN |
 | `ARCHITECTURE-PERSONAL-AREA.md` | אזור אישי (P7 מיושר ל-No Escrow ב-QA). | BINDING |
 | `ARCHITECTURE-PAYOUT-MECHANISM.md` | תשלום ספק פיזי: T+N + שער משלוח, באצ', העברה ידנית+CSV. | BINDING (10.08) |
 | `ARCHITECTURE-PRICING-RULES.md` | platform_percent דינמי פר מוצר, בזק, הנחות. | QA-PASS (#12) |
 | `ARCHITECTURE-PRODUCTION-OPS.md` | תכנון תשתית. | DESIGN |
 | `ARCHITECTURE-PWA.md` | PWA: manifest, SW, push. | BINDING |
-| `ARCHITECTURE-REFERRAL.md` | חבר מביא חבר + קאשבק פנימי. | QA-PASS (#8) |
+| `ARCHITECTURE-REFERRAL.md` | חבר מביא חבר + קאשבק פנימי (מחייב). | QA-PASS (#8) |
+| `REFERRAL-PROGRAM.md` | שכבת מוצר/אנטי-fraud מעל REFERRAL. | PLAN (10.08) |
 | `ARCHITECTURE-SEARCH-UX.md` | Meilisearch, השלמות, טעויות כתיב. | QA-PASS (#4) |
 | `ARCHITECTURE-SEARCH.md` | חיפוש קטלוג בעברית + DLQ. | BINDING |
-| `ARCHITECTURE-SEASONAL-CAMPAIGNS.md` | חגים ישראליים, בזק, ראש השנה/פסח. | QA-PASS (#18) |
+| `ARCHITECTURE-SEASONAL-CAMPAIGNS.md` | חגים ישראליים, בזק, ראש השנה/פסח (מחייב). | QA-PASS (#18) |
+| `SEASONAL-CAMPAIGNS.md` | באנרים מתוזמנים, קולקציות, countdown (תפעול/תוצר). | PLAN (10.08) |
 | `ARCHITECTURE-SECURITY-RLS.md` | מטריצת RLS ל-44 טבלאות. | BINDING |
 | `ARCHITECTURE-SECURITY.md` | Security decision record. | BINDING |
 | `ARCHITECTURE-SEO-PERFORMANCE.md` | SEO+ביצועים: metadata, JSON-LD, sitemap, CWV, ISR. | BINDING (10.08) |
@@ -219,3 +226,7 @@ docs/ROADMAP-V2.md
 | 2026-08-10 | `ARCHITECTURE-INTEGRATIONS.md` + ריענון MOBILE-APP; אינדקס |
 | 2026-08-10 | `ADMIN-USER-GUIDE.md` + `SUPPLIER-ONBOARDING.md`; אינדקס |
 | 2026-08-10 | `MARKETING-LAUNCH.md` + `ANALYTICS-SPEC.md`; אינדקס |
+| 2026-08-10 | `API-PUBLIC-SPEC.md`; אינדקס + ניקוי כפילויות companion |
+| 2026-08-10 | `SEASONAL-CAMPAIGNS.md` + `REFERRAL-PROGRAM.md`; אינדקס |
+| 2026-08-10 | `SLA-MONITORING.md` + `BACKUP-RECOVERY.md`; אינדקס |
+| 2026-08-10 | `CUSTOMER-SUPPORT-PLAYBOOK.md` + `FAQ-CONTENT.md`; אינדקס |
