@@ -1,245 +1,145 @@
 # ארכיטקטורה: אזור אישי (`/account/**`)
 
-מסכי לקוח מחובר: הזמנות, קופונים (`vouchers`), ארנק קאשבק, וניווט RTL.  
-זהות ו-session:
-
-```
-docs/ARCHITECTURE-ACCOUNT-IDENTITY.md
-```
-
-ארנק לעומק:
-
-```
-docs/ARCHITECTURE-ACCOUNT-WALLET.md
-```
+מסכי לקוח מחובר: הזמנות, קופונים, ארנק קאשבק, וניווט RTL.
 
 Status: **BINDING** · עודכן: 2026-08-12  
-Scope: `arch/docs-batch-2` · batch #21/50  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+
+מודל כסף: **No Escrow**. מקדמת קופון באתר נשארת אצל הפלטפורמה. יתרה בבית העסק מחוץ לפלטפורמה.
 
 מסמכים קשורים:
 
 ```
 docs/ARCHITECTURE-ACCOUNT-IDENTITY.md
 docs/ARCHITECTURE-ACCOUNT-WALLET.md
-docs/ARCHITECTURE-CART-GUEST.md
 docs/ARCHITECTURE-COUPON-LIFECYCLE.md
 docs/ARCHITECTURE-WALLET-LEDGER.md
-docs/ARCHITECTURE-CASHBACK-WALLET.md
-docs/ARCHITECTURE-NOTIFICATIONS.md
 docs/CONTRADICTIONS.md
 ```
 
-מודל כסף: **No Escrow**. מקדמת קופון באתר נשארת אצל הפלטפורמה. יתרה בבית העסק מחוץ לפלטפורמה. אין held לספק.
-
-Stack: Next.js App Router `(account)`, Server Components + Server Actions, Supabase Auth + RLS, כסף באגורות (integer), RTL + Heebo.
+Stack: Next.js `(account)`, Server Components, Supabase Auth + RLS, agorot integer, RTL + Heebo.
 
 ---
 
-## 0. הכרעות
+## 1. החלטה
 
 | # | הכרעה |
 |---|---|
 | PA1 | כל `/account/**` דורש session. אורח → `/login?next=...`. |
-| PA2 | כניסה ראשית: Google OAuth. OTP/גיבוי לפי IDENTITY. |
-| PA3 | RLS הוא הגבול. קריאות לקוח עם user client; `adminClient` רק עם `.eq('user_id', uid)` מתועד. |
-| PA4 | קופונים בתצוגה חדשה = `vouchers` (לא כתיבה ל-`coupon_codes`). Alias: `/account/vouchers` → `/account/coupons`. |
-| PA5 | ארנק = קרדיט פנימי בלבד. אין משיכה, אין P2P, אין זיכוי כרטיס מהארנק. |
-| PA6 | כסף ב-DB/domain: integer agorot. UI: ₪ ב-`he-IL`, `Asia/Jerusalem`. |
-| PA7 | קופון: במייל ובמסך מופיעים שולם באתר + יתרה בבית העסק. פיזי לפי `platform_percent` פר מוצר (snapshot). |
-| PA8 | אין PAN/CVV. `payment_tokens.cardcom_token` לא ב-SELECT ל-`authenticated`. |
-| PA9 | התנתקות בניווט וב-`/account/details`. אחרי logout → `/login`. |
+| PA2 | כניסה ראשית: Google OAuth. OTP לפי IDENTITY. |
+| PA3 | RLS הוא הגבול. user client בלבד; אין service role במסכי לקוח. |
+| PA4 | קופונים = `vouchers` (לא כתיבה ל-`coupon_codes`). Alias: `/account/vouchers` → `/account/coupons`. |
+| PA5 | ארנק = קרדיט פנימי בלבד. אין משיכה, P2P, cash-out. |
+| PA6 | כסף ב-DB: agorot. UI: ₪ ב-`he-IL`, `Asia/Jerusalem`. |
+| PA7 | קופון: שולם באתר + יתרה בבית העסק (snapshots). פיזי: `platform_percent` snapshot. |
+| PA8 | אין PAN/CVV. `cardcom_token` לא ב-SELECT ל-authenticated. |
+| PA9 | התנתקות → `/login`; ניקוי cache QR ב-logout (PWA). |
 | PA10 | אין cancel/refund מהאזור האישי ב-v1. |
-| PA11 | `AccountNav` RTL קבוע: `dir="rtl"`, תוויות עברית, סדר ויזואלי מימין לשמאל. |
+| PA11 | `AccountNav` RTL: `dir="rtl"`, תוויות עברית. |
 
 ---
 
-## 1. מפת מידע + ניווט RTL
+## 2. חלופות שנדחו
+
+| חלופה | נימוק דחייה |
+|---|---|
+| `/account` פתוח לאורח עם "preview" | PA1: gate session; RLS לא מספיק לבד. |
+| כתיבת לקוח ל-`orders` / `vouchers` | checkout/webhook בלבד. |
+| הצגת escrow "כסף אצלנו לספק" | No Escrow; PA7. |
+| `coupon_codes` לקופונים חדשים | PA4: canonical `vouchers`. |
+| float ב-JS לתצוגת מחיר | PA6: agorot + money layer. |
+| cancel/refund self-service v1 | PA10: תמיכה בלבד. |
+
+---
+
+## 3. סכמת DB
+
+**אין DDL חדש.** SELECT ללקוח (RLS own):
+
+| טבלה | שדות UI רלוונטיים |
+|---|---|
+| `orders` | status, `paid_at`, סכומים מצולמים |
+| `order_items` | `coupon_price_agorot`, `remaining_amount_due_agorot`, `platform_percent` snapshot |
+| `vouchers` | `face_value_agorot`, `qr_payload`, `expires_at`, status |
+| `wallet_accounts` / `v_wallet_ledger` | יתרה, היסטוריה |
+| `profiles` | שם, טלפון; email read-only |
+| `payment_tokens` | last4, brand (לא token) |
+| `user_addresses` | CRUD כתובות |
+
+Deprecated לקריאה ישנה בלבד: `coupon_codes`, `wallets`.
+
+---
+
+## 4. מפת מסכים
 
 ```text
-(account)/layout.tsx     getUser() gate + AccountNav + shell
-  /account               סקירה
-  /account/orders        היסטוריית הזמנות
-  /account/orders/[id]   פרטי הזמנה (+ קופונים/QR שלה)
-  /account/coupons       ארנק קופונים (טאבים + QR)
-  /account/wallet        ארנק קאשבק פנימי
-  /account/details       פרופיל / פרטים
-  /account/addresses     כתובות למשלוח
-  /account/tokens        כרטיסים שמורים (last4 בלבד)
+/account               סקירה
+/account/orders        היסטוריית הזמנות
+/account/orders/[id]   פרטי הזמנה + QR
+/account/coupons       ארנק קופונים (טאבים)
+/account/wallet        ארנק קאשבק
+/account/details       פרופיל
+/account/addresses     כתובות
+/account/tokens        כרטיסים (last4)
+/coupon/[id]           דף קופון (noindex, בעלים בלבד)
 ```
 
-| href | תווית עברית | הערת UI |
+AccountNav: פריט פעיל מודגש; badge ארנק מ-agorot; mobile drawer מימין.
+
+---
+
+## 5. הזמנות וקופונים (תמצית)
+
+הזמנות: עד 50 שורות; פרט מציג שולם מהארנק + שולם באתר + יתרה בעסק לקופון.
+
+קופונים: טאבים פעיל / נסרק / פג; QR לפעילים בלבד;  
+עותק: "הצגת הקוד בבית העסק. היתרה משולמת שם בזמן הסריקה."
+
+QR: bearer להצגה; redeem אטומי אצל ספק. אין QR ב-DOM לאורח.
+
+---
+
+## 6. מקרי קצה
+
+| # | מצב | התנהגות |
 |---|---|---|
-| `/account` | סקירה | כרטיסי קיצור: הזמנה אחרונה, קופונים פעילים, יתרת ארנק |
-| `/account/orders` | ההזמנות שלי | רשימה כרונולוגית |
-| `/account/coupons` | הקופונים שלי | טאבים לפי סטטוס |
-| `/account/wallet` | הארנק שלי | badge יתרה מעוצבת |
-| `/account/details` | הפרטים שלי | + כפתור התנתקות |
-| `/account/addresses` | כתובות | CRUD רך |
-| `/account/tokens` | אמצעי תשלום | last4 בלבד |
-
-### כללי AccountNav
-
-1. Shell עם `dir="rtl"` ו-`lang="he"`. גופן Heebo.
-2. פריט פעיל: הדגשה ויזואלית בלי שינוי סדר ה-DOM (סדר DOM = סדר קריאה מימין).
-3. Mobile: תפריט תחתון או drawer מימין; אותן תוויות כמו בדסקטופ.
-4. Badge על הארנק: יתרה מפורמטת מ-agorot דרך שכבת `money` (לא float ב-JS של התצוגה).
-5. דף קופון בודד (מחוץ ל-nav): `/coupon/[id]` (`noindex`), עם CTA חזרה ל-`/account/coupons`.
-6. אחרי `signOut`: ניקוי cache מקומי של QR (אם PWA) + redirect ל-`/login`.
+| E1 | session פג באמצע `/account/orders/[id]` | redirect login + next |
+| E2 | voucher של משתמש אחר ב-URL | 404 / forbidden |
+| E3 | QR screenshot sharing | חד-פעמיות ב-DB (redeem) |
+| E4 | offline PWA: קופון cached | תצוגה בלבד; redeem online |
+| E5 | order pending ללא paid | אין voucher; סטטוס "ממתינה" |
+| E6 | refund אחרי redeem | UI "זוכה"; ללא self cancel |
+| E7 | עריכת role ב-profiles | RLS block |
+| E8 | token delete בלי re-auth | `requireRecentAuth` |
 
 ---
 
-## 2. הזמנות
+## 7. פתוחות
 
-| Route | תוכן |
-|---|---|
-| `/account/orders` | עד 50 שורות: תאריך, סטטוס, סכום ששולם באתר, סימון "כולל קופונים", CTA פרטים |
-| `/account/orders/[id]` | סיכום, שורות, שולם מהארנק, סך שולם באתר, יתרה בבית העסק לשורות קופון, קישור/QR |
-
-ריק: `עוד לא ביצעת הזמנות.`
-
-| טבלה | SELECT ללקוח | כתיבה |
-|---|---|---|
-| `orders` | `user_id = auth.uid()` | אין (checkout/webhook בשרת) |
-| `order_items` | דרך בעלות על ההזמנה | אין |
-
-שאילתות יעד: `getMyOrders` / `getOrderDetail` עם user-scoped client.
-
-| מצב נגזר | תווית UI |
-|---|---|
-| `pending` | ממתינה לתשלום |
-| `paid` | שולמה |
-| הושלם / שוחרר | הושלמה |
-| קופון נסרק | מומשה |
-| `refunded` | זוכתה |
-| `cancelled` | בוטלה |
-
-לשורות קופון תמיד שני מספרים מ-snapshots (לא חישוב חי ממוצר):
-
-1. שולם באתר (`coupon_price` מצולם)
-2. לתשלום בבית העסק (`remaining_amount_due`)
-
-לשורות פיזי: סכום ששולם באתר + פיצול לפי `platform_percent` snapshot (לתצוגת שקיפות בלבד; הלקוח לא רואה "עמלה לספק" כמדד נפרד ב-v1 אלא אם הוגדר במפורש ב-UI).
-
-אין כפתור ביטול/החזר מהמסך. הפניה לתמיכה בלבד.
+| # | פער | החלטה זמנית | תאריך |
+|---|---|---|---|
+| O1 | wishlist באזור אישי | מחוץ ל-v1 | 2026-08-12 |
+| O2 | הצגת עמלה לספק ב-UI | לא v1 ללקוח | 2026-08-12 |
+| O3 | `/account/vouchers` redirect קבוע | alias ל-coupons | 2026-08-12 |
 
 ---
 
-## 3. קופונים (UI)
+## 8. Acceptance
 
-| ישות | טבלה | הערה |
-|---|---|---|
-| קנוני | `vouchers` | הנפקה אחרי תשלום מאומת |
-| מורשת | `coupon_codes` | תצוגה ישנה בלבד; לא לכתיבה חדשה |
-
-עמודות כסף: `face_value_agorot`, `coupon_price_agorot`, `remaining_amount_due_agorot`  
-(CHECK: face = coupon_price + remaining_due).  
-QR: `qr_payload` + `qr_key_id`.
-
-### `/account/coupons`
-
-- טאבים: פעיל · נסרק · פג תוקף (+ זוכה אם רלוונטי)
-- פעיל: שם, ספק, קוד, שולם באתר, יתרה בעסק, תוקף, QR גדול (שרת מ-`qr_payload`)
-- מומש/פג: בלי QR סריק; חותמת סטטוס
-- עותק: `הצגת הקוד בבית העסק. היתרה משולמת שם בזמן הסריקה.`
-
-### `/coupon/[id]`
-
-Session של הבעלים, QR + שני הסכומים + פרטי בית עסק, CTA חזרה ל-`/account/coupons`.
-
-### כללי QR
-
-1. QR הוא bearer להצגה; חד-פעמיות ב-`redeem_voucher` אצל הספק.
-2. אין להטמיע QR כ-`data:` URI במייל (ראה notifications).
-3. Offline (PWA): cache של issued בלבד; wipe ב-logout.
-4. אין מצג "כסף מוחזק בפלטפורמה לספק" על מסך הקופון.
-
-פירוט מחזור חיים: COUPON-LIFECYCLE.
+- [ ] Session gate על `/account/**`  
+- [ ] AccountNav RTL + badge ארנק  
+- [ ] הזמנות + קופונים מ-`vouchers` + שני סכומים  
+- [ ] ארנק: יתרה + ledger; אין משיכה  
+- [ ] כסף מ-agorot דרך money layer  
+- [ ] No Escrow בנוסח  
+- [ ] חלופות + DB + קצה + פתוחות  
 
 ---
 
-## 4. ארנק קאשבק (כללי UI)
-
-הארנק הוא **קרדיט אתר בלבד**:
-
-1. אין משיכה לבנק / כרטיס / מזומן.
-2. אין העברה למשתמש אחר.
-3. שימוש יחיד: `apply_wallet` ב-checkout מפחית חיוב Cardcom.
-4. תנועות רק דרך `fn_wallet_transfer` (service role).
-5. Ledger append-only: תיקון = reverse entry.
-
-עותק UI מחייב:
-
-```text
-הארנק משמש לתשלום חלקי או מלא באתר.
-אין משיכה למזומן ואין העברה למשתמש אחר.
-```
-
-| טבלה | תפקיד |
-|---|---|
-| `wallet_accounts` | חשבון משתמש + חשבונות פלטפורמה |
-| `wallet_entries` | יומן double-entry, `idempotency_key UNIQUE` |
-| `v_wallet_ledger` | תצוגת לקוח |
-
-Deprecated: `wallets`, `wallet_balances`, `wallet_transactions`.
-
-מסך `/account/wallet`: יתרה גדולה + תנועות מ-`v_wallet_ledger`. אין כתיבה מה-UI. אין כפתור משיכה.
-
-קאשבק: אחוז מ-**התשלום באתר** (לא מ-face), מצולם ב-checkout. חיוב ארנק רק אחרי אימות Cardcom ב-finalize.
-
-מקדמת קופון **אינה** נכנסת לארנק כ-held. ראה ACCOUNT-WALLET + WALLET-LEDGER.
-
----
-
-## 5. פרופיל ואמצעי תשלום
-
-| רכיב | מיקום |
-|---|---|
-| כניסה | לפי IDENTITY (Google / OTP) |
-| Callback | `/auth/callback` · מיזוג עגלה → CART-GUEST |
-| Gate | `getUser()` ב-layout / proxy על `/account*` |
-| יציאה | `signOut` → `/login` |
-
-`/account/details`: שם וטלפון ניתנים לעריכה; אימייל OAuth לקריאה בלבד; `role` קפוא.
-
-`/account/tokens`: `last4` / brand / expiry בלבד. הוספת כרטיס רק דרך Cardcom Low Profile (לא טופס PAN אצלנו).
-
----
-
-## 6. RLS (תמצית)
-
-| טבלה | SELECT | כתיבת לקוח |
-|---|---|---|
-| `profiles` | own | own (בלי role) |
-| `orders` / `order_items` | own | לא |
-| `vouchers` | own | לא |
-| `wallet_*` | own (views/policies) | לא |
-| `payment_tokens` | own, עמודות בטוחות | מחיקה / ברירת מחדל דרך fn |
-| `user_addresses` | own | soft delete |
-
----
-
-## 7. Acceptance
-
-- [ ] Session gate על כל `/account/**` (+ proxy על `/coupon/`)
-- [ ] AccountNav RTL: תוויות עברית, badge ארנק, logout
-- [ ] הזמנות: רשימה + פרט, בלי כתיבת לקוח
-- [ ] קופונים מ-`vouchers` עם QR לפעילים בלבד; שני סכומים
-- [ ] ארנק: יתרה + ledger; עותק "לא יוצא מהמערכת"; אין כפתור משיכה
-- [ ] פרטים: email read-only; שם/טלפון נשמרים
-- [ ] כסף מוצג מ-agorot דרך שכבת `money`
-- [ ] No Escrow בנוסח ובמספרים (אין "מוחזק לספק")
-
-מחוץ לסקופ: אדמין/סורק ספק, wishlist, משיכת ארנק, שיווק.
-
----
-
-## 8. Revision
+## 9. Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-02 | מסמך מחייב ראשון: הזמנות, קופונים, ארנק, Google |
-| 2026-08-06 | QA: P7 ל-No Escrow |
-| 2026-08-12 | batch #21: ריענון BINDING ממוקד על arch/docs-batch-2 |
-| 2026-08-12 | batch #21/50 pass-2: חיזוק הזמנות/קופונים/ארנק + AccountNav RTL |
-| 2026-08-12 | batch-2 #21 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
+| 2026-08-02 | מסמך מחייב ראשון |
+| 2026-08-12 | batch-2: BINDING מלא; תבנית חובה |
