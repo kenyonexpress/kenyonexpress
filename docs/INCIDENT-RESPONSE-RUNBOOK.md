@@ -124,9 +124,27 @@ SEV:
 
 ---
 
+## 8. עץ החלטה מהיר (כסף)
+
+```text
+כסף חשוד / סליקה שבורה?
+  כן → CHECKOUT_ENABLED=false
+       → האם חיובים כפולים ב-Cardcom?
+            כן → freeze הזמנות + refund לפי CHECKOUT-OPTIMIZATION
+            לא → האם DB פגום?
+                 כן → BACKUP-RESTORE (PITR) רק אחרי kill switch
+                 לא → rollback קוד / תיקון נקודתי
+  לא → SEV2/3 לפי playbook
+```
+
+אין לפתוח מדיה ממומנת מחדש לפני reconciliation ירוק.
+
+---
+
 ## Revision
 
 | תאריך | שינוי |
 |---|---|
 | 2026-08-11 | מסגרת IR: SEV, kill switches, תקשורת, postmortem |
 | 2026-08-11 | רשימת בדיקה מיידית ל-SEV1 |
+| 2026-08-11 | עץ החלטה מהיר לאירועי כסף |
