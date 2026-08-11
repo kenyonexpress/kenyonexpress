@@ -2,9 +2,11 @@
 
 מכסות קופון פר דיל, מלאי פיזי בסיסי, reserve ב-pending, ו-reconcile בלי over-sell.
 
-Status: **BINDING** · עודכן: 2026-08-12 · QA: PASS  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #13/50  
-אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד.
+
+מודל כסף: **No Escrow**. מכסה/מלאי מגבילים מכירה והנפקה; לא מחזיקים כסף לספק.
 
 מסמכים קשורים:
 
@@ -15,34 +17,29 @@ docs/ARCHITECTURE-GIFT-COUPONS.md
 docs/ARCHITECTURE-PRICING-RULES.md
 docs/ARCHITECTURE-FRAUD-PREVENTION.md
 docs/CONTRADICTIONS.md
-docs/BUSINESS-MODEL.md
 ```
-
-מודל כסף: **No Escrow**. מכסה/מלאי מגבילים מכירה והנפקה; הם לא מחזיקים כסף לספק ולא יוצרים held.
 
 ---
 
-## 0. הכרעות
+## החלטה
 
 | # | הכרעה |
 |---|---|
 | I1 | מכסת קופון נאכפת אטומית לפני/בתוך finalize (לא רק ב-UI). |
 | I2 | כשל מכסה → אין Low Profile חדש / אין `paid` על יחידות עודפות. |
 | I3 | מלאי פיזי: `stock_quantity` יורד ב-finalize; replay לא מוריד פעמיים. |
-| I4 | קופון מתנה חולק מכסה עם מכירה רגילה (אותו product), אלא אם הוגדר אחרת במפורש. |
-| I5 | Over-sell אסור. Reconcile מתקן תצוגה; לא יוצר vouchers יש מאין מעל המכסה. |
-| I6 | הזמנת `pending` יכולה לשריין (reserve) עד `expires_at`; אחרי cancel/expiry השריון משתחרר. |
-| I7 | מכסה = מספר יחידות דיל, לא סכום כסף ולא אחוז. |
+| I4 | קופון מתנה חולק מכסה עם מכירה רגילה (אותו product). |
+| I5 | Over-sell אסור. Reconcile מתקן תצוגה; לא יוצר vouchers מעל המכסה. |
+| I6 | הזמנת `pending` יכולה לשריין עד `expires_at`; אחרי cancel/expiry השריון משתחרר. |
+| I7 | מכסה = מספר יחידות דיל, לא סכום כסף. |
 
----
-
-## 1. מושגים
+### מושגים
 
 | מושג | משמעות |
 |---|---|
 | `quota` | תקרת יחידות לדיל קופון (admin) |
-| `issued` | שוברים שכבר הונפקו אחרי `paid` |
-| `reserved_pending` | יחידות בהזמנות `pending` שטרם שולמו / לא פקעו |
+| `issued` | שוברים שהונפקו אחרי `paid` |
+| `reserved_pending` | יחידות ב-`pending` שטרם שולמו |
 | `available` | `quota - issued - reserved_pending` |
 | `stock_quantity` | מלאי פיזי (nullable = לא נמדד) |
 
@@ -50,88 +47,120 @@ docs/BUSINESS-MODEL.md
 available >= 0 תמיד אחרי כל טרנזקציה אטומית
 ```
 
----
-
-## 2. קופון: שריון → תשלום → הנפקה
+### קופון: שריון → תשלום → הנפקה
 
 ```text
 beginCheckout
-  → בדוק available >= sum(qty) לכל דיל בעגלה
+  → בדוק available >= sum(qty)
   → אם לא: cart_invalid / INSUFFICIENT_QUOTA; אין LP
-  → צור order pending + (אופציונלי) reserve שורות
+  → order pending + (אופציונלי) reserve
   → Low Profile
 
-pending expiry / cancel
-  → שחרור reserve
-  → order → cancelled
+pending expiry / cancel → שחרור reserve
 
 finalize paid
-  → CAS: issued + qty <= quota (או reserved מומר ל-issued)
+  → CAS: issued + qty <= quota
   → mint vouchers × qty (idempotent לפי order_item)
   → item_status=issued, settlement_status=platform_settled
 ```
 
-| כשל | התנהגות |
-|---|---|
-| שני checkouts במקביל על יחידה אחרונה | אחד מצליח; השני נכשל במכסה לפני LP או ב-finalize |
-| Webhook replay | לא מנפיק מעל quantity; לא חוצה quota |
-| paid בלי mint מלא | reconcile משלים עד min(qty, available); אלרט אם חסר |
-
----
-
-## 3. פיזי: מלאי
+### פיזי
 
 ```text
-validateCart / beginCheckout
-  → אם stock_quantity לא null: נדרש stock >= qty
-
-finalize
-  → UPDATE stock_quantity = max(0, stock - qty)
-  → מוגן ב-split_executions UNIQUE(order_item_id) / guard דומה
+validateCart: stock_quantity >= qty (אם לא null)
+finalize: UPDATE stock_quantity = max(0, stock - qty)
+  מוגן ב-split_executions UNIQUE(order_item_id)
 ```
 
-אין החזרת מלאי אוטומטית ב-refund בלי מדיניות מפורשת (REFUNDS); ברירת מחדל אחרי refund מאושר: החזרת qty למלאי אם המוצר עדיין active.
+החזרת מלאי ב-refund: לפי REFUNDS; ברירת מחדל אחרי refund מאושר.
 
----
-
-## 4. תצוגה בקטלוג
+### תצוגה בקטלוג
 
 | מצב | UI |
 |---|---|
 | `available == 0` | אזל / לא ניתן לרכישה |
-| `available` נמוך | באדג' אופציונלי; לא מחיר |
+| `available` נמוך | באדג' אופציונלי |
 | מלאי פיזי 0 | אותו שער |
 
-המחיר וה-`platform_percent` לא נגזרים מהמכסה.
-
 ---
 
-## 5. Admin
+## חלופות שנדחו
 
-| פעולה | מי |
+| חלופה | למה נדחתה |
 |---|---|
-| קביעת quota / stock | admin |
-| הגדלת מכסה | audit חובה |
-| הקטנה מתחת ל-issued+reserved | נדחה או clamp עם אזהרה |
-| ספק | קריאה בלבד (אם בכלל); לא משנה מכסה |
+| מכסה רק ב-UI | I1: אכיפה בשרת. |
+| mint מעל quota ב-reconcile | I5: אין vouchers יש מאין. |
+| מכסה נפרדת ל-gift | I4: quota משותפת. |
+| stock יורד ב-beginCheckout | I3: finalize + idempotency. |
+| held כסף על reserve | No Escrow: reserve = יחידות, לא כסף. |
+| quota כסכום ₪ | I7: יחידות בלבד. |
 
 ---
 
-## 6. Acceptance
+## סכמת DB
 
-- [ ] נוסחת available מתועדת  
-- [ ] אכיפה לפני LP וב-finalize  
-- [ ] Race על יחידה אחרונה מוגדר  
-- [ ] פיזי idempotent ב-finalize  
-- [ ] מתנה חולקת מכסה (I4)  
-- [ ] No Escrow מפורש  
+```text
+products (
+  stock_quantity int CHECK (stock_quantity IS NULL OR stock_quantity >= 0),
+  coupon_quota int,              -- pending: תקרת יחידות קופון
+  ...
+)
+
+product_variants (
+  stock_quantity int,
+  ...
+)
+
+inventory_reservations (
+  id uuid PK,
+  order_id uuid FK,
+  order_item_id uuid FK,
+  product_id uuid,
+  quantity int,
+  expires_at timestamptz,
+  released_at timestamptz
+)
+
+-- issued count: COUNT(vouchers) WHERE product_id AND status='issued'
+```
+
+| שדה | מקור אמת |
+|---|---|
+| `products.stock_quantity` | פיזי; קיים (001/005) |
+| `coupon_quota` | pending migration |
+| `inventory_reservations` | pending migration |
 
 ---
 
-## 7. Revision
+## מקרי קצה
+
+| # | מקרה | התנהגות |
+|---|---|---|
+| CE1 | שני checkouts על יחידה אחרונה | אחד מצליח; השני נכשל במכסה |
+| CE2 | webhook replay | לא מנפיק מעל qty; idempotent |
+| CE3 | paid בלי mint מלא | reconcile עד min(qty, available); אלרט |
+| CE4 | pending expiry | שחרור reserve; order cancelled |
+| CE5 | הקטנת quota מתחת issued+reserved | נדחה או clamp + אזהרה |
+| CE6 | variant stock vs product stock | variant קודם; fallback product |
+| CE7 | refund פיזי | החזרת qty לפי מדיניות |
+
+---
+
+## פתוחות
+
+| # | פתוח | הערה |
+|---|---|---|
+| O1 | `coupon_quota` column migration | pending |
+| O2 | `inventory_reservations` table | pending |
+| O3 | admin UI quota | ADMIN-PRODUCT-FIELDS |
+| O4 | supplier read-only quota view | SUPPLIER-PORTAL |
+
+---
+
+## Revision
 
 | תאריך | שינוי |
 |---|---|
 | 2026-08-06 | QA-PASS |
-| 2026-08-12 | batch-2 #13 stub |
-| 2026-08-12 | batch-2 #13 pass-2: reserve, races, admin, פיזי מלא |
+| 2026-08-12 | batch-2: reserve, races, admin, פיזי |
+| 2026-08-12 | batch-2: תבנית חובה (5 סעיפים) |
