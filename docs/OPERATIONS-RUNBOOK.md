@@ -1,187 +1,49 @@
-# OPERATIONS-RUNBOOK.md
+# ספר תפעול יומי
 
-ספר **תפעול יומי** ל-KenyonExpress: נהלים צעד-אחר-צעד לפעולות שגרה ולתקלות נפוצות.
+מוצר, ספק, webhook.
 
-Status: BINDING · worktree
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד. אין נגיעה בתיקייה הראשית. כסף: **agorot integer**; `platform_percent` פר מוצר בלי default.
 
-```
-/Users/ofir/kenyonexpress-web/ke-arch
-```
-
-branch:
 
 ```
-arch/docs-queue
-```
-
-Date: 2026-08-02 (rev A)  
-Scope: docs בלבד.  
-Companions: `ARCHITECTURE-ADMIN-DASHBOARD-SPEC.md` (המסכים שבהם מבצעים), `ARCHITECTURE-INCIDENT-RESPONSE.md` (SEV), `ARCHITECTURE-CUSTOMER-SUPPORT.md` (החזרים), `ARCHITECTURE-PAYMENT-RECONCILIATION.md`, `ARCHITECTURE-SUPPLIER-ONBOARDING.md`.
-
-הבחנה: תקלה שנוגעת לכסף חי ולא נסגרת בנוהל שכאן תוך 30 דקות מסלימה ל-INCIDENT-RESPONSE. הנהלים כאן הם הקומה הראשונה.
-
----
-
-## 0. שגרה יומית (בוקר, 10 דקות)
-
-```
-1. /admin Overview: הזמנות מהלילה, כשלי webhook, DLQ
-2. פילטר "חריגים" ב-/admin/orders: חייב להיות ריק
-3. redemption log מאתמול: אחוז כשלים סביר (מתחת ל-20%)
-4. Ntfy: אין התראות שלא טופלו
-5. Resend dashboard: אין bounce חריג
-```
-
-כל ממצא: או נסגר במקום לפי הנהלים כאן, או נפתח טיקט/אירוע. לא "נבדוק מחר".
-
----
-
-## 1. איך מוסיפים מוצר
-
-### 1.1 קופון
-
-```
-1. Cursor אין. הכל ב-Chrome: /admin/products → "מוצר חדש"
-2. type=coupon; שם, תיאור, תמונה ראשית (חובה), קטגוריה, ספק
-3. כסף: price_ils (השווי המלא), coupon_price_ils (מה שנגבה באתר),
-   coupon_expiry_days, הוראות מימוש בעברית
-4. שמירה כ-draft → תצוגה מקדימה ב-PDP
-5. אימות שלוש נקודות: PDP מציג את מחיר הקופון, היתרה בעסק מחושבת נכון,
-   הטקסט לא מבטיח דבר שהעסק לא אישר
-6. publish (השערים ייחסמו אם חסר שדה; לא לעקוף)
-```
-
-זמן צפוי: 10 דקות. חסימת publish = שדה חסר; ההודעה אומרת איזה.
-
-### 1.2 פיזי
-
-אותו מסלול, עם: `platform_percent` (הערך שסוכם עם הספק, אין ברירת מחדל), מלאי, פרטי משלוח. בלי percent אין publish, וזה מכוון: לא ממציאים אחוז כדי לעלות מהר.
-
----
-
-## 2. איך מאשרים ספק
-
-```
-1. /admin/suppliers → הספק בסטטוס pending
-2. טאב פרטים: כל המסמכים לפי ONBOARDING §2 קיימים בפועל (לא "בדרך")
-3. נספח הכסף חתום, כולל סעיף אין-Escrow
-4. member מוזמן עם האימייל התפעולי (חשבון Google)
-5. הדרכה בוצעה (ONBOARDING §5) ומסומנת בכרטיס
-6. פעולת "אישור" → active
-7. הספק מקבל מייל; מוודאים כניסה ראשונה לפורטל תוך 48 שעות
-```
-
-אסור לאשר ספק כדי "לפתוח לו מוצרים בינתיים": ‏active פותח גם סורק וגם נראות בקטלוג.
-
----
-
-## 3. תשלום נכשל
-
-### 3.1 לקוח מדווח "שילמתי ולא קיבלתי"
-
-```
-1. /admin/orders: חיפוש לפי אימייל הלקוח
-2. יש הזמנה paid + voucher: הבעיה בתצוגה/מייל → שליחה מחדש של האישור,
-   הקופון ממילא ב-/account
-3. הזמנה pending בלי webhook: המתנה עד 10 דקות (עיכוב ספק), ואז §4
-4. הזמנה failed: החיוב נדחה בפועל. אם ללקוח יש חיוב בכרטיס:
-   Cardcom dashboard → חיפוש העסקה → אם נלכדה בלי הזמנה, זו אנומליה:
-   SEV לפי INCIDENT-RESPONSE + reconciliation
-5. אין הזמנה בכלל: הלקוח לא הגיע ל-finalize; מפנים לרכישה מחדש
-   ובודקים ב-Sentry אם יש שגיאת checkout מאותה שעה
-```
-
-### 3.2 גל כשלונות (כמה לקוחות ברצף)
-
-```
-1. בדיקת סטטוס Cardcom (ספק בעיה?) + Sentry error spike
-2. אם ה-checkout שבור: CHECKOUT_ENABLED=false (Vercel env) מיד
-3. SEV2 לפחות; ממשיכים ב-INCIDENT-RESPONSE
-```
-
-עדיף חנות סגורה שעה מלקוחות מחויבים בלי הזמנה.
-
----
-
-## 4. Webhook לא הגיע
-
-סימפטום: הזמנה תקועה pending, הלקוח אומר ששילם, ב-Cardcom העסקה מוצלחת.
-
-```
-1. פירוט ההזמנה → ציר payment_events: יש create, אין webhook
-2. אימות יזום: הפעלת ה-verify השרתי (אותו מסלול כמו /checkout/return),
-   שמושך GetLpResult ישירות מ-Cardcom
-3. verify מאשר תשלום: ה-finalize האידמפוטנטי רץ, ההזמנה paid,
-   voucher נוצר, מייל יוצא. סגור
-4. verify לא מאשר: העסקה לא באמת הושלמה; ההזמנה נשארת pending
-   ותפוג לפי המדיניות
-5. חוזר על עצמו (יותר מ-2 ביום): בדיקת ה-webhook URL בהגדרות המסוף,
-   Deployment Protection ב-Vercel, ולוגי ה-route. זה סיסטמי, לא נקודתי
-```
-
-כלל הזהב: לעולם לא מסמנים paid ידנית ב-DB. רק verify מול הספק קובע.
-
----
-
-## 5. קופון לא נסרק
-
-```
-1. redemption log: מה התוצאה שנרשמה בניסיון?
-   (אם אין שורה בכלל: בעיית רשת/הרשאה אצל הספק, לא בעיית voucher)
-2. לפי התוצאה:
-   already_used → מומש קודם. תאריך ושעה מוצגים; מקרו "מומש" ללקוח.
-     אם הלקוח מתעקש שלא מימש: חשד הונאה/שיתוף קוד, אסקלציה
-   expired → פג תוקף; לפי מדיניות C6 (זיכוי ארנק) אם רצה
-   wrong_supplier → הלקוח בעסק הלא נכון, או המוצר שויך לספק שגוי
-   invalid_hmac → QR פגום/מזויף; אם הגיע מהמייל שלנו: SEV, בדיקת secret
-3. voucher תקין והסריקה לא עוברת טכנית:
-   הספק מחובר לחשבון הנכון? ה-member פעיל? נסיון מהנייד של איש קשר אחר
-4. פתרון זמני בעסק (לקוח ממתין): אימות ידני מול /admin שהvoucher issued
-   ותקף → אישור טלפוני לספק לכבד → סימון ידני של המימוש באדמין
-   עם הערה. רק owner/admin מוסמכים לזה, וזה נרשם ב-audit
+docs/RUNBOOK-OPERATIONS.md
 ```
 
 ---
 
-## 6. פעולות כסף ידניות (מדרגה אחרונה)
+## החלטה
 
-| פעולה | מתי מותר | איך |
-|---|---|---|
-| refund | לפי מטריצת SUPPORT §2 | רק דרך פעולת ה-refund באדמין (Cardcom + ledger יחד); לעולם לא רק ב-Cardcom dashboard |
-| סימון מימוש ידני | ‏§5 שלב 4 בלבד | פעולת אדמין עם הערה; נרשם מי ולמה |
-| זיכוי ארנק ידני | פיצוי שאושר ע"י owner | פעולת wallet credit באדמין עם סיבה; לא UPDATE ב-SQL |
-| עדכון סטטוס הזמנה ידני | אסור | אין נוהל כזה; אם נראה שצריך, האמת היא ש-verify/finalize צריכים לרוץ |
-
-כל פעולה ידנית מהטבלה מופיעה בדוח reconciliation הבא ומוסברת שם.
-
----
-
-## 7. תבנית תיעוד תקלה (לכל §3-§5 שנסגר)
-
-```
-תאריך/שעה:
-מי טיפל:
-סימפטום:
-order_id / voucher_id:
-מה נמצא (ציר events):
-מה נעשה:
-האם סיסטמי (כן = מה נפתח בעקבות):
-```
-
-נשמר בערוץ התפעול; שלוש תקלות מאותו סוג בשבוע = פתיחת משימת תיקון שורש.
-
----
-
-## 8. Out of scope
-
-- נהלי deploy ו-rollback (‏Go-Live §2.4)
-- ‏cutover מ-WP (‏WP-DATA-MIGRATION-EXECUTION)
-- תרחישי SEV מלאים (INCIDENT-RESPONSE)
-
----
-
-## 9. Revision
-
-| Date | Change |
+| # | הכרעה |
 |---|---|
-| 2026-08-02 | rev A: שגרה יומית, הוספת מוצר, אישור ספק, תשלום נכשל, webhook חסר, קופון לא נסרק, גבולות פעולות ידניות |
+| D1 | בוקר overview |
+| D2 | percent חובה |
+| D3 | verify path |
+| D4 | checkout off בגל |
+
+## חלופות שנדחו
+
+| חלופה | למה נדחתה |
+|---|---|
+| ספק active זמני | לא |
+| SQL paid | verify |
+
+## סכמת DB
+
+`products`, `orders`, `payments`, `vouchers`.
+
+## מקרי קצה
+
+| # | מקרה | התנהגות |
+|---|---|---|
+| CE1 | Vercel protection | fix |
+| CE2 | charge no order | SEV |
+| CE3 | webhook repeat | systemic |
+| CE4 | missing percent | block |
+| CE5 | 10 דק pending | wait |
+
+## פתוחות
+
+אין פתוחות (2026-08-12).
+
