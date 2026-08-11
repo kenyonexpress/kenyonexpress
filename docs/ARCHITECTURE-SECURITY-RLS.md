@@ -1,137 +1,109 @@
-# ארכיטקטורה: מטריצת RLS
+# ארכיטקטורה: אבטחת RLS (Security RLS)
 
-סיכום מחייב של מדיניות RLS לטבלאות ליבה (קטלוג / כסף / ספק / ארנק / התראות).
+סיכום מחייב של מדיניות RLS. **מטריצה מלאה:** `docs/ARCHITECTURE-RLS-MATRIX.md`.
 
 Status: **BINDING** · עודכן: 2026-08-12  
-Scope: `arch/docs-batch-2` · batch #30/50  
-אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.  
+מודל כסף: **No Escrow**
 
 מסמכים קשורים:
 
 ```
+docs/DOCS-TEMPLATE-BINDING.md
+docs/ARCHITECTURE-RLS-MATRIX.md
 docs/ARCHITECTURE-SECURITY.md
 docs/ARCHITECTURE-TRUST-SAFETY.md
-docs/ARCHITECTURE-WALLET-LEDGER.md
-docs/ARCHITECTURE-SUPPLIER-PORTAL.md
+docs/ARCHITECTURE-RBAC.md
 docs/CONTRADICTIONS.md
 ```
 
 ---
 
-## 0. Principals וקודים
+## 0. החלטה (RLS1 עד RLS8)
 
-| Principal | משמעות |
+| # | הכרעה |
 |---|---|
-| `anon` | בלי session / תפקיד anon |
-| `authenticated` | `auth.uid()` |
-| `supplier` | חבר פעיל ב-`supplier_members` |
-| `admin` | `is_admin()` (`admin` / `super_admin`) |
-| `service_role` | מפתח שרת; **עוקף RLS**; נתיב יחיד לכתיבות כסף |
+| RLS1 | אין כתיבת כסף מ-JWT על orders/payments/vouchers/wallet. |
+| RLS2 | Redeem רק RPC SECURITY DEFINER + membership. |
+| RLS3 | `platform_percent` כתיבה admin/service בלבד. |
+| RLS4 | `FORCE ROW LEVEL SECURITY` על טבלאות כסף. |
+| RLS5 | service_role עוקף RLS; נתיב שרת בלבד. |
+| RLS6 | anon לא כותב cart/money. |
+| RLS7 | notification_outbox: enqueue definer; drain service. |
+| RLS8 | טבלה חדשה → שורה ב-RLS-MATRIX לפני soft-open. |
 
-| קוד | משמעות |
+---
+
+## 1. חלופות שנדחו
+
+| חלופה | למה נדחתה |
 |---|---|
-| `-` | אין policy ללקוח |
-| `own` | שורות בעלות/`auth.uid()` |
-| `pub` | מפורסם/פעיל לקטלוג |
-| `mem` | דרך membership לספק של השורה |
-| `rpc` | רק SECURITY DEFINER / route |
-| `bypass` | service_role |
-
-Helpers: `is_admin()`, `is_support()`, `is_supplier_member(id)`, `current_user_supplier_id()`.
-
-### כללי ברזל
-
-1. אין כתיבת כסף מ-JWT על `orders` / `payments` / `vouchers` / `wallet_*` / payouts.  
-2. `platform_percent` ושורות מחיר קופון: כתיבה רק admin/service אחרי session.  
-3. Redeem רק RPC עם JWT + membership; לא `supplier_id` מה-body.  
-4. `FORCE ROW LEVEL SECURITY` על טבלאות כסף רגישות.  
-5. מודל קופון: שולם באתר + יתרה בעסק (טבלאות היסטוריות של החזקה לא בשימוש מוצר).
+| RLS רק על חלק מהטבלאות | bypass על כסף |
+| policies permissive OR מתרחבות | SEC-06; union leak |
+| client UPDATE על voucher status | race redeem |
+| GRANT כתיבה ל-authenticated על ledger | RLS1 |
+| security definer בלי SET search_path | search_path injection |
 
 ---
 
-## 1. מטריצה מקוצרת (ליבה)
+## 2. סכמת DB
 
-פורמט תא: SELECT · INSERT · UPDATE · DELETE (עבור authenticated / supplier / admin בקירוב; service תמיד bypass לכתיבות שרת).
+**אין DDL חדש במסמך זה.**
 
-| Table | customer | supplier | admin read | client write money? |
-|---|---|---|---|---|
-| `profiles` | own r/w (role pinned) | own | Y | role רק admin path |
-| `products` | pub read | mem r/w לא-כסף | Y | money fields: service |
-| `orders` | own read | mem read paid+ | Y | **no** (rpc/service) |
-| `order_items` | own via parent | mem | Y | **no** |
-| `payments` | own read | - | Y | **no** |
-| `payment_tokens` | own meta (בלי token col) | - | Y | **no** |
-| `payment_webhook_events` | - | - | Y | service only |
-| `vouchers` / `coupon_codes` | own read | mem read | Y | insert/update: rpc |
-| `voucher_redemptions` | own read | mem read | Y | insert: redeem rpc |
-| `wallet_accounts` | own read | - | Y | rpc only |
-| `wallet_entries` | own read | - | Y | append via transfer rpc |
-| `suppliers` | pub fields | mem | Y | limited self / admin |
-| `supplier_members` | self read | mem/owner | Y | owner/admin |
-| `supplier_bank_accounts` | - | own lim | Y | no scanner |
-| `carts` / `cart_items` | own | own | Y | guest: service only |
-| `notification_outbox` | - | - | Y | enqueue definer + drain |
-| `user_notification_preferences` | own | - | Y | own update |
-| `audit_log` | - | - | Y | append-only definer |
-| `rate_limits` / `user_rate_limits` | - | - | - | rpc/service |
-| `payout_statements` | - | own read | Y | generator/service |
-| `settlement_events` | - | - | Y | append service |
-| `idempotency_keys` | - | - | Y | server only |
+טבלאות P0 (כסף/זהות): `orders`, `order_items`, `payments`, `payment_webhook_events`, `vouchers`, `voucher_redemptions`, `wallet_accounts`, `wallet_entries`, `payment_tokens`, `payout_statements`, `settlement_events`, `audit_log`.
 
-קטלוג (`categories`, `product_images`, `product_variants`, `hero_slides`): `pub` ל-anon/auth; כתיבה admin/service (ספק לפי mem על מוצריו).
+Helpers: `is_admin()`, `is_supplier_member(id)`, `current_user_supplier_id()`.
+
+**מטריצה מלאה (48+ טבלאות):** `docs/ARCHITECTURE-RLS-MATRIX.md`
 
 ---
 
-## 2. פירוט קריטי
+## 3. מטריצה מקוצרת (ליבה)
 
-### `orders` / `payments`
-
-| Action | authenticated | supplier | service |
+| Table | customer | supplier | client write money? |
 |---|---|---|---|
-| SELECT | `user_id = auth.uid()` | הזמנות עם item ב-mem | bypass |
-| INSERT/UPDATE | - | - | checkout / webhook finalize |
-| DELETE | - | - | - |
+| `orders` | own read | mem read | **no** (service/rpc) |
+| `payments` | own read | - | **no** |
+| `vouchers` | own read | mem read | insert/update: rpc only |
+| `wallet_entries` | own read | - | append rpc only |
+| `products` | pub read | mem non-money | money: service |
+| `notification_outbox` | - | - | service/d definer |
 
-אין ללקוח לשנות `status` / `paid_at`.
-
-### `vouchers`
-
-| Action | authenticated | supplier | service/rpc |
-|---|---|---|---|
-| SELECT | owner | mem על `supplier_id` | all |
-| INSERT | - | - | issue path |
-| UPDATE | - | - | `redeem_voucher` בלבד |
-
-`wrong_supplier` פנימי → תשובה חיצונית `not_found`.
-
-### `wallet_entries`
-
-Append-only דרך `fn_wallet_transfer` (service_role בלבד אחרי SEC-WALLET). סכומים integer agorot.
-
-### `notification_outbox`
-
-אין SELECT ללקוח (PII של אחרים). Drain = service. Enqueue = trigger/definer.
-
-### `products` (כסף)
-
-ספק לא כותב: `platform_percent`, `supplier_split_percent`, `coupon_price_ils` (או מקבילים).
+קוד תא: `-` = אין · `own` = בעלות · `mem` = membership · `pub` = published
 
 ---
 
-## 3. מחוץ למטריצה המקוצרת
+## 4. מקרי קצה
 
-Agents, analytics partitions, ledger מורחב, reconciliation: RLS = admin/service עד מסמך ייעודי. כל טבלה חדשה חייבת שורה כאן או ticket עדכון לפני soft-open.
+| # | מצב | התנהגות |
+|---|---|---|
+| RLS-E1 | FORCE RLS שובר SECURITY DEFINER ישן | staged rollout + tests |
+| RLS-E2 | supplier A redeem voucher of B | `not_found` חיצוני |
+| RLS-E3 | authenticated SELECT payment_tokens.token col | REVOKE column |
+| RLS-E4 | orphan cart NULL owner | SEC-09; service cleanup |
+| RLS-E5 | policy OR expands admin to all rows | audit policies quarterly |
+| RLS-E6 | webhook insert as anon | service route only |
+| RLS-E7 | content_uploader UPDATE platform_percent | blocked; SEC-UPLOADER |
 
 ---
 
-## 4. Acceptance
+## 5. פתוחות
 
-- [ ] `NOT rowsecurity` על `public` = 0  
-- [ ] אין policy שמעדכנת `orders.status` / `vouchers.status` / wallet מ-authenticated  
-- [ ] ספק לא כותב `platform_percent`  
-- [ ] anon לא כותב cart/money  
-- [ ] outbox + webhook journals בלי כתיבת לקוח  
-- [ ] FORCE על טבלאות כסף רגישות  
+| # | פער | תאריך |
+|---|---|---|
+| O1 | FORCE על כל 33 טבלאות public | 2026-08-12 |
+| O2 | CI test suite RLS matrix automated | 2026-08-12 |
+| O3 | ledger extended tables row in MATRIX | 2026-08-12 |
+
+---
+
+## 6. Acceptance
+
+- [ ] `NOT rowsecurity` על public = 0
+- [ ] אין policy מ-authenticated על money write
+- [ ] ספק לא כותב platform_percent
+- [ ] RLS-MATRIX מעודכן לכל טבלה חדשה
 
 ---
 
@@ -139,5 +111,4 @@ Agents, analytics partitions, ledger מורחב, reconciliation: RLS = admin/ser
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-12 | batch #30/50: ריענון BINDING (סיכום מטריצה ממוקד) |
-| 2026-08-12 | batch-2 #30 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
+| 2026-08-12 | batch-2: DOCS-TEMPLATE-BINDING; הפניה ל-RLS-MATRIX |
