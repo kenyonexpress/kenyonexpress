@@ -1,130 +1,51 @@
 # מדריך תפעול: ייצור
 
-Deploy ל-Vercel, rollback, ומיגרציות **דרך MCP בלבד**.
+Deploy + MCP.
 
-Status: **BINDING** · עודכן: 2026-08-06 · QA: PASS  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
-אין שינוי קוד במסמך זה. אין נגיעה בתיקייה הראשית.
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד. אין נגיעה בתיקייה הראשית. כסף: **agorot integer**; `platform_percent` פר מוצר בלי default.
 
-מסמכים קשורים:
 
 ```
-docs/ARCHITECTURE-BACKUP-DR.md
-docs/ARCHITECTURE-OBSERVABILITY.md
-docs/ARCHITECTURE-FRAUD-PREVENTION.md
-docs/ARCHITECTURE-PRICING-RULES.md
 docs/DEPLOY.md
-docs/ROADMAP-V2.md
-docs/CONTRADICTIONS.md
 ```
-
-Package manager: **pnpm** בלבד.  
-שורש אפליקציה מאושר:
-
-```
-/Users/ofir/kenyonexpress-web/kenyonexpress
-```
-
-עד רכישת טסט: `CHECKOUT_ENABLED=false`.
 
 ---
 
-## 0. סדר שיגור
+## החלטה
 
-| # | שלב |
+| # | הכרעה |
 |---|---|
-| 1 | Freeze + גיבוי/PITR |
-| 2 | מיגרציות prod **רק MCP** (§3) |
-| 3 | Env Production ב-Vercel |
-| 4 | Deploy Vercel |
-| 5 | Smoke בלי תשלום |
-| 6 | רכישת טסט |
-| 7 | Soft-open: `CHECKOUT_ENABLED=true` |
+| D1 | ship order |
+| D2 | pnpm test build |
+| D3 | MCP only prod |
+| D4 | rollback rules |
+| D5 | checkout false until test |
 
----
+## חלופות שנדחו
 
-## 1. Deploy
-
-לפני (Terminal משורש האפליקציה כשמורשה):
-
-```bash
-pnpm install --frozen-lockfile
-pnpm typecheck
-pnpm test
-pnpm build
-```
-
-Vercel: promote/Production → Ready → Certificate Valid.  
-Instant Rollback מובן לפני soft-open.
-
-Env P0: URL, Supabase prod, Cardcom prod, `CHECKOUT_ENABLED`, `CRON_SECRET`, Resend, `VOUCHER_QR_SECRET`.  
-אסור Cardcom תחת `NEXT_PUBLIC_`.
-
-Smoke: `/` RTL, PDP עם מחיר אתר + יתרה בעסק, admin מציג `platform_percent`, supplier בלי Escrow UI.
-
----
-
-## 2. Rollback
-
-| כשל | פעולה |
+| חלופה | למה נדחתה |
 |---|---|
-| באג אפ, כסף תקין | Vercel Instant Rollback |
-| כסף שבור | `CHECKOUT_ENABLED=false` ואז rollback |
-| Webhook נכשל | כיבוי checkout; לא paid ידני ב-SQL |
-| מיגרציה שברה DB | §3.4 + BACKUP-DR |
+| db push | no |
+| no smoke | no |
 
----
+## סכמת DB
 
-## 3. מיגרציות: MCP בלבד
+`schema_migrations`.
 
-החלת מיגרציות על production **אך ורק דרך MCP של Supabase** (כלי apply migration של השרת המחובר).
+## מקרי קצה
 
-**אסור בייצור:**
+| # | מקרה | התנהגות |
+|---|---|---|
+| CE1 | bad migration | PITR |
+| CE2 | public Cardcom | rotate |
+| CE3 | schema drift rollback | check |
+| CE4 | MCP down | STATE |
+| CE5 | early checkout | risk |
 
-```bash
-supabase db push
-supabase db reset
-```
+## פתוחות
 
-סדר:
-
-1. קבצים ב-`supabase/migrations/` לפי שם.  
-2. דרך MCP: קובץ אחד בכל פעם לפי החסר ב-`schema_migrations`.  
-3. אחרי כל קובץ: smoke SQL + רישום ב-`STATE.md`.  
-4. רק אז Deploy אפ שתלוי בסכמה.  
-
-Rollback מיגרציה: קובץ מתקן חדש דרך MCP. אסור למחוק מ-`schema_migrations`.  
-Local בלבד מותר `supabase db reset`.
-
-חריג MCP לא זמין: תיעוד מפורש ב-`STATE.md` לפני SQL Editor.
-
----
-
-## 4. חירום (תמצית)
-
-| תרחיש | מיידי |
+| # | פער |
 |---|---|
-| תשלומים כפולים | כיבוי checkout |
-| מימוש כפול חשוד | FRAUD + freeze |
-| דליפת מפתח | רוטציה + invalidate |
-| אתר למטה | Instant Rollback |
-| DB | PITR / DR |
-
----
-
-## 5. Acceptance
-
-- [ ] Deploy Vercel + smoke  
-- [ ] Rollback ידוע  
-- [ ] מיגרציות prod רק MCP  
-- [ ] אין `db push`/`reset` על prod  
-
----
-
-## 6. Revision
-
-| תאריך | שינוי |
-|---|---|
-| 2026-08-06 | Deploy/rollback + מיגרציות MCP בלבד |
-| 2026-08-06 | QA: smoke No Escrow + `platform_percent`; קישור PRICING/ROADMAP |
-| 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
+| O1 | MCP SLA |
