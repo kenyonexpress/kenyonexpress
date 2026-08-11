@@ -151,6 +151,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `ARCHITECTURE-GIFT-COUPONS.md` | קופון מתנה. | QA-PASS (#16) |
 | `ARCHITECTURE-SUPPLIER-ONBOARDING.md` | הצטרפות ספק (ארכיטקטורה). | QA-PASS (#1) |
 | `SUPPLIER-ONBOARDING.md` | מדריך צירוף ספק. | GUIDE (10.08) |
+| `SEED-SUPPLIERS-SPEC.md` | מיפוי ספקים מ-WP: geo, שעות, WhatsApp, ולידציה. | SPEC (11.08) |
 | `SUPPLIER-QUALITY-PROGRAM.md` | איכות ספקים: NPS פנימי, השעיה, boost חינם. | PLAN (10.08) |
 | `FEATURED-DEALS-PRICING.md` | תמחור קידום דילים (מודל עתידי). | PLAN (10.08) |
 | `ARCHITECTURE-SUPPLIER-PORTAL.md` | פורטל ספק. | BINDING |
