@@ -136,6 +136,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `ARCHITECTURE-CASHBACK-WALLET.md` | ארנק פנימי באגורות. | BINDING |
 | `CASHBACK-WALLET-SPEC.md` | מפרט מוצר לארנק קאשבק (earn/spend UI). | SPEC (11.08) |
 | `ARCHITECTURE-WALLET-LEDGER.md` | ledger כפול-רישום. | BINDING |
+| `ARCHITECTURE-WALLET-INTEGER.md` | תכנית money-integer + SEC-WALLET. | BINDING (11.08) |
 | `ARCHITECTURE-ACCOUNT-WALLET.md` | תכנון/יישום ארנק חשבון. | DESIGN |
 | `PRODUCT-FIELDS-RESEARCH.md` | שדות מוצר, agorot, No Escrow. | BINDING (10.08) |
 
@@ -358,3 +359,4 @@ docs/ROADMAP-V2.md
 | 2026-08-11 | `CHECKOUT-OPTIMIZATION.md`: Cardcom flow + failures + retry |
 | 2026-08-11 | `PAYOUT-ARCHITECTURE.md` BINDING מחדש (TransferFromDigitalBank) |
 | 2026-08-11 | `ARCHITECTURE-SUBSCRIPTIONS.md`: מנוי חודשי Cardcom Recurring |
+| 2026-08-11 | תור 35-38: subscriptions ledger, seed suppliers, product editor, wallet-integer |
