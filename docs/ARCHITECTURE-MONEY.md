@@ -83,7 +83,7 @@ src/lib/commerce/product-money.ts
 | `supplier_split_percent` | משלים ל-100 (CHECK) |
 | `discount_percent` | תצוגה; בקופון נגזר ממחירי sticker/coupon |
 
-### 2.2 שורת הזמנה (`order_items`) — snapshot
+### 2.2 שורת הזמנה (`order_items`): snapshot
 
 | שדה (לוגי) | משמעות |
 |---|---|
