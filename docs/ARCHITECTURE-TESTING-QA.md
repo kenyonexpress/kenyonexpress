@@ -132,3 +132,4 @@ Coverage diff-scoped לשאר הקוד **לא** מחליף 100% money/redeem.
 |---|---|
 | 2026-08-11 | פירמידה + E1–E4 + coverage changed-files |
 | 2026-08-12 | batch-2 #36: BINDING; Q5/Q6 נגד Escrow ו-default עמלה |
+| 2026-08-12 | batch-2 #36 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
