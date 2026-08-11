@@ -155,3 +155,4 @@ Preview Vercel: לעיון ידני; **לא** כותב כסף אמיתי ל-prod
 | 2026-07 | טיוטה אנגלית עם HMAC / escrow / DEFAULT 5% (מיושן) |
 | 2026-08-06 | QA באנר על ארבעה תיקונים |
 | 2026-08-12 | batch-2 #37: BINDING מלא; סעיף 0.1 Assert אין commission default; הסרת 5% כ-open/current |
+| 2026-08-12 | batch-2 #37 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
