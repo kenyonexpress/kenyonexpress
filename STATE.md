@@ -1272,3 +1272,11 @@ ke-arch
 - קישורים הדדיים + QA-PASS ב-MASTER-INDEX (`2144654`)
 - PERSONAL-AREA P7: ביטול Escrow/held
 - STATE: סעיף Escrow 2026-07-27 מסומן כארכיון (דורס)
+
+### 2026-08-11 : electro home-v7 380/768 refs
+- refs/electro-measurements-380.md (`2c29ae9`)
+- refs/electro-measurements-768.md (`50d94c9`)
+- refs/electro-components-map.md (`bf9c666`)
+- refs/electro-design-discrepancies.md (`8be1d48`) : 20 discrepancies
+- Playwright headless (MCP browser blocked); DESIGN named file missing
+- MASTER-INDEX + STATE updated
