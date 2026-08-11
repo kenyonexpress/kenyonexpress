@@ -1,18 +1,19 @@
 # ארכיטקטורה: Testing ו-CI/CD
 
-שערי CI למיזוג, רצפות כיסוי על נתיבי כסף, וחוזה טסטים שתואם את מודל הכסף החי.
+שערי CI למיזוג, רצפות כיסוי על נתיבי כסף, חוזה טסטים שתואם מודל הכסף החי.
 
-Status: **BINDING** · עודכן: 2026-08-12 · QA: PASS  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #37/50  
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+
+מודל כסף: **No Escrow**. אין Escrow held בטסטים. אין default 5% ל-`platform_percent`.
 
 מסמכים קשורים:
 
 ```
-docs/TESTING-STRATEGY.md
+docs/ARCHITECTURE-TESTING.md
 docs/ARCHITECTURE-TESTING-QA.md
-docs/ARCHITECTURE-PRICING-RULES.md
-docs/ARCHITECTURE-CARDCOM-WEBHOOKS.md
+docs/TESTING-STRATEGY.md
 docs/CONTRADICTIONS.md
 .github/workflows/ci.yml
 vitest.config.ts
@@ -20,131 +21,108 @@ vitest.config.ts
 
 ---
 
-## 0. תיקוני אמת (חובה; מחליפים טקסט ישן)
+## 1. החלטה
 
-המסמך ההיסטורי הכיל ארבעה כשלים שמייצרים "טסט ירוק על שקר". **בטל אותם כמצב פתוח:**
+| # | הכרעה |
+|---|---|
+| C1 | אין אחוז כיסוי גלובלי שפותח merge; invariants כסף סגורים + 100% ליבה. |
+| C2 | Pipeline: lint → typecheck → test → build → e2e (conditional). |
+| C3 | Cardcom ב-CI: mock LP; אימות `?s=` + `GetLpResult`; **אין** HMAC גוף. |
+| C4 | אין threshold על `escrow.ts`; אין `DEFAULT_PLATFORM_COMMISSION`. |
+| C5 | `platform_percent` בטסט: חייב מפורש בקלט; חסר = fail. |
+| C6 | Branch protection: lint, typecheck, test, build (+ e2e כשמוכן). |
+| C7 | מיגרציות remote: MCP בלבד; לא `db push` מ-CI. |
+| C8 | Concurrency: `ci-${{ github.ref }}`, cancel-in-progress. |
+| C9 | Preview Vercel: לעיון; לא כותב כסף ל-prod DB. |
 
-| # | היה (שגוי) | מצב מחייב עכשיו |
+### 1.1 תיקוני אמת (מחליפים טקסט ישן)
+
+| # | היה שגוי | מצב מחייב |
 |---|---|---|
-| A | פיצול קופון "10%/90%" כברירת מחדל | `coupon_price` מוחלט פר מוצר; אין יחס קבוע |
-| B | E2E בונה גוף webhook **חתום HMAC** | **אין** חתימת גוף Cardcom. אימות = `?s=` + `GetLpResult` |
-| C | assert "escrow is held" | **No Escrow**. אין held/נאמן/J5 |
-| D | רצפת coverage על `escrow.ts` + `DEFAULT_PLATFORM_COMMISSION = 5` | **אין** קובץ escrow במודל; **אין** `DEFAULT_PLATFORM_COMMISSION`; **אין** default 5% ל-`platform_percent` |
-
-### 0.1 Assert: אין commission default
-
-1. אסור בקוד ובטסטים: `DEFAULT_PLATFORM_COMMISSION`, `DEFAULT_PLATFORM_COMMISSION_PERCENT`, או כל קבוע 5/10 כאחוז עמלה גלובלי.  
-2. `platform_percent` מגיע מהמוצר (או snapshot בהזמנה). חסר = כשל ולידציה / כשל טסט.  
-3. טסט settlement **מעביר percent במפורש** בקלט וטוען את החשבון.  
-4. דמי ביטול חוקיים 5% או 100₪ הם **statutory**, לא commission, ולא מחליפים את הכלל למעלה.  
-5. כל אזכור ישן ל-5% כ-open/current commission default במסמך זה או בקונפיג CI = חוב לתיקון קוד/docs, לא מדיניות פתוחה.
+| A | פיצול קופון 10%/90% | `coupon_price` מוחלט; אין יחס קבוע |
+| B | E2E webhook HMAC | אין חתימת גוף; `?s=` + GetLpResult |
+| C | assert escrow held | No Escrow |
+| D | DEFAULT 5% commission | אסור; percent מהמוצר |
 
 ---
 
-## 1. עקרון שערי CI
+## 2. חלופות שנדחו
 
-אין אחוז כיסוי גלובלי שפותח merge. יש:
-
-1. רשימת invariants כסף סגורה (סעיף 2) עם לפחות טסט אחד לכל invariant.  
-2. רצפות per-file על מודולי money/redeem לפי `TESTING-STRATEGY.md` (**100%** על ליבה; לא 95% כתחליף).  
-3. lint + typecheck + build ירוקים.  
-4. e2e עם mock Cardcom כש-`CI_SUPABASE_*` קיימים.
-
-Target branch למיזוג מוגן: הענף הראשי של הריפו (אחרי cutover: `main`). ענף עבודה יומי יכול לקבל push ישיר; השער על ה-PR למיזוג.
-
----
-
-## 2. Invariants כסף (unit)
-
-| מודול | מה חייבים לנעול |
+| חלופה | נימוק דחייה |
 |---|---|
-| money (agorot) | parse מדויק, דחיית >2 ספרות, allocation (סכום חלקים = מקור), בלי float |
-| split / settlement | קופון: on-site = `coupon_price`; `supplier_due` מפלטפורמה = 0; פיזי: fee מ-`platform_percent` **מפורש** |
-| redemption gate | not_found / wrong_supplier / already_used / expired / success |
-| QR verify | payload תקין עובר; שינוי digest נכשל |
-| cart merge (pure) | איחוד כמויות; atomicity ב-DB/integration לא ב-unit |
-
-אסור:
-
-- hardcode יחס 10/90 כמודל  
-- `platformPercent` חסר עם fallback שקט ל-5  
-- חתימת HMAC ל-Cardcom כשלב חובה  
-- expect על escrow held  
+| merge עם E2E אדום קבוע | מלמד להתעלם; skip מפורש עד secrets |
+| lint על כל הריפו כחוסם | 45 שגיאות legacy; diff-scoped |
+| HMAC Cardcom כדרישת CI | לא במודל החי |
+| coverage על escrow.ts | קובץ מחוץ למודל |
+| db push מ-CI | אסור; MCP |
+| force push ל-main | branch protection |
 
 ---
 
-## 3. E2E (CI)
+## 3. סכמת DB (CI)
 
-| Flow | דרישה |
+**אין DDL חדש.** CI משתמש ב:
+
+| משאב | שימוש |
 |---|---|
-| Checkout | guest/user → mock LP return → paid + voucher issued |
-| Redeem | סריקה ראשונה success; שנייה already_used; race → שורה אחת |
-| Refund | לפי מדיניות לפני/אחרי redeem |
+| `CI_SUPABASE_URL` / anon key | build + e2e |
+| stack מקומי (supabase start) | migrations job יעד |
+| `tests/sql/*.sql` | assertions post-reset |
+
+Harness יעד (D6): apply-twice + SQL tests ב-job `migrations`.
+
+---
+
+## 4. Invariants ו-E2E CI
+
+| מודול | חובה |
+|---|---|
+| money (agorot) | parse, allocation, no float |
+| split/settlement | קופון supplier_due=0; פיזי percent מפורש |
+| redemption gate | not_found, already_used, wrong_supplier |
+| QR verify | digest tamper fail |
+
+E2E flows: checkout mock LP; redeem once; refund policy.
 
 Stub Cardcom:
 
-1. Low Profile create דרך `CHECKOUT_PROVIDER=mock` (או מקביל).  
-2. Webhook/return: גוף עם `?s=<secret>` + mock `GetLpResult`. **אין** `signCardcomBody`.  
-
-אין secrets של מסוף אמיתי ב-CI.
-
----
-
-## 4. Pipeline GitHub Actions
-
-סדר חוסם:
-
-```text
-lint → typecheck → test(--coverage) → build → e2e (conditional)
+```
+CHECKOUT_PROVIDER=mock
 ```
 
-| Job | הערות |
-|---|---|
-| lint | diff-scoped מותר; לא לחסום על רעש ב-`scripts/` אם מדיניות כך |
-| typecheck | `tsc --noEmit` |
-| test | רצפות money; **בלי** threshold על `escrow.ts` |
-| build | דורש `CI_SUPABASE_*` ציבוריים ל-build |
-| e2e | Playwright he-IL; skip אם אין secrets DB |
+---
 
-Concurrency: `ci-${{ github.ref }}`, cancel-in-progress.
+## 5. מקרי קצה
 
-Preview Vercel: לעיון ידני; **לא** כותב כסף אמיתי ל-prod DB מ-CI.
+| # | מצב | התנהגות CI |
+|---|---|---|
+| E1 | אין `CI_SUPABASE_*` | e2e skip + warning |
+| E2 | build ללא env | fail (לא skip שקט) |
+| E3 | migration לא idempotent | apply-twice fail |
+| E4 | secret ב-`.next/static` | scan job fail |
+| E5 | percent null בטסט | unit fail |
+| E6 | טסט HMAC ישן | להסיר; block review |
+| E7 | PR concurrent pushes | cancel-in-progress |
 
 ---
 
-## 5. Branch protection (יעד)
+## 6. פתוחות
 
-על ענף המיזוג:
-
-- אין push ישיר  
-- required checks: lint, typecheck, test, build (+ e2e כשמוכן)  
-- linear history מומלץ  
-- אין force push  
-
-מיגרציות remote: MCP בלבד, לא `db push` מ-CI.
-
----
-
-## 6. חוב קוד מתועד (לא פתוח כמדיניות)
-
-אם בריפו הראשי עדיין מופיעים:
-
-- `DEFAULT_PLATFORM_COMMISSION*`  
-- threshold ל-`escrow.ts`  
-- טסטי HMAC Cardcom  
-
-אלה באגים מול CONTRADICTIONS / PRICING-RULES. המדיניות כאן: **להסיר**, לא "לחכות להחלטה על default 5%".
+| # | פער | תאריך |
+|---|---|---|
+| O1 | E2E required check | אחרי CI_SUPABASE stable |
+| O2 | migrations job ב-ci.yml | D6 |
+| O3 | secret bundle scan | 7.4 TESTING |
+| O4 | Lighthouse / axe jobs | post-launch |
 
 ---
 
 ## 7. Acceptance
 
-- [ ] אין `DEFAULT_PLATFORM_COMMISSION` / default 5% כעמלה פתוחה  
-- [ ] אין HMAC גוף כדרישת CI  
-- [ ] אין Escrow held בטסטים  
-- [ ] percent מפורש בכל טסט settlement  
-- [ ] statutory cancellation fee מופרד מ-commission  
-- [ ] CI: lint/typecheck/test/build מתועדים כשערים  
+- [ ] אין DEFAULT 5% / HMAC / Escrow בטסטים  
+- [ ] percent מפורש בכל settlement test  
+- [ ] lint/typecheck/test/build מתועדים  
+- [ ] חלופות + DB + קצה + פתוחות  
 
 ---
 
@@ -152,7 +130,5 @@ Preview Vercel: לעיון ידני; **לא** כותב כסף אמיתי ל-prod
 
 | תאריך | שינוי |
 |---|---|
-| 2026-07 | טיוטה אנגלית עם HMAC / escrow / DEFAULT 5% (מיושן) |
-| 2026-08-06 | QA באנר על ארבעה תיקונים |
-| 2026-08-12 | batch-2 #37: BINDING מלא; סעיף 0.1 Assert אין commission default; הסרת 5% כ-open/current |
-| 2026-08-12 | batch-2 #37 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
+| 2026-07 | טיוטה עם HMAC/escrow (מיושן) |
+| 2026-08-12 | batch-2: BINDING מלא; תבנית חובה |
