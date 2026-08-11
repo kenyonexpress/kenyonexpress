@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-11 (docs queue notifications/seo/mobile/analytics + MASTER-INDEX)
+Updated: 2026-08-11 (queue reinforce notifications/seo/mobile/analytics + MASTER-INDEX)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,11 +8,11 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-תור docs סגור (commit+push לכל מסמך) + עדכון MASTER-INDEX:
-1 ARCHITECTURE-NOTIFICATIONS (Resend RTL, CF Workers bus, SMS, preferences, spam law)
-2 ARCHITECTURE-SEO-PERFORMANCE (metadata, schema.org, sitemap/category, CWV, ISR, Meili)
-3 ARCHITECTURE-MOBILE-APP (Expo shared API, RTL, push, offline coupon wallet)
-4 ARCHITECTURE-ANALYTICS (events, supplier KPIs, admin revenue by percent)
+תור docs סגור (commit+push לכל מסמך) + MASTER-INDEX + STATE:
+1 ARCHITECTURE-NOTIFICATIONS (Resend RTL, CF Workers Queue/DLQ, SMS, preferences, spam law)
+2 ARCHITECTURE-SEO-PERFORMANCE (metadata Next 15+, schema.org JSON-LD, sitemap/category, CWV, ISR, Meili)
+3 ARCHITECTURE-MOBILE-APP (Expo shared API session-only, RTL, push, SecureStore offline QR)
+4 ARCHITECTURE-ANALYTICS (events envelope, supplier KPIs, admin revenue SQL by percent)
 
 ## In Progress
 nothing (closed queue)
