@@ -1,10 +1,12 @@
 # ארכיטקטורה: קופון מתנה
 
-רכישה למתנה, ברכה, העברת בעלות, ומימוש. אותם כללי כסף כמו קופון רגיל (No Escrow).
+רכישה למתנה, ברכה, העברת בעלות, ומימוש. אותם כללי כסף כמו קופון רגיל.
 
-Status: **BINDING** · עודכן: 2026-08-12 · QA: PASS  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #14/50  
-אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד.
+
+מודל כסף: **No Escrow**. מקדמה באתר = הכנסת פלטפורמה. העברה/מימוש לא משחררים payout לספק.
 
 מסמכים קשורים:
 
@@ -18,11 +20,9 @@ docs/ARCHITECTURE-FRAUD-PREVENTION.md
 docs/CONTRADICTIONS.md
 ```
 
-מודל כסף: **No Escrow**. מקדמה באתר = הכנסת פלטפורמה. העברה/מימוש לא משחררים payout לספק.
-
 ---
 
-## 0. הכרעות
+## החלטה
 
 | # | הכרעה |
 |---|---|
@@ -35,9 +35,7 @@ docs/CONTRADICTIONS.md
 | G7 | Redeem אצל ספק זהה לקופון רגיל (RPC + CAS). |
 | G8 | Refund: לפי בעלות נוכחית + סטטוס `issued` בלבד; אחרי redeem אין refund לכרטיס. |
 
----
-
-## 1. זרימה מקצה לקצה
+### זרימה מקצה לקצה
 
 ```text
 רוכש מוסיף דיל (דגל gift אופציונלי ב-checkout)
@@ -50,9 +48,7 @@ docs/CONTRADICTIONS.md
   → ספק סורק → redeemed
 ```
 
----
-
-## 2. העברת בעלות
+### העברת בעלות
 
 | כלל | פירוט |
 |---|---|
@@ -65,21 +61,15 @@ docs/CONTRADICTIONS.md
 
 אסור: העברה אחרי `redeemed`. אסור: פיצול שובר אחד לשניים.
 
----
-
-## 3. ברכה ותצוגה
+### ברכה ותצוגה
 
 | רכיב | כלל |
 |---|---|
 | טקסט | אורך מוגבל; סינון XSS בשרת |
-| נראות | לבעלים ולנמען אחרי transfer; לא לספק בסריקה (אופציונלי שם קצר) |
+| נראות | לבעלים ולנמען אחרי transfer; לא לספק בסריקה |
 | עריכה | רק לפני transfer או לפי מדיניות "עד redeem" |
 
----
-
-## 4. כסף ומכסה
-
-זהה לקופון רגיל:
+### כסף
 
 ```text
 charged = coupon_price
@@ -92,33 +82,82 @@ supplier_due_from_platform = 0
 
 ---
 
-## 5. כשלים
+## חלופות שנדחו
 
-| קוד | התנהגות |
+| חלופה | למה נדחתה |
 |---|---|
-| `not_owner` | אין transfer |
-| `not_issued` | אין transfer / אין הצגת QR פעיל |
-| `recipient_invalid` | דחייה; בעלות נשארת |
-| `quota` | כמו INVENTORY |
-| `already_redeemed` | בסריקה רגילה |
+| mint לפני paid | G1: כמו קופון רגיל. |
+| transfer מ-`redeemed` | G3: שובר נשרף; terminal. |
+| ברכה משנה סכום | G4: מטא-דאטה בלבד. |
+| מכסה נפרדת ל-gift | G5: quota משותפת. |
+| payout לספק על gift | No Escrow: supplier_due = 0. |
+| פיצול שובר לשניים | אסור: voucher אחד = בעלים אחד. |
+| QR לרוכש אחרי transfer | G6: רק בעלים נוכחי. |
 
 ---
 
-## 6. Acceptance
+## סכמת DB
 
-- [ ] Mint רק אחרי paid  
-- [ ] Transfer רק מ-issued עם audit  
-- [ ] מכסה משותפת  
-- [ ] Redeem זהה לרגיל  
-- [ ] No Escrow / אין payout על gift  
-- [ ] Refund רק לפני redeem  
+```text
+vouchers (
+  ...
+  user_id uuid NOT NULL,          -- בעלים נוכחי
+  is_gift boolean DEFAULT false,
+  gift_message text,
+  gift_transferred_at timestamptz,
+  gift_transferred_from uuid,
+  ...
+)
+
+voucher_transfers (
+  id uuid PK,
+  voucher_id uuid FK,
+  from_user_id uuid,
+  to_user_id uuid,
+  actor_user_id uuid,
+  created_at timestamptz
+)
+```
+
+| שדה | שימוש |
+|---|---|
+| `vouchers.user_id` | בעלות נוכחית (מתעדכן ב-transfer) |
+| `gift_message` | ברכה; nullable |
+| `voucher_transfers` | audit append-only |
+
+אין שדות held/payout על gift. `platform_percent = 100` על voucher (054).
 
 ---
 
-## 7. Revision
+## מקרי קצה
+
+| # | מקרה | התנהגות |
+|---|---|---|
+| CE1 | transfer כפול במקביל | CAS: רק אחד מצליח |
+| CE2 | recipient לא קיים | `recipient_invalid`; בעלות נשארת |
+| CE3 | redeem לפני transfer | `already_redeemed` / not_owner |
+| CE4 | refund אחרי transfer | לפי בעלים נוכחי + `issued` |
+| CE5 | quota מלאה | כמו INVENTORY; אין mint |
+| CE6 | greeting ארוך מדי | דחייה בשרת |
+| CE7 | XSS בברכה | sanitize; strip tags |
+
+---
+
+## פתוחות
+
+| # | פתוח | הערה |
+|---|---|---|
+| O1 | claim באימייל לנמען לא רשום | מדיניות onboarding |
+| O2 | `voucher_transfers` migration | pending |
+| O3 | תבניות ברכה מוכנות | UX phase 2 |
+| O4 | עריכת ברכה אחרי transfer | counsel + מוצר |
+
+---
+
+## Revision
 
 | תאריך | שינוי |
 |---|---|
 | 2026-08-06 | QA-PASS |
-| 2026-08-12 | batch-2 #14 stub |
-| 2026-08-12 | batch-2 #14 pass-2: transfer, greeting, failures, money |
+| 2026-08-12 | batch-2: transfer, greeting, failures, money |
+| 2026-08-12 | batch-2: תבנית חובה (5 סעיפים) |
