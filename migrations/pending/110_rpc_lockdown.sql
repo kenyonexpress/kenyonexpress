@@ -2,8 +2,22 @@
 -- PENDING: RPC lockdown -- take anon off every function that never needed it
 -- ============================================================================
 --
--- STATUS: NOT APPLIED. Files only. Applied through MCP apply_migration by
--- Claude Web, never db push, never from this session.
+-- STATUS: APPLIED to production on 2026-08-12 through MCP apply_migration
+-- (migration name `rpc_lockdown_security_definer_grants`). Never db push.
+--
+-- The 2026-08-11 audit below was re-verified against the live catalog
+-- immediately before applying and had not drifted: every identity signature
+-- still matched, is_admin() still sat in 13 anon-reachable policies and
+-- is_supplier_member() in 2. Applied verbatim except that the anon probe for
+-- the storefront was widened to categories as well as products.
+--
+-- RESULT, measured after applying:
+--   anon-executable SECURITY DEFINER functions   14 -> 4
+--   security advisor WARN total                  38 -> 24
+--   PUBLIC grants left on the 14 touched names   0
+--   anon SELECT on products (expect > 0)         61
+--   anon SELECT on categories (expect > 0)       12
+--   anon check_rate_limit (expect true)          true
 --
 -- Audited against the live catalog on 2026-08-11: 59 SECURITY DEFINER functions
 -- in `public`, of which 14 are reachable by `anon` today.

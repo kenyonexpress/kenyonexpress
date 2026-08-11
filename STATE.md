@@ -1,8 +1,96 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-12 (שער הפיקסלים הפך משורת פרוזה לשער שנופל, ‏tag `wave-measured-leads`)
+Updated: 2026-08-12 (הקשחת ה-RPC הוחלה על פרודקשן, אזהרות ה-security ירדו מ-38 ל-24)
 
-## המשך מ: התור בן שלושת הסעיפים נסגר (‏tag `wave-measured-leads`). התור הבא נבנה מהתור הישן בן 14 ה-goals, מ-`goal 2 ADMIN PRODUCT ENGINE`
+## המשך מ: שלב 4 בשרשרת החמישה, ‏ADMIN CORE לפי `docs/ADMIN-ARCHITECTURE.md`. שלבים 1 ו-3 סגורים, שלב 2 נמצא כבר מסופק ברמת ה-DB
+
+### שרשרת חמשת השלבים, מצב אמיתי נכון ל-12.08
+
+**שלב 1, היגיינת ריפו: סגור.** 29 branches מוזגים נמחקו ב-`-d`, ו-`arch/supplier-portal`
+נמחק ב-`-D` אחרי ש-`git cherry` הראה שאין בו patch שאינו ב-main. הרשימה עם ה-SHA
+שמורה ב-`~/ke-merged-branches-backup.deleted-29.txt`. ‏`origin/HEAD` הצביע על
+`cursor/add-supabase-3c830` בזמן ש-GitHub מדווח `main`, תוקן. כלל 4 ב-CLAUDE.md
+הצביע על `phase5/homepage`, ענף שכבר מוזג, והועבר ל-`main`.
+
+**‏.gitignore לא שונה, בכוונה.** ההוראה הייתה להוסיף לו `refs/*.png`,
+`ke_live_singlefile.html` ו-`ke_live_computed.json`. הקובץ כבר עושה את ההפך
+במפורש (שורות 61-68: ‏`refs/*` ואז `!refs/ke_live_*.png` ושתי האחיות), וזה נכתב
+ב-`e07eb28d6` כדי שקבצי הייחוס יהיו addable בלי `-f`. ‏CLAUDE.md מכריז ש-`refs/`
+הוא המקור הוויזואלי היחיד. להתעלם מהם היה מנתק את הבסיס ש-`compare.mjs` מודד מולו.
+
+**שלב 2, שדות דינמיים: מסופק ברמת ה-DB, נותר ה-UI.** ‏`products` בפרודקשן מחזיק
+את חמשת השדות, כולם `NULL`-able וכולם **בלי `DEFAULT`**, כלומר כלל האחוזים
+הדינמיים נאכף בסכימה: `supplier_split_percent`, `platform_percent`,
+`discount_percent`, `coupon_price_ils`, `type`, ‏`supplier_id`.
+‏**אין עמלת 5% קשיחה בשום מקום:** ‏`node scripts/no-hardcoded-fees.mjs` מחזיר
+`✓ no hardcoded commission or split percentage found`. ‏**אין `packages/payments`**
+ואין `packages/` בכלל, הריפו אינו monorepo.
+
+**שלב 3, הקשחת אבטחה: הוחל על פרודקשן.** ראה למטה.
+
+**שלבים 4 ו-5: פתוחים.**
+
+### החלטות שהתקבלו לבד
+
+**‏1. הלולאה האוטונומית נהרגה, כי היא כתבה לאותו working tree.** ‏`kenyon-loop.sh`
+(‏PID 44793) ו-`claude --print` שלה היו חיים וביצעו commit לתוך אותה תיקייה תוך
+כדי הסשן: ‏`8b61d7ece` ו-`2ed270364` ב-04:07, ו-`272eda208` ב-04:39. הקומיט שלי
+נחת מעל שלהם. ‏SIGTERM לא הספיק, היא ייצרה תהליך חדש, ונדרש `kill -9` לתסריט
+ולעטיפת ה-`caffeinate` לפני הצאצא. אין אובדן, שלושת הקומיטים reachable.
+
+**‏2. הרשימה של 21 הפונקציות בשלב 3 לא הופעלה כלשונה, כי ארבע ממנה מפילות את האתר.**
+הופעל במקומה `migrations/pending/110_rpc_lockdown.sql`, שמבוקר מול הקטלוג החי.
+ההבדל, מדוד מול פרודקשן ולא משוער:
+
+| פונקציה | מה הרשימה ביקשה | מה נעשה, ולמה |
+| --- | --- | --- |
+| `is_admin` | לשלול מ-anon | **נשארה ל-anon.** יושבת ב-13 policies שנגישות ל-anon, על `products` ו-`categories` ביניהן. שלילה הופכת כל SELECT אנונימי לדחייה, כלומר מורידה את חנות הראווה |
+| `is_supplier_member` | לשלול מ-anon | **נשארה.** אותו סיפור על 2 policies |
+| `check_rate_limit` | לשלול מ-anon | **נשארה.** נקראת מ-`auth.ts` להתחברות, הרשמה, magic link, ‏OTP ואיפוס סיסמה, כולם רצים למבקר בלי סשן. שלילה שוברת התחברות |
+| `fn_record_recent_search` | לשלול מ-anon | **נשארה.** ‏`/search` הוא עמוד ציבורי ומעביר את הלקוח ה-cookie-scoped בכוונה |
+
+שמונה מתוך ה-21 כבר היו סגורות ל-anon מלכתחילה. מ-`authenticated` נשללו רק
+ארבע, אלה שנקראות דרך `createAdminClient()` בלבד; שלילת `authenticated`
+מ-RLS helpers הייתה שוברת את ה-policies של משתמשים מחוברים.
+
+**‏3. ה-policy על `invoices` נכתב דרך `orders`, כי `user_id` לא קיים שם.** ההוראה
+הייתה `user_id = auth.uid()`. ל-`invoices` אין עמודה כזו; הבעלות מגיעה רק דרך
+`order_id -> orders.user_id`. ראה `migrations/pending/117_invoices_owner_read.sql`.
+
+**‏4. ה-rate limit של ה-PIN סופר כישלונות בלבד, לא ניסיונות.** קופאי מזדהה
+בקופה עשרות פעמים במשמרת; ספירת הצלחות הייתה נועלת עסק עובד תוך שעה. ראה
+`migrations/pending/118_verify_supplier_staff_pin_rate_limit.sql`.
+
+**‏5. חוב `reconcile_054` נסגר בלי לגעת.** אומת ש-076, 027, 054 ו-071 הוחלו
+ב-27.07, ו-`platform_settled` קיים בשלושת ה-enums. אין enum חסר ואין מה להריץ.
+
+### שלב 3, מה בדיוק הוחל על פרודקשן ומה נמדד אחריו
+
+שלוש מיגרציות דרך MCP `apply_migration`, אף פעם `db push`:
+
+1. `rpc_lockdown_security_definer_grants` — ‏`migrations/pending/110_rpc_lockdown.sql`
+2. `invoices_owner_read_policy` — ‏`migrations/pending/117_invoices_owner_read.sql`
+3. `verify_supplier_staff_pin_rate_limit` — ‏`migrations/pending/118_...sql`
+
+| מדד | לפני | אחרי |
+| --- | --- | --- |
+| פונקציות SECURITY DEFINER נגישות ל-anon | 14 | **4** |
+| ‏`security` advisor, סך WARN | 38 | **24** |
+| ‏`rls_enabled_no_policy` (INFO) | 9 טבלאות | **8** |
+| מענקי `PUBLIC` על 14 השמות שנגעתי בהם | קיימים | **0** |
+
+בדיקות הריצה שתופסות את הטעות המסוכנת, כולן בתור `anon`:
+‏`products` פעילים = 61, ‏`categories` = 12, ‏`check_rate_limit` = true.
+כלומר חנות הראווה נטענת וההתחברות עובדת אחרי הנעילה.
+
+הנעילה של ה-PIN אומתה על פרודקשן בבלוק שמתגלגל אחורה: חמישה כישלונות שקטים,
+הששי מחזיר `locked=true`, ‏PIN נכון **אינו** עוקף נעילה, ואחרי החלון הוא
+מחזיר `locked=false` והמונה מתאפס.
+
+**מה שנשאר פתוח באבטחה, במכוון:** 19 אזהרות `authenticated_security_definer`
+(‏RLS helpers שחייבים להישאר נגישים למשתמש מחובר), 4 של anon לפי הטבלה למעלה,
+ואחת שאינה DB כלל: `auth_leaked_password_protection` מכובה, וזו הגדרה בלוח
+הבקרה של Supabase Auth ולא משהו שמיגרציה יכולה לשנות.
 
 **התור הבא, סגור, לפי הסדר.** נבנה מהלידים **המדודים** שנשארו פתוחים אחרי
 שני הגלים, ולא מ-NEXT-GOALS.md: שם נשאר פתוח סעיף אחד בלבד, ‏goal 15 ‏(ארנק
