@@ -122,3 +122,4 @@ product_categories (product_id, category_id, is_primary)
 | 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
 | 2026-08-07 | QA audit: T7 + קישור PRICING; קטגוריה בלי עמלה/Escrow |
 | 2026-08-12 | batch #43/50: רענון BINDING על arch/docs-batch-2; slug אטרקציות מתוקן ל-attractions |
+| 2026-08-12 | batch-2 #43 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
