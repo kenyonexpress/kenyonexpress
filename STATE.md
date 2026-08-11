@@ -14,14 +14,14 @@ docs/DOCS-TEMPLATE-BINDING.md
 .
 
 ## המשך מ:
-נכתב
-docs/ARCHITECTURE-MONEY.md
+נכתב מחדש
+docs/ARCHITECTURE-CART-GUEST.md
 . ממתין למסמך הבא על
 arch/docs-batch-2
 .
 
 ## Last Completed
-ARCHITECTURE-MONEY.md: agorot integer, half-up, VAT extractVat, split residual, snapshot ב-beginCheckout, No Escrow. קודם: COUPON-LIFECYCLE.
+ARCHITECTURE-CART-GUEST.md: guest token, cookie policy, merge sum+cap99, מטריצת קונפליקטים. קודם: MONEY.
 
 ## In Progress
 nothing
@@ -33,6 +33,8 @@ nothing
 /Users/ofir/kenyonexpress-web/ke-arch
 
 ## החלטות שהתקבלו אוטומטית
+- **2026-08-12 CART-GUEST conflicts:** מיזוג = sum+cap 99 (לא max). מחיר תמיד חי. מחיקת cookie אחרי merge; קישור אנליטיקס לפני המחיקה ב-OAuth. תועד BINDING ב-ARCHITECTURE-CART-GUEST.md.
+
 - **2026-08-12 MONEY:** נוצר ARCHITECTURE-MONEY.md כ-BINDING. קופון: commission=paid_on_site ו-supplier_due=0 למרות ש-platform_percent מצולם (הסכם/ביקורת, לא payable). COMPLETE-SYSTEM Escrow נדחה במפורש במסמך. עיגול = half-up integer; מע"מ = extractVat על הכנסת פלטפורמה בלבד.
 
 - **2026-08-12 COUPON-LIFECYCLE locks:** redeem ננעל ב-`UPDATE … WHERE status=issued … RETURNING` (לא SELECT FOR UPDATE מפורש); expire ב-`FOR UPDATE SKIP LOCKED`. תועד כ-BINDING ב-ARCHITECTURE-COUPON-LIFECYCLE.md מול 092/068.
