@@ -1,9 +1,54 @@
 # CONTENT-PLAYBOOK.md
 
-איך כותבים דיל שנמכר, בעברית, בשדות שקיימים בפועל באדמין.
+Status: **BINDING (PLAYBOOK)** · עודכן: 2026-08-12
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+מודל כסף: No Escrow; אסור נאמן/Escrow בטקסט ללקוח.
 
-Status: **PLAYBOOK** · 2026-08-07 · Scope: docs only
-שמות השדות למטה נלקחו מהסכימה של `public.products` בפרודקשן, לא מהזיכרון.
+---
+
+## 1. החלטה
+
+| # | הכרעה |
+|---|---|
+| P1 | שדות מ-`products` בפרוד; סדר מילוי קבוע |
+| P2 | קופון: רק `coupon_price_ils` + `full_price` |
+| P3 | `platform_percent` חובה; אין default |
+| P4 | דמי ביטול: 5% או ₪100, הנמוך |
+
+---
+
+## 2. חלופות שנדחו
+
+| חלופה | נימוק |
+|---|---|
+| coupon_price כאחוז מ-face | C4 CONTRADICTIONS |
+| מילוי 6 עמודות מחיר | שני מחירים = תלונה |
+| "חינם" עם יתרה בעסק | הטעיית צרכן |
+
+---
+
+## 3. סכמת DB
+
+| טבלה | שדות |
+|---|---|
+| `products` | name_he, coupon_price_ils, full_price, platform_percent, highlights, coupon_terms_he |
+
+---
+
+## 4. מקרי קצה
+
+| # | מצב |
+|---|---|
+| E1 | platform_percent ריק | publish fail |
+| E2 | תוקף דיל ≠ תוקף שובר | שני שדות נפרדים |
+| E3 | תמונה 8MB ללא דחיסה | בדוק bytes |
+
+---
+
+## 5. פתוחות
+
+| O1 | מיגרציה agorot | PRODUCT-FIELDS-RESEARCH | 2026-08-12 |
 
 ---
 
@@ -292,8 +337,10 @@ coupon_terms_he (השורות הייחודיות):
 
 ---
 
+
 ## Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-07 | נכתב. שמות השדות מהסכימה החיה של `products` |
+| 2026-08-12 | BINDING batch-2: החלטה, חלופות, DB, קצה, פתוחות |
+
