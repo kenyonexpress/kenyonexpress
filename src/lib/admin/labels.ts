@@ -24,6 +24,10 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   fulfilled: 'סופקה',
   cancelled: 'בוטלה',
   refunded: 'הוחזרה',
+  // Added 2026-08-11 with the type regeneration. Migration 071 put this value
+  // in the live enum and the checked-in types never carried it, so the map
+  // compiled while a real order state had no Hebrew label at all.
+  platform_settled: 'הפלטפורמה שולמה',
 }
 
 export const ORDER_ITEM_STATUS_LABELS: Record<OrderItemStatus, string> = {
@@ -41,6 +45,7 @@ export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   succeeded: 'הצליח',
   failed: 'נכשל',
   refunded: 'הוחזר',
+  platform_settled: 'הפלטפורמה שולמה',
 }
 
 export const PAYMENT_KIND_LABELS: Record<PaymentKind, string> = {
@@ -117,6 +122,10 @@ export const REFERRAL_STATUS_LABELS: Record<ReferralStatus, string> = {
   pending: 'ממתין',
   completed: 'הושלם',
   rejected: 'נדחה',
+  // Migration 097 added this for referrals held back for fraud review. Same
+  // story as platform_settled above: live in the database, absent from the
+  // checked-in types, so the admin had no word for it.
+  flagged: 'סומן לבדיקה',
 }
 
 export const PENDING_QUEUE_LABELS: Record<string, string> = {
