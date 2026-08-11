@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-11 (notifications + SEO-PERFORMANCE + electro map queue)
+Updated: 2026-08-11 (mobile/testing-qa/observability docs queue)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -11,24 +11,23 @@ kenyonexpress
 
 ## Last Completed
 תור docs סגור (commit+push לכל קובץ):
-1. refs/electro-measurements-380.md + 768 (כבר ב-branch)
-2. refs/electro-components-map.md (Header/HeroSlider/ProductCard/DealsRow/CategoryStrip/BrandsCarousel/Footer + 20 px discrepancies)
-3. docs/ARCHITECTURE-NOTIFICATIONS.md (outbox/Resend/push/in-app/retry+DLQ)
-4. docs/ARCHITECTURE-SEO-PERFORMANCE.md (hreflang he-IL, JSON-LD, CWV@380/768, seo_redirects מ-030)
-5. docs/MASTER-INDEX.md + STATE.md
+1. docs/ARCHITECTURE-MOBILE-APP.md (496112e)
+2. docs/ARCHITECTURE-TESTING-QA.md (7962993)
+3. docs/ARCHITECTURE-OBSERVABILITY.md (7d71f67)
+4. docs/MASTER-INDEX.md blurbs (ccfc62e)
 
 ## In Progress
-nothing (closed queue)
+docs integrity audit → docs/INDEX.md
 
 ## Blocking Issues
 - refs/electro.madrasthemes.com-DESIGN.md חסר (D01); baseline = DESIGN-MEASURED.md + ELECTRO_HERO
 - BrandsCarousel: נתיב מיועד src/components/store/BrandsCarousel.tsx עדיין לא קיים בקוד
 - cursor-ide-browser MCP לא יציב; מדידות Playwright
 - השקה: 10 דילי seed missing; Cardcom prod; Vercel session
+- BUSINESS-MODEL-RULES.md לא קיים; האודיט מול BUSINESS-MODEL.md + CONTRADICTIONS + PRICING-RULES
 
 ## Next Task
-שערי LAUNCH-WEEK-RUNBOOK / ARCHITECTURE-LAUNCH-CHECKLIST
-או שחזור refs/electro.madrasthemes.com-DESIGN.md
+Commit docs/INDEX.md (integrity) ואז סגירת STATE
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
