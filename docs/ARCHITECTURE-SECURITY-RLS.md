@@ -140,3 +140,4 @@ Agents, analytics partitions, ledger מורחב, reconciliation: RLS = admin/ser
 | תאריך | שינוי |
 |---|---|
 | 2026-08-12 | batch #30/50: ריענון BINDING (סיכום מטריצה ממוקד) |
+| 2026-08-12 | batch-2 #30 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
