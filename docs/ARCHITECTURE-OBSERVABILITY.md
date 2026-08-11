@@ -140,3 +140,4 @@ Timeout להתראה ≤ 4s. `ALERTS_ENABLED=false` בטסטים.
 | תאריך | שינוי |
 |---|---|
 | 2026-08-12 | batch #32/50: ריענון BINDING (Sentry, webhook alerts, reconcile) |
+| 2026-08-12 | batch-2 #32 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
