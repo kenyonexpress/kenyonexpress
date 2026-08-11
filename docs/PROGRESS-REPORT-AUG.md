@@ -22,8 +22,8 @@ docs/V2-VISION.md
 
 | מדד | ערך | הערה |
 |---|---:|---|
-| מסמכי `docs/*.md` | **~126** | כולל companions + סבב 20 |
-| קומיטי docs מאז 01.08 | **~248** | ענף `arch/docs-lifecycle` |
+| מסמכי `docs/*.md` | **~135** | כולל companions + סבבים 1–29 |
+| קומיטי docs מאז 01.08 | **~260+** | ענף `arch/docs-lifecycle` |
 | מיגרציות SQL בריפו | **73** | החלה ל-prod רק MCP |
 | דפי `page.tsx` | **55** | store / account / admin / supplier |
 | טסטי unit (`*.test.ts/x`) | **56** | Vitest; רף כסף בדרך ל-100% |
@@ -63,6 +63,22 @@ docs/V2-VISION.md
 | 19 | `LAUNCH-WEEK-RUNBOOK.md` | D-2 עד D+7 |
 | 20 | `PROGRESS-REPORT-AUG.md` | דוח זה |
 
+### 2.1 סבב 21–29 (2026-08-11): הושלם
+
+| # | מסמך | תוכן עיקרי |
+|---|---|---|
+| 21 | `LEGAL-TERMS-SUPPLIERS.md` | הסכם ספקים בעברית (טיוטה; דורש עו״ד) |
+| 22 | `REFUNDS-CANCELLATION-POLICY.md` | ביטולים לפי הגנת הצרכן |
+| 23 | `DATA-RETENTION-POLICY.md` | משכי שמירה + קישור IR/backup |
+| 24 | `INCIDENT-RESPONSE-RUNBOOK.md` | מסגרת SEV / kill switch / postmortem |
+| 25 | `BACKUP-RESTORE-RUNBOOK.md` | Supabase PITR + dump offsite |
+| 26 | `EMAIL-TEMPLATES-SPEC.md` | קטלוג Resend RTL |
+| 27 | `COUPON-LIFECYCLE-SPEC.md` | issued / used / expired / refunded |
+| 28 | `FRAUD-PREVENTION-SPEC.md` | משטחים, velocity, chargeback |
+| 29 | `VENDOR-PAYOUT-SPEC.md` | פיזי: Cardcom ללקוח → באצ' בנקאי לספק |
+
+הכרעת payout: "דרך Cardcom" = סליקת לקוח ב-Cardcom; העברה לספק נשארת ידנית+CSV (לא Cardcom Financial ב-MVP).
+
 אינדקס מעודכן:
 
 ```
@@ -75,12 +91,15 @@ docs/MASTER-INDEX.md
 
 | תחום | דוגמאות |
 |---|---|
-| כסף | Cardcom flow, checkout retry, payout, No Escrow |
+| כסף | Cardcom flow, checkout retry, vendor payout אחרי settlement, No Escrow |
 | השקה | VALIDATION, LAUNCH-WEEK-RUNBOOK, MARKETING-LAUNCH-PLAN |
-| תפעול | INCIDENT, SLA, BACKUP, SUPPORT playbook |
+| תפעול | IR runbook, PITR restore, SLA, SUPPORT playbook |
+| משפט/פרטיות | הסכם ספקים, ביטולים, data retention |
+| קופונים/הונאה | lifecycle FSM, fraud spec |
+| מייל | EMAIL-TEMPLATES-SPEC + COPY |
 | אבטחה/ביצועים | SECURITY-AUDIT-CHECKLIST, PERFORMANCE-BUDGET |
 | צמיחה | SEO strategy, analytics KPI, referral, seasonal |
-| ספקים | quality, onboarding, featured pricing |
+| ספקים | quality, onboarding, featured pricing, LEGAL-TERMS |
 | מובייל/עתיד | Expo WebView, integrations roadmap, geo, WA, subscriptions, wallet spec |
 | חזון | V2-VISION |
 
@@ -157,3 +176,4 @@ docs/MASTER-INDEX.md
 |---|---|
 | 2026-08-10 | דוח מנהלים ראשון לאוגוסט |
 | 2026-08-11 | סיכום סבב 20 מסמכים; מספרים מעודכנים; חסימת SEC |
+| 2026-08-11 | סיכום סבב 21–29 (legal→vendor payout) |
