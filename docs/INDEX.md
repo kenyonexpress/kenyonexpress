@@ -21,7 +21,7 @@ docs/ARCHITECTURE-PRICING-RULES.md
 3. אחוזים פר מוצר בלבד; לא אחוז מחייב ברמת ספק.
 4. Stack נוכחי = Next.js + Supabase; WordPress/PHP רק כמיגרציה/היסטוריה/rollback.
 
-נקראו: כל `docs/*.md` (144), `.claude/skills/*/SKILL.md` (6), `CLAUDE.md`, `AGENTS.md`. תיקיית `claude/` (בלי נקודה) **לא קיימת**.
+נקראו: כל `docs/*.md` (149), `.claude/skills/*/SKILL.md` (6), `CLAUDE.md`, `AGENTS.md`. תיקיית `claude/` (בלי נקודה) **לא קיימת**.
 
 קישור הדדי:
 
@@ -74,6 +74,27 @@ docs/BUSINESS-MODEL.md
 
 ---
 
+## 0.1 חבילת lifecycle / channels (BINDING, 2026-08-12)
+
+תור docs שנסגר ב-
+`arch/docs-lifecycle`
+. כסף: No Escrow, `platform_percent` פר מוצר, אגורות integer.
+
+| # | מסמך | תקציר |
+|---|---|---|
+| 1 | `ARCHITECTURE-CHECKOUT-FLOW.md` | מכונת הזמנה, snapshot %, Cardcom+QStash, guest merge, כשלים, ERD |
+| 2 | `ARCHITECTURE-COUPON-LIFECYCLE.md` | mint, QR, redeem אטומי, races, expiry, audit, הרשאות ספק |
+| 3 | `ARCHITECTURE-WALLET-CASHBACK.md` | קאשבק פנימי, ledger agorot, אין cash-out, כללי צבירה עתידיים |
+| 4 | `ARCHITECTURE-WORDPRESS-IMPORT.md` | WXR מ-`data-import/wp-backup/`, dedup, R2, dry-run, rollback |
+| 5 | `ARCHITECTURE-GEO-FEATURE.md` | תגיות עיר, מיון מרחק, אינדקסים, בורר UI |
+| 6 | `ARCHITECTURE-RECURRING-SUBSCRIPTIONS.md` | מנוי חודשי product-facing; טכני ב-`ARCHITECTURE-SUBSCRIPTIONS.md` |
+| 7 | `ARCHITECTURE-ADMIN-DASHBOARD.md` | סוג מוצר, `platform_percent`, WhatsApp toggle, ספקים |
+| 8 | `ARCHITECTURE-NOTIFICATIONS.md` | Resend RTL, outbox/CF, QStash, ntfy ops, WhatsApp עתידי |
+| 9 | `ARCHITECTURE-SEO-PERFORMANCE.md` | metadata עברית, JSON-LD, sitemap, ISR, CWV |
+| 10 | `ARCHITECTURE-MOBILE-APP.md` | Expo + חזון אפ פנימית, API v1, Auth |
+
+---
+
 ## 1. Orphans
 
 | מסמך | הערה |
@@ -97,7 +118,7 @@ docs/BUSINESS-MODEL.md
 | `API-PUBLIC-SPEC.md` | DESIGN | yes | 1 | API מפתחים לספקי enterprise: קריאת מכירות ועדכון מלאי, עם API keys ו-rate limits. |
 | `ARCHITECTURE-ACCOUNT-IDENTITY.md` | ? | yes | 17 | מסמך תכנון. מיגרציה נלווית (טיוטה, לא הוחלה): |
 | `ARCHITECTURE-ACCOUNT-WALLET.md` | DEPRECATED | yes | 4 | סטטוס: DESIGN + IMPLEMENTATION. ענף `feat/account-wallet`, worktree `ke-account`. |
-| `ARCHITECTURE-ADMIN-DASHBOARD.md` | BINDING | yes | 17 | ניהול מוצרים עם `platform_percent` דינמי פר מוצר, מחיר קופון, יתרה אצל הספק (בבית העסק), ניהול ספקים, ודוחות מכירות. |
+| `ARCHITECTURE-ADMIN-DASHBOARD.md` | BINDING | yes | 17 | ניהול מוצרים: בורר סוג, platform_percent דינמי, WhatsApp toggle, ספקים, דוחות על snapshots. |
 | `ARCHITECTURE-AI-AGENTS-RUNTIME.md` | ? | yes | 3 | סטטוס: טיוטה מחייבת v2.0 (2026-07-17). בעלים: ארכיטקט פלטפורמת ה-AI. |
 | `ARCHITECTURE-AI-AGENTS.md` | design specification. No agent code exis | yes | 8 | five planned AI agents, the shared infrastructure they run on, and the |
 | `ARCHITECTURE-ANALYTICS-BI.md` | authoritative spec. Scope: event taxonom | yes | 11 | The marketplace runs on Supabase Postgres. Products have a `product_type` of `coupon` or `physical`. Commission works by the platform keeping `platform_percent` per produ |
@@ -109,14 +130,16 @@ docs/BUSINESS-MODEL.md
 | `ARCHITECTURE-CASHBACK-WALLET.md` | BINDING | yes | 12 | ארנק פנימי בלבד שלא יוצא מהמערכת: ledger כפול-רישום, צבירה, ומימוש בקנייה הבאה. |
 | `ARCHITECTURE-CATALOG-SEARCH-SEO.md` | ? | yes | 11 | מסמך תכנון מלא. מיגרציה נלווית (טיוטה, לא הוחלה): |
 | `ARCHITECTURE-CATEGORIES-TAXONOMY.md` | BINDING | yes | 8 | עץ קטגוריות לשוק הישראלי (קופונים ומוצרים פיזיים). |
-| `ARCHITECTURE-CHECKOUT-FLOW.md` | BINDING | yes | 1 | מכונת מצבי הזמנה, snapshot של platform_percent, קופון/פיזי No Escrow, וסליקת Cardcom. |
+| `ARCHITECTURE-CHECKOUT-FLOW.md` | BINDING | yes | 1 | מכונת מצבי הזמנה, snapshot של platform_percent, קופון/פיזי No Escrow, Cardcom+QStash, guest merge, כשלים, ERD. |
 | `ARCHITECTURE-COMMERCE.md` | DESIGN, QA-PASS 2026-08-06 | yes | 22 | Date: 2026-07-08. Supersedes the fixed-10% commission model documented in |
+| `ARCHITECTURE-COUPON-LIFECYCLE.md` | BINDING | yes | 1 | יצירה אחרי paid, QR חתום, redeem אטומי, races, expiry, audit, הרשאות ספק; No Escrow. |
 | `ARCHITECTURE-COUPON-REDEMPTION-UX.md` | BINDING for `feat/coupon-redemption` (20 | yes | 4 | מפרט UX מחייב למימוש קופון (ספק + לקוח). |
 | `ARCHITECTURE-COUPON-REDEMPTION.md` | BINDING | yes | 10 | KenyonExpress supplier coupon / voucher redemption architecture (binding scan spec). |
 | `ARCHITECTURE-CUSTOMER-SUPPORT.md` | BINDING | yes | 15 | פניות לקוח, בעיות מימוש קופון, ו-SLA. |
 | `ARCHITECTURE-DATA-EXPORT-GDPR.md` | BINDING | yes | 9 | ייצוא ומחיקת נתוני משתמש (זכויות נושא מידע; יישור לדין הישראלי + עקרונות GDPR כשיחולו). |
 | `ARCHITECTURE-EMAIL-TEMPLATES.md` | BINDING | yes | 12 | תבניות RTL לכל אירוע במחזור חיי קופון (Resend). |
 | `ARCHITECTURE-FRAUD-PREVENTION.md` | BINDING | yes | 23 | מימוש כפול, צילומי מסך QR, chargebacks, בדיקות velocity, וחסימת קופון. |
+| `ARCHITECTURE-GEO-FEATURE.md` | BINDING | yes | 1 | תגיות עיר, מיון מרחק, אינדקסים, ובורר UI מחוץ ל-header. |
 | `ARCHITECTURE-GIFT-COUPONS.md` | BINDING | yes | 8 | קופון מתנה: רכישה, העברת בעלות, וברכות. |
 | `ARCHITECTURE-GROWTH-SEO.md` | ? | yes | 9 | מסמך הכרעות. תאריך: 2026-07-17. ענף: `phase5/homepage`. |
 | `ARCHITECTURE-INTEGRATIONS.md` | DESIGN → BINDING על העקרונות | yes | 3 | ורטיקלים של משלוחי אוכל והסעות: בנייה פנימית בתוך KenyonExpress, webhooks נכנסים, ומיפוי הזמנות לליבת `orders` / תשלומים. |
@@ -124,10 +147,10 @@ docs/BUSINESS-MODEL.md
 | `ARCHITECTURE-LAUNCH-CHECKLIST.md` | ACTIONABLE / BINDING gates | yes | 2 | שערי Go-Live מחייבים: Resend מאומת, Cardcom production, התראות Sentry, דומיינים ב-Vercel, מדיניות גיבוי, ו-10 קופוני השקה חיים. |
 | `ARCHITECTURE-LEGAL-COMPLIANCE.md` | BINDING | yes | 46 | הגנת הצרכן, ביטול 14 יום, דמי ביטול 5% או 100 ₪, תוקף שוברים, נגישות ישראלית. |
 | `ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md` | REFRESHED 2026-08-06 | yes | 6 | Money rule: agorot integers only, zero floats past the ILS/agorot boundary. |
-| `ARCHITECTURE-MOBILE-APP.md` | BINDING | yes | 12 | Expo React Native כערוץ מובייל על אותו backend של Next.js + Supabase: Auth deep links, Push דרך `push_tokens`, סריקת ספק עם PIN לפי `115_supplier_app_scanning`, ארנק קופו |
+| `ARCHITECTURE-MOBILE-APP.md` | BINDING | yes | 12 | Expo על אותו backend: Auth, Push, סריקת ספק, חזון אפ פנימית Wolt-style + `/api/mobile/v1`. |
 | `ARCHITECTURE-MOBILE-SUPERAPP.md` | ? | yes | 10 | מסמך תכנון מחייב. תאריך: 2026-07-17. ענף: `phase5/homepage`. |
 | `ARCHITECTURE-NOTIFICATIONS-MARKETING.md` | ? | yes | 10 | מסמך תכנון. מיגרציה נלווית (טיוטה, לא הוחלה): |
-| `ARCHITECTURE-NOTIFICATIONS.md` | BINDING | yes | 21 | תור התראות טרנזקציוניות בעברית: outbox ב-Postgres, Resend (RTL), Push (`push_tokens`), in-app (פעמון), retry+DLQ, העדפות, וציות לחוק הספאם. |
+| `ARCHITECTURE-NOTIFICATIONS.md` | BINDING | yes | 21 | Outbox + Resend RTL + Push/in-app; QStash תזמון; ntfy ops; WhatsApp עתידי; No Escrow בנוסח. |
 | `ARCHITECTURE-OBSERVABILITY.md` | BINDING | yes | 19 | Sentry (כולל error boundaries לפי route group), לוגים מובנים, התראות webhook של Cardcom, דשבורד התאמה על `settlement_events`, ובדיקות uptime. |
 | `ARCHITECTURE-PAYOUT-MECHANISM.md` | BINDING | yes | 10 | תשלום יתרת ספק על מוצר פיזי בלבד: מתי נצבר, איך יוצא כסף, סכימה באגורות, מסך אישור אדמין, וחריגים. |
 | `ARCHITECTURE-PERFORMANCE.md` | ? | yes | 10 | Owner: Performance Architect |
@@ -136,13 +159,14 @@ docs/BUSINESS-MODEL.md
 | `ARCHITECTURE-PRODUCTION-OPS.md` | ? | yes | 5 | מסמך תכנון תשתית. סטטוס: DESIGN. אין בו מיגרציות ואין בו קוד להחלה. |
 | `ARCHITECTURE-PWA.md` | BINDING | yes | 4 | ארכיטקטורת Progressive Web App: manifest, Service Worker, push. |
 | `ARCHITECTURE-REFERRAL.md` | BINDING | yes | 8 | תוכנית הפניות עם קאשבק פנימי (בלי משיכה החוצה). |
+| `ARCHITECTURE-RECURRING-SUBSCRIPTIONS.md` | BINDING (product-facing) | yes | 1 | מנוי חודשי ללקוח; מקור טכני = ARCHITECTURE-SUBSCRIPTIONS (SU*). |
 | `ARCHITECTURE-REFUNDS-DISPUTES.md` | BINDING | yes | 3 | החזר קופון לפני/אחרי מימוש, החזרות פיזי לפי דיני צרכן בישראל (14 יום), היפוך ledger (אין Escrow), Cardcom Refund API, ומכונת מצבי dispute. |
 | `ARCHITECTURE-SEARCH-UX.md` | BINDING | yes | 8 | Meilisearch, השלמות בעברית, ותיקון טעויות כתיב. |
 | `ARCHITECTURE-SEARCH.md` | BINDING | yes | 3 | ארכיטקטורת חיפוש קטלוג בעברית: שאילתות, פילטרים, אינדוקס, ו-DLQ. |
 | `ARCHITECTURE-SEASONAL-CAMPAIGNS.md` | BINDING | yes | 11 | חגים ישראליים, מבצעי בזק, וראש השנה / פסח. |
 | `ARCHITECTURE-SECURITY-RLS.md` | BINDING | yes | 10 | מטריצת RLS מחייבת ל-44 טבלאות ב-`public` (ליבה פרודקשן + קטלוג/כסף/ספק/ארנק). |
 | `ARCHITECTURE-SECURITY.md` | ? | yes | 20 | KenyonExpress security architecture. This document is the binding security decision record: where it conflicts with any other doc, this one wins for security controls. |
-| `ARCHITECTURE-SEO-PERFORMANCE.md` | BINDING | yes | 11 | Metadata (Next.js 15 App Router), hreflang `he-IL`, JSON-LD Product/Offer/LocalBusiness לקופונים, sitemap לפי קטגוריה, תקציב Core Web Vitals לפי breakpoints שנמדדו (380/7 |
+| `ARCHITECTURE-SEO-PERFORMANCE.md` | BINDING | yes | 11 | Metadata עברית, hreflang he-IL, JSON-LD Product/Offer, sitemap, ISR, CWV @ 380/768. |
 | `ARCHITECTURE-SEO.md` | ? | yes | 1 | מסמך תכנון מלא, מוכן ליישום. תאריך: 2026-07-23. ענף: `phase5/homepage`. |
 | `ARCHITECTURE-SUBSCRIPTIONS.md` | BINDING (design) | yes | 4 | מודל מנוי מלא: הצטרפות, מחזור חיוב, כשלי חיוב ו-retry, ביטול/הקפאה, וזכויות צרכן. |
 | `ARCHITECTURE-SUPPLIER-ONBOARDING.md` | BINDING | yes | 12 | בקשת ספק, אישור אדמין, צ'קליסט פתיחת חשבון/מסוף Cardcom (כשנדרש), הסכם פיצול פר מוצר (אין תעריף ברמת ספק), ומודל נתונים לחוזה. |
@@ -151,8 +175,10 @@ docs/BUSINESS-MODEL.md
 | `ARCHITECTURE-TESTING-CICD.md` | FINAL DESIGN. Branch: `phase5/homepage`. | yes | 10 | This document is the single source of truth for the testing strategy and the CI/CD pipeline. It is written for a marketplace that moves real money: Cardcom charges, a cas |
 | `ARCHITECTURE-TESTING-QA.md` | BINDING | yes | 1 | פירמידת בדיקות למונורפו KenyonExpress: Vitest unit, integration מול Supabase branch DB, Playwright e2e לזרימות קריטיות, מטריצת GitHub Actions, ושערי coverage על קבצים ששו |
 | `ARCHITECTURE-TRUST-SAFETY.md` | BINDING | yes | 2 | Rate limiting לפי endpoint, אנטרופיה של קודי שובר ומניעת ניחוש, abuse בסורק (`wrong_supplier`, `rate_limited`), כיסוי audit לאדמין, וצ'קליסט סקירת RLS. |
+| `ARCHITECTURE-WALLET-CASHBACK.md` | BINDING | yes | 1 | קאשבק פנימי באגורות, אין cash-out, earn/spend idempotent, כללי צבירה עתידיים. |
 | `ARCHITECTURE-WALLET-INTEGER.md` | BINDING (plan) | yes | 2 | מעבר מלא לכסף ב-integer agorot, יישור חתימת `fn_wallet_transfer`, וסגירת SEC-WALLET. |
 | `ARCHITECTURE-WALLET-LEDGER.md` | BINDING | yes | 7 | ארנק קאשבק פנימי: ledger כפול-רישום באגורות integer, בלי משיכה החוצה. |
+| `ARCHITECTURE-WORDPRESS-IMPORT.md` | BINDING | yes | 1 | ייבוא WXR מ-data-import/wp-backup: מיפוי, dedup, R2, dry-run, rollback. |
 | `ARCHITECTURE-WP-DATA-MIGRATION.md` | binding operational spec for the WP impo | yes | 9 | Source of truth for extraction, field mapping, image pipeline, SEO |
 | `BACKUP-RECOVERY.md` | RUNBOOK | yes | 3 | Supabase Pro, תרגול שחזור, ו-RPO/RTO מעשיים. |
 | `BACKUP-RESTORE-RUNBOOK.md` | RUNBOOK | yes | 8 | צעדים לתרגול ולאירוע אמיתי. מדיניות מספרים: |
@@ -255,3 +281,4 @@ docs/BUSINESS-MODEL.md
 |---|---|
 | 2026-08-11 | יצירה: fix table + orphans + סיכום לכל docs + ביקורת .claude |
 | 2026-08-12 | הוספת `ARCHITECTURE-CHECKOUT-FLOW.md` (BINDING); ספירת docs=144 |
+| 2026-08-12 | חבילת 10 lifecycle/channels (§0.1); docs=149; רענון תקצירים |
