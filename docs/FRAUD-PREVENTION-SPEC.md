@@ -1,128 +1,68 @@
-# FRAUD-PREVENTION-SPEC.md
-# מפרט מניעת הונאה (מוצר ותפעול)
+# מפרט מניעת הונאה
 
-שכבת מוצר מעל ההכרעות המחייבות ב-
+שכבת מוצר מעל `ARCHITECTURE-FRAUD-PREVENTION.md`.
 
-```
-docs/ARCHITECTURE-FRAUD-PREVENTION.md
-```
-
-Status: **SPEC** · עודכן: 2026-08-11  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+עקרון: כפילות ב-**DB אטומי**; rate limit על כסף = **fail-closed**.
 
 מסמכים קשורים:
 
 ```
 docs/ARCHITECTURE-FRAUD-PREVENTION.md
 docs/COUPON-LIFECYCLE-SPEC.md
-docs/SECURITY-AUDIT-CHECKLIST.md
-docs/CHECKOUT-OPTIMIZATION.md
-docs/DISPUTE-RESOLUTION.md
-docs/INCIDENT-RESPONSE-RUNBOOK.md
 docs/VENDOR-PAYOUT-SPEC.md
 ```
 
-עקרון: כפילות נחסמת ב-**DB אטומי**. Rate limit על כסף: **fail-closed**.
-
 ---
 
-## 1. משטחי תקיפה
+## החלטה
 
-| משטח | סיכון | הגנה עיקרית |
-|---|---|---|
-| Double redeem | מימוש כפול | `issued`→`redeemed` אטומי |
-| זיוף QR | קופון מזויף | HMAC/Ed25519 keyed |
-| שיתוף צילום | שימוש ע״י אחר | חד-פעמיות + מייל "אם לא אתם" |
-| Checkout abuse | כרטיסים גנובים | velocity + Cardcom + RL |
-| Chargeback | אובדן כסף אחרי paid | freeze + review ידני |
-| Supplier fraud | סריקות פיקטיביות | geo/off-hours/velocity על scanner |
-| Payout fraud | משיכת יתרה פיזית | אישור אדמין + חשבון מאומת |
-
----
-
-## 2. Velocity (יעדי התחלה)
-
-| פעולה | חלון | סף כיוון | פעולה בחריגה |
-|---|---|---|---|
-| begin_checkout / IP | 10 דק' | N ניסיונות | 429 fail-closed |
-| begin_checkout / guest email | 1 שע' | G הזמנות | challenge / block |
-| redeem / ספק | 1 דק' | M סריקות | האטה + התראה |
-| חשבונות חדשים→purchase | 1 שע' | K הזמנות | manual_review |
-| כרטיס נכשל חוזר | 1 שע' | לפי Cardcom | חסימה זמנית |
-
-מספרים מדויקים בקונפיג; כאן העיקרון.
-
----
-
-## 3. Chargeback playbook (תמצית)
-
-1. קבלת התראה → תיק `manual_review`.  
-2. אם voucher `issued` → freeze מיידי.  
-3. אם `redeemed` → אין unwind אוטומטי; ראיות מימוש + DISPUTE.  
-4. אין מחיקת payments/orders.  
-5. פיזי אחרי payout → `supplier_debit` לפי PAYOUT.  
-
----
-
-## 4. תור review באדמין
-
-| שדה | שימוש |
+| # | הכרעה |
 |---|---|
-| reason | chargeback / velocity / supplier_alert |
-| entity refs | order_id, voucher_id, supplier_id |
-| status | open / approved / rejected |
-| audit | מי החליט ומתי |
-
-אין auto-refund מלא מתוך התור בלי לחיצת admin.
+| F1 | Double redeem: `issued`→`redeemed` אטומי. |
+| F2 | QR: HMAC/Ed25519 keyed. |
+| F3 | Checkout velocity: 429 fail-closed. |
+| F4 | Chargeback: freeze `issued`; `redeemed` = review ידני. |
+| F5 | Supplier fraud: geo/off-hours/velocity. |
+| F6 | Payout פיזי: אישור אדמין; קופון **אין payout**. |
+| F7 | סדר סריקה: RL → membership → חתימה → ספק → status → expiry → UPDATE. |
 
 ---
 
-## 5. סימני אדום לספק
+## חלופות שנדחו
 
-| אות | פעולה |
+| חלופה | למה נדחתה |
 |---|---|
-| redeem מחוץ לשעות עסק קיצוני | התראה |
-| קפיצות geo בין סריקות | review |
-| יחס chargeback גבוה | השעיית דילים (QUALITY) |
+| auto-refund מתור review | F4 |
+| unwind redeemed אוטומטי | F4 |
+| rate limit fail-open | fail-closed על כסף |
 
 ---
 
-## 5.1 סדר אימות סריקה (חובה)
+## סכמת DB
 
 ```text
-1. rate limit fail-closed
-2. membership ספק פעיל
-3. חתימת QR (HMAC/Ed25519)
-4. ספק תואם ל-voucher
-5. status == issued (לא frozen)
-6. expires_at > now()
-7. UPDATE … WHERE status='issued' → redeemed (rowcount 0 = already_redeemed)
-8. audit + מייל coupon_redeemed
+vouchers, fraud_review_queue, coupon_scan_events, audit_log
 ```
 
-כל שלב שנכשל: תשובה חיצונית אחידה כשאפשר (`not_found` / `already_redeemed`) בלי לדלוף מידע עודף.
+---
+
+## מקרי קצה
+
+| # | מקרה | התנהגות |
+|---|---|---|
+| CE1 | שני redeem parallel | אחד בלבד |
+| CE2 | chargeback + issued | freeze |
+| CE3 | refund אחרי payout פיזי | supplier_debit |
 
 ---
 
-## 5.2 Account takeover / גניבת סשן
+## פתוחות
 
-| אות | פעולה |
-|---|---|
-| החלפת סיסמה / OAuth ממכשיר חדש + redeem מיידי | challenge / השהיית redeem קצרה |
-| שליחת קופון למייל/WA שונה מהחשבון | חסום ב-MVP (אין העברת voucher בלי מפרט מתנה) |
-| ריבוי כתובות משלוח פיזי בחלון קצר | manual_review לפני payout |
-
-מתנות: רק לפי `ARCHITECTURE-GIFT-COUPONS.md` כשמופעל; לא קיצור דרך בתמיכה.
-
----
-
-## 6. Acceptance
-
-- [ ] SEC-QR סגור לפני פרוד מלא  
-- [ ] RL fail-closed על checkout/redeem  
-- [ ] בדיקת עומס double-redeem  
-- [ ] תסריט תמיכה ל-chargeback ב-PLAYBOOK  
-- [ ] אין העברת voucher ידנית בלי audit  
+| # | פתוח | הערה |
+|---|---|---|
+| O1 | velocity tuning | קונפיג |
 
 ---
 
@@ -130,8 +70,4 @@ docs/VENDOR-PAYOUT-SPEC.md
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-11 | מפרט הונאה: משטחים, velocity, chargeback, review |
-| 2026-08-11 | יישור סטטוס מימוש ל-`redeemed` (פרוד 054) |
-| 2026-08-11 | סדר אימות סריקה מפורט |
-| 2026-08-11 | velocity לאורח (guest email) ב-checkout |
-| 2026-08-11 | אותות account takeover / מתנות |
+| 2026-08-12 | batch-2: BINDING 5 סעיפים |
