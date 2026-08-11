@@ -3,7 +3,9 @@
 ארנק **פנימי בלבד** שלא יוצא מהמערכת: ledger כפול-רישום, צבירה, ומימוש בקנייה הבאה.
 
 Status: **BINDING** · עודכן: 2026-08-03  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #18/50
+
+מודל כסף: **No Escrow**. אין held/נאמן/J5 לקופון.
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
 מסמכים קשורים:
@@ -112,3 +114,4 @@ docs/ARCHITECTURE-WALLET-LEDGER.md
 | תאריך | שינוי |
 |---|---|
 | 2026-08-03 | צבירה + מימוש בקנייה הבאה; ארנק פנימי בלבד |
+| 2026-08-12 | batch-2 #18: רענון BINDING על `arch/docs-batch-2`; No Escrow מאושר |
