@@ -3,7 +3,7 @@
 ניהול מוצרים עם בורר **סוג מוצר**, **`platform_percent` חובה** (דינמי פר מוצר, בלי default), ומתג **WhatsApp** פר מוצר. בנוסף: ספקים ודוחות מכירות.
 
 Status: **BINDING** · עודכן: 2026-08-12  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #25/50  
+Scope: `arch/docs-batch-2` · batch #25/50  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
 מסמכים קשורים:
@@ -36,6 +36,7 @@ docs/RUNBOOK-PRODUCTION.md
 | קופון | `coupon_price` באתר; 100% לפלטפורמה; יתרה בעסק |
 | פיזי | חיוב מלא + פיצול לפי snapshot |
 | מנוי | לפי SUBSCRIPTIONS; % snapshot פר מחזור |
+| אין held לספק | אין מדד/עמודה פעילה של כסף מוחזק על קופון |
 
 ---
 
@@ -50,6 +51,7 @@ docs/RUNBOOK-PRODUCTION.md
 | AD5 | שינוי כסף אחרי publish → `audit_log`; לא משנה הזמנות ישנות. |
 | AD6 | דוחות על snapshots; אסור לחשב GMV מ-`products.platform_percent` החי. |
 | AD7 | אין מדד או עמודה פעילה של כסף מוחזק לספק על קופון. |
+| AD8 | אין תעריף ברמת ספק; רק אחוז פר מוצר (ONBOARDING §6). |
 
 ---
 
@@ -63,31 +65,46 @@ docs/RUNBOOK-PRODUCTION.md
 | `/admin/products/new` | יצירה |
 | `/admin/products/[id]/edit` | עורך מלא |
 
+עמודת רשימה חובה: סוג · אחוז · סטטוס publish · דגל WhatsApp.  
+סינון לפי סוג / ספק / חסר אחוז / WhatsApp on.
+
 ### 2.2 בורר סוג מוצר (product-type selector)
 
-| ערך | UI בעברית | שדות חובה נוספים |
-|---|---|---|
-| `coupon` | קופון | `coupon_price`, face/מחירון, expiry, quota, `platform_percent` (ביקורת/עקביות) |
-| `physical` | פיזי | מחיר מלא, מלאי/variant, `platform_percent` + split=100 |
-| `subscription` | מנוי | `recurring_amount_agorot`, interval; לא soft-open בלי ADR |
-| `service` (אם קיים) | שירות | לפי מדיניות קטלוג |
+| ערך | UI בעברית | שדות חובה נוספים | שדות מוסתרים |
+|---|---|---|---|
+| `coupon` | קופון | `coupon_price`, face/מחירון, expiry, quota, `platform_percent` | מלאי פיזי / משלוח |
+| `physical` | פיזי | מחיר מלא, מלאי/variant, `platform_percent` + split=100 | `coupon_price` / יתרה בעסק |
+| `subscription` | מנוי | `recurring_amount_agorot`, interval, `platform_percent`; לא soft-open בלי ADR | שדות קופון חד-פעמי |
+| `service` (אם קיים) | שירות | לפי מדיניות קטלוג + `platform_percent` | לפי מדיניות |
 
-שינוי סוג אחרי שיש הזמנות: אסור בלי ארכיון + מוצר חדש (או guard מפורש).
+כללי בורר:
+
+1. בחירת סוג **לפני** מילוי שדות כסף (או איפוס שדות לא רלוונטיים עם אישור).
+2. שינוי סוג אחרי שיש הזמנות: אסור בלי ארכיון + מוצר חדש (או guard מפורש + ADR).
+3. UI עברית RTL; תוויות ברורות לסוג.
 
 ### 2.3 `platform_percent` חובה
 
 | UI בעברית | עמודה | כללים |
 |---|---|---|
 | עמלת פלטפורמה % | `platform_percent` | > 0 ו-< 100 (או טווח מוסכם); **חובה לפני publish**; אין default |
-| חלק ספק % | `supplier_split_percent` | משלים ל-100 |
+| חלק ספק % | `supplier_split_percent` | משלים ל-100 (פיזי) |
 | מחיר מחירון | `price_*` / agorot | > 0 |
 | מחיר קופון באתר | `coupon_price_*` | > 0 ו-≤ מחירון (קופון) |
 | יתרה אצל הספק (תצוגה) | מחושב | face − coupon |
 | ספק | `supplier_id` | חובה ל-publish |
 
-Publish gate (`assertPublishable` / מקביל): נכשל אם חסר אחוז, ספק, או זהות ספק ל-PDP.
+Publish gate (`assertPublishable` / מקביל) נכשל אם:
 
-Preview:
+- חסר `platform_percent`
+- חסר סוג מוצר תקין
+- חסר `supplier_id` / זהות ספק ל-PDP
+- קופון בלי `coupon_price` תקין
+- פיזי בלי split שמשלים ל-100
+
+אין placeholder "10%" או "5%" בשדה. שדה ריק = לא ניתן לפרסם.
+
+Preview בעברית:
 
 ```text
 הלקוח משלם באתר: ₪X
@@ -95,7 +112,8 @@ Preview:
 הפלטפורמה שומרת מתשלום האתר: 100% (קופון) / % מצולם (פיזי)
 ```
 
-אחוז חדש נרשם גם בהסכם פר מוצר (ONBOARDING §6) כשיש משא ומתן.
+אחוז חדש נרשם גם בהסכם פר מוצר (ONBOARDING §6) כשיש משא ומתן.  
+שינוי אחרי publish: `audit_log` + עדכון `products` החי; הזמנות ישנות נשארות על snapshot.
 
 ### 2.4 מתג WhatsApp פר מוצר
 
@@ -103,10 +121,17 @@ Preview:
 |---|---|
 | `whatsapp_enabled` (bool) | מציג CTA "וואטסאפ" ב-PDP כש-true |
 | מספר | יורש מ-`suppliers.whatsapp_phone` אלא אם override פר מוצר |
-| כבוי | אין כפתור; לא שובר checkout |
+| כבוי (ברירת מחדל בטוחה) | אין כפתור; לא שובר checkout |
 | שיווק יזום | **לא** דרך המתג; רק deep link לשיחה |
+| content_uploader | לא משנה את המתג |
 
-אין שליחת הודעות המוניות ממתג המוצר. תשתית עתידית: WHATSAPP-BUSINESS-SETUP + NOTIFICATIONS.
+כללי UI בעורך:
+
+1. מתג ברור בעברית: "הצג וואטסאפ בדף המוצר"
+2. כש-on בלי מספר ספק: אזהרה / חסימת שמירה עד שיש טלפון
+3. אין שליחת הודעות המוניות ממתג המוצר
+
+תשתית עתידית: WHATSAPP-BUSINESS-SETUP + NOTIFICATIONS.
 
 ### 2.5 הרשאות
 
@@ -130,7 +155,8 @@ Preview:
 | WhatsApp / טלפון | לתצוגת יצירת קשר |
 | סניפים / עובדים / PIN | ONBOARDING + MOBILE scan |
 
-מסך ספק: מוצרים, % נוכחיים (קריאה), סטטוס, סריקות, יתרת payout **פיזי** (לא כסף מוחזק על קופון).
+מסך ספק: מוצרים, % נוכחיים (קריאה פר מוצר), סטטוס, סריקות, יתרת payout **פיזי**.  
+אין תצוגת "כסף מוחזק על קופון". אין עריכת תעריף ברמת ספק.
 
 ---
 
@@ -144,18 +170,24 @@ Preview:
 | מימושים | vouchers → redeemed |
 | לפי ספק / מוצר / סוג | כולל % מצולם |
 
-אסור: חישוב מ-`products.platform_percent` החי; מדד "escrow held" / `escrow_held`.
+אסור:
+
+- חישוב מ-`products.platform_percent` החי לדוחות היסטוריים
+- מדד "escrow held" / `escrow_held`
+- עמלה ממוצעת מחושבת כאילו יש default גלובלי
 
 ---
 
 ## 5. Acceptance
 
-- [ ] בורר סוג מוצר משנה שדות חובה  
-- [ ] `platform_percent` חובה ל-publish; בלי default  
-- [ ] מתג WhatsApp פר מוצר מתועד ומכובה כברירת מחדל בטוחה  
-- [ ] ניהול ספקים: אישור / השעיה / בנק / geo  
-- [ ] דוחות על snapshots בלבד  
-- [ ] No Escrow בנוסח ובמדדים  
+- [ ] בורר סוג מוצר משנה שדות חובה ומסתיר לא רלוונטיים
+- [ ] `platform_percent` חובה ל-publish; בלי default ובלי placeholder קבוע
+- [ ] מתג WhatsApp פר מוצר מתועד; כבוי כברירת מחדל בטוחה; לא שיווק המוני
+- [ ] content_uploader לא נוגע בסוג / % / WhatsApp / publish
+- [ ] ניהול ספקים: אישור / השעיה / בנק / geo; בלי תעריף ספק
+- [ ] דוחות על snapshots בלבד
+- [ ] No Escrow בנוסח ובמדדים
+- [ ] UI אדמין עברית RTL
 
 ---
 
@@ -166,3 +198,4 @@ Preview:
 | 2026-08-03 | מוצרים / ספקים / דוחות + platform_percent |
 | 2026-08-12 | product-type + WhatsApp toggle + No Escrow |
 | 2026-08-12 | batch #25: ריענון BINDING; % חובה + בורר סוג + WhatsApp |
+| 2026-08-12 | batch #25/50 pass-2: חיזוק בורר סוג + % חובה + WhatsApp toggle |
