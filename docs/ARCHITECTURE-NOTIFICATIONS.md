@@ -2,7 +2,7 @@
 
 תור התראות טרנזקציוניות בעברית: outbox ב-Postgres, Resend (RTL), Push (`push_tokens`), in-app (פעמון), retry+DLQ, העדפות, וציות לחוק הספאם.
 
-Status: **BINDING** · עודכן: 2026-08-11  
+Status: **BINDING** · עודכן: 2026-08-12  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -33,10 +33,13 @@ supabase/migrations/031_notifications.sql
 
 | ערוץ | תשתית | תפקיד |
 |---|---|---|
-| email | Resend | ראשי לכל אירוע טרנזקציוני ללקוח/ספק |
+| email | Resend | ראשי לכל אירוע טרנזקציוני ללקוח/ספק (תבניות עברית RTL) |
 | push | Expo → APNs/FCM דרך `push_tokens` | אחרי השקת אפ; אותם kinds |
 | in-app | פעמון באתר (RLS owner) | תמיד לטרנזקציוני למשתמש מחובר |
 | sms | ספק ישראלי | fallback קריטי / OTP בלבד |
+| ops (ntfy) | ntfy topic פרטי / self-host | התראות מפעיל על DLQ / P1 כסף; לא ללקוח |
+| whatsapp (עתיד) | Meta Cloud API אחרי opt-in | טרנזקציוני מצומצם; לא שיווק בלי הסכמה |
+| תזמון | QStash schedules + outbox `next_attempt_at` | expiry_48h, abandoned_cart, retry |
 
 אין Make/Zapier. אין שיווק בלי הסכמה. **No Escrow** בנוסח. כסף ב-payload באגורות בלבד.
 
@@ -57,6 +60,9 @@ supabase/migrations/031_notifications.sql
 | N9 | כסף ב-payload: `*_agorot` integers; תצוגה ₪ בפורמט בלבד. |
 | N10 | No Escrow: "שולם באתר" + "יתרה בעסק". אסור נאמן/J5/held. |
 | N11 | שיווק רק עם opt-in מתועד + unsubscribe. טרנזקציוני לא דורש opt-in שיווקי. |
+| N12 | QStash: תזמון jobs (expiry, abandoned) + אופציונלי wake ל-drain; לא מחליף outbox כמקור אמת. |
+| N13 | ntfy: ערוץ ops בלבד (DLQ/P1); לא תוכן שיווקי ללקוח. |
+| N14 | WhatsApp עתידי: רק אחרי `whatsapp_opt_in` + תבנית מאושרת; מתג מוצר = CTA שיחה, לא broadcast. |
 
 ### 1.1 שני שמות outbox (מציאות הסכמה)
 
@@ -98,7 +104,37 @@ Secrets: `RESEND_API_KEY`, DB service role מוגבל ל-drain, `CRON_SECRET`, �
 
 גשר Next נשאר חוקי עד Worker בפרוד; החוזה (סטטוסים, backoff, dedupe) זהה.
 
----
+### 2.2 QStash (תזמון + wake)
+
+| שימוש | דפוס |
+|---|---|
+| `coupon_expiry_48h` | QStash schedule / delay publish עם `dedupe_id=expiry48:{voucher_id}` → handler שמבצע enqueue |
+| `abandoned_cart_1` | delay אחרי עגלה; בודק opt-in לפני enqueue שיווקי |
+| Wake drain | אופציונלי: אחרי INSERT outbox, publish קל ל-Worker/cron |
+| Cardcom finalize | ראה `ARCHITECTURE-CHECKOUT-FLOW.md` (לא ערוץ הודעות ללקוח) |
+| Retry Resend | נשאר על `next_attempt_at` ב-outbox; QStash לא משכפל מייל בלי dedupe |
+
+חתימת Upstash על כל קריאת job. כשל QStash ≠ כשל תשלום.
+
+### 2.3 ntfy (ops)
+
+```text
+outbox status=dead על kind כספי
+  OR amount_mismatch / checkout P1
+  → POST ntfy topic (secret URL)
+  → מפעיל מקבל push קצר בטלפון
+```
+
+אין PII מלא בגוף ntfy (רק order id / kind). לא מחליף Sentry.
+
+### 2.4 WhatsApp (עתיד)
+
+| מותר | אסור |
+|---|---|
+| הודעת "הקופון מוכן" אחרי opt-in | דילים יומיים בלי הסכמה |
+| קישור שיחה מ-PDP (`whatsapp_enabled`) | שימוש במתג המוצר כשידור המוני |
+
+עד הפעלה: הערוץ כבוי ב-drain; CTA בלבד לפי ADMIN-DASHBOARD.
 
 ## 3. `fn_enqueue_notification` + סכימת `notification_outbox`
 
@@ -251,6 +287,8 @@ whatsapp_opt_in
 - [ ] אין שיווק בלי opt-in
 - [ ] אין Escrow בנוסח; agorot ב-payload
 - [ ] כשל enqueue לא שובר תשלום
+- [ ] QStash לתזמון מתועד; ntfy ל-ops בלבד
+- [ ] WhatsApp מסומן כעתיד + opt-in
 
 ---
 
@@ -263,3 +301,4 @@ whatsapp_opt_in
 | 2026-08-11 | CF Workers bus, SMS IL, preferences, חוק ספאם, Push לאפ |
 | 2026-08-11 | §2.1 Cloudflare Queue/DLQ; outbox id בתור |
 | 2026-08-11 | הרחבה BINDING: 095/`fn_enqueue_notification`, push_tokens, in-app, איחוד מול 029/031, RTL+agorot+No Escrow |
+| 2026-08-12 | N12-N14: QStash scheduling, ntfy ops, WhatsApp future; Resend RTL נשאר ראשי |
