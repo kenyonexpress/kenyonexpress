@@ -14,27 +14,48 @@ docs/DOCS-TEMPLATE-BINDING.md
 .
 
 ## המשך מ:
-pass-2 על כל מסמכי
-docs/ARCHITECTURE-*.md
-הושלם (תבנית BINDING: החלטה, חלופות שנדחו, סכמת DB, מקרי קצה, פתוחות).
-ממתין להוראת מסמך/נושא הבא על
+תור docs BINDING על
 arch/docs-batch-2
-.
+**הושלם במלואו**. אין מסמך docs שחסר חמשת הסעיפים. ממתין להוראת scope חדשה (עדיין docs-only על אותו ענף אלא אם נאמר אחרת).
 
 ## Last Completed
-CART-CHECKOUT + CATEGORY-PAGE קוצרו ל-BINDING. לפני כן: גל אוטונומי מלא עד 125/127 ואז סגירת השניים האחרונים.
+סגירת תור docs מלא על
+arch/docs-batch-2
+: 230/230 תחת
+docs/
+עם החלטה + חלופות שנדחו + סכמת DB + מקרי קצה + פתוחות. יישור אחרון:
+docs/ARCHITECTURE-COUPON-REDEMPTION.md
+(
+החלטה
+) +
+docs/ARCHITECTURE-RLS-MATRIX.md
+(
+סכמת DB
+). גם שורש:
+GO-LIVE.md
+,
+RELEASE-READINESS.md
+,
+CHECKOUT-COMPLETE.md
+,
+LEDGER-DESIGN.md
+,
+NEXT-GOALS.md
+.
 
 ## In Progress
 nothing
 
 ## Next Task
-מסמך docs הבא לפי הוראת משתמש על arch/docs-batch-2
+אין. תור docs-batch-2 סגור. לחכות להוראת scope חדשה.
 
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
 
 ## החלטות שהתקבלו אוטומטית
+- **2026-08-12 docs-batch-2 complete:** בדיקת סעיפים גמישה לכותרות ממוספרות (`## 0. החלטה` וכו'). שני שאריות: COUPON-REDEMPTION השתמש ב"הכרעות" במקום "החלטה"; RLS-MATRIX ב"סכמת עזר" במקום "סכמת DB". תוקנו + push. תור docs סגור ב-230/230.
+
 - **2026-08-12 autonomous pass-2:** ממשיכים שכתוב BINDING בלי לשאול. SUBSCRIPTIONS: paused אחרי 3 soft/7d; מחיר מנוי מצולם. WALLET: אין cash-out. RLS-MATRIX: 52 ליבה. SUPER-APP: בלי אינטגרציית Wolt. ROADMAP: V1.1a geo/PWA → wallet → physical → subscriptions.
 
 - **2026-08-12 ADMIN-PRODUCT-FIELDS:** נוצר BINDING מול ProductForm + upsertProduct Zod. סטטוס חנות = active (לא published בתיעוד ישן). is_coupon_enabled מורשת מול type. קופון: supplier מהפלטפורמה = 0 בתצוגת השפעה.
