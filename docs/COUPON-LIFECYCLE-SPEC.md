@@ -1,5 +1,5 @@
 # COUPON-LIFECYCLE-SPEC.md
-# מחזור חיי קופון: מכונת מצבים
+# מחזור חיי קופון: מכונת מצבים מלאה
 
 סטטוסים, מעברים מותרים, וצדדים (מייל / ledger / UI).
 
@@ -17,24 +17,29 @@ docs/FRAUD-PREVENTION-SPEC.md
 docs/CONTRADICTIONS.md
 ```
 
+מקור enum בפרוד (מיגרציה 054):
+
+```text
+issued | redeemed | expired | refunded
+```
+
 ---
 
 ## 0. סטטוסים קנוניים
 
-Enum יעד:
+| סטטוס | משמעות | טרמינלי למימוש? |
+|---|---|---|
+| `issued` | הונפק אחרי `paid`; ניתן לסריקה | לא |
+| `redeemed` | מומש אצל ספק (חד-פעמי) | כן |
+| `expired` | פג תוקף בלי מימוש | כן |
+| `refunded` | בוטל/הוחזר ללקוח | כן |
 
-```text
-issued | used | expired | refunded
-```
-
-| שם במסמכים/UI ישנים | קנוני |
+| שם במסמכים ישנים | קנוני בפרוד |
 |---|---|
-| `redeemed` | **`used`** (alias לקריאה; כתיבה חדשה רק `used`) |
-| `issued` | `issued` |
-| `expired` | `expired` |
-| `refunded` | `refunded` |
+| `used` | **`redeemed`** (alias לקריאה בלבד; כתיבה חדשה = `redeemed`) |
+| `coupon_redeemed` (אירוע אנליטיקה) | אירוע ≠ סטטוס DB |
 
-אופציונלי תפעולי (לא חובה ב-enum אם ממומש בדגל): `frozen` לחסימה זמנית ב-chargeback (או `issued` + `frozen_at`).
+אופציונלי תפעולי: `frozen_at` על שורת `issued` לחסימה זמנית ב-chargeback (בלי enum נפרד חובה).
 
 ---
 
@@ -48,22 +53,22 @@ issued | used | expired | refunded
          ┌───────▶│ issued │◀──────── freeze/unfreeze (admin)
          │        └───┬────┘
          │            │
-         │     redeem │ expire cron │ refund/cancel
-         │      atomic│             │
+         │   redeem   │ expire cron │ refund/cancel
+         │    atomic  │             │
          │            ▼             ▼
-         │        ┌──────┐    ┌──────────┐
-         │        │ used │    │ refunded │
-         │        └──────┘    └──────────┘
+         │      ┌──────────┐  ┌──────────┐
+         │      │ redeemed │  │ refunded │
+         │      └──────────┘  └──────────┘
          │            │
-         │            X (טרמינלי למימוש)
+         │            X (אין unwind אוטומטי)
          │
          └─ expire ──▶ ┌─────────┐
                        │ expired │
                        └─────────┘
 ```
 
-טרמינליים למימוש: `used`, `expired`, `refunded`.  
-מ-`used` אין חזרה ל-`issued`.  
+טרמינליים למימוש: `redeemed`, `expired`, `refunded`.  
+מ-`redeemed` אין חזרה ל-`issued`.  
 מ-`refunded` אין מימוש.
 
 ---
@@ -73,11 +78,11 @@ issued | used | expired | refunded
 | מ | אל | טריגר | תנאים |
 |---|---|---|---|
 | (none) | `issued` | הנפקה אחרי order paid | snapshots כסף + QR חתום |
-| `issued` | `used` | סריקת ספק אטומית | `FOR UPDATE` + `WHERE status='issued'` |
+| `issued` | `redeemed` | סריקת ספק אטומית | `FOR UPDATE` + `WHERE status='issued'` |
 | `issued` | `expired` | cron / בדיקת תוקף | `expires_at <= now()` |
 | `issued` | `refunded` | ביטול מאושר + Cardcom | טרם מימוש |
-| `issued` | freeze | chargeback / fraud | בלי side-effect כסף לספק קופון |
-| `used` | (אין) | (אין) | אין מעבר; מחלוקת ידנית בלבד |
+| `issued` | freeze | chargeback / fraud | דגל; בלי payout קופון |
+| `redeemed` | (אין) | (אין) | מחלוקת ידנית בלבד |
 | `expired` | `issued` | הארכת admin נדירה | audit חובה |
 | `refunded` | (אין) | (אין) | טרמינלי |
 
@@ -87,35 +92,36 @@ issued | used | expired | refunded
 
 | מעבר | מייל | אחר |
 |---|---|---|
-| → issued | `coupon_issued` | הצגה באזור אישי / Wallet pass אופציונלי |
-| → used | `coupon_redeemed` | audit redemption; **אין** payout קופון |
-| → expired | `coupon_expired` | void Wallet; אופציונלי זיכוי ארנק לפי מדיניות |
-| → refunded | `coupon_refunded` | Cardcom refund; QR מת |
+| → `issued` | `coupon_issued` | אזור אישי / Wallet pass אופציונלי |
+| → `redeemed` | `coupon_redeemed` | audit redemption; **אין** payout קופון |
+| → `expired` | `coupon_expired` | void Wallet; אופציונלי זיכוי ארנק לפי מדיניות |
+| → `refunded` | `coupon_refunded` | Cardcom refund; QR מת |
 
 ---
 
 ## 4. כללי כסף (No Escrow)
 
 - מקדמת קופון נשארת אצל הפלטפורמה; אין held לספק.  
-- במימוש: הלקוח משלם יתרה בעסק; הפלטפורמה לא "משחררת" מקדמה.  
-- ב-refund: מחזירים את ששולם באתר (פחות דמי ביטול אם חלים).  
+- במימוש (`redeemed`): הלקוח משלם יתרה בעסק; הפלטפורמה לא "משחררת" מקדמה.  
+- ב-`refunded`: מחזירים את ששולם באתר (פחות דמי ביטול אם חלים).  
 
 ---
 
 ## 5. אימות סריקה (תמצית)
 
-סדר בדיקות: חתימה → ספק תואם → `status=issued` → `expires_at` → עדכון אטומי ל-`used`.  
-כשל: `already_used` / `expired` / `refunded` / `not_found` בלי side effects.
+סדר בדיקות: חתימה → ספק תואם → `status=issued` → `expires_at` → עדכון אטומי ל-`redeemed` (+ `redeemed_at`, `redeemed_by_*`).  
+כשל: `already_redeemed` / `expired` / `refunded` / `not_found` בלי side effects.
 
-פירוט: ARCHITECTURE-COUPON-REDEMPTION + FRAUD.
+פירוט: `ARCHITECTURE-COUPON-REDEMPTION.md` + `FRAUD-PREVENTION-SPEC.md`.
 
 ---
 
 ## 6. Acceptance
 
-- [ ] קוראים מתייחסים ל-`redeemed` כ-`used`  
+- [ ] Enum פרוד = `issued|redeemed|expired|refunded`  
+- [ ] קוראים ישנים שמכירים `used` ממופים ל-`redeemed`  
 - [ ] אין double-redeem תחת עומס  
-- [ ] refund על used נחסם אוטומטית  
+- [ ] refund על `redeemed` נחסם אוטומטית  
 - [ ] מיילים לכל מעבר ליבה  
 
 ---
@@ -124,4 +130,5 @@ issued | used | expired | refunded
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-11 | מכונת מצבים issued/used/expired/refunded + alias redeemed |
+| 2026-08-11 | מכונת מצבים ראשונה (עם alias used) |
+| 2026-08-11 | יישור לפרוד 054: קנוני `redeemed` (לא `used`) |
