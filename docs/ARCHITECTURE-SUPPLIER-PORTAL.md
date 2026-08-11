@@ -1,9 +1,10 @@
 # ארכיטקטורה: פורטל ספק
 
-לוח ספק: בית, מימושי קופונים, תור הזמנות פיזיות, ותצוגת payouts. אין מודל פעיל של כסף מוחזק לספק על קופון.
+לוח ספק: בית (dashboard), סריקה, מימושים, ותצוגת payouts.  
+אין מודל פעיל של כסף מוחזק לספק על קופון; אין מדד `escrow_held` פעיל ב-UI או בדוחות.
 
 Status: **BINDING** · עודכן: 2026-08-12  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #23/50  
+Scope: `arch/docs-batch-2` · batch #23/50  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
 מסמכים קשורים:
@@ -37,9 +38,10 @@ Stack: `(supplier)` App Router, Supabase RLS, PWA scanner, Resend.
 | SP4 | הרשאת פורטל = `supplier_members`, לא `profiles.role=vendor` לבדו. |
 | SP5 | מימוש רק דרך RPC; אין UPDATE ישיר ל-`vouchers` מ-JWT ספק. |
 | SP6 | Payout מהפלטפורמה: **פיזי בלבד**. שורות קופון לא נכנסות ל-statement. |
-| SP7 | תצוגת payouts לספק: statements שאינם `draft`; אין מדד "escrow_held" פעיל. |
+| SP7 | תצוגת payouts לספק: statements שאינם `draft`; **אין** מדד/כרטיס `escrow_held` פעיל. |
 | SP8 | PDP מציג זהות ספק (שם, טלפון, כתובת, לוגו). |
 | SP9 | כסף בפורטל באגורות פנימית; UI ב-₪. |
+| SP10 | UI פורטל עברית RTL בכל המסכים. |
 
 ---
 
@@ -79,11 +81,30 @@ SQL: `is_supplier_member`, `is_supplier_owner`.
 /supplier/settings         פרטי עסק / סניפים / צוות / בנק (owner)
 ```
 
-UI עברית RTL. Multi-supplier: בחירת הקשר; redeem לפי **כל** ה-memberships הפעילים.
+Multi-supplier: בחירת הקשר; redeem לפי **כל** ה-memberships הפעילים.
 
 ---
 
-## 3. כסף לפי סוג מוצר (מבט ספק)
+## 3. Dashboard (בית)
+
+מסך `/supplier` מציג סיכום **היום** (אזור זמן `Asia/Jerusalem`):
+
+| כרטיס | מקור | הערה |
+|---|---|---|
+| סריקות היום | `voucher_redemptions` להיום | מונה בלבד |
+| יתרה שנגבתה בקופה (היום) | סכום `remaining_amount_due` על מימושים | לא "הועבר מפלטפורמה" |
+| הזמנות פיזיות פתוחות | `order_items` פיזי במצב לא fulfilled | manager+ בלבד לקישור לתור |
+| קיצור לסריקה | CTA ל-`/supplier/scan` | כל התפקידים |
+
+אסור ב-dashboard:
+
+- כרטיס / מדד בשם `escrow_held` או "מוחזק עד סריקה"
+- יתרת קופון ש"ממתינה להעברה מ-KenyonExpress"
+- עריכת `platform_percent`
+
+---
+
+## 4. כסף לפי סוג מוצר (מבט ספק)
 
 | סוג | לקוח באתר | לקוח בעסק | מה הפלטפורמה שומרת | מה הספק מקבל מהפלטפורמה |
 |---|---|---|---|---|
@@ -95,7 +116,15 @@ UI עברית RTL. Multi-supplier: בחירת הקשר; redeem לפי **כל** �
 
 ---
 
-## 4. מימושים (redemptions)
+## 5. סריקה ומימושים (scan + redemptions)
+
+### 5.1 סריקה
+
+מסך `/supplier/scan` (PWA-friendly):
+
+1. מצלמה ל-QR או הזנת קוד ידנית
+2. קריאה ל-API → RPC `redeem_voucher`
+3. תוצאה מיידית בעברית; בלי optimistic UI שמסמן redeemed לפני תשובת שרת
 
 זרימה:
 
@@ -112,14 +141,17 @@ POST /api/supplier/vouchers/redeem  (או alias /api/supplier/redeem)
 | already_redeemed / expired / … | הודעה ברורה |
 | wrong shop | קורס ל-`not_found` ב-API (anti-enum) |
 
-היסטוריה: SELECT על `voucher_redemptions` / vouchers שמומשו אצל הספק.  
-Issued של חנויות אחרות: לא ברשימה.
+### 5.2 היסטוריית מימושים
+
+`/supplier/redemptions`: SELECT על `voucher_redemptions` / vouchers שמומשו אצל הספק.  
+Issued של חנויות אחרות: לא ברשימה.  
+סינון לפי תאריך / סניף (אם קיים ב-audit).
 
 פירוט RPC: COUPON-REDEMPTION + COUPON-LIFECYCLE.
 
 ---
 
-## 5. הזמנות פיזיות
+## 6. הזמנות פיזיות
 
 Manager+ רואה `order_items` עם `supplier_id` שלו על הזמנות `paid` / fulfilled חלקי.
 
@@ -134,7 +166,7 @@ PII מעבר למשלוח: מינימום; אימייל לקוח כבוי כבר
 
 ---
 
-## 6. תצוגת payouts (בלי escrow_held)
+## 7. תצוגת payouts (בלי escrow_held פעיל)
 
 | מקור | תפקיד |
 |---|---|
@@ -149,13 +181,14 @@ PII מעבר למשלוח: מינימום; אימייל לקוח כבוי כבר
 | קופון | לא בשורות payout |
 | זכאות | T+N ימי עסקים + סף מינימום (ברירת מחדל ₪100) |
 | בנק | חובה מאומת לפני תשלום בפועל |
-| UI | יתרה לתשלום / שולם / ממתין לאישור. **אין** שדה או כרטיס `escrow_held` |
+| UI | יתרה לתשלום / שולם / ממתין לאישור |
+| אסור | שדה, כרטיס, עמודה או KPI בשם `escrow_held` (לא מודל פעיל) |
 
 ביצוע כסף: PAYOUT-ARCHITECTURE (`TransferFromDigitalBank` + CSV fallback). הספק רואה תוצאה; לא מריץ Transfer.
 
 ---
 
-## 7. מוצרים בפורטל
+## 8. מוצרים בפורטל
 
 ספק יוצר טיוטה / מגיש לביקורת.  
 **אסור** לכתוב `platform_percent`, `coupon_price`, `discount_percent`, `supplier_split_percent` מ-JWT ספק.  
@@ -163,7 +196,7 @@ PII מעבר למשלוח: מינימום; אימייל לקוח כבוי כבר
 
 ---
 
-## 8. RLS (תמצית)
+## 9. RLS (תמצית)
 
 | טבלה | SELECT ספק | כתיבה |
 |---|---|---|
@@ -176,21 +209,24 @@ PII מעבר למשלוח: מינימום; אימייל לקוח כבוי כבר
 
 ---
 
-## 9. Acceptance
+## 10. Acceptance
 
 - [ ] Membership gate על כל `/supplier/**`
-- [ ] Scan → redeem_voucher אטומי; wrong shop לא מנחש
-- [ ] UI מימוש מציג יתרה בקופה, לא העברה מפלטפורמה
+- [ ] Dashboard היום בלי `escrow_held` ובלי "מוחזק לספק"
+- [ ] Scan → redeem_voucher אטומי; wrong shop לא מנחש; anti-optimistic
+- [ ] Redemptions: היסטוריה לספק בלבד
 - [ ] תור פיזי ל-manager+
 - [ ] Payouts: פיזי בלבד; אין escrow_held פעיל
 - [ ] ספק לא עורך `platform_percent`
 - [ ] No Escrow בנוסח ובדוחות
+- [ ] UI עברית RTL
 
 ---
 
-## 10. Revision
+## 11. Revision
 
 | תאריך | שינוי |
 |---|---|
 | 2026-08-03 | BINDING רחב: portal + redeem + payout |
 | 2026-08-12 | batch #23: ריענון ממוקד dashboard/redemptions/payouts; escrow_held לא מודל פעיל |
+| 2026-08-12 | batch #23/50 pass-2: חיזוק dashboard/scan/redemptions/payouts; איסור escrow_held פעיל |
