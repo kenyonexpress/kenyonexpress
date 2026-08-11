@@ -1,50 +1,39 @@
-# ADMIN-PRODUCT-EDITOR-SPEC.md
-# מפרט עורך מוצר באדמין (UI מלא)
+# מפרט עורך מוצר באדמין
 
-מפרט ל-
-`ProductForm`
-ולדפי
-`/admin/products/new`
-|
-`/admin/products/[id]/edit`
-: שלושה מצבי סוג, ולידציות, RTL בעברית.
+מפרט UI ל-`ProductForm` ולדפי `/admin/products/new` | `/admin/products/[id]/edit`: שלושה מצבי סוג, ולידציות, RTL בעברית.
 
-Status: **SPEC** · עודכן: 2026-08-11  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד. מודל כסף: **No Escrow**; agorot integer; `platform_percent` **בלי default**.
 
 מסמכים קשורים:
 
 ```
-docs/PRODUCT-FIELDS-RESEARCH.md
+docs/ADMIN-PRODUCT-PAGE-SPEC.md
+docs/ARCHITECTURE-ADMIN-PRODUCT-FIELDS.md
 docs/ARCHITECTURE-PRICING-RULES.md
-docs/BUSINESS-MODEL.md
-docs/ARCHITECTURE-SUBSCRIPTIONS.md
 docs/SEED-SUPPLIERS-SPEC.md
-docs/ADMIN-USER-GUIDE.md
-docs/CONTRADICTIONS.md
+docs/ARCHITECTURE-SUBSCRIPTIONS.md
 ```
-
-יישום נוכחי (קוד): בעיקר `coupon` | `physical`. מצב `subscription` = יעד UI לפי מסמך זה (טרם חובה בפרוד).
 
 ---
 
-## 0. הכרעות
+## החלטה
 
 | # | הכרעה |
 |---|---|
 | E1 | שלושה מצבים לפי `products.type`: **קופון / פיזי / מנוי**. |
 | E2 | UI אדמין: עברית, `dir="rtl"`, לייבלים מימין. |
-| E3 | `platform_percent` חובה לפרסום; **אין default**. |
-| E4 | קופון: `coupon_price` מוחלט; הנחה % נגזרת לתצוגה בלבד. |
+| E3 | `platform_percent` חובה לפרסום; **אין default**; ריק = שגיאה. |
+| E4 | קופון: `coupon_price_ils` מוחלט; הנחה % נגזרת לתצוגה בלבד. |
 | E5 | פיזי: `platform_percent` + `supplier_split_percent` מסתכמים ל-100. |
-| E6 | מנוי: `recurring_amount` + `billing_interval=monthly`; לא מציג שדות קופון. |
-| E7 | ספק: חובה לקופון/פיזי לפני publish; readiness לפי SEED-SUPPLIERS. |
-| E8 | כסף בטופס: קלט ב-₪; שמירה לפי הסכמה החיה (ILS או agorot אחרי cutover). |
-| E9 | אין שפת Escrow / נאמן / held בטופס או בטולטיפים. |
+| E6 | מנוי: `recurring_amount_agorot` + `billing_interval=monthly`; אין שדות קופון/QR. |
+| E7 | ספק: חובה לקופון/פיזי לפני publish; readiness לפי `SEED-SUPPLIERS-SPEC`. |
+| E8 | כסף בטופס: קלט ב-₪; שמירה כ-**agorot integer** בשרת. |
+| E9 | אין ניסוח Escrow / נאמן / held בטופס או בטולטיפים. |
+| E10 | ולידציית שרת (zod ב-`upsertProduct`) היא מקור האמת; client = UX בלבד. |
 
----
-
-## 1. מבנה מסך (RTL)
+### מבנה מסך (RTL)
 
 ```text
 [ התראות שגיאה/הצלחה ]
@@ -59,124 +48,76 @@ docs/CONTRADICTIONS.md
 [ שמירה ]
 ```
 
-כיוון: `dir="rtl"` על הטופס; מספרי כסף ב-`<bdi dir="ltr">` אם צריך; שגיאות מעל השדה.
+### שדות לפי מצב
+
+**קופון:** `kenyon_price`, `coupon_price_ils`, `coupon_expiry_days` (מינימום 120), `platform_percent`, `supplier_split_percent` (100/0 מומלץ), יתרה בעסק = face − coupon (תצוגה).
+
+**פיזי:** `kenyon_price`, `platform_percent`, `supplier_split_percent`, וריאנטים אופציונליים, תצוגת פיצול חיה.
+
+**מנוי:** `recurring_amount_agorot`, `billing_interval`, `max_billing_cycles`, `platform_percent` אם יש ספק; קישור למדיניות ביטול.
 
 ---
 
-## 2. שלושת המצבים
+## חלופות שנדחו
 
-### 2.1 קופון (`type=coupon`)
-
-| שדה | חובה | ולידציה |
-|---|---|---|
-| `kenyon_price` / face (שווי דיל) | כן | > 0 |
-| `coupon_price_ils` (מחיר באתר) | כן | > 0 ו-`≤ face` |
-| `coupon_expiry_days` | כן | ≥ מינימום מדיניות (למשל 120) |
-| `platform_percent` | כן | 0–100; בלי default ריק |
-| `supplier_split_percent` | כן | משלים ל-100 עם platform |
-| `discount_percent` | לא (נגזר) | read-only בתצוגה |
-| יתרה בעסק | מחושב | face − coupon; מוצג בעברית |
-| וריאנטים | לא | מוסתרים או מושבתים |
-
-טולטיפ חובה:
-
-> הלקוח משלם באתר את מחיר הקופון. היתרה משולמת בעסק. אין העברת מקדמה לספק.
-
-### 2.2 פיזי (`type=physical`)
-
-| שדה | חובה | ולידציה |
-|---|---|---|
-| מחיר מחירון / `kenyon_price` | כן | > 0 |
-| `platform_percent` | כן | 0–100 |
-| `supplier_split_percent` | כן | סכום הזוג = 100 (±0.01) |
-| `coupon_price_*` | לא | מוסתר |
-| וריאנטים | אופציונלי | מחיר/מלאי לכל וריאנט |
-| משלוח / הערות | אופציונלי | |
-
-תצוגת פיצול חיה: "פלטפורמה ₪X · ספק ₪Y" לפי אחוזים על המחיר.
-
-### 2.3 מנוי (`type=subscription`)
-
-| שדה | חובה | ולידציה |
-|---|---|---|
-| `recurring_amount` (₪/חודש) | כן | > 0 |
-| `billing_interval` | כן | `monthly` בלבד ב-MVP |
-| `max_billing_cycles` | לא | null = ללא הגבלה; או ≥ 1 |
-| `platform_percent` | כן | כמו פיזי אם יש ספק |
-| שדות קופון / QR | לא | מוסתרים |
-| קישור למדיניות ביטול | כן (UI) | לינק ל-REFUNDS / LEGAL |
-
-טולטיפ: חיוב חוזר Cardcom; ביטול מאזור אישי. פירוט: `ARCHITECTURE-SUBSCRIPTIONS.md`.
-
----
-
-## 3. ולידציות (שרת + לקוח)
-
-| כלל | הודעת שגיאה (עברית) |
+| חלופה | למה נדחתה |
 |---|---|
-| שם ריק | יש להזין שם מוצר |
-| slug לא חוקי | slug באנגלית/מקפים בלבד |
-| platform ריק | חובה לקבוע אחוז פלטפורמה (אין ברירת מחדל) |
-| זוג אחוזים ≠ 100 | אחוז פלטפורמה + אחוז ספק חייבים להסתכם ל-100 |
-| coupon > face | מחיר הקופון לא יכול לעלות על שווי הדיל |
-| ספק חסר ב-publish | יש לבחור ספק מוכן (טלפון, כתובת, לוגו) |
-| ספק לא ready | הצג רשימת חוסרים מ-`supplierReadiness` |
-| מנוי בלי סכום | יש להזין סכום חיוב חודשי |
-
-ולידציית שרת (zod ב-`upsertProduct`) היא מקור האמת; client = UX בלבד.
+| default 5% ל-`platform_percent` | E3: אין ברירת מחדל שקטה. |
+| הנחה % כמקור לחיוב קופון | C4: מחיר קופון מוחלט בלבד. |
+| Escrow / held בטולטיפ קופון | No Escrow; יתרה בעסק במזומן. |
+| `dir=ltr` על כל הטופס | E2: RTL מלא; LTR רק ב-`<bdi>` לסכומים. |
+| publish בלי ספק ready | E7: חסימה או draft בלבד. |
+| שינוי סוג בלי אישור כשיש הזמנות | איפוס שדות לא רלוונטיים רק אחרי אישור. |
 
 ---
 
-## 4. ספק ו-readiness
+## סכמת DB
 
-- Select ספקים פעילים.  
-- אם נבחר ספק חסר לוגו/טלפון/כתובת: באנר אזהרה + קישור ל-
-  `/admin/suppliers/[id]`
-  .  
-- Publish ל-`status=published` נחסם עד readiness (או אישור מפורש ל-draft בלבד).
+כתיבה/קריאה (קיים):
 
----
+```text
+products
+  type, status, name_he, slug, category_id, supplier_id
+  price_ils / kenyon_price, full_price
+  platform_percent, supplier_split_percent, discount_percent
+  coupon_price_ils, coupon_expiry_days
+  stock_quantity, images, seo_*, redemption_instructions_he
+  coupon_terms_he, has_variants, variant_axes
 
-## 5. מדיה, תוכן, SEO
+product_variants (פיזי)
+  price_agorot, stock_quantity, option_values, sku
 
-| בלוק | כללים |
-|---|---|
-| תמונות | ImageUploader; לפחות תמונה אחת לפני publish |
-| תיאור עברית | RTL; בלי Escrow |
-| `coupon_terms_he` | רק במצב קופון |
-| SEO title/description | אופציונלי; מציגים תצוגה מקדימה |
+suppliers (readiness)
+  name, contact_phone, address, city, logo_url, status
+```
 
----
-
-## 6. נגישות ו-RTL
-
-- לייבלים מקושרים ל-`htmlFor` / `id`.  
-- שגיאות `role="alert"`.  
-- פוקוס נראה על שדות ושגיאות.  
-- סדר tab הגיוני מימין לשמאל.  
-- אל תשתמש ב-`dir=ltr` על כל הטופס.
+אין DDL חדש במסמך זה. פירוט כסף: `ADMIN-PRODUCT-PAGE-SPEC.md`.
 
 ---
 
-## 7. מצבי שמירה
+## מקרי קצה
 
-| פעולה | תוצאה |
-|---|---|
-| שמירת טיוטה | `draft`; ולידציות רכות יותר |
-| פרסום | כל שערי §3 + ספק ready |
-| שינוי סוג מוצר | אישור אם יש הזמנות קיימות; אחרת איפוס שדות לא רלוונטיים |
+| # | מקרה | התנהגות |
+|---|---|---|
+| CE1 | `platform_percent` ריק ב-publish | שגיאה: "חובה לקבוע אחוז פלטפורמה (אין ברירת מחדל)" |
+| CE2 | זוג אחוזים ≠ 100 | דחייה; לא "בוחרים מנצח" |
+| CE3 | `coupon_price` > face | דחייה בעברית |
+| CE4 | ספק חסר לוגו/טלפון/כתובת | באנר + חסימת publish |
+| CE5 | מעבר קופון→פיזי עם הזמנות | אישור; שדות קופון מוסתרים, לא נמחקים מהיסטוריה |
+| CE6 | מנוי: שדות QR/יתרה | מוסתרים לגמרי |
+| CE7 | שמירת טיוטה | ולידציות רכות; publish = כל שערי §החלטה |
+| CE8 | WP import: חסר percent | פילטר אדמין "חסר percent" (dashboard) |
 
 ---
 
-## 8. Acceptance
+## פתוחות
 
-- [ ] מעבר בין 3 מצבים מחליף שדות בלי שדות "רפאים"  
-- [ ] platform_percent ריק → שגיאה בעברית  
-- [ ] קופון: יתרה בעסק מוצגת נכון  
-- [ ] פיזי: סכום אחוזים = 100  
-- [ ] מנוי: אין שדות QR/יתרה בעסק  
-- [ ] RTL תקין ב-Chrome + Safari  
-- [ ] אין ניסוח Escrow  
+| # | פתוח | הערה |
+|---|---|---|
+| O1 | `type=subscription` בפרוד | UI לפי E6; יישום מלא ב-`ARCHITECTURE-SUBSCRIPTIONS`. |
+| O2 | אכיפת רצפת 120 יום ב-zod | CHECK בטיוטת 081; משימה 1.0 ב-`PRODUCT-PAGE-SPEC`. |
+| O3 | `cashback_bp` בטופס | עמודה קיימת; שדה UI עתידי. |
+| O4 | `cost_ils` / רווח גולמי | לא חוסם מכירה. |
 
 ---
 
@@ -184,4 +125,5 @@ docs/CONTRADICTIONS.md
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-11 | מפרט UI אדמין: 3 מצבים, ולידציות, RTL |
+| 2026-08-11 | rev A: UI 3 מצבים, RTL |
+| 2026-08-12 | batch-2: BINDING 5 סעיפים; No Escrow; agorot |
