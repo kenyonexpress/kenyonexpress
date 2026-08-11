@@ -1,151 +1,183 @@
-# ARCHITECTURE: Supplier Settlements
+# ארכיטקטורה: התחשבנות ספקים
 
-מחזורי התחשבנות לספקים: מימוש קופון יוצר רשומת payout, פיצול מיידי לפיזי, דוח חודשי, חלון מחלוקת.
+מחזורי settlement לספקים: פיזי בלבד ב-payout; קופון ללא payout מהפלטפורמה; דוח חודשי; חלון מחלוקת.
 
-Status: **BINDING** · Updated: 2026-08-03  
-Scope: **docs only** · branch `arch/docs-queue`  
-אין שינוי קוד. אין נגיעה ב-worktree הראשי.
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
-Companions:
+מודל כסף: **No Escrow**. אין held-until-redeem. מקדמת קופון = הכנסת פלטפורמה; `supplier_due` מהפלטפורמה = 0.
+
+מסמכים קשורים:
 
 ```
 docs/ARCHITECTURE-SUPPLIER-ANALYTICS.md
 docs/ARCHITECTURE-ADMIN-REPORTS.md
 docs/ARCHITECTURE-REFUNDS-DISPUTES.md
 docs/ARCHITECTURE-SUPPLIER-ONBOARDING.md
+docs/ARCHITECTURE-PAYOUT-MECHANISM.md
+docs/ARCHITECTURE-PRICING-RULES.md
 docs/LEGAL-CHECKLIST.md
 ```
 
-מודל כסף: Escrow פנימי 2026-07-27. אגורות ב-DB. `platform_percent` רק מסנאפשוט `order_items`.
-
 ---
 
-## 0. הכרעות מחייבות
+## 0. החלטה (מחייבת)
 
 | # | הכרעה |
 |---|---|
-| SS1 | קופון: בעת מכירה המקדמה נגבית באתר; חלק ספק מהמקדמה ב-**held** עד `redeemed`. |
-| SS2 | Redeem מוצלח → יצירת/שחרור **payout record** (לא לפני). |
-| SS3 | פיזי: אחרי `paid`, יתרת ספק (אחרי עמלה מהסנאפשוט) נכנסת למסלול settlement לפי hold T+N. |
-| SS4 | אין חישוב מחדש מ-`products.platform_percent` החי בזמן תשלום לספק. |
-| SS5 | דוח חודשי לכל ספק פעיל; CSV/PDF יעד. |
-| SS6 | חלון מחלוקת לפני סגירת מחזור (dispute window). |
+| SS1 | **קופון: אין payout** מהפלטפורמה. מקדמה באתר = 100% הכנסת פלטפורמה. redeem לא יוצר payout record. |
+| SS2 | **פיזי:** אחרי `paid`, יתרת ספק (אחרי עמלה מהסנאפשוט) נכנסת ל-settlement; payout אחרי T+N + שער משלוח. |
+| SS3 | אין חישוב מחדש מ-`products.platform_percent` החי בזמן settlement. |
+| SS4 | דוח חודשי לכל ספק פעיל; CSV/PDF יעד. |
+| SS5 | חלון מחלוקת לפני סגירת מחזור (dispute window). |
+| SS6 | Refunds יוצרים clawback / `supplier_debit` על פיזי ששולם. |
+| SS7 | **נדחה במפורש:** held-until-redeem, Escrow פנימי, payout על redeem קופון. |
+| SS8 | כל סכום באגורות integer; snapshot בלבד. |
 
 ---
 
-## 1. מחזור חיים
+## 1. חלופות שנדחו
+
+| חלופה | למה נדחתה |
+|---|---|
+| **held-until-redeem** לחלק ספק מהמקדמה | **נדחה.** סותר No Escrow. מקדמה = הכנסת פלטפורמה. |
+| payout record על redeem קופון | supplier_due מהפלטפורמה = 0; אין מסלול. |
+| Escrow פנימי 2026-07-27 | הוחלף ב-No Escrow; מסמך זה מבטל. |
+| חישוב settlement מ-`products` החי | משנה היסטוריה; snapshot בלבד. |
+| תשלום מיידי ב-redeem (קופון) | אין כסף פלטפורמה→ספק על קופון. |
+| monthly statement בלי dispute window | ספק ללא זכות ערעור; נדחה. |
+
+---
+
+## 2. סכמת DB (קיים; אין DDL חדש)
+
+| ישות | תפקיד |
+|---|---|
+| `settlement_events` | ledger; `kind`: `charge_settled`, `payout_settled`, `supplier_debit`, `refund` |
+| `order_items` | snapshot amounts; `settlement_status` |
+| `supplier_settlement_statements` | דוח חודשי (יעד) |
+| `payout_batches` / lines | באצ' payout פיזי |
+| `disputes` | מחלוקת על statement |
+| `vouchers` | redeem = סטטוס בלבד; **לא** payout trigger |
+
+אין טבלת `escrow_holds`. אין `held_agorot` על קופון.
+
+אין DDL חדש במסמך זה.
+
+---
+
+## 3. מחזור חיים
 
 ```text
 Physical line paid
-  → settlement_line status=pending_hold (snapshot amounts)
-  → after T+N / ship rules → eligible
-  → include in payout batch
+  → settlement_events charge_settled (snapshot)
+  → settlement_status = split_executed
+  → after T+N + shipped → eligible
+  → payout batch (PAYOUT-MECHANISM)
 
 Coupon line paid
-  → held (no supplier payout yet)
-  → voucher redeemed
-  → payout_record created/released for supplier share of advance
-  → include in next batch (or instant queue if policy)
+  → platform_settled (100% מקדמה לפלטפורמה)
+  → voucher issued
+  → redeem → status redeemed ONLY
+  → NO payout record / NO held release
 
 Monthly statement
-  → sum eligible lines − clawbacks
+  → sum physical eligible − clawbacks
   → dispute window
-  → mark payable → bank transfer (ops)
-  → mark paid
+  → finalized → payout_in_progress → closed
 ```
 
 ---
 
-## 2. Coupon redemption → payout record
+## 4. קופון: מה קורה ב-redeem
 
-| שדה ברשומה | מקור |
+| פעולה | קורה? |
 |---|---|
-| `supplier_id` | voucher / order_item |
-| `voucher_id` / `order_item_id` | |
-| `gross_paid_on_site_agorot` | snapshot |
-| `platform_commission_agorot` | snapshot `%` |
-| `supplier_payout_agorot` | held released amount |
-| `collected_at_store_agorot` | מה שהעסק גבה (לא payout פלטפורמה) |
-| `redeemed_at` | |
-| `status` | `eligible` / `included` / `paid` / `clawback` |
+| שינוי `vouchers.status` → `redeemed` | כן |
+| ledger release / held | **לא** |
+| payout record | **לא** |
+| `collected_at_store` (informational) | כן, ב-scan log |
 
-Idempotency: מפתח `payout:voucher:{voucher_id}` UNIQUE.  
-Replay redeem → לא יוצר payout כפול.
+יתרה בעסק נגבית מחוץ לפלטפורמה. הפלטפורמה לא מעבירה כסף לספק על קופון.
 
 ---
 
-## 3. Physical immediate split
-
-"Immediate" = לוגי ב-ledger מיד ב-`paid`, לא בהכרח העברה בנקאית באותו רגע.
+## 5. פיזי: פיצול מיידי (ledger)
 
 | רכיב | חישוב |
 |---|---|
 | Gross | `paid_on_site` לשורת הספק |
 | Platform | `commission_agorot` מסנאפשוט |
 | Supplier due | Gross − commission |
-| Hold | T+N ימי עסקים / עד shipped לפי מדיניות |
-| Clawback | refunds / chargebacks |
-
-אסור לשלם לספק על סכום שעדיין ב-dispute Cardcom פתוח (מדיניות).
+| Hold | T+N + שער משלוח |
+| Clawback | refunds / chargebacks → `supplier_debit` |
 
 ---
 
-## 4. Monthly statement generation
-
-| פריט | תוכן |
-|---|---|
-| תקופה | חודש קלנדרי `Asia/Jerusalem` או מחזור 1–סוף |
-| ספק | כל `suppliers.status=active` עם תנועה או יתרה |
-| סעיפים | physical eligible, coupon released, refunds, adjustments, fees |
-| פלט | `/admin/reports/supplier-settlements` + קובץ לספק בפורטל |
-| ייצוא | CSV UTF-8 BOM (ראה Admin Reports) |
-
-סטטוסי statement:
+## 6. דוח חודשי
 
 ```text
 draft → open_for_dispute → finalized → payout_in_progress → closed
 ```
 
----
-
-## 5. Dispute window
-
-| פרמטר | יעד התחלתי |
+| פריט | תוכן |
 |---|---|
-| משך | 5 ימי עסקים אחרי הפצת statement `open_for_dispute` |
-| מי יכול לפתוח | supplier owner / admin |
-| נושאים | סכום שגוי, redeem חסר, clawback לא מוצדק |
-| אחרי החלון | `finalized`; שינוי רק עם admin override + audit |
-| במהלך חלון | אין העברה בנקאית סופית על הסכום השנוי במחלוקת |
-
-תוצאות: accept / adjust ledger / reject עם נימוק עברית.
+| תקופה | חודש קלנדרי Asia/Jerusalem |
+| סעיפים | physical eligible, refunds, adjustments |
+| **לא** | coupon payout / held release |
+| פלט | admin reports + פורטל ספק |
 
 ---
 
-## 6. Payout batch (ops)
+## 7. חלון מחלוקת
 
-1. סינון `eligible` + statements finalized
-2. מינימום payout (אם מוגדר)
-3. יצירת batch + קובץ בנק
-4. סימון `paid` + `paid_at` + reference
-5. הודעה לספק (אופציונלי)
-
-כישלון העברה: לא לשכתב ledger כפול; סטטוס `payout_failed` + retry.
-
----
-
-## 7. Acceptance
-
-- [ ] Redeem יוצר payout record אידמפוטנטי
-- [ ] פיזי משתמש ב-snapshot בלבד
-- [ ] Statement חודשי + dispute window
-- [ ] Admin + supplier יכולים לראות יתרות לפי RBAC
-- [ ] Refunds יוצרים clawback
-
----
-
-## 8. Revision
-
-| Date | Change |
+| פרמטר | יעד |
 |---|---|
-| 2026-08-03 | מסמך ראשוני על arch/docs-queue |
+| משך | 5 ימי עסקים אחרי `open_for_dispute` |
+| מי פותח | supplier owner / admin |
+| אחרי החלון | `finalized`; override רק admin + audit |
+
+---
+
+## 8. מקרי קצה
+
+| מקרה | התנהגות |
+|---|---|
+| redeem קופון | סטטוס בלבד; **אין** payout |
+| refund קופון issued | refund ללקוח; לא clawback ספק (לא קיבל payout) |
+| refund פיזי אחרי payout | `supplier_debit`; קיזוז בבאג' הבא |
+| dispute במהלך חלון | freeze סכום disputed |
+| statement עם 0 תנועה | draft ריק; לא payout |
+| ספק suspended | לא statement חדש; יתרות קיימות נשמרות |
+| duplicate redeem replay | idempotent; לא payout כפול (N/A לקופון) |
+| chargeback פתוח | exclude מ-finalized |
+| held-until-redeem (legacy doc) | **נדחה**; לא לממש |
+
+---
+
+## 9. Acceptance
+
+- [ ] redeem קופון: **אין** payout record
+- [ ] held-until-redeem **נדחה** במפורש
+- [ ] פיזי: snapshot בלבד
+- [ ] statement חודשי + dispute window
+- [ ] Refunds → clawback על פיזי
+
+---
+
+## 10. פתוחות
+
+| ID | שאלה | ברירת מחדל |
+|---|---|---|
+| Q-SS-STMT | שם טבלת statement סופי? | `supplier_settlement_statements` |
+| Q-SS-PDF | PDF generation? | v2 |
+
+---
+
+## 11. Revision
+
+| תאריך | שינוי |
+|---|---|
+| 2026-08-03 | מסמך ראשוני (Escrow; deprecated) |
+| 2026-08-12 | batch-2: No Escrow; **דחיית held-until-redeem**; BINDING template |
