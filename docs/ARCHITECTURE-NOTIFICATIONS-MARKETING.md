@@ -136,3 +136,4 @@ wording_version, ip, user_agent, created_at
 | תאריך | שינוי |
 |---|---|
 | 2026-08-12 | batch #28/50: ריענון BINDING ממוקד (ערוצים + consent) |
+| 2026-08-12 | batch-2 #28 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
