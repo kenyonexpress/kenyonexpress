@@ -140,3 +140,4 @@ POST redeem
 | תאריך | שינוי |
 |---|---|
 | 2026-08-12 | batch #31/50: ריענון BINDING (RL, entropy, abuse) |
+| 2026-08-12 | batch-2 #31 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
