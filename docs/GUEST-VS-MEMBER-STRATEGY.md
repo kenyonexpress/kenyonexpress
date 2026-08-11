@@ -1,23 +1,52 @@
 # אסטרטגיית אורח מול חבר
 
-מתי דוחפים הרשמה ומתי נותנים לקנות בשקט.
-
-Status: **PLAN** · עודכן: 2026-08-10  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+Status: **PLAN** · עודכן: 2026-08-12
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+מודל כסף: No Escrow; אין held בתמורה להרשמה.
 
-מסמכים קשורים:
+---
 
-```
-docs/CHECKOUT-OPTIMIZATION.md
-docs/ARCHITECTURE-ACCOUNT-IDENTITY.md
-docs/ARCHITECTURE-PERSONAL-AREA.md
-docs/ARCHITECTURE-REFERRAL.md
-docs/ANALYTICS-SPEC.md
-docs/CONTRADICTIONS.md
-```
+## 1. החלטה
 
-מצב נוכחי (E2E/מוצר): המשך לתשלום כאורח עובר דרך התחברות (למשל Google). המסמך מגדיר **מדיניות מוצר**, לא מחליף מיד את הקוד.
+| # | הכרעה |
+|---|---|
+| G1 | צפייה/חיפוש בלי login |
+| G2 | קופון: זהות לפני charge |
+| G3 | מיזוג עגלה אחרי login |
+| G4 | הרשמה כשיש תועלת |
+
+---
+
+## 2. חלופות שנדחו
+
+| חלופה | נימוק |
+|---|---|
+| paywall על קטלוג | SEO |
+| modal הרשמה באמצע כתובת | UX |
+| guest coupon email-only | fraud risk |
+
+---
+
+## 3. סכמת DB
+
+| טבלה | שדות |
+|---|---|
+| carts | guest cookie + user merge |
+| vouchers | user_id required |
+
+---
+
+## 4. מקרי קצה
+
+| E1 | קונפליקט מחיר אורח | DB at checkout |
+| E2 | wishlist בלי login | block feature |
+
+---
+
+## 5. פתוחות
+
+| O1 | AB guest full coupon | future | 2026-08-12 |
 
 ---
 
@@ -102,3 +131,12 @@ docs/CONTRADICTIONS.md
 | תאריך | שינוי |
 |---|---|
 | 2026-08-10 | מדיניות אורח/חבר ראשונית |
+
+---
+
+## Revision
+
+| תאריך | שינוי |
+|---|---|
+| 2026-08-12 | BINDING batch-2: החלטה, חלופות, DB, קצה, פתוחות |
+
