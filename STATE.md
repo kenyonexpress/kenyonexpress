@@ -1,55 +1,54 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-12 (arch/docs-batch-2)
+Updated: 2026-08-12 (arch/docs-batch-2 union)
 
 ## Current Phase
 ‏**arch/docs-batch-2** ב-worktree
 ke-arch
-. Docs only. אסור נגיעה בתיקייה הראשית
+בלבד. Docs only. אסור נגיעה בתיקייה הראשית
 kenyonexpress
-. אסור קוד. אסור
-git checkout
-על
-main
-. אחרי כל מסמך: commit + push ל-
+. **אין יצירת ענפים חדשים.** כל מסמך רק על
 arch/docs-batch-2
 .
 
 ## המשך מ:
-תור סגור 50/50 (batch-2) **הושלם**. כל מסמך: commit נפרד + push ל-
-`origin/arch/docs-batch-2`
-(50 commits מסוג `docs(batch-2): #N`). אין goal הבא בתור זה.
+תור 50/50 **הושלם** לפני איחוד הענפים. אחרי האיחוד אומתו #1–#4 ו-#50. אין פריט הבא בתור 50. הבא: P0 מ-
+docs/INDEX.md
+על אותו ענף בלבד.
 
 ## Last Completed
-תור docs-batch-2 #1–#50 נסגר. כולל מסמכים חדשים
-ARCHITECTURE-CARDCOM-WEBHOOKS.md
-ו-
-ARCHITECTURE-CART-GUEST.md
-. HEAD מרוחק:
-ca80743
-(#50).
+איחוד docs-only מ-24 ענפי
+arch/docs-*
+לתוך
+arch/docs-batch-2
+(+71 קבצי docs חדשים; batch-2 גובר על חפיפה). Commit+push יחיד:
+44780e7
+. תור 50 נשאר סגור.
 
 ## In Progress
 nothing
 
 ## Blocking Issues
-- בקשת המשתמש ל-50 מסמכים נקטעה אחרי פריט 4; תור 5-50 הושלם אוטומטית (ראה החלטות)
-- refs/electro.madrasthemes.com-DESIGN.md חסר (D01); baseline = DESIGN-MEASURED.md + ELECTRO_HERO
-- BrandsCarousel: נתיב מיועד src/components/store/BrandsCarousel.tsx עדיין לא קיים בקוד
-- cursor-ide-browser MCP לא יציב; מדידות Playwright
-- השקה: 10 דילי seed missing; Cardcom prod; Vercel session
+- אסור ליצור ענף docs חדש; הכל על arch/docs-batch-2
+- בקשת 50 מסמכים נקטעה אחרי פריט 4; תור 5-50 הושלם אוטומטית
+- refs/electro.madrasthemes.com-DESIGN.md חסר (D01)
+- BrandsCarousel חסר בקוד
+- cursor-ide-browser MCP לא יציב
+- השקה: seed/Cardcom/Vercel
 - P0 integrity: DDL-FIXES Escrow; DB-SCHEMA escrow_held; cardcom-payments skill held
 
 ## Next Task
-nothing (batch-2 סגור) או תיקוני P0 מ-
+P0 מ-
 docs/INDEX.md
-
-
+על
+arch/docs-batch-2
+בלבד
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
 
 ## החלטות שהתקבלו אוטומטית
+- **2026-08-12 no new arch branches + docs union:** מיזוג git מלא של arch/docs-* מחק src/; בוטל. במקום: ייבוא path `docs/` מ-24 ענפים + batch-2 wins על חפיפה + push יחיד 44780e7.
 - **2026-08-12 batch #43-#50:** ריענון BINDING (CATEGORIES עד WORDPRESS-IMPORT). LEGAL L3a: דמי ביטול 5%/100₪ = LEGAL לא commission. WORDPRESS WI0: WP מקור מיגרציה WXR בלבד, לא stack חי. SUBSCRIPTIONS נשאר מקור טכני מול RECURRING. slug אטרקציות = attractions. ללא commit/push לפי בקשה.
 - **2026-08-12 batch #34-#42:** ריענון BINDING (PRODUCTION-OPS עד SEARCH-UX). PRODUCTION-OPS: WP לא סטאק נוכחי. TESTING-CICD: Assert אין DEFAULT_PLATFORM_COMMISSION / אין 5% commission default (statutory cancellation OK). API-CONTRACTS צומצם לסיכום No Escrow. BI מ-snapshots. SEARCH-UX בלי margin boost מעמלה. ללא commit/push לפי בקשה.
 - **2026-08-12 batch #21-#25:** ריענון BINDING (PERSONAL-AREA, ACCOUNT-IDENTITY, SUPPLIER-PORTAL, SUPPLIER-ONBOARDING, ADMIN-DASHBOARD). OTP כגיבוי ל-Google; מצביע מיזוג ל-CART-GUEST; portal בלי escrow_held פעיל; onboarding רק הסכמי platform_percent פר מוצר; אדמין: product-type + % חובה + WhatsApp toggle. ללא commit/push לפי בקשה.
