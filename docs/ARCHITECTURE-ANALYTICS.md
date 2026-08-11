@@ -150,3 +150,4 @@ UI: עברית RTL; ₪ מתורגם מאגורות.
 | 2026-08-06 | משפך + PostHog/GA4 |
 | 2026-08-11 | KPIs ספק + SQL הכנסות |
 | 2026-08-12 | batch-2 #39: BINDING על arch/docs-batch-2; הדגשת snapshots / No Escrow |
+| 2026-08-12 | batch-2 #39 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
