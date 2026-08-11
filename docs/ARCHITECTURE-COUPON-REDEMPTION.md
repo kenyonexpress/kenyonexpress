@@ -37,7 +37,7 @@ docs/ARCHITECTURE-CARDCOM-WEBHOOKS.md
 
 ---
 
-## 0. הכרעות
+## 0. החלטה (הכרעות מחייבות)
 
 | # | הכרעה |
 |---|---|
