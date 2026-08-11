@@ -54,7 +54,7 @@ nothing
 /Users/ofir/kenyonexpress-web/ke-arch
 
 ## החלטות שהתקבלו אוטומטית
-- **2026-08-12 docs-batch-2 complete:** בדיקת סעיפים גמישה לכותרות ממוספרות (`## 0. החלטה` וכו'). שני שאריות: COUPON-REDEMPTION השתמש ב"הכרעות" במקום "החלטה"; RLS-MATRIX ב"סכמת עזר" במקום "סכמת DB". תוקנו + push. תור docs סגור ב-230/230.
+- **2026-08-12 docs-batch-2 complete:** בדיקת סעיפים גמישה לכותרות ממוספרות (`## 0. החלטה` וכו'). שני שאריות: COUPON-REDEMPTION השתמש ב"הכרעות" במקום "החלטה"; RLS-MATRIX ב"סכמת עזר" במקום "סכמת DB". תוקנו + push. תור docs סגור ב-230/230. ntfy נדחה (HTTP 429 daily quota); לא מנסים שוב.
 
 - **2026-08-12 autonomous pass-2:** ממשיכים שכתוב BINDING בלי לשאול. SUBSCRIPTIONS: paused אחרי 3 soft/7d; מחיר מנוי מצולם. WALLET: אין cash-out. RLS-MATRIX: 52 ליבה. SUPER-APP: בלי אינטגרציית Wolt. ROADMAP: V1.1a geo/PWA → wallet → physical → subscriptions.
 
