@@ -35,3 +35,25 @@ overrides:
   nanoid: ^3.3.17
   brace-expansion: ^5.0.9
   fast-uri: ^3.1.5
+
+  # ...except for minimatch@9, which the blanket line above was breaking.
+  #
+  # minimatch@9 declares `brace-expansion: ^2.0.2` and its compiled CJS calls
+  # `(0, brace_expansion_1.default)(...)`. brace-expansion 5 is ESM-first: its
+  # CommonJS build exports { expand, EXPANSION_MAX, EXPANSION_MAX_LENGTH } and
+  # no `default` at all. So the override satisfied a ^2.0.2 range with a 5.x
+  # major and every glob that went through minimatch@9 died on
+  #
+  #     TypeError: (0 , brace_expansion_1.default) is not a function
+  #
+  # That is not a hypothetical. It is why all 11 CI runs were red while
+  # `pnpm test` was green locally: the only caller on that path is
+  # test-exclude -> glob -> minimatch@9, reached from
+  # V8CoverageProvider.getUntestedFiles, which runs under `pnpm test:coverage`
+  # and under nothing else. Every test passed and then the coverage reporter
+  # threw, so the failure never named a test.
+  #
+  # The advisory is still closed. GHSA/CVE-2025-5889 is fixed in 1.1.12, 2.0.2,
+  # 3.0.1 and 4.0.1, so ^2.0.2 is a patched line and not a rollback to the
+  # vulnerable one. minimatch@10 keeps 5.x: it asks for ^5.0.5 itself.
+  'minimatch@9>brace-expansion': ^2.0.2

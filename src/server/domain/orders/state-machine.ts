@@ -56,8 +56,6 @@ export const SETTLEMENT_EVENTS: readonly SettlementEvent[] = [
 
 type TransitionRule = {
   to: SettlementState
-  /** When set, the event is legal only for lines of this product type. */
-  productType?: CommissionProductType
 }
 
 /**
@@ -100,7 +98,16 @@ const TRANSITIONS: Readonly<
   cancelled: {},
 }
 
-export type TransitionErrorCode = 'ILLEGAL_TRANSITION' | 'WRONG_PRODUCT_TYPE'
+/**
+ * Only one code. There used to be a second, `WRONG_PRODUCT_TYPE`, guarding a
+ * `productType` field on TransitionRule that no rule ever set: under C11(b)
+ * both product types share every transition, so the guard could not fire and
+ * nothing anywhere caught the error it named. A check that cannot fail is not a
+ * safety net, it is a comment that reads like one, and on the settlement path
+ * that is worse than nothing. If a per-type rule is ever needed, it comes back
+ * with the transition that needs it and a test that proves it fires.
+ */
+export type TransitionErrorCode = 'ILLEGAL_TRANSITION'
 
 export class SettlementTransitionError extends Error {
   readonly code: TransitionErrorCode
@@ -116,28 +123,32 @@ export class SettlementTransitionError extends Error {
   }
 }
 
+/**
+ * `productType` is still taken, and still ignored.
+ *
+ * Both types share every transition under C11(b), so it changes no answer
+ * today. It stays in the signature because every caller has one to hand and
+ * because the day a transition does diverge by type, the call sites are already
+ * passing the thing the rule will need. Dropping it would mean threading it
+ * back through refund.ts to add one rule.
+ */
 export function canTransition(
   from: SettlementState,
   event: SettlementEvent,
-  productType: CommissionProductType,
+  _productType: CommissionProductType,
 ): boolean {
-  const rule = TRANSITIONS[from][event]
-  if (!rule) return false
-  return rule.productType === undefined || rule.productType === productType
+  return TRANSITIONS[from][event] !== undefined
 }
 
 /** Applies an event, throwing SettlementTransitionError when illegal. */
 export function transition(
   from: SettlementState,
   event: SettlementEvent,
-  productType: CommissionProductType,
+  _productType: CommissionProductType,
 ): SettlementState {
   const rule = TRANSITIONS[from][event]
   if (!rule) {
     throw new SettlementTransitionError('ILLEGAL_TRANSITION', from, event)
-  }
-  if (rule.productType !== undefined && rule.productType !== productType) {
-    throw new SettlementTransitionError('WRONG_PRODUCT_TYPE', from, event)
   }
   return rule.to
 }

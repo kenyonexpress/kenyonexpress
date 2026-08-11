@@ -6,6 +6,7 @@ import {
   type SettlementState,
   type SettlementTransitionError,
   canTransition,
+  deriveOrderStatus,
   isSettled,
   isTerminal,
   transition,
@@ -145,5 +146,60 @@ describe('isSettled covers every state where the platform owes nobody', () => {
     const settled = SETTLEMENT_STATES.filter(isSettled)
     expect(settled).toEqual(['split_executed', 'refunded', 'cancelled'])
     expect(SETTLEMENT_STATES).toHaveLength(6)
+  })
+})
+
+describe('deriveOrderStatus rolls lines up to an order', () => {
+  it('calls an order with no lines pending', () => {
+    // Not an error and not settled: an order mid-creation has no lines yet, and
+    // the rollup is read before the first one is written.
+    expect(deriveOrderStatus([])).toBe('pending')
+  })
+
+  it('reports the least-advanced active line, not the most advanced', () => {
+    // The order is only as far along as its slowest line. Reading the furthest
+    // one would call an order paid while part of it had not been charged.
+    expect(deriveOrderStatus(['pending', 'paid', 'split_executed'])).toBe('pending')
+    expect(deriveOrderStatus(['paid', 'split_executed'])).toBe('paid')
+    expect(deriveOrderStatus(['redeemed', 'split_executed'])).toBe('redeemed')
+  })
+
+  it('ranks pending over paid over redeemed', () => {
+    // Pins the order of the three guards against each other. Swapping any two
+    // changes what a mixed order reports, and each is checked here against a
+    // state that would win under the wrong ordering.
+    expect(deriveOrderStatus(['paid', 'pending'])).toBe('pending')
+    expect(deriveOrderStatus(['redeemed', 'pending'])).toBe('pending')
+    expect(deriveOrderStatus(['redeemed', 'paid'])).toBe('paid')
+  })
+
+  it('settles to cancelled only when every line was cancelled', () => {
+    expect(deriveOrderStatus(['cancelled', 'cancelled'])).toBe('cancelled')
+    // One refund among cancellations is a refunded order: money moved back.
+    expect(deriveOrderStatus(['cancelled', 'refunded'])).toBe('refunded')
+  })
+
+  it('settles to refunded when every line was refunded or cancelled', () => {
+    expect(deriveOrderStatus(['refunded'])).toBe('refunded')
+    expect(deriveOrderStatus(['refunded', 'refunded'])).toBe('refunded')
+  })
+
+  it('settles to split_executed when any line kept its money', () => {
+    expect(deriveOrderStatus(['split_executed'])).toBe('split_executed')
+    // A partial refund leaves the order split_executed: the platform still
+    // earned on the line that was not refunded, so calling the whole order
+    // refunded would overstate what went back to the card.
+    expect(deriveOrderStatus(['split_executed', 'refunded'])).toBe('split_executed')
+    expect(deriveOrderStatus(['split_executed', 'cancelled'])).toBe('split_executed')
+  })
+
+  it('returns a state this machine knows, for every combination of line states', () => {
+    // The guard against a seventh state sneaking in through the rollup: every
+    // pair of line states must derive to something SETTLEMENT_STATES contains.
+    for (const a of SETTLEMENT_STATES) {
+      for (const b of SETTLEMENT_STATES) {
+        expect(SETTLEMENT_STATES, `${a} + ${b}`).toContain(deriveOrderStatus([a, b]))
+      }
+    }
   })
 })
