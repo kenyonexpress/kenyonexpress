@@ -129,7 +129,8 @@ docs/ONBOARDING-DEVELOPER.md
 | `SUBSCRIPTIONS-BILLING-SPEC.md` | מנויים + Cardcom Recurring (עתידי). | SPEC (11.08) |
 | `GUEST-VS-MEMBER-STRATEGY.md` | מתי דוחפים הרשמה ומתי לא. | PLAN (10.08) |
 | `CARDCOM-ARCHITECTURE.md` | Cardcom (מחקר v11; קוד legacy). | BINDING + QA (07.08) |
-| `ARCHITECTURE-PAYOUT-MECHANISM.md` | Payout פיזי: T+N, באצ', CSV ידני. | BINDING (10.08) |
+| `PAYOUT-ARCHITECTURE.md` | מסמך קנוני: TransferFromDigitalBank, statements, T+3, reconcile. | BINDING (11.08) |
+| `ARCHITECTURE-PAYOUT-MECHANISM.md` | באצ'/סכימה מפורטת; ביצוע קנוני ב-PAYOUT-ARCHITECTURE. | BINDING (10.08) |
 | `VENDOR-PAYOUT-SPEC.md` | Payout פיזי אחרי Cardcom: באצ'+העברה בנקאית. | SPEC (11.08) |
 | `ARCHITECTURE-CASHBACK-WALLET.md` | ארנק פנימי באגורות. | BINDING |
 | `CASHBACK-WALLET-SPEC.md` | מפרט מוצר לארנק קאשבק (earn/spend UI). | SPEC (11.08) |
@@ -290,7 +291,6 @@ docs/ONBOARDING-DEVELOPER.md
 
 | מסמך | הוחלף ע״י | סטטוס |
 |---|---|---|
-| `PAYOUT-ARCHITECTURE.md` | `ARCHITECTURE-PAYOUT-MECHANISM.md` | DEPRECATED (10.08) |
 | `ADMIN-ARCHITECTURE.md` | `ARCHITECTURE-ADMIN-DASHBOARD.md` + `ADMIN-USER-GUIDE.md` | DEPRECATED (10.08) |
 | `TEST-STRATEGY.md` | `TESTING-STRATEGY.md` + `ARCHITECTURE-TESTING-CICD.md` | DEPRECATED (10.08) |
 
@@ -352,3 +352,4 @@ docs/ROADMAP-V2.md
 | 2026-08-10 | `CHECKOUT-OPTIMIZATION.md` + `GUEST-VS-MEMBER-STRATEGY.md`; אינדקס |
 | 2026-08-10 | `SUPPORT-SLA-POLICY.md` + `WHATSAPP-BUSINESS-SETUP.md`; אינדקס |
 | 2026-08-11 | `CHECKOUT-OPTIMIZATION.md`: Cardcom flow + failures + retry |
+| 2026-08-11 | `PAYOUT-ARCHITECTURE.md` BINDING מחדש (TransferFromDigitalBank) |
