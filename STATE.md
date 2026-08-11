@@ -29,6 +29,43 @@ TypeError: (0 , brace_expansion_1.default) is not a function
 כוסה: בדיקה שלא יכולה להיכשל אינה רשת ביטחון במסלול הסליקה. הקובץ עכשיו 100%
 בכל ארבעת המדדים, ‏2348 טסטים עוברים.
 
+### חסום: ג'וב הבנייה ב-CI דורש DB אמיתי, ואין secrets בריפו
+
+**מה שנשאר אדום אחרי `d0bad19`, וזה לא רגרסיה, זה שער שמעולם לא רץ.**
+‏`build` הוא `needs: [test]`, ו-test נכשל בכל 11 הריצות, ולכן הבנייה דולגה בכל
+פעם והחוסר הזה מעולם לא נראה. ברגע שהטסטים נהיו ירוקים היא רצה לראשונה ונפלה:
+
+```
+Missing NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY
+Failed to collect page data for /category/[slug]
+```
+
+‏`gh secret list` ריק. אין אף secret בריפו, ולכן `secrets.CI_SUPABASE_URL`
+מתפרש כמחרוזת ריקה.
+
+‏**ניסיון תיקון בלי קרדנציאלים, נמדד ונכשל.** עם ערכי placeholder הבנייה עוברת
+את בדיקת ה-env, מתקמפלת, ואז מתה על:
+
+```
+EmptyGenerateStaticParamsError: all generateStaticParams must return
+at least one result  →  /category/[slug]
+```
+
+‏`generateStaticParams` בונה את הרשימה מ-`getAllCategorySlugs()`, כלומר
+מה-DB. ‏Cache Components פוסל רשימה ריקה. אין ערך דמה שיעבוד, ואין תיקון קוד
+חוץ מהמצאת slug, שזו בדיוק "נתון מהדמיון" שהחוקים אוסרים.
+
+‏**מה נעשה:** הוחל על `build` אותו שומר-דילוג שכבר קיים ב-`e2e` מאז שנכתב,
+עם אותו נימוק שכתוב שם בשורה 155: *"a permanently red required check teaches
+people to ignore red checks"*. הג'וב מדווח **skipped** עם warning גלוי, לא
+‏passed. שער הבנייה לא הוחלש, כי הוא לא רץ ממילא.
+
+‏**התיקון האמיתי, והוא שלך:** להגדיר `CI_SUPABASE_URL`,
+‏`CI_SUPABASE_ANON_KEY` ו-`CI_SUPABASE_SECRET_KEY` כ-repository secrets. לא
+הגדרתי לבד: ‏`SUPABASE_SECRET_KEY` הוא service-role key, כתיבתו ל-GitHub היא
+פרסום סוד החוצה, והזיכרון של הפרויקט אומר שהמפתח ב-`.env.local` אינו של
+הפרויקט הזה. ברגע שהם מוגדרים, גם `build` וגם `e2e` נדלקים לבד בלי שינוי קוד.
+
 ### ‏.gitignore ✅ ‏(`e07eb28`)
 
 ‏`refs/` עם לוכסן מוציא את **התיקייה**, ו-git לא נכנס לתיקייה מוחרגת, ולכן כל

@@ -138,14 +138,49 @@ jobs:
           # The Sentry plugin reads git history to associate commits with the
           # release; a shallow clone gives it one commit and no association.
           fetch-depth: 0
+
+      # Same guard, and the same reasoning, as the e2e job below: without the
+      # secret this job cannot pass, and a permanently red check teaches people
+      # to ignore red checks.
+      #
+      # `pnpm build` needs a REAL database, not just a reachable one. Cache
+      # Components rejects a generateStaticParams that returns zero results, and
+      # /category/[slug] builds its list from getAllCategorySlugs(). Measured
+      # 2026-08-12 against placeholder credentials: the build gets past the env
+      # check, compiles, and then dies on
+      #
+      #   EmptyGenerateStaticParamsError ... Failed to collect page data for
+      #   /category/[slug]
+      #
+      # So there is no dummy-value trick here and no code change that would fix
+      # it short of inventing a category slug, which is data from imagination.
+      #
+      # This job had never actually run before 2026-08-12. It is `needs: [test]`
+      # and test failed on every one of the 11 runs before d0bad19, so build was
+      # skipped every time and its missing secrets were never visible.
+      - name: Check whether Supabase credentials are configured
+        id: creds
+        run: |
+          if [ -n "${{ secrets.CI_SUPABASE_URL }}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Build skipped::CI_SUPABASE_URL is not set, so pnpm build cannot resolve generateStaticParams. Add the CI_SUPABASE_* repository secrets to enable it."
+          fi
+
       - uses: pnpm/action-setup@v4
+        if: steps.creds.outputs.present == 'true'
       - uses: actions/setup-node@v4
+        if: steps.creds.outputs.present == 'true'
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+        if: steps.creds.outputs.present == 'true'
       - run: pnpm build
+        if: steps.creds.outputs.present == 'true'
       - uses: actions/upload-artifact@v4
+        if: steps.creds.outputs.present == 'true'
         with:
           name: next-build
           path: .next/
