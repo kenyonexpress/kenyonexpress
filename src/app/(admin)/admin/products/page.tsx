@@ -1,5 +1,5 @@
 import ProductsTable, { type ProductRow } from '@/components/admin/ProductsTable'
-import { productListParamsSchema } from '@/lib/admin/page-params'
+import { INCOMPLETE_PRODUCT_FILTER, productListParamsSchema } from '@/lib/admin/page-params'
 import { createClient } from '@/lib/supabase/server'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
@@ -28,11 +28,22 @@ export default async function AdminProductsPage({ searchParams }: Props) {
   const parsed = productListParamsSchema.safeParse({
     q: typeof raw.q === 'string' ? raw.q : undefined,
     status: typeof raw.status === 'string' ? raw.status : undefined,
+    incomplete: typeof raw.incomplete === 'string' ? raw.incomplete : undefined,
     page: typeof raw.page === 'string' ? raw.page : undefined,
   })
 
   const params = parsed.success ? parsed.data : { page: 1 }
   const { q, status, page } = params
+  const incomplete = 'incomplete' in params ? params.incomplete === '1' : false
+
+  // Carried by every link on this page so a filter survives paging and search.
+  const carry = (extra: Record<string, string> = {}) =>
+    new URLSearchParams({
+      ...(status ? { status } : {}),
+      ...(q ? { q } : {}),
+      ...(incomplete ? { incomplete: '1' } : {}),
+      ...extra,
+    })
   const from = (page - 1) * PAGE_SIZE
   const to = from + PAGE_SIZE - 1
 
@@ -50,6 +61,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
 
   if (status) query = query.eq('status', status)
   if (q) query = query.ilike('name_he', `%${q}%`)
+  if (incomplete) query = query.or(INCOMPLETE_PRODUCT_FILTER)
 
   const [{ data: products, count }, { data: categories }] = await Promise.all([
     query,
@@ -90,6 +102,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
           const sp = new URLSearchParams()
           if (f.value) sp.set('status', f.value)
           if (q) sp.set('q', q)
+          if (incomplete) sp.set('incomplete', '1')
           const href = sp.toString() ? `/admin/products?${sp}` : '/admin/products'
           return (
             <Link
@@ -106,8 +119,29 @@ export default async function AdminProductsPage({ searchParams }: Props) {
           )
         })}
 
+        {/* Orthogonal to the status chips above, so it toggles on its own and
+            keeps whichever status is selected. */}
+        <Link
+          href={(() => {
+            const sp = new URLSearchParams()
+            if (status) sp.set('status', status)
+            if (q) sp.set('q', q)
+            if (!incomplete) sp.set('incomplete', '1')
+            return sp.toString() ? `/admin/products?${sp}` : '/admin/products'
+          })()}
+          title="מוצרים בלי ספק או בלי אחוזים. אלה לא ניתנים לפרסום."
+          className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+            incomplete
+              ? 'bg-red-100 text-red-800 ring-1 ring-red-300'
+              : 'border border-black/10 text-black/60 hover:bg-red-50 hover:text-red-700'
+          }`}
+        >
+          חסרי הגדרה
+        </Link>
+
         <form method="GET" action="/admin/products" className="ms-auto flex gap-2">
           {status && <input type="hidden" name="status" value={status} />}
+          {incomplete && <input type="hidden" name="incomplete" value="1" />}
           <input
             name="q"
             defaultValue={q}
@@ -129,11 +163,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
         <div className="flex items-center justify-center gap-2">
           {page > 1 && (
             <Link
-              href={`/admin/products?${new URLSearchParams({
-                ...(status ? { status } : {}),
-                ...(q ? { q } : {}),
-                page: String(page - 1),
-              })}`}
+              href={`/admin/products?${carry({ page: String(page - 1) })}`}
               className="rounded-lg border border-black/10 px-3 py-1.5 text-xs transition-colors hover:bg-brand-primary/30"
             >
               הקודם
@@ -144,11 +174,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
           </span>
           {page < totalPages && (
             <Link
-              href={`/admin/products?${new URLSearchParams({
-                ...(status ? { status } : {}),
-                ...(q ? { q } : {}),
-                page: String(page + 1),
-              })}`}
+              href={`/admin/products?${carry({ page: String(page + 1) })}`}
               className="rounded-lg border border-black/10 px-3 py-1.5 text-xs transition-colors hover:bg-brand-primary/30"
             >
               הבא

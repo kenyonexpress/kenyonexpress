@@ -1,5 +1,6 @@
 'use server'
 
+import { bulkPublishErrorMessage, findUnpublishableProducts } from '@/lib/admin/bulk-publish'
 import { productSchema as schema, variantSchema } from '@/lib/admin/product-form-schema'
 import { variantIdsToRemove } from '@/lib/admin/product-variants'
 import { requireStaffSession } from '@/lib/admin/rbac'
@@ -361,12 +362,55 @@ async function runBulkUpdateProductStatus(
   }
 
   const supabase = await createClient()
+
+  // Publishing in bulk runs the same gate as publishing one product. Without
+  // this, the "פרסם" button wrote `active` onto every selected id, and the 19
+  // draft products in the live catalog all have a NULL supplier_id and a NULL
+  // platform_percent. The whole batch is refused rather than partly applied:
+  // a half-published selection is harder to reason about than none.
+  if (status === 'active') {
+    const blocked = await findBlockedForPublish(ids)
+    if (blocked === null) return { error: 'לא ניתן לטעון את המוצרים לבדיקה' }
+    if (blocked.length > 0) return { error: bulkPublishErrorMessage(blocked) }
+  }
+
   const { error } = await supabase.from('products').update({ status }).in('id', ids)
   if (error) return { error: error.message }
 
   revalidatePath('/admin/products')
   updateTag(CATALOGUE_TAG)
   return {}
+}
+
+/**
+ * Loads the selection and its suppliers and asks the pure gate which fail.
+ * Returns null if either read failed, so the caller can refuse rather than
+ * publish on missing evidence.
+ *
+ * Service role on both reads: `suppliers` has no permissive select policy for
+ * `authenticated`, matching the single-product path above.
+ */
+async function findBlockedForPublish(ids: string[]) {
+  const adminClient = createAdminClient()
+
+  const { data: products, error: productsError } = await adminClient
+    .from('products')
+    .select(
+      'id, name_he, type, supplier_id, price_ils, platform_percent, supplier_split_percent, discount_percent, coupon_price_ils, coupon_expiry_days',
+    )
+    .in('id', ids)
+  if (productsError || !products) return null
+
+  const supplierIds = [...new Set(products.map((p) => p.supplier_id).filter((s) => s != null))]
+  const { data: suppliers, error: suppliersError } = supplierIds.length
+    ? await adminClient
+        .from('suppliers')
+        .select('id, name, contact_phone, address, logo_url, status')
+        .in('id', supplierIds)
+    : { data: [], error: null }
+  if (suppliersError || !suppliers) return null
+
+  return findUnpublishableProducts(products, suppliers)
 }
 
 async function runBulkAssignCategory(
