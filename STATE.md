@@ -1,6 +1,41 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-10 (autonomous: [68] WhatsApp, geo פר מוצר, ושאריות ה-escrow שעוד שילמו לספק על קופון)
+Updated: 2026-08-11 בוקר (goal-65: product_type selector)
+
+## המשך מ: goal-65, product_type selector
+
+**סטטוס נמדד 11.08:**
+
+- `main`: `35c5b07`, ahead 1, **לא נדחף**. (`cc21247` הוא ענף `arch/*`, 65 קומיטים
+  מאחור, ואינו נקודת המשך.)
+- 81 goals סגורים (הלוג מגיע ל-`[81]`; ‏`FINAL-REPORT.md` שמזכיר 64 נכתב ב-07.08).
+- מיגרציות ממתינות: `PENDING-109-recurring-subscriptions`,
+  `PENDING-110-supplier-coordinates`, ו-`PENDING-money-integer-fix` שהוא
+  **חסום, לא skipped**: section 4 בונה מחדש את `v_wallet_ledger` ו-
+  `v_wallet_balance_drift` בלי `security_invoker` ובלי `REVOKE`, ולכן הרצתו
+  הופכת את `v_wallet_balance_drift` מ-service_role בלבד לקריא ל-`anon` עם
+  ‏RLS עקוף. נמדד מול הקטלוג החי.
+- `revoke_anon_writes` ✅ הוחל 10.08 בתור `111_revoke_anon_writes.sql`.
+- שלוש מיגרציות מוחלות בפרודקשן בלי קובץ בריפו:
+  `supplier_app_scanning_crypt_schema`, `stock_reservations_variable_conflict`,
+  `supplier_leads`.
+- ענף עבודה: `feat/product-type`, מסועף מ-`main`. ‏`phase5/homepage` מפגר ב-30.
+
+**goal-65: product_type selector**
+
+1. schema: ‏`product_type` enum + טבלת `subscriptions` (Cardcom Recurring Token)
+2. admin: בורר שלושה מצבים, שדות מותנים לפי type
+3. checkout: הסתעפות לפי `product_type`
+4. tests: vitest + snapshots
+5. `compare.mjs`: מתחת ל-11%
+
+סוף: ‏tag ‏goal-65 + דוח.
+
+**אחרי goal-65:** ‏goal-66+ ‏admin dashboard, ואז integration pass על הענפים.
+
+**התור הישן נשאר פתוח:** ‏`## המשך מ: תור המרתון (20 שלבים), שלב 3` שלמטה מצביע
+על "עגלה מלאה", ו-`product_type` הוא שלב 12 באותו תור. ‏goal-65 גובר עליו לפי
+הוראה מ-11.08; שלב 3 לא בוצע ולא בוטל.
 
 ## דוח סיום — ‏10.08.2026, ‏v1.0.0
 
