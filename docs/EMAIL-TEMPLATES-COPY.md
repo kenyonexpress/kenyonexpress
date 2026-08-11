@@ -102,6 +102,40 @@ RTL, plaintext, בלי Escrow/נאמן/J5/held, בלי הבטחת העברה ל�
 
 ---
 
+## 2b. קופון מומש (`coupon_redeemed`)
+
+**נושא:**  
+הקופון ל-{{product_name}} מומש
+
+**גוף:**
+
+> היי {{first_name}},  
+>  
+> הקופון ל-**{{product_name}}** נסרק בהצלחה אצל **{{supplier_name}}** ב-{{redeemed_at_he}}.  
+>  
+> אם **לא אתם** ביצעתם את המימוש, פנו מיד לתמיכה.
+
+**CTA:**  
+ההזמנות שלי → `{{orders_url}}`
+
+---
+
+## 2c. קופון שפג (`coupon_expired`)
+
+**נושא:**  
+פג תוקף: {{product_name}}
+
+**גוף:**
+
+> היי {{first_name}},  
+>  
+> הקופון ל-**{{product_name}}** פג ב-{{expires_at_he}} ואינו ניתן למימוש.
+
+**CTA:**  
+דילים נוספים → `{{home_url}}`
+
+---
+
 ## 3. תזכורת תפוגה (`coupon_expiry_48h`)
 
 **נושא:**  

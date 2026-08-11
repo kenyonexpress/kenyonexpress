@@ -54,17 +54,69 @@ Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 
 ---
 
-## 1.1 גוף מינימלי חסר ב-COPY (להשלים)
+## 1.1 גוף מלא לכל kind (עברית)
+
+### `order_paid`
+
+**נושא:** ההזמנה שלך התקבלה · {{order_ref}}  
+**גוף:** היי {{first_name}}, התשלום עבר. מספר הזמנה {{order_ref}}. שולם באתר: ₪{{paid_now_ils}}. {{#if balance_at_business}}יתרה בעסק: ₪{{balance_at_business_ils}}.{{/if}}  
+**CTA:** צפייה בהזמנה → {{order_url}}
+
+### `coupon_issued`
+
+**נושא:** הקופון שלך מוכן · {{product_name}}  
+**גוף:** היי {{first_name}}, הקופון ל-{{product_name}} מוכן. קוד: {{code}}. תוקף עד {{expires_at_he}}. שולם באתר ₪{{paid_now_ils}}. {{#if balance_at_business_ils}}יתרה בעסק ₪{{balance_at_business_ils}}.{{/if}} מציגים QR בעסק לסריקה.  
+**CTA:** פתחו את הקופון → {{coupon_url}}
+
+### `coupon_expiry_48h`
+
+**נושא:** תזכורת: הקופון ל-{{product_name}} פג בעוד כ-48 שעות  
+**גוף:** היי {{first_name}}, הקופון ל-{{product_name}} בתוקף עד {{expires_at_he}}. קוד: {{code}}. אחרי התאריך אי אפשר לממש.  
+**CTA:** פתחו קופון → {{coupon_url}}
 
 ### `coupon_redeemed`
 
 **נושא:** הקופון ל-{{product_name}} מומש  
-**גוף:** היי {{first_name}}, הקופון שלכם נסרק בהצלחה אצל {{supplier_name}} ב-{{redeemed_at_he}}. תודה שקניתם אצלנו.
+**גוף:** היי {{first_name}}, הקופון שלכם נסרק בהצלחה אצל {{supplier_name}} ב-{{redeemed_at_he}}. אם לא אתם ביצעתם את המימוש, פנו מיד לתמיכה.  
+**CTA:** ההזמנות שלי → {{orders_url}}
 
 ### `coupon_expired`
 
 **נושא:** פג תוקף: {{product_name}}  
-**גוף:** היי {{first_name}}, הקופון ל-{{product_name}} פג ב-{{expires_at_he}} ולא ניתן למימוש. שאלות? {{contact_url}}.
+**גוף:** היי {{first_name}}, הקופון ל-{{product_name}} פג ב-{{expires_at_he}} ולא ניתן למימוש. שאלות? {{contact_url}}.  
+**CTA:** דילים נוספים → {{home_url}}
+
+### `coupon_refunded`
+
+**נושא:** ההחזר בוצע · {{order_ref}}  
+**גוף:** היי {{first_name}}, אישרנו החזר להזמנה {{order_ref}}. סכום: ₪{{refund_ils}}. {{#if cancel_fee}}דמי ביטול: ₪{{cancel_fee_ils}}.{{/if}} הקופון אינו ניתן למימוש.  
+**CTA:** ההזמנות שלי → {{orders_url}}
+
+### `wallet_activity`
+
+**נושא:** ₪{{amount_ils}} נכנסו לארנק שלכם  
+**גוף:** היי {{first_name}}, נוספו ₪{{amount_ils}} ליתרת הארנק (זיכוי פנימי באתר בלבד, לא משיכה לבנק). יתרה: ₪{{wallet_balance_ils}}.  
+**CTA:** הארנק שלי → {{wallet_url}}
+
+### `abandoned_cart` (שיווקי)
+
+**נושא:** שכחתם משהו בעגלה?  
+**גוף:** היי {{first_name}}, התחלתם הזמנה ולא סיימתם. לחצו לחזרה לעגלה. להסרה: {{unsubscribe_url}}.  
+**CTA:** חזרו לעגלה → {{cart_url}}
+
+### `supplier_sale`
+
+**נושא:** הזמנה חדשה · {{order_ref}} · {{product_name}}  
+**גוף:** שלום {{supplier_contact_name}}, נרשמה הזמנה {{order_ref}} ל-{{product_name}}. {{#if is_coupon}}יתרת לקוח בעסק: ₪{{balance_due_ils}}. סריקה רק במערכת.{{/if}} בלי הבטחת payout מקופון.  
+**CTA:** פורטל ספק → {{supplier_order_url}}
+
+### `welcome`
+
+**נושא:** ברוכים הבאים ל-KenyonExpress  
+**גוף:** היי {{first_name}}, אחרי קנייה הקופון יופיע תחת "הקופונים שלי". מציגים QR בעסק ומשלמים יתרה בקופה.  
+**CTA:** לדף הבית → {{home_url}}
+
+נוסחים מורחבים (כולל plaintext מלא): `EMAIL-TEMPLATES-COPY.md`.
 
 ---
 
@@ -134,3 +186,4 @@ Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 |---|---|
 | 2026-08-11 | מפרט Resend: קטלוג kind, מעטפת RTL, משתנים, acceptance |
 | 2026-08-11 | גופי מינימום ל-redeemed/expired + קישור lifecycle |
+| 2026-08-11 | גוף מלא בעברית לכל 10 ה-kinds |
