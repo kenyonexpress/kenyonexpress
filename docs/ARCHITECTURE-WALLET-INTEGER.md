@@ -103,7 +103,7 @@ GRANT EXECUTE ON FUNCTION public.fn_wallet_transfer(/* exact args */)
 3. Verify drift = 0  
 4. **עדיין לא** DROP/RENAME של `*_ils` עד שכל הקוד קורא agorot  
 
-### 4.3 שלב C–E
+### 4.3 שלב C-E
 
 - Deploy קוד שמדבר agorot בלבד  
 - Smoke: earn/spend/idempotency replay  

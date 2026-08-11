@@ -66,7 +66,7 @@ Secrets CI: `CI_SUPABASE_*`. אין service role בלוג דפדפן.
 
 ---
 
-## 4. פירמידה ו-E1–E4
+## 4. פירמידה ו-E1-E4
 
 ```text
         /\
@@ -117,7 +117,7 @@ Unit: agorot integer; allocation invariant; קופון supplier_due=0.
 
 - [ ] אין PR כספי בלי unit ירוק על money/redeem  
 - [ ] אין טסט Escrow / HMAC / default 5%  
-- [ ] E1–E4 מתועדים  
+- [ ] E1-E4 מתועדים  
 - [ ] CI: lint/typecheck/test/build  
 - [ ] חלופות + DB + קצה + פתוחות  
 
@@ -127,5 +127,5 @@ Unit: agorot integer; allocation invariant; קופון supplier_due=0.
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-11 | פירמידה + E1–E4 |
+| 2026-08-11 | פירמידה + E1-E4 |
 | 2026-08-12 | batch-2: BINDING מלא; תבנית חובה |
