@@ -1,19 +1,53 @@
 # יישוב מחלוקות לקוח מול ספק
 
-מי מכריע, על סמך מה, ותוך כמה זמן.
-
-Status: **BINDING** · עודכן: 2026-08-10
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
+Status: **BINDING** · עודכן: 2026-08-12
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+מודל כסף: No Escrow; החזר ≠ הודאת אשמה.
 
-מסמכים קשורים:
+---
 
-```
-docs/ARCHITECTURE-FRAUD-PREVENTION.md     (F4: chargeback → manual_review)
-docs/ARCHITECTURE-CUSTOMER-SUPPORT.md
-docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
-docs/ARCHITECTURE-COUPON-REDEMPTION.md
-```
+## 1. החלטה
+
+| # | הכרעה |
+|---|---|
+| D1 | פלטפורמה מכריעה |
+| D2 | נטל ראיה על ספק במימוש |
+| D3 | אין redeemed→issued |
+| D4 | SLA: 1 יום / 3 ימים |
+
+---
+
+## 2. חלופות שנדחו
+
+| חלופה | נימוק |
+|---|---|
+| "תסדרו ביניכם" | אנחנו צד לעסקה |
+| שחזור שובר | voucher terminal |
+| ארנק בלי ברירת החזר כספי | חוק צרכן |
+
+---
+
+## 3. סכמת DB
+
+| טבלה | שדות |
+|---|---|
+| vouchers | status, redeemed_at, staff_id |
+| redemption_log | scan audit |
+
+---
+
+## 4. מקרי קצה
+
+| E1 | chargeback post-redeem | ראיות §2 |
+| E2 | ספק לא הגיב 2 יום | זיכוי |
+| E3 | ראיה חלקית | מדרג §4 |
+
+---
+
+## 5. פתוחות
+
+| O1 | ticket numbering | manual | 2026-08-12 |
 
 ---
 
@@ -149,3 +183,12 @@ docs/ARCHITECTURE-COUPON-REDEMPTION.md
 | תאריך | שינוי |
 |---|---|
 | 2026-08-10 | נכתב. ההכרעה המרכזית: נטל הראיה על הספק, מהסיבה ב-§2. |
+
+---
+
+## Revision
+
+| תאריך | שינוי |
+|---|---|
+| 2026-08-12 | BINDING batch-2: החלטה, חלופות, DB, קצה, פתוחות |
+
