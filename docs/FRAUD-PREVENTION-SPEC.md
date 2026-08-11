@@ -86,6 +86,23 @@ docs/VENDOR-PAYOUT-SPEC.md
 
 ---
 
+## 5.1 סדר אימות סריקה (חובה)
+
+```text
+1. rate limit fail-closed
+2. membership ספק פעיל
+3. חתימת QR (HMAC/Ed25519)
+4. ספק תואם ל-voucher
+5. status == issued (לא frozen)
+6. expires_at > now()
+7. UPDATE … WHERE status='issued' → redeemed (rowcount 0 = already_redeemed)
+8. audit + מייל coupon_redeemed
+```
+
+כל שלב שנכשל: תשובה חיצונית אחידה כשאפשר (`not_found` / `already_redeemed`) בלי לדלוף מידע עודף.
+
+---
+
 ## 6. Acceptance
 
 - [ ] SEC-QR סגור לפני פרוד מלא  
@@ -101,3 +118,4 @@ docs/VENDOR-PAYOUT-SPEC.md
 |---|---|
 | 2026-08-11 | מפרט הונאה: משטחים, velocity, chargeback, review |
 | 2026-08-11 | יישור סטטוס מימוש ל-`redeemed` (פרוד 054) |
+| 2026-08-11 | סדר אימות סריקה מפורט |
