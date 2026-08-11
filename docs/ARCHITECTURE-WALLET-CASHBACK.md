@@ -1,223 +1,184 @@
 # ארכיטקטורה: ארנק קאשבק (Cashback)
 
-אשראי פנימי בלבד: צבירה אחרי `paid`, מימוש בקופה, ledger באגורות, בלי משיכה החוצה.
+קאשבק פנימי בלבד (לא יוצא החוצה), חשבונאות double-entry באגורות.
 
-Status: **BINDING** · עודכן: 2026-08-12 · QA: PASS  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #15/50  
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
-
-מודל כסף: **No Escrow**. אין held/נאמן/J5 לקופון. מקדמת קופון אינה נכנסת לארנק.
 
 מסמכים קשורים:
 
 ```
-docs/ARCHITECTURE-CASHBACK-WALLET.md
+docs/DOCS-TEMPLATE-BINDING.md
+docs/ARCHITECTURE-MONEY.md
 docs/ARCHITECTURE-WALLET-LEDGER.md
 docs/ARCHITECTURE-WALLET-INTEGER.md
+docs/ARCHITECTURE-CASHBACK-WALLET.md
 docs/ARCHITECTURE-ACCOUNT-WALLET.md
 docs/CASHBACK-WALLET-SPEC.md
 docs/ARCHITECTURE-CHECKOUT-FLOW.md
-docs/ARCHITECTURE-REFERRAL.md
 docs/CONTRADICTIONS.md
 ```
 
-**יחס למסמכים האחרים:** מסמך זה = מחזור earn/spend + כללי עתיד.  
-`ARCHITECTURE-CASHBACK-WALLET.md` = חוזה C1-C7 תמציתי.  
-`ARCHITECTURE-WALLET-LEDGER.md` = journal / `fn_wallet_transfer`.  
-`ARCHITECTURE-ACCOUNT-WALLET.md` = UI אזור אישי + apply בקופה.
+מודל כסף: **No Escrow**. מקדמת קופון אינה נכנסת לארנק כנאמן. אגורות integer.
 
 ---
 
-## 0. הכרעות
+## 0. החלטה (מחייבת)
 
 | # | הכרעה |
 |---|---|
 | WC1 | הארנק פנימי לשימוש באתר/באפ בלבד. |
-| WC2 | **אין cash-out**, אין P2P, אין המרה לכרטיס/בנק/מזומן. |
-| WC3 | יתרות ותנועות: integer **agorot** בלבד (1 ₪ = 100). אין float. |
-| WC4 | כל תנועה = כפול-רישום דרך `fn_wallet_transfer` + `idempotency_key` UNIQUE. |
-| WC5 | מקדמת קופון אינה escrow בארנק (No Escrow). |
-| WC6 | מימוש רק על סכום לתשלום **באתר** לפני Cardcom. |
-| WC7 | צבירה אחרי `paid` בלבד. |
-| WC8 | מפתחות: `order:{order_id}:cashback` ו-`order:{order_id}:spend`. |
-| WC9 | אין צבירה על חלק ששולם מארנק (מונע לופ), אלא אם rule מפורש אומר אחרת. |
+| WC2 | **אין cash-out**: לא בנק, לא כרטיס, לא מזומן, לא P2P, לא ביט. |
+| WC3 | יתרות ותנועות: integer **agorot** בלבד. אין float. |
+| WC4 | כל תנועה = double-entry דרך `fn_wallet_transfer` (או מקביל) + `idempotency_key` UNIQUE. |
+| WC5 | Earn רק אחרי `paid`. Spend רק על סכום **באתר** (לא יתרת עסק). |
+| WC6 | מפתחות: `order:{order_id}:cashback`, `order:{order_id}:spend`. |
+| WC7 | אין צבירה על חלק ששולם מארנק (מונע לופ), אלא rule מפורש. |
+| WC8 | תיקון טעות = journal פיצוי חדש; אסור UPDATE/DELETE שורות ישנות. |
+| WC9 | חשבונאות: זיכוי קאשבק מ-`platform:cashback_reserve`; spend ל-`platform:revenue`. |
+| WC10 | מע״מ: קאשבק אינו מחליף חשבונית; טיפול מס לפי INVOICING/ייעוץ (לא מזיכוי ארנק). |
 
 ---
 
-## 1. Ledger באגורות (תמצית)
+## 1. חלופות שנדחו
+
+| חלופה | למה נדחתה |
+|---|---|
+| משיכה לכרטיס/בנק | הופך לכסף יוצא; רגולציה + fraud; WC2. |
+| יתרה ב-float / ILS numeric | שובר אגורה; MONEY. |
+| כתיבת `balance` בלי journal | אין audit; SEC-WALLET. |
+| Earn לפני paid | זיכוי על תשלום שלא נסגר. |
+| כיסוי יתרת קופון בעסק מארנק | מחוץ לפלטפורמה; לא. |
+| Escrow של מקדמה בארנק | No Escrow. |
+| P2P בין משתמשים | abuse + AML. |
+
+---
+
+## 2. סכמת DB (קיים/יעד; אין DDL כאן)
 
 | ישות | תפקיד |
 |---|---|
-| `wallet_accounts` | user `available` + חשבונות פלטפורמה |
-| `wallet_entries` | debit/credit append-only תחת `journal_id` |
-| יתרה מוצגת | cache או view; מקור אמת = journal |
+| `wallet_accounts` | חשבון משתמש `available` + חשבונות פלטפורמה |
+| `wallet_entries` / journals | append-only |
+| `wallet_balances` | cache תצוגה; לא מקור אמת |
+| `cashback_rules` | percent/flat + חלונות |
+| `cashback_reversal_debts` | חובות קיזוז אחרי refund (אם מופעל) |
 
-חשבונות פלטפורמה קבועים:
+חשבונות פלטפורמה:
 
-| purpose / code | תפקיד |
+| code | תפקיד חשבונאי |
 |---|---|
-| `platform:cashback_reserve` | מקור זיכוי קאשבק |
-| `platform:revenue` | יעד spend / התאמות הכנסה |
+| `platform:cashback_reserve` | מקור earn (התחייבות שיווקית פנימית) |
+| `platform:revenue` | יעד spend בקופה |
 | `platform:adjustments` | זיכוי/חיוב אדמין |
 
-תיקון טעות = תנועת פיצוי חדשה. אסור UPDATE/DELETE על שורת journal ישנה.
-
-פירוט מלא:
-
-```
-docs/ARCHITECTURE-WALLET-LEDGER.md
-```
-
 ---
 
-## 2. צבירה (earn)
+## 3. חשבונאות (double-entry)
 
-### 2.1 מסלול
+### 3.1 Earn
 
 ```text
-order status → paid
-  → base = paid_on_site_agorot
-       (אחרי wallet spend אם היה; לא face, לא יתרת עסק)
-  → cashback = floor(base * rule_percent / 100)
-       או flat_agorot מ-rule
-  → fn_wallet_transfer(
-       from: platform:cashback_reserve,
-       to:   user available,
-       reason: order_cashback,
-       idempotency_key: order:{order_id}:cashback
-     )
-  → (אופציונלי) enqueue wallet_activity
+Dr  platform:cashback_reserve    cashback_agorot
+Cr  user:available               cashback_agorot
+idempotency: order:{order_id}:cashback
 ```
 
-### 2.2 כללים
+בסיס: `floor(eligible_paid_on_site_agorot * percent / 100)` או `flat_agorot`.  
+`eligible` = מה ששולם בכרטיס/חיצוני אחרי spend (לא face, לא יתרת עסק).
 
-| כלל | פירוט |
+### 3.2 Spend (בקופה באתר)
+
+```text
+לפני Cardcom: W = min(balance, T, cap)
+Charge Cardcom = T - W
+
+אחרי paid:
+Dr  user:available        W
+Cr  platform:revenue      W
+idempotency: order:{order_id}:spend
+```
+
+אם Cardcom נכשל לפני paid: אין confirm spend (או reverse hold אם היה).
+
+### 3.3 Refund / clawback (כשמופעל)
+
+| מצב | חשבונאות |
 |---|---|
-| בסיס | רק מה ששולם באתר בכרטיס/אמצעי חיצוני לפי snapshot ההזמנה |
-| מוצר בלי rule | 0; לא ממציאים אחוז |
-| עיגול | `floor` פעם אחת לאגורות שלמות |
-| כשל אחרי paid | retry עם אותו מפתח; **לא** מבטל Cardcom / לא משנה `paid` |
-| Replay webhook | אותו מפתח → journal קיים; אין זיכוי כפול |
-| Referral | reason נפרד; לא לערבב עם `order_cashback` |
+| Refund כרטיס אחרי earn | Dr user / Cr reserve עם `order:{id}:cashback_reversal` אם יתרה מספיקה; אחרת `cashback_reversal_debts` |
+| Refund אחרי spend | לפי REFUNDS; לא cash-out |
 
-### 2.3 מתי לא צוברים
+אסור "למחוק" earn ישן.
 
-- הזמנה לא `paid`
-- `paid_on_site_agorot = 0` אחרי spend מלא
-- rule לא פעיל / מחוץ לחלון תאריכים
-- מוצר/קטגוריה שלא תואמים rule
+### 3.4 דוחות פנימיים
 
----
-
-## 3. מימוש (spend)
-
-### 3.1 מסלול checkout
-
-```text
-checkout (משתמש מחובר, יתרה > 0):
-  T = on_site total agorot
-  W = min(balance_agorot, T, cap_if_any)
-  Cardcom charge = T - W
-
-on paid:
-  fn_wallet_transfer(
-    from: user available,
-    to:   platform:revenue,
-    reason: order_spend,
-    idempotency_key: order:{order_id}:spend
-  )
-
-on failed / cancel לפני paid:
-  אין confirm spend; יתרה נשארת (או reverse אם כבר נרשם hold זמני)
-```
-
-### 3.2 כללים
-
-| כלל | פירוט |
+| מדד | חישוב |
 |---|---|
-| מתי | לפני יצירת חיוב Cardcom |
-| קופון | רק על `coupon_price` (חלק האתר); לא על יתרת בית העסק |
-| פיזי | על סכום העגלה באתר |
-| תצוגה | "ימומש מהארנק: ₪X · לתשלום בכרטיס: ₪Y" |
-| Double-spend | FOR UPDATE + יתרה לא שלילית + UNIQUE על מפתח spend |
-| כשל Cardcom אחרי ניסיון spend | reverse / אל תאשר; לא לאבד יתרה בשקט |
+| יתרות לקוחות | sum credits−debits ל-`user:available` |
+| עתודת קאשבק | יתרת `cashback_reserve` |
+| Redeem rate | spend / earn בתקופה |
 
-ולידציה ב-`beginCheckout` היא מייעצת. החיוב הסופי ליתרה רק אחרי `paid` (או מנגנון hold+confirm מתועד), עם אותו מפתח.
+לא מדווחים כלקוח חיצוני "כסף נזיל".
 
 ---
 
-## 4. Idempotency (מחייב)
-
-| פעולה | מפתח | התנהגות replay |
-|---|---|---|
-| Earn | `order:{order_id}:cashback` | החזר journal קיים |
-| Spend | `order:{order_id}:spend` | החזר journal קיים |
-| Admin credit | `adj:{uuid}` | חד-פעמי |
-| Refund credit | `order:{order_id}:refund` | חד-פעמי (כשמופעל) |
-
-אין מפתחות חלופיים (`cashback:{id}` וכו') בנתיב חדש. אם קיים legacy במערכת, מיפוי חד-כיווני לתיעוד בלבד; קוד חדש כותב רק את הצורה למעלה.
-
----
-
-## 5. כללי צבירה עתידיים (לא soft-open חובה)
-
-| Rule ID | רעיון | תלות |
-|---|---|---|
-| F1 | אחוז דיפרנציאלי לפי `product.type` | `cashback_rules` |
-| F2 | תקרת צבירה חודשית למשתמש | cron + counter |
-| F3 | בונוס referral נפרד | REFERRAL; לא לערבב |
-| F4 | תוקף יתרה (expiry לזכות ישנה) | journal expire → reserve |
-| F5 | מבצע כפל קאשבק בחלון זמן | שעון שרת |
-| F6 | אין צבירה על סכום ששולם מארנק | ברירת מחדל מומלצת |
-
-עד הפעלה: rule table ריקה או percent=0 = אין earn.
-
----
-
-## 6. מה אסור
-
-- משיכה / ביט / העברה למשתמש אחר  
-- הצגת יתרת ארנק כ"כסף נאמן" / Escrow  
-- צבירה על יתרה שתשולם בעסק  
-- כתיבת יתרה בלי journal  
-- float בנתיב earn/spend  
-- cash-out לכל אמצעי חיצוני  
-
----
-
-## 7. אינטגרציה ל-finalize
+## 4. מחזור earn/spend
 
 ```text
-Cardcom webhook / finalizeOrder (paid)
-  → issue vouchers / mark physical
-  → confirm spend אם W > 0 (order:{id}:spend)
-  → compute cashback מה-rule + paid_on_site snapshot
-  → earn (order:{id}:cashback)
-  → notification אופציונלי (לא חוסם)
+paid finalize
+  → confirm spend (אם W>0)
+  → compute cashback on eligible card portion
+  → earn
+  → notify (לא חוסם)
 ```
 
-סדר מומלץ: קודם confirm spend (אם רלוונטי), אחר כך earn על הבסיס אחרי spend. שניהם idempotent.
+Replay webhook: אותם מפתחות → אין כפל.
 
 ---
 
-## 8. Acceptance
+## 5. מקרי קצה
 
-- [ ] Agorot + double-entry מתועדים  
-- [ ] אין cash-out  
-- [ ] Earn אחרי `paid` בלבד  
-- [ ] Spend מפחית חיוב Cardcom באתר  
-- [ ] מפתחות `order:{id}:cashback` ו-`order:{id}:spend`  
-- [ ] Replay לא מזכה/מחייב פעמיים  
-- [ ] No Escrow מפורש  
-- [ ] קופון: ארנק לא מכסה יתרת עסק  
-- [ ] טבלת כללי עתיד F1-F6  
+| קוד | תוצאה |
+|---|---|
+| `earn_before_paid` | אסור |
+| `spend_covers_business_remainder` | אסור |
+| `negative_balance` | נחסם ב-transfer |
+| `double_earn_replay` | no-op idempotent |
+| `cardcom_fail_after_hold` | reverse; יתרה חוזרת |
+| `rule_missing` | earn=0 |
+| `admin_grant` | דרך adjustments + `adj:{uuid}` |
 
 ---
 
-## 9. Revision
+## 6. פתוחות
+
+| # | פתוח | שמרני עד סגירה |
+|---|---|---|
+| O1 | תוקף יתרה (expiry) | כבוי; אין שריפה אוטומטית |
+| O2 | צבירה דיפרנציאלית לפי type | rule table; default 0 |
+| O3 | טיפול מס מלא לקאשבק | ייעוץ רו״ח; ארנק לא מחליף חשבונית |
+| O4 | hold לפני Cardcom מול confirm-after-paid בלבד | confirm-after-paid ב-MVP |
+
+עודכן: 2026-08-12.
+
+---
+
+## 7. Acceptance
+
+- [ ] אין cash-out מפורש  
+- [ ] Double-entry + מפתחות idempotency  
+- [ ] Earn אחרי paid; spend על אתר בלבד  
+- [ ] חשבונאות reserve/revenue מתועדת  
+- [ ] חלופות + DB + מקרי קצה + פתוחות  
+- [ ] No Escrow  
+
+---
+
+## 8. Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-12 | BINDING: earn/spend, ledger agorot, future accrual rules |
-| 2026-08-12 | batch-2 #15: רענון BINDING על `arch/docs-batch-2`; No Escrow מאושר |
-| 2026-08-12 | batch-2 #15 pass-2: מחזור מלא; מפתחות `order:{id}:cashback` / `order:{id}:spend` |
+| 2026-08-12 | BINDING earn/spend |
+| 2026-08-12 | pass-2 batch-2 #15 |
+| 2026-08-12 | העמקת חשבונאות פנימית + חלופות/פתוחות לפי תבנית |
