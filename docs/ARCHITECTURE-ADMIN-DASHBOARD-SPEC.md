@@ -1,239 +1,94 @@
-# ARCHITECTURE-ADMIN-DASHBOARD-SPEC.md
+# ארכיטקטורה: Admin Dashboard Spec
 
-מפרט **מסכי האדמין** מסך-אחר-מסך: טבלאות, פילטרים, פעולות והרשאות.
+מפרט מסכי אדמין מסך-אחר-מסך: טבלאות, פילטרים, פעולות, RBAC.
 
-Status: BINDING · worktree
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.  
+מודל כסף: **No Escrow**; שדות כסף דינמיים לפי סוג מוצר.
+
+מסמכים קשורים:
 
 ```
-/Users/ofir/kenyonexpress-web/ke-arch
+docs/ARCHITECTURE-ADMIN.md
+docs/ARCHITECTURE-ADMIN-DASHBOARD.md
+docs/ADMIN-PRODUCT-PAGE-SPEC.md
+docs/ARCHITECTURE-ANALYTICS-KPI.md
+docs/ARCHITECTURE-CUSTOMER-SUPPORT.md
 ```
-
-branch:
-
-```
-arch/docs-queue
-```
-
-Date: 2026-08-02 (rev A)  
-Scope: docs בלבד.  
-Companions: `ARCHITECTURE-ADMIN-DASHBOARD.md` (מודל הדומיין וה-API), `ARCHITECTURE-ADMIN.md`, `ADMIN-PRODUCT-PAGE-SPEC.md` (טופס המוצר המלא), `ARCHITECTURE-ANALYTICS.md` (דשבורד המכירות), `ARCHITECTURE-CUSTOMER-SUPPORT.md`.
-
-חלוקה: המסמכים הקיימים מגדירים מה מותר ומה ה-API; **המסמך הזה קובע מה רואים על המסך**: אילו עמודות, אילו פילטרים, אילו כפתורים, ולמי. סתירה מול מודל הכסף מוכרעת לפי MASTER.
 
 ---
 
-## 0. כללים רוחביים לכל המסכים
+## החלטה
 
-| כלל | פירוט |
+| # | הכרעה |
 |---|---|
-| שפה וכיוון | עברית, RTL, ‏Heebo; מספרי כסף בספרות לטיניות |
-| כסף | תצוגה בשקלים (₪) בשתי ספרות; המקור תמיד אגורות integer; אין עיגול בצד לקוח |
-| טבלאות | מיון בלחיצה על כותרת; ברירת מחדל: החדש למעלה; עימוד 50 שורות |
-| פילטרים | נשמרים ב-query string (שיתוף קישור משחזר את המסך) |
-| פעולה הרסנית | תמיד דיאלוג אישור עם שם היעד; מחיקה אמיתית אין, רק סטטוסים |
-| ריק | כל טבלה ריקה מציגה הסבר + הפעולה המתבקשת, לא עמוד לבן |
-| audit | כל פעולת כתיבה נרשמת: מי, מתי, מה היה קודם |
-
-### 0.1 מטריצת הרשאות (roles)
-
-| מסך | owner | admin | finance | support | supplier |
-|---|---|---|---|---|---|
-| Overview | מלא | מלא | קריאה | קריאה | אין |
-| Products | מלא | מלא | קריאה | קריאה | רק דרך פורטל הספק |
-| Suppliers | מלא | מלא | קריאה | קריאה | אין |
-| Orders | מלא | מלא | מלא | קריאה + פתיחת טיקט | אין |
-| Redemption log | מלא | מלא | קריאה | קריאה | רק שלו, בפורטל |
-| Settlements | מלא | קריאה | מלא | אין | רק שלו, בפורטל |
-| Refund ביצוע | כן | כן | כן | לא (רק בקשה) | לא |
-
-‏RBAC נאכף בשרת (route + RLS), לא בהסתרת כפתורים בלבד.
+| D1 | כל מסך: עברית RTL, Heebo; כסף ₪ בתצוגה, agorot במקור. |
+| D2 | טבלאות: מיון בכותרת; 50 שורות; פילטרים ב-query string. |
+| D3 | `/admin` overview: KPI יום/7י + 10 הזמנות אחרונות + ops alerts. |
+| D4 | `/admin/products`: פילטר "חסר percent" / "חסר coupon_price" אחרי WP import. |
+| D5 | type=coupon: `coupon_price_ils`, expiry, הוראות; type=physical: `platform_percent` חובה. |
+| D6 | `/admin/orders`: פילטר "חריגים" (webhook כפול, paid בלי voucher). |
+| D7 | `/admin/redemptions`: כולל כשלי סריקה; לא רק success. |
+| D8 | `/admin/settlements`: פיזי בלבד; draft→approved→paid דו-שלבי; אין עריכת סכום ידנית. |
+| D9 | RBAC בשרת; לא הסתרת כפתורים בלבד. |
 
 ---
 
-## 1. `/admin` (Overview)
+## חלופות שנדחו
 
-שורת כרטיסים עליונה (היום / 7 ימים):
-
-| כרטיס | מקור |
+| חלופה | למה נדחתה |
 |---|---|
-| הזמנות paid | orders |
-| GMV באתר (₪) | sum(total_agorot) |
-| הכנסת פלטפורמה (₪) | לפי מודל: קופון prepaid מלא + עמלת פיזי |
-| מימושים היום | redemption log |
-| טיקטים פתוחים | support |
-| כשלי webhook / DLQ | payment_events + notifications |
-
-מתחת: 10 ההזמנות האחרונות (קישור לכל אחת) + התראות תפעול (סעיף 4.4 ב-ANALYTICS).
+| סכום refund חופשי בידי נציג | D8: מחושב מהשורה. |
+| settlements על קופון prepaid | No Escrow; לא התחייבות לספק. |
+| מחיקה פיזית של הזמנות | סטטוסים + audit בלבד. |
+| percent גלובלי בטופס | ADMIN: פר מוצר. |
+| עמוד לבן בטבלה ריקה | D1: הסבר + CTA. |
 
 ---
 
-## 2. `/admin/products`
+## סכמת DB
 
-### 2.1 טבלה
+מסכים קוראים (קיים):
 
-| עמודה | הערה |
-|---|---|
-| תמונה ממוזערת | |
-| שם | קישור לעריכה |
-| ספק | קישור לספק |
-| סוג | badge: קופון / פיזי |
-| מחיר תצוגה (₪) | face value |
-| מחיר קופון (₪) | רק לקופון; ריק בפיזי |
-| `platform_percent` | ‏badge אדום "חסר" אם null |
-| מלאי | |
-| סטטוס | draft / published / archived |
-| עודכן | |
+```text
+products, categories, suppliers, orders, order_items
+vouchers, coupon_scan_events / voucher_redemptions
+payments, payment_events
+payout_statements, payout_statement_lines
+audit_log, support_tickets
+```
 
-### 2.2 פילטרים
+אין DDL חדש.
 
-סטטוס, סוג (קופון/פיזי), ספק, קטגוריה, "חסר percent", "חסר מחיר קופון", חיפוש טקסט חופשי על שם/SKU.
+---
 
-שני הפילטרים "חסר" הם כלי העבודה המרכזי אחרי ייבוא WP: מציגים בדיוק את מה שחוסם publish.
+## מקרי קצה
 
-### 2.3 שדות הכסף הדינמיים בטופס (התנהגות)
-
-הטופס המלא: ‏`ADMIN-PRODUCT-PAGE-SPEC.md`. כללי הדינמיקה המחייבים:
-
-| בחירה | שדות מוצגים | ולידציה חוסמת |
+| # | מקרה | התנהגות |
 |---|---|---|
-| type=physical | `price_ils` (face), ‏`platform_percent`, מלאי, משלוח | percent חובה, ‏0 עד 100, בלי ברירת מחדל; face גדול מ-0 |
-| type=coupon | `price_ils` (שווי מלא לתצוגה), ‏`coupon_price_ils` (הנגבה באתר), ‏`coupon_expiry_days`, הוראות מימוש | ‏0 קטן מ-coupon_price קטן או שווה ל-face; תוקף חובה (בכפוף להכרעת LEGAL-PAGES §3.2); הוראות מימוש בעברית חובה |
-| discount (אופציונלי) | `regular_price_ils` מעל `price_ils` | ‏regular גדול מ-price, אחרת השדה נדחה |
-
-שינוי `platform_percent` על מוצר חי: נכנס לתוקף להזמנות חדשות בלבד; המסך מציג הערה קבועה על כך ליד השדה. אין שדה Escrow ואין אחוז גלובלי.
-
-### 2.4 פעולות
-
-שורה: עריכה, שכפול כ-draft, ארכוב. Bulk: publish (רק לשורות שעוברות את כל השערים), unpublish, שיוך קטגוריה. ‏publish שנכשל מציג את הסיבה פר מוצר, לא כישלון כללי.
+| CE1 | publish bulk: חלק נכשל | סיבה פר מוצר; לא fail כללי. |
+| CE2 | supplier suspend | unpublish all + block scan. |
+| CE3 | order "חריג" webhook כפול | סימון אדום; reconciliation. |
+| CE4 | refund: support role | בקשה בלבד; לא ביצוע. |
+| CE5 | settlement: קופון ב-SQL | filter physical; סכום 0 לקופון. |
+| CE6 | redemption fail rate >20% | באנר אזהרה ב-log. |
 
 ---
 
-## 3. `/admin/suppliers`
+## פתוחות
 
-### 3.1 טבלה
-
-| עמודה | הערה |
-|---|---|
-| שם עסק | קישור לכרטיס ספק |
-| סטטוס | pending / active / suspended / terminated |
-| מוצרים published | מספר |
-| מימושים 30 יום | |
-| יתרת payout (₪) | פיזי בלבד; קופון prepaid לא מופיע כחוב לספק |
-| איש קשר | אימייל + טלפון |
-
-פילטרים: סטטוס, "יש מוצרים בלי percent", "מסמכים חסרים".
-
-### 3.2 כרטיס ספק (טאבים)
-
-| טאב | תוכן |
-|---|---|
-| פרטים | פרטי עסק, מסמכים (bucket פרטי), members |
-| מוצרים | טבלת המוצרים שלו עם אותם פילטרי "חסר" |
-| מימושים | ה-redemption log מסונן לספק |
-| כספים | settlements של פיזי; שורת הסבר קבועה: קופון prepaid = הכנסת פלטפורמה, לא payout |
-
-פעולות: אישור (pending → active), השעיה (unpublish הכל + חסימת סורק), סיום התקשרות (מפעיל את flow ה-offboarding ב-ONBOARDING §7, כולל רשימת vouchers פתוחים לפני האישור).
-
----
-
-## 4. `/admin/orders`
-
-### 4.1 טבלה
-
-| עמודה | הערה |
-|---|---|
-| מזהה קצר + תאריך | קישור לפירוט |
-| לקוח | שם + אימייל |
-| סכום ששולם (₪) | total אחרי ארנק |
-| ארנק שנוצל (₪) | אם 0, ריק |
-| תוכן | badges: קופון xN / פיזי xN |
-| סטטוס תשלום | state machine: pending / paid / failed / refunded / partially_refunded |
-| סטטוס אספקה | לקופון: הונפק/מומש; לפיזי: awaiting_shipment / shipped / delivered |
-
-פילטרים: סטטוס תשלום, טווח תאריכים, ספק, סוג שורה, "חריגים" (paid בלי voucher, webhook כפול, סכום לא תואם).
-
-פילטר "חריגים" הוא מסך העבודה של reconciliation; שורה חריגה מסומנת באדום עם סיבת החריגה.
-
-### 4.2 פירוט הזמנה
-
-| בלוק | תוכן |
-|---|---|
-| שורות | מוצר, כמות, מחיר יחידה, ‏paid_on_site, לפיזי: ‏percent מצולם + commission; לקופון: יתרה בעסק (תצוגה בלבד) |
-| תשלום | ציר זמן payment_events: ‏create, webhook, verify, finalize עם timestamps |
-| שוברים | voucher לכל שורת קופון: קוד (מוסתר חלקית), סטטוס, קישור ל-redemption |
-| פעולות | refund מלא / פר שורה (לפי מטריצת SUPPORT §2), שליחת מייל אישור מחדש |
-
-‏refund פותח דיאלוג עם הסכום המחושב מהשורה; הנציג לא מקליד סכום חופשי.
-
----
-
-## 5. `/admin/redemptions` (יומן מימושים)
-
-| עמודה | הערה |
-|---|---|
-| תאריך ושעה | Asia/Jerusalem |
-| voucher | קוד חלקי + קישור |
-| מוצר | |
-| ספק | מי סרק |
-| סורק | ה-member הספציפי |
-| תוצאה | success / already_used / expired / invalid_hmac / wrong_supplier |
-| הזמנה | קישור |
-
-פילטרים: ספק, תוצאה, טווח תאריכים. ברירת מחדל: הכל, לא רק הצלחות; הכשלים הם סיגנל ההונאה.
-
-שורת סיכום: אחוז כשלי סריקה בטווח המסונן; מעל 20% = באנר אזהרה (ANALYTICS §4.4).
-
----
-
-## 6. `/admin/settlements` (כספי ספקים, פיזי בלבד)
-
-### 6.1 טבלה (פר ספק, פר מחזור)
-
-| עמודה | הערה |
-|---|---|
-| ספק | |
-| מחזור | טווח תאריכים (T+3) |
-| מכירות פיזי ברוטו (₪) | sum שורות פיזי paid |
-| עמלת פלטפורמה (₪) | sum(commission_agorot) לפי percent מצולם |
-| refunds במחזור (₪) | מקטין |
-| לתשלום לספק (₪) | ברוטו פחות עמלה פחות refunds |
-| סטטוס | draft / approved / paid |
-| אסמכתא | מספר העברה בנקאית אחרי סימון paid |
-
-### 6.2 כללים
-
-| כלל | אכיפה |
-|---|---|
-| קופונים לא במסך הזה | prepaid קופון אינו התחייבות לספק; אין שורת settlement עליו |
-| אישור דו-שלבי | finance מכין (draft → approved), owner מסמן paid עם אסמכתא |
-| אין עריכת סכום ידנית | הסכום נגזר מהשורות; תיקון = refund/adjustment ברמת ההזמנה, שמתגלגל לחישוב |
-| ייצוא | CSV פר מחזור לצורך הנהלת חשבונות |
-
----
-
-## 7. שערי קבלה
-
-| # | בדיקה | חוסם |
+| # | פתוח | הערה |
 |---|---|---|
-| AD1 | כל מסך נטען עם RBAC נאכף בשרת; משתמש support לא מבצע refund | כן |
-| AD2 | טופס מוצר: אי אפשר publish קופון בלי coupon_price/expiry, ופיזי בלי percent | כן |
-| AD3 | פילטר "חריגים" ב-orders מזהה הזמנת בדיקה עם webhook כפול מדומה | כן |
-| AD4 | settlements: קופון לא מופיע, וסכום המחזור תואם SQL ידני | כן |
-| AD5 | ‏redemption log מציג גם כשל סריקה, לא רק הצלחות | כן |
-| AD6 | כל פעולת כתיבה מופיעה ב-audit עם המשתמש והערך הקודם | כן |
+| O1 | `/admin/analytics` מפורט | ANALYTICS-KPI. |
+| O2 | באנרים שיווקיים | out of scope v1. |
+| O3 | finance vs owner role split | RBAC matrix live. |
 
 ---
 
-## 8. Out of scope
+## Revision
 
-- דשבורד האנליטיקס (‏`/admin/analytics`, מפורט ב-ANALYTICS §4)
-- מסכי פורטל הספק (‏SUPPLIER-PORTAL)
-- ניהול תוכן שיווקי (באנרים) ביום 1
-
----
-
-## 9. Revision
-
-| Date | Change |
+| תאריך | שינוי |
 |---|---|
-| 2026-08-02 | rev A: מפרט מסך-אחר-מסך: overview, products עם שדות כסף דינמיים, suppliers, orders+חריגים, redemption log, settlements דו-שלבי, מטריצת הרשאות |
+| 2026-08-02 | rev A: מסך-אחר-מסך |
+| 2026-08-12 | batch-2: BINDING 5 סעיפים |
