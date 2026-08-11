@@ -69,20 +69,32 @@ export function normalizeValue(prop, raw) {
 }
 
 /**
- * @param {Array<{x:number,y:number,w:number,h:number,style:Record<string,string>}>} elements
- * @returns {{count:number, totalArea:number, pageHeight:number, dist:Record<string, Map<string, number>>}}
+ * @param {Array<{tag?:string,x:number,y:number,w:number,h:number,style:Record<string,string>}>} elements
+ * @returns {{count:number, totalArea:number, pageHeight:number, contentEnd:number|null, dist:Record<string, Map<string, number>>}}
  *   `dist` values are fractions of total area, summing to 1 per property.
  */
 export function profilePage(elements) {
   const areaByValue = Object.fromEntries(PROFILED_PROPS.map((p) => [p, new Map()]))
   let totalArea = 0
   let pageHeight = 0
+  // Where the page stops being the page and starts being chrome. `footer` is
+  // the one landmark both sides genuinely share -- the live theme calls it
+  // footer.site-footer and ours footer.w-full, so the TAG is the only part that
+  // survives the rebuild, and that is enough.
+  //
+  // Worth its own line because page height hides the thing it answers. On
+  // /search the two pages are 2780px and 2696px tall, which reads as agreement,
+  // while live's content runs to y=1795 and ours has handed over to the footer
+  // at y=799: 3 results against 17. Two pages with that little in common do not
+  // produce a fidelity score, they produce a number.
+  let contentEnd = null
 
   for (const el of elements) {
     // The page is as tall as its lowest box reaches. Taken from the elements
     // rather than from the root, because the root of a WooCommerce page is not
     // always the tallest thing on it.
     pageHeight = Math.max(pageHeight, el.y + el.h)
+    if (el.tag === 'footer') contentEnd = contentEnd === null ? el.y : Math.min(contentEnd, el.y)
 
     const area = el.w * el.h
     if (area <= 0) continue
@@ -102,7 +114,7 @@ export function profilePage(elements) {
     dist[prop] = fractions
   }
 
-  return { count: elements.length, totalArea, pageHeight, dist }
+  return { count: elements.length, totalArea, pageHeight, contentEnd, dist }
 }
 
 /**

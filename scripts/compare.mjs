@@ -570,6 +570,28 @@ if (liveProfile.pageHeight <= VIEW.height || mineProfile.pageHeight <= VIEW.heig
     `        (${capped} fits in the ${VIEW.height}px window, so that height IS the window)`,
   )
 }
+// Where each side stops being content. See profilePage() for why this is not
+// the same question as page height, and for the /search case that made it a
+// line of its own.
+if (liveProfile.contentEnd !== null && mineProfile.contentEnd !== null) {
+  const gap = mineProfile.contentEnd - liveProfile.contentEnd
+  console.log(
+    `content: live ends at ${liveProfile.contentEnd}px  mine at ${mineProfile.contentEnd}px` +
+      `   (${gap >= 0 ? '+' : ''}${gap}px before the footer)`,
+  )
+  // Half. Below that the two pages are not showing the same amount of anything,
+  // and the pixel percentage is measuring the difference in how much page there
+  // is, not in how the page looks.
+  const ratio =
+    Math.min(liveProfile.contentEnd, mineProfile.contentEnd) /
+    Math.max(liveProfile.contentEnd, mineProfile.contentEnd)
+  if (ratio < 0.5) {
+    console.log(
+      '        WARNING: one side carries less than half the content of the other.',
+      '\n        The band percentage below is not a fidelity score.',
+    )
+  }
+}
 console.log(`TOKEN DISTANCE (mean of the properties below): ${tokens.overallPct}%`)
 for (const { prop, pct: distance, worst } of tokens.props) {
   console.log(`  ${prop.padEnd(17)} ${String(distance).padStart(6)}%`)

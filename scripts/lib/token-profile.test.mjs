@@ -71,6 +71,26 @@ describe('profilePage', () => {
     expect(profile.pageHeight).toBe(5000)
   })
 
+  it('reports where the content ends, by the footer both sides share as a tag', () => {
+    const profile = profilePage([
+      { ...box(1170, 600, {}), y: 148 },
+      { ...box(1440, 656, {}), y: 799, tag: 'footer' },
+    ])
+    expect(profile.contentEnd).toBe(799)
+  })
+
+  it('takes the FIRST footer, so a nested one cannot move the answer down', () => {
+    const profile = profilePage([
+      { ...box(1440, 525, {}), y: 1442, tag: 'footer' },
+      { ...box(1200, 400, {}), y: 1500, tag: 'footer' },
+    ])
+    expect(profile.contentEnd).toBe(1442)
+  })
+
+  it('reports no content end rather than a wrong one when there is no footer', () => {
+    expect(profilePage([box(100, 100, {})]).contentEnd).toBe(null)
+  })
+
   it('does not divide by zero when every box is empty', () => {
     const profile = profilePage([box(0, 0, { color: 'rgb(0, 0, 0)' })])
     expect(profile.totalArea).toBe(0)
