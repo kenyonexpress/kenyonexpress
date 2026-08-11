@@ -2,7 +2,7 @@
 
 אינדקס כל מסמכי הארכיטקטורה ב-`docs/` עם שורת תקציר לכל אחד.
 
-Status: **BINDING (index)** · עודכן: 2026-08-11 (queue notifications/seo/mobile/analytics) · QA: PASS (final, topic-sorted + DEPRECATED)
+Status: **BINDING (index)** · עודכן: 2026-08-11 (queue onboarding/refunds/trust/launch) · QA: PASS (final, topic-sorted + DEPRECATED)
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -150,7 +150,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `ARCHITECTURE-SUPPLIER-REDEMPTION.md` | תכנון מימוש ספק. | DESIGN |
 | `ARCHITECTURE-INVENTORY.md` | מכסות ומלאי קופונים. | QA-PASS (#7) |
 | `ARCHITECTURE-GIFT-COUPONS.md` | קופון מתנה. | QA-PASS (#16) |
-| `ARCHITECTURE-SUPPLIER-ONBOARDING.md` | הצטרפות ספק (ארכיטקטורה). | QA-PASS (#1) |
+| `ARCHITECTURE-SUPPLIER-ONBOARDING.md` | בקשת ספק, אישור אדמין, Cardcom checklist, הסכם פיצול **פר מוצר בלבד** (אין תעריף ספק), מודל חוזה. | QA-PASS (#1) · רענון 11.08 |
 | `SUPPLIER-ONBOARDING.md` | מדריך צירוף ספק. | GUIDE (10.08) |
 | `SEED-SUPPLIERS-SPEC.md` | מיפוי ספקים מ-WP: geo, שעות, WhatsApp, ולידציה. | SPEC (11.08) |
 | `SUPPLIER-QUALITY-PROGRAM.md` | איכות ספקים: NPS פנימי, השעיה, boost חינם. | PLAN (10.08) |
@@ -230,8 +230,10 @@ docs/ONBOARDING-DEVELOPER.md
 |---|---|---|
 | `ARCHITECTURE-SECURITY.md` | Security ADR. | BINDING |
 | `ARCHITECTURE-SECURITY-RLS.md` | מטריצת RLS. | BINDING |
+| `ARCHITECTURE-TRUST-SAFETY.md` | RL לפי endpoint, אנטרופיית שובר, abuse סורק, audit אדמין, צ'קליסט RLS. | BINDING (11.08) |
 | `ARCHITECTURE-LEGAL-COMPLIANCE.md` | צרכן, 14 יום, נגישות. | QA-PASS (#3) |
 | `REFUNDS-CANCELLATION-POLICY.md` | מדיניות ביטולים/החזרים (הגנת הצרכן). | DRAFT (11.08) |
+| `ARCHITECTURE-REFUNDS-DISPUTES.md` | החזר קופון לפני/אחרי redeem, פיזי 14 יום, ledger reversal (אין Escrow), Cardcom refund, dispute SM. | BINDING (11.08) |
 | `ARCHITECTURE-DATA-EXPORT-GDPR.md` | ייצוא/מחיקה. | QA-PASS (#19) |
 | `DATA-RETENTION-POLICY.md` | משכי שמירה; **דורש עו״ד**. | DRAFT (11.08) |
 | `SECURITY-AUDIT-CHECKLIST.md` | צ׳קליסט ביקורת אבטחה לפני/אחרי השקה. | CHECKLIST (11.08) |
@@ -259,6 +261,7 @@ docs/ONBOARDING-DEVELOPER.md
 | מסמך | תקציר | סטטוס |
 |---|---|---|
 | `LAUNCH-CHECKLIST.md` | עלייה לאוויר לפי בעלות. | ACTIONABLE |
+| `ARCHITECTURE-LAUNCH-CHECKLIST.md` | שערי ארכיטקטורה: Resend, Cardcom prod, Sentry, Vercel, backup, 10 קופונים. | ACTIONABLE (11.08) |
 | `GO-LIVE-CHECKLIST.md` | שערי Go-Live: DNS/Vercel/Cardcom/PITR/דילים/Transfer payout. | ACTIONABLE (11.08) |
 | `LAUNCH-VALIDATION.md` | אימות 10 דילי השקה מול פרוד. | ACTIONABLE (10.08) |
 | `launch-week-plan.md` | 10 דילים + ספקים (seed). | PLAN (10.08) |
@@ -361,3 +364,4 @@ docs/ROADMAP-V2.md
 | 2026-08-11 | `ARCHITECTURE-SUBSCRIPTIONS.md`: מנוי חודשי Cardcom Recurring |
 | 2026-08-11 | תור 35-38: subscriptions ledger, seed suppliers, product editor, wallet-integer |
 | 2026-08-11 | תור notifications/seo/mobile/analytics: חיזוק CF Queue, JSON-LD, SecureStore, SQL revenue; תקצירי אינדקס |
+| 2026-08-11 | תור onboarding/refunds/trust/launch: הסכם פר מוצר, disputes, trust&safety, שערי השקה; אינדקס |
