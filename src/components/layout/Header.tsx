@@ -6,11 +6,26 @@ import Link from 'next/link'
 
 /**
  * kenyonexpress.co.il — top bar (welcome) + masthead.
- * Masthead height matched to the live site (measured 2026-07-24): live masthead is
- * 127px (28px top/bottom padding around the logo row), so content starts at 165.4.
- * The earlier 54px was a project override against the collapsed single-file snapshot;
- * Ofir approved raising it to live parity to close the 70px content offset. Container
- * stays 1320px (max-w-page) per the standing project override.
+ *
+ * Masthead height is NOT set here. It comes from `--spacing-header-masthead`
+ * in globals.css, which is 109px + a 1px border = the 110px the live masthead
+ * actually is.
+ *
+ * This comment used to say 127px, "measured 2026-07-24", and it was wrong twice
+ * over: 127 was remeasured to 110 on 2026-07-30 (globals.css:132 carries that
+ * finding, including that the stale value pushed every block below the header
+ * down 17px and showed up as 30-42% band differences that looked like
+ * card-level defects), and the number was never in this file to begin with.
+ * A stale figure in a locked file is worse than none: on 2026-08-12 it was read
+ * back as the live truth and nearly reverted the fix.
+ *
+ * Verified against refs/ke_live_computed.json, captured by
+ * scripts/snapshot-live.mjs: `.site-header` is 109.938px tall at 1440.
+ *
+ * Container stays 1320px (max-w-page) per the standing project override. The
+ * live masthead row is 1200px, so that one IS a deliberate divergence, and
+ * globals.css:120 explains why it has not been chased: --container-page is read
+ * by ten other components that have not been measured.
  */
 export default function SiteHeader() {
   return (
@@ -48,7 +63,7 @@ export default function SiteHeader() {
       </div>
 
       <header dir="rtl" className="sticky top-0 z-40 w-full border-b border-border bg-white">
-        {/* 126px + 1px border = the 127px masthead measured on the live site.
+        {/* 109px + 1px border = the 110px masthead measured on the live site.
             Everything below the header inherits this offset, so the height has
             to match before any page can be compared band by band. */}
         <div className="mx-auto flex h-header-masthead max-w-page items-center justify-between px-4">
