@@ -168,3 +168,4 @@ HSTS preload: רק אחרי יציבות (P1).
 |---|---|
 | 2026-08-11 | שערי Resend/Cardcom/Sentry/Vercel/backup/10 coupons |
 | 2026-08-12 | batch-2 #35: BINDING על arch/docs-batch-2; הדגשת אין default percent / No Escrow |
+| 2026-08-12 | batch-2 #35 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
