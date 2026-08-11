@@ -172,3 +172,4 @@ CTA: /account/coupons
 | תאריך | שינוי |
 |---|---|
 | 2026-08-12 | batch #26/50: ריענון BINDING ממוקד (outbox, Resend RTL, QStash, DLQ) |
+| 2026-08-12 | batch-2 #26 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
