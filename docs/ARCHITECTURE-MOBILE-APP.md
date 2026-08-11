@@ -2,7 +2,7 @@
 
 Expo React Native כערוץ מובייל על **אותו backend** של Next.js + Supabase: Auth deep links, Push דרך `push_tokens`, סריקת ספק עם PIN לפי `115_supplier_app_scanning`, ארנק קופונים עם מטמון אופליין לתצוגה, ו-RTL עברית מהיום הראשון.
 
-Status: **BINDING** · עודכן: 2026-08-11  
+Status: **BINDING** · עודכן: 2026-08-12  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -14,6 +14,7 @@ docs/ARCHITECTURE-APP-STORE-LAUNCH.md
 docs/ARCHITECTURE-PWA.md
 docs/ARCHITECTURE-NOTIFICATIONS.md
 docs/ARCHITECTURE-API-CONTRACTS.md
+docs/ARCHITECTURE-CHECKOUT-FLOW.md
 docs/ARCHITECTURE-SUPPLIER-PORTAL.md
 docs/ARCHITECTURE-INTEGRATIONS.md
 docs/CONTRADICTIONS.md
@@ -22,7 +23,7 @@ supabase/migrations/114_push_tokens.sql
 supabase/migrations/115_supplier_app_scanning.sql
 ```
 
-עקרון: **Web = SEO + רכישה ראשונית בדסקטופ.** האפ = שימור, Push, ארנק קופונים, סריקת ספק. אין DB שני, אין Auth שני, אין PSP שני. **No Escrow** בנוסח ובזרימות.
+עקרון: **Web = SEO + רכישה ראשונית בדסקטופ.** האפ = שימור, Push, ארנק קופונים, סריקת ספק. חזון עתידי: אפ פנימית בסגנון Wolt (גילוי+הזמנה+מעקב) על **אותו** backend. אין DB שני, אין Auth שני, אין PSP שני. **No Escrow** בנוסח ובזרימות.
 
 ---
 
@@ -198,6 +199,34 @@ Logout / החלפת משתמש:
 
 ---
 
+## 3.1 חזון אפ פנימית (Wolt-style) + חוזי API
+
+לא מחליף את scaffold הנוכחי; מגדיר כיוון אחרי שלבי §3.1–7.
+
+| שכבה | חוזה |
+|---|---|
+| גילוי | `GET /api/mobile/v1/catalog`, חיפוש, geo filter (GEO-FEATURE) |
+| עגלה | אותם cart actions / RPC כמו web; session Bearer |
+| Checkout | WebView → אותו CHECKOUT-FLOW; `CHECKOUT_ENABLED` מ-`app-config` |
+| הזמנות / קופונים | `GET /api/mobile/v1/orders`, vouchers; RLS בעלים |
+| ספק | redeem + PIN כמו §2.5 |
+| Auth | Supabase Auth + SecureStore; deep links §2.3 |
+| Config | `GET /api/mobile/v1/app-config` (flags, min version) |
+
+כללי API (מיושר ל-
+`docs/ARCHITECTURE-API-CONTRACTS.md`
+):
+
+1. אין service role באפ.  
+2. כסף באגורות ב-JSON; פורמט ₪ ב-UI בלבד.  
+3. Idempotency-Key על מוטציות תשלום/redeem.  
+4. Rate limit לפי RL* ב-API-CONTRACTS.  
+5. שגיאות עברית ללקוח; קודים יציבים למכונה.
+
+ורטיקלים עתידיים (משלוח/נסיעה) נכנסים רק דרך KenyonKit לפי INTEGRATIONS; לא fork של סליקה.
+
+---
+
 ## 4. Acceptance
 
 - [ ] אין service role באפ  
@@ -208,6 +237,7 @@ Logout / החלפת משתמש:
 - [ ] PIN מייחס `staff_id` בלי להרחיב הרשאות  
 - [ ] Cardcom רק ב-WebView; finalize בשרת  
 - [ ] אין נוסח Escrow  
+- [ ] חזון Wolt-style + app-config / API v1 מתועדים  
 
 ---
 
@@ -221,3 +251,4 @@ Logout / החלפת משתמש:
 | 2026-08-11 | API layer reuse, RTL, coupon wallet offline display |
 | 2026-08-11 | session-only API auth; SecureStore/SQLite להצגת QR אופליין |
 | 2026-08-11 | מבנה audit → target → migration; `114`/`115`, scaffold `apps/mobile`, Auth deep links, staff PIN, offline cache |
+| 2026-08-12 | חזון אפ פנימית Wolt-style + חוזי `/api/mobile/v1` + Auth |
