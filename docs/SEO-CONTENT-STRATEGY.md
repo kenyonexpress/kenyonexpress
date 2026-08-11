@@ -1,22 +1,49 @@
 # אסטרטגיית תוכן SEO (עברית)
 
-איך בונים תוכן אורגני לקניון Express בלי לשבור את מודל הקופון ובלי דפי זבל.
+Status: **STRATEGY** · עודכן: 2026-08-12
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+מודל כסף: No Escrow; מסר ברור ב-P1.
 
-Status: **STRATEGY** · עודכן: 2026-08-11  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
+---
 
-מסמכים קשורים:
+## 1. החלטה
 
-```
-docs/ARCHITECTURE-SEO-PERFORMANCE.md
-docs/ARCHITECTURE-GROWTH-SEO.md
-docs/CITY-LANDING-CONTENT.md
-docs/CONTENT-PLAYBOOK.md
-docs/FAQ-CONTENT.md
-docs/CATEGORY-TAXONOMY.md
-docs/MARKETING-LAUNCH-PLAN.md
-docs/BUSINESS-MODEL.md
-```
+| # | הכרעה |
+|---|---|
+| S1 | P0: home/category/PDP/FAQ |
+| S2 | עיר רק עם דילים |
+| S3 | title/meta ייחודיים |
+| S4 | JSON-LD לפי SEO-PERFORMANCE |
+
+---
+
+## 2. חלופות שנדחו
+
+| חלופה | נימוק |
+|---|---|
+| doorway שכונות | spam |
+| aggregateRating מזויף | policy |
+| תוכן WP ישן גולמי | duplicate |
+
+---
+
+## 3. סכמת DB
+
+**אין DDL.** products/categories feed sitemap.
+
+---
+
+## 4. מקרי קצה
+
+| E1 | city noindex | no deals |
+| E2 | keyword cannibalization | merge pages |
+
+---
+
+## 5. פתוחות
+
+| O1 | blog P3 | only if cadence | 2026-08-12 |
 
 ---
 
@@ -107,8 +134,10 @@ docs/BUSINESS-MODEL.md
 
 ---
 
+
 ## Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-11 | אסטרטגיית תוכן SEO בעברית: עדיפויות, אשכולות, לוח |
+| 2026-08-12 | BINDING batch-2: החלטה, חלופות, DB, קצה, פתוחות |
+
