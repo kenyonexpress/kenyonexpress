@@ -445,3 +445,4 @@ Fallback אינו מבטל את היעד הקנוני (`TransferFromDigitalBank`
 | 2026-08-10 | סומן DEPRECATED לטובת PAYOUT-MECHANISM (CSV ידני) |
 | 2026-08-11 | **BINDING מחדש:** TransferFromDigitalBank קנוני; statements + bank; T+3; min ₪100; debit; reconcile יומי |
 | 2026-08-11 | הרחבה: SQL מלא ל-T+3, דוגמת client v11, פער פרוד G1, יישור FINAL-REPORT §7 → GO-LIVE |
+| 2026-08-11 | הבהרת FINAL-REPORT §7 Data מול CARDCOM §7.1; קישור VENDOR-PAYOUT |
