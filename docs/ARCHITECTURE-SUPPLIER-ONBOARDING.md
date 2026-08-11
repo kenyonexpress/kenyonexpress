@@ -1,9 +1,9 @@
 # ארכיטקטורה: הצטרפות ספק
 
-בקשת ספק, אישור אדמין, צ'קליסט פתיחת חשבון/מסוף Cardcom (כשנדרש), **הסכם פיצול פר מוצר** (אין תעריף ברמת ספק), ומודל נתונים לחוזה.
+בקשת ספק, אישור אדמין, בנק/Cardcom checklist, והסכמי **`platform_percent` פר מוצר בלבד** (אין תעריף ברמת ספק).
 
-Status: **BINDING** · עודכן: 2026-08-11 · QA: PASS (#1)  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #24/50  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
 מסמכים קשורים:
@@ -13,21 +13,21 @@ docs/SUPPLIER-ONBOARDING.md
 docs/LEGAL-TERMS-SUPPLIERS.md
 docs/ARCHITECTURE-SUPPLIER-PORTAL.md
 docs/ARCHITECTURE-ADMIN-DASHBOARD.md
-docs/ARCHITECTURE-SECURITY-RLS.md
-docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
-docs/ARCHITECTURE-B2B-SALES.md
 docs/ARCHITECTURE-PRICING-RULES.md
-docs/CARDCOM-ARCHITECTURE.md
+docs/ARCHITECTURE-PAYOUT-MECHANISM.md
 docs/PAYOUT-ARCHITECTURE.md
-docs/VENDOR-PAYOUT-SPEC.md
+docs/CARDCOM-ARCHITECTURE.md
+docs/ARCHITECTURE-SECURITY-RLS.md
 docs/CONTRADICTIONS.md
 ```
 
+מודל כסף: **No Escrow**. קופון = מקדמה לפלטפורמה + יתרה בעסק. פיזי = פיצול לפי אחוז **המוצר**. אין held/J5.
+
 ---
 
-## 0. המלצה אחת (מחייבת)
+## 0. המלצה אחת
 
-**אין מכירה בלי בקשה מאושרת + שורת `suppliers` + `supplier_members(owner)`. אין `platform_percent` ברמת ספק. כל מוצר מקבל אחוז פיצול שנקבע בהסכמה פרטית עם המפעיל ונשמר על שורת המוצר (snapshot בהזמנה). No Escrow לקופון.**
+**אין מכירה בלי בקשה מאושרת + שורת `suppliers` + `supplier_members(owner)`. אין `platform_percent` ברמת ספק. כל מוצר מקבל אחוז מוסכם פרטית עם המפעיל ונשמר על המוצר (snapshot בהזמנה).**
 
 ---
 
@@ -35,156 +35,130 @@ docs/CONTRADICTIONS.md
 
 | # | הכרעה |
 |---|---|
-| O1 | אין מכירה בלי בקשה מאושרת + `suppliers` + `supplier_members(owner)`. |
-| O2 | מסמכים מינימום: עוסק/ח.פ, טלפון, כתובת, לוגו (לפני publish). |
-| O3 | פרטי בנק חובה לפני payout פיזי; לא חוסמים סריקת קופונים. |
-| O4 | אישור/דחייה: admin בלבד; דחייה עם סיבה חובה. |
+| O1 | אין מכירה בלי approve + `suppliers` + owner membership. |
+| O2 | מינימום מסמכים: עוסק/ח.פ, טלפון, כתובת, לוגו (לפני publish). |
+| O3 | בנק חובה לפני payout פיזי; לא חוסם סריקת קופונים. |
+| O4 | אישור/דחייה: admin בלבד; דחייה עם סיבה חובה + audit. |
 | O5 | סניפים = ישויות משנה תחת אותו ספק. |
-| O6 | עובדים = `supplier_members` עם `owner` / `manager` / `scanner`. |
-| O7 | UI הצטרפות בעברית RTL. |
-| O8 | **No Escrow:** קופון = מקדמה באתר לפלטפורמה; יתרה בעסק; אין held/J5/נאמן. פיזי = פיצול לפי `platform_percent` **פר מוצר**. |
-| O9 | **אין תעריף ספק:** אסור עמודה/שדה `suppliers.default_platform_percent` (או מקביל) כמקור אמת. |
-| O10 | כל מוצר חדש: אחוז מוסכם פרטית עם המפעיל → נשמר ב-`products.platform_percent` + רשומת הסכם (§6). |
-| O11 | סליקה ללקוח: מסוף פלטפורמה יחיד (MVP). חשבון/מסוף Cardcom לספק = אופציונלי/עתידי לפי צ'קליסט §5; payout לספק לפי `PAYOUT-ARCHITECTURE.md`. |
+| O6 | עובדים = `supplier_members`: `owner` / `manager` / `scanner`. |
+| O7 | UI הצטרפות עברית RTL. |
+| O8 | **No Escrow** לקופון ולנוסח חוזי. |
+| O9 | אסור `suppliers.default_platform_percent` (או מקביל) כמקור אמת. |
+| O10 | כל מוצר: הסכם פרטי → `products.platform_percent` + רשומת הסכם. |
+| O11 | סליקת לקוח במסוף פלטפורמה (MVP). Cardcom לספק = אופציונלי לפי §5. |
 
 ---
 
-## 2. זרימת בקשה (application flow)
+## 2. זרימת בקשה
 
 ```text
 מועמד נרשם / מתחבר
-  → ממלא טופס /supplier/apply (עברית RTL)
-  → מועלה מסמכים ל-Storage פרטי
-  → שורה ב-supplier_applications: status=pending
-  → מייל לאדמין: "בקשת ספק ממתינה"
-  → אדמין ב-/admin/suppliers/applications:
-       · approve → יוצר suppliers + owner membership + welcome
-       · reject  → reason חובה + cooldown להגשה מחדש
-  → אחרי approve: ספק נכנס ל-/supplier (סניפים, עובדים, מוצרים בהמתנה)
-  → מוצרים לא עולים לחיים בלי platform_percent + הסכם פר מוצר + publish אדמין
+  → /supplier/apply (RTL)
+  → מסמכים ל-Storage פרטי
+  → supplier_applications.status = pending
+  → מייל לאדמין
+  → /admin/suppliers/applications:
+       approve → suppliers + owner + welcome
+       reject  → reason + cooldown להגשה מחדש
+  → כניסה ל-/supplier (סניפים, צוות, טיוטות מוצר)
+  → מוצרים לא עולים לחיים בלי platform_percent מוסכם + publish אדמין
 ```
 
 | כלל | פירוט |
 |---|---|
-| בקשה פתוחה | `pending` אחת למשתמש בזמן נתון |
-| כפילות ח.פ | אדמין בודק ידנית; אין approve אוטומטי |
-| Cooldown אחרי reject | ≥ 7 ימים (מוצר; ניתן לדרוס באדמין) |
-| Audit | כל approve/reject ב-`audit_log` |
+| בקשה פתוחה | לכל היותר `pending` אחת למשתמש |
+| כפילות ח.פ | בדיקה ידנית; אין approve אוטומטי |
+| Cooldown אחרי reject | ≥ 7 ימים (ניתן לדרוס באדמין) |
+| Approve | אידמפוטנטי על `application_id` |
 
 ---
 
-## 3. מכונת מצבים (בקשה)
+## 3. מכונת מצבים
 
 ```text
-draft (אופציונלי) → pending → approved
-                          └→ rejected → (cooldown) → pending מחדש
+(draft אופציונלי) → pending → approved
+                           └→ rejected → (cooldown) → pending מחדש
 ```
 
-אחרי `approved`: הסטטוס על `suppliers` (למשל `active` / `paused`) נפרד ממכונת הבקשה.
+אחרי `approved`: סטטוס חי על `suppliers` (`active` / `suspended` / `closed`) נפרד ממכונת הבקשה.
 
 ---
 
-## 4. מסמכים ופרטי בנק
+## 4. מסמכים ובנק
 
 | שדה | לאישור | ל-payout פיזי |
 |---|---|---|
 | שם עסק בעברית | כן | |
 | ח.פ / עוסק | כן | |
 | טלפון + אימייל | כן | |
-| כתובת, עיר, lat/lng | כן ל-publish | |
+| כתובת / עיר / lat/lng | כן ל-publish | |
 | לוגו | כן ל-publish | |
 | חשבון בנק + אישור ניהול | | כן (`supplier_bank_accounts`) |
-| קבצים סרוקים | Storage פרטי (admin/owner) | |
 
-סריקת קופונים מותרת בלי בנק. payout פיזי חסום עד בנק מאומת (`PAYOUT-ARCHITECTURE.md`).
-
----
-
-## 5. צ'קליסט Cardcom (חשבון / מסוף ספק)
-
-**MVP מחייב:** סליקת לקוח במסוף הפלטפורמה בלבד. אין תלות ב-sub-account לספק כדי למכור או לסרוק.
-
-כשמוחלט לפתוח חשבון/מסוף Cardcom לספק (Multi-Account / `NewCompany` וכו'; ראה `CARDCOM-ARCHITECTURE.md`), לפני סימון "מוכן":
-
-| # | שער | ראיה |
-|---|---|---|
-| C1 | פרטי עסק תואמים למסמכי ההצטרפות | צילום פאנל Cardcom |
-| C2 | חשבון/מסוף נוצר (או מקושר) תחת חשבון האם של הפלטפורמה | מזהה חשבון |
-| C3 | מזהה נשמר ב-`suppliers.cardcom_account_id` (או עמודת חוזה מוסכמת) | שורת DB |
-| C4 | הרשאות API: מה מותר לספק מול מה שנשאר בפלטפורמה | טבלת הרשאות |
-| C5 | Webhook / IndicatorUrl: לא לערבב עם מסוף הפלטפורמה בלי הפרדת סודות | secrets נפרדים אם נדרש |
-| C6 | Smoke: אין חיוב לקוח דרך מסוף הספק ב-MVP אלא אם ADR מפורש שינה | לוג |
-| C7 | Payout לספק עדיין לפי TransferFromDigitalBank / CSV fallback, לא "כסף נעלם במסוף ספק" | `PAYOUT-ARCHITECTURE.md` |
-
-אם Multi-Account לא מופעל: סמן C1–C7 כ-`N/A (single terminal)` ואל תחסום הצטרפות.
+סריקה מותרת בלי בנק. payout פיזי חסום עד אימות בנק (PAYOUT-ARCHITECTURE).
 
 ---
 
-## 6. הסכם פר מוצר (אין תעריף ספק)
+## 5. צ'קליסט Cardcom (אופציונלי)
+
+**MVP:** סליקת לקוח במסוף הפלטפורמה בלבד.
+
+כשפותחים חשבון/מסוף לספק:
+
+| # | שער |
+|---|---|
+| C1 | פרטי עסק תואמים למסמכי הצטרפות |
+| C2 | חשבון נוצר/מקושר תחת חשבון האם |
+| C3 | מזהה ב-`suppliers.cardcom_account_id` (או עמודה מוסכמת) |
+| C4 | הרשאות API מוגדרות |
+| C5 | Webhook secrets מופרדים ממסוף הפלטפורמה אם נדרש |
+| C6 | אין חיוב לקוח דרך מסוף הספק ב-MVP בלי ADR |
+| C7 | Payout לספק לפי Transfer/CSV, לא "כסף נעלם במסוף" |
+
+אם Multi-Account לא מופעל: סמן C1-C7 כ-`N/A (single terminal)`.
+
+---
+
+## 6. הסכם פר מוצר בלבד
 
 ### 6.1 כלל זהב
 
 | מותר | אסור |
 |---|---|
-| `products.platform_percent` ייחודי לכל מוצר | default גלובלי / "10% לכל הספקים" |
+| `products.platform_percent` ייחודי לכל מוצר | default גלובלי / "X% לכל הספקים" |
 | משא ומתן פר דיל עם המפעיל | הסקת אחוז ממוצר קודם בלי אישור |
-| snapshot ל-`order_items` ברגע הקנייה | שינוי אחוז רטרו על הזמנות ישנות |
+| snapshot ל-`order_items` ברכישה | שינוי אחוז רטרו על הזמנות ישנות |
 
-קופון: הלקוח משלם `coupon_price` באתר (הכנסת פלטפורמה); יתרה בעסק.  
-פיזי: הלקוח משלם מלא; פיצול לפי `platform_percent` של **אותו** מוצר.
+קופון: `coupon_price` באתר (הכנסת פלטפורמה); יתרה בעסק.  
+פיזי: חיוב מלא; פיצול לפי `platform_percent` של **אותו** מוצר.
 
 ### 6.2 זרימת הסכמה
 
 ```text
 טיוטת מוצר (ספק או אדמין)
-  → מפעיל קובע platform_percent (+ coupon_price אם קופון) בהסכמה עם הספק
-  → נרשמת שורת product_split_agreements (או מקביל)
-  → products.platform_percent = הערך המוסכם
-  → publish רק אחרי אחוז מלא + תמונה + סטטוס
+  → מפעיל קובע platform_percent (+ coupon_price אם קופון) בהסכמה
+  → product_split_agreements (או מקביל) + products.platform_percent
+  → publish רק אחרי אחוז מלא + שערים אחרים
 ```
 
-אין UI שמראה "תעריף ברירת מחדל של הספק".
+אין UI "תעריף ברירת מחדל של הספק".
 
-### 6.3 מודל נתונים לחוזה / הסכם
-
-תמצית יעד (שמות סופיים במיגרציה עתידית; עד אז audit + עמודות מוצר):
+### 6.3 מודל נתונים (יעד)
 
 ```sql
--- בקשת הצטרפות
-CREATE TABLE public.supplier_applications (
-  id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id         uuid NOT NULL REFERENCES auth.users(id),
-  business_name_he text NOT NULL,
-  company_id      text NOT NULL,          -- ח.פ / עוסק
-  phone           text NOT NULL,
-  email           text NOT NULL,
-  address_json    jsonb NOT NULL,
-  status          text NOT NULL CHECK (status IN ('pending','approved','rejected')),
-  reject_reason   text,
-  reviewed_by     uuid REFERENCES auth.users(id),
-  reviewed_at     timestamptz,
-  created_at      timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (user_id) -- או partial unique על pending בלבד
-);
-
--- ספק אחרי אישור (קיים / מורחב)
--- suppliers: id, name_he, company_id, cardcom_account_id NULL,
---            bank verified via supplier_bank_accounts, …
-
 -- הסכם פיצול פר מוצר (אין rate ברמת ספק)
 CREATE TABLE public.product_split_agreements (
   id                 uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   product_id         uuid NOT NULL REFERENCES public.products(id),
   supplier_id        uuid NOT NULL REFERENCES public.suppliers(id),
-  platform_percent   numeric(5,2) NOT NULL CHECK (platform_percent > 0 AND platform_percent < 100),
-  coupon_price_agorot integer,           -- NULL לפיזי
+  platform_percent   numeric(5,2) NOT NULL
+    CHECK (platform_percent > 0 AND platform_percent < 100),
+  coupon_price_agorot integer,  -- NULL לפיזי
   agreed_with_admin  uuid NOT NULL REFERENCES auth.users(id),
   agreed_at          timestamptz NOT NULL DEFAULT now(),
   notes_he           text,
-  superseded_at      timestamptz          -- NULL = פעיל
+  superseded_at      timestamptz  -- NULL = פעיל
 );
-
--- products.platform_percent = הערך הפעיל; הזמנה מצלמת snapshot
 ```
 
 | טבלה | תפקיד |
@@ -193,30 +167,23 @@ CREATE TABLE public.product_split_agreements (
 | `suppliers` + `supplier_members` | ישות חיה + RBAC |
 | `supplier_branches` | סניפים |
 | `supplier_bank_accounts` | payout פיזי |
-| `product_split_agreements` | היסטוריית הסכמות אחוז פר מוצר |
+| `product_split_agreements` | היסטוריית הסכמות אחוז |
 | `products` | אחוז חי לפרסום |
-| `order_items.*_snapshot` | אחוז שחל על העסקה |
+| snapshot ב-`order_items` | אחוז שחל על העסקה |
 
-חוזה משפטי כללי מול ספק: `LEGAL-TERMS-SUPPLIERS.md` (**[דורש עו״ד]** לפני חתימה). האחוז המסחרי חי במוצר, לא כסעיף יחיד בחוזה הגלובלי.
+חוזה משפטי כללי: `LEGAL-TERMS-SUPPLIERS.md` (**[דורש עו״ד]**). האחוז המסחרי חי במוצר.
 
 ---
 
 ## 7. סניפים ועובדים
 
-```text
-supplier_branches (
-  id, supplier_id, name_he, address, city, phone,
-  lat, lng, hours_json, is_active
-)
-```
-
 | תפקיד | הרשאות |
 |---|---|
-| `scanner` | סריקה + היסטוריית מימושים |
+| `scanner` | סריקה + היסטוריה |
 | `manager` | scanner + הזמנות פיזיות + סניפים |
 | `owner` | manager + הזמנת עובדים + בנק + הגדרות |
 
-`is_active=false` על membership חוסם redeem. Redeem לפי `supplier_id`; סניף ב-audit אם נבחר.
+`is_active=false` חוסם redeem. Redeem לפי `supplier_id`; סניף ב-audit אם נבחר.
 
 ---
 
@@ -224,7 +191,7 @@ supplier_branches (
 
 1. כניסה ל-`/supplier`  
 2. סניפים + עובדים  
-3. טיוטות מוצר → הסכמת אחוז עם המפעיל → `platform_percent`  
+3. טיוטות מוצר → הסכמת אחוז → `platform_percent`  
 4. אדמין publish  
 5. בנק מאומת → זכאות payout פיזי  
 6. (אופציונלי) צ'קליסט Cardcom §5  
@@ -236,19 +203,18 @@ supplier_branches (
 - [ ] Approve יוצר `suppliers` + owner  
 - [ ] Reject דורש סיבה + audit  
 - [ ] אין שדה תעריף ברמת ספק במודל / UI  
-- [ ] כל מוצר חי עם `platform_percent` מוסכם + snapshot בהזמנה  
+- [ ] כל מוצר חי עם `platform_percent` מוסכם + snapshot  
 - [ ] בנק לפני payout בלבד  
 - [ ] Cardcom sub-account: צ'קליסט או N/A מפורש  
-- [ ] No Escrow בנוסח ובתשלומים  
+- [ ] No Escrow בנוסח  
 - [ ] UI עברית RTL  
 
 ---
 
-## Revision
+## 10. Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-06 | חידוד הצטרפות: מסמכים, בנק, סניפים, עובדים |
-| 2026-08-06 | QA: O8 No Escrow + `platform_percent`; קישורים B2B/PRICING |
-| 2026-08-07 | QA re-pass: קישור CONTRADICTIONS |
-| 2026-08-11 | application flow, Cardcom checklist, הסכם פר מוצר בלבד, מודל חוזה |
+| 2026-08-06 | הצטרפות: מסמכים, בנק, סניפים, עובדים |
+| 2026-08-11 | application flow + הסכם פר מוצר + Cardcom checklist |
+| 2026-08-12 | batch #24: ריענון BINDING; הסכמים רק per-product `platform_percent` |
