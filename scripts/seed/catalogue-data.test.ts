@@ -16,7 +16,6 @@ type Supplier = {
   city: string
   contactPhone: string
   logoUrl: string
-  defaultSplitPercent: number
 }
 type Product = {
   id: string
@@ -87,10 +86,18 @@ describe('the suppliers, which exist to be complete', () => {
     }
   })
 
-  it('carries a split percent that leaves the platform a share', () => {
+  // Was: 'carries a split percent that leaves the platform a share'. Inverted on
+  // 2026-08-12. A supplier-level percentage is exactly what AGENTS.md forbids,
+  // and migration 112 dropped the column the old field was seeding
+  // (suppliers.default_split_percent). The seed must not grow a replacement for
+  // it under a new name, so the assertion is now that no supplier carries any
+  // percentage at all.
+  it('carries no percentage of any kind: every percent is per product', () => {
     for (const supplier of suppliers) {
-      expect(supplier.defaultSplitPercent).toBeGreaterThan(0)
-      expect(supplier.defaultSplitPercent).toBeLessThan(100)
+      const percentKeys = Object.keys(supplier).filter((k) =>
+        /percent|rate|split|commission/i.test(k),
+      )
+      expect(percentKeys, `${supplier.name} must hold identity and payout only`).toEqual([])
     }
   })
 })

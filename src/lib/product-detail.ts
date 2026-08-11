@@ -149,10 +149,13 @@ export async function loadProductBySlug(slug: string) {
  * printed after the sale.
  *
  * What stays out is exactly what stayed out before: `contact_name`,
- * `contact_email`, `business_id`, `notes`, `commission_percent`,
- * `default_split_percent`. The margin in particular is the one field that must
- * never reach a shopper (`ShippingInfo.tsx` makes the same call), so this is a
- * named list and not `select('*')`.
+ * `contact_email`, `business_id`, `notes`. The two margin columns that used to
+ * head this list, `commission_percent` and `default_split_percent`, no longer
+ * exist on the table at all: migration 112 dropped them on 2026-08-12. A margin
+ * is still the one class of field that must never reach a shopper
+ * (`ShippingInfo.tsx` makes the same call), which is why this stays a named
+ * list and not `select('*')` -- the next such column must be excluded by
+ * someone choosing to, not by luck.
  */
 async function loadSupplierPublicContact(supplierId: string | null) {
   if (!supplierId) return null

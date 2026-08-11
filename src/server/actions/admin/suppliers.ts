@@ -74,9 +74,9 @@ async function runUpsertSupplier(
       changes: auditChanges(parsed.data),
     })
   } else {
-    // commission_percent and default_split_percent are left to their column
-    // defaults on purpose. They are the retired fixed-commission knobs; the real
-    // split lives per product (section 0.1).
+    // No percentage is written here, and none can be: migration 112 dropped
+    // suppliers.commission_percent and suppliers.default_split_percent, the two
+    // retired fixed-commission knobs. The split lives per product (section 0.1).
     const { data, error } = await admin.from('suppliers').insert(parsed.data).select('id').single()
     if (error) return { error: error.message }
     await writeAuditLog({

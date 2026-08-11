@@ -2589,12 +2589,10 @@ export type Database = {
           app_scanning_enabled: boolean
           business_id: string | null
           city: string | null
-          commission_percent: number
           contact_email: string | null
           contact_name: string | null
           contact_phone: string | null
           created_at: string
-          default_split_percent: number
           deleted_at: string | null
           id: string
           logo_url: string | null
@@ -2610,12 +2608,10 @@ export type Database = {
           app_scanning_enabled?: boolean
           business_id?: string | null
           city?: string | null
-          commission_percent?: number
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string
-          default_split_percent?: number
           deleted_at?: string | null
           id?: string
           logo_url?: string | null
@@ -2631,12 +2627,10 @@ export type Database = {
           app_scanning_enabled?: boolean
           business_id?: string | null
           city?: string | null
-          commission_percent?: number
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string
-          default_split_percent?: number
           deleted_at?: string | null
           id?: string
           logo_url?: string | null
@@ -2764,7 +2758,6 @@ export type Database = {
           business_id: string | null
           business_logo: string | null
           business_name: string
-          commission_rate: number | null
           contact_email: string | null
           contact_name: string | null
           contact_phone: string | null
@@ -2790,7 +2783,6 @@ export type Database = {
           business_id?: string | null
           business_logo?: string | null
           business_name: string
-          commission_rate?: number | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
@@ -2816,7 +2808,6 @@ export type Database = {
           business_id?: string | null
           business_logo?: string | null
           business_name?: string
-          commission_rate?: number | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null

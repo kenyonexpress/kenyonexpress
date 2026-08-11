@@ -31,8 +31,9 @@ export const vendorFormSchema = z.object({
   // distinct rates of their own (30/25/15) -- the supplier-level number was
   // both unused by settlement and wrong.
   //
-  // `vendors.commission_rate` still exists in the database and is dropped by a
-  // separate approved migration; see migrations/pending.
+  // `vendors.commission_rate` was dropped from the database by
+  // migrations/pending/112_drop_legacy_percent_columns.sql on 2026-08-12. The
+  // old values are archived in public.legacy_percent_archive_112.
   logo_url: z.string().nullable().optional(),
   status: vendorStatusSchema.default('pending'),
 })

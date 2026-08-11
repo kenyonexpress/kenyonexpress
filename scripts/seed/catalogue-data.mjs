@@ -81,8 +81,9 @@ export const SUPPLIERS = SUPPLIER_NAMES.map((name, i) => {
     website: `https://example.test/seed-supplier-${i + 1}`,
     businessId: `51${String(1000000 + i).padStart(7, '0')}`,
     logoUrl: image(`supplier-${i + 1}`),
-    // Distinct per supplier, for the same reason the products' percents are.
-    defaultSplitPercent: 60 + i * 2,
+    // No percentage of any kind. A supplier is identity and payout details;
+    // every percentage is per product (AGENTS.md). The field that used to sit
+    // here fed suppliers.default_split_percent, dropped by migration 112.
   }
 })
 

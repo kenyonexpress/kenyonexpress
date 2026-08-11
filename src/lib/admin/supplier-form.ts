@@ -9,14 +9,17 @@
  * The screen now edits `suppliers`, and this module holds the rules so the form,
  * the server action and the tests share one implementation.
  *
- * Two columns on the live table are deliberately NOT exposed here:
- * `commission_percent` (NOT NULL DEFAULT 0) and `default_split_percent`
- * (NOT NULL DEFAULT 70). They are leftovers from the fixed-commission model that
- * section 0.1 revoked. Every money knob is per product now, so surfacing a
- * supplier-level percent would give an admin two places to set the same thing
- * and no rule for which one wins. They are left at whatever the row already
- * carries, and nothing reads them (verified 2026-07-28: no reference outside the
- * generated types).
+ * This form never carried a percentage, and the table no longer has one to
+ * carry. `commission_percent` (NOT NULL DEFAULT 0) and `default_split_percent`
+ * (NOT NULL DEFAULT 70) were leftovers from the fixed-commission model that
+ * section 0.1 revoked; migration 112 dropped both on 2026-08-12, after
+ * confirming nothing outside the generated types read them. Every money knob is
+ * per product, so a supplier-level percent would have given an admin two places
+ * to set the same thing and no rule for which one wins.
+ *
+ * `parseSupplierForm` still strips those two keys from its input rather than
+ * trusting that no caller sends them; see supplier-form.test.ts. Sending a key
+ * for a dropped column is a PostgREST error, not a silently ignored field.
  */
 
 /** The four details a supplier must carry before any of its products publish. */
