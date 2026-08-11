@@ -1,12 +1,14 @@
-# ARCHITECTURE: Admin Reports
+# ארכיטקטורה: דוחות אדמין
 
 דוחות אדמין: הכנסות יומיות, עמלת פלטפורמה לפי מוצר, התחשבנות ספקים, התחייבות קופונים (נמכרו ולא מומשו), ייצוא CSV.
 
-Status: **BINDING** · Updated: 2026-08-03  
-Scope: **docs only** · branch `arch/docs-queue`  
-אין שינוי קוד. אין נגיעה ב-worktree הראשי.
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד.
 
-Companions:
+מודל כסף: **No Escrow**. קופון: on-site = הכנסת פלטפורמה; אין held / payout לספק על מקדמה. פיזי: payout לפי settlement.
+
+מסמכים קשורים:
 
 ```
 docs/ARCHITECTURE-SUPPLIER-ANALYTICS.md
@@ -14,25 +16,25 @@ docs/ARCHITECTURE-ANALYTICS.md
 docs/ARCHITECTURE-REFUNDS-DISPUTES.md
 docs/RUNBOOK-OPERATIONS.md
 docs/ARCHITECTURE-WALLET-CASHBACK.md
+docs/CONTRADICTIONS.md
 ```
 
 ---
 
-## 0. הכרעות מחייבות
+## החלטה
 
 | # | הכרעה |
 |---|---|
-| AR1 | מקור אמת כספי: `orders` / `order_items` / `vouchers` / ledger. לא GA4. |
-| AR2 | כל הסכומים בדוח: agorot בחישוב; תצוגה וייצוא ל-UI ב-₪ (שתי ספרות) + עמודת agorot אופציונלית. |
-| AR3 | `platform_percent` ו-commission **רק מהסנאפשוט** בשורת הזמנה. |
-| AR4 | Coupon liability = paid on-site על vouchers בסטטוס `issued` (עדיין לא redeemed/cancelled/expired לפי מדיניות). |
+| AR1 | מקור אמת כספי: `orders` / `order_items` / `vouchers` / ledger. **לא** GA4. |
+| AR2 | חישוב באגורות; תצוגה ו-CSV ב-₪ (2 ספרות) + עמודת agorot אופציונלית. |
+| AR3 | `platform_percent` ו-commission **רק מה-snapshot** בשורת הזמנה. |
+| AR4 | Coupon liability = paid on-site על vouchers `issued` (לא redeemed/cancelled/expired). |
 | AR5 | גישה: `is_admin()` בלבד. כל ייצוא ב-`audit_log`. |
-| AR6 | אזור זמן דוחות: `Asia/Jerusalem`. |
-| AR7 | CSV: UTF-8 עם BOM לתאימות Excel עברית. |
+| AR6 | אזור זמן: `Asia/Jerusalem`. |
+| AR7 | CSV: UTF-8 עם BOM ל-Excel עברית. |
+| AR8 | **No Escrow:** אין עמודות `coupon_held` / `escrow_held` פעילות בדוחות. |
 
----
-
-## 1. משטחי UI
+### משטחי UI
 
 ```text
 /admin/reports
@@ -40,122 +42,75 @@ docs/ARCHITECTURE-WALLET-CASHBACK.md
   /admin/reports/commission-by-product
   /admin/reports/supplier-settlements
   /admin/reports/coupon-liability
-  /admin/reports/export  (actions)
+  /admin/reports/export
 ```
 
-פילטרים משותפים: תאריך מ–עד, ספק, סוג מוצר (coupon/physical), סטטוס הזמנה.
+### דוחות (תמצית)
 
----
-
-## 2. Daily revenue
-
-| מדד | הגדרה |
+| דוח | מדדים עיקריים |
 |---|---|
-| Gross on-site | סכום ששולם באתר להזמנות `paid` ביום (Jerusalem) |
-| Refunds | סכום refunds `succeeded` ביום |
-| Net on-site | Gross − Refunds |
-| Platform commission | סכום `commission_agorot` משורות ביום (פיזי + חלק קופון לפי מודל) |
-| Orders count | מספר הזמנות paid |
-| Vouchers issued | מספר שוברים שהונפקו ביום |
-| Vouchers redeemed | מספר מימושים ביום |
-
-גרף: 14/30 יום. טבלה יומית לייצוא.
+| Daily revenue | Gross/Net on-site, refunds, platform commission, orders, vouchers issued/redeemed |
+| Commission by product | units, gross, **platform_percent_snapshot**, commission_agorot |
+| Supplier settlements | physical_due, payout_status (פיזי בלבד); **לא** coupon held |
+| Coupon liability | open `issued`, on-site paid, aging, expiring 7d |
 
 ---
 
-## 3. Platform commission per product
+## חלופות שנדחו
 
-שורות:
-
-| עמודה | מקור |
+| חלופה | למה נדחתה |
 |---|---|
-| product_id / name_he | products / snapshot |
-| supplier_id / name | |
-| product_type | coupon / physical |
-| units_sold | |
-| gross_paid_agorot | |
-| platform_percent_snapshot | avg או per-line detail בפירוט |
-| commission_agorot | sum |
-| period | |
-
-פירוט לחיצה: פיצול להזמנות. אסור לחשב מ-`products.platform_percent` החי.
+| Escrow / `coupon_held_agorot` בדוח settlements | AR8: No Escrow; קופון לא payout/held. |
+| commission מ-`products.platform_percent` החי | AR3: snapshot בלבד. |
+| GA4 כמקור הכנסה | AR1: ledger. |
+| CSV בלי BOM | AR7: Excel עברית. |
+| export בלי audit | AR5: חובה audit_log. |
+| timezone UTC בדוחות יומיים | AR6: Jerusalem. |
 
 ---
 
-## 4. Supplier settlements
+## סכמת DB
 
-| עמודה | משמעות |
+**אין DDL חדש.** קריאה מטבלאות קיימות.
+
+| טבלה | שימוש בדוח |
 |---|---|
-| supplier_id | |
-| period | |
-| physical_due_agorot | יתרה לפיצול אחרי עמלה (מדיניות hold) |
-| coupon_held_agorot | מקדמות held עד redeem |
-| coupon_released_agorot | שוחרר אחרי redeem בתקופה |
-| refunds_clawback_agorot | קיזוזים |
-| payout_status | pending / paid / on_hold |
-| payout_agorot | סכום להעברה בנקאית (אם בתקופה) |
+| `orders` | paid_at, status, timezone bucket |
+| `order_items` | snapshots, commission_agorot, product_type |
+| `vouchers` | issued/redeemed/expired; liability |
+| `settlement_events` / ledger | supplier settlements (פיזי) |
+| `audit_log` | export actions |
 
-התאמה למודל Escrow 2026-07-27: קופון לא מופיע כ-payout מיידי בעת מכירה.
+ייצוא async: signed URL ב-R2 אם > N שורות (יעד).
 
 ---
 
-## 5. Coupon liability (sold but unredeemed)
+## מקרי קצה
 
-התחייבות / חשיפה תפעולית:
+| # | מקרה | התנהגות |
+|---|---|---|
+| CE1 | refund באותו יום כ-paid | Net = Gross − Refunds (Jerusalem day) |
+| CE2 | voucher issued אחרי חצות | bucket לפי `issued_at` Jerusalem |
+| CE3 | export גדול | async job + signed URL |
+| CE4 | admin לא super_admin | read OK; money-out actions נפרד |
+| CE5 | שורת קופון ב-settlement payout | **לא** מופיעה (No Escrow) |
+| CE6 | PAN בדוח | **לעולם לא** (last4 בלבד אם בכלל) |
 
-| מדד | הגדרה |
+---
+
+## פתוחות
+
+| # | פתוח | הערה |
+|---|---|---|
+| O1 | סף N ל-async export | RUNBOOK |
+| O2 | פורמט headers CSV (`,` vs `#`) | product decision |
+| O3 | coupon liability vs רו"ח | disclaimer ב-UI |
+
+---
+
+## Revision
+
+| תאריך | שינוי |
 |---|---|
-| Open vouchers | count `issued` |
-| Liability face remaining | sum יתרה לתשלום בעסק על issued (אם נשמר) |
-| Liability on-site held | sum חלק מקדמה ב-held / paid on-site לפי מדיניות דיווח |
-| Aging | buckets: 0–7d, 8–30d, 31–90d, 90d+ עד expiry |
-| Expiring 7d | issued עם `expires_at` ב-7 ימים |
-
-דוח זה לניהול סיכון ותזרים; לא מחליף דוח רו״ח.
-
-ייצוא CSV חובה לתאריך חתך.
-
----
-
-## 6. Export to CSV
-
-| דוח | שם קובץ לדוגמה |
-|---|---|
-| Daily revenue | `ke-daily-revenue-YYYYMMDD-YYYYMMDD.csv` |
-| Commission by product | `ke-commission-by-product-….csv` |
-| Settlements | `ke-supplier-settlements-….csv` |
-| Coupon liability | `ke-coupon-liability-asof-YYYYMMDD.csv` |
-
-כללים:
-
-1. UTF-8 BOM
-2. מפריד `,` או `#` לפי בחירת מוצר; עברית ב-headers
-3. שורת מטא: generated_at, timezone, filters
-4. מקסימום שורות / async job אם > N (יעד: הורדה דרך signed URL ב-R2)
-5. `audit_log`: admin_id, report_type, filters, row_count
-
----
-
-## 7. הרשאות ואבטחה
-
-- רק admin
-- אין CSV למייל אוטומטי עם PII בלי הצפנה
-- Rate limit על export
-- מספרי כרטיס: לעולם לא בדוח (last4 בלבד אם בכלל)
-
----
-
-## 8. Acceptance
-
-- [ ] ארבעת הדוחות מוגדרים עם נוסחאות snapshot
-- [ ] Coupon liability על `issued`
-- [ ] CSV UTF-8 + audit
-- [ ] timezone ירושלים
-
----
-
-## 9. Revision
-
-| Date | Change |
-|---|---|
-| 2026-08-03 | מסמך ראשוני על arch/docs-queue |
+| 2026-08-03 | מסמך ראשוני |
+| 2026-08-12 | batch-2: BINDING; הסרת Escrow מ-settlements; 5 סעיפים |
