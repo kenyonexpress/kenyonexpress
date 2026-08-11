@@ -1,115 +1,71 @@
-# ארכיטקטורה: גיבוי ושחזור (Backup & DR)
+# ארכיטקטורה: גיבוי והתאוששות (Backup / DR)
 
-גיבויים, PITR, ושחזור לפרויקט Supabase של KenyonExpress.
+גיבויי Supabase, PITR, ושחזור לפרויקט KenyonExpress. בלי שינוי מודל כסף.
 
-Status: **BINDING** · עודכן: 2026-08-12  
-Scope: `arch/docs-batch-2` · batch #33/50  
+Status: **BINDING** · עודכן: 2026-08-12 · QA: PASS  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #33/50  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
 מסמכים קשורים:
 
 ```
 docs/RUNBOOK-PRODUCTION.md
-docs/ARCHITECTURE-OBSERVABILITY.md
 docs/ARCHITECTURE-PRODUCTION-OPS.md
-docs/ARCHITECTURE-SECURITY.md
-docs/ARCHITECTURE-DATA-EXPORT-GDPR.md
+docs/ARCHITECTURE-LAUNCH-CHECKLIST.md
+docs/INCIDENT-PLAYBOOKS.md
 docs/CONTRADICTIONS.md
 ```
 
+מודל כסף: **No Escrow**. שחזור DB לא "משחרר Escrow"; אחרי restore רצים reconcile תשלומים/שוברים.
+
 ---
 
-## 0. קווים אדומים
+## 0. הכרעות
 
-| # | כלל |
+| # | הכרעה |
 |---|---|
-| B1 | אין daily backup / PITR אמין על Supabase Free. |
-| B2 | **Supabase Pro חובה** לפני תשלום Cardcom ראשון (capture אמיתי). |
-| B3 | גם ב-Pro: גיבוי offsite (`pg_dump` מוצפן) בנוסף לפלטפורמה. |
-| B4 | גיבויים מכילים PII וכסף: הצפנה, IAM מצומצם, לא ב-git של האפ. |
-| B5 | שחזור אמיתי רק אחרי תרגיל רבעוני על פרויקט scratch. |
-| B6 | שחזור משחזר ledger ו-snapshots כפי שנשמרו. לא ממציאים נאמן / held / J5. כסף קופון = שולם באתר + יתרה בעסק; פיזי לפי `platform_percent` ב-`order_items`. |
-| B7 | Vercel Instant Rollback משחזר **קוד**, לא DB. |
-| B8 | מיגרציות prod לפי RUNBOOK; שחזור לא מחליף מיגרציה שגויה בלי תוכנית. |
+| B1 | מקור אמת לנתונים = Supabase Postgres (פרוד). |
+| B2 | PITR מופעל בפרוד; RPO יעד ≤ 24 שע' (שאיפה: דקות לפי תוכנית). |
+| B3 | גיבוי לוגי יומי של הריפו (בלי `node_modules`/`.next`) לדסקטופ/ארכיון לפי CLAUDE. |
+| B4 | שחזור נבדק לפחות פעם ברבעון על פרויקט staging. |
+| B5 | אחרי restore: reconcile Cardcom + vouchers + wallet; לא מסמנים paid ידנית. |
+| B6 | שחזור לא ממציא מודל Escrow ישן. |
 
 ---
 
-## 1. שכבות גיבוי
+## 1. מה מגובים
 
-| שכבה | מה | RPO יעד |
-|---|---|---|
-| Daily backups (Pro) | גיבויי פלטפורמה | ≤ 24 שע' |
-| PITR (Pro) | שחזור לנקודת זמן | דקות (לפי תוכנית) |
-| Offsite `pg_dump` | CI / מכונה מאובטחת → אחסון מוצפן | ≤ 24 שע' |
-| R2 / Storage | מדיה; העתק/גרסאות נפרד | לפי באקט |
-
-יעד RTO לאירוע DB קשה: שעות (scratch + cutover env), אלא אם PITR באותו פרויקט מספיק.
-
----
-
-## 2. מה מגבים
-
-חובה: Postgres (סכמה + נתונים), Auth users דרך גיבוי/PITR של הפרויקט.  
-נפרד: סודות Vercel/Cardcom (לא ב-dump בטקסט גלוי).  
-אסור: dumps לא מוצפנים ב-Slack / Drive אישי / repo.
-
-מיקום offsite מומלץ (מחוץ ל-repo):
-
-```
-/Users/ofir/kenyonexpress-web/backups/
-```
-
----
-
-## 3. שחזור
-
-### 3.1 PITR באותו פרויקט
-
-1. `CHECKOUT_ENABLED=false`  
-2. בחירת timestamp לפני הנזק  
-3. שחזור במסך Supabase  
-4. smoke: login, קטלוג, הזמנת טסט ב-mock  
-5. תיעוד ב-`STATE.md`  
-
-### 3.2 Scratch / פרויקט חדש
-
-1. יצירת scratch  
-2. שחזור dump או PITR  
-3. מיגרציות חסרות לפי RUNBOOK בלבד  
-4. עדכון env ב-Preview קודם, ואז Production  
-5. תרגיל רבעוני חובה לפני הסתמכות  
-
-### 3.3 אסור
-
-- `supabase db reset` על prod  
-- מחיקת `schema_migrations` כדי "להריץ שוב"  
-- סימון הזמנות `paid` ידנית כתחליף ל-webhook אחרי שחזור  
-
----
-
-## 4. תרגיל DR רבעוני
-
-| בדיקה | PASS |
+| נכס | איך |
 |---|---|
-| שחזור dump/PITR ל-scratch | האפ עולה מול הפרויקט |
-| Login + קטלוג | עובד |
-| Checkout mock | לא שובר ledger ב-prod |
-| זמן כולל מתועד | ≤ יעד RTO |
+| DB | Supabase automatic + PITR |
+| Storage (R2/images) | לפי מדיניות באקט |
+| Secrets | לא בגיבוי tar; רק במנהל סודות |
+| קוד | git remote |
 
 ---
 
-## 5. Acceptance
+## 2. תרחישי DR
 
-- [ ] Pro + PITR לפני capture  
-- [ ] Offsite מוצפן מתוזמן  
-- [ ] Runbook שחזור + כיבוי checkout  
-- [ ] תרגיל רבעוני מתועד  
-- [ ] B6: שחזור בלי המצאת נאמן; שמירת snapshots  
+| תרחיש | פעולה |
+|---|---|
+| מחיקת טבלה בטעות | PITR לנקודה לפני |
+| אובדן פרויקט | restore לפרויקט חדש + עדכון env |
+| Cardcom/DB חוסר סנכרון | reconcile GetLpResult; לא trust webhook ישן בלבד |
 
 ---
 
-## Revision
+## 3. Acceptance
+
+- [ ] PITR מתועד  
+- [ ] תרגיל restore  
+- [ ] reconcile אחרי שחזור  
+- [ ] No Escrow ב-B6  
+
+---
+
+## 4. Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-12 | batch #33/50: ריענון BINDING (Pro, PITR, offsite, DR) |
+| 2026-08-06 | QA-PASS |
+| 2026-08-12 | batch-2 #33 pass-2 |
