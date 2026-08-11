@@ -149,3 +149,4 @@ Stack: Next.js App Router, **Serwist**, Web App Manifest, RTL עברית, brand 
 | 2026-07-30 | Serwist, manifest, offline, A2HS, Web Push first-party |
 | 2026-08-03 | ke-arch docs-lifecycle |
 | 2026-08-12 | batch #47/50: רענון BINDING עברית ממוקד על arch/docs-batch-2 |
+| 2026-08-12 | batch-2 #47 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
