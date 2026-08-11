@@ -114,6 +114,21 @@ IndicatorUrl בעת Create:
 
 אסור לשים את הסוד בלוג גולמי; אסור לחשוף ב-client.
 
+### 3.1 חוזה תשובת HTTP ל-Cardcom
+
+| מצב | HTTP | גוף טיפוסי | למה |
+|---|---|---|---|
+| UNIQUE replay | 200 | `{ ok: true, replay: true }` | מונע ספאם retry |
+| secret fail / parse fail | 200 | `{ ok: true }` | אחרי INSERT; לא לעודד brute על הסוד ב-retry אינסופי |
+| unknown_payment | 200 | `{ unknown_payment: true }` | לא לחשוף מ enumeration; reconcile ידני |
+| provider decline | 200 | `{ ok: true }` | עובד; payment failed |
+| GetLpResult fail זמני | 200 | `{ verified: false }` | cron יאסוף; ראה O4 |
+| amount_mismatch | 200 | `{ amount_mismatch: true }` | לא paid; P1 |
+| finalize OK / replay | 200 | `{ ok: true }` / לפי תוצאה | הצלחה |
+| קריסת תהליך / DB down לפני ack | 5xx | - | Cardcom ינסה שוב; dedup יטפל |
+
+אין 401/403 על סוד שגוי ב-MVP (מונע מיפוי קל של הסוד דרך קודי סטטוס). הסוד נשפט רק פנימית ב-`signature_valid`.
+
 ---
 
 ## 4. זרימת IndicatorUrl
@@ -168,6 +183,19 @@ Return URL (`reconcileOrderReturn`) = **אותו** חוזה GetLpResult+finalize
 
 כלל: **אין** "עיבוד מפצה" שמדלג על GetLpResult בגלל שנראה כפול.
 
+### 6.1 ציר זמן: כפילות
+
+```text
+t0  Cardcom charge OK
+t1  IndicatorUrl #1  → INSERT event E1 → GetLpResult → finalize → paid_at
+t2  IndicatorUrl #2 (אותו deal) → UNIQUE(E1) → 200 replay STOP
+t1' SuccessRedirect במקביל ל-t1 → GetLpResult → finalize replay (paid_at set)
+t3  IndicatorUrl אחרי paid עם deal id חדש בטעות → event E2 חדש
+       → מוצא payment כבר succeeded → לא דורס; finalize replay / no-op
+```
+
+אם `InternalDealNumber` חסר תמיד (`na`): שני POSTs לאותו LP מתנגשים באותו `external_event_id` וזה **רצוי** ל-dedup.
+
 ---
 
 ## 7. Double charge
@@ -199,6 +227,21 @@ Return URL (`reconcileOrderReturn`) = **אותו** חוזה GetLpResult+finalize
 
 QStash: wake ל-notification drain אחרי paid בלבד. לא מחליף אימות סליקה.
 
+### 8.1 חוזה פריט DLQ / reconcile (לוגי)
+
+כל פריט בתור התפעולי חייב:
+
+| שדה | משמעות |
+|---|---|
+| `payment_id` / `low_profile_id` | מזהה |
+| `order_id` | קישור |
+| `reason` | אחד מ: `verify_failed`, `amount_mismatch`, `unknown_payment`, `finalize_internal`, `stale_redirected`, … |
+| `first_seen_at` / `attempts` | לעצירת max |
+| `last_error` | מחרוזת קצרה בלי סודות |
+| `terminal_number` | MVP=env; עתידי=snapshot |
+
+אסור לפריט DLQ לסמן `paid` ישירות. רק: קריאה חוזרת ל-GetLpResult → finalize, או החלטה ידנית מתועדת ב-audit.
+
 ---
 
 ## 9. Multi-terminal
@@ -227,6 +270,17 @@ QStash: wake ל-notification drain אחרי paid בלבד. לא מחליף אי�
 - לאמת LP שנוצר במסוף A עם GetLpResult על מסוף B  
 - לקבל webhook ולסמן paid בלי התאמת terminal לצילום  
 - לערבב מסוף בדיקות עם מסוף פרוד באותו `payments` namespace  
+
+### 9.4 מטריצת סביבות / מסופים
+
+| סביבה | Terminal | Webhook secret | DB payments |
+|---|---|---|---|
+| local/mock | mock / `CARDCOM_USE_MOCK` | mock-secret | DB מקומי |
+| staging | מסוף בדיקות Cardcom | secret staging | DB staging |
+| production | מסוף פרוד יחיד (MVP) | secret prod | DB prod |
+| עתידי: ספק X | מסוף ספק (אחרי snapshot) | shared או per-terminal | אותו DB; סינון לפי snapshot |
+
+מעבר staging→prod = החלפת env מלאה, לא שני מסופים באותו deployment.
 
 ---
 
@@ -298,3 +352,4 @@ QStash: wake ל-notification drain אחרי paid בלבד. לא מחליף אי�
 |---|---|
 | 2026-08-12 | BINDING ראשון (batch-2 #2) |
 | 2026-08-12 | שכתוב לפי תבנית חובה: webhook כפול, multi-terminal, חלופות, DB, פתוחות |
+| 2026-08-12 | השלמה: חוזה HTTP, ציר זמן כפילות, סכמת פריט DLQ, מטריצת סביבות/מסופים |
