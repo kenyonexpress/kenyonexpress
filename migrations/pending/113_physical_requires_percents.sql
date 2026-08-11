@@ -22,7 +22,9 @@
 -- present. It says nothing about presence, which is the hole this file closes.
 --
 -- ============================================================================
--- BOTH CONSTRAINTS ARE ADDED **NOT VALID**. READ THIS BEFORE VALIDATING.
+-- WHAT THIS FILE ACTUALLY DOES: the physical half only, and **NOT VALID**.
+-- The coupon half is written out at the bottom and NOT executed -- it would
+-- break every coupon save today. Read that section before adding it.
 -- ============================================================================
 --
 -- MEASURED against production (ixvwfbuvfxxsjiywhbbb) on 2026-08-12, immediately
@@ -79,34 +81,77 @@ COMMENT ON CONSTRAINT products_physical_requires_percents ON public.products IS
   'by 113: 19 pre-existing rows had neither, and no value may be invented for '
   'them (AGENTS.md forbids a default). Enforced on all writes since.';
 
--- coupon_absolute: neither half may be set. The price paid on site is
--- coupon_price_ils, an absolute amount, not a share of anything.
-ALTER TABLE public.products
-  DROP CONSTRAINT IF EXISTS products_coupon_forbids_percents;
-
-ALTER TABLE public.products
-  ADD CONSTRAINT products_coupon_forbids_percents
-  CHECK (
-    commission_type <> 'coupon_absolute'::public.commission_type
-    OR (platform_percent IS NULL AND supplier_split_percent IS NULL)
-  ) NOT VALID;
-
-COMMENT ON CONSTRAINT products_coupon_forbids_percents ON public.products IS
-  'A coupon_absolute product has no split. Added NOT VALID by 113: all 15 '
-  'pre-existing coupon rows carried an inert 25.00/75.00 pair, and deleting '
-  'live values is not a migration''s call. Enforced on all writes since.';
-
 COMMIT;
 
--- VERIFY the constraints exist and are not yet validated (expect convalidated = f
--- for both):
+-- ============================================================================
+-- THE COUPON HALF IS NOT APPLIED. IT WOULD BREAK EVERY COUPON SAVE TODAY.
+-- ============================================================================
+--
+-- The other half of the rule this file was asked for is:
+--
+--   coupon_absolute  =>  platform_percent IS NULL AND supplier_split_percent IS NULL
+--
+-- It is correct as a model. A coupon's price on this site is coupon_price_ils,
+-- an absolute amount; there is no share of anything to store. It is written out
+-- below and deliberately left unexecuted, because the application contradicts
+-- it and the constraint would lose that argument at runtime.
+--
+-- src/lib/commerce/product-money.ts, interface ProductMoneyWrite:
+--
+--     platform_percent: number
+--     supplier_split_percent: number
+--
+-- Neither is optional and neither is nullable, and buildProductMoneyWrite ends
+-- by emitting both unconditionally for every product type:
+--
+--     platform_percent:       split.pair.platformPercent,
+--     supplier_split_percent: split.pair.supplierSplitPercent,
+--     commission_percent:     split.pair.platformPercent,
+--
+-- That single function is the write path behind the admin product form, for
+-- create and for edit alike. So a coupon product cannot currently be saved with
+-- NULLs in those columns -- which is exactly why all 15 live coupon rows carry
+-- an identical 25.00/75.00 pair. Adding the constraint would not clean that up;
+-- it would make every create and every edit of a coupon product fail with
+-- 23514, including edits to fields that have nothing to do with money. NOT
+-- VALID does not soften this: it skips the scan of existing rows, but it
+-- enforces on every INSERT and UPDATE from the moment it lands.
+--
+-- The ordering is therefore fixed, and it is application-first:
+--
+--   1. Change ProductMoneyWrite so platform_percent and supplier_split_percent
+--      are `number | null`, and have buildProductMoneyWrite emit NULL for both
+--      on the coupon_absolute branch. Note that `commission_percent` is NOT
+--      NULL in the live schema and is snapshotted onto the order line by
+--      src/lib/commerce/order-money-columns.ts, so it cannot simply follow them
+--      to NULL; decide what a coupon line's commission_percent means first.
+--   2. Cover it: a coupon write asserts NULL/NULL, a physical write still
+--      asserts the pair, and the settlement snapshot is unchanged.
+--   3. Repair the 15 live rows (query at the bottom of this file).
+--   4. Only then run the block below.
+--
+-- ALTER TABLE public.products
+--   DROP CONSTRAINT IF EXISTS products_coupon_forbids_percents;
+--
+-- ALTER TABLE public.products
+--   ADD CONSTRAINT products_coupon_forbids_percents
+--   CHECK (
+--     commission_type <> 'coupon_absolute'::public.commission_type
+--     OR (platform_percent IS NULL AND supplier_split_percent IS NULL)
+--   ) NOT VALID;
+--
+-- COMMENT ON CONSTRAINT products_coupon_forbids_percents ON public.products IS
+--   'A coupon_absolute product has no split; the site price is coupon_price_ils.';
+
+-- VERIFY the constraint exists and is not yet validated (expect exactly one row,
+-- convalidated = f. Two rows here means the coupon block above was run anyway):
 --
 --   SELECT conname, convalidated FROM pg_constraint
 --    WHERE conrelid = 'public.products'::regclass
 --      AND conname IN ('products_physical_requires_percents',
 --                      'products_coupon_forbids_percents');
 --
--- VERIFY enforcement is live on new writes (both must raise 23514; run inside a
+-- VERIFY enforcement is live on new writes (must raise 23514; run inside a
 -- transaction you roll back):
 --
 --   BEGIN;
@@ -114,7 +159,10 @@ COMMIT;
 --      WHERE commission_type = 'physical_percent' AND platform_percent IS NOT NULL;
 --   ROLLBACK;
 --
--- THE 34 ROWS TO REPAIR. This is the admin's work list, not a migration's:
+-- THE 34 ROWS TO REPAIR. This is the admin's work list, not a migration's.
+-- The 19 physical rows can be fixed today, in the product editor. The 15 coupon
+-- rows cannot be fixed at all until step 1 above lands, because the form has no
+-- way to write a NULL into those columns:
 --
 --   SELECT id, slug, name_he, type, commission_type,
 --          platform_percent, supplier_split_percent,
@@ -128,9 +176,12 @@ COMMIT;
 --             AND (platform_percent IS NOT NULL OR supplier_split_percent IS NOT NULL))
 --    ORDER BY commission_type, slug;
 --
--- ONCE THAT QUERY RETURNS 0 ROWS, and only then:
+-- ONCE THE 19 PHYSICAL ROWS ARE FIXED, and only then:
 --
 --   ALTER TABLE public.products VALIDATE CONSTRAINT products_physical_requires_percents;
+--
+-- And only after the coupon block above has been added, and its 15 rows cleared:
+--
 --   ALTER TABLE public.products VALIDATE CONSTRAINT products_coupon_forbids_percents;
 --
 -- VALIDATE takes only a SHARE UPDATE EXCLUSIVE lock, so it does not block reads

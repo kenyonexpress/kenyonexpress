@@ -1,6 +1,79 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-11 ערב (תור 9 שלבים: אחוזים דינמיים)
+Updated: 2026-08-12 (תור בן 14 goals; goal 1 סגור בקוד, לא הוחל על הפרודקשן)
+
+## המשך מ: תור בן 14 goals שהוזמן ב-12.08. הבא בתור: goal 2, ADMIN PRODUCT ENGINE
+
+goal 1 (LEGACY PERCENT PURGE) הושלם בקוד ונדחף. **הוא לא הוחל על הפרודקשן**,
+ושתי הסיבות למטה. שאר 13 ה-goals טרם התחילו. הם הוזמנו ברצף בסשן אחד ונרשמו
+כאן כתור, לפי הכלל "goal אחד בכל פעם".
+
+1. ✅ LEGACY PERCENT PURGE + CONSTRAINT HARDENING (קומיט `cb627e2`, נדחף)
+2. ADMIN PRODUCT ENGINE, ‏`feat/admin-core`
+3. STOREFRONT PIXEL-PERFECT, ‏`phase5/homepage`
+4. CHECKOUT COMPLETE, ‏`arch/checkout-cardcom`
+5. SUPPLIER PORTAL, ‏`feat/supplier-portal`
+6. SEARCH CORE V2, ‏`feat/search-core`
+7. NOTIFICATIONS WORKER
+8. REFUNDS END TO END
+9. INVOICES + ISRAEL VAT
+10. WALLET + CASHBACK + REFERRALS
+11. GROWTH JOBS
+12. PERFORMANCE + HARDENING PASS
+13. E2E REGRESSION SUITE
+14. LAUNCH READINESS
+15. INTEGRATION PASS (rebase + merge + tag v0.9.0-beta). אחרון בכוונה: הוא ממזג
+    את התוצרים של 2 עד 14, ומוחק ענפים, שזו עצירה לפי הכלל.
+
+### goal 1, מה נעשה ומה נחסם
+
+הקוד: ‏`suppliers` ו-`vendors` הם מעכשיו זהות ותשלומים בלבד. הוסרו
+‏`commission_percent` ו-`default_split_percent` מהטיפוסים המיוצרים (9 שורות,
+בתוך גבולות הבלוקים של שתי הטבלאות בלבד), ‏`vendors.commission_rate` איתם,
+‏`seed-catalogue.mjs` הפסיק לכתוב ‏`default_split_percent`, וטסט הזרעים שדרש
+אחוז פיצול לכל ספק הפוך עכשיו: אף ספק לא נושא מפתח שמכיל
+‏`percent|rate|split|commission`.
+
+‏`type-check` נקי, ‏`biome` נקי, ‏`gate:fees` נקי, ‏`pnpm build` עבר,
+‏`vitest` ‏2341/2341 ב-187 קבצים.
+
+**נמדד מול הפרודקשן לפני שנכתבה שורת SQL אחת:** אין ולו view או פונקציה אחת
+בכל סכימת `public` שתלויה בשלוש העמודות, כך שה-DROP לא צריך CASCADE.
+
+### שתי החלטות שהתקבלו לבד (goal 1)
+
+**‏1. ‏113 מוחל חצי, ולא במלואו.** ה-goal ביקש שני אילוצים: ל-`physical_percent`
+שני האחוזים חובה, ול-`coupon_absolute` שניהם חייבים להיות NULL. החצי הפיזי נכתב
+ומופעל. **החצי של הקופון נכתב בקובץ ולא מופעל**, כי הוא סותר את קוד האפליקציה:
+ב-
+
+```
+src/lib/commerce/product-money.ts
+```
+
+הממשק `ProductMoneyWrite` מגדיר `platform_percent: number` ו-
+‏`supplier_split_percent: number`, שניהם לא אופציונליים ולא nullable, ו-
+‏`buildProductMoneyWrite` פולט את שניהם לכל סוג מוצר כולל קופון. זה בדיוק למה כל
+‏15 שורות הקופון החיות נושאות 25.00/75.00 זהה. אילוץ כזה לא היה מנקה אותן, הוא
+היה מפיל **כל** שמירה של מוצר קופון ב-23514, גם עריכה של שדה שאינו כסף.
+‏`NOT VALID` לא מרכך את זה: הוא מדלג על סריקת השורות הקיימות ואוכף כל INSERT
+ו-UPDATE מרגע ההחלה. הסדר הנכון הוא אפליקציה קודם, והוא כתוב בתחתית 113.
+
+**‏2. שני האילוצים ‏`NOT VALID`, בלי backfill ובלי מחיקה.** ‏34 מתוך 80 המוצרים
+מפרים את הכלל היום: ‏19 פיזיים בלי אף אחד משני האחוזים, ו-15 קופונים עם צמד
+שאסור להם. לא בוצע backfill ל-19, כי כל מספר שהיה נכתב שם הוא בדיוק ה"ברירת
+מחדל גלובלית" ש-AGENTS.md אוסר. לא בוצעה מחיקה ל-15, כי זו כתיבה הרסנית על
+נתונים חיים. ‏34 השורות נשארו גלויות, עם שאילתת התיקון בתחתית 113.
+
+### מה חוסם את סיום goal 1
+
+1. **פריסה ל-Vercel לא אפשרית מכאן.** אין `.vercel/project.json`, אין
+   ‏`VERCEL_TOKEN`, ו-`vercel login` הוא אינטראקטיבי. ה-CLI עצמו זמין
+   (‏`pnpm dlx vercel@latest`, גרסה 58.9.0), הקישור והאישור הם שחסרים.
+2. **‏112 ו-113 לא הוחלו על הפרודקשן.** הרצת migration על פרודקשן היא אחת מארבע
+   העצירות המאושרות, וה-goal עצמו התנה את ההחלה ב"אחרי שהפריסה ירוקה", תנאי
+   שלא ניתן לקיים כרגע.
+
 
 ## המשך מ: תור ההקשחה של ה-DB (security + performance), קובץ 010 ואילך
 
