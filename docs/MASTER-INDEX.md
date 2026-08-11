@@ -126,7 +126,8 @@ docs/ONBOARDING-DEVELOPER.md
 | `ARCHITECTURE-COMMERCE.md` | כללי מסחר C1-C10. | QA-PASS (06.08) |
 | `ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md` | checkout/מימוש; יומן D1-D6. | QA-PASS (06.08) |
 | `CHECKOUT-OPTIMIZATION.md` | זרימת Cardcom, כשלים, retry + משפך/A/B. | PLAN (11.08) |
-| `SUBSCRIPTIONS-BILLING-SPEC.md` | מנויים + Cardcom Recurring (עתידי). | SPEC (11.08) |
+| `ARCHITECTURE-SUBSCRIPTIONS.md` | מנוי חודשי: Token, מחזור, retry, ביטול, צרכן. | BINDING (11.08) |
+| `SUBSCRIPTIONS-BILLING-SPEC.md` | סיכום מוצר מנויים (מפנה לארכיטקטורה). | SPEC (11.08) |
 | `GUEST-VS-MEMBER-STRATEGY.md` | מתי דוחפים הרשמה ומתי לא. | PLAN (10.08) |
 | `CARDCOM-ARCHITECTURE.md` | Cardcom (מחקר v11; קוד legacy). | BINDING + QA (07.08) |
 | `PAYOUT-ARCHITECTURE.md` | מסמך קנוני: TransferFromDigitalBank, statements, T+3, reconcile. | BINDING (11.08) |
@@ -354,3 +355,4 @@ docs/ROADMAP-V2.md
 | 2026-08-10 | `SUPPORT-SLA-POLICY.md` + `WHATSAPP-BUSINESS-SETUP.md`; אינדקס |
 | 2026-08-11 | `CHECKOUT-OPTIMIZATION.md`: Cardcom flow + failures + retry |
 | 2026-08-11 | `PAYOUT-ARCHITECTURE.md` BINDING מחדש (TransferFromDigitalBank) |
+| 2026-08-11 | `ARCHITECTURE-SUBSCRIPTIONS.md`: מנוי חודשי Cardcom Recurring |
