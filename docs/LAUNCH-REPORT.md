@@ -8,9 +8,9 @@ taken off that running server or off the live database, not read out of source.
 
 | # | Item | Verdict | Evidence |
 | --- | --- | --- | --- |
-| 1 | Homepage deal links | **NO-GO** | 8 of 32 deal cards answer 404 when clicked. Measured. |
+| 1 | Homepage deal links | GO, closed 2026-08-12 | 0 of 32 cards lead anywhere dead. Measured on the rebuilt server. |
 | 2 | Sitemap URLs | GO | 86 URLs, all 200. Measured. |
-| 3 | Internal links (off-sitemap) | GO, after #1 | 23 distinct hrefs, 15 ok, 8 broken — all 8 are #1. |
+| 3 | Internal links (off-sitemap) | GO | 23 distinct hrefs, 15 ok, 8 were #1 and are no longer emitted. |
 | 4 | robots.txt | GO | Live, absolute production origin, 12 sensitive paths disallowed. |
 | 5 | 404 page | GO | HTTP 404, RTL, Hebrew, branded. |
 | 6 | 500 pages | GO | `error.tsx` + `global-error.tsx`, both RTL Hebrew, `<html lang="he" dir="rtl">`. |
@@ -23,16 +23,18 @@ taken off that running server or off the live database, not read out of source.
 | 13 | Load test, 50 concurrent | GO on render, **UNVERIFIED** on payment | 1500 requests, 0 failures. Payment path not exercised. |
 | 14 | Test suite / typecheck / lint / build | GO | 2341/2341, all clean, build compiles. |
 
-**Verdict: NO-GO on one item (#1).** Everything else is either green or is
-green-on-config with an environment gap that this machine cannot close.
+**Verdict: no NO-GO left.** #1 closed 2026-08-12 (see below). Everything else is
+either green or green-on-config with an environment gap that this machine cannot
+close.
 
 ---
 
-## 1. NO-GO: eight homepage deal cards 404
+## 1. CLOSED: the homepage deal grid no longer offers a dead target
 
 The homepage renders 32 deal cards from `src/lib/ke-live-deals-data.ts`, a
-verbatim mirror of the old live site's deal grid. Eight of those slugs have no
-reachable product:
+verbatim mirror of the old live site's deal grid. Its hrefs were live's, and
+nothing ever checked that this catalogue answers them. Measured against
+production, the grid held three separate dead ends at once, not one:
 
 | Slug | State in production |
 | --- | --- |
@@ -45,23 +47,56 @@ reachable product:
 | `עוזרת-אישית-שירותי-משרד` | `draft`, no supplier, no percents |
 | `תספורת-לגבר-ילד-או-סידור-זקן-בפתח-תקווה` | `draft`, no supplier, no percents |
 
-This is already known: `ProductDealCard.tsx` names all eight in a comment and
-sets `prefetch={false}` on the links so the grid stops firing 404 server renders
-on scroll. That fix addressed the *cost* of the dead links. It did not make them
-not dead — a customer who clicks one still lands on the 404 page.
+**Two more, found while closing this one.**
 
-Six of the eight are `draft` with no `supplier_id` and no `platform_percent`,
-which makes them a subset of the same 19 rows that migration 113 is waiting on.
-They are unpublishable as they stand: the bulk-publish gate refuses them.
+*Four dead category links, invisible to the 404 test.* Four cards carry
+`category: general` and there is no `general` category. `/category/general`
+answers **HTTP 200** and streams the not-found body, because the category
+route's `notFound()` fires inside a Suspense boundary after the shell is
+committed. The visitor lands on "הדף שחיפשתם לא נמצא"; the response line says
+200. `home.spec.ts` "reaching the footer costs no 404s" watches statuses, so it
+could never have reported these. One of the four, `אוזניות-איירפודס-3`, has a
+perfectly good product link — counting dead product slugs alone missed it.
 
-Nothing was changed here, on purpose. The grid is pixel-matched to
-`refs/ke_live_singlefile.html` under a project rule, so removing cards is a
-decision about that rule, not a bug fix. Two ways to close it:
+*All 32 add-to-cart buttons were dead.* The fixture carries fixture ids
+(`ke-deal-9132`), not product uuids, and `addToCartSchema` validates
+`product_id` as a uuid. Every button in the grid failed validation before it
+reached the cart, on every card, including the 24 whose product is live.
 
-- Import or complete the six draft products (supplier + both percents), and drop
-  the two that are not merchandise from `KE_LIVE_DEALS`. Restores 30 of 32.
-- Or filter `KE_LIVE_DEALS` at render time to slugs that resolve, accepting a
-  grid shorter than live until the data lands.
+### What was done
+
+`src/lib/deal-targets.ts` resolves the fixture against the catalogue behind
+`use cache` + `cacheTag(CATALOGUE_TAG)` — one query for the 32 slugs, one for
+the 8 category slugs — and returns, per card: the real uuid, whether the
+product page renders, whether the category page renders. `ProductDealCard`
+renders a link only where there is something to link to, and the add-to-cart
+button now carries the uuid, so it works.
+
+**No card was dropped, and the pixel gate did not move: `home` measures 11.03%
+before and after**, three runs, same server. A dead target loses its `href` and
+keeps its box, its image and its price; `<span>` and `<a>` measure identically
+here because every rule that paints the card is on `.p_con__*`, and the
+disabled cart button keeps the grey circle (`.p_con .atc a, .p_con .atc button`
+styles both). Dropping 8 of 32 cards would have taken the grid from 8 rows to 6
+and blown the 11% rule, which is why the report's first option was not taken.
+
+Measured on the rebuilt server: 0 links to the 8 dead slugs, 0 links to
+`/category/general`, 32 cards still in the DOM, 23 working add-to-cart buttons,
+8 disabled ones, 1 "צפה במוצר" fallback (`restaurants-meat-2`, which live shows
+without a price).
+
+**The data gap itself is untouched and still open.** The six `draft` rows are a
+subset of the 19 that migration 113 waits on, and they are unpublishable from
+here: both percentages are per product and the admin's to set, per the
+dynamic-percentages rule. When those six are completed and the `general`
+category exists, the cards relink themselves on the next catalogue write — the
+resolution is cached under `CATALOGUE_TAG`, which every admin write path
+already invalidates. Nothing needs to be edited here for that to happen.
+
+A read that FAILS is not a dead link: if the catalogue cannot be reached, every
+card keeps its links and only loses its cart button, which is exactly how the
+grid behaved before. One unreachable Supabase at build time may not strip the
+homepage of its links.
 
 ---
 

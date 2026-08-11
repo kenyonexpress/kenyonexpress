@@ -1,4 +1,5 @@
 import AddToCartButton from '@/components/cart/AddToCartButton'
+import { type DealTarget, UNKNOWN_DEAL_TARGET } from '@/lib/deal-targets'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -57,7 +58,14 @@ function CartPlusIcon() {
   )
 }
 
-export default function ProductDealCard({ product }: { product: Product }) {
+export default function ProductDealCard({
+  product,
+  target = UNKNOWN_DEAL_TARGET,
+}: {
+  product: Product
+  /** Measured reachability of this card's links; see lib/deal-targets.ts. */
+  target?: DealTarget
+}) {
   const thumb =
     Array.isArray(product.images) && typeof product.images[0] === 'string'
       ? (product.images[0] as string)
@@ -68,72 +76,97 @@ export default function ProductDealCard({ product }: { product: Product }) {
   const hasDiscount = old != null && old > price
   const discountPct = hasDiscount ? Math.round((1 - price / old) * 100) : 0
   const outOfStock = product.stock_quantity === 0
-  const canAdd = product.kenyon_price != null && !outOfStock
+  // The uuid is the gate, not the fixture id: `addToCartSchema` rejects
+  // `ke-deal-9132` before the action runs, so a button without a resolved
+  // product id is a button that can only fail.
+  const addableId =
+    product.kenyon_price != null && !outOfStock && target.productId !== null
+      ? target.productId
+      : null
+
+  const thumbImage = thumb ? (
+    <Image
+      src={thumb}
+      alt={product.name_he}
+      width={400}
+      height={245}
+      sizes={DEAL_IMAGE_SIZES}
+      quality={50}
+      // `.p_con__image` pins the height to 245px and leaves the width auto,
+      // which is live's aspect. No inline style: see the note in
+      // ProductCard.tsx - an inline `height:auto` beats the class and took all
+      // 31 homepage thumbs off the pin.
+      className="p_con__image"
+    />
+  ) : null
 
   return (
     <article className="p_con">
-      {product.category && (
-        <Link href={`/category/${product.category.slug}`} className="p_con__category">
-          {product.category.name_he}
-        </Link>
-      )}
+      {product.category &&
+        (target.categoryReachable ? (
+          <Link href={`/category/${product.category.slug}`} className="p_con__category">
+            {product.category.name_he}
+          </Link>
+        ) : (
+          // Four cards say `general` and there is no such category, so this
+          // link landed on the not-found page - at HTTP 200, because the
+          // category route's `notFound()` fires inside a Suspense boundary.
+          // The label is live's and stays; only the href goes. Same element
+          // box: `.p_con__category` sets every rule that paints it, and
+          // neither <a> nor <span> brings a box of its own.
+          <span className="p_con__category">{product.category.name_he}</span>
+        ))}
 
       {/*
-        `prefetch={false}` on every product link in this card, and it is a fix
-        with a number behind it.
+        A DEAD SLUG NOW LOSES ITS LINK, AND KEEPS EVERYTHING ELSE.
 
         This card renders ONLY `KE_LIVE_DEALS` (via `DealsOfTheDay`, its single
         caller), which is a verbatim mirror of the live site's 32 deal hrefs -
         the file says so at the top, "including live's own mismatched slugs".
-        Measured against this catalogue: **8 of those 32 slugs have no product
-        here at all** (`reverse-withdrawal-payment`, `קופון-טסט`,
-        `צימר-מאסטר-copy-copy`, `מלון-4-כוכבים-פלוס-ארוחת-בוקר`,
-        `מלון-5-כוכבים-בטבריה`, `ארוחת-בוקר-זוגית-בקפה-קפה`,
-        `עוזרת-אישית-שירותי-משרד`,
-        `תספורת-לגבר-ילד-או-סידור-זקן-בפתח-תקווה`), and all 8 answer 404.
+        Measured against this catalogue, 8 of those 32 slugs have no reachable
+        product and answered 404 to anyone who clicked. The earlier fix set
+        `prefetch={false}` so the grid stopped firing 404 server renders on
+        scroll; that addressed the COST of the dead links and left them dead.
 
-        Next prefetches a Link when it scrolls into view, so a quarter of this
-        grid fired a full server render that came back 404 on every homepage
-        view. That was invisible while the product page was a PPR shell: a
-        prefetch got the static frame with a 200 and never ran the body that
-        calls `notFound()`. Now that the page is fully static per slug ([46]),
-        the prefetch resolves the real thing and the 404 surfaces - which is
-        how `home.spec.ts` "reaching the footer costs no 404s" caught it.
+        `target` (lib/deal-targets.ts) is the measurement, taken from the
+        catalogue rather than assumed, and an unreachable slug renders as plain
+        markup: no href to follow, no 404 to land on. The card itself is
+        untouched, because the grid is pixel-matched to `refs/` under a project
+        rule - dropping 8 cards would take the homepage from 8 rows to 6 and
+        blow the 11% gate. `<span>` and `<a>` measure identically here: every
+        rule that paints this card is on `.p_con__*`, and `.p_con__image-link`
+        carries its own `display:flex`.
 
-        The links stay, because the cards are pixel-matched to live and this is
-        a DATA gap (those products are not imported yet - recorded in
-        GO-LIVE.md), not a markup one. Same shape as the `built: false` footer
-        links from [21]: the href remains, the speculative fetch does not.
+        `prefetch={false}` stays on the links that remain. Its first reason is
+        gone with the 404s, but the second stands: this is 24 links in one
+        viewport-height grid, and prefetching all of them on scroll buys a
+        speculative render each for a page a visitor opens one of.
       */}
       <div className="p_con__title-wrap">
-        <Link href={`/product/${product.slug}`} className="hover:underline" prefetch={false}>
-          <h2 className="p_con__title">{product.name_he}</h2>
-        </Link>
+        {target.productReachable ? (
+          <Link href={`/product/${product.slug}`} className="hover:underline" prefetch={false}>
+            <h2 className="p_con__title">{product.name_he}</h2>
+          </Link>
+        ) : (
+          <span className="hover:underline">
+            <h2 className="p_con__title">{product.name_he}</h2>
+          </span>
+        )}
       </div>
 
       <div className="p_con__image-wrap relative">
-        <Link
-          href={`/product/${product.slug}`}
-          className="p_con__image-link"
-          aria-label={product.name_he}
-          prefetch={false}
-        >
-          {thumb ? (
-            <Image
-              src={thumb}
-              alt={product.name_he}
-              width={400}
-              height={245}
-              sizes={DEAL_IMAGE_SIZES}
-              quality={50}
-              // `.p_con__image` pins the height to 245px and leaves the width
-              // auto, which is live's aspect. No inline style: see the note in
-              // ProductCard.tsx - an inline `height:auto` beats the class and
-              // took all 31 homepage thumbs off the pin.
-              className="p_con__image"
-            />
-          ) : null}
-        </Link>
+        {target.productReachable ? (
+          <Link
+            href={`/product/${product.slug}`}
+            className="p_con__image-link"
+            aria-label={product.name_he}
+            prefetch={false}
+          >
+            {thumbImage}
+          </Link>
+        ) : (
+          <span className="p_con__image-link">{thumbImage}</span>
+        )}
 
         {hasDiscount && (
           <div className="p_con__badge">
@@ -164,10 +197,24 @@ export default function ProductDealCard({ product }: { product: Product }) {
           </div>
         )}
 
+        {/*
+          Three states, and the middle one is why `canAdd` moved.
+
+          `product.id` here is the FIXTURE id (`ke-deal-9132`), not a uuid, and
+          `addToCartSchema` validates `product_id` as a uuid - so every one of
+          these 32 buttons failed validation before it reached the cart. The
+          button now carries `target.productId`, the real row, and works.
+
+          Without a resolved uuid the control falls back to the link it always
+          used for unbuyable cards, and when the slug itself is dead there is
+          nowhere left to send anyone: a disabled button, which the CSS paints
+          as the same grey circle (`.p_con .atc a, .p_con .atc button`), so the
+          card measures the same as the other 31.
+        */}
         <div className="atc shrink-0">
-          {canAdd ? (
+          {addableId !== null ? (
             <AddToCartButton
-              productId={product.id}
+              productId={addableId}
               productName={product.name_he}
               priceAgorot={Math.round(Number(product.kenyon_price ?? 0) * 100)}
               disabled={outOfStock}
@@ -176,10 +223,19 @@ export default function ProductDealCard({ product }: { product: Product }) {
             >
               <CartPlusIcon />
             </AddToCartButton>
-          ) : (
+          ) : target.productReachable ? (
             <Link href={`/product/${product.slug}`} aria-label="צפה במוצר" prefetch={false}>
               <CartPlusIcon />
             </Link>
+          ) : (
+            <button
+              type="button"
+              disabled
+              aria-label={`${product.name_he} אינו זמין כעת`}
+              className="flex h-full w-full items-center justify-center"
+            >
+              <CartPlusIcon />
+            </button>
           )}
         </div>
       </div>
