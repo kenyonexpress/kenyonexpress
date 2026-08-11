@@ -73,6 +73,21 @@ docs/SLA-MONITORING.md
 
 ### 3.3 אחרי
 
+שאילתות אימות מינימום (שירות-role / SQL editor):
+
+```sql
+-- הזמנות אחרונות מול חלון האירוע
+SELECT count(*), status FROM orders
+WHERE created_at > now() - interval '2 days' GROUP BY 2;
+
+-- קופונים: אין issued בלי order paid תואם (ספירה גסה)
+SELECT status, count(*) FROM vouchers GROUP BY 1;
+
+-- settlement פיזי
+SELECT kind, count(*) FROM settlement_events
+WHERE occurred_at > now() - interval '7 days' GROUP BY 1;
+```
+
 - [ ] Smoke: login, קטלוג, checkout כבוי או sandbox  
 - [ ] השוואת orders/payments מול Cardcom לחלון החסר  
 - [ ] עדכון STATE + postmortem  
@@ -134,3 +149,4 @@ pg_dump "$DATABASE_URL" | gzip | openssl enc -aes-256-cbc -out backup-YYYYMMDD.s
 | תאריך | שינוי |
 |---|---|
 | 2026-08-11 | Runbook PITR + offsite dump + scratch restore |
+| 2026-08-11 | שאילתות אימות אחרי PITR |
