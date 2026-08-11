@@ -1287,3 +1287,10 @@ ke-arch
 - refs/electro-design-discrepancies.md (`8be1d48`) : 20 discrepancies
 - Playwright headless (MCP browser blocked); DESIGN named file missing
 - MASTER-INDEX + STATE updated
+
+### 2026-08-11 : notifications + SEO + map expand
+- refs/electro-components-map.md expand DealsRow/BrandsCarousel (`609807c`)
+- docs/ARCHITECTURE-NOTIFICATIONS.md (`6519764`)
+- docs/ARCHITECTURE-SEO-PERFORMANCE.md (`977b613`)
+- docs/MASTER-INDEX.md (`d1b13d0`)
+- shell intent: ke-arch existing arch/docs-lifecycle (not ~/workspace -b)
