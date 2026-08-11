@@ -2,7 +2,7 @@
 
 אינדקס כל מסמכי הארכיטקטורה ב-`docs/` עם שורת תקציר לכל אחד.
 
-Status: **BINDING (index)** · עודכן: 2026-08-11 (queue onboarding/refunds/trust/launch) · QA: PASS (final, topic-sorted + DEPRECATED)
+Status: **BINDING (index)** · עודכן: 2026-08-11 (MOBILE-APP + TESTING-QA + OBSERVABILITY) · QA: PASS (final, topic-sorted + DEPRECATED)
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -250,7 +250,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `RUNBOOK-PRODUCTION.md` | Deploy, rollback, **MCP migrations**. | QA-PASS (#5) |
 | `RUNBOOK-LAUNCH-DAY.md` | יום השקה. | ACTIONABLE (10.08) |
 | `LAUNCH-WEEK-RUNBOOK.md` | שבוע השקה D-2 עד D+7: שערי עצירה ותפעול. | RUNBOOK (11.08) |
-| `ARCHITECTURE-OBSERVABILITY.md` | Sentry / לוגים. | QA-PASS (#9) |
+| `ARCHITECTURE-OBSERVABILITY.md` | Sentry boundaries לפי route group, לוגים מובנים, התראות webhook Cardcom, דשבורד reconciliation על `settlement_events`, uptime. | BINDING + QA-PASS (#9) (11.08) |
 | `SLA-MONITORING.md` | זמינות + מי מקבל התראה. | RUNBOOK (10.08) |
 | `INCIDENT-PLAYBOOKS.md` | 6 תקריות תפעול. | RUNBOOK (10.08) |
 | `INCIDENT-RESPONSE-RUNBOOK.md` | מסגרת IR: SEV, kill switch, postmortem. | RUNBOOK (11.08) |
@@ -275,7 +275,7 @@ docs/ONBOARDING-DEVELOPER.md
 
 | מסמך | תקציר | סטטוס |
 |---|---|---|
-| `ARCHITECTURE-MOBILE-APP.md` | Expo על שכבת API משותפת (session-only), RTL, push, ארנק קופונים אופליין (SecureStore/QR). | BINDING (11.08) |
+| `ARCHITECTURE-MOBILE-APP.md` | Expo super-app על backend Next משותף: Auth deep links, `push_tokens`, סריקת ספק+PIN (`115`), מטמון קופונים אופליין, RTL. | BINDING (11.08) |
 | `ARCHITECTURE-MOBILE-SUPERAPP.md` | תכנון סופר-אפ. | DESIGN |
 | `ARCHITECTURE-PWA.md` | manifest / SW / push. | BINDING |
 | `ARCHITECTURE-APP-STORE-LAUNCH.md` | חנויות אפ. | QA-PASS (#15) |
@@ -289,6 +289,7 @@ docs/ONBOARDING-DEVELOPER.md
 | מסמך | תקציר | סטטוס |
 |---|---|---|
 | `TESTING-STRATEGY.md` | פירמידה + שערי merge (100% money/redeem). | BINDING (10.08) |
+| `ARCHITECTURE-TESTING-QA.md` | פירמידה מונורפו: Vitest, integration על Supabase branch, Playwright E1–E4, CI matrix, coverage על קבצים ששונו. | BINDING (11.08) |
 | `ARCHITECTURE-TESTING-CICD.md` | פירוט CI/CD וטסטים. | QA-PASS (06.08) |
 | `CODE-REVIEW-CHECKLIST.md` | צ'קליסט PR: agorot, RLS, RTL, compare.mjs. | BINDING (10.08) |
 
@@ -372,3 +373,4 @@ docs/ROADMAP-V2.md
 | 2026-08-11 | תור onboarding/refunds/trust/launch: הסכם פר מוצר, disputes, trust&safety, שערי השקה; אינדקס |
 | 2026-08-11 | refs electro 380/768 + components-map + design-discrepancies; אינדקס |
 | 2026-08-11 | NOTIFICATIONS (outbox/push/in-app) + SEO-PERFORMANCE (hreflang/CWV 380/768/seo_redirects); אינדקס |
+| 2026-08-11 | MOBILE-APP + TESTING-QA + OBSERVABILITY (audit→target→migration); תקצירי אינדקס |
