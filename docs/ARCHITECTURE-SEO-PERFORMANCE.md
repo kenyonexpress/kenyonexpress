@@ -100,6 +100,27 @@ src/lib/seo/json-ld.ts → buildProductJsonLd
 
 מחיר ב-JSON-LD = מחיר שהקופה גובה.
 
+דוגמה מקוצרת (קופון):
+
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "inLanguage": "he-IL",
+  "name": "ארוחה זוגית",
+  "description": "קופון לארוחה זוגית. משלמים באתר; יתרה בעסק.",
+  "offers": {
+    "@type": "Offer",
+    "priceCurrency": "ILS",
+    "price": "149.00",
+    "availability": "https://schema.org/InStock",
+    "url": "https://kenyonexpress.co.il/product/example"
+  }
+}
+```
+
+`offers.price` = מחיר האתר (agorot/100 לתצוגה), לא face.
+
 ---
 
 ## 3. Sitemap לפי קטגוריה
@@ -215,3 +236,4 @@ revalidateTag('home')
 | 2026-08-03 | ISR / sitemap / schema / CWV |
 | 2026-08-10 | metadata, JSON-LD, OG, תקציב פר דף, Meili מול Google |
 | 2026-08-11 | sitemap לפי קטגוריה, קישור PERFORMANCE-BUDGET, דפי SEO מול Meili, הערת Next docs |
+| 2026-08-11 | דוגמת JSON-LD Product+Offer בעברית (מחיר אתר) |
