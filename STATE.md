@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-11 (docs queue 35-38 complete)
+Updated: 2026-08-11 (docs queue notifications/seo/mobile/analytics + MASTER-INDEX)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,14 +8,14 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-תור docs 35-38 (commit+push לכל מסמך):
-35 ARCHITECTURE-SUBSCRIPTIONS (+ ledger per cycle)
-36 SEED-SUPPLIERS-SPEC (WP→suppliers, geo/hours/WA)
-37 ADMIN-PRODUCT-EDITOR-SPEC (3 modes RTL)
-38 ARCHITECTURE-WALLET-INTEGER (money-integer + SEC-WALLET)
+תור docs סגור (commit+push לכל מסמך) + עדכון MASTER-INDEX:
+1 ARCHITECTURE-NOTIFICATIONS (Resend RTL, CF Workers bus, SMS, preferences, spam law)
+2 ARCHITECTURE-SEO-PERFORMANCE (metadata, schema.org, sitemap/category, CWV, ISR, Meili)
+3 ARCHITECTURE-MOBILE-APP (Expo shared API, RTL, push, offline coupon wallet)
+4 ARCHITECTURE-ANALYTICS (events, supplier KPIs, admin revenue by percent)
 
 ## In Progress
-nothing
+nothing (closed queue)
 
 ## Blocking Issues
 - השקה: 10 דילי seed עדיין missing מול `suppliers` בפרוד
@@ -29,6 +29,7 @@ nothing
 /Users/ofir/kenyonexpress-web/ke-arch
 
 ## החלטות שהתקבלו אוטומטית
+- **2026-08-11 notifications bus:** `ARCHITECTURE-NOTIFICATIONS.md` מחייב Cloudflare Worker כ-drain/bus ל-outbox (retry+DLQ); Next cron מותר כגשר זמני בלבד. ערוצים: Resend RTL, SMS ישראל, push לאפ עתידי; preferences + חוק ספאם ישראלי.
 - **2026-08-11 wallet-integer:** תכנית cutover ב-`ARCHITECTURE-WALLET-INTEGER.md`; SEC-WALLET לפני rename; אסור להריץ 059/PENDING בלי cutover קוד.
 - **2026-08-11 subscriptions:** `ARCHITECTURE-SUBSCRIPTIONS.md` הוא המקור המחייב למנוי חודשי; לא חלק מ-soft-open קופונים; דורש עו״ד לניסוח ביטול לפני פרוד.
 - **2026-08-11 תור סגור PAYOUT+GO-LIVE:** `PAYOUT-ARCHITECTURE.md` נשאר BINDING ל-TransferFromDigitalBank; `VENDOR-PAYOUT-SPEC` מיושר (CSV=fallback). החלטות CSV-בלבד מ-10.08 / Phase-B-as-MVP למטה **נדחות** לטובת המסמך הקנוני.
@@ -1081,6 +1082,23 @@ default, והטופס לא שלח אף אחת מהן. כל `insert` של מוצ�
 ---
 
 ## History
+
+### 2026-08-11: docs queue notifications / SEO / mobile / analytics
+- Worktree
+ke-arch
+branch
+arch/docs-lifecycle
+: רענון BINDING ל-
+ARCHITECTURE-NOTIFICATIONS.md
+,
+ARCHITECTURE-SEO-PERFORMANCE.md
+,
+ARCHITECTURE-MOBILE-APP.md
+,
+ARCHITECTURE-ANALYTICS.md
++ עדכון
+MASTER-INDEX.md
+. Docs only.
 
 ### 2026-08-02: feat/seo-performance (SEO + Performance)
 - Branch

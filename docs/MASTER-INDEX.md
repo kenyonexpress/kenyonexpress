@@ -2,7 +2,7 @@
 
 אינדקס כל מסמכי הארכיטקטורה ב-`docs/` עם שורת תקציר לכל אחד.
 
-Status: **BINDING (index)** · עודכן: 2026-08-10 · QA: PASS (final, topic-sorted + DEPRECATED)
+Status: **BINDING (index)** · עודכן: 2026-08-11 · QA: PASS (final, topic-sorted + DEPRECATED)
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -171,7 +171,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `ARCHITECTURE-SEARCH.md` | חיפוש + DLQ. | BINDING |
 | `ARCHITECTURE-SEARCH-UX.md` | Meilisearch, השלמות, כתיב. | QA-PASS (#4) |
 | `ARCHITECTURE-CATALOG-SEARCH-SEO.md` | קטלוג/דירוג בלי מרג'ין. | QA-PASS (06.08) |
-| `ARCHITECTURE-SEO-PERFORMANCE.md` | metadata, JSON-LD, CWV, ISR. | BINDING (10.08) |
+| `ARCHITECTURE-SEO-PERFORMANCE.md` | metadata Next, schema.org Product+Offer עברית, sitemap לפי קטגוריה, CWV, ISR, Meili מול Google. | BINDING (11.08) |
 | `ARCHITECTURE-SEO.md` | תכנון SEO. | DESIGN |
 | `ARCHITECTURE-GROWTH-SEO.md` | צמיחה + SEO. | QA-PASS (06.08) |
 | `ARCHITECTURE-PERFORMANCE.md` | ביצועים. | DESIGN |
@@ -210,7 +210,7 @@ docs/ONBOARDING-DEVELOPER.md
 
 | מסמך | תקציר | סטטוס |
 |---|---|---|
-| `ARCHITECTURE-ANALYTICS.md` | משפך דיל→מימוש. | QA-PASS (#2) |
+| `ARCHITECTURE-ANALYTICS.md` | סכימת אירועים, KPIs ספק, דוחות הכנסה אדמין לפי platform_percent. | QA-PASS (#2) · רענון 11.08 |
 | `ARCHITECTURE-ANALYTICS-BI.md` | אחסון אירועים / BI. | QA-PASS (06.08) |
 | `ANALYTICS-SPEC.md` | אירועים, GA4/Meta, Consent, KPI מוצר. | BINDING (11.08) |
 | `ARCHITECTURE-REFERRAL.md` | חבר מביא חבר (מחייב). | QA-PASS (#8) |
@@ -219,7 +219,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `SEASONAL-CAMPAIGNS.md` | באנרים, קולקציות, countdown. | PLAN (10.08) |
 | `MARKETING-LAUNCH.md` | שיווק השקה + UTM. | PLAN (10.08) |
 | `MARKETING-LAUNCH-PLAN.md` | תוכנית השקה שיווקית: קהל, תקציב, שערי עצירה. | PLAN (11.08) |
-| `ARCHITECTURE-NOTIFICATIONS.md` | paid/redeem/abandon + DLQ. | BINDING (10.08) |
+| `ARCHITECTURE-NOTIFICATIONS.md` | Resend RTL, CF Workers bus, SMS IL, push, preferences, חוק ספאם. | BINDING (11.08) |
 | `WHATSAPP-BUSINESS-SETUP.md` | הקמת WhatsApp Business API + תבניות. | GUIDE (10.08) |
 | `WHATSAPP-COMMERCE-SPEC.md` | מסחר/תמיכה ב-WA: opt-in, תבניות, בלי סליקה בצ׳אט. | SPEC (11.08) |
 | `ARCHITECTURE-NOTIFICATIONS-MARKETING.md` | שיווק התראות. | DESIGN |
@@ -267,7 +267,7 @@ docs/ONBOARDING-DEVELOPER.md
 
 | מסמך | תקציר | סטטוס |
 |---|---|---|
-| `ARCHITECTURE-MOBILE-APP.md` | Expo, deep links, סריקה. | BINDING (10.08) |
+| `ARCHITECTURE-MOBILE-APP.md` | Expo על שכבת API משותפת, RTL, push, ארנק קופונים אופליין. | BINDING (11.08) |
 | `ARCHITECTURE-MOBILE-SUPERAPP.md` | תכנון סופר-אפ. | DESIGN |
 | `ARCHITECTURE-PWA.md` | manifest / SW / push. | BINDING |
 | `ARCHITECTURE-APP-STORE-LAUNCH.md` | חנויות אפ. | QA-PASS (#15) |
