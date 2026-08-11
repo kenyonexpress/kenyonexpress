@@ -115,7 +115,7 @@ RLS: SELECT/UPDATE admin-only; service role לקריאה ב-drain/cron.
 
 ## 4. מקרי קצה
 
-| # | מצb | התנהגות |
+| # | מצב | התנהגות |
 |---|---|---|
 | E1 | `CHECKOUT_ENABLED` unset | fail-closed: disabled |
 | E2 | `CHECKOUT_ENABLED=false` mid-payment | webhook/idempotency מסיים; beginCheckout חדש חסום |

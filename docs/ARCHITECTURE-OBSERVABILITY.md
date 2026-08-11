@@ -25,7 +25,7 @@ supabase/migrations/094_settlement_events.sql
 
 ---
 
-## 0. החלטה (OBS1–OBS9)
+## 0. החלטה (OBS1 עד OBS9)
 
 | # | הכרעה |
 |---|---|
@@ -155,8 +155,8 @@ Timeout להתראה ≤ 4s. `ALERTS_ENABLED=false` בטסטים.
 
 | בדיקה | תדירות יעד | קריטריון |
 |---|---|---|
-| `GET /` | 1–5 דק' | HTTP 200 |
-| `GET /api/health` | 30–60 שנ' | 200 + `ok: true` |
+| `GET /` | 1 עד 5 דק' | HTTP 200 |
+| `GET /api/health` | 30 עד 60 שנ' | 200 + `ok: true` |
 | Deep cron health | לפי לוח | תלויות; לא מפייג על `not_configured` |
 | Cardcom | אין probe שיוצר עסקה | config + stranded/reconcile |
 

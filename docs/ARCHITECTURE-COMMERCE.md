@@ -1,6 +1,6 @@
 # ארכיטקטורה: מסחר (Commerce)
 
-סיכום מחייב של כללי המסחר C1–C10 (ו-C11א), מיושר ל-**No Escrow**, עם הערות סכימה שימושיות וסימון פער DDL.
+סיכום מחייב של כללי המסחר C1 עד C10 (ו-C11א), מיושר ל-**No Escrow**, עם הערות סכימה שימושיות וסימון פער DDL.
 
 Status: **BINDING** · עודכן: 2026-08-12  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #6/50  
@@ -29,7 +29,7 @@ docs/ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md
 
 ---
 
-## 0. החלטה (C1–C10 + C11א)
+## 0. החלטה (C1 עד C10 + C11א)
 
 | # | הכרעה מחייבת |
 |---|---|
@@ -241,7 +241,7 @@ issued → redeemed | expired | refunded
 | O3 | האם `cart_items` מנורמל (026) חובה לפני launch | INVENTORY / CART |
 | O4 | TTL מדויק ל-order `pending` | CHECKOUT-FLOW O2 |
 | O5 | מדיניות קרדיט ארנק לקופון שפג (C6) | LEGAL + CASHBACK |
-| O6 | מנויים / geo: האם C1–C10 חלים אחיד | SUBSCRIPTIONS, GEO |
+| O6 | מנויים / geo: האם C1 עד C10 חלים אחיד | SUBSCRIPTIONS, GEO |
 | O7 | backfill legacy `commission_percent` → snapshot חדש | תאימות בלבד; לא ידית חדשה |
 
 עודכן: 2026-08-12. אין להסתיר פערים אלה כסגורים.
@@ -250,7 +250,7 @@ issued → redeemed | expired | refunded
 
 ## 7. Acceptance
 
-- [ ] C1–C10 + C11א מנוסחים במפורש; אין held-until-redeem לספק על קופון
+- [ ] C1 עד C10 + C11א מנוסחים במפורש; אין held-until-redeem לספק על קופון
 - [ ] קישור חי ל-CHECKOUT-FLOW, PRICING-RULES, CONTRADICTIONS
 - [ ] קופון: `supplier_due` פלטפורמה = 0; פיזי: fee + supplier = line מ-snapshot
 - [ ] פער ILS numeric (026) מול אגורות integer מסומן; אין הנחיה להחיל 026 כפי שהיא
@@ -266,7 +266,7 @@ issued → redeemed | expired | refunded
 | תאריך | שינוי |
 |---|---|
 | 2026-07-08 | תכנון commerce + טיוטת 026 |
-| 2026-08-06 | QA: יישור C1–C10; הסרת באנר STALE שגוי; סימון פער ILS |
+| 2026-08-06 | QA: יישור C1 עד C10; הסרת באנר STALE שגוי; סימון פער ILS |
 | 2026-08-07 | QA: `voucher_redemptions` חי מול טיוטה |
 | 2026-08-12 | batch #6/50: כתיבה מחדש BINDING, No Escrow מלא |
 | 2026-08-12 | batch-2 pass-3: DOCS-TEMPLATE-BINDING (חלופות, מקרי קצה, פתוחות) |

@@ -24,7 +24,7 @@ docs/ARCHITECTURE-COMMERCE.md
 
 ---
 
-## 0. החלטה (UX1–UX7)
+## 0. החלטה (UX1 עד UX7)
 
 | # | הכרעה |
 |---|---|
