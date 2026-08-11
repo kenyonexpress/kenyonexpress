@@ -86,6 +86,20 @@ docs/GAPS-CODE-VS-DOCS.md
 
 סוגר פער G1 (מסך payouts) לפי GAPS / PAYOUT-MECHANISM.
 
+### 3.1 עמודות CSV (מינימום)
+
+| עמודה | תוכן |
+|---|---|
+| `supplier_id` | מזהה פנימי |
+| `supplier_name_he` | שם לתצוגה |
+| `bank_code` / `branch` / `account` | פרטי חשבון מאומתים |
+| `amount_agorot` | סכום נטו אחרי קיזוז debit |
+| `amount_ils` | תצוגה לבנק (נגזר; מקור = אגורות) |
+| `batch_id` | מזהה באצ' |
+| `lines_count` | מספר שורות settlement |
+
+אין לכלול PAN לקוח או טוקני Cardcom ב-CSV.
+
 ---
 
 ## 4. החזרים אחרי payout
@@ -141,3 +155,4 @@ Payout פיזי = ידני אחרי Cardcom customer settlement; לא Cardcom Fi
 |---|---|
 | 2026-08-11 | מפרט payout פיזי: Cardcom ללקוח, העברה בנקאית לספק |
 | 2026-08-11 | סעיף 5.1: פירוש מחייב ל"payout דרך Cardcom" |
+| 2026-08-11 | עמודות CSV מינימום לבאצ' |
