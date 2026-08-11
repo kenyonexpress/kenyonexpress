@@ -1,22 +1,47 @@
 # תוכן FAQ: 20 שאלות נפוצות לעמוד
 
-טקסטים מוכנים לעמוד `/faq` (או עזרה). עברית בלבד ללקוח.
-
-Status: **CONTENT** · עודכן: 2026-08-10  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+Status: **CONTENT** · עודכן: 2026-08-12
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+מודל כסף: No Escrow; אסור Escrow/נאמן/J5.
 
-מסמכים קשורים:
+---
 
-```
-docs/CUSTOMER-SUPPORT-PLAYBOOK.md
-docs/ARCHITECTURE-CUSTOMER-SUPPORT.md
-docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
-docs/BUSINESS-MODEL.md
-docs/CONTRADICTIONS.md
-```
+## 1. החלטה
 
-אסור בטקסטים: Escrow, נאמן אשראי, J5, "כסף מוחזק לספק".
+| # | הכרעה |
+|---|---|
+| F1 | 20 שאלות ל-`/faq` |
+| F2 | 2-4 משפטים לתשובה |
+| F3 | עברית ללקוח |
+
+---
+
+## 2. חלופות שנדחו
+
+| חלופה | נימוק |
+|---|---|
+| אחוזי עמלה ללקוח | פנימי |
+| הבטחת SLA שלא ב-LEGAL | סתירה |
+
+---
+
+## 3. סכמת DB
+
+**אין DDL.** תוכן סטטי; JSON-LD FAQPage.
+
+---
+
+## 4. מקרי קצה
+
+| E1 | SLA משתנה | sync LEGAL |
+| E2 | מחיר/מע״מ | מ-PDP |
+
+---
+
+## 5. פתוחות
+
+| O1 | FAQ schema live | SEO | 2026-08-12 |
 
 ---
 
@@ -112,8 +137,10 @@ docs/CONTRADICTIONS.md
 
 ---
 
+
 ## Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-10 | 20 שאלות נפוצות לעמוד FAQ |
+| 2026-08-12 | BINDING batch-2: החלטה, חלופות, DB, קצה, פתוחות |
+
