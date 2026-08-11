@@ -3,7 +3,9 @@
 ארנק קאשבק פנימי: ledger כפול-רישום באגורות integer, בלי משיכה החוצה.
 
 Status: **BINDING** · Updated: 2026-08-03  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #16/50
+
+מודל כסף: **No Escrow**. אין held/נאמן/J5 לקופון.
 אין שינוי קוד. אין נגיעה ב-worktree הראשי (`kenyonexpress`).
 
 Companions:
@@ -234,3 +236,9 @@ Cardcom webhook / finalizeOrder (paid)
 | Date | Change |
 |---|---|
 | 2026-08-03 | ke-arch docs-lifecycle: wallet ledger כפול-רישום באגורות; בלי משיכה החוצה |
+
+## Revision
+
+| תאריך | שינוי |
+|---|---|
+| 2026-08-12 | batch-2 #16: רענון BINDING על `arch/docs-batch-2`; No Escrow מאושר |
