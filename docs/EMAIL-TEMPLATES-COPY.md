@@ -1,10 +1,52 @@
 # נוסחי מייל בעברית (עותק מלא)
 
-נושא + גוף + CTA לכל תבנית. טון חברותי ישראלי, בלי שפת שיווק אמריקאית כבדה.
-
-Status: **CONTENT** · עודכן: 2026-08-10  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+Status: **CONTENT** · עודכן: 2026-08-12
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+מודל כסף: No Escrow; בלי held/נאמן/J5 במייל.
+
+---
+
+## 1. החלטה
+
+| # | הכרעה |
+|---|---|
+| E1 | 8 תבניות: נושא+גוף+CTA |
+| E2 | RTL plaintext; QR מ-URL לא base64 |
+| E3 | שולם באתר / יתרה בעסק |
+| E4 | marketing: unsubscribe |
+
+---
+
+## 2. חלופות שנדחו
+
+| חלופה | נימוק |
+|---|---|
+| "כסף מוחזק" | אסור |
+| 3 CTAs | conversion |
+| inline QR base64 | deliverability |
+
+---
+
+## 3. סכמת DB
+
+**אין DDL.** kind mapping ל-`email_templates` / notifications.
+
+---
+
+## 4. מקרי קצה
+
+| E1 | סכום בלי ₪ | אסור |
+| E2 | supplier payout promise | אסור |
+| E3 | abandoned בלי consent | GDPR |
+
+---
+
+## 5. פתוחות
+
+| O1 | Resend preview לפני bulk | pending | 2026-08-12 |
+
+---
 
 **מעטפת טכנית / אסורים:**
 
@@ -289,8 +331,10 @@ RTL, plaintext, בלי Escrow/נאמן/J5/held, בלי הבטחת העברה ל�
 
 ---
 
+
 ## Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-10 | נוסח מלא ל-8 מיילים בעברית |
+| 2026-08-12 | BINDING batch-2: החלטה, חלופות, DB, קצה, פתוחות |
+
