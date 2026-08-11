@@ -70,7 +70,15 @@
   אסור `float` בשום מקום במסלול הכסף.
 - **אסור `db push`.** שינוי סכימה נכתב כקובץ מיגרציה ב-`migrations/pending` וממתין
   לאישור. ראה גם את הכלל על migration על פרודקשן למעלה.
-- **כל UI לפי** `refs/ke_live_singlefile.html`, ושער ההשוואה חייב להישאר מתחת ל-11%:
+- **המקור הוויזואלי הוא `refs/` בלבד, ו-`curl` אסור.** את `refs/` מייצרים אך ורק
+  דרך `node scripts/snapshot-live.mjs`, שמרנדר את האתר בכרומיום אמיתי ומחכה
+  ל-`networkidle` ול-`document.fonts.ready`. ‏`curl` מחזיר את ה-HTML של השרת
+  לפני שרץ סקריפט אחד, כלומר עמוד שאף גולש לא רואה, ומדידה מולו היא מדידה מול
+  דף שלא קיים. הסקריפט כותב:
+  `ke_live_singlefile.html` (ה-DOM אחרי הידרציה), `ke_live_computed.json`
+  (‏`getComputedStyle` לכל אלמנט, בשלושת הרוחבים) ו-`ke_live_380/768/1440.png`.
+  הוא נכשל בכוונה אם ה-DOM קטן מ-100KB, כי זה עמוד חסימה ולא האתר.
+- **כל UI לפי `refs/ke_live_computed.json`**, ושער ההשוואה חייב להישאר מתחת ל-11%:
   ```bash
   PORT=3311 pnpm start &
   LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home
