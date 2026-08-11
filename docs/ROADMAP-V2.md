@@ -1,23 +1,49 @@
 # מפת דרכים V2
 
-סיכום מסמכי הארכיטקטורה לתוכנית שלבים עם תלויות.
-
-Status: **BINDING (תכנון)** · עודכן: 2026-08-06 · QA: PASS  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+Status: **BINDING (תכנון)** · עודכן: 2026-08-12
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+מודל כסף: No Escrow; platform_percent דינמי; MCP migrations.
 
-מודל כסף: **No Escrow** לקופון; `platform_percent` דינמי פר מוצר לפיזי; ארנק פנימי בלי משיכה; מיגרציות prod **רק MCP**.
-אין נאמן/J5 של חברת אשראי. אין עמלה גלובלית.
+---
 
-מסמכים קשורים:
+## 1. החלטה
 
-```
-docs/MASTER-INDEX.md
-docs/CONTRADICTIONS.md
-docs/RUNBOOK-PRODUCTION.md
-docs/ARCHITECTURE-APP-STORE-LAUNCH.md
-docs/ARCHITECTURE-PRICING-RULES.md
-```
+| # | הכרעה |
+|---|---|
+| V1 | Web SEO + checkout קודם |
+| V2 | שלבים A/B/C עם תלויות |
+| V3 | docs לפני כסף רגיש |
+| V4 | CHECKOUT_ENABLED=false עד טest |
+
+---
+
+## 2. חלופות שנדחו
+
+| חלופה | נימוק |
+|---|---|
+| Escrow לקופון | CONTRADICTIONS |
+| db push prod | forbidden |
+| Expo לפני web יציב | ROADMAP |
+
+---
+
+## 3. סכמת DB
+
+**אין DDL במסמך.** כל שינוי = migration MCP.
+
+---
+
+## 4. מקרי קצה
+
+| E1 | soft-open בלי LEGAL /cancel | block A8 |
+| E2 | referral לפני wallet | B3 dep |
+
+---
+
+## 5. פתוחות
+
+| O1 | תאריך QA PASS | 2026-08-06 baseline | 2026-08-12 |
 
 ---
 
@@ -134,3 +160,12 @@ Escrow לקופון · משיכת ארנק החוצה · `supabase db push` לי
 | 2026-08-06 | הוספת docs 16 עד 20 (gift/B2B/seasonal/GDPR/index) |
 | 2026-08-06 | QA: חיזוק No Escrow + `platform_percent`; קישורים הדדיים |
 | 2026-08-07 | QA re-pass: הסרת en-dash; יישור מול CONTRADICTIONS No Escrow |
+
+---
+
+## Revision
+
+| תאריך | שינוי |
+|---|---|
+| 2026-08-12 | BINDING batch-2: החלטה, חלופות, DB, קצה, פתוחות |
+
