@@ -1,101 +1,54 @@
 # מדיניות גיבוי ושחזור (תפעול)
 
-Supabase Pro, תרגול שחזור, ו-RPO/RTO מעשיים.
+RPO/RTO ותרגול. ארכיטקטורה: `docs/ARCHITECTURE-BACKUP-DR.md`.
 
-Status: **RUNBOOK** · עודכן: 2026-08-10  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
-אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד. אין נגיעה בתיקייה הראשית. כסף: **agorot integer**; `platform_percent` פר מוצר בלי default.
 
-**מקור מחייב (ארכיטקטורה):** לא מחליף את
-
-```
-docs/ARCHITECTURE-BACKUP-DR.md
-```
-
-מסמך זה = מדיניות תפעולית קצרה לתרגול ולמספרים.
-
-מסמכים נוספים:
 
 ```
+docs/BACKUP-RESTORE-RUNBOOK.md
 docs/RUNBOOK-PRODUCTION.md
-docs/ARCHITECTURE-OBSERVABILITY.md
-docs/SLA-MONITORING.md
-docs/CONTRADICTIONS.md
 ```
 
 ---
 
-## 1. תנאי סף
+## החלטה
 
-| כלל | פירוט |
+| # | הכרעה |
 |---|---|
-| תוכנית | **Supabase Pro חובה** לפני Cardcom חי ראשון |
-| Free | אין הסתמכות על daily backup / PITR |
-| Offsite | `pg_dump` מוצפן בנוסף לגיבויי הפלטפורמה |
-| קוד | Vercel Instant Rollback = קוד בלבד, לא DB |
+| D1 | Supabase Pro לפני Cardcom חי |
+| D2 | PITR: RPO דקות; RTO ≤ 2 שע' |
+| D3 | scratch: RPO ≤ 24 שע'; RTO ≤ 8 שע' עסקים |
+| D4 | pg_dump מוצפן offsite |
+| D5 | Vercel rollback = קוד בלבד |
+| D6 | reconciliation Cardcom לפני checkout |
 
----
+## חלופות שנדחו
 
-## 2. RPO / RTO
+| חלופה | למה נדחתה |
+|---|---|
+| daily בלי PITR | חלון אובדן |
+| תיקון SQL כסף | Cardcom |
+| git כגיבוי DB | לא |
 
-| תרחיש | RPO יעד | RTO יעד |
+## סכמת DB
+
+אין DDL. `orders`, `payments`, `vouchers`, `wallet_ledger`, `schema_migrations`.
+
+## מקרי קצה
+
+| # | מקרה | התנהגות |
 |---|---|---|
-| טעות נתונים נקודתית (PITR באותו פרויקט) | דקות (לפי תוכנית Pro) | ≤ 2 שע' |
-| אובדן פרויקט / שחזור ל-scratch | ≤ 24 שע' (daily + offsite) | ≤ 8 שע' עסקים (cutover env/DNS) |
-| מדיה ב-R2 | לפי גרסאות באקט | לפי שחזור אובייקטים |
+| CE1 | מיגרציה אחרי restore | MCP |
+| CE2 | checkout ב-PITR | kill switch |
+| CE3 | R2 | שחזור נפרד |
+| CE4 | PITR מחוץ לחלון | offsite |
+| CE5 | restore חלקי | אסור |
 
-אין הבטחת RTO של דקות לאירוע DB מלא בלי PITR מספיק.
+## פתוחות
 
----
-
-## 3. מה מגבים
-
-חובה: Postgres (סכמה + נתונים), Auth דרך גיבוי/PITR של הפרויקט.  
-נפרד: סודות Vercel/Cardcom (לא בטקסט גלוי ב-dump).  
-אסור: dumps לא מוצפנים ב-Drive/Slack.
-
-מיקום offsite מומלץ (מחוץ ל-repo):
-
-```
-/Users/ofir/kenyonexpress-web/backups/
-```
-
----
-
-## 4. תרגול שחזור (רבעוני)
-
-1. יצירת פרויקט scratch  
-2. שחזור dump או PITR לפי היכולת  
-3. מיגרציות חסרות רק דרך **MCP** אם נדרש  
-4. Preview env ב-Vercel → smoke (login, קטלוג, checkout mock)  
-5. תיעוד תוצאה ב-
-
-```
-STATE.md
-```
-
-בלי תרגיל רבעוני: אסור להסתמך על המספרים למעלה כאילו נבדקו.
-
----
-
-## 5. אחרי שחזור (כסף)
-
-משחזרים ledger ו-snapshots כפי שנשמרו.  
-**לא** ממציאים Escrow / held / J5. קופון = No Escrow; פיזי לפי `platform_percent` ב-`order_items`.
-
----
-
-## 6. Acceptance
-
-- [ ] Pro פעיל לפני תשלום חי  
-- [ ] תרגיל רבעוני מתועד  
-- [ ] RPO/RTO ידועים לבעלים  
-- [ ] rollback קוד לא מוחלף ב"שחזור DB"
-
----
-
-## 7. Revision
-
-| תאריך | שינוי |
+| # | פער |
 |---|---|
-| 2026-08-10 | מדיניות תפעול RPO/RTO מעל ARCHITECTURE-BACKUP-DR |
+| O1 | תאריך תרגול ב-STATE |
