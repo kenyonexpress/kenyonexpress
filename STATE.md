@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-11 (docs 21-29 pass complete + reinforce)
+Updated: 2026-08-11 (docs 21-29 reinforce pass complete)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,10 +8,9 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-סבב 21-29 הושלם ומחוזק על arch/docs-lifecycle (commit+push לכל קובץ):
-LEGAL-TERMS, REFUNDS, DATA-RETENTION, INCIDENT-RESPONSE, BACKUP-RESTORE (PITR),
-EMAIL-TEMPLATES-SPEC (10 kinds RTL), COUPON-LIFECYCLE, FRAUD-PREVENTION-SPEC,
-VENDOR-PAYOUT (Cardcom=סליקת לקוח; CSV ידני לספק).
+חיזוק סבב 21-29 (commit+push לכל קובץ): LEGAL נספחים, REFUNDS דוגמאות דמי ביטול,
+DATA-RETENTION ספק/WA, IR journal, BACKUP Cardcom reconcile, EMAIL Resend webhooks,
+COUPON SQL אטומי, FRAUD ATO, VENDOR-PAYOUT Phase B Cardcom Financial.
 
 ## In Progress
 nothing
@@ -28,6 +27,7 @@ nothing
 /Users/ofir/kenyonexpress-web/ke-arch
 
 ## החלטות שהתקבלו אוטומטית
+- **2026-08-11 payout Cardcom Phase B:** VENDOR-PAYOUT-SPEC §5.3 מתאר TransferFromDigitalBank אחרי שערי threat-model; MVP נשאר CSV.
 - **2026-08-11 payout Cardcom:** בקשת VENDOR-PAYOUT "דרך Cardcom" פורשה כך: חיוב הלקוח ב-Cardcom הוא מקור הסליקה; ביצוע payout לספק פיזי נשאר העברה בנקאית ידנית+CSV לפי ARCHITECTURE-PAYOUT-MECHANISM (לא Cardcom Financial ב-MVP). תועד ב-VENDOR-PAYOUT-SPEC.md.
 - **2026-08-06 QA:** המודל המחייב ל-docs הוא **No Escrow** לקופון (מקדמה לפלטפורמה; יתרה בבית העסק; אין held לספק; אין נאמן/J5 של חברת אשראי) + `platform_percent` פר מוצר בלי default. זה **דורס** את נוסח Escrow/held של 2026-07-27 בסעיף ההיסטורי למטה (נשמר לתיעוד בלבד).
 - **2026-08-07 QA re-pass:** `docs/CONTRADICTIONS.md` עצמו עודכן בהתאם (C11א). בלי זה המסמך "הגובר" סתר את חבילת ה-20.
