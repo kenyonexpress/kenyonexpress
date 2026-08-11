@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-11 (PAYOUT-ARCHITECTURE BINDING TransferFromDigitalBank + GO-LIVE-CHECKLIST)
+Updated: 2026-08-11 (PAYOUT-ARCHITECTURE canonical + GO-LIVE-CHECKLIST)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,9 +8,10 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-PAYOUT-ARCHITECTURE.md הוחזר ל-BINDING: payout פיזי דרך Cardcom TransferFromDigitalBank,
-payout_statements + supplier_bank_accounts, T+3, min ₪100, supplier_debit, reconcile יומי.
-GO-LIVE-CHECKLIST.md נכתב (דומיין/Vercel/env/Cardcom/PITR/אבטחה/דילים/payout).
+PAYOUT-ARCHITECTURE.md קנוני: TransferFromDigitalBank, payout_statements +
+supplier_bank_accounts, T+3, min ₪100, supplier_debit, reconcile יומי.
+GO-LIVE-CHECKLIST.md: שערי P0/P1 כולל FINAL-REPORT §7 ו-payout.
+ARCHITECTURE-PAYOUT-MECHANISM מיושר לצינור Cardcom (CSV=fallback).
 
 ## In Progress
 nothing
@@ -27,6 +28,7 @@ nothing
 /Users/ofir/kenyonexpress-web/ke-arch
 
 ## החלטות שהתקבלו אוטומטית
+- **2026-08-11 payout canonical:** `PAYOUT-ARCHITECTURE.md` BINDING: ביצוע לספק פיזי = Cardcom `TransferFromDigitalBank` (CSV fallback). גובר על המלצת CSV-בלבד הישנה ב-PAYOUT-MECHANISM §0.
 - **2026-08-11 PAYOUT-ARCHITECTURE BINDING מחדש:** צינור payout קנוני לספק פיזי = Cardcom `TransferFromDigitalBank` + טבלאות `payout_statements` / `supplier_bank_accounts`. CSV = fallback. דורס את סימון DEPRECATED מ-10.08 ואת "CSV בלבד כ-MVP" כמקור קנוני (MECHANISM נשאר לפירוט באצ').
 - **2026-08-11 payout Cardcom Phase B:** VENDOR-PAYOUT-SPEC §5.3 מתאר TransferFromDigitalBank אחרי שערי threat-model; MVP נשאר CSV.
 - **2026-08-11 payout Cardcom:** בקשת VENDOR-PAYOUT "דרך Cardcom" פורשה כך: חיוב הלקוח ב-Cardcom הוא מקור הסליקה; ביצוע payout לספק פיזי נשאר העברה בנקאית ידנית+CSV לפי ARCHITECTURE-PAYOUT-MECHANISM (לא Cardcom Financial ב-MVP). תועד ב-VENDOR-PAYOUT-SPEC.md.

@@ -255,7 +255,7 @@ docs/ONBOARDING-DEVELOPER.md
 | מסמך | תקציר | סטטוס |
 |---|---|---|
 | `LAUNCH-CHECKLIST.md` | עלייה לאוויר לפי בעלות. | ACTIONABLE |
-| `GO-LIVE-CHECKLIST.md` | שערי Go-Live: דומיין, Vercel, Cardcom, PITR, payout. | ACTIONABLE (11.08) |
+| `GO-LIVE-CHECKLIST.md` | שערי Go-Live: DNS/Vercel/Cardcom/PITR/דילים/Transfer payout. | ACTIONABLE (11.08) |
 | `LAUNCH-VALIDATION.md` | אימות 10 דילי השקה מול פרוד. | ACTIONABLE (10.08) |
 | `launch-week-plan.md` | 10 דילים + ספקים (seed). | PLAN (10.08) |
 

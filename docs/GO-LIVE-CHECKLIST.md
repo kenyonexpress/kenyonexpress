@@ -9,6 +9,7 @@ GO-LIVE.md
 docs/LAUNCH-CHECKLIST.md
 docs/LAUNCH-WEEK-RUNBOOK.md
 docs/RUNBOOK-LAUNCH-DAY.md
+docs/PAYOUT-ARCHITECTURE.md
 ```
 
 Status: **ACTIONABLE** · עודכן: 2026-08-11  
@@ -26,9 +27,10 @@ docs/BACKUP-RESTORE-RUNBOOK.md
 docs/SECURITY-AUDIT-CHECKLIST.md
 docs/ANALYTICS-SPEC.md
 docs/GITHUB-SETTINGS.md
+docs/INCIDENT-RESPONSE-RUNBOOK.md
 ```
 
-מקור מספרי היסטורי (קריאה בלבד מהראשית): `docs/FINAL-REPORT.md` (שערי CI נמדדו; נותר קונפיג אנושי).
+מקור מספרי היסטורי (קריאה בלבד מהראשית): `docs/FINAL-REPORT.md` §7 (חסמי נתונים: ספקים בלי כתובת/לוגו, דילי בית שבורים, legal). שערי CI שם נמדדו; נותר קונפיג אנושי.
 
 כלל: שיגור כסף אמיתי רק כשכל שערי **P0** מסומנים PASS עם ראיה (לוג / צילום / timestamp).
 
@@ -41,6 +43,8 @@ docs/GITHUB-SETTINGS.md
 | P0 | חוסם כסף אמיתי / קופון אמיתי / אבטחת כסף |
 | P1 | חוסם שיגור ציבורי מלא; אפשר soft-open מוגבל בלעדיו |
 | P2 | אחרי השקה / שיפור |
+
+בעלות: **אתה** (מפעיל יחיד) לכל השערים אלא אם צוין אחרת.
 
 ---
 
@@ -100,7 +104,7 @@ docs/GITHUB-SETTINGS.md
 - [ ] Smoke: תשלום → return → אימות (`GetLpResult`) → `paid` → voucher `issued`  
 - [ ] Smoke refund  
 - [ ] רק אז: `CHECKOUT_ENABLED=true`  
-- [ ] (פיזי) בנק דיגיטלי + הרשאת `TransferFromDigitalBank` לפני payout אמיתי (`PAYOUT-ARCHITECTURE.md`)
+- [ ] (פיזי / payout) בנק דיגיטלי + הרשאת `TransferFromDigitalBank` לפני תשלום ספק אמיתי (`PAYOUT-ARCHITECTURE.md` §11; `CARDCOM-ARCHITECTURE.md` §1.5)
 
 ---
 
@@ -144,18 +148,29 @@ docs/GITHUB-SETTINGS.md
 
 ## 9. תוכן ודילי השקה (P0 מסחרי)
 
-- [ ] ≥ 5/10 דילי seed `verified` מול `suppliers` (`LAUNCH-VALIDATION.md`)  
+מיושר ל-`FINAL-REPORT.md` §7 (קריאה מהראשית) + `LAUNCH-VALIDATION.md`:
+
+- [ ] ≥ 5/10 דילי seed `verified` מול `suppliers`  
 - [ ] תמונות + מחיר + יתרה בעסק בדף  
+- [ ] אין קישורי בית ל-slug מוצר שלא קיים (8 דילים שבורים היסטורית ב-FINAL-REPORT)  
+- [ ] ספקי השקה: כתובת + לוגו מינימליים לתצוגה  
+- [ ] `/about` עם תוכן בסיסי (P1)  
 - [ ] עמודי legal בסיסיים קיימים; ניסוח סופי **[דורש עו״ד]** (P1 לפרסום ממומן)  
 
 ---
 
 ## 10. Payout פיזי (P1 אם יש פיזי בהשקה; P0 לפני תשלום ספק)
 
-- [ ] `supplier_bank_accounts` מאומתים  
-- [ ] מסך `/admin/payouts` חי או נוהל CSV fallback מאושר  
-- [ ] שערי `PAYOUT-ARCHITECTURE.md` §10  
-- [ ] Reconciliation יומי מוגדר  
+לפי `PAYOUT-ARCHITECTURE.md`:
+
+- [ ] מיגרציית `supplier_bank_accounts` + `payout_statements` (+ lines) הוחלה ב-MCP  
+- [ ] חשבונות בנק מאומתים (`verified_at`) לספקי פיזי  
+- [ ] מסך `/admin/payouts` חי  
+- [ ] Sandbox: statement → `TransferFromDigitalBank` → `GetMoneyTransfers` ירוק  
+- [ ] Kill switch ל-cron Transfer (בלי לכבות סליקת לקוח)  
+- [ ] CSV fallback מנוסה  
+- [ ] Reconciliation יומי מוגדר (Sentry/דוח)  
+- [ ] שערי §11 ב-PAYOUT-ARCHITECTURE מסומנים  
 
 קופונים בלבד: אפשר soft-open בלי payout.
 
@@ -177,7 +192,7 @@ docs/GITHUB-SETTINGS.md
 4. באנר/מודעה אורגנית בלבד  
 5. מדיה ממומנת רק אחרי D1–D2 יציבים (`MARKETING-LAUNCH-PLAN.md`)  
 
-Kill switch מיידי: `CHECKOUT_ENABLED=false` + IR runbook.
+Kill switch מיידי: `CHECKOUT_ENABLED=false` + `INCIDENT-RESPONSE-RUNBOOK.md`.
 
 ---
 
@@ -187,6 +202,7 @@ Kill switch מיידי: `CHECKOUT_ENABLED=false` + IR runbook.
 - [ ] Sentry שקט יחסית  
 - [ ] עדכון `STATE.md` / `PROGRESS-REPORT-AUG.md`  
 - [ ] החלטת HSTS / הרחבת מדיה  
+- [ ] אם פיזי שולם לספק: reconcile payout יומי ירוק  
 
 ---
 
@@ -194,7 +210,8 @@ Kill switch מיידי: `CHECKOUT_ENABLED=false` + IR runbook.
 
 - [ ] אין שפת Escrow בצ'קליסט  
 - [ ] מפעיל יודע היכן kill switch  
-- [ ] קישור ל-PITR ול-payout  
+- [ ] קישור ל-PITR ול-payout הקנוני  
+- [ ] חסמי FINAL-REPORT §7 מכוסים בסעיף 9  
 
 ---
 
@@ -203,3 +220,4 @@ Kill switch מיידי: `CHECKOUT_ENABLED=false` + IR runbook.
 | תאריך | שינוי |
 |---|---|
 | 2026-08-11 | צ'קליסט Go-Live: דומיין, Vercel, env, Cardcom, PITR, אבטחה, דילים, payout |
+| 2026-08-11 | יישור ל-FINAL-REPORT §7 + שערי TransferFromDigitalBank מפורטים |
