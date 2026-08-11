@@ -53,8 +53,20 @@
 BEGIN;
 
 -- 1. vendors.commission_rate: stop handing out 10%.
-ALTER TABLE public.vendors
-  ALTER COLUMN commission_rate DROP DEFAULT;
+--    Guarded, because 008 DROPs this column outright and the two files have no
+--    fixed order. Unguarded, an 008-then-007 run would abort on a missing
+--    column and take statements 2 and 3 down with it inside this transaction.
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'vendors'
+      AND column_name = 'commission_rate'
+  ) THEN
+    ALTER TABLE public.vendors ALTER COLUMN commission_rate DROP DEFAULT;
+  END IF;
+END $$;
 
 -- 2. suppliers.default_split_percent: stop handing out 70%.
 --    Dropping a NOT NULL column's default makes an omitting INSERT fail loudly
@@ -69,10 +81,16 @@ ALTER TABLE public.suppliers
 ALTER TABLE public.suppliers
   ALTER COLUMN commission_percent DROP DEFAULT;
 
--- 4. NOT ENABLED. The finishing move, once the admin vendor page stops
---    reading the column. Left here so the intent is not lost.
---
--- ALTER TABLE public.vendors DROP COLUMN commission_rate;
+-- 4. The column drops are NOT here. They landed in their own files, each with
+--    an archive table, because dropping a column is not reversible by rerunning
+--    the file:
+--      008-drop-vendors-commission-rate.sql    vendors.commission_rate
+--      009-retire-supplier-percent-columns.sql suppliers.commission_percent,
+--                                              suppliers.default_split_percent,
+--                                              plus the active-product CHECK
+--    This file stays the reversible one: it only stops new defaults from being
+--    written, and its rollback at the bottom restores the previous state
+--    exactly.
 
 COMMIT;
 
