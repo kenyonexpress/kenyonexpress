@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-11 (docs 21-29 reinforced: legal→vendor payout)
+Updated: 2026-08-11 (docs 21-29 pass complete + reinforce)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,10 +8,10 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-סבב 21-29 מחוזק (commit+push לכל קובץ): LEGAL-TERMS (חתימה), REFUNDS (redeemed),
-DATA-RETENTION (settlement), IR (עץ כסף), BACKUP-RESTORE (PITR vs scratch),
-EMAIL-TEMPLATES-SPEC (10 kinds), COUPON-LIFECYCLE (מעברים אסורים),
-FRAUD (סדר סריקה), VENDOR-PAYOUT (CSV + Cardcom=לקוח).
+סבב 21-29 הושלם ומחוזק על arch/docs-lifecycle (commit+push לכל קובץ):
+LEGAL-TERMS, REFUNDS, DATA-RETENTION, INCIDENT-RESPONSE, BACKUP-RESTORE (PITR),
+EMAIL-TEMPLATES-SPEC (10 kinds RTL), COUPON-LIFECYCLE, FRAUD-PREVENTION-SPEC,
+VENDOR-PAYOUT (Cardcom=סליקת לקוח; CSV ידני לספק).
 
 ## In Progress
 nothing
