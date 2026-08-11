@@ -88,6 +88,19 @@ issued | redeemed | expired | refunded
 
 ---
 
+## 2.1 מעברים אסורים (חייב להיכשל)
+
+| ניסיון | תוצאה צפויה |
+|---|---|
+| `redeemed` → `issued` | דחייה; אין unwind אוטומטי |
+| `redeemed` → `refunded` | דחייה; מחלוקת ידנית בלבד |
+| `refunded` → `redeemed` | דחייה |
+| `expired` → `redeemed` | דחייה |
+| סריקה כפולה על אותו voucher | `already_redeemed`; בלי side effects |
+| refund על `issued` בלי אישור Cardcom | דחייה; אין שינוי סטטוס |
+
+---
+
 ## 3. Side effects לפי מעבר
 
 | מעבר | מייל | אחר |
@@ -132,3 +145,4 @@ issued | redeemed | expired | refunded
 |---|---|
 | 2026-08-11 | מכונת מצבים ראשונה (עם alias used) |
 | 2026-08-11 | יישור לפרוד 054: קנוני `redeemed` (לא `used`) |
+| 2026-08-11 | טבלת מעברים אסורים |
