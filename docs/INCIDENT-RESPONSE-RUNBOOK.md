@@ -62,6 +62,16 @@ docs/LAUNCH-WEEK-RUNBOOK.md
 
 ---
 
+## 3.5 רשימת בדיקה מיידית (SEV1)
+
+1. האם כסף זז לא נכון? → `CHECKOUT_ENABLED=false`  
+2. האם ניתן rollback קוד בלי DB? → Vercel Instant Rollback  
+3. האם נדרש PITR? → `BACKUP-RESTORE-RUNBOOK` (רק אחרי kill switch)  
+4. האם לקוחות רואים שגיאה גלובלית? → באנר עברית  
+5. תיעוד חלון זמן ב-STATE  
+
+---
+
 ## 4. תקשורת
 
 | קהל | ערוץ | כללים |
@@ -119,3 +129,4 @@ SEV:
 | תאריך | שינוי |
 |---|---|
 | 2026-08-11 | מסגרת IR: SEV, kill switches, תקשורת, postmortem |
+| 2026-08-11 | רשימת בדיקה מיידית ל-SEV1 |
