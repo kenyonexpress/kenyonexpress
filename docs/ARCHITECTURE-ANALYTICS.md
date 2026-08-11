@@ -1,9 +1,9 @@
-# ארכיטקטורה: אנליטיקה
+# ארכיטקטורה: אנליטיקה (משפך)
 
-סכימת אירועים, KPIs ללוח ספק, ודוחות הכנסות אדמין לפי `platform_percent` פר מוצר.
+סכימת אירועי משפך, KPIs ספק, ודוחות אדמין לפי snapshot של `platform_percent`.
 
-Status: **BINDING** · עודכן: 2026-08-11 · QA: PASS  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+Status: **BINDING** · עודכן: 2026-08-12 · QA: PASS  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #39/50  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
 מסמכים קשורים:
@@ -14,13 +14,12 @@ docs/ARCHITECTURE-ANALYTICS-BI.md
 docs/ARCHITECTURE-ADMIN-DASHBOARD.md
 docs/ARCHITECTURE-SUPPLIER-PORTAL.md
 docs/ARCHITECTURE-PRICING-RULES.md
-docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 docs/ARCHITECTURE-OBSERVABILITY.md
 docs/CONTRADICTIONS.md
 ```
 
 עקרון: התנהגות באירועים; **כסף עסקי רק מה-ledger**. בלי PII באירועים.  
-עמלה/GMV: snapshot של `platform_percent` + No Escrow (לא סכום מ-GA4/PostHog).
+GMV/עמלה: snapshot על `order_items` + **No Escrow** (לא סכום מ-GA4/PostHog).
 
 ---
 
@@ -28,16 +27,14 @@ docs/CONTRADICTIONS.md
 
 | שכבה | כלי |
 |---|---|
-| מקור אמת פנימי | `analytics_events` (וגם טבלאות כסף) ב-Postgres |
-| Product analytics | **PostHog** (אחרי consent) |
-| Marketing / Ads | **GA4** + Consent Mode |
-| GMV / עמלה / payout | דוחות אדמין + פורטל ספק מה-ledger בלבד |
+| מקור אמת פנימי | `analytics_events` + טבלאות כסף ב-Postgres |
+| Product analytics | PostHog (אחרי consent) |
+| Marketing / Ads | GA4 + Consent Mode |
+| GMV / עמלה / payout | אדמין + פורטל ספק מה-ledger בלבד |
 
 ---
 
-## 1. סכימת אירועים
-
-### 1.1 משפך ליבה
+## 1. משפך ליבה
 
 ```text
 view_product → add_to_cart → begin_checkout → purchase → redeem
@@ -49,11 +46,15 @@ view_product → add_to_cart → begin_checkout → purchase → redeem
 | `add_to_cart` | client | + `quantity` |
 | `begin_checkout` | client | `items_count`, `value_agorot` |
 | `purchase` | **server** אחרי paid | `order_id`, `value_agorot`, `currency=ILS`, `items[]`, `utm_*` |
-| `redeem` | **server** אחרי סריקה | `voucher_id`, `product_id`, `supplier_id`, `order_id` |
+| `redeem` | **server** אחרי סריקה מוצלחת | `voucher_id`, `product_id`, `supplier_id`, `order_id` |
 
 שם ישן: `coupon_redeemed` = alias ל-`redeem`.
 
-### 1.2 Envelope (בלי PII)
+`purchase` / `redeem` נגזרים מה-ledger (אחרי הכתיבה הכספית). שדות כסף באירוע = עותק לנוחות timeline בלבד.
+
+---
+
+## 2. Envelope (בלי PII)
 
 ```json
 {
@@ -80,96 +81,45 @@ view_product → add_to_cart → begin_checkout → purchase → redeem
 אסור: email, phone, שם, IP מלא, PAN, מחרוזת חיפוש גולמית.  
 כסף: אגורות integer בלבד.
 
-מיפוי GA4/PostHog + Consent: `ANALYTICS-SPEC.md`.
-
 ---
 
-## 2. KPIs ללוח ספק (Supplier dashboard)
+## 3. KPIs ספק
 
-היקף: רק נתונים של `current_user_supplier_id()`. כסף לספק = שורות שלו ב-ledger / הזמנות; **לא** עמלה של פלטפורמה כהכנסת ספק.
+היקף: רק `current_user_supplier_id()`.  
+כסף לספק = שורותיו ב-ledger; לא "הנחת לקוח" מ-`platform_percent`.
 
-| KPI | הגדרה | מקור |
-|---|---|---|
-| צפיות בדילים | `view_product` למוצרים של הספק (אם נשמר `supplier_id` ב-props או join) | events / BI |
-| הוספות לעגלה | `add_to_cart` על מוצרי הספק | events |
-| הזמנות paid | count orders עם פריטי הספק ב-`paid` | orders/order_items |
-| GMV on-site (ספק) | סכום ששולם באתר על שורות הספק | order_items snapshots |
-| מימושים | count `redeem` / vouchers `redeemed` | vouchers |
-| Redeem rate | redeems / purchases (קופון) בחלון 7/30 יום | derived |
-| יתרה לגבייה בעסק (ממוצע) | face − coupon על מימושים | snapshots |
-| פיזי: ממתין למשלוח | שורות physical לא fulfilled | fulfillment |
-| פיזי: זכאי payout | לפי PAYOUT (T+N, min) | settlement_events |
-| דירוג איכות | לפי SUPPLIER-QUALITY (אם קיים) | quality tables |
-
-אסור להציג לספק את `platform_percent` כ"ההנחה ללקוח". מותר להציג תקבולים צפויים לפי חוזה.
-
-UI: עברית RTL; סכומים ב-₪ מתורגמים מאגורות.
-
----
-
-## 3. דוחות הכנסות אדמין (לפי אחוז פר מוצר)
-
-מקור אמת: `order_items` + `settlement_events` / ledger. **לא** PostHog.
-
-### 3.1 מדדים
-
-| מדד | נוסחה |
+| KPI | מקור |
 |---|---|
-| GMV on-site | `sum(paid_on_site_agorot)` להזמנות paid |
-| הכנסת פלטפורמה (פיזי) | `sum(paid_on_site * platform_percent_snapshot / 100)` באגורות עם עיגול יחיד |
-| הכנסת פלטפורמה (קופון) | `sum(coupon_price_agorot)` (No Escrow: כל האתר לפלטפורמה) |
-| חלק ספק (פיזי) | `sum(supplier_due_agorot)` מ-`charge_settled` |
-| עמלה בפועל % | platform_revenue / GMV on-site (פיזי בלבד לניתוח אחוז) |
-| לפי מוצר | group by `product_id` + הצגת `platform_percent` שצולם |
-| לפי קטגוריה / ספק | join מוצר/ספק |
-| Refunds | מפחיתים לפי invoices/refunds מאומתים |
+| צפיות / ATC על מוצרי הספק | events |
+| הזמנות paid | orders/order_items |
+| GMV on-site (שורות הספק) | snapshots |
+| מימושים / redeem rate | vouchers + redeem events |
+| יתרה לגבייה בעסק (ממוצע) | face − coupon מ-snapshots |
+| פיזי: זכאי payout | settlement / PAYOUT |
 
-### 3.2 מסך אדמין (יעד)
-
-```text
-/admin/reports/revenue
-  · מסננים: תאריך, סוג (coupon/physical), ספק, קטגוריה
-  · טבלה: מוצר | % פלטפורמה (snapshot) | GMV | הכנסת פלטפורמה | חלק ספק | #הזמנות
-  · ייצוא CSV (אגורות + עמודת ₪ לתצוגה)
-```
-
-כל שורה מציגה את האחוז **שצולם בהזמנה**, לא את האחוז הנוכחי במוצר.
-
-תמצית שאילתה (יעד; שמות עמודות לפי הסכמה החיה אחרי agorot cutover):
-
-```sql
-SELECT
-  oi.product_id,
-  oi.platform_percent AS platform_percent_snapshot,
-  sum(oi.paid_on_site_agorot) AS gmv_agorot,
-  sum(
-    CASE WHEN oi.product_type = 'coupon'
-      THEN oi.paid_on_site_agorot
-      ELSE (oi.paid_on_site_agorot * oi.platform_percent / 100.0)::bigint
-    END
-  ) AS platform_revenue_agorot,
-  count(DISTINCT oi.order_id) AS orders_count
-FROM order_items oi
-JOIN orders o ON o.id = oi.order_id
-WHERE o.status = 'paid'
-  AND o.paid_at >= $from AND o.paid_at < $to
-GROUP BY 1, 2
-ORDER BY platform_revenue_agorot DESC;
-```
-
-עיגול יחיד בשרת לפי `ARCHITECTURE-PRICING-RULES`; לא לעגל פעמיים ב-UI.
-
-### 3.3 התאמות
-
-| כלל | פירוט |
-|---|---|
-| קופון | אין "חלק ספק מהמקדמה"; יתרה בעסק מחוץ ל-GMV פלטפורמה |
-| מנוי | פר invoice לפי ARCHITECTURE-SUBSCRIPTIONS §8 |
-| ארנק | הפחתת charge Cardcom; פיצול לפי מדיניות wallet (פלטפורמה סופגת לפי ADR ארנק) |
+UI: עברית RTL; ₪ מתורגם מאגורות.
 
 ---
 
-## 4. KPI מוצר (פלטפורמה)
+## 4. דוחות הכנסה אדמין
+
+מקור: `order_items` + `settlement_events` / ledger. **לא** PostHog.
+
+| מדד | כלל |
+|---|---|
+| GMV on-site | sum paid_on_site להזמנות paid |
+| הכנסת פלטפורמה (קופון) | sum coupon on-site (No Escrow: כל האתר לפלטפורמה) |
+| הכנסת פלטפורמה (פיזי) | sum לפי **`platform_percent` שצולם בשורה** |
+| חלק ספק (פיזי) | supplier_due מ-settlement |
+| לפי מוצר | group by product_id + הצגת percent snapshot |
+
+כל שורה מציגה את האחוז **שצולם בהזמנה**, לא את האחוז החי במוצר היום.
+
+אין לחשב הכנסה כ-"5% או 10% קבוע מ-face".
+
+---
+
+## 5. KPI מוצר (פלטפורמה)
 
 | KPI | נוסחה |
 |---|---|
@@ -179,26 +129,24 @@ ORDER BY platform_revenue_agorot DESC;
 | Redeem rate | redeem / purchase (coupon) |
 | AOV on-site | sum(value_agorot) / count(purchase) |
 
-פירוט מדידה חיצונית: `ANALYTICS-SPEC.md`.
-
 ---
 
-## 5. Acceptance
+## 6. Acceptance
 
-- [ ] סכימת אירועים + envelope בלי PII  
+- [ ] משפך חמשת האירועים מתועד  
 - [ ] purchase/redeem מהשרת  
-- [ ] לוח ספק: רק נתוני הספק; בלי המצאת עמלה  
-- [ ] דוח אדמין: הכנסה לפי `platform_percent` snapshot פר מוצר  
-- [ ] כסף לא מ-sum ב-GA4/PostHog  
+- [ ] בלי PII  
+- [ ] לוח ספק בלי המצאת עמלה  
+- [ ] דוח אדמין לפי snapshot percent  
+- [ ] כסף לא מ-GA4/PostHog  
 - [ ] No Escrow בקופון בדוחות  
 
 ---
 
-## Revision
+## 7. Revision
 
 | תאריך | שינוי |
 |---|---|
 | 2026-08-06 | משפך + PostHog/GA4 |
-| 2026-08-07 | QA: CONTRADICTIONS / OBSERVABILITY |
-| 2026-08-11 | סכימת אירועים מורחבת, KPIs ספק, דוחות הכנסה לפי percent פר מוצר |
-| 2026-08-11 | דוגמת SQL לדוח הכנסות אדמין לפי snapshot percent |
+| 2026-08-11 | KPIs ספק + SQL הכנסות |
+| 2026-08-12 | batch-2 #39: BINDING על arch/docs-batch-2; הדגשת snapshots / No Escrow |
