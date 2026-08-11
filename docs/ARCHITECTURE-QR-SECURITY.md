@@ -1,161 +1,129 @@
-# ARCHITECTURE: QR Coupon Security
+# ארכיטקטורה: אבטחת QR לקופון
 
-אבטחת קופון QR: מבנה payload חתום, תוקף משובץ, מניעת replay, fallback לסריקה אופליין אצל ספק, רוטציה בחשד לדליפה.
+Payload חתום, תוקף משובץ, replay prevention, offline ספק, רוטציה בדליפה.
 
-Status: **BINDING** · Updated: 2026-08-03  
-Scope: **docs only** · branch `arch/docs-queue`  
-אין שינוי קוד. אין נגיעה ב-worktree הראשי.
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
-Companions:
+מודל כסף: **No Escrow**. QR אינו מייצג held לספק.
+
+מסמכים קשורים:
 
 ```
 docs/ARCHITECTURE-FRAUD-PREVENTION.md
 docs/ARCHITECTURE-COUPON-REDEMPTION.md
-docs/ARCHITECTURE-MOBILE-APP-V2.md
-docs/ARCHITECTURE-NOTIFICATIONS.md
+docs/ARCHITECTURE-COUPON-LIFECYCLE.md
 docs/RUNBOOK-INCIDENTS.md
 ```
 
 ---
 
-## 0. הכרעות מחייבות
+## 1. החלטה
 
 | # | הכרעה |
 |---|---|
-| Q1 | QR מקודד **payload חתום** (HMAC או Ed25519), לא URL פתוח עם service role. |
-| Q2 | מימוש: אטומי ב-DB; חתימה תקינה ≠ מספיק בלי `status=issued`. |
-| Q3 | Replay אחרי redeem → `already_used`, בלי side effects. |
-| Q4 | סוד החתימה (`VOUCHER_QR_SECRET` או מקביל) רק בשרת; לא ב-client bundle. |
-| Q5 | Offline אצל **ספק**: תור סריקה מקומי אופציונלי; commit רק כשיש רשת. לקוח offline = תצוגה בלבד. |
-| Q6 | חשד לדליפת סוד → רוטציה + מדיניות invalidate/re-sign. |
+| Q1 | QR = **payload חתום** (HMAC או Ed25519), לא URL עם service role. |
+| Q2 | מימוש אטומי ב-DB; חתימה תקינה ≠ מספיק בלי `status=issued`. |
+| Q3 | Replay אחרי redeem → `already_used`. |
+| Q4 | `VOUCHER_QR_SECRET` רק בשרת; לא ב-client bundle. |
+| Q5 | Offline ספק: תור אופציונלי; commit רק עם רשת. לקוח offline = תצוגה. |
+| Q6 | חשד לדליפה → רוטציה + re-sign / grace v1. |
+| Q7 | אין PII / מחיר / secret ב-payload QR. |
+| Q8 | `/coupon/[id]`: בעלים בלבד; אין QR לאורח. |
 
 ---
 
-## 1. Signed payload structure
+## 2. חלופות שנדחו
 
-פורמט לוגי (גרסה בשדה):
+| חלופה | נימוק דחייה |
+|---|---|
+| QR = URL עם token ב-query | leak ב-referrer/logs; Q1. |
+| redeem offline "סופי" לספק | כסף online; Q5. |
+| קוד אנושי בלבד בלי חתימה | forge + enumeration. |
+| secret ב-client ל-verify | Q4. |
+| QR עם face_value / email | Q7 PII/price. |
+| ביטול כל QR בלי grace | UX; Q6 grace window. |
+
+---
+
+## 3. סכמת DB
+
+**אין DDL חדש.** שימוש ב:
+
+| טבלה/עמודה | שימוש |
+|---|---|
+| `vouchers.id` | `vid` ב-payload |
+| `vouchers.supplier_id` | `sid` |
+| `vouchers.expires_at` | DB מנצח על `exp` ב-QR |
+| `vouchers.status` | issued → redeemed |
+| `voucher_scan_log` / `coupon_scan_events` | audit + rate limit |
+| `qr_payload`, `qr_key_id` | אחסון issued |
+
+פורמט:
 
 ```text
 KEV1.<base64url(payload_json)>.<base64url(signature)>
 ```
 
-`payload_json` מינימלי:
-
 ```json
-{
-  "v": 1,
-  "vid": "uuid-voucher-id",
-  "sid": "uuid-supplier-id",
-  "exp": 1735689599,
-  "iat": 1700000000
-}
+{"v":1,"vid":"uuid","sid":"uuid","exp":1735689599,"iat":1700000000}
 ```
 
-| שדה | משמעות |
-|---|---|
-| `v` | גרסת סכמה |
-| `vid` | `vouchers.id` |
-| `sid` | ספק מורשה למימוש |
-| `exp` | unix expiry (שיבוץ ב-QR; גם נבדק מול `vouchers.expires_at`) |
-| `iat` | issued-at אופציונלי |
-
-חתימה: HMAC-SHA256 על ה-payload (או Ed25519).  
-הקוד האנושי (`code`) יכול להופיע בנפרד במסך; לא חובה בתוך ה-QR אם `vid` מספיק.
-
-אסור ב-payload: מחיר, PII לקוח, service keys.
-
 ---
 
-## 2. Expiry embedded
-
-1. `exp` ב-QR חייב להיות ≤ `vouchers.expires_at`.
-2. שרת redeem בודק: עכשיו < exp **ו** status issued **ו** DB expires_at.
-3. אם DB הוארך/קוצר אחרי הנפקה: **DB מנצח**; QR עם exp ישן עלול להידחות (או מדיניות re-issue).
-4. תצוגת לקוח: תאריך עברית מ-DB, לא רק מה-QR.
-
----
-
-## 3. Replay prevention
+## 4. Replay ו-offline
 
 | שכבה | מנגנון |
 |---|---|
-| DB | `UPDATE … WHERE status='issued'` → `redeemed` |
-| תשובה | `already_used` על ניסיון שני |
-| לוג | `voucher_scan_log` לכל ניסיון |
-| Idempotency | אותו בקשת הצלחה כפולה לא משחררת ledger פעמיים |
-| Rate limit | על חתימות כושלות / burst |
+| DB | `UPDATE … WHERE status='issued'` |
+| תשובה | `already_used` |
+| Idempotency | הצלחה כפולה לא כפל ledger |
+| Rate limit | invalid_hmac burst |
 
-Screenshot sharing: לא ניתן למנוע; חד-פעמיות ב-DB היא ההגנה.
-
----
-
-## 4. Offline supplier scan fallback
-
-### 4.1 לקוח
-
-- מציג QR/קוד מה-cache (Mobile V2)
-- לא מבצע redeem
-
-### 4.2 ספק (יעד זהיר)
-
-| מצב | התנהגות |
-|---|---|
-| Online | redeem מיידי מול API |
-| Offline | סריקה נשמרת בתור מוצפן במכשיר: payload + timestamp + member_id |
-| חזרה לרשת | flush לפי סדר; שרת מיישם אותם כללי already_used |
-| התנגשות | שרת מנצח; אם כבר redeemed → סימון מקומי failed/already_used |
-
-מגבלות:
-
-- תור offline קצר TTL (למשל 24–48ש)
-- לא לאשר "הצלחה סופית" לקופה בלי ACK שרת (רק "בתור לאימות")
-- מדיניות עסקית: חלק מהספקים יידרשו online-only ב-day-0
+Offline ספק: תור מוצפן; flush לפי סדר; TTL 24-48ש; אין "הצלחה סופית" בלי ACK.
 
 ---
 
-## 5. Rotation on suspected leak
+## 5. מקרי קצה
 
-חשד: סוד ב-git, לוג ציבורי, מכשיר נגנב עם secret, burst invalid_hmac.
-
-```text
-1. CHECKOUT_ENABLED נשאר (או כיבוי הנפקת קופונים חדשים בלבד)
-2. Generate new VOUCHER_QR_SECRET (v2)
-3. Deploy server verifying v2; optionally accept v1 for grace window
-4. Re-sign issued vouchers OR force customers to open /account/coupons for fresh QR
-5. Revoke grace on v1 after window
-6. Audit scan logs for abuse
-7. Rotate related secrets if shared material
-```
-
-תיעוד: תאריך רוטציה, גרסת מפתח, האם נדרש re-issue ללקוחות.
-
-מייל ללקוחות רק אם QR ישנים מושבתים לפני שהם מימשו (נוסח זהיר, בלי פאניקה).
+| # | מצב | התנהגות |
+|---|---|---|
+| E1 | screenshot sharing | DB חד-פעמיות |
+| E2 | exp QR < DB extends | DB מנצח; re-issue |
+| E3 | wrong supplier scan | wrong_supplier; anti-enumeration |
+| E4 | invalid_hmac burst | rate limit + alert |
+| E5 | replay אחרי success | already_used |
+| E6 | offline queue stale | drop + re-scan |
+| E7 | secret ב-git | rotation Q6 |
+| E8 | forged `/redeem/token` | generic reject |
 
 ---
 
-## 6. Display and transport security
+## 6. פתוחות
 
-| ערוץ | כלל |
-|---|---|
-| `/coupon/[id]` | רק בעלים; אין QR לאורח |
-| מייל | קישור חתום או QR מצורף; לא secret גולמי |
-| Push | בלי payload מלא |
-| Logs | מסכת קוד; לא לוג secret |
+| # | פער | תאריך |
+|---|---|---|
+| O1 | Ed25519 vs HMAC-SHA256 | HMAC v1; Ed25519 v2 אם נדרש |
+| O2 | online-only suppliers day-0 | מדיניות per supplier |
+| O3 | re-sign כל issued ברוטציה | grace + `/account/coupons` refresh |
 
 ---
 
 ## 7. Acceptance
 
-- [ ] Payload חתום עם exp + vid + sid
-- [ ] Replay → already_used
-- [ ] Secret לא ב-client
-- [ ] Offline supplier מדיניות מתועדת (queue או online-only)
-- [ ] נוהל רוטציה כתוב ובדק ב-tabletop
+- [ ] Payload חתום exp+vid+sid  
+- [ ] Replay → already_used  
+- [ ] Secret לא ב-client  
+- [ ] Offline supplier מתועד  
+- [ ] נוהל רוטציה כתוב  
+- [ ] חלופות + DB + קצה + פתוחות  
 
 ---
 
 ## 8. Revision
 
-| Date | Change |
+| תאריך | שינוי |
 |---|---|
-| 2026-08-03 | מסמך ראשוני על arch/docs-queue |
+| 2026-08-03 | מסמך ראשוני QR security |
+| 2026-08-12 | batch-2: BINDING עברית; תבנית חובה |
