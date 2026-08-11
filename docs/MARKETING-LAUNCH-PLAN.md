@@ -1,28 +1,49 @@
 # תוכנית השקה שיווקית (עברית)
 
-תוכנית פעולה להשקה מסחרית: קהל, מסרים, תקציב כיוון, לוח שבועי, ומדדי עצירה/המשך.  
-הטקסטים המלאים לרשתות ו-UTM נמצאים ב-
+Status: **PLAN** · עודכן: 2026-08-12
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+מודל כסף: No Escrow; מסר: מחיר באתר + יתרה בעסק.
 
-```
-docs/MARKETING-LAUNCH.md
-```
+---
 
-Status: **PLAN** · עודכן: 2026-08-11  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
+## 1. החלטה
 
-מסמכים קשורים:
+| # | הכרעה |
+|---|---|
+| M1 | soft-open לפני מדיה ממומנת |
+| M2 | שער: 5/10 verified + Cardcom |
+| M3 | CAC מול ledger לא face |
+| M4 | עצירה אם reconciliation שבור |
 
-```
-docs/MARKETING-LAUNCH.md
-docs/ANALYTICS-SPEC.md
-docs/LAUNCH-VALIDATION.md
-docs/LAUNCH-WEEK-RUNBOOK.md
-docs/SEO-CONTENT-STRATEGY.md
-docs/BUSINESS-MODEL.md
-docs/CONTRADICTIONS.md
-```
+---
 
-מודל מסר חובה: משלמים באתר את מחיר הקופון; יתרה בבית העסק. **אין** Escrow / נאמן / J5.
+## 2. חלופות שנדחו
+
+| חלופה | נימוק |
+|---|---|
+| "מקדמה בנאמנות" | אסור |
+| מדיה לפני consent | חוק |
+| KPI redeem יום 1 | לא ריאלי |
+
+---
+
+## 3. סכמת DB
+
+**אין DDL.** orders + ledger = מקור אמת.
+
+---
+
+## 4. מקרי קצה
+
+| E1 | 0 purchase 48h paid | בדוק landing |
+| E2 | Pixel pre-consent | illegal |
+
+---
+
+## 5. פתוחות
+
+| O1 | תקציב ₪ מספרי | מחוץ למסמך | 2026-08-12 |
 
 ---
 
@@ -150,8 +171,10 @@ SEO תוכן נלווה: `SEO-CONTENT-STRATEGY.md`. תפעול שבוע: `LAUNCH
 
 ---
 
+
 ## Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-11 | תוכנית השקה שיווקית בעברית: קהל, תקציב כיוון, שערי עצירה, מדדים |
+| 2026-08-12 | BINDING batch-2: החלטה, חלופות, DB, קצה, פתוחות |
+
