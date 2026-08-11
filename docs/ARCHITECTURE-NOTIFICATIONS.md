@@ -74,6 +74,17 @@ Worker secrets (Cloudflare): `RESEND_API_KEY`, `DATABASE_URL` או service role 
 
 גישור זמני עד Worker בפרוד: אותו חוזה outbox יכול להישאב מ-`/api/cron/notifications` ב-Next. היעד המחייב ל-bus הוא Cloudflare.
 
+### 2.1 Cloudflare (יעד)
+
+| רכיב | תפקיד |
+|---|---|
+| Worker | drain + שליחה ל-Resend/SMS/Push |
+| Queue (או Cron Trigger) | wake על הודעות חדשות / מרווח קבוע |
+| DLQ Queue | הודעות אחרי max attempts |
+| Secrets | `RESEND_API_KEY`, DB credentials מוגבלים, `SMS_*` |
+
+אין לחשוף את ה-Worker ל-internet בלי חתימת cron/queue. Payload בתור = `outbox.id` בלבד (לא PII מלא ב-CF logs).
+
 ---
 
 ## 3. תבניות Resend (עברית RTL)
@@ -224,3 +235,4 @@ CREATE TABLE public.notification_preferences (
 | 2026-08-03 | מחזור קופון + Wallet |
 | 2026-08-10 | חמשת אירועי הליבה; outbox; QStash |
 | 2026-08-11 | CF Workers bus, SMS IL, preferences, חוק ספאם, Push לאפ |
+| 2026-08-11 | §2.1 Cloudflare Queue/DLQ bindings; outbox id בתור |
