@@ -29,6 +29,7 @@ export default defineConfig({
       'src/**/*.test.ts',
       'src/**/*.test.tsx',
       'scripts/wp-import/**/*.test.mjs',
+      'scripts/lib/**/*.test.mjs',
       'scripts/seed/**/*.test.ts',
     ],
     exclude: ['node_modules', '.next', 'e2e'],

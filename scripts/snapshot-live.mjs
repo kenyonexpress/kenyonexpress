@@ -26,8 +26,14 @@
 //   ke_live_<page>.html        post-hydration DOM, one per page
 //   ke_live_<page>_<w>.png     full-page screenshot, unless --no-shots
 
-import { mkdir, writeFile } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { chromium } from '@playwright/test'
+// Shared with compare.mjs on purpose: the reference and the page scored against
+// it have to be read by the same walker, or the difference between the two
+// readers gets reported as a difference between the two designs.
+import { PROPS, collectComputed } from './lib/computed.mjs'
+import { freezeHero, loadLazyContent } from './lib/settle.mjs'
 
 function arg(name, fallback) {
   const hit = process.argv.find((a) => a.startsWith(`--${name}=`))
@@ -35,6 +41,10 @@ function arg(name, fallback) {
 }
 
 const WIDTHS = [380, 768, 1440]
+// The viewport height compare.mjs scores at. Matched on purpose: a reference
+// captured at another viewport is a reference of a different render, and any
+// element sized in vh would differ for that reason alone.
+const SHOT_HEIGHT = 2600
 const SHOTS = !process.argv.includes('--no-shots')
 
 /**
@@ -76,68 +86,7 @@ const TARGETS = only ? [only] : Object.keys(PAGES)
 // would poison every measurement taken against it afterwards.
 const MIN_HTML_BYTES = 100 * 1024
 
-/**
- * The properties worth recording, in the order the goal listed them.
- *
- * Deliberately NOT the whole CSSStyleDeclaration: that is ~340 longhand
- * properties per element, which across seven pages is a JSON nobody can diff.
- * These are the ones a layout is rebuilt from.
- */
-const PROPS = [
-  'width',
-  'height',
-  'padding-top',
-  'padding-right',
-  'padding-bottom',
-  'padding-left',
-  'margin-top',
-  'margin-right',
-  'margin-bottom',
-  'margin-left',
-  'font-family',
-  'font-size',
-  'font-weight',
-  'line-height',
-  'color',
-  'background-color',
-  'border-radius',
-]
-
-/**
- * Runs in the page. Walks every element and records the properties above.
- *
- * Elements with no box (display:none, and the head's script/meta/style nodes)
- * are skipped: they have computed styles but no geometry, and keeping them
- * triples the file for rows that can never be compared against a rendered
- * layout.
- */
-function collectComputed(props) {
-  const out = []
-  for (const el of document.querySelectorAll('*')) {
-    const rect = el.getBoundingClientRect()
-    if (rect.width === 0 && rect.height === 0) continue
-
-    const cs = getComputedStyle(el)
-    const style = {}
-    for (const prop of props) style[prop] = cs.getPropertyValue(prop)
-
-    out.push({
-      tag: el.tagName.toLowerCase(),
-      // `className` is not a string on SVG elements (it is an SVGAnimatedString),
-      // which is why this reads the attribute instead.
-      class: el.getAttribute('class') ?? '',
-      id: el.id || undefined,
-      // Rounded: sub-pixel noise differs between runs on the same page and would
-      // make every snapshot diff against the last one for no reason.
-      x: Math.round(rect.x),
-      y: Math.round(rect.y),
-      w: Math.round(rect.width),
-      h: Math.round(rect.height),
-      style,
-    })
-  }
-  return out
-}
+const COMPUTED_PATH = 'refs/ke_live_computed.json'
 
 /**
  * Puts one line in WooCommerce's cart so /cart and /checkout have something to
@@ -174,7 +123,7 @@ try {
 
     for (const width of WIDTHS) {
       const context = await browser.newContext({
-        viewport: { width, height: 1200 },
+        viewport: { width, height: SHOT_HEIGHT },
         deviceScaleFactor: 1,
         locale: 'he-IL',
         // A default headless UA is what gets served the bot challenge.
@@ -194,6 +143,15 @@ try {
       // for fonts, because font-family and line-height are two of the things
       // being recorded and both read differently before the webfont lands.
       await page.evaluate(() => document.fonts.ready)
+
+      // Settle BEFORE anything is recorded, so the screenshot and the style
+      // walk describe the same page. They did not: home was photographed at
+      // 4968px and measured at 5493px, because the screenshot's own scroll was
+      // what loaded the last 525px. See scripts/lib/settle.mjs.
+      await page.evaluate(loadLazyContent)
+      await page.waitForLoadState('networkidle').catch(() => {})
+      await page.evaluate(freezeHero)
+      await page.waitForTimeout(1200) // the theme's 700ms slide fade, plus room
 
       if (SHOTS) {
         await page.screenshot({ path: `refs/ke_live_${name}_${width}.png`, fullPage: true })
@@ -236,9 +194,28 @@ for (const [name, doc] of Object.entries(html)) {
   if (name === 'home') await writeFile('refs/ke_live_singlefile.html', doc)
 }
 
+// MERGED, not replaced. `--page=home` used to write a file containing only
+// home, silently deleting the other six pages' reference data -- and the
+// script's own success message gave no hint that it had. Every page but the
+// one being refreshed is carried over.
+//
+// The pages captured in THIS run overwrite their old entries wholesale rather
+// than being merged per width, so a page can never end up half fresh and half
+// stale at different viewports.
+let merged = computed
+if (existsSync(COMPUTED_PATH)) {
+  try {
+    merged = { ...JSON.parse(await readFile(COMPUTED_PATH, 'utf8')), ...computed }
+  } catch (unreadable) {
+    console.log(`  NOTE: ${COMPUTED_PATH} was unreadable (${unreadable.message}); writing fresh.`)
+  }
+}
+const carried = Object.keys(merged).filter((name) => !TARGETS.includes(name))
+if (carried.length > 0) console.log(`  carried over, not re-captured: ${carried.join(', ')}`)
+
 // Not pretty-printed. Indentation was 60% of this file at seven pages, and
 // nothing reads it by eye.
-await writeFile('refs/ke_live_computed.json', JSON.stringify(computed))
+await writeFile(COMPUTED_PATH, JSON.stringify(merged))
 
 console.log('\n=== snapshot-live ===')
 for (const name of TARGETS) {

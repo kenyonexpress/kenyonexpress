@@ -1,25 +1,52 @@
 import { spawn } from 'node:child_process'
-import { copyFileSync, existsSync } from 'node:fs'
+import { copyFileSync, existsSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { resolve } from 'node:path'
 import { chromium } from '@playwright/test'
+import { PROPS, collectComputed } from './lib/computed.mjs'
+import { freezeHero, loadLazyContent } from './lib/settle.mjs'
+import { compareProfiles, profilePage } from './lib/token-profile.mjs'
 
 // Usage: node scripts/compare.mjs [--page=home|product|category|products|search|cart|checkout]
-//                                 [--live=<url>] [--mine=<url>]
-// home     : live = refs/ke_live_singlefile.html    mine = http://localhost:3000/
-// product  : live = live kenyonexpress product page mine = http://localhost:3000/product/<slug>
-// category : live = live product-category archive   mine = http://localhost:3000/category/<slug>
-// coupon   : live coupon PDP vs local coupon product (QR customer page needs auth; PDP is the public surface)
-// account  : live WP /my-account/ vs local /account (set COMPARE_STORAGE_STATE for an authed session)
+//                                 [--live-source=refs|network] [--live=<url>] [--mine=<url>]
+//
+// THE REFERENCE IS refs/, NOT THE LIVE SITE.
+//
+// Every project rule says the visual source of truth is refs/, produced by
+// scripts/snapshot-live.mjs. This script used to contradict that: it opened
+// https://kenyonexpress.co.il on every run and scored the local page against
+// whatever came back at that moment. Three things were wrong with it.
+//
+//  1. It was not reproducible. The live homepage autoplays a hero every 5s and
+//     is fronted by Cloudflare; two runs of an unchanged local build could not
+//     be assumed to produce the same number, and the retry ladder below exists
+//     entirely because the live host intermittently drops navigations.
+//  2. It could not run without the network, and it paid a WooCommerce cart
+//     seeding round trip on /cart and /checkout for a reference the snapshot
+//     engine had already captured with the cart seeded.
+//  3. Nothing read refs/ke_live_computed.json, so the 6MB of per-element
+//     geometry the snapshot engine writes was decorative.
+//
+// The default is now --live-source=refs: the live side comes from
+// refs/ke_live_<page>_1440.png and refs/ke_live_computed.json, both written by
+// snapshot-live.mjs. Pass --live-source=network (or an explicit --live=<url>)
+// to score against the live site directly, which is still the right thing when
+// the question is "has the live site changed since we snapshotted it".
+//
 // Writes refs/live.png + refs/mine.png (consumed by diff-bands.mjs), plus
-// page-suffixed copies refs/live-<page>.png / refs/mine-<page>.png for reference.
+// page-suffixed copies refs/live-<page>.png / refs/mine-<page>.png, and
+// refs/mine_computed.json with the local side of the computed-style walk.
 
 const argOf = (name, dflt) => {
   const hit = process.argv.find((a) => a.startsWith(`--${name}=`))
   return hit ? hit.slice(name.length + 3) : dflt
 }
 const page = argOf('page', 'home')
-const VIEW = { width: 1440, height: 2600 }
+// 1440 is not a free choice any more: it is the widest viewport
+// snapshot-live.mjs captures, so it is the only width the stored reference PNG
+// and the stored computed styles exist at.
+const REF_WIDTH = 1440
+const VIEW = { width: REF_WIDTH, height: 2600 }
 const LOCAL = process.env.LOCAL_BASE ?? 'http://localhost:3000'
 const LIVE_HOME = 'https://kenyonexpress.co.il/'
 const LIVE_PRODUCT = 'https://kenyonexpress.co.il/product/מוצר-לדוגמא/'
@@ -47,9 +74,16 @@ const LIVE_CART = 'https://kenyonexpress.co.il/cart/'
 // the same id refs/checkout-measured.json was measured against, so the order
 // panel holds one line on both runs.
 const LIVE_ATC_ID = process.env.LIVE_ATC_ID ?? '6166'
-// The saved refs/ke_live_singlefile.html renders a collapsed header (masthead 1px,
-// no 110px header row), so it under-represents the real site. Default the home
-// reference to the live site; pass --live=<file url> to use the single-file.
+// The URLs above are used only by --live-source=network now, and they are also
+// the URLs snapshot-live.mjs captured the stored reference from. Kept in step
+// with that list deliberately: if the two drift, the reference stops being of
+// the page being measured.
+//
+// Do NOT point --live at refs/ke_live_singlefile.html to get an offline run.
+// Reopening that saved DOM from file:// renders a collapsed masthead -- 1px,
+// no 110px header row -- because the theme rebuilds the header on the client
+// and none of that runs again from a file. That is why the offline reference is
+// the PNG the snapshot took of the real render, not the HTML it saved next to it.
 
 if (!process.env.PLAYWRIGHT_BROWSERS_PATH) {
   const cache = resolve(homedir(), 'Library/Caches/ms-playwright')
@@ -67,6 +101,15 @@ const ctx = await b.newContext({
 
 let liveUrl = argOf('live', null)
 let mineUrl = argOf('mine', null)
+
+// An explicit --live=<url> is a request to score against that URL, so it picks
+// the network path on its own. Everything else defaults to the stored refs.
+const LIVE_SOURCE = argOf('live-source', liveUrl ? 'network' : 'refs')
+if (LIVE_SOURCE !== 'refs' && LIVE_SOURCE !== 'network') {
+  console.error(`unknown --live-source=${LIVE_SOURCE} (use refs or network)`)
+  process.exit(2)
+}
+const USE_REFS = LIVE_SOURCE === 'refs'
 
 if (page === 'home') {
   liveUrl ??= LIVE_HOME
@@ -158,6 +201,50 @@ if (page === 'home') {
 }
 
 const CART_EMPTY_ONLY = process.env.COMPARE_CART_EMPTY === '1'
+
+// ---------------------------------------------------------------------------
+// The stored reference
+// ---------------------------------------------------------------------------
+
+const REF_SHOT = `refs/ke_live_${page}_${REF_WIDTH}.png`
+const REF_HTML = `refs/ke_live_${page}.html`
+const REF_COMPUTED = 'refs/ke_live_computed.json'
+const REBUILD = `node scripts/snapshot-live.mjs --page=${page}`
+
+/** Live-side elements at REF_WIDTH, read from refs; null in network mode. */
+let liveElements = null
+
+if (USE_REFS) {
+  // Fail here, before a browser is launched and before the local cart is
+  // seeded. A missing reference is a setup problem, and finding it out after
+  // two minutes of seeding is the kind of thing that gets a run abandoned
+  // rather than fixed.
+  const missing = [REF_SHOT, REF_COMPUTED].filter((file) => !existsSync(file))
+  if (missing.length > 0) {
+    console.error(`REFUSING to measure: no stored reference for --page=${page}.`)
+    for (const file of missing) console.error(`  missing ${file}`)
+    console.error(`Build it with:  ${REBUILD}`)
+    console.error('Or score against the live site directly with --live-source=network.')
+    process.exit(3)
+  }
+
+  const stored = JSON.parse(readFileSync(REF_COMPUTED, 'utf8'))
+  liveElements = stored?.[page]?.[String(REF_WIDTH)]
+  if (!Array.isArray(liveElements) || liveElements.length === 0) {
+    console.error(`REFUSING to measure: ${REF_COMPUTED} has no ${page} at ${REF_WIDTH}px.`)
+    console.error(`Build it with:  ${REBUILD}`)
+    process.exit(3)
+  }
+
+  // Not a failure, because an old reference is still a reference and the live
+  // site is not redesigned weekly. It is said out loud because a number scored
+  // against a stale snapshot looks exactly like a number scored against a fresh
+  // one, and the difference has been mistaken for a regression before.
+  const ageDays = (Date.now() - statSync(REF_SHOT).mtimeMs) / 86_400_000
+  if (ageDays > 14) {
+    console.log(`  NOTE: ${REF_SHOT} is ${Math.round(ageDays)} days old. Re-snapshot: ${REBUILD}`)
+  }
+}
 
 // Puts one line in the cart the page under test will read. Live takes the
 // WooCommerce GET; ours has no such route, so the local seed drives the real
@@ -326,62 +413,84 @@ const shoot = async (url, out) => {
       return /(סל|עגל)[^.]{0,20}ריק|אין מוצרים בסל|cart is currently empty/i.test(text)
     })
   }
-  // Stop the hero before shooting.
+  // Settle the page, exactly as snapshot-live.mjs settles the reference: pull
+  // in everything that loads on approach, then stop the hero on slide 1. Both
+  // steps live in scripts/lib/settle.mjs so the two scripts cannot drift.
   //
   // OUR slider no longer autoplays unless the visitor has pressed something
   // (see the autoplay effect in HeroSlider.tsx - revealing a slide was setting
-  // the homepage's LCP), and the synthetic events below are not trusted input,
-  // so locally this is already holding slide 1 by the time we arrive. It stays
-  // because LIVE still autoplays every 5s against our 6s wait, and because a
-  // fullPage capture is slow enough to advance mid-scroll: without this the
-  // reference moves under us even when our side is frozen.
-  //
-  // Pointer-enter is the component's own supported way to hold a slide, so use
-  // that rather than reaching into its state. Pages without a hero match
-  // nothing and are untouched.
-  await p
-    .evaluate(() => {
-      const hero = document.querySelector(
-        '[data-hero-slider], .home-v1-slider, rs-module, [class*="hero"]',
-      )
-      // Pause first, then put slide 1 back. Pausing alone is not enough for the
-      // live reference: its wait above is 6s and its autoplay fires at 5s, so
-      // by the time we get here it has already advanced once and pausing would
-      // just hold the wrong slide.
-      hero?.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true, view: window }))
-      const firstSlide =
-        document.querySelector('rs-bullet') ??
-        document.querySelector('button[aria-label="שקופית 1"]')
-      firstSlide?.dispatchEvent(
-        new MouseEvent('click', { bubbles: true, cancelable: true, view: window }),
-      )
-    })
-    .catch(() => {})
+  // the homepage's LCP), and synthetic events are not trusted input, so locally
+  // this is already holding slide 1 by the time we arrive. It stays because
+  // LIVE still autoplays every 5s against our 6s wait.
+  await p.evaluate(loadLazyContent).catch(() => {})
+  if (!external) await p.waitForLoadState('networkidle').catch(() => {})
+  await p.evaluate(freezeHero).catch(() => {})
   // 700ms opacity transition on our slider, plus room for live's.
   await p.waitForTimeout(1200)
 
   await p.screenshot({ path: out, fullPage: true })
+  // The same walk snapshot-live.mjs ran against the reference, run here against
+  // the page being scored. Taken after the screenshot so both describe the same
+  // frozen state of the page.
+  const elements = await p.evaluate(collectComputed, PROPS)
   await p.close()
-  console.log(`${out} written (${url})`)
+  console.log(`${out} written (${url}) - ${elements.length} boxes`)
+  return elements
 }
 
 const cartEmptiness = { live: null, mine: null }
+
+// snapshot-live.mjs seeds the WooCommerce cart before it captures /cart and
+// /checkout, so a stored reference for either page is the FILLED state by
+// construction. Confirmed against the text rather than assumed: the shipped
+// refs/ke_live_cart.html carries three cart_item rows and none of the three
+// empty-cart wordings. Reading it here keeps the guard honest if that ever
+// changes -- a reference that says "empty" now refuses the run instead of
+// quietly scoring an empty page against a filled one.
+const refCartIsEmpty = () => {
+  if (!existsSync(REF_HTML)) return null
+  const text = readFileSync(REF_HTML, 'utf8').replace(/<[^>]*>/g, ' ')
+  return /(סל|עגל)[^.]{0,20}ריק|אין מוצרים בסל|cart is currently empty/i.test(text)
+}
+
+if (USE_REFS && page === 'cart' && CART_EMPTY_ONLY) {
+  console.error(
+    'REFUSING to measure: COMPARE_CART_EMPTY=1 has no stored reference to score against.',
+  )
+  console.error(
+    'The reference cart is captured with a line in it. Use --live-source=network for the empty state.',
+  )
+  process.exit(3)
+}
 
 if (page === 'checkout' || (page === 'cart' && !CART_EMPTY_ONLY)) {
   // Local first. Seeding live first left the next navigation in this context
   // waiting out its full timeout on a page that answers in under a second
   // cold, and the order costs nothing to get right.
   await seedCart('mine')
-  await seedCart('live')
+  // In refs mode the live cart was already seeded, by snapshot-live.mjs, at the
+  // moment the reference was captured. Seeding it again here would be a minute
+  // of network for a page this run never opens.
+  if (!USE_REFS) await seedCart('live')
 }
 
-await shoot(liveUrl, 'refs/live.png')
-await shoot(mineUrl, 'refs/mine.png')
+if (USE_REFS) {
+  copyFileSync(REF_SHOT, 'refs/live.png')
+  cartEmptiness.live = refCartIsEmpty()
+  console.log(`refs/live.png <- ${REF_SHOT} (${liveElements.length} boxes from ${REF_COMPUTED})`)
+} else {
+  liveElements = await shoot(liveUrl, 'refs/live.png')
+}
+const mineElements = await shoot(mineUrl, 'refs/mine.png')
 
 // Two carts in different states are not a comparison. This is the same rule as
 // the not-found and the checkout-redirect guards: refuse rather than print a
 // percentage nobody can act on.
-if (page === 'cart' && cartEmptiness.live !== cartEmptiness.mine) {
+if (page === 'cart' && cartEmptiness.live === null) {
+  console.log(
+    `cart: ${REF_HTML} is missing, so the reference state could not be read. Rebuild: ${REBUILD}`,
+  )
+} else if (page === 'cart' && cartEmptiness.live !== cartEmptiness.mine) {
   const describe = (v) => (v ? 'empty' : 'filled')
   console.error(
     `REFUSING to measure: live cart is ${describe(cartEmptiness.live)} and the local cart is ${describe(cartEmptiness.mine)}.`,
@@ -399,7 +508,15 @@ copyFileSync('refs/mine.png', `refs/mine-${page}.png`)
 
 await b.close()
 
-console.log(`=== compare --page=${page} ===`)
+// The local half of what refs/ke_live_computed.json holds for the live half.
+// Written per page rather than accumulated, because a run measures one page and
+// a file that mixed a fresh page with six stale ones would be a trap.
+writeFileSync(
+  'refs/mine_computed.json',
+  JSON.stringify({ page, width: REF_WIDTH, elements: mineElements }),
+)
+
+console.log(`=== compare --page=${page} (live from ${USE_REFS ? REF_SHOT : liveUrl}) ===`)
 await new Promise((resolvePromise, reject) => {
   const child = spawn(process.execPath, [resolve('scripts/diff-bands.mjs')], {
     stdio: 'inherit',
@@ -410,3 +527,56 @@ await new Promise((resolvePromise, reject) => {
     code === 0 ? resolvePromise() : reject(new Error(`diff-bands exited ${code}`)),
   )
 })
+
+// ---------------------------------------------------------------------------
+// The second measurement: what the pixels cannot say
+//
+// The band diff answers "do these two images differ", which is the gate. It
+// cannot say WHY, and on a page whose blocks sit at different heights it says
+// 40% for a design that is right and shifted. The computed styles answer the
+// other half: which type sizes, weights, families, colours and radii the two
+// pages spend their area on. A shifted-but-correct page scores near 0 here.
+// ---------------------------------------------------------------------------
+
+const liveProfile = profilePage(liveElements)
+const mineProfile = profilePage(mineElements)
+const tokens = compareProfiles(liveProfile, mineProfile)
+const pct = (n) => `${(100 * n).toFixed(1)}%`
+
+console.log(`\n=== computed styles, ${REF_WIDTH}px ===`)
+console.log(
+  `boxes:  live ${liveProfile.count}  mine ${mineProfile.count}` +
+    `   (${mineProfile.count - liveProfile.count >= 0 ? '+' : ''}${mineProfile.count - liveProfile.count})`,
+)
+const heightDelta = mineProfile.pageHeight - liveProfile.pageHeight
+const heightPct = liveProfile.pageHeight > 0 ? (100 * heightDelta) / liveProfile.pageHeight : 0
+console.log(
+  `height: live ${liveProfile.pageHeight}px  mine ${mineProfile.pageHeight}px` +
+    `   (${heightDelta >= 0 ? '+' : ''}${heightDelta}px, ${heightPct >= 0 ? '+' : ''}${heightPct.toFixed(1)}%)`,
+)
+// A page shorter than the window still has a root box the height of the window,
+// so `2600` here is the viewport and not the content. Said out loud because
+// four of the seven pages report exactly that, and reading the difference
+// between one capped side and one real one as a layout regression is the sort
+// of number this whole script exists to stop producing.
+if (liveProfile.pageHeight <= VIEW.height || mineProfile.pageHeight <= VIEW.height) {
+  const capped = [
+    liveProfile.pageHeight <= VIEW.height ? 'live' : null,
+    mineProfile.pageHeight <= VIEW.height ? 'mine' : null,
+  ]
+    .filter(Boolean)
+    .join(' and ')
+  console.log(
+    `        (${capped} fits in the ${VIEW.height}px window, so that height IS the window)`,
+  )
+}
+console.log(`TOKEN DISTANCE (mean of the properties below): ${tokens.overallPct}%`)
+for (const { prop, pct: distance, worst } of tokens.props) {
+  console.log(`  ${prop.padEnd(17)} ${String(distance).padStart(6)}%`)
+  for (const gap of worst) {
+    if (gap.gap < 0.005) continue // under half a percent of the page: noise
+    console.log(
+      `      ${gap.value.slice(0, 46).padEnd(46)} live ${pct(gap.live).padStart(6)}   mine ${pct(gap.mine).padStart(6)}`,
+    )
+  }
+}
