@@ -1,9 +1,9 @@
 # ארכיטקטורה: החזרים ומחלוקות
 
-החזר קופון לפני/אחרי מימוש, החזרות פיזי לפי דיני צרכן בישראל (14 יום), היפוך ledger (אין Escrow), Cardcom Refund API, ומכונת מצבי dispute.
+החזר קופון לפני/אחרי מימוש, החזרות פיזי לפי דיני צרכן בישראל (14 יום), Cardcom Refund, היפוך ledger לפיזי שכבר שולם לספק (**No Escrow**), ומכונת מצבי dispute.
 
-Status: **BINDING** · עודכן: 2026-08-11  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #11/50  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
 **אינה ייעוץ משפטי.** ניסוח ללקוח רק אחרי עו״ד.
@@ -16,18 +16,19 @@ docs/DISPUTE-RESOLUTION.md
 docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 docs/CARDCOM-ARCHITECTURE.md
 docs/ARCHITECTURE-FRAUD-PREVENTION.md
-docs/COUPON-LIFECYCLE-SPEC.md
-docs/PAYOUT-ARCHITECTURE.md
-docs/VENDOR-PAYOUT-SPEC.md
+docs/ARCHITECTURE-COUPON-LIFECYCLE.md
+docs/ARCHITECTURE-PAYOUT-MECHANISM.md
 docs/ARCHITECTURE-CUSTOMER-SUPPORT.md
+docs/ARCHITECTURE-CHECKOUT-FLOW.md
 docs/CONTRADICTIONS.md
+docs/BUSINESS-MODEL.md
 ```
 
 ---
 
 ## 0. המלצה אחת (מחייבת)
 
-**אין Escrow ואין "שחרור נאמן".** החזר ללקוח = Cardcom refund (או זיכוי ארנק כשמותר) + עדכון voucher/order + היפוך settlement (`supplier_debit` לפיזי שכבר שולם לספק). קופון אחרי `redeemed`: אין ביטול אוטומטי של מימוש; פיצוי דרך dispute בלבד.
+**אין Escrow ואין "שחרור נאמן".** החזר ללקוח = Cardcom refund (או זיכוי ארנק כשמותר) + עדכון voucher/order + היפוך settlement לפיזי (`supplier_debit` אם כבר שולם לספק). קופון אחרי `redeemed`: אין ביטול אוטומטי של מימוש; פיצוי רק דרך dispute.
 
 ---
 
@@ -37,14 +38,14 @@ docs/CONTRADICTIONS.md
 |---|---|
 | R1 | מכר מרחוק: חלון **14 יום** כשחל החוק ואין פטור (**[דורש עו״ד]**). |
 | R2 | דמי ביטול כשמותר: עד **5% או 100 ₪**, הנמוך. |
-| R3 | קופון: סכום הבסיס להחזר = מה ששולם **באתר** (`paid_on_site`), לא face. |
-| R4 | לפני מימוש (`issued`): ביטול מקוון אפשרי במסלול מדיניות + freeze → refunded. |
+| R3 | קופון: בסיס להחזר = מה ששולם **באתר** (`paid_on_site` / `coupon_price`), לא face. |
+| R4 | לפני מימוש (`issued`): ביטול מקוון אפשרי במסלול מדיניות + freeze → `refunded`. |
 | R5 | אחרי מימוש (`redeemed`): אין unwind של הסטטוס; dispute → ארנק / Cardcom / דחייה. |
 | R6 | פיזי: החזרה/ביטול לפי דין + סטטוס משלוח; ledger הפוך אם כבר payout. |
 | R7 | Cardcom: `RefundByTransactionId` (+ `CancelOnly` אותו יום כשמתאים). |
-| R8 | כל refund/dispute ב-`audit_log` + טבלת `refunds` / `disputes`. |
-| R9 | No Escrow: אין אירוע "release_escrow" / held לספק על מקדמת קופון. |
-| R10 | Chargeback → freeze אם issued; תור `manual_review` (FRAUD). |
+| R8 | כל refund/dispute ב-`audit_log` + טבלאות `refunds` / `disputes`. |
+| R9 | No Escrow: אין אירוע release_escrow / held לספק על מקדמת קופון. |
+| R10 | Chargeback → freeze אם `issued`; תור `manual_review` (FRAUD). |
 
 ---
 
@@ -59,23 +60,24 @@ docs/CONTRADICTIONS.md
        Cardcom RefundByTransactionId (או CancelOnly)
        payments / orders מסומנים
        voucher → refunded
-       outbox: refund confirmation email
+       outbox: refund confirmation
   → COMMIT + audit
 ```
 
 | כלל | פירוט |
 |---|---|
-| QR | אחרי freeze/refund: חתימה לא תעבור redeem |
+| QR | אחרי freeze/refund: חתימה לא תעבור redeem תקף |
 | כסף | רק סכום האתר; יתרה "בעסק" לא מוחזרת כי לא נגבתה |
 | כשל Cardcom | voucher נשאר frozen; תור ops; אין redeem |
 | Idempotency | מפתח refund יציב; `AllowMultipleRefunds` רק במודע |
+| Race מול redeem | FOR UPDATE; refund רק מ-`issued`; אחרי `redeemed` אין refund אוטומטי לכרטיס |
 
 ---
 
 ## 3. קופון: אחרי מימוש
 
 ```text
-redeemed → אין שינוי ל-issued
+redeemed → אין שינוי חזרה ל-issued
   → פתיחת dispute (לקוח/תמיכה)
   → מכונת מצבים §7
   → פיצוי אפשרי: wallet credit | Cardcom refund | דחייה
@@ -83,7 +85,7 @@ redeemed → אין שינוי ל-issued
 ```
 
 נטל ראיה במחלוקת מימוש: על הספק (`DISPUTE-RESOLUTION.md`).  
-החזר ללקוח אחרי redeem אינו "ביטול עסקה רגילה" אלא הכרעה מסחרית/דין עם audit.
+החזר ללקוח אחרי redeem אינו ביטול עסקה רגילה אלא הכרעה מסחרית/דין עם audit.
 
 ---
 
@@ -107,25 +109,25 @@ refund_agorot = paid_on_site_agorot - fee_agorot
 
 ---
 
-## 5. "Escrow reversal" (פירוש מחייב: אין Escrow)
+## 5. היפוך ledger לפיזי (לא Escrow)
 
-בקשות ישנות / נוסח חיצוני שמדברות על "היפוך escrow" מתורגמות כך:
+בקשות/נוסחים ישנים על "היפוך escrow" מתורגמים כך:
 
 | נוסח שגוי | מנגנון אמיתי |
 |---|---|
 | שחרור held לספק בקופון | **לא קיים** (No Escrow) |
 | ביטול held בקופון | freeze/refund של מקדמת האתר ללקוח בלבד |
-| היפוך אחרי payout פיזי | `supplier_debit` + תביעה מול באצ' הבא / clawback |
+| היפוך אחרי payout פיזי | `supplier_debit` + קיזוז באצ' הבא / clawback |
 | chargeback על קופון issued | freeze; אין release לספק |
 
 ```text
 פיזי שכבר charge_settled / שולם לספק
   → Cardcom refund ללקוח
-  → settlement_events: supplier_debit (סכום חלק הספק)
+  → settlement_events: supplier_debit (חלק הספק)
   → באצ' payout הבא מקזז / דורש החזרה מהספק
 ```
 
-קופון: אין שורת payout מהמקדמה; refund לא יוצר "היפוך escrow".
+קופון: אין שורת payout מהמקדמה; refund לא יוצר היפוך נאמן.
 
 ---
 
@@ -142,10 +144,10 @@ refund_agorot = paid_on_site_agorot - fee_agorot
 
 דרישות:
 
-- `CARDCOM_API_PASSWORD` בפרוד (בלי זה זיכויים נכשלים בשקט תפעולי)  
+- `CARDCOM_API_PASSWORD` בפרוד  
 - מקור אמת עסקה: `TransactionId` מאומת מ-`payments` / GetLpResult  
 - כסף באגורות בדומיין; המרה לפורמט Cardcom בשכבת הלקוח בלבד  
-- הצלחת API → עדכון DB באותה TX לוגית; כשל → מצב `refund_failed` + Sentry  
+- הצלחת API → עדכון DB באותה TX לוגית; כשל → `refund_failed` + Sentry  
 
 אין PAN/CVV. אין refund מ-client בלי admin/session מורשה.
 
@@ -208,8 +210,8 @@ disputes (
 - [ ] קופון issued: מסלול ביטול + Cardcom + `refunded`  
 - [ ] קופון redeemed: בלי unwind; רק dispute  
 - [ ] פיזי: חלון 14 יום מתועד במדיניות (**[דורש עו״ד]** לטקסט לקוח)  
-- [ ] אין אירועי Escrow/held בסכמה או בנוסח  
-- [ ] `supplier_debit` אחרי payout פיזי  
+- [ ] אין אירועי Escrow/held בסכמה או בנוסח מחייב  
+- [ ] `supplier_debit` אחרי payout פיזי (לא "היפוך escrow")  
 - [ ] מכונת dispute + audit  
 - [ ] Refund API עם idempotency וטיפול כשל  
 
@@ -219,4 +221,5 @@ disputes (
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-11 | יצירה: לפני/אחרי redeem, 14 יום, ledger reversal, Cardcom, dispute SM |
+| 2026-08-11 | יצירה: לפני/אחרי redeem, 14 יום, ledger, Cardcom, dispute SM |
+| 2026-08-12 | batch #11/50: חיזוק No Escrow; היפוך ledger לפיזי בלבד; יישור ל-`redeemed` |
