@@ -21,7 +21,7 @@ arch/docs-batch-2
 .
 
 ## Last Completed
-ARCHITECTURE-CARDCOM-WEBHOOKS.md: חתימה, idempotency, DLQ, double charge, webhook כפול, multi-terminal + תבנית חובה.
+ARCHITECTURE-CHECKOUT-FLOW.md: חידוד מפת S0–S8 (יציאות כישלון, settlement_status, מעברים אסורים). קודם: שכתוב מלא + CARDCOM-WEBHOOKS.
 
 ## In Progress
 nothing
