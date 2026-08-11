@@ -1,10 +1,10 @@
-# מפרט: API ציבורי לספקים גדולים (עתידי)
+# מפרט API ציבורי לספקים (עתידי)
 
-API מפתחים לספקי enterprise: קריאת מכירות ועדכון מלאי, עם API keys ו-rate limits.
+API מפתחים ל-enterprise: קריאת מכירות, עדכון מלאי, API keys, rate limits.
 
-Status: **DESIGN** · עודכן: 2026-08-10  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
-אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד. כסף: **agorot integer**; **No Escrow**; snapshot `platform_percent` בלי default.
 
 מסמכים קשורים:
 
@@ -12,138 +12,83 @@ Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 docs/ARCHITECTURE-API-CONTRACTS.md
 docs/ARCHITECTURE-SUPPLIER-PORTAL.md
 docs/ARCHITECTURE-INVENTORY.md
-docs/ARCHITECTURE-SECURITY.md
 docs/ARCHITECTURE-FRAUD-PREVENTION.md
-docs/CONTRADICTIONS.md
 ```
 
-לא מחליף את חוזי ה-API הפנימיים ב-
-
-```
-docs/ARCHITECTURE-API-CONTRACTS.md
-```
-
-זה שכבת **שותפים חיצוניים** בלבד.
+שכבת **שותפים חיצוניים** בלבד; לא מחליף API פנימי.
 
 ---
 
-## 0. הכרעות
+## החלטה
 
 | # | הכרעה |
 |---|---|
-| P1 | MVP ציבורי = קריאה בלבד למכירות + כתיבה מוגבלת למלאי/מכסות דיל. אין תשלום Cardcom דרך API זה. |
-| P2 | אימות: API key לספק (`Authorization: Bearer ke_live_...`) + scope. אין service-role ללקוח. |
-| P3 | Rate limit לפי מפתח: ברירת מחדל 60 req/min, burst 120; enterprise לפי חוזה. |
-| P4 | כל כסף בדוחות = snapshots / ledger כמו בפרוד. **No Escrow.** אין שדות held/J5. |
-| P5 | מלאי: עדכון מכסה/מלאי דיל של הספק בלבד; אסור לגעת בדילים של ספק אחר. |
-| P6 | גרסה בנתיב: `/v1/...`. שינוי שובר = גרסה חדשה. |
-| P7 | Webhooks אופציונליים בשלב 2 (paid / redeemed). שלב 1 = polling. |
+| P1 | MVP = קריאת מכירות + כתיבה מוגבלת למלאי; **אין** Cardcom דרך API זה. |
+| P2 | אימות: `Authorization: Bearer ke_live_...` + scope; אין service-role ללקוח. |
+| P3 | Rate limit: 60 req/min, burst 120; enterprise לפי חוזה. |
+| P4 | דוחות כסף = snapshots/ledger; אין שדות held/J5/Escrow. |
+| P5 | מלאי: רק דילים של הספק; אסור מחיר/`platform_percent`. |
+| P6 | גרסה בנתיב: `/v1/...`; breaking = גרסה חדשה. |
+| P7 | Webhooks (paid/redeemed) = phase 2; phase 1 = polling. |
+
+Base: `https://api.kenyonexpress.co.il/v1` (עתידי). שגיאות: `{ error: { code, message_he, request_id } }`.
 
 ---
 
-## 1. בסיס
+## חלופות שנדחו
 
-| נושא | חוזה |
+| חלופה | למה נדחתה |
 |---|---|
-| Base URL | `https://api.kenyonexpress.co.il/v1` (עתידי; עד אז אין דומיין חי) |
-| פורמט | JSON UTF-8 |
-| זמן | ISO-8601, אזור `Asia/Jerusalem` בשדות תצוגה בלבד |
-| מטבע | אגורות (`*_agorot`) בשדות כסף |
-| שגיאות | `{ "error": { "code", "message_he", "request_id" } }` |
+| checkout דרך API ציבורי | P1: מחוץ לסקופ. |
+| service-role key לספק | P2: RLS לפי supplier_id. |
+| float בשדות כסף | agorot integer. |
+| webhooks ב-MVP | P7: polling קודם. |
+| גישה ל-ledger גלובלי | מחוץ לסקופ. |
 
 ---
 
-## 2. API keys
+## סכמת DB
 
-| שדה | משמעות |
-|---|---|
-| `key_id` | מזהה ציבורי ללוגים |
-| `secret` | מוצג פעם אחת ב-create; נשמר כ-hash |
-| `supplier_id` | בעלות |
-| `scopes` | `sales:read`, `inventory:write`, `inventory:read` |
-| `env` | `test` / `live` |
-| `revoked_at` | ביטול מיידי |
+```text
+api_keys (יעד)
+  key_id, secret_hash, supplier_id, scopes[], env, revoked_at
 
-ניהול: אדמין או פורטל ספק (enterprise). רוטציה: create חדש → חפיפה → revoke ישן.
+audit_log  -- כל כתיבה
 
----
-
-## 3. Rate limits
-
-| מנגנון | פרט |
-|---|---|
-| מפתח | token bucket; כותרות `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `Retry-After` |
-| IP | רשת ביטחון מול ניחוש מפתחות |
-| 429 | גוף שגיאה + `request_id` ל-support |
-
-חריגה חוזרת: throttle אוטומטי + התראת fraud/ops.
-
----
-
-## 4. Endpoints (שלב 1)
-
-### 4.1 מכירות (קריאה)
-
-`GET /v1/sales`
-
-| Query | חובה | משמעות |
-|---|---|---|
-| `from` / `to` | כן | חלון זמן (max 31 יום לבקשה) |
-| `cursor` | לא | עימוד |
-| `status` | לא | `paid` / `refunded` / ... |
-
-תשובה (עקרון): שורות הזמנה של הספק עם `product_id`, `qty`, `customer_pays_now_agorot`, `platform_percent` (snapshot), `type` (`coupon`/`physical`). בלי PII מלא של לקוח (מינימום: order ref פנימי).
-
-`GET /v1/sales/{order_item_id}`: פירוט שורה אחת בבעלות הספק.
-
-### 4.2 מלאי (קריאה + עדכון)
-
-`GET /v1/inventory` : דילים של הספק + `quota_remaining` / `stock`.
-
-`PATCH /v1/inventory/{product_id}` :
-
-```json
-{
-  "quota_total": 500,
-  "stock": 120,
-  "idempotency_key": "inv-2026-08-10-01"
-}
+קריאה:
+  order_items, orders, products, inventory/quota
 ```
 
-חוקים: רק שדות מלאי/מכסה; לא מחיר; לא `platform_percent`; לא סטטוס publish בלי scope נפרד (עתידי).
+DDL ב-phase נפרד; אין migration במסמך זה.
 
 ---
 
-## 5. אבטחה
+## מקרי קצה
 
-- TLS בלבד
-- אין מפתחות ב-query string
-- Audit log לכל כתיבה
-- IP allowlist אופציונלי לספק גדול
-- חתימת webhook (שלב 2): HMAC-SHA256
-
----
-
-## 6. מה מחוץ לסקופ
-
-- יצירת הזמנות / checkout
-- מימוש קופון (נשאר ב-scanner / פורטל)
-- שינוי עמלות
-- גישה ל-ledger גלובלי של הפלטפורמה
+| # | מקרה | התנהגות |
+|---|---|---|
+| CE1 | מפתח `sales:read` על PATCH מלאי | 403 |
+| CE2 | ספק א מנסה מכירות של ב | ריק / 404 |
+| CE3 | חלון `from/to` > 31 יום | 400 |
+| CE4 | 429 תחת עומס | `Retry-After` + `request_id` |
+| CE5 | PATCH מחיר מוצר | 403 |
+| CE6 | idempotency_key כפול | 200 עם אותה תוצאה |
 
 ---
 
-## 7. Acceptance
+## פתוחות
 
-- [ ] מפתח עם `sales:read` בלבד נחסם על PATCH מלאי
-- [ ] ספק א לא רואה מכירות של ספק ב
-- [ ] 429 + כותרות limit תחת עומס
-- [ ] אין שדות Escrow/held ב-JSON
+| # | פתוח | הערה |
+|---|---|---|
+| O1 | דומיין API חי | עד אז אין endpoint ציבורי. |
+| O2 | IP allowlist enterprise | אופציונלי. |
+| O3 | HMAC webhooks phase 2 | P7. |
 
 ---
 
-## 8. Revision
+## Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-10 | טיוטת API ציבורי: sales read + inventory write, keys, limits |
+| 2026-08-10 | rev A: sales read + inventory |
+| 2026-08-12 | batch-2: BINDING 5 סעיפים |

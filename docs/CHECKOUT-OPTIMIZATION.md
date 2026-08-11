@@ -1,114 +1,71 @@
-# אופטימיזציית Checkout (משפך)
+# אופטימיזציית Checkout
 
-כל שלב מנטישה אפשרית, מדדי יעד, ורעיונות A/B לפי עלות/תועלת.
-
-Status: **PLAN** · עודכן: 2026-08-10  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
-אין שינוי קוד. אין נגיעה בתיקייה הראשית.
-
-מסמכים קשורים:
+תקציר BINDING למשפך ו-A/B. פירוט:
 
 ```
-docs/GUEST-VS-MEMBER-STRATEGY.md
-docs/ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md
-docs/CARDCOM-ARCHITECTURE.md
-docs/ANALYTICS-SPEC.md
-docs/TESTING-STRATEGY.md
-docs/CONTRADICTIONS.md
-```
-
-מודל: No Escrow; סכום לתשלום באתר = מה שהלקוח רואה בקופה (agorot).
-
----
-
-## 1. שלבי המשפך
-
-| # | שלב | נטישה טיפוסית | אות אנליטיקה |
-|---|---|---|---|
-| 1 | צפייה במוצר | מחיר/יתרה בעסק לא ברורים | `view_product` |
-| 2 | הוספה לעגלה | כפתור / וריאנט / מלאי | `add_to_cart` |
-| 3 | עגלה | משלוח מבלבל, סה״כ מפתיע | `begin_checkout` (או view cart) |
-| 4 | זהות (אורח→התחברות) | חובת Google בלי הסבר | `checkout_step` identity |
-| 5 | כתובת (פיזי בלבד) | שדות ארוכים / שגיאות | `checkout_step` address |
-| 6 | אישור ותשלום | פחד Cardcom / זמן טעינה | `checkout_step` payment_redirect |
-| 7 | חזרה מ-Cardcom | webhook/return נכשל | `purchase` / failed |
-| 8 | אחרי קנייה (קופון) | לא מוצאים QR | redeem later |
-
----
-
-## 2. מדדי יעד (כיוון MVP)
-
-בסיס: למדוד שבועיים אחרי soft-open, אחר כך לקבע יעדים. מספרים למטה = **יעד כיוון**, לא הבטחה.
-
-| מעבר | יעד המרה (כיוון) | הערה |
-|---|---|---|
-| view → add_to_cart | ≥ 8% | דילים חמים גבוה יותר |
-| cart view → begin_checkout | ≥ 55% | |
-| begin_checkout → payment_redirect | ≥ 70% | אחרי זהות |
-| payment_redirect → purchase | ≥ 85% | תלוי Cardcom |
-| purchase (coupon) → redeem@30d | לפי קטגוריה | לא יעד checkout |
-
-שבירת אורח/חבר: לדווח בנפרד (ראה GUEST-VS-MEMBER).
-
----
-
-## 3. נקודות כאב מוכרות (לתיעוד, לא בהכרח באגים)
-
-| שלב | כאב | כיוון תיקון |
-|---|---|---|
-| מוצר | יתרה בעסק לא מודגשת | בלוק "משלמים עכשיו / בעסק" |
-| עגלה | סיכום ארוך במובייל | sticky סיכום + CTA |
-| זהות | אורח חייב login לתשלום | הסבר משפט אחד + שמירת עגלה |
-| Cardcom | חרדה בדף חיצוני | מיקרו־קופי לפני redirect |
-| חזרה | pending ארוך | מסך "בודקים תשלום" + תמיכה |
-
----
-
-## 4. רעיונות A/B (ממוספרים לפי עלות/תועלת)
-
-סולם עלות: 1 = העתקת טקסט, 5 = פיצ'ר מלא. תועלת: 1-5.
-
-| ID | רעיון | שלב | עלות | תועלת | יחס |
-|---|---|---|---:|---:|---|
-| AB-01 | הדגשת "לתשלום באתר ₪X · יתרה בעסק ₪Y" מעל CTA | 1-3 | 1 | 5 | גבוה |
-| AB-02 | כפתור עגלה sticky במובייל | 3 | 2 | 4 | גבוה |
-| AB-03 | משפט לפני Google: "העגלה נשמרת אחרי ההתחברות" | 4 | 1 | 4 | גבוה |
-| AB-04 | צמצום שדות כתובת (עיר+רחוב חובה; דירה אופציונלי) | 5 | 2 | 3 | בינוני |
-| AB-05 | מסך ביניים "מעבירים לסליקה מאובטחת" 1.5 שנ׳ | 6 | 2 | 3 | בינוני |
-| AB-06 | אורח checkout מלא (בלי חשבון) לקופון-only | 4 | 5 | 5 | גבוה אבל סיכון fraud/תמיכה |
-| AB-07 | התראת מלאי "נשארו N" בעגלה | 3 | 3 | 3 | בינוני |
-| AB-08 | אחרי purchase: deep link ישר ל-QR | 8 | 3 | 5 | גבוה לקופון |
-| AB-09 | הסרת שדות מיותרים מסיכום הזמנה | 3 | 1 | 2 | נמוך |
-| AB-10 | A/B צבע CTA (זהירות מול מותג) | 3-6 | 1 | 2 | נמוך |
-
-סדר מומלץ ליישום: **AB-01 → AB-03 → AB-02 → AB-08 → AB-05**.  
-AB-06 רק אחרי מדיניות fraud + תמיכה.
-
----
-
-## 5. מה לא לעשות
-
-- לשנות מחיר בין עגלה ל-Cardcom (חייב אותו סכום באגורות).
-- להסתיר יתרה בעסק.
-- להבטיח Escrow / "כסף מוחזק לספק".
-- A/B בלי event taxonomy מ-
-
-```
+docs/ARCHITECTURE-CART-CHECKOUT.md
+docs/ARCHITECTURE-CHECKOUT-FLOW.md
 docs/ANALYTICS-SPEC.md
 ```
 
----
-
-## 6. Acceptance
-
-- [ ] משפך 8 השלבים מתועד
-- [ ] יעדי כיוון מוגדרים
-- [ ] לפחות 5 ניסויי A/B ממוספרים עם עלות/תועלת
+Status: **BINDING (product)** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+No Escrow; סכום checkout = agorot.
 
 ---
 
-## 7. Revision
+## החלטה
+
+| # | הכרעה |
+|---|---|
+| CO1 | 8 שלבי משפך: view → cart → checkout → identity → address → payment → return → QR. |
+| CO2 | סכום עגלה = Cardcom (agorot); אין surprise. |
+| CO3 | קופון: "משלמים עכשיו / יתרה בעסק" (AB-01). |
+| CO4 | יעדי כיוון: view→cart ≥8%; cart→checkout ≥55%; →redirect ≥70%; →purchase ≥85%. |
+| CO5 | סדר A/B: AB-01 → AB-03 → AB-02 → AB-08 → AB-05. |
+| CO6 | אסור Escrow בקופי. |
+
+---
+
+## חלופות שנדחו
+
+| חלופה | למה |
+|---|---|
+| הסתרת יתרה | שקיפות חובה |
+| שינוי מחיר ב-redirect | אסור |
+| guest checkout מלא | fraud; AB-06 מאוחר |
+
+---
+
+## סכמת DB
+
+אין DDL. Events: `view_product`, `add_to_cart`, `begin_checkout`, `purchase`.
+
+---
+
+## מקרי קצה
+
+| # | מקרה | התנהגות |
+|---|---|---|
+| CE1 | pending ארוך | מסך polling + reconcile |
+| CE2 | מלאי נגמר | block redirect |
+| CE3 | mobile summary | sticky CTA |
+| CE4 | no QR post-purchase | deep link AB-08 |
+| CE5 | Google abandon | cart saved |
+
+---
+
+## פתוחות
+
+| # | פתוח |
+|---|---|
+| O1 | AB-06 guest coupon |
+| O2 | baseline post soft-open |
+
+---
+
+## Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-10 | משפך + יעדים + AB-01…10 |
+| 2026-08-12 | batch-2: BINDING |
