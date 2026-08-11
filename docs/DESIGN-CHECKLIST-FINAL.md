@@ -1,23 +1,50 @@
 # DESIGN-CHECKLIST-FINAL.md
-# צ'קליסט עיצוב סופי מול electro home-v7
 
-> **עודכן: 2026-08-10.**  
-> מקור ערכים: `refs/ke_live_singlefile.html` (capture מ-kenyonexpress.co.il) + מדידות ב-`DESIGN-MEASURED.md` / `KE_LIVE_SPEC.md` + tokens ב-`src/app/globals.css`.  
-> תבנית ייחוס: electro home-v7. Overrides מכוונים של הפרויקט גוברים על 1:1 לחי כשמפורטים למטה.
+Status: **BINDING (QA gate)** · עודכן: 2026-08-12
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+מודל כסף: No Escrow; אין copy Escrow/J5 ב-UI.
 
-Status: **BINDING (QA gate)** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
-Scope: **docs only**. אין שינוי קוד ב-worktree הראשי.
+---
 
-מסמכים קשורים:
+## 1. החלטה
 
-```
-KE_LIVE_SPEC.md
-DESIGN-MEASURED.md
-docs/ARCHITECTURE-SEO-PERFORMANCE.md
-docs/PRODUCT-FIELDS-RESEARCH.md
-src/styles/tokens.ts
-src/app/globals.css
-```
+| # | הכרעה |
+|---|---|
+| D1 | Tokens: #fed700, #E4002B (override), Heebo, 1320px |
+| D2 | Header: לוגו + 3 אייקונים; אין search/אזור |
+| D3 | Touch ≥44px; RTL `dir=he` |
+| D4 | FAIL אוטומטי על Inter/Escrow/container |
+
+---
+
+## 2. חלופות שנדחו
+
+| חלופה | נימוק |
+|---|---|
+| 1170px container | override פרויקט 1320 |
+| #dc3545 מחיר | יעד #E4002B |
+| search ב-masthead | override מכוון |
+
+---
+
+## 3. סכמת DB
+
+**אין DDL חדש.** QA על UI; tokens ב-`globals.css`.
+
+---
+
+## 4. מקרי קצה
+
+| E1 | #B0E0E9 primary | FAIL |
+| E2 | hit <44px | FAIL |
+| E3 | מחיר #1da1f2 | FAIL |
+
+---
+
+## 5. פתוחות
+
+| O1 | compare gate <11% home | ongoing | 2026-08-12 |
 
 ---
 
@@ -203,3 +230,12 @@ node scripts/measure-live.mjs
 | תאריך | שינוי |
 |---|---|
 | 2026-08-10 | צ'קליסט סופי: בית / מוצר / קטגוריה / עגלה / checkout / אזור אישי מול electro-v7 + overrides |
+
+---
+
+## Revision
+
+| תאריך | שינוי |
+|---|---|
+| 2026-08-12 | BINDING batch-2: החלטה, חלופות, DB, קצה, פתוחות |
+
