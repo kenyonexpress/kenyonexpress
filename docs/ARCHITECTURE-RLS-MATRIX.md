@@ -61,7 +61,7 @@ docs/CONTRADICTIONS.md
 
 ---
 
-## 2. סכמת עזר (קיים)
+## 2. סכמת DB (עזר; קיים)
 
 Helpers: `is_admin()`, `is_support()`, `is_supplier_member(uuid)`, `current_user_role()`.  
 אין DDL במסמך זה.
