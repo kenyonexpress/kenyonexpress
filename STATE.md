@@ -2,7 +2,53 @@
 
 Updated: 2026-08-11 בוקר (goal-65: product_type selector)
 
-## המשך מ: goal-70 שלב 3, ‏Admin product editor v2
+## המשך מ: goal B, ‏admin product editor v2
+
+### goal A ✅ — ‏`migrations/pending/006-product-type-foundation.sql`, לא הורץ
+
+**החלטות שהתקבלו לבד**, כי הבריף סתר את הסכימה החיה בשלושה מקומות ואסור היה
+לשאול. כל סטייה כתובה בראש הקובץ עצמו:
+
+1. **הבריף ביקש `CREATE TYPE product_type`. הטיפוס כבר קיים** עם
+   `(coupon, physical, service)`, ולכן זה היה נכשל. ‏006 מוסיף שני members
+   ב-`ADD VALUE IF NOT EXISTS` במקום.
+2. **הבריף ביקש עמודה בשם `product_type` על products. היא קיימת בשם `type`**,
+   ‏`NOT NULL`, עם 61 שורות פעילות, ו-`order_items.product_type` הוא הצילום
+   שלה. עמודה שנייה הייתה נותנת לעובדה אחת שני איותים, בדיוק הפגם ש-
+   `PENDING-money-integer-fix` מתיר עבור `compare_at_price`. **לא נוספה עמודה.**
+3. **‏`split` נקרא היום `physical`, ו-`subscription` נקרא `recurring`
+   ב-PENDING-109.** נבחר `subscription` כי שניים משלושה מקורות אומרים כך
+   (הבריף, ומיגרציה 066 בשרשרת הקבצים). **אין backfill:** אף אחת מ-61 השורות
+   לא שוכתבה, כי שינוי נתונים על מסלול הכסף אינו החלטה של הסשן הזה.
+
+**‏006 ו-PENDING-109 סותרים.** שניהם יוצרים `subscriptions` ושניהם מוסיפים
+member לאותו מושג. שניהם משתמשים ב-`IF NOT EXISTS`, ולכן החלת שניהם **לא
+תשגה** אלא תשאיר enum עם שני שמות למצב אחד וטבלה בצורת מי שרץ ראשון. מי
+שמאשר אחד חייב לפרוש את השני. לא מחקתי את 109.
+
+**שני באגים שנתפסו רק מול הקטלוג החי, לפני שהקובץ הגיע לאישור:**
+
+- הטיוטה הראשונה כתבה `role IN ('admin', 'staff')`. ה-enum החי הוא
+  `(customer, content_uploader, vendor, admin, super_admin, support)` **ואין בו
+  `staff`**, כלומר כל המיגרציה הייתה נופלת ב-22P02. הוחלף ב-`public.is_admin()`,
+  שהוא `SECURITY DEFINER` עם `search_path` נעוץ וכבר מכסה admin ו-super_admin,
+  וזו המוסכמה של כל שאר המדיניות בבסיס הנתונים.
+- ‏`ALTER TYPE ... ADD VALUE` אוסר שימוש בערך שנוסף באותה טרנזקציה, ו-
+  `apply_migration` היא טרנזקציה אחת. לכן `product_type_config` נשלחת **ריקה**
+  והזריעה שלה היא מיגרציה 007. אין CHECK ואין DEFAULT שמזכיר את שני החדשים.
+
+‏10 טסטים ב-`src/lib/db/pending-006-product-type.test.ts` נועלים בדיוק את
+הטעויות האלה, כי מיגרציה ממתינה לא מקבלת שום משוב עד רגע ההחלה.
+
+### ובדרך: הטיפוסים היו ישנים בשלוש דרכים נוספות
+
+‏`src/types/database.ts` נוצר מחדש מהפרודקשן (`0e59006`). מעבר ל-`city`,
+`latitude`, `longitude` שחסרו מאז 113, הקומפיילר גילה מיד שלושה ערכי enum חיים
+שלא היה להם תרגום: ‏`order_status.platform_settled`, `payment_status.platform_settled`
+ו-`referral_status.flagged`. ‏`src/lib/admin/labels.ts` התקמפל בלי מילה עברית
+לשלושתם. תוקן.
+
+## goal-70 שלב 3 (מוזג לתוך goal B), ‏Admin product editor v2
 
 תור goal-70: ‏(1) ✅ rebase+merge ל-`main` · ‏(2) ✅ דוח פערים מיגרציות ·
 ‏(3) ‏Admin product editor v2 · ‏(4) ‏compare.mjs אדמין ומוצר · סוף: ‏tag goal-70.
