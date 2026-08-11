@@ -1,90 +1,86 @@
-# CASHBACK-WALLET-SPEC.md
-# מפרט ארנק קאשבק (מוצר)
+# מפרט ארנק קאשבק
 
-מפרט מוצר/זרימה לארנק פנימי באגורות. ההכרעות המחייבות ב-
+מפרט מוצר/זרימה לארנק פנימי באגורות.
+
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד. **No Escrow**; agorot integer בלבד.
+
+מסמכים קשורים (מקור מימוש):
 
 ```
 docs/ARCHITECTURE-CASHBACK-WALLET.md
 docs/ARCHITECTURE-WALLET-LEDGER.md
+docs/ARCHITECTURE-WALLET-INTEGER.md
+docs/ARCHITECTURE-MONEY.md
 ```
 
-Status: **SPEC** · עודכן: 2026-08-11  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
-
-מודל: אשראי פנימי בלבד. **אין** משיכה לבנק/כרטיס. **אין** Escrow על מקדמת קופון.
-
 ---
 
-## 1. ערך למשתמש
+## החלטה
 
-| רגע | חוויה בעברית |
+| # | הכרעה |
 |---|---|
-| אחרי רכישה | "צברת ₪X לארנק (לשימוש בקנייה הבאה באתר)" |
-| ב-checkout | "לממש מהארנק: ₪W · לתשלום בכרטיס: ₪Y" |
-| באזור אישי | יתרה + היסטוריית תנועות (earn / spend / reverse) |
+| W1 | אשראי פנימי בלבד; **אין** משיכה לבנק/כרטיס. |
+| W2 | צבירה (earn): על `paid_on_site_agorot` אחרי order `paid`; idempotency `cashback:{order_id}`. |
+| W3 | מימוש (spend): `min(יתרה, סכום_באתר, cap)`; Cardcom = on-site − wallet. |
+| W4 | קופון: צבירה על חלק האתר בלבד; לא על יתרת העסק. |
+| W5 | כשל תשלום אחרי spend: reverse/hold+release; יתרה לא נעלמת. |
+| W6 | ביטול הזמנה: reverse earn אם כבר נזקף. |
+| W7 | EXECUTE wallet: service-role בלבד (SEC-WALLET). |
 
 ---
 
-## 2. כללי צבירה (earn)
+## חלופות שנדחו
 
-| כלל | פירוט |
+| חלופה | למה נדחתה |
 |---|---|
-| בסיס | `paid_on_site_agorot` אחרי order `paid` |
-| חישוב | לפי `cashback_rules` פעיל (אחוז / סכום) |
-| תזמון | אסינכרוני אחרי paid; idempotency `cashback:{order_id}` |
-| כשל | retry; לא מבטל תשלום |
-| קופון | צבירה על חלק האתר בלבד; לא על יתרת העסק |
+| cash-out לבנק | W1: לא מוצר. |
+| float ביתרה | agorot integer. |
+| Escrow על מקדמת קופון | No Escrow. |
+| ארנק לאורח | הרשמה חובה. |
+| העברה בין משתמשים | out of scope MVP. |
 
 ---
 
-## 3. כללי מימוש (spend)
+## סכמת DB
 
-| כלל | פירוט |
-|---|---|
-| מקסימום | `min(יתרה, סכום_באתר, cap)` |
-| סדר | בחירת משתמש או ברירת מחדל "החל הכל עד המקסימום" |
-| Cardcom | חיוב = סכום אתר − W |
-| אחרי כשל תשלום | reverse / hold+release; יתרה לא נעלמת |
-| מתנה / referral | יכולים לזכות לאותו ארנק אם הוגדר בכלל נפרד |
+```text
+wallet_accounts
+  user_id, balance_agorot bigint
 
----
+wallet_ledger
+  id, user_id, amount_agorot, kind (earn|spend|reverse)
+  idempotency_key, order_id nullable, created_at
 
-## 4. מצבי UI
+cashback_rules
+  percent / fixed_agorot, active
+```
 
-| מסך | אלמנטים |
-|---|---|
-| PDP | אופציונלי: "צורכים קאשבק על מחיר האתר" |
-| Cart | תצוגת יתרה אם מחובר |
-| Checkout | toggle מימוש + פירוט ₪ |
-| Account / wallet | יתרה, תנועות, תוקף אם יוחלט בעתיד |
-| אורח | אין ארנק עד הרשמה; ראה GUEST-VS-MEMBER |
+פירוט RLS: `ARCHITECTURE-WALLET-LEDGER.md`.
 
 ---
 
-## 5. הודעות
+## מקרי קצה
 
-| אירוע | ערוץ |
-|---|---|
-| earn | מייל/דחיפה אופציונלי `wallet_activity` |
-| spend ב-checkout | אין מייל נפרד; מופיע באישור הזמנה |
-| reverse | הודעה אם המשתמש ראה יתרה ירדה זמנית |
-
----
-
-## 6. אנטי-fraud (תמצית)
-
-- אין cash-out  
-- velocity על earn מאותו אמצעי תשלום  
-- ביטול הזמנה → reverse earn אם כבר נזקף  
-- SEC-WALLET: EXECUTE ל-service בלבד  
+| # | מקרה | התנהגות |
+|---|---|---|
+| CE1 | earn כפול לאותה הזמנה | idempotency חוסם |
+| CE2 | spend > יתרה | דחייה ב-checkout |
+| CE3 | refund מלא אחרי earn | reverse ledger |
+| CE4 | velocity earn חשוד | manual_review |
+| CE5 | אורח מנסה spend | אין ארנק |
+| CE6 | כשל Cardcom אחרי hold | release יתרה |
 
 ---
 
-## 7. Out of scope ל-MVP ארנק
+## פתוחות
 
-- העברה בין משתמשים  
-- תוקף נקודות מורכב (אפשר phase 2)  
-- המרה לקופון מתנה  
+| # | פתוח | הערה |
+|---|---|---|
+| O1 | תוקף נקודות | phase 2. |
+| O2 | המרה לקופון מתנה | out of scope. |
+| O3 | earn async retry | NOTIFICATIONS. |
 
 ---
 
@@ -92,4 +88,5 @@ Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-11 | מפרט מוצר לארנק קאשבק מעל הארכיטקטורה המחייבת |
+| 2026-08-11 | rev A: earn/spend UI |
+| 2026-08-12 | batch-2: BINDING 5 סעיפים |
