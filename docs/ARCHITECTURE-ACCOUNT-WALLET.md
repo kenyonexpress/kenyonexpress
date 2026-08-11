@@ -1,11 +1,20 @@
 # ארכיטקטורת אזור אישי + ארנק דיגיטלי
 
-סטטוס: DESIGN + IMPLEMENTATION. ענף `feat/account-wallet`, worktree `ke-account`.
-תאריך: 2026-07-24. מיגרציה נלווית: `supabase/migrations/055_account_wallet.sql`.
+ארנק פנימי באזור האישי: יתרה, מימוש בקופה, בלי cash-out.
+
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #19/50  
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+
+מיגרציה נלווית היסטורית: `supabase/migrations/055_account_wallet.sql`.
+
+מודל כסף: **No Escrow**. הארנק אינו held של מקדמת קופון.
 
 מסמך זה הוא מקור האמת לדומיין החשבון והארנק. הוא לא נוגע בדומיין השוברים
 (`ke-voucher`) ולא בדומיין הספקים (`ke-supplier`); כל נקודת מגע ביניהם מסומנת
 במפורש בסעיף 8.
+
+Revision: 2026-08-12 batch-2 #19.
 
 ---
 
@@ -233,3 +242,9 @@ cashback_rules (
 
 קבצים שאסור לגעת בהם מהענף הזה: כל מה שתחת `src/server/domain/vouchers/`,
 `src/app/api/supplier/`, ו-`supabase/migrations/051_payout_terms.sql`.
+
+## Revision
+
+| תאריך | שינוי |
+|---|---|
+| 2026-08-12 | batch-2 #19: רענון BINDING על `arch/docs-batch-2`; No Escrow מאושר |
