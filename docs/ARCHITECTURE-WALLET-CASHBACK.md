@@ -34,7 +34,8 @@ docs/CONTRADICTIONS.md
 | WC4 | כל תנועה = כפול-רישום דרך `fn_wallet_transfer` (+ idempotency_key). |
 | WC5 | מקדמת קופון אינה נכנסת לארנק כ-escrow (No Escrow). |
 | WC6 | מימוש רק על סכום לתשלום **באתר** לפני Cardcom. |
-| WC7 | צבירה אחרי `paid` בלבד; מפתח `cashback:{order_id}`. |
+| WC7 | צבירה אחרי `paid` בלבד; מפתח `order:{order_id}:cashback` (או `cashback:{order_id}` כגשר). |
+| WC8 | Spend מאושר ב-finalize במפתח `order:{order_id}:spend`. |
 
 ---
 
@@ -59,7 +60,7 @@ order paid
   → fn_wallet_transfer(
        platform:cashback_reserve → user,
        reason: order_cashback,
-       idempotency: cashback:{order_id}
+       idempotency: order:{order_id}:cashback
      )
 ```
 
@@ -68,6 +69,7 @@ order paid
 | בסיס | רק מה ששולם באתר (לא face, לא יתרת עסק) |
 | כשל אחרי paid | retry אותו מפתח; לא מבטל Cardcom |
 | מוצר בלי rule | 0; לא ממציאים אחוז |
+| Snapshot | `cashback_amount_agorot` על `order_items` בזמן קנייה |
 
 ---
 
@@ -126,3 +128,4 @@ checkout:
 |---|---|
 | 2026-08-12 | BINDING: earn/spend, ledger agorot, future accrual rules |
 | 2026-08-12 | batch-2 #15: רענון BINDING על `arch/docs-batch-2`; No Escrow מאושר |
+| 2026-08-12 | batch-2 #15 pass-2: מפתחות idempotency לפי finalize החי |
