@@ -3,9 +3,9 @@
 תכנית בטוחה: מעבר מלא לכסף ב-**integer agorot**, יישור `fn_wallet_transfer`, וסגירת SEC-WALLET.  
 לא להריץ מיגרציית cutover בלי אישור מפורש וחלון תחזוקה.
 
-Status: **BINDING (plan)** · עודכן: 2026-08-12 · QA: PASS  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #17/50  
-אין שינוי קוד כאן. אין נגיעה בתיקייה הראשית.
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
 מודל כסף: **No Escrow**. אין held/נאמן/J5 לקופון.
 
@@ -13,25 +13,16 @@ Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batc
 
 ```
 docs/ARCHITECTURE-WALLET-LEDGER.md
-docs/ARCHITECTURE-WALLET-CASHBACK.md
 docs/ARCHITECTURE-CASHBACK-WALLET.md
+docs/ARCHITECTURE-ACCOUNT-WALLET.md
 docs/ARCHITECTURE-SECURITY.md
 docs/GAPS-CODE-VS-DOCS.md
-docs/ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md
-docs/ARCHITECTURE-COMMERCE.md
-docs/SECURITY-AUDIT-CHECKLIST.md
 docs/BACKUP-RESTORE-RUNBOOK.md
 ```
 
-רקע מדיד:
-
-- G5 ב-`GAPS-CODE-VS-DOCS.md`: הקוד ממיר ל-float כי RPC מקבל `p_amount_ils`.  
-- D3 ב-MASTER-CHECKOUT: יעד אגורות מאושר; קבצי `PENDING-money-integer-fix.sql` / `059_money_integer_units.sql` **אסורים להחלה עיוורת** בלי cutover קוד.  
-- SEC-WALLET: `EXECUTE` ל-`fn_wallet_transfer` חייב להיות `service_role` בלבד.
-
 ---
 
-## 0. הכרעות
+## 1. החלטה
 
 | # | הכרעה |
 |---|---|
@@ -44,187 +35,111 @@ docs/BACKUP-RESTORE-RUNBOOK.md
 | WI7 | `CHECKOUT_ENABLED=false` בחלון cutover כסף. |
 | WI8 | אין float בנתיבי finalize / spendWallet אחרי cutover. |
 | WI9 | חישובי אחוזים דרך helpers באגורות (למשל `percentageOf`), לא `* 0.01` ב-float. |
+| WI10 | כל חישוב עובר דרך `src/lib/money.ts` כנתיב יחיד. |
 
 ---
 
-## 1. סיכונים אם מריצים לא נכון
+## 2. חלופות שנדחו
 
-| סיכון | תוצאה | הפחתה |
-|---|---|---|
-| קוד עדיין קורא `*_ils` אחרי rename | מחירים ×100 או קריסה | feature flag / deploy אטומי |
-| `fn_wallet_transfer` עדיין `numeric` + קוד שולח אגורות | זיכוי מאית | בדיקת חתימה + טסטים |
-| PUBLIC EXECUTE נשאר | מיניט יתרות (SEC-WALLET) | REVOKE ראשון |
-| Backfill drift | חוסר איזון ledger | DO block עם RAISE |
-| שחזור חלקי | DB/קוד לא תואמים | PITR + rollback plan |
-| float ב-finalize | סטיית אגורה / כפילות | שער CI על money path |
-
----
-
-## 2. שלב A: אבטחה (SEC-WALLET): מיידי
-
-לפני כל שינוי סכמה גדול:
-
-```sql
--- התאם חתימה לפונקציה החיה לפני REVOKE
-REVOKE ALL ON FUNCTION public.fn_wallet_transfer(/* exact args */)
-  FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.fn_wallet_transfer(/* exact args */)
-  TO service_role;
-```
-
-אימות:
-
-```sql
-SELECT p.proname, pg_get_function_identity_arguments(p.oid),
-       has_function_privilege('anon', p.oid, 'EXECUTE') AS anon_exec,
-       has_function_privilege('authenticated', p.oid, 'EXECUTE') AS auth_exec,
-       has_function_privilege('service_role', p.oid, 'EXECUTE') AS service_exec
-FROM pg_proc p
-JOIN pg_namespace n ON n.oid = p.nspname
-WHERE n.nspname = 'public' AND p.proname = 'fn_wallet_transfer';
-```
-
-יעד: `anon_exec=false`, `auth_exec=false`, `service_exec=true`.
-
-הגנה נוספת (מומלץ בגוף אחרי recreate): דחיית קריאה כש-`auth.uid()` לא null ואינו admin.
-
-ראה `ARCHITECTURE-SECURITY.md`.
+| חלופה | נימוק דחייה |
+|---|---|
+| `numeric(10,2)` ILS כמקור אמת | float/עיגול שקלי יוצר סטיית אגורה; G5 ב-GAPS מתעד את הבעיה. |
+| cutover "בבת אחת" (rename + deploy בלי twin) | שובר קוד שעדיין קורא `*_ils`; drift בין DB לשרת. |
+| השארת `EXECUTE` ל-`authenticated` "זמנית" | SEC-WALLET: מיניט יתרות; אין חריג לטסט. |
+| המרה ב-JS עם `Number()` / `parseFloat` | לא SafeInteger; כשל על סכומים גדולים. |
+| Escrow wallet לספק במקביל ל-cutover | No Escrow; דומיינים נפרדים; לא לערבב בחבילה אחת. |
+| `db push` ליישום 059 | אסור; מיגרציה ב-`migrations/pending` + MCP בלבד. |
 
 ---
 
-## 3. שלב B: עמודות twin (agorot) בלי שבירת קוד
+## 3. סכמת DB
 
-דפוס:
+**אין DDL חדש במסמך זה.** Cutover מתוכנן על סכמה קיימת + קבצי pending (למשל `059_money_integer_units.sql`).  
+לא להחיל על prod בלי חלון ואישור.
 
-1. `ADD COLUMN IF NOT EXISTS foo_agorot integer/bigint`  
-2. Backfill: `foo_agorot = round(foo_ils * 100)::bigint` איפה ש-null  
-3. Verify drift = 0  
-4. **עדיין לא** DROP/RENAME של `*_ils` עד שכל הקוד קורא agorot  
+### טבלאות קריטיות (מצב יעד)
 
-טבלאות קריטיות לארנק:
-
-| טבלה | ישן | חדש |
+| טבלה | ישן (legacy) | חדש (canonical) |
 |---|---|---|
 | `wallet_entries` | `amount_ils` | `amount_agorot` |
-| `wallet_accounts` (cache) | `balance_ils` | `balance_agorot` |
-| כללי cashback | סכומי ILS | `*_agorot` / percent נשאר numeric לתצוגת אחוז בלבד |
+| `wallet_accounts` | `balance_ils` (cache) | `balance_agorot` |
+| `order_items` / snapshots | עמודות ILS | `*_agorot` לפי D3 |
 
-הזמנות/תשלומים: לפי D3 / 059; לא לערבב באצ' אחד בלי רשימת קבצי אפליקציה.
-
----
-
-## 4. שלב C: יישור `fn_wallet_transfer`
-
-### 4.1 חתימת יעד
+### `fn_wallet_transfer` (חתימת יעד)
 
 ```sql
 fn_wallet_transfer(
   p_debit_account uuid,
   p_credit_account uuid,
   p_amount_agorot int,          -- STRICT > 0
-  p_reason wallet_reason,       -- או text
+  p_reason wallet_reason,
   p_idempotency_key text
-  -- אופציונלי: order_id, meta
 ) RETURNS uuid
 ```
 
-### 4.2 גוף
+EXECUTE: `service_role` בלבד. Idempotency: UNIQUE על `idempotency_key`.
 
-- כתיבת `amount_agorot` בלבד  
-- Idempotency UNIQUE  
-- יתרת משתמש לא שלילית אחרי העברה  
-- SECURITY DEFINER + `search_path` קשיח  
-- EXECUTE רק ל-`service_role`  
-
-### 4.3 תאימות זמנית
-
-עומס יתר לפונקציה ישנה **אסור** אם מבלבל ILS/agorot. עדיף:
-
-1. Deploy קוד שמדבר רק agorot לפונקציה חדשה `fn_wallet_transfer_agorot`  
-2. החלפת קריאות  
-3. Drop/rename הישנה  
-
-מפתחות נשארים: `order:{id}:cashback`, `order:{id}:spend`.
+מפתחות earn/spend: `order:{id}:cashback`, `order:{id}:spend`.
 
 ---
 
-## 5. שלב D: cutover קוד (אפליקציה)
+## 4. שלבי cutover (תמצית)
 
-רשימת נגיעה מינימלית (לא לערוך במסמך זה):
+### 4.1 שלב A: SEC-WALLET
 
-- `finalize.ts` / spend wallet: להסיר `/ 100` ו-float  
-- admin wallet adjust  
-- תצוגת `/account/wallet`  
-- טסטים שמניחים `amount_ils`  
-- helpers ב-`src/lib/money.ts` כנתיב יחיד  
-
-שערים לפני הפעלת checkout:
-
-- [ ] Vitest money modules ירוקים  
-- [ ] E2E: רכישה עם ארנק (sandbox)  
-- [ ] יתרה לפני/אחרי באגורות זהה לציפייה  
-- [ ] SEC-WALLET query ירוק  
-- [ ] אין `Number`/`parseFloat` על סכומי כסף בנתיב החי  
-
----
-
-## 6. שלב E: ניקוי legacy
-
-אחרי ≥ N ימים יציבים:
-
-1. RENAME `amount_ils` → `amount_ils_legacy` (או DROP אם מדיניות מאפשרת)  
-2. NOT NULL + CHECK על עמודות agorot  
-3. עדכון views (`v_wallet_ledger`)  
-4. תיעוד ב-STATE + GAPS (סגירת G5/D3)
-
----
-
-## 7. תכנית rollback
-
-| שלב שנכשל | פעולה |
-|---|---|
-| A בלבד | לא נדרש rollback כסף; רק הרשאות |
-| B (twin) | DROP עמודות agorot החדשות אם ריקות/לא בשימוש |
-| C/D | Instant Rollback קוד + השארת twin; `CHECKOUT_ENABLED=false` |
-| אחרי rename | PITR לנקודה לפני המיגרציה (BACKUP-RESTORE) |
-
-אין "תיקון ידני" של יתרות בלי journal נגדי.
-
----
-
-## 8. סדר ביצוע מומלץ (צ׳קליסט)
-
-1. [ ] גיבוי/PITR מאומת  
-2. [ ] `CHECKOUT_ENABLED=false`  
-3. [ ] שלב A: SEC-WALLET REVOKE + אימות  
-4. [ ] שלב B: twin columns + drift 0  
-5. [ ] Deploy קוד שכותב/קורא agorot (feature flag אם אפשר)  
-6. [ ] שלב C: פונקציית transfer באגורות + GRANT  
-7. [ ] Smoke: earn/spend/idempotency replay  
-8. [ ] `CHECKOUT_ENABLED=true`  
-9. [ ] ניטור 48ש: אין drift ב-`v_wallet_balance_drift`  
-10. [ ] שלב E בניקוי מאוחר  
-
----
-
-## 9. אין float בנתיב הכסף (חוק קבוע)
-
-| מותר | אסור |
-|---|---|
-| `bigint`/`int` אגורות ב-DB ובשרת | `float` / `double` / `Number` על סכום |
-| `numeric` רק לאחוז rule (לא לסכום) | `amount_ils` כמקור אמת אחרי cutover |
-| המרה ל-₪ רק ב-UI / Cardcom string | `* 0.01` בשרשרת חישוב |
-| `floor` באגורות | עיגול כפול בשקלים |
-
-כל חישוב עובר דרך:
-
-```
-src/lib/money.ts
+```sql
+REVOKE ALL ON FUNCTION public.fn_wallet_transfer(/* exact args */)
+  FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.fn_wallet_transfer(/* exact args */)
+  TO service_role;
 ```
 
+יעד: `anon_exec=false`, `auth_exec=false`, `service_exec=true`.
+
+### 4.2 שלב B: עמודות twin
+
+1. `ADD COLUMN IF NOT EXISTS foo_agorot integer/bigint`  
+2. Backfill: `foo_agorot = round(foo_ils * 100)::bigint`  
+3. Verify drift = 0  
+4. **עדיין לא** DROP/RENAME של `*_ils` עד שכל הקוד קורא agorot  
+
+### 4.3 שלב C–E
+
+- Deploy קוד שמדבר agorot בלבד  
+- Smoke: earn/spend/idempotency replay  
+- אחרי יציבות: rename/drop legacy + עדכון `v_wallet_ledger`  
+
+Rollback: PITR לפני rename; אין "תיקון ידני" של יתרות בלי journal נגדי.
+
 ---
 
-## 10. Acceptance
+## 5. מקרי קצה
+
+| # | מצב | התנהגות |
+|---|---|---|
+| E1 | קוד שולח אגורות לפונקציה שמצפה ל-ILS | זיכוי ×100; חסימה בטests + verify חתימה לפני deploy |
+| E2 | replay אותו `idempotency_key` | journal קיים; אין כפילות |
+| E3 | spend במקביל על יתרה דקה | `FOR UPDATE` + יתרה ≥ amount; אחד נכשל |
+| E4 | cutover חלקי (DB agorot, קוד ILS) | `CHECKOUT_ENABLED=false`; PITR |
+| E5 | backfill drift (ILS×100 ≠ agorot) | DO block עם RAISE; לא prod |
+| E6 | PUBLIC EXECUTE נשאר אחרי recreate | query SEC-WALLET חוסם merge |
+| E7 | float ב-finalize אחרי cutover | CI gate על money path |
+| E8 | אחוז cashback עם float | `floor` באגורות בלבד |
+
+---
+
+## 6. פתוחות
+
+| # | פער | החלטה זמנית | תאריך |
+|---|---|---|---|
+| O1 | תאריך חלון cutover prod | ממתין לאישור מפורש + גיבוי PITR | 2026-08-12 |
+| O2 | `fn_wallet_transfer_agorot` vs rename ישיר | prefer wrapper זמני אם חתימה חיה שונה | 2026-08-12 |
+| O3 | סגירת G5 ב-GAPS | אחרי מדידה post-cutover | 2026-08-12 |
+| O4 | N ימים לפני drop legacy | ≥7 ימים יציבים + drift=0 | 2026-08-12 |
+
+---
+
+## 7. Acceptance
 
 - [ ] `authenticated` לא יכול EXECUTE ל-transfer  
 - [ ] אין `p_amount_ils` בנתיב החי  
@@ -233,23 +148,13 @@ src/lib/money.ts
 - [ ] אין float ב-finalize wallet  
 - [ ] UI מציג ₪ נכון (agorot/100 רק לתצוגה)  
 - [ ] No Escrow לא נשבר ב-cutover  
+- [ ] חלופות שנדחו + DB + מקרי קצה + פתוחות מתועדים  
 
 ---
 
-## 11. מה לא לעשות
-
-1. להריץ 059 / PENDING על פרוד בלי cutover קוד.  
-2. לשלוח אגורות לפונקציה שעדיין מצפה לשקלים.  
-3. להשאיר PUBLIC EXECUTE "רק לטסט".  
-4. לעגל באחוזים עם float במקום helper באגורות.  
-5. לערבב payout ספקים עם ארנק משתמש (דומיינים נפרדים).  
-
----
-
-## Revision
+## 8. Revision
 
 | תאריך | שינוי |
 |---|---|
 | 2026-08-11 | תכנית בטוחה: SEC-WALLET + money-integer cutover |
-| 2026-08-12 | batch-2 #17: רענון BINDING על `arch/docs-batch-2`; No Escrow מאושר |
-| 2026-08-12 | batch-2 #17 pass-2: cutover מלא; חוק no-float על money path |
+| 2026-08-12 | batch-2: BINDING מלא; תבנית חובה (החלטה, חלופות, DB, קצה, פתוחות) |
