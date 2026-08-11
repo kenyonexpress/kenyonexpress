@@ -1,21 +1,12 @@
 # ארכיטקטורה: זהות וחשבון (Account & Identity)
 
-Google OAuth, OTP, session, ומיזוג עגלת אורח.  
-מסכי האזור האישי:
-
-```
-docs/ARCHITECTURE-PERSONAL-AREA.md
-```
-
-מיזוג עגלה (חוזה מלא):
-
-```
-docs/ARCHITECTURE-CART-GUEST.md
-```
+Google OAuth, OTP, session, ומיזוג עגלת אורח.
 
 Status: **BINDING** · עודכן: 2026-08-12  
-Scope: `arch/docs-batch-2` · batch #22/50  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+
+מודל כסף: **No Escrow** (זהות לא מחזיקה כסף; סליקה ב-Cardcom אחרי session).
 
 מסמכים קשורים:
 
@@ -25,16 +16,12 @@ docs/ARCHITECTURE-PERSONAL-AREA.md
 docs/ARCHITECTURE-ACCOUNT-WALLET.md
 docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 docs/ARCHITECTURE-DATA-EXPORT-GDPR.md
-docs/ARCHITECTURE-TRUST-SAFETY.md
 docs/ARCHITECTURE-SECURITY.md
-docs/CONTRADICTIONS.md
 ```
-
-מודל כסף: **No Escrow** (זהות לא מחזיקה כסף; סליקה ב-Cardcom אחרי session).
 
 ---
 
-## 0. הכרעות
+## 1. החלטה
 
 | # | הכרעה |
 |---|---|
@@ -45,190 +32,116 @@ docs/CONTRADICTIONS.md
 | ID5 | RLS הוא גבול האמת באזור אישי; אין service role במסכי לקוח. |
 | ID6 | אין PAN/CVV אצלנו; רק `payment_tokens` (טוקן Cardcom + last4). |
 | ID7 | מחיקת חשבון = מחיקת PII, לא מחיקת היסטוריה כספית (7 שנים). |
-| ID8 | מיזוג עגלת אורח: חוזה ב-CART-GUEST; כאן מצביע + דרישות identity בלבד. |
+| ID8 | מיזוג עגלת אורח: חוזה ב-CART-GUEST; כאן דרישות identity בלבד. |
 | ID9 | `profiles.role` לא ניתן לשינוי ע"י הלקוח. |
 | ID10 | פעולות רגישות דורשות re-auth טרי (`requireRecentAuth`). |
 
 ---
 
-## 1. Google OAuth
+## 2. חלופות שנדחו
+
+| חלופה | נימוק דחייה |
+|---|---|
+| סיסמה מקומית כנתיב ראשי | OTP/Google מספיקים; תחזוקת hash + reset. |
+| `getSession()` בשרת להחלטות הרשאה | JWT stale; ID4 דוחה. |
+| magic link כערוץ יחיד | deliverability + UX; OTP/Google עדיפים. |
+| open redirect ב-`next` | ID: path יחסי `/` בלבד. |
+| service role ב-Server Component לקוח | ID5: RLS + user client. |
+| מחיקת orders/wallet ב-GDPR delete | ID7: retention כספי 7 שנים. |
+
+---
+
+## 3. סכמת DB
+
+**אין DDL חדש.** טבלאות רלוונטיות:
+
+### `profiles` (Auth sync)
+
+| עמודה | שימוש |
+|---|---|
+| `id` | = `auth.users.id` |
+| `email`, `full_name`, `phone`, `avatar_url` | פרופיל |
+| `role` | RBAC; לא ניתן לעריכה ע"י לקוח |
+
+Trigger: `handle_new_user` מ-`raw_user_meta_data`.
+
+### `payment_tokens`
+
+| עמודה | SELECT ללקוח |
+|---|---|
+| `last4`, `brand`, `expiry`, `is_default` | כן |
+| `cardcom_token` | **לא** (REVOKE מ-authenticated) |
+
+INSERT: service role מ-webhook Cardcom בלבד.
+
+### `user_addresses`
+
+CRUD על כתובות ישראליות; soft delete.
+
+### מחיקת חשבון
+
+`fn_request_account_deletion` → חלון ~30 יום → `fn_execute_account_deletion`:  
+PII נמחק; `orders` / `payments` / wallet / vouchers נשארים מנותקים.
+
+---
+
+## 4. Google OAuth + OTP (תמצית)
 
 ```text
-signInWithGoogle (scopes: openid email profile)
-  → redirect /auth/callback?next=...
-  → exchangeCodeForSession (PKCE)
+signInWithGoogle (PKCE)
+  → /auth/callback?next=...
+  → exchangeCodeForSession
   → handle_new_user / profiles sync
-  → mergeGuestCart (ראה §4 + CART-GUEST)
-  → redirect ל-next בטוח (חייב להתחיל ב-/)
+  → mergeGuestCart (CART-GUEST)
+  → redirect ל-next בטוח (מתחיל ב-/)
 ```
 
-| רכיב | מיקום יעד |
-|---|---|
-| כפתור | `/login` · תווית: "כניסה עם Google" |
-| Action | `signInWithGoogle` |
-| Callback | `src/app/auth/callback/route.ts` |
-| יצירת פרופיל | trigger `handle_new_user` מ-`raw_user_meta_data` |
+OTP: גיבוי; rate limit; אחרי הצלחה אותה שרשרת כמו OAuth.
 
-שדות מ-Google ל-`profiles`: `email`, `full_name`/`name`, `avatar_url`.  
-`phone` ריק עד מילוי משתמש.
-
-| כלל | פירוט |
-|---|---|
-| PKCE | חובה; אין implicit flow |
-| `next` | path יחסי שמתחיל ב-`/`; אחרת fallback ל-`/account` |
-| Re-auth רגיש | `prompt=select_account`, `max_age=0` |
-| כשל Google | הודעה עברית + הצעת OTP; לא חושפים פרטי ספק |
-
-UI `/login`: עברית RTL; Google ככפתור ראשי מעל OTP.
+Session: עוגיות `@supabase/ssr` httpOnly; `proxy.ts` gate על `/account*` ו-`/checkout*`.
 
 ---
 
-## 2. OTP
+## 5. מקרי קצה
 
-| כלל | פירוט |
-|---|---|
-| ערוץ | אימייל ו/או SMS דרך Supabase Auth (ספק SMS לפי env; rate limit חובה) |
-| מתי | גיבוי כשאין Google, או אימות טלפון לפרופיל |
-| UI | `/login`: קוד חד-פעמי; עברית RTL; הנחיות קצרות |
-| אחרי הצלחה | אותה שרשרת כמו OAuth: session → מיזוג עגלה (§4) → `next` |
-| אבטחה | velocity לפי TRUST-SAFETY; אין enumeration של קיום משתמש מעבר למה ש-Auth מחזיר |
-| תוקף קוד | לפי הגדרת Supabase; אין הארכה ידנית בלי rate limit |
-
-אין SMS OTP כערוץ שיווקי. OTP טרנזקציוני לזהות בלבד.
-
-Magic link / email-password קיימים כ-legacy לסגירה ב-UX; לא מוסיפים מסלול סיסמה חדש כנתיב מועדף.
+| # | מצב | התנהגות |
+|---|---|---|
+| E1 | OAuth callback עם `next=//evil.com` | reject; fallback `/account` |
+| E2 | mergeGuestCart נכשל | session נשמר; log; המשך ל-next |
+| E3 | refresh token reuse | Supabase detection; signOut |
+| E4 | XSS + גניבת session | httpOnly; CSP (המשך) |
+| E5 | enumeration via OTP | הודעות גנריות; rate limit |
+| E6 | מחיקה בתוך חלון חרטה | ביטול דרך מייל/link |
+| E7 | re-auth stale על delete | `requireRecentAuth` block |
+| E8 | guest `ke_session_id` חסר ב-merge | skip merge; עגלה ריקה |
 
 ---
 
-## 3. Session
+## 6. פתוחות
 
-| שכבה | תפקיד |
-|---|---|
-| עוגיות `@supabase/ssr` | httpOnly, מקור אמת ל-JWT |
-| `proxy.ts` | `getUser()` + רענון; redirect גס ל-`/login` על `/account*` ו-`/checkout*` |
-| layout `(account)` | `requireUserSession()` |
-| RLS | גם אם ה-guard נכשל, DB מחזיר רק `auth.uid()` |
-
-| כלל | פירוט |
-|---|---|
-| אורח | cookie `ke_session_id` (לא זהות; רק עגלה) |
-| JWT | קצר; refresh reuse detection של Supabase |
-| יציאה | `signOut` / `signOutAll` (global) → `/login` |
-| Open redirect | `next` חייב path יחסי שמתחיל ב-`/` |
-| מקור אמת | רק `getUser()` בשרת; `getSession()` אסור כבסיס להחלטות הרשאה |
-
-רענון session שקוף למשתמש בזמן גלישה ב-`/account/**`. כשל רענון → redirect ל-login עם `next` נוכחי.
+| # | פער | החלטה זמנית | תאריך |
+|---|---|---|---|
+| O1 | SMS provider production | env לפי Supabase config | 2026-08-12 |
+| O2 | CSP מלא | שלב 2 SECURITY | 2026-08-12 |
+| O3 | RPC mergeGuestCart אטומי | CART-GUEST | 2026-08-12 |
 
 ---
 
-## 4. מיזוג עגלת אורח (מצביע ל-CART-GUEST)
+## 7. Acceptance
 
-**מקור מחייב לפירוט המלא:**
-
-```
-docs/ARCHITECTURE-CART-GUEST.md
-```
-
-תמצית דרישות identity (לא מחליף את CART-GUEST):
-
-1. טריגר: אחרי `auth.getUser()` הצליח ב-callback OAuth/OTP או ב-server action מחובר.
-2. קוראים `mergeGuestCart` עם:
-   - `userId` מה-session בלבד (לא מהלקוח)
-   - `sessionId` מ-cookie `ke_session_id`
-3. מיזוג כמויות לפי מפתח מוצר/וריאנט; cap 99; מחיקת עגלת אורח אחרי הצלחה.
-4. כשל מיזוג **לא** מבטל session; לוג + המשך ל-`next` (המשתמש יכול לשחזר ידנית).
-5. אין מחירים / `platform_percent` בעגלת אורח; פיצול כסף רק ב-`beginCheckout` snapshots.
-
-יעד DB (כשמוחל): RPC אטומי + advisory lock + unique חלקי על `carts.profile_id` (פירוט ב-CART-GUEST).
-
-שרשרת אחרי login מוצלח:
-
-```text
-getUser() OK
-  → mergeGuestCart(userId, sessionId)   // CART-GUEST
-  → redirect(next)
-```
+- [ ] Google OAuth PKCE + callback + `next` בטוח  
+- [ ] OTP גיבוי עם rate limit  
+- [ ] Gate על `/account*` ו-`/checkout*` מבוסס `getUser()`  
+- [ ] מיזוג עגלה לפי CART-GUEST אחרי login  
+- [ ] אין חשיפת `cardcom_token` ללקוח  
+- [ ] מחיקת חשבון: PII נמחק, כסף נשמר  
+- [ ] חלופות + DB + קצה + פתוחות  
 
 ---
 
-## 5. פרופיל ואמצעי תשלום
-
-| שדה | עריכה |
-|---|---|
-| `full_name` | כן |
-| `phone` | כן (ולידציית IL) |
-| `email` | דרך Auth בלבד (לא עריכה חופשית במסך) |
-| `avatar_url` | תצוגה; מקור Google |
-| `role` | קפוא ללקוח |
-
-כתובות: CRUD על `user_addresses` (פורמט ישראלי).
-
-`payment_tokens`:
-
-- SELECT: last4, brand, expiry, is_default (בלי `cardcom_token`)
-- DELETE + set-default דרך fn
-- INSERT רק service role מ-webhook Cardcom
-
-Re-auth נדרש ל: מחיקת חשבון, מחיקת כל הטוקנים, `signOutAll`.
-
----
-
-## 6. מחיקת חשבון (תמצית)
-
-```text
-/account/privacy + re-auth
-  → fn_request_account_deletion (חלון חרטה ~30 יום)
-  → cron: fn_execute_account_deletion
-       · profiles → tombstone / anonymized_at
-       · מחיקת כתובות, טוקנים, עגלות, העדפות
-       · scrub PII מ-audit
-       · orders / payments / wallet ledger / vouchers נשארים מנותקים מזהות
-```
-
-פירוט משפטי: LEGAL-COMPLIANCE + DATA-EXPORT-GDPR.
-
----
-
-## 7. העדפות התראות (מינימום)
-
-| שדה | ברירת מחדל |
-|---|---|
-| עדכוני הזמנה / פקיעת קופון | on (טרנזקציוני) |
-| שיווק email/SMS | **off** (opt-in, חוק ספאם) |
-
----
-
-## 8. איומים (תמצית)
-
-| איום | מיטיגציה |
-|---|---|
-| XSS + גניבת session | httpOnly cookies; CSP בהמשך |
-| JWT מזויף | `getUser()` בשרת |
-| קריאת טוקן Cardcom | REVOKE עמודה מ-authenticated |
-| הרעלת מיזוג עגלה | userId מה-session; lock/RPC; אין מחירים בעגלה |
-| מחיקה זדונית | re-auth + חלון חרטה + מייל ביטול |
-| Open redirect אחרי OAuth | ולידציית `next` |
-
----
-
-## 9. Acceptance
-
-- [ ] Google OAuth PKCE + callback + `next` בטוח
-- [ ] OTP גיבוי מתועד עם rate limit
-- [ ] Gate על `/account*` ו-`/checkout*` מבוסס `getUser()`
-- [ ] מיזוג עגלה לפי CART-GUEST אחרי login (OAuth ו-OTP)
-- [ ] אין חשיפת `cardcom_token` ללקוח
-- [ ] מחיקת חשבון: PII נמחק, כסף נשמר
-- [ ] שיווק opt-in בלבד
-- [ ] No Escrow: זהות לא מחזיקה כסף לספק
-
----
-
-## 10. Revision
+## 8. Revision
 
 | תאריך | שינוי |
 |---|---|
 | 2026-07-08 | טיוטת זהות + 029 |
-| 2026-07-17 | ציות LEGAL / retention |
-| 2026-08-12 | batch #22: BINDING ממוקד OAuth+OTP+session + מצביע CART-GUEST |
-| 2026-08-12 | batch #22/50 pass-2: חיזוק OAuth/OTP/session + קישור מפורש ל-CART-GUEST merge |
+| 2026-08-12 | batch-2: BINDING מלא; תבנית חובה |
