@@ -45,6 +45,7 @@ docs/VENDOR-PAYOUT-SPEC.md
 | פעולה | חלון | סף כיוון | פעולה בחריגה |
 |---|---|---|---|
 | begin_checkout / IP | 10 דק' | N ניסיונות | 429 fail-closed |
+| begin_checkout / guest email | 1 שע' | G הזמנות | challenge / block |
 | redeem / ספק | 1 דק' | M סריקות | האטה + התראה |
 | חשבונות חדשים→purchase | 1 שע' | K הזמנות | manual_review |
 | כרטיס נכשל חוזר | 1 שע' | לפי Cardcom | חסימה זמנית |
@@ -119,3 +120,4 @@ docs/VENDOR-PAYOUT-SPEC.md
 | 2026-08-11 | מפרט הונאה: משטחים, velocity, chargeback, review |
 | 2026-08-11 | יישור סטטוס מימוש ל-`redeemed` (פרוד 054) |
 | 2026-08-11 | סדר אימות סריקה מפורט |
+| 2026-08-11 | velocity לאורח (guest email) ב-checkout |
