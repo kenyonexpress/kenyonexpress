@@ -6,27 +6,25 @@ Status: **BINDING** · עודכן: 2026-08-12
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #9/50  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
+מודל כסף בתצוגה: **No Escrow**. יתרה לגבייה = `face - coupon_price` (אגורות→₪ ב-`he-IL`). מימוש סופי רק אחרי תשובת שרת `success`. אין ניסוח נאמן / Escrow / שחרור תשלום לספק.
+
 מסמכים קשורים:
 
 ```
+docs/DOCS-TEMPLATE-BINDING.md
 docs/ARCHITECTURE-COUPON-REDEMPTION.md
 docs/ARCHITECTURE-COUPON-LIFECYCLE.md
 docs/ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md
 docs/ARCHITECTURE-PERSONAL-AREA.md
 docs/ARCHITECTURE-SUPPLIER-PORTAL.md
+docs/ARCHITECTURE-COMMERCE.md
 ```
 
-חוזה שרת/outcomes:
-
-```
-docs/ARCHITECTURE-COUPON-REDEMPTION.md
-```
-
-מודל כסף בתצוגה: **No Escrow**. יתרה לגבייה = `face - coupon_price` (אגורות→₪ ב-`he-IL`). מימוש סופי רק אחרי תשובת שרת `success`.
+חוזה שרת/outcomes: `docs/ARCHITECTURE-COUPON-REDEMPTION.md`
 
 ---
 
-## 0. הכרעות UX
+## 0. החלטה (UX1–UX7)
 
 | # | הכרעה |
 |---|---|
@@ -40,7 +38,42 @@ docs/ARCHITECTURE-COUPON-REDEMPTION.md
 
 ---
 
-## 1. מסלולים
+## 1. חלופות שנדחו
+
+| חלופה | למה נדחתה |
+|---|---|
+| Optimistic UI: סימון "מומש" לפני תשובת RPC | סיכון double-spend תפיסתי; UX3 אוסר. |
+| הודעה נפרדת ל-"ספק לא נכון" | חושף enum; UX4 מאחד ל-not_found. |
+| הצגת "שוחרר תשלום" / Escrow בהצלחה | סותר No Escrow; מקדמה = הכנסת פלטפורמה. |
+| QR פעיל גם אחרי `redeemed` (ל"הוכחה") | UX7; QR = כלי מימוש בלבד. |
+| הצלחת כסף באופליין לפני sync | CE offline: תור בלבד, לא יתרה מדומה. |
+| מימוש על ידי הלקוח (כפתור "ממש") | מימוש = ספק בלבד; REDEMPTION. |
+| הצגת `platform_percent` / עמלה לספק בסורק | לא רלוונטי לקופון; supplier_due = 0. |
+| BarcodeDetector חובה בלי fallback הקלדה | UX5; Safari ישן / הרשאות נדחות. |
+
+---
+
+## 2. סכמת DB
+
+**אין DDL חדש במסמך זה.** ה-UI קורא נתונים קיימים; מימוש כותב דרך RPC.
+
+| טבלה / שדה | שימוש UX |
+|---|---|
+| `vouchers.status` | `issued` / `redeemed` / `expired` / `refunded` → סטטוס + QR |
+| `vouchers.code` | תצוגה ltr; הקלדה ידנית בסורק |
+| `vouchers.qr_payload` | חתום; רינדור QR ללקוח |
+| `vouchers.expires_at` | תוקף בתצוגה |
+| `vouchers.user_id` | RLS: לקוח רואה רק שלו |
+| `order_items.coupon_price_*` / face | "שולם באתר" + חישוב יתרה |
+| `remaining_amount_due_agorot` (לוגי/API) | המספר הדומיננטי בהצלחת סריקה |
+| `voucher_redemptions` | outcome, `idempotency_key`, replay |
+| `products.name` / snapshot | שם מוצר בתוצאה |
+
+כסף: agorot integer בשרת; UI ממיר ל-₪ `he-IL`. **אין** שדות Escrow/held.
+
+---
+
+## 3. מסלולים
 
 | Route | קהל | תפקיד |
 |---|---|---|
@@ -53,9 +86,9 @@ docs/ARCHITECTURE-COUPON-REDEMPTION.md
 
 ---
 
-## 2. סורק ספק: `/supplier/scan`
+## 4. סורק ספק: `/supplier/scan`
 
-### 2.1 שלבים
+### 4.1 שלבים
 
 ```text
 1. קלט     מצלמה (BarcodeDetector / polyfill) ו/או שדה קוד
@@ -67,7 +100,7 @@ docs/ARCHITECTURE-COUPON-REDEMPTION.md
 
 Double-tap: אותו `idempotency_key` לניסיון אחד, או מפתח חדש לניסיון חדש אחרי תוצאה סופית. השרת מגדיר אמת; ה-UI לא "מנחש" הצלחה.
 
-### 2.2 פריסה (mobile-first)
+### 4.2 פריסה (mobile-first)
 
 | פריט | כלל |
 |---|---|
@@ -78,18 +111,16 @@ Double-tap: אותו `idempotency_key` לניסיון אחד, או מפתח חד
 | CTA | "מימוש" / "אשר וממש"; disabled בזמן busy או קוד קצר מדי |
 | סטטוס רשת | מחובר / לא מקוון (אם יש תור: "נשמר לסנכרון", בלי הצלחת כסף) |
 
-טוקנים: CTA כהה (`#333e48` או טוקן heading); הדגשת הצלחה עם מותג צהוב (`#fed700`) על פס/מסגרת הצלחה. בלי כרטיסים מיותרים; אזור תוצאה אחד.
+טוקנים: CTA כהה (`#333e48` או טוקן heading); הדגשת הצלחה עם מותג צהוב (`#fed700`) על פס/מסגרת הצלחה.
 
-### 2.3 מה מוצג בהצלחה
+### 4.3 מה מוצג בהצלחה
 
-1. כותרת הצלחה (טבלה בסעיף 4)  
+1. כותרת הצלחה (טבלה בסעיף 6)  
 2. **לגבייה בקופה: ₪X.XX** (מ-`remaining_amount_due_agorot` / `amount_collected_agorot`)  
 3. שם מוצר + קוד (משני)  
 4. אם `replayed`: שורת משנה "תשובה חוזרת" (לא מימוש כפול)
 
-אין הצגת "Escrow", "נאמן", או "שוחרר תשלום לספק".
-
-### 2.4 אופליין (אם מיושם)
+### 4.4 אופליין (אם מיושם)
 
 | מותר | אסור |
 |---|---|
@@ -99,9 +130,9 @@ Double-tap: אותו `idempotency_key` לניסיון אחד, או מפתח חד
 
 ---
 
-## 3. לקוח: תצוגת QR
+## 5. לקוח: תצוגת QR
 
-### 3.1 רשימה (`/account/coupons`)
+### 5.1 רשימה (`/account/coupons`)
 
 | מצב שובר | UI |
 |---|---|
@@ -112,11 +143,9 @@ Double-tap: אותו `idempotency_key` לניסיון אחד, או מפתח חד
 
 מיון מומלץ: פעילים קודם. כסף: אגורות מהשרת → פורמט `he-IL`.
 
-### 3.2 פרט (`/coupon/[id]`)
+### 5.2 פרט (`/coupon/[id]`)
 
 דורש session; רק בעל השובר (`user_id`).
-
-שדות חובה בתצוגה:
 
 | שדה | מקור |
 |---|---|
@@ -128,15 +157,15 @@ Double-tap: אותו `idempotency_key` לניסיון אחד, או מפתח חד
 | תוקף | `expires_at` |
 | סטטוס | תרגום עברי של status |
 
-אחרי מימוש/פקיעה/החזר: מסתירים QR פעיל; אפשר להשאיר קוד לקריאה בלבד. אין כפתור "ממש" ללקוח (מימוש = ספק בלבד).
+אחרי מימוש/פקיעה/החזר: מסתירים QR פעיל; אפשר להשאיר קוד לקריאה בלבד.
 
-### 3.3 בהירות מול בית העסק
+### 5.3 בהירות מול בית העסק
 
 לקוח מבין משפט אחד: "שלמת מקדמה באתר; בבית העסק ישלמו את היתרה המוצגת." בלי נאמן/Escrow.
 
 ---
 
-## 4. מיפוי הודעות שגיאה (עברית מחייבת)
+## 6. מיפוי הודעות שגיאה (עברית מחייבת)
 
 מיפוי מ-`outcome` (קנוני ב-REDEMPTION) לטקסט UI. Wrong shop לא מקבל ניסוח נפרד.
 
@@ -151,15 +180,13 @@ Double-tap: אותו `idempotency_key` לניסיון אחד, או מפתח חד
 | `rate_limited` | יותר מדי סריקות, המתינו רגע |
 | `invalid_request` | בקשה לא תקינה |
 
-Aliases ישנים ב-UI: `already_used` → אותה הודעה כמו `already_redeemed`.
+Aliases ישנים: `already_used` → אותה הודעה כמו `already_redeemed`.
 
 שגיאת רשת/5xx (לפני outcome): "שגיאת רשת, נסו שוב" / "שגיאת מערכת, נסו שוב". **לא** לסמן מומש.
 
-ללקוח (תצוגה, לא סריקה): סטטוסים קצרים ("פעיל" / "מומש" / "פג תוקף" / "הוחזר") בלי לערבב את טבלת הספק.
-
 ---
 
-## 5. אין optimistic redeemed
+## 7. אין optimistic redeemed
 
 | רגע | מצב UI מותר |
 |---|---|
@@ -169,17 +196,11 @@ Aliases ישנים ב-UI: `already_used` → אותה הודעה כמו `already
 | כל כשל | מסך כשל לפי טבלה; הקוד נשאר לניסיון חוזר אם רלוונטי |
 | timeout / abort | כשל רשת; שובר נשאר `issued` בצד לקוח עד רענון מהשרת |
 
-אסור:
-
-- לצבוע QR כבוי / "מומש" לפני 200 + `outcome=success`
-- לעדכן רשימת לקוח מקומית ל-`redeemed` מסריקת ספק בלי invalidate/refetch
-- להציג יתרה לגבייה מתשובה מקומית מדומה
-
-מקור האמת לסטטוס אחרי סריקה: תשובת RPC / קריאה מחדש ל-DB.
+אסור: לצבוע QR כבוי / "מומש" לפני 200 + `outcome=success`; לעדכן רשימת לקוח מקומית ל-`redeemed` בלי invalidate/refetch; להציג יתרה מתשובה מקומית מדומה.
 
 ---
 
-## 6. נגישות וביצועי שטח
+## 8. נגישות וביצועי שטח
 
 | נושא | כלל |
 |---|---|
@@ -191,20 +212,56 @@ Aliases ישנים ב-UI: `already_used` → אותה הודעה כמו `already
 
 ---
 
-## 7. Acceptance (UX)
+## 9. מקרי קצה
+
+| מקרה | תרחיש | UX מחייב | הערה |
+|---|---|---|---|
+| UXE1 | double-tap על "מימוש" | busy + idempotency; replay אם אותו מפתח | לא optimistic |
+| UXE2 | שני סורקים, אחד success | השני: already_redeemed | CAS בשרת |
+| UXE3 | timeout אחרי success בשרת | כשל רשת; refetch לפני retry | שובר עדיין issued עד refetch |
+| UXE4 | wrong_supplier | not_found (אותה הודעה) | anti-enum UX4 |
+| UXE5 | QR מצולם / חתימה שבורה | not_found + log | לא מגיעים ל-RPC |
+| UXE6 | rate_limit | הודעה UX6; CTA disabled זמני | לא spam |
+| UXE7 | offline queue flush | "מסנכרן…"; success רק אחרי RPC | לא יתרה מדומה |
+| UXE8 | לקוח פותח QR אחרי redeem מרחוק | refetch: "מומש", QR מוסתר | invalidate on focus |
+| UXE9 | voucher expired בזמן סריקה | expired | לא success |
+| UXE10 | refunded בזמן סריקה | refunded | CE redeem_after_refund |
+| UXE11 | unauthorized supplier | unauthorized | לא leak voucher |
+| UXE12 | מצלמה נדחית | fallback הקלדה UX5 | לא dead-end |
+
+---
+
+## 10. פתוחות
+
+| # | פתוח | הערה |
+|---|---|---|
+| O1 | האם offline queue חובה ב-v1 או opt-in | תלוי SUPPLIER-PORTAL |
+| O2 | BarcodeDetector polyfill: איזה חבילה / גודל bundle | ביצועים mobile |
+| O3 | `/account/coupons` מול `/account/vouchers`: route קנוני אחד | PERSONAL-AREA |
+| O4 | רטט haptic: iOS vs Android | נגישות O5 |
+| O5 | polling/refetch interval אחרי סריקה ללקוח (realtime?) | notifications v2 |
+| O6 | האם `replayed` מוצג גם ללקוח (לא רק ספק) | כרגע ספק בלבד |
+
+עודכן: 2026-08-12.
+
+---
+
+## 11. Acceptance
 
 - [ ] Scan RTL, CTA ≥ 44px, יתרה דומיננטית בהצלחה  
-- [ ] מיפוי הודעות לפי סעיף 4 (כולל anti-enum)  
+- [ ] מיפוי הודעות לפי סעיף 6 (כולל anti-enum)  
 - [ ] אין optimistic redeemed  
 - [ ] QR ללקוח רק ב-`issued`; מוסתר אחרי redeemed/expired/refunded  
 - [ ] אין ניסוח Escrow/נאמן  
 - [ ] אופליין (אם קיים) לא מציג הצלחת כסף לפני שרת  
+- [ ] החלטה + חלופות שנדחו + סכמת DB + מקרי קצה + פתוחות  
 
 ---
 
-## 8. Revision
+## 12. Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-12 | BINDING batch #9: סורק + QR לקוח, RTL, מיפוי שגיאות, anti-optimistic |
 | 2026-08-02 | טיוטת UX קודמת ל-feat/coupon-redemption |
+| 2026-08-12 | BINDING batch #9: סורק + QR לקוח, RTL, anti-optimistic |
+| 2026-08-12 | batch-2 pass-3: DOCS-TEMPLATE-BINDING (חלופות, DB, מקרי קצה, פתוחות) |
