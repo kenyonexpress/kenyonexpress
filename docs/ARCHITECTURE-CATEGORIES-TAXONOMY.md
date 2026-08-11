@@ -1,9 +1,9 @@
 # ארכיטקטורה: טקסונומיית קטגוריות
 
-עץ קטגוריות לשוק הישראלי (קופונים ומוצרים פיזיים).
+עץ קטגוריות לשוק הישראלי (קופונים ומוצרים פיזיים). עומק 2, SEO בעברית, בלי עמלה לפי קטגוריה.
 
-Status: **BINDING** · עודכן: 2026-08-06 · QA: PASS  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #43/50  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
 מסמכים קשורים:
@@ -15,10 +15,11 @@ docs/ARCHITECTURE-ADMIN-DASHBOARD.md
 docs/ARCHITECTURE-CATALOG-SEARCH-SEO.md
 docs/ARCHITECTURE-SEASONAL-CAMPAIGNS.md
 docs/ARCHITECTURE-PRICING-RULES.md
+docs/ARCHITECTURE-GEO-FEATURE.md
 docs/CONTRADICTIONS.md
 ```
 
-עקרון כסף: קטגוריה **לא** קובעת עמלה. `platform_percent` רק במוצר (פר מוצר, בלי default). אין Escrow.
+עקרון כסף: קטגוריה **לא** קובעת עמלה. `platform_percent` רק במוצר (פר מוצר, בלי default). אין Escrow / held / J5.
 
 ---
 
@@ -49,7 +50,7 @@ docs/CONTRADICTIONS.md
 | `kids` | ילדים ותינוקות | צעצועים, ביגוד |
 | `services` | שירותים מקומיים | רכב, לימודים, מקצועי |
 
-לא יותר מעומק 2. בנים נוספים לפי ביקוש בלבד.
+לא יותר מעומק 2. בנים נוספים לפי ביקוש בלבד. תיקון מחייב: slug אטרקציות הוא `attractions` (לא `attraced`).
 
 ---
 
@@ -69,27 +70,50 @@ product_categories (product_id, category_id, is_primary)
 
 `enforce_category_depth`: אסור סבא (parent של parent חייב null).
 
+| כלל | פירוט |
+|---|---|
+| primary | בדיוק קטגוריית taxonomy אחת עם `is_primary=true` ל-publish |
+| collections | מוצר יכול להיות משויך לכמה; לא canonical |
+| sort | `sort_order` בתוך אותו parent |
+| כיבוי | `is_active=false` מסתיר מ-listing; לא מוחק SEO redirects |
+
 ---
 
 ## 3. SEO / UX
 
-- URL: `/category/{slug}` בעברית RTL  
-- BreadcrumbList בעברית  
-- Collection: canonical ל-taxonomy או `noindex` אם חופפת סינון  
-- מעטפת listing זהה לחיפוש  
+| נושא | כלל |
+|---|---|
+| URL | `/category/{slug}` בעברית RTL |
+| Breadcrumb | BreadcrumbList בעברית מה-primary taxonomy |
+| Collection | canonical ל-taxonomy או `noindex` אם חופפת סינון |
+| מעטפת | listing זהה לחיפוש (SEARCH-UX) |
+| עיר | פילטר geo לפי GEO-FEATURE; לא חלק מהעץ |
 
 ---
 
-## 4. Acceptance
+## 4. Admin
 
-- [ ] עומק ≤ 2 נאכף  
-- [ ] 8 אבות ישראליים כבסיס  
+| פעולה | כלל |
+|---|---|
+| יצירת קטגוריה | slug ייחודי; עומק ≤ 2 |
+| שינוי parent | נדחה אם יוצר עומק > 2 |
+| מחיקה | רק אם אין מוצרים משויכים; אחרת archive |
+| עמלה | אין שדה עמלה על קטגוריה |
+
+---
+
+## 5. Acceptance
+
+- [ ] עומק ≤ 2 נאכף ב-trigger  
+- [ ] 8 אבות ישראליים כבסיס (כולל `attractions`)  
 - [ ] primary category חובה ל-publish  
-- [ ] RTL + breadcrumb  
+- [ ] RTL + breadcrumb בעברית  
+- [ ] collection לא מחליפה canonical  
+- [ ] אין `platform_percent` / Escrow ברמת קטגוריה  
 
 ---
 
-## 5. Revision
+## 6. Revision
 
 | תאריך | שינוי |
 |---|---|
@@ -97,3 +121,4 @@ product_categories (product_id, category_id, is_primary)
 | 2026-08-06 | QA: קישור SEASONAL; RTL עברית |
 | 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
 | 2026-08-07 | QA audit: T7 + קישור PRICING; קטגוריה בלי עמלה/Escrow |
+| 2026-08-12 | batch #43/50: רענון BINDING על arch/docs-batch-2; slug אטרקציות מתוקן ל-attractions |
