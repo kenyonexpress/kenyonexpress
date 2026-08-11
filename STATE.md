@@ -14,14 +14,14 @@ docs/DOCS-TEMPLATE-BINDING.md
 .
 
 ## המשך מ:
-נכתב מחדש
-docs/ARCHITECTURE-CART-GUEST.md
+נכתב
+docs/ARCHITECTURE-PRODUCT-TYPES.md
 . ממתין למסמך הבא על
 arch/docs-batch-2
 .
 
 ## Last Completed
-ARCHITECTURE-CART-GUEST.md: guest token, cookie policy, merge sum+cap99, מטריצת קונפליקטים. קודם: MONEY.
+ARCHITECTURE-PRODUCT-TYPES.md: מטריצת שכבות coupon/physical/subscription + בשלות. קודם: CART-GUEST.
 
 ## In Progress
 nothing
@@ -33,6 +33,8 @@ nothing
 /Users/ofir/kenyonexpress-web/ke-arch
 
 ## החלטות שהתקבלו אוטומטית
+- **2026-08-12 PRODUCT-TYPES:** נוצר ARCHITECTURE-PRODUCT-TYPES.md. מנוי מחוץ ל-cart/beginCheckout הרגיל ב-GA. Admin ישן שכופה platform_percent=100 על קופון נדחה לטובת settlement supplier_due=0 + snapshot אחוז (MONEY). commission_type נשאר נגזר מ-type.
+
 - **2026-08-12 CART-GUEST conflicts:** מיזוג = sum+cap 99 (לא max). מחיר תמיד חי. מחיקת cookie אחרי merge; קישור אנליטיקס לפני המחיקה ב-OAuth. תועד BINDING ב-ARCHITECTURE-CART-GUEST.md.
 
 - **2026-08-12 MONEY:** נוצר ARCHITECTURE-MONEY.md כ-BINDING. קופון: commission=paid_on_site ו-supplier_due=0 למרות ש-platform_percent מצולם (הסכם/ביקורת, לא payable). COMPLETE-SYSTEM Escrow נדחה במפורש במסמך. עיגול = half-up integer; מע"מ = extractVat על הכנסת פלטפורמה בלבד.
