@@ -170,6 +170,19 @@ Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 
 ---
 
+## 4.1 Webhooks Resend (סטטוסי משלוח)
+
+| אירוע Resend | פעולה אצלנו |
+|---|---|
+| `email.sent` | עדכון `notification_deliveries.status=sent` |
+| `email.delivered` | `delivered` + timestamp |
+| `email.bounced` / `complained` | `failed`; השבתת שיווק לכתובת; אל תכבה טרנזקציוני בלי מדיניות |
+| `email.delivery_delayed` | לוג; retry לפי תור |
+
+Webhook חתום + idempotent לפי `email_id`. אין לשמור גוף HTML מלא בלוג האירועים.
+
+---
+
 ## 5. Acceptance לפני soft-open
 
 - [ ] כל kind ליבת קופון: issued / expiry_48h / redeemed / expired / refunded  
@@ -179,6 +192,7 @@ Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 - [ ] unsubscribe רק בשיווקי  
 - [ ] בדיקת RTL ב-Gmail / Apple Mail  
 - [ ] דומיין From מאומת (SPF/DKIM) ב-Resend  
+- [ ] webhook משלוח מחובר (לפחות delivered/bounced)  
 
 מפת kind מלאה בסעיף 1; גופים בעברית בסעיף 1.1; COPY מורחב ב-`EMAIL-TEMPLATES-COPY.md`.
 
@@ -192,3 +206,4 @@ Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 | 2026-08-11 | גופי מינימום ל-redeemed/expired + קישור lifecycle |
 | 2026-08-11 | גוף מלא בעברית לכל 10 ה-kinds |
 | 2026-08-11 | Acceptance: DKIM + מיפוי מפורש ל-COPY |
+| 2026-08-11 | Webhooks Resend לסטטוסי משלוח |
