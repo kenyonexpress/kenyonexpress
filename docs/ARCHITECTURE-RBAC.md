@@ -1,17 +1,20 @@
-# ARCHITECTURE: RBAC
+# ארכיטקטורה: RBAC (תפקידים והרשאות)
 
-מטריצת תפקידים והרשאות: guest, customer, supplier, supplier-staff, admin, super-admin. מיפוי RLS לפי טבלה.
+מטריצת תפקידים: guest, customer, supplier, supplier-staff, admin, super-admin. מיפוי RLS לפי טבלה.
 
-Status: **BINDING** · Updated: 2026-08-03  
-Scope: **docs only** · branch `arch/docs-queue`  
-אין שינוי קוד. אין נגיעה ב-worktree הראשי.
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.  
+מודל כסף: **No Escrow** (כשרלוונטי)
 
-Companions:
+מסמכים קשורים:
 
 ```
+docs/DOCS-TEMPLATE-BINDING.md
+docs/ARCHITECTURE-SECURITY-RLS.md
+docs/ARCHITECTURE-RLS-MATRIX.md
 docs/ARCHITECTURE-SUPPLIER-ONBOARDING.md
 docs/ARCHITECTURE-SECURITY-COMPLIANCE.md
-docs/ARCHITECTURE-ADMIN-REPORTS.md
 docs/ONBOARDING-DEVELOPER.md
 ```
 
@@ -19,130 +22,120 @@ docs/ONBOARDING-DEVELOPER.md
 
 ---
 
-## 0. תפקידים
+## 0. החלטה (D1 עד D10)
 
-| Role | איך נקבע | תיאור |
-|---|---|---|
-| `guest` | אין session | גלישה, עגלה מקומית/אורח, checkout לפי מדיניות |
-| `customer` | `auth.users` + `profiles` רגיל | חשבון, הזמנות, קופונים, ארנק |
-| `supplier` | `supplier_members` role `owner` | ניהול עסק, מוצרים, דוחות, סריקה |
-| `supplier-staff` | `supplier_members` role `manager` או `scanner` | manager: מוצרים/סריקה; scanner: סריקה בלבד |
-| `admin` | `profiles.role` / `is_admin()` | תפעול פלטפורמה, אישורי מוצרים, refunds |
-| `super-admin` | תת-קבוצה של admin (flag / allowlist) | secrets רגישים, רוטציות, שינוי RBAC, DR |
-
-הערות:
-
-- משתמש יכול להיות customer וגם supplier-member במקביל (super-app).
-- `scanner` ⊂ supplier-staff בלי גישת כסף.
+| # | הכרעה |
+|---|---|
+| D1 | שישה principals לוגיים: guest, customer, supplier-owner, supplier-staff (manager/scanner), admin, super-admin. |
+| D2 | תפקיד נגזר מ-DB (`profiles`, `supplier_members`), לא מטענות JWT מותאמות. |
+| D3 | Route gates ב-Next הם שכבה ראשונה; RLS הוא שכבת האמת. |
+| D4 | Redeem רק דרך RPC `SECURITY DEFINER` עם membership + `FOR UPDATE`. |
+| D5 | Admin elevation (grant admin, wallet adjust, export CSV) דורש audit. |
+| D6 | Scanner ⊂ supplier-staff: סריקה בלבד, בלי עריכת כסף או `platform_percent`. |
+| D7 | משתמש יכול להיות customer וגם supplier-member (super-app). |
+| D8 | Impersonation אסור: admin לא משלם בשם לקוח. |
+| D9 | Env/secrets ו-RBAC grant: super-admin בלבד. |
+| D10 | כל שלילת גישה רגישה: אין שורה / `not_found`, לא דליפת קיום voucher. |
 
 ---
 
-## 1. Permission matrix (per resource)
+## 1. חלופות שנדחו
 
-| Resource | guest | customer | supplier (owner) | staff manager | staff scanner | admin | super-admin |
+| חלופה | למה נדחתה |
+|---|---|
+| RBAC רק ב-middleware בלי RLS | middleware נעקף; RLS חובה על Postgres |
+| תפקידים ב-JWT custom claims | claims לא מתעדכנים מייד; מקור אמת = DB |
+| supplier כותב ישירות ל-`vouchers` | race על redeem; RPC אטומי בלבד |
+| admin עם service_role בדפדפן | דליפת מפתח = עקיפת כל המטריצה |
+| role hierarchy בקוד בלבד | policies חייבות helpers (`is_admin()`, `is_supplier_member`) |
+
+---
+
+## 2. סכמת DB
+
+**אין DDL חדש במסמך זה.** טבלאות ועמודות שמגדירות תפקיד:
+
+| טבלה / עמודה | שימוש RBAC |
+|---|---|
+| `profiles.role` | `customer` / `admin` / `super_admin` |
+| `profiles.is_admin()` helper | policy admin |
+| `supplier_members` (`user_id`, `supplier_id`, `role`) | owner / manager / scanner |
+| `supplier_members.status` | active חובה לסריקה |
+| `orders.user_id` | בעלות customer |
+| `order_items.supplier_id` | visibility לספק |
+| `vouchers.user_id`, `vouchers.supplier_id` | owner vs redeem path |
+| `audit_log` | append-only לפעולות elevation |
+
+Enums יעד (לפי מיגרציות): `supplier_member_role`, `profile_role`.  
+פירוט policies: `docs/ARCHITECTURE-RLS-MATRIX.md`.
+
+---
+
+## 3. מטריצת הרשאות (תמצית)
+
+| Resource | guest | customer | supplier owner | staff manager | scanner | admin | super-admin |
 |---|---|---|---|---|---|---|---|
 | Catalog read | R | R | R | R | R | R | R |
-| Product write (own) | — | — | CUD draft | CUD draft | — | approve/publish any | same |
-| Cart | own | own | own | own | own | — | — |
+| Product write (own) | - | - | CUD draft | CUD draft | - | approve | same |
 | Checkout / pay | limited | Y | Y | Y | Y | impersonation אסור | אסור |
-| Own orders | — | R | R | R | R | R all | R all |
-| Own vouchers / QR | — | R | — | — | — | R all | R all |
-| Redeem voucher | — | — | Y | Y | Y | emergency only | emergency only |
-| Wallet | — | R + redeem at checkout | — | — | — | adjust+audit | adjust+audit |
-| Supplier portal | — | — | Y | limited | scan only | Y | Y |
-| Settlements view | — | — | own | — | — | all | all |
-| Refund approve | — | request | evidence | — | — | Y | Y |
-| Admin reports CSV | — | — | — | — | — | Y | Y |
-| Env / secrets | — | — | — | — | — | — | Y (ops) |
-| RBAC grant admin | — | — | — | — | — | — | Y |
-| Support tickets | create | own | supplier thread | — | — | all | all |
+| Own orders | - | R | R | R | R | R all | R all |
+| Redeem voucher | - | - | Y | Y | Y | emergency | emergency |
+| Wallet | - | R + checkout | - | - | - | adjust+audit | adjust+audit |
+| Settlements | - | - | own | - | - | all | all |
+| Env / secrets | - | - | - | - | - | - | Y (ops) |
+| Grant admin | - | - | - | - | - | - | Y |
 
-Y = מותר · R = קריאה · CUD = יצירה/עדכון/מחיקה · — = אין
+Y = מותר · R = קריאה · CUD = create/update/delete · `-` = אין
 
----
+### Route gates (Next)
 
-## 2. Route gates (Next)
-
-| Path prefix | מינימום |
+| Path | מינימום |
 |---|---|
-| `/` catalog | guest |
+| `/`, `/product/*` | guest |
 | `/cart`, `/checkout` | guest (form); pay לפי מדיניות |
 | `/account/**` | customer |
-| `/coupon/[id]` | customer owner |
 | `/scan`, `/supplier/**` | supplier-member active |
 | `/admin/**` | admin |
 | `/api/cron/**` | Bearer `CRON_SECRET` |
-| Cardcom webhook | password/signature |
 
 ---
 
-## 3. RLS mapping (per table)
+## 4. מקרי קצה
 
-שמות פונקציות לוגיים; ליישר למיגרציות בפועל.
-
-| Table | guest/anon | customer (auth) | supplier-member | admin |
-|---|---|---|---|---|
-| `products` (published) | SELECT | SELECT | SELECT; UPDATE own drafts | ALL |
-| `categories` | SELECT | SELECT | SELECT | ALL |
-| `suppliers` public fields | SELECT limited | SELECT limited | SELECT/UPDATE own | ALL |
-| `supplier_members` | — | — | SELECT own supplier; owner manages | ALL |
-| `orders` | — | SELECT own | SELECT lines for own supplier | SELECT all |
-| `order_items` | — | via order | SELECT where supplier_id = mine | ALL |
-| `payments` | — | SELECT own order | — | SELECT |
-| `vouchers` | — | SELECT own | SELECT for redeem path / own supplier | SELECT |
-| `wallet_accounts` / `wallet_ledger` | — | SELECT own | — | ALL + adjust |
-| `notification_outbox` | — | — | — | SELECT |
-| `support_tickets` | — | own | escalated | ALL |
-| `analytics_events` | INSERT limited | INSERT | — | SELECT |
-| `refunds` | — | SELECT own | — | ALL |
-
-עקרונות RLS:
-
-1. אין policy שמחזירה service_role ל-client.
-2. Redeem: RPC `SECURITY DEFINER` עם בדיקות role + `FOR UPDATE`, לא UPDATE חופשי מ-client על `vouchers`.
-3. Admin: `is_admin()`; super-admin: `is_super_admin()` לפעולות הרסניות.
-4. כל שלילת גישה = אין שורה, לא דליפת קיום כשצריך (למשל voucher של אחר).
+| # | מצב | התנהגות |
+|---|---|---|
+| RB-E1 | customer + supplier על אותו `auth.uid()` | שתי הזירות פעילות; policies מבודדות לפי context |
+| RB-E2 | membership deactivated באמצע סשן | redeem נכשל `unauthorized`; לא cache ישן |
+| RB-E3 | scanner מנסה UPDATE על `platform_percent` | RLS חוסם; audit אם ניסיון דרך API |
+| RB-E4 | admin מבקש refund מעל סף | דורש recent auth + audit row |
+| RB-E5 | anon מנסה SELECT על voucher של אחר | אין שורה (לא 403 עם id) |
+| RB-E6 | super-admin grant admin לעצמו | audit + allowlist; לא ב-production בלי שני אנשים |
+| RB-E7 | service_role leaked to client | אין policy שמחזירה; בדיקת bundle חוסמת |
 
 ---
 
-## 4. Helper functions (יעד)
+## 5. פתוחות
 
-```text
-is_admin()
-is_super_admin()
-is_supplier_member(supplier_id)
-is_supplier_role(supplier_id, roles[])
-current_user_id()
-```
-
-שימוש ב-policies בלבד; לא לסמוך על טענות JWT מזויפות מעבר ל-Supabase Auth.
-
----
-
-## 5. Elevation and audit
-
-| פעולה | דורש |
-|---|---|
-| Grant admin | super-admin + audit |
-| Refund מעל סף | admin + recent auth |
-| Manual wallet adjust | admin + reason + audit |
-| Export CSV reports | admin + audit |
-| PITR restore | super-admin / ops |
+| # | פער | תאריך |
+|---|---|---|
+| O1 | `is_super_admin()` vs flag ב-`profiles`: ליישר למיגרציה | 2026-08-12 |
+| O2 | emergency redeem admin: SLA ונימוק חובה ב-UI | 2026-08-12 |
+| O3 | content_uploader role: מטריצה מלאה ב-RLS-MATRIX | 2026-08-12 |
 
 ---
 
 ## 6. Acceptance
 
-- [ ] מטריצת תפקידים מכוסה ב-routes
+- [ ] מטריצת תפקידים מכוסה ב-routes וב-RLS
 - [ ] scanner בלי עריכת `platform_percent`
-- [ ] RLS על P0 tables
 - [ ] אין service_role בדפדפן
 - [ ] audit על elevation וכסף ידני
 
 ---
 
-## 7. Revision
+## Revision
 
-| Date | Change |
+| תאריך | שינוי |
 |---|---|
-| 2026-08-03 | מסמך ראשוני על arch/docs-queue |
+| 2026-08-03 | מסמך ראשוני |
+| 2026-08-12 | batch-2: DOCS-TEMPLATE-BINDING (חלופות, DB, מקרי קצה, פתוחות) |
