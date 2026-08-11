@@ -2,8 +2,8 @@
  * Build hero 1:1 from refs/ke_live_singlefile.html ONLY.
  * Iron rule: no live capture, no invented DOM.
  */
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
 const SINGLEFILE = 'refs/ke_live_singlefile.html'
 const html = fs.readFileSync(SINGLEFILE, 'utf8')
@@ -32,8 +32,7 @@ function parseLayers(slideHtml) {
   const layers = []
   const re =
     /<(?:rs-layer\s|span\s)([^>]*\bid=slider-6-slide-[^ >\s]+[^>]*)>([\s\S]*?)<\/(?:rs-layer|span)>/g
-  let m
-  while ((m = re.exec(slideHtml))) {
+  for (const m of slideHtml.matchAll(re)) {
     const attrs = m[1]
     const type = attrs.match(/data-type=(\w+)/)?.[1]
     const style = attrs.match(/style="([^"]*)"/)?.[1] || attrs.match(/style='([^']*)'/)?.[1] || ''
@@ -150,7 +149,7 @@ hero = hero.replace(/https?:\/\/kenyonexpress\.co\.il\/wp-content\/uploads\/[^"'
   localPathFromUrl(u),
 )
 hero = hero.replace(/\/\/kenyonexpress\.co\.il\/wp-content\/uploads\/[^"'\s)>]+/g, (u) =>
-  localPathFromUrl('https:' + u),
+  localPathFromUrl(`https:${u}`),
 )
 
 fs.writeFileSync('refs/ke_live_singlefile-hero.html', hero)
@@ -212,7 +211,7 @@ for (const rule of allCss.split('}')) {
     /rev_slider|rs-layer|rs-slide|rs-module|tp-bullet|da-block|da-inner|da-action|da-text|da-media|departments-menu|product-categories|elementor-column|elementor-container/.test(
       sel,
     )
-  if (hit) rules.push(rule.trim() + '}')
+  if (hit) rules.push(`${rule.trim()}}`)
 }
 
 let css = `.ke-hero-exact-root.elementor-5202{--bs-ec-primary:#fed700;font-family:var(--font-heebo),"Open Sans",Arial,sans-serif;direction:rtl;width:100%}\n`
@@ -245,7 +244,7 @@ fs.writeFileSync(
 
 console.log('hero bytes:', hero.length)
 console.log('css rules:', rules.length)
-slides.forEach((s) => {
+for (const s of slides) {
   const textLayers = s.layers.filter((l) => l.type === 'text' && l.text)
   console.log(
     s.key,
@@ -253,6 +252,6 @@ slides.forEach((s) => {
       ? textLayers.map((l) => `${l.text}@${l.fontSize || l.dataText || '?'}`).join(' | ')
       : '(empty in file)',
   )
-})
+}
 console.log('banners in file:', banners.filter((b) => b.text).length)
 console.log('categories in file:', categories.length)

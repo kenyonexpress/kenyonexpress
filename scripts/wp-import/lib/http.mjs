@@ -77,7 +77,11 @@ export async function politeFetch(url, init = {}) {
       await sleep(backoff)
     } catch (err) {
       // an explicit non-retryable status was already thrown above
-      if (err.message?.match(/^4\d\d /) && !err.message.startsWith('408') && !err.message.startsWith('429')) {
+      if (
+        err.message?.match(/^4\d\d /) &&
+        !err.message.startsWith('408') &&
+        !err.message.startsWith('429')
+      ) {
         throw err
       }
       lastErr = err
@@ -124,7 +128,11 @@ export async function* wcPages(path, params = {}) {
   let page = 1
   let totalPages = null
   for (;;) {
-    const { data, total, totalPages: reported } = await wcGet(path, {
+    const {
+      data,
+      total,
+      totalPages: reported,
+    } = await wcGet(path, {
       ...params,
       per_page: WC.perPage,
       page,

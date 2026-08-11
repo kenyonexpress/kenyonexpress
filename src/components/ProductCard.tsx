@@ -149,7 +149,21 @@ function DealsProductCard({ product }: { product: Product }) {
               needs `sizes`, not `fill`. Width and height are next/image's
               required intrinsic hint and nothing renders at them: `.p_con__image`
               pins the height to 245 and leaves the width auto, which is how
-              live keeps a narrow image narrow instead of stretching it. */}
+              live keeps a narrow image narrow instead of stretching it.
+
+              DO NOT add `style={{ width: 'auto', height: 'auto' }}` back here.
+              It was added in [35] to silence next/image's "width or height
+              modified, but not the other" console line, and it is the same
+              inline-beats-class mistake as `fill` above: an inline `height:auto`
+              overrides `.p_con__image`'s 245px, so every card rendered at its
+              source aspect instead. Measured on the homepage: 31 of 31 images
+              off the pin, heights spread from 124px to 361px, and the pixel gate
+              at 24.16% against 11.26-11.62% on record. The warning it bought is
+              guarded by `process.env.NODE_ENV !== 'production'`
+              (next/dist/client/image-component.js:84) and is unavoidable by
+              design here - rendering at live's aspect means the rendered width
+              cannot equal the declared 400. A dev-only console line is not worth
+              a production layout. */}
           {thumb ? (
             <Image
               src={thumb}
@@ -157,6 +171,7 @@ function DealsProductCard({ product }: { product: Product }) {
               width={400}
               height={245}
               sizes={DEAL_IMAGE_SIZES}
+              quality={50}
               className="p_con__image"
             />
           ) : null}
@@ -196,6 +211,7 @@ function DealsProductCard({ product }: { product: Product }) {
             <AddToCartButton
               productId={product.id}
               productName={product.name_he}
+              priceAgorot={Math.round(Number(product.kenyon_price ?? 0) * 100)}
               disabled={outOfStock}
               variant="icon"
               className="flex h-full w-full items-center justify-center"
@@ -317,6 +333,7 @@ function DefaultProductCard({ product }: { product: Product }) {
             <AddToCartButton
               productId={product.id}
               productName={product.name_he}
+              priceAgorot={Math.round(Number(product.kenyon_price ?? 0) * 100)}
               className="rounded-lg bg-brand-primary px-3 py-1.5 text-xs font-bold text-brand-dark hover:bg-brand-primary-hover transition-colors"
             >
               הוסף לסל

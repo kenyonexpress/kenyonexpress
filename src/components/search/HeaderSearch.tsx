@@ -2,7 +2,7 @@
 
 import { Search } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 /**
  * Search entry point in the masthead.
@@ -25,12 +25,124 @@ import { useState } from 'react'
  * thresholds to 4 and 7 characters because Hebrew words are systematically
  * shorter than the defaults assume.
  */
+interface Suggestion {
+  slug: string
+  name_he: string
+  image: string | null
+  price: number | null
+}
+
+interface QuickLinks {
+  popular: { term: string; target_url: string | null }[]
+  recent: string[]
+}
+
+/** Live prints ₪399, not ₪399.00. Agorot only when a price actually has them. */
+function shekels(value: number): string {
+  return `₪${value.toLocaleString('he-IL', { maximumFractionDigits: 2 })}`
+}
+
 export default function HeaderSearch() {
   const router = useRouter()
   const [q, setQ] = useState('')
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([])
+  const [quick, setQuick] = useState<QuickLinks | null>(null)
+  const [open, setOpen] = useState(false)
+  const [active, setActive] = useState(-1)
+
+  /**
+   * The promoted terms and the shopper's own recent ones, fetched ONCE on mount
+   * rather than every time the box is focused. Neither list changes between
+   * focuses within a page view, and re-fetching would make the dropdown appear
+   * empty for a beat each time it opens - the one moment it must not.
+   */
+  useEffect(() => {
+    const controller = new AbortController()
+    fetch('/api/search/quick-links', { signal: controller.signal })
+      .then((r) => r.json())
+      .then((data: QuickLinks) => setQuick(data))
+      .catch(() => {
+        // No quick links is a smaller failure than a search box that errors.
+      })
+    return () => controller.abort()
+  }, [])
+
+  /**
+   * Suggestions come from /api/search/suggest, not from the engine directly:
+   * the Meilisearch key is a server secret, so the browser cannot query it and
+   * the CSP connect-src stays closed to our own origin.
+   *
+   * Debounced, and every in-flight request is abandoned when a newer keystroke
+   * arrives. Without the abort an earlier, slower response can land after a
+   * later one and repopulate the list with results for a prefix the user has
+   * already typed past.
+   */
+  useEffect(() => {
+    const term = q.trim()
+    if (term.length < 2) {
+      setSuggestions([])
+      setOpen(false)
+      return
+    }
+    const controller = new AbortController()
+    const timer = setTimeout(() => {
+      fetch(`/api/search/suggest?q=${encodeURIComponent(term)}`, { signal: controller.signal })
+        .then((r) => r.json())
+        .then((data: { results?: Suggestion[] }) => {
+          setSuggestions(data.results ?? [])
+          setOpen((data.results ?? []).length > 0)
+          setActive(-1)
+        })
+        .catch(() => {
+          // An aborted or failed suggestion must never interrupt typing.
+        })
+    }, 180)
+    return () => {
+      clearTimeout(timer)
+      controller.abort()
+    }
+  }, [q])
+
+  function go(slug: string) {
+    setOpen(false)
+    router.push(`/product/${encodeURIComponent(slug)}`)
+  }
+
+  /** A promoted or recent term re-runs as a search rather than opening a product. */
+  function goTerm(term: string, targetUrl?: string | null) {
+    setOpen(false)
+    setQ(term)
+    router.push(targetUrl ? targetUrl : `/search?q=${encodeURIComponent(term)}`)
+  }
+
+  const hasQuick = (quick?.popular.length ?? 0) > 0 || (quick?.recent.length ?? 0) > 0
+  // Below the two-character floor there are no suggestions, so the dropdown
+  // shows the quick links instead of nothing at all - which is the difference
+  // between a box that helps and a box that waits.
+  const showQuick = open && q.trim().length < 2 && hasQuick
+
+  function onKeyDown(event: React.KeyboardEvent) {
+    if (!open || suggestions.length === 0) return
+    if (event.key === 'ArrowDown') {
+      event.preventDefault()
+      setActive((i) => (i + 1) % suggestions.length)
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault()
+      setActive((i) => (i <= 0 ? suggestions.length - 1 : i - 1))
+    } else if (event.key === 'Escape') {
+      setOpen(false)
+    } else if (event.key === 'Enter' && active >= 0) {
+      const hit = suggestions[active]
+      if (hit) {
+        event.preventDefault()
+        go(hit.slug)
+      }
+    }
+  }
 
   function submit(event: React.FormEvent) {
     event.preventDefault()
+    setOpen(false)
     const term = q.trim()
     // An empty submit still goes to /search rather than doing nothing, so the
     // control never looks broken; the page prompts for a term.
@@ -43,27 +155,132 @@ export default function HeaderSearch() {
     <form
       onSubmit={submit}
       aria-label="חיפוש מוצרים באתר"
-      className="hidden min-w-0 flex-1 justify-center md:flex"
+      className="relative hidden min-w-0 flex-1 justify-center md:flex"
     >
-      <div className="flex h-11 w-full max-w-md items-stretch overflow-hidden rounded-lg border-2 border-brand-primary bg-white">
-        <label htmlFor="masthead-search" className="sr-only">
-          חיפוש מוצרים
-        </label>
-        <input
-          id="masthead-search"
-          type="search"
-          value={q}
-          onChange={(event) => setQ(event.target.value)}
-          placeholder="מה בא לך למצוא היום?"
-          className="min-w-0 flex-1 bg-transparent px-4 text-sm text-heading focus:outline-none"
-        />
-        <button
-          type="submit"
-          aria-label="חיפוש"
-          className="flex w-12 shrink-0 items-center justify-center bg-brand-primary text-brand-dark transition-colors hover:bg-brand-primary-hover"
-        >
-          <Search size={18} aria-hidden="true" />
-        </button>
+      <div className="relative w-full max-w-md">
+        <div className="flex h-11 w-full items-stretch overflow-hidden rounded-lg border-2 border-brand-primary bg-white">
+          <label htmlFor="masthead-search" className="sr-only">
+            חיפוש מוצרים
+          </label>
+          <input
+            id="masthead-search"
+            type="search"
+            value={q}
+            onChange={(event) => setQ(event.target.value)}
+            onKeyDown={onKeyDown}
+            onFocus={() => setOpen(suggestions.length > 0 || hasQuick)}
+            onBlur={() => setTimeout(() => setOpen(false), 120)}
+            autoComplete="off"
+            role="combobox"
+            aria-expanded={open}
+            aria-controls="masthead-search-suggestions"
+            placeholder="מה בא לך למצוא היום?"
+            className="min-w-0 flex-1 bg-transparent px-4 text-sm text-heading focus:outline-none focus:ring-2 focus:ring-inset focus:ring-black/40"
+          />
+          <button
+            type="submit"
+            aria-label="חיפוש"
+            className="flex w-12 shrink-0 items-center justify-center bg-brand-primary text-brand-dark transition-colors hover:bg-brand-primary-hover"
+          >
+            <Search size={18} aria-hidden="true" />
+          </button>
+        </div>
+
+        {showQuick && (
+          <div
+            dir="rtl"
+            className="absolute inset-x-0 top-full z-30 mt-1 overflow-hidden rounded-lg border border-black/10 bg-white p-3 text-start shadow-lg"
+          >
+            {quick && quick.recent.length > 0 && (
+              <div className="mb-3">
+                <p className="mb-1 text-xs font-semibold text-muted">חיפושים אחרונים שלך</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {quick.recent.map((term) => (
+                    <button
+                      key={`recent-${term}`}
+                      type="button"
+                      onMouseDown={() => goTerm(term)}
+                      className="rounded-full border border-border px-3 py-1 text-xs text-heading transition-colors hover:bg-brand-accent"
+                    >
+                      {term}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {quick && quick.popular.length > 0 && (
+              <div>
+                <p className="mb-1 text-xs font-semibold text-muted">חיפושים פופולריים</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {quick.popular.map((item) => (
+                    <button
+                      key={`popular-${item.term}`}
+                      type="button"
+                      onMouseDown={() => goTerm(item.term, item.target_url)}
+                      className="rounded-full bg-brand-accent px-3 py-1 text-xs font-medium text-heading transition-colors hover:bg-brand-primary"
+                    >
+                      {item.term}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {open && suggestions.length > 0 && (
+          <ul
+            id="masthead-search-suggestions"
+            dir="rtl"
+            className="absolute inset-x-0 top-full z-30 mt-1 overflow-hidden rounded-lg border border-black/10 bg-white text-start shadow-lg"
+          >
+            {suggestions.map((s, i) => (
+              <li key={s.slug}>
+                <button
+                  type="button"
+                  // onMouseDown, not onClick: blur fires first on click and would
+                  // close the list before the handler ever runs.
+                  onMouseDown={() => go(s.slug)}
+                  className={`flex w-full items-center gap-3 px-3 py-2 text-start text-sm text-heading transition-colors ${
+                    i === active ? 'bg-brand-accent' : 'hover:bg-brand-accent'
+                  }`}
+                >
+                  {/*
+                    A plain <img>, not next/image: the URL comes from the search
+                    index and can point at any host the catalogue has ever used,
+                    while next/image only serves hosts listed in
+                    `remotePatterns` and 500s on the rest. A 40px thumbnail in a
+                    dropdown is not worth a broken suggestion list.
+                    `alt=""` because the product name is right next to it, and
+                    reading it twice is noise to a screen reader.
+                  */}
+                  {s.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={s.image}
+                      alt=""
+                      width={40}
+                      height={40}
+                      loading="lazy"
+                      className="h-10 w-10 shrink-0 rounded object-cover"
+                    />
+                  ) : (
+                    <span
+                      className="h-10 w-10 shrink-0 rounded bg-brand-accent"
+                      aria-hidden="true"
+                    />
+                  )}
+                  <span className="min-w-0 flex-1 truncate">{s.name_he}</span>
+                  {s.price != null && (
+                    <span className="shrink-0 text-xs font-semibold text-price">
+                      {shekels(s.price)}
+                    </span>
+                  )}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </form>
   )

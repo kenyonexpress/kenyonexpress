@@ -37,6 +37,21 @@ export const REMOTE_IMAGE_PATTERNS: readonly RemoteImagePattern[] = [
   { protocol: 'https', hostname: 'picsum.photos' },
   // R2 public CDN (image pipeline renditions)
   { protocol: 'https', hostname: '*.kenyonexpress.co.il' },
+  // The APEX host, listed separately because `*.kenyonexpress.co.il` does NOT
+  // match it - the wildcard consumes exactly one label, so it covers
+  // `www.` and `cdn.` and misses the bare domain (see hostnameMatches below,
+  // and the test that pins this).
+  //
+  // All 66 images in the WordPress export are on the bare host:
+  // https://kenyonexpress.co.il/wp-content/uploads/... Until the media stage
+  // can run - it needs a service_role key that this machine does not have, so
+  // the uploads have not happened - imported products carry those legacy URLs,
+  // and without this entry every one of them throws in next/image.
+  //
+  // Verified live 2026-08-07: the host answers 200 and content-length 33578 for
+  // greg_i.jpg, which is byte-for-byte the size recorded in the export's
+  // media manifest. This is a real, serving origin, not an assumption.
+  { protocol: 'https', hostname: 'kenyonexpress.co.il' },
   { protocol: 'https', hostname: '*.r2.dev' },
 ] as const
 

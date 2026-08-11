@@ -1,8 +1,10 @@
 'use client'
 
 import ImageUploader from '@/components/admin/ImageUploader'
+import { readDimensionMm, readTags, readVatExempt } from '@/lib/admin/product-fields'
 import { supplierReadiness } from '@/lib/admin/supplier-form'
 import {
+  type ProductMoneyType,
   commissionTypeOf,
   completeSplitPair,
   deriveDiscountPercent,
@@ -10,6 +12,17 @@ import {
   normalizePercent,
   previewProductMoney,
 } from '@/lib/commerce/product-money'
+import {
+  BILLING_INTERVALS,
+  BILLING_INTERVAL_LABELS,
+  type BillingInterval,
+  cadenceLabel,
+  isRecurringProduct,
+  normalizeIntervalCount,
+  previewRecurringMoney,
+  readRecurringProductFields,
+} from '@/lib/commerce/recurring'
+import { readWhatsAppEnabled } from '@/lib/supplier-contact'
 import { slugify } from '@/lib/utils/slugify'
 import { type ProductFormState, upsertProduct } from '@/server/actions/admin/products'
 import type { Category, Product, ProductVariant } from '@/types/database'
@@ -80,8 +93,24 @@ export default function ProductForm({
   const [supplierSplit, setSupplierSplit] = useState(
     product?.supplier_split_percent != null ? String(product.supplier_split_percent) : '',
   )
-  const [productType, setProductType] = useState<'physical' | 'coupon'>(
-    product?.type === 'coupon' ? 'coupon' : 'physical',
+  // Read defensively: PENDING-109 has not been applied, so these three columns
+  // are absent from both the generated type and the row itself. See
+  // readRecurringProductFields.
+  const savedRecurring = readRecurringProductFields(product)
+
+  const [productType, setProductType] = useState<ProductMoneyType>(
+    isRecurringProduct(product) ? 'recurring' : product?.type === 'coupon' ? 'coupon' : 'physical',
+  )
+  // Shekels in the form, agorot in the column. The conversion happens once, in
+  // the server action, through money.ts - never here and never twice.
+  const [recurringAmount, setRecurringAmount] = useState(
+    savedRecurring.amountAgorot != null ? String(savedRecurring.amountAgorot / 100) : '',
+  )
+  const [billingInterval, setBillingInterval] = useState<BillingInterval>(
+    savedRecurring.interval ?? 'monthly',
+  )
+  const [billingIntervalCount, setBillingIntervalCount] = useState(
+    String(savedRecurring.intervalCount ?? 1),
   )
   const [kenyonPrice, setKenyonPrice] = useState(
     product?.kenyon_price != null ? String(product.kenyon_price) : '',
@@ -97,6 +126,7 @@ export default function ProductForm({
   const error = state && 'error' in state ? state.error : null
 
   const isCouponProduct = productType === 'coupon'
+  const isRecurring = productType === 'recurring'
   // Derived from the type, never stored: see commissionTypeOf and
   // docs/CONTRADICTIONS.md C2.
   const commissionType = commissionTypeOf(productType)
@@ -120,12 +150,36 @@ export default function ProductForm({
     })
     if (price === null || !split.ok) return null
     if (isCouponProduct && normalizeIls(couponPrice) === null) return null
+    if (isRecurring && normalizeIls(recurringAmount) === null) return null
     return previewProductMoney({
       type: productType,
       priceIls: price,
       platformPercent: split.pair.platformPercent,
       couponPriceIls: normalizeIls(couponPrice),
       discountPercent: normalizePercent(discountPercent),
+      recurringAmountIls: normalizeIls(recurringAmount),
+    })
+  })()
+
+  /**
+   * What the subscription costs over a year, next to what one cycle costs.
+   * Shown because a per-cycle number alone hides the size of the commitment the
+   * admin is creating: 49.90 a month is 598.80 a year, and the person setting
+   * the price should see both before saving.
+   */
+  const recurringPreview = (() => {
+    if (!isRecurring) return null
+    const amount = normalizeIls(recurringAmount)
+    const split = completeSplitPair({
+      platformPercent,
+      supplierSplitPercent: supplierSplit,
+    })
+    if (amount === null || !split.ok) return null
+    return previewRecurringMoney({
+      recurringAmountIls: amount,
+      platformPercent: split.pair.platformPercent,
+      interval: billingInterval,
+      intervalCount: normalizeIntervalCount(billingIntervalCount) ?? 1,
     })
   })()
 
@@ -300,13 +354,21 @@ export default function ProductForm({
             id="prod-type"
             name="type"
             value={productType}
-            onChange={(e) => setProductType(e.target.value as 'physical' | 'coupon')}
+            onChange={(e) => setProductType(e.target.value as ProductMoneyType)}
             required
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
           >
-            <option value="physical">פיזי</option>
             <option value="coupon">קופון</option>
+            <option value="physical">פיצול הזמנה (פיזי)</option>
+            <option value="recurring">חיוב חודשי קבוע</option>
           </select>
+          <p className="mt-1 text-xs text-gray-500">
+            {isCouponProduct
+              ? 'הלקוח משלם מקדמה באתר ומשלים בבית העסק'
+              : isRecurring
+                ? 'הלקוח מאשר כרטיס פעם אחת, והחיוב חוזר עד שהוא מבטל'
+                : 'הלקוח משלם את מלוא הסכום באתר, והוא מתחלק בינינו לבין הספק'}
+          </p>
         </div>
         <div>
           <label htmlFor="prod-status" className="block text-xs font-medium text-gray-700 mb-1">
@@ -538,6 +600,99 @@ export default function ProductForm({
               <p className="mt-1 text-xs text-gray-500">מחושב מהמחירים, לא נקבע ידנית</p>
             </div>
           </div>
+        ) : isRecurring ? (
+          <div className="space-y-4">
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label
+                  htmlFor="recurring_amount_ils"
+                  className="block text-xs font-medium text-gray-700 mb-1"
+                >
+                  סכום החיוב התקופתי (₪) *
+                </label>
+                <input
+                  id="recurring_amount_ils"
+                  name="recurring_amount_ils"
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={recurringAmount}
+                  onChange={(e) => setRecurringAmount(e.target.value)}
+                  required
+                  dir="ltr"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                />
+                <p className="mt-1 text-xs text-gray-500">נגבה בכל מחזור, לא סכום חד פעמי</p>
+              </div>
+              <div>
+                <label
+                  htmlFor="billing_interval"
+                  className="block text-xs font-medium text-gray-700 mb-1"
+                >
+                  תדירות חיוב *
+                </label>
+                <select
+                  id="billing_interval"
+                  name="billing_interval"
+                  value={billingInterval}
+                  onChange={(e) => setBillingInterval(e.target.value as BillingInterval)}
+                  required
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                >
+                  {BILLING_INTERVALS.map((interval) => (
+                    <option key={interval} value={interval}>
+                      {BILLING_INTERVAL_LABELS[interval]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label
+                  htmlFor="billing_interval_count"
+                  className="block text-xs font-medium text-gray-700 mb-1"
+                >
+                  מכפיל תדירות
+                </label>
+                <input
+                  id="billing_interval_count"
+                  name="billing_interval_count"
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={billingIntervalCount}
+                  onChange={(e) => setBillingIntervalCount(e.target.value)}
+                  dir="ltr"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  {cadenceLabel(billingInterval, normalizeIntervalCount(billingIntervalCount) ?? 1)}
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-900">
+              <p className="font-medium">איך החיוב החוזר עובד</p>
+              <p className="mt-1 leading-relaxed">
+                בקנייה הראשונה הכרטיס מאושר ונשמר כטוקן של Cardcom. מהמחזור השני והלאה החיוב מתבצע
+                אוטומטית מול הטוקן, בלי שהלקוח נכנס לאתר. הלקוח יכול לבטל בכל רגע מהאזור האישי,
+                והביטול עוצר את החיוב הבא בלבד: התקופה ששולמה נמשכת עד סופה ואינה מוחזרת.
+              </p>
+            </div>
+
+            {recurringPreview && (
+              <div className="rounded-lg bg-gray-50 border border-gray-200 p-4">
+                <p className="text-xs font-semibold text-gray-700 mb-2">
+                  מה הלקוח משלם, {recurringPreview.cadenceLabel}
+                </p>
+                <dl className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs">
+                  <Row label="בכל מחזור" value={recurringPreview.chargeIls} />
+                  <Row label="בשנה" value={recurringPreview.annualIls} />
+                  <Row label="הפלטפורמה שומרת, למחזור" value={recurringPreview.platformKeepsIls} />
+                  <Row label="הספק מקבל, למחזור" value={recurringPreview.supplierGetsIls} />
+                </dl>
+              </div>
+            )}
+          </div>
         ) : (
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -599,8 +754,13 @@ export default function ProductForm({
           </div>
         )}
 
-        {/* Consequence of the numbers above, before saving them. */}
-        <div className="rounded-lg bg-gray-50 border border-gray-200 p-4">
+        {/* Consequence of the numbers above, before saving them. A recurring
+            product already showed its own per-cycle and annual breakdown, and a
+            second box quoting "one unit" of a subscription would say nothing
+            the first did not. */}
+        <div
+          className={`rounded-lg bg-gray-50 border border-gray-200 p-4 ${isRecurring ? 'hidden' : ''}`}
+        >
           <p className="text-xs font-semibold text-gray-700 mb-2">מה יקרה בפועל ליחידה אחת</p>
           {preview === null ? (
             <p className="text-xs text-gray-500">
@@ -637,22 +797,26 @@ export default function ProductForm({
             מוצר מומלץ
           </label>
         </div>
-        <div className="flex items-center gap-3">
-          <input
-            id="is_coupon_enabled"
-            name="is_coupon_enabled"
-            type="checkbox"
-            value="true"
-            defaultChecked={product?.is_coupon_enabled ?? false}
-            className="w-4 h-4 rounded border-gray-300 text-brand focus:ring-brand"
-          />
-          <label htmlFor="is_coupon_enabled" className="text-sm font-medium text-gray-700">
-            ניתן לרכישה כקופון
-          </label>
-          <span className="text-xs text-gray-400">
-            (הלקוח משלם באתר את מחיר הקופון שתגדיר, והיתרה נגבית בבית העסק)
-          </span>
-        </div>
+        {/* A subscription is not also sellable as a one-off coupon: the two
+            settle differently and the checkout would have to pick one. */}
+        {!isRecurring && (
+          <div className="flex items-center gap-3">
+            <input
+              id="is_coupon_enabled"
+              name="is_coupon_enabled"
+              type="checkbox"
+              value="true"
+              defaultChecked={product?.is_coupon_enabled ?? false}
+              className="w-4 h-4 rounded border-gray-300 text-brand focus:ring-brand"
+            />
+            <label htmlFor="is_coupon_enabled" className="text-sm font-medium text-gray-700">
+              ניתן לרכישה כקופון
+            </label>
+            <span className="text-xs text-gray-400">
+              (הלקוח משלם באתר את מחיר הקופון שתגדיר, והיתרה נגבית בבית העסק)
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Marketing content (048) */}
@@ -728,8 +892,10 @@ export default function ProductForm({
         </div>
       </div>
 
-      {/* Coupon details (048) */}
-      <div className="border-t border-gray-100 pt-5 space-y-4">
+      {/* Coupon details (048). Hidden on a subscription, which has no voucher to
+          redeem, no expiry to count from a purchase and no minimum spend at a
+          business. */}
+      <div className={`border-t border-gray-100 pt-5 space-y-4 ${isRecurring ? 'hidden' : ''}`}>
         <p className="text-sm font-semibold text-gray-700">פרטי קופון</p>
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -764,6 +930,28 @@ export default function ProductForm({
           </div>
         </div>
         <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label
+              htmlFor="coupon_expiry_days"
+              className="block text-xs font-medium text-gray-700 mb-1"
+            >
+              תוקף הקופון (ימים){isCouponProduct ? ' *' : ''}
+            </label>
+            <input
+              id="coupon_expiry_days"
+              name="coupon_expiry_days"
+              type="number"
+              min="1"
+              step="1"
+              defaultValue={product?.coupon_expiry_days ?? ''}
+              required={isCouponProduct}
+              dir="ltr"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              נספר מרגע הרכישה. אין ברירת מחדל. בפקיעה בלי מימוש הסכום ששולם נזקף לארנק הלקוח
+            </p>
+          </div>
           <div>
             <label
               htmlFor="min_purchase_ils"
@@ -852,6 +1040,71 @@ export default function ProductForm({
             דורש משלוח פיזי
           </label>
         </div>
+        {/* The WhatsApp opt-in. Default false and no fallback to true: ticking
+            this publishes a link that opens a chat with a real business, so it
+            is the admin's statement that this supplier answers WhatsApp for
+            this deal. The hint is not decoration -- six of eleven suppliers
+            have no number at all, and without it a ticked box that renders
+            nothing looks like a bug rather than missing supplier data. */}
+        <div className="flex items-start gap-3">
+          <input
+            id="whatsapp_enabled"
+            name="whatsapp_enabled"
+            type="checkbox"
+            value="true"
+            defaultChecked={readWhatsAppEnabled(product)}
+            className="mt-1 w-4 h-4 rounded border-gray-300 text-brand focus:ring-brand"
+          />
+          <div>
+            <label htmlFor="whatsapp_enabled" className="text-sm font-medium text-gray-700">
+              הצג כפתור וואטסאפ בדף המוצר
+            </label>
+            <p className="text-xs text-gray-500 mt-0.5">
+              מוצג רק אם לספק יש מספר נייד. מספר קווי אינו נתמך בוואטסאפ.
+            </p>
+          </div>
+        </div>
+        {/* VAT and tags. Both are admin-only and neither is shown on a coupon:
+            a coupon's money is the prepayment split, not a taxed goods sale,
+            and tagging is for the physical catalogue's merchandising. */}
+        {!isCouponProduct && (
+          <div className="flex items-start gap-3">
+            <input
+              id="vat_exempt"
+              name="vat_exempt"
+              type="checkbox"
+              value="true"
+              defaultChecked={readVatExempt(product)}
+              className="mt-1 w-4 h-4 rounded border-gray-300 text-brand focus:ring-brand"
+            />
+            <div>
+              <label htmlFor="vat_exempt" className="text-sm font-medium text-gray-700">
+                פטור ממע"מ
+              </label>
+              <p className="text-xs text-gray-500 mt-0.5">
+                ברירת המחדל היא שמע"מ חל. סמנו רק כשיש פטור ממשי, למשל אילת.
+              </p>
+            </div>
+          </div>
+        )}
+        {!isCouponProduct && (
+          <div>
+            <label htmlFor="tags" className="block text-xs font-medium text-gray-700 mb-1">
+              תגיות
+            </label>
+            <input
+              id="tags"
+              name="tags"
+              type="text"
+              defaultValue={readTags(product).join(', ')}
+              placeholder="מבצע, חורף, מתנה"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              מופרדות בפסיק. משמשות להתאמת "אולי יעניין אותך" ולקידום, ואינן קטגוריה.
+            </p>
+          </div>
+        )}
         <div className="grid grid-cols-5 gap-4">
           <div>
             <label htmlFor="weight_grams" className="block text-xs font-medium text-gray-700 mb-1">
@@ -869,46 +1122,46 @@ export default function ProductForm({
             />
           </div>
           <div>
-            <label htmlFor="length_cm" className="block text-xs font-medium text-gray-700 mb-1">
-              אורך (ס"מ)
+            <label htmlFor="length_mm" className="block text-xs font-medium text-gray-700 mb-1">
+              אורך (מ"מ)
             </label>
             <input
-              id="length_cm"
-              name="length_cm"
+              id="length_mm"
+              name="length_mm"
               type="number"
-              min="0"
-              step="0.1"
-              defaultValue={product?.length_cm ?? ''}
+              min="1"
+              step="1"
+              defaultValue={readDimensionMm(product, 'length') ?? ''}
               dir="ltr"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
           <div>
-            <label htmlFor="width_cm" className="block text-xs font-medium text-gray-700 mb-1">
-              רוחב (ס"מ)
+            <label htmlFor="width_mm" className="block text-xs font-medium text-gray-700 mb-1">
+              רוחב (מ"מ)
             </label>
             <input
-              id="width_cm"
-              name="width_cm"
+              id="width_mm"
+              name="width_mm"
               type="number"
-              min="0"
-              step="0.1"
-              defaultValue={product?.width_cm ?? ''}
+              min="1"
+              step="1"
+              defaultValue={readDimensionMm(product, 'width') ?? ''}
               dir="ltr"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
           <div>
-            <label htmlFor="height_cm" className="block text-xs font-medium text-gray-700 mb-1">
-              גובה (ס"מ)
+            <label htmlFor="height_mm" className="block text-xs font-medium text-gray-700 mb-1">
+              גובה (מ"מ)
             </label>
             <input
-              id="height_cm"
-              name="height_cm"
+              id="height_mm"
+              name="height_mm"
               type="number"
-              min="0"
-              step="0.1"
-              defaultValue={product?.height_cm ?? ''}
+              min="1"
+              step="1"
+              defaultValue={readDimensionMm(product, 'height') ?? ''}
               dir="ltr"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
@@ -1079,6 +1332,8 @@ export default function ProductForm({
           value={images}
           onChange={setImages}
           maxFiles={8}
+          altKind="product"
+          altSubject={nameHe}
         />
       </div>
 

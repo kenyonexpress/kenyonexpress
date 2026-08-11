@@ -44,9 +44,24 @@ test.describe('product page', () => {
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   })
 
-  test('an unknown product slug is a 404, not a blank page', async ({ page }) => {
-    const response = await page.goto('/product/no-such-product-slug-12345')
-    expect(response?.status()).toBe(404)
+  /**
+   * See the twin of this test in category.spec.ts for the full reasoning.
+   *
+   * Short version: the product page now streams a prerendered shell before it
+   * knows whether the slug exists, so `notFound()` can no longer change the
+   * status line. Next injects `<meta name="robots" content="noindex">` instead,
+   * and that tag - not the status - is what keeps a dead slug out of the index.
+   * Asserting the tag is stricter than asserting the status was.
+   */
+  test('an unknown product slug is noindex and shows the not-found page', async ({
+    page,
+    request,
+  }) => {
+    const html = await (await request.get('/product/no-such-product-slug-12345')).text()
+    expect(html).toContain('<meta name="robots" content="noindex"/>')
+
+    await page.goto('/product/no-such-product-slug-12345')
+    await expect(page.getByRole('heading', { name: 'הדף שחיפשתם לא נמצא' })).toBeVisible()
   })
 
   test('a product page is reachable directly by URL, not only by clicking through', async ({
@@ -57,5 +72,71 @@ test.describe('product page', () => {
 
     expect(response?.status()).toBe(200)
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  })
+
+  /**
+   * The related-products cards must not order more pixels than their box has.
+   *
+   * `sizes` on this card used to name the grid COLUMN (50vw / 33vw / 25vw) and
+   * not the image, ignoring the page gutter, the grid gap and the card padding.
+   * The cards paint 204px at desktop widths and were fetching w=384; on a
+   * 412px phone at dpr 2 the page pulled 236.3KB of images where 117.0KB
+   * covers every box.
+   *
+   * The rule, not the number: a candidate wider than 1.5x the device pixels the
+   * box actually has is over-ordering. At this project's 1280px default that is
+   * 204 device pixels, so 256 passes and 384 - the old value - does not.
+   */
+  test('related-product thumbnails do not over-order pixels', async ({ page }) => {
+    await openFirstProduct(page)
+
+    const grid = page.locator('.pdp-related__grid')
+    await expect(grid.locator('img').first()).toBeAttached({ timeout: 15000 })
+    // The grid is below the fold and the thumbnails are lazy, so without the
+    // scroll `currentSrc` is the empty string and every assertion below passes
+    // on nothing. That is exactly how the first version of this test passed
+    // against the bug it was written for.
+    await grid.scrollIntoViewIfNeeded()
+    await page.waitForFunction(
+      () =>
+        Array.from(document.querySelectorAll('.pdp-related__grid img')).every(
+          (el) => (el as HTMLImageElement).currentSrc !== '',
+        ),
+      undefined,
+      { timeout: 15000 },
+    )
+
+    const shots = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('.pdp-related__grid img')).map((el) => {
+        const img = el as HTMLImageElement
+        const painted = img.getBoundingClientRect().width
+        const w = new URL(img.currentSrc, location.href).searchParams.get('w')
+        return { painted, ordered: Number(w), src: img.currentSrc.slice(-60) }
+      }),
+    )
+    const dpr = await page.evaluate(() => window.devicePixelRatio)
+
+    // The bound is the smallest RUNG that covers the paint, not a linear
+    // multiple of it. `painted * dpr * 1.5` assumes the browser can request any
+    // width; it cannot, it picks from next's ladder. On a Pixel 5 a 149.5px
+    // thumbnail at dpr 2.75 needs 411 device pixels, and the ladder goes
+    // 384 -> 640 with nothing between, so 640 is the only correct choice and
+    // the old tolerance of 616 called the right answer a regression. The
+    // over-ordering this guards against is picking a rung ABOVE the one that
+    // covers the paint, which is still caught.
+    const RUNGS = [16, 32, 48, 64, 96, 128, 256, 288, 384, 640, 750, 828, 1080, 1200, 1920, 2048]
+    const rungFor = (devicePx: number) => RUNGS.find((r) => r >= devicePx) ?? RUNGS.at(-1)
+
+    expect(shots.length).toBeGreaterThan(0)
+    for (const s of shots) {
+      // A candidate of 0 means currentSrc carried no `w`, i.e. the image never
+      // went through the optimizer. That is a failure, not a pass.
+      expect(s.ordered, `${s.src}: no w= in currentSrc`).toBeGreaterThan(0)
+      const allowed = rungFor(s.painted * dpr) as number
+      expect(
+        s.ordered,
+        `${s.src}: painted ${s.painted} at dpr ${dpr} needs ${Math.ceil(s.painted * dpr)}px, rung ${allowed} covers it`,
+      ).toBeLessThanOrEqual(allowed)
+    }
   })
 })

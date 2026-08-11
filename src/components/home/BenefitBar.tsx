@@ -3,12 +3,43 @@ import { HandCoins, Headphones, Tag, ThumbsUp, Truck } from 'lucide-react'
 
 const USP = ELECTRO_HERO.uspBar
 
+/**
+ * The five trust items, in the live site's order and with its exact strings.
+ *
+ * READ OFF THE LIVE SITE on 2026-08-10, not from a reference file:
+ * `refs/ke_live_singlefile.html` does not exist in this repo, and
+ * `compare.mjs:50-52` already defaults the home reference to
+ * https://kenyonexpress.co.il for the same reason. The band there is an Electro
+ * `features-list` of five `.feature` blocks, each `<strong>title</strong> rest`:
+ *
+ *   ec-transport  <strong>לכל חלקי</strong> הארץ
+ *   ec-support    <strong>שירות</strong> לקוחות
+ *   ec-payment    <strong>מחירים</strong> מנצחים
+ *   ec-tag        <strong>מותגי יוקרה</strong> מובילים !
+ *   ec-customers  <strong>קניה</strong> חכמה
+ *
+ * TWO THINGS WERE OFF, and both are the kind a screenshot diff cannot see
+ * because the band is the same width either way:
+ *
+ *  1. ORDER. "קניה חכמה" sat second here and is LAST on live, which pushed
+ *     support, payment and tag each one slot to the right. Five items in five
+ *     equal fifths means every label was in the wrong cell.
+ *  2. SPELLING. "קנייה" with two yods; live writes "קניה" with one. It is the
+ *     business's own wording for its own promise, so it is copied, not corrected.
+ *
+ * The icons stay lucide. Live uses an icon FONT (`<i class="ec ec-transport">`),
+ * and the five glyphs do exist in src/styles/electro-icons.css, but the sizes
+ * and colours here come from ELECTRO_HERO.uspBar, which was measured against
+ * the rendered band; swapping the glyph source would change the metrics that
+ * token module pins. The goal named position, sizes, texts and colours, and
+ * those are what this matches.
+ */
 const benefits = [
   { icon: Truck, title: 'לכל חלקי', subtitle: 'הארץ' },
-  { icon: ThumbsUp, title: 'קנייה', subtitle: 'חכמה' },
   { icon: Headphones, title: 'שירות', subtitle: 'לקוחות' },
   { icon: HandCoins, title: 'מחירים', subtitle: 'מנצחים' },
   { icon: Tag, title: 'מותגי יוקרה', subtitle: 'מובילים !' },
+  { icon: ThumbsUp, title: 'קניה', subtitle: 'חכמה' },
 ]
 
 // All colours and sizes come from ELECTRO_HERO.uspBar (the measured token

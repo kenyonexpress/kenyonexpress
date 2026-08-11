@@ -1,8 +1,14 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import {
+  PUBLISHED_STORE_WHATSAPP,
   buildCouponShareText,
+  buildRedemptionInquiryText,
+  buildSupplierInquiryText,
+  formatIsraeliPhoneDisplay,
   isIsraeliMobile,
   normalizeIsraeliPhone,
+  storeWhatsAppLink,
+  storeWhatsAppNumber,
   waChatLink,
   waShareLink,
 } from './whatsapp'
@@ -54,6 +60,60 @@ describe('waChatLink', () => {
 describe('waShareLink', () => {
   it('builds a recipient-less share link', () => {
     expect(waShareLink('בדיקה')).toBe(`https://wa.me/?text=${encodeURIComponent('בדיקה')}`)
+  })
+})
+
+describe('the store number', () => {
+  const original = process.env.NEXT_PUBLIC_WHATSAPP_PHONE
+
+  afterEach(() => {
+    process.env.NEXT_PUBLIC_WHATSAPP_PHONE = original
+  })
+
+  it('falls back to the published number when the env var is absent', () => {
+    // The floating button, the footer icon and the /contact line are three
+    // surfaces for one number. Only the button read the env var, so a
+    // deployment that never set it lost the button and kept the other two -- a
+    // silent gap. KE_LIVE_SPEC.md publishes this number.
+    process.env.NEXT_PUBLIC_WHATSAPP_PHONE = ''
+    expect(storeWhatsAppNumber()).toBe(PUBLISHED_STORE_WHATSAPP)
+    expect(storeWhatsAppLink()).toBe(`https://wa.me/${PUBLISHED_STORE_WHATSAPP}`)
+  })
+
+  it('lets the env var override it', () => {
+    process.env.NEXT_PUBLIC_WHATSAPP_PHONE = '050-111-2222'
+    expect(storeWhatsAppNumber()).toBe('972501112222')
+  })
+
+  it('ignores an env value that is not a phone number', () => {
+    process.env.NEXT_PUBLIC_WHATSAPP_PHONE = 'TODO'
+    expect(storeWhatsAppNumber()).toBe(PUBLISHED_STORE_WHATSAPP)
+  })
+})
+
+describe('formatIsraeliPhoneDisplay', () => {
+  it('prints international digits as the local form', () => {
+    expect(formatIsraeliPhoneDisplay('972524635550')).toBe('052-463-5550')
+    expect(formatIsraeliPhoneDisplay('03-1234567')).toBe('03-1234567')
+  })
+
+  it('returns null for a non-phone', () => {
+    expect(formatIsraeliPhoneDisplay('nope')).toBeNull()
+  })
+})
+
+describe('supplier message builders', () => {
+  it('names the deal a shopper is asking about', () => {
+    expect(buildSupplierInquiryText('ארוחה זוגית')).toContain('ארוחה זוגית')
+    expect(buildSupplierInquiryText(null)).toContain('דיל')
+  })
+
+  it('never puts the voucher code in a pre-filled message', () => {
+    // A pre-filled message is one forward away from being somebody else's, and
+    // the code is what redeems the coupon.
+    const text = buildRedemptionInquiryText('ארוחה זוגית')
+    expect(text).toContain('ארוחה זוגית')
+    expect(text).not.toMatch(/\d{6,}/)
   })
 })
 

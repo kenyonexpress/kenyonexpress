@@ -4,9 +4,8 @@ import {
   SETTLEMENT_STATES,
   type SettlementEvent,
   type SettlementState,
-  SettlementTransitionError,
+  type SettlementTransitionError,
   canTransition,
-  deriveOrderStatus,
   isSettled,
   isTerminal,
   transition,
@@ -18,27 +17,21 @@ const PHYSICAL_TABLE: Record<SettlementState, Expected> = {
   pending: { PAYMENT_CONFIRMED: 'paid', CANCEL: 'cancelled' },
   paid: { EXECUTE_SPLIT: 'split_executed', REFUND: 'refunded' },
   split_executed: { REFUND: 'refunded' },
-  platform_settled: { REFUND: 'refunded' },
-  escrow_held: { REFUND: 'refunded' },
   redeemed: {},
-  escrow_released: {},
   refunded: {},
   cancelled: {},
 }
 
 const COUPON_TABLE: Record<SettlementState, Expected> = {
   pending: { PAYMENT_CONFIRMED: 'paid', CANCEL: 'cancelled' },
-  paid: { SETTLE_PLATFORM: 'platform_settled', REFUND: 'refunded' },
-  platform_settled: { REFUND: 'refunded' },
-  escrow_held: { REFUND: 'refunded' },
+  paid: { EXECUTE_SPLIT: 'split_executed', REFUND: 'refunded' },
   redeemed: {},
   split_executed: { REFUND: 'refunded' },
-  escrow_released: {},
   refunded: {},
   cancelled: {},
 }
 
-describe('settlement state machine (final rules, no escrow)', () => {
+describe('settlement state machine (the coupon prepayment stays with the platform)', () => {
   it('matches the full physical transition matrix', () => {
     for (const from of SETTLEMENT_STATES) {
       for (const event of SETTLEMENT_EVENTS) {
@@ -76,69 +69,81 @@ describe('settlement state machine (final rules, no escrow)', () => {
     expect(isSettled(state)).toBe(true)
   })
 
-  it('walks the coupon happy path: money settles to the platform at paid-time', () => {
+  it('settles a coupon line the moment it is paid: nothing is deferred', () => {
     let state: SettlementState = 'pending'
     state = transition(state, 'PAYMENT_CONFIRMED', 'coupon')
-    state = transition(state, 'SETTLE_PLATFORM', 'coupon')
-    expect(state).toBe('platform_settled')
-    expect(isTerminal(state)).toBe(false) // refund window still open
+    state = transition(state, 'EXECUTE_SPLIT', 'coupon')
+    expect(state).toBe('split_executed')
+    // The whole prepayment is platform revenue at paid-time, so the line is
+    // settled immediately. Refund is the only way out.
     expect(isSettled(state)).toBe(true)
+    expect(isTerminal(state)).toBe(false)
   })
 
-  it('throws WRONG_PRODUCT_TYPE when a physical line tries the coupon leg', () => {
-    expect(() => transition('paid', 'SETTLE_PLATFORM', 'physical')).toThrowError(
-      SettlementTransitionError,
-    )
+  it('lets both product types take the same split leg', () => {
+    // Nothing is type-exclusive any more: a physical line splits by the
+    // per-product percent and a coupon splits 100/0, but both land in
+    // split_executed through the same event.
+    for (const type of ['coupon', 'physical'] as const) {
+      expect(transition('paid', 'EXECUTE_SPLIT', type)).toBe('split_executed')
+    }
+  })
+
+  it('throws ILLEGAL_TRANSITION for consumed-value refunds', () => {
     try {
-      transition('paid', 'SETTLE_PLATFORM', 'physical')
+      transition('redeemed', 'REFUND', 'coupon')
+      expect.unreachable('refund from redeemed must throw')
     } catch (error) {
-      expect((error as SettlementTransitionError).code).toBe('WRONG_PRODUCT_TYPE')
+      expect((error as SettlementTransitionError).code).toBe('ILLEGAL_TRANSITION')
     }
   })
 
-  it('throws ILLEGAL_TRANSITION for consumed-value refunds (legacy states included)', () => {
-    for (const from of ['redeemed', 'escrow_released'] as const) {
-      try {
-        transition(from, 'REFUND', 'coupon')
-        expect.unreachable(`refund from ${from} must throw`)
-      } catch (error) {
-        expect((error as SettlementTransitionError).code).toBe('ILLEGAL_TRANSITION')
-      }
-    }
+  it('lets a held line be refunded while its vouchers are still outstanding', () => {
+    expect(transition('split_executed', 'REFUND', 'coupon')).toBe('refunded')
   })
 
-  it('still allows refunding a legacy escrow_held row', () => {
-    expect(transition('escrow_held', 'REFUND', 'coupon')).toBe('refunded')
-  })
-
-  it('keeps refunded and cancelled terminal', () => {
-    for (const from of ['refunded', 'cancelled'] as const) {
-      expect(isTerminal(from)).toBe(true)
+  it('has no escrow state left to reach', () => {
+    // The regression guard: every reachable state must be one of the six the
+    // model still has. An escrow_held or platform_settled slipping back in
+    // would mean a coupon line deferring money to a supplier again.
+    for (const from of SETTLEMENT_STATES) {
       for (const event of SETTLEMENT_EVENTS) {
-        expect(canTransition(from, event, 'coupon')).toBe(false)
-        expect(canTransition(from, event, 'physical')).toBe(false)
+        for (const type of ['coupon', 'physical'] as const) {
+          if (!canTransition(from, event, type)) continue
+          expect(SETTLEMENT_STATES).toContain(transition(from, event, type))
+        }
       }
     }
+    expect(SETTLEMENT_STATES).toHaveLength(6)
   })
 })
 
-describe('deriveOrderStatus', () => {
-  it('is pending for empty or any-pending orders', () => {
-    expect(deriveOrderStatus([])).toBe('pending')
-    expect(deriveOrderStatus(['pending', 'platform_settled'])).toBe('pending')
+describe('isSettled covers every state where the platform owes nobody', () => {
+  // This block arrived from feat/ci-foundation naming `escrow_released` and
+  // `escrow_held`, two states the model no longer has: the branch was cut on
+  // 2026-07-27, before the no-escrow rule removed them. Left as written it did
+  // not fail as a wrong assertion, it failed as a type error, which is a
+  // coverage test that never ran. Rewritten against the six states that exist.
+  //
+  // These arms decide whether a line still shows up in the payout run. A false
+  // negative pays a supplier twice, a false positive strands the money.
+  it('reports the split, refund and cancellation outcomes as settled', () => {
+    for (const state of ['split_executed', 'refunded', 'cancelled'] as const) {
+      expect(isSettled(state), `${state} should be settled`).toBe(true)
+    }
   })
 
-  it('shows the least-advanced active line', () => {
-    expect(deriveOrderStatus(['paid', 'split_executed'])).toBe('paid')
-    expect(deriveOrderStatus(['escrow_held', 'split_executed'])).toBe('escrow_held')
-    expect(deriveOrderStatus(['redeemed', 'split_executed'])).toBe('redeemed')
+  it('reports every state with money still in flight as unsettled', () => {
+    for (const state of ['pending', 'paid', 'redeemed'] as const) {
+      expect(isSettled(state), `${state} should not be settled`).toBe(false)
+    }
   })
 
-  it('resolves fully-settled orders', () => {
-    expect(deriveOrderStatus(['cancelled', 'cancelled'])).toBe('cancelled')
-    expect(deriveOrderStatus(['refunded', 'cancelled'])).toBe('refunded')
-    expect(deriveOrderStatus(['split_executed', 'refunded'])).toBe('split_executed')
-    expect(deriveOrderStatus(['platform_settled', 'split_executed'])).toBe('platform_settled')
-    expect(deriveOrderStatus(['escrow_released', 'platform_settled'])).toBe('escrow_released')
+  it('classifies all six states and invents no seventh', () => {
+    // The guard that makes the two lists above exhaustive rather than a
+    // sample: adding a state without deciding its payout side fails here.
+    const settled = SETTLEMENT_STATES.filter(isSettled)
+    expect(settled).toEqual(['split_executed', 'refunded', 'cancelled'])
+    expect(SETTLEMENT_STATES).toHaveLength(6)
   })
 })

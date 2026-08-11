@@ -1,3 +1,4 @@
+import { siteUrl } from '@/lib/site-url'
 import type { MetadataRoute } from 'next'
 
 /**
@@ -14,11 +15,6 @@ import type { MetadataRoute } from 'next'
  * also gated server-side; this only stops well-behaved crawlers from spending
  * their budget on pages that are useless or private.
  */
-
-function siteUrl(): string {
-  const raw = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
-  return raw.replace(/\/+$/, '')
-}
 
 export default function robots(): MetadataRoute.Robots {
   const base = siteUrl()

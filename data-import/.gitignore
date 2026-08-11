@@ -1,0 +1,5 @@
+# Local WordPress exports (large). Keep README trackable.
+data-import/wp-backup/*.xml
+data-import/wp-backup/*.xml.gz
+data-import/wp-backup/*.sql
+data-import/wp-backup/*.sql.gz

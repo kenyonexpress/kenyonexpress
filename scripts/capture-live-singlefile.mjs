@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'node:fs'
 import { chromium } from '@playwright/test'
 
 const browser = await chromium.launch({ headless: true })

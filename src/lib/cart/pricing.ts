@@ -5,13 +5,21 @@ import {
   EMPTY_CART,
 } from '@/lib/cart/types'
 import { calculateCommission } from '@/lib/commerce/commission'
-import { agorot, ilsToAgorot } from '@/lib/commerce/money'
+import { type Agorot, agorot, ilsToAgorot, multiplyAgorot } from '@/lib/commerce/money'
+import type { ProductType } from '@/types/database'
+
+const ZERO = agorot(0)
 
 type ProductRow = {
   id: string
   slug: string
   name_he: string
-  type: 'physical' | 'coupon'
+  /**
+   * The live enum, not the two values the cart can price. Narrowing this to
+   * `'physical' | 'coupon'` made every other value invisible to the compiler
+   * while the database kept returning them. See `productType` below.
+   */
+  type: ProductType
   kenyon_price: number | null
   stock_quantity: number | null
   status: string
@@ -60,8 +68,24 @@ function isAvailable(product: ProductRow, variant: VariantRow | null, quantity: 
   return stock >= quantity
 }
 
-function productType(product: ProductRow): 'physical' | 'coupon' {
-  return product.type === 'coupon' || product.is_coupon_enabled ? 'coupon' : 'physical'
+/**
+ * The cart prices exactly two shapes, coupon and physical. `products.type` is a
+ * Postgres enum that already holds a third value in production (`service`) and
+ * gains a fourth (`recurring`) whenever PENDING-109 is applied, so anything the
+ * cart does not recognise returns null and the line is refused.
+ *
+ * This used to end in `: 'physical'`, which meant an unrecognised type was sold
+ * once, at its physical price, with no type error and no failing test. For a
+ * recurring product that is a subscription charged a single time; the shape of
+ * defect the `priceable` gate below already exists to prevent.
+ *
+ * `is_coupon_enabled` still wins, because it is an explicit admin opt-in rather
+ * than an unhandled case.
+ */
+function productType(product: ProductRow): 'physical' | 'coupon' | null {
+  if (product.type === 'coupon' || product.is_coupon_enabled) return 'coupon'
+  if (product.type === 'physical') return 'physical'
+  return null
 }
 
 /** Null when the admin has not set the mandatory per-product percent yet. */
@@ -88,6 +112,12 @@ export function buildCartView(
   storageItems: CartStorageItem[],
   products: ProductRow[],
   variants: VariantRow[],
+  /**
+   * A discount code already evaluated against this cart, in agorot. Passed in
+   * rather than looked up here so this stays a pure function of its inputs and
+   * so the coupon is read once per request instead of once per caller.
+   */
+  coupon: { code: string; label: string; discountAgorot: number } | null = null,
 ): CartView {
   if (storageItems.length === 0) {
     return { ...EMPTY_CART, id: cartId }
@@ -99,10 +129,10 @@ export function buildCartView(
   const commissionLines: {
     id: string
     productType: 'physical' | 'coupon'
-    unitPrice: ReturnType<typeof ilsToAgorot>
+    unitPrice: Agorot
     quantity: number
     platformPercent: number
-    couponPriceUnit?: ReturnType<typeof ilsToAgorot>
+    couponPriceUnit?: Agorot
     cashbackPercent: number
   }[] = []
   const viewItems: CartViewItem[] = []
@@ -114,13 +144,19 @@ export function buildCartView(
     const variant = item.variant_id ? (variantMap.get(item.variant_id) ?? null) : null
     if (item.variant_id && (!variant || variant.product_id !== product.id)) continue
 
-    const unitPrice = resolveUnitPrice(product, variant)
-    const lineTotal = unitPrice * item.quantity
+    // The only float-to-integer boundary in the cart. `kenyon_price` is a
+    // `numeric` column and arrives as a JS number; it is converted to agorot
+    // here, once, and every downstream value is integer arithmetic on the
+    // result. Nothing below ever divides by 100 to get back.
+    const unitPrice = ilsToAgorot(resolveUnitPrice(product, variant).toFixed(2))
+    const lineTotal = multiplyAgorot(unitPrice, item.quantity)
     const type = productType(product)
     const lineKey = `${item.product_id}::${item.variant_id ?? 'null'}`
 
     const percent = platformPercent(product)
     const couponPrice = couponPriceIls(product)
+    const couponPriceUnit =
+      type === 'coupon' && couponPrice != null ? ilsToAgorot(couponPrice.toFixed(2)) : null
 
     // Both types need the percent since 2026-07-27, and a coupon additionally
     // needs its admin-set absolute price. A line missing either renders as
@@ -131,18 +167,18 @@ export function buildCartView(
     // unavailable, which was harmless while a coupon's percent did nothing.
     // It is not harmless now: 0% on a coupon means the platform takes nothing
     // and the whole prepayment is held for the supplier.
-    const priceable = percent != null && (type !== 'coupon' || couponPrice != null)
+    // `type == null` is a product shape the cart cannot price at all, and joins
+    // the same refusal path as a missing percent rather than being guessed at.
+    const priceable =
+      type != null && percent != null && (type !== 'coupon' || couponPriceUnit != null)
     if (priceable) {
       commissionLines.push({
         id: lineKey,
         productType: type,
-        unitPrice: ilsToAgorot(unitPrice.toFixed(2)),
+        unitPrice,
         quantity: item.quantity,
         platformPercent: percent,
-        couponPriceUnit:
-          type === 'coupon' && couponPrice != null
-            ? ilsToAgorot(couponPrice.toFixed(2))
-            : undefined,
+        couponPriceUnit: couponPriceUnit ?? undefined,
         cashbackPercent: cashbackPercent(product),
       })
     }
@@ -156,12 +192,22 @@ export function buildCartView(
       image_url: firstImage(product.images),
       unit_price: unitPrice,
       line_total: lineTotal,
-      type,
+      // Display only, and only ever reached with `available: false` below, since
+      // a null type forces `priceable` false. The two components that read this
+      // field both additionally require `balance_due_at_business > 0`, which
+      // stays ZERO for any line the money engine never saw.
+      type: type ?? 'physical',
       available: priceable && isAvailable(product, variant, item.quantity),
-      platform_fee: 0,
-      supplier_due: 0,
-      customer_pays_now: 0,
-      balance_due_at_business: 0,
+      platform_fee: ZERO,
+      supplier_due: ZERO,
+      customer_pays_now: ZERO,
+      balance_due_at_business: ZERO,
+      platform_percent_bp: 0,
+      // Carried through from storage untouched. This is the percent the
+      // catalogue held when the shopper added the line, which is not
+      // necessarily `percent` above: that one is what the product says now.
+      platform_percent_snapshot: item.platform_percent_snapshot ?? null,
+      coupon_price_unit: couponPriceUnit,
     })
   }
 
@@ -180,22 +226,38 @@ export function buildCartView(
     const key = `${viewItem.product_id}::${viewItem.variant_id ?? 'null'}`
     const line = lineByKey.get(key)
     if (!line) continue
-    viewItem.platform_fee = agorot(line.platformFee) / 100
-    viewItem.supplier_due = agorot(line.supplierDue) / 100
-    viewItem.customer_pays_now = agorot(line.customerPaysNow) / 100
-    viewItem.balance_due_at_business = agorot(line.balanceDueAtBusiness) / 100
-    viewItem.line_total = agorot(line.faceValue) / 100
+    viewItem.platform_fee = line.platformFee
+    viewItem.supplier_due = line.supplierDue
+    viewItem.customer_pays_now = line.customerPaysNow
+    viewItem.balance_due_at_business = line.balanceDueAtBusiness
+    viewItem.line_total = line.faceValue
+    viewItem.platform_percent_bp = line.platformPercentBps
   }
 
   const itemCount = viewItems.reduce((sum, item) => sum + item.quantity, 0)
+
+  // Cap here as well as in the settlement engine. The cart is what the shopper
+  // reads and the settlement is what the card is charged; if only one of them
+  // capped, a large code on a small cart would show one number and bill
+  // another, which is the disagreement this repo keeps paying for.
+  const payableAgorot = commission.customerPaysNow
+  const discountAgorot = agorot(
+    coupon ? Math.max(0, Math.min(coupon.discountAgorot, payableAgorot)) : 0,
+  )
 
   return {
     id: cartId,
     items: viewItems,
     item_count: itemCount,
-    subtotal: agorot(commission.customerPaysNow) / 100,
-    platform_fee: agorot(commission.platformFee) / 100,
-    supplier_due: agorot(commission.supplierDue) / 100,
-    balance_due_at_business: agorot(commission.balanceDueAtBusiness) / 100,
+    subtotal: payableAgorot,
+    platform_fee: commission.platformFee,
+    supplier_due: commission.supplierDue,
+    balance_due_at_business: commission.balanceDueAtBusiness,
+    coupon:
+      coupon && discountAgorot > 0
+        ? { code: coupon.code, label: coupon.label, discount: discountAgorot }
+        : null,
+    discount: discountAgorot,
+    total: agorot(payableAgorot - discountAgorot),
   }
 }

@@ -9,6 +9,7 @@ import {
 } from '@/server/actions/auth'
 import Link from 'next/link'
 import { useActionState, useState } from 'react'
+import PhoneOtpForm from './PhoneOtpForm'
 
 function getError(state: AuthState): string | null {
   return state && 'error' in state ? state.error : null
@@ -22,10 +23,17 @@ interface Props {
   next?: string
   callbackError?: string
   magic?: string
+  /**
+   * Whether an SMS provider is actually wired into the Supabase project. False
+   * hides the option entirely rather than showing a button that always fails:
+   * without a provider, every send returns an error the customer cannot act on.
+   */
+  phoneEnabled?: boolean
 }
 
-export default function LoginForm({ next, callbackError, magic }: Props) {
+export default function LoginForm({ next, callbackError, magic, phoneEnabled = false }: Props) {
   const [showMagic, setShowMagic] = useState(false)
+  const [showPhone, setShowPhone] = useState(false)
 
   const [emailState, emailAction, emailPending] = useActionState<AuthState, FormData>(
     signInWithEmail,
@@ -70,6 +78,27 @@ export default function LoginForm({ next, callbackError, magic }: Props) {
           {googlePending ? 'מתחברים...' : 'כניסה עם Google'}
         </button>
       </form>
+
+      {/*
+        Directly under Google, not buried below the password form. This is the
+        route for shoppers who have no Google account, and it is worth nothing
+        if they have to scroll past a password field to find it.
+      */}
+      {phoneEnabled && (
+        <div className="mt-3">
+          {!showPhone ? (
+            <button
+              type="button"
+              onClick={() => setShowPhone(true)}
+              className="w-full flex items-center justify-center gap-2 border border-gray-300 rounded-lg py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              כניסה עם קוד ב-SMS
+            </button>
+          ) : (
+            <PhoneOtpForm next={next} />
+          )}
+        </div>
+      )}
 
       <div className="my-5 flex items-center gap-3">
         <div className="flex-1 border-t border-gray-200" />
@@ -125,7 +154,7 @@ export default function LoginForm({ next, callbackError, magic }: Props) {
         <button
           type="submit"
           disabled={emailPending}
-          className="w-full bg-brand hover:bg-brand-dark disabled:opacity-60 text-white font-semibold rounded-lg py-2.5 text-sm transition-colors"
+          className="w-full bg-brand text-heading hover:bg-brand-dark hover:text-white disabled:opacity-60 font-semibold rounded-lg py-2.5 text-sm transition-colors"
         >
           {emailPending ? 'מתחברים...' : 'כניסה'}
         </button>

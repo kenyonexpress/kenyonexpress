@@ -31,13 +31,39 @@ describe('processImage', () => {
     expect(result.height).toBe(1200)
   }, 30000)
 
-  it('never upscales small originals', async () => {
+  it('never upscales small originals, and never throws their pixels away either', async () => {
+    // THIS TEST USED TO ASSERT `[400]`, i.e. it confirmed the defect.
+    //
+    // The rule was `RENDITION_WIDTHS.filter(w => w <= original)`, so a 600px
+    // upload failed both `1600 <= 600` and `800 <= 600` and was stored at a
+    // maximum of 400px. Two thirds of what the admin uploaded was discarded,
+    // silently, and the gallery then served 400px to a phone asking for over a
+    // thousand. "Never upscale" was the intent; "round down to the next tier"
+    // was the behaviour.
     const input = await makeTestImage(600, 400)
     const result = await processImage(input)
 
     const webp = result.renditions.filter((r) => r.format === 'webp')
-    expect(webp.map((r) => r.width)).toEqual([400])
-    expect(result.width).toBe(400)
+    expect(webp.map((r) => r.width)).toEqual([600, 400])
+    expect(result.width).toBe(600)
+    // Still no upscaling: nothing wider than the original was produced.
+    expect(Math.max(...result.renditions.map((r) => r.width))).toBe(600)
+  }, 30000)
+
+  it('caps at the top tier and keeps the tiers below it', async () => {
+    // The measured case: 1200x900 in, 800x600 out, before the fix.
+    const input = await makeTestImage(1200, 900)
+    const result = await processImage(input)
+    const webp = result.renditions.filter((r) => r.format === 'webp')
+    expect(webp.map((r) => r.width)).toEqual([1200, 800, 400])
+    expect(result.width).toBe(1200)
+  }, 30000)
+
+  it('does not emit the same width twice when the original sits on a tier', async () => {
+    const input = await makeTestImage(800, 600)
+    const result = await processImage(input)
+    const webp = result.renditions.filter((r) => r.format === 'webp')
+    expect(webp.map((r) => r.width)).toEqual([800, 400])
   }, 30000)
 
   it('emits a base64 webp blur placeholder', async () => {

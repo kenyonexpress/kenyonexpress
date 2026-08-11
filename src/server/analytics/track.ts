@@ -1,3 +1,4 @@
+import { log } from '@/lib/observability/log'
 import 'server-only'
 
 import { ATTRIBUTION_COOKIE, type Attribution, parseAttribution } from '@/lib/analytics/attribution'
@@ -51,7 +52,7 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
       p_user_agent: null,
     })
   } catch (error) {
-    console.error('trackServerEvent failed:', error instanceof Error ? error.message : error)
+    log.error('analytics.track_failed', { err: error })
   }
 }
 
@@ -84,7 +85,7 @@ export async function linkAnalyticsIdentity(
         { onConflict: 'anonymous_id,user_id' },
       )
   } catch (error) {
-    console.error('linkAnalyticsIdentity failed:', error instanceof Error ? error.message : error)
+    log.error('analytics.identity_link_failed', { err: error })
   }
 }
 
@@ -122,8 +123,8 @@ export async function stampOrderAttribution(orderId: string): Promise<void> {
       .eq('id', orderId)
       .is('attribution', null)
 
-    if (error) console.error('stampOrderAttribution failed:', error.message)
+    if (error) log.error('analytics.order_attribution_failed', { reason: error.message })
   } catch (error) {
-    console.error('stampOrderAttribution failed:', error instanceof Error ? error.message : error)
+    log.error('analytics.order_attribution_failed', { err: error })
   }
 }

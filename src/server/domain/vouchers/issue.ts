@@ -1,4 +1,5 @@
 import { type Agorot, agorot, ilsToAgorot } from '@/lib/commerce/money'
+import type { VoucherRateColumn } from '@/lib/commerce/order-money-columns'
 import { computeVoucherExpiry, generateUniqueVoucherCode } from './code'
 import { signVoucherQrPayload } from './qr'
 
@@ -21,8 +22,25 @@ export interface VoucherIssueInput {
   priceIls: string | number
   /** Absolute amount charged online, ILS. Must be > 0 and <= priceIls. */
   couponPriceIls: string | number
+  /**
+   * The order line's snapshot of products.platform_percent. Required and with
+   * no default: it decides how the prepayment splits between the platform and
+   * the supplier's hold, so a missing value is a bug rather than a case to
+   * paper over. Stamping a constant 100 here, as this issuer did until
+   * 2026-07-27, silently re-imposed the abolished C11(a) rule in which the
+   * supplier receives nothing.
+   */
+  platformPercent: string | number
   couponExpiryDays: number
   offerValidUntil: Date
+  /**
+   * Which rate column this database actually has, from probing it. Required
+   * and with no default on purpose: the previous code assumed `platform_bp`,
+   * the hosted project never received the migration that creates it, and the
+   * silent result was that no voucher could be issued in production at all.
+   * A default here would restore exactly that failure for the next caller.
+   */
+  rateColumn: VoucherRateColumn
   now?: Date
 }
 
@@ -39,7 +57,13 @@ export interface IssuedVoucherRow {
   face_value_agorot: number
   coupon_price_agorot: number
   remaining_amount_due_agorot: number
-  platform_percent: number
+  /**
+   * Exactly one of these is ever set, chosen from `rateColumn`. Naming both at
+   * once is not a safer hedge: one column that does not exist fails the whole
+   * INSERT, so spelling more of them makes failure more likely, not less.
+   */
+  platform_bp?: number
+  platform_percent?: number
   offer_valid_until: string
   expires_at: string
   issued_at: string
@@ -111,6 +135,12 @@ export async function issueVoucher(
   }
 
   const { faceValue, couponPrice, remainingDue } = buildVoucherMoney(input)
+  const platformPercent = Number(input.platformPercent)
+  if (!Number.isFinite(platformPercent) || platformPercent < 0 || platformPercent > 100) {
+    throw new VoucherIssueError(
+      'platform_percent must be a number between 0 and 100; no default exists',
+    )
+  }
 
   const expiresAt = computeVoucherExpiry({
     issuedAt: now,
@@ -147,7 +177,13 @@ export async function issueVoucher(
       face_value_agorot: faceValue,
       coupon_price_agorot: couponPrice,
       remaining_amount_due_agorot: remainingDue,
-      platform_percent: 100,
+      // 059 renames vouchers.platform_percent to platform_bp AND changes its
+      // units to basis points, so the name and the number have to move
+      // together: 30 written into platform_bp is a 0.3 percent split, and 3000
+      // written into platform_percent violates the 0..100 check constraint.
+      ...(input.rateColumn === 'platform_bp'
+        ? { platform_bp: Math.round(platformPercent * 100) }
+        : { platform_percent: platformPercent }),
       offer_valid_until: input.offerValidUntil.toISOString(),
       expires_at: expiresAt.toISOString(),
       issued_at: now.toISOString(),

@@ -144,6 +144,8 @@ export default function SupplierForm({ supplier, productCount }: Props) {
           value={logoUrl}
           onChange={(urls) => setLogoUrl(urls.slice(-1))}
           maxFiles={1}
+          altKind="supplier"
+          altSubject={name}
         />
       </section>
 

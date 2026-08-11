@@ -9,9 +9,9 @@
 
 import { writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { DRY_RUN, PATHS, ensureDirs } from './config.mjs'
 import { readRaw } from './01-extract.mjs'
 import { readNormalized } from './02-transform.mjs'
+import { DEFAULTS, DRY_RUN, PATHS, ensureDirs } from './config.mjs'
 import { countRows, getDb } from './lib/db.mjs'
 import { Run, error, info, ok, warn } from './lib/log.mjs'
 
@@ -68,15 +68,24 @@ export async function validate(run) {
   // ------------------------------------------------------------------
 
   const excludedStatuses = new Set(['trash', 'private', 'auto-draft', 'inherit'])
-  const sourceProducts = rawProducts.filter(
-    (p) => (p.post_type ?? 'product') === 'product' && !excludedStatuses.has(String(p.status).toLowerCase()),
+  const excludedSlugs = new Set(DEFAULTS.excludeProductSlugs)
+  const byStatus = rawProducts.filter(
+    (p) =>
+      (p.post_type ?? 'product') === 'product' &&
+      !excludedStatuses.has(String(p.status).toLowerCase()),
   )
+  // Plugin bookkeeping products are dropped by slug, not by status, so they have
+  // to be subtracted here too. Leaving them in the expected count would turn a
+  // deliberate exclusion into a parity failure on every run, and a gate that
+  // cries wolf is a gate an operator learns to wave through.
+  const sourceProducts = byStatus.filter((p) => !excludedSlugs.has(p.slug))
+  const bySlug = byStatus.length - sourceProducts.length
   gates.add({
     gate: 'count_parity_products',
     expected: sourceProducts.length,
     actual: products.length,
     passed: sourceProducts.length === products.length,
-    detail: `${rawProducts.length} raw rows, ${rawProducts.length - sourceProducts.length} excluded by status`,
+    detail: `${rawProducts.length} raw rows, ${rawProducts.length - byStatus.length} excluded by status, ${bySlug} excluded by slug`,
     offenders: sourceProducts
       .filter((s) => !products.some((p) => p.wp_post_id === s.id))
       .map((s) => ({ wp_id: s.id, slug: s.slug, status: s.status })),
@@ -100,13 +109,18 @@ export async function validate(run) {
     actual: noCategory.length,
     passed: noCategory.length === 0,
     detail: 'a product with no product_cat term cannot be browsed to; it projects as draft',
-    offenders: noCategory.map((p) => ({ wp_id: p.wp_post_id, slug: p.slug_decoded, title: p.title_he })),
+    offenders: noCategory.map((p) => ({
+      wp_id: p.wp_post_id,
+      slug: p.slug_decoded,
+      title: p.title_he,
+    })),
   })
 
   const knownCategoryIds = new Set(categories.map((c) => String(c.wp_term_id)))
   const danglingCategory = products.filter(
-    (p) => (p.category_wp_ids || []).length > 0
-      && !(p.category_wp_ids || []).some((id) => knownCategoryIds.has(String(id))),
+    (p) =>
+      (p.category_wp_ids || []).length > 0 &&
+      !(p.category_wp_ids || []).some((id) => knownCategoryIds.has(String(id))),
   )
   gates.add({
     gate: 'products_with_dangling_category',
@@ -114,7 +128,11 @@ export async function validate(run) {
     actual: danglingCategory.length,
     passed: danglingCategory.length === 0,
     detail: 'every product_cat term the product references is missing from the category export',
-    offenders: danglingCategory.map((p) => ({ wp_id: p.wp_post_id, slug: p.slug_decoded, refs: p.category_wp_ids })),
+    offenders: danglingCategory.map((p) => ({
+      wp_id: p.wp_post_id,
+      slug: p.slug_decoded,
+      refs: p.category_wp_ids,
+    })),
   })
 
   // ------------------------------------------------------------------
@@ -122,7 +140,9 @@ export async function validate(run) {
   // ------------------------------------------------------------------
 
   const mediaIds = new Set(media.map((m) => String(m.wp_attachment_id)))
-  const noImage = products.filter((p) => !p.featured_image_wp_id && (p.gallery_wp_ids || []).length === 0)
+  const noImage = products.filter(
+    (p) => !p.featured_image_wp_id && (p.gallery_wp_ids || []).length === 0,
+  )
   gates.add({
     gate: 'products_without_image',
     severity: 'warn',
@@ -146,7 +166,8 @@ export async function validate(run) {
     expected: 0,
     actual: missingMedia.length,
     passed: missingMedia.length === 0,
-    detail: 'product references an attachment id that never appeared in the media inventory: a dead image',
+    detail:
+      'product references an attachment id that never appeared in the media inventory: a dead image',
     offenders: missingMedia,
   })
 
@@ -157,7 +178,11 @@ export async function validate(run) {
     actual: media.length - unsyncedMedia.length,
     passed: media.length > 0 && unsyncedMedia.length === 0,
     detail: 'every attachment must be downloaded, converted and uploaded before cutover',
-    offenders: unsyncedMedia.map((m) => ({ wp_id: m.wp_attachment_id, status: m.status, url: m.source_url })),
+    offenders: unsyncedMedia.map((m) => ({
+      wp_id: m.wp_attachment_id,
+      status: m.status,
+      url: m.source_url,
+    })),
   })
 
   // ------------------------------------------------------------------
@@ -176,8 +201,11 @@ export async function validate(run) {
   })
 
   const fakeDiscount = products.filter(
-    (p) => p.compare_at_price !== null && p.compare_at_price !== undefined && p.price !== null
-      && p.compare_at_price <= p.price,
+    (p) =>
+      p.compare_at_price !== null &&
+      p.compare_at_price !== undefined &&
+      p.price !== null &&
+      p.compare_at_price <= p.price,
   )
   gates.add({
     gate: 'fake_strikethrough_prices',
@@ -185,7 +213,11 @@ export async function validate(run) {
     actual: fakeDiscount.length,
     passed: fakeDiscount.length === 0,
     detail: 'compare_at_price must be strictly greater than price, or it is a misleading discount',
-    offenders: fakeDiscount.map((p) => ({ wp_id: p.wp_post_id, price: p.price, compare_at: p.compare_at_price })),
+    offenders: fakeDiscount.map((p) => ({
+      wp_id: p.wp_post_id,
+      price: p.price,
+      compare_at: p.compare_at_price,
+    })),
   })
 
   for (const [label, rows, key] of [
@@ -197,7 +229,8 @@ export async function validate(run) {
     for (const row of rows) {
       const slug = row[key]
       if (!slug) continue
-      if (seen.has(slug)) dupes.push({ slug, wp_ids: [seen.get(slug), row.wp_post_id ?? row.wp_term_id] })
+      if (seen.has(slug))
+        dupes.push({ slug, wp_ids: [seen.get(slug), row.wp_post_id ?? row.wp_term_id] })
       else seen.set(slug, row.wp_post_id ?? row.wp_term_id)
     }
     gates.add({
@@ -220,7 +253,8 @@ export async function validate(run) {
     actual: resolvedUrls.length,
     passed: urls.length > 0 && resolvedUrls.length === urls.length,
     detail: 'every old path needs a 301 target, a direct match, or an explicit 410',
-    offenders: urls.filter((u) => !u.mapped_new_path && !u.direct_match && !u.gone_410)
+    offenders: urls
+      .filter((u) => !u.mapped_new_path && !u.direct_match && !u.gone_410)
       .map((u) => ({ old_path: u.old_path, entity: u.entity })),
   })
 
@@ -363,12 +397,15 @@ function renderMarkdown(report) {
     .join('\n')
 
   const counts = (obj) =>
-    Object.entries(obj).map(([k, v]) => `| \`${k}\` | ${v ?? 'n/a'} |`).join('\n')
+    Object.entries(obj)
+      .map(([k, v]) => `| \`${k}\` | ${v ?? 'n/a'} |`)
+      .join('\n')
 
   const offenders = Object.entries(report.offenders)
     .map(([gate, data]) => {
       const shown = data.sample.map((o) => `  ${JSON.stringify(o)}`).join('\n')
-      const more = data.total > data.sample.length ? `\n  ... and ${data.total - data.sample.length} more` : ''
+      const more =
+        data.total > data.sample.length ? `\n  ... and ${data.total - data.sample.length} more` : ''
       return `### \`${gate}\` (${data.total})\n\n\`\`\`\n${shown}${more}\n\`\`\`\n`
     })
     .join('\n')

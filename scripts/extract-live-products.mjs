@@ -139,9 +139,7 @@ async function extractTiles(page, categoryUrl) {
           el.querySelector('a.woocommerce-LoopProduct-link') ||
           el.querySelector('a[href*="/product/"]') ||
           el.querySelector('a[href]')
-        const productUrl = linkEl
-          ? new URL(linkEl.getAttribute('href'), origin).href
-          : null
+        const productUrl = linkEl ? new URL(linkEl.getAttribute('href'), origin).href : null
 
         const priceEl = el.querySelector('.price')
         // Prefer the sale/effective price when present (ins), else full text.

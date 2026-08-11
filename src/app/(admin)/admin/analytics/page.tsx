@@ -18,7 +18,6 @@ import Link from 'next/link'
 export const metadata = { title: 'אנליטיקה' }
 
 // Never cached: an owner reading this page is deciding what to do today.
-export const dynamic = 'force-dynamic'
 
 // A tuple, not an array: the first entry is the default and must be known to
 // exist. Each period carries the window that makes it readable (30 daily bars,

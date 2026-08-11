@@ -48,6 +48,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+tsconfig.ci-changed.json
 refs/
 
 # WordPress import run artifacts (raw payloads, normalized rows, reports, logs)

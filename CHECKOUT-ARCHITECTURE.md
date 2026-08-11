@@ -1,11 +1,17 @@
 # CHECKOUT-ARCHITECTURE
 
-> **דריסה מחייבת (2026-07-24, יום המיזוג):** כל נוסחת תמחור קופון באחוז-מהמחיר
-> (`face * platform_percent / 100`) במסמך הזה בטלה. המודל המחייב: האדמין קובע סכום
-> מוחלט `coupon_price` (בעמודה `coupon_deals.coupon_price_agorot`, מיגרציה 055),
-> הלקוח משלם בדיוק אותו ב-Cardcom, הכל נשאר בפלטפורמה, אין payout לספק על קופונים,
-> היתרה נגבית בבית העסק בסריקה ואז הקופון פג לצמיתות. `platform_percent` נשאר
-> בתוקף לפיצול על מוצרים פיזיים בלבד (מצולם ל-order_items בקנייה).
+> **דריסה מחייבת (2026-07-27, הכרעת Ofir):** `docs/CONTRADICTIONS.md` גובר על
+> המסמך הזה בכל סתירה כספית.
+>
+> - **תמחור:** האדמין קובע סכום מוחלט `coupon_price` (`products.coupon_price_agorot`,
+>   מיגרציה 059), הלקוח משלם בדיוק אותו ב-Cardcom. כל נוסחת
+>   `face * platform_percent / 100` כתמחור בטלה.
+> - **משמורת (השתנה מ-24.07):** הקופון הוא **Escrow**. מהמקדמה הפלטפורמה שומרת
+>   `platform_percent` והיתרה מוחזקת לספק (`escrow_holds`) ומשוחררת במימוש
+>   (C11 גרסה ב). "הכל נשאר בפלטפורמה" ו"אין payout לספק על קופונים" בטלים.
+> - **`platform_percent`:** חל על קופון ופיזי כאחד, שדה חובה פר-מוצר בלי ברירת
+>   מחדל (C1).
+> - **פקיעה:** קרדיט לארנק הלקוח (C6), לא הפקעה לטובת הפלטפורמה.
 
 
 Status: **DESIGN ONLY**. Branch `arch/checkout-cardcom`. No UI files in this deliverable.
@@ -16,16 +22,17 @@ Date: 2026-07-23.
 
 | Source | Role |
 |---|---|
-| `MASTER-ARCHITECTURE.md` (v2 owner model) | Binding for money, no escrow, `platform_percent` per product, Cardcom = production PSP |
+| `docs/CONTRADICTIONS.md` | **Binding for money.** Wins over MASTER and over this file |
+| `MASTER-ARCHITECTURE.md` (v2 owner model) | Runtime convergence; its "no escrow" clauses are void since 2026-07-27 |
 | `ARCHITECTURE-SECURITY.md` | Webhook forgery, rate limits, PCI SAQ-A |
 | `ARCHITECTURE-LEGAL-COMPLIANCE.md` | Refund windows, card vs wallet |
 | This file | Checkout + Cardcom pipeline detail |
 | `docs/ARCHITECTURE-API-CONTRACTS.md` Domain D | Wire shapes; lose on conflict with this file + MASTER |
 | `.claude/skills/cardcom-payments` | **Stale** on fixed 10%, Multi-Account at charge, coupon status names. Do not follow those parts |
 
-`LEDGER-DESIGN.md`: **does not exist**. Ledger rules are D-LEDGER in MASTER (hybrid: wallet double-entry + Cardcom settlement reconcile for external cash).
+`LEDGER-DESIGN.md`: exists at the repo root and owns the posting rules, including the `escrow_held` account added in migration 080. D-LEDGER in MASTER remains the shape (hybrid: wallet double-entry + Cardcom settlement reconcile for external cash).
 
-**Out of scope:** Stripe as production PSP (experimental on `phase6/checkout-foundation` only). UI components. Supplier scan UI (see SUPPLIER-REDEMPTION).
+**Out of scope:** any PSP other than Cardcom (C9 rules out Stripe, Payoneer and Cloudways). UI components. Supplier scan UI (see SUPPLIER-REDEMPTION).
 
 ---
 
@@ -37,7 +44,7 @@ Date: 2026-07-23.
 | C-2 | On login: merge guest cart, then checkout. No pay-without-account in v1 |
 | C-3 | **Low Profile** for first / hosted card entry (SAQ-A). **ChargeToken** for saved-token one-click. Transactions API (raw card / Direct) is **not** used for browser checkout |
 | C-4 | No Cardcom Multi-Account split at charge. Physical supplier share settles later via `payout_statements` |
-| C-5 | Coupon on-site charge = `round_half_up(face_agorot * platform_percent / 100)` from product snapshot. Physical charge = full face. No escrow |
+| C-5 | Coupon on-site charge = `coupon_price_agorot` from the product snapshot (absolute, never derived from a percent). It splits by the snapshotted `platform_percent`: fee to the platform, remainder **held** for the supplier until redemption. Physical charge = full face, immediate split |
 | C-6 | Only verified webhook, verified token-charge result, or reconcile cron may call `finalizePaidOrder`. Browser redirects are read-only |
 | C-7 | Money unit end-to-end: integer **agorot**. Cardcom boundary converts to ILS string with 2 decimals |
 | C-8 | `CHECKOUT_ENABLED=false` blocks new `beginCheckout` / `chargeWithToken`; already-in-flight finalize still runs |
@@ -591,7 +598,7 @@ CI unit/integration (no live Cardcom): money golden tests (`calculateCommission`
 4. Set order `paid` + `paid_at`.
 5. Wallet spend / cashback idempotent keys.
 6. Coupon lines: issue codes + QR; `item_status=issued`.
-7. Physical lines: stock--; `split_executions` claim; notify supplier via **internal** outbox (Trigger / Edge / Resend). No escrow.
+7. Physical lines: stock--; `split_executions` claim; notify supplier via **internal** outbox (Trigger / Edge / Resend). Coupon lines instead write an `escrow_holds` row (`held = commission + release`), released on redemption.
 8. Persist token if requested.
 9. Audit + `order_paid` notification event.
 
@@ -601,7 +608,7 @@ CI unit/integration (no live Cardcom): money golden tests (`calculateCommission`
 
 | Need | Read |
 |---|---|
-| Money / no escrow | `MASTER-ARCHITECTURE.md` |
+| Money model (binding) | `docs/CONTRADICTIONS.md`, then `MASTER-ARCHITECTURE.md` |
 | This pipeline | `CHECKOUT-ARCHITECTURE.md` (here) |
 | Security controls | `docs/ARCHITECTURE-SECURITY.md` |
 | Legal refunds | `docs/ARCHITECTURE-LEGAL-COMPLIANCE.md` |

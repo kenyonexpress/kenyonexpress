@@ -2,29 +2,31 @@
 
 import { formatIls } from '@/lib/account/format'
 import type { Agorot } from '@/lib/money'
-import { signOut } from '@/server/actions/auth'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const ITEMS = [
   { href: '/account', label: 'סקירה' },
+  { href: '/account/details', label: 'הפרטים שלי' },
   { href: '/account/orders', label: 'ההזמנות שלי' },
   { href: '/account/coupons', label: 'הקופונים שלי' },
   { href: '/account/wallet', label: 'הארנק שלי' },
-  { href: '/account/details', label: 'הפרטים שלי' },
+  { href: '/account/subscriptions', label: 'המנויים שלי' },
   { href: '/account/addresses', label: 'כתובות' },
   { href: '/account/tokens', label: 'אמצעי תשלום' },
 ] as const
 
+// This file carried its OWN copy of `formatIls`, a second
+// `₪${value.toFixed(2)}` over a float, so the wallet badge in the nav and the
+// wallet figure on the page were formatted by two different functions. One
+// formatter, in format.ts, over integer agorot.
 export default function AccountNav({
   fullName,
   email,
-  avatarUrl,
   walletBalanceAgorot,
 }: {
   fullName: string | null
   email: string
-  avatarUrl: string | null
   walletBalanceAgorot: Agorot
 }) {
   const pathname = usePathname()
@@ -32,23 +34,8 @@ export default function AccountNav({
   return (
     <nav className="account-nav" aria-label="ניווט באזור האישי">
       <div className="account-nav__head">
-        <div className="account-nav__identity">
-          {avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element -- Google avatar URL
-            <img
-              className="account-nav__avatar"
-              src={avatarUrl}
-              alt=""
-              width={40}
-              height={40}
-              referrerPolicy="no-referrer"
-            />
-          ) : null}
-          <div>
-            <p className="account-nav__name">{fullName || 'שלום'}</p>
-            <p className="account-nav__email">{email}</p>
-          </div>
-        </div>
+        <p className="account-nav__name">{fullName || 'שלום'}</p>
+        <p className="account-nav__email">{email}</p>
       </div>
       <ul className="account-nav__list">
         {ITEMS.map((item) => {
@@ -71,11 +58,6 @@ export default function AccountNav({
           )
         })}
       </ul>
-      <form action={signOut} className="account-nav__logout">
-        <button type="submit" className="account-nav__logout-btn">
-          התנתקות
-        </button>
-      </form>
     </nav>
   )
 }

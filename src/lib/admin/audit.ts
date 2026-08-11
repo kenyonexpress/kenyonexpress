@@ -1,3 +1,4 @@
+import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { AuditAction, Json, UserRole } from '@/types/database'
 
@@ -28,9 +29,9 @@ export async function writeAuditLog(entry: {
       metadata: entry.metadata ?? null,
     })
     if (error) {
-      console.error('[audit] failed to write audit_log row:', error.message)
+      log.error('audit.write_failed', { reason: error.message })
     }
   } catch (err) {
-    console.error('[audit] unexpected failure writing audit_log:', err)
+    log.error('audit.write_threw', { err })
   }
 }

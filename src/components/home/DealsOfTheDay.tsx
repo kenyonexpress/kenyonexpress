@@ -1,4 +1,4 @@
-import ProductCard from '@/components/ProductCard'
+import ProductDealCard from '@/components/ProductDealCard'
 import { KE_LIVE_DEALS } from '@/lib/ke-live-deals-data'
 
 /** refs/ke_live_singlefile.html — jet-listing-grid faf8583, 4 columns desktop, no section title */
@@ -12,7 +12,7 @@ export default async function DealsOfTheDay() {
       <div className="jet-listing-grid-deals bg-white">
         {products.map((product) => (
           <div key={product.id} className="jet-listing-grid-deals__item">
-            <ProductCard product={product} variant="deals" />
+            <ProductDealCard product={product} />
           </div>
         ))}
       </div>

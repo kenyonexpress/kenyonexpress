@@ -1,5 +1,6 @@
 import SmartImage from '@/components/ui/SmartImage'
 import { LOGO_FOOTER } from '@/lib/assets'
+import { storeWhatsAppLink } from '@/lib/whatsapp'
 import { Headphones } from 'lucide-react'
 import Link from 'next/link'
 
@@ -14,17 +15,38 @@ import Link from 'next/link'
  *  - copyright bar bg = bottom-bar
  */
 
-const PERSONAL_LINKS = [
-  { label: 'החשבון שלי', href: '/profile' },
+/**
+ * `built: false` means the href has NO page in this app and returns 404.
+ *
+ * Wishlist and recently-viewed were WP leftovers. They are not features here
+ * (import maps both to 410), so the labels were removed in [28] rather than
+ * kept as visible 404s. Contact and terms stay listed with prefetch off until
+ * real copy exists; inventing a תקנון is not a code task. Tracked in GO-LIVE.md.
+ *
+ * When a `built: false` page ships, delete the flag and prefetch comes back.
+ */
+const PERSONAL_LINKS: { label: string; href: string; built?: false }[] = [
+  { label: 'החשבון שלי', href: '/account' },
   { label: 'סל הקניות', href: '/cart' },
-  { label: 'מועדפים', href: '/wishlist' },
-  { label: 'הסטוריה', href: '/recently-viewed' },
-  { label: 'הזמנות', href: '/orders' },
+  { label: 'הזמנות', href: '/account/orders' },
 ]
 
-const SERVICE_LINKS = [
+const SERVICE_LINKS: { label: string; href: string; built?: false }[] = [
+  { label: 'אודות', href: '/about' },
   { label: 'צור קשר', href: '/contact' },
+  { label: 'שאלות נפוצות', href: '/faq' },
+  { label: 'הבלוג', href: '/blog' },
+  // Above the legal block on purpose: this is the one link in the footer aimed
+  // at a business rather than a shopper, and burying it under four legal pages
+  // is where it stops being found.
+  { label: 'הצטרפו כספקים', href: '/suppliers' },
+  // The flag is gone from all four because the pages exist now ([58]). The two
+  // long ones are the site's OWN published Hebrew text, migrated out of the
+  // WordPress export rather than rewritten.
   { label: 'תקנון', href: '/terms-and-conditions' },
+  { label: 'מדיניות פרטיות', href: '/privacy-policy' },
+  { label: 'ביטולים והחזרות', href: '/refund_returns' },
+  { label: 'הצהרת נגישות', href: '/accessibility' },
 ]
 
 // lucide-react (this project) ships no brand icons — inline simple-icons glyphs.
@@ -47,7 +69,10 @@ const SOCIALS: { label: string; href: string; path: string }[] = [
   },
   {
     label: 'וואטסאפ',
-    href: 'https://wa.me/972524635550',
+    // One source for the store's number ([68]). The literal that used to sit
+    // here was the third copy of it, and the only one of the three that did not
+    // read the env override.
+    href: storeWhatsAppLink() ?? '#',
     path: 'M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z',
   },
   {
@@ -73,11 +98,13 @@ function SocialGlyph({ path }: { path: string }) {
 export default function SiteFooter() {
   return (
     <footer dir="rtl" className="w-full font-sans">
-      {/* 1. Newsletter bar — bg brand-primary, padding .55em 0 */}
+      {/* 1. Newsletter bar. Measured on the live single-product template
+          (scripts/_footer-probe.mjs): the bar is 80px, its row 65px, and the
+          title and marketing line sit side by side on ONE line, not stacked. */}
       <div className="bg-brand-secondary text-heading">
-        <div className="mx-auto flex max-w-page flex-col items-center justify-between gap-4 px-4 py-[0.55em] lg:flex-row">
+        <div className="mx-auto flex min-h-newsletter-bar max-w-store-footer flex-col items-center justify-between gap-4 px-[15px] lg:flex-row">
           {/* right side: paper-plane + title + subtitle */}
-          <div className="flex items-center gap-4 text-center lg:text-start">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-center lg:justify-start lg:text-start">
             <svg
               viewBox="0 0 24 24"
               width="34"
@@ -93,19 +120,23 @@ export default function SiteFooter() {
               <path d="M22 2 11 13" />
               <path d="M22 2 15 22l-4-9-9-4 20-7z" />
             </svg>
-            <div>
-              <h2 className="m-0 text-[1.429em] font-bold leading-snug">
-                קנה וחסוך, הירשם ל Newsletter
-              </h2>
-              <span className="text-[1.071em]">לקבלת הנחות והטבות $ נוספות . . .</span>
-            </div>
+            {/* live: 20.006px / 48.5946px / 500, with the marketing line beside
+                it at 14.994px / 25.6997px */}
+            <h2 className="m-0 text-[20.006px] font-medium leading-[48.5946px]">
+              קנה וחסוך, הירשם ל Newsletter
+            </h2>
+            <span className="text-[14.994px] leading-[25.6997px]">
+              לקבלת הנחות והטבות $ נוספות . . .
+            </span>
           </div>
 
           {/* left side: white rounded email field + dark הירשם button */}
+          {/* live: one 470x41 pill, rounded at both ends, input on the
+              inline-start (right) and the submit button on the left */}
           <form
             method="post"
             action="/api/newsletter"
-            className="flex w-full items-stretch overflow-hidden rounded-none bg-white lg:w-auto lg:min-w-newsletter-min"
+            className="flex h-newsletter-field w-full items-stretch overflow-hidden rounded-full bg-white lg:w-newsletter-min"
           >
             <input
               type="email"
@@ -113,11 +144,11 @@ export default function SiteFooter() {
               required
               placeholder="הזן כתובת Email"
               aria-label="כתובת אימייל לניוזלטר"
-              className="h-12 min-w-0 flex-1 border-0 bg-white px-4 text-sm text-gray-900 focus:outline-none"
+              className="min-w-0 flex-1 border-0 bg-white px-5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-black/40"
             />
             <button
               type="submit"
-              className="h-12 shrink-0 bg-footer-bg px-7 text-sm font-normal text-white transition-colors hover:bg-black"
+              className="shrink-0 bg-footer-bg px-7 text-sm font-normal text-white transition-colors hover:bg-black"
             >
               הירשם
             </button>
@@ -127,7 +158,10 @@ export default function SiteFooter() {
 
       {/* 2. Three columns — white bg, RTL (right col first) */}
       <div className="bg-white text-heading">
-        <div className="mx-auto grid max-w-page grid-cols-1 gap-8 px-4 py-10 md:grid-cols-[5fr_3.5fr_3.5fr]">
+        {/* Measured on live: three columns of 492 / 335 / 335 with no gutter of
+            their own inside the 1170 content width, and 60px of clearance under
+            the newsletter bar before the headings. */}
+        <div className="mx-auto grid max-w-store-footer grid-cols-1 gap-y-8 px-[15px] pt-[60px] pb-10 md:grid-cols-[492fr_335fr_335fr] md:gap-x-0">
           {/* right column: logo + contact + address */}
           <div>
             <SmartImage
@@ -171,6 +205,7 @@ export default function SiteFooter() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
+                    prefetch={link.built === false ? false : undefined}
                     className="text-sm text-heading/80 transition-colors hover:text-heading"
                   >
                     {link.label}
@@ -188,6 +223,7 @@ export default function SiteFooter() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
+                    prefetch={link.built === false ? false : undefined}
                     className="text-sm text-heading/80 transition-colors hover:text-heading"
                   >
                     {link.label}
@@ -200,7 +236,7 @@ export default function SiteFooter() {
 
         {/* 3. Social icons row — dark circular */}
         <div className="border-t border-border">
-          <div className="mx-auto flex max-w-page items-center justify-center gap-3 px-4 py-6">
+          <div className="mx-auto flex max-w-store-footer items-center justify-center gap-3 px-4 py-6">
             {SOCIALS.map((s) => (
               <a
                 key={s.label}
@@ -219,7 +255,7 @@ export default function SiteFooter() {
 
       {/* 4. Bottom gray bar — bg bottom-bar, copyright (right) + payment (left) */}
       <div className="bg-bottom-bar text-heading">
-        <div className="mx-auto flex max-w-page flex-col items-center justify-between gap-3 px-4 py-3 sm:flex-row">
+        <div className="mx-auto flex max-w-store-footer flex-col items-center justify-between gap-3 px-4 py-3 sm:flex-row">
           <p className="m-0 text-sm">
             כל הזכויות שמורות © <strong className="font-bold">Kenyon Express</strong>
           </p>
@@ -227,7 +263,7 @@ export default function SiteFooter() {
             {['Visa', 'Mastercard', 'Discover', 'American Express'].map((label) => (
               <li
                 key={label}
-                className="rounded border border-black/15 bg-white px-2 py-1 text-micro font-semibold text-heading/70"
+                className="rounded border border-black/15 bg-white px-2 py-1 text-micro font-semibold text-heading/80"
               >
                 {label}
               </li>

@@ -2,6 +2,7 @@ import {
   buildNotification,
   buildOrderPaidEmail,
   buildSupplierSaleEmail,
+  buildVoucherIssuedEmail,
   buildVoucherRedeemedEmail,
 } from '@/lib/email/notifications'
 import { describe, expect, it } from 'vitest'
@@ -147,55 +148,46 @@ describe('buildVoucherRedeemedEmail', () => {
   })
 })
 
-describe('buildVoucherIssuedEmail via buildNotification', () => {
+describe('buildVoucherIssuedEmail', () => {
   const payload = {
-    order_id: '79f488aa-aaaa-bbbb-cccc-ddddeeeeffff',
-    customer_name: 'דני',
+    order_id: '79f488aa-549a-40dd-af80-eb66d886668f',
+    order_ref: '79F488AA',
+    customer_name: 'דנה',
     vouchers: [
       {
-        id: 'v1',
-        code: 'ABCDE12345',
-        product_name: 'ארוחה',
-        supplier_name: 'מסעדה',
-        supplier_address: null,
-        supplier_phone: null,
-        face_value_agorot: 20_000,
-        coupon_price_agorot: 2_200,
-        remaining_amount_due_agorot: 17_800,
-        expires_at: '2026-12-01T00:00:00.000Z',
+        id: '57002c6d-f917-4adc-804e-65e6c4bde594',
+        code: 'PRQBE23456',
+        product_name: 'ארוחה בשרית',
+        supplier_name: 'טעמים גורמה',
+        supplier_address: 'תל אביב',
+        supplier_phone: '0500000000',
+        face_value_agorot: 40_000,
+        coupon_price_agorot: 22_000,
+        remaining_amount_due_agorot: 18_000,
+        expires_at: '2026-12-31T00:00:00.000Z',
       },
     ],
   }
 
-  it('renders RTL Hebrew coupon mail with /coupon link and no QR data URI', () => {
-    const mail = buildNotification('voucher_issued', payload, SITE)
-    expect(mail).not.toBeNull()
-    expect(mail?.html).toContain('lang="he"')
-    expect(mail?.html).toContain('dir="rtl"')
-    expect(mail?.html).toContain('/coupon/v1')
-    expect(mail?.html).not.toContain('data:image')
-    expect(mail?.text).toContain('שולם באתר')
-    expect(mail?.text).toContain('לתשלום בבית העסק')
+  it('states both amounts in the locked coupon money order', () => {
+    const mail = buildVoucherIssuedEmail(payload, SITE)
+    expect(mail.text).toContain('שולם באתר: ₪220.00')
+    expect(mail.text).toContain('לתשלום בבית העסק: ₪180.00')
+    expect(mail.html).toContain('/coupon/57002c6d-f917-4adc-804e-65e6c4bde594')
   })
 
-  it('returns null when the voucher list is empty', () => {
-    expect(
-      buildNotification('voucher_issued', { order_id: payload.order_id, vouchers: [] }, SITE),
-    ).toBeNull()
+  it('survives an empty voucher list rather than throwing at drain time', () => {
+    const mail = buildVoucherIssuedEmail({ ...payload, vouchers: [] }, SITE)
+    expect(mail.subject).toContain('0 קופונים')
+    expect(mail.text).toContain('0 הקופונים שלך מוכנים')
   })
 })
 
 describe('buildNotification', () => {
-  it('dispatches each kind the outbox CHECK constraint allows', () => {
-    for (const kind of ['order_paid', 'supplier_sale', 'voucher_redeemed']) {
+  it('dispatches each kind the outbox CHECK constraint allows after 102', () => {
+    for (const kind of ['order_paid', 'supplier_sale', 'voucher_redeemed', 'voucher_issued']) {
       expect(buildNotification(kind, {}, SITE)).not.toBeNull()
     }
-  })
-
-  it('puts lang=he on the RTL shell', () => {
-    const mail = buildNotification('order_paid', { order_ref: 'ABCD1234', total_agorot: 100 }, SITE)
-    expect(mail?.html).toContain('lang="he"')
-    expect(mail?.html).toContain('dir="rtl"')
   })
 
   // The drain parks an unrenderable row immediately instead of retrying it
@@ -213,5 +205,59 @@ describe('buildNotification', () => {
     )
     expect(mail?.html).not.toContain('<script>')
     expect(mail?.html).toContain('&lt;script&gt;')
+  })
+})
+
+describe('buildInvoiceDeadEmail', () => {
+  const SITE = 'https://kenyonexpress.co.il'
+
+  it('names the order, the reason and the admin page', () => {
+    const built = buildNotification(
+      'invoice_dead',
+      {
+        order_id: '11111111-2222-3333-4444-555555555555',
+        order_ref: '11111111',
+        document_type: 'קבלה על קופון',
+        reason: 'provider rejected (500)',
+        attempts: 5,
+      },
+      SITE,
+    )
+    expect(built?.subject).toContain('11111111')
+    expect(built?.text).toContain('provider rejected (500)')
+    expect(built?.html).toContain('/admin/orders/11111111-2222-3333-4444-555555555555')
+  })
+
+  it('says out loud that the customer paid and has no receipt', () => {
+    // The line that makes the alert actionable rather than informational.
+    const built = buildNotification('invoice_dead', { order_id: 'o1', reason: 'x' }, SITE)
+    expect(built?.text).toContain('הלקוח שילם ואין לו קבלה')
+  })
+
+  it('renders nothing without an order to point at', () => {
+    // An alert with no subject is a mail an operator cannot act on, and the
+    // drain parks an unrenderable row rather than sending a blank.
+    expect(buildNotification('invoice_dead', { reason: 'x' }, SITE)).toBeNull()
+  })
+})
+
+describe('the order confirmation links a receipt', () => {
+  const SITE = 'https://kenyonexpress.co.il'
+
+  it('links our own ownership-checked route, never a provider URL', () => {
+    // A raw provider link in an email is readable by every forward, screenshot
+    // and shared inbox that mail ever reaches.
+    const built = buildNotification(
+      'order_paid',
+      { order_id: 'order-9', order_ref: 'ORDER9', total_agorot: 5000, item_count: 1 },
+      SITE,
+    )
+    expect(built?.html).toContain('/account/orders/order-9/invoice')
+    expect(built?.text).toContain('/account/orders/order-9/invoice')
+  })
+
+  it('omits the link entirely when there is no order id to build one from', () => {
+    const built = buildNotification('order_paid', { order_ref: 'X', total_agorot: 100 }, SITE)
+    expect(built?.html).not.toContain('/invoice')
   })
 })

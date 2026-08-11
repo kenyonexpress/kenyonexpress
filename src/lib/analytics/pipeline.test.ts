@@ -1,5 +1,9 @@
 import { mergeAttribution, readUtmFromQuery, utmForEvent } from '@/lib/analytics/attribution'
 import {
+  CONSENT_COOKIE,
+  CONSENT_DECIDED_ATTRIBUTE,
+  CONSENT_DECIDED_VALUE,
+  CONSENT_PREPAINT_SCRIPT,
   CONSENT_WORDING_VERSION,
   isTrackingAllowed,
   needsConsentDecision,
@@ -55,6 +59,59 @@ describe('consent', () => {
   it('ignores a malformed cookie value', () => {
     expect(parseConsent('yes')).toBeNull()
     expect(isTrackingAllowed('granted')).toBe(false)
+  })
+})
+
+/**
+ * The banner's markup now ships to everyone and is hidden by CSS off an
+ * attribute this snippet sets before first paint, so the snippet - not
+ * `needsConsentDecision` - is what decides whether a visitor sees the banner on
+ * a fresh load. Two implementations of one rule is a drift waiting to happen,
+ * so this runs BOTH over the same table and asserts they never disagree.
+ *
+ * The snippet is executed for real, against a fake document, rather than
+ * pattern-matched: a regex over its source would pass on a snippet that throws.
+ */
+describe('consent pre-paint snippet', () => {
+  function runSnippet(documentCookie: string): string | null {
+    const attributes = new Map<string, string>()
+    const fakeDocument = {
+      cookie: documentCookie,
+      documentElement: {
+        setAttribute: (name: string, value: string) => void attributes.set(name, value),
+      },
+    }
+    new Function('document', CONSENT_PREPAINT_SCRIPT)(fakeDocument)
+    return attributes.get(CONSENT_DECIDED_ATTRIBUTE) ?? null
+  }
+
+  const cases: Array<[label: string, raw: string | null]> = [
+    ['a current grant', serializeConsent({ decision: 'granted', wordingVersion: 1 })],
+    ['a current decline', serializeConsent({ decision: 'denied', wordingVersion: 1 })],
+    ['superseded wording', serializeConsent({ decision: 'granted', wordingVersion: 0 })],
+    ['a decision word with no version', 'granted'],
+    ['a non-numeric version', 'granted.1abc'],
+    ['a fractional version', 'granted.1.5'],
+    ['an unknown decision', 'maybe.1'],
+    ['an empty value', ''],
+    ['no cookie at all', null],
+  ]
+
+  for (const [label, raw] of cases) {
+    it(`agrees with needsConsentDecision for ${label}`, () => {
+      const cookie = raw === null ? 'other=1' : `other=1; ${CONSENT_COOKIE}=${raw}; last=2`
+      const hidden = runSnippet(cookie) === CONSENT_DECIDED_VALUE
+
+      expect(hidden).toBe(!needsConsentDecision(raw))
+    })
+  }
+
+  it('does not match a cookie whose name merely ends in the consent cookie', () => {
+    expect(runSnippet(`not_${CONSENT_COOKIE}=granted.1`)).toBeNull()
+  })
+
+  it('survives a percent-encoding that cannot be decoded', () => {
+    expect(runSnippet(`${CONSENT_COOKIE}=%E0%A4%A`)).toBeNull()
   })
 })
 

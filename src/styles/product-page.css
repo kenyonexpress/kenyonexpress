@@ -1,0 +1,531 @@
+/* Product-detail page - values measured from the live single-product template
+   at 1440x2600 (scripts/_pdp-probe.mjs, scripts/_pdp-summary-probe.mjs).
+   Container 1170, gallery 470, summary 670, 30px between them. */
+
+.pdp {
+  /* Colour tokens. Single source of truth: src/styles/tokens.ts (PDP).
+     tokens.test.ts fails if these drift from it. Every rule below reads them
+     through var() so no rule carries a raw hex. */
+  --pdp-ink: #333e48;
+  --pdp-muted: #657888;
+  --pdp-action: #5d7184;
+  --pdp-sale: #dc3545;
+  --pdp-strike: #848484;
+  --pdp-rule: #cccfd1;
+  --pdp-line: #dddddd;
+  --pdp-brand: #fed700;
+  --pdp-brand-hover: #fedd26;
+  --pdp-buy: #ee6443;
+  --pdp-buy-hover: #e5502c;
+  --pdp-surface: #ffffff;
+
+  /* Geometry measured on the live template. Same contract as the colours:
+     change the number in tokens.ts, never in a rule. */
+  --pdp-container: 1170px;
+  --pdp-gallery: 470px;
+  --pdp-summary: 700px;
+  --pdp-column-gap: 15px;
+  --pdp-crumb-h: 84px;
+  --pdp-eyebrow-size: 11.998px;
+  --pdp-eyebrow-line: 17.2771px;
+  --pdp-title-size: 25.004px;
+  --pdp-title-line: 32.0051px;
+  --pdp-meta-size: 13.006px;
+  --pdp-meta-line: 18.0133px;
+  --pdp-body-size: 14px;
+  --pdp-body-line: 23.996px;
+  --pdp-price-size: 35px;
+  --pdp-price-line: 45.01px;
+  --pdp-price-del-size: 21px;
+  --pdp-price-del-line: 31.5px;
+  --pdp-qty-w: 140px;
+  --pdp-qty-h: 41px;
+  --pdp-atc-w: 192px;
+  --pdp-atc-h: 53px;
+  --pdp-buy-h: 46px;
+  --pdp-related-size: 25.004px;
+  --pdp-related-line: 40.0064px;
+  --pdp-related-rule: 233px;
+  --pdp-related-gap: 54px;
+  --pdp-summary-tail: 40px;
+  --pdp-page-tail: 80px;
+  --pdp-content-h: 1329px;
+
+  color: var(--pdp-ink);
+  font-size: var(--pdp-body-size);
+  line-height: var(--pdp-body-line);
+}
+
+.pdp__inner {
+  max-width: var(--pdp-container);
+  margin-inline: auto;
+  padding-inline: 15px;
+  /* Live's content column runs y165..1442, and the footer starts on that line
+     whatever the product is. Stating the measured height rather than a gap is
+     what keeps the two footers aligned when our recommendations row comes out
+     a few pixels shorter than live's carousel; longer content still pushes
+     past it, with the measured 80px live leaves before the footer. */
+  min-height: var(--pdp-content-h);
+  padding-bottom: var(--pdp-page-tail);
+}
+
+@media (min-width: 1200px) {
+  .pdp__inner {
+    padding-inline: 0;
+  }
+}
+
+/* Breadcrumb: live gives the row 84px and centres the 14px line in it, which
+   is what lands the columns block on y250. */
+.pdp-breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: var(--pdp-crumb-h);
+  font-size: var(--pdp-body-size);
+  line-height: var(--pdp-body-line);
+  color: var(--pdp-ink);
+}
+
+.pdp-breadcrumb a {
+  color: var(--pdp-ink);
+  text-decoration: none;
+}
+
+.pdp-breadcrumb a:hover {
+  color: var(--pdp-sale);
+}
+
+.pdp-breadcrumb__sep {
+  color: var(--pdp-line);
+}
+
+/* Gallery first so RTL puts it on the right, where live has it. */
+.pdp__columns {
+  display: grid;
+  gap: 24px;
+}
+
+@media (min-width: 768px) {
+  .pdp__columns {
+    grid-template-columns: var(--pdp-gallery) minmax(0, 1fr);
+    gap: var(--pdp-column-gap);
+    align-items: start;
+  }
+}
+
+.pdp-gallery__frame {
+  /* Live: .product-images-wrapper padding: 0 15px. Measured 2026-07-28. */
+  padding: 0 15px;
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background-color: var(--pdp-surface);
+}
+
+.pdp-gallery__frame--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 72px;
+  background-color: color-mix(in srgb, var(--pdp-line) 25%, var(--pdp-surface));
+}
+
+.pdp-gallery__thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.pdp-gallery__thumb {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  flex: none;
+  overflow: hidden;
+  border: 2px solid var(--pdp-line);
+  background-color: var(--pdp-surface);
+}
+
+.pdp-gallery__thumb[aria-current="true"] {
+  border-color: var(--pdp-brand);
+}
+
+/* Summary column. Every margin below is the measured gap between two live
+   boxes, so the block is 478px tall and ends on y728 like live's does. */
+.pdp-summary {
+  max-width: var(--pdp-summary);
+  /* Live's summary runs 40px past its tag line, and that tail is what makes the
+     column 478px tall - the height the gallery beside it stretches to. */
+  padding-bottom: var(--pdp-summary-tail);
+}
+
+.pdp-summary__eyebrow {
+  margin: 0;
+  font-size: var(--pdp-eyebrow-size);
+  line-height: var(--pdp-eyebrow-line);
+  color: var(--pdp-muted);
+}
+
+.pdp-summary__title {
+  margin: 12px 0 0;
+  font-size: var(--pdp-title-size);
+  line-height: var(--pdp-title-line);
+  font-weight: 500;
+  color: var(--pdp-ink);
+}
+
+/* The slot live fills with its star rating. We do not have ratings, so it
+   carries the identifiers a shopper can actually act on instead of a fabricated
+   score; the height is what the rhythm below depends on. */
+.pdp-summary__meta {
+  margin: 12px 0 0;
+  min-height: var(--pdp-body-size);
+  font-size: var(--pdp-body-size);
+  line-height: var(--pdp-body-size);
+  color: var(--pdp-ink);
+}
+
+.pdp-summary__rule {
+  margin: 16px 0 0;
+  border: 0;
+  border-top: 1px solid var(--pdp-rule);
+}
+
+.pdp-summary__stock {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0 0;
+  min-height: 37px;
+  font-size: var(--pdp-meta-size);
+  line-height: var(--pdp-meta-line);
+  color: var(--pdp-action);
+}
+
+/*
+ * The scarcity line sits under the in-stock line, not instead of it: "in stock"
+ * and "only 3 left" are two different facts and a shopper reads the second as a
+ * qualifier on the first. Tighter top margin than a fresh block so the two read
+ * as one group.
+ *
+ * `min-height` is deliberately NOT inherited from .pdp-summary__stock here.
+ * That 37px exists to stop the buy block jumping while the stock line resolves;
+ * applying it to a line that is usually absent would reserve empty space on
+ * every ordinary product page.
+ */
+.pdp-summary__stock--low {
+  margin-top: 4px;
+  min-height: 0;
+  font-weight: 600;
+  color: var(--color-price);
+}
+
+.pdp-summary__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--pdp-sale);
+}
+
+.pdp-summary__dot--in {
+  background-color: var(--pdp-action);
+}
+
+.pdp-summary__list {
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pdp-summary__list li {
+  font-size: var(--pdp-body-size);
+  line-height: var(--pdp-body-line);
+  color: var(--pdp-ink);
+}
+
+.pdp-summary__list del {
+  text-decoration-line: line-through;
+}
+
+.pdp-summary__price {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0;
+  font-size: var(--pdp-price-size);
+  line-height: var(--pdp-price-line);
+  color: var(--pdp-sale);
+}
+
+.pdp-summary__price del {
+  font-size: var(--pdp-price-del-size);
+  line-height: var(--pdp-price-del-line);
+  color: var(--pdp-strike);
+}
+
+.pdp-summary__badge {
+  font-size: var(--pdp-body-size);
+  line-height: var(--pdp-body-line);
+  font-weight: 700;
+  color: var(--pdp-surface);
+  background-color: var(--pdp-sale);
+  padding-inline: 8px;
+  border-radius: 4px;
+}
+
+.pdp-summary__variants {
+  margin-top: 16px;
+}
+
+.pdp-summary__variants > p {
+  margin: 0 0 8px;
+  font-weight: 700;
+}
+
+/* Buy controls. Live: quantity 140x45 on the inline-end of the row, a 192x53
+   pill next to it, then a full-width button 10px below. */
+.pdp-buy {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 101px;
+}
+
+.pdp-buy__qty {
+  width: var(--pdp-qty-w);
+  height: var(--pdp-qty-h);
+  border: 1px solid var(--pdp-line);
+  background-color: var(--pdp-surface);
+  text-align: center;
+  font-size: var(--pdp-body-size);
+  color: var(--pdp-ink);
+  /* Live suppresses the native spinner; there are no +/- controls at all. */
+  appearance: none;
+  -moz-appearance: textfield;
+}
+
+.pdp-buy__qty::-webkit-outer-spin-button,
+.pdp-buy__qty::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.pdp-buy__step {
+  width: 40px;
+  height: 100%;
+  color: var(--pdp-action);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pdp-buy__step:disabled {
+  opacity: 0.3;
+}
+
+.pdp-buy__count {
+  flex: 1;
+  text-align: center;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.pdp-buy__atc {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: var(--pdp-atc-w);
+  height: var(--pdp-atc-h);
+  border-radius: 999px;
+  font-weight: 700;
+  color: var(--pdp-ink);
+  background-color: var(--pdp-brand);
+  transition: background-color 0.15s;
+}
+
+.pdp-buy__atc:hover:not(:disabled) {
+  background-color: var(--pdp-brand-hover);
+}
+
+.pdp-buy__atc:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pdp-buy__now {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: var(--pdp-buy-h);
+  margin-top: 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  color: var(--pdp-surface);
+  background-color: var(--pdp-buy);
+  transition: background-color 0.15s;
+}
+
+.pdp-buy__now:hover:not(:disabled) {
+  background-color: var(--pdp-buy-hover);
+}
+
+.pdp-buy__now:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pdp-summary__tags {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 10px 0 0;
+  font-size: var(--pdp-body-size);
+  line-height: var(--pdp-body-line);
+  color: var(--pdp-ink);
+}
+
+/* Below the columns live leaves a 160px band before the recommendations. The
+   description, shipping and supplier blocks share it as flat columns; as
+   stacked bordered cards they cost 423px and pushed the whole footer down. */
+.pdp-details {
+  margin-top: 40px;
+  display: grid;
+  gap: 24px;
+}
+
+@media (min-width: 768px) {
+  .pdp-details {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: var(--pdp-column-gap);
+  }
+}
+
+.pdp-details__title {
+  margin: 0 0 4px;
+  font-size: var(--pdp-body-size);
+  line-height: var(--pdp-body-line);
+  font-weight: 700;
+  color: var(--pdp-ink);
+}
+
+.pdp-details__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--pdp-body-size);
+  line-height: var(--pdp-body-line);
+  color: var(--pdp-ink);
+}
+
+.pdp-details__label {
+  color: var(--pdp-muted);
+}
+
+.pdp-details__note {
+  margin: 4px 0 0;
+  font-size: var(--pdp-meta-size);
+  line-height: var(--pdp-meta-line);
+  color: var(--pdp-muted);
+}
+
+.pdp-details__text {
+  margin: 0;
+  font-size: var(--pdp-body-size);
+  line-height: var(--pdp-body-line);
+  color: var(--pdp-ink);
+  white-space: pre-line;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
+}
+
+/* Recommendations: 25.004px/500 heading over a full-width hairline with a
+   233px brand segment on the inline-start end, measured at y937-938. */
+.pdp-related {
+  /* Live opens the recommendations row on y940; the summary column above ends
+     well before that. Measured 2026-07-28. */
+  margin-top: -20px;
+}
+
+.pdp-related__title {
+  position: relative;
+  margin: 0 0 calc(var(--pdp-related-gap) - 24px);
+  padding-bottom: 10px;
+  font-size: var(--pdp-related-size);
+  line-height: var(--pdp-related-line);
+  font-weight: 500;
+  color: var(--pdp-ink);
+  border-bottom: 1px solid var(--pdp-line);
+}
+
+.pdp-related__title::after {
+  content: "";
+  position: absolute;
+  inset-block-end: -1px;
+  inset-inline-start: 0;
+  width: var(--pdp-related-rule);
+  border-bottom: 2px solid var(--pdp-brand);
+}
+
+.pdp-related__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .pdp-related__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  /* Live: five 230px cards, no gutter, separated by a 1px rule. */
+  .pdp-related__grid {
+    grid-template-columns: repeat(5, 230px);
+    gap: 0;
+  }
+
+  .pdp-related__grid > * + * {
+    border-inline-start: 1px solid var(--pdp-line);
+  }
+}
+
+/* Coupon-only blocks keep their own card treatment: the split table and the
+   redemption terms are consumer-protection copy that has no counterpart on the
+   live physical template, so there is no measured layout to match them to. */
+.pdp-coupon {
+  margin-top: 24px;
+}
+
+/* City tag: the product page and the home card. The catalogue card keeps its
+   own `.category-card__city`, which also carries a distance and is sized for
+   that card's tag row.
+
+   Muted and small on purpose. Where a business is, is provenance, not a
+   promotion, so it must not compete with the price for attention. */
+.city-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--pdp-muted);
+}
+
+.city-tag--link {
+  text-decoration: none;
+}
+
+.city-tag--link:hover {
+  text-decoration: underline;
+}

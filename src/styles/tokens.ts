@@ -36,7 +36,12 @@ export const SITE = {
     success: '#5cb85c',
     link: '#0062bd',
     heading: '#333e48',
-    saleBadge: '#44b81b',
+    /* WCAG AA ([40]): the live green is #44b81b and white text on it is
+       2.58:1 -- it fails even the 3:1 large-text floor. Darkened by the
+       minimum that clears 4.5:1 in both directions (white on it, and it as
+       text on white), hue kept. The one place goal 18 overrides
+       match-the-live-site, because here the live site is what is wrong. */
+    saleBadge: '#328614',
   },
   /** Neutrals: hairlines, muted text, icon greys. */
   neutral: {
@@ -44,8 +49,11 @@ export const SITE = {
     borderAlt: '#e7e7e7',
     /** Section-header rule under a tab strip. */
     rule: '#ededed',
-    muted: '#7e7e7e',
-    muted2: '#768b9e',
+    /* WCAG AA ([40]): #7e7e7e was 4.06:1 on white and #768b9e was 3.53:1, both
+       below the 4.5:1 floor for body text. Darkened by the minimum that clears
+       it, keeping the hue -- measured, not eyeballed. */
+    muted: '#767676',
+    muted2: '#657888',
     icon: '#515151',
     /** Large empty-state glyphs (empty cart, no results). */
     iconEmpty: '#cccccc',
@@ -89,6 +97,14 @@ export const SITE = {
     base: '#25d366',
     ink: '#128c7e',
     inkHover: '#075e54',
+  },
+  /**
+   * Facebook's own brand blue, used by the share button on the product page.
+   * Same rule as `whatsapp` above: a third-party mark, tokenised so no
+   * component repeats it, and never rebranded along with `brand.*`.
+   */
+  facebook: {
+    base: '#1877f2',
   },
 } as const
 
@@ -139,6 +155,7 @@ export const SITE_CSS_VARS: Record<string, string> = {
   '--color-whatsapp': SITE.whatsapp.base,
   '--color-whatsapp-ink': SITE.whatsapp.ink,
   '--color-whatsapp-ink-hover': SITE.whatsapp.inkHover,
+  '--color-facebook': SITE.facebook.base,
 
   // Semantic + backward-compat aliases.
   '--color-background': SITE.surface.page,
@@ -179,16 +196,20 @@ export const SITE_CSS_METRICS: Record<string, string> = {
 
   '--header-height': '70px',
   '--container-page': '1320px',
+  '--container-hero-row': '1170px',
   '--container-footer': '1430px',
+  '--container-store-footer': '1200px',
   '--container-deals': '1150px',
 
   '--spacing-header-topbar': '37.3px',
-  '--spacing-header-masthead': '126px',
+  '--spacing-header-masthead': '109px',
   '--spacing-logo-h': '40px',
   '--spacing-logo-w': '52px',
   '--spacing-footer-logo-h': '42px',
   '--spacing-footer-logo-w': '160px',
-  '--spacing-newsletter-min': '420px',
+  '--spacing-newsletter-min': '470px',
+  '--spacing-newsletter-field': '41px',
+  '--spacing-newsletter-bar': '80px',
   '--spacing-deals-top': '30px',
 }
 
@@ -221,11 +242,11 @@ export const CATALOG = {
     /** product titles */
     link: '#0062bd',
     /** struck-through original price, category eyebrow */
-    muted: '#768b9e',
+    muted: '#657888',
     /** sale price. Measured on live; NOT the #E4002B in the brief. */
     sale: '#dc3545',
     /** discount badge background */
-    badge: '#44b81b',
+    badge: '#328614',
     /** control bar background */
     bar: '#efefef',
     /** hairlines: select border, card bottom rule, carousel rule */
@@ -330,4 +351,140 @@ export const CATALOG_CSS_METRICS: Record<string, string> = {
   '--cat-carousel-pad': CATALOG.metric.carouselTitlePad,
   '--cat-eyebrow-gap': '8px',
   '--cat-footer-gap-top': '10px',
+}
+
+/**
+ * Product-detail page. Measured on the live single-product template
+ * (`https://kenyonexpress.co.il/product/מוצר-לדוגמא/`) at 1440x2600 with
+ * `scripts/_pdp-probe.mjs` and `scripts/_pdp-summary-probe.mjs`, and the
+ * hairline colours read straight out of `refs/live.png`.
+ *
+ * The vertical numbers are the load-bearing ones. The rebuilt page had the
+ * summary wrapped in a card and the shipping/supplier blocks stacked as two
+ * more cards, which pushed the footer 230px below where live puts it; every
+ * band from y1400 down was comparing our recommendations grid against live's
+ * footer. The measurements below are what put the two pages back on the same
+ * vertical grid.
+ *
+ * Same contract as CATALOG: `product-page.css` declares these on `.pdp` and
+ * every rule reads them through var(), with `tokens.test.ts` failing if the
+ * two drift apart.
+ */
+export const PDP = {
+  color: {
+    /** body and heading text */
+    ink: '#333e48',
+    /** category eyebrow links */
+    muted: '#657888',
+    /** secondary actions (the stock line sits where live puts its wishlist) */
+    action: '#5d7184',
+    /** sale price */
+    sale: '#dc3545',
+    /** struck-through original price next to the sale price */
+    strike: '#848484',
+    /** hairline under the title block, measured at y353 */
+    rule: '#cccfd1',
+    /** hairline under the recommendations heading, measured at y938 */
+    line: '#dddddd',
+    /** add-to-cart pill */
+    brand: '#fed700',
+    brandHover: '#fedd26',
+    /** the full-width buy-now button under it */
+    buy: '#ee6443',
+    buyHover: '#e5502c',
+    surface: '#ffffff',
+  },
+  /** Geometry measured on the live single-product template. */
+  metric: {
+    container: '1170px',
+    /** gallery column: x835..1305 */
+    gallery: '470px',
+    /** summary column: x135..805 */
+    summary: '700px',
+    columnGap: '15px',
+    /** breadcrumb block y165..249 */
+    crumbHeight: '84px',
+    eyebrowSize: '11.998px',
+    eyebrowLine: '17.2771px',
+    titleSize: '25.004px',
+    titleLine: '32.0051px',
+    metaSize: '13.006px',
+    metaLine: '18.0133px',
+    bodySize: '14px',
+    bodyLine: '23.996px',
+    priceSize: '35px',
+    priceLine: '45.01px',
+    priceDelSize: '21px',
+    priceDelLine: '31.5px',
+    /** quantity field x665..805, y548..593 */
+    qtyWidth: '140px',
+    qtyHeight: '41px',
+    /** add-to-cart pill x469..661, y545..598 */
+    atcWidth: '192px',
+    atcHeight: '53px',
+    /** buy-now spans the whole summary column, y608..654 */
+    buyHeight: '46px',
+    /** recommendations heading y888..939 */
+    relatedTitleSize: '25.004px',
+    relatedTitleLine: '40.0064px',
+    /** yellow segment of the rule under it, x1071..1304 */
+    relatedRuleWidth: '233px',
+    /** heading rule y939 to the first card's own text y993 */
+    relatedGap: '54px',
+    /** live's summary runs 40px past its tag line, y688..728 */
+    summaryTail: '40px',
+    /** gap between the last section and the footer, y1362..1442 */
+    pageTail: '80px',
+    /** the content column between header and footer, y165..1442 */
+    contentHeight: '1329px',
+  },
+} as const
+
+/** The CSS custom-property name each PDP colour maps to in product-page.css. */
+export const PDP_CSS_VARS: Record<string, string> = {
+  '--pdp-ink': PDP.color.ink,
+  '--pdp-muted': PDP.color.muted,
+  '--pdp-action': PDP.color.action,
+  '--pdp-sale': PDP.color.sale,
+  '--pdp-strike': PDP.color.strike,
+  '--pdp-rule': PDP.color.rule,
+  '--pdp-line': PDP.color.line,
+  '--pdp-brand': PDP.color.brand,
+  '--pdp-brand-hover': PDP.color.brandHover,
+  '--pdp-buy': PDP.color.buy,
+  '--pdp-buy-hover': PDP.color.buyHover,
+  '--pdp-surface': PDP.color.surface,
+}
+
+/** Measured PDP geometry and the custom property each value is exposed through. */
+export const PDP_CSS_METRICS: Record<string, string> = {
+  '--pdp-container': PDP.metric.container,
+  '--pdp-gallery': PDP.metric.gallery,
+  '--pdp-summary': PDP.metric.summary,
+  '--pdp-column-gap': PDP.metric.columnGap,
+  '--pdp-crumb-h': PDP.metric.crumbHeight,
+  '--pdp-eyebrow-size': PDP.metric.eyebrowSize,
+  '--pdp-eyebrow-line': PDP.metric.eyebrowLine,
+  '--pdp-title-size': PDP.metric.titleSize,
+  '--pdp-title-line': PDP.metric.titleLine,
+  '--pdp-meta-size': PDP.metric.metaSize,
+  '--pdp-meta-line': PDP.metric.metaLine,
+  '--pdp-body-size': PDP.metric.bodySize,
+  '--pdp-body-line': PDP.metric.bodyLine,
+  '--pdp-price-size': PDP.metric.priceSize,
+  '--pdp-price-line': PDP.metric.priceLine,
+  '--pdp-price-del-size': PDP.metric.priceDelSize,
+  '--pdp-price-del-line': PDP.metric.priceDelLine,
+  '--pdp-qty-w': PDP.metric.qtyWidth,
+  '--pdp-qty-h': PDP.metric.qtyHeight,
+  '--pdp-atc-w': PDP.metric.atcWidth,
+  '--pdp-atc-h': PDP.metric.atcHeight,
+  '--pdp-buy-h': PDP.metric.buyHeight,
+  '--pdp-related-size': PDP.metric.relatedTitleSize,
+  '--pdp-related-line': PDP.metric.relatedTitleLine,
+  '--pdp-related-rule': PDP.metric.relatedRuleWidth,
+  '--pdp-related-gap': PDP.metric.relatedGap,
+  '--pdp-summary-tail': PDP.metric.summaryTail,
+  '--pdp-page-tail': PDP.metric.pageTail,
+  '--pdp-content-h': PDP.metric.contentHeight,
 }

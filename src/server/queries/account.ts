@@ -1,5 +1,6 @@
 import { ilsColumnToAgorot } from '@/lib/account/format'
 import { type Agorot, agorot } from '@/lib/money'
+import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
 
 /**
@@ -10,10 +11,6 @@ import { createClient } from '@/lib/supabase/server'
  * remembered to write. Migration 052 added the owner policies that make this
  * possible (wallet_entries and payment_tokens were previously unreadable or
  * undeletable by their own owner).
- *
- * Money leaves this module as integer Agorot. Live wallet/order columns are
- * still decimal `*_ils` until migration 059; conversion happens here via
- * ilsColumnToAgorot so the UI never does float money math.
  */
 
 export interface AccountProfile {
@@ -25,7 +22,7 @@ export interface AccountProfile {
 }
 
 export interface WalletSummary {
-  /** Cached balance as integer agorot (via money.ts). */
+  /** Integer agorot. The wallet is internal credit and never leaves the system. */
   balanceAgorot: Agorot
   accountId: string | null
 }
@@ -35,7 +32,9 @@ export type WalletDirection = 'credit' | 'debit'
 export interface WalletLedgerRow {
   id: string
   direction: WalletDirection
+  /** Integer agorot, signed: negative for a debit. */
   signedAmountAgorot: Agorot
+  /** Integer agorot, unsigned magnitude. */
   amountAgorot: Agorot
   reason: string
   orderId: string | null
@@ -116,15 +115,18 @@ export async function getWalletSummary(): Promise<WalletSummary> {
   } = await supabase.auth.getUser()
   if (!user) return { balanceAgorot: agorot(0), accountId: null }
 
-  const { data } = await supabase
-    .from('wallet_accounts')
-    .select('id, balance_ils')
-    .eq('user_id', user.id)
-    .maybeSingle()
+  // Probed, not named. This selected `balance_agorot`, which the hosted project
+  // does not have, so the select 42703'd and the account area showed every
+  // customer an empty wallet. Naming `balance_ils` instead would just move the
+  // same failure onto a migrated database.
+  const { accountId, balanceAgorot } = await readWalletAccountAgorot(
+    (select, ids) => supabase.from('wallet_accounts').select(select).eq('user_id', ids[0]) as never,
+    user.id,
+  )
 
   return {
-    balanceAgorot: ilsColumnToAgorot(data?.balance_ils ?? 0),
-    accountId: data?.id ?? null,
+    balanceAgorot: agorot(balanceAgorot),
+    accountId,
   }
 }
 
@@ -139,8 +141,9 @@ export async function getWalletLedger(limit = 100): Promise<WalletLedgerRow[]> {
   return (data ?? []).map((row) => ({
     id: row.id,
     direction: row.direction === 'credit' ? 'credit' : 'debit',
-    signedAmountAgorot: ilsColumnToAgorot(row.signed_amount_ils ?? 0),
-    amountAgorot: ilsColumnToAgorot(row.amount_ils ?? 0),
+    // `v_wallet_ledger` still exposes decimal `*_ils`; parsed, not multiplied.
+    signedAmountAgorot: ilsColumnToAgorot(row.signed_amount_ils),
+    amountAgorot: ilsColumnToAgorot(row.amount_ils),
     reason: row.reason,
     orderId: row.order_id,
     createdAt: row.created_at,
@@ -192,3 +195,12 @@ export async function getMyPaymentTokens(): Promise<AccountPaymentToken[]> {
     createdAt: t.created_at,
   }))
 }
+
+/**
+ * `getMyCoupons` used to live here, as the second read of `vouchers` in the
+ * codebase. It backed /account/coupons and the overview tile while
+ * `getCustomerVouchers` in queries/vouchers.ts backed /account/vouchers, and
+ * the two selected different columns and mapped them to different units. Both
+ * screens now use `getCustomerVouchers`, which is the one that carries the
+ * voucher id, and therefore the one that can link to /coupon/[id].
+ */

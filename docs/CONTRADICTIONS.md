@@ -4,6 +4,48 @@
 המסמך הזה גובר על כל נוסח סותר בכל מסמך אחר בפרויקט. כל מספר "ברירת מחדל"
 שנשאר במסמך ישן ולא מופיע כאן הוא שריד ואינו מחייב.
 
+## ⚠️⚠️ היפוך מודל 2026-07-28 — הקופון חוזר להיות "הכל לפלטפורמה"
+
+**הוראת מפעיל מ-28.07 דורסת את הכרעת 27.07 ומחזירה את C11 לגרסה (א).**
+הנוסח שנמסר:
+
+> "קופון: הלקוח משלם באתר את כל מחיר הקופון (הכל לפלטפורמה), היתרה פיזית
+> בחנות, QR, קופון פג בסריקה. פיזי: פיצול מיידי לפי platform_percent דינמי.
+> מחק כל Escrow, כל hardcoded percent, כל platform_settled מאוויר מ-codebase."
+
+| | 27.07 (בוטל היום) | 28.07 (מחייב) |
+|---|---|---|
+| מקדמת הקופון | מתפצלת: עמלה לפלטפורמה, היתרה held לספק | **כולה לפלטפורמה** |
+| הספק על קופון | מקבל את היתרה במימוש | **מקבל 0 מאיתנו.** הכנסתו היא היתרה שנגבית בקופה |
+| ‏`escrow_holds` | נכתב בכל הנפקה | **לא נכתב** |
+| ‏settlement של קופון | `escrow_held` -> `escrow_released` | **`platform_settled`** מיד בתשלום |
+| ‏פיזי | פיצול מיידי לפי האחוז | ללא שינוי |
+
+**מה שנשאר בתוקף:** אין אחוז קבוע בשום מקום (C1), אין Escrow חיצוני ואין J5
+(C3), מחיר הקופון הוא סכום מוחלט ולא נגזרת של אחוז (C4), Cardcom בלבד (C9),
+האחוזים מצולמים ל-`order_items` (C10), וכל כסף באגורות integer.
+
+**הערה על ההיפוך.** ההערכה שלי הייתה, ונשארת, שההוראה הזאת נוסחה לפני הכרעת
+27.07: היא מפנה ל-`packages/payments` שאינו קיים בפרויקט ול-branch מ-`main`
+שנמצא 161 קומיטים מאחור. סימנתי את הסתירה, היא נמסרה שוב ללא שינוי, וביצעתי
+לפי ההוראה. אם ההיפוך אינו מכוון, `git revert` על הקומיטים של 28.07 מחזיר את
+מודל ה-Escrow במלואו.
+
+**מצב היישום של ההיפוך (2026-07-28):**
+- ✅ ‏`commission.ts`: קופון = כל המקדמה לפלטפורמה, `supplierDue = 0`,
+  ‏`escrowHeld` הוסר מהטיפוסים. פיזי: פיצול דינמי לפי `platform_percent`.
+- ✅ ‏`split.ts`: ‏`escrowHeldIls` הוסר מה-wire view.
+- ✅ ‏`finalize.ts`: לא נכתבות שורות `escrow_holds`; שורת קופון מקבלת
+  `settlement_status = 'platform_settled'`.
+- ✅ בדיקות `commission.test.ts` ו-`split.test.ts` עודכנו למודל. 523 ירוקות.
+- ⏳ נותר: `redeem_voucher()` (074) עדיין משחררת hold שכבר לא נוצר (no-op
+  בפועל), ‏`escrow.ts` / `escrow.test.ts` בדומיין, ומיגרציות 073/079/080.
+  **אין DDL בסבב הזה לפי ההוראה** (enum ממתין), ולכן הסכימה לא נגעה.
+
+---
+
+## הכרעת 2026-07-27 (בוטלה ב-28.07, נשמרת לתיעוד)
+
 ## ⚠️ שינוי מודל 2026-07-27 — הקופון חוזר ל-Escrow
 
 הכרעת Ofir מ-27.07 **דורסת את הכרעת 24.07 בנושא הקופון**, וסוגרת את C11
@@ -108,14 +150,54 @@
 
 ## מצב יישום
 
-- [x] מסמכים מיושרים (CHECKOUT-PAYMENT, CARDCOM-ARCHITECTURE, COMMERCE, PROGRESS-CHECKOUT)
-- [x] מיגרציה `050_platform_percent_required.sql` (הסרת defaults, `coupon_expiry_days` כשדה התוקף הקנוני)
-- [x] C9 מאומת: אין אזכור Stripe / Payoneer / Cloudways בשום קובץ בפרויקט מלבד השורה הזו
-- [x] C1/C2 בשאר המסמכים: הוסרו שרשראות ה-fallback ב-`ARCHITECTURE-SUPPLIER-REDEMPTION`, `ARCHITECTURE-WP-MIGRATION`, `ARCHITECTURE-COMMERCE` (O1 נסגרה), `ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION` (R1/R2)
-- [x] C8 בסכימה: מיגרציה `051_payout_terms.sql` - `add_business_days` / `payout_available_at` (T+3 ראשון-חמישי), `suppliers.min_payout_ils` (100) + `payout_hold_business_days` (3), `generate_payout_statement` אוסף רק שורות שעברו T+3 ומגלגל ריצה מתחת לסף (`cancelled` + `rolled_over`), trigger `enforce_payout_availability` חוסם תשלום מוקדם
-- [ ] **051 טרם הוחלה על המרוחק** (כמו 050). דורשת סשן החלה מסודר
-- [ ] טופס האדמין: `platform_percent` כשדה חובה + `coupon_expiry_days` (משימה פתוחה, חוסמת את החלת 050)
-- [ ] מנוע payout בצד האפליקציה: מסך אדמין שמריץ `generate_payout_statement` ומציג ריצות שהתגלגלו
-- [x] **C11 הוכרעה** 2026-07-27 לטובת (ב) — ראו למעלה
-- [ ] `payout_ils = 0` בשורות `coupon_redemption` — באג כספי שנובע מ-C11(ב)
-- [ ] מנוע העמלות: להחזיר את מסלול ה-Escrow לקופון (בוטל ב-24.07, מוחזר ב-27.07)
+עודכן 2026-07-28 אחרי סבב אימות מלא של חמש ההכרעות מול המסמכים והסכימה.
+
+### הושלם
+
+- [x] **C1/C2 (‏`platform_percent` בלי ברירת מחדל):** `050` מסירה את ה-DEFAULT
+      ומחייבת NOT NULL, `070` מוסיפה את זוג האחוזים עם
+      `products_split_pair_sums_to_100`, ‏`product_platform_percent()` בלי
+      fallback לספק ובלי הליטרל 10. בקוד: `commission.ts`,
+      `settlement.ts`, `finalize.ts` ו-`issue.ts` כולם זורקים על אחוז חסר במקום
+      לנחש. טופס האדמין מזין את האחוז כשדה חובה, ומאז 2026-07-28 גם **שומר את
+      `supplier_split_percent`** (נגזר כ-`100 −` הקלט, כדי שה-CHECK של 070 יסופק
+      תמיד בבנייה)
+- [x] **C3/C11(ב) (Escrow = held פנימי בלבד):** `073` מגדירה `vouchers` עם
+      `platform_percent` בטווח 0..100 ובלי default, `074` מקשרת
+      `escrow_holds.voucher_id` ומשחררת את ה-hold בתוך אותה טרנזקציה של המימוש.
+      במנוע: `commission.ts` מחזיר `escrowHeld`, ו-`finalize.ts` כותב את שורות
+      ה-hold ומתקן אותן ב-retry. `080` מוסיפה חשבון ledger `escrow_held` פר-ספק,
+      כי בלעדיו ל-journal של רכישת קופון לא היה צד נגדי
+- [x] **C7 (`expiry_days` פר-מוצר):** `products.coupon_expiry_days` הוא השדה
+      הקנוני (050), הוא חוסם מכירה ב-`product-money.ts`, ומאז 2026-07-28 הוא
+      **שדה בטופס האדמין** (חובה על מוצר קופון). ברירת המחדל השקטה של 90 יום
+      ב-`finalize.ts` הוסרה: מוצר בלי תוקף מסרב להנפיק ואצר במקום להמציא הבטחה
+      ללקוח
+- [x] **C8 (payout ‏T+3, מינימום 100 ש"ח):** `051` מוסיפה
+      `add_business_days` / `payout_available_at` (ראשון-חמישי),
+      `suppliers.min_payout_ils` (100) ו-`payout_hold_business_days` (3),
+      גלגול ריצה מתחת לסף ו-trigger `enforce_payout_availability`
+- [x] **C9 (Cardcom + Vercel בלבד):** אין ולו אינטגרציה אחת של
+      Stripe / Payoneer / Cloudways בשום שכבה. ב-2026-07-28 נוקו גם ההפניות
+      במסמכים שהשאירו את Stripe כ"ניסוי מקביל שממתין ל-ADR"
+      (`MASTER-ARCHITECTURE`, `COMPLETE-SYSTEM-ARCHITECTURE`,
+      `CHECKOUT-ARCHITECTURE`, `CHECKOUT-COMPLETE`). האזכורים שנשארו הם היסטוריים
+      ומסומנים ככאלה: `DECISIONS.md` D4 (תיעוד הדחייה) ו-`STATE.md` (שמות ענפים
+      שנמחקו)
+- [x] **הבאג הכספי של C11(ב) נסגר:** `079_payout_escrow_release.sql` משלמת
+      בשורת `coupon_redemption` את `escrow_holds.release_agorot` במקום 0, ומתקנת
+      גם שמות עמודות מלפני 059 שהפכו את `generate_payout_statement` לקוד מת
+- [x] **מסמכים מיושרים (2026-07-28):** הוסרו קביעות "אין escrow", "הספק מקבל 0",
+      `platform_percent = 100` ו-"פקיעה = breakage" מ-`MASTER-ARCHITECTURE`,
+      `ARCHITECTURE-VOUCHER-REDEMPTION`, `LEDGER-DESIGN`, `CHECKOUT-ARCHITECTURE`
+      ו-`COMPLETE-SYSTEM-ARCHITECTURE`
+
+### פתוח
+
+- [ ] **החלה על המרוחק:** 050, 051, 070, 079, 080 טרם הוחלו. דורש סשן החלה
+      מסודר, ו-050/070 יעצרו בכוונה כל עוד יש מוצר חי בלי אחוז
+- [ ] **מנוע payout בצד האפליקציה:** מסך אדמין שמריץ `generate_payout_statement`,
+      מציג ריצות שהתגלגלו ומאשר תשלום
+- [ ] **רישום ל-`escrow_held` בפועל:** החשבון קיים (080) אבל
+      `fn_post_journal` עדיין לא נקרא ממסלול הקופון; הרישום הכספי חי היום
+      ב-`escrow_holds` בלבד

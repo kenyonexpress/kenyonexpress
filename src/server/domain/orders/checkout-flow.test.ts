@@ -13,10 +13,10 @@ const NOW = new Date('2026-07-21T12:00:00.000Z')
 const SCAN_AT = new Date('2026-07-25T09:30:00.000Z')
 
 /**
- * End-to-end domain flow for a mixed cart under the FINAL business rules
- * (docs/ADMIN-ARCHITECTURE.md section 0): coupon = absolute admin price on site,
- * split by the product's own platform_percent, balance collected at the business
- * on scan, voucher then terminal. No escrow.
+ * End-to-end domain flow for a mixed cart under the final business rules
+ * (C11 version b, 2026-07-27): coupon = absolute admin price on site, split by
+ * the product's own platform_percent, the supplier's share HELD until the scan,
+ * balance collected at the business on scan, voucher then terminal.
  */
 describe('checkout flow (domain integration, final rules)', () => {
   it('runs a mixed order from pending to full settlement', () => {
@@ -71,11 +71,13 @@ describe('checkout flow (domain integration, final rules)', () => {
     }
     expect(deriveOrderStatus([...lineStates.values()])).toBe('paid')
 
-    // 3. Finalize: physical splits immediately, coupon money settles to the
-    //    platform; one voucher money-snapshot per purchased unit.
+    // 3. Finalize: physical splits immediately, the coupon line's supplier
+    //    share goes into escrow; one voucher money-snapshot per purchased unit.
     lineStates.set('item-physical', transition('paid', 'EXECUTE_SPLIT', 'physical'))
-    lineStates.set('item-coupon', transition('paid', 'SETTLE_PLATFORM', 'coupon'))
-    expect(deriveOrderStatus([...lineStates.values()])).toBe('platform_settled')
+    lineStates.set('item-coupon', transition('paid', 'EXECUTE_SPLIT', 'coupon'))
+    // The order is not settled while a line is held, even though the physical
+    // leg is done: the held line is the least-advanced active one.
+    expect(deriveOrderStatus([...lineStates.values()])).toBe('split_executed')
 
     expect(couponLine.perUnitVoucher).toHaveLength(2)
     const vouchers = couponLine.perUnitVoucher.map((unit, i) => ({
@@ -123,7 +125,15 @@ describe('checkout flow (domain integration, final rules)', () => {
     expect(wrongSupplier).toBe('wrong_supplier')
     expect(toPublicOutcome(wrongSupplier)).toBe('not_found')
 
-    // 7. Money conservation: the on-site charge divides between platform and
+    // 7. Scanning moves no money: the line was already settled at paid-time,
+    //    so the voucher lifecycle runs to completion without touching the
+    //    settlement state at all.
+    const scanned = [firstRedeemed, { ...second, status: 'redeemed' as const }]
+    expect(scanned.every((v) => v.status === 'redeemed')).toBe(true)
+    expect(lineStates.get('item-coupon')).toBe('split_executed')
+    expect(deriveOrderStatus([...lineStates.values()])).toBe('split_executed')
+
+    // 8. Money conservation: the on-site charge divides between platform and
     //    supplier by each product's own percent, no matter what happens to the
     //    vouchers; the business collected only the balance.
     const platformKeeps = couponLine.commission + physicalLine.commission
@@ -143,7 +153,7 @@ describe('checkout flow (domain integration, final rules)', () => {
       {
         orderItemId: 'item-coupon',
         productType: 'coupon' as const,
-        settlementStatus: 'platform_settled' as const,
+        settlementStatus: 'split_executed' as const,
       },
     ]
 
@@ -208,7 +218,9 @@ describe('checkout flow (domain integration, final rules)', () => {
         now: SCAN_AT,
       }),
     ).toBe('expired')
-    // Breakage: the platform already recognised the on-site charge at
-    // paid-time; expiry posts nothing and refunds nothing by itself.
+    // The scan itself moves nothing. Expiry is not forfeiture though (C6): the
+    // sweep refunds the supplier's hold and credit_expired_vouchers() returns
+    // what the customer paid online as wallet credit. Both live in migration
+    // 074, not in this pure domain layer.
   })
 })

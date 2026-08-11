@@ -70,7 +70,7 @@
   font-size: 12px;
   font-weight: 400;
   line-height: 24px; /* live: category row is 24px tall */
-  color: #768b9e;
+  color: #657888;
 }
 
 .p_con__category:hover {
@@ -182,7 +182,17 @@
   flex-shrink: 0;
 }
 
-.p_con .atc a {
+/* `a, button`, not `a` alone.
+ *
+ * ProductCard renders an <a> when the product cannot be added to the cart and a
+ * <button> when it can, so styling only the anchor meant the REAL add-to-cart
+ * control matched nothing: 0x0, invisible and unclickable, on every homepage
+ * card. The fallback link was the only one that ever looked right, which is why
+ * it survived review. The live site shows the grey circle on all of them.
+ * Measured before the fix: `.atc` 0x0 and its svg 0x0 on localhost, against a
+ * 40px circle on kenyonexpress.co.il. */
+.p_con .atc a,
+.p_con .atc button {
   display: inline-flex;
   flex-direction: row;
   align-items: center;
@@ -194,14 +204,22 @@
   border: none;
   border-radius: 200px;
   transition: background-color 0.3s;
+  /* a <button> brings its own font and appearance; the <a> never did */
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
-.p_con .atc a svg {
+.p_con .atc a svg,
+.p_con .atc button svg {
   width: 20px;
   height: 20px;
   fill: #fff;
 }
 
-.p_con:hover .atc a {
+.p_con:hover .atc a,
+.p_con:hover .atc button {
   background: #fed700 !important;
 }

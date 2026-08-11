@@ -4,6 +4,7 @@ import {
   INDEX_SETTINGS,
   RANKING_RULES,
   SEARCHABLE_ATTRIBUTES,
+  SORTABLE_ATTRIBUTES,
   TYPO_TOLERANCE,
   toProductDocument,
 } from './meili-settings'
@@ -84,5 +85,107 @@ describe('toProductDocument', () => {
   it('carries the supplier name so a shop can be found by its own name', () => {
     expect(toProductDocument(row, 'ספא רויאל').supplier_name).toBe('ספא רויאל')
     expect(toProductDocument(row).supplier_name).toBeNull()
+  })
+})
+
+describe('city and tags in the index', () => {
+  const base = { id: 'p1', slug: 's', name_he: 'ארוחה', categories: null }
+
+  it('indexes and facets on both', () => {
+    // The goal names עיר and tags as searchable AND filterable.
+    expect(SEARCHABLE_ATTRIBUTES).toContain('city')
+    expect(SEARCHABLE_ATTRIBUTES).toContain('tags')
+    expect(FILTERABLE_ATTRIBUTES).toContain('city')
+    expect(FILTERABLE_ATTRIBUTES).toContain('tags')
+  })
+
+  it('ranks a city hit above the description', () => {
+    // searchableAttributes is an importance ranking. "מסעדה תל אביב" is a
+    // place-and-thing query, so the city must outrank the same word buried in
+    // marketing copy.
+    const order = SEARCHABLE_ATTRIBUTES as readonly string[]
+    expect(order.indexOf('city')).toBeLessThan(order.indexOf('description_he'))
+  })
+
+  it('falls back to the supplier city, matching productLocation()', () => {
+    const doc = toProductDocument(base as never, 'ספק', 'תל אביב')
+    expect(doc.city).toBe('תל אביב')
+  })
+
+  it("prefers the product's own city over the supplier's", () => {
+    const doc = toProductDocument({ ...base, city: 'אילת' } as never, 'ספק', 'תל אביב')
+    expect(doc.city).toBe('אילת')
+  })
+
+  it('survives the columns being absent entirely', () => {
+    // They reach the row only when the query selects them. An absent column
+    // must index as "no city"/"no tags", never throw and leave the whole
+    // catalogue unsearchable.
+    const doc = toProductDocument(base as never, null, null)
+    expect(doc.city).toBeNull()
+    expect(doc.tags).toEqual([])
+  })
+
+  it('normalises tags to a clean array', () => {
+    const doc = toProductDocument(
+      { ...base, tags: ['מבצע', '', '  ', 7, null, 'מתנה'] } as never,
+      null,
+      null,
+    )
+    expect(doc.tags).toEqual(['מבצע', 'מתנה'])
+  })
+})
+
+describe('_geo', () => {
+  const base = { id: 'p1', slug: 's', name_he: 'מוצר' }
+
+  it('carries real coordinates as Meilisearch reserved field', () => {
+    const doc = toProductDocument({ ...base, latitude: 32.0853, longitude: 34.7818 } as never)
+    expect(doc._geo).toEqual({ lat: 32.0853, lng: 34.7818 })
+  })
+
+  it('omits the key entirely when there are no coordinates', () => {
+    // Not {0,0}: Null Island is a real point in the Atlantic, and a product
+    // placed there is invisible inside any radius filter rather than merely
+    // last in a distance sort.
+    const doc = toProductDocument(base as never)
+    expect('_geo' in doc).toBe(false)
+  })
+
+  it('refuses a zero pair, which is a missing value wearing a number', () => {
+    const doc = toProductDocument({ ...base, latitude: 0, longitude: 0 } as never)
+    expect('_geo' in doc).toBe(false)
+  })
+
+  it('refuses values outside the coordinate range', () => {
+    // A column holding something that is not a coordinate at all.
+    expect('_geo' in toProductDocument({ ...base, latitude: 999, longitude: 34 } as never)).toBe(
+      false,
+    )
+    expect('_geo' in toProductDocument({ ...base, latitude: 32, longitude: 999 } as never)).toBe(
+      false,
+    )
+  })
+
+  it('refuses a half-filled pair', () => {
+    expect('_geo' in toProductDocument({ ...base, latitude: 32.08 } as never)).toBe(false)
+    expect('_geo' in toProductDocument({ ...base, longitude: 34.78 } as never)).toBe(false)
+  })
+
+  it('is declared both sortable and filterable, because they are separate permissions', () => {
+    expect(SORTABLE_ATTRIBUTES).toContain('_geo')
+    expect(FILTERABLE_ATTRIBUTES).toContain('_geo')
+  })
+})
+
+/** Indexing by a variable keeps biome's literal-key rule happy on Hebrew keys. */
+function at(map: Record<string, string[]>, key: string): string[] {
+  return map[key] ?? []
+}
+
+describe('index settings carry the Hebrew synonyms', () => {
+  it('ships a symmetric map rather than nothing', () => {
+    expect(at(INDEX_SETTINGS.synonyms, 'מסעדה')).toContain('מסעדות')
+    expect(at(INDEX_SETTINGS.synonyms, 'מסעדות')).toContain('מסעדה')
   })
 })

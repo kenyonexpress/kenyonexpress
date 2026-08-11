@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'node:fs'
 import { chromium } from '@playwright/test'
 
 const browser = await chromium.launch({ headless: true })
@@ -38,10 +38,10 @@ const heroShell = await page.evaluate(() => {
   if (!section) return null
   const clone = section.cloneNode(true)
   // remove all rs-slide contents - will replace
-  clone.querySelectorAll('rs-slide').forEach((s) => {
+  for (const s of clone.querySelectorAll('rs-slide')) {
     s.innerHTML = '<!--placeholder-->'
-  })
-  clone.querySelectorAll('script').forEach((s) => s.remove())
+  }
+  for (const s of clone.querySelectorAll('script')) s.remove()
   return clone.outerHTML
 })
 

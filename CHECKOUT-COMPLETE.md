@@ -91,7 +91,7 @@ The two machines are coupled at exactly one point: **`checkout_finalize` is the 
 
 | Topic | Decision |
 |---|---|
-| PSP | Cardcom only (Israeli). Stripe out of scope (D-PSP). |
+| PSP | Cardcom only (Israeli). No second PSP: C9 rules out Stripe, Payoneer and Cloudways. |
 | Hosted UI | Low Profile, full redirect (simpler CSP / SAQ-A than iframe). PAN never on our origin. |
 | Amount | `payments.amount_agorot` passed as minor units. Never float. |
 | Create | Low Profile `CreateAndCharge`-equivalent per current Cardcom API. |

@@ -26,14 +26,14 @@
   --color-success: #5cb85c; /* confirmation, in-stock */
   --color-link: #0062bd; /* product names + links (distinct from red price) */
   --color-heading: #333e48; /* hero + section headings (electro home-v7) */
-  --color-sale-badge: #44b81b; /* on-sale badge green (live measured) */
+  --color-sale-badge: #328614; /* on-sale badge green; darkened from live #44b81b for WCAG AA */
 
   /* --- Neutrals / borders / muted text (live measured) ----------------------- */
   --color-border: #dddddd; /* default hairline borders / dividers */
   --color-border-alt: #e7e7e7; /* secondary borders (category strips) */
   --color-rule: #ededed; /* rule under a section-header tab strip */
-  --color-muted: #7e7e7e; /* muted secondary text */
-  --color-muted-2: #768b9e; /* muted slate-blue text (product meta) */
+  --color-muted: #767676; /* muted secondary text */
+  --color-muted-2: #657888; /* muted slate-blue text (product meta) */
   --color-icon: #515151; /* nav / masthead icon gray */
   --color-icon-empty: #cccccc; /* large empty-state glyphs */
 
@@ -56,6 +56,7 @@
   --color-whatsapp: #25d366;
   --color-whatsapp-ink: #128c7e;
   --color-whatsapp-ink-hover: #075e54;
+  --color-facebook: #1877f2;
 
   /* --- Semantic tokens ------------------------------------------------------- */
   --color-background: #ffffff; /* page background (body in ke_live_singlefile) */
@@ -103,18 +104,45 @@
   /* Measured on live: the footer and the deals grid do NOT share the page
      container, they run wider and narrower respectively. */
   --container-footer: 1430px;
+  /* Measured on the live single-product template: the site footer's newsletter
+     bar, columns and copyright bar all sit in a 1200 container with 15px of
+     inline padding, which lands their content on the same x135..x1305 edges as
+     the page body. SiteFooter used --container-page and ran 68px wider on each
+     side. --container-footer above belongs to home/Footer.tsx, a different
+     component; the two are not the same box. */
+  /* The hero row, measured on kenyonexpress.co.il 2026-07-30: the three-column
+     block spans x135..x1305 at a 1440 viewport, so 1170 wide, and the slider
+     between the fixed side columns lands at 728. Ours ran in --container-page
+     (1320), and because the two side columns are fixed widths the whole 150px
+     surplus went to the slider through flex-1: 900 instead of 728, which is most
+     of the homepage's remaining y200-700 band difference.
+
+     Scoped to the hero rather than corrected in --container-page, which is 1320
+     with no provenance comment and is read by ten other components that have not
+     been measured. One of them is the header. Widen the audit before widening
+     the fix. */
+  --container-hero-row: 1170px;
+  --container-store-footer: 1200px;
   --container-deals: 1150px;
 
   /* --- Measured layout boxes -------------------------------------------------
      Each was read off the live site; the component that used to inline the
      number carries the provenance comment. `--spacing-*` generates h-/w-/min-w-. */
   --spacing-header-topbar: 37.3px; /* + 1px border = the 38.3px live top bar */
-  --spacing-header-masthead: 126px; /* + 1px border = the 127px live masthead */
+  /* Remeasured 2026-07-30 against the live masthead, which is 110px total
+     including its 1px border, not 127px. The old value shifted every homepage
+     block below the header down by 17px, and because the product grid is 8 rows
+     of 485px cards inside a 2600px compare window, that one offset was showing
+     up as 30-42% band differences that looked like card-level defects. Card
+     heights were identical all along: 485px on both sides. */
+  --spacing-header-masthead: 109px; /* + 1px border = the 110px live masthead */
   --spacing-logo-h: 40px; /* header logo box (not live's 270x71; see Header.tsx) */
   --spacing-logo-w: 52px;
   --spacing-footer-logo-h: 42px;
   --spacing-footer-logo-w: 160px;
-  --spacing-newsletter-min: 420px; /* footer newsletter form min width at lg */
+  --spacing-newsletter-min: 470px; /* live newsletter pill: 470x41 */
+  --spacing-newsletter-field: 41px;
+  --spacing-newsletter-bar: 80px; /* live newsletter bar height */
   --spacing-deals-top: 30px; /* live deals grid top offset */
 }
 
@@ -124,3 +152,51 @@ body {
   font-family: var(--font-sans), Arial, sans-serif;
   direction: rtl;
 }
+
+/* The consent banner ships in every response so it paints with the HTML rather
+   than after hydration - it is the largest element in a phone viewport, so it
+   IS the homepage's LCP element and it used to arrive 3.4s after first paint.
+   Visitors who already answered get it hidden here, at first paint, off the
+   attribute src/lib/analytics/consent.ts's pre-paint snippet sets on <html>.
+   display:none and not opacity/visibility on purpose: only display:none keeps
+   it out of the LCP candidate set and out of the accessibility tree. */
+html[data-consent="decided"] [data-consent-banner] {
+  display: none;
+}
+
+/* The banner is `fixed bottom-0`, so it OVERLAYS whatever is at the bottom of
+   the page, and on a phone it is tall: the paragraph and the two buttons stack.
+   Measured on a Pixel 5 at /login, the "כניסה ללא סיסמה" toggle was visible,
+   enabled, and unclickable -- elementFromPoint at its centre returned the
+   banner's paragraph. Playwright timed out on the click, which is precisely
+   what a thumb does.
+
+   Reserved here in CSS rather than by measuring in an effect, for two reasons
+   the rest of this file has already paid for: an effect would move content
+   after hydration and this project holds CLS at 0 on all three pages, and
+   [20] deliberately removed every mount-time state from the banner so the
+   server and client render one tree. Keyed off the same attribute as the rule
+   above, so a visitor who already answered reserves nothing.
+
+   Two values because the layout has two shapes: `sm:flex-row` puts the text and
+   the buttons on one line from 640px up. */
+html:not([data-consent="decided"]) body {
+  padding-bottom: 12rem;
+}
+
+@media (min-width: 640px) {
+  html:not([data-consent="decided"]) body {
+    padding-bottom: 6rem;
+  }
+}
+
+/* Turbopack caches this file's compiled output by CONTENT hash, not mtime.
+   A dev server started before a @theme colour was added keeps serving CSS
+   without that colour's utilities, and `touch` does not clear it: on
+   2026-07-30 a server running since an earlier revision served the product
+   page with NO brand utilities at all -- bg-brand-secondary resolved to
+   transparent, so the yellow newsletter bar rendered white -- while
+   `npx @tailwindcss/cli -i src/app/globals.css -o out.css` produced them
+   correctly. Every pixel-diff measured against that server was scoring a page
+   missing its own design tokens. If brand colours are missing in dev, restart
+   the dev server; do not go looking for the bug in a component. */

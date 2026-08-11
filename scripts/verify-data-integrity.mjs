@@ -1,6 +1,6 @@
+import { readFileSync } from 'node:fs'
 // Verification: every product has supplier_id NOT NULL + at least one image.
 import { createClient } from '@supabase/supabase-js'
-import { readFileSync } from 'node:fs'
 
 const env = Object.fromEntries(
   readFileSync('.env.local', 'utf8')
@@ -19,9 +19,7 @@ const { data: prods, error } = await admin
   .order('slug')
 if (error) throw new Error(error.message)
 
-const { data: piRows, error: piErr } = await admin
-  .from('product_images')
-  .select('product_id')
+const { data: piRows, error: piErr } = await admin.from('product_images').select('product_id')
 if (piErr) throw new Error(piErr.message)
 const piByProduct = {}
 for (const r of piRows) piByProduct[r.product_id] = (piByProduct[r.product_id] || 0) + 1
@@ -29,13 +27,20 @@ for (const p of prods) p.product_images = { length: piByProduct[p.id] || 0 }
 
 const missingSupplier = prods.filter((p) => !p.supplier_id)
 const missingImage = prods.filter(
-  (p) =>
-    (!Array.isArray(p.images) || p.images.length === 0) || p.product_images.length === 0,
+  (p) => !Array.isArray(p.images) || p.images.length === 0 || p.product_images.length === 0,
 )
 
 console.log('total products:', prods.length)
-console.log('products with supplier_id NULL:', missingSupplier.length, missingSupplier.map((p) => p.slug))
-console.log('products without any image:', missingImage.length, missingImage.map((p) => p.slug))
+console.log(
+  'products with supplier_id NULL:',
+  missingSupplier.length,
+  missingSupplier.map((p) => p.slug),
+)
+console.log(
+  'products without any image:',
+  missingImage.length,
+  missingImage.map((p) => p.slug),
+)
 
 const bySupplier = {}
 for (const p of prods) {

@@ -7,9 +7,9 @@
      through var() so no rule carries a raw hex. */
   --cat-ink: #333e48;
   --cat-link: #0062bd;
-  --cat-muted: #768b9e;
+  --cat-muted: #657888;
   --cat-sale: #dc3545;
-  --cat-badge: #44b81b;
+  --cat-badge: #328614;
   --cat-bar: #efefef;
   --cat-line: #dddddd;
   --cat-switcher: #495057;
@@ -107,6 +107,18 @@
   font-weight: 500;
   line-height: var(--cat-title-line);
   color: var(--cat-ink);
+}
+
+/*
+ * The title's line box, held open while the title itself is still streaming.
+ *
+ * Worn by a div and not by an empty heading (an unnamed <h1> is an a11y defect
+ * biome fails the build on, and rightly). Without the height the element
+ * collapses to zero and the control bar, the grid and everything under them
+ * start one title-line too high, then drop when the name arrives.
+ */
+.category-page__title--pending {
+  min-height: var(--cat-title-line);
 }
 
 .category-page__count {
@@ -296,16 +308,51 @@
 
 /* Image: measured 186x186 centered inside 234 card */
 /* Measured: image top sits var(--cat-thumb-gap) below the title box (margins collapse) */
+/**
+ * The box is a fixed 186px tall whether an image has arrived or not.
+ *
+ * Without the height it took its height from the loaded image, so every
+ * non-square thumb shrank its own card the moment the bytes landed and pushed
+ * everything below it up. Measured on mobile Lighthouse: CLS 0.197 on
+ * /category and 0.361 on /products, and it got worse - 0.414 and 0.394 - as
+ * soon as the thumbs started going through the optimizer and rendering at all,
+ * because a blocked image never shifts anything.
+ *
+ * 186.03 is not a new number: `.category-skeleton--thumb` already reserves
+ * exactly this height while the card loads. The card was simply not honouring
+ * the reservation its own skeleton makes.
+ *
+ * `line-height` and not flex, because the image is already
+ * `display:inline-block; vertical-align:middle` - it centres in the line box,
+ * which is what those two declarations were there for.
+ */
 .category-card__thumb {
   position: relative;
   display: block;
   text-align: center;
+  height: var(--cat-thumb-max);
+  line-height: var(--cat-thumb-max);
   margin-top: var(--cat-thumb-gap);
 }
 
+/**
+ * `min(..., 100%)`, and the second half is not decoration.
+ *
+ * `--cat-thumb-max` is 186.03px, measured off the live desktop card, where the
+ * content box inside the 234px column is exactly that. Below 576px the column
+ * is 50% of the row and the content box is much smaller: 143px on a 412px
+ * phone, 117px on a 360px one. A flat 186px max let the image paint 186
+ * REGARDLESS, so on every phone the two thumbs in a row met in the middle with
+ * no gutter, spilled over their own cards, the discount badge landed on the
+ * neighbour's image, and the document came out 4px wider than the viewport -
+ * a horizontal scroll on /products, /category and /search.
+ *
+ * The height stays a flat `--cat-thumb-max` on the wrapper: that is the CLS
+ * reservation from [18] and it does not depend on how wide the image ends up.
+ */
 .category-card__thumb img {
   width: auto;
-  max-width: var(--cat-thumb-max);
+  max-width: min(var(--cat-thumb-max), 100%);
   max-height: var(--cat-thumb-max);
   height: auto;
   display: inline-block;
@@ -646,4 +693,23 @@
 
 .category-sidebar__disclosure[open] .category-sidebar__widgets {
   padding-top: 20px;
+}
+
+/* City and distance on a card. Sits with the category tags above the title,
+   at the same weight, so it reads as provenance and not as a promotion. */
+.category-card__city {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--cat-muted);
+}
+
+.category-card__distance {
+  /* The same muted grey, stepped back. The distance is secondary to the city:
+     the city is a fact about the business, the distance is a fact about where
+     the customer happens to be standing. */
+  color: var(--cat-muted);
+  opacity: 0.75;
 }

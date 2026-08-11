@@ -1,7 +1,9 @@
-import { formatDate, formatIls, formatVoucherCode } from '@/lib/account/format'
+import { formatDate, formatIls } from '@/lib/account/format'
+import { agorot } from '@/lib/money'
 import { aggregateDashboard } from '@/lib/supplier/dashboard'
 import { requireSupplierMember } from '@/lib/supplier/rbac'
 import { hasMinRole } from '@/lib/supplier/roles'
+import { formatVoucherCode } from '@/server/domain/vouchers/code'
 import { getSupplierRedemptions, getSupplierSales } from '@/server/queries/supplier'
 import Link from 'next/link'
 
@@ -64,28 +66,23 @@ export default async function SupplierHomePage({
         />
         <StatCard
           label="לגבייה בקופה היום"
-          value={formatIls(stats.tillCollectedTodayAgorot)}
+          value={formatIls(agorot(stats.tillCollectedTodayAgorot))}
           hint="יתרת לקוח בעסק"
         />
         <StatCard
           label="עמלת פלטפורמה"
-          value={formatIls(stats.platformFeeAgorot)}
+          value={formatIls(agorot(stats.platformFeeAgorot))}
           hint="מתוך הזמנות ששולמו"
         />
         <StatCard
-          label="מגיע לספק"
-          value={formatIls(stats.supplierDueAgorot)}
-          hint="מיידי + מוחזק לשחרור"
+          label="מגיע לספק (פיזי)"
+          value={formatIls(agorot(stats.supplierDueAgorot))}
+          hint="סליקה מיידית אחרי תשלום באתר"
         />
         <StatCard
-          label="מוחזק (אסקראו)"
-          value={formatIls(stats.escrowHeldAgorot)}
-          hint="ממתין למימוש קופון"
-        />
-        <StatCard
-          label="שוחרר לתשלום"
-          value={formatIls(stats.escrowReleasedAgorot)}
-          hint="אחרי סריקה מוצלחת"
+          label="מימושי קופון"
+          value={String(stats.couponRedemptionsTotal)}
+          hint="סריקות מוצלחות (יתרה נגבית בקופה)"
         />
       </div>
 
@@ -121,7 +118,10 @@ export default async function SupplierHomePage({
       <section className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-bold text-heading">מימושים אחרונים</h2>
-          <Link href="/supplier/redemptions" className="text-sm font-semibold text-brand">
+          <Link
+            href="/supplier/redemptions"
+            className="text-sm font-semibold text-heading underline"
+          >
             לכל המימושים
           </Link>
         </div>
@@ -147,7 +147,7 @@ export default async function SupplierHomePage({
                   <div className="text-end">
                     <p className="text-xs text-gray-500">לגבייה</p>
                     <p className="text-lg font-extrabold text-heading" dir="ltr">
-                      {formatIls(row.remainingAmountDueAgorot)}
+                      {formatIls(agorot(row.remainingAmountDueAgorot))}
                     </p>
                   </div>
                 </div>

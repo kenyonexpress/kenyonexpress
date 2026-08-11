@@ -1,4 +1,5 @@
 import { formatDate, formatIls } from '@/lib/account/format'
+import { agorot } from '@/lib/money'
 import {
   SETTLEMENT_LABEL_HE,
   sumPayoutBreakdown,
@@ -26,9 +27,9 @@ export default async function SupplierPayoutsPage() {
       </section>
 
       <div className="grid grid-cols-3 gap-2">
-        <Summary label="ברוטו לחישוב" value={formatIls(totals.grossAgorot)} />
-        <Summary label="עמלת פלטפורמה" value={formatIls(totals.platformFeeAgorot)} />
-        <Summary label="מגיע לספק" value={formatIls(totals.supplierPayoutAgorot)} />
+        <Summary label="ברוטו לחישוב" value={formatIls(agorot(totals.grossAgorot))} />
+        <Summary label="עמלת פלטפורמה" value={formatIls(agorot(totals.platformFeeAgorot))} />
+        <Summary label="מגיע לספק" value={formatIls(agorot(totals.supplierPayoutAgorot))} />
       </div>
 
       {lines.length === 0 ? (
@@ -66,13 +67,13 @@ export default async function SupplierPayoutsPage() {
                     עמלה {line.platformPercent != null ? `${line.platformPercent}%` : 'לא הוגדר'}
                   </p>
                   <p className="mt-1 text-gray-600" dir="ltr">
-                    ברוטו {formatIls(line.grossAgorot)}
+                    ברוטו {formatIls(agorot(line.grossAgorot))}
                   </p>
                   <p className="text-gray-600" dir="ltr">
-                    פלטפורמה {formatIls(line.platformFeeAgorot)}
+                    פלטפורמה {formatIls(agorot(line.platformFeeAgorot))}
                   </p>
                   <p className="font-extrabold text-heading" dir="ltr">
-                    ספק {formatIls(line.supplierPayoutAgorot)}
+                    ספק {formatIls(agorot(line.supplierPayoutAgorot))}
                   </p>
                 </div>
               </div>

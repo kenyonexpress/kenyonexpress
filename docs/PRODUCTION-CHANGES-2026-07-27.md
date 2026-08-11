@@ -307,3 +307,408 @@ charged but never closed. Do not revert this without also reverting 071.
   agorot/basis-point equivalents, and every one of those names is read by
   running code. It is a planned cutover, not a routine migration, and running
   `supabase db push` would apply it as a side effect of pushing anything else.
+
+---
+
+## 4. Migration 074: the voucher redemption RPCs
+
+Applied via MCP `apply_migration` as `074_voucher_redemption_rpcs`. Repo file:
+`supabase/migrations/074_voucher_redemption_rpcs.sql`.
+
+This closes the gap the "What was NOT done" section above named: the redeem
+route was calling `redeem_voucher()` and `log_voucher_scan()`, and neither
+existed on the hosted project. A voucher could be bought and never scanned.
+
+### What it adds
+
+**Schema**
+- `escrow_holds.voucher_id uuid REFERENCES vouchers(id)`, and
+  `escrow_holds.coupon_code_id` becomes nullable. A hold now belongs to either
+  a legacy coupon code or a voucher, enforced by
+  `escrow_holds_exactly_one_instance CHECK (num_nonnulls(...) = 1)` (validated
+  clean against the two existing rows).
+- `escrow_holds_voucher_id_key` unique partial index, one hold per voucher.
+- `escrow_holds_status_supplier_idx`.
+
+**Functions** (ported from `054_voucher_redemption.sql` sections 5-7, adapted)
+- `voucher_success_payload(vouchers)` - the counter-facing success shape.
+- `redeem_voucher(text, text, text)` - the only redemption path. One
+  conditional UPDATE decides the race; supplier identity comes from
+  `supplier_members` and never from the request; `not_found` and
+  `wrong_supplier` collapse to one answer for the caller.
+- `log_voucher_scan(text, text, text)` - audit for scans rejected before the DB
+  (bad HMAC, malformed code). Cannot record a success.
+- `expire_vouchers()`, `credit_expired_vouchers()`,
+  `cancel_vouchers_for_order(uuid, text)`,
+  `refund_vouchers_for_order(uuid, text)` - service-role sweeps.
+
+### Two deliberate departures from 054
+
+1. **Escrow release** (C11 version b). 054 was written when the platform kept
+   the whole prepayment, so redemption moved no money. Under the current model
+   the supplier's share is held from payment until scan, so `redeem_voucher()`
+   closes the hold in the same transaction as the status flip and moves the
+   order line to `escrow_released` once no voucher of that line is still
+   outstanding.
+2. **Expiry is not forfeiture** (C6). An unscanned expired voucher refunds the
+   supplier's hold and credits the customer's wallet with what they paid
+   online, debited from `platform:adjustments` and keyed
+   `voucher:<id>:expiry_credit`. The credit is a separate function from the
+   status sweep so a failure in the money leg leaves the statuses correct and
+   retries on the next run.
+
+### Rollback
+
+```sql
+DROP FUNCTION IF EXISTS public.refund_vouchers_for_order(uuid, text);
+DROP FUNCTION IF EXISTS public.cancel_vouchers_for_order(uuid, text);
+DROP FUNCTION IF EXISTS public.credit_expired_vouchers();
+DROP FUNCTION IF EXISTS public.expire_vouchers();
+DROP FUNCTION IF EXISTS public.log_voucher_scan(text, text, text);
+DROP FUNCTION IF EXISTS public.redeem_voucher(text, text, text);
+DROP FUNCTION IF EXISTS public.voucher_success_payload(public.vouchers);
+
+ALTER TABLE public.escrow_holds DROP CONSTRAINT IF EXISTS escrow_holds_exactly_one_instance;
+DROP INDEX IF EXISTS public.escrow_holds_status_supplier_idx;
+DROP INDEX IF EXISTS public.escrow_holds_voucher_id_key;
+ALTER TABLE public.escrow_holds DROP COLUMN IF EXISTS voucher_id;
+-- Only if no voucher hold was written: the column above must be gone first.
+ALTER TABLE public.escrow_holds ALTER COLUMN coupon_code_id SET NOT NULL;
+
+DELETE FROM supabase_migrations.schema_migrations
+WHERE name = '074_voucher_redemption_rpcs';
+```
+
+Reverting returns redemption to "function does not exist", i.e. a voucher that
+can be bought and never used. It also strips the wallet credit an expired
+voucher is owed under C6.
+
+---
+
+## 5. Migration 075: `cardcom_account_id` on payments and tokens
+
+Applied via MCP `apply_migration` as `075_cardcom_account_id`. Repo file:
+`supabase/migrations/075_cardcom_account_id.sql`.
+
+Multi-account Cardcom needs exactly one thing from the database, and this is it.
+
+### Why a column and not a lookup
+
+Cardcom scopes both Low Profile ids and card tokens to the terminal that
+created them. Send `GetLpResult` to a different terminal and it answers "not
+found"; the webhook reads that as "the payment did not happen" for a customer
+who was in fact charged. Charge a token on a different terminal and it is
+declined. Neither failure announces itself as a configuration problem, which is
+why the account is recorded at the moment the artefact is created rather than
+re-derived later.
+
+### What it adds
+
+- `payments.cardcom_account_id text` (nullable)
+- `payment_tokens.cardcom_account_id text` (nullable)
+- `payments_cardcom_account_idx`, `payment_tokens_cardcom_account_idx` -
+  partial indexes, `WHERE cardcom_account_id IS NOT NULL`. The platform account
+  is the overwhelming majority and NULL is its marker, so a full index would be
+  a near-copy of the table.
+- Two `CHECK (... IS NULL OR length(btrim(...)) > 0)` constraints, so an empty
+  string cannot become a third spelling of "platform" that no code tests for.
+
+NULL means the platform account. Every row that existed before this migration
+was cleared on the platform terminal, so NULL reads history correctly rather
+than standing for "unknown", and `getPaymentProvider(null)` resolves to platform
+for the same reason.
+
+### Blast radius
+
+Additive only. Two nullable columns on tables holding 2 rows each, no existing
+value touched, no NOT NULL, no default, no code required to populate them.
+Verified after applying: both columns present and nullable, both constraints
+`convalidated = true`, both indexes created.
+
+### Rollback
+
+```sql
+ALTER TABLE public.payments DROP CONSTRAINT IF EXISTS payments_cardcom_account_id_not_blank;
+ALTER TABLE public.payment_tokens DROP CONSTRAINT IF EXISTS payment_tokens_cardcom_account_id_not_blank;
+DROP INDEX IF EXISTS public.payments_cardcom_account_idx;
+DROP INDEX IF EXISTS public.payment_tokens_cardcom_account_idx;
+ALTER TABLE public.payments DROP COLUMN IF EXISTS cardcom_account_id;
+ALTER TABLE public.payment_tokens DROP COLUMN IF EXISTS cardcom_account_id;
+
+DELETE FROM supabase_migrations.schema_migrations
+WHERE name = '075_cardcom_account_id';
+```
+
+Safe while only the platform account exists: nothing but NULLs is lost. Once a
+second account has cleared a payment, dropping the column loses which terminal
+owns those transactions, and neither refunds nor re-verification for them can be
+routed afterwards.
+
+---
+
+## 6. Migration 076: reconcile the 054-era voucher constraints
+
+Applied via MCP `apply_migration` as `076_vouchers_reconcile_054_constraints`.
+Repo file: `supabase/migrations/076_vouchers_reconcile_054_constraints.sql`.
+
+**On production this is a no-op, and that is the point.** Verified before and
+after: `vouchers_platform_percent_full` was already absent,
+`vouchers_platform_percent_range` already present, and `platform_percent` had
+no default. Nothing changed.
+
+### Why it exists anyway
+
+073 was adapted by hand before being applied here, because 054 writes the
+abolished C11(a) rule into the schema:
+
+```sql
+CONSTRAINT vouchers_platform_percent_full CHECK (platform_percent = 100)
+platform_percent numeric(5,2) NOT NULL DEFAULT 100
+```
+
+Under C11(a) the platform kept the whole prepayment, so 100 was the only legal
+value. Under C11(b) the split is per product and every live product carries 15,
+25 or 30, so that CHECK rejects every voucher the shop can issue.
+
+Production dodged it because 073 went in adapted. A local database does not:
+054 creates the table, and 073's `CREATE TABLE IF NOT EXISTS` then sees it
+already there and does nothing. **`supabase db reset` therefore produces a
+developer database on which the entire coupon path fails at the first insert**,
+with a constraint error naming a rule abolished on 2026-07-27. This was found
+by running the new lifecycle harness against a freshly started local stack.
+
+076 makes the two environments agree by running the same files, rather than by
+remembering which ones were hand-adapted.
+
+### Rollback
+
+Not meaningful on production: it changed nothing here. To reverse it on a
+database where it did act (restoring the abolished rule, which should not be
+wanted):
+
+```sql
+ALTER TABLE public.vouchers DROP CONSTRAINT IF EXISTS vouchers_platform_percent_range;
+ALTER TABLE public.vouchers ALTER COLUMN platform_percent SET DEFAULT 100;
+ALTER TABLE public.vouchers ADD CONSTRAINT vouchers_platform_percent_full
+  CHECK (platform_percent = 100);
+
+DELETE FROM supabase_migrations.schema_migrations
+WHERE name = '076_vouchers_reconcile_054_constraints';
+```
+
+Doing so re-blocks every voucher for every product that is not on a 100 percent
+platform take, i.e. all 61 of them.
+
+---
+
+## 7. Migration 077: break an RLS recursion that makes `orders` unreadable
+
+Applied via MCP `apply_migration` as `077_orders_supplier_read_no_recursion`.
+Repo file: `supabase/migrations/077_orders_supplier_read_no_recursion.sql`.
+
+**On production this creates one function and changes no policy.** Verified
+after applying: `is_supplier_order` exists and is SECURITY DEFINER, and
+`orders` still carries exactly its three pre-existing policies
+(`orders_user_read`, `orders_admin_all`, `orders_support_select`).
+`user_addresses` is likewise untouched.
+
+### The bug it fixes elsewhere
+
+027 gives suppliers a read on orders containing their items, and also gives
+customers a read on order_items:
+
+```sql
+orders_supplier_read     USING (... EXISTS (SELECT 1 FROM order_items oi
+                                            WHERE oi.order_id = orders.id ...))
+order_items_user_read    USING (order_id IN (SELECT id FROM orders
+                                             WHERE user_id = auth.uid()))
+```
+
+Evaluating the first reads order_items, which evaluates the second, which reads
+orders, which evaluates the first. Postgres stops it with
+`42P17 infinite recursion detected in policy for relation "orders"`.
+
+Policies are OR'd, so this fires for **every reader**, not only suppliers. On a
+database carrying both policies a customer opening `/account/orders` gets the
+recursion error instead of their own orders. Found by running the new
+`tests/sql/voucher_account_rls.sql` against a freshly reset local stack.
+
+The fix moves the inner lookup into a SECURITY DEFINER function, so the
+order_items read does not re-enter RLS and the cycle cannot form.
+
+### Why the policy was not added here
+
+The hosted project never received 027 in full, only the adapted subset applied
+as 072, so it has no `orders_supplier_read` and suppliers cannot read orders at
+all. **Granting them that access is a real change in who can see customer orders
+and shipping addresses**, and it is a decision about access, not a bug fix. The
+migration therefore repairs the policy only where it already exists, and creates
+just the helper where it does not. If the supplier portal is meant to read
+orders in production, that is a separate, deliberate change.
+
+### Rollback
+
+```sql
+DROP FUNCTION IF EXISTS public.is_supplier_order(uuid);
+
+DELETE FROM supabase_migrations.schema_migrations
+WHERE name = '077_orders_supplier_read_no_recursion';
+```
+
+Safe on production: nothing calls the function here, because no policy
+references it. On a database where the policy WAS repaired, dropping the
+function first requires restoring 027's recursive policy text, which reinstates
+the outage.
+
+---
+
+## 8. Migration 078: supplier order access, scoped
+
+Applied via MCP `apply_migration` as `078_supplier_scoped_order_read`. Repo
+file: `supabase/migrations/078_supplier_scoped_order_read.sql`.
+Backup of the prior policy state:
+`/Users/ofir/kenyonexpress-web/backups/rls-policies-2026-07-27-pre-078.sql`
+(kept outside the repo, matching the pre-070 convention).
+
+Section 7 left this open deliberately: 077 repaired the recursive policy where
+one existed and refused to grant new access on its own. **Ofir decided it on
+2026-07-27**: suppliers must read the orders containing their own products,
+only those, and no customer personal data beyond what shipping requires. 078 is
+that decision.
+
+### The three rules, as written
+
+| Policy | Grants | Denies |
+|---|---|---|
+| `order_items_supplier_read` | lines whose `supplier_id` the caller staffs | a co-supplier's line on the same order |
+| `orders_supplier_read` | the order row, once `paid`/`partially_fulfilled`/`fulfilled`, if it holds such a line | pending carts, cancelled and refunded orders, orders they are not on |
+| `user_addresses_supplier_read` | the address, only where they have a live **physical** line | every address for a coupon-only supplier |
+
+Every policy is `FOR SELECT`. Suppliers get no write of any kind.
+
+**Why the address rule is narrower than the order rule.** `is_supplier_order()`
+answers "is this supplier on the order", which is what justifies seeing the
+order. `is_supplier_shipping_order()` additionally requires a live `physical`
+line, which is what justifies seeing where the customer lives. A coupon is
+redeemed in person at the business, so nothing about it requires an address.
+
+**`profiles` was left alone on purpose.** RLS is row-level, so silence there
+would have been ambiguous: no supplier policy exists on `profiles` and 078 adds
+none, meaning customer name, email and phone stay invisible. Verified after
+applying: `profiles` still carries exactly its four pre-existing policies. The
+`orders` row itself carries no personal data either - the table has no name,
+email or phone column, only `user_id` (an opaque uuid) and `address_id`.
+
+### Verification
+
+Policy definitions read back from `pg_policy` after applying and match the
+migration exactly. All three helpers (`is_supplier_member`, `is_supplier_order`,
+`is_supplier_shipping_order`) are `SECURITY DEFINER`, which is what keeps the
+`orders` <-> `order_items` policy cycle from re-forming (see section 7).
+
+A read-only probe on production impersonating a random authenticated user
+returned `orders 0, order_items 0, user_addresses 0, profiles 0` **with no
+error** - the point being the absence of `42P17`, since a recursion here takes
+the table down for every reader, not only suppliers.
+
+The behavioural assertions run against the local stack, which carries the same
+policies, in `tests/sql/voucher_account_rls.sql`: on an order shared between a
+physical supplier and a coupon supplier, each sees exactly one line and not the
+other's; neither sees an order they have no line on; the shipping supplier gets
+the address and **the coupon supplier does not**; neither reads the customer
+profile; and an attempted write on an order line changes nothing.
+
+### Blast radius on the day of application
+
+`supplier_members` holds **0 rows** in production, so every predicate resolves
+through `is_supplier_member()` and is false for every caller. The policies match
+nothing until a supplier member is created, which makes this a change that takes
+effect deliberately rather than immediately.
+
+### Rollback
+
+```sql
+DROP POLICY IF EXISTS user_addresses_supplier_read ON public.user_addresses;
+DROP POLICY IF EXISTS orders_supplier_read         ON public.orders;
+DROP POLICY IF EXISTS order_items_supplier_read    ON public.order_items;
+DROP FUNCTION IF EXISTS public.is_supplier_shipping_order(uuid);
+
+DELETE FROM supabase_migrations.schema_migrations
+WHERE name = '078_supplier_scoped_order_read';
+```
+
+Additive only: dropping these returns suppliers to seeing no orders at all,
+which is where production stood before. No customer-facing policy is touched by
+either direction.
+
+---
+
+## 9. Migrations 032 + 057: the `wp_import` schema
+
+Applied via MCP `apply_migration` as `032_wp_import_staging` and
+`057_wp_migration_log`. Repo files of the same names.
+
+### Why now
+
+The WordPress import pipeline has existed since 2026-07-24: six ETL stages in
+`scripts/wp-import/` (~72KB), dry-run by default, with a migration log and a
+rollback function. **It had nowhere to write.** `wp_import` did not exist on the
+hosted project at all, so no stage past extract could run against production.
+This unblocks that and nothing else: no WordPress data was imported by these
+migrations.
+
+### Backup
+
+None taken, because there is nothing to back up: the schema did not exist. The
+pre-state is "no `wp_import` namespace", confirmed by querying `pg_namespace`
+before applying, and the rollback is a single `DROP SCHEMA`.
+
+### What was applied
+
+- **032**: the schema plus 12 staging/archive tables (`import_batches`,
+  `id_map`, `products`, `categories`, `customers`, `orders`, `order_items`,
+  `coupons`, `vouchers`, `media`, `url_inventory`, `issues`) and 2
+  reconciliation views.
+- **057**: `migration_log`, `validation_reports`, 3 log views, and
+  `fn_rollback_batch(uuid, boolean)` - **dry-run by default**, which reports
+  updated rows rather than auto-reverting them.
+
+### Why this is low risk despite its size
+
+`032` creates **nothing in `public`**. The one `public` object it touches is
+`CREATE OR REPLACE FUNCTION public.set_updated_at()`, which is a defensive
+re-declaration of a function that already existed with an identical body.
+
+Access is closed by construction and verified after applying:
+`REVOKE ALL ON SCHEMA wp_import FROM PUBLIC, anon, authenticated`, usage granted
+to `service_role` only, RLS enabled on **all 14 tables** with admin-SELECT
+policies as defence in depth, and no write policy anywhere - `service_role`
+bypasses RLS and is the only writer. `wp_import` is also not in the PostgREST
+exposed-schemas list, so it is unreachable from any supabase-js client
+regardless of grants.
+
+Verified: 14 tables, 5 views, **0 tables with RLS disabled**, **0 schema-usage
+grants to anon/authenticated/PUBLIC**, rollback function present.
+
+### A contradiction resolved rather than escalated
+
+`032`'s header read `DRAFT, DO NOT APPLY` while line 22 of the same file said
+"Apply only via Supabase MCP apply_migration (never `db push`)", and the
+migration had been applied to the local database since 2026-07-24. The header
+was stale rather than a standing instruction: nothing else in the repo treats
+032 as unfinished, and 057 depends on its tables. The header has been corrected
+in the repo file and now points here.
+
+### Rollback
+
+```sql
+DROP SCHEMA IF EXISTS wp_import CASCADE;
+
+DELETE FROM supabase_migrations.schema_migrations
+WHERE name IN ('032_wp_import_staging', '057_wp_migration_log');
+```
+
+Safe while the schema holds no imported data: it is self-contained, and nothing
+in `public` references it. Once an import has run, dropping it destroys the
+migration log and with it the ability to roll that import back - so check
+`wp_import.import_batches` is empty first.

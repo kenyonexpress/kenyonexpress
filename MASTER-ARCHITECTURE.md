@@ -1,16 +1,26 @@
 # MASTER-ARCHITECTURE v2
 
-> **דריסה מחייבת (2026-07-24, יום המיזוג):** כל נוסחת תמחור קופון באחוז-מהמחיר
-> (`face * platform_percent / 100`) במסמך הזה בטלה. המודל המחייב: האדמין קובע סכום
-> מוחלט `coupon_price` (בעמודה `coupon_deals.coupon_price_agorot`, מיגרציה 059),
-> הלקוח משלם בדיוק אותו ב-Cardcom, הכל נשאר בפלטפורמה, אין payout לספק על קופונים,
-> היתרה נגבית בבית העסק בסריקה ואז הקופון פג לצמיתות. `platform_percent` נשאר
-> בתוקף לפיצול על מוצרים פיזיים בלבד (מצולם ל-order_items בקנייה).
+> **דריסה מחייבת (2026-07-27, הכרעת Ofir):** `docs/CONTRADICTIONS.md` גובר על
+> המסמך הזה בכל סתירה כספית. שלוש קביעות במסמך בטלות:
+>
+> 1. **"אין escrow"** בטלה. קופון = **Escrow**: הלקוח משלם באתר את
+>    `coupon_price` (סכום מוחלט), הפלטפורמה שומרת `platform_percent` מהמקדמה,
+>    והיתרה מוחזקת כ-held ומשוחררת לספק במימוש (C11 גרסה ב). ה-held הוא רישום
+>    פנימי ב-`escrow_holds` / ledger בלבד: אין נאמן חיצוני ואין J5 (C3).
+> 2. **"הספק מקבל 0 על קופונים"** בטלה. `payout_ils = 0` בשורת
+>    `coupon_redemption` הוא באג כספי, מתוקן במיגרציה `079_payout_escrow_release`.
+> 3. **`platform_percent = 100` בקופון** בטלה. האחוז הוא פר-מוצר, שדה חובה בלי
+>    ברירת מחדל (C1), וחל על קופון ופיזי כאחד.
+>
+> נשאר בתוקף מ-24.07: מחיר הקופון הוא סכום מוחלט ולא נגזרת של אחוז, כל נוסחת
+> `face * platform_percent / 100` כתמחור בטלה, והאחוזים מצולמים ל-`order_items`
+> בקנייה (C10). פקיעה בלי מימוש = קרדיט לארנק הלקוח (C6), לא breakage.
 
 
 kenyonexpress.co.il. Branch `arch/master-v2`. **Design only.** No UI files.
 
-Supersedes earlier drafts on this branch that still modeled coupon **escrow**.
+Supersedes earlier drafts on this branch. The coupon **is** an escrow again as of
+2026-07-27; see the binding override at the top.
 This revision is binding to the product-owner business model below.
 
 ## Authority
@@ -26,7 +36,7 @@ This revision is binding to the product-owner business model below.
 
 **Owner business model (binding):**
 
-1. **Coupon:** customer pays a **% on site** (`products.platform_percent`); remainder is paid **at the merchant** when the coupon is scanned; coupon then **expires**. **NO escrow.** Platform keeps the on-site %. Supplier receives **0** from the platform for coupon lines.
+1. **Coupon (escrow, 2026-07-27):** customer pays the absolute `coupon_price` **on site**; the platform keeps `platform_percent` of that prepayment and **holds the remainder for the supplier** until the voucher is scanned, when the hold is released. The rest of the face value is paid **at the merchant** at scan time and never reaches the platform. Unscanned expiry credits the customer wallet (C6).
 2. **Physical:** customer pays **100% on site**. Platform takes per-product `platform_percent`; remainder settles to the supplier via bank payout after fulfillment eligibility.
 3. **`platform_percent`** is set **per product by admin** and **MUST be snapshotted** into `order_items` at purchase. Settlement **never** re-reads live `products.platform_percent`.
 4. Every product page shows **supplier details** (coupon and physical alike).
@@ -37,14 +47,17 @@ This revision is binding to the product-owner business model below.
 | ID | Decision | Justification |
 |---|---|---|
 | D-MONEY-1 | Integer **agorot** is the sole money type end to end | Floats and `numeric(12,2)` round-trips corrupt money |
-| D-MONEY-2 | Coupon on-site charge = `round_half_up(face * platform_percent / 100)`; 100% of that charge is platform revenue; **no escrow table in target** | Owner model; merchant collects remainder in cash |
+| D-MONEY-2 | Coupon on-site charge = `products.coupon_price_agorot` (absolute, never derived from a percent). The charge splits by the snapshotted `platform_percent`: platform fee now, supplier share **held in `escrow_holds` and released on redemption** (C11 b) | Owner model 2026-07-27; merchant collects the remaining balance in cash |
 | D-MONEY-3 | Physical: full charge on site; supplier claim = `face - commission`; paid only via `payout_statements` after `delivered + 14d` | Return window; no Cardcom Multi-Account at charge |
 | D-LEDGER | **Hybrid:** double-entry for wallet; conserved custody tables + nightly Cardcom reconcile for external cash | Cardcom is external SoT for card money; wallet has no external arbiter |
-| D-PSP | **Cardcom** Low Profile is production IL PSP (SAQ-A). Stripe foundation on `phase6/checkout-foundation` is a parallel experiment; production cutover needs an explicit ADR | Israeli cards + hosted page |
-| D-EXPIRY | Expired unused coupons = **breakage** (platform keeps on-site fee); no auto wallet refund | Owner: "expires"; LEGAL may later require credit note path without changing scan/settlement |
-| D-SCALE | Agorot integers in DB; display formats ₪X.XX | Matches Stripe/Cardcom minor units |
+| D-PSP | **Cardcom only** (Low Profile, SAQ-A). No second PSP: C9 rules out Stripe, Payoneer and Cloudways, and the abandoned `phase6/checkout-foundation` experiment is not a cutover candidate | Israeli cards + hosted page; one PSP means one reconciliation source |
+| D-EXPIRY | Expired unused coupons **credit the customer wallet** with what they paid; the supplier hold is refunded (C6). No breakage revenue | Owner 2026-07-27; nobody keeps money for a service never rendered |
+| D-SCALE | Agorot integers in DB; display formats ₪X.XX | Cardcom settles in minor units |
 
-Live code that still books coupon escrow / supplier release is **defect R1** and is corrected by migration plan §9 (050), not by this doc re-adopting escrow.
+**R1 is void (2026-07-27).** It called live coupon escrow a defect. Escrow is the
+model, so code that books a hold and releases it on redemption is correct; what
+was left to fix is the opposite direction, a payout that pays the supplier 0 on
+a redeemed voucher, closed by migration `079_payout_escrow_release`.
 
 ---
 
@@ -56,7 +69,7 @@ Live code that still books coupon escrow / supplier release is **defect R1** and
 - **[S] server-only** — service_role / SECURITY DEFINER writes; default-deny client write
 - **[A] audit** — append-only
 
-### 1.2 ERD (target money path — no escrow)
+### 1.2 ERD (target money path: coupon escrow + physical claim)
 
 ```mermaid
 erDiagram
@@ -116,7 +129,7 @@ erDiagram
 | `user_addresses` | U | Shipping |
 | `user_rate_limits` / `rate_limits` | S | Abuse |
 
-**Intentionally absent from target:** `escrow_holds` (owner: no escrow). Live 047 rows are drained/nulled by migration 050 and the table is deprecated.
+**Present in target:** `escrow_holds` is the coupon custody table (C11 b). 074 keys it to `vouchers`; `held_agorot = commission_agorot + release_agorot` is enforced by CHECK, and `redeem_voucher()` flips the hold to `released` in the same transaction as the scan. `split_executions` stays for the physical immediate split.
 
 **Drift:** live `coupons` table (pre-008) is non-canonical; `coupon_codes` is SoT.
 
@@ -172,7 +185,7 @@ issued --refund----> refunded
 
 **Illegal:** `used -> issued`; redeem of `expired`/`refunded`; second redeem of `used`.
 
-#### Physical item settlement (claim, not escrow)
+#### Physical item settlement (immediate split, no hold)
 
 ```
 pending --PAYMENT_CONFIRMED--> paid
@@ -208,24 +221,25 @@ Never: user -> bank / card (non-withdrawable).
 
 Not a full general ledger. Justification: Cardcom is external SoT; wallet is the only pure internal liability.
 
-### 2.2 Coupon flow (no escrow)
+### 2.2 Coupon flow (escrow, C11 b)
 
-On-site % = snapshotted `platform_percent`.
+`paid_on_site` is the absolute per-product price, never a percent of the face.
+The percent splits that prepayment and nothing else (C5).
 
 ```
 face_agorot     = unit_face * qty
-paid_on_site    = round_half_up(face_agorot * platform_percent / 100)
+paid_on_site    = coupon_price_agorot * qty    # absolute, set per product
 balance_due     = face_agorot - paid_on_site   # collected at merchant in cash
-commission      = paid_on_site                 # entire on-site charge
-supplier_due    = 0
+commission      = round_half_up(paid_on_site * platform_percent / 100)
+supplier_held   = paid_on_site - commission    # held, released on redemption
 ```
 
 | Step | Recorded where |
 |---|---|
 | `beginCheckout` | `orders` pending; `order_items` snapshots; `payments` initiated with `idempotency_key=lp:<ref>` |
-| Webhook finalize | `orders.paid_at`; `coupon_codes` issued (8-digit + QR); `commission_ledger` accrual; `item_status=issued`; optional cashback wallet credit `order:<id>:cashback` |
-| Scan | `coupon_codes issued->used`; `coupon_redemptions` insert; `coupon_scan_events`; accrual `-> earned`. **No platform→supplier money move.** |
-| Expiry | `issued->expired`; breakage (D-EXPIRY). Optional credit-note accounting for tax later without wallet mint. |
+| Webhook finalize | `orders.paid_at`; `vouchers` issued (10-char + signed QR); `escrow_holds` row `held_agorot = commission_agorot + release_agorot`; `commission_ledger` accrual; optional cashback wallet credit `order:<id>:cashback` |
+| Scan | `vouchers issued->redeemed`; `voucher_redemptions` insert; the hold flips to `released` in the **same transaction** (`redeem_voucher`, 074). The released amount reaches the supplier through `payout_statements` on the next run past its T+3 hold (079). |
+| Expiry | `issued->expired`; the hold is refunded and the customer wallet is credited with what they paid (C6, `credit_expired_vouchers`). No breakage revenue. |
 
 ### 2.3 Physical flow
 
@@ -492,11 +506,11 @@ Required on every PDP (owner §4): supplier display name, city, phone or WhatsAp
 
 ## 9. MIGRATIONS (forward)
 
-Live remote ≈ 001–025 (+ data 043/044) with partial later applies. Drafts 026–035/042 must not be applied verbatim if they reintroduce escrow economics.
+Live remote ≈ 001–025 (+ data 043/044) with partial later applies. Since 2026-07-27 the escrow economics are the target, so the constraint on drafts 026–035/042 is the opposite one: they must not be applied verbatim where they hardcode a commission default (C1).
 
 | # | Purpose |
 |---|---|
-| **050** | Money convergence: remove coupon escrow economics; agorot columns SoT; harden `payments` UNIQUE keys; wallet double-entry reasons; deprecate `escrow_holds` |
+| **050** | `platform_percent` mandatory, no default anywhere; `coupon_expiry_days` is the canonical validity field (C1/C7). The "remove coupon escrow economics" goal of this row is void as of 2026-07-27 |
 | **051** | Legal: invoices, terms evidence, cancellation |
 | **052** | Ed25519 QR |
 | **053** | Performance indexes |
@@ -511,7 +525,7 @@ Apply via approved MCP/`apply_migration` only — never `db push`.
 
 ## 10. RISK REGISTER
 
-1. **R1** Live coupon escrow pays suppliers — contradicts owner model → 050
+1. **R1** VOID (2026-07-27). Coupon escrow paying suppliers is the model, not a defect. The live risk is the inverse: `payout_ils = 0` on redeemed vouchers → 079
 2. **R2** Forgeable QR SHA-256 → 052 Ed25519
 3. **R3** Weak payment idempotency → NOT NULL + UNIQUE txn id
 4. **R4** Schema fork (ils vs agorot, dual payout tables) → 050 + Drizzle resync
@@ -522,7 +536,7 @@ Apply via approved MCP/`apply_migration` only — never `db push`.
 9. **R9** Wallet cache drift → nightly SEV1
 10. **R10** Role escalation → WITH CHECK + privilege trigger
 11. **R11** service_role in client → CI grep + import fence
-12. **R12** Dual PSP (Stripe experiment vs Cardcom) without ADR → D-PSP until cutover ADR
+12. **R12** CLOSED by C9: Cardcom is the only PSP. A second PSP would need a new owner decision, not an ADR
 13. **R13** Legal invoices missing → 051 launch gate
 14. **R14** Free-tier no backups → GHA pg_dump
 
@@ -532,8 +546,8 @@ Apply via approved MCP/`apply_migration` only — never `db push`.
 
 | Q | Default in this master |
 |---|---|
-| Expired coupon money | Breakage (D-EXPIRY) |
-| Production PSP | Cardcom (D-PSP); Stripe stays experimental |
+| Expired coupon money | Customer wallet credit, supplier hold refunded (D-EXPIRY / C6) |
+| Production PSP | Cardcom only (D-PSP / C9). No second PSP is in scope |
 | Coupon on-site basis | **הוכרע 2026-07-24:** סכום מוחלט `coupon_price_agorot` שהאדמין קובע; לא אחוז |
 | Cashback rule | Configurable server-side; skill "every 5th / 5%" is launch config not schema |
 | `vendors` vs `suppliers` | `suppliers` canonical; vendors legacy until unification migration |
@@ -547,7 +561,7 @@ Apply via approved MCP/`apply_migration` only — never `db push`.
 | This convergence | `MASTER-ARCHITECTURE.md` (here) |
 | Security controls | `docs/ARCHITECTURE-SECURITY.md` |
 | Legal | `docs/ARCHITECTURE-LEGAL-COMPLIANCE.md` |
-| Checkout sequence | `ARCHITECTURE-CHECKOUT-PAYMENT.md` (Cardcom path; ignore escrow if present) |
+| Checkout sequence | `ARCHITECTURE-CHECKOUT-PAYMENT.md` (Cardcom path) |
 | Supplier scan UI contracts | `docs/ARCHITECTURE-SUPPLIER-REDEMPTION.md` |
 | Cache tags | `ARCHITECTURE-PERFORMANCE-SEO.md` |
 | Identity | `docs/ARCHITECTURE-ACCOUNT-IDENTITY.md` |

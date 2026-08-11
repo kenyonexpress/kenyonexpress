@@ -1,5 +1,6 @@
 'use client'
 
+import { type AltSubjectKind, suggestAltHe } from '@/lib/images/alt-text'
 import { isValidHebrewAlt, validateImageFile } from '@/lib/images/validate'
 import { processAndUploadImage } from '@/server/actions/admin/images'
 import { ImagePlus, Trash2, Upload } from 'lucide-react'
@@ -13,6 +14,14 @@ interface Props {
   value: string[]
   onChange: (urls: string[]) => void
   maxFiles?: number
+  /**
+   * What the images are of, for the alt-text suggestion: the kind of entity and
+   * its Hebrew name as it stands in the form right now. Optional, because a
+   * form with nothing typed in its name field has nothing true to suggest, and
+   * the field then behaves exactly as it did before - empty and mandatory.
+   */
+  altKind?: AltSubjectKind
+  altSubject?: string | null
 }
 
 interface StagedFile {
@@ -28,7 +37,15 @@ interface StagedFile {
  * The server pipeline converts to webp/avif in multiple sizes, generates a
  * blur placeholder and registers everything in media_assets.
  */
-export default function ImageUploader({ bucket, folder, value, onChange, maxFiles = 5 }: Props) {
+export default function ImageUploader({
+  bucket,
+  folder,
+  value,
+  onChange,
+  maxFiles = 5,
+  altKind,
+  altSubject,
+}: Props) {
   const [staged, setStaged] = useState<StagedFile[]>([])
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -41,7 +58,13 @@ export default function ImageUploader({ bucket, folder, value, onChange, maxFile
       return
     }
     const next: StagedFile[] = []
-    for (const file of Array.from(files)) {
+    const incoming = Array.from(files)
+    // The suggestion is numbered across everything this entity will have, not
+    // just this batch, so adding a sixth photo does not produce a second
+    // "תמונה 1 מתוך 5".
+    const alreadyHave = value.length + staged.length
+    const total = alreadyHave + incoming.length
+    for (const [offset, file] of incoming.entries()) {
       const err = validateImageFile(file)
       if (err) {
         setError(err)
@@ -51,7 +74,14 @@ export default function ImageUploader({ bucket, folder, value, onChange, maxFile
         key: crypto.randomUUID(),
         file,
         previewUrl: URL.createObjectURL(file),
-        alt: '',
+        alt: altKind
+          ? (suggestAltHe({
+              kind: altKind,
+              subject: altSubject,
+              index: alreadyHave + offset,
+              total,
+            }) ?? '')
+          : '',
       })
     }
     setStaged((prev) => [...prev, ...next])
@@ -125,7 +155,8 @@ export default function ImageUploader({ bucket, folder, value, onChange, maxFile
       {staged.length > 0 && (
         <div className="space-y-2 border border-gray-200 rounded-lg p-3 bg-gray-50">
           <p className="text-xs font-medium text-gray-600">
-            לפני ההעלאה: הזינו טקסט חלופי בעברית לכל תמונה (נדרש לנגישות ולקידום)
+            לפני ההעלאה: טקסט חלופי בעברית לכל תמונה (נדרש לנגישות ולקידום). ההצעה נגזרת מהשם שהוזן
+            בטופס, וכדאי לתאר מה רואים בתמונה.
           </p>
           {staged.map((s) => (
             <div key={s.key} className="flex items-center gap-3">

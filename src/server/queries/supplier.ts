@@ -1,5 +1,12 @@
+import { parseIls } from '@/lib/money'
+import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
-import type { SupplierRedemptionRow, SupplierSaleLine } from '@/lib/supplier/dashboard'
+import {
+  type SupplierRedemptionRow,
+  type SupplierSaleLine,
+  supplierDueAgorot,
+} from '@/lib/supplier/dashboard'
+import type { SupplierProductRow } from '@/lib/supplier/products'
 
 /**
  * Supplier-scoped reads. Membership is verified by requireSupplierMember before
@@ -66,7 +73,7 @@ export async function getSupplierSales(supplierId: string): Promise<SupplierSale
     .limit(200)
 
   if (error) {
-    console.error('[supplier] getSupplierSales', error.message)
+    log.error('supplier.sales_query_failed', { reason: error.message })
     return []
   }
 
@@ -86,7 +93,21 @@ export async function getSupplierSales(supplierId: string): Promise<SupplierSale
       supplierImmediateAgorot: immediate,
       escrowHeldAgorot: held,
       escrowReleaseAgorot: row.escrow_release_agorot ?? 0,
-      supplierDueAgorot: immediate + held,
+      // The immediate split ONLY. This used to be `immediate + held`, which is
+      // the escrow model Ofir reversed on 2026-07-28 and migration 085 removed
+      // from the database: a coupon's whole prepayment is the platform's at the
+      // moment of payment, the supplier receives nothing from us on it, and
+      // there is no hold to release. Adding `held` told a supplier they were
+      // owed money that was never going to arrive.
+      //
+      // It is delegated rather than reimplemented because it WAS reimplemented,
+      // and the two copies disagreed: `lib/supplier/dashboard.ts` has ignored
+      // the escrow columns since 085 and its aggregate is what the portal
+      // actually prints, so this field was a shadowed second answer waiting for
+      // the first caller to read it. Measured against production: two legacy
+      // escrow_holds rows are still `held`, both against coupon codes, so this
+      // was not hypothetical.
+      supplierDueAgorot: supplierDueAgorot({ supplierImmediateAgorot: immediate }),
       settlementStatus: row.settlement_status,
       paidAt: row.orders?.paid_at ?? null,
     }
@@ -115,7 +136,7 @@ export async function getSupplierRedemptions(supplierId: string): Promise<Suppli
     .limit(100)
 
   if (error) {
-    console.error('[supplier] getSupplierRedemptions', error.message)
+    log.error('supplier.redemptions_query_failed', { reason: error.message })
     return []
   }
 
@@ -130,4 +151,84 @@ export async function getSupplierRedemptions(supplierId: string): Promise<Suppli
     redeemedAt: row.redeemed_at,
     status: row.status,
   }))
+}
+
+type SupplierProductDbRow = {
+  id: string
+  slug: string
+  name_he: string
+  type: string | null
+  status: string
+  approval_status: string
+  full_price: number | null
+  kenyon_price: number | null
+  coupon_price_ils: number | null
+  platform_percent: number | null
+  images: unknown
+}
+
+/**
+ * The supplier's own catalogue.
+ *
+ * Prices on `products` are still numeric shekels in production -- the agorot
+ * rename lives in PENDING-money-integer-fix.sql and has not been applied -- so
+ * they are converted at this boundary with `parseIls` and nothing downstream
+ * ever sees a float. When that migration lands, this function is the single
+ * place that changes.
+ *
+ * Face value differs by kind: a coupon is worth `full_price` and sells for
+ * `coupon_price_ils`; a physical item is worth what it sells for, preferring
+ * `kenyon_price` over `full_price` because that is the number the storefront
+ * charges.
+ *
+ * Soft-deleted rows are excluded here explicitly rather than trusted to RLS:
+ * this read goes through the admin client, which bypasses RLS entirely.
+ */
+export async function getSupplierProducts(supplierId: string): Promise<SupplierProductRow[]> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('products')
+    .select(
+      `
+      id,
+      slug,
+      name_he,
+      type,
+      status,
+      approval_status,
+      full_price,
+      kenyon_price,
+      coupon_price_ils,
+      platform_percent,
+      images
+    `,
+    )
+    .eq('supplier_id', supplierId)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+    .limit(200)
+
+  if (error) {
+    log.error('supplier.products_query_failed', { reason: error.message })
+    return []
+  }
+
+  return ((data ?? []) as unknown as SupplierProductDbRow[]).map((row) => {
+    const kind = productType(row.type)
+    const faceIls = kind === 'coupon' ? row.full_price : (row.kenyon_price ?? row.full_price)
+
+    return {
+      id: row.id,
+      slug: row.slug,
+      nameHe: row.name_he,
+      type: kind,
+      status: row.status,
+      approvalStatus: row.approval_status,
+      faceValueAgorot: parseIls(faceIls ?? 0),
+      couponPriceAgorot: kind === 'coupon' ? parseIls(row.coupon_price_ils ?? 0) : null,
+      platformPercent: row.platform_percent,
+      imageUrl:
+        Array.isArray(row.images) && typeof row.images[0] === 'string' ? row.images[0] : null,
+    }
+  })
 }

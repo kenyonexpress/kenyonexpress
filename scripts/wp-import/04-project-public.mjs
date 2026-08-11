@@ -15,8 +15,8 @@
 
 import { writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { DEFAULTS, DRY_RUN, PATHS, RUN, dryRunReason } from './config.mjs'
 import { readNormalized } from './02-transform.mjs'
+import { DEFAULTS, DRY_RUN, PATHS, RUN, dryRunReason } from './config.mjs'
 import { getDb, persistIdMap, resolveIdMap, upsertRows } from './lib/db.mjs'
 import { Run, info, ok, warn } from './lib/log.mjs'
 
@@ -38,23 +38,36 @@ async function ensureLegacySupplier(run, db) {
 
   if (DRY_RUN) {
     info(`  supplier      would create "${DEFAULTS.legacySupplierName}"`)
-    run.op({ stage: 'project_public', entity: 'supplier', wpId: 'legacy', action: 'insert', targetTable: 'public.suppliers' })
+    run.op({
+      stage: 'project_public',
+      entity: 'supplier',
+      wpId: 'legacy',
+      action: 'insert',
+      targetTable: 'public.suppliers',
+    })
     return null
   }
   const { data: created, error: insertError } = await db
     .from('suppliers')
     .insert({
       name: DEFAULTS.legacySupplierName,
-      commission_percent: DEFAULTS.commissionPercent,
+      // suppliers.commission_percent is NOT NULL DEFAULT 0 in production, so
+      // this is the column's own default rather than an imported 15.
+      commission_percent: 0,
       status: 'active',
-      notes: 'Auto-created by the WordPress import. Owns every legacy catalog row until real suppliers are attached.',
+      notes:
+        'Auto-created by the WordPress import. Owns every legacy catalog row until real suppliers are attached.',
     })
     .select('id')
     .single()
   if (insertError) throw new Error(`supplier create failed: ${insertError.message}`)
   run.op({
-    stage: 'project_public', entity: 'supplier', wpId: 'legacy', action: 'insert',
-    targetTable: 'public.suppliers', targetId: created.id,
+    stage: 'project_public',
+    entity: 'supplier',
+    wpId: 'legacy',
+    action: 'insert',
+    targetTable: 'public.suppliers',
+    targetId: created.id,
   })
   return created.id
 }
@@ -99,13 +112,22 @@ async function projectCategories(run, db) {
   }))
 
   const plan = await upsertRows({
-    db, schema: 'public', table: 'categories', rows,
-    conflictColumn: 'id', entity: 'category', wpIdColumn: 'slug',
+    db,
+    schema: 'public',
+    table: 'categories',
+    rows,
+    conflictColumn: 'id',
+    entity: 'category',
+    wpIdColumn: 'slug',
   })
   for (const [i, item] of plan.entries()) {
     run.op({
-      stage: 'project_public', entity: 'category', wpId: ordered[i].wp_term_id,
-      action: item.action, targetTable: 'public.categories', targetId: rows[i].id,
+      stage: 'project_public',
+      entity: 'category',
+      wpId: ordered[i].wp_term_id,
+      action: item.action,
+      targetTable: 'public.categories',
+      targetId: rows[i].id,
       after: { slug: rows[i].slug, name_he: rows[i].name_he },
     })
   }
@@ -123,23 +145,37 @@ async function projectProducts(run, db, categoryIds, supplierId) {
   if (staged.length === 0) return
 
   const ids = await resolveIdMap({ db, entity: 'product', wpIds: staged.map((p) => p.wp_post_id) })
-  const mediaByAttachment = new Map(readNormalized('media').map((m) => [String(m.wp_attachment_id), m]))
+  const mediaByAttachment = new Map(
+    readNormalized('media').map((m) => [String(m.wp_attachment_id), m]),
+  )
 
   const rows = []
   const skipped = []
   for (const p of staged) {
-    const categoryId = p.category_wp_ids
-      ?.map((wpId) => categoryIds.get(String(wpId))?.newId)
-      .find(Boolean) ?? null
+    const categoryId =
+      p.category_wp_ids?.map((wpId) => categoryIds.get(String(wpId))?.newId).find(Boolean) ?? null
 
-    // The two gates that keep a broken row out of the live catalog. Both are
-    // already recorded as issues by the transform stage; here they decide
-    // status rather than dropping the row, so nothing silently disappears.
+    // The gates that keep a broken row out of the live catalog. All are already
+    // recorded as issues by the transform stage; here they decide status rather
+    // than dropping the row, so nothing silently disappears.
+    //
+    // The third gate is unconditional, and that is the point. No product may go
+    // live without a per-product platform_percent, and the WordPress export does
+    // not carry one, so no projected row can ever be active. See below.
     let status = p.projected_status ?? 'draft'
     if (p.price === null || p.price <= 0) status = 'draft'
     if (!categoryId) status = 'draft'
+    status = 'draft'
     if (status === 'draft' && p.status_raw === 'publish') {
-      skipped.push({ wp_id: p.wp_post_id, slug: p.slug_decoded, reason: !categoryId ? 'no_category' : 'no_price' })
+      skipped.push({
+        wp_id: p.wp_post_id,
+        slug: p.slug_decoded,
+        reason: !categoryId
+          ? 'no_category'
+          : p.price === null || p.price <= 0
+            ? 'no_price'
+            : 'no_platform_percent',
+      })
     }
 
     rows.push({
@@ -159,10 +195,26 @@ async function projectProducts(run, db, categoryIds, supplierId) {
       images: buildImages(p, mediaByAttachment),
       attributes: p.attributes ?? {},
       is_coupon_enabled: p.target_type === 'coupon',
-      platform_percent: DEFAULTS.platformPercent,
-      commission_percent: DEFAULTS.commissionPercent,
+      // NULL, never a default. This wrote DEFAULTS.platformPercent (10) until
+      // 2026-08-11, which is the single thing this codebase forbids outright:
+      // the percent is the only split handle, it is set per product, and it is
+      // snapshotted onto order_items at purchase. A fixed 10 here would have
+      // silently decided the supplier's cut for every imported row.
+      //
+      // emit-missing-products.mjs already refused these numbers and documented
+      // why; it was written as a substitute for this file rather than a fix to
+      // it, which left the original still able to write them the moment anyone
+      // ran `--apply` with a working key. assertPublishable refuses to activate
+      // a NULL-percent product, so the row lands as draft and an admin decides.
+      platform_percent: null,
+      // Not a commission, a placeholder for a NOT NULL column: same stance and
+      // same value as emit-missing-products.mjs.
+      commission_percent: 0,
       cashback_percent: DEFAULTS.cashbackPercent,
-      coupon_expiry_days: DEFAULTS.couponExpiryDays,
+      // C7: an unset validity used to become a silent 90 days in finalize, a
+      // promise nobody made. 365 here was the same invention wearing a nicer
+      // number, so the admin sets it per coupon or it does not go live.
+      coupon_expiry_days: null,
       requires_shipping: p.target_type === 'physical',
       seo_title: p.seo_title_raw,
       seo_description: p.seo_description_raw,
@@ -176,13 +228,22 @@ async function projectProducts(run, db, categoryIds, supplierId) {
     const sourceSlice = staged.slice(i, i + DEFAULTS.batchSize)
     try {
       const plan = await upsertRows({
-        db, schema: 'public', table: 'products', rows: slice,
-        conflictColumn: 'id', entity: 'product', wpIdColumn: 'slug',
+        db,
+        schema: 'public',
+        table: 'products',
+        rows: slice,
+        conflictColumn: 'id',
+        entity: 'product',
+        wpIdColumn: 'slug',
       })
       for (const [j, item] of plan.entries()) {
         run.op({
-          stage: 'project_public', entity: 'product', wpId: sourceSlice[j].wp_post_id,
-          action: item.action, targetTable: 'public.products', targetId: slice[j].id,
+          stage: 'project_public',
+          entity: 'product',
+          wpId: sourceSlice[j].wp_post_id,
+          action: item.action,
+          targetTable: 'public.products',
+          targetId: slice[j].id,
           after: { slug: slice[j].slug, status: slice[j].status, price_ils: slice[j].price_ils },
         })
       }
@@ -195,9 +256,13 @@ async function projectProducts(run, db, categoryIds, supplierId) {
   }
 
   await persistIdMap({ db, entity: 'product', ids, batchId: run.batchId })
-  info(`  products      ${String(rows.length).padStart(6)} projected (${rows.filter((r) => r.status === 'active').length} active)`)
+  info(
+    `  products      ${String(rows.length).padStart(6)} projected (${rows.filter((r) => r.status === 'active').length} active)`,
+  )
   if (skipped.length > 0) {
-    warn(`  ${skipped.length} products were published on WordPress but project as draft (missing price or category)`)
+    warn(
+      `  ${skipped.length} products were published on WordPress but project as draft (missing price or category)`,
+    )
     writeFileSync(
       resolve(PATHS.reports, 'downgraded-to-draft.json'),
       `${JSON.stringify(skipped, null, 2)}\n`,
@@ -268,18 +333,27 @@ async function projectCustomers(run, db) {
       flow: 'password_reset',
     })
     run.op({
-      stage: 'project_public', entity: 'customer', wpId: customer.wp_user_id,
-      action: 'skip', targetTable: 'auth.users', targetId,
+      stage: 'project_public',
+      entity: 'customer',
+      wpId: customer.wp_user_id,
+      action: 'skip',
+      targetTable: 'auth.users',
+      targetId,
       errorCode: 'deferred_to_invite_list',
-      errorDetail: 'account creation happens in the post-cutover invite campaign, not in the import',
+      errorDetail:
+        'account creation happens in the post-cutover invite campaign, not in the import',
     })
   }
 
   await persistIdMap({ db, entity: 'customer', ids, batchId: run.batchId })
   const file = resolve(PATHS.reports, 'customer-invites.json')
   writeFileSync(file, `${JSON.stringify(inviteList, null, 2)}\n`)
-  info(`  customers     ${String(inviteList.length).padStart(6)} queued for password-reset invite -> ${file.replace(`${PATHS.root}/`, '')}`)
-  warn('  no auth accounts were created: passwords are never migrated, invites are a separate campaign')
+  info(
+    `  customers     ${String(inviteList.length).padStart(6)} queued for password-reset invite -> ${file.replace(`${PATHS.root}/`, '')}`,
+  )
+  warn(
+    '  no auth accounts were created: passwords are never migrated, invites are a separate campaign',
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -291,12 +365,19 @@ function reportOrders(run) {
   if (orders.length === 0) return
   for (const order of orders) {
     run.op({
-      stage: 'project_public', entity: 'order', wpId: order.wp_order_id, action: 'skip',
-      targetTable: 'wp_import.orders', errorCode: 'archive_only',
-      errorDetail: 'historical orders are read-only archive and are never projected into live commerce tables',
+      stage: 'project_public',
+      entity: 'order',
+      wpId: order.wp_order_id,
+      action: 'skip',
+      targetTable: 'wp_import.orders',
+      errorCode: 'archive_only',
+      errorDetail:
+        'historical orders are read-only archive and are never projected into live commerce tables',
     })
   }
-  info(`  orders        ${String(orders.length).padStart(6)} kept as read-only archive (never projected)`)
+  info(
+    `  orders        ${String(orders.length).padStart(6)} kept as read-only archive (never projected)`,
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -308,11 +389,17 @@ export async function projectPublic(run) {
   const supplierId = await ensureLegacySupplier(run, db)
   if (!supplierId && !DRY_RUN) throw new Error('no legacy supplier id: cannot project products')
 
-  const categoryIds = RUN.entity && RUN.entity !== 'category'
-    ? await resolveIdMap({ db, entity: 'category', wpIds: readNormalized('categories').map((c) => c.wp_term_id) })
-    : await projectCategories(run, db)
+  const categoryIds =
+    RUN.entity && RUN.entity !== 'category'
+      ? await resolveIdMap({
+          db,
+          entity: 'category',
+          wpIds: readNormalized('categories').map((c) => c.wp_term_id),
+        })
+      : await projectCategories(run, db)
 
-  if (!RUN.entity || RUN.entity === 'product') await projectProducts(run, db, categoryIds, supplierId)
+  if (!RUN.entity || RUN.entity === 'product')
+    await projectProducts(run, db, categoryIds, supplierId)
   if (!RUN.entity || RUN.entity === 'customer') await projectCustomers(run, db)
   if (!RUN.entity || RUN.entity === 'order') reportOrders(run)
 

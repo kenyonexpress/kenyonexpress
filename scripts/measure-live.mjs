@@ -23,9 +23,9 @@
 // Note: only @playwright/test is installed (there is no bare "playwright"
 // package), so we import chromium from '@playwright/test'.
 
-import { mkdirSync, writeFileSync, existsSync } from 'node:fs'
-import { resolve, dirname } from 'node:path'
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
+import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { chromium } from '@playwright/test'
 
@@ -61,13 +61,7 @@ const REGIONS = {
     'figure.woocommerce-product-gallery__wrapper img',
     '[class*="gallery"] img',
   ],
-  priceBlock: [
-    '.summary .price',
-    'p.price',
-    '.product .price',
-    '.price',
-    '[class*="price"]',
-  ],
+  priceBlock: ['.summary .price', 'p.price', '.product .price', '.price', '[class*="price"]'],
   buyBox: [
     'form.cart .single_add_to_cart_button',
     '.single_add_to_cart_button',
@@ -163,7 +157,12 @@ function collectInPage(regions) {
     result[name] = {
       matched,
       tried: selectors,
-      rect: { top: round(r.top), left: round(r.left), width: round(r.width), height: round(r.height) },
+      rect: {
+        top: round(r.top),
+        left: round(r.left),
+        width: round(r.width),
+        height: round(r.height),
+      },
       style: styleOf(el),
     }
   }
@@ -249,7 +248,9 @@ async function measureLocal(ctx) {
     await page.close()
     return { url: null, regions: null }
   }
-  const localUrl = href.startsWith('http') ? href : `${LOCAL_ORIGIN}${href.startsWith('/') ? '' : '/'}${href}`
+  const localUrl = href.startsWith('http')
+    ? href
+    : `${LOCAL_ORIGIN}${href.startsWith('/') ? '' : '/'}${href}`
   console.error(`Opening LOCAL product ${localUrl} ...`)
   try {
     await gotoSettled(page, localUrl, 30000)
@@ -287,17 +288,23 @@ async function main() {
   lines.push(`Local product: ${local.url || '(none discovered)'}`)
   lines.push(`Viewport: ${VIEWPORT.width}x${VIEWPORT.height}`)
   lines.push(`Measured at: ${new Date().toISOString()}`)
-  lines.push(`Tool: Playwright (@playwright/test) chromium, getComputedStyle + getBoundingClientRect`)
+  lines.push(
+    'Tool: Playwright (@playwright/test) chromium, getComputedStyle + getBoundingClientRect',
+  )
   lines.push('')
   lines.push('| Element | CSS Property | Live | Local | Match? |')
   lines.push('|---------|--------------|------|-------|--------|')
 
   for (const name of Object.keys(REGIONS)) {
-    const liveFlat = flatten(live && live[name])
-    const localFlat = localAvailable ? flatten(local.regions && local.regions[name]) : null
+    const liveFlat = flatten(live?.[name])
+    const localFlat = localAvailable ? flatten(local.regions?.[name]) : null
     for (const prop of PROP_ORDER) {
       const lvVal = liveFlat ? (liveFlat[prop] ?? '(missing)') : '(not found)'
-      const loVal = !localAvailable ? 'n/a' : localFlat ? (localFlat[prop] ?? '(missing)') : '(not found)'
+      const loVal = !localAvailable
+        ? 'n/a'
+        : localFlat
+          ? (localFlat[prop] ?? '(missing)')
+          : '(not found)'
       lines.push(`| ${name} | ${prop} | ${lvVal} | ${loVal} | ${matchCell(lvVal, loVal)} |`)
     }
   }

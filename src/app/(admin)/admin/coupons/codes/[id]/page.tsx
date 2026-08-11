@@ -9,11 +9,11 @@ import {
   isScannable,
 } from '@/lib/admin/voucher-view'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { voucherQrDataUrl } from '@/lib/vouchers/qr-image'
 import { AlertTriangle } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import QRCode from 'qrcode'
 
 export const metadata = { title: 'שובר' }
 
@@ -93,14 +93,7 @@ export default async function AdminVoucherDetailPage({ params }: Props) {
 
   // A QR failure must not blank the page: the code below it stays readable and
   // a supplier can key it in.
-  let qrDataUrl: string | null = null
-  if (scannable) {
-    try {
-      qrDataUrl = await QRCode.toDataURL(voucher.qr_payload, { margin: 1, width: 320 })
-    } catch {
-      qrDataUrl = null
-    }
-  }
+  const qrDataUrl = scannable ? await voucherQrDataUrl(voucher.qr_payload) : null
 
   return (
     <div className="space-y-5 max-w-3xl">

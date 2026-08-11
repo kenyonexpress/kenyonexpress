@@ -209,8 +209,8 @@ const tokens = await page.evaluate(() => {
       const authored = parseDataText(el.getAttribute('data-text'))
       return {
         text: (el.textContent || '').trim().slice(0, 60),
-        color: el.getAttribute('data-color') || (type(el) || {}).color || null,
-        font_family: (type(el) || {})['font-family'] || null,
+        color: el.getAttribute('data-color') || type(el)?.color || null,
+        font_family: type(el)?.['font-family'] || null,
         // authored responsive scale from data-text (desktop / mobile)
         font_size_desktop: authored?.font_size?.desktop ?? null,
         font_size_mobile: authored?.font_size?.mobile ?? null,

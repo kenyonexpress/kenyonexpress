@@ -3,6 +3,7 @@
 import { requireStaffSession } from '@/lib/admin/rbac'
 import { processImage } from '@/lib/images/process'
 import { ALLOWED_IMAGE_TYPES, MAX_ORIGINAL_BYTES, isValidHebrewAlt } from '@/lib/images/validate'
+import { withActionContext } from '@/lib/observability/action-context'
 import { createR2PresignedPutUrl, isR2Configured, r2PublicUrl } from '@/lib/storage/r2'
 import { createAdminClient } from '@/lib/supabase/admin'
 
@@ -34,8 +35,24 @@ async function putToR2(key: string, buffer: Buffer, contentType: string): Promis
  * webp/avif renditions + blur placeholder, uploads every rendition to R2
  * (or Supabase Storage when R2 is not configured), and registers the asset
  * with its mandatory Hebrew alt text in media_assets.
+ *
+ * WHAT IS ACTUALLY SERVED, MEASURED
+ *
+ * Only `url` - the largest webp - and `blur_data_url` are ever read back:
+ * `product-detail.ts` selects exactly `url, alt_he, blur_data_url`, and
+ * grepping the whole of `src` finds no reader of `media_assets.renditions` at
+ * all. Delivery goes through `/_next/image` on the main URL, which resizes and
+ * re-encodes per request, so the w800/w400 webp and the avif are an archive of
+ * the original at known widths, not a delivery path. They cost four uploads per
+ * image instead of one.
+ *
+ * That is recorded rather than "cleaned up": the renditions are what makes the
+ * stored asset independent of the optimizer, and [19] is the reason to be
+ * careful here - Next's optimizer silently served source bytes for a year
+ * because it swallowed a sharp error, and the only thing that caught it was
+ * counting bytes. Deleting the fallback the same week would be optimism.
  */
-export async function processAndUploadImage(formData: FormData): Promise<UploadImageResult> {
+async function runProcessAndUploadImage(formData: FormData): Promise<UploadImageResult> {
   let userId: string
   try {
     const session = await requireStaffSession()
@@ -121,4 +138,10 @@ export async function processAndUploadImage(formData: FormData): Promise<UploadI
     width: processed.width,
     height: processed.height,
   }
+}
+
+export async function processAndUploadImage(formData: FormData): Promise<UploadImageResult> {
+  return withActionContext('admin.image.process_and_upload', () =>
+    runProcessAndUploadImage(formData),
+  )
 }

@@ -39,8 +39,8 @@ const report = await page.evaluate(
       ctx.drawImage(img, 0, 0)
       return ctx.getImageData(0, 0, W, H).data
     }
-    const a = data(live),
-      m = data(mine)
+    const a = data(live)
+    const m = data(mine)
     const TOL = 24 // per-channel tolerance for AA noise
     const BAND = 100
     const bands = []

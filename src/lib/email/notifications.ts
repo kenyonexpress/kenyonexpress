@@ -1,14 +1,13 @@
-import { type VoucherEmailLine, buildVoucherEmail } from '@/lib/email/voucher-email'
+import { buildVoucherEmail } from '@/lib/email/voucher-email'
 import { formatAgorot, formatCouponCode } from '@/lib/vouchers/coupon-view'
 
 /**
- * Transactional notification builders (pure).
+ * Outbox notification builders for GOAL 6 (+ voucher_issued for migration 102).
  *
  * Same shape and the same reasoning as `voucher-email.ts`: a subject and two
  * bodies, no transport, no database, no network, so what a person reads can be
  * tested directly. The sending half is the drain at
- * `/api/cron/notifications` (and the Edge twin), which takes rows out of
- * `notification_outbox`.
+ * `/api/cron/notifications`, which takes rows out of `notification_outbox`.
  *
  * Each builder takes the queued payload, which the enqueuing trigger froze at
  * the moment of the event. That is deliberate: a supplier alert must describe
@@ -35,6 +34,18 @@ export type NotificationKind =
   | 'supplier_sale'
   | 'voucher_redeemed'
   | 'voucher_issued'
+  /** A coupon bought for somebody else. Added by migration 108. */
+  | 'voucher_gifted'
+  /** Fixed days-remaining reminder. Queued by 114's sweep. */
+  | 'voucher_expiring'
+  /** Wallet credit, enqueued after the ledger move. Added by 114. */
+  | 'cashback_credited'
+  /** Operator alert: a tax document gave up after five attempts. Added by 116. */
+  | 'invoice_dead'
+  /** Operator alert: a product is at or under its threshold. Added by 117. */
+  | 'low_stock'
+  /** Operator alert: our records and the terminal's disagree about money. */
+  | 'reconciliation_gap'
 
 function escapeHtml(value: string): string {
   return value
@@ -50,8 +61,8 @@ function trimSite(siteUrl: string): string {
 
 function shell(bodyHtml: string, footer: string): string {
   return `
-    <div lang="he" dir="rtl" style="background:#f5f5f5;padding:24px 12px;font-family:Arial,Helvetica,sans-serif;direction:rtl;text-align:right">
-      <div style="max-width:560px;margin:0 auto" dir="rtl">
+    <div dir="rtl" style="background:#f5f5f5;padding:24px 12px;font-family:Arial,Helvetica,sans-serif">
+      <div style="max-width:560px;margin:0 auto">
         <div style="font-size:20px;font-weight:800;color:${INK};margin-bottom:16px">KenyonExpress</div>
         ${bodyHtml}
         <div style="font-size:12px;color:${MUTED};margin-top:18px;text-align:center">${escapeHtml(footer)}</div>
@@ -105,6 +116,21 @@ export function buildOrderPaidEmail(
   const items = asNumber(payload.item_count)
   const url = `${trimSite(siteUrl)}/account/orders`
 
+  /**
+   * The receipt link points at OUR route, not at the provider's URL, and the
+   * route re-checks ownership before it redirects. A tax document handed out as
+   * a raw provider link is readable by anything that ever sees the mail - a
+   * forward, a screenshot, a shared inbox.
+   *
+   * It is also why the link can be included at all despite the document not
+   * existing yet when this mail is built: the invoice cron and the notification
+   * cron are separate jobs, so the receipt is usually issued minutes after the
+   * confirmation goes out. A link resolved at CLICK time has no race; an
+   * embedded URL would have had to wait for one.
+   */
+  const orderId = asText(payload.order_id)
+  const receiptUrl = orderId ? `${trimSite(siteUrl)}/account/orders/${orderId}/invoice` : null
+
   const subject = `ההזמנה שלך התקבלה · ${ref}`
   const greeting = name ? `שלום ${name},` : 'שלום,'
 
@@ -118,6 +144,7 @@ export function buildOrderPaidEmail(
     items > 0 ? `פריטים: ${items}` : '',
     '',
     `לפרטי ההזמנה: ${url}`,
+    receiptUrl ? `לקבלה: ${receiptUrl}` : '',
   ]
     .filter((line) => line !== '')
     .join('\n')
@@ -132,6 +159,7 @@ export function buildOrderPaidEmail(
           ${items > 0 ? `<div style="color:${MUTED}">${items} פריטים</div>` : ''}
         </div>
         <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לפרטי ההזמנה</a>
+        ${receiptUrl ? `<div style="font-size:13px;color:${MUTED};margin-top:12px;text-align:center"><a href="${escapeHtml(receiptUrl)}" style="color:${MUTED}">להורדת הקבלה</a></div>` : ''}
       </div>`,
     'קיבלת את המייל הזה כי ביצעת רכישה ב-KenyonExpress.',
   )
@@ -274,40 +302,369 @@ export function buildVoucherRedeemedEmail(
 }
 
 /**
- * Coupon delivery for the customer (QR lives on /coupon/{id}, not in the mail).
- * Payload is frozen by tg_orders_notify_paid when paid_at is set.
+ * Coupon delivery after pay. Payload shape is frozen by
+ * `tg_orders_notify_paid` in migration 102 (snake_case voucher rows).
+ * Reuses `buildVoucherEmail` so the transitional finalize sender and the
+ * outbox drain cannot drift apart on copy or amounts.
  */
 export function buildVoucherIssuedEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification {
+  const orderId = asText(payload.order_id) ?? 'unknown'
+  const raw = Array.isArray(payload.vouchers) ? payload.vouchers : []
+  const vouchers = raw.flatMap((row) => {
+    if (!row || typeof row !== 'object') return []
+    const v = row as Record<string, unknown>
+    const id = asText(v.id)
+    const code = asText(v.code)
+    const expiresAt = asText(v.expires_at)
+    if (!id || !code || !expiresAt) return []
+    return [
+      {
+        id,
+        code,
+        productName: asText(v.product_name),
+        supplierName: asText(v.supplier_name),
+        supplierAddress: asText(v.supplier_address),
+        supplierPhone: asText(v.supplier_phone),
+        faceValueAgorot: asNumber(v.face_value_agorot),
+        couponPriceAgorot: asNumber(v.coupon_price_agorot),
+        remainingDueAgorot: asNumber(v.remaining_amount_due_agorot),
+        expiresAt,
+      },
+    ]
+  })
+
+  return buildVoucherEmail({
+    customerName: asText(payload.customer_name),
+    orderId,
+    vouchers,
+    siteUrl: trimSite(siteUrl),
+  })
+}
+
+/**
+ * A coupon somebody bought for somebody else (108).
+ *
+ * The one email on this system sent to an address that never registered, so it
+ * says who it is from before it says anything else - an unexplained coupon from
+ * a store you have not heard of is indistinguishable from a phishing mail.
+ *
+ * It carries the CLAIM link, not the coupon code, and that is the whole design:
+ * the voucher belongs to the buyer until the recipient claims it, because the
+ * buyer paid and a refund belongs to them. A code in this email would be
+ * redeemable by whoever forwards it, with no record of who now owns it.
+ *
+ * The greeting is the buyer's own words, so it is escaped like every other
+ * value here and never interpolated raw.
+ */
+export function buildVoucherGiftedEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification {
+  const product = asText(payload.product_name) ?? 'קופון'
+  const sender = asText(payload.sender_name)
+  const recipient = asText(payload.recipient_name)
+  const message = asText(payload.gift_message)
+  const token = asText(payload.claim_token) ?? ''
+  const expires = hebrewDateTime(payload.expires_at)
+  const url = `${trimSite(siteUrl)}/gift/${encodeURIComponent(token)}`
+
+  const subject = sender ? `${sender} שלח לך מתנה: ${product}` : `קיבלת מתנה: ${product}`
+  const greeting = recipient ? `שלום ${recipient},` : 'שלום,'
+
+  const text = [
+    greeting,
+    '',
+    sender ? `${sender} קנה עבורך קופון ב-KenyonExpress:` : 'קנו עבורך קופון ב-KenyonExpress:',
+    product,
+    '',
+    message ? `"${message}"` : '',
+    '',
+    'כדי לקבל את הקופון לחשבון שלך:',
+    url,
+    '',
+    expires ? `הקופון בתוקף עד ${expires}.` : '',
+    'הקישור אישי. אל תעבירו אותו הלאה.',
+  ]
+    .filter((line) => line !== '')
+    .join('\n')
+
+  const html = shell(
+    `<div dir="rtl" style="background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+        <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(
+          sender ? `${sender} שלח לך מתנה` : 'קיבלת מתנה',
+        )}</div>
+        <div style="font-size:15px;color:${INK};margin-top:10px">${escapeHtml(greeting)}</div>
+        <div style="font-size:16px;font-weight:700;color:${INK};margin-top:12px">${escapeHtml(product)}</div>
+        ${
+          message
+            ? `<div style="font-size:14px;color:${INK};line-height:1.9;margin-top:14px;padding:14px;background:#f9fafb;border-radius:10px;border:1px solid #e5e7eb">${escapeHtml(message)}</div>`
+            : ''
+        }
+        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">קבלת הקופון</a>
+        ${expires ? `<div style="font-size:13px;color:${MUTED};margin-top:12px">הקופון בתוקף עד ${escapeHtml(expires)}.</div>` : ''}
+        <div style="font-size:13px;color:${MUTED};margin-top:6px">הקישור אישי. אל תעבירו אותו הלאה.</div>
+      </div>`,
+    'קיבלת את המייל הזה כי מישהו קנה עבורך קופון ב-KenyonExpress.',
+  )
+
+  return { subject, html, text }
+}
+
+/**
+ * The expiry reminder. Queued by `enqueue_expiring_voucher_notices` at fixed
+ * days-remaining buckets, so a customer sees it at 7 days and again at 1.
+ *
+ * It carries a real deadline or it is not sent. A reminder without a date is a
+ * nag; the caller keeps the day count in the payload precisely so this can
+ * refuse to render without one, and the drain then parks the row rather than
+ * mailing a blank. Same rule the push template applies.
+ */
+export function buildVoucherExpiringEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification | null {
+  const days = Math.round(asNumber(payload.days_remaining))
+  const expires = hebrewDateTime(payload.expires_at)
+  if (days <= 0 && !expires) return null
+
+  const product = asText(payload.product_name) ?? 'הקופון שלך'
+  const supplier = asText(payload.supplier_name)
+  const url = `${trimSite(siteUrl)}/account/coupons`
+  const when = days === 1 ? 'מחר' : days === 2 ? 'בעוד יומיים' : `בעוד ${days} ימים`
+
+  const subject = days === 1 ? `${product} פג מחר` : `${product} פג ${when}`
+
+  const text = [
+    'שלום,',
+    '',
+    `${product}${supplier ? ` ב${supplier}` : ''} עדיין לא מומש, והתוקף שלו נגמר ${when}.`,
+    expires ? `תאריך התפוגה: ${expires}.` : '',
+    '',
+    'הקופונים שלך:',
+    url,
+  ]
+    .filter((line) => line !== '')
+    .join('\n')
+
+  const html = shell(
+    `<div dir="rtl" style="background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+        <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(`הקופון פג ${when}`)}</div>
+        <div style="font-size:16px;font-weight:700;color:${INK};margin-top:12px">${escapeHtml(product)}</div>
+        ${supplier ? `<div style="font-size:14px;color:${MUTED};margin-top:4px">${escapeHtml(supplier)}</div>` : ''}
+        ${expires ? `<div style="font-size:13px;color:${MUTED};margin-top:12px">בתוקף עד ${escapeHtml(expires)}.</div>` : ''}
+        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לצפייה בקופון</a>
+      </div>`,
+    'קיבלת את המייל הזה כי יש לך קופון פעיל ב-KenyonExpress.',
+  )
+
+  return { subject, html, text }
+}
+
+/**
+ * Cashback landing in the wallet. Enqueued by `finalizeOrder` after the credit
+ * has actually moved through `fn_wallet_transfer`, never before: an email that
+ * promises money the ledger does not hold is a support ticket.
+ */
+export function buildCashbackCreditedEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification | null {
+  const amountAgorot = Math.round(asNumber(payload.amount_agorot))
+  if (amountAgorot <= 0) return null
+
+  const whole = Math.trunc(amountAgorot / 100)
+  const fraction = amountAgorot % 100
+  const amount =
+    fraction === 0
+      ? `₪${whole.toLocaleString('he-IL')}`
+      : `₪${whole.toLocaleString('he-IL')}.${String(fraction).padStart(2, '0')}`
+
+  const ref = asText(payload.order_ref)
+  const url = `${trimSite(siteUrl)}/account/wallet`
+  const subject = `נכנס לך קאשבק של ${amount}`
+
+  const text = [
+    'שלום,',
+    '',
+    `זיכינו את הארנק שלך ב-${amount}${ref ? ` על הזמנה ${ref}` : ''}.`,
+    'אפשר להשתמש בסכום בקנייה הבאה.',
+    '',
+    'הארנק שלך:',
+    url,
+  ].join('\n')
+
+  const html = shell(
+    `<div dir="rtl" style="background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+        <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
+        <div style="font-size:15px;color:${INK};margin-top:10px">זיכינו את הארנק שלך${ref ? ` על הזמנה ${escapeHtml(ref)}` : ''}. אפשר להשתמש בסכום בקנייה הבאה.</div>
+        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לארנק שלי</a>
+      </div>`,
+    'קיבלת את המייל הזה כי נכנס קאשבק לארנק שלך ב-KenyonExpress.',
+  )
+
+  return { subject, html, text }
+}
+
+/**
+ * Operator alert for a tax document that has stopped retrying.
+ *
+ * Deliberately plain and deliberately actionable: the order id, the reason the
+ * provider gave, and the admin URL. No branding, because it is not going to a
+ * customer, and adding a hero image to an alert is how it gets skimmed.
+ *
+ * The provider's raw error is included here and NOT shown to customers
+ * anywhere. That asymmetry is the point of an operator channel.
+ */
+export function buildInvoiceDeadEmail(
   payload: Record<string, unknown>,
   siteUrl: string,
 ): BuiltNotification | null {
   const orderId = asText(payload.order_id)
   if (!orderId) return null
 
-  const raw = Array.isArray(payload.vouchers) ? (payload.vouchers as Record<string, unknown>[]) : []
-  const vouchers: VoucherEmailLine[] = raw
-    .map((row) => ({
-      id: asText(row.id) ?? '',
-      code: asText(row.code) ?? '',
-      productName: asText(row.product_name),
-      supplierName: asText(row.supplier_name),
-      supplierAddress: asText(row.supplier_address),
-      supplierPhone: asText(row.supplier_phone),
-      faceValueAgorot: asNumber(row.face_value_agorot),
-      couponPriceAgorot: asNumber(row.coupon_price_agorot),
-      remainingDueAgorot: asNumber(row.remaining_amount_due_agorot),
-      expiresAt: asText(row.expires_at) ?? new Date().toISOString(),
-    }))
-    .filter((v) => v.id && v.code)
+  const ref = asText(payload.order_ref) ?? orderId.slice(0, 8).toUpperCase()
+  const documentType = asText(payload.document_type) ?? 'מסמך'
+  const reason = asText(payload.reason) ?? 'לא ידוע'
+  const attempts = asNumber(payload.attempts)
+  const url = `${trimSite(siteUrl)}/admin/orders/${orderId}`
 
-  if (vouchers.length === 0) return null
+  const subject = `נכשלה הנפקת מסמך להזמנה ${ref}`
 
-  return buildVoucherEmail({
-    customerName: asText(payload.customer_name),
-    orderId,
-    vouchers,
-    siteUrl,
-  })
+  const text = [
+    `הנפקת ${documentType} להזמנה ${ref} נכשלה ${attempts} פעמים והפסיקה לנסות.`,
+    '',
+    `סיבה אחרונה: ${reason}`,
+    '',
+    'ההזמנה באדמין:',
+    url,
+    '',
+    'המסמך לא הונפק. הלקוח שילם ואין לו קבלה.',
+  ].join('\n')
+
+  const html = shell(
+    `<div dir="rtl" style="background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+        <div style="font-size:17px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
+        <div style="font-size:14px;color:${INK};margin-top:10px">${escapeHtml(`הנפקת ${documentType} נכשלה ${attempts} פעמים והפסיקה לנסות.`)}</div>
+        <div style="font-size:13px;color:${MUTED};margin-top:10px;padding:12px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb">${escapeHtml(reason)}</div>
+        <div style="font-size:14px;color:${INK};margin-top:12px">הלקוח שילם ואין לו קבלה.</div>
+        <a href="${escapeHtml(url)}" style="display:block;margin-top:16px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:12px 18px;border-radius:10px">פתיחת ההזמנה באדמין</a>
+      </div>`,
+    'התראה תפעולית, לא הודעה ללקוח.',
+  )
+
+  return { subject, html, text }
+}
+
+/**
+ * Operator alert for a product running out.
+ *
+ * States AVAILABLE and the raw level as two separate numbers when they differ,
+ * because the gap between them is live checkouts - and an operator who sees
+ * only "3 in stock" while all three are inside payment sessions will conclude
+ * the alert is wrong.
+ */
+export function buildLowStockEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification | null {
+  const productId = asText(payload.product_id)
+  if (!productId) return null
+
+  const name = asText(payload.product_name) ?? 'מוצר'
+  const available = Math.round(asNumber(payload.available))
+  const level = Math.round(asNumber(payload.stock_quantity))
+  const threshold = Math.round(asNumber(payload.threshold))
+  const supplier = asText(payload.supplier_name)
+  const url = `${trimSite(siteUrl)}/admin/products/${productId}`
+  const held = level - available
+
+  const subject = available <= 0 ? `אזל המלאי: ${name}` : `מלאי נמוך: ${name}`
+
+  const text = [
+    available <= 0 ? `${name} אזל מהמלאי.` : `${name} ירד ל-${available} יחידות זמינות.`,
+    supplier ? `ספק: ${supplier}` : '',
+    `סף התראה: ${threshold}`,
+    held > 0 ? `${held} יחידות מוחזקות כרגע בתשלומים פעילים.` : '',
+    '',
+    'לעריכת המוצר:',
+    url,
+  ]
+    .filter((line) => line !== '')
+    .join('\n')
+
+  const html = shell(
+    `<div dir="rtl" style="background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+        <div style="font-size:17px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
+        <div style="font-size:14px;color:${INK};line-height:2;margin-top:12px">
+          <div>זמין למכירה: <strong>${available}</strong></div>
+          ${held > 0 ? `<div style="color:${MUTED}">${held} מוחזקות בתשלומים פעילים (מתוך ${level} במלאי)</div>` : ''}
+          <div style="color:${MUTED}">סף התראה: ${threshold}</div>
+          ${supplier ? `<div style="color:${MUTED}">ספק: ${escapeHtml(supplier)}</div>` : ''}
+        </div>
+        <a href="${escapeHtml(url)}" style="display:block;margin-top:16px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:12px 18px;border-radius:10px">עריכת המוצר</a>
+      </div>`,
+    'התראה תפעולית, לא הודעה ללקוח.',
+  )
+
+  return { subject, html, text }
+}
+
+/**
+ * Operator alert: the terminal and our database disagree about money.
+ *
+ * The most urgent mail this system sends, and the copy says why in the first
+ * line: `missing_locally` means a customer was charged and has no order, which
+ * no support ticket will ever report because there is no order number to cite.
+ */
+export function buildReconciliationGapEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification | null {
+  const critical = Math.round(asNumber(payload.critical))
+  if (critical <= 0) return null
+
+  const day = asText(payload.day) ?? ''
+  const rows = Array.isArray(payload.rows) ? (payload.rows as Record<string, unknown>[]) : []
+  const url = `${trimSite(siteUrl)}/admin/payments`
+
+  const subject = `⚠️ ${critical} פערי סליקה מול המסוף (${day})`
+
+  const describe = (row: Record<string, unknown>): string => {
+    const kind = asText(row.kind)
+    const tx = asText(row.transactionId) ?? '—'
+    if (kind === 'missing_locally') {
+      return `${tx}: המסוף חייב ${formatAgorot(asNumber(row.terminalAgorot))} ואין אצלנו רישום כלל`
+    }
+    return `${tx}: המסוף ${formatAgorot(asNumber(row.terminalAgorot))} מול ${formatAgorot(asNumber(row.localAgorot))} אצלנו`
+  }
+
+  const text = [
+    `נמצאו ${critical} פערים בין הרישום שלנו לדוח המסוף.`,
+    '',
+    'פער מסוג "אין אצלנו רישום" פירושו לקוח שחויב ואין לו הזמנה. הוא לא ייפתח פנייה,',
+    'כי אין לו מספר הזמנה לצטט.',
+    '',
+    ...rows.map((row) => `— ${describe(row)}`),
+    '',
+    url,
+  ].join('\n')
+
+  const html = shell(
+    `<div dir="rtl" style="background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+        <div style="font-size:17px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
+        <div style="font-size:14px;color:${INK};margin-top:10px">פער מסוג "אין אצלנו רישום" פירושו לקוח שחויב ואין לו הזמנה, והוא לא ייפתח פנייה כי אין לו מספר הזמנה לצטט.</div>
+        <div style="font-size:13px;color:${MUTED};margin-top:12px;line-height:2">
+          ${rows.map((row) => `<div>${escapeHtml(describe(row))}</div>`).join('')}
+        </div>
+        <a href="${escapeHtml(url)}" style="display:block;margin-top:16px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:12px 18px;border-radius:10px">פתיחת התשלומים באדמין</a>
+      </div>`,
+    'התראה תפעולית, לא הודעה ללקוח.',
+  )
+
+  return { subject, html, text }
 }
 
 /** Dispatch by queued kind. Unknown kinds return null so the drain can park them. */
@@ -325,6 +682,18 @@ export function buildNotification(
       return buildVoucherRedeemedEmail(payload, siteUrl)
     case 'voucher_issued':
       return buildVoucherIssuedEmail(payload, siteUrl)
+    case 'voucher_gifted':
+      return buildVoucherGiftedEmail(payload, siteUrl)
+    case 'voucher_expiring':
+      return buildVoucherExpiringEmail(payload, siteUrl)
+    case 'cashback_credited':
+      return buildCashbackCreditedEmail(payload, siteUrl)
+    case 'invoice_dead':
+      return buildInvoiceDeadEmail(payload, siteUrl)
+    case 'low_stock':
+      return buildLowStockEmail(payload, siteUrl)
+    case 'reconciliation_gap':
+      return buildReconciliationGapEmail(payload, siteUrl)
     default:
       return null
   }

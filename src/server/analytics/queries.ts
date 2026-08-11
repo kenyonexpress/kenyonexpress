@@ -1,8 +1,10 @@
+import { log } from '@/lib/observability/log'
 import 'server-only'
 
 import type { FunnelRow, SaleLine } from '@/lib/analytics/aggregate'
 import { agorot, agorotToIls } from '@/lib/commerce/money'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { supplierDueAgorot } from '@/lib/supplier/dashboard'
 
 // Data loading for the admin analytics dashboard.
 //
@@ -75,7 +77,7 @@ export async function loadSalesLines(days: number): Promise<SalesLoad> {
     .limit(MAX_LINES)
 
   if (error || !data) {
-    console.error('loadSalesLines failed:', error?.message)
+    log.error('analytics.sales_lines_failed', { reason: error?.message })
     return { lines: [], truncated: false }
   }
 
@@ -84,7 +86,17 @@ export async function loadSalesLines(days: number): Promise<SalesLoad> {
     const order = firstOf(row.orders)
     if (!order?.paid_at) continue
 
-    const supplierDue = (row.supplier_immediate_agorot ?? 0) + (row.escrow_release_agorot ?? 0)
+    // The immediate split ONLY. `+ escrow_release_agorot` was the abolished
+    // escrow model: under it the supplier's share of a coupon prepayment was
+    // held until the scan and released then. Ofir reversed that on 2026-07-28
+    // and migration 085 removed the release path from the database, so the
+    // whole coupon prepayment is the platform's at payment and no release ever
+    // happens. Two legacy order_items still carry a non-zero
+    // escrow_release_agorot, so this line was inflating supplier revenue in
+    // analytics by money that was never released.
+    const supplierDue = supplierDueAgorot({
+      supplierImmediateAgorot: row.supplier_immediate_agorot ?? 0,
+    })
 
     lines.push({
       paidAt: order.paid_at,

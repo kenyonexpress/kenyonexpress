@@ -4,17 +4,17 @@
 // Writes a markdown report to docs/hardcoded-audit.md and prints a summary.
 // Usage: node scripts/audit-hardcoded.mjs (run from repo root).
 
-import { readdirSync, statSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
-import { join, relative, dirname, extname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
+import { dirname, extname, join, relative } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const __filename = fileURLToPath(import.meta.url);
-const REPO_ROOT = join(dirname(__filename), '..');
-const SRC_DIR = join(REPO_ROOT, 'src');
-const OUT_FILE = join(REPO_ROOT, 'docs', 'hardcoded-audit.md');
+const __filename = fileURLToPath(import.meta.url)
+const REPO_ROOT = join(dirname(__filename), '..')
+const SRC_DIR = join(REPO_ROOT, 'src')
+const OUT_FILE = join(REPO_ROOT, 'docs', 'hardcoded-audit.md')
 
-const SCAN_EXTS = new Set(['.ts', '.tsx', '.css']);
-const SKIP_DIRS = new Set(['node_modules', '.next', '.git', 'dist', 'build', 'coverage']);
+const SCAN_EXTS = new Set(['.ts', '.tsx', '.css'])
+const SKIP_DIRS = new Set(['node_modules', '.next', '.git', 'dist', 'build', 'coverage'])
 
 // Suggested token mapping. Keys are normalized (lowercase for hex).
 const HEX_TOKENS = {
@@ -28,7 +28,7 @@ const HEX_TOKENS = {
   '#e00': '--color-price',
   '#ddd': '--color-border (proposed)',
   '#768b9e': '--color-muted (proposed)',
-};
+}
 
 const PX_TOKENS = {
   '70px': '--header-height',
@@ -36,129 +36,131 @@ const PX_TOKENS = {
   '1320px': '--container-page',
   '1200px': '--container-page',
   '22px': '--radius-pill (proposed)',
-};
+}
 
-const NONE = '(none - candidate for new token)';
+const NONE = '(none - candidate for new token)'
 
-const HEX_RE = /#[0-9a-fA-F]{3,8}\b/g;
-const PX_RE = /\b\d+(?:\.\d+)?px\b/g;
+const HEX_RE = /#[0-9a-fA-F]{3,8}\b/g
+const PX_RE = /\b\d+(?:\.\d+)?px\b/g
 
 function suggestHex(value) {
-  const key = value.toLowerCase();
-  return HEX_TOKENS[key] || NONE;
+  const key = value.toLowerCase()
+  return HEX_TOKENS[key] || NONE
 }
 
 function suggestPx(value) {
-  const key = value.toLowerCase();
-  return PX_TOKENS[key] || NONE;
+  const key = value.toLowerCase()
+  return PX_TOKENS[key] || NONE
 }
 
 // Returns true when the line is a trivial full-line comment (JS // or CSS /* */ only).
 function isTrivialComment(line) {
-  const t = line.trim();
-  if (t.startsWith('//')) return true;
-  if (t.startsWith('*')) return true; // JSDoc continuation
-  if (t.startsWith('/*') && t.endsWith('*/')) return true;
-  return false;
+  const t = line.trim()
+  if (t.startsWith('//')) return true
+  if (t.startsWith('*')) return true // JSDoc continuation
+  if (t.startsWith('/*') && t.endsWith('*/')) return true
+  return false
 }
 
 function walk(dir, files) {
-  let entries;
+  let entries
   try {
-    entries = readdirSync(dir);
+    entries = readdirSync(dir)
   } catch {
-    return;
+    return
   }
   for (const name of entries) {
-    if (SKIP_DIRS.has(name)) continue;
-    const full = join(dir, name);
-    let st;
+    if (SKIP_DIRS.has(name)) continue
+    const full = join(dir, name)
+    let st
     try {
-      st = statSync(full);
+      st = statSync(full)
     } catch {
-      continue;
+      continue
     }
     if (st.isDirectory()) {
-      walk(full, files);
+      walk(full, files)
     } else if (SCAN_EXTS.has(extname(name))) {
-      files.push(full);
+      files.push(full)
     }
   }
 }
 
 function collectMatches(re, line) {
-  const out = [];
-  re.lastIndex = 0;
-  let m = re.exec(line);
+  const out = []
+  re.lastIndex = 0
+  let m = re.exec(line)
   while (m !== null) {
-    out.push(m[0]);
-    m = re.exec(line);
+    out.push(m[0])
+    m = re.exec(line)
   }
-  return out;
+  return out
 }
 
 function escapeCell(v) {
-  return v.replace(/\|/g, '\\|');
+  return v.replace(/\|/g, '\\|')
 }
 
-const files = [];
-walk(SRC_DIR, files);
-files.sort();
+const files = []
+walk(SRC_DIR, files)
+files.sort()
 
-const rows = [];
-let hexCount = 0;
-let pxCount = 0;
+const rows = []
+let hexCount = 0
+let pxCount = 0
 
 for (const file of files) {
-  let content;
+  let content
   try {
-    content = readFileSync(file, 'utf8');
+    content = readFileSync(file, 'utf8')
   } catch {
-    continue;
+    continue
   }
-  const rel = relative(REPO_ROOT, file);
-  const lines = content.split(/\r?\n/);
+  const rel = relative(REPO_ROOT, file)
+  const lines = content.split(/\r?\n/)
   for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    if (isTrivialComment(line)) continue;
-    const lineNo = i + 1;
+    const line = lines[i]
+    if (isTrivialComment(line)) continue
+    const lineNo = i + 1
 
     for (const value of collectMatches(HEX_RE, line)) {
-      rows.push({ rel, lineNo, value, token: suggestHex(value) });
-      hexCount++;
+      rows.push({ rel, lineNo, value, token: suggestHex(value) })
+      hexCount++
     }
     for (const value of collectMatches(PX_RE, line)) {
-      rows.push({ rel, lineNo, value, token: suggestPx(value) });
-      pxCount++;
+      rows.push({ rel, lineNo, value, token: suggestPx(value) })
+      pxCount++
     }
   }
 }
 
 // Build markdown.
-const now = new Date().toISOString().slice(0, 10);
-const md = [];
-md.push('# Hardcoded values audit');
-md.push('');
-md.push('Read-only scan of `src/` (.ts, .tsx, .css) for hardcoded hex colors and px values.');
-md.push('Generated by `scripts/audit-hardcoded.mjs`.');
-md.push('');
-md.push(`Date: ${now}`);
-md.push('');
-md.push(`Total hits: ${rows.length} (hex colors: ${hexCount}, px values: ${pxCount}).`);
-md.push('');
-md.push('| File | Line | Value | Suggested token |');
-md.push('| --- | --- | --- | --- |');
+const now = new Date().toISOString().slice(0, 10)
+const md = []
+md.push('# Hardcoded values audit')
+md.push('')
+md.push('Read-only scan of `src/` (.ts, .tsx, .css) for hardcoded hex colors and px values.')
+md.push('Generated by `scripts/audit-hardcoded.mjs`.')
+md.push('')
+md.push(`Date: ${now}`)
+md.push('')
+md.push(`Total hits: ${rows.length} (hex colors: ${hexCount}, px values: ${pxCount}).`)
+md.push('')
+md.push('| File | Line | Value | Suggested token |')
+md.push('| --- | --- | --- | --- |')
 for (const r of rows) {
-  md.push(`| ${escapeCell(r.rel)} | ${r.lineNo} | \`${escapeCell(r.value)}\` | ${escapeCell(r.token)} |`);
+  md.push(
+    `| ${escapeCell(r.rel)} | ${r.lineNo} | \`${escapeCell(r.value)}\` | ${escapeCell(r.token)} |`,
+  )
 }
-md.push('');
+md.push('')
 
-mkdirSync(dirname(OUT_FILE), { recursive: true });
-writeFileSync(OUT_FILE, md.join('\n'), 'utf8');
+mkdirSync(dirname(OUT_FILE), { recursive: true })
+writeFileSync(OUT_FILE, md.join('\n'), 'utf8')
 
-console.log('Hardcoded audit complete.');
-console.log(`Files scanned: ${files.length}`);
-console.log(`Hex color hits: ${hexCount}`);
-console.log(`Px value hits: ${pxCount}`);
-console.log(`Total hits: ${rows.length}`);
-console.log(`Report written to: ${relative(REPO_ROOT, OUT_FILE)}`);
+console.log('Hardcoded audit complete.')
+console.log(`Files scanned: ${files.length}`)
+console.log(`Hex color hits: ${hexCount}`)
+console.log(`Px value hits: ${pxCount}`)
+console.log(`Total hits: ${rows.length}`)
+console.log(`Report written to: ${relative(REPO_ROOT, OUT_FILE)}`)

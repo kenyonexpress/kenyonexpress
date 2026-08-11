@@ -2,6 +2,7 @@
 
 import { requireAdminSession } from '@/lib/admin/rbac'
 import { parseVendorForm } from '@/lib/admin/vendor-form'
+import { withActionContext } from '@/lib/observability/action-context'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -10,7 +11,7 @@ const statusSchema = z.enum(['pending', 'active', 'suspended'])
 
 export type VendorActionState = { error: string } | { success: string } | null
 
-export async function upsertVendor(
+async function runUpsertVendor(
   _: VendorActionState,
   formData: FormData,
 ): Promise<VendorActionState> {
@@ -62,7 +63,7 @@ export async function upsertVendor(
   return { success: id ? 'ספק עודכן' : 'ספק נוצר' }
 }
 
-export async function updateVendorStatus(
+async function runUpdateVendorStatus(
   _: VendorActionState,
   formData: FormData,
 ): Promise<VendorActionState> {
@@ -85,7 +86,7 @@ export async function updateVendorStatus(
   return { success: 'סטטוס עודכן' }
 }
 
-export async function updateVendorCommission(
+async function runUpdateVendorCommission(
   _: VendorActionState,
   formData: FormData,
 ): Promise<VendorActionState> {
@@ -111,7 +112,7 @@ export async function updateVendorCommission(
   return { success: 'עמלה עודכנה' }
 }
 
-export async function softDeleteVendor(id: string): Promise<{ error?: string }> {
+async function runSoftDeleteVendor(id: string): Promise<{ error?: string }> {
   try {
     await requireAdminSession()
   } catch {
@@ -127,4 +128,31 @@ export async function softDeleteVendor(id: string): Promise<{ error?: string }> 
 
   revalidatePath('/admin/vendors')
   return {}
+}
+
+export async function upsertVendor(
+  _: VendorActionState,
+  formData: FormData,
+): Promise<VendorActionState> {
+  return withActionContext('admin.vendor.upsert', () => runUpsertVendor(_, formData))
+}
+
+export async function updateVendorStatus(
+  _: VendorActionState,
+  formData: FormData,
+): Promise<VendorActionState> {
+  return withActionContext('admin.vendor.update_status', () => runUpdateVendorStatus(_, formData))
+}
+
+export async function updateVendorCommission(
+  _: VendorActionState,
+  formData: FormData,
+): Promise<VendorActionState> {
+  return withActionContext('admin.vendor.update_commission', () =>
+    runUpdateVendorCommission(_, formData),
+  )
+}
+
+export async function softDeleteVendor(id: string): Promise<{ error?: string }> {
+  return withActionContext('admin.vendor.soft_delete', () => runSoftDeleteVendor(id))
 }

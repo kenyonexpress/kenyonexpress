@@ -83,7 +83,6 @@ export function buildProductJsonLd(input: ProductJsonLdInput): JsonLdNode {
     '@type': 'Product',
     name: input.name,
     url,
-    inLanguage: 'he-IL',
   }
 
   if (input.description) node.description = input.description
@@ -196,17 +195,14 @@ export function buildSiteJsonLd(siteUrl: string): JsonLdNode[] {
     {
       '@context': SCHEMA,
       '@type': 'Organization',
-      name: 'קניון אקספרס',
-      alternateName: 'KenyonExpress',
+      name: 'KenyonExpress',
       url: site,
       logo: `${site}/logo.png`,
-      inLanguage: 'he-IL',
     },
     {
       '@context': SCHEMA,
       '@type': 'WebSite',
-      name: 'קניון אקספרס',
-      alternateName: 'KenyonExpress',
+      name: 'KenyonExpress',
       url: site,
       inLanguage: 'he-IL',
       potentialAction: {

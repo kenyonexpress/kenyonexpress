@@ -1,124 +1,25 @@
 'use server'
 
+import { productSchema as schema, variantSchema } from '@/lib/admin/product-form-schema'
 import { variantIdsToRemove } from '@/lib/admin/product-variants'
 import { requireStaffSession } from '@/lib/admin/rbac'
-import { revalidateStorefrontCatalogue } from '@/lib/catalogue-cache'
+import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
+import { ilsToAgorot } from '@/lib/commerce/money'
 import { assertPublishable, buildProductMoneyWrite } from '@/lib/commerce/product-money'
+import { recurringSchemaError } from '@/lib/commerce/recurring-schema-error'
+import { whatsappSchemaError } from '@/lib/commerce/whatsapp-schema-error'
+import { IMAGE_HOST_ERROR, isAllowedImageUrl } from '@/lib/images/remote-hosts'
+import { withActionContext } from '@/lib/observability/action-context'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import type { PostgrestError } from '@supabase/supabase-js'
+import { revalidatePath, updateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
-const schema = z
-  .object({
-    id: z.string().uuid().optional(),
-    supplier_id: z.string().uuid().nullable().optional(),
-    category_id: z.string().uuid().nullable().optional(),
-    slug: z
-      .string()
-      .min(2, 'קישור חייב להכיל לפחות 2 תווים')
-      .regex(/^[a-z0-9-]+$/, 'קישור יכול להכיל אותיות לועזיות, מספרים ומקפים בלבד'),
-    name_he: z.string().min(2, 'שם חייב להכיל לפחות 2 תווים'),
-    name_en: z.string().nullable().optional(),
-    description_he: z.string().nullable().optional(),
-    type: z.enum(['physical', 'coupon']),
-    kenyon_price: z.coerce.number().min(0, 'מחיר בקניון נדרש'),
-    full_price: z.coerce.number().min(0).nullable().optional(),
-    // CONTRADICTIONS C1: no default exists anywhere, on purpose. It is the only
-    // split handle, and since 2026-07-27 it governs coupons too. A product
-    // without it cannot be priced, so the storefront hides it rather than
-    // guessing; that is why this is required rather than nullable.
-    platform_percent: z.coerce
-      .number({ invalid_type_error: 'עמלת פלטפורמה נדרשת' })
-      .min(0, 'עמלה לא יכולה להיות שלילית')
-      .max(100, 'עמלה לא יכולה לעלות על 100'),
-    // The supplier's half. Sent so the admin can type either side; the pair is
-    // completed and checked against 100 by completeSplitPair before it is
-    // written, and the DB CHECK products_split_pair_sums_to_100 backs that up.
-    supplier_split_percent: z.coerce.number().min(0).max(100).nullable().optional(),
-    // Physical: reduces the on-site charge. Coupon: badge only, and recomputed
-    // from the two prices so the page cannot quote a saving checkout will not
-    // honour (ADMIN-ARCHITECTURE.md section 3.2).
-    discount_percent: z.coerce.number().min(0).max(100).nullable().optional(),
-    // Absolute shekel amount charged on this site for a coupon. Not a percent,
-    // and no default: see lib/commerce/coupon-offer.ts for the bug that caused.
-    coupon_price_ils: z.coerce.number().positive().nullable().optional(),
-    coupon_expiry_days: z.coerce.number().int().positive().nullable().optional(),
-    offer_valid_until: z.string().nullable().optional(),
-    is_coupon_enabled: z.coerce.boolean().default(false),
-    sku: z.string().nullable().optional(),
-    stock_quantity: z.coerce.number().int().min(0).nullable().optional(),
-    is_featured: z.coerce.boolean().default(false),
-    status: z.enum(['draft', 'active', 'paused', 'archived']),
-    // content/marketing (048)
-    short_description_he: z.string().max(300, 'תיאור קצר עד 300 תווים').nullable().optional(),
-    brand: z.string().nullable().optional(),
-    highlights: z.array(z.string().min(1)).default([]),
-    video_url: z.string().url('כתובת וידאו לא תקינה').nullable().optional(),
-    barcode: z.string().nullable().optional(),
-    // inventory (048)
-    low_stock_threshold: z.coerce.number().int().min(0).default(5),
-    max_per_order: z.coerce.number().int().min(1).nullable().optional(),
-    // logistics (048)
-    requires_shipping: z.coerce.boolean().default(true),
-    weight_grams: z.coerce.number().int().min(0).nullable().optional(),
-    length_cm: z.coerce.number().min(0).nullable().optional(),
-    width_cm: z.coerce.number().min(0).nullable().optional(),
-    height_cm: z.coerce.number().min(0).nullable().optional(),
-    warranty_months: z.coerce.number().int().min(0).nullable().optional(),
-    condition: z.enum(['new', 'refurbished', 'used']).nullable().optional(),
-    // coupon specifics (048)
-    coupon_terms_he: z.string().nullable().optional(),
-    redemption_instructions_he: z.string().nullable().optional(),
-    min_purchase_ils: z.coerce.number().min(0).nullable().optional(),
-    // SEO (048)
-    seo_title: z.string().max(70, 'כותרת SEO עד 70 תווים').nullable().optional(),
-    seo_description: z.string().max(170, 'תיאור SEO עד 170 תווים').nullable().optional(),
-    seo_keywords: z.string().nullable().optional(),
-  })
-  .superRefine((data, ctx) => {
-    if (data.full_price != null && data.full_price < data.kenyon_price) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'מחיר מלא חייב להיות גדול או שווה למחיר בקניון',
-        path: ['full_price'],
-      })
-    }
-    // Mirrors products_coupon_price_within_price, which was added NOT VALID and
-    // so cannot be relied on alone for rows that predate it.
-    if (data.coupon_price_ils != null && data.coupon_price_ils > data.kenyon_price) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'מחיר הקופון לא יכול לעלות על המחיר הרגיל',
-        path: ['coupon_price_ils'],
-      })
-    }
-    if (data.supplier_split_percent != null) {
-      const sum = Math.round((data.platform_percent + data.supplier_split_percent) * 100) / 100
-      if (sum !== 100) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: `עמלת פלטפורמה ואחוז לספק חייבים להסתכם ב-100%. כרגע ${sum}%.`,
-          path: ['supplier_split_percent'],
-        })
-      }
-    }
-  })
-
-const variantSchema = z.object({
-  id: z.string().uuid().optional(),
-  name_he: z.string().min(1),
-  sku: z.string().min(1),
-  price: z.coerce.number().min(0).nullable().optional(),
-  price_modifier: z.coerce.number().default(0),
-  stock_quantity: z.coerce.number().int().min(0).nullable().optional(),
-  is_active: z.coerce.boolean().default(true),
-})
-
 export type ProductFormState = { error: string } | { success: string } | null
 
-export async function upsertProduct(
+async function runUpsertProduct(
   _: ProductFormState,
   formData: FormData,
 ): Promise<ProductFormState> {
@@ -162,10 +63,23 @@ export async function upsertProduct(
     low_stock_threshold: formData.get('low_stock_threshold') || 5,
     max_per_order: formData.get('max_per_order') || null,
     requires_shipping: formData.get('requires_shipping') === 'true',
+    whatsapp_enabled: formData.get('whatsapp_enabled') === 'true',
     weight_grams: formData.get('weight_grams') || null,
-    length_cm: formData.get('length_cm') || null,
-    width_cm: formData.get('width_cm') || null,
-    height_cm: formData.get('height_cm') || null,
+    length_mm: formData.get('length_mm') || null,
+    width_mm: formData.get('width_mm') || null,
+    height_mm: formData.get('height_mm') || null,
+    vat_exempt: formData.get('vat_exempt') === 'true',
+    // One text input, comma separated. Split here rather than in the form so
+    // the server decides what a tag is: trimmed, non-empty, and deduped, so
+    // "מבצע, מבצע" is one tag and a trailing comma is not an empty one.
+    tags: [
+      ...new Set(
+        String(formData.get('tags') ?? '')
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean),
+      ),
+    ],
     warranty_months: formData.get('warranty_months') || null,
     condition: formData.get('condition') || null,
     coupon_terms_he: formData.get('coupon_terms_he') || null,
@@ -182,8 +96,32 @@ export async function upsertProduct(
     data: { user },
   } = await supabase.auth.getUser()
 
+  /**
+   * Every entry is validated, and it is the only one of the four image write
+   * paths that had NO validation at all: the field arrives as a JSON string and
+   * went to the column unread.
+   *
+   * These strings are rendered by next/image on the deal cards, the homepage
+   * and the product page. next THROWS on a host that is not in
+   * `images.remotePatterns`, so one pasted URL from an un-allowlisted host is a
+   * 500 on the storefront, written from the admin, with nothing failing at the
+   * moment it is saved. Measured against production before this landed: 76
+   * entries, 27 local paths and 45 picsum, all of them allowed, so no existing
+   * row becomes uneditable.
+   */
   const imagesRaw = formData.get('images') as string | null
-  const images = imagesRaw ? (JSON.parse(imagesRaw) as unknown[]) : []
+  let images: unknown[] = []
+  if (imagesRaw) {
+    try {
+      const parsedImages = JSON.parse(imagesRaw)
+      if (!Array.isArray(parsedImages)) return { error: 'רשימת התמונות אינה תקינה' }
+      images = parsedImages
+    } catch {
+      return { error: 'רשימת התמונות אינה תקינה' }
+    }
+    const badImage = images.find((v) => typeof v !== 'string' || !isAllowedImageUrl(v))
+    if (badImage !== undefined) return { error: IMAGE_HOST_ERROR }
+  }
 
   const variantsRaw = formData.get('variants') as string | null
   const variantsParsed = variantsRaw
@@ -197,7 +135,68 @@ export async function upsertProduct(
 
   const variants = variantsParsed.filter((v) => v.success).map((v) => v.data)
 
-  const { id, ...fields } = parsed.data
+  /**
+   * The three recurring inputs leave `fields` here and never reach the row
+   * spread. `recurring_amount_ils` is not a column at any point - the column is
+   * `recurring_amount_agorot` - and the other two arrive on the row only via
+   * `money.fields`, which omits them entirely unless the type is recurring.
+   *
+   * This is what keeps PENDING-109 optional for every other product: a physical
+   * save sends no column that the un-migrated database has never heard of.
+   */
+  const {
+    id,
+    recurring_amount_ils: recurringAmountIls,
+    billing_interval: billingInterval,
+    billing_interval_count: billingIntervalCount,
+    whatsapp_enabled: whatsappEnabled,
+    ...fields
+  } = parsed.data
+
+  /**
+   * The row always carries `whatsapp_enabled`; the WRITE drops it if the column
+   * turns out not to exist yet.
+   *
+   * The column arrives with `migrations/pending/003-products-whatsapp-enabled
+   * .sql`, which is not applied. Three cheaper-looking options were rejected:
+   *
+   *  - Always send it. PostgREST answers PGRST204 for EVERY product an admin
+   *    edits: the whole admin broken by a feature nobody switched on.
+   *  - Send it only when ticked. Then un-ticking a previously ticked box sends
+   *    nothing and the flag silently stays on -- the one direction that matters,
+   *    because it is how a supplier withdraws consent.
+   *  - Read the row first to see whether it has the column. An extra round trip
+   *    on every save, and the read itself fails on the un-migrated database.
+   *
+   * So the write is attempted with the column and retried without it, once,
+   * only on the missing-column error. On a migrated database there is no retry
+   * and no extra call. On an un-migrated one an untouched toggle costs one
+   * retry and saves correctly, while a DELIBERATELY ticked box is reported
+   * through `whatsappSchemaError` with the filename, rather than being written
+   * nowhere and reported as success.
+   */
+  const whatsappFields = { whatsapp_enabled: whatsappEnabled }
+
+  async function writeWithWhatsAppFallback<T>(
+    run: (
+      extra: Record<string, unknown>,
+    ) => Promise<{ data: T | null; error: PostgrestError | null }>,
+  ) {
+    const first = await run(whatsappFields)
+    if (!first.error) return first
+
+    // Only the missing-column case is retried, and only when the admin did not
+    // ask for the feature. Anything else is a real error and must surface.
+    if (whatsappEnabled || whatsappSchemaError(first.error.message) === null) return first
+    return run({})
+  }
+
+  // Shekels to agorot, once, at the edge, through money.ts. Nothing downstream
+  // ever sees a float on this path.
+  const recurringAmountAgorot =
+    fields.type === 'recurring' && recurringAmountIls != null
+      ? ilsToAgorot(recurringAmountIls.toFixed(2))
+      : null
 
   // Every money column this write must set, derived once by the same pure
   // module the form preview and checkout use.
@@ -209,6 +208,9 @@ export async function upsertProduct(
     discountPercent: fields.discount_percent,
     couponPriceIls: fields.coupon_price_ils,
     couponExpiryDays: fields.coupon_expiry_days,
+    recurringAmountAgorot,
+    billingInterval,
+    billingIntervalCount: billingIntervalCount ?? 1,
   })
   if (!money.ok) return { error: money.message }
 
@@ -233,6 +235,8 @@ export async function upsertProduct(
       discountPercent: money.fields.discount_percent,
       couponPriceIls: money.fields.coupon_price_ils,
       couponExpiryDays: money.fields.coupon_expiry_days,
+      recurringAmountAgorot,
+      billingInterval,
       supplier: supplier
         ? {
             id: supplier.id,
@@ -254,18 +258,39 @@ export async function upsertProduct(
   let productId = id
 
   if (id) {
-    const { error } = await supabase
-      .from('products')
-      .update({ ...fields, ...money.fields, images })
-      .eq('id', id)
-    if (error) return { error: error.message }
+    const { error } = await writeWithWhatsAppFallback(async (extra) =>
+      supabase
+        .from('products')
+        .update({ ...fields, ...money.fields, ...extra, images })
+        .eq('id', id)
+        .select('id')
+        .maybeSingle(),
+    )
+    if (error) {
+      return {
+        error:
+          whatsappSchemaError(error.message) ??
+          recurringSchemaError(error.message) ??
+          error.message,
+      }
+    }
   } else {
-    const { data, error } = await supabase
-      .from('products')
-      .insert({ ...fields, ...money.fields, images, created_by: user!.id })
-      .select('id')
-      .single()
-    if (error) return { error: error.message }
+    const { data, error } = await writeWithWhatsAppFallback<{ id: string }>(async (extra) =>
+      supabase
+        .from('products')
+        .insert({ ...fields, ...money.fields, ...extra, images, created_by: user!.id })
+        .select('id')
+        .single(),
+    )
+    if (error || !data) {
+      return {
+        error:
+          whatsappSchemaError(error?.message) ??
+          recurringSchemaError(error?.message) ??
+          error?.message ??
+          'שמירת המוצר נכשלה',
+      }
+    }
     productId = data.id
   }
 
@@ -302,11 +327,11 @@ export async function upsertProduct(
   }
 
   revalidatePath('/admin/products')
-  revalidateStorefrontCatalogue()
+  updateTag(CATALOGUE_TAG)
   redirect('/admin/products')
 }
 
-export async function deleteProduct(id: string): Promise<{ error?: string }> {
+async function runDeleteProduct(id: string): Promise<{ error?: string }> {
   try {
     await requireStaffSession()
   } catch {
@@ -321,11 +346,11 @@ export async function deleteProduct(id: string): Promise<{ error?: string }> {
   if (error) return { error: error.message }
 
   revalidatePath('/admin/products')
-  revalidateStorefrontCatalogue()
+  updateTag(CATALOGUE_TAG)
   return {}
 }
 
-export async function bulkUpdateProductStatus(
+async function runBulkUpdateProductStatus(
   ids: string[],
   status: 'draft' | 'active' | 'paused' | 'archived',
 ): Promise<{ error?: string }> {
@@ -340,11 +365,11 @@ export async function bulkUpdateProductStatus(
   if (error) return { error: error.message }
 
   revalidatePath('/admin/products')
-  revalidateStorefrontCatalogue()
+  updateTag(CATALOGUE_TAG)
   return {}
 }
 
-export async function bulkAssignCategory(
+async function runBulkAssignCategory(
   ids: string[],
   categoryId: string | null,
 ): Promise<{ error?: string }> {
@@ -366,7 +391,7 @@ export async function bulkAssignCategory(
   if (error) return { error: error.message }
 
   revalidatePath('/admin/products')
-  revalidateStorefrontCatalogue()
+  updateTag(CATALOGUE_TAG)
   return {}
 }
 
@@ -389,7 +414,7 @@ function round2(n: number): number {
  * set mode writes kenyon_price and skips products whose full_price would fall
  * below it (those are reported back, not silently broken).
  */
-export async function bulkAdjustPrices(
+async function runBulkAdjustPrices(
   ids: string[],
   input: BulkPriceInput,
 ): Promise<{ error?: string; updated?: number; skipped?: string[] }> {
@@ -440,11 +465,11 @@ export async function bulkAdjustPrices(
   }
 
   revalidatePath('/admin/products')
-  revalidateStorefrontCatalogue()
+  updateTag(CATALOGUE_TAG)
   return { updated, skipped }
 }
 
-export async function bulkSoftDeleteProducts(ids: string[]): Promise<{ error?: string }> {
+async function runBulkSoftDeleteProducts(ids: string[]): Promise<{ error?: string }> {
   try {
     await requireStaffSession()
   } catch {
@@ -460,11 +485,11 @@ export async function bulkSoftDeleteProducts(ids: string[]): Promise<{ error?: s
   if (error) return { error: error.message }
 
   revalidatePath('/admin/products')
-  revalidateStorefrontCatalogue()
+  updateTag(CATALOGUE_TAG)
   return {}
 }
 
-export async function deleteVariant(id: string): Promise<{ error?: string }> {
+async function runDeleteVariant(id: string): Promise<{ error?: string }> {
   try {
     await requireStaffSession()
   } catch {
@@ -479,4 +504,50 @@ export async function deleteVariant(id: string): Promise<{ error?: string }> {
   if (error) return { error: error.message }
 
   return {}
+}
+
+export async function upsertProduct(
+  _: ProductFormState,
+  formData: FormData,
+): Promise<ProductFormState> {
+  return withActionContext('admin.product.upsert', () => runUpsertProduct(_, formData))
+}
+
+export async function deleteProduct(id: string): Promise<{ error?: string }> {
+  return withActionContext('admin.product.delete', () => runDeleteProduct(id))
+}
+
+export async function bulkUpdateProductStatus(
+  ids: string[],
+  status: 'draft' | 'active' | 'paused' | 'archived',
+): Promise<{ error?: string }> {
+  return withActionContext('admin.product.bulk_update_status', () =>
+    runBulkUpdateProductStatus(ids, status),
+  )
+}
+
+export async function bulkAssignCategory(
+  ids: string[],
+  categoryId: string | null,
+): Promise<{ error?: string }> {
+  return withActionContext('admin.product.bulk_assign_category', () =>
+    runBulkAssignCategory(ids, categoryId),
+  )
+}
+
+export async function bulkAdjustPrices(
+  ids: string[],
+  input: BulkPriceInput,
+): Promise<{ error?: string; updated?: number; skipped?: string[] }> {
+  return withActionContext('admin.product.bulk_adjust_prices', () =>
+    runBulkAdjustPrices(ids, input),
+  )
+}
+
+export async function bulkSoftDeleteProducts(ids: string[]): Promise<{ error?: string }> {
+  return withActionContext('admin.product.bulk_soft_delete', () => runBulkSoftDeleteProducts(ids))
+}
+
+export async function deleteVariant(id: string): Promise<{ error?: string }> {
+  return withActionContext('admin.variant.delete', () => runDeleteVariant(id))
 }

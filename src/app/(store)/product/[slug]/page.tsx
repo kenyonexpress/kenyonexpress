@@ -4,135 +4,122 @@ import ProductGallery from '@/components/storefront/ProductGallery'
 import ProductInfo from '@/components/storefront/ProductInfo'
 import RelatedProducts from '@/components/storefront/RelatedProducts'
 import ShippingInfo from '@/components/storefront/ShippingInfo'
+import StockScarcity from '@/components/storefront/StockScarcity'
 import SupplierInfo from '@/components/storefront/SupplierInfo'
-import { type CouponOffer, buildCouponOffer } from '@/lib/commerce/coupon-offer'
+import { productLocation } from '@/lib/geo/distance'
+import { listProductSlugsForPrerender, loadProductBySlug } from '@/lib/product-detail'
+import { getProductSeoBySlug } from '@/lib/product-seo'
 import { buildBreadcrumbJsonLd, buildProductJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
-import { createAdminClient } from '@/lib/supabase/admin'
-import {
-  COUPON_054_COLUMNS,
-  type Coupon054Row,
-  readOptionalColumns,
-} from '@/lib/supabase/optional-columns'
-import { createPublicClient } from '@/lib/supabase/public'
-import type { Metadata } from 'next'
+import { readWhatsAppEnabled } from '@/lib/supplier-contact'
+import '@/styles/product-page.css'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 
 type Props = { params: Promise<{ slug: string }> }
 
-/** ISR: product pages refresh at most every 2 minutes (SEO-PERFORMANCE §1.1). */
-export const revalidate = 120
-
-export async function generateStaticParams() {
-  const admin = createAdminClient()
-  const { data } = await admin
-    .from('products')
-    .select('slug')
-    .eq('status', 'active')
-    .is('deleted_at', null)
-    .not('slug', 'is', null)
-    .limit(500)
-  return (data ?? []).map((row) => ({ slug: row.slug as string }))
-}
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params }: Props) {
   const { slug: rawSlug } = await params
   const slug = decodeURIComponent(rawSlug)
-  const supabase = createPublicClient()
-  const { data } = await supabase
-    .from('products')
-    .select(
-      'name_he, description_he, short_description_he, seo_title, seo_description, images, kenyon_price, type, is_coupon_enabled',
-    )
-    .eq('slug', slug)
-    .single()
+  const data = await getProductSeoBySlug(slug)
 
-  const name = data?.name_he ?? 'מוצר'
-  const onSite = Number(data?.kenyon_price ?? 0)
-  const priceTitle = data?.seo_title ?? (onSite > 0 ? `${name} ב-${onSite.toFixed(0)} ש"ח` : name)
+  // Missing / inactive / soft-deleted: the body calls notFound(), which already
+  // emits noindex via app/not-found.tsx. State it here too so a crawler that
+  // only reads metadata never treats an empty shell as indexable ([26]).
+  if (!data || data.status !== 'active' || data.deleted_at) {
+    return {
+      title: 'מוצר לא נמצא',
+      robots: { index: false, follow: true },
+      description: 'המוצר לא נמצא או שאינו זמין בקניון אקספרס.',
+    }
+  }
+
+  const title = data.seo_title?.trim() || data.name_he || 'מוצר'
+  // Most catalogue rows ship with null seo/short/body copy. Lighthouse SEO
+  // fails the whole page when <meta name="description"> is absent ([26] scored
+  // 58 on those). Fall back to a short Hebrew line from the product name so
+  // every active PDP has a description without inventing marketing copy.
   const description =
-    data?.seo_description ?? data?.short_description_he ?? data?.description_he ?? undefined
-  const path = `/product/${encodeURIComponent(slug)}`
-  const images = Array.isArray(data?.images) ? (data.images as string[]).filter(Boolean) : []
+    data.seo_description?.trim() ||
+    data.short_description_he?.trim() ||
+    data.description_he?.trim() ||
+    `${title} בקניון אקספרס. קופונים, מבצעים ומשלוחים.`
 
+  // A canonical, because the same product is reachable through more than one
+  // path (category trails, search, share links with tracking parameters) and
+  // without one those all compete as separate pages.
+  const path = `/product/${encodeURIComponent(slug)}`
+
+  // NO `openGraph.images` HERE, and its absence is the whole point.
+  //
+  // MEASURED: with `images: [data.images[0]]` set, the served page carried
+  // `<meta property="og:image" content=".../rm5-600x600.webp">` and the
+  // `opengraph-image.tsx` beside this file was never used. Next's file
+  // convention only fills the field when metadata has not already claimed it,
+  // so the generated card existed, built, appeared in the route list, and
+  // reached nothing. It would have shipped looking done.
+  //
+  // The generated card is also the better image: the product photo is a 600x600
+  // square, which WhatsApp crops to a thumbnail beside the link, and it shows no
+  // price — which is the only reason anyone forwards a deal.
   return {
-    title: priceTitle,
+    title,
     description,
     alternates: { canonical: path },
     openGraph: {
-      title: priceTitle,
+      title,
       description,
       url: path,
       type: 'website',
       locale: 'he_IL',
-      siteName: 'קניון אקספרס',
-      ...(images[0] ? { images: [{ url: images[0] as string }] } : {}),
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: priceTitle,
-      description,
     },
   }
 }
 
+/**
+ * Prerendered at build time, capped. See `listProductSlugsForPrerender`.
+ */
+export async function generateStaticParams() {
+  const slugs = await listProductSlugsForPrerender()
+  return slugs.map((slug) => ({ slug }))
+}
+
+/**
+ * NO `<Suspense>` WRAPPER, and removing it is a fix rather than a cleanup.
+ *
+ * This page used to render `<Suspense fallback={<ProductPageFallback/>}>` round
+ * its whole body, which was right while the body was a request-time hole: the
+ * frame streamed first and the product arrived after it. Once the last
+ * uncached read left this tree (`RelatedProducts`, see `lib/related-products.ts`)
+ * the page became fully static -- `x-nextjs-prerender: 1`, `s-maxage=3600`, no
+ * `x-nextjs-postponed` -- and the wrapper stopped being free.
+ *
+ * MEASURED, because it is not obvious: with the wrapper still in place, a
+ * DOCUMENT request served the complete product (94338 bytes, correct HTML) but
+ * an RSC request served the fallback shell instead -- byte-identical for every
+ * slug, 31852 bytes, containing no product name and ending on unresolved
+ * `$W` slots. So every CLIENT-SIDE navigation into a product died on
+ * "Connection closed." and rendered the error boundary, while every direct load
+ * and every curl looked perfect. Six products, Hebrew and ASCII slugs alike,
+ * from `/products` and from a category page: 6/6. That is 11 Playwright
+ * failures and nothing in the server log.
+ *
+ * A long-tail slug past the 200 of `generateStaticParams` now renders on first
+ * request instead of showing a frame first. That costs one round trip on one
+ * view of one uncached product, and `loadProductBySlug` caches it from there.
+ */
 export default async function ProductPage({ params }: Props) {
   const { slug: rawSlug } = await params
   const slug = decodeURIComponent(rawSlug)
-  const supabase = createPublicClient()
 
-  const { data: product } = await supabase
-    .from('products')
-    .select(
-      `id, slug, name_he, name_en, description_he,
-       kenyon_price, full_price, price_ils, is_coupon_enabled,
-       coupon_expiry_days, coupon_terms_he, redemption_instructions_he,
-       requires_shipping, weight_grams, warranty_months,
-       type, sku, images, stock_quantity, category_id, supplier_id,
-       categories!products_category_id_fkey(id, name_he, slug)`,
-    )
-    .eq('slug', slug)
-    .eq('status', 'active')
-    .is('deleted_at', null)
-    .single()
+  // One cached call instead of four per-request queries. See product-detail.ts
+  // for why: none of this is per-shopper, and reading it through the
+  // cookie-reading client is what made this page 1.2-1.9s hot under L1 in [41]
+  // while the home page answered in 6ms.
+  const detail = await loadProductBySlug(slug)
+  if (!detail) notFound()
 
-  if (!product) notFound()
-
-  // Supplier is resolved separately so the SupplierInfo block renders on every
-  // product (coupon and physical). suppliers RLS is admin-only, so the
-  // public-safe name is read server-side via the service client (name only,
-  // no contact details are exposed to the page).
-  let supplier: { id: string; name: string } | null = null
-  if (product.supplier_id) {
-    const admin = createAdminClient()
-    const { data } = await admin
-      .from('suppliers')
-      .select('id, name')
-      .eq('id', product.supplier_id)
-      .maybeSingle()
-    supplier = data
-  }
-
-  const { data: variants } = await supabase
-    .from('product_variants')
-    .select('id, name_he, price, price_modifier, stock_quantity, sku')
-    .eq('product_id', product.id)
-    .eq('is_active', true)
-    .is('deleted_at', null)
-    .order('name_he')
-
-  const images = Array.isArray(product.images)
-    ? (product.images as unknown[]).filter((u): u is string => typeof u === 'string')
-    : []
-
-  // Pipeline metadata (blur placeholder + mandatory Hebrew alt) would come from
-  // a `media_assets` table keyed by image URL. That table does not exist: it is
-  // in no migration this database has run and it appears nowhere in the
-  // generated types, so the query it was written against fails to compile and
-  // would 400 at runtime. Creating it is DDL, which this queue may not apply
-  // without approval, so the gallery falls back to what it did before - no blur
-  // placeholder, alt derived from the product name. Recorded in STATE.md.
-  const galleryAssets: Record<string, { alt: string | null; blurDataURL: string | null }> = {}
+  const { product, images, supplier, variants, galleryAssets, couponOffer } = detail
 
   const category = Array.isArray(product.categories)
     ? null
@@ -144,37 +131,7 @@ export default async function ProductPage({ params }: Props) {
       ? Number(product.full_price)
       : null
 
-  // A coupon is priced by its own absolute model. Building the offer here, on
-  // the server, from the same column the commission engine bills from is what
-  // keeps the quoted price and the charged price identical; the page used to
-  // render price * 0.1 and disagree with the cart.
   const isCoupon = product.type === 'coupon' || product.is_coupon_enabled
-
-  // coupon_price_ils and offer_valid_until come from migration 054, which is
-  // not applied to every deployment. Naming them in the select above would
-  // fail the WHOLE product query with 42703 and blank the page; read
-  // separately, a database without them simply yields an unpriced coupon.
-  const coupon054 = isCoupon
-    ? (
-        await readOptionalColumns<Coupon054Row>(
-          (select, ids) => supabase.from('products').select(select).in('id', ids) as never,
-          COUPON_054_COLUMNS,
-          [product.id],
-          'product page',
-        )
-      ).get(product.id)
-    : undefined
-
-  const couponOffer: CouponOffer | null = isCoupon
-    ? buildCouponOffer({
-        // price_ils is the sticker price the business would charge; full_price
-        // is the legacy column and is used only when price_ils is unset.
-        fullPriceIls: product.price_ils ?? product.full_price ?? basePrice,
-        couponPriceIls: coupon054?.coupon_price_ils,
-        validUntil: coupon054?.offer_valid_until,
-        expiryDays: product.coupon_expiry_days,
-      })
-    : null
 
   const attributes: { label: string; value: string }[] = []
   if (category) attributes.push({ label: 'קטגוריה', value: category.name_he })
@@ -183,76 +140,92 @@ export default async function ProductPage({ params }: Props) {
     value: product.type === 'coupon' ? 'קופון' : 'מוצר פיזי',
   })
 
+  // Structured data, built from the values this page already resolved and never
+  // from a second calculation: a JSON-LD price is a public claim about what
+  // something costs, and this page has previously rendered a price the cart
+  // disagreed with. `couponOffer` is the object the commission engine bills
+  // from, so the advertised price and the charged price cannot diverge.
   const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
   const productLd = buildProductJsonLd({
     name: product.name_he,
     description: product.description_he ?? null,
     slug: product.slug,
-    sku: product.sku,
-    images,
+    sku: product.sku ?? null,
+    images: Array.isArray(product.images) ? (product.images as string[]) : [],
     siteUrl,
     supplierName: supplier?.name ?? null,
     categoryName: category?.name_he ?? null,
     priceIls: isCoupon ? null : basePrice,
     fullPriceIls: isCoupon ? null : oldPrice,
     couponOffer,
-    stockQuantity: product.stock_quantity,
+    stockQuantity: product.stock_quantity ?? null,
   })
   const breadcrumbLd = buildBreadcrumbJsonLd(
     [
       { name: 'בית', path: '/' },
       ...(category ? [{ name: category.name_he, path: `/category/${category.slug}` }] : []),
-      { name: product.name_he, path: `/product/${encodeURIComponent(product.slug)}` },
+      { name: product.name_he, path: `/product/${product.slug}` },
     ],
     siteUrl,
   )
 
   return (
-    <div data-pdp="container" className="max-w-page mx-auto px-4 py-6 space-y-8">
-      {/* biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD; jsonLdScript escapes < */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLdScript(productLd) }}
-      />
-      {/* biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD; jsonLdScript escapes < */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbLd) }}
-      />
+    <div data-pdp="container" className="pdp">
+      <div className="pdp__inner">
+        {/* Both nodes, one script each, mirroring the visible breadcrumb below. */}
+        <script
+          type="application/ld+json"
+          // One line, deliberately: a biome-ignore only suppresses the line
+          // directly after it, so wrapping the reason onto a second `//` line
+          // silently disarms it.
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD has no other insertion point, and jsonLdScript escapes every angle bracket so catalogue text cannot close the tag.
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(productLd) }}
+        />
+        <script
+          type="application/ld+json"
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: same as above.
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbLd) }}
+        />
+        <ViewTracker
+          event="view_product"
+          props={{
+            product_id: product.id,
+            category_id: product.category_id,
+            price_ils: product.kenyon_price,
+            product_type: product.type,
+          }}
+          commerceItem={{
+            id: product.id,
+            name: product.name_he,
+            // Agorot, converted exactly once at the vendor boundary by
+            // `toCurrencyAmount`. `kenyon_price` is still the pre-integer
+            // shekel column, so this is the one rounding on the path.
+            priceAgorot: Math.round(Number(product.kenyon_price ?? 0) * 100),
+            quantity: 1,
+            category: category?.name_he ?? null,
+            supplier: supplier?.name ?? null,
+          }}
+        />
 
-      <ViewTracker
-        event="view_product"
-        props={{
-          product_id: product.id,
-          category_id: product.category_id,
-          price_ils: product.kenyon_price,
-          product_type: product.type,
-        }}
-      />
+        {/* Breadcrumb. The row is 84px on live, and that height is what puts
+            the columns block below it on y250. */}
+        <nav className="pdp-breadcrumb" aria-label="נתיב ניווט">
+          <Link href="/">בית</Link>
+          {category && (
+            <>
+              <span className="pdp-breadcrumb__sep">/</span>
+              <Link href={`/category/${category.slug}`}>{category.name_he}</Link>
+            </>
+          )}
+          <span className="pdp-breadcrumb__sep">/</span>
+          <span>{product.name_he}</span>
+        </nav>
 
-      {/* Breadcrumb */}
-      <nav
-        className="text-sm text-gray-500 flex items-center gap-1.5 flex-wrap"
-        aria-label="נתיב ניווט"
-      >
-        <Link href="/" className="hover:text-brand-dark">
-          בית
-        </Link>
-        {category && (
-          <>
-            <span className="text-gray-300">/</span>
-            <Link href={`/category/${category.slug}`} className="hover:text-brand-dark">
-              {category.name_he}
-            </Link>
-          </>
-        )}
-        <span className="text-gray-300">/</span>
-        <span className="text-brand-dark font-medium">{product.name_he}</span>
-      </nav>
-
-      {/* Two columns: gallery (right in RTL) + info (left) */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-5 lg:p-8">
-        <div data-pdp="columns" className="grid md:grid-cols-[5fr_7fr] gap-8">
+        {/* Two columns: gallery (right in RTL, 470px) + summary (left, 670px).
+            No card wrapper: live puts both straight on the page, and the
+            border plus 32px of padding we used to draw round them offset every
+            row inside by the width of the chrome. */}
+        <div data-pdp="columns" className="pdp__columns">
           <ProductGallery images={images} name={product.name_he} assets={galleryAssets} />
           <ProductInfo
             productId={product.id}
@@ -261,41 +234,82 @@ export default async function ProductPage({ params }: Props) {
             basePrice={basePrice}
             oldPrice={oldPrice}
             baseStock={product.stock_quantity}
+            /*
+              The one live read on this page, behind its own boundary. The
+              product load is `'use cache'` for an hour, and availability moves
+              with every checkout - reading it in the cached subtree makes the
+              whole route uncacheable, which `next build` refuses outright.
+              No fallback: an empty line is the correct "nothing to say yet",
+              and a skeleton for one short sentence would flash.
+            */
+            scarcitySlot={
+              <Suspense fallback={null}>
+                <StockScarcity
+                  productId={product.id}
+                  trackedLevel={product.stock_quantity}
+                  isCoupon={isCoupon}
+                />
+              </Suspense>
+            }
             sku={product.sku}
-            description={product.description_he}
+            categoryName={category?.name_he ?? null}
+            city={productLocation({ ...product, supplier }).city?.name ?? null}
             attributes={attributes}
             variants={variants ?? []}
             isCoupon={isCoupon}
             couponOffer={couponOffer}
           />
         </div>
+
+        {/* Coupon-only: how and by when the voucher may be redeemed. */}
+        {couponOffer && (
+          <div className="pdp-coupon">
+            <CouponTerms
+              offer={couponOffer}
+              terms={product.coupon_terms_he}
+              instructions={product.redemption_instructions_he}
+            />
+          </div>
+        )}
+
+        {/* One flat band for description, shipping and supplier. Live leaves
+            160px here before the recommendations; the same three blocks as
+            stacked bordered cards took 423px and carried the footer 230px down
+            the page, which is what every band below y1400 was really measuring.
+
+            Physical-only for shipping. The platform/supplier split stays off
+            the page either way — it is an internal settlement detail and the
+            customer pays the full price however it divides. */}
+        <div className="pdp-details">
+          {product.description_he && (
+            <section aria-label="תיאור המוצר">
+              <h2 className="pdp-details__title">תיאור המוצר</h2>
+              <p className="pdp-details__text">{product.description_he}</p>
+            </section>
+          )}
+
+          {!isCoupon && (
+            <ShippingInfo
+              requiresShipping={product.requires_shipping}
+              weightGrams={product.weight_grams}
+              warrantyMonths={product.warranty_months}
+            />
+          )}
+
+          {/* Supplier details: rendered for every product (coupon and physical).
+              The name is passed through so the WhatsApp message names the deal:
+              a business selling forty of them cannot answer "יש פרטים?". */}
+          <SupplierInfo
+            supplier={supplier}
+            productType={product.type}
+            productName={product.name_he}
+            whatsappEnabled={readWhatsAppEnabled(product)}
+          />
+        </div>
+
+        {/* Related products */}
+        <RelatedProducts categoryId={product.category_id} excludeId={product.id} />
       </div>
-
-      {/* Coupon-only: how and by when the voucher may be redeemed. */}
-      {couponOffer && (
-        <CouponTerms
-          offer={couponOffer}
-          terms={product.coupon_terms_he}
-          instructions={product.redemption_instructions_he}
-        />
-      )}
-
-      {/* Physical-only: shipping and delivery. The platform/supplier split is
-          deliberately NOT shown — it is an internal settlement detail and the
-          customer pays the full price either way. */}
-      {!isCoupon && (
-        <ShippingInfo
-          requiresShipping={product.requires_shipping}
-          weightGrams={product.weight_grams}
-          warrantyMonths={product.warranty_months}
-        />
-      )}
-
-      {/* Supplier details: rendered for every product (coupon and physical) */}
-      <SupplierInfo supplier={supplier} productType={product.type} />
-
-      {/* Related products */}
-      <RelatedProducts categoryId={product.category_id} excludeId={product.id} />
     </div>
   )
 }

@@ -1,0 +1,85 @@
+{
+  "expo": {
+    "name": "KenyonExpress",
+    "slug": "kenyonexpress",
+    "version": "0.2.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "scheme": "kenyonexpress",
+    "extra": {
+      "siteUrl": "https://kenyonexpress.co.il"
+    },
+    "ios": {
+      "bundleIdentifier": "co.il.kenyonexpress.app",
+      "supportsTablet": false,
+      "associatedDomains": [
+        "applinks:kenyonexpress.co.il",
+        "applinks:www.kenyonexpress.co.il"
+      ],
+      "infoPlist": {
+        "UIBackgroundModes": [
+          "remote-notification"
+        ],
+        "NSAllowsArbitraryLoads": false,
+        "NSCameraUsageDescription": "המצלמה משמשת לסריקת קודי QR של שוברים בעמדת הקופה."
+      }
+    },
+    "android": {
+      "package": "co.il.kenyonexpress.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#f5c518"
+      },
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "kenyonexpress.co.il",
+              "pathPrefix": "/account"
+            },
+            {
+              "scheme": "https",
+              "host": "kenyonexpress.co.il",
+              "pathPrefix": "/checkout"
+            },
+            {
+              "scheme": "https",
+              "host": "kenyonexpress.co.il",
+              "pathPrefix": "/product"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ],
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.VIBRATE"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "color": "#f5c518"
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "המצלמה משמשת לסריקת קודי QR של שוברים בעמדת הקופה."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}

@@ -28,7 +28,18 @@
 
 import { type Agorot, agorot, ilsToAgorot, percentToBasisPoints, percentageOf } from './money'
 
-export type ProductMoneyType = 'coupon' | 'physical'
+/**
+ * `recurring` was added 2026-08-07. It splits its per-cycle charge exactly the
+ * way `physical` splits its discounted price, so it shares the
+ * `physical_percent` commission shape - which is also what lets it satisfy the
+ * live CHECK `products_commission_type_matches_type` (measured, not assumed:
+ * the constraint says type <> 'coupon' -> commission_type = 'physical_percent',
+ * so a third type needs no constraint change).
+ *
+ * What is NOT shared is where the amount comes from: a recurring product bills
+ * `recurring_amount_agorot`, not `price_ils` minus a discount.
+ */
+export type ProductMoneyType = 'coupon' | 'physical' | 'recurring'
 
 /** The two halves always sum to this. Enforced by CHECK in migration 070. */
 export const SPLIT_TOTAL = 100
@@ -40,6 +51,8 @@ export type ProductMoneyField =
   | 'discount_percent'
   | 'coupon_price_ils'
   | 'coupon_expiry_days'
+  | 'recurring_amount_agorot'
+  | 'billing_interval'
   | 'price_ils'
   | 'supplier_id'
   | 'supplier_name'
@@ -255,6 +268,9 @@ export interface PublishGateInput {
   discountPercent: number | null | undefined
   couponPriceIls: number | null | undefined
   couponExpiryDays: number | null | undefined
+  /** Recurring only. Agorot, integer, because that is how the column stores it. */
+  recurringAmountAgorot?: number | null | undefined
+  billingInterval?: string | null | undefined
   supplier: SupplierIdentity | null | undefined
 }
 
@@ -284,8 +300,27 @@ export function assertPublishable(input: PublishGateInput): PublishGateResult {
     blockers.push({ field: split.field, message: split.message })
   }
 
-  if (normalizePercent(input.discountPercent) === null) {
+  // A subscription has no sticker discount to state: the customer sees the cycle
+  // amount and pays it. Requiring a percent here would force the admin to type a
+  // meaningless 0 to publish.
+  if (input.type !== 'recurring' && normalizePercent(input.discountPercent) === null) {
     blockers.push({ field: 'discount_percent', message: 'חייב להגדיר אחוז הנחה בין 0 ל-100' })
+  }
+
+  if (input.type === 'recurring') {
+    const amount = Number(input.recurringAmountAgorot)
+    if (!Number.isFinite(amount) || !Number.isInteger(amount) || amount <= 0) {
+      blockers.push({
+        field: 'recurring_amount_agorot',
+        message: 'חייב להגדיר סכום חיוב תקופתי חיובי. אין ברירת מחדל.',
+      })
+    }
+    if (input.billingInterval !== 'monthly' && input.billingInterval !== 'yearly') {
+      blockers.push({
+        field: 'billing_interval',
+        message: 'חייב לבחור תדירות חיוב: חודשי או שנתי',
+      })
+    }
   }
 
   if (input.type === 'coupon') {
@@ -412,6 +447,19 @@ export interface ProductMoneyWrite {
   coupon_expiry_days: number | null
   commission_percent: number
   price_ils: number
+  /**
+   * Recurring only, and ABSENT (not null) on every other type.
+   *
+   * The distinction matters more than it looks: these three columns arrive with
+   * PENDING-109 and do not exist in production yet. Emitting them as `null` on
+   * a physical product would put unknown columns in every single product write
+   * and fail all of them. They appear only when the admin actually chose the
+   * recurring type, which is also the only case where PENDING-109 must already
+   * have been applied.
+   */
+  recurring_amount_agorot?: number
+  billing_interval?: string
+  billing_interval_count?: number
 }
 
 export type ProductMoneyWriteResult =
@@ -427,6 +475,10 @@ export function buildProductMoneyWrite(input: {
   discountPercent: unknown
   couponPriceIls: unknown
   couponExpiryDays: number | null | undefined
+  /** Recurring only. Agorot, integer, straight from ilsToAgorot at the form edge. */
+  recurringAmountAgorot?: unknown
+  billingInterval?: unknown
+  billingIntervalCount?: unknown
 }): ProductMoneyWriteResult {
   const price = normalizeIls(input.kenyonPrice)
   if (price === null) {
@@ -449,13 +501,54 @@ export function buildProductMoneyWrite(input: {
   // On a coupon the badge is DERIVED from the two prices, never taken from the
   // form. Letting the admin type a saving that disagrees with the billed amount
   // is the quote-versus-charge split coupon-offer.ts exists to prevent.
+  const isRecurring = input.type === 'recurring'
+
   const discountPercent = isCoupon
     ? deriveDiscountPercent(price, couponPriceIls)
-    : normalizePercent(input.discountPercent)
+    : isRecurring
+      ? null
+      : normalizePercent(input.discountPercent)
+
+  let recurringFields: Pick<
+    ProductMoneyWrite,
+    'recurring_amount_agorot' | 'billing_interval' | 'billing_interval_count'
+  > = {}
+
+  if (isRecurring) {
+    const amount = Number(input.recurringAmountAgorot)
+    if (!Number.isFinite(amount) || !Number.isInteger(amount) || amount <= 0) {
+      return {
+        ok: false,
+        field: 'recurring_amount_agorot',
+        message: 'חייב להגדיר סכום חיוב תקופתי חיובי. אין ברירת מחדל.',
+      }
+    }
+    if (input.billingInterval !== 'monthly' && input.billingInterval !== 'yearly') {
+      return {
+        ok: false,
+        field: 'billing_interval',
+        message: 'חייב לבחור תדירות חיוב: חודשי או שנתי',
+      }
+    }
+    const count = Number(input.billingIntervalCount ?? 1)
+    if (!Number.isFinite(count) || !Number.isInteger(count) || count < 1) {
+      return {
+        ok: false,
+        field: 'billing_interval',
+        message: 'מכפיל התדירות חייב להיות מספר שלם חיובי',
+      }
+    }
+    recurringFields = {
+      recurring_amount_agorot: amount,
+      billing_interval: input.billingInterval,
+      billing_interval_count: count,
+    }
+  }
 
   return {
     ok: true,
     fields: {
+      ...recurringFields,
       platform_percent: split.pair.platformPercent,
       supplier_split_percent: split.pair.supplierSplitPercent,
       discount_percent: discountPercent,
@@ -507,6 +600,13 @@ export interface CommissionTypeView {
 }
 
 export function commissionTypeOf(type: ProductMoneyType): CommissionTypeView {
+  if (type === 'recurring') {
+    return {
+      shape: 'physical_percent',
+      label: 'אחוז מכל חיוב תקופתי',
+      baseLabel: 'מלוא הסכום שנגבה בכל מחזור חיוב. האחוז מצולם בפתיחת המנוי ואינו משתנה אחריה.',
+    }
+  }
   return type === 'coupon'
     ? {
         shape: 'coupon_absolute',
@@ -526,11 +626,18 @@ export function previewProductMoney(input: {
   platformPercent: number
   couponPriceIls?: number | null
   discountPercent?: number | null
+  /** Recurring only: what one cycle bills. */
+  recurringAmountIls?: number | null
 }): MoneyPreview {
+  // A subscription bills its cycle amount outright. It has no sticker discount
+  // and no balance left at the business, so both of those are 0 below rather
+  // than derived from a price the customer never sees.
   const paidOnlineIls =
-    input.type === 'coupon'
-      ? (normalizeIls(input.couponPriceIls) ?? 0)
-      : physicalOnSiteChargeIls(input.priceIls, input.discountPercent)
+    input.type === 'recurring'
+      ? (normalizeIls(input.recurringAmountIls) ?? 0)
+      : input.type === 'coupon'
+        ? (normalizeIls(input.couponPriceIls) ?? 0)
+        : physicalOnSiteChargeIls(input.priceIls, input.discountPercent)
 
   const base = ilsToAgorot(paidOnlineIls.toFixed(2))
   const { platformFee, supplierDue } = splitOnSiteCharge(base, input.platformPercent)
@@ -542,8 +649,10 @@ export function previewProductMoney(input: {
     platformKeepsIls: round2(platformFee / 100),
     supplierGetsIls: round2(supplierDue / 100),
     discountPercent:
-      input.type === 'coupon'
-        ? (deriveDiscountPercent(input.priceIls, paidOnlineIls) ?? 0)
-        : (normalizePercent(input.discountPercent) ?? 0),
+      input.type === 'recurring'
+        ? 0
+        : input.type === 'coupon'
+          ? (deriveDiscountPercent(input.priceIls, paidOnlineIls) ?? 0)
+          : (normalizePercent(input.discountPercent) ?? 0),
   }
 }

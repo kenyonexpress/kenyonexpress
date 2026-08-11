@@ -70,3 +70,25 @@ describe('isAllowedImageUrl', () => {
     for (const p of REMOTE_IMAGE_PATTERNS) expect(p.protocol).toBe('https')
   })
 })
+
+describe('the legacy WordPress origin', () => {
+  it('allows the apex host the export actually uses', () => {
+    // Every one of the 66 images in kenyonexpress-wxr-2026-07-29.xml is on the
+    // BARE domain. Imported products carry these URLs until the media stage can
+    // upload them, and next/image throws on a host that is not allowlisted.
+    expect(
+      isAllowedImageUrl('https://kenyonexpress.co.il/wp-content/uploads/2022/02/greg_i.jpg'),
+    ).toBe(true)
+  })
+
+  it('still allows subdomains, which the wildcard covers separately', () => {
+    expect(isAllowedImageUrl('https://www.kenyonexpress.co.il/x.jpg')).toBe(true)
+    expect(isAllowedImageUrl('https://cdn.kenyonexpress.co.il/x.jpg')).toBe(true)
+  })
+
+  it('does not let the apex entry widen the gate to lookalike hosts', () => {
+    expect(isAllowedImageUrl('https://kenyonexpress.co.il.evil.com/x.jpg')).toBe(false)
+    expect(isAllowedImageUrl('https://notkenyonexpress.co.il/x.jpg')).toBe(false)
+    expect(isAllowedImageUrl('http://kenyonexpress.co.il/x.jpg')).toBe(false)
+  })
+})

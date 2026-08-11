@@ -7,6 +7,8 @@ import CategoryProductCard, {
 import SearchBox from '@/components/search/SearchBox'
 import { type ProductTypeFilter, getAllCategories, parseProductType } from '@/lib/category-page'
 import { searchProductsCached } from '@/lib/search-server'
+import { recordRecentSearch, recordSearchTerm } from '@/lib/search/record'
+import { createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
@@ -34,6 +36,19 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 /** Count and grid share one search call via searchProductsCached. */
 async function ResultCount({ q, productType }: { q: string; productType?: ProductTypeFilter }) {
   const { total, engine } = await searchProductsCached(q, 48, productType)
+
+  // Recorded HERE, on the results page, and never in the type-ahead route: the
+  // suggest endpoint fires on every keystroke, so recording there would fill
+  // the table with "מ", "מס", "מסע" and bury the real query under its own
+  // prefixes. This component already holds the total, which is the half of the
+  // record that matters - a query with zero results is a customer telling us,
+  // in their own words, what we do not sell.
+  //
+  // Awaited rather than fired and forgotten: a serverless invocation can be
+  // frozen the moment its response is returned. Neither call can throw.
+  await recordSearchTerm(q, total)
+  await recordRecentSearch(await createClient(), q)
+
   return (
     <p className="category-page__count">
       נמצאו {total} מוצרים
@@ -72,7 +87,47 @@ async function ResultGrid({ q, productType }: { q: string; productType?: Product
   )
 }
 
-export default async function SearchPage({ searchParams }: Props) {
+/**
+ * The frame, minus the query.
+ *
+ * The H1, the search box's value, the count and the grid are all the query, and
+ * the query is `searchParams`. What IS static is the page's structure: the
+ * breadcrumb, the heading's line box, the search box at full width and the grid
+ * skeleton. So the shell renders the search page and the query fills it in.
+ */
+function SearchPageFallback() {
+  return (
+    <div className="category-page">
+      <div className="category-page__inner">
+        <CategoryBreadcrumb items={[defaultHomeCrumb(), { label: 'חיפוש' }]} />
+        <header className="category-page__header">
+          {/* A div rather than an empty <h1>: see the note on the same line in
+              category/[slug]/page.tsx. The heading here is the query. */}
+          <div className="category-page__title category-page__title--pending" aria-hidden="true" />
+        </header>
+        <div className="category-search__box">
+          <SearchBox defaultValue="" />
+        </div>
+        <div className="category-page__body">
+          <div className="category-page__main">
+            <CategoryGridSkeleton count={12} />
+          </div>
+          <div className="category-sidebar" aria-hidden="true" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function SearchPage(props: Props) {
+  return (
+    <Suspense fallback={<SearchPageFallback />}>
+      <SearchPageBody {...props} />
+    </Suspense>
+  )
+}
+
+async function SearchPageBody({ searchParams }: Props) {
   const sp = await searchParams
   const q = firstStr(sp.q).trim()
   const productType = parseProductType(sp.type)

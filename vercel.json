@@ -8,7 +8,7 @@
     },
     {
       "path": "/api/cron/notifications",
-      "schedule": "* * * * *"
+      "schedule": "*/5 * * * *"
     },
     {
       "path": "/api/cron/abandoned-cart",
@@ -17,6 +17,30 @@
     {
       "path": "/api/cron/reap-carts",
       "schedule": "40 3 * * *"
+    },
+    {
+      "path": "/api/cron/invoices",
+      "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/cron/health",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/subscriptions",
+      "schedule": "30 2 * * *"
+    },
+    {
+      "path": "/api/cron/stock",
+      "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/cron/reconcile",
+      "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/stranded-payments",
+      "schedule": "*/10 * * * *"
     }
   ]
 }

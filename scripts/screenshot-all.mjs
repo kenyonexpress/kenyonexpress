@@ -20,9 +20,9 @@
 // Note: this script reaches out to the live production site
 // (https://kenyonexpress.co.il) over the public internet.
 
-import { chromium } from 'playwright';
-import { mkdir } from 'node:fs/promises';
-import path from 'node:path';
+import { mkdir } from 'node:fs/promises'
+import path from 'node:path'
+import { chromium } from 'playwright'
 
 // ---------------------------------------------------------------------------
 // CONFIG
@@ -32,7 +32,7 @@ import path from 'node:path';
 // You can override any of them with an env var (preferred) or, for the four
 // path values, positional CLI args in this order:
 //   node scripts/screenshot-all.mjs <LIVE_PRODUCT> <LIVE_CATEGORY> <LOCAL_PRODUCT> <LOCAL_CATEGORY>
-const argv = process.argv.slice(2);
+const argv = process.argv.slice(2)
 
 const CONFIG = {
   // Base URLs for each target.
@@ -42,32 +42,24 @@ const CONFIG = {
   // TODO: set these to real slugs that exist on each environment.
   // Local routes are `/product/[first]` and `/category/[first]`; because the
   // first slug differs between live and local, adjust the defaults below.
-  LIVE_PRODUCT_PATH:
-    process.env.LIVE_PRODUCT_PATH || argv[0] || '/product/example-product',
-  LIVE_CATEGORY_PATH:
-    process.env.LIVE_CATEGORY_PATH || argv[1] || '/category/example-category',
-  LOCAL_PRODUCT_PATH:
-    process.env.LOCAL_PRODUCT_PATH || argv[2] || '/product/example-product',
-  LOCAL_CATEGORY_PATH:
-    process.env.LOCAL_CATEGORY_PATH || argv[3] || '/category/example-category',
-};
+  LIVE_PRODUCT_PATH: process.env.LIVE_PRODUCT_PATH || argv[0] || '/product/example-product',
+  LIVE_CATEGORY_PATH: process.env.LIVE_CATEGORY_PATH || argv[1] || '/category/example-category',
+  LOCAL_PRODUCT_PATH: process.env.LOCAL_PRODUCT_PATH || argv[2] || '/product/example-product',
+  LOCAL_CATEGORY_PATH: process.env.LOCAL_CATEGORY_PATH || argv[3] || '/category/example-category',
+}
 
 // Viewports to capture. Comment out the mobile entry to skip it, or add more.
 const VIEWPORTS = [
   { label: 'desktop', width: 1440, height: 900 },
   { label: 'mobile', width: 390, height: 844 },
-];
+]
 
 // Where screenshots go.
-const SHOTS_ROOT = path.resolve(
-  new URL('..', import.meta.url).pathname,
-  'refs',
-  'shots'
-);
+const SHOTS_ROOT = path.resolve(new URL('..', import.meta.url).pathname, 'refs', 'shots')
 
 // Per-shot navigation timeout (milliseconds). Generous, because networkidle on
 // image-heavy pages can be slow.
-const NAV_TIMEOUT = 60000;
+const NAV_TIMEOUT = 60000
 
 // ---------------------------------------------------------------------------
 // Build the matrix of targets x routes.
@@ -91,44 +83,44 @@ const TARGETS = [
       { label: 'category', path: CONFIG.LOCAL_CATEGORY_PATH },
     ],
   },
-];
+]
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 function timestampLabel(date) {
   // YYYY-MM-DD_HH-MM-SS in local time, filesystem safe.
-  const pad = (n) => String(n).padStart(2, '0');
+  const pad = (n) => String(n).padStart(2, '0')
   return (
     `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
     `_${pad(date.getHours())}-${pad(date.getMinutes())}-${pad(date.getSeconds())}`
-  );
+  )
 }
 
 function joinUrl(base, routePath) {
-  const trimmedBase = base.replace(/\/+$/, '');
-  const suffix = routePath.startsWith('/') ? routePath : `/${routePath}`;
-  return `${trimmedBase}${suffix}`;
+  const trimmedBase = base.replace(/\/+$/, '')
+  const suffix = routePath.startsWith('/') ? routePath : `/${routePath}`
+  return `${trimmedBase}${suffix}`
 }
 
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 async function main() {
-  const startedAt = new Date();
-  const stamp = timestampLabel(startedAt);
-  const outDir = path.join(SHOTS_ROOT, stamp);
-  await mkdir(outDir, { recursive: true });
+  const startedAt = new Date()
+  const stamp = timestampLabel(startedAt)
+  const outDir = path.join(SHOTS_ROOT, stamp)
+  await mkdir(outDir, { recursive: true })
 
-  console.log(`Screenshot run: ${stamp}`);
-  console.log(`Output dir: ${outDir}`);
-  console.log(`Note: this run hits the LIVE site at ${CONFIG.LIVE_BASE}`);
-  console.log('');
+  console.log(`Screenshot run: ${stamp}`)
+  console.log(`Output dir: ${outDir}`)
+  console.log(`Note: this run hits the LIVE site at ${CONFIG.LIVE_BASE}`)
+  console.log('')
 
-  const browser = await chromium.launch();
+  const browser = await chromium.launch()
 
-  const saved = [];
-  const failed = [];
+  const saved = []
+  const failed = []
 
   try {
     for (const target of TARGETS) {
@@ -136,53 +128,53 @@ async function main() {
         // One context per (target, viewport) so the viewport applies cleanly.
         const context = await browser.newContext({
           viewport: { width: viewport.width, height: viewport.height },
-        });
-        const page = await context.newPage();
+        })
+        const page = await context.newPage()
 
         for (const route of target.routes) {
-          const url = joinUrl(target.base, route.path);
-          const fileName = `${target.name}_${route.label}_${viewport.label}.png`;
-          const filePath = path.join(outDir, fileName);
+          const url = joinUrl(target.base, route.path)
+          const fileName = `${target.name}_${route.label}_${viewport.label}.png`
+          const filePath = path.join(outDir, fileName)
 
           try {
-            console.log(`-> ${target.name} ${route.label} (${viewport.label}): ${url}`);
+            console.log(`-> ${target.name} ${route.label} (${viewport.label}): ${url}`)
             await page.goto(url, {
               waitUntil: 'networkidle',
               timeout: NAV_TIMEOUT,
-            });
-            await page.screenshot({ path: filePath, fullPage: true });
-            saved.push(filePath);
-            console.log(`   saved: ${fileName}`);
+            })
+            await page.screenshot({ path: filePath, fullPage: true })
+            saved.push(filePath)
+            console.log(`   saved: ${fileName}`)
           } catch (err) {
             // Log and continue so one bad route does not abort the whole run.
-            failed.push({ url, fileName, error: err?.message });
-            console.warn(`   FAILED: ${fileName} (${err?.message})`);
+            failed.push({ url, fileName, error: err?.message })
+            console.warn(`   FAILED: ${fileName} (${err?.message})`)
           }
         }
 
-        await context.close();
+        await context.close()
       }
     }
   } finally {
-    await browser.close();
+    await browser.close()
   }
 
   // Summary.
-  console.log('');
-  console.log('==== Summary ====');
-  console.log(`Saved ${saved.length} screenshot(s) to ${outDir}`);
+  console.log('')
+  console.log('==== Summary ====')
+  console.log(`Saved ${saved.length} screenshot(s) to ${outDir}`)
   for (const f of saved) {
-    console.log(`  ok:   ${path.basename(f)}`);
+    console.log(`  ok:   ${path.basename(f)}`)
   }
   if (failed.length > 0) {
-    console.log(`Failed ${failed.length} shot(s):`);
+    console.log(`Failed ${failed.length} shot(s):`)
     for (const f of failed) {
-      console.log(`  fail: ${f.fileName} (${f.url})`);
+      console.log(`  fail: ${f.fileName} (${f.url})`)
     }
   }
 }
 
 main().catch((err) => {
-  console.error('Fatal error:', err);
-  process.exitCode = 1;
-});
+  console.error('Fatal error:', err)
+  process.exitCode = 1
+})

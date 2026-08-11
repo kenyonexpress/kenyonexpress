@@ -119,7 +119,7 @@ const dbRows = await res.json()
 const dbBySlug = new Map(dbRows.filter((r) => !r.deleted_at).map((r) => [r.slug, r]))
 
 // ---- report ----
-const liveSlugs = liveItems.map((it) => it.slug)
+const _liveSlugs = liveItems.map((it) => it.slug)
 const mineBySlug = new Map(mineItems.map((it) => [it.slug, it]))
 const liveBySlug = new Map(liveItems.map((it) => [it.slug, it]))
 

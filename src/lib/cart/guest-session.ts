@@ -1,7 +1,7 @@
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
+import { GUEST_SESSION_COOKIE, guestSessionCookieOptions } from './guest-session-cookie'
 
-export const GUEST_SESSION_COOKIE = 'ke_session_id'
-const SESSION_MAX_AGE = 60 * 60 * 24 * 30
+export { GUEST_SESSION_COOKIE }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 
@@ -19,12 +19,15 @@ export async function ensureGuestSessionId(): Promise<string> {
   if (existing) return existing
 
   const sessionId = crypto.randomUUID()
-  cookieStore.set(GUEST_SESSION_COOKIE, sessionId, {
-    httpOnly: true,
-    sameSite: 'lax',
-    maxAge: SESSION_MAX_AGE,
-    path: '/',
-  })
+  // The options come from the shared builder rather than being written out
+  // again here. They used to be written twice — once here and once in the proxy
+  // — and `secure` was missing from both, which is what two copies buys.
+  const requestHeaders = await headers()
+  cookieStore.set(
+    GUEST_SESSION_COOKIE,
+    sessionId,
+    guestSessionCookieOptions(requestHeaders.get('x-forwarded-proto')),
+  )
   return sessionId
 }
 

@@ -2,6 +2,8 @@
 
 import { writeAuditLog } from '@/lib/admin/audit'
 import { type AdminSessionInfo, requireAdminSession } from '@/lib/admin/rbac'
+import { withActionContext } from '@/lib/observability/action-context'
+import { log } from '@/lib/observability/log'
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -21,7 +23,7 @@ const cancelSchema = z.object({
 // finalize, redemption). The ONLY manual admin transition is
 // pending -> cancelled, with a mandatory reason and an audit row.
 // Refunds of paid orders belong to the refund console (037, not built yet).
-export async function cancelPendingOrder(
+async function runCancelPendingOrder(
   _: OrderActionState,
   formData: FormData,
 ): Promise<OrderActionState> {
@@ -69,6 +71,22 @@ export async function cancelPendingOrder(
 
   if (error) return { error: error.message }
 
+  // Hand the stock back immediately rather than waiting for the hold to lapse.
+  // An expired reservation stops counting against availability on its own -
+  // `available_stock` filters on `expires_at` - but "on its own" can be up to
+  // fifteen minutes away, and a cancelled order is stock that is known free
+  // now. Best effort: a failure here costs a quarter of an hour of shelf space,
+  // not a cancellation.
+  const { error: releaseError } = await supabase.rpc('release_order_stock', {
+    p_order_id: parsed.data.id,
+  })
+  if (releaseError) {
+    log.warn('admin.order_cancel_stock_release_failed', {
+      orderId: parsed.data.id,
+      reason: releaseError.message,
+    })
+  }
+
   await writeAuditLog({
     actorId: session.userId,
     actorRole: session.role,
@@ -97,10 +115,7 @@ const noteSchema = z.object({
  * the previous one acted. The audit_log row carries the same text, so the
  * history survives even if the column is later edited by hand.
  */
-export async function addOrderNote(
-  _: OrderActionState,
-  formData: FormData,
-): Promise<OrderActionState> {
+async function runAddOrderNote(_: OrderActionState, formData: FormData): Promise<OrderActionState> {
   let session: AdminSessionInfo
   try {
     session = await requireAdminSession()
@@ -143,4 +158,18 @@ export async function addOrderNote(
 
   revalidatePath(`/admin/orders/${parsed.data.id}`)
   return { success: 'ההערה נוספה' }
+}
+
+export async function cancelPendingOrder(
+  _: OrderActionState,
+  formData: FormData,
+): Promise<OrderActionState> {
+  return withActionContext('admin.order.cancel_pending', () => runCancelPendingOrder(_, formData))
+}
+
+export async function addOrderNote(
+  _: OrderActionState,
+  formData: FormData,
+): Promise<OrderActionState> {
+  return withActionContext('admin.order.add_note', () => runAddOrderNote(_, formData))
 }

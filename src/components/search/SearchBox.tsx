@@ -23,7 +23,7 @@ export default function SearchBox({ defaultValue = '' }: { defaultValue?: string
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="מה בא לך למצוא היום?"
-          className="min-w-0 flex-1 px-4 py-2.5 text-sm text-gray-800 focus:outline-none"
+          className="min-w-0 flex-1 px-4 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-black/40"
         />
         <button
           type="submit"
