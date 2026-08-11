@@ -144,7 +144,7 @@ supplier_members (התקן מאומת)
 
 | כלל | פירוט |
 |---|---|
-| PIN | ייחוס, לא הרשאה. bcrypt ב-DB (`extensions.crypt`). 4–8 ספרות. |
+| PIN | ייחוס, לא הרשאה. bcrypt ב-DB (`extensions.crypt`). 4-8 ספרות. |
 | Lockout | `failed_attempts` + `locked_until`; rate limit ב-route. |
 | כתיבת עובדים | פורטל ספק / service role בלבד (`set_supplier_staff_pin`). |
 | אופליין | מותר **תור סריקה** מקומי; אסור להציג "מומש" לפני תשובת שרת. |
@@ -201,7 +201,7 @@ Logout / החלפת משתמש:
 
 ## 3.1 חזון אפ פנימית (Wolt-style) + חוזי API
 
-לא מחליף את scaffold הנוכחי; מגדיר כיוון אחרי שלבי §3.1–7.
+לא מחליף את scaffold הנוכחי; מגדיר כיוון אחרי שלבי §3.1-7.
 
 | שכבה | חוזה |
 |---|---|
