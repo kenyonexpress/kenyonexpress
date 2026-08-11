@@ -169,14 +169,28 @@ function readTaxonomy(preambleXml) {
       description: childText(term, 'wp:term_description'),
     })
   }
-  for (const term of root.child['wp:category'] ?? []) {
-    categories.push({
-      id: Number.parseInt(childText(term, 'wp:term_id'), 10),
-      slug: childText(term, 'wp:category_nicename'),
-      name: childText(term, 'wp:cat_name'),
-      parentSlug: childText(term, 'wp:category_parent') || null,
-      description: childText(term, 'wp:category_description'),
-    })
+  // `<wp:category>` is the BLOG taxonomy's element, and it carries no
+  // `wp:term_taxonomy` to filter on. It is read only as a fallback, for the old
+  // exports described above that have no `<wp:term>` at all.
+  //
+  // It used to be read unconditionally and merged into the list above. This
+  // export has both, so the product tree came out with 28 categories of which
+  // 17 were the Electro demo blog: podcasts, videos, links-quotes, aside,
+  // design, enterprise, events, gadgets, mobile, news, social, technology and
+  // four uncategorized variants. The dry run of 2026-07-29 recorded the count
+  // against a second parser and named this as the cause; the reader was never
+  // changed. Projecting them would have created 17 empty categories in the
+  // live catalog, each one a navigable dead end.
+  if (categories.length === 0) {
+    for (const term of root.child['wp:category'] ?? []) {
+      categories.push({
+        id: Number.parseInt(childText(term, 'wp:term_id'), 10),
+        slug: childText(term, 'wp:category_nicename'),
+        name: childText(term, 'wp:cat_name'),
+        parentSlug: childText(term, 'wp:category_parent') || null,
+        description: childText(term, 'wp:category_description'),
+      })
+    }
   }
 
   const index = new Map()

@@ -6,7 +6,9 @@
 // gallery id with no attachment item, a term an item references that the
 // preamble never declared, and CDATA holding markup.
 
-import { resolve } from 'node:path'
+import { mkdtempSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { parseCsv, readWooCsv, readWxr } from './wxr.mjs'
 
@@ -212,5 +214,69 @@ describe('readWooCsv', () => {
     const { products, warnings } = readWooCsv('ID,Name\n')
     expect(products).toEqual([])
     expect(warnings.join()).toContain('no data rows')
+  })
+})
+
+/**
+ * `<wp:term>` carries a `wp:term_taxonomy` the reader filters on. `<wp:category>`
+ * does not: it is WordPress's element for the BLOG category taxonomy, and it was
+ * being read unconditionally and merged into the product tree.
+ *
+ * The real 2026-07-29 export has both, so it produced 28 product categories of
+ * which 17 were the Electro demo blog (podcasts, videos, links-quotes, aside,
+ * design, enterprise, events, gadgets, mobile, news, social, technology, and
+ * four uncategorized variants). The dry-run doc measured 28 against a second
+ * parser's 11 and named this as the cause; nobody changed the reader.
+ *
+ * The fallback still matters, so it is kept and tested: a 2016-era export has no
+ * `<wp:term>` at all and its product categories arrive only as `<wp:category>`.
+ */
+describe('readWxr: the blog taxonomy is not the product taxonomy', () => {
+  function wxr(body) {
+    const dir = mkdtempSync(join(tmpdir(), 'wxr-'))
+    const file = join(dir, 'export.xml')
+    writeFileSync(
+      file,
+      `<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:wp="http://wordpress.org/export/1.2/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:excerpt="http://wordpress.org/export/1.2/excerpt/">
+<channel>
+  <title>t</title>
+  <wp:wxr_version>1.2</wp:wxr_version>
+${body}
+</channel>
+</rss>`,
+    )
+    return file
+  }
+
+  const productTerm = `  <wp:term>
+    <wp:term_id>21</wp:term_id>
+    <wp:term_taxonomy>product_cat</wp:term_taxonomy>
+    <wp:term_slug><![CDATA[restaurants]]></wp:term_slug>
+    <wp:term_parent><![CDATA[]]></wp:term_parent>
+    <wp:term_name><![CDATA[מסעדות]]></wp:term_name>
+    <wp:term_description><![CDATA[]]></wp:term_description>
+  </wp:term>`
+
+  const blogCategory = `  <wp:category>
+    <wp:term_id>7</wp:term_id>
+    <wp:category_nicename><![CDATA[podcasts]]></wp:category_nicename>
+    <wp:category_parent><![CDATA[]]></wp:category_parent>
+    <wp:cat_name><![CDATA[Podcasts]]></wp:cat_name>
+    <wp:category_description><![CDATA[]]></wp:category_description>
+  </wp:category>`
+
+  it('excludes blog categories when the export declares product terms', async () => {
+    const result = await readWxr(wxr(`${productTerm}\n${blogCategory}`))
+    const slugs = result.categories.map((c) => c.slug)
+    expect(slugs).toContain('restaurants')
+    expect(slugs).not.toContain('podcasts')
+    expect(result.categories).toHaveLength(1)
+  })
+
+  it('still reads an old export whose only taxonomy is wp:category', async () => {
+    // The stated reason the fallback exists: a 2016 export has no <wp:term>.
+    const result = await readWxr(wxr(blogCategory))
+    expect(result.categories.map((c) => c.slug)).toEqual(['podcasts'])
   })
 })
