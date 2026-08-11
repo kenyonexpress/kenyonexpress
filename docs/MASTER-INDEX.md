@@ -125,6 +125,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `ARCHITECTURE-PRICING-RULES.md` | מקור האמת ל-percent / בזק / הנחות. | QA-PASS (#12) |
 | `ARCHITECTURE-COMMERCE.md` | כללי מסחר C1-C10. | QA-PASS (06.08) |
 | `ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md` | checkout/מימוש; יומן D1-D6. | QA-PASS (06.08) |
+| `ARCHITECTURE-CHECKOUT-FLOW.md` | מכונת הזמנה, snapshot percent, No Escrow, Cardcom finalize. | BINDING (12.08) |
 | `CHECKOUT-OPTIMIZATION.md` | זרימת Cardcom, כשלים, retry + משפך/A/B. | PLAN (11.08) |
 | `ARCHITECTURE-SUBSCRIPTIONS.md` | מנוי חודשי: Token, מחזור, retry, ביטול, ledger. | BINDING (11.08) |
 | `SUBSCRIPTIONS-BILLING-SPEC.md` | סיכום מוצר מנויים (מפנה לארכיטקטורה). | SPEC (11.08) |
@@ -374,3 +375,4 @@ docs/ROADMAP-V2.md
 | 2026-08-11 | refs electro 380/768 + components-map + design-discrepancies; אינדקס |
 | 2026-08-11 | NOTIFICATIONS (outbox/push/in-app) + SEO-PERFORMANCE (hreflang/CWV 380/768/seo_redirects); אינדקס |
 | 2026-08-11 | MOBILE-APP + TESTING-QA + OBSERVABILITY (audit→target→migration); תקצירי אינדקס |
+| 2026-08-12 | `ARCHITECTURE-CHECKOUT-FLOW.md` BINDING: state machine + Cardcom + No Escrow |
