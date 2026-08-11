@@ -15,13 +15,13 @@ docs/DOCS-TEMPLATE-BINDING.md
 
 ## המשך מ:
 נכתב מחדש
-docs/ARCHITECTURE-CHECKOUT-FLOW.md
-(מפת מצבים מלאה + תבנית חובה). ממתין למסמך הבא על
+docs/ARCHITECTURE-CARDCOM-WEBHOOKS.md
+. ממתין למסמך הבא על
 arch/docs-batch-2
 .
 
 ## Last Completed
-ARCHITECTURE-CHECKOUT-FLOW.md: cart→coupon_redeemed, כל מעבר/טריגר/כישלון + חלופות/DB/פתוחות.
+ARCHITECTURE-CARDCOM-WEBHOOKS.md: חתימה, idempotency, DLQ, double charge, webhook כפול, multi-terminal + תבנית חובה.
 
 ## In Progress
 nothing
