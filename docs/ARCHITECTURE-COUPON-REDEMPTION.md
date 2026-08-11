@@ -151,6 +151,45 @@ redeem_voucher:
 
 ---
 
+## 1b. חלופות שנדחו
+
+| חלופה | למה נדחתה |
+|---|---|
+| UPDATE ישיר מ-JWT ספק על `vouchers` | עוקף CAS/rate-limit/audit. |
+| `supplier_id` מגוף הבקשה או מ-QR | IDOR. |
+| הודעות שונות ל-wrong shop | enumeration. |
+| Optimistic redeemed ב-UI | race; LIFECYCLE. |
+| Payout / Escrow על success | No Escrow. |
+
+---
+
+## 1c. סכמת DB (קיים; אין DDL)
+
+`vouchers`, `voucher_redemptions`, `supplier_members`, `order_items.settlement_status`. מקור: 054/092. אין DDL במסמך זה.
+
+---
+
+## 1d. מקרי קצה
+
+| קוד | תוצאה |
+|---|---|
+| `scan_race` | אחד success |
+| `invalid_qr` | not_found + audit |
+| `replay_idempotency` | replayed outcome |
+| `rate_limited` | 429 |
+| `redeem_after_refund` | 409 refunded |
+
+---
+
+## 1e. פתוחות
+
+| # | פתוח | שמרני |
+|---|---|---|
+| O1 | PIN חובה | לפי הגדרת ספק; ראה SUPPLIER-REDEMPTION |
+| O2 | תור אופליין | אין redeemed לפני שרת |
+
+---
+
 ## 6. Wrong shop (anti-enum)
 
 ```text
