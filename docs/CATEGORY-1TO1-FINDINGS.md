@@ -1,141 +1,185 @@
-# דף קטגוריה 1:1 - ממצאי מדידה (2026-07-24)
+# דף קטגוריה 1:1: ממצאי מדידה
 
-מדידות מהאתר החי ומ-localhost ב-1440x2600, דרך `scripts/_cat-probe.mjs`,
-`scripts/_cat-card-probe.mjs`, `scripts/_cat-cpw-probe.mjs`,
-`scripts/_cat-sidebar-probe.mjs`. הרפרנס: `/product-category/hot-deals/`.
+ממצאי השוואת פיקסלים בין האתר החי ל-localhost לדף קטגוריה, עם הכרעות תיקון ורצפת diff.
 
-**הסשן הזה עצר את עבודת הקטגוריה** (רצו 6 סוכנים במקביל על אותם קבצים).
-המסמך קיים כדי שהממצאים לא ילכו לאיבוד. שום תיקון קטגוריה לא בוצע כאן.
+Status: **BINDING (מדידה)** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.  
+מודל כסף: No Escrow (לא רלוונטי ישירות; כרטיס מציג מחיר אתר + יתרה בעסק).
 
-## מדד פתיחה
+מסמכים קשורים:
 
-`node scripts/compare.mjs --page=category` = **11.56%** (לא 23.7% כפי שכתוב
-ב-STATE.md, המספר שם מיושן). היעד: מתחת ל-7%.
+```
+refs/ke_live_singlefile.html
+scripts/_cat-probe.mjs
+scripts/compare.mjs
+docs/DESIGN-CHECKLIST-FINAL.md
+```
 
-רצועות גרועות: y2100 = 53.4%, y400 = 51.5%, y900 = 41.5%, y500 = 38.6%,
-y800 = 30.6%, y300 = 16.8%.
+---
 
-## פערי מבנה, ממוינים לפי השפעה
+## 1. החלטה
+
+| # | הכרעה |
+|---|---|
+| D1 | עובדים לפי **מדידה מהאתר החי**, לא לפי ערכים ישנים ב-STATE או בהוראות electro. |
+| D2 | ה-footer **לא** sticky: הוסר `flex-1` מ-main ב-`(store)/layout.tsx`. |
+| D3 | כרטיס קטגוריה חייב בלוק `custom-price-wrapper` (72px, שתי שורות 24px) מ-`full_price` / `kenyon_price`. |
+| D4 | ה-header נסגר לגובה החי (masthead ~127px); אישור לגעת ב-header שהיה נעול. |
+| D5 | **אין sidebar** בקטגוריה: `CategoryFilterSidebar` אין לו מקבילה בחי. |
+| D6 | יעד compare: מתחת ל-7% **רק** אם נתוני הקטלוג תואמים (מספר מוצרים זהה). |
+| D7 | המספרים ב-`custom-price-wrapper` החי הם קלט WooCommerce ידני: משחזרים **גאומטריה**, לא ערכים. |
+
+---
+
+## 2. חלופות שנדחו
+
+| חלופה | נימוק דחייה |
+|---|---|
+| להשאיר sticky footer ל"יופי" viewport גבוה | מדידה: +1218px ל-footer; רצועות y1400-2400 ב-9-53% diff. |
+| sidebar כמו חנויות SaaS | בארכיון חי: `content-area` 1200px מלא, אין shop sidebar באף URL שנבדק. |
+| להעתיק מספרי full-price/discount מהחי | לא עקביים עם מחירי הכרטיס (JEEP: ₪99 בכרטיס, ₪399/₪196 ב-wrapper). |
+| למחוק 2 מוצרים מ-hot-deals כדי לרדת מתחת ל-7% | גיים של המדד, לא תיקון layout; הקטלוג אמיתי. |
+| container 1320px / צהוב `#fedd26` / אדום `#E4002B` לפי הוראה ישנה | singlefile: 1170px, `#fed700`, `#dc3545`. |
+
+---
+
+## 3. סכמת DB
+
+**אין DDL חדש.** הממצאים הם UI/תוכן.
+
+טבלאות/שדות שנקראים בהקשר השוואה:
+
+| טבלה / מקור | שדות | שימוש |
+|---|---|---|
+| `products` | `name_he`, `coupon_price_ils`, `full_price`, `kenyon_price`, `images` | כרטיס, מחיר, גובה wrapper |
+| `categories` | `slug`, `kind` | hot-deals = collection; מספר מוצרים בגריד |
+| `KE_LIVE_CATEGORIES` / seed | slugs קיימים | התאמת תוכן לרפרנס `/product-category/hot-deals/` |
+
+מיגרציות: אין שינוי סכימה במסמך זה.
+
+---
+
+## 4. מקרי קצה
+
+| # | מצב | התנהגות / ממצא |
+|---|---|---|
+| E1 | viewport 2600px עם flex-1 | main נמתח ל-1993px; footer ב-2089 במקום ~871 בחי. |
+| E2 | 2 מוצרים בחי מול 4 אצלנו | חצי גריד שמאלי ריק בחי, מלא אצלנו: רצפת diff y400-900 (22-55%). |
+| E3 | header קצר 95px מול 148px חי | תוכן מתחיל 69.9px גבוה מדי; רצפה 70px בכל רצועה. |
+| E4 | Next image optimization שקט | 8MB מקור עם 200 בלי לוג: לא להניח דחיסה. |
+| E5 | compare על hot-deals אחרי layout 1:1 | 9.45% (לא מתחת 7%) בגלל תוכן, לא CSS. |
+| E6 | sidebar widget ב-footer החי | לא sidebar קטלוג; אין לבנות filter sidebar "כמו Woo". |
+| E7 | מוצרים משותפים, סדר שונה | JEEP + חבילת פינוק אצלנו; תספורת + JEEP בחי. |
+| E8 | 6 סוכנים במקביל על קטגוריה | הסשן נעצר; ממצאים נשמרים כאן בלבד. |
+
+---
+
+## 5. פתוחות
+
+| # | פער | החלטה זמנית | תאריך |
+|---|---|---|---|
+| O1 | compare category 9.45% > יעד 7% | מקובל כרצפת תוכן; לא לשנות קטלוג למען המדד | 2026-08-12 |
+| O2 | האם להסיר `CategoryFilterSidebar` לפני GA | להמתין להחלטת מוצר; אין מקבילה בחי | 2026-08-12 |
+| O3 | probes `_cat-*.mjs` | למחוק אחרי סגירת דף קטגוריה | 2026-08-12 |
+| O4 | STATE.md מציין 11.56% / 23.7% ישן | לעדכן STATE בהמשך batch | 2026-08-12 |
+
+---
+
+## 6. מדד פתיחה (2026-07-24)
+
+`node scripts/compare.mjs --page=category` = **11.56%** (STATE ישן). יעד: מתחת ל-7%.
+
+רצועות גרועות לפני תיקון layout: y2100 = 53.4%, y400 = 51.5%, y900 = 41.5%, y500 = 38.6%, y800 = 30.6%, y300 = 16.8%.
+
+---
+
+## 7. פערי מבנה (לפני תיקון)
 
 | # | פער | חי | אצלנו | דלתא |
 |---|---|---|---|---|
-| 1 | מיקום footer | top 871 | top 2089 | **+1218px** |
-| 2 | גובה כרטיס מוצר | 437.5 | 358.5 | **-79px** |
-| 3 | תחילת התוכן (breadcrumb) | top 165.4 | top 95.5 | **-69.9px** |
-| 4 | מספר מוצרים | 2 | 4 | תוכן, לא ניתן ליישור |
+| 1 | מיקום footer | top 871 | top 2089 | +1218px |
+| 2 | גובה כרטיס | 437.5 | 358.5 | -79px |
+| 3 | תחילת breadcrumb | top 165.4 | top 95.5 | -69.9px |
+| 4 | מספר מוצרים | 2 | 4 | תוכן |
 
-### 1. ה-footer נדחף לתחתית (הגורם הגדול ביותר)
+### 7.1 Footer sticky
 
-`src/app/(store)/layout.tsx` עוטף ב-`min-h-screen flex flex-col` עם
-`main.flex-1`. ב-viewport של 2600px זה מותח את ה-main ל-1993px ודוחף את
-ה-footer ל-2089. האתר החי לא עושה sticky footer: `div.hfeed` שם גבוה
-1396px בלבד וה-footer יושב מיד אחרי התוכן.
+`src/app/(store)/layout.tsx`: `min-h-screen flex flex-col` + `main.flex-1` דוחף footer. החי: `div.hfeed` 1396px, footer מיד אחרי תוכן.
 
-תיקון: להוריד את מתיחת ה-`flex-1` בעמודי חנות. משפיע על כל עמודי `(store)`.
-
-### 2. הכרטיס החי גבוה ב-79px: בלוק `custom-price-wrapper` שחסר לנו
-
-מבנה ה-footer של הכרטיס החי:
+### 7.2 custom-price-wrapper (72px)
 
 ```html
-<div class="product-loop-footer">            <!-- h 114.9 -->
-  <div class="price-add-to-cart"> ... </div>  <!-- h 36, margin-bottom 7 -->
-  <div class="custom-price-wrapper">          <!-- h 72  <-- חסר אצלנו -->
-    <div class="full-price">₪399</div>        <!-- h 24, 14px/23.996px, 400, #333e48 -->
-    <br>                                       <!-- h 19 -->
-    <div class="discount-price">₪196</div>    <!-- h 24, אותו סטיילינג -->
+<div class="product-loop-footer">
+  <div class="price-add-to-cart">...</div>
+  <div class="custom-price-wrapper">
+    <div class="full-price">₪399</div>
+    <br>
+    <div class="discount-price">₪196</div>
   </div>
 </div>
 ```
 
-**אזהרה על הנתונים:** הערכים בבלוק הזה באתר החי הם שדות WooCommerce שהוזנו
-ידנית ואינם עקביים עם המחירים המוצגים בכרטיס:
+גאומטריה מ-`full_price`/`kenyon_price`; לא המספרים הלא-עקביים של החי.
 
-| מוצר | מחיר בכרטיס | `full-price` | `discount-price` |
-|---|---|---|---|
-| תיק עור JEEP | ₪195 מחוק, ₪99 | ₪399 | ₪196 |
-| תספורת לגבר | ₪50 מחוק, ₪20 | ₪50 | ₪ (ריק) |
+### 7.3 Header 70px
 
-אין מיפוי נאמן מ-Supabase לערכים האלה. ההמלצה: לשחזר את **הגאומטריה**
-(72px, שתי שורות 24px + br) ממקור `full_price` / `kenyon_price`, ולתעד
-שהמספרים בחי הם קלט ידני לא עקבי. אין להמציא ערכים.
+`TopBar.tsx` + `MainHeader.tsx` היו נעולים; אושר תיקון masthead ל-127px.
 
-### 3. ‏70px של ה-header: חסום
+---
 
-התוכן שלנו מתחיל 69.9px גבוה מדי מפני שה-header שלנו קצר בדיוק בשיעור הזה
-(topbar+masthead 148px בחי מול 95 אצלנו). ה-70px יושבים בתוך
-`src/components/layout/TopBar.tsx` ו-`MainHeader.tsx` ששניהם ב-`LOCKED_COMPONENTS.md`.
-**הם נשארים נעולים ואין לגעת בהם; אין לעצור כדי לשאול על כך.** לכן יש רצפה קשיחה של
-היסט 70px שמייצרת דיף בכל רצועה שיש בה תוכן.
+## 8. Sidebar: המצאה מקומית
 
-## ה-sidebar הוא המצאה שלנו
-
-נבדקו ארבעה ארכיונים חיים:
-
-| URL | `content-area` | shop sidebar |
+| URL | content-area | sidebar |
 |---|---|---|
-| `/product-category/hot-deals/` | 1200px מלא | אין |
-| `/product-category/restaurants-cafes/` | 1200px מלא | אין |
-| `/product-category/electronics/` | 1200px מלא | אין |
-| `/shop/` | 1200px מלא | אין |
+| hot-deals / restaurants / electronics / shop | 1200px | אין |
 
-לאתר החי **אין sidebar בשום ארכיון**. ה-`aside.widget` היחיד שנמצא הוא
-ווידג'ט בתוך ה-footer (top 1011, מתחת ל-footer שמתחיל ב-871).
-‏`CategoryFilterSidebar` נוצר אצלנו בסשן 2026-07-21 בלי מקבילה בחי.
+`CategoryFilterSidebar` נוצר 2026-07-21 בלי מקבילה בחי.
 
-## ערכי עיצוב: ההוראה מול המדידה
+---
 
-הוכרע (Ofir, 2026-07-24): **עובדים לפי המדידה מהחי.**
+## 9. ערכי עיצוב: הוראה מול מדידה
 
-| ערך | נמסר בהוראה | נמדד בחי | ב-`refs/ke_live_singlefile.html` |
+| ערך | הוראה ישנה | נמדד בחי | singlefile |
 |---|---|---|---|
-| רוחב קונטיינר | 1320px | **1170px** | `1170` מופיע 3 פעמים, `1320` אפס |
-| צהוב hover | `#fedd26` | **`#fed700`** | `fed700` מופיע 13 פעמים, `fedd26` אפס |
-| אדום מחיר | `#E4002B` | **`#dc3545`** | `dc3545` מופיע 2 פעמים, `E4002B` אפס |
+| container | 1320px | 1170px | 1170×3 |
+| צהוב hover | #fedd26 | #fed700 | fed700×13 |
+| אדום מחיר | #E4002B | #dc3545 | dc3545×2 |
 
-## מה שכן מיושר כבר
+---
 
-רוחב קונטיינר 1170, מיקום ורוחב הכרטיס (left 1071, w 234 בשניהם), גובה
-בלוק ה-header בכרטיס (278.6 בחי מול 281.5 אצלנו), breadcrumb 1170x71.4,
-בר המיון, ה-badge הירוק ‎#44b81b.
+## 10. תיקונים שבוצעו (2026-07-24)
 
-## מה תוקן בסבב הבנייה (2026-07-24, המשך)
+1. הוסר `flex-1` מה-main: footer אחרי תוכן; רצועות y1400-2400 → 0%.
+2. `custom-price-wrapper` ב-`CategoryProductCard.tsx`: כרטיס ~430px (קרוב ל-437).
+3. masthead 54px → 127px ב-`Header.tsx`.
 
-לפי אישור Ofir (כולל אישור לגעת ב-header הנעול), עם ערכי מדידה מהחי:
+**תוצאה:** קטגוריה 10.89% → 9.45%. בית 28.01% → 17.83%.
 
-1. **footer sticky הוסר** (`(store)/layout.tsx`): הוסר `flex-1` מה-main. ה-footer
-   יושב מיד אחרי התוכן כמו בחי, לא נדחף לתחתית ה-viewport. רצועות y1400-2400
-   ירדו מ-9-53% ל-0%.
-2. **`custom-price-wrapper` נוסף לכרטיס** (`CategoryProductCard.tsx` + CSS): שתי
-   שורות 24px + br, גובה 72px, ממקור `full_price`/`kenyon_price` (לא המספרים
-   הלא-עקביים של החי). הכרטיס עלה מ-358 ל-~430px, קרוב ל-437 של החי.
-3. **פער ה-70px של ה-header נסגר** (`Header.tsx`): ה-masthead עלה מ-54px ל-127px
-   כמדידת החי (padding 28/28, תוכן מתחיל ב-165). ה-54px היה override מכוון מול
-   ה-snapshot המנוון, לא מול החי.
+---
 
-**תוצאה:** קטגוריה `10.89% -> 9.45%`. בונוס: דף הבית השתפר `28.01% -> 17.83%`
-(אותו masthead היה קצר גם שם). type-check ו-biome נקיים.
-
-## רצפת התוכן: למה לא מתחת ל-7% ב-hot-deals
-
-אחרי שה-layout זהה 1:1, כל השארית (y400-900, 22-55%) היא **הבדל תוכן, לא עיצוב**:
+## 11. רצפת תוכן (מתחת 7%)
 
 | | חי | אצלנו |
 |---|---|---|
-| מוצרים ב-hot-deals | **2** ("מציגים את כל 2 התוצאות") | **4** |
-| חצי הגריד השמאלי | ריק (לבן) | שני כרטיסים נוספים |
-| 2 המוצרים המשותפים | תספורת + JEEP | JEEP + חבילת פינוק (סדר/תוכן שונה) |
+| מוצרים hot-deals | 2 | 4 |
+| חצי גריד שמאלי | ריק | 2 כרטיסים |
 
-זו אותה מחלקה של רצפה שתועדה לדף הבית: כשהתוכן שונה, ה-pixel-diff לא יורד מתחת
-לסף בלי קשר ל-CSS. הרצפה נשלטת ע"י 6 רצועות הגריד (y400-900). ה-layout מאומת
-1:1 ויזואלית (`refs/cat-grid.png`, `refs/cat-footer.png`).
+layout 1:1; השארית diff = תוכן. refs: `refs/cat-grid.png`, `refs/cat-footer.png`.
 
-**אי אפשר לרדת מתחת ל-7% על hot-deals בלי לשנות את נתוני הקטלוג** (למחוק 2 מוצרים
-כדי להתאים ל-2 של החי) - וזה גיים של המדד, לא תיקון layout. הכרעה זו נמסרה ל-Ofir.
+---
 
-## כלי עזר שנוצרו
+## 12. כלי עזר
 
-- `scripts/crop-band.mjs <y0> <y1> [שם] [scale]` - חותך את אותו טווח y
-  מ-`refs/live.png` ומ-`refs/mine.png` ומייצר השוואה זו לצד זו. שימושי
-  לתרגם מספר רצועה מ-`diff-bands.mjs` למשהו שאפשר להסתכל עליו.
-- `scripts/_cat-*.mjs` - probes חד-פעמיים, אפשר למחוק אחרי שהדף נסגר.
+- `scripts/crop-band.mjs <y0> <y1>`: חיתוך רצועה live/mine.
+- `scripts/_cat-*.mjs`: probes חד-פעמיים.
+
+---
+
+## 13. Revision
+
+| תאריך | שינוי |
+|---|---|
+| 2026-07-24 | ממצאי מדידה; הסשן נעצר (6 סוכנים) |
+| 2026-07-24 | תיקון footer, wrapper, header |
+| 2026-08-12 | BINDING: 5 סעיפי תבנית batch-2 (`arch/docs-batch-2`) |
