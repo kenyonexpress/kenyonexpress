@@ -1,23 +1,26 @@
-# ARCHITECTURE: Wallet Ledger
+# ארכיטקטורה: Wallet Ledger
 
-ארנק קאשבק פנימי: ledger כפול-רישום באגורות integer, בלי משיכה החוצה.
+ארנק קאשבק פנימי: ledger כפול-רישום באגורות integer, נתיב כתיבה יחיד, בלי משיכה החוצה.
 
-Status: **BINDING** · Updated: 2026-08-03  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #16/50
+Status: **BINDING** · עודכן: 2026-08-12 · QA: PASS  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #16/50  
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
-מודל כסף: **No Escrow**. אין held/נאמן/J5 לקופון.
-אין שינוי קוד. אין נגיעה ב-worktree הראשי (`kenyonexpress`).
+מודל כסף: **No Escrow**. אין held/נאמן/J5 לקופון. הארנק אינו מחזיק מקדמת קופון לספק.
 
-Companions:
+מסמכים קשורים:
 
 ```
+docs/ARCHITECTURE-WALLET-CASHBACK.md
+docs/ARCHITECTURE-CASHBACK-WALLET.md
+docs/ARCHITECTURE-WALLET-INTEGER.md
 docs/ARCHITECTURE-ACCOUNT-WALLET.md
 docs/ARCHITECTURE-SECURITY-RLS.md
 docs/ARCHITECTURE-NOTIFICATIONS.md
 docs/BUSINESS-MODEL.md
 ```
 
-Stack: Supabase Postgres, SECURITY DEFINER `fn_wallet_transfer`, service_role בלבד לכתיבה, UI ב-
+Stack: Supabase Postgres, `SECURITY DEFINER` `fn_wallet_transfer`, כתיבה ב-`service_role` בלבד. UI ב:
 
 ```
 src/app/(account)/account/wallet
@@ -30,15 +33,18 @@ src/app/(account)/account/wallet
 | # | הכרעה |
 |---|---|
 | W1 | הארנק הוא **אשראי פנימי בלבד** (קאשבק / זיכוי). |
-| W2 | **אין משיכה החוצה**, אין P2P, אין cash-out לבנק/כרטיס, אין המרה למזומן. |
-| W3 | כסף ב-DB: **integer agorot** בלבד (1 ₪ = 100). אין float. UI מציג ₪ עם 2 עשרונים. |
+| W2 | **אין משיכה החוצה**, אין P2P, אין cash-out לבנק/כרטיס. |
+| W3 | כסף ב-DB: **integer agorot** בלבד (1 ₪ = 100). אין float. UI מציג ₪. |
 | W4 | תנועות רק ב-**כפול-רישום** (debit + credit) באותה טרנזקציה. |
-| W5 | נתיב כתיבה יחיד: `fn_wallet_transfer` (service_role / definer). אין INSERT ישיר מ-JWT. |
+| W5 | נתיב כתיבה יחיד: `fn_wallet_transfer`. אין INSERT ישיר מ-JWT. |
 | W6 | Idempotency: `idempotency_key` UNIQUE על העברה. |
 | W7 | Canonical: `wallet_accounts` + `wallet_entries`. Deprecated: `wallets`, `wallet_balances`, `wallet_transactions`. |
 | W8 | כשל מייל/התראה לא מגלגל תנועת ארנק. |
+| W9 | Append-only: אין UPDATE/DELETE על entries; תיקון = journal נגדי. |
+| W10 | מפתחות earn/spend: `order:{order_id}:cashback` / `order:{order_id}:spend`. |
 
-מסמכים ישנים עם `amount_ils` / `balance_ils` כמקור אמת: **נדחים** לטובת agorot. אם עמודה legacy עדיין `numeric` ILS, קוד חדש כותב/קורא דרך המרה מפורשת או מיגרציית יישור לעמודות `*_agorot`.
+מסמכים ישנים עם `amount_ils` / `balance_ils` כמקור אמת: **נדחים** לטובת agorot. Cutover:  
+`docs/ARCHITECTURE-WALLET-INTEGER.md`.
 
 ---
 
@@ -51,33 +57,38 @@ wallet_accounts (
   id uuid PK,
   owner_type text,          -- user | platform
   owner_id uuid null,       -- auth user when user
-  purpose text,             -- available | platform:revenue | platform:cashback_reserve | platform:adjustments
+  purpose text,             -- available | platform:*
   currency text default 'ILS',
+  balance_agorot bigint,    -- cache אופציונלי; לא מקור אמת
   created_at timestamptz
 )
 ```
 
 חשבונות פלטפורמה קבועים:
 
-| purpose | תפקיד |
+| purpose / code | תפקיד |
 |---|---|
 | `platform:cashback_reserve` | מקור זיכוי קאשבק |
-| `platform:revenue` | כנגד הוצאות/התאמות הכנסה |
+| `platform:revenue` | יעד spend / התאמות הכנסה |
 | `platform:adjustments` | זיכוי/חיוב ידני אדמין |
 
-לכל משתמש: חשבון `available` אחד (נוצר ב-signup trigger).
+לכל משתמש: חשבון `available` אחד (נוצר ב-signup trigger). אין חשבון חמישי / סכמה מקבילה.
 
 ### 1.2 Entries (append-only)
+
+שתי צורות ייצוג מקובלות (יישור לפי הסכמה החיה; העיקרון זהה):
+
+**צורה A (זוג שורות תחת journal):**
 
 ```text
 wallet_entries (
   id uuid PK,
-  journal_id uuid not null,     -- pairs debit+credit
+  journal_id uuid not null,
   account_id uuid not null,
   direction text check in ('debit','credit'),
   amount_agorot int not null check (amount_agorot > 0),
   reason text not null,
-  reference_type text,          -- order | payment | admin | ...
+  reference_type text,
   reference_id uuid,
   idempotency_key text,
   created_at timestamptz,
@@ -85,38 +96,54 @@ wallet_entries (
 )
 ```
 
-יתרה מחושבת:
+**צורה B (שורה אחת = העברה):**
+
+```text
+wallet_entries (
+  id uuid PK,
+  debit_account uuid not null,
+  credit_account uuid not null,
+  amount_agorot bigint not null check (amount_agorot > 0),
+  reason text not null,
+  idempotency_key text not null unique,
+  order_id uuid null,
+  created_at timestamptz
+)
+```
+
+בשתי הצורות: סכום חיובי בלבד, שני צדדים, אין שורה חד-צדדית.
+
+יתרה:
 
 ```text
 balance_agorot(account) =
-  sum(credit.amount_agorot) - sum(debit.amount_agorot)
+  sum(credits) - sum(debits)
 ```
 
-איסור יתרה שלילית בחשבון משתמש ב-`available` (נבדק תחת `FOR UPDATE` בהעברה).
+איסור יתרה שלילית בחשבון משתמש `available` (נבדק תחת `FOR UPDATE`).
 
 ### 1.3 Cashback rules
 
 ```text
 cashback_rules (
-  id, name, percent numeric,   -- או flat_agorot
+  id, name, percent numeric או flat_agorot,
   active, valid_from, valid_to,
-  product_type null|coupon|physical
+  product_type null|coupon|physical,
+  priority, …
 )
 ```
-
-חישוב:
 
 ```text
 cashback_agorot = floor(eligible_paid_on_site_agorot * percent / 100)
 ```
 
-עיגול: פעם אחת כלפי מטה לאגורות שלמות. אין float ביניים.
+עיגול: פעם אחת כלפי מטה. אין float ביניים. ראה גם WALLET-CASHBACK.
 
 ---
 
 ## 2. `fn_wallet_transfer`
 
-### 2.1 חתימה (יעד)
+### 2.1 חתימת יעד
 
 ```sql
 fn_wallet_transfer(
@@ -128,28 +155,31 @@ fn_wallet_transfer(
   p_reference_id uuid,
   p_idempotency_key text,
   p_metadata jsonb default '{}'
-) returns uuid  -- journal_id
+) returns uuid  -- journal_id / entry id
 ```
+
+שמות פרמטרים חיים עשויים להיות `p_debit_account` / `p_credit_account`. העיקרון: אגורות integer, idempotency, שני חשבונות.
 
 ### 2.2 אלגוריתם
 
-1. רק `service_role` / definer עם `search_path` נעול.
-2. `amount_agorot > 0` אחרת reject.
-3. אם `idempotency_key` קיים: החזר journal קיים (replay).
-4. `SELECT … FOR UPDATE` על שני החשבונות (סדר uuid קבוע למניעת deadlock).
-5. בדוק יתרת מקור ≥ amount (לחשבון משתמש).
-6. Insert שתי שורות `wallet_entries` תחת אותו `journal_id`.
-7. Commit. אופציונלי: enqueue `wallet_activity` notification (לא חוסם).
+1. רק `service_role` / definer עם `search_path` נעול.  
+2. `amount_agorot > 0` אחרת reject.  
+3. אם `idempotency_key` קיים: החזר journal קיים (replay בטוח).  
+4. `SELECT … FOR UPDATE` על שני החשבונות (סדר uuid קבוע למניעת deadlock).  
+5. בדוק יתרת מקור ≥ amount (לחשבון משתמש).  
+6. Insert שורות entries מאוזנות.  
+7. עדכון cache יתרה אם קיים.  
+8. Commit. אופציונלי: enqueue `wallet_activity` (לא חוסם).
 
 ### 2.3 Reasons
 
-| reason | from → to | מתי |
-|---|---|---|
-| `order_cashback` | cashback_reserve → user available | אחרי paid (webhook/finalize) |
-| `order_spend` | user available → platform revenue/reserve | אם/כשמשתמשים ביתרה בקופה (עתידי) |
-| `order_refund_credit` | platform → user | זיכוי החזר ליתרה פנימית |
-| `admin_credit` | adjustments → user | super_admin + recent auth + reason |
-| `admin_debit` | user → adjustments | super_admin; לא מתחת לאפס |
+| reason | from → to | מתי | idempotency |
+|---|---|---|---|
+| `order_cashback` | cashback_reserve → user | אחרי paid | `order:{id}:cashback` |
+| `order_spend` | user → revenue | מימוש בקופה אחרי paid | `order:{id}:spend` |
+| `order_refund` / `order_refund_credit` | platform → user | החזר ליתרה פנימית | `order:{id}:refund` |
+| `admin_credit` | adjustments → user | super_admin + reason | `adj:{uuid}` |
+| `admin_debit` | user → adjustments | super_admin; לא מתחת לאפס | `adj:{uuid}` |
 
 ---
 
@@ -162,26 +192,28 @@ fn_wallet_transfer(
 | המרה לכסף בכרטיס | אסור |
 | עדכון יתרה ב-UPDATE ישיר | אסור |
 | כתיבה מ-anon/authenticated JWT | אסור |
-| שימוש בארנק כ-Escrow לספק | אסור (מודל קופון: No Escrow; יתרה בעסק מחוץ לארנק) |
+| שימוש בארנק כ-Escrow לספק | אסור (No Escrow) |
+| מחיקת / עריכת entry ישן | אסור |
 
-הארנק **לא** מחזיק את מקדמת הקופון של הלקוח לספק. מקדמת קופון נשארת בפלטפורמה כהכנסה; הארנק הוא קאשבק נפרד.
+הארנק **לא** מחזיק את מקדמת הקופון. מקדמת קופון נשארת בפלטפורמה כהכנסה; הארנק הוא קאשבק נפרד.
 
 ---
 
-## 4. אינטגרציה ל-checkout
+## 4. אינטגרציה ל-checkout / finalize
 
 ```text
 Cardcom webhook / finalizeOrder (paid)
   → issue vouchers / mark physical
-  → compute cashback_agorot from active rule + paid_on_site_agorot snapshot
-  → fn_wallet_transfer(... reason=order_cashback, idempotency=cashback:{order_id})
-  → enqueue notification wallet_activity (optional prefs)
+  → אם W>0: fn_wallet_transfer(... order_spend, order:{id}:spend)
+  → compute cashback_agorot
+  → fn_wallet_transfer(... order_cashback, order:{id}:cashback)
+  → enqueue notification (אופציונלי)
 ```
 
 כשל העברת ארנק אחרי paid:
 
-- לא מבטל את ה-paid.
-- נרשם ל-retry job עם אותו idempotency key.
+- לא מבטל את ה-paid.  
+- נרשם ל-retry עם אותו idempotency key.  
 - Alert אם נכשל חוזר.
 
 ---
@@ -194,7 +226,13 @@ Cardcom webhook / finalizeOrder (paid)
 | `wallet_entries` | own account / admin | `fn_wallet_transfer` only |
 | `cashback_rules` | admin (+ optional read active) | admin/service |
 
-פירוט: `ARCHITECTURE-SECURITY-RLS.md`.
+פירוט:
+
+```
+docs/ARCHITECTURE-SECURITY-RLS.md
+```
+
+`EXECUTE` על `fn_wallet_transfer`: `service_role` בלבד. ראה SEC-WALLET ב-WALLET-INTEGER.
 
 ---
 
@@ -203,8 +241,8 @@ Cardcom webhook / finalizeOrder (paid)
 | View / check | מטרה |
 |---|---|
 | `v_wallet_ledger` | יומן קריא ל-UI/אדמין |
-| `v_wallet_balance_drift` | זיהוי אי-איזון journals |
-| Nightly job | סכום debit==credit לכל `journal_id` |
+| `v_wallet_balance_drift` | זיהוי אי-איזון cache מול journal |
+| Nightly job | סכום debit == credit לכל journal; drift = 0 |
 
 ---
 
@@ -212,9 +250,9 @@ Cardcom webhook / finalizeOrder (paid)
 
 | Surface | התנהגות |
 |---|---|
-| `/account/wallet` | יתרה ב-₪, היסטוריית entries, הסבר "לשימוש באתר בלבד" |
-| Admin adjust | super_admin + recent auth + reason חובה + audit_log |
-| Checkout | הצגת יתרה למימוש עתידי (אם מופעל); לא חובה ל-MVP |
+| `/account/wallet` | יתרה ב-₪, היסטוריית entries, "לשימוש באתר בלבד" |
+| Admin adjust | super_admin + recent auth + reason + audit_log |
+| Checkout | בחירת סכום למימוש; חיוב Cardcom = T − W |
 
 אין כפתור "משוך לחשבון".
 
@@ -222,23 +260,21 @@ Cardcom webhook / finalizeOrder (paid)
 
 ## 8. Acceptance
 
-- [ ] כל תנועה = journal עם debit+credit באגורות
-- [ ] אין API למשיכה החוצה
-- [ ] Idempotency על cashback per order
-- [ ] JWT לא יכול INSERT ל-`wallet_entries`
-- [ ] UI מציג ₪; DB שומר agorot
-- [ ] Paid לא ממתין להתראה
+- [ ] כל תנועה = journal מאוזן באגורות  
+- [ ] Append-only נאכף (אין UPDATE/DELETE ל-JWT)  
+- [ ] אין API למשיכה החוצה  
+- [ ] Idempotency על cashback/spend per order  
+- [ ] JWT לא יכול INSERT ל-`wallet_entries`  
+- [ ] UI מציג ₪; DB שומר agorot  
+- [ ] Paid לא ממתין להתראה  
+- [ ] No Escrow מפורש  
 
 ---
 
 ## 9. Revision
 
-| Date | Change |
-|---|---|
-| 2026-08-03 | ke-arch docs-lifecycle: wallet ledger כפול-רישום באגורות; בלי משיכה החוצה |
-
-## Revision
-
 | תאריך | שינוי |
 |---|---|
+| 2026-08-03 | ke-arch docs-lifecycle: wallet ledger כפול-רישום באגורות |
 | 2026-08-12 | batch-2 #16: רענון BINDING על `arch/docs-batch-2`; No Escrow מאושר |
+| 2026-08-12 | batch-2 #16 pass-2: double-entry, fn_wallet_transfer, accounts, append-only מלא |
