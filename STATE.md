@@ -21,7 +21,7 @@ arch/docs-batch-2
 .
 
 ## Last Completed
-ARCHITECTURE-CHECKOUT-FLOW.md: חידוד מפת S0–S8 (יציאות כישלון, settlement_status, מעברים אסורים). קודם: שכתוב מלא + CARDCOM-WEBHOOKS.
+ARCHITECTURE-CARDCOM-WEBHOOKS.md: חידוד HTTP/DLQ/כפילות/multi-terminal. קודם: CHECKOUT-FLOW deepen.
 
 ## In Progress
 nothing
