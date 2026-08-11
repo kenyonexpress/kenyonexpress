@@ -43,3 +43,16 @@ Install with `pnpm add -D <pkg>`.
 PORT=3311 pnpm start &
 LOCAL_BASE=http://localhost:3311 node scripts/compare.mjs --page=home
 ```
+
+## NON NEGOTIABLE: Dynamic Percentages
+
+There is NO fixed commission or split percentage in this project.
+Every percentage is per product, set by the admin on the product page.
+Never hardcode 0.05, 5, or any other value in code, env, config, or seed.
+Never create a global default or a fallback. Empty field = validation error.
+
+Per product fields: supplier_split_percent, platform_commission_percent,
+discount_percent, voucher_prepaid_amount, supplier_id, product_type.
+
+DB CHECK: supplier_split_percent + platform_commission_percent = 100
+Percentages are snapshotted into order_items at order creation and are immutable.
