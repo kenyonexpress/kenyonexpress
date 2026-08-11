@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { resolve } from 'node:path'
 // Measure pixel mismatch between refs/live.png and refs/mine.png
@@ -75,6 +75,15 @@ const report = await page.evaluate(
 )
 
 await b.close()
+
+// The number, written down rather than only printed: compare.mjs runs this as a
+// child with inherited stdio, and the pixel gate has to be decided by the
+// script that also knows which page was measured and how much content each side
+// carried. Scraping it back out of the log would be a parser nobody asked for.
+writeFileSync(
+  'refs/band-report.json',
+  JSON.stringify({ page: process.env.COMPARE_PAGE ?? null, ...report }),
+)
 
 console.log(
   `live: ${report.liveSize.w}x${report.liveSize.h}  mine: ${report.mineSize.w}x${report.mineSize.h}`,

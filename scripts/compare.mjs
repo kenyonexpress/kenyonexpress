@@ -4,6 +4,7 @@ import { homedir } from 'node:os'
 import { resolve } from 'node:path'
 import { chromium } from '@playwright/test'
 import { PROPS, collectComputed } from './lib/computed.mjs'
+import { gateVerdict, verdictLines } from './lib/pixel-gate.mjs'
 import { freezeHero, loadLazyContent } from './lib/settle.mjs'
 import { compareProfiles, profilePage } from './lib/token-profile.mjs'
 
@@ -573,6 +574,7 @@ if (liveProfile.pageHeight <= VIEW.height || mineProfile.pageHeight <= VIEW.heig
 // Where each side stops being content. See profilePage() for why this is not
 // the same question as page height, and for the /search case that made it a
 // line of its own.
+let contentRatio = null
 if (liveProfile.contentEnd !== null && mineProfile.contentEnd !== null) {
   const gap = mineProfile.contentEnd - liveProfile.contentEnd
   console.log(
@@ -585,6 +587,7 @@ if (liveProfile.contentEnd !== null && mineProfile.contentEnd !== null) {
   const ratio =
     Math.min(liveProfile.contentEnd, mineProfile.contentEnd) /
     Math.max(liveProfile.contentEnd, mineProfile.contentEnd)
+  contentRatio = ratio
   if (ratio < 0.5) {
     console.log(
       '        WARNING: one side carries less than half the content of the other.',
@@ -602,3 +605,22 @@ for (const { prop, pct: distance, worst } of tokens.props) {
     )
   }
 }
+
+// ---------------------------------------------------------------------------
+// The verdict
+//
+// Last, because it needs both halves: the band percentage the child wrote, and
+// the content ratio that decides whether that percentage is a fidelity score at
+// all. Printing a number and leaving the reading of it to whoever runs the
+// script is what let four pages sit above the rule for a week with nobody able
+// to say, from the output alone, which of them was allowed to.
+// ---------------------------------------------------------------------------
+const bandReport = JSON.parse(readFileSync('refs/band-report.json', 'utf8'))
+const verdict = gateVerdict({ page, overallPct: bandReport.overallPct, contentRatio })
+console.log('')
+for (const line of verdictLines({ page, overallPct: bandReport.overallPct, verdict })) {
+  console.log(line)
+}
+// A gate that cannot fail a run is a report. Exit 1 is the pixel gate itself;
+// 2 and 3 above stay what they are, a bad flag and a refusal to measure.
+if (verdict.status === 'FAIL') process.exit(1)
