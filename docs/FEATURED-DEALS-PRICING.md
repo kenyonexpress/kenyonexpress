@@ -1,23 +1,49 @@
 # תמחור קידום דילים לספקים (Featured)
 
-מודל עתידי להכנסת פרסום/חשיפה. לא חלק מ-soft-open.
-
-Status: **PLAN (future)** · עודכן: 2026-08-10  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+Status: **PLAN (future)** · עודכן: 2026-08-12
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+מודל כסף: No Escrow; תשלום קידום ≠ checkout לקוח.
 
-מסמכים קשורים:
+---
 
-```
-docs/V2-VISION.md
-docs/SUPPLIER-QUALITY-PROGRAM.md
-docs/ARCHITECTURE-ADMIN-DASHBOARD.md
-docs/ARCHITECTURE-SUPPLIER-PORTAL.md
-docs/ARCHITECTURE-SEASONAL-CAMPAIGNS.md
-docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
-docs/ARCHITECTURE-PRICING-RULES.md
-docs/CONTRADICTIONS.md
-```
+## 1. החלטה
+
+| # | הכרעה |
+|---|---|
+| F1 | Featured = פרסום נפרד |
+| F2 | אורגני לא לפי תשלום |
+| F3 | תווית ממומן חובה |
+| F4 | ledger ad_revenue נפרד |
+
+---
+
+## 2. חלופות שנדחו
+
+| חלופה | נימוק |
+|---|---|
+| שינוי platform_percent | PRICING-RULES |
+| הסתרת מתחרים | יושרה |
+| held על קופון | No Escrow |
+
+---
+
+## 3. סכמת DB
+
+**יעד:** `featured_slots`, `ad_revenue`; אין DDL במסמך.
+
+---
+
+## 4. מקרי קצה
+
+| E1 | overbook slot | admin block |
+| E2 | מוצר לא מאושר | no boost |
+
+---
+
+## 5. פתוחות
+
+| O1 | מחירים סופיים | PLAN | 2026-08-12 |
 
 ---
 
@@ -99,3 +125,12 @@ docs/CONTRADICTIONS.md
 | תאריך | שינוי |
 |---|---|
 | 2026-08-10 | טיוטת חבילות Featured + הכרעות F1–F5 |
+
+---
+
+## Revision
+
+| תאריך | שינוי |
+|---|---|
+| 2026-08-12 | BINDING batch-2: החלטה, חלופות, DB, קצה, פתוחות |
+
