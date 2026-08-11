@@ -14,14 +14,14 @@ docs/DOCS-TEMPLATE-BINDING.md
 .
 
 ## המשך מ:
-נכתב
-docs/ARCHITECTURE-PRODUCT-TYPES.md
+נכתב מחדש
+docs/ARCHITECTURE-SUPPLIER-PORTAL.md
 . ממתין למסמך הבא על
 arch/docs-batch-2
 .
 
 ## Last Completed
-ARCHITECTURE-PRODUCT-TYPES.md: מטריצת שכבות coupon/physical/subscription + בשלות. קודם: CART-GUEST.
+ARCHITECTURE-SUPPLIER-PORTAL.md: RBAC, מסכים, סריקה, דוחות, onboarding. קודם: PRODUCT-TYPES.
 
 ## In Progress
 nothing
@@ -33,6 +33,8 @@ nothing
 /Users/ofir/kenyonexpress-web/ke-arch
 
 ## החלטות שהתקבלו אוטומטית
+- **2026-08-12 SUPPLIER-PORTAL:** שכתוב BINDING. שער = supplier_members לא profiles.role. דוחות בלי escrow_held. בנק לא חוסם סריקה. Settlements ישנים עם held נדחים במפורש ממפת הפורטל.
+
 - **2026-08-12 PRODUCT-TYPES:** נוצר ARCHITECTURE-PRODUCT-TYPES.md. מנוי מחוץ ל-cart/beginCheckout הרגיל ב-GA. Admin ישן שכופה platform_percent=100 על קופון נדחה לטובת settlement supplier_due=0 + snapshot אחוז (MONEY). commission_type נשאר נגזר מ-type.
 
 - **2026-08-12 CART-GUEST conflicts:** מיזוג = sum+cap 99 (לא max). מחיר תמיד חי. מחיקת cookie אחרי merge; קישור אנליטיקס לפני המחיקה ב-OAuth. תועד BINDING ב-ARCHITECTURE-CART-GUEST.md.
