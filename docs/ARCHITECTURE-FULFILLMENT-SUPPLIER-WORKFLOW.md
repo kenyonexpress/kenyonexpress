@@ -174,3 +174,4 @@ pending_fulfillment → processing → shipped → delivered
 | 2026-07-28 | Fulfillment binding |
 | 2026-07-31 | No Escrow coupon language |
 | 2026-08-12 | batch-2: עברית RTL; BINDING template; חמשת סעיפי חובה |
+| 2026-08-12 | batch-2: commit נפרד מ-REFUNDS-DISPUTES |
