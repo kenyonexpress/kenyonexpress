@@ -1,252 +1,276 @@
-# ארכיטקטורה: מנוי חודשי (טכני)
+# ארכיטקטורה: מנויים (Subscriptions)
 
-מודל מנוי טכני מלא: הצטרפות, מחזור חיוב חודשי, כשלי חיוב ו-retry, ביטול/הקפאה, ledger, וזכויות צרכן.  
-לא חלק מהשקת הקופונים. דורש threat model + מיגרציה + אישור עו״ד לניסוח ללקוח לפני קוד פרוד.
+Cardcom Recurring Token, חידושים, ביטולים, כישלון גבייה.
 
 Status: **BINDING (design)** · עודכן: 2026-08-12  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #48/50  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
 מסמכים קשורים:
 
 ```
+docs/DOCS-TEMPLATE-BINDING.md
 docs/ARCHITECTURE-RECURRING-SUBSCRIPTIONS.md
 docs/SUBSCRIPTIONS-BILLING-SPEC.md
-docs/BUSINESS-MODEL.md
+docs/ARCHITECTURE-PRODUCT-TYPES.md
+docs/ARCHITECTURE-MONEY.md
+docs/ARCHITECTURE-CARDCOM-WEBHOOKS.md
+docs/ARCHITECTURE-CHECKOUT-FLOW.md
 docs/CARDCOM-ARCHITECTURE.md
-docs/ARCHITECTURE-COMMERCE.md
-docs/ARCHITECTURE-PRICING-RULES.md
-docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
-docs/ARCHITECTURE-NOTIFICATIONS.md
+docs/BUSINESS-MODEL.md
 docs/CONTRADICTIONS.md
-docs/GO-LIVE-CHECKLIST.md
 ```
 
-**יחס ל-`ARCHITECTURE-RECURRING-SUBSCRIPTIONS.md`:** המסמך הזה = מקור אמת טכני (סכמה, cron, threat, SU*). Recurring = תצוגת מוצר. בהתנגשות גובר המסמך הזה.
+**יחס ל-RECURRING:** המסמך הזה = מקור אמת טכני (Token, cron, retry, ביטול, ledger). Recurring = תצוגת מוצר. בהתנגשות גובר המסמך הזה.
 
-מודל כסף: **No Escrow**. מנוי ≠ מקדמת קופון. אין held לספק.
+מודל כסף: **No Escrow**. מנוי ≠ מקדמת קופון. אין voucher מימוש בעסק במפרט זה. אגורות integer. `platform_percent` snapshot פר מחזור. דגל `SUBSCRIPTIONS_ENABLED` נפרד משיגור קופונים.
 
 ---
 
-## 0. הכרעות מחייבות
+## 0. החלטה (מחייבת)
 
 | # | הכרעה |
 |---|---|
-| SU1 | סוג מוצר: `products.type = 'subscription'`. |
-| SU2 | Interval ראשוני: **`monthly`** בלבד. שנתי = phase 2 על אותו מודל. |
-| SU3 | סכומים: integer **agorot** בכל מקום פנימי. |
-| SU4 | אמצעי: **Cardcom Token** אחרי חיוב ראשון מוצלח. |
-| SU5 | אין Escrow. מנוי ≠ מקדמת קופון. אין held לספק. |
-| SU6 | פיצול לספק (אם יש): `platform_percent` **snapshot פר מחזור חיוב**. |
-| SU7 | משתמש מחובר חובה בהצטרפות (לא אורח). |
-| SU8 | Cron חיוב: idempotency מפתח `(subscription_id, billing_period)`. |
-| SU9 | ביטול מנוי: מאזור אישי + `/cancel` לפי דין; ניסוח סופי דורש עו״ד. |
-| SU10 | Apple/Google IAP: מחוץ למסמך. |
-| SU11 | מיגרציות prod רק MCP. לא חלק מ-soft-open קופונים. |
-| SU12 | דגל `SUBSCRIPTIONS_ENABLED` נפרד מ-`CHECKOUT_ENABLED` (מומלץ). |
+| SU1 | `products.type = 'subscription'`. Interval ראשון: `monthly` בלבד. |
+| SU2 | חיוב ראשון: Low Profile **ChargeAndCreateToken** (או מקביל מאושר). מקור אמת = GetLpResult / תוצאת charge מאומתת. |
+| SU3 | מחזורים הבאים: **ChargeToken** server-to-server בלבד. אין iframe לכל חודש. |
+| SU4 | Idempotency חיוב מחזור: UNIQUE `sub:{subscription_id}:{period_start_iso}` על invoice. |
+| SU5 | טוקן Cardcom = server-only (עמודת מוצפנת / vault). לא ל-client, לא ל-Sentry, לא ללוגים. |
+| SU6 | אין Escrow / held. פיצול לספק (אם יש) = residual לפי snapshot `%` על סכום המחזור. |
+| SU7 | משתמש מחובר חובה בהצטרפות; לא אורח; לא דרך `beginCheckout` של עגלת קופון. |
+| SU8 | ביטול מאזור אישי (+ `/cancel`); אחרי ביטול cron לא מחייב. ניסוח ללקוח דורש עו״ד לפני פרסום. |
+| SU9 | Soft decline: עד 3 ניסיונות בחלון ~7 ימים על **אותו** idempotency_key; אז `paused` או `cancelled` (ברירת מחדל שמרנית: `paused` + דורשים עדכון כרטיס). |
+| SU10 | Hard decline / token invalid: עצירת retry; סטטוס `past_due`/`paused`; CTA עדכון כרטיס. |
+| SU11 | מיגרציות/קוד פרוד רק אחרי threat model + דגל כבוי כברירת מחדל. לא soft-open קופונים. |
+| SU12 | Wallet spend על מנוי: אופציונלי עם מפתח `sub_spend:{invoice_id}`; לא חובה ב-MVP. |
 
 ---
 
-## 1. מה הלקוח קונה
+## 1. חלופות שנדחו
 
-| רכיב | פירוט |
+| חלופה | למה נדחתה |
 |---|---|
-| מוצר | קורס / שירות מתמשך / גישה תקופתית (לא קופון מימוש בעסק) |
-| מחיר | `recurring_amount_agorot` |
-| מחזור | חודש מ-`paid_at` הראשון, Asia/Jerusalem |
-| מספר מחזורים | `max_billing_cycles` או `null` = ללא הגבלה |
-| הנפקה | כל חיוב מוצלח = `orders` + `subscription_invoices` |
-
-אין לערבב במפרט זה הנפקת voucher למימוש בעסק.
+| חיוב חוזר בלי Token (PAN כל פעם) | PCI + חיכוך; Cardcom Token הוא המודל. |
+| Webhook בלבד בלי idempotency לתקופה | double-charge ב-retry/cron חופפים. |
+| מנוי דרך עגלת קופון רגילה | ערבוב voucher/settlement; מסלול נפרד. |
+| Escrow עד "שימוש במנוי" | סותר No Escrow; מנוי = הכנסה מחזורית. |
+| סימון `paid` מ-Return URL בלי אימות | כמו checkout חד-פעמי; אסור. |
+| ביטול רק במייל לתמיכה | חובה UI עצמי לפי כיוון צרכני. |
+| הנפקת voucher חודשי כמנוי | מחוץ למפרט; PRODUCT-TYPES. |
 
 ---
 
-## 2. מודל נתונים
+## 2. סכמת DB (יעד; אין DDL במסמך זה)
 
-### 2.1 שדות מוצר
+אין DDL כאן. מיגרציה עתידית ב-`migrations/pending` רק אחרי אישור.
 
-| שדה | סוג | הערה |
-|---|---|---|
-| `type` | `'subscription'` | |
-| `billing_interval` | `'monthly'` | CHECK |
-| `recurring_amount_agorot` | `bigint` | מקור אמת |
-| `max_billing_cycles` | `int` null | null = אין תקרה |
-| `platform_percent` | כמו שאר המוצרים | חובה לפרסום |
+### 2.1 מוצר
 
-### 2.2 `subscriptions` (תמצית)
+| שדה | כלל |
+|---|---|
+| `type` | `subscription` |
+| `billing_interval` | `monthly` |
+| `recurring_amount_agorot` | > 0 |
+| `max_billing_cycles` | null = ללא הגבלה |
+| `platform_percent` | חובה לפרסום; אין default |
+
+### 2.2 `subscriptions`
 
 סטטוסים: `incomplete` | `active` | `past_due` | `paused` | `cancelled` | `expired`.
 
-שדות ליבה: `user_id`, `product_id`, `supplier_id`, `amount_agorot`, `platform_percent_snapshot`, `billing_interval=monthly`, `cardcom_token` (server-only), `card_last4`, `next_billing_at`, `current_period_*`, `cycles_completed`, `max_billing_cycles`, `retry_count`, `cancel_at_period_end`, `cancelled_at`, `paused_at`.
+שדות ליבה: `user_id`, `product_id`, `supplier_id`, `amount_agorot`, `platform_percent_snapshot` (של מחזור נוכחי/אחרון), `cardcom_token` (server), `card_last4`, `next_billing_at`, `current_period_start/end`, `cycles_completed`, `max_billing_cycles`, `retry_count`, `cancel_at_period_end`, `cancelled_at`, `paused_at`.
 
-RLS: לקוח read own; כתיבות כסף/טוקן רק service role אחרי שער שרת.
+RLS: לקוח SELECT own; כתיבות כסף/טוקן = service role אחרי שער שרת.
 
 ### 2.3 `subscription_invoices`
 
-סטטוסים: `pending` | `paid` | `failed` | `refunded` | `void`.  
-`idempotency_key` UNIQUE: `sub:{subscription_id}:{period_start_iso}`.
-
----
-
-## 3. הצטרפות (חיוב ראשון + Token)
-
-```text
-PDP type=subscription
-  → session חובה
-  → מחיר חודשי + תנאי ביטול
-  → Low Profile ChargeAndCreateToken
-  → return / webhook → GetLpResult (מקור אמת)
-  → הצלחה: subscriptions active + token + invoice#1 paid + order + מייל
-  → כשל: incomplete; אין טוקן לשימוש חוזר
-```
-
-סכום = `recurring_amount_agorot`. Snapshot `platform_percent` לשורה.
-
----
-
-## 4. מחזור חיוב (cron)
-
-```text
-Cron (CRON_SECRET):
-  SELECT active WHERE next_billing_at <= now()
-    AND cancel_at_period_end = false
-    AND (max_cycles null OR cycles_completed < max)
-
-  לכל מנוי בטרנזקציה:
-    1. INSERT invoice pending עם idempotency_key (ON CONFLICT → יציאה)
-    2. ChargeToken
-    3a. OK → paid + order + cycles++ + קדם next_billing_at
-    3b. כשל → סעיף 5
-```
-
-אין double-charge: המפתח הייחודי לתקופה הוא חומת האש.  
-תזמון: יום עוגן; אם אין יום בחודש (31) → יום אחרון בחודש.
-
----
-
-## 5. כשלי חיוב ו-retry
-
-| סוג | התנהגות |
+| שדה | כלל |
 |---|---|
-| Soft | `past_due` + retry |
-| Hard | עצירת retry; בקשת עדכון אמצעי |
-| Technical | backoff; לא hard מיד |
-
-מדיניות יעד: ניסיון 1 מיידי; 2 אחרי +2 ימים; 3 אחרי +5 מימים מניסיון 1; אחרי 3 soft בחלון 7 ימים → `paused`/`cancelled`.  
-אותו `idempotency_key` לכל retry של אותה תקופה.
-
-עדכון כרטיס: Low Profile CreateTokenOnly / ChargeAndCreateToken; החלפת טוקן בשרת; אם `past_due` ניסיון מיידי לאותה תקופה. אין PAN/CVV.
+| `status` | pending \| paid \| failed \| refunded \| void |
+| `idempotency_key` | UNIQUE `sub:{id}:{period_start}` |
+| `amount_agorot` | snapshot |
+| `platform_percent_snapshot` | פר מחזור |
+| `cardcom_deal_*` | מזהי ספק תשלום |
 
 ---
 
-## 6. ביטול והקפאה
+## 3. Cardcom Recurring Token
+
+### 3.1 הצטרפות (חיוב ראשון)
+
+```text
+PDP subscription + SUBSCRIPTIONS_ENABLED
+  → auth required
+  → CreateLowProfile ChargeAndCreateToken (amount = recurring_amount)
+  → return / webhook
+  → GetLpResult (אמת)
+  → success:
+       store token server-only
+       subscription = active
+       invoice#1 = paid (idempotency period0)
+       order + order_items snapshots
+       mail RTL
+  → fail: incomplete; אין token לשימוש חוזר
+```
+
+| כלל | פירוט |
+|---|---|
+| סכום | agorot → ILS רק בשכבת Cardcom |
+| חתימה / אימות | כמו CARDCOM-WEBHOOKS (`?s=` + GetLpResult) |
+| כפילות return+webhook | אותו finalize idempotent |
+
+### 3.2 חידוש (ChargeToken)
+
+```text
+Cron (CRON_SECRET) יומי:
+  claim due subscriptions (FOR UPDATE SKIP LOCKED)
+    status=active
+    next_billing_at <= now()
+    cancel_at_period_end = false
+    cycles < max (אם מוגדר)
+
+  per sub:
+    INSERT invoice pending ON CONFLICT idempotency_key DO NOTHING → exit if exists paid/pending-in-flight
+    ChargeToken(token, amount_agorot)
+    OK  → mark paid, order, cycles++, advance period, reset retry_count
+    FAIL → §5
+```
+
+תזמון עוגן: יום מ-`paid_at` הראשון, `Asia/Jerusalem`. אם אין יום בחודש (31) → יום אחרון בחודש.
+
+אין ChargeToken בלי שורת invoice עם מפתח תקופה.
+
+### 3.3 החלפת כרטיס
+
+Low Profile CreateTokenOnly או ChargeAndCreateToken קטן/אפס לפי יכולת Cardcom המאושרת. מחליפים טוקן בשרת בלבד. אם `past_due`: ניסיון מיידי לאותה תקופה **עם אותו idempotency_key** (אם עדיין לא paid).
+
+---
+
+## 4. חידושים (renewal) מול הלקוח
+
+| אירוע | התנהגות |
+|---|---|
+| הצלחה שקטה | מייל קבלה אופציונלי; גישה נמשכת |
+| תזכורת לפני חיוב | אופציונלי T-3; לא חוסם |
+| הגעת `max_billing_cycles` | `expired`; אין ChargeToken נוסף |
+| שינוי מחיר במוצר | לא משנה מנויים פעילים עד מדיניות מפורשת; ברירת מחדל שמרנית = נשאר `amount_agorot` שצולם בהצטרפות/מחזור אחרון |
+
+החלטה שמרנית (מתועדת): מחיר מנוי מצולם בהצטרפות; שינוי קטלוג לא מזיז מנויים חיים בלי consent מפורש (פתוח O2).
+
+---
+
+## 5. כישלון גבייה (dunning)
+
+| סוג כשל | זיהוי | פעולה |
+|---|---|---|
+| Soft (insufficient funds, temp) | קוד Cardcom soft | `past_due`; retry |
+| Hard (stolen, invalid token) | קוד hard | עצירת retry; CTA עדכון כרטיס; `paused` אחרי מדיניות |
+| Technical (timeout, 5xx) | רשת/ספק | backoff; לא נחשב soft מיד; לא מסמנים paid |
+
+### 5.1 לוח retry (יעד)
+
+| ניסיון | מתי |
+|---|---|
+| 1 | מיידי עם כשל ראשון ב-cron |
+| 2 | +2 ימים מניסיון 1 |
+| 3 | +5 ימים מניסיון 1 |
+| אחרי 3 soft בחלון 7 ימים | `paused` (שמרני) + מייל; לא ChargeToken עד עדכון כרטיס / resume |
+
+כל ה-retries לאותה תקופה משתמשים ב**אותו** `idempotency_key`. אסור invoice חדש לאותה period.
+
+### 5.2 גישה בזמן `past_due`
+
+ברירת מחדל שמרנית: גישה נמשכת עד סוף חלון ה-dunning או עד hard pause (מוצר דיגיטלי). ניסוח ללקוח + האם לחסום גישה מיד = עו״ד (O3).
+
+---
+
+## 6. ביטולים והקפאה
 
 ```text
 incomplete → active
-active → past_due → active
-active|past_due → paused → active
+active → past_due → active (אחרי תשלום)
+active|past_due → paused → active (resume + charge אם צריך)
 active|paused|past_due → cancelled
-active → expired (max_cycles)
+active → expired (max cycles)
 ```
 
-| מצב | התנהגות יעד |
+| פעולת לקוח | תוצאה |
 |---|---|
-| ביטול מיידי | `cancelled`; אין חיוב עתידי; גישה עד `current_period_end` אם שולם |
-| `cancel_at_period_end` | active עד סוף תקופה; cron לא מחדש |
-| הקפאה | cron מדלג; חידוש = חיוב מיידי לתקופה חדשה |
+| ביטול מיידי | `cancelled_at=now()`; אין חיוב עתידי; גישה עד `current_period_end` אם התקופה שולמה |
+| `cancel_at_period_end` | נשאר `active` עד סוף תקופה; cron מדלג על renew |
+| הקפאה (אם מוצג) | cron מדלג; resume = חיוב לתקופה חדשה לפי כללים |
+| אדמין cancel | audit + אותו איסור ChargeToken |
 
-UI חובה באזור אישי + קישור מ-`/cancel`.
+אחרי `cancelled` / `expired`: כל ChargeToken נחסם בשער cron (בדיקת status לפני charge).
+
+Refund על מחזור ששולם: לפי REFUNDS/LEGAL; לא אוטומטי בביטול.
 
 ---
 
-## 7. זכויות צרכן (כיוון הנדסי)
-
-דורש עו״ד לפני פרסום. לא ייעוץ משפטי.
-
-| נושא | כיוון |
-|---|---|
-| שקיפות | מחיר חודשי + תדירות + ביטול לפני תשלום |
-| ביטול מתמשך | כפתור פשוט באזור אישי |
-| מכר מרחוק (חיוב ראשון) | 14 יום כשחל; דמי ביטול LEGAL לפי LEGAL L2/L3 (לא commission) |
-| אחרי שימוש דיגיטלי | ייתכן פטור/הגבלה ל-14 יום (עו״ד) |
-| אחרי ביטול | אסור חיוב חוזר; cron מכבד cancelled |
-
----
-
-## 8. Ledger פר מחזור
+## 7. Ledger / כסף פר מחזור
 
 ```text
 invoice paid
-  → orders + order_items (snapshots)
-  → settlement_events (platform + supplier_due אם יש)
-  → wallet spend? idempotency = sub_spend:{invoice_id}
-  → cashback? key = cashback:sub:{invoice_id}
+  → order + items (amount, platform_percent snapshot)
+  → extractVat על חלק פלטפורמה
+  → supplier_due = residual אם פיזי-שירות עם ספק (לא קופון)
+  → optional wallet spend / cashback עם מפתחי sub_*
 ```
 
 | כלל | פירוט |
 |---|---|
-| יחידה | אגורות bigint |
-| Snapshot | `platform_percent` פר invoice |
-| קופון | מנוי לא מנפיק voucher במפרט זה |
-| כשל אחרי ChargeToken לפני ledger | reconcile; לא ChargeToken שני לאותה תקופה |
+| יחידה | agorot |
+| כשל אחרי ChargeToken לפני ledger | reconcile; **לא** charge שני לאותה period |
+| קופון | אין |
 
 ---
 
-## 9. אבטחה
+## 8. מקרי קצה
 
-| כלל | פירוט |
-|---|---|
-| Token | server-only; לא ב-Sentry/client |
-| Rate limit | fail-closed על subscribe / update-card / cancel |
-| Audit | שינוי status, החלפת טוקן, ביטול admin |
-| Alert | spike ב-`past_due` / כשל cron |
-
-Threat model לפני קוד: גניבת טוקן, double-charge, ביטול שלא נאכף, ledger בלי idempotency.
-
----
-
-## 10. סדר יישום
-
-```text
-1. Threat model + עו״ד לניסוח ביטול
-2. מיגרציית subscriptions + invoices (MCP)
-3. הצטרפות + Token + מיילים
-4. Cron + idempotency + retry + ledger
-5. UI ביטול/הקפאה/עדכון כרטיס
-6. SUBSCRIPTIONS_ENABLED בפרוד
-7. Soft-open מנויים נפרד מקופונים
-```
+| קוד | סימפטום | תוצאה |
+|---|---|---|
+| `double_cron` | שני workers | SKIP LOCKED + UNIQUE idempotency |
+| `return_and_webhook` | כפילות הצטרפות | finalize פעם אחת |
+| `charge_ok_db_fail` | Cardcom OK, DB down | reconcile by deal/idempotency; no second charge |
+| `cancel_during_charge` | ביטול תוך כדי | אם invoice כבר paid נשאר; אחרת לא renew |
+| `token_missing` | active בלי token | paused + alert P1 |
+| `flag_off` | SUBSCRIPTIONS_ENABLED=false | אין CTA/cron charge |
+| `guest_subscribe` | בלי auth | חסום |
+| `period_31` | חיוב ב-31 לחודש קצר | יום אחרון בחודש |
 
 ---
 
-## 11. Acceptance
+## 9. פתוחות
 
-- [ ] אין active בלי חיוב ראשון מאומת  
-- [ ] אין ChargeToken בלי idempotency לתקופה  
-- [ ] soft decline לפי 3 ניסיונות / 7 ימים  
-- [ ] ביטול מונע חיוב הבא  
-- [ ] טוקן לא ב-client  
-- [ ] invoice paid ⇒ order + settlement  
-- [ ] אין שפת Escrow  
-- [ ] ניסוח צרכן אושר עו״ד לפני פרסום  
-- [ ] דמי ביטול (אם חלים) = LEGAL לא commission  
+| # | פתוח | הערה שמרנית עד סגירה |
+|---|---|---|
+| O1 | ניסוח ביטול/14 יום לעו״ד | אין copy פרוד בלי אישור |
+| O2 | האם שינוי מחיר קטלוג מזיז מנויים חיים | לא; נשאר amount מצולם |
+| O3 | חסימת גישה מיידית ב-past_due | לא; גישה עד סוף dunning/pause |
+| O4 | wallet על מנוי ב-MVP | כבוי |
+| O5 | שנתי / הנחת prepay | phase 2 |
+| O6 | קודים מדויקים soft/hard של Cardcom | למפות ב-CARDCOM לפני קוד |
 
----
-
-## 12. Out of scope
-
-- מנוי שמנפיק קופוני מימוש חודשיים  
-- שנתי עם הנחה (phase 2)  
-- מסוף פר ספק לחיוב מנוי  
-- IAP בחנויות אפ  
+עודכן: 2026-08-12.
 
 ---
 
-## 13. Revision
+## 10. Acceptance
+
+- [ ] ChargeAndCreateToken + GetLpResult בהצטרפות  
+- [ ] ChargeToken + idempotency לתקופה  
+- [ ] Dunning 3/7 + paused שמרני  
+- [ ] ביטול חוסם renew  
+- [ ] Token לא ב-client  
+- [ ] No Escrow; לא voucher  
+- [ ] חלופות + DB + מקרי קצה + פתוחות  
+
+---
+
+## 11. Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-11 | ארכיטקטורת מנוי חודשי מלאה: Token, מחזור, retry, ביטול |
-| 2026-08-11 | Ledger per billing cycle |
-| 2026-08-12 | batch #48/50: רענון טכני BINDING על arch/docs-batch-2; קישור Recurring |
-| 2026-08-12 | batch-2 #48 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
+| 2026-08-11 | ארכיטקטורת מנוי מלאה |
+| 2026-08-12 | batch #48 / pass-2 |
+| 2026-08-12 | שכתוב לפי תבנית: Token, renew, cancel, dunning, חלופות, פתוחות שמרניות |
