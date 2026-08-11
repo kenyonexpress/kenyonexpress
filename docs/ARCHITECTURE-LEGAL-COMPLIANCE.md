@@ -1,80 +1,58 @@
 # ארכיטקטורה: ציות משפטי
 
-הגנת הצרכן, ביטול 14 יום, דמי ביטול 5% או 100 ₪ (משפטי, לא עמלה), תוקף שוברים, נגישות ישראלית.
+הגנת הצרכן, ביטול 14 יום, דמי ביטול, תוקף שוברים, נגישות ישראלית.
 
 Status: **BINDING** · עודכן: 2026-08-12  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #44/50
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד.
 
-מודל כסף: **No Escrow**.
-אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+מודל כסף: **No Escrow**. מקדמת קופון באתר = הכנסת פלטפורמה; יתרה בבית העסק מחוץ לפלטפורמה.
 
 מסמכים קשורים:
 
 ```
-docs/ARCHITECTURE-NOTIFICATIONS.md
-docs/ARCHITECTURE-CASHBACK-WALLET.md
-docs/ARCHITECTURE-CUSTOMER-SUPPORT.md
-docs/ARCHITECTURE-FRAUD-PREVENTION.md
-docs/ARCHITECTURE-DATA-EXPORT-GDPR.md
+docs/ARCHITECTURE-LEGAL-PAGES.md
+docs/ARCHITECTURE-LEGAL.md
 docs/ARCHITECTURE-REFUNDS-DISPUTES.md
-docs/ARCHITECTURE-PRICING-RULES.md
+docs/ARCHITECTURE-DATA-EXPORT-GDPR.md
 docs/ARCHITECTURE-SUBSCRIPTIONS.md
 docs/CONTRADICTIONS.md
 ```
 
 אזהרה: חוזה מוצר/הנדסה. לא מחליף ייעוץ משפטי.
 
-מודל כסף: **No Escrow**. אין נאמן/held/J5. מקדמת קופון באתר = הכנסת פלטפורמה; יתרה בבית העסק מחוץ לפלטפורמה.
-
 ---
 
-## 0. הכרעות
+## החלטה
 
 | # | הכרעה |
 |---|---|
 | L1 | מכירה באתר = עסקת מכר מרחוק. |
 | L2 | זכות ביטול: **14 יום** (לפי דין וסוג העסקה). |
 | L3 | דמי ביטול: עד **5% או 100 ₪, הנמוך**, כשמותר בחוק. |
-| L3a | דמי ביטול הם **חיוב משפטי (LEGAL)**, לא `platform_percent` ולא עמלת פלטפורמה. |
+| L3a | דמי ביטול = חיוב **LEGAL**; לא `platform_percent`. |
 | L4 | תוקף שובר ב-`expires_at`; אחרי פקיעה אין מימוש. |
-| L5 | נגישות ישראלית: ת"י 5568 / WCAG + תקנות התאמות נגישות לשירות; RTL. |
+| L5 | נגישות: ת"י 5568 / WCAG + תקנות התאמות נגישות; RTL. |
 | L6 | גילוי: שולם באתר + יתרה בבית העסק; לא להציג face כאילו שולם במלואו. |
 | L7 | ביטול מקוון חובה: `/cancel` + קישור ב-footer. |
-| L8 | **No Escrow:** אין נאמן/החזקה של חברת אשראי על מקדמת קופון; המקדמה לפלטפורמה; יתרה בבית העסק. פיזי לפי `platform_percent` פר מוצר (בלי default). |
+| L8 | פיזי: `platform_percent` פר מוצר (snapshot); קופון: 100% on-site לפלטפורמה. |
 
----
-
-## 1. הגנת הצרכן
-
-| חובה | יישום |
-|---|---|
-| גילוי מוקדם | בלוק פרטי עסקה ב-PDP |
-| מסמך בכתב | מייל ב-paid / עם הקופון |
-| ביטול 14 יום | מנוע בשרת; לקופון מ-`paid_at` אם לא מומש / לא פטור |
-| דמי ביטול | `min(5%, 100 ₪)`; פגם/אי אספקה → 0 |
-| החזר תוך 14 יום | כרטיס→Cardcom; ארנק→יתרה פנימית |
-| ביטול מקוון | `/cancel` + אזור אישי |
+### דמי ביטול
 
 ```text
 fee_agorot = min(floor(amount_agorot * 5 / 100), 10000)
 refund = amount_agorot - fee_agorot
 ```
 
-סכום רלוונטי לקופון = מה ששולם באתר בלבד.
-
-### 1.1 דמי ביטול ≠ עמלה
+סכום לקופון = מה ששולם באתר בלבד. שדה נפרד: `cancellation_fee_agorot` (LEGAL).
 
 | מושג | מה זה | מה זה לא |
 |---|---|---|
-| דמי ביטול 5% או 100 ₪ | ניכוי חוקי בעסקת מכר מרחוק (כשחל) | לא `platform_percent` |
-| `platform_percent` | עמלת פיצול פיזי פר מוצר (snapshot) | לא דמי ביטול צרכן |
-| מקדמת קופון | הכנסת פלטפורמה on-site | לא Escrow לספק |
+| דמי ביטול | ניכוי חוקי (כשחל) | לא `platform_percent` |
+| `platform_percent` | עמלת פיצול פיזי (snapshot) | לא דמי ביטול |
+| מקדמת קופון | הכנסת פלטפורמה on-site | לא held לספק |
 
-אסור להציג דמי ביטול כ"עמלת שירות קבועה" או לערבב עם אחוז הספק. שדה/לוג נפרד: `cancellation_fee_agorot` (LEGAL), לא `platform_fee`.
-
----
-
-## 2. תוקף שוברים
+### תוקף שוברים
 
 | כלל | פירוט |
 |---|---|
@@ -83,49 +61,102 @@ refund = amount_agorot - fee_agorot
 | פקיעה | `expired` + מייל + Wallet void |
 | הארכה | admin + audit בלבד |
 
----
-
-## 3. נגישות ישראלית
+### נגישות ישראלית
 
 | דרישה | יישום |
 |---|---|
 | תקנות נגישות לשירות | אתר ציבורי נגיש |
 | ת"י 5568 / WCAG 2.x AA | יעד בדיקות |
-| RTL | `lang=he` `dir=rtl` מהמסמך |
+| RTL | `lang=he` `dir=rtl` |
 | הצהרה | `/accessibility` ב-footer |
-| ניגודיות / מקלדת / תוויות | חובה על CTA וטפסים |
-
-אין להסתמך על תוסף כתחליף ל-HTML נכון.
 
 ---
 
-## 4. מנויים (הפניה)
+## חלופות שנדחו
 
-ביטול מנוי מתמשך + חלון 14 יום על חיוב ראשון: לפי
-`docs/ARCHITECTURE-SUBSCRIPTIONS.md`
-סעיף זכויות צרכן. ניסוח ללקוח דורש עו״ד לפני פרסום.
-
----
-
-## 5. Acceptance
-
-- [ ] 14 יום בשרת  
-- [ ] דמי ביטול = min(5%, 100 ₪)  
-- [ ] דמי ביטול מתועדים כ-LEGAL (לא commission / לא `platform_percent`)  
-- [ ] `/cancel` חי  
-- [ ] תוקף נאכף  
-- [ ] הצהרת נגישות + RTL  
-- [ ] אין נוסח Escrow בגילוי ללקוח  
+| חלופה | למה נדחתה |
+|---|---|
+| דמי ביטול = `platform_percent` | L3a: LEGAL נפרד. |
+| ביטול אחרי redeem | terminal; סכסוך מול ספק. |
+| גילוי face כ"שולם" | L6: רק coupon_price באתר. |
+| תוסף נגישות במקום HTML | L5: markup נכון. |
+| ביטול בלי `/cancel` | L7: חובה בדין. |
+| held על מקדמת קופון | No Escrow. |
 
 ---
 
-## 6. Revision
+## סכמת DB
+
+```text
+cancellation_requests (
+  id uuid PK,
+  order_id uuid FK,
+  user_id uuid,
+  reason text,
+  status text,                 -- pending | approved | rejected
+  cancellation_fee_agorot int,
+  refund_agorot int,
+  created_at timestamptz,
+  resolved_at timestamptz
+)
+
+orders (
+  accepted_terms_at timestamptz,
+  terms_version text,
+  paid_at timestamptz,
+  ...
+)
+
+vouchers (
+  expires_at timestamptz NOT NULL,
+  status voucher_status,
+  ...
+)
+
+consent_events (
+  user_id uuid,
+  consent_type text,
+  granted boolean,
+  created_at timestamptz
+)
+```
+
+| שדה | שימוש |
+|---|---|
+| `cancellation_fee_agorot` | LEGAL; לא commission |
+| `terms_version` | ראיה ב-checkout |
+
+---
+
+## מקרי קצה
+
+| # | מקרה | התנהגות |
+|---|---|---|
+| CE1 | ביטול אחרי מימוש | דחייה; מסלול תמיכה |
+| CE2 | פגם / אי אספקה | fee = 0 |
+| CE3 | קופון + שירות בתאריך קבוע | חריג 14ג(ג); גילוי ב-PDP |
+| CE4 | פקיעה בלי מימוש | expired; זיכוי לפי מדיניות |
+| CE5 | אזרח ותיק / 14ג1 | חלון 4 חודשים; counsel |
+| CE6 | refund כרטיס vs ארנק | לאמצעי מקורי |
+| CE7 | מנוי מתמשך | SUBSCRIPTIONS |
+
+---
+
+## פתוחות
+
+| # | פתוח | הערה |
+|---|---|---|
+| O1 | סיווג קופון (14ח vs שובר הטבה) | counsel; חוסם תוקף |
+| O2 | `cancellation_requests` migration | pending |
+| O3 | גביית דמי ביטול בפועל | soft-launch: לא |
+| O4 | ניסוח מנויים ללקוח | counsel |
+
+---
+
+## Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-06 | 14 יום, 5%/100 ₪, תוקף שוברים, נגישות ישראלית |
-| 2026-08-06 | QA: L8 No Escrow + `platform_percent`; קישור GDPR/PRICING |
-| 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
-| 2026-08-12 | batch #44/50: L3a דמי ביטול LEGAL לא עמלה; רענון על arch/docs-batch-2 |
-| 2026-08-12 | batch-2 #44: BINDING על arch/docs-batch-2 |
-| 2026-08-12 | batch-2 #44 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
+| 2026-08-06 | 14 יום, 5%/100 ₪, תוקף, נגישות |
+| 2026-08-12 | L3a LEGAL; batch-2 |
+| 2026-08-12 | batch-2: תבנית חובה (5 סעיפים) |
