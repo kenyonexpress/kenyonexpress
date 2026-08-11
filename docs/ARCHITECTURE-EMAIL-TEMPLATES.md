@@ -2,90 +2,124 @@
 
 תבניות RTL בעברית לכל אירועי מחזור קופון והזמנה. Resend בלבד כערוץ מייל.
 
-Status: **BINDING** · עודכן: 2026-08-12 · QA: PASS  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #27/50  
-אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.  
+מודל כסף: **No Escrow**. תבניות לא מבטיחות "כסף מוחזק לספק".
 
 מסמכים קשורים:
 
 ```
+docs/DOCS-TEMPLATE-BINDING.md
 docs/ARCHITECTURE-NOTIFICATIONS.md
-docs/ARCHITECTURE-EMAIL-TEMPLATES.md
 docs/EMAIL-TEMPLATES-COPY.md
 docs/ARCHITECTURE-COUPON-LIFECYCLE.md
 docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 docs/CONTRADICTIONS.md
 ```
 
-מודל כסף: **No Escrow**. תבניות לא מבטיחות "כסף מוחזק לספק" ולא payout על קופון.
-
 ---
 
-## 0. הכרעות
+## 0. החלטה (EM1 עד EM6)
 
 | # | הכרעה |
 |---|---|
-| E1 | כל המיילים העסקיים דרך outbox → Resend; לא SMTP ישיר מדפי Next. |
-| E2 | RTL + עברית; `dir=rtl` ב-HTML. |
-| E3 | Idempotency: `dedupe_key` / `voucher-email:{orderId}` וכו'. |
-| E4 | אין שליחה לפני `paid` לאירועי רכישה/הנפקה. |
-| E5 | תוכן כספי באגורות→₪ תצוגה; מספרים מ-snapshot הזמנה. |
-| E6 | Unsubscribe / העדפות לפי NOTIFICATIONS + חוק ספאם ישראלי. |
+| EM1 | כל המיילים העסקיים דרך outbox → Resend; לא SMTP ישיר מדפי Next. |
+| EM2 | RTL + עברית; `dir=rtl` ב-HTML. |
+| EM3 | Idempotency: `dedupe_key` / `voucher-email:{orderId}`. |
+| EM4 | אין שליחה לפני `paid` לאירועי רכישה/הנפקה. |
+| EM5 | תוכן כספי באגורות→₪ תצוגה; מספרים מ-snapshot הזמנה. |
+| EM6 | Unsubscribe / העדפות לפי NOTIFICATIONS + חוק ספאם ישראלי. |
 
 ---
 
-## 1. אירועים מחייבים
+## 1. חלופות שנדחו
+
+| חלופה | למה נדחתה |
+|---|---|
+| SMTP ישיר מ-Vercel | deliverability + secret exposure |
+| SendGrid במקביל ל-Resend | EM1; vendor אחד v1 |
+| שליחה מ-client (Resend key) | EM1; key leak |
+| float בסכומים במייל | EM5; agorot integer |
+| נוסח "כסף מוחזק / Escrow" | No Escrow; CONTRADICTIONS |
+
+---
+
+## 2. סכמת DB
+
+**אין DDL חדש במסמך זה.**
+
+| טבלה | שימוש email |
+|---|---|
+| `notification_outbox` | queue + retry + DLQ |
+| `notification_templates` | template key + version |
+| `user_notification_preferences` | opt-out |
+| `orders` / `order_items` | snapshot amounts |
+| `vouchers` | event triggers |
+
+Migration מקור: notifications migrations (ראה `ARCHITECTURE-NOTIFICATIONS.md`).
+
+---
+
+## 3. אירועים ומבנה
 
 | אירוע | מתי | נמען |
 |---|---|---|
 | `order_paid` | אחרי finalize | לקוח |
 | `voucher_issued` | אחרי mint | לקוח |
-| `voucher_redeemed` | אחרי סריקה | לקוח (+ אופציונלי ספק) |
+| `voucher_redeemed` | אחרי סריקה | לקוח |
 | `voucher_expired` | cron | לקוח |
 | `refund_completed` | אחרי Cardcom confirm | לקוח |
 | `gift_received` | אחרי transfer | נמען |
 
-עותק מלא של טקסטים: `EMAIL-TEMPLATES-COPY.md`.
-
----
-
-## 2. מבנה תבנית
-
 ```text
 header (לוגו)
   → כותרת פעולה אחת
-  → גוף קצר (מה קרה / מה לעשות)
+  → גוף קצר
   → CTA יחיד (אזור אישי / QR)
   → footer משפטי + העדפות
 ```
 
-אסור: המלצות "Escrow", אחוז עמלה קבוע, הבטחת payout קופון.
+עותק מלא: `EMAIL-TEMPLATES-COPY.md`.
 
 ---
 
-## 3. כשלים
+## 4. מקרי קצה
 
-| מצב | התנהגות |
-|---|---|
-| Resend 5xx | retry outbox + DLQ |
-| כפילות | dedupe_key → no-op |
-| משתמש בלי אימייל | לוג; SMS/in-app אם קיים |
-
----
-
-## 4. Acceptance
-
-- [ ] רשימת אירועים מלאה  
-- [ ] RTL + dedupe  
-- [ ] No Escrow בנוסח  
-- [ ] קישור ל-COPY ול-NOTIFICATIONS  
+| # | מצב | התנהגות |
+|---|---|---|
+| EM-E1 | Resend 5xx | retry outbox + DLQ |
+| EM-E2 | dedupe_key כפול | no-op |
+| EM-E3 | משתמש בלי אימייל | לוג; in-app אם קיים |
+| EM-E4 | שליחה לפני paid | חסום ב-trigger |
+| EM-E5 | bounce hard | mark undeliverable; לא retry לנצח |
+| EM-E6 | unsubscribe link forged | signed token `UNSUBSCRIBE_SIGNING_SECRET` |
+| EM-E7 | partial order (multi voucher) | dedupe per voucher_id |
 
 ---
 
-## 5. Revision
+## 5. פתוחות
+
+| # | פער | תאריך |
+|---|---|---|
+| O1 | WhatsApp parallel לחלק מהאירועים | 2026-08-12 |
+| O2 | A/B subject lines (marketing) | 2026-08-12 |
+| O3 | supplier copy on `voucher_redeemed` | 2026-08-12 |
+
+---
+
+## 6. Acceptance
+
+- [ ] רשימת אירועים מלאה
+- [ ] RTL + dedupe
+- [ ] No Escrow בנוסח
+- [ ] קישור ל-COPY ול-NOTIFICATIONS
+
+---
+
+## Revision
 
 | תאריך | שינוי |
 |---|---|
 | 2026-08-06 | QA-PASS |
-| 2026-08-12 | batch-2 #27 |
-| 2026-08-12 | batch-2 #27 pass-2: אירועים, מבנה, כשלים |
+| 2026-08-12 | batch-2: DOCS-TEMPLATE-BINDING |
