@@ -1,121 +1,109 @@
-# אופטימיזציית Checkout + זרימת Cardcom
+# אופטימיזציית Checkout (משפך)
 
-זרימת תשלום מלאה, מצבי כשל, retry, ומשפך נטישה.
+כל שלב מנטישה אפשרית, מדדי יעד, ורעיונות A/B לפי עלות/תועלת.
 
-Status: **PLAN** · עודכן: 2026-08-11  
+Status: **PLAN** · עודכן: 2026-08-10  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
 מסמכים קשורים:
 
 ```
-docs/CARDCOM-ARCHITECTURE.md
-docs/ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md
 docs/GUEST-VS-MEMBER-STRATEGY.md
+docs/ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md
+docs/CARDCOM-ARCHITECTURE.md
 docs/ANALYTICS-SPEC.md
-docs/INCIDENT-PLAYBOOKS.md
+docs/TESTING-STRATEGY.md
 docs/CONTRADICTIONS.md
 ```
 
-מודל: **No Escrow**. סכום ב-Cardcom = סכום לתשלום באתר באגורות (אותו מספר בקופה וב-LP).  
-אין HMAC על webhook Cardcom; מקור אמת = `GetLpResult` (או המקביל ב-legacy Interface).
+מודל: No Escrow; סכום לתשלום באתר = מה שהלקוח רואה בקופה (agorot).
 
 ---
 
-## 1. זרימת תשלום מלאה (happy path)
+## 1. שלבי המשפך
 
-```text
-עגלה תקינה
-  → validateCart (מחיר/מלאי/סוג)
-  → זהות (חשבון; ראה GUEST-VS-MEMBER)
-  → כתובת אם פיזי
-  → submitCheckout → שורת order (pending) + Low Profile Create
-  → redirect / WebView ל-Cardcom
-  → לקוח משלם
-  → SuccessRedirect → /checkout/return?…
-  → שרת: GetLpResult + התאמת סכום/מזהה
-  → order paid + vouchers / פיצול פיזי ב-ledger
-  → מייל / אזור אישי
+| # | שלב | נטישה טיפוסית | אות אנליטיקה |
+|---|---|---|---|
+| 1 | צפייה במוצר | מחיר/יתרה בעסק לא ברורים | `view_product` |
+| 2 | הוספה לעגלה | כפתור / וריאנט / מלאי | `add_to_cart` |
+| 3 | עגלה | משלוח מבלבל, סה״כ מפתיע | `begin_checkout` (או view cart) |
+| 4 | זהות (אורח→התחברות) | חובת Google בלי הסבר | `checkout_step` identity |
+| 5 | כתובת (פיזי בלבד) | שדות ארוכים / שגיאות | `checkout_step` address |
+| 6 | אישור ותשלום | פחד Cardcom / זמן טעינה | `checkout_step` payment_redirect |
+| 7 | חזרה מ-Cardcom | webhook/return נכשל | `purchase` / failed |
+| 8 | אחרי קנייה (קופון) | לא מוצאים QR | redeem later |
+
+---
+
+## 2. מדדי יעד (כיוון MVP)
+
+בסיס: למדוד שבועיים אחרי soft-open, אחר כך לקבע יעדים. מספרים למטה = **יעד כיוון**, לא הבטחה.
+
+| מעבר | יעד המרה (כיוון) | הערה |
+|---|---|---|
+| view → add_to_cart | ≥ 8% | דילים חמים גבוה יותר |
+| cart view → begin_checkout | ≥ 55% | |
+| begin_checkout → payment_redirect | ≥ 70% | אחרי זהות |
+| payment_redirect → purchase | ≥ 85% | תלוי Cardcom |
+| purchase (coupon) → redeem@30d | לפי קטגוריה | לא יעד checkout |
+
+שבירת אורח/חבר: לדווח בנפרד (ראה GUEST-VS-MEMBER).
+
+---
+
+## 3. נקודות כאב מוכרות (לתיעוד, לא בהכרח באגים)
+
+| שלב | כאב | כיוון תיקון |
+|---|---|---|
+| מוצר | יתרה בעסק לא מודגשת | בלוק "משלמים עכשיו / בעסק" |
+| עגלה | סיכום ארוך במובייל | sticky סיכום + CTA |
+| זהות | אורח חייב login לתשלום | הסבר משפט אחד + שמירת עגלה |
+| Cardcom | חרדה בדף חיצוני | מיקרו־קופי לפני redirect |
+| חזרה | pending ארוך | מסך "בודקים תשלום" + תמיכה |
+
+---
+
+## 4. רעיונות A/B (ממוספרים לפי עלות/תועלת)
+
+סולם עלות: 1 = העתקת טקסט, 5 = פיצ'ר מלא. תועלת: 1-5.
+
+| ID | רעיון | שלב | עלות | תועלת | יחס |
+|---|---|---|---:|---:|---|
+| AB-01 | הדגשת "לתשלום באתר ₪X · יתרה בעסק ₪Y" מעל CTA | 1-3 | 1 | 5 | גבוה |
+| AB-02 | כפתור עגלה sticky במובייל | 3 | 2 | 4 | גבוה |
+| AB-03 | משפט לפני Google: "העגלה נשמרת אחרי ההתחברות" | 4 | 1 | 4 | גבוה |
+| AB-04 | צמצום שדות כתובת (עיר+רחוב חובה; דירה אופציונלי) | 5 | 2 | 3 | בינוני |
+| AB-05 | מסך ביניים "מעבירים לסליקה מאובטחת" 1.5 שנ׳ | 6 | 2 | 3 | בינוני |
+| AB-06 | אורח checkout מלא (בלי חשבון) לקופון-only | 4 | 5 | 5 | גבוה אבל סיכון fraud/תמיכה |
+| AB-07 | התראת מלאי "נשארו N" בעגלה | 3 | 3 | 3 | בינוני |
+| AB-08 | אחרי purchase: deep link ישר ל-QR | 8 | 3 | 5 | גבוה לקופון |
+| AB-09 | הסרת שדות מיותרים מסיכום הזמנה | 3 | 1 | 2 | נמוך |
+| AB-10 | A/B צבע CTA (זהירות מול מותג) | 3-6 | 1 | 2 | נמוך |
+
+סדר מומלץ ליישום: **AB-01 → AB-03 → AB-02 → AB-08 → AB-05**.  
+AB-06 רק אחרי מדיניות fraud + תמיכה.
+
+---
+
+## 5. מה לא לעשות
+
+- לשנות מחיר בין עגלה ל-Cardcom (חייב אותו סכום באגורות).
+- להסתיר יתרה בעסק.
+- להבטיח Escrow / "כסף מוחזק לספק".
+- A/B בלי event taxonomy מ-
+
 ```
-
-| שלב | אחריות | הערה |
-|---|---|---|
-| יצירת LP | Next server | `ReturnValue` = מזהה הזמנה פנימי |
-| IndicatorUrl / webhook | `?s=<secret>` | לא חתימת גוף |
-| Return URL | דפדפן/WebView | UI בלבד; לא סוגר בלי GetLpResult |
-| Finalize | שרת | idempotent לפי order id / LP id |
-
-אנליטיקה: `begin_checkout` → `checkout_step` → `purchase` (רק אחרי paid).
-
----
-
-## 2. מצבי כשל
-
-| קוד פנימי | סימפטום | גורם טיפוסי | התנהגות ללקוח | פעולת מערכת |
-|---|---|---|---|---|
-| `cart_invalid` | לא מגיעים ל-Cardcom | מלאי/מחיר השתנו | הודעה בעגלה + רענון סכום | לא יוצרים LP |
-| `auth_required` | עצירה בזהות | אורח בלי login | מסך התחברות | עגלה נשמרת |
-| `lp_create_failed` | שגיאה לפני redirect | Cardcom/טרמינל/env | "נסו שוב" | order נשאר cancellable / לא paid |
-| `user_cancel` | חזרה מ-FailedRedirect | ביטול בדף Cardcom | חזרה לעגלה/checkout | אין חיוב; אפשר LP חדש |
-| `3ds_fail` | כישלון אימות | בנק/כרטיס | נסו כרטיס אחר | כמו cancel |
-| `amount_mismatch` | GetLpResult ≠ order | באג/מניפולציה | מסך בדיקה + תמיכה | **לא** mark paid; alert P1 |
-| `webhook_dup` | כפילות indicator | retry רשת | שקוף ללקוח | idempotent finalize |
-| `lp_pending` | return בלי תוצאה סופית | עיכוב Cardcom | "בודקים תשלום…" | poll GetLpResult (סעיף 3) |
-| `paid_no_voucher` | paid בלי הנפקת קופון | כשל אחרי חיוב | תמיכה דחופה | reconcile ידני / job |
-| `cardcom_down` | timeouts גורפים | ספק סליקה | באנר + checkout off | INCIDENT §Cardcom |
-
-אסור: לסמן paid על סמך query string ב-return בלבד.
-
----
-
-## 3. מדיניות Retry
-
-| מצב | מי מריץ | כלל |
-|---|---|---|
-| יצירת LP נכשלה לפני redirect | לקוח | כפתור "נסו שוב"; order חדש או reuse pending לפי מימוש |
-| FailedRedirect / ביטול משתמש | לקוח | חזרה לcheckout; **LP חדש** (לא reuse session שנגמר) |
-| Return עם pending | שרת | GetLpResult כל N שנ׳, מקס M ניסיונות; אח״כ מסך תמיכה |
-| Webhook אחרי return שכבר finalize | שרת | no-op (idempotent) |
-| GetLpResult 5xx | שרת | backoff אקספוננציאלי; אל תכפיל חיוב |
-| הלקוח מרענן return | שרת | אותה reconcile; אין LP שני אוטומטי |
-| חשד כפל חיוב | תמיכה+admin | לפי PLAYBOOK תשלום כפול; לא retry סליקה |
-
-מגבלות: לא יותר מ-K ניסיונות LP לאותה עגלה בחלון זמן (anti-bot).  
-`CHECKOUT_ENABLED=false` עוצר retry אוטומטי גלובלי.
-
----
-
-## 4. משפך נטישה (תזכורת)
-
-| # | שלב | נטישה טיפוסית |
-|---|---|---|
-| 1-3 | מוצר→עגלה | מחיר/יתרה בעסק לא ברורים |
-| 4 | זהות | חובת login בלי הסבר |
-| 5 | כתובת | שדות ארוכים (פיזי) |
-| 6 | Cardcom | פחד / נטישה בדף חיצוני |
-| 7 | Return | pending / כשל reconcile |
-
-יעדי כיוון: payment_redirect→purchase ≥ 85% אחרי ייצוב.
-
----
-
-## 5. A/B בעדיפות גבוהה
-
-| ID | רעיון | עלות | תועלת |
-|---|---|---:|---:|
-| AB-01 | "לתשלום באתר / יתרה בעסק" מעל CTA | 1 | 5 |
-| AB-03 | "העגלה נשמרת אחרי התחברות" | 1 | 4 |
-| AB-05 | מסך ביניים לפני Cardcom | 2 | 3 |
-| AB-08 | אחרי paid: קישור ישיר ל-QR | 3 | 5 |
+docs/ANALYTICS-SPEC.md
+```
 
 ---
 
 ## 6. Acceptance
 
-- [ ] Happy path מתועד מקצה לקצה
-- [ ] טבלת כשלים כוללת amount_mismatch ו-idempotency
-- [ ] Retry לא יוצר חיוב כפול
-- [ ] אין finalize בלי GetLpResult
+- [ ] משפך 8 השלבים מתועד
+- [ ] יעדי כיוון מוגדרים
+- [ ] לפחות 5 ניסויי A/B ממוספרים עם עלות/תועלת
 
 ---
 
@@ -123,5 +111,4 @@ docs/CONTRADICTIONS.md
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-10 | משפך + A/B |
-| 2026-08-11 | זרימת Cardcom מלאה, מצבי כשל, מדיניות retry |
+| 2026-08-10 | משפך + יעדים + AB-01…10 |
