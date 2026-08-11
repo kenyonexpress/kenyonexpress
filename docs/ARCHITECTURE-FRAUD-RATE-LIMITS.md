@@ -48,7 +48,7 @@ docs/ARCHITECTURE-SUPPLIER-REDEMPTION.md
 
 ### 1.2 Fraud signals
 
-| אות | טriggr | פעולה |
+| אות | טריגר | פעולה |
 |---|---|---|
 | Velocity כרטיסים | N כרטיסים שונים / user חדש | `manual_review` |
 | Self-referral loop | IP/device משותף referrer+referee | דחיית בונוס |
@@ -60,7 +60,7 @@ docs/ARCHITECTURE-SUPPLIER-REDEMPTION.md
 ### 1.3 תגובות (סדר)
 
 1. Soft challenge / delay (אם קיים).  
-2. `profiles.checkout_blocked = true` (או דגל שequivalent).  
+2. `profiles.checkout_blocked = true` (או דגל דגל מקביל).  
 3. תור admin `manual_review`.  
 4. Kill switch env: `CHECKOUT_ENABLED=false`, `SUPPLIER_SCAN_ENABLED=false` (ראה FEATURE-FLAGS).
 

@@ -162,7 +162,7 @@ Resend webhook (bounced / complained)
 | `external_event_id` | dedup webhook |
 | `event_type` | delivered / bounced / complained |
 | `outbox_id` | קישור לשורת outbox |
-| `payload` | jsonb גolם |
+| `payload` | jsonb גולמי |
 
 UNIQUE `(provider, external_event_id)`.
 

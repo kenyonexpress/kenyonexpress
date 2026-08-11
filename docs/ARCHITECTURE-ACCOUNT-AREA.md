@@ -90,7 +90,7 @@ docs/ARCHITECTURE-COUPON-LIFECYCLE.md
 
 ## 3. סכמת DB
 
-**אין DDL חדש.** טבלאות קיימות (מיגרציות مرجع):
+**אין DDL חדש.** טבלאות קיימות (מיגרציות ייחוס):
 
 | טבלה | עמודות מרכזיות | שימוש account |
 |---|---|---|
@@ -114,7 +114,7 @@ Enums רלוונטיים: `order_status`, `voucher_status` (`issued`, `redeemed`
 |---|---|---|
 | E1 | Session פג באמצע `/account/coupons` | redirect login + `next`; אין flash של QR ב-cache ציבורי |
 | E2 | הזמנה `pending` ללא `paid_at` | מוצגת ברשימה; קופונים לא `issued` עד paid |
-| E3 | קופון `redeemed` | טאb "נוצל"; QR לא actionable; טקst "נוצל ב-{date}" |
+| E3 | קופון `redeemed` | טאb "נוצל"; QR לא actionable; טקסט "נוצל ב-{date}" |
 | E4 | `balance_agorot` שלילי (לא אמור) | תצוגה 0 + alert ops; לקוח לא רואה מינוס |
 | E5 | מחיקת token default | promote token אחר או empty state "הוסף אמצעי תשלום" |
 | E6 | soft-delete address בשימוש בהזמנה ישנה | order detail מציג snapshot; לא מופיע ב-CRUD list |

@@ -106,7 +106,7 @@ docs/LEGAL-CHECKLIST.md
 | E4 | QR לא נטען (תמונה שבורה) | קוד טקסט + כפתור "העתק קוד" נגיש במקלדת |
 | E5 | `#fed700` על רקע לבן לטקסט body | אסור; רק רקע או אייקון; טקסט על צהוב עם `#333e48` |
 | E6 | Modal תשלום נפתח מעל drawer | focus trap יחיד; סגירה מחזירה לטריגר הנכון |
-| E7 | Screen reader על מחיר sale | מחיר ישן + חדש בטקסט, לא רק קוו חוצה CSS |
+| E7 | Screen reader על מחיר sale | מחיר ישן + חדש בטקסט, לא רק קו חוצה CSS |
 | E8 | Checkout disabled (`CHECKOUT_ENABLED=false`) | הודעה נגישה עם סיבה; CTA לא מוסתר בלי explanation |
 | E9 | יתרת ארנק 0 | empty state בטקסט, לא רק אייקון ריק |
 | E10 | Zoom 200% mobile | אין גלילה אופקית על P0; כפתורי CTA נשארים לחיצים |
