@@ -171,7 +171,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `ARCHITECTURE-SEARCH.md` | חיפוש + DLQ. | BINDING |
 | `ARCHITECTURE-SEARCH-UX.md` | Meilisearch, השלמות, כתיב. | QA-PASS (#4) |
 | `ARCHITECTURE-CATALOG-SEARCH-SEO.md` | קטלוג/דירוג בלי מרג'ין. | QA-PASS (06.08) |
-| `ARCHITECTURE-SEO-PERFORMANCE.md` | metadata Next 15+, schema.org Product+Offer עברית (+ דוגמת JSON-LD), sitemap לפי קטגוריה, CWV, ISR, Meili מול Google. | BINDING (11.08) |
+| `ARCHITECTURE-SEO-PERFORMANCE.md` | metadata Next 15+, hreflang he-IL, JSON-LD Product/Offer/LocalBusiness, sitemap לפי קטגוריה, CWV+layout @ 380/768 refs, seo_redirects (030). | BINDING (11.08) |
 | `ARCHITECTURE-SEO.md` | תכנון SEO. | DESIGN |
 | `ARCHITECTURE-GROWTH-SEO.md` | צמיחה + SEO. | QA-PASS (06.08) |
 | `ARCHITECTURE-PERFORMANCE.md` | ביצועים. | DESIGN |
@@ -180,7 +180,7 @@ docs/ONBOARDING-DEVELOPER.md
 | (root) `DESIGN-MEASURED.md` | מדידות צבע/טיפוגרפיה/ריווח (בעיקר desktop/LIVE). | BINDING measured |
 | (refs) `electro-measurements-380.md` | box model pixel-exact home-v7 @ 380×667 (JSON). | REF (11.08) |
 | (refs) `electro-measurements-768.md` | box model pixel-exact home-v7 @ 768×1024 (JSON). | REF (11.08) |
-| (refs) `electro-components-map.md` | מיפוי סקשנים → Header/HeroSlider/ProductCard/CategoryStrip/Footer. | REF (11.08) |
+| (refs) `electro-components-map.md` | מיפוי → Header/HeroSlider/ProductCard/DealsRow/CategoryStrip/BrandsCarousel/Footer + 20 px discrepancies. | REF (11.08) |
 | (refs) `electro-design-discrepancies.md` | 20 פערים מול DESIGN-MEASURED / ELECTRO_HERO; הקובץ `electro.madrasthemes.com-DESIGN.md` חסר. | REF (11.08) |
 | `PHASE2-3-SPEC.md` | וריאנטים + SEO + תגיות. | BINDING (10.08) |
 | `CITY-LANDING-CONTENT.md` | SEO ל-15 ערי ישראל: title/meta/פתיחה. | CONTENT (10.08) |
@@ -224,7 +224,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `SEASONAL-CAMPAIGNS.md` | באנרים, קולקציות, countdown. | PLAN (10.08) |
 | `MARKETING-LAUNCH.md` | שיווק השקה + UTM. | PLAN (10.08) |
 | `MARKETING-LAUNCH-PLAN.md` | תוכנית השקה שיווקית: קהל, תקציב, שערי עצירה. | PLAN (11.08) |
-| `ARCHITECTURE-NOTIFICATIONS.md` | Resend RTL, CF Workers bus (+ Queue/DLQ), SMS IL, push, preferences, חוק ספאם. | BINDING (11.08) |
+| `ARCHITECTURE-NOTIFICATIONS.md` | outbox 095 + fn_enqueue_notification; Resend RTL / push_tokens / in-app; retry+DLQ; No Escrow+agorot. | BINDING (11.08) |
 | `WHATSAPP-BUSINESS-SETUP.md` | הקמת WhatsApp Business API + תבניות. | GUIDE (10.08) |
 | `WHATSAPP-COMMERCE-SPEC.md` | מסחר/תמיכה ב-WA: opt-in, תבניות, בלי סליקה בצ׳אט. | SPEC (11.08) |
 | `ARCHITECTURE-NOTIFICATIONS-MARKETING.md` | שיווק התראות. | DESIGN |
@@ -371,3 +371,4 @@ docs/ROADMAP-V2.md
 | 2026-08-11 | תור notifications/seo/mobile/analytics: חיזוק CF Queue, JSON-LD, SecureStore, SQL revenue; תקצירי אינדקס |
 | 2026-08-11 | תור onboarding/refunds/trust/launch: הסכם פר מוצר, disputes, trust&safety, שערי השקה; אינדקס |
 | 2026-08-11 | refs electro 380/768 + components-map + design-discrepancies; אינדקס |
+| 2026-08-11 | NOTIFICATIONS (outbox/push/in-app) + SEO-PERFORMANCE (hreflang/CWV 380/768/seo_redirects); אינדקס |
