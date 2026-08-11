@@ -2,9 +2,11 @@
 
 הכנה לפרסום אפליקציית KenyonExpress ב-App Store ו-Google Play.
 
-Status: **BINDING** · עודכן: 2026-08-06 · QA: PASS  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+
+מודל כסף: **No Escrow**. אין מסכי נאמן / held / J5. קופון = שולם באתר + יתרה בעסק. פיזי = `platform_percent` פר מוצר (בלי default).
 
 מסמכים קשורים:
 
@@ -19,105 +21,102 @@ docs/ROADMAP-V2.md
 docs/CONTRADICTIONS.md
 ```
 
-עקרון: Web נשאר ערוץ SEO ורכישה ראשונית. האפ (Expo) = שימור, Push, ארנק קופונים, סריקת ספק.  
-Store copy בעברית RTL. אסור מסכי Escrow/held לקופון; חובה שולם באתר + יתרה בעסק. 
-PWA היא גשר עד שהאפ בחנויות; לא תחליף קבוע.
+עקרון: Web נשאר ערוץ SEO ורכישה ראשונית. האפ (Expo) = שימור, Push, ארנק קופונים, סריקת ספק. PWA גשר עד שהאפ בחנויות.
 
 ---
 
-## 0. הכרעות
+## החלטה
 
-| # | הכרעה |
+| # | הכרעה מחייבת |
 |---|---|
 | AS1 | Client: Expo + EAS Build (iOS + Android). |
 | AS2 | אותו Supabase Auth/DB כמו ה-web; אין backend שני. |
-| AS3 | תשלומים: Cardcom דרך WebView/שרת; לא Store IAP לקופונים/מוצרים פיזיים. |
-| AS4 | ארנק פנימי: אין משיכה החוצה; יש לנסח במדיניות פרטיות ותנאי שימוש. |
+| AS3 | תשלומים: Cardcom דרך WebView/שרת; **לא** Store IAP לקופונים/מוצרים פיזיים. |
+| AS4 | ארנק פנימי: אין משיכה החוצה; חובה בניסוח מדיניות פרטיות ותנאי שימוש. |
 | AS5 | לפני Soft Launch בחנויות: soft-open web יציב + רכישת טסט + redeem טסט. |
 | AS6 | חשבונות מפתח: Apple Developer + Google Play Console על שם העוסק. |
-| AS7 | **No Escrow:** אין מסכי נאמן/held/J5. קופון = שולם באתר לפלטפורמה + יתרה בעסק. פיזי = `platform_percent` פר מוצר (בלי default; ראה PRICING / CONTRADICTIONS). |
+| AS7 | **No Escrow:** אין מסכי נאמן/held/J5. Store copy בעברית RTL. |
+| AS8 | סדר השקה: web יציב → PWA (אופציונלי) → EAS preview → closed test → production listing → soft launch. |
+
+### דרישות חנות (צ'קליסט)
+
+| פריט | Apple | Google | חובה |
+|---|---|---|---|
+| שם, אייקון, screenshots עברית | כן | כן | כן |
+| Privacy / Terms URL חיים | כן | כן | כן |
+| גילוי תשלום מחוץ לחנות | Review notes | Data safety | כן |
+| Sign in with Apple | אם Google login | N/A | לפי Apple |
+| Camera (סורק ספק) | `NSCameraUsageDescription` | Photos/Camera | כן |
+| Push | APNs | Android 13+ permission | כן |
+| Test account ל-reviewer | כן | internal testing | כן |
+
+### מה לא לשלוח לביקורת
+
+- Service role / סודות Cardcom ב-bundle
+- Checkout שבור או `CHECKOUT_ENABLED` בלי מסלול דמו
+- טקסט "כסף יועבר לבנק" מהארנק הפנימי
+- מסכי Escrow / held / J5
 
 ---
 
-## 1. דרישות חנות (צ'קליסט)
+## חלופות שנדחו
 
-### 1.1 משותף
-
-| פריט | סטטוס נדרש |
+| חלופה | למה נדחתה |
 |---|---|
-| שם אפ, אייקון, screenshots עברית | חובה |
-| תיאור קצר/מלא בעברית | חובה |
-| מדיניות פרטיות URL חי | חובה |
-| תנאי שימוש URL חי | חובה |
-| הצהרת נגישות / קישור | מומלץ + LEGAL |
-| גילוי תשלום מחוץ לחנות (קופונים) | חובה בניסוח |
-| תמיכה: מייל/טופס בעברית | חובה |
-| גרסת build חתומה (EAS) | חובה |
+| Store IAP לקופונים/מוצרים | AS3: Cardcom; Apple/Google לא מתאימים למודל קופון+פיזי. |
+| Backend נפרד לאפ | AS2: Supabase יחיד. |
+| PWA כתחליף קבוע לאפ | PWA גשר בלבד. |
+| Escrow / held במסכי אפ | AS7: No Escrow. |
+| React Native bare (ללא Expo) | AS1: Expo + EAS לבנייה חתומה. |
+| השקה בחנות לפני web יציב | AS5: soft-open web קודם. |
 
-### 1.2 Apple App Store
+---
 
-| פריט | הערות |
+## סכמת DB
+
+**אין DDL חדש במסמך זה.** האפ קוראת לאותן טבלאות כמו web.
+
+| טבלה | שימוש באפ |
 |---|---|
-| Privacy Nutrition Labels | איסוף analytics/account; בלי PII מיותר |
-| Sign in with Apple | אם יש Google login חברתי אחר: לבדוק חובת Apple |
-| Push (APNs) | entlements + הרשאת משתמש |
-| Camera (ספק) | `NSCameraUsageDescription` בעברית |
-| Review notes | הסבר: קופונים נרכשים באתר/באפ דרך Cardcom; אין IAP דיגיטלי לחנות |
-| Test account | משתמש reviewer + קופון דמו אם נדרש |
+| `profiles`, auth | login Google / Apple |
+| `orders`, `vouchers` | קופונים שלי, QR |
+| `wallet_*` | יתרה פנימית (קריאה) |
+| `supplier_members` | סורק ספק |
+| `push_tokens` | רישום APNs/FCM |
 
-### 1.3 Google Play
-
-| פריט | הערות |
-|---|---|
-| Data safety form | תואם מדיניות פרטיות |
-| Photos/Camera permission | לסורק ספק |
-| Notifications permission | Android 13+ |
-| Target API level | לפי דרישת Google העדכנית |
-| Internal / closed testing | לפני production track |
+אין טבלת `app_store_metadata` חובה; listing metadata ב-Console/Changelog ב-repo אופציונלי.
 
 ---
 
-## 2. מה לא לשלוח לביקורת
+## מקרי קצה
 
-- Service role / סודות Cardcom ב-bundle  
-- Checkout שבור או `CHECKOUT_ENABLED` בלי מסלול דמו ל-reviewer  
-- טקסט שמבטיח "כסף יועבר לבנק" מהארנק הפנימי  
-- מסכי Escrow/held לקופון  
-
----
-
-## 3. סדר השקה מומלץ
-
-```text
-1. Web soft-open יציב (ROADMAP שלב A)
-2. PWA bridge (אופציונלי)
-3. EAS preview פנימי (TestFlight + internal testing)
-4. Closed test עם ספקים אמיתיים (סריקה)
-5. Production store listing בעברית
-6. Soft launch גיאוגרפי / מדורג
-```
-
-תלויות: MOBILE-APP, NOTIFICATIONS (push), LEGAL (מדיניות), CASHBACK-WALLET (ניסוח ארנק), SUPPLIER-PORTAL (מצב ספק).
+| # | מקרה | התנהגות מחייבת |
+|---|---|---|
+| CE1 | Reviewer בלי Cardcom test | Review notes + test account + הסבר web checkout |
+| CE2 | Apple דורש Sign in with Apple | להוסיף אם יש Google בלבד |
+| CE3 | Push כבוי ב-build | הצדקה ב-review notes |
+| CE4 | סורק ספק לא מוכן | closed test פנימי לפחות; production עם הסבר |
+| CE5 | Store copy מזכיר Escrow | **נדחה** לפני הגשה |
+| CE6 | Deep link לקופון אחרי login | MOBILE-APP flow |
+| CE7 | גרסת API ישנה ב-review | Target API level עדכני (Google) |
 
 ---
 
-## 4. Acceptance לפני הגשה לחנות
+## פתוחות
 
-- [ ] Build EAS iOS + Android ירוק  
-- [ ] Privacy / Terms / Support URLs חיים בעברית  
-- [ ] Login + הצגת קופון + QR  
-- [ ] Checkout Cardcom במסלול reviewer או הסבר ברור  
-- [ ] Push registration עובד (או כבוי עם הצדקה)  
-- [ ] סורק ספק במצב פנימי לפחות  
-- [ ] אין סודות ב-client  
+| # | פתוח | הערה |
+|---|---|---|
+| O1 | תאריך יעד production listing | ROADMAP-V2 |
+| O2 | TestFlight vs internal testing קהל | ops |
+| O3 | Privacy Nutrition Labels סופי | LEGAL + analytics stack |
+| O4 | Expo SDK version lock ל-EAS | MOBILE-APP |
 
 ---
 
-## 5. Revision
+## Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-06 | מסמך הכנה להשקה ב-App Store / Google Play |
-| 2026-08-06 | QA: איסור Escrow/held ב-store; קישור PRICING |
-| 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
-| 2026-08-07 | QA audit: AS7 No Escrow + `platform_percent` פר מוצר |
+| 2026-08-06 | מסמך הכנה App Store / Google Play |
+| 2026-08-07 | QA: AS7 No Escrow |
+| 2026-08-12 | batch-2: כתיבה מחדש BINDING (5 סעיפים) |
