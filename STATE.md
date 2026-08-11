@@ -1,23 +1,89 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-12 (lifecycle/channels pack of 10 closed)
+Updated: 2026-08-12 (arch/docs-batch-2)
 
 ## Current Phase
-‏**arch/docs-lifecycle** ב-worktree
+‏**arch/docs-batch-2** ב-worktree
 ke-arch
-. Docs/refs only. אין נגיעה בתיקייה הראשית
+. Docs only. אסור נגיעה בתיקייה הראשית
 kenyonexpress
+. אסור קוד. אסור
+git checkout
+על
+main
+. אחרי כל מסמך: commit + push ל-
+arch/docs-batch-2
 .
 
+## המשך מ:
+תור סגור 50/50 (batch-2). הרשימה בבקשת המשתמש נקטעה אחרי פריט 4; פריטים 5-50 הושלמו אוטומטית לפי תלות commerce→platform (מתועד בהחלטות). **הבא לביצוע: #1**.
+
+1. ARCHITECTURE-CHECKOUT-FLOW.md — מפת מצבים cart→coupon_redeemed
+2. ARCHITECTURE-CARDCOM-WEBHOOKS.md — חתימה, idempotency, DLQ, double charge
+3. ARCHITECTURE-COUPON-LIFECYCLE.md — יצירה, QR, סריקה, פקיעה, races
+4. ARCHITECTURE-CART-GUEST.md — guest token, מיזוג, cookie policy
+5. ARCHITECTURE-PRICING-RULES.md — platform_percent פר מוצר, בלי default
+6. ARCHITECTURE-COMMERCE.md — C1-C10, No Escrow, snapshots
+7. ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md — נוסחאות כסף + D1-D6
+8. ARCHITECTURE-COUPON-REDEMPTION.md — scan RPC, outcomes
+9. ARCHITECTURE-COUPON-REDEMPTION-UX.md — UX ספק+לקוח
+10. ARCHITECTURE-SUPPLIER-REDEMPTION.md — פורטל מימוש
+11. ARCHITECTURE-REFUNDS-DISPUTES.md — החזרים לפני/אחרי redeem
+12. ARCHITECTURE-FRAUD-PREVENTION.md — velocity, QR abuse, chargeback
+13. ARCHITECTURE-INVENTORY.md — מכסות קופון + מלאי פיזי
+14. ARCHITECTURE-GIFT-COUPONS.md — מתנה + העברת בעלות
+15. ARCHITECTURE-WALLET-CASHBACK.md — קאשבק פנימי
+16. ARCHITECTURE-WALLET-LEDGER.md — double-entry
+17. ARCHITECTURE-WALLET-INTEGER.md — cutover אגורות
+18. ARCHITECTURE-CASHBACK-WALLET.md — חוזה ארנק
+19. ARCHITECTURE-ACCOUNT-WALLET.md — ארנק באזור אישי
+20. ARCHITECTURE-PAYOUT-MECHANISM.md — payout פיזי T+N
+21. ARCHITECTURE-PERSONAL-AREA.md — אזור אישי
+22. ARCHITECTURE-ACCOUNT-IDENTITY.md — זהות / OTP / OAuth
+23. ARCHITECTURE-SUPPLIER-PORTAL.md — פורטל ספק
+24. ARCHITECTURE-SUPPLIER-ONBOARDING.md — onboarding ספק
+25. ARCHITECTURE-ADMIN-DASHBOARD.md — אדמין מוצרים/%
+26. ARCHITECTURE-NOTIFICATIONS.md — outbox + channels
+27. ARCHITECTURE-EMAIL-TEMPLATES.md — Resend RTL
+28. ARCHITECTURE-NOTIFICATIONS-MARKETING.md — שיווק
+29. ARCHITECTURE-SECURITY.md — ADR אבטחה
+30. ARCHITECTURE-SECURITY-RLS.md — מטריצת RLS
+31. ARCHITECTURE-TRUST-SAFETY.md — rate limit + abuse
+32. ARCHITECTURE-OBSERVABILITY.md — Sentry + reconcile alerts
+33. ARCHITECTURE-BACKUP-DR.md — גיבוי/PITR
+34. ARCHITECTURE-PRODUCTION-OPS.md — תפעול פרוד
+35. ARCHITECTURE-LAUNCH-CHECKLIST.md — שערי go-live
+36. ARCHITECTURE-TESTING-QA.md — אסטרטגיית QA
+37. ARCHITECTURE-TESTING-CICD.md — CI gates (בלי 5% default)
+38. ARCHITECTURE-API-CONTRACTS.md — חוזי API
+39. ARCHITECTURE-ANALYTICS.md — אירועי משפך
+40. ARCHITECTURE-ANALYTICS-BI.md — BI / snapshots
+41. ARCHITECTURE-SEO-PERFORMANCE.md — SEO + CWV
+42. ARCHITECTURE-SEARCH-UX.md — חיפוש UX
+43. ARCHITECTURE-CATEGORIES-TAXONOMY.md — קטגוריות
+44. ARCHITECTURE-LEGAL-COMPLIANCE.md — צרכן / 14 יום
+45. ARCHITECTURE-DATA-EXPORT-GDPR.md — ייצוא/מחיקה
+46. ARCHITECTURE-MOBILE-APP.md — Expo
+47. ARCHITECTURE-PWA.md — PWA
+48. ARCHITECTURE-SUBSCRIPTIONS.md — מנוי חודשי טכני
+49. ARCHITECTURE-GEO-FEATURE.md — תגיות עיר
+50. ARCHITECTURE-WORDPRESS-IMPORT.md — ייבוא WXR
+(סוף תור: אחרי #50 עדכן INDEX + tag הערה ב-STATE)
+
 ## Last Completed
-שכתוב BINDING של
-docs/ARCHITECTURE-CHECKOUT-FLOW.md
-: מפת מצבים cart→coupon_redeemed, enum order_status מלא, Low Profile, webhook `?s=`, idempotency `lp:{client_ref}`, snapshot platform_percent, כשלי timeout/double-charge/webhook כפול, סריקה→redeemed, No Escrow.
+מעבר ל-
+arch/docs-batch-2
+(מ-
+arch/docs-lifecycle
+, לא מ-
+main
+). תור 50 נסגר ב-STATE.
 
 ## In Progress
-nothing
+docs-batch-2 #1 ARCHITECTURE-CHECKOUT-FLOW.md
 
 ## Blocking Issues
+- בקשת המשתמש ל-50 מסמכים נקטעה אחרי פריט 4; תור 5-50 הושלם אוטומטית (ראה החלטות)
 - refs/electro.madrasthemes.com-DESIGN.md חסר (D01); baseline = DESIGN-MEASURED.md + ELECTRO_HERO
 - BrandsCarousel: נתיב מיועד src/components/store/BrandsCarousel.tsx עדיין לא קיים בקוד
 - cursor-ide-browser MCP לא יציב; מדידות Playwright
@@ -25,12 +91,13 @@ nothing
 - P0 integrity: TESTING-CICD 5% default; DDL-FIXES Escrow; DB-SCHEMA escrow_held; MASTER-CHECKOUT held; cardcom-payments skill held
 
 ## Next Task
-תיקוני P0 מ-docs/INDEX.md (או שערי LAUNCH)
+docs-batch-2 #1: ARCHITECTURE-CHECKOUT-FLOW.md → commit+push → #2
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
 
 ## החלטות שהתקבלו אוטומטית
+- **2026-08-12 docs-batch-2 queue:** פרומפט המשתמש נקטע אחרי `5.`. נבנה תור סגור 50: פריטים 1-4 כפי שנכתבו; 5-50 = רענון/כתיבה לפי תלות commerce→wallet→supplier→ops→growth מתוך `docs/ARCHITECTURE-*.md` הקיימים (+ שני חדשים שצוינו: CARDCOM-WEBHOOKS, CART-GUEST). ענף `arch/docs-batch-2` מ-`arch/docs-lifecycle` (לא main).
 - **2026-08-12 checkout flow rewrite:** מסמך CHECKOUT-FLOW מיושר לקוד חי ב-ke-arch: webhook מעבד inline (GetLpResult + finalize) עם dedup ב-`payment_webhook_events`; אין HMAC על גוף Cardcom; No Escrow מפורש; `coupon_redeemed` = voucher.status `redeemed` + settlement_status על השורה (לא ערך ב-order_status).
 - **2026-08-12 recurring docs split:** `ARCHITECTURE-RECURRING-SUBSCRIPTIONS.md` = product-facing; `ARCHITECTURE-SUBSCRIPTIONS.md` נשאר מקור טכני SU*. אין סתירה מכוונת.
 - **2026-08-12 wp-backup path:** מקור WXR לקריאה בלבד תחת `kenyonexpress/data-import/wp-backup/` (לא ב-ke-arch). חוזה הייבוא ב-`ARCHITECTURE-WORDPRESS-IMPORT.md`.

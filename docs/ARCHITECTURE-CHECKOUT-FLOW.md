@@ -3,7 +3,7 @@
 מפת מצבים מלאה של הזמנה מ-cart עד `coupon_redeemed`, כולל Cardcom Low Profile, webhook signature, idempotency key, snapshot של `platform_percent` על `order_items`, מקרי כשל, ומה קורה בסריקת קופון.
 
 Status: **BINDING** · עודכן: 2026-08-12  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #1/50  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
 מסמכים קשורים:
@@ -430,3 +430,4 @@ payments
 | 2026-08-12 | BINDING ראשון: state machine, snapshot, Cardcom |
 | 2026-08-12 | הרחבה: QStash/guest/failures/ERD |
 | 2026-08-12 | שכתוב מלא: cart→coupon_redeemed, webhook signature, idempotency, timeout/double-charge, scan path, enum מלא, בלי Escrow |
+| 2026-08-12 | batch-2 #1: סמן ענף `arch/docs-batch-2`; תוכן מחייב ללא שינוי מבני |
