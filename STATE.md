@@ -2,7 +2,40 @@
 
 Updated: 2026-08-11 בוקר (goal-65: product_type selector)
 
-## המשך מ: goal-65, product_type selector
+## המשך מ: goal 2 מתוך 5, ייבוא WordPress אמיתי
+
+תור 11.08, חמישה goals: ‏(1) ✅ product_type selector · ‏(2) ייבוא WP אמיתי
+‏(61 מוצרים) · ‏(3) ‏Geo tags + קרוב אליי · ‏(4) כפתור WhatsApp פר מוצר ·
+‏(5) ‏trust icons ‏1:1 מהאתר החי.
+
+### goal 1 ✅ הושלם, ‏11.08
+
+הסלקטור **כבר היה בנוי** ‏(`ProductForm.tsx:347-372`, ‏zod ב-
+`products.ts:31`, הסתעפות checkout ב-`checkout.ts:386`, ‏`finalize.ts:458`).
+המדידה מצאה שהמצב השלישי בטופס הוא `recurring`, בעוד ה-enum החי הוא
+`coupon | physical | service`, ולכן שמירת מוצר recurring נכשלת היום. זה בדיוק
+מה ש-`recurring-schema-error.ts` קיים כדי לתרגם.
+
+**החסם:** ‏`PENDING-109` הוא migration ללא אישור. **אופיר דחה אותו לשלב 2
+ב-11.08 והורה לא להריץ.** לא הורץ.
+
+מה שכן נמצא ותוקן, שלושתם לא חסומים:
+
+1. **‏`src/lib/cart/pricing.ts:65`** החזיר `'physical'` לכל ערך לא מוכר.
+   ‏`ProductRow.type` הוצהר `'physical' | 'coupon'` בזמן שהעמודה מחזירה גם
+   `service`, ולכן הקומפיילר לא שאל. התוצאה: מנוי היה נמכר פעם אחת במחיר
+   הפיזי, בלי שגיאת טיפוס ובלי טסט אדום. עכשיו מוחזר `null` והשורה נכנסת
+   לאותו מסלול סירוב של `platform_percent` חסר.
+2. **‏`ProductsTable.tsx:182`** הציג `type === 'physical' ? 'פיזי' : 'קופון'`,
+   כלומר מוצר `service` הוצג כ"קופון", התווית היחידה שיש לה משמעות כספית.
+   הוחלף ב-`productTypeBadge` לפי אותו idiom של שאר ה-badges.
+3. **הסכימה לא הייתה ניתנת לבדיקה** כי `'use server'` מייצא רק פונקציות async.
+   הוצאה ל-`src/lib/admin/product-form-schema.ts` בלי שינוי בכללים, ‏12 טסטים
+   על ה-`superRefine` שהוא כל ההיגיון התלוי-מצב.
+
+שערים: ‏`pnpm test` ‏**2268/2268** ב-182 קבצים, ‏`type-check` נקי, ‏`lint` נקי
+ב-880 קבצים, ‏`pnpm build` עובר, ‏`compare.mjs --page=home` ‏**9.84%** מול שער
+של 11%. קומיטים `1a663ce`, `7678127`, נדחפו ל-`origin/feat/product-type`.
 
 **סטטוס נמדד 11.08:**
 
