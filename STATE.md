@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-11 (queue reinforce notifications/seo/mobile/analytics + MASTER-INDEX)
+Updated: 2026-08-11 (queue onboarding/refunds/trust/launch + MASTER-INDEX)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -9,10 +9,10 @@ ke-arch
 
 ## Last Completed
 תור docs סגור (commit+push לכל מסמך) + MASTER-INDEX + STATE:
-1 ARCHITECTURE-NOTIFICATIONS (Resend RTL, CF Workers Queue/DLQ, SMS, preferences, spam law)
-2 ARCHITECTURE-SEO-PERFORMANCE (metadata Next 15+, schema.org JSON-LD, sitemap/category, CWV, ISR, Meili)
-3 ARCHITECTURE-MOBILE-APP (Expo shared API session-only, RTL, push, SecureStore offline QR)
-4 ARCHITECTURE-ANALYTICS (events envelope, supplier KPIs, admin revenue SQL by percent)
+1 ARCHITECTURE-SUPPLIER-ONBOARDING (application, admin approve, Cardcom checklist, per-product split only, contract model)
+2 ARCHITECTURE-REFUNDS-DISPUTES (coupon before/after redeem, 14-day physical, ledger reversal no Escrow, Cardcom refund, dispute SM)
+3 ARCHITECTURE-TRUST-SAFETY (RL per endpoint, voucher entropy, scanner abuse, audit, RLS checklist)
+4 ARCHITECTURE-LAUNCH-CHECKLIST (Resend, Cardcom prod, Sentry, Vercel, backup, 10 coupons)
 
 ## In Progress
 nothing (closed queue)
@@ -23,12 +23,14 @@ nothing (closed queue)
 - Vercel dashboard: אין סשן מחובר
 
 ## Next Task
-ביצוע שערי LAUNCH-WEEK-RUNBOOK / PROGRESS-REPORT (דילים → Cardcom smoke → DNS → SEC-QR/WALLET)
+ביצוע שערי LAUNCH-WEEK-RUNBOOK / ARCHITECTURE-LAUNCH-CHECKLIST (דילים → Cardcom smoke → DNS → SEC-QR/WALLET)
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
 
 ## החלטות שהתקבלו אוטומטית
+- **2026-08-11 onboarding percent:** אין תעריף ברמת ספק; כל `platform_percent` מוסכם פר מוצר עם המפעיל ונשמר במוצר + `product_split_agreements`. Cardcom sub-account לספק אופציונלי (MVP = מסוף פלטפורמה).
+- **2026-08-11 refunds:** "Escrow reversal" = היפוך ledger / `supplier_debit` לפיזי; אין held/Escrow לקופון. אחרי redeem אין unwind ל-issued.
 - **2026-08-11 notifications bus:** `ARCHITECTURE-NOTIFICATIONS.md` מחייב Cloudflare Worker כ-drain/bus ל-outbox (retry+DLQ); Next cron מותר כגשר זמני בלבד. ערוצים: Resend RTL, SMS ישראל, push לאפ עתידי; preferences + חוק ספאם ישראלי.
 - **2026-08-11 wallet-integer:** תכנית cutover ב-`ARCHITECTURE-WALLET-INTEGER.md`; SEC-WALLET לפני rename; אסור להריץ 059/PENDING בלי cutover קוד.
 - **2026-08-11 subscriptions:** `ARCHITECTURE-SUBSCRIPTIONS.md` הוא המקור המחייב למנוי חודשי; לא חלק מ-soft-open קופונים; דורש עו״ד לניסוח ביטול לפני פרוד.
@@ -1082,6 +1084,22 @@ default, והטופס לא שלח אף אחת מהן. כל `insert` של מוצ�
 ---
 
 ## History
+
+### 2026-08-11: docs queue onboarding / refunds / trust / launch
+- Worktree
+ke-arch
+branch
+arch/docs-lifecycle
+: BINDING/ACTIONABLE ל-
+ARCHITECTURE-SUPPLIER-ONBOARDING.md
+,
+ARCHITECTURE-REFUNDS-DISPUTES.md
+,
+ARCHITECTURE-TRUST-SAFETY.md
+,
+ARCHITECTURE-LAUNCH-CHECKLIST.md
++ אינדקס.
+- הכרעות: אין תעריף ספק; Escrow reversal = ledger בלבד; שערי P0 להשקה.
 
 ### 2026-08-11: docs queue notifications / SEO / mobile / analytics
 - Worktree
