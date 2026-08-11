@@ -1,251 +1,204 @@
-# ארכיטקטורת אזור אישי + ארנק דיגיטלי
+# ארכיטקטורה: ארנק באזור האישי
 
-ארנק פנימי באזור האישי: יתרה, מימוש בקופה, בלי cash-out.
+ארנק פנימי ב-`/account`: יתרה, היסטוריה, מימוש בקופה. בלי cash-out.
 
-Status: **BINDING** · עודכן: 2026-08-12  
+Status: **BINDING** · עודכן: 2026-08-12 · QA: PASS  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #19/50  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
-מיגרציה נלווית היסטורית: `supabase/migrations/055_account_wallet.sql`.
-
 מודל כסף: **No Escrow**. הארנק אינו held של מקדמת קופון.
 
-מסמך זה הוא מקור האמת לדומיין החשבון והארנק. הוא לא נוגע בדומיין השוברים
-(`ke-voucher`) ולא בדומיין הספקים (`ke-supplier`); כל נקודת מגע ביניהם מסומנת
-במפורש בסעיף 8.
+מסמכים קשורים:
 
-Revision: 2026-08-12 batch-2 #19.
-
----
-
-## 0. כללי היסוד
-
-1. **הארנק פנימי בלבד.** היתרה היא קרדיט לשימוש באתר. אין משיכה, אין העברה
-   למשתמש אחר, ואין המרה למזומן. אין endpoint כזה, וזו החלטת מוצר ולא פער מימוש.
-2. **אין `tenant_id`.** כל בידוד הנתונים נשען על `auth.uid()` דרך RLS.
-3. **עגלת אורח פתוחה.** אפשר לגלוש, להוסיף לעגלה ולהגיע ל-checkout בלי חשבון.
-   ההתחברות (Google OAuth) נדרשת רק בלחיצה על תשלום, ואז העגלה ממוזגת.
-4. **הפנקס append-only.** `wallet_entries` נכתב פעם אחת ולא מתעדכן ולא נמחק.
-   תיקון נעשה בשורת נגד, לא בעריכה.
-5. **כל תנועת כסף עוברת דרך `fn_wallet_transfer`.** אין UPDATE ידני ל-`balance_ils`
-   בשום מקום בקוד.
-
----
-
-## 1. הסכימה בפועל, ומה הוחלט לגביה
-
-בבסיס הנתונים המרוחק קיימות **ארבע** צורות ארנק שנוצרו לאורך הפרויקט. זה מצב
-הדריפט שהמסמך הזה סוגר:
-
-| טבלה | מקור | מצב במרוחק | הכרעה |
-|---|---|---|---|
-| `wallets` | 001 | לא קיימת בפועל | מתה. לא נוצרת מחדש. |
-| `wallet_balances` | 006 | קיימת, 0 שורות | **DEPRECATED**, מסומנת בהערה. לא נקראת ולא נכתבת. |
-| `wallet_transactions` | 006 / 026 | קיימת, 0 שורות | **DEPRECATED**, מסומנת בהערה. |
-| `wallet_accounts` + `wallet_entries` | **046 (הוחלה)** | קיימות עם נתונים אמיתיים | **הפנקס הקנוני.** |
-
-**ההכרעה: לא נוצרת צורת ארנק חמישית.** ההוראה המקורית ביקשה
-`wallets` + `wallet_transactions`, אבל יצירת זוג טבלאות נוסף מעל שלוש נטושות
-הייתה מגדילה את הדריפט במקום לסגור אותו. `wallet_accounts` + `wallet_entries`
-הוא כבר בדיוק המבנה שהתבקש: חשבון פר משתמש ופנקס append-only. מיגרציה 052
-מרחיבה אותו במקום להחליף אותו.
-
-### 1.1 `wallet_accounts` (קיימת, 046)
-
-```sql
-id          uuid PK
-user_id     uuid UNIQUE NULL -> profiles(id) ON DELETE CASCADE
-code        text UNIQUE NULL          -- חשבונות פלטפורמה בלבד
-balance_ils numeric(12,2) NOT NULL DEFAULT 0
-CHECK (user_id IS NOT NULL OR code IS NOT NULL)
+```
+docs/ARCHITECTURE-WALLET-CASHBACK.md
+docs/ARCHITECTURE-CASHBACK-WALLET.md
+docs/ARCHITECTURE-WALLET-LEDGER.md
+docs/ARCHITECTURE-WALLET-INTEGER.md
+docs/ARCHITECTURE-ACCOUNT.md
+docs/ARCHITECTURE-CHECKOUT-FLOW.md
+docs/ARCHITECTURE-SECURITY-RLS.md
 ```
 
-חשבון משתמש: `user_id` מלא, `code` ריק. חשבון פלטפורמה: הפוך. שלושת חשבונות
-הפלטפורמה הקיימים: `platform:revenue`, `platform:cashback_reserve`,
-`platform:adjustments`.
+מיגרציות היסטוריות רלוונטיות: `046` (accounts/entries), הרחבות cashback rules. לא יוצרים צורת ארנק חמישית.
 
-`balance_ils` הוא **cache מתוחזק**, לא מקור האמת. מקור האמת הוא סכום השורות
-ב-`wallet_entries`. `v_wallet_balance_drift` (סעיף 2.3) מאתר פער.
+---
 
-### 1.2 `wallet_entries` (קיימת, 046)
+## 0. הכרעות UI + דומיין
 
-```sql
-id              uuid PK
-debit_account   uuid NOT NULL -> wallet_accounts
-credit_account  uuid NOT NULL -> wallet_accounts
-amount_ils      numeric(12,2) NOT NULL CHECK (> 0)
-reason          text NOT NULL
-idempotency_key text NOT NULL UNIQUE
-order_id        uuid NULL -> orders
-created_at      timestamptz NOT NULL DEFAULT now()
+| # | הכרעה |
+|---|---|
+| AW1 | מסך הארנק מציג יתרה ב-₪ והיסטוריה מ-journal (לא מטבלות deprecated). |
+| AW2 | אין כפתור/API משיכה, P2P, או המרה למזומן. |
+| AW3 | מימוש רק ב-checkout על סכום האתר, לפני Cardcom. |
+| AW4 | יתרות באגורות; תצוגה בלבד ממירה ל-₪. |
+| AW5 | כתיבה רק דרך `fn_wallet_transfer` (service). JWT קורא בלבד. |
+| AW6 | מפתחות: `order:{order_id}:cashback` / `order:{order_id}:spend`. |
+| AW7 | אורח רואה checkout; שדה ארנק רק למשתמש מחובר עם יתרה > 0. |
+| AW8 | Canonical: `wallet_accounts` + `wallet_entries`. Deprecated: `wallets`, `wallet_balances`, `wallet_transactions`. |
+
+---
+
+## 1. מסך `/account/wallet`
+
+נתיב:
+
+```
+src/app/(account)/account/wallet
 ```
 
-רישום כפול: כל שורה מזיזה סכום חיובי מחשבון אחד לשני. אין סכומים שליליים ואין
-שורה חד-צדדית. `idempotency_key` הוא ההגנה מפני חיוב כפול ברמת ה-DB.
+מאחורי session בשרת. לא מחובר → `/login?next=/account/wallet`.
+
+| רכיב | תוכן |
+|---|---|
+| יתרה ראשית | `balance_agorot` → תצוגת ₪ (2 ספרות) |
+| הסבר | "לשימוש באתר בלבד · לא ניתן למשיכה" |
+| היסטוריה | שורות מ-`v_wallet_ledger` (או מקבילה): תאריך, סיבה בעברית, סכום חתום, קישור להזמנה אם יש |
+| ריק | מצב empty: אין תנועות עדיין + CTA לקטלוג |
+| שגיאת טעינה | הודעה בעברית; בלי לחשוף פרטי DB |
+
+תוויות `reason` (דוגמה):
+
+| reason | תווית UI |
+|---|---|
+| `order_cashback` | קאשבק מהזמנה |
+| `order_spend` | מימוש בקופה |
+| `order_refund` | זיכוי החזר |
+| `admin_credit` | זיכוי מערכת |
+| `admin_debit` | חיוב התאמה |
+
+סכום חיובי = זיכוי ליתרה; שלילי = מימוש/חיוב. RTL מלא, Electro/Heebo לפי design system הקיים.
 
 ---
 
-## 2. מה מיגרציה 052 מוסיפה
+## 2. יתרה: מקור אמת
 
-### 2.1 `cashback_rules` (חדשה)
-
-הקאשבק היה עד היום קבוע בקוד. הטבלה הופכת אותו לנתון.
-
-```sql
-cashback_rules (
-  id                uuid PK,
-  name_he           text NOT NULL,
-  is_active         boolean NOT NULL DEFAULT true,
-  percent           numeric(5,2) NOT NULL CHECK (percent > 0 AND percent <= 100),
-  every_nth_order   integer NULL CHECK (every_nth_order IS NULL OR every_nth_order >= 1),
-  min_order_ils     numeric(12,2) NOT NULL DEFAULT 0 CHECK (min_order_ils >= 0),
-  max_cashback_ils  numeric(12,2) NULL CHECK (max_cashback_ils IS NULL OR max_cashback_ils > 0),
-  category_id       uuid NULL -> categories ON DELETE CASCADE,
-  starts_at         timestamptz NULL,
-  ends_at           timestamptz NULL,
-  priority          integer NOT NULL DEFAULT 100,
-  created_at, updated_at,
-  CHECK (ends_at IS NULL OR starts_at IS NULL OR ends_at > starts_at)
-)
+```text
+UI balance = balance_agorot(user available)
+           = sum(credits) - sum(debits) על חשבון המשתמש
 ```
 
-- `every_nth_order = 5` פירושו: הכלל חל רק כשההזמנה המשולמת היא כל חמישית של
-  אותו משתמש. `NULL` פירושו כל הזמנה.
-- `category_id` מצמצם את הכלל למוצרים מקטגוריה אחת. `NULL` = כל הקטלוג.
-- `priority` נמוך יותר גובר. הכלל הראשון שמתאים הוא הכלל שחל; אין צבירה של
-  כמה כללים על אותה הזמנה, כדי שהחישוב יישאר ניתן להסבר ללקוח.
-- RLS: קריאה ציבורית לכללים פעילים בלבד (לתצוגת "תקבלו X בחזרה"), כתיבה staff.
+אם קיים cache ב-`wallet_accounts`:
 
-### 2.2 `fn_wallet_cashback_percent(p_user_id, p_order_total_ils, p_category_ids)`
+- מוצג מהיר ל-UI  
+- מקור אמת נשאר journal  
+- `v_wallet_balance_drift` חייב להיות ריק; אחרת אלרט אדמין  
 
-פונקציית `STABLE SECURITY DEFINER` שמחזירה את האחוז החל, או 0. היא סופרת
-הזמנות משולמות קודמות של המשתמש כדי להעריך `every_nth_order`. הפונקציה נקראת
-**בתוך טרנזקציית ה-webhook**, אחרי שהתשלום אומת, ולא בצד הלקוח.
+אין הצגת "כסף שמור אצל ספק" / Escrow.
 
-### 2.3 תצוגות
+---
 
-| view | תפקיד |
+## 3. היסטוריה
+
+| דרישה | פירוט |
 |---|---|
-| `v_wallet_ledger` | הפנקס מנקודת מבט המשתמש: שורה אחת לתנועה עם `signed_amount_ils` חיובי לזיכוי ושלילי לחיוב, `direction`, `reason`, `order_id`. מסונן ל-`auth.uid()`. |
-| `v_wallet_balance_drift` | פער בין `wallet_accounts.balance_ils` לסכום הפנקס. אמור להיות ריק תמיד. כלי אדמין. |
+| מקור | entries שנוגעים בחשבון המשתמש בלבד (RLS) |
+| מיון | חדש → ישן |
+| עימוד | cursor/limit; לא לטעון את כל ההיסטוריה בלי גבול |
+| קישור | אם `order_id` קיים → `/account/orders/[id]` |
+| פרטיות | משתמש א לא רואה entries של ב |
 
-`v_wallet_ledger` מוגדרת `security_invoker = true` כדי שה-RLS של הטבלאות שמתחת
-יחול על הקורא ולא יעקוף אותו.
-
-### 2.4 מדיניות RLS שהייתה חסרה
-
-| טבלה | מה חסר היה | מה נוסף |
-|---|---|---|
-| `wallet_entries` | רק אדמין יכול לקרוא. משתמש לא ראה את הפנקס של עצמו כלל. | `wallet_entries_owner_read`: קריאה כששורה נוגעת בחשבון של הקורא. |
-| `payment_tokens` | קריאה בלבד. אי אפשר היה למחוק כרטיס שמור. | `payment_tokens_owner_delete` + `payment_tokens_owner_update` (רק `is_default`). |
-
-**אין** מדיניות INSERT/UPDATE/DELETE ל-`wallet_entries` ול-`wallet_accounts`
-לאף תפקיד. כל הכתיבה עוברת ב-service role דרך `fn_wallet_transfer`. זו הסיבה
-שהפנקס באמת append-only ולא רק בהסכמה.
+אין עריכה/מחיקה מה-UI. תמיכה/אדמין מתקנים ב-journal נגדי.
 
 ---
 
-## 3. הגנת double-spend
+## 4. Apply ב-checkout
 
-שלוש שכבות, מהחיצונית לפנימית:
+### 4.1 תצוגה
 
-1. **ולידציה ב-`beginCheckout`**: הסכום המבוקש חייב להיות `<= balance_ils`
-   ו-`<= total`. זו בדיקה מייעצת בלבד; היא לא מחייבת כלום ולא נועלת כלום.
-2. **חיוב בפועל רק ב-webhook**, אחרי אימות התשלום מול Cardcom, בתוך אותה
-   טרנזקציה שמסמנת את ההזמנה כמשולמת. הכסף לא יורד מהארנק לפני שהחיוב באשראי
-   אושר.
-3. **`fn_wallet_transfer` ברמת ה-DB**:
-   - `SELECT ... FOR UPDATE` על שני החשבונות **בסדר id דטרמיניסטי**, כך ששתי
-     טרנזקציות מקבילות לא יכולות להיכנס ל-deadlock.
-   - חשבון משתמש לא יכול לרדת מתחת לאפס. חשבון פלטפורמה כן (הוא התחייבות).
-   - `idempotency_key UNIQUE`. מפתח החיוב הוא `order:<order_id>:wallet`, כך
-     ששני webhooks על אותה הזמנה מייצרים שורה אחת בדיוק. השני מקבל את ה-id
-     של הראשון וממשיך כאילו הצליח.
-
-התרחיש שהשכבות האלה חוסמות: לקוח עם 50 ש"ח פותח שני טאבים ומתחיל שני checkouts
-של 50 ש"ח כל אחד. שניהם עוברים את שלב 1. שניהם מגיעים ל-webhook. הראשון נועל
-את החשבון, מוריד 50, מגיע ל-0. השני ממתין על הנעילה, מתעורר, ורואה יתרה 0
-ונכשל על החוקה של האי-שליליות. ההזמנה השנייה נשארת עם חוב לגבייה באשראי ולא
-עם ארנק שירד פעמיים.
-
----
-
-## 4. מסלול הכסף בארנק
-
-הקודים למטה הם מה ש-`finalize.ts` באמת כותב, ואומתו מול הפנקס החי. כל שינוי
-בהם מחייב עדכון של `WALLET_REASON_LABELS` ב-`src/server/queries/account.ts`,
-אחרת עמוד הארנק יציג את הקוד הגולמי במקום תווית בעברית.
-
-| אירוע | חיוב | זיכוי | `reason` | `idempotency_key` | ממומש |
-|---|---|---|---|---|---|
-| קאשבק על הזמנה | `platform:cashback_reserve` | ארנק המשתמש | `order_cashback` | `order:<id>:cashback` | כן |
-| שימוש בארנק בתשלום | ארנק המשתמש | `platform:revenue` | `order_spend` | `order:<id>:spend` | כן |
-| החזר על ביטול הזמנה | `platform:revenue` | ארנק המשתמש | `order_refund` | `order:<id>:refund` | לא, מתוכנן |
-| זיכוי ידני של אדמין | `platform:adjustments` | ארנק המשתמש | `admin_credit` | `adj:<uuid>` | לא, מתוכנן |
-
-פקיעת קופון בלי מימוש מזכה גם היא את הארנק, אבל השורה הזאת נכתבת בדומיין
-השוברים (`ke-voucher`) ולא כאן. סעיף 8.
-
----
-
-## 5. מסכי `/account`
-
-קבוצת ראוטים `src/app/(account)/account/`, כולה מאחורי בדיקת session בשרת.
-משתמש לא מחובר מנותב ל-`/login?next=/account/...`.
-
-| מסלול | תוכן |
+| מצב | UI |
 |---|---|
-| `/account` | סקירה: יתרת ארנק, הזמנה אחרונה, קופונים פעילים, קיצורים |
-| `/account/details` | שם מלא, טלפון, אימייל (קריאה בלבד, מגיע מ-OAuth) |
-| `/account/orders` | רשימת הזמנות עם סטטוס וסכום |
-| `/account/orders/[id]` | פירוט שורות, כתובת, תשלום |
-| `/account/coupons` | קופונים שנרכשו: קוד, QR, תוקף, סטטוס |
-| `/account/wallet` | יתרה + פנקס תנועות מתוך `v_wallet_ledger` |
-| `/account/addresses` | CRUD כתובות, סימון ברירת מחדל |
-| `/account/tokens` | כרטיסים שמורים: 4 ספרות אחרונות, מותג, תוקף, מחיקה |
+| לא מחובר | אין שדה ארנק |
+| מחובר, יתרה 0 | מוסתר או disabled עם הסבר קצר |
+| מחובר, יתרה > 0 | מתג "השתמש ביתרה" ו/או קלט סכום עד המקסימום |
+| אחרי בחירה | סיכום: ארנק ₪W · כרטיס ₪(T−W) |
 
-עיצוב: Electro home-v7, Heebo, RTL מלא, container 1320px, צהוב `#fed700`.
-כל המסכים server components; אינטראקציה (מחיקת כתובת, קביעת ברירת מחדל, מחיקת
-טוקן) דרך server actions.
+### 4.2 חוקי סכום
+
+```text
+T = on_site total agorot
+W = min(balance_agorot, T, cap_if_any)
+Cardcom = T - W
+```
+
+קופון: W רק מול `coupon_price`. פיזי: מול סכום העגלה באתר.
+
+### 4.3 אישור אחרי paid
+
+```text
+on paid:
+  fn_wallet_transfer(
+    reason: order_spend,
+    idempotency_key: order:{order_id}:spend
+  )
+  then earn if applicable:
+    order:{order_id}:cashback
+```
+
+כשל Cardcom לפני paid: אין spend מאושר / reverse. יתרה לא נעלמת בשקט.
+
+הגנת double-spend: ולידציה ב-`beginCheckout` + `FOR UPDATE` + UNIQUE ב-DB (ראה LEDGER).
 
 ---
 
-## 6. עגלת אורח והתחברות בשלב התשלום
+## 5. סקירה באזור האישי
 
-1. אורח מוסיף לעגלה. העגלה נשמרת ב-`carts` לפי `session_id`.
-2. אורח נכנס ל-`/checkout` ורואה סיכום מלא. אין חסימה.
-3. לחיצה על תשלום בלי session מפנה ל-Google OAuth עם `next` חתום.
-4. אחרי חזרה: `mergeGuestCart` ממזג את עגלת ה-session לעגלת המשתמש, ורק אז
-   `beginCheckout` רץ.
-5. שדה הארנק ב-checkout מוצג רק למשתמש מחובר עם יתרה חיובית.
+ב-`/account` (dashboard):
+
+- כרטיס/שורה: יתרה נוכחית + קישור ל-`/account/wallet`  
+- לא מציגים כפתור משיכה  
+- אופציונלי: "קאשבק אחרון" אם יש תנועת `order_cashback` אחרונה  
+
+שאר מסכי account (הזמנות, קופונים, כתובות, טוקנים) מחוץ לסקופ המפורט כאן; הארנק רק נשען עליהם לקישורים.
 
 ---
 
-## 7. בדיקות
+## 6. RLS וטעינה
 
-| שכבה | מה נבדק |
+| פעולה | מי |
 |---|---|
-| unit | חישוב הקאשבק: בחירת כלל לפי priority, `every_nth_order`, `min_order_ils`, תקרת `max_cashback_ils`, חלון תאריכים |
-| unit | חישוב שימוש בארנק: cap ליתרה, cap לסכום ההזמנה, אפס, סכום שלילי |
-| sql | `fn_wallet_transfer`: אי-שליליות לחשבון משתמש, idempotency, סדר נעילה |
-| RLS | משתמש א לא רואה את הפנקס, הכתובות, הטוקנים והקופונים של משתמש ב |
+| SELECT יתרה/ledger של עצמי | authenticated + RLS |
+| WRITE entries/accounts | service דרך `fn_wallet_transfer` בלבד |
+| Admin adjust | super_admin + recent auth + reason + audit |
+
+אין מדיניות INSERT/UPDATE/DELETE ל-JWT על entries.
 
 ---
 
-## 8. נקודות מגע עם worktrees אחרים
+## 7. אורח → התחברות → ארנק
 
-| דומיין | מגע | הכלל |
-|---|---|---|
-| `ke-voucher` | פקיעת קופון מזכה את הארנק | הדומיין הזה **חושף** את `fn_wallet_transfer` ואת חשבון `platform:adjustments`. השורה נכתבת שם. אין כאן קוד שוברים. |
-| `ke-supplier` | payout לספק | לא נוגע בארנק המשתמש כלל. חשבונות נפרדים. אין כאן קוד ספקים. |
-| `ke-payments` | webhook שמזכה קאשבק ומחייב ארנק | הקריאות ל-`fn_wallet_transfer` יושבות ב-`finalize.ts` שבבעלות payments. כאן מוגדרים הפונקציה, הכללים והמפתחות בלבד. |
+1. אורח מוסיף לעגלה ומגיע ל-checkout.  
+2. לחיצה על תשלום בלי session → OAuth עם `next`.  
+3. אחרי חזרה: מיזוג עגלה, ואז שדה ארנק אם יתרה > 0.  
+4. אין יצירת חשבון ארנק ב-client; trigger ב-signup / first transfer.
 
-קבצים שאסור לגעת בהם מהענף הזה: כל מה שתחת `src/server/domain/vouchers/`,
-`src/app/api/supplier/`, ו-`supabase/migrations/051_payout_terms.sql`.
+---
 
-## Revision
+## 8. מה אסור במסך
+
+- "משוך לחשבון בנק"  
+- העברה לחבר  
+- עריכת יתרה ידנית ע"י המשתמש  
+- הצגת יתרה כנאמנות/Escrow  
+- float / עמודות ILS כמקור אמת אחרי cutover  
+
+---
+
+## 9. Acceptance
+
+- [ ] `/account/wallet` מציג יתרה + היסטוריה בעברית RTL  
+- [ ] אין cash-out ב-UI או API  
+- [ ] Checkout מאפשר apply עם T−W לכרטיס  
+- [ ] Spend/earn עם מפתחות `order:{id}:…`  
+- [ ] RLS: משתמש רואה רק את עצמו  
+- [ ] No Escrow מפורש בטקסט המסך או בחוזה  
+- [ ] Deprecated tables לא נקראות  
+
+---
+
+## 10. Revision
 
 | תאריך | שינוי |
 |---|---|
 | 2026-08-12 | batch-2 #19: רענון BINDING על `arch/docs-batch-2`; No Escrow מאושר |
-| 2026-08-12 | batch-2 #19 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
+| 2026-08-12 | batch-2 #19 pass-2: UI יתרה/היסטוריה/apply בקופה; מפתחות מיושרים |
