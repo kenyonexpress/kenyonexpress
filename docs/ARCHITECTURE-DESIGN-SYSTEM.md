@@ -1,82 +1,85 @@
-# ARCHITECTURE-DESIGN-SYSTEM.md
+# ארכיטקטורה: מערכת עיצוב (Design System)
 
-ארכיטקטורת **שפת עיצוב / Design tokens** ל-KenyonExpress (Electro-aligned).
+טוקנים, RTL, רכיבים משותפים ל-storefront/admin/supplier.
 
-Status: BINDING · worktree
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
-```
-/Users/ofir/kenyonexpress-web/ke-arch
-```
-
-branch:
+מסמכים קשורים:
 
 ```
-arch/docs-queue
+docs/DOCS-TEMPLATE-BINDING.md
+docs/ARCHITECTURE-ACCESSIBILITY.md
+docs/COMPONENT-INVENTORY.md
+docs/DESIGN-CHECKLIST-FINAL.md
 ```
 
-Date: 2026-07-31  
-Scope: docs בלבד.  
-Companions: refs/, account.css, cart-page.css, SEO-PERFORMANCE, a11y.
+מודל כסף: תצוגת ₪ בלבד ב-UI; חישוב באגורות מאחורי הקלעים (MONEY).
 
 ---
 
-## 0. עקרונות
+## 0. החלטה
 
-1. מותג ראשון ב-viewport שיווקי; לא דשבורד גנרי.
-2. RTL + Heebo בלבד ל-UI עברי.
-3. צהוב מותג `#fed700` ל-CTA ראשי; ink `#333e48`.
-4. מדידות מ-`refs/` + CSS חי גוברות על "טעם AI".
-5. אין ערכות סגול-על-לבן / קרם-טרקוטה כברירת מחדל.
-
----
-
-## 1. Tokens
-
-```css
-:root {
-  --color-brand: #fed700;
-  --color-ink: #333e48;
-  --color-muted: #768b9e;
-  --color-line: #e4e4e4;
-  --color-link: #0062bd;
-  --color-danger: #e4002b;
-  --color-success: #44b81b;
-  --font-heebo: /* next/font */;
-  --container: 1320px; /* storefront; cart often ~1170 */
-}
-```
-
----
-
-## 2. טיפוגרפיה
-
-| שימוש | גודל משוער |
+| # | הכרעה |
 |---|---|
-| H1 עגלה/חשבון | ~40px / 500 |
-| גוף | 14–16px |
-| Meta | 13px muted |
+| DS1 | UI עברית `dir=rtl` בכל משטחי לקוח/ספק/אדמין. |
+| DS2 | צבעי מותג דרך CSS variables / טוקנים; אסור hex גולמי ברכיבים חדשים. |
+| DS3 | טיפוגרפיה לפי storefront הקיים (Heebo וכד׳); לא Inter כברירת AI. |
+| DS4 | יעדי מגע ≥44px במובייל. |
+| DS5 | כסף ב-UI: `formatIls`; לא להציג agorot ללקוח. |
+| DS6 | שער ויזואלי: compare בית מתחת ל-11% מול refs. |
+| DS7 | אין ניסוח Escrow בקופי. |
 
 ---
 
-## 3. רכיבים
+## 1. חלופות שנדחו
 
-| רכיב | כלל |
+| חלופה | למה נדחתה |
 |---|---|
-| Primary button | bg brand, text ink |
-| Cards | גבול line, רדיוס קטן; לא ב-hero |
-| Chips | ok/warn/dead |
-| Forms | labels מימין, שגיאה אדומה |
+| עיצוב dark-first / סגול גנרי | לא תואם מותג חי. |
+| כרטיסים בכל מקום | רק כשיש אינטראקציה (כללי frontend). |
+| LTR על טפסים שלמים | שובר עברית; רק שדות מספר `dir=ltr`. |
 
 ---
 
-## 4. Motion
+## 2. סכמת DB
 
-2–3 תנועות מכוונות במשטחים שיווקיים (hero fade, add-to-cart feedback). בלי רעש.
+אין. טוקנים ב-CSS/TS.
 
 ---
 
-## 5. Revision
+## 3. מקרי קצה
 
-| Date | Change |
+| קוד | תוצאה |
 |---|---|
-| 2026-07-31 | Design system tokens (`arch/docs-queue`) |
+| `cls_badge` | hydrate עגלה בלי קפיצה |
+| `hex_drift` | לינט/ביקורת דוחה |
+| `ltr_form` | אסור על מעטפת |
+
+---
+
+## 4. פתוחות
+
+| # | פתוח | שמרני |
+|---|---|---|
+| O1 | ספריית רכיבים מאוחדת admin/supplier | להרחיב קיים; לא שכתוב |
+| O2 | מצב כהה | אין ב-V1 |
+
+עודכן: 2026-08-12.
+
+---
+
+## 5. Acceptance
+
+- [ ] RTL + טוקנים  
+- [ ] כסף ב-₪  
+- [ ] חלופות + קצה + פתוחות  
+
+---
+
+## 6. Revision
+
+| תאריך | שינוי |
+|---|---|
+| 2026-08-12 | BINDING לפי תבנית |
