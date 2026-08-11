@@ -127,6 +127,18 @@ issued | redeemed | expired | refunded
 
 פירוט: `ARCHITECTURE-COUPON-REDEMPTION.md` + `FRAUD-PREVENTION-SPEC.md`.
 
+### 5.1 Cron פקיעה
+
+```text
+כל שעה (או יומי):
+  UPDATE vouchers
+  SET status = 'expired', updated_at = now()
+  WHERE status = 'issued' AND expires_at <= now()
+  -- שולח coupon_expired לכל שורה שעודכנה (idempotent per voucher_id)
+```
+
+אין לעבור מ-`redeemed`/`refunded` ל-`expired`.
+
 ---
 
 ## 6. Acceptance
@@ -136,6 +148,7 @@ issued | redeemed | expired | refunded
 - [ ] אין double-redeem תחת עומס  
 - [ ] refund על `redeemed` נחסם אוטומטית  
 - [ ] מיילים לכל מעבר ליבה  
+- [ ] cron expire לא נוגע בטרמינליים  
 
 ---
 
@@ -146,3 +159,4 @@ issued | redeemed | expired | refunded
 | 2026-08-11 | מכונת מצבים ראשונה (עם alias used) |
 | 2026-08-11 | יישור לפרוד 054: קנוני `redeemed` (לא `used`) |
 | 2026-08-11 | טבלת מעברים אסורים |
+| 2026-08-11 | סעיף cron פקיעה + acceptance |
