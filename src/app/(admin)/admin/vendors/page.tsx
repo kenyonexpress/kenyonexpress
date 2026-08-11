@@ -79,7 +79,7 @@ export default async function AdminVendorsPage({ searchParams }: Props) {
               <th className="px-5 py-3 font-medium">שם עסק</th>
               <th className="px-5 py-3 font-medium">ח.פ</th>
               <th className="px-5 py-3 font-medium">אימייל</th>
-              <th className="px-5 py-3 font-medium">עמלה</th>
+              {/* No commission column: the rate is per product, not per supplier. */}
               <th className="px-5 py-3 font-medium">סטטוס</th>
               <th className="px-5 py-3 font-medium">פעולות</th>
             </tr>
@@ -107,7 +107,6 @@ export default async function AdminVendorsPage({ searchParams }: Props) {
                     {vendor.business_id}
                   </td>
                   <td className="px-5 py-3 text-gray-600">{vendor.contact_email}</td>
-                  <td className="px-5 py-3 text-gray-700">{vendor.commission_rate}%</td>
                   <td className="px-5 py-3">
                     <StatusBadge label={badge.label} variant={badge.variant} />
                   </td>

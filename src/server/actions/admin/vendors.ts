@@ -36,9 +36,7 @@ async function runUpsertVendor(
     bank_name: formData.get('bank_name') || null,
     bank_branch: formData.get('bank_branch') || null,
     bank_account: formData.get('bank_account') || null,
-    // Passed through raw. No `?? '90'`: a missing commission is a validation
-    // error the schema must raise, not a value this line invents.
-    commission_rate: formData.get('commission_rate'),
+    // No commission_rate. Percentages are per product only (AGENTS.md).
     logo_url: formData.get('logo_url') || null,
     status: formData.get('status'),
   }
@@ -88,31 +86,10 @@ async function runUpdateVendorStatus(
   return { success: 'סטטוס עודכן' }
 }
 
-async function runUpdateVendorCommission(
-  _: VendorActionState,
-  formData: FormData,
-): Promise<VendorActionState> {
-  try {
-    await requireAdminSession()
-  } catch {
-    return { error: 'אין הרשאה' }
-  }
-
-  const id = formData.get('id') as string
-  const rate = z.coerce.number().min(0).max(100).safeParse(formData.get('commission_rate'))
-  if (!rate.success) return { error: 'עמלה לא תקינה' }
-
-  const supabase = await createClient()
-  const { error } = await supabase
-    .from('vendors')
-    .update({ commission_rate: rate.data })
-    .eq('id', id)
-  if (error) return { error: error.message }
-
-  revalidatePath('/admin/vendors')
-  revalidatePath(`/admin/vendors/${id}`)
-  return { success: 'עמלה עודכנה' }
-}
+// runUpdateVendorCommission was removed on 2026-08-11. It was the only writer
+// of vendors.commission_rate, and a supplier-level percentage contradicts the
+// rule that every rate is per product. Editing a rate now happens in the
+// product editor, on the product it applies to.
 
 async function runSoftDeleteVendor(id: string): Promise<{ error?: string }> {
   try {
@@ -144,15 +121,6 @@ export async function updateVendorStatus(
   formData: FormData,
 ): Promise<VendorActionState> {
   return withActionContext('admin.vendor.update_status', () => runUpdateVendorStatus(_, formData))
-}
-
-export async function updateVendorCommission(
-  _: VendorActionState,
-  formData: FormData,
-): Promise<VendorActionState> {
-  return withActionContext('admin.vendor.update_commission', () =>
-    runUpdateVendorCommission(_, formData),
-  )
 }
 
 export async function softDeleteVendor(id: string): Promise<{ error?: string }> {

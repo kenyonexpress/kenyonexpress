@@ -149,27 +149,16 @@ export default function VendorForm({ vendor, profiles = [] }: Props) {
       <section>
         <h3 className="text-sm font-semibold text-gray-700 mb-3 border-b pb-1">הגדרות</h3>
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label
-              htmlFor="commission_rate"
-              className="block text-xs font-medium text-gray-700 mb-1"
-            >
-              עמלת פלטפורם (%) *
-            </label>
-            <input
-              id="commission_rate"
-              name="commission_rate"
-              type="number"
-              min="0"
-              max="100"
-              step="0.1"
-              // Blank on a new vendor, never a pre-filled 90. The admin has to
-              // choose, per the dynamic-percentage rule in AGENTS.md.
-              defaultValue={vendor?.commission_rate ?? ''}
-              required
-              dir="ltr"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
-            />
+          {/*
+            No commission field. A supplier holds identity and payout details
+            only; the percentage belongs to each product, and the same supplier
+            may have ten products at ten different rates.
+          */}
+          <div className="col-span-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+            <p className="text-xs text-gray-600">
+              עמלת הפלטפורמה נקבעת לכל מוצר בנפרד, במסך עריכת המוצר. לספק אחד יכולים להיות מוצרים
+              באחוזים שונים, ולכן אין כאן שדה עמלה.
+            </p>
           </div>
           <div>
             <label htmlFor="vendor-status" className="block text-xs font-medium text-gray-700 mb-1">
