@@ -53,7 +53,7 @@ function configure(): void {
   vi.stubEnv('APPLE_WALLET_CERT_PEM', certificatePem)
   vi.stubEnv('APPLE_WALLET_KEY_PEM', privateKeyPem)
   vi.stubEnv('APPLE_WALLET_WWDR_PEM', certificatePem)
-  vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://kenyonexpress.co.il/')
+  vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://kenyonexpress.co.il/')
 }
 
 function request(id: string) {

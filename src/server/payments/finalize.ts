@@ -5,6 +5,7 @@ import {
   moneyColumnProbe,
   resolveVoucherRateColumn,
 } from '@/lib/commerce/order-money-columns'
+import { sendAlert } from '@/lib/observability/alert'
 import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
 import { resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
@@ -550,6 +551,31 @@ export async function finalizeOrder(input: {
       entity_id: order.id,
       changes: { status: { from: 'pending', to: 'paid' } } as unknown as Json,
       metadata: { source: 'checkout_finalize', payment_id: input.paymentId } as unknown as Json,
+    })
+
+    // A push for every paid order, which is the one success this project asked
+    // to be told about.
+    //
+    // This runs AFTER the `paid_at IS NULL` guarded update and after the early
+    // return at the top of finalizeOrder, so a replayed webhook cannot buzz the
+    // phone twice for one order. That placement is the whole correctness of it:
+    // Cardcom retries, and an alert on the retry path would make every network
+    // hiccup look like a second sale.
+    //
+    // alert.ts argues, correctly, that alerting on anything routine trains its
+    // reader to ignore the phone. A paid order is the deliberate exception: it
+    // is rare, it is revenue, and it is the event Ofir asked to see. Priority is
+    // 'default' rather than the module's 'high' so it stays distinguishable from
+    // alertMoneyFailure, which is the one that means something is broken.
+    //
+    // Not awaited for its result and unable to throw: sendAlert swallows every
+    // error and carries its own 4s timeout, because the card is already charged
+    // and no notification is worth failing a settled order over.
+    await sendAlert({
+      title: 'Order paid',
+      message: `הזמנה שולמה: ${order.id}`,
+      priority: 'default',
+      tags: ['moneybag'],
     })
 
     // Best-effort: the purchased cart is done; leftovers confuse the header badge.

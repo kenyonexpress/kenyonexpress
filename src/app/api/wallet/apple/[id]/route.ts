@@ -1,5 +1,6 @@
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
+import { siteUrl } from '@/lib/site-url'
 import { readAppleWalletConfig } from '@/lib/wallet/config'
 import { passImages } from '@/lib/wallet/pass-images'
 import { buildApplePass } from '@/lib/wallet/pass-model'
@@ -35,7 +36,11 @@ async function handleGET(
   const voucher = await getCustomerVoucher(id)
   if (!voucher) return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 })
 
-  const origin = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, '') ?? ''
+  // siteUrl(), not NEXT_PUBLIC_SITE_URL. That variable is in no .env.example
+  // and nothing else in the app reads it, so unset it yielded '' and the pass
+  // shipped with a blank origin. The rest of the app resolves its origin from
+  // NEXT_PUBLIC_APP_URL through this helper.
+  const origin = siteUrl()
 
   try {
     const archive = buildPkpass(

@@ -1,3 +1,4 @@
+import { siteUrl } from '@/lib/site-url'
 import { readAppleWalletConfig, readGoogleWalletConfig } from '@/lib/wallet/config'
 import { buildSaveUrl } from '@/lib/wallet/google-wallet'
 import { type WalletVoucher, buildGooglePass } from '@/lib/wallet/pass-model'
@@ -25,9 +26,19 @@ interface Props {
   presentable: boolean
 }
 
-/** Trailing slashes stripped: Google compares `origins` as an exact string. */
+/**
+ * Trailing slashes stripped: Google compares `origins` as an exact string.
+ *
+ * Reads the shared helper rather than env directly. This function used to read
+ * `NEXT_PUBLIC_SITE_URL`, which is documented nowhere -- it is absent from
+ * `.env.example`, and the rest of the app resolves its origin from
+ * `NEXT_PUBLIC_APP_URL` through `siteUrl()`. Unset, the old fallback was the
+ * empty string, so a production build handed Google an `origins` entry of `''`
+ * and Apple a pass whose origin was blank. Both fail as a wrong value rather
+ * than as a missing one, which is why nothing surfaced it.
+ */
 function origin(): string {
-  return (process.env.NEXT_PUBLIC_SITE_URL ?? '').replace(/\/+$/, '')
+  return siteUrl()
 }
 
 export default function WalletButtons({ voucher, presentable }: Props) {
