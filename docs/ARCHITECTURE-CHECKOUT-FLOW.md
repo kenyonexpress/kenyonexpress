@@ -149,6 +149,22 @@ voucher.status (קנוני):
 `paid`
 (לא חלק מ-coupon_redeemed): פיזי → `partially_fulfilled` / `fulfilled`; refund → `refunded`.
 
+### 3.1 יציאות כישלון מכל מצב (S0–S8)
+
+| מצב | כישלונות אפשריים | לאן נופלים |
+|---|---|---|
+| S0 | אין (גלישה) | נשאר S0 |
+| S1 | `cart_invalid`, IDOR, rate limit עגלה | נשאר S1; אין order |
+| S2 | `unauthenticated`, `address_required`, `checkout_disabled`, `cart_invalid`, `rate_limited`, `quota_race` | נשאר S1/S2; אין LP |
+| S3 | `lp_create_failed`, `idempotent_replay` (כשל) | payment `failed`; order `pending` עד expiry→`cancelled` |
+| S4 | `user_cancel`, `3ds_fail`, `provider_decline`, `timeout_return` | payment `failed`/`cancelled`; order `pending`→expiry |
+| S5 | `secret_invalid`, `amount_mismatch`, `verify_failed`, `unknown_payment`, `timeout_getlp` | **לא** S6; order נשאר `pending` |
+| S6 | `finalize_internal`, `paid_no_voucher` | `paid` נשאר אם `paid_at` נכתב; reconcile משלים S7 |
+| S7 | `invalid_qr_sig`, `wrong_shop`, `scan_race` (הפסד), `redeem_after_refund`, expire cron | נשאר `issued` או →`expired`/`refunded`; לא S8 |
+| S8 | אין יציאה | טרמינלי למימוש |
+
+עגלת מעורבת (קופון+פיזי): אותו order; שורות קופון הולכות S6→S7→S8; שורות פיזי הולכות split/`fulfilled` בנפרד. כישלון redeem על שורת קופון **לא** מבטל `paid` של ההזמנה.
+
 ---
 
 ## 4. כל מעבר (טבלת מכונה)
@@ -182,7 +198,7 @@ voucher.status (קנוני):
 |---|---|---|---|
 | (אין) | `initiated` | INSERT payment ב-beginCheckout | server |
 | `initiated` | `redirected` | Low Profile נוצר; נשמר LP id + redirect_url | server |
-| `initiated` | `failed` | createLow Profile זורק | server |
+| `initiated` | `failed` | createLowProfile זורק | server |
 | `initiated`/`redirected` | `cancelled` | ביטול משתמש לפני חיוב (אם נתמך) | server |
 | `redirected` | `succeeded` | GetLpResult OK בתוך finalize path | webhook/return |
 | `redirected` | `failed` | דחייה / verify fail / FailedRedirect path | server |
@@ -197,6 +213,27 @@ voucher.status (קנוני):
 | `issued` | `expired` | cron `expires_at<=now()` | job | אין redeem |
 | `issued` | `refunded` | refund לפני מימוש | admin/legal | חוסם redeem |
 | `redeemed` | * | אין | אין | אין unwind ל-issued |
+
+### 4.5 `settlement_status` על `order_items` (קופון)
+
+| מ | אל | טריגר | אסור |
+|---|---|---|---|
+| `pending` / `paid` | `platform_settled` | finalize אחרי mint | לפני `orders.paid` |
+| `platform_settled` | `redeemed` | redeem success (+ markOrderItemRedeemed) | בלי voucher `redeemed` |
+| * | `escrow_held` כמודל פעיל | אין | No Escrow; לא במסלול מחייב |
+
+### 4.6 מעברים אסורים (רשימת ברזל)
+
+| מעבר אסור | סיבה |
+|---|---|
+| `*` → `paid` בלי GetLpResult (או wallet-only מפורש) | אין מקור אמת |
+| `cancelled` → `paid` | הזמנה מתה |
+| `refunded` → כל מצב | טרמינלי |
+| `paid` / `fulfilled` / `refunded` → `pending` | שחזור אסור |
+| `redeemed` → `issued` | אין unwind אחרי סריקה |
+| `expired` voucher → `redeemed` | פג תוקף |
+| S1 → S4 בלי auth לקופון | GC/CF |
+| יצירת LP שני על אותו `redirected` payment | double charge |
 
 ---
 
@@ -292,6 +329,8 @@ Finalize לא קורא מחדש למוצר החי לפיצול כסף.
 
 ## 9. Acceptance
 
+- [ ] יציאות כישלון מכל S0–S8  
+- [ ] settlement_status + מעברים אסורים  
 - [ ] מפת S0→S8 עד coupon_redeemed  
 - [ ] טבלת מעברי order/payment/voucher מלאה  
 - [ ] כל טריגר ברשימה  
@@ -307,3 +346,4 @@ Finalize לא קורא מחדש למוצר החי לפיצול כסף.
 |---|---|
 | 2026-08-12 | BINDING ראשון / batch-2 #1 |
 | 2026-08-12 | שכתוב מלא לפי DOCS-TEMPLATE-BINDING: כל מעבר, כל טריגר, כל כישלון, חלופות, DB, פתוחות |
+| 2026-08-12 | השלמה: יציאות כישלון S0–S8, settlement_status, מעברים אסורים, עגלה מעורבת |
