@@ -6,6 +6,7 @@ import {
   type SupplierSaleLine,
   supplierDueAgorot,
 } from '@/lib/supplier/dashboard'
+import { type SupplierOrderLine, lineFrom } from '@/lib/supplier/orders'
 import type { SupplierProductRow } from '@/lib/supplier/products'
 
 /**
@@ -68,6 +69,11 @@ export async function getSupplierSales(supplierId: string): Promise<SupplierSale
     `,
     )
     .eq('supplier_id', supplierId)
+    // The admin client bypasses RLS, so the soft-delete predicate that
+    // `order_items`' SELECT policy would have applied has to be stated here.
+    // getSupplierProducts already does this; this read did not, and a
+    // soft-deleted line is a line an admin removed from the money path.
+    .is('deleted_at', null)
     .not('orders.paid_at', 'is', null)
     .order('created_at', { ascending: false })
     .limit(200)
@@ -112,6 +118,109 @@ export async function getSupplierSales(supplierId: string): Promise<SupplierSale
       paidAt: row.orders?.paid_at ?? null,
     }
   })
+}
+
+type SupplierOrderItemRow = {
+  id: string
+  order_id: string
+  quantity: number
+  product_type: string | null
+  item_status: string | null
+  settlement_status: string | null
+  platform_percent: number | null
+  face_value_agorot: number | null
+  commission_agorot: number | null
+  supplier_immediate_agorot: number | null
+  balance_due_agorot: number | null
+  products: { name_he: string | null; type: string | null } | null
+  orders: { id: string; status: string | null; paid_at: string | null } | null
+}
+
+/**
+ * The supplier's physical order queue, grouped into orders.
+ *
+ * VISIBLE ORDERS are paid ones only, matching the `orders` SELECT policy in
+ * ARCHITECTURE-SUPPLIER-PORTAL.md section 3.2: `paid`, `partially_fulfilled`,
+ * `fulfilled`. Cancelled and refunded orders are money disputes, and v1 keeps
+ * them out of the queue rather than showing a shop a package it must not send.
+ * Individual lines cancelled inside a still-live order do come through, because
+ * the rest of that order is still work.
+ *
+ * TENANT SCOPE is `supplier_id`, which is this schema's tenant key -- there is
+ * no `tenant_id` column anywhere in it. The id is not a parameter a caller may
+ * invent: every call site takes it from `requireSupplierMember`, which reads an
+ * active `supplier_members` row for `auth.uid()`. The `.eq('supplier_id', ...)`
+ * below is the second of the two locks, and it is not redundant: this runs on
+ * the admin client, which bypasses RLS outright, so it is the only lock that is
+ * actually holding here.
+ */
+export async function getSupplierOrders(supplierId: string): Promise<{
+  lines: SupplierOrderLine[]
+  meta: Map<string, { orderStatus: string; paidAt: string | null }>
+}> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('order_items')
+    .select(
+      `
+      id,
+      order_id,
+      quantity,
+      product_type,
+      item_status,
+      settlement_status,
+      platform_percent,
+      face_value_agorot,
+      commission_agorot,
+      supplier_immediate_agorot,
+      balance_due_agorot,
+      products(name_he, type),
+      orders!inner(id, status, paid_at)
+    `,
+    )
+    .eq('supplier_id', supplierId)
+    .is('deleted_at', null)
+    .in('orders.status', ['paid', 'partially_fulfilled', 'fulfilled'])
+    .not('orders.paid_at', 'is', null)
+    .order('created_at', { ascending: false })
+    .limit(300)
+
+  if (error) {
+    log.error('supplier.orders_query_failed', { reason: error.message })
+    return { lines: [], meta: new Map() }
+  }
+
+  const rows = (data ?? []) as unknown as SupplierOrderItemRow[]
+  const meta = new Map<string, { orderStatus: string; paidAt: string | null }>()
+  const lines = rows.map((row) => {
+    if (row.orders && !meta.has(row.order_id)) {
+      meta.set(row.order_id, {
+        orderStatus: row.orders.status ?? 'paid',
+        paidAt: row.orders.paid_at ?? null,
+      })
+    }
+
+    return lineFrom({
+      orderItemId: row.id,
+      orderId: row.order_id,
+      productName: row.products?.name_he ?? 'מוצר',
+      // `order_items.product_type` is the snapshot; `products.type` is what the
+      // catalogue says today. Section 0.3 says past lines keep their snapshot,
+      // so the live join is a fallback for pre-snapshot rows and never an
+      // override.
+      productType: productType(row.product_type ?? row.products?.type),
+      quantity: row.quantity,
+      itemStatus: row.item_status ?? 'pending',
+      settlementStatus: row.settlement_status,
+      platformPercent: row.platform_percent,
+      faceValueAgorot: row.face_value_agorot,
+      commissionAgorot: row.commission_agorot,
+      supplierImmediateAgorot: row.supplier_immediate_agorot,
+      balanceDueAgorot: row.balance_due_agorot,
+    })
+  })
+
+  return { lines, meta }
 }
 
 export async function getSupplierRedemptions(supplierId: string): Promise<SupplierRedemptionRow[]> {
