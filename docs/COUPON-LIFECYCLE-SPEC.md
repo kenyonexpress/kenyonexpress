@@ -1,172 +1,87 @@
-# COUPON-LIFECYCLE-SPEC.md
-# מחזור חיי קופון: מכונת מצבים מלאה
+# מחזור חיי קופון
 
-סטטוסים, מעברים מותרים, וצדדים (מייל / ledger / UI).
+מכונת מצבים: `issued` | `redeemed` | `expired` | `refunded`.
 
-Status: **SPEC** · עודכן: 2026-08-11  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד. **No Escrow**; agorot integer.
 
 מסמכים קשורים:
 
 ```
 docs/ARCHITECTURE-COUPON-REDEMPTION.md
-docs/REFUNDS-CANCELLATION-POLICY.md
+docs/ARCHITECTURE-COUPON-LIFECYCLE.md
 docs/EMAIL-TEMPLATES-SPEC.md
-docs/ARCHITECTURE-FRAUD-PREVENTION.md
 docs/FRAUD-PREVENTION-SPEC.md
-docs/CONTRADICTIONS.md
 ```
 
-מקור enum בפרוד (מיגרציה 054):
-
-```text
-issued | redeemed | expired | refunded
-```
+enum פרוד (054): `issued | redeemed | expired | refunded`. alias ישן `used` = `redeemed` (קריאה בלבד).
 
 ---
 
-## 0. סטטוסים קנוניים
+## החלטה
 
-| סטטוס | משמעות | טרמינלי למימוש? |
-|---|---|---|
-| `issued` | הונפק אחרי `paid`; ניתן לסריקה | לא |
-| `redeemed` | מומש אצל ספק (חד-פעמי) | כן |
-| `expired` | פג תוקף בלי מימוש | כן |
-| `refunded` | בוטל/הוחזר ללקוח | כן |
-
-| שם במסמכים ישנים | קנוני בפרוד |
+| # | הכרעה |
 |---|---|
-| `used` | **`redeemed`** (alias לקריאה בלבד; כתיבה חדשה = `redeemed`) |
-| `coupon_redeemed` (אירוע אנליטיקה) | אירוע ≠ סטטוס DB |
-
-אופציונלי תפעולי: `frozen_at` על שורת `issued` לחסימה זמנית ב-chargeback (בלי enum נפרד חובה).
-
----
-
-## 1. דיאגרמת מעברים
-
-```text
-                 mint אחרי paid
-                      │
-                      ▼
-                  ┌────────┐
-         ┌───────▶│ issued │◀──────── freeze/unfreeze (admin)
-         │        └───┬────┘
-         │            │
-         │   redeem   │ expire cron │ refund/cancel
-         │    atomic  │             │
-         │            ▼             ▼
-         │      ┌──────────┐  ┌──────────┐
-         │      │ redeemed │  │ refunded │
-         │      └──────────┘  └──────────┘
-         │            │
-         │            X (אין unwind אוטומטי)
-         │
-         └─ expire ──▶ ┌─────────┐
-                       │ expired │
-                       └─────────┘
-```
-
-טרמינליים למימוש: `redeemed`, `expired`, `refunded`.  
-מ-`redeemed` אין חזרה ל-`issued`.  
-מ-`refunded` אין מימוש.
+| C1 | הנפקה (`issued`) אחרי order `paid`; QR חתום + snapshots כסף. |
+| C2 | מימוש (`redeemed`): סריקה אטומית `WHERE status='issued'`; חד-פעמי. |
+| C3 | פקיעה (`expired`): cron על `expires_at`; לא מטרמינליים אחרים. |
+| C4 | החזר (`refunded`): רק `issued`; Cardcom מאומת. |
+| C5 | כסף קופון: מקדמה בפלטפורמה; במימוש יתרה בעסק; **אין** payout לספק. |
+| C6 | `redeemed` טרמינלי: אין unwind אוטומטי. |
+| C7 | `frozen_at` על `issued` ל-chargeback. |
 
 ---
 
-## 2. טבלת מעברים
+## חלופות שנדחו
 
-| מ | אל | טריגר | תנאים |
-|---|---|---|---|
-| (none) | `issued` | הנפקה אחרי order paid | snapshots כסף + QR חתום |
-| `issued` | `redeemed` | סריקת ספק אטומית | `FOR UPDATE` + `WHERE status='issued'` |
-| `issued` | `expired` | cron / בדיקת תוקף | `expires_at <= now()` |
-| `issued` | `refunded` | ביטול מאושר + Cardcom | טרם מימוש |
-| `issued` | freeze | chargeback / fraud | דגל; בלי payout קופון |
-| `redeemed` | (אין) | (אין) | מחלוקת ידנית בלבד |
-| `expired` | `issued` | הארכת admin נדירה | audit חובה |
-| `refunded` | (אין) | (אין) | טרמינלי |
-
----
-
-## 2.1 מעברים אסורים (חייב להיכשל)
-
-| ניסיון | תוצאה צפויה |
+| חלופה | למה נדחתה |
 |---|---|
-| `redeemed` → `issued` | דחייה; אין unwind אוטומטי |
-| `redeemed` → `refunded` | דחייה; מחלוקת ידנית בלבד |
-| `refunded` → `redeemed` | דחייה |
-| `expired` → `redeemed` | דחייה |
-| סריקה כפולה על אותו voucher | `already_redeemed`; בלי side effects |
-| refund על `issued` בלי אישור Cardcom | דחייה; אין שינוי סטטוס |
+| Escrow release במימוש | C5: No Escrow. |
+| `redeemed` → `issued` | C6. |
+| `refunded` → `redeemed` | טרמינלי. |
+| `expired` → `redeemed` | דחייה. |
+| enum `used` בכתיבה | קנוני: `redeemed`. |
+| refund על `redeemed` אוטומטי | מחלוקת ידנית. |
 
 ---
 
-## 3. Side effects לפי מעבר
-
-| מעבר | מייל | אחר |
-|---|---|---|
-| → `issued` | `coupon_issued` | אזור אישי / Wallet pass אופציונלי |
-| → `redeemed` | `coupon_redeemed` | audit redemption; **אין** payout קופון |
-| → `expired` | `coupon_expired` | void Wallet; אופציונלי זיכוי ארנק לפי מדיניות |
-| → `refunded` | `coupon_refunded` | Cardcom refund; QR מת |
-
----
-
-## 4. כללי כסף (No Escrow)
-
-- מקדמת קופון נשארת אצל הפלטפורמה; אין held לספק.  
-- במימוש (`redeemed`): הלקוח משלם יתרה בעסק; הפלטפורמה לא "משחררת" מקדמה.  
-- ב-`refunded`: מחזירים את ששולם באתר (פחות דמי ביטול אם חלים).  
-
----
-
-## 5. אימות סריקה (תמצית)
-
-סדר בדיקות: חתימה → ספק תואם → `status=issued` → `expires_at` → עדכון אטומי ל-`redeemed` (+ `redeemed_at`, `redeemed_by_*`).  
-כשל: `already_redeemed` / `expired` / `refunded` / `not_found` בלי side effects.
-
-פירוט: `ARCHITECTURE-COUPON-REDEMPTION.md` + `FRAUD-PREVENTION-SPEC.md`.
-
-### 5.1 Cron פקיעה
+## סכמת DB
 
 ```text
-כל שעה (או יומי):
-  UPDATE vouchers
-  SET status = 'expired', updated_at = now()
-  WHERE status = 'issued' AND expires_at <= now()
-  -- שולח coupon_expired לכל שורה שעודכנה (idempotent per voucher_id)
+vouchers
+  id, order_id, product_id, supplier_id
+  status  -- issued|redeemed|expired|refunded
+  code, qr_payload, expires_at
+  redeemed_at, redeemed_by, frozen_at
+  paid_on_site_agorot, balance_due_agorot
+
+coupon_scan_events / voucher_redemptions
 ```
-
-אין לעבור מ-`redeemed`/`refunded` ל-`expired`.
-
-### 5.2 דוגמת עדכון אטומי (redeem)
-
-```sql
-UPDATE vouchers
-SET status = 'redeemed',
-    redeemed_at = now(),
-    redeemed_by = $scanner_user_id,
-    updated_at = now()
-WHERE id = $voucher_id
-  AND status = 'issued'
-  AND (frozen_at IS NULL)
-  AND expires_at > now();
--- rowcount 0 → already_redeemed / expired / frozen / not issued
-```
-
-תחת עומס: שני סורקים במקביל; רק אחד מקבל rowcount=1.
 
 ---
 
-## 6. Acceptance
+## מקרי קצה
 
-- [ ] Enum פרוד = `issued|redeemed|expired|refunded`  
-- [ ] קוראים ישנים שמכירים `used` ממופים ל-`redeemed`  
-- [ ] אין double-redeem תחת עומס  
-- [ ] refund על `redeemed` נחסם אוטומטית  
-- [ ] מיילים לכל מעבר ליבה  
-- [ ] cron expire לא נוגע בטרמינליים  
-- [ ] בדיקת race: שני redeem במקביל → אחד בלבד  
+| # | מקרה | התנהגות |
+|---|---|---|
+| CE1 | שני redeem במקביל | אחד מצליח; השני `already_redeemed` |
+| CE2 | סריקה אחרי `expired` | `expired`; בלי side effects |
+| CE3 | refund בלי Cardcom | דחייה |
+| CE4 | cron על `redeemed` | לא נוגע |
+| CE5 | הארכת admin נדירה | audit חובה |
+| CE6 | chargeback | freeze על `issued` |
+
+מיילים: `coupon_issued`, `coupon_redeemed`, `coupon_expired`, `coupon_refunded`.
+
+---
+
+## פתוחות
+
+| # | פתוח | הערה |
+|---|---|---|
+| O1 | זיכוי ארנק ב-`expired` | מדיניות LEGAL. |
+| O2 | Wallet pass void | אופציונלי. |
 
 ---
 
@@ -174,8 +89,5 @@ WHERE id = $voucher_id
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-11 | מכונת מצבים ראשונה (עם alias used) |
-| 2026-08-11 | יישור לפרוד 054: קנוני `redeemed` (לא `used`) |
-| 2026-08-11 | טבלת מעברים אסורים |
-| 2026-08-11 | סעיף cron פקיעה + acceptance |
-| 2026-08-11 | SQL אטומי ל-redeem + בדיקת race |
+| 2026-08-11 | rev A: FSM + SQL |
+| 2026-08-12 | batch-2: BINDING 5 סעיפים |
