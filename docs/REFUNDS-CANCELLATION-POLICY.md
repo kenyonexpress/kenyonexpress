@@ -1,29 +1,53 @@
 # REFUNDS-CANCELLATION-POLICY.md
-# מדיניות ביטולים והחזרים
 
-מדיניות מוצר לפי דיני הגנת הצרכן בישראל (מכר מרחוק), מיושרת ל-
+Status: **DRAFT POLICY** · עודכן: 2026-08-12
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+מודל כסף: No Escrow; ביטול על paid_on_site בלבד.
 
-```
-docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
-```
+---
 
-**אינה ייעוץ משפטי.** לפני פרסום ללקוחות: אישור עו״ד.
+## 1. החלטה
 
-Status: **DRAFT POLICY** · עודכן: 2026-08-11  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
+| # | הכרעה |
+|---|---|
+| C1 | 14 יום מכר מרחוק |
+| C2 | fee min(5%, ₪100) |
+| C3 | redeemed: לא refund אוטומטי |
+| C4 | /cancel + footer link |
 
-מסמכים קשורים:
+---
 
-```
-docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
-docs/DISPUTE-RESOLUTION.md
-docs/CUSTOMER-SUPPORT-PLAYBOOK.md
-docs/CHECKOUT-OPTIMIZATION.md
-docs/COUPON-LIFECYCLE-SPEC.md
-docs/VENDOR-PAYOUT-SPEC.md
-docs/CONTRADICTIONS.md
-docs/FAQ-CONTENT.md
-```
+## 2. חלופות שנדחו
+
+| חלופה | נימוק |
+|---|---|
+| refund על face מלא | C5 |
+| שחרור נאמן | No Escrow |
+| CVV request | PCI |
+
+---
+
+## 3. סכמת DB
+
+| טבלה | שדות |
+|---|---|
+| orders | paid_at, paid_on_site_agorot |
+| vouchers | status issued/redeemed/refunded |
+
+---
+
+## 4. מקרי קצה
+
+| E1 | chargeback | freeze if issued |
+| E2 | פג תוקף | policy נפרד |
+| E3 | פגם | fee=0 |
+
+---
+
+## 5. פתוחות
+
+| O1 | **[דורש עו״ד]** ניסוח | pending | 2026-08-12 |
 
 ---
 
@@ -158,12 +182,10 @@ refund_agorot = amount_agorot - fee_agorot   # אם חלים דמי ביטול
 
 ---
 
+
 ## Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-11 | מדיניות ביטולים/החזרים לפי הגנת הצרכן + No Escrow |
-| 2026-08-11 | טבלת השוואה קופון/פיזי + קישור ל-lifecycle |
-| 2026-08-11 | קישור מפורש לחוק הגנת הצרכן + C9 שעון מ-paid_at |
-| 2026-08-11 | יישור סטטוס מימוש ל-`redeemed` בלבד |
-| 2026-08-11 | דוגמאות דמי ביטול + UX `/cancel` |
+| 2026-08-12 | BINDING batch-2: החלטה, חלופות, DB, קצה, פתוחות |
+
