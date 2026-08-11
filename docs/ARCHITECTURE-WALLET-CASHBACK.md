@@ -3,7 +3,9 @@
 אשראי פנימי בלבד, ledger באגורות, בלי משיכה החוצה, וכללי צבירה עתידיים.
 
 Status: **BINDING** · עודכן: 2026-08-12  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #15/50
+
+מודל כסף: **No Escrow**. אין held/נאמן/J5 לקופון.
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
 מסמכים קשורים:
@@ -123,3 +125,4 @@ checkout:
 | תאריך | שינוי |
 |---|---|
 | 2026-08-12 | BINDING: earn/spend, ledger agorot, future accrual rules |
+| 2026-08-12 | batch-2 #15: רענון BINDING על `arch/docs-batch-2`; No Escrow מאושר |
