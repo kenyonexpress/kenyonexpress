@@ -160,3 +160,4 @@ IMPORT_MODE=dry_run
 |---|---|
 | 2026-08-12 | BINDING מול data-import/wp-backup WXR + R2 + dry-run/rollback |
 | 2026-08-12 | batch #50/50: WI0 WP כמקור מיגרציה לא stack; רענון על arch/docs-batch-2 |
+| 2026-08-12 | batch-2 #50 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
