@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-11 (docs integrity INDEX)
+Updated: 2026-08-12 (ARCHITECTURE-CHECKOUT-FLOW)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -10,12 +10,12 @@ kenyonexpress
 .
 
 ## Last Completed
-1. תור MOBILE/TESTING-QA/OBSERVABILITY + MASTER-INDEX (SHAs ב-History למטה)
-2. docs/INDEX.md integrity audit (b8e770a): fix table P0–P3, orphans=5, WP stale=5, money contradictions=13
-3. STATE סגירה
+`docs/ARCHITECTURE-CHECKOUT-FLOW.md` BINDING: מכונת הזמנה (מיפוי ל-enum 007), snapshot `platform_percent`, קופון/פיזי No Escrow, Cardcom finalize. עודכנו `docs/MASTER-INDEX.md` + `docs/INDEX.md`. Commits נפרדים ב-
+arch/docs-lifecycle
+(ראה History).
 
 ## In Progress
-nothing (closed queue)
+nothing
 
 ## Blocking Issues
 - refs/electro.madrasthemes.com-DESIGN.md חסר (D01); baseline = DESIGN-MEASURED.md + ELECTRO_HERO
@@ -31,6 +31,7 @@ nothing (closed queue)
 /Users/ofir/kenyonexpress-web/ke-arch
 
 ## החלטות שהתקבלו אוטומטית
+- **2026-08-12 checkout status labels:** תוויות מוצר `draft` / `pending_payment` / `expired` אינן ערכי `order_status` ב-007. מיפוי מחייב ב-`ARCHITECTURE-CHECKOUT-FLOW.md`: draft=לפני INSERT; pending_payment→`pending`; expired→`cancelled`; נשמר גם `partially_fulfilled`.
 - **2026-08-11 BUSINESS-MODEL-RULES path:** הקובץ `BUSINESS-MODEL-RULES.md` לא קיים. אודיט שלמות מול `docs/BUSINESS-MODEL.md` + `docs/CONTRADICTIONS.md` + `docs/ARCHITECTURE-PRICING-RULES.md`. תועד ב-`docs/INDEX.md`.
 - **2026-08-11 shell intent override:** המשתמש ביקש `cd ~/workspace/kenyonexpress` ו-`git checkout -b arch/docs-lifecycle`. הסוכן עבד רק ב-
 /Users/ofir/kenyonexpress-web/ke-arch
