@@ -140,3 +140,4 @@ ORDER BY platform_revenue_agorot DESC;
 | 2026-08-06 | QA: הסרת 10/90 שגוי מגוף המסמך |
 | 2026-08-07 | voucher_redemptions + amount_collected_agorot |
 | 2026-08-12 | batch-2 #40: BINDING עברית; BI מ-snapshots בלבד |
+| 2026-08-12 | batch-2 #40 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
