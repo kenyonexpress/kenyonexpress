@@ -1,13 +1,20 @@
 # ארכיטקטורה: זהות וחשבון (Account & Identity)
 
-Google OAuth, OTP, session, ומיזוג עגלת אורח. מסכי האזור האישי ב-
-`ARCHITECTURE-PERSONAL-AREA.md`
-. מיזוג עגלה בפירוט ב-
-`ARCHITECTURE-CART-GUEST.md`
-.
+Google OAuth, OTP, session, ומיזוג עגלת אורח.  
+מסכי האזור האישי:
+
+```
+docs/ARCHITECTURE-PERSONAL-AREA.md
+```
+
+מיזוג עגלה (חוזה מלא):
+
+```
+docs/ARCHITECTURE-CART-GUEST.md
+```
 
 Status: **BINDING** · עודכן: 2026-08-12  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #22/50  
+Scope: `arch/docs-batch-2` · batch #22/50  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
 מסמכים קשורים:
@@ -38,7 +45,7 @@ docs/CONTRADICTIONS.md
 | ID5 | RLS הוא גבול האמת באזור אישי; אין service role במסכי לקוח. |
 | ID6 | אין PAN/CVV אצלנו; רק `payment_tokens` (טוקן Cardcom + last4). |
 | ID7 | מחיקת חשבון = מחיקת PII, לא מחיקת היסטוריה כספית (7 שנים). |
-| ID8 | מיזוג עגלת אורח: חוזה ב-CART-GUEST; כאן רק מצביע + דרישות identity. |
+| ID8 | מיזוג עגלת אורח: חוזה ב-CART-GUEST; כאן מצביע + דרישות identity בלבד. |
 | ID9 | `profiles.role` לא ניתן לשינוי ע"י הלקוח. |
 | ID10 | פעולות רגישות דורשות re-auth טרי (`requireRecentAuth`). |
 
@@ -51,13 +58,13 @@ signInWithGoogle (scopes: openid email profile)
   → redirect /auth/callback?next=...
   → exchangeCodeForSession (PKCE)
   → handle_new_user / profiles sync
-  → mergeGuestCart (ראה CART-GUEST)
+  → mergeGuestCart (ראה §4 + CART-GUEST)
   → redirect ל-next בטוח (חייב להתחיל ב-/)
 ```
 
 | רכיב | מיקום יעד |
 |---|---|
-| כפתור | `/login` · "כניסה עם Google" |
+| כפתור | `/login` · תווית: "כניסה עם Google" |
 | Action | `signInWithGoogle` |
 | Callback | `src/app/auth/callback/route.ts` |
 | יצירת פרופיל | trigger `handle_new_user` מ-`raw_user_meta_data` |
@@ -65,7 +72,14 @@ signInWithGoogle (scopes: openid email profile)
 שדות מ-Google ל-`profiles`: `email`, `full_name`/`name`, `avatar_url`.  
 `phone` ריק עד מילוי משתמש.
 
-Re-auth רגיש: `prompt=select_account`, `max_age=0`.
+| כלל | פירוט |
+|---|---|
+| PKCE | חובה; אין implicit flow |
+| `next` | path יחסי שמתחיל ב-`/`; אחרת fallback ל-`/account` |
+| Re-auth רגיש | `prompt=select_account`, `max_age=0` |
+| כשל Google | הודעה עברית + הצעת OTP; לא חושפים פרטי ספק |
+
+UI `/login`: עברית RTL; Google ככפתור ראשי מעל OTP.
 
 ---
 
@@ -75,13 +89,14 @@ Re-auth רגיש: `prompt=select_account`, `max_age=0`.
 |---|---|
 | ערוץ | אימייל ו/או SMS דרך Supabase Auth (ספק SMS לפי env; rate limit חובה) |
 | מתי | גיבוי כשאין Google, או אימות טלפון לפרופיל |
-| UI | `/login`: קוד חד-פעמי; עברית RTL |
-| אחרי הצלחה | אותה שרשרת כמו OAuth: session → מיזוג עגלה → `next` |
+| UI | `/login`: קוד חד-פעמי; עברית RTL; הנחיות קצרות |
+| אחרי הצלחה | אותה שרשרת כמו OAuth: session → מיזוג עגלה (§4) → `next` |
 | אבטחה | velocity לפי TRUST-SAFETY; אין enumeration של קיום משתמש מעבר למה ש-Auth מחזיר |
+| תוקף קוד | לפי הגדרת Supabase; אין הארכה ידנית בלי rate limit |
 
 אין SMS OTP כערוץ שיווקי. OTP טרנזקציוני לזהות בלבד.
 
-Magic link / email-password קיימים כ-legacy לסגירה ב-UX; לא מוסיפים מסלול סיסמה חדש.
+Magic link / email-password קיימים כ-legacy לסגירה ב-UX; לא מוסיפים מסלול סיסמה חדש כנתיב מועדף.
 
 ---
 
@@ -100,22 +115,39 @@ Magic link / email-password קיימים כ-legacy לסגירה ב-UX; לא מו
 | JWT | קצר; refresh reuse detection של Supabase |
 | יציאה | `signOut` / `signOutAll` (global) → `/login` |
 | Open redirect | `next` חייב path יחסי שמתחיל ב-`/` |
+| מקור אמת | רק `getUser()` בשרת; `getSession()` אסור כבסיס להחלטות הרשאה |
+
+רענון session שקוף למשתמש בזמן גלישה ב-`/account/**`. כשל רענון → redirect ל-login עם `next` נוכחי.
 
 ---
 
-## 4. מיזוג עגלת אורח (מצביע)
+## 4. מיזוג עגלת אורח (מצביע ל-CART-GUEST)
 
-**מקור מחייב לפירוט:**  
-`docs/ARCHITECTURE-CART-GUEST.md`
+**מקור מחייב לפירוט המלא:**
 
-תמצית זהות:
+```
+docs/ARCHITECTURE-CART-GUEST.md
+```
 
-1. אחרי `auth.getUser()` הצליח ב-callback / server action.
-2. קוראים `mergeGuestCart` עם `userId` מה-session בלבד (לא מהלקוח) + `sessionId` מ-cookie.
-3. מיזוג כמויות לפי מפתח מוצר/וריאנט; cap 99; מחיקת עגלת אורח.
-4. כשל מיזוג לא מבטל session.
+תמצית דרישות identity (לא מחליף את CART-GUEST):
 
-יעד DB (כשמוחל): RPC אטומי + advisory lock + unique חלקי על `carts.profile_id`.
+1. טריגר: אחרי `auth.getUser()` הצליח ב-callback OAuth/OTP או ב-server action מחובר.
+2. קוראים `mergeGuestCart` עם:
+   - `userId` מה-session בלבד (לא מהלקוח)
+   - `sessionId` מ-cookie `ke_session_id`
+3. מיזוג כמויות לפי מפתח מוצר/וריאנט; cap 99; מחיקת עגלת אורח אחרי הצלחה.
+4. כשל מיזוג **לא** מבטל session; לוג + המשך ל-`next` (המשתמש יכול לשחזר ידנית).
+5. אין מחירים / `platform_percent` בעגלת אורח; פיצול כסף רק ב-`beginCheckout` snapshots.
+
+יעד DB (כשמוחל): RPC אטומי + advisory lock + unique חלקי על `carts.profile_id` (פירוט ב-CART-GUEST).
+
+שרשרת אחרי login מוצלח:
+
+```text
+getUser() OK
+  → mergeGuestCart(userId, sessionId)   // CART-GUEST
+  → redirect(next)
+```
 
 ---
 
@@ -136,6 +168,8 @@ Magic link / email-password קיימים כ-legacy לסגירה ב-UX; לא מו
 - SELECT: last4, brand, expiry, is_default (בלי `cardcom_token`)
 - DELETE + set-default דרך fn
 - INSERT רק service role מ-webhook Cardcom
+
+Re-auth נדרש ל: מחיקת חשבון, מחיקת כל הטוקנים, `signOutAll`.
 
 ---
 
@@ -173,6 +207,7 @@ Magic link / email-password קיימים כ-legacy לסגירה ב-UX; לא מו
 | קריאת טוקן Cardcom | REVOKE עמודה מ-authenticated |
 | הרעלת מיזוג עגלה | userId מה-session; lock/RPC; אין מחירים בעגלה |
 | מחיקה זדונית | re-auth + חלון חרטה + מייל ביטול |
+| Open redirect אחרי OAuth | ולידציית `next` |
 
 ---
 
@@ -180,11 +215,12 @@ Magic link / email-password קיימים כ-legacy לסגירה ב-UX; לא מו
 
 - [ ] Google OAuth PKCE + callback + `next` בטוח
 - [ ] OTP גיבוי מתועד עם rate limit
-- [ ] Gate על `/account*` ו-`/checkout*`
-- [ ] מיזוג עגלה לפי CART-GUEST אחרי login
+- [ ] Gate על `/account*` ו-`/checkout*` מבוסס `getUser()`
+- [ ] מיזוג עגלה לפי CART-GUEST אחרי login (OAuth ו-OTP)
 - [ ] אין חשיפת `cardcom_token` ללקוח
 - [ ] מחיקת חשבון: PII נמחק, כסף נשמר
 - [ ] שיווק opt-in בלבד
+- [ ] No Escrow: זהות לא מחזיקה כסף לספק
 
 ---
 
@@ -195,3 +231,4 @@ Magic link / email-password קיימים כ-legacy לסגירה ב-UX; לא מו
 | 2026-07-08 | טיוטת זהות + 029 |
 | 2026-07-17 | ציות LEGAL / retention |
 | 2026-08-12 | batch #22: BINDING ממוקד OAuth+OTP+session + מצביע CART-GUEST |
+| 2026-08-12 | batch #22/50 pass-2: חיזוק OAuth/OTP/session + קישור מפורש ל-CART-GUEST merge |
