@@ -1,78 +1,101 @@
-# ARCHITECTURE-DOCS-INDEX.md
+# ארכיטקטורה: Docs Index
 
-אינדקס מסמכי ארכיטקטורה ב-`ke-arch` (branch `arch/docs-queue`).
+אינדקס מסמכי ארכיטקטורה ב-`ke-arch` (branch `arch/docs-batch-2`).
 
-Date: 2026-07-31 · docs only.
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד.
 
-**Master (money-first):** `MASTER-ARCHITECTURE-v2.md`
+Master: `docs/MASTER-ARCHITECTURE-v2.md` · תבנית: `docs/DOCS-TEMPLATE-BINDING.md`
 
-## Go-Live / ops
-- `ARCHITECTURE-GO-LIVE-CHECKLIST.md`
-- `ARCHITECTURE-BACKUP-DR.md`
-- `ARCHITECTURE-OBSERVABILITY.md`
-- `ARCHITECTURE-TESTING-CICD.md`
-- `ARCHITECTURE-FRAUD-RATE-LIMITS.md`
-- `ARCHITECTURE-ENV-SECRETS.md`
-- `ARCHITECTURE-FEATURE-FLAGS.md`
-- `ARCHITECTURE-INCIDENT-RESPONSE.md`
-- `ARCHITECTURE-PAYMENT-RECONCILIATION.md`
+---
 
-## Commerce
-- `ARCHITECTURE-CART-ZUSTAND.md`
-- `ARCHITECTURE-CHECKOUT-CARDCOM.md`
-- `ARCHITECTURE-COUPON-REDEMPTION.md`
-- `ARCHITECTURE-FULFILLMENT-SUPPLIER-WORKFLOW.md`
-- `ARCHITECTURE-INVOICING-TAX.md`
-- `ARCHITECTURE-SHIPPING-RETURNS.md`
+## החלטה
 
-## Storefront
-- `ARCHITECTURE-SEO-PERFORMANCE.md`
-- `ARCHITECTURE-CATEGORY-PAGE.md`
-- `ARCHITECTURE-SEARCH.md`
-- `ARCHITECTURE-PWA.md`
-- `ARCHITECTURE-MOBILE-APP.md`
-- `ARCHITECTURE-WISHLIST.md`
-- `ARCHITECTURE-MEDIA-R2.md`
-- `ARCHITECTURE-DESIGN-SYSTEM.md`
-- `ARCHITECTURE-ACCESSIBILITY.md`
-- `ARCHITECTURE-COOKIE-CONSENT.md`
+| # | הכרעה |
+|---|---|
+| I1 | כל `ARCHITECTURE-*.md` חייב 5 סעיפים BINDING (החלטה, חלופות, DB, קצה, פתוחות). |
+| I2 | worktree docs: `ke-arch` בלבד; branch `arch/docs-batch-2`. |
+| I3 | סתירות כסף: `CONTRADICTIONS.md` + `ARCHITECTURE-MONEY.md` גוברים. |
+| I4 | מסמך V2 pointer → קנוני אחד (לא כפילות). |
+| I5 | יישום קוד: worktrees ייעודיים (`ke-arch-*`) + docs כאן. |
 
-## Account / support
-- `ARCHITECTURE-ACCOUNT-AREA.md`
-- `ARCHITECTURE-CUSTOMER-SUPPORT.md`
-- `ARCHITECTURE-AI-AGENTS-SUPPORT.md`
-- `ARCHITECTURE-AI-AGENTS.md`
-- `ARCHITECTURE-NOTIFICATIONS.md` (V2 מלא: Resend+Trigger+Edge, WhatsApp, QR, 48h, unsubscribe)
-- `ARCHITECTURE-NOTIFICATIONS-V2.md` (מצביע לקנוני למעלה)
+---
 
-## Admin / suppliers / growth
-- `ARCHITECTURE-ADMIN.md`
-- `ARCHITECTURE-ADMIN-DASHBOARD.md`
-- `ARCHITECTURE-SUPPLIER-PORTAL.md`
-- `ARCHITECTURE-SUPPLIER-ONBOARDING.md`
-- `ARCHITECTURE-ANALYTICS.md`
-- `ARCHITECTURE-ANALYTICS-KPI.md`
-- `ARCHITECTURE-REFERRALS.md`
-- `ARCHITECTURE-SECURITY-COMPLIANCE.md`
-- `ARCHITECTURE-SECURITY-AUDIT.md` (תוכנית ביקורת: RLS probes, סריקות, רישום ממצאים)
-- `ARCHITECTURE-ADMIN-DASHBOARD-SPEC.md` (מפרט מסכי אדמין: טבלאות, פילטרים, הרשאות)
-- `OPERATIONS-RUNBOOK.md` (תפעול יומי ותקלות נפוצות)
-- `INDEX.md` (אינדקס עשרת מסמכי ספרינט 07/31-08/02)
-- `ARCHITECTURE-LEGAL.md`
-- `ARCHITECTURE-LEGAL-PAGES.md` (מפרט תקנון, ביטולים לפי חוק הגנת הצרכן, פרטיות, נגישות)
+## חלופות שנדחו
 
-## Data
-- `ARCHITECTURE-WP-MIGRATION.md`
-- `ARCHITECTURE-WP-MIGRATION-PLAN.md` (חוזה מיפוי שדה-מול-שדה, סדר ייבוא, rollback)
-- `ARCHITECTURE-LAUNCH-MARKETING.md` (‏301 מ-WP, Google Merchant, קמפיין השקה)
-- `ARCHITECTURE-WP-DATA-MIGRATION-EXECUTION.md`
+| חלופה | למה נדחתה |
+|---|---|
+| docs רק באנגלית | I1: עברית RTL. |
+| אינדקס אוטומטי מ-git | ידני + INDEX.md לספרינט. |
+| ARCHITECTURE ב-root repo | I2: ke-arch worktree. |
+| כפילות NOTIFICATIONS + V2 | I4: pointer. |
+| em dash בכותרות | DOCS-TEMPLATE: אסור. |
 
-## Still deeper elsewhere (worktrees)
-Full-length versions may live under `ke-arch-*` (cart, account-area, notifications-v2, wp, etc.). Prefer the dedicated worktree when implementing that domain; `ke-arch` holds the consolidated queue + summaries.
+---
+
+## סכמת DB
+
+אין DDL. מטא-נתונים:
+
+```text
+docs/INDEX.md          -- sprint index
+docs/MASTER-INDEX.md   -- master map
+docs/CHANGELOG.md      -- doc revisions
+```
+
+---
+
+## מקרי קצה
+
+| # | מקרה | התנהגות |
+|---|---|---|
+| CE1 | שני docs סותרים על Escrow | CONTRADICTIONS wins. |
+| CE2 | doc בלי 5 סעיפים | לא BINDING; batch fix. |
+| CE3 | worktree wrong path | R1 template: ke-arch only. |
+| CE4 | code dump 2000 lines | BINDING pointer + git history. |
+| CE5 | branch not docs-batch-2 | R5: commit לענף הנכון. |
+
+---
+
+## פתוחות
+
+| # | פתוח | הערה |
+|---|---|---|
+| O1 | auto-link checker CI | broken refs. |
+| O2 | batch-3 domains | STATE.md queue. |
+| O3 | merge docs-batch-2 → main | after review. |
+
+---
+
+## אינדקס לפי דומיין
+
+### Go-Live / ops
+`ARCHITECTURE-GO-LIVE-CHECKLIST`, `BACKUP-DR`, `OBSERVABILITY`, `TESTING-CICD`, `FRAUD-RATE-LIMITS`, `ENV-SECRETS`, `FEATURE-FLAGS`, `INCIDENT-RESPONSE`, `PAYMENT-RECONCILIATION`
+
+### Commerce
+`CART-ZUSTAND`, `CHECKOUT-CARDCOM`, `COUPON-REDEMPTION`, `MASTER-CHECKOUT-REDEMPTION`, `FULFILLMENT-SUPPLIER-WORKFLOW`, `INVOICING-TAX`, `SHIPPING-RETURNS`
+
+### Storefront / SEO
+`SEO`, `SEO-SITEMAP`, `SEO-PERFORMANCE`, `SEARCH`, `SEARCH-UX`, `SEARCH-DISCOVERY`, `CATALOG-SEARCH-SEO`, `CATEGORY-PAGE`, `PWA`, `ACCESSIBILITY`, `ACCESSIBILITY-IL`
+
+### Account / AI / notifications
+`ACCOUNT`, `ACCOUNT-IDENTITY`, `ACCOUNT-WALLET`, `ACCOUNT-AREA`, `AI-AGENTS`, `AI-AGENTS-RUNTIME`, `AI-AGENTS-SUPPORT`, `NOTIFICATIONS`, `NOTIFICATIONS-V2`, `NOTIFICATIONS-MARKETING`
+
+### Admin / analytics
+`ADMIN`, `ADMIN-DASHBOARD`, `ADMIN-DASHBOARD-SPEC`, `ADMIN-ANALYTICS`, `ANALYTICS`, `ANALYTICS-BI`, `ANALYTICS-KPI`, `SUPPLIER-PORTAL`
+
+### Data / WP
+`WORDPRESS-IMPORT`, `WP-MIGRATION`, `WP-MIGRATION-PLAN`, `WP-DATA-MIGRATION`, `WP-DATA-MIGRATION-EXECUTION`
+
+### Security / legal
+`SECURITY`, `SECURITY-COMPLIANCE`, `SECURITY-RLS`, `LEGAL`, `LEGAL-PAGES`, `CARDCOM-EDGE-CASES`, `CARDCOM-WEBHOOKS`
+
+---
 
 ## Revision
-| Date | Change |
+
+| תאריך | שינוי |
 |---|---|
-| 2026-07-31 | Index after docs-queue continuous run |
-| 2026-07-31 | Gap docs: env, flags, shipping, reconcile, onboarding, incident, a11y, design, cookies |
-| 2026-07-31 | Link MASTER-ARCHITECTURE-v2; GO-LIVE/ONBOARDING/ANALYTICS/SUPPORT rev C |
+| 2026-07-31 | index docs-queue |
+| 2026-08-12 | batch-2: BINDING index + 5 סעיפים |
