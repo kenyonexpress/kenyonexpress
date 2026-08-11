@@ -177,6 +177,11 @@ docs/ONBOARDING-DEVELOPER.md
 | `ARCHITECTURE-PERFORMANCE.md` | ביצועים. | DESIGN |
 | `PERFORMANCE-BUDGET.md` | תקציבי CWV ומשקל עמוד לחנות. | BINDING (11.08) |
 | `DESIGN-CHECKLIST-FINAL.md` | צ'קליסט מול electro home-v7. | BINDING (10.08) |
+| (root) `DESIGN-MEASURED.md` | מדידות צבע/טיפוגרפיה/ריווח (בעיקר desktop/LIVE). | BINDING measured |
+| (refs) `electro-measurements-380.md` | box model pixel-exact home-v7 @ 380×667 (JSON). | REF (11.08) |
+| (refs) `electro-measurements-768.md` | box model pixel-exact home-v7 @ 768×1024 (JSON). | REF (11.08) |
+| (refs) `electro-components-map.md` | מיפוי סקשנים → Header/HeroSlider/ProductCard/CategoryStrip/Footer. | REF (11.08) |
+| (refs) `electro-design-discrepancies.md` | 20 פערים מול DESIGN-MEASURED / ELECTRO_HERO; הקובץ `electro.madrasthemes.com-DESIGN.md` חסר. | REF (11.08) |
 | `PHASE2-3-SPEC.md` | וריאנטים + SEO + תגיות. | BINDING (10.08) |
 | `CITY-LANDING-CONTENT.md` | SEO ל-15 ערי ישראל: title/meta/פתיחה. | CONTENT (10.08) |
 | `GEO-FEATURES-SPEC.md` | מיקום, עיר, near/radius, פרטיות. | SPEC (11.08) |
@@ -365,3 +370,4 @@ docs/ROADMAP-V2.md
 | 2026-08-11 | תור 35-38: subscriptions ledger, seed suppliers, product editor, wallet-integer |
 | 2026-08-11 | תור notifications/seo/mobile/analytics: חיזוק CF Queue, JSON-LD, SecureStore, SQL revenue; תקצירי אינדקס |
 | 2026-08-11 | תור onboarding/refunds/trust/launch: הסכם פר מוצר, disputes, trust&safety, שערי השקה; אינדקס |
+| 2026-08-11 | refs electro 380/768 + components-map + design-discrepancies; אינדקס |

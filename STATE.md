@@ -1,34 +1,55 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-11 (queue onboarding/refunds/trust/launch + MASTER-INDEX)
+Updated: 2026-08-11 (electro 380/768 measurements + component map)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
 ke-arch
-. Docs only. אין נגיעה בתיקייה הראשית.
+. Docs/refs only. אין נגיעה בתיקייה הראשית
+kenyonexpress
+.
 
 ## Last Completed
-תור docs סגור (commit+push לכל מסמך) + MASTER-INDEX + STATE:
-1 ARCHITECTURE-SUPPLIER-ONBOARDING (application, admin approve, Cardcom checklist, per-product split only, contract model)
-2 ARCHITECTURE-REFUNDS-DISPUTES (coupon before/after redeem, 14-day physical, ledger reversal no Escrow, Cardcom refund, dispute SM)
-3 ARCHITECTURE-TRUST-SAFETY (RL per endpoint, voucher entropy, scanner abuse, audit, RLS checklist)
-4 ARCHITECTURE-LAUNCH-CHECKLIST (Resend, Cardcom prod, Sentry, Vercel, backup, 10 coupons)
+תור electro measurements סגור (commit+push לכל קובץ):
+1. refs/electro-measurements-380.md (380×667, JSON pixel box model)
+2. refs/electro-measurements-768.md (768×1024, JSON pixel box model)
+3. refs/electro-components-map.md (Header/HeroSlider/ProductCard/CategoryStrip/Footer → src paths)
+4. refs/electro-design-discrepancies.md (20 discrepancies; named DESIGN file missing)
+5. STATE.md + MASTER-INDEX refs index
 
 ## In Progress
 nothing (closed queue)
 
 ## Blocking Issues
+- refs/electro.madrasthemes.com-DESIGN.md חסר ב-worktree (D01); baseline בפועל = DESIGN-MEASURED.md + ELECTRO_HERO
+- cursor-ide-browser MCP: טאבים לא נשארים פתוחים; מדידה רצה ב-Playwright headless
 - השקה: 10 דילי seed עדיין missing מול `suppliers` בפרוד
 - Cardcom production + DNS cutover (ראה PROGRESS-REPORT-AUG)
 - Vercel dashboard: אין סשן מחובר
 
 ## Next Task
 ביצוע שערי LAUNCH-WEEK-RUNBOOK / ARCHITECTURE-LAUNCH-CHECKLIST (דילים → Cardcom smoke → DNS → SEC-QR/WALLET)
+או שחזור/כתיבה של refs/electro.madrasthemes.com-DESIGN.md מול המדידות החדשות
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
 
 ## החלטות שהתקבלו אוטומטית
+- **2026-08-11 path/branch override (electro refs queue):** עבודה רק ב-
+/Users/ofir/kenyonexpress-web/ke-arch
+על
+arch/docs-lifecycle
+. דוחה הוראות ~/workspace ו-arch/supplier-portal אם הופיעו. אין עריכת תיקיית
+kenyonexpress
+הראשית ואין עותקים מקוננים.
+- **2026-08-11 electro measure method:** MCP browser נכשל (No browser tab available / viewId נעלם). מדידה ב-Playwright Chromium headless + getBoundingClientRect; Node 25 דורש polyfill ל-global.URL לפני require של @playwright/test. refs/ ב-.gitignore ולכן git add -f לקבצי refs שנדרשים ב-git.
+- **2026-08-11 electro DESIGN baseline:** בהעדר
+refs/electro.madrasthemes.com-DESIGN.md
+השוואת discrepancy מול
+DESIGN-MEASURED.md
++
+src/lib/electro-hero-tokens.ts
+. מספרי layout שם הם desktop/1440; אין להחיל 1:1 על 380/768.
 - **2026-08-11 onboarding percent:** אין תעריף ברמת ספק; כל `platform_percent` מוסכם פר מוצר עם המפעיל ונשמר במוצר + `product_split_agreements`. Cardcom sub-account לספק אופציונלי (MVP = מסוף פלטפורמה).
 - **2026-08-11 refunds:** "Escrow reversal" = היפוך ledger / `supplier_debit` לפיזי; אין held/Escrow לקופון. אחרי redeem אין unwind ל-issued.
 - **2026-08-11 notifications bus:** `ARCHITECTURE-NOTIFICATIONS.md` מחייב Cloudflare Worker כ-drain/bus ל-outbox (retry+DLQ); Next cron מותר כגשר זמני בלבד. ערוצים: Resend RTL, SMS ישראל, push לאפ עתידי; preferences + חוק ספאם ישראלי.
