@@ -1,168 +1,124 @@
-# ARCHITECTURE: Scaling
+# ארכיטקטורה: Scaling (צמיחה)
 
-תוכנית צמיחה: Upstash Redis, כוונון ISR, אינדקסי DB, connection pooling, CDN ב-Vercel Edge, הערכות עלות.
+Upstash Redis, ISR, אינדקסי DB, connection pooling, CDN, עלות.
 
-Status: **BINDING** · Updated: 2026-08-03  
-Scope: **docs only** · branch `arch/docs-queue`  
-אין שינוי קוד. אין נגיעה ב-worktree הראשי.
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.  
+מודל כסף: **No Escrow**. Redis לא מקור אמת ליתרות.
 
-Companions:
+מסמכים קשורים:
 
 ```
+docs/DOCS-TEMPLATE-BINDING.md
 docs/ARCHITECTURE-SEO-PERFORMANCE.md
 docs/ARCHITECTURE-SEARCH-DISCOVERY.md
-docs/ARCHITECTURE-BACKUP-DR.md
 docs/ARCHITECTURE-FRAUD-PREVENTION.md
-docs/LAUNCH-DAY.md
+docs/ARCHITECTURE-BACKUP-DR.md
 ```
 
 ---
 
-## 0. הכרעות מחייבות
+## 0. החלטה (SC1 עד SC6)
 
 | # | הכרעה |
 |---|---|
 | SC1 | קודם cache נכון לפני שדרוג DB יקר. |
-| SC2 | נתיבי כסף (checkout, redeem, wallet) **fail-closed** על rate limit; לא fail-open. |
+| SC2 | נתיבי כסף fail-closed על rate limit. |
 | SC3 | ISR לקטלוג ציבורי; dynamic לחשבון/קופה. |
-| SC4 | Redis (Upstash) ל-rate limit / session bits / hot keys; לא מקור אמת להזמנות. |
-| SC5 | Pooling ל-Supabase/Postgres חובה מעל עומס serverless. |
-| SC6 | מדידה לפני אופטימיזציה: p95 latency, error rate, DB CPU, Meili qps. |
+| SC4 | Redis (Upstash) ל-RL / hot keys; לא מקור אמת להזמנות. |
+| SC5 | Pooling ל-Supabase חובה מעל עומס serverless. |
+| SC6 | מדידה לפני אופטימיזציה: p95, error rate, DB CPU. |
 
 ---
 
-## 1. Caching strategy (Upstash Redis)
+## 1. חלופות שנדחו
 
-| שימוש | מפתח לדוגמה | TTL | הערות |
-|---|---|---|---|
-| Rate limit | `rl:{route}:{id}` | חלון קצר | checkout/redeem/login |
-| Category product ids | `cat:{slug}:v{n}` | 60–120s | לצד data cache של Next |
-| Feature flags | `ff:{name}` | 30–60s | |
-| Idempotency short lock | `idem:{key}` | דקות | מונע כפל לחיצה |
-| Hot PDP fragment | אופציונלי | ≤120s | עדיף Next data cache / ISR |
-
-אסור ב-Redis כמקור אמת: יתרת ארנק, סטטוס voucher, ledger.
-
-SDK יעד: `@upstash/redis` + `@upstash/ratelimit`.
-
----
-
-## 2. ISR tuning
-
-מתוך SEO-PERFORMANCE + כוונון צמיחה:
-
-| Page | עכשיו / יעד | תחת עומס |
-|---|---|---|
-| `/` | `revalidate = 120` | אפשר 300 אם תוכן יציב |
-| `/product/[slug]` | 120 + `generateStaticParams` top N | להרחיב N עם פופולריות; on-demand ב-publish |
-| `/category/[slug]` | force-dynamic עם filters | cache data layer; לא HTML אחד לכל filter |
-| `/sitemap.xml` | 3600 | OK |
-
-On-demand: `revalidatePath` / `revalidateTag` אחרי publish.  
-לא להעלות revalidate על דפי כסף.
-
----
-
-## 3. DB indexes
-
-אינדקסים קריטיים (לוגיים; לאס ליישר למיגרציות):
-
-| שאילתה | אינדקס יעד |
+| חלופה | למה נדחתה |
 |---|---|
-| קטלוג לפי category + published | `(category_id, status)` / partial published |
-| מוצר לפי slug | UNIQUE slug |
-| הזמנות למשתמש | `(user_id, created_at DESC)` |
-| paid_at / webhook | `(status, paid_at)` |
-| vouchers למשתמש | `(user_id, status)` |
-| vouchers לפי code | UNIQUE code |
+| read replica לפני cache | SC1; עלות |
+| wallet balance ב-Redis | SC4; consistency |
+| ISR על `/checkout` | stale prices; SC3 |
+| fail-open RL under load | SC2; fraud |
+| full table scan search at scale | Meili/SQL fallback |
+
+---
+
+## 2. סכמת DB
+
+**אין DDL חדש במסמך זה.** אינדקסים יעד (ליישר למיגרציות):
+
+| שאילתה | אינדקס |
+|---|---|
+| קטלוג category + published | `(category_id, status)` partial |
+| orders by user | `(user_id, created_at DESC)` |
+| vouchers by code | UNIQUE code |
 | redeem by supplier | `(supplier_id, redeemed_at)` |
-| outbox due | `(next_attempt_at) WHERE status=pending` |
-| order_items by supplier | `(supplier_id, order_id)` |
-
-בדיקה: `EXPLAIN ANALYZE` על top 10 queries לפני קמפיין.
+| outbox due | `(next_attempt_at) WHERE pending` |
 
 ---
 
-## 4. Connection pooling
+## 3. Caching ו-ISR
 
-| סביבה | גישה |
+| שימוש Redis | TTL | הערות |
+|---|---|---|
+| Rate limit | חלון קצר | checkout/redeem |
+| Category ids | 60-120s | + Next data cache |
+| Feature flags | 30-60s | |
+
+| Page | revalidate |
 |---|---|
-| Vercel serverless | Supabase pooler (transaction mode) לרוב ה-API |
-| Migrations / long tx | session mode / direct בזהירות |
-| Edge | לא לפתוח pool כבד; העדף REST/RPC קצרים |
+| `/` | 120-300s |
+| `/product/[slug]` | 120s + top N static |
+| `/category/*` | data cache; לא HTML לכל filter |
+| `/account`, `/checkout` | dynamic |
 
-כללים:
-
-- לא ליצור `createClient` עם חיבורים ללא הגבלה בכל request בלי reuse של ה-SDK
-- הגבלת concurrency על cron כבדים (notifications, index, expiry)
+Connection pooling: Supabase pooler transaction mode ב-serverless; session mode רק למיגרציות.
 
 ---
 
-## 5. CDN / Vercel Edge
+## 4. מקרי קצה
 
-| שכבה | תפקיד |
-|---|---|
-| Vercel CDN | HTML ISR + static assets |
-| `next/image` + R2 | תמונות; cache headers ארוכים ל-immutable hashes |
-| Edge middleware | auth gate קל, geo אופציונלי; לא business logic כבד |
-| Meilisearch | אזור קרוב (EU) ל-latency מישראל |
-
-Headers: cache-control נכון ל-private vs public.  
-אין CDN cache ל-`/account`, `/checkout`, `/api` רגיש.
-
----
-
-## 6. Search under load
-
-- Meili: replicas / גדול מופע כש-qps עולה
-- Debounce client; rate limit `/api/search`
-- Fallback: SQL `ilike` מוגבל רק אם Meili down (הודעת "חיפוש מוגבל")
+| # | מצב | התנהגות |
+|---|---|---|
+| SC-E1 | Redis down at checkout | fail-closed |
+| SC-E2 | ISR stale after price change | on-demand revalidate on publish |
+| SC-E3 | pool exhaustion 429 | reduce fan-out; SC5 |
+| SC-E4 | Meili timeout | degrade UI; SQL limited fallback |
+| SC-E5 | campaign spike on redeem | RL supplier tier; לא skip lock |
+| SC-E6 | CDN caches `/account` | headers private; no cache |
+| SC-E7 | cron notification fan-out | concurrency cap |
 
 ---
 
-## 7. Cost projections (סדר גודל)
+## 5. עלות ופתוחות
 
-הערכות גסות לתכנון (לא הצעת מחיר):
+| רכיב | השקה | ×10 traffic |
+|---|---|---|
+| Vercel Pro | ISR מוריד compute | higher tier |
+| Supabase Pro + pooler | קריטי | compute upgrade |
+| Upstash | קטן | לינארי ל-RL |
 
-| רכיב | שלב השקה | ×10 טראפיק | הערות |
-|---|---|---|---|
-| Vercel | Pro | Pro / higher | ISR מוריד compute |
-| Supabase | Pro | Compute upgrade | pooling קריטי |
-| Upstash | Pay-as-you-go קטן | גדילה לינארית ל-RL | זול מול DB |
-| Meilisearch Cloud / VPS | קטן | medium | אינדקס קטלוג לא ענק בהתחלה |
-| Resend | לפי אימייל טרנזקציוני | לינארי להזמנות | |
-| Cardcom | עמלה לעסקה | לינארי | לא infra |
-| R2 | אחסון תמונות | גדילה איטית | egress דרך CDN |
-
-עקרון עלות: כל page_view לא צריך hit ל-Postgres. כל search לא צריך full table scan.
+| # | פער | תאריך |
+|---|---|---|
+| O1 | Upstash wiring ב-production | 2026-08-12 |
+| O2 | EXPLAIN ANALYZE top-10 pre-campaign | 2026-08-12 |
+| O3 | edge middleware geo scope | 2026-08-12 |
 
 ---
 
-## 8. Capacity playbook
-
-| סימפטום | פעולה ראשונה |
-|---|---|
-| TTFB גבוה ב-PDP | בדוק ISR hit ratio; origin DB |
-| 429 מ-Supabase | pooling + הקטנת fan-out |
-| Redeem איטי | אינדקס + פחות joins; rate limit הוגן |
-| Checkout spike | RL + queue webhooks; לא לשבור idempotency |
-| Meili timeout | scale Meili; degrade UI |
-
----
-
-## 9. Acceptance
+## 6. Acceptance
 
 - [ ] Upstash RL על נתיבי כסף
-- [ ] ISR matrix מתועדת ומכווננת
-- [ ] אינדקסי DB לרשימת השאילתות החמות
-- [ ] Pooler בשימוש ב-serverless
+- [ ] ISR matrix מתועדת
+- [ ] Pooler בשימוש
 - [ ] CDN לא מחזיק דפים פרטיים
-- [ ] הערכות עלות מעודכנות לפני קמפיין גדול
 
 ---
 
-## 10. Revision
+## Revision
 
-| Date | Change |
+| תאריך | שינוי |
 |---|---|
-| 2026-08-03 | מסמך ראשוני על arch/docs-queue |
+| 2026-08-03 | מסמך ראשוני |
+| 2026-08-12 | batch-2: DOCS-TEMPLATE-BINDING |
