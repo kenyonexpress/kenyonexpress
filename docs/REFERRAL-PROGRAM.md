@@ -1,25 +1,52 @@
 # תוכנית חבר מביא חבר (מוצר + אנטי-fraud)
 
-הפניות עם קאשבק פנימי, ומגני fraud תפעוליים.
-
-Status: **PLAN** · עודכן: 2026-08-10  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+Status: **PLAN** · עודכן: 2026-08-12
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+מודל כסף: No Escrow; בונוס ארנק פנימי בלבד.
 
-**מקור מחייב (ארכיטקטורה):**
+---
 
-```
-docs/ARCHITECTURE-REFERRAL.md
-```
+## 1. החלטה
 
-מסמכים נוספים:
+| # | הכרעה |
+|---|---|
+| R1 | /r/{code} + 30d last-touch |
+| R2 | בונוס אחרי paid + סף |
+| R3 | idempotency keys |
+| R4 | self-referral block |
 
-```
-docs/ARCHITECTURE-CASHBACK-WALLET.md
-docs/ARCHITECTURE-FRAUD-PREVENTION.md
-docs/ARCHITECTURE-PRICING-RULES.md
-docs/CONTRADICTIONS.md
-```
+---
+
+## 2. חלופות שנדחו
+
+| חלופה | נימוק |
+|---|---|
+| משיכה לבנק | wallet policy |
+| בונוס משנה platform_percent | PRICING |
+| בונוס לפני paid | fraud |
+
+---
+
+## 3. סכמת DB
+
+| טבלה | שדות |
+|---|---|
+| referrals | referrer, referred, status |
+| wallet_ledger | referral_bonus |
+
+---
+
+## 4. מקרי קצה
+
+| E1 | chargeback after bonus | hold window |
+| E2 | same payment token | block |
+
+---
+
+## 5. פתוחות
+
+| O1 | hold days before credit | config | 2026-08-12 |
 
 ---
 
@@ -90,3 +117,12 @@ docs/ARCHITECTURE-REFERRAL.md
 | תאריך | שינוי |
 |---|---|
 | 2026-08-10 | שכבת מוצר/fraud מעל ARCHITECTURE-REFERRAL |
+
+---
+
+## Revision
+
+| תאריך | שינוי |
+|---|---|
+| 2026-08-12 | BINDING batch-2: החלטה, חלופות, DB, קצה, פתוחות |
+
