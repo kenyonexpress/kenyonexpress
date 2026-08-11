@@ -148,3 +148,4 @@ Anti-enumeration בסורק: `wrong_supplier` → תשובה חיצונית `not
 | תאריך | שינוי |
 |---|---|
 | 2026-08-12 | batch #29/50: ריענון BINDING (ADR highlights בעברית) |
+| 2026-08-12 | batch-2 #29 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
