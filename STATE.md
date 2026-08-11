@@ -1,44 +1,47 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-12 (arch/docs-batch-2 pass-2 from #13)
+Updated: 2026-08-12 (docs standing rules locked)
 
 ## Current Phase
 ‏**arch/docs-batch-2** ב-worktree
 ke-arch
-. Docs only. **אין ענפים חדשים.** כל מסמך רק ל-
-arch/docs-batch-2
-. אסור נגיעה בתיקייה הראשית
+. **כלל קבוע:** docs בלבד; אסור קוד; אסור תיקייה ראשית
 kenyonexpress
-. אסור קוד. אסור checkout ל-
+; אסור checkout ל-
 main
+; אסור ענפים חדשים; אחרי כל מסמך commit+push; עברית RTL; כל מסמך = החלטה + חלופות שנדחו + סכמת DB + מקרי קצה + פתוחות. תבנית:
+docs/DOCS-TEMPLATE-BINDING.md
 .
 
 ## המשך מ:
-Pass-2 לתור 50 על `arch/docs-batch-2` **הושלם** (#13–#50). אין ענף חדש. הבא: P0 מ-docs/INDEX.md על אותו ענף.
-
+כלל העבודה נעול. תור 50 pass-2 הושלם. הבא לפי בקשת משתמש הבאה, או P0 מ-
+docs/INDEX.md
+, על
+arch/docs-batch-2
+בלבד.
 
 ## Last Completed
-Pass-2 #13–#50 על arch/docs-batch-2 (commit+push לכל מסמך).
-
+נעילת כלל קבוע +
+docs/DOCS-TEMPLATE-BINDING.md
+.
 
 ## In Progress
 nothing
 
-
 ## Blocking Issues
 - אסור ליצור ענף docs חדש
-- הרשימה המקורית נקטעה אחרי #4; 5-50 הושלמו ואז pass-2 לאיכות
 - P0: DDL-FIXES Escrow; DB-SCHEMA escrow_held; cardcom-payments skill held
 
 ## Next Task
-P0 מ-docs/INDEX.md על arch/docs-batch-2 בלבד
-
+ממתין להוראת מסמך/תור הבא על
+arch/docs-batch-2
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
 
 ## החלטות שהתקבלו אוטומטית
-- **2026-08-12 pass-2 reopen:** המשתמש ביקש להמשיך תור 50 אחרי שסומן הושלם. Pass-2 מתחיל מ-#13 (מסמכים דקים/stub) על `arch/docs-batch-2` בלבד.
+- **2026-08-12 standing docs rules:** נעול לכל ההודעות הבאות: ke-arch בלבד; docs בלבד; אין קוד; אין main dir; אין checkout main; אין ענפים חדשים (רק arch/docs-batch-2); commit+push אחרי כל מסמך; עברית RTL; חמשת רכיבי תוכן חובה (החלטה, חלופות שנדחו, סכמת DB, מקרי קצה, פתוחות). מקור: DOCS-TEMPLATE-BINDING.md.
+
 
 - **2026-08-12 pass-2 from #13:** תור 50 סומן הושלם, אבל #13/#14 דקים; המשתמש ביקש להמשיך. Pass-2 מ-#13 על אותו `arch/docs-batch-2` בלי ענף חדש.
 
