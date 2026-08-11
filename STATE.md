@@ -1,51 +1,80 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-12 (arch/docs-batch-2 merge of arch/docs-*)
+Updated: 2026-08-12 (arch/docs-batch-2 pass-2 from #13)
 
 ## Current Phase
 ‏**arch/docs-batch-2** ב-worktree
 ke-arch
-. Docs only. **ענף יחיד למסמכים.** אסור ליצור ענפי `arch/*` חדשים. אסור נגיעה בתיקייה הראשית
+. Docs only. **אין ענפים חדשים.** כל מסמך רק ל-
+arch/docs-batch-2
+. אסור נגיעה בתיקייה הראשית
 kenyonexpress
-. אסור קוד. אסור
-git checkout
-על
+. אסור קוד. אסור checkout ל-
 main
 .
 
 ## המשך מ:
-תור 50/50 (batch-2) כבר הושלם לפני המיזוג (commits `docs(batch-2): #1`…`#50`). אחרי מיזוג `arch/docs-*` שוחזרו 16 מסמכי BINDING שנדרסו. **אין פריט פתוח בתור 50.** הבא: תיקוני P0 מ-
-docs/INDEX.md
-(או שערי LAUNCH), על אותו ענף בלבד.
+Pass-2 על תור 50 (איכות): מתחיל מ-**#13** (INVENTORY היה דק). אחרי כל מסמך: commit + push לאותו ענף.
+
+13. ARCHITECTURE-INVENTORY.md
+14. ARCHITECTURE-GIFT-COUPONS.md
+15. ARCHITECTURE-WALLET-CASHBACK.md
+16. ARCHITECTURE-WALLET-LEDGER.md
+17. ARCHITECTURE-WALLET-INTEGER.md
+18. ARCHITECTURE-CASHBACK-WALLET.md
+19. ARCHITECTURE-ACCOUNT-WALLET.md
+20. ARCHITECTURE-PAYOUT-MECHANISM.md
+21. ARCHITECTURE-PERSONAL-AREA.md
+22. ARCHITECTURE-ACCOUNT-IDENTITY.md
+23. ARCHITECTURE-SUPPLIER-PORTAL.md
+24. ARCHITECTURE-SUPPLIER-ONBOARDING.md
+25. ARCHITECTURE-ADMIN-DASHBOARD.md
+26. ARCHITECTURE-NOTIFICATIONS.md
+27. ARCHITECTURE-EMAIL-TEMPLATES.md
+28. ARCHITECTURE-NOTIFICATIONS-MARKETING.md
+29. ARCHITECTURE-SECURITY.md
+30. ARCHITECTURE-SECURITY-RLS.md
+31. ARCHITECTURE-TRUST-SAFETY.md
+32. ARCHITECTURE-OBSERVABILITY.md
+33. ARCHITECTURE-BACKUP-DR.md
+34. ARCHITECTURE-PRODUCTION-OPS.md
+35. ARCHITECTURE-LAUNCH-CHECKLIST.md
+36. ARCHITECTURE-TESTING-QA.md
+37. ARCHITECTURE-TESTING-CICD.md
+38. ARCHITECTURE-API-CONTRACTS.md
+39. ARCHITECTURE-ANALYTICS.md
+40. ARCHITECTURE-ANALYTICS-BI.md
+41. ARCHITECTURE-SEO-PERFORMANCE.md
+42. ARCHITECTURE-SEARCH-UX.md
+43. ARCHITECTURE-CATEGORIES-TAXONOMY.md
+44. ARCHITECTURE-LEGAL-COMPLIANCE.md
+45. ARCHITECTURE-DATA-EXPORT-GDPR.md
+46. ARCHITECTURE-MOBILE-APP.md
+47. ARCHITECTURE-PWA.md
+48. ARCHITECTURE-SUBSCRIPTIONS.md
+49. ARCHITECTURE-GEO-FEATURE.md
+50. ARCHITECTURE-WORDPRESS-IMPORT.md
 
 ## Last Completed
-Merge docs-only של כל ענפי
-arch/docs-*
-המקומיים לתוך
-arch/docs-batch-2
-(20 merges + restore). INDEX שוחזר לגרסת integrity של batch-2.
+Merge docs-* + restore. משתמש ביקש להמשיך תור 50: pass-2 מ-#13.
 
 ## In Progress
-nothing
+batch-2 pass-2 #13 ARCHITECTURE-INVENTORY.md
 
 ## Blocking Issues
-- בקשת המשתמש ל-50 מסמכים נקטעה אחרי פריט 4 (תור 5-50 הושלם אוטומטית קודם)
-- refs/electro.madrasthemes.com-DESIGN.md חסר (D01)
-- BrandsCarousel חסר בקוד
-- השקה: seed/Cardcom/Vercel
-- P0 integrity: DDL-FIXES Escrow; DB-SCHEMA escrow_held; cardcom-payments skill held
+- אסור ליצור ענף docs חדש
+- הרשימה המקורית נקטעה אחרי #4; 5-50 הושלמו ואז pass-2 לאיכות
+- P0: DDL-FIXES Escrow; DB-SCHEMA escrow_held; cardcom-payments skill held
 
 ## Next Task
-P0 מ-
-docs/INDEX.md
-על
-arch/docs-batch-2
-בלבד (בלי ענף חדש)
+#13 INVENTORY → commit+push → #14
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
 
 ## החלטות שהתקבלו אוטומטית
+- **2026-08-12 pass-2 from #13:** תור 50 סומן הושלם, אבל #13/#14 דקים; המשתמש ביקש להמשיך. Pass-2 מ-#13 על אותו `arch/docs-batch-2` בלי ענף חדש.
+
 - **2026-08-12 docs branch freeze:** מעכשיו כל מסמכים רק על `arch/docs-batch-2`. אסור ענפים חדשים. בוצע merge docs-only של כל `arch/docs-*` המקומיים לתוך batch-2 + push יחיד. 16 מסמכי BINDING של תור 50 שוחזרו אחרי ש-merge --theirs דרס אותם. דלף 4 נתיבי non-docs תוקן.
 
 - 2026-08-06: [53] **ה-SQL של הזריעה לא הוחל על הפרודקשן.** הוא נכתב, נבדק
