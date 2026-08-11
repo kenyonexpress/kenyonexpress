@@ -22,6 +22,7 @@ import {
   previewRecurringMoney,
   readRecurringProductFields,
 } from '@/lib/commerce/recurring'
+import { CITIES } from '@/lib/geo/cities'
 import { readWhatsAppEnabled } from '@/lib/supplier-contact'
 import { slugify } from '@/lib/utils/slugify'
 import { type ProductFormState, upsertProduct } from '@/server/actions/admin/products'
@@ -1063,6 +1064,37 @@ export default function ProductForm({
               מוצג רק אם לספק יש מספר נייד. מספר קווי אינו נתמך בוואטסאפ.
             </p>
           </div>
+        </div>
+        {/* Geo. `products.city` has existed since migration 113 (2026-08-10) and
+            is NULL on all 80 rows, so until now the storefront's "קרוב אליי"
+            and the city filter have had only `suppliers.city` to read, which is
+            filled for 5 of 11 suppliers. This is the field that fills it.
+
+            A select and not a text box: distance is resolved through the CITIES
+            table, so a hand-typed "ת"א" would save without error, match no
+            city, and drop the product out of both the filter and near-me
+            silently. The schema refuses an unknown name for the same reason. */}
+        <div>
+          <label htmlFor="prod-city" className="block text-xs font-medium text-gray-700 mb-1">
+            עיר
+          </label>
+          <select
+            id="prod-city"
+            name="city"
+            defaultValue={product?.city ?? ''}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+          >
+            <option value="">ללא עיר</option>
+            {CITIES.map((c) => (
+              <option key={c.slug} value={c.name}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-gray-500">
+            קובע את המרחק ב"קרוב אליי". בלעדיה המוצר נופל לעיר של הספק, ואם גם לה אין עיר הוא לא
+            יופיע בסינון לפי עיר.
+          </p>
         </div>
         {/* VAT and tags. Both are admin-only and neither is shown on a coupon:
             a coupon's money is the prepayment split, not a taxed goods sale,

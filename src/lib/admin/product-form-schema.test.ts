@@ -124,3 +124,39 @@ describe('productSchema: the split pair, in every mode', () => {
     expect(result.success).toBe(false)
   })
 })
+
+/**
+ * Geo. `products.city` landed with migration 113 on 2026-08-10 and every one of
+ * the 80 rows is still NULL, so the storefront's city filter and "קרוב אליי"
+ * have only ever had `suppliers.city` to read, which is filled for 5 of 11
+ * suppliers. This field is what finally fills the product's own.
+ *
+ * It is a closed list rather than free text because distance resolves through
+ * the CITIES table: an unrecognised name would save without error, match no
+ * city, and drop the product out of both the filter and near-me with nothing
+ * anywhere reporting it. That silence is the whole reason for the refinement.
+ */
+describe('productSchema: city', () => {
+  it('accepts a city the geo table knows', () => {
+    const result = productSchema.safeParse(base({ city: 'תל אביב' }))
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.data.city).toBe('תל אביב')
+  })
+
+  it('refuses a city the geo table does not know', () => {
+    expect(errorsAt(base({ city: 'ת"א' }), 'city')).toContain('עיר לא מוכרת')
+    expect(errorsAt(base({ city: 'Tel Aviv' }), 'city')).toContain('עיר לא מוכרת')
+  })
+
+  it('treats the empty selection as no city rather than an invalid one', () => {
+    const result = productSchema.safeParse(base({ city: '' }))
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.data.city).toBeNull()
+  })
+
+  it('stays optional, so every existing product still validates', () => {
+    // All 80 live rows have city NULL. A required field here would have made
+    // every one of them unsaveable through the form.
+    expect(productSchema.safeParse(base()).success).toBe(true)
+  })
+})

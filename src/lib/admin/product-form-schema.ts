@@ -1,3 +1,4 @@
+import { CITIES } from '@/lib/geo/cities'
 import { z } from 'zod'
 
 /**
@@ -95,6 +96,22 @@ export const productSchema = z
     seo_title: z.string().max(70, 'כותרת SEO עד 70 תווים').nullable().optional(),
     seo_description: z.string().max(170, 'תיאור SEO עד 170 תווים').nullable().optional(),
     seo_keywords: z.string().nullable().optional(),
+    // Geo. Migration 113 added city/latitude/longitude to products on
+    // 2026-08-10 and all 80 rows are still NULL, so nothing in the storefront
+    // has ever had a per-product location to read: `productLocation`'s override
+    // branch falls through to the supplier's city every time.
+    //
+    // The city is chosen from `CITIES`, not typed free-hand, because the whole
+    // geo stack resolves distance through that table. A free-text "ת"א" would
+    // save fine, match no city, and silently drop the product out of both the
+    // city filter and near-me with no error anywhere.
+    city: z
+      .string()
+      .trim()
+      .refine((v) => v === '' || CITIES.some((c) => c.name === v), 'עיר לא מוכרת')
+      .transform((v) => (v === '' ? null : v))
+      .nullable()
+      .optional(),
   })
   .superRefine((data, ctx) => {
     // A coupon cannot be sold without a validity period (C7). Checked here
