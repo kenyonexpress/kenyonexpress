@@ -188,3 +188,4 @@ Lookup ב-`redirects.ts` (מפה + TTL). סטטוס 301 או 410.
 |---|---|
 | 2026-08-11 | hreflang, LocalBusiness, 380/768, seo_redirects |
 | 2026-08-12 | batch-2 #41: BINDING על arch/docs-batch-2; קישור PRODUCTION-OPS |
+| 2026-08-12 | batch-2 #41 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
