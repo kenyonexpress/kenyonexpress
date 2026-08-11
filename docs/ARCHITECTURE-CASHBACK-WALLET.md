@@ -115,3 +115,15 @@ docs/ARCHITECTURE-WALLET-LEDGER.md
 |---|---|
 | 2026-08-03 | צבירה + מימוש בקנייה הבאה; ארנק פנימי בלבד |
 | 2026-08-12 | batch-2 #18: רענון BINDING על `arch/docs-batch-2`; No Escrow מאושר |
+| 2026-08-12 | batch-2 #18 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
+
+## 8. Pass-2 flow (earn / spend)
+
+```text
+paid → credit user from cashback_reserve (order:{id}:cashback)
+checkout → apply_wallet_ils ≤ balance
+finalize → debit user to platform:revenue (order:{id}:spend)
+```
+
+אין cash-out. אין P2P. קופון: רק על coupon_price באתר.
+
