@@ -31,9 +31,16 @@ export const vendorFormSchema = z.object({
   // distinct rates of their own (30/25/15) -- the supplier-level number was
   // both unused by settlement and wrong.
   //
-  // `vendors.commission_rate` was dropped from the database by
-  // migrations/pending/112_drop_legacy_percent_columns.sql on 2026-08-12. The
-  // old values are archived in public.legacy_percent_archive_112.
+  // `vendors.commission_rate` STILL EXISTS in the database. It is dropped by
+  // migrations/pending/112_drop_legacy_percent_columns.sql, which is WRITTEN
+  // AND UNAPPLIED; the archive table it creates,
+  // public.legacy_percent_archive_112, does not exist yet either.
+  //
+  // Read off information_schema on 2026-08-12, after this comment briefly
+  // claimed the drop had already happened. Nothing is wrong with 112; the
+  // claim was just ahead of it. Stating it in the past tense is the kind of
+  // error that gets the archival step skipped, because the next reader
+  // believes the values are already saved somewhere.
   logo_url: z.string().nullable().optional(),
   status: vendorStatusSchema.default('pending'),
 })
