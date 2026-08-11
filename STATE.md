@@ -14,27 +14,20 @@ docs/DOCS-TEMPLATE-BINDING.md
 .
 
 ## המשך מ:
-כלל העבודה נעול. תור 50 pass-2 הושלם. הבא לפי בקשת משתמש הבאה, או P0 מ-
-docs/INDEX.md
-, על
+נכתב מחדש
+docs/ARCHITECTURE-CHECKOUT-FLOW.md
+(מפת מצבים מלאה + תבנית חובה). ממתין למסמך הבא על
 arch/docs-batch-2
-בלבד.
+.
 
 ## Last Completed
-נעילת כלל קבוע +
-docs/DOCS-TEMPLATE-BINDING.md
-.
+ARCHITECTURE-CHECKOUT-FLOW.md: cart→coupon_redeemed, כל מעבר/טריגר/כישלון + חלופות/DB/פתוחות.
 
 ## In Progress
 nothing
 
-## Blocking Issues
-- אסור ליצור ענף docs חדש
-- P0: DDL-FIXES Escrow; DB-SCHEMA escrow_held; cardcom-payments skill held
-
 ## Next Task
-ממתין להוראת מסמך/תור הבא על
-arch/docs-batch-2
+מסמך docs הבא לפי הוראת משתמש על arch/docs-batch-2
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
