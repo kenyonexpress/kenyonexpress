@@ -10,10 +10,12 @@ kenyonexpress
 .
 
 ## Last Completed
-תור 10 מסמכי lifecycle/channels נסגר (commit נפרד לכל קובץ + INDEX). ראה History 2026-08-12. `docs/INDEX.md` §0.1 מקשר את החבילה.
+שכתוב BINDING של
+docs/ARCHITECTURE-CHECKOUT-FLOW.md
+: מפת מצבים cart→coupon_redeemed, enum order_status מלא, Low Profile, webhook `?s=`, idempotency `lp:{client_ref}`, snapshot platform_percent, כשלי timeout/double-charge/webhook כפול, סריקה→redeemed, No Escrow.
 
 ## In Progress
-nothing (closed queue)
+nothing
 
 ## Blocking Issues
 - refs/electro.madrasthemes.com-DESIGN.md חסר (D01); baseline = DESIGN-MEASURED.md + ELECTRO_HERO
@@ -29,6 +31,7 @@ nothing (closed queue)
 /Users/ofir/kenyonexpress-web/ke-arch
 
 ## החלטות שהתקבלו אוטומטית
+- **2026-08-12 checkout flow rewrite:** מסמך CHECKOUT-FLOW מיושר לקוד חי ב-ke-arch: webhook מעבד inline (GetLpResult + finalize) עם dedup ב-`payment_webhook_events`; אין HMAC על גוף Cardcom; No Escrow מפורש; `coupon_redeemed` = voucher.status `redeemed` + settlement_status על השורה (לא ערך ב-order_status).
 - **2026-08-12 recurring docs split:** `ARCHITECTURE-RECURRING-SUBSCRIPTIONS.md` = product-facing; `ARCHITECTURE-SUBSCRIPTIONS.md` נשאר מקור טכני SU*. אין סתירה מכוונת.
 - **2026-08-12 wp-backup path:** מקור WXR לקריאה בלבד תחת `kenyonexpress/data-import/wp-backup/` (לא ב-ke-arch). חוזה הייבוא ב-`ARCHITECTURE-WORDPRESS-IMPORT.md`.
 - **2026-08-12 checkout status labels:** תוויות מוצר `draft` / `pending_payment` / `expired` אינן ערכי `order_status` ב-007. מיפוי מחייב ב-`ARCHITECTURE-CHECKOUT-FLOW.md`: draft=לפני INSERT; pending_payment→`pending`; expired→`cancelled`; נשמר גם `partially_fulfilled`.

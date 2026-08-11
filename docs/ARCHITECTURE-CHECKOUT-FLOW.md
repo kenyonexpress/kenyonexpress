@@ -1,6 +1,6 @@
 # ארכיטקטורה: זרימת Checkout
 
-מכונת מצבי הזמנה, snapshot של `platform_percent`, מסלולי קופון/פיזי (No Escrow), סליקת Cardcom, QStash, מיזוג עגלת אורח, תרחישי כשל, ו-ERD.
+מפת מצבים מלאה של הזמנה מ-cart עד `coupon_redeemed`, כולל Cardcom Low Profile, webhook signature, idempotency key, snapshot של `platform_percent` על `order_items`, מקרי כשל, ומה קורה בסריקת קופון.
 
 Status: **BINDING** · עודכן: 2026-08-12  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
@@ -10,23 +10,17 @@ Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 
 ```
 docs/CARDCOM-ARCHITECTURE.md
-docs/CHECKOUT-OPTIMIZATION.md
-docs/GUEST-VS-MEMBER-STRATEGY.md
+docs/ARCHITECTURE-COUPON-LIFECYCLE.md
+docs/ARCHITECTURE-COUPON-REDEMPTION.md
 docs/ARCHITECTURE-PRICING-RULES.md
-docs/CONTRADICTIONS.md
-docs/BUSINESS-MODEL.md
-docs/ARCHITECTURE-COMMERCE.md
-docs/ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md
 docs/ARCHITECTURE-REFUNDS-DISPUTES.md
-docs/PAYOUT-ARCHITECTURE.md
 docs/ARCHITECTURE-PAYOUT-MECHANISM.md
 docs/ARCHITECTURE-NOTIFICATIONS.md
-docs/ARCHITECTURE-API-CONTRACTS.md
-docs/INCIDENT-PLAYBOOKS.md
-docs/GAPS-CODE-VS-DOCS.md
+docs/CONTRADICTIONS.md
+docs/BUSINESS-MODEL.md
 ```
 
-מודל כסף מחייב: **No Escrow** (C11א). קופון: כל תשלום האתר לפלטפורמה; יתרה בבית העסק. פיזי: חיוב מלא + פיצול ledger לפי snapshot של `platform_percent`. סכומים פנימיים באגורות integer; תצוגה ₪.
+מודל כסף מחייב: **No Escrow** (C11א). אין held/נאמן/J5. קופון: מקדמה באתר = הכנסת פלטפורמה; יתרה בבית העסק מחוץ לפלטפורמה; אין payout פלטפורמה→ספק על קופון. פיזי: חיוב מלא + ledger לפי snapshot של `platform_percent`. סכומים פנימיים באגורות integer.
 
 ---
 
@@ -34,41 +28,57 @@ docs/GAPS-CODE-VS-DOCS.md
 
 | # | הכרעה |
 |---|---|
-| CF1 | מקור אמת לתשלום = `GetLpResult` (או מקביל legacy Interface). Return URL ו-webhook הם טריגר/UI בלבד. |
-| CF2 | `CHECKOUT_ENABLED=false` חוסם יצירת חיובים חדשים; finalize של חיובים שכבר הצליחו ממשיך. |
-| CF3 | אין אחסון PAN/CVV. SAQ-A בלבד דרך Low Profile. |
-| CF4 | `platform_percent` (+ `supplier_split_percent`) מצולמים ל-`order_items` ברכישה; שינוי במוצר לא משנה הזמנות ישנות (C10, P7). |
-| CF5 | קופון: `supplier_due` / payout מהפלטפורמה = 0. אין held / J5 / נאמן. |
-| CF6 | פיזי: פיצול ledger מיידי ב-finalize; payout בנקאי נפרד (T+3, מינימום). |
-| CF7 | שמות סטטוס ב-DB לפי enum חי (`007`); תוויות מוצר (`draft` / `pending_payment` / `expired`) ממופות בסעיף 1.1. |
-| CF8 | Webhook Cardcom: ack מהיר + עיבוד כבד ב-QStash (או waitUntil); idempotency על LowProfileId. |
-| CF9 | לפני LP לקופון: זהות חובה; מיזוג עגלת אורח אחרי login דרך `fn_merge_guest_cart`. |
-| CF10 | אגורות integer בכל חישוב כסף פנימי; Cardcom מקבל סכום בשקלים עשרוניים מאותו מספר. |
+| CF1 | מקור אמת לתשלום = `GetLpResult` (שרת↔Cardcom). Return URL ו-webhook הם טריגר/UI בלבד. |
+| CF2 | `CHECKOUT_ENABLED=false` חוסם יצירת Low Profile חדש; finalize של חיוב שכבר הצליח ממשיך. |
+| CF3 | אין אחסון PAN/CVV. SAQ-A דרך Low Profile מתארח. |
+| CF4 | `platform_percent` (+ `supplier_split_percent`) מצולמים ל-`order_items` ב-`beginCheckout`. שינוי מוצר לא משנה הזמנות ישנות. |
+| CF5 | קופון: אין Escrow. אחרי `paid` השורה `platform_settled`; יתרה בעסק מחוץ למערכת. |
+| CF6 | פיזי: פיצול ledger ב-finalize; payout בנקאי נפרד (לא בתוך checkout). |
+| CF7 | ערכי `order_status` ב-DB = enum מ-`007_orders_schema.sql` בלבד. תוויות מוצר (`draft` / `pending_payment` / `expired`) ממופות בסעיף 1. |
+| CF8 | Webhook Cardcom: אין HMAC על הגוף. אותנטיות = `?s=<CARDCOM_WEBHOOK_SECRET>` ב-URL + אימות חוזר ב-`GetLpResult`. |
+| CF9 | Idempotency מפתח תשלום: `lp:{client_ref}` על `payments.idempotency_key`. Finalize: `paid_at` guard. |
+| CF10 | הנפקת voucher רק אחרי `paid`. מימוש = `redeemed` (לא `used` בכתיבה חדשה). |
 
 ---
 
-## 1. מכונת מצבי הזמנה
+## 1. טבלת enum מלאה: `order_status`
 
-### 1.1 מיפוי תוויות מוצר ↔ enum סכמה
-
-אודיט READ-ONLY: `supabase/migrations/007_orders_schema.sql` (מחליף את enum של `001`).
+מקור: `supabase/migrations/007_orders_schema.sql` (מחליף את enum של `001`).
 
 ```text
 public.order_status =
-  pending | paid | partially_fulfilled | fulfilled | cancelled | refunded
+  pending
+  | paid
+  | partially_fulfilled
+  | fulfilled
+  | cancelled
+  | refunded
 ```
 
 ברירת מחדל בעמודה: `pending`.
 
-| תווית במפרט מוצר | ערך ב-DB (`order_status`) | הערה |
+| ערך | משמעות | טרמינלי? | מי כותב |
+|---|---|---|---|
+| `pending` | הזמנה נוצרה; ממתין לאימות תשלום / expiry | לא | `beginCheckout` |
+| `paid` | `GetLpResult` OK + `finalizeOrder` | לא | `finalizeOrder` בלבד |
+| `partially_fulfilled` | חלק מפריטי פיזי התקדמו | לא | שרת / ספק (אגרגציית פריטים) |
+| `fulfilled` | כל השורות במצב סופי לפי מדיניות | לא (עד refund) | שרת |
+| `cancelled` | בוטל לפני תשלום / פקיעת `expires_at` | כן | cron / server |
+| `refunded` | החזר מאושר מול Cardcom | כן | מסלול refund |
+
+### 1.1 מיפוי תוויות מוצר ↔ enum
+
+| תווית במפרט מוצר | ערך ב-DB | הערה |
 |---|---|---|
-| `draft` | **אין ערך** | שלב לפני INSERT להזמנה (עגלה / validateCart). |
-| `pending_payment` | `pending` | הזמנה נוצרה; ממתין ל-Cardcom / finalize. |
-| `paid` | `paid` | אחרי GetLpResult מוצלח + finalize אטומי. |
-| `fulfilled` | `fulfilled` | כל השורות במצב סופי לפי מדיניות. |
-| (ביניים) | `partially_fulfilled` | חלק מפריטי פיזי התקדמו. |
-| `expired` | `cancelled` | אין `expired` ב-enum; פקיעת `expires_at` → `cancelled`. |
-| `refunded` | `refunded` | אחרי מסלול החזר + אישור Cardcom. |
+| `draft` | **אין ערך** | לפני INSERT (עגלה / validate) |
+| `pending_payment` | `pending` | אחרי יצירת הזמנה, לפני finalize |
+| `paid` | `paid` | אחרי GetLpResult + finalize |
+| `fulfilled` | `fulfilled` | כל הפריטים סופיים |
+| (ביניים) | `partially_fulfilled` | נשמר ב-enum; לא מופיע תמיד במפרט מוצר |
+| `expired` | `cancelled` | אין `expired` ב-enum |
+| `refunded` | `refunded` | אחרי refund path |
+
+### 1.2 Enumים נלווים (לא `order_status`)
 
 `order_item_status` (007):
 
@@ -76,283 +86,347 @@ public.order_status =
 pending | issued | shipped | delivered | cancelled | refunded
 ```
 
-מכונת תשלום:
+הערה: אין `redeemed` ב-`order_item_status`. אחרי מימוש קופון: `item_status` נשאר `issued`; `settlement_status` על השורה → `redeemed`.
+
+`payment_status` (מכונת תשלום בקוד):
 
 ```text
 initiated → redirected → succeeded | failed | cancelled
-succeeded → refunded (אחרי שורת refund מאושרת)
+succeeded → refunded
 ```
 
-### 1.2 דיאגרמת מעברים (order)
+סטטוס voucher (קנוני בפרוד, ראה COUPON-LIFECYCLE):
+
+```text
+issued → redeemed | expired | refunded
+```
+
+(כתיבה חדשה: `redeemed`, לא `used`.)
+
+---
+
+## 2. מפת מצבים מקצה לקצה: cart → coupon_redeemed
+
+```text
+[browse / guest cart]
+        │ addToCart (session cookie או profile)
+        ▼
+   cart (items חיים מהמוצר; אין מחיר קבוע בעגלה)
+        │ login אם צריך + fn_merge_guest_cart
+        │ validateCart
+        ▼
+   beginCheckout / submitCheckout
+        │ CHECKOUT_ENABLED, auth, rate limit
+        │ snapshot platform_percent → order_items
+        │ orders.status = pending
+        │ payments: idempotency_key = lp:{client_ref}
+        ▼
+   payment initiated
+        │ Create Low Profile (Interface/LowProfile.aspx)
+        │ IndicatorUrl = .../webhook?s=<secret>
+        ▼
+   payment redirected  ──► redirect לדף Cardcom
+        │
+        ├─ Return URL (/checkout/return) ──► reconcileOrderReturn
+        │                                         │
+        └─ IndicatorUrl POST ─────────────────────┤
+                                                  ▼
+                                    secret ?s= OK?
+                                    INSERT payment_webhook_events
+                                    GetLpResult (מקור אמת)
+                                    amount match (אגורות)
+                                                  ▼
+                                         finalizeOrder
+                              orders.status = paid, paid_at set
+                              vouchers status = issued (× quantity)
+                              order_items: platform_settled + item_status=issued
+                              (פיזי: split_executed + ledger)
+                              clear cart
+                                                  ▼
+                              לקוח מציג QR / קוד באזור אישי
+                                                  ▼
+                              ספק: POST /api/supplier/vouchers/redeem
+                              verify QR HMAC (אם payload)
+                              redeem_voucher RPC (CAS issued→redeemed)
+                                                  ▼
+                              voucher.status = redeemed  ← סוף מסלול קופון
+                              settlement_status = redeemed על השורה
+                              (יתרה נגבית בבית העסק, מחוץ לפלטפורמה)
+```
+
+### 2.1 דיאגרמת מעברי `order_status`
 
 ```text
 [cart / draft לוגי]
-        │ submitCheckout (שרת)
+        │ beginCheckout
         ▼
-     pending  ──(expires_at / ביטול לפני תשלום)──► cancelled
+     pending ──(expires_at / ביטול לפני חיוב)──► cancelled
         │
-        │ GetLpResult OK + finalize
+        │ GetLpResult OK + finalizeOrder
         ▼
-       paid ──(חלק פיזי)──► partially_fulfilled ──(הכל סופי)──► fulfilled
-        │                         │                              │
-        └─────────────┬───────────┴──────────────────────────────┘
-                      │ refund path + Cardcom confirm
+       paid ──(חלק פיזי)──► partially_fulfilled ──► fulfilled
+        │                         │                    │
+        └─────────────┬───────────┴────────────────────┘
+                      │ refund + Cardcom confirm
                       ▼
                    refunded
 ```
 
-### 1.3 טבלת מעברים מלאה
+מעברים אסורים: `paid`/`fulfilled`/`refunded`→`pending`; `cancelled`→`paid`; `refunded`→כל מצב; סימון `paid` מ-query string בלי GetLpResult.
+
+### 2.2 טבלת מעברים
 
 | מ | אל | טריגר | מי | Idempotency | אסור |
 |---|---|---|---|---|---|
-| (אין שורה) | `pending` | `submitCheckout` אחרי validate + זהות (+ כתובת אם פיזי) | Next server | מפתח payment; לא LP כפול לאותו attempt | יצירה כש-`CHECKOUT_ENABLED=false`; סימון `paid` כאן |
-| `pending` | `paid` | GetLpResult OK + finalize | webhook / return / cron / QStash worker | UNIQUE tx id / LP id; UPDATE רק מ-`pending` | paid מ-query string בלבד |
-| `pending` | `cancelled` | `expires_at` או ביטול לפני חיוב | cron / server | UPDATE … WHERE `pending` | ביטול אחרי `paid` בלי refund |
-| `pending` | (payment failed) | דחייה Cardcom אחרי אימות | שרת | payment→`failed`; order נשאר `pending` עד expiry | order=`refunded` בלי חיוב |
-| `paid` | `partially_fulfilled` | חלק פריטי פיזי התקדמו | server / supplier | אגרגציית `item_status` | דילוג ל-refunded בלי Cardcom |
-| `paid` / partial | `fulfilled` | כל השורות טרמינליות | server | אגרגציה דטרמיניסטית | `fulfilled`→`pending` |
-| `paid` / partial / `fulfilled` | `refunded` | REFUNDS + Cardcom confirm | admin / legal | מפתח refund יציב | refund מ-`cancelled` בלי payment |
-| אחר | * | אין | אין | אין | מעבר לא חוקי |
-
-מעברים אסורים לטסטים: `paid`/`fulfilled`/`refunded`→`pending`; `cancelled`→`paid`; `refunded`→כל מצב; `paid` בלי GetLpResult.
+| (אין) | `pending` | `beginCheckout` אחרי validate + זהות | Next server | `lp:{client_ref}` | יצירה כש-checkout כבוי; `paid` כאן |
+| `pending` | `paid` | GetLpResult OK + finalize | webhook ו/או return reconcile | `paid_at` IS NULL; payment status ∈ initiated/redirected | paid מ-return בלבד |
+| `pending` | `cancelled` | expiry / ביטול לפני חיוב | cron / server | UPDATE WHERE pending | ביטול אחרי paid בלי refund |
+| `paid` | `partially_fulfilled` | חלק פריטי פיזי התקדמו | server | אגרגציית item_status | דילוג ל-refunded בלי Cardcom |
+| `paid` / partial | `fulfilled` | כל השורות סופיות | server | אגרגציה | חזרה ל-pending |
+| `paid` / partial / `fulfilled` | `refunded` | refund path | admin/legal | מפתח refund יציב | refund מ-cancelled בלי payment |
 
 ---
 
-## 2. Snapshot של `platform_percent` על `order_items`
+## 3. Snapshot של `platform_percent` על `order_items`
 
-### 2.1 למה
+### 3.1 למה
 
-C10 / P7: אחרי רכישה האחוזים והסכומים על השורה קבועים. שינוי באדמין חל רק על הזמנות עתידיות. דוחות/payout/refund מול מה שנקנה.
+C10: אחרי רכישה האחוזים והסכומים על השורה קבועים. דוחות, payout (פיזי), ו-refund נשענים על מה שנקנה, לא על המוצר החי.
 
-### 2.2 איך
+### 3.2 מתי ואיך
 
-ב-`submitCheckout`, לפני redirect:
+ב-`beginCheckout`, לפני יצירת Low Profile:
 
-| שדה | מקור |
+| שדה (לוגי / קוד) | מקור |
 |---|---|
-| `platform_percent` | `products.platform_percent` (חובה; אין default) |
-| `supplier_split_percent` | משלים ל-100 |
-| `charged_on_site_*` | קופון: `coupon_price`; פיזי: מחיר מלא (אגורות) |
-| `platform_fee_*` | קופון: = on-site; פיזי: אחוז מהחיוב |
-| `supplier_due_*` | קופון: **0**; פיזי: charged - fee |
-| `balance_due_at_business_*` | קופון: face - coupon; פיזי: 0 |
+| `platform_percent` / `commission_percent_snapshot` | `products.platform_percent` (חובה; אין default) |
+| `supplier_split_percent` | משלים ל-100 עם platform |
+| סכום חיוב באתר | קופון: `coupon_price`; פיזי: מחיר מלא (אגורות) |
+| עמלת פלטפורמה | לפי אחוז ה-snapshot על הסכום שנגבה באתר |
+| `supplier_due` (קופון) | **0** (No Escrow; אין תשלום פלטפורמה→ספק) |
+| יתרה בעסק (קופון) | face − coupon; מחוץ לפלטפורמה |
 
-Finalize לא קורא מחדש למוצר החי לפיצול כסף.
+`buildOrderItemSnapshot` / settlement בשרת בלבד. הלקוח שולח ids ו-consent, לא מחירים.
 
-### 2.3 שינוי אחוז אחרי רכישה
-
-הזמנות ישנות לא מתעדכנות. הזמנת `pending` עם LP פתוח לא מרעננת אחוז (מונע amount_mismatch).
+Finalize **לא** קורא מחדש למוצר החי לפיצול כסף. שינוי אחוז באדמין חל רק על הזמנות עתידיות. הזמנת `pending` עם LP פתוח לא מרעננת אחוז (מונע amount_mismatch).
 
 ---
 
-## 3. קופון: No Escrow
+## 4. Cardcom Low Profile
+
+קוד חי: legacy form-urlencoded על
+
+```
+/Interface/LowProfile.aspx
+/Interface/GetLpResult.aspx
+```
+
+(לא v11 JSON כמימוש נוכחי; מחקר v11 ב-`CARDCOM-ARCHITECTURE.md`.)
+
+### 4.1 רצף יצירה
+
+1. שערי `CHECKOUT_ENABLED`, auth, validateCart, כתובת אם פיזי.  
+2. INSERT `orders` ב-`pending` + שורות `order_items` עם snapshots.  
+3. אם `cardCharge === 0` (ארנק מכסה הכל): `finalizeOrder` מיד, בלי LP.  
+4. INSERT `payments` (`kind=charge`, `status=initiated`, `idempotency_key=lp:{client_ref}`).  
+5. `createLowProfile`: סכום מאגורות→ILS עשרוני, Success/Failed redirect, IndicatorUrl עם `?s=`.  
+6. שמירת `cardcom_low_profile_id`, `status=redirected`, `redirect_url` ב-`raw_response`.  
+7. Redirect לדף המתארח.
+
+Operation: ChargeOnly / יצירת טוקן לפי `save_card`. **J5 אסור.**
+
+### 4.2 מקור אמת
+
+| ערוץ | תפקיד |
+|---|---|
+| Success/Failed Redirect | UI בלבד; מפעיל `reconcileOrderReturn` |
+| IndicatorUrl (webhook) | טריגר שרת; לא סומכים על גוף ה-POST לסכום/סטטוס |
+| `GetLpResult` | **מקור האמת היחיד** לסכום, הצלחה, transaction id, token |
+
+---
+
+## 5. Webhook signature
+
+Cardcom **אינו חותם** את ה-callback (אין HMAC / signature header על הגוף).
+
+שכבות האותנטיות בפועל:
+
+| שכבה | מנגנון | קוד |
+|---|---|---|
+| 1 | סוד בלתי-ניחוש ב-URL: `?s=<CARDCOM_WEBHOOK_SECRET>` | השוואה ב-`timingSafeEqual` |
+| 2 | אימות חוזר שרת↔Cardcom: `GetLpResult` לפי `LowProfileCode` | `verifyLowProfile` |
+| 3 | התאמת סכום: `verified.amountAgorot === round(payment.amount_ils * 100)` | mismatch → audit + **לא** finalize |
+| 4 | Dedup אירועים | `payment_webhook_events` UNIQUE `(provider, external_event_id)` |
+
+`signature_valid` בטבלת האירועים = תוצאת בדיקת `?s=`, לא חתימת גוף.
+
+אם הסוד שגוי או ה-payload לא parseable: עדיין 200 (מונע retry ספאם), בלי finalize.
+
+`external_event_id` טיפוסי:
+
+```text
+{lowprofilecode}:{InternalDealNumber|na}
+```
+
+---
+
+## 6. Idempotency key
+
+| שכבה | מפתח | התנהגות |
+|---|---|---|
+| יצירת תשלום | `payments.idempotency_key = lp:{client_ref}` | replay של אותו `client_ref`: מחזיר redirect קיים / paid / IDEMPOTENT_REPLAY |
+| אירוע webhook | `(provider, external_event_id)` UNIQUE | INSERT כפול → 200 replay, בלי עיבוד חוזר |
+| Finalize הזמנה | `orders.paid_at` לא null | `finalizeOrder` מחזיר `{ ok: true, replay: true }` |
+| עדכון payment ל-succeeded | UPDATE … WHERE status IN (initiated, redirected) | כפילות לא דורסת succeeded |
+| הנפקת voucher | ספירת vouchers ל-`order_item_id` ≥ quantity | לא מנפיק מעבר לכמות |
+| Wallet spend/cashback | `order:{id}:spend` / `order:{id}:cashback` | RPC ארנק idempotent |
+| מימוש קופון | RPC `redeem_voucher` + optional `idempotency_key` | CAS `issued`→`redeemed`; כבר מומש → `already_redeemed` / replayed |
+
+כלל: retry של לקוח / Cardcom / return+webhook במקביל **לא** יוצרים חיוב כפול. LP חדש רק אחרי failed/cancel מפורש ומפתח `client_ref` חדש.
+
+---
+
+## 7. No Escrow (קופון) ופיזי בקצרה
+
+### 7.1 קופון
 
 | כלל | פירוט |
 |---|---|
-| חיוב | `coupon_price` באגורות → Cardcom |
-| כסף באתר | **100% לפלטפורמה** |
-| יתרה | face - coupon בבית העסק |
-| Payout | **0** לספק מהפלטפורמה |
-| אסור | Escrow, J5, held, נאמן |
+| חיוב באתר | `coupon_price` באגורות |
+| כסף באתר | 100% לפלטפורמה ב-`paid` |
+| יתרה | face − coupon בבית העסק (מחוץ למערכת) |
+| Payout לספק | **0** מהפלטפורמה |
+| אחרי finalize | `settlement_status=platform_settled`, vouchers `issued` |
+| אסור | Escrow, held לספק, J5, נאמן, שחרור כסף אחרי סריקה |
 
-DB מינימום: order/items snapshots, payment, vouchers `issued`, ledger platform בלבד, redemption ללא payout.
-
-פירוט מימוש:
-`docs/ARCHITECTURE-COUPON-LIFECYCLE.md`
-,
-`docs/ARCHITECTURE-COUPON-REDEMPTION.md`.
-
----
-
-## 4. פיזי: פיצול מיידי + הודעה לספק
+### 7.2 פיזי
 
 ```text
 platform_fee = round(charged * platform_percent_snapshot / 100)
 supplier_due = charged - platform_fee
 ```
 
-Finalize: order `paid` + ledger payable + settlement event; **אין** העברה בנקאית מיידית. Outbox: `order_paid`, `supplier_sale`.
+Finalize: `split_executed` + רישום ledger; העברה בנקאית = מסלול payout נפרד.
 
 ---
 
-## 5. Cardcom + webhook + QStash + idempotency
+## 8. מה קורה כשקופון נסרק
 
-### 5.1 Low Profile
-
-1. `CHECKOUT_ENABLED`  
-2. validateCart + order `pending` + snapshots  
-3. payment `initiated`  
-4. Low Profile Create (legacy Interface בקוד חי; v11 במחקר)  
-5. `ReturnValue` = מזהה פנימי  
-6. IndicatorUrl עם `?s=<secret>`  
-7. שמירת LowProfileId → `redirected` → redirect  
-
-Operation: ChargeOnly / Do3DS. **J5 אסור**.
-
-### 5.2 מקור אמת
-
-| ערוץ | תפקיד |
-|---|---|
-| Return URL | UI בלבד |
-| IndicatorUrl | טריגר; אין HMAC על הגוף |
-| `GetLpResult` | **מקור האמת היחיד** |
-
-### 5.3 Webhook → QStash → finalize
+קצה: `POST /api/supplier/vouchers/redeem`  
+עבודה אטומית: RPC `redeem_voucher` (SECURITY DEFINER; `supplier_id` מ-`auth.uid()` / membership, לא מהבקשה).
 
 ```text
-Cardcom POST IndicatorUrl
-  → בדוק ?s=<secret>
-  → חלץ LowProfileId
-  → INSERT payment_webhook_events ON CONFLICT DO NOTHING
-  → אם שורה חדשה: publish QStash job { lowProfileId, attempt }
-  → החזר 200 מיד (< שניות)
-
-QStash worker /api/jobs/cardcom-finalize
-  → GetLpResult
-  → התאם סכום (אגורות↔ILS) ומזהה הזמנה
-  → BEGIN finalize אטומי (paid / failed)
-  → COMMIT
-  → כשל 5xx → QStash retry (max N, backoff)
-  → אחרי max → DLQ + Sentry P1
+ספק מחובר (JWT)
+  → qr_payload? verify HMAC (KEV1) קודם; חתימה לא תקינה → not_found + log invalid_signature
+  → או code ידני (normalize)
+  → redeem_voucher(p_code, p_scan_method, p_idempotency_key)
+       SELECT … FOR UPDATE
+       רק status=issued ושייך לספק הקורא
+       UPDATE status='redeemed', redeemed_at=now()
+       INSERT voucher_redemptions / audit
+  → markOrderItemRedeemed: settlement_status='redeemed'
+       (item_status נשאר issued; אין ערך redeemed ב-order_item_status)
+  → outbox: voucher_redeemed (התראות)
 ```
 
-| מנגנון | כלל |
-|---|---|
-| Dedupe webhook | UNIQUE על LowProfileId (או provider+external_id) |
-| Dedupe finalize | UPDATE order WHERE status=`pending`; UNIQUE cardcom_transaction_id |
-| QStash | חתימת Upstash על ה-job; `dedupe_id` = `cardcom-finalize:{lpId}` |
-| בלי QStash (גשר) | `waitUntil` / עיבוד inline קצר; אותו חוזה idempotency |
-| Return לפני webhook | אותה GetLpResult + finalize; QStash כפול = no-op |
-| Cron | intents `redirected` מעל 5 דק׳ → GetLpResult; מעל שעה → expire path |
+| תוצאה | HTTP | משמעות |
+|---|---|---|
+| `success` | 200 | הועבר ל-`redeemed` |
+| `already_redeemed` | 409 | כבר מומש (כולל race / retry) |
+| `expired` / `cancelled` / `refunded` | 409 | לא ניתן למימוש |
+| `not_found` | 404 | קוד לא קיים / wrong shop (תשובה אחידה) |
+| `unauthorized` | 401 | אין session ספק |
+| `rate_limited` | 429 | יותר מדי סריקות |
 
-### 5.4 Finalize → paid
+כסף בסריקה: הפלטפורמה **לא** מעבירה כסף לספק. המסך מציג ללקוח/ספק את יתרת העסק (`remaining_amount_due_agorot`) לתיעוד גבייה מקומית בלבד.
 
-טרנזקציה אחת: payment succeeded, order paid, vouchers / ledger פיזי, wallet spend/cashback, outbox, ניקוי עגלה.
+אחרי `redeemed`: אין unwind אוטומטי ל-`issued`; refund לכרטיס חסום לשוברים שכבר מומשו (ראה REFUNDS).
 
-### 5.5 Refund / secrets / PAN
-
-מצביע:
-`docs/ARCHITECTURE-REFUNDS-DISPUTES.md`.
-Secrets: Terminal, ApiName, ApiPassword (זיכויים בלבד), WEBHOOK_SECRET, `CHECKOUT_ENABLED`. אין PAN/CVV.
+פירוט מלא: `docs/ARCHITECTURE-COUPON-LIFECYCLE.md`.
 
 ---
 
-## 6. מיזוג עגלת אורח (Guest Cart)
+## 9. מקרי כשל
+
+| קוד | סימפטום | התנהגות נדרשת |
+|---|---|---|
+| `checkout_disabled` | `CHECKOUT_ENABLED=false` | אין LP חדש; באנר למשתמש |
+| `cart_invalid` | מחיר/מלאי השתנו | רענון עגלה; אין LP |
+| `auth_required` | אורח בלחיצת תשלום | login; מיזוג עגלה; עגלה נשמרת |
+| `lp_create_failed` | Cardcom/env | payment→failed; order נשאר pending/cancellable |
+| `user_cancel` / `3ds_fail` | FailedRedirect | return failed; LP חדש עם client_ref חדש |
+| `timeout` (משתמש חוזר לפני webhook) | return בלי תוצאה סופית | `reconcileOrderReturn` קורא GetLpResult; מסך "בודקים תשלום" אם עדיין pending |
+| `timeout` (GetLpResult / Cardcom down) | verify נכשל זמנית | לא paid; cron reconcile על redirected מעל N דק׳; kill switch אם ממושך |
+| `amount_mismatch` | GetLpResult ≠ payment | **לא** finalize; audit P1; order נשאר pending |
+| `webhook_dup` | Cardcom שולח שוב | UNIQUE על external_event_id → 200 replay; finalize no-op דרך paid_at |
+| `double_charge` (חשש) | לחיצה כפולה / שני טאבים | אותו `client_ref` → אותו payment/redirect; לא שני LP |
+| `double_charge` (שני client_ref) | באג לקוח | שני pending אפשריים; רק מה ששולם ב-Cardcom עובר paid; השני expiry→cancelled; reconcile ידני אם שני חיובים אמיתיים |
+| `return_and_webhook_race` | שני ערוצים במקביל | שניהם קוראים GetLpResult + finalize; השני replay בטוח |
+| `paid_no_voucher` | paid בלי הנפקה מלאה | reconcile job משלים לפי quantity; לא מבטל paid |
+| `scan_race` | שני סורקים | UPDATE אחד מצליח; השני already_redeemed |
+| `cardcom_down` | timeouts רחבים | CHECKOUT_ENABLED off + playbook INCIDENT |
+
+אסור מוחלט: לסמן `paid` מפרמטרי Return URL בלי GetLpResult.
+
+---
+
+## 10. מיזוג עגלת אורח (רקע לכניסה ל-checkout)
 
 | כלל | פירוט |
 |---|---|
-| מזהה אורח | cookie `ke_cart_sid` (httpOnly, 30d) |
-| לפני login | עגלה ב-`carts.session_id`; בלי מחירים קבועים |
-| אחרי login | RPC `fn_merge_guest_cart(p_session_id)` עם advisory lock |
-| כמויות | union שורות; אותן product/variant → סכימה (cap 99) |
-| מחיר | תמיד מהמוצר החי בקופה, לא מזיכרון אורח |
-| מלאי לא תקין | drop / clamp; לא חוסם login |
-| Idempotency | מחיקת עגלת האורח באותה TX; replay = no-op |
-| קופון | לפני LP: חשבון חובה (G3 ב-GUEST-VS-MEMBER) |
+| מזהה אורח | cookie session (httpOnly) |
+| אחרי login | RPC מיזוג עם lock; כמויות מאוחדות |
+| מחיר בקופה | תמיד מהמוצר החי ב-validate/beginCheckout |
+| קופון | חשבון חובה לפני LP |
 
-יעד חוזה:
-`docs/ARCHITECTURE-API-CONTRACTS.md`
-(C3). אין מיזוג מלקוח עם userId זר.
+---
+
+## 11. ERD מצומצם
 
 ```text
-guest browse → addToCart (session)
-  → login / OAuth callback
-  → fn_merge_guest_cart
-  → validateCart
-  → submitCheckout → Cardcom
+carts / cart_items
+        │
+        ▼
+orders (status: order_status)
+   └── order_items
+         · platform_percent / commission_percent_snapshot
+         · paid_on_site / face / balance_due (agorot)
+         · item_status, settlement_status
+         └── vouchers (issued → redeemed)
+                └── voucher_redemptions
+
+payments
+   · idempotency_key = lp:{client_ref}
+   · cardcom_low_profile_id
+   · cardcom_transaction_id
+   └── payment_webhook_events
+         · external_event_id UNIQUE per provider
+         · signature_valid (?s=)
+         · verified_against_api (GetLpResult)
 ```
 
----
-
-## 7. תרחישי כשל
-
-| קוד | סימפטום | פעולה |
-|---|---|---|
-| `checkout_disabled` | `CHECKOUT_ENABLED=false` | באנר; אין LP |
-| `cart_invalid` | מחיר/מלאי השתנו | רענון עגלה; אין LP |
-| `auth_required` | אורח לפני קופון | מסך התחברות; עגלה נשמרת |
-| `merge_failed` | RPC מיזוג נכשל | לוג security_events; לא חוסם session; עגלה משתמש נשארת |
-| `lp_create_failed` | Cardcom/env | "נסו שוב"; order cancellable |
-| `user_cancel` / `3ds_fail` | FailedRedirect | חזרה לcheckout; LP חדש |
-| `amount_mismatch` | GetLpResult ≠ order | **לא** paid; alert P1 |
-| `webhook_dup` | retry Cardcom | no-op אחרי UNIQUE |
-| `qstash_fail` | job לא רץ | cron reconcile + DLQ |
-| `lp_pending` | return בלי תוצאה | poll GetLpResult; מסך "בודקים תשלום" |
-| `paid_no_voucher` | paid בלי הנפקה | reconcile / תמיכה |
-| `cardcom_down` | timeouts | kill switch + INCIDENT |
-
-אסור: לסמן paid מ-return בלבד. Retry לא יוצר חיוב כפול (LP חדש רק אחרי failed/cancel מפורש).
-
-פירוט משפך:
-`docs/CHECKOUT-OPTIMIZATION.md`.
+אין טבלת escrow פעילה במודל המחייב לקופון.
 
 ---
 
-## 8. ERD (ישויות checkout)
+## 12. Acceptance
 
-```text
-profiles (user)
-    │ 1
-    │
-    ├──< carts >──< cart_items >── products
-    │                 session_id (guest) | profile_id (user)
-    │
-    └──< orders >──< order_items >── products
-              │         │  snapshots: platform_percent, fees, balance_due
-              │         │
-              │         └──< vouchers / coupon_codes  (coupon lines)
-              │
-              ├──< payments >── payment_webhook_events
-              │        │
-              │        └── cardcom_low_profile_id / transaction_id
-              │
-              ├── wallet_transactions (spend / cashback; agorot)
-              │
-              └── settlement_events / ledger (physical supplier_due)
-
-QStash jobs (external): cardcom-finalize:{lowProfileId}
-notification_outbox: order_paid, supplier_sale, …
-```
-
-יחסים מחייבים:
-
-1. `order_items` נכתבים עם snapshot לפני LP.  
-2. `payments` append-oriented; refund = שורה חדשה.  
-3. voucher נוצר רק אחרי `paid`.  
-4. אין טבלת escrow פעילה למודל קופון.
+- [ ] מפת מצבים cart → pending → paid → issued → redeemed  
+- [ ] טבלת enum מלאה של `order_status` (6 ערכים) + מיפוי תוויות מוצר  
+- [ ] Low Profile + GetLpResult כמקור אמת  
+- [ ] Webhook: `?s=` + אין HMAC גוף; dedup אירועים  
+- [ ] Idempotency: `lp:{client_ref}`, paid_at, voucher cap, redeem CAS  
+- [ ] Snapshot `platform_percent` לפני LP; לא רטרואקטיבי  
+- [ ] No Escrow מפורש; supplier_due קופון = 0  
+- [ ] כשלי timeout / double charge / webhook כפול מתועדים  
+- [ ] סריקת קופון: RPC אטומי → `redeemed` + settlement_status  
 
 ---
 
-## 9. זרימה מקצה לקצה
-
-```text
-עגלת אורח (אופציונלי) → login + merge
-  → validateCart
-  → submitCheckout → pending + snapshots + LP
-  → Cardcom
-  → IndicatorUrl → QStash → GetLpResult → finalize paid
-  → vouchers | ledger פיזי + התראות
-  → fulfilled / cancelled / refunded
-```
-
----
-
-## 10. Acceptance
-
-- [ ] טבלת מעברי order עם idempotency ומעברים אסורים  
-- [ ] מיפוי draft / pending_payment / expired מול enum 007  
-- [ ] Snapshot platform_percent; שינוי מוצר לא רטרואקטיבי  
-- [ ] קופון No Escrow; פיזי split + payout נפרד  
-- [ ] GetLpResult מקור אמת; QStash + UNIQUE webhook  
-- [ ] Guest cart merge עם advisory lock מתועד  
-- [ ] טבלת כשלים כוללת amount_mismatch ו-qstash_fail  
-- [ ] ERD כולל orders/payments/items/vouchers/outbox  
-
----
-
-## 11. Revision
+## 13. Revision
 
 | תאריך | שינוי |
 |---|---|
 | 2026-08-12 | BINDING ראשון: state machine, snapshot, Cardcom |
-| 2026-08-12 | הרחבה: QStash, guest merge, failures, ERD, agorot |
+| 2026-08-12 | הרחבה: QStash/guest/failures/ERD |
+| 2026-08-12 | שכתוב מלא: cart→coupon_redeemed, webhook signature, idempotency, timeout/double-charge, scan path, enum מלא, בלי Escrow |
