@@ -1,9 +1,9 @@
 # ארכיטקטורה: יכולות Geo
 
-תגיות עיר, מיון מרחק, אינדקסים, ובורר UI.
+תגיות עיר, מיון מרחק, אינדקסים, ובורר UI. אין השפעה על מודל כסף.
 
 Status: **BINDING** · עודכן: 2026-08-12  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #49/50  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
 מסמכים קשורים:
@@ -15,11 +15,13 @@ docs/ARCHITECTURE-SEARCH-UX.md
 docs/ARCHITECTURE-SEO-PERFORMANCE.md
 docs/ARCHITECTURE-COMMERCE.md
 docs/ARCHITECTURE-MOBILE-APP.md
+docs/ARCHITECTURE-CATEGORIES-TAXONOMY.md
+docs/CONTRADICTIONS.md
 ```
 
-**יחס ל-`GEO-FEATURES-SPEC.md`:** מסמך זה = BINDING ארכיטקטורה. ה-SPEC נשאר לפירוט מוצר; במקרה סתירה גובר המסמך הזה.
+**יחס ל-`GEO-FEATURES-SPEC.md`:** מסמך זה = BINDING ארכיטקטורה. ה-SPEC לפירוט מוצר; במקרה סתירה גובר המסמך הזה.
 
-אין השפעה על מודל כסף (No Escrow / `platform_percent`).
+מודל כסף: **No Escrow**. Geo לא נוגע ב-`platform_percent`.
 
 ---
 
@@ -33,6 +35,7 @@ docs/ARCHITECTURE-MOBILE-APP.md
 | GF4 | מרחק מ-`suppliers.lat/lng` מאומתים בלבד. |
 | GF5 | תגיות עיר על מוצר/ספק לתצוגה ופילטר; לא מחליפות קואורדינטות. |
 | GF6 | JSON-LD LocalBusiness+geo רק עם lat/lng אמיתיים. |
+| GF7 | אסור לדרוש מיקום בכניסה לאתר. |
 
 ---
 
@@ -42,8 +45,7 @@ docs/ARCHITECTURE-MOBILE-APP.md
 |---|---|
 | ספק | `city` text + אופציונלי `city_slug` |
 | מוצר | יורש מספק ו/או `product_cities` M2M לקמפיינים רב-עירוניים |
-| נחיתה | `/city/[slug]` מתוכן
-`CITY-LANDING-CONTENT.md` |
+| נחיתה | `/city/[slug]` מתוכן `CITY-LANDING-CONTENT.md` |
 
 פילטר: `WHERE city_slug = $1 OR product overlapping cities`.
 
@@ -74,7 +76,7 @@ user point (lat,lng) or city centroid
 | `(status, city_slug)` חלקי למוצרים פעילים | listing |
 | `seo_redirects` לעיר ישנה | 301 |
 
-הרחבות Postgres: לאפשר `cube`/`earthdistance` או PostGIS רק אחרי החלטת ops; עד אז Haversine ב-SQL עם אינדקס B-tree על lat/lng לסינון גס.
+הרחבות Postgres: `cube`/`earthdistance` או PostGIS רק אחרי החלטת ops; עד אז Haversine ב-SQL עם אינדקס B-tree על lat/lng לסינון גס.
 
 ---
 
@@ -84,10 +86,8 @@ user point (lat,lng) or city centroid
 |---|---|---|
 | בורר עיר | פילטרים בקטגוריה / חיפוש | רשימת ערים + "כל הארץ" |
 | קרוב אליי | ליד הבורר | מבקש permission; שומר prefs למשתמש מחובר |
-| תג עיר בכרטיס דיל | מתחת לשם ספק | טקסט בלבד; לא card מיותר |
+| תג עיר בכרטיס דיל | מתחת לשם ספק | טקסט בלבד |
 | מפה | PDP ספק / עמוד ספק | אופציונלי phase 2 |
-
-אסור: לדרוש מיקום בכניסה לאתר. אסור geolocation גלובלי בלי Permissions-Policy ממוקד.
 
 Prefs:
 
@@ -95,7 +95,8 @@ Prefs:
 user_location_prefs(user_id, preferred_city, preferred_radius_km, last_lat, last_lng, updated_at)
 ```
 
-אורח: localStorage לעיר בלבד; לא נשלח לשרת בלי הסכמה.
+אורח: localStorage לעיר בלבד; לא נשלח לשרת בלי הסכמה.  
+Permissions-Policy ממוקד; אין geolocation גלובלי בלי הצדקה.
 
 ---
 
@@ -106,6 +107,7 @@ user_location_prefs(user_id, preferred_city, preferred_radius_km, last_lat, last
 - [ ] אינדקס מרחק מתועד  
 - [ ] קרוב אליי עם fallback  
 - [ ] אין geo בלי קואורדינטות ב-JSON-LD  
+- [ ] אין השפעה על עמלה / Escrow  
 
 ---
 
@@ -114,3 +116,4 @@ user_location_prefs(user_id, preferred_city, preferred_radius_km, last_lat, last
 | תאריך | שינוי |
 |---|---|
 | 2026-08-12 | BINDING: city tags, distance sort, indexes, UI selector |
+| 2026-08-12 | batch #49/50: רענון על arch/docs-batch-2 |
