@@ -195,3 +195,4 @@ Vercel Hobby מגביל cron: פרוד מסחרי דורש Pro (או מקביל 
 |---|---|
 | 2026-07-08 | טיוטת תשתית (כולל WP כאתר חי) |
 | 2026-08-12 | batch-2 #34: BINDING; סטאק נוכחי = Next+Supabase; WP = cutover היסטורי בלבד |
+| 2026-08-12 | batch-2 #34 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
