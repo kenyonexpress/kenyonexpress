@@ -141,6 +141,29 @@ Cardcom Financial (או מסה"ב אוטומטי) = שלב עתידי אחרי t
 
 עד אז: הלקוח משלם ב-Cardcom; הספק מקבל העברה בנקאית אחרי באצ' מאושר.
 
+### 5.3 Phase B: Cardcom Financial (יעד ארכיטקטוני)
+
+אחרי מעבר מפתחות v11 / Financial (ראה `CARDCOM-ARCHITECTURE.md` Multi-Account):
+
+| שלב | פעולה |
+|---|---|
+| B1 | חישוב באצ' זהה ל-MVP (אותו ledger) |
+| B2 | אישור אדמין נשאר חובה לפחות ב-N הבאצ'ים הראשונים |
+| B3 | קריאה ל-`/Financial/TransferFromDigitalBank` (או מקבילה מאושרת) לספק |
+| B4 | reconciliation: `GetMoneyTransfers` / דוחות Financial מול `payout_settled` |
+| B5 | כשל העברה → באצ' נשאר `approved` עם שורות `transfer_failed`; fallback CSV |
+
+```text
+Cardcom (לקוח) → platform terminal settled
+  → settlement_events (supplier_due)
+  → payout_batch approved
+  → Cardcom Financial transfer to supplier bank
+       OR fallback CSV manual
+  → payout_settled + payment_reference
+```
+
+קופון נשאר מחוץ לכל נתיב Financial.
+
 ---
 
 ## 6. Acceptance
@@ -151,12 +174,13 @@ Cardcom Financial (או מסה"ב אוטומטי) = שלב עתידי אחרי t
 - [ ] קיזוז debit עובד אחרי refund  
 - [ ] LEGAL-TERMS לא מבטיח מועד לפני שהמסך חי  
 - [ ] CSV בלי PAN / טוקנים  
+- [ ] Phase B לא מופעל בלי שערי 5.2  
 
 ---
 
 ## 7. החלטה שתועדה ב-STATE
 
-Payout פיזי = ידני אחרי Cardcom customer settlement; לא Cardcom Financial עד איום-מודל נפרד.
+Payout פיזי = ידני אחרי Cardcom customer settlement ב-MVP; Phase B = Cardcom Financial אחרי threat model. "Payout דרך Cardcom" = סליקת לקוח חובה + (עתיד) העברה Financial אופציונלית.
 
 ---
 
@@ -168,3 +192,4 @@ Payout פיזי = ידני אחרי Cardcom customer settlement; לא Cardcom Fi
 | 2026-08-11 | סעיף 5.1: פירוש מחייב ל"payout דרך Cardcom" |
 | 2026-08-11 | עמודות CSV מינימום לבאצ' |
 | 2026-08-11 | שערי Cardcom Financial עתידיים (5.2) |
+| 2026-08-11 | Phase B: TransferFromDigitalBank + fallback CSV |
