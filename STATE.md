@@ -14,14 +14,14 @@ docs/DOCS-TEMPLATE-BINDING.md
 .
 
 ## המשך מ:
-נכתב מחדש
-docs/ARCHITECTURE-COUPON-LIFECYCLE.md
+נכתב
+docs/ARCHITECTURE-MONEY.md
 . ממתין למסמך הבא על
 arch/docs-batch-2
 .
 
 ## Last Completed
-ARCHITECTURE-COUPON-LIFECYCLE.md: mint/QR/scan/expiry + races + נעילות (CAS UPDATE RETURNING, FOR UPDATE SKIP LOCKED). קודם: CARDCOM-WEBHOOKS deepen.
+ARCHITECTURE-MONEY.md: agorot integer, half-up, VAT extractVat, split residual, snapshot ב-beginCheckout, No Escrow. קודם: COUPON-LIFECYCLE.
 
 ## In Progress
 nothing
@@ -33,6 +33,8 @@ nothing
 /Users/ofir/kenyonexpress-web/ke-arch
 
 ## החלטות שהתקבלו אוטומטית
+- **2026-08-12 MONEY:** נוצר ARCHITECTURE-MONEY.md כ-BINDING. קופון: commission=paid_on_site ו-supplier_due=0 למרות ש-platform_percent מצולם (הסכם/ביקורת, לא payable). COMPLETE-SYSTEM Escrow נדחה במפורש במסמך. עיגול = half-up integer; מע"מ = extractVat על הכנסת פלטפורמה בלבד.
+
 - **2026-08-12 COUPON-LIFECYCLE locks:** redeem ננעל ב-`UPDATE … WHERE status=issued … RETURNING` (לא SELECT FOR UPDATE מפורש); expire ב-`FOR UPDATE SKIP LOCKED`. תועד כ-BINDING ב-ARCHITECTURE-COUPON-LIFECYCLE.md מול 092/068.
 
 - **2026-08-12 standing docs rules:** נעול לכל ההודעות הבאות: ke-arch בלבד; docs בלבד; אין קוד; אין main dir; אין checkout main; אין ענפים חדשים (רק arch/docs-batch-2); commit+push אחרי כל מסמך; עברית RTL; חמשת רכיבי תוכן חובה (החלטה, חלופות שנדחו, סכמת DB, מקרי קצה, פתוחות). מקור: DOCS-TEMPLATE-BINDING.md.
