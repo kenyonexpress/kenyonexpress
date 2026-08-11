@@ -55,7 +55,7 @@ docs/NEXT-GOALS.md
 
 ## 3. שלבים
 
-### 3.1 V1.0 (שיגור קופונים) — בסיס
+### 3.1 V1.0 (שיגור קופונים) :  בסיס
 
 | פריט | סטטוס יעד |
 |---|---|
@@ -65,7 +65,7 @@ docs/NEXT-GOALS.md
 | Admin product fields | חי |
 | RLS ליבה | שער `NOT rowsecurity=0` |
 
-### 3.2 V1.1a — חוויית Super App קלה
+### 3.2 V1.1a :  חוויית Super App קלה
 
 | פריט | תלות |
 |---|---|
@@ -74,7 +74,7 @@ docs/NEXT-GOALS.md
 | התראות הזמנה/מימוש | NOTIFICATIONS |
 | בית מותאם | SUPER-APP |
 
-### 3.3 V1.1b — ארנק פנימי
+### 3.3 V1.1b :  ארנק פנימי
 
 | פריט | תלות |
 |---|---|
@@ -82,7 +82,7 @@ docs/NEXT-GOALS.md
 | UI אזור אישי | ACCOUNT-WALLET |
 | אין cash-out | WC2 |
 
-### 3.4 V1.1c — פיזי ראשון
+### 3.4 V1.1c :  פיזי ראשון
 
 | פריט | תלות |
 |---|---|
@@ -90,7 +90,7 @@ docs/NEXT-GOALS.md
 | Payout פיזי | PAYOUT |
 | מלאי בסיסי | INVENTORY |
 
-### 3.5 אחרי V1.1 — מנוי / Native
+### 3.5 אחרי V1.1 :  מנוי / Native
 
 | פריט | תלות |
 |---|---|
