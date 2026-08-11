@@ -1,197 +1,97 @@
-# ANALYTICS-SPEC.md
-# מפרט מדידה (השקה)
+# מפרט מדידה (Analytics)
 
-אירועי משפך (`view_product`, `add_to_cart`, `purchase`, `redeem`), מיפוי ל-GA4 ול-Meta Pixel, ו-Consent Mode בהתאם לבאנר העוגיות.
+אירועי משפך, מיפוי GA4/Meta Pixel, Consent Mode מול באנר עוגיות.
 
-Status: **BINDING (measurement)** · עודכן: 2026-08-10  
-Scope: **docs only** · worktree `ke-arch`
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד. כסף ב-props: **agorot integer**; מקור אמת = DB/ledger.
 
 מסמכים קשורים:
 
 ```
 docs/ARCHITECTURE-ANALYTICS.md
+docs/ARCHITECTURE-ANALYTICS-KPI.md
+docs/ARCHITECTURE-COOKIE-CONSENT.md
 docs/MARKETING-LAUNCH.md
-docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
-docs/CONTRADICTIONS.md
-docs/ARCHITECTURE-OBSERVABILITY.md
 ```
-
-עקרון: התנהגות באירועים; **כסף עסקי רק מה-ledger**. GA4/Pixel לא מחליפים דוחות אדמין.
 
 ---
 
-## 0. הכרעות
+## החלטה
 
 | # | הכרעה |
 |---|---|
 | A1 | אירועי ליבה: `view_product`, `add_to_cart`, `begin_checkout`, `purchase`, `redeem`. |
-| A2 | `purchase` ו-`redeem` נגזרים **בשרת** אחרי אימות (לא רק client). |
-| A3 | GA4 + Meta Pixel נטענים רק לפי **Consent Mode** מבאנר העוגיות. |
-| A4 | בלי consent שיווקי: אין Pixel / ads tags; analytics מוגבל לפי בחירת המשתמש. |
-| A5 | כסף ב-props: **agorot integer** או ערך שקלים מחושב לתגי מודעות בלבד; מקור האמת נשאר DB. |
-| A6 | אין PII באירועים (email, טלפון, שם, IP מלא, PAN). |
+| A2 | `purchase` ו-`redeem` נגזרים **בשרת** אחרי אימות. |
+| A3 | GA4 + Meta Pixel רק לפי **Consent Mode** מבאנר העוגיות. |
+| A4 | בלי consent שיווקי: אין Pixel; analytics מוגבל לבחירה. |
+| A5 | כסף ב-props: `*_agorot` integer; Ads value = המרה ל-₪ לתצוגה בלבד. |
+| A6 | אין PII (email, טלפון, שם, IP מלא, PAN). |
+| A7 | GA4/Pixel לא מחליפים דוחות אדמין; ledger = מקור עסקי. |
 
----
+### מיפוי GA4 / Meta
 
-## 1. אירועי ליבה
-
-| event (פנימי) | מתי | מקור | props מינימום |
-|---|---|---|---|
-| `view_product` | PDP נטען | client | `product_id`, `slug`, `product_type`, `list_price_agorot`, `coupon_price_agorot?` |
-| `add_to_cart` | הוספה לעגלה | client | + `quantity`, `variant_id?` |
-| `begin_checkout` | כניסה ל-checkout | client | `cart_id` / `items_count`, `value_agorot` |
-| `purchase` | תשלום אומת + order `paid` | **server** | `order_id`, `value_agorot`, `currency=ILS`, `items[]`, `utm_*` |
-| `redeem` | סריקה מוצלחת | **server** | `voucher_id`, `product_id`, `supplier_id`, `order_id` |
-
-שם חלופי בתיעוד ישן: `coupon_redeemed` = אותו אירוע כמו `redeem`.
-
-אופציונלי להשקה:
-
-| event | מתי |
-|---|---|
-| `view_cart` | פתיחת `/cart` |
-| `remove_from_cart` | הסרה |
-| `sign_up` / `login` | אחרי Supabase session |
-| `refund` | אחרי זיכוי Cardcom מאומת |
-
----
-
-## 2. מיפוי GA4
-
-| פנימי | GA4 recommended | הערות |
+| פנימי | GA4 | Meta |
 |---|---|---|
-| `view_product` | `view_item` | `items[]` עם `item_id` = product_id |
-| `add_to_cart` | `add_to_cart` | |
-| `begin_checkout` | `begin_checkout` | |
-| `purchase` | `purchase` | `transaction_id` = order_id; `value` בשקלים לדוחות Ads |
-| `redeem` | event מותאם `redeem` או `coupon_redeemed` | לא מחליף purchase |
+| `view_product` | `view_item` | `ViewContent` |
+| `add_to_cart` | `add_to_cart` | `AddToCart` |
+| `begin_checkout` | `begin_checkout` | `InitiateCheckout` |
+| `purchase` | `purchase` (`transaction_id`=order_id) | `Purchase` (`eventID`=order_id) |
+| `redeem` | custom | custom (אופציונלי) |
 
-Enhanced measurement: לא מחליף את חמשת אירועי הליבה.
-
----
-
-## 3. מיפוי Meta Pixel
-
-| פנימי | Meta | הערות |
-|---|---|---|
-| `view_product` | `ViewContent` | `content_ids`, `content_type=product` |
-| `add_to_cart` | `AddToCart` | |
-| `begin_checkout` | `InitiateCheckout` | |
-| `purchase` | `Purchase` | `value` + `currency=ILS`; `eventID` = order_id ל-dedup |
-| `redeem` | Custom `Redeem` | אופציונלי לאופטימיזציה; לא חובה להשקה |
-
-CAPI (Conversions API) מומלץ אחרי השקה יציבה: אותו `eventID` כמו בדפדפן ל-`Purchase`.
+Consent default: **denied** ל-analytics ו-marketing לפני בחירה (v2).
 
 ---
 
-## 4. Consent Mode + באנר עוגיות
+## חלופות שנדחו
 
-### 4.1 קטגוריות באנר
-
-| קטגוריה | תוצאה |
+| חלופה | למה נדחתה |
 |---|---|
-| הכרחי | אתר + אבטחה + סל; בלי GA4/Pixel |
-| analytics | מאפשר מדידת התנהגות (GA4 analytics_storage) |
-| marketing | מאפשר Pixel / ads / remarketing |
+| `purchase` רק מ-client | A2: אימות שרת חובה. |
+| Pixel לפני באנר | A3: חוקי + Consent Mode. |
+| float בשדות כסף | A5: agorot integer. |
+| Session replay מלא ב-D0 | פרטיות; out of scope. |
+| CAPI לכל משתמש בלי מדיניות | phase 2. |
 
-ברירת מחדל לפני בחירה: **denied** ל-analytics ול-marketing (Consent Mode v2).
+---
 
-### 4.2 Google Consent Mode (v2)
-
-לפני טעינת gtag:
+## סכמת DB
 
 ```text
-ad_storage = denied | granted
-ad_user_data = denied | granted
-ad_personalization = denied | granted
-analytics_storage = denied | granted
+analytics_events (או equivalent)
+  event_id, event_name, schema_version
+  session_id, user_id nullable
+  consent jsonb, context jsonb, props jsonb
+  created_at
+
+orders / vouchers  -- מקור purchase/redeem
+notification_deliveries  -- consent_events אופציונלי
 ```
 
-מיפוי מבאנר:
-
-| באנר | Consent Mode |
-|---|---|
-| רק הכרחי | הכל denied |
-| + analytics | `analytics_storage=granted` |
-| + marketing | `ad_storage`, `ad_user_data`, `ad_personalization` = granted |
-
-אחרי עדכון באנר: `gtag('consent', 'update', …)` ואז טעינת תגים אם צריך.
-
-### 4.3 Meta
-
-Pixel נטען **רק** אחרי marketing granted.  
-לפני כן: אין `fbq('init')` / אין image pixel.
-
-### 4.4 רצף טכני
-
-```text
-HTML shell
-  → באנר עוגיות (עברית, RTL)
-  → שמירת העדפה (cookie / local + אופציונלי consent_events ב-DB למשתמש מחובר)
-  → consent default denied
-  → אם analytics: טען GA4
-  → אם marketing: טען Meta Pixel (+ GA ads אם רלוונטי)
-  → אירועי client רק לערוצים שאושרו
-```
-
-טרנזקציות שרת (`purchase`, `redeem`): נשמרות תמיד ב-Postgres; שליחה ל-GA4 Measurement Protocol / CAPI רק אם יש בסיס חוקי + מדיניות מאושרת (לא חובה ביום D0).
+אין DDL חדש במסמך זה. אירועי שרת נשמרים ב-Postgres תמיד; שליחה ל-MP/CAPI לפי consent.
 
 ---
 
-## 5. UTM ו-attribution
+## מקרי קצה
 
-| שדה | שמירה |
-|---|---|
-| `utm_source/medium/campaign/content/term` | ב-session storage + העתקה ל-props של `purchase` |
-| first-touch | נשמר לביקור הראשון בקמפיין `launch_week` |
-| last-touch | נשלח עם `purchase` |
-
-פירוט קמפיין: `MARKETING-LAUNCH.md` §4.
-
----
-
-## 6. Envelope (בלי PII)
-
-```json
-{
-  "event_id": "uuid",
-  "event_name": "view_product",
-  "schema_version": 1,
-  "session_id": "uuid",
-  "user_id": "uuid-or-null",
-  "consent": { "analytics": true, "marketing": false },
-  "context": {
-    "locale": "he-IL",
-    "path": "/product/example",
-    "utm_campaign": "launch_week"
-  },
-  "props": {
-    "product_id": "uuid",
-    "product_type": "coupon",
-    "list_price_agorot": 32000,
-    "coupon_price_agorot": 14900
-  }
-}
-```
+| # | מקרה | התנהגות |
+|---|---|---|
+| CE1 | בלי לחיצה על באנר | אין בקשות ל-GA/Meta |
+| CE2 | analytics בלבד | GA4 כן; Pixel לא |
+| CE3 | refund אחרי purchase | אירוע `refund` אופציונלי; ledger מקור |
+| CE4 | `coupon_redeemed` ב-docs ישנים | alias ל-`redeem` |
+| CE5 | סכום Ads ≠ ledger | מותר רק מעיגול/refunds; חקירה אם >1% |
+| CE6 | UTM חסר | purchase ללא attribution; לא חוסם |
 
 ---
 
-## 7. אימות השקה (QA)
+## פתוחות
 
-- [ ] בלי לחיצה על באנר: אין בקשות ל-`google-analytics.com` / `facebook.com/tr`  
-- [ ] analytics בלבד: GA4 נטען; Pixel לא  
-- [ ] marketing: Pixel `PageView` אחרי grant  
-- [ ] `purchase` ב-GA4 מגיע עם `transaction_id` = order_id  
-- [ ] סכום ב-Ads ≈ סכום ledger (סטייה רק מעיגול / refunds)  
-- [ ] `redeem` נרשם אחרי סריקה מוצלחת  
-
----
-
-## 8. Out of scope ליום ההשקה
-
-- Session replay מלא (PostHog) בלי הגדרת פרטיות נפרדת  
-- ייחוס רב-מגע מתקדם  
-- שליחת purchase לכל משתמש בלי מדיניות CAPI  
+| # | פתוח | הערה |
+|---|---|---|
+| O1 | CAPI עם dedup `eventID` | מומלץ אחרי השקה יציבה. |
+| O2 | PostHog session replay | דורש מדיניות נפרדת. |
+| O3 | `/admin/analytics` מפורט | `ARCHITECTURE-ANALYTICS-KPI`. |
 
 ---
 
@@ -199,4 +99,5 @@ HTML shell
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-10 | מפרט אירועים + GA4/Meta + Consent Mode מול באנר עוגיות |
+| 2026-08-10 | rev A: אירועים + consent |
+| 2026-08-12 | batch-2: BINDING 5 סעיפים |
