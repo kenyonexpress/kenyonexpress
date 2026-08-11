@@ -139,6 +139,23 @@ issued | redeemed | expired | refunded
 
 אין לעבור מ-`redeemed`/`refunded` ל-`expired`.
 
+### 5.2 דוגמת עדכון אטומי (redeem)
+
+```sql
+UPDATE vouchers
+SET status = 'redeemed',
+    redeemed_at = now(),
+    redeemed_by = $scanner_user_id,
+    updated_at = now()
+WHERE id = $voucher_id
+  AND status = 'issued'
+  AND (frozen_at IS NULL)
+  AND expires_at > now();
+-- rowcount 0 → already_redeemed / expired / frozen / not issued
+```
+
+תחת עומס: שני סורקים במקביל; רק אחד מקבל rowcount=1.
+
 ---
 
 ## 6. Acceptance
@@ -149,6 +166,7 @@ issued | redeemed | expired | refunded
 - [ ] refund על `redeemed` נחסם אוטומטית  
 - [ ] מיילים לכל מעבר ליבה  
 - [ ] cron expire לא נוגע בטרמינליים  
+- [ ] בדיקת race: שני redeem במקביל → אחד בלבד  
 
 ---
 
@@ -160,3 +178,4 @@ issued | redeemed | expired | refunded
 | 2026-08-11 | יישור לפרוד 054: קנוני `redeemed` (לא `used`) |
 | 2026-08-11 | טבלת מעברים אסורים |
 | 2026-08-11 | סעיף cron פקיעה + acceptance |
+| 2026-08-11 | SQL אטומי ל-redeem + בדיקת race |
