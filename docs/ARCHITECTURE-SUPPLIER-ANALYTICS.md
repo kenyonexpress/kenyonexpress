@@ -1,15 +1,21 @@
-# ARCHITECTURE: Supplier Analytics
+# ארכיטקטורה: אנליטיקה לספק
 
-דשבורד מכירות לספק ודוחות payout לפי `platform_percent` מצולם.
+דשבורד מכירות לספק ודוחות payout לפי `platform_percent` מצולם. **No Escrow**: אין held/Escrow בדשבורד.
 
-Status: **BINDING** · Updated: 2026-08-02  
-Scope: docs only.  
-Companions:
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+
+מודל כסף: **No Escrow**. מקדמת קופון = הכנסת פלטפורמה; `supplier_due` מהפלטפורמה = 0; יתרה נגבית בעסק.
+
+מסמכים קשורים:
 
 ```
 docs/ARCHITECTURE-SUPPLIER-PORTAL.md
 docs/ARCHITECTURE-ANALYTICS-BI.md
 docs/ARCHITECTURE-PERSONAL-AREA.md
+docs/ARCHITECTURE-PAYOUT-MECHANISM.md
+docs/ARCHITECTURE-PRICING-RULES.md
 ```
 
 קהל: `supplier_members` עם role `owner` או `manager` (scanner: סריקות בלבד, בלי כסף).  
@@ -17,20 +23,51 @@ docs/ARCHITECTURE-PERSONAL-AREA.md
 
 ---
 
-## 0. הכרעות מחייבות
+## 0. החלטה (מחייבת)
 
 | # | הכרעה |
 |---|---|
-| S1 | ספק רואה רק את השורות שלו (`supplier_id`). |
-| S2 | `platform_percent` בתצוגה = snapshot משורת ההזמנה, לא הערך החי במוצר. |
-| S3 | קופון (Escrow 2026-07-27): מקדמה באתר; עמלה = `%` מהמקדמה; יתרת המקדמה ב-held עד מימוש; יתרת face נגבית בקופה. |
-| S4 | פיזי: פיצול מיידי לפי snapshot; payout אחרי T+hold ומינימום. |
-| S5 | אין לסכם כסף מ-`analytics_events`. כסף רק מ-orders/payments/ledger/vouchers. |
-| S6 | אין ייצוא CSV עם PII לקוח (שם/טלפון/כתובת) ב-v1; רק ids פנימיים + סכומים. |
+| SA1 | ספק רואה רק את השורות שלו (`supplier_id`). |
+| SA2 | `platform_percent` בתצוגה = snapshot משורת ההזמנה, לא הערך החי במוצר. |
+| SA3 | קופון (No Escrow): מקדמה באתר = 100% הכנסת פלטפורמה; אין held/Escrow בדשבורד. |
+| SA4 | פיזי: פיצול מיידי לפי snapshot; payout אחרי T+hold ומינימום (PAYOUT-MECHANISM). |
+| SA5 | אין לסכם כסף מ-`analytics_events`. כסף רק מ-orders/payments/ledger/vouchers. |
+| SA6 | אין ייצוא CSV עם PII לקוח (שם/טלפון/כתובת) ב-v1; רק ids פנימיים + סכומים. |
+| SA7 | Scanner לא רואה KPI כספיים או payout. |
+| SA8 | קופון: אין שורות payout בדוח; רק מידע על מימושים וגבייה בעסק (informational). |
 
 ---
 
-## 1. מפת מסכים (פורטל ספק)
+## 1. חלופות שנדחו
+
+| חלופה | למה נדחתה |
+|---|---|
+| Escrow held בדשבורד עד redeem | סותר No Escrow; מציג כסף שלא קיים ב-ledger. |
+| payout record על redeem קופון | קופון: supplier_due מהפלטפורמה = 0; אין payout. |
+| חישוב `platform_percent` מ-`products` החי | משנה היסטוריה; snapshot בלבד. |
+| analytics_events כמקור כסף | לא authoritative; drift מול ledger. |
+| CSV עם PII לקוח | GDPR / אבטחה; v1 נדחה. |
+| scanner רואה payout | RBAC; scanner = סריקה בלבד. |
+
+---
+
+## 2. סכמת DB (קיים; אין DDL חדש)
+
+| ישות | שדות / שימוש |
+|---|---|
+| `order_items` | snapshot: `platform_percent`, `paid_on_site_agorot`, `commission_agorot`, `supplier_due`, `balance_due_agorot` |
+| `orders` | `paid_at`, `status`; join לפי `supplier_id` |
+| `vouchers` | `status`, `redeemed_at`; ספירת מימושים |
+| `voucher_redemptions` | לוג סריקות; `collected_agorot` (informational) |
+| `settlement_events` | payout eligibility; לא ל-KPI יומי ישיר |
+| `payout_batches` / statements | דוחות payout לספק |
+| views (`security_invoker`) | אופציונלי לסיכומים מאובטחים |
+
+אין DDL חדש במסמך זה.
+
+---
+
+## 3. מפת מסכים (פורטל ספק)
 
 | Route | תפקיד | Roles |
 |---|---|---|
@@ -44,24 +81,23 @@ Gate: `is_supplier_member(supplier_id)` + role. אין service role בדפדפן
 
 ---
 
-## 2. דשבורד מכירות
+## 4. דשבורד מכירות
 
-### 2.1 KPI cards (agorot → ₪)
+### 4.1 KPI cards (agorot → ₪)
 
 | מדד | הגדרה |
 |---|---|
-| Gross sold (period) | סכום `paid_on_site_agorot` (או שקיל) לשורות הספק בהזמנות `paid` |
-| Platform fee | סכום `commission_agorot` מהסנאפשוט |
+| Gross sold (period) | סכום `paid_on_site_agorot` לשורות הספק בהזמנות `paid` |
+| Platform fee | סכום `commission_agorot` מהסנאפשוט (פיזי) |
 | Supplier share (physical) | `supplier_immediate_agorot` / יתרה לפיצול |
-| Escrow held (coupons) | חלק מקדמה מוחזק שטרם שוחרר במימוש |
 | Redeemed count | מספר `vouchers` בסטטוס redeemed בתקופה |
-| Till collected (informational) | סכום `remaining_due` / `collected` בסריקות (לא עובר ב-KE) |
+| Till collected (informational) | סכום שנגבה בעסק בסריקות; לא עובר ב-KE |
+
+**אין** KPI `Escrow held` או `held until redeem`.
 
 טווחים: היום · 7 ימים · 30 ימים · חודש קלנדרי · custom.
 
-### 2.2 טבלת מכירות
-
-עמודות מחייבות:
+### 4.2 טבלת מכירות
 
 | עמודה | מקור |
 |---|---|
@@ -73,101 +109,62 @@ Gate: `is_supplier_member(supplier_id)` + role. אין service role בדפדפן
 | שולם באתר | `paid_on_site_agorot` |
 | `platform_percent` | snapshot |
 | עמלת פלטפורמה | `commission_agorot` |
-| חלק ספק / held | לפי סוג מוצר |
+| חלק ספק / יתרה בעסק | פיזי: supplier_due; קופון: balance_due (informational) |
 | סטטוס שורה | paid / redeemed / refunded / … |
 
-פילטרים: סוג מוצר, סטטוס, טווח תאריכים, מוצר.
-
-### 2.3 שאילתות (עקרונות)
-
-- Views מאובטחות (`security_invoker`) או Server Actions עם member check.
-- אינדקסים על `(supplier_id, paid_at)` בנתיב הקריאה (דרך join ל-orders).
-- אין N+1 מ-PDP חי לכל שורה.
-
 ---
 
-## 3. דוחות payout לפי `platform_percent`
+## 5. דוחות payout (פיזי בלבד)
 
-### 3.1 מה נכנס לדוח
-
-| סוג שורה | נכנס ל-`payout_statement_lines`? | בסיס חישוב |
+| סוג שורה | נכנס ל-payout? | בסיס |
 |---|---|---|
-| פיזי ששולם | כן (אחרי hold + מינימום) | `paid_on_site - commission` מהסנאפשוט (`platform_percent`) |
-| קופון ששולם ועדיין לא מומש | לא כ-payout מיידי; מוצג כ-held בדשבורד | held = מקדמה − עמלה |
-| קופון שמומש | שחרור held ל-payout לפי מדיניות Escrow (ledger), לא המצאת אחוז חדש | אותם אחוזי snapshot |
-| החזר | שורת adjustment שלילית / קיזוז | לפי refund finalize |
+| פיזי ששולם | כן (אחרי hold + מינימום) | snapshot `paid_on_site - commission` |
+| קופון | **לא** | supplier_due מהפלטפורמה = 0 |
+| החזר | adjustment / קיזוז | refund finalize |
 
-אסור לחשב מחדש `platform_percent` מהמוצר החי בזמן יצירת הדוח.
-
-### 3.2 מחזור דוח
-
-```text
-generate_payout_statement(supplier_id, period)
-  → אוסף שורות זכאיות
-  → מסכם total_payout_agorot
-  → אם מתחת ל-min_payout: rolled_over
-  → draft → pending_approval → approved → paid
-```
-
-שדות דוח:
-
-- תקופה, מספר הצהרה, סטטוס
-- סה״כ ברוטו, סה״כ עמלות (לפי percent מצולם), סה״כ לתשלום
-- צילום פרטי בנק (בלי לחשוף מלא ל-scanner)
-- `payment_reference` אחרי תשלום
-
-### 3.3 שקיפות אחוזים
-
-בכל שורת דוח מציגים:
-
-```
-platform_percent (snapshot) · commission_agorot · supplier_due_agorot
-```
-
-עותק UI:
-
-```
-העמלה נקבעה במוצר בזמן הרכישה ואינה משתנה אחורה
-גם אם האחוז במוצר עודכן מאז.
-```
+אסור לחשב מחדש `platform_percent` מהמוצר החי.
 
 ---
 
-## 4. לוג מימושים (קישור לדשבורד)
+## 6. מקרי קצה
 
-| שדה | הערה |
+| מקרה | התנהגות |
 |---|---|
-| זמן סריקה | `redeemed_at` |
-| קוד מקוצר | לא payload מלא |
-| מוצר | שם |
-| גבייה בקופה | `collected_agorot` |
-| תוצאה | success / already_used / expired / … |
-| חבר שסרק | `member_id` |
-
-Scanner רואה את הטבלה הזו בלבד. בלי KPI כספיים של payout.
-
----
-
-## 5. ייצוא ואדמין
-
-- Export CSV ל-owner: שורות מכירה/payout **בלי** PII לקוח ב-v1.
-- אדמין KE רואה את אותם מספרים ב-`/admin` לצורך reconciliation; מקור האמת זהה.
-- Drift: אם `v_money_alarms` / ledger לא מתיישרים, הדשבורד מציג באנר "בבדיקה" ולא ממציא מספר.
+| שינוי `platform_percent` במוצר אחרי paid | דשבורד מציג snapshot; לא מתעדכן |
+| refund חלקי | שורה adjusted; KPI מתעדכן לפי settlement |
+| ספק חבר בשני suppliers | RLS מפריד; אין דליפה בין ספקים |
+| ledger drift (`v_money_alarms`) | באנר "בבדיקה"; לא ממציא מספר |
+| redeem ללא collected_agorot | informational null; לא payout |
+| rolled_over מתחת ל-min | מוצג "מגלגל"; לא כ-paid |
+| scanner ניגש ל-`/supplier/payouts` | 403 / redirect |
+| N+1 על PDP חי | views / batch query; לא live product per row |
+| timezone Asia/Jerusalem | תקופות KPI לפי TZ זה |
 
 ---
 
-## 6. Acceptance
+## 7. Acceptance
 
 - [ ] KPI וטבלה רק לשורות `supplier_id` של החבר
 - [ ] `platform_percent` תמיד מהסנאפשוט
-- [ ] דוח payout מסביר עמלה מול percent מצולם
+- [ ] אין Escrow/held KPI
 - [ ] Scanner בלי מסכי כסף
 - [ ] אין סיכום כסף מאירועי analytics
+- [ ] קופון: 0 שורות payout
 
 ---
 
-## 7. Revision
+## 8. פתוחות
 
-| Date | Change |
+| ID | שאלה | ברירת מחדל |
+|---|---|---|
+| Q-SA-EXPORT | CSV export v2 עם PII מסונן? | v1: ids בלבד |
+| Q-SA-VIEW | materialized view ל-KPI? | Server Action + index |
+
+---
+
+## 9. Revision
+
+| תאריך | שינוי |
 |---|---|
-| 2026-08-02 | מסמך מחייב: דשבורד מכירות + דוחות payout לפי platform_percent (Escrow 2026-07-27) |
+| 2026-08-02 | דשבורד מכירות + payout לפי platform_percent |
+| 2026-08-12 | batch-2: BINDING template; הסרת Escrow; No Escrow מפורש |
