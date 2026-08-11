@@ -1,96 +1,92 @@
 # ארכיטקטורה: צ'קליסט השקה (Launch gates)
 
-שערי Go-Live מחייבים: Resend מאומת, Cardcom production, התראות Sentry, דומיינים ב-Vercel, מדיניות גיבוי, ו-10 קופוני השקה חיים.
+שערי Go-Live מחייבים לפני כסף אמיתי על Next + Supabase + Vercel.
 
-Status: **ACTIONABLE / BINDING gates** · עודכן: 2026-08-11  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+Status: **BINDING** · עודכן: 2026-08-12 · QA: PASS  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #35/50  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
-מסמכים קשורים (סדר ביצוע מפורט יותר):
+מסמכים קשורים:
 
 ```
 docs/GO-LIVE-CHECKLIST.md
 docs/LAUNCH-CHECKLIST.md
 docs/LAUNCH-WEEK-RUNBOOK.md
-docs/LAUNCH-VALIDATION.md
-docs/RUNBOOK-LAUNCH-DAY.md
-GO-LIVE.md
-docs/ARCHITECTURE-NOTIFICATIONS.md
-docs/CARDCOM-ARCHITECTURE.md
-docs/BACKUP-RESTORE-RUNBOOK.md
+docs/ARCHITECTURE-PRODUCTION-OPS.md
 docs/ARCHITECTURE-OBSERVABILITY.md
-docs/SECURITY-AUDIT-CHECKLIST.md
-docs/PAYOUT-ARCHITECTURE.md
+docs/ARCHITECTURE-BACKUP-DR.md
+docs/ARCHITECTURE-CARDCOM-WEBHOOKS.md
+docs/ARCHITECTURE-NOTIFICATIONS.md
+docs/ARCHITECTURE-PRICING-RULES.md
+docs/CONTRADICTIONS.md
 ```
 
-כלל: **כסף אמיתי רק אחרי שכל שערי P0 למטה מסומנים PASS עם ראיה** (צילום / לוג / timestamp).
+כלל: **כסף אמיתי רק אחרי שכל שערי P0 מסומנים PASS עם ראיה** (צילום / לוג / timestamp).
+
+מודל כסף: **No Escrow**. אין held. אין default ל-`platform_percent`.
 
 ---
 
-## 0. המלצה אחת (מחייבת)
+## 0. ששת שערי P0 (חוסמים)
 
-**ששת השערים האלה חוסמים soft-open עם תשלום אמיתי:** Resend verified · Cardcom production credentials · Sentry alerts · Vercel domains · backup policy חיה · 10 קופונים ראשונים live עם `platform_percent` מלא.
-
-פירוט בעלות/סדר ארוך: `GO-LIVE-CHECKLIST.md` + `LAUNCH-CHECKLIST.md`. המסמך הזה הוא **שערי הארכיטקטורה** שחייבים להיות ירוקים.
+1. Resend verified  
+2. Cardcom production credentials  
+3. Sentry alerts  
+4. Vercel domains + HTTPS  
+5. Backup policy (Pro + PITR + offsite)  
+6. 10 קופוני השקה live עם `platform_percent` מפורש פר מוצר  
 
 ---
 
-## 1. Resend verified (P0 לתקשורת הזמנה)
+## 1. Resend verified
 
 | שער | ראיה |
 |---|---|
-| דומיין שולח מאומת ב-Resend (SPF/DKIM) | צילום Domains ב-Resend |
-| From קבוע בעברית RTL (למשל הזמנות@דומיין) | מייל ניסיון inbox |
-| `RESEND_API_KEY` ב-Vercel server env בלבד | dashboard env |
-| Smoke: `order_paid` / `voucher_issued` אחרי תשלום בדיקה | לוג outbox `sent` |
-| אין שיווק בלי opt-in (`ARCHITECTURE-NOTIFICATIONS.md`) | preferences / מדיניות |
-
-בלי Resend מאומת: אפשר soft-open טכני רק אם יש ערוץ חלופי מתועד ל-OTP/קריטי; **לא** מומלץ לכסף אמיתי.
+| דומיין שולח מאומת (SPF/DKIM) | צילום Resend Domains |
+| From קבוע בעברית RTL | מייל ניסיון inbox |
+| `RESEND_API_KEY` ב-Vercel server env | dashboard |
+| Smoke: `order_paid` / voucher issued | outbox `sent` |
+| אין שיווק בלי opt-in | preferences |
 
 ---
 
-## 2. Cardcom production credentials (P0 לכסף)
+## 2. Cardcom production
 
 | שער | ראיה |
 |---|---|
-| מסוף **production** פתוח ומאומת עסקית | פאנל Cardcom |
-| `CARDCOM_TERMINAL_NUMBER` | Vercel prod |
-| `CARDCOM_API_NAME` | Vercel prod |
-| `CARDCOM_API_PASSWORD` | Vercel prod (חובה לזיכויים) |
-| `CARDCOM_WEBHOOK_SECRET` + IndicatorUrl HTTPS | URL + secret |
+| מסוף production פתוח | פאנל Cardcom |
+| `CARDCOM_TERMINAL_NUMBER` / `API_NAME` / `API_PASSWORD` | Vercel prod |
+| `CARDCOM_WEBHOOK_SECRET` + IndicatorUrl HTTPS עם `?s=` | URL + secret |
 | Smoke: תשלום → return → `GetLpResult` → `paid` → voucher `issued` | לוג הזמנה |
-| Smoke refund (`RefundByTransactionId`) | לוג refund |
+| Smoke refund | לוג refund |
 | רק אז: `CHECKOUT_ENABLED=true` | env + audit |
 
-בלי `API_PASSWORD`: חיובים עלולים לעבוד והחזרים ייכשלו בשטח.  
-Payout לספק: לפי `PAYOUT-ARCHITECTURE.md` (TransferFromDigitalBank / CSV) לפני כסף אמיתי לספק.
+בלי `API_PASSWORD`: חיובים עלולים לעבוד והחזרים ייכשלו.  
+אין HMAC על גוף webhook. אימות = `?s=` + `GetLpResult`.
 
 ---
 
-## 3. Sentry alerts (P0 לתצפית)
+## 3. Sentry alerts
 
 | שער | ראיה |
 |---|---|
-| DSN פרוד מוגדר (server + client לפי מדיניות PII) | Sentry project |
-| Alert: error spike / תסמין checkout | rule פעיל |
-| Alert: redeem failures / DLQ notifications | rule או מקביל |
+| DSN פרוד (server + client לפי מדיניות PII) | Sentry project |
+| Alert: error spike / checkout | rule פעיל |
+| Alert: redeem failures / notification DLQ | rule |
 | Alert: Cardcom finalize / refund failed | rule |
-| אין PAN/PII באירועים | sample event נקי |
-| ערוץ התראה למפעיל (מייל/Slack/SMS) | הודעת ניסיון |
-
-פירוט: `ARCHITECTURE-OBSERVABILITY.md` + `INCIDENT-RESPONSE-RUNBOOK.md`.
+| אין PAN/PII באירועים | sample נקי |
+| ערוץ למפעיל (מייל/Slack/ntfy) | הודעת ניסיון |
 
 ---
 
-## 4. Vercel domains (P0 למותג ציבורי)
+## 4. Vercel domains
 
 | שער | ראיה |
 |---|---|
-| `kenyonexpress.co.il` מחובר בפרויקט | Domains UI |
-| DNS → Vercel | dig / אשף |
-| SSL תקף (HTTPS) | `curl -I` |
-| `NEXT_PUBLIC_APP_URL=https://kenyonexpress.co.il` | env |
-| Production deploy ירוק על הענף המוסכם | Deployments |
+| `kenyonexpress.co.il` מחובר | Domains UI |
+| DNS → Vercel + SSL | dig / `curl -I` |
+| `NEXT_PUBLIC_APP_URL` = דומיין הקנוני | env |
+| Production deploy ירוק | Deployments |
 | Instant Rollback ידוע | תרגול קצר |
 | Preview ≠ Production | הפרדת env |
 
@@ -98,49 +94,48 @@ HSTS preload: רק אחרי יציבות (P1).
 
 ---
 
-## 5. Backup policy (P0 לנתונים)
+## 5. Backup policy
 
 | שער | ראיה |
 |---|---|
-| Supabase **Pro** + **PITR** דלוק | dashboard |
-| מדיניות RPO/RTO מתועדת | `BACKUP-RESTORE-RUNBOOK.md` / BACKUP-RECOVERY |
-| תרגול restore מתוכנן או בוצע | הערת תאריך |
+| Supabase **Pro** + **PITR** | dashboard |
+| RPO/RTO מתועדים | BACKUP-DR |
+| תרגול restore מתוכנן/בוצע | תאריך |
 | `pg_dump` offsite מוצפן (לפחות שבועי) | מיקום + checksum |
-| מיגרציות prod רק דרך **MCP**, אחת-אחת | נוהל |
-| RLS: אין טבלת `public` בלי rowsecurity | שאילתת ספירה = 0 |
+| מיגרציות prod רק MCP | נוהל |
+| אין טבלת `public` בלי rowsecurity | שאילתה = 0 |
 
 בלי PITR: אין עלייה לכסף אמיתי.
 
 ---
 
-## 6. First 10 coupons live (P0 לקטלוג השקה)
+## 6. First 10 coupons live
 
 | שער | ראיה |
 |---|---|
-| 10 דילי קופון מהשקה קיימים ב-`products` | רשימת IDs / slugs |
-| כל אחד: `status=active`, תמונה, מחיר קופון, **`platform_percent` פר מוצר** | שאילתה |
-| ספק מקושר עם כתובת/לוגו מינימום ל-publish | `suppliers` |
-| אין תעריף ברמת ספק; אחוז מוסכם פר דיל | `ARCHITECTURE-SUPPLIER-ONBOARDING.md` |
-| PDP מציג מחיר אתר + יתרה בעסק (No Escrow) | צילום |
-| אימות מול פרוד | `LAUNCH-VALIDATION.md` |
-| קנייה אמיתית אחת (אחרי Cardcom smoke) על דיל מהרשימה | order_id |
+| 10 דילי קופון השקה ב-`products` | IDs / slugs |
+| כל אחד: `status=active`, תמונה, מחיר קופון, **`platform_percent` מפורש** (בלי default) | שאילתה |
+| ספק מקושר עם מינימום publish | `suppliers` |
+| אין תעריף מחייב ברמת ספק | PRICING-RULES |
+| PDP: מחיר אתר + יתרה בעסק (**No Escrow**) | צילום |
+| קנייה אמיתית אחת אחרי Cardcom smoke | `order_id` |
 
-מקור רשימה היסטורי: `scripts/seed/catalogue-data.mjs` / `launch-week-plan.md` / `PROGRESS-REPORT-AUG.md`.
+אסור: מוצר בלי `platform_percent`; אסור להמציא 5%/10% כברירת מחדל.
 
 ---
 
-## 7. שערי P1 (לא חוסמים soft-open צר, חוסמים שיגור מלא)
+## 7. שערי P1 (שיגור מלא)
 
 - [ ] Meilisearch פרוד + אינדוקס  
-- [ ] QStash / CF Worker ל-notifications drain  
+- [ ] Drain notifications (QStash / Worker)  
 - [ ] Analytics consent + PostHog/GA4  
 - [ ] 2FA לאדמין  
-- [ ] SEC-QR / SEC-WALLET סגורים לפי SECURITY  
-- [ ] עמוד מדיניות ביטולים מאושר עו״ד  
+- [ ] עמוד מדיניות ביטולים מאושר עו״ד (statutory fee ≠ commission)  
+- [ ] SEO redirects smoke מנתיבי WP ישנים  
 
 ---
 
-## 8. סדר הפעלה מומלץ
+## 8. סדר הפעלה
 
 ```text
 1. Vercel domains + env שלד
@@ -148,7 +143,7 @@ HSTS preload: רק אחרי יציבות (P1).
 3. Cardcom production + smoke charge/refund
 4. Resend verified + מייל ניסיון
 5. Sentry alerts
-6. 10 קופונים live + LAUNCH-VALIDATION
+6. 10 קופונים live + validation
 7. CHECKOUT_ENABLED=true
 8. קנייה אמיתית אחת + redeem בשטח
 ```
@@ -157,18 +152,19 @@ HSTS preload: רק אחרי יציבות (P1).
 
 ## 9. Acceptance (כל ה-P0)
 
-- [ ] Resend verified + smoke מייל הזמנה  
-- [ ] Cardcom prod credentials + smoke charge/refund  
-- [ ] Sentry alerts חיים למפעיל  
+- [ ] Resend verified  
+- [ ] Cardcom prod + smoke charge/refund  
+- [ ] Sentry alerts חיים  
 - [ ] Vercel domain + HTTPS + APP_URL  
 - [ ] PITR + מדיניות גיבוי  
-- [ ] 10 קופונים חיים עם percent פר מוצר  
+- [ ] 10 קופונים עם percent פר מוצר (בלי default)  
 - [ ] No Escrow בנוסח ובתשלום  
 
 ---
 
-## Revision
+## 10. Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-11 | יצירה: שערי Resend/Cardcom/Sentry/Vercel/backup/10 coupons |
+| 2026-08-11 | שערי Resend/Cardcom/Sentry/Vercel/backup/10 coupons |
+| 2026-08-12 | batch-2 #35: BINDING על arch/docs-batch-2; הדגשת אין default percent / No Escrow |
