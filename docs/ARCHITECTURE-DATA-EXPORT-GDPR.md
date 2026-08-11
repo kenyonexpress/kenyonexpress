@@ -2,8 +2,8 @@
 
 ייצוא ומחיקת נתוני משתמש (זכויות נושא מידע; יישור לדין הישראלי + עקרונות GDPR כשיחולו).
 
-Status: **BINDING** · עודכן: 2026-08-06 · QA: PASS  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #45/50  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
 מסמכים קשורים:
@@ -21,6 +21,8 @@ docs/CONTRADICTIONS.md
 
 אזהרה: חוזה הנדסי. לא מחליף ייעוץ משפטי / רשם מאגרי מידע.
 
+מודל כסף בייצוא: snapshots כפי שנשמרו. **אין** שדות Escrow/held/J5.
+
 ---
 
 ## 0. הכרעות
@@ -34,7 +36,7 @@ docs/CONTRADICTIONS.md
 | D5 | בקשות דרך טבלה + SLA יעד 30 יום (יעד פנימי: 14 יום עסקים). |
 | D6 | Admin/support מבצעים אחרי אימות זהות; פעולה ב-`audit_log`. |
 | D7 | Analytics: מחיקת/ניתוק `user_id`; אירועים אגרגטיביים נשארים בלי PII. |
-| D8 | ייצוא כסף = snapshots כפי שנשמרו (`platform_percent`, סכומי on-site). **אין** שדות Escrow/held/J5. מודל: No Escrow (CONTRADICTIONS / PRICING). |
+| D8 | ייצוא כסף = snapshots (`platform_percent`, סכומי on-site, דמי ביטול LEGAL אם היו). **אין** Escrow/held/J5. |
 
 ---
 
@@ -52,6 +54,7 @@ docs/CONTRADICTIONS.md
 | ארנק | יתרות ותנועות (agorot) |
 | העדפות התראות | כן |
 | מתנות | ברכות ששלח/קיבל |
+| ביטולים | `cancellation_fee_agorot` אם קיים (LEGAL, לא commission) |
 
 לא נכלל: `service_role`, Cardcom tokens גולמיים, לוגים פנימיים עם IP מלא אם לא הכרחי (או IP truncated בלבד).
 
@@ -101,6 +104,7 @@ account_deletion_requests
 - [ ] Sessions מבוטלים  
 - [ ] Audit על כל בקשה  
 - [ ] קישור הורדה חד-פעמי  
+- [ ] אין שדות Escrow בייצוא  
 
 ---
 
@@ -112,3 +116,4 @@ account_deletion_requests
 | 2026-08-06 | QA: קישור CUSTOMER-SUPPORT; RTL עברית |
 | 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
 | 2026-08-07 | QA audit: D8 ייצוא בלי Escrow; קישור PRICING |
+| 2026-08-12 | batch #45/50: רענון BINDING; דמי ביטול LEGAL בייצוא |
