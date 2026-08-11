@@ -1,75 +1,82 @@
 # ארכיטקטורה: SEO וביצועים
 
-Metadata דינמי, JSON-LD, sitemap, OG, Core Web Vitals, ISR/cache, Meilisearch מול Google.
+Metadata (App Router), schema.org בעברית ל-Product/Offer, sitemap לפי קטגוריה, תקציב Core Web Vitals, ISR, ודפי SEO מול Meilisearch.
 
-Status: **BINDING** · עודכן: 2026-08-10  
+Status: **BINDING** · עודכן: 2026-08-11  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+
+לפני יישום API של Next: לאמת חתימות מול
+
+```
+node_modules/next/dist/docs/
+```
+
+(בילד מותאם; לא להניח Next "רגיל" מאימון).
 
 מסמכים קשורים:
 
 ```
+docs/PERFORMANCE-BUDGET.md
 docs/ARCHITECTURE-SEARCH-UX.md
 docs/ARCHITECTURE-SEARCH.md
 docs/ARCHITECTURE-GROWTH-SEO.md
+docs/SEO-CONTENT-STRATEGY.md
 docs/ARCHITECTURE-CATEGORIES-TAXONOMY.md
 docs/ARCHITECTURE-PRICING-RULES.md
-docs/RUNBOOK-PRODUCTION.md
+docs/CITY-LANDING-CONTENT.md
 ```
 
-עקרון: **Web = SEO + רכישה.** Meilisearch משרת חיפוש באתר; Google מאונדקס מ-HTML/sitemap/JSON-LD בלבד.
+עקרון: **Web = SEO + רכישה.** Meilisearch = חיפוש באתר בלבד. Google מאונדקס מ-HTML / sitemap / JSON-LD.
 
 ---
 
 ## 0. המלצה אחת (מחייבת)
 
-**RSC + ISR על קטלוג ציבורי, `generateMetadata` מ-DB, JSON-LD מאותם ערכי קופה, sitemap דינמי שעתי, OG מתמונת המוצר, תקציב CWV פר דף ב-CI.**
+**RSC + ISR על קטלוג, `generateMetadata` מ-DB, JSON-LD Product+Offer בעברית מאותם מחירי קופה, sitemap דינמי (כולל פיצול לקטגוריות), תקציב CWV מ-PERFORMANCE-BUDGET, דפי נחיתה לחיפוש עם noindex על `/search` הדינמי.**
 
-אין SSG מלא של כל הקטלוג ב-build. אין מחיר שני ב-meta. אין אינדוקס Google דרך Meilisearch.
+אין מחיר שני ב-meta. אין אינדוקס Google דרך Meili.
 
 ---
 
-## 1. Metadata דינמי (עברית)
+## 1. Metadata (App Router / Next 15+)
 
 ### 1.1 מוצר `/product/[slug]`
 
-מקור: שדות `*_he` + מחיר מהמודל הכספי (לא חישוב נפרד).
-
 ```ts
-// src/app/(store)/product/[slug]/page.tsx
 export const revalidate = 120
 
 export async function generateMetadata({ params }): Promise<Metadata> {
-  // title: seo_title ?? `${name_he} | KenyonExpress`
-  // description: seo_description ?? short_description_he (≤155)
+  // title: seo_title_he ?? `${name_he} | KenyonExpress`
+  // description: seo_description_he ?? תקציר + מחיר אתר (עברית)
   // alternates.canonical: `${site}/product/${slug}`
-  // openGraph + twitter מאותם title/description/image
+  // openGraph / twitter מאותם ערכים + תמונה absolute
 }
 ```
 
 | שדה | כלל |
 |---|---|
-| `title` | עברית; עד ~60 תווים; כולל מותג בסוף |
-| `description` | עברית; מה מקבלים + מחיר אתר |
-| `canonical` | URL יציב בלי query |
+| `title` | עברית; ~60 תווים; מותג בסוף |
+| `description` | עברית; מה מקבלים + מחיר שנגבה באתר |
+| `canonical` | בלי query |
 | `robots` | index רק אם `status=active` ו-`deleted_at IS NULL` |
 
-קופון: בתיאור מופיע **מחיר האתר** (`coupon_price_ils`) ויתרה בעסק; לא מציגים face כאילו שולם במלואו.
+קופון: בתיאור **מחיר האתר** + יתרה בעסק; לא להציג face כאילו שולם במלואו.
 
 ### 1.2 קטגוריה `/category/[slug]`
 
 | שדה | כלל |
 |---|---|
-| `title` | `name_he` + "דילים ומבצעים \| KenyonExpress" |
-| `description` | `description_he` או משפט קבוע בעברית עם שם הקטגוריה |
-| `canonical` | `/category/{slug}` בלי filters ב-query |
-| דף עם `searchParams` | אותו title בסיסי; **noindex** אם ה-URL הוא תוצאת פילטר עמוקה (page>1 עם sort ייחודי) |
+| `title` | `{name_he} · דילים \| KenyonExpress` |
+| `description` | `description_he` או משפט קבוע בעברית |
+| `canonical` | `/category/{slug}` בלי filters |
+| פילטרים עמוקים | **noindex** (page>1 + sort ייחודי) |
 
-`lang="he"` + `dir="rtl"` ב-layout השורש. פונט Heebo מ-`next/font`.
+`lang="he"` + `dir="rtl"` ב-root layout. פונט מותג מ-`next/font`.
 
 ---
 
-## 2. JSON-LD: Product + Offer
+## 2. schema.org בעברית: Product + Offer
 
 בונה יחיד:
 
@@ -79,95 +86,77 @@ src/lib/seo/json-ld.ts → buildProductJsonLd
 
 | כלל | פירוט |
 |---|---|
-| `@type` | `Product` + `Offer` (או AggregateOffer רק אם יש טווח מחירים אמיתי) |
+| `@type` | `Product` + nested `Offer` |
 | `inLanguage` | `he-IL` |
 | `name` / `description` | מ-`name_he` / `description_he` |
-| קופון `Offer.price` | **`paidOnlineIls`** (`coupon_price`) בלבד |
-| קופון הקשר | `highPrice` / strikethrough = face; לא Offer יחיד על face |
-| פיזי `Offer.price` | מחיר on-site בפועל |
+| קופון `Offer.price` | **מחיר האתר בלבד** (`coupon_price` / agorot→ILS לתצוגה schema) |
+| face / השוואה | `property` נפרד או טקסט; **לא** Offer יחיד על face |
+| פיזי `Offer.price` | מחיר on-site |
 | `priceCurrency` | `ILS` |
-| `availability` | InStock / OutOfStock לפי מלאי; **בלי Offer במחיר 0** |
-| `brand` | שם הספק; לא "KenyonExpress" כברירת מחדל |
+| `availability` | InStock / OutOfStock; בלי Offer במחיר 0 |
+| `seller` / `brand` | שם ספק; LocalBusiness+geo רק מקואורדינטות מאומתות |
 
-קטגוריה: `CollectionPage` / `ItemList` של URL מוצרים פעילים (עד N ראשונים), בלי מחירים שקריים.
+קטגוריה: `CollectionPage` + `ItemList` של URL מוצרים פעילים.
 
-מחיר ב-JSON-LD = מחיר שהקופה גובה. נקודה.
+מחיר ב-JSON-LD = מחיר שהקופה גובה.
 
 ---
 
-## 3. Sitemap דינמי
+## 3. Sitemap לפי קטגוריה
 
+```text
+/sitemap.xml                 → sitemap index
+/sitemap-static.xml          → בית, משפטי, FAQ
+/sitemap-categories.xml      → כל /category/{slug} פעיל
+/sitemap-products-{n}.xml    → מוצרים (chunk ≤ 45k)
+/sitemap-cities.xml          → דפי עיר (אם published)
 ```
-src/app/sitemap.ts
-export const revalidate = 3600
-```
+
+יישום: `src/app/sitemap.ts` או route handlers מפוצלים עם `revalidate = 3600`.
 
 | נכנס | לא נכנס |
 |---|---|
-| `/`, `/products`, `/coupons` | `/account/**`, `/checkout/**`, `/cart` |
-| `/category/{slug}` פעיל | `/admin/**`, `/supplier/**`, `/api/**` |
-| `/product/{slug}` עם `status=active` | `/coupon/**`, `/redeem/**`, `/search` |
+| `/`, קטגוריות פעילות, מוצרים active | `/account/**`, `/checkout/**`, `/cart` |
+| דפי עיר מאושרים | `/admin/**`, `/supplier/**`, `/api/**` |
+| | `/search`, `/redeem/**` |
 
-`lastmod` מ-`updated_at`. אחרי publish: `revalidateTag('sitemap')`. מעל 45k URLs: פיצול ל-sitemap index (אותו מנגנון, קבצים נוספים).
+`lastmod` מ-`updated_at`. אחרי publish: `revalidateTag('sitemap')`.
 
-robots:
-
-```
-src/app/robots.ts
-```
-
-Allow קטלוג ציבורי; Disallow על הנתיבים מהעמודה הימנית; `Sitemap: https://kenyonexpress.co.il/sitemap.xml`.
+`robots.ts`: Allow קטלוג; Disallow פרטי; `Sitemap: https://kenyonexpress.co.il/sitemap.xml`.
 
 ---
 
-## 4. OG images
+## 4. Core Web Vitals (תקציב)
 
-| דף | תמונה |
+מקור מספרים מחייב:
+
+```
+docs/PERFORMANCE-BUDGET.md
+```
+
+| מדד | יעד (mobile p75) |
 |---|---|
-| מוצר | תמונה ראשית של המוצר (R2 + `next/image`); absolute URL ב-`openGraph.images` |
-| קטגוריה | תמונת קטגוריה אם יש; אחרת ברירת מותג `#fed700` סטטית אחת |
-| בית | hero / מותג קבוע |
-
-אין OG דינמי מ-edge screenshot ב-MVP. מימדים מומלצים: 1200×630. תמונה בלי טקסט Eng שבור על רקע עברי. `twitter:card = summary_large_image`.
-
----
-
-## 5. Core Web Vitals + תקציב פר דף
-
-יעדי שדה (mobile, p75):
-
-| מדד | יעד |
-|---|---|
-| LCP | ≤ 2.5s |
+| LCP | ≤ 2.5s (קטגוריה ≤ 2.8s) |
 | INP | ≤ 200ms |
 | CLS | ≤ 0.1 |
-| TTFB (קטלוג) | ≤ 800ms |
-| Lighthouse Performance / A11y / SEO | ≥ 90 |
+| TTFB קטלוג | ≤ 800ms |
 
-תקציב פר דף (mobile):
-
-| דף | JS קריטי | LCP image | הערות |
-|---|---|---|---|
-| `/` | ≤ 170KB gzip | hero slide פעיל אחד `priority` | בלי Cardcom ב-bundle הבית |
-| `/product/[slug]` | ≤ 190KB gzip | תמונה ראשית אחת `priority` | קופה ב-dynamic import |
-| `/category/[slug]` | ≤ 180KB gzip | כרטיס ראשון בלבד eager | פילטרים אחרי hydration |
-| `/checkout` | לא ב-LH CI | n/a | `no-store`; smoke בלבד |
-
-אכיפה: Lighthouse CI על home + PDP קופון + category; רגרסיית Performance > 5 נקודות בלי הצדקה = כשל PR.
+תקציב JS ראשוני (gzip): home ≤ 180KB, category ≤ 200KB, product ≤ 220KB.  
+Lighthouse CI על home + PDP + category; רגרסיית Performance > 5 נקודות בלי הצדקה = כשל PR.
 
 ---
 
-## 6. ISR / cache פר סוג דף
+## 5. ISR / cache
 
 | דף | מצב | `revalidate` |
 |---|---|---|
-| `/` | ISR | **120s** · tag `home` |
-| `/product/[slug]` | ISR | **120s** · tags `product:{id}`, `catalog` |
-| `/category/[slug]` בלי filters | ISR | **180s** · tag `category:{id}` |
-| `/category` + `searchParams` | dynamic | data-cache קצר לqueries |
+| `/` | ISR | 120s · tag `home` |
+| `/product/[slug]` | ISR | 120s · `product:{id}`, `catalog` |
+| `/category/[slug]` | ISR | 180s · `category:{id}` |
+| `/category` + filters | dynamic | data-cache קצר |
 | `/search` | dynamic | **noindex** |
-| `/cart`, `/checkout*`, `/account/**`, `/admin/**`, `/supplier/**` | dynamic private | `no-store` |
-| `/sitemap.xml` | ISR | **3600s** · tag `sitemap` |
+| cart/checkout/account/admin | private | `no-store` |
+| sitemaps | ISR | 3600s · `sitemap` |
 
 אחרי publish / שינוי מחיר:
 
@@ -179,20 +168,31 @@ revalidateTag('sitemap')
 revalidateTag('home')
 ```
 
-יעד: PDP מעודכן תוך ~דקה.
+---
+
+## 6. Meilisearch ודפי SEO
+
+| מערכת | תפקיד |
+|---|---|
+| Google | HTML + sitemap + JSON-LD |
+| Meilisearch | חיפוש/השלמות/typos **בתוך** האתר |
+
+| סוג דף | אינדוקס |
+|---|---|
+| `/search?q=` | **noindex** (תוצאות דינמיות) |
+| `/category/{slug}` | index (תוכן יציב) |
+| דפי עיר / קולקציה | index רק עם תוכן ייחודי + דילים |
+| "דף SEO" מלאכותי שמעתיק Meili hits ל-HTML בלי ערך | אסור (doorway) |
+
+אינדוקס Meili: job אחרי שינוי מוצר (QStash/Worker). מסמך Meili כולל `name_he`, facets, מחיר אתר; Google לא קורא אותו.
+
+דירוג Meili: רלוונטיות עברית; **אין** boost לפי `platform_percent`.
 
 ---
 
-## 7. Meilisearch מול Google
+## 7. OG
 
-| מערכת | תפקיד | מה לא |
-|---|---|---|
-| **Google** | אינדוקס ציבורי דרך HTML + sitemap + JSON-LD | לא נשלח קטלוג מ-Meili |
-| **Meilisearch** | חיפוש/השלמות/typos בתוך האתר | לא מקור ל-SEO; `/search` = noindex |
-
-אינדוקס Meili: QStash → `/api/search/index-job` אחרי שינוי מוצר (אותו דפוס retry כמו התראות). מסמך Meili כולל `name_he`, facets, מחיר אתר לתצוגה; Google לא קורא אותו.
-
-דירוג Google: תוכן עברי בשרת, canonical, CWV, מחיר עקבי. דירוג Meili: רלוונטיות עברית בלי boost לפי עמלה קבועה (`platform_percent` אינו גורם מיון ב-UX).
+מוצר: תמונה ראשית absolute 1200×630. קטגוריה: תמונת קטגוריה או מותג. `twitter:card = summary_large_image`.
 
 ---
 
@@ -200,11 +200,11 @@ revalidateTag('home')
 
 - [ ] `generateMetadata` עברי למוצר ולקטגוריה  
 - [ ] JSON-LD Offer = מחיר קופה; קופון לא מפרסם face כ-price יחיד  
-- [ ] sitemap דינמי בלי account/checkout/coupon/redeem  
-- [ ] OG מתמונת מוצר absolute  
-- [ ] LH ≥ 90 על home/PDP/category  
-- [ ] ISR 120 על PDP; checkout `no-store`  
-- [ ] Meili ≠ Google indexing  
+- [ ] sitemap index + קובץ קטגוריות נפרד  
+- [ ] CWV לפי PERFORMANCE-BUDGET  
+- [ ] ISR על PDP; checkout `no-store`  
+- [ ] `/search` noindex; Meili ≠ Google  
+- [ ] אין Escrow ב-meta/תיאורים  
 
 ---
 
@@ -212,5 +212,6 @@ revalidateTag('home')
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-03 | ISR / sitemap / schema / CWV (rev C) |
-| 2026-08-10 | מסמך ממוקד מחייב: metadata, JSON-LD, OG, תקציב פר דף, Meili מול Google |
+| 2026-08-03 | ISR / sitemap / schema / CWV |
+| 2026-08-10 | metadata, JSON-LD, OG, תקציב פר דף, Meili מול Google |
+| 2026-08-11 | sitemap לפי קטגוריה, קישור PERFORMANCE-BUDGET, דפי SEO מול Meili, הערת Next docs |
