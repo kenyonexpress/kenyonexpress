@@ -1,112 +1,79 @@
 # תוכנית איכות ספקים
 
-מדדים פנימיים, סף השעיה, שימוע, ותמריצים לספקים מצטיינים.
-
-Status: **PLAN** · עודכן: 2026-08-10  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
-אין שינוי קוד. אין נגיעה בתיקייה הראשית.
-
-מסמכים קשורים:
+תקציר BINDING. פירוט:
 
 ```
-docs/ARCHITECTURE-SUPPLIER-ONBOARDING.md
-docs/SUPPLIER-ONBOARDING.md
 docs/ARCHITECTURE-SUPPLIER-PORTAL.md
-docs/ARCHITECTURE-FRAUD-PREVENTION.md
-docs/ARCHITECTURE-CUSTOMER-SUPPORT.md
 docs/DISPUTE-RESOLUTION.md
-docs/FEATURED-DEALS-PRICING.md
-docs/V2-VISION.md
-docs/CONTRADICTIONS.md
+docs/ARCHITECTURE-FRAUD-PREVENTION.md
 ```
 
-עקרון: איכות ≠ עמלה. `platform_percent` נשאר פר מוצר. תמריץ חשיפה הוא **boost** נפרד, לא הנחת עמלה אוטומטית.
+Status: **BINDING (policy)** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+`platform_percent` לא משתנה כעונש; boost נפרד.
 
 ---
 
-## 1. מדדים פנימיים (NPS-like)
+## החלטה
 
-לא סקר NPS ציבורי חובה ב-MVP. ציון איכות פנימי `supplier_quality_score` (0–100) מורכב מ:
-
-| רכיב | משקל יעד | מקור | הערה |
-|---|---:|---|---|
-| שיעור מימושים תקינים | 30% | redeem success / attempts | כישלונות סריקה חוזרים מורידים |
-| מחלוקות לטובת לקוח | 25% | DISPUTE / support | משקל כבד ל-P1 כסף |
-| זמן מענה ספק לפניות | 15% | תמיכה / פורטל | יעד פנימי |
-| ביטולי ספק / no-show | 15% | הזמנות + דיווחים | |
-| דירוג לקוח (אם קיים) | 15% | אופציונלי אחרי השקה | בלי כוח דירוג מזויף |
-
-חישוב: חלון נע 90 יום. ספק חדש (< 10 מימושים): מצב `probation`, בלי השעיה אוטומטית על מדגם קטן.
-
----
-
-## 2. ספי פעולה
-
-| ציון / אירוע | פעולה |
+| # | הכרעה |
 |---|---|
-| ≥ 80 | מועמד ל-**boost חינם** (סעיף 4) |
-| 50–79 | רגיל; התראה רבעונית בפורטל |
-| 30–49 | אזהרה כתובה + תוכנית שיפור 30 יום |
-| < 30 או 3 מחלוקות P1 ב-30 יום | **השעיה זמנית** של מוצרים חדשים / pause דילים |
-| הונאה / מימוש כפול מכוון | השעיה מיידית + FRAUD |
-
-השעיה = `supplier.status` / pause מוצרים; לא מחיקת היסטוריית כסף.  
-אין "קנס עמלה" אוטומטי שמשנה `platform_percent`.
+| SQ1 | `supplier_quality_score` 0-100; חלון 90 יום. |
+| SQ2 | רכיבים: redeem success 30%, disputes 25%, response 15%, no-show 15%, ratings 15%. |
+| SQ3 | ספי: ≥80 boost; 30-49 warning; <30 or 3 P1 disputes → suspend listings. |
+| SQ4 | שימוע: notice → response 5bd → decision → one appeal 7d → audit_log. |
+| SQ5 | fraud/double redeem → immediate suspend. |
+| SQ6 | **לא** משנים `platform_percent` אוטומטית. |
 
 ---
 
-## 3. תהליך שימוע ספק
+## חלופות שנדחו
 
-1. **הודעה:** מייל ל-`contact_email` + רשומה באדמין: סיבה, מדדים, מועד מענה (5 ימי עסקים).  
-2. **תגובת ספק:** הסבר + ראיות (צילומים, יומן סריקות).  
-3. **בדיקה:** support/admin לפי DISPUTE + FRAUD; בלי הבטחות Escrow.  
-4. **הכרעה:**  
-   - החזרה לפעילות  
-   - הארכת אזהרה  
-   - השעיה מלאה / סיום התקשרות לפי הסכם  
-5. **ערעור:** פעם אחת לבעלים תוך 7 ימים.  
-6. **Audit:** כל שלב ב-`audit_log`.
-
-בזמן השעיה: קופונים פעילים שכבר נמכרו: מדיניות DISPUTE (חלופה / החזר ללקוח שלא מימש).
+| חלופה | למה |
+|---|---|
+| penalty percent | SQ6; pricing separate |
+| public NPS mandatory MVP | internal score |
+| delete supplier history on suspend | money audit |
+| Escrow in dispute copy | No Escrow |
 
 ---
 
-## 4. תמריצים למצטיינים
+## סכמת DB
 
-| תמריץ | מי זכאי | פרטים |
-|---|---|---|
-| **Boost חינם** | ציון ≥ 80 + ≥ 20 מימושים ב-90 יום | סלוט "מומלץ" / באנר קטגוריה ל-7–14 יום בלי תשלום |
-| תג "ספק מצטיין" | אותו סף | תווית בפורטל ובכרטיס (לא מחליפה גילוי ממומן בתשלום) |
-| עדיפות בתמיכה | מצטיינים | מענה מהיר יותר לפניות ספק תפעוליות |
-| הזמנה למכרז מוקדם | מצטיינים | גישה מוקדמת לחבילות FEATURED (בתשלום) |
-
-Boost חינם **אינו** משנה דירוג אורגני לפי עמלה.  
-Boost בתשלום: ראה
-
-```
-docs/FEATURED-DEALS-PRICING.md
+```text
+suppliers.status
+audit_log (appeals)
+disputes / support tickets (sources for score)
+products.status (pause on suspend)
 ```
 
----
-
-## 5. שקיפות לספק
-
-בפורטל (יעד): ציון נוכחי, מגמה, סיבות עיקריות לירידה, קישור למדיניות.  
-בלי לחשוף פרטי לקוח מזהים במדד.
+אין DDL חדש.
 
 ---
 
-## 6. Acceptance
+## מקרי קצה
 
-- [ ] ספי אזהרה/השעיה מתועדים
-- [ ] שימוע עם לוחות זמנים ו-audit
-- [ ] Boost חינם מופרד מ-`platform_percent`
-- [ ] אין שפת Escrow בתקשורת לספק
+| # | מקרה |
+|---|---|
+| CE1 | new supplier <10 redeems | probation, no auto suspend |
+| CE2 | sold coupons during suspend | DISPUTE policy |
+| CE3 | false dispute spike | fraud review |
+| CE4 | boost abuse | paid FEATURED separate |
+| CE5 | score without PII leak | portal aggregate only |
 
 ---
 
-## 7. Revision
+## פתוחות
+
+| # | פתוח |
+|---|---|
+| O1 | automated score job |
+| O2 | customer rating post-redeem |
+
+---
+
+## Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-10 | תוכנית איכות ראשונית + boost חינם |
+| 2026-08-12 | batch-2: BINDING |
