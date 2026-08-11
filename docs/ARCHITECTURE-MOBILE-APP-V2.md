@@ -1,20 +1,13 @@
-# ARCHITECTURE: Mobile App V2 (Expo Super-App)
+# ארכיטקטורה: Mobile App V2 (Expo delta)
 
-חידוד ל-
+חידוד ל-`docs/ARCHITECTURE-MOBILE-APP.md`: Push, QR wallet native, תצוגת קופון אופליין, super-app navigation.
 
-```
-docs/ARCHITECTURE-MOBILE-APP.md
-```
+Status: **BINDING (V2 delta)** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.  
+מודל כסף: **No Escrow**.
 
-Expo React Native super-app, אותו Supabase, Push, QR wallet native, תצוגת קופון אופליין.
-
-Status: **BINDING (V2 delta)** · Updated: 2026-08-03  
-Scope: **docs only** · branch `arch/docs-queue`  
-אין שינוי קוד. אין נגיעה ב-worktree הראשי.
-
-המסמך הבסיסי נשאר מקור ל-IA ולשלבי M0–M4. מסמך זה מחדד חוזים ל-Push, ארנק QR נייטיבי, ואופליין.
-
-Companions:
+מסמכים קשורים:
 
 ```
 docs/ARCHITECTURE-MOBILE-APP.md
@@ -24,9 +17,11 @@ docs/ARCHITECTURE-FRAUD-PREVENTION.md
 docs/ARCHITECTURE-E2E-TESTING.md
 ```
 
+המסמך הבסיסי (MOBILE-APP) נשאר מקור ל-IA ולשלבי M0–M4. V2 מנצח בפרטי Push/QR/offline.
+
 ---
 
-## 0. הכרעות V2 (מחדדות)
+## 1. החלטה
 
 | # | הכרעה |
 |---|---|
@@ -37,26 +32,13 @@ docs/ARCHITECTURE-E2E-TESTING.md
 | V2-5 | Offline: **תצוגה בלבד** של issued; redeem תמיד אונליין אצל הספק. |
 | V2-6 | Secure Store / Keychain ל-refresh token; MMKV/SQLite מוצפן למטא-דאטה קופון. |
 | V2-7 | Web נשאר SEO; האפ לא דורשת indexation. |
+| V2-8 | ספריית QR: `react-native-qrcode-svg` (או מקביל מתוחזק). |
+| V2-9 | Navigation: tabs Home | Search | Coupons | Account; supplier entry מ-Account. |
+| V2-10 | Push dedupe: `dedupe_key` עם suffix `:push`. |
 
----
+### 1.1 Push (V2)
 
-## 1. Shared Supabase backend (V2)
-
-| נושא | חוזה |
-|---|---|
-| Auth | Google (Expo Auth Session); Apple Sign-In לפני הגשת iOS אם נדרש |
-| Session | `@supabase/supabase-js` + auto refresh ב-Secure Store |
-| RLS | זהה ל-web; אפס service role באפ |
-| Realtime (אופציונלי) | רק לערוצים לא-כספיים (למשל ticket); לא למאזן ארנק כמקור אמת |
-| Edge/Next APIs | checkout, redeem, wallet debit כמו web |
-
-מיפוי טבלאות זהה: `profiles`, `orders`, `vouchers`, `wallet_*`, `supplier_members`, `push_tokens`.
-
----
-
-## 2. Push notifications (V2)
-
-### 2.1 רישום
+רישום:
 
 ```text
 App asks permission after value moment
@@ -65,43 +47,19 @@ App asks permission after value moment
   → upsert push_tokens (user_id, platform, token, app_version, updated_at)
 ```
 
-UNIQUE `(user_id, token)`. מחיקה ב-logout / 410 מ-FCM/APNs.
-
-### 2.2 שליחה
-
-Worker ההתראות מוסיף channel `push`:
+אירועים:
 
 | event | קהל | Deep link |
 |---|---|---|
 | coupon purchased / issued | customer | `kenyonexpress://coupon/{voucherId}` |
 | coupon redeemed | customer (+ supplier optional) | coupons / scan history |
 | expiry 48h | customer | `kenyonexpress://coupons` |
-| supplier new order | supplier members | `kenyonexpress://scan` או orders |
+| supplier new order | supplier members | `kenyonexpress://scan` |
 | refund succeeded | customer | order deep link |
 
-Payload: מינימלי; בלי קוד קופון מלא ב-push body אם אפשר (רק לאחר פתיחת האפ).
+UX: לא לבקש הרשאה ב-cold start; quiet hours אופציונלי ל-expiry בלבד.
 
-Idempotency: `dedupe_key` כמו מייל (`…:push`).
-
-### 2.3 UX
-
-- לא לבקש הרשאה ב-cold start האגרסיבי
-- כבוי מערכת → in-app inbox אם קיים (`inapp` channel)
-- Quiet hours אופציונלי לתזכורות expiry בלבד
-
----
-
-## 3. QR wallet native
-
-### 3.1 למה native
-
-- אמינות בקופה (בהירות, מסך מלא, לא זום WebView)
-- עבודה בלי רשת אחרי sync
-- שליטה ב-`Brightness` / keep-awake בזמן הצגה
-
-ספרייה יעד: `react-native-qrcode-svg` (או מקביל מתוחזק) על מחרוזת `qr_payload`.
-
-### 3.2 מסך קופון
+### 1.2 QR wallet native
 
 ```text
 Full-bleed QR
@@ -112,55 +70,79 @@ Expiry
 Banner if offline (last synced_at)
 ```
 
-אין כפתור "ממש עכשיו" ללקוח.
-
-### 3.3 אבטחת אחסון
-
-| נתון | אחסון |
-|---|---|
-| refresh token | Secure Store |
-| qr_payload + code | encrypted-at-rest store (Keystore/Keychain-backed אם אפשר) |
-| product images | disk cache רגיל |
-
 Wipe: logout, unwind על `redeemed`/`cancelled`/`expired` אחרי sync.
 
----
-
-## 4. Offline coupon display
+### 1.3 Offline coupon display
 
 | מצב | התנהגות |
 |---|---|
 | Online foreground | delta sync `vouchers` where status=issued |
 | Offline | מציג cache; באנר "לא מחובר · נכון ל-{{synced_at}}" |
-| Offline + user taps share | מותר לשתף קוד; לא redeem |
-| Supplier offline | האפ מסרבת לסרוק; הודעה בעברית |
+| Offline + share | מותר לשתף קוד; לא redeem |
+| Supplier offline | האפ מסרבת לסרוק |
 
-Conflict: שרת מנצח תמיד. אם השרת אומר redeemed והמטמון issued → מסיר QR מיד בכניסה לרשת.
-
----
-
-## 5. Super-app navigation (V2 sharpening)
-
-```text
-Root tabs (customer): Home | Search | Coupons | Account
-Hidden stack: Product, Cart, Checkout (Cardcom WebView), Order detail
-Supplier mode entry: Account → "סורק לעסק" if supplier_members active
-  → Scan tab (camera) + History
-```
-
-Deep links נשמרים מ-V1; Universal Links ל-`/coupon/*` פותחים את המסך הנייטיבי אחרי auth.
+Conflict: שרת מנצח תמיד.
 
 ---
 
-## 6. Checkout + wallet (V2)
+## 2. חלופות שנדחו
 
-- Cardcom Low Profile ב-WebView / דפדפן מערכת עם return deep link
-- Wallet debit רק דרך שרת (ARCHITECTURE-WALLET-CASHBACK)
-- אחרי הצלחה: sync vouchers + local notification אופציונלית + Push מהשרת
+| חלופה | נימוק דחייה |
+|---|---|
+| WebView ל-QR | בהירות/זום/keep-awake inferior; V2-4 native. |
+| FCM/APNs ישיר מהאפ לשליחה | bypass worker/consent/dedupe; V2-3. |
+| redeem מקומי offline | fraud + חד-פעמיות; שרת בלבד. |
+| AsyncStorage ל-qr_payload | לא encrypted-at-rest; V2-6. |
+| IAP לקופונים | MOBILE-APP M4; Cardcom WebView. |
+| אפ נפרדת לספק | V2-1 super-app; scan mode מוסתר. |
+| Push body עם קוד קופון מלא | leakage; payload מינימלי. |
 
 ---
 
-## 7. Test matrix (V2)
+## 3. סכמת DB
+
+**אין DDL חדש ב-V2.** שימוש בטבלאות קיימות:
+
+| טבלה | שדות V2 |
+|---|---|
+| `push_tokens` | `user_id`, `token`, `platform`, `enabled`, `app_version` |
+| `vouchers` | `qr_payload`, `code`, `status`, `expires_at`, `updated_at` (delta sync) |
+| `notification_outbox` | `channel=push`, `dedupe_key`, `payload` |
+| `supplier_members` | scan mode gate |
+
+מיגרציות مرجع: `114_push_tokens.sql`, outbox מ-029/031.
+
+---
+
+## 4. מקרי קצה
+
+| # | מצב | התנהגות |
+|---|---|---|
+| E1 | Airplane mode אחרי sync | QR מ-cache; באנר offline |
+| E2 | Redeem על supplier → customer online | cache clears ב-delta sync |
+| E3 | Push replay על finalize | dedupe; MV6 test |
+| E4 | Logout mid-display | wipe SecureStore + coupon cache |
+| E5 | Brightness / keep-awake timeout | QR screen re-activates on focus |
+| E6 | `qr_payload` rotate בשרת | sync מחליף; QR ישן invalid |
+| E7 | Permission denied push | in-app inbox fallback אם קיים |
+| E8 | Same user web vs app voucher list | MV5: חייב זהות |
+| E9 | Supplier taps scan בלי membership | redirect + הודעה |
+| E10 | Deep link ל-voucher של user אחר | 403 / redirect login |
+
+---
+
+## 5. פתוחות
+
+| # | פער | החלטה זמנית | תאריך |
+|---|---|---|---|
+| O1 | `/api/mobile/push-register` vs `/api/app/push-tokens` | לאחד ל-endpoint אחד ב-M3 | 2026-08-12 |
+| O2 | in-app inbox channel | P1; push opt-out fallback | 2026-08-12 |
+| O3 | quiet hours timezone | Asia/Jerusalem default | 2026-08-12 |
+| O4 | Maestro E2E ל-MV1–MV6 | TESTING-CICD P2 | 2026-08-12 |
+
+---
+
+## 6. Test matrix (V2)
 
 | ID | תרחיש |
 |---|---|
@@ -173,7 +155,7 @@ Deep links נשמרים מ-V1; Universal Links ל-`/coupon/*` פותחים את 
 
 ---
 
-## 8. Relation to V1
+## 7. Relation to V1
 
 | נושא | V1 | V2 |
 |---|---|---|
@@ -186,19 +168,9 @@ Deep links נשמרים מ-V1; Universal Links ל-`/coupon/*` פותחים את 
 
 ---
 
-## 9. Acceptance
+## 8. Revision
 
-- [ ] Shared Supabase only
-- [ ] Push דרך notifications pipeline + push_tokens
-- [ ] QR native מ-qr_payload
-- [ ] Offline display בלי redeem מקומי
-- [ ] Wipe ב-logout
-- [ ] Docs only; main worktree לא נגע
-
----
-
-## 10. Revision
-
-| Date | Change |
+| תאריך | שינוי |
 |---|---|
-| 2026-08-03 | V2 delta על arch/docs-queue: Push, native QR wallet, offline display |
+| 2026-08-03 | V2 delta: Push, native QR, offline display |
+| 2026-08-12 | BINDING מלא: החלטה, חלופות, DB, קצה, פתוחות (`arch/docs-batch-2`) |
