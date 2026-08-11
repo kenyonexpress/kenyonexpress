@@ -170,10 +170,18 @@ docs/MASTER-INDEX.md
 
 ---
 
+## 7.5 סבב 21-29 (משפטי/תפעול/כסף)
+
+LEGAL-TERMS, REFUNDS, DATA-RETENTION, IR, BACKUP-RESTORE (PITR), EMAIL Resend,
+COUPON lifecycle (`redeemed`), FRAUD, VENDOR-PAYOUT (Cardcom ללקוח → CSV לספק).
+
+---
+
 ## 8. Revision
 
 | תאריך | שינוי |
 |---|---|
 | 2026-08-10 | דוח מנהלים ראשון לאוגוסט |
 | 2026-08-11 | סיכום סבב 20 מסמכים; מספרים מעודכנים; חסימת SEC |
+| 2026-08-11 | סבב 21-29: משפטי, IR, PITR, מיילים, lifecycle, payout |
 | 2026-08-11 | סיכום סבב 21–29 (legal→vendor payout) |
