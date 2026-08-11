@@ -80,6 +80,32 @@ Updated: 2026-08-10 (autonomous: [68] WhatsApp, geo פר מוצר, ושאריו�
 ‏v1.3.0. ‏(7) ✅ ‏(8) ✅ ‏(9) ✅ ‏(10) חלקי.
 ‏(11) ✅ ‏(12) ✅ ‏(13) ✅.
 
+## מעבר read-only 11.08 — ארבע בדיקות, שתי הפרכות
+
+‏**‏(1) ‏`docs/FINAL-REPORT.md`** — הקובץ **לא** נמצא בשורש אלא ב-`docs/`.
+‏"What is left" קיים (שורה 152, שמונה סעיפים). ‏**סעיף "Blockers" לא קיים בקובץ
+כלל** — ‏`grep -i blocker` מחזיר אפס התאמות. אין להתייחס אליו כאל סעיף חסר בטעות.
+
+‏**‏(2) ‏`protect-main` — ⛔ לא נמדד, חסר credentials.** ‏`gh auth status`:
+‏"You are not logged into any GitHub hosts". נבדקו שלושה מקורות: משתני סביבה
+‏(`GH_TOKEN`/`GITHUB_TOKEN`) — אין; ‏`~/.config/gh/hosts.yml` — לא קיים;
+‏keychain ‏(`security find-internet-password -s github.com`) — לא נמצא.
+‏`git remote` הוא SSH, שלא מקנה גישה ל-REST API. ‏`gh auth login` אינטראקטיבי
+ולכן לא ניתן להרצה מכאן. **ראיה עקיפה שכן קיים ruleset אבל עם bypass list לא
+ריקה:** כל push ל-`main` הדפיס ‏`remote: Bypassed rule violations`. זו בדיוק
+התקלה ש-`docs/GITHUB-SETTINGS.md` שורה 46 מזהירה עליה.
+
+‏**‏(3) ‏`docs/PAYOUT-ARCHITECTURE.md` — לא קיים.** המסמך הקנוני ל-payout הוא
+‏`docs/ARCHITECTURE-SUPPLIER-PORTAL.md` ‏(46 אזכורי payout; פרקים 7.1–7.4).
+
+‏**‏(4) ההנחה ש-61 המוצרים הם seed דמה — מופרכת.** בפרודקשן יש **80 מוצרים,
+לא 61**. השוואת slug מלאה מול `data-import/wp-backup/kenyonexpress-wxr-2026-07-29.xml`
+‏(47 מוצרי `product` בייצוא): **43 מתאימים ב-slug וגם ב-`name_he` בדיוק**,
+ועוד 3 מתאימים אחרי הסרת `₪` מה-slug. כלומר **46 מ-80 הם ייבוא WP אמיתי**,
+ו-34 בלבד הם seed: 4 מ-03.06 ‏(`samsung-galaxy-s24` וחבריו) ו-30 מ-23.07
+‏(`demo-coupon-1..15`, `demo-physical-1..15`). מחיקת "seed" גורפת הייתה מוחקת
+נתוני WP אמיתיים.
+
 ## המשך מ: תור המרתון (20 שלבים), שלב 3
 
 ‏**‏(1) credentials — ⛔ חסום על תלות חיצונית.** ראה למטה.
