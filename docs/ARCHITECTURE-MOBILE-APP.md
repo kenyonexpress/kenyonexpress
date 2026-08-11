@@ -14,7 +14,10 @@ docs/ARCHITECTURE-PWA.md
 docs/ARCHITECTURE-NOTIFICATIONS.md
 docs/ARCHITECTURE-SUPPLIER-PORTAL.md
 docs/ARCHITECTURE-CASHBACK-WALLET.md
+docs/ARCHITECTURE-INTEGRATIONS.md
+docs/ARCHITECTURE-MOBILE-SUPERAPP.md
 docs/CONTRADICTIONS.md
+docs/PRODUCT-FIELDS-RESEARCH.md
 ```
 
 עקרון: **Web = SEO + רכישה ראשונית.** האפ = שימור, Push, ארנק קופונים, סריקת ספק. אין DB שני, אין Auth שני, אין PSP שני.
@@ -26,6 +29,8 @@ docs/CONTRADICTIONS.md
 **Expo (React Native) + Expo Router + EAS**, עם חבילות TypeScript משותפות מול המונורפו Next.js, על אותו פרויקט Supabase.
 
 PWA היא גשר עד החנויות; לא תחליף קבוע. Flutter ו-RN "נקי" בלי Expo נדחים.
+
+ורטיקלים עתידיים (משלוחים / נסיעות בסגנון Wolt/Gett): ראה `ARCHITECTURE-INTEGRATIONS.md`. נבנים פנימית בתוך אותה אפ; לא SDK צד ג' שמריץ כסף.
 
 ---
 
@@ -40,6 +45,7 @@ PWA היא גשר עד החנויות; לא תחליף קבוע. Flutter ו-RN "
 | M5 | קופון: **No Escrow** (שולם באתר לפלטפורמה; יתרה בעסק; payout קופון = 0). |
 | M6 | RTL native מההתחלה (`I18nManager` / expo-localization). |
 | M7 | Push + Wallet updates דרך `ARCHITECTURE-NOTIFICATIONS.md`. אין Make/Zapier. |
+| M8 | כסף ב-domain: **integer agorot**; UI מציג ₪. `platform_percent` דינמי מהשרת, בלי default באפ. |
 
 ---
 
@@ -48,11 +54,11 @@ PWA היא גשר עד החנויות; לא תחליף קבוע. Flutter ו-RN "
 מבנה יעד (packages בתוך אותו repo):
 
 ```text
-packages/shared-types     # DB row shapes, enums, API DTOs
-packages/shared-money     # agorot, coupon offer, platform_percent rules
+packages/shared-types      # DB row shapes, enums, API DTOs
+packages/shared-money      # agorot, coupon offer, platform_percent rules
 packages/shared-validation # zod schemas ל-checkout / redeem
-apps/web                  # Next.js (קיים כ-src/)
-apps/mobile               # Expo app
+apps/web                   # Next.js (קיים כ-src/)
+apps/mobile                # Expo app
 ```
 
 | משותף | לא משותף |
@@ -96,7 +102,8 @@ src/lib/commerce/coupon-offer.ts
 
 הגדרות: Associated Domains (iOS) + Digital Asset Links (Android) לדומיין הייצור.  
 Scheme מותאם: `kenyonexpress://`.  
-אסור deep link שמכיל service role או PAN.
+אסור deep link שמכיל service role או PAN.  
+אסור לשתף קישור שמאפשר redeem בלי session ספק.
 
 ---
 
@@ -105,13 +112,15 @@ Scheme מותאם: `kenyonexpress://`.
 | פריט | ערך |
 |---|---|
 | תשתית | Expo Notifications → APNs / FCM |
-| רישום | אחרי login + הרשאה; שורה ב-`push_tokens (user_id, platform, token, updated_at)` |
+| רישום | אחרי login + הרשאה; שורה ב-`push_tokens` (או `push_subscriptions`) `(user_id, platform, token, updated_at)` |
 | שליחה | אותו outbox (`channel=push`) מ-`ARCHITECTURE-NOTIFICATIONS.md` |
 | אירועים ללקוח | `voucher_issued`, `voucher_redeemed`, `coupon_expiry_48h`, `wallet_cashback_earned` |
 | אירועים לספק | `supplier_sale` (פיזי) |
 
 Transactional push לא תלוי ב-opt-in שיווקי.  
 נטישת עגלה: רק עם opt-in (מייל קודם; push בהמשך).
+
+כל push לקופון נושא deep link לארנק (`kenyonexpress://coupons/{id}` או HTTPS מקביל).
 
 ---
 
@@ -122,7 +131,7 @@ Transactional push לא תלוי ב-opt-in שיווקי.
   → פענוח KEV1.<payload>.<hmac>
   → POST /api/supplier/vouchers/redeem
        { code, scan_method: "camera", idempotency_key }
-  → הצלחה: צליל + מסך ירוק + יתרה לגבייה בעסק
+  → הצלחה: צליל + מסך ירוק + יתרה לגבייה בעסק (agorot → ₪)
   → כשל: already_used / wrong_supplier / expired בעברית
 ```
 
@@ -132,7 +141,7 @@ Transactional push לא תלוי ב-opt-in שיווקי.
 | רשת | Redeem תמיד אונליין. בלי רשת: הודעה ברורה, בלי "מימוש אופליין" |
 | אופליין ללקוח | הצגת QR בלבד (בהירות מסך); לא redeem מקומי |
 | קצב | אותם rate limits כמו ב-web redeem RPC |
-| ביקורת | כל סריקה ב-audit / redemption log |
+| ביקורת | כל סריקה ב-audit / `voucher_redemptions` |
 
 אין מסך Escrow/held לספק. אחרי redeem: הלקוח שילם יתרה בקופה; הפלטפורמה לא מעבירה מקדמת קופון.
 
@@ -142,7 +151,8 @@ Transactional push לא תלוי ב-opt-in שיווקי.
 
 Cardcom Low Profile ב-WebView מול השרת הקיים.  
 `CHECKOUT_ENABLED` ו-env Cardcom זהים ל-web.  
-אחרי `paid_at`: sync ארנק קופונים + רישום push + (אופציונלי) Wallet pass CTA.
+אחרי `paid_at`: sync ארנק קופונים + רישום push + (אופציונלי) Wallet pass CTA.  
+מקור האמת לעסקה: webhook / GetLpResult בשרת, לא ה-WebView לבדו.
 
 ---
 
@@ -154,6 +164,7 @@ M1  Expo customer    catalog + auth + QR display + deep links
 M2  Checkout         Cardcom WebView + push registration
 M3  Supplier scan    מצלמה + redeem e2e
 M4  Store soft       TestFlight / internal track (ראה APP-STORE-LAUNCH)
+M5+ Verticals        לפי ARCHITECTURE-INTEGRATIONS.md (אחרי ליבת החנות יציבה)
 ```
 
 ---
@@ -161,12 +172,13 @@ M4  Store soft       TestFlight / internal track (ראה APP-STORE-LAUNCH)
 ## 9. Acceptance
 
 - [ ] אין service role באפ  
-- [ ] מחיר קופון באפ = אותו shared-money כמו web  
+- [ ] מחיר קופון באפ = אותו shared-money כמו web (agorot)  
 - [ ] Deep link למוצר/קופון עובד מ-Safari/Chrome  
 - [ ] Push issued + expiry 48h עם deep link לארנק  
 - [ ] ספק סורק ו-redeem נכשל בנימוס בלי רשת  
 - [ ] RTL + עברית בכל מסכי הכסף  
 - [ ] אין נוסח Escrow/J5  
+- [ ] `platform_percent` לא מומצא באפ כשחסר בשרת  
 
 ---
 
@@ -176,3 +188,4 @@ M4  Store soft       TestFlight / internal track (ראה APP-STORE-LAUNCH)
 |---|---|
 | 2026-08-03 | Expo RN, QR offline, push, No Escrow |
 | 2026-08-10 | מיקוד: monorepo shared packages, deep links, supplier QR, push מ-outbox |
+| 2026-08-10 | קישור ל-INTEGRATIONS; M8 agorot; חידוד deep links / redeem |
