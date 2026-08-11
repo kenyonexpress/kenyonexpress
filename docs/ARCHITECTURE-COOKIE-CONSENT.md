@@ -1,62 +1,105 @@
-# ARCHITECTURE-COOKIE-CONSENT.md
+# ארכיטקטורה: הסכמת עוגיות (Cookie Consent)
 
-ארכיטקטורת **הסכמת עוגיות / פרטיות לקוח** (ישראל + שקיפות).
+קטגוריות עוגיות, באנר RTL, והפרדה מ-guest cart / אנליטיקס כסף.
 
-Status: BINDING · worktree
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
-```
-/Users/ofir/kenyonexpress-web/ke-arch
-```
-
-branch:
+מסמכים קשורים:
 
 ```
-arch/docs-queue
+docs/DOCS-TEMPLATE-BINDING.md
+docs/ARCHITECTURE-CART-GUEST.md
+docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
+docs/ARCHITECTURE-ANALYTICS.md
+docs/ARCHITECTURE-TRUST-SAFETY.md
 ```
 
-Date: 2026-07-31  
-Scope: docs בלבד.  
-Companions: legal, analytics-KPI, notifications V2, account-area.
+מודל כסף: **No Escrow**. עוגיות לא מחזיקות סכומי כסף.
 
 ---
 
-## 0. עקרונות
+## 0. החלטה
 
-1. עוגיות הכרחיות (session cart `ke_session_id`, auth Supabase) לא דורשות באנר חוסם.
-2. אנליטיקה שאינה הכרחית / מרקטינג: רק אחרי הסכמה אם נדרש לפי מדיניות האתר.
-3. קישור קבוע למדיניות פרטיות בפוטר.
-4. אין טעינת סקריפטי צד ג׳ כבדים לפני idle/consent.
+| # | הכרעה |
+|---|---|
+| CC1 | הכרחיות (`ke_session_id`, auth Supabase) תמיד; לא דורשות באנר חוסם. |
+| CC2 | Analytics שאינו הכרחי + Marketing: רק אחרי opt-in מפורש. |
+| CC3 | Funnel כסף בשרת (`begin_checkout`, `purchase`) לא תלוי cookie שיווקי. |
+| CC4 | באנר RTL קצר; לא חוסם גלישת קטלוג. |
+| CC5 | קישור קבוע למדיניות פרטיות בפוטר. |
+| CC6 | אין טעינת פיקסלים כבדים לפני consent/idle. |
+| CC7 | `ke_session_id` לא נשלח ל-Meta/Cardcom כ-`external_id`. |
 
 ---
 
-## 1. קטגוריות
+## 1. חלופות שנדחו
+
+| חלופה | למה נדחתה |
+|---|---|
+| חסימת כל האתר עד לחיצה | פוגע ב-SEO ובשיעור נטישה. |
+| דרישת consent ל-`ke_session_id` | שובר עגלה; הכרחי לתפקוד. |
+| טעינת כל הפיקסלים כברירת מחדל | סותר פרטיות/שקיפות. |
+| ערבוב guest cart id באנליטיקס שיווק בלי הסכמה | PII מיותר. |
+
+---
+
+## 2. סכמת DB
+
+| רכיב | תפקיד |
+|---|---|
+| `consent_events` (אם קיים) | audit בחירות |
+| localStorage prefs | UX מיידי |
+| prefs בחשבון (אופציונלי) | סנכרון בין מכשירים |
+
+אין DDL במסמך זה.
+
+---
+
+## 3. קטגוריות
 
 | קטגוריה | דוגמאות | ברירת מחדל |
 |---|---|---|
-| Necessary | `ke_session_id`, auth cookies | תמיד |
-| Preferences | UI locale (אם יתווסף) | opt-in או necessary קל |
-| Analytics | RUM / non-essential | לפי מדיניות legal |
+| Necessary | `ke_session_id`, auth | תמיד |
+| Preferences | העדפות UI קלות | לפי LEGAL |
+| Analytics | RUM לא-הכרחי | opt-in |
 | Marketing | pixels | opt-in מפורש |
 
 ---
 
-## 2. UX
+## 4. מקרי קצה
 
-- באנר RTL קצר אם יש non-essential: קבל / רק הכרחיות / הגדרות.
-- שמירה ב-`localStorage` + אופציונלי שורת prefs בחשבון.
-- לא לחסום גלישה בקטלוג על באנר ענק.
-
----
-
-## 3. אנליטיקה
-
-- Funnel כסף (`begin_checkout`, `purchase`) בשרת: לא תלוי cookie marketing.
-- Client page views: מכבדים opt-out.
-
----
-
-## 4. Revision
-
-| Date | Change |
+| קוד | תוצאה |
 |---|---|
-| 2026-07-31 | Cookie consent architecture (`arch/docs-queue`) |
+| `consent_denied_marketing` | אין pixels; funnel שרת חי |
+| `storage_blocked` | עגלה ב-cookie httpOnly עדיין עובדת |
+| `banner_cls` | באנר לא דוחף layout של hero מעבר לתקציב |
+
+---
+
+## 5. פתוחות
+
+| # | פתוח | שמרני |
+|---|---|---|
+| O1 | חובת באנר לפי ייעוץ עו״ד ישראלי | הכרחיות בלי באנר; שיווק עם opt-in |
+| O2 | שמירת consent ב-DB ללקוח מחובר | localStorage מספיק ל-MVP |
+
+עודכן: 2026-08-12.
+
+---
+
+## 6. Acceptance
+
+- [ ] הכרחי מול שיווק מופרדים  
+- [ ] Funnel כסף בשרת  
+- [ ] חלופות + DB + קצה + פתוחות  
+
+---
+
+## 7. Revision
+
+| תאריך | שינוי |
+|---|---|
+| 2026-07-31 | שלד ראשון |
+| 2026-08-12 | BINDING מלא לפי תבנית על arch/docs-batch-2 |
