@@ -157,6 +157,18 @@ pg_dump "$DATABASE_URL" | gzip | openssl enc -aes-256-cbc -out backup-YYYYMMDD.s
 
 ---
 
+## 9. Supabase: PITR בממשק (תזכורת UI)
+
+1. Project → Database → Backups.  
+2. ודא ש-PITR / Point in Time מופעל (Pro+).  
+3. בחר timestamp **לפני** האירוע; אשר downtime.  
+4. אחרי restore: הרץ שאילתות §3.3 + smoke.  
+5. מיגרציות שאבדו: MCP בלבד, לא SQL ידני אד-הוק על כסף.
+
+אין API ציבורי יציב לשחזור אוטומטי מתוך האפליקציה. השחזור הוא פעולת אדם מתועדת.
+
+---
+
 ## Revision
 
 | תאריך | שינוי |
@@ -164,3 +176,4 @@ pg_dump "$DATABASE_URL" | gzip | openssl enc -aes-256-cbc -out backup-YYYYMMDD.s
 | 2026-08-11 | Runbook PITR + offsite dump + scratch restore |
 | 2026-08-11 | שאילתות אימות אחרי PITR |
 | 2026-08-11 | טבלת בחירה PITR מול scratch |
+| 2026-08-11 | סעיף 9: צעדי UI ל-PITR ב-Supabase |
