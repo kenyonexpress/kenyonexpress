@@ -152,3 +152,4 @@ Statutory cancellation fee (5% או 100₪) = שדה/מסלול משפטי נפ�
 |---|---|
 | 2026-07-17 | טיוטה ארוכה + תיקון QA ל-default 10 ב-zod |
 | 2026-08-12 | batch-2 #38: סיכום BINDING מיושר No Escrow; בלי default commission |
+| 2026-08-12 | batch-2 #38 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
