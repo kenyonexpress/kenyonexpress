@@ -1,24 +1,53 @@
 # PRODUCT-FIELDS-RESEARCH.md
-# מחקר שדות מוצר (כסף + קטלוג)
 
-> **עודכן: 2026-08-10 · מודל עסקי v2.**  
-> אין עמלה קבועה (לא 5% ולא 10%). `platform_percent` דינמי פר מוצר, בלי default.  
-> קופון = תשלום מלא של `coupon_price` באתר שנשאר בפלטפורמה; יתרה בבית העסק; אין Escrow / held / שחרור לספק.  
-> סכמה מומלצת: כסף ב-`integer` אגורות (לא `numeric` שקלים).
+Status: **BINDING (research)** · עודכן: 2026-08-12
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+מודל כסף: No Escrow; agorot integer; platform_percent פר מוצר.
 
-Status: **BINDING (research → target)** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
-Scope: **docs only**. אין שינוי קוד ב-worktree הראשי.
+---
 
-מסמכים קשורים:
+## 1. החלטה
 
-```
-docs/CONTRADICTIONS.md
-docs/BUSINESS-MODEL.md
-docs/ARCHITECTURE-PRICING-RULES.md
-docs/CARDCOM-ARCHITECTURE.md
-docs/ARCHITECTURE-PAYOUT-MECHANISM.md
-docs/DB-SCHEMA.md
-```
+| # | הכרעה |
+|---|---|
+| F1 | אין 5%/10% default |
+| F2 | קופון: 100% platform keeps |
+| F3 | snapshot ב-order_items |
+| F4 | DROP escrow_* |
+
+---
+
+## 2. חלופות שנדחו
+
+| חלופה | נימוק |
+|---|---|
+| numeric ILS amounts | float risk |
+| COALESCE percent | C1 |
+| release on redeem | C3 |
+
+---
+
+## 3. סכמת DB
+
+| טבלה | שדות יעד |
+|---|---|
+| products | *_agorot, platform_percent NOT NULL |
+| order_items | snapshots, no escrow_* |
+| vouchers | face/coupon/remaining agorot |
+
+---
+
+## 4. מקרי קצה
+
+| E1 | publish without percent | fail |
+| E2 | dual price columns | UI bug |
+
+---
+
+## 5. פתוחות
+
+| O1 | prod still *_ils | migration pending | 2026-08-12 |
 
 ---
 
@@ -225,3 +254,12 @@ Cardcom wire נשאר בשקלים עשרוניים ב-API; המרה רק בגב
 | תאריך | שינוי |
 |---|---|
 | 2026-08-10 | יצירה/יישור מודל v2: דינמי פר מוצר, No Escrow, סכמה מומלצת באגורות integer |
+
+---
+
+## Revision
+
+| תאריך | שינוי |
+|---|---|
+| 2026-08-12 | BINDING batch-2: החלטה, חלופות, DB, קצה, פתוחות |
+
