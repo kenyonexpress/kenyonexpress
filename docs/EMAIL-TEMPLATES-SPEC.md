@@ -174,9 +174,13 @@ Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 
 - [ ] כל kind ליבת קופון: issued / expiry_48h / redeemed / expired / refunded  
 - [ ] order_paid + plaintext  
+- [ ] wallet_activity / abandoned_cart / supplier_sale / welcome לפי צורך השקה  
 - [ ] אין Escrow בנוסח  
 - [ ] unsubscribe רק בשיווקי  
 - [ ] בדיקת RTL ב-Gmail / Apple Mail  
+- [ ] דומיין From מאומת (SPF/DKIM) ב-Resend  
+
+מפת kind מלאה בסעיף 1; גופים בעברית בסעיף 1.1; COPY מורחב ב-`EMAIL-TEMPLATES-COPY.md`.
 
 ---
 
@@ -187,3 +191,4 @@ Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 | 2026-08-11 | מפרט Resend: קטלוג kind, מעטפת RTL, משתנים, acceptance |
 | 2026-08-11 | גופי מינימום ל-redeemed/expired + קישור lifecycle |
 | 2026-08-11 | גוף מלא בעברית לכל 10 ה-kinds |
+| 2026-08-11 | Acceptance: DKIM + מיפוי מפורש ל-COPY |
