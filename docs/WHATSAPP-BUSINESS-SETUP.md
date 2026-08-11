@@ -1,124 +1,77 @@
-# הקמת WhatsApp Business API (ישראל)
+# WhatsApp Business (הקמה)
 
-צעדים מול ספק/ערוץ ישראלי, עלויות כיוון, ותבניות להגשה לאישור.
-
-Status: **SETUP GUIDE** · עודכן: 2026-08-10  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
-אין שינוי קוד. אין נגיעה בתיקייה הראשית.
-
-מסמכים קשורים:
+תקציר BINDING. פירוט התראות:
 
 ```
 docs/ARCHITECTURE-NOTIFICATIONS.md
-docs/SUPPORT-SLA-POLICY.md
-docs/EMAIL-TEMPLATES-COPY.md
-docs/ANALYTICS-SPEC.md
-docs/CONTRADICTIONS.md
+docs/ARCHITECTURE-NOTIFICATIONS-V2.md
+docs/WHATSAPP-COMMERCE-SPEC.md
 ```
 
-MVP התראות: **Resend קודם**. WhatsApp = משני (utility) אחרי opt-in / חלון שירות.  
-UI טלפון באתר יכול להשתמש ב-
-
-```
-NEXT_PUBLIC_WHATSAPP_PHONE
-```
-
-(קישור wa.me) בלי Cloud API מלא.
+Status: **BINDING (setup)** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+MVP: **Resend first**; WhatsApp utility P2.
 
 ---
 
-## 1. בחירת מסלול
+## החלטה
 
-| מסלול | יתרון | חיסרון |
-|---|---|---|
-| Meta Cloud API ישיר | שליטה מלאה | אימות עסקי, תמיכה באנגלית, חיוב Meta |
-| ספק ישראלי / BSP (למשל באמצעות אינטגרטורים מקומיים על Cloud API) | חשבונית ₪, תמיכה בעברית, ליווי תבניות | עמלה על הודעה / דמי הקמה |
-
-**המלצה ל-MVP מורחב:** BSP ישראלי על Cloud API, כדי לקבל חשבונית מקומית וליווי אישור תבניות.
-
-(שמות ספקים מסחריים משתנים; לבחור לפי: תמיכה עברית, מחיר conversation, SLA הקמה, GDPR/פרטיות.)
-
----
-
-## 2. צעדי הקמה (סדר)
-
-1. **עמוד עסקי בפייסבוק** + אימות Meta Business (מסמכי חברה / עוסק).  
-2. **בחירת BSP / חיבור Cloud API** ויצירת WABA (WhatsApp Business Account).  
-3. **מספר טלפון ישראלי** ייעודי לתמיכה/התראות (לא מספר פרטי של הבעלים אם אפשר).  
-4. **פרופיל עסקי:** שם KenyonExpress, כתובת, אתר, תיאור בעברית.  
-5. **Webhook** לשרת שלנו (או ל-BSP) לסטטוסי משלוח + הודעות נכנסות.  
-6. **הגשת תבניות** (סעיף 4) לאישור Meta.  
-7. **בדיקת sandbox / מספר טסט** לפני production.  
-8. **opt-in:** תיעוד הסכמה (צ׳קאאוט / חשבון / תמיכה). בלי opt-in: רק session replies בתוך 24 שעות אחרי פניית לקוח.  
-9. **חיבור לקוד:** queue התראות (`channel=whatsapp`) לפי NOTIFICATIONS; לא לשלוח שיווק בלי קטגוריה נכונה.
-
----
-
-## 3. עלויות (כיוון, לא הצעת מחיר)
-
-| רכיב | סדר גודל | הערה |
-|---|---|---|
-| דמי הקמה BSP | מאות-אלפי ₪ חד־פעמי | תלוי ספק |
-| דמי מנוי חודשי | אופציונלי אצל BSP | |
-| Conversation / הודעה (Meta) | סנטים-עשרות אגורות לפי קטגוריה ומדינה | utility זול יותר מ-marketing |
-| מספר וירטואלי ישראלי | עשרות ₪/חודש | אם נדרש |
-| זמן פנימי | 1-3 ימי עבודה | אימות + תבניות |
-
-לפני חתימה: לבקש מחירון conversation ל-IL + דוגמת חשבונית.
-
----
-
-## 4. תבניות להגשה (טיוטה בעברית)
-
-קטגוריה: **UTILITY** (לא MARKETING) אלא אם מצוין.  
-אין Escrow / נאמן. משתנים בסוגריים.
-
-### 4.1 `support_after_hours`
-
-> שלום {{name}}, קיבלנו את פנייתכם ב-KenyonExpress. שעות התמיכה א׳-ה׳ 09:00-18:00. נחזור ביום העסקים הבא. לבדיקת קופון: האזור האישי באתר.
-
-### 4.2 `order_paid_short`
-
-> היי {{name}}, ההזמנה {{order_ref}} התקבלה. פירוט במייל. קופונים (אם יש) באזור האישי.
-
-### 4.3 `voucher_ready`
-
-> היי {{name}}, הקופון ל-{{product_name}} מוכן. קוד: {{code}}. פתחו באתר להצגת QR: {{link}}
-
-### 4.4 `voucher_expiry_48h`
-
-> תזכורת: הקופון ל-{{product_name}} פג ב-{{expires_at}}. מימוש ב-QR באזור האישי.
-
-### 4.5 `refund_done`
-
-> היי {{name}}, בוצע החזר להזמנה {{order_ref}} בסך {{amount_ils}} ₪. זיכוי לכרטיס לפי חברת האשראי.
-
-שיווק (abandoned cart) = קטגוריה **MARKETING** + opt-in מפורש; להגיש בנפרד רק אחרי utility יציב.
-
----
-
-## 5. כללי תוכן
-
-| כן | לא |
+| # | הכרעה |
 |---|---|
-| קישור לאזור אישי / הזמנה | קישור עם טוקן סודי ב-query ארוך בלי הצפנה |
-| קוד קופון קצר | PAN / CVV / סיסמה |
-| שולם באתר / יתרה בעסק | Escrow / held / J5 |
+| WA1 | MVP email (Resend); WhatsApp after opt-in + templates approved. |
+| WA2 | BSP ישראלי על Cloud API (חשבונית ₪, תמיכה עברית). |
+| WA3 | `wa.me` link via `NEXT_PUBLIC_WHATSAPP_PHONE` OK without full API. |
+| WA4 | Templates: UTILITY; no Escrow/נאמן in copy. |
+| WA5 | Marketing WhatsApp: opt-in only (30א). |
+| WA6 | Webhook for delivery status; queue `channel=whatsapp`. |
 
 ---
 
-## 6. Acceptance לפני שליחה ללקוחות
+## חלופות שנדחו
 
-- [ ] WABA מאומת; מספר חי
-- [ ] לפחות `support_after_hours` + `voucher_ready` מאושרים
-- [ ] Webhook ירוק; לוג סטטוסים
-- [ ] opt-in מתועד
-- [ ] Resend נשאר ערוץ חובה לאירועי כסף
+| חלופה | למה |
+|---|---|
+| WhatsApp before email stable | WA1 |
+| marketing templates day-1 | consent |
+| Meta direct without BSP | ops burden MVP |
+| Escrow wording in templates | No Escrow |
 
 ---
 
-## 7. Revision
+## סכמת DB
+
+```text
+notification_queue: channel, template_id, payload
+consent_events: whatsapp_marketing
+```
+
+אין DDL חדש.
+
+---
+
+## מקרי קצה
+
+| # | מקרה |
+|---|---|
+| CE1 | template rejected | fallback email |
+| CE2 | user no opt-in | session 24h only |
+| CE3 | wrong phone E164 | validate |
+| CE4 | BSP outage | retry + email |
+| CE5 | PII in template vars | minimize |
+
+---
+
+## פתוחות
+
+| # | פתוח |
+|---|---|
+| O1 | BSP vendor selection |
+| O2 | order_paid template prod approval |
+
+---
+
+## Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-10 | מדריך הקמה + תבניות utility ראשונות |
+| 2026-08-12 | batch-2: BINDING |
