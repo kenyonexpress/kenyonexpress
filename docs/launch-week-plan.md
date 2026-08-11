@@ -1,15 +1,71 @@
 # תוכנית שבוע השקה (Launch Week Plan)
 
-עשרת דילי ההשקה והספקים המיועדים. מקור נתונים: קטלוג seed (אין דוח מחקר סוכן נפרד בעץ).
+עשרת דילי ההשקה והספקים המיועדים.
 
-Status: **PLAN** · עודכן: 2026-08-10  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.  
+מודל כסף: **No Escrow**
 
-אימות מול מאגר:
+מקור נתונים: קטלוג seed. אימות:
 
 ```
 docs/LAUNCH-VALIDATION.md
 ```
+
+---
+
+## 1. החלטה (מחייבת)
+
+| # | הכרעה |
+|---|---|
+| L1 | **10 דילים** לשבוע השקה, כל אחד עם ספק, face, coupon price, `platform_percent` ייחודי. |
+| L2 | מודל **No Escrow:** מקדמה באתר = הכנסת פלטפורמה; יתרה בעסק. |
+| L3 | אין default ל-`platform_percent`: כל שורה בטבלה מציגה ערך מפורש. |
+| L4 | לפני go-live: כל דיל **מקושר ל-`suppliers` אמיתי** (LAUNCH-VALIDATION). |
+
+---
+
+## 2. חלופות שנדחו
+
+| חלופה | למה נדחתה |
+|---|---|
+| דילים בלי ספק (placeholder) | חוסם השקה; LAUNCH-VALIDATION 10/10 missing |
+| אחוז אחיד לכל הדילים | סותר C1 / per-product |
+| Escrow על מקדמה | No Escrow |
+| מחיר קופון = אחוז מ-face | C4: סכום מוחלט |
+
+---
+
+## 3. סכמת DB (קריאה; אין DDL חדש)
+
+| שדה | שימוש |
+|---|---|
+| `products.coupon_price_ils` | תשלום באתר |
+| `products.price` / face | שווי מלא |
+| `products.platform_percent` | עמלה, חובה |
+| `products.supplier_id` | קישור לספק |
+
+---
+
+## 4. מקרי קצה
+
+| # | מצב | פעולה |
+|---|---|---|
+| E1 | ספק חסר כתובת/לוגו | `assertPublishable` חוסם שמירה |
+| E2 | `platform_percent` null | אין publish |
+| E3 | face < coupon price | validation ב-product-money |
+| E4 | דיל פעיל לפני קישור ספק | הסרה מקטלוג עד תיקון |
+| E5 | שינוי מחיר אחרי השקה | snapshot ב-`order_items` |
+
+---
+
+## 5. פתוחות
+
+| # | פער |
+|---|---|
+| O1 | 10/10 דילים: `supplier_id` חסר בפרוד (LAUNCH-VALIDATION) |
+| O2 | 11/11 ספקים: כתובת + logo (GO-LIVE) |
 
 ---
 
@@ -28,12 +84,11 @@ docs/LAUNCH-VALIDATION.md
 | 9 | ארוחה טבעונית זוגית | בית קפה שקד | 210 | 99 | 16 |
 | 10 | קינוח שף לזוג | מסעדת הים הכחול | 70 | 34 | 17 |
 
-מודל: קופון / **No Escrow** (מקדמה באתר לפלטפורמה; יתרה בעסק).
-
 ---
 
 ## Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-10 | שוחזר מקטלוג seed אחרי שקובץ/דוח מחקר לא נמצאו בעץ |
+| 2026-08-12 | BINDING batch-2: חמש סעיפים |
+| 2026-08-10 | שוחזר מ-seed |
