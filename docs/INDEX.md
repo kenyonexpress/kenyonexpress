@@ -2,7 +2,7 @@
 
 אינדקס קנוני לשלמות `docs/` (וביקורת על `.claude/` + קבצי שורש). נפרד מ-`MASTER-INDEX.md` (שם: נושאים/סטטוס QA). כאן: סתירות מודל, WP/PHP stale, יתומים, ותור תיקונים.
 
-Status: **BINDING (integrity index)** · עודכן: 2026-08-11
+Status: **BINDING (integrity index)** · עודכן: 2026-08-12
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -21,7 +21,7 @@ docs/ARCHITECTURE-PRICING-RULES.md
 3. אחוזים פר מוצר בלבד; לא אחוז מחייב ברמת ספק.
 4. Stack נוכחי = Next.js + Supabase; WordPress/PHP רק כמיגרציה/היסטוריה/rollback.
 
-נקראו: כל `docs/*.md` (143), `.claude/skills/*/SKILL.md` (6), `CLAUDE.md`, `AGENTS.md`. תיקיית `claude/` (בלי נקודה) **לא קיימת**.
+נקראו: כל `docs/*.md` (144), `.claude/skills/*/SKILL.md` (6), `CLAUDE.md`, `AGENTS.md`. תיקיית `claude/` (בלי נקודה) **לא קיימת**.
 
 קישור הדדי:
 
@@ -109,6 +109,7 @@ docs/BUSINESS-MODEL.md
 | `ARCHITECTURE-CASHBACK-WALLET.md` | BINDING | yes | 12 | ארנק פנימי בלבד שלא יוצא מהמערכת: ledger כפול-רישום, צבירה, ומימוש בקנייה הבאה. |
 | `ARCHITECTURE-CATALOG-SEARCH-SEO.md` | ? | yes | 11 | מסמך תכנון מלא. מיגרציה נלווית (טיוטה, לא הוחלה): |
 | `ARCHITECTURE-CATEGORIES-TAXONOMY.md` | BINDING | yes | 8 | עץ קטגוריות לשוק הישראלי (קופונים ומוצרים פיזיים). |
+| `ARCHITECTURE-CHECKOUT-FLOW.md` | BINDING | yes | 1 | מכונת מצבי הזמנה, snapshot של platform_percent, קופון/פיזי No Escrow, וסליקת Cardcom. |
 | `ARCHITECTURE-COMMERCE.md` | DESIGN, QA-PASS 2026-08-06 | yes | 22 | Date: 2026-07-08. Supersedes the fixed-10% commission model documented in |
 | `ARCHITECTURE-COUPON-REDEMPTION-UX.md` | BINDING for `feat/coupon-redemption` (20 | yes | 4 | מפרט UX מחייב למימוש קופון (ספק + לקוח). |
 | `ARCHITECTURE-COUPON-REDEMPTION.md` | BINDING | yes | 10 | KenyonExpress supplier coupon / voucher redemption architecture (binding scan spec). |
@@ -253,3 +254,4 @@ docs/BUSINESS-MODEL.md
 | תאריך | שינוי |
 |---|---|
 | 2026-08-11 | יצירה: fix table + orphans + סיכום לכל docs + ביקורת .claude |
+| 2026-08-12 | הוספת `ARCHITECTURE-CHECKOUT-FLOW.md` (BINDING); ספירת docs=144 |
