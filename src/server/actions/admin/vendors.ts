@@ -36,7 +36,9 @@ async function runUpsertVendor(
     bank_name: formData.get('bank_name') || null,
     bank_branch: formData.get('bank_branch') || null,
     bank_account: formData.get('bank_account') || null,
-    commission_rate: formData.get('commission_rate') ?? '90',
+    // Passed through raw. No `?? '90'`: a missing commission is a validation
+    // error the schema must raise, not a value this line invents.
+    commission_rate: formData.get('commission_rate'),
     logo_url: formData.get('logo_url') || null,
     status: formData.get('status'),
   }

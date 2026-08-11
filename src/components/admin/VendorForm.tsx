@@ -163,7 +163,10 @@ export default function VendorForm({ vendor, profiles = [] }: Props) {
               min="0"
               max="100"
               step="0.1"
-              defaultValue={vendor?.commission_rate ?? 90}
+              // Blank on a new vendor, never a pre-filled 90. The admin has to
+              // choose, per the dynamic-percentage rule in AGENTS.md.
+              defaultValue={vendor?.commission_rate ?? ''}
+              required
               dir="ltr"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />

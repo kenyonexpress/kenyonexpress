@@ -51,6 +51,69 @@ describe('parseVendorForm', () => {
     expect(result.ok).toBe(false)
     if (!result.ok) expect(result.error).toBe('אימייל לא תקין')
   })
+
+  // The dynamic-percentage rule (AGENTS.md): no default, no fallback, and an
+  // empty field is an error. Until 2026-08-11 this schema carried
+  // `.default(90)` and the action carried `?? '90'`, so a vendor saved with the
+  // field untouched silently took a 90% commission nobody chose.
+  describe('commission_rate has no default and no fallback', () => {
+    it('rejects an empty string instead of coercing it to 0', () => {
+      // The specific trap: Number('') === 0, which is itself a legal percent.
+      // Coercion alone would turn a blank field into a silent 0% commission.
+      const result = parseVendorForm(rawCreate({ commission_rate: '', profile_id: UUID_A }))
+      expect(result.ok).toBe(false)
+      if (!result.ok) expect(result.error).toBe('עמלה נדרשת')
+    })
+
+    it('rejects a whitespace-only value', () => {
+      const result = parseVendorForm(rawCreate({ commission_rate: '   ', profile_id: UUID_A }))
+      expect(result.ok).toBe(false)
+      if (!result.ok) expect(result.error).toBe('עמלה נדרשת')
+    })
+
+    it('rejects a missing field rather than substituting 90', () => {
+      const { commission_rate: _omitted, ...raw } = rawCreate({ profile_id: UUID_A })
+      const result = parseVendorForm(raw)
+      expect(result.ok).toBe(false)
+      if (!result.ok) expect(result.error).toBe('עמלה נדרשת')
+    })
+
+    it('rejects a null field rather than substituting 90', () => {
+      const result = parseVendorForm(rawCreate({ commission_rate: null, profile_id: UUID_A }))
+      expect(result.ok).toBe(false)
+      if (!result.ok) expect(result.error).toBe('עמלה נדרשת')
+    })
+
+    it('still accepts an explicit 0, which is a real choice and not a blank', () => {
+      const result = parseVendorForm(rawCreate({ commission_rate: '0', profile_id: UUID_A }))
+      expect(result.ok).toBe(true)
+      if (result.ok) expect(result.data.commission_rate).toBe(0)
+    })
+
+    it('still accepts an explicit 100', () => {
+      const result = parseVendorForm(rawCreate({ commission_rate: '100', profile_id: UUID_A }))
+      expect(result.ok).toBe(true)
+      if (result.ok) expect(result.data.commission_rate).toBe(100)
+    })
+
+    it('accepts a decimal rate', () => {
+      const result = parseVendorForm(rawCreate({ commission_rate: '33.33', profile_id: UUID_A }))
+      expect(result.ok).toBe(true)
+      if (result.ok) expect(result.data.commission_rate).toBe(33.33)
+    })
+
+    it('rejects a rate above 100', () => {
+      const result = parseVendorForm(rawCreate({ commission_rate: '101', profile_id: UUID_A }))
+      expect(result.ok).toBe(false)
+      if (!result.ok) expect(result.error).toBe('עמלה לא יכולה לעלות על 100')
+    })
+
+    it('rejects a negative rate', () => {
+      const result = parseVendorForm(rawCreate({ commission_rate: '-1', profile_id: UUID_A }))
+      expect(result.ok).toBe(false)
+      if (!result.ok) expect(result.error).toBe('עמלה לא יכולה להיות שלילית')
+    })
+  })
 })
 
 describe('eligibleVendorProfiles', () => {

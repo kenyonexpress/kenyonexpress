@@ -51,8 +51,32 @@ Every percentage is per product, set by the admin on the product page.
 Never hardcode 0.05, 5, or any other value in code, env, config, or seed.
 Never create a global default or a fallback. Empty field = validation error.
 
-Per product fields: supplier_split_percent, platform_commission_percent,
-discount_percent, voucher_prepaid_amount, supplier_id, product_type.
+Per product fields, under the names the live database actually uses:
 
-DB CHECK: supplier_split_percent + platform_commission_percent = 100
+| The rule's name | The live column | Notes |
+| --- | --- | --- |
+| `supplier_split_percent` | `supplier_split_percent` | same |
+| `platform_commission_percent` | **`platform_percent`** | read in 49 places, snapshotted to `order_items` |
+| `discount_percent` | `discount_percent` | same |
+| `voucher_prepaid_amount` | **`coupon_price_ils`** | the absolute amount paid on site for a coupon |
+| `supplier_id` | `supplier_id` | same |
+| `product_type` | **`products.type`** | enum `product_type` = (coupon, physical, service) |
+
+The two bolded rows were decided on 2026-08-11: the facts already existed under
+those names, and adding a second spelling would give one fact two columns on the
+money path. That is the exact defect `PENDING-money-integer-fix.sql` exists to
+untangle for `compare_at_price` / `compare_at_price_ils`. Do not add
+`platform_commission_percent` or `voucher_prepaid_amount` as columns.
+
+DB CHECK: `supplier_split_percent + platform_percent = 100`
 Percentages are snapshotted into order_items at order creation and are immutable.
+
+**Statutory rates are not commissions and are exempt from this rule.** They are
+set by law, not by an admin, and hardcoding them is correct:
+
+- `CANCELLATION_FEE_RATE` (`src/server/domain/orders/refund.ts`), the Israeli
+  distance-selling cancellation fee: the lower of 5% or ₪100.
+- `DEFAULT_VAT_PERCENT` (`src/lib/invoices/document.ts`), VAT at 18%.
+
+The CI gate `scripts/check-hardcoded-percentages.mjs` enforces the rule and
+allowlists exactly those two.
