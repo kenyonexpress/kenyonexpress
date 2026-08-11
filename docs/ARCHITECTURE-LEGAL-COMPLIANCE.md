@@ -4,6 +4,8 @@
 
 Status: **BINDING** · עודכן: 2026-08-12  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #44/50
+
+מודל כסף: **No Escrow**.
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
 מסמכים קשורים:
@@ -126,3 +128,4 @@ refund = amount_agorot - fee_agorot
 | 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
 | 2026-08-12 | batch #44/50: L3a דמי ביטול LEGAL לא עמלה; רענון על arch/docs-batch-2 |
 | 2026-08-12 | batch-2 #44: BINDING על arch/docs-batch-2 |
+| 2026-08-12 | batch-2 #44 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
