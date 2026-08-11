@@ -41,15 +41,30 @@ Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 | `order_paid` | הזמנה paid בלי/לפני פירוט קופונים | §1 | לא |
 | `coupon_issued` | voucher `issued` | §2 | לא |
 | `coupon_expiry_48h` | 48ש לפני `expires_at` | §3 | לא |
-| `coupon_redeemed` | אחרי מימוש מוצלח | ARCH subject + גוף קצר | לא |
-| `coupon_expired` | cron פקיעה | ARCH | לא |
-| `coupon_refunded` | אחרי refund מאושר | §7 | לא |
+| `coupon_redeemed` | אחרי מעבר voucher → `redeemed` | ARCH + גוף קצר בעברית | לא |
+| `coupon_expired` | cron פקיעה → `expired` | ARCH | לא |
+| `coupon_refunded` | אחרי מעבר → `refunded` | §7 | לא |
 | `wallet_activity` | earn/spend ארנק | §4 | לא |
 | `abandoned_cart` | נטישה + consent | §5 | **כן** (unsubscribe) |
 | `supplier_sale` | הזמנה לספק | §6 | לא (תפעולי) |
 | `welcome` | אחרי הרשמה | §8 | אופציונלי |
 
-`coupon_redeemed` / `coupon_expired`: אם חסרים ב-COPY, להשלים לפי ARCHITECTURE-EMAIL-TEMPLATES לפני soft-open.
+`coupon_redeemed` / `coupon_expired`: אם חסרים ב-COPY, להשלים לפי ARCHITECTURE-EMAIL-TEMPLATES לפני soft-open.  
+סטטוסי voucher: `issued` / `redeemed` / `expired` / `refunded` (`COUPON-LIFECYCLE-SPEC.md`).
+
+---
+
+## 1.1 גוף מינימלי חסר ב-COPY (להשלים)
+
+### `coupon_redeemed`
+
+**נושא:** הקופון ל-{{product_name}} מומש  
+**גוף:** היי {{first_name}}, הקופון שלכם נסרק בהצלחה אצל {{supplier_name}} ב-{{redeemed_at_he}}. תודה שקניתם אצלנו.
+
+### `coupon_expired`
+
+**נושא:** פג תוקף: {{product_name}}  
+**גוף:** היי {{first_name}}, הקופון ל-{{product_name}} פג ב-{{expires_at_he}} ולא ניתן למימוש. שאלות? {{contact_url}}.
 
 ---
 
@@ -118,3 +133,4 @@ Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 | תאריך | שינוי |
 |---|---|
 | 2026-08-11 | מפרט Resend: קטלוג kind, מעטפת RTL, משתנים, acceptance |
+| 2026-08-11 | גופי מינימום ל-redeemed/expired + קישור lifecycle |
