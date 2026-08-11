@@ -5,7 +5,9 @@
 לא להריץ מיגרציית cutover בלי אישור מפורש וחלון תחזוקה.
 
 Status: **BINDING (plan)** · עודכן: 2026-08-11  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #17/50
+
+מודל כסף: **No Escrow**. אין held/נאמן/J5 לקופון.
 
 מסמכים קשורים:
 
@@ -223,3 +225,4 @@ fn_wallet_transfer(
 | תאריך | שינוי |
 |---|---|
 | 2026-08-11 | תכנית בטוחה: SEC-WALLET + money-integer cutover לארנק ולמערכת |
+| 2026-08-12 | batch-2 #17: רענון BINDING על `arch/docs-batch-2`; No Escrow מאושר |
