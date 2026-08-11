@@ -24,6 +24,10 @@
     "db:types": "supabase gen types typescript --linked --schema public > src/types/database.ts",
     "analyze": "next experimental-analyze",
     "lighthouse:smoke": "node scripts/lighthouse-smoke.mjs",
+    "lighthouse:budgets": "node scripts/lighthouse-budgets.mjs",
+    "test:e2e:a11y": "playwright test a11y.spec.ts --project=chromium",
+    "test:e2e:rtl": "playwright test rtl-widths.spec.ts rtl-mobile.spec.ts --project=chromium",
+    "test:e2e:money": "playwright test --grep @money --project=chromium",
     "prepare": "husky || true"
   },
   "dependencies": {

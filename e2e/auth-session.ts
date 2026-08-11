@@ -15,6 +15,9 @@ export const E2E_CUSTOMER_PASSWORD = process.env.E2E_CUSTOMER_PASSWORD ?? 'E2eCu
 export const E2E_SUPPLIER_EMAIL =
   process.env.E2E_SUPPLIER_EMAIL ?? 'e2e-supplier@test.kenyonexpress.local'
 export const E2E_SUPPLIER_PASSWORD = process.env.E2E_SUPPLIER_PASSWORD ?? 'E2eSupplier!pass1'
+/** The catalog-writer fixture (profiles.role = 'admin'), from the same seed. */
+export const E2E_ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL ?? 'e2e-admin@test.kenyonexpress.local'
+export const E2E_ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD ?? 'E2eAdmin!pass1'
 
 /** Fixture product from scripts/seed-test-data.mjs */
 export const E2E_COUPON_SLUG = 'e2e-test-coupon'

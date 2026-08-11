@@ -41,9 +41,20 @@ function describe(results: Awaited<ReturnType<typeof scan>>) {
     .join('\n  ')
 }
 
+/**
+ * The five core pages are the shopping path -- home, catalogue, a product,
+ * coupons and the cart -- and they are listed first because they are the ones a
+ * customer cannot avoid. The three below them are cheap to scan and have each
+ * been a real defect at some point, so they stay.
+ *
+ * The product page is discovered at runtime rather than hard-coded: the
+ * catalogue is DB-driven with Hebrew slugs, and a pinned slug rots with the
+ * seed. See PRODUCT_PATH below.
+ */
 const PAGES: Array<{ name: string; path: string }> = [
   { name: 'home', path: '/' },
   { name: 'products', path: '/products' },
+  { name: 'coupons', path: '/coupons' },
   { name: 'cart', path: '/cart' },
   { name: 'contact', path: '/contact' },
   { name: 'offline', path: '/offline' },
@@ -65,6 +76,32 @@ for (const { name, path } of PAGES) {
     expect(summary, `\n  ${describe(results)}\n`).toEqual([])
   })
 }
+
+/**
+ * The product page, which is the fifth core page and the only one whose URL is
+ * data.
+ *
+ * It carries the densest interactive surface in the shop -- a gallery, a
+ * quantity control, a purchase button that relabels itself, a supplier block
+ * with tel: and WhatsApp links, and a related-products grid -- so it is the
+ * page most likely to grow a violation, and it was the one page the sweep did
+ * not look at.
+ */
+test('a product page has no WCAG A/AA violations', async ({ page }) => {
+  await page.goto('/products')
+  const link = page.locator('a[href^="/product/"]').first()
+  await expect(link).toBeVisible({ timeout: 15_000 })
+  const href = await link.getAttribute('href')
+  test.skip(!href, 'catalogue exposes no product links')
+
+  await page.goto(href as string)
+  await page.waitForLoadState('domcontentloaded')
+
+  const results = await scan(page)
+  const summary = results.violations.map((v) => `${v.id} x${v.nodes.length}`)
+
+  expect(summary, `\n  ${href}\n  ${describe(results)}\n`).toEqual([])
+})
 
 test('the document declares Hebrew and RTL, so a screen reader picks the right voice', async ({
   page,

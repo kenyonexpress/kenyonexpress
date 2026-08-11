@@ -23,6 +23,71 @@ env:
   NODE_VERSION: '22'
 
 jobs:
+  # ---------------------------------------------------------------------------
+  # What this push/PR actually touches.
+  #
+  # The browser jobs below cost minutes each: they boot a production build, pull
+  # a Chromium, and drive it. Running all of that for a change to STATE.md is
+  # not thoroughness, it is a queue nobody wants to wait behind, and a slow gate
+  # gets routed around. So the expensive jobs are scoped to the diff, exactly
+  # like the lint gates above them.
+  #
+  # Computed with `git diff` rather than a marketplace filter action: the diff
+  # range is already resolved twice in this file for the lint gates, the rule is
+  # four lines, and a third-party action in the critical path of every PR is a
+  # supply-chain surface bought for nothing.
+  #
+  # SKIPPING IS NOT THE SAME AS PASSING, and that distinction is what the
+  # `quality-gate` job at the bottom exists to preserve. A required check that
+  # is `skipped` blocks a PR forever on GitHub; a required check that aggregates
+  # skips into a pass does not. Only `quality-gate` is meant to be marked
+  # required in branch protection.
+  # ---------------------------------------------------------------------------
+  changes:
+    name: Scope the diff
+    runs-on: ubuntu-latest
+    outputs:
+      app: ${{ steps.filter.outputs.app }}
+      e2e: ${{ steps.filter.outputs.e2e }}
+      creds: ${{ steps.creds.outputs.present }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Whether a browser job can reach a database at all. Hoisted here so the
+      # jobs below can skip on it at the JOB level, which `quality-gate` reads
+      # as "out of scope" rather than as a failure. A browser job that boots the
+      # app without Supabase gets a 500 on every page and would report an
+      # infrastructure gap as a regression in the diff.
+      - id: creds
+        run: |
+          if [ -n "${{ secrets.CI_SUPABASE_URL }}" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Browser gates skipped::CI_SUPABASE_URL is not set, so the E2E, accessibility and web-vitals jobs cannot reach a database. Add the CI_SUPABASE_* repository secrets to enable them."
+          fi
+      - id: filter
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            RANGE="origin/${{ github.base_ref }}...HEAD"
+          else
+            RANGE="HEAD~1..HEAD"
+          fi
+          # A first commit on an orphan branch has no HEAD~1; treat that as
+          # "everything changed" rather than failing the whole workflow.
+          CHANGED=$(git diff --name-only "$RANGE" 2>/dev/null || git ls-files)
+          echo "changed files:"; echo "$CHANGED"
+
+          match() { echo "$CHANGED" | grep -qE "$1" && echo true || echo false; }
+
+          # Anything that can change what a browser sees. Deliberately wide:
+          # a missed match here is a gate that silently did not run, which is
+          # far worse than a gate that ran for no reason.
+          echo "app=$(match '^(src/|public/|messages/|e2e/|scripts/|next\.config\.ts|package\.json|pnpm-lock\.yaml|playwright\.config\.ts|\.lighthouserc\.cjs|\.github/workflows/)')" >> "$GITHUB_OUTPUT"
+          echo "e2e=$(match '^(src/|e2e/|scripts/seed-test-data\.mjs|playwright\.config\.ts|package\.json|pnpm-lock\.yaml|\.github/workflows/)')" >> "$GITHUB_OUTPUT"
+
   # Diff-scoped gates. Default range is HEAD~1..HEAD (tip commit only).
   # Repo-wide lint debt and docs/hardcoded-audit.md hits do not block;
   # only NEW diagnostics / hardcoded values in the changed file set do.
@@ -157,7 +222,8 @@ jobs:
   # ignore red checks. Promote it to a required check once the secret is set.
   e2e:
     name: E2E (Playwright)
-    needs: [build]
+    needs: [changes, build]
+    if: needs.changes.outputs.e2e == 'true'
     runs-on: ubuntu-latest
     env:
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.CI_SUPABASE_URL }}
@@ -176,6 +242,10 @@ jobs:
       E2E_CUSTOMER_PASSWORD: E2eCustomer!pass1
       E2E_SUPPLIER_EMAIL: e2e-supplier@test.kenyonexpress.local
       E2E_SUPPLIER_PASSWORD: E2eSupplier!pass1
+      # The catalog-writer fixture behind the admin split-percent gate. Created
+      # by pnpm seed:test with profiles.role = 'admin'. Disposable CI DB only.
+      E2E_ADMIN_EMAIL: e2e-admin@test.kenyonexpress.local
+      E2E_ADMIN_PASSWORD: E2eAdmin!pass1
     steps:
       - uses: actions/checkout@v4
 
@@ -195,6 +265,9 @@ jobs:
         if: steps.creds.outputs.present == 'true'
         with:
           node-version: ${{ env.NODE_VERSION }}
+          # Caches the pnpm STORE, keyed on pnpm-lock.yaml. The install still
+          # runs; what it stops is re-downloading ~700MB of tarballs per job,
+          # and there are now four jobs doing it.
           cache: pnpm
       - run: pnpm install --frozen-lockfile
         if: steps.creds.outputs.present == 'true'
@@ -209,9 +282,38 @@ jobs:
         if: steps.creds.outputs.present == 'true'
         run: pnpm seed:test
 
-      - name: Install Chromium
+      # The browser binary, cached separately from the pnpm store because it is
+      # not in it: `playwright install` downloads into ~/.cache/ms-playwright,
+      # and the download is ~130MB and about a minute per job.
+      #
+      # Keyed on the RESOLVED @playwright/test version, not on the range in
+      # package.json. A cache keyed on "^1.50.1" would keep serving the browsers
+      # for 1.50 after a lockfile bump to 1.6x, and Playwright refuses to run
+      # against a browser build it did not ship with - a confusing failure that
+      # looks like a broken test.
+      - name: Resolve Playwright version
         if: steps.creds.outputs.present == 'true'
+        id: pw
+        run: echo "version=$(pnpm exec playwright --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        if: steps.creds.outputs.present == 'true'
+        id: pw-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}-chromium
+
+      - name: Install Chromium
+        if: steps.creds.outputs.present == 'true' && steps.pw-cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright install --with-deps chromium
+
+      # The OS-level libraries live outside ~/.cache and are NOT in the cache
+      # above, so a cache hit still needs them. Cheap (apt only, no download of
+      # the browser itself) and it is the difference between a warm run passing
+      # and dying on a missing libnss3.
+      - name: Install browser system dependencies
+        if: steps.creds.outputs.present == 'true' && steps.pw-cache.outputs.cache-hit == 'true'
+        run: pnpm exec playwright install-deps chromium
 
       - name: Run E2E against the production build
         if: steps.creds.outputs.present == 'true'
@@ -225,3 +327,220 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # Accessibility: axe-core over the core pages, in a real browser.
+  #
+  # Split out of the E2E job rather than left inside it for one reason: it does
+  # not need a seeded catalogue or a payment mock, so it can run on a PR that
+  # has no database secret and still say something true. Contrast the E2E job,
+  # which without CI_SUPABASE_URL can only warn.
+  #
+  # It DOES need the app running, and Playwright's webServer starts it from the
+  # downloaded production build.
+  # ---------------------------------------------------------------------------
+  a11y:
+    name: Accessibility (axe-core, WCAG 2.1 AA)
+    needs: [changes, build]
+    if: needs.changes.outputs.app == 'true' && needs.changes.outputs.creds == 'true'
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.CI_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.CI_SUPABASE_ANON_KEY }}
+      SUPABASE_SECRET_KEY: ${{ secrets.CI_SUPABASE_SECRET_KEY }}
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      E2E_WEB_COMMAND: pnpm start
+      CARDCOM_USE_MOCK: 'true'
+      CARDCOM_WEBHOOK_SECRET: mock-webhook-secret
+      CHECKOUT_ENABLED: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: next-build
+          path: .next/
+
+      - name: Resolve Playwright version
+        id: pw
+        run: echo "version=$(pnpm exec playwright --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        id: pw-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}-chromium
+      - name: Install Chromium
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Install browser system dependencies
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: pnpm exec playwright install-deps chromium
+
+      - name: axe-core sweep of the core pages
+        run: pnpm test:e2e:a11y
+
+      - name: RTL at 380 / 768 / 1440
+        run: pnpm test:e2e:rtl
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: a11y-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # Web-vitals budgets: LCP < 2.5s and CLS < 0.1 on the home and product pages.
+  #
+  # Read the header of scripts/lighthouse-budgets.mjs before trusting a number
+  # from this job. Lighthouse SIMULATES the LCP on a runner rather than
+  # measuring it, so this is a regression gate on page structure, not a field
+  # measurement. CLS is observed and is the trustworthy half.
+  #
+  # Three runs, median taken, because a one-run budget fails on noise and a gate
+  # that fails on noise gets re-run until it passes, which is the same as not
+  # having one.
+  # ---------------------------------------------------------------------------
+  lighthouse:
+    name: Web-vitals budgets (LCP, CLS)
+    needs: [changes, build]
+    if: needs.changes.outputs.app == 'true' && needs.changes.outputs.creds == 'true'
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.CI_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.CI_SUPABASE_ANON_KEY }}
+      SUPABASE_SECRET_KEY: ${{ secrets.CI_SUPABASE_SECRET_KEY }}
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      CARDCOM_USE_MOCK: 'true'
+      CARDCOM_WEBHOOK_SECRET: mock-webhook-secret
+      CHECKOUT_ENABLED: 'true'
+      LOCAL_BASE: http://localhost:3000
+      LH_RUNS: '3'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: next-build
+          path: .next/
+
+      # Lighthouse drives Chrome through puppeteer-core and looks for a browser
+      # on the machine; the Playwright cache is the one this repo already keeps
+      # warm, so CHROME_PATH points at it rather than at a second download.
+      - name: Resolve Playwright version
+        id: pw
+        run: echo "version=$(pnpm exec playwright --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        id: pw-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}-chromium
+      - name: Install Chromium
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Install browser system dependencies
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: pnpm exec playwright install-deps chromium
+      # Resolved by globbing the cache rather than by requiring playwright-core:
+      # pnpm's node_modules is not flat, so a bare `require('playwright-core')`
+      # from the repo root resolves only by accident of hoisting.
+      - name: Point Lighthouse at the cached Chromium
+        run: |
+          CHROME=$(ls -d "$HOME"/.cache/ms-playwright/chromium-*/chrome-linux/chrome 2>/dev/null | head -1)
+          if [ -z "$CHROME" ]; then
+            echo "::error title=No Chromium::playwright install did not leave a chrome binary in ~/.cache/ms-playwright"
+            exit 1
+          fi
+          echo "CHROME_PATH=$CHROME" >> "$GITHUB_ENV"
+
+      - name: Start the production server
+        run: |
+          pnpm start &
+          # Polls for the app rather than sleeping a fixed number of seconds: a
+          # sleep is either too short on a cold start or wasted on a warm one.
+          # Deliberately not `npx wait-on` - npx would run an npm install, and
+          # npm cannot resolve this repo's pnpm node_modules at all (AGENTS.md).
+          for i in $(seq 1 90); do
+            if curl -sf -o /dev/null http://localhost:3000/; then
+              echo "server up after ${i}s"; exit 0
+            fi
+            sleep 2
+          done
+          echo "::error title=Server never came up::http://localhost:3000 did not answer within 180s"
+          exit 1
+
+      - name: Assert the budgets
+        run: pnpm lighthouse:budgets
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse-reports
+          path: lighthouse-reports/
+          retention-days: 14
+
+  # ---------------------------------------------------------------------------
+  # THE ONE CHECK TO MARK REQUIRED IN BRANCH PROTECTION.
+  #
+  # Every job above is either required-and-slow or scoped-and-skippable, and
+  # GitHub cannot express "required unless skipped": a required check in the
+  # `skipped` state blocks the PR permanently. So the scoping above would make
+  # every one of those jobs unusable as a required check on a docs-only PR.
+  #
+  # This job runs unconditionally, reads the results, and fails only on an
+  # actual failure. `skipped` and `success` both pass; `failure` and
+  # `cancelled` do not.
+  #
+  # Branch protection on `main` should require exactly this check.
+  # ---------------------------------------------------------------------------
+  quality-gate:
+    name: Quality gate
+    if: always()
+    needs: [lint, typecheck, test, build, e2e, a11y, lighthouse]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if any gate failed
+        run: |
+          echo "lint:       ${{ needs.lint.result }}"
+          echo "typecheck:  ${{ needs.typecheck.result }}"
+          echo "test:       ${{ needs.test.result }}"
+          echo "build:      ${{ needs.build.result }}"
+          echo "e2e:        ${{ needs.e2e.result }}"
+          echo "a11y:       ${{ needs.a11y.result }}"
+          echo "lighthouse: ${{ needs.lighthouse.result }}"
+
+          failed=""
+          for pair in \
+            "lint:${{ needs.lint.result }}" \
+            "typecheck:${{ needs.typecheck.result }}" \
+            "test:${{ needs.test.result }}" \
+            "build:${{ needs.build.result }}" \
+            "e2e:${{ needs.e2e.result }}" \
+            "a11y:${{ needs.a11y.result }}" \
+            "lighthouse:${{ needs.lighthouse.result }}"; do
+            name="${pair%%:*}"; result="${pair##*:}"
+            case "$result" in
+              success|skipped) ;;
+              *) failed="$failed $name($result)" ;;
+            esac
+          done
+
+          if [ -n "$failed" ]; then
+            echo "::error title=Quality gate failed::failed jobs:$failed"
+            exit 1
+          fi
+          echo "all gates passed or were out of scope for this diff"
