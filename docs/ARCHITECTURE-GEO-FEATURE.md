@@ -117,3 +117,4 @@ Permissions-Policy ממוקד; אין geolocation גלובלי בלי הצדקה
 |---|---|
 | 2026-08-12 | BINDING: city tags, distance sort, indexes, UI selector |
 | 2026-08-12 | batch #49/50: רענון על arch/docs-batch-2 |
+| 2026-08-12 | batch-2 #49 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
