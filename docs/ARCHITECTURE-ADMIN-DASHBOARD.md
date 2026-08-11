@@ -1,9 +1,9 @@
 # ארכיטקטורה: לוח בקרה אדמין
 
-ניהול מוצרים עם **`platform_percent` דינמי פר מוצר**, בורר סוג מוצר, מתג WhatsApp פר מוצר, ניהול ספקים, ודוחות מכירות.
+ניהול מוצרים עם בורר **סוג מוצר**, **`platform_percent` חובה** (דינמי פר מוצר, בלי default), ומתג **WhatsApp** פר מוצר. בנוסף: ספקים ודוחות מכירות.
 
 Status: **BINDING** · עודכן: 2026-08-12  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #25/50  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
 מסמכים קשורים:
@@ -16,12 +16,13 @@ docs/ARCHITECTURE-SUPPLIER-PORTAL.md
 docs/ARCHITECTURE-PAYOUT-MECHANISM.md
 docs/PAYOUT-ARCHITECTURE.md
 docs/WHATSAPP-BUSINESS-SETUP.md
+docs/ARCHITECTURE-NOTIFICATIONS.md
 docs/BUSINESS-MODEL.md
 docs/CONTRADICTIONS.md
 docs/RUNBOOK-PRODUCTION.md
 ```
 
-כסף: אגורות integer ב-DB; UI ב-₪ עם שני עשרונים. **No Escrow.**
+כסף: אגורות integer ב-DB; UI ב-₪. מודל: **No Escrow**.
 
 ---
 
@@ -29,18 +30,32 @@ docs/RUNBOOK-PRODUCTION.md
 
 | כלל | פירוט |
 |---|---|
-| אין עמלה קבועה | אין 5%/10% כברירת מחדל |
-| `platform_percent` | דינמי **פר מוצר**, בלי default, admin only, מצולם ל-`order_items` |
-| `supplier_split_percent` | משלים ל-100 |
+| אין עמלה קבועה | אין 5%/10% כברירת מחדל במערכת |
+| `platform_percent` | דינמי **פר מוצר**, בלי default DB, admin only, snapshot ל-`order_items` |
+| `supplier_split_percent` | משלים ל-100 (פיזי) |
 | קופון | `coupon_price` באתר; 100% לפלטפורמה; יתרה בעסק |
 | פיזי | חיוב מלא + פיצול לפי snapshot |
-| מנוי | ראה RECURRING / SUBSCRIPTIONS; % snapshot פר מחזור |
+| מנוי | לפי SUBSCRIPTIONS; % snapshot פר מחזור |
 
 ---
 
-## 1. ניהול מוצרים
+## 1. הכרעות
 
-### 1.1 מסכים
+| # | הכרעה |
+|---|---|
+| AD1 | Publish אסור בלי `platform_percent` מלא (וחובה סוג מוצר תקין). |
+| AD2 | בורר סוג מוצר קובע שדות חובה ומסתיר שדות לא רלוונטיים. |
+| AD3 | מתג WhatsApp הוא פר מוצר (`whatsapp_enabled`); לא שידור המוני. |
+| AD4 | content_uploader לא נוגע בכסף / סוג / WhatsApp toggle / publish סופי. |
+| AD5 | שינוי כסף אחרי publish → `audit_log`; לא משנה הזמנות ישנות. |
+| AD6 | דוחות על snapshots; אסור לחשב GMV מ-`products.platform_percent` החי. |
+| AD7 | אין מדד או עמודה פעילה של כסף מוחזק לספק על קופון. |
+
+---
+
+## 2. ניהול מוצרים
+
+### 2.1 מסכים
 
 | נתיב | תפקיד |
 |---|---|
@@ -48,27 +63,29 @@ docs/RUNBOOK-PRODUCTION.md
 | `/admin/products/new` | יצירה |
 | `/admin/products/[id]/edit` | עורך מלא |
 
-### 1.2 בורר סוג מוצר (product-type selector)
+### 2.2 בורר סוג מוצר (product-type selector)
 
 | ערך | UI בעברית | שדות חובה נוספים |
 |---|---|---|
-| `coupon` | קופון | `coupon_price`, face/מחירון, expiry, quota, `platform_percent` (ביקורת) |
+| `coupon` | קופון | `coupon_price`, face/מחירון, expiry, quota, `platform_percent` (ביקורת/עקביות) |
 | `physical` | פיזי | מחיר מלא, מלאי/variant, `platform_percent` + split=100 |
-| `subscription` | מנוי | `recurring_amount_agorot`, interval monthly; לא soft-open |
+| `subscription` | מנוי | `recurring_amount_agorot`, interval; לא soft-open בלי ADR |
 | `service` (אם קיים) | שירות | לפי מדיניות קטלוג |
 
-שינוי סוג אחרי שיש הזמנות: אסור בלי ארכיון+מוצר חדש (או guard מפורש).
+שינוי סוג אחרי שיש הזמנות: אסור בלי ארכיון + מוצר חדש (או guard מפורש).
 
-### 1.3 שדות כסף (admin only)
+### 2.3 `platform_percent` חובה
 
 | UI בעברית | עמודה | כללים |
 |---|---|---|
-| מחיר מחירון | `price_ils` / agorot | > 0 |
-| מחיר קופון באתר | `coupon_price_*` | > 0 ו-≤ מחירון (קופון) |
-| יתרה אצל הספק (תצוגה) | מחושב | face - coupon |
-| עמלת פלטפורמה % | `platform_percent` | 0..100, חובה לפני publish |
+| עמלת פלטפורמה % | `platform_percent` | > 0 ו-< 100 (או טווח מוסכם); **חובה לפני publish**; אין default |
 | חלק ספק % | `supplier_split_percent` | משלים ל-100 |
+| מחיר מחירון | `price_*` / agorot | > 0 |
+| מחיר קופון באתר | `coupon_price_*` | > 0 ו-≤ מחירון (קופון) |
+| יתרה אצל הספק (תצוגה) | מחושב | face − coupon |
 | ספק | `supplier_id` | חובה ל-publish |
+
+Publish gate (`assertPublishable` / מקביל): נכשל אם חסר אחוז, ספק, או זהות ספק ל-PDP.
 
 Preview:
 
@@ -78,33 +95,30 @@ Preview:
 הפלטפורמה שומרת מתשלום האתר: 100% (קופון) / % מצולם (פיזי)
 ```
 
-שינוי כסף אחרי publish → `audit_log`; לא משנה הזמנות ישנות.
+אחוז חדש נרשם גם בהסכם פר מוצר (ONBOARDING §6) כשיש משא ומתן.
 
-### 1.4 מתג WhatsApp פר מוצר
+### 2.4 מתג WhatsApp פר מוצר
 
 | שדה | התנהגות |
 |---|---|
 | `whatsapp_enabled` (bool) | מציג CTA "וואטסאפ" ב-PDP כש-true |
 | מספר | יורש מ-`suppliers.whatsapp_phone` אלא אם override פר מוצר |
 | כבוי | אין כפתור; לא שובר checkout |
-| שיווק יזום | לא דרך המתג הזה; רק deep link לשיחה עם הספק/תמיכה לפי מדיניות |
+| שיווק יזום | **לא** דרך המתג; רק deep link לשיחה |
 
-אין שליחת הודעות המוניות ממתג המוצר. תשתית עתידית:
-`docs/WHATSAPP-BUSINESS-SETUP.md`
-,
-`docs/ARCHITECTURE-NOTIFICATIONS.md`.
+אין שליחת הודעות המוניות ממתג המוצר. תשתית עתידית: WHATSAPP-BUSINESS-SETUP + NOTIFICATIONS.
 
-### 1.5 הרשאות
+### 2.5 הרשאות
 
 | שדות | content_uploader | admin |
 |---|---|---|
 | תוכן / תמונות / SEO | כן (טיוטה) | כן |
 | סוג מוצר / % / מחיר / WhatsApp toggle | לא | כן |
-| publish | submit | כן |
+| publish | submit בלבד | כן |
 
 ---
 
-## 2. ניהול ספקים
+## 3. ניהול ספקים
 
 | פעולה | תוצאה |
 |---|---|
@@ -116,11 +130,11 @@ Preview:
 | WhatsApp / טלפון | לתצוגת יצירת קשר |
 | סניפים / עובדים / PIN | ONBOARDING + MOBILE scan |
 
-מסך ספק: מוצרים, % נוכחיים (קריאה), סטטוס, סריקות, יתרת payout פיזי (לא Escrow).
+מסך ספק: מוצרים, % נוכחיים (קריאה), סטטוס, סריקות, יתרת payout **פיזי** (לא כסף מוחזק על קופון).
 
 ---
 
-## 3. דוחות מכירות
+## 4. דוחות מכירות
 
 | מדד | הגדרה |
 |---|---|
@@ -130,23 +144,25 @@ Preview:
 | מימושים | vouchers → redeemed |
 | לפי ספק / מוצר / סוג | כולל % מצולם |
 
-אסור: חישוב מ-`products.platform_percent` החי; מדד "Escrow held".
+אסור: חישוב מ-`products.platform_percent` החי; מדד "escrow held" / `escrow_held`.
 
 ---
 
-## 4. Acceptance
+## 5. Acceptance
 
 - [ ] בורר סוג מוצר משנה שדות חובה  
 - [ ] `platform_percent` חובה ל-publish; בלי default  
-- [ ] מתג WhatsApp פר מוצר מתועד  
-- [ ] ניהול ספקים: אישור/השעיה/בנק/geo  
-- [ ] דוחות על snapshots  
+- [ ] מתג WhatsApp פר מוצר מתועד ומכובה כברירת מחדל בטוחה  
+- [ ] ניהול ספקים: אישור / השעיה / בנק / geo  
+- [ ] דוחות על snapshots בלבד  
+- [ ] No Escrow בנוסח ובמדדים  
 
 ---
 
-## 5. Revision
+## 6. Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-03 | מוצרים/ספקים/דוחות + platform_percent |
-| 2026-08-12 | product-type selector + WhatsApp toggle + יישור No Escrow/agorot |
+| 2026-08-03 | מוצרים / ספקים / דוחות + platform_percent |
+| 2026-08-12 | product-type + WhatsApp toggle + No Escrow |
+| 2026-08-12 | batch #25: ריענון BINDING; % חובה + בורר סוג + WhatsApp |
