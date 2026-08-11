@@ -152,3 +152,4 @@ Logout: מחיקת המטמון
 | 2026-08-11 | מבנה audit → target → migration; `114`/`115` |
 | 2026-08-12 | חזון Wolt-style + חוזי API |
 | 2026-08-12 | batch #46/50: רענון BINDING ממוקד על arch/docs-batch-2 |
+| 2026-08-12 | batch-2 #46 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
