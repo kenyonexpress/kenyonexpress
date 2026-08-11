@@ -1,95 +1,113 @@
 # ארכיטקטורה: כללי תמחור
 
-`platform_percent` דינמי פר מוצר, מבצעי בזק, והנחות תצוגה.
+`platform_percent` דינמי פר מוצר (חובה, בלי default), `coupon_price` מוחלט, snapshots, ומבצעים.
 
-Status: **BINDING** · עודכן: 2026-08-06 · QA: PASS  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+Status: **BINDING** · עודכן: 2026-08-12 · QA: PASS  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #5/50  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
 מסמכים קשורים:
 
 ```
-docs/ARCHITECTURE-ADMIN-DASHBOARD.md
-docs/ARCHITECTURE-INVENTORY.md
 docs/BUSINESS-MODEL.md
-docs/ARCHITECTURE-FRAUD-PREVENTION.md
-docs/ARCHITECTURE-SEASONAL-CAMPAIGNS.md
-docs/ARCHITECTURE-B2B-SALES.md
-docs/ARCHITECTURE-CUSTOMER-SUPPORT.md
-docs/ARCHITECTURE-REFERRAL.md
-docs/ARCHITECTURE-EMAIL-TEMPLATES.md
 docs/CONTRADICTIONS.md
+docs/ARCHITECTURE-COMMERCE.md
+docs/ARCHITECTURE-CHECKOUT-FLOW.md
+docs/ARCHITECTURE-ADMIN-DASHBOARD.md
+docs/ARCHITECTURE-SEASONAL-CAMPAIGNS.md
+docs/ARCHITECTURE-REFERRAL.md
+docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 ```
+
+מודל כסף: **No Escrow**. אין held/נאמן/J5. אין עמלה קבועה גלובלית.
+
 ---
 
 ## 0. הכרעות
 
 | # | הכרעה |
 |---|---|
-| P1 | אין עמלה גלובלית. `platform_percent` **פר מוצר**, בלי default, admin only. |
-| P2 | `platform_percent + supplier_split_percent = 100`. |
-| P3 | קופון: `coupon_price_ils` מוחלט באתר; יתרה בעסק = face - coupon; **No Escrow** (אין נאמן/J5 של חברת אשראי; אין held לספק). |
-| P4 | פיזי: פיצול on-site לפי snapshot ב-`order_items`. |
-| P5 | `discount_percent` לתצוגה בלבד; לא מקור חיוב. |
+| P1 | אין עמלה גלובלית. `platform_percent` **פר מוצר**, בלי default, admin only. שדה ריק = שגיאת ולידציה. |
+| P2 | `platform_percent + supplier_split_percent = 100` (DB CHECK). |
+| P3 | קופון: `coupon_price` / `coupon_price_ils` מוחלט באתר (לא נגזר מאחוז). יתרה בעסק = face − coupon. **No Escrow**. |
+| P4 | פיזי: הלקוח משלם 100% באתר; פיצול לפי snapshot של `platform_percent`. |
+| P5 | `discount_percent` לתצוגה/באדג' בלבד; לא מקור חיוב Cardcom. |
 | P6 | מבצע בזק = חלון זמן + מחיר חלופי לפי שעון שרת. |
-| P7 | אחרי paid: snapshots לא משתנים. |
+| P7 | אחרי יצירת הזמנה: snapshots על `order_items` לא משתנים כשהמוצר מתעדכן. |
+| P8 | אין תעריף מחייב ברמת ספק (`suppliers.commission_*` אינו default ליצירת מוצר). |
+| P9 | דמי ביטול חוקיים 5% או 100₪ ו-VAT 18% הם statutory; **לא** commission. |
 
 ---
 
 ## 1. שדות כסף במוצר
 
-| שדה | תפקיד |
+| שדה חי | תפקיד |
 |---|---|
-| `price_ils` | מחירון / שווי דיל |
-| `coupon_price_ils` | תשלום באתר לקופון |
-| `platform_percent` | עמלת פלטפורמה (פיזי; בקופון לביקורת) |
+| `platform_percent` | אחוז פלטפורמה מהסכום שנגבה באתר |
 | `supplier_split_percent` | משלים ל-100 |
-| `discount_percent` | תווית הנחה לתצוגה |
-| `flash_price_ils` | מחיר בזק אופציונלי |
-| `flash_starts_at` / `flash_ends_at` | חלון הבזק |
+| `coupon_price_ils` / agorot | מחיר קופון באתר (מוחלט) |
+| face / compare | ערך נקוב לתצוגה ויתרת עסק |
+| `discount_percent` | תצוגה |
+| `cashback_percent` | אופציונלי; snapshot בזמן קנייה |
+| `coupon_expiry_days` | בסיס ל-`expires_at` ב-mint |
+
+חישוב פנימי באגורות integer (`src/lib/money` / commerce money). Cardcom מקבל ILS עשרוני מאותו מספר אגורות.
 
 ---
 
-## 2. מבצעי בזק
+## 2. קופון מול פיזי
+
+### קופון
 
 ```text
-if now() in [flash_starts_at, flash_ends_at) and flash_price set:
-  charge = flash_price
-else:
-  charge = coupon_price (קופון) או price (פיזי)
+charged_on_site = coupon_price
+platform_revenue = charged_on_site   (100% לפלטפורמה; No Escrow)
+supplier_due_from_platform = 0
+balance_at_business = face - coupon_price
 ```
 
-כללים: לא מאריך אוטומטית; הארכה = admin + audit; מכסת מלאי עדיין חלה.
+### פיזי
+
+```text
+charged_on_site = price
+platform_fee = round(charged * platform_percent / 100)
+supplier_due = charged - platform_fee
+```
+
+Payout לספק פיזי = מסלול נפרד (T+N), לא בתוך Cardcom charge.
 
 ---
 
-## 3. הנחות
+## 3. Snapshot
 
-| סוג | התנהגות |
-|---|---|
-| תווית הנחה על PDP | מ-`discount_percent` או נגזרת ממחירון מול קופון |
-| קופון ארנק / referral | לא משנים `platform_percent`; מפחיתים חיוב on-site בקופה |
-| קופון קוד הנחה עתידי | snapshot בזמן checkout; לא רטרואקטיבי |
+ב-`beginCheckout` מועתקים לשורת `order_items` לפחות: `platform_percent`, פיצול ספק, סכומי on-site / fee / due / balance, זהות ספק לתצוגה.
+
+Finalize, refund, payout ודוחות נשענים על ה-snapshot, לא על `products` החי.
 
 ---
 
-## 4. Acceptance
+## 4. אסור
 
-- [ ] Publish נכשל בלי `platform_percent`  
-- [ ] Flash לא שובר snapshots ישנים  
-- [ ] קופון: platform keeps on-site; יתרה בעסק נפרדת  
-- [ ] UI אדמין: זוג אחוזים = 100  
+- default `platform_percent = 5` / 10 / כל קבוע במוצר  
+- נאמן / J5 / held לספק על מקדמת קופון  
+- שינוי רטרואקטיבי של % על הזמנות `paid`  
+- חיוב מלקוח לפי מחיר ששמר האורח בעגלה  
 
 ---
 
-## 5. Revision
+## 5. Acceptance
+
+- [ ] P1-P9 מתועדים  
+- [ ] נוסחאות קופון/פיזי תואמות No Escrow  
+- [ ] Snapshot חובה לפני LP  
+- [ ] Statutory fees מופרדים מ-commission  
+- [ ] אין default אחוז ברמת ספק  
+
+---
+
+## 6. Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-06 | platform_percent + בזק + הנחות |
-| 2026-08-06 | QA: קישור SEASONAL/B2B; חיזוק No Escrow |
-| 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
-| 2026-08-07 | QA verify: קישור הדדי ל-CUSTOMER-SUPPORT |
-| 2026-08-07 | QA: קישור הדדי ל-REFERRAL |
-| 2026-08-07 | QA audit: מינוס יוניקוד → ASCII; חיזוק איסור J5/held ב-P3 |
-| 2026-08-07 | QA audit: קישור הדדי ל-EMAIL-TEMPLATES |
+| 2026-08-06 | QA-PASS חבילת 20 |
+| 2026-08-12 | batch-2 #5: רענון BINDING + קישור CHECKOUT-FLOW |
