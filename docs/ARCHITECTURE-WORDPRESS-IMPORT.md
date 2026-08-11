@@ -1,163 +1,92 @@
 # ארכיטקטורה: ייבוא WordPress (WXR)
 
-ייבוא חד-פעמי מגיבוי WXR של WordPress/WooCommerce לסכמת Supabase: מיפוי, דה-דופ, תמונות ל-R2, dry-run, rollback.
-
-**WordPress הוא מקור מיגרציה בלבד, לא ה-stack הנוכחי.** ה-stack החי הוא Next.js + Supabase. אחרי cutover אין תלות ריצה ב-WP.
+ייבוא חד-פעמי מ-WXR ל-Supabase: מיפוי, dedup, R2, dry-run, rollback.
 
 Status: **BINDING** · עודכן: 2026-08-12  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #50/50  
-אין שינוי קוד. אין נגיעה בתיקייה הראשית (קריאת מבנה הגיבוי READ-ONLY בלבד).
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד. WP = **מקור מיגרציה בלבד**, לא stack חי.
 
 מסמכים קשורים:
 
 ```
 docs/ARCHITECTURE-WP-DATA-MIGRATION.md
+docs/ARCHITECTURE-WP-MIGRATION.md
 docs/ARCHITECTURE-CATALOG-SEARCH-SEO.md
-docs/ARCHITECTURE-CATEGORIES-TAXONOMY.md
 docs/ARCHITECTURE-PRICING-RULES.md
-docs/ARCHITECTURE-PRODUCTION-OPS.md
-docs/CONTRADICTIONS.md
-docs/RUNBOOK-PRODUCTION.md
 ```
 
-**יחס ל-`ARCHITECTURE-WP-DATA-MIGRATION.md`:** מסמך זה = חוזה תפעולי מול תיקיית WXR + R2 + dry-run/rollback. WP-DATA-MIGRATION נשאר לפירוט שדות/SEO ארוך. במקרה סתירה על מודל כסף גוברים CONTRADICTIONS (No Escrow, `platform_percent` פר מוצר בלי default).
-
-מקור גיבוי (נתיב בקוד הראשי, לקריאה בלבד):
-
-```text
-kenyonexpress/data-import/wp-backup/
-  README.md
-  kenyonexpress-wxr-2026-07-29.xml
-```
+מקור: `data-import/wp-backup/kenyonexpress-wxr-2026-07-29.xml`
 
 ---
 
-## 0. הכרעות
+## החלטה
 
 | # | הכרעה |
 |---|---|
-| WI0 | WP = **מקור מיגרציה** (WXR / REST ארכיון). לא runtime, לא CMS חי אחרי cutover. |
-| WI1 | ייבוא קטלוג בלבד: מוצרים, קטגוריות, תמונות, ספקים בסיסיים. הזמנות/לקוחות WP = ארכיון, לא import חובה. |
-| WI2 | Idempotent: `id_map` יציב (wp_post_id → uuid); re-run = upsert, לא כפילות. |
-| WI3 | לפני publish: `platform_percent` חובה; בלי default. מוצרים חסרים % נשארים `draft`. |
-| WI4 | מחיר קופון: שדה מוחלט; לא לגזור אחוז ישן כברירת מחדל עסקית. |
-| WI5 | תמונות: העלאה ל-R2 (או CDN היעד); URL ב-`products.images` מצביע ליעד החדש. |
-| WI6 | Dry-run חובה לפני כתיבה ל-prod; rollback = ביטול באצ' לפי `import_batch_id`. |
-| WI7 | מיגרציות סכמה ל-prod רק MCP; סקריפט הייבוא לא מריץ DDL. |
-| WI8 | אסור בייבוא: להמציא `platform_percent`, להמציא Escrow/held. |
+| WI1 | ייבוא קטלוג: מוצרים, קטגוריות, תמונות, ספקים stubs. הזמנות/לקוחות WP = ארכיון. |
+| WI2 | Idempotent: `id_map` (wp_post_id → uuid); re-run = upsert. |
+| WI3 | לפני publish: `platform_percent` חובה; בלי default; חסר → `draft`. |
+| WI4 | `coupon_price` מוחלט; לא לגזור אחוז ישן. |
+| WI5 | תמונות → R2; URL ב-`products.images`. |
+| WI6 | Dry-run חובה לפני prod; rollback לפי `import_batch_id`. |
+| WI7 | מיגרציות prod רק MCP; סקריפט import לא מריץ DDL. |
+| WI8 | SEO: `seo_redirects` 301 מ-URL ישן. |
 
 ---
 
-## 1. מיפוי WXR → סכמה
+## חלופות שנדחו
 
-| מקור WP (WXR / meta) | יעד Supabase | הערה |
+| חלופה | למה נדחתה |
+|---|---|
+| WP כ-CMS חי אחרי cutover | WI1: Next.js + Supabase. |
+| default 5%/`platform_percent` בייבוא | WI3: admin ממלא ידנית. |
+| import הזמנות WP ל-orders | ארכיון; לא מקור אמת כסף. |
+| hotlink תמונות WP לנצח | WI5: R2 יעד. |
+| REST בלבד בלי WXR dump | WP-MIGRATION: dump עמודה-לעמודה. |
+
+---
+
+## סכמת DB
+
+```text
+products (import_batch_id, wp_post_id via id_map)
+categories, product_categories
+suppliers (stub)
+id_map (source_type, source_id, target_uuid, import_batch_id)
+seo_redirects (from_path, to_path, status=301)
+products.images jsonb (r2_key, url, alt)
+```
+
+אין DDL חדש במסמך זה.
+
+---
+
+## מקרי קצה
+
+| # | מקרה | התנהגות |
 |---|---|---|
-| `item` post type product | `products` | slug מ-`wp:post_name` |
-| title | `name_he` | ניקוי HTML |
-| content / excerpt | `description_he` / תקציר | strip shortcodes |
-| `_regular_price` / sale | מחיר / compare; המרה לאגורות בשכבת כסף | |
-| coupon meta / ACF | `coupon_price_ils`, `type=coupon` | חסר → draft |
-| categories | `categories` + join | שמירת היררכיה (עומק ≤ 2 ביעד) |
-| featured image + gallery | R2 keys → `images` jsonb | §3 |
-| vendor / author shop | `suppliers` + `supplier_id` | stub אם חסר |
-| old URL | `seo_redirects` 301 | חובה ל-SEO |
-| stock | `stock_qty` / quota | לפי type |
+| CE1 | slug collision | `slug__wp{id}`. |
+| CE2 | תמונה בודדת נכשלת | `images_incomplete`; לא מפיל באצ'. |
+| CE3 | חסר `platform_percent` | draft; לא publish. |
+| CE4 | rollback אחרי רכישות | archived; לא hard delete. |
+| CE5 | duplicate wp_post_id | upsert; לא שורה שנייה. |
+| CE6 | מחיר float ב-WP meta | המרה ל-agorot בשכבת כסף. |
 
 ---
 
-## 2. Dedup
+## פתוחות
 
-```text
-1. חפש id_map לפי wp_post_id
-2. אם אין: התאם slug UNIQUE; התנגשות → slug__wp{id}
-3. UPSERT products לפי מדיניות באצ'
-4. אל תיצור מוצר שני לאותו wp_post_id
-```
-
-| מפתח | שימוש |
-|---|---|
-| `wp_post_id` | ראשי |
-| `slug` | משני + SEO |
-| checksum תוכן | דילוג אם זהה (אופציונלי) |
+| # | פתוח | הערה |
+|---|---|---|
+| O1 | `seo_redirects` table על prod | מיגרציה pending. |
+| O2 | checksum skip אם תוכן זהה | אופציונלי. |
+| O3 | backfill enrichment AI | AI-AGENTS-RUNTIME. |
 
 ---
 
-## 3. תמונות → R2
-
-```text
-extract image URLs from WXR / media items
-  → download (rate limited)
-  → upload R2: imports/{batch}/{wp_attachment_id}/{file}
-  → write products.images = [{ url, alt, width, height, r2_key }]
-  → id_map media
-```
-
-| כלל | פירוט |
-|---|---|
-| כשל תמונה בודדת | מוצר נשאר; דגל `images_incomplete`; לא מפיל באצ' שלם |
-| שכפול | אותו attachment id → אותה R2 key |
-| מחיקת מקור WP | רק אחרי אימות באצ' + תקופת חפיפה; לא חוסם cutover |
-
----
-
-## 4. Dry-run
-
-```text
-IMPORT_MODE=dry_run
-  → parse WXR
-  → validate mapping + missing platform_percent + missing supplier
-  → דוח: N create / N update / N skip / N error
-  → אין כתיבה ל-DB/R2 (או staging בלבד)
-```
-
-שער ל-prod: 0 שגיאות חוסמות; אזהרות % חסר מתועדות כ-draft.
-
----
-
-## 5. Rollback
-
-| רמה | פעולה |
-|---|---|
-| באצ' אחרון | `DELETE/soft-delete WHERE import_batch_id = X` + מחיקת R2 prefix (אחרי אישור) |
-| SEO | לא למחוק `seo_redirects` ישנים בלי ביקורת |
-| אחרי רכישות על מוצר מיובא | **אין** hard delete; `archived` + הפסקת מכירה |
-
-לפני rollback פרוד: גיבוי לפי runbook גיבויים.
-
----
-
-## 6. סדר הרצה
-
-```text
-1. dry-run על WXR
-2. upsert categories
-3. upsert suppliers stubs
-4. upload images R2
-5. upsert products (draft אם חסר %)
-6. seo_redirects
-7. דוח + אימות ידני מדגם
-8. admin ממלא platform_percent → publish
-9. cutover דומיין ל-Next; WP כבוי כמקור אמת
-```
-
----
-
-## 7. Acceptance
-
-- [ ] מיפוי WXR→טבלאות מתועד  
-- [ ] Dedup לפי wp_post_id  
-- [ ] R2 pipeline + כשל חלקי  
-- [ ] Dry-run בלי כתיבת prod  
-- [ ] Rollback לפי import_batch_id  
-- [ ] אין default עמלה / Escrow בייבוא  
-- [ ] מתועד: WP = מקור מיגרציה בלבד, לא stack חי  
-
----
-
-## 8. Revision
+## Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-12 | BINDING מול data-import/wp-backup WXR + R2 + dry-run/rollback |
-| 2026-08-12 | batch #50/50: WI0 WP כמקור מיגרציה לא stack; רענון על arch/docs-batch-2 |
-| 2026-08-12 | batch-2 #50 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
+| 2026-08-12 | BINDING WXR + R2 + dry-run |
+| 2026-08-12 | batch-2: 5 סעיפים מלאים |
