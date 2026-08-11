@@ -203,6 +203,7 @@ docs/ONBOARDING-DEVELOPER.md
 |---|---|---|
 | `ARCHITECTURE-ADMIN-DASHBOARD.md` | דשבורד אדמין + percent. | BINDING |
 | `ADMIN-USER-GUIDE.md` | מדריך אדמין בעברית. | GUIDE (10.08) |
+| `ADMIN-PRODUCT-EDITOR-SPEC.md` | עורך מוצר: 3 מצבים, ולידציות, RTL. | SPEC (11.08) |
 
 ### 6. אנליטיקה, צמיחה, שיווק, קמפיינים
 
