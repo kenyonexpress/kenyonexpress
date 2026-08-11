@@ -1,26 +1,49 @@
 # חזון V2 (אסטרטגיה)
 
-מה בא אחרי soft-open יציב: המלצות ML, מכרזים לספקים, live deals, גיימיפיקציה. עלות/תועלת ותלויות.
-
-Status: **VISION / PLAN** · עודכן: 2026-08-10  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+Status: **VISION / PLAN** · עודכן: 2026-08-12
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+מודל כסף: No Escrow; V2 לא משנה חוקי כסף.
 
-מסמכים קשורים:
+---
 
-```
-docs/ROADMAP-V2.md
-docs/MASTER-INDEX.md
-docs/CONTRADICTIONS.md
-docs/ARCHITECTURE-ANALYTICS.md
-docs/ANALYTICS-SPEC.md
-docs/SEASONAL-CAMPAIGNS.md
-docs/REFERRAL-PROGRAM.md
-docs/ONBOARDING-DEVELOPER.md
-```
+## 1. החלטה
 
-מודל כסף נשאר: **No Escrow**; `platform_percent` פר מוצר; אגורות; ארנק פנימי בלי משיכה לבנק.  
-V2 **לא** משנה את חוקי הכסף. רק מוסיף צמיחה ושימור.
+| # | הכרעה |
+|---|---|
+| V1 | Live deals → auctions → ML → gamification |
+| V2 | שער: analytics + soft-open ירוק |
+| V3 | אורגני לא לפי עמלה |
+| V4 | ארנק פנימי בלבד |
+
+---
+
+## 2. חלופות שנדחו
+
+| חלופה | נימוק |
+|---|---|
+| ML לפני דאטה | waste |
+| דירוג לפי margin | SEARCH-UX |
+| משיכת ארנק | policy |
+
+---
+
+## 3. סכמת DB
+
+**אין DDL במסמך.** events + products for ML later.
+
+---
+
+## 4. מקרי קצה
+
+| E1 | live deal race stockout | INVENTORY |
+| E2 | gamification bots | FRAUD |
+
+---
+
+## 5. פתוחות
+
+| O1 | ML model choice | after 3mo data | 2026-08-12 |
 
 ---
 
@@ -175,3 +198,12 @@ Analytics + Consent
 | תאריך | שינוי |
 |---|---|
 | 2026-08-10 | חזון V2 ראשוני: ML, מכרזים, live, גיימיפיקציה |
+
+---
+
+## Revision
+
+| תאריך | שינוי |
+|---|---|
+| 2026-08-12 | BINDING batch-2: החלטה, חלופות, DB, קצה, פתוחות |
+
