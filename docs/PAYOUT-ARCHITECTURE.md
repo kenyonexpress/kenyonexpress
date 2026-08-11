@@ -31,9 +31,10 @@ docs/BACKUP-RESTORE-RUNBOOK.md
 יישור:
 
 - `CARDCOM-ARCHITECTURE.md` §1.5 (Multi-Account / Financial) ו-§7.1 (client v11: אותו `CARDCOM_BASE`, `ApiName` / `ApiPassword` / `TerminalNumber` לפעולות כספיות).
-- `FINAL-REPORT.md` בתיקייה הראשית (קריאה בלבד) §7: חסמי נתונים להשקה (ספקים בלי כתובת/לוגו, דילים שבורים). שערי go-live כולל payout: `GO-LIVE-CHECKLIST.md`.
+- `FINAL-REPORT.md` בתיקייה הראשית (קריאה בלבד) **§7 Data** (לא §7.1): חסמי השקה (ספקים בלי כתובת/לוגו, דילי בית שבורים, legal). שערי go-live כולל payout ו-CI שנמדדו: `GO-LIVE-CHECKLIST.md`.
 
 **יחס ל-`ARCHITECTURE-PAYOUT-MECHANISM.md`:** מסמך זה גובר על צינור הביצוע ושמות הטבלאות הקנוניים. המנגנון נשאר לפירוט באצ', מסך אדמין, ו-CSV fallback.
+**יחס ל-`VENDOR-PAYOUT-SPEC.md`:** מפרט מוצר מעל המסמך הזה; לא סותר את P3.
 
 ---
 
