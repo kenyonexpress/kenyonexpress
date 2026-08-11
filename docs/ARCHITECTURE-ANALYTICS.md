@@ -1,240 +1,169 @@
-# ARCHITECTURE-ANALYTICS.md
+# ARCHITECTURE: Analytics
 
-ארכיטקטורת **אנליטיקה**: GA4, אירועי המרה, דשבורד מכירות לבעלים.
+תוכנית אירועי מעקב ל-KenyonExpress: page views, עגלה, משפך checkout, מימוש קופונים, ביצועי ספק. תואם פרטיות ושוק ישראלי.
 
-Status: BINDING · worktree
+Status: **BINDING** · Updated: 2026-08-03  
+Scope: **docs only** · branch `arch/docs-queue`  
+אין שינוי קוד. אין נגיעה ב-worktree הראשי.
 
-```
-/Users/ofir/kenyonexpress-web/ke-arch
-```
-
-branch:
+Companions:
 
 ```
-arch/docs-queue
+docs/ARCHITECTURE-COOKIE-CONSENT.md
+docs/ARCHITECTURE-ADMIN-REPORTS.md
+docs/ARCHITECTURE-SUPPLIER-ANALYTICS.md
+docs/LEGAL-CHECKLIST.md
+docs/ARCHITECTURE-SEO-PERFORMANCE.md
 ```
-
-Date: 2026-07-31 (rev D)  
-Scope: docs בלבד.  
-Companions: `ARCHITECTURE-ANALYTICS-KPI.md`, `ARCHITECTURE-COOKIE-CONSENT.md`, admin dashboard, Go-Live, `MASTER-ARCHITECTURE-v2.md`.
-
-Stack: GA4 (client + server where needed), Supabase `analytics_events` / marts, `/admin/analytics` RTL.
 
 ---
 
-## 0. מודל כסף בכל KPI
+## 0. הכרעות מחייבות
 
-| כלל | משמעות באנליטיקה |
+| # | הכרעה |
 |---|---|
-| קופון | GMV on-site / הכנסת פלטפורמה = מלוא `paid_on_site` (`coupon_price`). יתרה בעסק **לא** revenue |
-| פיזי | הכנסת פלטפורמה = `commission_agorot` מ-snapshot `platform_percent` (דינמי, בלי default) |
-| אין Escrow | אין מדדי escrow_held / release |
-| אגורות | DB bigint; UI ₪ |
-| Behavioral ≠ finance | לא סוכמים הכנסה מ-page_view |
+| A1 | Behavioral analytics ≠ finance. הכנסה רק מ-orders/ledger (אגורות), לא מסיכום page_view. |
+| A2 | קופון: GMV on-site = `coupon_price` ששולם; יתרה בעסק לא revenue פלטפורמה. |
+| A3 | פיזי: הכנסת פלטפורמה = `commission_agorot` מ-snapshot `platform_percent`. |
+| A4 | Marketing tags (GA4/Meta) רק אחרי consent לפי מדיניות עוגיות / 30א. |
+| A5 | אין PII מלא ב-events לצד שלישי (לא אימייל גולמי, לא קוד קופון מלא). |
+| A6 | עברית RTL במוצר; שמות אירועים באנגלית snake_case ליציבות. |
+| A7 | Server-side / first-party מועדף לאירועי כסף; client ל-UX funnel. |
 
 ---
 
 ## 1. שכבות
 
+```text
+Browser (consent gate)
+  → GA4 / pixels (behavior, ads)     [optional after consent]
+First-party
+  → analytics_events (Supabase)       [product analytics]
+Finance source of truth
+  → orders / order_items / vouchers / ledger
+Admin
+  → /admin/analytics + ARCHITECTURE-ADMIN-REPORTS
+Supplier
+  → ARCHITECTURE-SUPPLIER-ANALYTICS (scoped RLS)
 ```
-Browser (consent) → GA4 (behavior)
-                 → optional ke analytics_events ingest
-
-Server (authoritative money):
-  beginCheckout / finalizeOrder / redeem
-    → trackServerEvent + GA4 Measurement Protocol (purchase)
-    → orders / order_items snapshots
-
-Admin dashboard:
-  reads marts + SQL on paid orders (not GA4 alone for money)
-```
-
-| שכבה | תפקיד |
-|---|---|
-| GA4 | Funnel שיווקי, traffic, CVR התנהגותי |
-| Server events | Funnel כסף אמין + קישור ל-order_id |
-| Marts / SQL | דשבורד מכירות יומי לבעלים |
 
 ---
 
-## 2. GA4
+## 2. Event tracking plan
 
-### 2.1 נכס
+### 2.1 Engagement
 
-- Property אחד ל-prod (stream Web ל-`kenyonexpress.co.il`).
-- Measurement ID ב-`NEXT_PUBLIC_GA_MEASUREMENT_ID` (ציבורי).
-- API secret ל-Measurement Protocol **רק בשרת** (לא NEXT_PUBLIC).
-
-### 2.2 Consent
-
-- טעינת gtag רק לפי `ARCHITECTURE-COOKIE-CONSENT.md`.
-- אירועי כסף בשרת לא תלויים ב-cookie marketing (אופציונלי לשלוח purchase תמיד כ-transactional measurement; מדיניות legal קובעת).
-
-### 2.3 אירועי המרה (שמות מחייבים)
-
-| Event | מקור | פרמטרים עיקריים (בלי PII) |
+| event | מתי | params עיקריים |
 |---|---|---|
-| `page_view` | client | page_path, page_type |
-| `view_item` | client PDP | item_id, item_category, item_variant (coupon\|physical) |
-| `add_to_cart` | client/server | item_id, quantity, value (on-site ILS), currency=ILS |
-| `begin_checkout` | **server** | value, items[], order draft id hash |
-| `purchase` | **server** אחרי finalize | transaction_id=order_id, value=on-site total, tax/shipping אם רלוונטי, items[] |
-| `refund` | server | transaction_id, value |
-| `generate_lead` | אופציונלי | supplier interest |
-| `login` | client אחרי Google | method=Google |
-| `view_cart` | client `/cart` | value, items[] |
-| `checkout_step` | client | step: identity \| address \| guest_login \| payment_redirect |
+| `page_view` | כל עמוד ציבורי | `path`, `title`, `locale=he` |
+| `view_item_list` | category / search results | `list_id`, `item_count` |
+| `view_item` | PDP | `item_id`, `item_name`, `item_category`, `product_type`, `price_agorot` (paid online) |
+| `select_item` | קליק מכרטיס | כמו view_item |
+| `search` | שליחת חיפוש | `search_term` (מקוצר/hashed אם רגיש), `results_count` |
+| `share` | שיתוף מוצר | `method`, `item_id` |
 
-`checkout_step` כבר נורה בקוד ה-checkout הקיים דרך:
+### 2.2 Cart / Checkout funnel
 
-```
-src/lib/analytics/tracker.ts
-```
-
-והקטלוג כאן מחייב את שמות ה-step האלה; step חדש = עדכון המסמך.
-
-`value` ב-GA4 לקופון = מחיר ששולם באתר בלבד (לא face value).
-
-Item params:
-
-```
-item_id, item_name, item_category, quantity,
-price  // unit on-site charge
-item_brand // supplier display name ok
-```
-
-אסור ב-GA4: email, phone, PAN, cardcom_token, service role.
-
-### 2.4 Enhanced measurement
-
-- אפשר scrolls/outbound בזהירות; לא תחליף ל-`purchase` שרת.
-
----
-
-## 3. אירועים פנימיים (Supabase)
-
-קטלוג קצר (מפורט גם ב-KPI doc):
-
-| event_name | מתי |
-|---|---|
-| `product_view` | PDP |
-| `add_to_cart` | הצלחת ATC |
-| `begin_checkout` | beginCheckout |
-| `purchase` | finalize פעם אחת |
-| `coupon_redeem` | redeem success |
-| `refund` | refund path |
-
-Envelope: event_id, occurred_at, session_id, user_id uuid optional, props jsonb בלי PII.
-
-### 3.1 Mart יומי (מקור הדשבורד)
-
-טבלה מחושבת פעם ביום (cron) או view חומרני, לא שאילתה חיה על orders בכל טעינת דשבורד:
-
-```sql
--- mart_daily_sales: שורה ליום, Asia/Jerusalem
-create materialized view if not exists mart_daily_sales as
-select
-  (paid_at at time zone 'Asia/Jerusalem')::date as day,
-  count(*)                                      as paid_orders,
-  sum(total_agorot)                             as gmv_on_site_agorot,
-  sum(platform_revenue_agorot)                  as platform_revenue_agorot,
-  count(*) filter (where has_coupon_line)       as orders_with_coupon,
-  count(*) filter (where has_physical_line)     as orders_with_physical
-from orders_money_rollup
-group by 1;
-```
-
-‏`orders_money_rollup` הוא view עזר שמסכם order_items לפי המודל בסעיף 0 (קופון: `paid_on_site_agorot`; פיזי: `commission_agorot`). refresh דרך cron מאובטח ב-`CRON_SECRET`.
-
----
-
-## 4. דשבורד מכירות (`/admin/analytics`)
-
-קהל: אדמין/בעלים בלבד (`is_admin()`).
-
-### 4.1 וידג'טים חובה
-
-1. **היום / 7י / 30י:** מספר הזמנות paid, GMV on-site, הכנסת פלטפורמה, refunds.
-2. **Funnel:** view_item → add_to_cart → begin_checkout → purchase (CVR בין שלבים).
-3. **פיצול:** % הזמנות עם קופון מול פיזי.
-4. **Top products** לפי הכנסת פלטפורמה (לא רק GMV).
-5. **Top suppliers** (פיזי commission + כמות קופונים שנמכרו; בלי לרמוז payout על prepaid).
-6. **איכות ops:** webhook fails, notification DLQ (קישור), redeem fail rate.
-
-### 4.2 נוסחאות כסף
-
-```
-GMV_on_site = sum(orders.total_agorot) where paid_at is not null
-
-platform_revenue =
-  sum(coupon lines paid_on_site_agorot)
-  + sum(physical lines commission_agorot)
-
-NOT included: balance_due_at_business, escrow_*, wishful % of face
-```
-
-שעון: `Asia/Jerusalem`.
-
-### 4.3 ייצוא
-
-CSV לטווח תאריכים; RBAC admin; לוג audit.
-
-### 4.4 התראות אנומליה (Ntfy לבעלים)
-
-| תנאי | חלון | פעולה |
+| event | מתי | params |
 |---|---|---|
-| 0 רכישות בשעות פעילות (10:00-22:00) | 4 שעות רצופות | בדיקת checkout חי + Cardcom status |
-| purchase ב-GA4 בלי order תואם (או להפך) | דוח יומי | חקירת discrepancy לפני שסומכים על מספרי שיווק |
-| refunds מעל 10% מהזמנות היום | יומי | עצירה ובדיקת מוצר/ספק חריג |
-| redeem fail rate מעל 20% | יומי | בדיקת שעון/HMAC בסורק |
+| `add_to_cart` | הוספה | `item_id`, `qty`, `price_agorot`, `product_type` |
+| `remove_from_cart` | הסרה | כמו לעיל |
+| `view_cart` | `/cart` | `value_agorot`, `num_items` |
+| `begin_checkout` | כניסה ל-`/checkout` | `value_agorot`, `num_items` |
+| `add_shipping_info` | בחירת משלוח (פיזי) | `shipping_tier` |
+| `add_payment_info` | מעבר ל-Cardcom | `payment_type=cardcom` (בלי PAN) |
+| `purchase` | אחרי paid מאומת (server מועדף) | `transaction_id`, `value_agorot`, `tax` אם רלוונטי, `items[]` |
 
-הסְפים ניתנים לכוונון בקובץ config, לא hardcoded בקוד ההתראות.
+משפך KPI:
 
----
+```text
+view_item → add_to_cart → begin_checkout → purchase
+```
 
-## 5. סנכרון GA4 ↔ שרת
+שיעורי נטישה: מחושבים first-party; GA4 משני.
 
-| נושא | כלל |
+### 2.3 Coupons / redemption
+
+| event | מתי | params |
+|---|---|---|
+| `coupon_issued` | voucher `issued` (server) | `voucher_id` (uuid ok), `product_id`, `paid_agorot` |
+| `coupon_view` | צפייה ב-QR באזור אישי | `voucher_id` |
+| `coupon_redeem_success` | redeem OK (server) | `voucher_id`, `supplier_id`, `collected_agorot` |
+| `coupon_redeem_fail` | כשל | `reason` enum: already_used / expired / invalid / wrong_supplier / rate_limited |
+
+מדדים:
+
+| Metric | הגדרה |
 |---|---|
-| Idempotency | `purchase` פעם אחת ל-order_id (finalize guard) |
-| Bot traffic | סנן ב-ingest; אל תאמן KPI כסף מ-GA4 בלבד |
-| Discrepancy | דוח שבועי: GA4 purchases count מול count(orders.paid) |
-| UTM | utm_source/medium/campaign נקלטים ב-session ראשון ומוצמדים ל-begin_checkout ו-purchase כ-props; בלי לשמור אותם על שורת ה-order עצמה |
+| Redemption rate | redeemed / issued (בחלון זמן + cohort) |
+| Time to redeem | median(redeemed_at − issued_at) |
+| Expiry waste | expired never redeemed / issued |
 
----
+### 2.4 Supplier performance (product analytics)
 
-## 6. פרטיות ואבטחה
-
-- RLS על analytics raw: staff select; insert דרך edge/service.
-- אין הצגת PII בדשבורד.
-- ספקים לא מקבלים את דשבורד הפלטפורמה המלא.
-
----
-
-## 7. טסטים
-
-| # | בדיקה |
+| event / metric | מקור |
 |---|---|
-| AN1 | purchase נורה פעם אחת אחרי finalize |
-| AN2 | value קופון = coupon_price לא face |
-| AN3 | דשבורד platform_revenue תואם SQL ידני על order_items |
-| AN4 | בלי consent: אין client GA4 (אם מדיניות דורשת) |
-| AN5 | אין אירועי escrow במערכת |
+| `supplier_sale` | order paid עם שורות ספק |
+| GMV on-site | sum paid לשורות הספק |
+| Redeem count | vouchers redeemed |
+| Scan fail rate | redeem_fail / attempts |
+| Physical ship lag | shipped_at − paid_at (כשקיים) |
+
+דשבורד ספק: מסמך Supplier Analytics (RLS). כאן רק אירועים/הגדרות.
 
 ---
 
-## 8. Out of scope
+## 3. Privacy (ישראל)
 
-- BigQuery warehouse חובה ביום 1
-- Attribution רב-ערוצי מלא
-- מכירת דאטה
+| כלל | יישום |
+|---|---|
+| Consent | באנר עוגיות לפני GA4/pixels שיווקיים |
+| Transactional measurement | first-party יכול לרוץ לתפעול/מניעת הונאה במסגרת מדיניות הפרטיות |
+| 30א | דיוור שיווקי לא דרך analytics tags |
+| Data minimization | בלי קוד קופון מלא, בלי טלפון, בלי כתובת מלאה ב-GA |
+| Processors | לגלות בפרטיות: GA/Meta/Supabase לפי מה שמחובר |
+| Retention | גולמי client: קצר; aggregates ארוכים יותר |
+| Children | לא מכוון לקטינים; בלי איסוף מודע |
+
+IP: truncation בלוגים; לא לשלוח IP גולמי לכלי פרסום אם אפשר.
 
 ---
 
-## 9. Revision
+## 4. יישום טכני (יעד)
+
+| שכבה | כלי |
+|---|---|
+| Client | `gtag` / GTM רק אחרי consent |
+| Server purchase | emit מ-finalize / webhook אחרי paid |
+| First-party | `analytics_events` append-only או pipeline ל-marts |
+| Admin UI | RTL, ₪ מ-agorot, Asia/Jerusalem |
+
+Idempotency ל-`purchase` / `coupon_issued`: מפתח `transaction_id` / `voucher_id` כדי לא לכפול ב-replay.
+
+---
+
+## 5. מה לא מודדים ככה
+
+- הכנסת פלטפורמה מ-session replay
+- עמלה מ-`products.platform_percent` החי במקום snapshot
+- "Escrow חיצוני" כמימד
+- ניסויים שמשנים מחיר בלי audit
+
+---
+
+## 6. Acceptance
+
+- [ ] Funnel events מוגדרים מקצה לקצה
+- [ ] Redemption rate מחושב מ-vouchers
+- [ ] Consent חוסם pixels שיווקיים
+- [ ] purchase server-side עם idempotency
+- [ ] אין PII רגיש ב-GA params
+
+---
+
+## 7. Revision
 
 | Date | Change |
 |---|---|
-| 2026-07-29 | Analytics marts + goals ראשוני |
-| 2026-07-31 | rev C: GA4, conversion events, sales dashboard, money rules |
-| 2026-07-31 | rev D: יישור קטלוג לאירועי checkout_step הקיימים בקוד, mart יומי, התראות אנומליה, UTM |
+| 2026-07-31 | rev D (GA4 + KPI) |
+| 2026-08-03 | Event plan מלא + privacy ישראל + redemption; Escrow-aware finance rules |

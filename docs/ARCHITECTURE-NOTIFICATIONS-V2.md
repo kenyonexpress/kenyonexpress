@@ -1,24 +1,35 @@
 # ARCHITECTURE-NOTIFICATIONS-V2.md
 
-ארכיטקטורת התראות **V2** (סיכום מחייב ב-`ke-arch`).
+מצביע למודל ההתראות הקנוני.
 
-Status: BINDING pointer · Date: 2026-07-31 · docs only.  
-Full text: `ke-arch-notifications-v2/docs/ARCHITECTURE-NOTIFICATIONS-V2.md`.
+Status: BINDING pointer · Date: 2026-08-03 · docs only.
+
+**הטקסט המלא:**
+
+```
+docs/ARCHITECTURE-NOTIFICATIONS.md
+```
 
 ## Stack (final)
-**Resend + Supabase Trigger + Edge Function worker.**  
+
+**Resend + Supabase DB Trigger + Edge Function worker.**  
 No Make. No Zapier.
 
 ## Events (must)
-1. Coupon purchase: email+WhatsApp to customer with QR; supplier sold alert (no payout).  
-2. Coupon redeem: customer confirm; supplier summary.  
-3. Expiry in 48h: customer reminder.  
-4. Physical order: supplier ship alert.
+
+1. `order_confirmation` (לקוח)
+2. `coupon_purchased` (לקוח + QR)
+3. `coupon_redeemed` (לקוח; ספק משני)
+4. `supplier_new_order` (ספק)
+5. `refund` (לקוח)
 
 ## Also required
-RTL Hebrew templates · retry+DLQ · unsubscribe/consent · money paths never await provider.
+
+תבניות עברית RTL · retry + DLQ · `dedupe_key` + Resend `Idempotency-Key` · מסלול כסף לא מחכה ל-provider.
 
 ## Revision
+
 | Date | Change |
 |---|---|
-| 2026-07-31 | V2 summary mirrored into `ke-arch` (`arch/docs-queue`) |
+| 2026-07-31 | V2 summary |
+| 2026-08-03 | מצביע ל-5 אירועי ליבה + idempotency |

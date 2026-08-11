@@ -42,8 +42,8 @@ Date: 2026-07-31 · docs only.
 - `ARCHITECTURE-CUSTOMER-SUPPORT.md`
 - `ARCHITECTURE-AI-AGENTS-SUPPORT.md`
 - `ARCHITECTURE-AI-AGENTS.md`
-- `ARCHITECTURE-NOTIFICATIONS.md`
-- `ARCHITECTURE-NOTIFICATIONS-V2.md`
+- `ARCHITECTURE-NOTIFICATIONS.md` (V2 מלא: Resend+Trigger+Edge, WhatsApp, QR, 48h, unsubscribe)
+- `ARCHITECTURE-NOTIFICATIONS-V2.md` (מצביע לקנוני למעלה)
 
 ## Admin / suppliers / growth
 - `ARCHITECTURE-ADMIN.md`
@@ -55,6 +55,9 @@ Date: 2026-07-31 · docs only.
 - `ARCHITECTURE-REFERRALS.md`
 - `ARCHITECTURE-SECURITY-COMPLIANCE.md`
 - `ARCHITECTURE-SECURITY-AUDIT.md` (תוכנית ביקורת: RLS probes, סריקות, רישום ממצאים)
+- `ARCHITECTURE-ADMIN-DASHBOARD-SPEC.md` (מפרט מסכי אדמין: טבלאות, פילטרים, הרשאות)
+- `OPERATIONS-RUNBOOK.md` (תפעול יומי ותקלות נפוצות)
+- `INDEX.md` (אינדקס עשרת מסמכי ספרינט 07/31-08/02)
 - `ARCHITECTURE-LEGAL.md`
 - `ARCHITECTURE-LEGAL-PAGES.md` (מפרט תקנון, ביטולים לפי חוק הגנת הצרכן, פרטיות, נגישות)
 
