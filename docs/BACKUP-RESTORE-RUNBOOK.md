@@ -169,6 +169,20 @@ pg_dump "$DATABASE_URL" | gzip | openssl enc -aes-256-cbc -out backup-YYYYMMDD.s
 
 ---
 
+## 10. Reconciliation אחרי restore
+
+חלון חובה לפני `CHECKOUT_ENABLED=true`:
+
+1. ייצוא הזמנות `paid` / `refunded` מה-DB לחלון האירוע ± buffer.  
+2. השוואה מול דוח Cardcom (טרמינל) לאותם order refs / LP numbers.  
+3. הזמנות שקיימות ב-Cardcom וחסרות אחרי PITR: תור תיקון ידני (לא הנפקה כפולה).  
+4. הזמנות ב-DB בלי אימות Cardcom: freeze + חקירה.  
+5. רק אחרי ירוק: הפעלת checkout + הודעת תמיכה אם נדרש.
+
+אין לסמוך על "נראה תקין בקטלוג" כאימות כסף.
+
+---
+
 ## Revision
 
 | תאריך | שינוי |
@@ -177,3 +191,4 @@ pg_dump "$DATABASE_URL" | gzip | openssl enc -aes-256-cbc -out backup-YYYYMMDD.s
 | 2026-08-11 | שאילתות אימות אחרי PITR |
 | 2026-08-11 | טבלת בחירה PITR מול scratch |
 | 2026-08-11 | סעיף 9: צעדי UI ל-PITR ב-Supabase |
+| 2026-08-11 | סעיף 10: reconciliation מול Cardcom אחרי restore |
