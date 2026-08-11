@@ -14,25 +14,26 @@ docs/DOCS-TEMPLATE-BINDING.md
 .
 
 ## המשך מ:
-נכתב
-docs/ARCHITECTURE-ADMIN-PRODUCT-FIELDS.md
-. ממתין למסמך הבא על
+הושלמו בתור הנוכחי: SUBSCRIPTIONS, WALLET-CASHBACK, RLS-MATRIX, SUPER-APP, ROADMAP-V1.1, COOKIE-CONSENT, CART-ZUSTAND, COUPON-REDEMPTION (+ DESIGN-SYSTEM / BACKUP-DR בתהליך).
+ממשיכים pass-2 על מסמכי ARCHITECTURE החסרים חלופות/מקרי-קצה/פתוחות על
 arch/docs-batch-2
 .
 
 ## Last Completed
-ARCHITECTURE-ADMIN-PRODUCT-FIELDS.md: קטלוג שדות אדמין + ולידציה + השפעת storefront. קודם: SUPPLIER-PORTAL.
+ARCHITECTURE-COUPON-REDEMPTION template sections; קודם: COOKIE-CONSENT, CART-ZUSTAND, ROADMAP-V1.1, SUPER-APP, RLS-MATRIX, WALLET-CASHBACK, SUBSCRIPTIONS.
 
 ## In Progress
-nothing
+pass-2 docs BINDING על arch/docs-batch-2
 
 ## Next Task
-מסמך docs הבא לפי הוראת משתמש על arch/docs-batch-2
+המשך שכתוב מסמכי ARCHITECTURE החסרים תבנית מלאה (הבא בתור לפי חוסרים)
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
 
 ## החלטות שהתקבלו אוטומטית
+- **2026-08-12 autonomous pass-2:** ממשיכים שכתוב BINDING בלי לשאול. SUBSCRIPTIONS: paused אחרי 3 soft/7d; מחיר מנוי מצולם. WALLET: אין cash-out. RLS-MATRIX: 52 ליבה. SUPER-APP: בלי אינטגרציית Wolt. ROADMAP: V1.1a geo/PWA → wallet → physical → subscriptions.
+
 - **2026-08-12 ADMIN-PRODUCT-FIELDS:** נוצר BINDING מול ProductForm + upsertProduct Zod. סטטוס חנות = active (לא published בתיעוד ישן). is_coupon_enabled מורשת מול type. קופון: supplier מהפלטפורמה = 0 בתצוגת השפעה.
 
 - **2026-08-12 SUPPLIER-PORTAL:** שכתוב BINDING. שער = supplier_members לא profiles.role. דוחות בלי escrow_held. בנק לא חוסם סריקה. Settlements ישנים עם held נדחים במפורש ממפת הפורטל.
