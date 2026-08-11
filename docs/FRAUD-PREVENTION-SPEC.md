@@ -104,12 +104,25 @@ docs/VENDOR-PAYOUT-SPEC.md
 
 ---
 
+## 5.2 Account takeover / גניבת סשן
+
+| אות | פעולה |
+|---|---|
+| החלפת סיסמה / OAuth ממכשיר חדש + redeem מיידי | challenge / השהיית redeem קצרה |
+| שליחת קופון למייל/WA שונה מהחשבון | חסום ב-MVP (אין העברת voucher בלי מפרט מתנה) |
+| ריבוי כתובות משלוח פיזי בחלון קצר | manual_review לפני payout |
+
+מתנות: רק לפי `ARCHITECTURE-GIFT-COUPONS.md` כשמופעל; לא קיצור דרך בתמיכה.
+
+---
+
 ## 6. Acceptance
 
 - [ ] SEC-QR סגור לפני פרוד מלא  
 - [ ] RL fail-closed על checkout/redeem  
 - [ ] בדיקת עומס double-redeem  
 - [ ] תסריט תמיכה ל-chargeback ב-PLAYBOOK  
+- [ ] אין העברת voucher ידנית בלי audit  
 
 ---
 
@@ -121,3 +134,4 @@ docs/VENDOR-PAYOUT-SPEC.md
 | 2026-08-11 | יישור סטטוס מימוש ל-`redeemed` (פרוד 054) |
 | 2026-08-11 | סדר אימות סריקה מפורט |
 | 2026-08-11 | velocity לאורח (guest email) ב-checkout |
+| 2026-08-11 | אותות account takeover / מתנות |
