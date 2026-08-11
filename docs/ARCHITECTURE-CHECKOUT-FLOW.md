@@ -156,8 +156,8 @@ succeeded → refunded (אחרי שורת refund מאושרת)
 | `supplier_split_percent` | משלים ל-100 (מצולם גם כן) |
 | `charged_on_site_ils` | קופון: `coupon_price_ils` (או flash); פיזי: מחיר מלא |
 | `platform_fee_ils` | קופון: = charged_on_site; פיזי: אחוז מהחיוב |
-| `supplier_due_ils` | קופון: **0**; פיזי: charged − platform_fee |
-| `balance_due_at_business_ils` | קופון: face − coupon; פיזי: 0 |
+| `supplier_due_ils` | קופון: **0**; פיזי: charged - platform_fee |
+| `balance_due_at_business_ils` | קופון: face - coupon; פיזי: 0 |
 
 אין קריאה חוזרת ל-`products.platform_percent` ב-finalize לצורך פיצול כסף; משתמשים ב-snapshot על השורה (או ב-intent שכבר צילם אותו).
 
@@ -180,7 +180,7 @@ succeeded → refunded (אחרי שורת refund מאושרת)
 |---|---|
 | חיוב Cardcom | סכום = `coupon_price` (אגורות/שקלים לפי שכבת הכסף בקוד) |
 | כסף באתר | **100% נשאר בפלטפורמה** |
-| יתרה | `face − coupon` נגבית בבית העסק במימוש |
+| יתרה | `face - coupon` נגבית בבית העסק במימוש |
 | Payout לספק | **0** מהפלטפורמה על קופון |
 | אסור | Escrow, J5, `held` עד מימוש, שחרור מקדמה לספק |
 
