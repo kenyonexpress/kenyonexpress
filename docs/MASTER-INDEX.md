@@ -2,7 +2,7 @@
 
 אינדקס כל מסמכי הארכיטקטורה ב-`docs/` עם שורת תקציר לכל אחד.
 
-Status: **BINDING (index)** · עודכן: 2026-08-10 · QA: PASS (final, topic-sorted + DEPRECATED)
+Status: **BINDING (index)** · עודכן: 2026-08-10 · QA: PASS (final)
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -108,13 +108,11 @@ docs/ONBOARDING-DEVELOPER.md
 | מסמך | תקציר | סטטוס |
 |---|---|---|
 | `ONBOARDING-DEVELOPER.md` | מדריך מפתח: מבנה, ברזל, הרצה, PR. | GUIDE (10.08) |
-| `PROGRESS-REPORT-AUG.md` | דוח מנהלים אוגוסט: מספרים, חסמים, שבוע קרוב. | REPORT (10.08) |
 | `MASTER-INDEX.md` | אינדקס זה. | QA-PASS (#20) |
 | `CONTRADICTIONS.md` | No Escrow (C11א), `platform_percent` פר מוצר. | BINDING (07.08) |
 | `BUSINESS-MODEL.md` | מחיר קופון באתר + יתרה בעסק. | BINDING |
 | `MASTER-ARCHITECTURE.md` | מסמך הכרעות; 1.4/1.11 בוטלות. | QA-PASS (06.08) |
 | `ROADMAP-V2.md` | שלבים ותלויות לחבילת docs. | QA-PASS (#10) |
-| `V2-VISION.md` | חזון אסטרטגי: ML, מכרזים, live, גיימיפיקציה. | VISION (10.08) |
 | `CHANGELOG.md` | יומן שינויים. | LIVE |
 | `GAPS-CODE-VS-DOCS.md` | ביקורת קוד מול מסמכים. | AUDIT (07.08) |
 
@@ -125,10 +123,9 @@ docs/ONBOARDING-DEVELOPER.md
 | `ARCHITECTURE-PRICING-RULES.md` | מקור האמת ל-percent / בזק / הנחות. | QA-PASS (#12) |
 | `ARCHITECTURE-COMMERCE.md` | כללי מסחר C1-C10. | QA-PASS (06.08) |
 | `ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md` | checkout/מימוש; יומן D1-D6. | QA-PASS (06.08) |
-| `CHECKOUT-OPTIMIZATION.md` | משפך נטישה + יעדים + A/B לפי עלות/תועלת. | PLAN (10.08) |
-| `GUEST-VS-MEMBER-STRATEGY.md` | מתי דוחפים הרשמה ומתי לא. | PLAN (10.08) |
 | `CARDCOM-ARCHITECTURE.md` | Cardcom (מחקר v11; קוד legacy). | BINDING + QA (07.08) |
 | `ARCHITECTURE-PAYOUT-MECHANISM.md` | Payout פיזי: T+N, באצ', CSV ידני. | BINDING (10.08) |
+| `PAYOUT-ARCHITECTURE.md` | טיוטה ישנה; superseded ע״י PAYOUT-MECHANISM. | superseded |
 | `ARCHITECTURE-CASHBACK-WALLET.md` | ארנק פנימי באגורות. | BINDING |
 | `ARCHITECTURE-WALLET-LEDGER.md` | ledger כפול-רישום. | BINDING |
 | `ARCHITECTURE-ACCOUNT-WALLET.md` | תכנון/יישום ארנק חשבון. | DESIGN |
@@ -145,8 +142,6 @@ docs/ONBOARDING-DEVELOPER.md
 | `ARCHITECTURE-GIFT-COUPONS.md` | קופון מתנה. | QA-PASS (#16) |
 | `ARCHITECTURE-SUPPLIER-ONBOARDING.md` | הצטרפות ספק (ארכיטקטורה). | QA-PASS (#1) |
 | `SUPPLIER-ONBOARDING.md` | מדריך צירוף ספק. | GUIDE (10.08) |
-| `SUPPLIER-QUALITY-PROGRAM.md` | איכות ספקים: NPS פנימי, השעיה, boost חינם. | PLAN (10.08) |
-| `FEATURED-DEALS-PRICING.md` | תמחור קידום דילים (מודל עתידי). | PLAN (10.08) |
 | `ARCHITECTURE-SUPPLIER-PORTAL.md` | פורטל ספק. | BINDING |
 | `SUPPLIER-AGREEMENT-DRAFT.md` | טיוטת הסכם. לא ייעוץ משפטי. | DRAFT |
 | `ARCHITECTURE-FRAUD-PREVENTION.md` | כפילות, QR, chargeback, velocity. | BINDING |
@@ -177,8 +172,6 @@ docs/ONBOARDING-DEVELOPER.md
 | `ARCHITECTURE-ACCOUNT-IDENTITY.md` | זהות חשבון. | DESIGN |
 | `ARCHITECTURE-CUSTOMER-SUPPORT.md` | פניות ו-SLA. | QA-PASS (#13) |
 | `CUSTOMER-SUPPORT-PLAYBOOK.md` | תסריטי מענה בעברית. | PLAYBOOK (10.08) |
-| `SUPPORT-SLA-POLICY.md` | מדרג פניות, שעות, אסקלציה, נוסח מחוץ לשעות. | POLICY (10.08) |
-| `DISPUTE-RESOLUTION.md` | מחלוקות מימוש; נטל ראיה אצל ספק. | RUNBOOK (10.08) |
 | `FAQ-CONTENT.md` | 20 שאלות לעמוד FAQ. | CONTENT (10.08) |
 | `CONTENT-PLAYBOOK.md` | כתיבת דיל בעברית. | PLAYBOOK |
 | `ARCHITECTURE-EMAIL-TEMPLATES.md` | תבניות Resend RTL. | QA-PASS (#6) |
@@ -190,6 +183,7 @@ docs/ONBOARDING-DEVELOPER.md
 |---|---|---|
 | `ARCHITECTURE-ADMIN-DASHBOARD.md` | דשבורד אדמין + percent. | BINDING |
 | `ADMIN-USER-GUIDE.md` | מדריך אדמין בעברית. | GUIDE (10.08) |
+| `ADMIN-ARCHITECTURE.md` | ארכיטקטורת אדמין ישנה. | LEGACY |
 
 ### 6. אנליטיקה, צמיחה, שיווק, קמפיינים
 
@@ -204,7 +198,6 @@ docs/ONBOARDING-DEVELOPER.md
 | `SEASONAL-CAMPAIGNS.md` | באנרים, קולקציות, countdown. | PLAN (10.08) |
 | `MARKETING-LAUNCH.md` | שיווק השקה + UTM. | PLAN (10.08) |
 | `ARCHITECTURE-NOTIFICATIONS.md` | paid/redeem/abandon + DLQ. | BINDING (10.08) |
-| `WHATSAPP-BUSINESS-SETUP.md` | הקמת WhatsApp Business API + תבניות. | GUIDE (10.08) |
 | `ARCHITECTURE-NOTIFICATIONS-MARKETING.md` | שיווק התראות. | DESIGN |
 
 ### 7. אבטחה, פרטיות, משפט
@@ -258,6 +251,7 @@ docs/ONBOARDING-DEVELOPER.md
 |---|---|---|
 | `TESTING-STRATEGY.md` | פירמידה + שערי merge (100% money/redeem). | BINDING (10.08) |
 | `ARCHITECTURE-TESTING-CICD.md` | פירוט CI/CD וטסטים. | QA-PASS (06.08) |
+| `TEST-STRATEGY.md` | פירמידה ישנה יותר (כסף קודם). | BINDING |
 | `CODE-REVIEW-CHECKLIST.md` | צ'קליסט PR: agorot, RLS, RTL, compare.mjs. | BINDING (10.08) |
 
 ### 12. AI, מיגרציית WP, שונות
@@ -268,17 +262,7 @@ docs/ONBOARDING-DEVELOPER.md
 | `ARCHITECTURE-AI-AGENTS-RUNTIME.md` | runtime לסוכנים. | DESIGN |
 | `ARCHITECTURE-WP-DATA-MIGRATION.md` | מיגרציית WordPress. | DESIGN |
 
-### 13. DEPRECATED / ארכיון (אל תממשו)
-
-| מסמך | הוחלף ע״י | סטטוס |
-|---|---|---|
-| `PAYOUT-ARCHITECTURE.md` | `ARCHITECTURE-PAYOUT-MECHANISM.md` | DEPRECATED (10.08) |
-| `ADMIN-ARCHITECTURE.md` | `ARCHITECTURE-ADMIN-DASHBOARD.md` + `ADMIN-USER-GUIDE.md` | DEPRECATED (10.08) |
-| `TEST-STRATEGY.md` | `TESTING-STRATEGY.md` + `ARCHITECTURE-TESTING-CICD.md` | DEPRECATED (10.08) |
-
-קבצי ארכיטקטורה ישנים **מחוץ** ל-`docs/` בשורש הריפו (למשל `CHECKOUT-ARCHITECTURE.md`, `LEDGER-DESIGN.md`) אינם חלק מהאינדקס המחייב; אל תסמכו עליהם מול CONTRADICTIONS.
-
-## חבילת ROADMAP 1-20 (תזכורת)
+## חבילת ROADMAP 1–20 (תזכורת)
 
 | # | מסמך |
 |---:|---|
@@ -327,8 +311,3 @@ docs/ROADMAP-V2.md
 | 2026-08-10 | `CATEGORY-TAXONOMY.md`; אינדקס (עץ 3 רמות + DB) |
 | 2026-08-10 | `EMAIL-TEMPLATES-COPY.md`; אינדקס |
 | 2026-08-10 | `CITY-LANDING-CONTENT.md`; אינדקס |
-| 2026-08-10 | `V2-VISION.md`; ניקוי DEPRECATED באינדקס + באנרים |
-| 2026-08-10 | `SUPPLIER-QUALITY-PROGRAM.md` + `FEATURED-DEALS-PRICING.md`; אינדקס |
-| 2026-08-10 | `PROGRESS-REPORT-AUG.md`; אינדקס |
-| 2026-08-10 | `CHECKOUT-OPTIMIZATION.md` + `GUEST-VS-MEMBER-STRATEGY.md`; אינדקס |
-| 2026-08-10 | `SUPPORT-SLA-POLICY.md` + `WHATSAPP-BUSINESS-SETUP.md`; אינדקס |
