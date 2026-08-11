@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-11 (electro 380/768 measurements + component map)
+Updated: 2026-08-11 (notifications + SEO-PERFORMANCE + electro map queue)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -10,31 +10,38 @@ kenyonexpress
 .
 
 ## Last Completed
-תור electro measurements סגור (commit+push לכל קובץ):
-1. refs/electro-measurements-380.md (380×667, JSON pixel box model)
-2. refs/electro-measurements-768.md (768×1024, JSON pixel box model)
-3. refs/electro-components-map.md (Header/HeroSlider/ProductCard/CategoryStrip/Footer → src paths)
-4. refs/electro-design-discrepancies.md (20 discrepancies; named DESIGN file missing)
-5. STATE.md + MASTER-INDEX refs index
+תור docs סגור (commit+push לכל קובץ):
+1. refs/electro-measurements-380.md + 768 (כבר ב-branch)
+2. refs/electro-components-map.md (Header/HeroSlider/ProductCard/DealsRow/CategoryStrip/BrandsCarousel/Footer + 20 px discrepancies)
+3. docs/ARCHITECTURE-NOTIFICATIONS.md (outbox/Resend/push/in-app/retry+DLQ)
+4. docs/ARCHITECTURE-SEO-PERFORMANCE.md (hreflang he-IL, JSON-LD, CWV@380/768, seo_redirects מ-030)
+5. docs/MASTER-INDEX.md + STATE.md
 
 ## In Progress
 nothing (closed queue)
 
 ## Blocking Issues
-- refs/electro.madrasthemes.com-DESIGN.md חסר ב-worktree (D01); baseline בפועל = DESIGN-MEASURED.md + ELECTRO_HERO
-- cursor-ide-browser MCP: טאבים לא נשארים פתוחים; מדידה רצה ב-Playwright headless
-- השקה: 10 דילי seed עדיין missing מול `suppliers` בפרוד
-- Cardcom production + DNS cutover (ראה PROGRESS-REPORT-AUG)
-- Vercel dashboard: אין סשן מחובר
+- refs/electro.madrasthemes.com-DESIGN.md חסר (D01); baseline = DESIGN-MEASURED.md + ELECTRO_HERO
+- BrandsCarousel: נתיב מיועד src/components/store/BrandsCarousel.tsx עדיין לא קיים בקוד
+- cursor-ide-browser MCP לא יציב; מדידות Playwright
+- השקה: 10 דילי seed missing; Cardcom prod; Vercel session
 
 ## Next Task
-ביצוע שערי LAUNCH-WEEK-RUNBOOK / ARCHITECTURE-LAUNCH-CHECKLIST (דילים → Cardcom smoke → DNS → SEC-QR/WALLET)
-או שחזור/כתיבה של refs/electro.madrasthemes.com-DESIGN.md מול המדידות החדשות
+שערי LAUNCH-WEEK-RUNBOOK / ARCHITECTURE-LAUNCH-CHECKLIST
+או שחזור refs/electro.madrasthemes.com-DESIGN.md
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
 
 ## החלטות שהתקבלו אוטומטית
+- **2026-08-11 shell intent override:** המשתמש ביקש `cd ~/workspace/kenyonexpress` ו-`git checkout -b arch/docs-lifecycle`. הסוכן עבד רק ב-
+/Users/ofir/kenyonexpress-web/ke-arch
+על הענף הקיים
+arch/docs-lifecycle
+(tracking origin). לא נוצר branch חדש עם `-b`. לא נגע בתיקייה הראשית
+kenyonexpress
+.
+- **2026-08-11 seo_redirects naming:** בקשת "`095_seo_redirects`" ממופה ל-`public.seo_redirects` ב-`030_catalog.sql` + `src/lib/seo/redirects.ts`. מיגרציה 095 = notification_outbox בלבד.
 - **2026-08-11 path/branch override (electro refs queue):** עבודה רק ב-
 /Users/ofir/kenyonexpress-web/ke-arch
 על
