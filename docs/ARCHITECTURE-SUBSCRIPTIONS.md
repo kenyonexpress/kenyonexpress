@@ -249,3 +249,4 @@ Threat model לפני קוד: גניבת טוקן, double-charge, ביטול ש�
 | 2026-08-11 | ארכיטקטורת מנוי חודשי מלאה: Token, מחזור, retry, ביטול |
 | 2026-08-11 | Ledger per billing cycle |
 | 2026-08-12 | batch #48/50: רענון טכני BINDING על arch/docs-batch-2; קישור Recurring |
+| 2026-08-12 | batch-2 #48 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
