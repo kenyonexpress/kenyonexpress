@@ -2,6 +2,7 @@
 
 import { formatAgorot, formatCouponCode, formatCouponDate } from '@/lib/vouchers/coupon-view'
 import { parseScanInput } from '@/lib/vouchers/scan-input'
+import { buildScanResultView, formatCouponDateTime } from '@/lib/vouchers/scan-result-view'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 /**
@@ -57,6 +58,13 @@ type RedeemResponse = {
   outcome: string
   message: string
   replayed?: boolean
+  // Present on FAILURES, at the top level rather than inside `voucher`: the
+  // redeem route answers a refusal with timestamps and no voucher body. Without
+  // these two the counter could not be told WHEN a voucher was already
+  // redeemed, which is the difference between "burned at the till next door
+  // four minutes ago" and "burned last Tuesday".
+  redeemed_at?: string | null
+  expires_at?: string | null
   voucher?: RedeemVoucher
 }
 
@@ -253,9 +261,19 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
               <Row label="לקוח" value={v.customer_name ?? '—'} />
               <Row label="שולם באתר" value={formatAgorot(v.coupon_price_agorot)} />
               <Row label="מחיר מלא" value={formatAgorot(v.face_value_agorot)} />
+              {/*
+                A redemption gets a time, an expiry does not. "Already redeemed"
+                is the answer a cashier has to discuss with a customer standing
+                in front of them, and 14:32 today reads very differently from
+                the same date with no clock on it.
+              */}
               <Row
                 label={v.redeemed_at ? 'מומש ב' : 'בתוקף עד'}
-                value={formatCouponDate(v.redeemed_at ?? v.expires_at)}
+                value={
+                  v.redeemed_at
+                    ? formatCouponDateTime(v.redeemed_at)
+                    : formatCouponDate(v.expires_at)
+                }
               />
             </dl>
           </>
@@ -297,40 +315,70 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
   }
 
   if (stage === 'result' && result) {
-    const ok = result.outcome === 'success'
     const v = result.voucher
+    // The screen is decided in scan-result-view.ts, not here, so the rules that
+    // matter at a counter are unit-tested. Chief among them: `payAtBusinessAgorot`
+    // is non-null ONLY on success, so a refused scan can never put an amount to
+    // collect in front of a cashier.
+    const view = buildScanResultView({
+      outcome: result.outcome,
+      replayed: result.replayed,
+      // On success the timestamps ride inside `voucher`; on a refusal they come
+      // back at the top level. Both shapes feed the same view.
+      redeemedAt: v?.redeemed_at ?? result.redeemed_at ?? null,
+      expiresAt: result.expires_at ?? null,
+      faceValueAgorot: v?.face_value_agorot ?? null,
+      couponPriceAgorot: v?.coupon_price_agorot ?? null,
+      remainingAmountDueAgorot: v?.remaining_amount_due_agorot ?? null,
+    })
+    const ok = view.tone === 'success'
     return (
       <div
         className={`rounded-2xl border p-5 shadow-sm ${
-          ok ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'
+          ok ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50'
         }`}
       >
-        <p className={`text-center text-lg font-bold ${ok ? 'text-green-700' : 'text-red-700'}`}>
-          {result.message}
+        {/* Read at arm's length, on a phone, over a counter. */}
+        <p
+          className={`text-center text-2xl font-extrabold leading-tight ${
+            ok ? 'text-green-800' : 'text-red-800'
+          }`}
+        >
+          {view.headline}
         </p>
-        {ok && v && (
-          <div className="mt-4 space-y-3">
-            <div className="rounded-xl bg-white p-4 text-center">
-              <p className="text-sm text-gray-500">לגבייה מהלקוח עכשיו</p>
-              <p className="mt-1 text-4xl font-extrabold text-gray-900">
-                {formatAgorot(v.remaining_amount_due_agorot)}
-              </p>
-            </div>
-            <dl className="space-y-1.5 rounded-xl bg-white p-4 text-sm">
-              <Row label="מוצר" value={v.product_name ?? '—'} />
-              <Row label="לקוח" value={v.customer_name ?? '—'} />
-              <Row label="שולם באתר" value={formatAgorot(v.coupon_price_agorot)} />
-              <Row label="מחיר מלא" value={formatAgorot(v.face_value_agorot)} />
-            </dl>
+
+        {view.payAtBusinessAgorot !== null && (
+          <div className="mt-4 rounded-xl border-2 border-green-600 bg-white p-5 text-center">
+            <p className="text-base font-semibold text-gray-600">{view.payLabel}</p>
+            <p className="mt-1 text-6xl font-extrabold tabular-nums text-gray-900">
+              {formatAgorot(view.payAtBusinessAgorot)}
+            </p>
           </div>
         )}
+
+        {view.reason && (
+          <p className="mt-4 rounded-xl bg-white p-4 text-center text-lg font-semibold text-red-800">
+            {view.reason}
+          </p>
+        )}
+
+        {(view.rows.length > 0 || (ok && v)) && (
+          <dl className="mt-3 space-y-1.5 rounded-xl bg-white p-4 text-base">
+            {ok && v && <Row label="מוצר" value={v.product_name ?? '—'} />}
+            {ok && v && <Row label="לקוח" value={v.customer_name ?? '—'} />}
+            {view.rows.map((row) => (
+              <Row key={row.label} label={row.label} value={row.value} />
+            ))}
+          </dl>
+        )}
+
         {result.replayed && (
           <p className="mt-3 text-center text-xs text-gray-400">התוצאה שוחזרה מבקשה קודמת</p>
         )}
         <button
           type="button"
           onClick={reset}
-          className="mt-5 w-full rounded-xl bg-heading py-3 text-sm font-bold text-white"
+          className="mt-5 w-full rounded-xl bg-heading py-4 text-base font-bold text-white"
         >
           סריקה נוספת
         </button>

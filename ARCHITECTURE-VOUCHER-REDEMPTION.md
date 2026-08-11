@@ -342,6 +342,69 @@ Users belonging to several suppliers are handled by resolving the membership
 that matches the voucher, out of the set of the user's active memberships. A
 membership the user does not hold can never be selected.
 
+### 4.6 The counter screen
+
+Decided 2026-08-11. **The supplier scans BEFORE providing the service**, to
+verify the voucher is genuine. The screen is a phone held behind a counter with
+a customer waiting, so it is built for arm's length reading and for one
+decision: hand over the service or do not, and take this much money or none.
+
+Three stages, and the middle one is why a scan is safe:
+
+```
+input   -> QR or typed code
+confirm -> /api/supplier/vouchers/lookup   reads nothing, writes nothing
+result  -> /api/supplier/vouchers/redeem   burns the voucher, cannot be undone
+```
+
+**On success the screen states four things**, in this order of prominence:
+
+| Shown | Source | Type size |
+| --- | --- | --- |
+| valid, redeemed now | `outcome = success` | `text-2xl` headline |
+| **PAY_AT_BUSINESS**, the amount to collect now | `remaining_amount_due_agorot` | `text-6xl`, boxed |
+| already paid on this site | `coupon_price_agorot` | detail row |
+| full voucher value | `face_value_agorot` | detail row |
+| the redemption timestamp | `redeemed_at` | detail row, date **and** time |
+
+`PAY_AT_BUSINESS` is `face_value - coupon_price`: the remainder the business
+collects at the counter in cash. It never passes through the platform. See
+section 0.
+
+**On failure the screen states the reason**, and for a redeemed voucher it
+states *when*:
+
+| Outcome | What the counter is told |
+| --- | --- |
+| `already_redeemed` | the ORIGINAL redemption date **and time**, plus "do not provide the service" |
+| `expired` | the expiry date, when the API returned one |
+| `refunded` | the money went back to the customer |
+| `cancelled` | the voucher was cancelled |
+| `not_found` | check the code against the customer's screen |
+
+Timestamps carry a clock, not just a date (`formatCouponDateTime`, not
+`formatCouponDate`). A voucher burned four minutes ago at the till next door is
+a different conversation from one burned last Tuesday, and a bare date cannot
+tell a cashier which one they are having.
+
+**`wrong_supplier` is deliberately NOT a distinct screen.** It collapses to
+`not_found` per section 4.2, so a supplier cannot use their own scanner to probe
+whether a code is live at another business. The two answers are byte identical,
+and a test pins that the `not_found` view adds no detail row that would
+reintroduce the difference.
+
+#### The safety property
+
+`buildScanResultView` (`src/lib/vouchers/scan-result-view.ts`) returns
+`payAtBusinessAgorot` **non-null only on `success`**. Every refusal returns
+null, so no code path can put an amount to collect in front of a cashier
+alongside a refusal. "Already redeemed" and "collect 80" on one screen is one
+voucher paid for twice. This is enforced by a table-driven test over all ten
+failure outcomes, each supplied with money fields that it must discard.
+
+The view is a pure module rather than JSX because the scan screen is a client
+component: the rules that decide money at a counter belong somewhere testable.
+
 ---
 
 ## 5. State machine
