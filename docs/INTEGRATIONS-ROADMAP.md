@@ -1,22 +1,49 @@
 # INTEGRATIONS-ROADMAP.md
-# מפת דרכים: ורטיקלים פנימיים (סגנון Wolt / Gett)
 
-בנייה **פנימית** של משלוחי אוכל ונסיעות בתוך KenyonExpress.  
-אין חיבור OAuth ל-Wolt/Gett חיצוניים ואין סליקה מחוץ ל-Cardcom.
+Status: **ROADMAP** · עודכן: 2026-08-12
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+מודל כסף: No Escrow; ורטיקל = חיוב מלא via Cardcom.
 
-Status: **ROADMAP** · עודכן: 2026-08-11  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
+---
 
-מסמך מחייב לעקרונות:
+## 1. החלטה
 
-```
-docs/ARCHITECTURE-INTEGRATIONS.md
-docs/ARCHITECTURE-MOBILE-SUPERAPP.md
-docs/ARCHITECTURE-MOBILE-APP.md
-docs/ARCHITECTURE-API-CONTRACTS.md
-docs/CARDCOM-ARCHITECTURE.md
-docs/CONTRADICTIONS.md
-```
+| # | הכרעה |
+|---|---|
+| R1 | verticals/<key> פנימי |
+| R2 | orders + vertical + job table |
+| R3 | kill switch per vertical |
+| R4 | אין OAuth Wolt/Gett |
+
+---
+
+## 2. חלופות שנדחו
+
+| חלופה | נימוק |
+|---|---|
+| affiliate חיצוני | scope V0-V5 |
+| WebView תשלום צד ג | PCI |
+| cardcom_token החוצה | security |
+
+---
+
+## 3. סכמת DB
+
+**יעד:** orders.vertical, delivery_jobs, ride_jobs; אין DDL כאן.
+
+---
+
+## 4. מקרי קצה
+
+| E1 | food downtime | kill switch |
+| E2 | בלבול קופון vs משלוח | UI copy |
+
+---
+
+## 5. פתוחות
+
+| O1 | V2 food pilot city | TBD | 2026-08-12 |
 
 ---
 
@@ -99,8 +126,10 @@ docs/CONTRADICTIONS.md
 
 ---
 
+
 ## Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-11 | מפת דרכים V0–V5 לורטיקלים פנימיים בסגנון Wolt/Gett |
+| 2026-08-12 | BINDING batch-2: החלטה, חלופות, DB, קצה, פתוחות |
+
