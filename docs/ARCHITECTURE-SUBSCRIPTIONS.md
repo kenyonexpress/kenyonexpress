@@ -1,31 +1,30 @@
-# ARCHITECTURE-SUBSCRIPTIONS.md
-# ארכיטקטורה: מנוי חודשי (Cardcom Recurring Token)
+# ארכיטקטורה: מנוי חודשי (טכני)
 
-מודל מנוי מלא: הצטרפות, מחזור חיוב, כשלי חיוב ו-retry, ביטול/הקפאה, וזכויות צרכן.  
+מודל מנוי טכני מלא: הצטרפות, מחזור חיוב חודשי, כשלי חיוב ו-retry, ביטול/הקפאה, ledger, וזכויות צרכן.  
 לא חלק מהשקת הקופונים. דורש threat model + מיגרציה + אישור עו״ד לניסוח ללקוח לפני קוד פרוד.
 
-Status: **BINDING (design)** · עודכן: 2026-08-11  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+Status: **BINDING (design)** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #48/50  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
 מסמכים קשורים:
 
 ```
+docs/ARCHITECTURE-RECURRING-SUBSCRIPTIONS.md
 docs/SUBSCRIPTIONS-BILLING-SPEC.md
 docs/BUSINESS-MODEL.md
 docs/CARDCOM-ARCHITECTURE.md
 docs/ARCHITECTURE-COMMERCE.md
 docs/ARCHITECTURE-PRICING-RULES.md
 docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
-docs/REFUNDS-CANCELLATION-POLICY.md
-docs/CHECKOUT-OPTIMIZATION.md
-docs/EMAIL-TEMPLATES-SPEC.md
 docs/ARCHITECTURE-NOTIFICATIONS.md
 docs/CONTRADICTIONS.md
 docs/GO-LIVE-CHECKLIST.md
 ```
 
-**יחס ל-`SUBSCRIPTIONS-BILLING-SPEC.md`:** המסמך הזה = הכרעות ארכיטקטורה מחייבות. ה-SPEC נשאר לסיכום מוצר קצר ומפנה לכאן.
+**יחס ל-`ARCHITECTURE-RECURRING-SUBSCRIPTIONS.md`:** המסמך הזה = מקור אמת טכני (סכמה, cron, threat, SU*). Recurring = תצוגת מוצר. בהתנגשות גובר המסמך הזה.
+
+מודל כסף: **No Escrow**. מנוי ≠ מקדמת קופון. אין held לספק.
 
 ---
 
@@ -36,14 +35,15 @@ docs/GO-LIVE-CHECKLIST.md
 | SU1 | סוג מוצר: `products.type = 'subscription'`. |
 | SU2 | Interval ראשוני: **`monthly`** בלבד. שנתי = phase 2 על אותו מודל. |
 | SU3 | סכומים: integer **agorot** בכל מקום פנימי. |
-| SU4 | אמצעי: **Cardcom Token** אחרי חיוב ראשון מוצלח (`ChargeAndCreateToken` / מקבילה legacy `ChargeToken` לפי הקוד החי). |
+| SU4 | אמצעי: **Cardcom Token** אחרי חיוב ראשון מוצלח. |
 | SU5 | אין Escrow. מנוי ≠ מקדמת קופון. אין held לספק. |
-| SU6 | פיצול לספק (אם יש): `platform_percent` **snapshot פר מחזור חיוב**, כמו commerce. |
+| SU6 | פיצול לספק (אם יש): `platform_percent` **snapshot פר מחזור חיוב**. |
 | SU7 | משתמש מחובר חובה בהצטרפות (לא אורח). |
 | SU8 | Cron חיוב: idempotency מפתח `(subscription_id, billing_period)`. |
-| SU9 | ביטול מנוי: מאזור אישי + `/cancel` לפי דין; ניסוח סופי **[דורש עו״ד]**. |
-| SU10 | Apple/Google IAP: **מחוץ למסמך** (כללי חנות נפרדים). |
+| SU9 | ביטול מנוי: מאזור אישי + `/cancel` לפי דין; ניסוח סופי דורש עו״ד. |
+| SU10 | Apple/Google IAP: מחוץ למסמך. |
 | SU11 | מיגרציות prod רק MCP. לא חלק מ-soft-open קופונים. |
+| SU12 | דגל `SUBSCRIPTIONS_ENABLED` נפרד מ-`CHECKOUT_ENABLED` (מומלץ). |
 
 ---
 
@@ -52,12 +52,12 @@ docs/GO-LIVE-CHECKLIST.md
 | רכיב | פירוט |
 |---|---|
 | מוצר | קורס / שירות מתמשך / גישה תקופתית (לא קופון מימוש בעסק) |
-| מחיר | `recurring_amount_agorot` בדף המוצר (או `recurring_amount` שמומר לאגורות) |
-| מחזור | חודש קלנדרי או 30 ימים מ-`anchor` (הכרעה מוצר: **חודש מ-`paid_at` הראשון**, Asia/Jerusalem) |
+| מחיר | `recurring_amount_agorot` |
+| מחזור | חודש מ-`paid_at` הראשון, Asia/Jerusalem |
 | מספר מחזורים | `max_billing_cycles` או `null` = ללא הגבלה |
-| הנפקה | כל חיוב מוצלח = שורת `orders` + `subscription_invoices` |
+| הנפקה | כל חיוב מוצלח = `orders` + `subscription_invoices` |
 
-אין לערבב במנוי זה הנפקת voucher למימוש בעסק בלי מפרט נפרד.
+אין לערבב במפרט זה הנפקת voucher למימוש בעסק.
 
 ---
 
@@ -69,75 +69,22 @@ docs/GO-LIVE-CHECKLIST.md
 |---|---|---|
 | `type` | `'subscription'` | |
 | `billing_interval` | `'monthly'` | CHECK |
-| `recurring_amount_agorot` | `bigint` | מקור אמת לתצוגה ולחיוב |
+| `recurring_amount_agorot` | `bigint` | מקור אמת |
 | `max_billing_cycles` | `int` null | null = אין תקרה |
 | `platform_percent` | כמו שאר המוצרים | חובה לפרסום |
 
-### 2.2 `subscriptions`
+### 2.2 `subscriptions` (תמצית)
 
-```sql
-CREATE TYPE public.subscription_status AS ENUM (
-  'incomplete',   -- חיוב ראשון לא הושלם
-  'active',
-  'past_due',     -- כשל soft; בחלון retry
-  'paused',       -- השהיה יזומה
-  'cancelled',
-  'expired'       -- הגיע max_cycles או בוטל אחרי תקופה ששולמה
-);
+סטטוסים: `incomplete` | `active` | `past_due` | `paused` | `cancelled` | `expired`.
 
-CREATE TABLE public.subscriptions (
-  id                         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id                    uuid NOT NULL REFERENCES auth.users(id),
-  product_id                 uuid NOT NULL REFERENCES public.products(id),
-  supplier_id                uuid REFERENCES public.suppliers(id),
-  status                     public.subscription_status NOT NULL DEFAULT 'incomplete',
-  amount_agorot              bigint NOT NULL,              -- snapshot ממחיר המוצר בהצטרפות
-  platform_percent_snapshot  numeric(5,2) NOT NULL,
-  billing_interval           text NOT NULL DEFAULT 'monthly'
-                             CHECK (billing_interval = 'monthly'),
-  cardcom_token              text,                         -- server-only; לא ל-client
-  cardcom_token_exp          text,                         -- MMYY אם זמין
-  card_last4                 text,                         -- תצוגה בלבד
-  next_billing_at            timestamptz,
-  current_period_start       timestamptz,
-  current_period_end         timestamptz,
-  cycles_completed           integer NOT NULL DEFAULT 0,
-  max_billing_cycles         integer,                      -- null = unlimited
-  retry_count                integer NOT NULL DEFAULT 0,
-  cancel_at_period_end       boolean NOT NULL DEFAULT false,
-  cancelled_at               timestamptz,
-  cancel_reason              text,
-  paused_at                  timestamptz,
-  created_at                 timestamptz NOT NULL DEFAULT now(),
-  updated_at                 timestamptz NOT NULL DEFAULT now()
-);
-```
+שדות ליבה: `user_id`, `product_id`, `supplier_id`, `amount_agorot`, `platform_percent_snapshot`, `billing_interval=monthly`, `cardcom_token` (server-only), `card_last4`, `next_billing_at`, `current_period_*`, `cycles_completed`, `max_billing_cycles`, `retry_count`, `cancel_at_period_end`, `cancelled_at`, `paused_at`.
 
-RLS: לקוח `own` read; כתיבות כסף/טוקן רק service role אחרי שער שרת.
+RLS: לקוח read own; כתיבות כסף/טוקן רק service role אחרי שער שרת.
 
 ### 2.3 `subscription_invoices`
 
-```sql
-CREATE TYPE public.subscription_invoice_status AS ENUM (
-  'pending', 'paid', 'failed', 'refunded', 'void'
-);
-
-CREATE TABLE public.subscription_invoices (
-  id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  subscription_id   uuid NOT NULL REFERENCES public.subscriptions(id),
-  order_id          uuid REFERENCES public.orders(id),
-  period_start      timestamptz NOT NULL,
-  period_end        timestamptz NOT NULL,
-  amount_agorot     bigint NOT NULL,
-  status            public.subscription_invoice_status NOT NULL DEFAULT 'pending',
-  attempt_count     integer NOT NULL DEFAULT 0,
-  last_attempt_at   timestamptz,
-  cardcom_ref       text,
-  failure_code      text,
-  idempotency_key   text NOT NULL UNIQUE,  -- sub:{subscription_id}:{period_start_iso}
-  created_at        timestamptz NOT NULL DEFAULT now()
-);
-```
+סטטוסים: `pending` | `paid` | `failed` | `refunded` | `void`.  
+`idempotency_key` UNIQUE: `sub:{subscription_id}:{period_start_iso}`.
 
 ---
 
@@ -145,279 +92,160 @@ CREATE TABLE public.subscription_invoices (
 
 ```text
 PDP type=subscription
-  → חובה session (Google / OTP)
-  → הצגת מחיר חודשי + תנאי ביטול (קישור)
-  → Low Profile: ChargeAndCreateToken (או ChargeOnly + יצירת טוקן לפי מסוף)
-  → return / webhook → אימות GetLpResult (מקור אמת; כמו checkout רגיל)
-  → אם הצליח:
-       INSERT subscriptions status=active
-       שמירת cardcom_token (server-only)
-       invoice #1 paid + order paid
-       next_billing_at = period_end
-       מייל subscription_started + קישור ביטול
-  → אם נכשל:
-       status=incomplete או מחיקת טיוטה; אין טוקן לשימוש חוזר
+  → session חובה
+  → מחיר חודשי + תנאי ביטול
+  → Low Profile ChargeAndCreateToken
+  → return / webhook → GetLpResult (מקור אמת)
+  → הצלחה: subscriptions active + token + invoice#1 paid + order + מייל
+  → כשל: incomplete; אין טוקן לשימוש חוזר
 ```
 
-כללי כסף בחיוב ראשון:
-
-- סכום = `recurring_amount_agorot` (לא face של קופון).  
-- Snapshot `platform_percent` לשורת order/invoice.  
-- Kill switch: אותו `CHECKOUT_ENABLED` או דגל `SUBSCRIPTIONS_ENABLED` נפרד (מומלץ נפרד כדי לא לחסום קופונים).
+סכום = `recurring_amount_agorot`. Snapshot `platform_percent` לשורה.
 
 ---
 
 ## 4. מחזור חיוב (cron)
 
 ```text
-Cron (שעתי או יומי, CRON_SECRET):
-  SELECT * FROM subscriptions
-  WHERE status = 'active'
+Cron (CRON_SECRET):
+  SELECT active WHERE next_billing_at <= now()
     AND cancel_at_period_end = false
-    AND next_billing_at <= now()
-    AND (max_billing_cycles IS NULL OR cycles_completed < max_billing_cycles)
+    AND (max_cycles null OR cycles_completed < max)
 
-  לכל מנוי, טרנזקציה אחת:
-    1. INSERT invoice pending עם idempotency_key
-       (ON CONFLICT DO NOTHING → יציאה בטוחה)
-    2. ChargeToken / API טוקן בסכום amount_agorot
-    3a. הצלחה:
-          invoice=paid, order חדש, settlement אם פיזי/שירות עם ספק
-          cycles_completed++
-          קדם current_period_* ו-next_billing_at בחודש
-          אם cycles_completed >= max → status=expired/cancelled
-          מייל invoice_paid
+  לכל מנוי בטרנזקציה:
+    1. INSERT invoice pending עם idempotency_key (ON CONFLICT → יציאה)
+    2. ChargeToken
+    3a. OK → paid + order + cycles++ + קדם next_billing_at
     3b. כשל → סעיף 5
 ```
 
-**אין double-charge:** המפתח הייחודי לתקופה הוא חומת האש.  
-חיוב ידני מאדמין חייב אותו מפתח או מפתח `manual:{invoice_id}`.
-
-תזמון `next_billing_at`: לשמור על יום העוגן כשאפשר (למשל 11 בכל חודש); אם אין יום בחודש (31→30/28) → יום אחרון בחודש.
+אין double-charge: המפתח הייחודי לתקופה הוא חומת האש.  
+תזמון: יום עוגן; אם אין יום בחודש (31) → יום אחרון בחודש.
 
 ---
 
 ## 5. כשלי חיוב ו-retry
 
-### 5.1 סיווג
-
-| סוג | דוגמאות | התנהגות |
-|---|---|---|
-| Soft decline | אין כיסוי, bank decline זמני | `past_due` + retry |
-| Hard decline | כרטיס גנוב/חסום, טוקן לא תקף | עצירת retry; בקשת עדכון אמצעי |
-| Technical | timeout, 5xx Cardcom | retry עם backoff; לא לספור כ-hard מיד |
-
-### 5.2 מדיניות retry (יעד מוצר)
-
-| ניסיון | מתי | פעולה |
-|---|---|---|
-| 1 | מיידי ב-cron | ChargeToken |
-| 2 | +2 ימים | ChargeToken + מייל תזכורת |
-| 3 | +5 ימים מניסיון 1 | ChargeToken + מייל דחוף |
-| אחרי 3 כשלונות soft בחלון 7 ימים | | `paused` או `cancelled` לפי מדיניות; גישה נחסמת |
-
-`retry_count` ו-`last_attempt_at` על המנוי/invoice.  
-אותו `idempotency_key` לתקופה בכל הניסיונות (לא מפתח חדש לכל retry של אותה תקופה).
-
-### 5.3 עדכון אמצעי תשלום
-
-```text
-חשבון → "עדכון כרטיס"
-  → Low Profile CreateTokenOnly או ChargeAndCreateToken בסכום 0/אימות לפי מסוף
-  → החלפת cardcom_token בשרת
-  → אם past_due: ניסיון מיידי לחיוב התקופה הפתוחה (אותו idempotency_key)
-```
-
-Rate limit fail-closed על עדכון כרטיס.  
-אין לשמור PAN/CVV (SAQ-A).
-
-### 5.4 התראות
-
-| אירוע | מייל kind (יעד) |
+| סוג | התנהגות |
 |---|---|
-| הצטרפות | `subscription_started` |
-| חיוב הצליח | `subscription_invoice_paid` |
-| כשל soft | `subscription_payment_failed` |
-| נחסם אחרי retries | `subscription_paused_payment` |
-| בוטל | `subscription_cancelled` |
+| Soft | `past_due` + retry |
+| Hard | עצירת retry; בקשת עדכון אמצעי |
+| Technical | backoff; לא hard מיד |
 
-RTL / Resend לפי `EMAIL-TEMPLATES-SPEC.md`. להוסיף kinds לפני השקת מנויים.
+מדיניות יעד: ניסיון 1 מיידי; 2 אחרי +2 ימים; 3 אחרי +5 מימים מניסיון 1; אחרי 3 soft בחלון 7 ימים → `paused`/`cancelled`.  
+אותו `idempotency_key` לכל retry של אותה תקופה.
+
+עדכון כרטיס: Low Profile CreateTokenOnly / ChargeAndCreateToken; החלפת טוקן בשרת; אם `past_due` ניסיון מיידי לאותה תקופה. אין PAN/CVV.
 
 ---
 
 ## 6. ביטול והקפאה
 
-### 6.1 מכונת מצבים (תמצית)
-
 ```text
-incomplete → active          (חיוב ראשון OK)
-active → past_due            (soft fail)
-past_due → active            (retry/עדכון כרטיס OK)
-active|past_due → paused     (משתמש/admin)
-paused → active              (חידוש + אמצעי תקף)
+incomplete → active
+active → past_due → active
+active|past_due → paused → active
 active|paused|past_due → cancelled
-active → expired             (max_cycles)
+active → expired (max_cycles)
 ```
-
-### 6.2 ביטול ע״י לקוח
 
 | מצב | התנהגות יעד |
 |---|---|
-| ביטול מיידי | `cancelled`; אין חיוב עתידי; גישה עד `current_period_end` אם התקופה שולמה |
-| `cancel_at_period_end=true` | נשאר `active` עד סוף התקופה; cron לא מחדש |
-| תוך חלון ביטול עסקה ראשונה | ראה סעיף 7 (החזר אפשרי לפי דין) |
+| ביטול מיידי | `cancelled`; אין חיוב עתידי; גישה עד `current_period_end` אם שולם |
+| `cancel_at_period_end` | active עד סוף תקופה; cron לא מחדש |
+| הקפאה | cron מדלג; חידוש = חיוב מיידי לתקופה חדשה |
 
-UI חובה באזור אישי: כפתור "ביטול מנוי", אישור בעברית, סיכום "לא תחויבו שוב אחרי {date}".
-
-Admin יכול לבטל/להשהות עם audit.
-
-### 6.3 הקפאה (`paused`)
-
-- Cron מדלג על חיוב.  
-- אין גישה לתוכן בתשלום (אלא אם מדיניות מוצר אומרת אחרת).  
-- חידוש: משתמש מאשר + אמצעי תקף → `active`; אם התקופה פגה בזמן pause → חיוב מיידי לתקופה חדשה או יישור תאריכים (הכרעת מוצר: **חיוב מיידי לתקופה חדשה**).
+UI חובה באזור אישי + קישור מ-`/cancel`.
 
 ---
 
-## 7. זכויות צרכן (ישראל): כיוון הנדסי
+## 7. זכויות צרכן (כיוון הנדסי)
 
-**[דורש עו״ד]** לפני פרסום ללקוחות. המסמך אינו ייעוץ משפטי.
+דורש עו״ד לפני פרסום. לא ייעוץ משפטי.
 
-| נושא | כיוון מוצר | מקור פנימי |
-|---|---|---|
-| שקיפות מחיר | מחיר חודשי, תדירות, תנאי ביטול בדף לפני תשלום | BUSINESS-MODEL |
-| ביטול מנוי מתמשך | מנגנון ביטול פשוט באזור אישי + אישור במייל | LEGAL / REFUNDS |
-| עסקת מכר מרחוק (חיוב ראשון) | חלון 14 יום כשחל החוק ואין פטור; דמי ביטול לפי REFUNDS | LEGAL L2/L3 |
-| אחרי תחילת שימוש בשירות דיגיטלי | ייתכן פטור/הגבלה לביטול 14 יום **[דורש עו״ד]** | |
-| חיובים חוזרים אחרי ביטול | אסורים; cron חייב לכבד `cancelled` / `cancel_at_period_end` | SU8/SU9 |
-| החזר על מחזור ששולם | לפי דין + מדיניות; לא אוטומטי אחרי שימוש מלא בתקופה | REFUNDS |
-| הודעות | אישור הצטרפות, כשל חיוב, ביטול | EMAIL |
-| נגישות | כפתורי ביטול נגישים (ת״י 5568 כיוון) | LEGAL |
-
-קישור ביטול גם מ-footer / `/cancel` כשחל על עסקת ההצטרפות.
-
-נוסח ללקוח (כיוון):
-
-> ניתן לבטל מנוי בכל עת מאזור אישי. הביטול ייכנס לתוקף בסוף התקופה ששולמה, אלא אם חלה זכות ביטול נוספת לפי חוק על העסקה הראשונה.
+| נושא | כיוון |
+|---|---|
+| שקיפות | מחיר חודשי + תדירות + ביטול לפני תשלום |
+| ביטול מתמשך | כפתור פשוט באזור אישי |
+| מכר מרחוק (חיוב ראשון) | 14 יום כשחל; דמי ביטול LEGAL לפי LEGAL L2/L3 (לא commission) |
+| אחרי שימוש דיגיטלי | ייתכן פטור/הגבלה ל-14 יום (עו״ד) |
+| אחרי ביטול | אסור חיוב חוזר; cron מכבד cancelled |
 
 ---
 
-## 8. Ledger ופיצול כסף (פר מחזור)
-
-כל חיוב מנוי מוצלח נרשם כמו הזמנה רגילה + שורות ledger. אין מקור אמת מקביל בטוקן Cardcom.
-
-### 8.1 רצף אחרי ChargeToken OK
+## 8. Ledger פר מחזור
 
 ```text
-invoice.status = paid
-  → INSERT orders (type/source = subscription) + order_items
-  → snapshot: amount_agorot, platform_percent, billing_period
-  → settlement_events:
-       charge_settled (platform + supplier_due אם יש ספק)
-  → אם ארנק הוחל על החיוב: fn_wallet_transfer (spend) עם
-       idempotency = sub_spend:{invoice_id}
-  → אופציונלי cashback: כמו הזמנה רגילה, key = cashback:sub:{invoice_id}
+invoice paid
+  → orders + order_items (snapshots)
+  → settlement_events (platform + supplier_due אם יש)
+  → wallet spend? idempotency = sub_spend:{invoice_id}
+  → cashback? key = cashback:sub:{invoice_id}
 ```
-
-### 8.2 כללים
 
 | כלל | פירוט |
 |---|---|
-| יחידה | אגורות `bigint` בלבד (אחרי money-integer; עד אז המרה מפורשת בשרת) |
-| Snapshot | `platform_percent` מצולם **פר invoice**, לא נמשך חי מהמוצר לחיובים ישנים |
-| קופון | מנוי לא מנפיק voucher בעסק במפרט זה |
-| Payout | רק אם המנוי משלם לספק שירות; לפי `PAYOUT-ARCHITECTURE.md` |
-| Refund מחזור | Cardcom refund + `supplier_debit` אם כבר שולם לספק; invoice → `refunded` |
-| Idempotency | ledger keys נגזרים מ-`subscription_invoices.id` / `idempotency_key` |
-
-### 8.3 כשל אחרי חיוב Cardcom לפני ledger
-
-כמו checkout: reconcile מול Cardcom; השלמת order/invoice עם אותו מפתח; **לא** ChargeToken שני לאותה תקופה.
-
-דיאגרמה:
-
-```text
-Cardcom ChargeToken (period P)
-        │
-        ▼
- subscription_invoices(P) paid ──► orders + settlement_events
-        │
-        ├─ wallet spend? ──► fn_wallet_transfer
-        └─ supplier due? ──► payout eligibility (T+N) אם רלוונטי
-```
+| יחידה | אגורות bigint |
+| Snapshot | `platform_percent` פר invoice |
+| קופון | מנוי לא מנפיק voucher במפרט זה |
+| כשל אחרי ChargeToken לפני ledger | reconcile; לא ChargeToken שני לאותה תקופה |
 
 ---
 
-## 9. אבטחה ו-observability
+## 9. אבטחה
 
 | כלל | פירוט |
 |---|---|
-| Token | עמודה מופרדת; service role בלבד; לא ב-Sentry |
-| Secrets | `ApiPassword` רק לנתיבי ChargeToken / refund / payout |
-| Rate limit | fail-closed על subscribe, update-card, cancel spam |
-| Audit | כל שינוי `status`, החלפת טוקן, ביטול admin |
-| Alert | spike ב-`past_due` / כשל cron המוני |
-| Idempotency | חובה בכל ChargeToken למנוי |
+| Token | server-only; לא ב-Sentry/client |
+| Rate limit | fail-closed על subscribe / update-card / cancel |
+| Audit | שינוי status, החלפת טוקן, ביטול admin |
+| Alert | spike ב-`past_due` / כשל cron |
 
-Threat model קצר לפני קוד: גניבת טוקן מ-DB, double-charge, ביטול שלא נאכף ב-cron, ledger בלי idempotency.
+Threat model לפני קוד: גניבת טוקן, double-charge, ביטול שלא נאכף, ledger בלי idempotency.
 
 ---
 
-## 10. אנליטיקה (יעד)
-
-| event | מתי |
-|---|---|
-| `subscribe` | אחרי active |
-| `subscription_renew` | חיוב חוזר paid |
-| `subscription_payment_failed` | כשל |
-| `subscription_cancel` | ביטול |
-| `subscription_pause` / `resume` | הקפאה/חידוש |
-
-בלי PII; כסף מאגורות. Consent לפי `ANALYTICS-SPEC.md`.
-
----
-
-## 11. סדר יישום
+## 10. סדר יישום
 
 ```text
-1. Threat model + אישור עו״ד לניסוח ביטול
+1. Threat model + עו״ד לניסוח ביטול
 2. מיגרציית subscriptions + invoices (MCP)
 3. הצטרפות + Token + מיילים
-4. Cron חיוב + idempotency + retry + ledger posts
+4. Cron + idempotency + retry + ledger
 5. UI ביטול/הקפאה/עדכון כרטיס
-6. דגל SUBSCRIPTIONS_ENABLED בפרוד
+6. SUBSCRIPTIONS_ENABLED בפרוד
 7. Soft-open מנויים נפרד מקופונים
 ```
 
 ---
 
-## 12. Acceptance
+## 11. Acceptance
 
-- [ ] אין מנוי `active` בלי חיוב ראשון מאומת  
-- [ ] אין ChargeToken בלי `idempotency_key` ייחודי לתקופה  
-- [ ] soft decline → בדיוק מדיניות 3 ניסיונות / 7 ימים  
-- [ ] hard decline → אין לולאת חיוב אינסופית  
-- [ ] ביטול מונע את החיוב הבא  
-- [ ] טוקן לא ב-client bundle / לוגים  
-- [ ] invoice paid ⇒ order + `charge_settled` (או מתועד כפלטפורמה-טהור)  
+- [ ] אין active בלי חיוב ראשון מאומת  
+- [ ] אין ChargeToken בלי idempotency לתקופה  
+- [ ] soft decline לפי 3 ניסיונות / 7 ימים  
+- [ ] ביטול מונע חיוב הבא  
+- [ ] טוקן לא ב-client  
+- [ ] invoice paid ⇒ order + settlement  
 - [ ] אין שפת Escrow  
-- [ ] ניסוח צרכן אושר ע״י עו״ד לפני פרסום  
-- [ ] `SUBSCRIPTIONS_ENABLED` נפרד מ-`CHECKOUT_ENABLED` או מתועד כמשותף  
+- [ ] ניסוח צרכן אושר עו״ד לפני פרסום  
+- [ ] דמי ביטול (אם חלים) = LEGAL לא commission  
 
 ---
 
-## 13. Out of scope
+## 12. Out of scope
 
 - מנוי שמנפיק קופוני מימוש חודשיים  
 - שנתי עם הנחה (phase 2)  
-- מאגד Cardcom / מסוף פר ספק לחיוב מנוי  
+- מסוף פר ספק לחיוב מנוי  
 - IAP בחנויות אפ  
 
 ---
 
-## Revision
+## 13. Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-11 | ארכיטקטורת מנוי חודשי מלאה: Token, מחזור, retry, ביטול/הקפאה, זכויות צרכן |
-| 2026-08-11 | §8 Ledger: settlement/wallet/payout per billing cycle |
+| 2026-08-11 | ארכיטקטורת מנוי חודשי מלאה: Token, מחזור, retry, ביטול |
+| 2026-08-11 | Ledger per billing cycle |
+| 2026-08-12 | batch #48/50: רענון טכני BINDING על arch/docs-batch-2; קישור Recurring |
