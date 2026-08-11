@@ -129,6 +129,15 @@ Audit על ביצוע המחיקה: חובה.
 | Vercel log drains | כיבוי או TTL אצל יעד |
 | Admin tool | soft-delete משתמש + anonymize job |
 | מדיניות פרטיות באתר | טקסט סופי רק אחרי עו״ד |
+| PITR / dump | משכי גיבוי לפי `BACKUP-RESTORE-RUNBOOK.md` (לא מחליף טבלת שמירה ללקוח) |
+
+יעדי jobs (שמות לוגיים; יישום בקוד נפרד):
+
+| Job | תדירות | פעולה |
+|---|---|---|
+| `purge_abandoned_carts` | יומי | מחיקת עגלות > 30 יום |
+| `anonymize_deleted_accounts` | יומי | השלמת אנונימיזציה בתור |
+| `expire_vouchers` | שעתי/יומי | `issued` → `expired` (lifecycle) |
 
 ---
 
@@ -158,3 +167,4 @@ Audit על ביצוע המחיקה: חובה.
 | 2026-08-11 | קישור ל-BACKUP-RESTORE / IR; רענון תאריך |
 | 2026-08-11 | שמירת סטטוסי voucher עם הזמנות; קישור lifecycle |
 | 2026-08-11 | שורות settlement/payout + העדפות שיווק בטבלת שמירה |
+| 2026-08-11 | טבלת jobs: purge carts / anonymize / expire vouchers |
