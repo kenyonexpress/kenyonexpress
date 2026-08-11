@@ -36,6 +36,52 @@ Updated: 2026-08-11 ערב (תור 9 שלבים: אחוזים דינמיים)
 
 **‏2306 טסטים עברו**, ‏`type-check` ו-`lint` נקיים.
 
+### ‏RPC SECURITY AUDIT, ‏11.08 ערב, קומיטים `3da98ac` ו-`37844b6`
+
+**‏Phase 1 מדד: ‏59 פונקציות SECURITY DEFINER, ‏14 מהן פתוחות ל-anon.**
+
+**הממצא שהופך גרסה תמימה של המיגרציה ל-no-op:** ‏Postgres נותן EXECUTE
+ל-PUBLIC אוטומטית ב-`CREATE FUNCTION`, ו-12 מתוך ה-14 עדיין נושאות את
+ההרשאה הזו. ‏`REVOKE ... FROM anon` משאיר אותה, כלומר anon עדיין קורא.
+כל revoke בקובץ מציין PUBLIC ראשון.
+
+**שתי הסרות שהברִיף ביקש ולא בוצעו, כי מעקב לאתר הקריאה הראה שהן נושאות משקל:**
+
+- **‏`check_rate_limit`** נקראת דרך ה-client עם ה-cookie מ-`auth.ts`: התחברות,
+  הרשמה, magic link, ‏OTP בטלפון ואיפוס סיסמה, ועוד newsletter ועגלת אורח.
+  כולן רצות בלי session. הסרת anon לא מקשיחה התחברות, היא **שוברת** אותה.
+- **‏`fn_record_recent_search`** מקבלת את ה-client המקושר במכוון מדף `/search`
+  הציבורי. אחותה `fn_record_search` **כן** הוסרה: אותו קובץ, אבל היא משתמשת
+  ב-`createAdminClient` ורצה כ-service_role.
+
+**‏`is_admin` שומרת anon:** היא מופיעה ב-42 policies, ‏13 מהן נגישות ל-anon,
+בין היתר על `products` ו-`categories`. ביטוי policy מוערך בהרשאות התפקיד
+השואל, ולכן הסרת anon מפילה כל SELECT אנונימי על הקטלוג. זו כל החנות.
+
+**שלוש חתימות שנוסחו מהזיכרון היו שגויות** והיו מפילות את המיגרציה עם 42883:
+‏`available_stock` מקבלת שלושה uuid ולא אחד, ‏`log_voucher_scan` מקבלת text
+ל-`p_ip` ולא inet וחמישה ארגומנטים ולא שישה, ו-`fn_enqueue_notification`
+**עמוסה בשתי גרסאות**, כך שהסרת אחת הייתה משאירה את השנייה פתוחה תחת שם
+שנראה נעול.
+
+**‏Phase 3, בכנות:** שמונת הטבלאות כבר סגורות. ‏RLS דלוק בלי policy הוא
+DENY ALL, ולכן הקובץ **פותח** נתיב קריאה לאדמין, לא סוגר דליפה. מה שכן
+מוקשח: לשמונתן עדיין יש GRANT ברמת הטבלה ל-anon ול-authenticated, מנוטרל
+היום רק על ידי RLS, והוא במרחק `DISABLE ROW LEVEL SECURITY` אחד מדליפה
+אמיתית.
+
+**‏Phase 4, שלוש בדיקות:**
+
+| טענה | תוצאה |
+| --- | --- |
+| ‏`redeem_voucher` מסמן redeemed בלבד | ✅ נמדד: לא נוגע ב-escrow, לא מזיז כסף, לא קורא אחוזים |
+| ‏zero escrow | ✅ נכון |
+| ‏zero split | ❌ **לא נכון.** ‏`settlement.ts:201` מחשב `commission = percentageOf(paidOnSite, platformPercentBps)` |
+
+הקופון מתפצל לפי ה-`platform_percent` של המוצר, וזה מכוון: סעיף 0.1
+ב-`ADMIN-ARCHITECTURE.md` מבטל במפורש את "100% לפלטפורמה". ראה באנר
+ב-`docs/BUSINESS-MODEL.md`, קומיט `1f8fd75`.
+
 ### מסך הסורק, 11.08 ערב, קומיט `fcd8155`
 
 הזרימה שאופיר ביקש כבר הייתה קיימת: שלושה שלבים, והאמצעי הוא `lookup` שלא
