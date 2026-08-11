@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-12 (ARCHITECTURE-CHECKOUT-FLOW)
+Updated: 2026-08-12 (lifecycle/channels pack of 10 closed)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -10,12 +10,10 @@ kenyonexpress
 .
 
 ## Last Completed
-`docs/ARCHITECTURE-CHECKOUT-FLOW.md` BINDING: מכונת הזמנה (מיפוי ל-enum 007), snapshot `platform_percent`, קופון/פיזי No Escrow, Cardcom finalize. עודכנו `docs/MASTER-INDEX.md` + `docs/INDEX.md`. Commits נפרדים ב-
-arch/docs-lifecycle
-(ראה History).
+תור 10 מסמכי lifecycle/channels נסגר (commit נפרד לכל קובץ + INDEX). ראה History 2026-08-12. `docs/INDEX.md` §0.1 מקשר את החבילה.
 
 ## In Progress
-nothing
+nothing (closed queue)
 
 ## Blocking Issues
 - refs/electro.madrasthemes.com-DESIGN.md חסר (D01); baseline = DESIGN-MEASURED.md + ELECTRO_HERO
@@ -31,6 +29,8 @@ nothing
 /Users/ofir/kenyonexpress-web/ke-arch
 
 ## החלטות שהתקבלו אוטומטית
+- **2026-08-12 recurring docs split:** `ARCHITECTURE-RECURRING-SUBSCRIPTIONS.md` = product-facing; `ARCHITECTURE-SUBSCRIPTIONS.md` נשאר מקור טכני SU*. אין סתירה מכוונת.
+- **2026-08-12 wp-backup path:** מקור WXR לקריאה בלבד תחת `kenyonexpress/data-import/wp-backup/` (לא ב-ke-arch). חוזה הייבוא ב-`ARCHITECTURE-WORDPRESS-IMPORT.md`.
 - **2026-08-12 checkout status labels:** תוויות מוצר `draft` / `pending_payment` / `expired` אינן ערכי `order_status` ב-007. מיפוי מחייב ב-`ARCHITECTURE-CHECKOUT-FLOW.md`: draft=לפני INSERT; pending_payment→`pending`; expired→`cancelled`; נשמר גם `partially_fulfilled`.
 - **2026-08-11 BUSINESS-MODEL-RULES path:** הקובץ `BUSINESS-MODEL-RULES.md` לא קיים. אודיט שלמות מול `docs/BUSINESS-MODEL.md` + `docs/CONTRADICTIONS.md` + `docs/ARCHITECTURE-PRICING-RULES.md`. תועד ב-`docs/INDEX.md`.
 - **2026-08-11 shell intent override:** המשתמש ביקש `cd ~/workspace/kenyonexpress` ו-`git checkout -b arch/docs-lifecycle`. הסוכן עבד רק ב-
@@ -1301,3 +1301,22 @@ ke-arch
 - docs/MASTER-INDEX.md (`ccfc62e`)
 - docs/INDEX.md (`b8e770a`): contradictions=13, WP/PHP stale=5, orphans=5
 - BUSINESS-MODEL-RULES.md missing → audit vs BUSINESS-MODEL + CONTRADICTIONS + PRICING-RULES
+
+### 2026-08-12 : ARCHITECTURE-CHECKOUT-FLOW BINDING
+- docs/ARCHITECTURE-CHECKOUT-FLOW.md (`4aa9617` אחרי ASCII fix; יצירה `1acd29d`)
+- docs/MASTER-INDEX.md (`9674a96`)
+- docs/INDEX.md (`f5d5f61`)
+- מיפוי: pending_payment→pending; expired→cancelled; draft=לפני INSERT; partially_fulfilled נשמר
+
+### 2026-08-12 : lifecycle/channels pack of 10 closed
+- CHECKOUT-FLOW expand QStash/guest/ERD (`320460e`)
+- COUPON-LIFECYCLE (`2fb5638`)
+- WALLET-CASHBACK (`65707d0`)
+- WORDPRESS-IMPORT (`9b8a1c7`)
+- GEO-FEATURE (`c33095a`)
+- RECURRING-SUBSCRIPTIONS (`405af88`)
+- ADMIN-DASHBOARD refresh (`f558665`)
+- NOTIFICATIONS ntfy/QStash (`237ba18`)
+- SEO-PERFORMANCE refresh (`e1d3dd2`)
+- MOBILE-APP Wolt API (`79240c6` אחרי ASCII)
+- INDEX §0.1 (`86a58b7`)
