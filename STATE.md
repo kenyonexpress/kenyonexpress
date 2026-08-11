@@ -14,15 +14,15 @@ main
 .
 
 ## המשך מ:
-Pass-2 איכות לתור 50 על `arch/docs-batch-2` בלבד (בלי ענף חדש). #1–#12 נשארו; #13–#14 עודכנו. **הבא: #15 ARCHITECTURE-WALLET-CASHBACK.md**
+Pass-2 לתור 50 על `arch/docs-batch-2` **הושלם** (#13–#50). אין ענף חדש. הבא: P0 מ-docs/INDEX.md על אותו ענף.
 
 
 ## Last Completed
-batch-2 pass-2 #13 INVENTORY + #14 GIFT-COUPONS (BINDING מלא).
+Pass-2 #13–#50 על arch/docs-batch-2 (commit+push לכל מסמך).
 
 
 ## In Progress
-docs-batch-2 pass-2 #15 ARCHITECTURE-WALLET-CASHBACK.md
+nothing
 
 
 ## Blocking Issues
@@ -31,7 +31,7 @@ docs-batch-2 pass-2 #15 ARCHITECTURE-WALLET-CASHBACK.md
 - P0: DDL-FIXES Escrow; DB-SCHEMA escrow_held; cardcom-payments skill held
 
 ## Next Task
-#15 ARCHITECTURE-WALLET-CASHBACK.md → commit+push → #16…
+P0 מ-docs/INDEX.md על arch/docs-batch-2 בלבד
 
 
 ## Working Directory
