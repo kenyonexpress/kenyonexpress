@@ -1,173 +1,115 @@
-# ARCHITECTURE: Backup and Disaster Recovery
+# ארכיטקטורה: גיבוי ושחזור (Backup & DR)
 
-גיבוי ו-DR: Supabase PITR, גיבוי נכסי R2, יעדי RTO/RPO, checklist תרגיל שחזור רבעוני.
+גיבויים, PITR, ושחזור לפרויקט Supabase של KenyonExpress.
 
-Status: **BINDING** · Updated: 2026-08-03  
-Scope: **docs only** · branch `arch/docs-queue`  
-אין שינוי קוד. אין נגיעה ב-worktree הראשי.
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: `arch/docs-batch-2` · batch #33/50  
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
-Companions:
+מסמכים קשורים:
 
 ```
-docs/RUNBOOK-INCIDENTS.md
-docs/RUNBOOK-PRODUCTION-DEPLOY.md
-docs/RUNBOOK-OPERATIONS.md
+docs/RUNBOOK-PRODUCTION.md
 docs/ARCHITECTURE-OBSERVABILITY.md
-docs/LAUNCH-DAY.md
+docs/ARCHITECTURE-PRODUCTION-OPS.md
+docs/ARCHITECTURE-SECURITY.md
+docs/ARCHITECTURE-DATA-EXPORT-GDPR.md
+docs/CONTRADICTIONS.md
 ```
 
 ---
 
-## 0. יעדי RTO / RPO
+## 0. קווים אדומים
 
-| מדד | יעד | הערה |
+| # | כלל |
+|---|---|
+| B1 | אין daily backup / PITR אמין על Supabase Free. |
+| B2 | **Supabase Pro חובה** לפני תשלום Cardcom ראשון (capture אמיתי). |
+| B3 | גם ב-Pro: גיבוי offsite (`pg_dump` מוצפן) בנוסף לפלטפורמה. |
+| B4 | גיבויים מכילים PII וכסף: הצפנה, IAM מצומצם, לא ב-git של האפ. |
+| B5 | שחזור אמיתי רק אחרי תרגיל רבעוני על פרויקט scratch. |
+| B6 | שחזור משחזר ledger ו-snapshots כפי שנשמרו. לא ממציאים נאמן / held / J5. כסף קופון = שולם באתר + יתרה בעסק; פיזי לפי `platform_percent` ב-`order_items`. |
+| B7 | Vercel Instant Rollback משחזר **קוד**, לא DB. |
+| B8 | מיגרציות prod לפי RUNBOOK; שחזור לא מחליף מיגרציה שגויה בלי תוכנית. |
+
+---
+
+## 1. שכבות גיבוי
+
+| שכבה | מה | RPO יעד |
 |---|---|---|
-| RPO (DB) | ≤ 1 שעה | PITR / WAL |
-| RTO storefront לקריאה | ≤ 4 שעות | CDN/ISR + DB קריאה |
-| RTO checkout / כסף | ≤ 8 שעות | כולל reconcile Cardcom |
-| RPO מדיה (R2) | ≤ 24 שעות | versioning + שכפול |
-| RTO DNS / Vercel app | ≤ 1 שעה | Instant Rollback |
+| Daily backups (Pro) | גיבויי פלטפורמה | ≤ 24 שע' |
+| PITR (Pro) | שחזור לנקודת זמן | דקות (לפי תוכנית) |
+| Offsite `pg_dump` | CI / מכונה מאובטחת → אחסון מוצפן | ≤ 24 שע' |
+| R2 / Storage | מדיה; העתק/גרסאות נפרד | לפי באקט |
 
-Kill switch בכל אירוע כסף/שחזור:
+יעד RTO לאירוע DB קשה: שעות (scratch + cutover env), אלא אם PITR באותו פרויקט מספיק.
+
+---
+
+## 2. מה מגבים
+
+חובה: Postgres (סכמה + נתונים), Auth users דרך גיבוי/PITR של הפרויקט.  
+נפרד: סודות Vercel/Cardcom (לא ב-dump בטקסט גלוי).  
+אסור: dumps לא מוצפנים ב-Slack / Drive אישי / repo.
+
+מיקום offsite מומלץ (מחוץ ל-repo):
 
 ```
-CHECKOUT_ENABLED=false
+/Users/ofir/kenyonexpress-web/backups/
 ```
 
 ---
 
-## 1. Supabase PITR
+## 3. שחזור
 
-### 1.1 חובה בפרוד
+### 3.1 PITR באותו פרויקט
 
-1. תוכנית עם **Point-in-Time Recovery** פעילה (Pro+).
-2. גיבויים יומיים אוטומטיים + WAL לפי המנוי.
-3. חלון PITR ≥ יעד RPO (לוודא ב-Dashboard).
-4. הרשאת restore: owner/ops בלבד.
+1. `CHECKOUT_ENABLED=false`  
+2. בחירת timestamp לפני הנזק  
+3. שחזור במסך Supabase  
+4. smoke: login, קטלוג, הזמנת טסט ב-mock  
+5. תיעוד ב-`STATE.md`  
 
-### 1.2 סדר עדיפות שחזור לוגי
+### 3.2 Scratch / פרויקט חדש
 
-| עדיפות | מחלקה | דוגמאות |
-|---|---|---|
-| P0 | כסף + זהות | `orders`, `order_items`, `payments`, `vouchers`, `wallet_*`, `ledger_*`, `auth`/`profiles` |
-| P1 | קטלוג | `products`, `categories`, `suppliers`, מפתחות מדיה |
-| P2 | תפעול | `notification_outbox`, prefs, support |
-| P3 | אנליטיקה | `analytics_events` (מותר לאבד חלקית) |
+1. יצירת scratch  
+2. שחזור dump או PITR  
+3. מיגרציות חסרות לפי RUNBOOK בלבד  
+4. עדכון env ב-Preview קודם, ואז Production  
+5. תרגיל רבעוני חובה לפני הסתמכות  
 
-### 1.3 נוהל restore (תמצית)
+### 3.3 אסור
 
-ראה גם `RUNBOOK-INCIDENTS.md` §5.
-
-```text
-CHECKOUT_ENABLED=false → stop crons → pick PITR timestamp
-  → restore to staging first → verify P0
-  → Cardcom reconcile → promote
-  → rotate secrets if breach → smoke → open checkout
-```
-
-אסור: `supabase db push` כתיקון; סימון `paid` ידני.
+- `supabase db reset` על prod  
+- מחיקת `schema_migrations` כדי "להריץ שוב"  
+- סימון הזמנות `paid` ידנית כתחליף ל-webhook אחרי שחזור  
 
 ---
 
-## 2. R2 asset backup
+## 4. תרגיל DR רבעוני
 
-### 2.1 מה ב-bucket
-
-תמונות מוצר / OG / נכסי ספק. אין dumps DB או סודות ב-bucket ציבורי.
-
-### 2.2 בקרות
-
-| בקרה | פרט |
+| בדיקה | PASS |
 |---|---|
-| Versioning | חובה על bucket הפרוד |
-| Retention | מניעת מחיקה מקרית ≥ 30 יום אם זמין |
-| Replication | bucket משני (אזור/חשבון אחר) או sync יומי |
-| Access | כתיבה רק מ-presigned PUT שרת |
-| GC | מחיקת יתומים רק אחרי dry-run + אישור |
-
-### 2.3 שחזור מדיה
-
-1. אובייקט נמחק → versioning.
-2. bucket אבוד → bucket משני + עדכון base URL אם צריך.
-3. אחרי restore DB ישן: מדגם 404 על תמונות קטלוג.
+| שחזור dump/PITR ל-scratch | האפ עולה מול הפרויקט |
+| Login + קטלוג | עובד |
+| Checkout mock | לא שובר ledger ב-prod |
+| זמן כולל מתועד | ≤ יעד RTO |
 
 ---
 
-## 3. שכבות נוספות
+## 5. Acceptance
 
-| שכבה | תפקיד |
+- [ ] Pro + PITR לפני capture  
+- [ ] Offsite מוצפן מתוזמן  
+- [ ] Runbook שחזור + כיבוי checkout  
+- [ ] תרגיל רבעוני מתועד  
+- [ ] B6: שחזור בלי המצאת נאמן; שמירת snapshots  
+
+---
+
+## Revision
+
+| תאריך | שינוי |
 |---|---|
-| Vercel Instant Rollback | אפליקציה תוך דקות |
-| Logical dump מוצפן (אופציונלי) | שבועי offsite; לא ב-git |
-| Secrets vault/Dashboard | רוטציה אחרי חשד דליפה |
-| Cardcom | מקור אמת לחיובים שנלכדו אחרי restore |
-
----
-
-## 4. Quarterly restore drill checklist
-
-מריצים **פעם ברבעון**. מתעדים תאריך + זמנים בפועל מול RTO/RPO.
-
-### 4.1 לפני התרגיל
-
-- [ ] PITR פעיל; חלון ≥ RPO
-- [ ] יש פרויקט/ענף staging ל-restore (לא דריסת prod)
-- [ ] רשימת order_id / voucher_id לדוגמה לאימות
-- [ ] בעל תפקיד restore זמין
-- [ ] Cardcom test/read access ל-reconcile מדומה
-
-### 4.2 במהלך התרגיל
-
-- [ ] בחירת timestamp (למשל "לפני מיגרציה מדומה")
-- [ ] Stop crons על סביבת התרגיל
-- [ ] Restore ל-staging
-- [ ] מדידת זמן עד DB זמין (RTO חלקי)
-- [ ] אימות ספירות P0 (orders, payments, vouchers, wallet)
-- [ ] פתיחת הזמנת דוגמה + קופון דוגמה ב-UI staging
-- [ ] בדיקת מדגם תמונות R2 (version restore מדומה אם אפשר)
-- [ ] תרגול `CHECKOUT_ENABLED=false` על staging/preview
-- [ ] תיעוד פערים (חסר אינדקס, הרשאות, סודות)
-
-### 4.3 אחרי התרגיל
-
-- [ ] רישום תאריך + משך בפועל במסמך זה / STATE
-- [ ] אם RTO/RPO לא עמדו: פעולת שיפור אחת (תוכנית Supabase, סקריפט אימות, הרשאות)
-- [ ] עדכון runbook אם הצעדים השתנו
-- [ ] מחיקת/בידוד DB תרגיל כדי לא לבלבל עם prod
-
-| רבעון | תאריך | RPO נמדד | RTO נמדד | Pass? | הערות |
-|---|---|---|---|---|---|
-| 2026-Q3 | | | | | |
-| 2026-Q4 | | | | | |
-| 2027-Q1 | | | | | |
-| 2027-Q2 | | | | | |
-
----
-
-## 5. Checklist מוכנות חודשי
-
-- [ ] PITR פעיל
-- [ ] תרגיל רבעוני אחרון < 90 יום או מתוזמן
-- [ ] R2 versioning + יעד שכפול ידוע
-- [ ] שמות בעלי restore מעודכנים
-- [ ] Kill switch checkout בדוק
-- [ ] רשימת סודות לרוטציה מעודכנת
-
----
-
-## 6. מה אסור
-
-- דריסת prod בלי staging verify
-- Down-migrations הרסניות בלי PITR מוכן
-- מחיקת bucket R2 באמצע אירוע
-- להסתמך על לפטופ מפתח כגיבוי
-
----
-
-## 7. Revision
-
-| Date | Change |
-|---|---|
-| 2026-07-31 | טיוטת PITR + drills |
-| 2026-08-02 | R2 + runbook DR |
-| 2026-08-03 | RTO/RPO table + quarterly restore checklist מורחב |
+| 2026-08-12 | batch #33/50: ריענון BINDING (Pro, PITR, offsite, DR) |

@@ -1,22 +1,28 @@
-# ARCHITECTURE: Fraud Prevention
+# ארכיטקטורה: מניעת הונאה
 
-וקטורי הונאה והגנות: כרטיסים גנובים ב-Cardcom, ניסיונות מימוש כפול לקופון, ספקים מזויפים, rate limiting, תור ביקורת ידנית.
+מימוש כפול, צילומי מסך QR, בדיקות velocity, chargebacks, והקפאת קופון (freeze).
 
-Status: **BINDING** · Updated: 2026-08-03  
-Scope: **docs only** · branch `arch/docs-queue`  
-אין שינוי קוד. אין נגיעה ב-worktree הראשי.
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #12/50  
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
-Companions:
+מסמכים קשורים:
 
 ```
-docs/ARCHITECTURE-REFUNDS-DISPUTES.md
-docs/ARCHITECTURE-SUPPLIER-ONBOARDING.md
-docs/ARCHITECTURE-RBAC.md
-docs/RUNBOOK-INCIDENTS.md
+docs/ARCHITECTURE-COUPON-LIFECYCLE.md
 docs/ARCHITECTURE-COUPON-REDEMPTION.md
+docs/ARCHITECTURE-SUPPLIER-REDEMPTION.md
+docs/ARCHITECTURE-REFUNDS-DISPUTES.md
+docs/ARCHITECTURE-ADMIN-DASHBOARD.md
+docs/ARCHITECTURE-CUSTOMER-SUPPORT.md
+docs/ARCHITECTURE-TRUST-SAFETY.md
+docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
+docs/CONTRADICTIONS.md
+docs/BUSINESS-MODEL.md
 ```
 
-עקרון: כסף ומניעת כפילות נאכפים ב-DB (אטומיות), לא ב-UI. Rate limits על נתיבי כסף: **fail-closed**.
+עקרון: מניעת כפילות ב-**DB אטומי**. Rate limits על כסף: **fail-closed**.  
+מודל כסף: **No Escrow**. Chargeback/freeze לא "משחררים held" לספק.
 
 ---
 
@@ -24,140 +30,125 @@ docs/ARCHITECTURE-COUPON-REDEMPTION.md
 
 | # | הכרעה |
 |---|---|
-| F1 | קופון `issued` → `redeemed` פעם אחת; replay → `already_used`. |
+| F1 | קופון `issued` → `redeemed` פעם אחת. Replay → `already_redeemed` בלי side effects כספיים. |
 | F2 | אימות QR: חתימה + ספק תואם + תוקף + סטטוס. |
-| F3 | Rate limit: checkout, login, redeem, search, AI. |
-| F4 | Chargeback: לא מוחק היסטוריה; ledger + audit. |
-| F5 | אין auto-refund מלא בלי מסלול אדמין; Cardcom dashboard לא מקור אמת יחיד. |
-| F6 | ספק חדש לא `active` בלי אימות אדמין. |
-| F7 | תור `manual_review` לסיגנלים חזקים לפני payout / אחרי חיוב חשוד. |
+| F3 | צילום מסך לא נמנע ב-DRM; ההגנה היא חד-פעמיות + התראת בעלים. |
+| F4 | Chargeback לא מוחק היסטוריה; תור `manual_review`. |
+| F5 | Velocity checks על checkout / redeem / כרטיסים / חשבונות חדשים. |
+| F6 | חסימת קופון: freeze / void רק דרך admin או מסלול dispute, עם audit. |
+| F7 | No Escrow: אין "שחרור held" לביטול ב-chargeback על קופון. |
 
 ---
 
-## 1. Stolen cards on Cardcom
-
-### 1.1 וקטורים
-
-- ניסיונות רבים עם כרטיסים שונים לאותו user/IP
-- סכומים עגולים חוזרים / רכישות קופון יקרות מיד אחרי הרשמה
-- mismatch בין billing ל-geo חריג
-
-### 1.2 הגנות
-
-| הגנה | יישום |
-|---|---|
-| Cardcom 3DS / issuer auth | לפי הגדרת מסוף |
-| Rate limit `begin_checkout` | per user_id + IP |
-| Velocity | N כרטיסים / כשלי תשלום למשתמש → השהיית checkout |
-| Webhook verify | סיסמה/חתימה; reject → לא paid |
-| Post-pay review | דגל ל-manual_review אם score גבוה |
-| Chargeback flow | ARCHITECTURE-REFUNDS-DISPUTES |
-
-אסור: שמירת PAN/CVV; לוגים עם מספר כרטיס מלא.
-
----
-
-## 2. Coupon double-redemption
+## 1. מימוש כפול (double redeem)
 
 ```text
-POST redeem (supplier JWT)
-  → verify signature
-  → SELECT voucher FOR UPDATE
-  → if status <> issued → already_used | expired | invalid (no money side effects)
-  → UPDATE redeemed + member + collected
-  → ledger release
-  → notify
+POST redeem (supplier JWT + PIN session אם נדרש)
+  → membership active
+  → BEGIN
+      SELECT voucher FOR UPDATE
+      UPDATE … WHERE status='issued'  -- rowcount 0 → already_redeemed
+      INSERT redemption audit
+      -- אין ledger release לקופון
+  → COMMIT
+  → enqueue voucher_redeemed
 ```
 
 | הגנה | פרט |
 |---|---|
-| אטומיות | `UPDATE … WHERE status = 'issued'` / rowcount |
-| Idempotency | dedupe הצלחה על voucher_id |
-| Wrong supplier | `wrong_supplier` בלי הדלפת יתר |
-| Burst already_used | התראת ops / Fraud queue |
-| Screenshot sharing | לא ניתן למנוע; חד-פעמיות ב-DB |
+| Row lock | `FOR UPDATE` |
+| Conditional update | רק `issued` |
+| Idempotency | מפתח ניסיון יציב |
+| Wrong supplier | נראה כ-`not_found` חיצונית |
+| Burst `already_redeemed` | התראת ops (velocity) |
+
+שני מכשירים / שני עובדים במקביל: הצלחה אחת בלבד. אין תשלום כפול לספק ואין גבייה כפולה מהלקוח דרך הפלטפורמה.
 
 ---
 
-## 3. Fake suppliers
+## 2. צילומי מסך ושיתוף QR
 
-| סיכון | הגנה |
+| שכבה | מנגנון |
 |---|---|
-| הרשמה עם מסמכים מזויפים | KYC קל + אישור אדמין (Onboarding) |
-| מוצרים מטעים / פישינג | approve לפני publish |
-| Redeem לעסק פיקטיבי | רק `supplier_members` פעילים |
-| הלבנת payout | hold + dispute window + מזעור payout לפני אימות בנק |
-| חשבון נפרץ | Google OAuth; השעיה מהירה `suspended` |
+| חד-פעמיות | §1 |
+| תוקף | `expires_at` |
+| חתימה | בלי מפתח חתימה אי אפשר לזייף מטען תקף |
+| התרעה | `voucher_redeemed` לבעלים: "אם לא אתם, פנו מיד" |
+| Wallet / UI | אחרי redeem/refund השובר לא מוצג כבר־לשימוש |
+
+אין להבטיח "QR שלא ניתן לצילום". צילום מסך של חבר שעדיין `issued` הוא שיתוף לגיטימי מבחינת קריפטו; אחרי redeem הראשון, השני נכשל.
+
+סיכונים נלווים:
+
+- שיתוף קוד לפני redeem → מי שמגיע ראשון לספק מנצח; זה סיכון מוצר, לא באג.
+- Cross-supplier אותו code → flag שיתוף / enumeration (לוג).
 
 ---
 
-## 4. Rate limiting strategy
+## 3. Velocity checks
 
-| פעולה | מפתח | גבול התחלתי | על כשל מאגר |
-|---|---|---|---|
-| `begin_checkout` | user_id | 10 / דקה | fail-closed |
-| Cardcom return/webhook | order_id | idempotent + IP burst | |
-| `redeem` | supplier_id + member | הדוק (למשל 30/דקה) | fail-closed |
-| redeem failures | voucher/IP | lockout קצר אחרי N חתימות כושלות | |
-| login / OTP | IP + email | לפי Supabase + שכבה | |
-| search | IP | burst protect | degrade |
-| admin refund / wallet | admin_id | נמוך + recent auth | fail-closed |
+| בדיקה | מפתח | פעולה בסף |
+|---|---|---|
+| Checkout attempts | user + IP | fail-closed / delay |
+| Redeem failures | supplier + member / IP | lockout קצר |
+| PIN failures | member / device | lockout + audit |
+| כרטיסים שונים למשתמש חדש | user_id | manual_review |
+| Burst `already_redeemed` | voucher / supplier | התראת ops |
+| Cross-supplier אותו code | code hash | flag שיתוף |
+| הרשמות + רכישות מיידיות (referral abuse) | IP / device | דחיית בונוס |
+| Refund storms | user + payment | תור review |
 
-יישום יעד: Upstash Redis `@upstash/ratelimit` או RPC.  
-תשובה ללקוח: הודעה כללית בעברית.
+כל התראה נכנסת ל-`manual_review_cases` או `security_events`.  
+סף מדויק: קונפיג תפעולי; שינוי סף לא דורש שינוי מודל.
 
 ---
 
-## 5. Manual review queue
+## 4. Chargebacks
 
-### 5.1 טריגרים לתור
+1. היסטוריה לא נמחקת.  
+2. מקור אמת: `payments` + orders + vouchers + scan log.  
+3. אין auto-refund מלא ברגע ההודעה.  
+4. אם `issued` → **הקפאת קופון** (freeze) עד החלטה.  
+5. אם `redeemed` → אין ביטול מימוש אוטומטי; טיפול ידני / dispute.  
+6. No Escrow: אין אירוע release לספק על מקדמת קופון.
 
-| סיגנל | פעולה |
+ראיות לתור: webhook events, timeline voucher, scan log, IP truncated, audit, membership של הסורק.
+
+---
+
+## 5. הקפאת קופון (coupon freeze)
+
+| מצב | משמעות | מי |
+|---|---|---|
+| `frozen` / `blocked_redeem` | לא ניתן לסרוק; עדיין לא refund | admin / dispute job / chargeback handler |
+| `refunded` / `cancelled` | סופי; מייל refund | admin path / legal engine |
+| `expired` | פג; אין מימוש | cron |
+| `void` | בטל תפעולית (הונאה חמורה) | admin + audit |
+
+כללים:
+
+- אסור UPDATE ידני ב-SQL בלי audit.  
+- UI אדמין: "חסום מימוש" / "הקפא" + סיבה חובה.  
+- אחרי freeze: redeem מחזיר תוצאת חסימה; QR לא עובר.  
+- הסרת freeze רק אדמין, עם נימוק.  
+- מסלול refund מ-frozen לפי `ARCHITECTURE-REFUNDS-DISPUTES.md`.
+
+---
+
+## 6. Acceptance
+
+- [ ] שני redeem מקבילים → הצלחה אחת  
+- [ ] Velocity מתועד ו-fail-closed על כסף  
+- [ ] Chargeback → freeze ל-issued  
+- [ ] הקפאת קופון עם audit + הודעה ללקוח  
+- [ ] No Escrow בטיפול chargeback/freeze  
+- [ ] צילום מסך: אין הבטחת DRM; חד-פעמיות עובדת  
+
+---
+
+## Revision
+
+| תאריך | שינוי |
 |---|---|
-| Velocity כרטיסים / כשלי תשלום | hold fulfillment / flag order |
-| Chargeback חדש | freeze voucher אם issued; case |
-| Spike `already_used` / invalid_hmac | חקירת ספק/קמפיין שיתוף |
-| ספק חדש + מחזור גבוה | עיכוב payout |
-| Refund חוזר לאותו user | review לפני אישור |
-| דיווח לקוח "לא אני מימשתי" | fraud ticket |
-
-### 5.2 שדות case (יעד)
-
-```text
-manual_review_cases:
-  id, kind, user_id?, order_id?, voucher_id?, supplier_id?,
-  score, status (open|approved|rejected|escalated),
-  notes, assignee_admin_id, created_at, resolved_at
-```
-
-הרשאות: admin+. סגירה עם audit.  
-לא לחסום redeem לגיטימי גלובלית בלי SEV; להעדיף חסימה ממוקדת.
-
----
-
-## 6. Logging (מינימום)
-
-- voucher_scan_log: result, supplier_id, member_id, truncated IP
-- payment attempts: outcome בלי PAN
-- admin actions על כסף: audit_log
-
-מסכות: קודי קופון בלוגים (4 תווים אחרונים לכל היותר).
-
----
-
-## 7. Acceptance
-
-- [ ] Redeem אטומי + already_used
-- [ ] RL fail-closed על checkout/redeem
-- [ ] Onboarding חוסם ספק מזויף לפני active
-- [ ] תור manual_review מוגדר
-- [ ] Chargeback לא מוחק היסטוריה
-
----
-
-## 8. Revision
-
-| Date | Change |
-|---|---|
-| 2026-08-02 | Duplicate QR, RL, chargeback |
-| 2026-08-03 | Stolen cards, fake suppliers, manual review queue |
+| 2026-08-03 | מימוש כפול, QR, chargebacks, velocity, חסימת קופון |
+| 2026-08-12 | batch #12/50: double redeem, screenshots, velocity, chargebacks, freeze; יישור ל-`redeemed` + No Escrow |
