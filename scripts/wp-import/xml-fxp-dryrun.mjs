@@ -442,8 +442,10 @@ for (const p of byType.get('product') ?? []) {
     type: 'physical',
     status,
     wp_status: wpStatus,
-    platform_percent: DEFAULTS.platformPercent,
-    commission_percent: DEFAULTS.commissionPercent,
+    // NULL for the same reason as 04-project-public.mjs: no per-product percent
+    // exists in the export, and inventing one decides the supplier's cut.
+    platform_percent: null,
+    commission_percent: 0,
     images,
     published_at: text(p.post_date_gmt),
   })

@@ -121,10 +121,19 @@ export const DEFAULTS = {
   couponCategorySlugs: [],
   // product_cat slugs whose products become type = 'service'
   serviceCategorySlugs: [],
-  platformPercent: 10,
-  commissionPercent: 15,
+  // REMOVED 2026-08-11. There was a `platformPercent: 10` and a
+  // `commissionPercent: 15` here, and both projectors wrote them onto every
+  // imported product. The percent is per product, has no default anywhere in
+  // this codebase on purpose, and is snapshotted onto order_items at purchase;
+  // a constant here would have decided every supplier's cut on import.
+  //
+  // Deliberately not replaced with `platformPercent: null`. A named default is
+  // an invitation to use it, and the correct value is "the admin has not chosen
+  // one yet", which is the absence of the field rather than a value of it.
   cashbackPercent: 0,
-  couponExpiryDays: 365,
+  // couponExpiryDays: 365 removed 2026-08-11 with the two percents above. A
+  // coupon's validity is a promise to the customer, and C7 records what an
+  // invented one costs: an unset value became a silent 90 days in finalize.
   currency: 'ILS',
   // every imported product hangs off this supplier unless vendor_map.csv says otherwise
   legacySupplierName: 'Kenyon Express (legacy WP)',

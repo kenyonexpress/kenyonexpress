@@ -51,7 +51,9 @@ async function ensureLegacySupplier(run, db) {
     .from('suppliers')
     .insert({
       name: DEFAULTS.legacySupplierName,
-      commission_percent: DEFAULTS.commissionPercent,
+      // suppliers.commission_percent is NOT NULL DEFAULT 0 in production, so
+      // this is the column's own default rather than an imported 15.
+      commission_percent: 0,
       status: 'active',
       notes:
         'Auto-created by the WordPress import. Owns every legacy catalog row until real suppliers are attached.',
@@ -153,17 +155,26 @@ async function projectProducts(run, db, categoryIds, supplierId) {
     const categoryId =
       p.category_wp_ids?.map((wpId) => categoryIds.get(String(wpId))?.newId).find(Boolean) ?? null
 
-    // The two gates that keep a broken row out of the live catalog. Both are
-    // already recorded as issues by the transform stage; here they decide
-    // status rather than dropping the row, so nothing silently disappears.
+    // The gates that keep a broken row out of the live catalog. All are already
+    // recorded as issues by the transform stage; here they decide status rather
+    // than dropping the row, so nothing silently disappears.
+    //
+    // The third gate is unconditional, and that is the point. No product may go
+    // live without a per-product platform_percent, and the WordPress export does
+    // not carry one, so no projected row can ever be active. See below.
     let status = p.projected_status ?? 'draft'
     if (p.price === null || p.price <= 0) status = 'draft'
     if (!categoryId) status = 'draft'
+    status = 'draft'
     if (status === 'draft' && p.status_raw === 'publish') {
       skipped.push({
         wp_id: p.wp_post_id,
         slug: p.slug_decoded,
-        reason: !categoryId ? 'no_category' : 'no_price',
+        reason: !categoryId
+          ? 'no_category'
+          : p.price === null || p.price <= 0
+            ? 'no_price'
+            : 'no_platform_percent',
       })
     }
 
@@ -184,10 +195,26 @@ async function projectProducts(run, db, categoryIds, supplierId) {
       images: buildImages(p, mediaByAttachment),
       attributes: p.attributes ?? {},
       is_coupon_enabled: p.target_type === 'coupon',
-      platform_percent: DEFAULTS.platformPercent,
-      commission_percent: DEFAULTS.commissionPercent,
+      // NULL, never a default. This wrote DEFAULTS.platformPercent (10) until
+      // 2026-08-11, which is the single thing this codebase forbids outright:
+      // the percent is the only split handle, it is set per product, and it is
+      // snapshotted onto order_items at purchase. A fixed 10 here would have
+      // silently decided the supplier's cut for every imported row.
+      //
+      // emit-missing-products.mjs already refused these numbers and documented
+      // why; it was written as a substitute for this file rather than a fix to
+      // it, which left the original still able to write them the moment anyone
+      // ran `--apply` with a working key. assertPublishable refuses to activate
+      // a NULL-percent product, so the row lands as draft and an admin decides.
+      platform_percent: null,
+      // Not a commission, a placeholder for a NOT NULL column: same stance and
+      // same value as emit-missing-products.mjs.
+      commission_percent: 0,
       cashback_percent: DEFAULTS.cashbackPercent,
-      coupon_expiry_days: DEFAULTS.couponExpiryDays,
+      // C7: an unset validity used to become a silent 90 days in finalize, a
+      // promise nobody made. 365 here was the same invention wearing a nicer
+      // number, so the admin sets it per coupon or it does not go live.
+      coupon_expiry_days: null,
       requires_shipping: p.target_type === 'physical',
       seo_title: p.seo_title_raw,
       seo_description: p.seo_description_raw,
