@@ -1,29 +1,40 @@
-# ARCHITECTURE: Marketing
+# ארכיטקטורה: Marketing
 
 פיד Google Shopping, Facebook catalog, שיתוף WhatsApp, ומבנה קישורי affiliate.
 
-Status: **BINDING** · Updated: 2026-08-02  
-Scope: docs only.  
-Companions:
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.  
+מודל כסף: No Escrow (פידים מציגים מחיר אתר; קופון = מחיר מלא באתר).
+
+מסמכים קשורים:
 
 ```
 docs/ARCHITECTURE-LAUNCH-MARKETING.md
 docs/ARCHITECTURE-GROWTH-SEO.md
 docs/ARCHITECTURE-NOTIFICATIONS-MARKETING.md
+docs/ARCHITECTURE-MEDIA-R2.md
 docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
-docs/LEGAL-CHECKLIST.md
 ```
-
-עקרונות:
-
-1. אין מדיה בתשלום לפני שערי Go-Live ירוקים.
-2. כל קישור יוצא עם UTM (חוץ מאורגני ישיר).
-3. דיוור שיווקי: opt-in + הסרה (30א). Transactional (הזמנה/קופון) לא דרך המסמך הזה.
-4. מחירים בפידים מ-API שרת באגורות → מחרוזת ILS; לא ידני בגיליון כמקור אמת.
 
 ---
 
-## 0. UTM קנוני
+## 1. החלטה
+
+| # | הכרעה |
+|---|---|
+| MK1 | אין מדיה בתשלום לפני שערי Go-Live P0 ירוקים. |
+| MK2 | כל קישור יוצא עם UTM (חוץ מאורגני ישיר). |
+| MK3 | דיוור שיווקי: opt-in + הסרה (30א). Transactional (הזמנה/קופון) לא דרך מסמך זה. |
+| MK4 | מחירים בפידים מ-API שרת באגורות → מחרוזת `"X.XX ILS"`; לא ידני בגיליון. |
+| MK5 | Google Shopping + Meta catalog: **`physical` בלבד** ביום 1; קופונים **לא** בפיד. |
+| MK6 | `image_link` = URL ציבורי R2/CDN; לא signed URL קצר. |
+| MK7 | WhatsApp share: `wa.me/?text=` עם URL https + UTM; **לא** `qr_token` / `qr_payload`. |
+| MK8 | Affiliate: `/r/{code}` עם cookie first-party; `noindex`; attribution ב-`paid`. |
+| MK9 | Meta CAPI / server purchase event אחרי `paid`; לא pixel בלבד. |
+| MK10 | Merchant Center מאומת על `kenyonexpress.co.il` לפני שלב B. |
+
+### 1.1 UTM קנוני
 
 | ערוץ | utm_source | utm_medium |
 |---|---|---|
@@ -34,175 +45,125 @@ docs/LEGAL-CHECKLIST.md
 | Affiliate | `affiliate` | `affiliate` |
 | Newsletter | `newsletter` | `email` |
 
-`utm_campaign` לדוגמה: `launch_2026`, `supplier_{slug}`, `aff_{code}`.  
-הצמדה להמרות: purchase בצד שרת (לא פיקסל בלבד).
+`utm_campaign`: `launch_2026`, `supplier_{slug}`, `aff_{code}`.
 
----
-
-## 1. Google Shopping feed
-
-### 1.1 Endpoint
+### 1.2 Google Shopping
 
 ```
 GET /api/feeds/google-shopping.xml
 ```
 
-(או TSV לפי Merchant Center). Auth: ציבורי לקריאה או token בהגדרות הפיד. בניה מ-DB published בלבד.
-
-### 1.2 שדות
-
 | שדה | מקור |
 |---|---|
 | `id` | `products.id` |
 | `title` | `name_he` |
-| `description` | תיאור מקוצר נקי מ-HTML |
+| `description` | תיאור מקוצר נקי HTML |
 | `link` | `https://kenyonexpress.co.il/product/{slug}` |
-| `image_link` | URL ציבורי ב-R2 |
-| `price` | `"X.XX ILS"` ממחיר הפיזי / מחיר התצוגה הקנוני |
-| `availability` | in stock / out of stock ממלאי |
+| `image_link` | R2 public URL |
+| `price` | מחיר פיזי / תצוגה קנונית |
+| `availability` | מלאי |
 | `condition` | `new` |
-| `brand` | אם קיים |
-| `identifier_exists` | `no` כשאין GTIN |
+| `identifier_exists` | `no` בלי GTIN |
 
-### 1.3 סייג קופונים
+פילטר: `product_type = physical` AND `status = published`.
 
-| סוג | בפיד? |
-|---|---|
-| `physical` | כן |
-| `coupon` | **לא** ביום 1 (מדיניות vouchers/gift; סיכון לחשבון) |
-
-פילטר מחייב: `product_type = physical` ו-`status = published`.
-
-### 1.4 תפעול
-
-1. Merchant Center מאומת על הדומיין (דרך GSC).
-2. שליחת פיד + בדיקת אזהרות שבועית.
-3. מחיר/זמינות: רענון לפחות יומי (או לפי דרישת Google).
-
----
-
-## 2. Facebook catalog
-
-### 2.1 פיד
-
-פורמט Meta Product Catalog (CSV/XML) מאותו מקור מוצרים:
+### 1.3 Meta catalog
 
 ```
 GET /api/feeds/meta-catalog.csv
 ```
 
-שדות מקבילים ל-Shopping: `id`, `title`, `description`, `availability`, `condition`, `price`, `link`, `image_link`, `brand`.  
-מטבע: `ILS`. אותה החלטה: **פיזי בלבד** ביום 1.
+אותם שדות; `ILS`; physical only; scheduled feed ב-Business Manager.
 
-### 2.2 חיבור
+### 1.4 WhatsApp share
 
-1. Meta Business Manager → Catalog → Data source = scheduled feed.
-2. פיקסל / CAPI לרכישות: עדיפות לאירוע שרת אחרי `paid` (לא רק browser pixel).
-3. לא להעלות ידנית גיליון שמתפצל מה-DB.
-
-### 2.3 Creative
-
-- תמונות מ-R2 בלבד (יחסים שמותרים במודעות).
-- טקסט מודעה לא מבטיח מחיר שונה מהפיד.
-- קופונים: קידום מחוץ לקטלוג המוצרים (טראפיק ל-URL) אם בכלל, לא כ-product feed item ביום 1.
-
----
-
-## 3. WhatsApp share
-
-### 3.1 שיתוף מוצר (לקוח / ספק)
-
-כפתור "שיתוף ב-WhatsApp" בונה:
-
-```
-https://wa.me/?text={urlencoded}
-```
-
-טקסט מומלץ:
-
-```
+```text
 {product_name_he}
-שולם באתר: ₪X · יתרה בבית העסק: ₪Y   (לקופון)
+שולם באתר: ₪X · יתרה בבית העסק: ₪Y   (קופון)
 {url}?utm_source=whatsapp&utm_medium=social&utm_campaign=share_product
 ```
 
-לפיזי: מחיר מלא באתר בלבד (בלי המצאת יתרה).
-
-### 3.2 חוקים
-
-- לא לשתף `qr_token` / `qr_payload` בוואטסאפ.
-- לא לשתף קישורי אדמין או redeem.
-- ספק מקבל טקסט מוכן (מהפורטל) עם `utm_campaign=supplier_{slug}`.
-- הודעות שיווקיות יזומות לרשימות: רק עם הסכמה; תבניות Meta אם Cloud API.
-
-### 3.3 Deep link
-
-אם האפליקציה חיה: אותו URL web + App Links. השיתוף תמיד URL https יציב, לא custom scheme בלבד.
-
----
-
-## 4. Affiliate links structure
-
-### 4.1 צורה קנונית
+### 1.5 Affiliate
 
 ```
 https://kenyonexpress.co.il/r/{code}
 ```
 
-או:
-
-```
-https://kenyonexpress.co.il/?ref={code}
-```
-
-העדפה: `/r/{code}` עם 302 לערך הנחיתה + cookie first-party.
-
-| רכיב | חוזה |
-|---|---|
-| `code` | ציבורי, לא ניתן לניחוש קל (ננויד), ייחודי ב-`affiliates` / `referral_codes` |
-| Cookie | `ke_ref={code}`; TTL מוגדר (למשל 30 יום); Last-click או First-click: הכרעה אחת ב-STATE |
-| Attribution | נשמר על `orders` ב-`paid` (`referral_code` / `affiliate_id`) |
-| תגמול | ארנק פנימי / קרדיט בלבד לפי מדיניות; **לא** משיכה אם זה משתמש-קצה; שותף עסקי לפי חוזה נפרד |
-| `noindex` | על `/r/*` |
-
-### 4.2 פרמטרים
-
-```
-/r/{code}?utm_source=affiliate&utm_medium=affiliate&utm_campaign=aff_{code}
-```
-
-אחרי redirect ליעד (בית / מוצר / קטגוריה) ה-UTM נשמרים ל-analytics.
-
-### 4.3 הגנות
-
-| סיכון | הגנה |
-|---|---|
-| Self-referral | דגל אם `affiliate.user_id = order.user_id` |
-| בוטים | rate limit על `/r/*` + סינון analytics |
-| שינוי עמלה אחורה | תגמול לפי חוקי התוכנית בזמן ההזמנה (snapshot) |
-| שיתוף QR | אסור כערוץ שותפים |
-
-### 4.4 מחוץ ליום 1
-
-- פורטל שותפים מלא
-- תשלום בנקאי לשותפים
-- קוקי cross-domain
+Cookie `ke_ref={code}`; TTL 30 יום; snapshot תגמול בזמן `paid`.
 
 ---
 
-## 5. Acceptance
+## 2. חלופות שנדחו
 
-- [ ] פיד Google: physical only, מחירים תקינים, Merchant בלי דחיות המוניות
-- [ ] פיד Meta מאותו מקור
-- [ ] שיתוף WhatsApp בלי סודות QR ועם UTM
-- [ ] `/r/{code}` רושם attribution בלי SEO index
-- [ ] אין דיוור שיווקי בלי opt-in
+| חלופה | נימוק דחייה |
+|---|---|
+| קופונים ב-Google Shopping ביום 1 | מדיניות vouchers/gift; סיכון דחיית חשבון כולו. |
+| גיליון Google Sheets כמקור אמת לפיד | drift מ-DB; MK4 API only. |
+| שיתוף QR token ב-WhatsApp | leakage + אבטחה; MK7. |
+| Affiliate cross-domain cookie | first-party `/r/` בלבד; privacy. |
+| Browser pixel בלבד ל-Meta | SKAN/ITP; MK9 server CAPI. |
+| קמפיין paid לפני Go-Live | MK1; checkout לא מאומת. |
+| UTM מזויף על traffic ישיר | analytics noise; organic בלי UTM. |
 
 ---
 
-## 6. Revision
+## 3. סכמת DB
 
-| Date | Change |
+**אין DDL חדש במסמך זה.** קריאה מטבלאות קיימות:
+
+| טבלה | שדות לפידים / attribution |
 |---|---|
-| 2026-07-31 | Launch marketing (Shopping + SEO 301) |
-| 2026-08-02 | מסמך מחייב: Shopping, Facebook catalog, WhatsApp share, affiliate `/r/{code}` |
+| `products` | `id`, `slug`, `name_he`, `description`, `product_type`, `status`, מחירים באגורות, מלאי |
+| `media_assets` / `product_images` | `image_link` |
+| `orders` | `referral_code`, `affiliate_id`, UTM snapshot (analytics) |
+| `affiliates` / `referral_codes` | `code` ל-`/r/{code}` |
+| `marketing_consent` / preferences | opt-in לדיוור (30א) |
+
+פידים: generated at request; cache TTL יומי מינימום.
+
+---
+
+## 4. מקרי קצה
+
+| # | מצב | התנהגות |
+|---|---|---|
+| E1 | מוצר unpublished באמצע build פיד | excluded; לא 404 ב-feed item |
+| E2 | תמונה R2 404 | exclude מ-p feed + alert |
+| E3 | מחיר 0 / null | exclude; לא `"0.00 ILS"` |
+| E4 | קופון בטעות ב-query פיד | filter `physical`; monitor Merchant warnings |
+| E5 | Self-referral affiliate | block credit; flag fraud |
+| E6 | `/r/{code}` bot crawl | rate limit; לא index (noindex) |
+| E7 | UTM stripped ב-WhatsApp preview | URL מלא ב-text; landing שומר query |
+| E8 | Meta catalog stale price | daily refresh; price mismatch = disapproval |
+| E9 | share ללא opt-in marketing | transactional OK; bulk WA lists = opt-in |
+| E10 | float במחיר פיד | אסור; integer agorot → format ILS string |
+
+---
+
+## 5. פתוחות
+
+| # | פער | החלטה זמנית | תאריך |
+|---|---|---|---|
+| O1 | First-click vs last-click affiliate | last-click; תיעוד ב-analytics | 2026-08-12 |
+| O2 | קופונים ב-Shopping post-launch | בחינה משפטית/מדיניות per SKU | 2026-08-12 |
+| O3 | פורטל affiliates מלא | מחוץ ליום 1 | 2026-08-12 |
+| O4 | TikTok catalog | P2 אחרי Meta/Google stable | 2026-08-12 |
+
+---
+
+## 6. Acceptance
+
+- [ ] פיד Google: physical only, מחירים תקינים  
+- [ ] פיד Meta מאותו מקור  
+- [ ] WhatsApp בלי QR secrets + UTM  
+- [ ] `/r/{code}` attribution + noindex  
+- [ ] אין דיוור שיווקי בלי opt-in  
+
+---
+
+## 7. Revision
+
+| תאריך | שינוי |
+|---|---|
+| 2026-08-02 | Shopping, Meta, WhatsApp, affiliate |
+| 2026-08-12 | BINDING מלא: החלטה, חלופות, DB, קצה, פתוחות (`arch/docs-batch-2`) |
