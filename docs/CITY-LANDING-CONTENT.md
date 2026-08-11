@@ -1,10 +1,55 @@
 # תוכן SEO לעמודי ערים (15)
 
-פסקת פתיחה ייחודית (~100 מילים) + `title` + `meta description` לכל עיר.
-
-Status: **CONTENT** · עודכן: 2026-08-10  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+Status: **CONTENT** · עודכן: 2026-08-12
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+מודל כסף: No Escrow; בלי נאמן/J5 בטקסט.
+
+---
+
+## 1. החלטה
+
+| # | הכרעה |
+|---|---|
+| C1 | 15 ערים; נתיב `/city/{slug}` |
+| C2 | title ≤60; meta ≤155 תווים |
+| C3 | פתיחה ~100 מילים ייחודית לעיר |
+| C4 | מחיר רק מהעמוד החי; בלי מלאי במטא |
+
+---
+
+## 2. חלופות שנדחו
+
+| חלופה | נימוק |
+|---|---|
+| תוכן מועתק בין ערים | SEO duplicate |
+| doorway לכל שכונה | בלי מלאי |
+| הבטחת Escrow | אסור במסר |
+
+---
+
+## 3. סכמת DB
+
+**אין DDL חדש.** דפי עיר קוראים `products`, `categories`, geo.
+ייתכן טבלת `city_pages` עתידית; לא במסמך זה.
+
+---
+
+## 4. מקרי קצה
+
+| # | מצב | התנהגות |
+|---|---|---|
+| E1 | עיר בלי דילים | noindex / לא ב-sitemap |
+| E2 | slug כפול | canonical אחד |
+| E3 | מחיר השתנה | metadata מ-DB ב-build |
+
+---
+
+## 5. פתוחות
+
+| O1 | JSON-LD LocalBusiness | לפי SEO doc | 2026-08-12 |
+
+---
 
 מסמכים קשורים:
 
@@ -240,8 +285,10 @@ docs/CONTENT-PLAYBOOK.md
 
 ---
 
+
 ## Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-10 | 15 עמודי ערים: title, meta, פתיחה |
+| 2026-08-12 | BINDING batch-2: החלטה, חלופות, DB, קצה, פתוחות |
+
