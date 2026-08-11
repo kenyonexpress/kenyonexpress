@@ -144,9 +144,23 @@ pg_dump "$DATABASE_URL" | gzip | openssl enc -aes-256-cbc -out backup-YYYYMMDD.s
 
 ---
 
+## 8. מתי PITR ומתי dump→scratch
+
+| מצב | בחירה |
+|---|---|
+| מחיקה/באג בחלון PITR, אותו פרויקט חי | PITR לאותו פרויקט |
+| פרויקט נמחק / אובדן גישה / מעבר region | dump→scratch + cutover env |
+| רק קוד שבור, DB תקין | Vercel rollback בלבד |
+| חוסר ודאות בחלון הזמן | אל תנחש; עצור checkout, אסוף ראיות, התייעץ |
+
+אחרי כל restore: השוואת סכומי יום מול Cardcom לפני הפעלת checkout.
+
+---
+
 ## Revision
 
 | תאריך | שינוי |
 |---|---|
 | 2026-08-11 | Runbook PITR + offsite dump + scratch restore |
 | 2026-08-11 | שאילתות אימות אחרי PITR |
+| 2026-08-11 | טבלת בחירה PITR מול scratch |
