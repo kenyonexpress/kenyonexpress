@@ -182,6 +182,19 @@ docs/INCIDENT-RESPONSE-RUNBOOK.md
 - [ ] Branch protection על הענף לייצור  
 - [ ] תג release על ה-commit המועמד (P2)  
 
+### 11.1 שערי מדידה היסטוריים (`FINAL-REPORT.md`, קריאה מהראשית)
+
+נמדדו ב-2026-08-07 על build נקי; **לא מחליפים** smoke Cardcom חי. לפני cutover ציבורי: לאשר שהענף הנוכחי עדיין ירוק באותם סוגי שערים.
+
+| שער | תוצאה שנמדדה אז | חובה עכשיו |
+|---|---|---|
+| `pnpm test` (Vitest) | 1833/1833 | ירוק על הענף לייצור |
+| Playwright E2E | 191 passed / 0 failed | ירוק (`E2E_WEB_COMMAND='pnpm start'`) |
+| `pnpm type-check` / `lint` / `build` | clean | ירוק |
+| `compare.mjs` home/category | מתחת לשער 11% | ירוק אם עדיין בשימוש |
+
+מה שנשאר אנושי (לא קוד): env ב-Vercel, DNS, PITR, Cardcom production, דילי seed, אישור עו״ד ל-legal.
+
 ---
 
 ## 12. Soft-open (סדר יום)
@@ -221,3 +234,4 @@ Kill switch מיידי: `CHECKOUT_ENABLED=false` + `INCIDENT-RESPONSE-RUNBOOK.md
 |---|---|
 | 2026-08-11 | צ'קליסט Go-Live: דומיין, Vercel, env, Cardcom, PITR, אבטחה, דילים, payout |
 | 2026-08-11 | יישור ל-FINAL-REPORT §7 + שערי TransferFromDigitalBank מפורטים |
+| 2026-08-11 | §11.1: שערי CI שנמדדו ב-FINAL-REPORT + מה שנשאר אנושי |
