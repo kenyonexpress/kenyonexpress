@@ -1,0 +1,79 @@
+-- 116: cardcom_accounts -- NOT WRITTEN AS DDL, ON PURPOSE. READ THIS INSTEAD.
+--
+-- NOTHING IN THIS FILE EXECUTES, for the same reason as 115 but a sharper one:
+-- the table this file was asked to create would reopen a hole that was closed
+-- deliberately, and the decision is recorded in the code it was closed in.
+--
+-- THE REQUEST
+--
+--   "multi-account: a cardcom_accounts table, terminal chosen by supplier or
+--    by platform"
+--
+-- The capability already exists. src/lib/payments/accounts.ts is a registry
+-- keyed by account id, each entry carrying terminalNumber, apiName,
+-- apiPassword, a sandbox flag, and the supplierIds that clear on it.
+-- `payments.cardcom_account_id` and `payment_tokens.cardcom_account_id` already
+-- record which account produced each artefact, which is load-bearing: a token
+-- created on terminal A cannot be charged on terminal B, and a Low Profile id
+-- looked up against the wrong terminal reports "not found" for a payment that
+-- really happened.
+--
+-- So the only thing a table would change is WHERE the mapping lives. That is
+-- exactly what was decided against, at accounts.ts:41:
+--
+--     "This is config and not a `suppliers` column on purpose: a terminal is a
+--      credential, it is provisioned with the other Cardcom credentials, and an
+--      admin editing a supplier row must not be able to redirect where money
+--      lands by typing an id into a form."
+--
+-- WHAT THE TABLE WOULD COST
+--
+-- A row that says "supplier X clears on terminal Y" is a row that decides who
+-- receives money. Put it in Postgres and everything that can write Postgres can
+-- redirect a payout: the admin UI, a stray service-role script, a SQL injection
+-- anywhere in the admin surface, or a compromised admin session. None of those
+-- can touch an environment variable. The blast radius of the table version is
+-- every settlement after the edit, and it is silent, because a charge on the
+-- wrong terminal succeeds.
+--
+-- Storing the credentials themselves (apiName / apiPassword) in a table is
+-- worse again: it puts money-moving secrets in the same store as the catalogue,
+-- readable by any path that gets a service-role key, and into every backup and
+-- every branch database.
+--
+-- If a table is wanted anyway, the conservative shape is a mapping with NO
+-- credentials and NO ability to introduce a terminal: supplier_id -> account_id
+-- where account_id must already exist in the env-provided registry, so the
+-- worst a bad row can do is name an account the platform already controls.
+-- That version is written below and NOT executed, because even it moves the
+-- supplier -> terminal decision out of the credential store, and that decision
+-- is the one accounts.ts refused to move. It needs a human who is willing to
+-- accept the redirect risk, which is a stop condition under the project rules.
+--
+-- ============================================================================
+-- NOT EXECUTED. Requires an explicit decision to reverse accounts.ts:41.
+-- ============================================================================
+--
+-- CREATE TABLE IF NOT EXISTS public.cardcom_account_suppliers (
+--   -- The registry key from accounts.ts. NOT a terminal number, and no
+--   -- credentials: this table can only point at an account the environment
+--   -- already defines, never define one.
+--   account_id  text        NOT NULL,
+--   supplier_id uuid        NOT NULL REFERENCES public.suppliers(id) ON DELETE CASCADE,
+--   created_at  timestamptz NOT NULL DEFAULT now(),
+--   PRIMARY KEY (account_id, supplier_id),
+--   -- One supplier clears on exactly one terminal. Without this a supplier
+--   -- could sit on two and the resolver's answer would depend on row order.
+--   UNIQUE (supplier_id)
+-- );
+--
+-- ALTER TABLE public.cardcom_account_suppliers ENABLE ROW LEVEL SECURITY;
+--
+-- -- Deny-all. Not even admins: this is read by the server with the service
+-- -- role, and an admin who can edit it is the whole risk described above.
+-- REVOKE ALL ON public.cardcom_account_suppliers FROM anon, authenticated;
+--
+-- COMMENT ON TABLE public.cardcom_account_suppliers IS
+--   'Supplier -> Cardcom account id. Credentials stay in env (accounts.ts). Deny-all by design: whoever can write this row decides where money lands.';
+
+SELECT 'migration 116 is intentionally inert; see the comment above' AS note;

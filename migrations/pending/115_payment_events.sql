@@ -1,0 +1,73 @@
+-- 115: payment_events -- NOT WRITTEN AS DDL, ON PURPOSE. READ THIS INSTEAD.
+--
+-- NOTHING IN THIS FILE EXECUTES. It is deliberately inert, in the same way the
+-- coupon half of 113 is written out and not run. The reason is short:
+--
+--   THE TABLE THIS FILE WAS ASKED TO CREATE ALREADY EXISTS IN PRODUCTION,
+--   UNDER THE NAME public.payment_webhook_events, AND IS ALREADY IN USE.
+--
+-- The request was: "payment_events table + write every event + idempotency +
+-- DLQ". Every one of those four is already true today. Measured against
+-- src/types/database.ts, which is generated from the live project and is the
+-- only description of it that has ever been accurate:
+--
+--   payment_webhook_events(
+--     id, provider, external_event_id, payload,
+--     payment_id, signature_valid, verified_against_api,
+--     processed_at, created_at
+--   )
+--
+-- and the four requirements, each with the code that already meets it:
+--
+--   log every event   src/app/api/payments/cardcom/webhook/route.ts:65
+--                     inserts BEFORE any processing, so an event that later
+--                     fails to process is still on record.
+--
+--   idempotency       the insert dedups on (provider, external_event_id),
+--                     built at route.ts:61 from Cardcom's lowprofilecode plus
+--                     InternalDealNumber. A UNIQUE violation on the second
+--                     delivery is the dedup working and answers 200.
+--
+--   DLQ               `processed_at` stays NULL until the order actually
+--                     closes (route.ts:253), which is precisely what marks a
+--                     row as dead-lettered. route.ts:278 documents it.
+--
+--   signature         `signature_valid` is stored per row rather than being
+--                     used to reject early, so a bad-signature delivery is
+--                     recorded as evidence instead of vanishing.
+--
+-- WHY A SECOND TABLE WOULD BE A DEFECT AND NOT AN ADDITION
+--
+-- Two tables recording "did we already handle this Cardcom callback" is two
+-- answers to a question that must have one. The webhook would dedup against
+-- whichever it was pointed at, and a replay that missed the other one would be
+-- processed twice. On this path processing twice means finalizing an order
+-- twice: issuing a second set of vouchers for one payment. That is the exact
+-- failure `payment_webhook_events` exists to prevent, so adding a rival table
+-- to satisfy the letter of the request would introduce the bug the request is
+-- trying to avoid.
+--
+-- WHAT IS ACTUALLY MISSING, IF ANYTHING
+--
+-- One thing, and it is not a table. `payment_webhook_events` has no retry
+-- counter and no next_attempt_at, so "dead-lettered" is inferred from
+-- `processed_at IS NULL` and age rather than recorded. The QStash retry the
+-- goal describes would want somewhere to count attempts. That is two nullable
+-- columns on the existing table, not a new one, and it is written below,
+-- unexecuted, for whoever picks it up.
+--
+-- ============================================================================
+-- NOT EXECUTED. Uncomment only with a QStash consumer that reads these.
+-- ============================================================================
+--
+-- ALTER TABLE public.payment_webhook_events
+--   ADD COLUMN IF NOT EXISTS attempts        int NOT NULL DEFAULT 0,
+--   ADD COLUMN IF NOT EXISTS next_attempt_at timestamptz,
+--   ADD COLUMN IF NOT EXISTS last_error      text;
+--
+-- -- The dead-letter queue as a query rather than as a second table.
+-- CREATE INDEX IF NOT EXISTS payment_webhook_events_unprocessed_idx
+--   ON public.payment_webhook_events (created_at)
+--   WHERE processed_at IS NULL;
+
+SELECT 'migration 115 is intentionally inert; see the comment above' AS note;
