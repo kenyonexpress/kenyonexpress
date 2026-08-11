@@ -346,3 +346,74 @@ describe('buildCartView: empty', () => {
     expect(cart.total).toBe(0)
   })
 })
+
+/**
+ * `products.type` is a Postgres enum with three values in production today
+ * (`coupon`, `physical`, `service`) and a fourth, `recurring`, waiting in
+ * PENDING-109. The cart prices two of them.
+ *
+ * The resolver used to end in `: 'physical'`, so every value it did not
+ * recognise was priced as a one-time physical purchase. That is silent by
+ * construction: the row type claimed only two values could arrive, so the
+ * compiler never asked about the third, and a subscription would have been
+ * charged once at its physical price with a green suite.
+ *
+ * These tests assert the refusal, not the fallback.
+ */
+describe('buildCartView: a type the cart cannot price', () => {
+  it('refuses a service line instead of selling it as physical', () => {
+    // Mixed with a priceable line, because a cart of nothing but unpriceable
+    // lines short-circuits to EMPTY_CART and would hide the per-line result.
+    const cart = buildCartView(
+      'cart-1',
+      [stored({ product_id: 'ok' }), stored({ product_id: 'svc' })],
+      [product({ id: 'ok', slug: 'ok' }), product({ id: 'svc', slug: 'svc', type: 'service' })],
+      [],
+    )
+
+    const service = cart.items.find((i) => i.product_id === 'svc')
+    expect(service?.available).toBe(false)
+    // Kept out of the money engine entirely, not priced at zero commission.
+    expect(service?.platform_fee).toBe(0)
+    expect(service?.supplier_due).toBe(0)
+    expect(service?.customer_pays_now).toBe(0)
+
+    // And it contributes nothing to the totals: ₪100 for the one good line.
+    expect(cart.subtotal).toBe(agorot(10000))
+  })
+
+  it('drops the cart to empty when every line is an unpriceable type', () => {
+    const cart = buildCartView('cart-1', [stored()], [product({ type: 'service' })], [])
+    expect(cart.items).toHaveLength(0)
+    expect(cart.total).toBe(0)
+  })
+
+  it('still honours is_coupon_enabled on an unrecognised type', () => {
+    // The admin opt-in is an explicit decision about this product, unlike the
+    // enum value itself, so it resolves the line rather than being overridden.
+    const cart = buildCartView(
+      'cart-1',
+      [stored()],
+      [product({ type: 'service', is_coupon_enabled: true, coupon_price_ils: 80 })],
+      [],
+    )
+
+    expect(line(cart).type).toBe('coupon')
+    expect(line(cart).available).toBe(true)
+  })
+
+  it('prices physical and coupon exactly as before', () => {
+    const physical = buildCartView('c', [stored()], [product({ type: 'physical' })], [])
+    expect(line(physical).available).toBe(true)
+    expect(line(physical).type).toBe('physical')
+
+    const coupon = buildCartView(
+      'c',
+      [stored()],
+      [product({ type: 'coupon', coupon_price_ils: 80 })],
+      [],
+    )
+    expect(line(coupon).available).toBe(true)
+    expect(line(coupon).type).toBe('coupon')
+  })
+})
