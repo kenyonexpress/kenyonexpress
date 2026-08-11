@@ -135,6 +135,30 @@ UI: עברית RTL; סכומים ב-₪ מתורגמים מאגורות.
 
 כל שורה מציגה את האחוז **שצולם בהזמנה**, לא את האחוז הנוכחי במוצר.
 
+תמצית שאילתה (יעד; שמות עמודות לפי הסכמה החיה אחרי agorot cutover):
+
+```sql
+SELECT
+  oi.product_id,
+  oi.platform_percent AS platform_percent_snapshot,
+  sum(oi.paid_on_site_agorot) AS gmv_agorot,
+  sum(
+    CASE WHEN oi.product_type = 'coupon'
+      THEN oi.paid_on_site_agorot
+      ELSE (oi.paid_on_site_agorot * oi.platform_percent / 100.0)::bigint
+    END
+  ) AS platform_revenue_agorot,
+  count(DISTINCT oi.order_id) AS orders_count
+FROM order_items oi
+JOIN orders o ON o.id = oi.order_id
+WHERE o.status = 'paid'
+  AND o.paid_at >= $from AND o.paid_at < $to
+GROUP BY 1, 2
+ORDER BY platform_revenue_agorot DESC;
+```
+
+עיגול יחיד בשרת לפי `ARCHITECTURE-PRICING-RULES`; לא לעגל פעמיים ב-UI.
+
 ### 3.3 התאמות
 
 | כלל | פירוט |
@@ -177,3 +201,4 @@ UI: עברית RTL; סכומים ב-₪ מתורגמים מאגורות.
 | 2026-08-06 | משפך + PostHog/GA4 |
 | 2026-08-07 | QA: CONTRADICTIONS / OBSERVABILITY |
 | 2026-08-11 | סכימת אירועים מורחבת, KPIs ספק, דוחות הכנסה לפי percent פר מוצר |
+| 2026-08-11 | דוגמת SQL לדוח הכנסות אדמין לפי snapshot percent |
