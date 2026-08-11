@@ -22,13 +22,13 @@ Reproduced from MASTER v2 so this file is self-contained. These are non-negotiab
 | ID | Decision | Why |
 |---|---|---|
 | D-MONEY-1 | Integer **agorot** (`integer`/`bigint`) is the sole money type end to end. No `numeric` money, no floats. | Float and `numeric(12,2)` round-trips corrupt money; matches Cardcom minor units. |
-| D-MONEY-2 | Coupon: customer pays on-site `round_half_up(face * platform_bp / 10000)`. 100% of that charge is platform revenue. **No escrow.** Supplier receives **0** from the platform for coupon lines; the remainder is collected in cash at the merchant when the coupon is scanned. | Owner model. |
+| D-MONEY-2 | Coupon: customer pays the absolute `coupon_price_agorot` on site (never a percent of the face). That prepayment splits by the snapshotted `platform_bp`: the platform fee is recognised at payment, the supplier's share is **held in `escrow_holds` and released on redemption** (C11 b). The rest of the face value is collected in cash at the merchant at scan time and never reaches the platform. | Owner model, revised 2026-07-27. |
 | D-MONEY-3 | Physical: customer pays 100% on-site. `supplier_due = face - commission`; paid only via a **settlement batch** after `delivered + 14d`. No Cardcom Multi-Account at charge. | Return window; supplier is not a Cardcom sub-merchant. |
 | D-PERCENT | Every rate (`platform_percent`, cashback) is stored as **integer basis points** (`_bp`): 10% = 1000 bp, 100% = 10000 bp. | Same integer discipline as money. |
 | D-SNAPSHOT | `platform_bp` and all amount fields are **snapshotted into `order_items` at purchase** and frozen after `paid_at`. Settlement and ledger **never** re-read live `products.platform_percent`. | A later admin price/rate edit must not change historical settlement. Enforced by trigger `trg_order_items_snapshot_lock` (054). |
 | D-LEDGER | **Hybrid model:** true double-entry for internal wallet + revenue + VAT + supplier payable; conserved custody + nightly Cardcom reconcile for external card cash. | Cardcom is the external system of record for card money; the wallet is the only pure internal liability. |
-| D-PSP | **Cardcom Low Profile** is the production Israeli PSP (SAQ-A). Stripe is an out-of-scope experiment; production cutover requires an explicit ADR. | Israeli cards + hosted page, PAN never on our origin. |
-| D-EXPIRY | Expired unused coupons are **breakage**: the platform keeps the on-site fee; no auto wallet refund. | Owner: coupon "expires". Revenue was already recognized at payment. |
+| D-PSP | **Cardcom Low Profile** is the only PSP (SAQ-A). C9 rules out Stripe, Payoneer and Cloudways; a second PSP would need a new owner decision. | Israeli cards + hosted page, PAN never on our origin. |
+| D-EXPIRY | An unredeemed coupon that expires **credits the customer wallet** with what they paid, and the supplier hold is reversed (C6). No breakage revenue. | Owner 2026-07-27: nobody keeps money for a service never rendered. |
 | D-VAT | Platform issues a tax invoice **only on its own commission**. Commission is gross-inclusive; extract `net = round(gross * 10000 / 11700)`, `vat = gross - net`, booked to `vat_output`. Amounts the supplier collects are the supplier's VAT obligation, not the platform's. | Israeli 17% VAT, cash-basis recognition at payment. |
 
 ---

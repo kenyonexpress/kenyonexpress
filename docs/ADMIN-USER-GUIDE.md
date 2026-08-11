@@ -16,13 +16,9 @@ docs/SUPPLIER-ONBOARDING.md
 docs/ARCHITECTURE-PAYOUT-MECHANISM.md
 docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 docs/RUNBOOK-PRODUCTION.md
-docs/CHECKOUT-OPTIMIZATION.md
-docs/SUPPORT-SLA-POLICY.md
 ```
 
 כניסה: `/admin` (משתמש עם תפקיד admin). ממשק RTL בעברית.
-
-כשל סליקה / כפל חיוב: אל תסמנו paid ידנית בלי GetLpResult; ראו CHECKOUT-OPTIMIZATION + PLAYBOOK.
 
 ---
 
@@ -209,4 +205,3 @@ docs/SUPPLIER-ONBOARDING.md
 | תאריך | שינוי |
 |---|---|
 | 2026-08-10 | מדריך אדמין ראשון: קופון/פיזי/מנוי, percent, קאשבק, ספקים, החזר, דוחות |
-| 2026-08-11 | קישור ל-CHECKOUT-OPTIMIZATION ו-SUPPORT-SLA; אזהרת reconcile סליקה |

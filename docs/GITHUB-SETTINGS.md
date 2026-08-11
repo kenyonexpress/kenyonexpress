@@ -1,163 +1,133 @@
-# GITHUB-SETTINGS.md
+# GitHub settings that cannot be committed
 
-הגדרות GitHub שאי אפשר לבצע מהקוד, ושאתה מבצע ידנית ב-UI.
+Everything in this file is a setting in the GitHub web UI. None of it lives in
+the repository, so none of it can be applied by a commit, a script, or an agent.
+This is the list of steps to perform by hand, in order.
 
-Status: **ACTIONABLE** · 2026-08-07 · repo `kenyonexpress/kenyonexpress`
-Scope: docs only. שום סעיף כאן לא מבוצע על ידי סוכן; כולם דורשים הרשאת admin ב-GitHub.
-
----
-
-## 0. מה כבר עובד, ולמה זה משנה לפני שאתה נוגע בהגדרות
-
-**ה-CI כבר מריץ את ארבעת השערים על כל push.** `.github/workflows/ci.yml` קיים
-ורץ על `push` ל-`main`, ‏`phase5/homepage` ו-`cursor/add-supabase-3c830`, וגם על
-כל `pull_request` ל-`main`. ארבע העבודות:
-
-| job | שם התצוגה (זה השם שתסמן כ-required) | מה מריץ |
-|---|---|---|
-| `lint` | `Lint (changed files)` | `pnpm lint:changed` + `pnpm lint` לא-חוסם |
-| `typecheck` | `Typecheck` | `pnpm type-check` |
-| `test` | `Unit tests + money coverage floors` | `pnpm test:coverage` |
-| `build` | `Build` | `pnpm build` (תלוי בשלושת הקודמים) |
-| `e2e` | `E2E (Playwright)` | מדלג בשקט כל עוד `CI_SUPABASE_URL` לא מוגדר |
-
-**המסקנה המעשית: אין צורך לכתוב workflow חדש.** מה שנשאר הוא שני דברים
-שהקוד לא יכול לעשות בעצמו: להפוך את השערים למחייבים ב-GitHub, ולסגור פרצה
-אחת שנמדדה.
-
----
-
-## 1. הפרצה שנמדדה: יש כלל, והוא נעקף
-
-כשנדחף קוד ל-`main` ב-06.08, השרת ענה:
+Why it matters here specifically: `main` currently accepts direct pushes, and
+every push to it so far has reported
 
 ```
 remote: Bypassed rule violations for refs/heads/main:
 remote: - Changes must be made through a pull request.
 ```
 
-כלומר **כבר קיים ruleset שדורש PR ל-`main`, והדחיפה עברה בכל זאת** דרך הרשאת
-bypass. כלל שנעקף בשקט גרוע מכלל שלא קיים: הוא מייצר תחושה שהענף מוגן בזמן
-שכל דחיפה ישירה מצליחה ורק מדפיסה שורה שאיש לא קורא.
-
-**זה הסעיף הראשון לטפל בו** (‏1.3 למטה), ולא הוספת שערים חדשים.
+A rule that announces it was bypassed is not enforcing anything. The steps below
+turn that line into a refusal.
 
 ---
 
-## 2. מה לעשות, לפי סדר
+## 1. Which branch is production
 
-### 2.1 להפוך את ארבעת השערים ל-required
+Check this first, because step 2 changes what a push to it costs.
 
-```
-https://github.com/kenyonexpress/kenyonexpress/settings/rules
-```
+`Settings` > `General` > `Default branch`
 
-‏Rulesets ← הכלל הקיים על `main` ← Edit. תחת **Require status checks to pass**:
+The default branch today is `cursor/add-supabase-3c830`, not `main`. Vercel
+follows the default branch for production deploys unless it was told otherwise,
+so confirm which branch Vercel is actually building before protecting either:
 
-הוסף בדיוק את ארבעת השמות האלה, **מילה במילה**:
+`vercel.com` > the project > `Settings` > `Git` > `Production Branch`
 
-```
-Lint (changed files)
-Typecheck
-Unit tests + money coverage floors
-Build
-```
-
-**המלכודת:** ‏GitHub מזהה check לפי **שם התצוגה** (`name:` של ה-job), לא לפי
-מזהה ה-job. אם תקליד `lint` או `typecheck` הוא ייצור דרישה לבדיקה שלא קיימת,
-היא לעולם לא תדווח, וכל PR ייתקע ב-"Expected — Waiting for status to be
-reported" לנצח. השמות למעלה הועתקו מ-`ci.yml` כפי שהם.
-
-סמן גם **Require branches to be up to date before merging**. בלי זה שני PR-ים
-ירוקים בנפרד יכולים להישבר יחד אחרי המיזוג.
-
-**אל תסמן `E2E (Playwright)` כ-required.** היא מדלגת בכוונה כל עוד סודות
-Supabase לא מוגדרים (סעיף 2.4), ובדיקה חובה שאף פעם לא מדווחת חוסמת כל מיזוג.
-
-זמן: ‏5 דקות.
-
-### 2.2 להפוך את repo-wide lint לחוסם
-
-זה שינוי קוד ולא הגדרה, ולכן הוא **לא שלך** אלא של הסוכן שעל main. נרשם כאן כי
-הוא חלק מאותה החלטה.
-
-‏`ci.yml` מריץ היום `pnpm lint` על כל הריפו עם `continue-on-error: true`,
-וההערה שם מסבירה למה: "‏a repo-wide `pnpm lint` reports 45 pre-existing errors".
-
-**הנימוק הזה כבר לא נכון. נמדד ב-06.08:**
-
-```
-$ pnpm lint
-Checked 681 files in 201ms. No fixes applied.
-```
-
-אפס שגיאות. החוב שולם, ולכן `continue-on-error` יכול לרדת וה-lint המלא יכול
-להיות שער אמיתי. כל עוד הוא נשאר לא-חוסם, השורה הבאה שתישבר לא תעצור כלום.
-
-### 2.3 לדרוש PR ולאסור דחיפה ישירה
-
-באותו ruleset:
-
-- **Require a pull request before merging** — כבר מוגדר, ראה סעיף 1.
-- **Required approvals: 0.** אתה עובד לבד; דרישת מאשר אחד תנעל אותך מחוץ לריפו
-  שלך. ה-PR קיים כאן כדי להריץ את הבדיקות, לא כדי להביא דעה שנייה.
-- **Block force pushes** — סמן.
-- **Restrict deletions** — סמן.
-
-### 2.4 להסיר את ה-bypass מעצמך
-
-```
-https://github.com/kenyonexpress/kenyonexpress/settings/rules
-```
-
-בכלל של `main`, תחת **Bypass list**: הסר את `Repository admin` / `Organization
-admin`, או הורד ל-`Pull requests only`.
-
-**זה הסעיף היחיד כאן שמשנה משהו בפועל.** כל השאר מוסיף שערים; זה מה שגורם להם
-לחסום אותך במקום להדפיס אזהרה. שים לב שאחרי זה **גם הסוכנים לא יוכלו לדחוף
-ישירות ל-`main`**, וזו הכוונה, אבל זה משנה את זרימת העבודה האוטונומית: הם
-יצטרכו לעבוד ב-branch ולפתוח PR.
-
-זמן: ‏2 דקות. תלות: אחרי 2.1, אחרת תחסום את עצמך משערים שעדיין לא מוגדרים.
-
-### 2.5 סודות ה-CI
-
-```
-https://github.com/kenyonexpress/kenyonexpress/settings/secrets/actions
-```
-
-| Secret | לְמה משמש | מה קורה בלעדיו |
-|---|---|---|
-| `CI_SUPABASE_URL` | job `build` ו-`e2e` | ‏E2E מדלג עם warning; ה-build רץ בלי DB |
-| `CI_SUPABASE_ANON_KEY` | אותו דבר | אותו דבר |
-| `CI_SUPABASE_SECRET_KEY` | אותו דבר | אותו דבר |
-
-**המלצה: פרויקט Supabase נפרד ל-CI, לא הפרודקשן.** ה-E2E קונה, סורק ומממש
-שוברים; הרצה מול הפרודקשן תזהם את הנתונים האמיתיים בהזמנות בדיקה.
-
-אחרי שהסודות קיימים, אפשר להוסיף גם את `E2E (Playwright)` ל-required.
-
-זמן: ‏15 דקות, פלוס הקמת פרויקט Supabase ל-CI.
+Decide one branch to be both, and make the two agree. Leaving them different is
+the reason it is currently unclear whether pushing `main` deploys anything.
 
 ---
 
-## 3. סדר ביצוע ותלויות
+## 2. Require a pull request into the protected branch
 
-```
-2.1  required checks       ─┐
-2.3  require PR             ├─► 2.4  הסרת bypass   (רק אחרי ששלושתם עומדים)
-2.2  lint חוסם (סוכן main) ─┘
+`Settings` > `Rules` > `Rulesets` > `New ruleset` > `New branch ruleset`
 
-2.5  סודות CI  ──►  הוספת E2E ל-required   (עצמאי, בכל זמן)
-```
+- **Ruleset Name**: `protect-main`
+- **Enforcement status**: `Active` (not `Evaluate`; evaluate mode is what
+  produces the "Bypassed rule violations" line instead of a block)
+- **Target branches** > `Add target` > `Include default branch`, and add the
+  branch from step 1 by name if it is not the default
+- **Bypass list**: leave it EMPTY. An entry here is what let every push through.
 
-**אל תבצע את 2.4 ראשון.** הסרת ה-bypass לפני שהשערים מוגדרים משאירה אותך עם
-ענף שדורש PR בלי בדיקות שירוצו עליו, וזו כל העלות בלי שום תועלת.
+Then tick, under `Branch rules`:
+
+- [x] **Require a pull request before merging**
+  - Required approvals: `0` if working solo. The value is not the point; the
+    pull request is, because it is what gives the checks in step 3 something to
+    attach to and block.
+  - [x] Dismiss stale pull request approvals when new commits are pushed
+- [x] **Block force pushes**
+- [x] **Restrict deletions**
 
 ---
 
-## Revision
+## 3. Require the CI checks to pass
 
-| תאריך | שינוי |
-|---|---|
-| 2026-08-07 | נכתב. נמדד: ה-CI כבר מריץ את ארבעת השערים; ה-ruleset קיים ונעקף; `pnpm lint` נקי ולכן `continue-on-error` מיותר |
+Same ruleset, still under `Branch rules`:
+
+- [x] **Require status checks to pass**
+  - [x] Require branches to be up to date before merging
+  - `Add checks`, and add these four **by the exact name in the `name:` field of
+    `.github/workflows/ci.yml`**, not the job id:
+
+    | Add this check                    | What it runs                          |
+    | --------------------------------- | ------------------------------------- |
+    | `Diff-scoped lint gates`          | biome + tsc on the diff, then repo-wide `pnpm lint` and `pnpm type-check`, both blocking |
+    | `Typecheck (changed files)`       | `pnpm typecheck:changed`              |
+    | `Unit tests + money coverage floors` | `pnpm test:coverage`               |
+    | `Build`                           | `pnpm build`                          |
+
+A check only becomes selectable after it has reported on this repository at
+least once. If a name does not appear in the picker, push any branch, let CI
+run, and come back.
+
+**Do not add `E2E (Playwright)` yet.** It skips itself when
+`CI_SUPABASE_URL` is absent, and a required check that skips can never
+report success, so the PR stays unmergeable forever. Add it after step 4.
+
+---
+
+## 4. Repository secrets, which is what unblocks E2E
+
+`Settings` > `Secrets and variables` > `Actions` > `New repository secret`
+
+| Secret                     | Needed by                        |
+| -------------------------- | -------------------------------- |
+| `CI_SUPABASE_URL`          | E2E, Build                       |
+| `CI_SUPABASE_ANON_KEY`     | E2E, Build                       |
+| `CI_SUPABASE_SECRET_KEY`   | E2E, Build                       |
+| `SENTRY_ORG`               | source map upload (optional)     |
+| `SENTRY_PROJECT`           | source map upload (optional)     |
+| `SENTRY_AUTH_TOKEN`        | source map upload (optional)     |
+
+Point `CI_SUPABASE_*` at a **disposable** project, never production. The E2E job
+runs `pnpm seed:test`, which creates fixture users and catalogue rows.
+
+Once these exist, run CI once, confirm `E2E (Playwright)` reports rather than
+skips, then go back to step 3 and add it as a fifth required check.
+
+---
+
+## 5. Verify it actually blocks
+
+The point of this step is that steps 2 to 4 all look identical whether they
+worked or not until something is refused.
+
+```bash
+git checkout main
+git commit --allow-empty -m "probe: confirm branch protection refuses a direct push"
+git push origin main
+```
+
+Expected, and the whole objective of this file:
+
+```
+remote: error: GH006: Protected branch update failed for refs/heads/main.
+remote: error: Changes must be made through a pull request.
+```
+
+If it pushes instead, one of these is true: `Enforcement status` is `Evaluate`
+rather than `Active`, the bypass list is not empty, or the ruleset targets a
+branch that is not the one being pushed.
+
+Then undo the probe commit:
+
+```bash
+git reset --hard origin/main
+```

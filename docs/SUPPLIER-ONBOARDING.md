@@ -15,8 +15,6 @@ docs/ARCHITECTURE-SUPPLIER-PORTAL.md
 docs/ADMIN-USER-GUIDE.md
 docs/BUSINESS-MODEL.md
 docs/ARCHITECTURE-MOBILE-APP.md
-docs/SUPPORT-SLA-POLICY.md
-docs/SUPPLIER-QUALITY-PROGRAM.md
 ```
 
 ---
@@ -164,8 +162,7 @@ docs/ADMIN-USER-GUIDE.md
 | 2-3 | שיחת קצרה עם הספק: שאלות צוות קופה |
 | 7 | סיכום מימושים מול תלונות לקוח |
 
-תמיכה: הפנה לאדמין / `SUPPORT-SLA-POLICY.md` + `ARCHITECTURE-CUSTOMER-SUPPORT.md` לפי תפקיד.  
-איכות לאורך זמן: `SUPPLIER-QUALITY-PROGRAM.md`. סריקה באפ: `ARCHITECTURE-MOBILE-APP.md` §סריקה.
+תמיכה: הפנה לאדמין / `ARCHITECTURE-CUSTOMER-SUPPORT.md` לפי תפקיד.
 
 ---
 
@@ -174,4 +171,3 @@ docs/ADMIN-USER-GUIDE.md
 | תאריך | שינוי |
 |---|---|
 | 2026-08-10 | תהליך צירוף: מסמכים, הסכם, מערכת, הדרכת סריקה |
-| 2026-08-11 | קישורים ל-SLA, איכות ספקים, סריקה באפ |
