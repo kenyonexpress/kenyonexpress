@@ -30,7 +30,7 @@ docs/VENDOR-PAYOUT-SPEC.md
 
 | משטח | סיכון | הגנה עיקרית |
 |---|---|---|
-| Double redeem | מימוש כפול | `issued`→`used` אטומי |
+| Double redeem | מימוש כפול | `issued`→`redeemed` אטומי |
 | זיוף QR | קופון מזויף | HMAC/Ed25519 keyed |
 | שיתוף צילום | שימוש ע״י אחר | חד-פעמיות + מייל "אם לא אתם" |
 | Checkout abuse | כרטיסים גנובים | velocity + Cardcom + RL |
@@ -57,7 +57,7 @@ docs/VENDOR-PAYOUT-SPEC.md
 
 1. קבלת התראה → תיק `manual_review`.  
 2. אם voucher `issued` → freeze מיידי.  
-3. אם `used` → אין unwind אוטומטי; ראיות מימוש + DISPUTE.  
+3. אם `redeemed` → אין unwind אוטומטי; ראיות מימוש + DISPUTE.  
 4. אין מחיקת payments/orders.  
 5. פיזי אחרי payout → `supplier_debit` לפי PAYOUT.  
 
@@ -100,3 +100,4 @@ docs/VENDOR-PAYOUT-SPEC.md
 | תאריך | שינוי |
 |---|---|
 | 2026-08-11 | מפרט הונאה: משטחים, velocity, chargeback, review |
+| 2026-08-11 | יישור סטטוס מימוש ל-`redeemed` (פרוד 054) |
