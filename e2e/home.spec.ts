@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 // Relative, not the `@/` alias: no other spec uses the alias, and this import
 // only has to reach one dependency-free module.
-import { CONSENT_PREPAINT_SCRIPT } from '../src/lib/analytics/consent'
+import { CONSENT_PREPAINT_SCRIPT, CONSENT_WORDING_VERSION } from '../src/lib/analytics/consent'
 
 test.describe('homepage', () => {
   test('loads with RTL layout and the Hebrew locale', async ({ page }) => {
@@ -301,11 +301,20 @@ test.describe('homepage', () => {
     )
   })
 
+  /**
+   * The cookie carries the wording version the visitor decided against, and the
+   * snippet ignores anything older than the current one - that is the whole
+   * point of the version, so a reworded banner asks again. This test therefore
+   * has to write the CURRENT version rather than a literal: it was pinned at
+   * `granted.1`, the wording moved to 2, and from that moment the fixture
+   * described a visitor the app is required to ask again. It failed on a rule
+   * working exactly as designed.
+   */
   test('consent banner is hidden for a visitor who decided', async ({ context, page, baseURL }) => {
     await context.addCookies([
       {
         name: 'ke_consent',
-        value: 'granted.1',
+        value: `granted.${CONSENT_WORDING_VERSION}`,
         domain: new URL(baseURL as string).hostname,
         path: '/',
       },
@@ -391,8 +400,23 @@ test.describe('homepage', () => {
    *
    * The scroll is the test: without it the footer never enters the viewport and
    * the prefetches never happen, which is exactly why this was invisible.
+   *
+   * An asset under `/_vercel/` is NOT one of the app's assets. `<VercelAnalytics
+   * />` and `<SpeedInsights />` in `layout.tsx` inject
+   * `/_vercel/insights/script.js` and `/_vercel/speed-insights/script.js`, and
+   * those paths are answered by the platform's edge, not by any route in this
+   * repo - there is nothing to add here that would make them resolve. Against a
+   * local `pnpm start` they therefore 404 on every single run, and a test that
+   * is red on every run is a test nobody reads. Against a Vercel host the same
+   * 404 is a real defect (the platform is serving and still missed), so the
+   * exemption is scoped to where the platform is absent rather than dropped.
    */
-  test('reaching the footer costs no 404s', async ({ page }) => {
+  test('reaching the footer costs no 404s', async ({ page, baseURL }) => {
+    /** Reserved by the platform; no app route may live here. */
+    const PLATFORM_PREFIX = '/_vercel/'
+    const host = new URL(baseURL ?? 'http://localhost').hostname
+    const servedByVercel = /(^|\.)vercel\.app$|(^|\.)kenyonexpress\.co\.il$/.test(host)
+
     const failed: string[] = []
     page.on('response', (r) => {
       if (r.status() >= 400) failed.push(`${r.status()} ${new URL(r.url()).pathname}`)
@@ -403,7 +427,16 @@ test.describe('homepage', () => {
     // Prefetch is queued off the intersection observer, not awaited by anything.
     await page.waitForTimeout(3000)
 
-    expect(failed, failed.join(', ')).toEqual([])
+    const isPlatform = (entry: string) => entry.split(' ')[1]?.startsWith(PLATFORM_PREFIX) ?? false
+    const appFailures = failed.filter((entry) => !isPlatform(entry))
+    const platformFailures = failed.filter(isPlatform)
+
+    expect(appFailures, appFailures.join(', ')).toEqual([])
+    if (servedByVercel) {
+      expect(platformFailures, `${host} serves /_vercel/: ${platformFailures.join(', ')}`).toEqual(
+        [],
+      )
+    }
   })
 
   /**
@@ -427,6 +460,15 @@ test.describe('homepage', () => {
   }) => {
     await page.goto('/')
     const slider = page.locator('[data-hero-slider]')
+    // TWO heroes exist for the length of the streaming window, by design: the
+    // page renders the authored `<HeroSection />` as the Suspense fallback for
+    // `<CmsHero />`, so the initial HTML carries both and React drops the
+    // fallback when the boundary resolves (measured here: 2 nodes at `load`, 1
+    // within 500ms). `activeDot` reads an attribute, and `getAttribute` does
+    // NOT retry - it throws on the ambiguity the moment it sees it. Waiting for
+    // the count, which does retry, is what makes this test about the slider
+    // instead of about how loaded the machine is.
+    await expect(slider).toHaveCount(1)
     await expect(slider).toBeVisible()
 
     const activeDot = () => slider.locator('button[aria-current="true"]').getAttribute('aria-label')
