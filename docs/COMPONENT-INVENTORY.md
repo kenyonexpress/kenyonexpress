@@ -1,8 +1,51 @@
 # Component Inventory
 
-Read-only scan of `src/components`. Every `.tsx` component is listed, grouped by subdirectory.
+Status: **BINDING (inventory)** · עודכן: 2026-08-12
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+מודל כסף: No Escrow (לא רלוונטי; רשימת קומפוננטות).
 
-Judgements are based on the actual file contents (with `file:line` references where useful). The token system lives in `src/app/globals.css` `@theme` (brand `#fed700`, heading `#333e48`, etc.). Any hardcoded hex or arbitrary Tailwind value (`[#...]` or `[NNpx]`) counts as NOT token compliant. The app renders `dir="rtl"`, so physical direction utilities (`ml-`, `mr-`, `pl-`, `pr-`, `left-`, `right-`, `text-left`, `text-right`, `border-l`, `border-r`) are RTL risks; logical / symmetric utilities are safe.
+---
+
+## 1. החלטה
+
+| # | הכרעה |
+|---|---|
+| I1 | 72 קומפוננטות `.tsx` (6 shims) |
+| I2 | 33 לא token-compliant (hex/arbitrary) |
+| I3 | 7 RTL risky (physical ml/mr/left/right) |
+| I4 | tokens ב-globals.css @theme |
+
+---
+
+## 2. חלופות שנדחו
+
+| חלופה | נימוק |
+|---|---|
+| refactor all at once | scope |
+| ignore RTL in admin | P2 still keyboard |
+| Inter fallback | FAIL gate |
+
+---
+
+## 3. סכמת DB
+
+**אין DDL.** inventory read-only של `src/components`.
+
+---
+
+## 4. מקרי קצה
+
+| E1 | hardcoded #fed700 vs token | swap to brand |
+| E2 | border-l in BenefitBar | RTL risk |
+
+---
+
+## 5. פתוחות
+
+| O1 | unused components cleanup | post-GA | 2026-08-12 |
+
+---
 
 ## Summary
 
@@ -134,3 +177,12 @@ Judgements are based on the actual file contents (with `file:line` references wh
 ## src/components/features and src/components/shared
 
 Both contain only a `.gitkeep` file. No components.
+
+---
+
+## Revision
+
+| תאריך | שינוי |
+|---|---|
+| 2026-08-12 | BINDING batch-2: החלטה, חלופות, DB, קצה, פתוחות |
+
