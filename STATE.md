@@ -16,7 +16,7 @@ arch/docs-batch-2
 .
 
 ## המשך מ:
-תור סגור 50/50 (batch-2). הרשימה בבקשת המשתמש נקטעה אחרי פריט 4; פריטים 5-50 הושלמו אוטומטית לפי תלות commerce→platform (מתועד בהחלטות). **הבא לביצוע: #1**.
+תור סגור 50/50 (batch-2). הרשימה בבקשת המשתמש נקטעה אחרי פריט 4; פריטים 5-50 הושלמו אוטומטית לפי תלות commerce→platform (מתועד בהחלטות). **הבא לביצוע: #5**.
 
 1. ARCHITECTURE-CHECKOUT-FLOW.md — מפת מצבים cart→coupon_redeemed
 2. ARCHITECTURE-CARDCOM-WEBHOOKS.md — חתימה, idempotency, DLQ, double charge
@@ -71,6 +71,8 @@ arch/docs-batch-2
 (סוף תור: אחרי #50 עדכן INDEX + tag הערה ב-STATE)
 
 ## Last Completed
+batch-2 #1–#4: CHECKOUT-FLOW, CARDCOM-WEBHOOKS, COUPON-LIFECYCLE, CART-GUEST.
+
 מעבר ל-
 arch/docs-batch-2
 (מ-
@@ -80,7 +82,7 @@ main
 ). תור 50 נסגר ב-STATE.
 
 ## In Progress
-docs-batch-2 #1 ARCHITECTURE-CHECKOUT-FLOW.md
+docs-batch-2 #5 ARCHITECTURE-PRICING-RULES.md
 
 ## Blocking Issues
 - בקשת המשתמש ל-50 מסמכים נקטעה אחרי פריט 4; תור 5-50 הושלם אוטומטית (ראה החלטות)
@@ -91,7 +93,7 @@ docs-batch-2 #1 ARCHITECTURE-CHECKOUT-FLOW.md
 - P0 integrity: TESTING-CICD 5% default; DDL-FIXES Escrow; DB-SCHEMA escrow_held; MASTER-CHECKOUT held; cardcom-payments skill held
 
 ## Next Task
-docs-batch-2 #1: ARCHITECTURE-CHECKOUT-FLOW.md → commit+push → #2
+docs-batch-2 #5: ARCHITECTURE-PRICING-RULES.md
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
