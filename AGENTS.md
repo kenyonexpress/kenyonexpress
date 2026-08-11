@@ -78,5 +78,5 @@ set by law, not by an admin, and hardcoding them is correct:
   distance-selling cancellation fee: the lower of 5% or ₪100.
 - `DEFAULT_VAT_PERCENT` (`src/lib/invoices/document.ts`), VAT at 18%.
 
-The CI gate `scripts/check-hardcoded-percentages.mjs` enforces the rule and
+The CI gate `scripts/no-hardcoded-fees.mjs` enforces the rule and
 allowlists exactly those two.

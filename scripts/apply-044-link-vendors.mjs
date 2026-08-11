@@ -21,12 +21,27 @@ const { data: vendors, error: vErr } = await admin
   .is('deleted_at', null)
 if (vErr) throw new Error(vErr.message)
 
+// A vendor with no rate stops the mirror instead of being assigned one. This
+// line read `?? 10` until 2026-08-11, which would have written a 10% commission
+// that no admin ever chose onto every vendor missing a rate -- the same defect
+// commit 8819c5d removed from the wp-import projector. Per AGENTS.md there is
+// no default and no fallback: a missing percentage is an error to be fixed in
+// the admin, not a number for a script to invent.
+const unrated = vendors.filter((v) => v.commission_rate == null)
+if (unrated.length > 0) {
+  throw new Error(
+    `${unrated.length} vendor(s) have no commission_rate: ${unrated
+      .map((v) => v.business_name)
+      .join(', ')}. Set each rate in /admin/vendors and re-run; this script will not invent one.`,
+  )
+}
+
 const mirrored = vendors.map((v) => ({
   id: v.id,
   name: v.business_name,
   contact_email: v.contact_email,
   contact_phone: v.contact_phone,
-  commission_percent: v.commission_rate ?? 10,
+  commission_percent: v.commission_rate,
   notes: 'שוקף מ-public.vendors (044); ישות קנונית עד איחוד 036',
 }))
 const { error: upErr } = await admin
