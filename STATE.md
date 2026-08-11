@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-11 (mobile/testing-qa/observability docs queue)
+Updated: 2026-08-11 (docs integrity INDEX)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -10,29 +10,28 @@ kenyonexpress
 .
 
 ## Last Completed
-תור docs סגור (commit+push לכל קובץ):
-1. docs/ARCHITECTURE-MOBILE-APP.md (496112e)
-2. docs/ARCHITECTURE-TESTING-QA.md (7962993)
-3. docs/ARCHITECTURE-OBSERVABILITY.md (7d71f67)
-4. docs/MASTER-INDEX.md blurbs (ccfc62e)
+1. תור MOBILE/TESTING-QA/OBSERVABILITY + MASTER-INDEX (SHAs ב-History למטה)
+2. docs/INDEX.md integrity audit (b8e770a): fix table P0–P3, orphans=5, WP stale=5, money contradictions=13
+3. STATE סגירה
 
 ## In Progress
-docs integrity audit → docs/INDEX.md
+nothing (closed queue)
 
 ## Blocking Issues
 - refs/electro.madrasthemes.com-DESIGN.md חסר (D01); baseline = DESIGN-MEASURED.md + ELECTRO_HERO
 - BrandsCarousel: נתיב מיועד src/components/store/BrandsCarousel.tsx עדיין לא קיים בקוד
 - cursor-ide-browser MCP לא יציב; מדידות Playwright
 - השקה: 10 דילי seed missing; Cardcom prod; Vercel session
-- BUSINESS-MODEL-RULES.md לא קיים; האודיט מול BUSINESS-MODEL.md + CONTRADICTIONS + PRICING-RULES
+- P0 integrity: TESTING-CICD 5% default; DDL-FIXES Escrow; DB-SCHEMA escrow_held; MASTER-CHECKOUT held; cardcom-payments skill held
 
 ## Next Task
-Commit docs/INDEX.md (integrity) ואז סגירת STATE
+תיקוני P0 מ-docs/INDEX.md (או שערי LAUNCH)
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
 
 ## החלטות שהתקבלו אוטומטית
+- **2026-08-11 BUSINESS-MODEL-RULES path:** הקובץ `BUSINESS-MODEL-RULES.md` לא קיים. אודיט שלמות מול `docs/BUSINESS-MODEL.md` + `docs/CONTRADICTIONS.md` + `docs/ARCHITECTURE-PRICING-RULES.md`. תועד ב-`docs/INDEX.md`.
 - **2026-08-11 shell intent override:** המשתמש ביקש `cd ~/workspace/kenyonexpress` ו-`git checkout -b arch/docs-lifecycle`. הסוכן עבד רק ב-
 /Users/ofir/kenyonexpress-web/ke-arch
 על הענף הקיים
@@ -1293,3 +1292,11 @@ ke-arch
 - docs/ARCHITECTURE-SEO-PERFORMANCE.md (`977b613`)
 - docs/MASTER-INDEX.md (`d1b13d0`)
 - shell intent: ke-arch existing arch/docs-lifecycle (not ~/workspace -b)
+
+### 2026-08-11 : mobile + testing-qa + observability + integrity INDEX
+- docs/ARCHITECTURE-MOBILE-APP.md (`496112e`)
+- docs/ARCHITECTURE-TESTING-QA.md (`7962993`)
+- docs/ARCHITECTURE-OBSERVABILITY.md (`7d71f67`)
+- docs/MASTER-INDEX.md (`ccfc62e`)
+- docs/INDEX.md (`b8e770a`): contradictions=13, WP/PHP stale=5, orphans=5
+- BUSINESS-MODEL-RULES.md missing → audit vs BUSINESS-MODEL + CONTRADICTIONS + PRICING-RULES
