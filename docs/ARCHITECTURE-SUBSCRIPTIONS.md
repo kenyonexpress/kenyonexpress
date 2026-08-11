@@ -302,14 +302,49 @@ Admin יכול לבטל/להשהות עם audit.
 
 ---
 
-## 8. כסף לספק (אם רלוונטי)
+## 8. Ledger ופיצול כסף (פר מחזור)
 
-| מקרה | התנהגות |
+כל חיוב מנוי מוצלח נרשם כמו הזמנה רגילה + שורות ledger. אין מקור אמת מקביל בטוקן Cardcom.
+
+### 8.1 רצף אחרי ChargeToken OK
+
+```text
+invoice.status = paid
+  → INSERT orders (type/source = subscription) + order_items
+  → snapshot: amount_agorot, platform_percent, billing_period
+  → settlement_events:
+       charge_settled (platform + supplier_due אם יש ספק)
+  → אם ארנק הוחל על החיוב: fn_wallet_transfer (spend) עם
+       idempotency = sub_spend:{invoice_id}
+  → אופציונלי cashback: כמו הזמנה רגילה, key = cashback:sub:{invoice_id}
+```
+
+### 8.2 כללים
+
+| כלל | פירוט |
 |---|---|
-| מנוי פלטפורמה טהור (תוכן שלנו) | אין payout לספק |
-| מנוי לשירות ספק | פר חיוב: snapshot `platform_percent`; יתרה לספק לפי `PAYOUT-ARCHITECTURE.md` אם מוגדר כפיזי/שירות משולם לספק |
+| יחידה | אגורות `bigint` בלבד (אחרי money-integer; עד אז המרה מפורשת בשרת) |
+| Snapshot | `platform_percent` מצולם **פר invoice**, לא נמשך חי מהמוצר לחיובים ישנים |
+| קופון | מנוי לא מנפיק voucher בעסק במפרט זה |
+| Payout | רק אם המנוי משלם לספק שירות; לפי `PAYOUT-ARCHITECTURE.md` |
+| Refund מחזור | Cardcom refund + `supplier_debit` אם כבר שולם לספק; invoice → `refunded` |
+| Idempotency | ledger keys נגזרים מ-`subscription_invoices.id` / `idempotency_key` |
 
-אין לערבב עם No Escrow של קופון.
+### 8.3 כשל אחרי חיוב Cardcom לפני ledger
+
+כמו checkout: reconcile מול Cardcom; השלמת order/invoice עם אותו מפתח; **לא** ChargeToken שני לאותה תקופה.
+
+דיאגרמה:
+
+```text
+Cardcom ChargeToken (period P)
+        │
+        ▼
+ subscription_invoices(P) paid ──► orders + settlement_events
+        │
+        ├─ wallet spend? ──► fn_wallet_transfer
+        └─ supplier due? ──► payout eligibility (T+N) אם רלוונטי
+```
 
 ---
 
@@ -324,7 +359,7 @@ Admin יכול לבטל/להשהות עם audit.
 | Alert | spike ב-`past_due` / כשל cron המוני |
 | Idempotency | חובה בכל ChargeToken למנוי |
 
-Threat model קצר לפני קוד: גניבת טוקן מ-DB, double-charge, ביטול שלא נאכף ב-cron.
+Threat model קצר לפני קוד: גניבת טוקן מ-DB, double-charge, ביטול שלא נאכף ב-cron, ledger בלי idempotency.
 
 ---
 
@@ -348,7 +383,7 @@ Threat model קצר לפני קוד: גניבת טוקן מ-DB, double-charge, �
 1. Threat model + אישור עו״ד לניסוח ביטול
 2. מיגרציית subscriptions + invoices (MCP)
 3. הצטרפות + Token + מיילים
-4. Cron חיוב + idempotency + retry
+4. Cron חיוב + idempotency + retry + ledger posts
 5. UI ביטול/הקפאה/עדכון כרטיס
 6. דגל SUBSCRIPTIONS_ENABLED בפרוד
 7. Soft-open מנויים נפרד מקופונים
@@ -364,6 +399,7 @@ Threat model קצר לפני קוד: גניבת טוקן מ-DB, double-charge, �
 - [ ] hard decline → אין לולאת חיוב אינסופית  
 - [ ] ביטול מונע את החיוב הבא  
 - [ ] טוקן לא ב-client bundle / לוגים  
+- [ ] invoice paid ⇒ order + `charge_settled` (או מתועד כפלטפורמה-טהור)  
 - [ ] אין שפת Escrow  
 - [ ] ניסוח צרכן אושר ע״י עו״ד לפני פרסום  
 - [ ] `SUBSCRIPTIONS_ENABLED` נפרד מ-`CHECKOUT_ENABLED` או מתועד כמשותף  
@@ -384,3 +420,4 @@ Threat model קצר לפני קוד: גניבת טוקן מ-DB, double-charge, �
 | תאריך | שינוי |
 |---|---|
 | 2026-08-11 | ארכיטקטורת מנוי חודשי מלאה: Token, מחזור, retry, ביטול/הקפאה, זכויות צרכן |
+| 2026-08-11 | §8 Ledger: settlement/wallet/payout per billing cycle |
