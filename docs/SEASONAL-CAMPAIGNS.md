@@ -1,26 +1,49 @@
 # קמפיינים עונתיים (תוצר/תפעול)
 
-באנרים מתוזמנים, קולקציות זמניות, ו-countdown לחגים ישראליים ול-Black Friday.
-
-Status: **PLAN** · עודכן: 2026-08-10  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+Status: **PLAN** · עודכן: 2026-08-12
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+מודל כסף: No Escrow; קמפיין לא יוצר held.
 
-**מקור מחייב (ארכיטקטורה):** לא משכפלים הכרעות S1-S7 כאן.
+---
 
-```
-docs/ARCHITECTURE-SEASONAL-CAMPAIGNS.md
-```
+## 1. החלטה
 
-מסמכים נוספים:
+| # | הכרעה |
+|---|---|
+| S1 | Asia/Jerusalem שעון |
+| S2 | campaign_banner + collection |
+| S3 | countdown משרת |
+| S4 | אין שינוי platform_percent מבאנר |
 
-```
-docs/ARCHITECTURE-PRICING-RULES.md
-docs/ARCHITECTURE-EMAIL-TEMPLATES.md
-docs/MARKETING-LAUNCH.md
-docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
-docs/CONTRADICTIONS.md
-```
+---
+
+## 2. חלופות שנדחו
+
+| חלופה | נימוק |
+|---|---|
+| countdown מזויף | LEGAL/אמון |
+| מחיר מבצע אחרי ends_at | bug |
+| Escrow copy בבאנר | אסור |
+
+---
+
+## 3. סכמת DB
+
+**יעד:** campaign_banner, campaign_collection; אין DDL כאן.
+
+---
+
+## 4. מקרי קצה
+
+| E1 | באנר מחוץ לחלון | hidden |
+| E2 | חפיפת priority | higher wins |
+
+---
+
+## 5. פתוחות
+
+| O1 | 410 vs redirect post-campaign | SEO | 2026-08-12 |
 
 ---
 
@@ -101,3 +124,12 @@ docs/CONTRADICTIONS.md
 | תאריך | שינוי |
 |---|---|
 | 2026-08-10 | שכבת תפעול/תוצר מעל ARCHITECTURE-SEASONAL-CAMPAIGNS |
+
+---
+
+## Revision
+
+| תאריך | שינוי |
+|---|---|
+| 2026-08-12 | BINDING batch-2: החלטה, חלופות, DB, קצה, פתוחות |
+
