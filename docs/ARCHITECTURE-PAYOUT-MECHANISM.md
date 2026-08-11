@@ -2,8 +2,8 @@
 
 תשלום יתרת ספק על **מוצר פיזי בלבד**: זכאות T+N, באצ', אישור אדמין, ביצוע Cardcom `TransferFromDigitalBank` או CSV fallback.
 
-Status: **BINDING** · עודכן: 2026-08-12 · QA: PASS  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #20/50  
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
 מודל כסף: **No Escrow**. אין held/נאמן/J5 לקופון. **קופון: אין payout** מהפלטפורמה (יתרה נגבית בבית העסק).
@@ -29,23 +29,9 @@ docs/ARCHITECTURE-FRAUD-PREVENTION.md
 docs/GAPS-CODE-VS-DOCS.md
 ```
 
-סוגר G1 (מסך payouts): בונים על `settlement_events` כמקור סכום. טבלת ריצה קנונית לפי PAYOUT-ARCHITECTURE (`payout_statements` / באצ' מקביל). **לא** מחיים את מנוע `generate_payout_statement` הישן מ-026.
-
 ---
 
-## 0. המלצה אחת (מחייבת)
-
-**קנוני:** Cardcom `TransferFromDigitalBank` אחרי אישור אדמין (T+N, מינימום, `supplier_debit`, reconcile).
-
-**Fallback:** ייצוא CSV + העברה בנקאית ידנית מתוך באצ' מאושר, עם הזנת `payment_reference`.
-
-סליקת לקוח נשארת Low Profile / Interface לפי הקוד החי; payout לספק הוא שכבה נפרדת.
-
-ארנק קאשבק משתמש **אינו** חלק מ-payout ספק.
-
----
-
-## 1. הכרעות
+## 0. החלטה (מחייבת)
 
 | # | הכרעה |
 |---|---|
@@ -58,12 +44,52 @@ docs/GAPS-CODE-VS-DOCS.md
 | PY7 | אחרי payout: החזר יוצר `supplier_debit` ומתקזז בבאצ' הבא; לא מוחקים חוב. |
 | PY8 | אין Escrow/held/J5. קופון מחוץ לצינור. |
 | PY9 | כל סכום באגורות integer; אין float. |
+| PY10 | סליקת לקוח נשארת Low Profile / Interface; payout לספק שכבה נפרדת. |
+
+**קנוני:** Cardcom `TransferFromDigitalBank` אחרי אישור אדמין (T+N, מינימום, `supplier_debit`, reconcile).
+
+**Fallback:** ייצוא CSV + העברה בנקאית ידנית מתוך באצ' מאושר, עם הזנת `payment_reference`.
+
+ארנק קאשבק משתמש **אינו** חלק מ-payout ספק.
 
 ---
 
-## 2. מתי משולם (טריגר)
+## 1. חלופות שנדחו
 
-### 2.1 שעון כסף
+| חלופה | למה נדחתה |
+|---|---|
+| Multi-Account Cardcom בזמן checkout (פיצול מיידי לספק) | מורכבות תפעולית; snapshot + payout batch מספיק. |
+| Escrow / held-until-redeem לקופון | סותר No Escrow; קופון לא עובר בצינור payout. |
+| payout אוטומטי בלי אישור אדמין | סיכון fraud / שגיאת באצ'; אדמין חובה. |
+| חישוב net מ-`products.platform_percent` החי | משנה היסטוריה; snapshot בלבד. |
+| תשלום מיידי ב-`paid` (בלי T+N) | חשיפה ל-chargeback/refund; T+3/T+14 נדרש. |
+| מחיקת `supplier_debit` אחרי החזר | מאבד audit; קיזוז בבאצ' הבא בלבד. |
+
+---
+
+## 2. סכמת DB (קיים / יעד; אין DDL חדש במסמך)
+
+| ישות | תפקיד |
+|---|---|
+| `settlement_events` | ledger; `kind`, `supplier_due_agorot`, `idempotency_key` UNIQUE |
+| `order_items` | `settlement_status`, `supplier_immediate_agorot`, snapshot amounts |
+| `suppliers` | `payout_hold_business_days`, `min_payout_ils`, `status` |
+| `supplier_bank_accounts` | פרטי בנק; RLS אדמין; חשבון פעיל מאומת אחד |
+| `payout_batches` / statements | תקופה, סטטוסים, gross/debit/net באגורות |
+| ריצת ספק | gross / debit / net, `payment_reference`, UNIQUE על `settlement_event_id` |
+
+```text
+net_agorot = gross_agorot - debit_agorot
+idempotency_key על באצ' ועל ריצת ספק
+```
+
+אין DDL חדש במסמך זה. יישור ל-PAYOUT-ARCHITECTURE ומיגרציות pending.
+
+---
+
+## 3. מתי משולם (טריגר)
+
+### 3.1 שעון כסף
 
 | תנאי | פירוט |
 |---|---|
@@ -80,7 +106,7 @@ payout_available_at =
 
 ברירת מחדל: **T+3 ימי עסקים**. ספק חדש (שלושת החודשים הראשונים): **T+14** פר ספק.
 
-### 2.2 שער מימוש משלוח
+### 3.2 שער מימוש משלוח
 
 בנוסף ל-T+N, השורה לפחות ב:
 
@@ -90,7 +116,7 @@ shipped | ready_for_pickup | fulfilled
 
 אישור משלוח אינו מחליף את T+N; הוא מונע תשלום על הזמנה ששולמה ועדיין לא יצאה.
 
-### 2.3 מתי רץ המנוע
+### 3.3 מתי רץ המנוע
 
 ```text
 /api/cron/payouts
@@ -102,9 +128,9 @@ shipped | ready_for_pickup | fulfilled
 
 ---
 
-## 3. איך משולם (ביצוע)
+## 4. איך משולם (ביצוע)
 
-### 3.1 קנוני (TransferFromDigitalBank)
+### 4.1 קנוני (TransferFromDigitalBank)
 
 ```text
 cron → pending_approval
@@ -114,7 +140,7 @@ cron → pending_approval
   → settlement_events.kind = payout_settled
 ```
 
-### 3.2 Fallback (CSV)
+### 4.2 Fallback (CSV)
 
 ```text
 cron → pending_approval
@@ -126,33 +152,6 @@ cron → pending_approval
   → payout_settled על השורות
 ```
 
-| שלב | אחריות |
-|---|---|
-| יצירת באצ' | cron |
-| אישור / דחייה | admin |
-| Transfer / CSV | מערכת או אדם+בנק |
-| סימון paid | admin / reconcile (אסמכתה חובה ב-CSV path) |
-
----
-
-## 4. סכימה (אגורות): עקרונות
-
-ישויות ליבה (שמות מדויקים לפי PAYOUT-ARCHITECTURE / מיגרציות חיות):
-
-| ישות | תפקיד |
-|---|---|
-| `supplier_bank_accounts` | פרטי בנק; RLS אדמין; חשבון פעיל מאומת אחד |
-| באצ' (`payout_batches` / statements) | תקופה, סטטוסים, סכומי gross/debit/net באגורות |
-| ריצת ספק | gross / debit / net, סטטוס, `payment_reference` |
-| שורות | קישור ל-`settlement_event_id` UNIQUE (אין תשלום כפול) |
-
-```text
-net_agorot = gross_agorot - debit_agorot
-idempotency_key על באצ' ועל ריצת ספק
-```
-
-אסור לשלם `net <= 0` או מתחת ל-`min_payout_agorot`.
-
 ---
 
 ## 5. אלגוריתם באצ' (cron)
@@ -160,7 +159,7 @@ idempotency_key על באצ' ועל ריצת ספק
 לכל ספק פעיל שאינו חסום:
 
 ```text
-1. אסוף charge_settled זכאים (סעיף 2)     → gross
+1. אסוף charge_settled זכאים (סעיף 3)     → gross
 2. אסוף supplier_debit שלא קוזזו         → debit
 3. net = gross - debit
 4. אם אין בנק מאומת / חסום / net < min / net <= 0
@@ -179,20 +178,14 @@ idempotency_key על באצ' ועל ריצת ספק
 
 | יכולת | פירוט |
 |---|---|
-| רשימת באצ'ים | תקופה, סטטוס, ברוטו/קיזוז/נטו ב-₪ מתצוגת אגורות |
+| רשימת באצ'ים | תקופה, סטטוס, ברוטו/קיזוז/נטו ב-₪ |
 | פירוט ספק | שורות עד הזמנה; 4 ספרות אחרונות של חשבון |
-| אישור | שערים: בנק מאומת, לא חסום, net>0, אין dispute פתוח, בדיקת refund מאז הלילה |
-| CSV / Transfer | לפי מצב המערכת; paid דורש אסמכתה או reconcile |
-
-| תפקיד | יכולת |
-|---|---|
-| admin | אישור, ייצוא/Transfer, mark paid/failed |
-| support | קריאה בלבד |
-| ספק | רואה ריצות שלו בפורטל; לא פרטי בנק של אחרים |
+| אישור | שערים: בנק מאומת, לא חסום, net>0, אין dispute פתוח |
+| CSV / Transfer | לפי מצב המערכת; paid דורש אסמכתה |
 
 ---
 
-## 7. Edge cases
+## 7. מקרי קצה
 
 | מקרה | התנהגות |
 |---|---|
@@ -203,6 +196,9 @@ idempotency_key על באצ' ועל ריצת ספק
 | מתחת לסף | `rolled_over`; אפס שורות |
 | בלי בנק מאומת | skipped; לא חוסם redeem קופונים |
 | קופון ברשימה | reject לפי PY1; אין מסלול Escrow |
+| TransferFromDigitalBank כשל | `payout_failed`; retry; לא double-pay |
+| duplicate cron run | idempotency על באצ' + event |
+| dispute פתוח על שורה | exclude מבאצ' עד סגירה |
 
 ---
 
@@ -224,21 +220,29 @@ idempotency_key על באצ' ועל ריצת ספק
 
 ## 9. Acceptance
 
-- [ ] באצ' עם idempotency יציב  
-- [ ] רק פיזי + T+N + שער משלוח  
-- [ ] TransferFromDigitalBank מתועד כקנוני; CSV כ-fallback  
-- [ ] אישור אדמין חובה לפני יציאת כסף  
-- [ ] החזר אחרי paid → debit בבאג' הבא  
-- [ ] ספק חסום לא משולם  
-- [ ] קופון: 0 שורות payout  
-- [ ] אין float; No Escrow מפורש  
+- [ ] באצ' עם idempotency יציב
+- [ ] רק פיזי + T+N + שער משלוח
+- [ ] TransferFromDigitalBank מתועד כקנוני; CSV כ-fallback
+- [ ] אישור אדמין חובה לפני יציאת כסף
+- [ ] החזר אחרי paid → debit בבאג' הבא
+- [ ] קופון: 0 שורות payout
+- [ ] אין float; No Escrow מפורש
 
 ---
 
-## 10. Revision
+## 10. פתוחות
+
+| ID | שאלה | ברירת מחדל |
+|---|---|---|
+| Q-PY-SHIP | האם `delivered` חובה מעבר ל-`shipped`? | לא; `shipped` מספיק |
+| Q-PY-NEW | T+14 לספק חדש: 3 חודשים קלנדריים? | כן |
+| Q-PY-TABLE | שם טבלת באצ' סופי: `payout_batches` vs statements | לפי PAYOUT-ARCHITECTURE |
+
+---
+
+## 11. Revision
 
 | תאריך | שינוי |
 |---|---|
 | 2026-08-10 | מסמך מחייב: T+N + באצ' + CSV + edge cases |
-| 2026-08-12 | batch-2 #20: רענון BINDING על `arch/docs-batch-2`; No Escrow מאושר |
-| 2026-08-12 | batch-2 #20 pass-2: TransferFromDigitalBank + CSV; פיזי בלבד; ללא Escrow |
+| 2026-08-12 | batch-2: BINDING template; חמשת סעיפי חובה; No Escrow |
