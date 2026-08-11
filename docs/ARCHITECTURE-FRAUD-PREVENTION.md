@@ -1,21 +1,28 @@
 # ארכיטקטורה: מניעת הונאה
 
-מימוש כפול, צילומי מסך QR, chargebacks, בדיקות velocity, וחסימת קופון.
+מימוש כפול, צילומי מסך QR, בדיקות velocity, chargebacks, והקפאת קופון (freeze).
 
-Status: **BINDING** · עודכן: 2026-08-03  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+Status: **BINDING** · עודכן: 2026-08-12  
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #12/50  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
 מסמכים קשורים:
 
 ```
+docs/ARCHITECTURE-COUPON-LIFECYCLE.md
 docs/ARCHITECTURE-COUPON-REDEMPTION.md
+docs/ARCHITECTURE-SUPPLIER-REDEMPTION.md
+docs/ARCHITECTURE-REFUNDS-DISPUTES.md
 docs/ARCHITECTURE-ADMIN-DASHBOARD.md
 docs/ARCHITECTURE-CUSTOMER-SUPPORT.md
+docs/ARCHITECTURE-TRUST-SAFETY.md
 docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
+docs/CONTRADICTIONS.md
+docs/BUSINESS-MODEL.md
 ```
 
-עקרון: מניעת כפילות ב-**DB אטומי**. Rate limits על כסף: **fail-closed**.
+עקרון: מניעת כפילות ב-**DB אטומי**. Rate limits על כסף: **fail-closed**.  
+מודל כסף: **No Escrow**. Chargeback/freeze לא "משחררים held" לספק.
 
 ---
 
@@ -23,7 +30,7 @@ docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 
 | # | הכרעה |
 |---|---|
-| F1 | קופון `issued` → `redeemed` פעם אחת. Replay → `already_used` בלי side effects כספיים. |
+| F1 | קופון `issued` → `redeemed` פעם אחת. Replay → `already_redeemed` בלי side effects כספיים. |
 | F2 | אימות QR: חתימה + ספק תואם + תוקף + סטטוס. |
 | F3 | צילום מסך לא נמנע ב-DRM; ההגנה היא חד-פעמיות + התראת בעלים. |
 | F4 | Chargeback לא מוחק היסטוריה; תור `manual_review`. |
@@ -33,18 +40,18 @@ docs/ARCHITECTURE-LEGAL-COMPLIANCE.md
 
 ---
 
-## 1. מימוש כפול
+## 1. מימוש כפול (double redeem)
 
 ```text
-POST redeem (supplier JWT)
+POST redeem (supplier JWT + PIN session אם נדרש)
   → membership active
   → BEGIN
       SELECT voucher FOR UPDATE
-      UPDATE … WHERE status='issued'  -- rowcount 0 → already_used
+      UPDATE … WHERE status='issued'  -- rowcount 0 → already_redeemed
       INSERT redemption audit
       -- אין ledger release לקופון
   → COMMIT
-  → enqueue coupon_redeemed
+  → enqueue voucher_redeemed
 ```
 
 | הגנה | פרט |
@@ -53,6 +60,9 @@ POST redeem (supplier JWT)
 | Conditional update | רק `issued` |
 | Idempotency | מפתח ניסיון יציב |
 | Wrong supplier | נראה כ-`not_found` חיצונית |
+| Burst `already_redeemed` | התראת ops (velocity) |
+
+שני מכשירים / שני עובדים במקביל: הצלחה אחת בלבד. אין תשלום כפול לספק ואין גבייה כפולה מהלקוח דרך הפלטפורמה.
 
 ---
 
@@ -62,51 +72,66 @@ POST redeem (supplier JWT)
 |---|---|
 | חד-פעמיות | §1 |
 | תוקף | `expires_at` |
-| חתימה | בלי `VOUCHER_QR_SECRET` אי אפשר לזייף |
-| התרעה | `coupon_redeemed` לבעלים: "אם לא אתם, פנו מיד" |
-| Wallet | void אחרי redeem/refund |
+| חתימה | בלי מפתח חתימה אי אפשר לזייף מטען תקף |
+| התרעה | `voucher_redeemed` לבעלים: "אם לא אתם, פנו מיד" |
+| Wallet / UI | אחרי redeem/refund השובר לא מוצג כבר־לשימוש |
 
-אין להבטיח "QR שלא ניתן לצילום".
+אין להבטיח "QR שלא ניתן לצילום". צילום מסך של חבר שעדיין `issued` הוא שיתוף לגיטימי מבחינת קריפטו; אחרי redeem הראשון, השני נכשל.
 
----
+סיכונים נלווים:
 
-## 3. Chargebacks
-
-1. היסטוריה לא נמחקת.  
-2. מקור אמת: `payments` + orders + vouchers.  
-3. אין auto-refund מלא ברגע ההודעה.  
-4. אם `issued` → **חסימת קופון** (freeze) עד החלטה.  
-5. אם `redeemed` → אין ביטול מימוש אוטומטי; טיפול ידני.
-
-ראיות: webhook events, timeline voucher, scan log, IP truncated, audit.
+- שיתוף קוד לפני redeem → מי שמגיע ראשון לספק מנצח; זה סיכון מוצר, לא באג.
+- Cross-supplier אותו code → flag שיתוף / enumeration (לוג).
 
 ---
 
-## 4. Velocity checks
+## 3. Velocity checks
 
 | בדיקה | מפתח | פעולה בסף |
 |---|---|---|
 | Checkout attempts | user + IP | fail-closed / delay |
 | Redeem failures | supplier + member / IP | lockout קצר |
+| PIN failures | member / device | lockout + audit |
 | כרטיסים שונים למשתמש חדש | user_id | manual_review |
-| Burst `already_used` | voucher / supplier | התראת ops |
+| Burst `already_redeemed` | voucher / supplier | התראת ops |
 | Cross-supplier אותו code | code hash | flag שיתוף |
 | הרשמות + רכישות מיידיות (referral abuse) | IP / device | דחיית בונוס |
+| Refund storms | user + payment | תור review |
 
-כל התראה נכנסת ל-`manual_review_cases` או `security_events`.
+כל התראה נכנסת ל-`manual_review_cases` או `security_events`.  
+סף מדויק: קונפיג תפעולי; שינוי סף לא דורש שינוי מודל.
 
 ---
 
-## 5. חסימת קופון
+## 4. Chargebacks
+
+1. היסטוריה לא נמחקת.  
+2. מקור אמת: `payments` + orders + vouchers + scan log.  
+3. אין auto-refund מלא ברגע ההודעה.  
+4. אם `issued` → **הקפאת קופון** (freeze) עד החלטה.  
+5. אם `redeemed` → אין ביטול מימוש אוטומטי; טיפול ידני / dispute.  
+6. No Escrow: אין אירוע release לספק על מקדמת קופון.
+
+ראיות לתור: webhook events, timeline voucher, scan log, IP truncated, audit, membership של הסורק.
+
+---
+
+## 5. הקפאת קופון (coupon freeze)
 
 | מצב | משמעות | מי |
 |---|---|---|
-| `freeze` / `blocked_redeem` | לא ניתן לסרוק; עדיין לא refund | admin / dispute job |
-| `cancelled` / `refunded` | סופי; מייל `coupon_refunded` | admin path / legal engine |
+| `frozen` / `blocked_redeem` | לא ניתן לסרוק; עדיין לא refund | admin / dispute job / chargeback handler |
+| `refunded` / `cancelled` | סופי; מייל refund | admin path / legal engine |
 | `expired` | פג; אין מימוש | cron |
+| `void` | בטל תפעולית (הונאה חמורה) | admin + audit |
 
-אסור UPDATE ידני ב-SQL בלי audit.  
-UI אדמין: כפתור "חסום מימוש" + סיבה חובה.
+כללים:
+
+- אסור UPDATE ידני ב-SQL בלי audit.  
+- UI אדמין: "חסום מימוש" / "הקפא" + סיבה חובה.  
+- אחרי freeze: redeem מחזיר תוצאת חסימה; QR לא עובר.  
+- הסרת freeze רק אדמין, עם נימוק.  
+- מסלול refund מ-frozen לפי `ARCHITECTURE-REFUNDS-DISPUTES.md`.
 
 ---
 
@@ -115,12 +140,15 @@ UI אדמין: כפתור "חסום מימוש" + סיבה חובה.
 - [ ] שני redeem מקבילים → הצלחה אחת  
 - [ ] Velocity מתועד ו-fail-closed על כסף  
 - [ ] Chargeback → freeze ל-issued  
-- [ ] חסימת קופון עם audit + הודעה ללקוח  
+- [ ] הקפאת קופון עם audit + הודעה ללקוח  
+- [ ] No Escrow בטיפול chargeback/freeze  
+- [ ] צילום מסך: אין הבטחת DRM; חד-פעמיות עובדת  
 
 ---
 
-## 7. Revision
+## Revision
 
 | תאריך | שינוי |
 |---|---|
 | 2026-08-03 | מימוש כפול, QR, chargebacks, velocity, חסימת קופון |
+| 2026-08-12 | batch #12/50: double redeem, screenshots, velocity, chargebacks, freeze; יישור ל-`redeemed` + No Escrow |
