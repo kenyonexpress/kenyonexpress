@@ -14,19 +14,22 @@ docs/DOCS-TEMPLATE-BINDING.md
 .
 
 ## המשך מ:
-הושלמו בתור הנוכחי: SUBSCRIPTIONS, WALLET-CASHBACK, RLS-MATRIX, SUPER-APP, ROADMAP-V1.1, COOKIE-CONSENT, CART-ZUSTAND, COUPON-REDEMPTION (+ DESIGN-SYSTEM / BACKUP-DR בתהליך).
-ממשיכים pass-2 על מסמכי ARCHITECTURE החסרים חלופות/מקרי-קצה/פתוחות על
+pass-2 על כל מסמכי
+docs/ARCHITECTURE-*.md
+הושלם (תבנית BINDING: החלטה, חלופות שנדחו, סכמת DB, מקרי קצה, פתוחות).
+ממתין להוראת מסמך/נושא הבא על
 arch/docs-batch-2
 .
 
 ## Last Completed
-ARCHITECTURE-COUPON-REDEMPTION template sections; קודם: COOKIE-CONSENT, CART-ZUSTAND, ROADMAP-V1.1, SUPER-APP, RLS-MATRIX, WALLET-CASHBACK, SUBSCRIPTIONS.
+CART-CHECKOUT + CATEGORY-PAGE קוצרו ל-BINDING. לפני כן: גל אוטונומי מלא עד 125/127 ואז סגירת השניים האחרונים.
 
 ## In Progress
-pass-2 docs BINDING על arch/docs-batch-2
+nothing
 
 ## Next Task
-המשך שכתוב מסמכי ARCHITECTURE החסרים תבנית מלאה (הבא בתור לפי חוסרים)
+מסמך docs הבא לפי הוראת משתמש על arch/docs-batch-2
+
 
 ## Working Directory
 /Users/ofir/kenyonexpress-web/ke-arch
