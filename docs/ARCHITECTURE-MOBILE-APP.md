@@ -66,6 +66,8 @@ packages/shared-validation
 
 עד monorepo packages: ייבוא חוזים מ-`product-money` / OpenAPI בלי שכפול לוגיקת כסף.
 
+Auth באפ: Supabase JS client עם session המשתמש; קריאות ל-`/api/**` עם cookies/Bearer של אותו session. אין embedding של `SUPABASE_SERVICE_ROLE_KEY` ב-EAS secrets של האפ הלקוח.
+
 ---
 
 ## 3. RTL
@@ -114,10 +116,11 @@ Sync כשיש רשת:
 
 | כלל | פירוט |
 |---|---|
-| אבטחה | אחסון מקומי מוצפן; מחיקה ב-logout; אין service secrets |
+| אבטחה | אחסון מקומי מוצפן (`expo-secure-store` / SQLite+SQLCipher לפי היקף); מחיקה ב-logout; אין service secrets |
 | תוקף | הסתרה/סימון expired לפי שעון מכשיר + סנכרון |
 | מתנה | רק לפי GIFT-COUPONS כשמופעל |
 | ספק | מצלמה אונליין בלבד; בלי "מימוש אופליין" |
+| מגבלת נפח | לשמור רק קופונים `issued` פעילים + חלון קצר אחרי redeem לתצוגה |
 
 ---
 
@@ -174,3 +177,4 @@ M5+ Verticals (INTEGRATIONS)
 | 2026-08-10 | shared packages, deep links, supplier QR |
 | 2026-08-11 | WebView checkout + push סביב תשלום |
 | 2026-08-11 | API layer reuse, RTL, coupon wallet offline display |
+| 2026-08-11 | session-only API auth; SecureStore/SQLite להצגת QR אופליין |
