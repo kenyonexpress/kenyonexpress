@@ -1,13 +1,20 @@
 # ארכיטקטורה: אזור אישי (`/account/**`)
 
-מסכי לקוח מחובר: הזמנות, קופונים (`vouchers`), וארנק קאשבק פנימי. זהות ו-session ב-
-`ARCHITECTURE-ACCOUNT-IDENTITY.md`
-. ארנק לעומק ב-
-`ARCHITECTURE-ACCOUNT-WALLET.md`
-.
+מסכי לקוח מחובר: הזמנות, קופונים (`vouchers`), ארנק קאשבק, וניווט RTL.  
+זהות ו-session:
+
+```
+docs/ARCHITECTURE-ACCOUNT-IDENTITY.md
+```
+
+ארנק לעומק:
+
+```
+docs/ARCHITECTURE-ACCOUNT-WALLET.md
+```
 
 Status: **BINDING** · עודכן: 2026-08-12  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2` · batch #21/50  
+Scope: `arch/docs-batch-2` · batch #21/50  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
 מסמכים קשורים:
@@ -43,10 +50,11 @@ Stack: Next.js App Router `(account)`, Server Components + Server Actions, Supab
 | PA8 | אין PAN/CVV. `payment_tokens.cardcom_token` לא ב-SELECT ל-`authenticated`. |
 | PA9 | התנתקות בניווט וב-`/account/details`. אחרי logout → `/login`. |
 | PA10 | אין cancel/refund מהאזור האישי ב-v1. |
+| PA11 | `AccountNav` RTL קבוע: `dir="rtl"`, תוויות עברית, סדר ויזואלי מימין לשמאל. |
 
 ---
 
-## 1. מפת מידע (IA)
+## 1. מפת מידע + ניווט RTL
 
 ```text
 (account)/layout.tsx     getUser() gate + AccountNav + shell
@@ -60,17 +68,24 @@ Stack: Next.js App Router `(account)`, Server Components + Server Actions, Supab
   /account/tokens        כרטיסים שמורים (last4 בלבד)
 ```
 
-| href | תווית |
-|---|---|
-| `/account` | סקירה |
-| `/account/orders` | ההזמנות שלי |
-| `/account/coupons` | הקופונים שלי |
-| `/account/wallet` | הארנק שלי |
-| `/account/details` | הפרטים שלי |
-| `/account/addresses` | כתובות |
-| `/account/tokens` | אמצעי תשלום |
+| href | תווית עברית | הערת UI |
+|---|---|---|
+| `/account` | סקירה | כרטיסי קיצור: הזמנה אחרונה, קופונים פעילים, יתרת ארנק |
+| `/account/orders` | ההזמנות שלי | רשימה כרונולוגית |
+| `/account/coupons` | הקופונים שלי | טאבים לפי סטטוס |
+| `/account/wallet` | הארנק שלי | badge יתרה מעוצבת |
+| `/account/details` | הפרטים שלי | + כפתור התנתקות |
+| `/account/addresses` | כתובות | CRUD רך |
+| `/account/tokens` | אמצעי תשלום | last4 בלבד |
 
-Badge על הארנק: יתרה מעוצבת. דף קופון בודד (מחוץ ל-nav): `/coupon/[id]` (`noindex`).
+### כללי AccountNav
+
+1. Shell עם `dir="rtl"` ו-`lang="he"`. גופן Heebo.
+2. פריט פעיל: הדגשה ויזואלית בלי שינוי סדר ה-DOM (סדר DOM = סדר קריאה מימין).
+3. Mobile: תפריט תחתון או drawer מימין; אותן תוויות כמו בדסקטופ.
+4. Badge על הארנק: יתרה מפורמטת מ-agorot דרך שכבת `money` (לא float ב-JS של התצוגה).
+5. דף קופון בודד (מחוץ ל-nav): `/coupon/[id]` (`noindex`), עם CTA חזרה ל-`/account/coupons`.
+6. אחרי `signOut`: ניקוי cache מקומי של QR (אם PWA) + redirect ל-`/login`.
 
 ---
 
@@ -99,7 +114,14 @@ Badge על הארנק: יתרה מעוצבת. דף קופון בודד (מחוץ
 | `refunded` | זוכתה |
 | `cancelled` | בוטלה |
 
-לשורות קופון תמיד שני מספרים: שולם באתר / לתשלום בבית העסק (מ-snapshots, לא חישוב חי ממוצר).
+לשורות קופון תמיד שני מספרים מ-snapshots (לא חישוב חי ממוצר):
+
+1. שולם באתר (`coupon_price` מצולם)
+2. לתשלום בבית העסק (`remaining_amount_due`)
+
+לשורות פיזי: סכום ששולם באתר + פיצול לפי `platform_percent` snapshot (לתצוגת שקיפות בלבד; הלקוח לא רואה "עמלה לספק" כמדד נפרד ב-v1 אלא אם הוגדר במפורש ב-UI).
+
+אין כפתור ביטול/החזר מהמסך. הפניה לתמיכה בלבד.
 
 ---
 
@@ -130,6 +152,9 @@ Session של הבעלים, QR + שני הסכומים + פרטי בית עסק, 
 1. QR הוא bearer להצגה; חד-פעמיות ב-`redeem_voucher` אצל הספק.
 2. אין להטמיע QR כ-`data:` URI במייל (ראה notifications).
 3. Offline (PWA): cache של issued בלבד; wipe ב-logout.
+4. אין מצג "כסף מוחזק בפלטפורמה לספק" על מסך הקופון.
+
+פירוט מחזור חיים: COUPON-LIFECYCLE.
 
 ---
 
@@ -158,9 +183,11 @@ Session של הבעלים, QR + שני הסכומים + פרטי בית עסק, 
 
 Deprecated: `wallets`, `wallet_balances`, `wallet_transactions`.
 
-מסך `/account/wallet`: יתרה גדולה + תנועות מ-`v_wallet_ledger`. אין כתיבה מה-UI.
+מסך `/account/wallet`: יתרה גדולה + תנועות מ-`v_wallet_ledger`. אין כתיבה מה-UI. אין כפתור משיכה.
 
 קאשבק: אחוז מ-**התשלום באתר** (לא מ-face), מצולם ב-checkout. חיוב ארנק רק אחרי אימות Cardcom ב-finalize.
+
+מקדמת קופון **אינה** נכנסת לארנק כ-held. ראה ACCOUNT-WALLET + WALLET-LEDGER.
 
 ---
 
@@ -195,6 +222,7 @@ Deprecated: `wallets`, `wallet_balances`, `wallet_transactions`.
 ## 7. Acceptance
 
 - [ ] Session gate על כל `/account/**` (+ proxy על `/coupon/`)
+- [ ] AccountNav RTL: תוויות עברית, badge ארנק, logout
 - [ ] הזמנות: רשימה + פרט, בלי כתיבת לקוח
 - [ ] קופונים מ-`vouchers` עם QR לפעילים בלבד; שני סכומים
 - [ ] ארנק: יתרה + ledger; עותק "לא יוצא מהמערכת"; אין כפתור משיכה
@@ -213,3 +241,5 @@ Deprecated: `wallets`, `wallet_balances`, `wallet_transactions`.
 | 2026-08-02 | מסמך מחייב ראשון: הזמנות, קופונים, ארנק, Google |
 | 2026-08-06 | QA: P7 ל-No Escrow |
 | 2026-08-12 | batch #21: ריענון BINDING ממוקד על arch/docs-batch-2 |
+| 2026-08-12 | batch #21/50 pass-2: חיזוק הזמנות/קופונים/ארנק + AccountNav RTL |
+| 2026-08-12 | batch-2 #21 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
