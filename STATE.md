@@ -1,6 +1,6 @@
 # KenyonExpress: Project State
 
-Updated: 2026-08-11 (ARCHITECTURE-SUBSCRIPTIONS binding)
+Updated: 2026-08-11 (docs queue 35-38 complete)
 
 ## Current Phase
 ‏**arch/docs-lifecycle** ב-worktree
@@ -8,8 +8,11 @@ ke-arch
 . Docs only. אין נגיעה בתיקייה הראשית.
 
 ## Last Completed
-ARCHITECTURE-SUBSCRIPTIONS.md (BINDING): מנוי חודשי Cardcom Token, מחזור חיוב,
-retry, ביטול/הקפאה, זכויות צרכן. SUBSCRIPTIONS-BILLING-SPEC מפנה אליו.
+תור docs 35-38 (commit+push לכל מסמך):
+35 ARCHITECTURE-SUBSCRIPTIONS (+ ledger per cycle)
+36 SEED-SUPPLIERS-SPEC (WP→suppliers, geo/hours/WA)
+37 ADMIN-PRODUCT-EDITOR-SPEC (3 modes RTL)
+38 ARCHITECTURE-WALLET-INTEGER (money-integer + SEC-WALLET)
 
 ## In Progress
 nothing
@@ -26,6 +29,7 @@ nothing
 /Users/ofir/kenyonexpress-web/ke-arch
 
 ## החלטות שהתקבלו אוטומטית
+- **2026-08-11 wallet-integer:** תכנית cutover ב-`ARCHITECTURE-WALLET-INTEGER.md`; SEC-WALLET לפני rename; אסור להריץ 059/PENDING בלי cutover קוד.
 - **2026-08-11 subscriptions:** `ARCHITECTURE-SUBSCRIPTIONS.md` הוא המקור המחייב למנוי חודשי; לא חלק מ-soft-open קופונים; דורש עו״ד לניסוח ביטול לפני פרוד.
 - **2026-08-11 תור סגור PAYOUT+GO-LIVE:** `PAYOUT-ARCHITECTURE.md` נשאר BINDING ל-TransferFromDigitalBank; `VENDOR-PAYOUT-SPEC` מיושר (CSV=fallback). החלטות CSV-בלבד מ-10.08 / Phase-B-as-MVP למטה **נדחות** לטובת המסמך הקנוני.
 - **2026-08-11 payout canonical:** `PAYOUT-ARCHITECTURE.md` BINDING: ביצוע לספק פיזי = Cardcom `TransferFromDigitalBank` (CSV fallback). גובר על המלצת CSV-בלבד הישנה ב-PAYOUT-MECHANISM §0.
