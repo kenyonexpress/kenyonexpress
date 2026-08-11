@@ -15,13 +15,13 @@ docs/DOCS-TEMPLATE-BINDING.md
 
 ## המשך מ:
 נכתב מחדש
-docs/ARCHITECTURE-CARDCOM-WEBHOOKS.md
+docs/ARCHITECTURE-COUPON-LIFECYCLE.md
 . ממתין למסמך הבא על
 arch/docs-batch-2
 .
 
 ## Last Completed
-ARCHITECTURE-CARDCOM-WEBHOOKS.md: חידוד HTTP/DLQ/כפילות/multi-terminal. קודם: CHECKOUT-FLOW deepen.
+ARCHITECTURE-COUPON-LIFECYCLE.md: mint/QR/scan/expiry + races + נעילות (CAS UPDATE RETURNING, FOR UPDATE SKIP LOCKED). קודם: CARDCOM-WEBHOOKS deepen.
 
 ## In Progress
 nothing
@@ -33,6 +33,8 @@ nothing
 /Users/ofir/kenyonexpress-web/ke-arch
 
 ## החלטות שהתקבלו אוטומטית
+- **2026-08-12 COUPON-LIFECYCLE locks:** redeem ננעל ב-`UPDATE … WHERE status=issued … RETURNING` (לא SELECT FOR UPDATE מפורש); expire ב-`FOR UPDATE SKIP LOCKED`. תועד כ-BINDING ב-ARCHITECTURE-COUPON-LIFECYCLE.md מול 092/068.
+
 - **2026-08-12 standing docs rules:** נעול לכל ההודעות הבאות: ke-arch בלבד; docs בלבד; אין קוד; אין main dir; אין checkout main; אין ענפים חדשים (רק arch/docs-batch-2); commit+push אחרי כל מסמך; עברית RTL; חמשת רכיבי תוכן חובה (החלטה, חלופות שנדחו, סכמת DB, מקרי קצה, פתוחות). מקור: DOCS-TEMPLATE-BINDING.md.
 
 
