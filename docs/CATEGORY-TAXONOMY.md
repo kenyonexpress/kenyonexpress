@@ -1,19 +1,54 @@
 # עץ קטגוריות לשוק הישראלי (תוכן מלא)
 
-Slugs באנגלית, שמות בעברית, 3 רמות עומק. מיושר ל-slugs שקיימים בפרוד/סיד.
-
-Status: **CONTENT / PLAN** · עודכן: 2026-08-10  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
+Status: **BINDING (CONTENT)** · עודכן: 2026-08-12
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+מודל כסף: No Escrow; קטגוריה לא קובעת `platform_percent`.
 
-**מקור ארכיטקטורה (הכרעות):**
+---
 
-```
-docs/ARCHITECTURE-CATEGORIES-TAXONOMY.md
-```
+## 1. החלטה
 
-כללים: קטגוריה **לא** קובעת `platform_percent`; אין Escrow.  
-`kind=collection` (דילים חמים / עד 99 / חדש) ≠ taxonomy ל-SEO ראשי.
+| # | הכרעה |
+|---|---|
+| T1 | עץ יעד 3 רמות; slugs **E** יציבים |
+| T2 | Collections נפרדות מ-taxonomy |
+| T3 | L3 דורש depth guard=3 לפני prod |
+| T4 | Primary taxonomy אחד לכל מוצר |
+| T5 | **E**=exists, **P**=proposed |
+
+---
+
+## 2. חלופות שנדחו
+
+| חלופה | נימוק |
+|---|---|
+| slug עברית | CHECK DB + SEO |
+| עמלה לפי קטגוריה | platform_percent פר מוצר |
+| L1 health נפרד מיד | שובר URL |
+
+---
+
+## 3. סכמת DB
+
+**קיים:** `categories`, trigger depth≤2, seed `018_*`.
+**יעד:** depth≤3; אין DDL במסמך.
+
+---
+
+## 4. מקרי קצה
+
+| # | מצב | התנהגות |
+|---|---|---|
+| E1 | L3 לפני מיגרציה | reject |
+| E2 | שינוי slug E | 301 חובה |
+| E3 | מוצר בלי primary | publish fail |
+
+---
+
+## 5. פתוחות
+
+| O1 | מיגרציה depth=3 | pending MCP | 2026-08-12 |
 
 ---
 
@@ -267,3 +302,12 @@ L1 **P** `health` · בריאות ורפואה משלימה
 | תאריך | שינוי |
 |---|---|
 | 2026-08-10 | עץ מלא 3 רמות + מיפוי exists מול DB/seed/hero |
+
+---
+
+## Revision
+
+| תאריך | שינוי |
+|---|---|
+| 2026-08-12 | BINDING batch-2: החלטה, חלופות, DB, קצה, פתוחות |
+
