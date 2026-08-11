@@ -2,7 +2,7 @@
 
 Metadata (Next.js 15 App Router), hreflang `he-IL`, JSON-LD Product/Offer/LocalBusiness לקופונים, sitemap לפי קטגוריה, תקציב Core Web Vitals לפי breakpoints שנמדדו (380/768), וטבלת `seo_redirects`.
 
-Status: **BINDING** · עודכן: 2026-08-11  
+Status: **BINDING** · עודכן: 2026-08-12  
 Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`  
 אין שינוי קוד. אין נגיעה בתיקייה הראשית.
 
@@ -21,6 +21,7 @@ docs/ARCHITECTURE-GROWTH-SEO.md
 docs/SEO-CONTENT-STRATEGY.md
 docs/ARCHITECTURE-CATEGORIES-TAXONOMY.md
 docs/ARCHITECTURE-PRICING-RULES.md
+docs/ARCHITECTURE-GEO-FEATURE.md
 refs/electro-measurements-380.md
 refs/electro-measurements-768.md
 refs/electro-components-map.md
@@ -35,7 +36,7 @@ supabase/migrations/030_catalog.sql
 
 ## 0. המלצה אחת (מחייבת)
 
-**RSC + ISR על קטלוג, `generateMetadata` מ-DB, `alternates.languages` ל-`he-IL`, JSON-LD Product+Offer (+ LocalBusiness לספק כשיש geo), sitemap index עם קובץ קטגוריות, CWV לפי PERFORMANCE-BUDGET + layout budgets מ-refs 380/768, ו-301/410 מ-`public.seo_redirects` דרך `src/lib/seo/redirects.ts`.**
+**RSC + ISR על קטלוג, `generateMetadata` עברית מ-DB, `alternates.languages` ל-`he-IL`, JSON-LD Product+Offer (+ LocalBusiness לספק כשיש geo), sitemap index עם קובץ קטגוריות, CWV לפי PERFORMANCE-BUDGET + layout budgets מ-refs 380/768, ו-301/410 מ-`public.seo_redirects` דרך `src/lib/seo/redirects.ts`.**
 
 אין מחיר שני ב-meta. אין אינדוקס Google דרך Meili. **No Escrow** בתיאורים. מחיר schema = מחיר קופה (agorot→ILS לתצוגה בלבד).
 
@@ -346,3 +347,4 @@ revalidateTag('home')
 | 2026-08-11 | sitemap לפי קטגוריה, PERFORMANCE-BUDGET, דפי SEO מול Meili |
 | 2026-08-11 | דוגמת JSON-LD Product+Offer בעברית |
 | 2026-08-11 | hreflang he-IL, LocalBusiness, CWV+layout @ 380/768 refs, seo_redirects מ-030 (תיקון שם 095) |
+| 2026-08-12 | רענון BINDING: metadata עברית, Product structured data, sitemap, ISR, CWV; קישור GEO-FEATURE |
