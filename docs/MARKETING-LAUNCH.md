@@ -1,24 +1,49 @@
 # MARKETING-LAUNCH.md
-# תוכנית שיווק השקה
 
-10 דילי ההשקה, לוח פרסום לשבוע הראשון, טקסטים לרשתות בעברית, ו-UTM tracking.
+Status: **PLAN** · עודכן: 2026-08-12
+Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-batch-2`
+אין שינוי קוד. אין נגיעה בתיקייה הראשית.
+מודל כסף: No Escrow; בלי נאמן/Escrow בטקסטים.
 
-Status: **PLAN** · עודכן: 2026-08-10  
-Scope: **docs only** · worktree `ke-arch` · branch `arch/docs-lifecycle`
+---
 
-מסמכים קשורים:
+## 1. החלטה
 
-```
-docs/launch-week-plan.md
-docs/LAUNCH-VALIDATION.md
-docs/LAUNCH-CHECKLIST.md
-docs/ANALYTICS-SPEC.md
-docs/CONTENT-PLAYBOOK.md
-docs/ARCHITECTURE-SEASONAL-CAMPAIGNS.md
-docs/BUSINESS-MODEL.md
-```
+| # | הכרעה |
+|---|---|
+| L1 | 10 דילי השקה |
+| L2 | UTM חובה |
+| L3 | consent לפני Pixel marketing |
+| L4 | יתרה בעסק בכל פוסט |
 
-מודל מסר: קופון = מחיר באתר + יתרה בעסק. **אין** נאמן / Escrow / "משלמים חלק ונשמר אצלנו לספק".
+---
+
+## 2. חלופות שנדחו
+
+| חלופה | נימוק |
+|---|---|
+| PII ב-UTM | privacy |
+| purchase מ-Pixel בלבד | server truth |
+| פרסום לפני verified | LAUNCH-VALIDATION |
+
+---
+
+## 3. סכמת DB
+
+**אין DDL.** analytics events + orders.
+
+---
+
+## 4. מקרי קצה
+
+| E1 | slug missing supplier | don't promote |
+| E2 | remarketing no consent | block |
+
+---
+
+## 5. פתוחות
+
+| O1 | Top3 by sales D7 | manual | 2026-08-12 |
 
 ---
 
@@ -176,8 +201,10 @@ https://kenyonexpress.co.il/product/{slug}?utm_source=facebook&utm_medium=paid&u
 
 ---
 
+
 ## Revision
 
 | תאריך | שינוי |
 |---|---|
-| 2026-08-10 | תוכנית שיווק השקה: 10 דילים, לוח שבוע, טקסטים, UTM |
+| 2026-08-12 | BINDING batch-2: החלטה, חלופות, DB, קצה, פתוחות |
+
