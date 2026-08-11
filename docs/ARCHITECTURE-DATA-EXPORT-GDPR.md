@@ -117,3 +117,4 @@ account_deletion_requests
 | 2026-08-07 | QA re-pass: קישור CONTRADICTIONS (No Escrow + platform_percent) |
 | 2026-08-07 | QA audit: D8 ייצוא בלי Escrow; קישור PRICING |
 | 2026-08-12 | batch #45/50: רענון BINDING; דמי ביטול LEGAL בייצוא |
+| 2026-08-12 | batch-2 #45 pass-2: BINDING על arch/docs-batch-2 (המשך תור) |
