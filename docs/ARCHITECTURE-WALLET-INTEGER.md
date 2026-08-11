@@ -55,7 +55,7 @@ docs/BACKUP-RESTORE-RUNBOOK.md
 
 ---
 
-## 2. שלב A: אבטחה (SEC-WALLET) — מיידי
+## 2. שלב A: אבטחה (SEC-WALLET): מיידי
 
 לפני כל שינוי סכמה גדול:
 
