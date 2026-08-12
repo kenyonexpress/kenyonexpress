@@ -13,8 +13,20 @@ export default async function DealsOfTheDay() {
   const targets = await loadDealTargets()
 
   return (
-    // live: grid box x=145 w=1150 at 1440px viewport -> exact 1150px container
-    <section aria-label="מוצרים מובילים" className="mx-auto w-full max-w-deals pt-deals-top pb-6">
+    // The grid is narrower than the viewport at every width, and by a different
+    // amount at each. Measured off ke_live_computed home, `.jet-listing-grid__items`:
+    //
+    //   380  -> x=25  w=330   (100% - 50px)
+    //   768  -> x=49  w=670   (a fixed box, live's Bootstrap container is 720 here)
+    //   1440 -> x=145 w=1150  (--container-deals)
+    //
+    // Only the 1440 line was here before, so below lg the grid ran edge to edge:
+    // 768px of cards against live's 670, which put every card image, badge and
+    // price on different pixels for the whole 8000px of grid.
+    <section
+      aria-label="מוצרים מובילים"
+      className="mx-auto w-[calc(100%-50px)] max-w-deals pt-deals-top pb-6 md:w-[670px] lg:w-full"
+    >
       <div className="jet-listing-grid-deals bg-white">
         {products.map((product) => (
           <div key={product.id} className="jet-listing-grid-deals__item">
