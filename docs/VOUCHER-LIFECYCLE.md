@@ -1,19 +1,21 @@
 # VOUCHER-LIFECYCLE.md
 
-מחזור חיי שובר (voucher) מקצה לקצה: הנפקה עד מימוש / פקיעה / ביטול / החזר.
+מחזור חיי שובר (`vouchers`): מ-`issued` עד `redeemed` / `expired` / `cancelled` / `refunded`.
 
 Status: **BINDING** · Updated: 2026-08-12  
 Scope: **docs only** · worktree `ke-docs-pack` · branch `arch/docs-queue`  
 אין שינוי קוד במסמך הזה.
 
-מקורות מחייבים למצבים:
+## מקורות מחייבים למצבים
 
-- enum חי בטיפוסים: `src/types/database.ts` → `Enums.voucher_status`
-- מכונת מצבים בקוד: `src/server/domain/vouchers/state-machine.ts`
-- הנפקה: `finalizeOrder` → `issueVoucher`
-- מימוש: RPC `public.redeem_voucher` דרך `POST /api/supplier/vouchers/redeem`
-- פקיעה: RPC `expire_vouchers` / `credit_expired_vouchers`
-- החזר: `refund_vouchers_for_order` במסלול refund
+| מקור | תפקיד |
+| --- | --- |
+| `src/types/database.ts` → `Enums.voucher_status` | enum חי בפרודקשן |
+| `src/server/domain/vouchers/state-machine.ts` | מעברים חוקיים + guards |
+| `finalizeOrder` → `issueVoucher` | הנפקה אחרי תשלום |
+| RPC `public.redeem_voucher` via `POST /api/supplier/vouchers/redeem` | מימוש |
+| RPC `expire_vouchers` / `credit_expired_vouchers` | פקיעה (+ זיכוי ארנק אם קיים) |
+| `refund_vouchers_for_order` במסלול refund | החזר |
 
 Companions:
 
@@ -23,9 +25,13 @@ docs/COUPON-STOREFRONT-SPEC.md
 docs/ADMIN-ARCHITECTURE.md
 ```
 
+השופט תחת מקביליות הוא ה-SQL (UPDATE מותנה / RPC). מודול ה-TypeScript הוא השופט של מה חוקי לפני הקריאה.
+
 ---
 
-## 0. Enum חי (פרודקשן לפי database.ts)
+## 0. Enum חי (`voucher_status`)
+
+מתוך `database.ts` (פרודקשן):
 
 ```text
 voucher_status =
@@ -36,19 +42,19 @@ voucher_status =
   | refunded
 ```
 
-זה ה-enum על טבלת `vouchers`. כל כתיבה חייבת להיות אחד מהערכים האלה.
+כל כתיבה ל-`vouchers.status` חייבת להיות אחד מחמשת הערכים האלה. אין `used` על טבלת `vouchers`.
 
 ### אל תבלבל עם enums סמוכים
 
 | Enum | ערכים רלוונטיים | תפקיד |
 | --- | --- | --- |
 | `voucher_status` | למעלה | מצב השובר הבודד (יחידת מימוש) |
-| `coupon_status` | `issued`, `used`, `expired`, `refunded` | טבלת `coupons` (קודי הנחה / ישות אחרת). **לא** מחליף את `vouchers.status` |
-| `order_item_status` | כולל `issued`, `refunded`, … | שורת הזמנה; מתעדכן לצד השובר, לא במקומו |
-| `settlement_status` | `split_executed`, `escrow_held`, … | כסף/סליקה על שורת הזמנה |
-| `escrow_status` | `held`, `released`, `refunded` | ישות escrow אם קיימת; המודל המחייב: **אין Escrow חיצוני** |
+| `coupon_status` | `issued`, `used`, `expired`, `refunded` | טבלת `coupons` (קודי הנחה / ישות אחרת). **לא** מחליף `vouchers.status` |
+| `order_item_status` | כולל `issued`, `refunded`, … | שורת הזמנה; מקביל לשובר, לא במקומו |
+| `settlement_status` | `split_executed`, `escrow_held`, … | כסף על שורת הזמנה |
+| `escrow_status` | `held`, `released`, `refunded` | ישות escrow אם קיימת; מודל מחייב: **אין Escrow חיצוני** (ADMIN §0) |
 
-קריאה ישנה: בחלק מהמסמכים מופיע `used` כמימוש. ב-`vouchers` הקנוני הוא **`redeemed`**. ב-`coupon_status` נשאר `used` כערך היסטורי של ישות אחרת.
+קריאה ישנה במסמכים: `used` כמימוש → ב-`vouchers` הקנוני הוא **`redeemed`**.
 
 ---
 
@@ -66,13 +72,30 @@ voucher_status =
          └────────── REFUND (refund path) ──► refunded  (טרמינלי)
 ```
 
+| מצב | טרמינלי? | אירועים יוצאים |
+| --- | --- | --- |
+| `issued` | לא | REDEEM, EXPIRE, CANCEL, REFUND |
+| `redeemed` | כן | אין |
+| `expired` | כן | אין |
+| `cancelled` | כן | אין |
+| `refunded` | כן | אין |
+
 חוקים:
 
-1. כל המצבים חוץ מ-`issued` הם **טרמינליים**. אין חזרה ל-`issued`.
-2. `REDEEM` רק מ-`issued`, רק לספק של השובר, ורק לפני `expires_at`.
-3. `EXPIRE` רק מ-`issued` ורק אחרי ש-`now >= expires_at`.
-4. `CANCEL` ו-`REFUND` רק מ-`issued` (לפני סריקה). אחרי `redeemed` אין unwind אוטומטי של השובר; זיכוי רצון טוב הוא ארנק / מחלוקת ידנית, לא מעבר מצב אחורה.
-5. השופט תחת מקביליות הוא ה-SQL (UPDATE מותנה / RPC), לא ה-UI.
+1. כל מצב חוץ מ-`issued` הוא **טרמינלי**. אין חזרה ל-`issued`.
+2. `REDEEM` רק מ-`issued`, רק לספק של השובר (`actingSupplierId === supplierId`), ורק לפני `expires_at`.
+3. `EXPIRE` רק מ-`issued` ורק כש-`now >= expires_at`.
+4. `CANCEL` ו-`REFUND` רק מ-`issued` (לפני סריקה). אחרי `redeemed` אין unwind של השובר; זיכוי רצון טוב הוא ארנק / מחלוקת ידנית.
+5. בלי הקשר ספק / תאריך: `REDEEM` ו-`EXPIRE` נחסמים (אין guard context = סירוב).
+
+### קודי סירוב (guards)
+
+| קוד | מתי |
+| --- | --- |
+| `WRONG_SUPPLIER` | ספק סורק ≠ `supplier_id` של השובר |
+| `PAST_EXPIRY` | `REDEEM` אחרי / ב-`expires_at` |
+| `NOT_YET_EXPIRED` | `EXPIRE` לפני `expires_at` |
+| `ILLEGAL_TRANSITION` | אירוע לא חוקי ממצב נתון |
 
 ---
 
@@ -80,23 +103,23 @@ voucher_status =
 
 | מעבר | מי / מה מפעיל | מה נכתב | מה לא |
 | --- | --- | --- | --- |
-| → `issued` | `finalizeOrder` אחרי תשלום Cardcom מאומת; `issueVoucher` per unit | שורת `vouchers` חדשה: `status=issued`, `code`, `qr_payload`, snapshots כסף, `expires_at`, קישורי order/product/supplier/user | לא נוגע ב-`coupon_status` של טבלת coupons; לא יוצר escrow_holds במודל הנוכחי |
-| `issued` → `redeemed` | ספק (תפקיד scanner+) קורא `redeem_voucher` עם JWT משתמש | `status=redeemed`, `redeemed_at`, `redeemed_by`; אירוע סריקה; התראת `coupon_redeemed` | לא מעביר יתרת קופה דרך הפלטפורמה; לא יוצר payout line לקופון |
-| `issued` → `expired` | Job / RPC `expire_vouchers` (ואולי `credit_expired_vouchers` לזכות ארנק לפי מדיניות) | `status=expired` על שורות שפג תוקפן ועדיין `issued` | לא נוגע ב-`redeemed` / `refunded` / `cancelled` |
-| `issued` → `cancelled` | נתיב ops / ביטול יזום לפני סריקה (אירוע `CANCEL` במכונה) | `status=cancelled` | לא תחליף ל-refund כספי; refund הוא מסלול נפרד |
-| `issued` → `refunded` | מסלול החזר הזמנה: `refund_vouchers_for_order` אחרי אימות Cardcom | `status=refunded` על שוברים שעדיין `issued` | אם כבר `redeemed`: התשובה היא MANUAL_RESOLUTION, לא עדכון סטטוס אחורה |
+| → `issued` | `finalizeOrder` אחרי Cardcom מאומת; `issueVoucher` per unit | שורת `vouchers`: `status=issued`, `code`, `qr_payload`, snapshots כסף, `expires_at`, קישורי order/product/supplier/user; `order_items.item_status` ל-`issued` | לא נוגע ב-`coupon_status` של טבלת coupons; לא יוצר `escrow_holds` במודל הנוכחי |
+| `issued` → `redeemed` | ספק scanner+ קורא `redeem_voucher` עם JWT | `status=redeemed`, `redeemed_at`, `redeemed_by`; אירוע סריקה; התראת `coupon_redeemed` | לא מעביר יתרת קופה דרך הפלטפורמה; לא יוצר payout על יתרת הקופה |
+| `issued` → `expired` | Job / RPC `expire_vouchers` (+ `credit_expired_vouchers` לפי מדיניות) | `status=expired` על שורות שפג תוקפן ועדיין `issued` | לא נוגע ב-`redeemed` / `refunded` / `cancelled` |
+| `issued` → `cancelled` | ops / ביטול יזום לפני סריקה (`CANCEL`) | `status=cancelled` | לא תחליף ל-refund כספי |
+| `issued` → `refunded` | מסלול החזר הזמנה: `refund_vouchers_for_order` אחרי אימות Cardcom | `status=refunded` על שוברים שעדיין `issued` | אם כבר `redeemed`: MANUAL_RESOLUTION, בלי עדכון סטטוס אחורה |
 
 ### שדות נלווים (מי כותב)
 
 | שדה | נכתב ב- | הערות |
 | --- | --- | --- |
 | `code`, `qr_payload`, `qr_key_id` | הנפקה | סוד ללקוח; לא ללוג גולמי |
-| `face_value_agorot`, `coupon_price_*`, יתרה | הנפקה (snapshot) | immutable אחרי יצירה |
-| `platform_percent` (או bp) | הנפקה | snapshot מהמוצר/שורת הזמנה |
+| `face_value_agorot`, מחירי קופון, יתרה | הנפקה (snapshot) | immutable אחרי יצירה |
+| `platform_percent` (או bp) | הנפקה | snapshot; דינמי פר מוצר (ADMIN §0) |
 | `expires_at` | הנפקה מ-`coupon_expiry_days` / תוקף הצעה | בסיס ל-EXPIRE |
-| `redeemed_at`, `redeemed_by` | redeem_voucher | מזהה חבר ספק / משתמש סורק |
-| `frozen_at` | chargeback / fraud על `issued` | חוסם redeem בלי בהכרח להעביר ל-cancelled |
-| `order_items.item_status` | finalize (`issued`) / refund / fulfillment | מקביל, לא תחליף ל-`vouchers.status` |
+| `redeemed_at`, `redeemed_by` | `redeem_voucher` | מזהה חבר ספק / סורק |
+| `frozen_at` | chargeback / fraud על `issued` | חוסם redeem בלי בהכרח cancelled |
+| `order_items.item_status` | finalize / refund / fulfillment | מקביל ל-`vouchers.status` |
 
 ---
 
@@ -104,13 +127,13 @@ voucher_status =
 
 | מצב | מה קרה לכסף |
 | --- | --- |
-| `issued` | הלקוח שילם באתר את המקדמה; יתרת הפנים עדיין לא נגבתה בקופה |
-| `redeemed` | הקופה גבתה את היתרה ישירות; השובר חד-פעמי ומת; אין payout פלטפורמה→ספק על היתרה |
-| `expired` | לא מומש; מדיניות זיכוי ארנק (אם קיימת) דרך `credit_expired_vouchers`, לא החזר אשראי אוטומטי בהכרח |
-| `cancelled` | בוטל לפני מימוש; תלוי אם כבר חויב כרטיס (בדרך כלל לצמוד להחזר הזמנה) |
-| `refunded` | כסף המקדמה חזר במסלול Cardcom refund; רק מ-`issued` |
+| `issued` | הלקוח שילם באתר את המקדמה (`coupon_price`); יתרת הפנים עדיין אצל הקופה |
+| `redeemed` | הקופה גבתה את היתרה ישירות; השובר חד-פעמי; אין payout פלטפורמה→ספק על היתרה |
+| `expired` | לא מומש; זיכוי ארנק אפשרי דרך `credit_expired_vouchers` (לא בהכרח החזר אשראי) |
+| `cancelled` | בוטל לפני מימוש; צמוד בדרך כלל להחזר הזמנה אם כבר חויב כרטיס |
+| `refunded` | מקדמה חזרה במסלול Cardcom refund; רק מ-`issued` |
 
-אגורות integer בכל המסלול. אין float.
+אגורות integer בכל המסלול. אין float. אין Escrow חיצוני.
 
 ---
 
@@ -118,11 +141,11 @@ voucher_status =
 
 | תפקיד | מותר |
 | --- | --- |
-| מערכת (finalize) | יצירת `issued` |
-| לקוח | צפייה בשוברים שלו + QR; לא משנה status |
-| ספק scanner+ | `REDEEM` על שוברים של `supplier_id` שלו בלבד |
+| מערכת (`finalizeOrder`) | יצירת `issued` |
+| לקוח | צפייה בשוברים + QR; **לא** משנה status |
+| ספק scanner+ | `REDEEM` על `supplier_id` שלו בלבד |
 | Cron / worker | `EXPIRE` |
-| Admin / refund worker | `REFUND` / `CANCEL` לפי מדיניות, עם audit |
+| Admin / refund worker | `REFUND` / `CANCEL` עם audit |
 | anon | כלום על עדכון status |
 
 ---
@@ -131,13 +154,14 @@ voucher_status =
 
 | # | מקרה | תוצאה |
 | --- | --- | --- |
-| CE1 | שני redeem במקביל על אותו code | אחד מצליח; השני `already_redeemed` (UPDATE מותנה) |
-| CE2 | סריקה אחרי `expires_at` | סירוב `expired` / PAST_EXPIRY; בלי side effects |
-| CE3 | ספק אחר סורק | WRONG_SUPPLIER |
-| CE4 | Refund על `redeemed` | MANUAL_RESOLUTION; השורה נשארת `redeemed` |
+| CE1 | שני redeem במקביל על אותו code | אחד מצליח; השני `already_redeemed` |
+| CE2 | סריקה אחרי `expires_at` | `PAST_EXPIRY` / expired; בלי side effects |
+| CE3 | ספק אחר סורק | `WRONG_SUPPLIER` |
+| CE4 | Refund על `redeemed` | MANUAL_RESOLUTION; נשאר `redeemed` |
 | CE5 | Cron על שורות לא-`issued` | no-op |
 | CE6 | Chargeback | `frozen_at` על `issued`; redeem נחסם |
 | CE7 | חתימת QR לא תקינה | לא קוראים ל-RPC; לוג `invalid_signature` |
+| CE8 | `EXPIRE` לפני תוקף | `NOT_YET_EXPIRED` |
 
 ---
 
@@ -150,19 +174,20 @@ voucher_status =
 | פקיעה | `coupon_expired` |
 | החזר | `coupon_refunded` |
 
-הפרטים ב-`ARCHITECTURE-NOTIFICATIONS.md`.
+פרטים ב-`ARCHITECTURE-NOTIFICATIONS.md`.
 
 ---
 
-## 7. Acceptance לתיעוד/בדיקות
+## 7. Acceptance
 
 | # | קריטריון |
 | --- | --- |
 | A1 | כל כתיבה ל-`vouchers.status` היא אחד מחמשת ערכי ה-enum החי |
 | A2 | אין מעבר מטרמינלי חזרה ל-`issued` |
-| A3 | Redeem עובר רק ב-`redeem_voucher` עם זהות ספק |
-| A4 | מסמכים ישנים שאומרים `used` על voucher מתורגמים ל-`redeemed` בקריאה |
+| A3 | Redeem רק ב-`redeem_voucher` עם זהות ספק |
+| A4 | מסמכים ישנים עם `used` על voucher מתורגמים ל-`redeemed` |
 | A5 | אין הבטחת Escrow release במעבר ל-`redeemed` |
+| A6 | Guards תואמים ל-`state-machine.ts` (WRONG_SUPPLIER, PAST_EXPIRY, NOT_YET_EXPIRED) |
 
 ---
 
@@ -170,4 +195,5 @@ voucher_status =
 
 | תאריך | שינוי |
 | --- | --- |
-| 2026-08-12 | יצירה ב-`arch/docs-queue`: FSM מול enum חי + מי מעדכן מה |
+| 2026-08-12 | יצירה: FSM מול enum חי + מי מעדכן מה |
+| 2026-08-12 | הרחבה: טבלת guards, אחריות תפקידים, CE8, יישור ל-ADMIN §0 |
