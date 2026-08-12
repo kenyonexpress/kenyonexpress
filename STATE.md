@@ -2,7 +2,7 @@
 
 Updated: 2026-08-12 (AUTOPILOT תור סגור מ-AUTOPILOT-PROMPT.md)
 
-## המשך מ: שלב 5
+## המשך מ: שלב 6
 
 ### AUTOPILOT תור סגור (2026-08-12)
 
@@ -10,10 +10,14 @@ Updated: 2026-08-12 (AUTOPILOT תור סגור מ-AUTOPILOT-PROMPT.md)
 2. ✅ CLAUDE.md על `main`: הענף הקבוע הוא `main`, לא `phase5/homepage` (קומיט `688a90df0` נדחף ל-`origin/main`).
 3. ✅ נושא `refs/*.png` ב-gitignore: **נסגר בלי שינוי.** הקובץ כבר עושה `refs/*` ואז `!refs/ke_live_*.png`. ‏`compare.mjs` קורא `refs/ke_live_<page>_<width>.png`. להתעלם מהם היה מנתק את שער הפיקסלים. שלושת הקבצים היתומים `refs/ke_live_{380,768,1440}.png` (בלי שם דף) נשארים מחוץ ל-git בכוונה.
 4. ✅ `finalize.ts:312` מול enum: **אין פער.** השורה היום היא חתימת `spendWallet`, לא כתיבת settlement. הקוד כותב `split_executed` לקופון ולפיזי (שורות 471/478). ‏`platform_settled` קיים ב-`src/types/database.ts` ב-enum `settlement_status` (legacy ליציאה בלבד). אין MCP `list_tables` בסשן הזה; האימות הוא מול הטיפוסים שנוצרו מהקטלוג החי + המדידה הקודמת בפרודקשן (0 שורות `platform_settled`). **אין מיגרציה ממתינה.**
-5. ⏳ feat/product-type: מודל שני סוגי מוצרים
+5. ✅ feat/product-type: מודל שני סוגי מוצרים לפי `docs/ADMIN-ARCHITECTURE.md` §0 (גובר על ניסוח Escrow ב-AUTOPILOT-PROMPT ועל היפוך 28.07 ב-CONTRADICTIONS). קופון: `coupon_price_ils` באתר, יתרה בקופה, פיצול המקדמה לפי `platform_percent`, בלי Escrow. פיזי: חיוב אחרי `discount_percent`, פיצול מיידי. `commission.ts` יושר ל-`settlement.ts`; finalize כותב `split_executions` גם לקופון; לוגו ספק ב-PDP; Zod דורש מחיר קופון. 2395 טסטים ירוקים.
 6. ⏳ pixel parity
 7–8. תהליך אחרי כל שלב
 9. ⏳ AUTOPILOT-DONE + tag
+
+### החלטות שהתקבלו אוטומטית (AUTOPILOT)
+
+**A1. מודל הקופון = ADMIN §0, לא Escrow ולא 100% פלטפורמה קשיח.** הפרומפט ביקש Escrow; CONTRADICTIONS מ-28.07 ביקש 100% לפלטפורמה. המסמך המחייב (`ADMIN-ARCHITECTURE.md` §0, סטטוס BINDING) קובע פיצול מקדמה לפי `platform_percent` ו-Escrow: None. יושם כך. `platform_percent = 100` עדיין מבטא את מודל 28.07 כבחירת אדמין.
 
 ### שרשרת חמשת השלבים, מצב אמיתי נכון ל-12.08
 
