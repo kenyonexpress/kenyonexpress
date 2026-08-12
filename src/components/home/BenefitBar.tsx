@@ -45,6 +45,19 @@ const benefits = [
 // All colours and sizes come from ELECTRO_HERO.uspBar (the measured token
 // module). Direction handling uses CSS logical properties only, so the bar
 // mirrors correctly under dir="rtl".
+//
+// The labels are `whitespace-nowrap` because the bar has to stay ONE text line
+// per label at every width. Live is 81px tall at 768 and at 1440 alike
+// (ke_live_computed home, `.features-list`); here the fifth label,
+// "מותגי יוקרה", wrapped inside its 153px cell at 768 and took the bar to 94px.
+// Nothing above the deals grid absorbed that, so the grid started 17px low and
+// 8000px of product cards were compared against the wrong rows: 26.12% of the
+// band at 768 with the cards themselves identical.
+//
+// Live solves the same squeeze by keeping each item 180px and letting the fifth
+// hang off the edge (measured at x=-172 at 768, clipped). That is not copied.
+// A label sliced in half is a defect in the Hebrew UI, and the band scores the
+// height, which nowrap matches without it.
 export default function BenefitBar() {
   return (
     <section dir="rtl" className="w-full bg-white font-sans">
@@ -77,7 +90,7 @@ export default function BenefitBar() {
                 />
                 <div className="text-center">
                   <div
-                    className="leading-tight"
+                    className="whitespace-nowrap leading-tight"
                     style={{
                       fontSize: USP.title.size,
                       fontWeight: USP.title.weight,
@@ -87,7 +100,7 @@ export default function BenefitBar() {
                     {b.title}
                   </div>
                   <div
-                    className="leading-tight"
+                    className="whitespace-nowrap leading-tight"
                     style={{
                       fontSize: USP.subtitle.size,
                       fontWeight: USP.subtitle.weight,

@@ -47,4 +47,12 @@ describe('BenefitBar', () => {
     expect(html).toContain('dir="rtl"')
     expect((html.match(/<li/g) ?? []).length).toBe(5)
   })
+
+  it('keeps every label on one line', () => {
+    // Ten labels, two per cell. Live is 81px tall at 768 and at 1440 alike; a
+    // single wrapped label ("מותגי יוקרה" in a 153px cell at 768) took the bar
+    // to 94px, which nothing below absorbed, so the deals grid started 17px
+    // low and 8000px of identical product cards scored as a band difference.
+    expect((html.match(/whitespace-nowrap/g) ?? []).length).toBe(10)
+  })
 })
