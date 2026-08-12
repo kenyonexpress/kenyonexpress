@@ -1,19 +1,34 @@
+AUTOPILOT-DONE
+
 # KenyonExpress — Project State
 
 Updated: 2026-08-12 (AUTOPILOT תור סגור מ-AUTOPILOT-PROMPT.md)
 
-## המשך מ: שלב 6
+## המשך מ: אין (AUTOPILOT הושלם)
 
-### AUTOPILOT תור סגור (2026-08-12)
+### AUTOPILOT תור סגור (2026-08-12) — סיום
 
-1. ✅ גיבוי ענפים ל-`branches-backup.txt` + מחיקת 26 מקומיים ב-`-d` בלבד (כולם עדיין ב-`origin/*`). 7 לא-merged נשארו. 4 worktrees דולגו. לא הופעלה לולאת `claude` מקבילה (שני סוכנים על אותו tree כבר הרסו עבודה, ראה החלטה 1 למטה).
-2. ✅ CLAUDE.md על `main`: הענף הקבוע הוא `main`, לא `phase5/homepage` (קומיט `688a90df0` נדחף ל-`origin/main`).
-3. ✅ נושא `refs/*.png` ב-gitignore: **נסגר בלי שינוי.** הקובץ כבר עושה `refs/*` ואז `!refs/ke_live_*.png`. ‏`compare.mjs` קורא `refs/ke_live_<page>_<width>.png`. להתעלם מהם היה מנתק את שער הפיקסלים. שלושת הקבצים היתומים `refs/ke_live_{380,768,1440}.png` (בלי שם דף) נשארים מחוץ ל-git בכוונה.
-4. ✅ `finalize.ts:312` מול enum: **אין פער.** השורה היום היא חתימת `spendWallet`, לא כתיבת settlement. הקוד כותב `split_executed` לקופון ולפיזי (שורות 471/478). ‏`platform_settled` קיים ב-`src/types/database.ts` ב-enum `settlement_status` (legacy ליציאה בלבד). אין MCP `list_tables` בסשן הזה; האימות הוא מול הטיפוסים שנוצרו מהקטלוג החי + המדידה הקודמת בפרודקשן (0 שורות `platform_settled`). **אין מיגרציה ממתינה.**
-5. ✅ feat/product-type: מודל שני סוגי מוצרים לפי `docs/ADMIN-ARCHITECTURE.md` §0 (גובר על ניסוח Escrow ב-AUTOPILOT-PROMPT ועל היפוך 28.07 ב-CONTRADICTIONS). קופון: `coupon_price_ils` באתר, יתרה בקופה, פיצול המקדמה לפי `platform_percent`, בלי Escrow. פיזי: חיוב אחרי `discount_percent`, פיצול מיידי. `commission.ts` יושר ל-`settlement.ts`; finalize כותב `split_executions` גם לקופון; לוגו ספק ב-PDP; Zod דורש מחיר קופון. 2395 טסטים ירוקים.
-6. ⏳ pixel parity
-7–8. תהליך אחרי כל שלב
-9. ⏳ AUTOPILOT-DONE + tag
+1. ✅ גיבוי ענפים ל-`branches-backup.txt` + מחיקת 26 מקומיים ב-`-d` בלבד (כולם עדיין ב-`origin/*`).
+2. ✅ CLAUDE.md על `main`: הענף הקבוע הוא `main` (קומיט `688a90df0`).
+3. ✅ נושא `refs/*.png` ב-gitignore נסגר בלי שינוי (החריגים `!refs/ke_live_*.png` נשארים).
+4. ✅ `finalize.ts:312` מול enum: אין פער, אין מיגרציה ממתינה.
+5. ✅ feat/product-type לפי ADMIN §0 (פיצול מקדמה, בלי Escrow). 2396 טסטים ירוקים.
+6. ✅ pixel parity header/hero: גובה hero רספונסיבי (193@380, 304@768, 422@lg+); masthead נייד 84px; `compare.mjs --width=`; שערי סטייה רשומים חלים רק ב-1440. ציון כולל ב-380/768 עדיין גבוה כי תוכן מתחת ל-hero (פונט Heebo מול Open Sans, גריד מבצעים, top-bar כפול בלייב ב-380) אינו פער header/hero. לא הופעלה לולאת `claude` מקבילה.
+7–8. ✅ type-check + טסטים אחרי כל שלב; commit+push.
+9. ✅ AUTOPILOT-DONE + tag `autopilot-2026-08-12`.
+
+### דוח סיום AUTOPILOT
+
+| שלב | תוצאה |
+| --- | --- |
+| 1 ענפים | 26 נמחקו ב-`-d`, גיבוי ב-`branches-backup.txt` |
+| 2 CLAUDE.md | `main` על origin/main |
+| 3 gitignore refs | נסגר בלי שינוי |
+| 4 finalize enum | תקין, אין מיגרציה |
+| 5 product-type | ADMIN §0, commission≡settlement |
+| 6 pixel | hero+masthead מיושרים לגיאומטריית refs; ציון כולל צר עדיין אדום מתוכן |
+
+**החלטות אוטומטיות:** A1 מודל קופון = ADMIN §0. A2 לא להריץ `./autopilot.sh` / `claude` מקביל על אותו tree. A3 שערי סטייה רשומים רק ב-1440.
 
 ### החלטות שהתקבלו אוטומטית (AUTOPILOT)
 
