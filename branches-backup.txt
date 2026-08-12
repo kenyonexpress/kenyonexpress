@@ -1,0 +1,79 @@
+# branches-backup.txt
+# Generated 2026-08-12T16:15:00Z from /Users/ofir/kenyonexpress-web/kenyonexpress
+# Policy: git branch -d only (no -D). Unmerged tips kept. Worktree tips skipped.
+#
+# Previously deleted (29), SHA list from ~/ke-merged-branches-backup.deleted-29.txt:
+arch/account 77a609f85e50590898f4de0f329525da4a35f65a
+arch/admin-analytics 86a9cf05734ab2f661c57100e31beaa823ae3ed4
+arch/backup-dr 3cdf6de495feda39fc0962c2d4f69fa926188894
+arch/cart-checkout c2c541fef5cb1e34f01235dd78ecea370f0a3f2d
+arch/category-page 33d4d85329f9f2ca924c3020cd121820da087fd7
+arch/coupon-redemption f5fcba4394e8b8aff7466a7ba9e6e854de6c7744
+arch/legal ee5a3a58d012e3466173e29dea358e396ef084f8
+arch/notifications 5a1e318c3f2a8ed201ca9b1ad5cc850495ffdef1
+arch/observability c6b6ec906bf22a07bb45027a3de84e6b8c9616a5
+arch/performance 5cb1922e0ece327b18ec2ba6da3e987760a5d6a2
+arch/pwa 5bd5c45cec0fe2bea3e58be4b7f74aba29856b69
+arch/search 7864d9b79bed956d676eeeea44bdcb67c95139b0
+arch/security 1ccccf5cf33f042e57cdccebe690e1c82d668477
+arch/seo c1b843ef059ad2f49c5984aa1671f8d36de3fd95
+arch/supplier-portal 564c5dd864b570089cff17f51b3e37551636e09a
+feat/admin-core bdb90b92fac4a05e290150c655324f23f6f215c2
+feat/checkout-complete 395b3c7cad6c6d689b98bbdf371dd09f6146993b
+feat/ci-foundation d302cd29f9d6aff1becfe418913f097214b0d19c
+feat/coupon-redemption 552bfe0415ceb07ab9c00defb3da9ca9942a99a3
+feat/e2e 4731043e05a4dc0df810f0687c9cb5f3d3d0871c
+feat/growth-core 8701fd06ffb81f4726b1208edcb0a31ae92739f6
+feat/notifications 552bfe0415ceb07ab9c00defb3da9ca9942a99a3
+feat/observability 3e1618721c776db8a6f52460d6434e5609ddc687
+feat/payments-core 211591db90e531198ac514057626c2945caa3051
+feat/personal-area 552bfe0415ceb07ab9c00defb3da9ca9942a99a3
+feat/search-core 6e0fdcad6c180eed6f5507307d499ecceff80916
+feat/seo-performance 552bfe0415ceb07ab9c00defb3da9ca9942a99a3
+feat/wp-migration ee79b3e7deaeea084eab8f1e271c0db48de729da
+phase5/homepage 1f5063a5a21438595c9a762dec3f02a9806e566b
+save/ke-admin-work ae85406e994eb59f005bf4be47ccef763937fa93
+#
+# This run: deleted 26 local tips (all still on origin/*). Kept 7 unmerged. Skipped 4 worktrees.
+# Deleted local names (recover via origin/<name>):
+arch/docs-admin-supplier-guides 9eef62b78321ac2f84dd2c95c8c5054d0301eb76 docs(guides): add Hebrew admin user guide and supplier onboarding
+arch/docs-api-public fc926a1a4def11581df903e6ee78043133158312 docs(api): public partner API draft with keys and rate limits
+arch/docs-category-taxonomy 4b8f9c6420deeb111c1c5812d156c2150b5ead91 docs(catalog): use attred slug for attractions L1
+arch/docs-checkout-guest 53156e2a5540c6e14570568eac10a0714a64519c docs(growth): checkout funnel optimization and guest vs member
+arch/docs-city-landing e5c1d6a1302b55b03fc950bea22ea83ea22471a7 docs(seo): city landing copy for fifteen Israeli cities
+arch/docs-data-retention a281da83c9265d6e0e8f7fbe9181414ad717cd6d docs(legal): data retention policy draft marked for counsel
+arch/docs-design-phase23 bc09e8bf906dbf0185886e83e17b95e661b76967 docs(design): electro final checklist and phase 2-3 variants/SEO/tags
+arch/docs-email-copy b43c5d7aa004d0d863457c9a8d1cdae9caf19bc3 docs(email): full Hebrew copy for eight transactional mails
+arch/docs-incident-playbooks 167cfc9f9a6fcf55f4e569e6cd1300dd2fb91805 docs(ops): six incident playbooks for money-critical outages
+arch/docs-launch-pack 9eb4b3b674c97a0d30dcc5d0fb17b7367ac873ed docs(launch): mobile, launch validation, and launch-day runbook
+arch/docs-legal-ops 38d95a7092e5755f887ba97903993e0f17e9afb0 docs(ops): Hebrew legal draft and post-launch ops runbook
+arch/docs-lifecycle d73921e0416ae209c1a097810a3340d54d90547e docs: rewrite CHECKOUT-FLOW cart to coupon_redeemed
+arch/docs-marketing-analytics e22d12b9cac1aa7d8ad85e54fe1dab0ba06d6850 docs(launch): marketing week plan and analytics measurement spec
+arch/docs-mobile-integrations 457b45301526c0f3bcbc82faf1e95a1d47f16230 docs(mobile): refresh Expo app contract and add vertical integrations
+arch/docs-onboarding-dev b83c48111e639280c11aaeda27b563d7202d7e6e docs(dev): developer onboarding and topic-sorted master index
+arch/docs-progress-aug 6e5342327f4470990af1dc6fa7da04883eba398d docs(ops): August executive progress report
+arch/docs-seasonal-referral b6eee86bf0da3d83f8733256d9a36a363400a774 docs(growth): seasonal campaign ops and referral fraud playbook
+arch/docs-sla-backup eeeb0c5300772a24233e0444aac6c8a1b3773acc docs(ops): SLA alerting matrix and backup RPO/RTO runbook
+arch/docs-supplier-quality 4d375b7be9f742b2fb27e6e7f8408b1e88f4eddb docs(supplier): quality program and featured deals pricing
+arch/docs-support-faq cf6eb98f55b38eeb6ea0980b291b1a5104c7264f docs(support): Hebrew reply scripts and twenty FAQ answers
+arch/docs-support-whatsapp e63a789eb66c47c95fef104127bc41f9f684a0cc docs(ops): support SLA policy and WhatsApp Business setup
+arch/docs-testing-review bd52102dd34daa77880e55791b2e7e5e55a4c124 docs(qa): testing pyramid gates and PR review checklist
+arch/docs-v2-vision f460ddaf7a933115f1fbcd001eea7fdd168611ee docs(vision): V2 strategy and deprecate superseded index entries
+docs/app-store-and-deep-links edc6e29c7284e72b2d0f2676d07d7960ff1c5039 docs(mobile): the submission checklist, and why the payment return is https
+feat/checkout-cardcom be47a627d1e9263164d79f4dfdd5fe5e43e34fbe feat(checkout): Cardcom multi-account, payment_events journal, escrow flow, webhook retry queue
+feat/visual-polish 7e4b38ef819cb43580092a0f7d17e2fe6a556597 docs(state): mark archived In Progress section after Goal 4
+#
+# Remaining local after step 1:
+arch/account-area e44c27550860064eeae310d417baf849cab74ef5 chore(worktree): preserve uncommitted work before closing the ke-arch-account-area worktree
+arch/checkout-cardcom-verification d5351bf965fbf4cbaea9ca95cf4dacb9067512e0 chore(worktree): preserve uncommitted work before closing the ke-arch-checkout-verify worktree
+arch/docs-batch-2 a3e57fd15ec556e2f2c37a277241a64210df717c docs: note ntfy 429 on docs-batch-2 completion in STATE
+arch/docs-queue 47813ae15412f771203cade814e2536845d0b089 docs(state): record email/Cardcom/QR/a11y/images doc push
+arch/notifications-v2 977e060ebec3e3d5ea5e98f0639c3f5729ecadf8 chore(worktree): preserve uncommitted work before closing the ke-arch-notifications-v2 worktree
+arch/seed-data 8a4c5bc011a9e9f69203b288fb81e24ee81c4fe6 chore(worktree): preserve uncommitted work before closing the ke-seed worktree
+arch/wp-migration 050b9ffc36517c71909cd7c65854fb3be8b9a806 chore(worktree): preserve uncommitted work before closing the ke-arch-wp worktree
+docs/final-pack de2df1da4362bbcc3b4329a8bdb9ef79e5243468 docs(arch): full notifications catalog (QR, refund, idempotency)
+feat/e2e-quality c8ade85135ced60b099a6d629ad2ff0b05adf2e1 test(quality): the money paths, RTL and web vitals become gates
+feat/product-type 6ba1686163138e90b4522314b8b4e2f0594a5e81 db(security): the rpc lockdown lands, minus the four revokes that would have killed the site
+feat/supplier-portal 4e73c88a50f19c5f9b5028fdddd3561dc961c5eb feat(supplier): the order queue the portal never had, and the last escrow promise
+main 911db3d2fa654fb9ec101002382dede424c23952 docs(state): pending migrations verified against the live catalog, and the 45 triggers 005 replaces
+save/ke-visual-work 7e4b38ef819cb43580092a0f7d17e2fe6a556597 docs(state): mark archived In Progress section after Goal 4

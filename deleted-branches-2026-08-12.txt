@@ -1,0 +1,82 @@
+# deleted-branches-2026-08-12.txt
+# נמדד ב-12.08.2026 מול origin/main אחרי git fetch origin.
+# נמחקו בפועל: אפס ענפים. git branch -d מסרב על כל אחד מהם, כי אף אחד מהם
+# לא merged לתוך origin/main. הרשימה נשמרת כראיה, לא כרישום מחיקה.
+
+## git branch --merged origin/main
+main        (הענף הנוכחי של הפרודקשן, לא למחיקה)
+# זה כל מה שהפקודה מחזירה. אין ענף נוסף שעומד בתנאי של -d.
+
+## 38 הענפים המקומיים, ופער הקומיטים שלהם מול origin/main
+# AHEAD = קומיטים שקיימים בענף ולא ב-origin/main, כלומר עבודה שתיעלם במחיקה.
+BRANCH                                        AHEAD   BEHIND
+arch/account-area                                 1      877
+arch/checkout-cardcom-verification                1      877
+arch/docs-admin-supplier-guides                   1       42
+arch/docs-api-public                              1       41
+arch/docs-batch-2                               815       16
+arch/docs-category-taxonomy                       2       29
+arch/docs-checkout-guest                          1       22
+arch/docs-city-landing                            1       29
+arch/docs-data-retention                          1       29
+arch/docs-design-phase23                          1       61
+arch/docs-email-copy                              1       29
+arch/docs-incident-playbooks                      1       29
+arch/docs-launch-pack                             1       68
+arch/docs-legal-ops                               1       48
+arch/docs-lifecycle                             369      520
+arch/docs-marketing-analytics                     1       42
+arch/docs-mobile-integrations                     1       43
+arch/docs-onboarding-dev                          1       29
+arch/docs-progress-aug                            1       22
+arch/docs-queue                                  38      781
+arch/docs-seasonal-referral                       1       41
+arch/docs-sla-backup                              1       41
+arch/docs-supplier-quality                        1       22
+arch/docs-support-faq                             1       41
+arch/docs-support-whatsapp                        1       16
+arch/docs-testing-review                          1       29
+arch/docs-v2-vision                               1       29
+arch/notifications-v2                             1      877
+arch/seed-data                                    1      472
+arch/wp-migration                                 1      875
+docs/app-store-and-deep-links                   219      520
+docs/final-pack                                  10      781
+feat/checkout-cardcom                             1      557
+feat/e2e-quality                                  1        0
+feat/product-type                                55        0   <- HEAD
+feat/supplier-portal                              4        0
+feat/visual-polish                               17      606
+save/ke-visual-work                              17      606
+
+## דגימה: מה יש בקומיט הבודד שמונע את המחיקה
+arch/docs-support-whatsapp  e63a789eb  docs(ops): support SLA policy and WhatsApp Business setup
+                            3 קבצים, 566 שורות (MASTER-INDEX, SUPPORT-SLA-POLICY, WHATSAPP-BUSINESS-SETUP)
+arch/account-area           e44c27550  chore(worktree): preserve uncommitted work
+                            2 קבצים, 712 שורות (STATE.md, ARCHITECTURE-ACCOUNT-AREA)
+feat/e2e-quality            c8ade8513  test(quality): the money paths, RTL and web vitals become gates
+                            ci.yml, .lighthouserc.cjs, ותשעה קבצי e2e
+
+## ענפים מרוחקים שכן merged לתוך origin/main (20)
+# git branch -d לא נוגע בהם. מחיקתם היא git push origin --delete, פעולה אחרת
+# שלא התבקשה ולא בוצעה.
+origin/arch/admin-supplier
+origin/arch/ai-agents
+origin/arch/db-audit
+origin/arch/mega-docs
+origin/arch/supplier-portal
+origin/cursor/add-supabase-3c830
+origin/feat/admin-core
+origin/feat/checkout-complete
+origin/feat/ci-foundation
+origin/feat/coupon-redemption
+origin/feat/e2e
+origin/feat/growth-core
+origin/feat/notifications
+origin/feat/observability
+origin/feat/payments-core
+origin/feat/personal-area
+origin/feat/search-core
+origin/feat/seo-performance
+origin/feat/wp-migration
+origin/phase5/homepage

@@ -1,8 +1,24 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-12 (הקשחת ה-RPC הוחלה על פרודקשן, אזהרות ה-security ירדו מ-38 ל-24)
+Updated: 2026-08-12 (AUTOPILOT תור סגור מ-AUTOPILOT-PROMPT.md)
 
-## המשך מ: שלב 4 בשרשרת החמישה, ‏ADMIN CORE לפי `docs/ADMIN-ARCHITECTURE.md`. שלבים 1 ו-3 סגורים, שלב 2 נמצא כבר מסופק ברמת ה-DB
+## המשך מ: שלב 2
+
+### AUTOPILOT תור סגור (2026-08-12)
+
+1. ✅ גיבוי ענפים ל-`branches-backup.txt` + מחיקת 26 מקומיים ב-`-d` בלבד (כולם עדיין ב-`origin/*`). 7 לא-merged נשארו. 4 worktrees דולגו. לא הופעלה לולאת `claude` מקבילה (שני סוכנים על אותו tree כבר הרסו עבודה, ראה החלטה 1 למטה).
+2. ⏳ CLAUDE.md → main
+3. ⏳ refs/gitignore (סגירת נושא)
+4. ⏳ finalize.ts:312 מול enum
+5. ⏳ feat/product-type
+6. ⏳ pixel parity
+7–8. תהליך אחרי כל שלב
+9. ⏳ AUTOPILOT-DONE + tag
+
+### שרשרת חמשת השלבים, מצב אמיתי נכון ל-12.08
+
+**שלב 1, היגיינת ריפו: סגור.** 29 branches מוזגים נמחקו ב-`-d`, ו-`arch/supplier-portal`
+נמחק ב-`-D` אחרי ש-`git cherry` הראה שאין בו patch שאינו ב-main. הרשימה עם ה-SHA
 
 ### שרשרת חמשת השלבים, מצב אמיתי נכון ל-12.08
 
