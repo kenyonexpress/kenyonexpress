@@ -6,7 +6,17 @@ import { HERO_SLIDER_IMAGES } from '@/lib/assets'
 
 export const HERO_SLIDER_BG = '#eef4f7'
 
+/** Desktop / lg+ authored height (full hero row). Kept for callers that need a number. */
 export const HERO_SLIDER_HEIGHT = 422
+
+/**
+ * Responsive heights measured from refs/ke_live_computed.json home slider
+ * (`#rev_slider_6_1_wrapper`) on 2026-08-12:
+ *   380 → 193px, 768 → 304px, 1440 → 370px (slider alone; row stays 422 on lg+).
+ * Inline `height: 422` on every viewport made the phone/tablet hero ~2× live.
+ */
+export const HERO_SLIDER_HEIGHT_CLASS =
+  'h-[193px] min-h-[193px] md:h-[304px] md:min-h-[304px] lg:h-[422px] lg:min-h-[422px]'
 
 const WELCOME_SLIDE: HeroSlide = {
   id: 'rs-18',
