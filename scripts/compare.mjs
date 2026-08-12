@@ -43,10 +43,14 @@ const argOf = (name, dflt) => {
   return hit ? hit.slice(name.length + 3) : dflt
 }
 const page = argOf('page', 'home')
-// 1440 is not a free choice any more: it is the widest viewport
-// snapshot-live.mjs captures, so it is the only width the stored reference PNG
-// and the stored computed styles exist at.
-const REF_WIDTH = 1440
+// snapshot-live.mjs captures 380, 768 and 1440. Default stays 1440 (desktop
+// gate); pass --width=380 or --width=768 for the narrow refs.
+const ALLOWED_WIDTHS = new Set([380, 768, 1440])
+const REF_WIDTH = Number(argOf('width', '1440'))
+if (!ALLOWED_WIDTHS.has(REF_WIDTH)) {
+  console.error(`unknown --width=${REF_WIDTH} (use 380, 768 or 1440)`)
+  process.exit(2)
+}
 const VIEW = { width: REF_WIDTH, height: 2600 }
 const LOCAL = process.env.LOCAL_BASE ?? 'http://localhost:3000'
 const LIVE_HOME = 'https://kenyonexpress.co.il/'
