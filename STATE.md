@@ -2,23 +2,18 @@
 
 Updated: 2026-08-12 (AUTOPILOT תור סגור מ-AUTOPILOT-PROMPT.md)
 
-## המשך מ: שלב 2
+## המשך מ: שלב 5
 
 ### AUTOPILOT תור סגור (2026-08-12)
 
 1. ✅ גיבוי ענפים ל-`branches-backup.txt` + מחיקת 26 מקומיים ב-`-d` בלבד (כולם עדיין ב-`origin/*`). 7 לא-merged נשארו. 4 worktrees דולגו. לא הופעלה לולאת `claude` מקבילה (שני סוכנים על אותו tree כבר הרסו עבודה, ראה החלטה 1 למטה).
-2. ⏳ CLAUDE.md → main
-3. ⏳ refs/gitignore (סגירת נושא)
-4. ⏳ finalize.ts:312 מול enum
-5. ⏳ feat/product-type
+2. ✅ CLAUDE.md על `main`: הענף הקבוע הוא `main`, לא `phase5/homepage` (קומיט `688a90df0` נדחף ל-`origin/main`).
+3. ✅ נושא `refs/*.png` ב-gitignore: **נסגר בלי שינוי.** הקובץ כבר עושה `refs/*` ואז `!refs/ke_live_*.png`. ‏`compare.mjs` קורא `refs/ke_live_<page>_<width>.png`. להתעלם מהם היה מנתק את שער הפיקסלים. שלושת הקבצים היתומים `refs/ke_live_{380,768,1440}.png` (בלי שם דף) נשארים מחוץ ל-git בכוונה.
+4. ✅ `finalize.ts:312` מול enum: **אין פער.** השורה היום היא חתימת `spendWallet`, לא כתיבת settlement. הקוד כותב `split_executed` לקופון ולפיזי (שורות 471/478). ‏`platform_settled` קיים ב-`src/types/database.ts` ב-enum `settlement_status` (legacy ליציאה בלבד). אין MCP `list_tables` בסשן הזה; האימות הוא מול הטיפוסים שנוצרו מהקטלוג החי + המדידה הקודמת בפרודקשן (0 שורות `platform_settled`). **אין מיגרציה ממתינה.**
+5. ⏳ feat/product-type: מודל שני סוגי מוצרים
 6. ⏳ pixel parity
 7–8. תהליך אחרי כל שלב
 9. ⏳ AUTOPILOT-DONE + tag
-
-### שרשרת חמשת השלבים, מצב אמיתי נכון ל-12.08
-
-**שלב 1, היגיינת ריפו: סגור.** 29 branches מוזגים נמחקו ב-`-d`, ו-`arch/supplier-portal`
-נמחק ב-`-D` אחרי ש-`git cherry` הראה שאין בו patch שאינו ב-main. הרשימה עם ה-SHA
 
 ### שרשרת חמשת השלבים, מצב אמיתי נכון ל-12.08
 
