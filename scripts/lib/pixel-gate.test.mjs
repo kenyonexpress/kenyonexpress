@@ -44,6 +44,14 @@ describe('gateVerdict', () => {
     expect(gateVerdict({ page: 'home', overallPct: 11.03, contentRatio: 0.99 }).status).toBe('PASS')
   })
 
+  it('ignores registered 1440 ceilings at narrow widths', () => {
+    // home is registered at 11.1% for 1440. At 380 the same number must not
+    // pass a 40% score under that ceiling.
+    expect(gateVerdict({ page: 'home', overallPct: 40, width: 380 }).status).toBe('FAIL')
+    expect(gateVerdict({ page: 'home', overallPct: 40, width: 380 }).ceiling).toBe(GATE_PERCENT)
+    expect(gateVerdict({ page: 'home', overallPct: 11.03, width: 1440 }).status).toBe('PASS')
+  })
+
   it('takes the content ratio ahead of the ceiling, on a registered page too', () => {
     expect(gateVerdict({ page: 'products', overallPct: 31.81, contentRatio: 0.2 }).status).toBe(
       'NOT_A_SCORE',

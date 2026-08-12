@@ -620,7 +620,12 @@ for (const { prop, pct: distance, worst } of tokens.props) {
 // to say, from the output alone, which of them was allowed to.
 // ---------------------------------------------------------------------------
 const bandReport = JSON.parse(readFileSync('refs/band-report.json', 'utf8'))
-const verdict = gateVerdict({ page, overallPct: bandReport.overallPct, contentRatio })
+const verdict = gateVerdict({
+  page,
+  overallPct: bandReport.overallPct,
+  contentRatio,
+  width: REF_WIDTH,
+})
 console.log('')
 for (const line of verdictLines({ page, overallPct: bandReport.overallPct, verdict })) {
   console.log(line)

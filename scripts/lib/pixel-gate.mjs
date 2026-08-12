@@ -66,7 +66,7 @@ export const REGISTERED_DEVIATIONS = {
  * calling that a failed pixel gate would be reporting the size of the catalogue
  * as a styling defect.
  */
-export function gateVerdict({ page, overallPct, contentRatio = null }) {
+export function gateVerdict({ page, overallPct, contentRatio = null, width = 1440 }) {
   if (contentRatio !== null && contentRatio < CONTENT_RATIO_FLOOR) {
     return {
       status: 'NOT_A_SCORE',
@@ -74,7 +74,11 @@ export function gateVerdict({ page, overallPct, contentRatio = null }) {
       reason: `one side carries ${(100 * contentRatio).toFixed(0)}% of the other's content`,
     }
   }
-  const deviation = REGISTERED_DEVIATIONS[page]
+  // Registered ceilings were measured at 1440. Applying them at 380/768 would
+  // treat a different layout (and often a different content height) as the
+  // same fidelity score. Narrow widths use the plain 11% rule until measured
+  // and registered under their own key.
+  const deviation = width === 1440 ? REGISTERED_DEVIATIONS[page] : null
   const ceiling = deviation?.ceiling ?? GATE_PERCENT
   return {
     status: overallPct <= ceiling ? 'PASS' : 'FAIL',
