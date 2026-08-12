@@ -136,6 +136,17 @@
      up as 30-42% band differences that looked like card-level defects. Card
      heights were identical all along: 485px on both sides. */
   --spacing-header-masthead: 109px; /* + 1px border = the 110px live masthead */
+  /* The live masthead is only 110px on desktop. At 380 and 768 it is 84px
+     (ke_live_computed home, `.site-header` h=84 at both widths).
+
+     This is a SECOND token, applied as `lg:` on the element, and not a
+     media-query override of the one above. Tailwind v4 folds a `:root` block
+     that redefines theme variables back into the single top-level `:root` and
+     drops the media context with it, so the max-width:1023px override written
+     on 2026-08-12 never reached the built stylesheet at all: grepping
+     .next/static/chunks/*.css for 83px found nothing, the phone masthead
+     stayed 110px, and every block below the header sat 26px low. */
+  --spacing-header-handheld: 83px; /* + 1px border = 84px */
   --spacing-logo-h: 40px; /* header logo box (not live's 270x71; see Header.tsx) */
   --spacing-logo-w: 52px;
   --spacing-footer-logo-h: 42px;
@@ -144,15 +155,6 @@
   --spacing-newsletter-field: 41px;
   --spacing-newsletter-bar: 80px; /* live newsletter bar height */
   --spacing-deals-top: 30px; /* live deals grid top offset */
-}
-
-/* Handheld masthead is 84px on live (ke_live_computed home @ 380 and 768),
-   not the 110px desktop row. Leaving 110 on the phone pushed the hero down
-   26px past the live start. */
-@media (max-width: 1023px) {
-  :root {
-    --spacing-header-masthead: 83px; /* + 1px border = 84px */
-  }
 }
 
 body {

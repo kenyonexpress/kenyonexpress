@@ -7,9 +7,10 @@ import Link from 'next/link'
 /**
  * kenyonexpress.co.il — top bar (welcome) + masthead.
  *
- * Masthead height is NOT set here. It comes from `--spacing-header-masthead`
- * in globals.css, which is 109px + a 1px border = the 110px the live masthead
- * actually is.
+ * Masthead height is NOT set here. It comes from two tokens in globals.css:
+ * `--spacing-header-handheld` (83px + 1px border = 84px, what live is at 380
+ * and 768) and `--spacing-header-masthead` (109px + 1px = 110px, live from lg
+ * up). The element carries the handheld one and overrides it at `lg:`.
  *
  * This comment used to say 127px, "measured 2026-07-24", and it was wrong twice
  * over: 127 was remeasured to 110 on 2026-07-30 (globals.css:132 carries that
@@ -63,10 +64,11 @@ export default function SiteHeader() {
       </div>
 
       <header dir="rtl" className="sticky top-0 z-40 w-full border-b border-border bg-white">
-        {/* 109px + 1px border = the 110px masthead measured on the live site.
-            Everything below the header inherits this offset, so the height has
-            to match before any page can be compared band by band. */}
-        <div className="mx-auto flex h-header-masthead max-w-page items-center justify-between px-4">
+        {/* 109px + 1px border = the 110px masthead measured on the live site,
+            but only from lg up: the live handheld masthead is 84px. Everything
+            below the header inherits this offset, so the height has to match
+            before any page can be compared band by band. */}
+        <div className="mx-auto flex h-header-handheld max-w-page items-center justify-between px-4 lg:h-header-masthead">
           <Link href="/" aria-label="קניון אקספרס, לדף הבית" className="shrink-0">
             <SmartImage
               src={LOGO}
