@@ -146,6 +146,15 @@
   --spacing-deals-top: 30px; /* live deals grid top offset */
 }
 
+/* Handheld masthead is 84px on live (ke_live_computed home @ 380 and 768),
+   not the 110px desktop row. Leaving 110 on the phone pushed the hero down
+   26px past the live start. */
+@media (max-width: 1023px) {
+  :root {
+    --spacing-header-masthead: 83px; /* + 1px border = 84px */
+  }
+}
+
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
