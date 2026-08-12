@@ -79,7 +79,7 @@ export default function SupplierInfo({
   // that the admin has not opted in would otherwise render an empty <ul> under
   // the heading instead of the "details coming soon" line.
   const hasAnyVisible = Boolean(
-    contact.name || contact.addressLine || contact.telHref || showWhatsApp,
+    contact.name || contact.addressLine || contact.telHref || showWhatsApp || contact.logoUrl,
   )
 
   return (
@@ -88,10 +88,24 @@ export default function SupplierInfo({
 
       {hasAnyVisible ? (
         <ul className="pdp-details__list space-y-1.5">
-          {contact.name && (
-            <li>
-              <span className="pdp-details__label">ספק: </span>
-              <span className="font-medium">{contact.name}</span>
+          {(contact.logoUrl || contact.name) && (
+            <li className="flex items-center gap-3">
+              {contact.logoUrl && (
+                // eslint-disable-next-line @next/next/no-img-element -- supplier CDN URLs vary; next/image needs a static allowlist
+                <img
+                  src={contact.logoUrl}
+                  alt={contact.name ? `לוגו ${contact.name}` : 'לוגו הספק'}
+                  width={48}
+                  height={48}
+                  className="h-12 w-12 shrink-0 rounded object-contain"
+                />
+              )}
+              {contact.name && (
+                <span>
+                  <span className="pdp-details__label">ספק: </span>
+                  <span className="font-medium">{contact.name}</span>
+                </span>
+              )}
             </li>
           )}
 

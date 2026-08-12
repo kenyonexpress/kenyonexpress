@@ -23,6 +23,7 @@ export interface SupplierContactRow {
   address?: string | null
   contact_phone?: string | null
   whatsapp?: string | null
+  logo_url?: string | null
 }
 
 export interface SupplierContactView {
@@ -36,6 +37,7 @@ export interface SupplierContactView {
   phoneDisplay: string | null
   telHref: string | null
   whatsappHref: string | null
+  logoUrl: string | null
   /** True when there is at least one thing to render. */
   hasAny: boolean
 }
@@ -62,6 +64,7 @@ export function buildSupplierContact(
     phoneDisplay: null,
     telHref: null,
     whatsappHref: null,
+    logoUrl: null,
     hasAny: false,
   }
   if (!supplier) return empty
@@ -70,6 +73,7 @@ export function buildSupplierContact(
   const city = trimmed(supplier.city)
   const address = trimmed(supplier.address)
   const phone = trimmed(supplier.contact_phone)
+  const logoUrl = trimmed(supplier.logo_url)
 
   const addressLine = [address, city].filter(Boolean).join(', ') || null
 
@@ -88,10 +92,13 @@ export function buildSupplierContact(
     phoneDisplay: phone,
     telHref: telIntl ? `tel:+${telIntl}` : null,
     whatsappHref: whatsappSource ? waChatLink(whatsappSource, options.whatsappMessage) : null,
+    logoUrl,
     hasAny: false,
   }
 
-  view.hasAny = Boolean(view.name || view.addressLine || view.telHref || view.whatsappHref)
+  view.hasAny = Boolean(
+    view.name || view.addressLine || view.telHref || view.whatsappHref || view.logoUrl,
+  )
   return view
 }
 

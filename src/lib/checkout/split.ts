@@ -15,9 +15,9 @@ export type SplitLineView = {
   balanceDueAtBusinessIls: number
   platformPercent: number
   platformFeeIls: number
-  /** Physical: transferred with the settlement. Zero on coupons. */
+  /** Immediate supplier share of the on-site charge (residual of platformFee). */
   supplierImmediateIls: number
-  /** Coupon: held internally, released to the supplier at redemption. */
+  /** Same as supplierImmediate under ADMIN §0 (no escrow). */
   supplierDueIls: number
   cashbackPercent: number
   cashbackAmountIls: number
@@ -38,17 +38,15 @@ export type SplitResultView = {
 }
 
 /**
- * Wire-facing split calculator (model of 2026-07-27).
+ * Wire-facing split calculator (ADMIN-ARCHITECTURE §0).
  * Coupon: customer pays the admin-set ABSOLUTE coupon price on site (mandatory
  * per product, no default and no percent derivation), remainder at the
  * business. The platform keeps platform_percent OF THAT PREPAYMENT and the
- * rest is held for the supplier until redemption.
- * Physical: customer pays 100% on site; platform_percent splits it immediately.
+ * residual settles to the supplier immediately. No escrow.
+ * Physical: customer pays the on-site charge (after discount_percent); the same
+ * pair splits it immediately.
  *
- * platform_percent is mandatory on both types. It used to be forced to 0 for
- * coupons here, which was correct only while the platform kept the whole
- * prepayment; passing 0 now would silently pay the supplier the entire
- * prepayment and the platform nothing.
+ * platform_percent is mandatory on both types.
  */
 export function calculateSplit(input: CalculateSplitInput): SplitResultView {
   const commissionInput: CommissionInput = {

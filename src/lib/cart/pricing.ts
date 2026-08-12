@@ -27,6 +27,7 @@ type ProductRow = {
   images: unknown
   is_coupon_enabled: boolean
   platform_percent?: number | null
+  discount_percent?: number | null
   coupon_price_ils?: number | null
   cashback_percent?: number | null
 }
@@ -133,6 +134,7 @@ export function buildCartView(
     quantity: number
     platformPercent: number
     couponPriceUnit?: Agorot
+    discountPercent?: number
     cashbackPercent: number
   }[] = []
   const viewItems: CartViewItem[] = []
@@ -157,6 +159,8 @@ export function buildCartView(
     const couponPrice = couponPriceIls(product)
     const couponPriceUnit =
       type === 'coupon' && couponPrice != null ? ilsToAgorot(couponPrice.toFixed(2)) : null
+    const discountPercent =
+      type === 'physical' && product.discount_percent != null ? product.discount_percent : undefined
 
     // Both types need the percent since 2026-07-27, and a coupon additionally
     // needs its admin-set absolute price. A line missing either renders as
@@ -179,6 +183,7 @@ export function buildCartView(
         quantity: item.quantity,
         platformPercent: percent,
         couponPriceUnit: couponPriceUnit ?? undefined,
+        discountPercent,
         cashbackPercent: cashbackPercent(product),
       })
     }

@@ -47,11 +47,11 @@ describe('calculateSplit — wire view', () => {
     expect(line.faceValueIls).toBe(400)
     expect(line.customerPaysNowIls).toBe(40)
     expect(line.balanceDueAtBusinessIls).toBe(360)
-    // The whole 40₪ prepayment is platform revenue; the 360₪ balance is the
-    // supplier's and is collected at their counter, never through us.
-    expect(line.platformFeeIls).toBe(40)
-    expect(line.supplierImmediateIls).toBe(0)
-    expect(line.supplierDueIls).toBe(0)
+    // 20% of the 40₪ prepayment; residual to the supplier. The 360₪ balance is
+    // collected at their counter and never through us.
+    expect(line.platformFeeIls).toBe(8)
+    expect(line.supplierImmediateIls).toBe(32)
+    expect(line.supplierDueIls).toBe(32)
     expect(result.cardChargeIls).toBe(40)
   })
 
@@ -72,11 +72,10 @@ describe('calculateSplit — wire view', () => {
     expect(result.faceValueIls).toBe(500)
     expect(result.customerPaysNowIls).toBe(140)
     expect(result.balanceDueAtBusinessIls).toBe(360)
-    // The full 40₪ coupon prepayment + 10₪ off the physical line.
-    expect(result.platformFeeIls).toBe(50)
-    expect(result.supplierImmediateIls).toBe(90)
-    // Only the physical line owes the supplier anything; the coupon owes 0.
-    expect(result.supplierDueIls).toBe(90)
+    // 8₪ from the coupon prepayment + 10₪ from the physical line.
+    expect(result.platformFeeIls).toBe(18)
+    expect(result.supplierImmediateIls).toBe(122)
+    expect(result.supplierDueIls).toBe(122)
     expect(result.cardChargeIls).toBe(140)
   })
 
@@ -127,12 +126,10 @@ describe('calculateSplit — wire view', () => {
   })
 
   it('reports the coupon percent it actually applied, so the snapshot is auditable', () => {
-    // The product is configured at 20%, but a coupon prepayment is not split:
-    // the platform takes all of it. Snapshotting the configured 20% would
-    // describe a division that never happened and would make the order_items
-    // row disagree with the money actually booked.
+    // The product is configured at 20% and that is the split that ran on the
+    // prepayment. Snapshotting 100% would invent a different agreement.
     const result = calculateSplit(split({ lines: [couponLine()] }))
-    expect(at(result.lines, 0).platformPercent).toBe(100)
+    expect(at(result.lines, 0).platformPercent).toBe(20)
   })
 
   it('derives cashback from the on-site charge, never from face value', () => {

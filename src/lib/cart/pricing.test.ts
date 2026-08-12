@@ -135,13 +135,24 @@ describe('buildCartView: coupon lines', () => {
     expect(cart.balance_due_at_business).toBe(15_000)
   })
 
-  it('keeps the whole prepayment and reports the rate that actually applied', () => {
+  it('splits the prepayment by the product platform_percent', () => {
     const cart = buildCartView('cart-1', [stored({ product_id: 'c1' })], [couponProduct], [])
 
-    // The platform keeps all of it; the supplier is owed nothing BY US.
+    // Default fixture percent is 10%: ₪5.00 prepayment → ₪0.50 platform, ₪4.50 supplier.
+    expect(cart.platform_fee).toBe(500)
+    expect(cart.supplier_due).toBe(4_500)
+    expect(line(cart).platform_percent_bp).toBe(1_000)
+  })
+
+  it('at 100 percent keeps the whole prepayment on the platform', () => {
+    const cart = buildCartView(
+      'cart-1',
+      [stored({ product_id: 'c1' })],
+      [product({ ...couponProduct, platform_percent: 100 })],
+      [],
+    )
     expect(cart.platform_fee).toBe(5_000)
     expect(cart.supplier_due).toBe(0)
-    // Not the product's configured 10%: that split did not happen.
     expect(line(cart).platform_percent_bp).toBe(10_000)
   })
 

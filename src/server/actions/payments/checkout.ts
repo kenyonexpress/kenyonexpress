@@ -409,6 +409,7 @@ async function runBeginCheckout(
         quantity: item.quantity,
         platformPercent: split.pair.platformPercent,
         cashbackPercent: product.cashback_percent ?? 0,
+        discountPercent: product.discount_percent,
       })
     }
   }

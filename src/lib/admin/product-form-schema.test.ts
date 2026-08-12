@@ -36,9 +36,11 @@ function errorsAt(input: Record<string, unknown>, path: string): string[] {
 describe('productSchema: the three modes', () => {
   it('accepts each mode the selector offers', () => {
     expect(productSchema.safeParse(base({ type: 'physical' })).success).toBe(true)
-    expect(productSchema.safeParse(base({ type: 'coupon', coupon_expiry_days: 30 })).success).toBe(
-      true,
-    )
+    expect(
+      productSchema.safeParse(
+        base({ type: 'coupon', coupon_expiry_days: 30, coupon_price_ils: 40 }),
+      ).success,
+    ).toBe(true)
     expect(
       productSchema.safeParse(
         base({ type: 'recurring', recurring_amount_ils: 49, billing_interval: 'monthly' }),
@@ -71,6 +73,12 @@ describe('productSchema: coupon rules', () => {
 
   it('does not demand a validity period from a plain physical product', () => {
     expect(errorsAt(base({ type: 'physical' }), 'coupon_expiry_days')).toHaveLength(0)
+  })
+
+  it('refuses a coupon with no on-site price', () => {
+    expect(
+      errorsAt(base({ type: 'coupon', coupon_expiry_days: 30 }), 'coupon_price_ils'),
+    ).toContain('מחיר קופון לתשלום באתר נדרש למוצר קופון')
   })
 
   it('refuses a coupon priced above the product price', () => {

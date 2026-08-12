@@ -17,23 +17,23 @@ export interface CommissionLineInput {
   /**
    * Mandatory on BOTH product types. There is no default anywhere (C1).
    *
-   * On a PHYSICAL line it is the split: the platform takes this percent of the
-   * full charge and the rest settles to the supplier immediately.
-   *
-   * On a COUPON line it does not divide anything, because the platform keeps
-   * the whole on-site prepayment. It stays required so the catalog invariant
-   * holds one way for every product and a mispriced product fails loudly
-   * instead of selling at an accidental split.
+   * On both types it splits whatever the customer pays on site: the platform
+   * takes this percent and the residual settles to the supplier. A coupon where
+   * the platform keeps everything is expressible as platform_percent = 100.
    */
   platformPercent?: string | number | null
   cashbackPercent: string | number
   /**
    * Coupon only: the ABSOLUTE per-unit amount the customer pays on site, set by
    * the admin on the product (products.coupon_price_ils). Required for coupon
-   * lines; never derived from a percent, because deriving it is exactly how the
-   * quote and the charge came apart before (see lib/commerce/coupon-offer.ts).
+   * lines; never derived from a percent.
    */
   couponPriceUnit?: Agorot
+  /**
+   * Physical only: products.discount_percent. Reduces the on-site charge off
+   * the sticker (unitPrice). Ignored on coupons (coupon_price_ils is absolute).
+   */
+  discountPercent?: string | number | null
 }
 
 export interface CommissionInput {
@@ -52,16 +52,11 @@ export interface CommissionLineResult {
   platformPercentBps: number
   platformFee: Agorot
   /**
-   * Physical only: the supplier's share of a full on-site payment, transferred
-   * as part of the same settlement. Zero on coupon lines.
+   * Supplier share of the on-site charge, residual of platformFee. Immediate on
+   * both types under ADMIN-ARCHITECTURE §0 (no escrow).
    */
   supplierImmediate: Agorot
-  /**
-   * Everything the supplier is owed from the platform. Equals supplierImmediate:
-   * there is no deferred component, because a coupon owes the supplier nothing
-   * from us. What the supplier earns on a coupon is the balance the customer
-   * hands over at the counter, which never passes through the platform.
-   */
+  /** Same as supplierImmediate: nothing is deferred. */
   supplierDue: Agorot
   cashbackPercentBps: number
   cashbackAmount: Agorot
@@ -87,6 +82,25 @@ function assertNonNegative(value: Agorot, label: string): void {
   }
 }
 
+/**
+ * Sticker minus discount_percent, integer-safe. discount 0 or missing = face.
+ * The residual form (face - fee) matches settlement so cart and checkout agree.
+ */
+export function applyDiscountAgorot(
+  face: Agorot,
+  discountPercent: string | number | null | undefined,
+): Agorot {
+  if (discountPercent === undefined || discountPercent === null || discountPercent === '') {
+    return face
+  }
+  const discountBps = percentToBasisPoints(discountPercent)
+  if (discountBps <= 0) return face
+  if (discountBps >= 10_000) {
+    throw new RangeError('discount percent must be less than 100')
+  }
+  return agorot(face - percentageOf(face, discountBps))
+}
+
 function calculateLine(line: CommissionLineInput): CommissionLineResult {
   if (!line.id.trim()) {
     throw new TypeError('line id is required')
@@ -97,11 +111,8 @@ function calculateLine(line: CommissionLineInput): CommissionLineResult {
 
   assertNonNegative(line.unitPrice, 'unit price')
 
-  const faceValue = multiplyAgorot(line.unitPrice, line.quantity)
+  const stickerFace = multiplyAgorot(line.unitPrice, line.quantity)
 
-  // Required on both types. A physical line is unpriceable without it, and a
-  // coupon product that reached checkout without one was mis-configured in
-  // admin, so refusing is better than shipping a silent split.
   if (line.platformPercent === undefined || line.platformPercent === null) {
     throw new TypeError(
       `platform percent is required for ${line.productType} line ${line.id} (no default exists)`,
@@ -110,9 +121,6 @@ function calculateLine(line: CommissionLineInput): CommissionLineResult {
   const platformPercentBps = percentToBasisPoints(line.platformPercent)
   const cashbackPercentBps = percentToBasisPoints(line.cashbackPercent)
 
-  // R1: the coupon on-site charge is the admin-set absolute coupon price, never
-  // a percent of face. A coupon line without it cannot be priced; refusing
-  // beats inventing a number.
   if (line.productType === 'coupon') {
     if (line.couponPriceUnit === undefined || line.couponPriceUnit === null) {
       throw new TypeError(`coupon price is required for coupon line ${line.id} (no default exists)`)
@@ -122,47 +130,48 @@ function calculateLine(line: CommissionLineInput): CommissionLineResult {
         `coupon price for line ${line.id} must be positive and at most the unit price`,
       )
     }
+    const customerPaysNow = multiplyAgorot(line.couponPriceUnit, line.quantity)
+    const balanceDueAtBusiness = agorot(stickerFace - customerPaysNow)
+    // Split the prepayment only (ADMIN §0.3). Never the face: the balance is
+    // cash at the counter and never reaches us.
+    const platformFee = percentageOf(customerPaysNow, platformPercentBps)
+    const supplierImmediate = agorot(customerPaysNow - platformFee)
+
+    return {
+      id: line.id,
+      productType: line.productType,
+      quantity: line.quantity,
+      faceValue: stickerFace,
+      customerPaysNow,
+      balanceDueAtBusiness,
+      platformPercentBps,
+      platformFee,
+      supplierImmediate,
+      supplierDue: supplierImmediate,
+      cashbackPercentBps,
+      cashbackAmount: percentageOf(customerPaysNow, cashbackPercentBps),
+    }
   }
-  const customerPaysNow =
-    line.productType === 'coupon'
-      ? multiplyAgorot(line.couponPriceUnit as Agorot, line.quantity)
-      : faceValue
-  const balanceDueAtBusiness =
-    line.productType === 'coupon' ? agorot(faceValue - customerPaysNow) : agorot(0)
 
-  // Coupon: the platform keeps the entire on-site prepayment. Nothing is split,
-  // nothing is held, and the supplier is paid nothing by us for the line. The
-  // balance the customer pays at the counter is the supplier's revenue and is
-  // collected directly, never through our clearing account.
-  //
-  // Physical: the platform takes platformPercent of the full charge, rounded
-  // once on the complete line total, and the residual settles to the supplier
-  // in the same run. The residual is gross minus fee rather than the mirror
-  // percent applied a second time, so the two halves can never disagree.
-  const isCoupon = line.productType === 'coupon'
-  const platformFee = isCoupon ? customerPaysNow : percentageOf(faceValue, platformPercentBps)
-  const supplierImmediate = isCoupon ? agorot(0) : agorot(faceValue - platformFee)
-
-  // R3: cashback uses customerPaysNow only and is merely snapshotted here.
-  // Lifecycle handlers credit it after redemption or shipment.
-  const cashbackAmount = percentageOf(customerPaysNow, cashbackPercentBps)
+  const customerPaysNow = applyDiscountAgorot(stickerFace, line.discountPercent)
+  const platformFee = percentageOf(customerPaysNow, platformPercentBps)
+  const supplierImmediate = agorot(customerPaysNow - platformFee)
 
   return {
     id: line.id,
     productType: line.productType,
     quantity: line.quantity,
-    faceValue,
+    // Face follows the charge after discount so cart totals match what the card
+    // is billed. The sticker lives on full_price / compare_at for display.
+    faceValue: customerPaysNow,
     customerPaysNow,
-    balanceDueAtBusiness,
-    // A coupon's effective platform share of the prepayment is the whole of it.
-    // Reporting the product's configured percent here would describe a split
-    // that did not happen, and this value is what gets snapshotted downstream.
-    platformPercentBps: isCoupon ? 10_000 : platformPercentBps,
+    balanceDueAtBusiness: agorot(0),
+    platformPercentBps,
     platformFee,
     supplierImmediate,
     supplierDue: supplierImmediate,
     cashbackPercentBps,
-    cashbackAmount,
+    cashbackAmount: percentageOf(customerPaysNow, cashbackPercentBps),
   }
 }
 
@@ -194,8 +203,6 @@ export function calculateCommission(input: CommissionInput): CommissionResult {
     throw new RangeError('wallet applied must not exceed customerPaysNow')
   }
 
-  // R4: wallet is a payment source. It reduces only the card charge and never
-  // mutates line settlement, commission, supplier due, or cashback snapshots.
   const cardCharge = agorot(customerPaysNow - walletApplied)
 
   return {

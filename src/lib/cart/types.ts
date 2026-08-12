@@ -39,9 +39,8 @@ export type CartViewItem = {
   balance_due_at_business: Agorot
   /**
    * The rate that actually priced this line, in basis points, as the settlement
-   * engine reported it. On a coupon this is 10000: the platform keeps the whole
-   * prepayment, so reporting the product's configured percent here would
-   * describe a split that did not happen.
+   * engine reported it. On both product types this is the product's configured
+   * platform_percent in basis points (the split that actually ran).
    */
   platform_percent_bp: number
   /**

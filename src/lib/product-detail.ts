@@ -161,7 +161,7 @@ async function loadSupplierPublicContact(supplierId: string | null) {
   if (!supplierId) return null
   const { data } = await createAdminClient()
     .from('suppliers')
-    .select('id, name, city, address, contact_phone, whatsapp')
+    .select('id, name, city, address, contact_phone, whatsapp, logo_url')
     .eq('id', supplierId)
     .maybeSingle()
   return data

@@ -89,6 +89,18 @@ describe('calculateSettlement — final business rules', () => {
     expect(line.perUnitVoucher).toHaveLength(0)
   })
 
+  it('physical: discount_percent reduces the on-site charge before the split', () => {
+    const result = calculateSettlement({
+      idempotencyKey: 'k',
+      lines: [physicalLine({ discountPercent: 10 })],
+    })
+    const line = at(result.lines, 0)
+    expect(line.paidOnSite).toBe(9000)
+    expect(line.commission).toBe(450)
+    expect(line.supplierDue).toBe(8550)
+    expect(line.faceValue).toBe(9000)
+  })
+
   // There is no default percent and no default coupon price. A line missing
   // its mandatory value must fail loudly rather than settle on an invention.
   it('rejects a physical line with no platform percent', () => {

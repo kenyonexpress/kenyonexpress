@@ -1,4 +1,4 @@
-import type { CommissionProductType } from '@/lib/commerce/commission'
+import { type CommissionProductType, applyDiscountAgorot } from '@/lib/commerce/commission'
 import {
   type Agorot,
   agorot,
@@ -44,10 +44,15 @@ export interface SettlementLineInput {
   couponPriceUnit?: Agorot
   /**
    * products.platform_percent. Required on BOTH types since 070: on a coupon it
-   * splits the prepayment, on a physical the full on-site charge.
+   * splits the prepayment, on a physical the on-site charge after discount.
    */
   platformPercent?: string | number
   cashbackPercent?: string | number
+  /**
+   * Physical only: products.discount_percent. Reduces the on-site charge.
+   * Ignored on coupons (coupon_price_ils is absolute).
+   */
+  discountPercent?: string | number | null
 }
 
 /** Per-unit money snapshot, used to stamp each issued voucher. */
@@ -216,20 +221,23 @@ function calculateLine(line: SettlementLineInput): SettlementLineResult {
   }
 
   const platformPercentBps = requirePlatformPercentBps()
-  const commission = percentageOf(faceValue, platformPercentBps)
+  const paidOnSite = applyDiscountAgorot(faceValue, line.discountPercent)
+  const commission = percentageOf(paidOnSite, platformPercentBps)
 
   return {
     id: line.id,
     productType: line.productType,
     quantity: line.quantity,
-    faceValue,
-    paidOnSite: faceValue,
+    // Face follows the charge after discount so cart and checkout agree.
+    // Sticker display uses full_price / compare_at, not this field.
+    faceValue: paidOnSite,
+    paidOnSite,
     balanceDueAtBusiness: agorot(0),
     platformPercentBps,
     commission,
-    supplierDue: agorot(faceValue - commission),
+    supplierDue: agorot(paidOnSite - commission),
     perUnitVoucher: [],
-    cashbackAmount: percentageOf(faceValue, cashbackBps),
+    cashbackAmount: percentageOf(paidOnSite, cashbackBps),
   }
 }
 

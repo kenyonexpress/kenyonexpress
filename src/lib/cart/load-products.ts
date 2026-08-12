@@ -39,7 +39,7 @@ export async function loadCartProductData(items: CartStorageItem[]) {
   // column exists, and a cart is not worth losing over a perk that defaults to
   // zero.
   const productSelect =
-    'id, slug, name_he, type, kenyon_price, stock_quantity, status, deleted_at, images, is_coupon_enabled, platform_percent'
+    'id, slug, name_he, type, kenyon_price, stock_quantity, status, deleted_at, images, is_coupon_enabled, platform_percent, discount_percent'
 
   const { data: products } = await catalogue
     .from('products')

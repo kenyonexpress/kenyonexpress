@@ -462,10 +462,11 @@ export async function finalizeOrder(input: {
           offerValidUntil: null,
         }
         await issueVouchersForItem(admin, item, order.user_id, info, now, rateColumn)
-        // The coupon line is settled the moment it is paid: everything charged
-        // online is ours, nothing is deferred, and scanning the voucher moves
-        // no money. It shares split_executed with physical lines because the
-        // split did happen, at 100/0.
+        // ADMIN §0.3: the coupon prepayment splits by platform_percent. Write
+        // the same split_executions row physical lines get, then mark settled.
+        // Scanning the voucher moves no money; the supplier residual is owed
+        // from the on-site charge, not from the cash balance at the counter.
+        await executeSplitForItem(admin, item, input.paymentId)
         await admin
           .from('order_items')
           .update({ settlement_status: 'split_executed', item_status: 'issued' })

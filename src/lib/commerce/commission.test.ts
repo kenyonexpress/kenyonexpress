@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { type CommissionInput, calculateCommission } from './commission'
+import { type CommissionInput, applyDiscountAgorot, calculateCommission } from './commission'
 import { agorot } from './money'
 
-// The coupon on-site charge is the ABSOLUTE admin price (40₪ here on a 400₪
-// face), never a percent. Since 2026-07-27 the coupon also carries a platform
-// percent, which splits that 40₪ prepayment: the platform keeps 20% of it and
-// the remaining 32₪ is held for the supplier until the voucher is redeemed.
+// ADMIN-ARCHITECTURE §0: coupon on-site charge is the ABSOLUTE admin price
+// (40₪ here on a 400₪ face). That prepayment splits by platform_percent: 20%
+// of 40₪ stays with the platform, 32₪ is the supplier residual. No escrow.
 const coupon = {
   id: 'coupon-1',
   productType: 'coupon' as const,
@@ -26,7 +25,7 @@ const physical = {
 }
 
 describe('calculateCommission golden cases', () => {
-  it('charges a coupon its absolute admin-set price on site', () => {
+  it('charges a coupon its absolute admin-set price on site and splits it', () => {
     const result = calculateCommission({
       idempotencyKey: 'checkout:coupon',
       lines: [coupon],
@@ -38,23 +37,21 @@ describe('calculateCommission golden cases', () => {
       balanceDueAtBusiness: 36_000,
       // 20% of the 4,000 prepayment, NOT of the 40,000 face: the balance is
       // collected in cash at the business and never passes through us (C5).
-      platformFee: 4_000,
-      supplierImmediate: 0,
-      supplierDue: 0,
+      platformFee: 800,
+      supplierImmediate: 3_200,
+      supplierDue: 3_200,
+      platformPercentBps: 2_000,
       cashbackAmount: 200,
     })
     expect(result.cardCharge).toBe(4_000)
   })
 
-  it('keeps the whole coupon prepayment on the platform and owes the supplier nothing', () => {
+  it('at 100 percent keeps the whole coupon prepayment on the platform', () => {
     const result = calculateCommission({
       idempotencyKey: 'checkout:coupon-full-price',
-      lines: [coupon],
+      lines: [{ ...coupon, platformPercent: 100 }],
     })
 
-    // The regression that matters: any non-zero supplier figure on a coupon
-    // line means money left the platform for a balance the supplier collects
-    // in cash at their own counter, so it would be paid twice.
     expect(result.lines[0]?.supplierImmediate).toBe(0)
     expect(result.lines[0]?.supplierDue).toBe(0)
     expect(result.supplierDue).toBe(0)
@@ -69,19 +66,13 @@ describe('calculateCommission golden cases', () => {
 
     const line = result.lines[0]
     if (!line) throw new Error('expected one line')
-    // Every agora the customer paid on site is platform revenue.
-    expect(line.platformFee).toBe(line.customerPaysNow)
-    expect(line.supplierDue).toBe(0)
-    // And the face value is fully explained by what was paid plus what is owed.
+    expect(line.platformFee + line.supplierDue).toBe(line.customerPaysNow)
     expect(line.customerPaysNow + line.balanceDueAtBusiness).toBe(line.faceValue)
   })
 
   it('refuses a coupon line with no platform percent instead of assuming one', () => {
     const { platformPercent: _omitted, ...noPercent } = coupon
 
-    // The percent does not divide a coupon prepayment, but a coupon product
-    // that reached checkout without one was mis-configured in admin. Failing
-    // here is how that is caught before money moves (C1: no defaults).
     expect(() =>
       calculateCommission({ idempotencyKey: 'checkout:no-percent', lines: [noPercent] }),
     ).toThrow(TypeError)
@@ -103,6 +94,21 @@ describe('calculateCommission golden cases', () => {
     })
   })
 
+  it('applies discount_percent to the physical on-site charge before the split', () => {
+    const result = calculateCommission({
+      idempotencyKey: 'checkout:physical-discount',
+      lines: [{ ...physical, discountPercent: 10 }],
+    })
+
+    expect(result.lines[0]).toMatchObject({
+      faceValue: 9_000,
+      customerPaysNow: 9_000,
+      platformFee: 900,
+      supplierDue: 8_100,
+    })
+    expect(result.cardCharge).toBe(9_000)
+  })
+
   it('aggregates coupon and physical lines without mixing settlement rules', () => {
     const result = calculateCommission({
       idempotencyKey: 'checkout:mixed',
@@ -116,12 +122,11 @@ describe('calculateCommission golden cases', () => {
       faceValue: 50_000,
       customerPaysNow: 14_000,
       balanceDueAtBusiness: 36_000,
-      // The whole 4,000 coupon prepayment + 1,000 off the physical line.
-      platformFee: 5_000,
-      // Only the physical line pays the supplier. The coupon pays them nothing
-      // from us: their revenue on it is the balance collected at the counter.
-      supplierImmediate: 9_000,
-      supplierDue: 9_000,
+      // 800 from the coupon prepayment + 1,000 from the physical line.
+      platformFee: 1_800,
+      // Coupon residual 3,200 + physical 9,000.
+      supplierImmediate: 12_200,
+      supplierDue: 12_200,
       cashbackAmount: 1_400,
       walletApplied: 0,
       cardCharge: 14_000,
@@ -137,9 +142,9 @@ describe('calculateCommission golden cases', () => {
 
     expect(result).toMatchObject({
       customerPaysNow: 14_000,
-      platformFee: 5_000,
-      supplierImmediate: 9_000,
-      supplierDue: 9_000,
+      platformFee: 1_800,
+      supplierImmediate: 12_200,
+      supplierDue: 12_200,
       cashbackAmount: 700,
       walletApplied: 3_000,
       cardCharge: 11_000,
@@ -285,9 +290,20 @@ describe('calculateCommission guards', () => {
     expect(result.cardCharge).toBe(0)
     // Wallet is a payment source, not a discount: paying by wallet must leave
     // the commission and the supplier figures exactly where they were.
-    expect(result.platformFee).toBe(4_000)
-    expect(result.supplierDue).toBe(0)
+    expect(result.platformFee).toBe(800)
+    expect(result.supplierDue).toBe(3_200)
     expect(result.customerPaysNow).toBe(4_000)
+  })
+})
+
+describe('applyDiscountAgorot', () => {
+  it('returns face when discount is missing or zero', () => {
+    expect(applyDiscountAgorot(agorot(10_000), null)).toBe(10_000)
+    expect(applyDiscountAgorot(agorot(10_000), 0)).toBe(10_000)
+  })
+
+  it('refuses a 100 percent discount', () => {
+    expect(() => applyDiscountAgorot(agorot(10_000), 100)).toThrow(/less than 100/)
   })
 })
 
@@ -363,6 +379,9 @@ describe('calculateCommission refuses to invent a missing number', () => {
       lines: [{ ...coupon, couponPriceUnit: agorot(40_000) }],
     })
     expect(result.balanceDueAtBusiness).toBe(0)
-    expect(result.platformFee).toBe(40_000)
+    expect(result.customerPaysNow).toBe(40_000)
+    // 20% of the full-face prepayment.
+    expect(result.platformFee).toBe(8_000)
+    expect(result.supplierDue).toBe(32_000)
   })
 })

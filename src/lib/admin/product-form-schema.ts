@@ -123,6 +123,16 @@ export const productSchema = z
         path: ['coupon_expiry_days'],
       })
     }
+    if (
+      (data.type === 'coupon' || data.is_coupon_enabled) &&
+      (data.coupon_price_ils == null || !(data.coupon_price_ils > 0))
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'מחיר קופון לתשלום באתר נדרש למוצר קופון',
+        path: ['coupon_price_ils'],
+      })
+    }
     if (data.full_price != null && data.full_price < data.kenyon_price) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
