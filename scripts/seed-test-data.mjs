@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
  * Seeds the deterministic fixtures the E2E suite needs: one test supplier, one
- * test category, one coupon product, one physical product, plus a customer and
- * a supplier-member user for the paid purchase + redeem flow.
+ * test category, one coupon product, one physical product, plus a customer, a
+ * supplier-member user for the paid purchase + redeem flow, and an admin user
+ * for the catalog-write gates.
  *
  * Design rules this script obeys:
  *  - Idempotent. Every write is an upsert on a fixed UUID / email, so running
@@ -70,6 +71,21 @@ const CUSTOMER_EMAIL = env.E2E_CUSTOMER_EMAIL ?? 'e2e-customer@test.kenyonexpres
 const CUSTOMER_PASSWORD = env.E2E_CUSTOMER_PASSWORD ?? 'E2eCustomer!pass1'
 const SUPPLIER_EMAIL = env.E2E_SUPPLIER_EMAIL ?? 'e2e-supplier@test.kenyonexpress.local'
 const SUPPLIER_PASSWORD = env.E2E_SUPPLIER_PASSWORD ?? 'E2eSupplier!pass1'
+/**
+ * The catalog-writer fixture, added for the admin split-percent gate.
+ *
+ * Role `admin` and not `content_uploader`, which also passes `requireSection
+ * ('catalog', 'write')`: the spec navigates the panel to reach the product it
+ * edits, and content_uploader is bounced out of every other section, so a
+ * failure would read as a missing page rather than as a refused edit.
+ *
+ * This user can write the whole catalogue of whatever database it is pointed
+ * at. That is the point of the gate and the reason `--clean` removes it, and it
+ * is why the seed script has always been documented as a disposable-CI-database
+ * tool rather than something to run against production.
+ */
+const ADMIN_EMAIL = env.E2E_ADMIN_EMAIL ?? 'e2e-admin@test.kenyonexpress.local'
+const ADMIN_PASSWORD = env.E2E_ADMIN_PASSWORD ?? 'E2eAdmin!pass1'
 
 const SUPPLIER = {
   id: IDS.supplier,
@@ -161,7 +177,13 @@ async function findUserByEmail(email) {
   return data.users.find((u) => u.email?.toLowerCase() === email.toLowerCase()) ?? null
 }
 
-async function ensureAuthUser({ email, password, fullName }) {
+/**
+ * `role` is written on every run, not only on creation. A fixture whose role
+ * drifted -- because someone demoted it by hand, or because an earlier version
+ * of this script wrote `customer` unconditionally -- would send the admin spec
+ * to /login and report a permission bug as a broken login page.
+ */
+async function ensureAuthUser({ email, password, fullName, role = 'customer' }) {
   const existing = await findUserByEmail(email)
   if (existing) {
     const { error } = await admin.auth.admin.updateUserById(existing.id, {
@@ -172,11 +194,8 @@ async function ensureAuthUser({ email, password, fullName }) {
     if (error) throw new Error(`updateUser ${email}: ${error.message}`)
     await admin
       .from('profiles')
-      .upsert(
-        { id: existing.id, email, full_name: fullName, role: 'customer' },
-        { onConflict: 'id' },
-      )
-    console.log(`  ok   auth user ${email} (updated)`)
+      .upsert({ id: existing.id, email, full_name: fullName, role }, { onConflict: 'id' })
+    console.log(`  ok   auth user ${email} (updated, role=${role})`)
     return existing.id
   }
 
@@ -189,11 +208,8 @@ async function ensureAuthUser({ email, password, fullName }) {
   if (error || !data.user) throw new Error(`createUser ${email}: ${error?.message ?? 'no user'}`)
   await admin
     .from('profiles')
-    .upsert(
-      { id: data.user.id, email, full_name: fullName, role: 'customer' },
-      { onConflict: 'id' },
-    )
-  console.log(`  ok   auth user ${email} (created)`)
+    .upsert({ id: data.user.id, email, full_name: fullName, role }, { onConflict: 'id' })
+  console.log(`  ok   auth user ${email} (created, role=${role})`)
   return data.user.id
 }
 
@@ -241,6 +257,7 @@ async function main() {
       await report('products', IDS.physicalProduct, 'physical product'),
       await reportUser(CUSTOMER_EMAIL, 'customer user'),
       await reportUser(SUPPLIER_EMAIL, 'supplier user'),
+      await reportUser(ADMIN_EMAIL, 'admin user'),
     ]
     process.exit(results.every(Boolean) ? 0 : 1)
   }
@@ -250,6 +267,7 @@ async function main() {
     await remove('supplier_members', IDS.member, 'supplier membership')
     await deleteAuthUser(CUSTOMER_EMAIL, 'customer user')
     await deleteAuthUser(SUPPLIER_EMAIL, 'supplier user')
+    await deleteAuthUser(ADMIN_EMAIL, 'admin user')
     await remove('products', IDS.couponProduct, 'coupon product')
     await remove('products', IDS.physicalProduct, 'physical product')
     await remove('categories', IDS.category, 'category')
@@ -274,9 +292,16 @@ async function main() {
     fullName: 'ספק בדיקות E2E',
   })
   await ensureSupplierMember(supplierUserId)
+  await ensureAuthUser({
+    email: ADMIN_EMAIL,
+    password: ADMIN_PASSWORD,
+    fullName: 'מנהל בדיקות E2E',
+    role: 'admin',
+  })
   console.log('seed-test-data: done')
   console.log(`  customer: ${CUSTOMER_EMAIL}`)
   console.log(`  supplier: ${SUPPLIER_EMAIL}`)
+  console.log(`  admin:    ${ADMIN_EMAIL}`)
 }
 
 main().catch((error) => {
