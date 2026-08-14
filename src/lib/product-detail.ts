@@ -156,7 +156,18 @@ export async function loadProductBySlug(slug: string) {
  */
 async function loadSupplierPublicContact(supplierId: string | null) {
   if (!supplierId) return null
-  const { data } = await createAdminClient()
+  // A build with no admin key at all (CI prerender without the CI_SUPABASE
+  // secrets) must not turn into "no deploy" over this one display-only field:
+  // the entry lives inside `use cache`, so it refills at runtime, where the
+  // key exists, and the name appears on the next fill. A key that is present
+  // but wrong still fails the request, exactly as admin.ts intends.
+  let admin: ReturnType<typeof createAdminClient>
+  try {
+    admin = createAdminClient()
+  } catch {
+    return null
+  }
+  const { data } = await admin
     .from('suppliers')
     .select('id, name, city, address, contact_phone, whatsapp')
     .eq('id', supplierId)
