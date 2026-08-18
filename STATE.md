@@ -1,12 +1,23 @@
-AUTOPILOT-DONE
+גל 1 נסגר (tag autopilot-2026-08-12); גל DB HARDENING בתור, שלב 10
 
 # KenyonExpress — Project State
 
-Updated: 2026-08-12 (AUTOPILOT תור סגור מ-AUTOPILOT-PROMPT.md)
+Updated: 2026-08-12 (גל DB HARDENING אושר, תור שלבים 10–15)
 
-## המשך מ: אין (AUTOPILOT הושלם)
+## המשך מ: שלב 10
 
-### AUTOPILOT תור סגור (2026-08-12) — סיום
+### גל DB HARDENING (אושר 12.08, apply_migration דרך MCP מותר לשלבים 10–13 בלבד)
+
+10. ⏳ auth_rls_initplan (~40): עטיפת `auth.uid()`/`auth.jwt()` ב-`(select ...)`
+11. ⏳ multiple_permissive_policies (~72): איחוד ל-policy אחת
+12. ⏳ duplicate_index (4) + אינדקסי FK (35)
+13. ⏳ REVOKE EXECUTE מ-anon על RPC שלא נקרא מ-anon
+14. ⏳ `refs/unused-indexes-report.md` (90 unused, בלי מחיקה)
+15. ⏳ advisors חוזר אחרי כל מיגרציה + type-check + טסטים
+
+**חסימה נוכחית:** בסשן הזה אין שרת MCP של Supabase (`plugin-supabase-supabase` לא זמין), ו-`SUPABASE_SECRET_KEY` ב-`.env.local` הוא מפתח `iss=supabase-demo` שנדחה בפרודקשן. בלי `get_advisors` ובלי `apply_migration` אי אפשר להחיל. מכינים את קבצי המיגרציה מהמקור בריפו וממתינים ל-MCP.
+
+### AUTOPILOT תור סגור (2026-08-12) — סיום גל 1
 
 1. ✅ גיבוי ענפים ל-`branches-backup.txt` + מחיקת 26 מקומיים ב-`-d` בלבד (כולם עדיין ב-`origin/*`).
 2. ✅ CLAUDE.md על `main`: הענף הקבוע הוא `main` (קומיט `688a90df0`).
