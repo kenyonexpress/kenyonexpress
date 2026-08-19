@@ -1,6 +1,6 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-19 (MISSION-FINAL שלב 1 הושלם: שני המיזוגים בוצעו; ובנוסף docs/ARCHITECTURE-AFFILIATES-REFERRALS.md)
+Updated: 2026-08-19 (docs: GROWTH-LAUNCH-MARKETING.md on phase5/homepage)
 
 ## המשך מ: תור AUTOPILOT (11) AUTH
 
