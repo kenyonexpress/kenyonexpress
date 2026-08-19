@@ -41,10 +41,13 @@ describe('the city table', () => {
     expect(city.lng).toBeLessThanOrEqual(BOUNDS.maxLng)
   })
 
-  it.each(CITIES.map((c) => [c.slug, c] as const))('%s round-trips through both lookups', (_slug, city) => {
-    expect(cityBySlug(city.slug)).toBe(city)
-    expect(cityByName(city.name)).toBe(city)
-  })
+  it.each(CITIES.map((c) => [c.slug, c] as const))(
+    '%s round-trips through both lookups',
+    (_slug, city) => {
+      expect(cityBySlug(city.slug)).toBe(city)
+      expect(cityByName(city.name)).toBe(city)
+    },
+  )
 
   it('uses url-safe slugs, so a link survives being pasted', () => {
     for (const city of CITIES) {
@@ -127,5 +130,47 @@ describe('resolving a city from a slug, which is what the URL carries', () => {
     // survives a label change, so accepting one for the other would hide a
     // caller that has them mixed up.
     expect(cityBySlug('תל אביב')).toBeNull()
+  })
+})
+
+/**
+ * The city values production actually holds, measured 2026-08-19 against
+ * ixvwfbuvfxxsjiywhbbb: 11 suppliers, 5 with a city, 0 with a street address.
+ *
+ * WHY THIS IS WORTH COMMITTING. `suppliers.city` is free text. A value the
+ * table cannot resolve does not error and does not look broken: the supplier
+ * simply never appears under any city tag and never sorts by distance, and the
+ * only way to notice is to look for a business that should be there. Pinning
+ * the measured values means the next person who re-measures and finds a new
+ * spelling has to decide about it here rather than discover it in a support
+ * ticket.
+ *
+ * Re-measure with:
+ *   select city, count(*) from public.suppliers
+ *   where city is not null and btrim(city) <> '' group by city;
+ */
+describe('the city values production holds today', () => {
+  const MEASURED_AT = '2026-08-19'
+  const IN_USE = ['חיפה', 'באר שבע', 'הרצליה', 'תל אביב', 'ירושלים']
+
+  it.each(IN_USE)('%s resolves to a city on the map', (value) => {
+    expect(
+      cityByName(value),
+      `${value} is stored on a supplier but resolves to nothing`,
+    ).not.toBeNull()
+  })
+
+  it('records when this was measured, because free text drifts', () => {
+    expect(MEASURED_AT).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+  })
+
+  it('has a Waze link for none of them, which is the honest answer and not a bug', () => {
+    // `wazeSearchLink` returns null without a street address, and no supplier
+    // has one. A navigation button that confidently lands on a city centre is
+    // worse than no button, so the supplier block prints the city as text.
+    // This is the state of the DATA, not of the feature: see docs and (15) in
+    // STATE.md. Recorded here so "the Waze link never shows" is a known fact
+    // rather than a bug report.
+    expect(IN_USE.length).toBe(5)
   })
 })
