@@ -1,0 +1,28 @@
+עצרתי. **סוכן קוד שני עובד על אותו repo** — זה תנאי העצירה הרביעי ב-CLAUDE.md. באמצע שלב 20 הענף הוחלף תחתיי מ-`feat/product-type` ל-`ke-arch`, ובעץ העבודה יש כרגע עריכות פעילות שאינן שלי (`src/lib/cart/pricing.ts`, `store.ts`, `types.ts`, `src/server/actions/cart.ts`; הקובץ `store.ts` נוסף בין שתי בדיקות סמוכות שלי, כלומר העריכה מתרחשת עכשיו).
+
+לא נגעתי בעבודה שלהם: החזרתי את `package.json` למצבו והשארתי את העץ שלהם נקי ממני.
+
+**מה הושלם ונדחף ל-`origin/feat/product-type` (3 קומיטים):**
+
+גל DB HARDENING (10-15) סגור והוחל על פרודקשן:
+
+| lint | לפני | אחרי |
+|---|---|---|
+| `auth_rls_initplan` | 40 | **0** |
+| `duplicate_index` | 4 | **0** |
+| `unindexed_foreign_keys` | 35 | **0** |
+| `multiple_permissive_policies` | 72 | **13** |
+
+מגל COUPON STOREFRONT: שלבים 17-18 קיימים ואומתו. שלב 19 היה חלקי והושלם — הוספתי `/supplier/vouchers` (הרשימה היחידה שעונה "מה פתוח", כי `getSupplierRedemptions` מסננת ל-`redeemed`), וחיברתי את `markOrderItemRedeemed` שהיה קוד מת עם טסטים ובלי אף קורא בפרודקשן, כך ש-`order_items.settlement_status` מגיע ל-`redeemed` כפי ש-§0 דורש. ‏2411 טסטים ירוקים.
+
+**מה חסום ולמה, מדוד ולא משוער:** שלב 20 מקצה לקצה לא ניתן להרצה כאן. השרת עצמו רושם את הסיבה: `SUPABASE_SECRET_KEY` המקומי הוא מפתח הדמו הגנרי (`iss=supabase-demo`), וכל מסלול admin-client נכשל ב-Invalid API key. בנוסף, הפרויקט היחיד המוגדר הוא פרודקשן, ולכן `pnpm seed:test` היה כותב שורות בדיקה ל-DB החי. לא עשיתי זאת.
+
+מה שכן הרצתי: בנייה מלאה, `pnpm start`, וצילום שש הדפים האנונימיים ב-380/768/1440. זו אינה רק ראיה ויזואלית אלא בדיקה אמיתית שהמיזוג ב-120/121 לא שבר את החזית האנונימית: `לתשלום באתר עכשיו ₪149.50`, `יתרה לתשלום בבית העסק ₪149.50`, `סה"כ שווי ₪299.00`, בדיוק כמו §0.3.
+
+**לא כתבתי `AUTOPILOT-DONE`**, כי 20-21 אינם סגורים.
+
+הארטיפקטים של שלב 20 שמורים ב-`~/ke-step20-artifacts` (הסקריפט, שש התמונות, ושני ה-patch של `.gitignore` ו-`package.json`). שים לב: שתי שורות ה-`.gitignore` שהוספתי קיימות בקומיט `b0dbda274` אך **לא** ב-`ke-arch`, ולכן `refs/unused-indexes-report.md` אינו קיים בענף הנוכחי.
+
+כדי שאמשיך: הפסק את הסוכן השני, או אמור לי להמשיך על worktree נפרד.
+cat: AUTOPILOT-PROMPT.md: No such file or directory
+Error: Input must be provided either through stdin or as a prompt argument when using --print
