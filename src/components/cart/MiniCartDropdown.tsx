@@ -196,8 +196,13 @@ export default function MiniCartDropdown() {
               <Link href="/cart" className="mini-cart__view" onClick={closeDrawer}>
                 צפייה בעגלה
               </Link>
+              {/* Same two-part gate as the sheet and the cart page. This panel
+                  is the desktop half of the same cart, and an unavailable line
+                  has to stop the checkout on every surface that offers one or
+                  the refusal just moves to the pay button. */}
               <CartCheckoutButton
                 isAuthenticated={isAuthenticated}
+                disabled={cart.items.some((item) => !item.available)}
                 className="mini-cart__checkout"
                 onNavigate={closeDrawer}
               />

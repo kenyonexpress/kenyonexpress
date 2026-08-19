@@ -175,11 +175,20 @@ export default function CartDrawer() {
             <Link href="/cart" onClick={closeDrawer} className="cart-drawer__view-cart">
               צפייה בעגלה המלאה
             </Link>
-            {/* Same gate as the cart page. Linking straight to /checkout here
-                sent a guest into a proxy bounce instead of the sign-in they
-                actually need, and lost the drawer's context on the way. */}
+            {/* BOTH halves of the cart page's gate, which is what "same gate"
+                used to mean and did not do. The auth half was here: linking
+                straight to /checkout sent a guest into a proxy bounce instead
+                of the sign-in they need, and lost the drawer's context on the
+                way. The AVAILABILITY half was not, and this is the surface
+                where it matters most - the drawer opens on add-to-cart, so it
+                is the first cart most shoppers see, and it prints the warning
+                for a dead line right above a button that let them check out
+                with it. The refusal then arrived from `beginCheckout` after
+                the whole address form was filled in. "צפייה בעגלה המלאה" above
+                is the route out: that page names the lines and removes them. */}
             <CartCheckoutButton
               isAuthenticated={isAuthenticated}
+              disabled={cart.items.some((item) => !item.available)}
               className="cart-drawer__checkout"
               onNavigate={closeDrawer}
             />
