@@ -17,12 +17,25 @@ path"**. נמדד ב-08:26 לפני שנגעתי במשהו: **ארבעה** תה
 מ-`phase5/homepage`. שני המיזוגים בוצעו שם, השערים ירוקים, והענף נדחף.
 
 ```
-merge/supplier-and-arch-night  =  phase5/homepage
+merge/supplier-and-arch-night  =  phase5/homepage @ bf4a9aa17
                                 + feat/supplier-portal
                                 + docs/architecture-night
-type-check  נקי
-tests       2379/2379
+
+type-check  נקי           TSC_EXIT=0
+tests       2379/2379      188 קבצים, TEST_EXIT=0
+lint        נקי            LINT_EXIT=0
+build       ירוק           201/201 עמודים סטטיים, BUILD_EXIT=0
 ```
+
+**‏`--ff-only` כבר לא יעבוד.** נמדד ב-09:0x: ‏`phase5/homepage` התקדמה ל-
+`69c170118` והיא **7 קומיטים** לפני נקודת הבסיס של הענף הזה. צריך merge רגיל.
+זה בדיוק מה שהעצירה הקשה מנעה: אילו מיזגתי לתוך העץ המשותף, הייתי מתחרה
+בשבעת הקומיטים האלה בזמן שהם נכתבו.
+
+**‏`pnpm build` בעץ חדש דורש `.env.local`.** ראה `DECISIONS.md` D-MERGE-3:
+‏`.env*.local` הוא gitignored, ולכן `git worktree add` לא מביא אותו, ו-build
+נכשל ב-`Failed to collect page data for /category/[slug]` שנראה כמו באג בעמוד
+ואינו קשור אליו. אומת: commit הבסיס **לפני** המיזוגים נכשל באותה שגיאה.
 
 **הפעולה הבאה, ידנית, כשאין סוכן שני על הנתיב:**
 

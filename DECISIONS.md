@@ -186,3 +186,34 @@ isAvailable(...)`, ו-`isAvailable` **כבר לא קיים** בענף הזה: ל
 
 `type: type ?? 'physical'` נשמר לתצוגה בלבד, עם ההערה המקורית, כי הוא
 נקרא רק בשורות שכבר `available: false`.
+
+## D-MERGE-3: worktree חדש לא יכול לבנות, כי `.env.local` הוא gitignored
+
+‏`pnpm build` ב-`ke-merge` נכשל:
+
+```
+⨯ Missing NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY
+    at src/lib/supabase/anon.ts:31
+    at src/lib/category-page.ts:90
+    at src/lib/product-detail.ts:196   (listProductSlugsForPrerender)
+Error: Failed to collect page data for /category/[slug]
+```
+
+**זה לא שבר בקוד ולא תוצאה של המיזוג.** ‏`git worktree add` לא מביא קבצים
+ש-git מתעלם מהם, ו-`.gitignore:40` מכיל `.env*.local`. לכן כל worktree חדש
+נולד בלי `.env.local`, ו-`cacheComponents` אוסף נתוני עמוד בזמן build דרך
+לקוח Supabase אמיתי, אז האיסוף נופל.
+
+**איך זה אומת ולא הונח:** נבנה קודם commit הבסיס `bf4a9aa17`, **לפני שני
+המיזוגים**, באותו worktree. הוא נכשל **באותה שגיאה בדיוק**. זה הוציא את
+המיזוג מהתמונה. אחרי העתקת `.env.local` מ-`kenyonexpress`, אותו עץ בונה
+ירוק: ‏201/201 עמודים סטטיים.
+
+**המסקנה המעשית:** אחרי כל `git worktree add`, לפני `pnpm build`:
+
+```bash
+cp /Users/ofir/kenyonexpress-web/kenyonexpress/.env.local <new-worktree>/
+```
+
+הקובץ נשאר gitignored ולא נכנס לאף קומיט. בלי זה, `pnpm build` בעץ חדש נכשל
+בשגיאה שנראית כמו באג בעמוד הקטגוריה ואינה קשורה אליו.
