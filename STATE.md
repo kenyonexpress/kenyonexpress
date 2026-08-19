@@ -4,6 +4,36 @@ Updated: 2026-08-19 09:56 ((13) VOUCHERS VERIFY הושלם. המצביע עבר 
 
 ## המשך מ: תור AUTOPILOT (14) WHATSAPP+SHARE
 
+## 19.08.2026 — ענף `feat/legal-pages` (worktree `ke-legal`): ארבעת העמודים המשפטיים
+
+נבנה ב-`src/app/(legal)/` בלבד, פלוס `docs/legal/`. שום קובץ אחר לא נגע.
+
+* `/legal/terms` תקנון: פלטפורמת תיווך, מימוש חד פעמי, אין כפל מבצעים, תיאום מראש.
+* `/legal/privacy` פרטיות לפי תיקון 13, כולל Google OAuth, טוקן Cardcom ושמות העוגיות בפועל.
+* `/legal/returns` ביטולים לפי חוק הגנת הצרכן: 14 יום, קופון לפני מימוש מול אחרי, מוצר פיזי.
+* `/legal/accessibility` הצהרת נגישות לפי ת"י 5568 רמה AA, עם מגבלות ידועות אמיתיות.
+* `_components/LegalFooterLinks.tsx` רכיב קישורי הפוטר, נגזר מ-`LEGAL_DOCS`.
+* `legal-pages.test.ts`: 44 בדיקות ירוקות.
+
+**החלטה שהתקבלה לבד:** העמודים עלו תחת `/legal/*` ולא ב-`/terms`, `/privacy`,
+`/returns`, `/accessibility` כפי שנתבקש, ראיה מדודה: `curl /terms` מחזיר
+`308 -> /terms-and-conditions` כי `next.config.ts` כבר מפנה שם, ו-`/accessibility`
+כבר תפוס על ידי `src/app/(store)/accessibility`, כלומר עמוד שני באותו נתיב הוא
+שגיאת build. שני הקבצים החוסמים מחוץ לתחום הענף. תוכנית קידום בת ארבעה צעדים:
+`docs/legal/README.md` §2.
+
+**אימות:** ארבעת העמודים מחזירים 200 עם כותרות נכונות מול `pnpm dev`, עוגני
+הסעיפים ורכיב הפוטר נבדקו ב-HTML. `next build` הידר בהצלחה ועבר TypeScript, ואז
+נפל ב-`/category/[slug]` על `Missing NEXT_PUBLIC_SUPABASE_URL`: ל-worktree הזה
+אין `.env.local`. כשל סביבתי קיים, לא קשור לעמודים המשפטיים.
+
+**חוסם GA:** אישור עורך דין לארבעת הנוסחים, שער LP3. עשר שאלות פתוחות מרוכזות
+ב-`docs/legal/COUNSEL-REVIEW.md`, והחדה שבהן היא סיווג הקופון לפי סעיף 14ח.
+
+---
+
+## המשך מ: MISSION-FINAL שלב 1 (merge supplier + arch-night)
+
 ## ‏(25) BACKUP + RECOVERY — ✅ הושלם. `docs/DISASTER-RECOVERY.md`
 
 **נמדד מול פרודקשן דרך MCP, לא הועתק מ-`ARCHITECTURE-BACKUP-DR.md`.**
