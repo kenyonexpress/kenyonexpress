@@ -2,7 +2,38 @@
 
 Updated: 2026-08-19 (MISSION-FINAL שלב 1 הושלם: שני המיזוגים בוצעו; ובנוסף docs/ARCHITECTURE-AFFILIATES-REFERRALS.md)
 
-## המשך מ: תור AUTOPILOT (10) DB HARDENING
+## המשך מ: תור AUTOPILOT (11) AUTH
+
+**‏(10) DB HARDENING — ✅ בוצע כאודיט. ‏`docs/DB-HARDENING-AUDIT.md`.**
+**לא הורצה שום DDL על פרודקשן.**
+
+**הממצא המרכזי: יעד היציאה "0 WARN advisors" אינו בר-השגה בלי להפיל את האתר.**
+‏`is_admin()` מוזכר ב-**79 policies**. ביטוי policy מוערך בהרשאות התפקיד השואל,
+ולכן `REVOKE EXECUTE` ממנו — התיקון הראשון שה-advisor עצמו מציע — הופך את 79
+המדיניות ל-`permission denied for function is_admin` לכל משתמש מחובר. אותו דבר
+ב-`has_role` (17), ‏`is_support` (8), ‏`current_user_role` (7),
+‏`is_supplier_member` (6), ‏`is_supplier_owner` (4). **‏123 הפניות בסך הכל.**
+
+**תיאור המשימה בתור היה מיושן ב-5 מתוך 6 סעיפים** (רובו כבר בוצע ב-`0f8359bc`):
+
+| מה שהתור אמר | מה שנמדד |
+| --- | --- |
+| ‏40 `auth_rls_initplan` | **0** |
+| ‏72 `multiple_permissive_policies` | **13** |
+| ‏4 אינדקסים כפולים | **0** |
+| ‏35 אינדקסי FK חסרים | **0** |
+| ‏24 פונקציות SECURITY DEFINER | **26** |
+| ‏8 `rls_enabled_no_policy` | **8, וכולן INFO ומכוונות** |
+
+**מה כן הוכן:** ‏`migrations/pending/125_revoke_unused_definer_execute.sql`
+(טיוטה) — שש פונקציות שנמדדו כחסרות כל קורא: אפס policies, אפס views, אפס
+פונקציות אחרות, אפס `rpc()` ב-`src/`. מנקה 6 מתוך 39 WARN בלי לגעת במסלול קוד
+שקיים. **ממתין לאישור אופיר להרצת DDL.**
+
+**‏8 `rls_enabled_no_policy` נכונות כמו שהן.** כולן טבלאות service-key בלבד.
+‏RLS דלוקה בלי policies **חוסמת כל תפקיד לקוח** — בדיוק הכוונה. הוספת policies
+כדי לרצות linter הייתה **מרפה** בקרה, לא מהדקת.
+
 
 **‏MISSION-FINAL שלב 1 — ✅ הושלם 19.08.** שני המיזוגים בוצעו אל `phase5/homepage`:
 
