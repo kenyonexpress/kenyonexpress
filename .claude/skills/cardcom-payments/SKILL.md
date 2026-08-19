@@ -55,6 +55,22 @@ It is snapshotted into `order_items` at purchase.
 
 - All Cardcom calls go through server actions in `src/server/actions/payments/`.
 - Never call Cardcom from client components.
-- Always validate the Cardcom callback signature before updating order status.
 - Use `adminClient` (service role) for order status updates -- never the user's client.
-- Log every Cardcom webhook event to `audit_log` before acting on it.
+- **There is no callback signature to validate. Cardcom does not sign its
+  callbacks** -- no HMAC, no signature header. Do not add a signature check and
+  do not treat its absence as a bug. Authenticity rests on two things, and never
+  on the POST body:
+  1. An unguessable shared secret carried in the callback URL (`?s=`), set when
+     the Low Profile page is created and compared with `secretEquals`
+     (constant time, in `src/lib/security/constant-time.ts`). Two secrets are
+     accepted at once so a rotation has a window.
+  2. Mandatory server-to-server re-verification via `GetLpResult`. The re-fetched
+     result is the ONLY trusted source of amount, status and token, and the
+     amount must equal the stored payment row or the order does not close.
+- Journal every webhook event to `payment_webhook_events` BEFORE acting on it,
+  deduped on `(provider, external_event_id)`. `processed_at` stays null until
+  the order actually closes -- that null is what puts a charged-but-unfinalized
+  event into the dead-letter queue `src/server/payments/webhook-dlq.ts` replays.
+  `audit_log` is for the amount-mismatch alarm, not for the event journal.
+- A persist failure that is NOT a unique violation must answer 5xx, so Cardcom
+  retries. Answering 200 there loses the charge silently.
