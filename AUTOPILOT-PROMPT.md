@@ -47,3 +47,12 @@ When ALL steps 0-26 are complete and green:
 4. Create the file /Users/ofir/kenyonexpress-web/PROJECT-DONE.flag with the completion date.
 5. After the flag exists, do NOT start new work — each cycle only verifies tests still pass and answers nothing new.
 If a step cannot pass after 3 full attempts: document the blocker in OFIR-RETURN-BRIEF.md under "חסום — דורש את אופיר", skip it, continue to the next step.
+
+[FINAL EXIT PROTOCOL]
+When ALL steps 0-26 are complete and green:
+1. Write docs/PROJECT-COMPLETE.md: full summary of everything built since project start, evidence per step (test counts, lint counts, page diffs), and a numbered list titled "שאלות פתוחות לאופיר" — every ambiguity you resolved alone, what you chose, and why (brief, in Hebrew).
+2. Update OFIR-RETURN-BRIEF.md: top line "הפרויקט הושלם באופן מוחלט. ממתין רק ל: תוכן אמיתי, ספקים, מפתחות Cardcom, DNS cutover."
+3. Tag v1.0.0.
+4. Create the file /Users/ofir/kenyonexpress-web/PROJECT-DONE.flag with the completion date.
+5. After the flag exists, do NOT start new work — each cycle only verifies tests still pass.
+If a step cannot pass after 3 full attempts: document the blocker in OFIR-RETURN-BRIEF.md under "חסום — דורש את אופיר", skip it, continue to the next step.
