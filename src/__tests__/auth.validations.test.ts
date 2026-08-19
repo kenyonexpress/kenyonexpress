@@ -52,6 +52,15 @@ describe('signupSchema', () => {
     expect(result.success).toBe(true)
   })
 
+  // The country code without its plus, which is how a number pasted out of a
+  // contacts export or a WhatsApp link usually arrives. Named in the QA
+  // checklist alongside the other three, and the only one of the four that had
+  // no case here.
+  it('accepts 972 with no leading plus', () => {
+    const result = signupSchema.safeParse({ ...valid, phone: '972521234567' })
+    expect(result.success).toBe(true)
+  })
+
   it('accepts 07x VoIP numbers', () => {
     const result = signupSchema.safeParse({ ...valid, phone: '0721234567' })
     expect(result.success).toBe(true)
@@ -80,6 +89,31 @@ describe('signupSchema', () => {
   it('rejects name shorter than 2 chars', () => {
     const result = signupSchema.safeParse({ ...valid, full_name: 'א' })
     expect(result.success).toBe(false)
+  })
+
+  /*
+    THE TWO CHARACTERS ARE COUNTED AFTER TRIMMING, WHICH THEY WERE NOT.
+
+    The chain used to read `.min(2).trim()`, so the length was measured on the
+    raw string and only the survivor was trimmed. Two spaces are two characters:
+    `"  "` passed the rule and was stored as `""`, `" a "` passed and was stored
+    as `"a"`. The case above did not catch it because a bare `'א'` is short
+    either way - the padding is what makes the order visible.
+
+    Reachable as typed: full_name is `type="text"` and the browser submits the
+    spaces verbatim (measured on /signup: the serialised value was `"  "`).
+  */
+  it('rejects whitespace that is only long enough before trimming', () => {
+    for (const full_name of ['  ', '   ', ' a ', '\t\t']) {
+      const result = signupSchema.safeParse({ ...valid, full_name })
+      expect(result.success, `${JSON.stringify(full_name)} should be refused`).toBe(false)
+    }
+  })
+
+  it('keeps the trimmed name when it is long enough', () => {
+    const result = signupSchema.safeParse({ ...valid, full_name: '  ישראל ישראלי  ' })
+    expect(result.success).toBe(true)
+    if (result.success) expect(result.data.full_name).toBe('ישראל ישראלי')
   })
 
   it('normalises email to lowercase', () => {
