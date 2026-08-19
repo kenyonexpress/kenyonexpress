@@ -38,3 +38,12 @@ After every step: pnpm type-check && pnpm test && pnpm build green, commit, push
 (24) SEED CONTENT WAVE: build scripts/seed with 60 realistic Hebrew products across the agreed categories (מסעדות, ספא, תינוקות, אפל, צימרים) — coupon_price absolute for coupons, platform_percent for physical, full supplier details, offer_valid_until, Unsplash image URLs list. Idempotent upsert, dry-run default. Run dry-run, write docs/SEED-REPORT.md. NO real DB writes without Ofir.
 (25) BACKUP+RECOVERY: document and script DB backup strategy — verify PITR status via MCP, add scripts/backup-schema.sh (local schema dump via MCP), write docs/DISASTER-RECOVERY.md with restore steps + RTO/RPO targets. No destructive ops.
 (26) FINAL SWEEP: re-run full advisors via MCP, re-run all tests, re-run Lighthouse on all routes, update LAUNCH-READINESS.md verdict, update OFIR-RETURN-BRIEF.md with the complete picture + numbered critical questions + the exact 3 next paste-blocks for Ofir. Tag v1.0.0-rc2 if all green.
+
+[FINAL EXIT PROTOCOL]
+When ALL steps 0-26 are complete and green:
+1. Write docs/PROJECT-COMPLETE.md: full summary of everything built since project start, evidence per step (test counts, lint counts, page diffs), and a numbered list titled "שאלות פתוחות לאופיר" — every ambiguity you resolved alone, what you chose, and why (brief, in Hebrew).
+2. Update OFIR-RETURN-BRIEF.md: top line "הפרויקט הושלם באופן מוחלט. ממתין רק ל: תוכן אמיתי, ספקים, מפתחות Cardcom, DNS cutover."
+3. Tag v1.0.0.
+4. Create the file /Users/ofir/kenyonexpress-web/PROJECT-DONE.flag with the completion date.
+5. After the flag exists, do NOT start new work — each cycle only verifies tests still pass and answers nothing new.
+If a step cannot pass after 3 full attempts: document the blocker in OFIR-RETURN-BRIEF.md under "חסום — דורש את אופיר", skip it, continue to the next step.
