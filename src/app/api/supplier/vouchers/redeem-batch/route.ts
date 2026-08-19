@@ -6,6 +6,7 @@ import { settledKeys } from '@/lib/vouchers/offline-scan'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
 import { verifyVoucherQrPayload } from '@/server/domain/vouchers/qr'
 import { readScanContext } from '@/server/domain/vouchers/scan-context'
+import { stampSettlementRedeemed } from '@/server/domain/vouchers/stamp-settlement'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
@@ -168,6 +169,15 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
 
     const result = (data ?? {}) as Record<string, unknown>
     const outcome = typeof result.outcome === 'string' ? result.outcome : 'not_found'
+
+    // Same lifecycle stamp the single-scan route applies, because a queue
+    // drained from the till redeems exactly as a live scan does and the UX
+    // spec's acceptance does not care which door the scan came through. Runs on
+    // replays too; the update is a no-op once the line is already `redeemed`.
+    if (outcome === 'success' && typeof result.voucher_id === 'string') {
+      await stampSettlementRedeemed(result.voucher_id)
+    }
+
     results.push({
       idempotency_key: item.idempotency_key,
       outcome,

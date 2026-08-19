@@ -9,6 +9,7 @@ import { expireWalletPasses } from '@/lib/wallet/notify'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
 import { verifyVoucherQrPayload } from '@/server/domain/vouchers/qr'
 import { readScanContext, recordRefusedScan } from '@/server/domain/vouchers/scan-context'
+import { stampSettlementRedeemed } from '@/server/domain/vouchers/stamp-settlement'
 import { type NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
@@ -289,6 +290,13 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     // `staff_id` must never be read as "the redemption did not happen".
     if (staff_id && idempotency_key) {
       await stampStaff(idempotency_key, staff_id, user.id)
+    }
+
+    // The order line's lifecycle status, required by the UX spec's acceptance
+    // list. Runs on replays too; the update is a no-op once the line is already
+    // `redeemed`.
+    if (typeof result.voucher_id === 'string') {
+      await stampSettlementRedeemed(result.voucher_id)
     }
 
     // A redemption is a funnel step worth measuring - it is the moment a coupon

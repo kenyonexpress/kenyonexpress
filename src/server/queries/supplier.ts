@@ -7,6 +7,11 @@ import {
   supplierDueAgorot,
 } from '@/lib/supplier/dashboard'
 import type { SupplierProductRow } from '@/lib/supplier/products'
+import {
+  VOUCHER_STATUS_LABEL,
+  type VoucherDisplayStatus,
+  voucherDisplayStatus,
+} from '@/lib/supplier/voucher-status'
 
 /**
  * Supplier-scoped reads. Membership is verified by requireSupplierMember before
@@ -39,6 +44,27 @@ type VoucherRow = {
   platform_percent: number
   redeemed_at: string | null
   products: { name_he: string | null } | null
+  user_id?: string | null
+}
+
+type SupplierVoucherDbRow = VoucherRow & {
+  issued_at: string | null
+  expires_at: string | null
+}
+
+/** One voucher of this supplier's, in the read-only portal list. */
+export type SupplierVoucherListRow = {
+  voucherId: string
+  code: string
+  productName: string
+  customerName: string | null
+  status: VoucherDisplayStatus
+  statusLabel: string
+  couponPriceAgorot: number
+  remainingAmountDueAgorot: number
+  issuedAt: string | null
+  expiresAt: string | null
+  redeemedAt: string | null
 }
 
 function productType(raw: string | null | undefined): SupplierSaleLine['productType'] {
@@ -114,6 +140,113 @@ export async function getSupplierSales(supplierId: string): Promise<SupplierSale
   })
 }
 
+/**
+ * Customer display names for a set of voucher owners.
+ *
+ * A separate round trip rather than a PostgREST embed, because there is no FK
+ * to embed along: `vouchers.user_id` references `auth.users`, not
+ * `public.profiles`. Asking for `profiles(full_name)` inside the voucher select
+ * does not merely return nulls, it fails the whole query, which would empty the
+ * supplier's list rather than drop a name from it. `profiles.id` IS the auth
+ * user id, which is the join every helper in this schema already relies on
+ * (is_admin() reads `profiles WHERE id = auth.uid()`), so the two-step lookup
+ * is exact.
+ *
+ * A failure here costs names and nothing else; the caller still lists vouchers.
+ */
+async function customerNames(
+  // biome-ignore lint/suspicious/noExplicitAny: Supabase's generics recurse deep enough to slow the typecheck for no gain here.
+  admin: any,
+  userIds: Array<string | null>,
+): Promise<Map<string, string>> {
+  const ids = [...new Set(userIds.filter((id): id is string => Boolean(id)))]
+  if (ids.length === 0) return new Map()
+
+  const { data, error } = await admin.from('profiles').select('id, full_name').in('id', ids)
+
+  if (error) {
+    log.warn('supplier.customer_names_failed', { reason: error.message })
+    return new Map()
+  }
+
+  const out = new Map<string, string>()
+  for (const row of (data ?? []) as Array<{ id: string; full_name: string | null }>) {
+    if (row.full_name) out.set(row.id, row.full_name)
+  }
+  return out
+}
+
+/**
+ * Every voucher issued against this supplier, whatever its status.
+ *
+ * `getSupplierRedemptions` answers "what did we scan", filtered to `redeemed`.
+ * This answers "what is outstanding", which is the question a business actually
+ * has before a customer walks in, and which nothing in the portal could answer.
+ *
+ * Read-only, and scoped by supplierId on the server. The admin client is used
+ * for the same reason the other supplier reads do: membership was already
+ * proven by requireSupplierMember, and the explicit supplier_id filter means a
+ * missing RLS policy cannot widen the result to another tenant.
+ *
+ * Status is derived through voucherDisplayStatus, not printed from the column,
+ * so an issued-but-expired voucher reads as "פג תוקף" here exactly as
+ * redeem_voucher would refuse it at the till.
+ */
+export async function getSupplierVouchers(
+  supplierId: string,
+  limit = 200,
+): Promise<SupplierVoucherListRow[]> {
+  const admin = createAdminClient()
+  const { data, error } = await admin
+    .from('vouchers')
+    .select(
+      `
+      id,
+      code,
+      status,
+      remaining_amount_due_agorot,
+      coupon_price_agorot,
+      platform_percent,
+      issued_at,
+      expires_at,
+      redeemed_at,
+      user_id,
+      products(name_he)
+    `,
+    )
+    .eq('supplier_id', supplierId)
+    .order('issued_at', { ascending: false })
+    .limit(limit)
+
+  if (error) {
+    log.error('supplier.vouchers_query_failed', { reason: error.message })
+    return []
+  }
+
+  const rows = (data ?? []) as unknown as SupplierVoucherDbRow[]
+  const names = await customerNames(
+    admin,
+    rows.map((r) => r.user_id ?? null),
+  )
+
+  return rows.map((row) => {
+    const status = voucherDisplayStatus({ status: row.status, expiresAt: row.expires_at })
+    return {
+      voucherId: row.id,
+      code: row.code,
+      productName: row.products?.name_he ?? 'קופון',
+      customerName: names.get(row.user_id ?? '') ?? null,
+      status,
+      statusLabel: VOUCHER_STATUS_LABEL[status],
+      couponPriceAgorot: row.coupon_price_agorot,
+      remainingAmountDueAgorot: row.remaining_amount_due_agorot,
+      issuedAt: row.issued_at,
+      expiresAt: row.expires_at,
+      redeemedAt: row.redeemed_at,
+    }
+  })
+}
+
 export async function getSupplierRedemptions(supplierId: string): Promise<SupplierRedemptionRow[]> {
   const admin = createAdminClient()
   const { data, error } = await admin
@@ -127,6 +260,7 @@ export async function getSupplierRedemptions(supplierId: string): Promise<Suppli
       coupon_price_agorot,
       platform_percent,
       redeemed_at,
+      user_id,
       products(name_he)
     `,
     )
@@ -140,11 +274,17 @@ export async function getSupplierRedemptions(supplierId: string): Promise<Suppli
     return []
   }
 
-  return ((data ?? []) as unknown as VoucherRow[]).map((row) => ({
+  const rows = (data ?? []) as unknown as VoucherRow[]
+  const names = await customerNames(
+    admin,
+    rows.map((r) => r.user_id ?? null),
+  )
+
+  return rows.map((row) => ({
     voucherId: row.id,
     code: row.code,
     productName: row.products?.name_he ?? 'קופון',
-    customerName: null,
+    customerName: names.get(row.user_id ?? '') ?? null,
     remainingAmountDueAgorot: row.remaining_amount_due_agorot,
     couponPriceAgorot: row.coupon_price_agorot,
     platformPercent: row.platform_percent,
