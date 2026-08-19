@@ -81,6 +81,41 @@ console.log(
 )
 console.log(`compared: ${report.W}x${report.H}`)
 console.log(`OVERALL first ${report.H}px: ${report.overallPct}%`)
+
+/**
+ * A band percentage only means something when the two pages are the same page.
+ *
+ * MEASURED, 2026-08-19. A `next start` left running from an earlier build kept
+ * port 3311 and went on serving it long after `.next` was rebuilt. The home
+ * page it served rendered 15562px tall against the live site's 5492px, and this
+ * script dutifully reported OVERALL 45.53%. The same commit measured against a
+ * server on the CURRENT build reported 11.07%. Nothing in the output said which
+ * of the two numbers to believe, and the wrong one is the one that looks like a
+ * catastrophic regression worth a day of chasing.
+ *
+ * The height ratio is the cheapest signal that separates them, and it is
+ * unambiguous: a styling drift moves a page by a few percent, not by 3x. When
+ * the ratio is this far out, the honest output is "these are different pages"
+ * rather than a number.
+ *
+ * Deliberately a warning and not an exit code. This script prints; the caller
+ * decides. Failing here would break `--page=search`, where the live and local
+ * pages legitimately differ in length.
+ */
+const heightRatio = report.mineSize.h / report.liveSize.h
+if (heightRatio > 1.6 || heightRatio < 0.62) {
+  console.log('')
+  console.log(
+    `!! HEIGHT RATIO ${heightRatio.toFixed(2)}x — the percentage above is NOT a pixel gate.`,
+  )
+  console.log('!! These are structurally different pages, not the same page styled differently.')
+  console.log('!! Most likely causes, in the order they have actually happened here:')
+  console.log('!!   1. a stale `next start` holding the port and serving an older build')
+  console.log('!!      (check: is the server older than .next/BUILD_ID?)')
+  console.log('!!   2. the local page failed to load its data and rendered a fallback')
+  console.log('!!      (check the server log for supabase.admin_key_invalid)')
+  console.log('!! Fix the server, then re-measure. Do not chase the bands.')
+}
 console.log('worst bands:')
 for (const band of [...report.bands].sort((x, y) => y.pct - x.pct).slice(0, 12)) {
   console.log(`  y ${String(band.y0).padStart(4)}-${String(band.y1).padEnd(4)}  ${band.pct}%`)
