@@ -72,7 +72,7 @@ export default function PhoneOtpForm({ next }: { next?: string }) {
         <button
           type="submit"
           disabled={sendPending}
-          className="w-full border border-brand text-brand hover:bg-brand/5 disabled:opacity-60 font-semibold rounded-lg py-2.5 text-sm transition-colors"
+          className="w-full border border-brand text-heading hover:bg-brand/5 disabled:opacity-60 font-semibold rounded-lg py-2.5 text-sm transition-colors"
         >
           {sendPending ? 'שולחים קוד...' : 'שליחת קוד ב-SMS'}
         </button>
@@ -122,7 +122,7 @@ export default function PhoneOtpForm({ next }: { next?: string }) {
       <button
         type="button"
         onClick={() => setConfirmed(null)}
-        className="w-full text-xs text-center text-gray-500 hover:text-brand"
+        className="w-full text-xs text-center text-gray-500 hover:text-link"
       >
         שינוי מספר טלפון
       </button>

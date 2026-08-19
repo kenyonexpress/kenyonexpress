@@ -78,7 +78,7 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
           {coupon.title_he}
         </p>
         {coupon.location_he && (
-          <div className="flex items-center gap-1 text-xs text-gray-400">
+          <div className="flex items-center gap-1 text-xs text-gray-500">
             <MapPin size={11} />
             {coupon.location_he}
           </div>
@@ -86,15 +86,15 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
         <div className="pt-1 flex items-baseline gap-2">
           {platformPrice != null ? (
             <>
-              <span className="text-lg font-bold text-brand">₪{platformPrice.toFixed(2)}</span>
-              <span className="text-xs text-gray-400 line-through">₪{original.toFixed(2)}</span>
+              <span className="text-lg font-bold text-price">₪{platformPrice.toFixed(2)}</span>
+              <span className="text-xs text-gray-500 line-through">₪{original.toFixed(2)}</span>
             </>
           ) : (
-            <span className="text-sm text-gray-400">המחיר יעודכן בקרוב</span>
+            <span className="text-sm text-gray-500">המחיר יעודכן בקרוב</span>
           )}
         </div>
         {platformPrice != null && (
-          <p className="text-micro text-gray-400">
+          <p className="text-micro text-gray-500">
             ₪{platformPrice.toFixed(2)} באתר, היתרה בבית העסק
           </p>
         )}

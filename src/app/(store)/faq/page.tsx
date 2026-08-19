@@ -56,7 +56,7 @@ export default function FaqPage() {
 
       <header className="mb-8 max-w-3xl">
         <h1 className="text-3xl font-bold text-heading">שאלות נפוצות</h1>
-        <p className="mt-2 text-sm text-heading/70">עודכן לאחרונה: {updated}</p>
+        <p className="mt-2 text-sm text-heading/75">עודכן לאחרונה: {updated}</p>
         <p className="mt-3 text-base leading-relaxed text-heading/80">
           לא מצאתם תשובה? אפשר לפנות אלינו דרך{' '}
           <Link href="/contact" className="font-medium text-heading underline underline-offset-2">

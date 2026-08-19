@@ -40,12 +40,28 @@ function Blocks({ blocks, sectionNumber }: { blocks: LegalBlock[]; sectionNumber
 
         if (block.type === 'table') {
           return (
-            // Wide tables scroll inside their own box; the page body must not
-            // scroll sideways on a phone.
-            <div key={key} className="overflow-x-auto">
+            // WIDE TABLES SCROLL INSIDE THEIR OWN BOX, AND THE BOX MUST BE
+            // REACHABLE WITHOUT A MOUSE.
+            //
+            // The page body must not scroll sideways on a phone, so the table
+            // gets its own scroller. axe then reports
+            // `scrollable-region-focusable` on the phone viewport and only
+            // there, because the box overflows only once the screen is narrower
+            // than the table's 36rem minimum: a keyboard user could see half a
+            // table of consumer-law figures with no way to reach the rest.
+            //
+            // A <section> with a name rather than a bare div, so the extra tab
+            // stop announces what it is.
+            <section
+              key={key}
+              className="overflow-x-auto"
+              aria-label={block.caption ?? 'טבלה'}
+              // biome-ignore lint/a11y/noNoninteractiveTabindex: scrolling IS the interaction here, which is the one case the rule's premise gets wrong.
+              tabIndex={0}
+            >
               <table className="w-full min-w-[36rem] border-collapse text-start text-sm">
                 {block.caption && (
-                  <caption className="mb-2 text-start text-sm text-heading/70">
+                  <caption className="mb-2 text-start text-sm text-heading/75">
                     {block.caption}
                   </caption>
                 )}
@@ -80,7 +96,7 @@ function Blocks({ blocks, sectionNumber }: { blocks: LegalBlock[]; sectionNumber
                   ))}
                 </tbody>
               </table>
-            </div>
+            </section>
           )
         }
 
@@ -141,7 +157,7 @@ export default function LegalArticle({
 
       <header className="mb-8 max-w-3xl">
         <h1 className="text-3xl font-bold text-heading">{doc.title}</h1>
-        <p className="mt-2 text-sm text-heading/70">
+        <p className="mt-2 text-sm text-heading/75">
           עודכן לאחרונה: <time dateTime={doc.updatedAt}>{updated}</time>
         </p>
       </header>
@@ -172,7 +188,7 @@ export default function LegalArticle({
         <ol className="mt-3 space-y-1 text-base">
           {doc.sections.map((section, index) => (
             <li key={section.id} className="flex gap-2">
-              <span className="shrink-0 text-heading/70 tabular-nums">{index + 1}.</span>
+              <span className="shrink-0 text-heading/75 tabular-nums">{index + 1}.</span>
               <a
                 href={`#${section.id}`}
                 className="text-heading/85 underline underline-offset-4 hover:text-heading"

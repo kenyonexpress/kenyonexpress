@@ -43,7 +43,7 @@ export default function AboutPage() {
 
       <header className="mb-8 max-w-3xl">
         <h1 className="text-3xl font-bold text-heading">אודות קניון אקספרס</h1>
-        <p className="mt-2 text-sm text-heading/70">עודכן לאחרונה: {updated}</p>
+        <p className="mt-2 text-sm text-heading/75">עודכן לאחרונה: {updated}</p>
         <p className="mt-4 text-base leading-relaxed text-heading/80">{aboutIntro}</p>
       </header>
 

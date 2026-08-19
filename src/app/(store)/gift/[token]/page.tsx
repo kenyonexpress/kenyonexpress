@@ -32,7 +32,7 @@ export default function GiftClaimPage(props: Props) {
   return (
     <main className="mx-auto w-full max-w-page px-4 py-12">
       <div className="mx-auto max-w-xl rounded-2xl border border-heading/15 bg-white p-6 text-center shadow-sm">
-        <Suspense fallback={<p className="text-sm text-heading/70">רגע, טוענים את המתנה…</p>}>
+        <Suspense fallback={<p className="text-sm text-heading/75">רגע, טוענים את המתנה…</p>}>
           <GiftContent {...props} />
         </Suspense>
       </div>
@@ -62,11 +62,11 @@ async function GiftContent({ params }: Props) {
 
   return (
     <>
-      <p className="text-sm font-medium text-heading/70">
+      <p className="text-sm font-medium text-heading/75">
         {gift.recipientName ? `${gift.recipientName}, קיבלת מתנה` : 'קיבלת מתנה'}
       </p>
       <h1 className="mt-2 text-2xl font-bold text-heading">{gift.productName ?? 'קופון'}</h1>
-      {gift.supplierName && <p className="mt-1 text-sm text-heading/70">{gift.supplierName}</p>}
+      {gift.supplierName && <p className="mt-1 text-sm text-heading/75">{gift.supplierName}</p>}
 
       {gift.message && (
         <blockquote className="mt-5 rounded-xl border border-heading/10 bg-heading/5 px-4 py-3 text-base leading-relaxed text-heading/90">
@@ -74,7 +74,7 @@ async function GiftContent({ params }: Props) {
         </blockquote>
       )}
 
-      {expires && <p className="mt-4 text-sm text-heading/70">הקופון בתוקף עד {expires}</p>}
+      {expires && <p className="mt-4 text-sm text-heading/75">הקופון בתוקף עד {expires}</p>}
 
       <div className="mt-6">
         {!gift.usable ? (

@@ -41,6 +41,27 @@ function describe(results: Awaited<ReturnType<typeof scan>>) {
     .join('\n  ')
 }
 
+/**
+ * EVERY PUBLIC ROUTE, NOT A SAMPLE.
+ *
+ * This list held six routes and all six were green, which read as "the site
+ * passes". A sweep across every public route on 2026-08-19 found serious
+ * violations on TEN of the thirteen that were missing, and none at all on the
+ * six that were here. That is not a coincidence: a page in the gate gets fixed,
+ * a page outside it does not, and the gate's own scope was the bug.
+ *
+ * What the sweep found, all fixed in the same change: brand yellow used as text
+ * (#fed700 on white, 1.41:1, on the sign-up and forgotten-password links and on
+ * a coupon's own price), `text-gray-400` as muted body text (2.60:1) across the
+ * coupon and auth surfaces, `text-heading/70` missing AA by 0.02 (4.48 against
+ * 4.5) on every legal page, white on the promo CTA orange (2.86:1), and the
+ * legal tables' horizontal scrollers being unreachable from a keyboard.
+ *
+ * Both project viewports run this file, and that is load-bearing rather than
+ * incidental: `scrollable-region-focusable` appears ONLY on the phone, because
+ * the table box only overflows once the screen is narrower than its 36rem
+ * minimum.
+ */
 const PAGES: Array<{ name: string; path: string }> = [
   { name: 'home', path: '/' },
   { name: 'products', path: '/products' },
@@ -48,6 +69,23 @@ const PAGES: Array<{ name: string; path: string }> = [
   { name: 'contact', path: '/contact' },
   { name: 'offline', path: '/offline' },
   { name: 'supplier login', path: '/supplier/login' },
+  { name: 'coupons', path: '/coupons' },
+  { name: 'suppliers', path: '/suppliers' },
+  { name: 'login', path: '/login' },
+  { name: 'signup', path: '/signup' },
+  { name: 'reset password', path: '/reset-password' },
+  // With a query and a slug: an empty archive renders none of the cards, the
+  // prices or the badges that carry most of this site's colour pairings.
+  { name: 'search results', path: '/search?q=%D7%9E%D7%95%D7%A6%D7%A8' },
+  { name: 'category archive', path: '/category/hot-deals' },
+  // Both legal sets. Which one is binding is Ofir's open decision; until it is
+  // made, both are served and both have to be accessible.
+  { name: 'legal terms', path: '/legal/terms' },
+  { name: 'legal privacy', path: '/legal/privacy' },
+  { name: 'legal returns', path: '/legal/returns' },
+  { name: 'legal accessibility', path: '/legal/accessibility' },
+  { name: 'terms and conditions', path: '/terms-and-conditions' },
+  { name: 'privacy policy', path: '/privacy-policy' },
 ]
 
 for (const { name, path } of PAGES) {

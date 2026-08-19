@@ -40,7 +40,7 @@ async function CouponsGrid() {
       ))}
     </div>
   ) : (
-    <div className="text-center py-12 text-gray-400 text-sm bg-white rounded-xl border border-gray-200">
+    <div className="text-center py-12 text-gray-500 text-sm bg-white rounded-xl border border-gray-200">
       <p className="text-3xl mb-2">🎟</p>
       <p>אין קופונים פעילים כרגע</p>
     </div>

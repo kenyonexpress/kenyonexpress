@@ -99,8 +99,8 @@ async function CouponDealBody({ params }: Props) {
           {/* Pricing breakdown */}
           <div className="bg-brand-light/40 border border-brand/20 rounded-xl p-4 space-y-2">
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-brand">₪{platformPrice.toFixed(2)}</span>
-              <span className="text-sm text-gray-400 line-through">
+              <span className="text-2xl font-bold text-price">₪{platformPrice.toFixed(2)}</span>
+              <span className="text-sm text-gray-500 line-through">
                 ₪{Number(deal.original_price).toFixed(2)}
               </span>
             </div>
@@ -119,7 +119,7 @@ async function CouponDealBody({ params }: Props) {
           <button
             type="button"
             disabled
-            className="w-full bg-brand/60 text-heading/70 font-semibold rounded-lg px-6 py-3 text-sm cursor-not-allowed"
+            className="w-full bg-brand/60 text-heading/75 font-semibold rounded-lg px-6 py-3 text-sm cursor-not-allowed"
           >
             רכישת קופון — בקרוב
           </button>
@@ -132,7 +132,7 @@ async function CouponDealBody({ params }: Props) {
           )}
 
           {deal.valid_until && (
-            <p className="text-xs text-gray-400 pt-1">
+            <p className="text-xs text-gray-500 pt-1">
               בתוקף עד {new Date(deal.valid_until).toLocaleDateString('he-IL')}
             </p>
           )}

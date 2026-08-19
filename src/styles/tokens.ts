@@ -84,8 +84,12 @@ export const SITE = {
     rose: '#fff5f5',
     violet: '#f5f5ff',
     sky: '#f0f7ff',
-    /** Banner CTA button. */
-    flame: '#ff6b00',
+    /**
+     * Banner CTA button. Darkened from #ff6b00 for WCAG AA: the button's label
+     * is white, bold and 12px, and white on #ff6b00 is 2.86:1. See the note on
+     * --color-promo-flame in globals.css.
+     */
+    flame: '#c24d00',
   },
   /**
    * WhatsApp's own brand colours, used by the share button and the float.

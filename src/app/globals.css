@@ -24,6 +24,13 @@
   --color-price-strike: #9ca3af; /* crossed-out original price */
   --color-deal-price: #2d2d2d; /* deals-card price ink (live measured) */
   --color-success: #5cb85c; /* confirmation, in-stock */
+  /* BRAND YELLOW IS NOT A TEXT COLOUR, and this is the token that replaces it.
+     `text-brand` is #fed700: 1.41:1 against white where AA wants 4.5, which axe
+     reported as a serious violation on /login, /signup, /suppliers and /coupons
+     for the sign-up link, the forgotten-password link and a coupon's own price.
+     The sibling rule, "nothing ON brand yellow may be white", already has a gate
+     in src/lib/a11y/brand-contrast.test.ts; the same colour read the other way
+     round had none. This one measures 6.03:1. */
   --color-link: #0062bd; /* product names + links (distinct from red price) */
   --color-heading: #333e48; /* hero + section headings (electro home-v7) */
   --color-sale-badge: #328614; /* on-sale badge green; darkened from live #44b81b for WCAG AA */
@@ -50,7 +57,13 @@
   --color-promo-rose: #fff5f5;
   --color-promo-violet: #f5f5ff;
   --color-promo-sky: #f0f7ff;
-  --color-promo-flame: #ff6b00; /* promo card CTA */
+  /* Darkened from #ff6b00 for WCAG AA, the same trade already recorded on
+     --color-sale-badge. The button on that card is white, bold, 12px, and white
+     on #ff6b00 measures 2.86:1 where AA wants 4.5; axe reported it as serious on
+     /coupons. Dark ink instead of white does not rescue it either - #333e48 on
+     #ff6b00 is 3.82 - and the text is far below the 18.66px bold that would let
+     3:1 apply. #c24d00 carries white at 4.82:1. */
+  --color-promo-flame: #c24d00; /* promo card CTA */
 
   /* --- WhatsApp (third-party mark; never rebrand with --color-brand-*) -------- */
   --color-whatsapp: #25d366;

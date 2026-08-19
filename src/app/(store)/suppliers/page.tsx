@@ -104,7 +104,7 @@ export default function SuppliersPage() {
         {FACTS.map((fact) => (
           <div key={fact.title} className="rounded-xl border border-heading/10 p-5">
             <h3 className="text-base font-semibold text-heading">{fact.title}</h3>
-            <p className="mt-2 text-sm leading-relaxed text-heading/70">{fact.body}</p>
+            <p className="mt-2 text-sm leading-relaxed text-heading/75">{fact.body}</p>
           </div>
         ))}
       </section>

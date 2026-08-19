@@ -20,7 +20,7 @@ export default function ForgotPasswordForm() {
       {success ? (
         <div className="space-y-4">
           <div className="text-sm text-green-700 bg-green-50 rounded-lg px-4 py-3">{success}</div>
-          <Link href="/login" className="block text-center text-sm text-brand hover:underline">
+          <Link href="/login" className="block text-center text-sm text-link hover:underline">
             חזרה לכניסה
           </Link>
         </div>
@@ -52,7 +52,7 @@ export default function ForgotPasswordForm() {
           </button>
 
           <p className="text-center text-sm text-gray-500">
-            <Link href="/login" className="text-brand hover:underline">
+            <Link href="/login" className="text-link hover:underline">
               חזרה לכניסה
             </Link>
           </p>
