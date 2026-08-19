@@ -60,7 +60,7 @@
     {
       "table_name": "coupon_codes",
       "rls_enabled": true,
-      "policy_count": 2
+      "policy_count": 1
     },
     {
       "table_name": "coupon_deals",
@@ -155,17 +155,17 @@
     {
       "table_name": "product_variants",
       "rls_enabled": true,
-      "policy_count": 8
+      "policy_count": 5
     },
     {
       "table_name": "products",
       "rls_enabled": true,
-      "policy_count": 7
+      "policy_count": 5
     },
     {
       "table_name": "profiles",
       "rls_enabled": true,
-      "policy_count": 3
+      "policy_count": 2
     },
     {
       "table_name": "push_tokens",
@@ -240,7 +240,7 @@
     {
       "table_name": "suppliers",
       "rls_enabled": true,
-      "policy_count": 6
+      "policy_count": 4
     },
     {
       "table_name": "user_addresses",
@@ -564,80 +564,45 @@
       },
       {
         "tablename": "product_variants",
-        "policyname": "product_variants_delete_authenticated",
+        "policyname": "product_variants_delete_unified",
         "cmd": "DELETE",
-        "qual": "has_role('content_uploader'::text)",
+        "qual": "(is_admin() OR has_role('content_uploader'::text))",
         "with_check": ""
       },
       {
         "tablename": "product_variants",
-        "policyname": "product_variants_delete_public",
-        "cmd": "DELETE",
-        "qual": "is_admin()",
-        "with_check": ""
-      },
-      {
-        "tablename": "product_variants",
-        "policyname": "product_variants_insert_authenticated",
+        "policyname": "product_variants_insert_unified",
         "cmd": "INSERT",
         "qual": "",
-        "with_check": "has_role('content_uploader'::text)"
+        "with_check": "(is_admin() OR has_role('content_uploader'::text))"
       },
       {
         "tablename": "product_variants",
-        "policyname": "product_variants_insert_public",
-        "cmd": "INSERT",
-        "qual": "",
-        "with_check": "is_admin()"
-      },
-      {
-        "tablename": "product_variants",
-        "policyname": "product_variants_update_authenticated",
+        "policyname": "product_variants_update_unified",
         "cmd": "UPDATE",
-        "qual": "has_role('content_uploader'::text)",
-        "with_check": "has_role('content_uploader'::text)"
-      },
-      {
-        "tablename": "product_variants",
-        "policyname": "product_variants_update_public",
-        "cmd": "UPDATE",
-        "qual": "is_admin()",
-        "with_check": "is_admin()"
+        "qual": "(is_admin() OR has_role('content_uploader'::text))",
+        "with_check": "(is_admin() OR has_role('content_uploader'::text))"
       },
       {
         "tablename": "products",
         "policyname": "products_delete_unified",
         "cmd": "DELETE",
-        "qual": "(is_admin() OR is_admin())",
+        "qual": "is_admin()",
         "with_check": ""
       },
       {
         "tablename": "products",
-        "policyname": "products_insert_authenticated",
+        "policyname": "products_insert_unified",
         "cmd": "INSERT",
         "qual": "",
-        "with_check": "(has_role('content_uploader'::text) OR ((current_user_role() = 'content_uploader'::user_role) AND (created_by = ( SELECT auth.uid() AS uid))))"
+        "with_check": "(is_admin() OR has_role('content_uploader'::text) OR ((current_user_role() = 'content_uploader'::user_role) AND (created_by = ( SELECT auth.uid() AS uid))))"
       },
       {
         "tablename": "products",
-        "policyname": "products_insert_public",
-        "cmd": "INSERT",
-        "qual": "",
-        "with_check": "is_admin()"
-      },
-      {
-        "tablename": "products",
-        "policyname": "products_update_authenticated",
+        "policyname": "products_update_unified",
         "cmd": "UPDATE",
-        "qual": "(has_role('content_uploader'::text) OR ((current_user_role() = 'content_uploader'::user_role) AND (created_by = ( SELECT auth.uid() AS uid))))",
-        "with_check": "(has_role('content_uploader'::text) OR ((current_user_role() = 'content_uploader'::user_role) AND (created_by = ( SELECT auth.uid() AS uid))))"
-      },
-      {
-        "tablename": "products",
-        "policyname": "products_update_public",
-        "cmd": "UPDATE",
-        "qual": "is_admin()",
-        "with_check": "is_admin()"
+        "qual": "(is_admin() OR has_role('content_uploader'::text) OR ((current_user_role() = 'content_uploader'::user_role) AND (created_by = ( SELECT auth.uid() AS uid))))",
+        "with_check": "(is_admin() OR has_role('content_uploader'::text) OR ((current_user_role() = 'content_uploader'::user_role) AND (created_by = ( SELECT auth.uid() AS uid))))"
       },
       {
         "tablename": "profiles",
@@ -720,36 +685,22 @@
         "tablename": "suppliers",
         "policyname": "suppliers_delete_unified",
         "cmd": "DELETE",
-        "qual": "(is_admin() OR is_admin())",
+        "qual": "is_admin()",
         "with_check": ""
       },
       {
         "tablename": "suppliers",
-        "policyname": "suppliers_insert_authenticated",
+        "policyname": "suppliers_insert_unified",
         "cmd": "INSERT",
         "qual": "",
-        "with_check": "has_role('content_uploader'::text)"
+        "with_check": "(is_admin() OR has_role('content_uploader'::text))"
       },
       {
         "tablename": "suppliers",
-        "policyname": "suppliers_insert_public",
-        "cmd": "INSERT",
-        "qual": "",
-        "with_check": "is_admin()"
-      },
-      {
-        "tablename": "suppliers",
-        "policyname": "suppliers_update_authenticated",
+        "policyname": "suppliers_update_unified",
         "cmd": "UPDATE",
-        "qual": "has_role('content_uploader'::text)",
-        "with_check": "has_role('content_uploader'::text)"
-      },
-      {
-        "tablename": "suppliers",
-        "policyname": "suppliers_update_public",
-        "cmd": "UPDATE",
-        "qual": "is_admin()",
-        "with_check": "is_admin()"
+        "qual": "(is_admin() OR has_role('content_uploader'::text))",
+        "with_check": "(is_admin() OR has_role('content_uploader'::text))"
       },
       {
         "tablename": "user_addresses",
