@@ -13,6 +13,7 @@ import type { CartActionResult, CartStorageItem, CartView } from '@/lib/cart/typ
 import { growthClient } from '@/lib/growth/client'
 import { evaluateDiscount } from '@/lib/growth/discount'
 import { withActionContext } from '@/lib/observability/action-context'
+import { log } from '@/lib/observability/log'
 import { createGuestCartClient, createPublicClient } from '@/lib/supabase/anon'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
@@ -191,23 +192,47 @@ async function getCartRow(): Promise<{
   } = await supabase.auth.getUser()
 
   if (user) {
-    const { data } = await supabase
+    const result = await supabase
       .from('carts')
       .select('id, items')
       .eq('profile_id', user.id)
       .maybeSingle()
-    return { row: data, isGuest: false, userId: user.id }
+    return { row: cartRowOrFail(result, user.id), isGuest: false, userId: user.id }
   }
 
   const sessionId = (await getGuestSessionId()) ?? (await ensureGuestSessionId())
-  const { data } = await createGuestCartClient(sessionId)
+  const result = await createGuestCartClient(sessionId)
     .from('carts')
     .select('id, items')
     .eq('session_id', sessionId)
     .is('profile_id', null)
     .maybeSingle()
 
-  return { row: data, isGuest: true, userId: null }
+  return { row: cartRowOrFail(result, sessionId), isGuest: true, userId: null }
+}
+
+/**
+ * The shopper's own cart row, or a throw. Never a silent null.
+ *
+ * `.maybeSingle()` reports a genuinely absent cart as `data: null` with NO
+ * error, so every error here is exceptional - and one of them is a trap that
+ * repairs nothing on its own. postgrest-js synthesises PGRST116 when the filter
+ * matched MORE than one row (`dist/index.mjs`: `if (isMaybeSingle &&
+ * Array.isArray(data)) if (data.length > 1)`), and `public.carts` has no unique
+ * index on `profile_id` to stop a second row existing. Discarded, that error
+ * read as "this account has no cart": the cart showed empty on every request,
+ * and every write, seeing no existing id, inserted yet another row. Note that
+ * `orFail` is deliberately NOT used - it exempts PGRST116 as "a `.single()`
+ * found no row", which is the right call for the catalogue and the exact wrong
+ * one here, where PGRST116 can only mean duplicates.
+ */
+function cartRowOrFail(
+  result: { data: CartRow | null; error: { code?: string; message?: string } | null },
+  owner: string,
+): CartRow | null {
+  if (!result.error) return result.data
+  log.error('cart.row_read_failed', { owner, error: result.error })
+  throw new Error(`cart.row_read_failed: ${result.error.message ?? 'cart read failed'}`)
 }
 
 async function saveCartItems(
@@ -535,10 +560,10 @@ async function runMergeGuestCart(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
   sessionId: string,
-): Promise<void> {
+): Promise<boolean> {
   const guest = createGuestCartClient(sessionId)
 
-  const [{ data: guestCart }, { data: userCart }] = await Promise.all([
+  const [guestResult, userResult] = await Promise.all([
     guest
       .from('carts')
       .select('id, items')
@@ -548,7 +573,28 @@ async function runMergeGuestCart(
     supabase.from('carts').select('id, items').eq('profile_id', userId).maybeSingle(),
   ])
 
-  if (!guestCart || !Array.isArray(guestCart.items) || guestCart.items.length === 0) return
+  // NEITHER read may be discarded, and the account one is the dangerous half.
+  // Every branch below reads "no id" as "this account has no cart yet", so a
+  // failed read took the INSERT branch - and `public.carts` has no unique index
+  // on `profile_id` (measured against production 2026-08-20), so the insert
+  // SUCCEEDS and the profile ends up owning two rows. `getCartRow` then reads
+  // both with `.maybeSingle()`, which is the PGRST116 `cartRowOrFail` exists
+  // for. The guest half matters for the other direction: it is deleted below
+  // unconditionally, so a failed read there loses the items it was about to
+  // merge. Returning false rather than throwing because all three callers are
+  // on the login path, after the session is already exchanged: a login that
+  // succeeded must not fail over a cart. The caller keeps the guest cookie on false, and
+  // the merge is retried at the next login instead of being orphaned.
+  const failure = guestResult.error ?? userResult.error
+  if (failure) {
+    log.error('cart.merge_read_failed', { userId, sessionId, error: failure })
+    return false
+  }
+
+  const guestCart = guestResult.data
+  const userCart = userResult.data
+
+  if (!guestCart || !Array.isArray(guestCart.items) || guestCart.items.length === 0) return true
 
   const guestItems = parseItems(guestCart.items)
   const userItems = parseItems(userCart?.items)
@@ -574,6 +620,8 @@ async function runMergeGuestCart(
       : supabase.from('carts').insert({ profile_id: userId, items: mergedItems }),
     guest.from('carts').delete().eq('id', guestCart.id),
   ])
+
+  return true
 }
 
 async function runClearGuestSessionCookie(): Promise<void> {
@@ -734,11 +782,13 @@ export async function removeUnavailableItems(): Promise<CartActionResult> {
   return withActionContext('cart.remove_unavailable', () => runRemoveUnavailableItems())
 }
 
+/** True when the merge ran (or had nothing to merge); false when a read failed
+ * and the caller must keep the guest cookie so it can be retried. */
 export async function mergeGuestCart(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
   sessionId: string,
-): Promise<void> {
+): Promise<boolean> {
   return withActionContext('cart.merge_guest', () => runMergeGuestCart(supabase, userId, sessionId))
 }
 

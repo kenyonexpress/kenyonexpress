@@ -62,11 +62,16 @@ export async function GET(request: NextRequest) {
       const cookieStore = await cookies()
       const sessionId = parseGuestSessionToken(cookieStore.get(GUEST_SESSION_COOKIE)?.value)
       if (sessionId) {
-        await mergeGuestCart(supabase, session.user.id, sessionId)
+        const merged = await mergeGuestCart(supabase, session.user.id, sessionId)
         // Before the cookie is cleared: this is the last moment the guest id
         // and the user id are both known.
         await linkAnalyticsIdentity(session.user.id, sessionId)
-        cookieStore.delete(GUEST_SESSION_COOKIE)
+        // The cookie is what makes the guest cart findable. Clearing it after a
+        // merge that did NOT run - a read failed, and the merge refused to
+        // guess rather than duplicate the row - would orphan that cart with the
+        // shopper's items in it. Keeping it costs nothing (a signed-in shopper
+        // never reads the guest cart) and lets the next login retry the merge.
+        if (merged) cookieStore.delete(GUEST_SESSION_COOKIE)
       }
       return NextResponse.redirect(new URL(safeNext, origin))
     }

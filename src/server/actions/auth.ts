@@ -164,9 +164,13 @@ async function runSignInWithEmail(_: AuthState, formData: FormData): Promise<Aut
 
   const sessionId = await getGuestSessionId()
   if (signInData.user && sessionId) {
-    await mergeGuestCart(supabase, signInData.user.id, sessionId)
-    const cookieStore = await cookies()
-    cookieStore.delete(GUEST_SESSION_COOKIE)
+    // Only on a merge that actually ran: see the same guard in
+    // app/auth/callback/route.ts. A cleared cookie orphans the guest cart.
+    const merged = await mergeGuestCart(supabase, signInData.user.id, sessionId)
+    if (merged) {
+      const cookieStore = await cookies()
+      cookieStore.delete(GUEST_SESSION_COOKIE)
+    }
   }
 
   redirect(safeNext(formData.get('next')))
@@ -356,9 +360,13 @@ async function runVerifyPhoneOtp(_: AuthState, formData: FormData): Promise<Auth
 
   const sessionId = await getGuestSessionId()
   if (data.user && sessionId) {
-    await mergeGuestCart(supabase, data.user.id, sessionId)
-    const cookieStore = await cookies()
-    cookieStore.delete(GUEST_SESSION_COOKIE)
+    // Gated on the return value, same as the other two login paths: clearing
+    // the cookie after a merge that did not run orphans the guest cart.
+    const merged = await mergeGuestCart(supabase, data.user.id, sessionId)
+    if (merged) {
+      const cookieStore = await cookies()
+      cookieStore.delete(GUEST_SESSION_COOKIE)
+    }
   }
 
   // A phone-only account has no profile row, because the trigger that creates
