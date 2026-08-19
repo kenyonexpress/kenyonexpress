@@ -18,6 +18,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
  *                              own header records that a silently-failing key
  *                              "once collapsed the sitemap to three URLs" -
  *                              the same bug, patched at the client layer.
+ *   sitemap                    the literal event that header describes, and it
+ *                              kept the bug through BOTH fixes: the second one
+ *                              was recorded as covering the sitemap through
+ *                              getFeedProducts, which in fact only backs
+ *                              feed.xml and merchant.xml. Its two reads are its
+ *                              own, and a cached sitemap listing no products is
+ *                              a deindexing request that outlives the failure.
  *   listProductSlugsForPrerender  and getActiveCouponDealIds feed
  *                              generateStaticParams: a failed read at build
  *                              time bakes a deploy with zero prerendered pages
@@ -83,6 +90,7 @@ const { getProductSeoBySlug } = await import('./product-seo')
 const { getCouponDeal, getActiveCouponDealIds } = await import('./coupon-deals')
 const { getFeedProducts } = await import('./feeds/catalogue')
 const { loadProductBySlug, listProductSlugsForPrerender } = await import('./product-detail')
+const { default: sitemap } = await import('@/app/sitemap')
 
 /** Every cached reader, with the empty value each is expected to resolve to. */
 const READERS: Array<{ name: string; run: () => Promise<unknown>; empty: unknown }> = [
@@ -117,6 +125,31 @@ describe.each(READERS)('$name', ({ run, empty }) => {
   it('treats PGRST116 as an answer, not a failure', async () => {
     readResult.error = { code: 'PGRST116', message: 'no rows returned' }
     await expect(run()).resolves.toEqual(empty)
+    expect(logError).not.toHaveBeenCalled()
+  })
+})
+
+/**
+ * The sitemap does not fit the table above: on a genuinely empty catalogue it
+ * still returns the static entries, so "resolves empty" is the wrong control.
+ * The contract is the same one, stated in its own terms - no /product/ and no
+ * /category/ URL may ever be produced by a FAILED read.
+ */
+describe('sitemap', () => {
+  const catalogueUrls = (entries: Array<{ url: string }>) =>
+    entries.filter((e) => e.url.includes('/product/') || e.url.includes('/category/'))
+
+  it('throws and logs when the catalogue read fails', async () => {
+    readResult.error = { code: '08006', message: 'connection failure' }
+    await expect(sitemap()).rejects.toThrow(/connection failure/)
+    expect(logError).toHaveBeenCalledTimes(1)
+  })
+
+  it('serves the static entries and stays silent when the catalogue is genuinely empty', async () => {
+    readResult.data = []
+    const entries = await sitemap()
+    expect(catalogueUrls(entries)).toEqual([])
+    expect(entries.length).toBeGreaterThan(0)
     expect(logError).not.toHaveBeenCalled()
   })
 })

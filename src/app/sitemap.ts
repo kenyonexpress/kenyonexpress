@@ -1,6 +1,7 @@
 import { sortedPosts } from '@/content/blog'
 import { LEGAL_PAGE_SLUGS, getLegalPage } from '@/content/legal'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
+import { orFail } from '@/lib/catalogue-read'
 import { newestTimestamp } from '@/lib/seo/lastmod'
 import { siteUrl } from '@/lib/site-url'
 import { createPublicClient } from '@/lib/supabase/anon'
@@ -49,7 +50,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const supabase = createPublicClient()
 
-  const [{ data: products }, { data: categories }] = await Promise.all([
+  // Both reads go through `orFail`, and that is the whole point of the expire
+  // window described above. Discarding the `error` here inverted the promise
+  // this file makes two comments up: a failed query yields `data: null`, the
+  // `?? []` below turns it into an empty list, and the enclosing `use cache`
+  // scope stores THAT as the good answer - so the failure did not fall back to
+  // the last good sitemap, it replaced it for the full cache life, silently.
+  // A sitemap that lists nothing is a deindexing request, which is why this
+  // read failing loudly is the safe direction: `use cache` stores nothing for a
+  // scope that threw, so the previous sitemap keeps being served.
+  //
+  // This file kept the bug through both 2026-08-20 fixes because the record of
+  // the second one assumed `getFeedProducts` fed it. It does not - that backs
+  // feed.xml and merchant.xml, and these two reads are the sitemap's own.
+  const [productsRead, categoriesRead] = await Promise.all([
     supabase
       .from('products')
       .select('slug, updated_at')
@@ -65,6 +79,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .eq('is_active', true)
       .not('slug', 'is', null),
   ])
+
+  const products = orFail(productsRead, 'sitemap.products_read_failed')
+  const categories = orFail(categoriesRead, 'sitemap.categories_read_failed')
 
   const categoryEntries: MetadataRoute.Sitemap = (categories ?? []).map((c) => ({
     url: `${base}/category/${c.slug}`,
