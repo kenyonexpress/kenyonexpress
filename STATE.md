@@ -61,7 +61,7 @@ Updated: 2026-08-10 (autonomous: [68] WhatsApp, geo פר מוצר, ושאריו�
 
 ---
 
-## המשך מ: תור ארכיטקטורה לילי (docs/architecture-night), משימה 9
+## המשך מ: תור ארכיטקטורה לילי (docs/architecture-night), משימה 10
 
 תור סגור בן 10 מסמכים, ענף `docs/architecture-night`, worktree `ke-arch-night`.
 **מסמכים בלבד.** אין נגיעה ב-`src/`, אין נגיעה במיגרציה קיימת, אין הרצת SQL.
@@ -79,7 +79,7 @@ Updated: 2026-08-10 (autonomous: [68] WhatsApp, geo פר מוצר, ושאריו�
 6. ✅ `ARCHITECTURE-GEO-LOCATION.md` + טיוטה `migrations/pending/123_supplier_branches.sql`
 7. ✅ `ARCHITECTURE-WP-IMPORT-PIPELINE.md`
 8. ✅ `ARCHITECTURE-OBSERVABILITY.md` (בשורש; `docs/ARCHITECTURE-OBSERVABILITY.md` הישן נשאר ולא נמחק)
-9. `ARCHITECTURE-SECURITY-HARDENING.md`
+9. ✅ `ARCHITECTURE-SECURITY-HARDENING.md`
 10. `MASTER-ARCHITECTURE-v3.md`
 
 ### מודל עסקי מחייב לתור הזה, דורס כל מסמך ישן
