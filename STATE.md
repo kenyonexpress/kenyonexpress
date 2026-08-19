@@ -1,13 +1,13 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-19 (docs night on `ke-arch`: QUESTIONS-FOR-OFIR.md)
+Updated: 2026-08-19 (docs night on `ke-arch`: LAUNCH-CHECKLIST.md)
 
-## המשך מ: docs/LAUNCH-CHECKLIST.md (לילה, docs בלבד)
+## המשך מ: docs/MORNING-REPORT.md (לילה, docs בלבד)
 
 לילה 19.08, ענף `ke-arch`, אסור לגעת בקוד. תור סגור:
 1. ✅ `docs/QUESTIONS-FOR-OFIR.md`
-2. `docs/LAUNCH-CHECKLIST.md` (הבא)
-3. `docs/MORNING-REPORT.md`
+2. ✅ `docs/LAUNCH-CHECKLIST.md`
+3. `docs/MORNING-REPORT.md` (הבא)
 אחרי 3: `MISSION-FINAL.md` שלב 1 (merge voucher → wallet → supplier → arch-night), לא בלילה הזה.
 
 ### החלטות שהתקבלו אוטומטית 19.08 (docs)
