@@ -72,5 +72,22 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.redirect(new URL('/login?error=auth_callback_error', origin))
+  /*
+    THE DESTINATION SURVIVES THE FAILURE, BECAUSE THE NEXT STEP IS A RETRY.
+
+    Everything that lands here arrived from somewhere: /account, /checkout/return,
+    a product page. On success `safeNext` carries that through. On failure it used
+    to be dropped, so a customer whose code had expired - one refresh of a magic
+    link, one slow trip through Google - signed in again and arrived at the home
+    page instead of the page they were trying to reach, with nothing to tell them
+    why. The retry is one click away on the screen this redirects to, and
+    `LoginForm` already threads `next` into all three of its forms.
+
+    Safe to append for the same reason it was safe to redirect to: this is
+    `safeNextPath` output, so it is a plain same-site path or `/`. `/` is left
+    off rather than written out, to keep the bare failure URL exactly as it was.
+  */
+  const failed = new URL('/login?error=auth_callback_error', origin)
+  if (safeNext !== '/') failed.searchParams.set('next', safeNext)
+  return NextResponse.redirect(failed)
 }
