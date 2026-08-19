@@ -60,12 +60,24 @@ async function handleGET(request: NextRequest) {
     .limit(limit)
 
   if (category) {
-    const { data: cat } = await supabase
+    // A FAILED LOOKUP HERE IS NOT "NO SUCH CATEGORY". Discarded, the error left
+    // `cat` null, the filter was silently dropped, and the shopper who asked to
+    // search inside one category got results from ALL of them - a WRONG answer
+    // presented as a correct one, which is worse than the empty list every
+    // other failure in this route degrades to. A slug that genuinely does not
+    // exist still returns no rows and no error, and still narrows to nothing.
+    const { data: cat, error: catError } = await supabase
       .from('categories')
       .select('id')
       .eq('slug', category)
       .maybeSingle()
-    if (cat?.id) query = query.eq('category_id', cat.id)
+    if (catError) {
+      log.error('search.category_lookup_failed', { reason: catError.message })
+      return NextResponse.json({ query: q, results: [], error: 'search_failed' }, { status: 500 })
+    }
+    // No row: the slug is not a category, so nothing can match inside it.
+    if (!cat?.id) return NextResponse.json({ query: q, results: [] })
+    query = query.eq('category_id', cat.id)
   }
 
   const { data, error } = await query

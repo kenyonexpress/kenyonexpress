@@ -1,5 +1,6 @@
 import CouponCard, { type Coupon } from '@/components/CouponCard'
 import { CouponsGridSkeleton } from '@/components/CouponCardSkeleton'
+import { orFail } from '@/lib/catalogue-read'
 import { createClient } from '@/lib/supabase/server'
 import { Suspense } from 'react'
 
@@ -29,14 +30,21 @@ export default function CouponsPage() {
 async function CouponsGrid() {
   const supabase = await createClient()
 
-  const { data: coupons } = await supabase
-    .from('coupon_deals')
-    .select(
-      'id, title_he, business_name, original_price, platform_price, discount_percentage, location_he, image_url',
-    )
-    .eq('status', 'active')
-    .is('deleted_at', null)
-    .order('created_at', { ascending: false })
+  // `orFail`, not `const { data }`. "אין קופונים פעילים כרגע" below is a claim
+  // about the catalogue, and a discarded error made a failed read say it - to
+  // every visitor, with nothing in any log, on the page the whole coupon
+  // business is sold from.
+  const coupons = orFail(
+    await supabase
+      .from('coupon_deals')
+      .select(
+        'id, title_he, business_name, original_price, platform_price, discount_percentage, location_he, image_url',
+      )
+      .eq('status', 'active')
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false }),
+    'coupons.list_read_failed',
+  )
 
   return coupons?.length ? (
     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">

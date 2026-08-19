@@ -291,3 +291,50 @@ describe('re-verification is what is trusted, never the body', () => {
     )
   })
 })
+
+/**
+ * A READ THAT FAILED IS NOT A PAYMENT WE DO NOT HAVE.
+ *
+ * The `payments` lookup discarded its error, so a failed read produced the same
+ * null a genuinely unknown Low Profile id produces, and took that branch: it
+ * raised the "a customer may have been charged and has no order" alarm - which
+ * this route's own comment calls the single most expensive thing it can see -
+ * and answered 200, which tells Cardcom the event is handled and stops the
+ * retries for a payment we DO hold.
+ *
+ * The 10-minute stranded-payments job would eventually finalize that order by
+ * re-verifying with the provider, so the money is not lost. What IS lost is the
+ * immediate settlement, and what is gained is a false page saying a charge has
+ * no local row at all.
+ */
+describe('cardcom webhook when the payment read itself fails', () => {
+  beforeEach(() => {
+    queue('payments.select', { data: null, error: { code: '42703' } })
+  })
+
+  it('answers 5xx so Cardcom retries, rather than 200', async () => {
+    queue('payments.select', { data: null, error: { code: '57014', message: 'statement timeout' } })
+    const response = await POST(request(SECRET, callbackBody()))
+    expect(response.status).toBe(503)
+    expect(await response.json()).toEqual({ ok: false, retry: true })
+  })
+
+  it('does not raise the "charged with no order here" alarm', async () => {
+    queue('payments.select', { data: null, error: { code: '57014', message: 'statement timeout' } })
+    await POST(request(SECRET, callbackBody()))
+    expect(capturePaymentAlarm).not.toHaveBeenCalled()
+  })
+
+  it('still raises it, and still answers 200, for a genuinely unknown payment', async () => {
+    // The negative control: refusing to alarm on an ERROR must not turn into
+    // refusing to alarm at all, or the case the alarm exists for goes silent.
+    queue('payments.select', { data: null, error: null })
+    const response = await POST(request(SECRET, callbackBody()))
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({ ok: true, unknown_payment: true })
+    expect(capturePaymentAlarm).toHaveBeenCalledWith(
+      expect.stringContaining('does not exist here'),
+      expect.objectContaining({ stage: 'cardcom_webhook_unknown_payment' }),
+    )
+  })
+})

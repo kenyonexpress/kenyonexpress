@@ -1,4 +1,5 @@
 import { ilsColumnToAgorot } from '@/lib/account/format'
+import { orFail } from '@/lib/catalogue-read'
 import { type Agorot, agorot } from '@/lib/money'
 import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
@@ -92,11 +93,15 @@ export async function getAccountProfile(): Promise<AccountProfile | null> {
   } = await supabase.auth.getUser()
   if (!user) return null
 
-  const { data } = await supabase
-    .from('profiles')
-    .select('id, email, full_name, phone, avatar_url')
-    .eq('id', user.id)
-    .maybeSingle()
+  const data = orFail(
+    await supabase
+      .from('profiles')
+      .select('id, email, full_name, phone, avatar_url')
+      .eq('id', user.id)
+      .maybeSingle(),
+    'account.profile_read_failed',
+    { userId: user.id },
+  )
 
   if (!data) return null
   return {
@@ -132,11 +137,17 @@ export async function getWalletSummary(): Promise<WalletSummary> {
 
 export async function getWalletLedger(limit = 100): Promise<WalletLedgerRow[]> {
   const supabase = await createClient()
-  const { data } = await supabase
-    .from('v_wallet_ledger')
-    .select('id, direction, signed_amount_ils, amount_ils, reason, order_id, created_at')
-    .order('created_at', { ascending: false })
-    .limit(limit)
+  // The ledger is the customer's record of their own money. A discarded error
+  // rendered it as "no movements yet", which for someone checking where a
+  // refund went is not a slower answer, it is a wrong one.
+  const data = orFail(
+    await supabase
+      .from('v_wallet_ledger')
+      .select('id, direction, signed_amount_ils, amount_ils, reason, order_id, created_at')
+      .order('created_at', { ascending: false })
+      .limit(limit),
+    'account.wallet_ledger_read_failed',
+  )
 
   return (data ?? []).map((row) => ({
     id: row.id,
@@ -152,14 +163,17 @@ export async function getWalletLedger(limit = 100): Promise<WalletLedgerRow[]> {
 
 export async function getMyAddresses(): Promise<AccountAddress[]> {
   const supabase = await createClient()
-  const { data } = await supabase
-    .from('user_addresses')
-    .select(
-      'id, full_name, phone, street, street_number, apartment, entrance, floor, city, zip, notes_for_courier, is_default',
-    )
-    .is('deleted_at', null)
-    .order('is_default', { ascending: false })
-    .order('created_at', { ascending: false })
+  const data = orFail(
+    await supabase
+      .from('user_addresses')
+      .select(
+        'id, full_name, phone, street, street_number, apartment, entrance, floor, city, zip, notes_for_courier, is_default',
+      )
+      .is('deleted_at', null)
+      .order('is_default', { ascending: false })
+      .order('created_at', { ascending: false }),
+    'account.addresses_read_failed',
+  )
 
   return (data ?? []).map((a) => ({
     id: a.id,
@@ -179,11 +193,14 @@ export async function getMyAddresses(): Promise<AccountAddress[]> {
 
 export async function getMyPaymentTokens(): Promise<AccountPaymentToken[]> {
   const supabase = await createClient()
-  const { data } = await supabase
-    .from('payment_tokens')
-    .select('id, last_4, card_brand, expiry_month, expiry_year, is_default, created_at')
-    .order('is_default', { ascending: false })
-    .order('created_at', { ascending: false })
+  const data = orFail(
+    await supabase
+      .from('payment_tokens')
+      .select('id, last_4, card_brand, expiry_month, expiry_year, is_default, created_at')
+      .order('is_default', { ascending: false })
+      .order('created_at', { ascending: false }),
+    'account.payment_tokens_read_failed',
+  )
 
   return (data ?? []).map((t) => ({
     id: t.id,
