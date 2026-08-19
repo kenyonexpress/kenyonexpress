@@ -339,7 +339,7 @@ const shoot = async (url, out) => {
   // The counts are read off the two shapes the sides actually use: WooCommerce
   // renders `li.product`, ours renders `article`. Neither side has both, so the
   // union counts each card exactly once.
-  if (page === 'category' || page === 'products') {
+  if (COUNTED_GRIDS.has(page)) {
     gridCounts[external ? 'live' : 'mine'] = await p.evaluate(
       () => document.querySelectorAll('li.product, article').length,
     )
@@ -465,6 +465,18 @@ const shoot = async (url, out) => {
 
 const cartEmptiness = { live: null, mine: null }
 const gridCounts = { live: null, mine: null }
+// THE SEARCH PAGE BELONGS HERE TOO, AND LEAVING IT OUT COST A DAY OF NUMBERS.
+//
+// The rule below was written for /category and /shop. `--page=search` scores
+// the same shape - a grid of product cards over two catalogues that do not hold
+// the same products - and it was reporting the difference as a fidelity score.
+// Measured on 2026-08-19, one build, one server, no code change between runs:
+// 15.10, 15.09, 9.84, 15.08, 10.30, 15.33. Bimodal, not drift, which is what a
+// content difference looks like when the two sides settle differently.
+//
+// The counts for `צימר`: live 4 cards and "showing all 4 results", ours 2 cards
+// and "found 2 products". Same query, same day, different catalogue.
+const COUNTED_GRIDS = new Set(['category', 'products', 'search'])
 const pendingImages = { live: 0, mine: 0 }
 
 if (page === 'checkout' || (page === 'cart' && !CART_EMPTY_ONLY)) {
@@ -539,7 +551,7 @@ if (
 }
 
 if (
-  (page === 'category' || page === 'products') &&
+  COUNTED_GRIDS.has(page) &&
   gridCounts.live !== gridCounts.mine &&
   process.env.COMPARE_ALLOW_GRID_MISMATCH !== '1'
 ) {
