@@ -346,22 +346,6 @@ const shoot = async (url, out) => {
   // same) and scored 31.92%, and the band crop at y900-1100 showed live's
   // restaurant dishes against our bags, phones and wine. So the titles come
   // back too, and the guard below reads them.
-  if (COUNTED_GRIDS.has(page)) {
-    const grid = await p.evaluate(() => {
-      const cards = [...document.querySelectorAll('li.product, article')]
-      const titles = cards
-        .map((c) =>
-          (c.querySelector('h2, h3, .woocommerce-loop-product__title')?.textContent ?? '')
-            .trim()
-            .replace(/\s+/g, ' ')
-            .toLowerCase(),
-        )
-        .filter(Boolean)
-      return { count: cards.length, titles }
-    })
-    gridCounts[external ? 'live' : 'mine'] = grid.count
-    gridTitles[external ? 'live' : 'mine'] = grid.titles
-  }
   // THE PRODUCT PAGE, AND THE PHOTO THAT IS LOADED, LAID OUT AND INVISIBLE.
   //
   // MEASURED 2026-08-19. `--page=product` scored 16.17% and the top bands read
@@ -524,6 +508,37 @@ const shoot = async (url, out) => {
   // 700ms opacity transition on our slider, plus room for live's.
   await p.waitForTimeout(1200)
 
+  // COUNTED AT THE SHUTTER, NOT BEFORE IT. This block used to run right after
+  // load, several waits earlier than the screenshot. Our related-products row
+  // streams in, so on `--page=product` it counted ZERO cards while the picture
+  // taken moments later holds four - a guard reading a different page from the
+  // one it is guarding. Measured 2026-08-20: 0 cards at the old point, 4 in the
+  // shot. Counting here reads exactly what the diff will score.
+  if (COUNTED_GRIDS.has(page)) {
+    const grid = await p.evaluate(() => {
+      // Three shapes, because the two sides do not agree and neither do we
+      // with ourselves: WooCommerce renders `li.product`, our grids render
+      // `article.p_con`, and the product page's related row renders plain
+      // divs from its own card. Measured 2026-08-20: without the third
+      // selector this counted ZERO related cards on a page whose screenshot
+      // holds four, so the guard passed a catalogue difference through as a
+      // fidelity number. No side has more than one of the three shapes, so
+      // the union still counts each card exactly once.
+      const cards = [...document.querySelectorAll('li.product, article, .pdp-related__grid > *')]
+      const titles = cards
+        .map((c) =>
+          (c.querySelector('h2, h3, .woocommerce-loop-product__title')?.textContent ?? '')
+            .trim()
+            .replace(/\s+/g, ' ')
+            .toLowerCase(),
+        )
+        .filter(Boolean)
+      return { count: cards.length, titles }
+    })
+    gridCounts[external ? 'live' : 'mine'] = grid.count
+    gridTitles[external ? 'live' : 'mine'] = grid.titles
+  }
+
   await p.screenshot({ path: out, fullPage: true })
   await p.close()
   console.log(`${out} written (${url})`)
@@ -544,7 +559,16 @@ const heroImages = { live: null, mine: null }
 //
 // The counts for `צימר`: live 4 cards and "showing all 4 results", ours 2 cards
 // and "found 2 products". Same query, same day, different catalogue.
-const COUNTED_GRIDS = new Set(['category', 'products', 'search'])
+// `product` is in this set for its RELATED-PRODUCTS row, and it was the last
+// page whose catalogue difference was still being reported as a design number.
+// Measured 2026-08-20 on a freshly built server: `--page=product` scored
+// 14.18% against a gate CLAUDE.md sets at 11%, and cropping the two worst
+// bands showed why - live renders ONE related card (a barbershop coupon, in a
+// single narrow column with the rest of the row blank) against our FOUR, none
+// of which is the same product. The rest of the page matches closely enough
+// that the same crop at y520-770 shows the gallery, the quantity box, both
+// buttons and the tag line in the same places, offset by about 58px.
+const COUNTED_GRIDS = new Set(['category', 'products', 'search', 'product'])
 const pendingImages = { live: 0, mine: 0 }
 
 if (page === 'checkout' || (page === 'cart' && !CART_EMPTY_ONLY)) {
