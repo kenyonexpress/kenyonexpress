@@ -50,7 +50,7 @@
 | 20 | ‏SUPPLIER PORTAL | ✅ **אומת** | ‏6 מסכים + 21 טסטים ל-`rbac.ts`, שלא היה מכוסה כלל |
 | 21 | ‏EMAIL TEMPLATES | ⚠️ **קיים ולא כפי שנוסח. חסרות 2 תבניות** | ראה למטה |
 | 22 | ‏LEGAL PAGES | ✅ מוזג | ‏4 דפים. ‏404 בבילד הנוכחי כי מוזגו אחריו |
-| 23 | ‏PIXEL WAVE | ❌ **לא נעשה** | תלוי ב-(17) שעדיין לא עובר |
+| 23 | ‏PIXEL WAVE | ⛔ **חסום על זיכרון** | דורש לולאת build; ‏swap ב-4.8GB מ-6GB. ראה STATE.md |
 | 24 | ‏SEED CONTENT | ✅ מוזג | ‏ראה STATE.md |
 | 25 | ‏BACKUP+RECOVERY | ✅ | ‏`docs/DISASTER-RECOVERY.md` |
 | 26 | ‏FINAL SWEEP | ❌ **לא נעשה** | תלוי ב-21, ‏23 |
