@@ -1,8 +1,47 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-19 (docs: CUSTOMER-SUPPORT-PLAYBOOK.md on phase5/homepage)
+Updated: 2026-08-19 (MISSION-FINAL שלב 1: שני המיזוגים בוצעו ב-`merge/supplier-and-arch-night`)
 
-## המשך מ: MISSION-FINAL שלב 1 (merge supplier + arch-night)
+## המשך מ: MISSION-FINAL שלב 2 — אופיר ממזג את `merge/supplier-and-arch-night`
+
+**שלב 1 בוצע, אבל לא אל `phase5/homepage`.** ראה `DECISIONS.md` D-MERGE-1.
+
+`AUTOPILOT-PROMPT.md` מגדיר עצירה קשה: **"two code agents on the same repo
+path"**. נמדד ב-08:26 לפני שנגעתי במשהו: **ארבעה** תהליכי `claude` עם cwd ב-
+`/Users/ofir/kenyonexpress-web/kenyonexpress`, ‏`pnpm build` רץ שם באותו רגע,
+וקומיט נחת על `phase5/homepage` **86 שניות** קודם. מיזוג לתוך אותו עץ עבודה היה
+בדיוק ההתנגשות שכבר נצרבה הלילה ב-`MASTER-ARCHITECTURE-v3.md` §0.3, אבל בקוד
+ובמסלול הכסף במקום ב-docs.
+
+**מה נעשה במקום:** worktree חדש `ke-merge`, ענף `merge/supplier-and-arch-night`
+מ-`phase5/homepage`. שני המיזוגים בוצעו שם, השערים ירוקים, והענף נדחף.
+
+```
+merge/supplier-and-arch-night  =  phase5/homepage
+                                + feat/supplier-portal
+                                + docs/architecture-night
+type-check  נקי
+tests       2379/2379
+```
+
+**הפעולה הבאה, ידנית, כשאין סוכן שני על הנתיב:**
+
+```bash
+pgrep -fl claude          # לוודא שאין סוכן אחר על kenyonexpress
+cd /Users/ofir/kenyonexpress-web/kenyonexpress
+git merge --ff-only merge/supplier-and-arch-night   # או merge רגיל אם התקדמה
+```
+
+אם `phase5/homepage` התקדמה מאז `bf4a9aa17`, ה-ff ייכשל וצריך merge רגיל.
+**זה בדיוק היתרון:** ההתנגשות תתגלה בפקודה אחת מבוקרת, לא בעץ עבודה שארבעה
+תהליכים כותבים אליו.
+
+**אין להחיל שום SQL מ-`migrations/pending/` על remote.** חמש טיוטות שם
+(`120`-`124`), אף אחת לא הורצה.
+
+---
+
+### ההיסטוריה של שלב 1
 
 לילה 19.08 docs נסגר. בוקר 19.08:
 ✅ `docs/DATA-BASELINE.md`
@@ -307,6 +346,83 @@ Updated: 2026-08-11 בוקר (goal-65: product_type selector)
 צילומים בלי CSS כציוני נאמנות.
 
 ---
+
+## המשך מ: אין. תור הארכיטקטורה הלילי הושלם.
+
+### שלוש החלטות של אופיר, 2026-08-19, בוצעו
+
+1. **כפילות `payment_events` הוכרעה.** ‏`migrations/pending/120_payment_events.sql`
+   נשמר, ‏`006-payment-events.sql` **נמחק** (מחיקת קובץ באישור מפורש). ארבעה
+   דברים שהיו רק ב-006 קופלו פנימה ולא אבדו: `stage`, ‏`external_event_id`,
+   ‏`provider`, ואוצר מילים רחב יותר של אירועים. שתי הפניות ל-006 ב-`docs/`
+   הופנו מחדש ל-120.
+2. **`delivered_at` נוסף כטיוטה:** ‏`migrations/pending/124_order_items_delivered_at.sql`.
+   מוסיף `shipped_at` ו-`delivered_at` ל-`order_items`, שני CHECK,
+   אינדקס חלקי, ופונקציה `order_item_cancellation_deadline(uuid)` כדי ששלושת
+   הקוראים לא יחלקו על התאריך. **בלי backfill.** לא הורצה.
+3. **‏rate limiting = Upstash Redis.** ‏`ARCHITECTURE-SECURITY-HARDENING.md` §1
+   נכתב מחדש: ההחלטה, מה שהקוד עושה **היום** (Postgres RPCs, נמדד), והמסלול
+   ביניהם. ההתנגדות הישנה "ספק חדש" **נמשכה**: ‏Upstash כבר בסטאק דרך QStash.
+   ‏`UPSTASH_REDIS_REST_URL`/`_TOKEN` נוספו לרשימת הסודות.
+
+### מה נשאר לפני הרצה של הטיוטות
+
+- **‏`007-order-transition-guard.sql` של הסוכן השני לא נבדק לעומק.** הוא לא
+  כפילות של 120, אבל צריך לעבור עליו.
+- אף אחת מחמש הטיוטות (`120`, `121`, `122`, `123`, `124`) **לא הורצה**, ואף אחת
+  לא תרוץ בלי אישור מפורש ודרך MCP `apply_migration`.
+- **‏`PENDING-money-integer-fix.sql` עדיין מסוכן להריץ מוקדם:** ‏55 קבצים קוראים
+  את השמות הישנים.
+
+### עשרת המסמכים, ענף `docs/architecture-night`
+
+בשורש: `ARCHITECTURE-CHECKOUT-CARDCOM-E2E`, `ARCHITECTURE-ORDER-STATE-MACHINE`,
+`ARCHITECTURE-REFUNDS-CANCELLATIONS`, `ARCHITECTURE-ADMIN-PRODUCT-FORM`,
+`ARCHITECTURE-SEARCH-DISCOVERY`, `ARCHITECTURE-GEO-LOCATION`,
+`ARCHITECTURE-WP-IMPORT-PIPELINE`, `ARCHITECTURE-OBSERVABILITY`,
+`ARCHITECTURE-SECURITY-HARDENING`, `MASTER-ARCHITECTURE-v3`.
+
+**‏v3 §0.2 מחזיק את טבלת "מה דורס מה". שום מסמך ישן לא נמחק.**
+
+**אזהרה שנרשמה ב-v3 §0.3:** בלילה הזה רץ סוכן שני על **אותו ענף ואותו worktree**,
+כתב את אותו תור אל `docs/`, וה-`git add -A` שלו בלע קובץ שלי לתוך קומיט שלו.
+התוכן שלם, ההיסטוריה מטעה. **סוכן שני = worktree נפרד וענף נפרד.**
+
+## תור ארכיטקטורה לילי (docs/architecture-night) — הושלם
+
+תור סגור בן 10 מסמכים, ענף `docs/architecture-night`, worktree `ke-arch-night`.
+**מסמכים בלבד.** אין נגיעה ב-`src/`, אין נגיעה במיגרציה קיימת, אין הרצת SQL.
+
+1. ✅ `docs/ARCHITECTURE-CHECKOUT-CARDCOM-E2E.md` (578 שורות) + טיוטה
+   `migrations/pending/120_payment_events.sql` (לא הורצה; 006 נמחק, ראה למעלה).
+   **תיקון לשם שנרשם כאן מראש:** התיקייה `migrations/pending/` ממספרת `003-`,
+   `004-`, `005-` ובמפורש אינה חלק משרשרת `NNN_` של `supabase/migrations`, ולכן
+   הקובץ הוא `006-` ולא `120_`. ה-✅ שהופיע כאן לפני שהמסמך נכתב היה תוכנית,
+   לא עובדה.
+2. ✅ `ARCHITECTURE-ORDER-STATE-MACHINE.md`
+3. ✅ `ARCHITECTURE-REFUNDS-CANCELLATIONS.md` + טיוטה `migrations/pending/121_refunds.sql`
+4. ✅ `ARCHITECTURE-ADMIN-PRODUCT-FORM.md`
+5. ✅ `ARCHITECTURE-SEARCH-DISCOVERY.md` + טיוטה `migrations/pending/122_search_index_outbox.sql`
+6. ✅ `ARCHITECTURE-GEO-LOCATION.md` + טיוטה `migrations/pending/123_supplier_branches.sql`
+7. ✅ `ARCHITECTURE-WP-IMPORT-PIPELINE.md`
+8. ✅ `ARCHITECTURE-OBSERVABILITY.md` (בשורש; `docs/ARCHITECTURE-OBSERVABILITY.md` הישן נשאר ולא נמחק)
+9. ✅ `ARCHITECTURE-SECURITY-HARDENING.md`
+10. ✅ `MASTER-ARCHITECTURE-v3.md`
+
+### מודל עסקי מחייב לתור הזה, דורס כל מסמך ישן
+
+- קופון: `coupon_price` סכום מוחלט שהאדמין קובע, הלקוח משלם אותו במלואו באתר
+  דרך Cardcom, היתרה נגבית בבית העסק בסריקה ולא נכנסת לפלטפורמה. אין Escrow.
+  אחרי סריקה הקופון פג לצמיתות.
+- פיזי: תשלום מלא באתר, פיצול מיידי לפי `platform_percent` פר-מוצר, מצולם
+  ל-`order_items` ובלתי משתנה.
+- כסף: אגורות שלמות, integer בלבד, בכל שכבה.
+- Checkout: עגלת אורח פתוחה, התחברות (Google OAuth) חובה רק בתשלום.
+- ארנק: פנימי בלבד, לא יוצא החוצה.
+- אין `tenant_id`. RLS לפי `auth.uid()` בלבד.
+- התראות: Supabase Trigger + Edge Function + Resend בלבד. אסור Make/Zapier.
+- כל דף מוצר מציג פרטי ספק. תיאור מוצר: שדה `description` אחד.
+- `offer_valid_until` פג אוטומטית ומוצג ללקוח (חוק הגנת הצרכן).
 
 ## המשך מ:
 
