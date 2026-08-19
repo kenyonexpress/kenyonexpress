@@ -1,4 +1,5 @@
 import CouponCard, { type Coupon } from '@/components/CouponCard'
+import { CouponsGridSkeleton } from '@/components/CouponCardSkeleton'
 import { createClient } from '@/lib/supabase/server'
 import { Suspense } from 'react'
 
@@ -14,7 +15,11 @@ export default function CouponsPage() {
   return (
     <section className="space-y-4">
       <h1 className="text-lg font-bold text-gray-900">קופונים פעילים 🎟</h1>
-      <Suspense fallback={null}>
+      {/* NOT `fallback={null}`: with nothing here the footer painted 342px
+          down and was thrown a thousand pixels lower when the grid arrived,
+          which Lighthouse scored as CLS 0.585 on 2026-08-19. See the skeleton's
+          own comment for the measurement. */}
+      <Suspense fallback={<CouponsGridSkeleton />}>
         <CouponsGrid />
       </Suspense>
     </section>
