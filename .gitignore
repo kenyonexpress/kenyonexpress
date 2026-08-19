@@ -53,3 +53,6 @@ refs/
 
 # WordPress import run artifacts (raw payloads, normalized rows, reports, logs)
 wp_import/
+
+# DR schema dumps: real data, rotated by scripts/backup-schema.sh. Never committed.
+backups/
