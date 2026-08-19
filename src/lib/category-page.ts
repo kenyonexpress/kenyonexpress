@@ -2,6 +2,7 @@ import type { SortValue } from '@/components/category/CategoryControlBar'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { cityBySlug } from '@/lib/geo/cities'
 import { filterByCity } from '@/lib/geo/distance'
+import { log } from '@/lib/observability/log'
 import { createPublicClient } from '@/lib/supabase/anon'
 import { cacheLife, cacheTag } from 'next/cache'
 import { cache } from 'react'
@@ -33,6 +34,51 @@ import { cache } from 'react'
  */
 
 export const CATEGORY_PAGE_SIZE = 12
+
+/**
+ * Unwrap a PostgREST result, or fail loudly. Every read in this file goes
+ * through it.
+ *
+ * The header above promises that `cacheLife`'s one-day expire means "if
+ * Supabase is unreachable, the last good catalogue keeps being served instead
+ * of an empty grid". Discarding the error inverted that promise. A failed query
+ * yields `data: null`, which `?? []` turns into an empty list, which the
+ * enclosing `use cache` scope then stores as a perfectly good answer - so the
+ * failure does not fall back to the last good catalogue, it REPLACES it, for
+ * the full cache life, with no line in any log.
+ *
+ * Measured on a built server 2026-08-20: /products served
+ * "לא נמצאו מוצרים התואמים את הבחירה שלך" while /, /category/hot-deals and
+ * /search all rendered products from the same table, and the identical query
+ * returned 24 rows over REST. Restarting the server brought all 24 back. One
+ * transient failure had been cached as an empty shop.
+ *
+ * Throwing is what restores the documented behaviour: `use cache` does not
+ * store a result for a scope that threw, so the previous entry keeps being
+ * served until it expires, which is the fallback the header describes.
+ */
+function orFail<T>(
+  result: { data: T; error: { code?: string; message?: string } | null },
+  event: string,
+  context: Record<string, unknown> = {},
+): T {
+  const { data, error } = result
+  if (!error) return data
+  // PGRST116 is `.single()` finding no row. That is an answer, not a failure,
+  // and callers already handle the null it comes with.
+  if (error.code === 'PGRST116') return data
+  log.error(event, { ...context, error })
+  throw new Error(`${event}: ${error.message ?? 'catalogue read failed'}`)
+}
+
+/** Same contract as `orFail`, for the two reads that also carry `count`. */
+function orFailWithCount<T>(
+  result: { data: T; count: number | null; error: { code?: string; message?: string } | null },
+  event: string,
+  context: Record<string, unknown> = {},
+): { data: T; count: number | null } {
+  return { data: orFail(result, event, context), count: result.count }
+}
 
 type Orderable<T> = { order(column: string, opts: { ascending: boolean }): T }
 
@@ -111,12 +157,16 @@ export async function getCategoryBySlug(slug: string): Promise<CategoryRow | nul
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
   const supabase = createPublicClient()
-  const { data } = await supabase
-    .from('categories')
-    .select('id, slug, name_he, description_he, parent_id')
-    .eq('slug', slug)
-    .eq('is_active', true)
-    .single()
+  const data = orFail(
+    await supabase
+      .from('categories')
+      .select('id, slug, name_he, description_he, parent_id')
+      .eq('slug', slug)
+      .eq('is_active', true)
+      .single(),
+    'catalogue.category_by_slug_failed',
+    { slug },
+  )
   return data
 }
 
@@ -125,8 +175,9 @@ export async function getAllCategorySlugs(): Promise<string[]> {
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
   const supabase = createPublicClient()
-  const { data } = await orderedByMenu(
-    supabase.from('categories').select('slug').eq('is_active', true),
+  const data = orFail(
+    await orderedByMenu(supabase.from('categories').select('slug').eq('is_active', true)),
+    'catalogue.category_slugs_failed',
   )
   return (data ?? []).map((c) => c.slug)
 }
@@ -138,11 +189,11 @@ export async function getCategoryParent(
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
   const supabase = createPublicClient()
-  const { data } = await supabase
-    .from('categories')
-    .select('slug, name_he')
-    .eq('id', parentId)
-    .single()
+  const data = orFail(
+    await supabase.from('categories').select('slug, name_he').eq('id', parentId).single(),
+    'catalogue.category_parent_failed',
+    { parent_id: parentId },
+  )
   return data
 }
 
@@ -153,12 +204,16 @@ export async function getCategoryChildren(
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
   const supabase = createPublicClient()
-  const { data } = await orderedByMenu(
-    supabase
-      .from('categories')
-      .select('id, slug, name_he')
-      .eq('parent_id', categoryId)
-      .eq('is_active', true),
+  const data = orFail(
+    await orderedByMenu(
+      supabase
+        .from('categories')
+        .select('id, slug, name_he')
+        .eq('parent_id', categoryId)
+        .eq('is_active', true),
+    ),
+    'catalogue.category_children_failed',
+    { category_id: categoryId },
   )
   return data ?? []
 }
@@ -311,13 +366,17 @@ async function newestProductIds(
   supabase: ReturnType<typeof createPublicClient>,
   limit: number,
 ): Promise<string[]> {
-  const { data } = await supabase
-    .from('products')
-    .select('id')
-    .eq('status', 'active')
-    .is('deleted_at', null)
-    .order('created_at', { ascending: false })
-    .limit(limit)
+  const data = orFail(
+    await supabase
+      .from('products')
+      .select('id')
+      .eq('status', 'active')
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+      .limit(limit),
+    'catalogue.recent_product_ids_failed',
+    { limit },
+  )
   return (data ?? []).map((row) => row.id)
 }
 
@@ -395,7 +454,11 @@ export async function getCategoryProducts(opts: {
       query = query.order('name_he', { ascending: true })
   }
 
-  const { data, count } = await query.range(from, from + CATEGORY_PAGE_SIZE - 1)
+  const { data, count } = orFailWithCount(
+    await query.range(from, from + CATEGORY_PAGE_SIZE - 1),
+    'catalogue.category_products_failed',
+    { category_id: opts.categoryId, page },
+  )
   const items = (data ?? []).map((row) =>
     normalizeCategoryJoin(row as CategoryProductRow, category),
   )
@@ -426,8 +489,9 @@ export async function getAllCategories(): Promise<{ slug: string; name_he: strin
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
   const supabase = createPublicClient()
-  const { data } = await orderedByMenu(
-    supabase.from('categories').select('slug, name_he').eq('is_active', true),
+  const data = orFail(
+    await orderedByMenu(supabase.from('categories').select('slug, name_he').eq('is_active', true)),
+    'catalogue.all_categories_failed',
   )
   return data ?? []
 }
@@ -482,7 +546,11 @@ export async function getShopProducts(opts: {
       query = query.order('name_he', { ascending: true })
   }
 
-  const { data, count } = await query.range(from, from + SHOP_PAGE_SIZE - 1)
+  const { data, count } = orFailWithCount(
+    await query.range(from, from + SHOP_PAGE_SIZE - 1),
+    'catalogue.shop_products_failed',
+    { page, sort },
+  )
   const items = (data ?? []).map((row) => {
     const r = row as CategoryProductRow
     const joined = r.categories
