@@ -1,8 +1,8 @@
 import type { SortValue } from '@/components/category/CategoryControlBar'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
+import { orFail, orFailWithCount } from '@/lib/catalogue-read'
 import { cityBySlug } from '@/lib/geo/cities'
 import { filterByCity } from '@/lib/geo/distance'
-import { log } from '@/lib/observability/log'
 import { createPublicClient } from '@/lib/supabase/anon'
 import { cacheLife, cacheTag } from 'next/cache'
 import { cache } from 'react'
@@ -36,55 +36,13 @@ import { cache } from 'react'
 export const CATEGORY_PAGE_SIZE = 12
 
 /**
- * Unwrap a PostgREST result, or fail loudly. Every read in this file goes
- * through it.
+ * Both unwrappers live in `src/lib/catalogue-read.ts`, not here.
  *
- * The header above promises that `cacheLife`'s one-day expire means "if
- * Supabase is unreachable, the last good catalogue keeps being served instead
- * of an empty grid". Discarding the error inverted that promise. A failed query
- * yields `data: null`, which `?? []` turns into an empty list, which the
- * enclosing `use cache` scope then stores as a perfectly good answer - so the
- * failure does not fall back to the last good catalogue, it REPLACES it, for
- * the full cache life, with no line in any log.
- *
- * Measured on a built server 2026-08-20: /products served
- * "לא נמצאו מוצרים התואמים את הבחירה שלך" while /, /category/hot-deals and
- * /search all rendered products from the same table, and the identical query
- * returned 24 rows over REST. Restarting the server brought all 24 back. One
- * transient failure had been cached as an empty shop.
- *
- * Throwing is what restores the documented behaviour: `use cache` does not
- * store a result for a scope that threw, so the previous entry keeps being
- * served until it expires, which is the fallback the header describes.
+ * They were written in this file first, on 2026-08-20, and five other cached
+ * readers kept the original bug for exactly as long as the helper was private
+ * to it. Shared is what makes "every cached catalogue read fails loudly" a
+ * property of the codebase rather than of one file.
  */
-function orFail<T>(
-  result: { data: T; error: { code?: string; message?: string } | null },
-  event: string,
-  context: Record<string, unknown> = {},
-): T {
-  const { data, error } = result
-  if (!error) return data
-  // Two PostgREST codes are answers, not failures, and callers already handle
-  // the empty result each comes with.
-  //   PGRST116  `.single()` found no row.
-  //   PGRST103  the requested range starts past the last row. That is what
-  //             /products?page=9999 asks for, and the page clamps to the last
-  //             page from the empty result. Throwing here regressed exactly
-  //             that: caught by e2e/category.spec.ts:122 and :142, which is
-  //             why the suite is worth running before calling a fix done.
-  if (error.code === 'PGRST116' || error.code === 'PGRST103') return data
-  log.error(event, { ...context, error })
-  throw new Error(`${event}: ${error.message ?? 'catalogue read failed'}`)
-}
-
-/** Same contract as `orFail`, for the two reads that also carry `count`. */
-function orFailWithCount<T>(
-  result: { data: T; count: number | null; error: { code?: string; message?: string } | null },
-  event: string,
-  context: Record<string, unknown> = {},
-): { data: T; count: number | null } {
-  return { data: orFail(result, event, context), count: result.count }
-}
 
 type Orderable<T> = { order(column: string, opts: { ascending: boolean }): T }
 

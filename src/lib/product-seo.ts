@@ -1,4 +1,5 @@
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
+import { orFail } from '@/lib/catalogue-read'
 import { createPublicClient } from '@/lib/supabase/anon'
 import { cacheLife, cacheTag } from 'next/cache'
 
@@ -27,12 +28,15 @@ export async function getProductSeoBySlug(slug: string): Promise<ProductSeoRow |
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
   const supabase = createPublicClient()
-  const { data } = await supabase
-    .from('products')
-    .select(
-      'name_he, description_he, short_description_he, seo_title, seo_description, images, status, deleted_at',
-    )
-    .eq('slug', slug)
-    .maybeSingle()
-  return data
+  return orFail(
+    await supabase
+      .from('products')
+      .select(
+        'name_he, description_he, short_description_he, seo_title, seo_description, images, status, deleted_at',
+      )
+      .eq('slug', slug)
+      .maybeSingle(),
+    'product_seo.read_failed',
+    { slug },
+  )
 }

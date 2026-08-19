@@ -1,4 +1,5 @@
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
+import { orFail } from '@/lib/catalogue-read'
 import { createPublicClient } from '@/lib/supabase/anon'
 import { cacheLife, cacheTag } from 'next/cache'
 
@@ -32,14 +33,17 @@ export async function getCouponDeal(id: string) {
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
   const supabase = createPublicClient()
-  const { data } = await supabase
-    .from('coupon_deals')
-    .select('*')
-    .eq('id', id)
-    .eq('status', 'active')
-    .is('deleted_at', null)
-    .single()
-  return data
+  return orFail(
+    await supabase
+      .from('coupon_deals')
+      .select('*')
+      .eq('id', id)
+      .eq('status', 'active')
+      .is('deleted_at', null)
+      .single(),
+    'coupon_deal.read_failed',
+    { deal_id: id },
+  )
 }
 
 /**
@@ -61,10 +65,9 @@ export async function getActiveCouponDealIds(): Promise<string[]> {
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
   const supabase = createPublicClient()
-  const { data } = await supabase
-    .from('coupon_deals')
-    .select('id')
-    .eq('status', 'active')
-    .is('deleted_at', null)
+  const data = orFail(
+    await supabase.from('coupon_deals').select('id').eq('status', 'active').is('deleted_at', null),
+    'coupon_deal.active_ids_failed',
+  )
   return (data ?? []).map((row) => row.id)
 }

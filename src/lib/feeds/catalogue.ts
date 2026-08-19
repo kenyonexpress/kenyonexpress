@@ -1,4 +1,5 @@
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
+import { orFail } from '@/lib/catalogue-read'
 import { type CouponOffer, buildCouponOffer } from '@/lib/commerce/coupon-offer'
 import { isAllowedImageUrl } from '@/lib/images/remote-hosts'
 import { createPublicClient } from '@/lib/supabase/anon'
@@ -157,14 +158,18 @@ export async function getFeedProducts(limit = 200): Promise<FeedProduct[]> {
   cacheTag(CATALOGUE_TAG)
 
   const supabase = createPublicClient()
-  const { data } = await supabase
-    .from('products')
-    .select(SELECT)
-    .eq('status', 'active')
-    .is('deleted_at', null)
-    .not('slug', 'is', null)
-    .order('published_at', { ascending: false, nullsFirst: false })
-    .limit(limit)
+  const data = orFail(
+    await supabase
+      .from('products')
+      .select(SELECT)
+      .eq('status', 'active')
+      .is('deleted_at', null)
+      .not('slug', 'is', null)
+      .order('published_at', { ascending: false, nullsFirst: false })
+      .limit(limit),
+    'feed_catalogue.read_failed',
+    { limit },
+  )
 
   const now = new Date()
   return ((data ?? []) as unknown as Row[])
