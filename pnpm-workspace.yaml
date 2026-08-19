@@ -34,4 +34,14 @@ overrides:
   postcss: ^8.5.23
   nanoid: ^3.3.17
   brace-expansion: ^5.0.9
+
+  # ...except for minimatch@9, which declares `^2.0.2` and whose compiled CJS
+  # calls `brace_expansion_1.default(...)`. v5 is ESM-first and exports no
+  # `.default`, so the global pin above turned every minimatch@9 glob into
+  # `TypeError: (0, brace_expansion_1.default) is not a function`. It surfaced
+  # as a CI failure with ALL TESTS PASSING: the crash is in test-exclude ->
+  # glob -> minimatch@9, reached only by @vitest/coverage-v8 in
+  # getUntestedFiles, after the run. 2.0.2 is the patched release of the 2.x
+  # line, so the advisory stays closed on this edge too.
+  minimatch@9>brace-expansion: ^2.0.2
   fast-uri: ^3.1.5
