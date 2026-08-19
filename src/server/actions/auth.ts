@@ -13,6 +13,7 @@ import {
 } from '@/lib/auth/phone-otp'
 import { safeNextPath } from '@/lib/auth/safe-next'
 import { GUEST_SESSION_COOKIE, getGuestSessionId } from '@/lib/cart/guest-session'
+import { siteUrl } from '@/lib/site-url'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
@@ -65,6 +66,32 @@ function toHebrew(msg: string): string {
 
 const safeNext = safeNextPath
 
+/**
+ * WHERE SUPABASE SENDS THE CUSTOMER BACK. `siteUrl()`, NOT A BARE ENV READ.
+ *
+ * These three URLs used to interpolate `process.env.NEXT_PUBLIC_APP_URL`
+ * directly, and that variable is not in the required list in `lib/env.ts`, so
+ * nothing refuses to boot without it. MEASURED against `pnpm start` on this
+ * machine: clicking "כניסה עם Google" sent the customer to Google carrying
+ * `redirect_to=undefined%2Fauth%2Fcallback%3Fnext%3D%2F` - the literal word
+ * "undefined" as the origin, because template interpolation stringifies it
+ * instead of failing.
+ *
+ * That is the worst shape a missing variable can take: `signInWithOAuth`
+ * returns no error, the button works, the customer reaches a real Google
+ * screen, and only the trip back is broken. The same read is behind the magic
+ * link and the password-reset mail, so all three ways into an account share
+ * one unguarded variable.
+ *
+ * `siteUrl()` is what the other ten call sites in the repo already use -
+ * `layout.tsx`, `sitemap`, `robots`, the feeds, invoices, `finalize.ts` - and
+ * it falls back to the canonical origin. These were the only three that did
+ * not, which is exactly why they were the ones that broke.
+ */
+function authRedirect(path: string): string {
+  return `${siteUrl()}${path}`
+}
+
 // ──────────────────────────────────────────────
 // Google OAuth
 // ──────────────────────────────────────────────
@@ -74,7 +101,7 @@ async function runSignInWithGoogle(_: AuthState, formData: FormData): Promise<Au
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=${encodeURIComponent(next)}`,
+      redirectTo: authRedirect(`/auth/callback?next=${encodeURIComponent(next)}`),
       scopes: 'openid email profile',
     },
   })
@@ -171,7 +198,7 @@ async function runSendMagicLink(_: AuthState, formData: FormData): Promise<AuthS
   const { error } = await supabase.auth.signInWithOtp({
     email: parsed.data.email,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+      emailRedirectTo: authRedirect('/auth/callback'),
     },
   })
   if (error) return { error: toHebrew(error.message) }
@@ -373,7 +400,7 @@ async function runSendPasswordReset(_: AuthState, formData: FormData): Promise<A
 
   const supabase = await createClient()
   const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=/reset-password`,
+    redirectTo: authRedirect('/auth/callback?next=/reset-password'),
   })
 
   // Never let the reply reveal whether the address is registered. Failures are

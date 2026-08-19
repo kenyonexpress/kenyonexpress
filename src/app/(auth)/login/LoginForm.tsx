@@ -121,6 +121,15 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
             required
             autoComplete="email"
             placeholder="you@example.com"
+            /*
+              An address is Latin on a Hebrew page, so the FIELD is LTR while
+              the form around it stays RTL - the same call `NewsletterSignup`,
+              `ContactForm` and the signup phone input already make, and the
+              reasoning is written out in the first of those. MEASURED before
+              this line existed: `you@example.com` sat flush RIGHT here and
+              flush LEFT on /contact, one address rendered two ways on one site.
+            */
+            dir="ltr"
             className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
           />
         </div>
@@ -182,6 +191,7 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
               required
               autoComplete="email"
               placeholder="you@example.com"
+              dir="ltr"
               className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
             />
             {getSuccess(magicState) && (
