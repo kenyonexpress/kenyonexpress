@@ -1,3 +1,5 @@
+import { type Agorot, ilsToAgorot } from '@/lib/commerce/money'
+
 /**
  * Our record of what was charged, against the TERMINAL's record.
  *
@@ -155,10 +157,59 @@ export function reconcileAgainstTerminal(
   }
 }
 
-/** Shekels as the terminal reports them, to integer agorot. */
+/**
+ * Shekels as the terminal reports them, as an exact decimal string this module
+ * can hand to `ilsToAgorot`, or null when it is not one.
+ *
+ * The point is to reach `ilsToAgorot` with the terminal's DIGITS rather than
+ * with a double built from them. `Number('12.30') * 100` is 1229.9999999999998
+ * on some values and exact on others, and this file's own header explains why
+ * that is intolerable here: it makes some rows differ and others not, and the
+ * pattern of which is which reads like a real discrepancy.
+ *
+ * Sub-agora precision returns null rather than rounding. Trailing zeros are
+ * dropped because "12.300" is 12.30, but "12.301" is a number no terminal
+ * should be reporting, and quietly turning it into 1230 would be this money
+ * path inventing an answer.
+ */
+function exactIlsText(raw: string | number): string | null {
+  // Currency glyph, thousands separators, ordinary and non-breaking spaces.
+  // Nothing else is stripped: the old cleaner used `[^\d.-]`, which deleted the
+  // `e` out of `1e3` and turned it into the number 13.
+  const cleaned = String(raw).replace(/[\s\u00a0,₪]/g, '')
+  const match = /^(-?)(\d+)(?:\.(\d+))?$/.exec(cleaned)
+  if (!match) return null
+
+  const [, sign, whole, fraction] = match
+  if (!fraction) return `${sign}${whole}`
+  if (fraction.length <= 2) return `${sign}${whole}.${fraction}`
+  if (/[^0]/.test(fraction.slice(2))) return null
+  return `${sign}${whole}.${fraction.slice(0, 2)}`
+}
+
+/**
+ * Shekels as the terminal reports them, to integer agorot, or null when the
+ * value is not a readable amount.
+ *
+ * Callers on the money path want the null: `verifyLowProfile` feeds the webhook
+ * branch that alarms on "payment row carries no readable amount" and refuses to
+ * finalize, which is the safe direction. `terminalAmountToAgorot` below keeps
+ * the zero for the reconciliation report, where a zero surfaces as a visible
+ * amount mismatch rather than as a silent absence.
+ */
+export function parseTerminalAmountAgorot(raw: string | number | null | undefined): Agorot | null {
+  if (raw === null || raw === undefined) return null
+  const text = exactIlsText(raw)
+  if (text === null) return null
+  try {
+    return ilsToAgorot(text)
+  } catch {
+    // Only reachable for a value too large to be a safe integer in agorot.
+    return null
+  }
+}
+
+/** Shekels as the terminal reports them, to integer agorot. Unreadable is zero. */
 export function terminalAmountToAgorot(raw: string | number | null | undefined): number {
-  if (raw === null || raw === undefined) return 0
-  const value = typeof raw === 'number' ? raw : Number(String(raw).replace(/[^\d.-]/g, ''))
-  if (!Number.isFinite(value)) return 0
-  return Math.round(value * 100)
+  return parseTerminalAmountAgorot(raw) ?? 0
 }
