@@ -28,3 +28,8 @@ Every product page shows full supplier details. One description field. Cardcom S
 
 [CHECKPOINT]
 After every step: pnpm type-check && pnpm test && pnpm build green, commit, push, rewrite STATE.md with "המשך מ: (next)". Never leave the tree dirty.
+
+(19) ACCOUNT AREA: /account complete — profile, orders+status, my-vouchers with QR, wallet (internal cashback ledger, append-only, whole agorot), saved addresses, saved Cardcom tokens (never PAN). RLS by auth.uid. Tests.
+(20) SUPPLIER PORTAL: /supplier — dashboard (sales today/month), physical orders + shipping status updates, redeemed vouchers with balance-collected view, my products read-only, business profile. RLS supplier_id via auth.uid. Resend email on new physical order (RTL template). Tests.
+(21) EMAIL TEMPLATES: react-email, Hebrew RTL, Heebo, #fed700 — order confirmation (voucher: QR+code+balance+offer_valid_until; physical: shipping), new-order-to-supplier, redemption confirmation, expiry T-3 reminder, refund done, welcome. Snapshot tests. Resend only.
+(22) LEGAL PAGES: /terms /privacy /returns /accessibility per Israeli law (consumer protection 14-day, privacy amendment 13, IS 5568 AA), Hebrew RTL, footer links. Platform is intermediary only.
