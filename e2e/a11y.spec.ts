@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import { type Page, expect, test } from '@playwright/test'
+import { firstProductHref } from './helpers'
 
 /**
  * Goal 18. WCAG 2.1 A + AA, measured with axe-core against the real rendered
@@ -169,3 +170,59 @@ for (const width of [320, 640, 1440]) {
     ).toBeGreaterThanOrEqual((bannerBox?.height ?? 0) - 1)
   })
 }
+
+/**
+ * THE PRODUCT PAGE WAS OUTSIDE THIS SWEEP, AND IT IS THE PAGE THAT SELLS.
+ *
+ * Every route above is a fixed path. The product page is not: its slugs are
+ * Hebrew and DB-driven, so it was simply absent, and a scan of twelve of them
+ * on 2026-08-19 failed EVERY ONE. What it found was not incidental trim:
+ *
+ *   .pdp-buy__now      white on #ee6443   3.21:1   the buy button itself
+ *   .pdp-summary__price del  #848484 on white  3.74:1
+ *   .text-price-strike  #9ca3af on white  2.53:1   the coupon page's old price
+ *   .text-muted         #767676 on #f5f5f5  4.16:1   terms and supplier blocks
+ *   .text-whatsapp-ink  #128c7e on white  4.14:1
+ *   .text-facebook      #1877f2 on white  4.23:1
+ *
+ * Two products, discovered rather than pinned, because the two halves of this
+ * catalogue render different components: a coupon shows CouponPricing with its
+ * struck "regular price", a physical product shows the stock and the buy
+ * button. A single sample would have covered one of the six failures above.
+ */
+test.describe('product pages have no WCAG A/AA violations', () => {
+  test('the first product in the catalogue', async ({ page }) => {
+    const href = await firstProductHref(page)
+    await page.goto(href)
+    await page.waitForLoadState('domcontentloaded')
+
+    const results = await scan(page)
+    expect(
+      results.violations.map((v) => v.id),
+      `${href}\n  ${describe(results)}`,
+    ).toEqual([])
+  })
+
+  test('a coupon product, which renders the struck regular price', async ({ page }) => {
+    await page.goto('/products')
+    // The coupon half of the catalogue is what carries CouponPricing, and its
+    // struck price was the worst pairing on the site. Fall back to the first
+    // product rather than skipping: a catalogue with no coupon is itself worth
+    // a red test on a coupon site.
+    const links = page.locator('a[href^="/product/"]')
+    await expect(links.first()).toBeVisible({ timeout: 15_000 })
+    const hrefs = await links.evaluateAll((els) =>
+      els.map((el) => el.getAttribute('href')).filter((h): h is string => Boolean(h)),
+    )
+    const coupon = hrefs.find((h) => h.includes('coupon')) ?? hrefs[0]
+    expect(coupon, 'no product links on /products to sample').toBeTruthy()
+    await page.goto(coupon as string)
+    await page.waitForLoadState('domcontentloaded')
+
+    const results = await scan(page)
+    expect(
+      results.violations.map((v) => v.id),
+      `${coupon}\n  ${describe(results)}`,
+    ).toEqual([])
+  })
+})

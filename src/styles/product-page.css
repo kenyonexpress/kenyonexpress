@@ -10,13 +10,13 @@
   --pdp-muted: #657888;
   --pdp-action: #5d7184;
   --pdp-sale: #dc3545;
-  --pdp-strike: #848484;
+  --pdp-strike: #6f6f6f;
   --pdp-rule: #cccfd1;
   --pdp-line: #dddddd;
   --pdp-brand: #fed700;
   --pdp-brand-hover: #fedd26;
-  --pdp-buy: #ee6443;
-  --pdp-buy-hover: #e5502c;
+  --pdp-buy: #c94b28;
+  --pdp-buy-hover: #b8401f;
   --pdp-surface: #ffffff;
 
   /* Geometry measured on the live template. Same contract as the colours:
