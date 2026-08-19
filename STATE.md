@@ -1,6 +1,6 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-19 (AUTOPILOT (11) AUTH הושלם. `docs/AUTH-MODEL.md`)
+Updated: 2026-08-19 (docs: ETERNAL-OPS.md. מצביע חי נשאר (12) PAYMENTS VERIFY)
 
 ## המשך מ: תור AUTOPILOT (12) PAYMENTS VERIFY
 
@@ -208,6 +208,7 @@ worktree. ‏`007-order-transition-guard.sql` הגיע מהסוכן שנעצר *
 ✅ `docs/CUSTOMER-SUPPORT-PLAYBOOK.md` (20 תסריטי תמיכה: תשובה + פעולה פנימית)
 ✅ `docs/GROWTH-LAUNCH-MARKETING.md` (ערוצי השקה, קאשבק כפול, 20 שאילתות SEO)
 ✅ `docs/CONTENT-OPERATIONS-GUIDE.md` (הזנת דיל א' עד ת': תמונות, 5 תבניות, מחיר קופון, שדות 14ג, checklist)
+✅ `docs/ETERNAL-OPS.md` (ספר המערכת הנצחית: spawners, LaunchAgents, תור 0-29, תרחישי קריסה, הוספת שלב בלי לעצור)
 Updated: 2026-08-19 (MISSION-FINAL שלב 1 הושלם: שני המיזוגים בוצעו; ובנוסף docs/ARCHITECTURE-AFFILIATES-REFERRALS.md)
 הבא שדורש קוד: merge `feat/supplier-portal` ואז `docs/architecture-night` אל `phase5/homepage`.
 
@@ -246,6 +247,7 @@ ke-supplier     feat/supplier-portal
 ### החלטות שהתקבלו אוטומטית 19.08 (docs)
 C11(א) נשאר המודל. אין Escrow. soft-launch = קופון בלבד. Google בלבד. Resend+cron בלי QStash. apex קנוני. נתיבי WP קנוניים לעמודים משפטיים. מע"מ לחשבוניות חדשות 18%. payout ידני עד פיזי חי. ראה `docs/QUESTIONS-FOR-OFIR.md`.
 `docs/CONTENT-OPERATIONS-GUIDE.md`: תבניות לפי 5 מחלקות תפריט (לא אוספים). פיצול שיגור 100/0. רצפת תוקף 120 מתועדת אבל zod מקבל ≥1, לכן הצ'קליסט חוסם ולא הקוד. OG הוא 1200×630 מצויר, לא `images[0]`. משקל העלאה באדמין 8MB; המלצה מעשית עד 4MB וצלע ארוכה ≥1600px.
+`docs/ETERNAL-OPS.md`: spawner אחד בלבד (loop XOR forever). forever מחוץ ל-git. הלולאה ב-git לא בודקת PROJECT-DONE.flag. תור 27-29 לא קיים בפרוטוקול. FINAL EXIT כפול בקובץ (נמדד).
 
 ---
 
