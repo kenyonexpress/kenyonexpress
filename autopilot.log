@@ -26,3 +26,44 @@
 כדי שאמשיך: הפסק את הסוכן השני, או אמור לי להמשיך על worktree נפרד.
 cat: AUTOPILOT-PROMPT.md: No such file or directory
 Error: Input must be provided either through stdin or as a prompt argument when using --print
+עצרתי בלי לגעת בכלום. זהו אחד מארבעת מצבי העצירה המוגדרים: **סוכן קוד שני שרץ על אותו repo**.
+
+## מה מדדתי
+
+חמישה תהליכי `claude` נפרדים עם `cwd` על הנתיב הזה בדיוק:
+
+```
+pid  9183  cwd=/Users/ofir/kenyonexpress-web/kenyonexpress
+pid  9460  cwd=/Users/ofir/kenyonexpress-web/kenyonexpress
+pid 11851  cwd=/Users/ofir/kenyonexpress-web/kenyonexpress   ← kenyon-loop.sh (pid 11850) מריץ אותו
+pid 33275  cwd=/Users/ofir/kenyonexpress-web/kenyonexpress
+pid 33722  cwd=/Users/ofir/kenyonexpress-web/kenyonexpress
+```
+
+(שניים נוספים רצים על repos אחרים, `ke-legal` ו-`ke-seed`, ואינם מתנגשים.)
+
+## למה זה חוסם דווקא עכשיו
+
+יש **merge פתוח באמצע הפעולה**, ואחד הסוכנים בדיוק בתוכו:
+
+- `.git/MERGE_HEAD` = `4e73c88a5`, הודעה: `merge(supplier): supplier portal into phase5/homepage — MISSION-FINAL step 1, first of two merges`
+- קונפליקטים מוצהרים: `STATE.md`, `src/lib/cart/pricing.ts`
+- שני הקבצים עדיין `UU` באינדקס, אבל **ספרתי בהם 0 סמני קונפליקט**. כלומר מישהו כבר פתר אותם בעץ העבודה ועוד לא עשה `git add`.
+- חותמות זמן: `MERGE_HEAD` 08:26, `pricing.ts` 08:27, `.git/index` ו-`STATE.md` 08:28. השעה כרגע 08:40. העבודה טרייה, לא נטושה.
+
+כל `git add`, `commit`, או עריכה של `pricing.ts` מצדי כרגע היו דורסים resolution שסוכן אחר כתב ולא סיים לרשום. גם `pnpm build` ו-`pnpm type-check` כבר רצים משם (pid 32562, pid 37306) ושיתוף `.next/` בין שני builds מייצר תוצאות שקריות.
+
+## מה לא עשיתי
+
+לא נגעתי בעץ, לא ב-git, לא ב-STATE.md. לא התחלתי את התור מ-`המשך מ:`. גם לא כתבתי ל-`docs/DECISIONS.md`, כי כתיבה לעץ היא בדיוק מה שצריך להימנע ממנו כאן.
+
+## מה צריך ממך
+
+אחת משתיים:
+
+1. **לתת לסוכן הפעיל לסיים.** לזהות מי מהחמישה מחזיק את ה-merge, לחכות שיסגור אותו ויעשה push, ואז להרוג את השאר ולהשאיר סוכן אחד.
+2. **לפנות לי את הזירה.** להרוג את `kenyon-loop.sh` (pid 11850) ואת שאר תהליכי ה-claude על הנתיב, ואז אני משלים את ה-merge ומריץ את התור מ-`המשך מ:` ברצף.
+
+תגיד איזו, ואמשיך מיד.
+
+הערה צדדית שראיתי בדרך: `.claude/settings.json` נקי, `defaultMode` הוא `default` ולא `bypassPermissions`.

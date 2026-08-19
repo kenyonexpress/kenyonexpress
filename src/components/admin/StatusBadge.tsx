@@ -51,6 +51,26 @@ export function vendorStatusBadge(status: string) {
   return map[status] ?? { label: status, variant: 'gray' as Variant }
 }
 
+/**
+ * `products.type` is an enum with three values in production (`coupon`,
+ * `physical`, `service`) and a fourth, `recurring`, once PENDING-109 is
+ * applied. The products table used to render this as `type === 'physical' ?
+ * 'פיזי' : 'קופון'`, so every value that was not `physical` displayed as
+ * "קופון", including the one type that is emphatically not a coupon.
+ *
+ * The fallback prints the raw value rather than guessing, matching the three
+ * helpers above: an unlabelled type should look unfamiliar, not wrong.
+ */
+export function productTypeBadge(type: string) {
+  const map: Record<string, { label: string; variant: Variant }> = {
+    coupon: { label: 'קופון', variant: 'yellow' },
+    physical: { label: 'פיזי', variant: 'blue' },
+    service: { label: 'שירות', variant: 'gray' },
+    recurring: { label: 'מנוי', variant: 'green' },
+  }
+  return map[type] ?? { label: type, variant: 'gray' as Variant }
+}
+
 export function orderStatusBadge(status: string) {
   const map: Record<string, { label: string; variant: Variant }> = {
     pending: { label: 'ממתין', variant: 'yellow' },

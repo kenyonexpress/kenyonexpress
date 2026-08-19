@@ -1,0 +1,8 @@
+## מצב חדש - 2026-08-11 בוקר
+
+1. revoke_anon_writes ✅ applied 2026-08-10
+2. PENDING-money-integer-fix ⏳ security issue in section 4, awaiting approval
+3. 64 goals סגורים ✓
+4. main: cc21247 + caffeinate
+
+צעד הבא: approve money-integer-fix או skip לgoal-65 (product_type selector)
