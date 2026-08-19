@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import { type Page, expect, test } from '@playwright/test'
-import { firstProductHref } from './helpers'
+import { addOpenProductToCart, firstProductHref, openPurchasableProduct } from './helpers'
 
 /**
  * Goal 18. WCAG 2.1 A + AA, measured with axe-core against the real rendered
@@ -223,6 +223,53 @@ test.describe('product pages have no WCAG A/AA violations', () => {
     expect(
       results.violations.map((v) => v.id),
       `${coupon}\n  ${describe(results)}`,
+    ).toEqual([])
+  })
+})
+
+/**
+ * THE CHECKOUT, WITH SOMETHING IN THE CART.
+ *
+ * /checkout sends an empty cart to /cart, so a scan that does not seed first is
+ * a scan of the cart page under another name. That is why this page sat outside
+ * the sweep, and it is the page where money changes hands.
+ *
+ * Seeded, it failed twice, and one of them was CRITICAL rather than a colour.
+ * Under 560px the step labels are hidden so the numerals can share the row, and
+ * `display: none` took them out of the accessibility tree as well. The numeral
+ * beside each one is aria-hidden, so all four step buttons were left with no
+ * accessible name at all: a screen reader announced "button" and nothing more,
+ * on the checkout. They are visually hidden now instead, which keeps the name.
+ *
+ * The other was the step row's own ink, #7a7a7a, at 4.01:1 on #f7f7f7 and
+ * 3.38:1 on the numeral's #e4e4e4 - and 14px BOLD is not the 18.66px that would
+ * let 3:1 apply. The cart's sidebar note was #999 at 2.84:1 on the phone.
+ */
+test.describe('the checkout with a seeded cart', () => {
+  test('cart and checkout have no WCAG A/AA violations', async ({ page }) => {
+    await openPurchasableProduct(page)
+    await addOpenProductToCart(page)
+
+    await page.goto('/cart')
+    await page.waitForLoadState('domcontentloaded')
+    const cart = await scan(page)
+    expect(
+      cart.violations.map((v) => v.id),
+      `/cart\n  ${describe(cart)}`,
+    ).toEqual([])
+
+    await page.goto('/checkout')
+    await page.waitForLoadState('domcontentloaded')
+    // A checkout that bounced to /cart would scan clean and mean nothing, which
+    // is the same trap scripts/compare.mjs guards for this page.
+    expect(page.url(), 'checkout bounced to the cart; the seed did not stick').toContain(
+      '/checkout',
+    )
+
+    const checkout = await scan(page)
+    expect(
+      checkout.violations.map((v) => v.id),
+      `/checkout\n  ${describe(checkout)}`,
     ).toEqual([])
   })
 })

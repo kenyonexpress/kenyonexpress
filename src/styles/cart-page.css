@@ -252,7 +252,9 @@
 
 .cart-sidebar__note {
   font-size: 0.75rem;
-  color: #999;
+  /* Darkened from #999 for WCAG AA: 2.84:1 on white at 12px, which axe reported
+     as serious on the phone. #6f6f6f is 5.02. */
+  color: #6f6f6f;
   margin-bottom: 1.25rem;
   line-height: 1.5;
 }
