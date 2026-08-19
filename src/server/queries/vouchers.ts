@@ -2,7 +2,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 
 /**
- * Customer-facing voucher reads. RLS (051 vouchers_owner_read) already scopes
+ * Customer-facing voucher reads. RLS (vouchers_select_unified, merged in 121) already scopes
  * rows to auth.uid(); the user_id filter here is defence in depth, not the
  * boundary.
  */
@@ -52,7 +52,7 @@ export async function getCustomerVouchers(): Promise<CustomerVoucher[]> {
  * QR, the money snapshot, the deadline, and enough about the business for the
  * customer to find it.
  *
- * Read through the user-scoped client, so RLS (051 vouchers_owner_read) is the
+ * Read through the user-scoped client, so RLS (vouchers_select_unified, merged in 121) is the
  * boundary; the user_id filter repeats it in code. A voucher id is a UUID and
  * not a secret worth relying on, so an id belonging to somebody else returns
  * null here exactly as a made-up one does.
