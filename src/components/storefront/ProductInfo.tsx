@@ -139,7 +139,10 @@ export default function ProductInfo({
 
   const handleAddToCart = async () => {
     if (blocked) return
-    await addToCart(productId, selected, qty, name)
+    // Only confirm what happened. The store resolves for a refusal as well, so
+    // the unconditional version showed "נוסף לסל" over a cart the server had
+    // just declined to change, next to the error toast contradicting it.
+    if (!(await addToCart(productId, selected, qty, name))) return
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)
   }
@@ -149,7 +152,12 @@ export default function ProductInfo({
   // on login with the item already saved rather than losing the selection.
   const handleBuyNow = async () => {
     if (blocked) return
-    await addToCart(productId, selected, qty, name)
+    // The navigation is the add's consequence, so it waits on the add's answer.
+    // A refused item used to push anyway, and /checkout bounces an empty cart
+    // to /cart — the shopper pressed "קנה עכשיו" and landed two pages away
+    // from the product with nothing saying why. Staying put leaves them on the
+    // product with the error toast that does.
+    if (!(await addToCart(productId, selected, qty, name))) return
     router.push('/checkout')
   }
 

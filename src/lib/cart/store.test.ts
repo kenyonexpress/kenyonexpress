@@ -177,7 +177,7 @@ describe('cart store', () => {
     addToCart.mockResolvedValue({ ok: true, cart: cart([item({ quantity: 1 })]) })
     const feedback = vi.fn()
     const store = createCartStore(EMPTY_CART, feedback)
-    await store.getState().addToCart('p1', null, 1, 'אוזניות')
+    expect(await store.getState().addToCart('p1', null, 1, 'אוזניות')).toBe(true)
     expect(store.getState().drawerOpen).toBe(true)
     expect(feedback).toHaveBeenCalledWith({ kind: 'added', message: 'אוזניות נוסף לעגלה' })
   })
@@ -187,7 +187,9 @@ describe('cart store', () => {
     const feedback = vi.fn()
     const store = createCartStore(EMPTY_CART, feedback)
 
-    await store.getState().addToCart('p1', null, 1)
+    // The boolean, not just the toast. Every caller's follow-up hangs off it:
+    // the analytics event, the "added" confirmation, and the push to /checkout.
+    expect(await store.getState().addToCart('p1', null, 1)).toBe(false)
 
     expect(store.getState().cart.item_count).toBe(0)
     expect(store.getState().drawerOpen).toBe(false)
@@ -201,7 +203,7 @@ describe('cart store', () => {
     const feedback = vi.fn()
     const store = createCartStore(EMPTY_CART, feedback)
 
-    await store.getState().addToCart('p1', null, 1)
+    expect(await store.getState().addToCart('p1', null, 1)).toBe(false)
 
     expect(store.getState().cart.item_count).toBe(0)
     expect(store.getState().isPending).toBe(false)

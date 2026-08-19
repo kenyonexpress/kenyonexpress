@@ -248,16 +248,44 @@ function CategoryPageFallback() {
   )
 }
 
-export default function CategoryPage(props: Props) {
+/**
+ * THE SLUG LOOKUP SITS OUTSIDE THE BOUNDARY SO THAT A DEAD SLUG CAN STILL 404.
+ *
+ * It used to live in `CategoryPageBody`, inside the `<Suspense>`, and the cost
+ * of that was measured, not theorised: `/category/no-such-slug` answered
+ * **`200 OK`** with `x-nextjs-postponed: 1`. The shell had already been
+ * committed to the wire by the time `notFound()` ran, so the status line could
+ * not be changed and the not-found page was served under a success code - a
+ * soft 404 on an infinite family of crawlable URLs.
+ *
+ * Hoisting it costs nothing, and that is the part that is not obvious. The
+ * twelve real slugs come from `generateStaticParams`, so `params` resolves at
+ * BUILD time and `getCategoryBySlug` is `use cache`: the outer component still
+ * finishes during the prerender and the shell below is still postponed on
+ * `searchParams` alone. Measured after the change: a real category keeps
+ * `x-nextjs-postponed: 1`, and an unknown slug answers `404`.
+ *
+ * `/product/[slug]` reached the same place from the other direction - see the
+ * note above `ProductPage` - which is why the two routes now behave alike.
+ */
+export default async function CategoryPage(props: Props) {
+  const { slug } = await props.params
+  const category = await getCategoryBySlug(slug)
+  if (!category) notFound()
+
   return (
     <Suspense fallback={<CategoryPageFallback />}>
-      <CategoryPageBody {...props} />
+      <CategoryPageBody {...props} category={category} />
     </Suspense>
   )
 }
 
-async function CategoryPageBody({ params, searchParams }: Props) {
-  const { slug } = await params
+async function CategoryPageBody({
+  searchParams,
+  category,
+}: Omit<Props, 'params'> & {
+  category: NonNullable<Awaited<ReturnType<typeof getCategoryBySlug>>>
+}) {
   const sp = await searchParams
   const sort = parseSort(sp.sort)
   const page = parsePage(sp.page)
@@ -266,9 +294,6 @@ async function CategoryPageBody({ params, searchParams }: Props) {
   const productType = parseProductType(sp.type)
   const city = parseCity(sp.city)
   const near = parseNear(sp.near)
-
-  const category = await getCategoryBySlug(slug)
-  if (!category) notFound()
 
   // Cheap shell data only. The product query is deferred to the boundaries
   // below so the breadcrumb, title, control bar and sidebar can stream first.
