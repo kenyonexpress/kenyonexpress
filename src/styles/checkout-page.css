@@ -456,6 +456,15 @@
   color: #333e48;
 }
 
+/* Shown when the reconcile loop runs out of budget, in place of the spinner.
+   Separated from the copy above it so the shopper reads a state change and not
+   a longer paragraph: the page has stopped waiting, and this is what to do. */
+.checkout-pending__stalled {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgb(0 0 0 / 0.08);
+}
+
 /* The Cardcom payment page, framed rather than navigated to.
    Fixed and centred: once the shopper is paying, the form behind it is no
    longer the thing to interact with, and a payment box that scrolls away with

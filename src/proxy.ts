@@ -1,3 +1,4 @@
+import { loginRedirectUrl } from '@/lib/auth/login-redirect'
 import { GUEST_SESSION_COOKIE, guestSessionCookieOptions } from '@/lib/cart/guest-session-cookie'
 import { REQUEST_ID_HEADER, resolveRequestId } from '@/lib/observability/request-id'
 import { isPaymentFramePath } from '@/lib/security/frame-policy'
@@ -140,18 +141,12 @@ export async function proxy(request: NextRequest) {
     (pathname.startsWith('/supplier') && !supplierPublic)
 
   if (needsAuth && !user) {
-    const loginUrl = request.nextUrl.clone()
-    loginUrl.pathname = '/login'
-    loginUrl.searchParams.set('next', pathname)
-    return withRequestId(NextResponse.redirect(loginUrl), requestId)
+    return withRequestId(NextResponse.redirect(loginRedirectUrl(request.nextUrl)), requestId)
   }
 
   if (pathname.startsWith('/admin')) {
     if (!user) {
-      const loginUrl = request.nextUrl.clone()
-      loginUrl.pathname = '/login'
-      loginUrl.searchParams.set('next', pathname)
-      return withRequestId(NextResponse.redirect(loginUrl), requestId)
+      return withRequestId(NextResponse.redirect(loginRedirectUrl(request.nextUrl)), requestId)
     }
     // Role is authoritative in the profiles table, not app_metadata (which may be stale).
     const { data: profile } = await supabase
