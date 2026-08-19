@@ -10,7 +10,9 @@ import Pagination from '@/components/category/Pagination'
 import CityTags from '@/components/geo/CityTags'
 import {
   CATEGORY_PAGE_SIZE,
+  type CollectionRule,
   type ProductTypeFilter,
+  collectionRule,
   getAllCategories,
   getAllCategorySlugs,
   getCategoryBySlug,
@@ -97,6 +99,8 @@ type QueryArgs = {
    * minting a cache entry per coordinate.
    */
   near?: Coordinates | null
+  /** The collection rule for this slug, if it is one of the three. */
+  collection?: CollectionRule
 }
 
 /**
@@ -263,6 +267,10 @@ async function CategoryPageBody({ params, searchParams }: Props) {
     productType,
     city,
     near,
+    // hot-deals / under-99 / new are collections, and nothing falls into a
+    // collection on its own. Undefined for the nine taxonomies, which keep
+    // matching on category_id alone.
+    collection: collectionRule(category.slug),
   }
 
   const pathname = `/category/${category.slug}`

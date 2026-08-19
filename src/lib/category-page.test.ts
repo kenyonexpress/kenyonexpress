@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { orderedByMenu, parseProductType, productTypeFilter } from './category-page'
+import {
+  collectionFilter,
+  collectionRule,
+  orderedByMenu,
+  parseProductType,
+  productTypeFilter,
+} from './category-page'
 
 /**
  * The archive facet has to agree with the rest of the system about what a
@@ -85,5 +91,83 @@ describe('orderedByMenu', () => {
   it('returns the query so it stays chainable', () => {
     const { query } = fake()
     expect(orderedByMenu(query)).toBe(query)
+  })
+})
+
+/**
+ * The three collections. Measured on production 19.08.2026: hot-deals held 4
+ * active products, under-99 3 and new 3, and nine of those ten were demo rows
+ * placed by hand. Nothing falls into a collection on its own, because
+ * `categories` has no column that expresses a rule.
+ */
+describe('collectionRule', () => {
+  it('claims exactly the three collection slugs', () => {
+    expect(collectionRule('under-99')).toEqual({ kind: 'price_max', maxIls: 99 })
+    expect(collectionRule('hot-deals')).toEqual({ kind: 'featured' })
+    expect(collectionRule('new')).toEqual({ kind: 'newest', limit: 24 })
+  })
+
+  it('leaves every taxonomy alone, so those still match on category_id', () => {
+    for (const slug of [
+      'restaurants-cafes',
+      'beauty-health',
+      'phones-computers',
+      'baby-kids',
+      'vacation',
+      'pets',
+      'professionals',
+      'courses',
+      'electronics',
+    ]) {
+      expect(collectionRule(slug), slug).toBeUndefined()
+    }
+  })
+
+  it('does not answer for a slug that is not a category at all', () => {
+    // Object.prototype keys reach a bare record lookup. `constructor` would
+    // return a function, and a function is truthy.
+    expect(collectionRule('constructor')).toBeUndefined()
+    expect(collectionRule('toString')).toBeUndefined()
+    expect(collectionRule('__proto__')).toBeUndefined()
+  })
+})
+
+describe('collectionFilter', () => {
+  const ID = 'bd5932c1-51a8-47a5-b64c-551b8692b53c'
+
+  it('always keeps the hand-assigned rows, so a page can only gain products', () => {
+    for (const rule of [
+      { kind: 'price_max', maxIls: 99 },
+      { kind: 'featured' },
+      { kind: 'newest', limit: 24 },
+    ] as const) {
+      expect(collectionFilter(ID, rule, ['a']), rule.kind).toContain(`category_id.eq.${ID}`)
+    }
+  })
+
+  it('bounds under-99 on kenyon_price, the price the card shows', () => {
+    expect(collectionFilter(ID, { kind: 'price_max', maxIls: 99 })).toBe(
+      `category_id.eq.${ID},kenyon_price.lte.99`,
+    )
+  })
+
+  it('reads hot-deals off is_featured', () => {
+    expect(collectionFilter(ID, { kind: 'featured' })).toBe(
+      `category_id.eq.${ID},is_featured.is.true`,
+    )
+  })
+
+  it('lists the newest ids explicitly', () => {
+    expect(collectionFilter(ID, { kind: 'newest', limit: 24 }, ['x', 'y'])).toBe(
+      `category_id.eq.${ID},id.in.(x,y)`,
+    )
+  })
+
+  it('never emits an empty in.() group, which is a PostgREST syntax error', () => {
+    // With no ids the group has to collapse to the hand-assigned rows rather
+    // than to `id.in.()`, which would fail the whole request and empty the page.
+    const filter = collectionFilter(ID, { kind: 'newest', limit: 24 }, [])
+    expect(filter).toBe(`category_id.eq.${ID}`)
+    expect(filter).not.toContain('in.()')
   })
 })
