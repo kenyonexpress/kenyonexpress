@@ -34,6 +34,38 @@ Updated: 2026-08-19 10:10 ((15) GEO הושלם. (16) כבר נעשה ע"י הס�
 
 ## המשך מ: MISSION-FINAL שלב 1 (merge supplier + arch-night)
 
+## ביקורת `migrations/pending/` — ✅ נמדדה מול פרודקשן
+
+לא נקרא מהקובץ אלא נבדק אובייקט-אובייקט מול `ixvwfbuvfxxsjiywhbbb`.
+**כל עשרת הקבצים באמת לא הורצו:** אין `payment_events`, ‏`refunds`,
+`search_index_outbox`, ‏`supplier_branches`, ‏`banners`, ‏`homepage_sections`;
+אין `order_items.shipped_at`, ‏`.delivered_at`, ‏`products.whatsapp_enabled`;
+ואין אף אחת משש פונקציות המשמר של `007`. ‏`expire_vouchers` כן קיימת, כצפוי,
+כי `004` מחליפה ולא יוצרת.
+
+**שתי טענות ב-README היו שגויות:**
+
+1. ‏`002-products-geo.sql` תואר כקובץ שממתין בתיקייה. הוא לא קיים בעץ ולא על
+   אף ראש ענף, והעמודות שלו (`products.city/latitude/longitude`) **קיימות
+   בפרודקשן**. כלומר הוא הורץ והקובץ נמחק. הקורא הבא היה מחפש אותו, או גרוע
+   מזה, כותב ומריץ אותו מחדש.
+2. ‏`PENDING-revoke_anon_writes.sql` היה שורה רביעית בטבלה שמתארת שלושה
+   קבצים. זה חמור יותר משורה מיותרת, כי הוא **מיגרציית אבטחה**, ולכן הופעתו
+   ברשימה נקראה כ"נכתב, ממתין לאישור" כשלא נכתב כלום.
+
+**מה באמת נכון, נמדד:** ‏`anon` יכול לכתוב ל-`carts` בלבד — זו עגלת האורח
+הפתוחה שהמוצר דורש, עם RLS ומדיניות owner. ‏`authenticated` מחזיק
+INSERT/UPDATE/DELETE/**TRUNCATE** על 55 טבלאות, חסום ב-RLS למעט חריג אחד
+שראוי שיהיה כתוב: **‏RLS אינו חל על TRUNCATE.** לא נגיש דרך PostgREST, ולכן
+הגנה לעומק ולא פרצה חיה. זה מה ש-`126_revoke_authenticated_dml.sql` פותר,
+והוא עצמו יושב על הענף הלא-ממוזג `feat/auth-model`.
+
+`src/__tests__/pending-migrations-inventory.test.ts` נועל את זה: כל שם קובץ
+שמוזכר ב-README חייב להיות קובץ אמיתי, או שה-README אומר במפורש שהוא נעלם.
+נבדק שהחזרת הנוסח המקורי מפילה אותו.
+
+---
+
 ## ‏(22) LEGAL PAGES — ✅ מוזג, **עם החלטה פתוחה לאופיר**
 
 `feat/legal-pages` מוזג (‏6 קומיטים, ‏1955 שורות, בלי מחיקות). כל השערים ירוקים.
