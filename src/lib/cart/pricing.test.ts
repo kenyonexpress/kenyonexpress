@@ -268,6 +268,52 @@ describe('buildCartView: why a line is unavailable', () => {
     expect(line(cart).unavailable_reason).toBe('unpriced')
   })
 
+  /**
+   * ZERO IS A MISSING PRICE, NOT A GIVEAWAY.
+   *
+   * The coupon half of the `priceable` gate has been there since the commission
+   * engine landed; the physical half had nothing. `resolveUnitPrice` returns 0
+   * for a product whose `kenyon_price` is null or 0, `ilsToAgorot` makes that a
+   * perfectly valid ZERO, and every layer below accepted it: the product page
+   * painted ₪0.00 beside a live add-to-cart, the cart priced the line at zero,
+   * and `beginCheckout`'s physical branch had no price check either.
+   *
+   * Measured against production the same day: ONE active product sits at
+   * kenyon_price 0.00, and it escapes only because it is is_coupon_enabled and
+   * takes the coupon branch.
+   */
+  for (const [label, value] of [
+    ['null', null],
+    ['zero', 0],
+  ] as const) {
+    it(`calls a physical product priced ${label} unpriced rather than free`, () => {
+      const cart = buildCartView('cart-1', [stored()], [product({ kenyon_price: value })], [])
+
+      expect(line(cart).unavailable_reason).toBe('unpriced')
+      expect(line(cart).available).toBe(false)
+    })
+  }
+
+  it('refuses the live zero-price row through the COUPON rule, not the new one', () => {
+    // `restaurants-meat-2` exactly as production holds it on 2026-08-19:
+    // kenyon_price 0.00, coupon_price_ils null, is_coupon_enabled true. It was
+    // already refused before the physical rule existed, and it has to stay
+    // refused for the coupon reason - a coupon is priced by its absolute
+    // coupon_price_ils, so the physical rule is deliberately scoped away from it.
+    //
+    // There is no such thing as a sellable coupon at kenyon_price 0 either way:
+    // the commission engine requires the coupon price to be positive AND no
+    // greater than the unit price, so zero fails that pair before this gate.
+    const cart = buildCartView(
+      'cart-1',
+      [stored()],
+      [product({ kenyon_price: 0, is_coupon_enabled: true, coupon_price_ils: null })],
+      [],
+    )
+
+    expect(line(cart).unavailable_reason).toBe('unpriced')
+  })
+
   it('still shows the lines when not one of them can be priced', () => {
     // The regression this pins: `commissionLines.length === 0` shared a branch
     // with "no lines at all" and returned EMPTY_CART. An out-of-stock line is

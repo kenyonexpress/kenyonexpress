@@ -126,11 +126,16 @@ export default function ProductInfo({
   // The commission engine refuses a coupon line with no absolute price, so the
   // button must not offer a purchase the checkout would reject.
   const couponUnsellable = isCoupon && couponOffer !== null && !couponOffer.sellable
+  // The same refusal for the other type. A physical product whose price is null
+  // or 0 would otherwise paint ₪0.00 beside a live add-to-cart button; the cart
+  // marks such a line unpriced and beginCheckout refuses it, so offering the
+  // purchase here only moves the refusal to the worst possible moment.
+  const priceUnsellable = !isCoupon && !(price > 0)
 
   const hasDiscount = oldPrice != null && oldPrice > price
   const discountPct = hasDiscount ? Math.round((1 - price / oldPrice) * 100) : 0
   const maxQty = stock != null && stock > 0 ? stock : 99
-  const blocked = outOfStock || needsVariant || couponUnsellable || isPending
+  const blocked = outOfStock || needsVariant || couponUnsellable || priceUnsellable || isPending
 
   const handleAddToCart = async () => {
     if (blocked) return
@@ -150,7 +155,7 @@ export default function ProductInfo({
 
   const buyLabel = outOfStock
     ? 'אזל מהמלאי'
-    : couponUnsellable
+    : couponUnsellable || priceUnsellable
       ? 'לא זמין לרכישה'
       : isCoupon
         ? 'קנה עכשיו'

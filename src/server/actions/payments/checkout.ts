@@ -402,6 +402,19 @@ async function runBeginCheckout(
         cashbackPercent: product.cashback_percent ?? 0,
       })
     } else {
+      // The same rule as the coupon branch above, for the type that had no
+      // rule: a physical line priced at zero is a product an admin saved
+      // without a price, not a giveaway. The cart refuses it first - see the
+      // `priceable` gate in lib/cart/pricing.ts - and this is the layer that
+      // has to hold if the cart is ever rebuilt or bypassed, because it is the
+      // one that writes the order.
+      if (!(item.unit_price > 0)) {
+        return {
+          ok: false,
+          error: `למוצר "${item.name_he}" לא הוגדר מחיר`,
+          code: 'INTERNAL',
+        }
+      }
       settlementLines.push({
         id: `${item.product_id}::${item.variant_id ?? 'null'}`,
         productType: item.type,

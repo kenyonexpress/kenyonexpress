@@ -207,8 +207,27 @@ export function buildCartView(
     // and the whole prepayment is held for the supplier.
     // `type == null` is a product shape the cart cannot price at all, and joins
     // the same refusal path as a missing percent rather than being guessed at.
+    // A PHYSICAL LINE ALSO NEEDS A PRICE ABOVE ZERO, and that half was missing.
+    //
+    // The coupon half of this gate has been here since the commission engine
+    // landed. The physical half had nothing: `resolveUnitPrice` returns 0 for a
+    // product whose `kenyon_price` is null or 0, `ilsToAgorot` turns that into
+    // a perfectly valid ZERO, and every layer downstream accepted it. Measured
+    // against production on 2026-08-19, one ACTIVE product sits at
+    // kenyon_price 0.00 - `restaurants-meat-2` - and it only escapes because it
+    // is `is_coupon_enabled`, so it takes the coupon branch instead.
+    //
+    // Without this, a physical product an admin saved without a price would
+    // have painted ₪0.00 with a live add-to-cart, priced at zero through the
+    // whole cart, and reached `beginCheckout`, whose physical branch has no
+    // price check either. Zero is not a discount; it is a missing value, and
+    // the comment on the coupon branch in checkout.ts says exactly that about
+    // its own: "a product missing a mandatory value cannot be sold".
     const priceable =
-      type != null && percent != null && (type !== 'coupon' || couponPriceUnit != null)
+      type != null &&
+      percent != null &&
+      (type !== 'coupon' || couponPriceUnit != null) &&
+      (type !== 'physical' || unitPrice > 0)
     const reason = unavailableReason(product, variant, item.quantity, priceable)
     if (priceable) {
       commissionLines.push({
