@@ -1,6 +1,6 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-19 (MISSION-FINAL שלב 1 הושלם: שני המיזוגים בוצעו)
+Updated: 2026-08-19 (MISSION-FINAL שלב 1 הושלם: שני המיזוגים בוצעו; ובנוסף docs/ARCHITECTURE-AFFILIATES-REFERRALS.md)
 
 ## המשך מ: תור AUTOPILOT (10) DB HARDENING
 
@@ -43,7 +43,7 @@ worktree. ‏`007-order-transition-guard.sql` הגיע מהסוכן שנעצר *
 ✅ `docs/RUNBOOK-OPS.md` (5 פקודות בוקר, סוכן תקוע, אתחול לולאה, Vercel rollback, webhook, אתר למטה)
 ✅ `docs/SUPPLIER-ONBOARDING-KIT.md` (טופס פרטים, טיוטת הסכם מתווך, הדרכת סריקה, FAQ)
 ✅ `docs/CUSTOMER-SUPPORT-PLAYBOOK.md` (20 תסריטי תמיכה: תשובה + פעולה פנימית)
-✅ `docs/LAUNCH-DAY-PLAN.md` (T-7 עד T+7: go/no-go, rollback, בעלים מול סוכן)
+Updated: 2026-08-19 (MISSION-FINAL שלב 1 הושלם: שני המיזוגים בוצעו; ובנוסף docs/ARCHITECTURE-AFFILIATES-REFERRALS.md)
 הבא שדורש קוד: merge `feat/supplier-portal` ואז `docs/architecture-night` אל `phase5/homepage`.
 
 ## ⛔ מדיניות ענפים מחייבת (19.08.2026)
