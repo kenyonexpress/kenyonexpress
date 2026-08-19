@@ -1,6 +1,6 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-19 (MISSION-FINAL שלב 1 הושלם: שני המיזוגים בוצעו; ובנוסף docs/ARCHITECTURE-AFFILIATES-REFERRALS.md)
+Updated: 2026-08-19 (docs: CONTENT-OPERATIONS-GUIDE.md on phase5/homepage)
 
 ## המשך מ: תור AUTOPILOT (11) AUTH
 
@@ -74,6 +74,8 @@ worktree. ‏`007-order-transition-guard.sql` הגיע מהסוכן שנעצר *
 ✅ `docs/RUNBOOK-OPS.md` (5 פקודות בוקר, סוכן תקוע, אתחול לולאה, Vercel rollback, webhook, אתר למטה)
 ✅ `docs/SUPPLIER-ONBOARDING-KIT.md` (טופס פרטים, טיוטת הסכם מתווך, הדרכת סריקה, FAQ)
 ✅ `docs/CUSTOMER-SUPPORT-PLAYBOOK.md` (20 תסריטי תמיכה: תשובה + פעולה פנימית)
+✅ `docs/GROWTH-LAUNCH-MARKETING.md` (ערוצי השקה, קאשבק כפול, 20 שאילתות SEO)
+✅ `docs/CONTENT-OPERATIONS-GUIDE.md` (הזנת דיל א' עד ת': תמונות, 5 תבניות, מחיר קופון, שדות 14ג, checklist)
 Updated: 2026-08-19 (MISSION-FINAL שלב 1 הושלם: שני המיזוגים בוצעו; ובנוסף docs/ARCHITECTURE-AFFILIATES-REFERRALS.md)
 הבא שדורש קוד: merge `feat/supplier-portal` ואז `docs/architecture-night` אל `phase5/homepage`.
 
@@ -111,6 +113,7 @@ ke-supplier     feat/supplier-portal
 
 ### החלטות שהתקבלו אוטומטית 19.08 (docs)
 C11(א) נשאר המודל. אין Escrow. soft-launch = קופון בלבד. Google בלבד. Resend+cron בלי QStash. apex קנוני. נתיבי WP קנוניים לעמודים משפטיים. מע"מ לחשבוניות חדשות 18%. payout ידני עד פיזי חי. ראה `docs/QUESTIONS-FOR-OFIR.md`.
+`docs/CONTENT-OPERATIONS-GUIDE.md`: תבניות לפי 5 מחלקות תפריט (לא אוספים). פיצול שיגור 100/0. רצפת תוקף 120 מתועדת אבל zod מקבל ≥1, לכן הצ'קליסט חוסם ולא הקוד. OG הוא 1200×630 מצויר, לא `images[0]`. משקל העלאה באדמין 8MB; המלצה מעשית עד 4MB וצלע ארוכה ≥1600px.
 
 ---
 
