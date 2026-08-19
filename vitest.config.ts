@@ -65,6 +65,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
+      // See the stub for why. Short version: the real `server-only` resolves
+      // only under the `react-server` condition, so every module carrying the
+      // marker was untestable - not by policy, by resolution failure.
+      'server-only': resolve(__dirname, './test/server-only-stub.ts'),
     },
   },
 })
