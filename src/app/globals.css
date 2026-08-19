@@ -178,15 +178,40 @@ html[data-consent="decided"] [data-consent-banner] {
    server and client render one tree. Keyed off the same attribute as the rule
    above, so a visitor who already answered reserves nothing.
 
-   Two values because the layout has two shapes: `sm:flex-row` puts the text and
-   the buttons on one line from 640px up. */
+   Three values because the layout has three shapes: `sm:flex-row` puts the text
+   and the buttons on one line from 640px up, and the two-line wrap at exactly
+   640 costs more than either neighbour.
+
+   MEASURED, 2026-08-19, against the production build at eleven viewport widths.
+   Two tiers were not enough and both of them were SHORT, which is the failure
+   this block exists to prevent:
+
+     320px  banner 225.50  reserved 192  short by 33.5
+     360px  banner 202.75  reserved 192  short by 10.75
+     414px  banner 202.75  reserved 192  short by 10.75
+     480px  banner 180.00  reserved 192  ok
+     639px  banner 157.25  reserved 192  ok
+     640px  banner 124.00  reserved  96  short by 28
+     768px  banner 101.25  reserved  96  short by 5.25
+    1440px  banner 101.25  reserved  96  short by 5.25
+
+   640px is the worst desktop case rather than the narrowest: `sm:flex-row` puts
+   the text and the buttons on one line there, and at exactly 640 the text still
+   wraps to two. A third tier at 768 keeps the widest pages from reserving the
+   28px that only 640 needs. */
 html:not([data-consent="decided"]) body {
-  padding-bottom: 12rem;
+  padding-bottom: 14.5rem;
 }
 
 @media (min-width: 640px) {
   html:not([data-consent="decided"]) body {
-    padding-bottom: 6rem;
+    padding-bottom: 8rem;
+  }
+}
+
+@media (min-width: 768px) {
+  html:not([data-consent="decided"]) body {
+    padding-bottom: 7rem;
   }
 }
 

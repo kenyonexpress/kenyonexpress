@@ -98,21 +98,36 @@ test('every interactive control on the home page is reachable by keyboard', asyn
   expect(unreachable).toEqual([])
 })
 
-test('the consent banner does not cover the page it sits on', async ({ page }) => {
-  await page.goto('/')
-  await page.waitForLoadState('domcontentloaded')
+/**
+ * The banner is fixed to the bottom, and the body carries padding sized to it.
+ * If that padding is smaller than the banner, the last control on every page is
+ * unclickable -- the exact regression e0bddad fixed on a phone.
+ *
+ * Checked at the widths that were actually short rather than at whatever the
+ * project viewport happens to be. Run at the two project viewports alone this
+ * passed for months while 320px was 33.5px short and 640px was 28px short; the
+ * reservation is a CSS breakpoint ladder, so only a width per rung measures it.
+ * 320 is the narrowest phone still sold, 640 is the rung where `sm:flex-row`
+ * turns on and the text still wraps to two lines, and 1440 is the widest rung.
+ */
+for (const width of [320, 640, 1440]) {
+  test(`the consent banner does not cover the page it sits on at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 800 })
+    await page.goto('/')
+    await page.waitForLoadState('domcontentloaded')
 
-  const banner = page.locator('[data-consent-banner]')
-  if ((await banner.count()) === 0) test.skip()
+    const banner = page.locator('[data-consent-banner]')
+    if ((await banner.count()) === 0) test.skip()
 
-  // The banner is fixed to the bottom, and the body carries padding sized to
-  // it. If that padding is smaller than the banner, the last control on every
-  // page is unclickable -- the exact regression e0bddad fixed on a phone.
-  const bannerBox = await banner.boundingBox()
-  const padding = await page.evaluate(() =>
-    Number.parseFloat(getComputedStyle(document.body).paddingBottom),
-  )
+    const bannerBox = await banner.boundingBox()
+    const padding = await page.evaluate(() =>
+      Number.parseFloat(getComputedStyle(document.body).paddingBottom),
+    )
 
-  expect(bannerBox).not.toBeNull()
-  expect(padding).toBeGreaterThanOrEqual((bannerBox?.height ?? 0) - 1)
-})
+    expect(bannerBox).not.toBeNull()
+    expect(
+      padding,
+      `body reserves ${padding}px for a ${bannerBox?.height}px banner at ${width}px`,
+    ).toBeGreaterThanOrEqual((bannerBox?.height ?? 0) - 1)
+  })
+}

@@ -1,7 +1,11 @@
 import { expect, test } from '@playwright/test'
 // Relative, not the `@/` alias: no other spec uses the alias, and this import
 // only has to reach one dependency-free module.
-import { CONSENT_PREPAINT_SCRIPT } from '../src/lib/analytics/consent'
+import {
+  CONSENT_PREPAINT_SCRIPT,
+  CONSENT_WORDING_VERSION,
+  serializeConsent,
+} from '../src/lib/analytics/consent'
 
 test.describe('homepage', () => {
   test('loads with RTL layout and the Hebrew locale', async ({ page }) => {
@@ -305,7 +309,13 @@ test.describe('homepage', () => {
     await context.addCookies([
       {
         name: 'ke_consent',
-        value: 'granted.1',
+        // Built from the constant, not spelled out. This was hardcoded to
+        // `granted.1` and went red the moment CONSENT_WORDING_VERSION was
+        // bumped 1 -> 2, which is the version field doing exactly its job:
+        // a decision made against superseded wording is not consent, so the
+        // pre-paint snippet correctly refused to mark the document and the
+        // test read that as a broken snippet.
+        value: serializeConsent({ decision: 'granted', wordingVersion: CONSENT_WORDING_VERSION }),
         domain: new URL(baseURL as string).hostname,
         path: '/',
       },
@@ -395,7 +405,14 @@ test.describe('homepage', () => {
   test('reaching the footer costs no 404s', async ({ page }) => {
     const failed: string[] = []
     page.on('response', (r) => {
-      if (r.status() >= 400) failed.push(`${r.status()} ${new URL(r.url()).pathname}`)
+      const { pathname } = new URL(r.url())
+      // /_vercel/insights/script.js and /_vercel/speed-insights/script.js are
+      // injected by @vercel/analytics and served by the PLATFORM, not by this
+      // app. They 404 on every localhost run and always will, so counting them
+      // makes a test about our own prefetches impossible to pass anywhere but a
+      // deployment. Our links are still counted.
+      if (pathname.startsWith('/_vercel/')) return
+      if (r.status() >= 400) failed.push(`${r.status()} ${pathname}`)
     })
 
     await page.goto('/')
@@ -427,6 +444,17 @@ test.describe('homepage', () => {
   }) => {
     await page.goto('/')
     const slider = page.locator('[data-hero-slider]')
+    // ONE slider, and waiting for that is the point.
+    //
+    // The homepage renders `<Suspense fallback={<HeroSection />}><CmsHero /></Suspense>`,
+    // so the authored hero ships as the fallback and the CMS hero replaces it.
+    // Both carry data-hero-slider, and both are in the response: `curl` counts
+    // the attribute twice. React removes the fallback on hydration, and the
+    // hydrated DOM measured at rest holds exactly one. Under the full suite at
+    // two workers hydration is slower, this assertion arrived inside that
+    // window, and strict mode failed on "resolved to 2 elements" - a race in
+    // the test, not a duplicate hero.
+    await expect(slider).toHaveCount(1)
     await expect(slider).toBeVisible()
 
     const activeDot = () => slider.locator('button[aria-current="true"]').getAttribute('aria-label')
@@ -476,6 +504,10 @@ test.describe('homepage', () => {
 
     await page.goto('/')
 
+    // Same Suspense fallback race as the autoplay test above: until React drops
+    // the fallback there are two sliders, and `.first()` would measure the one
+    // that is about to be removed.
+    await expect(page.locator('[data-hero-slider]')).toHaveCount(1)
     const heroImg = page.locator('[data-hero-slider] picture img').first()
     await expect
       .poll(() => heroImg.evaluate((el: HTMLImageElement) => el.currentSrc), {
