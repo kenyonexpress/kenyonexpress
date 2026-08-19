@@ -79,7 +79,10 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
 
   const { data: order } = await admin
     .from('orders')
-    .select('id, status')
+    // `user_id` is here only so the refund-done mail can find a recipient:
+    // `orders` carries no customer email column, the address lives on the
+    // profile, and a guest order has neither.
+    .select('id, status, user_id')
     .eq('id', input.orderId)
     .maybeSingle()
   if (!order) return { ok: false, error: 'הזמנה לא נמצאה', code: 'NOT_FOUND' }
@@ -336,6 +339,40 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
         reason: input.reason,
       } as unknown as Json,
     })
+
+    // Told last, and best-effort, for the same reason the credit note is
+    // queued rather than called: the card has already been credited by the
+    // time this line runs. A queue insert that fails must not turn a refund
+    // that succeeded into an error the operator retries, so it is logged and
+    // dropped. `refund:<order id>` as the dedupe key means a replayed refund
+    // cannot mail twice.
+    //
+    // A guest order has no `user_id` and therefore no profile to read an
+    // address off. That is silence by design, not a gap: there is nowhere to
+    // send it, and inventing a recipient is worse than not writing.
+    if (order.user_id) {
+      const { data: customer } = await admin
+        .from('profiles')
+        .select('email')
+        .eq('id', order.user_id)
+        .maybeSingle()
+      const { error: notifyError } = await admin.rpc('fn_enqueue_notification', {
+        p_kind: 'refund_completed',
+        p_email: customer?.email ?? '',
+        p_dedupe: `refund:${order.id}`,
+        p_payload: {
+          order_id: order.id,
+          order_ref: order.id.slice(0, 8).toUpperCase(),
+          refunded_agorot: plan.refundAmountAgorot,
+          cancellation_fee_agorot: plan.cancellationFeeAgorot,
+          cancel_only: plan.cancelOnly,
+        },
+        p_user_id: order.user_id,
+      })
+      if (notifyError) {
+        log.warn('refund.notify_not_queued', { order_id: order.id, err: notifyError.message })
+      }
+    }
 
     return {
       ok: true,
