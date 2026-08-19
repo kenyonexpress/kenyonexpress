@@ -98,13 +98,20 @@ export function storeWhatsAppLink(text?: string): string | null {
   return phone ? waChatLink(phone, text) : null
 }
 
-export function buildProductShareText(name: string, priceIls: number, url: string): string {
-  const price = `₪${priceIls.toLocaleString('he-IL', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`
-  return `מצאתי משהו שווה ב-KenyonExpress: ${name} ב-${price}\n${url}`
-}
+/**
+ * There is deliberately no product-share builder here.
+ *
+ * There was one, `buildProductShareText`, and it was wrong for exactly the case
+ * the storefront cares about most: for a coupon it quoted `products.price_ils`,
+ * the sticker price of the goods at the business, so a customer sharing an
+ * ₪80 coupon sent their friend "₪200" and the friend landed on a page quoting
+ * ₪80. It also baked the URL into the text, which every channel then appended
+ * again. `src/lib/share/message.ts` replaced it and explains the pricing rule at
+ * length; by the time it was removed here nothing imported this one.
+ *
+ * Kept as a comment rather than deleted silently, because the tempting thing to
+ * do next is to write it back.
+ */
 
 export function buildCouponShareText(input: {
   productName: string | null
