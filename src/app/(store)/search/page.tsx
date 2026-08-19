@@ -104,6 +104,9 @@ function SearchPageFallback() {
           {/* A div rather than an empty <h1>: see the note on the same line in
               category/[slug]/page.tsx. The heading here is the query. */}
           <div className="category-page__title category-page__title--pending" aria-hidden="true" />
+          {/* The count's box too, so the shell is the same height as the page
+              that replaces it. */}
+          <div className="category-page__count category-page__count--pending" aria-hidden="true" />
         </header>
         <div className="category-search__box">
           <SearchBox defaultValue="" />
@@ -144,8 +147,17 @@ async function SearchPageBody({ searchParams }: Props) {
           <h1 className="category-page__title">
             {q ? `תוצאות חיפוש עבור "${q}"` : 'חיפוש מוצרים'}
           </h1>
+          {/* The fallback is not `null`. A null fallback means the count's line
+              box does not exist until it streams in, and inserting it into the
+              header then pushes the entire page down - measured on
+              /search?q=barbecue as two shifts, both attributed to the footer,
+              CLS 0.401. The placeholder is the same box, held open. */}
           {q.length >= MIN_QUERY && (
-            <Suspense fallback={null}>
+            <Suspense
+              fallback={
+                <div className="category-page__count category-page__count--pending" aria-hidden />
+              }
+            >
               <ResultCount q={q} productType={productType} />
             </Suspense>
           )}

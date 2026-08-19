@@ -295,7 +295,14 @@ async function CategoryPageBody({ params, searchParams }: Props) {
 
         <header className="category-page__header">
           <h1 className="category-page__title">{category.name_he}</h1>
-          <Suspense fallback={null}>
+          {/* The count's box, held open while it streams. See the note on the
+              same boundary in search/page.tsx: a null fallback inserts a line
+              into the header on resolve and moves everything below it. */}
+          <Suspense
+            fallback={
+              <div className="category-page__count category-page__count--pending" aria-hidden />
+            }
+          >
             <ResultCount args={args} />
           </Suspense>
         </header>

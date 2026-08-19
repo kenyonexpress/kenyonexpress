@@ -183,7 +183,13 @@ export default function ProductsPage({ searchParams }: Props) {
 
         <header className="category-page__header">
           <h1 className="category-page__title">{PAGE_TITLE}</h1>
-          <Suspense fallback={null}>
+          {/* The count's box, held open while it streams - the same reason the
+              control bar below keeps its own empty shell. */}
+          <Suspense
+            fallback={
+              <div className="category-page__count category-page__count--pending" aria-hidden />
+            }
+          >
             <ShopResultCount searchParams={searchParams} />
           </Suspense>
         </header>

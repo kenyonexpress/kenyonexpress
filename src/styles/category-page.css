@@ -128,6 +128,17 @@
   color: var(--cat-ink);
 }
 
+/* The box the count will land in, held open while it streams.
+   Same idea as `--pending` on the title and as the control bar's empty shell:
+   `<Suspense fallback={null}>` around the count inserts a line into the header
+   when it resolves and pushes the whole page down. Measured on
+   /search?q=barbecue: two shifts, both attributed to `footer.w-full`, CLS
+   0.401. `--cat-body-line` is the same line-height the real paragraph uses, so
+   the box is exactly the right size and nothing moves. */
+.category-page__count--pending {
+  min-height: var(--cat-body-line);
+}
+
 .category-page__count--bottom {
   padding-block: 16px 8px;
 }
