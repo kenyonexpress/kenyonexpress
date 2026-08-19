@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { firstProductHref } from './helpers'
+import { addOpenProductToCart, firstProductHref, openPurchasableProduct } from './helpers'
 
 /**
  * CLS as a gate, on the search page and on every other public route.
@@ -119,6 +119,33 @@ for (const path of ROUTES) {
     expect(cls, `${path} shifted ${cls.toFixed(4)}`).toBeLessThan(CLS_GOOD)
   })
 }
+
+/**
+ * THE CHECKOUT, WITH SOMETHING IN THE CART.
+ *
+ * `/checkout` is in the sweep above, and the note there is honest about what it
+ * covers: an empty cart bounces to `/cart`, so that entry measures the bounce.
+ * The real checkout, the page where money changes hands, had no CLS cover at
+ * all -- the same blind spot the a11y sweep found on this exact route, where a
+ * seeded scan turned up a CRITICAL violation the unseeded one could not see.
+ *
+ * What it guards is specific. This page paints a Suspense shell -- heading
+ * only -- while the cart, the address and the saved cards are read, and the
+ * body replaces it. Anything added above the heading in the body and not in the
+ * shell drops the heading by its own height after first paint. The breadcrumb
+ * added on 2026-08-19 is 71px of exactly that shape, and it is in both. Live's
+ * `/coupons` scored 0.585 on this failure mode.
+ */
+test('the seeded checkout stays under the CLS budget', async ({ page }) => {
+  await openPurchasableProduct(page)
+  await addOpenProductToCart(page)
+
+  const cls = await measureCls(page, '/checkout')
+  // A bounce to /cart would measure the cart and pass under this route's name,
+  // which is the trap both the a11y sweep and scripts/compare.mjs guard here.
+  expect(page.url(), 'checkout bounced to the cart; the seed did not stick').toContain('/checkout')
+  expect(cls, `/checkout shifted ${cls.toFixed(4)}`).toBeLessThan(CLS_GOOD)
+})
 
 test('a product page stays under the CLS budget', async ({ page }) => {
   // Through a catalogue link rather than a hardcoded slug: a stale slug 404s,

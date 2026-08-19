@@ -6,9 +6,11 @@ import { readWalletAccountAgorot } from '@/lib/supabase/optional-columns'
 import { createClient } from '@/lib/supabase/server'
 import { getCart } from '@/server/actions/cart'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 import CheckoutForm, { type CheckoutAddressPrefill } from './CheckoutForm'
+import { CheckoutShell } from './CheckoutShell'
 import '@/styles/checkout-page.css'
 
 export const metadata: Metadata = {
@@ -36,6 +38,34 @@ const EMPTY_ADDRESS: CheckoutAddressPrefill = {
  * It still buys the thing that was missing: the response starts immediately
  * instead of after `auth.getUser()`, `getCart()` and three admin queries.
  */
+/**
+ * Live names this route in a breadcrumb above the heading, the cart already
+ * carries the same one, and checkout was the only page of the funnel without
+ * it. Measured on the live /checkout/: `nav.woocommerce-breadcrumb` occupies
+ * y165..236 and the `h1` starts at 237, which is 71px this page did not spend.
+ *
+ * That 71px is the whole of the residual the pixel gate was reading. Ours put
+ * the `h1` at 172 against live's 237 and the yellow login strip at 268 against
+ * live's 335, and `scripts/_offset-scan.mjs` found a single clean minimum at
+ * exactly 67px: sliding the entire page down by that much took the diff from
+ * 12.43% to 9.48%. One offset, not four steps' worth of structure.
+ *
+ * It is rendered in the Suspense shell as well as the body ON PURPOSE. The
+ * shell paints the heading before the cart, the address and the saved cards
+ * are read; a breadcrumb that arrived with the body would drop the `h1` 71px
+ * after first paint, which is the exact shape of the /coupons regression that
+ * scored CLS 0.585.
+ */
+function CheckoutBreadcrumb() {
+  return (
+    <nav className="checkout-page__breadcrumb" aria-label="פירורי לחם">
+      <Link href="/">עמוד הבית</Link>
+      <span aria-hidden="true">›</span>
+      <span aria-current="page">קופה</span>
+    </nav>
+  )
+}
+
 export default function CheckoutPage(props: {
   searchParams: Promise<{ resume?: string; channel?: string }>
 }) {
@@ -43,7 +73,9 @@ export default function CheckoutPage(props: {
     <Suspense
       fallback={
         <div className="checkout-page">
+          <CheckoutBreadcrumb />
           <h1 className="checkout-page__title">קופה</h1>
+          <CheckoutShell />
         </div>
       }
     >
@@ -135,6 +167,7 @@ async function CheckoutPageBody({
 
   return (
     <div className="checkout-page">
+      <CheckoutBreadcrumb />
       <h1 className="checkout-page__title">קופה</h1>
       <CheckoutForm
         cart={cart}
