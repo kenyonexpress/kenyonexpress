@@ -1,3 +1,4 @@
+import { orFail } from '@/lib/catalogue-read'
 import {
   moneyColumnProbe,
   orderMoneySelect,
@@ -128,15 +129,24 @@ export async function getMyOrders(): Promise<OrderSummary[]> {
   const generation = await resolveOrderGeneration(moneyColumnProbe(admin as never))
   // The select string is built at runtime, so the client cannot infer the row
   // shape from it. The cast is confined to this one read.
-  const { data: rows } = await admin
-    .from('orders')
-    .select(
-      `id, status, created_at, paid_at, ${orderMoneySelect(generation)}, order_items(quantity, product_type, settlement_status)`,
-    )
-    .eq('user_id', userId)
-    .is('deleted_at', null)
-    .order('created_at', { ascending: false })
-    .limit(50)
+  // `orFail`, not `const { data }`. The comment above names the failure and the
+  // code used to fall straight into it: the probe fixes the COLUMN NAME cause
+  // of a null `rows`, and does nothing about a timeout, a dropped connection or
+  // a policy change, each of which renders the same "you have no orders" to a
+  // customer who has paid, with nothing in any log.
+  const rows = orFail(
+    await admin
+      .from('orders')
+      .select(
+        `id, status, created_at, paid_at, ${orderMoneySelect(generation)}, order_items(quantity, product_type, settlement_status)`,
+      )
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+      .limit(50),
+    'orders.list_read_failed',
+    { userId },
+  )
 
   type OrderListRow = Record<string, unknown> & {
     id: string
@@ -171,13 +181,19 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
 
   const admin = createAdminClient()
   const generation = await resolveOrderGeneration(moneyColumnProbe(admin as never))
-  const { data: orderRow } = await admin
-    .from('orders')
-    .select(`id, user_id, status, created_at, paid_at, ${orderMoneySelect(generation)}, address_id`)
-    .eq('id', orderId)
-    .eq('user_id', userId)
-    .is('deleted_at', null)
-    .maybeSingle()
+  const orderRow = orFail(
+    await admin
+      .from('orders')
+      .select(
+        `id, user_id, status, created_at, paid_at, ${orderMoneySelect(generation)}, address_id`,
+      )
+      .eq('id', orderId)
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      .maybeSingle(),
+    'orders.detail_read_failed',
+    { orderId, userId },
+  )
   const order = orderRow as unknown as
     | (Record<string, unknown> & {
         id: string
@@ -190,12 +206,18 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
   if (!order) return null
   const money = readOrderMoney(generation, order)
 
-  const { data: items } = await admin
-    .from('order_items')
-    .select(
-      'id, product_id, product_type, supplier_id, quantity, unit_price_agorot, total_price_agorot, paid_on_site_agorot, balance_due_agorot, settlement_status, item_status',
-    )
-    .eq('order_id', order.id)
+  // The worst of the three to discard: the order row carries the total, so a
+  // failed items read rendered a complete-looking order with NO lines in it.
+  const items = orFail(
+    await admin
+      .from('order_items')
+      .select(
+        'id, product_id, product_type, supplier_id, quantity, unit_price_agorot, total_price_agorot, paid_on_site_agorot, balance_due_agorot, settlement_status, item_status',
+      )
+      .eq('order_id', order.id),
+    'orders.items_read_failed',
+    { orderId: order.id },
+  )
 
   const productIds = [
     ...new Set((items ?? []).map((i) => i.product_id).filter((v): v is string => Boolean(v))),
@@ -205,11 +227,12 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
   ]
   const itemIds = (items ?? []).map((i) => i.id)
 
-  const [{ data: products }, { data: suppliers }, { data: coupons }] = await Promise.all([
+  const [productsResult, suppliersResult, couponsResult] = await Promise.all([
     productIds.length > 0
       ? admin.from('products').select('id, name_he, slug, images').in('id', productIds)
       : Promise.resolve({
           data: [] as { id: string; name_he: string; slug: string | null; images: unknown }[],
+          error: null,
         }),
     supplierIds.length > 0
       ? admin
@@ -224,6 +247,7 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
             city: string | null
             contact_phone: string | null
           }[],
+          error: null,
         }),
     // `vouchers`, not `coupon_codes`. The latter is the pre-voucher instance
     // table and nothing has written it since finalize.ts moved to issueVoucher,
@@ -247,8 +271,18 @@ export async function getOrderDetail(orderId: string): Promise<OrderDetail | nul
             redeemed_at: string | null
             order_item_id: string | null
           }[],
+          error: null,
         }),
   ])
+
+  const products = orFail(productsResult, 'orders.detail_products_read_failed', { orderId })
+  const suppliers = orFail(suppliersResult, 'orders.detail_suppliers_read_failed', { orderId })
+  // The one whose absence is indistinguishable from "this coupon was never
+  // issued". It is the page the customer opens AT THE COUNTER, and a discarded
+  // error rendered a coupon line with no code and no QR on an order that had
+  // been paid for - the same defect the /scan lookup carried, through a
+  // different door.
+  const coupons = orFail(couponsResult, 'orders.detail_vouchers_read_failed', { orderId })
 
   const productMap = new Map((products ?? []).map((p) => [p.id, p]))
   const supplierMap = new Map((suppliers ?? []).map((s) => [s.id, s]))
@@ -352,7 +386,10 @@ async function getOrderInvoiceSummary(
     .eq('status', 'issued')
     .maybeSingle()
   // A database without 107 has no invoices and no invoice link, which is what
-  // this page did before the feature existed.
+  // this page did before the feature existed. THE ONE READ IN THIS FILE THAT
+  // KEEPS SWALLOWING, deliberately: the error it is written for is 42P01 on a
+  // table that does not exist yet, and an order page that 500s because the
+  // invoice feature is unapplied would be a worse answer than no link.
   if (error || !data) return null
   const row = data as unknown as { document_number: string | null; issued_at: string | null }
   return { documentNumber: row.document_number, issuedAt: row.issued_at }
