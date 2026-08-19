@@ -1,5 +1,20 @@
 # KenyonExpress — Project State
 
+Updated: 2026-08-19 (docs night on `ke-arch`: QUESTIONS-FOR-OFIR.md)
+
+## המשך מ: docs/LAUNCH-CHECKLIST.md (לילה, docs בלבד)
+
+לילה 19.08, ענף `ke-arch`, אסור לגעת בקוד. תור סגור:
+1. ✅ `docs/QUESTIONS-FOR-OFIR.md`
+2. `docs/LAUNCH-CHECKLIST.md` (הבא)
+3. `docs/MORNING-REPORT.md`
+אחרי 3: `MISSION-FINAL.md` שלב 1 (merge voucher → wallet → supplier → arch-night), לא בלילה הזה.
+
+### החלטות שהתקבלו אוטומטית 19.08 (docs)
+C11(א) נשאר המודל. אין Escrow. soft-launch = קופון בלבד. Google בלבד. Resend+cron בלי QStash. apex קנוני. נתיבי WP קנוניים לעמודים משפטיים. מע"מ לחשבוניות חדשות 18%. payout ידני עד פיזי חי. ראה `docs/QUESTIONS-FOR-OFIR.md`.
+
+---
+
 Updated: 2026-08-10 (autonomous: [68] WhatsApp, geo פר מוצר, ושאריות ה-escrow שעוד שילמו לספק על קופון)
 
 ## דוח סיום — ‏10.08.2026, ‏v1.0.0
