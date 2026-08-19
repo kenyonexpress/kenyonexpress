@@ -399,3 +399,40 @@ test('the cart panel that opens on add-to-cart has no WCAG A/AA violations', asy
     `\n  ${describe(results)}\n`,
   ).toEqual([])
 })
+
+/**
+ * THE INSTALL BANNER, WHICH APPEARS FOR NOBODY THIS SWEEP HAS EVER VISITED AS.
+ *
+ * It renders off a captured `beforeinstallprompt`, which Chrome fires only when
+ * its own install heuristics are satisfied, so it is never on the page during a
+ * normal run and no route list can reach it. It is also the last surface in the
+ * app that paints over the content of every public page -- the cart panel and
+ * the toast were the other two, and the toast was carrying four AA failures.
+ *
+ * The event is synthesised rather than waited for. The component needs nothing
+ * from it but `preventDefault`, and waiting for a real one means never running
+ * this test.
+ */
+test('the install banner has no WCAG A/AA violations', async ({ page }) => {
+  await page.goto('/')
+  await page.waitForLoadState('domcontentloaded')
+
+  await page.evaluate(() => {
+    const event = new Event('beforeinstallprompt') as Event & {
+      prompt: () => Promise<void>
+      userChoice: Promise<{ outcome: string }>
+    }
+    event.prompt = async () => {}
+    event.userChoice = Promise.resolve({ outcome: 'dismissed' })
+    window.dispatchEvent(event)
+  })
+
+  const banner = page.getByRole('region', { name: 'התקנת האפליקציה' })
+  await expect(banner, 'the install banner did not render; nothing was scanned').toBeVisible()
+
+  const results = await scan(page)
+  expect(
+    results.violations.map((v) => `${v.id} x${v.nodes.length}`),
+    `\n  ${describe(results)}\n`,
+  ).toEqual([])
+})

@@ -192,6 +192,36 @@ test.describe('no sideways scroll at 320px', () => {
     ).toBeLessThanOrEqual(321)
   })
 
+  /**
+   * The install banner is `fixed inset-x-3` with an icon, two lines of text and
+   * two buttons in one row, which is the shape that overflows first. It has no
+   * URL and Chrome only fires the event that raises it when its own install
+   * heuristics are met, so it is in no route list and no normal run sees it.
+   */
+  test('the install banner fits 320px', async ({ page }) => {
+    await page.goto('/')
+    await page.waitForLoadState('domcontentloaded')
+    await page.evaluate(() => {
+      const event = new Event('beforeinstallprompt') as Event & {
+        prompt: () => Promise<void>
+        userChoice: Promise<{ outcome: string }>
+      }
+      event.prompt = async () => {}
+      event.userChoice = Promise.resolve({ outcome: 'dismissed' })
+      window.dispatchEvent(event)
+    })
+
+    const banner = page.getByRole('region', { name: 'התקנת האפליקציה' })
+    await expect(banner, 'the install banner did not render; nothing was measured').toBeVisible()
+    await page.waitForTimeout(300)
+
+    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
+    expect(
+      scrollWidth,
+      `the install banner makes the document ${scrollWidth}px wide in a 320px viewport`,
+    ).toBeLessThanOrEqual(321)
+  })
+
   test('a product page fits 320px', async ({ page }) => {
     const href = await firstProductHref(page)
     await page.goto(href)
