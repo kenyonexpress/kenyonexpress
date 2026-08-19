@@ -5,6 +5,7 @@ import CityTag from '@/components/geo/CityTag'
 import FacebookShareButton from '@/components/shared/FacebookShareButton'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import CouponPricing from '@/components/storefront/CouponPricing'
+import { productQuantityCeiling } from '@/lib/cart/format'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
 import { cityByName } from '@/lib/geo/cities'
 import { buildShareMessage } from '@/lib/share/message'
@@ -134,7 +135,11 @@ export default function ProductInfo({
 
   const hasDiscount = oldPrice != null && oldPrice > price
   const discountPct = hasDiscount ? Math.round((1 - price / oldPrice) * 100) : 0
-  const maxQty = stock != null && stock > 0 ? stock : 99
+  // Not `stock ?? 99`. The schema stops a cart line at 99 whatever the shelf
+  // holds, and /product/demo-coupon-1 rendered `max="100"` against it -
+  // measured on a built server. `CART_LINE_MAX_QUANTITY` exists precisely so
+  // this number and the one that rejects the write cannot drift.
+  const maxQty = productQuantityCeiling(stock)
   const blocked = outOfStock || needsVariant || couponUnsellable || priceUnsellable || isPending
 
   const handleAddToCart = async () => {
