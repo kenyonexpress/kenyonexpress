@@ -1,14 +1,14 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-19 (docs night on `ke-arch`: LAUNCH-CHECKLIST.md)
+Updated: 2026-08-19 (docs night on `ke-arch`: MORNING-REPORT.md, queue complete)
 
-## המשך מ: docs/MORNING-REPORT.md (לילה, docs בלבד)
+## המשך מ: MISSION-FINAL שלב 1 (merge supplier + arch-night)
 
-לילה 19.08, ענף `ke-arch`, אסור לגעת בקוד. תור סגור:
+לילה 19.08 **נסגר**. ענף `ke-arch`, docs בלבד, אסור היה לגעת בקוד.
 1. ✅ `docs/QUESTIONS-FOR-OFIR.md`
 2. ✅ `docs/LAUNCH-CHECKLIST.md`
-3. `docs/MORNING-REPORT.md` (הבא)
-אחרי 3: `MISSION-FINAL.md` שלב 1 (merge voucher → wallet → supplier → arch-night), לא בלילה הזה.
+3. ✅ `docs/MORNING-REPORT.md`
+הבא (לא בלילה הזה, דורש קוד): merge `feat/supplier-portal` ואז `docs/architecture-night` אל `phase5/homepage`. voucher+wallet כבר בפנים מ-24.07. אחרי כל merge: טסטים ירוקים. לא להחיל pending SQL על remote.
 
 ### החלטות שהתקבלו אוטומטית 19.08 (docs)
 C11(א) נשאר המודל. אין Escrow. soft-launch = קופון בלבד. Google בלבד. Resend+cron בלי QStash. apex קנוני. נתיבי WP קנוניים לעמודים משפטיים. מע"מ לחשבוניות חדשות 18%. payout ידני עד פיזי חי. ראה `docs/QUESTIONS-FOR-OFIR.md`.
