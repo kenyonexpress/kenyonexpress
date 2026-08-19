@@ -352,3 +352,34 @@ test.describe('the checkout wizard, step by step', () => {
     ).toEqual([])
   })
 })
+
+/**
+ * THE CART PANEL THAT OPENS ON TOP OF EVERYTHING, WHICH NO SWEEP HAS SEEN.
+ *
+ * Every entry in PAGES is a URL, and this panel does not have one. It opens on
+ * add-to-cart, which makes it the FIRST cart most shoppers ever see -- STATE.md
+ * says exactly that, and it is why the disabled-checkout bug there was the
+ * worst surface to leave open. It is also a `role="dialog"`, the one widget
+ * where the accessibility question is not decorative: a name, a reachable
+ * close, and contrast against whatever it covers.
+ *
+ * Both project viewports run this file and they exercise DIFFERENT components:
+ * above 767px the open panel is `MiniCartDropdown`, below it `CartDrawer`.
+ * They share `drawerOpen` and the label "עגלת קניות", and CSS picks between
+ * them, so one test covers both only because both viewports run it.
+ */
+test('the cart panel that opens on add-to-cart has no WCAG A/AA violations', async ({ page }) => {
+  await openPurchasableProduct(page)
+  await addOpenProductToCart(page)
+
+  const panel = page.getByRole('dialog', { name: 'עגלת קניות' })
+  // Adding opens it by itself. If that ever stops being true the scan below
+  // would quietly measure the page with no panel on it, so it is asserted.
+  await expect(panel, 'add-to-cart did not open the cart panel; nothing was scanned').toBeVisible()
+
+  const results = await scan(page)
+  expect(
+    results.violations.map((v) => `${v.id} x${v.nodes.length}`),
+    `\n  ${describe(results)}\n`,
+  ).toEqual([])
+})

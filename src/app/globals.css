@@ -284,3 +284,48 @@ html:not([data-consent="decided"]) body {
    correctly. Every pixel-diff measured against that server was scoring a page
    missing its own design tokens. If brand colours are missing in dev, restart
    the dev server; do not go looking for the bug in a component. */
+
+/* THE FOUR TOAST COLOURS, DARKENED FOR AA.
+ *
+ * `<Toaster richColors />` takes its palette from sonner's own stylesheet, and
+ * all four of its LIGHT pairs miss WCAG AA. Measured against the built page,
+ * not read off the source: the title is 13px at weight 500 and the description
+ * 13px at 400, so 4.5:1 applies to both (14pt bold is 18.66px, and these are
+ * nowhere near it).
+ *
+ *   success  #008a2e on #ecfdf3   4.26:1
+ *   info     #0973dc on #f0f8ff   4.35:1
+ *   error    #e60000 on #fff0f0   4.35:1
+ *   warning  #dc7609 on #fffcf0   3.08:1   <- the worst on the site
+ *
+ * Only the hue's LIGHTNESS moves, by the smallest step that clears 4.5 with a
+ * margin rather than landing on it, which is the same treatment already given
+ * to `--color-sale-badge` and to the checkout step row's #7a7a7a. The
+ * backgrounds and borders are untouched, so the toasts still read as the same
+ * four colours.
+ *
+ *   success  hsl(140, 100%, 25.5%)  4.71:1
+ *   info     hsl(210, 92%, 43.5%)   4.61:1
+ *   warning  hsl(31, 92%, 35.5%)    4.68:1
+ *   error    hsl(360, 100%, 43.5%)  4.62:1
+ *
+ * Sonner's DARK pairs were measured too and all four pass, 6.56 to 12.30, so
+ * they are left alone. That theme is still reachable here: there is no
+ * ThemeProvider in this app, so `useTheme()` returns 'system' and sonner
+ * follows the operating system even though the site itself has no dark mode.
+ *
+ * These were invisible to every gate because a toast has no URL and lives for
+ * four seconds. The a11y sweep sees them now through the cart panel test,
+ * which adds to the cart and therefore raises one.
+ */
+/* `html` is load-bearing and not decoration. Sonner injects its own <style>
+ * into the head at runtime, so it lands AFTER this file's link; at equal
+ * specificity the library wins and the override is silently ignored. Measured:
+ * without the type selector the toast still computed rgb(0, 138, 46). One
+ * element name takes this to (0,2,1) against the library's (0,2,0). */
+html [data-sonner-toaster][data-sonner-theme="light"] {
+  --success-text: hsl(140, 100%, 25.5%);
+  --info-text: hsl(210, 92%, 43.5%);
+  --warning-text: hsl(31, 92%, 35.5%);
+  --error-text: hsl(360, 100%, 43.5%);
+}

@@ -169,6 +169,29 @@ test.describe('no sideways scroll at 320px', () => {
     await width('confirm')
   })
 
+  /**
+   * The cart panel has no URL, so it is in no route list. It opens over the
+   * product page on add-to-cart, at the width where a fixed panel is most
+   * likely to push the document sideways.
+   */
+  test('the open cart panel fits 320px', async ({ page }) => {
+    await openPurchasableProduct(page)
+    await addOpenProductToCart(page)
+
+    const panel = page.getByRole('dialog', { name: 'עגלת קניות' })
+    await expect(
+      panel,
+      'add-to-cart did not open the cart panel; nothing was measured',
+    ).toBeVisible()
+    await page.waitForTimeout(400)
+
+    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
+    expect(
+      scrollWidth,
+      `the open cart panel makes the document ${scrollWidth}px wide in a 320px viewport`,
+    ).toBeLessThanOrEqual(321)
+  })
+
   test('a product page fits 320px', async ({ page }) => {
     const href = await firstProductHref(page)
     await page.goto(href)
