@@ -324,7 +324,6 @@
     width: 50%;
     flex: 0 0 50%;
   }
-
 }
 
 /* Card: measured .product-inner padding 20.006px top / 14px bottom, content
@@ -511,16 +510,16 @@
  * wide against a 320px viewport. A horizontal scrollbar on the whole page, on
  * the narrowest phone still sold, because of one card.
  *
- * Two changes, and the padding alone is not enough: 24px of gutter each side
- * was measured for a 234px column, and 15px is what `.category-page__inner`
- * already uses at this width, but even 115px cannot hold 141. So the row also
- * wraps, and the fixed 36px height goes with it, because a wrapped row inside a
- * fixed height would just clip instead of overflow. */
+ * The row wraps, and the fixed 36px height goes with it, because a wrapped row
+ * inside a fixed height would clip instead of overflow.
+ *
+ * A narrower gutter was tried first and REJECTED on measurement. Dropping the
+ * card's 24px sides to 15px, the value `.category-page__inner` already uses at
+ * this width, does silence the document-width gate. It does not fix the card:
+ * 104 + 37 is still 141 against a 115px content box, so the circle still paints
+ * outside its own card and over the neighbour, where nothing measures it. The
+ * gate would have gone green over a defect it cannot see. */
 @media (max-width: 575px) {
-  .category-card {
-    padding-inline: 15px;
-  }
-
   .category-card__footer {
     flex-wrap: wrap;
     height: auto;

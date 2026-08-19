@@ -166,6 +166,38 @@ body {
   direction: rtl;
 }
 
+/* THE TRUST BAR'S FIVE ITEMS DO NOT FIT ONE ROW ON THE NARROWEST PHONES.
+ *
+ * Each item is a fifth of the row with a 36px icon beside a two-line label, and
+ * the pair measures 68px wide before the 16px of padding on each side. Measured
+ * against the built page:
+ *
+ *   320px  item 64px  document 326px  (+6)
+ *   340px  item 68px  document 344px  (+4)
+ *   360px  item 72px  document 362px  (+2)
+ *   375px  item 75px  document 375px  ok
+ *
+ * A horizontal scrollbar on the home page, on every phone below 375px. No
+ * amount of padding fixes it: the icon alone is 36px and the label will not
+ * shrink past its longest Hebrew word, so 68px cannot go into 64 side by side.
+ * Below 375 the pair stacks instead, which makes the item as wide as its widest
+ * part rather than as wide as their sum.
+ *
+ * The breakpoint is 374 and not a round 400 because 375 upward measures clean,
+ * and a bar that already fits should not be relaid out. */
+.benefit-bar__item {
+  gap: var(--usp-gap);
+  padding-inline: var(--usp-pad);
+}
+
+@media (max-width: 374px) {
+  .benefit-bar__item {
+    flex-direction: column;
+    gap: 2px;
+    padding-inline: 4px;
+  }
+}
+
 /* The consent banner ships in every response so it paints with the HTML rather
    than after hydration - it is the largest element in a phone viewport, so it
    IS the homepage's LCP element and it used to arrive 3.4s after first paint.
