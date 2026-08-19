@@ -313,6 +313,10 @@ SUPABASE_SECRET_KEY blocker and not a regression.
 כל 10 נתיבי ה-cron משתמשים ב-`bearerMatches` ונופלים סגור בלי `CRON_SECRET`.
 ה-webhook של Cardcom מוקשח: יומן ודדופ לפני פעולה, סוד בזמן קבוע, אימות חוזר
 מול `GetLpResult` כמקור האמת היחיד, והשוואת סכום. מסלול הכסף נקי מ-float.
+משטח ה-XSS נקי: ‏9 שימושי `dangerouslySetInnerHTML`, אף אחד לא מוזן מקלט משתמש
+(‏6 ‏JSON-LD דרך `jsonLdScript`, שאומתה כמבריחה `<` ולכן `</script>` אינו ניתן
+ליצירה; אחד סקריפט מקבועים ליטרליים; שתיים הערות שמסבירות הימנעות מכוונת).
+אפס `innerHTML`, ‏`eval`, ‏`document.write` בכל `src/`.
 מניפסט ה-RLS נמדד מחדש מול פרודקשן ב-20.08: ‏53 טבלאות, אפס סחיפה, ‏RLS דלוק על
 כולן. מדיניויות עשר טבלאות הכסף מצמצמות קריאה ל-`auth.uid()`, ולפנקס הכסף
 (`wallet_accounts`, ‏`wallet_entries`, ‏`payments`, ‏`vouchers`,
