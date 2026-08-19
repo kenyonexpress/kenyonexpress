@@ -142,6 +142,11 @@ export default function SiteFooter() {
               type="email"
               name="email"
               required
+              // The site has TWO newsletter fields. `NewsletterSignup` is LTR
+              // and explains why in a comment; this one, the footer's own copy
+              // of the same form, was not - the same address flush left on one
+              // and flush right on the other.
+              dir="ltr"
               placeholder="הזן כתובת Email"
               aria-label="כתובת אימייל לניוזלטר"
               className="min-w-0 flex-1 border-0 bg-white px-5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-black/40"

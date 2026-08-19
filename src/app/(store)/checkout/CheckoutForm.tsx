@@ -462,6 +462,15 @@ export default function CheckoutForm({
                         inputMode="tel"
                         autoComplete="tel"
                         placeholder="05XXXXXXXX"
+                        /*
+                          LTR, like the gift-recipient email a few fields down
+                          already is. A number and an address are Latin on a
+                          Hebrew page; the form around them stays RTL. Measured
+                          before this line: the BUYER's own phone and email
+                          rendered flush right while the RECIPIENT's rendered
+                          flush left, in the same form, on the same screen.
+                        */
+                        dir="ltr"
                         aria-invalid={errorFor('phone') ? 'true' : undefined}
                       />
                       {errorFor('phone') && (
@@ -484,6 +493,7 @@ export default function CheckoutForm({
                         type="email"
                         defaultValue={prefill.email}
                         autoComplete="email"
+                        dir="ltr"
                         aria-invalid={errorFor('email') ? 'true' : undefined}
                       />
                       {errorFor('email') && (
