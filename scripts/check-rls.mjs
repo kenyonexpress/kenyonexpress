@@ -21,6 +21,18 @@
  *   node scripts/check-rls.mjs --sql                # print the query and exit
  *   node scripts/check-rls.mjs --write              # rewrite the manifest's tables
  *
+ * THE WRITE SIDE, which is a different question and therefore a different
+ * query. A policy COUNT cannot say whether a ledger or an audit trail can be
+ * rewritten through PostgREST. `--sql-writes` prints the query for every
+ * non-SELECT policy with its predicates, and `--writes` diffs the result
+ * against `write_policies` in the manifest. The rules those rows must satisfy
+ * live in src/lib/auth/rls-write-policies.test.ts, so they run in CI without a
+ * database; this side re-measures them.
+ *
+ *   node scripts/check-rls.mjs --sql-writes
+ *   node scripts/check-rls.mjs --writes --from rows.json
+ *   node scripts/check-rls.mjs --writes --from rows.json --write
+ *
  * Exit 0 = manifest matches and every rule holds. Exit 1 = drift or a violation.
  */
 
@@ -38,6 +50,13 @@ const QUERY = `select c.relname as table_name,
  where n.nspname = 'public' and c.relkind = 'r'
  order by c.relname`
 
+const WRITE_QUERY = `select tablename, policyname, cmd,
+       coalesce(qual, '') as qual,
+       coalesce(with_check, '') as with_check
+  from pg_policies
+ where schemaname = 'public' and cmd <> 'SELECT'
+ order by tablename, cmd, policyname`
+
 const args = process.argv.slice(2)
 const flag = (name) => args.includes(`--${name}`)
 const value = (name) => {
@@ -47,6 +66,11 @@ const value = (name) => {
 
 if (flag('sql')) {
   console.log(QUERY)
+  process.exit(0)
+}
+
+if (flag('sql-writes')) {
+  console.log(WRITE_QUERY)
   process.exit(0)
 }
 
@@ -108,6 +132,69 @@ async function measure() {
 }
 
 const manifest = JSON.parse(readFileSync(MANIFEST, 'utf8'))
+
+/**
+ * `--writes`: diff the measured non-SELECT policies against the manifest.
+ *
+ * Deliberately does NOT re-implement the rules from
+ * rls-write-policies.test.ts. That test runs in CI on the committed
+ * measurement; this path exists to REFRESH that measurement and to say loudly
+ * when production has moved away from it. Two jobs, one source of truth.
+ */
+if (flag('writes')) {
+  const rows = (await measure())
+    .map((r) => ({
+      tablename: r.tablename,
+      policyname: r.policyname,
+      cmd: r.cmd,
+      qual: r.qual ?? '',
+      with_check: r.with_check ?? '',
+    }))
+    .sort((a, b) =>
+      `${a.tablename}${a.cmd}${a.policyname}`.localeCompare(
+        `${b.tablename}${b.cmd}${b.policyname}`,
+      ),
+    )
+
+  const key = (r) => `${r.tablename}.${r.policyname}.${r.cmd}`
+  const before = new Map((manifest.write_policies?.policies ?? []).map((r) => [key(r), r]))
+  const after = new Map(rows.map((r) => [key(r), r]))
+  const changes = []
+  for (const [k, row] of after) {
+    const old = before.get(k)
+    if (!old) changes.push(`+ ${k}`)
+    else if (old.qual !== row.qual || old.with_check !== row.with_check) {
+      changes.push(`~ ${k}: predicate changed`)
+    }
+  }
+  for (const k of before.keys()) if (!after.has(k)) changes.push(`- ${k}`)
+
+  const named = new Set(rows.map((r) => r.tablename))
+  const closed = manifest.tables.map((t) => t.table_name).filter((t) => !named.has(t))
+
+  if (flag('write')) {
+    manifest.write_policies = {
+      ...manifest.write_policies,
+      no_write_policy: closed,
+      policies: rows,
+    }
+    writeFileSync(MANIFEST, `${JSON.stringify(manifest, null, 2)}\n`)
+    console.log(`write_policies rewritten: ${rows.length} policies, ${closed.length} closed tables`)
+    console.log('($measured_at is NOT touched — set it by hand to the date you measured)')
+    process.exit(0)
+  }
+
+  console.log(`measured ${rows.length} write policies across ${named.size} tables`)
+  console.log(`tables with no write policy at all: ${closed.length}`)
+  if (changes.length) {
+    console.error(`\nFAIL: write_policies is stale (${manifest.write_policies?.$measured_at}):`)
+    for (const line of changes) console.error(`  ${line}`)
+    console.error('\nRe-run with --write and update $measured_at.')
+    process.exit(1)
+  }
+  console.log('\nOK')
+  process.exit(0)
+}
 const measured = (await measure())
   .map((r) => ({
     table_name: r.table_name,
