@@ -61,11 +61,21 @@ the grant is confined to that one table, and RLS is on with an owner policy.
 The `authenticated` grants are broad by Supabase default and RLS is the real
 gate, with one exception worth writing down: **RLS does not apply to TRUNCATE.**
 It is not reachable through PostgREST, so this is defence in depth rather than a
-live exploit, and it is what `126_revoke_authenticated_dml.sql` addresses. That
-file is **not in this directory** either: it is on the unmerged `feat/auth-model`
-branch.
+live exploit, and it is what `126_revoke_authenticated_dml.sql` addresses.
 
-## All eleven files here are genuinely unapplied
+**That file is now here.** It was brought over from `feat/auth-model` on 19.08
+rather than merging the branch, which would also have landed a second
+guard-coverage suite alongside the one already in `src/lib/auth/`. Its central
+measurement was re-checked against production before importing and still holds
+exactly: the eight tables with RLS on and zero policies are
+`legacy_percent_archive_112`, `payment_webhook_events`, `rate_limits`,
+`referral_signals`, `search_index_dlq`, `settlement_events`,
+`stock_reservations`, `user_rate_limits`. It revokes DML on those eight only,
+and deliberately not across the schema: `authenticated` legitimately writes to
+carts, addresses and profiles, and a blanket revoke would break the storefront
+while the RLS policies above it kept passing.
+
+## All twelve files here are genuinely unapplied
 
 Checked object by object against production, not assumed from this file: none of
 `payment_events`, `refunds`, `search_index_outbox`, `supplier_branches`,
