@@ -15,8 +15,14 @@ import { readFileSync } from 'node:fs'
 // true: 45 is the raw publish count and already includes it. Read literally,
 // the old comment told the next reader that a correct 44 was a bug, and the
 // obvious way to "fix" that is to start importing a bookkeeping row as a
-// product. docs/WP-EXPORT-2026-07-29-DRY-RUN.md carries the same off-by-one in
-// its summary; docs/WP-IMPORT-REPORT.md has the arithmetic.
+// product.
+//
+// docs/WP-EXPORT-2026-07-29-DRY-RUN.md says 45 and is NOT making that mistake,
+// which is worth stating because the two numbers sit next to each other and
+// look like a contradiction. It counts PROJECTED products, so it includes the
+// one `draft`: 44 active + 1 draft. This script counts publish only and reports
+// the draft under "products skipped". Both readers agree there are 44 products
+// anyone can buy. docs/WP-IMPORT-REPORT.md has the arithmetic.
 //
 // A reader that reports 28 categories is reading the blog taxonomy; one that
 // reports 45 products has picked up Dokan's bookkeeping row; one that reports
