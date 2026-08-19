@@ -436,7 +436,7 @@ create unique index orders_one_open_per_user_idx
 | `voucher_redemptions` | **כל סריקה, כולל כישלונות** | דה-פקטו |
 | `split_executions` | הפיצול בזמן התשלום | דה-פקטו |
 | `wallet_entries` | תנועות ארנק | ספר חשבונות |
-| `payment_events` | **טיוטה**, `006-payment-events.sql` | **כן, בטריגר** |
+| `payment_events` | **טיוטה**, `120_payment_events.sql` | **כן, בטריגר** |
 
 `voucher_redemptions` היא הטובה שבהן: היא רושמת גם `not_found`, גם `wrong_supplier`
 וגם `rate_limited`, עם `ip_address` ו-`user_agent`. **יומן שרושם רק הצלחות לא

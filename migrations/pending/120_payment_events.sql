@@ -4,6 +4,14 @@
 -- STATUS: DRAFT, NOT APPLIED. Requires Ofir's explicit approval and MCP
 -- apply_migration. Never `db push`.
 --
+-- SUPERSEDES the withdrawn draft `006-payment-events.sql`, which covered the
+-- same ground from a parallel session on this branch. Ofir chose this file on
+-- 2026-08-19. Four things 006 had and this did not have been folded in rather
+-- than lost: the `stage` column, `external_event_id`, `provider`, and the
+-- richer event vocabulary. What was NOT taken from 006 is its `text` +
+-- CHECK-constraint approach to the event type; an enum enforces the same
+-- closed set, is cheaper to compare, and shows up in the generated types.
+--
 -- MEASURED BEFORE WRITING (2026-08-19, src/types/database.ts, the generated
 -- types, which describe production; supabase/migrations/ does not):
 --   payments                : exists. amount_ils, wallet_applied_ils
@@ -29,28 +37,52 @@ DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'payment_event_type') THEN
     CREATE TYPE public.payment_event_type AS ENUM (
+      -- checkout, before the provider is involved
+      'checkout_started',
+      'order_created',
+      'stock_reserved',
+      'stock_reservation_failed',
+      -- hosted page
       'low_profile_requested',   -- BEFORE the outbound call. Shrinks the F2 window.
       'low_profile_created',     -- Cardcom returned a page id
       'low_profile_failed',      -- Cardcom refused to create one
       'redirected',              -- customer sent to the hosted page
-      'token_charge_requested',  -- saved-card path; there is no webhook for this
-      'token_charge_result',     -- its response IS the outcome
+      -- saved-card path; there is no webhook for this at all
+      'token_charge_requested',
+      'token_charge_succeeded',
+      'token_charge_declined',
+      -- callback
       'callback_received',       -- a webhook body arrived (links the journal row)
+      'callback_replay',         -- 23505 on the journal insert: Cardcom sent it twice
       'callback_rejected',       -- secret did not match
-      'verify_requested',        -- GetLpResult call
+      'callback_unknown_payment',-- a Low Profile id we hold no payment for
+      'callback_provider_failure',
+      -- server-to-server verification: OUR finding, not the provider's statement
+      'verify_requested',
       'verify_succeeded',
       'verify_failed',
+      'verify_contradicted_callback',
       'amount_mismatch',         -- verified amount != our expected amount
+      'amount_unreadable',
+      -- closing the order
       'finalize_started',
       'finalize_succeeded',
+      'finalize_replay',
       'finalize_failed',         -- F9: the worst state. Expect replays after this.
-      'dlq_replay_started',
+      'voucher_issued',
+      'voucher_issue_refused',
+      -- money going back out
       'refund_requested',
       'refund_succeeded',
       'refund_failed',
+      'cancellation_fee_applied',
+      'wallet_credited',
+      -- out-of-band findings
+      'dlq_replay_started',
       'reconciliation_matched',
       'reconciliation_missing_locally',
-      'reconciliation_missing_remotely'
+      'reconciliation_missing_remotely',
+      'reconciliation_amount_differs'
     );
   END IF;
 END
@@ -68,12 +100,26 @@ CREATE TABLE IF NOT EXISTS public.payment_events (
   payment_id   uuid REFERENCES public.payments(id) ON DELETE SET NULL,
   order_id     uuid REFERENCES public.orders(id)   ON DELETE SET NULL,
 
+  provider     text NOT NULL DEFAULT 'cardcom',
+
   event_type   public.payment_event_type NOT NULL,
+
+  -- Mirrors the `stage` string capturePaymentAlarm already tags Sentry with
+  -- ('cardcom_webhook_verify', 'cardcom_webhook_finalize', ...). Carrying the
+  -- same token here is what lets an alarm in Sentry be joined to the row that
+  -- caused it without anybody correlating by timestamp.
+  stage        text,
+
   occurred_at  timestamptz NOT NULL DEFAULT now(),
 
   -- Correlation, so a Cardcom-side investigation can start from either end.
   low_profile_id  text,
   transaction_id  text,
+
+  -- Ties back to payment_webhook_events when there WAS a callback. Null is
+  -- meaningful: it says this event had no inbound delivery behind it, which is
+  -- true of every token charge, every cron finding and every operator action.
+  external_event_id text,
 
   -- Integer agorot or NULL. NEVER numeric, never a shekel amount: this column
   -- exists so "we asked for X, they charged Y" is greppable, and the whole
@@ -84,28 +130,33 @@ CREATE TABLE IF NOT EXISTS public.payment_events (
   -- pressed refund. NOT money and NOT status.
   detail       jsonb NOT NULL DEFAULT '{}'::jsonb,
 
-  -- Who caused it. NULL means "the system" (cron, webhook, DLQ).
+  -- Who caused it. NULL means "the system" (cron, webhook, DLQ). actor_role is
+  -- captured at write time rather than joined later, because a role can change
+  -- and the question is always "what were they allowed to do THEN".
   actor_id     uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  actor_role   text,
 
   -- Which deployment wrote it. F2's "written against a different deployment"
   -- is unanswerable today.
-  environment  text
+  environment  text,
+
+  CONSTRAINT payment_events_amount_is_whole_agorot
+    CHECK (amount_agorot IS NULL OR amount_agorot >= 0),
+
+  -- A row with neither a payment nor an order cannot be investigated and is
+  -- therefore not worth storing.
+  CONSTRAINT payment_events_has_an_anchor
+    CHECK (num_nulls(payment_id, order_id) < 2)
 );
 
 COMMENT ON TABLE public.payment_events IS
   'Append-only life history of a payment. NOT a source of truth for status or amount: payments is. Rows are never updated and never deleted.';
 COMMENT ON COLUMN public.payment_events.amount_agorot IS
   'Integer agorot. NEVER shekels, NEVER numeric. Whole-agorot rule, src/lib/money.ts.';
-
-ALTER TABLE public.payment_events
-  ADD CONSTRAINT payment_events_amount_is_whole_agorot
-  CHECK (amount_agorot IS NULL OR amount_agorot >= 0);
-
--- A row with neither a payment nor an order cannot be investigated and is
--- therefore not worth storing.
-ALTER TABLE public.payment_events
-  ADD CONSTRAINT payment_events_has_an_anchor
-  CHECK (num_nulls(payment_id, order_id) < 2);
+COMMENT ON COLUMN public.payment_events.stage IS
+  'The same stage token capturePaymentAlarm tags Sentry with, so an alarm can be joined to the row that caused it.';
+COMMENT ON COLUMN public.payment_events.external_event_id IS
+  'payment_webhook_events.external_event_id when this event had an inbound callback behind it. NULL means it did not, which is true of every token charge and every cron finding.';
 
 -- ---------------------------------------------------------------------------
 -- 3. Append-only, enforced by the database
@@ -129,7 +180,7 @@ CREATE TRIGGER payment_events_no_mutation
   FOR EACH ROW EXECUTE FUNCTION public.payment_events_append_only();
 
 -- ---------------------------------------------------------------------------
--- 4. Indexes: the three questions actually asked
+-- 4. Indexes: the four questions actually asked
 -- ---------------------------------------------------------------------------
 CREATE INDEX IF NOT EXISTS payment_events_payment_idx
   ON public.payment_events (payment_id, occurred_at DESC)
@@ -145,15 +196,23 @@ CREATE INDEX IF NOT EXISTS payment_events_order_idx
 CREATE INDEX IF NOT EXISTS payment_events_failures_idx
   ON public.payment_events (occurred_at DESC)
   WHERE event_type IN (
-    'low_profile_failed','callback_rejected','verify_failed','amount_mismatch',
-    'finalize_failed','refund_failed','reconciliation_missing_locally',
-    'reconciliation_missing_remotely'
+    'low_profile_failed','callback_rejected','callback_unknown_payment',
+    'callback_provider_failure','verify_failed','verify_contradicted_callback',
+    'amount_mismatch','amount_unreadable','finalize_failed',
+    'voucher_issue_refused','refund_failed','token_charge_declined',
+    'stock_reservation_failed','reconciliation_missing_locally',
+    'reconciliation_missing_remotely','reconciliation_amount_differs'
   );
 
 -- Correlation from the Cardcom side.
 CREATE INDEX IF NOT EXISTS payment_events_low_profile_idx
   ON public.payment_events (low_profile_id)
   WHERE low_profile_id IS NOT NULL;
+
+-- Joining a Sentry alarm to its rows.
+CREATE INDEX IF NOT EXISTS payment_events_stage_idx
+  ON public.payment_events (stage, occurred_at DESC)
+  WHERE stage IS NOT NULL;
 
 -- ---------------------------------------------------------------------------
 -- 5. RLS

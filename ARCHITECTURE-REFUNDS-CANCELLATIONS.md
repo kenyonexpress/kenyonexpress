@@ -240,15 +240,26 @@ for the supplier, so nothing to claw back.
 
 | Window | Starts at | Column |
 |---|---|---|
-| 14-day goods cancellation | later of `orders.paid_at` and delivery | `paid_at`; delivery has no timestamp column today (§6) |
+| 14-day goods cancellation | later of `orders.paid_at` and delivery | `paid_at` + `order_items.delivered_at` (**draft 124**) |
 | 14-day service cancellation | later of `orders.paid_at` and disclosure delivery | `paid_at`; `accepted_terms_at` is the closest proxy |
 | 2-day / 7-day pre-service cut | the booked date | **does not exist on `products`** (§6) |
 | 14-day refund deadline | the customer's cancellation **notice** | **does not exist** (§5 draft) |
 | same-clearing-day cancel | `payments.succeeded_at` | exists |
 | voucher expiry | `vouchers.expires_at` | exists, immutable |
 
-Three of those six have no column. That is the honest state of the schema and it
-is why §5 and §6 exist.
+Two of those six still have no column, and one has a draft. That is the honest
+state of the schema and it is why §5 and §6 exist.
+
+**`delivered_at` was drafted on Ofir's decision, 2026-08-19**:
+`migrations/pending/124_order_items_delivered_at.sql`. It adds
+`order_items.shipped_at` and `order_items.delivered_at`, and a
+`order_item_cancellation_deadline(uuid)` function so the account area, the admin
+refund screen and any lateness report cannot disagree about the date. The
+function returns **NULL for a physical line not yet delivered**, which callers
+must read as *the window is still open*, never as *expired*. It does **not**
+backfill: there is no record of when any past order arrived, and inventing one
+would fabricate the start of a statutory clock in the one column whose whole
+purpose is to be legally relied upon.
 
 ### 3.2 Counting days without rest days
 
@@ -566,15 +577,26 @@ Listed because naming a gap is more useful than inventing a column.
 
 | Gap | Consequence | Where it belongs |
 |---|---|---|
-| No delivery timestamp on `order_items` | The goods 14-day window "from receipt" cannot be computed; the code can only use `paid_at`, which is **earlier**, so the window we honour is shorter than the law requires | a `delivered_at` column, alongside the existing `fulfilled_at` |
+| ~~No delivery timestamp on `order_items`~~ | ~~the window we honour is shorter than the law requires~~ | **drafted 2026-08-19**: `migrations/pending/124_order_items_delivered_at.sql`. Not applied. Stamping the columns is still an application change on the supplier's ship/deliver actions |
 | No booked-date field on service products | The 2-day and 7-day pre-service cuts cannot be applied at all | `products.service_date`, plus a boolean for "date-specific leisure" |
 | No cancellation-notice record | The 14-day refund deadline is unmeasurable and unalertable | §5 draft |
 | No extended-window flag on profiles | The 4-month window cannot be honoured automatically | a self-declared status on `profiles`, with proof handled off-platform |
 | `audit_log` is not append-only in the database | The refusal record can be edited | a `BEFORE UPDATE OR DELETE` trigger, per `ARCHITECTURE-ORDER-STATE-MACHINE.md` §8.3 |
 
-The first row is the one that matters most, and it errs in the **wrong**
+The first row was the one that mattered most, and it erred in the **wrong**
 direction: honouring a shorter window than the law grants is a compliance
-failure, not a conservative default.
+failure, not a conservative default. Draft 124 closes the schema half of it. The
+application half, stamping the columns when a supplier marks a line shipped or
+delivered, is a code change and is listed in `MASTER-ARCHITECTURE-v3.md` §5.
+
+**Why not reuse `fulfilled_at`**, which already exists: it is *our* side of the
+transaction. On a coupon line it is stamped at issuance, when nothing has been
+delivered to anybody; on a physical line it is stamped when the supplier says
+they are done, which is the handover to the carrier rather than to the customer.
+The statute asks when the **consumer** received the goods. Overloading one column
+with two questions that differ by days, when the day count is the entire legal
+effect, is the same defect `compare_at_price` / `compare_at_price_ils` exists to
+untangle.
 
 ---
 

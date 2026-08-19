@@ -506,7 +506,7 @@ payload = { v:1, c:code, s:supplier_id, u:user_id, e:expiry_unix, k:key_id }
 ## 11. טיוטת SQL: `payment_events`
 
 ```
-migrations/pending/006-payment-events.sql
+migrations/pending/120_payment_events.sql
 ```
 
 הקובץ נכתב בהרצה הזאת ו**לא הורץ**. הוא יוצר יומן append-only לכל אירוע על
