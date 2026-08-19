@@ -57,6 +57,33 @@ function CartPlusIcon() {
   )
 }
 
+/**
+ * LIVE'S CATCH-ALL CATEGORY HAS NO ROW HERE, SO ITS LINK WENT NOWHERE.
+ *
+ * Four of the 32 cards - the two hotels, the AirPods and the café breakfast -
+ * are labelled "כללי" and carry `slug: 'general'`, copied verbatim from live
+ * along with everything else in the fixture. This catalogue has twelve
+ * categories and none of them is `general`, so `/category/general` was a page
+ * that did not exist. It was invisible while the route answered a soft 200;
+ * once it started answering a real 404 it became a dead link on the home page.
+ *
+ * The LABEL is not touched, because the label is measured: "כללי" is what live
+ * prints and what the comparison gate expects in that box. Only the
+ * destination changes, and "everything we sell" is the honest reading of a
+ * category called general. The anchor, its class and its text are identical,
+ * so this costs nothing in pixels.
+ *
+ * Deliberately NOT the same treatment as the eight dead PRODUCT slugs above:
+ * those are products this catalogue has not imported yet, so their hrefs are
+ * right and merely early. `general` is not early - there is no such category
+ * and no plan for one.
+ */
+const LIVE_CATCH_ALL_CATEGORY = 'general'
+
+function categoryHref(slug: string): string {
+  return slug === LIVE_CATCH_ALL_CATEGORY ? '/products' : `/category/${slug}`
+}
+
 export default function ProductDealCard({ product }: { product: Product }) {
   const thumb =
     Array.isArray(product.images) && typeof product.images[0] === 'string'
@@ -73,7 +100,7 @@ export default function ProductDealCard({ product }: { product: Product }) {
   return (
     <article className="p_con">
       {product.category && (
-        <Link href={`/category/${product.category.slug}`} className="p_con__category">
+        <Link href={categoryHref(product.category.slug)} className="p_con__category">
           {product.category.name_he}
         </Link>
       )}

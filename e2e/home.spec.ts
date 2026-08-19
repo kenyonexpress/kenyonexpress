@@ -363,6 +363,43 @@ test.describe('homepage', () => {
   })
 
   /**
+   * EVERY CATEGORY LINK ON THE HOME PAGE MUST LEAD SOMEWHERE.
+   *
+   * The page carries two sets of hard-coded category hrefs - the five strip
+   * tiles, and one per card in the 32-card deals grid - and neither is derived
+   * from the categories table, so nothing connected them to what exists. Four
+   * of the deal cards are labelled "כללי" and pointed at `/category/general`,
+   * a category this catalogue does not have and has no plan to have.
+   *
+   * It survived because the route answered a soft `200` for an unknown slug.
+   * Nothing that looked at status codes could see it, INCLUDING "reaching the
+   * footer costs no 404s" - and that test still cannot see it, because a
+   * category link on this page is never prefetched. So the links are collected
+   * and requested outright.
+   */
+  test('every category link on the home page resolves', async ({ page, request }) => {
+    await page.goto('/')
+    const hrefs = [
+      ...new Set(
+        await page
+          .locator('a[href^="/category/"]')
+          .evaluateAll((as) => as.map((a) => a.getAttribute('href') ?? '')),
+      ),
+    ].filter(Boolean)
+
+    // The strip alone is five, so an empty list means the selector broke rather
+    // than that the page is clean.
+    expect(hrefs.length).toBeGreaterThanOrEqual(5)
+
+    const dead: string[] = []
+    for (const href of hrefs) {
+      const status = (await request.get(href)).status()
+      if (status !== 200) dead.push(`${status} ${href}`)
+    }
+    expect(dead, dead.join(', ')).toEqual([])
+  })
+
+  /**
    * The homepage ships ONE stylesheet.
    *
    * Every stylesheet imported by a route segment becomes its own chunk and its
