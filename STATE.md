@@ -61,13 +61,54 @@ Updated: 2026-08-10 (autonomous: [68] WhatsApp, geo פר מוצר, ושאריו�
 
 ---
 
-## המשך מ: תור ארכיטקטורה לילי (docs/architecture-night), התור הושלם
+## המשך מ: אין. תור הארכיטקטורה הלילי הושלם.
+
+### שלוש החלטות של אופיר, 2026-08-19, בוצעו
+
+1. **כפילות `payment_events` הוכרעה.** ‏`migrations/pending/120_payment_events.sql`
+   נשמר, ‏`006-payment-events.sql` **נמחק** (מחיקת קובץ באישור מפורש). ארבעה
+   דברים שהיו רק ב-006 קופלו פנימה ולא אבדו: `stage`, ‏`external_event_id`,
+   ‏`provider`, ואוצר מילים רחב יותר של אירועים. שתי הפניות ל-006 ב-`docs/`
+   הופנו מחדש ל-120.
+2. **`delivered_at` נוסף כטיוטה:** ‏`migrations/pending/124_order_items_delivered_at.sql`.
+   מוסיף `shipped_at` ו-`delivered_at` ל-`order_items`, שני CHECK,
+   אינדקס חלקי, ופונקציה `order_item_cancellation_deadline(uuid)` כדי ששלושת
+   הקוראים לא יחלקו על התאריך. **בלי backfill.** לא הורצה.
+3. **‏rate limiting = Upstash Redis.** ‏`ARCHITECTURE-SECURITY-HARDENING.md` §1
+   נכתב מחדש: ההחלטה, מה שהקוד עושה **היום** (Postgres RPCs, נמדד), והמסלול
+   ביניהם. ההתנגדות הישנה "ספק חדש" **נמשכה**: ‏Upstash כבר בסטאק דרך QStash.
+   ‏`UPSTASH_REDIS_REST_URL`/`_TOKEN` נוספו לרשימת הסודות.
+
+### מה נשאר לפני הרצה של הטיוטות
+
+- **‏`007-order-transition-guard.sql` של הסוכן השני לא נבדק לעומק.** הוא לא
+  כפילות של 120, אבל צריך לעבור עליו.
+- אף אחת מחמש הטיוטות (`120`, `121`, `122`, `123`, `124`) **לא הורצה**, ואף אחת
+  לא תרוץ בלי אישור מפורש ודרך MCP `apply_migration`.
+- **‏`PENDING-money-integer-fix.sql` עדיין מסוכן להריץ מוקדם:** ‏55 קבצים קוראים
+  את השמות הישנים.
+
+### עשרת המסמכים, ענף `docs/architecture-night`
+
+בשורש: `ARCHITECTURE-CHECKOUT-CARDCOM-E2E`, `ARCHITECTURE-ORDER-STATE-MACHINE`,
+`ARCHITECTURE-REFUNDS-CANCELLATIONS`, `ARCHITECTURE-ADMIN-PRODUCT-FORM`,
+`ARCHITECTURE-SEARCH-DISCOVERY`, `ARCHITECTURE-GEO-LOCATION`,
+`ARCHITECTURE-WP-IMPORT-PIPELINE`, `ARCHITECTURE-OBSERVABILITY`,
+`ARCHITECTURE-SECURITY-HARDENING`, `MASTER-ARCHITECTURE-v3`.
+
+**‏v3 §0.2 מחזיק את טבלת "מה דורס מה". שום מסמך ישן לא נמחק.**
+
+**אזהרה שנרשמה ב-v3 §0.3:** בלילה הזה רץ סוכן שני על **אותו ענף ואותו worktree**,
+כתב את אותו תור אל `docs/`, וה-`git add -A` שלו בלע קובץ שלי לתוך קומיט שלו.
+התוכן שלם, ההיסטוריה מטעה. **סוכן שני = worktree נפרד וענף נפרד.**
+
+## תור ארכיטקטורה לילי (docs/architecture-night) — הושלם
 
 תור סגור בן 10 מסמכים, ענף `docs/architecture-night`, worktree `ke-arch-night`.
 **מסמכים בלבד.** אין נגיעה ב-`src/`, אין נגיעה במיגרציה קיימת, אין הרצת SQL.
 
 1. ✅ `docs/ARCHITECTURE-CHECKOUT-CARDCOM-E2E.md` (578 שורות) + טיוטה
-   `migrations/pending/006-payment-events.sql` (לא הורצה).
+   `migrations/pending/120_payment_events.sql` (לא הורצה; 006 נמחק, ראה למעלה).
    **תיקון לשם שנרשם כאן מראש:** התיקייה `migrations/pending/` ממספרת `003-`,
    `004-`, `005-` ובמפורש אינה חלק משרשרת `NNN_` של `supabase/migrations`, ולכן
    הקובץ הוא `006-` ולא `120_`. ה-✅ שהופיע כאן לפני שהמסמך נכתב היה תוכנית,

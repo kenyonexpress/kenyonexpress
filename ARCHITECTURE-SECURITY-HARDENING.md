@@ -34,11 +34,31 @@ Migrations: `103_lock_definer_views_and_rpcs`, `104`, `105`, `111_revoke_anon_wr
 
 ## 1. Rate limiting
 
-### 1.1 What actually exists
+### 1.0 The decision
 
-**Postgres, not Redis.** Measured: `UPSTASH`, `redis` and `Redis` appear nowhere
-in `src` outside the QStash publisher, and there is a test that pins that fact
-(`src/lib/health/checks.test.ts`).
+**Rate limiting is Upstash Redis.** Ofir, 2026-08-19. This section documents that
+decision, the state the code is in today, and the path between them.
+
+The objection an earlier draft of this document raised, that Upstash would be a
+new vendor, a new secret and a new failure mode, is **withdrawn**. Upstash is
+already in this stack: QStash carries every search-index job, its signing keys
+are already provisioned and rotated, and `src/lib/search/qstash.ts` already
+speaks to it SDK-free over plain fetch. Adding Redis is a second product from a
+vendor already onboarded, not a new dependency, and the argument against it was
+weighing a cost that has already been paid.
+
+### 1.1 What the code does today
+
+**Postgres, not Redis, at the time of writing.** Measured 2026-08-19:
+
+```
+package.json          no @upstash/redis, no @upstash/ratelimit
+src/, scripts/        no UPSTASH_REDIS_*, no Ratelimit, no createClient from redis
+.env.example          Upstash appears once, for QSTASH_* only
+```
+
+There is also a test pinning the current shape
+(`src/lib/health/checks.test.ts`), which will need updating with the code.
 
 ```
 check_rate_limit(p_key, p_max_attempts, p_window_seconds)        -> rate_limits
@@ -47,7 +67,12 @@ check_user_rate_limit(p_user_id, p_action, p_limit, p_window)    -> user_rate_li
 
 Two tables, two RPCs, called through `checkRateLimit` and `checkUserRateLimit`.
 
-### 1.2 It fails **open**, deliberately
+This is stated plainly because a security document that describes a limiter the
+deployment does not run is worse than no document: it would tell a reader that a
+control is in place when the control is somewhere else, with different failure
+behaviour. **Until the migration below lands, §1.2 is the live behaviour.**
+
+### 1.2 The current limiter fails **open**
 
 ```ts
 if (error) {
@@ -56,15 +81,19 @@ if (error) {
 }
 ```
 
-An unavailable limiter must not block legitimate users. This is the correct
-trade for a limiter protecting **cost and abuse**, and it is the **wrong** trade
-for a limiter protecting **money or credentials**.
+An unavailable limiter must not block legitimate users. That is the correct
+trade for a limiter protecting **cost and abuse**, and the **wrong** trade for a
+limiter protecting **money or credentials**.
 
-Consequence, stated plainly: **if the database is degraded, the voucher scan
-endpoint and the checkout action are unthrottled.** For those two, failing
-closed is the safer default, and §1.5 says so.
+Consequence, stated plainly: **while the limiter shares a database with
+everything else, a degraded Postgres leaves the voucher scan endpoint and the
+checkout action unthrottled.** That is the sharpest single argument for moving
+to Redis, and it is a stronger one than latency: a limiter that fails in
+lockstep with the thing it protects is not an independent control.
 
-### 1.3 Where limits are applied today
+### 1.3 Where limits are applied
+
+Unchanged by the move; only the store changes.
 
 | Surface | Keyed by | Note |
 |---|---|---|
@@ -86,21 +115,52 @@ is a shared bucket that a distributed client can occupy on purpose. Anything
 security-critical must be keyed by **user or supplier**, never by IP alone,
 which is why the two money surfaces above are.
 
-### 1.5 Recommended changes, in priority order
+### 1.5 The migration to Upstash Redis
 
-1. **Fail closed on the two money surfaces.** Voucher redemption and checkout
-   should refuse rather than allow when the limiter is unreachable. A customer
-   retrying in ten seconds is a worse outcome than an unthrottled scan endpoint
-   during a database incident.
-2. **Add a Redis limiter only if measurement demands it.** Upstash Redis would be
-   faster and would survive a Postgres incident, but it is a **new dependency,
-   a new secret and a new failure mode**, and the current limiter has not been
-   measured as a bottleneck. Adding it "for correctness" would trade a known
-   trade-off for an unknown one.
-3. **Key the scan endpoint by supplier member and by voucher code**, so probing
-   many codes from one device is caught even at a normal per-request rate.
+Four properties the new limiter must have, in priority order. The first is the
+reason for the move; the rest are what makes it safe.
 
----
+1. **Independent of Postgres.** The point is that a database incident no longer
+   disables the control that protects the database.
+2. **Fail closed on the two money surfaces.** Voucher redemption and checkout
+   refuse when the limiter is unreachable. A customer retrying in ten seconds is
+   a better outcome than an unthrottled scan endpoint during an incident.
+   Search and suggest keep failing **open**: an unreachable limiter must not
+   take the catalogue down.
+3. **Sliding window, not fixed.** A fixed window lets a client spend a full
+   budget at 09:59:59 and another at 10:00:00. Upstash's sliding-window
+   algorithm is the one to configure.
+4. **SDK-free, like every other HTTP integration here.** Cardcom, Meilisearch
+   and QStash are all plain `fetch`, and the REST API is two calls. A dependency
+   that can break is a dependency that can break the limiter.
+
+Composite keys, so probing is caught even at a per-request rate that looks
+normal:
+
+```
+ratelimit:scan:<supplier_member_id>
+ratelimit:scan:<voucher_code_prefix>    <- many codes from one device
+ratelimit:checkout:<user_id>
+ratelimit:search:<ip>
+```
+
+New environment variables, which join the launch secret list in §5:
+
+```
+UPSTASH_REDIS_REST_URL
+UPSTASH_REDIS_REST_TOKEN
+```
+
+**What happens to the Postgres tables.** `rate_limits` and `user_rate_limits`
+stay until the Redis limiter has run in production long enough to be trusted,
+then are dropped in their own migration. Dropping them in the same change that
+introduces the new store would leave no fallback on the day it is most likely to
+be needed. No migration draft is written for the drop here, because the date
+that decides it has not happened yet.
+
+**This is a code change and this branch does not touch `src/`.** It is listed in
+`MASTER-ARCHITECTURE-v3.md` §5 as item 4, now carrying Ofir's decision rather
+than a recommendation.
 
 ## 2. Webhook authentication
 
@@ -320,6 +380,7 @@ buckets, reached through signed URLs.
 | `RESEND_API_KEY` | send mail as us |
 | `R2_SECRET_ACCESS_KEY` | write to the media bucket |
 | `SENTRY_AUTH_TOKEN` | build-time only |
+| `UPSTASH_REDIS_REST_TOKEN` | read and write the rate-limit store. **Pending the §1.5 migration** |
 
 ### 5.2 Rules
 
@@ -525,7 +586,7 @@ physically in a shop. Controls:
 |---|---|---|---|
 | 1 | **CSP allows `unsafe-inline`** | XSS | a nonce generated in `src/proxy.ts` with `strict-dynamic` |
 | 2 | **`supabase_admin` default privileges still grant `anon` everything** on dashboard-created tables | a new table is world-writable and nothing reports it | a privileged connection; until then, re-run 111 §2 after any dashboard table |
-| 3 | **Rate limiting fails open on money surfaces** | unthrottled scan and checkout during a database incident | fail closed on those two |
+| 3 | **Rate limiting fails open on money surfaces, and shares a database with what it protects** | unthrottled scan and checkout during a database incident | move to Upstash Redis and fail closed on those two. **Decided 2026-08-19.** §1.5 |
 | 4 | `audit_log` is append-only by convention only | the record of a decision can be edited | a `BEFORE UPDATE OR DELETE` trigger, per draft 120's pattern |
 | 5 | Branch protection does not enforce | every push in the last run printed `Bypassed rule violations for refs/heads/main` | a GitHub settings change |
 | 6 | Vercel treats `cursor/add-supabase-3c830` as production, not `main` | a deploy could ship an unreviewed branch | verify before any deploy |
