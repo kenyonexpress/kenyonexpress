@@ -326,6 +326,96 @@ const shoot = async (url, out) => {
       return /(סל|עגל)[^.]{0,20}ריק|אין מוצרים בסל|cart is currently empty/i.test(text)
     })
   }
+  // Same rule as the cart guard above, for the page where it bites hardest.
+  //
+  // MEASURED, 2026-08-19: `--page=category` scored 17.26% against
+  // /product-category/hot-deals/ and the number was not a design measurement at
+  // all. Live holds TWO products in that category and says so
+  // ("מציגים את כל 2 התוצאות"); our seed holds THIRTEEN and paginates
+  // ("מציג 1-12 מתוך 13 תוצאות"). One row of cards was being scored against
+  // three rows of cards, so most of the mismatch was the grid existing where
+  // live has footer, and none of it was a token anybody could move.
+  //
+  // The counts are read off the two shapes the sides actually use: WooCommerce
+  // renders `li.product`, ours renders `article`. Neither side has both, so the
+  // union counts each card exactly once.
+  if (page === 'category' || page === 'products') {
+    gridCounts[external ? 'live' : 'mine'] = await p.evaluate(
+      () => document.querySelectorAll('li.product, article').length,
+    )
+  }
+  // EVERY IMAGE BELOW THE FOLD MUST BE ASKED FOR BEFORE THE PAGE IS SHOT.
+  //
+  // `fullPage: true` captures past the viewport without ever scrolling, so
+  // nothing below the fold is intersected and nothing lazy is fetched. Both
+  // sides lazy-load: live is WooCommerce with `loading="lazy"` on the catalogue,
+  // ours is next/image, which does the same. The capture therefore contains
+  // whichever images happened to be in flight when the timer expired, and that
+  // set is different on every run.
+  //
+  // Measured on 2026-08-19, same build, same URLs, no scroll pass:
+  // --page=category returned 17.26% and 18.51% on two consecutive runs, and the
+  // band crop showed live's product grid as blank boxes where ours had photos.
+  // The 8.45% recorded for the same page earlier the same morning was produced
+  // the same way. A gate cannot swing nine points on which images loaded.
+  //
+  // Scroll the whole page in viewport steps, wait for the images to actually
+  // finish, then return to the top. Placed before the hero freeze on purpose:
+  // scrolling advances live's slider, so the freeze has to be the last thing
+  // that happens before the shutter.
+  await p
+    .evaluate(async () => {
+      const step = window.innerHeight
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      for (let y = 0; y < document.body.scrollHeight; y += step) {
+        window.scrollTo(0, y)
+        await sleep(120)
+      }
+      window.scrollTo(0, document.body.scrollHeight)
+      await sleep(300)
+      // decode() rather than the `complete` flag: a lazy image that has just
+      // been asked for reports complete=false, and one that failed reports
+      // complete=true with zero natural width. Both are settled states and
+      // neither is worth waiting on, so failures resolve rather than reject.
+      const decodeAll = () =>
+        Promise.all(
+          [...document.images].map((img) =>
+            img.decode ? img.decode().catch(() => {}) : Promise.resolve(),
+          ),
+        )
+      await decodeAll()
+      // THE PAGE IS NOT READY UNTIL ITS HEIGHT STOPS GROWING.
+      //
+      // MEASURED, 2026-08-19. The scroll pass above fixed WHICH images loaded
+      // and left WHEN the page finished alone, and that was the larger hole.
+      // Three consecutive `--page=home` runs against one build and one live URL:
+      //
+      //   live 5492px -> 9.83%   live 5492px -> 9.83%   live 3730px -> 34.54%
+      //
+      // The 34.54% run is not a regression and not a flake in the diff. It is
+      // the live homepage screenshotted while 1762px of it had not arrived, so
+      // our footer was scored against live's mid-page. `--page=category` threw
+      // the same 3730px outlier the same morning and printed 25.58% for it.
+      //
+      // The existing structural guard could not catch either: it compares the
+      // two SIDES to each other, and 3730/5679 is 0.66, inside its 0.62-1.6
+      // band. So the page is now settled against ITSELF - re-measured until two
+      // consecutive readings agree - which is the only signal available without
+      // a stored per-page baseline.
+      let previousHeight = -1
+      for (let attempt = 0; attempt < 8; attempt++) {
+        const height = document.body.scrollHeight
+        if (height === previousHeight) break
+        previousHeight = height
+        window.scrollTo(0, height)
+        await sleep(500)
+        await decodeAll()
+      }
+      window.scrollTo(0, 0)
+      await sleep(400)
+    })
+    .catch(() => {})
+
   // Stop the hero before shooting.
   //
   // OUR slider no longer autoplays unless the visitor has pressed something
@@ -366,6 +456,7 @@ const shoot = async (url, out) => {
 }
 
 const cartEmptiness = { live: null, mine: null }
+const gridCounts = { live: null, mine: null }
 
 if (page === 'checkout' || (page === 'cart' && !CART_EMPTY_ONLY)) {
   // Local first. Seeding live first left the next navigation in this context
@@ -393,6 +484,25 @@ if (page === 'cart' && cartEmptiness.live !== cartEmptiness.mine) {
 }
 if (page === 'cart' && cartEmptiness.mine) {
   console.log('cart: measuring the EMPTY state on both sides.')
+}
+
+// A grid of 13 scored against a grid of 2 produces a percentage, and the
+// percentage is about the catalogue rather than the design. Refuse it, the same
+// way the cart refuses two different cart states, and name both counts so the
+// reader can see which side to change. COMPARE_ALLOW_GRID_MISMATCH=1 measures
+// it anyway, for the run that only wants the header and footer bands.
+if (
+  (page === 'category' || page === 'products') &&
+  gridCounts.live !== gridCounts.mine &&
+  process.env.COMPARE_ALLOW_GRID_MISMATCH !== '1'
+) {
+  console.error(
+    `REFUSING to measure: live shows ${gridCounts.live} product cards and the local page shows ${gridCounts.mine}.`,
+  )
+  console.error(
+    'Seed the two catalogues to the same count, pin a category that already matches, or run with COMPARE_ALLOW_GRID_MISMATCH=1 to score the mismatch deliberately.',
+  )
+  process.exit(3)
 }
 copyFileSync('refs/live.png', `refs/live-${page}.png`)
 copyFileSync('refs/mine.png', `refs/mine-${page}.png`)
