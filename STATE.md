@@ -1,21 +1,59 @@
-גל 1 נסגר (tag autopilot-2026-08-12); גל DB HARDENING בתור, שלב 10
+גל DB HARDENING נסגר (שלבים 10-15); גל COUPON STOREFRONT בתור, שלב 16
 
 # KenyonExpress — Project State
 
-Updated: 2026-08-12 (גל DB HARDENING אושר, תור שלבים 10–15)
+Updated: 2026-08-19 (גל DB HARDENING הוחל על פרודקשן דרך MCP)
 
-## המשך מ: שלב 10
+## המשך מ: שלב 16
 
-### גל DB HARDENING (אושר 12.08, apply_migration דרך MCP מותר לשלבים 10–13 בלבד)
+### גל DB HARDENING (אושר 12.08, הוחל 19.08 דרך MCP apply_migration)
 
-10. ⏳ auth_rls_initplan (~40): עטיפת `auth.uid()`/`auth.jwt()` ב-`(select ...)`
-11. ⏳ multiple_permissive_policies (~72): איחוד ל-policy אחת
-12. ⏳ duplicate_index (4) + אינדקסי FK (35)
-13. ⏳ REVOKE EXECUTE מ-anon על RPC שלא נקרא מ-anon
-14. ⏳ `refs/unused-indexes-report.md` (90 unused, בלי מחיקה)
-15. ⏳ advisors חוזר אחרי כל מיגרציה + type-check + טסטים
+החסימה מ-12.08 הוסרה: בסשן של 19.08 שרת ה-MCP של Supabase כן זמין
+(`claude_ai_Supabase`, פרויקט `ixvwfbuvfxxsjiywhbbb`), ולכן `get_advisors`
+ו-`apply_migration` רצו באמת. אף מיגרציה לא נבנתה משחזור של היסטוריית הקבצים
+בריפו, אלא נקראה מהקטלוג החי, כי ההיסטוריה איננה מה שרץ בפרודקשן.
 
-**חסימה נוכחית:** בסשן הזה אין שרת MCP של Supabase (`plugin-supabase-supabase` לא זמין), ו-`SUPABASE_SECRET_KEY` ב-`.env.local` הוא מפתח `iss=supabase-demo` שנדחה בפרודקשן. בלי `get_advisors` ובלי `apply_migration` אי אפשר להחיל. מכינים את קבצי המיגרציה מהמקור בריפו וממתינים ל-MCP.
+10. ✅ auth_rls_initplan: 40 → 0. ‏`119` עטף 41 policies ב-`(select ...)` דרך
+    `ALTER POLICY`, שמשנה רק USING/WITH CHECK ולכן FOR/TO/PERMISSIVE לא זזים.
+    ‏`119b` סגר את החצי השני של אותו lint, ‏`current_setting()` ב-`carts`.
+11. ✅ multiple_permissive_policies: 72 → 13. ‏`120` איחד 19 קבוצות בעלות
+    טבלה+פעולה+תפקיד זהים (45 policies → 19). ‏`121` פרש policies של `FOR ALL`
+    לפי פעולה ואיחד גם חוצה-תפקידים, אבל רק כשבטוח.
+12. ✅ duplicate_index 4 → 0 ו-unindexed_foreign_keys 35 → 0. ‏`122` מחק את
+    ארבעת הכפולים ויצר 44 אינדקסי FK.
+13. ✅ ‏`123`. אף אחת מארבע הפונקציות שהשלב נקב בהן לא נשללה, כי כולן נקראות
+    מ-anon בפועל. במקומן נשללו 5 שבאמת מתות.
+14. ✅ `refs/unused-indexes-report.md`, 90 אינדקסים עם המלצה פר אחד, בלי מחיקה.
+15. ✅ advisors אחרי כל מיגרציה, `pnpm type-check` נקי, 2397 טסטים ירוקים.
+
+**‏13 ה-overlaps שנשארו הם החלטה, לא שארית.** איחוד שלהם היה מחייב policy
+שקוראת ל-`has_role()`, ‏`current_user_role()` או `is_support()` להיות `TO public`,
+ול-anon אין `EXECUTE` על אף אחת מהן. מדוד בפרודקשן: ל-anon יש EXECUTE רק על
+`is_admin` ו-`is_supplier_member`. ‏policy איננה בדיקת הרשאה שמחזירה false בשקט
+כשאין הרשאה, אלא נכשלת: קריאת products אנונימית עברה מ-61 שורות ל-
+`permission denied for function is_admin` בבדיקה שגולגלה לאחור. איחוד כזה היה
+הופך כל דף מוצר אנונימי לשגיאה.
+
+**מה שלב 13 מצא.** ‏`is_admin` ו-`is_supplier_member` נקראות מתוך 30 policies
+שהן `TO public`, כולל `products_select_public` ו-`categories_select_public`.
+‏`check_rate_limit` נקראת דרך `createClient()` מ-`/redeem/[token]`, ‏`/api/search`,
+‏`/api/search/suggest`, ‏`/api/a` ו-`/api/app/session`, כולן לפי IP דווקא מפני
+שהקורא אנונימי, ו-`checkRateLimit` נכשלת פתוח, כך ששלילה הייתה מכבה הגבלת קצב
+בשקט בדיוק לתעבורה שבגללה היא קיימת. ‏`fn_record_recent_search` נקראת מדף
+`/search` עם הלקוח של הקורא. במקומן נשללו `set_updated_at`,
+`set_coupon_deals_updated_at`, `set_vendors_updated_at`,
+`tg_products_track_stock_initial` ו-`voucher_scan_ip`, ‏**מ-PUBLIC ולא רק מ-anon**,
+כי ל-חמשתן הייתה הרשאת PUBLIC שברירת המחדל נותנת ושלילה מ-anon לבדה לא הייתה
+משנה דבר. ל-`authenticated` יש הרשאה מפורשת ולכן היא נשמרה, והמיגרציה בודקת זאת
+בעצמה ונכשלת אם לא.
+
+**‏unused_index עלה 90 → 131 בכוונה.** אלה 88 ששרדו מהמקור ועוד 44 אינדקסי ה-FK
+שנוצרו ב-122, פחות אחד שנסרק מאז. אינדקס שכל תפקידו במסלול הכתיבה תמיד ייראה
+"לא בשימוש" ל-lint הזה, ולכן `unindexed_foreign_keys` הוא המדד הנכון כאן.
+
+**ענף העבודה בסשן הזה: `feat/product-type`.** ‏CLAUDE.md קובע `main` כענף הקבוע.
+לא הועבר, כי הסשן נפתח על `feat/product-type` ויש סוכנים נוספים על אותו repo;
+מיזוג ל-main הוא החלטה שצריכה להילקח כשלא רצים שני סוכנים.
 
 ### AUTOPILOT תור סגור (2026-08-12) — סיום גל 1
 

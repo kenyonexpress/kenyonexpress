@@ -67,5 +67,10 @@ refs/*
 !refs/ke_live_singlefile.html
 !refs/ke_live_*.png
 
+# Written reports that belong to the repo rather than to one run. The advisor
+# index report is read alongside the migrations that acted on the same advisors,
+# so it ships with them.
+!refs/*-report.md
+
 # WordPress import run artifacts (raw payloads, normalized rows, reports, logs)
 wp_import/
