@@ -195,3 +195,53 @@ describe('POST /api/supplier/vouchers/lookup', () => {
     expect(getVoucherForRedemption).toHaveBeenCalledWith('ABCDEFGHJK', ['sup-1', 'sup-2'])
   })
 })
+
+/**
+ * A READ THAT FAILED IS NOT A VOUCHER THAT DOES NOT EXIST.
+ *
+ * `getVoucherForRedemption` discarded its `error`, so a failed read arrived
+ * here as `null` - the same value another supplier's voucher produces - and
+ * this route answered it the way it answers a code that was never issued:
+ * `not_found`, 404, and a row written to the refusal log saying so.
+ *
+ * Both halves are wrong at a till. The customer standing there has PAID for
+ * the voucher, and is sent away; and the refusal log, which exists so a
+ * disputed scan can be reconstructed later, is left holding a record that says
+ * the code did not exist when in fact nothing was ever looked up.
+ *
+ * So the query layer throws, and this route catches that specific case and
+ * says "temporarily unavailable" instead - which is also the one outcome the
+ * cashier can act on, by scanning again in a moment.
+ */
+describe('POST /api/supplier/vouchers/lookup when the read itself fails', () => {
+  it('does not report a paid voucher as not found', async () => {
+    getVoucherForRedemption.mockRejectedValue(new Error('voucher.read_failed: statement timeout'))
+
+    const res = await POST(post({ code: 'ABCDEFGHJK' }))
+    const body = await res.json()
+
+    expect(body.outcome).toBe('unavailable')
+    expect(res.status).toBe(503)
+  })
+
+  it('does not write a refusal saying the code does not exist', async () => {
+    getVoucherForRedemption.mockRejectedValue(new Error('voucher.read_failed: statement timeout'))
+
+    await POST(post({ code: 'ABCDEFGHJK' }))
+
+    expect(recordRefusedScan, 'nothing was refused; nothing was even read').not.toHaveBeenCalled()
+  })
+
+  it('still records a refusal for a code that genuinely is not there', async () => {
+    // The negative control: refusing to log on an ERROR must not turn into
+    // refusing to log at all, or the forged-QR trail goes with it.
+    getVoucherForRedemption.mockResolvedValue(null)
+
+    const res = await POST(post({ code: 'ABCDEFGHJK' }))
+
+    expect(res.status).toBe(404)
+    expect((await res.json()).outcome).toBe('not_found')
+    expect(recordRefusedScan).toHaveBeenCalledTimes(1)
+    expect(recordRefusedScan.mock.calls[0]?.[0]).toMatchObject({ outcome: 'not_found' })
+  })
+})

@@ -147,7 +147,23 @@ async function RedeemTokenBody({ params }: Props) {
   }
 
   const supplierIds = await getSupplierMemberships()
-  const voucher = await getVoucherForRedemption(code, supplierIds)
+
+  // A READ THAT FAILED IS NOT A VOUCHER THAT DOES NOT EXIST. Without this the
+  // failure took the branch below: a customer who has already paid is told the
+  // code is not theirs, and a refusal row is written saying so - into the log
+  // that exists so a disputed scan can be reconstructed. The throw is already
+  // logged, once, by the query.
+  let voucher: Awaited<ReturnType<typeof getVoucherForRedemption>>
+  try {
+    voucher = await getVoucherForRedemption(code, supplierIds)
+  } catch {
+    return (
+      <Refusal
+        title="לא ניתן לבדוק את השובר כרגע"
+        detail="התרחשה תקלה זמנית בקריאת השובר. נסו לסרוק שוב בעוד רגע; לא בוצע שום שינוי בשובר."
+      />
+    )
+  }
 
   if (!voucher) {
     await recordRefusedScan({

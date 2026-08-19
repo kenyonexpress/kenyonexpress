@@ -259,6 +259,12 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
               />
             </dl>
           </>
+        ) : lookup.outcome === 'unavailable' ? (
+          // Not the hint below: that one blames the code, and this outcome
+          // means the platform never managed to look the code up at all.
+          <p className="text-center text-sm text-gray-500">
+            לא בוצע שום שינוי בשובר. נסו לסרוק שוב בעוד רגע.
+          </p>
         ) : (
           <p className="text-center text-sm text-gray-500">
             ודאו שהקוד תואם למסך של הלקוח, או בקשו ממנו לפתוח מחדש את הקופון באזור האישי.
