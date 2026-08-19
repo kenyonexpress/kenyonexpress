@@ -66,7 +66,12 @@ Updated: 2026-08-10 (autonomous: [68] WhatsApp, geo פר מוצר, ושאריו�
 תור סגור בן 10 מסמכים, ענף `docs/architecture-night`, worktree `ke-arch-night`.
 **מסמכים בלבד.** אין נגיעה ב-`src/`, אין נגיעה במיגרציה קיימת, אין הרצת SQL.
 
-1. ✅ `ARCHITECTURE-CHECKOUT-CARDCOM-E2E.md` + טיוטה `migrations/pending/120_payment_events.sql`
+1. ✅ `docs/ARCHITECTURE-CHECKOUT-CARDCOM-E2E.md` (578 שורות) + טיוטה
+   `migrations/pending/006-payment-events.sql` (לא הורצה).
+   **תיקון לשם שנרשם כאן מראש:** התיקייה `migrations/pending/` ממספרת `003-`,
+   `004-`, `005-` ובמפורש אינה חלק משרשרת `NNN_` של `supabase/migrations`, ולכן
+   הקובץ הוא `006-` ולא `120_`. ה-✅ שהופיע כאן לפני שהמסמך נכתב היה תוכנית,
+   לא עובדה.
 2. `ARCHITECTURE-ORDER-STATE-MACHINE.md`
 3. `ARCHITECTURE-REFUNDS-CANCELLATIONS.md`
 4. `ARCHITECTURE-ADMIN-PRODUCT-FORM.md`
