@@ -187,17 +187,25 @@ canTransition(from, event, productType) // -> boolean
 מה לכתוב חייב לעבור דרך `transition()`. קוד ש**שואל** משתמש ב-`canTransition()`.
 ‏`UPDATE` ישיר על `settlement_status` בלי אחד מהשניים הוא הפרה.
 
-### 3.4 סתירה ידועה בין תיעוד לקוד, ומה נכון
+### 3.4 הסתירה בין התיעוד לקוד — ✅ נסגרה ב-19.08
 
-**ה-docblock בראש `src/server/domain/orders/state-machine.ts` מתאר את מודל
-‏C11(b)** ("a coupon prepayment is held for the supplier until the voucher is
-scanned", ומסלול `pending -> paid -> escrow_held -> escrow_released`).
-**‏`TRANSITIONS` באותו קובץ אינו מממש את זה**, אין `escrow_held` במכונה, ו-`redeem_voucher()`
-בפרודקשן אינו מזיז כסף.
+**מה היה:** ה-docblock בראש `src/server/domain/orders/state-machine.ts` תיאר את
+מודל C11(b) ("a coupon prepayment is held for the supplier until the voucher is
+scanned"), כולל מסלול `pending -> paid -> escrow_held -> escrow_released`.
+‏`TRANSITIONS` באותו קובץ מעולם לא מימש את זה, אין `escrow_held` במכונה,
+ו-`redeem_voucher()` בפרודקשן אינו מזיז כסף. הסעיף הזה נכתב כאזהרה בלבד, כי
+תיקון ההערה הוא שינוי קוד ולכן היה מחוץ לתחום ענף התיעוד.
 
-**מה מחייב:** הקוד, לא ההערה. אין Escrow. ההערה היא שריד לניסוח שבוטל ב-28.07,
-ותיקונה הוא שינוי בקוד ולכן מחוץ לתחום הענף הזה. **רשום כאן כדי שהקורא הבא לא
-יסיק מהערה שהמודל חזר.**
+**מה נעשה (‏(12) PAYMENTS VERIFY, ענף `feat/payments-verify`):** ה-docblock נכתב
+מחדש ומתאר עכשיו את המודל המחייב — שני סוגי המוצר רצים
+`pending -> paid -> split_executed`, והקופון "מתפצל" ‏100/0. נוסף בו סעיף מפורש
+שמסביר **למה** `escrow_held`, ‏`escrow_released` ו-`platform_settled` עדיין
+קיימים ב-enum של פרודקשן ובכל זאת חסרים מ-`SettlementState`: ערך שהטיפוס אינו
+מכיר הוא שורה שהקוד לא יכול לכתוב. גם ההערה ב-`checkout-flow.test.ts`, שאמרה
+שחלק הספק בקופון "goes into escrow", תוקנה.
+
+**מה מחייב, ללא שינוי:** הקוד. אין Escrow. ההבדל היחיד הוא שהתיעוד בקוד כבר לא
+סותר אותו.
 
 `migrations/pending/004-expire-vouchers-drop-escrow.sql` מסיים את אותו ניקוי
 בצד ה-DB: `expire_vouchers()` בפרודקשן עדיין נוגע ב-`escrow_holds`.
@@ -502,4 +510,4 @@ create unique index orders_one_open_per_user_idx
 6. **שובר נצרך או שפג חוסם החזר לכרטיס.** המסלול היחיד הוא זיכוי לארנק.
 7. **זיכוי חלקי: בלי דמי ביטול, בלי `cancelOnly`, שורת `payments` חדשה.**
 8. **`deriveOrderStatus` לעולם לא נכתב ל-`orders.status`.**
-9. **אין Escrow.** ה-docblock ב-`state-machine.ts` שאומר אחרת הוא שריד; הקוד מחייב.
+9. **אין Escrow.** ה-docblock ב-`state-machine.ts` תוקן ב-19.08 ותואם לקוד (‏§3.4).
