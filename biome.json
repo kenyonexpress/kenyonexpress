@@ -47,7 +47,7 @@
         "noExplicitAny": "warn"
       },
       "security": {
-        "noDangerouslySetInnerHtml": "warn"
+        "noDangerouslySetInnerHtml": "error"
       },
       "a11y": {
         "noSvgWithoutTitle": "warn"
