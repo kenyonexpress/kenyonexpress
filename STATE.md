@@ -61,7 +61,7 @@ Updated: 2026-08-10 (autonomous: [68] WhatsApp, geo פר מוצר, ושאריו�
 
 ---
 
-## המשך מ: תור ארכיטקטורה לילי (docs/architecture-night), משימה 4
+## המשך מ: תור ארכיטקטורה לילי (docs/architecture-night), משימה 5
 
 תור סגור בן 10 מסמכים, ענף `docs/architecture-night`, worktree `ke-arch-night`.
 **מסמכים בלבד.** אין נגיעה ב-`src/`, אין נגיעה במיגרציה קיימת, אין הרצת SQL.
@@ -74,7 +74,7 @@ Updated: 2026-08-10 (autonomous: [68] WhatsApp, geo פר מוצר, ושאריו�
    לא עובדה.
 2. ✅ `ARCHITECTURE-ORDER-STATE-MACHINE.md`
 3. ✅ `ARCHITECTURE-REFUNDS-CANCELLATIONS.md` + טיוטה `migrations/pending/121_refunds.sql`
-4. `ARCHITECTURE-ADMIN-PRODUCT-FORM.md`
+4. ✅ `ARCHITECTURE-ADMIN-PRODUCT-FORM.md`
 5. `ARCHITECTURE-SEARCH-DISCOVERY.md`
 6. `ARCHITECTURE-GEO-LOCATION.md`
 7. `ARCHITECTURE-WP-IMPORT-PIPELINE.md`
