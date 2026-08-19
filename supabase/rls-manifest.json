@@ -7,6 +7,8 @@
     "src/lib/auth/rls-manifest.test.ts is the CI gate that reads this file."
   ],
   "measured_at": "2026-08-19",
+  "reverified_at": "2026-08-20",
+  "$reverified_comment": "Re-measured against the same production project on 2026-08-20 via a read-only pg_class/pg_policy query. 53 tables both sides, zero drift in rls_enabled or policy_count, and the eight zero-policy tables still match service_role_only exactly.",
   "project_ref": "ixvwfbuvfxxsjiywhbbb",
   "schema": "public",
   "service_role_only": {
