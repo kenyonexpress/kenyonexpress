@@ -1,4 +1,5 @@
 import type { CartStorageItem } from '@/lib/cart/types'
+import { orFail } from '@/lib/catalogue-read'
 import { createPublicClient } from '@/lib/supabase/anon'
 import {
   CASHBACK_PERCENT_CANDIDATES,
@@ -41,10 +42,17 @@ export async function loadCartProductData(items: CartStorageItem[]) {
   const productSelect =
     'id, slug, name_he, type, kenyon_price, stock_quantity, status, deleted_at, images, is_coupon_enabled, platform_percent'
 
-  const { data: products } = await catalogue
-    .from('products')
-    .select(productSelect)
-    .in('id', productIds)
+  // `orFail`, not `const { data }`. A discarded error here does not just show a
+  // thin cart: `buildCartView` skips every line whose product it cannot find,
+  // and `removeUnavailableItems` then reads "not in the priced view" as "this
+  // product is gone" and WRITES the survivors back. With the error swallowed
+  // the survivors are none, so one failed read deleted the whole cart and
+  // returned ok. Measured in read-failure-never-empties-the-cart.test.ts.
+  const products = orFail(
+    await catalogue.from('products').select(productSelect).in('id', productIds),
+    'cart.products_read_failed',
+    { productCount: productIds.length },
+  )
 
   // coupon_price_ils arrives with migration 054, which is not applied to every
   // deployment. Naming it above would fail the whole cart query with 42703 and
@@ -82,11 +90,17 @@ export async function loadCartProductData(items: CartStorageItem[]) {
   }[] = []
 
   if (variantIds.length > 0) {
-    const { data } = await catalogue
-      .from('product_variants')
-      .select('id, product_id, price, price_modifier, stock_quantity, is_active, deleted_at')
-      .in('id', variantIds)
-    variants = data ?? []
+    // Same reason, and a shorter path to it: a line with a `variant_id` whose
+    // variant is missing is skipped by `buildCartView` outright.
+    variants =
+      orFail(
+        await catalogue
+          .from('product_variants')
+          .select('id, product_id, price, price_modifier, stock_quantity, is_active, deleted_at')
+          .in('id', variantIds),
+        'cart.variants_read_failed',
+        { variantCount: variantIds.length },
+      ) ?? []
   }
 
   return { products: pricedProducts, variants }
