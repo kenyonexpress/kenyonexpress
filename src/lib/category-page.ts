@@ -64,9 +64,15 @@ function orFail<T>(
 ): T {
   const { data, error } = result
   if (!error) return data
-  // PGRST116 is `.single()` finding no row. That is an answer, not a failure,
-  // and callers already handle the null it comes with.
-  if (error.code === 'PGRST116') return data
+  // Two PostgREST codes are answers, not failures, and callers already handle
+  // the empty result each comes with.
+  //   PGRST116  `.single()` found no row.
+  //   PGRST103  the requested range starts past the last row. That is what
+  //             /products?page=9999 asks for, and the page clamps to the last
+  //             page from the empty result. Throwing here regressed exactly
+  //             that: caught by e2e/category.spec.ts:122 and :142, which is
+  //             why the suite is worth running before calling a fix done.
+  if (error.code === 'PGRST116' || error.code === 'PGRST103') return data
   log.error(event, { ...context, error })
   throw new Error(`${event}: ${error.message ?? 'catalogue read failed'}`)
 }

@@ -95,6 +95,24 @@ describe('a failed catalogue read', () => {
     expect(logError).not.toHaveBeenCalled()
   })
 
+  it('treats PGRST103 as "that page is past the end", not as a failure', async () => {
+    // /products?page=9999 asks PostgREST for an offset past the last row, and
+    // it answers 416 PGRST103. The page clamps to the last page from the empty
+    // result. An earlier draft of this fix threw here and broke that; the two
+    // clamping specs in e2e/category.spec.ts caught it.
+    readResult.error = {
+      code: 'PGRST103',
+      details: 'An offset of 239952 was requested, but there are only 61 rows.',
+      message: 'Requested range not satisfiable',
+    }
+
+    await expect(getShopProducts({ sort: 'name', page: 9999 })).resolves.toEqual({
+      items: [],
+      total: 0,
+    })
+    expect(logError).not.toHaveBeenCalled()
+  })
+
   it('treats PGRST116 as "no such row", not as a failure', async () => {
     // `.single()` reports zero rows as an error code. Callers already handle the
     // null that comes with it, so throwing there would break real 404s.
