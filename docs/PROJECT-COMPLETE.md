@@ -34,6 +34,34 @@
 | שער פיקסלים — צ'ק-אאוט | ✅ **9.72%** (היה 12.43%) |
 | שער פיקסלים — מוצר / products / קטגוריה / חיפוש | ⛔ הכלי **מסרב**, ולא במקרה. ראה למטה |
 | ‏axe על כל המסלולים הציבוריים | ✅ **0 הפרות** |
+| ‏E2E Playwright, סוויטה מלאה | ⚠️ **‏335 עברו, ‏6 דולגו, ‏9 נכשלו** — כולם אותו חסם סביבה, ראה למטה |
+
+### תשעת הכשלים ב-E2E, ותיקון לטענה שעמדה כאן קודם
+
+‏**כל התשעה על `mobile-chrome`, וכולם זריעת עגלת אורח.** השרת אומר את הסיבה
+בעצמו, ‏177 פעמים בלוג של אותה הרצה:
+
+```
+supabase.admin_key_invalid — SUPABASE_SECRET_KEY is the stock local-development
+demo key (iss=supabase-demo), which the hosted project rejects as an invalid
+API key. Every admin-client path — the guest cart, ... — fails with it.
+```
+
+‏**‏`STATE.md` טען שהכשלים האלה "עוברים בהרצה ממוקדת על worker אחד". נמדד
+עכשיו: הם לא.** הרצה ממוקדת על `mobile-chrome` עם worker אחד: **‏64 עברו,
+‏2 דולגו, והתשעה נכשלו שוב.** הטענה הייתה נכונה בזמנו ואינה נכונה היום, והיא
+מתוקנת כאן ולא מושארת לעמוד.
+
+הודעת הכישלון עצמה שופרה כדי שלא תדרוש את הפסקה הזאת בפעם הבאה:
+
+```
+add-to-cart did not stick: the header badge went 0 -> 0. No error toast was
+raised... If the server log shows `Invalid API key`, this is the known
+SUPABASE_SECRET_KEY blocker and not a regression.
+```
+
+‏**זה חוסם #2 ברשימת החוסמים, ואינו ניתן לפתרון מכאן.** ‏`chromium` עובר את
+אותם טסטים.
 
 ---
 
