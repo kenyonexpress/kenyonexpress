@@ -70,3 +70,7 @@ D9. Company legal identity: placeholder COMPANY_LEGAL_TBD in terms/invoice templ
 D10. WP import: build + dry-run only. Real import stays OFF until Ofir approves.
 D11. Homepage category order: mirror groo.co.il ordering logic; fallback: מסעדות, ספא, צימרים, תינוקות, אפל.
 D12. Pixel gate: 11% hard gate for all pages; push toward 7% only after step 26 passes everything else.
+
+(27) MERGE NIGHT BRANCHES: merge into the working branch, in order, resolving conflicts with tests green after each: feat/voucher-redemption, feat/account-wallet, feat/supplier-portal, docs/architecture-night, test/e2e-full, ci/foundation-v2, feat/seed-data, feat/email-templates, feat/legal-pages (skip any branch that does not exist). Delete merged branches local+remote. Update the 4 open PRs: merge or close each with a one-line reason.
+(28) AFFILIATES WAVE: implement per docs/ARCHITECTURE-AFFILIATES-REFERRALS.md if it exists, else design minimal: affiliate links with tracking, admin-set percent, credit to internal wallet only (never cash out), /affiliate dashboard, refer-a-friend dual cashback, anti-fraud (self-referral block). MCP migrations only. Tests.
+(29) WHATSAPP-BUTTON + GEO VERIFY: confirm floating WhatsApp with supplier number renders on every product page, Waze deep-link works on every supplier block, near-me filter functional. Fix gaps. compare.mjs stays under gates.
