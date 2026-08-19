@@ -8,6 +8,39 @@ Updated: 2026-08-19 (docs: DATA-BASELINE.md on phase5/homepage)
 ✅ `docs/DATA-BASELINE.md` (80 products / 12 categories / 11 suppliers / 4 orders / 3 order_items).
 הבא שדורש קוד: merge `feat/supplier-portal` ואז `docs/architecture-night` אל `phase5/homepage`. voucher+wallet כבר בפנים מ-24.07.
 
+## ענף `feat/seed-data` (worktree `ke-seed`)
+
+**המשך מ: שלב 2, השלמת 6 טיוטות הגריד.**
+
+שלב 1 ✅ ‏19.08: שער ההשקה של הקטלוג הפך מקוד פרוזה לקוד רץ.
+`scripts/seed/launch-bar.mjs` פולט SELECT אחד שמחזיר שורה אחת ומעריך אותה ל-12 שורות
+pass/fail; `scripts/audit-launch-bar.mjs --measured` מדפיס את המצב. הוא לא מתחבר לכלום,
+כמו `seed-catalogue.mjs` ומאותה סיבה. השאילתה **הורצה מול הפרודקשן, read-only**, והמספרים
+בקוד הם מה שהיא החזירה. ‏`docs/DATA-BASELINE.md` §7.
+
+מה שהמדידה שינתה, ולא רק אישרה:
+
+* **‏15 הקופונים הפעילים הם כולם `demo-coupon-1..15`.** אחד לכל קטגוריה, כולם picsum,
+  כולם `platform_percent = 25`. **בפרודקשן אין אף דיל קופון אמיתי,** ו-0 מתוך 7
+  הטקסונומיות הפתוחות מכוסות. השורה הזו נוקדה קודם "המספר כן, האיכות לא".
+* **‏4 קטגוריות ש-DATA-BASELINE §3 ניחש כריקות אינן ריקות, הן דמו:** ‏`pets` 2,
+  ‏`under-99` 3, ‏`new` 3, ‏`courses` 2. ‏`courses` מוצגת בתפריט כ"בקרוב" ומגישה מוצרים.
+  ‏`electronics` לא יתומה בנתונים: 6 פעילים.
+* **‏8 כרטיסי ה-404 הם 2 חסרים ו-6 טיוטות.** ‏`product/[slug]/page.tsx:29` מחזיר
+  `notFound()` על כל דבר שאינו active. טיוטה היא פרסום אחד משם, שורה חסרה היא ייבוא.
+* **‏24 הכרטיסים שנפתחים כולם `physical`.** בגריד הבית אין אף כרטיס קופון.
+* **באג חדש: `electronics` ו-`professionals` שתיהן על `sort_order = 10`.** סדר הסיידבר
+  ביניהן הוא מה שה-planner מחזיר.
+
+‏0/12 שורות בשער עוברות. ‏`19dad8da8`, ‏2294/2294, ‏tsc ו-biome נקיים, נדחף ל-origin.
+
+התור בענף הזה:
+2. השלמת 6 טיוטות הגריד (קטגוריה + `platform_percent` + ספק, ואז פרסום). זו הכי זולה, ומורידה 8 ל-2.
+3. `sort_order` ייחודי ל-12 הקטגוריות: קובץ migration ב-`migrations/pending`, לא להריץ.
+4. הרחבת `catalogue-data.mjs` ל-8 המחלקות שאינו נוגע בהן, לסטייג'ינג בלבד.
+
+---
+
 ## ⛔ מדיניות ענפים מחייבת (19.08.2026)
 
 **כל הסוכנים ממשיכים מ-`phase5/homepage` בלבד, עד ה-merge המרוכז.**
