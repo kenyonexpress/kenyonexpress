@@ -21,6 +21,14 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
     globals: true,
+    // The default 5s is a wall two files hit under the full suite and neither
+    // hits alone: `vouchers/code.test.ts` (2000 rounds of crypto codes, 1.6s
+    // solo) and `a11y/brand-contrast.test.ts` (scans all of src/, 0.8s solo).
+    // Both are CPU-bound and 190 files compete for the same cores, so the red
+    // moved between them run to run — a gate that fails on machine load says
+    // nothing about the code. 30s still fails a genuinely hung test; it just
+    // stops reporting "slow" as "broken".
+    testTimeout: 30_000,
     // The wp-import pipeline is plain .mjs run by node, not by Next, so it
     // needs its own pattern. Without it the pipeline's tests exist but never
     // run, which is worse than having none. The seed data module is the same
