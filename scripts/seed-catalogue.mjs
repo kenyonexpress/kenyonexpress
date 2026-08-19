@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Seeds a full-looking catalogue: 10 complete suppliers and 30 Hebrew deals.
+ * Seeds a full-looking catalogue: 14 complete suppliers and 40 Hebrew deals.
  *
  * WHY THIS EMITS SQL RATHER THAN CALLING SUPABASE
  *
@@ -16,7 +16,7 @@
  * Write anything by itself. Default is a dry run that prints what it would
  * write and touches nothing, the same shape `WP_IMPORT_ALLOW_WRITES` gives the
  * WordPress import: the artifact is reviewable before it exists anywhere. These
- * are 30 demo products destined for a live catalogue that already holds 61 real
+ * are 40 demo products destined for a live catalogue that already holds 61 real
  * ones, and that is a decision to take deliberately rather than as a side effect
  * of running a script.
  *
@@ -26,7 +26,7 @@
  *      when `auth.uid() IS NULL`, which is exactly the case for SQL run through
  *      MCP or the service role. So the admin path that would set `approved` on
  *      an activated product never runs, and a seed that omitted the column would
- *      leave 30 products `active` and unapproved — a state the admin screens
+ *      leave 40 products `active` and unapproved — a state the admin screens
  *      would then treat as pending.
  *   2. `category_id`. Resolved by SLUG against the categories that already
  *      exist, never invented: a seed that created its own categories would put

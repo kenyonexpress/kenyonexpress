@@ -27,6 +27,10 @@ settled.**
 `003-products-whatsapp-enabled.sql` is independent of everything in
 `supabase/migrations/`. It does not depend on PENDING-109 or PENDING-110.
 
+`006-categories-sort-order.sql` is independent of all of them. It is data, not
+schema: one UPDATE that moves `electronics` from a shared `sort_order` of 10 to
+12. It adds no unique index on purpose, and the file says why.
+
 ## Two corrections, measured against production on 19.08.2026
 
 Both were stale claims in this file, found by checking every object named here
@@ -61,7 +65,7 @@ live exploit, and it is what `126_revoke_authenticated_dml.sql` addresses. That
 file is **not in this directory** either: it is on the unmerged `feat/auth-model`
 branch.
 
-## All ten files here are genuinely unapplied
+## All eleven files here are genuinely unapplied
 
 Checked object by object against production, not assumed from this file: none of
 `payment_events`, `refunds`, `search_index_outbox`, `supplier_branches`,

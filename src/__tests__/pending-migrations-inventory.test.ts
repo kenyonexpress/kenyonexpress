@@ -34,13 +34,14 @@ function sqlFilesIn(dir: string, filter: (name: string) => boolean): string[] {
 }
 
 describe('the pending migration inventory', () => {
-  it('has the ten files the README claims are unapplied', () => {
+  it('has the eleven files the README claims are unapplied', () => {
     // A new pending migration is a deliberate diff here, which is the point:
     // schema changes are the one category where a silent addition is expensive.
     expect(sqlFilesIn(PENDING_DIR, () => true)).toEqual([
       '003-products-whatsapp-enabled.sql',
       '004-expire-vouchers-drop-escrow.sql',
       '005-homepage-cms.sql',
+      '006-categories-sort-order.sql',
       '007-order-transition-guard.sql',
       '120_payment_events.sql',
       '121_refunds.sql',
