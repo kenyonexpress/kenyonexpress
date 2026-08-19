@@ -20,7 +20,16 @@ export default async function EditSupplierPage({ params }: Props) {
   const admin = createAdminClient()
   const [{ data: supplier }, { data: products }, { data: memberRows }, { data: profiles }] =
     await Promise.all([
-      admin.from('suppliers').select('*').eq('id', id).single(),
+      // Soft-deleted rows do not open this form. See the note on the same
+      // line in admin/products/[id]/edit: there is no restore flow anywhere in
+      // the panel, so a deleted id has no destination here, and saving from it
+      // would write to a row nothing else reads.
+      admin
+        .from('suppliers')
+        .select('*')
+        .eq('id', id)
+        .is('deleted_at', null)
+        .single(),
       admin
         .from('products')
         .select('id, name_he, status, type')

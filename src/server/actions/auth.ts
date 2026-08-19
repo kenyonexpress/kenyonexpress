@@ -41,10 +41,25 @@ const ERROR_MAP: Record<string, string> = {
   'Too many requests': 'יותר מדי ניסיונות — נסו שוב מאוחר יותר',
 }
 
+/**
+ * THE FALLBACK IS LOGGED, BECAUSE IT IS INDISTINGUISHABLE FROM WORKING.
+ *
+ * Every key above is an ENGLISH STRING SUPABASE CHOOSES, matched by substring.
+ * Nothing here is under our control and nothing warns when one of them is
+ * reworded upstream: the match simply stops firing, "כתובת אימייל או סיסמה
+ * שגויים" quietly becomes "אירעה שגיאה, נסו שוב", and the sign-in form still
+ * looks like it is behaving. The customer is told nothing useful and we are
+ * told nothing at all.
+ *
+ * So an unmapped message is a warning with the message on it. The reason goes
+ * to the log and never into the response - the same split the API routes are
+ * held to by `log-coverage.test.ts`.
+ */
 function toHebrew(msg: string): string {
   for (const [key, val] of Object.entries(ERROR_MAP)) {
     if (msg.includes(key)) return val
   }
+  log.warn('auth.error_unmapped', { reason: msg })
   return 'אירעה שגיאה, נסו שוב'
 }
 

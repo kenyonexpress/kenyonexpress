@@ -15,7 +15,16 @@ export default async function EditCouponDealPage({ params }: Props) {
   const supabase = await createClient()
 
   const [{ data: deal }, { data: vendors }] = await Promise.all([
-    supabase.from('coupon_deals').select('*').eq('id', id).single(),
+    // Soft-deleted rows do not open this form - same reasoning as the product
+    // and supplier editors. It matters slightly more here: `/coupons/[id]` now
+    // reads through a CACHED query, so editing an archived deal would be work
+    // that not even a cache invalidation could make visible.
+    supabase
+      .from('coupon_deals')
+      .select('*')
+      .eq('id', id)
+      .is('deleted_at', null)
+      .single(),
     supabase
       .from('vendors')
       .select('id, business_name')
