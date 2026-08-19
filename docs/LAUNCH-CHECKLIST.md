@@ -188,7 +188,7 @@ curl -sI https://www.kenyonexpress.co.il | head -n 8
 | SE7 | `ESCROW_FLOW_ENABLED` לא true | P0 | PASS (מדיניות) | אסור להגדיר |
 | SE8 | אף סוד כסף לא ב-client bundle | P0 | PASS 31.07 | לחזור על הסריקה ב-build המועמד |
 | SE9 | Preview ≠ prod (DB, Cardcom, Resend) | P0 | OPEN | |
-| SE10 | שישה cron מול תוכנית Hobby/Pro | P0 | BLOCKED_OWNER | Q5. חובה: `notifications`, `expire-vouchers` |
+| SE10 | **עשרה** cron מול תוכנית Hobby/Pro (נספר 20.08; "שישה" היה שגוי) | P0 | BLOCKED_OWNER | Q5. חובה: `notifications`, `expire-vouchers`, **`stranded-payments`** (‏10 דק'; ביממה מאבד את ערכו) |
 | SE11 | Rollback מתועד (Instant Rollback) | P0 | OPEN | |
 | SE12 | Deployment Protection לא חוסם webhook Cardcom/Resend | P0 | OPEN | |
 | SE13 | Meilisearch / R2 | P1 | OPEN | חיפוש ומדיה; לא חוסם קופון יחיד ב-soft-launch צר |
@@ -366,7 +366,7 @@ Lighthouse 01.08 (מובייל, אחרי תיקון הירו): בית perf 75 / 
 | מע"מ 17 מול 18 | DB8 | חשבונית ראשונה תהיה שגויה |
 | אין `/cancel` | LG7 | חוסם GA (14ט) |
 | אין חתימת עו"ד / ח.פ | LG10, LG11 | חוסם GA |
-| cron מול Hobby | SE10 | מייל ופקיעה עלולים לא לרוץ |
+| cron מול Hobby | SE10 | מייל, פקיעה, ותשלום תקוע עלולים לא לרוץ |
 | leaked password protection כבוי | DB5 | GA |
 
 ### מה לא ב-soft-launch (בכוונה)
