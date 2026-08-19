@@ -82,6 +82,23 @@ async function runSignInWithEmail(_: AuthState, formData: FormData): Promise<Aut
   })
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
 
+  // Per-account as well as per-IP, for the same reason `phone-otp-number` exists
+  // below: the IP ceiling alone is a ceiling on one attacker's connection, not
+  // on one customer's password. A list of proxies turns ten tries an hour into
+  // ten per proxy against the same address. Lower-cased so `A@b.com` and
+  // `a@b.com` cannot each buy their own allowance for one account.
+  //
+  // Twenty is above any real person's typo rate and far below a dictionary.
+  const accountAllowed = await checkRateLimit(
+    `login-account:${parsed.data.email.trim().toLowerCase()}`,
+    20,
+    3600,
+  )
+  // Deliberately the SAME sentence the IP refusal returns. Saying "too many
+  // attempts on this account" to someone who has made none from this IP
+  // confirms the address is registered.
+  if (!accountAllowed) return { error: 'יותר מדי ניסיונות כניסה — נסו שוב בעוד שעה' }
+
   const supabase = await createClient()
   const { data: signInData, error } = await supabase.auth.signInWithPassword(parsed.data)
   if (error) return { error: toHebrew(error.message) }
@@ -327,6 +344,18 @@ async function runSendPasswordReset(_: AuthState, formData: FormData): Promise<A
   const parsed = passwordResetSchema.safeParse({ email: formData.get('email') })
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
 
+  // Per-address too: the IP ceiling does not stop a rotating connection from
+  // mailing one customer a reset link every minute until they click one.
+  const addressAllowed = await checkRateLimit(
+    `reset-address:${parsed.data.email.trim().toLowerCase()}`,
+    5,
+    3600,
+  )
+  // Still the neutral reply. A refusal that differs from the success message
+  // would turn this endpoint into a registration oracle, which is the whole
+  // point of `passwordResetResult` below.
+  if (!addressAllowed) return passwordResetResult(null)
+
   const supabase = await createClient()
   const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
     redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=/reset-password`,
@@ -342,6 +371,14 @@ async function runSendPasswordReset(_: AuthState, formData: FormData): Promise<A
 // Update password (after recovery flow)
 // ──────────────────────────────────────────────
 async function runUpdatePassword(_: AuthState, formData: FormData): Promise<AuthState> {
+  // The recovery session is what authorises this, so the ceiling is not about
+  // guessing. It is about a leaked or replayed recovery link being used to
+  // cycle a password repeatedly, and about the same session being driven in a
+  // loop; ten an hour is more than a real recovery ever needs.
+  const ip = await getClientIp()
+  const allowed = await checkRateLimit(`update-password:${ip}`, 10, 3600)
+  if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
+
   const parsed = newPasswordSchema.safeParse({
     password: formData.get('password'),
     confirm_password: formData.get('confirm_password'),
