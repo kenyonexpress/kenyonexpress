@@ -104,12 +104,36 @@ export interface CartStoreState {
   openDrawer: () => void
   closeDrawer: () => void
   toggleDrawer: () => void
+  /**
+   * Resolves to WHETHER THE SERVER TOOK THE ITEM, and the boolean is the point.
+   *
+   * It used to resolve to `void`, so every caller treated "the round trip
+   * finished" as "the item is in the cart". Three of them were wrong in three
+   * different ways, and all three fire on the same refusal:
+   *
+   *  - `AddToCartButton` emitted `add_to_cart` to the first-party tracker AND
+   *    a priced `trackCommerce` event to the ad platforms, directly under a
+   *    comment promising the opposite ("an intent that failed is not an
+   *    add_to_cart").
+   *  - `ProductInfo` flipped its button to the "added" confirmation.
+   *  - `ProductInfo`'s "קנה עכשיו" pushed to /checkout, which bounces an empty
+   *    cart back to /cart -- so a refused add ended on a page that explains
+   *    nothing.
+   *
+   * The home page is where this is not hypothetical: all 32 `KE_LIVE_DEALS`
+   * cards carry synthetic ids (`ke-deal-9132`), `addToCartSchema` requires a
+   * uuid, so EVERY add from the deals grid is refused and every one of them
+   * reported a sale's worth of intent.
+   *
+   * The error toast was always shown; it is the callers' own follow-up that
+   * had no way to ask.
+   */
   addToCart: (
     productId: string,
     variantId: string | null,
     quantity: number,
     productName?: string,
-  ) => Promise<void>
+  ) => Promise<boolean>
   updateQuantity: (productId: string, variantId: string | null, quantity: number) => Promise<void>
   removeItem: (productId: string, variantId: string | null) => Promise<void>
   /**
@@ -247,12 +271,14 @@ export function createCartStore(
               message: productName ? `${productName} נוסף לעגלה` : 'נוסף לעגלה',
             })
             set({ drawerOpen: true })
-          } else {
-            settle(null, rollback)
-            onFeedback({ kind: 'error', message: result.error })
+            return true
           }
+          settle(null, rollback)
+          onFeedback({ kind: 'error', message: result.error })
+          return false
         } catch {
           crashed(rollback)
+          return false
         }
       },
 
