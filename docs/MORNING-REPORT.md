@@ -36,8 +36,12 @@ repository secrets.** ‏`CI_SUPABASE_URL` ו-`CI_SUPABASE_ANON_KEY` אינם מ
 בריפו כלל (`gh secret list` ריק), ולכן `job` ה-Build ב-CI נופל על
 ‏`Missing NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY` בשלב
 איסוף נתוני העמודים. בעשרים הריצות המושלמות האחרונות הוא הצליח **אפס פעמים**.
-שני הערכים ציבוריים מעצם טבעם (מפתח anon נשלח לדפדפן תחת `NEXT_PUBLIC_`), ולכן
-אין כאן חשיפה. פירוט: פריט 8 ב-`docs/PROJECT-COMPLETE.md`.
+שני הערכים האלה ציבוריים מעצם טבעם (מפתח anon נשלח לדפדפן תחת `NEXT_PUBLIC_`),
+ולכן אין בהם חשיפה. **אבל שים לב:** ‏job ה-Build מפנה גם ל-`CI_SUPABASE_SECRET_KEY`,
+שהוא מפתח service_role אמיתי, **והריפו ציבורי** — זו החלטת אבטחה שלך ולא
+פורמליות. ייתכן שערך דמה מספיק, כי `createAdminClient` זורק רק על מפתח **חסר**
+ומזהיר בלבד על מפתח שגוי; לא הצלחתי לבדוק את זה כי אי אפשר להריץ בילד כאן.
+פירוט מלא: פריט 8 ב-`docs/PROJECT-COMPLETE.md`.
 
 **שאלה 11, חדשה מהיום:** איזה סט מסמכים משפטיים מחייב, `/legal/*` או
 `/terms-and-conditions` + `/privacy-policy`? שניהם מוגשים, שניהם מסכימים היום על
