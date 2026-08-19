@@ -47,17 +47,22 @@ export default defineConfig({
       // Only the money path is instrumented for floors. Including all of src
       // would let report noise drown the signal.
       include: [
+        // The canonical money module CLAUDE.md makes mandatory for every money
+        // calculation. It was absent from this list until 2026-08-20, so it
+        // carried no floor and did not even appear in the report, while the
+        // primitives it re-exports from ./commerce/money were floored at 95%.
+        'src/lib/money.ts',
         'src/lib/commerce/**/*.ts',
         'src/lib/checkout/split.ts',
         'src/server/domain/orders/**/*.ts',
       ],
       exclude: ['**/*.test.ts', '**/*.test.tsx'],
       thresholds: {
+        'src/lib/money.ts': MONEY_MODULE_FLOOR,
         'src/lib/commerce/money.ts': MONEY_MODULE_FLOOR,
         'src/lib/commerce/commission.ts': MONEY_MODULE_FLOOR,
         'src/lib/checkout/split.ts': MONEY_MODULE_FLOOR,
         'src/server/domain/orders/settlement.ts': MONEY_MODULE_FLOOR,
-        'src/server/domain/orders/escrow.ts': MONEY_MODULE_FLOOR,
         'src/server/domain/orders/state-machine.ts': MONEY_MODULE_FLOOR,
       },
     },
