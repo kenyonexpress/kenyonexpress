@@ -47,7 +47,8 @@ export type SalesPoint = {
   commissionIls: number
 }
 
-const shekels = (value: number) =>
+/** Shekels in, unlike `@/lib/money-format`'s agorot one. See its header. */
+const shekelsFromIls = (value: number) =>
   `₪${value.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
 /** Axis ticks are scanned, not read: ₪1,250.00 at every gridline is noise. */
@@ -86,7 +87,7 @@ export default function SalesChart({ points }: { points: SalesPoint[] }) {
             // "₪NaN" rather than nothing, so it is handled rather than cast away.
             formatter={(value) => {
               const numeric = Number(Array.isArray(value) ? value[0] : value)
-              return Number.isFinite(numeric) ? shekels(numeric) : '—'
+              return Number.isFinite(numeric) ? shekelsFromIls(numeric) : '—'
             }}
             contentStyle={{
               direction: 'rtl',

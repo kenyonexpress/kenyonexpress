@@ -8,7 +8,7 @@ import {
   isHeld,
   markPaidSchema,
   payoutState,
-  shekels,
+  shekelsFromIls,
 } from './payouts'
 
 const UUID = '11111111-1111-4111-8111-111111111111'
@@ -126,10 +126,10 @@ describe('markPaidSchema', () => {
   })
 })
 
-describe('shekels', () => {
+describe('shekelsFromIls', () => {
   it('formats the numeric(12,2) strings postgrest returns for money columns', () => {
-    expect(shekels('1234.5')).toBe('₪1,234.50')
-    expect(shekels(0)).toBe('₪0.00')
-    expect(shekels(null)).toBe('₪0.00')
+    expect(shekelsFromIls('1234.5')).toBe('₪1,234.50')
+    expect(shekelsFromIls(0)).toBe('₪0.00')
+    expect(shekelsFromIls(null)).toBe('₪0.00')
   })
 })

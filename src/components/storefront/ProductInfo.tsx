@@ -64,7 +64,7 @@ interface Props {
  * Live prints ₪399, not ₪399.00, and the pixel comparison counts every glyph.
  * Agorot are still shown when a price actually has them.
  */
-function shekels(value: number): string {
+function shekelsFromIls(value: number): string {
   return `₪${value.toLocaleString('he-IL', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`
 }
 
@@ -219,17 +219,17 @@ export default function ProductInfo({
           <ul className="pdp-summary__list">
             {oldPrice != null && (
               <li>
-                מחיר רגיל: <del>{shekels(oldPrice)}</del>
+                מחיר רגיל: <del>{shekelsFromIls(oldPrice)}</del>
               </li>
             )}
-            <li>מחיר בקניון: {shekels(price)}</li>
+            <li>מחיר בקניון: {shekelsFromIls(price)}</li>
           </ul>
 
           <p className="pdp-summary__price">
-            <span>{shekels(price)}</span>
+            <span>{shekelsFromIls(price)}</span>
             {hasDiscount && (
               <>
-                <del>{shekels(oldPrice)}</del>
+                <del>{shekelsFromIls(oldPrice)}</del>
                 <span className="pdp-summary__badge">{discountPct}%-</span>
               </>
             )}

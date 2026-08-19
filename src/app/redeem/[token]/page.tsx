@@ -1,3 +1,5 @@
+import { agorot } from '@/lib/money'
+import { shekels } from '@/lib/money-format'
 import { getSupplierMemberships, getSupplierSession } from '@/lib/supplier/rbac'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
@@ -39,13 +41,6 @@ export const metadata: Metadata = {
 }
 
 type Props = { params: Promise<{ token: string }> }
-
-function shekels(agorot: number): string {
-  return `₪${(agorot / 100).toLocaleString('he-IL', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`
-}
 
 function formatCode(code: string): string {
   return code.length > 5 ? `${code.slice(0, 5)}-${code.slice(5, 10)}` : code
@@ -183,9 +178,9 @@ async function RedeemTokenBody({ params }: Props) {
         status={voucher.status}
         productName={voucher.productName}
         customerName={voucher.customerName}
-        faceValue={shekels(voucher.faceValueAgorot)}
-        paidOnline={shekels(voucher.couponPriceAgorot)}
-        toCollect={shekels(voucher.remainingAmountDueAgorot)}
+        faceValue={shekels(agorot(voucher.faceValueAgorot))}
+        paidOnline={shekels(agorot(voucher.couponPriceAgorot))}
+        toCollect={shekels(agorot(voucher.remainingAmountDueAgorot))}
         expiresAtLabel={formatDate(voucher.expiresAt)}
         redeemedAtLabel={voucher.redeemedAt ? formatDate(voucher.redeemedAt) : null}
         expired={new Date(voucher.expiresAt).getTime() <= Date.now()}

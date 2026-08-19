@@ -107,7 +107,15 @@ export const markPaidSchema = z.object({
 })
 
 /** ILS from the numeric(12,2) columns the payout tables store money in. */
-export function shekels(value: number | string | null | undefined): string {
+/**
+ * Shekels in, from the `..._ils` columns the payout tables carry.
+ *
+ * Deliberately NOT called `shekels`: `@/lib/money-format` owns that name for
+ * the agorot formatter the rest of the app uses, and two functions with one
+ * name and opposite units is the 100x error this repo has already paid for
+ * once. Renaming this was cheaper than migrating the columns.
+ */
+export function shekelsFromIls(value: number | string | null | undefined): string {
   const n = typeof value === 'string' ? Number(value) : (value ?? 0)
   return `₪${n.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }

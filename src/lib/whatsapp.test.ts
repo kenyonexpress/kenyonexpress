@@ -118,17 +118,35 @@ describe('supplier message builders', () => {
 })
 
 describe('buildCouponShareText', () => {
-  it('includes name, code, collect amount, expiry and site url', () => {
-    const text = buildCouponShareText({
+  function share(overrides: Partial<Parameters<typeof buildCouponShareText>[0]> = {}) {
+    return buildCouponShareText({
       productName: 'ארוחה זוגית',
       code: '12345678',
-      collectAmountIls: 162,
+      collectAmountAgorot: 16_200,
       expiresAt: '2026-12-31T00:00:00Z',
       siteUrl: 'https://kenyonexpress.co.il',
+      ...overrides,
     })
+  }
+
+  it('includes name, code, collect amount, expiry and site url', () => {
+    const text = share()
     expect(text).toContain('ארוחה זוגית')
     expect(text).toContain('12345678')
     expect(text).toContain('162')
     expect(text).toContain('https://kenyonexpress.co.il')
+  })
+
+  it('takes agorot and prints the agora, so a forwarded message is exact', () => {
+    // This is the message a customer forwards to whoever is coming with them,
+    // as a record of what they will still pay at the counter. It used to take
+    // shekels, so every caller divided `remaining_amount_due_agorot` by 100
+    // and handed over a float that had to be rounded back.
+    expect(share({ collectAmountAgorot: 16_250 })).toContain('₪162.50')
+    expect(share({ collectAmountAgorot: 5 })).toContain('₪0.05')
+  })
+
+  it('says nothing about a balance when the coupon covers the whole price', () => {
+    expect(share({ collectAmountAgorot: 0 })).not.toContain('לתשלום בעסק')
   })
 })

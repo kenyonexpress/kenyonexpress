@@ -1,5 +1,5 @@
-import { shekels, shekelsRounded } from '@/lib/cart/format'
 import { agorot } from '@/lib/money'
+import { shekels, shekelsRounded } from '@/lib/money-format'
 import { describe, expect, it } from 'vitest'
 
 /**

@@ -1,3 +1,5 @@
+import { agorot } from '@/lib/money'
+import { shekels } from '@/lib/money-format'
 /**
  * WhatsApp deep-link helpers (client-safe, no dependencies).
  *
@@ -107,20 +109,25 @@ export function buildProductShareText(name: string, priceIls: number, url: strin
 export function buildCouponShareText(input: {
   productName: string | null
   code: string
-  collectAmountIls: number
+  /**
+   * What is still owed at the business, in integer AGOROT.
+   *
+   * This took shekels, which meant every caller had to divide a stored agorot
+   * column by 100 first and hand over a float. `vouchers
+   * .remaining_amount_due_agorot` is the only source there has ever been for
+   * this number, so the division was pure loss: it converted an exact integer
+   * into a value that has to be rounded back, in the one message a customer
+   * forwards to someone else as a record of what they will pay.
+   */
+  collectAmountAgorot: number
   expiresAt: string
   siteUrl: string
 }): string {
   const lines = ['קופון מ-KenyonExpress 🎁']
   if (input.productName) lines.push(input.productName)
   lines.push(`קוד: ${input.code}`)
-  if (input.collectAmountIls > 0) {
-    lines.push(
-      `לתשלום בעסק במימוש: ₪${input.collectAmountIls.toLocaleString('he-IL', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}`,
-    )
+  if (input.collectAmountAgorot > 0) {
+    lines.push(`לתשלום בעסק במימוש: ${shekels(agorot(input.collectAmountAgorot))}`)
   }
   lines.push(
     `בתוקף עד ${new Date(input.expiresAt).toLocaleDateString('he-IL', {

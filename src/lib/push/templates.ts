@@ -42,7 +42,16 @@ function integer(payload: Record<string, unknown>, key: string): number | null {
 }
 
 /** Agorot to a shekel string. The money path is integers; only display divides. */
-function shekels(agorotValue: number): string {
+/**
+ * Agorot, with the `.00` dropped when there is nothing after the point.
+ *
+ * Not `@/lib/money-format`'s `shekels`, which always prints two decimals: this
+ * is a push notification title, where "₪25" reads and "₪25.00" is noise. The
+ * name says agorot-in like the canonical one and says it is a different shape,
+ * because the thing this repo cannot afford is two functions called `shekels`
+ * that disagree about their unit.
+ */
+function shekelsCompact(agorotValue: number): string {
   const whole = Math.trunc(Math.abs(agorotValue) / 100)
   const fraction = Math.abs(agorotValue) % 100
   const sign = agorotValue < 0 ? '-' : ''
@@ -119,7 +128,7 @@ function cashbackCredited(payload: Record<string, unknown>, siteUrl: string): Pu
   if (amount === null || amount <= 0) return null
 
   return {
-    title: `נכנס לך קאשבק של ${shekels(amount)}`,
+    title: `נכנס לך קאשבק של ${shekelsCompact(amount)}`,
     body: 'הסכום נמצא בארנק שלך ואפשר להשתמש בו בקנייה הבאה.',
     data: {
       kind: 'cashback_credited',

@@ -2,7 +2,6 @@
 
 import { trackCommerce } from '@/lib/analytics/commerce-client'
 import { track } from '@/lib/analytics/tracker'
-import { shekels } from '@/lib/cart/format'
 import type { CartView } from '@/lib/cart/types'
 import { sectionsFromElectro } from '@/lib/checkout/electro-content'
 import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-code'
@@ -19,6 +18,7 @@ import {
   validateStep,
 } from '@/lib/checkout/steps'
 import { type Agorot, parseIls, sumAgorot } from '@/lib/money'
+import { shekels } from '@/lib/money-format'
 import { type AuthState, signInWithGoogle } from '@/server/actions/auth'
 import { type CheckoutFormState, submitCheckout } from '@/server/actions/payments/checkout'
 import { useActionState, useEffect, useRef, useState } from 'react'

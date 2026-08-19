@@ -40,7 +40,7 @@ const DEAL_IMAGE_SIZES = [
   `${DEAL_SIZE_STOPS.desktopPaint}px`,
 ].join(', ')
 
-function shekels(value: number): string {
+function shekelsFromIls(value: number): string {
   return `₪${Math.round(value)}`
 }
 
@@ -153,13 +153,13 @@ export default function ProductDealCard({ product }: { product: Product }) {
       <div className="p_con__footer">
         {hasDiscount && old != null ? (
           <div className="p_con__prices">
-            <span className="p_con__strike">{shekels(old)}</span>
-            <span className="p_con__sale">{shekels(price)}</span>
+            <span className="p_con__strike">{shekelsFromIls(old)}</span>
+            <span className="p_con__sale">{shekelsFromIls(price)}</span>
           </div>
         ) : (
           <div className="p_con__prices">
             {product.kenyon_price != null && (
-              <span className="p_con__single-price">{shekels(price)}</span>
+              <span className="p_con__single-price">{shekelsFromIls(price)}</span>
             )}
           </div>
         )}

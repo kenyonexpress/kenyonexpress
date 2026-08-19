@@ -1,5 +1,5 @@
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
-import { shekels } from '@/lib/commerce/coupon-offer'
+import { shekelsFromIls } from '@/lib/commerce/coupon-offer'
 
 /**
  * The pricing block on a coupon product page.
@@ -28,7 +28,7 @@ export default function CouponPricing({ offer }: { offer: CouponOffer }) {
         {offer.fullPriceIls > 0 && (
           <p className="mt-3 text-sm text-muted">
             מחיר רגיל:{' '}
-            <span className="font-medium text-heading">{shekels(offer.fullPriceIls)}</span>
+            <span className="font-medium text-heading">{shekelsFromIls(offer.fullPriceIls)}</span>
           </p>
         )}
       </div>
@@ -41,11 +41,15 @@ export default function CouponPricing({ offer }: { offer: CouponOffer }) {
       <div>
         <p className="text-sm text-muted">
           מחיר רגיל:{' '}
-          <span className="line-through text-price-strike">{shekels(offer.fullPriceIls)}</span>
+          <span className="line-through text-price-strike">
+            {shekelsFromIls(offer.fullPriceIls)}
+          </span>
         </p>
         <div className="mt-1 flex flex-wrap items-end gap-3">
           <span className="text-sm text-muted">מחיר בקניון:</span>
-          <span className="text-3xl font-black text-price">{shekels(offer.paidOnlineIls)}</span>
+          <span className="text-3xl font-black text-price">
+            {shekelsFromIls(offer.paidOnlineIls)}
+          </span>
           {offer.discountPercent > 0 && (
             <span className="rounded-md bg-price px-2 py-0.5 text-sm font-bold text-white">
               {offer.discountPercent}%-
@@ -58,17 +62,21 @@ export default function CouponPricing({ offer }: { offer: CouponOffer }) {
       <dl className="rounded-lg border border-border bg-surface-hover p-4 text-sm">
         <div className="flex items-baseline justify-between gap-4">
           <dt className="text-muted">לתשלום באתר עכשיו</dt>
-          <dd className="font-bold text-heading tabular-nums">{shekels(offer.paidOnlineIls)}</dd>
+          <dd className="font-bold text-heading tabular-nums">
+            {shekelsFromIls(offer.paidOnlineIls)}
+          </dd>
         </div>
         <div className="mt-2 flex items-baseline justify-between gap-4">
           <dt className="text-muted">יתרה לתשלום בבית העסק</dt>
           <dd className="font-bold text-heading tabular-nums">
-            {shekels(offer.balanceAtBusinessIls)}
+            {shekelsFromIls(offer.balanceAtBusinessIls)}
           </dd>
         </div>
         <div className="mt-3 flex items-baseline justify-between gap-4 border-t border-border pt-3">
           <dt className="font-medium text-heading">סה"כ שווי</dt>
-          <dd className="font-bold text-heading tabular-nums">{shekels(offer.fullPriceIls)}</dd>
+          <dd className="font-bold text-heading tabular-nums">
+            {shekelsFromIls(offer.fullPriceIls)}
+          </dd>
         </div>
       </dl>
     </div>

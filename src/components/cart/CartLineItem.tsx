@@ -2,8 +2,9 @@
 
 import { useCart } from '@/components/cart/CartProvider'
 import SmartImage from '@/components/ui/SmartImage'
-import { lineQuantityCeiling, shekels, unavailableMessage } from '@/lib/cart/format'
+import { lineQuantityCeiling, unavailableMessage } from '@/lib/cart/format'
 import type { CartViewItem } from '@/lib/cart/types'
+import { shekels } from '@/lib/money-format'
 import { Minus, Plus, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'

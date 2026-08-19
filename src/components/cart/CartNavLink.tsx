@@ -1,8 +1,8 @@
 'use client'
 
 import { useCart, useCartStoreApi } from '@/components/cart/CartProvider'
-import { shekelsRounded } from '@/lib/cart/format'
 import { displayItemCount } from '@/lib/cart/store'
+import { shekelsRounded } from '@/lib/money-format'
 import { ShoppingCart } from 'lucide-react'
 import { useStore } from 'zustand'
 

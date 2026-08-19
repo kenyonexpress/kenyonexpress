@@ -38,7 +38,7 @@ interface QuickLinks {
 }
 
 /** Live prints ₪399, not ₪399.00. Agorot only when a price actually has them. */
-function shekels(value: number): string {
+function shekelsFromIls(value: number): string {
   return `₪${value.toLocaleString('he-IL', { maximumFractionDigits: 2 })}`
 }
 
@@ -273,7 +273,7 @@ export default function HeaderSearch() {
                   <span className="min-w-0 flex-1 truncate">{s.name_he}</span>
                   {s.price != null && (
                     <span className="shrink-0 text-xs font-semibold text-price">
-                      {shekels(s.price)}
+                      {shekelsFromIls(s.price)}
                     </span>
                   )}
                 </button>

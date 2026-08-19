@@ -72,7 +72,7 @@ const DEAL_IMAGE_SIZES = [
   `${DEAL_SIZE_STOPS.desktopPaint}px`,
 ].join(', ')
 
-function shekels(value: number): string {
+function shekelsFromIls(value: number): string {
   return `₪${Math.round(value)}`
 }
 
@@ -195,13 +195,13 @@ function DealsProductCard({ product }: { product: Product }) {
       <div className="p_con__footer">
         {hasDiscount && old != null ? (
           <div className="p_con__prices">
-            <span className="p_con__strike">{shekels(old)}</span>
-            <span className="p_con__sale">{shekels(price)}</span>
+            <span className="p_con__strike">{shekelsFromIls(old)}</span>
+            <span className="p_con__sale">{shekelsFromIls(price)}</span>
           </div>
         ) : (
           <div className="p_con__prices">
             {product.kenyon_price != null && (
-              <span className="p_con__single-price">{shekels(price)}</span>
+              <span className="p_con__single-price">{shekelsFromIls(price)}</span>
             )}
           </div>
         )}
@@ -316,7 +316,7 @@ function DefaultProductCard({ product }: { product: Product }) {
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap items-baseline gap-2">
             {hasDiscount && old != null && (
-              <span className="text-sm text-deal-price line-through">{shekels(old)}</span>
+              <span className="text-sm text-deal-price line-through">{shekelsFromIls(old)}</span>
             )}
             <span
               className={
@@ -325,7 +325,7 @@ function DefaultProductCard({ product }: { product: Product }) {
                   : 'text-base font-bold text-deal-price'
               }
             >
-              {shekels(price)}
+              {shekelsFromIls(price)}
             </span>
           </div>
 
