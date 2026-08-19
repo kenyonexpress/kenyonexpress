@@ -61,6 +61,37 @@ Updated: 2026-08-10 (autonomous: [68] WhatsApp, geo פר מוצר, ושאריו�
 
 ---
 
+## המשך מ: תור ארכיטקטורה לילי (docs/architecture-night), משימה 2
+
+תור סגור בן 10 מסמכים, ענף `docs/architecture-night`, worktree `ke-arch-night`.
+**מסמכים בלבד.** אין נגיעה ב-`src/`, אין נגיעה במיגרציה קיימת, אין הרצת SQL.
+
+1. ✅ `ARCHITECTURE-CHECKOUT-CARDCOM-E2E.md` + טיוטה `migrations/pending/120_payment_events.sql`
+2. `ARCHITECTURE-ORDER-STATE-MACHINE.md`
+3. `ARCHITECTURE-REFUNDS-CANCELLATIONS.md`
+4. `ARCHITECTURE-ADMIN-PRODUCT-FORM.md`
+5. `ARCHITECTURE-SEARCH-DISCOVERY.md`
+6. `ARCHITECTURE-GEO-LOCATION.md`
+7. `ARCHITECTURE-WP-IMPORT-PIPELINE.md`
+8. `ARCHITECTURE-OBSERVABILITY.md`
+9. `ARCHITECTURE-SECURITY-HARDENING.md`
+10. `MASTER-ARCHITECTURE-v3.md`
+
+### מודל עסקי מחייב לתור הזה, דורס כל מסמך ישן
+
+- קופון: `coupon_price` סכום מוחלט שהאדמין קובע, הלקוח משלם אותו במלואו באתר
+  דרך Cardcom, היתרה נגבית בבית העסק בסריקה ולא נכנסת לפלטפורמה. אין Escrow.
+  אחרי סריקה הקופון פג לצמיתות.
+- פיזי: תשלום מלא באתר, פיצול מיידי לפי `platform_percent` פר-מוצר, מצולם
+  ל-`order_items` ובלתי משתנה.
+- כסף: אגורות שלמות, integer בלבד, בכל שכבה.
+- Checkout: עגלת אורח פתוחה, התחברות (Google OAuth) חובה רק בתשלום.
+- ארנק: פנימי בלבד, לא יוצא החוצה.
+- אין `tenant_id`. RLS לפי `auth.uid()` בלבד.
+- התראות: Supabase Trigger + Edge Function + Resend בלבד. אסור Make/Zapier.
+- כל דף מוצר מציג פרטי ספק. תיאור מוצר: שדה `description` אחד.
+- `offer_valid_until` פג אוטומטית ומוצג ללקוח (חוק הגנת הצרכן).
+
 ## המשך מ:
 
 ‏**‏10.08 — התור הפעיל, לפי הסדר:** ‏(1) ✅ אפליקציה שלב 2 · ‏(2) ✅ אפליקציית ספק
