@@ -86,12 +86,17 @@ pass/fail; `scripts/audit-launch-bar.mjs --measured` מדפיס את המצב. �
 
 `docs/DATA-BASELINE.md` §8. ‏2308/2308, ‏tsc ו-biome נקיים.
 
-**‏`pnpm build` לא נמדד בשלב הזה, ונדלג לפי כלל "נתקע פעמיים".** שתי הרצות נהרגו
-באמצע. הראיה: `uptime` החזיר load average **109.94** בזמן ההרצה השנייה, עם שלושה
-`next build` מקבילים מ-worktrees אחרים (`kenyonexpress`, `ke-legal`, ועוד) ו-`tsc`
-מ-`ke-merge`. זו לא שגיאת בנייה אלא רעב למשאבים. אותה הרצה **כן עברה קודם באותו סשן**
-(exit 0) על אותו קובץ `category-page.ts` אחרי שינוי `orderedByMenu`. יש להריץ `pnpm build`
-פעם אחת כשהמכונה פנויה, לפני merge ל-`phase5/homepage`.
+**‏`pnpm build` לא נמדד בשלב הזה, ונדלג לפי כלל "נתקע פעמיים".** שלוש הרצות נהרגו
+באמצע, אף אחת מהן לא הספיקה לכתוב שורת פלט אחת. **הראיה שזה משאבים ולא באג בנייה:**
+`uptime` החזיר load average **109.94** בהרצה השנייה, ו-`vm_stat` בהרצה השלישית החזיר
+**3,747 דפים פנויים בלבד**, שהם כ-60MB זיכרון פנוי בעמוד של 16KB. במקביל רצו שלושה
+`next build` מ-worktrees אחרים (`kenyonexpress`, `ke-legal`) ו-`tsc` מ-`ke-merge`.
+זו הריגה ב-OOM.
+
+**אותה בנייה כן עברה קודם באותו סשן** (exit 0) על אותו `src/lib/category-page.ts`,
+אחרי שינוי `orderedByMenu`. מה שלא נבדק בבנייה הוא רק התוספת של שלב 5: קריאה
+מ-`newestProductIds` בתוך scope של `use cache`. יש להריץ `pnpm build` פעם אחת כשהמכונה
+פנויה, **לפני merge ל-`phase5/homepage`**.
 
 התור בענף הזה נגמר כאן. מה שנשאר בשער חסום על נתונים אמיתיים (ספקים, תמונות,
 טיוטות) או על אישור (migration 006).
