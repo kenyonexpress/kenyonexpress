@@ -62,6 +62,50 @@
 -- statement and the failure is a 42501 on a path nothing currently takes.
 --
 -- Effect: 6 of 39 WARN advisors clear. No reachable code path changes.
+--
+-- ----------------------------------------------------------------------------
+-- PRIORITY CORRECTION, added 2026-08-20 by a verification cycle
+-- ----------------------------------------------------------------------------
+--
+-- Everything above frames these six as least-privilege hygiene: unused, so
+-- revoke. That is true of five of them. It UNDERSTATES the third one, and the
+-- difference decides whether this file waits or goes in.
+--
+--   fn_ensure_referral_code(p_user_id uuid) never looks at auth.uid().
+--
+-- Re-read the body against production on 2026-08-20. It takes the target's id
+-- entirely from its caller, and the first thing it does is
+--
+--     SELECT referral_code INTO v_existing FROM public.profiles WHERE id = p_user_id;
+--     IF v_existing IS NOT NULL THEN RETURN v_existing; END IF;
+--
+-- It is SECURITY DEFINER, so it does not read profiles as the caller and RLS on
+-- profiles never applies. While the grant stands, ANY signed-in user who knows
+-- another user's profile uuid can call /rest/v1/rpc/fn_ensure_referral_code and
+-- (a) read that user's referral code, and (b) if they have none yet, MINT one
+-- into their profiles row. That is an unauthorised read plus an unauthorised
+-- write on another user's row, not merely a dead grant.
+--
+-- Bounding it honestly: the caller must already know the victim's profile uuid,
+-- which is not enumerable through this function, and a referral code is not
+-- money. So this is not an emergency. But "unused" is the wrong reason to
+-- prioritise the revoke, and a future reader deciding whether this file is
+-- urgent should see the real one.
+--
+-- The same missing check applies to fn_wallet_cashback_percent and
+-- fn_wallet_cashback_amount, which also take p_user_id and never compare it to
+-- auth.uid(). Those are STABLE and write nothing, so the exposure is limited to
+-- disclosing another user's cashback tier, which reveals a bucket of their paid
+-- order count.
+--
+-- The contrast that proves this is an oversight and not a convention:
+-- fn_record_recent_search, in the same schema and also SECURITY DEFINER, takes
+-- no user id at all and derives it with `v_user uuid := auth.uid()`. That is
+-- the correct shape.
+--
+-- If these three are ever re-granted, the GRANT must be paired with an
+-- `IF p_user_id <> auth.uid() THEN RAISE` guard inside each body, or the same
+-- hole returns with the grant.
 -- ============================================================================
 
 -- ---------------------------------------------------------------------------
