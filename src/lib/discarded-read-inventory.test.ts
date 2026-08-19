@@ -71,7 +71,6 @@ const INVENTORY: Record<string, number> = {
   'src/components/home/FeaturedProducts.tsx': 1,
   'src/lib/admin/rbac.ts': 1,
   'src/lib/search/indexer.ts': 1,
-  'src/lib/supplier/rbac.ts': 2,
   'src/proxy.ts': 1,
   'src/server/actions/admin/affiliates.ts': 1,
   'src/server/actions/admin/approvals.ts': 2,

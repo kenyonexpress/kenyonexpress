@@ -263,3 +263,79 @@ describe('the role gate on top of membership', () => {
     expect(await roleCheck('scanner', 'manager')).toContain('/supplier?denied=role')
   })
 })
+
+/**
+ * THE READ THAT FAILS, WHICH IS NOT A MEMBERSHIP THAT DOES NOT EXIST.
+ *
+ * A PostgREST query never rejects: it resolves `{ data: null, error }`. Both
+ * reads above used to name only `data`, so an unreachable database and a user
+ * who staffs nobody arrived at every caller as the same value - `null` from
+ * getSupplierSession, `[]` from getSupplierMemberships.
+ *
+ * `[]` is the one that got out. `getVoucherForRedemption` opens with
+ * `if (supplierIds.length === 0) return null`, BEFORE the guarded query that
+ * the 2026-08-20 voucher fix put there, so a failed membership read produced
+ * exactly what that fix exists to prevent while never reaching it:
+ *
+ *   the till is told "הקוד אינו משויך לבית העסק שלכם" about a paid voucher
+ *   a refusal row saying the code does not exist is written to the scan log
+ *
+ * Both are pinned at the call sites (lookup route, /redeem/[token]). These pin
+ * the read itself, which is where the two answers stop being one value.
+ */
+describe('a membership read that fails', () => {
+  /** The same builder shape, resolving the way PostgREST resolves a failure. */
+  function failingQuery(code?: string) {
+    const failure = { data: null, error: { code, message: 'connection terminated' } }
+    const chain = Promise.resolve(failure) as Promise<unknown> & Record<string, unknown>
+    Object.assign(chain, {
+      select: () => chain,
+      eq: () => chain,
+      order: () => chain,
+      limit: () => chain,
+      maybeSingle: () => Promise.resolve(failure),
+    })
+    return chain
+  }
+
+  beforeEach(() => {
+    getUser.mockReset().mockResolvedValue({ data: { user: { id: 'user-1' } } })
+    redirect.mockClear()
+    from.mockReset().mockReturnValue(failingQuery())
+  })
+
+  it('throws out of getSupplierMemberships instead of answering with an empty set', async () => {
+    await expect(getSupplierMemberships()).rejects.toThrow(/memberships_read_failed/)
+  })
+
+  it('throws out of getSupplierSession instead of answering "not a member"', async () => {
+    await expect(getSupplierSession()).rejects.toThrow(/session_read_failed/)
+  })
+
+  it('does not tell a real member they are not staff here', async () => {
+    // The pre-fix path: null session, user present, so requireSupplierMember
+    // sent a genuine supplier to /supplier/access-denied over a transient
+    // failure. An error page is honest; that redirect was not.
+    await expect(requireSupplierMember('/supplier')).rejects.toThrow(/session_read_failed/)
+    expect(redirect).not.toHaveBeenCalled()
+  })
+
+  it('refuses rather than admits, when it cannot tell which', async () => {
+    // The direction matters more than the message: an unreadable membership
+    // must never resolve to a session, whatever else it does.
+    await expect(requireSupplierRole('owner')).rejects.toThrow()
+  })
+
+  it('still treats PGRST116 as the "no row" answer maybeSingle means by it', async () => {
+    // Exempt on purpose: that code IS "staffs nobody" for a maybeSingle, and
+    // the guards already handle it by denying access.
+    from.mockReturnValue(failingQuery('PGRST116'))
+    expect(await getSupplierSession()).toBeNull()
+  })
+
+  it('never reaches the read for a signed-out caller, so there is nothing to fail', async () => {
+    getUser.mockResolvedValue({ data: { user: null } })
+    expect(await getSupplierMemberships()).toEqual([])
+    expect(await getSupplierSession()).toBeNull()
+  })
+})
