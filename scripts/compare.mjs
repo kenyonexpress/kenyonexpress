@@ -339,10 +339,28 @@ const shoot = async (url, out) => {
   // The counts are read off the two shapes the sides actually use: WooCommerce
   // renders `li.product`, ours renders `article`. Neither side has both, so the
   // union counts each card exactly once.
+  //
+  // A COUNT IS NOT A CATALOGUE. Equal counts pass this guard while the two
+  // grids hold entirely different merchandise, and that is not hypothetical:
+  // on 2026-08-19 `--page=products` stopped refusing (both sides counted the
+  // same) and scored 31.92%, and the band crop at y900-1100 showed live's
+  // restaurant dishes against our bags, phones and wine. So the titles come
+  // back too, and the guard below reads them.
   if (COUNTED_GRIDS.has(page)) {
-    gridCounts[external ? 'live' : 'mine'] = await p.evaluate(
-      () => document.querySelectorAll('li.product, article').length,
-    )
+    const grid = await p.evaluate(() => {
+      const cards = [...document.querySelectorAll('li.product, article')]
+      const titles = cards
+        .map((c) =>
+          (c.querySelector('h2, h3, .woocommerce-loop-product__title')?.textContent ?? '')
+            .trim()
+            .replace(/\s+/g, ' ')
+            .toLowerCase(),
+        )
+        .filter(Boolean)
+      return { count: cards.length, titles }
+    })
+    gridCounts[external ? 'live' : 'mine'] = grid.count
+    gridTitles[external ? 'live' : 'mine'] = grid.titles
   }
   // EVERY IMAGE BELOW THE FOLD MUST BE ASKED FOR BEFORE THE PAGE IS SHOT.
   //
@@ -465,6 +483,7 @@ const shoot = async (url, out) => {
 
 const cartEmptiness = { live: null, mine: null }
 const gridCounts = { live: null, mine: null }
+const gridTitles = { live: [], mine: [] }
 // THE SEARCH PAGE BELONGS HERE TOO, AND LEAVING IT OUT COST A DAY OF NUMBERS.
 //
 // The rule below was written for /category and /shop. `--page=search` scores
@@ -562,6 +581,43 @@ if (
     'Seed the two catalogues to the same count, pin a category that already matches, or run with COMPARE_ALLOW_GRID_MISMATCH=1 to score the mismatch deliberately.',
   )
   process.exit(3)
+}
+
+// SAME COUNT, DIFFERENT PRODUCTS, AND THE COUNT CANNOT SEE IT.
+//
+// MEASURED 2026-08-19 on `--page=products`: both grids held exactly 24 cards,
+// so the count guard above passed and the run scored 31.92% as though that were
+// a fidelity number. The titles say otherwise. Both sides sort alphabetically,
+// 14 of the 24 products exist on both, and the local catalogue carries 10 that
+// live does not while missing 9 that it has -- so from the fourth card on,
+// every slot holds a different product, and only 7 of 24 slots agree.
+//
+// The test is POSITIONAL and not set overlap, because position is what pixels
+// are: a product that exists on both sides but sits two rows lower contributes
+// exactly as much mismatch as one that does not exist at all. Set overlap was
+// 58% on the run that produced 31.92%, which would have passed a threshold on
+// overlap and taught the next reader that the shop page has a design problem.
+if (
+  COUNTED_GRIDS.has(page) &&
+  gridTitles.live.length > 0 &&
+  gridTitles.mine.length > 0 &&
+  process.env.COMPARE_ALLOW_GRID_MISMATCH !== '1'
+) {
+  const slots = Math.min(gridTitles.live.length, gridTitles.mine.length)
+  let aligned = 0
+  for (let i = 0; i < slots; i++) if (gridTitles.live[i] === gridTitles.mine[i]) aligned++
+  const share = aligned / slots
+  if (share < 0.8) {
+    const inBoth = new Set(gridTitles.live)
+    const shared = gridTitles.mine.filter((t) => inBoth.has(t)).length
+    console.error(
+      `REFUSING to measure: the two grids hold ${gridCounts.live} cards each, but only ${aligned} of ${slots} slots hold the same product (${Math.round(share * 100)}%). ${shared} of the products exist on both sides, in different places.`,
+    )
+    console.error(
+      'A percentage between two catalogues in different order is a content difference wearing a fidelity number. Seed the local catalogue from live, or run with COMPARE_ALLOW_GRID_MISMATCH=1 to score it deliberately.',
+    )
+    process.exit(3)
+  }
 }
 for (const side of ['live', 'mine']) {
   copyFileSync(runShot(side), `refs/${side}-${page}.png`)
