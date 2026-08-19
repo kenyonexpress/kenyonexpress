@@ -1,5 +1,10 @@
 import { expect, test } from '@playwright/test'
-import { expectHebrewRtl, firstProductHref } from './helpers'
+import {
+  addOpenProductToCart,
+  expectHebrewRtl,
+  firstProductHref,
+  openPurchasableProduct,
+} from './helpers'
 
 /**
  * RTL + phone viewport gates that must not regress independently of desktop.
@@ -101,6 +106,68 @@ test.describe('no sideways scroll at 320px', () => {
       ).toBeLessThanOrEqual(321)
     })
   }
+
+  /**
+   * THE CHECKOUT IN THE LIST ABOVE IS NOT THE CHECKOUT.
+   *
+   * `/checkout` with an empty cart redirects to `/cart`, so that entry measures
+   * the cart at 320px under this route's name and the real form has never been
+   * width-tested at all. Nor have steps 2 to 4: the wizard keeps every step
+   * mounted and hides the ones that are not current, so even a seeded visit
+   * only ever puts `details` on the screen.
+   *
+   * This is the third gate found with that hole on the same day, after the CLS
+   * sweep and the a11y sweep, and all three had `/checkout` in their list.
+   *
+   * It walks with the shopper's own "המשך" button, which refuses a step whose
+   * fields do not validate, so a step this gate reaches is a step a shopper can
+   * reach.
+   */
+  test('every step of a seeded checkout fits 320px', async ({ page }) => {
+    await openPurchasableProduct(page)
+    await addOpenProductToCart(page)
+    await page.goto('/checkout')
+    await page.waitForLoadState('domcontentloaded')
+    expect(page.url(), 'checkout bounced to the cart; the seed did not stick').toContain(
+      '/checkout',
+    )
+
+    const width = async (label: string) => {
+      await page.waitForTimeout(400)
+      const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
+      expect(
+        scrollWidth,
+        `the checkout ${label} step is ${scrollWidth}px wide in a 320px viewport`,
+      ).toBeLessThanOrEqual(321)
+    }
+
+    const next = page.locator('.checkout-nav__next').first()
+    const advance = async (to: string) => {
+      await next.click()
+      await expect(
+        page.locator('.checkout-steps__item[aria-current="step"]'),
+        `the wizard would not advance to ${to}`,
+      ).toContainText(to)
+    }
+
+    await width('details')
+
+    await page.fill('#co-first-name', 'אופיר')
+    await page.fill('#co-last-name', 'בדיקה')
+    await page.fill('#co-phone', '0501234567')
+    await page.fill('#co-email', 'qa@example.com')
+    await advance('כתובת למשלוח')
+    await width('address')
+
+    await page.fill('#co-city', 'תל אביב')
+    await page.fill('#co-street', 'דיזנגוף')
+    await page.fill('#co-number', '10')
+    await advance('ביקורת הזמנה')
+    await width('review')
+
+    await advance('אישור ותשלום')
+    await width('confirm')
+  })
 
   test('a product page fits 320px', async ({ page }) => {
     const href = await firstProductHref(page)

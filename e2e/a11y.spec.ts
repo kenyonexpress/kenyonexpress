@@ -273,3 +273,82 @@ test.describe('the checkout with a seeded cart', () => {
     ).toEqual([])
   })
 })
+
+/**
+ * THE THREE STEPS OF THE CHECKOUT NOBODY HAS EVER SCANNED.
+ *
+ * The sweep above seeds a cart and scans /checkout, and it looks like the money
+ * page is covered. It is not. The whole form stays mounted at every step and
+ * only visibility changes -- `lib/checkout/steps.ts` says so, and gives the
+ * reason: unmounting step 1 to render step 3 would drop the name, phone and
+ * email from `FormData`. The steps that are not current carry the `hidden`
+ * attribute, axe skips hidden content by design, and so a scan on arrival sees
+ * ONLY `details`. The address, the review and the pay screen -- the one with
+ * the terms tickbox and the button that moves money -- have never been in a
+ * gate.
+ *
+ * This is the same shape as the empty-cart bounce on the CLS gate and the six
+ * routes that were the whole a11y sweep before 2026-08-19: the scope was the
+ * bug, and everything inside it was green.
+ *
+ * It walks with the shopper's own controls rather than setting `step` from the
+ * outside, so the gate cannot pass on a state the shopper cannot reach: the
+ * "המשך" button refuses a step whose fields do not validate.
+ */
+test.describe('the checkout wizard, step by step', () => {
+  test('every step of the checkout has no WCAG A/AA violations', async ({ page }) => {
+    await openPurchasableProduct(page)
+    await addOpenProductToCart(page)
+    await page.goto('/checkout')
+    await page.waitForLoadState('domcontentloaded')
+    expect(page.url(), 'checkout bounced to the cart; the seed did not stick').toContain(
+      '/checkout',
+    )
+
+    const next = page.locator('.checkout-nav__next').first()
+    const advance = async (to: string) => {
+      await next.click()
+      await expect(
+        page.locator('.checkout-steps__item[aria-current="step"]'),
+        `the wizard would not advance to ${to}`,
+      ).toContainText(to)
+    }
+
+    // Values that satisfy `validateDetailsStep`: an Israeli mobile and an
+    // address-shaped email are both checked, so placeholders will not do.
+    await page.fill('#co-first-name', 'אופיר')
+    await page.fill('#co-last-name', 'בדיקה')
+    await page.fill('#co-phone', '0501234567')
+    await page.fill('#co-email', 'qa@example.com')
+    await advance('כתובת למשלוח')
+
+    const address = await scan(page)
+    expect(
+      address.violations.map((v) => v.id),
+      `address step\n  ${describe(address)}`,
+    ).toEqual([])
+
+    await page.fill('#co-city', 'תל אביב')
+    await page.fill('#co-street', 'דיזנגוף')
+    await page.fill('#co-number', '10')
+    await advance('ביקורת הזמנה')
+
+    const review = await scan(page)
+    expect(
+      review.violations.map((v) => v.id),
+      `review step\n  ${describe(review)}`,
+    ).toEqual([])
+
+    await advance('אישור ותשלום')
+
+    // Scanned but NOT submitted. The terms box is the last gate before the pay
+    // button, and ticking it is what a shopper about to pay sees, so the state
+    // under test is the one with the box checked and the button live.
+    await page.check('input[name="accept_terms"]')
+    const confirm = await scan(page)
+    expect(
+      confirm.violations.map((v) => v.id),
+      `confirm step\n  ${describe(confirm)}`,
+    ).toEqual([])
+  })
+})
