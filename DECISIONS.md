@@ -108,3 +108,65 @@ Zod (`page-params.ts`). זה נותן RSC טהור (אפס fetch בצד לקוח
 כפול. בוצע עם pnpm, בתוך worktree נפרד
 (`/Users/ofir/kenyonexpress-web/kenyon-audit`) כדי לא להחליף branch
 באמצע עבודת האדמין בתיקייה הראשית.
+
+---
+
+## D-MERGE-1: המיזוג בוצע ב-worktree מבודד, לא ב-`kenyonexpress`
+
+תאריך: 2026-08-19, 08:26.
+
+`STATE.md` הפנה ל-**MISSION-FINAL שלב 1**: למזג `feat/supplier-portal`
+ואז `docs/architecture-night` אל `phase5/homepage`. `AUTOPILOT-PROMPT.md`
+מגדיר שלוש עצירות קשות בלבד, והשלישית היא **"two code agents on the same
+repo path"**.
+
+**נמדד לפני שנגעתי במשהו, ולא הונח:**
+
+```
+lsof -a -p <pid> -d cwd  על כל תהליכי claude:
+  9183   /Users/ofir/kenyonexpress-web/kenyonexpress
+  9460   /Users/ofir/kenyonexpress-web/kenyonexpress
+  11851  /Users/ofir/kenyonexpress-web/kenyonexpress   (מונע ע"י kenyon-loop.sh)
+  33275  /Users/ofir/kenyonexpress-web/kenyonexpress   (אותו prompt שלי)
+  32562  pnpm build רץ באותו רגע באותה תיקייה
+
+git log -1 phase5/homepage -> bf4a9aa17, 2026-08-19 08:25:20
+השעה בזמן הבדיקה        -> 2026-08-19 08:26:46
+```
+
+כלומר ארבעה סוכנים חולקים את נתיב ה-repo שאליו המיזוג אמור לכתוב, וקומיט
+נחת על הענף **86 שניות** קודם. זו העצירה הקשה במילים שלה.
+
+**ההכרעה, לפי הכלל "pick the production-safest option, record, continue":**
+לא לוותר על המשימה ולא להריץ אותה בנתיב המשותף. המיזוג בוצע ב-worktree
+חדש `ke-merge` על ענף חדש `merge/supplier-and-arch-night`, שנולד מ-
+`phase5/homepage`. שום דבר לא נכתב ל-`phase5/homepage` ולא לנתיב המשותף.
+
+**מה זה משאיר לאופיר:** במקום להתיר התנגשות תלת-כיוונית בקוד, נשאר
+fast-forward או merge של ענף אחד שכבר עבר את השערים. אם `phase5/homepage`
+התקדמה בינתיים, ההתנגשות תתגלה במיזוג הזה ולא בעץ עבודה שארבעה תהליכים
+כותבים אליו.
+
+**למה זה חשוב במיוחד כאן:** את בדיוק ההתנגשות הזאת כבר תיעדנו הלילה ב-
+`MASTER-ARCHITECTURE-v3.md` §0.3, כששני סוכנים על אותו ענף גרמו ל-
+`git add -A` של אחד לבלוע קובץ של השני. שם זה היה docs והנזק היה היסטוריה
+מטעה בלבד. כאן מדובר בקוד ובמסלול הכסף.
+
+## D-MERGE-2: התנגשות `src/lib/cart/pricing.ts` נפתרה לטובת שני הצדדים
+
+שני הענפים שיפרו את אותן שורות, ואף אחד מהם לבדו אינו נכון:
+
+* `phase5/homepage` הוסיף את `unavailableReason(...)`, שמחזיר סיבה
+  ממשית ללקוח, ואת `max_quantity: stockCeiling(...)`.
+* `feat/supplier-portal` הוסיף את השמירה `type != null` ל-`priceable`,
+  כדי שמוצר מסוג שהעגלה לא מכירה (`service`, ובעתיד `recurring`) **לא
+  יתומחר בכלל** במקום להימכר פעם אחת במחיר הפיזי שלו.
+
+**נלקחו שניהם.** ה-`priceable` המחמיר נכנס כקלט ל-`unavailableReason`,
+שמחזיר `'unpriced'` כשהוא false, ולכן `available: reason === null` כבר
+גורר `priceable`. הצד של הפורטל כתב `available: priceable &&
+isAvailable(...)`, ו-`isAvailable` **כבר לא קיים** בענף הזה: לקיחת אותו צד
+כלשונו הייתה שוברת את הבילד.
+
+`type: type ?? 'physical'` נשמר לתצוגה בלבד, עם ההערה המקורית, כי הוא
+נקרא רק בשורות שכבר `available: false`.

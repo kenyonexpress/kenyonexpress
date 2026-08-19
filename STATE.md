@@ -50,6 +50,204 @@ C11(א) נשאר המודל. אין Escrow. soft-launch = קופון בלבד. G
 ---
 
 Updated: 2026-08-10 (autonomous: [68] WhatsApp, geo פר מוצר, ושאריות ה-escrow שעוד שילמו לספק על קופון)
+---
+Updated: 2026-08-11 בוקר (goal-65: product_type selector)
+
+## המשך מ: goal-70 שלב 3, ‏Admin product editor v2
+
+תור goal-70: ‏(1) ✅ rebase+merge ל-`main` · ‏(2) ✅ דוח פערים מיגרציות ·
+‏(3) ‏Admin product editor v2 · ‏(4) ‏compare.mjs אדמין ומוצר · סוף: ‏tag goal-70.
+
+### שלב 1 ✅ — ‏`main` ב-`dc095bb`
+
+‏`feat/product-type` היה 8 לפני ו-0 מאחור, ולכן ה-rebase היה no-op וה-merge
+היה fast-forward נקי. שערים לפני המיזוג: ‏2274 טסטים, ‏type-check, ‏lint,
+ו-`pnpm build` עם 200/200 עמודים. הדחיפה שוב הדפיסה
+`Bypassed rule violations`, כלומר הכלל ב-GitHub עדיין לא אוכף.
+
+### שלב 2 ✅ — דוח פערים, קריאה בלבד, שום apply
+
+שלושת הקבצים ב-`migrations/pending/` **עקביים עם הסכימה החיה**, ואף אחד לא
+הוחל. נמדד מול הקטלוג, לא מול שרשרת הקבצים:
+
+| אובייקט | ב-production | מסקנה |
+| --- | --- | --- |
+| `products.whatsapp_enabled` (003) | חסר | 003 עדיין נחוץ |
+| `homepage_sections`, `banners` (005) | חסרים | 005 עדיין נחוץ |
+| `v_homepage_sections_live`, `v_banners_live` (005) | חסרים | ” |
+| `expire_vouchers()` | קיים, **ועדיין מכיל escrow** | 004 עדיין נחוץ, ההנחה שלו נכונה |
+| `set_updated_at()` | קיים | ראה למטה |
+
+**שלושה ממצאים שדורשים תשומת לב, ואף אחד מהם אינו חוסם:**
+
+1. **‏005 עושה `CREATE OR REPLACE` על פונקציה שהיא לא יצרה.** ‏`set_updated_at()`
+   כבר קיימת בפרודקשן ו-**45 טריגרים תלויים בה**. השוואת הגוף מול `pg_proc`:
+   הטקסט זהה בתו, אותה שפה, לא `SECURITY DEFINER`. כלומר זה no-op אמיתי ולא
+   שינוי התנהגות שקט על 45 טבלאות. ראוי לבדיקה חוזרת אם 005 ישונה.
+2. **שני ה-views ב-005 נושאים `security_invoker = true`**, וההערה שמעליהם מנסחת
+   בדיוק את כשל האבטחה שמצאתי ב-`PENDING-money-integer-fix` (view בלי invoker
+   רץ כבעליו ומוסר כל שורה ל-anon). כלומר 005 עקבי, ו-money-integer-fix הוא
+   החריג.
+3. **הנימוק של 003 נמדד ואומת.** ‏003 מגדיר `whatsapp_enabled DEFAULT false`
+   כי ברירת מחדל true הייתה מדליקה ערוץ תמיכה ל-80 מוצרים בשם 11 ספקים.
+   המדידה: ‏11 ספקים, ל-5 יש whatsapp, ל-5 יש טלפון, **ול-6 אין אף אחד
+   מהשניים**. כלומר הכפתור היה מת על אותם שישה. הנימוק מדויק.
+
+**פער נפרד שנמצא בדרך:** ‏`src/types/database.ts` לא כולל את `products.city`,
+`latitude`, `longitude` למרות ש-113 הוחלה ב-10.08. הטיפוסים לא נוצרו מחדש,
+ולכן כתיבה מוקלדת לעמודות האלה לא תתקמפל. זה חוסם ישירות את שלב 3.
+
+## בדיקת nameservers, ‏11.08 — תואמים, אין פעולה אצל הרשם
+
+**המסקנה: אין אי-התאמה, ואין מה להגדיר אצל רשם הדומיין.** הדומיין כבר מואצל
+ל-Cloudflare במלואו. ארבע מדידות, לא אחת:
+
+| בדיקה | תוצאה |
+| --- | --- |
+| `dig NS kenyonexpress.co.il +short` | `elma.ns.cloudflare.com.` · `derek.ns.cloudflare.com.` |
+| `dig A kenyonexpress.co.il +short` | `172.67.148.28` · `104.21.55.125` |
+| `dig SOA` | `derek.ns.cloudflare.com. dns.cloudflare.com.` |
+| האצלה מרמת ה-TLD ‏`co.il` | אותם שניים, ‏TTL ‏86400 |
+
+הבדיקה הרביעית היא הקובעת. שאילתה ישירה לשרת של רשם `co.il`, בלי רקורסיה,
+מחזירה את שני ה-nameservers של Cloudflare ב-AUTHORITY SECTION. זו רשומת
+ההאצלה **אצל הרשם**, ולא מה שהזון מספר על עצמו, ולכן היא מוכיחה שההגדרה אצל
+הרשם כבר נכונה.
+
+‏Cloudflare מקצה זוג ייחודי לכל zone, ולכן "מה ש-Cloudflare דורש" נמדד ולא
+מנוחש: אם הזוג היה שגוי, ‏Cloudflare לא היה עונה סמכותית, וה-SOA לא היה מגיע
+מ-`derek`. שתי כתובות ה-A הן טווחי anycast של Cloudflare (`104.21.0.0/16`,
+`172.67.0.0/16`), כלומר הדומיין גם עובר דרך ה-proxy ולא רק מואצל.
+
+**מה שהדומיין מגיש כרגע: עדיין הוורדפרס הישן.** ‏`HTTP/2 200`, וה-HTML מכיל
+`wp-content` ו-`wp-includes`. ‏`last-modified` היה `11.08 09:17 GMT`, כלומר
+מישהו עדיין כותב לאתר הזה היום.
+
+**הפעולה הידנית הנדרשת, ואינה אצל הרשם:**
+
+1. ‏**לא** לגעת ב-nameservers. הם נכונים.
+2. לוודא איזה branch ‏Vercel מתייחס אליו כפרודקשן. ברירת המחדל ב-GitHub היא
+   `cursor/add-supabase-3c830` ולא `main`, ולכן דחיפה ל-`main` לא בהכרח מגיעה
+   לאוויר. זה החסם האמיתי לפני כל cutover.
+3. רק אחר כך: לשנות את רשומות ה-A/CNAME **בפאנל של Cloudflare** כך שיצביעו
+   ל-Vercel. זו החלפה של רשומה בתוך zone קיים, לא העברת nameservers.
+4. מי שכותב לוורדפרס היום צריך לדעת מתי מנתקים.
+
+## המשך מ: goal 3 מתוך 5, ‏Geo tags + קרוב אליי
+
+### goal 2 ✅ הושלם, ‏11.08 — והנחת המוצא שלו הייתה שגויה
+
+**ה-61 אינו מספר הייבוא.** הייבוא כבר רץ בקומיט `8404118` ב-07.08 והעלה את
+הקטלוג מ-61 ל-80 (19 שורות חדשות, כולן `draft`). ה-61 הוא מה שכבר היה ב-DB,
+ומתוכם 30 עדיין על `picsum.photos` (`GO-LIVE.md:253`). הייצוא כולו מכיל **45
+מוצרים**, לא 61, ואין בריפו מסלול שמייצר 61 מתוך ה-WXR.
+
+כתיבה ל-DB חסומה ממילא: ‏`SUPABASE_SECRET_KEY` מחזיר 401, ואין `DATABASE_URL`.
+לכן goal 2 בוצע כתיקון הצינור עצמו, ושני הפגמים שנמצאו היו אמיתיים:
+
+**1. הצינור המציא כסף.** ‏`04-project-public.mjs:187` כתב
+`platform_percent: DEFAULTS.platformPercent` **(10)** לכל מוצר מיובא, ועוד
+`commission_percent: 15` ו-`coupon_expiry_days: 365`. זה בדיוק הדבר שהפרויקט
+אוסר: האחוז נקבע פר מוצר, אין לו default בשום מקום, והוא מצולם ל-`order_items`
+בזמן ההזמנה. ‏**44 מוצרים היו עולים לאוויר עם נתח של 10% מכספו של הספק שאיש לא
+בחר.**
+
+‏`emit-missing-products.mjs` כבר תיעד את הסירוב הזה במלואו ב-07.08, אבל הוא
+נכתב כתחליף ל-`04-project-public.mjs` ולא כתיקון שלו, ולכן המקור נשאר טעון:
+מפתח service_role תקין אחד והוא כותב. הביקורת העצמית ב-`FINAL-REPORT.md`
+דיווחה "אין platform_percent קשיח" כנקי כי סרקה את `src/`, וזה יושב ב-`scripts/`.
+תוקן בשני ה-projectors, ‏`DEFAULTS` נוקה משלושת המספרים, ‏4 טסטים.
+
+**2. ‏17 מתוך 28 הקטגוריות היו הבלוג של תבנית Electro.** ‏`lib/wxr.mjs:172`
+קרא `<wp:category>` בלי שום סינון taxonomy. זהו האלמנט של **קטגוריות הבלוג**,
+ואילו `<wp:term>` שמעליו כן מסונן ל-`product_cat`. ייצוא מודרני מכיל את שניהם,
+ולכן podcasts, videos, links-quotes, aside, design ועוד נכנסו לעץ המוצרים.
+הפער תועד ב-`docs/WP-EXPORT-2026-07-29-DRY-RUN.md:212` מול parser שני (11 מול
+28) ונקבע שם ש-11 הוא הנכון, אבל הקורא עצמו לא שונה. עכשיו `<wp:category>`
+נקרא רק כ-fallback כשאין `<wp:term>` כלל, מה ששומר על ייצוא 2016 ישן.
+
+מדידה אחרי התיקון על הייצוא האמיתי (6MB): ‏**11 קטגוריות**, ו-
+`products_without_category` ו-`products_with_dangling_category` נשארו 0.
+
+**נותר פתוח ב-goal 2, דורש בן אדם:** ‏19 הטיוטות צריכות עמלה וספק פר מוצר,
+ל-13 מהן אין קטגוריה, ו-3 שערי validation נכשלים (`media_uploaded` 0/66,
+`redirect_coverage` 98/103, `live_count_parity`). כרטיס הדיל `קופון-טסט` לא
+ייתקן בייבוא: הוא ב-`NOT_MERCHANDISE` ומסונן בכוונה.
+
+**דריפט שנמצא ולא תוקן:** ‏`src/db/schema/commerce.ts:68` מצהיר
+`coupon_expiry_days ... notNull()`, ובפרודקשן העמודה `nullable`. ‏drizzle לא
+בשימוש במסלול הכתיבה, ולכן זה תיעוד שגוי ולא באג פעיל.
+
+שערים: ‏`pnpm test` ‏**2274/2274**, ‏`type-check` ו-`lint` נקיים. קומיטים
+`8819c5d`, `121a780`, נדחפו.
+
+## goal 2 מתוך 5, ייבוא WordPress אמיתי (סגור)
+
+תור 11.08, חמישה goals: ‏(1) ✅ product_type selector · ‏(2) ייבוא WP אמיתי
+‏(61 מוצרים) · ‏(3) ‏Geo tags + קרוב אליי · ‏(4) כפתור WhatsApp פר מוצר ·
+‏(5) ‏trust icons ‏1:1 מהאתר החי.
+
+### goal 1 ✅ הושלם, ‏11.08
+
+הסלקטור **כבר היה בנוי** ‏(`ProductForm.tsx:347-372`, ‏zod ב-
+`products.ts:31`, הסתעפות checkout ב-`checkout.ts:386`, ‏`finalize.ts:458`).
+המדידה מצאה שהמצב השלישי בטופס הוא `recurring`, בעוד ה-enum החי הוא
+`coupon | physical | service`, ולכן שמירת מוצר recurring נכשלת היום. זה בדיוק
+מה ש-`recurring-schema-error.ts` קיים כדי לתרגם.
+
+**החסם:** ‏`PENDING-109` הוא migration ללא אישור. **אופיר דחה אותו לשלב 2
+ב-11.08 והורה לא להריץ.** לא הורץ.
+
+מה שכן נמצא ותוקן, שלושתם לא חסומים:
+
+1. **‏`src/lib/cart/pricing.ts:65`** החזיר `'physical'` לכל ערך לא מוכר.
+   ‏`ProductRow.type` הוצהר `'physical' | 'coupon'` בזמן שהעמודה מחזירה גם
+   `service`, ולכן הקומפיילר לא שאל. התוצאה: מנוי היה נמכר פעם אחת במחיר
+   הפיזי, בלי שגיאת טיפוס ובלי טסט אדום. עכשיו מוחזר `null` והשורה נכנסת
+   לאותו מסלול סירוב של `platform_percent` חסר.
+2. **‏`ProductsTable.tsx:182`** הציג `type === 'physical' ? 'פיזי' : 'קופון'`,
+   כלומר מוצר `service` הוצג כ"קופון", התווית היחידה שיש לה משמעות כספית.
+   הוחלף ב-`productTypeBadge` לפי אותו idiom של שאר ה-badges.
+3. **הסכימה לא הייתה ניתנת לבדיקה** כי `'use server'` מייצא רק פונקציות async.
+   הוצאה ל-`src/lib/admin/product-form-schema.ts` בלי שינוי בכללים, ‏12 טסטים
+   על ה-`superRefine` שהוא כל ההיגיון התלוי-מצב.
+
+שערים: ‏`pnpm test` ‏**2268/2268** ב-182 קבצים, ‏`type-check` נקי, ‏`lint` נקי
+ב-880 קבצים, ‏`pnpm build` עובר, ‏`compare.mjs --page=home` ‏**9.84%** מול שער
+של 11%. קומיטים `1a663ce`, `7678127`, נדחפו ל-`origin/feat/product-type`.
+
+**סטטוס נמדד 11.08:**
+
+- `main`: `35c5b07`, ahead 1, **לא נדחף**. (`cc21247` הוא ענף `arch/*`, 65 קומיטים
+  מאחור, ואינו נקודת המשך.)
+- 81 goals סגורים (הלוג מגיע ל-`[81]`; ‏`FINAL-REPORT.md` שמזכיר 64 נכתב ב-07.08).
+- מיגרציות ממתינות: `PENDING-109-recurring-subscriptions`,
+  `PENDING-110-supplier-coordinates`, ו-`PENDING-money-integer-fix` שהוא
+  **חסום, לא skipped**: section 4 בונה מחדש את `v_wallet_ledger` ו-
+  `v_wallet_balance_drift` בלי `security_invoker` ובלי `REVOKE`, ולכן הרצתו
+  הופכת את `v_wallet_balance_drift` מ-service_role בלבד לקריא ל-`anon` עם
+  ‏RLS עקוף. נמדד מול הקטלוג החי.
+- `revoke_anon_writes` ✅ הוחל 10.08 בתור `111_revoke_anon_writes.sql`.
+- שלוש מיגרציות מוחלות בפרודקשן בלי קובץ בריפו:
+  `supplier_app_scanning_crypt_schema`, `stock_reservations_variable_conflict`,
+  `supplier_leads`.
+- ענף עבודה: `feat/product-type`, מסועף מ-`main`. ‏`phase5/homepage` מפגר ב-30.
+
+**goal-65: product_type selector**
+
+1. schema: ‏`product_type` enum + טבלת `subscriptions` (Cardcom Recurring Token)
+2. admin: בורר שלושה מצבים, שדות מותנים לפי type
+3. checkout: הסתעפות לפי `product_type`
+4. tests: vitest + snapshots
+5. `compare.mjs`: מתחת ל-11%
+
+סוף: ‏tag ‏goal-65 + דוח.
+
+**אחרי goal-65:** ‏goal-66+ ‏admin dashboard, ואז integration pass על הענפים.
+
+**התור הישן נשאר פתוח:** ‏`## המשך מ: תור המרתון (20 שלבים), שלב 3` שלמטה מצביע
+על "עגלה מלאה", ו-`product_type` הוא שלב 12 באותו תור. ‏goal-65 גובר עליו לפי
+הוראה מ-11.08; שלב 3 לא בוצע ולא בוטל.
 
 ## דוח סיום — ‏10.08.2026, ‏v1.0.0
 
@@ -130,6 +328,34 @@ Updated: 2026-08-10 (autonomous: [68] WhatsApp, geo פר מוצר, ושאריו�
 ‏(11) ✅ ‏(12) ✅ ‏(13) ✅.
 
 ## המשך מ: תור המרתון (20 שלבים), שלב 5
+---
+## מעבר read-only 11.08 — ארבע בדיקות, שתי הפרכות
+
+‏**‏(1) ‏`docs/FINAL-REPORT.md`** — הקובץ **לא** נמצא בשורש אלא ב-`docs/`.
+‏"What is left" קיים (שורה 152, שמונה סעיפים). ‏**סעיף "Blockers" לא קיים בקובץ
+כלל** — ‏`grep -i blocker` מחזיר אפס התאמות. אין להתייחס אליו כאל סעיף חסר בטעות.
+
+‏**‏(2) ‏`protect-main` — ⛔ לא נמדד, חסר credentials.** ‏`gh auth status`:
+‏"You are not logged into any GitHub hosts". נבדקו שלושה מקורות: משתני סביבה
+‏(`GH_TOKEN`/`GITHUB_TOKEN`) — אין; ‏`~/.config/gh/hosts.yml` — לא קיים;
+‏keychain ‏(`security find-internet-password -s github.com`) — לא נמצא.
+‏`git remote` הוא SSH, שלא מקנה גישה ל-REST API. ‏`gh auth login` אינטראקטיבי
+ולכן לא ניתן להרצה מכאן. **ראיה עקיפה שכן קיים ruleset אבל עם bypass list לא
+ריקה:** כל push ל-`main` הדפיס ‏`remote: Bypassed rule violations`. זו בדיוק
+התקלה ש-`docs/GITHUB-SETTINGS.md` שורה 46 מזהירה עליה.
+
+‏**‏(3) ‏`docs/PAYOUT-ARCHITECTURE.md` — לא קיים.** המסמך הקנוני ל-payout הוא
+‏`docs/ARCHITECTURE-SUPPLIER-PORTAL.md` ‏(46 אזכורי payout; פרקים 7.1–7.4).
+
+‏**‏(4) ההנחה ש-61 המוצרים הם seed דמה — מופרכת.** בפרודקשן יש **80 מוצרים,
+לא 61**. השוואת slug מלאה מול `data-import/wp-backup/kenyonexpress-wxr-2026-07-29.xml`
+‏(47 מוצרי `product` בייצוא): **43 מתאימים ב-slug וגם ב-`name_he` בדיוק**,
+ועוד 3 מתאימים אחרי הסרת `₪` מה-slug. כלומר **46 מ-80 הם ייבוא WP אמיתי**,
+ו-34 בלבד הם seed: 4 מ-03.06 ‏(`samsung-galaxy-s24` וחבריו) ו-30 מ-23.07
+‏(`demo-coupon-1..15`, `demo-physical-1..15`). מחיקת "seed" גורפת הייתה מוחקת
+נתוני WP אמיתיים.
+
+## המשך מ: תור המרתון (20 שלבים), שלב 3
 
 ‏**‏(1) credentials — ⛔ חסום על תלות חיצונית.** ראה למטה.
 ‏**‏(2) ‏CMS דף בית — ✅** קומיט `11f331e`.

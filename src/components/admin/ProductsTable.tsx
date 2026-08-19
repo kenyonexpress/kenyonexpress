@@ -2,7 +2,7 @@
 
 import DataTable, { type DataTableColumn } from '@/components/admin/DataTable'
 import DeleteButton from '@/components/admin/DeleteButton'
-import StatusBadge, { productStatusBadge } from '@/components/admin/StatusBadge'
+import StatusBadge, { productStatusBadge, productTypeBadge } from '@/components/admin/StatusBadge'
 import {
   type BulkPriceInput,
   bulkAdjustPrices,
@@ -177,12 +177,7 @@ export default function ProductsTable({ products, categories }: Props) {
     {
       id: 'type',
       header: 'סוג',
-      cell: (p) => (
-        <StatusBadge
-          label={p.type === 'physical' ? 'פיזי' : 'קופון'}
-          variant={p.type === 'physical' ? 'blue' : 'yellow'}
-        />
-      ),
+      cell: (p) => <StatusBadge {...productTypeBadge(p.type)} />,
     },
     {
       id: 'status',
