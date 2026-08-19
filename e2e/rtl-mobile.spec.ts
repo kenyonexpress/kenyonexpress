@@ -4,6 +4,7 @@ import {
   expectHebrewRtl,
   firstProductHref,
   openPurchasableProduct,
+  raiseInstallBanner,
 } from './helpers'
 
 /**
@@ -201,17 +202,7 @@ test.describe('no sideways scroll at 320px', () => {
   test('the install banner fits 320px', async ({ page }) => {
     await page.goto('/')
     await page.waitForLoadState('domcontentloaded')
-    await page.evaluate(() => {
-      const event = new Event('beforeinstallprompt') as Event & {
-        prompt: () => Promise<void>
-        userChoice: Promise<{ outcome: string }>
-      }
-      event.prompt = async () => {}
-      event.userChoice = Promise.resolve({ outcome: 'dismissed' })
-      window.dispatchEvent(event)
-    })
-
-    const banner = page.getByRole('region', { name: 'התקנת האפליקציה' })
+    const banner = await raiseInstallBanner(page)
     await expect(banner, 'the install banner did not render; nothing was measured').toBeVisible()
     await page.waitForTimeout(300)
 

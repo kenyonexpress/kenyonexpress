@@ -1,6 +1,11 @@
 import AxeBuilder from '@axe-core/playwright'
 import { type Page, expect, test } from '@playwright/test'
-import { addOpenProductToCart, firstProductHref, openPurchasableProduct } from './helpers'
+import {
+  addOpenProductToCart,
+  firstProductHref,
+  openPurchasableProduct,
+  raiseInstallBanner,
+} from './helpers'
 
 /**
  * Goal 18. WCAG 2.1 A + AA, measured with axe-core against the real rendered
@@ -26,7 +31,41 @@ import { addOpenProductToCart, firstProductHref, openPurchasableProduct } from '
 const WCAG_AA = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']
 
 async function scan(page: Page) {
+  await settleToasts(page)
   return new AxeBuilder({ page }).withTags(WCAG_AA).analyze()
+}
+
+/**
+ * WAIT FOR ANY TOAST TO FINISH ANIMATING, THEN SCAN. IT IS NOT A WAY OF NOT
+ * LOOKING AT THE TOAST - the toast is still on the page and still scanned.
+ *
+ * MEASURED 2026-08-20. The cart-panel scan failed one full run with
+ * `color-contrast (serious) x1` on `div[data-title=""]`, and passed alone
+ * every time. That node is the sonner toast's title, and its SETTLED colours
+ * were read off the running page: rgb(0,130,43) on rgb(236,253,243), which is
+ * 4.71:1 - AA, but with 0.21 of margin. Sonner fades a toast in and out, axe
+ * folds opacity into the colour it computes, and a scan that lands mid-fade
+ * measures a lighter green on the same white and drops under 4.5.
+ *
+ * So the flake was real arithmetic on a real element, at a moment no shopper
+ * is asked to read anything. Waiting for opacity 1 measures the toast a
+ * shopper actually sees, and keeps the scan deterministic.
+ *
+ * THE MARGIN IS THE FINDING, and it is recorded in STATE rather than papered
+ * over here: 4.71:1 is sonner's `richColors` palette, not a brand token, and
+ * anything that ever renders it at less than full opacity fails AA.
+ */
+async function settleToasts(page: Page): Promise<void> {
+  await page
+    .waitForFunction(
+      () =>
+        [...document.querySelectorAll('[data-sonner-toast]')].every(
+          (el) => Number(getComputedStyle(el).opacity) === 1,
+        ),
+      undefined,
+      { timeout: 5000 },
+    )
+    .catch(() => undefined)
 }
 
 /** A readable failure: axe's own output is a wall of JSON. */
@@ -477,17 +516,7 @@ test('the install banner has no WCAG A/AA violations', async ({ page }) => {
   await page.goto('/')
   await page.waitForLoadState('domcontentloaded')
 
-  await page.evaluate(() => {
-    const event = new Event('beforeinstallprompt') as Event & {
-      prompt: () => Promise<void>
-      userChoice: Promise<{ outcome: string }>
-    }
-    event.prompt = async () => {}
-    event.userChoice = Promise.resolve({ outcome: 'dismissed' })
-    window.dispatchEvent(event)
-  })
-
-  const banner = page.getByRole('region', { name: 'התקנת האפליקציה' })
+  const banner = await raiseInstallBanner(page)
   await expect(banner, 'the install banner did not render; nothing was scanned').toBeVisible()
 
   const results = await scan(page)

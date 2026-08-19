@@ -99,7 +99,31 @@ test.describe('category archive', () => {
 
     const response = await page.goto(`/category/${slug}`)
     expect(response?.status()).toBe(200)
-    expect(response?.headers()['x-nextjs-postponed']).toBe('1')
+
+    // POSTPONED **OR** PRERENDER, because those are the two shapes of "not
+    // dynamic" and this route legitimately answers with either.
+    //
+    // MEASURED 2026-08-20, after this failed three times in one night and
+    // passed every time it ran alone. The failing responses were not missing a
+    // shell: they carried `x-nextjs-cache: HIT` and `x-nextjs-prerender: 1`
+    // and no `x-nextjs-postponed` - the whole route came out of the full-route
+    // cache as a COMPLETED prerender rather than as a shell to resume. That is
+    // the stronger of the two outcomes, and the old assertion read it as the
+    // regression it was written to catch. Which one arrives depends on whether
+    // that cache entry is warm, so at two workers it moved run to run. A first
+    // theory - that the header was missing only from the first request after
+    // boot - was measured and abandoned: twenty concurrent cookie-less curls
+    // to a nine-second-old server all carried it.
+    //
+    // The regression is still caught. A route that has gone fully dynamic
+    // carries NEITHER header: verified on the same build against
+    // `/account/orders`, which carries neither, while `/category/[slug]`,
+    // `/cart`, `/checkout`, `/search` and `/coupons` each carry at least one.
+    const headers = response?.headers() ?? {}
+    expect(
+      `${headers['x-nextjs-postponed'] ?? ''}${headers['x-nextjs-prerender'] ?? ''}`,
+      `neither postponed nor prerendered, so the archive is rendering dynamically (cache=${headers['x-nextjs-cache'] ?? 'none'})`,
+    ).not.toBe('')
   })
 
   /**

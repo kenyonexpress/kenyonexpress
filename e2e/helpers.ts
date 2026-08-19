@@ -1,4 +1,4 @@
-import { type Page, expect } from '@playwright/test'
+import { type Locator, type Page, expect } from '@playwright/test'
 
 /**
  * Catalog content is DB-driven and the slugs are Hebrew, so specs discover a
@@ -232,4 +232,41 @@ export async function addOpenProductToCart(page: Page): Promise<void> {
       ].join(' '),
     )
   }
+}
+
+/**
+ * Raises the PWA install banner, and keeps asking until it is up.
+ *
+ * WHY IT DISPATCHES MORE THAN ONCE. The banner renders off a captured
+ * `beforeinstallprompt`, and the listener that captures it is attached by a
+ * client component on mount. Both callers used to fire the event once, right
+ * after `domcontentloaded`, which is BEFORE hydration - so the whole test hung
+ * on whether hydration won a race against one synchronous dispatch. Measured
+ * 2026-08-20 at two workers: both install-banner tests failed in the same full
+ * run with "the install banner did not render", and both passed alone. The
+ * component was never involved; nothing was scanned and nothing was measured,
+ * which is the worst way for an a11y check to be green or red.
+ *
+ * Re-dispatching costs nothing - the component's handler only calls
+ * `preventDefault` and stores the event - and it turns a race into a poll.
+ */
+export async function raiseInstallBanner(page: Page): Promise<Locator> {
+  const banner = page.getByRole('region', { name: 'התקנת האפליקציה' })
+  const fire = () =>
+    page.evaluate(() => {
+      const event = new Event('beforeinstallprompt') as Event & {
+        prompt: () => Promise<void>
+        userChoice: Promise<{ outcome: string }>
+      }
+      event.prompt = async () => {}
+      event.userChoice = Promise.resolve({ outcome: 'dismissed' })
+      window.dispatchEvent(event)
+    })
+
+  for (let attempt = 0; attempt < 20; attempt++) {
+    await fire()
+    if (await banner.isVisible().catch(() => false)) return banner
+    await page.waitForTimeout(250)
+  }
+  return banner
 }
