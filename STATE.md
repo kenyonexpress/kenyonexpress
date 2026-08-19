@@ -2,6 +2,30 @@
 
 Updated: 2026-08-19 (docs night on `ke-arch`: MORNING-REPORT.md, queue complete)
 
+## ⛔ מדיניות ענפים מחייבת (19.08.2026)
+
+**כל הסוכנים ממשיכים מ-`phase5/homepage` בלבד, עד ה-merge המרוכז.**
+
+* אסור לכתוב ל-`main`. לא commit, לא push, לא merge. `main` קפוא עד המיזוג המרוכז האחד.
+* כל branch עבודה חדש נולד מ-`phase5/homepage` וחוזר אליו.
+* `phase5/homepage` קיבלה fast-forward מ-`ke-arch` (שני קומיטי docs), והיא כעת הקודקוד העדכני ביותר.
+
+### מצב ה-worktrees ברגע ההחלטה
+
+```
+kenyonexpress   phase5/homepage       <- הגזע היחיד
+ke-arch         arch/docs-batch-2
+ke-arch-night   docs/architecture-night
+ke-docs-pack    arch/docs-queue
+ke-e2e          test/e2e-full         <- נולד מ-phase5/homepage
+ke-quality      feat/e2e-quality
+ke-supplier     feat/supplier-portal
+```
+
+ששת הענפים האחרים ממשיכים לרוץ, אבל היעד שלהם הוא `phase5/homepage`, לא `main`.
+
+---
+
 ## המשך מ: MISSION-FINAL שלב 1 (merge supplier + arch-night)
 
 לילה 19.08 **נסגר**. ענף `ke-arch`, docs בלבד, אסור היה לגעת בקוד.
