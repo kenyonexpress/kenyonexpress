@@ -191,9 +191,45 @@ export async function addOpenProductToCart(page: Page): Promise<void> {
   await expect(addButton).toBeVisible()
   await expect(addButton).toBeEnabled()
   await addButton.click()
-  await expect
-    .poll(async () => (await addButton.isEnabled()) && (await headerCartCount(page)) > before, {
-      timeout: DISCOVERY_TIMEOUT,
-    })
-    .toBe(true)
+  try {
+    await expect
+      .poll(async () => (await addButton.isEnabled()) && (await headerCartCount(page)) > before, {
+        timeout: DISCOVERY_TIMEOUT,
+      })
+      .toBe(true)
+  } catch {
+    // A REFUSAL AND A DEAD BUTTON FAIL IDENTICALLY, AND ONE OF THEM IS NOT A BUG.
+    //
+    // The poll above is correct and stays: on a refusal `settle()` rolls the
+    // count back, so the condition is false either way. What it cannot do is
+    // say WHICH, and every caller inherited the same message -- "Timeout
+    // 15000ms exceeded while waiting on the predicate" at this line -- for two
+    // completely different situations. STATE.md carries a whole paragraph
+    // explaining that a recurring set of these is not a regression, which is
+    // the cost of a failure that does not name itself.
+    //
+    // On this machine the usual cause is the third case and not a product bug
+    // at all: the guest cart's stock read goes through the admin client, the
+    // local SUPABASE_SECRET_KEY is the stock demo key, and the hosted project
+    // answers `Invalid API key`. Measured 2026-08-19, the server logging
+    // `stock.available_read_failed` with that reason while this poll timed out.
+    //
+    // `toast.error` in CartProvider carries the server's own words, so they go
+    // into the message when there are any.
+    const refusal = await page
+      .locator('[data-sonner-toast][data-type="error"]')
+      .first()
+      .textContent({ timeout: 1000 })
+      .catch(() => null)
+    const after = await headerCartCount(page)
+    throw new Error(
+      [
+        `add-to-cart did not stick: the header badge went ${before} -> ${after}.`,
+        refusal
+          ? `The cart refused it and said: ${refusal.trim()}`
+          : 'No error toast was raised, so the click either never reached the server or the answer never came back.',
+        'If the server log shows `Invalid API key`, this is the known SUPABASE_SECRET_KEY blocker and not a regression.',
+      ].join(' '),
+    )
+  }
 }
