@@ -12,8 +12,11 @@ if (!process.env.PLAYWRIGHT_BROWSERS_PATH) {
 }
 
 const toDataUrl = (p) => `data:image/png;base64,${readFileSync(resolve(p)).toString('base64')}`
-const liveUrl = toDataUrl('refs/live.png')
-const mineUrl = toDataUrl('refs/mine.png')
+// compare.mjs shoots to a per-process path so two concurrent runs in one
+// working directory cannot overwrite each other's evidence between the shot and
+// this diff. Run standalone, the stable names are still the right default.
+const liveUrl = toDataUrl(process.env.COMPARE_LIVE_PNG ?? 'refs/live.png')
+const mineUrl = toDataUrl(process.env.COMPARE_MINE_PNG ?? 'refs/mine.png')
 
 const b = await chromium.launch()
 const page = await b.newPage()

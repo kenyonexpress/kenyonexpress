@@ -28,6 +28,14 @@
   font-weight: 500;
   color: #333e48;
   margin: 0 0 48px;
+  /* Measured on the live /checkout/ with an item in the cart, not chosen:
+     `header.entry-header` there computes to `text-align: center` while every
+     other block on the page computes to `start`. The centres coincide exactly
+     even though the containers differ - live is 1170 wide at x135, ours is
+     1290 at x75, and both are centred on the 1440 viewport, so the glyphs land
+     on the same pixels. Left as `start` this was the single largest fixable
+     contribution to the y200-400 bands. */
+  text-align: center;
 }
 
 /* Guest notice. Live renders the same strip above the form for a visitor with
