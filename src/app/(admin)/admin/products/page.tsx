@@ -1,5 +1,6 @@
 import ProductsTable, { type ProductRow } from '@/components/admin/ProductsTable'
 import { productListParamsSchema } from '@/lib/admin/page-params'
+import { requireSection } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
@@ -24,6 +25,15 @@ interface Props {
 }
 
 export default async function AdminProductsPage({ searchParams }: Props) {
+  // The catalogue list was the ONE page in this group with no guard of its own.
+  // `(admin)/layout.tsx` calls requirePanelSession(), but a layout does not gate
+  // its children: in the App Router a layout and the page below it render in
+  // PARALLEL, and `children` is an element the layout receives already built.
+  // A redirect() up there discards the output, it does not prevent this
+  // function from running and querying. Read access is the right level here:
+  // 'write' would lock out content_uploader, who is allowed to see the list.
+  await requireSection('catalog', 'read')
+
   const raw = await searchParams
   const parsed = productListParamsSchema.safeParse({
     q: typeof raw.q === 'string' ? raw.q : undefined,
