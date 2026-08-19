@@ -124,9 +124,29 @@ function pageWindow(total: number, page: number) {
   return { totalPages, currentPage, from, to }
 }
 
+/**
+ * A page past the end is not an empty filter. Same helper as /products, for the
+ * same reason: PostgREST answers an out-of-range `range()` with no rows AND no
+ * count, so `total` comes back 0 and cannot tell "past the end" from "nothing
+ * matched". The second read of page 1 only runs on a page that already had
+ * nothing to show, and both boundaries call this so they describe one page.
+ */
+async function categoryPageOrLast(args: QueryArgs) {
+  const first = await getCategoryProductsCached(cacheableArgs(args))
+  if (first.items.length > 0 || args.page <= 1) return first
+
+  const head = await getCategoryProductsCached(cacheableArgs({ ...args, page: 1 }))
+  if (head.total === 0) return first
+
+  const lastPage = Math.max(1, Math.ceil(head.total / CATEGORY_PAGE_SIZE))
+  return lastPage === 1
+    ? head
+    : getCategoryProductsCached(cacheableArgs({ ...args, page: lastPage }))
+}
+
 /** Header count. Shares one query with the grid via getCategoryProductsCached. */
 async function ResultCount({ args }: { args: QueryArgs }) {
-  const { total } = await getCategoryProductsCached(cacheableArgs(args))
+  const { total } = await categoryPageOrLast(args)
   if (total === 0) return null
   const { from, to } = pageWindow(total, args.page)
   return <p className="category-page__count">{resultCountText(total, from, to)}</p>
@@ -141,7 +161,7 @@ async function ResultGrid({
   pathname: string
   linkParams: Record<string, string | undefined>
 }) {
-  const { items, total } = await getCategoryProductsCached(cacheableArgs(args))
+  const { items, total } = await categoryPageOrLast(args)
 
   // Nearest first, applied after the cached read. `sortByDistance` returns the
   // list unchanged when there is no origin, so the default page is untouched.
