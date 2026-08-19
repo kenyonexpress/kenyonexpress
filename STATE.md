@@ -1,8 +1,103 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-19 (docs: CONTENT-OPERATIONS-GUIDE.md on phase5/homepage)
+Updated: 2026-08-19 (AUTOPILOT (11) AUTH הושלם. `docs/AUTH-MODEL.md`)
 
-## המשך מ: תור AUTOPILOT (11) AUTH
+## המשך מ: תור AUTOPILOT (12) PAYMENTS VERIFY
+
+## ⛔ עצירה מאושרת: שני סוכני קוד על אותו repo (19.08, 09:15)
+
+**זהו אחד מארבעת מצבי העצירה, והוא נמדד ולא משוער.** `pgrep` מצא שני תהליכי
+`claude` על **אותה תיקיית עבודה**, לא על worktrees נפרדים:
+
+| PID | הפרומפט |
+| --- | --- |
+| 47227 | `Read AUTOPILOT-PROMPT.md and STATE.md. Continue from 'המשך מ:'...` |
+| 47240 | `קרא MISSION-FINAL.md ו-STATE.md ועבוד אוטונומי לפי התור...` |
+
+**הראיה שזה כבר גרם נזק:** ה-HEAD זז מתחת לסשן הזה תוך כדי עבודה. בתחילת
+הסשן הוא היה `6c7175b5b`; באמצע הוא היה `68118f66a` — **קומיט חדש עם אותה
+הודעה בדיוק**, שהוסיף בלוק `[FINAL EXIT PROTOCOL]` כפול ל-`AUTOPILOT-PROMPT.md`.
+כלומר שני הסוכנים ביצעו את אותו שלב, וכתבו את אותו קובץ, פעמיים.
+
+**למה זה מסוכן ולא רק מבזבז:** שניהם חולקים תיקיית עבודה אחת. `git checkout`,
+`git stash` או `git merge` של אחד מוחק את הקבצים שהשני ערך ועדיין לא ביצע
+עליהם commit. זה בדיוק התרחיש של `HANDOVER-ARCH-NIGHT-COLLISION.md`.
+
+**מה נעשה כדי שכלום לא ילך לאיבוד:** העבודה של (11) הושלמה, עברה את כל
+השערים, בוצע commit (`a82c8c373`), מוזגה עם origin ונדחפה (`75981a3b3`).
+**הסשן הזה לא מתחיל את (12).**
+
+**מה שאופיר צריך לעשות, אחד משניים:**
+1. להרוג את אחד משני התהליכים: `kill 47227` או `kill 47240`, ולתת לנותר להמשיך.
+2. או לתת לכל אחד worktree משלו, כמו במדיניות הענפים למטה.
+
+---
+
+## ‏(11) AUTH — ✅ הושלם. `docs/AUTH-MODEL.md`
+
+**נמדד מול פרודקשן (`ixvwfbuvfxxsjiywhbbb`), לא הוסק מ-`supabase/migrations/`.**
+
+### החור שנמצא ונסגר
+
+‏`/admin/products` היה **בלי guard**. הוא נשען על `(admin)/layout.tsx` לבדו,
+וה-layout קורא `requirePanelSession` — שמוכיח **כניסה לפאנל** ותו לא. משתמש
+`support`, שמטריצת ההרשאות שוללת ממנו קטלוג במפורש, יכול היה לפתוח את רשימת
+המוצרים המלאה כולל `platform_percent` ו-`coupon_price_ils`. כל שאר המסכים
+תחת `/admin/products/*` כן דרשו `requireSection('catalog', ...)`.
+
+### השערים שנוספו ל-CI
+
+| שער | מה הוא בודק | נבדק שהוא נופל? |
+| --- | --- | --- |
+| `src/lib/auth/route-guards.test.ts` | ‏48 קבצי route תחת `(admin)`, `(supplier)`, `api/admin`, `api/supplier` | ✅ הסרת השורה החדשה מפילה אותו עם שם הקובץ |
+| `src/lib/auth/rls-manifest.test.ts` | ‏53 טבלאות, RLS + policies | ✅ |
+| `scripts/check-rls.mjs` | מדידה מחדש ו-diff מול ה-manifest | ✅ מדידה "מורעלת" יוצאת 1 |
+
+### מה שנמדד
+
+| שאלה | מדידה |
+| --- | --- |
+| טבלאות ב-`public` | ‏53 |
+| מתוכן עם RLS דלוקה | ‏**53** |
+| בלי policies | ‏8, וכולן מנומקות ב-`supabase/rls-manifest.json` |
+| policies שאינן SELECT בכל הסכימה | ‏74 |
+| מתוכן שמזכירות ספק | ‏**3 בלבד**, כולן על `supplier_members`, כולן `is_supplier_owner()` |
+
+כלומר **הספק הוא קריאה-בלבד ב-RLS**: בעל עסק מנהל את הצוות שלו ותו לא. אין
+נתיב כתיבה ל-`products`, `orders`, `order_items`, `vouchers`, `payments`.
+מימוש שובר עובר דרך `redeem_voucher()` — SECURITY DEFINER שגוזרת את הספק
+מ-`auth.uid()` בעצמה.
+
+### הגבלות קצב
+
+נוספו שלוש: `login-account:<email>`, `reset-address:<email>`,
+`update-password:<ip>`. תקרה לפי IP היא תקרה על **חיבור אחד של תוקף**, לא על
+**חשבון אחד של לקוח**; רשימת proxies קונה את המכסה מחדש לכל proxy. נוסח
+הסירוב זהה לקיים — הודעה שונה הייתה מאשרת שהכתובת רשומה.
+
+### החלטות שהתקבלו לבד
+
+**התור ביקש Upstash. לא בוצע, ובכוונה.** לפרויקט **אין אישורי Upstash Redis
+בכלל** — לא פגי תוקף, פשוט לא קיימים ב-`.env.local` — וה-`QSTASH_TOKEN`
+היחיד שכן קיים תועד ב-11.08 כמחזיר 401. `check_rate_limit()` נמדדה SECURITY
+DEFINER ומוענקת ל-`anon`+`authenticated`, וכל התקרות כבר רצות עליה. החלפת
+מנגנון שנמדד עובד במנגנון בלי אישורים הייתה מאפסת את כל האכיפה בפרודקשן ביום
+העלייה. נקודת ההחלפה היחידה אם ייפתח חשבון: `src/lib/utils/rate-limit.ts`.
+
+### שני ממצאים שתועדו ולא שונו
+
+1. **‏`checkRateLimit` היא fail-open.** מכוון — מונה תקול לא ינעל לקוחות
+   אמיתיים. המחיר: תקלה ב-`rate_limits` מסירה את כל התקרות בבת אחת. צריך
+   alert על `rate_limit.check_failed`.
+2. **‏`check_user_rate_limit` לא מוענקת ל-`authenticated`** (רק `postgres`
+   ו-`service_role`). כרגע **אין לה אף קורא ב-`src/`**, ולכן זו לא פרצה חיה,
+   אבל מי שיוסיף קורא דרך הלקוח המשתמשי יקבל `permission denied` שה-fail-open
+   יהפוך ל"מותר" בשקט.
+
+**שערים:** ‏2441/2441 טסטים, ‏type-check 0, ‏lint 0, ‏build 0.
+**קומיטים:** ‏`a82c8c373`, מוזג ונדחף ב-`75981a3b3`.
+
+---
 
 **‏(10) DB HARDENING — ✅ בוצע כאודיט. ‏`docs/DB-HARDENING-AUDIT.md`.**
 **לא הורצה שום DDL על פרודקשן.**
