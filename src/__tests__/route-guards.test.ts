@@ -56,6 +56,58 @@ const NO_GUARD_NEEDED: Record<string, string> = {
     're-export alias; the guard lives in api/supplier/vouchers/redeem',
 }
 
+/**
+ * Strips comments, string literals and template literals before matching.
+ *
+ * THIS IS WHAT MAKES THE TEST A TEST. Without it the check is a substring
+ * search over the raw file, and a page that merely MENTIONS a guard in a
+ * comment passes while being wide open.
+ *
+ * That is not hypothetical. Two agents wrote this suite independently on
+ * 2026-08-19 and BOTH shipped the raw `source.includes(call)` form; both were
+ * verified by mutation to pass a deliberately unguarded
+ * `admin/products/page.tsx`, because the comment explaining why the layout is
+ * not a guard contains the word `requirePanelSession`. The header of THIS file
+ * contains it too.
+ *
+ * A guard-coverage test that cannot see a missing guard is worse than no test,
+ * because it is also a claim.
+ */
+function stripCommentsAndStrings(source: string): string {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, ' ') // block comments, including JSDoc
+    .replace(/\/\/[^\n]*/g, ' ') // line comments
+    .replace(/'(?:[^'\\\n]|\\.)*'/g, "''") // single-quoted strings
+    .replace(/"(?:[^"\\\n]|\\.)*"/g, '""') // double-quoted strings
+    .replace(/`(?:[^`\\]|\\.)*`/g, '``') // template literals
+}
+
+/**
+ * The redirect-free guard, used where a redirect would be the wrong answer.
+ *
+ * `src/app/api/admin/reports/[report]/route.ts` is the case: it is a DOWNLOAD.
+ * `requireSection` ends in `redirect()`, and a 307 to /login in answer to a
+ * download reaches the user as a file named `login` containing an HTML page.
+ * So it reads the session and checks the matrix by hand, and answers 403 with a
+ * body that says so.
+ *
+ * Both halves are required. `getSessionWithRole()` on its own is a READ with no
+ * decision attached, so accepting it alone would let a route that merely looks
+ * up who is calling count as guarded.
+ */
+function callsSessionPlusMatrixCheck(code: string): boolean {
+  const readsSession = /\bgetSessionWithRole\s*\(/.test(code)
+  const checksMatrix = /\b(canReadSection|canWriteSection)\s*\(/.test(code)
+  return readsSession && checksMatrix
+}
+
+/** True when `source` CALLS a guard, rather than naming one. */
+function callsAGuard(source: string): boolean {
+  const code = stripCommentsAndStrings(source)
+  if (GUARD_CALLS.some((call) => new RegExp(`\\b${call}\\s*\\(`).test(code))) return true
+  return callsSessionPlusMatrixCheck(code)
+}
+
 function walk(dir: string): string[] {
   const out: string[] = []
   for (const entry of readdirSync(dir)) {
@@ -97,16 +149,41 @@ describe('privileged routes call a guard of their own', () => {
   it.each(files)('%s', (file) => {
     if (file in NO_GUARD_NEEDED) return
     const source = readFileSync(file, 'utf8')
-    const guarded = GUARD_CALLS.some((call) => source.includes(call))
-    expect(guarded, `${file} calls no guard from ${GUARD_CALLS.join(', ')}`).toBe(true)
+    expect(callsAGuard(source), `${file} calls no guard from ${GUARD_CALLS.join(', ')}`).toBe(true)
+  })
+
+  it('does not accept a guard named in a comment or a string as a guard', () => {
+    const decoy = [
+      '// the layout calls requirePanelSession(), which does not cover children',
+      '/** requireSection is deliberately not called here. */',
+      "const hint = 'call requireAdminPage() first'",
+      'export default async function Page() { return null }',
+    ].join('\n')
+    expect(callsAGuard(decoy)).toBe(false)
+
+    // And a real call is still seen, so the strip is not simply eating everything.
+    expect(
+      callsAGuard('export default async function P(){ await requireSection("catalog") }'),
+    ).toBe(true)
+  })
+
+  it('accepts the redirect-free guard only when the matrix is actually checked', () => {
+    const both =
+      'const s = await getSessionWithRole(); if (!s || !canReadSection(s.role, "payments")) return new Response("", { status: 403 })'
+    expect(callsAGuard(both)).toBe(true)
+
+    // Reading who is calling, and then doing nothing with it, is not a guard.
+    const sessionOnly = 'const s = await getSessionWithRole(); return Response.json(await rows())'
+    expect(callsAGuard(sessionOnly)).toBe(false)
   })
 
   it('keeps the allowlist honest', () => {
     // An allowlisted file that has grown a database read is no longer the
     // trivial stub it was allowlisted as.
     for (const [file, reason] of Object.entries(NO_GUARD_NEEDED)) {
-      const source = readFileSync(file, 'utf8')
+      const source = stripCommentsAndStrings(readFileSync(file, 'utf8'))
       expect(source, `${file} was allowlisted as: ${reason}`).not.toContain('createClient')
+      expect(source, `${file} was allowlisted as: ${reason}`).not.toContain('createAdminClient')
     }
   })
 })
