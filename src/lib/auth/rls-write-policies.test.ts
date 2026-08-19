@@ -133,6 +133,8 @@ describe('the write side of RLS', () => {
       split_executions: 'the executed money split, per order item. Immutable once written.',
       escrow_holds:
         'abolished model, two historical rows. Nothing may write here again, by any path.',
+      wallet_entries:
+        'the live cashback ledger, and the one step (19) calls append-only. Double-entry: every row names a debit_account and a credit_account, so a balance is the sum of its entries and nothing else. An UPDATE path would let a corrected row silently restate a balance that was already shown to a customer; the correction a ledger allows is a second, compensating entry. Written only by the service role, from the checkout return path.',
     }
 
     it.each(Object.entries(IMMUTABLE_TO_THE_API))('%s has no write policy at all', (table) => {
@@ -169,7 +171,16 @@ describe('the write side of RLS', () => {
   })
 
   describe('the money tables that DO allow writes', () => {
-    /** Admin-gated, deliberately: an operator has to be able to fix a bad row. */
+    /**
+     * Admin-gated, deliberately: an operator has to be able to fix a bad row.
+     *
+     * `wallet_transactions` and `wallet_balances` are here for a narrower
+     * reason than the other two, and it is worth not misreading them as the
+     * wallet. They are the superseded single-entry wallet from migration 006.
+     * Both hold 0 rows, no code writes to either, and the only reader left is
+     * the admin user page. The ledger the site actually runs on is
+     * `wallet_entries`, which is asserted above to have no write policy at all.
+     */
     const ADMIN_ONLY = ['order_items', 'orders', 'wallet_transactions', 'wallet_balances']
 
     it.each(ADMIN_ONLY)('%s is writable only behind is_admin()', (table) => {
