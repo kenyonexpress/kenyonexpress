@@ -1,30 +1,56 @@
 /**
- * Settlement lifecycle of an order line (and, derived, of an order), under
- * C11 version (b), decided 2026-07-27: a coupon prepayment is held for the
- * supplier until the voucher is scanned.
+ * Settlement lifecycle of an order line, and, derived, of an order.
+ *
+ * THE MODEL, AND WHAT THIS COMMENT USED TO SAY.
+ *
+ * A coupon prepayment is NOT held for the supplier. The customer pays the
+ * admin-set absolute `coupon_price` on the site, and 100% of that charge stays
+ * with the platform permanently. The balance is collected by the business at
+ * the counter, in cash, and never enters the platform. Scanning the voucher
+ * moves no money.
+ *
+ * This docstring previously described the opposite -- "C11 version (b) ... a
+ * coupon prepayment is held for the supplier until the voucher is scanned" --
+ * and gave the coupon happy path as
+ * `pending -> paid -> escrow_held -> escrow_released`. Neither state has
+ * existed in `SettlementState` for some time, and the TRANSITIONS table below
+ * has never contained them, so the comment contradicted the code eight lines
+ * under it and contradicted its own closing paragraph. The code was right.
  *
  * Physical happy path: pending -> paid -> split_executed
- *   (the whole charge splits the moment the order is paid)
- * Coupon happy path:   pending -> paid -> escrow_held -> escrow_released
- *   (the platform keeps platform_percent of the prepayment at paid-time; the
- *   remainder is held per voucher and released by the same transaction that
- *   redeems it, once no voucher of the line is still outstanding)
- * Failure paths: pending -> cancelled;
- *   paid | escrow_held | split_executed -> refunded
+ *   The whole charge splits the moment the order is paid, by the per-product
+ *   platform_percent snapshotted onto the order line.
  *
- * Every state here is a live `settlement_status` enum value, verified against
- * the hosted project. Two of them are LEGACY and no new row enters them:
+ * Coupon happy path:   pending -> paid -> split_executed
+ *   The same states, because the same event happened: the split occurred. Only
+ *   the percentages differ. A coupon line splits 100/0, so
+ *   commission_agorot == paid_on_site_agorot and supplier_immediate_agorot is
+ *   zero. There is deliberately no state between `paid` and settled, because
+ *   nothing is deferred and nothing is held.
  *
+ * Failure paths: pending -> cancelled; paid | split_executed -> refunded.
+ *
+ * Every state here is a live `settlement_status` enum value. The database enum
+ * carries nine; this type declares the six that are reachable. The other three
+ * are dead, for three different reasons, and rows written before the model
+ * changed can still hold them:
+ *
+ *   escrow_held, escrow_released - the ABOLISHED escrow model. Nothing writes
+ *     them and nothing may. `server/queries/orders.ts` maps both forward to
+ *     `split_executed` when reading old rows, because both meant "the money
+ *     question for this line is closed".
  *   platform_settled - written by the abolished C11(a) rule, under which the
- *     platform kept the whole prepayment and the supplier got nothing. Kept
- *     refundable so such a row can still be unwound. Zero rows carry it.
+ *     platform kept the whole prepayment and the supplier got nothing. There is
+ *     deliberately no event leading INTO it: it is a state this machine can
+ *     only exit, which is what "legacy, no new row enters it" looks like when
+ *     written as code rather than as a comment. Zero rows carry it.
  *   redeemed - the pre-voucher coupon_codes model recorded consumption on the
- *     line rather than on the voucher. Terminal, like escrow_released.
+ *     LINE rather than on the voucher. Consumption now lives on the voucher.
+ *     Terminal.
  *
- * The write path this mirrors: finalize.ts issues vouchers and settles the
- * coupon line immediately, because the whole prepayment is platform revenue
- * the moment it is charged. Nothing is deferred and nothing is held, so there
- * is no state between paid and settled.
+ * The write path this mirrors: finalize.ts issues one voucher per unit and
+ * settles the coupon line immediately, because the whole prepayment is platform
+ * revenue the moment it is charged.
  */
 export type SettlementState =
   | 'pending'
