@@ -1,4 +1,5 @@
 import { privacyDoc } from './privacy'
+import { returnsDoc } from './returns'
 import { termsDoc } from './terms'
 import type { LegalDoc } from './types'
 
@@ -11,7 +12,7 @@ import type { LegalDoc } from './types'
  * registry, so a document cannot exist as a page and be missing from the
  * navigation, which is the failure mode that leaves a policy unreachable.
  */
-export const LEGAL_DOCS: readonly LegalDoc[] = [termsDoc, privacyDoc]
+export const LEGAL_DOCS: readonly LegalDoc[] = [termsDoc, privacyDoc, returnsDoc]
 
 export type LegalSlug = LegalDoc['slug']
 
