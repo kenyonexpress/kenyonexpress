@@ -115,7 +115,24 @@ export default function MiniCartDropdown() {
     const onPointerDown = (event: PointerEvent) => {
       const target = event.target as Node | null
       if (!target) return
-      if (panelRef.current?.contains(target)) return
+      // THIS PANEL IS `display: none` BELOW 768px, AND A HIDDEN PANEL MUST NOT
+      // DISMISS THE ONE THE SHOPPER CAN SEE.
+      //
+      // Below that width the visible surface is `CartDrawer`'s full-height
+      // sheet, and this component still mounts - CSS hides the markup, it does
+      // not detach the listener. Every point inside that sheet is outside THIS
+      // panel, so the sheet dismissed itself on contact: pressing "הוסף כמות",
+      // "המשך לתשלום", or even its own title closed it. Measured on a 390px
+      // viewport - one tap on `.cart-drawer__title` and the sheet was gone,
+      // which makes the quantity controls unreachable on a phone.
+      //
+      // The check reads the CSS rather than repeating the breakpoint: whatever
+      // width `.mini-cart__panel` is hidden at, it stops acting there. A
+      // `matchMedia('(min-width: 768px)')` here would be a second copy of a
+      // number that already lives in mini-cart.css, which is how this class of
+      // bug is written in the first place.
+      if (!panelRef.current || getComputedStyle(panelRef.current).display === 'none') return
+      if (panelRef.current.contains(target)) return
       // The trigger lives outside the panel and owns its own toggle.
       if ((target as Element).closest?.('[data-mini-cart-trigger]')) return
       closeDrawer()

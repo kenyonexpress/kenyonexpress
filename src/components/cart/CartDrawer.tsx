@@ -84,16 +84,36 @@ export default function CartDrawer() {
   const { cart, drawerOpen, closeDrawer, isPending } = useCart()
   const isAuthenticated = useCartAuth()
 
+  /**
+   * THE SCROLL LOCK IS A CLASS, NOT `body.style.overflow`, AND THE REASON IS
+   * THAT THIS COMPONENT MOUNTS AT WIDTHS WHERE IT IS INVISIBLE.
+   *
+   * `.cart-drawer-root` is `display: none` above 767px - the sheet is the phone
+   * surface, the mini-cart dropdown is the desktop one, and both read the same
+   * `drawerOpen` flag. CSS hides the MARKUP; it does not stop the effect. So
+   * opening the little dropdown on a 1440px desktop set `overflow: hidden` on
+   * the body and the page stopped scrolling, measured with a real wheel
+   * gesture: 0px against a 600px scroll, with only a dropdown on screen.
+   *
+   * That is precisely the modal behaviour `MiniCartDropdown` refuses on purpose
+   * (see the note on `<dialog open>` there): a dropdown is not a modal and must
+   * not freeze the page behind it.
+   *
+   * Putting the lock in CSS keeps the 767px boundary in ONE place, next to the
+   * two `display: none` rules it has to agree with. A `matchMedia` check here
+   * would work today and drift the first time that breakpoint moves - which is
+   * the bug this replaces, in a new spelling.
+   */
   useEffect(() => {
     if (!drawerOpen) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') closeDrawer()
     }
     document.addEventListener('keydown', onKey)
-    document.body.style.overflow = 'hidden'
+    document.body.classList.add('cart-drawer-open')
     return () => {
       document.removeEventListener('keydown', onKey)
-      document.body.style.overflow = ''
+      document.body.classList.remove('cart-drawer-open')
     }
   }, [drawerOpen, closeDrawer])
 

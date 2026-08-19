@@ -545,6 +545,16 @@
   .mini-cart__panel {
     display: none;
   }
+
+  /* The scroll lock belongs to the SHEET, so it lives at the sheet's width.
+     `CartDrawer` sets this class at every width - it mounts whenever the cart
+     is open and only its markup is hidden above - so a lock written in JS
+     froze a 1440px page behind a dropdown. Keeping it here means the lock and
+     the two `display: none` rules cannot disagree about where the boundary is.
+     See the note above the effect in CartDrawer.tsx. */
+  body.cart-drawer-open {
+    overflow: hidden;
+  }
 }
 
 @media (min-width: 768px) {
