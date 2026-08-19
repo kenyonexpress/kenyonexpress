@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process'
-import { copyFileSync, existsSync } from 'node:fs'
+import { copyFileSync, existsSync, rmSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { resolve } from 'node:path'
 import { chromium } from '@playwright/test'
@@ -377,44 +377,52 @@ const shoot = async (url, out) => {
       // been asked for reports complete=false, and one that failed reports
       // complete=true with zero natural width. Both are settled states and
       // neither is worth waiting on, so failures resolve rather than reject.
-      const decodeAll = () =>
+      const settle = () =>
         Promise.all(
           [...document.images].map((img) =>
             img.decode ? img.decode().catch(() => {}) : Promise.resolve(),
           ),
         )
-      await decodeAll()
-      // THE PAGE IS NOT READY UNTIL ITS HEIGHT STOPS GROWING.
+      await settle()
+      // A LAZY IMAGE THAT NEVER ARRIVED IS A PAGE THAT NEVER FINISHED.
       //
-      // MEASURED, 2026-08-19. The scroll pass above fixed WHICH images loaded
-      // and left WHEN the page finished alone, and that was the larger hole.
-      // Three consecutive `--page=home` runs against one build and one live URL:
+      // MEASURED, 2026-08-19. Three `--page=home` runs, one build, one live URL:
       //
       //   live 5492px -> 9.83%   live 5492px -> 9.83%   live 3730px -> 34.54%
       //
-      // The 34.54% run is not a regression and not a flake in the diff. It is
-      // the live homepage screenshotted while 1762px of it had not arrived, so
-      // our footer was scored against live's mid-page. `--page=category` threw
-      // the same 3730px outlier the same morning and printed 25.58% for it.
+      // The 34.54% is not a regression and not noise in the diff. It is the
+      // live homepage shot while 1762px of it was missing, because a lazy
+      // `<img>` that has not loaded has no intrinsic height and collapses the
+      // block it sits in. Our footer was then scored against live's mid-page.
+      // `--page=category` threw the same 3730px capture the same morning and
+      // printed 25.58% for it.
       //
-      // The existing structural guard could not catch either: it compares the
-      // two SIDES to each other, and 3730/5679 is 0.66, inside its 0.62-1.6
-      // band. So the page is now settled against ITSELF - re-measured until two
-      // consecutive readings agree - which is the only signal available without
-      // a stored per-page baseline.
-      let previousHeight = -1
-      for (let attempt = 0; attempt < 8; attempt++) {
-        const height = document.body.scrollHeight
-        if (height === previousHeight) break
-        previousHeight = height
-        window.scrollTo(0, height)
+      // Neither guard already here could catch it. The structural guard
+      // compares the two SIDES to each other and 3730/5679 is 0.66, inside its
+      // 0.62-1.6 band. The scroll pass above fixes WHICH images are asked for
+      // and says nothing about whether the answers came back.
+      //
+      // So the scroll is repeated while any image is still incomplete, and the
+      // count that remains is handed to the caller, which refuses to score a
+      // live capture that still has holes in it.
+      const stillLoading = () => [...document.images].filter((img) => !img.complete).length
+      for (let attempt = 0; attempt < 4 && stillLoading() > 0; attempt++) {
+        for (let y = 0; y < document.body.scrollHeight; y += step) {
+          window.scrollTo(0, y)
+          await sleep(120)
+        }
         await sleep(500)
-        await decodeAll()
+        await settle()
       }
+      window.__comparePendingImages = stillLoading()
       window.scrollTo(0, 0)
       await sleep(400)
     })
     .catch(() => {})
+
+  pendingImages[external ? 'live' : 'mine'] = await p
+    .evaluate(() => window.__comparePendingImages ?? 0)
+    .catch(() => 0)
 
   // Stop the hero before shooting.
   //
@@ -457,6 +465,7 @@ const shoot = async (url, out) => {
 
 const cartEmptiness = { live: null, mine: null }
 const gridCounts = { live: null, mine: null }
+const pendingImages = { live: 0, mine: 0 }
 
 if (page === 'checkout' || (page === 'cart' && !CART_EMPTY_ONLY)) {
   // Local first. Seeding live first left the next navigation in this context
@@ -466,8 +475,29 @@ if (page === 'checkout' || (page === 'cart' && !CART_EMPTY_ONLY)) {
   await seedCart('live')
 }
 
-await shoot(liveUrl, 'refs/live.png')
-await shoot(mineUrl, 'refs/mine.png')
+// TWO AGENTS RUNNING THIS SCRIPT IN ONE WORKING DIRECTORY OVERWRITE EACH
+// OTHER'S EVIDENCE.
+//
+// `refs/live.png` and `refs/mine.png` are fixed names, and there is a window of
+// tens of seconds between writing them and diff-bands reading them. A second
+// run landing inside that window replaces one of the two files, and the diff is
+// then computed across two different pages. It does not error: it prints a
+// percentage that looks like every other percentage.
+//
+// CAUGHT IN THE ACT, 2026-08-19: a `--page=cart` run reported 24.51% with
+// `live: 1440x5492`, which is the height of the live HOMEPAGE and not of any
+// cart. `refs/live-home.png` carries an mtime of 11:17:53, between that run's
+// two shots, and no `--page=home` was started from this session. Three of the
+// morning's outliers - cart 24.51%, search 24.5%, and the checkout run that
+// first raised the structural warning - are all the same substitution.
+//
+// The shots are per-process from here, so a concurrent run cannot reach them.
+// The stable names are still written afterwards, because every other tool and
+// every note in STATE.md refers to them.
+const runShot = (side) => `refs/.run-${process.pid}-${side}.png`
+
+await shoot(liveUrl, runShot('live'))
+await shoot(mineUrl, runShot('mine'))
 
 // Two carts in different states are not a comparison. This is the same rule as
 // the not-found and the checkout-redirect guards: refuse rather than print a
@@ -491,6 +521,23 @@ if (page === 'cart' && cartEmptiness.mine) {
 // way the cart refuses two different cart states, and name both counts so the
 // reader can see which side to change. COMPARE_ALLOW_GRID_MISMATCH=1 measures
 // it anyway, for the run that only wants the header and footer bands.
+// The live side is the one that arrives over the internet, so it is the one
+// that shows up half-loaded. Ours is a `next start` on loopback and has never
+// been seen with a hole in it, but both are named because a hole on our side
+// would be the same lie in the other direction.
+if (
+  (pendingImages.live > 0 || pendingImages.mine > 0) &&
+  process.env.COMPARE_ALLOW_PENDING_IMAGES !== '1'
+) {
+  console.error(
+    `REFUSING to measure: ${pendingImages.live} image(s) on live and ${pendingImages.mine} on the local page had still not loaded when the shutter fired.`,
+  )
+  console.error(
+    'The unloaded blocks collapse and the page is short, which scores as a design difference. Re-run; set COMPARE_ALLOW_PENDING_IMAGES=1 to score it anyway.',
+  )
+  process.exit(3)
+}
+
 if (
   (page === 'category' || page === 'products') &&
   gridCounts.live !== gridCounts.mine &&
@@ -504,8 +551,10 @@ if (
   )
   process.exit(3)
 }
-copyFileSync('refs/live.png', `refs/live-${page}.png`)
-copyFileSync('refs/mine.png', `refs/mine-${page}.png`)
+for (const side of ['live', 'mine']) {
+  copyFileSync(runShot(side), `refs/${side}-${page}.png`)
+  copyFileSync(runShot(side), `refs/${side}.png`)
+}
 
 await b.close()
 
@@ -514,9 +563,21 @@ await new Promise((resolvePromise, reject) => {
   const child = spawn(process.execPath, [resolve('scripts/diff-bands.mjs')], {
     stdio: 'inherit',
     cwd: process.cwd(),
-    env: { ...process.env, COMPARE_PAGE: page },
+    env: {
+      ...process.env,
+      COMPARE_PAGE: page,
+      // Read the per-process shots, not the shared names. Without this the
+      // isolation above buys nothing: the diff would still be taken across
+      // whatever refs/live.png happens to hold by the time the child starts.
+      COMPARE_LIVE_PNG: runShot('live'),
+      COMPARE_MINE_PNG: runShot('mine'),
+    },
   })
   child.on('exit', (code) =>
     code === 0 ? resolvePromise() : reject(new Error(`diff-bands exited ${code}`)),
   )
 })
+
+// The stable copies above are the ones anybody looks at; these two only existed
+// to keep a concurrent run out of this one's diff.
+for (const side of ['live', 'mine']) rmSync(runShot(side), { force: true })
