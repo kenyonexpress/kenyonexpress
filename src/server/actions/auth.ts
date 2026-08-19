@@ -40,6 +40,23 @@ const ERROR_MAP: Record<string, string> = {
   'Signup is disabled': 'ההרשמה סגורה כרגע',
   'Email rate limit exceeded': 'יותר מדי ניסיונות — נסו שוב מאוחר יותר',
   'Too many requests': 'יותר מדי ניסיונות — נסו שוב מאוחר יותר',
+  /*
+    THE ONLY WAY /reset-password FAILS FOR A REAL CUSTOMER, AND IT USED TO SAY
+    NOTHING.
+
+    `updateUser` is authorised by the recovery session the mail link opens, so
+    a link that expired, was already used, or was never followed at all leaves
+    no session and this is what Supabase returns. It was unmapped, so the page
+    said "אירעה שגיאה, נסו שוב" - true, useless, and with no next step on a
+    screen that has no other link on it.
+
+    Not guessed. The string was READ OUT OF THE LOG that the unmapped-fallback
+    warning above started writing: `auth.error_unmapped … reason: "Auth session
+    missing!"`, from a direct visit to /reset-password. Sibling wordings for an
+    expired link are deliberately NOT listed here - they have not been seen on
+    this project, and the fallback now names anything new rather than hiding it.
+  */
+  'Auth session missing': 'קישור האיפוס פג או שכבר נעשה בו שימוש — בקשו קישור חדש',
 }
 
 /**

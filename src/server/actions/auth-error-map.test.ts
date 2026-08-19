@@ -61,4 +61,35 @@ describe('the Supabase error map', () => {
     // that matters most: a wrong password is the common case on this form.
     expect(code()).toContain("'Invalid login credentials': 'כתובת אימייל או סיסמה שגויים'")
   })
+
+  /*
+    THE FIRST STRING THE LOG ABOVE ACTUALLY CAUGHT.
+
+    A direct visit to /reset-password - which is also what an expired or
+    already-used mail link amounts to, since the recovery session is what
+    authorises `updateUser` - wrote `auth.error_unmapped … reason: "Auth session
+    missing!"`, and the customer was shown "אירעה שגיאה, נסו שוב" on a page
+    that carried no other link. True, useless, and a dead end.
+
+    Pinned because it is the ONLY way this page fails for a real customer, and
+    because losing it would be invisible: the generic message would come back
+    and the page would still render.
+  */
+  it('names the expired reset link instead of falling back', () => {
+    const src = code()
+    expect(src).toContain("'Auth session missing'")
+    const hebrew = /'Auth session missing':\s*'([^']+)'/.exec(src)?.[1] ?? ''
+    expect(hebrew).toContain('קישור האיפוס')
+    expect(hebrew).not.toBe('אירעה שגיאה, נסו שוב')
+  })
+
+  it('leaves the customer somewhere to go when the link has expired', () => {
+    // The message tells them to ask for a new link; this is the only element on
+    // that screen that can take them anywhere.
+    const form = readFileSync(
+      join(process.cwd(), 'src/app/(auth)/reset-password/ResetPasswordForm.tsx'),
+      'utf8',
+    )
+    expect(form).toContain('href="/forgot-password"')
+  })
 })
