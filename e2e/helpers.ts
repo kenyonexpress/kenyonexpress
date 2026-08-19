@@ -96,13 +96,26 @@ export async function firstCategorySlug(page: Page): Promise<string | null> {
     .toBeVisible({ timeout: DISCOVERY_TIMEOUT })
     .catch(() => undefined)
 
-  const count = await links.count()
-  const candidates: string[] = []
-  for (let i = 0; i < count; i += 1) {
-    const href = await links.nth(i).getAttribute('href')
-    const slug = href?.split('?')[0]?.replace('/category/', '')
-    if (slug && !candidates.includes(slug)) candidates.push(slug)
-  }
+  // ONE ROUND TRIP, NOT ONE PER LINK.
+  //
+  // This was `links.nth(i).getAttribute()` in a loop. The homepage carries more
+  // than fifty category links between the navigation, the strip and the promo
+  // banners, so the loop was fifty protocol calls before the function had even
+  // started visiting candidates, and under load it spent the whole 30s test
+  // timeout: three specs failed on `waiting for locator(...).nth(49)`, reported
+  // as a missing breadcrumb or a missing sort control. `evaluateAll` reads them
+  // all in the page, in one call.
+  const candidates = [
+    ...new Set(
+      (
+        await links.evaluateAll((els) =>
+          els.map((el) => el.getAttribute('href') ?? '').filter(Boolean),
+        )
+      )
+        .map((href) => href.split('?')[0]?.replace('/category/', ''))
+        .filter((slug): slug is string => Boolean(slug)),
+    ),
+  ]
 
   // Returning the first link was not the same thing as this function's
   // contract, which is "a category that actually has products". The homepage

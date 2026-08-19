@@ -1,6 +1,15 @@
 import { expect, test } from '@playwright/test'
 import { firstCategorySlug } from './helpers'
 
+/**
+ * The result count once its boundary has resolved.
+ *
+ * Two things make the bare class ambiguous: the streaming placeholder carries
+ * it so the box stays the same height, and the archive prints the count twice,
+ * in the header and again under the grid as `--bottom`.
+ */
+const SETTLED_COUNT = '.category-page__count:not(.category-page__count--pending)'
+
 test.describe('category archive', () => {
   test('renders the title, result count, breadcrumb and a product grid', async ({ page }) => {
     const slug = await firstCategorySlug(page)
@@ -78,13 +87,56 @@ test.describe('category archive', () => {
     await expect(page.getByRole('heading', { name: 'הדף שחיפשתם לא נמצא' })).toBeVisible()
   })
 
-  test('an out-of-range page number clamps instead of erroring', async ({ page }) => {
+  /**
+   * THIS TEST HAD THIS NAME AND DID NOT CHECK IT.
+   *
+   * It asserted a 200 and a visible h1, both of which an out-of-range page
+   * returned while showing nothing: `?page=9999` offset past the last row, the
+   * grid printed "nothing matches your selection" - blaming filters the shopper
+   * never set - and the count line printed nothing at all.
+   *
+   * The missing count is the tell. PostgREST answers an out-of-range `range()`
+   * with no rows AND NO COUNT, so `total` came back 0 and the page could not
+   * tell "past the end" from "nothing matched". Both boundaries go through
+   * `categoryPageOrLast` now, which re-reads page 1 to recover the total.
+   *
+   * So the assertion is that the page shows the LAST page: cards present, the
+   * count line present, and the empty state absent. A 200 was never the
+   * question.
+   */
+  test('an out-of-range page number clamps to the last page', async ({ page }) => {
     const slug = await firstCategorySlug(page)
     test.skip(!slug, 'catalog exposes no category links')
 
     const response = await page.goto(`/category/${slug}?page=9999`)
     expect(response?.status()).toBe(200)
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+
+    // A category with a single page clamps to page 1 and is still a pass; what
+    // must never happen is the empty state on a category that has products.
+    const firstCard = page.locator('a[href^="/product/"]').first()
+    await expect(firstCard).toBeVisible({ timeout: 15_000 })
+    // `.first()` and `:not(--pending)` are both load-bearing. The streaming
+    // placeholder carries the same class so it holds the same box open, and the
+    // archive prints the count TWICE, once in the header and once under the
+    // grid as `--bottom`. Either alone leaves strict mode with two matches.
+    await expect(page.locator(SETTLED_COUNT).first()).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText('לא נמצאו מוצרים התואמים את הבחירה שלך.')).toHaveCount(0)
+  })
+
+  test('the shop archive clamps an out-of-range page the same way', async ({ page }) => {
+    // /products is the bigger archive and the one with more than one page, so
+    // it is where the clamp is visible as a page NUMBER rather than a fallback
+    // to page 1.
+    await page.goto('/products?page=9999')
+    const clampedCount = await page.locator(SETTLED_COUNT).first().textContent({ timeout: 15_000 })
+
+    await page.goto('/products')
+    const total = await page.locator(SETTLED_COUNT).first().textContent({ timeout: 15_000 })
+
+    expect(clampedCount, 'the clamped page printed no count').toBeTruthy()
+    expect(clampedCount, 'page=9999 rendered the first page instead of the last').not.toBe(total)
+    await expect(page.getByText('לא נמצאו מוצרים התואמים את הבחירה שלך.')).toHaveCount(0)
   })
 
   test('a price filter narrows the archive without breaking it', async ({ page }) => {
