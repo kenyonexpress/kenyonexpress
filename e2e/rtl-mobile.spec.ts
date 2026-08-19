@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { expectHebrewRtl } from './helpers'
+import { expectHebrewRtl, firstProductHref } from './helpers'
 
 /**
  * RTL + phone viewport gates that must not regress independently of desktop.
@@ -8,7 +8,18 @@ import { expectHebrewRtl } from './helpers'
  */
 
 test.describe('RTL document shell', () => {
-  for (const path of ['/', '/login', '/products', '/cart', '/coupons']) {
+  for (const path of [
+    '/',
+    '/login',
+    '/products',
+    '/cart',
+    '/coupons',
+    '/checkout',
+    '/search?q=%D7%9E%D7%95%D7%A6%D7%A8',
+    '/category/hot-deals',
+    '/legal/terms',
+    '/this-route-does-not-exist',
+  ]) {
     test(`${path} is lang=he dir=rtl`, async ({ page }) => {
       await page.goto(path)
       await expectHebrewRtl(page)
@@ -33,6 +44,19 @@ test.describe('RTL document shell', () => {
  * The assertion is the document rather than any one element, because a page
  * that scrolls sideways is what a person actually feels, and because the
  * element responsible was different on each of the two pages.
+ *
+ * THE LIST IS EVERY PUBLIC ROUTE, AND THAT IS THE POINT. It held seven routes,
+ * and the stage-8 sweep on 2026-08-19 (`scripts/_rtl-sweep.mjs`, 27 routes at
+ * 320 and 393) found exactly one page still overflowing: the product page,
+ * which was not in it. Its buy row carries 140px of quantity field, a 4px gap
+ * and a 192px add-to-cart button, all measured off the live desktop template,
+ * so 336px of fixed width sat in a 290px column. The same shape as the a11y
+ * sweep of the morning: the routes inside the gate were clean and the ones
+ * outside it were not.
+ *
+ * The product page is added below through a real catalogue link rather than a
+ * hardcoded slug, because the seeded slugs change and a 404 measures 320px wide
+ * and passes.
  */
 test.describe('no sideways scroll at 320px', () => {
   test.use({ viewport: { width: 320, height: 800 } })
@@ -41,10 +65,27 @@ test.describe('no sideways scroll at 320px', () => {
     '/',
     '/products',
     '/cart',
+    '/checkout',
+    '/contact',
     '/coupons',
+    '/suppliers',
+    '/supplier/login',
+    '/login',
+    '/signup',
+    '/forgot-password',
+    '/reset-password',
     '/category/hot-deals',
+    '/category/baby-kids',
+    '/category/phones-computers',
     '/search?q=%D7%9E%D7%95%D7%A6%D7%A8',
     '/legal/terms',
+    '/legal/privacy',
+    '/legal/returns',
+    '/legal/accessibility',
+    '/terms-and-conditions',
+    '/privacy-policy',
+    '/offline',
+    '/this-route-does-not-exist',
   ]) {
     test(`${path} fits 320px`, async ({ page }) => {
       await page.goto(path)
@@ -60,6 +101,18 @@ test.describe('no sideways scroll at 320px', () => {
       ).toBeLessThanOrEqual(321)
     })
   }
+
+  test('a product page fits 320px', async ({ page }) => {
+    const href = await firstProductHref(page)
+    await page.goto(href)
+    await page.waitForLoadState('domcontentloaded')
+    await page.waitForTimeout(600)
+
+    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)
+    expect(scrollWidth, `${href} is ${scrollWidth}px wide in a 320px viewport`).toBeLessThanOrEqual(
+      321,
+    )
+  })
 })
 
 test.describe('mobile storefront chrome', () => {

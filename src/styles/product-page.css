@@ -293,10 +293,20 @@
   align-items: center;
   gap: 4px;
   margin-top: 101px;
+  /* The quantity field and the add-to-cart button are both measured from the
+     live desktop template: 140 + 4 + 192 = 336px of fixed width. On a 320px
+     phone the summary column is 290px, so that row alone made the whole
+     document scroll sideways -- the product page was outside the 320px gate
+     and was the only public route still failing it on 2026-08-19. Wrapping
+     costs nothing on desktop, where the column is 700px and the row never
+     reaches the second line. */
+  flex-wrap: wrap;
 }
 
 .pdp-buy__qty {
   width: var(--pdp-qty-w);
+  /* A number input does not shrink below its intrinsic size on its own. */
+  max-width: 100%;
   height: var(--pdp-qty-h);
   border: 1px solid var(--pdp-line);
   background-color: var(--pdp-surface);
@@ -340,6 +350,7 @@
   justify-content: center;
   gap: 8px;
   width: var(--pdp-atc-w);
+  max-width: 100%;
   height: var(--pdp-atc-h);
   border-radius: 999px;
   font-weight: 700;
