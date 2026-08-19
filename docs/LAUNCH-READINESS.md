@@ -48,7 +48,7 @@
 | 18 | ‏GO/NO-GO | ✅ | המסמך הזה |
 | 19 | ‏ACCOUNT AREA | ⚠️ **קוד קיים, לא אומת כשלב** | ‏8 מסכים תחת `(account)/account/` |
 | 20 | ‏SUPPLIER PORTAL | ⚠️ **קוד קיים, לא אומת כשלב** | ‏6 מסכים תחת `(supplier)/supplier/` |
-| 21 | ‏EMAIL TEMPLATES | ❌ **לא נעשה** | ‏אין `react-email` ב-`package.json` ואין תבניות `.tsx` |
+| 21 | ‏EMAIL TEMPLATES | ⚠️ **קיים ולא כפי שנוסח. חסרות 2 תבניות** | ראה למטה |
 | 22 | ‏LEGAL PAGES | ✅ מוזג | ‏4 דפים. ‏404 בבילד הנוכחי כי מוזגו אחריו |
 | 23 | ‏PIXEL WAVE | ❌ **לא נעשה** | תלוי ב-(17) שעדיין לא עובר |
 | 24 | ‏SEED CONTENT | ✅ מוזג | ‏ראה STATE.md |
@@ -126,3 +126,119 @@
 - **לא נטען שה-E2E עובר.** הוא לא הורץ.
 - **לא נטען ש-(19) ו-(20) הושלמו.** הקוד קיים ולא אומת מול הדרישות של השלב.
 - **לא נטען שהאתר נבדק בפרודקשן.** שום דבר כאן לא נדחף ל-Vercel.
+
+---
+
+## ‏נספח, ‏19.08.2026 ‏10:45: שני סעיפים שהיו פתוחים למעלה, נמדדו וסגורים
+
+‏המדידות כאן רצו על אותו ענף, ‏HEAD `c5dd9c779`, בתוך ‏worktree ‏`ke-payments`.
+
+### ‏1. ‏`pnpm build` ‏**כן עובר**, והסיבה שהוא לא רץ כאן לא הייתה זיכרון
+
+‏המסמך למעלה כותב פעמיים שהבילד לא הורץ "מסיבת זיכרון מדודה". זה לא מה שחסם.
+‏**‏`ke-payments/node_modules` היה ‏symlink אל ‏`kenyonexpress/node_modules`**, ו-
+‏Turbopack מסרב לו מפורשות:
+
+```
+FATAL: Symlink [project]/node_modules is invalid, it points out of the filesystem root
+```
+
+‏הבילד נפל על זה מיידית, לפני שהספיק להקצות זיכרון בכלל. אחרי החלפת ה-symlink
+‏ב-`pnpm install --frozen-lockfile` אמיתי בתוך ה-worktree, הבילד **עבר, קוד יציאה 0**,
+‏עם ‏50% זיכרון פנוי ובלי ‏OOM. ארבעת השערים, כפי שנמדדו כאן:
+
+| שער | תוצאה |
+| --- | --- |
+| `tsc --noEmit` | ‏✅ **0 שגיאות** |
+| `biome lint .` | ‏✅ **0**, ‏920 קבצים |
+| `vitest run` | ‏✅ **2784/2784** ב-**201 קבצים**, ‏20.56 שניות |
+| `next build` | ‏✅ **קוד יציאה 0** |
+
+‏**השורה "לא נטען ש-`pnpm build` עובר בענף הזה" בסוף המסמך כבר לא נכונה.** הוא עובר.
+
+### ‏⚠️ מפגע שנמנע: ‏`pnpm install` ב-worktree היה מוחק את ה-`node_modules` של הסוכן השני
+
+‏כל עוד ה-symlink היה במקומו, ‏`pnpm` ב-`ke-payments` ביקש לרוקן את תיקיית המודולים,
+‏כלומר את **התיקייה האמיתית ב-`kenyonexpress/`** שסוכן אחר עובד מולה באותו רגע.
+‏הוא נעצר רק במקרה, כי אין ‏TTY:
+
+```
+[ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY] Aborted removal of modules directory due to no TTY
+```
+
+‏**לכן:** אף פעם לא להריץ `pnpm install` ב-worktree שה-`node_modules` שלו הוא symlink.
+‏להסיר קודם את ה-symlink בלבד (`rm node_modules`, לא `rm -r`) ואז להתקין. זה כבר נעשה
+‏ב-`ke-payments`, ויש לו מעכשיו `node_modules` משלו.
+
+### ‏2. ‏סעיף (10) מונה משפחה אחת של ‏WARN. יש שתיים, והשנייה ‏**כן ניתנת לתיקון**
+
+‏המסמך למעלה כותב "כל 24 ה-WARN הן מאותו סוג". נמדד עכשיו דרך ‏MCP, בשתי
+‏קריאות נפרדות:
+
+| סוג ‏advisor | רמה | כמות | ניתן לתיקון? |
+| --- | --- | --- | --- |
+| ‏`*_security_definer_function_executable` | ‏WARN | ‏**23** | חלקית: ‏6 מהן ב-`migrations/pending/125` |
+| ‏`multiple_permissive_policies` | ‏WARN | ‏**13** | ‏**כן, במלואן** |
+| ‏`rls_enabled_no_policy` | ‏INFO | ‏8 | לא ליקוי, ראה למעלה |
+| ‏`unused_index` | ‏INFO | ‏130 | לא חוסם |
+| ‏`auth_db_connections_absolute` | ‏INFO | ‏1 | לא חוסם |
+
+‏**סה"כ ‏36 ‏WARN, לא 24.** ההפרש הוא שהמסמך למעלה קרא רק את ‏advisors האבטחה
+‏ולא את אלה של הביצועים.
+
+‏**וזה משנה את המסקנה של (10) בנקודה אחת.** הטיעון "היעד בלתי אפשרי" נכון לגבי
+‏פונקציות `SECURITY DEFINER`, כי `is_admin()` באמת מוזכרת ב-79 מדיניות. **הוא לא
+‏חל על 13 ה-`multiple_permissive_policies`.** אלה זוגות כפולים של אותה מדיניות
+‏שנוצרו פעם ל-`public` ופעם ל-`authenticated`, והם בדיוק מה שהשלב ביקש לאחד:
+
+```
+categories        SELECT   {categories_select_authenticated, categories_select_public}
+coupon_codes      SELECT   {coupon_codes_select_authenticated, coupon_codes_select_public}
+popular_searches  SELECT   {popular_searches_select_anon_authenticated, popular_searches_select_authenticated}
+product_variants  SELECT/INSERT/UPDATE/DELETE   {..._authenticated, ..._public}   ← 4 שורות
+products          SELECT/INSERT/UPDATE          {..._authenticated, ..._public}   ← 3 שורות
+profiles          SELECT   {profiles_select_authenticated, profiles_select_public}
+suppliers         INSERT/UPDATE                 {..._authenticated, ..._public}   ← 2 שורות
+```
+
+‏‏`public` ב-PostgreSQL כולל כבר את `authenticated`, ולכן בכל אחד מהזוגות האלה
+‏המדיניות ה-`_authenticated` היא **חסרת השפעה על ההרשאה** ורק מכריחה את המתכנן
+‏להריץ שני predicate-ים במקום אחד. ההסרה שלהן אינה משנה מי רואה מה.
+
+‏**לא נכתבה מיגרציה לזה כאן, בכוונה.** ‏"מי רואה מה" הוא בדיוק המקום שבו הנחה
+‏שגויה פותחת נתונים, ולכן זה מחייב אימות פר טבלה מול הגדרות המדיניות בפועל
+‏ולא מול השם שלהן. זה פריט עבודה תחום ל-(26), לא הערת שוליים.
+
+---
+
+## ‏(21): תיקון לשורה שכתבתי קודם באותו מסמך
+
+**הטענה הראשונה שלי כאן, "לא נעשה", הייתה שגויה**, והתבססה על כך שאין
+`react-email` ב-`package.json`. **יש מערכת תבניות מייל מלאה**, בצורה אחרת:
+‏`src/lib/email/notifications.ts` (‏700 שורות) ו-`voucher-email.ts` (‏179 שורות)
+בונים נושא, ‏HTML וטקסט לעשרה סוגי הודעה, עם 405 שורות טסטים.
+
+**הצורה הזאת עדיפה על react-email כאן ולא נחותה ממנה:** פונקציות טהורות בלי
+JSX, בלי תלות נוספת, ומה שאדם קורא נבדק ישירות. ‏RTL עשוי נכון — `dir="rtl"`
+על האלמנטים עצמם, כי לקוחות דואר לא מכבדים גיליונות סגנון.
+
+**מה שכן נמצא שבור ותוקן:** שני הבונים השתמשו ב-`#f5c518` בזמן שכל האתר
+משתמש ב-`#fed700`. כל מייל שהלקוח קיבל היה בצהוב אחר מהדף שהכפתור מוביל אליו.
+תוקן, ו-`src/lib/email/brand-colour.test.ts` קורא עכשיו את הטוקן מ-`globals.css`
+ונופל אם השניים יתפצלו שוב. גם `font-family` מבקש עכשיו Heebo לפני Arial.
+
+**מה שבאמת חסר ב-(21), ולא הושלם:**
+
+| תבנית לפי הניסוח | קיימת? | הסוג במערכת |
+| --- | --- | --- |
+| אישור הזמנה | ✅ | `order_paid` |
+| הזמנה חדשה לספק | ✅ | `supplier_sale` |
+| אישור מימוש | ✅ | `voucher_redeemed` |
+| תזכורת לפני פקיעה | ✅ | `voucher_expiring` (‏7 ו-1 ימים, לא T-3) |
+| **זיכוי הושלם** | ❌ **חסר** | אין |
+| **ברוך הבא** | ❌ **חסר** | אין |
+
+**למה שתי אלה לא נוספו כאן:** כל סוג הודעה חדש דורש שורה ב-`notification_outbox`
+שמישהו מכניס, והצד המכניס הוא טריגר בבסיס הנתונים. זו **migration על פרודקשן**,
+שהיא אחד ממצבי העצירה. בונה שאף אחד לא מזין אליו הוא חצי תכונה, ולכן נרשם כאן
+במקום להיכתב.
