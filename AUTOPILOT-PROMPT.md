@@ -56,3 +56,17 @@ When ALL steps 0-26 are complete and green:
 4. Create the file /Users/ofir/kenyonexpress-web/PROJECT-DONE.flag with the completion date.
 5. After the flag exists, do NOT start new work — each cycle only verifies tests still pass.
 If a step cannot pass after 3 full attempts: document the blocker in OFIR-RETURN-BRIEF.md under "חסום — דורש את אופיר", skip it, continue to the next step.
+
+[PROVISIONAL DECISIONS — Ofir did not answer; safest defaults chosen. Every one of these MUST also be written to docs/DECISIONS.md with "ממתין לאישור אופיר" and listed in PROJECT-COMPLETE.md under שאלות פתוחות]
+D1. Default voucher validity: 90 days when admin sets no date (longest = safest for consumer law).
+D2. Unredeemed voucher cancellation within 14 days: full refund to card via Cardcom (consumer-law-safest). Wallet credit offered as optional faster path.
+D3. Expired unredeemed voucher: automatic wallet credit of the amount paid (never silent forfeiture).
+D4. Cashback: 0% at launch. Wallet infrastructure built and tested, cashback_rules table ready, rate configurable in admin, disabled by default.
+D5. Max units per order: 5 per product per customer, overridable per product in admin.
+D6. Supplier scan: staff PIN required (full audit trail). PIN management in supplier portal.
+D7. Email sender: noreply@kenyonexpress.co.il via Resend. All templates use it.
+D8. Support phone/WhatsApp: placeholder constant SUPPORT_CONTACT_TBD in one config file, marked in DECISIONS.md.
+D9. Company legal identity: placeholder COMPANY_LEGAL_TBD in terms/invoice templates, clearly marked, one-file swap.
+D10. WP import: build + dry-run only. Real import stays OFF until Ofir approves.
+D11. Homepage category order: mirror groo.co.il ordering logic; fallback: מסעדות, ספא, צימרים, תינוקות, אפל.
+D12. Pixel gate: 11% hard gate for all pages; push toward 7% only after step 26 passes everything else.
