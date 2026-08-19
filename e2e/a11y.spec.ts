@@ -314,6 +314,22 @@ test.describe('the checkout wizard, step by step', () => {
       ).toContainText(to)
     }
 
+    // THE STATE EVERY SHOPPER WHO MISTYPES SEES, WHICH IS ALSO UNSCANNED.
+    // Pressing "המשך" on an empty step paints four `role="alert"` messages and
+    // marks four inputs `aria-invalid`. A page is not accessible because it is
+    // accessible while empty: red-on-white at 12px is exactly the pairing that
+    // misses AA, and #dc3545 clears it on white by 0.03.
+    await next.click()
+    await expect(
+      page.locator('.checkout-field__error').first(),
+      'pressing continue on an empty step raised no error to scan',
+    ).toBeVisible()
+    const invalid = await scan(page)
+    expect(
+      invalid.violations.map((v) => v.id),
+      `details step with validation errors\n  ${describe(invalid)}`,
+    ).toEqual([])
+
     // Values that satisfy `validateDetailsStep`: an Israeli mobile and an
     // address-shaped email are both checked, so placeholders will not do.
     await page.fill('#co-first-name', 'אופיר')
