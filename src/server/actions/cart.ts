@@ -166,7 +166,11 @@ async function resolveAppliedCoupon(
 async function resolveCartView(cartId: string | null, items: CartStorageItem[]): Promise<CartView> {
   const { products, variants } = await loadCartProductData(items)
   const priced = buildCartView(cartId, items, products, variants)
-  if (priced.items.length === 0) return priced
+  // Nothing to discount, so neither code table is worth two round trips. This
+  // covers the empty cart and, since the pricer stopped blanking them, the cart
+  // whose every line is unpriceable: both charge zero, and every discount path
+  // caps itself at the payable total anyway, so the answer is already known.
+  if (priced.items.length === 0 || priced.subtotal === 0) return priced
   // Priced twice on purpose: the coupon needs the payable total to judge a
   // minimum and to cap itself, and that total is only known after the lines are
   // priced. The second pass costs no query.
@@ -453,6 +457,51 @@ async function runRemoveFromCart(
   return runUpdateCartItem(productId, variantId, 0)
 }
 
+/**
+ * Drops every line the priced cart marks unavailable, in one write.
+ *
+ * WHY IT DOES NOT TAKE A LIST. The obvious shape is for the browser to send the
+ * keys it has rendered as unavailable, and it is the wrong one: the cart on
+ * screen is as old as the last render, so a list built from it can name a line
+ * that has since come back into stock, and the shopper would press "remove the
+ * unavailable ones" and lose an item that was fine. Worse, a hand-sent list is
+ * an arbitrary delete of anything in the cart under a name that reads harmless.
+ * So the server re-prices the cart it actually holds and decides for itself;
+ * the browser is asking a question, not naming rows.
+ *
+ * Removing nothing is a success, not an error. The banner offering this is
+ * rendered from the same possibly-stale view, so "you pressed it and by then
+ * there was nothing left to remove" is a normal race and not a failure the
+ * shopper should be shown.
+ */
+async function runRemoveUnavailableItems(): Promise<CartActionResult> {
+  const { row, isGuest, userId } = await getCartRow()
+  if (!row) return { ok: true, cart: await resolveCartView(null, []) }
+
+  const items = parseItems(row.items)
+  if (items.length === 0) return { ok: true, cart: await resolveCartView(row.id, items) }
+
+  const priced = await resolveCartView(row.id, items)
+  const unavailable = new Set(priced.items.filter((i) => !i.available).map((i) => itemKey(i)))
+  // A line the pricer dropped entirely -- a product row that no longer exists,
+  // which `buildCartView` skips with `continue` rather than rendering -- never
+  // appears in `priced.items` at all. It is unavailable in the only sense that
+  // matters and is exactly what a shopper stuck behind this banner cannot see
+  // or remove, so it goes too.
+  const rendered = new Set(priced.items.map((i) => itemKey(i)))
+  const kept = items.filter((i) => rendered.has(itemKey(i)) && !unavailable.has(itemKey(i)))
+
+  if (kept.length === items.length) return { ok: true, cart: priced }
+
+  const allowed = await checkCartWriteRateLimit(userId)
+  if (!allowed) return fail('יותר מדי פעולות — נסו שוב מאוחר יותר', 'RATE_LIMITED')
+
+  const saved = await saveCartItems(kept, isGuest, userId, row.id)
+  const cart = await resolveCartView(saved.id, parseItems(saved.items))
+  revalidateCartPaths()
+  return { ok: true, cart }
+}
+
 async function runClearCart(): Promise<CartActionResult> {
   const { row, isGuest, userId } = await getCartRow()
   if (!row) return { ok: true, cart: await resolveCartView(null, []) }
@@ -679,6 +728,10 @@ export async function removeFromCart(
 
 export async function clearCart(): Promise<CartActionResult> {
   return withActionContext('cart.clear', () => runClearCart())
+}
+
+export async function removeUnavailableItems(): Promise<CartActionResult> {
+  return withActionContext('cart.remove_unavailable', () => runRemoveUnavailableItems())
 }
 
 export async function mergeGuestCart(

@@ -148,6 +148,17 @@
   overflow: hidden;
 }
 
+/* Same red as `.cart-line__warning` on the cart page, so a line the drawer
+   flags and the same line on /cart read as one statement rather than two
+   unrelated alarms. */
+.cart-drawer__item-warning {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #dc3545;
+  line-height: 1.35;
+}
+
 .cart-drawer__item-row {
   display: flex;
   align-items: center;

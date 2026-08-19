@@ -3,7 +3,7 @@
 import CartCheckoutButton from '@/components/cart/CartCheckoutButton'
 import { useCart, useCartAuth } from '@/components/cart/CartProvider'
 import SmartImage from '@/components/ui/SmartImage'
-import { shekels } from '@/lib/cart/format'
+import { lineQuantityCeiling, shekels, unavailableMessage } from '@/lib/cart/format'
 import type { CartViewItem } from '@/lib/cart/types'
 import { Minus, Plus, ShoppingCart, X } from 'lucide-react'
 import Link from 'next/link'
@@ -11,6 +11,14 @@ import { useEffect } from 'react'
 
 function DrawerLineItem({ item }: { item: CartViewItem }) {
   const { updateQuantity, removeItem, isPending } = useCart()
+
+  // The drawer is the first cart a shopper sees -- it opens on add-to-cart --
+  // and it used to be the least honest one: a bare `99` ceiling whatever the
+  // shelf held, and no sign at all that a line had gone unavailable. Someone
+  // could add an item, watch the drawer show it priced and fine, and only meet
+  // the problem at /cart.
+  const maxQty = lineQuantityCeiling(item)
+  const warning = unavailableMessage(item)
 
   return (
     <li className="cart-drawer__item">
@@ -35,6 +43,7 @@ function DrawerLineItem({ item }: { item: CartViewItem }) {
         <Link href={`/product/${item.slug}`} className="cart-drawer__item-name">
           {item.name_he}
         </Link>
+        {warning && <output className="cart-drawer__item-warning">{warning}</output>}
         <div className="cart-drawer__item-row">
           <div className="cart-drawer__qty">
             <button
@@ -56,7 +65,7 @@ function DrawerLineItem({ item }: { item: CartViewItem }) {
               onClick={() =>
                 void updateQuantity(item.product_id, item.variant_id, item.quantity + 1)
               }
-              disabled={isPending || item.quantity >= 99}
+              disabled={isPending || item.quantity >= maxQty}
               aria-label="הוסף כמות"
               className="cart-drawer__qty-btn"
             >

@@ -2,7 +2,7 @@
 
 import { useCart } from '@/components/cart/CartProvider'
 import SmartImage from '@/components/ui/SmartImage'
-import { shekels } from '@/lib/cart/format'
+import { lineQuantityCeiling, shekels, unavailableMessage } from '@/lib/cart/format'
 import type { CartViewItem } from '@/lib/cart/types'
 import { Minus, Plus, Trash2 } from 'lucide-react'
 import Link from 'next/link'
@@ -15,16 +15,25 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
   useEffect(() => {
     setLocalQty(item.quantity)
   }, [item.quantity])
-  const maxQty = 99
+
+  // Before this, `+` ran to 99 against any stock level, so the only way to
+  // discover there were three left was to press it a fourth time and read the
+  // error toast the server sent back.
+  const maxQty = lineQuantityCeiling(item)
+  const warning = unavailableMessage(item)
 
   const dec = () => {
     const next = Math.max(1, localQty - 1)
+    if (next === localQty) return
     setLocalQty(next)
     void updateQuantity(item.product_id, item.variant_id, next)
   }
 
   const inc = () => {
     const next = Math.min(maxQty, localQty + 1)
+    // At the ceiling `next` equals `localQty`, and firing the write anyway
+    // would spend a round trip to be told the quantity it already has.
+    if (next === localQty) return
     setLocalQty(next)
     void updateQuantity(item.product_id, item.variant_id, next)
   }
@@ -57,9 +66,11 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
           {item.name_he}
         </Link>
 
-        {!item.available && (
-          <p className="cart-line__warning">המוצר אינו זמין — הסירו מהעגלה לפני התשלום</p>
-        )}
+        {/* <output>, not a <p role="status">: it carries the same implicit
+            role, and it is what this actually is -- a message produced in
+            response to the shopper's own action, announced when a quantity
+            change turns a line unavailable rather than only read on load. */}
+        {warning && <output className="cart-line__warning">{warning}</output>}
 
         {item.type === 'coupon' && item.balance_due_at_business > 0 && (
           <p className="cart-line__coupon-note">

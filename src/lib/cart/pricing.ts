@@ -3,6 +3,7 @@ import {
   type CartView,
   type CartViewItem,
   EMPTY_CART,
+  type UnavailableReason,
 } from '@/lib/cart/types'
 import { calculateCommission } from '@/lib/commerce/commission'
 import { type Agorot, agorot, ilsToAgorot, multiplyAgorot } from '@/lib/commerce/money'
@@ -55,11 +56,48 @@ function resolveUnitPrice(product: ProductRow, variant: VariantRow | null): numb
   return Number(product.kenyon_price ?? 0)
 }
 
-function isAvailable(product: ProductRow, variant: VariantRow | null, quantity: number): boolean {
-  if (product.status !== 'active' || product.deleted_at) return false
+/**
+ * The live stock behind one line, or null when the catalogue tracks none.
+ *
+ * A variant's own count wins over the product's whenever the line names a
+ * variant, including when that count is zero: a sold-out size on a product with
+ * forty in the warehouse is sold out, and falling back to the product number
+ * there would sell it.
+ */
+function stockCeiling(product: ProductRow, variant: VariantRow | null): number | null {
   const stock = variant?.stock_quantity ?? product.stock_quantity
-  if (stock == null) return true
-  return stock >= quantity
+  if (stock == null) return null
+  return Math.max(0, Math.trunc(Number(stock)))
+}
+
+/**
+ * Why this line cannot be ordered, or null when it can.
+ *
+ * This replaced a boolean `isAvailable`, and the ordering of the branches is
+ * the whole content of the change. `available: false` told the shopper the same
+ * sentence for a product that stopped being sold, one with an empty shelf, one
+ * where three are left and they asked for five, and one the admin has not
+ * finished configuring -- and only the third of those has an action the shopper
+ * can take. See `UnavailableReason` for why the order is this one.
+ *
+ * `priceable` is passed in rather than recomputed because the caller has
+ * already decided it from the percent and the coupon price, and deciding it
+ * twice is how the money engine and the availability flag drift apart.
+ */
+function unavailableReason(
+  product: ProductRow,
+  variant: VariantRow | null,
+  quantity: number,
+  priceable: boolean,
+): UnavailableReason | null {
+  if (product.status !== 'active' || product.deleted_at) return 'delisted'
+  if (!priceable) return 'unpriced'
+
+  const stock = stockCeiling(product, variant)
+  if (stock == null) return null
+  if (stock === 0) return 'out_of_stock'
+  if (stock < quantity) return 'insufficient_stock'
+  return null
 }
 
 function productType(product: ProductRow): 'physical' | 'coupon' {
@@ -146,6 +184,7 @@ export function buildCartView(
     // It is not harmless now: 0% on a coupon means the platform takes nothing
     // and the whole prepayment is held for the supplier.
     const priceable = percent != null && (type !== 'coupon' || couponPriceUnit != null)
+    const reason = unavailableReason(product, variant, item.quantity, priceable)
     if (priceable) {
       commissionLines.push({
         id: lineKey,
@@ -168,7 +207,9 @@ export function buildCartView(
       unit_price: unitPrice,
       line_total: lineTotal,
       type,
-      available: priceable && isAvailable(product, variant, item.quantity),
+      available: reason === null,
+      unavailable_reason: reason,
+      max_quantity: stockCeiling(product, variant),
       platform_fee: ZERO,
       supplier_due: ZERO,
       customer_pays_now: ZERO,
@@ -182,8 +223,36 @@ export function buildCartView(
     })
   }
 
-  if (viewItems.length === 0 || commissionLines.length === 0) {
+  if (viewItems.length === 0) {
     return { ...EMPTY_CART, id: cartId }
+  }
+
+  /**
+   * No line is priceable, so there is nothing for the money engine to settle --
+   * but there is still a cart, and it used to disappear.
+   *
+   * "Unpriceable" is narrower than "unavailable": an out-of-stock line is still
+   * priced and still rendered. This is the line missing the mandatory
+   * `platform_percent`, or a coupon missing its absolute price (C1) -- an admin
+   * has half-configured a product that is otherwise on sale. When that was true
+   * of every line, this branch shared its `return` with the no-lines case and
+   * handed back EMPTY_CART, so the shopper opened /cart, was told it was empty,
+   * and the `carts` row still held everything. Nothing was lost and nothing said
+   * so: adding the same item again would silently rejoin a line that had been
+   * there all along, and the banner offering to clear unavailable lines could
+   * never appear in precisely the case where the whole cart was unavailable.
+   *
+   * So the lines are returned and the money stays at zero. `calculateCommission`
+   * is not called rather than called with nothing, because a settlement of an
+   * empty ledger is a question worth not asking.
+   */
+  if (commissionLines.length === 0) {
+    return {
+      ...EMPTY_CART,
+      id: cartId,
+      items: viewItems,
+      item_count: viewItems.reduce((sum, item) => sum + item.quantity, 0),
+    }
   }
 
   const commission = calculateCommission({

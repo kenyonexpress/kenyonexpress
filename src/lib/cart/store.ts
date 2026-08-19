@@ -3,6 +3,7 @@ import {
   addToCart as addToCartAction,
   clearCart as clearCartAction,
   removeFromCart as removeFromCartAction,
+  removeUnavailableItems as removeUnavailableItemsAction,
   updateCartItem as updateCartItemAction,
 } from '@/server/actions/cart'
 import { createJSONStorage, persist } from 'zustand/middleware'
@@ -111,6 +112,16 @@ export interface CartStoreState {
   ) => Promise<void>
   updateQuantity: (productId: string, variantId: string | null, quantity: number) => Promise<void>
   removeItem: (productId: string, variantId: string | null) => Promise<void>
+  /**
+   * Clears every line the server prices as unavailable, in one round trip.
+   *
+   * Alone among the write actions it starts no optimistic edit. The others know
+   * exactly which line they touch, so they can guess the result; this one is
+   * asking the server which lines those are, and a client-side guess based on
+   * the rendered `available` flags would be guessing at the very thing being
+   * asked. It shows the pending state and waits for the answer.
+   */
+  removeUnavailable: () => Promise<void>
   clear: () => Promise<void>
   setCart: (cart: CartView) => void
   /**
@@ -267,6 +278,35 @@ export function createCartStore(
           if (result.ok) {
             settle(result.cart, rollback)
             onFeedback({ kind: 'removed', message: 'הפריט הוסר מהעגלה' })
+          } else {
+            settle(null, rollback)
+            onFeedback({ kind: 'error', message: result.error })
+          }
+        } catch {
+          crashed(rollback)
+        }
+      },
+
+      removeUnavailable: async () => {
+        const rollback = get().serverCart
+        set((state) => ({ pendingOps: state.pendingOps + 1, isPending: true }))
+        try {
+          const result = await removeUnavailableItemsAction()
+          if (result.ok) {
+            const removed = rollback.items.length - result.cart.items.length
+            settle(result.cart, rollback)
+            // Silent when nothing went: the banner is rendered from a view that
+            // may already be stale, so "there was nothing left to remove" is a
+            // race the shopper does not need narrated.
+            if (removed > 0) {
+              onFeedback({
+                kind: 'removed',
+                message:
+                  removed === 1
+                    ? 'הפריט שאינו זמין הוסר מהעגלה'
+                    : `${removed} פריטים שאינם זמינים הוסרו מהעגלה`,
+              })
+            }
           } else {
             settle(null, rollback)
             onFeedback({ kind: 'error', message: result.error })
