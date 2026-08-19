@@ -47,7 +47,11 @@ export default function SiteFooter() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {columns.map((col) => (
             <div key={col.title}>
-              <h4 className="text-white font-bold mb-3 text-sm">{col.title}</h4>
+              {/* h2, not h4. The only heading above this footer on /coupons is the
+                  page's h1, so h4 skipped two levels and Lighthouse reported
+                  heading-order there. The size is a class; the LEVEL is the
+                  document outline a screen reader navigates by. */}
+              <h2 className="text-white font-bold mb-3 text-sm">{col.title}</h2>
               <ul className="space-y-2">
                 {col.links.map((link) => (
                   <li key={link.label}>
@@ -62,7 +66,7 @@ export default function SiteFooter() {
 
           {/* Social */}
           <div>
-            <h4 className="text-white font-bold mb-3 text-sm">עקבו אחרינו</h4>
+            <h2 className="text-white font-bold mb-3 text-sm">עקבו אחרינו</h2>
             <div className="flex items-center gap-3">
               {socials.map(({ label, href, Icon }) => (
                 <a
