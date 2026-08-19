@@ -1,4 +1,5 @@
 import { sendServerPurchase } from '@/lib/analytics/server-events'
+import { orFail } from '@/lib/catalogue-read'
 import { agorot, agorotToIls } from '@/lib/commerce/money'
 import {
   type VoucherRateColumn,
@@ -99,11 +100,27 @@ async function issueVouchersForItem(
 
   // Idempotency: never issue beyond quantity for this order_item (replay-safe).
   // The vouchers UNIQUE(code) plus this count cap make webhook replays no-ops.
-  const { data: existing } = await admin
-    .from('vouchers')
-    .select('id')
-    .eq('order_item_id', item.id)
-    .order('issued_at', { ascending: true })
+  //
+  // `orFail`, because THIS COUNT IS THE ONLY REPLAY CAP THAT COUNTS. UNIQUE(code)
+  // cannot help: every issue mints a fresh random code, so a second pass
+  // collides with nothing. A discarded error here reads as "none issued yet",
+  // and the loop below mints the full quantity a SECOND time - each one a
+  // voucher the customer can redeem at a counter for real goods, against a
+  // balance we already treated as revenue.
+  //
+  // The path where that is likeliest is the one built for failures:
+  // `webhook-dlq.ts` replays a finalize precisely when the first attempt broke,
+  // which is when the database is least healthy. Throwing is what keeps the
+  // replay safe to run repeatedly, which is the property that file promises.
+  const existing = orFail(
+    await admin
+      .from('vouchers')
+      .select('id')
+      .eq('order_item_id', item.id)
+      .order('issued_at', { ascending: true }),
+    'finalize.issued_vouchers_read_failed',
+    { orderItemId: item.id, orderId: item.order_id },
+  )
   const issuedIds = (existing ?? []).map((row) => row.id)
 
   // No offer deadline on the product means the rolling per-product window is
@@ -220,12 +237,17 @@ async function getOrCreateUserWalletAccount(
   admin: AdminClient,
   userId: string,
 ): Promise<{ id: string } | null> {
-  const { data: existing } = await admin
-    .from('wallet_accounts')
-    .select('id')
-    .eq('user_id', userId)
-    .maybeSingle()
+  const existing = orFail(
+    await admin.from('wallet_accounts').select('id').eq('user_id', userId).maybeSingle(),
+    'finalize.wallet_account_read_failed',
+    { userId },
+  )
   if (existing) return existing
+  // The INSERT keeps its error, and that is the distinction this function turns
+  // on: 23505 here is the expected answer to a race, not a failure, and the
+  // re-read below is the handler for it. The two SELECTs around it have no such
+  // reading - a failed one there returns null, and the caller reports it as
+  // "wallet accounts missing", which is a different incident entirely.
   const { data: created } = await admin
     .from('wallet_accounts')
     .insert({ user_id: userId })
@@ -233,11 +255,11 @@ async function getOrCreateUserWalletAccount(
     .maybeSingle()
   if (created) return created
   // unique-violation race: someone else created it, re-read
-  const { data: reread } = await admin
-    .from('wallet_accounts')
-    .select('id')
-    .eq('user_id', userId)
-    .maybeSingle()
+  const reread = orFail(
+    await admin.from('wallet_accounts').select('id').eq('user_id', userId).maybeSingle(),
+    'finalize.wallet_account_reread_failed',
+    { userId },
+  )
   return reread ?? null
 }
 
@@ -252,7 +274,7 @@ async function creditCashback(
   cashbackAgorot: number,
 ): Promise<void> {
   if (cashbackAgorot <= 0) return
-  const [userAccount, { data: reserve }] = await Promise.all([
+  const [userAccount, reserveResult] = await Promise.all([
     getOrCreateUserWalletAccount(admin, userId),
     admin
       .from('wallet_accounts')
@@ -260,6 +282,10 @@ async function creditCashback(
       .eq('code', 'platform:cashback_reserve')
       .maybeSingle(),
   ])
+  const reserve = orFail(reserveResult, 'finalize.cashback_reserve_read_failed', {
+    orderId,
+    userId,
+  })
   if (!userAccount || !reserve) {
     throw new Error('wallet accounts missing for cashback credit')
   }
@@ -310,10 +336,23 @@ async function spendWallet(
   walletAppliedIls: number,
 ): Promise<void> {
   if (walletAppliedIls <= 0) return
-  const [{ data: userAccount }, { data: platformAccount }] = await Promise.all([
+  // Both reads throw on error rather than resolving to null. The line below
+  // already fails loudly, but it fails with the WRONG SENTENCE: "wallet accounts
+  // missing" sends an operator to look for a ledger account that is sitting
+  // right there, while the actual incident was a read that did not answer.
+  const [userAccountResult, platformAccountResult] = await Promise.all([
     admin.from('wallet_accounts').select('id').eq('user_id', userId).maybeSingle(),
     admin.from('wallet_accounts').select('id').eq('code', 'platform:revenue').maybeSingle(),
   ])
+  const userAccount = orFail(userAccountResult, 'finalize.spend_user_account_read_failed', {
+    orderId,
+    userId,
+  })
+  const platformAccount = orFail(
+    platformAccountResult,
+    'finalize.spend_platform_account_read_failed',
+    { orderId },
+  )
   if (!userAccount || !platformAccount) {
     throw new Error('wallet accounts missing for wallet spend')
   }
@@ -355,78 +394,103 @@ export async function finalizeOrder(input: {
   const admin = createAdminClient()
   const now = input.now ?? new Date()
 
-  const { data: order } = await admin
-    .from('orders')
-    .select('id, user_id, status, paid_at, cashback_applied_agorot')
-    .eq('id', input.orderId)
-    .maybeSingle()
-  if (!order) return { ok: false, error: 'order not found', code: 'NOT_FOUND' }
-  if (order.paid_at) return { ok: true, replay: true, orderId: order.id }
-  if (order.status !== 'pending') {
-    return { ok: false, error: `order not finalizable from ${order.status}`, code: 'STATE_INVALID' }
-  }
-
-  const { data: items } = await admin
-    .from('order_items')
-    .select(
-      'id, order_id, product_id, product_type, supplier_id, quantity, unit_price_agorot, platform_percent, upfront_percent, commission_percent_snapshot, paid_on_site_agorot, commission_agorot, face_value_agorot, balance_due_agorot, supplier_immediate_agorot, cashback_amount_agorot, settlement_status',
-    )
-    .eq('order_id', order.id)
-  if (!items || items.length === 0) {
-    return { ok: false, error: 'order has no items', code: 'STATE_INVALID' }
-  }
-
-  let walletApplied = 0
-  let cardcomAccountId: string | null = null
-  if (input.paymentId) {
-    // The wallet column is amount-in-shekels before 059 and agorot after it,
-    // and naming the wrong one fails this select outright, which would abort a
-    // finalize for a card that has already been charged.
-    const money = await resolvePaymentMoneySchema((column) =>
-      admin
-        .from('payments')
-        .select(column)
-        .limit(0)
-        .then(({ error }) => ({ error })),
-    )
-    const { data: paymentRow } = await admin
-      .from('payments')
-      .select(`id, status, ${money.walletAppliedColumn}, cardcom_account_id`)
-      .eq('id', input.paymentId)
-      .maybeSingle()
-    const payment = paymentRow as unknown as
-      | (Record<string, unknown> & {
-          id: string
-          status: string
-          cardcom_account_id: string | null
-        })
-      | null
-    if (!payment) return { ok: false, error: 'payment not found', code: 'NOT_FOUND' }
-    // walletApplied is spent downstream in shekels, which is what this
-    // variable has always held.
-    walletApplied = (money.toAgorot(payment[money.walletAppliedColumn]) ?? 0) / 100
-    cardcomAccountId = payment.cardcom_account_id
-
-    const { error: payError } = await admin
-      .from('payments')
-      .update({
-        status: 'succeeded',
-        cardcom_transaction_id: input.transactionId,
-        succeeded_at: now.toISOString(),
-      })
-      .eq('id', payment.id)
-      .in('status', ['initiated', 'redirected'])
-    if (payError) {
-      return { ok: false, error: `payment update failed: ${payError.message}`, code: 'INTERNAL' }
-    }
-  } else {
-    // spendWallet speaks shekels (fn_wallet_transfer takes p_amount_ils), the
-    // column has held agorot since 059. Reading it as shekels credited a
-    // hundredth of what the customer actually spent from their wallet.
-    walletApplied = Number(order.cashback_applied_agorot ?? 0) / 100
-  }
-
   try {
+    // Every read from here down to the `paid_at` stamp throws instead of
+    // resolving to null, and the reason is the alarm rather than the customer:
+    // the webhook treats any `ok: false` as "payment verified but finalize
+    // failed", the single worst state in the system, and then prints the reason
+    // this function returned. A discarded error made that reason a lie - "order
+    // not found" for an order that exists and whose card has just been charged -
+    // and sent whoever answered the page hunting a missing row instead of a
+    // database that stopped answering. The dead-letter replay is identical
+    // either way; only the diagnosis changes, and only it was wrong.
+    const order = orFail(
+      await admin
+        .from('orders')
+        .select('id, user_id, status, paid_at, cashback_applied_agorot')
+        .eq('id', input.orderId)
+        .maybeSingle(),
+      'finalize.order_read_failed',
+      { orderId: input.orderId },
+    )
+    if (!order) return { ok: false, error: 'order not found', code: 'NOT_FOUND' }
+    if (order.paid_at) return { ok: true, replay: true, orderId: order.id }
+    if (order.status !== 'pending') {
+      return {
+        ok: false,
+        error: `order not finalizable from ${order.status}`,
+        code: 'STATE_INVALID',
+      }
+    }
+
+    const items = orFail(
+      await admin
+        .from('order_items')
+        .select(
+          'id, order_id, product_id, product_type, supplier_id, quantity, unit_price_agorot, platform_percent, upfront_percent, commission_percent_snapshot, paid_on_site_agorot, commission_agorot, face_value_agorot, balance_due_agorot, supplier_immediate_agorot, cashback_amount_agorot, settlement_status',
+        )
+        .eq('order_id', order.id),
+      'finalize.order_items_read_failed',
+      { orderId: order.id },
+    )
+    if (!items || items.length === 0) {
+      return { ok: false, error: 'order has no items', code: 'STATE_INVALID' }
+    }
+
+    let walletApplied = 0
+    let cardcomAccountId: string | null = null
+    if (input.paymentId) {
+      // The wallet column is amount-in-shekels before 059 and agorot after it,
+      // and naming the wrong one fails this select outright, which would abort a
+      // finalize for a card that has already been charged.
+      const money = await resolvePaymentMoneySchema((column) =>
+        admin
+          .from('payments')
+          .select(column)
+          .limit(0)
+          .then(({ error }) => ({ error })),
+      )
+      const paymentRow = orFail(
+        await admin
+          .from('payments')
+          .select(`id, status, ${money.walletAppliedColumn}, cardcom_account_id`)
+          .eq('id', input.paymentId)
+          .maybeSingle(),
+        'finalize.payment_read_failed',
+        { orderId: order.id, paymentId: input.paymentId },
+      )
+      const payment = paymentRow as unknown as
+        | (Record<string, unknown> & {
+            id: string
+            status: string
+            cardcom_account_id: string | null
+          })
+        | null
+      if (!payment) return { ok: false, error: 'payment not found', code: 'NOT_FOUND' }
+      // walletApplied is spent downstream in shekels, which is what this
+      // variable has always held.
+      walletApplied = (money.toAgorot(payment[money.walletAppliedColumn]) ?? 0) / 100
+      cardcomAccountId = payment.cardcom_account_id
+
+      const { error: payError } = await admin
+        .from('payments')
+        .update({
+          status: 'succeeded',
+          cardcom_transaction_id: input.transactionId,
+          succeeded_at: now.toISOString(),
+        })
+        .eq('id', payment.id)
+        .in('status', ['initiated', 'redirected'])
+      if (payError) {
+        return { ok: false, error: `payment update failed: ${payError.message}`, code: 'INTERNAL' }
+      }
+    } else {
+      // spendWallet speaks shekels (fn_wallet_transfer takes p_amount_ils), the
+      // column has held agorot since 059. Reading it as shekels credited a
+      // hundredth of what the customer actually spent from their wallet.
+      walletApplied = Number(order.cashback_applied_agorot ?? 0) / 100
+    }
+
     await spendWallet(admin, order.id, order.user_id, walletApplied)
 
     const productInfo = new Map<
@@ -437,10 +501,19 @@ export async function finalizeOrder(input: {
       .map((i) => i.product_id)
       .filter((id): id is string => typeof id === 'string')
     if (productIds.length > 0) {
-      const { data: products } = await admin
-        .from('products')
-        .select('id, coupon_expiry_days, offer_valid_until')
-        .in('id', productIds)
+      // This one changes the SENTENCE an admin is given. A failed read leaves
+      // `productInfo` empty, the per-item lookup falls back to a null expiry,
+      // and C7 below refuses with "product has no coupon_expiry_days" - telling
+      // an admin to go set a field that is already set, on an order that is
+      // stuck for an entirely different reason.
+      const products = orFail(
+        await admin
+          .from('products')
+          .select('id, coupon_expiry_days, offer_valid_until')
+          .in('id', productIds),
+        'finalize.product_expiry_read_failed',
+        { orderId: order.id },
+      )
       for (const p of products ?? []) {
         productInfo.set(p.id, {
           couponExpiryDays: p.coupon_expiry_days,
@@ -601,6 +674,13 @@ export async function finalizeOrder(input: {
     // read the order at all on any database where 108 has not been applied -
     // with the card already charged. Exactly the failure 106 documents for
     // `payments.refund_of_payment_id`. Here the worst case is no gift.
+    //
+    // It also keeps swallowing a TRANSIENT error, and that is the boundary this
+    // file runs on: `paid_at` was stamped above, so a throw from here on buys
+    // an alarm and nothing else - the dead-letter replay re-enters finalize,
+    // hits `if (order.paid_at) return replay`, and never reaches this line
+    // again. Everything before the stamp throws because a replay can fix it;
+    // everything after it stays best-effort because a replay cannot.
     const { data: giftRow } = await admin
       .from('orders')
       .select('gift_recipient_name, gift_recipient_email, gift_message')
@@ -651,11 +731,20 @@ export async function finalizeOrder(input: {
     return { ok: true, replay: false, orderId: order.id }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'finalize failed'
-    // Past this point the customer's card has already been charged, so a throw
-    // here is money taken against an order that never closed.
+    // The customer's card has already been charged by the time this function is
+    // called at all, so a throw anywhere in it is money taken against an order
+    // that never closed.
+    //
+    // The try now opens at the first read rather than after the payment row,
+    // and that is what keeps the contract "finalizeOrder never throws" true
+    // once those reads stopped discarding their errors. The webhook alarms on
+    // any `ok: false` and prints the reason; a throw escaping to the route
+    // instead would answer 500 with no alarm raised at all.
     capturePaymentError(error, {
       stage: 'finalize_order',
-      orderId: order.id,
+      // `input.orderId`, not `order.id`: the order read is inside this try now,
+      // so a failure there reaches here with no `order` bound at all.
+      orderId: input.orderId,
       paymentId: input.paymentId,
       detail: { message },
     })
