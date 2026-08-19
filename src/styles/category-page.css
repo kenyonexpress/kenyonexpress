@@ -324,6 +324,7 @@
     width: 50%;
     flex: 0 0 50%;
   }
+
 }
 
 /* Card: measured .product-inner padding 20.006px top / 14px bottom, content
@@ -498,6 +499,33 @@
 .category-card__atc:hover {
   background: var(--cat-brand-hover);
   border-color: var(--cat-brand-hover);
+}
+
+/* THE CARD FOOTER CANNOT HOLD ONE ROW ON THE NARROWEST PHONE, MEASURED.
+ *
+ * Below 576px the column is half the row, so at a 320px viewport the card is
+ * 145px wide. The footer is a `space-between` flex row holding the price and
+ * the 37px add-to-cart circle, and the price on a discounted card carries both
+ * numbers: "₪6499₪5499" measures 104px. 104 + 37 is 141 against a 97px content
+ * box, so the circle was pushed out to x -5 and the document came out 325px
+ * wide against a 320px viewport. A horizontal scrollbar on the whole page, on
+ * the narrowest phone still sold, because of one card.
+ *
+ * Two changes, and the padding alone is not enough: 24px of gutter each side
+ * was measured for a 234px column, and 15px is what `.category-page__inner`
+ * already uses at this width, but even 115px cannot hold 141. So the row also
+ * wraps, and the fixed 36px height goes with it, because a wrapped row inside a
+ * fixed height would just clip instead of overflow. */
+@media (max-width: 575px) {
+  .category-card {
+    padding-inline: 15px;
+  }
+
+  .category-card__footer {
+    flex-wrap: wrap;
+    height: auto;
+    row-gap: 4px;
+  }
 }
 
 /* Filter sidebar: one card column wide, on inline-end (left) */
