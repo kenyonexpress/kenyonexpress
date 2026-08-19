@@ -4,11 +4,23 @@ import { readFileSync } from 'node:fs'
 // to any database, ever. Usage:
 //   node scripts/wp-dry-run.mjs [path/to/export.xml]
 //
-// The numbers to check it against are in docs/WP-EXPORT-2026-07-29-DRY-RUN.md
-// and in STATE: 45 products, 11 categories, 65 images from the 2026-07-29
-// export. A reader that reports 28 categories is reading the blog taxonomy; one
-// that reports 46 products has picked up Dokan's bookkeeping row; one that
-// reports 66 images has taken an image off a product it excluded.
+// The numbers to check it against, MEASURED against the 2026-07-29 export on
+// 2026-08-19 rather than copied forward: 44 products, 11 categories, 65 images.
+//
+// 44 AND NOT 45, WHICH IS WHAT THIS COMMENT USED TO SAY. The export carries 48
+// `product` items: 45 `publish`, 2 `private`, 1 `draft`. One of the 45 publish
+// rows is `reverse-withdrawal-payment`, which is Dokan bookkeeping and not
+// merchandise, so excluding it leaves 44. The old wording asserted BOTH "45
+// products" and "46 means you picked up Dokan's row", which cannot both be
+// true: 45 is the raw publish count and already includes it. Read literally,
+// the old comment told the next reader that a correct 44 was a bug, and the
+// obvious way to "fix" that is to start importing a bookkeeping row as a
+// product. docs/WP-EXPORT-2026-07-29-DRY-RUN.md carries the same off-by-one in
+// its summary; docs/WP-IMPORT-REPORT.md has the arithmetic.
+//
+// A reader that reports 28 categories is reading the blog taxonomy; one that
+// reports 45 products has picked up Dokan's bookkeeping row; one that reports
+// 66 images has taken an image off a product it excluded.
 
 // The reader is dependency-free TypeScript and Node strips its types natively,
 // so there is no loader to configure and no build step between this script and
