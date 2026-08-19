@@ -1,4 +1,5 @@
 import WhatsAppIcon from '@/components/shared/WhatsAppIcon'
+import type { StorefrontProductType } from '@/lib/commerce/product-type'
 import { type SupplierContactRow, buildSupplierContact } from '@/lib/supplier-contact'
 import { buildSupplierInquiryText } from '@/lib/whatsapp'
 import { MapPin, Navigation, Phone } from 'lucide-react'
@@ -33,8 +34,14 @@ export type SupplierSummary = ({ id: string; name: string } & SupplierContactRow
  * their subscription "נשלח ומסופק על ידי הספק". The compiler could not catch it
  * because `products.type` is still typed from unmigrated production, where the
  * member does not exist yet.
+ *
+ * The union now lives in `lib/commerce/product-type.ts`, beside the function
+ * that RESOLVES it. Naming the four members was never the hard half: a caller
+ * that hands over `products.type` raw picks the wrong one for the five live
+ * products whose type says physical and whose `is_coupon_enabled` says coupon.
+ * The alias stays so existing imports keep working.
  */
-export type SupplierInfoProductType = 'coupon' | 'physical' | 'service' | 'recurring'
+export type SupplierInfoProductType = StorefrontProductType
 
 /**
  * What "the supplier" means for this type, in one sentence, under the contact

@@ -1,5 +1,7 @@
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { type CouponOffer, buildCouponOffer } from '@/lib/commerce/coupon-offer'
+import { resolveStorefrontProductType } from '@/lib/commerce/product-type'
+import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createPublicClient } from '@/lib/supabase/anon'
 import {
@@ -77,7 +79,7 @@ export async function loadProductBySlug(slug: string) {
   // are read HERE, inside the cache, because they are catalogue data like the
   // rest; left on the page they stayed two per-request round trips on exactly
   // the coupon products the shop exists to sell.
-  const isCoupon = product.type === 'coupon' || product.is_coupon_enabled
+  const isCoupon = resolveStorefrontProductType(product) === 'coupon'
   const probe = (select: string, ids: string[]) =>
     createPublicClient().from('products').select(select).in('id', ids) as never
 
@@ -156,11 +158,20 @@ export async function loadProductBySlug(slug: string) {
  */
 async function loadSupplierPublicContact(supplierId: string | null) {
   if (!supplierId) return null
-  const { data } = await createAdminClient()
+  const { data, error } = await createAdminClient()
     .from('suppliers')
     .select('id, name, city, address, contact_phone, whatsapp')
     .eq('id', supplierId)
     .maybeSingle()
+  // The error was dropped, and dropping it is invisible in exactly the way that
+  // costs: `SupplierInfo` reads a null supplier as "no details on file" and
+  // prints "פרטי הספק יתעדכנו בקרוב", the same sentence it prints for the
+  // suppliers that genuinely have none. MEASURED here on a built server -- a
+  // stale service key returned 401 "Invalid API key" and all five probed
+  // product pages hid a supplier that has a name, a city and a phone in the
+  // table, with not one line in the log. A key that expires in production would
+  // silently take the mandatory block off EVERY product page.
+  if (error) log.error('product_detail.supplier_load_failed', { supplier_id: supplierId, error })
   return data
 }
 

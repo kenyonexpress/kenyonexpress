@@ -6,6 +6,10 @@ import RelatedProducts from '@/components/storefront/RelatedProducts'
 import ShippingInfo from '@/components/storefront/ShippingInfo'
 import StockScarcity from '@/components/storefront/StockScarcity'
 import SupplierInfo from '@/components/storefront/SupplierInfo'
+import {
+  resolveStorefrontProductType,
+  storefrontProductTypeLabel,
+} from '@/lib/commerce/product-type'
 import { productLocation } from '@/lib/geo/distance'
 import { listProductSlugsForPrerender, loadProductBySlug } from '@/lib/product-detail'
 import { getProductSeoBySlug } from '@/lib/product-seo'
@@ -131,13 +135,20 @@ export default async function ProductPage({ params }: Props) {
       ? Number(product.full_price)
       : null
 
-  const isCoupon = product.type === 'coupon' || product.is_coupon_enabled
+  // One resolution, asked for rather than derived. `isCoupon` and the sentence
+  // under the supplier's phone number used to answer this question separately,
+  // and the second one read `products.type` alone -- so the five live products
+  // that are coupons by `is_coupon_enabled` and physical by `type` showed the
+  // coupon pricing block, hid the shipping block, and then promised the shopper
+  // their restaurant voucher would be shipped. See lib/commerce/product-type.ts.
+  const productType = resolveStorefrontProductType(product)
+  const isCoupon = productType === 'coupon'
 
   const attributes: { label: string; value: string }[] = []
   if (category) attributes.push({ label: 'קטגוריה', value: category.name_he })
   attributes.push({
     label: 'סוג מוצר',
-    value: product.type === 'coupon' ? 'קופון' : 'מוצר פיזי',
+    value: storefrontProductTypeLabel(productType),
   })
 
   // Structured data, built from the values this page already resolved and never
@@ -301,7 +312,7 @@ export default async function ProductPage({ params }: Props) {
               a business selling forty of them cannot answer "יש פרטים?". */}
           <SupplierInfo
             supplier={supplier}
-            productType={product.type}
+            productType={productType}
             productName={product.name_he}
             whatsappEnabled={readWhatsAppEnabled(product)}
           />

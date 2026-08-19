@@ -263,7 +263,19 @@ export default function ProductInfo({
               <button
                 type="button"
                 key={v.id}
-                onClick={() => setSelected(v.id)}
+                onClick={() => {
+                  setSelected(v.id)
+                  // The ceiling belongs to the SELECTION, so switching selection
+                  // has to move the number under it. Picking a 50-in-stock
+                  // variant, typing 20, then switching to one with 3 left left
+                  // `20` sitting in an input whose `max` had just become 3 --
+                  // and the add went out at 20, for the server to refuse. That
+                  // is the same drift `productQuantityCeiling` exists to stop,
+                  // one state update further along.
+                  setQty((current) =>
+                    Math.min(current, productQuantityCeiling(v.stock_quantity ?? baseStock)),
+                  )
+                }}
                 disabled={v.stock_quantity === 0}
                 className={`px-4 py-2 rounded-lg text-sm border transition-colors ${
                   selected === v.id
