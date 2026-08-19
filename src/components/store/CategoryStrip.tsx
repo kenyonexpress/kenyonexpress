@@ -46,9 +46,24 @@ const CATEGORIES = [
 // passed as CSS custom properties so the literals stay in tokens, not classes.
 // Direction is handled with logical properties only (border-e / border-s /
 // ms-auto / me-*), so RTL order and mirroring are automatic.
+//
+// FIVE ACROSS FROM md, NOT FROM lg. Live is five 146px cells at 768 exactly as
+// it is at 1440 (ke_live_computed home, `.product-categories-list`: y=426 x=39
+// w=729 h=170, items at x 39/185/331/476/622). Starting the row at lg left the
+// tablet two-up and wrapped, and since the strip is a fixed 170px box the
+// second row overflowed it and drew straight through the trust band below.
+// The inline-end offset stays lg-only: 517px was measured inside the 1320px
+// container, and at 768 live sits flush against the inline-start edge.
+//
+// BELOW md THE ROW STILL RENDERS, and that IS a divergence from live, which
+// hides the strip under 768 entirely. Live can afford to: it has an off-canvas
+// menu (`.off-canvas-navigation`, measured off-screen at x=769). This header is
+// logo plus account plus cart, so hiding the strip would leave a phone with no
+// way to reach a category from the homepage at all. The height is `auto` there
+// so the wrapped rows have room instead of colliding.
 export default function CategoryStrip() {
   const stripVars = {
-    height: C.height,
+    '--cat-h': `${C.height}px`,
     '--cat-end': `${C.offsetInlineEnd}px`,
     '--cat-w': `${C.maxWidth}px`,
     '--cat-hover-shadow': C.hoverShadow,
@@ -58,13 +73,13 @@ export default function CategoryStrip() {
     <section aria-label="קטגוריות מובילות" className="bg-white font-sans">
       <div className="mx-auto max-w-page">
         <ul
-          className="m-0 flex list-none flex-wrap p-0 lg:ms-auto lg:me-[var(--cat-end)] lg:max-w-[var(--cat-w)] lg:flex-nowrap"
+          className="m-0 flex list-none flex-wrap p-0 md:ms-0 md:me-auto md:h-[var(--cat-h)] md:max-w-[var(--cat-w)] md:flex-nowrap lg:ms-auto lg:me-[var(--cat-end)]"
           style={stripVars}
         >
           {CATEGORIES.map((cat) => (
             <li
               key={cat.id}
-              className="flex w-1/2 border-e first:border-s lg:w-[20%] lg:flex-[0_0_20%]"
+              className="flex w-1/2 border-e first:border-s md:w-[20%] md:flex-[0_0_20%]"
               style={{ borderColor: C.borderColor }}
             >
               <Link
