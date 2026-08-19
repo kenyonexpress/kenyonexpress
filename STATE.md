@@ -1,12 +1,13 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-19 (docs: DATA-BASELINE.md on phase5/homepage)
+Updated: 2026-08-19 (docs: CONTENT-SEO-PLAN.md on phase5/homepage)
 
 ## המשך מ: MISSION-FINAL שלב 1 (merge supplier + arch-night)
 
-לילה 19.08 docs נסגר. בוקר 19.08 נוסף קו בסיס דאטה:
-✅ `docs/DATA-BASELINE.md` (80 products / 12 categories / 11 suppliers / 4 orders / 3 order_items).
-הבא שדורש קוד: merge `feat/supplier-portal` ואז `docs/architecture-night` אל `phase5/homepage`. voucher+wallet כבר בפנים מ-24.07.
+לילה 19.08 docs נסגר. בוקר 19.08:
+✅ `docs/DATA-BASELINE.md`
+✅ `docs/CONTENT-SEO-PLAN.md` (metadata, Schema.org, sitemap/robots, 10 קטגוריות, CWV Next 15)
+הבא שדורש קוד: merge `feat/supplier-portal` ואז `docs/architecture-night` אל `phase5/homepage`.
 
 ## ⛔ מדיניות ענפים מחייבת (19.08.2026)
 
