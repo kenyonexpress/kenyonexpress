@@ -496,3 +496,75 @@ test('the install banner has no WCAG A/AA violations', async ({ page }) => {
     `\n  ${describe(results)}\n`,
   ).toEqual([])
 })
+
+/**
+ * THE SEARCH SUGGESTIONS, WHERE AXE REPORTS NOTHING AND THE WIDGET SAID NOTHING.
+ *
+ * The masthead box is `role="combobox"`, and arrow keys moved a highlight
+ * (`bg-brand-accent`) through the suggestions while Enter navigated to the one
+ * highlighted. Focus never left the input and nothing carried that selection
+ * into the accessibility tree: no `aria-activedescendant`, no `role="listbox"`
+ * on the popup `aria-controls` pointed at, no `role="option"` on anything. A
+ * screen reader heard "combobox, expanded", then silence through every
+ * ArrowDown, then a navigation to a product it had never named.
+ *
+ * A FULL AXE SCAN OF THAT STATE REPORTED ZERO VIOLATIONS -- measured, not
+ * assumed. The popup was a bare `ul` and axe has no rule that a combobox's
+ * controlled element must be a listbox, so the whole sweep above could stay
+ * green over a WCAG 4.1.2 failure. This test asserts the wiring directly, which
+ * is the only thing that would have caught it.
+ */
+test('the search combobox says which suggestion is selected', async ({ page, viewport }) => {
+  // `DeferredHeaderSearch` is `hidden ... md:flex`, so below 768px this widget
+  // is not on the page at all and there is nothing to assert.
+  test.skip((viewport?.width ?? 0) < 768, 'the masthead search is hidden below md')
+
+  await page.goto('/')
+  await page.waitForLoadState('domcontentloaded')
+
+  const input = page.locator('#masthead-search')
+  await input.click()
+  await input.fill('מוצר')
+
+  const list = page.locator('#masthead-search-suggestions')
+  await expect(list, 'no suggestions came back; nothing was asserted').toBeVisible()
+  await expect(list).toHaveAttribute('role', 'listbox')
+  await expect(input).toHaveAttribute('aria-expanded', 'true')
+  await expect(input).toHaveAttribute('aria-autocomplete', 'list')
+  await expect(input).toHaveAttribute('aria-controls', 'masthead-search-suggestions')
+
+  const options = list.locator('[role="option"]')
+  expect(
+    await options.count(),
+    'the list has no options for the combobox to point at',
+  ).toBeGreaterThan(1)
+
+  // Nothing is selected until the shopper chooses, so the attribute must be
+  // ABSENT rather than pointing at a first option they never asked for.
+  await expect(input).not.toHaveAttribute('aria-activedescendant', /./)
+
+  const selected = async () => {
+    const id = await input.getAttribute('aria-activedescendant')
+    return id ? list.locator(`#${id}`) : null
+  }
+
+  await page.keyboard.press('ArrowDown')
+  await expect(input).toHaveAttribute('aria-activedescendant', 'masthead-search-option-0')
+  await expect(list.locator('[aria-selected="true"]')).toHaveCount(1)
+
+  await page.keyboard.press('ArrowDown')
+  await expect(input).toHaveAttribute('aria-activedescendant', 'masthead-search-option-1')
+  await expect(list.locator('[aria-selected="true"]')).toHaveCount(1)
+
+  // Backwards is a separate branch, and it wraps at zero.
+  await page.keyboard.press('ArrowUp')
+  await expect(input).toHaveAttribute('aria-activedescendant', 'masthead-search-option-0')
+
+  // The payoff: what Enter opens has to be what was announced. A name read out
+  // and a different product opened is worse than silence.
+  const announced = (await (await selected())?.textContent()) ?? ''
+  await page.keyboard.press('Enter')
+  await page.waitForURL(/\/product\//)
+  const heading = (await page.locator('h1').first().textContent()) ?? ''
+  expect(announced, `announced "${announced}" and opened "${heading}"`).toContain(heading.trim())
+})
