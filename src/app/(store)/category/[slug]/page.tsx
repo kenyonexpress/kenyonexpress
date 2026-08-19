@@ -12,6 +12,7 @@ import {
   CATEGORY_PAGE_SIZE,
   type CollectionRule,
   type ProductTypeFilter,
+  categoryMetaDescription,
   collectionRule,
   getAllCategories,
   getAllCategorySlugs,
@@ -64,9 +65,39 @@ function resultCountText(total: number, from: number, to: number): string {
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params
   const category = await getCategoryBySlug(slug)
+
+  // A slug nobody has: the body calls notFound(), which emits noindex through
+  // app/not-found.tsx. State it here too, so a crawler that only reads metadata
+  // never treats the empty shell as an indexable page.
+  if (!category) {
+    return {
+      title: 'קטגוריה לא נמצאה',
+      description: 'הקטגוריה לא נמצאה או שאינה פעילה בקניון אקספרס.',
+      robots: { index: false, follow: true },
+    }
+  }
+
+  // Almost no category row carries description_he -- /category/hot-deals, the
+  // one linked from the home page, is one of them -- and `undefined` here meant
+  // the page shipped with no <meta name="description"> at all. Lighthouse SEO
+  // scored it 92 against 100 for every page that has one. Same fallback shape
+  // as the PDP in lib/product-seo.ts: a short Hebrew line built from the name
+  // the page already shows, rather than invented marketing copy.
+  const description = category.description_he?.trim() || categoryMetaDescription(category.name_he)
+
   return {
-    title: category?.name_he ?? 'קטגוריה',
-    description: category?.description_he ?? undefined,
+    title: category.name_he,
+    description,
+    // The same category is reachable with sort, page, price and city query
+    // strings, and without a canonical each of those competes as its own page.
+    alternates: { canonical: `/category/${encodeURIComponent(category.slug)}` },
+    openGraph: {
+      title: category.name_he,
+      description,
+      url: `/category/${encodeURIComponent(category.slug)}`,
+      type: 'website',
+      locale: 'he_IL',
+    },
   }
 }
 

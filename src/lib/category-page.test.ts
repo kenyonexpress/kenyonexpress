@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  categoryMetaDescription,
   collectionFilter,
   collectionRule,
   orderedByMenu,
@@ -169,5 +170,27 @@ describe('collectionFilter', () => {
     const filter = collectionFilter(ID, { kind: 'newest', limit: 24 }, [])
     expect(filter).toBe(`category_id.eq.${ID}`)
     expect(filter).not.toContain('in.()')
+  })
+})
+
+/**
+ * `/category/hot-deals` is linked from the home page and its row carries no
+ * description_he, so the page shipped with no <meta name="description"> at all.
+ * Lighthouse scored it 92 on SEO against 100 for every page that has one, and
+ * nothing else could see it: a missing tag renders identically to a present
+ * one. Measured 2026-08-19, MISSION-FINAL stage 8.
+ */
+describe('categoryMetaDescription', () => {
+  it('names the category, so the snippet is about this page and not the site', () => {
+    expect(categoryMetaDescription('דיל חם 🔥')).toContain('דיל חם 🔥')
+  })
+
+  it('stays inside the length a search engine will actually print', () => {
+    expect(categoryMetaDescription('אלקטרוניקה ומחשבים').length).toBeLessThanOrEqual(160)
+  })
+
+  it('still returns a sentence when the name is blank, never an empty tag', () => {
+    expect(categoryMetaDescription('   ').length).toBeGreaterThan(20)
+    expect(categoryMetaDescription('   ')).not.toContain('  בקניון')
   })
 })

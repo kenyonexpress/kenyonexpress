@@ -93,12 +93,53 @@ export const HERO_ANIMATION_MEDIA = '(min-width: 1024px)'
 
 /** WCAG 2.2 / Lighthouse minimum tap target. */
 const TAP_MIN = 24
+/** The `gap-2` between the dots, in px. The inline insets below read it. */
+const DOT_GAP = 8
 
 const dotWidth = (isCurrent: boolean) => (isCurrent ? DOT_WIDTH_CURRENT : DOT_WIDTH_IDLE)
 /** The button never shrinks below the tap minimum, and never below the dot. */
 const dotButtonSize = (visible: number) => Math.max(TAP_MIN, visible)
 /** Half the growth, handed back as negative margin so layout does not shift. */
 const dotInset = (visible: number) => (dotButtonSize(visible) - visible) / 2
+
+/**
+ * THE SIDEWAYS GROWTH IS CAPPED, AND THE VERTICAL GROWTH IS NOT.
+ *
+ * Growing an 8px dot to a 24px button and handing the growth back as negative
+ * margin keeps the layout still, but sideways it also walks the button into its
+ * neighbour: 8px of inset on each side against an 8px gap left adjacent hit
+ * areas overlapping by 8px, and hit testing gives an overlap to whichever
+ * button comes later in the DOM. Measured on the home page 2026-08-19 (stage 8
+ * Lighthouse, `target-size`): the buttons for slides 2 and 3 both claimed
+ * x199..207, which is the left half of the VISIBLE dot for slide 2 — tapping
+ * that dot opened slide 3.
+ *
+ * A neighbour can therefore only be met halfway. Capping each inline inset at
+ * half the gap makes the hit areas touch and never overlap, and because the
+ * button still gives back exactly what it grew, every dot stays where it was.
+ *
+ * That caps the idle dot at 16x24 rather than 24x24, so `target-size` still
+ * reports it: 8px dots spaced 8px apart cannot host 24px targets without moving
+ * them, and the spacing is measured off the live slider. WCAG 2.2's 2.5.8 is
+ * outside the WCAG 2.1 AA set this project gates on (`e2e/a11y.spec.ts`), and
+ * moving the dots is a pixel-fidelity decision for Ofir, recorded in
+ * docs/LIGHTHOUSE-AUDIT.md. The wrong-slide tap is a defect either way, and it
+ * is what this fixes. Vertically there is no neighbour, so the full 24px
+ * stands.
+ */
+const dotInsetInline = (visible: number) => Math.min(dotInset(visible), DOT_GAP / 2)
+export const dotButtonWidth = (visible: number) => visible + 2 * dotInsetInline(visible)
+export const dotHitBox = (visible: number) => ({
+  width: dotButtonWidth(visible),
+  height: dotButtonSize(DOT_HEIGHT),
+  marginInline: -dotInsetInline(visible),
+  marginBlock: -dotInset(DOT_HEIGHT),
+})
+export const HERO_DOT_GEOMETRY = {
+  gap: DOT_GAP,
+  idle: DOT_WIDTH_IDLE,
+  current: DOT_WIDTH_CURRENT,
+}
 const AUTOPLAY_MS = 5000
 
 /**
@@ -718,15 +759,12 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
                 aria-current={isCurrent ? 'true' : undefined}
                 style={{
                   // The dot is 8px because that is what the live slider renders.
-                  // A 24px minimum tap target and an 8px dot are not in conflict
-                  // if the BUTTON is 24px and its extra size is given back as
-                  // negative margin: the hit area grows, the visible dot and
-                  // every neighbour's position stay exactly where they were, so
-                  // the pixel diff against live does not move.
-                  width: dotButtonSize(dotWidth(isCurrent)),
-                  height: dotButtonSize(DOT_HEIGHT),
-                  marginInline: -dotInset(dotWidth(isCurrent)),
-                  marginBlock: -dotInset(DOT_HEIGHT),
+                  // The button around it grows to the tap minimum and hands the
+                  // growth back as negative margin, so the hit area grows while
+                  // the visible dot and every neighbour stay where they were and
+                  // the pixel diff against live does not move. Sideways the
+                  // growth stops at half the gap; see dotInsetInline.
+                  ...dotHitBox(dotWidth(isCurrent)),
                   background: 'transparent',
                 }}
                 className="flex shrink-0 items-center justify-center border-0 p-0"

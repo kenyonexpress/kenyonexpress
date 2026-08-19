@@ -92,6 +92,20 @@ type SupplierJoin = {
   longitude?: number | null
 }
 
+/**
+ * The description a category page falls back to when the row has none.
+ *
+ * Kept out of the page component so it can be tested without a database: the
+ * failure it exists for is silent (a missing tag, not a wrong one) and only
+ * Lighthouse ever noticed it.
+ */
+export function categoryMetaDescription(nameHe: string): string {
+  const name = nameHe.trim()
+  return name
+    ? `${name} בקניון אקספרס. דילים, קופונים ומוצרים במחירים של קניון אקספרס.`
+    : 'דילים, קופונים ומוצרים במחירים של קניון אקספרס.'
+}
+
 export async function getCategoryBySlug(slug: string): Promise<CategoryRow | null> {
   'use cache'
   cacheLife('hours')
