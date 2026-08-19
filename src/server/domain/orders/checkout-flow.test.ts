@@ -64,17 +64,14 @@ describe('checkout flow (domain integration, final rules)', () => {
       ['item-physical', 'pending'],
     ])
     for (const [id, state] of lineStates) {
-      lineStates.set(
-        id,
-        transition(state, 'PAYMENT_CONFIRMED', id === 'item-coupon' ? 'coupon' : 'physical'),
-      )
+      lineStates.set(id, transition(state, 'PAYMENT_CONFIRMED'))
     }
     expect(deriveOrderStatus([...lineStates.values()])).toBe('paid')
 
     // 3. Finalize: physical splits immediately, the coupon line's supplier
     //    share goes into escrow; one voucher money-snapshot per purchased unit.
-    lineStates.set('item-physical', transition('paid', 'EXECUTE_SPLIT', 'physical'))
-    lineStates.set('item-coupon', transition('paid', 'EXECUTE_SPLIT', 'coupon'))
+    lineStates.set('item-physical', transition('paid', 'EXECUTE_SPLIT'))
+    lineStates.set('item-coupon', transition('paid', 'EXECUTE_SPLIT'))
     // The order is not settled while a line is held, even though the physical
     // leg is done: the held line is the least-advanced active one.
     expect(deriveOrderStatus([...lineStates.values()])).toBe('split_executed')

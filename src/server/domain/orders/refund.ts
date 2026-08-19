@@ -183,13 +183,13 @@ export function describeRefundBlockers(input: {
     (line) =>
       line.settlementStatus !== 'refunded' &&
       line.settlementStatus !== 'cancelled' &&
-      !canTransition(line.settlementStatus, 'REFUND', line.productType),
+      !canTransition(line.settlementStatus, 'REFUND'),
   )
   const refundable = input.lines.filter(
     (line) =>
       line.settlementStatus !== 'refunded' &&
       line.settlementStatus !== 'cancelled' &&
-      canTransition(line.settlementStatus, 'REFUND', line.productType),
+      canTransition(line.settlementStatus, 'REFUND'),
   )
   if (refundable.length === 0) {
     blockers.push({
@@ -220,11 +220,11 @@ export function planOrderRefund(input: PlanRefundInput): RefundPlan {
   for (const line of input.lines) {
     // Already-terminal-refunded/cancelled lines are simply skipped (replay-safe).
     if (line.settlementStatus === 'refunded' || line.settlementStatus === 'cancelled') continue
-    if (canTransition(line.settlementStatus, 'REFUND', line.productType)) {
+    if (canTransition(line.settlementStatus, 'REFUND')) {
       refundable.push({
         orderItemId: line.orderItemId,
         from: line.settlementStatus,
-        to: transition(line.settlementStatus, 'REFUND', line.productType),
+        to: transition(line.settlementStatus, 'REFUND'),
       })
     } else {
       // redeemed / escrow_released / pending etc. — cannot pull this money back.

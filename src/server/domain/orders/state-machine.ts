@@ -1,5 +1,3 @@
-import type { CommissionProductType } from '@/lib/commerce/commission'
-
 /**
  * Settlement lifecycle of an order line (and, derived, of an order), under
  * C11 version (b), decided 2026-07-27: a coupon prepayment is held for the
@@ -56,8 +54,6 @@ export const SETTLEMENT_EVENTS: readonly SettlementEvent[] = [
 
 type TransitionRule = {
   to: SettlementState
-  /** When set, the event is legal only for lines of this product type. */
-  productType?: CommissionProductType
 }
 
 /**
@@ -72,6 +68,15 @@ type TransitionRule = {
  * consumed at the business, and the supplier has already been paid out of the
  * hold. A goodwill refund after that point is a wallet credit, which is a
  * different money movement entirely.
+ *
+ * No transition is product-type specific, and the machine no longer takes a
+ * product type. It carried a `productType` rule field and a WRONG_PRODUCT_TYPE
+ * error from the C11(a) escrow rule, where coupon lines had their own path.
+ * C11(b) removed that: both types run pending -> paid -> split_executed, and a
+ * coupon line simply splits 100/0. No rule ever set the field again, so the
+ * guard was unreachable in every state and every event, which is why the
+ * per-file branch floor could not be met while it stood. Type-specific money
+ * still exists, but it lives in platform_percent, not in the legal moves.
  *
  * There is deliberately no event leading INTO platform_settled. It is a state
  * this machine can only exit, which is what "legacy, no new row enters it"
@@ -100,7 +105,7 @@ const TRANSITIONS: Readonly<
   cancelled: {},
 }
 
-export type TransitionErrorCode = 'ILLEGAL_TRANSITION' | 'WRONG_PRODUCT_TYPE'
+export type TransitionErrorCode = 'ILLEGAL_TRANSITION'
 
 export class SettlementTransitionError extends Error {
   readonly code: TransitionErrorCode
@@ -116,28 +121,15 @@ export class SettlementTransitionError extends Error {
   }
 }
 
-export function canTransition(
-  from: SettlementState,
-  event: SettlementEvent,
-  productType: CommissionProductType,
-): boolean {
-  const rule = TRANSITIONS[from][event]
-  if (!rule) return false
-  return rule.productType === undefined || rule.productType === productType
+export function canTransition(from: SettlementState, event: SettlementEvent): boolean {
+  return TRANSITIONS[from][event] !== undefined
 }
 
 /** Applies an event, throwing SettlementTransitionError when illegal. */
-export function transition(
-  from: SettlementState,
-  event: SettlementEvent,
-  productType: CommissionProductType,
-): SettlementState {
+export function transition(from: SettlementState, event: SettlementEvent): SettlementState {
   const rule = TRANSITIONS[from][event]
   if (!rule) {
     throw new SettlementTransitionError('ILLEGAL_TRANSITION', from, event)
-  }
-  if (rule.productType !== undefined && rule.productType !== productType) {
-    throw new SettlementTransitionError('WRONG_PRODUCT_TYPE', from, event)
   }
   return rule.to
 }
