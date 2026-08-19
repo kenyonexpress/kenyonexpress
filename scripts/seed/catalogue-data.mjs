@@ -1,5 +1,5 @@
 /**
- * The 10 suppliers and 30 deals `seed-catalogue.mjs` writes.
+ * The 14 suppliers and 40 deals `seed-catalogue.mjs` writes.
  *
  * Pure data and pure helpers, in its own module so `catalogue-data.test.ts` can
  * assert the invariants without a database. Every rule below is one the
@@ -51,6 +51,10 @@ const CITIES = [
   ['פתח תקווה', 'ההסתדרות 22'],
   ['רמת גן', 'ביאליק 63'],
   ['אילת', 'התמרים 3'],
+  ['חולון', 'סוקולוב 15'],
+  ['הרצליה', 'סוקולוב 88'],
+  ['מודיעין', 'עמק דותן 4'],
+  ['רעננה', 'אחוזה 120'],
 ]
 
 const SUPPLIER_NAMES = [
@@ -64,6 +68,11 @@ const SUPPLIER_NAMES = [
   'פיצה נאפולי',
   'קליניקת עור ואור',
   'מרכז הבאולינג',
+  // Added for the three open taxonomies the seed used to skip. See DEALS.
+  'פטשופ החברים',
+  'מרכז חוגים זאטוטים',
+  'אינסטלציה ומיזוג רן',
+  'מעבדת סלולר טק',
 ]
 
 export const SUPPLIERS = SUPPLIER_NAMES.map((name, i) => {
@@ -87,9 +96,22 @@ export const SUPPLIERS = SUPPLIER_NAMES.map((name, i) => {
 })
 
 /**
- * 30 deals across the three families the goal names, mapped onto categories
- * that ALREADY EXIST in production (measured: 12 active category slugs). A seed
- * that invented its own categories would put demo rows in the navigation.
+ * 40 deals mapped onto categories that ALREADY EXIST in production (measured:
+ * 12 active category slugs). A seed that invented its own categories would put
+ * demo rows in the navigation.
+ *
+ * The last nine were added on 19.08 for a reason the launch bar names: the
+ * seed reached four categories, and `baby-kids`, `pets` and `professionals`
+ * were three of the seven open taxonomies it left with nothing. Production
+ * covers 0 of those 7 with a real coupon, so a staging reset that also covered
+ * none of them could not show what the gap looks like once it is closed.
+ *
+ * The three collections (`hot-deals`, `under-99`, `new`) are still untouched,
+ * and that is not an omission. Membership in them is a rule about price or
+ * recency, and `categories` has no column that expresses one; a row put there
+ * by hand is a hand-placed row, not a collection that works. `courses` stays
+ * empty until there is a subscription product, and `electronics` is not in the
+ * live menu.
  */
 const DEALS = [
   // restaurants + cafés
@@ -126,6 +148,22 @@ const DEALS = [
   // physical goods, so the seed is not all coupons
   ['אוזניות אלחוטיות', 'phones-computers', 8, 399, null],
   ['שעון חכם', 'phones-computers', 8, 690, null],
+  // pets
+  ['טיפוח וספר לכלב קטן', 'pets', 10, 220, 109],
+  ['חיסון שנתי ובדיקה וטרינרית', 'pets', 10, 400, 199],
+  ['שק מזון פרימיום 12 קילו', 'pets', 10, 340, null],
+  // baby + kids
+  ['כרטיסייה לחוג התעמלות לפעוטות', 'baby-kids', 11, 480, 229],
+  ['צילומי גיל שנה בסטודיו', 'baby-kids', 11, 750, 349],
+  ['סדנת הורים ותינוקות', 'baby-kids', 11, 260, 129],
+  // professionals
+  ['ביקור חשמלאי ואבחון תקלה', 'professionals', 12, 350, 169],
+  ['ניקוי מזגן מקצועי', 'professionals', 12, 280, 139],
+  ['פתיחת סתימה דחופה', 'professionals', 12, 450, 219],
+  // phones-computers held two physical rows and no coupon, which is exactly
+  // what production has there. The bar asks every open taxonomy for a coupon,
+  // so the seed answers it with a service rather than by dropping the row.
+  ['תיקון מסך סמארטפון', 'phones-computers', 13, 450, 219],
 ]
 
 export const PRODUCTS = DEALS.map(
