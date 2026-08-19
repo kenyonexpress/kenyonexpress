@@ -362,6 +362,54 @@ const shoot = async (url, out) => {
     gridCounts[external ? 'live' : 'mine'] = grid.count
     gridTitles[external ? 'live' : 'mine'] = grid.titles
   }
+  // THE PRODUCT PAGE, AND THE PHOTO THAT IS LOADED, LAID OUT AND INVISIBLE.
+  //
+  // MEASURED 2026-08-19. `--page=product` scored 16.17% and the top bands read
+  // 24% to 52%. That region is the gallery, and on LIVE it is white: the
+  // element carries an INLINE `opacity: 0`, no stylesheet rule anywhere on the
+  // page sets it back, and `jQuery.fn.wc_product_gallery` is undefined -- the
+  // theme swapped WooCommerce's gallery script for its own carousel, so the
+  // line that would restore the opacity is not loaded. `refs/ke_live_product.html`,
+  // an older capture, still carries `.woocommerce-product-gallery{opacity:1
+  // !important}` twice. The live page today does not.
+  //
+  // It is not headless and it is not lazy loading: the image is `complete`
+  // with `naturalWidth` 600, its box is 470x478 at x835 y250, and the opacity
+  // stays 0 at 900px and 2600px of viewport height, at 0s, 3s and 5s, after
+  // `load`, `resize`, `scroll`, jQuery `ready` and a real scroll. It is live's
+  // own regression, and the only way for our page to match it is to stop
+  // showing the product.
+  //
+  // Forcing `opacity: 1` on live and rerunning: 16.17% -> 12.56%, and 9.06% at
+  // the 22px offset. So a QUARTER of what this page was charged is one blank
+  // rectangle on the reference. That is the same defect as the grid guards
+  // above -- a content difference wearing a fidelity number -- so it refuses
+  // the same way instead of printing a number nobody can act on.
+  if (page === 'product') {
+    heroImages[external ? 'live' : 'mine'] = await p.evaluate(() => {
+      // Painted, not merely present. A box is what a pixel diff can see, so
+      // the check is the effective opacity down the whole ancestor chain
+      // rather than the element's own: live's image is fully opaque inside a
+      // container that is not.
+      const painted = (el) => {
+        for (let n = el; n && n !== document.documentElement; n = n.parentElement) {
+          const cs = getComputedStyle(n)
+          if (cs.display === 'none' || cs.visibility === 'hidden') return false
+          if (Number(cs.opacity) < 0.01) return false
+        }
+        return true
+      }
+      return [...document.querySelectorAll('img')].filter((img) => {
+        const r = img.getBoundingClientRect()
+        // The main product shot on both sides is ~470 square near the top. The
+        // floor is well under that and the ceiling on y keeps related-product
+        // thumbnails and the footer out of the answer.
+        if (r.width < 250 || r.height < 250) return false
+        if (r.top + window.scrollY > 1000) return false
+        return painted(img)
+      }).length
+    })
+  }
   // EVERY IMAGE BELOW THE FOLD MUST BE ASKED FOR BEFORE THE PAGE IS SHOT.
   //
   // `fullPage: true` captures past the viewport without ever scrolling, so
@@ -484,6 +532,7 @@ const shoot = async (url, out) => {
 const cartEmptiness = { live: null, mine: null }
 const gridCounts = { live: null, mine: null }
 const gridTitles = { live: [], mine: [] }
+const heroImages = { live: null, mine: null }
 // THE SEARCH PAGE BELONGS HERE TOO, AND LEAVING IT OUT COST A DAY OF NUMBERS.
 //
 // The rule below was written for /category and /shop. `--page=search` scores
@@ -618,6 +667,34 @@ if (
     )
     process.exit(3)
   }
+}
+
+// ONE SIDE SHOWS THE PRODUCT, THE OTHER SHOWS WHITE.
+//
+// The reasoning and the measurements are with the probe in `shoot()`. In short:
+// live's gallery carries an inline `opacity: 0` that nothing on the page clears
+// any more, so a 470x478 rectangle of the reference is blank where our page has
+// the product photo, and it was worth 3.61 points of the 16.17% this page
+// scored. Matching that reference means removing the photo.
+//
+// The flag is the same one, because it is the same kind of refusal: a content
+// difference, not a design one.
+if (
+  page === 'product' &&
+  heroImages.live !== null &&
+  heroImages.mine !== null &&
+  (heroImages.live === 0) !== (heroImages.mine === 0) &&
+  process.env.COMPARE_ALLOW_GRID_MISMATCH !== '1'
+) {
+  const blank = heroImages.live === 0 ? 'live' : 'the local page'
+  const shown = heroImages.live === 0 ? 'the local page' : 'live'
+  console.error(
+    `REFUSING to measure: ${shown} paints a main product image and ${blank} paints none (live ${heroImages.live}, mine ${heroImages.mine}).`,
+  )
+  console.error(
+    `Live's gallery holds a loaded, laid-out image under an inline opacity: 0 that no rule on the page clears. Fix it there, or run with COMPARE_ALLOW_GRID_MISMATCH=1 to score a product page against a blank one deliberately.`,
+  )
+  process.exit(3)
 }
 for (const side of ['live', 'mine']) {
   copyFileSync(runShot(side), `refs/${side}-${page}.png`)
