@@ -1,8 +1,41 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-19 (docs: LAUNCH-DAY-PLAN.md on phase5/homepage)
+Updated: 2026-08-19 (MISSION-FINAL שלב 1 הושלם: שני המיזוגים בוצעו)
 
-## המשך מ: MISSION-FINAL שלב 1 (merge supplier + arch-night)
+## המשך מ: תור AUTOPILOT (10) DB HARDENING
+
+**‏MISSION-FINAL שלב 1 — ✅ הושלם 19.08.** שני המיזוגים בוצעו אל `phase5/homepage`:
+
+| מיזוג | קומיט | מה נכנס |
+| --- | --- | --- |
+| `feat/supplier-portal` | `c6942ee58` | פורטל ספקים, שאילתות, טסטי tenant-scope |
+| `docs/architecture-night` | `f8f6c9d14` | ‏10 מסמכי ארכיטקטורה + 5 טיוטות SQL |
+
+**שערים בזמן המיזוג, נמדדו:** ‏`type-check` יצא 0, ‏`build` יצא 0,
+‏`pnpm test` ‏**2378/2379**. הכישלון היחיד הוא
+‏`src/lib/a11y/brand-contrast.test.ts` שחורג מ-timeout ברירת המחדל (5 שניות)
+תחת עומס הסוויטה המלאה; לבד הוא רץ ב-439ms ועובר. **זה timeout, לא באג.**
+
+### שתי התנגשויות שהוכרעו במיזוג, ולמה
+
+1. **‏`src/lib/cart/pricing.ts` — שני שיפורים אמיתיים, אחד מכל צד, שלא חופפים.**
+   ‏`phase5/homepage` החליפה את `isAvailable` ב-`unavailableReason`, כדי שמוצר
+   שהוסר, מדף ריק, מדף חלקי ומוצר שהאדמין לא סיים להגדיר יפסיקו לחלוק משפט אחד.
+   ‏`feat/supplier-portal` גרמה ל-`productType` להחזיר `null` לערך enum שהעגלה
+   לא יודעת לתמחר, כי נפילה ל-`'physical'` **מכרה שירות**, והייתה מוכרת מנוי
+   פעם אחת, בלי שגיאת טיפוס ובלי טסט אדום. **שניהם בקובץ הממוזג.**
+2. **חילוקי דעות אמיתיים על התנהגות — הצד החדש ניצח.** טסט מ-`feat/supplier-portal`
+   דרש שעגלה שכל שורותיה לא ניתנות לתמחור תחזיר **0 פריטים**.
+   ‏`phase5/homepage` כבר הסירה את זה בכוונה: החזרת `EMPTY_CART` אמרה ללקוח
+   שהעגלה ריקה בזמן ששורת `carts` החזיקה הכל, ולכן הוספה חוזרת של פריט הצטרפה
+   בשקט לשורה שהייתה שם מלכתחילה. הטסט עודכן ומסביר במקום למה השתנה.
+
+### ⛔ לפני שמריצים משהו מ-`migrations/pending/`
+
+לקרוא את `HANDOVER-ARCH-NIGHT-COLLISION.md`. שני סוכנים רצו על אותו תור באותו
+worktree. ‏`007-order-transition-guard.sql` הגיע מהסוכן שנעצר **ולא נבדק לעומק.**
+
+## המשך מ (היסטוריה, הושלם): MISSION-FINAL שלב 1 (merge supplier + arch-night)
 
 לילה 19.08 docs נסגר. בוקר 19.08:
 ✅ `docs/DATA-BASELINE.md`
