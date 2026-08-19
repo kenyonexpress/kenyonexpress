@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { getActiveCouponDealIds, getCouponDeal } from '@/lib/coupon-deals'
 import { MapPin, Tag } from 'lucide-react'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
@@ -9,13 +9,15 @@ interface Props {
 
 export async function generateMetadata({ params }: Props) {
   const { id } = await params
-  const supabase = await createClient()
-  const { data } = await supabase
-    .from('coupon_deals')
-    .select('title_he, business_name')
-    .eq('id', id)
-    .single()
-  return { title: data ? `${data.title_he} — ${data.business_name}` : 'קופון' }
+  // The same cached read the body makes, so the title and the page cannot
+  // describe different rows and the two do not cost two round trips.
+  const deal = await getCouponDeal(id)
+  return { title: deal ? `${deal.title_he} — ${deal.business_name}` : 'קופון' }
+}
+
+export async function generateStaticParams() {
+  const ids = await getActiveCouponDealIds()
+  return ids.map((id) => ({ id }))
 }
 
 /**
@@ -27,23 +29,16 @@ export async function generateMetadata({ params }: Props) {
  * a not-found body - a soft 404 over an unbounded id space. Same shape as the
  * one fixed on `/category/[slug]`, and the same reasoning applies.
  *
- * Unlike that route there is nothing to preserve by keeping the boundary. This
- * page has no `generateStaticParams` and reads through the cookie-scoped
- * client, so its shell was never more than an empty grey box painted a moment
- * before the answer arrived. Trading it for a truthful status code is not a
- * close call.
+ * Removing the boundary is not enough on its own: `cacheComponents` fails the
+ * BUILD on an uncached read outside one, which is what made this look
+ * unfixable. The read moved to `lib/coupon-deals.ts` behind `use cache` on the
+ * anon client, and that is what lets the page await the answer before it
+ * commits a status. The shell it gave up was an empty grey box painted a moment
+ * before the row arrived.
  */
 export default async function CouponDealPage({ params }: Props) {
   const { id } = await params
-  const supabase = await createClient()
-
-  const { data: deal } = await supabase
-    .from('coupon_deals')
-    .select('*')
-    .eq('id', id)
-    .eq('status', 'active')
-    .is('deleted_at', null)
-    .single()
+  const deal = await getCouponDeal(id)
 
   if (!deal) notFound()
 
