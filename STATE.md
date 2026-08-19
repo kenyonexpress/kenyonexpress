@@ -1,12 +1,13 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-19 (docs: CONTENT-SEO-PLAN.md on phase5/homepage)
+Updated: 2026-08-19 (docs: RUNBOOK-OPS.md on phase5/homepage)
 
 ## המשך מ: MISSION-FINAL שלב 1 (merge supplier + arch-night)
 
 לילה 19.08 docs נסגר. בוקר 19.08:
 ✅ `docs/DATA-BASELINE.md`
 ✅ `docs/CONTENT-SEO-PLAN.md` (metadata, Schema.org, sitemap/robots, 10 קטגוריות, CWV Next 15)
+✅ `docs/RUNBOOK-OPS.md` (5 פקודות בוקר, סוכן תקוע, אתחול לולאה, Vercel rollback, webhook, אתר למטה)
 הבא שדורש קוד: merge `feat/supplier-portal` ואז `docs/architecture-night` אל `phase5/homepage`.
 
 ## ⛔ מדיניות ענפים מחייבת (19.08.2026)
