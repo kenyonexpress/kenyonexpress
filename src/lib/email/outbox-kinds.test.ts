@@ -118,13 +118,19 @@ describe('the outbox kinds three lists have to agree on', () => {
     for (const file of sourceFiles(resolve(process.cwd(), 'src'))) {
       const source = readFileSync(file, 'utf8')
       for (const match of source.matchAll(/p_kind:\s*'([a-z_]+)'/g)) {
-        if (!accepted.has(match[1])) offenders.push(`${file}: p_kind '${match[1]}'`)
+        // `match[1]` is `string | undefined` under noUncheckedIndexedAccess even
+        // though a matched group-1 always exists. `?? ''` keeps the check honest:
+        // the empty string is not in the set, so a hypothetical miss is reported
+        // rather than silently skipped.
+        const kind = match[1] ?? ''
+        if (!accepted.has(kind)) offenders.push(`${file}: p_kind '${kind}'`)
       }
       // The direct-insert form, narrowed to files that name the table so a
       // `kind:` on some unrelated object does not read as a false positive.
       if (source.includes('notification_outbox')) {
         for (const match of source.matchAll(/\bkind:\s*'([a-z_]+)'/g)) {
-          if (!accepted.has(match[1])) offenders.push(`${file}: kind '${match[1]}'`)
+          const kind = match[1] ?? ''
+          if (!accepted.has(kind)) offenders.push(`${file}: kind '${kind}'`)
         }
       }
     }

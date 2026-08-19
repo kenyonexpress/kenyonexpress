@@ -88,3 +88,20 @@ expected: `004` replaces it rather than creating it.
 honest. It lives under `src/` because that is the only tree vitest is
 configured to collect from; widening `vitest.config.ts` to reach `migrations/`
 would change what every other suite in the repo picks up, for one file.
+
+## ‏⚠️ התנגשות מספור עם `supabase/migrations/`, ‏19.08.2026
+
+‏המספרים `120` ו-`121` **תפוסים פעמיים**, בשתי תיקיות, בשתי משמעויות שונות:
+
+| מספר | ‏`supabase/migrations/` (הורץ בפרודקשן) | ‏`migrations/pending/` (ממתין לאופיר) |
+| --- | --- | --- |
+| ‏120 | ‏`120_split_public_select_policies_by_role.sql` | ‏`120_payment_events.sql` |
+| ‏121 | ‏`121_widen_notification_outbox_kind_check.sql` | ‏`121_refunds.sql` |
+
+‏זה קרה כי `supabase/migrations/` הגיע ל-118 ושני מחזורים הוסיפו לו 119-121
+באותו יום, בעוד שהתור כאן שמר לעצמו את 120-126 מראש.
+
+‏**מה לעשות כשמקדמים קובץ מכאן:** ‏למספר אותו מחדש ל-**122 ומעלה** לפי מה
+שתפוס ב-`supabase/migrations/` באותו רגע, ולא להעתיק את המספר שכתוב כאן.
+‏הקבצים שכבר הורצו לא ימוספרו מחדש: שינוי שם של מיגרציה שרצה אינו משנה דבר
+במסד ורק שובר את הקשר בין הקובץ להיסטוריה.
