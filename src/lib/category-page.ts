@@ -34,6 +34,29 @@ import { cache } from 'react'
 
 export const CATEGORY_PAGE_SIZE = 12
 
+type Orderable<T> = { order(column: string, opts: { ascending: boolean }): T }
+
+/**
+ * The menu order, with the tie-break that makes it an order at all.
+ *
+ * `categories.sort_order` is not unique and, measured against production on
+ * 19.08.2026, is not distinct either: `electronics` and `professionals` both
+ * sit on 10, and the 12 rows carry the values 1..11. Ordering by that column
+ * alone leaves the position of those two to whatever the planner returns, and
+ * because these reads are `use cache` with an hour of life, a reshuffle can
+ * survive in the sidebar long after the query that produced it.
+ *
+ * The second key is `slug`, which is UNIQUE, so the result is total. It is not
+ * a UNIQUE constraint on `sort_order`, deliberately: `CategoryTree` reorders
+ * by swapping two rows in two separate `updateCategorySortOrder` calls, and a
+ * unique index would fail the first of them and break the admin's reordering.
+ * `migrations/pending/006-categories-sort-order.sql` renumbers the data; this
+ * is what holds regardless of the data.
+ */
+export function orderedByMenu<T extends Orderable<T>>(query: T): T {
+  return query.order('sort_order', { ascending: true }).order('slug', { ascending: true })
+}
+
 export type CategoryRow = {
   id: string
   slug: string
@@ -88,11 +111,9 @@ export async function getAllCategorySlugs(): Promise<string[]> {
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
   const supabase = createPublicClient()
-  const { data } = await supabase
-    .from('categories')
-    .select('slug')
-    .eq('is_active', true)
-    .order('sort_order', { ascending: true })
+  const { data } = await orderedByMenu(
+    supabase.from('categories').select('slug').eq('is_active', true),
+  )
   return (data ?? []).map((c) => c.slug)
 }
 
@@ -118,12 +139,13 @@ export async function getCategoryChildren(
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
   const supabase = createPublicClient()
-  const { data } = await supabase
-    .from('categories')
-    .select('id, slug, name_he')
-    .eq('parent_id', categoryId)
-    .eq('is_active', true)
-    .order('sort_order', { ascending: true })
+  const { data } = await orderedByMenu(
+    supabase
+      .from('categories')
+      .select('id, slug, name_he')
+      .eq('parent_id', categoryId)
+      .eq('is_active', true),
+  )
   return data ?? []
 }
 
@@ -277,11 +299,9 @@ export async function getAllCategories(): Promise<{ slug: string; name_he: strin
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
   const supabase = createPublicClient()
-  const { data } = await supabase
-    .from('categories')
-    .select('slug, name_he')
-    .eq('is_active', true)
-    .order('sort_order', { ascending: true })
+  const { data } = await orderedByMenu(
+    supabase.from('categories').select('slug, name_he').eq('is_active', true),
+  )
   return data ?? []
 }
 

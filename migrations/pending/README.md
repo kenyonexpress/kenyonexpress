@@ -28,3 +28,7 @@ settled.**
 `002-products-geo.sql` and `003-products-whatsapp-enabled.sql` are independent
 of each other and of everything in `supabase/migrations/`. Neither depends on
 PENDING-109 or PENDING-110.
+
+`006-categories-sort-order.sql` is independent of all of them. It is data, not
+schema: one UPDATE that moves `electronics` from a shared `sort_order` of 10 to
+12. It adds no unique index on purpose, and the file says why.

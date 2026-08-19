@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseProductType, productTypeFilter } from './category-page'
+import { orderedByMenu, parseProductType, productTypeFilter } from './category-page'
 
 /**
  * The archive facet has to agree with the rest of the system about what a
@@ -45,5 +45,45 @@ describe('parseProductType', () => {
     for (const raw of ['service', 'COUPON', '', undefined, ['coupon'], 'coupon; drop table']) {
       expect(parseProductType(raw as string | string[] | undefined)).toBeUndefined()
     }
+  })
+})
+
+/**
+ * The sidebar order. `categories.sort_order` is not unique, and on 19.08.2026
+ * production had `electronics` and `professionals` both on 10, so the column
+ * alone does not define an order at all. These reads are `use cache` for an
+ * hour, so whichever way the planner happened to return them is what the
+ * sidebar shows for the rest of that hour.
+ */
+describe('orderedByMenu', () => {
+  const fake = () => {
+    const calls: [string, { ascending: boolean }][] = []
+    const query = {
+      order(column: string, opts: { ascending: boolean }) {
+        calls.push([column, opts])
+        return query
+      },
+    }
+    return { query, calls }
+  }
+
+  it('breaks a sort_order tie on slug, which is unique', () => {
+    const { query, calls } = fake()
+    orderedByMenu(query)
+    expect(calls).toEqual([
+      ['sort_order', { ascending: true }],
+      ['slug', { ascending: true }],
+    ])
+  })
+
+  it('keeps sort_order as the first key, so the menu order still wins', () => {
+    const { query, calls } = fake()
+    orderedByMenu(query)
+    expect(calls[0]?.[0]).toBe('sort_order')
+  })
+
+  it('returns the query so it stays chainable', () => {
+    const { query } = fake()
+    expect(orderedByMenu(query)).toBe(query)
   })
 })
