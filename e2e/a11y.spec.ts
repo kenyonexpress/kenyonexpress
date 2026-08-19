@@ -115,13 +115,24 @@ test('the document declares Hebrew and RTL, so a screen reader picks the right v
   await expect(html).toHaveAttribute('dir', 'rtl')
 })
 
-test('every interactive control on the home page is reachable by keyboard', async ({ page }) => {
-  await page.goto('/')
-  await page.waitForLoadState('domcontentloaded')
-
-  // A control that is visible, enabled and focusable but carries a negative
-  // tabindex is invisible to a keyboard, and axe does not flag it.
-  const unreachable = await page.evaluate(() => {
+/**
+ * A control that is visible, enabled and focusable but carries a negative
+ * tabindex is invisible to a keyboard, and axe does not flag it.
+ *
+ * THE HOME PAGE ALONE IS NOT A SWEEP, and this file's own history says why:
+ * the a11y scan held six routes and all six were green while ten of the
+ * thirteen missing ones were not, the 320px gate held seven routes and the one
+ * page outside it was the only one overflowing, and the CLS gate held one page
+ * and the page that broke was a different one. This check held exactly one
+ * route for the same reason all of those did -- it was written on the page
+ * somebody happened to be looking at.
+ *
+ * The list below is the routes a shopper passes through on the way to paying,
+ * plus the two archives, because a control that cannot be tabbed to on the
+ * checkout is not the same size of problem as one on the home page.
+ */
+async function unreachableControls(page: Page): Promise<string[]> {
+  return page.evaluate(() => {
     const selector = 'a[href], button, input, select, textarea, [role="button"]'
     return Array.from(document.querySelectorAll(selector))
       .filter((el) => {
@@ -129,12 +140,61 @@ test('every interactive control on the home page is reachable by keyboard', asyn
         if (style.display === 'none' || style.visibility === 'hidden') return false
         if ((el as HTMLElement).offsetParent === null) return false
         if ((el as HTMLButtonElement).disabled) return false
+        // A SPAM HONEYPOT IS SUPPOSED TO BE UNREACHABLE, and widening this
+        // check past the home page found two of them before it found anything
+        // else: `ContactForm` and `SupplierLeadForm` both park a `company`
+        // input off-screen at -9999px, inside `aria-hidden="true"`, precisely
+        // so that no person ever fills it and every bot does. Off-screen is
+        // not `display: none`, so `offsetParent` is not null and the filter
+        // above calls it visible.
+        //
+        // `aria-hidden` is the right line to draw rather than a name or a
+        // position: a control hidden from assistive technology is not one a
+        // keyboard user is expected to reach, and it is the same declaration
+        // axe reads for `aria-hidden-focus` -- which passes here only BECAUSE
+        // the tabindex is negative. The two checks agree; without this clause
+        // they would contradict each other.
+        if (el.closest('[aria-hidden="true"]')) return false
         return Number(el.getAttribute('tabindex')) < 0
       })
       .map((el) => `${el.tagName.toLowerCase()}.${el.className}`.slice(0, 80))
   })
+}
 
-  expect(unreachable).toEqual([])
+for (const path of [
+  '/',
+  '/products',
+  '/cart',
+  '/category/hot-deals',
+  '/search?q=%D7%9E%D7%95%D7%A6%D7%A8',
+  '/coupons',
+  '/login',
+  '/contact',
+  '/suppliers',
+]) {
+  test(`every interactive control on ${path} is reachable by keyboard`, async ({ page }) => {
+    await page.goto(path)
+    await page.waitForLoadState('domcontentloaded')
+    expect(await unreachableControls(page)).toEqual([])
+  })
+}
+
+test('every interactive control on a product page is reachable by keyboard', async ({ page }) => {
+  // Through a catalogue link, not a hardcoded slug: a stale slug 404s, and a
+  // 404 page has three controls and passes.
+  const href = await firstProductHref(page)
+  await page.goto(href)
+  await page.waitForLoadState('domcontentloaded')
+  expect(await unreachableControls(page)).toEqual([])
+})
+
+test('every control in the seeded checkout is reachable by keyboard', async ({ page }) => {
+  await openPurchasableProduct(page)
+  await addOpenProductToCart(page)
+  await page.goto('/checkout')
+  await page.waitForLoadState('domcontentloaded')
+  expect(page.url(), 'checkout bounced to the cart; the seed did not stick').toContain('/checkout')
+  expect(await unreachableControls(page)).toEqual([])
 })
 
 /**
