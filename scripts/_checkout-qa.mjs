@@ -23,7 +23,9 @@ const log = (...a) => console.log(...a)
 
 for (const slug of SLUGS) {
   await page.goto(`${BASE}/product/${slug}`, { waitUntil: 'domcontentloaded', timeout: 90000 })
-  const atc = page.locator('.pdp-buy__atc, button:has-text("הוספה לסל"), button:has-text("הוסף לסל")').first()
+  const atc = page
+    .locator('.pdp-buy__atc, button:has-text("הוספה לסל"), button:has-text("הוסף לסל")')
+    .first()
   await atc.waitFor({ state: 'visible', timeout: 20000 })
   await atc.click()
   await page.waitForTimeout(2500)

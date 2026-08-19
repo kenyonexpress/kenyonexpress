@@ -43,9 +43,9 @@ vi.mock('@/lib/analytics/commerce-client', () => ({ trackCommerce: vi.fn() }))
 vi.mock('@/server/actions/auth', () => ({ signInWithGoogle: vi.fn() }))
 vi.mock('@/server/actions/payments/checkout', () => ({ submitCheckout: vi.fn() }))
 
-import CheckoutForm, { type CheckoutAddressPrefill } from './CheckoutForm'
 import type { CartView } from '@/lib/cart/types'
 import { agorot } from '@/lib/money'
+import CheckoutForm, { type CheckoutAddressPrefill } from './CheckoutForm'
 
 const PHYSICAL_LINE = {
   product_id: '11111111-1111-4111-8111-111111111111',

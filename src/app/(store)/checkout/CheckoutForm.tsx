@@ -5,7 +5,6 @@ import { track } from '@/lib/analytics/tracker'
 import type { CartView } from '@/lib/cart/types'
 import { sectionsFromElectro } from '@/lib/checkout/electro-content'
 import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-code'
-import { clampWalletIls } from '@/lib/checkout/wallet-input'
 import {
   CHECKOUT_STEPS,
   type CheckoutStep,
@@ -18,6 +17,7 @@ import {
   previousStep,
   validateStep,
 } from '@/lib/checkout/steps'
+import { clampWalletIls } from '@/lib/checkout/wallet-input'
 import { type Agorot, parseIls, sumAgorot } from '@/lib/money'
 import { shekels } from '@/lib/money-format'
 import { type AuthState, signInWithGoogle } from '@/server/actions/auth'

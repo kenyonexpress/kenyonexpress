@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
-import { describe, expect, it } from 'vitest'
 import { computeCancellationFee } from '@/server/domain/orders/refund'
+import { describe, expect, it } from 'vitest'
 
 /**
  * This site serves TWO complete sets of legal documents, and this pins that

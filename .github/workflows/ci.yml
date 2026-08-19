@@ -65,6 +65,14 @@ jobs:
       # carried lint debt. It does not any more: `pnpm lint` and
       # `tsc --noEmit` are both clean, measured before this line was changed.
       # Blocking it now is what stops the debt coming back.
+      #
+      # `pnpm lint` was `biome lint .` until 2026-08-20, and that had the very
+      # hole this step exists to close. `biome lint` runs rules only; `biome
+      # check` also runs the formatter and the assists, which is what
+      # `lint:changed` has always used. So four repo-wide errors (three
+      # organizeImports, one format) passed this backstop green while the
+      # pull_request run of the same commit failed on three of them. It is now
+      # `biome check .`, the same command as the diff-scoped gate.
       - name: Repo-wide lint
         run: pnpm lint
       - name: Repo-wide typecheck
