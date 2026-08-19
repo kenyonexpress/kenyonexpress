@@ -153,6 +153,7 @@ ALTER TABLE public.refunds ENABLE ROW LEVEL SECURITY;
 -- directly; the cancellation control goes through a server action, because the
 -- notice timestamp has to be the server's clock, not the browser's.
 -- (SELECT auth.uid()) not auth.uid(): InitPlan once, not once per row.
+DROP POLICY IF EXISTS refunds_owner_read ON public.refunds;
 CREATE POLICY refunds_owner_read ON public.refunds
   FOR SELECT TO authenticated
   USING (EXISTS (
@@ -160,6 +161,7 @@ CREATE POLICY refunds_owner_read ON public.refunds
     WHERE o.id = refunds.order_id AND o.user_id = (SELECT auth.uid())
   ));
 
+DROP POLICY IF EXISTS refunds_staff_read ON public.refunds;
 CREATE POLICY refunds_staff_read ON public.refunds
   FOR SELECT TO authenticated
   USING (public.current_user_role() IN ('admin','super_admin','support'));

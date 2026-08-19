@@ -98,6 +98,7 @@ ALTER TABLE public.supplier_branches ENABLE ROW LEVEL SECURITY;
 -- A branch is public information: it is an address a customer needs in order to
 -- walk in. Inactive branches are not, because an inactive branch is a closed
 -- shop and sending somebody there is worse than saying nothing.
+DROP POLICY IF EXISTS supplier_branches_public_read ON public.supplier_branches;
 CREATE POLICY supplier_branches_public_read ON public.supplier_branches
   FOR SELECT TO anon, authenticated
   USING (is_active AND EXISTS (
@@ -108,6 +109,7 @@ CREATE POLICY supplier_branches_public_read ON public.supplier_branches
 -- The supplier's own members manage their branches. (SELECT auth.uid()) rather
 -- than auth.uid(): InitPlan once, not once per row -- the same fix commit
 -- 0f8359bc applied across the schema.
+DROP POLICY IF EXISTS supplier_branches_member_write ON public.supplier_branches;
 CREATE POLICY supplier_branches_member_write ON public.supplier_branches
   FOR ALL TO authenticated
   USING (EXISTS (
@@ -123,6 +125,7 @@ CREATE POLICY supplier_branches_member_write ON public.supplier_branches
       AND m.role IN ('owner','manager')
   ));
 
+DROP POLICY IF EXISTS supplier_branches_admin_all ON public.supplier_branches;
 CREATE POLICY supplier_branches_admin_all ON public.supplier_branches
   FOR ALL TO authenticated
   USING (public.current_user_role() IN ('admin','super_admin'))

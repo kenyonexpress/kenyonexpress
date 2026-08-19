@@ -223,6 +223,7 @@ ALTER TABLE public.payment_events ENABLE ROW LEVEL SECURITY;
 -- (SELECT auth.uid()) rather than auth.uid(): the scalar subquery is evaluated
 -- once as an InitPlan instead of once per row. This is the same fix commit
 -- 0f8359bc applied across the schema; do not write the bare call here.
+DROP POLICY IF EXISTS payment_events_owner_read ON public.payment_events;
 CREATE POLICY payment_events_owner_read ON public.payment_events
   FOR SELECT TO authenticated
   USING (
@@ -234,6 +235,7 @@ CREATE POLICY payment_events_owner_read ON public.payment_events
     )
   );
 
+DROP POLICY IF EXISTS payment_events_admin_read ON public.payment_events;
 CREATE POLICY payment_events_admin_read ON public.payment_events
   FOR SELECT TO authenticated
   USING (public.current_user_role() IN ('admin','super_admin','support'));
