@@ -1,6 +1,6 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-19 (docs: CUSTOMER-SUPPORT-PLAYBOOK.md on phase5/homepage)
+Updated: 2026-08-19 (docs: ARCHITECTURE-AFFILIATES-REFERRALS.md on phase5/homepage)
 
 ## המשך מ: MISSION-FINAL שלב 1 (merge supplier + arch-night)
 
@@ -10,6 +10,7 @@ Updated: 2026-08-19 (docs: CUSTOMER-SUPPORT-PLAYBOOK.md on phase5/homepage)
 ✅ `docs/RUNBOOK-OPS.md` (5 פקודות בוקר, סוכן תקוע, אתחול לולאה, Vercel rollback, webhook, אתר למטה)
 ✅ `docs/SUPPLIER-ONBOARDING-KIT.md` (טופס פרטים, טיוטת הסכם מתווך, הדרכת סריקה, FAQ)
 ✅ `docs/CUSTOMER-SUPPORT-PLAYBOOK.md` (20 תסריטי תמיכה: תשובה + פעולה פנימית)
+✅ `docs/ARCHITECTURE-AFFILIATES-REFERRALS.md` (שותפים+הפניות: cookie 30d, ארנק בלבד, סכמה/RLS טיוטה)
 הבא שדורש קוד: merge `feat/supplier-portal` ואז `docs/architecture-night` אל `phase5/homepage`.
 
 ## ⛔ מדיניות ענפים מחייבת (19.08.2026)
