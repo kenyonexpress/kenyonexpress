@@ -9,7 +9,7 @@ import {
   paidFlowEnabled,
   signInWithEmail,
 } from './auth-session'
-import { BUY_BUTTON, expectHebrewRtl } from './helpers'
+import { BUY_BUTTON, addOpenProductToCart, expectHebrewRtl } from './helpers'
 
 /**
  * End-to-end money path against Cardcom mock + seeded fixtures:
@@ -45,28 +45,39 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
     test.skip(!buyable, 'e2e-test-coupon is not purchasable; run pnpm seed:test')
     test.skip(await buy.isDisabled(), 'e2e-test-coupon is out of stock')
 
-    await buy.click()
-    await expect(page.getByRole('button', { name: /נוסף לסל/ }).first()).toBeVisible()
+    // Waits on the header badge AND the button leaving its pending state, which
+    // is the moment the server confirmed the add. The old wait here was the
+    // button relabelling itself "נוסף לסל" - a two-second setTimeout that the
+    // route refresh can erase before an assertion sees it, which is exactly why
+    // helpers.addOpenProductToCart stopped using it.
+    await addOpenProductToCart(page)
 
-    // Checkout gate: guest must see Google (and email) before pay.
+    // The gate as it actually ships. src/proxy.ts deliberately leaves /checkout
+    // OFF the protected list: a guest fills the form and is asked to sign in
+    // only when they press pay. This block used to assert the opposite - a
+    // bounce to /login?next=%2Fcheckout - which contradicted e2e/checkout.spec.ts
+    // in the same directory and would have failed on the first run that had
+    // credentials to get this far.
     await page.goto('/checkout')
-    await expect(page).toHaveURL(/\/login\?.*next=%2Fcheckout/, { timeout: 15_000 })
-    await expect(page.getByRole('heading', { name: 'כניסה לחשבון' })).toBeVisible()
-    await expect(page.getByRole('button', { name: /כניסה עם Google/ })).toBeVisible()
+    await expect(page).toHaveURL(/\/checkout/, { timeout: 15_000 })
+    await expect(page.getByRole('heading', { name: 'קופה' })).toBeVisible({ timeout: 15_000 })
+    // The sign-in offer a guest is shown, in the yellow notice above the form.
+    await expect(page.getByRole('button', { name: 'יש ללחוץ כאן כדי להתחבר' })).toBeVisible()
     await expectHebrewRtl(page)
 
     // CI cannot complete real Google OAuth. Email/password hits the same
     // mergeGuestCart path the Google callback uses after the OAuth hop.
-    await page.getByLabel('אימייל').fill(E2E_CUSTOMER_EMAIL)
-    await page.getByLabel('סיסמה').fill(E2E_CUSTOMER_PASSWORD)
-    await page.getByRole('button', { name: 'כניסה', exact: true }).click()
+    await signInWithEmail(page, E2E_CUSTOMER_EMAIL, E2E_CUSTOMER_PASSWORD, '/checkout')
     await page.waitForURL(/\/checkout/, { timeout: 20_000 })
 
-    await expect(page.getByRole('heading', { name: 'תשלום' })).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByRole('heading', { name: 'קופה' })).toBeVisible({ timeout: 15_000 })
     await expect(page.getByText('קופון בדיקות אוטומטיות')).toBeVisible()
 
     await page.locator('input[name="accept_terms"]').check()
-    await page.getByRole('button', { name: 'מעבר לתשלום מאובטח' }).click()
+    // 'שליחת הזמנה'. The label the spec used to click, 'מעבר לתשלום מאובטח',
+    // is not on the page; the button says so only while it is busy, and then it
+    // reads 'מעביר לדף תשלום מאובטח...'.
+    await page.getByRole('button', { name: 'שליחת הזמנה' }).click()
 
     // Mock Cardcom redirects straight back to /checkout/return; reconcile
     // verifies the in-memory deal and finalizes (issues vouchers).
@@ -77,6 +88,13 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
     await expect(page.getByTestId('coupon-code').first()).toBeVisible()
     await expect(page.getByTestId('coupon-qr').first()).toBeVisible()
     await expectHebrewRtl(page)
+
+    // Where the coupon is redeemed. A confirmation that shows a code, a QR and
+    // an expiry but not the business they are for sends the shopper back to the
+    // catalogue to look the address up.
+    const supplierBlock = page.getByTestId('coupon-supplier').first()
+    await expect(supplierBlock).toBeVisible()
+    await expect(supplierBlock).toContainText(/המימוש ב/)
 
     const codeText = (await page.getByTestId('coupon-code').first().textContent()) ?? ''
     const voucherCode = codeText.replace(/[^0-9A-Za-z]/g, '').toUpperCase()

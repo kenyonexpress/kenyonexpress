@@ -198,7 +198,14 @@ async function CheckoutReturnBody({ searchParams }: Props) {
                 <article className="coupon-card" key={coupon.id}>
                   <div>
                     {productName && <div className="coupon-card__collect">{productName}</div>}
-                    <div className="coupon-card__code" dir="ltr">
+                    {/*
+                      The two testids are a contract with
+                      e2e/full-purchase-redeem.spec.ts, which reads the issued
+                      code off this page and carries it to the supplier scan.
+                      It asked for them before they existed, so the paid-flow
+                      spec failed here on every run that had credentials.
+                    */}
+                    <div className="coupon-card__code" dir="ltr" data-testid="coupon-code">
                       {formatVoucherCode(coupon.code)}
                     </div>
                     {Number(coupon.collect_amount_ils) > 0 && (
@@ -237,7 +244,7 @@ async function CheckoutReturnBody({ searchParams }: Props) {
                       </div>
                     )}
                     {supplier?.name && (
-                      <div className="coupon-card__supplier">
+                      <div className="coupon-card__supplier" data-testid="coupon-supplier">
                         <div className="coupon-card__supplier-name">המימוש ב{supplier.name}</div>
                         {supplierAddress !== '' && (
                           <div className="coupon-card__supplier-line">{supplierAddress}</div>
@@ -273,7 +280,7 @@ async function CheckoutReturnBody({ searchParams }: Props) {
                     </a>
                   </div>
                   {coupon.qrDataUrl && (
-                    <div className="coupon-card__qr">
+                    <div className="coupon-card__qr" data-testid="coupon-qr">
                       <img src={coupon.qrDataUrl} alt={`קוד QR לקופון ${coupon.code}`} />
                     </div>
                   )}
