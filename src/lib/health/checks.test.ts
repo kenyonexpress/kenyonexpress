@@ -32,6 +32,11 @@ function byName(report: HealthReport, name: string) {
 
 const EMPTY_ENV = {} as unknown as NodeJS.ProcessEnv
 
+const UPSTASH_ENV = {
+  UPSTASH_REDIS_REST_URL: 'https://eu1.upstash.io',
+  UPSTASH_REDIS_REST_TOKEN: 'tok',
+} as unknown as NodeJS.ProcessEnv
+
 describe('runHealthChecks', () => {
   it('reports an unset dependency as not_configured, never as ok', async () => {
     scriptDatabase(true)
@@ -44,13 +49,66 @@ describe('runHealthChecks', () => {
     expect(report.ok).toBe(true)
   })
 
-  it('does not invent a Redis, because this system does not have one', async () => {
-    // Measured: `UPSTASH`/`redis` appear nowhere in src. Rate limiting is two
-    // Postgres RPCs, so that is what is checked and what is named.
+  /**
+   * WAS: "does not invent a Redis, because this system does not have one",
+   * asserting that `UPSTASH` appeared nowhere in src. It does now -
+   * `lib/rate-limit` is a sliding window on Upstash with the Postgres RPC as
+   * its fallback - so the claim is retired rather than left standing as a
+   * measurement that stopped being true.
+   *
+   * What survives is the shape: ONE dependency named `rate_limiter`, not a
+   * `redis` row beside it. Two rows would let the report show a green limiter
+   * and a red Redis, or the reverse, and neither says whether requests are
+   * being counted.
+   */
+  it('reports the limiter as one dependency, and names the backend in use', async () => {
     scriptDatabase(true)
     const report = await runHealthChecks(EMPTY_ENV)
     expect(report.dependencies.map((d) => d.name)).not.toContain('redis')
     expect(byName(report, 'rate_limiter').detail).toContain('check_rate_limit')
+    expect(byName(report, 'rate_limiter').detail).toContain('Upstash לא מוגדר')
+    expect(byName(report, 'rate_limiter').status).toBe('ok')
+  })
+
+  it('names Upstash when it answers', async () => {
+    scriptDatabase(true)
+    vi.stubGlobal('fetch', () => Promise.resolve(Response.json({ result: 'PONG' })))
+
+    const report = await runHealthChecks(UPSTASH_ENV)
+
+    expect(byName(report, 'rate_limiter').status).toBe('ok')
+    expect(byName(report, 'rate_limiter').detail).toContain('Upstash sliding window')
+    vi.unstubAllGlobals()
+  })
+
+  /**
+   * The false page this avoids: Upstash unreachable while Postgres answers
+   * means the limits are STILL ENFORCED, by the slower backend. `report.ok`
+   * gates `/api/health` and `buildHealthAlert` pages on `down`, so calling this
+   * down would wake somebody for a working limiter.
+   */
+  it('does not page when only Upstash is unreachable, but says so in the detail', async () => {
+    scriptDatabase(true)
+    vi.stubGlobal('fetch', () => Promise.reject(new Error('ECONNREFUSED')))
+
+    const report = await runHealthChecks(UPSTASH_ENV)
+
+    expect(byName(report, 'rate_limiter').status).toBe('ok')
+    expect(report.ok).toBe(true)
+    expect(buildHealthAlert(report)).toBeNull()
+    expect(byName(report, 'rate_limiter').detail).toContain('Upstash לא נענה')
+    vi.unstubAllGlobals()
+  })
+
+  it('is down only when BOTH backends are gone, and says the limits are open', async () => {
+    scriptDatabase(false)
+    vi.stubGlobal('fetch', () => Promise.reject(new Error('ECONNREFUSED')))
+
+    const report = await runHealthChecks(UPSTASH_ENV)
+
+    expect(byName(report, 'rate_limiter').status).toBe('down')
+    expect(byName(report, 'rate_limiter').detail).toContain('נכשלים פתוח')
+    vi.unstubAllGlobals()
   })
 
   it('a database that will not answer is down, and takes the whole report down', async () => {

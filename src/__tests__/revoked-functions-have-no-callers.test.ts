@@ -53,7 +53,16 @@ const SERVICE_ROLE_CALLERS: Record<string, string[]> = {
   // Both callers below build the client with `createAdminClient()`, which
   // authenticates as service_role and is untouched by that file. The revoke is
   // in fact what makes these two the ONLY possible callers.
-  check_rate_limit: ['src/lib/health/checks.ts', 'src/lib/utils/rate-limit.ts'],
+  //
+  // CLASSIFIED 2026-08-21, and the reclassification is what this list is for.
+  // The call moved out of `lib/utils/rate-limit.ts` into
+  // `lib/rate-limit/limiter.ts`, which is now the Postgres FALLBACK behind the
+  // Upstash sliding window. It is the same `createAdminClient()` call in a new
+  // file, and `utils/rate-limit.ts` no longer names `check_rate_limit` at all -
+  // it delegates. This test failed on that move, which is correct behaviour: it
+  // refuses to let a caller relocate without a person saying which role it
+  // arrives as.
+  check_rate_limit: ['src/lib/health/checks.ts', 'src/lib/rate-limit/limiter.ts'],
 }
 
 const PENDING_DIR = 'migrations/pending'

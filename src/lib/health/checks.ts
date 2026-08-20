@@ -1,3 +1,4 @@
+import { command, upstashConfig } from '@/lib/rate-limit/upstash'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 /**
@@ -84,16 +85,59 @@ async function checkDatabase(): Promise<DependencyReport> {
 }
 
 /**
- * The rate limiter, where it actually lives: a Postgres function.
+ * The rate limiter, both backends, reported as one dependency.
  *
- * Called with a key of its own and a limit high enough that the check can never
- * be what exhausts it. A missing function (fresh database, unapplied migration)
- * is `down` rather than `not_configured`: unlike an unset API key, this one is
- * supposed to be there, and `checkRateLimit` FAILS OPEN when the RPC errors - so
- * a broken limiter is an open endpoint, silently.
+ * The Postgres RPC is probed with a key of its own and a limit high enough that
+ * the probe can never be what exhausts it. A missing function (fresh database,
+ * unapplied migration) is `down` rather than `not_configured`: unlike an unset
+ * API key, this one is supposed to be there, and the limiter FAILS OPEN when
+ * the RPC errors - so a broken limiter is an open endpoint, silently.
+ *
+ * WHY AN UNREACHABLE UPSTASH IS NOT `down`, AND WHERE IT SHOWS UP INSTEAD.
+ * `runHealthChecks` sets `ok: false` for any `down`, and `buildHealthAlert`
+ * pages for it. Upstash being unreachable while Postgres answers means the
+ * limits are STILL BEING ENFORCED, just by the slower backend - paging for that
+ * is a false page, and an alert that cries wolf costs the alerts that matter.
+ * The degradation is not silent, though: the detail below names it on the admin
+ * status screen, and `rate_limit.upstash_failed` is logged on every request
+ * that pays the fallback.
  */
-async function checkRateLimiter(): Promise<DependencyReport> {
+async function checkRateLimiter(env: NodeJS.ProcessEnv): Promise<DependencyReport> {
   const { value, ms } = await timed(async () => {
+    const [postgres, upstash] = await Promise.all([probePostgresLimiter(), probeUpstash(env)])
+    return { postgres, upstash }
+  })
+
+  // `timed` reports a thrown callback as `null`. Neither probe throws - each
+  // returns its own failure value - so null here can only mean the timing
+  // wrapper itself did, and treating that as "both backends unknown" is the
+  // conservative read.
+  const postgres = value?.postgres ?? false
+  const upstash = value?.upstash ?? 'not_configured'
+  const status: DependencyStatus = postgres || upstash === 'ok' ? 'ok' : 'down'
+
+  return {
+    name: 'rate_limiter',
+    status,
+    latencyMs: ms,
+    detail: rateLimiterDetail(postgres, upstash),
+  }
+}
+
+function rateLimiterDetail(postgres: boolean, upstash: 'ok' | 'down' | 'not_configured'): string {
+  if (upstash === 'ok') return 'Upstash sliding window, עם Postgres כגיבוי'
+  if (upstash === 'down') {
+    return postgres
+      ? 'Upstash לא נענה; הלימיטים נאכפים דרך Postgres, ואיטי יותר'
+      : 'שני הבקאנדים למטה, וכל המסלולים נכשלים פתוח'
+  }
+  return postgres
+    ? 'check_rate_limit (Postgres); Upstash לא מוגדר'
+    : 'ה-RPC של הרייט-לימיט לא זמין, והמסלולים נכשלים פתוח'
+}
+
+async function probePostgresLimiter(): Promise<boolean> {
+  try {
     const { error } = await createAdminClient().rpc(
       'check_rate_limit' as never,
       {
@@ -102,17 +146,26 @@ async function checkRateLimiter(): Promise<DependencyReport> {
         p_window_seconds: 60,
       } as never,
     )
-    return error ? 'down' : 'ok'
-  })
-  const status: DependencyStatus = value === 'ok' ? 'ok' : 'down'
-  return {
-    name: 'rate_limiter',
-    status,
-    latencyMs: ms,
-    detail:
-      status === 'ok'
-        ? 'check_rate_limit (Postgres)'
-        : 'ה-RPC של הרייט-לימיט לא זמין, והמסלולים נכשלים פתוח',
+    return !error
+  } catch {
+    // `createAdminClient` throws when the service key is absent, which is the
+    // same outcome for this report as an RPC that refuses.
+    return false
+  }
+}
+
+/**
+ * `PING`, not the limiter script. The probe must not write a counter, and it
+ * must not be able to refuse: a health check that consumes budget is a health
+ * check that eventually reports the outage it caused.
+ */
+async function probeUpstash(env: NodeJS.ProcessEnv): Promise<'ok' | 'down' | 'not_configured'> {
+  const config = upstashConfig(env)
+  if (!config) return 'not_configured'
+  try {
+    return (await command(config, ['PING'])) === 'PONG' ? 'ok' : 'down'
+  } catch {
+    return 'down'
   }
 }
 
@@ -208,7 +261,7 @@ export async function runHealthChecks(
 ): Promise<HealthReport> {
   const dependencies = await Promise.all([
     checkDatabase(),
-    checkRateLimiter(),
+    checkRateLimiter(env),
     checkSearch(env),
     Promise.resolve(checkCardcom(env)),
     Promise.resolve(checkEmail(env)),

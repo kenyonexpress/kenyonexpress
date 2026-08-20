@@ -35,8 +35,18 @@ vi.mock('@/lib/supabase/server', () => ({
 }))
 
 const logError = vi.fn()
+const logWarn = vi.fn()
 vi.mock('@/lib/observability/log', () => ({
-  log: { error: (...args: unknown[]) => logError(...args) },
+  log: {
+    error: (...args: unknown[]) => logError(...args),
+    // `warn` is reached only on the Upstash branch, which the `beforeEach`
+    // below keeps unconfigured. It is mocked anyway because a mock with a
+    // missing method does not fail as "wrong branch taken", it fails as
+    // "log.warn is not a function" three frames away from the cause.
+    warn: (...args: unknown[]) => logWarn(...args),
+    info: vi.fn(),
+    debug: vi.fn(),
+  },
 }))
 
 vi.mock('next/headers', () => ({
@@ -45,11 +55,30 @@ vi.mock('next/headers', () => ({
 
 import { checkRateLimit, checkUserRateLimit, getClientIp } from './rate-limit'
 
+/**
+ * `Reflect.deleteProperty`, not `delete` and NOT `= undefined`. Node's
+ * `process.env` setter coerces its value to a string, so `= undefined` stores
+ * the four-letter string `"undefined"` - which is truthy, passes the config
+ * check, and would send every request in this file at a host called
+ * "undefined". `delete` is correct but trips `lint/performance/noDelete`.
+ */
+function unsetUpstashEnv(): void {
+  Reflect.deleteProperty(process.env, 'UPSTASH_REDIS_REST_URL')
+  Reflect.deleteProperty(process.env, 'UPSTASH_REDIS_REST_TOKEN')
+  Reflect.deleteProperty(process.env, 'UPSTASH_REDIS_REST_TIMEOUT_MS')
+}
+
 beforeEach(() => {
   rpc.mockReset()
   createAdminClient.mockReset().mockReturnValue({ rpc })
   serverCreateClient.mockReset()
   logError.mockReset()
+  logWarn.mockReset()
+  // These assertions are all about the Postgres RPC, and `checkRateLimit` now
+  // tries Upstash FIRST. A developer with these two variables exported in their
+  // shell would otherwise run a different code path than CI does and see this
+  // file fail for a reason that is not in this file.
+  unsetUpstashEnv()
 })
 
 afterEach(() => {
@@ -88,6 +117,7 @@ describe('checkRateLimit', () => {
 
     expect(await checkRateLimit('login:203.0.113.5')).toBe(true)
     expect(logError).toHaveBeenCalledWith('rate_limit.check_failed', {
+      key: 'login:203.0.113.5',
       reason: 'permission denied',
     })
   })

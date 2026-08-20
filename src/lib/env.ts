@@ -26,6 +26,23 @@ const schema = z
     CARDCOM_WEBHOOK_SECRET: z.string().optional(),
     CARDCOM_SANDBOX: z.string().optional(),
 
+    /**
+     * The rate limiter's primary backend. OPTIONAL ON PURPOSE, and not because
+     * it is unimportant: no environment this repo can see sets it today, and
+     * `lib/rate-limit/limiter.ts` falls back to the Postgres `check_rate_limit`
+     * the app already shipped with. Requiring it here would mean this branch
+     * refuses to boot everywhere it is not provisioned yet, which is how a
+     * security improvement lands as an outage.
+     *
+     * Both must be set for the Upstash path to engage; either one alone is
+     * treated as absent, so a half-finished configuration degrades to Postgres
+     * rather than failing every request.
+     */
+    UPSTASH_REDIS_REST_URL: z.string().url().optional().or(z.literal('')),
+    UPSTASH_REDIS_REST_TOKEN: z.string().min(10).optional().or(z.literal('')),
+    /** Milliseconds. Defaults to 1000 in `lib/rate-limit/upstash.ts`. */
+    UPSTASH_REDIS_REST_TIMEOUT_MS: z.string().optional(),
+
     VOUCHER_QR_SECRET: z.string().optional(),
     CRON_SECRET: z.string().optional(),
     SENTRY_DSN: z.string().url().optional().or(z.literal('')),
