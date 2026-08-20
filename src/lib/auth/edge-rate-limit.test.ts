@@ -14,12 +14,15 @@ function headers(ip = '203.0.113.7'): Headers {
 
 beforeEach(() => {
   __test.memory.clear()
-  delete process.env.UPSTASH_REDIS_REST_URL
-  delete process.env.UPSTASH_REDIS_REST_TOKEN
+  // Empty, not deleted: upstashConfig() tests for falsy, and biome refuses the
+  // delete operator.
+  vi.stubEnv('UPSTASH_REDIS_REST_URL', '')
+  vi.stubEnv('UPSTASH_REDIS_REST_TOKEN', '')
 })
 
 afterEach(() => {
   vi.unstubAllGlobals()
+  vi.unstubAllEnvs()
 })
 
 describe('ruleFor', () => {
@@ -126,8 +129,8 @@ describe('the in-memory fallback', () => {
 
 describe('the Upstash path', () => {
   beforeEach(() => {
-    process.env.UPSTASH_REDIS_REST_URL = 'https://example.upstash.io/'
-    process.env.UPSTASH_REDIS_REST_TOKEN = 'token'
+    vi.stubEnv('UPSTASH_REDIS_REST_URL', 'https://example.upstash.io/')
+    vi.stubEnv('UPSTASH_REDIS_REST_TOKEN', 'token')
   })
 
   it('INCRs once and sets the TTL only on creation', async () => {

@@ -1,10 +1,88 @@
-גל DB HARDENING נסגר (שלבים 10-15); גל COUPON STOREFRONT בתור, שלב 16
+גל AUTH HARDENING נסגר (5 שלבים, ענף feat/auth-hardening); הבא בתור: שלב 12
 
 # KenyonExpress — Project State
 
-Updated: 2026-08-19 (גל DB HARDENING הוחל על פרודקשן דרך MCP)
+Updated: 2026-08-20 (גל AUTH HARDENING, ‏5 שלבים, ‏ke-auth-wave)
 
-## המשך מ: שלב 16
+## המשך מ: שלב 12
+
+### גל AUTH HARDENING (20.08, ענף `feat/auth-hardening`, worktree `ke-auth-wave`)
+
+חמישה שלבים, כולם עם `tsc` נקי ו-commit נפרד. בסוף הגל: **2458/2458 טסטים
+ירוקים**, ‏`biome lint` נקי, ‏`no-hardcoded-fees` נקי.
+
+1. ✅ **`requireRole()`** ב-`src/lib/auth/require-role.ts`, ארבעה שערים:
+   `admin`, `content_uploader`, `supplier`, `customer`, מעל ההחלטה ש-
+   `src/lib/admin/rbac.ts` ו-`src/lib/supplier/rbac.ts` כבר קיבלו בנפרד, ועוד
+   הצורה שלא מפנה מחדש שנדרשה ל-route handlers. ‏`supplier` נקבע לפי חברות
+   ב-`supplier_members` ולעולם לא לפי `profiles.role = 'vendor'`.
+   **החור שנמצא:** ‏`/api/admin` לא מתחיל ב-`/admin` ו-`/api/supplier` לא מתחיל
+   ב-`/supplier`, ולכן כל route תחתיהם עבר ב-`src/proxy.ts` בלי בדיקה בזמן
+   שקידומות העמודים שנראות בדיוק כמוהם כן נבדקו. ‏`/api/admin/reports/sales`
+   הוא GET בכתובת שאפשר לנחש שמחזיר כל שקל שהפלטפורמה גבתה, והשומר בתוך הקובץ
+   היה הדבר היחיד שעמד שם. עכשיו 401 בלי סימן זהות ו-403 לתפקיד שאינו panel;
+   בקשות Bearer עוברות ל-handler שיודע לאמת אותן, אחרת כל קופה בשטח מקבלת 401.
+   ‏`route-guard-coverage.test.ts` מוודא שכל route.ts תחת שני השורשים מאמת את
+   הקורא, כולל מעקב אחרי ה-re-export היחיד (`/api/supplier/redeem`).
+2. ✅ **הגבלת קצב לפי IP ב-edge**, ‏`src/lib/auth/edge-rate-limit.ts`, ‏10 לדקה
+   על `/api/auth/*` ו-5 לדקה על `/api/checkout`, נספרות ב-`src/proxy.ts`
+   **לפני** `supabase.auth.getUser()`. **נמדד:** אין היום route בשם `/api/auth`
+   או `/api/checkout` בריפו; ההתחברות היא server actions דרך POST לעמודי
+   `(auth)` וה-checkout הוא server action על `/checkout`, ולכן אותם מספרים חלים
+   גם על הנתיבים האמיתיים, ב-POST בלבד. ‏`/checkout/frame-return` פטור בכל
+   method: ‏Cardcom מנווט לשם את ה-iframe חוצה-אתרים, והכתובת שם היא של הרשת
+   של הקונה. בלי חבילת `@upstash/ratelimit`: ‏`INCR` + `PEXPIRE NX` בקריאת
+   pipeline אחת. נכשל פתוח, כמו `checkRateLimit`.
+3. ✅ **בידוד ספק אומת מול פרודקשן** ונעוץ ב-`src/lib/supplier/rls-isolation.test.ts`.
+   ‏probe בטרנזקציה שגולגלה לאחור: לקוח רגיל עם חברות אחת רואה 2 `order_items`,
+   שניהם של הספק שלו, ‏**0** מתוך השורה האחת של הספק האחר; ‏2 הזמנות מתוך 4;
+   שורת `supplier_members` אחת. הניסיון הראשון לקח את המשתמש הוותיק ביותר,
+   שבבעלותו כל 4 ההזמנות, ולכן `is_admin()` נשא את הקריאות והוכיח כלום.
+   **העיקר:** ‏RLS איננו מה שמגן על לוח הספק. ‏`src/server/queries/supplier.ts`
+   רץ דרך `createAdminClient()`, שהוא `service_role` ופטור מ-RLS לגמרי, ולכן
+   הדבר היחיד בין ספק למכירות של ספק אחר הוא `.eq('supplier_id', ...)` בטקסט
+   השאילתה. זה מה שהטסט נועל.
+4. ✅ **סבב session אחרי login**, ‏`src/lib/auth/session-rotation.ts`, מחובר
+   לשלוש הדלתות: סיסמה, ‏OTP בטלפון, והחלפת הקוד שמשרתת גם Google וגם magic
+   link. **הבאג שנמצא:** שני מסלולי ההתחברות מחקו את `ke_guest_session` רק
+   בתוך `if (user && sessionId)`, הענף שממזג עגלה, ולכן מזהה אורח שנשתל בלי
+   עגלה מאחוריו שרד את ההתחברות והמשיך למפתח את זהות האנליטיקס. עכשיו נמחק
+   ללא תנאי, ולפני קריאת הרשת, כדי שיקרה גם כש-GoTrue לא זמין. בנוסף
+   `refreshSession()` מוציא את ה-refresh token שנוצר בתגובת ההתחברות עצמה.
+5. ✅ **`migrations/pending/124_auth_hardening.sql`** — **לא הוחל**, ממתין
+   לאישור (‏DDL על פרודקשן הוא אחד מארבעת השערים).
+   **מה שהשלב ביקש כבר אין:** ‏123 שלל את הפונקציות מ-anon, והמשטח שנשאר הוא
+   ארבע פונקציות, כולן נמדדו שוב היום וכולן נושאות צפייה אנונימית. אין חמישית.
+   במקום זה שני חורים אמיתיים שאותה סריקה מצאה: ‏(א) ‏`suppliers` הוא policy
+   אחד `TO public` ול-anon יש `SELECT` — נמדד תחת `SET LOCAL ROLE anon`: ‏11
+   שורות, ‏6 `contact_email`, ‏5 `contact_phone`, ‏5 `business_id` (ח.פ.), ‏6
+   `notes`. אף קוד לא מפסיד כלום: כל קריאה של הטבלה ב-`src/` עוברת
+   `createAdminClient()`, נבדק קובץ-קובץ. ‏`authenticated` שומר `(id, name)`
+   כי הפורטל משבץ `suppliers(name)` דרך הלקוח של המשתמש. ‏(ב) ל-`authenticated`
+   יש `TRUNCATE` על 52 מתוך 53 טבלאות, ‏`payments` ו-`wallet_entries` בהן;
+   ‏RLS אינו חל על `TRUNCATE` כלל. לא נגיש היום (אין ל-PostgREST פועל כזה,
+   ו-0 פונקציות מכילות את המילה), ונשלל כי הוא helper אחד מלהיות חי.
+   ‏(ג) ‏`v_low_stock` בוחר `s.contact_email` ועדיין נותן `SELECT` ל-anon
+   ול-authenticated, מה ש-103 התכוון לסגור. **DRY RUN מול פרודקשן** בבלוק
+   `DO` אטומי אחד: כל ההצהרות וכל טענות האימות עברו, הכל גולגל לאחור, ואומת
+   שגולגל.
+
+**החלטות שהתקבלו לבד בגל הזה:**
+
+- **`src/middleware.ts` לא קיים ולא נוצר.** ‏Next 16 החליף אותו ב-`src/proxy.ts`,
+  שקובץ ההוראות של הגל התכוון אליו. כל עבודת ה-middleware נעשתה שם.
+- **המיגרציה מוספרה 124 ולא 085.** ‏085 כבר מוחל ב-`supabase/migrations` — הוא
+  זה ש-`src/lib/supplier/rbac.ts` מצטט על `redeem_voucher`. ‏`pending/` רץ
+  110..123, אז זה הבא.
+- **בלי `pnpm add @upstash/ratelimit`.** ‏`node_modules` בעץ העבודה הזה הוא
+  symlink לצ'קאאוט הראשי, ו-`pnpm add` שם מרוקן אותו לכל סוכן אחר שבונה מולו.
+  ‏Upstash Redis הוא ממשק HTTP וכל האלגוריתם הוא שתי פקודות בקריאת pipeline
+  אחת דרך `fetch`.
+- **הטסט של בידוד הספק יושב ב-`src/lib/supplier/` ולא ב-`src/lib/auth/`**,
+  ליד `no-escrow-in-supplier-due.test.ts` שהוא באותה צורה בדיוק.
+- **`UPSTASH_REDIS_REST_URL/TOKEN` אינם ברשימת החובה של פרודקשן** ב-`env.ts`.
+  סירוב לעלות בגלל limiter שנכשל פתוח ממילא מחליף סיכון קטן בהשבתה ודאית;
+  במקום זה `rate_limit.upstash_absent` נרשם בשימוש הראשון.
 
 ### גל DB HARDENING (אושר 12.08, הוחל 19.08 דרך MCP apply_migration)
 
