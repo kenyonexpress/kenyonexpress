@@ -15,15 +15,38 @@ import {
   parseProductType,
 } from '@/lib/category-page'
 import { type SortValue, parseSort } from '@/lib/category-tokens'
+import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
 
 /* Live equivalent: kenyonexpress.co.il/shop/ - h1 "חנות", 24 per page */
 const PAGE_TITLE = 'חנות'
 
-export const metadata = {
+const PAGE_DESCRIPTION = 'כל המוצרים, הדילים והקופונים של קניון Express במקום אחד.'
+
+/**
+ * The canonical is the bare `/products`, and every sort, page and filter
+ * collapses onto it.
+ *
+ * This page is in the sitemap at priority 0.9 and takes six query parameters,
+ * so without one it competes with itself: `?sort=price`, `?page=3`,
+ * `?type=coupon` and their combinations are the same catalogue described a
+ * different way, and each was previously free to be indexed as a page of its
+ * own. Same call as `/category/[slug]`, and the cost is the same one - page 2
+ * onward is not indexed - against a catalogue whose every product is in the
+ * sitemap under its own canonical anyway.
+ */
+export const metadata: Metadata = {
   title: PAGE_TITLE,
-  description: 'כל המוצרים, הדילים והקופונים של קניון Express במקום אחד.',
+  description: PAGE_DESCRIPTION,
+  alternates: { canonical: '/products' },
+  openGraph: {
+    title: PAGE_TITLE,
+    description: PAGE_DESCRIPTION,
+    url: '/products',
+    type: 'website',
+    locale: 'he_IL',
+  },
 }
 
 type Props = {
