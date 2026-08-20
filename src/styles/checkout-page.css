@@ -431,6 +431,33 @@
   font-weight: 700;
 }
 
+/*
+ * Where the coupon is actually redeemed. Sits under the expiry note, separated
+ * by a rule rather than by a gap, because the card already uses `gap` for the
+ * QR split and another blank band there reads as the end of the card.
+ */
+.coupon-card__supplier {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #e6eaee;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.coupon-card__supplier-name {
+  color: #333e48;
+  font-weight: 700;
+}
+
+.coupon-card__supplier-line {
+  display: block;
+  color: #657888;
+}
+
+a.coupon-card__supplier-line:hover {
+  color: #e4002b;
+}
+
 .checkout-wallet-note {
   display: inline-block;
   background: #eefbe8;

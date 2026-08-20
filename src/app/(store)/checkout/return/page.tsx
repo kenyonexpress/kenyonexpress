@@ -32,6 +32,26 @@ function shekels(value: number): string {
   return `₪${value.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
+type SupplierEmbed = {
+  name: string | null
+  address: string | null
+  city: string | null
+  contact_phone: string | null
+  whatsapp: string | null
+}
+
+/**
+ * True when the campaign end is a different CALENDAR DAY from this voucher's own
+ * expiry. Compared by day and not by timestamp on purpose: both are rendered as
+ * a date, so two instants hours apart inside one day render identically and the
+ * page would print the same date twice under two labels.
+ */
+function offerWindowDiffers(expiresAt: string, offerValidUntil: string | null): boolean {
+  if (!offerValidUntil) return false
+  const day = (value: string) => new Date(value).toISOString().slice(0, 10)
+  return day(offerValidUntil) !== day(expiresAt)
+}
+
 type Props = {
   searchParams: Promise<{ order_id?: string }>
 }
@@ -106,9 +126,10 @@ async function CheckoutReturnBody({ searchParams }: Props) {
     admin
       .from('vouchers')
       .select(
-        `id, code, qr_payload, expires_at,
+        `id, code, qr_payload, expires_at, offer_valid_until,
          face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot,
-         products(name_he)`,
+         products(name_he),
+         supplier:suppliers!vouchers_supplier_id_fkey(name, address, city, contact_phone, whatsapp)`,
       )
       .eq('order_id', orderId)
       .order('issued_at', { ascending: true }),
@@ -154,6 +175,16 @@ async function CheckoutReturnBody({ searchParams }: Props) {
               const productName = Array.isArray(coupon.products)
                 ? coupon.products[0]?.name_he
                 : (coupon.products as { name_he: string } | null)?.name_he
+              // PostgREST returns an embed as an object for a to-one relation and
+              // as an array when it cannot prove the relation is to-one. Both
+              // shapes are handled for the same reason `products` above is.
+              const supplier = (
+                Array.isArray(coupon.supplier) ? coupon.supplier[0] : coupon.supplier
+              ) as SupplierEmbed | null | undefined
+              const supplierAddress = [supplier?.address, supplier?.city]
+                .filter((part) => typeof part === 'string' && part.trim() !== '')
+                .join(', ')
+              const supplierPhone = supplier?.contact_phone ?? supplier?.whatsapp ?? null
               const shareHref = waShareLink(
                 buildCouponShareText({
                   productName: productName ?? null,
@@ -184,6 +215,44 @@ async function CheckoutReturnBody({ searchParams }: Props) {
                       })}
                       {' · '}הציגו את הקוד או את ה-QR בבית העסק
                     </div>
+                    {/*
+                      Shown only when it differs from the line above. The two are
+                      not the same date and the shopper only needs one of them:
+                      `expires_at` is THIS voucher's deadline and is already
+                      clamped to `offer_valid_until` by
+                      server/domain/vouchers/code.ts, so on most coupons the two
+                      agree and printing both would ask the reader to compare two
+                      identical dates and work out which one binds them. It
+                      differs only when the rolling per-product window ends first,
+                      and then the campaign end is context rather than a deadline.
+                    */}
+                    {offerWindowDiffers(coupon.expires_at, coupon.offer_valid_until) && (
+                      <div className="coupon-card__note">
+                        תוקף המבצע באתר:{' '}
+                        {new Date(coupon.offer_valid_until).toLocaleDateString('he-IL', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                        })}
+                      </div>
+                    )}
+                    {supplier?.name && (
+                      <div className="coupon-card__supplier">
+                        <div className="coupon-card__supplier-name">המימוש ב{supplier.name}</div>
+                        {supplierAddress !== '' && (
+                          <div className="coupon-card__supplier-line">{supplierAddress}</div>
+                        )}
+                        {supplierPhone && (
+                          <a
+                            className="coupon-card__supplier-line"
+                            href={`tel:${supplierPhone.replace(/[^+\d]/g, '')}`}
+                            dir="ltr"
+                          >
+                            {supplierPhone}
+                          </a>
+                        )}
+                      </div>
+                    )}
                     <a
                       href={shareHref}
                       target="_blank"
