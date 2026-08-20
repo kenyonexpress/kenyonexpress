@@ -16,6 +16,7 @@ import {
   buildOrderItemSnapshot,
   completeSplitPair,
 } from '@/lib/commerce/product-money'
+import { checkoutStep } from '@/lib/monitoring/breadcrumbs'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
@@ -282,6 +283,15 @@ async function runBeginCheckout(
     return { ok: false, error: 'נדרשת כתובת למשלוח', code: 'ADDRESS_REQUIRED' }
   }
 
+  // First crumb, and deliberately AFTER the gate rather than at the top of the
+  // function. A trail that starts before validation records every bot that
+  // posts nonsense at the endpoint; this one starts where a real purchase does.
+  checkoutStep('cart_validated', {
+    items: cart.items.length,
+    requires_address: validation.requiresAddress,
+    channel: input.channel ?? 'web',
+  })
+
   const admin = createAdminClient()
 
   if (input.address_id) {
@@ -505,6 +515,11 @@ async function runBeginCheckout(
     return { ok: false, error: `יצירת הזמנה נכשלה: ${orderError?.message}`, code: 'INTERNAL' }
   }
 
+  // From here on there is a row that can be left stranded, which is what makes
+  // this the crumb worth having: an error further down is now attached to an
+  // order id a person can look up.
+  checkoutStep('order_created', { order_id: order.id })
+
   // The gift intent (108), written in its OWN statement and not added to the
   // insert above. This whole module exists because naming a column the hosted
   // database does not have failed the entire orders INSERT with 42703, and NO
@@ -654,6 +669,13 @@ async function runBeginCheckout(
 
   // 5. Wallet covers everything: finalize without a provider round-trip
   if (settlement.cardCharge === 0) {
+    // The three branches below are three different failure surfaces, and from
+    // the outside all three read as "the order did not complete". Which one a
+    // shopper took is the first thing anyone asks.
+    checkoutStep('wallet_covered', {
+      order_id: order.id,
+      wallet_applied_agorot: settlement.walletApplied,
+    })
     const finalized = await finalizeOrder({
       orderId: order.id,
       paymentId: null,
@@ -671,6 +693,10 @@ async function runBeginCheckout(
   // never read, so a customer with a saved card was still sent through the full
   // redirect every time.
   if (input.token_id) {
+    checkoutStep('saved_token_charge', {
+      order_id: order.id,
+      amount_agorot: settlement.cardCharge,
+    })
     return await chargeSavedToken({
       admin,
       tokenId: input.token_id,
@@ -774,6 +800,16 @@ async function runBeginCheckout(
       })
       .eq('id', payment.id)
 
+    // The shopper is about to leave for Cardcom. Everything after this crumb
+    // arrives on a different request - the webhook, or the return - so this is
+    // the last thing the trail of THIS request can say.
+    checkoutStep('hosted_page_created', {
+      order_id: order.id,
+      payment_id: payment.id,
+      amount_agorot: settlement.cardCharge,
+      account_id: account.id,
+    })
+
     return {
       ok: true,
       data: { kind: 'redirect', order_id: order.id, redirect_url: created.redirectUrl },
@@ -839,6 +875,12 @@ async function runSubmitCheckout(
 
   let addressId: string | null = text('address_id') || null
   const needsAddress = text('needs_address') === 'true'
+
+  // The form's own step. Separate from `cart_validated` because they are
+  // separate requests: this one may persist a new address before it ever calls
+  // beginCheckout, and "the address save failed" and "the cart was rejected"
+  // are two different reports that both surface as a checkout that did nothing.
+  checkoutStep('submitted', { needs_address: needsAddress, has_address: Boolean(addressId) })
 
   if (needsAddress && !addressId) {
     const city = text('city')
@@ -949,6 +991,12 @@ async function runReconcileOrderReturn(orderId: string): Promise<ReturnReconcile
     .eq('id', orderId)
     .maybeSingle()
   if (!order || order.user_id !== user.id) return { status: 'not_found' }
+
+  // The shopper is back from Cardcom. A NEW request, so the trail from the
+  // request that sent them there is already gone; without this crumb an error
+  // here reads as if the order appeared from nowhere.
+  checkoutStep('provider_returned', { order_id: order.id, order_status: order.status })
+
   if (order.paid_at || order.status === 'paid') return { status: 'paid', order_id: order.id }
   if (order.status !== 'pending') {
     return { status: 'failed', order_id: order.id, reason: `order ${order.status}` }

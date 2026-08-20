@@ -1,4 +1,5 @@
 import { cardcomWebhookPayloadSchema, isCardcomSuccess } from '@/lib/contracts/webhooks'
+import { checkoutStep } from '@/lib/monitoring/breadcrumbs'
 import { log } from '@/lib/observability/log'
 import { capturePaymentAlarm } from '@/lib/observability/sentry'
 import { withRequestLog } from '@/lib/observability/with-request-log'
@@ -58,6 +59,13 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   }
 
   const parsed = cardcomWebhookPayloadSchema.safeParse(payloadJson)
+
+  // The third request in a hosted-page checkout, and the one nobody is watching
+  // when it fails: the shopper has already seen a success screen from Cardcom.
+  // `parsed.success` rather than the payload, because an unparsed body here is
+  // a scanner and its contents are not ours to attach to an event.
+  checkoutStep('webhook_received', { parsed: parsed.success, secret_ok: secretOk })
+
   const externalEventId = parsed.success
     ? `${parsed.data.lowprofilecode}:${parsed.data.InternalDealNumber ?? 'na'}`
     : `unparsed:${rawBody.slice(0, 64)}`

@@ -5,6 +5,7 @@ import {
   moneyColumnProbe,
   resolveVoucherRateColumn,
 } from '@/lib/commerce/order-money-columns'
+import { checkoutStep } from '@/lib/monitoring/breadcrumbs'
 import { sendAlert } from '@/lib/observability/alert'
 import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
@@ -362,6 +363,18 @@ export async function finalizeOrder(input: {
     .eq('id', input.orderId)
     .maybeSingle()
   if (!order) return { ok: false, error: 'order not found', code: 'NOT_FOUND' }
+
+  // Everything between this crumb and `finalize_completed` is the part where
+  // the money has already moved: vouchers are issued, the split is executed,
+  // cashback is credited, stock is consumed. An event carrying the first and
+  // not the second is an order that was charged and not closed, which is the
+  // worst state this system has.
+  checkoutStep('finalize_started', {
+    order_id: order.id,
+    payment_id: input.paymentId,
+    replay: Boolean(order.paid_at),
+  })
+
   if (order.paid_at) return { ok: true, replay: true, orderId: order.id }
   if (order.status !== 'pending') {
     return { ok: false, error: `order not finalizable from ${order.status}`, code: 'STATE_INVALID' }
@@ -675,6 +688,7 @@ export async function finalizeOrder(input: {
       ),
     })
 
+    checkoutStep('finalize_completed', { order_id: order.id, items: items.length })
     return { ok: true, replay: false, orderId: order.id }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'finalize failed'
