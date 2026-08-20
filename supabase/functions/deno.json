@@ -1,0 +1,32 @@
+{
+  "//": [
+    "Import map for every Edge Function in this directory.",
+    "",
+    "WHY BARE SPECIFIERS AND NOT `npm:` INLINE. The email templates under",
+    "_shared/emails are rendered by Deno in production AND by vitest in CI",
+    "(src/lib/notifications/emails.test.tsx). A source file that says",
+    "`npm:@react-email/components` compiles in Deno and is unresolvable in",
+    "Node, so the templates would be deployable and untestable. Mapping the",
+    "bare name here lets one file satisfy both resolvers, and the versions",
+    "below are pinned to the same ones package.json installs.",
+    "",
+    "Keep these in step with package.json. A drift means CI tests one",
+    "renderer and production runs another."
+  ],
+  "imports": {
+    "react": "npm:react@19.2.4",
+    "react/jsx-runtime": "npm:react@19.2.4/jsx-runtime",
+    "react-dom": "npm:react-dom@19.2.4",
+    "react-dom/server": "npm:react-dom@19.2.4/server",
+    "@react-email/components": "npm:@react-email/components@1.0.12",
+    "@react-email/render": "npm:@react-email/render@2.1.0",
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2.105.3",
+    "qrcode": "npm:qrcode@1.5.4"
+  },
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "npm:react@19.2.4",
+    "lib": ["deno.window", "dom"],
+    "strict": true
+  }
+}
