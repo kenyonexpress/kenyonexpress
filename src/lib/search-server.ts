@@ -49,6 +49,15 @@ const MIN_QUERY = 2
 const DEFAULT_LIMIT = 48
 
 /**
+ * The id a category slug resolves to when there is no such category.
+ *
+ * A uuid that cannot exist, rather than skipping the filter. Skipping it would
+ * turn `?category=typo` into an unfiltered search, which shows a shopper the
+ * whole catalogue under a heading naming a category they asked for.
+ */
+const NO_SUCH_CATEGORY = '00000000-0000-0000-0000-000000000000'
+
+/**
  * Sort in the two dialects.
  *
  * `relevance` produces NO sort clause on either path, rather than a sort by
@@ -149,7 +158,23 @@ async function searchDb(params: SearchParams, q: string): Promise<SearchOutcome>
     .or(`name_he.ilike.%${q}%,description_he.ilike.%${q}%`)
 
   if (params.type) query = query.eq('type', params.type)
-  if (params.categoryId) query = query.eq('category_id', params.categoryId)
+
+  // The engine filters on `category_slug`, which it stores flattened into the
+  // document; PostgREST has only the id. Resolved HERE rather than in the route
+  // so that both engines answer the same call - a caller that passes a slug
+  // gets the slug honoured either way, instead of the fallback quietly
+  // returning the unfiltered catalogue.
+  let categoryId = params.categoryId ?? null
+  if (!categoryId && params.categorySlug) {
+    const { data: category } = await supabase
+      .from('categories')
+      .select('id')
+      .eq('slug', params.categorySlug)
+      .maybeSingle()
+    // A slug that matches no category filters to nothing, not to everything.
+    categoryId = category?.id ?? NO_SUCH_CATEGORY
+  }
+  if (categoryId) query = query.eq('category_id', categoryId)
   if (params.city) query = query.eq('city', params.city)
   if (typeof params.priceMin === 'number' && Number.isFinite(params.priceMin)) {
     query = query.gte('kenyon_price', params.priceMin)
