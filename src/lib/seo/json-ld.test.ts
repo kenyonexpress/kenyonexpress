@@ -1,6 +1,8 @@
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
 import {
   buildBreadcrumbJsonLd,
+  buildCollectionPageJsonLd,
+  buildLocalBusinessJsonLd,
   buildProductJsonLd,
   buildSiteJsonLd,
   jsonLdScript,
@@ -183,5 +185,145 @@ describe('jsonLdScript', () => {
   it('still parses back to the same object', () => {
     const node = buildProductJsonLd(physical)
     expect(JSON.parse(jsonLdScript(node))).toEqual(node)
+  })
+})
+
+describe('buildCollectionPageJsonLd', () => {
+  const items = [
+    { name: 'פיצה משפחתית', slug: 'family-pizza' },
+    { name: 'ארוחה זוגית', slug: 'ארוחה-זוגית' },
+  ]
+
+  it('lists what is on screen, numbered from one', () => {
+    const node = buildCollectionPageJsonLd({
+      name: 'מסעדות',
+      description: 'דילים במסעדות',
+      path: '/category/restaurants',
+      siteUrl: SITE,
+      items,
+      total: 30,
+    })
+    const list = node.mainEntity as { numberOfItems: number; itemListElement: unknown[] }
+    expect(node['@type']).toBe('CollectionPage')
+    expect(node.url).toBe(`${SITE}/category/restaurants`)
+    expect(list.numberOfItems).toBe(2)
+    expect(list.itemListElement[0]).toMatchObject({ position: 1, name: 'פיצה משפחתית' })
+    expect(list.itemListElement[1]).toMatchObject({ position: 2 })
+  })
+
+  it('numbers a later page from one as well, because the canonical it names shows page one', () => {
+    const node = buildCollectionPageJsonLd({
+      name: 'מסעדות',
+      description: null,
+      path: '/category/restaurants',
+      siteUrl: SITE,
+      items,
+      total: 30,
+    })
+    const list = node.mainEntity as { itemListElement: { position: number }[] }
+    expect(list.itemListElement.map((entry) => entry.position)).toEqual([1, 2])
+  })
+
+  it('percent-encodes a Hebrew slug so the URL is fetchable', () => {
+    const node = buildCollectionPageJsonLd({
+      name: 'מסעדות',
+      description: null,
+      path: '/category/restaurants',
+      siteUrl: SITE,
+      items,
+      total: 2,
+    })
+    const list = node.mainEntity as { itemListElement: { url: string }[] }
+    expect(list.itemListElement[1]?.url).toBe(
+      `${SITE}/product/${encodeURIComponent('ארוחה-זוגית')}`,
+    )
+  })
+
+  it('carries the category total separately from the page it describes', () => {
+    const node = buildCollectionPageJsonLd({
+      name: 'מסעדות',
+      description: null,
+      path: '/category/restaurants',
+      siteUrl: SITE,
+      items,
+      total: 30,
+    })
+    expect(node.numberOfItems).toBe(30)
+    expect((node.mainEntity as { numberOfItems: number }).numberOfItems).toBe(2)
+  })
+
+  it('omits an absent or blank description rather than emitting an empty one', () => {
+    const blank = buildCollectionPageJsonLd({
+      name: 'מסעדות',
+      description: '   ',
+      path: '/category/restaurants',
+      siteUrl: SITE,
+      items: [],
+      total: 0,
+    })
+    expect('description' in blank).toBe(false)
+    expect('numberOfItems' in blank).toBe(false)
+  })
+})
+
+describe('buildLocalBusinessJsonLd', () => {
+  const base = {
+    name: 'פיצה רומא',
+    address: 'הרצל 10',
+    city: 'תל אביב',
+    telephone: '03-1234567',
+    logoUrl: '/logos/roma.png',
+    path: '/product/family-pizza',
+    siteUrl: SITE,
+  }
+
+  it('describes the business at the URL it appears on', () => {
+    const node = buildLocalBusinessJsonLd(base)
+    expect(node).toMatchObject({
+      '@type': 'LocalBusiness',
+      '@id': `${SITE}/product/family-pizza#supplier`,
+      name: 'פיצה רומא',
+      telephone: '03-1234567',
+      image: `${SITE}/logos/roma.png`,
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: 'הרצל 10',
+        addressLocality: 'תל אביב',
+        addressCountry: 'IL',
+      },
+    })
+  })
+
+  it('emits nothing for a supplier that is a name and nothing else', () => {
+    expect(
+      buildLocalBusinessJsonLd({ ...base, address: null, city: null, telephone: null }),
+    ).toBeNull()
+  })
+
+  it('treats blank strings as absent, because that is what the table holds', () => {
+    expect(
+      buildLocalBusinessJsonLd({ ...base, address: '  ', city: '', telephone: ' ' }),
+    ).toBeNull()
+    expect(buildLocalBusinessJsonLd({ ...base, name: '   ' })).toBeNull()
+  })
+
+  it('emits on a phone alone, with no address node', () => {
+    const node = buildLocalBusinessJsonLd({ ...base, address: null, city: null })
+    expect(node?.telephone).toBe('03-1234567')
+    expect(node && 'address' in node).toBe(false)
+  })
+
+  it('emits on a city alone, which is what most rows carry', () => {
+    const node = buildLocalBusinessJsonLd({ ...base, address: null, telephone: null })
+    expect(node?.address).toEqual({
+      '@type': 'PostalAddress',
+      addressLocality: 'תל אביב',
+      addressCountry: 'IL',
+    })
+  })
+
+  it('leaves an already absolute logo alone', () => {
+    const node = buildLocalBusinessJsonLd({ ...base, logoUrl: 'https://cdn.example.com/a.png' })
+    expect(node?.image).toBe('https://cdn.example.com/a.png')
   })
 })

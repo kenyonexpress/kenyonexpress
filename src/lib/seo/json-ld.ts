@@ -227,3 +227,138 @@ export function buildSiteJsonLd(siteUrl: string): JsonLdNode[] {
 export function jsonLdScript(node: JsonLdNode | JsonLdNode[] | Record<string, unknown>): string {
   return JSON.stringify(node).replace(/</g, '\\u003c')
 }
+
+export interface CollectionPageJsonLdInput {
+  /** The category's Hebrew name, as the H1 prints it. */
+  name: string
+  description: string | null
+  /** Site-relative path of the archive, with no query string. */
+  path: string
+  /** Origin with no trailing slash. */
+  siteUrl: string
+  /** The products this page is currently showing, in the order it shows them. */
+  items: readonly { name: string; slug: string }[]
+  /** How many products the category holds in total, across every page. */
+  total: number
+}
+
+/**
+ * `CollectionPage` + the `ItemList` of what is on screen.
+ *
+ * WHAT `position` COUNTS. The list is the products of THIS page of the archive,
+ * numbered from 1, not from `(page - 1) * 12`. The node is emitted with the
+ * canonical of the unfiltered category (see `generateMetadata` in
+ * `category/[slug]/page.tsx`), so a crawler that reads page 3 is being told
+ * about a URL whose first twelve products are a different twelve. Numbering
+ * from 1 keeps the list consistent with the URL it names; carrying the global
+ * offset would describe page 3's products as items 25-36 of a page that shows
+ * items 1-12.
+ *
+ * `numberOfItems` is the ItemList's own length for the same reason, and the
+ * category total rides on the CollectionPage as a plain count.
+ *
+ * Names and slugs only. A price in here would be a second place where a price
+ * is computed, which is the defect the note at the top of this file exists to
+ * prevent - the archive card and the PDP disagree about coupon pricing by
+ * design (`paidOnlineIls` vs sticker), so an ItemList that quoted either would
+ * contradict one of them.
+ */
+export function buildCollectionPageJsonLd(input: CollectionPageJsonLdInput): JsonLdNode {
+  const site = trimSite(input.siteUrl)
+  const url = absolute(site, input.path)
+
+  const node: JsonLdNode = {
+    '@context': SCHEMA,
+    '@type': 'CollectionPage',
+    name: input.name,
+    url,
+    inLanguage: 'he-IL',
+    isPartOf: { '@type': 'WebSite', url: site },
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: input.items.length,
+      itemListElement: input.items.map((item, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: item.name,
+        url: `${site}/product/${encodeURIComponent(item.slug)}`,
+      })),
+    },
+  }
+
+  const description = input.description?.trim()
+  if (description) node.description = description
+  if (Number.isFinite(input.total) && input.total > 0) node.numberOfItems = input.total
+
+  return node
+}
+
+export interface LocalBusinessJsonLdInput {
+  /** The business name, as the supplier block prints it. */
+  name: string
+  /** Street address, when the row carries one. */
+  address: string | null
+  city: string | null
+  telephone: string | null
+  /** Absolute logo URL, when there is one. */
+  logoUrl: string | null
+  /** The page the business appears on, site-relative. */
+  path: string
+  /** Origin with no trailing slash. */
+  siteUrl: string
+}
+
+/**
+ * `LocalBusiness` for the supplier a product is redeemed at.
+ *
+ * WHY IT LIVES ON THE PRODUCT PAGE AND NOT ON A PAGE OF ITS OWN. There is no
+ * public supplier route to put it on, and there cannot be one from the
+ * storefront alone: `suppliers` is admin-only under RLS (see
+ * `loadSupplierPublicContact` in `lib/product-detail.ts`, which reaches it
+ * through the service client), and the table has no slug column to address a
+ * row by. The business's shopfront details are already public on this page and
+ * required to be - a coupon is redeemed at a counter - so this describes the
+ * business exactly where the site already names it.
+ *
+ * IT IS NOT EMITTED FOR A NAME ALONE. A `LocalBusiness` with no address and no
+ * telephone is a claim that a business exists somewhere, which Google reads as
+ * incomplete markup and a shopper cannot act on. Measured against production,
+ * most supplier rows are exactly that: name and nothing else. Those get no
+ * node rather than an empty one, which is the same rule the `Offer` above
+ * follows for a coupon that cannot be sold.
+ *
+ * `@id` is the product URL plus a fragment, so two products of the same
+ * supplier do not assert two different businesses, and the supplier's identity
+ * is anchored to a URL that resolves.
+ */
+export function buildLocalBusinessJsonLd(input: LocalBusinessJsonLdInput): JsonLdNode | null {
+  const name = input.name.trim()
+  const street = input.address?.trim() || null
+  const city = input.city?.trim() || null
+  const telephone = input.telephone?.trim() || null
+
+  if (!name) return null
+  if (!street && !city && !telephone) return null
+
+  const site = trimSite(input.siteUrl)
+  const url = absolute(site, input.path)
+
+  const node: JsonLdNode = {
+    '@context': SCHEMA,
+    '@type': 'LocalBusiness',
+    '@id': `${url}#supplier`,
+    name,
+    url,
+  }
+
+  if (street || city) {
+    const address: Record<string, unknown> = { '@type': 'PostalAddress', addressCountry: 'IL' }
+    if (street) address.streetAddress = street
+    if (city) address.addressLocality = city
+    node.address = address
+  }
+  if (telephone) node.telephone = telephone
+  if (input.logoUrl) node.image = absolute(site, input.logoUrl)
+
+  return node
+}

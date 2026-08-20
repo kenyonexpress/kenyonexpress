@@ -9,7 +9,12 @@ import SupplierInfo from '@/components/storefront/SupplierInfo'
 import { productLocation } from '@/lib/geo/distance'
 import { listProductSlugsForPrerender, loadProductBySlug } from '@/lib/product-detail'
 import { getProductSeoBySlug } from '@/lib/product-seo'
-import { buildBreadcrumbJsonLd, buildProductJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
+import {
+  buildBreadcrumbJsonLd,
+  buildLocalBusinessJsonLd,
+  buildProductJsonLd,
+  jsonLdScript,
+} from '@/lib/seo/json-ld'
 import { readWhatsAppEnabled } from '@/lib/supplier-contact'
 import '@/styles/product-page.css'
 import Link from 'next/link'
@@ -169,6 +174,27 @@ export default async function ProductPage({ params }: Props) {
     siteUrl,
   )
 
+  /**
+   * The supplier as a `LocalBusiness`, from the same row `SupplierInfo` prints
+   * below and never from a second read.
+   *
+   * `null` for a supplier that is a bare name, which most of them are: see the
+   * note on `buildLocalBusinessJsonLd`. The block below still renders the name;
+   * what is withheld is the structured claim that a business exists at a place,
+   * when the row does not say where.
+   */
+  const supplierLd = supplier
+    ? buildLocalBusinessJsonLd({
+        name: supplier.name,
+        address: supplier.address ?? null,
+        city: supplier.city ?? null,
+        telephone: supplier.contact_phone ?? null,
+        logoUrl: supplier.logo_url ?? null,
+        path: `/product/${encodeURIComponent(product.slug)}`,
+        siteUrl,
+      })
+    : null
+
   return (
     <div data-pdp="container" className="pdp">
       <div className="pdp__inner">
@@ -186,6 +212,13 @@ export default async function ProductPage({ params }: Props) {
           // biome-ignore lint/security/noDangerouslySetInnerHtml: same as above.
           dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbLd) }}
         />
+        {supplierLd && (
+          <script
+            type="application/ld+json"
+            // biome-ignore lint/security/noDangerouslySetInnerHtml: same as above.
+            dangerouslySetInnerHTML={{ __html: jsonLdScript(supplierLd) }}
+          />
+        )}
         <ViewTracker
           event="view_product"
           props={{

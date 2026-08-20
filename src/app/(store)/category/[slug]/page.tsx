@@ -5,6 +5,7 @@ import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
 import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard, {
   type CategoryProduct,
+  thumbLoadingForIndex,
 } from '@/components/category/CategoryProductCard'
 import Pagination from '@/components/category/Pagination'
 import CityTags from '@/components/geo/CityTags'
@@ -21,6 +22,8 @@ import {
 } from '@/lib/category-page'
 import { type SortValue, parseSort } from '@/lib/category-tokens'
 import { type Coordinates, parseNear, sortByDistance } from '@/lib/geo/distance'
+import { buildBreadcrumbJsonLd, buildCollectionPageJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
@@ -29,6 +32,13 @@ type Props = {
   params: Promise<{ slug: string }>
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
+
+/**
+ * The origin the structured data is absolute against. Read once at module
+ * scope, exactly as the product page reads it: a JSON-LD URL that is
+ * site-relative is not fetchable by the crawler that reads it.
+ */
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
 
 function parsePage(raw: string | string[] | undefined): number {
   const n = typeof raw === 'string' ? Number.parseInt(raw, 10) : 1
@@ -59,12 +69,59 @@ function resultCountText(total: number, from: number, to: number): string {
  * these exact two columns behind the same `is_active` filter, so this is the
  * same answer off the same cache entry the body below reads.
  */
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const category = await getCategoryBySlug(slug)
+
+  // Unknown or deactivated slug: the body calls notFound() and app/not-found.tsx
+  // emits noindex, but a crawler that reads only the head must not be told this
+  // shell is indexable. Same rule the PDP follows.
+  if (!category) {
+    return {
+      title: 'קטגוריה לא נמצאה',
+      description: 'הקטגוריה לא נמצאה או שאינה פעילה בקניון אקספרס.',
+      robots: { index: false, follow: true },
+    }
+  }
+
+  // Most category rows carry no description_he, and Lighthouse SEO fails the
+  // whole page over a missing meta description. The fallback is built from the
+  // category's own name rather than invented copy.
+  const description =
+    category.description_he?.trim() ||
+    `${category.name_he} בקניון אקספרס: קופונים, דילים ומבצעים מבתי עסק בפריסה ארצית.`
+
+  /**
+   * THE CANONICAL CARRIES NO QUERY STRING, and `searchParams` is deliberately
+   * not read here.
+   *
+   * `?sort=`, `?page=`, `?min=`, `?max=`, `?type=`, `?city=` and `?near=` are
+   * seven axes over the same twelve products; left to compete they are a
+   * combinatorial number of URLs claiming to be separate pages. Pointing every
+   * one of them at the bare archive is the standard collapse, and it costs the
+   * indexing of page 2 onward - which is the right trade for a catalogue whose
+   * every product is also reachable from the sitemap, by name, with its own
+   * canonical.
+   *
+   * Reading `searchParams` to do better would cost more than it buys: this
+   * function is what [26] moved off the cookie-reading client so the
+   * description resolves with the shell and lands in the FIRST `</head>`
+   * instead of streaming in after it. `searchParams` is per-request by
+   * definition and would put the whole head back behind the request.
+   */
+  const path = `/category/${encodeURIComponent(category.slug)}`
+
   return {
-    title: category?.name_he ?? 'קטגוריה',
-    description: category?.description_he ?? undefined,
+    title: category.name_he,
+    description,
+    alternates: { canonical: path },
+    openGraph: {
+      title: category.name_he,
+      description,
+      url: path,
+      type: 'website',
+      locale: 'he_IL',
+    },
   }
 }
 
@@ -153,12 +210,38 @@ async function ResultGrid({
 
   const { totalPages, currentPage, from, to } = pageWindow(total, args.page)
 
+  /**
+   * The `CollectionPage` node, emitted HERE rather than in the shell, because
+   * this is the only scope that knows what the page is showing. It streams in
+   * with the grid it describes, which is also the only ordering that can be
+   * right: a list written before the query would be a list of nothing.
+   *
+   * `ordered`, not `items`: when the shopper asked for nearest-first, the
+   * structured list has to be the order on screen.
+   */
+  const collectionLd = buildCollectionPageJsonLd({
+    name: args.category.name_he,
+    description: null,
+    path: `/category/${encodeURIComponent(args.category.slug)}`,
+    siteUrl: SITE_URL,
+    items: ordered.map((product) => ({ name: product.name_he, slug: product.slug })),
+    total,
+  })
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD has no other insertion point, and jsonLdScript escapes every angle bracket so catalogue text cannot close the tag.
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(collectionLd) }}
+      />
       <ul className="category-products">
-        {ordered.map((product) => (
+        {ordered.map((product, index) => (
           <li key={product.id} className="category-products__item">
-            <CategoryProductCard product={product as CategoryProduct} />
+            <CategoryProductCard
+              product={product as CategoryProduct}
+              thumbLoading={thumbLoadingForIndex(index)}
+            />
           </li>
         ))}
       </ul>
@@ -283,6 +366,23 @@ async function CategoryPageBody({ params, searchParams }: Props) {
     <div className="category-page">
       <ViewTracker event="view_category" props={{ category_id: category.id }} />
       <div className="category-page__inner">
+        {/* Mirrors the visible trail directly below it, in the same order. */}
+        <script
+          type="application/ld+json"
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: same as in ResultGrid above.
+          dangerouslySetInnerHTML={{
+            __html: jsonLdScript(
+              buildBreadcrumbJsonLd(
+                [
+                  { name: 'בית', path: '/' },
+                  ...(parent ? [{ name: parent.name_he, path: `/category/${parent.slug}` }] : []),
+                  { name: category.name_he, path: `/category/${category.slug}` },
+                ],
+                SITE_URL,
+              ),
+            ),
+          }}
+        />
         <CategoryBreadcrumb items={crumbs} />
 
         <header className="category-page__header">
