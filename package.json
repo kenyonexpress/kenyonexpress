@@ -76,6 +76,8 @@
     "@axe-core/playwright": "^4.12.1",
     "@biomejs/biome": "^1.9.4",
     "@playwright/test": "^1.50.1",
+    "@react-email/components": "1.0.12",
+    "@react-email/render": "2.1.0",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
