@@ -4,6 +4,7 @@ import CategoryFilterSidebar from '@/components/category/CategoryFilterSidebar'
 import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard, {
   type CategoryProduct,
+  thumbLoadingForIndex,
 } from '@/components/category/CategoryProductCard'
 import Pagination from '@/components/category/Pagination'
 import {
@@ -122,9 +123,12 @@ async function ResultGrid({
   return (
     <>
       <ul className="category-products">
-        {items.map((product) => (
+        {items.map((product, index) => (
           <li key={product.id} className="category-products__item">
-            <CategoryProductCard product={product as CategoryProduct} />
+            <CategoryProductCard
+              product={product as CategoryProduct}
+              thumbLoading={thumbLoadingForIndex(index)}
+            />
           </li>
         ))}
       </ul>

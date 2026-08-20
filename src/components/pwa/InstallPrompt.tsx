@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 
 /**
@@ -75,7 +76,22 @@ export default function InstallPrompt() {
       aria-label="התקנת האפליקציה"
       className="fixed inset-x-3 bottom-3 z-40 flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-3 shadow-lg sm:inset-x-auto sm:end-4 sm:max-w-sm"
     >
-      <img src="/icons/icon-192.png" alt="" width={40} height={40} className="rounded-xl" />
+      {/* next/image, for the resize rather than for the format: the file is the
+          192px PWA icon and this box is 40px, so a raw <img> shipped 8879 bytes
+          to paint 1/23 of the area. A local asset needs no remotePatterns entry
+          and cannot 500 the way an unrecognised supplier host can, which is why
+          this one is converted and the supplier logo in
+          storefront/SupplierInfo.tsx deliberately is not. */}
+      <Image
+        src="/icons/icon-192.png"
+        alt=""
+        width={40}
+        height={40}
+        className="rounded-xl"
+        // The banner only ever renders after `beforeinstallprompt`, which is
+        // well past first paint, so there is nothing here worth preloading.
+        loading="lazy"
+      />
       <div className="min-w-0 flex-1">
         <p className="font-bold text-heading text-sm">התקינו את KenyonExpress</p>
         <p className="text-gray-500 text-xs">גישה מהירה מהמסך הראשי, גם בלי דפדפן.</p>

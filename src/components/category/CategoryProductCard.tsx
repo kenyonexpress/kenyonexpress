@@ -74,7 +74,51 @@ function CartPlusIcon() {
   )
 }
 
-export default function CategoryProductCard({ product }: { product: CategoryProduct }) {
+/**
+ * How eagerly this card's thumbnail is fetched, decided by the GRID from the
+ * card's position and never by the card itself.
+ *
+ * `lazy` is right for the 10 cards below the fold and wrong for the ones above
+ * it: an in-viewport image that is lazily loaded is discovered only after the
+ * preload scanner has finished, which on a category page delays the very image
+ * that is most likely to be the LCP element. Lighthouse audits this by name
+ * ("Largest Contentful Paint image was lazily loaded"), and every card on this
+ * grid carried a hard-coded `loading="lazy"` until now.
+ *
+ * THE THREE VALUES, and why there are three rather than two:
+ *
+ *   'lcp'    -> next/image `priority`: eager + fetchPriority=high + a <link
+ *               rel=preload> in the head. Reserved for the cards that are above
+ *               the fold on a PHONE, which is two: the grid is two columns
+ *               under 576px. Preloading more than that on a phone spends the
+ *               connection on images nobody has scrolled to yet, which is the
+ *               cost the lazy attribute was there to avoid.
+ *   'eager'  -> eager, no preload, no priority hint. The rest of the desktop
+ *               first row (a 4-up grid above 1023px). They are in the viewport
+ *               so they should not wait for the scanner, but they are not LCP
+ *               candidates on the device that decides the mobile score.
+ *   'lazy'   -> everything else, unchanged.
+ */
+export type ThumbLoading = 'lcp' | 'eager' | 'lazy'
+
+/** The first two cards on a phone, the first four on a desktop. See ThumbLoading. */
+export function thumbLoadingForIndex(index: number): ThumbLoading {
+  if (index < 2) return 'lcp'
+  if (index < 4) return 'eager'
+  return 'lazy'
+}
+
+export default function CategoryProductCard({
+  product,
+  thumbLoading = 'lazy',
+}: {
+  product: CategoryProduct
+  /**
+   * Defaults to `lazy`, so a grid that has not been taught about position keeps
+   * exactly the behaviour every card had before this prop existed.
+   */
+  thumbLoading?: ThumbLoading
+}) {
   const thumb =
     Array.isArray(product.images) && typeof product.images[0] === 'string'
       ? (product.images[0] as string)
@@ -151,7 +195,12 @@ export default function CategoryProductCard({ product }: { product: CategoryProd
                 width={186}
                 height={186}
                 sizes={THUMB_SIZES}
-                loading="lazy"
+                // `priority` and `loading` are mutually exclusive in next/image
+                // - passing both logs a warning and the priority wins - so this
+                // sets exactly one of them.
+                {...(thumbLoading === 'lcp'
+                  ? { priority: true }
+                  : { loading: thumbLoading === 'eager' ? ('eager' as const) : ('lazy' as const) })}
               />
             ) : null}
           </span>
