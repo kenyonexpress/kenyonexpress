@@ -18,6 +18,7 @@ import {
 } from '@/lib/commerce/product-money'
 import { checkoutStep } from '@/lib/monitoring/breadcrumbs'
 import { withActionContext } from '@/lib/observability/action-context'
+import { identifyRequestUser } from '@/lib/observability/request-context'
 import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
 import {
@@ -253,6 +254,10 @@ async function runBeginCheckout(
   if (!user) {
     return { ok: false, error: 'יש להתחבר לפני התשלום', code: 'UNAUTHENTICATED' }
   }
+  // A Server Function gets its request id from withActionContext, which runs
+  // before the action body and therefore cannot know who this is. This is the
+  // first line in the process that does.
+  identifyRequestUser(user.id)
 
   const allowed = await checkRateLimit(`begin_checkout:user:${user.id}`, 10, 60)
   if (!allowed) {

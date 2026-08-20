@@ -1,3 +1,5 @@
+import { maskUserId } from '@/lib/monitoring/mask'
+
 /**
  * Reading the per-request context, from anywhere -- including modules the
  * client bundler insists on walking into.
@@ -31,6 +33,13 @@ export type RequestContext = {
   route?: string
   /** HTTP method for a route handler; the action name for a Server Function. */
   method?: string
+  /**
+   * The MASKED user id, never the raw one. Set by `identifyRequestUser` once
+   * the request has established who it is, which is always some way into the
+   * handler -- so this field is absent for the first part of every request and
+   * that is not a bug.
+   */
+  userId?: string | null
 }
 
 /**
@@ -67,6 +76,29 @@ export function getRequestContext(): RequestContext | undefined {
 /** Null outside a request, which is the honest answer for a script or a test. */
 export function getRequestId(): string | null {
   return getRequestContext()?.requestId ?? null
+}
+
+/**
+ * Names the person this request belongs to, on every line logged from here on.
+ *
+ * WHY THIS MUTATES THE CONTEXT RATHER THAN RE-RUNNING IT. Who the request is
+ * cannot be known when the context is bound: `withRequestLog` runs before the
+ * handler, and the handler is what calls `auth.getUser()`. The alternative is a
+ * second `runWithRequestContext` wrapping the remainder of every handler, which
+ * is a callback and an indentation level at fifteen call sites for one field.
+ *
+ * Mutating is safe HERE because the object is per-request by construction --
+ * `runWithRequestContext` is handed a fresh literal for each request, and
+ * AsyncLocalStorage is what keeps two concurrent requests from sharing one.
+ *
+ * The id is masked on the way in, by this function, rather than at each call
+ * site. A call site that has to remember to mask is a call site that will one
+ * day forget, and the raw id would then be on every subsequent log line.
+ */
+export function identifyRequestUser(rawUserId: string | null | undefined): void {
+  const context = getRequestContext()
+  if (!context) return
+  context.userId = maskUserId(rawUserId)
 }
 
 /**

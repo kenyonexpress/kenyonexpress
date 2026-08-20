@@ -1,3 +1,4 @@
+import { identifyRequestUser } from '@/lib/observability/request-context'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
@@ -34,6 +35,7 @@ async function handleGET(): Promise<NextResponse> {
   const {
     data: { user },
   } = await supabase.auth.getUser()
+  identifyRequestUser(user?.id)
 
   // The popular list is world-readable by policy, but it is read with the admin
   // client so a logged-out visitor gets it without the anon client's RLS round

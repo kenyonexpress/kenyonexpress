@@ -2,6 +2,7 @@ import { CONSENT_COOKIE, isTrackingAllowed } from '@/lib/analytics/consent'
 import { ingestBatchSchema } from '@/lib/analytics/events'
 import { GUEST_SESSION_COOKIE, parseGuestSessionToken } from '@/lib/cart/guest-session'
 import { log } from '@/lib/observability/log'
+import { identifyRequestUser } from '@/lib/observability/request-context'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
@@ -67,6 +68,7 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   const {
     data: { user },
   } = await supabase.auth.getUser()
+  identifyRequestUser(user?.id)
 
   const anonymousId = parseGuestSessionToken(request.cookies.get(GUEST_SESSION_COOKIE)?.value)
 

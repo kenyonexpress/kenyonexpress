@@ -88,6 +88,14 @@ function emit(level: LogLevel, event: string, fields: Fields): void {
       request_id: context?.requestId ?? null,
       route: context?.route,
       method: context?.method,
+      // Masked, always. `identifyRequestUser` is the only thing that fills this
+      // in and it hashes on the way through, so a raw uuid cannot reach a line
+      // here even from a call site that passes one.
+      //
+      // Explicitly null rather than omitted when nobody is signed in: a missing
+      // field and a logged-out visitor are different facts, and a drain that
+      // groups by this one needs to be able to tell them apart.
+      user_id: context?.userId ?? null,
       ...normalize(fields),
     })
 

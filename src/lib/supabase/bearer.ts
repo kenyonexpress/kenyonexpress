@@ -1,3 +1,4 @@
+import { identifyRequestUser } from '@/lib/observability/request-context'
 import { createClient as createServerClient } from '@/lib/supabase/server'
 import { createClient } from '@supabase/supabase-js'
 import type { User } from '@supabase/supabase-js'
@@ -38,7 +39,13 @@ export async function authenticateRequest(request: Request): Promise<RequestIden
   const {
     data: { user: cookieUser },
   } = await cookieClient.auth.getUser()
-  if (cookieUser) return { user: cookieUser, via: 'cookie' }
+  if (cookieUser) {
+    // The one place every supplier and app route learns who it is talking to,
+    // which is why the log line gets its (masked) user here rather than in six
+    // handlers that would each have to remember. No-op outside a request.
+    identifyRequestUser(cookieUser.id)
+    return { user: cookieUser, via: 'cookie' }
+  }
 
   const token = bearerToken(request.headers.get('authorization'))
   if (!token) return null
@@ -51,7 +58,9 @@ export async function authenticateRequest(request: Request): Promise<RequestIden
   const {
     data: { user },
   } = await anon.auth.getUser(token)
-  return user ? { user, via: 'bearer' } : null
+  if (!user) return null
+  identifyRequestUser(user.id)
+  return { user, via: 'bearer' }
 }
 
 /**

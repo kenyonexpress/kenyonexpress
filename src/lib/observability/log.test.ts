@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { log } from './log'
 import './request-store'
-import { runWithRequestContext } from './request-context'
+import { identifyRequestUser, runWithRequestContext } from './request-context'
 
 type Line = Record<string, unknown>
 
@@ -104,6 +104,42 @@ describe('log', () => {
   it('omits undefined fields rather than emitting nulls for them', () => {
     log.error('analytics.sales_lines_failed', { reason: undefined })
     expect('reason' in captured(error)).toBe(false)
+  })
+
+  it('carries a masked user id, never the raw one', () => {
+    const raw = '3f2a1b7c-9d4e-4f80-8a1b-2c3d4e5f6071'
+    runWithRequestContext({ requestId: 'req-user', route: '/api/cart', method: 'GET' }, () => {
+      identifyRequestUser(raw)
+      log.error('cart.load_failed', {})
+    })
+
+    const line = captured(error)
+    expect(line.user_id).toMatch(/^u_[0-9a-f]{16}$/)
+    // The point of the whole exercise: a log drain is a third party, and
+    // "identify the customer" is not a capability a log line needs.
+    expect(JSON.stringify(line)).not.toContain(raw)
+  })
+
+  it('says user_id: null for an anonymous request rather than omitting it', () => {
+    runWithRequestContext({ requestId: 'req-anon', route: '/api/cart', method: 'GET' }, () => {
+      log.error('cart.load_failed', {})
+    })
+
+    const line = captured(error)
+    // A missing field and a logged-out visitor are different facts.
+    expect(line).toHaveProperty('user_id')
+    expect(line.user_id).toBeNull()
+  })
+
+  it('does not leak one request\'s user into the next', () => {
+    runWithRequestContext({ requestId: 'req-1' }, () => {
+      identifyRequestUser('3f2a1b7c-9d4e-4f80-8a1b-2c3d4e5f6071')
+    })
+    log.error('after.request', {})
+
+    // identifyRequestUser mutates the per-request context object. This is what
+    // makes that safe rather than clever: the object dies with the request.
+    expect(captured(error).user_id).toBeNull()
   })
 
   it('never throws, because every call site is already on a failure branch', () => {

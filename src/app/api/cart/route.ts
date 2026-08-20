@@ -1,3 +1,4 @@
+import { identifyRequestUser } from '@/lib/observability/request-context'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createClient } from '@/lib/supabase/server'
 import { getCart } from '@/server/actions/cart'
@@ -23,6 +24,7 @@ import { NextResponse } from 'next/server'
 async function handleGET() {
   const supabase = await createClient()
   const [cart, { data: auth }] = await Promise.all([getCart(), supabase.auth.getUser()])
+  identifyRequestUser(auth.user?.id)
 
   return NextResponse.json(
     { cart, isAuthenticated: auth.user !== null },
