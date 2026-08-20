@@ -1,3 +1,4 @@
+import { captureRouteFailure } from '@/lib/monitoring/capture'
 import type { NextRequest } from 'next/server'
 import { log } from './log'
 import { runWithRequestContext } from './request-context'
@@ -50,8 +51,35 @@ export function withRequestLog<Args extends unknown[]>(
         const level = response.status >= 500 ? 'error' : response.status >= 400 ? 'warn' : 'debug'
         log[level]('request.completed', { status: response.status, duration_ms: durationMs })
 
+        // A 5xx the handler RETURNED rather than threw.
+        //
+        // This is the gap `onRequestError` cannot see. It reports what escapes a
+        // handler, and a handler that catches its own failure and answers
+        // `{ ok: false }, { status: 500 }` never throws -- so the customer got a
+        // 500 and Sentry heard nothing. Four routes did exactly that. Reporting
+        // it here rather than in each of them means the guarantee covers the
+        // route written next month too.
+        //
+        // Deliberately not 4xx: a validation failure, a 401 and a 404 are the
+        // system working. They are on the log line above, where a drain can
+        // count them, and an alert channel that carries them is one nobody
+        // reads.
+        if (response.status >= 500) {
+          captureRouteFailure(`${route} responded ${response.status}`, {
+            route,
+            status: response.status,
+            detail: { method: request.method, duration_ms: durationMs },
+          })
+        }
+
         return response
       } catch (error) {
+        // Logged and re-thrown, NOT captured here. An error that escapes a
+        // handler reaches `instrumentation.ts` `onRequestError`, which already
+        // reports it -- with the route type and the digest, which this wrapper
+        // does not have. Capturing in both places would file every uncaught
+        // route error twice, and on the money path it would also mean two
+        // pushes to the phone for one failure.
         log.error('request.failed', {
           err: error instanceof Error ? error : new Error(String(error)),
           duration_ms: Math.round(performance.now() - startedAt),

@@ -8,6 +8,7 @@ import {
   isBillingInterval,
 } from '@/lib/commerce/recurring'
 import { log } from '@/lib/observability/log'
+import { capturePaymentError } from '@/lib/observability/sentry'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { getPaymentProvider } from '@/lib/payments'
 import { bearerMatches } from '@/lib/security/constant-time'
@@ -172,6 +173,18 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     } catch (error) {
       // A thrown provider call is a FAILED charge, not a crashed run. Letting it
       // escape would abandon every subscription after this one in the batch.
+      //
+      // Which is also why it has to be reported from inside the catch. The run
+      // goes on to answer 200 with a tally, so neither the 5xx reporting in
+      // `withRequestLog` nor `onRequestError` will ever see this: a terminal
+      // that has stopped answering looks, from the outside, like a batch of
+      // subscriptions that all declined. `capturePaymentError` rather than the
+      // alarm variant on purpose - a declined card is normal, and a phone that
+      // buzzes per failed renewal is a phone nobody reads.
+      capturePaymentError(error, {
+        stage: 'subscription_charge',
+        detail: { subscription_id: subscription.id, period_key: periodKey },
+      })
       outcome = {
         success: false,
         transactionId: null,

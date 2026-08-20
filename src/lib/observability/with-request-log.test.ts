@@ -1,9 +1,14 @@
+import { captureRouteFailure } from '@/lib/monitoring/capture'
 import type { NextRequest } from 'next/server'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { log } from './log'
 import { getRequestContext } from './request-context'
 import { REQUEST_ID_HEADER } from './request-id'
 import { withRequestLog } from './with-request-log'
+
+vi.mock('@/lib/monitoring/capture', () => ({
+  captureRouteFailure: vi.fn(),
+}))
 
 /** Only the parts of NextRequest the wrapper touches. */
 function request(init: { id?: string; method?: string } = {}): NextRequest {
@@ -20,6 +25,7 @@ describe('withRequestLog', () => {
     errorLine = vi.spyOn(console, 'error').mockImplementation(() => {})
     warnLine = vi.spyOn(console, 'warn').mockImplementation(() => {})
     vi.spyOn(console, 'log').mockImplementation(() => {})
+    vi.mocked(captureRouteFailure).mockClear()
   })
 
   afterEach(() => {
@@ -143,6 +149,45 @@ describe('withRequestLog', () => {
     ])
 
     expect(seen.sort()).toEqual(['first|first', 'second|second', 'third|third'])
+  })
+
+  it('reports a 5xx the handler RETURNED, which nothing else can see', async () => {
+    // onRequestError only hears about what escapes a handler. A route that
+    // catches its own failure and answers `{ ok: false }, { status: 500 }`
+    // never throws, so before this the customer got a 500 and Sentry got
+    // nothing. Four routes did exactly that.
+    const handler = withRequestLog('/api/cron/invoices', async () =>
+      Response.json({ ok: false }, { status: 500 }),
+    )
+
+    await handler(request({ id: 'five-hundred' }))
+
+    expect(captureRouteFailure).toHaveBeenCalledTimes(1)
+    const [message, context] = vi.mocked(captureRouteFailure).mock.calls[0] as [
+      string,
+      { route: string; status: number },
+    ]
+    expect(message).toContain('/api/cron/invoices')
+    expect(context.route).toBe('/api/cron/invoices')
+    expect(context.status).toBe(500)
+  })
+
+  it('does not report a 4xx, because a rejected request is the system working', async () => {
+    const handler = withRequestLog('/api/cart', async () => new Response(null, { status: 404 }))
+    await handler(request())
+    expect(captureRouteFailure).not.toHaveBeenCalled()
+  })
+
+  it('does not double-report a throw, which onRequestError already files', async () => {
+    const handler = withRequestLog('/api/payments/cardcom/webhook', async () => {
+      throw new Error('finalize exploded')
+    })
+
+    await expect(handler(request())).rejects.toThrow('finalize exploded')
+
+    // Two events for one error would also mean two pushes to the phone on the
+    // money path.
+    expect(captureRouteFailure).not.toHaveBeenCalled()
   })
 
   it('leaves no context behind for whatever runs next', async () => {

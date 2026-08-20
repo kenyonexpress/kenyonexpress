@@ -1,3 +1,5 @@
+import { captureRouteError } from '@/lib/monitoring/capture'
+import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { searchProductsCached } from '@/lib/search-server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
@@ -65,9 +67,25 @@ async function handleGET(request: Request) {
         headers: { 'Cache-Control': 'private, max-age=30' },
       },
     )
-  } catch {
+  } catch (error) {
     // A failed suggestion must never break typing. The form still submits and
-    // the full results page answers.
+    // the full results page answers, so the response stays a 200 with an empty
+    // list.
+    //
+    // Which is exactly why it has to be reported. A 200 is invisible to the 5xx
+    // reporting in `withRequestLog`, to an uptime monitor and to the customer,
+    // who just sees a search box that stopped suggesting. Meilisearch being
+    // down for an hour looked, from every dashboard this project has, like
+    // nobody typing.
+    log.error('search.suggest_failed', { err: error, query_length: q.length })
+    captureRouteError(error, {
+      route: '/api/search/suggest',
+      stage: 'search_products',
+      status: 200,
+      // Never the query itself: a search box takes whatever is pasted into it,
+      // and people paste order numbers, phone numbers and their own name.
+      detail: { query_length: q.length },
+    })
     return NextResponse.json({ results: [], engine: null }, { status: 200 })
   }
 }
