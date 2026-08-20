@@ -19,7 +19,7 @@ export default function SoldOutBadge({
     <p
       className={`inline-flex items-center gap-2 rounded-lg bg-surface-hover px-3 py-2 text-sm font-bold text-heading ${className}`}
     >
-      <PackageX size={16} aria-hidden="true" className="text-[#e4002b]" />
+      <PackageX size={16} aria-hidden="true" className="text-price" />
       {isCoupon ? 'הדיל נסגר' : 'אזל מהמלאי'}
     </p>
   )

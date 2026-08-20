@@ -135,7 +135,7 @@ export default function MobileStickyBar({
             // 44px is the minimum touch target the a11y audit holds every
             // control on this site to; `h-11` is exactly that, and the
             // horizontal padding keeps the Hebrew label off the edges.
-            className="inline-flex h-11 min-w-[8rem] shrink-0 items-center justify-center rounded-lg bg-[#fed700] px-5 text-base font-bold text-brand-dark transition-colors disabled:cursor-not-allowed disabled:bg-surface-hover disabled:text-muted"
+            className="inline-flex h-11 min-w-[8rem] shrink-0 items-center justify-center rounded-lg bg-brand-primary px-5 text-base font-bold text-brand-dark transition-colors disabled:cursor-not-allowed disabled:bg-surface-hover disabled:text-muted"
             // Not focusable while the bar is off screen: a keyboard user
             // tabbing the page must not land on a control nobody can see.
             tabIndex={visible ? 0 : -1}

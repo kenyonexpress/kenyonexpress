@@ -1,4 +1,10 @@
 import ViewTracker from '@/components/analytics/ViewTracker'
+import CountdownTimer from '@/components/product/CountdownTimer'
+import FloatingWhatsApp from '@/components/product/FloatingWhatsApp'
+import MobileStickyBar from '@/components/product/MobileStickyBar'
+import PriceDisplay from '@/components/product/PriceDisplay'
+import SoldOutBadge from '@/components/product/SoldOutBadge'
+import WaitlistForm from '@/components/product/WaitlistForm'
 import { CouponTerms } from '@/components/storefront/CouponPricing'
 import ProductGallery from '@/components/storefront/ProductGallery'
 import ProductInfo from '@/components/storefront/ProductInfo'
@@ -119,7 +125,7 @@ export default async function ProductPage({ params }: Props) {
   const detail = await loadProductBySlug(slug)
   if (!detail) notFound()
 
-  const { product, images, supplier, variants, galleryAssets, couponOffer } = detail
+  const { product, images, supplier, variants, galleryAssets, couponOffer, coupon054 } = detail
 
   const category = Array.isArray(product.categories)
     ? null
@@ -132,6 +138,17 @@ export default async function ProductPage({ params }: Props) {
       : null
 
   const isCoupon = product.type === 'coupon' || product.is_coupon_enabled
+
+  // What the shopper actually pays here, and what it is worth. For a coupon
+  // that is the ABSOLUTE admin-set amount the commission engine bills, never a
+  // percentage of the sticker: quoting a derived number beside a charged one is
+  // the exact drift `lib/commerce/coupon-offer.ts` was written to end.
+  const paidHereIls = couponOffer?.sellable ? couponOffer.paidOnlineIls : basePrice
+  const fullValueIls = couponOffer ? couponOffer.fullPriceIls : oldPrice
+  // The CACHED level, like everything else this page reads. It cannot oversell:
+  // `server/actions/cart.ts` re-reads stock on add and checkout reads it again.
+  const outOfStock = product.stock_quantity === 0
+  const sellable = !couponOffer || couponOffer.sellable
 
   const attributes: { label: string; value: string }[] = []
   if (category) attributes.push({ label: 'קטגוריה', value: category.name_he })
@@ -221,6 +238,18 @@ export default async function ProductPage({ params }: Props) {
           <span>{product.name_he}</span>
         </nav>
 
+        {/* The deal deadline, above the fold and only when there is one.
+            Rendered against `coupon054.offer_valid_until` rather than the
+            offer's own `validUntil`, because a LAPSED offer keeps the date on
+            the non-sellable branch and the timer has nothing to count. No
+            product carries this column today, so the whole band is absent from
+            every current page rather than being an empty div on all of them. */}
+        {coupon054?.offer_valid_until && (
+          <div className="mb-4">
+            <CountdownTimer validUntil={coupon054.offer_valid_until} />
+          </div>
+        )}
+
         {/* Two columns: gallery (right in RTL, 470px) + summary (left, 670px).
             No card wrapper: live puts both straight on the page, and the
             border plus 32px of padding we used to draw round them offset every
@@ -260,6 +289,27 @@ export default async function ProductPage({ params }: Props) {
             couponOffer={couponOffer}
           />
         </div>
+
+        {/* Sold out: the badge, the price it was, and somewhere for the
+            shopper to leave an address. Without the last one this page ends
+            the conversation, and the visit is spent.
+
+            Below the columns rather than inside them because the summary
+            column belongs to `ProductInfo`, which already refuses the sale in
+            its own button; this block adds the way back rather than repeating
+            the refusal in a second place that could drift from it. */}
+        {outOfStock && (
+          <section aria-label="המוצר אזל" className="pdp-details flex flex-col items-start gap-3">
+            <SoldOutBadge isCoupon={isCoupon} />
+            <PriceDisplay
+              fullPriceIls={fullValueIls}
+              priceIls={paidHereIls}
+              size="md"
+              showSavings={false}
+            />
+            <WaitlistForm productId={product.id} />
+          </section>
+        )}
 
         {/* Coupon-only: how and by when the voucher may be redeemed. */}
         {couponOffer && (
@@ -310,6 +360,26 @@ export default async function ProductPage({ params }: Props) {
         {/* Related products */}
         <RelatedProducts categoryId={product.category_id} excludeId={product.id} />
       </div>
+
+      {/* Both are fixed to the viewport, so they sit outside `.pdp__inner`
+          rather than inside a column that scrolls. The sticky bar quotes
+          `paidHereIls`, the same number the summary and the cart use. */}
+      <MobileStickyBar
+        productId={product.id}
+        productName={product.name_he}
+        priceIls={paidHereIls}
+        fullPriceIls={fullValueIls}
+        hasVariants={(variants ?? []).length > 0}
+        outOfStock={outOfStock}
+        sellable={sellable}
+        isCoupon={isCoupon}
+      />
+
+      <FloatingWhatsApp
+        supplier={supplier}
+        productName={product.name_he}
+        enabled={readWhatsAppEnabled(product)}
+      />
     </div>
   )
 }

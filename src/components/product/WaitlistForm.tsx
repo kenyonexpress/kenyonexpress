@@ -63,14 +63,14 @@ export default function WaitlistForm({
           // Latin-only content in an RTL page: the address itself reads
           // left-to-right, the label above it does not.
           dir="ltr"
-          className="h-11 min-w-0 flex-1 rounded-lg border border-border px-3 text-start text-base text-heading placeholder:text-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#fed700]"
+          className="h-11 min-w-0 flex-1 rounded-lg border border-border px-3 text-start text-base text-heading placeholder:text-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary"
           aria-describedby="waitlist-consent"
         />
         <button
           type="submit"
           disabled={pending}
           // 44px, the site-wide minimum touch target.
-          className="h-11 shrink-0 rounded-lg bg-[#fed700] px-4 text-sm font-bold text-brand-dark disabled:cursor-not-allowed disabled:bg-surface-hover disabled:text-muted"
+          className="h-11 shrink-0 rounded-lg bg-brand-primary px-4 text-sm font-bold text-brand-dark disabled:cursor-not-allowed disabled:bg-surface-hover disabled:text-muted"
         >
           {pending ? 'שולח...' : 'עדכנו אותי'}
         </button>
@@ -81,7 +81,7 @@ export default function WaitlistForm({
       </p>
 
       {state.error && (
-        <p role="alert" className="mt-2 text-sm font-medium text-[#e4002b]">
+        <p role="alert" className="mt-2 text-sm font-medium text-price">
           {state.error}
         </p>
       )}

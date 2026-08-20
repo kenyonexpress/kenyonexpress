@@ -11,6 +11,16 @@
  * shekel floats the legacy `numeric` columns hand over, because a badge that
  * says 60% beside a price that works out to 59% is the same defect as a wrong
  * charge as far as a customer is concerned. `CLAUDE.md`: money is integers.
+ *
+ * COLOURS COME FROM TOKENS, NOT FROM LITERALS. The spec for this block named
+ * three hexes; all three are already declared in the `@theme` block of
+ * globals.css as `price`, `price-strike` and `brand-primary`, and
+ * `styles/tokens.test.ts` fails the build on a raw hex in any component. The
+ * strike token IS the requested grey. The price token is the site's measured
+ * price red and is a shade off the hex the spec quoted -- changing that shade
+ * is a one-line edit to globals.css + tokens.ts, and doing it there moves
+ * every price on the site together instead of leaving this one block
+ * disagreeing with the cart, the deal cards and the mini-cart.
  */
 
 /** Shekels to whole agorot. Display only, so it rounds instead of throwing. */
@@ -72,20 +82,20 @@ export default function PriceDisplay({
   return (
     <div className={`flex flex-wrap items-baseline gap-x-3 gap-y-1 ${className}`}>
       {showFull && (
-        <del className={`text-gray-400 line-through tabular-nums ${s.strike}`}>
+        <del className={`text-price-strike line-through tabular-nums ${s.strike}`}>
           <span className="sr-only">מחיר מלא </span>
           {shekels(fullPriceIls)}
         </del>
       )}
 
-      <span className={`font-bold tabular-nums text-[#e4002b] ${s.price}`}>
+      <span className={`font-bold tabular-nums text-price ${s.price}`}>
         <span className="sr-only">המחיר שלנו </span>
         {shekels(priceIls)}
       </span>
 
       {showSavings && saving > 0 && (
         <span
-          className={`rounded-md bg-[#fed700] font-bold text-brand-dark ${s.badge}`}
+          className={`rounded-md bg-brand-primary font-bold text-brand-dark ${s.badge}`}
           // The digits sit inside a Hebrew sentence, and a bare `%` after a
           // number flips to the wrong side of it without an explicit bidi
           // isolate around the numeric run.

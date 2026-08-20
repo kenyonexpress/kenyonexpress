@@ -138,7 +138,7 @@ export default function CountdownTimer({
       role="timer"
       aria-label={`${urgent ? 'המבצע מסתיים בקרוב. ' : ''}${label}`}
       className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-bold ${
-        urgent ? 'bg-[#e4002b]/10 text-[#e4002b]' : 'bg-surface-hover text-heading'
+        urgent ? 'bg-price/10 text-price' : 'bg-surface-hover text-heading'
       } ${className}`}
     >
       <Clock size={16} aria-hidden="true" className={urgent ? 'animate-pulse' : undefined} />
