@@ -47,6 +47,28 @@ money path, and it writes numeric ILS deliberately, to agree with the columns it
 reads; its header explains why splitting units across two migrations is how a
 x100 bug is born.
 
+## 086: the checkout event journal, hardened rather than duplicated
+
+`086_checkout_events.sql` was asked for as "a `payment_events` table,
+append-only". It does not create that table, because it is already in production
+as `payment_webhook_events` and already dedups on
+`(provider, external_event_id)`. A second table would give one question - "have
+we handled this Cardcom callback?" - two answers, and a replay that consulted
+the wrong one would finalize an order twice and issue a second set of vouchers
+for one payment. `115_payment_events.sql` in this directory reached the same
+conclusion and was deliberately left inert.
+
+What `086` adds is the part that really is missing: the recorded facts
+(`provider`, `external_event_id`, `payload`, `signature_valid`, `created_at`)
+become immutable and rows become undeletable, while the two columns the webhook
+must still stamp stay writable; plus `attempts` / `next_attempt_at` /
+`last_error` and a partial index, so the dead-letter queue that
+`src/server/payments/webhook-dlq.ts` infers today can be recorded instead.
+
+Dry-run status is in the file header: every statement ran against production
+inside `BEGIN ... ROLLBACK` on 2026-08-20, the self-check passed, all four
+blocked operations were blocked, and the rollback left nothing behind.
+
 ## Order
 
 `002-products-geo.sql` and `003-products-whatsapp-enabled.sql` are independent
