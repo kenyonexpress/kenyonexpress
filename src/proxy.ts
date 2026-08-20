@@ -146,7 +146,37 @@ export async function proxy(request: NextRequest) {
     return withRequestId(NextResponse.redirect(loginUrl), requestId)
   }
 
-  if (pathname.startsWith('/admin')) {
+  // The API perimeter, which the two prefixes above do not cover.
+  //
+  // `/api/admin` does not start with `/admin` and `/api/supplier` does not
+  // start with `/supplier`, so every route under them passed through this file
+  // untouched while the page prefixes that look just like them were gated.
+  // `/api/admin/reports/sales` is a plain GET at a guessable URL that returns
+  // every shekel the platform has taken, and its own in-file guard was the only
+  // thing standing there.
+  //
+  // A 401, never a redirect. These are fetched by `fetch()` and by `<a href>`
+  // downloads: a 307 to /login reaches the first as a login page parsed as JSON
+  // and the second as a saved file named `login`.
+  //
+  // BEARER REQUESTS PASS THROUGH ON PURPOSE. The scanner app holds its session
+  // in the native keychain and sends `Authorization: Bearer`, which the cookie
+  // client above cannot read, so `user` is null for every legitimate till in
+  // the country. The header's presence is not proof of anything and is not
+  // treated as any: it defers the decision to the handler, which verifies the
+  // token against the auth server through `identityScopedClient`. What this
+  // block still stops is the request carrying neither.
+  const apiNeedsIdentity = pathname.startsWith('/api/admin') || pathname.startsWith('/api/supplier')
+  const hasBearer = /^Bearer\s+\S/i.test(request.headers.get('authorization') ?? '')
+  if (apiNeedsIdentity && !user && !hasBearer) {
+    return withRequestId(
+      NextResponse.json({ ok: false, error: 'unauthenticated' }, { status: 401 }),
+      requestId,
+    )
+  }
+
+  if (pathname.startsWith('/admin') || (pathname.startsWith('/api/admin') && user)) {
+    const isApi = pathname.startsWith('/api/admin')
     if (!user) {
       const loginUrl = request.nextUrl.clone()
       loginUrl.pathname = '/login'
@@ -168,6 +198,12 @@ export async function proxy(request: NextRequest) {
       profile?.role === 'content_uploader' ||
       profile?.role === 'support'
     if (!isPanel) {
+      if (isApi) {
+        return withRequestId(
+          NextResponse.json({ ok: false, error: 'forbidden' }, { status: 403 }),
+          requestId,
+        )
+      }
       return withRequestId(NextResponse.redirect(new URL('/', request.url)), requestId)
     }
   }
