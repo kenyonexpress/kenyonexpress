@@ -1,10 +1,84 @@
-גל DB HARDENING נסגר (שלבים 10-15); גל COUPON STOREFRONT בתור, שלב 16
+גל CHECKOUT E2E נסגר (שלבים 1-7 של התור מ-20.08); גל DB HARDENING נסגר (שלבים 10-15)
 
 # KenyonExpress — Project State
 
 Updated: 2026-08-19 (גל DB HARDENING הוחל על פרודקשן דרך MCP)
 
-## המשך מ: שלב 16
+## המשך מ: שלב 13
+
+‏**שתי סְפִירוֹת רצות במקביל ב-STATE הזה, וזה מכוון.** ‏"שלב 13" הוא הפריט הבא
+בתור ה-CHECKOUT E2E שנמסר ב-20.08 ורץ ב-worktree ‏`ke-checkout` על הענף
+‏`feat/checkout-e2e`. תור ה-COUPON STOREFRONT, שממתין ב-`שלב 16`, לא זז ולא
+נסגר; מי שממשיך אותו ממשיך משם.
+
+### גל CHECKOUT E2E (‏`feat/checkout-e2e`, ‏20.08) — שבעת השלבים
+
+‏**הממצא המרכזי: שישה מתוך שבעה כבר היו בנויים.** התור נכתב כאילו בונים checkout
+מאפס, והמדידה מול הקוד הראתה משהו אחר. מה שנשאר לעשות היה למלא פערים אמיתיים,
+לא לכתוב מחדש, ובניית עותק שני של כל אחד מהם הייתה מכניסה בדיוק את הבאג שהמנגנון
+הקיים מונע.
+
+1. ✅ **Guest cart persistence — כבר קיים.** ‏`src/lib/cart/store.ts` הוא Zustand
+   עם `persist` ו-`skipHydration`, ‏`CartProvider` עושה `rehydrate()` אחרי
+   הידרציה כדי לא לצייר badge שה-HTML מהשרת לא מכיל, ו-`mergeGuestCart`
+   ב-`src/server/actions/cart.ts:684` ממזג בכניסה דרך `/auth/callback`.
+2. ✅ **Checkout flow — כבר קיים.** ‏`/checkout` פתוח לאורחים בכוונה
+   (`src/proxy.ts:112` אומר זאת במפורש), ההתחברות היא בלחיצת התשלום, ו-Cardcom
+   LowProfile נטען ב-iframe מתוך `CheckoutForm.tsx:924`.
+3. ✅ **Webhook — כבר קיים, וחזק מהדרישה.** הדרישה ביקשה `signature verify`.
+   ‏**Cardcom לא חותמת קריאות חוזרות בכלל**, ולכן אין מה לאמת: האותנטיות נשענת על
+   סוד לא-ניחוש ב-URL (`?s=`) ועל אימות server-to-server דרך `GetLpResult`,
+   שהוא המקור היחיד שנסמכים עליו לסכום, לסטטוס ול-token. ‏`idempotency` קיים
+   כ-UNIQUE על `(provider, external_event_id)`.
+4. ✅ **דף הצלחה — הפער האמיתי הראשון, נסגר.** הדף הציג קוד, ‏QR ותוקף
+   ‏**ומעולם לא אמר איפה מממשים**. ‏`vouchers.supplier_id` רשם את זה מאז שנולד
+   מנגנון השוברים והדף פשוט לא קרא אותו. נוסף בלוק ספק (שם, כתובת, טלפון),
+   ‏`offer_valid_until` מוצג רק כשהוא נופל ביום אחר מ-`expires_at`, ונוסף
+   ‏`/checkout/success` כהפניה ל-`/checkout/return` ולא כעותק.
+   ‏**‏`embed` מפורק לפי שם ה-constraint**: ל-`vouchers` יש שני FK ל-`suppliers`,
+   ולכן `suppliers(...)` חשוף היה מפיל את כל ה-select.
+   ‏**הקוד הוא 10 תווים ולא 8** כפי שהתור ביקש: `VOUCHER_CODE_LENGTH = 10`
+   ו-CHECK בשם `vouchers_code_format` אוכף `{10}` בפרודקשן. שינוי ל-8 היה פוסל
+   כל שובר שהונפק אי פעם.
+5. ✅ **שמירת token — כבר קיים.** ‏`finalize.ts:525` כותב ל-`payment_tokens`
+   כולל `cardcom_account_id`, כי token ניתן לחיוב רק במסוף שהנפיק אותו.
+6. ✅ **E2E — תוקן, ולא הורץ.** ‏`e2e/full-purchase-redeem.spec.ts` מדולג בכל
+   ריצה מקומית (אין `E2E_CUSTOMER_EMAIL`), ולכן **חמש טענות מתות** ישבו בו בלי
+   שאיש ידע: הפניה ל-`/login` שהאפליקציה כבר לא עושה ושסותרת את
+   ‏`e2e/checkout.spec.ts` באותה תיקייה, כותרת `תשלום` במקום `קופה`, כפתור
+   ‏`מעבר לתשלום מאובטח` במקום `שליחת הזמנה`, המתנה ל-`נוסף לסל` שהיא
+   ‏`setTimeout` של שתי שניות, ושני `data-testid` שלא היו בדף. כולן תוקנו מול
+   המקור והוספו טענות על בלוק הספק. ‏`data-testid` הוסף לדף.
+7. ✅ **מיגרציה — נכתבה, לא הוחלה.** ‏`migrations/pending/086_checkout_events.sql`.
+
+**‏`payment_events` לא נוצרה, וזו החלטה.** הטבלה שהתור ביקש קיימת בפרודקשן בשם
+`payment_webhook_events` ומדדדפת כבר על `(provider, external_event_id)`. טבלה
+שנייה לא הייתה מוסיפה יומן אלא **תשובה שנייה** לשאלה "האם כבר טיפלנו בקריאה
+הזאת", ו-replay שבדק את הטבלה הלא-נכונה היה מסיים את ההזמנה פעמיים ומנפיק סט
+שוברים שני על חיוב אחד. במקום זה 086 מהדק את היומן הקיים: העובדות המתועדות
+(`provider`, `external_event_id`, `payload`, `signature_valid`, `created_at`)
+הופכות לבלתי ניתנות לשינוי, ‏DELETE נחסם לגמרי, ונוספו `attempts`,
+‏`next_attempt_at`, ‏`last_error` ואינדקס חלקי ל-DLQ.
+‏**‏append-only כאן אינו "בלי UPDATE"**: המסלול התקין מעדכן פעמיים, ו-`processed_at`
+הוא write-once **דרך שמירת הערך הראשון ולא דרך שגיאה**, כי גם ה-webhook וגם
+`webhook-dlq` יכולים להגיע לשורה חתומה, ושגיאה שם הייתה מפילה את הבקשה אחרי
+שההזמנה כבר נסגרה.
+‏**הורץ יבש מול פרודקשן בתוך `BEGIN ... ROLLBACK`**: הבדיקה העצמית עברה, ארבע
+הפעולות האסורות נחסמו, החותמת הראשונה נשמרה, ואחרי ה-rollback לא נשארו עמודות,
+טריגרים, פונקציות או שורות.
+
+**מה חסום ולמה, במדידה.** ריצת ה-E2E המלאה חסומה, ולא בגלל הקוד:
+‏`SUPABASE_SECRET_KEY` ב-`.env.local` הוא ה-JWT של `supabase-demo`, כלומר המפתח
+שמגיע עם `supabase start` מקומי, ולא מפתח של הפרויקט הזה. פוענח:
+‏`{"iss":"supabase-demo","role":"service_role"}`. מפתח ה-anon באותו קובץ **תקין**
+וזהה למה ש-`get_publishable_keys` מחזיר, ולכן כל מה שקורא בלבד עובד.
+‏`finalizeOrder` ו-`/checkout/return` עוברים דרך `createAdminClient()` ואין להם
+מסלול anon, כי הם כותבים חוצה-טבלאות בדיוק כדי לעקוף RLS. ‏MCP לא יכול להנפיק
+מפתח סודי, רק publishable. רק הדבקה מהדשבורד פותחת את זה.
+
+**שערים שכן נמדדו:** ‏`pnpm test` ‏**2411/2411 ירוקים** (193 קבצים),
+‏`pnpm type-check` נקי, ‏`pnpm lint` נקי כולל `gate:fees`.
+
 
 ### גל DB HARDENING (אושר 12.08, הוחל 19.08 דרך MCP apply_migration)
 
