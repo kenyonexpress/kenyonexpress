@@ -135,11 +135,19 @@ async function chargeSavedToken(args: {
 }): Promise<CheckoutActionResult<BeginCheckoutOutput>> {
   const { admin, tokenId, userId, orderId, amountAgorot, walletAppliedAgorot, now } = args
 
-  const { data: token } = await admin
+  const { data: token, error: tokenError } = await admin
     .from('payment_tokens')
     .select('id, cardcom_token, cardcom_account_id, expiry_month, expiry_year, profile_id')
     .eq('id', tokenId)
     .maybeSingle()
+  // A read that FAILED is not a card that is gone. Both used to arrive here as
+  // `token === null` and leave as NOT_FOUND, which tells a customer looking at
+  // their own saved card that it does not exist - the one message that makes
+  // deleting it the obvious next move.
+  if (tokenError) {
+    log.error('checkout.token_read_failed', { orderId, reason: tokenError.message })
+    return { ok: false, error: 'לא ניתן לאמת את הכרטיס השמור כרגע, נסו שוב', code: 'INTERNAL' }
+  }
   // Ownership is checked here rather than by RLS because this runs on the admin
   // client: a token id from another account must not be chargeable by guessing.
   if (!token || token.profile_id !== userId) {
@@ -285,23 +293,51 @@ async function runBeginCheckout(
   const admin = createAdminClient()
 
   if (input.address_id) {
-    const { data: address } = await admin
+    const { data: address, error: addressReadError } = await admin
       .from('user_addresses')
       .select('id, user_id')
       .eq('id', input.address_id)
       .maybeSingle()
+    // Separated from the ownership check below for the same reason as the card
+    // token: "we could not read it" and "it is not yours" are different answers,
+    // and only the second one should send the shopper back to pick an address.
+    if (addressReadError) {
+      log.error('checkout.address_read_failed', {
+        userId: user.id,
+        reason: addressReadError.message,
+      })
+      return { ok: false, error: 'לא ניתן לאמת את הכתובת כרגע, נסו שוב', code: 'INTERNAL' }
+    }
     if (!address || address.user_id !== user.id) {
       return { ok: false, error: 'כתובת לא תקינה', code: 'ADDRESS_REQUIRED' }
     }
   }
 
   // 2. Idempotent replay by client_ref
+  //
+  // A FAILED read here is the one that costs the most, because the whole
+  // purpose of this lookup is to notice that this client_ref has been through
+  // already. Swallowed, it read as "never seen" and the flow below went on to
+  // create a SECOND pending order and take a SECOND stock reservation for the
+  // same attempt, only to be stopped four statements later by
+  // `payments_idempotency_key_key` (UNIQUE, verified on the hosted schema) -
+  // and the shopper, whose first payment may have already succeeded, was told
+  // the payment could not be created. So this fails closed: retrying is safe
+  // precisely because the key is stable.
   const idempotencyKey = `lp:${input.client_ref}`
-  const { data: existingPayment } = await admin
+  const { data: existingPayment, error: existingPaymentError } = await admin
     .from('payments')
     .select('id, order_id, status, raw_response')
     .eq('idempotency_key', idempotencyKey)
     .maybeSingle()
+  if (existingPaymentError) {
+    log.error('checkout.replay_read_failed', {
+      userId: user.id,
+      idempotencyKey,
+      reason: existingPaymentError.message,
+    })
+    return { ok: false, error: 'לא ניתן לאמת את בקשת התשלום כרגע, נסו שוב', code: 'INTERNAL' }
+  }
   if (existingPayment) {
     const raw = existingPayment.raw_response as { redirect_url?: string } | null
     if (
@@ -325,12 +361,20 @@ async function runBeginCheckout(
 
   // 3. Settlement snapshot from product rows (never from the client)
   const productIds = [...new Set(cart.items.map((i) => i.product_id))]
-  const { data: productRows } = await admin
+  const { data: productRows, error: productRowsError } = await admin
     .from('products')
     .select(
       'id, type, is_coupon_enabled, supplier_id, platform_percent, supplier_split_percent, discount_percent, coupon_price_ils, cashback_percent',
     )
     .in('id', productIds)
+  // Fails closed either way - an empty map makes the loop below reject the
+  // first line - but on the wrong grounds: "מוצר בעגלה אינו קיים עוד" is a
+  // sentence about the catalogue, and a shopper who reads it clears the cart
+  // that was never the problem.
+  if (productRowsError) {
+    log.error('checkout.product_read_failed', { userId: user.id, reason: productRowsError.message })
+    return { ok: false, error: 'לא ניתן לטעון את פרטי המוצרים כרגע, נסו שוב', code: 'INTERNAL' }
+  }
   const productMap = new Map<string, SettlementProductRow>(
     (productRows ?? []).map((p) => [p.id, p as unknown as SettlementProductRow]),
   )
@@ -344,10 +388,31 @@ async function runBeginCheckout(
         .filter((id): id is string => typeof id === 'string'),
     ),
   ]
-  const { data: supplierRows } = await admin
+  const { data: supplierRows, error: supplierRowsError } = await admin
     .from('suppliers')
     .select('id, name, contact_phone, address, logo_url')
     .in('id', supplierIds.length > 0 ? supplierIds : ['00000000-0000-0000-0000-000000000000'])
+  // The only read in this function whose damage OUTLIVES the request. Every
+  // other one either fails the checkout or is corrected on the next load; this
+  // one is copied BY VALUE onto order_items and never joined back to, which is
+  // the whole point of a snapshot. Swallowed, an empty map is indistinguishable
+  // from a supplier with no details, so `supplierIdentityOf` fills in its
+  // documented id-only identity and the order is written - permanently - with
+  // no business name, phone or address on any line. The voucher the customer
+  // then holds does not say where to redeem it, and no later repair is possible
+  // because the correct values are exactly the ones that were never read.
+  //
+  // That id-only fallback stays, and stays right, for its own case: a supplier
+  // row that is genuinely blank. Missing and unreadable are different questions,
+  // and answering the second with the first is the mistake this whole family of
+  // fixes keeps finding.
+  if (supplierRowsError) {
+    log.error('checkout.supplier_read_failed', {
+      userId: user.id,
+      reason: supplierRowsError.message,
+    })
+    return { ok: false, error: 'לא ניתן לטעון את פרטי בתי העסק כרגע, נסו שוב', code: 'INTERNAL' }
+  }
   const supplierMap = new Map<string, SnapshotSupplierRow>(
     (supplierRows ?? []).map((s) => [s.id, s as unknown as SnapshotSupplierRow]),
   )
@@ -955,11 +1020,19 @@ async function runReconcileOrderReturn(orderId: string): Promise<ReturnReconcile
   if (!user) return { status: 'not_found' }
 
   const admin = createAdminClient()
-  const { data: order } = await admin
+  const { data: order, error: orderReadError } = await admin
     .from('orders')
     .select('id, user_id, status, paid_at')
     .eq('id', orderId)
     .maybeSingle()
+  // `not_found` here is not a message, it is `notFound()` in the page above -
+  // a hard 404 shown to someone who has just been charged. A failed read is
+  // answered `pending` instead, which is both the honest answer and a recovering
+  // one: that branch renders AutoRefresh, so the next poll re-reads.
+  if (orderReadError) {
+    log.error('checkout.return_order_read_failed', { orderId, reason: orderReadError.message })
+    return { status: 'pending', order_id: orderId, reason: 'order read failed' }
+  }
   if (!order || order.user_id !== user.id) return { status: 'not_found' }
   if (order.paid_at || order.status === 'paid') return { status: 'paid', order_id: order.id }
   if (order.status !== 'pending') {
@@ -975,7 +1048,7 @@ async function runReconcileOrderReturn(orderId: string): Promise<ReturnReconcile
   )
   // Runtime-built select: the client cannot infer the row shape, hence the cast.
   const paymentSelect = `id, status, ${money.amountColumn}, cardcom_low_profile_id, cardcom_account_id`
-  const { data: paymentRow } = await admin
+  const { data: paymentRow, error: paymentReadError } = await admin
     .from('payments')
     .select(paymentSelect)
     .eq('order_id', order.id)
@@ -983,6 +1056,17 @@ async function runReconcileOrderReturn(orderId: string): Promise<ReturnReconcile
     .order('created_at', { ascending: false })
     .limit(1)
     .maybeSingle()
+  // Same outward answer as "no payment row yet", on purpose - but reached
+  // deliberately and with a line in the log, so a terminal that is never
+  // verified because this read keeps failing is visible as something other than
+  // a slow customer.
+  if (paymentReadError) {
+    log.error('checkout.return_payment_read_failed', {
+      orderId: order.id,
+      reason: paymentReadError.message,
+    })
+    return { status: 'pending', order_id: order.id, reason: 'payment read failed' }
+  }
   const payment = paymentRow as unknown as {
     id: string
     status: string

@@ -29,7 +29,7 @@ import { describe, expect, it } from 'vitest'
  * for 42P01 on a database where migration 107 is unapplied. A blanket ban would
  * have to be argued down in each of those, every time.
  *
- * SO THIS IS NOT A CLAIM THAT THE 80 BELOW ARE CORRECT. It is the claim that
+ * SO THIS IS NOT A CLAIM THAT THE ONES BELOW ARE CORRECT. It is the claim that
  * they are the ones that exist TODAY, all of them known, none of them new. A
  * number that goes UP is a discarded error nobody looked at. A number that goes
  * DOWN is a fix, and lowering the entry here is how it is recorded.
@@ -83,7 +83,6 @@ const INVENTORY: Record<string, number> = {
   'src/server/actions/gifts.ts': 2,
   'src/server/actions/newsletter.ts': 2,
   'src/server/actions/orders.ts': 1,
-  'src/server/actions/payments/checkout.ts': 7,
   'src/server/actions/payments/refund.ts': 6,
   'src/server/domain/vouchers/issue.ts': 1,
   'src/server/payments/finalize.ts': 6,
@@ -147,8 +146,12 @@ describe('reads that discard their error', () => {
   it('finds the discards it is counting, so a rename cannot empty this test', () => {
     // Without this the suite would pass just as happily if the regex stopped
     // matching anything at all - which is how a guard becomes decoration.
-    expect(COUNTS.size).toBeGreaterThan(30)
-    expect([...COUNTS.values()].reduce((a, b) => a + b, 0)).toBeGreaterThan(70)
+    // The floor sits well under the current total on purpose. It is here to
+    // catch a regex that stopped matching, not to be re-tuned every time an
+    // entry is fixed - a guard that has to be edited to let a fix through is a
+    // guard people learn to edit without reading.
+    expect(COUNTS.size).toBeGreaterThan(20)
+    expect([...COUNTS.values()].reduce((a, b) => a + b, 0)).toBeGreaterThan(20)
   })
 
   it('does not match a read that names its error', () => {
