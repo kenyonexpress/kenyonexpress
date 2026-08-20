@@ -1,3 +1,4 @@
+import { makeTracesSampler, serverTracesSampleRate } from '@/lib/monitoring/tracing'
 import * as Sentry from '@sentry/nextjs'
 
 /**
@@ -12,7 +13,11 @@ Sentry.init({
   dsn: process.env.SENTRY_DSN,
   environment: process.env.SENTRY_ENVIRONMENT ?? process.env.NODE_ENV,
   release: process.env.SENTRY_RELEASE ?? process.env.VERCEL_GIT_COMMIT_SHA,
-  tracesSampleRate: 0,
+  // Same knob as the Node runtime, deliberately: the edge span and the node
+  // span belong to ONE request, and two different rates would keep one end of
+  // half the traces. `tracing.ts` carries the reasoning.
+  tracesSampleRate: serverTracesSampleRate(),
+  tracesSampler: makeTracesSampler(serverTracesSampleRate()),
   sendDefaultPii: false,
   beforeSend(event) {
     if (event.request?.headers) event.request.headers = {}

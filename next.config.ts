@@ -3,6 +3,7 @@ import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 import createNextIntlPlugin from 'next-intl/plugin'
 import { REMOTE_IMAGE_PATTERNS } from './src/lib/images/remote-hosts'
+import { clientTracesSampleRate } from './src/lib/monitoring/tracing'
 import { PAYMENT_FRAME_PATHS, contentSecurityPolicyFor } from './src/lib/security/frame-policy'
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
@@ -166,15 +167,23 @@ const nextConfig: NextConfig = {
      * ZERO bytes, because no replay integration is imported anywhere; they are
      * left out rather than kept as decoration.
      *
-     * `__SENTRY_TRACING__: false` is safe because tracing is off by decision in
-     * all three runtimes: `tracesSampleRate: 0` in instrumentation-client.ts,
-     * sentry.server.config.ts and sentry.edge.config.ts. Turn any of those up
-     * and this flag has to come out first, or the spans are shaken out of the
-     * build and the sample rate silently governs nothing.
+     * `__SENTRY_TRACING__` USED TO BE A HARD `false` HERE, with a note saying
+     * that turning any runtime's sample rate up meant taking this flag out
+     * first, "or the spans are shaken out of the build and the sample rate
+     * silently governs nothing". That note was right and it described a trap
+     * nobody would spring on purpose: the rate is now an environment variable,
+     * so the person raising it is not reading this file at all.
+     *
+     * So the flag follows the rate instead of contradicting it. A build with no
+     * `NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE` keeps every byte the measurement
+     * above bought (53322 of client JS, largest chunk 434316 -> 381140); a
+     * build that asks for traces ships the span code that makes them possible.
+     * The client variable is the one read here because this define governs the
+     * CLIENT bundle, which is where those bytes are.
      */
     define: {
       __SENTRY_DEBUG__: false,
-      __SENTRY_TRACING__: false,
+      __SENTRY_TRACING__: clientTracesSampleRate() > 0,
     },
   },
   experimental: {

@@ -1,3 +1,4 @@
+import { clientTracesSampleRate, makeTracesSampler } from '@/lib/monitoring/tracing'
 import * as Sentry from '@sentry/nextjs'
 
 /**
@@ -13,7 +14,18 @@ Sentry.init({
   environment: process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT ?? process.env.NODE_ENV,
   release: process.env.NEXT_PUBLIC_SENTRY_RELEASE,
 
-  tracesSampleRate: 0,
+  /**
+   * Browser traces: pageload and navigation timings, and the fetches a page
+   * makes. Off unless NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE says otherwise,
+   * for the volume reason set out in lib/monitoring/tracing.ts.
+   *
+   * This is the half of tracing that Speed Insights does not cover. Speed
+   * Insights reports Web Vitals per route -- what the distribution looks like;
+   * a trace says which request inside one slow session was the one that took
+   * the time.
+   */
+  tracesSampleRate: clientTracesSampleRate(),
+  tracesSampler: makeTracesSampler(clientTracesSampleRate()),
   // Session replay is off. It records the DOM, and this DOM contains addresses,
   // order contents and a voucher QR; shipping that to a third party is a
   // privacy decision nobody has taken.

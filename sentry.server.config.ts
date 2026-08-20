@@ -1,3 +1,4 @@
+import { makeTracesSampler, serverTracesSampleRate } from '@/lib/monitoring/tracing'
 import { redact } from '@/lib/observability/scrub'
 import * as Sentry from '@sentry/nextjs'
 
@@ -16,9 +17,24 @@ Sentry.init({
   // fallback keeps a self-hosted build from reporting no release at all.
   release: process.env.SENTRY_RELEASE ?? process.env.VERCEL_GIT_COMMIT_SHA,
 
-  // Off. Tracing is high-volume by nature and this project is one operator with
-  // a phone: what is wanted is every error, not a sample of every request.
-  tracesSampleRate: 0,
+  /**
+   * Performance traces, at whatever rate this deployment asked for.
+   *
+   * This was a hard `0` with a note saying tracing is high-volume by nature and
+   * that what is wanted is every error rather than a sample of every request.
+   * The first half is still true, which is why the default is still off and why
+   * `makeTracesSampler` drops cron, health and the Sentry tunnel before the
+   * rate is even consulted -- those are polled forever and are not a customer
+   * waiting for a page. The second half was a false choice: errors are
+   * unsampled regardless of this number, and a trace is the only thing that
+   * answers "the checkout took eleven seconds, where did they go".
+   *
+   * `SENTRY_TRACES_SAMPLE_RATE` unset means 0, so tests, CI and a laptop are
+   * unchanged. Raising it needs no deploy; note that the BUILD has to have
+   * tracing on too, or the spans were shaken out (see next.config.ts).
+   */
+  tracesSampleRate: serverTracesSampleRate(),
+  tracesSampler: makeTracesSampler(serverTracesSampleRate()),
 
   // Never. PII here would be customer emails and addresses in a third-party
   // system, and the money path already carries everything an investigation
