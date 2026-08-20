@@ -1,4 +1,5 @@
 import { safeNextPath } from '@/lib/auth/safe-next'
+import { rotateSessionAfterLogin } from '@/lib/auth/session-rotation'
 import { GUEST_SESSION_COOKIE, parseGuestSessionToken } from '@/lib/cart/guest-session'
 import { createClient } from '@/lib/supabase/server'
 import { mergeGuestCart } from '@/server/actions/cart'
@@ -26,8 +27,11 @@ export async function GET(request: NextRequest) {
         // Before the cookie is cleared: this is the last moment the guest id
         // and the user id are both known.
         await linkAnalyticsIdentity(session.user.id, sessionId)
-        cookieStore.delete(GUEST_SESSION_COOKIE)
       }
+      // Clears the guest id -- unconditionally, so a planted one with no cart
+      // behind it does not survive the login -- and spends the refresh token
+      // this exchange just produced for a fresh pair.
+      await rotateSessionAfterLogin(supabase)
       return NextResponse.redirect(new URL(safeNext, origin))
     }
   }

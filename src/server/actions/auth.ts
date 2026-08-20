@@ -12,7 +12,8 @@ import {
   toE164Israeli,
 } from '@/lib/auth/phone-otp'
 import { safeNextPath } from '@/lib/auth/safe-next'
-import { GUEST_SESSION_COOKIE, getGuestSessionId } from '@/lib/cart/guest-session'
+import { rotateSessionAfterLogin } from '@/lib/auth/session-rotation'
+import { getGuestSessionId } from '@/lib/cart/guest-session'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
@@ -26,7 +27,6 @@ import {
   signupSchema,
 } from '@/lib/validations/auth'
 import { mergeGuestCart } from '@/server/actions/cart'
-import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 export type AuthState = { error: string } | { success: string } | null
@@ -89,9 +89,11 @@ async function runSignInWithEmail(_: AuthState, formData: FormData): Promise<Aut
   const sessionId = await getGuestSessionId()
   if (signInData.user && sessionId) {
     await mergeGuestCart(supabase, signInData.user.id, sessionId)
-    const cookieStore = await cookies()
-    cookieStore.delete(GUEST_SESSION_COOKIE)
   }
+
+  // After the merge, which is the last thing that needs the guest id, and
+  // before the redirect, which is the last chance to write a cookie.
+  await rotateSessionAfterLogin(supabase)
 
   redirect(safeNext(formData.get('next')))
 }
@@ -281,9 +283,8 @@ async function runVerifyPhoneOtp(_: AuthState, formData: FormData): Promise<Auth
   const sessionId = await getGuestSessionId()
   if (data.user && sessionId) {
     await mergeGuestCart(supabase, data.user.id, sessionId)
-    const cookieStore = await cookies()
-    cookieStore.delete(GUEST_SESSION_COOKIE)
   }
+  await rotateSessionAfterLogin(supabase)
 
   // A phone-only account has no profile row, because the trigger that creates
   // one keys off the email. Written here so the rest of the site - which reads
