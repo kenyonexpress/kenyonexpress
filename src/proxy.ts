@@ -1,3 +1,4 @@
+import { consumeRateLimit } from '@/lib/auth/edge-rate-limit'
 import { GUEST_SESSION_COOKIE, guestSessionCookieOptions } from '@/lib/cart/guest-session-cookie'
 import { REQUEST_ID_HEADER, resolveRequestId } from '@/lib/observability/request-id'
 import { isPaymentFramePath } from '@/lib/security/frame-policy'
@@ -80,6 +81,24 @@ export async function proxy(request: NextRequest) {
       url.search = ''
       return withRequestId(NextResponse.redirect(url, 301), requestId)
     }
+  }
+
+  // Per-IP limiting, ABOVE the session refresh and below the redirect lookup.
+  //
+  // The position is the feature. `supabase.auth.getUser()` is a network round
+  // trip to the auth server on every request; a credential-stuffing run that
+  // gets counted after it has already paid for one has been limited in name
+  // only. Refused here, the ten thousandth attempt costs one Redis INCR.
+  //
+  // Below the redirect lookup because that lookup is cached and answers retired
+  // WordPress URLs, which are not the traffic this is aimed at.
+  const verdict = await consumeRateLimit(pathname, request.method, request.headers)
+  if (verdict && !verdict.allowed) {
+    const response = NextResponse.json(
+      { ok: false, error: 'rate_limited' },
+      { status: 429, headers: { 'Retry-After': String(verdict.resetSeconds) } },
+    )
+    return withRequestId(response, requestId)
   }
 
   let supabaseResponse = forward(request, requestId)

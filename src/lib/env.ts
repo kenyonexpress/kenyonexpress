@@ -30,6 +30,14 @@ const schema = z
     CRON_SECRET: z.string().optional(),
     SENTRY_DSN: z.string().url().optional().or(z.literal('')),
 
+    // Edge rate limiting (src/lib/auth/edge-rate-limit.ts). Optional, and NOT
+    // in the production required list below: adding it there would refuse to
+    // boot a deploy that is otherwise healthy, over a limiter that fails open
+    // by design. Their absence in production is reported at first use instead,
+    // because the fallback is per-instance memory and is not a rate limit.
+    UPSTASH_REDIS_REST_URL: z.string().url().optional(),
+    UPSTASH_REDIS_REST_TOKEN: z.string().min(10).optional(),
+
     /** See the superRefine below. Only ever "true" on a developer's machine. */
     ALLOW_INCOMPLETE_ENV: z.string().optional(),
   })
