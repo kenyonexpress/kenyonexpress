@@ -1,0 +1,160 @@
+-- ============================================================================
+-- PENDING 127: take `check_rate_limit` off the public API surface
+-- ============================================================================
+-- STATUS: DRAFT, NOT APPLIED. Requires Ofir's explicit approval, then MCP
+-- apply_migration. Never `db push`.
+--
+-- ⚠️ THIS FILE HAS A DEPLOY ORDER AND IT IS ONE-WAY. See "ORDER" below before
+--    applying it. Applying it ahead of the code turns off every rate limit in
+--    the application, silently.
+--
+-- ----------------------------------------------------------------------------
+-- THE HOLE, MEASURED AGAINST PRODUCTION `ixvwfbuvfxxsjiywhbbb` ON 2026-08-21
+-- ----------------------------------------------------------------------------
+--
+--   proname            prosecdef  acl
+--   check_rate_limit   true       postgres=X | anon=X | authenticated=X | service_role=X
+--
+-- `anon` holds EXECUTE. The publishable key that reaches that role is public by
+-- definition - it ships in the browser bundle - so the function is callable by
+-- anyone, from anywhere:
+--
+--   POST /rest/v1/rpc/check_rate_limit
+--   { "p_key": "phone-otp-number:+972500000000",
+--     "p_max_attempts": 1, "p_window_seconds": 3600 }
+--
+-- Two things follow from the body, which was read from production rather than
+-- assumed:
+--
+--   1. `p_key` is inserted verbatim. It is the WHOLE identity of a bucket, and
+--      the caller chooses it.
+--   2. The counter is incremented in the INSERT ... ON CONFLICT, and only then
+--      compared to `p_max_attempts`. So the caller's limit argument changes the
+--      answer they get and NOT the state that is stored. Spending someone
+--      else's budget does not require guessing the limit the app uses.
+--
+-- Every key in the application is guessable, because they are all built from
+-- an identifier the attacker already has. From `src/`:
+--
+--   login:<ip>                    10 / 1h     phone-otp-number:<e164>    5 / 1h
+--   login-account:<email>         20 / 1h     phone-otp:<ip>             5 / 1h
+--   reset-address:<email>          5 / 1h     reset:<ip>                 5 / 1h
+--   signup:<ip>                    5 / 1h     magic:<ip>                 5 / 1h
+--   contact:<ip>                   5 / 1h     newsletter:<ip>            5 / 1h
+--   supplier-lead:<ip>             5 / 1h     cart_write:user:<uuid>   120 / 1h
+--   begin_checkout:user:<uuid>    10 / 60s    staff-pin:<uuid>          15 / 1h
+--
+-- Five unauthenticated calls therefore lock a known phone number out of OTP
+-- sign-in for an hour; ten lock an IP out of logging in; ten lock a known user
+-- out of starting a checkout. The same call is also an unbounded INSERT of
+-- attacker-chosen rows into `public.rate_limits`, which has RLS on and no
+-- policy precisely because no client is supposed to write to it - the SECURITY
+-- DEFINER function is the way in that RLS cannot see.
+--
+-- This is a denial of service against named users, not a data breach. It is
+-- worth fixing because the fix costs nothing: nothing legitimate calls this
+-- function as `anon` or `authenticated`.
+--
+-- ----------------------------------------------------------------------------
+-- WHY THE GRANT EXISTED, AND WHY IT NO LONGER NEEDS TO
+-- ----------------------------------------------------------------------------
+--
+-- `src/lib/utils/rate-limit.ts` called the RPC through `createClient()`, the
+-- cookie-bound server client. That client authenticates as `anon` for a guest
+-- and `authenticated` for a signed-in user, so the grant was load-bearing even
+-- though every caller of `checkRateLimit` is server-side - 30 callsites, all of
+-- them server actions or route handlers, none of them a client component.
+--
+-- The paired commit moves both limiters to `createAdminClient()`, the
+-- service-role client. `service_role` already has EXECUTE (see the acl above),
+-- and `src/lib/health/checks.ts` has been calling this exact function on that
+-- exact client all along, so this path is not a new one - it is the one the
+-- health probe already proves works.
+--
+-- ----------------------------------------------------------------------------
+-- ORDER. READ THIS ONE.
+-- ----------------------------------------------------------------------------
+--
+--   1. Deploy `src/lib/utils/rate-limit.ts` on the service-role client.
+--   2. THEN apply this migration.
+--
+-- Backwards, the still-deployed code calls the RPC as `anon`, gets 42501, and
+-- hits the fail-open branch that both limiters have had since they were
+-- written:
+--
+--     if (error) { log.error(...); return true }
+--
+-- The site keeps serving, every limit is off, and the only trace is one log
+-- line per request. `src/lib/utils/rate-limit.test.ts` pins the client choice
+-- so step 1 cannot be quietly reverted afterwards; `/api/health` reports
+-- `rate_limiter: down` if the function itself ever goes missing.
+--
+-- ============================================================================
+
+-- ---------------------------------------------------------------------------
+-- 1. The revoke
+-- ---------------------------------------------------------------------------
+-- PUBLIC is named alongside the two roles even though the acl above shows it is
+-- not currently granted: a REVOKE of only the named roles would leave a PUBLIC
+-- grant behind them if one is ever added, which is the shape of fix that looks
+-- applied and is not. It is a no-op today and cheap insurance tomorrow.
+--
+-- service_role is untouched. It is the only caller left.
+
+REVOKE EXECUTE ON FUNCTION public.check_rate_limit(text, integer, integer)
+  FROM PUBLIC, anon, authenticated;
+
+-- `check_user_rate_limit` is deliberately absent from this file: it is ALREADY
+-- service_role-only in production (`postgres=X | service_role=X`), which is why
+-- the helper that called it on the cookie-bound client could never have worked.
+-- Measured 2026-08-21; nothing to revoke.
+
+-- ============================================================================
+-- VERIFICATION (after applying)
+-- ============================================================================
+--
+-- 1. The grant is gone. Expect anon and authenticated to be absent from the
+--    acl, and service_role to remain:
+--
+--      SELECT p.proname, array_to_string(p.proacl, ' | ') AS acl
+--        FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+--       WHERE n.nspname = 'public' AND p.proname = 'check_rate_limit';
+--
+-- 2. The advisor drops by exactly two, one per role, and NOTHING else moves:
+--
+--      anon_security_definer_function_executable           4 -> 3
+--      authenticated_security_definer_function_executable 20 -> 19
+--
+-- 3. The limiter still limits. This is the one that matters, because the
+--    failure mode of getting the order wrong is a limiter that is off and
+--    quiet, so the absence of an error proves nothing - only a refusal does.
+--    `/api/search` is the cheapest route with a limit (`search:<ip>`, 120 per
+--    300s) and it is a GET, so it can be driven from a shell:
+--
+--      for i in $(seq 1 130); do curl -s -o /dev/null -w '%{http_code} ' \
+--        "$SITE/api/search?q=test" ; done; echo
+--      # expect 200s, then 429 once the 120 in the window are spent
+--
+--    Then confirm the counter is being written BY THE SERVER and keyed on the
+--    proxy's address, not on something the caller chose:
+--
+--      SELECT key, attempts FROM public.rate_limits
+--       WHERE key LIKE 'search:%' ORDER BY window_start DESC LIMIT 5;
+--
+-- 4. The hole is closed. From a plain shell with only the publishable key:
+--
+--      curl -s -X POST "$SUPABASE_URL/rest/v1/rpc/check_rate_limit" \
+--        -H "apikey: $NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY" \
+--        -H 'content-type: application/json' \
+--        -d '{"p_key":"probe:127","p_max_attempts":1,"p_window_seconds":60}'
+--      # expect 42501 / "permission denied for function check_rate_limit"
+--      # and NO new row: SELECT * FROM public.rate_limits WHERE key='probe:127';
+--
+-- ROLLBACK
+--
+--   GRANT EXECUTE ON FUNCTION public.check_rate_limit(text, integer, integer)
+--     TO anon, authenticated;
+--
+--   Rolling back is safe in either code state, which is the asymmetry that
+--   makes the order above the careful direction.
+-- ============================================================================

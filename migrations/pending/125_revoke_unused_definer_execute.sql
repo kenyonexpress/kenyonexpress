@@ -1,5 +1,5 @@
 -- ============================================================================
--- PENDING 125: revoke EXECUTE on the six SECURITY DEFINER functions that
+-- PENDING 125: revoke EXECUTE on the five SECURITY DEFINER functions that
 --              nothing reachable calls
 -- ============================================================================
 -- STATUS: DRAFT, NOT APPLIED. Requires Ofir's explicit approval, then MCP
@@ -41,9 +41,10 @@
 -- WHAT THIS IS
 -- ----------------------------------------------------------------------------
 --
--- The six functions measured to have NO reachable caller at all. For each:
--- zero RLS policy references, zero view references, zero calls from any other
--- function, and zero rpc() callsites in src/.
+-- The functions measured to have NO reachable caller at all. For each: zero RLS
+-- policy references, zero view references, zero calls from any other function,
+-- and zero rpc() callsites in src/. That last clause is where this measurement
+-- was wrong for one row; see WITHDRAWAL below.
 --
 --   MEASURED 2026-08-19, project ixvwfbuvfxxsjiywhbbb:
 --
@@ -52,7 +53,7 @@
 --   fn_ensure_referral_code(uuid)    0         0       0      0
 --   fn_wallet_cashback_amount(...)   0         0       0      0
 --   fn_wallet_cashback_percent(...)  0         0       0      0
---   supplier_app_context()           0         0       0      0
+--   supplier_app_context()           0         0       0      0  <- WRONG, see below
 --   voucher_success_payload(v)       1         0       0      0
 --
 -- voucher_success_payload's single caller is itself SECURITY DEFINER, so the
@@ -61,14 +62,17 @@
 -- averaged away. If that assumption is wrong, this file's rollback is one
 -- statement and the failure is a 42501 on a path nothing currently takes.
 --
--- Effect: 6 of 39 WARN advisors clear. No reachable code path changes.
+-- Effect: 5 of the 24 WARN advisors clear. No reachable code path changes.
+-- (39 was the count on 19.08; re-measured 21.08 it is 24 - 4 anon, 20
+--  authenticated. Nothing was applied in between; earlier cycles' work on
+--  views and grants moved it.)
 --
 -- ----------------------------------------------------------------------------
 -- PRIORITY CORRECTION, added 2026-08-20 by a verification cycle
 -- ----------------------------------------------------------------------------
 --
--- Everything above frames these six as least-privilege hygiene: unused, so
--- revoke. That is true of five of them. It UNDERSTATES the third one, and the
+-- Everything above frames these as least-privilege hygiene: unused, so revoke.
+-- That is true of most of them. It UNDERSTATES the third one, and the
 -- difference decides whether this file waits or goes in.
 --
 --   fn_ensure_referral_code(p_user_id uuid) never looks at auth.uid().
@@ -106,6 +110,68 @@
 -- If these three are ever re-granted, the GRANT must be paired with an
 -- `IF p_user_id <> auth.uid() THEN RAISE` guard inside each body, or the same
 -- hole returns with the grant.
+--
+-- ----------------------------------------------------------------------------
+-- WITHDRAWAL, 2026-08-21: supplier_app_context() IS CALLED. IT BREAKS THE TILL.
+-- ----------------------------------------------------------------------------
+--
+-- The sixth revoke has been REMOVED from this file. It was not unused, and the
+-- measurement that said it was is the one sentence above that named its own
+-- blind spot:
+--
+--     "zero rpc() callsites in src/."
+--
+-- src/ is not the whole repo. The supplier till is an Expo app in a workspace
+-- package, and it is the only caller:
+--
+--     apps/mobile/src/lib/supplier/api.ts:64
+--       const { data, error } = await supabase.rpc('supplier_app_context')
+--
+-- That client is `createClient(SUPABASE_URL, SUPABASE_ANON_KEY)` with the
+-- cashier's session in SecureStore (apps/mobile/src/lib/supabase.ts:34), so the
+-- call arrives as `authenticated` and needs exactly the grant this file was
+-- about to take away. `loadSupplierContext()` returns null on error, and the
+-- screen that gates scanning on it would have concluded the device belongs to
+-- no supplier. Every till in the field would have stopped scanning, at once,
+-- with no error anywhere in the web app's logs.
+--
+-- The function is also not in the same class as the other five in any case: it
+-- derives everything from auth.uid() and takes no arguments, which is the
+-- correct shape described above, not the fn_ensure_referral_code shape.
+--
+-- The general lesson, which is worth more than this one row: a grant audit that
+-- greps `src/` measures the website. This repo has two Supabase clients.
+--
+-- ----------------------------------------------------------------------------
+-- PROMOTION, same date: voucher_success_payload is not hygiene either
+-- ----------------------------------------------------------------------------
+--
+-- The remaining five keep their revokes, but the last one is understated in the
+-- same way fn_ensure_referral_code was, and it is now PROVEN rather than argued.
+-- It takes a whole `vouchers` row as its argument, so the caller supplies the
+-- row - including `user_id` - and the function then reads
+--
+--     (SELECT pr.full_name FROM public.profiles pr WHERE pr.id = v.user_id)
+--
+-- as the definer. PostgREST builds that composite from a JSON object, so a
+-- signed-in user needs nothing but a victim's profile uuid.
+--
+-- RUN AGAINST PRODUCTION 2026-08-21, read-only, as role `authenticated` with no
+-- JWT (so auth.uid() is NULL and every profiles policy denies):
+--
+--     SET LOCAL ROLE authenticated;
+--     SELECT count(*) FROM public.profiles WHERE id = <victim>;
+--       -> 0 rows                                    (RLS refuses, as designed)
+--     SELECT public.voucher_success_payload(
+--              jsonb_populate_record(NULL::public.vouchers,
+--                                    jsonb_build_object('user_id', <victim>))
+--            ) ->> 'customer_name';
+--       -> the victim's full_name                    (RLS bypassed)
+--
+-- So this is a live, reachable disclosure of another person's name today, not a
+-- dead grant. It is bounded the same way the referral one is - the caller must
+-- already hold the uuid, and a name is not money - but it is the reason this
+-- file should not sit indefinitely.
 -- ============================================================================
 
 -- ---------------------------------------------------------------------------
@@ -131,8 +197,7 @@ REVOKE EXECUTE ON FUNCTION public.fn_wallet_cashback_amount(uuid, numeric, uuid[
 REVOKE EXECUTE ON FUNCTION public.fn_wallet_cashback_percent(uuid, numeric, uuid[])
   FROM PUBLIC, anon, authenticated;
 
-REVOKE EXECUTE ON FUNCTION public.supplier_app_context()
-  FROM PUBLIC, anon, authenticated;
+-- supplier_app_context() deliberately absent. See WITHDRAWAL above.
 
 REVOKE EXECUTE ON FUNCTION public.voucher_success_payload(public.vouchers)
   FROM PUBLIC, anon, authenticated;
@@ -141,8 +206,10 @@ REVOKE EXECUTE ON FUNCTION public.voucher_success_payload(public.vouchers)
 -- VERIFICATION (after applying)
 -- ============================================================================
 --
--- 1. The grants are gone. Expect six rows, all with an empty acl for anon and
---    authenticated:
+-- 1. The grants are gone. Expect SIX rows back but only FIVE changed: the
+--    sixth, supplier_app_context, must still show `authenticated=X` because it
+--    is the till app's and this file no longer touches it. It is kept in the
+--    query on purpose, as the check that the withdrawal held:
 --
 --      SELECT p.proname,
 --             pg_catalog.array_to_string(p.proacl, E'\n') AS acl
@@ -154,9 +221,12 @@ REVOKE EXECUTE ON FUNCTION public.voucher_success_payload(public.vouchers)
 --                           'supplier_app_context','voucher_success_payload');
 --
 -- 2. The advisor count drops by exactly six, and NOT more. Re-run
---    get_advisors(type='security') and confirm:
---      anon_security_definer_function_executable          4  -> 4   (unchanged)
---      authenticated_security_definer_function_executable 22 -> 16
+--    get_advisors(type='security') and confirm, against the 21.08 baseline:
+--      anon_security_definer_function_executable           4 -> 4   (unchanged)
+--      authenticated_security_definer_function_executable 20 -> 15
+--
+--    Five, not six. If it drops to 14 then supplier_app_context lost its grant
+--    after all and the till is down.
 --
 --    If `anon` moved at all, something in this file hit a function the audit
 --    said was anon-callable, and it should be rolled back and re-measured.
@@ -167,6 +237,9 @@ REVOKE EXECUTE ON FUNCTION public.voucher_success_payload(public.vouchers)
 --      - a voucher scan                /api/supplier/vouchers/redeem
 --      - a guest search (anon rate limiting)
 --      - the checkout success page (voucher payload rendering)
+--      - THE TILL APP'S FIRST SCREEN. apps/mobile calls supplier_app_context on
+--        the cashier's own session; if it shows "no supplier" this file took a
+--        grant it was not supposed to.
 --
 -- ROLLBACK
 --
@@ -174,6 +247,6 @@ REVOKE EXECUTE ON FUNCTION public.voucher_success_payload(public.vouchers)
 --   GRANT EXECUTE ON FUNCTION public.fn_ensure_referral_code(uuid)                   TO anon, authenticated;
 --   GRANT EXECUTE ON FUNCTION public.fn_wallet_cashback_amount(uuid, numeric, uuid[]) TO anon, authenticated;
 --   GRANT EXECUTE ON FUNCTION public.fn_wallet_cashback_percent(uuid, numeric, uuid[]) TO anon, authenticated;
---   GRANT EXECUTE ON FUNCTION public.supplier_app_context()                          TO anon, authenticated;
+--   -- supplier_app_context is not revoked here, so it has nothing to roll back.
 --   GRANT EXECUTE ON FUNCTION public.voucher_success_payload(public.vouchers)         TO anon, authenticated;
 -- ============================================================================

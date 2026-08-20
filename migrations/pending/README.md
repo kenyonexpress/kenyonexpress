@@ -75,7 +75,7 @@ and deliberately not across the schema: `authenticated` legitimately writes to
 carts, addresses and profiles, and a blanket revoke would break the storefront
 while the RLS policies above it kept passing.
 
-## All twelve files here are genuinely unapplied
+## All thirteen files here are genuinely unapplied
 
 Checked object by object against production, not assumed from this file: none of
 `payment_events`, `refunds`, `search_index_outbox`, `supplier_branches`,
@@ -83,6 +83,45 @@ Checked object by object against production, not assumed from this file: none of
 `order_items.delivered_at` or `products.whatsapp_enabled`; and none of the six
 guard functions in `007` is defined. `expire_vouchers` does exist, which is
 expected: `004` replaces it rather than creating it.
+
+`127_revoke_check_rate_limit_execute.sql` was added on 21.08 and is unapplied
+like the rest. Measured before writing: `check_rate_limit` is SECURITY DEFINER
+with `anon=X | authenticated=X | service_role=X`, its `p_key` argument is
+caller-supplied and inserted verbatim, and the counter increments before the
+limit is compared. So anyone holding the publishable key can spend any bucket:
+five calls on `phone-otp-number:<e164>` lock a real person out of OTP sign-in
+for an hour. **It has a deploy order and the file says so in a banner** - the
+`src/lib/utils/rate-limit.ts` change to the service-role client must be live
+before the revoke is applied, or the limiters hit their fail-open branch and
+every limit in the app goes off silently.
+
+## The audit that produced `125` measured the wrong tree
+
+`125` was written to revoke six functions "with zero rpc() callsites in src/".
+There are two Supabase clients in this repo. The supplier till is an Expo app at
+`apps/mobile`, it uses the anon key with the cashier's session in SecureStore,
+and `apps/mobile/src/lib/supplier/api.ts:64` calls `supplier_app_context` - one
+of the six. Applying `125` as written would have stopped every till from
+scanning at once, with nothing in the web app's logs, because
+`loadSupplierContext()` returns null on error and the screen reads null as "this
+device belongs to no supplier".
+
+That revoke has been **removed from `125`** and the file now carries the
+withdrawal and the reason. Two things came out of it worth keeping:
+
+- **A grant audit that greps `src/` measures the website, not the product.**
+- `voucher_success_payload`, which stays in `125`, is not the hygiene item the
+  file called it. It takes a whole `vouchers` row as its argument, so the caller
+  chooses `user_id`, and it then reads `profiles.full_name` as the definer.
+  Proven read-only against production on 21.08 as role `authenticated`: a direct
+  `SELECT` of the victim's profile returns **0 rows** and the same session gets
+  their name back through the function. That is a live RLS bypass, not a dead
+  grant.
+
+`src/__tests__/revoked-functions-have-no-callers.test.ts` re-derives the revoke
+list from this directory and checks it against every `.ts`/`.tsx` file in both
+`src/` and `apps/`, so the next revoke of a mobile-only function fails a test
+instead of a till.
 
 `src/__tests__/pending-migrations-inventory.test.ts` now keeps this section
 honest. It lives under `src/` because that is the only tree vitest is
