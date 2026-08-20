@@ -74,3 +74,22 @@ D12. Pixel gate: 11% hard gate for all pages; push toward 7% only after step 26 
 (27) MERGE NIGHT BRANCHES: merge into the working branch, in order, resolving conflicts with tests green after each: feat/voucher-redemption, feat/account-wallet, feat/supplier-portal, docs/architecture-night, test/e2e-full, ci/foundation-v2, feat/seed-data, feat/email-templates, feat/legal-pages (skip any branch that does not exist). Delete merged branches local+remote. Update the 4 open PRs: merge or close each with a one-line reason.
 (28) AFFILIATES WAVE: implement per docs/ARCHITECTURE-AFFILIATES-REFERRALS.md if it exists, else design minimal: affiliate links with tracking, admin-set percent, credit to internal wallet only (never cash out), /affiliate dashboard, refer-a-friend dual cashback, anti-fraud (self-referral block). MCP migrations only. Tests.
 (29) WHATSAPP-BUTTON + GEO VERIFY: confirm floating WhatsApp with supplier number renders on every product page, Waze deep-link works on every supplier block, near-me filter functional. Fix gaps. compare.mjs stays under gates.
+
+[D17-FINAL] Pixel truth source = kenyonexpress.co.il LIVE SITE. refs/ke_live_singlefile.html is the reference. compare.mjs measures against it. Electro home-v7 = structural inspiration only, not pixel target.
+
+(30-PRIORITY) REORDER QUEUE: execute in this exact sequence:
+A. Steps 10-13 (DB Hardening + Auth + Payments + Vouchers)
+B. Step 27 (merge all night branches)
+C. Steps 14-22 (WhatsApp, Geo, WP, Account, Supplier, Emails, Legal)
+D. Step 23 (Pixel wave — LAST code wave, against live site)
+E. Steps 24-26 (Seed, Backup, Final sweep → GO/NO-GO)
+
+(31) STAGING: after first green build post-merge, run: npx vercel --prod=false and write the preview URL to docs/STAGING-URL.md and OFIR-RETURN-BRIEF.md.
+
+(32) COUNTDOWN TIMER: on every product page, show days/hours countdown from offer_valid_until. Use server time (UTC). Hide when > 7 days remaining (not urgent). Show red when < 24h.
+
+(33) MOBILE STICKY BAR: fixed bottom bar on product pages mobile only (<768px): price + "קנה עכשיו" button. z-index above everything. 44px touch target.
+
+(34) PRICE DISPLAY: all product cards and product pages show: full deal value with strikethrough (gray) + coupon price in #E4002B bold. Savings badge: "חסכון X%" in yellow #fed700.
+
+(35) SOLD-OUT BADGE: products with stock=0 show "אזל" badge, remain visible in catalog, not purchasable. Click → "הצטרף לרשימת המתנה" (email capture, table: waitlist).
