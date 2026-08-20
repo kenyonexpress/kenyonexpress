@@ -4,80 +4,139 @@
 
 import 'server-only'
 import type { Product } from '@/components/ProductCard'
+import { type SearchFilters, buildFilter, meiliConfigured, searchIndex } from '@/lib/search/client'
+import { normalizeSearchQuery } from '@/lib/search/hebrew-tokenize'
 import { createClient } from '@/lib/supabase/server'
 import { sanitizeOrTerm } from '@/lib/utils/search-escape'
 import { cache } from 'react'
+
+/** How the caller wants the result set ordered. */
+export type SearchSort = 'relevance' | 'price_asc' | 'price_desc' | 'newest'
+
+export const SEARCH_SORTS: readonly SearchSort[] = [
+  'relevance',
+  'price_asc',
+  'price_desc',
+  'newest',
+]
+
+export function parseSearchSort(value: string | null | undefined): SearchSort {
+  return SEARCH_SORTS.includes(value as SearchSort) ? (value as SearchSort) : 'relevance'
+}
 
 export type SearchOutcome = {
   results: Product[]
   total: number
   engine: 'meilisearch' | 'database'
+  /**
+   * Facet counts, keyed attribute -> value -> count. Meilisearch only: the
+   * database path would need one COUNT per facet per query and is the
+   * degraded path already.
+   */
+  facets?: Record<string, Record<string, number>>
 }
 
-const sanitize = sanitizeOrTerm
-
-function meiliConfigured(): boolean {
-  return Boolean(process.env.MEILISEARCH_HOST && process.env.MEILISEARCH_API_KEY)
+export type SearchParams = SearchFilters & {
+  q: string
+  limit?: number
+  offset?: number
+  sort?: SearchSort
+  /** Attributes to return counts for. Ignored on the database path. */
+  facets?: string[]
 }
 
-type MeiliHit = {
-  id: string
-  slug: string
-  name_he: string
-  kenyon_price: number | null
-  full_price: number | null
-  images?: unknown
-  stock_quantity: number | null
-  category?: { name_he: string; slug: string } | null
-}
+const MIN_QUERY = 2
+const DEFAULT_LIMIT = 48
 
-async function searchMeili(
-  q: string,
-  limit: number,
-  productType?: 'coupon' | 'physical',
-): Promise<SearchOutcome | null> {
-  try {
-    const host = (process.env.MEILISEARCH_HOST as string).replace(/\/$/, '')
-    const index = process.env.MEILISEARCH_INDEX ?? 'products'
-    const res = await fetch(`${host}/indexes/${index}/search`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.MEILISEARCH_API_KEY}`,
-      },
-      // `type` is a filterable attribute (see lib/search/meili-settings.ts), so
-      // the facet is applied in the engine and estimatedTotalHits stays truthful.
-      body: JSON.stringify({
-        q,
-        limit,
-        ...(productType ? { filter: `type = ${productType}` } : {}),
-      }),
-      // Search is request-time; do not cache across queries.
-      cache: 'no-store',
-    })
-    if (!res.ok) return null
-    const data = (await res.json()) as { hits: MeiliHit[]; estimatedTotalHits?: number }
-    const results: Product[] = (data.hits ?? []).map((h) => ({
-      id: h.id,
-      slug: h.slug,
-      name_he: h.name_he,
-      kenyon_price: h.kenyon_price,
-      full_price: h.full_price,
-      images: h.images ?? [],
-      stock_quantity: h.stock_quantity,
-      category: h.category ?? null,
-    }))
-    return { results, total: data.estimatedTotalHits ?? results.length, engine: 'meilisearch' }
-  } catch {
-    return null
+/**
+ * Sort in the two dialects.
+ *
+ * `relevance` produces NO sort clause on either path, rather than a sort by
+ * something else that looks like relevance. In Meilisearch, passing `sort`
+ * moves the `sort` ranking rule ahead of the scoring that follows it, so
+ * "relevance" implemented as a sort would be strictly worse than no sort at all.
+ */
+function meiliSort(sort: SearchSort): string[] {
+  switch (sort) {
+    case 'price_asc':
+      return ['kenyon_price:asc']
+    case 'price_desc':
+      return ['kenyon_price:desc']
+    case 'newest':
+      return ['created_at:desc']
+    default:
+      return []
   }
 }
 
-async function searchDb(
-  q: string,
-  limit: number,
-  productType?: 'coupon' | 'physical',
-): Promise<SearchOutcome> {
+type MeiliProductHit = {
+  id: string
+  slug: string
+  name_he: string
+  kenyon_price?: number | null
+  full_price?: number | null
+  images?: unknown
+  stock_quantity?: number | null
+  category_name_he?: string | null
+  category_slug?: string | null
+}
+
+function hitToProduct(hit: MeiliProductHit): Product {
+  return {
+    id: hit.id,
+    slug: hit.slug,
+    name_he: hit.name_he,
+    kenyon_price: hit.kenyon_price ?? null,
+    full_price: hit.full_price ?? null,
+    images: hit.images ?? [],
+    stock_quantity: hit.stock_quantity ?? null,
+    // The index stores the category flattened into two scalar fields, because
+    // Meilisearch has no joins. Rebuilt into the nested shape ProductCard
+    // expects so the two engines return the same object.
+    category:
+      hit.category_name_he && hit.category_slug
+        ? { name_he: hit.category_name_he, slug: hit.category_slug }
+        : null,
+  }
+}
+
+async function searchMeili(params: SearchParams, q: string): Promise<SearchOutcome | null> {
+  const response = await searchIndex({
+    q,
+    limit: params.limit ?? DEFAULT_LIMIT,
+    ...(params.offset ? { offset: params.offset } : {}),
+    filter: buildFilter(params),
+    sort: meiliSort(params.sort ?? 'relevance'),
+    ...(params.facets?.length ? { facets: params.facets } : {}),
+  })
+  if (!response) return null
+
+  const results = (response.hits as MeiliProductHit[]).map(hitToProduct)
+  return {
+    results,
+    total: response.estimatedTotalHits,
+    engine: 'meilisearch',
+    ...(response.facetDistribution ? { facets: response.facetDistribution } : {}),
+  }
+}
+
+/**
+ * The Postgres fallback.
+ *
+ * IT IS NOT THE SAME SEARCH AND IT DOES NOT PRETEND TO BE. There is no typo
+ * tolerance, no synonym expansion and no relevance ranking here - an ILIKE
+ * either contains the substring or it does not. What it does keep identical is
+ * the FILTER set, so a shopper who has narrowed to "coupons in Haifa under
+ * ₪200" gets that narrowing honoured either way, and the count under the
+ * heading is a count of the filtered set rather than of everything.
+ *
+ * The one filter that genuinely differs is `city`: the engine indexes the
+ * effective city (the product's, else its supplier's, resolved once by
+ * toProductDocument), and PostgREST cannot express that COALESCE across a join
+ * in a filter. The fallback matches `products.city` only. That is narrower,
+ * never wider, so it can miss a deal - it cannot show one from the wrong city.
+ */
+async function searchDb(params: SearchParams, q: string): Promise<SearchOutcome> {
   const supabase = await createClient()
   let query = supabase
     .from('products')
@@ -89,11 +148,37 @@ async function searchDb(
     .is('deleted_at', null)
     .or(`name_he.ilike.%${q}%,description_he.ilike.%${q}%`)
 
-  // Same coupon/physical facet the archives expose, applied in the query so the
-  // count stays truthful rather than filtering an already-capped page.
-  if (productType) query = query.eq('type', productType)
+  if (params.type) query = query.eq('type', params.type)
+  if (params.categoryId) query = query.eq('category_id', params.categoryId)
+  if (params.city) query = query.eq('city', params.city)
+  if (typeof params.priceMin === 'number' && Number.isFinite(params.priceMin)) {
+    query = query.gte('kenyon_price', params.priceMin)
+  }
+  if (typeof params.priceMax === 'number' && Number.isFinite(params.priceMax)) {
+    query = query.lte('kenyon_price', params.priceMax)
+  }
+  if (params.inStockOnly) query = query.gt('stock_quantity', 0)
 
-  const { data, count } = await query.limit(limit)
+  switch (params.sort ?? 'relevance') {
+    case 'price_asc':
+      // nullsFirst: false on both directions. A product with no price is not
+      // the cheapest thing in the catalogue, and it is not the most expensive
+      // either; it belongs at the end of whichever order was asked for.
+      query = query.order('kenyon_price', { ascending: true, nullsFirst: false })
+      break
+    case 'price_desc':
+      query = query.order('kenyon_price', { ascending: false, nullsFirst: false })
+      break
+    case 'newest':
+      query = query.order('created_at', { ascending: false })
+      break
+    default:
+      break
+  }
+
+  const limit = params.limit ?? DEFAULT_LIMIT
+  const offset = params.offset ?? 0
+  const { data, count } = await query.range(offset, offset + limit - 1)
 
   const results: Product[] = (data ?? []).map((p) => {
     const cat = Array.isArray(p.categories) ? (p.categories[0] ?? null) : p.categories
@@ -111,27 +196,43 @@ async function searchDb(
   return { results, total: count ?? results.length, engine: 'database' }
 }
 
-export async function searchProductsServer(
-  query: string,
-  limit = 48,
-  productType?: 'coupon' | 'physical',
-): Promise<SearchOutcome> {
-  const q = sanitize(query)
-  if (q.length < 2) return { results: [], total: 0, engine: 'database' }
+/**
+ * One search, filters and all.
+ *
+ * The term is normalised for the engine (bidi marks, niqqud and gershayim
+ * removed - see lib/search/hebrew-tokenize.ts) and separately sanitised for
+ * PostgREST, because the two have different injection surfaces: Meilisearch
+ * takes the term as a JSON value and cannot be escaped out of, while the ILIKE
+ * path splices it into an `or()` expression string.
+ */
+export async function searchCatalogue(params: SearchParams): Promise<SearchOutcome> {
+  const normalized = normalizeSearchQuery(params.q)
+  if (normalized.length < MIN_QUERY) return { results: [], total: 0, engine: 'database' }
 
-  // scripts/setup-meilisearch.mjs declares `type` filterable, so the facet is
-  // honoured by the engine. If the index has not been configured the filtered
-  // request 400s, searchMeili returns null, and the database path takes over —
-  // which is correct behaviour, not a silent unfiltered result set.
   if (meiliConfigured()) {
-    const meili = await searchMeili(q, limit, productType)
+    const meili = await searchMeili(params, normalized)
+    // Null means the engine is unreachable, slow or rejected the filter - all
+    // of which fall through to the database rather than to an error page.
     if (meili) return meili
   }
-  return searchDb(q, limit, productType)
+  return searchDb(params, sanitizeOrTerm(normalized))
+}
+
+export async function searchProductsServer(
+  query: string,
+  limit = DEFAULT_LIMIT,
+  productType?: 'coupon' | 'physical',
+): Promise<SearchOutcome> {
+  return searchCatalogue({ q: query, limit, ...(productType ? { type: productType } : {}) })
 }
 
 /**
  * Request-scoped memoisation. The result count and the grid sit behind separate
  * Suspense boundaries; without this each would run the search independently.
+ *
+ * POSITIONAL PRIMITIVES, NOT AN OPTIONS OBJECT. React's `cache` compares
+ * arguments with Object.is, so an object literal is a fresh key on every call
+ * and the memo would never hit - the count and the grid would each run their
+ * own search and could disagree.
  */
 export const searchProductsCached = cache(searchProductsServer)

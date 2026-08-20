@@ -98,7 +98,11 @@ describe('runSearchIndexJob', () => {
     const put = fetchMock.mock.calls.find(([, init]) => (init as RequestInit).method === 'PUT')
     expect(put).toBeDefined()
     const [url, init] = put as [string, RequestInit]
-    expect(url).toBe('http://meili.local/indexes/products/documents')
+    // `?primaryKey=id` is part of the contract, not decoration: on an index
+    // that does not exist yet Meilisearch INFERS the primary key from the
+    // first document, and it picks whichever field it likes that ends in
+    // "id". Declaring it makes the first write deterministic.
+    expect(url).toBe('http://meili.local/indexes/products/documents?primaryKey=id')
     const [doc] = JSON.parse((init as { body: string }).body)
     expect(doc).toMatchObject({
       id: PRODUCT_ID,
@@ -107,8 +111,16 @@ describe('runSearchIndexJob', () => {
       in_stock: true,
       supplier_name: 'ספק הצפון',
     })
-    // The public predicate gate columns never leak into the index document.
-    expect(doc).not.toHaveProperty('status')
+    // `status` IS indexed, and is filterable - see FILTERABLE_ATTRIBUTES in
+    // meili-settings.ts for why. It is not a secret: every document in the
+    // index is a publicly readable, active product, so the field can only ever
+    // read 'active', and a document that says anything else is drift a caller
+    // can now filter out instead of ranking.
+    expect(doc.status).toBe('active')
+    // `deleted_at` stays out. That one is a gate column with no read-side use:
+    // a soft-deleted product is DELETED from the index, never written with a
+    // timestamp, so indexing the field would only make it possible to publish
+    // a document that contradicts its own presence.
     expect(doc).not.toHaveProperty('deleted_at')
   })
 

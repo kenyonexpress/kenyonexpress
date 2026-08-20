@@ -58,6 +58,19 @@ export const SEARCHABLE_ATTRIBUTES = [
 /** Every facet the archives and the search page can filter on. */
 export const FILTERABLE_ATTRIBUTES = [
   'type',
+  /**
+   * Always 'active' today, and filterable anyway.
+   *
+   * The indexer's inclusion predicate is `status = 'active' AND deleted_at IS
+   * NULL` and a row that fails it is DELETED from the index rather than
+   * written with another status, so this facet has exactly one value. It is
+   * declared because that invariant is enforced by code on the write path and
+   * by nothing at all on the read path: with the attribute filterable, a
+   * caller can pin `status = "active"` and a drifted document stops being
+   * returned instead of quietly ranking. Undeclared, that same filter is a
+   * 400 and the whole search falls back to Postgres.
+   */
+  'status',
   'category_id',
   'category_slug',
   // The effective city: products.city when set, the supplier's otherwise. The
@@ -137,6 +150,8 @@ export interface ProductDocument {
   images: unknown
   stock_quantity: number | null
   in_stock: boolean
+  /** The row's own status. See FILTERABLE_ATTRIBUTES: always 'active' here. */
+  status: string
   category_id: string | null
   category_slug: string | null
   category_name_he: string | null
@@ -165,6 +180,7 @@ type ProductSource = {
   short_description_he?: string | null
   description_he?: string | null
   sku?: string | null
+  status?: string | null
   type?: string | null
   is_coupon_enabled?: boolean | null
   kenyon_price?: number | null
@@ -248,6 +264,10 @@ export function toProductDocument(
     // Mirrors lib/cart/pricing.ts: a product flagged coupon-enabled IS a coupon
     // for every customer-facing purpose, whatever its `type` column says.
     type: row.type === 'coupon' || row.is_coupon_enabled ? 'coupon' : (row.type ?? 'physical'),
+    // Not defaulted to 'active': a row that reaches here without a status is a
+    // row the caller did not select the column for, and claiming it is active
+    // would put a document in the index under a status nobody checked.
+    status: row.status ?? 'unknown',
     kenyon_price: row.kenyon_price ?? null,
     full_price: row.full_price ?? null,
     images: row.images ?? [],
