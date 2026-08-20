@@ -27,7 +27,9 @@ Every product page shows full supplier details. One description field. Cardcom S
 (18) GO/NO-GO: docs/LAUNCH-READINESS.md pass/fail per step + evidence, tag v1.0.0-rc1, final STATE.md.
 
 [CHECKPOINT]
-After every step: pnpm type-check && pnpm test && pnpm build green, commit, push, rewrite STATE.md with "המשך מ: (next)". Never leave the tree dirty.
+After every step: pnpm type-check && pnpm test green, commit, push, rewrite STATE.md with "המשך מ: (next)". Never leave the tree dirty.
+NO pnpm build in worktrees — type-check + test only. Build runs only on the main working branch after merge.
+Reason, measured 2026-08-20: 8 agents share one machine and one node_modules. A single `next build` in ke-perf took the 1-minute load average to 44 and starves every other worktree; concurrent builds OOM-kill each other. type-check and test survive that contention, build does not.
 
 (19) ACCOUNT AREA: /account complete — profile, orders+status, my-vouchers with QR, wallet (internal cashback ledger, append-only, whole agorot), saved addresses, saved Cardcom tokens (never PAN). RLS by auth.uid. Tests.
 (20) SUPPLIER PORTAL: /supplier — dashboard (sales today/month), physical orders + shipping status updates, redeemed vouchers with balance-collected view, my products read-only, business profile. RLS supplier_id via auth.uid. Resend email on new physical order (RTL template). Tests.
@@ -93,3 +95,7 @@ E. Steps 24-26 (Seed, Backup, Final sweep → GO/NO-GO)
 (34) PRICE DISPLAY: all product cards and product pages show: full deal value with strikethrough (gray) + coupon price in #E4002B bold. Savings badge: "חסכון X%" in yellow #fed700.
 
 (35) SOLD-OUT BADGE: products with stock=0 show "אזל" badge, remain visible in catalog, not purchasable. Click → "הצטרף לרשימת המתנה" (email capture, table: waitlist).
+
+[COMPLETION NOTIFICATION]
+When PROJECT-DONE.flag is created, immediately run:
+curl -s -d "KenyonExpress DONE: פתח OFIR-RETURN-BRIEF.md לדו״ח מלא ושאלות" ntfy.sh/kenyon-ofir-limit
