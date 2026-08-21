@@ -146,9 +146,27 @@ jobs:
       # still skipping.
       NEXT_PUBLIC_SUPABASE_URL: ${{ vars.PUBLIC_SUPABASE_URL }}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.PUBLIC_SUPABASE_ANON_KEY }}
-      # Deliberately NOT set. The build only needs anon reads to collect page
-      # data; a service-role key in CI on a PUBLIC repo would be a real secret
-      # guarding a real database, for no gain.
+      # THE PUBLIC SUPABASE DEMO KEY, ON PURPOSE. Not this project's key.
+      #
+      # The build does need a service key to exist: `createAdminClient()` throws
+      # on a MISSING one while prerendering /product/[slug], which is what the
+      # second CI failure was. It does not need a WORKING one - the repo already
+      # has a guard for exactly this shape. src/lib/supabase/admin-key.ts
+      # decodes the JWT and returns `demo-key` rather than `missing` for
+      # `{"iss":"supabase-demo","role":"service_role"}`, and only `missing`
+      # throws. Admin reads then fail as `Invalid API key`, get logged, and the
+      # build completes - byte for byte the behaviour of a local `pnpm build`.
+      #
+      # So this is a variable and not a secret because it IS public: it is the
+      # key every `supabase start` prints, it belongs to no project, and it
+      # grants nothing on the hosted one. The alternative - a real service-role
+      # key on a PUBLIC repository - is not a trade-off worth making for a
+      # build whose output is discarded.
+      #
+      # What this costs, stated plainly: CI never prerenders an admin-backed
+      # page against real data. It compiles, type-checks and prerenders
+      # everything reachable without admin, which is what a build gate is for.
+      SUPABASE_SECRET_KEY: ${{ vars.CI_BUILD_SUPABASE_DEMO_SECRET_KEY }}
       #
       # Which is why this is needed: src/lib/env.ts refuses to boot in
       # production without Cardcom credentials and a service key, and
