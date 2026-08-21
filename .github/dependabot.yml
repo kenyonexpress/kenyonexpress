@@ -1,0 +1,106 @@
+version: 2
+
+# WHICH BRANCH THESE PULL REQUESTS TARGET, AND WHY IT IS NOT THE DEFAULT.
+#
+# Dependabot opens against the repository's default branch, which is `main`.
+# `main` is 301 commits behind `phase5/homepage`, and nothing merges into it
+# today. A bot PR against it would resolve a lockfile nobody runs, run CI on a
+# tree three hundred commits stale, and be unmergeable into the branch the work
+# is actually on. So `target-branch` overrides it below.
+#
+# THIS IS TEMPORARY AND MUST BE DELETED the day phase5/homepage merges into
+# main. A `target-branch` pointing at a branch that no longer exists makes
+# Dependabot stop silently - no PRs, no error anyone sees.
+
+updates:
+  # ---------------------------------------------------------------------------
+  # npm, at the root only.
+  #
+  # `package-ecosystem: npm` is correct for a pnpm repo - the ecosystem name
+  # covers npm/yarn/pnpm, and Dependabot reads `pnpm-lock.yaml` (v9 here).
+  # There is no separate "pnpm" value; using one would be silently ignored.
+  #
+  # apps/mobile is DELIBERATELY NOT LISTED. It has its own package.json
+  # (@kenyonexpress/mobile) but no lockfile of its own, and it is not a member
+  # of the pnpm workspace either - `pnpm-workspace.yaml` has no `packages:` key
+  # at all. Dependabot needs a lockfile to resolve against, so an entry here
+  # would open an error on every run rather than a pull request. Making it a
+  # real workspace member is the fix, and it is a separate change with its own
+  # blast radius.
+  # ---------------------------------------------------------------------------
+  - package-ecosystem: npm
+    directory: /
+    target-branch: phase5/homepage
+    schedule:
+      interval: weekly
+      day: monday
+      time: '04:00'
+      timezone: Asia/Jerusalem
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+    commit-message:
+      prefix: 'chore(deps)'
+      prefix-development: 'chore(deps-dev)'
+
+    # Grouping is what decides whether this feature is used or muted. Ungrouped,
+    # a weekly run on a tree this size opens a wall of one-line PRs, each
+    # costing a full CI matrix, and the habit that forms is closing them
+    # unread - which also closes the security ones.
+    groups:
+      # Everything safe enough to land together. This is also exactly the set
+      # the auto-merge workflow will merge unattended, so the two definitions
+      # must keep agreeing: see .github/workflows/dependabot-auto-merge.yml.
+      patch:
+        patterns: ['*']
+        update-types: [patch]
+      # Minor bumps are grouped but NOT auto-merged. A minor release is allowed
+      # to add behaviour, and this repo has caught real breakage inside one:
+      # see the `minimatch@9>brace-expansion` note in pnpm-workspace.yaml, where
+      # a transitive bump turned every glob into a TypeError and the unit suite
+      # still reported all tests passing.
+      minor-dev:
+        dependency-type: development
+        update-types: [minor]
+
+    ignore:
+      # Next, React and the Supabase client are upgraded deliberately, read
+      # against their own migration notes, never by a bot opening a PR. A major
+      # on any of these is a project, and AGENTS.md opens by saying this is not
+      # the Next.js anyone's training data describes.
+      - dependency-name: next
+        update-types: [version-update:semver-major, version-update:semver-minor]
+      - dependency-name: react
+        update-types: [version-update:semver-major]
+      - dependency-name: react-dom
+        update-types: [version-update:semver-major]
+      - dependency-name: '@supabase/*'
+        update-types: [version-update:semver-major]
+      # Pinned in pnpm-workspace.yaml `overrides` for measured reasons - sharp
+      # 0.34.5 cannot decode this repo's AVIF images and the failure is silent,
+      # serving full-size source bytes. A bot bump here would reopen that.
+      - dependency-name: sharp
+        update-types: [version-update:semver-major]
+
+  # ---------------------------------------------------------------------------
+  # The Actions themselves. Unpinned `@v4` tags already float, so this is less
+  # about versions than about being told when an action is retired - which
+  # otherwise surfaces as a workflow that fails on a day nobody changed it.
+  # ---------------------------------------------------------------------------
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: phase5/homepage
+    schedule:
+      interval: weekly
+      day: monday
+      time: '04:00'
+      timezone: Asia/Jerusalem
+    open-pull-requests-limit: 3
+    labels:
+      - dependencies
+      - ci
+    commit-message:
+      prefix: 'ci(deps)'
+    groups:
+      actions:
+        patterns: ['*']

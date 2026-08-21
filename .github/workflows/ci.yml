@@ -125,9 +125,38 @@ jobs:
     needs: [lint, typecheck, test]
     runs-on: ubuntu-latest
     env:
-      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.CI_SUPABASE_URL }}
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.CI_SUPABASE_ANON_KEY }}
-      SUPABASE_SECRET_KEY: ${{ secrets.CI_SUPABASE_SECRET_KEY }}
+      # VARIABLES, NOT SECRETS, AND THAT IS THE POINT.
+      #
+      # This job was permanently red - `Missing NEXT_PUBLIC_SUPABASE_URL /
+      # NEXT_PUBLIC_SUPABASE_ANON_KEY`, failing while collecting page data for
+      # /coupons/[id] - because it read `secrets.CI_SUPABASE_*` and the repo had
+      # no secrets at all. A required check that can never pass is not a gate.
+      #
+      # These two values are public by construction: NEXT_PUBLIC_* is inlined
+      # into the client bundle, so both are already served to every visitor.
+      # Storing them as repository VARIABLES says so, and keeps them readable in
+      # logs where a masked secret would only make a failure harder to read.
+      #
+      # THE NAMES MATTER MORE THAN THE VALUES. The E2E job skips itself when
+      # `secrets.CI_SUPABASE_URL` is empty. Setting that secret would have
+      # un-skipped it, and its first step is `pnpm seed:test`, which WRITES
+      # fixture users and catalogue rows - against whatever database the secret
+      # points at. The only database available here is production. So the build
+      # gets its own non-secret names and the E2E guard is left untouched and
+      # still skipping.
+      NEXT_PUBLIC_SUPABASE_URL: ${{ vars.PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.PUBLIC_SUPABASE_ANON_KEY }}
+      # Deliberately NOT set. The build only needs anon reads to collect page
+      # data; a service-role key in CI on a PUBLIC repo would be a real secret
+      # guarding a real database, for no gain.
+      #
+      # Which is why this is needed: src/lib/env.ts refuses to boot in
+      # production without Cardcom credentials and a service key, and
+      # `next build` collects page data under NODE_ENV=production. The waiver is
+      # the same one a local `pnpm start` uses, and env.ts documents it as
+      # opt-in and per-environment. It is safe HERE and only here because this
+      # job builds and throws the result away - it never serves a checkout.
+      ALLOW_INCOMPLETE_ENV: 'true'
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       # Source maps are uploaded to Sentry and then deleted from the output, so
       # a stack trace from production reads against real source. Without the
@@ -152,6 +181,30 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+
+      # The pnpm STORE is already cached by `cache: pnpm` on setup-node above.
+      # This is the other half, and it is the expensive one: Turbopack's own
+      # build cache. Without it every run compiles the whole app from cold.
+      #
+      # Scoped to the lockfile plus the source tree, so a dependency change or a
+      # source change reuses the nearest previous cache instead of starting from
+      # nothing. `restore-keys` is what makes that fallback happen; with only an
+      # exact `key`, any change at all is a full miss and the cache never helps.
+      #
+      # NOT `.next/` wholesale. That directory is the build OUTPUT, and restoring
+      # a stale output is how a build "succeeds" while serving the previous
+      # commit - the exact failure this repo has already recorded once, where
+      # Playwright served a server built from an older commit for four cycles.
+      # Only `.next/cache/` is restored.
+      - name: Restore Turbopack build cache
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: next-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('src/**', 'next.config.ts') }}
+          restore-keys: |
+            next-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+            next-${{ runner.os }}-
+
       - run: pnpm build
       - uses: actions/upload-artifact@v4
         with:
