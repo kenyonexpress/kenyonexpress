@@ -59,7 +59,79 @@ Updated: 2026-08-31 21:45 (‏תוכנית ההפניות הייתה בנויה 
 קודם: 2026-08-19 22:01 (הצ'ק-אאוט ירד מתחת לשער הפיקסלים, ו-CLS שלו תוקן)
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
-## המשך מ: אין. תור 1-10 הושלם. חסום על Vercel env + Cardcom prod + החלת 127 אחרי דיפלוי חי.
+## המשך מ: אין. חסום על חיבור פרויקט Vercel לריפו הנכון, ואז env + Cardcom prod + 127.
+
+### BUILD-DEBUG (01.09): **הבילד לא נכשל. ‏Vercel בונה ריפו אחר, והשגיאה שנצפתה היא מ-29.05 מקוד אחר.**
+
+**התלונה:** "פריסה לוורסל נכשלת על module-not-found בכל server actions".
+**הנמדד:** אף אחד משלושת החלקים לא מתאים למה שקורה כאן.
+
+‏**‏1. אין בכלל דיפלוי מהריפו הזה.** ‏`list_deployments` על
+‏`prj_oqr4NKtSaB2h3szrxnT0DknAv9Xk` מחזיר **אפס** דיפלויים מאז 29.05.2026,
+והפרויקט עדיין מקושר ל-`github: kenyonexpress/kenyonexpress-web`, בזמן שהקוד
+יושב ב-`kenyonexpress/kenyonexpress`. הדומיינים של הפרויקט הם
+‏`kenyonexpress-web-*.vercel.app`, ולכן `kenyonexpress.vercel.app` מחזיר 404:
+**אין host כזה**, לא "הבילד נפל".
+
+‏**‏2. השגיאה האחרונה באמת קיימת, והיא לא server actions ולא module-not-found
+מרובה.** ‏`get_deployment_build_logs` על `dpl_8rCkXXAdevmMDdZyPWjvR9d33jeD`:
+
+```
+./kenyonexpress/next.config.ts:2:34
+Type error: Cannot find module 'next-intl/plugin' or its corresponding type declarations.
+Error: Command "npm run build" exited with 1
+```
+
+**מודול אחד**, ב-`next.config.ts`, לא ב-server actions. ושלושה פרטים בשורות
+האלה מספרים את כל הסיפור: הנתיב הוא `./kenyonexpress/next.config.ts`, כלומר
+**מבנה מקונן** שכלל 1 ב-CLAUDE.md אוסר; הפקודה היא **`npm run build`**;
+והריפו הוא `kenyonexpress-web`.
+
+‏**‏3. ‏`npm` הוא המוקש הבא, לא הנוכחי.** ‏`AGENTS.md` מתעד ש-`npm install`
+קורס בריפו הזה בתוך `buildIdealTree`, לפני כל lifecycle hook, בגלל חנות
+ה-symlinks של pnpm. הריפו הישן הצליח להריץ `npm run build` כי הוא לא היה הריפו
+הזה. **ברגע שהפרויקט יחובר לכאן, Vercel יזהה `pnpm-lock.yaml`** (הקובץ היחיד
+בעץ: אין `package-lock.json` ואין `yarn.lock`) **ויעבור ל-pnpm מעצמו.** יש
+לוודא שאין Build/Install Command ידני שכתוב בו npm.
+
+**מה נמדד בצד שלנו, וכולו נקי:**
+
+```
+pnpm install --frozen-lockfile   נקי, הלוק מסונכרן, אין מה לקמט
+pnpm build (מ-.next ריק)          exit 0, אפס "module not found"
+```
+
+ביקורת תלויות שיטתית על 599 קבצי `src/` ו-`apps/` ועל `next.config.ts`,
+‏42 חבילות חיצוניות: **‏0 חבילות שמיובאות בזמן ריצה או בנייה ויושבות
+ב-devDependencies.** התיקון שהתבקש בשלב 2 כבר מיושם:
+‏`next-intl`, ‏`@next/mdx`, ‏`@sentry/nextjs`, ‏`zod`, ‏`@supabase/supabase-js`,
+‏`@supabase/ssr` כולן ב-`dependencies`.
+
+‏**‏`server-only` נבדק ונשלל כחשוד.** הוא מיובא ב-`src/lib/growth/client.ts:1`
+ואינו מוצהר באף סעיף, אבל הוא נשלח **בתוך next** (`next/dist/compiled/server-only`)
+ומקבל alias מהבאנדלר (`next/dist/build/webpack-config.js`). לא צריך להצהיר עליו
+ואסור להוסיף אותו.
+
+**סביבה, להשוואה:**
+
+```
+moduleResolution  bundler        module esnext   target ES2017   jsx react-jsx
+node מקומי        v25.9.0
+node ב-Vercel     24.x           (הגדרת הפרויקט)
+engines           לא מוצהר בכלל
+packageManager    pnpm@11.1.2
+lockfiles         pnpm-lock.yaml בלבד
+```
+
+‏**‏`engines` לא מוצהר**, ולכן שום דבר לא כופה את הפער 24 מול 25. זה לא שבר
+כלום עד היום ואינו הסיבה לתלונה, אבל הוא הפרש אמיתי בין המכונה ל-Vercel וכדאי
+לסגור אותו כשיהיה דיפלוי לבדוק מולו.
+
+**המסקנה, ומה שצריך לקרות:** אין מה לתקן בקוד. הפעולה היחידה היא לחבר את
+הפרויקט ב-Vercel ל-`kenyonexpress/kenyonexpress` ולהצביע על `phase5/homepage`,
+ואז לבנות ולקרוא את השגיאה **הראשונה שתהיה באמת שלנו**.
+
+
 
 ### ‏31.08 שלב 4: **נגישות עוברת בכל 14 המדידות. שלושה ציוני ביצועים מתחת ל-90, ושניים מהם מדדו דף אחר לגמרי.**
 
