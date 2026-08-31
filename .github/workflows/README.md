@@ -131,7 +131,33 @@ Ordinary pull requests keep `origin/base...HEAD`, because that is the range that
 stops laundering, and a pull request that quietly updates the ledger alongside
 the value it records is precisely what the rule exists to catch. The threshold
 is a shape test rather than a severity dial: 25 sits far above any feature
-branch here and far below this branch's 339.
+branch here and far below this branch's 341.
+
+### `HEAD~1..HEAD` is a trap on a pull_request event
+
+The first attempt at that fallback used `HEAD~1..HEAD`, the same string the
+push branch of the step uses, and it changed nothing. **On a `pull_request`
+event the runner checks out the MERGE commit, not the branch tip, and that
+merge commit's first parent is the base branch.** So `HEAD~1..HEAD` silently
+resolves to `main..merge`: the entire 341-commit diff, which is the exact range
+the fallback exists to escape.
+
+It fails in the worst possible way, which is why it is written down here. Run
+`33438594165` on `3e11ff1b8` printed
+
+```
+hardcoded-gate: range HEAD~1..HEAD
+hardcoded-gate: 239 file(s), baseline from docs/hardcoded-audit.md at HEAD~1
+```
+
+The first line names the narrow range and the second reports the wide one, 239
+files, identical to the aggregate run it was meant to replace. A local check
+does not reproduce it either, because a local `HEAD` is the branch tip and its
+`HEAD~1` is an ordinary parent.
+
+The fallback therefore addresses `${{ github.event.pull_request.head.sha }}`
+explicitly, and the commit-count shape test measures from the base to that SHA
+rather than to `HEAD`.
 
 **None of the values the gate listed were touched. They live in `src/`, and the
 ledger lives in `docs/`.**
