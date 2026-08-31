@@ -155,11 +155,37 @@ RLS. The migration adds a restrictive `using (false)` policy to each so the
 intent is in the schema instead of inferred from an absence. **It changes no
 effective permission.** Safe to apply at any point in the order, and safe not to.
 
-## `PENDING-money-integer-fix.sql` does not describe the deployed schema
+## `131`–`135`, added 2026-09-01: money to agorot, and percent ranges
 
-That file converts 41 money columns from numeric ILS to integer agorot. Queried
-live on 2026-09-01, production has **two** numeric columns matching the money
-name patterns, and both are percentages on `legacy_percent_archive_112`, an
-archive nothing in `src/` reads. The live database already holds money as
-integer agorot. Applying this file against production is not a no-op and is not
-a fix; read `docs/LAUNCH-READINESS.md` section B1 before touching it.
+Written after the audit finding was re-tested and **confirmed**. An earlier note
+in this file said the finding was false; that came from a query that compared
+`format_type(...)` against the string `numeric`, which never matches a
+precision-qualified `numeric(12,2)`. Re-measured against `pg_type.typname`:
+**32 money columns held as numeric across 15 tables**, plus 25 percent columns.
+
+| File | What it does |
+| --- | --- |
+| `131_money_agorot_money_path.sql` | `orders`, `order_items`, `payments` — 8 columns |
+| `132_money_agorot_wallet.sql` | wallet accounts, balances, entries, transactions, `profiles.wallet_balance` — 6 columns, all SIGNED |
+| `133_money_agorot_catalog.sql` | `products`, `product_variants`, `coupon_deals`, `coupons`, `coupon_codes` — 16 columns |
+| `134_money_agorot_growth.sql` | `affiliates`, `referrals` — 2 columns |
+| `135_percent_range_checks.sql` | 12 percent columns get `check (0 <= x <= 100)` |
+
+**All four money files are additive.** Each adds `<col>_agorot bigint`, backfills
+with `round(<col> * 100)`, constrains it, and leaves the original column in
+place. Applying them changes nothing for the running application: no reader sees
+a different value. Rewriting the readers is step two and dropping the numeric
+columns is step three, and neither is in this directory yet.
+
+Order does not matter between 131 and 135; they touch disjoint columns. 135
+refuses to run if any percent column already holds a value outside 0..100,
+rather than constraining bad data into place.
+
+**Verified before writing, not assumed.** `wallet_accounts.balance_ils` has a
+minimum of **-1.80** over 13 rows, so balances and ledger deltas are signed and
+take no non-negative check. A blanket `>= 0` would have failed at apply time.
+
+The emitted pattern was executed against production inside a single statement
+that raises at the end, so it rolled itself back: `backfilled=2 min_agorot=1800`
+(18.00 becomes 1800). `to_regclass` confirms the scratch table is gone and the
+table count is unchanged at 53.

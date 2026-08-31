@@ -79,3 +79,35 @@ placeholder שמסומן בבירור ומוחלף בקובץ אחד. הם לא 
 3. ‏**‏`opacity: 0` על הגלריה באתר החי לא "תוקן" אצלנו.** ראה שאלה 15
    ב-`QUESTIONS-FOR-OFIR.md`: זו רגרסיה באתר שלהם, והתאמה אליה פירושה להסתיר
    את תמונת המוצר גם אצלנו.
+
+## 2026-09-01: money moves to agorot additively, and six columns stay signed
+
+**Decision.** Migrations `131`–`134` add `<col>_agorot bigint` beside each of the
+32 numeric money columns instead of converting them in place with `ALTER TYPE`.
+
+**Why.** Every one of those columns has live readers. An in-place conversion
+changes what the same unchanged query returns, from `18.00` to `1800`, so every
+price on the site becomes a hundred times itself at the instant of apply, with
+no code change to blame it on. Additive means apply is a no-op for the running
+app and the cutover happens in the readers, one at a time, under test.
+
+**The six signed columns**, which get no `>= 0` check:
+
+```
+wallet_accounts.balance_ils        wallet_balances.balance_ils
+wallet_entries.amount_ils          wallet_transactions.amount_ils
+profiles.wallet_balance            product_variants.price_modifier
+```
+
+The first five are ledger deltas and balances: a debit is negative by
+construction. `price_modifier` is signed because a variant may cost less than
+the base product.
+
+**This was measured, not assumed.** `wallet_accounts.balance_ils` holds a
+minimum of `-1.80` across 13 rows today. A blanket non-negative constraint would
+have failed at apply time. That negative balance is flagged as an open question
+in `docs/LAUNCH-READINESS.md`; it is not constrained away here.
+
+**Percent columns are not money.** The 25 percent columns stay `numeric`.
+Migration `135` bounds the 12 that had no range check to 0..100, and refuses to
+run if any of them already holds a value outside that range.

@@ -42,37 +42,65 @@ nothing: they should be cleared on the first maintenance pass after launch.
 | Tables with RLS and no policy | 3 | 8 | see B2 |
 | `SECURITY DEFINER` functions | "0 or minimal" | 59 | by design, see B3 |
 | EXECUTE grants to anon/authenticated | 13 | 20 | see B3 |
-| Money columns held as float | 31 | **2** | brief is wrong, see B1 |
+| Money columns held as numeric | 31 | **32** | confirmed, see B1 |
 | Applied migration head | >= 125 | `20260831193325` | PASS |
 
-### B1. The 31 float money columns do not exist
+### B1. RETRACTED. The audit was right and this document was wrong
 
-Asked the widest way there is, with no name filter at all: every `numeric`,
-`real`, `double precision` or `money` column in `public`. Five rows, and not one
-of them is money.
+**An earlier revision of this file claimed the finding was false. That claim came
+from a broken query and it has been withdrawn.** The query filtered with
+`format_type(atttypid, atttypmod) in ('numeric', ...)`. `format_type` returns
+`numeric(12,2)` for a precision-qualified column, which is not the string
+`numeric`, so the test silently skipped every money column in the database and
+returned only the five columns that happen to carry no precision. Re-run against
+`pg_type.typname` instead:
 
 ```
-legacy_percent_archive_112.commission_percent      numeric            percentage
-legacy_percent_archive_112.commission_rate         numeric            percentage
-legacy_percent_archive_112.default_split_percent   numeric            percentage
-coupon_deals.lat                                   double precision   latitude
-coupon_deals.lng                                   double precision   longitude
+numeric/float columns in public : 74
+  money-like                    : 32
+  percent-like                  : 25
+  true floats (float4/float8)   :  2   (coupon_deals.lat, coupon_deals.lng)
 ```
 
-The first three are percentages on an archive table nothing in `src/` reads. The
-last two are coordinates, and `double precision` is the correct type for them. A
-migration converting these five to bigint agorot with `ROUND(x * 100)` would
-corrupt three percentages and erase the geographic position of every deal.
+The audit's count of 31 was substantially correct. Thirty-two money columns are
+held as `numeric`, across fifteen tables:
 
-That table is an archive of the pre-112 commission columns and is read by
-nothing in `src/`. Converting either column with `ROUND(x * 100)` would not fix
-a money bug, it would corrupt a percentage.
+| Table | Money columns held as numeric |
+| --- | --- |
+| `products` | `price_ils`, `coupon_price_ils`, `cost_ils`, `full_price`, `kenyon_price`, `compare_at_price`, `compare_at_price_ils` |
+| `order_items` | `unit_price_ils`, `total_price_ils`, `supplier_payout_ils`, `coupon_price_ils` |
+| `orders` | `subtotal_ils`, `total_ils`, `discount_ils` |
+| `product_variants` | `price`, `price_ils`, `price_modifier` |
+| `coupon_codes` | `collect_amount_ils`, `face_value_ils` |
+| `coupon_deals` | `original_price`, `platform_price` |
+| `coupons` | `discount_value`, `original_price` |
+| `wallet_transactions` | `amount_ils`, `gross_amount_ils` |
+| `wallet_accounts` | `balance_ils` |
+| `wallet_balances` | `balance_ils` |
+| `wallet_entries` | `amount_ils` |
+| `payments` | `amount_ils` |
+| `profiles` | `wallet_balance` |
+| `affiliates` | `total_earnings_ils` |
+| `referrals` | `bonus_paid_amount_ils` |
 
-**Where the number came from.** `supabase/migrations/PENDING-money-integer-fix.sql`
-converts "41 money columns from numeric ILS to integer agorot", and
-`migrations/pending/README.md` cites it. That file describes a schema lineage
-that is not the deployed one. The live database already holds money as integer
-agorot. No migration was written for B1, because there is nothing to convert.
+**One word in the finding is still wrong, and it matters for severity.** These
+are `numeric(p,s)`, not floats. `numeric` is exact decimal: it has no binary
+rounding error, so there is no money currently being lost to floating point.
+Only two true floats exist in the schema and both are coordinates, where
+`double precision` is correct. So this is a **standards and dual-representation**
+problem, not live corruption.
+
+The real hazard is that the same tables carry both representations at once.
+`order_items` holds `total_price_ils numeric(12,2)` beside `commission_agorot
+integer`, `face_value_agorot`, `paid_on_site_agorot` and six more. Two sources of
+truth for the same money, with no constraint tying them together, is how a
+rounding disagreement becomes a payout dispute.
+
+`migrations/pending/131` through `135` carry the conversion. They are **additive
+and unapplied**: each adds an `_agorot bigint` column, backfills it with
+`round(x * 100)`, and constrains it, leaving the existing column in place so no
+current reader breaks. Rewriting the readers is the follow-up, and cutting the
+old columns is the step after that. Rationale recorded in `docs/DECISIONS.md`.
 
 ### B2. Eight tables carry RLS and no policy, and all eight are already closed
 

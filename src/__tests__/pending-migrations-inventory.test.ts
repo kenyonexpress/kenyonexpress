@@ -34,7 +34,7 @@ function sqlFilesIn(dir: string, filter: (name: string) => boolean): string[] {
 }
 
 describe('the pending migration inventory', () => {
-  it('has the thirteen files the README claims are unapplied', () => {
+  it('has the nineteen files the README claims are unapplied', () => {
     // A new pending migration is a deliberate diff here, which is the point:
     // schema changes are the one category where a silent addition is expensive.
     expect(sqlFilesIn(PENDING_DIR, () => true)).toEqual([
@@ -51,6 +51,12 @@ describe('the pending migration inventory', () => {
       '125_revoke_unused_definer_execute.sql',
       '126_revoke_authenticated_dml.sql',
       '127_revoke_check_rate_limit_execute.sql',
+      '130_deny_all_on_server_only_tables.sql',
+      '131_money_agorot_money_path.sql',
+      '132_money_agorot_wallet.sql',
+      '133_money_agorot_catalog.sql',
+      '134_money_agorot_growth.sql',
+      '135_percent_range_checks.sql',
     ])
   })
 
