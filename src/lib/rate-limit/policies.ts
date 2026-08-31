@@ -65,6 +65,12 @@ export const RATE_LIMIT_POLICIES = {
   coupon: { limit: 10, windowSeconds: 3600, reason: 'coupon code guessing' },
   begin_checkout: { limit: 10, windowSeconds: 60, reason: 'Cardcom low-profile creation' },
 
+  // Added when this layer was rebased onto main: `referral-code` landed on main
+  // after the table was first written, and the static audit below is what
+  // caught it. Keyed on the user, not the IP, because the action can only touch
+  // that user's own row - the limit bounds a held-down button, not an attacker.
+  'referral-code': { limit: 10, windowSeconds: 3600, reason: 'referral code mint, per user' },
+
   // -- Vouchers and the supplier till. Keyed on the supplier user, never on IP:
   // a shop floor is one NAT address and would share one bucket.
   redeem: { limit: 60, windowSeconds: 3600, reason: 'customer-facing redeem page, per IP' },
