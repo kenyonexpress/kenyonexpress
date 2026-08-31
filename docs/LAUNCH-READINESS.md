@@ -47,14 +47,22 @@ nothing: they should be cleared on the first maintenance pass after launch.
 
 ### B1. The 31 float money columns do not exist
 
-The query looked for every `numeric`, `real`, `double precision` or `money`
-column in `public` whose name matches price, amount, total, balance, fee, cost,
-sum, payout or commission. It returns two rows, and both are percentages:
+Asked the widest way there is, with no name filter at all: every `numeric`,
+`real`, `double precision` or `money` column in `public`. Five rows, and not one
+of them is money.
 
 ```
-legacy_percent_archive_112.commission_percent   numeric
-legacy_percent_archive_112.commission_rate      numeric
+legacy_percent_archive_112.commission_percent      numeric            percentage
+legacy_percent_archive_112.commission_rate         numeric            percentage
+legacy_percent_archive_112.default_split_percent   numeric            percentage
+coupon_deals.lat                                   double precision   latitude
+coupon_deals.lng                                   double precision   longitude
 ```
+
+The first three are percentages on an archive table nothing in `src/` reads. The
+last two are coordinates, and `double precision` is the correct type for them. A
+migration converting these five to bigint agorot with `ROUND(x * 100)` would
+corrupt three percentages and erase the geographic position of every deal.
 
 That table is an archive of the pre-112 commission columns and is read by
 nothing in `src/`. Converting either column with `ROUND(x * 100)` would not fix
