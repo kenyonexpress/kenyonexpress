@@ -12,7 +12,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
  * increments before the limit is compared, so `phone-otp-number:<victim>` five
  * times locks that person out of logging in for the hour.
  *
- * `migrations/pending/127_revoke_check_rate_limit_execute.sql` removes that
+ * `migrations/pending/145_revoke_check_rate_limit_execute.sql` removes that
  * grant. It can only be applied while this file passes, which is why the
  * assertion is on the import and not on a returned number: a future edit that
  * "simplifies" this back to `createClient()` is a silent re-open of the hole

@@ -2,7 +2,7 @@
 -- PENDING: per-supplier coordinates and the distance index
 -- ============================================================================
 --
--- STATUS: NOT APPLIED. Awaiting Ofir's explicit approval, same as PENDING-109.
+-- STATUS: NOT APPLIED. Awaiting Ofir's explicit approval, same as 135.
 -- Apply ONLY through MCP apply_migration, never db push. The filename
 -- deliberately breaks the NNN_ prefix convention so no tooling picks it up.
 --

@@ -99,11 +99,11 @@ float. ‏`numeric` הוא עשרוני מדויק ואין בו שגיאת עי
 ### חמש מיגרציות נכתבו, אף אחת לא הוחלה
 
 ```
-131_money_agorot_money_path.sql    orders, order_items, payments        8 עמודות
-132_money_agorot_wallet.sql        ארנק ו-profiles                      6, כולן חתומות
-133_money_agorot_catalog.sql       products, variants, coupons          16
-134_money_agorot_growth.sql        affiliates, referrals                2
-135_percent_range_checks.sql       12 עמודות אחוז מקבלות 0..100
+138_money_agorot_money_path.sql    orders, order_items, payments        8 עמודות
+139_money_agorot_wallet.sql        ארנק ו-profiles                      6, כולן חתומות
+140_money_agorot_catalog.sql       products, variants, coupons          16
+141_money_agorot_growth.sql        affiliates, referrals                2
+126_percent_range_checks.sql       12 עמודות אחוז מקבלות 0..100
 ```
 
 **כולן אדיטיביות.** כל אחת מוסיפה `<col>_agorot bigint`, ממלאת ב-
@@ -154,12 +154,12 @@ pnpm audit        8 ממצאים, כולם ב-dev/build, אפס בקוד שרץ
 **‏B1 "‏31 עמודות כסף כ-float" לא קיים.** שאילתה חיה מחזירה **שתיים**, ושתיהן
 אחוזים על `legacy_percent_archive_112`, טבלת ארכיון שאף קובץ ב-`src/` לא קורא.
 פרודקשן כבר מחזיקה כסף כ-integer אגורות. המספר כנראה הגיע מ-
-`supabase/migrations/PENDING-money-integer-fix.sql`, שמתאר שושלת סכימה שאינה
+`supabase/migrations/142_money_integer_fix_in_place.sql`, שמתאר שושלת סכימה שאינה
 המותקנת. **לא נכתבה מיגרציה:** `ROUND(x * 100)` על אחוז מקלקל אותו.
 
 **‏B2 אמיתי אבל כבר סגור.** שמונה טבלאות עם RLS ובלי מדיניות. ‏RLS דלוק בלי
 מדיניות הוא **דחייה**, לא היתר, וכל השמונה נכתבות ב-service role שעוקף RLS.
-נכתבה `migrations/pending/130_deny_all_on_server_only_tables.sql` שמוסיפה
+נכתבה `migrations/pending/122_deny_all_on_server_only_tables.sql` שמוסיפה
 deny מפורש לחמש הלא-מסווגות. **היא לא משנה שום הרשאה בפועל, ולא הוחלה.**
 
 **‏B3 הספירה נכונה והתרופה לא.** שלושה מה-grants שהביקורת רצתה לבטל נקראים
@@ -1075,7 +1075,7 @@ signup:<ip>  5/1h      begin_checkout:user:<uuid> 10/60s staff-pin:<uuid>      1
 ‏**התיקון:** שני הלימיטרים ב-`src/lib/utils/rate-limit.ts` עברו ל-
 ‏`createAdminClient()`. כל 30 הקוראים הם server actions או route handlers, אף
 אחד מהם אינו קומפוננטת לקוח, ו-`src/lib/health/checks.ts` כבר קורא לאותה
-פונקציה על אותו לקוח ומוכיח שהמסלול עובד. נכתבה `127_revoke_check_rate_limit_execute.sql`
+פונקציה על אותו לקוח ומוכיח שהמסלול עובד. נכתבה `145_revoke_check_rate_limit_execute.sql`
 שמסירה את ההרשאה.
 
 ‏**‏⚠️ ל-127 יש סדר הרצה חד-כיווני, והוא כתוב בראש הקובץ:** הקוד קודם, המיגרציה
@@ -2813,7 +2813,7 @@ every `CREATE POLICY`". אלה הקבצים היחידים שאופיר אמור
 היא definer, **אינה מקבלת מזהה משתמש בכלל** ומחלצת אותו לבד ב-`v_user uuid := auth.uid()`.
 זו הצורה הנכונה, והיא קיימת שם ליד.
 
-‏**התיקון כבר כתוב, ויושב לא מיושם.** ‏`migrations/pending/125_revoke_unused_definer_execute.sql`
+‏**התיקון כבר כתוב, ויושב לא מיושם.** ‏`migrations/pending/143_revoke_unused_definer_execute.sql`
 כבר שולל `EXECUTE` מ-`PUBLIC, anon, authenticated` על שלוש הפונקציות האלה ועל
 עוד שלוש. הוא **לא הורץ**, כי הרצת migration על פרודקשן היא אחת מארבע העצירות,
 והוא מסומן `DRAFT, NOT APPLIED`. לא הורץ גם עכשיו.
@@ -4784,7 +4784,7 @@ CRON_SECRET`, והקורא היחיד שלהם הוא המתזמן. ההודעה
 
 ## המשך מ: MISSION-FINAL שלב 1 (merge supplier + arch-night)
 
-## ‏(24) SEED מוזג + ‏`126_revoke_authenticated_dml.sql` הובא למיינליין
+## ‏(24) SEED מוזג + ‏`144_revoke_authenticated_dml.sql` הובא למיינליין
 
 **‏(24):** ‏`feat/seed-data` מוזג (‏7 קומיטים). בפתרון הקונפליקט **לא הוחזרה**
 הטענה על `002-products-geo.sql`, שהוכחה שגויה שני קומיטים קודם. אומת מול
@@ -4828,7 +4828,7 @@ CRON_SECRET`, והקורא היחיד שלהם הוא המתזמן. ההודעה
 הפתוחה שהמוצר דורש, עם RLS ומדיניות owner. ‏`authenticated` מחזיק
 INSERT/UPDATE/DELETE/**TRUNCATE** על 55 טבלאות, חסום ב-RLS למעט חריג אחד
 שראוי שיהיה כתוב: **‏RLS אינו חל על TRUNCATE.** לא נגיש דרך PostgREST, ולכן
-הגנה לעומק ולא פרצה חיה. זה מה ש-`126_revoke_authenticated_dml.sql` פותר,
+הגנה לעומק ולא פרצה חיה. זה מה ש-`144_revoke_authenticated_dml.sql` פותר,
 והוא עצמו יושב על הענף הלא-ממוזג `feat/auth-model`.
 
 `src/__tests__/pending-migrations-inventory.test.ts` נועל את זה: כל שם קובץ
@@ -5350,7 +5350,7 @@ predicate של policy. שלילה שם מפילה את האתר. ‏`redeem_vouc
 ‏`wazeSearchLink` מחזיר `null` בלי כתובת רחוב, **ולאף ספק אין כתובת**. לכן היום
 לא מוצג אף כפתור Waze. זו החלטה מכוונת של המודול: `q=חיפה` מנווט למרכז העיר, וזה
 לא המקום שבו מממשים קופון, וכפתור ניווט שנוחת בביטחון במקום אחר גרוע מאין כפתור.
-בלוק הספק מדפיס את העיר כטקסט במקום. **‏`PENDING-110` מוסיף `lat/lng` פר ספק
+בלוק הספק מדפיס את העיר כטקסט במקום. **‏`136` מוסיף `lat/lng` פר ספק
 והוא לא הורץ** — הרצת migration על פרודקשן היא אחד ממצבי העצירה, ולכן לא הורץ כאן.
 
 **‏(15) דורש נתונים ולא קוד:** ברגע שאופיר יזין כתובות רחוב, הכפתור מופיע בלי
@@ -5687,7 +5687,7 @@ DEFINER ומוענקת ל-`anon`+`authenticated`, וכל התקרות כבר ר�
 | ‏24 פונקציות SECURITY DEFINER | **26** |
 | ‏8 `rls_enabled_no_policy` | **8, וכולן INFO ומכוונות** |
 
-**מה כן הוכן:** ‏`migrations/pending/125_revoke_unused_definer_execute.sql`
+**מה כן הוכן:** ‏`migrations/pending/143_revoke_unused_definer_execute.sql`
 (טיוטה) — שש פונקציות שנמדדו כחסרות כל קורא: אפס policies, אפס views, אפס
 פונקציות אחרות, אפס `rpc()` ב-`src/`. מנקה 6 מתוך 39 WARN בלי לגעת במסלול קוד
 שקיים. **ממתין לאישור אופיר להרצת DDL.**
@@ -5726,7 +5726,7 @@ DEFINER ומוענקת ל-`anon`+`authenticated`, וכל התקרות כבר ר�
 ### ⛔ לפני שמריצים משהו מ-`migrations/pending/`
 
 לקרוא את `HANDOVER-ARCH-NIGHT-COLLISION.md`. שני סוכנים רצו על אותו תור באותו
-worktree. ‏`007-order-transition-guard.sql` הגיע מהסוכן שנעצר **ולא נבדק לעומק.**
+worktree. ‏`137_order_transition_guard.sql` הגיע מהסוכן שנעצר **ולא נבדק לעומק.**
 
 ## המשך מ (היסטוריה, הושלם): MISSION-FINAL שלב 1 (merge supplier + arch-night)
 
@@ -5778,7 +5778,7 @@ pass/fail; `scripts/audit-launch-bar.mjs --measured` מדפיס את המצב. �
 אינדקס ייחודי היה מפיל את הראשונה מבין השתיים ושובר את הסידור באדמין. להפוך את ההחלפה
 לאטומית זה שינוי נפרד למסך שעובד.
 
-`migrations/pending/006-categories-sort-order.sql` מתקן את הנתונים: שורה אחת זזה,
+`migrations/pending/124_categories_sort_order.sql` מתקן את הנתונים: שורה אחת זזה,
 `electronics` מ-10 ל-12, אחרונה כי אינה אחד מ-11 פריטי התפריט החי. **לא הוחל.**
 היא לא מכבה את הקטגוריה: יש בה 6 מוצרים פעילים, וכיבוי מחלקה שמוצרים מצביעים עליה
 הוא החלטת תוכן ולא תיקון מספור. ‏`e5aab126a`, ‏2297/2297.
@@ -5917,7 +5917,7 @@ Updated: 2026-08-11 בוקר (goal-65: product_type selector)
    הטקסט זהה בתו, אותה שפה, לא `SECURITY DEFINER`. כלומר זה no-op אמיתי ולא
    שינוי התנהגות שקט על 45 טבלאות. ראוי לבדיקה חוזרת אם 005 ישונה.
 2. **שני ה-views ב-005 נושאים `security_invoker = true`**, וההערה שמעליהם מנסחת
-   בדיוק את כשל האבטחה שמצאתי ב-`PENDING-money-integer-fix` (view בלי invoker
+   בדיוק את כשל האבטחה שמצאתי ב-`142` (view בלי invoker
    רץ כבעליו ומוסר כל שורה ל-anon). כלומר 005 עקבי, ו-money-integer-fix הוא
    החריג.
 3. **הנימוק של 003 נמדד ואומת.** ‏003 מגדיר `whatsapp_enabled DEFAULT false`
@@ -6027,7 +6027,7 @@ Updated: 2026-08-11 בוקר (goal-65: product_type selector)
 `coupon | physical | service`, ולכן שמירת מוצר recurring נכשלת היום. זה בדיוק
 מה ש-`recurring-schema-error.ts` קיים כדי לתרגם.
 
-**החסם:** ‏`PENDING-109` הוא migration ללא אישור. **אופיר דחה אותו לשלב 2
+**החסם:** ‏`135` הוא migration ללא אישור. **אופיר דחה אותו לשלב 2
 ב-11.08 והורה לא להריץ.** לא הורץ.
 
 מה שכן נמצא ותוקן, שלושתם לא חסומים:
@@ -6053,8 +6053,8 @@ Updated: 2026-08-11 בוקר (goal-65: product_type selector)
 - `main`: `35c5b07`, ahead 1, **לא נדחף**. (`cc21247` הוא ענף `arch/*`, 65 קומיטים
   מאחור, ואינו נקודת המשך.)
 - 81 goals סגורים (הלוג מגיע ל-`[81]`; ‏`FINAL-REPORT.md` שמזכיר 64 נכתב ב-07.08).
-- מיגרציות ממתינות: `PENDING-109-recurring-subscriptions`,
-  `PENDING-110-supplier-coordinates`, ו-`PENDING-money-integer-fix` שהוא
+- מיגרציות ממתינות: `135_recurring_subscriptions`,
+  `136_supplier_coordinates`, ו-`142` שהוא
   **חסום, לא skipped**: section 4 בונה מחדש את `v_wallet_ledger` ו-
   `v_wallet_balance_drift` בלי `security_invoker` ובלי `REVOKE`, ולכן הרצתו
   הופכת את `v_wallet_balance_drift` מ-service_role בלבד לקריא ל-`anon` עם
@@ -6124,7 +6124,7 @@ Updated: 2026-08-11 בוקר (goal-65: product_type selector)
 2. לאמת דומיין ב-Resend.
 3. להחליט על ה-slugs של ‏WP (‏20 מתוך 44 ממחזרים כתובת של מוצר אחר) ואז להריץ
    את הייבוא, ואז reindex ל-Meilisearch.
-4. להריץ את `PENDING-money-integer-fix` **רק אחרי** שנכתב ענף הקוד ל-agorot —
+4. להריץ את `142` **רק אחרי** שנכתב ענף הקוד ל-agorot —
    ‏55 קבצים עדיין קוראים את השמות הישנים.
 5. לאמת את הענף שוורסל מגדיר כפרודקשן.
 6. עסקת בדיקה מקצה לקצה מול Cardcom production.
@@ -6144,12 +6144,12 @@ Updated: 2026-08-11 בוקר (goal-65: product_type selector)
 
 ### שלוש החלטות של אופיר, 2026-08-19, בוצעו
 
-1. **כפילות `payment_events` הוכרעה.** ‏`migrations/pending/120_payment_events.sql`
+1. **כפילות `payment_events` הוכרעה.** ‏`migrations/pending/130_payment_events.sql`
    נשמר, ‏`006-payment-events.sql` **נמחק** (מחיקת קובץ באישור מפורש). ארבעה
    דברים שהיו רק ב-006 קופלו פנימה ולא אבדו: `stage`, ‏`external_event_id`,
    ‏`provider`, ואוצר מילים רחב יותר של אירועים. שתי הפניות ל-006 ב-`docs/`
    הופנו מחדש ל-120.
-2. **`delivered_at` נוסף כטיוטה:** ‏`migrations/pending/124_order_items_delivered_at.sql`.
+2. **`delivered_at` נוסף כטיוטה:** ‏`migrations/pending/134_order_items_delivered_at.sql`.
    מוסיף `shipped_at` ו-`delivered_at` ל-`order_items`, שני CHECK,
    אינדקס חלקי, ופונקציה `order_item_cancellation_deadline(uuid)` כדי ששלושת
    הקוראים לא יחלקו על התאריך. **בלי backfill.** לא הורצה.
@@ -6160,11 +6160,11 @@ Updated: 2026-08-11 בוקר (goal-65: product_type selector)
 
 ### מה נשאר לפני הרצה של הטיוטות
 
-- **‏`007-order-transition-guard.sql` של הסוכן השני לא נבדק לעומק.** הוא לא
+- **‏`137_order_transition_guard.sql` של הסוכן השני לא נבדק לעומק.** הוא לא
   כפילות של 120, אבל צריך לעבור עליו.
 - אף אחת מחמש הטיוטות (`120`, `121`, `122`, `123`, `124`) **לא הורצה**, ואף אחת
   לא תרוץ בלי אישור מפורש ודרך MCP `apply_migration`.
-- **‏`PENDING-money-integer-fix.sql` עדיין מסוכן להריץ מוקדם:** ‏55 קבצים קוראים
+- **‏`142_money_integer_fix_in_place.sql` עדיין מסוכן להריץ מוקדם:** ‏55 קבצים קוראים
   את השמות הישנים.
 
 ### עשרת המסמכים, ענף `docs/architecture-night`
@@ -6187,16 +6187,16 @@ Updated: 2026-08-11 בוקר (goal-65: product_type selector)
 **מסמכים בלבד.** אין נגיעה ב-`src/`, אין נגיעה במיגרציה קיימת, אין הרצת SQL.
 
 1. ✅ `docs/ARCHITECTURE-CHECKOUT-CARDCOM-E2E.md` (578 שורות) + טיוטה
-   `migrations/pending/120_payment_events.sql` (לא הורצה; 006 נמחק, ראה למעלה).
+   `migrations/pending/130_payment_events.sql` (לא הורצה; 006 נמחק, ראה למעלה).
    **תיקון לשם שנרשם כאן מראש:** התיקייה `migrations/pending/` ממספרת `003-`,
    `004-`, `005-` ובמפורש אינה חלק משרשרת `NNN_` של `supabase/migrations`, ולכן
    הקובץ הוא `006-` ולא `120_`. ה-✅ שהופיע כאן לפני שהמסמך נכתב היה תוכנית,
    לא עובדה.
 2. ✅ `ARCHITECTURE-ORDER-STATE-MACHINE.md`
-3. ✅ `ARCHITECTURE-REFUNDS-CANCELLATIONS.md` + טיוטה `migrations/pending/121_refunds.sql`
+3. ✅ `ARCHITECTURE-REFUNDS-CANCELLATIONS.md` + טיוטה `migrations/pending/131_refunds.sql`
 4. ✅ `ARCHITECTURE-ADMIN-PRODUCT-FORM.md`
-5. ✅ `ARCHITECTURE-SEARCH-DISCOVERY.md` + טיוטה `migrations/pending/122_search_index_outbox.sql`
-6. ✅ `ARCHITECTURE-GEO-LOCATION.md` + טיוטה `migrations/pending/123_supplier_branches.sql`
+5. ✅ `ARCHITECTURE-SEARCH-DISCOVERY.md` + טיוטה `migrations/pending/132_search_index_outbox.sql`
+6. ✅ `ARCHITECTURE-GEO-LOCATION.md` + טיוטה `migrations/pending/133_supplier_branches.sql`
 7. ✅ `ARCHITECTURE-WP-IMPORT-PIPELINE.md`
 8. ✅ `ARCHITECTURE-OBSERVABILITY.md` (בשורש; `docs/ARCHITECTURE-OBSERVABILITY.md` הישן נשאר ולא נמחק)
 9. ✅ `ARCHITECTURE-SECURITY-HARDENING.md`
@@ -6501,7 +6501,7 @@ Updated: 2026-08-11 בוקר (goal-65: product_type selector)
    רשומות `supplier_staff` עם PIN. **טופס האדמין לשתיהן עוד לא נבנה.**
 7. שמונת הסודות מדוח ‏v1.0.0 עדיין חוסמים השקה.
 
-**‏`PENDING-money-integer-fix` עדיין לא הורץ,** לפי ההחלטה מהסשן הקודם.
+**‏`142` עדיין לא הורץ,** לפי ההחלטה מהסשן הקודם.
 
 ---
 
@@ -6984,7 +6984,7 @@ host שאינו ב-`remotePatterns`.
 
 **שערים:** ‏2066/2066 vitest, ‏type-check ו-lint נקיים.
 
-‏`PENDING-money-integer-fix` נשאר לא מורץ, לפי ההחלטה מהסשן הקודם.
+‏`142` נשאר לא מורץ, לפי ההחלטה מהסשן הקודם.
 
 ### ‏10.08 — ‏[71] אפליקציית ספק: הקופה והתור האופליין (קומיט `4690bf9`, מיגרציה `115` הוחלה)
 
@@ -7134,7 +7134,7 @@ host שאינו ב-`remotePatterns`.
 בחוק, והעתק קפוא פר מוצר הוא בדיוק איך שקטלוג מגיע לשני שיעורים.
 
 ‏**המידות הן עמודות חדשות, לא המרה.** שינוי היחידה של `length_cm` מתחת לקוראים
-חיים הוא אותו סוג שינוי כמו `PENDING-money-integer-fix`. זה בטוח כאן מסיבה
+חיים הוא אותו סוג שינוי כמו `142`. זה בטוח כאן מסיבה
 שנמדדה: ‏**אפס** מ-80 המוצרים נושאים מידה כלשהי. עמודות ה-cm **סומנו כמוחלפות
 ולא נמחקו**, ו-`readDimensionMm` עדיין ממיר אותן לתצוגה.
 
@@ -7144,7 +7144,7 @@ host שאינו ב-`remotePatterns`.
 ### ‏10.08 — רצף ההשקה: מה בוצע ומה לא, לפי שלב
 
 ‏**שלב 0 — מיגרציות.** ‏`111_revoke_anon_writes` **הורץ ואומת**.
-‏`PENDING-money-integer-fix` **לא הורץ**, לפי החלטת אופיר בסשן הזה כשהוצג לו
+‏`142` **לא הורץ**, לפי החלטת אופיר בסשן הזה כשהוצג לו
 שהקובץ עצמו מכריז שהחלה בלי ענף הקוד "מכפילה כל מחיר ב-100, לא סיכון אלא
 ודאות", ו-**55 קבצים** עדיין קוראים את השמות הישנים. **זה לא פער, זו החלטה.**
 
@@ -7236,7 +7236,7 @@ empty"). זה שער של הסקריפט, לא כשל: התוצאה תלויה �
 
 ‏**‏Geo פר מוצר.** ‏`products.city/latitude/longitude` ב-`migrations/pending/002`
 כ-**override** של הספק, לא העתק. נמדד: ‏**PostGIS לא מותקן** במסד הזה, ולכן
-‏`geography` מהמפרט לא זמין והעמודות זהות ל-PENDING-110.
+‏`geography` מהמפרט לא זמין והעמודות זהות ל-136.
 
 ‏**‏[65]/[66] — כבר היו סגורים.** הבקשה לבצע אותם מחדש נבדקה מול הקוד: שלושת
 הסוגים, ה-state machine והפיצול קיימים. מה שכן נמצא היו שני פערים אמיתיים,
@@ -7470,7 +7470,7 @@ slug של מוצר אחר: ‏`שעון-אפל-חכם-apple-watch-series-7` הו
 2. **דוח dry-run השוואתי לייבוא ‏WP**, ואחריו בלבד החלפת ה-seed.
 3. **‏`migrations/pending/`** מחכה לאישור: ‏002 (geo פר מוצר), ‏003
    (‏whatsapp_enabled), ‏004 (הסרת ה-escrow מ-`expire_vouchers`).
-   ‏`supabase/migrations/` מחכה: ‏PENDING-109, ‏PENDING-110, ו-money-integer-fix.
+   ‏`supabase/migrations/` מחכה: ‏135, ‏136, ו-money-integer-fix.
 
 ‏**ידני לאופיר בלבד — אי אפשר מהמחשב הזה:**
 
@@ -7489,7 +7489,7 @@ slug של מוצר אחר: ‏`שעון-אפל-חכם-apple-watch-series-7` הו
 
 ### ⚠️ החלטות שהתקבלו לבד ב-10.08
 
-1. **‏`PENDING-money-integer-fix.sql` לא הורץ, למרות אישור מפורש.** הקובץ עצמו
+1. **‏`142_money_integer_fix_in_place.sql` לא הורץ, למרות אישור מפורש.** הקובץ עצמו
    כותב שהחלה בלי ענף הקוד המקביל **מכפילה כל מחיר באתר ב-100, "לא סיכון אלא
    ודאות"**. נמדד עכשיו: ‏**55 קבצים** עדיין קוראים את השמות הישנים, למשל
    ‏`category-page.ts:216` שבוחר `kenyon_price, full_price` — שניהם משתנים.
@@ -7547,7 +7547,7 @@ slug של מוצר אחר: ‏`שעון-אפל-חכם-apple-watch-series-7` הו
 1. **מרחק מחושב ממרכז העיר, לא מכתובת.** נמדד: ל-5 מתוך 11 ספקים יש `city`,
    ול-**אפס** מהם יש `address`. אין מה לג'אוקוד. זה כן מבדיל בין תל אביב לחיפה,
    וזה מה ש"קרוב אליי" אומר ללקוח.
-2. **‏`PENDING-110` מוסיף lat/lng פר ספק**, אינדקס GiST חלקי, ו-CHECK שקואורדינטה
+2. **‏`136` מוסיף lat/lng פר ספק**, אינדקס GiST חלקי, ו-CHECK שקואורדינטה
    היא **זוג** (‏latitude עם longitude ריק נקרא כ-{32,0}, באוקיינוס האטלנטי).
    ‏`supplierLocation` כבר מעדיף את העמודות ברגע שהן קיימות.
 3. **‏⚠️ שורת תגי הערים אינה מתחת ל-hero.** שני היעדים בגוול סותרים זה את זה,
@@ -7562,7 +7562,7 @@ slug של מוצר אחר: ‏`שעון-אפל-חכם-apple-watch-series-7` הו
    העמוד הראשי היא `KE_LIVE_DEALS` סטטי בלי ספק כלל.
 4. **שתי תקלות שנתפסו לפני שנשלחו:** ‏(א) בחירת `suppliers(city, latitude,
    longitude)` הייתה נכשלת ב-42703 ומפילה את **כל** שאילתת הקטגוריה - רשת ריקה
-   בכל עמוד קטגוריה - כי ‏PENDING-110 לא הוחל. נבחר `city` בלבד. ‏(ב)
+   בכל עמוד קטגוריה - כי ‏136 לא הוחל. נבחר `city` בלבד. ‏(ב)
    ‏`useSearchParams` בעמוד סטטי מפיל את ה-export. ‏Suspense הוא חובה, לא קישוט.
 5. **בקשת מיקום בלחיצה בלבד**, לעולם לא ב-mount: פרומפט אוטומטי הוא זה שכולם
    דוחים, והדחייה דביקה לכל הדומיין.
@@ -7611,12 +7611,12 @@ slug של מוצר אחר: ‏`שעון-אפל-חכם-apple-watch-series-7` הו
    `coupon|physical|service`, ו-`service` אינו בשימוש בשום מקום בקוד. לא מיחזרתי
    אותו: המשמעות שלו אינה "חיוב חוזר", ומיחזור ערך קיים היה קובר את ההבדל.
 2. **`recurring_amount_agorot` הוא integer agorot, לא numeric ILS.** כל 41
-   עמודות הכסף הקיימות ממתינות ל-`PENDING-money-integer-fix.sql`. עמודה חדשה
+   עמודות הכסף הקיימות ממתינות ל-`142_money_integer_fix_in_place.sql`. עמודה חדשה
    ב-numeric הייתה ה-42. זה המסלול הכספי היחיד בסכימה שלא נזקק לתיקון ההוא.
 3. **אין שינוי ב-`products_commission_type_matches_type`.** נמדד מול פרודקשן:
    האילוץ אומר `type <> 'coupon'` ⇐ `commission_type = 'physical_percent'`,
    ולכן סוג שלישי נכנס בלי לגעת בו.
-4. **המיגרציה ב-pending בלבד** (`PENDING-109-recurring-subscriptions.sql`),
+4. **המיגרציה ב-pending בלבד** (`135_recurring_subscriptions.sql`),
    לפי ההוראה. הקוד נבנה סביב זה: שלוש העמודות החדשות נשלחות **רק** כשהסוג
    הוא recurring, כך ששמירת מוצר פיזי לא שולחת עמודה שהמסד לא מכיר; דף האזור
    האישי וה-cron מחזירים תוצאה ריקה על טבלה חסרה במקום 500; ושתי שגיאות המסד
@@ -7640,7 +7640,7 @@ slug של מוצר אחר: ‏`שעון-אפל-חכם-apple-watch-series-7` הו
 ‏**‏07.08 ‏05:45 — אימות חוזר של הנעילה. הכל ירוק, ואין מה לבצע.**
 התור נקרא מחדש מול הקוד ולא מהמסמך: ‏`NEXT-GOALS.md` סגור לחלוטין למעט
 ‏goal 15 (Wallet), שחסום בהוראה מפורשת שאוסרת להריץ את
-‏`PENDING-money-integer-fix.sql`, וכל 27 השורות הפתוחות ב-`GO-LIVE.md` הן
+‏`142_money_integer_fix_in_place.sql`, וכל 27 השורות הפתוחות ב-`GO-LIVE.md` הן
 קונפיגורציה, נתונים או מדידה מחוץ למחשב הזה. **השערים נמדדו עכשיו, לא צוטטו:**
 ‏`pnpm test` ‏**1833/1833** (‏145 קבצים; הבסיס הרשום היה 1823, וההפרש הוא
 הבדיקות שנוספו ב-[61] ו-[62]), ‏`type-check` נקי, ‏`lint` נקי על 774 קבצים,
@@ -7671,7 +7671,7 @@ pass: שניהם בוצעו ונדחפו. התוצאות תחת Last Completed.
 תור goals 9-20 מ-03.08. ‏[36] = goal 9, ‏[37] = goal 10, ‏[38] = goal 11.
 ‏12, ‏13, ‏14 ו-16 אומתו כקיימים ומסומנים ב-NEXT-GOALS.md עם הראיה.
 ‏**goal 15 (Wallet) חסום**: הארנק בשקלים numeric, וההמרה לאגורות היא
-‏`PENDING-money-integer-fix.sql` שאסור להריץ. ‏[39] = goal 17 (PWA),
+‏`142_money_integer_fix_in_place.sql` שאסור להריץ. ‏[39] = goal 17 (PWA),
 ‏[40] = goal 18 (a11y), ‏[41] = goal 19 (Load), ‏[42] = הליד של [41]
 (דף המוצר סטטי), ‏**[43] = goal 20 (Final)**. התור בן 12 היעדים סגור:
 ‏11 בוצעו ואחד (‏15) חסום בראיה. מה שנשאר פתוח הוא **קונפיגורציה, נתונים
@@ -7913,7 +7913,7 @@ rate_limiter למטה** - נכון, כי `.env.local` מחזיק את מפתח �
 ‏**[59] קופון מתנה, 2026-08-07 — קופון שנקנה עבור מישהו אחר, והחוסם שלא היה
 במסלול.** קומיט `38a3376`, מיגרציה **108 הוחלה ואומתה**.
 ‏**החוסם שנרשם מראש נבדק והופרך.** ‏STATE הזהיר שהגoal ייעצר בגבול הארנק, כי
-היתרה היא `numeric` בשקלים מאחורי `PENDING-money-integer-fix.sql`. נמדד:
+היתרה היא `numeric` בשקלים מאחורי `142_money_integer_fix_in_place.sql`. נמדד:
 מתנה מזיזה את `vouchers.user_id` ו**אינה נוגעת** ב-`wallet_accounts`,
 ‏`wallet_balances`, `wallet_entries` או בעמודת `_ils` כלשהי. **שום כסף לא זז
 בקבלת מתנה** - המכירה הוסדרה בתשלום, וההתחייבות שלנו אחריה היא אותה התחייבות
@@ -8480,7 +8480,7 @@ node:async_hooks)` תחת `Client Component Browser`. ‏`node:async_hooks` מר
 ‏026, מאותה סיבה בדיוק. אף מסלול כסף לא כותב אותה היום, ולכן היא לא נוספה ב-106
 "למען השלמות" - נרשמת כאן כדי שלא תתגלה שוב כ-42703 ביום שמישהו יכתוב אליה.
 ‏~~102, ‏103 ו-104 ממתינות~~ **הוחלו ואומתו ב-[44], 03.08.** דליפת ה-PII סגורה.
-‏`PENDING-money-integer-fix.sql` ממתין לאישור. **לא להריץ** (הוראה מפורשת, 03.08).
+‏`142_money_integer_fix_in_place.sql` ממתין לאישור. **לא להריץ** (הוראה מפורשת, 03.08).
 **אזהרה שנוצרה ב-[44]:** כשמישהו יחיל את מיגרציית האגורות, היא זורקת ובונה
 מחדש את `v_wallet_balance_drift`. ‏view שנבנה מחדש **לא יורש** את
 ‏`security_invoker` ולא את ה-REVOKE של 103, ולכן החור נפתח שוב בשקט אם לא
@@ -8769,7 +8769,7 @@ terms: תוכן משפטי, לא קוד.
       ברכה אישית, שליחת הקופון למקבל דרך מערכת ה-Notifications, והעברת
       בעלות בארנק.
       **חוסם ידוע שנרשם עכשיו:** "העברת בעלות בארנק" נוגעת ב-wallet, ויתרת
-      הארנק היא `numeric` בשקלים. ההמרה לאגורות היא `PENDING-money-integer-fix.sql`
+      הארנק היא `numeric` בשקלים. ההמרה לאגורות היא `142_money_integer_fix_in_place.sql`
       שאסור להריץ (זה מה שחוסם את goal 15). לכן העברת הבעלות תיכתב **בלי
       לגעת בעמודת היתרה**, או שה-goal ייעצר בגבול הזה ויירשם, ולא יומצא
       מסלול כסף חדש סביב העמודה החסומה.
@@ -9263,7 +9263,7 @@ k6 L1 (40 VU)      product p95 1120/884/751ms מול 800  ← נופל
 ‏`scripts/security-probe-views.mjs` שואל את אותו endpoint שתוקף היה שואל, ונכשל
 עם exit 1 כל עוד יש 200. הוא הריץ עכשיו 6/7 ומשחזר את הממצא. **להריץ אותו שוב
 אחרי כל מיגרציה שבונה view מחדש** — view מחודש לא יורש `security_invoker`,
-ו-`PENDING-money-integer-fix.sql` בונה מחדש בדיוק את `v_wallet_balance_drift`.
+ו-`142_money_integer_fix_in_place.sql` בונה מחדש בדיוק את `v_wallet_balance_drift`.
 
 ### שאר goal 9: מה נבדק ומה תוקן בקוד
 

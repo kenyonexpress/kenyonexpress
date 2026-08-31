@@ -1,9 +1,9 @@
 /**
- * The tables PENDING-109 adds, typed here because they are not in
+ * The tables 135 adds, typed here because they are not in
  * `src/types/database.ts` yet.
  *
  * `database.ts` is generated from production, and production has not had
- * PENDING-109 applied - that migration is Ofir's call, not this session's. So
+ * 135 applied - that migration is Ofir's call, not this session's. So
  * `supabase.from('subscriptions')` does not type-check against the generated
  * Database, and it would not work at runtime either.
  *
@@ -21,7 +21,7 @@
  *   call sites fully typed, and puts the whole "this does not exist yet" story
  *   in one place with one obvious deletion point.
  *
- * WHEN PENDING-109 IS APPLIED: regenerate `database.ts`, delete this file, and
+ * WHEN 135 IS APPLIED: regenerate `database.ts`, delete this file, and
  * replace `pendingSchema(supabase)` with plain `supabase` at the four call
  * sites. Nothing else changes - the column names here are the column names in
  * the migration.

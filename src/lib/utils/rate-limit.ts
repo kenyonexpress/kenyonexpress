@@ -64,7 +64,7 @@ export async function getClientIp(): Promise<string> {
  * Nothing on this path is ever reached from a browser: every caller is a server
  * action or a route handler. So the limiter uses the service-role client, which
  * `src/lib/health/checks.ts` already proved works for this RPC, and
- * `migrations/pending/127_revoke_check_rate_limit_execute.sql` revokes the
+ * `migrations/pending/145_revoke_check_rate_limit_execute.sql` revokes the
  * anon/authenticated grant behind it.
  *
  * ORDER MATTERS AND IS ONE-WAY: this file must be deployed BEFORE 127 is

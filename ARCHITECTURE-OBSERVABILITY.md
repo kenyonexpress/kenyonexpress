@@ -282,7 +282,7 @@ Ten scheduled jobs (`vercel.json`), all in `fra1`:
 | `/api/cron/stock` | `*/10 * * * *` | stock recalculation, low-stock signals |
 | `/api/cron/stranded-payments` | `*/10 * * * *` | **charged but not finalized.** §6.2 |
 | `/api/cron/abandoned-cart` | `0 * * * *` | hourly |
-| `/api/cron/subscriptions` | `30 2 * * *` | daily, pending PENDING-109 |
+| `/api/cron/subscriptions` | `30 2 * * *` | daily, pending 135 |
 | `/api/cron/reap-carts` | `40 3 * * *` | daily guest-cart cleanup |
 | `/api/cron/reconcile` | `0 4 * * *` | **daily terminal reconciliation.** §6.3 |
 | `/api/cron/expire-vouchers` | `15 23 * * *` | daily, just before midnight |

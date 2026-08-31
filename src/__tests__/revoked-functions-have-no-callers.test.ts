@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest'
  * EVERY FUNCTION A PENDING MIGRATION REVOKES MUST HAVE NO CLIENT CALLER LEFT,
  * AND "CLIENT" MEANS BOTH APPS.
  *
- * `125_revoke_unused_definer_execute.sql` was written on a measurement that
+ * `143_revoke_unused_definer_execute.sql` was written on a measurement that
  * ended "...and zero rpc() callsites in src/". One of its six functions,
  * `supplier_app_context`, has exactly one caller in the repo:
  *
@@ -49,7 +49,7 @@ import { describe, expect, it } from 'vitest'
  * client and nothing here would otherwise notice.
  */
 const SERVICE_ROLE_CALLERS: Record<string, string[]> = {
-  // `127_revoke_check_rate_limit_execute.sql` revokes anon/authenticated only.
+  // `145_revoke_check_rate_limit_execute.sql` revokes anon/authenticated only.
   // Both callers below build the client with `createAdminClient()`, which
   // authenticates as service_role and is untouched by that file. The revoke is
   // in fact what makes these two the ONLY possible callers.
@@ -63,7 +63,7 @@ const SERVICE_ROLE_CALLERS: Record<string, string[]> = {
   // refuses to let a caller relocate without a person saying which role it
   // arrives as.
   check_rate_limit: ['src/lib/health/checks.ts', 'src/lib/rate-limit/limiter.ts'],
-  // `125_revoke_unused_definer_execute.sql` takes EXECUTE away from PUBLIC,
+  // `143_revoke_unused_definer_execute.sql` takes EXECUTE away from PUBLIC,
   // anon and authenticated, and leaves service_role. The single caller builds
   // its client with `createAdminClient()`, so it arrives as service_role and is
   // untouched.

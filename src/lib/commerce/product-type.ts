@@ -23,7 +23,7 @@
 /**
  * The four the storefront can say a sentence about.
  *
- * `recurring` is not in the generated enum yet -- it arrives with PENDING-109 --
+ * `recurring` is not in the generated enum yet -- it arrives with 135 --
  * and is accepted here anyway, because `recurring.ts` already reads rows that
  * hold it and a type this file cannot name is a type the caller has to widen at
  * the call site.

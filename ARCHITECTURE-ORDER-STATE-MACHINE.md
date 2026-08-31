@@ -509,7 +509,7 @@ webhook, and by manual overrides.
    row itself. When the row is later corrected, the history is gone.
 3. **`audit_action` is a closed enum of human actions.** Payment lifecycle
    events are neither human nor closed. This is exactly why
-   `payment_events` (draft `migrations/pending/120_payment_events.sql`) is a
+   `payment_events` (draft `migrations/pending/130_payment_events.sql`) is a
    separate table rather than a widening of this enum.
 
 ### 8.3 The rule going forward

@@ -53,7 +53,7 @@ export function vendorStatusBadge(status: string) {
 
 /**
  * `products.type` is an enum with three values in production (`coupon`,
- * `physical`, `service`) and a fourth, `recurring`, once PENDING-109 is
+ * `physical`, `service`) and a fourth, `recurring`, once 135 is
  * applied. The products table used to render this as `type === 'physical' ?
  * 'פיזי' : 'קופון'`, so every value that was not `physical` displayed as
  * "קופון", including the one type that is emphatically not a coupon.

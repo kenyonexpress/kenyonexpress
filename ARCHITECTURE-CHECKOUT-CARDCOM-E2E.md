@@ -487,7 +487,7 @@ must render.
 
 ## 10. Draft SQL: `payment_events`
 
-**DRAFT. NOT APPLIED. NOT RUN.** File: `migrations/pending/120_payment_events.sql`.
+**DRAFT. NOT APPLIED. NOT RUN.** File: `migrations/pending/130_payment_events.sql`.
 
 Supersedes the withdrawn `006-payment-events.sql`, which a parallel session on this
 branch wrote over the same ground. Ofir chose this file on 2026-08-19. Four things
@@ -805,7 +805,7 @@ GRANT SELECT ON public.payment_events TO authenticated;
 - **No change to `payment_webhook_events`.** The two coexist;
   `callback_received` carries the journal row's `external_event_id` in `detail`.
 - **No column named `amount_ils`.** New money columns are agorot. The pre-059
-  columns are untangled by `PENDING-money-integer-fix.sql`, on its own schedule,
+  columns are untangled by `142_money_integer_fix_in_place.sql`, on its own schedule,
   and this file does not add a third spelling to that problem.
 
 ---

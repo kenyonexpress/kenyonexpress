@@ -280,7 +280,7 @@ type SupplierProductDbRow = {
  * The supplier's own catalogue.
  *
  * Prices on `products` are still numeric shekels in production -- the agorot
- * rename lives in PENDING-money-integer-fix.sql and has not been applied -- so
+ * rename lives in 142_money_integer_fix_in_place.sql and has not been applied -- so
  * they are converted at this boundary with `parseIls` and nothing downstream
  * ever sees a float. When that migration lands, this function is the single
  * place that changes.

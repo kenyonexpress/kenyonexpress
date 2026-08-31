@@ -54,7 +54,7 @@ import { type NextRequest, NextResponse } from 'next/server'
  *   charge row for settlement to read. Building orders per cycle would create a
  *   second, competing definition of what an order is.
  *
- * PENDING-109 IS NOT APPLIED. Until it is, `subscriptions` does not exist and
+ * 135 IS NOT APPLIED. Until it is, `subscriptions` does not exist and
  * this route reports `{ ok: true, skipped: 'not_migrated' }` rather than
  * failing: a cron that 500s every ten minutes on a feature nobody has enabled
  * is noise that trains the alerting to be ignored.
@@ -101,7 +101,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
 
   if (!read.ok) {
     if (read.missing) {
-      log.info('subscriptions.cron.not_migrated', { reason: 'PENDING-109 not applied' })
+      log.info('subscriptions.cron.not_migrated', { reason: '135 not applied' })
       return NextResponse.json({ ok: true, skipped: 'not_migrated', charged: 0, failed: 0 })
     }
     log.error('subscriptions.cron.read_failed', { reason: read.message })

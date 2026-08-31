@@ -5,7 +5,7 @@
 -- STATUS: NOT APPLIED. Awaiting Ofir's explicit approval.
 -- Apply ONLY through MCP apply_migration, never db push. The filename
 -- deliberately breaks the NNN_ prefix convention so no tooling picks it up as
--- part of the ordered chain, matching PENDING-money-integer-fix.sql.
+-- part of the ordered chain, matching 142_money_integer_fix_in_place.sql.
 --
 -- MEASURED AGAINST PRODUCTION 2026-08-07, BEFORE A LINE WAS WRITTEN
 --
@@ -30,7 +30,7 @@
 --
 -- Every existing money column on `products` is numeric ILS (kenyon_price,
 -- price_ils, coupon_price_ils), and all 41 of them are queued for conversion
--- in PENDING-money-integer-fix.sql. A new numeric ILS column here would be the
+-- in 142_money_integer_fix_in_place.sql. A new numeric ILS column here would be the
 -- 42nd, added on the same day the project rule says money is integer agorot.
 --
 -- So `recurring_amount_agorot` is integer agorot from birth. It costs one
@@ -295,5 +295,5 @@ CREATE POLICY subscription_charges_owner_read ON public.subscription_charges
 --  * No change to any existing column, constraint, policy or index.
 --  * No wallet involvement. Cancellation is not a refund (see
 --    cancellationNotice in src/lib/commerce/recurring.ts), so this path never
---    touches the numeric-shekel wallet columns that PENDING-money-integer-fix
+--    touches the numeric-shekel wallet columns that 142
 --    is blocked on.

@@ -3,7 +3,7 @@
  *
  * WHY `q=` AND NOT `ll=`. `docs/PRODUCT-PAGE-SPEC.md` derives the Waze link
  * from `suppliers.lat/lng` with zero drift. Those columns do not exist: they
- * are what `supabase/migrations/PENDING-110-supplier-coordinates.sql` adds, and
+ * are what `supabase/migrations/136_supplier_coordinates.sql` adds, and
  * it is unapplied ([67]). Naming a column this database lacks fails the WHOLE query
  * with 42703, so the coordinates are not merely unavailable, they cannot be
  * selected. `q=` is Waze's own address search and it is what the data supports

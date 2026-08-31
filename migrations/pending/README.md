@@ -1,191 +1,164 @@
 # `migrations/pending/`
 
-Unapplied migrations, written here by instruction. **Nothing in this directory
-has been run against any database**, and nothing here may be applied with
-`db push` — the project forbids it. The route to production is
-`apply_migration` through MCP, after a human approves the file.
+Unapplied migrations. **Nothing in this directory has been run against any
+database.** Nothing here may be applied with `db push` — the project forbids it.
+The route to production is `apply_migration` through MCP, after Ofir approves
+the file.
 
-## There is a second pending location, and it is older
+## This is now the only pending location
 
-Four unapplied files live in `supabase/migrations/` under a `PENDING-` prefix
-instead:
+`supabase/migrations/` holds applied production migrations only. The three
+`PENDING-` files that used to sit there were moved here on 2026-09-01 and
+renumbered into the sequence below:
 
-| File | What it does |
+| was | is now |
 | --- | --- |
-| `PENDING-109-recurring-subscriptions.sql` | the `recurring` enum member, `subscriptions`, the billing columns |
-| `PENDING-110-supplier-coordinates.sql` | `suppliers.latitude` / `.longitude`, GiST, the pair CHECK |
-| `PENDING-money-integer-fix.sql` | 41 money columns from numeric ILS to integer agorot |
+| `supabase/migrations/PENDING-109-recurring-subscriptions.sql` | `135_recurring_subscriptions.sql` |
+| `supabase/migrations/PENDING-110-supplier-coordinates.sql` | `136_supplier_coordinates.sql` |
+| `supabase/migrations/PENDING-money-integer-fix.sql` | `142_money_integer_fix_in_place.sql` |
 
-They are not moved here. The `PENDING-` prefix deliberately breaks the `NNN_`
-convention so no tooling picks them up as part of the ordered chain, and moving
-a file that four documents cite by path buys a tidier tree at the cost of every
-one of those references. **Read both locations before concluding the schema is
-settled.**
+Every reference to the old paths across `src/`, `apps/`, `docs/`, `scripts/`
+and the root `*.md` files was rewritten in the same commit. There is no second
+location left to read.
 
-## Order
+## Numbering
 
-`003-products-whatsapp-enabled.sql` is independent of everything in
-`supabase/migrations/`. It does not depend on PENDING-109 or PENDING-110.
+`120` and `121` were each used twice, in two directories, with two different
+meanings. That is fixed: every file here was renumbered from **122 upward**,
+skipping `128` and `129`, which are taken by
+`supabase/migrations/128_wp_publish.sql` and `129_catalogue_cleanup.sql`.
+Highest number applied in production is `129`. No number now repeats across the
+two directories.
 
-`006-categories-sort-order.sql` is independent of all of them. It is data, not
-schema: one UPDATE that moves `electronics` from a shared `sort_order` of 10 to
-12. It adds no unique index on purpose, and the file says why.
+## ⚠️ 138-141 and 142 are MUTUALLY EXCLUSIVE. Apply one path, never both.
 
-## Two corrections, measured against production on 19.08.2026
+Both convert money to integer agorot and they collide.
 
-Both were stale claims in this file, found by checking every object named here
-against `ixvwfbuvfxxsjiywhbbb` rather than by reading.
+- **138-141 (recommended)** are *additive*: they add a `<col>_agorot bigint`
+  beside each numeric column and backfill it. Applying them is a no-op for the
+  running application, and they are reversible with a `DROP COLUMN`.
+- **142** converts *in place*, renaming `total_ils` → `total_agorot` and
+  changing its type. The moment it lands, every reader that still says
+  `total_ils` breaks, and every reader that does not gets a number 100× larger.
 
-**`002-products-geo.sql` no longer exists**, anywhere in the tree or on any
-branch head. It was added in `f4fc79140` and has since been removed. It is not
-"pending": `products.city`, `products.latitude` and `products.longitude` are
-all **present in production today**, so its content was applied and the file
-was dropped afterwards. The sentence above used to name it as an unapplied file
-sitting in this directory, which would have led the next reader to go looking
-for it, or worse, to rewrite and re-apply it.
+They produce **9 identical column names** on the same tables, so applying 142
+after 138-141 fails outright with "column already exists":
 
-**`PENDING-revoke_anon_writes.sql` does not exist either.** The table above
-listed four files in `supabase/migrations/`; there are three. That mattered
-more than a missing row, because the file it named is a security migration and
-its absence read as "already written, waiting for approval". What is actually
-true in production, measured:
+```
+coupon_deals.original_price_agorot     products.compare_at_price_agorot
+coupon_deals.platform_price_agorot     products.full_price_agorot
+coupons.original_price_agorot          products.kenyon_price_agorot
+product_variants.price_agorot          profiles.wallet_balance_agorot
+product_variants.price_modifier_agorot
+```
 
-| role | INSERT / UPDATE / DELETE | TRUNCATE | gate |
-| --- | --- | --- | --- |
-| `anon` | **`carts` only** | none | RLS on, policy `carts: owner all` |
-| `authenticated` | 55 tables | **55 tables** | RLS, except TRUNCATE |
+and a further 23 columns where the names differ only by an `_ils` infix
+(`orders.total_ils_agorot` from 138 vs `orders.total_agorot` from 142), which
+would leave the table carrying two agorot columns for one amount.
 
-The `anon` grant is not a hole: an open guest cart is a product requirement,
-the grant is confined to that one table, and RLS is on with an owner policy.
+**Decision, taken 2026-09-01 and logged in `docs/DECISIONS.md`:** the additive
+path is the production-safest option, so 138-141 are in the apply order and
+**142 is parked**. It is kept, not deleted, because it is the only written
+description of the eventual in-place end state, and because the decision to
+abandon it belongs to Ofir.
 
-The `authenticated` grants are broad by Supabase default and RLS is the real
-gate, with one exception worth writing down: **RLS does not apply to TRUNCATE.**
-It is not reachable through PostgREST, so this is defence in depth rather than a
-live exploit, and it is what `126_revoke_authenticated_dml.sql` addresses.
+### 142 was verified against production, and it is not a no-op
 
-**That file is now here.** It was brought over from `feat/auth-model` on 19.08
-rather than merging the branch, which would also have landed a second
-guard-coverage suite alongside the one already in `src/lib/auth/`. Its central
-measurement was re-checked against production before importing and still holds
-exactly: the eight tables with RLS on and zero policies are
-`legacy_percent_archive_112`, `payment_webhook_events`, `rate_limits`,
-`referral_signals`, `search_index_dlq`, `settlement_events`,
-`stock_reservations`, `user_rate_limits`. It revokes DML on those eight only,
-and deliberately not across the schema: `authenticated` legitimately writes to
-carts, addresses and profiles, and a blanket revoke would break the storefront
-while the RLS policies above it kept passing.
+An earlier version of this file claimed production already stored money as
+integer agorot, and that 142 therefore did nothing. **That claim was false.**
+Measured against `ixvwfbuvfxxsjiywhbbb` on 2026-09-01, all **41** columns 142
+targets are still `numeric` on real tables (`relkind = 'r'`); none is already
+an integer, so none was removed from the file:
 
-## All thirteen files here are genuinely unapplied
+```
+orders.total_ils        orders.subtotal_ils      orders.discount_ils
+payments.amount_ils     payments.wallet_applied_ils
+order_items.unit_price_ils  order_items.total_price_ils
+products.price_ils      wallet_accounts.balance_ils    ... 41 total
+```
 
-Checked object by object against production, not assumed from this file: none of
-`payment_events`, `refunds`, `search_index_outbox`, `supplier_branches`,
-`banners`, `homepage_sections` exists; neither does `order_items.shipped_at`,
-`order_items.delivered_at` or `products.whatsapp_enabled`; and none of the six
-guard functions in `007` is defined. `expire_vouchers` does exist, which is
-expected: `004` replaces it rather than creating it.
+The columns that *are* already integer agorot — `order_items.face_value_agorot`,
+`vouchers.coupon_price_agorot`, `settlement_events.commission_agorot` and the
+rest — are **different columns**, added alongside the numeric ones. That dual
+representation is what made the earlier claim look true from a distance.
 
-`127_revoke_check_rate_limit_execute.sql` was added on 21.08 and is unapplied
-like the rest. Measured before writing: `check_rate_limit` is SECURITY DEFINER
-with `anon=X | authenticated=X | service_role=X`, its `p_key` argument is
-caller-supplied and inserted verbatim, and the counter increments before the
-limit is compared. So anyone holding the publishable key can spend any bucket:
-five calls on `phone-otp-number:<e164>` lock a real person out of OTP sign-in
-for an hour. **It has a deploy order and the file says so in a banner** - the
-`src/lib/utils/rate-limit.ts` change to the service-role client must be live
-before the revoke is applied, or the limiters hit their fail-open branch and
-every limit in the app goes off silently.
+## The manifest
 
-## The audit that produced `125` measured the wrong tree
+Blast radius is what breaks if the file is applied while the current code is
+running. Order is the position in the apply sequence.
 
-`125` was written to revoke six functions "with zero rpc() callsites in src/".
-There are two Supabase clients in this repo. The supplier till is an Expo app at
-`apps/mobile`, it uses the anon key with the cashier's session in SecureStore,
-and `apps/mobile/src/lib/supplier/api.ts:64` calls `supplier_app_context` - one
-of the six. Applying `125` as written would have stopped every till from
-scanning at once, with nothing in the web app's logs, because
-`loadSupplierContext()` returns null on error and the screen reads null as "this
-device belongs to no supplier".
+| # | File | What it changes | Blast radius | Order | Prerequisite | Rollback |
+| --- | --- | --- | --- | --- | --- | --- |
+| 122 | `122_deny_all_on_server_only_tables.sql` | Restrictive `using (false)` policy on the 5 server-only tables | **None.** RLS-on-no-policy is already deny; changes no effective permission | 1 | none | `drop policy if exists deny_all_client_roles on public.<each of the 5>;` |
+| 123 | `123_products_whatsapp_enabled.sql` | `products.whatsapp_enabled boolean not null default false` + partial index | **None.** Defaults false, so no product changes behaviour | 2 | none | `drop index if exists public.products_whatsapp_enabled_idx; alter table public.products drop column if exists whatsapp_enabled;` |
+| 124 | `124_categories_sort_order.sql` | One `UPDATE`: `electronics` `sort_order` 10 → 12 | **Cosmetic.** Fixes a tie that made category order planner-dependent | 3 | none | `update public.categories set sort_order = 10 where slug = 'electronics';` |
+| 125 | `125_expire_vouchers_drop_escrow.sql` | Replaces `expire_vouchers()`, dropping its last escrow branch | **Low.** Escrow model already abolished in 085; this finishes it | 4 | migration 085 (applied) | Restore the prior body from `supabase/migrations/085_voucher_scan_audit_and_no_escrow.sql` |
+| 126 | `126_percent_range_checks.sql` | `CHECK (0..100)` on 12 unconstrained percent columns | **Low.** Fails at apply time only if a row is already out of range | 5 | none | `alter table public.<t> drop constraint if exists <t>_<col>_range;` (12 statements, listed in the file) |
+| 127 | `127_homepage_cms.sql` | `banners`, `homepage_sections`, RLS policies, scheduling windows | **None.** Readers treat absence as normal and fall back to `src/lib/hero-singlefile-data.ts` | 6 | none | `drop table if exists public.banners, public.homepage_sections cascade;` |
+| 130 | `130_payment_events.sql` | `payment_events` append-only table, `payment_event_type` enum, no-mutation trigger | **None.** New table, no existing reader | 7 | none | `drop trigger if exists payment_events_no_mutation on public.payment_events; drop function if exists public.payment_events_append_only(); drop table if exists public.payment_events; drop type if exists public.payment_event_type;` |
+| 131 | `131_refunds.sql` | `refunds` table, `refund_state` + `refund_ground` enums | **None.** Holds no money truth; `payments` stays authoritative | 8 | 130 (shares the payment vocabulary) | `drop table if exists public.refunds; drop type if exists public.refund_state; drop type if exists public.refund_ground;` |
+| 132 | `132_search_index_outbox.sql` | `search_index_outbox`, enqueue trigger on `products`, `claim_search_index_jobs()` | **Low.** Adds a trigger to `products`; every product write now also writes an outbox row | 9 | none | `drop trigger if exists products_enqueue_search_index on public.products; drop function if exists public.enqueue_search_index(); drop function if exists public.claim_search_index_jobs(integer); drop table if exists public.search_index_outbox;` |
+| 133 | `133_supplier_branches.sql` | `supplier_branches` table | **None.** Changes no money and no authorisation; a voucher still redeems against `suppliers.id` | 10 | none | `drop table if exists public.supplier_branches;` |
+| 134 | `134_order_items_delivered_at.sql` | `order_items.delivered_at`, physical-only constraint, `order_item_cancellation_deadline()` | **Low.** Nullable column; the deadline function is new | 11 | none | `drop function if exists public.order_item_cancellation_deadline(uuid); drop index if exists public.order_items_delivered_at_idx; alter table public.order_items drop constraint if exists order_items_delivery_is_physical_only, drop column if exists delivered_at;` |
+| 135 | `135_recurring_subscriptions.sql` | `recurring` enum member, `subscriptions`, `subscription_charges`, 3 billing columns on `products` | **Medium.** `ALTER TYPE ... ADD VALUE` cannot run inside a transaction block and cannot be rolled back | 12 | none | Tables and columns drop cleanly; **the `recurring` enum member is permanent** — Postgres cannot remove an enum value |
+| 136 | `136_supplier_coordinates.sql` | `suppliers.latitude`/`.longitude`, GiST index, pair CHECK | **None.** `supplierLocation()`'s exact branch is dead code until the columns exist | 13 | `cube` + `earthdistance` extensions | `drop index if exists public.suppliers_earth_idx; alter table public.suppliers drop constraint if exists suppliers_latlng_pair, drop column if exists latitude, drop column if exists longitude;` |
+| 137 | `137_order_transition_guard.sql` | Status-transition guard triggers on `orders`/`vouchers`/`payments`, immutable `audit_log` | **Medium.** Constrains the service role, which every cron, webhook and repair script runs as. An illegal transition that used to succeed now raises | 14 | 130, 131, 134 (guards reference their statuses) | `drop trigger if exists audit_log_no_delete on public.audit_log; drop trigger if exists audit_log_no_update on public.audit_log; drop trigger if exists vouchers_status_guard on public.vouchers; drop trigger if exists payments_status_guard on public.payments; drop trigger if exists orders_status_guard on public.orders;` (+ the 6 guard functions) |
+| 138 | `138_money_agorot_money_path.sql` | Adds `_agorot` beside numeric on `orders`, `order_items`, `payments` | **None.** Additive; a no-op for the running app | 15 | none | `alter table public.orders drop column if exists subtotal_ils_agorot, drop column if exists total_ils_agorot, drop column if exists discount_ils_agorot;` (+ `order_items`, `payments`) |
+| 139 | `139_money_agorot_wallet.sql` | Adds `_agorot` on `wallet_accounts`, `wallet_balances`, `wallet_entries`, `wallet_transactions` | **None.** Additive. No `>= 0` check on balances: `wallet_accounts.balance_ils` has a live minimum of −1.80 | 16 | 138 | `alter table public.wallet_accounts drop column if exists balance_ils_agorot;` (+ the other 3 tables) |
+| 140 | `140_money_agorot_catalog.sql` | Adds `_agorot` on `products`, `product_variants`, `coupon_codes`, `coupon_deals`, `coupons` | **None.** Additive. `price_modifier` stays signed — a variant may be cheaper than its base | 17 | 138 | `alter table public.products drop column if exists price_ils_agorot, drop column if exists coupon_price_ils_agorot, drop column if exists cost_ils_agorot, drop column if exists full_price_agorot;` (+ the other 4 tables) |
+| 141 | `141_money_agorot_growth.sql` | Adds `_agorot` on `affiliates`, `referrals` | **None.** Additive. Both are cumulative earnings, so both take the non-negative check | 18 | 138 | `alter table public.affiliates drop column if exists total_earnings_ils_agorot; alter table public.referrals drop column if exists bonus_paid_amount_ils_agorot;` |
+| 142 | `142_money_integer_fix_in_place.sql` | Converts 41 money columns in place, numeric ILS → bigint agorot; rebuilds `fn_wallet_transfer`, `fn_pay_referral`, 2 wallet views | **CATASTROPHIC. PARKED — DO NOT APPLY.** Mutually exclusive with 138-141; ~55 code files still read the old ILS names | — | Abandoning 138-141 **and** rewriting every reader first | Inverse rename + `ALTER TYPE ... USING <col> / 100.0`, plus restoring both functions and both views. **Treat as one-way in practice.** |
+| 143 | `143_revoke_unused_definer_execute.sql` | Revokes `EXECUTE` on 5 SECURITY DEFINER functions from `anon`/`authenticated` | **Medium.** Closes a live RLS bypass in `voucher_success_payload`. `supplier_app_context` was withdrawn from this file — the Expo till calls it | 19 | `src/__tests__/revoked-functions-have-no-callers.test.ts` green | `GRANT EXECUTE ON FUNCTION public.<fn> TO anon, authenticated;` (5 statements, listed in the file) |
+| 144 | `144_revoke_authenticated_dml.sql` | Revokes INSERT/UPDATE/DELETE from `authenticated` on the 8 RLS-on-zero-policy tables | **Low.** Defence in depth; RLS already blocks these, but RLS does not cover `TRUNCATE` | 20 | 122 (same 5 tables, policies first) | `GRANT INSERT, UPDATE, DELETE ON public.<t> TO authenticated;` (8 statements, listed in the file) |
+| 145 | `145_revoke_check_rate_limit_execute.sql` | Revokes `EXECUTE` on `check_rate_limit` from `anon`/`authenticated` | **HIGH IF MISORDERED.** See below | **21 — LAST** | ⛔ **CODE-FIRST: commit `d5c2739d4`** | `GRANT EXECUTE ON FUNCTION public.check_rate_limit(text, integer, integer) TO anon, authenticated;` |
 
-That revoke has been **removed from `125`** and the file now carries the
-withdrawal and the reason. Two things came out of it worth keeping:
+## ⛔ 145 is CODE-FIRST and it is one-way
 
-- **A grant audit that greps `src/` measures the website, not the product.**
-- `voucher_success_payload`, which stays in `125`, is not the hygiene item the
-  file called it. It takes a whole `vouchers` row as its argument, so the caller
-  chooses `user_id`, and it then reads `profiles.full_name` as the definer.
-  Proven read-only against production on 21.08 as role `authenticated`: a direct
-  `SELECT` of the victim's profile returns **0 rows** and the same session gets
-  their name back through the function. That is a live RLS bypass, not a dead
-  grant.
+**Required commit: `d5c2739d4`** — *"docs: מדריך הזנת דיל חדש (CONTENT-OPERATIONS-GUIDE) (#6)"*.
+The title says docs; the commit also carries the change that matters here, in
+`src/lib/utils/rate-limit.ts`:
+
+```diff
+-import { createClient } from '@/lib/supabase/server'
++import { createAdminClient } from '@/lib/supabase/admin'
+-  const supabase = await createClient()
++  const supabase = adminClientOrNull()
+```
+
+Also required: **`8e26c3754`** (*"feat(rate-limit): a sliding window on Upstash
+behind all thirty callsites, with Postgres as the fallback"*), which relocated
+the Postgres fallback call into `src/lib/rate-limit/limiter.ts`. It is still the
+same `createAdminClient()` call, so `service_role` still reaches the RPC — but
+the callsite moved, and a check of the old path alone would now measure nothing.
+
+Both are ancestors of `origin/main` as of 2026-09-01, so the prerequisite is
+**merged**. What remains is that main is *deployed*: verify the running
+production build contains `d5c2739d4` before applying 145.
+
+**Why the order is one-way.** Apply 145 while a build older than `d5c2739d4` is
+live and the RPC starts returning `42501` to a caller that is still `anon`. The
+limiter's fail-open branch catches it, logs, and returns "allowed". Every rate
+limit in the application — OTP, cart writes, checkout, search — turns off, and
+the only symptom is a log line nobody is watching. That is strictly worse than
+the hole 145 closes.
+
+## Apply order
+
+```
+122 → 123 → 124 → 125 → 126 → 127 → 130 → 131 → 132 → 133 → 134
+    → 135 → 136 → 137 → 138 → 139 → 140 → 141 → 143 → 144 → 145
+```
+
+`142` is not in the sequence. It is parked and mutually exclusive with 138-141.
+
+## Inventory is enforced by a test
+
+`src/__tests__/pending-migrations-inventory.test.ts` checks both directions:
+every `.sql` on disk appears in this manifest, and every `.sql` this manifest
+names exists on disk. It also asserts `supabase/migrations/` contains no
+`PENDING-` file, so the split location cannot come back.
 
 `src/__tests__/revoked-functions-have-no-callers.test.ts` re-derives the revoke
-list from this directory and checks it against every `.ts`/`.tsx` file in both
-`src/` and `apps/`, so the next revoke of a mobile-only function fails a test
-instead of a till.
-
-`src/__tests__/pending-migrations-inventory.test.ts` now keeps this section
-honest. It lives under `src/` because that is the only tree vitest is
-configured to collect from; widening `vitest.config.ts` to reach `migrations/`
-would change what every other suite in the repo picks up, for one file.
-
-## ‏⚠️ התנגשות מספור עם `supabase/migrations/`, ‏19.08.2026
-
-‏המספרים `120` ו-`121` **תפוסים פעמיים**, בשתי תיקיות, בשתי משמעויות שונות:
-
-| מספר | ‏`supabase/migrations/` (הורץ בפרודקשן) | ‏`migrations/pending/` (ממתין לאופיר) |
-| --- | --- | --- |
-| ‏120 | ‏`120_split_public_select_policies_by_role.sql` | ‏`120_payment_events.sql` |
-| ‏121 | ‏`121_widen_notification_outbox_kind_check.sql` | ‏`121_refunds.sql` |
-
-‏זה קרה כי `supabase/migrations/` הגיע ל-118 ושני מחזורים הוסיפו לו 119-121
-באותו יום, בעוד שהתור כאן שמר לעצמו את 120-126 מראש.
-
-‏**מה לעשות כשמקדמים קובץ מכאן:** ‏למספר אותו מחדש ל-**122 ומעלה** לפי מה
-שתפוס ב-`supabase/migrations/` באותו רגע, ולא להעתיק את המספר שכתוב כאן.
-‏הקבצים שכבר הורצו לא ימוספרו מחדש: שינוי שם של מיגרציה שרצה אינו משנה דבר
-במסד ורק שובר את הקשר בין הקובץ להיסטוריה.
-
-## `130_deny_all_on_server_only_tables.sql`, added 2026-09-01
-
-Five tables carry RLS with zero policies: `legacy_percent_archive_112`,
-`referral_signals`, `search_index_dlq`, `settlement_events`,
-`stock_reservations`. RLS on with no policy is already deny for `anon` and
-`authenticated`, and all five are written by the service role, which bypasses
-RLS. The migration adds a restrictive `using (false)` policy to each so the
-intent is in the schema instead of inferred from an absence. **It changes no
-effective permission.** Safe to apply at any point in the order, and safe not to.
-
-## `131`–`135`, added 2026-09-01: money to agorot, and percent ranges
-
-Written after the audit finding was re-tested and **confirmed**. An earlier note
-in this file said the finding was false; that came from a query that compared
-`format_type(...)` against the string `numeric`, which never matches a
-precision-qualified `numeric(12,2)`. Re-measured against `pg_type.typname`:
-**32 money columns held as numeric across 15 tables**, plus 25 percent columns.
-
-| File | What it does |
-| --- | --- |
-| `131_money_agorot_money_path.sql` | `orders`, `order_items`, `payments` — 8 columns |
-| `132_money_agorot_wallet.sql` | wallet accounts, balances, entries, transactions, `profiles.wallet_balance` — 6 columns, all SIGNED |
-| `133_money_agorot_catalog.sql` | `products`, `product_variants`, `coupon_deals`, `coupons`, `coupon_codes` — 16 columns |
-| `134_money_agorot_growth.sql` | `affiliates`, `referrals` — 2 columns |
-| `135_percent_range_checks.sql` | 12 percent columns get `check (0 <= x <= 100)` |
-
-**All four money files are additive.** Each adds `<col>_agorot bigint`, backfills
-with `round(<col> * 100)`, constrains it, and leaves the original column in
-place. Applying them changes nothing for the running application: no reader sees
-a different value. Rewriting the readers is step two and dropping the numeric
-columns is step three, and neither is in this directory yet.
-
-Order does not matter between 131 and 135; they touch disjoint columns. 135
-refuses to run if any percent column already holds a value outside 0..100,
-rather than constraining bad data into place.
-
-**Verified before writing, not assumed.** `wallet_accounts.balance_ils` has a
-minimum of **-1.80** over 13 rows, so balances and ledger deltas are signed and
-take no non-negative check. A blanket `>= 0` would have failed at apply time.
-
-The emitted pattern was executed against production inside a single statement
-that raises at the end, so it rolled itself back: `backfilled=2 min_agorot=1800`
-(18.00 becomes 1800). `to_regclass` confirms the scratch table is gone and the
-table count is unchanged at 53.
+list from this directory and checks it against every `.ts`/`.tsx` in **both**
+`src/` and `apps/`, so revoking a function the Expo till uses fails a test
+rather than a till.

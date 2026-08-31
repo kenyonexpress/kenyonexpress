@@ -359,7 +359,7 @@ export function cancellationNotice(paidThroughIso: string | null): string {
 }
 
 /**
- * The three PENDING-109 columns, read off a product row that may not have them.
+ * The three 135 columns, read off a product row that may not have them.
  *
  * `src/types/database.ts` is generated from production and production has not
  * been migrated, so `Product` genuinely does not carry these fields - and
@@ -369,7 +369,7 @@ export function cancellationNotice(paidThroughIso: string | null): string {
  *
  * Reading defensively instead states the real situation: the fields are absent
  * until the migration lands, and every one of them comes back null until then.
- * Delete this function and use the generated type directly once PENDING-109 is
+ * Delete this function and use the generated type directly once 135 is
  * applied and the types are regenerated.
  */
 export interface RecurringProductFields {

@@ -132,7 +132,7 @@ secret, כל ההרשאה שלו היא שורה אחת בראש ה-handler, ו�
 
 ## 6. מה נשאר פתוח, ולא נגעתי בו
 
-1. **‏`migrations/pending/004-expire-vouchers-drop-escrow.sql` לא הורצה.**
+1. **‏`migrations/pending/125_expire_vouchers_drop_escrow.sql` לא הורצה.**
    ‏`expire_vouchers()` בפרודקשן עדיין נוגע ב-`escrow_holds`. הרצת migration על
    פרודקשן היא אחת מארבע העצירות המאושרות. הקוד מוגן בלי קשר, כי אין נתיב כתיבה
    ל-`escrow_holds`.

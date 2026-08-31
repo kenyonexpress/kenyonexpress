@@ -141,7 +141,7 @@ async function runUpsertProduct(
    * `recurring_amount_agorot` - and the other two arrive on the row only via
    * `money.fields`, which omits them entirely unless the type is recurring.
    *
-   * This is what keeps PENDING-109 optional for every other product: a physical
+   * This is what keeps 135 optional for every other product: a physical
    * save sends no column that the un-migrated database has never heard of.
    */
   const {

@@ -40,7 +40,7 @@ describe('resolveStorefrontProductType', () => {
     expect(resolveStorefrontProductType({ type: 'service', is_coupon_enabled: false })).toBe(
       'service',
     )
-    // Not in the generated enum until PENDING-109 lands, and already read by
+    // Not in the generated enum until 135 lands, and already read by
     // lib/commerce/recurring.ts.
     expect(resolveStorefrontProductType({ type: 'recurring', is_coupon_enabled: false })).toBe(
       'recurring',

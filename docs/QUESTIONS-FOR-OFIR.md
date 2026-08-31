@@ -377,7 +377,7 @@ LEGAL-COMPLIANCE: מנויים מחוץ להיקף עד threat model.
 ושרשרת הפרודקשן הן שתי שושלות. 059 משנה שמות ל-`_agorot`; הקוד החי עדיין קורא
 `price_ils`.
 55 קבצים עדיין על השמות הישנים (STATE 10.08).
-`PENDING-money-integer-fix`
+`142`
 ממתין לענף קוד.
 איסור:
 `db push`.

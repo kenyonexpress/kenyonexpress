@@ -109,7 +109,7 @@ function unavailableReason(
 /**
  * The cart prices exactly two shapes, coupon and physical. `products.type` is a
  * Postgres enum that already holds a third value in production (`service`) and
- * gains a fourth (`recurring`) whenever PENDING-109 is applied, so anything the
+ * gains a fourth (`recurring`) whenever 135 is applied, so anything the
  * cart does not recognise returns null and the line is refused.
  *
  * This used to end in `: 'physical'`, which meant an unrecognised type was sold

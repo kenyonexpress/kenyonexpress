@@ -47,13 +47,13 @@
 --
 -- PostGIS is not installed. Adding it for one point column per product pulls in
 -- a large extension and its own schema, and it would be the SECOND spatial
--- stack here: PENDING-110 already chose `earthdistance` + `cube` for the
+-- stack here: 136 already chose `earthdistance` + `cube` for the
 -- supplier coordinates, and the application's distance maths
 -- (src/lib/geo/distance.ts) is a haversine over plain lat/lng that neither
 -- stack is required for. Two ways to say "where" in one schema is how a query
 -- ends up joining metres to degrees.
 --
--- The columns therefore match PENDING-110 exactly -- numeric(9,6) latitude and
+-- The columns therefore match 136 exactly -- numeric(9,6) latitude and
 -- longitude -- and the index is GiST over the same `ll_to_earth` expression.
 -- numeric(9,6) resolves to about 11cm, which is far past what a street address
 -- justifies.
@@ -99,7 +99,7 @@ BEGIN
   -- data, it is wrong data: latitude 32 with a null longitude reads as {32, 0},
   -- which is in the Atlantic off Ghana, and it would sort as the nearest deal
   -- to nobody while looking like a real row. Same reasoning, same constraint
-  -- name shape, as suppliers_coordinates_are_a_pair in PENDING-110.
+  -- name shape, as suppliers_coordinates_are_a_pair in 136.
   IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'products_coordinates_are_a_pair') THEN
     ALTER TABLE public.products ADD CONSTRAINT products_coordinates_are_a_pair
       CHECK (num_nulls(latitude, longitude) <> 1);
@@ -111,7 +111,7 @@ $$;
 -- 3. Indexes
 -- ----------------------------------------------------------------------------
 
--- earthdistance needs cube. Both are IF NOT EXISTS, and PENDING-110 creates the
+-- earthdistance needs cube. Both are IF NOT EXISTS, and 136 creates the
 -- same pair, so whichever of the two files is applied first pays for it and the
 -- second is a no-op.
 CREATE EXTENSION IF NOT EXISTS cube          WITH SCHEMA extensions;

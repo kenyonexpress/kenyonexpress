@@ -70,7 +70,7 @@ async function runCancelSubscription(
 
   if (!current.ok) {
     if (current.missing) {
-      log.info('subscription.cancel.table_absent', { reason: 'PENDING-109 not applied' })
+      log.info('subscription.cancel.table_absent', { reason: '135 not applied' })
       return { error: 'המנויים אינם זמינים כרגע' }
     }
     log.error('subscription.cancel.read_failed', { reason: current.message })

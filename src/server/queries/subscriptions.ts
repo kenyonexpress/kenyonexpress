@@ -22,7 +22,7 @@ import { createClient } from '@/lib/supabase/server'
  * function never has to filter by user id itself - the same rule every other
  * account query follows.
  *
- * PENDING-109 is not applied, so `subscriptions` does not exist in production.
+ * 135 is not applied, so `subscriptions` does not exist in production.
  * A missing table is reported as an empty list and logged at info, not error:
  * a customer with no subscriptions and a database with no subscriptions table
  * look the same to the person reading the page, and neither is a fault. Any
@@ -70,7 +70,7 @@ export async function getMySubscriptions(): Promise<SubscriptionsResult> {
 
   if (!result.ok) {
     if (result.missing) {
-      log.info('subscriptions.table_absent', { reason: 'PENDING-109 not applied' })
+      log.info('subscriptions.table_absent', { reason: '135 not applied' })
       return { ok: true, subscriptions: [] }
     }
     log.error('subscriptions.read_failed', { reason: result.message })
@@ -81,7 +81,7 @@ export async function getMySubscriptions(): Promise<SubscriptionsResult> {
   if (rows.length === 0) return { ok: true, subscriptions: [] }
 
   // Product names in one round trip rather than one per row. The products table
-  // exists regardless of PENDING-109, so this read is typed normally.
+  // exists regardless of 135, so this read is typed normally.
   const productIds = [...new Set(rows.map((r) => r.product_id))]
   const { data: products } = await supabase
     .from('products')

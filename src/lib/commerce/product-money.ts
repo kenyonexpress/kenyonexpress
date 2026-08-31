@@ -451,10 +451,10 @@ export interface ProductMoneyWrite {
    * Recurring only, and ABSENT (not null) on every other type.
    *
    * The distinction matters more than it looks: these three columns arrive with
-   * PENDING-109 and do not exist in production yet. Emitting them as `null` on
+   * 135 and do not exist in production yet. Emitting them as `null` on
    * a physical product would put unknown columns in every single product write
    * and fail all of them. They appear only when the admin actually chose the
-   * recurring type, which is also the only case where PENDING-109 must already
+   * recurring type, which is also the only case where 135 must already
    * have been applied.
    */
   recurring_amount_agorot?: number

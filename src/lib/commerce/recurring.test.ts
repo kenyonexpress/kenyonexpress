@@ -264,7 +264,7 @@ describe('cancellation', () => {
 
 describe('reading a row whose columns may not exist yet', () => {
   it('returns all-null for a row from the un-migrated database', () => {
-    // This is the real state of production on 2026-08-07: PENDING-109 is not
+    // This is the real state of production on 2026-08-07: 135 is not
     // applied, so the columns are absent from the row, not null in it.
     const fields = readRecurringProductFields({ id: 'p1', type: 'physical', price_ils: 100 })
     expect(fields).toEqual({ amountAgorot: null, interval: null, intervalCount: null })

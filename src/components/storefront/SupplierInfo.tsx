@@ -27,7 +27,7 @@ export type SupplierSummary = ({ id: string; name: string } & SupplierContactRow
  * The enum members, spelled the way the database spells them.
  *
  * `recurring`, not `subscription`. The third type was named `recurring` by
- * PENDING-109 (`src/lib/commerce/recurring.ts` tests `row.type === 'recurring'`),
+ * 135 (`src/lib/commerce/recurring.ts` tests `row.type === 'recurring'`),
  * and this prop used to say `subscription` -- a string no product row ever
  * holds. Nothing failed loudly: the union simply never matched, so a monthly
  * subscription fell through to the physical branch below and told the customer
@@ -138,7 +138,7 @@ export default function SupplierInfo({
               send it to. Measured against production, all five filled
               `contact_phone` values are landlines, so the flag alone would
               render links that open WhatsApp only to say the number is not on
-              it. See 003-products-whatsapp-enabled.sql. */}
+              it. See 123_products_whatsapp_enabled.sql. */}
           {showWhatsApp && contact.whatsappHref && (
             <li>
               <a

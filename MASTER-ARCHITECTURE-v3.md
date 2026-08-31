@@ -50,7 +50,7 @@
 c9534ff11 docs(checkout): ...          -> docs/ARCHITECTURE-CHECKOUT-CARDCOM-E2E.md
                                           migrations/pending/006-payment-events.sql
 4dbc2324d docs(orders): ...            -> docs/ARCHITECTURE-ORDER-STATE-MACHINE.md
-                                          migrations/pending/007-order-transition-guard.sql
+                                          migrations/pending/137_order_transition_guard.sql
 ```
 
 **מה זה עלה בפועל:** ‏`git add -A` של הסוכן השני קלט קובץ שלי שעוד לא נוסף,
@@ -61,7 +61,7 @@ c9534ff11 docs(checkout): ...          -> docs/ARCHITECTURE-CHECKOUT-CARDCOM-E2E
 **המלצה:** להריץ סוכן שני ב-worktree נפרד ועל ענף נפרד, לא באותו אחד. שני
 מסמכים באותו שם תחת שתי תיקיות הם עבודה כפולה שצריך למזג ידנית.
 
-**הוכרע 2026-08-19:** הכפילות ב-`payment_events` נסגרה. ‏`120_payment_events.sql`
+**הוכרע 2026-08-19:** הכפילות ב-`payment_events` נסגרה. ‏`130_payment_events.sql`
 נשמר, ‏`006-payment-events.sql` נמחק. ארבעה דברים שהיו ב-006 ולא ב-120 **קופלו
 פנימה ולא אבדו**: העמודה `stage` (אותו token ש-`capturePaymentAlarm` מתייג בו את
 Sentry, כדי שאזעקה תתחבר לשורות שגרמו לה), ‏`external_event_id`, ‏`provider`,
@@ -220,14 +220,14 @@ Sentry, כדי שאזעקה תתחבר לשורות שגרמו לה), ‏`extern
 | # | קובץ | תלוי ב | למה בסדר הזה |
 |---|---|---|---|
 | 0 | `113` §3 בלבד, בחיבור מורשה | - | יוצר `cube` + `earthdistance`. כל אינדקס מרחק אחר מחכה לזה |
-| 1 | `PENDING-money-integer-fix.sql` | **קוד** | ‏55 קבצים עדיין קוראים את השמות הישנים. **אסור להריץ לפני שנכתב ענף הקוד ל-agorot** |
-| 2 | `120_payment_events.sql` (טיוטה) | - | אין תלות. סוגר את הפער "אומת, ואז finalize נכשל" |
-| 3 | `121_refunds.sql` (טיוטה) | - | מתחיל את שעון ה-14 יום. חובה לפני השקה מסחרית |
-| 4 | `122_search_index_outbox.sql` (טיוטה) | - | סוגר webhook שאובד |
-| 4.5 | `124_order_items_delivered_at.sql` (טיוטה) | - | **חוסם השקה מסחרית יחד עם (3):** בלעדיו חלון הביטול נמדד מ-`paid_at` |
-| 5 | `PENDING-110-supplier-coordinates.sql` | 0 | קואורדינטות לספק |
-| 6 | `123_supplier_branches.sql` (טיוטה) | 0, 5 | סניפים. ה-GiST שלו מוער עד ש-0 רץ |
-| 7 | `PENDING-109-recurring-subscriptions.sql` | - | הטופס כבר מציע "חיוב חודשי קבוע" ונכשל בלעדיה |
+| 1 | `142_money_integer_fix_in_place.sql` | **קוד** | ‏55 קבצים עדיין קוראים את השמות הישנים. **אסור להריץ לפני שנכתב ענף הקוד ל-agorot** |
+| 2 | `130_payment_events.sql` (טיוטה) | - | אין תלות. סוגר את הפער "אומת, ואז finalize נכשל" |
+| 3 | `131_refunds.sql` (טיוטה) | - | מתחיל את שעון ה-14 יום. חובה לפני השקה מסחרית |
+| 4 | `132_search_index_outbox.sql` (טיוטה) | - | סוגר webhook שאובד |
+| 4.5 | `134_order_items_delivered_at.sql` (טיוטה) | - | **חוסם השקה מסחרית יחד עם (3):** בלעדיו חלון הביטול נמדד מ-`paid_at` |
+| 5 | `136_supplier_coordinates.sql` | 0 | קואורדינטות לספק |
+| 6 | `133_supplier_branches.sql` (טיוטה) | 0, 5 | סניפים. ה-GiST שלו מוער עד ש-0 רץ |
+| 7 | `135_recurring_subscriptions.sql` | - | הטופס כבר מציע "חיוב חודשי קבוע" ונכשל בלעדיה |
 
 **‏(1) הוא היחיד שמסוכן להריץ מוקדם.** כל השאר הן תוספות בלבד.
 
@@ -237,14 +237,14 @@ Sentry, כדי שאזעקה תתחבר לשורות שגרמו לה), ‏`extern
 
 | קובץ | מה הוא | מסמך מקור |
 |---|---|---|
-| `120_payment_events.sql` | יומן append-only לחיי תשלום, נפרד מ-`payment_webhook_events` | ‏#1 §10 |
-| `121_refunds.sql` | הודעת הביטול והכרעתה, נפרדת מ-`payments` | ‏#3 §5 |
-| `122_search_index_outbox.sql` | outbox באותה טרנזקציה כמו שינוי המוצר | ‏#5 §7.4 |
-| `123_supplier_branches.sql` | סניפים של ספק, בלי כסף ובלי הרשאה | ‏#6 §8 |
-| `124_order_items_delivered_at.sql` | ‏`shipped_at` + `delivered_at` + פונקציית מועד אחרון לביטול | ‏#3 §6, בהחלטת אופיר |
+| `130_payment_events.sql` | יומן append-only לחיי תשלום, נפרד מ-`payment_webhook_events` | ‏#1 §10 |
+| `131_refunds.sql` | הודעת הביטול והכרעתה, נפרדת מ-`payments` | ‏#3 §5 |
+| `132_search_index_outbox.sql` | outbox באותה טרנזקציה כמו שינוי המוצר | ‏#5 §7.4 |
+| `133_supplier_branches.sql` | סניפים של ספק, בלי כסף ובלי הרשאה | ‏#6 §8 |
+| `134_order_items_delivered_at.sql` | ‏`shipped_at` + `delivered_at` + פונקציית מועד אחרון לביטול | ‏#3 §6, בהחלטת אופיר |
 
 **הכפילות הוכרעה 2026-08-19:** ‏`006-payment-events.sql` נמחק, ‏`120` נשמר,
-והטוב שבו קופל פנימה (§0.3). ‏`007-order-transition-guard.sql` של הסוכן השני
+והטוב שבו קופל פנימה (§0.3). ‏`137_order_transition_guard.sql` של הסוכן השני
 **נשאר** ולא נבדק לעומק כאן: הוא רץ על מכונת המצב ולא על `payment_events`, ולכן
 אינו כפילות. **צריך לעבור עליו לפני הרצה.**
 

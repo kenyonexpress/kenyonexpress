@@ -1,9 +1,9 @@
 /**
- * Turns the two database errors that PENDING-109 causes into one sentence an
+ * Turns the two database errors that 135 causes into one sentence an
  * admin can act on.
  *
  * The recurring product type ships as code before it ships as schema: the
- * migration is in `supabase/migrations/PENDING-109-recurring-subscriptions.sql`
+ * migration is in `supabase/migrations/135_recurring_subscriptions.sql`
  * and applying it is Ofir's call, not this session's. Until it is applied, an
  * admin who picks "חיוב חודשי קבוע" and saves gets one of two raw PostgREST
  * messages, both of which read like a crash:
@@ -20,7 +20,7 @@
  */
 
 /** Named here so the message and the file cannot drift apart. */
-export const RECURRING_MIGRATION_FILE = 'PENDING-109-recurring-subscriptions.sql'
+export const RECURRING_MIGRATION_FILE = '135_recurring_subscriptions.sql'
 
 // One template literal, not three joined with `+`. Concatenating template
 // literals has already corrupted a production build in this repo once: the
@@ -28,7 +28,7 @@ export const RECURRING_MIGRATION_FILE = 'PENDING-109-recurring-subscriptions.sql
 const RECURRING_MIGRATION_NOTICE = `סוג המוצר "חיוב חודשי קבוע" עדיין לא מופעל במסד הנתונים. יש להחיל את המיגרציה ${RECURRING_MIGRATION_FILE} ואז לשמור שוב. שאר סוגי המוצרים עובדים כרגיל.`
 
 /**
- * The enum label and the three columns PENDING-109 adds. Listed explicitly
+ * The enum label and the three columns 135 adds. Listed explicitly
  * rather than matched by a loose /recurring/ pattern, so an unrelated failure
  * that happens to mention the word is not swallowed and reported as a missing
  * migration.
@@ -43,7 +43,7 @@ const MISSING_SCHEMA_MARKERS = [
 ] as const
 
 /**
- * Returns the admin-facing notice when `message` is PENDING-109 not being
+ * Returns the admin-facing notice when `message` is 135 not being
  * applied, and null when it is any other failure.
  *
  * Returning null rather than a generic fallback is deliberate: a caller that

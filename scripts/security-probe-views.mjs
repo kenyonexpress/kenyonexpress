@@ -16,7 +16,7 @@
  * Re-run this after applying 103, and again after any migration that drops and
  * recreates one of these views -- a recreated view does not inherit
  * `security_invoker`, so the hole can reopen without a single line of app code
- * changing. PENDING-money-integer-fix.sql rebuilds v_wallet_balance_drift and
+ * changing. 142_money_integer_fix_in_place.sql rebuilds v_wallet_balance_drift and
  * is exactly that case.
  *
  *   node scripts/security-probe-views.mjs

@@ -115,7 +115,7 @@ rejects every write from `anon` and `authenticated`. All eight are written by
 the service role, which bypasses RLS. So the effective permissions are already
 correct and this is a legibility problem, not a hole.
 
-`migrations/pending/130_deny_all_on_server_only_tables.sql` makes the intent
+`migrations/pending/122_deny_all_on_server_only_tables.sql` makes the intent
 explicit for the five unclassified tables with a restrictive `using (false)`
 policy. It changes no effective permission. It is **not applied**.
 

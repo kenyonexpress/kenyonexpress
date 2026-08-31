@@ -16,7 +16,7 @@ import { revalidatePath } from 'next/cache'
  * settled when the buyer paid, the supplier's share was decided then, and the
  * platform's obligation afterwards is the same one to a different person. In
  * particular this touches NO wallet column - which is what makes this goal
- * possible while `PENDING-money-integer-fix.sql` is unapplied.
+ * possible while `142_money_integer_fix_in_place.sql` is unapplied.
  *
  * `gifted_by_user_id` is written at the same moment, because after the update
  * `user_id` is no longer the buyer and the link to whoever paid - the person a

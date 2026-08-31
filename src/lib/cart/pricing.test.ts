@@ -532,7 +532,7 @@ describe('buildCartView: empty', () => {
 /**
  * `products.type` is a Postgres enum with three values in production today
  * (`coupon`, `physical`, `service`) and a fourth, `recurring`, waiting in
- * PENDING-109. The cart prices two of them.
+ * 135. The cart prices two of them.
  *
  * The resolver used to end in `: 'physical'`, so every value it did not
  * recognise was priced as a one-time physical purchase. That is silent by

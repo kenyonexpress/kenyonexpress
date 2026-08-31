@@ -7,7 +7,7 @@ Status: **BINDING** · branch `docs/architecture-night` · 2026-08-19
 Scope: **docs only.**
 Companions: `ARCHITECTURE-CHECKOUT-CARDCOM-E2E.md`,
 `ARCHITECTURE-REFUNDS-CANCELLATIONS.md`, `ARCHITECTURE-SECURITY-HARDENING.md`.
-Draft SQL: `migrations/pending/007-order-transition-guard.sql` (לא הורצה).
+Draft SQL: `migrations/pending/137_order_transition_guard.sql` (לא הורצה).
 
 ---
 
@@ -207,7 +207,7 @@ scanned"), כולל מסלול `pending -> paid -> escrow_held -> escrow_release
 **מה מחייב, ללא שינוי:** הקוד. אין Escrow. ההבדל היחיד הוא שהתיעוד בקוד כבר לא
 סותר אותו.
 
-`migrations/pending/004-expire-vouchers-drop-escrow.sql` מסיים את אותו ניקוי
+`migrations/pending/125_expire_vouchers_drop_escrow.sql` מסיים את אותו ניקוי
 בצד ה-DB: `expire_vouchers()` בפרודקשן עדיין נוגע ב-`escrow_holds`.
 
 ### 3.5 הגלגול לרמת ההזמנה, והמלכודת שבו
@@ -444,7 +444,7 @@ create unique index orders_one_open_per_user_idx
 | `voucher_redemptions` | **כל סריקה, כולל כישלונות** | דה-פקטו |
 | `split_executions` | הפיצול בזמן התשלום | דה-פקטו |
 | `wallet_entries` | תנועות ארנק | ספר חשבונות |
-| `payment_events` | **טיוטה**, `120_payment_events.sql` | **כן, בטריגר** |
+| `payment_events` | **טיוטה**, `130_payment_events.sql` | **כן, בטריגר** |
 
 `voucher_redemptions` היא הטובה שבהן: היא רושמת גם `not_found`, גם `wrong_supplier`
 וגם `rate_limited`, עם `ip_address` ו-`user_agent`. **יומן שרושם רק הצלחות לא
@@ -464,7 +464,7 @@ create unique index orders_one_open_per_user_idx
 > **כל מעבר סטטוס על מסלול הכסף נרשם, עם `actor_id` אמיתי כשיש אדם,
 > ל-טבלה שאי אפשר לערוך.**
 
-`migrations/pending/007-order-transition-guard.sql` מוסיף את החלק שאפשר לאכוף
+`migrations/pending/137_order_transition_guard.sql` מוסיף את החלק שאפשר לאכוף
 ב-DB: טריגר שחוסם מעברים בלתי חוקיים על `orders`, ‏`order_items`, ‏`payments`
 ו-`vouchers`, וטריגר שחוסם UPDATE/DELETE על `audit_log`. שני התיקונים
 הנותרים (‏`actor_id` אמיתי, כתיבה ל-`payment_events`) הם שינויי קוד.

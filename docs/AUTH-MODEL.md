@@ -242,7 +242,7 @@ select p.proname, pg_get_function_identity_arguments(p.oid) as args,
 1. **‏`REVOKE EXECUTE` על `is_admin()` ואחיותיה — לא לעשות.** ‏123 policies
    מפנות לשש הפונקציות האלה, וביטוי policy מוערך בהרשאות התפקיד השואל.
    הפירוט ב-`docs/DB-HARDENING-AUDIT.md`.
-2. **‏`migrations/pending/125_revoke_unused_definer_execute.sql`** — שש
+2. **‏`migrations/pending/143_revoke_unused_definer_execute.sql`** — שש
    פונקציות שנמדדו בלי אף קורא. ממתין לאישור להרצת DDL.
 3. **ההענקה של `check_user_rate_limit`** — סעיף 6, נקודה 2.
 4. **alert על `rate_limit.check_failed`** — בלעדיו fail-open הוא שקט.

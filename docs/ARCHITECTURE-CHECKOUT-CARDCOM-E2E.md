@@ -355,7 +355,7 @@ pre-059 ויש בו `amount_ils`, ושאילתה שנקבה ב-`amount_agorot` �
 שמפילה את כל ה-SELECT. התוצאה הייתה `payment === null` והנקודה ענתה
 `{ok:true, unknown_payment:true}` עם 200 ללקוח ש-Cardcom בדיוק חייב.
 
-**זהו חוב טכני עם תאריך תפוגה.** ‏`PENDING-money-integer-fix.sql` הוא מה שמסיים
+**זהו חוב טכני עם תאריך תפוגה.** ‏`142_money_integer_fix_in_place.sql` הוא מה שמסיים
 אותו. עד שהוא מורץ, הפתרון בזמן ריצה הוא ההגנה.
 
 ---
@@ -506,7 +506,7 @@ payload = { v:1, c:code, s:supplier_id, u:user_id, e:expiry_unix, k:key_id }
 ## 11. טיוטת SQL: `payment_events`
 
 ```
-migrations/pending/120_payment_events.sql
+migrations/pending/130_payment_events.sql
 ```
 
 הקובץ נכתב בהרצה הזאת ו**לא הורץ**. הוא יוצר יומן append-only לכל אירוע על

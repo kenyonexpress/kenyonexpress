@@ -200,7 +200,7 @@ for (const p of missing) {
   const price = p.price ?? p.regular_price
 
   // A subscription is refused, not downgraded. `product_type` in production is
-  // still `coupon|physical|service`; PENDING-109 adds `recurring` and has not
+  // still `coupon|physical|service`; 135 adds `recurring` and has not
   // been applied, so `'recurring'::product_type` below would fail the whole
   // INSERT with 22P02. Coercing it to `physical` instead would let it through --
   // and sell a monthly subscription as a one-time boxed item. Neither is an
@@ -209,7 +209,7 @@ for (const p of missing) {
   if (p.target_type === 'recurring') {
     skippedRecurring += 1
     lines.push(
-      `-- SKIPPED (recurring; needs PENDING-109 for the enum member, then an amount and an interval): ${p.proposed_slug}`,
+      `-- SKIPPED (recurring; needs 135 for the enum member, then an amount and an interval): ${p.proposed_slug}`,
     )
     continue
   }

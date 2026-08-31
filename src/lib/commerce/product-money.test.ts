@@ -758,7 +758,7 @@ describe('the recurring type', () => {
   })
 
   it('emits the three new columns ONLY for a recurring product', () => {
-    // PENDING-109 has not been applied. Emitting these as null on a physical
+    // 135 has not been applied. Emitting these as null on a physical
     // write would send unknown columns on every product save in the system.
     const physical = buildProductMoneyWrite({
       type: 'physical',

@@ -383,7 +383,7 @@ that is silently wrong.
 
 ### 7.4 Draft SQL: `search_index_outbox`
 
-**DRAFT. NOT APPLIED. NOT RUN.** File: `migrations/pending/122_search_index_outbox.sql`.
+**DRAFT. NOT APPLIED. NOT RUN.** File: `migrations/pending/132_search_index_outbox.sql`.
 
 ```sql
 -- ============================================================================

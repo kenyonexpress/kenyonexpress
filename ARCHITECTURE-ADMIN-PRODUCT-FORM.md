@@ -52,7 +52,7 @@ Two discrepancies, both real, both recorded rather than fixed here.
 
 ### 1.1 `recurring` ships as code before it ships as schema
 
-`PENDING-109-recurring-subscriptions.sql` is unapplied and applying it is Ofir's
+`135_recurring_subscriptions.sql` is unapplied and applying it is Ofir's
 call. Until then, an admin who picks "חיוב חודשי קבוע" and saves gets one of two
 raw PostgREST messages, both of which read like a crash:
 
@@ -488,10 +488,10 @@ The form is Hebrew and RTL throughout. The parts that are not merely
 | Gap | Consequence | Where it belongs |
 |---|---|---|
 | `service` is unreachable from the form | service coupons cannot be created; the 2-day/7-day cancellation cuts have nothing to attach to | add the option, plus a booking-date column |
-| `recurring` is in the form and not in the enum | every recurring save fails until PENDING-109 is applied; the error is translated but the feature is dark | apply 109, or hide the option behind a flag |
+| `recurring` is in the form and not in the enum | every recurring save fails until 135 is applied; the error is translated but the feature is dark | apply 109, or hide the option behind a flag |
 | Generated types predate migration 112 | five columns are read through defensive helpers that exist only for that reason | regenerate `src/types/database.ts`, delete `product-fields.ts` |
 | No image processing | a 6000px upload is served as-is; `/_next/image` fails open | a size cap at upload, and a measured decision about resizing |
-| `compare_at_price` and `compare_at_price_ils` both exist | one fact, two columns, on the money path | `PENDING-money-integer-fix.sql` |
+| `compare_at_price` and `compare_at_price_ils` both exist | one fact, two columns, on the money path | `142_money_integer_fix_in_place.sql` |
 | No `delivered_at` | the goods cancellation window is computed from `paid_at`, which is earlier than the law allows | `ARCHITECTURE-REFUNDS-CANCELLATIONS.md` §6 |
 
 None of these are fixed by this document. They are listed in

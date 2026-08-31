@@ -105,7 +105,7 @@ function trimmed(value: string | null | undefined): string | null {
  * the column.
  *
  * `products.whatsapp_enabled` arrives with
- * `migrations/pending/003-products-whatsapp-enabled.sql`, which has NOT been
+ * `migrations/pending/123_products_whatsapp_enabled.sql`, which has NOT been
  * applied. `src/types/database.ts` is generated from production, so `Product`
  * genuinely does not carry the field and neither does the row at runtime.
  * Reading defensively states that; casting the row to a wider type would make

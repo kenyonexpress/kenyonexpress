@@ -251,7 +251,7 @@ Two of those six still have no column, and one has a draft. That is the honest
 state of the schema and it is why §5 and §6 exist.
 
 **`delivered_at` was drafted on Ofir's decision, 2026-08-19**:
-`migrations/pending/124_order_items_delivered_at.sql`. It adds
+`migrations/pending/134_order_items_delivered_at.sql`. It adds
 `order_items.shipped_at` and `order_items.delivered_at`, and a
 `order_item_cancellation_deadline(uuid)` function so the account area, the admin
 refund screen and any lateness report cannot disagree about the date. The
@@ -337,7 +337,7 @@ reconciliation is for.
 
 ## 5. Draft SQL: `refunds`
 
-**DRAFT. NOT APPLIED. NOT RUN.** File: `migrations/pending/121_refunds.sql`.
+**DRAFT. NOT APPLIED. NOT RUN.** File: `migrations/pending/131_refunds.sql`.
 
 ### 5.1 Why, when `payments(kind='refund')` already exists
 
@@ -563,7 +563,7 @@ GRANT SELECT ON public.refunds TO authenticated;
 - **No backfill.** Past refunds have no recorded notice date and inventing one
   would fabricate the start of a statutory clock.
 - **No `*_ils` column.** New money columns are agorot. The pre-059 spellings are
-  untangled by `PENDING-money-integer-fix.sql` on its own schedule, and this
+  untangled by `142_money_integer_fix_in_place.sql` on its own schedule, and this
   file does not add a third spelling.
 - **No status on `orders`.** The order rollup is derived, per
   `ARCHITECTURE-ORDER-STATE-MACHINE.md` §5, and a `refund_pending` order status
@@ -577,7 +577,7 @@ Listed because naming a gap is more useful than inventing a column.
 
 | Gap | Consequence | Where it belongs |
 |---|---|---|
-| ~~No delivery timestamp on `order_items`~~ | ~~the window we honour is shorter than the law requires~~ | **drafted 2026-08-19**: `migrations/pending/124_order_items_delivered_at.sql`. Not applied. Stamping the columns is still an application change on the supplier's ship/deliver actions |
+| ~~No delivery timestamp on `order_items`~~ | ~~the window we honour is shorter than the law requires~~ | **drafted 2026-08-19**: `migrations/pending/134_order_items_delivered_at.sql`. Not applied. Stamping the columns is still an application change on the supplier's ship/deliver actions |
 | No booked-date field on service products | The 2-day and 7-day pre-service cuts cannot be applied at all | `products.service_date`, plus a boolean for "date-specific leisure" |
 | No cancellation-notice record | The 14-day refund deadline is unmeasurable and unalertable | §5 draft |
 | No extended-window flag on profiles | The 4-month window cannot be honoured automatically | a self-declared status on `profiles`, with proof handled off-platform |

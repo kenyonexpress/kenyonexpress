@@ -9,7 +9,7 @@ Code this describes: `src/lib/geo/cities.ts`, `src/lib/geo/distance.ts`,
 `src/lib/search/meili-settings.ts` (the `_geo` field),
 `src/components/storefront/SupplierInfo.tsx`, `src/app/coupon/[id]/page.tsx`.
 Migrations: `113_products_geo.sql` (applied in reduced form),
-`PENDING-110-supplier-coordinates.sql` (not applied).
+`136_supplier_coordinates.sql` (not applied).
 
 ---
 
@@ -308,14 +308,14 @@ Measured, then decided.
 
 - PostGIS is **not installed**, and installing it for one point column per
   product pulls in a large extension and its own schema.
-- It would be the **second** spatial stack: `PENDING-110` already chose
+- It would be the **second** spatial stack: `136` already chose
   `earthdistance` + `cube`.
 - The application's distance maths is a haversine over plain lat/lng that
   neither stack is required for.
 
 **Two ways to say "where" in one schema is how a query ends up joining metres to
 degrees.** So the columns are `numeric(9,6)` latitude and longitude, matching
-PENDING-110 exactly, and the index is GiST over the same `ll_to_earth`
+136 exactly, and the index is GiST over the same `ll_to_earth`
 expression. `numeric(9,6)` resolves to about 11 cm, far past what a street
 address justifies.
 
@@ -352,7 +352,7 @@ would sort as the nearest deal to nobody while looking like a real row.
 
 ## 8. Draft SQL: `supplier_branches`
 
-**DRAFT. NOT APPLIED. NOT RUN.** File: `migrations/pending/123_supplier_branches.sql`.
+**DRAFT. NOT APPLIED. NOT RUN.** File: `migrations/pending/133_supplier_branches.sql`.
 
 ### 8.1 The problem it solves
 
@@ -563,4 +563,4 @@ GRANT SELECT ON public.supplier_branches TO anon, authenticated;
 | Meilisearch cannot hold a multi-point product | a branch-aware geo search has no representation | open design question. One document per branch is the obvious answer and it breaks the id-per-product assumption everywhere else |
 | `?near=` carries full geolocation precision | a shared link carries a doorstep | round to 3 decimals before it enters the URL |
 | No "closed now" signal | a customer can be sent to a shut business | `supplier_branches.hours` is display-only by design; a real open/closed calculation needs holiday data |
-| `PENDING-110` unapplied | `suppliers.latitude/longitude` do not exist, so `supplierLocation()`'s exact branch is dead code today | it is written to be a no-op until the columns exist, which is why it costs nothing to leave |
+| `136` unapplied | `suppliers.latitude/longitude` do not exist, so `supplierLocation()`'s exact branch is dead code today | it is written to be a no-op until the columns exist, which is why it costs nothing to leave |

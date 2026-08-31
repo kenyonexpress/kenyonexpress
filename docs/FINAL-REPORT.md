@@ -336,8 +336,8 @@ it landed, because that directory means "not run anywhere" and
 Everything else waiting is in `migrations/pending/` and that directory's README.
 There are **two** pending locations: `migrations/pending/`, and three
 `PENDING-`-prefixed files still sitting in `supabase/migrations/`
-(`PENDING-109-recurring-subscriptions.sql`, `PENDING-110-supplier-coordinates.sql`,
-`PENDING-money-integer-fix.sql`). Read both before concluding the schema is
+(`135_recurring_subscriptions.sql`, `136_supplier_coordinates.sql`,
+`142_money_integer_fix_in_place.sql`). Read both before concluding the schema is
 settled.
 
 ---

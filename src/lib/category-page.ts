@@ -60,7 +60,7 @@ type Orderable<T> = { order(column: string, opts: { ascending: boolean }): T }
  * a UNIQUE constraint on `sort_order`, deliberately: `CategoryTree` reorders
  * by swapping two rows in two separate `updateCategorySortOrder` calls, and a
  * unique index would fail the first of them and break the admin's reordering.
- * `migrations/pending/006-categories-sort-order.sql` renumbers the data; this
+ * `migrations/pending/124_categories_sort_order.sql` renumbers the data; this
  * is what holds regardless of the data.
  */
 export function orderedByMenu<T extends Orderable<T>>(query: T): T {
@@ -92,7 +92,7 @@ export type CategoryProductRow = {
 }
 
 /**
- * `latitude`/`longitude` are optional because they arrive with PENDING-110 and
+ * `latitude`/`longitude` are optional because they arrive with 136 and
  * are not selected yet. Typed here so the geo helpers compile against the
  * shape they will have, without the query pretending the columns exist.
  */
@@ -368,11 +368,11 @@ export async function getCategoryProducts(opts: {
   let query = supabase
     .from('products')
     .select(
-      // `city` ONLY. `latitude`/`longitude` arrive with PENDING-110 and do not
+      // `city` ONLY. `latitude`/`longitude` arrive with 136 and do not
       // exist in this database yet - naming a missing column is Postgres 42703,
       // which fails the WHOLE select, so every category page would render an
       // empty grid. That exact failure is why src/lib/supabase/optional-columns.ts
-      // exists. Add the two columns to this string when PENDING-110 is applied;
+      // exists. Add the two columns to this string when 136 is applied;
       // `supplierLocation` already prefers them the moment they are present.
       'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, categories!products_category_id_fkey(name_he, slug), suppliers(city)',
       { count: 'exact' },
@@ -441,7 +441,7 @@ export async function getCategoryProducts(opts: {
    * The cost is that `total` counts the unfiltered set, so pagination is
    * approximate while a city is selected. Stated rather than hidden: with a
    * catalogue of 80 products this is one page either way, and fixing it
-   * properly needs the coordinates from PENDING-110, not a second filter.
+   * properly needs the coordinates from 136, not a second filter.
    */
   const filtered = city ? (filterByCity(items, city) as typeof items) : items
 

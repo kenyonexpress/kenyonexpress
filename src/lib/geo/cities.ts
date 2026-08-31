@@ -6,7 +6,7 @@
  * `suppliers.city` is a text column that is filled in for 5 of the 11 live
  * suppliers; `suppliers.address` is filled in for NONE of them (measured
  * 2026-08-07). There is nothing to geocode. A per-supplier lat/lng exists as
- * columns in PENDING-110 and is the right long-term home for a real address,
+ * columns in 136 and is the right long-term home for a real address,
  * but until somebody enters those addresses, the only location signal in the
  * database is the city name.
  *

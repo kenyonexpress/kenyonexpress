@@ -267,7 +267,7 @@ SUPABASE_SECRET_KEY blocker and not a regression.
 ### 4. ‏`fn_ensure_referral_code` בפרודקשן קוראת וכותבת על שורת פרופיל של אחר
 
 - **איפה:** פונקציית DB בפרודקשן, לא בקוד. התיקון:
-  ‏`migrations/pending/125_revoke_unused_definer_execute.sql`, **‏DRAFT, לא הורץ**.
+  ‏`migrations/pending/143_revoke_unused_definer_execute.sql`, **‏DRAFT, לא הורץ**.
 - **מה:** ‏`fn_ensure_referral_code(p_user_id uuid)` היא `SECURITY DEFINER`,
   ניתנת להרצה בידי `authenticated` דרך `/rest/v1/rpc/`, ו**אינה בודקת
   ‏`auth.uid()` בכלל**. היא לוקחת את מזהה היעד מהקורא. מכיוון שהיא definer,

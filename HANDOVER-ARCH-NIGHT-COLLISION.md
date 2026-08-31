@@ -37,8 +37,8 @@ a4ee642d2 docs(arch): end-to-end checkout ...         סוכן A, משימה 1
 | --- | --- | --- |
 | ‏checkout E2E | `ARCHITECTURE-CHECKOUT-CARDCOM-E2E.md`, ‏779 שורות | `docs/ARCHITECTURE-CHECKOUT-CARDCOM-E2E.md`, ‏578 שורות |
 | מכונות מצב | `ARCHITECTURE-ORDER-STATE-MACHINE.md`, ‏554 שורות | `docs/ARCHITECTURE-ORDER-STATE-MACHINE.md`, ‏505 שורות |
-| ‏`payment_events` | `migrations/pending/120_payment_events.sql`, ‏215 שורות | `migrations/pending/006-payment-events.sql`, ‏295 שורות |
-| שומרי מעברים | אין | `migrations/pending/007-order-transition-guard.sql`, ‏326 שורות |
+| ‏`payment_events` | `migrations/pending/130_payment_events.sql`, ‏215 שורות | `migrations/pending/006-payment-events.sql`, ‏295 שורות |
+| שומרי מעברים | אין | `migrations/pending/137_order_transition_guard.sql`, ‏326 שורות |
 
 מסמכים 3, 4, 5 (החזרים, טופס מוצר, חיפוש) קיימים **רק** אצל A. אין להם כפילות.
 
@@ -78,7 +78,7 @@ a4ee642d2 docs(arch): end-to-end checkout ...         סוכן A, משימה 1
 
 שתיהן **לא הורצו**. שתיהן יוצרות טבלת יומן לאותו צורך.
 
-| | `120_payment_events.sql` (A) | `006-payment-events.sql` (B) |
+| | `130_payment_events.sql` (A) | `006-payment-events.sql` (B) |
 | --- | --- | --- |
 | שורות | 215 | 295 |
 | ‏append-only | ראה בקובץ | **טריגר שחוסם UPDATE ו-DELETE** |
@@ -87,7 +87,7 @@ a4ee642d2 docs(arch): end-to-end checkout ...         סוכן A, משימה 1
 | אינדקסים | ראה בקובץ | חלקי על 10 סוגי האירועים הקריטיים בלבד |
 
 **אחת מהן צריכה למות לפני שמריצים משהו.** שתי טבלאות יומן לאותו מסלול כסף הן
-בדיוק הפגם ש-`PENDING-money-integer-fix.sql` קיים כדי להתיר.
+בדיוק הפגם ש-`142_money_integer_fix_in_place.sql` קיים כדי להתיר.
 
 **המלצת המספור:** `migrations/pending/` ממספרת `003-`, `004-`, `005-`, וה-README
 שלה אומר במפורש שהיא **אינה** חלק משרשרת `NNN_` של `supabase/migrations`. לפי
@@ -95,7 +95,7 @@ a4ee642d2 docs(arch): end-to-end checkout ...         סוכן A, משימה 1
 
 ---
 
-## 5. `007-order-transition-guard.sql`, שאין לו כפילות
+## 5. `137_order_transition_guard.sql`, שאין לו כפילות
 
 טיוטה, **לא הורצה**. טריגרים שחוסמים מעברי סטטוס בלתי חוקיים על `orders`,
 `order_items`, `payments`, `vouchers`, ועוד שני טריגרים שהופכים את `audit_log`

@@ -11,7 +11,7 @@
 -- THE BLOCKER RECORDED FOR THIS GOAL DOES NOT APPLY, AND HERE IS WHY
 --
 -- STATE.md warned that "wallet ownership transfer" touches the wallet, whose
--- balance is `numeric` shekels behind `PENDING-money-integer-fix.sql`, and that
+-- balance is `numeric` shekels behind `142_money_integer_fix_in_place.sql`, and that
 -- the goal might have to stop at that boundary. Measured: gifting a coupon
 -- moves `vouchers.user_id` from the buyer to the recipient. It does not read,
 -- write or reference `wallet_accounts`, `wallet_balances`, `wallet_entries` or

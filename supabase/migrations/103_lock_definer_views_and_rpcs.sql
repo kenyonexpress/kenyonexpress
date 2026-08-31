@@ -75,7 +75,7 @@ begin;
 -- ---------------------------------------------------------------------------
 -- 1. Views: evaluate RLS as the caller, and stop handing them to the public.
 -- ---------------------------------------------------------------------------
--- NOTE for whoever applies PENDING-money-integer-fix.sql: that migration drops
+-- NOTE for whoever applies 142_money_integer_fix_in_place.sql: that migration drops
 -- and recreates `v_wallet_balance_drift` in agorot. A recreated view does NOT
 -- inherit these settings -- it must re-apply both the `security_invoker` and
 -- the REVOKE, or this hole reopens silently.

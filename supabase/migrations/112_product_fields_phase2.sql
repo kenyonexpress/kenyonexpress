@@ -85,7 +85,7 @@ COMMENT ON COLUMN public.product_variants.image_url IS
 --
 -- `length_cm`, `width_cm` and `height_cm` are numeric centimetres and are read
 -- today by the admin form and by ShippingInfo. Converting them in place would
--- be the same class of change as PENDING-money-integer-fix -- a unit change
+-- be the same class of change as 142 -- a unit change
 -- under live readers -- and that file is unapplied precisely because that is
 -- not safe without a paired code branch.
 --

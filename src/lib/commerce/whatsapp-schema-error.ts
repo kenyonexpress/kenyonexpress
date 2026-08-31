@@ -4,7 +4,7 @@
  *
  * Same shape and same reason as `recurring-schema-error.ts`: the WhatsApp
  * toggle ships as code before it ships as schema. The migration is
- * `migrations/pending/003-products-whatsapp-enabled.sql` and applying it is
+ * `migrations/pending/123_products_whatsapp_enabled.sql` and applying it is
  * Ofir's call, not this session's.
  *
  * WHAT AN ADMIN SEES WITHOUT THIS. Ticking the box and saving returns the raw
@@ -26,7 +26,7 @@
  */
 
 /** Named here so the message and the file cannot drift apart. */
-export const WHATSAPP_MIGRATION_FILE = 'migrations/pending/003-products-whatsapp-enabled.sql'
+export const WHATSAPP_MIGRATION_FILE = 'migrations/pending/123_products_whatsapp_enabled.sql'
 
 // One template literal, not several joined with `+`. Concatenating template
 // literals has already corrupted a production build in this repo once: the

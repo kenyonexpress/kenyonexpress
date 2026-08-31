@@ -243,7 +243,7 @@ const WOO_SUBSCRIPTION_META = ['_subscription_price', '_subscription_period']
  * so every gate in `emit-missing-products.mjs` passes it.
  *
  * The caller is responsible for refusing to WRITE a `recurring` row until
- * PENDING-109 adds the enum member; see the skip in `emit-missing-products.mjs`.
+ * 135 adds the enum member; see the skip in `emit-missing-products.mjs`.
  */
 export function mapType(
   categorySlugs,

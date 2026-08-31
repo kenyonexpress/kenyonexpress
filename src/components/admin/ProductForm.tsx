@@ -93,7 +93,7 @@ export default function ProductForm({
   const [supplierSplit, setSupplierSplit] = useState(
     product?.supplier_split_percent != null ? String(product.supplier_split_percent) : '',
   )
-  // Read defensively: PENDING-109 has not been applied, so these three columns
+  // Read defensively: 135 has not been applied, so these three columns
   // are absent from both the generated type and the row itself. See
   // readRecurringProductFields.
   const savedRecurring = readRecurringProductFields(product)

@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest'
  * The products table rendered its type column as
  * `type === 'physical' ? 'פיזי' : 'קופון'`, a binary on a column that is not
  * binary. `products.type` holds `coupon`, `physical` and `service` today, and
- * `recurring` once PENDING-109 is applied.
+ * `recurring` once 135 is applied.
  *
  * The visible consequence was that a `service` row displayed as "קופון" in the
  * admin list, which is the one label that carries a money meaning: a coupon is
@@ -25,7 +25,7 @@ describe('productTypeBadge', () => {
     }
   })
 
-  it('labels recurring ahead of PENDING-109 so the column is ready', () => {
+  it('labels recurring ahead of 135 so the column is ready', () => {
     expect(productTypeBadge('recurring').label).toBe('מנוי')
   })
 
