@@ -324,8 +324,14 @@ takes down the whole statement rather than failing partially. The probe in
 `src/lib/commerce/order-money-columns.ts` is how the order path stays correct on
 either lineage, and new code on that path must use it.
 
-**129 is written and not applied.** `migrations/pending/129_catalogue_cleanup.sql`
-drafts the product priced at zero and states in the file what it will not invent.
+**129 is applied.** `supabase/migrations/129_catalogue_cleanup.sql` went to
+production on 2026-09-01 through MCP `apply_migration`, after a `BEGIN`/`ROLLBACK`
+dry run whose counts matched its verification block exactly. Measured after:
+`active 45, zero_priced 0, no_supplier 0, no_category 0, picsum 0`, and the
+platform supplier's logo set. It drafts the product priced at zero and says in
+the file what it will not invent. It was moved out of `migrations/pending/` when
+it landed, because that directory means "not run anywhere" and
+`pending-migrations-inventory.test.ts` fails on an applied file left in it.
 
 Everything else waiting is in `migrations/pending/` and that directory's README.
 There are **two** pending locations: `migrations/pending/`, and three
