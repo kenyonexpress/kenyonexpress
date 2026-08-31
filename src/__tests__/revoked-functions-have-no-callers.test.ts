@@ -54,6 +54,22 @@ const SERVICE_ROLE_CALLERS: Record<string, string[]> = {
   // authenticates as service_role and is untouched by that file. The revoke is
   // in fact what makes these two the ONLY possible callers.
   check_rate_limit: ['src/lib/health/checks.ts', 'src/lib/utils/rate-limit.ts'],
+
+  // `125_revoke_unused_definer_execute.sql` takes EXECUTE away from PUBLIC,
+  // anon and authenticated, and leaves service_role. The single caller builds
+  // its client with `createAdminClient()`, so it arrives as service_role and is
+  // untouched.
+  //
+  // This entry is the classification 125's own audit skipped for another of its
+  // functions, and it points the other way: 125 justified this revoke with
+  // "zero rpc() callsites", which was true when it was written and is now
+  // false. The revoke is still right, and is in fact MORE right than before.
+  // `fn_ensure_referral_code(p_user_id uuid)` never reads `auth.uid()`, so
+  // while `authenticated` holds EXECUTE any signed-in customer who knows
+  // another customer's uuid can read (and mint) that person's referral code.
+  // `src/server/actions/referrals.ts` is the sanctioned path precisely because
+  // it takes the uuid from the session and never from a caller.
+  fn_ensure_referral_code: ['src/server/actions/referrals.ts'],
 }
 
 const PENDING_DIR = 'migrations/pending'

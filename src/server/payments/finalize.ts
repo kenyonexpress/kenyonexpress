@@ -19,6 +19,7 @@ import {
   recordSettlementEvents,
 } from '@/server/payments/settlement-events'
 import { sendVoucherEmail } from '@/server/payments/voucher-email'
+import { completeReferralForOrder } from '@/server/referrals/complete'
 import type { Json } from '@/types/database'
 
 export type FinalizeOutcome =
@@ -558,6 +559,21 @@ export async function finalizeOrder(input: {
       0,
     )
     await creditCashback(admin, order.id, order.user_id, cashbackTotal)
+
+    // The referral bonus, if this buyer was referred and this order qualifies.
+    //
+    // After the cashback credit and before the stock consumption on purpose:
+    // both of those are the same class of work - money and counters that follow
+    // a payment - and this one carries the weakest claim on the order's
+    // success, so it goes last of the two that touch a wallet. Every rule about
+    // whether anything is owed lives in `fn_complete_referral`; this call site
+    // decides nothing. Like the stock line below it, a failure is logged and
+    // does not fail the finalize: the card is already charged.
+    await completeReferralForOrder(admin, {
+      orderId: order.id,
+      userId: order.user_id,
+      cardToken: input.token?.token ?? null,
+    })
 
     // The stock the checkout held becomes a sale, once, in one statement.
     //

@@ -27,6 +27,7 @@ import {
   signupSchema,
 } from '@/lib/validations/auth'
 import { mergeGuestCart } from '@/server/actions/cart'
+import { claimReferralOnce } from '@/server/referrals/claim'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
@@ -377,6 +378,16 @@ async function runVerifyPhoneOtp(_: AuthState, formData: FormData): Promise<Auth
     await admin
       .from('profiles')
       .upsert({ id: data.user.id, phone: e164 }, { onConflict: 'id', ignoreDuplicates: true })
+  }
+
+  // The referral claim for the ONE signup path that never reaches
+  // /auth/callback: `verifyOtp` establishes the session right here, so the
+  // claim the callback makes for email, magic link and Google has to be made
+  // again for phone. `sessionId` is read above, before the merge deletes the
+  // cookie, which is deliberate - it is the device fingerprint the fraud guard
+  // scores on. Best-effort, and never a reason a sign-in fails.
+  if (data.user) {
+    await claimReferralOnce(data.user.id, sessionId)
   }
 
   redirect(safeNext(formData.get('next')))

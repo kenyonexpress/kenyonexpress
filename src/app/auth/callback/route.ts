@@ -5,6 +5,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { mergeGuestCart } from '@/server/actions/cart'
 import { linkAnalyticsIdentity } from '@/server/analytics/track'
+import { claimReferralOnce } from '@/server/referrals/claim'
 import { cookies } from 'next/headers'
 import { type NextRequest, NextResponse } from 'next/server'
 
@@ -61,6 +62,22 @@ export async function GET(request: NextRequest) {
       await enqueueWelcomeOnce(session.user)
       const cookieStore = await cookies()
       const sessionId = parseGuestSessionToken(cookieStore.get(GUEST_SESSION_COOKIE)?.value)
+
+      // The referral claim, before the guest cookie is cleared below.
+      //
+      // Order matters and only in this direction: that cookie is the closest
+      // thing to "the same browser" this app has, and `same_device` is the
+      // strongest of the three signals `fn_referral_fraud_signals` reads. Claim
+      // after the merge and the fingerprint is gone for exactly the accounts a
+      // fraud guard most wants it for.
+      //
+      // Every sign-in, not just a first one. `referrals` holds one row per
+      // referred person for life, so a returning customer's claim answers
+      // `already_referred` and writes nothing; making this conditional would
+      // mean inventing a "is this a new account" test that the database already
+      // owns. Best-effort throughout: it cannot fail a sign-in.
+      await claimReferralOnce(session.user.id, sessionId)
+
       if (sessionId) {
         const merged = await mergeGuestCart(supabase, session.user.id, sessionId)
         // Before the cookie is cleared: this is the last moment the guest id
