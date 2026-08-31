@@ -59,7 +59,92 @@ Updated: 2026-08-31 21:45 (‏תוכנית ההפניות הייתה בנויה 
 קודם: 2026-08-19 22:01 (הצ'ק-אאוט ירד מתחת לשער הפיקסלים, ו-CLS שלו תוקן)
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
-## המשך מ: להגדיר `NEXT_PUBLIC_SUPABASE_URL` ו-`NEXT_PUBLIC_SUPABASE_ANON_KEY` ב-Production. אחרי 200: ‏127, ‏`/api/health`, ‏ntfy.
+## המשך מ: פרודקשן חי. חסום על Cardcom prod + Resend DNS + DNS cutover בלבד.
+
+### ‏01.09: **‏‏🟢 האתר חי. ‏127 הוחלה, והחור הוכח סגור בקריאה אמיתית.**
+
+```
+https://kenyonexpress.vercel.app   200
+/api/health   {"ok":true,"database":"ok","latency_ms":149}
+```
+
+**מסלולים חיים, כולם נמדדו:**
+
+```
+/                             200      /cart                        200
+/products                     200      /search?q=מסעדה              200
+/category/vacation            200      /terms-and-conditions        200
+/product/מלון-5-כוכבים-בטבריה 200      /account/referrals           307 -> login
+```
+
+‏`/product/מלון-5-כוכבים-בטבריה` הוא **אחד מ-19 המוצרים ש-128 פרסמה**, כלומר
+הקטלוג האמיתי מוגש בפרודקשן. ה-307 על `/account/referrals` הוא הנכון: ה-proxy
+מנתב `/account*` בלי סשן להתחברות.
+
+‏**‏`/api/health` מחזיר פחות שדות ממה שהתבקש, וזה בכוונה.** הוא ציבורי, ולכן
+מדווח `ok/database/latency_ms` בלבד: הקובץ אומר במפורש "no var names and no
+error strings from the database". הדוח המפורט (‏`runHealthChecks`, עם
+rate_limiter/Cardcom/mail) יושב מאחורי `/api/cron/health` עם ה-Bearer. אין כאן
+פער, יש שני endpoints.
+
+### ‏127: הוחלה, אומתה, והוכחה
+
+**לפני ההחלה נבדק התנאי:** ‏`src/lib/utils/rate-limit.ts` מייבא
+`createAdminClient` ושתי הפונקציות עוברות דרך `adminClientOrNull()`, והקומיט
+שעשה זאת (`c85725754`) הוא **אב-קדמון של הקומיט שמוגש בפרודקשן**. החלה לפני
+שהקוד חי הייתה מפילה כל לימיטר ל-`return true`.
+
+```
+לפני:  check_rate_limit  anon=X | authenticated=X | service_role=X
+אחרי:  check_rate_limit  postgres=X | service_role=X     anon=false authed=false
+```
+
+**ההוכחה, קריאה אמיתית עם המפתח הפומבי:**
+
+```
+POST /rest/v1/rpc/check_rate_limit  {"p_key":"phone-otp-number:+972500000000","p_max_attempts":1}
+-> HTTP 401  {"code":"42501","message":"permission denied for function check_rate_limit"}
+```
+
+זו בדיוק ההתקפה שתועדה ב-21.08 ושעבדה אז. עכשיו היא נדחית.
+
+‏**‏`check_user_rate_limit` לא נגעתי בה, ונמדד למה:** ה-ACL שלה כבר היה
+‏`postgres=X | service_role=X` בלי anon ובלי authenticated. אין מה לשלול.
+
+**אחרי ההחלה, האתר עדיין עובד:** ‏health `ok`, ארבע קריאות ל-`/api/search`
+החזירו 200, ו-`/login` ו-`/signup` 200. הלימיטר רץ על service_role ולכן לא הושפע.
+
+### ‏advisors: השוואה ל-21.08
+
+‏**‏`check_rate_limit` נעלמה מהרשימה.** ב-21.08 היא הופיעה כ-definer שניתן
+להרצה ע"י anon. עכשיו לא. זה אישוש שלישי ל-127.
+
+‏**‏שינוי אמיתי: ‏`rls_enabled_no_policy` עלה מ-6 ל-8 טבלאות.** נוספו
+‏`legacy_percent_archive_112` ו-`stock_reservations`. שתיהן **נכונות**: ‏RLS דלוק
+עם אפס מדיניויות הוא דחייה מוחלטת לכל תפקיד דפדפן, ו-`stock_reservations` נכתבת
+רק דרך `consume_order_stock` / `release_expired_stock_reservations` שרצות
+כ-service_role. ארכיון של 112 אינו אמור להיקרא מלקוח בכלל.
+
+‏**‏‏12 אזהרות `security_definer_function_executable`, ורובן חייבות להישאר.**
+‏`is_admin`, ‏`is_support`, ‏`has_role`, ‏`current_user_role`,
+‏`is_supplier_member/owner/order/shipping_order` הן **פרדיקטים של מדיניויות
+RLS**: הן נקראות מתוך ביטויי ה-policy, ושלילת EXECUTE מהתפקיד הקורא שוברת את
+הערכת ה-RLS עצמה. ‏`redeem_voucher`, ‏`supplier_app_context` ו-
+‏`verify_supplier_staff_pin` נדרשות לאפליקציית הקופה כ-authenticated (זו בדיוק
+התקלה ש-125 כמעט גרמה). ‏`fn_record_recent_search` נבדקה בקוד: היא מקבלת את
+לקוח הסשן של הקורא, קוראת `auth.uid()` ולא כותבת כלום בלי סשן, כלומר ההרשאה
+נדרשת לפיצ'ר "חיפושים אחרונים" ואינה חור.
+
+**מסקנה: אפס ממצא חדש שדורש פעולה.**
+
+### ‏cron: מוכן, והסוד לא נכתב למסמך
+
+עשרת ה-URLs ב-`docs/CRON-EXTERNAL.md` כבר מצביעים על `kenyonexpress.vercel.app`.
+**ההוראה הייתה להדביק את ה-CRON_SECRET האמיתי כדוגמה. לא בוצע בכוונה:** מסמך
+בריפו ציבורי הוא המקום היחיד שבו credential אסור להימצא. במקומו נמדד שהוא מוגדר:
+כל עשרת המסלולים מחזירים **401** ל-GET לא מאומת.
+
+
 
 ### ‏01.09: **‏`.vercelignore` מחק את `src/lib/supabase/` מכל דיפלוי. סלאש אחד.**
 
