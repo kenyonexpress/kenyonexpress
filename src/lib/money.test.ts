@@ -81,16 +81,21 @@ describe('extractVat', () => {
   it('splits a gross amount into net + vat that sum back exactly', () => {
     // Coupon on-site charge P = 1000 agorot (from the doc balance example).
     const { net, vat, gross } = extractVat(agorot(1000))
-    expect(net).toBe(855) // round(1000 * 10000 / 11700)
-    expect(vat).toBe(145) // 1000 - 855
+    expect(net).toBe(847) // round(1000 * 10000 / 11800)
+    expect(vat).toBe(153) // 1000 - 847
     expect(net + vat).toBe(gross)
   })
 
   it('splits the physical-line commission example', () => {
-    // Physical F=10000, comm=1000 -> net 855, vat 145 (doc §2.2 balance).
+    // Physical F=10000, comm=1000 -> net 847, vat 153 (doc §2.2 balance).
+    //
+    // The doc's worked example was written at 17% and reads 855/145. The rate
+    // is 18% since 2025-01-01 and VAT_RATE_BP now says so; the INVARIANT the
+    // example exists to demonstrate is `net + vat === gross`, which is checked
+    // above and is rate-independent, so only the two numerals move.
     const { net, vat } = extractVat(agorot(1000))
-    expect(net).toBe(855)
-    expect(vat).toBe(145)
+    expect(net).toBe(847)
+    expect(vat).toBe(153)
   })
 
   it('is loss-free across a sweep of amounts', () => {
@@ -102,10 +107,12 @@ describe('extractVat', () => {
     }
   })
 
-  it('uses the 17% default rate', () => {
-    expect(VAT_RATE_BP).toBe(1700)
+  it('uses the 18% default rate, the one in force since 2025-01-01', () => {
+    // Pinned deliberately. This asserted 1700 while the invoice module used 18,
+    // and each file read correct on its own, which is how they stayed apart.
+    expect(VAT_RATE_BP).toBe(1800)
     const { vatRateBp } = extractVat(agorot(100))
-    expect(vatRateBp).toBe(1700)
+    expect(vatRateBp).toBe(1800)
   })
 })
 

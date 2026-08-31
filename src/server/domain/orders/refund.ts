@@ -1,11 +1,26 @@
 import type { CommissionProductType } from '@/lib/commerce/commission'
 import { type Agorot, agorot } from '@/lib/commerce/money'
+import { applyBp, bp } from '@/lib/money'
 import type { VoucherState } from '@/server/domain/vouchers/state-machine'
 import { type SettlementState, canTransition, deriveOrderStatus, transition } from './state-machine'
 
-/** Consumer-protection cap on cancellation fees: 5% of the charge, capped at ₪100. */
-const CANCELLATION_FEE_CAP_AGOROT = 10_000
-const CANCELLATION_FEE_RATE = 0.05
+/**
+ * Consumer-protection cap on cancellation fees: 5% of the charge, capped at ₪100.
+ *
+ * BASIS POINTS, NOT 0.05. This was `Math.round(chargedAgorot * 0.05)`, which is
+ * a float multiply sitting on the money path, and the project rule that every
+ * money calculation goes through `src/lib/money.ts` exists precisely so that
+ * there is one rounding rule rather than one per call site. `applyBp` is that
+ * rule: `round_half_up(amount * bp / 10000)` computed in integers, the same
+ * primitive commission, cashback and the coupon on-site fraction already use.
+ *
+ * The values are the statute's, not a business choice: the Consumer Protection
+ * Law's distance-selling cancellation fee is the LOWER of 5% of the transaction
+ * or ₪100. They are constants here rather than settings for that reason. When
+ * the statute changes, these two lines change with a note saying when.
+ */
+const CANCELLATION_FEE_CAP_AGOROT = agorot(10_000)
+const CANCELLATION_FEE_BP = bp(500)
 
 /**
  * Legal cancellation fee (Israeli distance-selling law): the LOWER of 5% or ₪100.
@@ -13,7 +28,7 @@ const CANCELLATION_FEE_RATE = 0.05
  */
 export function computeCancellationFee(chargedAgorot: number, isDefectClaim: boolean): Agorot {
   if (isDefectClaim || chargedAgorot <= 0) return agorot(0)
-  const fivePercent = Math.round(chargedAgorot * CANCELLATION_FEE_RATE)
+  const fivePercent = applyBp(agorot(chargedAgorot), CANCELLATION_FEE_BP)
   return agorot(Math.min(fivePercent, CANCELLATION_FEE_CAP_AGOROT))
 }
 

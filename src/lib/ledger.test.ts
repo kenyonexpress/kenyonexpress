@@ -47,14 +47,16 @@ describe('negateLines', () => {
 // --- money + ledger invariant: the LEDGER-DESIGN §5 posting rules balance ---
 
 describe('order_paid posting rules balance to zero (INV-1)', () => {
-  it('coupon line: F=10000, platform_bp=1000 -> P=1000 -> +1000,-855,-145', () => {
+  it('coupon line: F=10000, platform_bp=1000 -> P=1000 -> +1000,-847,-153', () => {
     const face = agorot(10_000)
     const platformBp = bp(1000)
     const onSite = applyBp(face, platformBp) // P
     expect(onSite).toBe(1000)
     const { net, vat } = extractVat(onSite) // commission = P
-    expect(net).toBe(855)
-    expect(vat).toBe(145)
+    // 18% since 2025-01-01. What INV-1 asserts is that the three lines sum to
+    // zero, which holds at any rate; these two numerals just pin the split.
+    expect(net).toBe(847)
+    expect(vat).toBe(153)
 
     const lines: JournalLine[] = [
       { kind: 'cardcom_clearing', amountAgorot: onSite }, // debit P
@@ -64,7 +66,7 @@ describe('order_paid posting rules balance to zero (INV-1)', () => {
     expect(() => assertBalanced('order:o1:paid', lines)).not.toThrow()
   })
 
-  it('physical line: F=10000, comm=1000 -> +10000,-9000,-855,-145', () => {
+  it('physical line: F=10000, comm=1000 -> +10000,-9000,-847,-153', () => {
     const face = agorot(10_000)
     const platformBp = bp(1000)
     const commission = applyBp(face, platformBp)
