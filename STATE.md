@@ -1,6 +1,7 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-31 21:46 UTC (‏סיום סופי — Production Ready, תג production-v1.0.0. מחכה להפעלת DNS)
+Updated: 2026-08-31 22:01 UTC (‏שכבת ה-rate limit מוזגה ל-main; ממצא "31 עמודות כסף צף" נמדד כשקרי, ושלושה grants שהביקורת רצתה לבטל מחזיקים את הקופות)
+קודם: 2026-08-31 21:46 UTC (‏סיום סופי — Production Ready, תג production-v1.0.0. מחכה להפעלת DNS)
 קודם: 2026-08-31 21:41 UTC (‏PR #6 מוזג ל-main ב-squash; סיום סופי, מחכה להפעלת DNS)
 קודם: 2026-08-31 21:45 (‏תוכנית ההפניות הייתה בנויה במלואה ב-DB בלי אף קורא; ‏128 נכתבה ולא הוחלה; ‏4 מתוך 7 שערי הפיקסלים מסרבים להימדד עד שתוחל)
 קודם: 2026-08-21 11:40 (‏שער ה-Build לא היה מסוגל לעבור אף פעם, והתיקון הראשון כמעט כתב fixtures ל-DB החי)
@@ -62,6 +63,80 @@ Updated: 2026-08-31 21:46 UTC (‏סיום סופי — Production Ready, תג p
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
 ## המשך מ: שלב 99 — סיום סופי, מחכה להפעלת DNS
+
+### ‏01.09 סבב סגירה: מה נמדד, ומה נדחה
+
+**נמזג ל-main:** שכבת ה-rate limiting (`src/lib/rate-limit/`), חלון מחליק על
+Upstash עם Postgres כנפילה אחורה, מאחורי כל שלושים ה-callsites. הועבר
+ב-cherry-pick מעל main אחרי ה-squash, והביקורת הסטטית תפסה callsite
+(`referral-code`) שנחת ב-main בינתיים בלי שורה בטבלה. תוקן.
+
+**כל השערים ירוקים על `dd10a9504`:**
+
+```
+pnpm type-check   נקי
+pnpm lint         biome, 1017 קבצים, 0
+pnpm test         3180 טסטים ב-248 קבצים
+pnpm build        עבר, .next = 154M
+playwright        396 עברו, 8 דילוגים, מול pnpm start על 3311
+compare.mjs home  9.83%   (התקרה 11%)
+pnpm audit        8 ממצאים, כולם ב-dev/build, אפס בקוד שרץ
+```
+
+### ביקורת פרודקשן: שלושה ממצאים, אחד מהם שקרי
+
+**‏B1 "‏31 עמודות כסף כ-float" לא קיים.** שאילתה חיה מחזירה **שתיים**, ושתיהן
+אחוזים על `legacy_percent_archive_112`, טבלת ארכיון שאף קובץ ב-`src/` לא קורא.
+פרודקשן כבר מחזיקה כסף כ-integer אגורות. המספר כנראה הגיע מ-
+`supabase/migrations/PENDING-money-integer-fix.sql`, שמתאר שושלת סכימה שאינה
+המותקנת. **לא נכתבה מיגרציה:** `ROUND(x * 100)` על אחוז מקלקל אותו.
+
+**‏B2 אמיתי אבל כבר סגור.** שמונה טבלאות עם RLS ובלי מדיניות. ‏RLS דלוק בלי
+מדיניות הוא **דחייה**, לא היתר, וכל השמונה נכתבות ב-service role שעוקף RLS.
+נכתבה `migrations/pending/130_deny_all_on_server_only_tables.sql` שמוסיפה
+deny מפורש לחמש הלא-מסווגות. **היא לא משנה שום הרשאה בפועל, ולא הוחלה.**
+
+**‏B3 הספירה נכונה והתרופה לא.** שלושה מה-grants שהביקורת רצתה לבטל נקראים
+מ-`apps/mobile`, שאיננו `src/` ומגיע כ-`authenticated`:
+
+```
+redeem_voucher   supplier_app_context   verify_supplier_staff_pin
+```
+
+ביטולם משבית כל קופה. **לא נכתב שום REVOKE.** ביקורת שסורקת רק `src/` תמשיך
+להציע את זה ותמשיך לטעות.
+
+### ארבעה חוסמים, אף אחד מהם אינו קוד
+
+הפירוט המלא עם ראיות ב-`docs/LAUNCH-READINESS.md`, והפסק שם הוא **NOT READY**.
+
+1. **קריטי:** אין מתזמן חיצוני לעשרת ה-cron. שלושה במסלול הכסף, ואחד הוא
+   המסלול היחיד ששולח ללקוח שובר.
+2. **קריטי:** אין מפתחות Cardcom לפרודקשן. **להחליף את מפתחות Cardcom
+   לפרודקשן לפני עלייה אמיתית**; היום מחוברים sandbox ו-mocks.
+3. **גבוה:** לא ידוע לאיזה פרויקט Vercel הדומיין יוצמד. המיזוג ל-main הפיק
+   דפלוי `Preview`, כלומר main אינו ה-Production Branch של הפרויקט החי.
+4. **בינוני:** ‏14 קבצים ב-`migrations/pending/` ועוד שלושה `PENDING-` ב-
+   `supabase/migrations/`. כל אחד עובר דרך MCP `apply_migration` באישור.
+
+### מה לא בוצע, ולמה
+
+**לא נמחקו ענפים ולא worktrees.** לכל ענף יש קומיטים שאינם ב-main
+(`arch/docs-batch-2` ‏815, ‏`feat/rate-limit-layer` ‏301, ‏`feat/auth-hardening` ‏80,
+ועוד). ‏`feat/db-hardening-v2`, ‏`feat/ux-wave-final` ו-`save/ke-visual-work`
+**אינם קיימים בשום מקום מלבד הדיסק הזה.** הרצף שהתבקש,
+`git branch -D` על הכל ואז `reflog expire --expire=now --all && gc --prune=now`,
+הופך את המחיקה לבלתי הפיכה.
+
+**חמישה מששת הענפים שהתבקשו למיזוג אינם קיימים:** ‏`feat/payment-split-engine`,
+‏`feat/ci-cd`, ‏`feat/wallet-cashback`, ‏`feat/e2e-harness`, ‏`feat/search-pipeline`.
+קיים רק `feat/rate-limit-layer`, והוא מוזג.
+
+**‏`packages/` לא קיים בריפו**, ו-`apps/` מכיל `mobile` בלבד. משימות שמכוונות
+ל-`packages/*`, ‏`apps/api` (Hono) ו-`apps/web` מתארות ארכיטקטורה אחרת מזו
+שנפרסת. ‏`docs/SEARCH-PIPELINE-SPEC.md` ו-`claude/AUTOPILOT-PROMPT-FINAL.md`
+אינם קיימים גם הם.
+
 
 ### ‏01.09 שלב 99: מה נסגר, ומה נשאר פתוח באמת
 
