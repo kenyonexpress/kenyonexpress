@@ -47,24 +47,29 @@ and paste the same value into the scheduler.
 
 ## The ten jobs
 
-Base URL is the production origin, `https://kenyonexpress.co.il` after the DNS
-cutover and the `*.vercel.app` deployment URL before it. Times are UTC, which
+Base URL is `https://kenyonexpress.vercel.app`, the Vercel production origin.
+It is deliberately NOT the apex domain: `kenyonexpress.co.il` still points at
+the old WordPress install, so a job pointed there today would be calling
+WordPress and getting a 404 that looks like a broken route. **After the DNS
+cutover, change all ten to `https://kenyonexpress.co.il/...`** (the Vercel URL
+keeps working, but the apex is the canonical origin and is what the redirects,
+the sitemap and the cookies are scoped to). Times are UTC, which
 is what every scheduler means by default; Israel is UTC+2 in winter and UTC+3
 in summer, so the two overnight jobs drift by an hour across the year. That is
 deliberate and harmless: both are sweeps with a wide window, not appointments.
 
 | # | Schedule (UTC) | Cron | URL |
 | --- | --- | --- | --- |
-| 1 | every 5 min | `*/5 * * * *` | `https://kenyonexpress.co.il/api/cron/notifications` |
-| 2 | every 5 min | `*/5 * * * *` | `https://kenyonexpress.co.il/api/cron/health` |
-| 3 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.co.il/api/cron/invoices` |
-| 4 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.co.il/api/cron/stock` |
-| 5 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.co.il/api/cron/stranded-payments` |
-| 6 | hourly | `0 * * * *` | `https://kenyonexpress.co.il/api/cron/abandoned-cart` |
-| 7 | 02:30 daily | `30 2 * * *` | `https://kenyonexpress.co.il/api/cron/subscriptions` |
-| 8 | 03:40 daily | `40 3 * * *` | `https://kenyonexpress.co.il/api/cron/reap-carts` |
-| 9 | 04:00 daily | `0 4 * * *` | `https://kenyonexpress.co.il/api/cron/reconcile` |
-| 10 | 23:15 daily | `15 23 * * *` | `https://kenyonexpress.co.il/api/cron/expire-vouchers` |
+| 1 | every 5 min | `*/5 * * * *` | `https://kenyonexpress.vercel.app/api/cron/notifications` |
+| 2 | every 5 min | `*/5 * * * *` | `https://kenyonexpress.vercel.app/api/cron/health` |
+| 3 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/invoices` |
+| 4 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/stock` |
+| 5 | every 10 min | `*/10 * * * *` | `https://kenyonexpress.vercel.app/api/cron/stranded-payments` |
+| 6 | hourly | `0 * * * *` | `https://kenyonexpress.vercel.app/api/cron/abandoned-cart` |
+| 7 | 02:30 daily | `30 2 * * *` | `https://kenyonexpress.vercel.app/api/cron/subscriptions` |
+| 8 | 03:40 daily | `40 3 * * *` | `https://kenyonexpress.vercel.app/api/cron/reap-carts` |
+| 9 | 04:00 daily | `0 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/reconcile` |
+| 10 | 23:15 daily | `15 23 * * *` | `https://kenyonexpress.vercel.app/api/cron/expire-vouchers` |
 
 Those are the schedules `vercel.json` carried, kept exactly, so nothing about
 timing changes with the scheduler.
@@ -115,12 +120,12 @@ For each of the ten rows:
 
 ```bash
 # Expect 401: proves the guard is live and the secret is required.
-curl -s -o /dev/null -w '%{http_code}\n' https://kenyonexpress.co.il/api/cron/health
+curl -s -o /dev/null -w '%{http_code}\n' https://kenyonexpress.vercel.app/api/cron/health
 
 # Expect 200: proves the secret you pasted is the secret the deployment has.
 curl -s -o /dev/null -w '%{http_code}\n' \
   -H "Authorization: Bearer $CRON_SECRET" \
-  https://kenyonexpress.co.il/api/cron/health
+  https://kenyonexpress.vercel.app/api/cron/health
 ```
 
 If the first returns anything other than 401, stop: the route is not guarded on
