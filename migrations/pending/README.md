@@ -35,8 +35,10 @@ two directories.
 Both convert money to integer agorot and they collide.
 
 - **138-141 (recommended)** are *additive*: they add a `<col>_agorot bigint`
-  beside each numeric column and backfill it. Applying them is a no-op for the
-  running application, and they are reversible with a `DROP COLUMN`.
+  beside each numeric column, `GENERATED ALWAYS AS (round(<col> * 100)::bigint)
+  STORED`, so it can never drift from the column it mirrors. Applying them is a
+  no-op for the running application, and they are reversible with a
+  `DROP COLUMN`.
 - **142** converts *in place*, renaming `total_ils` → `total_agorot` and
   changing its type. The moment it lands, every reader that still says
   `total_ils` breaks, and every reader that does not gets a number 100× larger.
@@ -103,14 +105,69 @@ running. Order is the position in the apply sequence.
 | 135 | `135_recurring_subscriptions.sql` | `recurring` enum member, `subscriptions`, `subscription_charges`, 3 billing columns on `products` | **Medium.** `ALTER TYPE ... ADD VALUE` cannot run inside a transaction block and cannot be rolled back | 12 | none | Tables and columns drop cleanly; **the `recurring` enum member is permanent** — Postgres cannot remove an enum value |
 | 136 | `136_supplier_coordinates.sql` | `suppliers.latitude`/`.longitude`, GiST index, pair CHECK | **None.** `supplierLocation()`'s exact branch is dead code until the columns exist | 13 | `cube` + `earthdistance` extensions | `drop index if exists public.suppliers_earth_idx; alter table public.suppliers drop constraint if exists suppliers_latlng_pair, drop column if exists latitude, drop column if exists longitude;` |
 | 137 | `137_order_transition_guard.sql` | Status-transition guard triggers on `orders`/`vouchers`/`payments`, immutable `audit_log` | **Medium.** Constrains the service role, which every cron, webhook and repair script runs as. An illegal transition that used to succeed now raises | 14 | 130, 131, 134 (guards reference their statuses) | `drop trigger if exists audit_log_no_delete on public.audit_log; drop trigger if exists audit_log_no_update on public.audit_log; drop trigger if exists vouchers_status_guard on public.vouchers; drop trigger if exists payments_status_guard on public.payments; drop trigger if exists orders_status_guard on public.orders;` (+ the 6 guard functions) |
-| 138 | `138_money_agorot_money_path.sql` | Adds `_agorot` beside numeric on `orders`, `order_items`, `payments` | **None.** Additive; a no-op for the running app | 15 | none | `alter table public.orders drop column if exists subtotal_ils_agorot, drop column if exists total_ils_agorot, drop column if exists discount_ils_agorot;` (+ `order_items`, `payments`) |
-| 139 | `139_money_agorot_wallet.sql` | Adds `_agorot` on `wallet_accounts`, `wallet_balances`, `wallet_entries`, `wallet_transactions` | **None.** Additive. No `>= 0` check on balances: `wallet_accounts.balance_ils` has a live minimum of −1.80 | 16 | 138 | `alter table public.wallet_accounts drop column if exists balance_ils_agorot;` (+ the other 3 tables) |
-| 140 | `140_money_agorot_catalog.sql` | Adds `_agorot` on `products`, `product_variants`, `coupon_codes`, `coupon_deals`, `coupons` | **None.** Additive. `price_modifier` stays signed — a variant may be cheaper than its base | 17 | 138 | `alter table public.products drop column if exists price_ils_agorot, drop column if exists coupon_price_ils_agorot, drop column if exists cost_ils_agorot, drop column if exists full_price_agorot;` (+ the other 4 tables) |
-| 141 | `141_money_agorot_growth.sql` | Adds `_agorot` on `affiliates`, `referrals` | **None.** Additive. Both are cumulative earnings, so both take the non-negative check | 18 | 138 | `alter table public.affiliates drop column if exists total_earnings_ils_agorot; alter table public.referrals drop column if exists bonus_paid_amount_ils_agorot;` |
+| 138 | `138_money_agorot_money_path.sql` | Adds a **generated** `_agorot` beside numeric on `orders`, `order_items`, `payments` | **None at apply.** Additive and unwritable. The `>= 0` checks become live on the numeric column's sign | 15 | none | `alter table public.orders drop column if exists subtotal_ils_agorot, drop column if exists total_ils_agorot, drop column if exists discount_ils_agorot;` (+ `order_items`, `payments`) |
+| 139 | `139_money_agorot_wallet.sql` | Adds a **generated** `_agorot` on `wallet_accounts`, `wallet_balances`, `wallet_entries`, `wallet_transactions` | **None.** Additive. No `>= 0` check on balances: `wallet_accounts.balance_ils` has a live minimum of −1.80 | 16 | 138 | `alter table public.wallet_accounts drop column if exists balance_ils_agorot;` (+ the other 3 tables) |
+| 140 | `140_money_agorot_catalog.sql` | Adds a **generated** `_agorot` on `products`, `product_variants`, `coupon_codes`, `coupon_deals`, `coupons` | **None at apply.** Additive. `price_modifier` stays signed — a variant may be cheaper than its base | 17 | 138 | `alter table public.products drop column if exists price_ils_agorot, drop column if exists coupon_price_ils_agorot, drop column if exists cost_ils_agorot, drop column if exists full_price_agorot;` (+ the other 4 tables) |
+| 141 | `141_money_agorot_growth.sql` | Adds a **generated** `_agorot` on `affiliates`, `referrals` | **None at apply.** Additive. Both are cumulative earnings, so both take the non-negative check | 18 | 138 | `alter table public.affiliates drop column if exists total_earnings_ils_agorot; alter table public.referrals drop column if exists bonus_paid_amount_ils_agorot;` |
 | 142 | `142_money_integer_fix_in_place.sql` | Converts 41 money columns in place, numeric ILS → bigint agorot; rebuilds `fn_wallet_transfer`, `fn_pay_referral`, 2 wallet views | **CATASTROPHIC. PARKED — DO NOT APPLY.** Mutually exclusive with 138-141; ~55 code files still read the old ILS names | — | Abandoning 138-141 **and** rewriting every reader first | Inverse rename + `ALTER TYPE ... USING <col> / 100.0`, plus restoring both functions and both views. **Treat as one-way in practice.** |
 | 143 | `143_revoke_unused_definer_execute.sql` | Revokes `EXECUTE` on 5 SECURITY DEFINER functions from `anon`/`authenticated` | **Medium.** Closes a live RLS bypass in `voucher_success_payload`. `supplier_app_context` was withdrawn from this file — the Expo till calls it | 19 | `src/__tests__/revoked-functions-have-no-callers.test.ts` green | `GRANT EXECUTE ON FUNCTION public.<fn> TO anon, authenticated;` (5 statements, listed in the file) |
 | 144 | `144_revoke_authenticated_dml.sql` | Revokes INSERT/UPDATE/DELETE from `authenticated` on the 8 RLS-on-zero-policy tables | **Low.** Defence in depth; RLS already blocks these, but RLS does not cover `TRUNCATE` | 20 | 122 (same 5 tables, policies first) | `GRANT INSERT, UPDATE, DELETE ON public.<t> TO authenticated;` (8 statements, listed in the file) |
 | 145 | `145_revoke_check_rate_limit_execute.sql` | Revokes `EXECUTE` on `check_rate_limit` from `anon`/`authenticated` | **HIGH IF MISORDERED.** See below | **21 — LAST** | ⛔ **CODE-FIRST: commit `d5c2739d4`** | `GRANT EXECUTE ON FUNCTION public.check_rate_limit(text, integer, integer) TO anon, authenticated;` |
+
+## 138-141 add GENERATED columns, and that is what makes step 2 possible
+
+The first draft added a plain `bigint` and filled it once:
+
+```sql
+alter table public.orders add column if not exists total_ils_agorot bigint;
+update public.orders set total_ils_agorot = round(total_ils * 100) where ...;
+```
+
+Nothing kept it in step after that. No trigger, no default, no NOT NULL. The
+running application writes `total_ils` and does not know the new column exists,
+so **every order placed after the apply would have carried `total_ils_agorot`
+NULL** — and step 2 of the cutover, rewriting the readers onto those columns,
+is the entire reason the files exist. A customer who had just paid would have
+been shown a total of 0.00, and the split would have settled a commission of
+zero against it. The one-shot backfill made the migration look finished while
+guaranteeing the step that follows it would be wrong.
+
+All 32 columns are now:
+
+```sql
+alter table public.orders
+  add column total_ils_agorot bigint
+    generated always as (round(total_ils * 100)::bigint) stored;
+```
+
+which cannot drift: Postgres recomputes it on every insert and update of the
+base column, and refuses any write that names it.
+
+**Measured against `ixvwfbuvfxxsjiywhbbb`, PostgreSQL 17.6, not assumed.** The
+generated form tracks insert, update and NULL, `-1.80` yields `-180`, and a
+write to the generated column is refused with SQLSTATE `428C9`. The real DDL
+for `orders.total_ils` and `product_variants.price_modifier` was then run
+against the live tables inside a `DO` block that raises at the end, so it rolled
+itself back:
+
+```
+DRYRUN_OK cols=1 backfill=[18.00->1800, 18.00->1800, 18.00->1800, 817.00->81700]
+leftover_columns = 0
+```
+
+**Two consequences worth stating rather than discovering later.**
+
+1. The non-negative CHECKs are no longer decorative. On a backfilled column
+   nothing re-evaluated them; on a generated column they are validated on every
+   write, so they now constrain the numeric column's sign at runtime. Every
+   checked column was measured first and none is negative today, so the apply
+   validates. The signed wallet columns still get no check.
+2. **Step 3 is no longer a plain `DROP COLUMN`.** A generated column depends on
+   its base column, so dropping the numeric one requires
+   `ALTER TABLE ... ALTER COLUMN <col>_agorot DROP EXPRESSION` first, which
+   turns it into an ordinary written column and keeps the stored values. This
+   also hardens the exclusion with 142: 142's `ALTER TYPE` on a base column is
+   refused outright while a generated column depends on it.
 
 ## ⛔ 145 is CODE-FIRST and it is one-way
 

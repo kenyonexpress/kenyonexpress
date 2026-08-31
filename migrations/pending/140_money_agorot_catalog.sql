@@ -1,18 +1,44 @@
--- 133: products, variants and the coupon catalogue — money to integer agorot, additive and reversible.
+-- 140: products, variants and the coupon catalogue — money to integer agorot, additive and reversible.
 --
 -- WHY ADDITIVE RATHER THAN `ALTER TYPE`
 --
 -- Every column below has live readers. Converting in place changes the value a
 -- reader gets from 18.00 to 1800 in the same query, with no code change, which
 -- turns every price on the site into a hundred times itself the moment this is
--- applied. So this migration only ADDS: a new `<col>_agorot bigint`, backfilled
--- with `round(<col> * 100)`, constrained, and left alongside the original. The
--- old column keeps working and nothing breaks at apply time.
+-- applied. So this migration only ADDS a `<col>_agorot bigint` alongside the
+-- original. The old column keeps working and nothing breaks at apply time.
+--
+-- WHY GENERATED AND NOT BACKFILLED
+--
+-- The first draft of this file added a plain `bigint` and filled it once with
+-- `update ... set <col>_agorot = round(<col> * 100)`. Nothing kept it in step
+-- afterwards: no trigger, no default, no NOT NULL. The running application
+-- writes the numeric column and does not know the new one exists, so **every
+-- row inserted after this migration would have carried a NULL agorot column**,
+-- and step 2 below — the whole reason this file exists — would then have read
+-- NULL for every order placed since the apply. A customer who had just paid
+-- would have been shown a total of 0.00, and the split would have settled a
+-- commission of zero against it.
+--
+-- `generated always as (round(<col> * 100)::bigint) stored` cannot drift. It is
+-- recomputed by Postgres on every insert and every update of the base column,
+-- and Postgres refuses a write that names it (SQLSTATE 428C9), so no writer can
+-- put the two out of step even by accident. Measured on the hosted project,
+-- PostgreSQL 17.6: insert, update and NULL all track, and a write to the
+-- generated column is refused with 428C9.
+--
+-- ONE CONSEQUENCE, STATED RATHER THAN HIDDEN: the non-negative CHECKs below are
+-- no longer decorative. On a plain backfilled column nothing ever re-evaluated
+-- them; on a generated column they are validated on every write, so they now
+-- constrain the *numeric* column's sign at runtime. Measured before writing
+-- this: no row in any checked column is negative today, so the apply validates.
+-- The signed columns in the wallet are deliberately left without a check.
 --
 -- The cutover is three steps and only the first is here:
---   1. this file: add and backfill the agorot columns          <- you are here
---   2. rewrite the readers and writers to use them
---   3. a later migration drops the numeric columns
+--   1. this file: add the generated agorot columns             <- you are here
+--   2. rewrite the readers to use them
+--   3. a later migration drops the numeric columns, at which point the agorot
+--      columns must stop being generated and become plain written columns
 --
 -- Applying this file alone is safe and is a no-op for the running application.
 --
@@ -49,11 +75,17 @@ begin
     raise notice 'skipping products, table not present'; return;
   end if;
 
-  alter table public.products add column if not exists price_ils_agorot bigint;
+  if exists (select 1
+               from information_schema.columns
+              where table_schema = 'public'
+                and table_name   = 'products'
+                and column_name  = 'price_ils_agorot') then
+    raise notice 'skipping products.price_ils_agorot, column already present'; return;
+  end if;
 
-  update public.products
-     set price_ils_agorot = round(price_ils * 100)
-   where price_ils is not null and price_ils_agorot is distinct from round(price_ils * 100);
+  alter table public.products
+    add column price_ils_agorot bigint
+      generated always as (round(price_ils * 100)::bigint) stored;
 
   if not exists (select 1 from pg_constraint
                  where conrelid = 'public.products'::regclass
@@ -72,11 +104,17 @@ begin
     raise notice 'skipping products, table not present'; return;
   end if;
 
-  alter table public.products add column if not exists coupon_price_ils_agorot bigint;
+  if exists (select 1
+               from information_schema.columns
+              where table_schema = 'public'
+                and table_name   = 'products'
+                and column_name  = 'coupon_price_ils_agorot') then
+    raise notice 'skipping products.coupon_price_ils_agorot, column already present'; return;
+  end if;
 
-  update public.products
-     set coupon_price_ils_agorot = round(coupon_price_ils * 100)
-   where coupon_price_ils is not null and coupon_price_ils_agorot is distinct from round(coupon_price_ils * 100);
+  alter table public.products
+    add column coupon_price_ils_agorot bigint
+      generated always as (round(coupon_price_ils * 100)::bigint) stored;
 
   if not exists (select 1 from pg_constraint
                  where conrelid = 'public.products'::regclass
@@ -95,11 +133,17 @@ begin
     raise notice 'skipping products, table not present'; return;
   end if;
 
-  alter table public.products add column if not exists cost_ils_agorot bigint;
+  if exists (select 1
+               from information_schema.columns
+              where table_schema = 'public'
+                and table_name   = 'products'
+                and column_name  = 'cost_ils_agorot') then
+    raise notice 'skipping products.cost_ils_agorot, column already present'; return;
+  end if;
 
-  update public.products
-     set cost_ils_agorot = round(cost_ils * 100)
-   where cost_ils is not null and cost_ils_agorot is distinct from round(cost_ils * 100);
+  alter table public.products
+    add column cost_ils_agorot bigint
+      generated always as (round(cost_ils * 100)::bigint) stored;
 
   if not exists (select 1 from pg_constraint
                  where conrelid = 'public.products'::regclass
@@ -118,11 +162,17 @@ begin
     raise notice 'skipping products, table not present'; return;
   end if;
 
-  alter table public.products add column if not exists full_price_agorot bigint;
+  if exists (select 1
+               from information_schema.columns
+              where table_schema = 'public'
+                and table_name   = 'products'
+                and column_name  = 'full_price_agorot') then
+    raise notice 'skipping products.full_price_agorot, column already present'; return;
+  end if;
 
-  update public.products
-     set full_price_agorot = round(full_price * 100)
-   where full_price is not null and full_price_agorot is distinct from round(full_price * 100);
+  alter table public.products
+    add column full_price_agorot bigint
+      generated always as (round(full_price * 100)::bigint) stored;
 
   if not exists (select 1 from pg_constraint
                  where conrelid = 'public.products'::regclass
@@ -141,11 +191,17 @@ begin
     raise notice 'skipping products, table not present'; return;
   end if;
 
-  alter table public.products add column if not exists kenyon_price_agorot bigint;
+  if exists (select 1
+               from information_schema.columns
+              where table_schema = 'public'
+                and table_name   = 'products'
+                and column_name  = 'kenyon_price_agorot') then
+    raise notice 'skipping products.kenyon_price_agorot, column already present'; return;
+  end if;
 
-  update public.products
-     set kenyon_price_agorot = round(kenyon_price * 100)
-   where kenyon_price is not null and kenyon_price_agorot is distinct from round(kenyon_price * 100);
+  alter table public.products
+    add column kenyon_price_agorot bigint
+      generated always as (round(kenyon_price * 100)::bigint) stored;
 
   if not exists (select 1 from pg_constraint
                  where conrelid = 'public.products'::regclass
@@ -164,11 +220,17 @@ begin
     raise notice 'skipping products, table not present'; return;
   end if;
 
-  alter table public.products add column if not exists compare_at_price_agorot bigint;
+  if exists (select 1
+               from information_schema.columns
+              where table_schema = 'public'
+                and table_name   = 'products'
+                and column_name  = 'compare_at_price_agorot') then
+    raise notice 'skipping products.compare_at_price_agorot, column already present'; return;
+  end if;
 
-  update public.products
-     set compare_at_price_agorot = round(compare_at_price * 100)
-   where compare_at_price is not null and compare_at_price_agorot is distinct from round(compare_at_price * 100);
+  alter table public.products
+    add column compare_at_price_agorot bigint
+      generated always as (round(compare_at_price * 100)::bigint) stored;
 
   if not exists (select 1 from pg_constraint
                  where conrelid = 'public.products'::regclass
@@ -187,11 +249,17 @@ begin
     raise notice 'skipping products, table not present'; return;
   end if;
 
-  alter table public.products add column if not exists compare_at_price_ils_agorot bigint;
+  if exists (select 1
+               from information_schema.columns
+              where table_schema = 'public'
+                and table_name   = 'products'
+                and column_name  = 'compare_at_price_ils_agorot') then
+    raise notice 'skipping products.compare_at_price_ils_agorot, column already present'; return;
+  end if;
 
-  update public.products
-     set compare_at_price_ils_agorot = round(compare_at_price_ils * 100)
-   where compare_at_price_ils is not null and compare_at_price_ils_agorot is distinct from round(compare_at_price_ils * 100);
+  alter table public.products
+    add column compare_at_price_ils_agorot bigint
+      generated always as (round(compare_at_price_ils * 100)::bigint) stored;
 
   if not exists (select 1 from pg_constraint
                  where conrelid = 'public.products'::regclass
@@ -210,11 +278,17 @@ begin
     raise notice 'skipping product_variants, table not present'; return;
   end if;
 
-  alter table public.product_variants add column if not exists price_agorot bigint;
+  if exists (select 1
+               from information_schema.columns
+              where table_schema = 'public'
+                and table_name   = 'product_variants'
+                and column_name  = 'price_agorot') then
+    raise notice 'skipping product_variants.price_agorot, column already present'; return;
+  end if;
 
-  update public.product_variants
-     set price_agorot = round(price * 100)
-   where price is not null and price_agorot is distinct from round(price * 100);
+  alter table public.product_variants
+    add column price_agorot bigint
+      generated always as (round(price * 100)::bigint) stored;
 
   if not exists (select 1 from pg_constraint
                  where conrelid = 'public.product_variants'::regclass
@@ -233,11 +307,17 @@ begin
     raise notice 'skipping product_variants, table not present'; return;
   end if;
 
-  alter table public.product_variants add column if not exists price_ils_agorot bigint;
+  if exists (select 1
+               from information_schema.columns
+              where table_schema = 'public'
+                and table_name   = 'product_variants'
+                and column_name  = 'price_ils_agorot') then
+    raise notice 'skipping product_variants.price_ils_agorot, column already present'; return;
+  end if;
 
-  update public.product_variants
-     set price_ils_agorot = round(price_ils * 100)
-   where price_ils is not null and price_ils_agorot is distinct from round(price_ils * 100);
+  alter table public.product_variants
+    add column price_ils_agorot bigint
+      generated always as (round(price_ils * 100)::bigint) stored;
 
   if not exists (select 1 from pg_constraint
                  where conrelid = 'public.product_variants'::regclass
@@ -256,11 +336,17 @@ begin
     raise notice 'skipping product_variants, table not present'; return;
   end if;
 
-  alter table public.product_variants add column if not exists price_modifier_agorot bigint;
+  if exists (select 1
+               from information_schema.columns
+              where table_schema = 'public'
+                and table_name   = 'product_variants'
+                and column_name  = 'price_modifier_agorot') then
+    raise notice 'skipping product_variants.price_modifier_agorot, column already present'; return;
+  end if;
 
-  update public.product_variants
-     set price_modifier_agorot = round(price_modifier * 100)
-   where price_modifier is not null and price_modifier_agorot is distinct from round(price_modifier * 100);
+  alter table public.product_variants
+    add column price_modifier_agorot bigint
+      generated always as (round(price_modifier * 100)::bigint) stored;
 
 end
 $$;
@@ -273,11 +359,17 @@ begin
     raise notice 'skipping coupon_deals, table not present'; return;
   end if;
 
-  alter table public.coupon_deals add column if not exists original_price_agorot bigint;
+  if exists (select 1
+               from information_schema.columns
+              where table_schema = 'public'
+                and table_name   = 'coupon_deals'
+                and column_name  = 'original_price_agorot') then
+    raise notice 'skipping coupon_deals.original_price_agorot, column already present'; return;
+  end if;
 
-  update public.coupon_deals
-     set original_price_agorot = round(original_price * 100)
-   where original_price is not null and original_price_agorot is distinct from round(original_price * 100);
+  alter table public.coupon_deals
+    add column original_price_agorot bigint
+      generated always as (round(original_price * 100)::bigint) stored;
 
   if not exists (select 1 from pg_constraint
                  where conrelid = 'public.coupon_deals'::regclass
@@ -296,11 +388,17 @@ begin
     raise notice 'skipping coupon_deals, table not present'; return;
   end if;
 
-  alter table public.coupon_deals add column if not exists platform_price_agorot bigint;
+  if exists (select 1
+               from information_schema.columns
+              where table_schema = 'public'
+                and table_name   = 'coupon_deals'
+                and column_name  = 'platform_price_agorot') then
+    raise notice 'skipping coupon_deals.platform_price_agorot, column already present'; return;
+  end if;
 
-  update public.coupon_deals
-     set platform_price_agorot = round(platform_price * 100)
-   where platform_price is not null and platform_price_agorot is distinct from round(platform_price * 100);
+  alter table public.coupon_deals
+    add column platform_price_agorot bigint
+      generated always as (round(platform_price * 100)::bigint) stored;
 
   if not exists (select 1 from pg_constraint
                  where conrelid = 'public.coupon_deals'::regclass
@@ -319,11 +417,17 @@ begin
     raise notice 'skipping coupons, table not present'; return;
   end if;
 
-  alter table public.coupons add column if not exists discount_value_agorot bigint;
+  if exists (select 1
+               from information_schema.columns
+              where table_schema = 'public'
+                and table_name   = 'coupons'
+                and column_name  = 'discount_value_agorot') then
+    raise notice 'skipping coupons.discount_value_agorot, column already present'; return;
+  end if;
 
-  update public.coupons
-     set discount_value_agorot = round(discount_value * 100)
-   where discount_value is not null and discount_value_agorot is distinct from round(discount_value * 100);
+  alter table public.coupons
+    add column discount_value_agorot bigint
+      generated always as (round(discount_value * 100)::bigint) stored;
 
   if not exists (select 1 from pg_constraint
                  where conrelid = 'public.coupons'::regclass
@@ -342,11 +446,17 @@ begin
     raise notice 'skipping coupons, table not present'; return;
   end if;
 
-  alter table public.coupons add column if not exists original_price_agorot bigint;
+  if exists (select 1
+               from information_schema.columns
+              where table_schema = 'public'
+                and table_name   = 'coupons'
+                and column_name  = 'original_price_agorot') then
+    raise notice 'skipping coupons.original_price_agorot, column already present'; return;
+  end if;
 
-  update public.coupons
-     set original_price_agorot = round(original_price * 100)
-   where original_price is not null and original_price_agorot is distinct from round(original_price * 100);
+  alter table public.coupons
+    add column original_price_agorot bigint
+      generated always as (round(original_price * 100)::bigint) stored;
 
   if not exists (select 1 from pg_constraint
                  where conrelid = 'public.coupons'::regclass
@@ -365,11 +475,17 @@ begin
     raise notice 'skipping coupon_codes, table not present'; return;
   end if;
 
-  alter table public.coupon_codes add column if not exists collect_amount_ils_agorot bigint;
+  if exists (select 1
+               from information_schema.columns
+              where table_schema = 'public'
+                and table_name   = 'coupon_codes'
+                and column_name  = 'collect_amount_ils_agorot') then
+    raise notice 'skipping coupon_codes.collect_amount_ils_agorot, column already present'; return;
+  end if;
 
-  update public.coupon_codes
-     set collect_amount_ils_agorot = round(collect_amount_ils * 100)
-   where collect_amount_ils is not null and collect_amount_ils_agorot is distinct from round(collect_amount_ils * 100);
+  alter table public.coupon_codes
+    add column collect_amount_ils_agorot bigint
+      generated always as (round(collect_amount_ils * 100)::bigint) stored;
 
   if not exists (select 1 from pg_constraint
                  where conrelid = 'public.coupon_codes'::regclass
@@ -388,11 +504,17 @@ begin
     raise notice 'skipping coupon_codes, table not present'; return;
   end if;
 
-  alter table public.coupon_codes add column if not exists face_value_ils_agorot bigint;
+  if exists (select 1
+               from information_schema.columns
+              where table_schema = 'public'
+                and table_name   = 'coupon_codes'
+                and column_name  = 'face_value_ils_agorot') then
+    raise notice 'skipping coupon_codes.face_value_ils_agorot, column already present'; return;
+  end if;
 
-  update public.coupon_codes
-     set face_value_ils_agorot = round(face_value_ils * 100)
-   where face_value_ils is not null and face_value_ils_agorot is distinct from round(face_value_ils * 100);
+  alter table public.coupon_codes
+    add column face_value_ils_agorot bigint
+      generated always as (round(face_value_ils * 100)::bigint) stored;
 
   if not exists (select 1 from pg_constraint
                  where conrelid = 'public.coupon_codes'::regclass
