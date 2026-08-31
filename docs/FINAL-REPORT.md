@@ -1,297 +1,265 @@
 # KenyonExpress: final report
 
-Written 2026-08-07 at the end of the autonomous run. `main` is at the state
-described here and every number below was measured on this machine against a
-clean production build, not quoted from an earlier session.
+Rewritten 2026-08-31. The previous version was written 2026-08-07 and said
+"`main` is at the state described here". That has not been true for some time:
+**`main` is 303 commits behind and `phase5/homepage` is the mainline.** Branching
+off `main`, or reading it to see what the project does, silently reverts every
+piece of security work done since.
+
+Every number below was measured on this machine, against this branch, on the
+date given. Nothing is quoted from an earlier session.
 
 ---
 
 ## The one-line version
 
-The code is done. **Nothing that remains is code.** What is left is eight
-configuration values, one DNS cutover, two database migrations, and a set of
-GitHub settings, all of which need a human with credentials.
+The code is done. **Nothing that remains is code.** What is left is a set of
+environment variables, a Cardcom production terminal, one database migration
+waiting for approval, and a DNS cutover: all of it needs a human with
+credentials, and none of it can be done from this machine.
+
+To go live, follow `docs/LAUNCH-RUNBOOK.md`. It is the ordered, command-by-command
+procedure with a rollback beside each step. This document is what is left and
+why; that one is what to do.
 
 ---
 
-## Gate status
+## Gate status, measured 2026-08-31
 
 | Gate | Result |
 | --- | --- |
-| `pnpm test` (Vitest) | **1833 / 1833**, 145 files |
-| `pnpm exec playwright test` | **191 passed, 3 skipped, 0 failed** |
+| `pnpm test` (Vitest) | **3122 / 3122**, 243 files |
 | `pnpm type-check` | clean |
-| `pnpm lint` | clean, 774 files |
-| `pnpm build` | succeeds |
-| `compare.mjs --page=home` | **9.76%** (gate: under 11%) |
-| `compare.mjs --page=category` | **9.1%** (gate: under 11%) |
+| `pnpm lint` (biome) | clean, 1005 files |
+| `pnpm build` | exit 0 from an empty `.next` |
+| `pnpm exec playwright test` | **393 passed**, 6 skipped |
+| `compare.mjs --page=home` | **9.83%** (gate: under 11%) |
+| `compare.mjs --page=cart` | **8.6%** |
+| `compare.mjs --page=checkout` | **9.72%** |
+| `compare.mjs` on `category`, `products`, `search`, `product` | **refuses to score.** See below. |
 
-E2E must be run as `E2E_WEB_COMMAND='pnpm start' npx playwright test`. A bare
-run starts `pnpm dev` instead and fabricates six failures that do not exist in
-a production build.
+`pnpm build` is a **separate gate** from the other three, not a formality:
+`cacheComponents` rejects uncached page reads that tests, type-check and lint
+all pass.
 
----
+E2E must run against a production build. A bare `playwright test` starts
+`pnpm dev` and fabricates failures that do not exist in a real build. Either
+`E2E_WEB_COMMAND='pnpm start' pnpm exec playwright test`, or start the server
+yourself and pass `E2E_BASE_URL`. **If you use `E2E_BASE_URL`, Playwright does
+not start the server and therefore does not apply its own env block**, so
+`CARDCOM_USE_MOCK=true`, `CARDCOM_WEBHOOK_SECRET` and `CHECKOUT_ENABLED=true`
+have to be passed to the server by hand or the paid-flow specs fail for
+environmental reasons.
 
-## What was completed
+### Why four of the seven pixel gates refuse to score
 
-The numbered queue `[1]`–`[64]` is closed. The last stretch:
-
-- **[48]–[54]** refund flow, wallet passes, security hardening, sitemap and
-  feeds, Open Graph, data seeding, admin reports.
-- **[55]** invoices through the Cardcom Document module.
-- **[56]** image pipeline to R2.
-- **[57]** first integration pass.
-- **[58]** legal pages: terms, privacy, accessibility statement (Israeli
-  standard 5568), cancellation policy, contact, FAQ.
-- **[59]** gift coupons: recipient, greeting, delivery through the
-  notifications outbox.
-- **[60]** health endpoint, cron monitoring, internal admin status page.
-- **[61]** self-audit. See below.
-- **[62]** CI hardening and the second integration pass.
-- **[63]** system checks, backup, secret sweep.
-- **[64]** final integration pass, this report, and the `revoke_anon_writes`
-  migration written to pending.
-
-### Observability, finished in this run
-
-All **74** Server Functions now carry a request id, up from 5. One wrapper call
-per exported action across 25 `'use server'` modules, guarded by a test that
-ties the count of exported actions to the count of wrapper calls, so an action
-added without one fails a test rather than logging anonymously.
-
-Wrapping the 70th exposed a real defect: `headers()` does not return empty
-outside a request scope, it **throws**. At five wrapped actions that was
-unreachable; at 74 it broke four `contact.ts` unit tests on the wrapper rather
-than on anything they test. Losing a correlation id must never fail an action,
-so the read is guarded now.
-
-Verified end to end, which the prior session had recorded as unverified: a
-contact form POST answered with `x-request-id: 78c8f1a7…` and the server wrote
-`{"event":"email.disabled","request_id":"78c8f1a7…","method":"contact.submit"}`
-from `lib/email/resend.ts`, six levels down in a module that holds no reference
-to any of it.
-
-### Self-audit [61]
-
-Three checks were asked for. **Two came back clean, and both looked like
-findings at first because the search was wrong, not the code.**
-
-- **No float money.** Every shekel/agorot conversion on the money path already
-  goes through a documented boundary module. Three places compute
-  `Math.round(ils * 100)` inline and were **deliberately not rewritten**:
-  `ilsToAgorot` throws on more than two decimal places, and those three read
-  `numeric` columns and a provider response. Trading documented tolerance for
-  an exception on the money path is not an improvement.
-- **No hardcoded `platform_percent`.** It is read from the database and
-  snapshotted per order item, and `finalize.ts` **refuses to issue a voucher**
-  when the snapshot is missing rather than falling back to a default.
-- **zod on every sensitive route.** Of ten API routes, eight validate through a
-  zod schema, two are `GET` with no body, and one is a re-export of a validated
-  implementation. The initial sweep flagged five as unvalidated, including the
-  Cardcom webhook, only because they import their schema rather than defining
-  it inline.
-
-**What the audit actually found was none of the three.** Seven routes compared
-`CRON_SECRET` with `!==` on a template string while the Cardcom webhook had
-used `timingSafeEqual` since it was written. String `!==` stops at the first
-differing byte. No test could have caught it: both forms answer 401 to a wrong
-secret and 200 to the right one. That secret authorises invoice generation,
-voucher expiry and the abandoned-cart mailer. There is now one implementation
-in `lib/security/constant-time.ts`, and a test that fails on any regression.
-
-### Secret sweep [63]
-
-A **`service_role` JWT was committed** in `.env.test`, which is tracked by git,
-in commit `11a5303`. That is the key that bypasses RLS entirely.
-
-Two things kept it from being an incident and **neither is a safeguard**: the
-JWT's own `ref` claim is `ixvwfbuvfxsijywhbbb` while this project is
-`ixvwfbuvfxxsjiywhbbb` (a different project, not a typo in the URL beside it),
-and it **expired 2025-02-17**. It authorises nothing here and nothing needs
-rotating. Values were replaced with placeholders after confirming nothing reads
-that file. History still carries `11a5303` and was not rewritten.
-
----
-
-## Integration pass: three branches, none merged, and why
-
-`main` is the only branch carrying live work. Three others hold `src/` changes
-that are not in `main`. All three were evaluated and **all three are stale
-re-implementations of work `main` has since surpassed.** Merging is not
-deferred work; it would be a regression.
-
-### `feat/checkout-cardcom` — must not be merged
-
-- Brings `src/server/payments/escrow.ts`, which **contradicts the locked money
-  model**. There is no external escrow and no J5.
-- Carries a **hardcoded `platform_percent: 10`**, six money-float hits and a
-  variable-time Bearer comparison, all three audit rules at once.
-- 479 commits behind, conflicts across the whole payments layer that `main` has
-  since rewritten (multi-account Cardcom, the money-column resolver, the refund
-  domain).
-
-### `feat/supplier-portal` — would break the build
-
-Its only `src` change adds `export const runtime = 'nodejs'` to an alias route.
-`next.config.ts` sets `cacheComponents: true`, which **rejects `runtime`**, and
-`main` already carries the superseding fix along with a comment explaining
-exactly this. Merging it would knowingly break the build.
-
-### `feat/visual-polish` — superseded by four measured rounds
-
-42 UI files last touched 2026-07-28, 528 commits behind. It conflicts in
-`globals.css`, `Header.tsx` and **`scripts/compare.mjs` itself**, the gate
-script. `main` has been through four compare-gate rounds since, ending at
-9.76% / 9.1%. Replaying older UI over a measured gate risks the one number the
-project treats as a hard rule.
-
-The `arch/*` branches are documentation only and live in a separate worktree.
-
----
-
-## What is left, and it is all yours
-
-Every item below needs credentials, a DNS panel, or a GitHub setting. None can
-be done from this machine.
-
-### 1. GitHub settings — start here
-
-`docs/GITHUB-SETTINGS.md` has the exact click path. It matters because **every
-push to `main` in this run printed**:
+Not a failure, and not a number being hidden. `compare.mjs` will not put a
+percentage on a comparison whose two sides hold different products, because
+that number would be about data and would invite someone to move CSS until the
+wrong content lined up. What it reports instead:
 
 ```
-remote: Bypassed rule violations for refs/heads/main:
-remote: - Changes must be made through a pull request.
+category   live shows 2 product cards, local shows 12
+products   24 cards on both sides, but only 7 of 24 slots hold the same product
+search     live shows 5, local shows 3
+product    live shows 1, local shows 4
 ```
 
-A rule that announces it was bypassed is not enforcing anything.
+One cause: **the catalogues differ**, which is exactly what migration 128 fixes.
+Once it is applied these four become measurable, and only then is it meaningful
+to chase geometry on them.
 
-Two traps are written up there in full: the **default branch is
-`cursor/add-supabase-3c830`, not `main`**, which decides what Vercel treats as
-production; and **`E2E (Playwright)` must not be made a required check** until
-`CI_SUPABASE_URL` exists, because without it the job skips itself, and a
-skipped required check never reports success, leaving every PR permanently
-unmergeable.
+---
 
-### 2. Missing secrets — 8 of 11
+## What is left, and all of it is yours
 
-Present: the three Supabase keys. Missing:
+### 1. Supabase
 
-| Secret | Blocks |
+- **Project Settings > API Keys**: copy the secret key (`sb_secret…` or `eyJ…`).
+  It goes into `.env.local` as `SUPABASE_SECRET_KEY` and into Vercel Production
+  under the same name. Never with a `NEXT_PUBLIC_` prefix.
+- **Authentication > Sign In / Providers > Email**: turn on
+  **"Prevent use of leaked passwords"**. It is a dashboard toggle, not DDL, and
+  there is no API for it. It is currently off.
+
+### 2. Resend
+
+<https://resend.com/domains/8cbce0e7-2334-40dc-aba6-fce92e80371f>
+
+Copy the three DNS records into Cloudflare > kenyonexpress.co.il > DNS > Add
+record, then return to Resend and press **Verify**.
+
+Do this early. Until the domain verifies, every transactional mail is refused,
+which means **no buyer ever receives their voucher**. Propagation is not
+instant and it cannot be done during the cutover.
+
+### 3. Vercel
+
+The GitHub App needs to see the repo first:
+<https://github.com/apps/vercel> > Configure > kenyonexpress > Repository
+access > **Only select repositories** > add `kenyonexpress` > Save.
+
+Then **Project Settings > Environment Variables > Production**:
+
+| Variable | Value |
 | --- | --- |
-| `VOUCHER_QR_SECRET` | voucher issuance and redemption |
-| `CARDCOM_TERMINAL_NUMBER` | live payments |
-| `CARDCOM_API_NAME` | live payments |
-| `CARDCOM_API_PASSWORD` | live payments |
-| `CARDCOM_WEBHOOK_SECRET` | webhook authenticity |
-| `CRON_SECRET` | all six cron routes |
-| `RESEND_API_KEY` | every transactional email |
-| `SENTRY_AUTH_TOKEN` | source maps (optional) |
+| `SUPABASE_SECRET_KEY` | the key from step 1 |
+| `VOUCHER_QR_SECRET` | `openssl rand -hex 32` |
+| `CRON_SECRET` | `openssl rand -hex 32`, same value into the scheduler |
+| `RESEND_API_KEY` | Resend > API Keys |
+| `NEXT_PUBLIC_WHATSAPP_PHONE` | the real business number |
+| `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD`, `CARDCOM_WEBHOOK_SECRET` | after the Cardcom call |
+| `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_AUTH_TOKEN` | Sentry, see `docs/SENTRY-SETUP.md` |
 
-### 3. Cardcom
+The full table with a note on every variable is `.env.example`, which was
+verified against the code on 2026-08-31: every `process.env.*` in `src/` and
+`apps/` is documented there, and the only two names left out are `NODE_ENV` and
+`NEXT_RUNTIME`, which the runtime supplies.
 
-The live client is **legacy `/Interface/*.aspx`**, not v11 JSON, by a decision
-taken 2026-07-23. `docs/CARDCOM-ARCHITECTURE.md` describes v11, so endpoint
-names in that document are not necessarily the ones the code calls. Measure
-against the code before changing anything there.
+Three traps in that list are worth repeating, because each one fails silently
+rather than loudly:
 
-Cardcom does **not sign its webhooks**. There is no HMAC and no signature
-header. Authenticity rests on an unguessable `?s=` secret in the IndicatorUrl
-plus mandatory server-to-server re-verification through `GetLpResult`, which is
-the only trusted source of amount, status and token.
+- **`NEXT_PUBLIC_SENTRY_DSN` is read at build time.** A build without it
+  produces a bundle whose SDK is `dsn: undefined`. Adding the variable later
+  requires a redeploy, not a restart.
+- **`VOUCHER_QR_SECRET` is not casually rotatable.** Every voucher already
+  issued is signed with it. Rotating invalidates them all unless the old value
+  moves to `VOUCHER_QR_SECRET_PREVIOUS` first.
+- **`NEXT_PUBLIC_WHATSAPP_PHONE`, unset, is not absent.** Every WhatsApp link
+  falls back to `972524635550`, which is the number published by the only store
+  on the live site, and that store is called "Test Store".
 
-### 4. Domain
+### 4. Cardcom
 
-`kenyonexpress.co.il` **is live and serving 200 today** through Cloudflare
-(`104.21.55.125`, `172.67.148.28`, NS `elma`/`derek.ns.cloudflare.com`), and
-what it serves is the **old WordPress site** (`wp-content`, `wp-includes`).
+Call **03-9436100** for a production terminal.
 
-So this is not "DNS is unconfigured". It is a cutover: point the domain at
-Vercel when you are ready to switch, and confirm first which branch Vercel
-treats as production (see item 1).
+Two facts about this integration that contradict the architecture document, and
+the code is the authority:
 
-### 5. Pending migrations — two of them, neither applied
+- The live client is the **legacy `/Interface/*.aspx` API**, not v11 JSON, by a
+  decision taken 2026-07-23. `docs/CARDCOM-ARCHITECTURE.md` describes v11, so
+  endpoint names there are not the ones the code calls.
+- **Cardcom does not sign its webhooks.** There is no HMAC and no signature
+  header. Authenticity rests on the unguessable `?s=` secret in the IndicatorUrl
+  plus mandatory server-to-server re-verification through `GetLpResult`, which
+  is the only trusted source of amount, status and token.
 
-Both live in `supabase/migrations/` under a `PENDING-` prefix. There is no
-`migrations/pending/` directory in this repo; the prefix is the convention.
-Everything numbered, including `106`–`108`, is already applied in production.
+### 5. Migration 128, and the two lineages behind it
 
-#### `PENDING-revoke_anon_writes.sql` — defence in depth, written this run
+`migrations/pending/128_wp_publish.sql` is written, **not applied**, and is
+waiting on your approval. It publishes the 19 real imported products, fills
+their categories and commercial terms, and moves the 34 demo products to draft.
 
-`anon` currently holds DELETE, INSERT, REFERENCES, SELECT, TRIGGER, TRUNCATE
-and UPDATE on **all 46 tables** in `public`, and RLS is enabled on all 46, so
-RLS is the only layer between an anonymous caller and a write.
+Measured against production on 2026-08-31, before it runs:
 
-**TRUNCATE is not a missing second layer, it is a missing first one.** RLS does
-not apply to TRUNCATE at all; no policy is consulted. `anon` holding it on 46
-tables is an unguarded path to emptying any of them.
+```
+19 products  draft, all physical, all supplier_id NULL   (the WP import)
+34 products  active, attributes.demo = true              (seed data)
+27 products  active and real
+```
 
-It is deliberately **not** the blanket `REVOKE ... FROM anon` it looks like,
-because that breaks the guest cart. The policy `carts: owner all` identifies a
-guest by session cookie and explicitly permits `profile_id IS NULL`, and
-`cart.ts` writes `carts` through the request-scoped anon-key client, so a
-logged-out visitor's writes execute as `anon`. `carts` is re-granted and is the
-only such table: newsletter and the `/api/a` beacon were both checked and go
-through `service_role`.
+The shop is currently serving 34 invented products and hiding all 19 real ones.
 
-The file carries its own verification query, the guest-cart check to run after,
-and a rollback.
+**Three things the file deliberately does not do**, each because the data does
+not exist rather than because it was overlooked:
 
-#### `PENDING-money-integer-fix.sql` — blocked, do not run it blind
+- **No `supplier_id`.** All 48 products in the WXR are authored by the site
+  admin; `_dokan_vendor_id` appears only on orders, never on a product; the
+  export has two authors and the second is the Dokan placeholder; and the live
+  store listing contains exactly one store, "Test Store". `supplier_id` decides
+  who gets paid, so **assigning suppliers to the 19 products is your task**, in
+  the admin, after 128.
+- **No coupon classification.** Seventeen of the nineteen are services that
+  cannot ship. Section 5 of the file writes the reclassification out per slug,
+  commented out, because `type` decides the money route and no source says.
+- **No supplier detail backfill.** All 11 existing supplier rows are seed data
+  themselves and none of their names appears anywhere on the live site.
 
-Converts the wallet balance from `numeric`
-shekels to integer agorot. It is **blocked by explicit instruction** and is
-what blocks the wallet goal.
+**Two measurements gate it**, both in the file header: all 32 homepage deal
+slugs were resolved (24 active and not demo, 6 draft, 2 with no row), so the
+demo retirement breaks no deal card and the grid goes from 24/32 reachable to
+30/32; and **all 32 product image URLs return 200 today and are all served by
+the WordPress install this project replaces**, so they all 404 on the day of the
+DNS cutover unless they are pulled into R2 first.
 
-It performs **41 column conversions across 16 tables** (`products` 8,
-`order_items` 5, `orders` 4, `wallet_balances`/`product_variants`/`coupon_codes`
-3 each, and so on), rewrites `fn_wallet_transfer` from `numeric` to `bigint`,
-plus `fn_pay_referral` and both cashback functions.
+Everything else waiting in `migrations/pending/` is listed in that directory's
+README. Note there are **two** pending locations: `migrations/pending/` and
+three `PENDING-`-prefixed files still in `supabase/migrations/`. Read both before
+concluding the schema is settled.
 
-**A warning was recorded when migration 103 was applied, and reading this file
-confirms it still applies:** it drops and rebuilds `v_wallet_balance_drift` and
-`v_wallet_ledger`, and the file contains **no `security_invoker` and no
-`REVOKE`** for either. A rebuilt view inherits neither. Run as written, it
-silently reopens the RLS hole that 103 closed.
+**Migration 059 is deliberately NOT applied**, reaffirmed 2026-07-31 with the
+evidence, and production is therefore the pre-059 lineage: numeric `*_ils`
+columns, not integer `*_agorot`. Code that names the wrong generation raises
+42703 and takes down the whole statement rather than failing partially. The
+probe in `src/lib/commerce/order-money-columns.ts` is how the order path stays
+correct on either lineage; new code on that path must use it.
 
-Also note `payments` in production is the **pre-059 lineage**: it has
-`amount_ils` and `wallet_applied_ils`, and no `amount_agorot`, no `paid_at` and
-no `refund_of_payment_id`. Naming a column that does not exist raises `42703`
-and takes down the whole statement rather than failing partially.
+### 6. The ten scheduled jobs
 
-### 6. Auth setting
+They are no longer in `vercel.json`. Vercel's cron allowance is a plan feature
+(two jobs, daily, on Hobby), and declaring ten neither failed the build nor
+warned: the platform ran what the plan covered and ignored the rest. Three of
+the ten are on the money path and one is the only way a customer ever receives
+a voucher, so "silently not scheduled" was not acceptable for any of them.
 
-`auth_leaked_password_protection` is **off**. It is a toggle in the Supabase
-Auth dashboard, not DDL, and there is no tool for it.
+`docs/CRON-EXTERNAL.md` has all ten URLs, their schedules unchanged, and the
+cron-job.org setup with the `Authorization: Bearer CRON_SECRET` header.
 
 ### 7. Data
 
-- **11 suppliers** have no address and no logo.
-- **8 of 32 homepage deals point at a product that does not exist.**
-  `prefetch={false}` already prevents a 404 on every view, but the click still
-  lands on a 404 until the products are imported. The eight slugs are named in
-  `GO-LIVE.md` step 3.
+- **11 suppliers, all 11 with no address and no logo.** They are seed rows.
+- **The homepage deal grid: 24 of 32 links resolve.** After 128, 30 of 32. The
+  remaining two have no product row at all: `reverse-withdrawal-payment` (the
+  Dokan admin product, deliberately excluded from the import) and `קופון-טסט`.
 - `/about` has no content.
-- The two new legal pages need a lawyer's approval. The framework is built; the
-  binding text is not code.
+- The legal pages need a lawyer's approval. The framework is built; the binding
+  text is not code.
 
-### 8. Load testing
+### 8. Domain
+
+`kenyonexpress.co.il` is live and serving 200 today through Cloudflare
+(`172.67.148.28`, `104.21.55.125`, NS `derek`/`elma.ns.cloudflare.com`), and what
+it serves is still the **old WordPress site** (`wp-content`, `wp-includes`),
+verified 2026-08-31.
+
+So this is not "DNS is unconfigured". It is a cutover, it is the one step that
+is not reversible in seconds, and it is step 7 of the runbook for that reason.
+Lower the TTL the day before.
+
+### 9. Load testing
 
 The full 200-VU L1 profile has never been run here and needs a machine that is
-not this laptop. The ~238ms floor that used to be listed as part of this is
-**not** part of it any more; it was one uncached Supabase round trip and was
-closed in [46].
+not this laptop.
+
+---
+
+## Known, measured, and not defects
+
+Recorded so nobody spends a day rediscovering them.
+
+- **A long-lived local `next start` can wedge one image-optimizer cache entry
+  permanently.** Symptom: `/products` never reaches `networkidle` and a
+  Playwright test fails in `page.goto`, not in its assertion. Measured: the file
+  is valid (sharp encodes it to AVIF in 101ms), 25 concurrent optimizer requests
+  wedge nothing, and on a freshly started server the same URL answers 200 in
+  104ms and the page idles in 2.3s. Restart the server. There is no code to fix.
+- **Lighthouse LCP on localhost is a Lantern simulation**, not an observation. A
+  2.7 second real improvement showed up as noise. Judge LCP changes on a
+  deployment, not here.
+- **`npm install` cannot work in this repo.** It dies inside `buildIdealTree`,
+  ahead of every lifecycle hook, so no error message can be improved from
+  inside the repo. Use `pnpm`. `AGENTS.md` explains the mechanism.
 
 ---
 
 ## Operational notes for whoever runs this next
 
-- Install with **`pnpm`**. `npm install` crashes in this repo before any
-  lifecycle hook can print a useful message; `AGENTS.md` explains why.
+- Install with **`pnpm`**.
 - Read the guide in `node_modules/next/dist/docs/` before writing Next code.
   This version has breaking changes from what most training data contains.
-- `STATE.md` is the source of truth for what happened and why. It is long on
+- **`STATE.md` is the source of truth for what happened and why.** It is long on
   purpose: most entries record a measurement that refuted an assumption, and
   those are the entries that stop the same mistake being made twice.
-- Backups are written to `~/Desktop/kenyonexpress-backup-<stamp>.tar.gz`,
-  `.git` included, `node_modules` excluded. Keep the three newest.
+- The mainline branch is `phase5/homepage`. `main` is 303 commits behind.
+- Backups are written to `~/Desktop/kenyonexpress-backup-<stamp>.tar.gz`, `.git`
+  included, `node_modules` excluded. Keep the three newest.
