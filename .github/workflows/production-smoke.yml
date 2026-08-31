@@ -15,6 +15,26 @@ name: Production smoke
 # on GitHub Actions, where a schedule is not a plan feature, and it authenticates
 # with nothing because both routes it calls are public.
 
+# IT DOES NOT RUN YET, AND THAT IS NOT FIXABLE FROM THIS BRANCH.
+#
+# GitHub fires `schedule` and accepts `workflow_dispatch` only for workflows
+# present on the repository's DEFAULT branch, which is `main`. This file lives
+# on `phase5/homepage`. Proven, not assumed - `gh workflow run
+# production-smoke.yml --ref phase5/homepage` answers:
+#
+#   HTTP 404: workflow production-smoke.yml not found on the default branch
+#
+# and `gh workflow list --all` shows only CI and Dependabot Updates, because
+# that listing is the default branch's too.
+#
+# So this probe starts working the day `phase5/homepage` reaches `main`, and not
+# before. Nothing in the file needs changing for that to happen; merging is the
+# fix, and merging is a decision this file is not allowed to make. The same is
+# true of dependabot-auto-merge.yml, which is likewise absent from `main`.
+#
+# Until then the liveness evidence is manual, and it was taken: on 2026-09-01
+# both probed URLs answered 200.
+
 on:
   schedule:
     # 04:20 UTC, which is 07:20 in Asia/Jerusalem. Cron on GitHub is UTC only
