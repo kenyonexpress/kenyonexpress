@@ -1,12 +1,35 @@
-.env.local
-.env*.local
-supabase/
-e2e/
+# Paths are ANCHORED with a leading slash. This is load-bearing, not style.
+#
+# This file used to read `supabase/`, unanchored, which matches a directory of
+# that name AT ANY DEPTH. The intended target was the root `supabase/` folder
+# of migrations and edge functions. What it also matched was `src/lib/supabase/`,
+# the thirteen modules that build every Supabase client in the app.
+#
+# The result was a build that passed locally and failed on Vercel, every time,
+# with `module-not-found` in what looked like "all server actions": 155 files
+# import `@/lib/supabase/*`, and the directory was being deleted from the upload
+# before the build ever started. The log said so in one line that scrolls past
+# above the errors: `Removed 392 ignored files defined in .vercelignore`.
+#
+# `e2e/` had the same shape. It has no nested twin today, but anchoring it costs
+# nothing and stops the next `src/**/e2e/` from silently disappearing.
+#
+# Rule for anything added here: if it names a directory that could plausibly
+# exist under src/, anchor it.
+
+/.env.local
+/.env*.local
+
+# Root-level only. NOT src/lib/supabase/, which the app imports 155 times.
+/supabase/
+/e2e/
+/.husky/
+
+# Test and config files, safe to strip: nothing shipped imports them.
 **/*.test.ts
 **/*.test.tsx
 **/*.spec.ts
 **/*.spec.tsx
-vitest.config.ts
-playwright.config.ts
-biome.json
-.husky/
+/vitest.config.ts
+/playwright.config.ts
+/biome.json
