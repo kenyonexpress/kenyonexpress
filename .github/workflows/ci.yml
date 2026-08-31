@@ -304,3 +304,148 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 7
+
+  # E2E AGAINST THE PULL REQUEST'S VERCEL PREVIEW. This is a different thing
+  # from the `e2e` job above and does not replace it.
+  #
+  # `e2e` builds the app on this runner and drives a localhost server: it is the
+  # gate on the code. This job drives the deployment a reviewer actually clicks,
+  # with the platform's routing, caching, image optimizer and environment
+  # variables in front of it. Those layers are exactly where a green localhost
+  # run and a broken preview diverge, and nothing else in this file looks at
+  # them.
+  #
+  # WHY IT IS GATED ON CI_SUPABASE_URL, given that the browser never reads that
+  # value. The preview carries its own Supabase credentials from Vercel; this
+  # job passes it none. The secret is used here as a SWITCH, not a connection
+  # string: it is the one place in this repository that records "there is a
+  # database CI is allowed to touch". Until it is set, the specs below would be
+  # browsing whatever the preview is wired to, and on this project today that is
+  # production. So the same guard that keeps the `e2e` job from seeding
+  # production keeps this one from reading it.
+  #
+  # NO `needs:`, deliberately. Vercel builds the preview whether or not our own
+  # lint/test/build jobs pass, so waiting on them only delays the poll while the
+  # preview sits there finished. This is an independent signal about the
+  # deployment, not a second opinion on the source.
+  #
+  # THE SPEC LIST IS NOT ARBITRARY AND MUST STAY READ-ONLY. home, product,
+  # category and render-mode navigate and assert; they create no cart, no
+  # account and no order. a11y, layout-stability and rtl-mobile are absent
+  # DESPITE being mostly read-only, because each carries a seeded-checkout test
+  # that writes a cart. Adding a spec here without checking that is how this job
+  # starts writing rows into a real database.
+  e2e-preview:
+    name: E2E against the PR preview
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Finding the preview URL means reading the deployment the Vercel GitHub
+      # app created on this SHA. Without this scope the API call answers 403.
+      deployments: read
+    steps:
+      # Both skip paths announce themselves. A job that quietly does nothing is
+      # indistinguishable from a job that passed, which is the failure this
+      # step exists to prevent.
+      - name: Decide whether this job can run
+        id: gate
+        env:
+          # Read through env rather than interpolated into the script body, so
+          # the value is never parsed as shell.
+          CI_SUPABASE_URL: ${{ secrets.CI_SUPABASE_URL }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT_NAME" != "pull_request" ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Preview E2E skipped::A ${EVENT_NAME} event has no pull request, so there is no preview deployment to point a browser at. This job runs on pull_request only."
+          elif [ -z "$CI_SUPABASE_URL" ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Preview E2E skipped::CI_SUPABASE_URL is not set. That secret is this repository's switch for 'CI may touch a database', and the only database a preview is wired to today is production. Set the CI_SUPABASE_* repository secrets against a disposable project to enable this job."
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # The URL is not guessed from the branch name. Vercel's preview hostnames
+      # include a hash, and a guessed host that happens not to resolve fails as
+      # a timeout that reads like an app bug. The deployment record is the only
+      # authoritative source, so this waits for it.
+      - name: Wait for the Vercel preview deployment
+        id: preview
+        if: steps.gate.outputs.run == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const sha = context.payload.pull_request.head.sha
+            const deadline = Date.now() + 12 * 60 * 1000
+            while (Date.now() < deadline) {
+              const { data: deployments } = await github.rest.repos.listDeployments({
+                ...context.repo,
+                sha,
+                per_page: 100,
+              })
+              for (const deployment of deployments) {
+                const { data: statuses } = await github.rest.repos.listDeploymentStatuses({
+                  ...context.repo,
+                  deployment_id: deployment.id,
+                  per_page: 100,
+                })
+                const ready = statuses.find((s) => s.state === 'success' && s.environment_url)
+                if (ready) {
+                  core.info(`Preview for ${sha}: ${ready.environment_url}`)
+                  core.setOutput('url', ready.environment_url)
+                  return
+                }
+                if (statuses.some((s) => s.state === 'failure' || s.state === 'error')) {
+                  core.setFailed(`The preview deployment for ${sha} did not build, so there is nothing to test.`)
+                  return
+                }
+              }
+              await new Promise((resolve) => setTimeout(resolve, 15_000))
+            }
+            core.setFailed(`No successful preview deployment appeared for ${sha} within 12 minutes.`)
+
+      - uses: actions/checkout@v4
+        if: steps.gate.outputs.run == 'true'
+      - uses: pnpm/action-setup@v4
+        if: steps.gate.outputs.run == 'true'
+      - uses: actions/setup-node@v4
+        if: steps.gate.outputs.run == 'true'
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+        if: steps.gate.outputs.run == 'true'
+
+      - name: Install Chromium
+        if: steps.gate.outputs.run == 'true'
+        run: pnpm exec playwright install --with-deps chromium
+
+      # E2E_BASE_URL is what tells playwright.config.ts NOT to start a server of
+      # its own - the app is already running somewhere this runner does not
+      # manage. Chromium only, and only the read-only specs named above: the
+      # mobile project would double the run for no extra statement about the
+      # platform layers this job exists to cover.
+      - name: Run the read-only smoke specs against the preview
+        if: steps.gate.outputs.run == 'true'
+        env:
+          E2E_BASE_URL: ${{ steps.preview.outputs.url }}
+          # Optional. A preview with Deployment Protection turned on answers
+          # every request with an SSO wall; this header is what a machine uses
+          # to get past it. Absent, the run simply behaves as it does on an
+          # unprotected preview.
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          pnpm exec playwright test --project=chromium \
+            e2e/home.spec.ts \
+            e2e/product.spec.ts \
+            e2e/category.spec.ts \
+            e2e/render-mode.spec.ts
+
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.gate.outputs.run == 'true'
+        with:
+          name: playwright-report-preview
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

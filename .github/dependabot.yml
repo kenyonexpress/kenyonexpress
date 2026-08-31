@@ -30,6 +30,9 @@ updates:
   # ---------------------------------------------------------------------------
   - package-ecosystem: npm
     directory: /
+    # DELETE THIS LINE THE DAY phase5/homepage MERGES INTO main. See the note at
+    # the top of the file: a target-branch naming a branch that no longer exists
+    # stops Dependabot silently - no pull requests, and no error anyone sees.
     target-branch: phase5/homepage
     schedule:
       interval: weekly
@@ -89,6 +92,9 @@ updates:
   # ---------------------------------------------------------------------------
   - package-ecosystem: github-actions
     directory: /
+    # DELETE THIS LINE TOO on the same day, for the same reason. Both entries
+    # carry it, so both have to be removed - deleting one leaves half of
+    # Dependabot pointed at a branch that is gone.
     target-branch: phase5/homepage
     schedule:
       interval: weekly
