@@ -1,8 +1,8 @@
 # What runs in CI, and what deliberately does not
 
-Three workflows live here, and the absence of a fourth is a decision rather
-than an oversight. This file records the decision so the next person does not add the
-missing file back.
+Four workflows live here. The absence of a fifth named `deploy.yml` is a
+decision rather than an oversight. This file records the decision so the next
+person does not add that missing file back.
 
 ## There is no `deploy.yml`, and there must not be one
 
@@ -105,12 +105,31 @@ merges anything itself, and its safety depends on branch protection existing on
 whatever branch `.github/dependabot.yml` names in `target-branch`. The file's
 own header comment carries the full argument.
 
+## `scheduled-jobs.yml`
+
+The external scheduler for the ten cron routes, plus a GET 405 probe of the two
+webhook receivers. It is the code-side answer to "nothing is calling the ten
+jobs": GitHub Actions fires every five minutes, and
+`scripts/run-scheduled-jobs.mjs` decides which of the ten are due.
+
+It authenticates with `secrets.CRON_SECRET`, which must be the same value as
+Vercel Production. Until that secret is set, every run fails closed and sends
+no request. `vars.PRODUCTION_URL` overrides the host the same way
+`production-smoke.yml` does, and `secrets.PRODUCTION_SMOKE_HEADER` is forwarded
+as a bypass if Deployment Protection is ever turned on.
+
+It does not deploy anything. See the `deploy.yml` section above.
+
+Like `production-smoke.yml`, GitHub will not fire `schedule` until this file is
+on `main`.
+
 ## `vercel.json` has no `crons` key, on purpose
 
 Ten scheduled jobs used to be declared there. Hobby runs two of them, at daily
-granularity, and silently ignores the rest - so four money-path and email jobs
-were believed to be scheduled and were not. They now run from `cron-job.org`;
-see `docs/CRON-EXTERNAL.md`.
+granularity, and silently ignores the rest, so four money-path and email jobs
+were believed to be scheduled and were not. They now run from GitHub Actions
+(`.github/workflows/scheduled-jobs.yml`). `docs/CRON-EXTERNAL.md` is the
+catalogue. cron-job.org remains a fallback if Actions delay becomes a problem.
 
 Nothing in the build reads that key. The route handlers under `src/app/api/cron/`
 are ordinary route handlers, built and reachable either way; `crons` is consumed

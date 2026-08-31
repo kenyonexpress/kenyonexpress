@@ -1,0 +1,102 @@
+name: Scheduled jobs
+
+# The external scheduler for the ten cron routes, plus a GET 405 probe of the
+# two webhook receivers. This is not a deploy.
+#
+# WHY THIS FILE EXISTS. Vercel Hobby registers two daily crons and silently
+# ignores the rest. The ten handlers under src/app/api/cron/ are ordinary
+# routes; they were reachable and guarded, and nothing called them. Three are
+# on the money path. One is the only path that sends a customer their voucher.
+# GitHub Actions schedule is not a plan feature, so the jobs live here.
+#
+# WHY THIS IS NOT deploy.yml. Vercel deploys this repository through its own
+# GitHub integration. A workflow named deploy.yml that called `vercel deploy`
+# would be the second thing publishing the same commit, and the production
+# alias would belong to whichever finished last. See README.md in this
+# directory. If a contributor adds deploy.yml, that is the bug, not a missing
+# file.
+#
+# IT DOES NOT RUN UNTIL THIS FILE IS ON main. GitHub fires `schedule` (and
+# accepts workflow_dispatch) only for workflows on the default branch. Merging
+# is what starts the clock; nothing in the file needs changing for that.
+#
+# THE ONE SECRET. CRON_SECRET must be the same value as Vercel Production.
+# Paste it at GitHub > Settings > Secrets and variables > Actions. Until it is
+# set, every run fails closed and sends no request, which is the same shape as
+# an unset secret on the routes themselves (they answer 401 forever).
+#
+# THE WEBHOOK PROBES ARE GET. POST /api/payments/cardcom/webhook inserts a row
+# into payment_webhook_events even on a bad secret. A liveness check that
+# writes the money path is not a liveness check. 405 means the route is
+# deployed and refuses GET.
+
+on:
+  schedule:
+    # Finest grain GitHub allows. The script then decides which of the ten
+    # jobs are due, using windows wide enough for GitHub's documented delay.
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+    inputs:
+      job:
+        description: 'Fire one job by name (notifications, health, invoices, stock, stranded-payments, abandoned-cart, subscriptions, reap-carts, reconcile, expire-vouchers, products-webhook, cardcom-webhook). Empty runs whatever is due now.'
+        required: false
+        type: string
+      dry_run:
+        description: 'Print the due set and send no request'
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: scheduled-jobs
+  # A tick that is still running when the next one is due should finish, not
+  # be cancelled. Cancelling a notifications drain mid-batch is how an outbox
+  # row looks "in flight" forever.
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    name: Run due cron jobs and probe webhooks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve the target
+        id: target
+        env:
+          CONFIGURED_URL: ${{ vars.PRODUCTION_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -n "$CONFIGURED_URL" ]; then
+            BASE="${CONFIGURED_URL%/}"
+          else
+            BASE="https://kenyonexpress.vercel.app"
+            echo "::notice title=Using the default production URL::The repository variable PRODUCTION_URL is not set, so this run used ${BASE}. Set the variable when the apex cutover happens; the job does not skip, because a scheduler that silently stops is worse than one aimed at a stale host."
+          fi
+          echo "base=${BASE}" >> "$GITHUB_OUTPUT"
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error title=CRON_SECRET is not set::Paste the Vercel Production CRON_SECRET into GitHub > Settings > Secrets and variables > Actions. Until that is done, every scheduled run fails closed and no job is called, which is the same failure mode as an unset secret on the routes themselves."
+            exit 1
+          fi
+
+      - name: Call the due routes
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          PRODUCTION_URL: ${{ steps.target.outputs.base }}
+          PRODUCTION_SMOKE_HEADER: ${{ secrets.PRODUCTION_SMOKE_HEADER }}
+          ONLY: ${{ github.event.inputs.job }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+        run: |
+          set -euo pipefail
+          ARGS=()
+          if [ "${DRY_RUN:-false}" = "true" ]; then
+            ARGS+=(--dry-run)
+          fi
+          if [ -n "${ONLY:-}" ]; then
+            ARGS+=(--only="${ONLY}")
+          fi
+          node scripts/run-scheduled-jobs.mjs "${ARGS[@]}"

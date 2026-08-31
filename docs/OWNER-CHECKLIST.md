@@ -1,8 +1,9 @@
-# ‏מה נשאר לך: ארבעה פריטים
+# ‏מה נשאר לך: שלושה פריטים
 
-‏נכתב ‏01.09.2026. זה המסמך היחיד שאתה צריך לקרוא.
+‏נכתב ‏01.09.2026, עודכן ‏31.08.2026 כשהמתזמן עבר ל-GitHub Actions.
+‏זה המסמך היחיד שאתה צריך לקרוא.
 
-‏**הקוד גמור והאתר חי בפרודקשן.** נמדד היום:
+‏**הקוד גמור והאתר חי בפרודקשן.** נמדד:
 
 ```
 https://kenyonexpress.vercel.app/          200
@@ -13,8 +14,7 @@ https://kenyonexpress.vercel.app/          200
 ‏ה-401 הוא **הצלחה**: הוא מוכיח ש-`CRON_SECRET` מוגדר בדיפלוימנט ושעשרת מסלולי
 ה-cron סגורים לאינטרנט.
 
-‏ארבעה פריטים נשארו. אף אחד מהם אינו קוד, ואף אחד מהם לא יכול להיעשות מהמכונה
-הזאת: כולם דורשים חשבון או טלפון שהם שלך.
+‏שלושה פריטים נשארו. אף אחד מהם אינו קוד.
 
 ‏**סדר ההרצה קובע.** פריט ‏3 (‏DNS) הוא היחיד שאינו הפיך בשניות, והוא חייב לבוא
 **אחרי** פריט ‏2, כי את התשלום האמיתי הראשון עושים על כתובת ה-`vercel.app`
@@ -22,23 +22,22 @@ https://kenyonexpress.vercel.app/          200
 
 | # | פריט | זמן | חוסם מה |
 |---|---|---|---|
-| ‏1 | ‏עשרת ה-cron ב-cron-job.org | ‏20 דקות | שוברים לא נשלחים ללקוחות |
+| ‏1 | ‏`CRON_SECRET` ב-GitHub Actions | דקה אחת | שוברים לא נשלחים ללקוחות |
 | ‏2 | מסוף Cardcom לייצור | שיחת טלפון + ‏10 דקות | אי אפשר לגבות שקל |
 | ‏3 | ניתוק ה-DNS | ‏30 דקות + המתנה | האתר האמיתי לא באוויר |
-| ‏4 | מיזוג ‏PR #6 | ‏2 דקות | ‏`main` מתאר מוצר שלא קיים |
 
 ---
 
-## ‏1. עשרת ה-cron ב-cron-job.org
+## ‏1. הסוד של ה-cron ב-GitHub
 
-‏**זה הפריט הכי דחוף ברשימה.** כרגע **שום דבר לא מתוזמן**: המסלולים פרוסים
-ומאובטחים, ואף אחד לא קורא להם. ‏`notifications` הוא **המסלול היחיד** שדרכו לקוח
-מקבל את השובר שלו, ו-`invoices`, ‏`reconcile` ו-`stranded-payments` יושבים על
-מסלול הכסף.
+‏**זה הפריט הכי דחוף ברשימה.** עשרת המסלולים פרוסים ומאובטחים. המתזמן הוא
+GitHub Actions (`.github/workflows/scheduled-jobs.yml`). בלי הסוד ב-GitHub
+הריצה נכשלת סגורה ואף מסלול לא נקרא. ‏`notifications` הוא **המסלול היחיד**
+שדרכו לקוח מקבל את השובר שלו.
 
-### ‏1.1 קודם כל: קח את הסוד
+### ‏1.1 קח את הסוד מ-Vercel, הדבק ב-GitHub
 
-‏**‏Chrome > Vercel > הפרויקט `kenyonexpress` > Settings > Environment Variables**
+‏**Chrome > Vercel > הפרויקט `kenyonexpress` > Settings > Environment Variables**
 
 מצא את:
 
@@ -49,57 +48,41 @@ CRON_SECRET
 לחץ על העין כדי לחשוף את הערך והעתק אותו. הוא נראה כמו ‏64 תווים הקסדצימליים.
 ‏**הערך עצמו לא כתוב באף מסמך בריפו, בכוונה.**
 
-‏אם המשתנה לא קיים, צור אותו. ‏**Terminal:**
+‏**Chrome > GitHub > הריפו `kenyonexpress/kenyonexpress` > Settings > Secrets
+and variables > Actions > New repository secret**
+
+- Name:
+
+```
+CRON_SECRET
+```
+
+- Secret: הערך שהעתקת מ-Vercel. אותו ערך, בייט לבייט.
+
+‏אם המשתנה לא קיים ב-Vercel, צור אותו שם קודם. ‏**Terminal:**
 
 ```bash
 openssl rand -hex 32
 ```
 
-והדבק את התוצאה ל-Vercel תחת השם `CRON_SECRET`, ‏Environment = `Production`.
-‏אחרי הוספה של משתנה חדש צריך **redeploy**, לא restart.
+והדבק את התוצאה ל-Vercel תחת השם `CRON_SECRET`, Environment = `Production`.
+‏אחרי הוספה של משתנה חדש צריך **redeploy**, לא restart. אחר כך אותה מחרוזת
+ב-GitHub.
 
-### ‏1.2 עשר השורות
+### ‏1.2 תוודא שזה עובד
 
-‏**Chrome > <https://cron-job.org> > הרשמה (חינם, בלי כרטיס אשראי)**
+‏**Chrome > GitHub > Actions > Scheduled jobs > Run workflow**
 
-לכל אחת מעשר השורות: **Create cronjob**, ואז מלא לפי השורה.
+הרץ פעם אחת עם `dry_run` מסומן (מדפיס את הסט, בלי לקרוא לייצור). אחר כך הרץ
+עם `job` =
 
 ```
-1   notifications        https://kenyonexpress.vercel.app/api/cron/notifications        GET   */5 * * * *     Authorization: Bearer <CRON_SECRET>
-2   health               https://kenyonexpress.vercel.app/api/cron/health               GET   */5 * * * *     Authorization: Bearer <CRON_SECRET>
-3   invoices             https://kenyonexpress.vercel.app/api/cron/invoices             GET   */10 * * * *    Authorization: Bearer <CRON_SECRET>
-4   stock                https://kenyonexpress.vercel.app/api/cron/stock                GET   */10 * * * *    Authorization: Bearer <CRON_SECRET>
-5   stranded-payments    https://kenyonexpress.vercel.app/api/cron/stranded-payments    GET   */10 * * * *    Authorization: Bearer <CRON_SECRET>
-6   abandoned-cart       https://kenyonexpress.vercel.app/api/cron/abandoned-cart       GET   0 * * * *       Authorization: Bearer <CRON_SECRET>
-7   subscriptions        https://kenyonexpress.vercel.app/api/cron/subscriptions        GET   30 2 * * *      Authorization: Bearer <CRON_SECRET>
-8   reap-carts           https://kenyonexpress.vercel.app/api/cron/reap-carts           GET   40 3 * * *      Authorization: Bearer <CRON_SECRET>
-9   reconcile            https://kenyonexpress.vercel.app/api/cron/reconcile            GET   0 4 * * *       Authorization: Bearer <CRON_SECRET>
-10  expire-vouchers      https://kenyonexpress.vercel.app/api/cron/expire-vouchers      GET   15 23 * * *     Authorization: Bearer <CRON_SECRET>
+health
 ```
 
-קרא כל שורה משמאל לימין: **שם | ‏URL מלא | ‏method | ‏schedule | הכותרת היחידה**.
+ו-`dry_run` כבוי. מצפים ל-200.
 
-### ‏1.3 איפה בדיוק ללחוץ, לכל job
-
-‏1. ‏**Title**: השם מהעמודה הראשונה.
-‏2. ‏**URL**: ה-URL המלא מהשורה.
-‏3. ‏**Execution schedule** ‏> ‏**Custom** ‏> הדבק את ביטוי ה-cron.
-‏4. ‏**Advanced** ‏> ‏**Request method**: ‏`GET`. כל העשרה הם GET; ‏POST מחזיר ‏405.
-‏5. ‏**Advanced** ‏> ‏**Headers** ‏> ‏Add header:
-   - ‏Name: `Authorization`
-   - ‏Value: `Bearer ` ואז הערך של `CRON_SECRET` (רווח אחד ביניהם)
-‏6. ‏**Advanced** ‏> ‏**Treat redirects as success**: השאר **כבוי**. ‏3xx כאן אומר
-   ש-ה-URL שגוי, ואתה רוצה לראות את זה ולא לספור אותו כירוק.
-‏7. ‏**Notifications**: הפעל התראות כישלון למייל שלך. תזמן שאף אחד לא מסתכל עליו
-   שווה בדיוק כמו אין תזמן.
-‏8. ‏**Save**.
-
-‏**כל השעות ב-UTC.** ישראל היא ‏UTC+3 בקיץ ו-UTC+2 בחורף, אז שני ה-jobs הליליים
-זזים בשעה לאורך השנה. זה מכוון ולא מזיק: שניהם סריקות עם חלון רחב.
-
-### ‏1.4 תבדוק שזה עובד, לפני שאתה סומך על זה
-
-‏**Terminal:**
+‏**Terminal, במקביל:**
 
 ```bash
 # ‏מצפים ל-401: מוכיח שהשומר חי ושהסוד נדרש.
@@ -113,10 +96,13 @@ curl -s -o /dev/null -w '%{http_code}\n' \
 
 ‏אם הראשון מחזיר משהו שאינו ‏401, **עצור**: המסלול לא מאובטח באותו דיפלוימנט.
 
-‏אם השני מחזיר ‏401, הערך ב-cron-job.org והערך ב-Vercel שונים. **זאת הדרך הכי
+‏אם השני מחזיר ‏401, הערך ב-GitHub והערך ב-Vercel שונים. **זאת הדרך הכי
 נפוצה שההגדרה הזאת נכשלת**, כי שני הצדדים נראים נכונים כשמסתכלים על כל אחד לחוד.
 
-‏אחרי חמש דקות, ההיסטוריה של `notifications` ב-cron-job.org צריכה להראות ‏200.
+‏אחרי המיזוג ל-main וחמש דקות, הריצה `Scheduled jobs` ב-Actions צריכה להיות ירוקה.
+
+cron-job.org נשאר נפילה אחורה אם GitHub מאחר את תזמון חמש הדקות. אל תריץ את
+שניהם יחד.
 
 ---
 

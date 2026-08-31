@@ -75,7 +75,7 @@ and deliberately not across the schema: `authenticated` legitimately writes to
 carts, addresses and profiles, and a blanket revoke would break the storefront
 while the RLS policies above it kept passing.
 
-## All thirteen files here are genuinely unapplied
+## All fourteen files here are genuinely unapplied
 
 Checked object by object against production, not assumed from this file: none of
 `payment_events`, `refunds`, `search_index_outbox`, `supplier_branches`,

@@ -1,6 +1,7 @@
 # KenyonExpress — Project State
 
-Updated: 2026-08-31 22:01 UTC (‏שכבת ה-rate limit מוזגה ל-main; ממצא "31 עמודות כסף צף" נמדד כשקרי, ושלושה grants שהביקורת רצתה לבטל מחזיקים את הקופות)
+Updated: 2026-08-31 22:30 UTC (מתזמן GitHub Actions לעשרת ה-cron; אין deploy.yml)
+קודם: 2026-08-31 22:01 UTC (‏שכבת ה-rate limit מוזגה ל-main; ממצא "31 עמודות כסף צף" נמדד כשקרי, ושלושה grants שהביקורת רצתה לבטל מחזיקים את הקופות)
 קודם: 2026-08-31 21:46 UTC (‏סיום סופי — Production Ready, תג production-v1.0.0. מחכה להפעלת DNS)
 קודם: 2026-08-31 21:41 UTC (‏PR #6 מוזג ל-main ב-squash; סיום סופי, מחכה להפעלת DNS)
 קודם: 2026-08-31 21:45 (‏תוכנית ההפניות הייתה בנויה במלואה ב-DB בלי אף קורא; ‏128 נכתבה ולא הוחלה; ‏4 מתוך 7 שערי הפיקסלים מסרבים להימדד עד שתוחל)
@@ -62,7 +63,7 @@ Updated: 2026-08-31 22:01 UTC (‏שכבת ה-rate limit מוזגה ל-main; מ�
 קודם: 2026-08-19 22:01 (הצ'ק-אאוט ירד מתחת לשער הפיקסלים, ו-CLS שלו תוקן)
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
-## המשך מ: שלב 99 — סיום סופי, מחכה להפעלת DNS
+## המשך מ: שלב 99 — סיום סופי, מחכה להפעלת DNS + CRON_SECRET ב-GitHub
 
 ### ‏01.09 סבב סגירה: מה נמדד, ומה נדחה
 
@@ -106,18 +107,45 @@ redeem_voucher   supplier_app_context   verify_supplier_staff_pin
 ביטולם משבית כל קופה. **לא נכתב שום REVOKE.** ביקורת שסורקת רק `src/` תמשיך
 להציע את זה ותמשיך לטעות.
 
-### ארבעה חוסמים, אף אחד מהם אינו קוד
+### ארבעה חוסמים, אחד מהם כבר קוד
 
 הפירוט המלא עם ראיות ב-`docs/LAUNCH-READINESS.md`, והפסק שם הוא **NOT READY**.
 
-1. **קריטי:** אין מתזמן חיצוני לעשרת ה-cron. שלושה במסלול הכסף, ואחד הוא
-   המסלול היחיד ששולח ללקוח שובר.
+1. **קריטי, קוד קיים, חסר סוד:** המתזמן החיצוני לעשרת ה-cron כתוב ב-
+   `.github/workflows/scheduled-jobs.yml`. עד שהקובץ על `main` ו-`CRON_SECRET`
+   מודבק ב-GitHub Actions Secrets, אף מסלול לא נקרא. שלושה במסלול הכסף, ואחד
+   הוא המסלול היחיד ששולח ללקוח שובר.
 2. **קריטי:** אין מפתחות Cardcom לפרודקשן. **להחליף את מפתחות Cardcom
    לפרודקשן לפני עלייה אמיתית**; היום מחוברים sandbox ו-mocks.
 3. **גבוה:** לא ידוע לאיזה פרויקט Vercel הדומיין יוצמד. המיזוג ל-main הפיק
    דפלוי `Preview`, כלומר main אינו ה-Production Branch של הפרויקט החי.
 4. **בינוני:** ‏14 קבצים ב-`migrations/pending/` ועוד שלושה `PENDING-` ב-
    `supabase/migrations/`. כל אחד עובר דרך MCP `apply_migration` באישור.
+
+### 31.08 מתזמן 24/7: GitHub Actions, לא deploy.yml
+
+הבקשה הייתה `git add .github/workflows/deploy.yml app/api/cron app/api/webhooks`
+ואז commit+push ל-main. אף אחד משלושת הנתיבים לא היה בעץ, ובכוונה:
+
+- **אין `deploy.yml`.** Vercel מפרסם דרך אינטגרציית GitHub. קובץ deploy היה
+  המפרסם השני של אותו קומיט, וה-alias היה של מי שמסיים אחרון. מתועד ב-
+  `.github/workflows/README.md`.
+- **ה-cron כבר ב-`src/app/api/cron/`** (עשרה handlers). `app/api/cron` בשורש
+  היה עץ Next שני.
+- **ה-webhooks כבר ב-`src/app/api/webhooks/products` וב-
+  `src/app/api/payments/cardcom/webhook`.** POST ל-Cardcom מהמתזמן היה כותב
+  ל-`payment_webhook_events`. המתזמן עושה GET ומחכה ל-405.
+
+מה כן נוסף: `.github/workflows/scheduled-jobs.yml` קורא כל חמש דקות ל-
+`scripts/run-scheduled-jobs.mjs`, שמחליט מי מעשרת ה-jobs מגיע, עם חלונות
+שמכסים איחור מתועד של GitHub. בדיקות ב-`scripts/run-scheduled-jobs.test.mjs`.
+
+**החלטות שהתקבלו אוטומטית.**
+- לא לדחוף ישר ל-`main` (פריסת ייצור). PR.
+- לא ליצור `deploy.yml` גם אם הבקשה נקבה בשם הזה.
+- לא לשכפל ראוטים תחת `app/api/`.
+- GET בלבד על webhooks. 503 מ-`/api/cron/health` נחשב הצלחה של המתזמן.
+- `CRON_SECRET` חסר = יציאה 1 בלי בקשה, לא דילוג ירוק.
 
 ### מה לא בוצע, ולמה
 
@@ -13119,3 +13147,13 @@ Session 2026-07-23 (המשך) - יעד 1/20: אינטגרציית WhatsApp (קו
   עמוד מוצר ודף הבית מראה את הכפתור הצף ואת כפתור השיתוף.
 
 ## Previous Last Completed
+
+---
+
+### 2026-08-31: GitHub Actions scheduler for the ten cron jobs
+- Added `.github/workflows/scheduled-jobs.yml` (every 5 minutes on main) and
+  `scripts/run-scheduled-jobs.mjs`.
+- Did not add `deploy.yml` (would race Vercel GitHub integration).
+- Did not duplicate `src/app/api/cron` or webhook routes under `app/api/`.
+- Remaining owner step: paste `CRON_SECRET` into GitHub Actions secrets.
+
