@@ -38,6 +38,7 @@ export default defineConfig({
       'src/**/*.test.tsx',
       'scripts/wp-import/**/*.test.mjs',
       'scripts/seed/**/*.test.ts',
+      'scripts/run-scheduled-jobs.test.mjs',
     ],
     exclude: ['node_modules', '.next', 'e2e'],
     coverage: {

@@ -1,7 +1,13 @@
 # Scheduled jobs, run from outside Vercel
 
 Ten jobs. All ten are `GET`, all ten authenticate with the same header, and all
-ten are wired to be run by a scheduler that is not Vercel.
+ten are wired to be run by a scheduler that is not Vercel. The scheduler in
+this repository is GitHub Actions:
+
+```
+.github/workflows/scheduled-jobs.yml
+scripts/run-scheduled-jobs.mjs
+```
 
 ## Why they left `vercel.json`
 
@@ -52,11 +58,13 @@ disclosing it: all ten routes answer **401** to an unauthenticated GET.
 /api/cron/reconcile 401   /api/cron/stranded-payments 401
 ```
 
-Paste the value from Vercel into the scheduler's Authorization header; the shape
-is `Bearer <64 hex characters>`.
+Paste the value from Vercel into **GitHub > Settings > Secrets and variables >
+Actions** under the name `CRON_SECRET`. The workflow fails closed (exit 1, no
+request sent) until that secret exists. That is the only remaining owner step
+for the scheduler. The ten routes themselves are already in the tree.
 
-Set it in **Vercel > Project Settings > Environment Variables > Production**,
-and paste the same value into the scheduler.
+Set it in **Vercel > Project Settings > Environment Variables > Production**
+if it is not there already, then paste the same value into GitHub.
 
 ## The ten lines, ready to paste
 
@@ -137,7 +145,33 @@ timing changes with the scheduler.
 - **`reap-carts`** deletes expired guest carts.
 - **`expire-vouchers`** marks vouchers past their date as expired.
 
-## Setting it up on cron-job.org
+## Setting it up on GitHub Actions (the scheduler in this repository)
+
+The workflow `.github/workflows/scheduled-jobs.yml` fires every five minutes on
+`main`. `scripts/run-scheduled-jobs.mjs` then decides which of the ten jobs are
+due, using windows wide enough for GitHub's documented schedule delay. It also
+GET-probes the two webhook receivers and expects 405: that proves they are
+deployed without writing a row. It never POSTs `/api/payments/cardcom/webhook`,
+because that insert hits `payment_webhook_events` even on a bad secret.
+
+After this file is on `main`:
+
+1. GitHub > Settings > Secrets and variables > Actions > New repository secret.
+2. Name: `CRON_SECRET`. Value: the same 64 hex characters that are in Vercel
+   Production.
+3. Actions > Scheduled jobs > Run workflow, with `dry_run` checked, to prove
+   the due set without calling production. Then run it again with `dry_run`
+   off and `job` set to `health`. Expect 200.
+
+GitHub will not fire `schedule` until the workflow file is on the default
+branch. Merging is what starts the clock.
+
+cron-job.org remains a fallback if Actions delay on the five-minute jobs
+becomes a problem. Do not run both: every handler is idempotent, but
+`notifications` sending twice would be visible to customers if the outbox
+dedupe ever regressed.
+
+## Setting it up on cron-job.org (fallback)
 
 Free, no card, and it can do minute-level schedules, which is the reason it is
 named here rather than a platform cron.

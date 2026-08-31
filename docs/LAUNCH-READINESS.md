@@ -111,20 +111,22 @@ being wrong.
 
 | # | Severity | Blocker |
 | --- | --- | --- |
-| 1 | critical | No external scheduler exists for the ten cron jobs |
+| 1 | critical | `CRON_SECRET` is not yet a GitHub Actions secret, so the in-repo scheduler cannot call the ten jobs |
 | 2 | critical | Cardcom production credentials not obtained |
 | 3 | high | Unconfirmed which Vercel project the domain will point at |
 | 4 | medium | 14 unapplied files in `migrations/pending/` |
 
-**1. Nothing is running the ten cron jobs.** They were deliberately removed from
-`vercel.json` in `21342fc4`, because the account is on the `hobby` plan, which
-registers two daily jobs and silently ignores the rest. The ten handlers exist
-and answer 401 without the bearer token, so the guard is live and the schedule
-is absent. Three of the ten are on the money path (`invoices`, `reconcile`,
-`stranded-payments`) and one is the only way a customer ever receives their
-voucher (`notifications`). `docs/CRON-EXTERNAL.md` has the ten lines ready to
-paste into an external scheduler. Until that is done, a paying customer gets no
-voucher.
+**1. The ten cron jobs have a scheduler in the repository.** They were
+deliberately removed from `vercel.json` in `21342fc4`, because the account is
+on the `hobby` plan, which registers two daily jobs and silently ignores the
+rest. `.github/workflows/scheduled-jobs.yml` is the replacement. It does not
+fire until the file is on `main` AND `CRON_SECRET` is set as a GitHub Actions
+secret to the same value as Vercel Production. Until that secret is pasted,
+every run fails closed and sends no request, which is the same shape as an
+unset secret on the routes themselves (they answer 401 forever). Three of the
+ten are on the money path (`invoices`, `reconcile`, `stranded-payments`) and
+one is the only way a customer ever receives their voucher (`notifications`).
+`docs/CRON-EXTERNAL.md` is the catalogue.
 
 **2. Cardcom.** `src/lib/payments/env.ts` requires three values in production
 and throws `Missing required env` on each missing one:
