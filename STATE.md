@@ -59,7 +59,73 @@ Updated: 2026-08-31 21:45 (‏תוכנית ההפניות הייתה בנויה 
 קודם: 2026-08-19 22:01 (הצ'ק-אאוט ירד מתחת לשער הפיקסלים, ו-CLS שלו תוקן)
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
-## המשך מ: פרודקשן חי. חסום על Cardcom prod + Resend DNS + DNS cutover בלבד.
+## המשך מ: שלב 99 — סיום סופי, מחכה להפעלת DNS
+
+### ‏01.09 שלב 99: מה נסגר, ומה נשאר פתוח באמת
+
+**‏PR #6 מוזג ל-main.** ‏345 קומיטים, squash. כל שערי ה-CI עברו לפני המיזוג:
+Build, ‏Diff-scoped lint gates, ‏Typecheck, ‏Unit tests + money coverage floors,
+‏E2E, ‏E2E against the PR preview, ‏Vercel. הגנת ה-branch על main דורשת ארבעה
+מהם, וכולם ירוקים.
+
+**‏`vercel.json` לא מכיל ולא יכיל עשרה cron, וזה תקין.** הבקשה "לוודא עשרה
+cron ב-vercel.json" בנויה על הנחה שכבר לא נכונה: קומיט `21342fc4` הוציא אותם
+משם ב-31.08 בכוונה. אומת מול ה-API של Vercel היום, לא מהזיכרון:
+
+```
+team kenyonexpress-projects   plan: hobby
+```
+
+‏Hobby מרשה שני cron ברזולוציה יומית. הפרויקט צריך עשרה, ארבעה מהם בכל 5 או 10
+דקות. הצהרה על עשרה לא נכשלת בבילד ולא מזהירה: הפלטפורמה רושמת את מה שהתוכנית
+מכסה ומתעלמת מהשאר. **החזרת המפתח `crons` לקובץ היא רגרסיה, לא תיקון.**
+
+**מה כן אומת בקוד:** עשרה route handlers, כל אחד מייצא `GET` בלבד:
+
+```
+abandoned-cart  expire-vouchers  health     invoices   notifications
+reap-carts      reconcile        stock      stranded-payments  subscriptions
+```
+
+עשרת הלוחות, ה-URLים וה-header יושבים ב:
+```
+docs/CRON-EXTERNAL.md
+```
+
+**‏⚠️ חוסם אמיתי לפני DNS, שלא היה ברשימה:** אף מתזמן חיצוני לא הוגדר עדיין.
+אין לו זכר בריפו, ו-Vercel לא מריץ אותם בתוכנית הזו. כלומר **שלושה מסלולי כסף
+(`invoices`, `reconcile`, `stranded-payments`) והמסלול היחיד ששולח ללקוח את
+השובר (`notifications`) לא רצים כרגע.** ‏`notification_outbox` ריקה, ולכן היא
+לא מוכיחה כלום לשני הכיוונים: עוד לא הייתה הזמנה.
+
+**‏Cardcom prod: לא בוצע, ולא ניתן לביצוע על ידי סוכן.** הפריט הוא שיחת טלפון
+ל-03-9436100. מה שצריך לחזור מהשיחה, בדיוק כפי ש-`src/lib/payments/env.ts`
+קורא אותו, ולא יותר מזה:
+
+```
+CARDCOM_TERMINAL_NUMBER
+CARDCOM_API_NAME
+CARDCOM_API_PASSWORD
+```
+
+‏`CARDCOM_WEBHOOK_SECRET` נוצר אצלנו ולא אצלם. שלושת הראשונים חובה: בפרודקשן
+`loadCardcomEnv` זורק `Missing required env` על כל אחד מהם שחסר.
+
+**‏‏פער תשתית שנמצא היום ולא היה מתועד:** ה-API של Vercel מחזיר בחשבון פרויקט
+אחד בלבד, `kenyonexpress-web`, שמחובר ל-repo אחר (`kenyonexpress/kenyonexpress-web`)
+ושכל אחד עשר הדפלויים שלו במצב `ERROR`. האתר החי מוגש מפרויקט בשם `kenyonexpress`,
+שמופיע בבדיקות ה-PR אבל לא ברשימת הפרויקטים דרך ה-API. **לפני הפניית ה-DNS יש
+לוודא ידנית שהדומיין מוצמד ל-`kenyonexpress` ולא ל-`kenyonexpress-web`.**
+
+**נמדד חי היום:**
+
+```
+https://kenyonexpress.vercel.app                200
+/api/health   {"ok":true,"database":"ok"}
+/api/cron/notifications                         401   (השומר חי)
+```
+
+### ‏01.09 (קודם): פרודקשן חי. חסום על Cardcom prod + Resend DNS + DNS cutover בלבד.
 
 ### ‏01.09: **‏‏🟢 האתר חי. ‏127 הוחלה, והחור הוכח סגור בקריאה אמיתית.**
 
