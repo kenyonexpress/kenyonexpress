@@ -11,6 +11,29 @@ short window, and both are called out.
 
 ---
 
+## Status, 2026-09-01: steps 1 to 6 are DONE. Step 7, the domain, is not.
+
+The site is live at **<https://kenyonexpress.vercel.app>** and serving the real
+catalogue. What is already verified there:
+
+```
+/                        200      /api/health   {"ok":true,"database":"ok"}
+/products                200      ten cron routes   401 unauthenticated (guard live)
+/category/vacation       200      migration 127     applied and proven
+/cart                    200      /account/referrals 307 to login (correct)
+/search?q=מסעדה          200
+/product/מלון-5-כוכבים-בטבריה  200   (one of the 19 that migration 128 published)
+```
+
+**What is left is step 7 and below**: the DNS cutover, plus a Cardcom
+production terminal and Resend domain verification. Step 5's real payment must
+happen on the vercel.app URL *before* the domain moves, which is still the
+order this document is built around.
+
+**Do not skip the R2 image work.** All 32 product images are still served by the
+WordPress install at `kenyonexpress.co.il`, so they 404 the moment the record
+moves. That is now a live-site consequence, not a hypothetical.
+
 ## Before the day: the four things that must already be true
 
 None of these can be done during the cutover, and each one takes hours to days
