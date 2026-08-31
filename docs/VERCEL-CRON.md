@@ -1,5 +1,22 @@
 # Vercel cron
 
+<!-- stale-banner:2026-09-01 -->
+> ⚠️ **SUPERSEDED on 2026-09-01. Do not follow this document.**
+>
+> Its premise, that `vercel.json` carries the schedule, stopped being true in
+> commit `21342fc4`. The ten schedules were moved OUT of `vercel.json` because
+> Vercel's cron allowance is a plan feature (two jobs, daily granularity, on
+> Hobby) and declaring ten neither failed the build nor warned: the platform ran
+> what the plan covered and silently ignored the rest.
+>
+> This file also describes **one** scheduled job. There are **ten**.
+>
+> The current document is **`docs/CRON-EXTERNAL.md`**. What is still accurate
+> here, and worth reading there instead, is the reasoning about why
+> `expire-vouchers` owes customers money and why an unset `CRON_SECRET` fails
+> closed rather than open.
+
+
 `vercel.json` exists for one reason: without it **no scheduled job runs at all**,
 and the one scheduled job this product has owes customers money.
 
