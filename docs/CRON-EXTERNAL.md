@@ -58,6 +58,36 @@ is `Bearer <64 hex characters>`.
 Set it in **Vercel > Project Settings > Environment Variables > Production**,
 and paste the same value into the scheduler.
 
+## The ten lines, ready to paste
+
+One line per job, in the order they matter if you are setting them up under
+time pressure. Every line is the same four fields: **URL**, **method**,
+**schedule**, **header**. The method is `GET` on all ten and the header is
+byte-identical on all ten, so the only thing that changes row to row is the URL
+and the cron expression.
+
+Replace `<CRON_SECRET>` with the value from Vercel > Project Settings >
+Environment Variables > Production. It is not written here on purpose: this
+file is in a repository.
+
+```
+1  https://kenyonexpress.vercel.app/api/cron/notifications       GET  */5 * * * *   Authorization: Bearer <CRON_SECRET>
+2  https://kenyonexpress.vercel.app/api/cron/health              GET  */5 * * * *   Authorization: Bearer <CRON_SECRET>
+3  https://kenyonexpress.vercel.app/api/cron/invoices            GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
+4  https://kenyonexpress.vercel.app/api/cron/stock               GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
+5  https://kenyonexpress.vercel.app/api/cron/stranded-payments   GET  */10 * * * *  Authorization: Bearer <CRON_SECRET>
+6  https://kenyonexpress.vercel.app/api/cron/abandoned-cart      GET  0 * * * *     Authorization: Bearer <CRON_SECRET>
+7  https://kenyonexpress.vercel.app/api/cron/subscriptions       GET  30 2 * * *    Authorization: Bearer <CRON_SECRET>
+8  https://kenyonexpress.vercel.app/api/cron/reap-carts          GET  40 3 * * *    Authorization: Bearer <CRON_SECRET>
+9  https://kenyonexpress.vercel.app/api/cron/reconcile           GET  0 4 * * *     Authorization: Bearer <CRON_SECRET>
+10 https://kenyonexpress.vercel.app/api/cron/expire-vouchers     GET  15 23 * * *   Authorization: Bearer <CRON_SECRET>
+```
+
+Verified against the code at HEAD, not from memory: all ten handlers export
+`GET` and nothing else (`export const GET = withRequestLog(...)` in each
+`route.ts`), so a POST gets 405. The ten cron expressions are the ones
+`vercel.json` carried before commit `21342fc4`, kept byte for byte.
+
 ## The ten jobs
 
 Base URL is `https://kenyonexpress.vercel.app`, the Vercel production origin.

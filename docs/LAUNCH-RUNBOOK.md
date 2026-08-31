@@ -243,30 +243,170 @@ Two things break the moment this happens, and both are known:
    `src/lib/seo/redirects.ts` covers the paths worth keeping, and that
    `redirect_coverage` passes, before you move the record.
 
-Lower the TTL a day ahead so a rollback is minutes and not hours:
+### 7.0 The state you are starting from
 
-Cloudflare > kenyonexpress.co.il > DNS > the `A`/`CNAME` for the apex > TTL
-`Auto` becomes `2 min`. **Do this the day before, not now.**
+Measured with `dig` on 2026-09-01, not assumed. This is what is live right now:
 
-Then point the record at Vercel per Vercel > Project > Settings > Domains, add
-both `kenyonexpress.co.il` and `www.kenyonexpress.co.il`, and let Vercel issue
-the certificate.
+```
+kenyonexpress.co.il      A     104.21.55.125       (Cloudflare edge, Proxied)
+kenyonexpress.co.il      A     172.67.148.28       (Cloudflare edge, Proxied)
+kenyonexpress.co.il      AAAA  2606:4700:3035::6815:377d
+kenyonexpress.co.il      AAAA  2606:4700:3036::ac43:941c
+www.kenyonexpress.co.il  A     104.21.55.125
+www.kenyonexpress.co.il  A     172.67.148.28
+www.kenyonexpress.co.il  AAAA  2606:4700:3035::6815:377d
+www.kenyonexpress.co.il  AAAA  2606:4700:3036::ac43:941c
+
+NS   derek.ns.cloudflare.com, elma.ns.cloudflare.com
+MX   10 mailgw2.spd.co.il
+```
+
+Those four A values are Cloudflare's own edge IPs, not the origin: the record
+is **Proxied**, so what `dig` returns is the proxy and the WordPress origin is
+hidden behind it. The four AAAA are the same proxy over IPv6. That matters for
+the rollback below, which restores exactly these values.
+
+Nameservers are Cloudflare's, so **Cloudflare is where DNS is edited**. The
+registrar is not involved in this step at all.
+
+Zone: `13a3f166fadbde6b432dff3b9668479a`
+(Cloudflare > kenyonexpress.co.il > Overview > API section, bottom right.)
+
+Write the current state to disk before touching anything:
 
 ```bash
-dig +short kenyonexpress.co.il A
+dig +short kenyonexpress.co.il A     >  ~/Desktop/dns-before-cutover.txt
+dig +short kenyonexpress.co.il AAAA  >> ~/Desktop/dns-before-cutover.txt
+dig +short www.kenyonexpress.co.il A    >> ~/Desktop/dns-before-cutover.txt
+dig +short www.kenyonexpress.co.il AAAA >> ~/Desktop/dns-before-cutover.txt
+cat ~/Desktop/dns-before-cutover.txt
+```
+
+### 7.1 The day before: lower the TTL
+
+Cloudflare > kenyonexpress.co.il > DNS > Records. For each of the four A and
+four AAAA records on `kenyonexpress.co.il` and `www`, set **TTL** from `Auto`
+to **2 min**.
+
+`Auto` on a Proxied record means Cloudflare decides, and a rollback then takes
+as long as it takes. Two minutes makes the rollback in 7.5 a coffee rather than
+an afternoon. **Do this the day before, not on the day.**
+
+### 7.2 Vercel first, DNS second
+
+Add the domain to the project *before* the record points at it, so the
+certificate is already issued when traffic arrives.
+
+Vercel > Project `kenyonexpress` > Settings > Domains > **Add Existing Domain**:
+
+1. Enter `kenyonexpress.co.il` > Add.
+2. Enter `www.kenyonexpress.co.il` > Add.
+3. Vercel shows the record it wants: an **A** record for the apex pointing at
+   **`76.76.21.21`**. Leave this screen open; it is where you confirm the
+   change landed.
+
+Vercel will report both domains as "Invalid Configuration" until 7.3 is done.
+That is expected and is not an error to act on.
+
+### 7.3 Cloudflare: the exact record surgery
+
+Cloudflare > kenyonexpress.co.il > **DNS** > **Records**.
+
+**Delete these four records. All four, and only these four:**
+
+| Type | Name | Content |
+| --- | --- | --- |
+| AAAA | `kenyonexpress.co.il` | `2606:4700:3035::6815:377d` |
+| AAAA | `kenyonexpress.co.il` | `2606:4700:3036::ac43:941c` |
+| AAAA | `www` | `2606:4700:3035::6815:377d` |
+| AAAA | `www` | `2606:4700:3036::ac43:941c` |
+
+Vercel serves the apex over IPv4 only. An AAAA left behind is the worst
+outcome available here: IPv6-capable clients prefer AAAA, so a share of your
+traffic keeps reaching the old proxy while everything you check from your own
+machine looks correct. Delete all four.
+
+**Then leave exactly one A record per name, edited to:**
+
+| Type | Name | Content | Proxy status | TTL |
+| --- | --- | --- | --- | --- |
+| A | `kenyonexpress.co.il` | `76.76.21.21` | **DNS only** (grey cloud) | 2 min |
+| A | `www` | `76.76.21.21` | **DNS only** (grey cloud) | 2 min |
+
+Each name currently has **two** A records. Edit one of the pair to
+`76.76.21.21` and delete the other, so each name ends with a single A. Two A
+records round-robin, and half your traffic going to `172.67.148.28` is half
+your traffic still being served WordPress.
+
+**Proxy status must be DNS only.** The grey cloud, not the orange one. Proxied
+puts Cloudflare's TLS in front of Vercel's, which is how you get a redirect
+loop or an untrusted certificate, and Vercel cannot issue its own certificate
+for a hostname whose A record answers as Cloudflare.
+
+**Do not touch anything else in this zone.** Specifically, leave alone:
+
+- the `MX` record (`10 mailgw2.spd.co.il`)
+- every `TXT` record: SPF, DKIM, DMARC, and any verification token
+- the `mail`, `pop`, `smtp` and `ftp` records
+
+Those are the hosting provider's mail service, which is not moving. Deleting or
+proxying any of them stops mail for the business, and the symptom shows up
+hours later as bounces rather than immediately as an error page.
+
+### 7.4 Verify, in this order
+
+```bash
+# 1. One A, and it is Vercel's.
+dig +short kenyonexpress.co.il A          # expect exactly: 76.76.21.21
+dig +short www.kenyonexpress.co.il A      # expect exactly: 76.76.21.21
+
+# 2. No AAAA at all. Empty output is the pass.
+dig +short kenyonexpress.co.il AAAA       # expect nothing
+dig +short www.kenyonexpress.co.il AAAA   # expect nothing
+
+# 3. Mail untouched.
+dig +short kenyonexpress.co.il MX         # expect: 10 mailgw2.spd.co.il.
+dig +short kenyonexpress.co.il TXT        # expect your SPF record, unchanged
+
+# 4. The site is the new one.
 curl -s -o /dev/null -w '%{http_code}\n' https://kenyonexpress.co.il/
 curl -s https://kenyonexpress.co.il/ | grep -c wp-content     # expect 0
 ```
 
-`wp-content` still appearing means you are being served the old site, cached or
-not yet propagated. Wait; do not change anything else while waiting.
+Any AAAA still answering in check 2 means a record was missed; go back to 7.3.
 
-**Rollback:** put the old A records back in Cloudflare. With a 2 minute TTL this
-is a few minutes. Write the old values down before you change them:
+`wp-content` still appearing in check 4 means you are being served the old
+site, cached or not yet propagated. Wait, and do not change anything else while
+waiting. Vercel > Settings > Domains should flip both entries to a green check
+within a few minutes of the record changing.
+
+### 7.5 Rollback: putting Cloudflare back in front of WordPress
+
+This restores the exact state recorded in 7.0. With the 2 minute TTL from 7.1
+it is live in minutes.
+
+For each of `kenyonexpress.co.il` and `www`, set the A records back to **two**
+records per name:
+
+| Type | Name | Content | Proxy status |
+| --- | --- | --- | --- |
+| A | `kenyonexpress.co.il` | `172.67.148.28` | **Proxied** (orange cloud) |
+| A | `kenyonexpress.co.il` | `104.21.55.125` | **Proxied** (orange cloud) |
+| A | `www` | `172.67.148.28` | **Proxied** (orange cloud) |
+| A | `www` | `104.21.55.125` | **Proxied** (orange cloud) |
+
+The AAAA records do not need to be recreated by hand. They were Cloudflare's
+own proxy addresses, and Cloudflare re-advertises IPv6 for a Proxied record on
+its own. Restoring the A records with the orange cloud is the whole rollback.
 
 ```bash
-dig +short kenyonexpress.co.il A > ~/Desktop/dns-before-cutover.txt
+dig +short kenyonexpress.co.il A     # expect 104.21.55.125 and 172.67.148.28
+curl -s https://kenyonexpress.co.il/ | grep -c wp-content   # expect non-zero
 ```
+
+Leave the domain attached in Vercel while rolled back. An attached domain that
+no record points at costs nothing and saves re-issuing the certificate on the
+second attempt.
 
 ---
 

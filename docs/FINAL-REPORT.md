@@ -1,26 +1,73 @@
 # KenyonExpress: final report
 
-Rewritten 2026-08-31. The previous version was written 2026-08-07 and said
-"`main` is at the state described here". That has not been true for some time:
-**`main` is 303 commits behind and `phase5/homepage` is the mainline.** Branching
-off `main`, or reading it to see what the project does, silently reverts every
-piece of security work done since.
+State of **2026-09-01**. Every number and every status code below was measured
+on this date, against this branch or against the live deployment. Nothing is
+quoted from an earlier session.
 
-Every number below was measured on this machine, against this branch, on the
-date given. Nothing is quoted from an earlier session.
+The previous revision of this file was written 2026-08-31 and said Vercel had
+never deployed. That is no longer true, and the change is the whole point of
+this revision: **the site is live**.
+
+`main` is stale. `phase5/homepage` is the mainline, and `main` is hundreds of
+commits behind it. Branching off `main`, or reading it to see what the project
+does, silently reverts every piece of security work done since. Closing that
+gap is item 4 below.
 
 ---
 
 ## The one-line version
 
-The code is done. **Nothing that remains is code.** What is left is a set of
-environment variables, a Cardcom production terminal, one database migration
-waiting for approval, and a DNS cutover: all of it needs a human with
-credentials, and none of it can be done from this machine.
+The code is done and it is deployed. **Nothing that remains is code.** Four
+things are left, all four need a human with credentials, and none of the four
+can be done from this machine:
 
-To go live, follow `docs/LAUNCH-RUNBOOK.md`. It is the ordered, command-by-command
-procedure with a rollback beside each step. This document is what is left and
-why; that one is what to do.
+1. the ten scheduled jobs, at cron-job.org
+2. a Cardcom production terminal
+3. the DNS cutover to `kenyonexpress.co.il`
+4. merging PR #6 into `main`
+
+Each is written out in "What is left" below. The ordered, command-by-command
+procedure with a rollback beside every step is `docs/LAUNCH-RUNBOOK.md`. This
+document is *what is left and why*; that one is *what to do*.
+
+---
+
+## What is verified in production, 2026-09-01
+
+Live at **<https://kenyonexpress.vercel.app>**, serving the real catalogue.
+Measured today with `curl` against that origin:
+
+| Path | Result |
+| --- | --- |
+| `/` | 200 |
+| `/products` | 200 |
+| `/cart` | 200 |
+| `/checkout` | 200 |
+| `/search?q=test` | 200 |
+| `/sitemap.xml` | 200 |
+| `/robots.txt` | 200 |
+| `/api/health` | `{"ok":true,"database":"ok","latency_ms":122}` |
+
+**All ten cron routes answer 401 to an unauthenticated GET:** `notifications`,
+`health`, `invoices`, `stock`, `stranded-payments`, `abandoned-cart`,
+`subscriptions`, `reap-carts`, `reconcile`, `expire-vouchers`.
+
+That 401 is a pass twice over. It proves the guard is live on the deployment,
+and it proves `CRON_SECRET` is set there, because `bearerMatches()` compares
+against the empty string when the variable is missing and an empty comparison
+never matches. An unset secret closes every job rather than opening one, so
+"401 on all ten" is the only externally observable evidence that the variable
+exists, short of holding the value.
+
+Also true in production as of today, established in earlier sessions and not
+re-measured here:
+
+- **Migration 127 is applied.** It revokes `EXECUTE` on `check_rate_limit` from
+  `anon` and `authenticated`. The anon attack it closes was proven refused
+  against production after the migration landed.
+- **Migration 128 is applied.** The catalogue is real: 19 imported WordPress
+  products live with a supplier, a category and commercial terms; the 34 demo
+  products are `draft`, never deleted, because four orders reference them.
 
 ---
 
@@ -81,204 +128,160 @@ content, and in two of the three the difference is content.
 
 ---
 
-## What is left, and all of it is yours
+## What is left, and all four are yours
 
-### 1. Supabase
+### 1. The ten scheduled jobs, at cron-job.org
 
-- **Project Settings > API Keys**: copy the secret key (`sb_secret…` or `eyJ…`).
-  It goes into `.env.local` as `SUPABASE_SECRET_KEY` and into Vercel Production
-  under the same name. Never with a `NEXT_PUBLIC_` prefix.
-- **Authentication > Sign In / Providers > Email**: turn on
-  **"Prevent use of leaked passwords"**. It is a dashboard toggle, not DDL, and
-  there is no API for it. It is currently off.
+**Nothing schedules them today.** The routes are deployed and guarded, which is
+what the ten 401s above prove, but a guarded route nobody calls does not run.
+Until this is done, no voucher email is ever sent, no invoice is issued, and no
+stranded payment is ever noticed.
 
-### 2. Resend
+They are deliberately **not** in `vercel.json`. Vercel's cron allowance is a
+plan feature (two jobs, daily, on Hobby), and declaring ten neither failed the
+build nor warned: the platform ran what the plan covered and silently ignored
+the rest. Three of the ten are on the money path and one is the only way a
+customer ever receives a voucher, so "silently not scheduled" was not an
+acceptable state for any of them.
 
-<https://resend.com/domains/8cbce0e7-2334-40dc-aba6-fce92e80371f>
+**`docs/CRON-EXTERNAL.md` has the ten lines ready to paste**: full URL, method,
+schedule and the `Authorization: Bearer <CRON_SECRET>` header, one line per job,
+plus the cron-job.org setup and the two curl checks that prove the pasted secret
+is the same secret the deployment holds.
 
-Copy the three DNS records into Cloudflare > kenyonexpress.co.il > DNS > Add
-record, then return to Resend and press **Verify**.
+If you set up exactly one of the ten, set up `notifications`. It is the only
+path by which a customer receives their voucher.
 
-Do this early. Until the domain verifies, every transactional mail is refused,
-which means **no buyer ever receives their voucher**. Propagation is not
-instant and it cannot be done during the cutover.
+### 2. A Cardcom production terminal
 
-### 3. Vercel
+Call **03-9436100**.
 
-**⚠️ NOTHING HAS EVER DEPLOYED, AND THE PROJECT POINTS AT THE WRONG REPO.**
+A test terminal accepts real cards and settles nowhere, so this is not a
+formality that can be deferred past the first customer. The four credentials go
+into Vercel Production as `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`,
+`CARDCOM_API_PASSWORD` and `CARDCOM_WEBHOOK_SECRET`, and `src/lib/env.ts`
+refuses the production boot without all four.
 
-Measured 2026-08-31: `https://kenyonexpress.vercel.app` and
-`https://kenyonexpress-web.vercel.app` both return **404**, and the project
-`kenyonexpress-web` (`prj_oqr4NKtSaB2h3szrxnT0DknAv9Xk`, plan **hobby**) has
-**11 deployments, all in state `ERROR`**. Every one of them carries
-`githubRepo: "kenyonexpress-web"` on branches `cursor/add-supabase-3c830` or
-`main`, while the repository this project actually lives in is
-`kenyonexpress/kenyonexpress`. So no commit from `phase5/homepage` has ever
-been built there.
+Then do step 5 of the runbook: **one real payment, on the production terminal,
+on the vercel.app URL, before the domain moves.** Buy the cheapest coupon with a
+real card, confirm the order reaches `paid`, the voucher exists, the email
+arrives, `/scan` accepts the QR once and refuses it the second time, and Cardcom
+shows the same amount. Then refund it from the Cardcom dashboard.
 
-That is what the GitHub App step fixes, and it comes first:
-<https://github.com/apps/vercel> > Configure > kenyonexpress > Repository
-access > **Only select repositories** > add `kenyonexpress` > Save. Then check
-that the Vercel project's Git connection points at `kenyonexpress`, not
-`kenyonexpress-web`, and that the production branch is `phase5/homepage`.
-
-Until a deployment succeeds, migration 127 must not be applied (see item 5).
-
-Then **Project Settings > Environment Variables > Production**:
-
-| Variable | Value |
-| --- | --- |
-| `SUPABASE_SECRET_KEY` | the key from step 1 |
-| `VOUCHER_QR_SECRET` | `openssl rand -hex 32` |
-| `CRON_SECRET` | `openssl rand -hex 32`, same value into the scheduler |
-| `RESEND_API_KEY` | Resend > API Keys |
-| `NEXT_PUBLIC_WHATSAPP_PHONE` | the real business number |
-| `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD`, `CARDCOM_WEBHOOK_SECRET` | after the Cardcom call |
-| `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_AUTH_TOKEN` | Sentry, see `docs/SENTRY-SETUP.md` |
-
-The full table with a note on every variable is `.env.example`, which was
-verified against the code on 2026-08-31: every `process.env.*` in `src/` and
-`apps/` is documented there, and the only two names left out are `NODE_ENV` and
-`NEXT_RUNTIME`, which the runtime supplies.
-
-Three traps in that list are worth repeating, because each one fails silently
-rather than loudly:
-
-- **`NEXT_PUBLIC_SENTRY_DSN` is read at build time.** A build without it
-  produces a bundle whose SDK is `dsn: undefined`. Adding the variable later
-  requires a redeploy, not a restart.
-- **`VOUCHER_QR_SECRET` is not casually rotatable.** Every voucher already
-  issued is signed with it. Rotating invalidates them all unless the old value
-  moves to `VOUCHER_QR_SECRET_PREVIOUS` first.
-- **`NEXT_PUBLIC_WHATSAPP_PHONE`, unset, is not absent.** Every WhatsApp link
-  falls back to `972524635550`, which is the number published by the only store
-  on the live site, and that store is called "Test Store".
-
-### 4. Cardcom
-
-Call **03-9436100** for a production terminal.
-
-Two facts about this integration that contradict the architecture document, and
-the code is the authority:
+Two facts about this integration contradict the architecture document. The code
+is the authority:
 
 - The live client is the **legacy `/Interface/*.aspx` API**, not v11 JSON, by a
   decision taken 2026-07-23. `docs/CARDCOM-ARCHITECTURE.md` describes v11, so
-  endpoint names there are not the ones the code calls.
+  the endpoint names there are not the ones the code calls.
 - **Cardcom does not sign its webhooks.** There is no HMAC and no signature
-  header. Authenticity rests on the unguessable `?s=` secret in the IndicatorUrl
-  plus mandatory server-to-server re-verification through `GetLpResult`, which
-  is the only trusted source of amount, status and token.
+  header. Authenticity rests entirely on the unguessable `?s=` secret in the
+  IndicatorUrl, plus mandatory server-to-server re-verification through
+  `GetLpResult`, which is the only trusted source of amount, status and token.
 
-### 5. Migration 128 is APPLIED. What it left open is a supplier problem.
+Two switches on this path fail in the direction that costs money, and both are
+covered in `.env.example`: `CARDCOM_USE_MOCK` must not be set, and
+`CARDCOM_SANDBOX=true` fails the production boot on purpose.
 
-`supabase/migrations/128_wp_publish.sql` was applied to production on
-2026-08-31 through MCP `apply_migration`, after a `BEGIN`/`ROLLBACK` dry run
-whose counts matched its verification block exactly. Measured after:
+### 3. The DNS cutover
 
-```
-active_total 46   active_picsum 0        active_no_supplier 0
-active_no_rate 0  active_no_category 0   demo_active 0
-coupons_no_price 0                       imported_active 19
-suppliers: 6 active, 6 closed
-```
+`kenyonexpress.co.il` serves 200 today and what it serves is the **old
+WordPress site**. This is not "DNS is unconfigured"; it is a cutover, and it is
+the one step in the launch that is not reversible in seconds.
 
-The catalogue is now real: 19 imported WordPress products published with a
-supplier, a category and commercial terms, and 34 demo products moved to
-`draft` (never deleted, because four orders reference them).
+Measured with `dig` on 2026-09-01: the apex and `www` each carry **two A
+records** (`104.21.55.125`, `172.67.148.28`) and **two AAAA records**, all
+Proxied through Cloudflare, so what resolves is the proxy and the WordPress
+origin sits behind it. Nameservers are `derek`/`elma.ns.cloudflare.com`, so
+Cloudflare is where this is edited and the registrar is not involved.
 
-**Two things it settled that were not obvious going in.** The "four coupons
-with no price" were not a guess in the brief: four *live* products carried
-`is_coupon_enabled` with `coupon_price_ils` NULL, which `buildCouponOffer`
-already models as unsellable, so four things on the site said "coupon" and
-could not be bought. Three took the live page's price. The fourth,
-`restaurants-meat-2`, deliberately got none: its live card shows no price and
-its stored price is `0.00`, and writing `coupon_price_ils = 0` would have made
-a coupon that is free to buy. And picsum needed no separate work: 30 active
-products carried picsum URLs and all 30 were demo.
+**Step 7 of `docs/LAUNCH-RUNBOOK.md` is the exact record surgery**, record by
+record, with the zone id, the four AAAA to delete, the single A per name to
+leave at `76.76.21.21` with the proxy **off**, the mail records not to touch,
+and the rollback that restores the two Proxied A records per name.
 
-**⚠️ THE OPEN ITEM, AND IT IS YOURS: five suppliers with no details own the
-real catalogue.**
+Three things about it are worth carrying here, because each fails quietly:
 
-| Supplier | Real active products |
-| --- | --- |
-| ביוטי לאב | 8 |
-| ספורט מקס | 6 |
-| טעמים גורמה | 6 |
-| טק וורלד | 4 |
-| סטייל הבית | 3 |
+- **The four AAAA must go.** Vercel serves the apex over IPv4 only. An AAAA left
+  behind keeps IPv6-capable clients on the old proxy while every check from your
+  own machine looks correct.
+- **The proxy must be off** (grey cloud). Proxied puts Cloudflare's TLS in front
+  of Vercel's, and Vercel cannot issue a certificate for a hostname whose A
+  record answers as Cloudflare.
+- **All 32 product images 404 the moment the record moves.** They are served
+  from `kenyonexpress.co.il/wp-content/uploads/...` by the install being
+  replaced. Pull them into R2 first, or the nineteen real products go live with
+  no picture. This is now a live-site consequence, not a hypothetical.
 
-All five have null `city`, `contact_phone`, `address` and `logo_url`, and all
-five are seed rows: none of their names appears anywhere on the live site.
-There is nothing to backfill them from, and inventing details for five
-businesses is not something a migration should do. Either fill them in the
-admin, or reassign those 27 products to a supplier that is real.
+Lower the TTL to 2 minutes **the day before**, not on the day.
 
-The nineteen imported products were assigned to a single new supplier row,
-**קניון אקספרס**, because that is what three independent checks say: every
-product in the WordPress export is authored by the site admin,
-`_dokan_vendor_id` appears only on orders and never on a product, and the only
-`/store/` links on a live product page sit inside the vendor registration form.
-Its `address` and `city` are NULL on purpose; the live site publishes no postal
-address on any page. **Setting that address is a launch task.**
+### 4. Merging PR #6
+
+<https://github.com/kenyonexpress/kenyonexpress/pull/6> — `phase5/homepage`
+into `main`. Open, **MERGEABLE**, 374 files changed, +53478 / -2717, checked
+2026-09-01.
+
+This is what makes `main` describe the project again. Until it merges, `main` is
+a trap: it is hundreds of commits behind, and anyone who branches from it or
+reads it to learn what the system does gets the state from before the security
+work, the money-path work and the catalogue import.
+
+It is a large PR because it is the accumulated mainline, not because it is
+risky: the branch it merges is the one currently deployed and serving
+production. Nothing in the merge changes what is live.
+
+---
+
+## Still open, but none of it blocks the launch
+
+Recorded so that "what is left" above stays honest about being four items.
+
+- **Five suppliers with no details own 27 real products.** ביוטי לאב (8),
+  ספורט מקס (6), טעמים גורמה (6), טק וורלד (4), סטייל הבית (3). All five have
+  null `city`, `contact_phone`, `address` and `logo_url`, and all five are seed
+  rows whose names appear nowhere on the live site. There is nothing to backfill
+  them from, and inventing details for five businesses is not something a
+  migration should do. Fill them in the admin, or reassign those products.
+- **קניון אקספרס has no postal address**, on purpose: the live site publishes no
+  postal address on any page. The nineteen imported products were assigned to it
+  because three independent checks agree the WordPress export has no vendor
+  (every product is authored by the site admin, `_dokan_vendor_id` appears only
+  on orders, and the only `/store/` links on a live product page sit inside the
+  vendor registration form). Setting that address is a launch task.
+- **Supabase: "Prevent use of leaked passwords" is off.** Authentication >
+  Sign In / Providers > Email. A dashboard toggle, no API, no DDL.
+- **Resend domain verification.** <https://resend.com/domains/8cbce0e7-2334-40dc-aba6-fce92e80371f>.
+  Three DNS records into Cloudflare, then press Verify. Until it is green every
+  transactional mail is refused, which means no buyer receives their voucher.
+  Do it early; propagation is not instant and it cannot be done during the
+  cutover.
+- **The legal pages need counsel's approval.** The framework is built and the
+  duplication is resolved: the better-sourced text (Amendment 13, the no-Escrow
+  coupon model, sections 14ג and 14ח) serves at `/terms-and-conditions`,
+  `/privacy-policy`, `/refund_returns` and `/accessibility`, and `/legal/*` 308s
+  onto those. `noindex` is gone because there is no longer a second set to hide.
+  Each document carries a visible "not yet reviewed by a lawyer" line until
+  counsel signs the wording.
+- **`/about` has no content.**
+- **Two homepage deal links have no product row at all**:
+  `reverse-withdrawal-payment` (the Dokan admin product, deliberately excluded
+  from the import) and `קופון-טסט`. After 128, 30 of 32 resolve.
+- **The full 200-VU L1 load profile has never been run** and needs a machine
+  that is not this laptop.
+
+### Schema, and the two lineages
 
 **Migration 059 is still deliberately NOT applied**, reaffirmed 2026-07-31 with
 the evidence, so production remains the pre-059 lineage: numeric `*_ils`
 columns, not integer `*_agorot`. Code that names the wrong generation raises
 42703 and takes down the whole statement rather than failing partially. The
 probe in `src/lib/commerce/order-money-columns.ts` is how the order path stays
-correct on either lineage; new code on that path must use it.
-
-**Migration 127 is written and NOT applied**, and the order matters: it revokes
-`EXECUTE` on `check_rate_limit` from `anon` and `authenticated`, and both
-limiters fail open to `return true`. The code that calls it on the service key
-has to be live in production *first*. See item 3.
+correct on either lineage, and new code on that path must use it.
 
 Everything else waiting is in `migrations/pending/` and that directory's README.
 There are **two** pending locations: `migrations/pending/` and three
 `PENDING-`-prefixed files still in `supabase/migrations/`. Read both before
 concluding the schema is settled.
-
-### 6. The ten scheduled jobs
-
-They are no longer in `vercel.json`. Vercel's cron allowance is a plan feature
-(two jobs, daily, on Hobby), and declaring ten neither failed the build nor
-warned: the platform ran what the plan covered and ignored the rest. Three of
-the ten are on the money path and one is the only way a customer ever receives
-a voucher, so "silently not scheduled" was not acceptable for any of them.
-
-`docs/CRON-EXTERNAL.md` has all ten URLs, their schedules unchanged, and the
-cron-job.org setup with the `Authorization: Bearer CRON_SECRET` header.
-
-### 7. Data
-
-- **11 suppliers, all 11 with no address and no logo.** They are seed rows.
-- **The homepage deal grid: 24 of 32 links resolve.** After 128, 30 of 32. The
-  remaining two have no product row at all: `reverse-withdrawal-payment` (the
-  Dokan admin product, deliberately excluded from the import) and `קופון-טסט`.
-- `/about` has no content.
-- **The legal pages need a lawyer's approval.** The framework is built and the
-  duplication is resolved: the better-sourced text (Amendment 13, the no-Escrow
-  coupon model, sections 14ג and 14ח) now serves at `/terms-and-conditions`,
-  `/privacy-policy`, `/refund_returns` and `/accessibility`, and `/legal/*`
-  308s onto those. `noindex` is gone because there is no longer a second set to
-  hide. What remains is counsel signing the wording; each document carries a
-  visible "not yet reviewed by a lawyer" line until they do.
-
-### 8. Domain
-
-`kenyonexpress.co.il` is live and serving 200 today through Cloudflare
-(`172.67.148.28`, `104.21.55.125`, NS `derek`/`elma.ns.cloudflare.com`), and what
-it serves is still the **old WordPress site** (`wp-content`, `wp-includes`),
-verified 2026-08-31.
-
-So this is not "DNS is unconfigured". It is a cutover, it is the one step that
-is not reversible in seconds, and it is step 7 of the runbook for that reason.
-Lower the TTL the day before.
-
-### 9. Load testing
-
-The full 200-VU L1 profile has never been run here and needs a machine that is
-not this laptop.
 
 ---
 
@@ -296,19 +299,20 @@ Recorded so nobody spends a day rediscovering them.
   2.7 second real improvement showed up as noise. Judge LCP changes on a
   deployment, not here.
 - **`npm install` cannot work in this repo.** It dies inside `buildIdealTree`,
-  ahead of every lifecycle hook, so no error message can be improved from
-  inside the repo. Use `pnpm`. `AGENTS.md` explains the mechanism.
+  ahead of every lifecycle hook, so no error message can be improved from inside
+  the repo. Use `pnpm`. `AGENTS.md` explains the mechanism.
+- **`next start` on a laptop is also `NODE_ENV=production`**, which is why
+  `ALLOW_INCOMPLETE_ENV=true` exists. Without it, a local production boot
+  answers 500 on every route over missing Cardcom secrets, and takes the E2E
+  suite and every performance measurement with it. Vercel must never set it.
 
 ---
 
-## Operational notes for whoever runs this next
+## Where to look next
 
-- Install with **`pnpm`**.
-- Read the guide in `node_modules/next/dist/docs/` before writing Next code.
-  This version has breaking changes from what most training data contains.
-- **`STATE.md` is the source of truth for what happened and why.** It is long on
-  purpose: most entries record a measurement that refuted an assumption, and
-  those are the entries that stop the same mistake being made twice.
-- The mainline branch is `phase5/homepage`. `main` is 303 commits behind.
-- Backups are written to `~/Desktop/kenyonexpress-backup-<stamp>.tar.gz`, `.git`
-  included, `node_modules` excluded. Keep the three newest.
+| Question | File |
+| --- | --- |
+| What do I run, in what order, on the day? | `docs/LAUNCH-RUNBOOK.md` |
+| What exactly do I paste into cron-job.org? | `docs/CRON-EXTERNAL.md` |
+| What is every environment variable and where does its value come from? | `.env.example` |
+| What does the DNS change look like, record by record? | `docs/LAUNCH-RUNBOOK.md` step 7 |
