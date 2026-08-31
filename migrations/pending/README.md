@@ -144,3 +144,22 @@ would change what every other suite in the repo picks up, for one file.
 שתפוס ב-`supabase/migrations/` באותו רגע, ולא להעתיק את המספר שכתוב כאן.
 ‏הקבצים שכבר הורצו לא ימוספרו מחדש: שינוי שם של מיגרציה שרצה אינו משנה דבר
 במסד ורק שובר את הקשר בין הקובץ להיסטוריה.
+
+## `130_deny_all_on_server_only_tables.sql`, added 2026-09-01
+
+Five tables carry RLS with zero policies: `legacy_percent_archive_112`,
+`referral_signals`, `search_index_dlq`, `settlement_events`,
+`stock_reservations`. RLS on with no policy is already deny for `anon` and
+`authenticated`, and all five are written by the service role, which bypasses
+RLS. The migration adds a restrictive `using (false)` policy to each so the
+intent is in the schema instead of inferred from an absence. **It changes no
+effective permission.** Safe to apply at any point in the order, and safe not to.
+
+## `PENDING-money-integer-fix.sql` does not describe the deployed schema
+
+That file converts 41 money columns from numeric ILS to integer agorot. Queried
+live on 2026-09-01, production has **two** numeric columns matching the money
+name patterns, and both are percentages on `legacy_percent_archive_112`, an
+archive nothing in `src/` reads. The live database already holds money as
+integer agorot. Applying this file against production is not a no-op and is not
+a fix; read `docs/LAUNCH-READINESS.md` section B1 before touching it.
