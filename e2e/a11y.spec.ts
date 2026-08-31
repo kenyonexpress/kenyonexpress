@@ -553,7 +553,17 @@ test('the search combobox says which suggestion is selected', async ({ page, vie
 
   const input = page.locator('#masthead-search')
   await input.click()
-  await input.fill('מוצר')
+  // The query has to return MORE THAN ONE suggestion, because the whole point
+  // below is arrowing between them. It used to be 'מוצר', which matched a
+  // catalogue full of seed rows literally named "מוצר לדוגמא"; migration 128
+  // retired those, the query dropped to a single hit, and this test failed on a
+  // correct catalogue change rather than on a regression.
+  //
+  // 'עיסוי' is chosen because it matches products the shop actually sells (six
+  // at the time of writing: several massage and spa deals across two
+  // suppliers), not because it happened to pass. A query tied to demo data is a
+  // test that expires the day the demo data does.
+  await input.fill('עיסוי')
 
   const list = page.locator('#masthead-search-suggestions')
   await expect(list, 'no suggestions came back; nothing was asserted').toBeVisible()
@@ -565,7 +575,7 @@ test('the search combobox says which suggestion is selected', async ({ page, vie
   const options = list.locator('[role="option"]')
   expect(
     await options.count(),
-    'the list has no options for the combobox to point at',
+    'fewer than two suggestions came back, so there is nothing to arrow between. If the catalogue changed, pick a query that still matches several real products.',
   ).toBeGreaterThan(1)
 
   // Nothing is selected until the shopper chooses, so the attribute must be
