@@ -85,20 +85,57 @@ describe('the legal document inventory', () => {
     for (const href of ['/terms-and-conditions', '/privacy-policy', '/refund_returns']) {
       expect(footer, `SiteFooter no longer links ${href}`).toContain(href)
     }
-    // If the footer ever points at /legal/*, the unlinked set has been promoted
-    // and the noindex in (legal)/layout.tsx is now actively wrong.
+    // /legal/* now redirects to these paths, so a footer link there would send
+    // every visitor through an extra hop to the page it already links directly.
     expect(
       footer.includes('/legal/'),
-      'SiteFooter links /legal/* — that set is marked noindex. Promote it properly or revert the link.',
+      'SiteFooter links /legal/*, which redirects. Link the canonical path directly.',
     ).toBe(false)
   })
 
-  it('keeps the unlinked set out of the index while it is a duplicate', () => {
-    const layout = readFileSync(resolve(process.cwd(), 'src/app/(legal)/layout.tsx'), 'utf8')
-    expect(
-      /robots:\s*\{[^}]*index:\s*false/.test(layout),
-      'src/app/(legal)/layout.tsx no longer sets robots.index=false, so a search engine can now present a second set of terms for this site.',
-    ).toBe(true)
+  /**
+   * THE DUPLICATION IS RESOLVED, SO THIS ASSERTION CHANGED SHAPE.
+   *
+   * It used to require `robots.index=false` on `(legal)/layout.tsx`, because
+   * two sets of terms both served and only one was linked. `noindex` was the
+   * holding position: it decided nothing, it only stopped a search engine
+   * presenting the unlinked set as this site's policy.
+   *
+   * The decision has been taken. The better-sourced text moved onto the older,
+   * linked, indexed paths, and `/legal/*` now permanently redirects there. So
+   * there is exactly one indexable set again, and the property worth locking is
+   * no longer "the second set is hidden" but "there is no second set". A page
+   * under `/legal/*` that goes back to rendering a document fails here.
+   */
+  it.each(['terms', 'privacy', 'returns', 'accessibility'])(
+    '/legal/%s redirects to the canonical path instead of serving a second document',
+    (slug) => {
+      const page = readFileSync(
+        resolve(process.cwd(), `src/app/(legal)/legal/${slug}/page.tsx`),
+        'utf8',
+      )
+      expect(
+        page,
+        `/legal/${slug} renders a document again, so the site states two sets of terms.`,
+      ).toContain('permanentRedirect(')
+      expect(page).not.toContain('LegalArticle')
+    },
+  )
+
+  it('serves the promoted text at the canonical paths', () => {
+    // The other half of the same property: the redirect above is only correct
+    // if the newer text actually arrived where it points.
+    for (const [path, slug] of [
+      ['terms-and-conditions', 'terms'],
+      ['privacy-policy', 'privacy'],
+      ['refund_returns', 'returns'],
+      ['accessibility', 'accessibility'],
+    ] as const) {
+      const page = readFileSync(resolve(process.cwd(), `src/app/(store)/${path}/page.tsx`), 'utf8')
+      expect(page, `/${path} does not render the promoted document`).toContain(
+        `getLegalDoc('${slug}')`,
+      )
+    }
   })
 })
 

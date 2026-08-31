@@ -1,5 +1,3 @@
-import type { Metadata } from 'next'
-
 import SkipLink from '@/components/a11y/SkipLink'
 import CartBootstrap from '@/components/cart/CartBootstrap'
 import { CartProvider } from '@/components/cart/CartProvider'
@@ -51,9 +49,6 @@ import SiteHeader from '@/components/layout/SiteHeader'
  * TO PROMOTE THIS SET: delete this export, point `SiteFooter` at `/legal/*`,
  * repoint the `next.config.ts` aliases, and retire the older set. One commit.
  */
-export const metadata: Metadata = {
-  robots: { index: false, follow: false },
-}
 
 export default function LegalLayout({ children }: { children: React.ReactNode }) {
   return (

@@ -1,6 +1,16 @@
 -- PENDING 128: publish the 19 imported WordPress drafts, retire the demo catalogue
 -- ============================================================================
 --
+-- ✅ APPLIED to ixvwfbuvfxxsjiywhbbb on 2026-08-31 via MCP `apply_migration`,
+-- after a BEGIN/ROLLBACK dry run whose counts matched the verification block at
+-- the foot of this file exactly. Moved out of `migrations/pending/` for that
+-- reason: that directory means "not run anywhere", and leaving an applied file
+-- in it is how the inventory stops meaning anything.
+--
+-- Post-apply, measured: active 46, picsum 0, no-supplier 0, no-rate 0,
+-- no-category 0, demo active 0, coupons without a price 0, imported active 19,
+-- suppliers 6 active / 6 closed.
+--
 -- Idempotent by `slug` and by supplier name throughout. Every statement is an
 -- UPDATE (or an INSERT guarded by NOT EXISTS) whose WHERE stops matching once
 -- it has run, so a second application changes nothing. No product is inserted
