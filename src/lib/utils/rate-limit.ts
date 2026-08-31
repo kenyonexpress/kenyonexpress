@@ -1,4 +1,6 @@
 import { log } from '@/lib/observability/log'
+import { rateLimitByKey } from '@/lib/rate-limit/limiter'
+import { legacyRedisKey } from '@/lib/rate-limit/policies'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { headers } from 'next/headers'
 
@@ -85,27 +87,35 @@ function adminClientOrNull(): ReturnType<typeof createAdminClient> | null {
   }
 }
 
+/**
+ * DELEGATES to `lib/rate-limit`, and the delegation is the point of this branch.
+ *
+ * Thirty call sites in twenty files already speak this signature - a composed
+ * key string, a count, a window - and every one of them was hand-writing both
+ * the prefix and the numbers. Rather than edit thirty files, this function now
+ * routes through `rateLimitByKey`, so all thirty get the Upstash sliding window
+ * with a Postgres fallback without a single one of them changing.
+ *
+ * The Redis key is built by `legacyRedisKey`, which produces the SAME string
+ * `redisKey(name, identifier)` produces for the split form. That equality is
+ * tested, and it is what makes moving a call site to `rateLimit('login', ip)` a
+ * pure rename rather than a counter reset.
+ *
+ * Still returns a bare boolean, and still fails open, because both are what the
+ * callers were written against. `rateLimit()` returns the counts and the reset
+ * time for anything new.
+ */
 export async function checkRateLimit(
   key: string,
   maxAttempts = 10,
   windowSeconds = 3600,
 ): Promise<boolean> {
-  const supabase = adminClientOrNull()
-  if (!supabase) return true
-  const { data, error } = await supabase.rpc(
-    'check_rate_limit' as never,
-    {
-      p_key: key,
-      p_max_attempts: maxAttempts,
-      p_window_seconds: windowSeconds,
-    } as never,
+  const decision = await rateLimitByKey(
+    { redis: legacyRedisKey(key), postgres: key },
+    maxAttempts,
+    windowSeconds,
   )
-  if (error) {
-    // Fail open — don't block legitimate users if rate limit RPC is unavailable
-    log.error('rate_limit.check_failed', { reason: error.message })
-    return true
-  }
-  return data === true
+  return decision.allowed
 }
 
 /**
