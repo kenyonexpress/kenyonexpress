@@ -1,0 +1,16 @@
+name: Commit Monitor
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 20
+      - name: Send latest commits
+        run: |
+          MSG=$(git log --oneline -3)
+          curl -s -d "$MSG" ntfy.sh/kenyon-ofir-limit
