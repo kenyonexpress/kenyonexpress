@@ -28,7 +28,7 @@ why; that one is what to do.
 
 | Gate | Result |
 | --- | --- |
-| `pnpm test` (Vitest) | **3122 / 3122**, 243 files |
+| `pnpm test` (Vitest) | **3126 / 3126**, 243 files |
 | `pnpm type-check` | clean |
 | `pnpm lint` (biome) | clean, 1005 files |
 | `pnpm build` | exit 0 from an empty `.next` |
@@ -36,7 +36,10 @@ why; that one is what to do.
 | `compare.mjs --page=home` | **9.83%** (gate: under 11%) |
 | `compare.mjs --page=cart` | **8.6%** |
 | `compare.mjs --page=checkout` | **9.72%** |
-| `compare.mjs` on `category`, `products`, `search`, `product` | **refuses to score.** See below. |
+| `compare.mjs --page=category` | **6.18%** |
+| `compare.mjs --page=search` | **14.31%** (over the gate) |
+| `compare.mjs --page=product` | **15.45%** (over the gate) |
+| `compare.mjs --page=products` | **26.94%** (over the gate) |
 
 `pnpm build` is a **separate gate** from the other three, not a formality:
 `cacheComponents` rejects uncached page reads that tests, type-check and lint
@@ -51,23 +54,30 @@ not start the server and therefore does not apply its own env block**, so
 have to be passed to the server by hand or the paid-flow specs fail for
 environmental reasons.
 
-### Why four of the seven pixel gates refuse to score
+### The three pages still above the pixel gate, and why each is different
 
-Not a failure, and not a number being hidden. `compare.mjs` will not put a
-percentage on a comparison whose two sides hold different products, because
-that number would be about data and would invite someone to move CSS until the
-wrong content lined up. What it reports instead:
+Migration 128 moved these substantially: `category` went from "live 2 cards,
+local 12" to **2 against 2**, and `products` from **7 of 24** matching grid
+slots to **17 of 24**, with 21 of the 24 products present on both sides.
+`category` crossed the gate at 6.18%.
 
-```
-category   live shows 2 product cards, local shows 12
-products   24 cards on both sides, but only 7 of 24 slots hold the same product
-search     live shows 5, local shows 3
-product    live shows 1, local shows 4
-```
+Three remain above 11%, and only one of them is a fidelity problem:
 
-One cause: **the catalogues differ**, which is exactly what migration 128 fixes.
-Once it is applied these four become measurable, and only then is it meaningful
-to chase geometry on them.
+- **`products` 26.94%** and **`search` 14.31%** are content, not fidelity, and
+  `compare.mjs` says so itself: it refuses to score a grid whose two sides hold
+  different products, because such a number "is a content difference wearing a
+  fidelity number". `products` matches 17 of 24 slots and the two pages are
+  different heights (3730 against 3253); `search` returns 5 results live and 3
+  locally for the same word. Which products sit where is curation, not CSS.
+- **`product` 15.45%** is the real one. Both sides render the same product,
+  verified by reading the `<h1>` on each. The difference is measured in the
+  captures: our gallery runs taller and pushes everything below it down, and we
+  additionally show a `-49%` badge, a share row and "hot deal / physical" chips
+  that the live page has not. Part of that gap is deliberate, including the two
+  buttons on the product page that stay by decision.
+
+No CSS was changed to chase these. The instruction was to fix fidelity and not
+content, and in two of the three the difference is content.
 
 ---
 
@@ -95,9 +105,24 @@ instant and it cannot be done during the cutover.
 
 ### 3. Vercel
 
-The GitHub App needs to see the repo first:
+**⚠️ NOTHING HAS EVER DEPLOYED, AND THE PROJECT POINTS AT THE WRONG REPO.**
+
+Measured 2026-08-31: `https://kenyonexpress.vercel.app` and
+`https://kenyonexpress-web.vercel.app` both return **404**, and the project
+`kenyonexpress-web` (`prj_oqr4NKtSaB2h3szrxnT0DknAv9Xk`, plan **hobby**) has
+**11 deployments, all in state `ERROR`**. Every one of them carries
+`githubRepo: "kenyonexpress-web"` on branches `cursor/add-supabase-3c830` or
+`main`, while the repository this project actually lives in is
+`kenyonexpress/kenyonexpress`. So no commit from `phase5/homepage` has ever
+been built there.
+
+That is what the GitHub App step fixes, and it comes first:
 <https://github.com/apps/vercel> > Configure > kenyonexpress > Repository
-access > **Only select repositories** > add `kenyonexpress` > Save.
+access > **Only select repositories** > add `kenyonexpress` > Save. Then check
+that the Vercel project's Git connection points at `kenyonexpress`, not
+`kenyonexpress-web`, and that the production branch is `phase5/homepage`.
+
+Until a deployment succeeds, migration 127 must not be applied (see item 5).
 
 Then **Project Settings > Environment Variables > Production**:
 
@@ -144,55 +169,74 @@ the code is the authority:
   plus mandatory server-to-server re-verification through `GetLpResult`, which
   is the only trusted source of amount, status and token.
 
-### 5. Migration 128, and the two lineages behind it
+### 5. Migration 128 is APPLIED. What it left open is a supplier problem.
 
-`migrations/pending/128_wp_publish.sql` is written, **not applied**, and is
-waiting on your approval. It publishes the 19 real imported products, fills
-their categories and commercial terms, and moves the 34 demo products to draft.
-
-Measured against production on 2026-08-31, before it runs:
+`supabase/migrations/128_wp_publish.sql` was applied to production on
+2026-08-31 through MCP `apply_migration`, after a `BEGIN`/`ROLLBACK` dry run
+whose counts matched its verification block exactly. Measured after:
 
 ```
-19 products  draft, all physical, all supplier_id NULL   (the WP import)
-34 products  active, attributes.demo = true              (seed data)
-27 products  active and real
+active_total 46   active_picsum 0        active_no_supplier 0
+active_no_rate 0  active_no_category 0   demo_active 0
+coupons_no_price 0                       imported_active 19
+suppliers: 6 active, 6 closed
 ```
 
-The shop is currently serving 34 invented products and hiding all 19 real ones.
+The catalogue is now real: 19 imported WordPress products published with a
+supplier, a category and commercial terms, and 34 demo products moved to
+`draft` (never deleted, because four orders reference them).
 
-**Three things the file deliberately does not do**, each because the data does
-not exist rather than because it was overlooked:
+**Two things it settled that were not obvious going in.** The "four coupons
+with no price" were not a guess in the brief: four *live* products carried
+`is_coupon_enabled` with `coupon_price_ils` NULL, which `buildCouponOffer`
+already models as unsellable, so four things on the site said "coupon" and
+could not be bought. Three took the live page's price. The fourth,
+`restaurants-meat-2`, deliberately got none: its live card shows no price and
+its stored price is `0.00`, and writing `coupon_price_ils = 0` would have made
+a coupon that is free to buy. And picsum needed no separate work: 30 active
+products carried picsum URLs and all 30 were demo.
 
-- **No `supplier_id`.** All 48 products in the WXR are authored by the site
-  admin; `_dokan_vendor_id` appears only on orders, never on a product; the
-  export has two authors and the second is the Dokan placeholder; and the live
-  store listing contains exactly one store, "Test Store". `supplier_id` decides
-  who gets paid, so **assigning suppliers to the 19 products is your task**, in
-  the admin, after 128.
-- **No coupon classification.** Seventeen of the nineteen are services that
-  cannot ship. Section 5 of the file writes the reclassification out per slug,
-  commented out, because `type` decides the money route and no source says.
-- **No supplier detail backfill.** All 11 existing supplier rows are seed data
-  themselves and none of their names appears anywhere on the live site.
+**⚠️ THE OPEN ITEM, AND IT IS YOURS: five suppliers with no details own the
+real catalogue.**
 
-**Two measurements gate it**, both in the file header: all 32 homepage deal
-slugs were resolved (24 active and not demo, 6 draft, 2 with no row), so the
-demo retirement breaks no deal card and the grid goes from 24/32 reachable to
-30/32; and **all 32 product image URLs return 200 today and are all served by
-the WordPress install this project replaces**, so they all 404 on the day of the
-DNS cutover unless they are pulled into R2 first.
+| Supplier | Real active products |
+| --- | --- |
+| ביוטי לאב | 8 |
+| ספורט מקס | 6 |
+| טעמים גורמה | 6 |
+| טק וורלד | 4 |
+| סטייל הבית | 3 |
 
-Everything else waiting in `migrations/pending/` is listed in that directory's
-README. Note there are **two** pending locations: `migrations/pending/` and
-three `PENDING-`-prefixed files still in `supabase/migrations/`. Read both before
-concluding the schema is settled.
+All five have null `city`, `contact_phone`, `address` and `logo_url`, and all
+five are seed rows: none of their names appears anywhere on the live site.
+There is nothing to backfill them from, and inventing details for five
+businesses is not something a migration should do. Either fill them in the
+admin, or reassign those 27 products to a supplier that is real.
 
-**Migration 059 is deliberately NOT applied**, reaffirmed 2026-07-31 with the
-evidence, and production is therefore the pre-059 lineage: numeric `*_ils`
+The nineteen imported products were assigned to a single new supplier row,
+**קניון אקספרס**, because that is what three independent checks say: every
+product in the WordPress export is authored by the site admin,
+`_dokan_vendor_id` appears only on orders and never on a product, and the only
+`/store/` links on a live product page sit inside the vendor registration form.
+Its `address` and `city` are NULL on purpose; the live site publishes no postal
+address on any page. **Setting that address is a launch task.**
+
+**Migration 059 is still deliberately NOT applied**, reaffirmed 2026-07-31 with
+the evidence, so production remains the pre-059 lineage: numeric `*_ils`
 columns, not integer `*_agorot`. Code that names the wrong generation raises
 42703 and takes down the whole statement rather than failing partially. The
 probe in `src/lib/commerce/order-money-columns.ts` is how the order path stays
 correct on either lineage; new code on that path must use it.
+
+**Migration 127 is written and NOT applied**, and the order matters: it revokes
+`EXECUTE` on `check_rate_limit` from `anon` and `authenticated`, and both
+limiters fail open to `return true`. The code that calls it on the service key
+has to be live in production *first*. See item 3.
+
+Everything else waiting is in `migrations/pending/` and that directory's README.
+There are **two** pending locations: `migrations/pending/` and three
+`PENDING-`-prefixed files still in `supabase/migrations/`. Read both before
+concluding the schema is settled.
 
 ### 6. The ten scheduled jobs
 
@@ -212,8 +256,13 @@ cron-job.org setup with the `Authorization: Bearer CRON_SECRET` header.
   remaining two have no product row at all: `reverse-withdrawal-payment` (the
   Dokan admin product, deliberately excluded from the import) and `קופון-טסט`.
 - `/about` has no content.
-- The legal pages need a lawyer's approval. The framework is built; the binding
-  text is not code.
+- **The legal pages need a lawyer's approval.** The framework is built and the
+  duplication is resolved: the better-sourced text (Amendment 13, the no-Escrow
+  coupon model, sections 14ג and 14ח) now serves at `/terms-and-conditions`,
+  `/privacy-policy`, `/refund_returns` and `/accessibility`, and `/legal/*`
+  308s onto those. `noindex` is gone because there is no longer a second set to
+  hide. What remains is counsel signing the wording; each document carries a
+  visible "not yet reviewed by a lawyer" line until they do.
 
 ### 8. Domain
 
