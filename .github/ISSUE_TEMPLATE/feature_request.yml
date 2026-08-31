@@ -1,0 +1,47 @@
+name: בקשת שינוי
+description: יכולת חדשה או שינוי בהתנהגות קיימת
+title: 'שינוי: '
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        <div dir="rtl" align="right">
+
+        תאר את הבעיה לפני הפתרון. בקשה שמנוסחת כפתרון סוגרת מראש את האפשרות
+        שיש דרך קצרה יותר.
+
+        </div>
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: הבעיה
+      description: מי נתקע היום, ובמה. בלי לתאר את הפתרון המבוקש.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: ההצעה
+      description: אם יש לך כיוון. מותר להשאיר ריק.
+
+  - type: textarea
+    id: done
+    attributes:
+      label: איך נדע שזה נגמר
+      description: התנהגות שאפשר למדוד, לא "שיעבוד יפה".
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: rules
+    attributes:
+      label: חוקים שהשינוי הזה נוגע בהם
+      description: סמן את מה שרלוונטי. זה קובע מה צריך לעבור לפני מיזוג.
+      options:
+        - label: 'מסלול כסף (אגורות, integer, דרך src/lib/money.ts)'
+        - label: 'שינוי סכימה (קובץ מיגרציה, בלי db push)'
+        - label: 'הרשאות או RLS'
+        - label: 'UI בעברית RTL, מול refs/ke_live_singlefile.html'

@@ -1,7 +1,7 @@
 # What runs in CI, and what deliberately does not
 
-Two workflows live here, and the absence of a third is a decision rather than an
-oversight. This file records the decision so the next person does not add the
+Three workflows live here, and the absence of a fourth is a decision rather
+than an oversight. This file records the decision so the next person does not add the
 missing file back.
 
 ## There is no `deploy.yml`, and there must not be one
@@ -67,6 +67,27 @@ only database either could reach today is production. Each prints an annotation
 saying so; a job that quietly does nothing is indistinguishable from a job that
 passed. Promote either to a required check once the secret points at a
 disposable project.
+
+## `production-smoke.yml`
+
+Two `curl`s a day against the live deployment, `/` and `/api/health`, and an
+issue labelled `production-down` if either answers anything but 200. Both were
+verified by hand before the file was written: `/` returned 200 and
+`/api/health` returned 200 with `{"ok":true,"database":"ok","latency_ms":243}`.
+
+It is a floor, not monitoring. A daily probe can miss most of an outage and
+nothing here pages anyone; what it gives is a standing record that the site
+still serves and can still reach its database. It opens **one** issue per
+outage and comments on it thereafter, because seven issues about one week-long
+outage is how a real alert gets scrolled past. It also fails the run, since an
+issue is the record and a red run is what shows in the Actions list.
+
+It reads no secret it cannot do without. `vars.PRODUCTION_URL` overrides the
+target and falls back to the known host with a notice rather than skipping, on
+the grounds that a smoke test which quietly stops running is worse than one
+aimed at a stale hostname. `secrets.PRODUCTION_SMOKE_HEADER` is optional and
+only matters if the site is ever put behind Deployment Protection, at which
+point an unauthenticated probe would read the SSO wall as a healthy 200.
 
 ## `dependabot-auto-merge.yml`
 

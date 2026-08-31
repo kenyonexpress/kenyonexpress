@@ -1,0 +1,194 @@
+name: Production smoke
+
+# Two requests a day against the live site, and an issue if either stops
+# answering 200.
+#
+# WHAT THIS IS NOT. It is not uptime monitoring - a once-daily probe can miss
+# 23 hours of an outage, and nothing here pages anyone. It is the floor: a
+# standing record that the deployment still serves its home page and that its
+# health route can still reach the database. Verified by hand on 2026-09-01
+# before this file was written: `/` answered 200 and `/api/health` answered 200
+# with {"ok":true,"database":"ok","latency_ms":243}.
+#
+# It is deliberately separate from the ten cron jobs in docs/CRON-EXTERNAL.md.
+# Those left the platform because Hobby silently runs two of ten; this one runs
+# on GitHub Actions, where a schedule is not a plan feature, and it authenticates
+# with nothing because both routes it calls are public.
+
+on:
+  schedule:
+    # 04:20 UTC, which is 07:20 in Asia/Jerusalem. Cron on GitHub is UTC only
+    # and has no timezone field, so a DST shift moves the local hour by one.
+    # That is acceptable for a daily liveness probe and would not be for
+    # anything on the money path.
+    - cron: '20 4 * * *'
+  # So it can be proven to work without waiting a day, and re-run after a fix.
+  workflow_dispatch:
+
+concurrency:
+  group: production-smoke
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  # The whole point of the job. Without this the probe would detect an outage
+  # and then fail to say so anywhere.
+  issues: write
+
+jobs:
+  smoke:
+    name: Probe the live deployment
+    runs-on: ubuntu-latest
+    steps:
+      # NOTHING SECRET IS NEEDED AND THE JOB SAYS SO RATHER THAN GUESSING.
+      #
+      # The base URL is a repository VARIABLE, not a secret: it is a public
+      # hostname printed in every browser address bar. When it is unset the job
+      # falls back to the known production host and prints a notice, because
+      # skipping here would mean a repository that quietly stops watching its
+      # own site the day someone tidies up the variables.
+      #
+      # A secret DOES get read, and it is optional: PRODUCTION_SMOKE_HEADER
+      # carries a bypass header for the day the site sits behind Deployment
+      # Protection. Unset, the probe runs unauthenticated, which is what it does
+      # today.
+      - name: Resolve the target and report what is configured
+        id: target
+        env:
+          CONFIGURED_URL: ${{ vars.PRODUCTION_URL }}
+          BYPASS: ${{ secrets.PRODUCTION_SMOKE_HEADER }}
+        run: |
+          set -euo pipefail
+          if [ -n "$CONFIGURED_URL" ]; then
+            BASE="${CONFIGURED_URL%/}"
+          else
+            BASE="https://kenyonexpress.vercel.app"
+            echo "::notice title=Using the default production URL::The repository variable PRODUCTION_URL is not set, so this probe used ${BASE}. Set the variable if the site ever moves; the job does not skip, because a smoke test that silently stops running is worse than one aimed at a stale host."
+          fi
+          if [ -z "$BYPASS" ]; then
+            echo "::notice title=Probing unauthenticated::The optional secret PRODUCTION_SMOKE_HEADER is not set, so requests carry no bypass header. That is correct while the site is public; set it if Deployment Protection is ever turned on, or every probe will read the SSO wall as a healthy 200."
+          fi
+          echo "base=${BASE}" >> "$GITHUB_OUTPUT"
+
+      # `--fail` is absent on purpose. It would make curl exit non-zero and end
+      # the step before the status code could be captured and reported, which
+      # would turn a precise "/api/health answered 503" into a bare red X.
+      - name: Probe / and /api/health
+        id: probe
+        env:
+          BASE: ${{ steps.target.outputs.base }}
+          BYPASS: ${{ secrets.PRODUCTION_SMOKE_HEADER }}
+        run: |
+          set -uo pipefail
+          FAILURES=''
+          REPORT=''
+          for PATH_SUFFIX in '/' '/api/health'; do
+            URL="${BASE}${PATH_SUFFIX}"
+            if [ -n "$BYPASS" ]; then
+              CODE=$(curl -sS -o /tmp/body -w '%{http_code}' --max-time 30 --retry 2 \
+                --retry-delay 5 --retry-connrefused \
+                -H "x-vercel-protection-bypass: ${BYPASS}" "$URL" || echo '000')
+            else
+              CODE=$(curl -sS -o /tmp/body -w '%{http_code}' --max-time 30 --retry 2 \
+                --retry-delay 5 --retry-connrefused "$URL" || echo '000')
+            fi
+            BODY=$(head -c 300 /tmp/body || true)
+            echo "${URL} -> ${CODE}"
+            REPORT="${REPORT}"$'\n'"| \`${PATH_SUFFIX}\` | ${CODE} |"
+            # 000 is curl's own "never got a response", which is a failure and
+            # not a status code. Anything but 200 counts, including a redirect:
+            # the home page answering 3xx is itself worth being told about.
+            if [ "$CODE" != '200' ]; then
+              FAILURES="${FAILURES}"$'\n'"- \`${URL}\` answered **${CODE}**"$'\n'"  \`\`\`"$'\n'"  ${BODY}"$'\n'"  \`\`\`"
+            fi
+          done
+          {
+            echo 'report<<SMOKE_EOF'
+            echo "$REPORT"
+            echo 'SMOKE_EOF'
+            echo 'failures<<SMOKE_EOF'
+            echo "$FAILURES"
+            echo 'SMOKE_EOF'
+          } >> "$GITHUB_OUTPUT"
+          if [ -n "$FAILURES" ]; then
+            echo 'failed=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'failed=false' >> "$GITHUB_OUTPUT"
+          fi
+
+      # ONE ISSUE PER OUTAGE, NOT ONE PER DAY. An outage lasting a week would
+      # otherwise open seven issues, and seven issues about one thing is how a
+      # real alert gets scrolled past. An existing open `production-down` issue
+      # gets a comment instead.
+      - name: Open or update the outage issue
+        if: steps.probe.outputs.failed == 'true'
+        uses: actions/github-script@v7
+        env:
+          BASE: ${{ steps.target.outputs.base }}
+          FAILURES: ${{ steps.probe.outputs.failures }}
+          REPORT: ${{ steps.probe.outputs.report }}
+        with:
+          script: |
+            const label = 'production-down'
+            const run = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+            const body = [
+              `בדיקת ה-smoke היומית נכשלה מול ${process.env.BASE}.`,
+              '',
+              '| נתיב | קוד |',
+              '| --- | --- |',
+              process.env.REPORT.trim(),
+              '',
+              '**מה נכשל**',
+              process.env.FAILURES.trim(),
+              '',
+              `ריצה: ${run}`,
+              `זמן: ${new Date().toISOString()}`,
+            ].join('\n')
+
+            // The label has to exist before it can be applied, and it does not
+            // on a fresh repository. Creating it is idempotent enough: a 422
+            // here means someone already made it.
+            try {
+              await github.rest.issues.createLabel({
+                ...context.repo,
+                name: label,
+                color: 'b60205',
+                description: 'הדיפלוי החי לא עונה 200',
+              })
+            } catch (error) {
+              if (error.status !== 422) throw error
+            }
+
+            const { data: open } = await github.rest.issues.listForRepo({
+              ...context.repo,
+              state: 'open',
+              labels: label,
+              per_page: 1,
+            })
+
+            if (open.length > 0) {
+              await github.rest.issues.createComment({
+                ...context.repo,
+                issue_number: open[0].number,
+                body,
+              })
+              core.notice(`Commented on the open outage issue #${open[0].number}.`)
+              return
+            }
+
+            const { data: created } = await github.rest.issues.create({
+              ...context.repo,
+              title: `ייצור לא עונה: בדיקת smoke נכשלה ב-${new Date().toISOString().slice(0, 10)}`,
+              body,
+              labels: [label],
+            })
+            core.notice(`Opened outage issue #${created.number}.`)
+
+      # The job goes red as well as opening the issue. An issue is the record;
+      # a red run is what shows up in the Actions list and in the repository's
+      # own badge, and the two are not interchangeable.
+      - name: Fail the run if anything did not answer 200
+        if: steps.probe.outputs.failed == 'true'
+        run: |
+          echo '::error title=Production smoke failed::At least one probed URL did not answer 200. See the issue labelled production-down.'
+          exit 1
