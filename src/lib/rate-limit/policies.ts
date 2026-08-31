@@ -21,7 +21,7 @@
  * and trusts nothing: `check_rate_limit` used to be reachable by anyone with
  * the publishable key, so `phone-otp-number:<victim>` five times locked that
  * person out of signing in. That hole is closed in `utils/rate-limit.ts` and by
- * `migrations/pending/127`; the table does not reopen it, because Upstash is
+ * `migrations/pending/145`; the table does not reopen it, because Upstash is
  * reachable only from the server.
  */
 

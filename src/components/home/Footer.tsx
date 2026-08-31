@@ -1,5 +1,6 @@
 'use client'
 
+import { formatIsraeliPhoneDisplay, storeWhatsAppNumber } from '@/lib/whatsapp'
 import { Phone, Send, Share2 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -45,7 +46,39 @@ const columns = [
   },
 ]
 
+/**
+ * THE PHONE NUMBER WAS A TEMPLATE PLACEHOLDER, AND IT DIALLED A STRANGER.
+ *
+ * This block read `href="tel:1800397777"` under the label `1-800-EXPRESS`, both
+ * inherited from the Electro theme this layout was ported from. Three things
+ * were measured on 2026-09-01 before changing it:
+ *
+ *   - `1800397777` appears exactly once in `src/` and nowhere in `refs/`.
+ *   - It does not even match its own label: EXPRESS dials 397-7377.
+ *   - The live site publishes ONE contact number, `972524635550`, and no
+ *     1-800 number appears on it at all.
+ *
+ * So the digits belonged to nobody connected to this business, and a customer
+ * pressing "call us 24/7" reached whoever owns that line. A wrong number is
+ * worse than no number, because it fails silently on the customer's side.
+ *
+ * It now goes through `storeWhatsAppNumber()`, the same accessor the floating
+ * button and the contact page use, so the shop has one number and
+ * `NEXT_PUBLIC_WHATSAPP_PHONE` moves all of them at once. The block renders
+ * nothing when that resolves to null, rather than printing a dead link.
+ *
+ * The "24/7" claim went with it: nothing substantiates it and it is a service
+ * promise, not a layout detail.
+ *
+ * NOTE: this component is currently imported by nothing. The live footers are
+ * `components/SiteFooter.tsx` and `components/layout/SiteFooter.tsx`, and
+ * neither renders a `tel:` link, so the placeholder never reached production.
+ * It is fixed rather than left because dead code carrying a plausible-looking
+ * phone number is exactly what gets revived and shipped later.
+ */
 export default function Footer() {
+  const storePhone = storeWhatsAppNumber()
+
   return (
     <footer dir="rtl" className="w-full bg-heading text-white">
       <div className="max-w-footer mx-auto px-4 py-12">
@@ -58,18 +91,20 @@ export default function Footer() {
               height={43}
               className="h-10 w-auto mb-6 brightness-0 invert"
             />
-            <div className="flex items-start gap-3">
-              <Phone className="w-12 h-12 text-brand-primary flex-shrink-0" strokeWidth={1.5} />
-              <div>
-                <div className="text-footer-note text-white/80">יש שאלות? התקשרו 24/7</div>
-                <a
-                  href="tel:1800397777"
-                  className="text-footer-phone font-bold text-white hover:text-brand-primary transition-colors"
-                >
-                  1-800-EXPRESS
-                </a>
+            {storePhone ? (
+              <div className="flex items-start gap-3">
+                <Phone className="w-12 h-12 text-brand-primary flex-shrink-0" strokeWidth={1.5} />
+                <div>
+                  <div className="text-footer-note text-white/80">יש שאלות? התקשרו</div>
+                  <a
+                    href={`tel:+${storePhone}`}
+                    className="text-footer-phone font-bold text-white hover:text-brand-primary transition-colors"
+                  >
+                    {formatIsraeliPhoneDisplay(storePhone)}
+                  </a>
+                </div>
               </div>
-            </div>
+            ) : null}
           </div>
 
           {columns.map((col) => (

@@ -21,18 +21,18 @@ export type EnsureCodeState = { ok: boolean; code?: string; error?: string }
  * customer holding another customer's uuid could POST
  * `/rest/v1/rpc/fn_ensure_referral_code` and both read that person's code and,
  * if they had none, mint one for them. That is written up in STATE for
- * 2026-08-20 01:48 and `migrations/pending/125` carries the REVOKE.
+ * 2026-08-20 01:48 and `migrations/pending/143` carries the REVOKE.
  *
  * The shape that keeps it closed is the shape of this file:
  *
  *   - the uuid comes from `supabase.auth.getUser()` and from nowhere else. No
  *     parameter, no form field, nothing a caller can steer. There is no way to
  *     name a victim because there is no argument to name one with.
- *   - the RPC runs on `createAdminClient()`, i.e. as `service_role`, which 125
- *     leaves granted. So applying 125 does not break this action, and this
- *     action does not become a reason to leave 125 unapplied.
+ *   - the RPC runs on `createAdminClient()`, i.e. as `service_role`, which 143
+ *     leaves granted. So applying 143 does not break this action, and this
+ *     action does not become a reason to leave 143 unapplied.
  *
- * That second point is the one that has gone wrong here before: 125's own
+ * That second point is the one that has gone wrong here before: 143's own
  * justification for another of its functions was "zero rpc() callsites in
  * src/", which was true of the website and false of the till app, and applying
  * it would have stopped every scanner in the field. Adding a caller to a

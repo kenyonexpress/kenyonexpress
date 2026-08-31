@@ -118,7 +118,7 @@ function trimmed(value: string | null | undefined): string | null {
  * exists to prevent. An unmigrated database therefore shows no button anywhere,
  * and that is correct, not degraded.
  *
- * Delete this and read the generated type directly once 003 is applied and the
+ * Delete this and read the generated type directly once 123 is applied and the
  * types are regenerated.
  */
 export function readWhatsAppEnabled(row: unknown): boolean {

@@ -12,7 +12,7 @@ import { readHomepageContent } from '@/lib/homepage/cms'
  *
  * `readHomepageContent` returns the authored slides whenever the CMS tables are
  * absent, empty or unreadable, so on every deployment until
- * `migrations/pending/005` is applied the replacement is identical to the thing
+ * `migrations/pending/127` is applied the replacement is identical to the thing
  * it replaces.
  */
 export default async function CmsHero() {

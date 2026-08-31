@@ -14,7 +14,7 @@ import { type NextRequest, NextResponse } from 'next/server'
  *      the supplier is due nothing from us on it, and no hold is ever written.
  *      The function in production still carries that refund block; it matches
  *      nothing, because every escrow_holds row has voucher_id NULL, and
- *      migrations/pending/004 removes it. See 085, which cut the identical
+ *      migrations/pending/125 removes it. See 085, which cut the identical
  *      dead branch out of redeem_voucher() and missed this one.
  *   2. `credit_expired_vouchers()` credits the customer's wallet with what they
  *      paid online for each expired voucher (C6: expiry is not forfeiture).

@@ -7,12 +7,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
  * `auth.uid()`. 098 revoked it from PUBLIC and anon and NOT from
  * `authenticated`, so for as long as that grant stands, any signed-in customer
  * holding somebody else's uuid can read (and mint) that person's referral code
- * straight off `/rest/v1/rpc/`. `migrations/pending/125` carries the REVOKE and
+ * straight off `/rest/v1/rpc/`. `migrations/pending/143` carries the REVOKE and
  * is waiting on approval.
  *
  * That makes the shape of this action the mitigation and not a detail: it takes
  * no argument, so there is no way to name a victim, and it runs on the service
- * key, so applying 125 does not break it. The assertions below are on both of
+ * key, so applying 143 does not break it. The assertions below are on both of
  * those and not on the returned string. A refactor that "helpfully" adds a
  * userId parameter has to delete a test with a reason attached to it.
  */
@@ -66,7 +66,7 @@ describe('ensureMyReferralCode', () => {
     expect(rpc).toHaveBeenCalledWith('fn_ensure_referral_code', { p_user_id: USER })
   })
 
-  it('runs on the service-role client, which is what migration 125 leaves granted', async () => {
+  it('runs on the service-role client, which is what migration 143 leaves granted', async () => {
     await ensureMyReferralCode()
     expect(adminClient).toHaveBeenCalledTimes(1)
   })

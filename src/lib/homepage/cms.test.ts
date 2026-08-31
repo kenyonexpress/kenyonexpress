@@ -51,7 +51,7 @@ function withAdmin(admin: unknown) {
 
 describe('when the tables are not there', () => {
   it('renders the authored page rather than an error', () => {
-    // 005 is pending and may stay pending. A deployment that cannot reach the
+    // 127 is pending and may stay pending. A deployment that cannot reach the
     // CMS must still serve a home page - the rule the invoice queue already
     // follows for a database without 107.
     withAdmin(

@@ -20,7 +20,7 @@ import { describe, expect, it } from 'vitest'
  * on error and the screen reads that as "this device belongs to no supplier".
  *
  * The bug was not the SQL. It was the word `src/` in the audit that produced it.
- * So this test is deliberately not about migration 125: it re-derives the
+ * So this test is deliberately not about migration 143: it re-derives the
  * revoke list from whatever is in `migrations/pending/` today and checks it
  * against every TypeScript file in BOTH trees. A future revoke of a function
  * the till uses fails here, before anyone types `apply_migration`.
@@ -68,8 +68,8 @@ const SERVICE_ROLE_CALLERS: Record<string, string[]> = {
   // its client with `createAdminClient()`, so it arrives as service_role and is
   // untouched.
   //
-  // This entry is the classification 125's own audit skipped for another of its
-  // functions, and it points the other way: 125 justified this revoke with
+  // This entry is the classification 143's own audit skipped for another of its
+  // functions, and it points the other way: 143 justified this revoke with
   // "zero rpc() callsites", which was true when it was written and is now
   // false. The revoke is still right, and is in fact MORE right than before.
   // `fn_ensure_referral_code(p_user_id uuid)` never reads `auth.uid()`, so

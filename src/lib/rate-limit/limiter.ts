@@ -110,7 +110,7 @@ async function viaUpstash(
  * these RPCs ran on the cookie-bound client they needed an `anon` EXECUTE
  * grant, and the publishable key is public, so anyone could spend anyone's
  * budget by naming their key. See `utils/rate-limit.ts` for the measurement and
- * `migrations/pending/127` for the revoke.
+ * `migrations/pending/145` for the revoke.
  */
 async function viaPostgres(args: {
   key: string

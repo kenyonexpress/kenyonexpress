@@ -16,7 +16,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
  * grant. It can only be applied while this file passes, which is why the
  * assertion is on the import and not on a returned number: a future edit that
  * "simplifies" this back to `createClient()` is a silent re-open of the hole
- * AND, once 127 is applied, a silent switch-off of every limit in the app,
+ * AND, once 145 is applied, a silent switch-off of every limit in the app,
  * because both functions fail open.
  */
 

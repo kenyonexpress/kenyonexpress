@@ -8,7 +8,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
  * constants when it is not.
  *
  * THE FALLBACK IS THE DESIGN, NOT A STOPGAP FOR THE PENDING MIGRATION.
- * `migrations/pending/005` has not been applied and may not be for a while, but
+ * `migrations/pending/127` has not been applied and may not be for a while, but
  * even after it is, a deployment that cannot reach these tables must still
  * render a home page. This is the rule `server/payments/invoices.ts` already
  * follows for a database without 107: a missing table is an ordinary state, not
@@ -51,7 +51,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
  * rather than a cached copy of it.
  *
  * The cost, stated: one query per uncached home page request. It is a single
- * indexed read against two small views, and until 005 is applied it is a
+ * indexed read against two small views, and until 127 is applied it is a
  * 42P01 that returns immediately. Adding `'use cache'` on top is a reasonable
  * next step and is not done here, because a cache with no invalidation hook
  * would hide an editor's change for an hour.
@@ -115,7 +115,7 @@ export const AUTHORED_CONTENT: HomepageContent = {
   source: 'authored',
 }
 
-/** Postgres: undefined_table, i.e. 005 has not been applied to this database. */
+/** Postgres: undefined_table, i.e. 127 has not been applied to this database. */
 const UNDEFINED_TABLE = '42P01'
 
 function isMissingTable(error: { code?: string; message?: string } | null): boolean {
@@ -210,7 +210,7 @@ export async function readHomepageContent(
     ])
 
     if (isMissingTable(banners.error) || isMissingTable(sections.error)) {
-      // 005 is not applied. Expected, and silent: logging it every request
+      // 127 is not applied. Expected, and silent: logging it every request
       // would be a line per page view for a state that is normal.
       return AUTHORED_CONTENT
     }

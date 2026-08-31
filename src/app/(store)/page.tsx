@@ -20,7 +20,7 @@ export const metadata = {
  *
  * THE HERO IS NOW CMS-BACKED, AND THE PAGE IS STILL STATIC. `readHomepageContent`
  * returns the authored constants whenever the CMS tables are absent, empty or
- * unreadable - which is every deployment until `migrations/pending/005` is
+ * unreadable - which is every deployment until `migrations/pending/127` is
  * applied - so the prerendered output is byte-identical to what the comparison
  * gate measured. See lib/homepage/cms.ts for why an editor can change the
  * CONTENT of a slide and never its measured geometry.
@@ -50,7 +50,7 @@ export default function HomePage() {
         The fallback is the AUTHORED hero, not a skeleton, and that is the
         whole trick. The static shell therefore paints exactly the markup the
         comparison gate measured - so a deployment with no CMS rows, which is
-        every deployment until `migrations/pending/005` is applied, is
+        every deployment until `migrations/pending/127` is applied, is
         byte-identical to before. The LCP element is never behind a spinner.
 
         A configured hero streams in and replaces it. That is the only case

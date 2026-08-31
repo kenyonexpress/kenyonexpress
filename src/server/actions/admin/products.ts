@@ -157,7 +157,7 @@ async function runUpsertProduct(
    * The row always carries `whatsapp_enabled`; the WRITE drops it if the column
    * turns out not to exist yet.
    *
-   * The column arrives with `migrations/pending/003-products-whatsapp-enabled
+   * The column arrives with `migrations/pending/123_products_whatsapp_enabled
    * .sql`, which is not applied. Three cheaper-looking options were rejected:
    *
    *  - Always send it. PostgREST answers PGRST204 for EVERY product an admin

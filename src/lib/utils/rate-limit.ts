@@ -67,8 +67,8 @@ export async function getClientIp(): Promise<string> {
  * `migrations/pending/145_revoke_check_rate_limit_execute.sql` revokes the
  * anon/authenticated grant behind it.
  *
- * ORDER MATTERS AND IS ONE-WAY: this file must be deployed BEFORE 127 is
- * applied. Apply 127 first and the RPC starts returning 42501 to a still-live
+ * ORDER MATTERS AND IS ONE-WAY: this file must be deployed BEFORE 145 is
+ * applied. Apply 145 first and the RPC starts returning 42501 to a still-live
  * caller, and the fail-open below turns every limit in the app off silently.
  */
 function adminClientOrNull(): ReturnType<typeof createAdminClient> | null {
