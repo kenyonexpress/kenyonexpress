@@ -51,6 +51,60 @@ describe('raw console in src/', () => {
   })
 })
 
+/**
+ * AN UPSTREAM ERROR MESSAGE IS NOT A RESPONSE BODY.
+ *
+ * Every route in src/app/api logs `error.message` and answers with a code of
+ * its own. One did not: `/api/search` returned it verbatim, and on 2026-08-19
+ * `?q=' or 1=1--` proved what that costs. The WAF in front of the database
+ * refused the request with a full HTML challenge page, and the endpoint put
+ * that page inside the JSON body of a public GET, telling anyone with a search
+ * box what infrastructure sits behind it.
+ *
+ * A regression test that reproduces it would have to provoke a third party's
+ * WAF, so this reads the source instead: no route may hand `error.message`, or
+ * any bare `message`, to NextResponse.json. Logging it is the whole point of
+ * `log.error(..., { reason: error.message })` and stays allowed, because the
+ * pattern below only matches inside a JSON response literal.
+ */
+describe('api routes and upstream error text', () => {
+  /**
+   * Cron is out of scope, and the reason is who is listening.
+   *
+   * Every route under app/api/cron is behind `Authorization: Bearer
+   * CRON_SECRET`, so its only reader is the scheduler and whoever reads the
+   * scheduler's logs. Eight of them answer `{ ok: false, error: error.message }`
+   * and that message is the whole diagnostic an operator has when a nightly job
+   * fails. Blanking it would cost real debugging and buy nothing: a stranger
+   * cannot reach these at all.
+   *
+   * The rule is about what a stranger can ask for, not about tidiness.
+   */
+  const ROUTES = ALL.filter(
+    (file) => rel(file).startsWith('app/api/') && !rel(file).startsWith('app/api/cron/'),
+  )
+
+  it('never puts an upstream message in a response body', () => {
+    // `NextResponse.json({...})` up to its closing brace, then the message
+    // shapes inside it. Deliberately narrow: `reason: error.message` in a log
+    // call is correct and must not be flagged.
+    const offenders = ROUTES.filter((file) => {
+      const source = readFileSync(file, 'utf8')
+      for (const body of source.match(/NextResponse\.json\(\s*\{[^}]*\}/g) ?? []) {
+        if (/\berror:\s*[\w.]*\berror\.message\b/.test(body)) return true
+        if (/\berror:\s*[\w.]*\bmessage\b\s*[,}]/.test(body)) return true
+      }
+      return false
+    }).map(rel)
+
+    expect(offenders, 'these routes return an upstream message to the client').toEqual([])
+  })
+
+  it('has routes to check, so the filter above cannot pass by matching nothing', () => {
+    expect(ROUTES.length).toBeGreaterThan(10)
+  })
+})
+
 describe('the request-id storage', () => {
   it('is named by exactly one module, and that module is server-only', () => {
     const importers = ALL.filter((file) =>

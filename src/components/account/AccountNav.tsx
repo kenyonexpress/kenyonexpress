@@ -11,6 +11,7 @@ const ITEMS = [
   { href: '/account/orders', label: 'ההזמנות שלי' },
   { href: '/account/coupons', label: 'הקופונים שלי' },
   { href: '/account/wallet', label: 'הארנק שלי' },
+  { href: '/account/referrals', label: 'חבר מביא חבר' },
   { href: '/account/subscriptions', label: 'המנויים שלי' },
   { href: '/account/addresses', label: 'כתובות' },
   { href: '/account/tokens', label: 'אמצעי תשלום' },

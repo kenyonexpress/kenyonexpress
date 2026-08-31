@@ -1,0 +1,58 @@
+# Code owners.
+#
+# One human works on this repo, so this file is NOT about routing reviews to
+# the right team. It is about making a review REQUEST appear on the paths where
+# a mistake is expensive, so that opening a PR that touches one of them is a
+# visible act rather than a quiet one.
+#
+# Note what this file cannot do on its own: CODEOWNERS only blocks a merge when
+# branch protection turns on "require review from Code Owners", and that setting
+# needs an approver who is not the PR author. On a solo repo that is a lock with
+# no key, so it is deliberately left off (see docs/CI-AND-BRANCH-PROTECTION.md).
+# What remains is the request, the ownership record, and a file that already
+# works the day a second maintainer exists.
+
+* @kenyonexpress
+
+# ---------------------------------------------------------------------------
+# The money path. Every line below can charge a customer, move a balance, or
+# decide that a paid voucher was already redeemed.
+# ---------------------------------------------------------------------------
+/src/lib/money.ts                       @kenyonexpress
+/src/server/actions/payments/           @kenyonexpress
+/src/app/api/payments/                  @kenyonexpress
+/src/app/api/webhooks/                  @kenyonexpress
+/src/app/api/supplier/vouchers/         @kenyonexpress
+
+# ---------------------------------------------------------------------------
+# Schema and access control. A wrong policy here is not a bug that throws, it
+# is data another customer can read while every test stays green.
+# ---------------------------------------------------------------------------
+/supabase/migrations/                   @kenyonexpress
+/migrations/pending/                    @kenyonexpress
+/supabase/rls-manifest.json             @kenyonexpress
+/src/lib/auth/                          @kenyonexpress
+/src/lib/security/                      @kenyonexpress
+/src/proxy.ts                           @kenyonexpress
+
+# ---------------------------------------------------------------------------
+# The gates themselves. A change here can make everything else stop being
+# checked, which is the one class of change that hides its own consequences.
+# ---------------------------------------------------------------------------
+/.github/                               @kenyonexpress
+/next.config.ts                         @kenyonexpress
+/biome.json                             @kenyonexpress
+/vitest.config.ts                       @kenyonexpress
+/playwright.config.ts                   @kenyonexpress
+/scripts/hardcoded-gate.mjs             @kenyonexpress
+/.lintstagedrc.json                     @kenyonexpress
+
+# ---------------------------------------------------------------------------
+# Observability. Silent by design in several places, so a regression here is
+# invisible until the day something else breaks and there is no record of it.
+# ---------------------------------------------------------------------------
+/src/instrumentation.ts                 @kenyonexpress
+/instrumentation-client.ts              @kenyonexpress
+/sentry.server.config.ts                @kenyonexpress
+/sentry.edge.config.ts                  @kenyonexpress
+/src/lib/observability/                 @kenyonexpress

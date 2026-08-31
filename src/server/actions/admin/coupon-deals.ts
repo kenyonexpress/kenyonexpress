@@ -1,10 +1,11 @@
 'use server'
 
 import { requireAdminSession } from '@/lib/admin/rbac'
+import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { IMAGE_HOST_ERROR, isAllowedImageUrl } from '@/lib/images/remote-hosts'
 import { withActionContext } from '@/lib/observability/action-context'
 import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
@@ -101,6 +102,11 @@ async function runUpsertCouponDeal(
     if (error) return { error: error.message }
   }
 
+  // The storefront's read of this row is `use cache` (lib/coupon-deals.ts), so
+  // without this the save is invisible on /coupons/[id] for an hour while the
+  // admin panel - which is uncached - shows it immediately. That failure mode
+  // is spelled out in full in catalogue-cache.ts.
+  updateTag(CATALOGUE_TAG)
   revalidatePath('/admin/coupons')
   redirect('/admin/coupons')
 }
@@ -119,6 +125,9 @@ async function runSoftDeleteCouponDeal(id: string): Promise<{ error?: string }> 
     .eq('id', id)
   if (error) return { error: error.message }
 
+  // Same contract as the save above, and it matters more here: an archived deal
+  // that stays readable on the storefront is a coupon still being advertised.
+  updateTag(CATALOGUE_TAG)
   revalidatePath('/admin/coupons')
   return {}
 }

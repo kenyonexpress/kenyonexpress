@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "biome lint .",
+    "lint": "biome check .",
     "lint:changed": "node scripts/lint-changed.mjs",
     "typecheck:changed": "node scripts/typecheck-changed.mjs",
     "gate:hardcoded": "node scripts/hardcoded-gate.mjs",
@@ -24,6 +24,8 @@
     "db:types": "supabase gen types typescript --linked --schema public > src/types/database.ts",
     "analyze": "next experimental-analyze",
     "lighthouse:smoke": "node scripts/lighthouse-smoke.mjs",
+    "sentry:verify": "node scripts/sentry-verify.mjs",
+    "sentry:verify:ci": "node scripts/sentry-verify.mjs --ci --dry",
     "prepare": "husky || true"
   },
   "dependencies": {

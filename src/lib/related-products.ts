@@ -1,5 +1,6 @@
 import type { Product } from '@/components/ProductCard'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
+import { orFail } from '@/lib/catalogue-read'
 import { createPublicClient } from '@/lib/supabase/anon'
 import { cacheLife, cacheTag } from 'next/cache'
 
@@ -64,15 +65,19 @@ export async function loadRelatedProducts(
   const byId = new Map<string, Product>()
 
   if (categoryId) {
-    const { data } = await supabase
-      .from('products')
-      .select(SELECT)
-      .eq('category_id', categoryId)
-      .eq('status', 'active')
-      .is('deleted_at', null)
-      .neq('id', excludeId)
-      .order('created_at', { ascending: false })
-      .limit(5)
+    const data = orFail(
+      await supabase
+        .from('products')
+        .select(SELECT)
+        .eq('category_id', categoryId)
+        .eq('status', 'active')
+        .is('deleted_at', null)
+        .neq('id', excludeId)
+        .order('created_at', { ascending: false })
+        .limit(5),
+      'related_products.by_category_failed',
+      { category_id: categoryId, exclude_id: excludeId },
+    )
     for (const r of (data ?? []) as Row[]) byId.set(r.id, toProduct(r))
   }
 
@@ -80,14 +85,18 @@ export async function loadRelatedProducts(
   // sequential on purpose: firing it alongside the first would pay for it on
   // every well-stocked category, which is most of them.
   if (byId.size < 4) {
-    const { data } = await supabase
-      .from('products')
-      .select(SELECT)
-      .eq('status', 'active')
-      .is('deleted_at', null)
-      .neq('id', excludeId)
-      .order('created_at', { ascending: false })
-      .limit(8)
+    const data = orFail(
+      await supabase
+        .from('products')
+        .select(SELECT)
+        .eq('status', 'active')
+        .is('deleted_at', null)
+        .neq('id', excludeId)
+        .order('created_at', { ascending: false })
+        .limit(8),
+      'related_products.fallback_failed',
+      { exclude_id: excludeId },
+    )
     for (const r of (data ?? []) as Row[]) {
       if (byId.size >= 4) break
       if (!byId.has(r.id)) byId.set(r.id, toProduct(r))

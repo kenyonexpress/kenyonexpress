@@ -1,4 +1,5 @@
 import { type Agorot, agorot, sumAgorot } from '@/lib/commerce/money'
+import { VAT_RATE_BP } from '@/lib/money'
 
 /**
  * What a tax document says, computed before anything is sent anywhere.
@@ -92,8 +93,16 @@ export function documentTypeForOrder(
   return everyLineIsACoupon ? 'coupon_receipt' : 'tax_invoice_receipt'
 }
 
-/** Standard Israeli VAT since 2025-01-01. Overridable via `INVOICE_VAT_PERCENT`. */
-export const DEFAULT_VAT_PERCENT = 18
+/**
+ * Standard Israeli VAT since 2025-01-01, as a whole percent. Overridable via
+ * `INVOICE_VAT_PERCENT`.
+ *
+ * Derived from `VAT_RATE_BP` rather than written out again. The two used to be
+ * independent literals and had drifted apart (1700 there, 18 here); one number
+ * about one tax should have one home, and the basis-point form is the one the
+ * money module computes in.
+ */
+export const DEFAULT_VAT_PERCENT = VAT_RATE_BP / 100
 
 export interface InvoiceCustomer {
   name: string | null

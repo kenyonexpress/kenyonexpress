@@ -19,10 +19,11 @@ import Link from 'next/link'
  * whole route in the static shell.
  */
 export default function CartPageView() {
-  const { cart, clear, isPending } = useCart()
+  const { cart, clear, removeUnavailable, isPending } = useCart()
   const isAuthenticated = useCartAuth()
 
-  const hasUnavailable = cart.items.some((item) => !item.available)
+  const unavailableCount = cart.items.filter((item) => !item.available).length
+  const hasUnavailable = unavailableCount > 0
   const isEmpty = cart.items.length === 0
 
   return (
@@ -43,6 +44,31 @@ export default function CartPageView() {
       ) : (
         <div className="cart-page__grid">
           <section aria-label="פריטים בעגלה">
+            {/* The checkout button below is disabled while any line is
+                unavailable, and until now the only way past it was to find each
+                offending line and remove it by hand, one round trip each. With
+                a cart of a dozen items and three dead lines that is a puzzle,
+                not a checkout. The count comes from the rendered view; the
+                server re-decides which lines those are when the button is
+                pressed, because this view is as old as the last render. */}
+            {hasUnavailable && (
+              <div className="cart-page__blocked" role="alert">
+                <p className="cart-page__blocked-text">
+                  {unavailableCount === 1
+                    ? 'פריט אחד בעגלה אינו זמין ואי אפשר להמשיך לתשלום איתו.'
+                    : `${unavailableCount} פריטים בעגלה אינם זמינים ואי אפשר להמשיך לתשלום איתם.`}
+                </p>
+                <button
+                  type="button"
+                  className="cart-page__blocked-action"
+                  onClick={() => void removeUnavailable()}
+                  disabled={isPending}
+                >
+                  {unavailableCount === 1 ? 'הסר את הפריט' : 'הסר את הפריטים'}
+                </button>
+              </div>
+            )}
+
             <div className="cart-page__items">
               {cart.items.map((item) => (
                 <CartLineItem

@@ -11,7 +11,7 @@ export default function ConfirmPage() {
       <p className="text-sm text-gray-500 mb-6">
         שלחנו לכם קישור לאימות. לחצו עליו כדי להפעיל את החשבון.
       </p>
-      <Link href="/login" className="text-brand text-sm font-medium hover:underline">
+      <Link href="/login" className="text-link text-sm font-medium hover:underline">
         חזרה לכניסה
       </Link>
     </div>

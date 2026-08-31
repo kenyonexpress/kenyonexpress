@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { type CouponOfferInput, buildCouponOffer, shekels } from './coupon-offer'
+import { type CouponOfferInput, buildCouponOffer, shekelsFromIls } from './coupon-offer'
 
 const NOW = new Date('2026-07-27T00:00:00Z')
 
@@ -83,9 +83,9 @@ describe('buildCouponOffer refuses to sell what it cannot price', () => {
   })
 })
 
-describe('shekels', () => {
+describe('shekelsFromIls', () => {
   it('always shows two decimals so prices align in a column', () => {
-    expect(shekels(50)).toBe('₪50.00')
-    expect(shekels(1234.5)).toBe('₪1,234.50')
+    expect(shekelsFromIls(50)).toBe('₪50.00')
+    expect(shekelsFromIls(1234.5)).toBe('₪1,234.50')
   })
 })

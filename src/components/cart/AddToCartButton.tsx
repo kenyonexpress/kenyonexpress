@@ -45,9 +45,13 @@ export default function AddToCartButton({
     if (disabled || busy || isPending) return
     setBusy(true)
     try {
-      await addToCart(productId, variantId, quantity, productName)
-      // Emitted after the server accepted the item, not on click: an intent
-      // that failed is not an add_to_cart.
+      // Emitted after the server ACCEPTED the item, not merely after the round
+      // trip returned: an intent that failed is not an add_to_cart. The early
+      // return is what makes that comment true — the store resolves for a
+      // refusal too, so awaiting it alone counted every rejected id as a sale's
+      // worth of intent. The deals grid on the home page refuses all 32.
+      const accepted = await addToCart(productId, variantId, quantity, productName)
+      if (!accepted) return
       track('add_to_cart', { product_id: productId, quantity, variant_id: variantId })
       // Same moment, same condition. A no-op without consent, because
       // `ThirdPartyTags` has not put either vendor global on the window.

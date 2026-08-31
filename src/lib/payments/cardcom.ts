@@ -1,6 +1,9 @@
 import { agorot } from '@/lib/commerce/money'
 import { type CardcomAccount, loadCardcomAccounts } from '@/lib/payments/accounts'
-import { terminalAmountToAgorot } from '@/lib/payments/terminal-reconciliation'
+import {
+  parseTerminalAmountAgorot,
+  terminalAmountToAgorot,
+} from '@/lib/payments/terminal-reconciliation'
 import type {
   ChargeWithTokenInput,
   ChargeWithTokenResult,
@@ -55,10 +58,22 @@ export class CardcomProvider implements PaymentProvider {
     this.account = account ?? loadCardcomAccounts(process.env, { mock: false }).platform
   }
 
+  /**
+   * Where the legacy interface lives, overridable for a sandbox host.
+   *
+   * BLANK IS ABSENT, and it has to be checked rather than left to `??`. An
+   * empty string is not nullish, so `CARDCOM_API_BASE_URL=` -- which is exactly
+   * how a variable someone cleared in a dashboard reads -- used to survive the
+   * `??` and make every path below a RELATIVE url. `fetch('/Interface/...')`
+   * has no origin to resolve against on a server, so it throws "Failed to parse
+   * URL", and checkout fails as a network error rather than by falling back to
+   * the host that was there all along. `env.ts` already treats whitespace as
+   * absence for the secrets, for the same reason.
+   */
   private baseUrl(): string {
-    return (
-      process.env.CARDCOM_API_BASE_URL?.replace(/\/$/, '') ?? 'https://secure.cardcom.solutions'
-    )
+    const configured = process.env.CARDCOM_API_BASE_URL?.trim()
+    if (!configured) return 'https://secure.cardcom.solutions'
+    return configured.replace(/\/+$/, '')
   }
 
   private async postForm(path: string, fields: Record<string, string>): Promise<CardcomJson> {
@@ -399,13 +414,20 @@ export class CardcomProvider implements PaymentProvider {
     })
 
     const responseCode = asNumber(raw.ResponseCode ?? raw.responsecode) ?? -1
-    const amountIls = asNumber(raw.Amount ?? raw.amount)
+    // The terminal's DIGITS, not a double built from them. This read is the
+    // only trusted source for what was actually charged -- the webhook compares
+    // it against the order and refuses to finalize on a mismatch -- and it used
+    // to go through `asNumber` and then `Math.round(x * 100)`, which is a float
+    // in the middle of the money path and against the rule the rest of this
+    // repo keeps. An amount this cannot read comes back null, and the webhook
+    // already treats null as "do not finalize, raise the alarm".
+    const amountAgorot = parseTerminalAmountAgorot(asString(raw.Amount ?? raw.amount) ?? undefined)
     const transactionId = asString(raw.InternalDealNumber ?? raw.internaldealnumber)
     const token = asString(raw.Token ?? raw.token)
 
     return {
       success: responseCode === 0,
-      amountAgorot: amountIls != null ? agorot(Math.round(amountIls * 100)) : null,
+      amountAgorot,
       transactionId,
       lowProfileId,
       token: token

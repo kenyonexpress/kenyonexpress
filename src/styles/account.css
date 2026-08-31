@@ -578,3 +578,130 @@
   direction: ltr;
   unicode-bidi: isolate;
 }
+
+/* Referrals.
+
+   `direction: ltr` plus `unicode-bidi: isolate` on the code and the link, the
+   same pair the coupon code above already uses. A referral code is eight Latin
+   characters that frequently end in a digit, and inside an RTL paragraph a
+   browser reorders exactly that: the code renders with its trailing digits
+   moved to the other end, so what a customer reads aloud is not what they were
+   given. Isolation is what stops the surrounding Hebrew from taking part. */
+
+.account-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.referral-steps {
+  margin: 0;
+  padding-inline-start: 20px;
+  font-size: 14px;
+  line-height: 1.9;
+}
+
+.referral-terms {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--account-muted);
+}
+
+.referral-share__empty {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: var(--account-muted);
+}
+
+.referral-share__error {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--account-red);
+}
+
+.referral-share__label,
+.referral-share__link-label {
+  display: block;
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: var(--account-muted);
+}
+
+.referral-share__link-label {
+  margin-top: 20px;
+}
+
+.referral-share__code {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: center;
+  padding: 12px;
+  border: 1px dashed var(--account-line);
+  border-radius: 4px;
+  background: #fafafa;
+}
+
+.referral-share__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.referral-share__link-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.referral-share__link {
+  flex: 1 1 260px;
+  min-width: 0;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--account-line);
+  border-radius: 4px;
+  font-size: 13px;
+  direction: ltr;
+  unicode-bidi: isolate;
+  background: #fafafa;
+  color: var(--account-ink);
+}
+
+.referral-status {
+  font-weight: 600;
+}
+
+.referral-status--ok {
+  color: var(--account-green);
+}
+
+.referral-status--warn {
+  color: #9a6b00;
+}
+
+.referral-status--dead {
+  color: var(--account-muted);
+}
+
+.referral-bonus {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--account-green);
+}
+
+.referral-bonus--pending {
+  color: var(--account-muted);
+  font-weight: 600;
+}
+
+.referral-count {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--account-muted);
+}

@@ -92,9 +92,37 @@ async function shopArgs(searchParams: Props['searchParams']) {
   return { args, linkParams }
 }
 
+/**
+ * A PAGE PAST THE END IS NOT AN EMPTY FILTER, AND IT USED TO SAY IT WAS.
+ *
+ * `?page=9999` offsets past the last row. The grid came back empty and printed
+ * "nothing matches your selection", blaming filters the shopper never set, and
+ * the header printed nothing at all.
+ *
+ * The header printing nothing is the tell, and it is why the obvious clamp does
+ * not work: PostgREST answers an out-of-range `range()` with no rows AND NO
+ * COUNT, so `total` comes back 0 and cannot tell "past the end" from "nothing
+ * matched". A second read of page 1 is what recovers the real total, and it
+ * only ever runs on a page that already had nothing to show.
+ *
+ * Both boundaries call this rather than the query, so the count and the grid
+ * agree about which page they are describing. `cache` makes the repeat a
+ * pointer copy within the request.
+ */
+async function shopPageOrLast(args: QueryArgs) {
+  const first = await getShopProductsCached(args)
+  if (first.items.length > 0 || args.page <= 1) return first
+
+  const head = await getShopProductsCached({ ...args, page: 1 })
+  if (head.total === 0) return first
+
+  const lastPage = Math.max(1, Math.ceil(head.total / SHOP_PAGE_SIZE))
+  return lastPage === 1 ? head : getShopProductsCached({ ...args, page: lastPage })
+}
+
 /** Header count. Shares one query with the grid via getShopProductsCached. */
 async function ResultCount({ args }: { args: QueryArgs }) {
-  const { total } = await getShopProductsCached(args)
+  const { total } = await shopPageOrLast(args)
   if (total === 0) return null
   const { from, to } = pageWindow(total, args.page)
   return <p className="category-page__count">{resultCountText(total, from, to)}</p>
@@ -107,7 +135,7 @@ async function ResultGrid({
   args: QueryArgs
   linkParams: Record<string, string | undefined>
 }) {
-  const { items, total } = await getShopProductsCached(args)
+  const { items, total } = await shopPageOrLast(args)
 
   if (items.length === 0) {
     return (
@@ -183,7 +211,13 @@ export default function ProductsPage({ searchParams }: Props) {
 
         <header className="category-page__header">
           <h1 className="category-page__title">{PAGE_TITLE}</h1>
-          <Suspense fallback={null}>
+          {/* The count's box, held open while it streams - the same reason the
+              control bar below keeps its own empty shell. */}
+          <Suspense
+            fallback={
+              <div className="category-page__count category-page__count--pending" aria-hidden />
+            }
+          >
             <ShopResultCount searchParams={searchParams} />
           </Suspense>
         </header>

@@ -1,0 +1,68 @@
+name: Dependabot auto-merge
+
+# Enables GitHub's own auto-merge on patch-only Dependabot pull requests.
+#
+# WHAT THIS DOES NOT DO, and the distinction is the whole safety argument:
+# it never merges anything itself. `gh pr merge --auto` asks GitHub to merge the
+# PR *if and when* its required checks pass. If a check is red the PR sits open
+# exactly as it would have without this file. So the failure mode of a bad patch
+# release is a red PR, not a merged regression.
+#
+# That guarantee is CONDITIONAL ON BRANCH PROTECTION EXISTING on the target
+# branch with required status checks. With no protection there is nothing for
+# auto-merge to wait on and GitHub merges as soon as it can - which turns this
+# file from a convenience into an unattended-merge machine. The protection is
+# documented in docs/CI-AND-BRANCH-PROTECTION.md and must be applied to
+# whichever branch dependabot.yml's `target-branch` names.
+#
+# Patch only, deliberately. Minor releases are grouped by dependabot.yml but
+# left for a human: a minor is allowed to add behaviour, and this repo has
+# already been bitten inside one. See the `minimatch@9>brace-expansion` note in
+# pnpm-workspace.yaml, where a transitive bump made every glob throw and the
+# unit suite still reported ALL TESTS PASSING, because the crash was in
+# coverage collection after the run.
+
+on: pull_request_target
+
+# `pull_request_target` runs in the context of the BASE branch, so this file is
+# the version on the target branch rather than whatever the PR contains. That is
+# what makes elevated permissions safe here: a PR cannot edit the workflow that
+# grants them. It is also why the job below never checks out or executes the
+# PR's code - it only reads metadata and calls the API.
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    # Two conditions, not one. `github.actor` is the account that opened the PR;
+    # the event check keeps this from firing on a synchronize triggered by
+    # someone else pushing to a Dependabot branch.
+    if: github.event.pull_request.user.login == 'dependabot[bot]' && github.actor == 'dependabot[bot]'
+
+    steps:
+      - name: Read Dependabot metadata
+        id: meta
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge for patch updates
+        if: steps.meta.outputs.update-type == 'version-update:semver-patch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        # Squash, so the merged history carries one commit per dependency group
+        # rather than Dependabot's rebase noise.
+        run: gh pr merge --auto --squash "$PR_URL"
+
+      - name: Say why a PR was left alone
+        if: steps.meta.outputs.update-type != 'version-update:semver-patch'
+        env:
+          UPDATE_TYPE: ${{ steps.meta.outputs.update-type }}
+        # A silent no-op here reads identically to a broken workflow. One line in
+        # the summary is the difference between "left for review on purpose" and
+        # "auto-merge stopped working three weeks ago and nobody noticed".
+        run: |
+          echo "::notice title=Not auto-merged::update-type is ${UPDATE_TYPE}; only semver-patch is merged unattended."

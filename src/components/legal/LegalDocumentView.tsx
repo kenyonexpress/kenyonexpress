@@ -40,7 +40,7 @@ export default function LegalDocumentView({
 
       <header className="mb-8">
         <h1 className="text-3xl font-bold text-heading">{document.title}</h1>
-        <p className="mt-2 text-sm text-heading/70">עודכן לאחרונה: {updated}</p>
+        <p className="mt-2 text-sm text-heading/75">עודכן לאחרונה: {updated}</p>
       </header>
 
       {document.reviewNotice && (

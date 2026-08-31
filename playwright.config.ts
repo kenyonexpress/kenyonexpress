@@ -38,6 +38,26 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     locale: 'he-IL',
     timezoneId: 'Asia/Jerusalem',
+    /**
+     * Only ever non-empty in CI, and only when pointed at a Vercel preview.
+     *
+     * A preview with Deployment Protection on answers EVERY request with the
+     * SSO wall rather than the app, so a suite aimed at one fails on missing
+     * headings and 404-shaped pages - symptoms that read like an app
+     * regression and are nothing of the sort. These two headers are the
+     * machine's way past it: the first authenticates the request, the second
+     * asks for a cookie so the redirects and subresources that follow are let
+     * through too.
+     *
+     * With the variable unset the object is empty and nothing about a local or
+     * localhost run changes.
+     */
+    extraHTTPHeaders: process.env.VERCEL_AUTOMATION_BYPASS_SECRET
+      ? {
+          'x-vercel-protection-bypass': process.env.VERCEL_AUTOMATION_BYPASS_SECRET,
+          'x-vercel-set-bypass-cookie': 'true',
+        }
+      : {},
   },
   projects: [
     {

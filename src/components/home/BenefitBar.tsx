@@ -59,16 +59,23 @@ export default function BenefitBar() {
             return (
               <li
                 key={b.title}
-                className="w-1/5 flex items-center justify-center"
-                style={{
-                  gap: USP.gap,
-                  paddingInline: USP.paddingInline,
-                  paddingBlockStart: USP.paddingBlockStart,
-                  paddingBlockEnd: USP.paddingBlockEnd,
-                  borderInlineEndStyle: 'solid',
-                  borderInlineEndWidth: isLast ? 0 : 1,
-                  borderInlineEndColor: USP.borderColor,
-                }}
+                // The gap and the inline padding go through custom properties
+                // rather than straight into `style`, because an inline value
+                // cannot be overridden by a media query and the narrowest
+                // phones need both smaller. See .benefit-bar__item in
+                // globals.css for the measurement.
+                className="benefit-bar__item w-1/5 flex items-center justify-center"
+                style={
+                  {
+                    '--usp-gap': `${USP.gap}px`,
+                    '--usp-pad': `${USP.paddingInline}px`,
+                    paddingBlockStart: USP.paddingBlockStart,
+                    paddingBlockEnd: USP.paddingBlockEnd,
+                    borderInlineEndStyle: 'solid',
+                    borderInlineEndWidth: isLast ? 0 : 1,
+                    borderInlineEndColor: USP.borderColor,
+                  } as React.CSSProperties
+                }
               >
                 <Icon
                   className="flex-shrink-0"

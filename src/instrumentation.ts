@@ -94,6 +94,16 @@ export const onRequestError: Instrumentation.onRequestError = async (error, requ
     scope.setTag('route_type', context.routeType)
     scope.setTag('router', context.routerKind)
     scope.setTag('route_path', context.routePath)
+    // routeType alone cannot separate the two ways a page fails. 'render'
+    // covers both a Server Component throwing during the RSC pass and the
+    // same tree failing in SSR, and they are different bugs with different
+    // fixes; renderSource is the only thing that distinguishes them.
+    // 'action' is a Server Function, which has no renderSource at all.
+    if (context.renderSource) scope.setTag('render_source', context.renderSource)
+    // Present only when the error happened while revalidating rather than on a
+    // normal request, which is how a failure that no user was waiting on is
+    // told apart from one that produced an error page.
+    if (context.revalidateReason) scope.setTag('revalidate_reason', context.revalidateReason)
     if (digest) scope.setTag('digest', digest)
     scope.setContext('request', { path, method: request.method })
     Sentry.captureException(error)

@@ -131,6 +131,89 @@ test.describe('shopping cart (guest)', () => {
     await expect(drawer).toBeVisible()
   })
 
+  /**
+   * THE PHONE SHEET DISMISSED ITSELF ON CONTACT.
+   *
+   * `MiniCartDropdown` is `display: none` below 768px, but it still MOUNTS -
+   * CSS hides the markup, it does not detach the document-level `pointerdown`
+   * listener it uses to close itself on an outside click. Every point inside
+   * the phone sheet is outside that hidden panel, so one tap anywhere in the
+   * sheet closed it: "הוסף כמות", "המשך לתשלום", or its own title. The quantity
+   * controls were unreachable on a phone.
+   *
+   * The title is what this taps on purpose. A quantity button would prove the
+   * same thing but would leave the reading "the quantity control is broken";
+   * the title is inert, so what it isolates is the dismissal.
+   *
+   * The desktop half is asserted in the same test, because the fix must not
+   * simply delete the outside-click dismissal that the dropdown needs.
+   */
+  test('the phone sheet survives being touched, and the desktop dropdown still dismisses', async ({
+    page,
+    viewport,
+  }) => {
+    await openPurchasableProduct(page)
+    await addOpenProductToCart(page)
+
+    const isPhone = (viewport?.width ?? 0) < 768
+    if (isPhone) {
+      const sheet = page.locator('.cart-drawer')
+      await expect(sheet).toBeVisible()
+      await sheet.locator('.cart-drawer__title').click()
+      await expect(sheet, 'tapping inside the sheet must not close it').toBeVisible()
+
+      // The controls the dismissal made unreachable.
+      await sheet.getByRole('button', { name: 'הוסף כמות' }).first().click()
+      await expect(sheet.locator('.cart-drawer__count')).toHaveText('(2)')
+      await sheet.getByRole('button', { name: 'הפחת כמות' }).first().click()
+      await expect(sheet.locator('.cart-drawer__count')).toHaveText('(1)')
+
+      // And the dismissal that IS the sheet's own: the overlay behind it.
+      await page.locator('.cart-drawer__overlay').click({ force: true })
+      await expect(sheet).toBeHidden()
+    } else {
+      const panel = page.locator('.mini-cart__panel')
+      await expect(panel).toBeVisible()
+      // Top-left of the page, clear of the panel and of the cart trigger.
+      await page.mouse.click(60, 500)
+      await expect(panel, 'an outside click must still close the dropdown').toBeHidden()
+    }
+  })
+
+  /**
+   * A DROPDOWN MUST NOT FREEZE THE PAGE; A SHEET MUST.
+   *
+   * `CartDrawer` mounts whenever the cart is open, at EVERY width - above 767px
+   * only its markup is hidden, by `display: none` on `.cart-drawer-root`. Its
+   * effect ran regardless, so `body { overflow: hidden }` was applied on a
+   * 1440px desktop where the visible surface is the little mini-cart dropdown,
+   * and the whole page stopped scrolling behind it. Measured with a real wheel
+   * gesture rather than `window.scrollBy`, which is not subject to the
+   * propagated overflow and reported the page as scrollable while a user could
+   * not move it.
+   *
+   * Both halves are asserted, because a fix that simply deleted the lock would
+   * pass the desktop half and silently break the phone sheet.
+   */
+  test('the page scrolls behind the desktop dropdown and not behind the phone sheet', async ({
+    page,
+    viewport,
+  }) => {
+    await openPurchasableProduct(page)
+    await addOpenProductToCart(page)
+    await expect(page.getByRole('dialog', { name: 'עגלת קניות' })).toBeVisible()
+
+    const isPhone = (viewport?.width ?? 0) < 768
+    const before = await page.evaluate(() => window.scrollY)
+    await page.mouse.move((viewport?.width ?? 800) / 2, (viewport?.height ?? 600) / 2)
+    await page.mouse.wheel(0, 600)
+    await page.waitForTimeout(400)
+    const moved = (await page.evaluate(() => window.scrollY)) - before
+
+    if (isPhone) expect(moved, 'the sheet must hold the page still').toBe(0)
+    else expect(moved, 'a dropdown must not freeze the page').toBeGreaterThan(0)
+  })
+
   // `button` here, matching the CTA's old shape, asserted the absence of
   // something that can no longer exist under any cart state, so it passed on an
   // empty cart and would have passed on a full one too. `link` is the role the
@@ -139,5 +222,74 @@ test.describe('shopping cart (guest)', () => {
     await page.goto('/cart')
     await expect(page.getByRole('heading', { name: 'סל הקניות' })).toBeVisible()
     await expect(page.getByRole('link', { name: /המשך לתשלום/ })).toBeHidden()
+  })
+})
+
+/**
+ * THE SHEET COVERS THE PHONE, AND THE KEYBOARD COULD NOT GET INTO IT.
+ *
+ * MEASURED on the built page before the fix: after add-to-cart, eight Tab
+ * presses and six Shift+Tab presses landed on the buy button, the share buttons
+ * and the related-products grid. Fourteen keypresses, not one inside the
+ * drawer, while every one of those controls sat UNDER the overlay -- a sighted
+ * keyboard user watching the focus ring vanish behind a sheet they cannot
+ * reach, on the first cart anyone sees. Escape worked, and that was all.
+ *
+ * `<dialog open>` is not `showModal()`: no top layer, no focus trap, nothing
+ * moves focus. The sheet already had the other two thirds of modal behaviour,
+ * a full-screen overlay and a body scroll lock, so this is the missing third.
+ *
+ * The desktop half of this describe is not decoration. `CartDrawer` mounts at
+ * EVERY width and CSS hides it above 767px, so the obvious version of the fix
+ * would move focus into an invisible sheet on a 1440px desktop -- the same trap
+ * the scroll lock is documented for, in a new spelling, and worse than the bug.
+ */
+test.describe('the cart sheet and the keyboard', () => {
+  const inDrawer = (page: Page) =>
+    page.evaluate(() => Boolean(document.activeElement?.closest('.cart-drawer')))
+
+  test('the phone sheet takes focus, keeps it, and gives it back on Escape', async ({
+    page,
+    viewport,
+  }) => {
+    test.skip((viewport?.width ?? 0) > 767, 'above 767px the panel is MiniCartDropdown')
+
+    await openPurchasableProduct(page)
+    await addOpenProductToCart(page)
+    const sheet = page.locator('.cart-drawer')
+    await expect(sheet).toBeVisible()
+
+    await expect(page.locator('.cart-drawer__close')).toBeFocused()
+
+    // A full lap and one past it: the trap has to WRAP, not stop. Seven
+    // controls today, so twelve presses crosses the end at least once.
+    for (let i = 0; i < 12; i++) {
+      await page.keyboard.press('Tab')
+      expect(await inDrawer(page), `Tab ${i + 1} left the sheet`).toBe(true)
+    }
+    // Backwards too: the wrap at the first control is a separate branch.
+    for (let i = 0; i < 3; i++) {
+      await page.keyboard.press('Shift+Tab')
+      expect(await inDrawer(page), `Shift+Tab ${i + 1} left the sheet`).toBe(true)
+    }
+
+    await page.keyboard.press('Escape')
+    await expect(sheet).toBeHidden()
+  })
+
+  test('the desktop dropdown does not steal focus into a sheet nobody can see', async ({
+    page,
+    viewport,
+  }) => {
+    test.skip((viewport?.width ?? 0) <= 767, 'below 768px the sheet is the visible surface')
+
+    await openPurchasableProduct(page)
+    await addOpenProductToCart(page)
+    await expect(page.locator('.mini-cart__panel')).toBeVisible()
+
+    // `.cart-drawer-root` is `display: none` here and its markup is still in
+    // the document. If focus is inside it, the width guard has broken and a
+    // desktop shopper is typing into something off-screen.
+    expect(await inDrawer(page), 'focus went into the hidden phone sheet').toBe(false)
   })
 })

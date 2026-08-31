@@ -1,5 +1,18 @@
 # ARCHITECTURE-OPS: סביבות, ניטור, גיבויים והתאוששות
 
+<!-- stale-banner:2026-09-01 -->
+> ⛔ **‏מיושן החל מ-01.09.2026. המסמך המחייב הוא `docs/FINAL-REPORT.md`.**
+>
+> ‏ארבע שורות בטבלת המצב בראש המסמך **שגויות היום**: ‏`/api/health` קיים,
+> ‏`vercel.json` קיים, ‏`src/lib/env.ts` קיים, ו-`instrumentation.ts` קיים.
+> גם השורה על ה-cron שגויה: יש **עשרה** ‏jobs ולא אחד, והם רצים מתזמן חיצוני.
+> ‏רשימת ‏O1 עד ‏O7 מסומנת "פתוח" על פריטים שנסגרו.
+>
+> ‏לתזמון עצמו: `docs/CRON-EXTERNAL.md`. ליום העלייה: `docs/LAUNCH-RUNBOOK.md`.
+>
+> שאר המסמך, שהוא מפרט תכנוני ולא דיווח מצב, עדיין תקף.
+
+
 תאריך: 2026-07-29 | ענף: `arch/mega-docs` | סטטוס: **מסמך מחייב, שכבת מימוש**
 
 כפיפות סמכות. כפוף ל-`docs/MASTER-ARCHITECTURE.md` (‏R25, ‏R26, ‏R39)
@@ -189,6 +202,20 @@ export const env = server.parse(process.env)
 ## 2. Vercel
 
 ### 2.1 `vercel.json`, שלא קיים
+
+> **‏תיקון 20.08: הכותרת הזו היסטורית.** הביקורת הזו נכתבה לפני
+> ‏31.07, ו-`vercel.json` נוצר באותו יום (`a27c29513`). היום הוא קיים ומחזיק
+> ‏**עשר** רשומות cron, לא ארבע, וכל עשרת ה-routes קיימים ומוגנים ב-`CRON_SECRET`
+> דרך `bearerMatches`. משלושת ה-routes שנרשמו כאן כחסרים: ‏`reconcile-cardcom`
+> קיים כ-`/api/cron/reconcile` (‏diff יומי מול המסוף בחלון 48 שעות),
+> ‏`money-alarms` התפזר ל-`capturePaymentAlarm` בתוך ה-webhook וב-`stranded-payments`
+> במקום להיות job נפרד, ו-**`expire-pending` אינו קיים בשום צורה**. זה מכוון ולא
+> פער: מלאי אינו ננעל על ידי הזמנה שלא שולמה, כי `available_stock` מסנן על
+> ‏`expires_at > now()`, כלומר שמירה פגה מפסיקה לתפוס מלאי בלי שאף job ירוץ.
+> הבלוק שלמטה נשמר כתיעוד של מה שהיה, לא כמצב. הרשימה המדויקת: `vercel.json`
+> וסעיף Q5 ב-`docs/QUESTIONS-FOR-OFIR.md`.
+>
+> **מה שכן עדיין תקף בסעיף הזה: הערת ה-Hobby.** היא הסיבה שהוא לא נמחק.
 
 ```json
 {
@@ -686,7 +713,7 @@ Cardcom הוא ספק הסליקה היחיד (‏C9). אין fallback. לכן �
 | OPS-8 | אין `reconcile-cardcom` | גבוה |
 | OPS-9 | טוקן ב-URL לא מנוקה ב-Sentry | בינוני |
 | OPS-10 | ‏Storage buckets לא בגיבוי | בינוני |
-| OPS-11 | ‏Vercel Hobby: cron יומי בלבד | בינוני |
+| OPS-11 | ‏Vercel Hobby: cron יומי בלבד, מול **עשר** רשומות (‏20.08) | **גבוה** |
 | OPS-12 | ‏DNS ללא ייצוא זון | נמוך |
 
 ---

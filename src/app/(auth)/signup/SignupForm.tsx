@@ -45,7 +45,7 @@ export default function SignupForm({ next }: Props) {
 
       <div className="my-5 flex items-center gap-3">
         <div className="flex-1 border-t border-gray-200" />
-        <span className="text-xs text-gray-400">או</span>
+        <span className="text-xs text-gray-500">או</span>
         <div className="flex-1 border-t border-gray-200" />
       </div>
 
@@ -78,6 +78,7 @@ export default function SignupForm({ next }: Props) {
             required
             autoComplete="email"
             placeholder="you@example.com"
+            dir="ltr"
             className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
           />
         </div>
@@ -99,7 +100,7 @@ export default function SignupForm({ next }: Props) {
             dir="ltr"
             className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent text-right"
           />
-          <p className="mt-1 text-xs text-gray-400">מספר ישראלי (050, 052, 054 וכו׳)</p>
+          <p className="mt-1 text-xs text-gray-500">מספר ישראלי (050, 052, 054 וכו׳)</p>
         </div>
 
         <div>
@@ -133,7 +134,7 @@ export default function SignupForm({ next }: Props) {
 
       <p className="mt-5 text-center text-sm text-gray-500">
         כבר יש לכם חשבון?{' '}
-        <Link href="/login" className="text-brand font-medium hover:underline">
+        <Link href="/login" className="text-link font-medium hover:underline">
           כניסה
         </Link>
       </p>

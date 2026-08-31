@@ -21,7 +21,25 @@ export default async function EditProductPage({ params }: Props) {
 
   const [{ data: product }, { data: categories }, { data: variants }, { data: suppliers }] =
     await Promise.all([
-      supabase.from('products').select('*').eq('id', id).single(),
+      // `.is('deleted_at', null)` LIKE THE TWO ROWS UNDER IT, AND IT WAS THE
+      // ONLY READ HERE THAT DID NOT FILTER.
+      //
+      // A soft-deleted product opened this form as though nothing had happened:
+      // same fields, same save button, no notice anywhere that the row is gone.
+      // Saving from it writes to a deleted row - `upsertProduct` does not clear
+      // `deleted_at`, so the product stays deleted and the edit simply never
+      // appears on the storefront. Work that vanishes without an error.
+      //
+      // There is no restore flow to justify reaching it either: `products.ts`
+      // has delete, bulk soft-delete and archive, and nothing that sets
+      // `deleted_at` back to null. So a deleted id has no destination here and
+      // now 404s, which is what the list already implies by not showing it.
+      supabase
+        .from('products')
+        .select('*')
+        .eq('id', id)
+        .is('deleted_at', null)
+        .single(),
       supabase.from('categories').select('id, name_he').eq('is_active', true).order('name_he'),
       supabase.from('product_variants').select('*').eq('product_id', id).is('deleted_at', null),
       admin

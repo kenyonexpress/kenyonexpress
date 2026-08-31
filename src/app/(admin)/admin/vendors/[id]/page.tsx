@@ -14,7 +14,14 @@ export default async function EditVendorPage({ params }: Props) {
   await requireAdminPage()
   const supabase = await createClient()
 
-  const { data: vendor } = await supabase.from('vendors').select('*').eq('id', id).single()
+  // Soft-deleted rows do not open this form - same reasoning as the product,
+  // supplier and coupon editors above.
+  const { data: vendor } = await supabase
+    .from('vendors')
+    .select('*')
+    .eq('id', id)
+    .is('deleted_at', null)
+    .single()
   if (!vendor) notFound()
 
   return (

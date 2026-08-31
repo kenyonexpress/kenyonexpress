@@ -50,6 +50,7 @@ type LookupOutcome =
   | 'invalid_request'
   | 'unauthorized'
   | 'rate_limited'
+  | 'unavailable'
 
 const MESSAGES: Record<LookupOutcome, string> = {
   redeemable: 'השובר תקף, אפשר לממש',
@@ -61,6 +62,7 @@ const MESSAGES: Record<LookupOutcome, string> = {
   invalid_request: 'בקשה לא תקינה',
   unauthorized: 'אין הרשאת ספק',
   rate_limited: 'יותר מדי בדיקות, המתן רגע',
+  unavailable: 'לא ניתן לבדוק את השובר כרגע, נסו שוב בעוד רגע',
 }
 
 const HTTP_STATUS: Record<LookupOutcome, number> = {
@@ -73,6 +75,7 @@ const HTTP_STATUS: Record<LookupOutcome, number> = {
   invalid_request: 400,
   unauthorized: 401,
   rate_limited: 429,
+  unavailable: 503,
 }
 
 export interface LookupResponse {
@@ -140,8 +143,26 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
 
   if (!shortCode) return respond({ outcome: 'not_found', message: MESSAGES.not_found }, 404)
 
-  const supplierIds = await getSupplierMemberships()
-  const voucher = await getVoucherForRedemption(shortCode, supplierIds)
+  // A READ THAT FAILED IS NOT A VOUCHER THAT DOES NOT EXIST. Both reads throw
+  // on failure rather than returning the same null another supplier's voucher
+  // returns, because both answers below are wrong for it: the customer at the
+  // till has already paid, and `recordRefusedScan` would write a row saying the
+  // code does not exist for a lookup that never happened - into the log that
+  // exists so a disputed scan can be reconstructed. Each throw is already
+  // logged, once, at the read.
+  //
+  // The MEMBERSHIP read is inside this try for a reason that outlived the first
+  // fix: it used to sit above it and swallow its error into `[]`, and
+  // `getVoucherForRedemption` returns null for an empty membership set BEFORE
+  // its guarded query runs. So a failure there produced the exact refusal this
+  // block exists to prevent, while stepping over the guard that prevents it.
+  let voucher: Awaited<ReturnType<typeof getVoucherForRedemption>>
+  try {
+    const supplierIds = await getSupplierMemberships()
+    voucher = await getVoucherForRedemption(shortCode, supplierIds)
+  } catch {
+    return respond({ outcome: 'unavailable', message: MESSAGES.unavailable }, 503)
+  }
 
   if (!voucher) {
     // Another supplier's voucher and a code that does not exist answer the

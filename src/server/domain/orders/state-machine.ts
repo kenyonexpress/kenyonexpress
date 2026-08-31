@@ -1,27 +1,32 @@
-import type { CommissionProductType } from '@/lib/commerce/commission'
-
 /**
- * Settlement lifecycle of an order line (and, derived, of an order), under
- * C11 version (b), decided 2026-07-27: a coupon prepayment is held for the
- * supplier until the voucher is scanned.
+ * Settlement lifecycle of an order line (and, derived, of an order).
+ *
+ * THERE IS NO ESCROW. That is the authoritative business rule (STATE.md,
+ * MISSION-FINAL.md, src/server/payments/README.md): the customer pays the
+ * absolute `coupon_price` on the site, ALL of it stays with the platform
+ * permanently, and the supplier collects the remaining balance in cash from
+ * the customer at the counter when the voucher is scanned. No coupon money is
+ * ever held for a supplier and none is ever paid out to one.
  *
  * Physical happy path: pending -> paid -> split_executed
- *   (the whole charge splits the moment the order is paid)
- * Coupon happy path:   pending -> paid -> escrow_held -> escrow_released
- *   (the platform keeps platform_percent of the prepayment at paid-time; the
- *   remainder is held per voucher and released by the same transaction that
- *   redeems it, once no voucher of the line is still outstanding)
- * Failure paths: pending -> cancelled;
- *   paid | escrow_held | split_executed -> refunded
+ *   (the charge splits by the per-product platform_percent snapshotted into
+ *   order_items, the moment the order is paid)
+ * Coupon happy path:   pending -> paid -> split_executed
+ *   (the same two moves, splitting 100/0: platform keeps everything)
+ * Failure paths: pending -> cancelled; paid | split_executed -> refunded
  *
- * Every state here is a live `settlement_status` enum value, verified against
- * the hosted project. Two of them are LEGACY and no new row enters them:
+ * THE STATES THIS FILE DELIBERATELY DOES NOT DECLARE. The hosted
+ * `settlement_status` enum still carries `escrow_held`, `escrow_released` and
+ * `platform_settled`, because dropping a Postgres enum value is not a thing
+ * you do to a production database over a rule change. They are absent from
+ * `SettlementState` on purpose: a value the type does not admit is a row this
+ * code can never write. `platform_settled` survives only in the redemption
+ * read path (`REDEEMABLE_SETTLEMENT_STATUSES`), which has to keep recognising
+ * rows written before the rule changed.
  *
- *   platform_settled - written by the abolished C11(a) rule, under which the
- *     platform kept the whole prepayment and the supplier got nothing. Kept
- *     refundable so such a row can still be unwound. Zero rows carry it.
- *   redeemed - the pre-voucher coupon_codes model recorded consumption on the
- *     line rather than on the voucher. Terminal, like escrow_released.
+ * `redeemed` is kept and is terminal: the pre-voucher coupon_codes model
+ * recorded consumption on the line rather than on the voucher, and those rows
+ * still exist.
  *
  * The write path this mirrors: finalize.ts issues vouchers and settles the
  * coupon line immediately, because the whole prepayment is platform revenue
@@ -56,26 +61,35 @@ export const SETTLEMENT_EVENTS: readonly SettlementEvent[] = [
 
 type TransitionRule = {
   to: SettlementState
-  /** When set, the event is legal only for lines of this product type. */
-  productType?: CommissionProductType
 }
 
 /**
  * Single source of truth for legal transitions.
  *
- * REFUND from split_executed covers physical returns inside the legal window
- * (money recovery from the supplier happens via payout adjustments).
- * REFUND from escrow_held is legal only while every voucher of the line is
- * still `issued`; the refund planner checks the voucher states, and the hold
- * itself is unwound by refund_vouchers_for_order().
- * escrow_released and redeemed cannot be refunded to the card: the value was
- * consumed at the business, and the supplier has already been paid out of the
- * hold. A goodwill refund after that point is a wallet credit, which is a
+ * REFUND from split_executed covers both types inside the legal window: a
+ * physical return (money recovery from the supplier happens via payout
+ * adjustments) and a coupon cancelled while every voucher of the line is still
+ * `issued`. The refund planner is what checks those voucher states; this
+ * machine only says the move is legal at all.
+ *
+ * `redeemed` cannot be refunded to the card: the value was consumed at the
+ * business. A goodwill refund after that point is a wallet credit, which is a
  * different money movement entirely.
  *
- * There is deliberately no event leading INTO platform_settled. It is a state
- * this machine can only exit, which is what "legacy, no new row enters it"
- * means when written as code rather than as a comment.
+ * No transition is product-type specific, and the machine no longer takes a
+ * product type. It carried a `productType` rule field and a WRONG_PRODUCT_TYPE
+ * error from the C11(a) escrow rule, where coupon lines had their own path.
+ * C11(b) removed that: both types run pending -> paid -> split_executed, and a
+ * coupon line simply splits 100/0. No rule ever set the field again, so the
+ * guard was unreachable in every state and every event, which is why the
+ * per-file branch floor could not be met while it stood. Type-specific money
+ * still exists, but it lives in platform_percent, not in the legal moves.
+ *
+ * There is deliberately no event leading INTO platform_settled, escrow_held or
+ * escrow_released, and no state for them either: a legacy enum value that the
+ * type does not admit is one no transition can ever produce, which is what
+ * "abolished, no new row enters it" means written as code rather than as a
+ * comment.
  */
 const TRANSITIONS: Readonly<
   Record<SettlementState, Partial<Record<SettlementEvent, TransitionRule>>>
@@ -100,7 +114,7 @@ const TRANSITIONS: Readonly<
   cancelled: {},
 }
 
-export type TransitionErrorCode = 'ILLEGAL_TRANSITION' | 'WRONG_PRODUCT_TYPE'
+export type TransitionErrorCode = 'ILLEGAL_TRANSITION'
 
 export class SettlementTransitionError extends Error {
   readonly code: TransitionErrorCode
@@ -116,28 +130,15 @@ export class SettlementTransitionError extends Error {
   }
 }
 
-export function canTransition(
-  from: SettlementState,
-  event: SettlementEvent,
-  productType: CommissionProductType,
-): boolean {
-  const rule = TRANSITIONS[from][event]
-  if (!rule) return false
-  return rule.productType === undefined || rule.productType === productType
+export function canTransition(from: SettlementState, event: SettlementEvent): boolean {
+  return TRANSITIONS[from][event] !== undefined
 }
 
 /** Applies an event, throwing SettlementTransitionError when illegal. */
-export function transition(
-  from: SettlementState,
-  event: SettlementEvent,
-  productType: CommissionProductType,
-): SettlementState {
+export function transition(from: SettlementState, event: SettlementEvent): SettlementState {
   const rule = TRANSITIONS[from][event]
   if (!rule) {
     throw new SettlementTransitionError('ILLEGAL_TRANSITION', from, event)
-  }
-  if (rule.productType !== undefined && rule.productType !== productType) {
-    throw new SettlementTransitionError('WRONG_PRODUCT_TYPE', from, event)
   }
   return rule.to
 }

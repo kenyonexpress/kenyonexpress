@@ -1,8 +1,7 @@
-import { createClient } from '@/lib/supabase/server'
+import { getActiveCouponDealIds, getCouponDeal } from '@/lib/coupon-deals'
 import { MapPin, Tag } from 'lucide-react'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
-import { Suspense } from 'react'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -10,53 +9,66 @@ interface Props {
 
 export async function generateMetadata({ params }: Props) {
   const { id } = await params
-  const supabase = await createClient()
-  const { data } = await supabase
-    .from('coupon_deals')
-    .select('title_he, business_name')
-    .eq('id', id)
-    .single()
-  return { title: data ? `${data.title_he} — ${data.business_name}` : 'קופון' }
+  // The same cached read the body makes, so the title and the page cannot
+  // describe different rows and the two do not cost two round trips.
+  const deal = await getCouponDeal(id)
+  return { title: deal ? `${deal.title_he} — ${deal.business_name}` : 'קופון' }
+}
+
+export async function generateStaticParams() {
+  const ids = await getActiveCouponDealIds()
+  return ids.map((id) => ({ id }))
 }
 
 /**
- * The deal IS `params.id`, so the shell is the card's outline: the 224px image
- * box (`h-56`) and the rounded frame around it, which is what holds the page
- * height while the row is read.
+ * NO `<Suspense>`, BECAUSE AN UNKNOWN ID HAS TO BE ABLE TO 404.
+ *
+ * The lookup used to sit inside a boundary, under a shell that was the card's
+ * outline. That shell went out with the status line, so `notFound()` ran too
+ * late to change it and `/coupons/<any uuid at all>` answered **`200 OK`** with
+ * a not-found body - a soft 404 over an unbounded id space. Same shape as the
+ * one fixed on `/category/[slug]`, and the same reasoning applies.
+ *
+ * Removing the boundary is not enough on its own: `cacheComponents` fails the
+ * BUILD on an uncached read outside one, which is what made this look
+ * unfixable. The read moved to `lib/coupon-deals.ts` behind `use cache` on the
+ * anon client, and that is what lets the page await the answer before it
+ * commits a status. The shell it gave up was an empty grey box painted a moment
+ * before the row arrived.
  */
-export default function CouponDealPage(props: Props) {
-  return (
-    <Suspense
-      fallback={
-        <article className="space-y-4">
-          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-            <div className="relative h-56 bg-gray-100" />
-          </div>
-        </article>
-      }
-    >
-      <CouponDealBody {...props} />
-    </Suspense>
-  )
-}
-
-async function CouponDealBody({ params }: Props) {
+export default async function CouponDealPage({ params }: Props) {
   const { id } = await params
-  const supabase = await createClient()
-
-  const { data: deal } = await supabase
-    .from('coupon_deals')
-    .select('*')
-    .eq('id', id)
-    .eq('status', 'active')
-    .is('deleted_at', null)
-    .single()
+  const deal = await getCouponDeal(id)
 
   if (!deal) notFound()
 
-  const platformPrice = deal.platform_price ?? Math.round(deal.original_price * 0.1 * 100) / 100
-  const remaining = Math.round((deal.original_price - platformPrice) * 100) / 100
-  const discountPct = deal.discount_percentage ?? 90
+  /**
+   * THE PERCENTAGES ARE GONE, AND THE INVENTED DEFAULT WITH THEM.
+   *
+   * `platform_price` is the ABSOLUTE amount charged online, set per deal by an
+   * admin. This page printed "(10%)" and "(90%)" beside the two numbers and
+   * fell back to a tenth of the sticker when the price was missing - the
+   * pricing model abolished on 2026-07-24. `CouponCard`, which lists these same
+   * rows, was corrected then; the detail page it links to was not, so the two
+   * views of one table disagreed.
+   *
+   * Today's eight seed rows are all exactly a tenth of their sticker, so the
+   * labels are arithmetically true and the bug is invisible. It stops being
+   * invisible the first time an admin sets a price that is not a tenth - the
+   * page would print "(10%)" next to a number that is not 10%, on a page that
+   * quotes what a customer pays.
+   *
+   * A deal with no price is shown without one, exactly as the card does,
+   * instead of being advertised at a number nobody set.
+   */
+  const platformPrice = deal.platform_price
+  const remaining =
+    platformPrice != null ? Math.round((deal.original_price - platformPrice) * 100) / 100 : null
+  const discountPct =
+    deal.discount_percentage ??
+    (platformPrice != null && deal.original_price > 0
+      ? Math.round((1 - platformPrice / deal.original_price) * 100)
+      : null)
 
   return (
     <article className="space-y-4">
@@ -80,9 +92,11 @@ async function CouponDealBody({ params }: Props) {
               <Tag size={48} />
             </div>
           )}
-          <div className="absolute top-3 right-3 bg-brand text-heading text-sm font-bold px-3 py-1.5 rounded-lg">
-            {discountPct}% הנחה
-          </div>
+          {discountPct != null && discountPct > 0 && (
+            <div className="absolute top-3 right-3 bg-brand text-heading text-sm font-bold px-3 py-1.5 rounded-lg">
+              {discountPct}% הנחה
+            </div>
+          )}
         </div>
 
         <div className="p-5 space-y-3">
@@ -96,30 +110,38 @@ async function CouponDealBody({ params }: Props) {
             </div>
           )}
 
-          {/* Pricing breakdown */}
+          {/* Pricing breakdown. The split is named in shekels, never in
+              percentages: what the customer owes here is `platform_price`
+              itself, and the balance is whatever is left of the sticker. */}
           <div className="bg-brand-light/40 border border-brand/20 rounded-xl p-4 space-y-2">
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-bold text-brand">₪{platformPrice.toFixed(2)}</span>
-              <span className="text-sm text-gray-400 line-through">
-                ₪{Number(deal.original_price).toFixed(2)}
-              </span>
-            </div>
-            <div className="text-sm text-gray-700 space-y-1">
-              <p>
-                שלם <span className="font-semibold">₪{platformPrice.toFixed(2)}</span> (10%) עכשיו
-                באתר
-              </p>
-              <p>
-                ואת היתרה <span className="font-semibold">₪{remaining.toFixed(2)}</span> (90%) בבית
-                העסק בעת מימוש הקופון
-              </p>
-            </div>
+            {platformPrice != null && remaining != null ? (
+              <>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-bold text-price">₪{platformPrice.toFixed(2)}</span>
+                  <span className="text-sm text-gray-500 line-through">
+                    ₪{Number(deal.original_price).toFixed(2)}
+                  </span>
+                </div>
+                <div className="text-sm text-gray-700 space-y-1">
+                  <p>
+                    שלם <span className="font-semibold">₪{platformPrice.toFixed(2)}</span> עכשיו
+                    באתר
+                  </p>
+                  <p>
+                    ואת היתרה <span className="font-semibold">₪{remaining.toFixed(2)}</span> בבית
+                    העסק בעת מימוש הקופון
+                  </p>
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-gray-500">המחיר יעודכן בקרוב</p>
+            )}
           </div>
 
           <button
             type="button"
             disabled
-            className="w-full bg-brand/60 text-heading/70 font-semibold rounded-lg px-6 py-3 text-sm cursor-not-allowed"
+            className="w-full bg-brand/60 text-heading/75 font-semibold rounded-lg px-6 py-3 text-sm cursor-not-allowed"
           >
             רכישת קופון — בקרוב
           </button>
@@ -132,7 +154,7 @@ async function CouponDealBody({ params }: Props) {
           )}
 
           {deal.valid_until && (
-            <p className="text-xs text-gray-400 pt-1">
+            <p className="text-xs text-gray-500 pt-1">
               בתוקף עד {new Date(deal.valid_until).toLocaleDateString('he-IL')}
             </p>
           )}

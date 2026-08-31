@@ -1,0 +1,11 @@
+# `false` on purpose. A blank issue is where an outage report with no URL and
+# no timestamp comes from, and this repository's two templates cover both
+# shapes of report it actually receives.
+blank_issues_enabled: false
+contact_links:
+  - name: תקלה בייצור, עכשיו
+    url: https://github.com/kenyonexpress/kenyonexpress/issues?q=is%3Aissue+is%3Aopen+label%3Aproduction-down
+    about: בדיקת ה-smoke היומית פותחת issue עם התווית production-down. אם האתר לא עונה, בדוק קודם אם כבר יש אחד פתוח.
+  - name: איך מזינים דיל חדש
+    url: https://github.com/kenyonexpress/kenyonexpress/blob/phase5/homepage/docs/CONTENT-OPERATIONS-GUIDE.md
+    about: שאלות תפעול תוכן נענות במדריך ולא ב-issue.

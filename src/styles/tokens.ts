@@ -30,7 +30,13 @@ export const SITE = {
   /** Colours that carry meaning: price, state, links, headings. */
   functional: {
     price: '#dc3545',
-    priceStrike: '#9ca3af',
+    /**
+     * Crossed-out original price. Darkened from #9ca3af for WCAG AA: at 2.53:1
+     * on white it was the worst text pairing left on the site after the
+     * brand-yellow sweep, and it paints the coupon product page's "regular
+     * price". #6f6f6f is 5.02.
+     */
+    priceStrike: '#6f6f6f',
     /** Deals-card price ink. Measured on live; darker than `brand.dark`. */
     dealPrice: '#2d2d2d',
     success: '#5cb85c',
@@ -52,7 +58,13 @@ export const SITE = {
     /* WCAG AA ([40]): #7e7e7e was 4.06:1 on white and #768b9e was 3.53:1, both
        below the 4.5:1 floor for body text. Darkened by the minimum that clears
        it, keeping the hue -- measured, not eyeballed. */
-    muted: '#767676',
+    /**
+     * Darkened from the live #767676 for WCAG AA. On white it was already 4.54,
+     * a hair over; on the #f5f5f5 panels the product page uses for its terms
+     * and its supplier block it is 4.16, and axe reported it as serious there.
+     * #6f6f6f is 5.02 and 4.61 respectively, so one value covers both surfaces.
+     */
+    muted: '#6f6f6f',
     muted2: '#657888',
     icon: '#515151',
     /** Large empty-state glyphs (empty cart, no results). */
@@ -84,8 +96,12 @@ export const SITE = {
     rose: '#fff5f5',
     violet: '#f5f5ff',
     sky: '#f0f7ff',
-    /** Banner CTA button. */
-    flame: '#ff6b00',
+    /**
+     * Banner CTA button. Darkened from #ff6b00 for WCAG AA: the button's label
+     * is white, bold and 12px, and white on #ff6b00 is 2.86:1. See the note on
+     * --color-promo-flame in globals.css.
+     */
+    flame: '#c24d00',
   },
   /**
    * WhatsApp's own brand colours, used by the share button and the float.
@@ -95,8 +111,17 @@ export const SITE = {
    */
   whatsapp: {
     base: '#25d366',
-    ink: '#128c7e',
-    inkHover: '#075e54',
+    /**
+     * WhatsApp's own DARK teal, not its mid teal. #128c7e is 4.14:1 on white
+     * and axe fails it as link text, and this token paints a link label rather
+     * than the mark itself, so the logo exemption does not cover it. #075e54 is
+     * WhatsApp's own colour too - it was already sitting in `inkHover` - at
+     * 7.67:1, so nothing here is a colour this project invented, which is what
+     * the note above forbids.
+     */
+    ink: '#075e54',
+    /** A shade of the same teal, so the hover still moves. 12.32:1. */
+    inkHover: '#043c36',
   },
   /**
    * Facebook's own brand blue, used by the share button on the product page.
@@ -104,7 +129,13 @@ export const SITE = {
    * component repeats it, and never rebranded along with `brand.*`.
    */
   facebook: {
-    base: '#1877f2',
+    /**
+     * Facebook's own darker blue, the one their buttons use on hover. #1877f2
+     * is 4.23:1 on white and axe fails it as link text; this token paints a
+     * link label rather than the mark, so the logo exemption does not cover it.
+     * #166fe5 is 4.73 and is still Facebook's colour, not one invented here.
+     */
+    base: '#166fe5',
   },
 } as const
 
@@ -380,8 +411,14 @@ export const PDP = {
     action: '#5d7184',
     /** sale price */
     sale: '#dc3545',
-    /** struck-through original price next to the sale price */
-    strike: '#848484',
+    /**
+     * Struck-through original price next to the sale price. Darkened from the
+     * live #848484 for WCAG AA: it paints at 21px normal weight, which is below
+     * the 24px that would let 3:1 apply, and #848484 on white is 3.74:1. axe
+     * reported it as serious on every physical product page. #6f6f6f is 5.02
+     * on white and 4.61 on the #f5f5f5 panels it also appears over.
+     */
+    strike: '#6f6f6f',
     /** hairline under the title block, measured at y353 */
     rule: '#cccfd1',
     /** hairline under the recommendations heading, measured at y938 */
@@ -389,9 +426,15 @@ export const PDP = {
     /** add-to-cart pill */
     brand: '#fed700',
     brandHover: '#fedd26',
-    /** the full-width buy-now button under it */
-    buy: '#ee6443',
-    buyHover: '#e5502c',
+    /**
+     * The full-width buy-now button under it. Darkened from the live #ee6443
+     * for WCAG AA: its label is white, bold, 14px, and white on #ee6443 is
+     * 3.21:1. This is the primary purchase control on every product page, so
+     * it is the last place on the site where an unreadable label is acceptable.
+     * #c94b28 carries white at 4.65 and the hover at 5.54.
+     */
+    buy: '#c94b28',
+    buyHover: '#b8401f',
     surface: '#ffffff',
   },
   /** Geometry measured on the live single-product template. */

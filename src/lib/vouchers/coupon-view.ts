@@ -1,3 +1,5 @@
+import { agorot } from '@/lib/money'
+import { shekels } from '@/lib/money-format'
 /**
  * Presentation rules for the two screens a voucher is actually used on: the
  * customer's coupon page (/coupon/[id]) and the counter's scan screen (/scan).
@@ -180,12 +182,23 @@ export function formatCouponCode(code: string): string {
   return groups.join('-')
 }
 
+/**
+ * The money formatter for the whole coupon-after-payment surface: the coupon
+ * page, the supplier scan screen, the account list, the voucher email, the
+ * notifications and the wallet pass all print through this one function.
+ *
+ * It divided by 100 and handed the resulting float to `toLocaleString`. That is
+ * the pattern `pricing.test.ts` was written to keep out of the money path, and
+ * `shekels` already does it by integer division -- whole shekels and the agora
+ * remainder separated with `/` and `%`, so no value is ever a float even for
+ * the length of a format call. Delegating keeps this function's own contract,
+ * which `shekels` does not have and which the callers rely on: a missing or
+ * non-finite amount is a DASH and never `₪0.00`, because "you owe nothing" and
+ * "we do not know what you owe" are different things to read at a till.
+ */
 export function formatAgorot(value: number | null | undefined): string {
   if (value == null || !Number.isFinite(value)) return '—'
-  return `₪${(value / 100).toLocaleString('he-IL', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`
+  return shekels(agorot(Math.trunc(value)))
 }
 
 export function formatCouponDate(iso: string | null | undefined): string {

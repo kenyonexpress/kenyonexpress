@@ -38,7 +38,7 @@ interface QuickLinks {
 }
 
 /** Live prints ₪399, not ₪399.00. Agorot only when a price actually has them. */
-function shekels(value: number): string {
+function shekelsFromIls(value: number): string {
   return `₪${value.toLocaleString('he-IL', { maximumFractionDigits: 2 })}`
 }
 
@@ -173,7 +173,24 @@ export default function HeaderSearch() {
             autoComplete="off"
             role="combobox"
             aria-expanded={open}
-            aria-controls="masthead-search-suggestions"
+            /*
+              THE ARROW KEYS MOVED A HIGHLIGHT NOBODY WAS TOLD ABOUT.
+              `active` painted `bg-brand-accent` on a suggestion and Enter went
+              to it, while focus never left this input and nothing carried the
+              selection into the accessibility tree. A screen reader announced
+              "combobox, expanded", then silence through every ArrowDown, and
+              then a navigation to a product it had never named. axe reports
+              zero violations here -- MEASURED, not assumed -- because the
+              popup was a bare `ul` it has no rule about; this is WCAG 4.1.2
+              and it needed reading the widget rather than scanning it.
+            */
+            aria-autocomplete="list"
+            aria-controls={showQuick ? 'masthead-search-quick' : 'masthead-search-suggestions'}
+            aria-activedescendant={
+              open && active >= 0 && suggestions[active]
+                ? `masthead-search-option-${active}`
+                : undefined
+            }
             placeholder="מה בא לך למצוא היום?"
             className="min-w-0 flex-1 bg-transparent px-4 text-sm text-heading focus:outline-none focus:ring-2 focus:ring-inset focus:ring-black/40"
           />
@@ -188,6 +205,7 @@ export default function HeaderSearch() {
 
         {showQuick && (
           <div
+            id="masthead-search-quick"
             dir="rtl"
             className="absolute inset-x-0 top-full z-30 mt-1 overflow-hidden rounded-lg border border-black/10 bg-white p-3 text-start shadow-lg"
           >
@@ -229,23 +247,60 @@ export default function HeaderSearch() {
         )}
 
         {open && suggestions.length > 0 && (
+          /*
+            The popup `aria-controls` has always pointed at, finally saying what
+            it is. Without the role a combobox announces an expanded
+            something-or-other with no options in it.
+
+            THE FOUR SUPPRESSIONS BELOW ARE THE SAME DISAGREEMENT, NOT FOUR.
+            Biome's generic a11y rules read `<ul role="listbox">` and
+            `<li role="option">` as "you gave a static element an interactive
+            role, now make it focusable and give it key handlers". That is right
+            for a lone widget and wrong for a COMPOSITE one: in the ARIA
+            combobox pattern the input keeps focus and the options must NOT be
+            focusable, because the selection travels through
+            `aria-activedescendant` instead. Making them tabbable is the bug
+            this change removes, not a fix. The keyboard lives in `onKeyDown` on
+            the input, twenty lines up.
+          */
+          // biome-ignore lint/a11y/useFocusableInteractive: the combobox input holds focus; the listbox must not take it.
           <ul
             id="masthead-search-suggestions"
+            // biome-ignore lint/a11y/useSemanticElements: there is no native listbox that can hold a thumbnail, a name and a price.
+            // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: ul as listbox is the pattern's own markup.
+            role="listbox"
+            aria-label="הצעות חיפוש"
             dir="rtl"
             className="absolute inset-x-0 top-full z-30 mt-1 overflow-hidden rounded-lg border border-black/10 bg-white text-start shadow-lg"
           >
             {suggestions.map((s, i) => (
-              <li key={s.slug}>
-                <button
-                  type="button"
-                  // onMouseDown, not onClick: blur fires first on click and would
-                  // close the list before the handler ever runs.
-                  onMouseDown={() => go(s.slug)}
-                  className={`flex w-full items-center gap-3 px-3 py-2 text-start text-sm text-heading transition-colors ${
-                    i === active ? 'bg-brand-accent' : 'hover:bg-brand-accent'
-                  }`}
-                >
-                  {/*
+              /*
+                THE OPTION IS THE `li` AND IT IS NO LONGER A BUTTON, WHICH FIXES
+                A SECOND BUG. Options in this pattern are not tabbable: the
+                input keeps focus and drives them. The buttons that used to be
+                here were, and Tab into one blurred the input -- which schedules
+                `setOpen(false)` 120ms later, so tabbing into the list closed
+                the list out from under the focused control. An `option` also
+                may not contain interactive descendants, so the two problems had
+                one shape.
+              */
+              // biome-ignore lint/a11y/useFocusableInteractive: an option under aria-activedescendant is deliberately not focusable.
+              // biome-ignore lint/a11y/useKeyWithMouseEvents: the input owns the keyboard; see onKeyDown.
+              <li
+                key={s.slug}
+                id={`masthead-search-option-${i}`}
+                // biome-ignore lint/a11y/useSemanticElements: see the note on the listbox above.
+                // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: li as option is the pattern's own markup.
+                role="option"
+                aria-selected={i === active}
+                // onMouseDown, not onClick: blur fires first on click and would
+                // close the list before the handler ever runs.
+                onMouseDown={() => go(s.slug)}
+                className={`flex w-full cursor-pointer items-center gap-3 px-3 py-2 text-start text-sm text-heading transition-colors ${
+                  i === active ? 'bg-brand-accent' : 'hover:bg-brand-accent'
+                }`}
+              >
+                {/*
                     A plain <img>, not next/image: the URL comes from the search
                     index and can point at any host the catalogue has ever used,
                     while next/image only serves hosts listed in
@@ -254,29 +309,25 @@ export default function HeaderSearch() {
                     `alt=""` because the product name is right next to it, and
                     reading it twice is noise to a screen reader.
                   */}
-                  {s.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={s.image}
-                      alt=""
-                      width={40}
-                      height={40}
-                      loading="lazy"
-                      className="h-10 w-10 shrink-0 rounded object-cover"
-                    />
-                  ) : (
-                    <span
-                      className="h-10 w-10 shrink-0 rounded bg-brand-accent"
-                      aria-hidden="true"
-                    />
-                  )}
-                  <span className="min-w-0 flex-1 truncate">{s.name_he}</span>
-                  {s.price != null && (
-                    <span className="shrink-0 text-xs font-semibold text-price">
-                      {shekels(s.price)}
-                    </span>
-                  )}
-                </button>
+                {s.image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={s.image}
+                    alt=""
+                    width={40}
+                    height={40}
+                    loading="lazy"
+                    className="h-10 w-10 shrink-0 rounded object-cover"
+                  />
+                ) : (
+                  <span className="h-10 w-10 shrink-0 rounded bg-brand-accent" aria-hidden="true" />
+                )}
+                <span className="min-w-0 flex-1 truncate">{s.name_he}</span>
+                {s.price != null && (
+                  <span className="shrink-0 text-xs font-semibold text-price">
+                    {shekelsFromIls(s.price)}
+                  </span>
+                )}
               </li>
             ))}
           </ul>

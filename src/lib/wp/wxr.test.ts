@@ -240,4 +240,76 @@ describe('recycledSlugs', () => {
     ])
     expect(flagged).toHaveLength(1)
   })
+
+  /**
+   * Both of these are real rows from the 2026-07-29 export, and both were
+   * reported as recycled posts needing a 301 decision when they are nothing of
+   * the kind. They are the whole reason the comparison normalises.
+   */
+  describe('does not invent a 301 decision that is not there', () => {
+    it('matches a Latin slug against a title that capitalises the same words', () => {
+      const flagged = recycledSlugs([
+        {
+          postId: '4',
+          slug: 'samsung-galaxy-s22-128gb-samsung-galaxy-s22-128gb-5g',
+          title: 'סמסונג גלקסי Samsung Galaxy S22 128GB- 5G',
+          status: 'publish',
+          link: '',
+          categorySlugs: [],
+          attachmentIds: [],
+        },
+      ])
+      expect(flagged).toHaveLength(0)
+    })
+
+    it('matches a title word that carries trailing punctuation', () => {
+      const flagged = recycledSlugs([
+        {
+          postId: '5',
+          // The slug IS the title's first word. Only the full stop differed.
+          slug: '%d7%a7%d7%95%d7%a1%d7%9e%d7%98%d7%99%d7%a7%d7%90%d7%99%d7%aa',
+          title: 'קוסמטיקאית.   אזל המלאי',
+          status: 'publish',
+          link: '',
+          categorySlugs: [],
+          attachmentIds: [],
+        },
+      ])
+      expect(flagged).toHaveLength(0)
+    })
+
+    it('still flags a genuinely recycled post after normalising', () => {
+      // Normalising must not turn the check off: this one shares no word with
+      // its title in any casing.
+      const flagged = recycledSlugs([
+        {
+          postId: '6',
+          slug: 'barbecue-2',
+          title: 'ארוחה בשרית',
+          status: 'publish',
+          link: '',
+          categorySlugs: [],
+          attachmentIds: [],
+        },
+      ])
+      expect(flagged.map((p) => p.postId)).toEqual(['6'])
+    })
+
+    it('does not let punctuation-only tokens use up one of the four slots', () => {
+      // '-' and '|' strip to nothing. If they survived the filter they would
+      // push 'breakfast', the word that actually matches, past the slice.
+      const flagged = recycledSlugs([
+        {
+          postId: '7',
+          slug: 'breakfast-for-two',
+          title: '--- ||| ... breakfast',
+          status: 'publish',
+          link: '',
+          categorySlugs: [],
+          attachmentIds: [],
+        },
+      ])
+      expect(flagged).toHaveLength(0)
+    })
+  })
 })

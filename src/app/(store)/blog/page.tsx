@@ -70,7 +70,7 @@ export default function BlogIndexPage() {
       </header>
 
       {posts.length === 0 ? (
-        <p className="text-base text-heading/70">עוד לא פורסמו פוסטים.</p>
+        <p className="text-base text-heading/75">עוד לא פורסמו פוסטים.</p>
       ) : (
         <ul className="divide-y divide-heading/10 border-y border-heading/10">
           {posts.map((post) => (

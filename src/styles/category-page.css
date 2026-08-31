@@ -21,6 +21,10 @@
      change the number in tokens.ts, never in a rule. */
   --cat-container: 1170px;
   --cat-card-col: 234px;
+  /* One row of the product grid, measured on the built page: the card is
+     234px wide, the grid is 1170px, so a row is five cards and 371px tall.
+     Used to reserve the search results area, see .category-page__main--search. */
+  --cat-card-row: 371px;
   --cat-thumb-max: 186.03px;
   --cat-body-line: 23.996px;
   --cat-title-size: 25.004px;
@@ -128,6 +132,17 @@
   color: var(--cat-ink);
 }
 
+/* The box the count will land in, held open while it streams.
+   Same idea as `--pending` on the title and as the control bar's empty shell:
+   `<Suspense fallback={null}>` around the count inserts a line into the header
+   when it resolves and pushes the whole page down. Measured on
+   /search?q=barbecue: two shifts, both attributed to `footer.w-full`, CLS
+   0.401. `--cat-body-line` is the same line-height the real paragraph uses, so
+   the box is exactly the right size and nothing moves. */
+.category-page__count--pending {
+  min-height: var(--cat-body-line);
+}
+
 .category-page__count--bottom {
   padding-block: 16px 8px;
 }
@@ -208,6 +223,85 @@
 
 .category-page__main {
   min-width: 0;
+}
+
+/* THE SEARCH RESULTS AREA NEVER SHRINKS, AND THAT IS THE PAGE'S CLS.
+ *
+ * `.category-page__body` is `display: block`, so the filter sidebar and the
+ * footer sit BELOW the grid. When the streamed grid resolves shorter than the
+ * placeholder, both are dragged upward INTO the viewport, and a shift of
+ * something that becomes visible is exactly what CLS counts.
+ *
+ * Measured with raw `layout-shift` entries against the built page, two runs per
+ * query. Reserving two rows and holding them costs whitespace on a search that
+ * returns nothing, and buys every number below:
+ *
+ *   query      results   before   after
+ *   barbecue         0    0.164   0.001 - 0.004
+ *   צימר             2    0.045   0.001
+ *   קופון           15    0.001   0.001
+ *   מוצר            16    0.001   0.001
+ *
+ * Two rows and not one: at one row the sidebar lands at roughly 900px, the
+ * viewport's own edge, and a grid that then grows past it pushed the sidebar
+ * across that edge for 0.083 to 0.127. Two rows put it at ~1270 where growth is
+ * free. Three rows would work too and reserve 371px more emptiness for nothing.
+ * Scoped to search because /category and /products fill their grids. */
+.category-page__main--search {
+  min-height: calc(var(--cat-card-row) * 2);
+}
+
+/* THE SEARCH HEADING WRAPS ON A PHONE, AND ITS PLACEHOLDER DID NOT.
+ *
+ * Every other page's H1 is a category name. This one is the query:
+ * `תוצאות חיפוש עבור "barbecue"`. Measured on a Pixel 5 against this build, the
+ * placeholder reserved one line and the real heading painted two, and the count
+ * did the same:
+ *
+ *              placeholder   resolved
+ *   title        40px          80px
+ *   count        24px          48px
+ *   desktop      40 / 24       40 / 24   (no wrap at 1440)
+ *
+ * The 64px the header gained pushed the search box, the grid, the sidebar and
+ * the footer down together: CLS 0.2824 on the phone against 0.0008 on the
+ * desktop, from the same build. Fixing the grid alone left this untouched,
+ * which is how it was found. With both fixes the phone reads 0.0394 for the
+ * zero-result query and 0.0000 for the other two.
+ *
+ * Two lines are RESERVED rather than reserved-while-pending, so the box is the
+ * same height in both states and a one-line query cannot shrink it back. The
+ * cost is 64px of header on a phone; the alternative is a placeholder that has
+ * to predict how long a query the visitor typed. A three-line query still
+ * shifts, by one line. Scoped to search: the other two pages' headings do not
+ * wrap, and reserving there would be whitespace bought for nothing. */
+@media (max-width: 575px) {
+  .category-page__header--search .category-page__title {
+    min-height: calc(var(--cat-title-line) * 2);
+  }
+
+  .category-page__header--search .category-page__count {
+    min-height: calc(var(--cat-body-line) * 2);
+  }
+}
+
+/* THE PLACEHOLDER IS TWO ROWS AT EVERY WIDTH, AND CLIPPING IS WHY.
+ *
+ * `CategoryGridSkeleton` is given a card COUNT, and how many rows that count
+ * occupies depends on how many 234px columns fit. Ten cards is two rows at
+ * 1440px and FIVE rows on a phone, where the card is 50% of the row. So the
+ * search page reserved two rows, the phone painted five, and a query returning
+ * nothing collapsed 1853px to an empty-state line: CLS 0.2824 on a Pixel 5
+ * against 0.0008 on the desktop, from one build and one fix.
+ *
+ * Clipping the placeholder to the height the page reserves makes the two agree
+ * without a breakpoint ladder that would have to track the column count. The
+ * cards past the second row are still sent, which costs nothing and keeps the
+ * markup identical for every viewport. Scoped to the loading state: the real
+ * grid must never be clipped. */
+.category-products[aria-busy="true"] {
+  max-height: calc(var(--cat-card-row) * 2);
+  overflow: hidden;
 }
 
 /* Product grid - measured: display flex, wrap, no gap, 234px fixed cards */
@@ -404,6 +498,33 @@
 .category-card__atc:hover {
   background: var(--cat-brand-hover);
   border-color: var(--cat-brand-hover);
+}
+
+/* THE CARD FOOTER CANNOT HOLD ONE ROW ON THE NARROWEST PHONE, MEASURED.
+ *
+ * Below 576px the column is half the row, so at a 320px viewport the card is
+ * 145px wide. The footer is a `space-between` flex row holding the price and
+ * the 37px add-to-cart circle, and the price on a discounted card carries both
+ * numbers: "₪6499₪5499" measures 104px. 104 + 37 is 141 against a 97px content
+ * box, so the circle was pushed out to x -5 and the document came out 325px
+ * wide against a 320px viewport. A horizontal scrollbar on the whole page, on
+ * the narrowest phone still sold, because of one card.
+ *
+ * The row wraps, and the fixed 36px height goes with it, because a wrapped row
+ * inside a fixed height would clip instead of overflow.
+ *
+ * A narrower gutter was tried first and REJECTED on measurement. Dropping the
+ * card's 24px sides to 15px, the value `.category-page__inner` already uses at
+ * this width, does silence the document-width gate. It does not fix the card:
+ * 104 + 37 is still 141 against a 115px content box, so the circle still paints
+ * outside its own card and over the neighbour, where nothing measures it. The
+ * gate would have gone green over a defect it cannot see. */
+@media (max-width: 575px) {
+  .category-card__footer {
+    flex-wrap: wrap;
+    height: auto;
+    row-gap: 4px;
+  }
 }
 
 /* Filter sidebar: one card column wide, on inline-end (left) */

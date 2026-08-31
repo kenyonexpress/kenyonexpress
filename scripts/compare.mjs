@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process'
-import { copyFileSync, existsSync } from 'node:fs'
+import { copyFileSync, existsSync, rmSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { resolve } from 'node:path'
 import { chromium } from '@playwright/test'
@@ -326,6 +326,154 @@ const shoot = async (url, out) => {
       return /(סל|עגל)[^.]{0,20}ריק|אין מוצרים בסל|cart is currently empty/i.test(text)
     })
   }
+  // Same rule as the cart guard above, for the page where it bites hardest.
+  //
+  // MEASURED, 2026-08-19: `--page=category` scored 17.26% against
+  // /product-category/hot-deals/ and the number was not a design measurement at
+  // all. Live holds TWO products in that category and says so
+  // ("מציגים את כל 2 התוצאות"); our seed holds THIRTEEN and paginates
+  // ("מציג 1-12 מתוך 13 תוצאות"). One row of cards was being scored against
+  // three rows of cards, so most of the mismatch was the grid existing where
+  // live has footer, and none of it was a token anybody could move.
+  //
+  // The counts are read off the two shapes the sides actually use: WooCommerce
+  // renders `li.product`, ours renders `article`. Neither side has both, so the
+  // union counts each card exactly once.
+  //
+  // A COUNT IS NOT A CATALOGUE. Equal counts pass this guard while the two
+  // grids hold entirely different merchandise, and that is not hypothetical:
+  // on 2026-08-19 `--page=products` stopped refusing (both sides counted the
+  // same) and scored 31.92%, and the band crop at y900-1100 showed live's
+  // restaurant dishes against our bags, phones and wine. So the titles come
+  // back too, and the guard below reads them.
+  // THE PRODUCT PAGE, AND THE PHOTO THAT IS LOADED, LAID OUT AND INVISIBLE.
+  //
+  // MEASURED 2026-08-19. `--page=product` scored 16.17% and the top bands read
+  // 24% to 52%. That region is the gallery, and on LIVE it is white: the
+  // element carries an INLINE `opacity: 0`, no stylesheet rule anywhere on the
+  // page sets it back, and `jQuery.fn.wc_product_gallery` is undefined -- the
+  // theme swapped WooCommerce's gallery script for its own carousel, so the
+  // line that would restore the opacity is not loaded. `refs/ke_live_product.html`,
+  // an older capture, still carries `.woocommerce-product-gallery{opacity:1
+  // !important}` twice. The live page today does not.
+  //
+  // It is not headless and it is not lazy loading: the image is `complete`
+  // with `naturalWidth` 600, its box is 470x478 at x835 y250, and the opacity
+  // stays 0 at 900px and 2600px of viewport height, at 0s, 3s and 5s, after
+  // `load`, `resize`, `scroll`, jQuery `ready` and a real scroll. It is live's
+  // own regression, and the only way for our page to match it is to stop
+  // showing the product.
+  //
+  // Forcing `opacity: 1` on live and rerunning: 16.17% -> 12.56%, and 9.06% at
+  // the 22px offset. So a QUARTER of what this page was charged is one blank
+  // rectangle on the reference. That is the same defect as the grid guards
+  // above -- a content difference wearing a fidelity number -- so it refuses
+  // the same way instead of printing a number nobody can act on.
+  if (page === 'product') {
+    heroImages[external ? 'live' : 'mine'] = await p.evaluate(() => {
+      // Painted, not merely present. A box is what a pixel diff can see, so
+      // the check is the effective opacity down the whole ancestor chain
+      // rather than the element's own: live's image is fully opaque inside a
+      // container that is not.
+      const painted = (el) => {
+        for (let n = el; n && n !== document.documentElement; n = n.parentElement) {
+          const cs = getComputedStyle(n)
+          if (cs.display === 'none' || cs.visibility === 'hidden') return false
+          if (Number(cs.opacity) < 0.01) return false
+        }
+        return true
+      }
+      return [...document.querySelectorAll('img')].filter((img) => {
+        const r = img.getBoundingClientRect()
+        // The main product shot on both sides is ~470 square near the top. The
+        // floor is well under that and the ceiling on y keeps related-product
+        // thumbnails and the footer out of the answer.
+        if (r.width < 250 || r.height < 250) return false
+        if (r.top + window.scrollY > 1000) return false
+        return painted(img)
+      }).length
+    })
+  }
+  // EVERY IMAGE BELOW THE FOLD MUST BE ASKED FOR BEFORE THE PAGE IS SHOT.
+  //
+  // `fullPage: true` captures past the viewport without ever scrolling, so
+  // nothing below the fold is intersected and nothing lazy is fetched. Both
+  // sides lazy-load: live is WooCommerce with `loading="lazy"` on the catalogue,
+  // ours is next/image, which does the same. The capture therefore contains
+  // whichever images happened to be in flight when the timer expired, and that
+  // set is different on every run.
+  //
+  // Measured on 2026-08-19, same build, same URLs, no scroll pass:
+  // --page=category returned 17.26% and 18.51% on two consecutive runs, and the
+  // band crop showed live's product grid as blank boxes where ours had photos.
+  // The 8.45% recorded for the same page earlier the same morning was produced
+  // the same way. A gate cannot swing nine points on which images loaded.
+  //
+  // Scroll the whole page in viewport steps, wait for the images to actually
+  // finish, then return to the top. Placed before the hero freeze on purpose:
+  // scrolling advances live's slider, so the freeze has to be the last thing
+  // that happens before the shutter.
+  await p
+    .evaluate(async () => {
+      const step = window.innerHeight
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      for (let y = 0; y < document.body.scrollHeight; y += step) {
+        window.scrollTo(0, y)
+        await sleep(120)
+      }
+      window.scrollTo(0, document.body.scrollHeight)
+      await sleep(300)
+      // decode() rather than the `complete` flag: a lazy image that has just
+      // been asked for reports complete=false, and one that failed reports
+      // complete=true with zero natural width. Both are settled states and
+      // neither is worth waiting on, so failures resolve rather than reject.
+      const settle = () =>
+        Promise.all(
+          [...document.images].map((img) =>
+            img.decode ? img.decode().catch(() => {}) : Promise.resolve(),
+          ),
+        )
+      await settle()
+      // A LAZY IMAGE THAT NEVER ARRIVED IS A PAGE THAT NEVER FINISHED.
+      //
+      // MEASURED, 2026-08-19. Three `--page=home` runs, one build, one live URL:
+      //
+      //   live 5492px -> 9.83%   live 5492px -> 9.83%   live 3730px -> 34.54%
+      //
+      // The 34.54% is not a regression and not noise in the diff. It is the
+      // live homepage shot while 1762px of it was missing, because a lazy
+      // `<img>` that has not loaded has no intrinsic height and collapses the
+      // block it sits in. Our footer was then scored against live's mid-page.
+      // `--page=category` threw the same 3730px capture the same morning and
+      // printed 25.58% for it.
+      //
+      // Neither guard already here could catch it. The structural guard
+      // compares the two SIDES to each other and 3730/5679 is 0.66, inside its
+      // 0.62-1.6 band. The scroll pass above fixes WHICH images are asked for
+      // and says nothing about whether the answers came back.
+      //
+      // So the scroll is repeated while any image is still incomplete, and the
+      // count that remains is handed to the caller, which refuses to score a
+      // live capture that still has holes in it.
+      const stillLoading = () => [...document.images].filter((img) => !img.complete).length
+      for (let attempt = 0; attempt < 4 && stillLoading() > 0; attempt++) {
+        for (let y = 0; y < document.body.scrollHeight; y += step) {
+          window.scrollTo(0, y)
+          await sleep(120)
+        }
+        await sleep(500)
+        await settle()
+      }
+      window.__comparePendingImages = stillLoading()
+      window.scrollTo(0, 0)
+      await sleep(400)
+    })
+    .catch(() => {})
+
+  pendingImages[external ? 'live' : 'mine'] = await p
+    .evaluate(() => window.__comparePendingImages ?? 0)
+    .catch(() => 0)
+
   // Stop the hero before shooting.
   //
   // OUR slider no longer autoplays unless the visitor has pressed something
@@ -360,12 +508,68 @@ const shoot = async (url, out) => {
   // 700ms opacity transition on our slider, plus room for live's.
   await p.waitForTimeout(1200)
 
+  // COUNTED AT THE SHUTTER, NOT BEFORE IT. This block used to run right after
+  // load, several waits earlier than the screenshot. Our related-products row
+  // streams in, so on `--page=product` it counted ZERO cards while the picture
+  // taken moments later holds four - a guard reading a different page from the
+  // one it is guarding. Measured 2026-08-20: 0 cards at the old point, 4 in the
+  // shot. Counting here reads exactly what the diff will score.
+  if (COUNTED_GRIDS.has(page)) {
+    const grid = await p.evaluate(() => {
+      // Three shapes, because the two sides do not agree and neither do we
+      // with ourselves: WooCommerce renders `li.product`, our grids render
+      // `article.p_con`, and the product page's related row renders plain
+      // divs from its own card. Measured 2026-08-20: without the third
+      // selector this counted ZERO related cards on a page whose screenshot
+      // holds four, so the guard passed a catalogue difference through as a
+      // fidelity number. No side has more than one of the three shapes, so
+      // the union still counts each card exactly once.
+      const cards = [...document.querySelectorAll('li.product, article, .pdp-related__grid > *')]
+      const titles = cards
+        .map((c) =>
+          (c.querySelector('h2, h3, .woocommerce-loop-product__title')?.textContent ?? '')
+            .trim()
+            .replace(/\s+/g, ' ')
+            .toLowerCase(),
+        )
+        .filter(Boolean)
+      return { count: cards.length, titles }
+    })
+    gridCounts[external ? 'live' : 'mine'] = grid.count
+    gridTitles[external ? 'live' : 'mine'] = grid.titles
+  }
+
   await p.screenshot({ path: out, fullPage: true })
   await p.close()
   console.log(`${out} written (${url})`)
 }
 
 const cartEmptiness = { live: null, mine: null }
+const gridCounts = { live: null, mine: null }
+const gridTitles = { live: [], mine: [] }
+const heroImages = { live: null, mine: null }
+// THE SEARCH PAGE BELONGS HERE TOO, AND LEAVING IT OUT COST A DAY OF NUMBERS.
+//
+// The rule below was written for /category and /shop. `--page=search` scores
+// the same shape - a grid of product cards over two catalogues that do not hold
+// the same products - and it was reporting the difference as a fidelity score.
+// Measured on 2026-08-19, one build, one server, no code change between runs:
+// 15.10, 15.09, 9.84, 15.08, 10.30, 15.33. Bimodal, not drift, which is what a
+// content difference looks like when the two sides settle differently.
+//
+// The counts for `צימר`: live 4 cards and "showing all 4 results", ours 2 cards
+// and "found 2 products". Same query, same day, different catalogue.
+// `product` is in this set for its RELATED-PRODUCTS row, and it was the last
+// page whose catalogue difference was still being reported as a design number.
+// Measured 2026-08-20 on a freshly built server: `--page=product` scored
+// 14.18% against a gate CLAUDE.md sets at 11%, and cropping the two worst
+// bands showed why - live renders ONE related card (a barbershop coupon, in a
+// single narrow column with the rest of the row blank) against our FOUR, none
+// of which is the same product. The rest of the page matches closely enough
+// that the same crop at y520-770 shows the gallery, the quantity box, both
+// buttons and the tag line in the same places, offset by about 58px.
+const COUNTED_GRIDS = new Set(['category', 'products', 'search', 'product'])
+const pendingImages = { live: 0, mine: 0 }
 
 if (page === 'checkout' || (page === 'cart' && !CART_EMPTY_ONLY)) {
   // Local first. Seeding live first left the next navigation in this context
@@ -375,8 +579,29 @@ if (page === 'checkout' || (page === 'cart' && !CART_EMPTY_ONLY)) {
   await seedCart('live')
 }
 
-await shoot(liveUrl, 'refs/live.png')
-await shoot(mineUrl, 'refs/mine.png')
+// TWO AGENTS RUNNING THIS SCRIPT IN ONE WORKING DIRECTORY OVERWRITE EACH
+// OTHER'S EVIDENCE.
+//
+// `refs/live.png` and `refs/mine.png` are fixed names, and there is a window of
+// tens of seconds between writing them and diff-bands reading them. A second
+// run landing inside that window replaces one of the two files, and the diff is
+// then computed across two different pages. It does not error: it prints a
+// percentage that looks like every other percentage.
+//
+// CAUGHT IN THE ACT, 2026-08-19: a `--page=cart` run reported 24.51% with
+// `live: 1440x5492`, which is the height of the live HOMEPAGE and not of any
+// cart. `refs/live-home.png` carries an mtime of 11:17:53, between that run's
+// two shots, and no `--page=home` was started from this session. Three of the
+// morning's outliers - cart 24.51%, search 24.5%, and the checkout run that
+// first raised the structural warning - are all the same substitution.
+//
+// The shots are per-process from here, so a concurrent run cannot reach them.
+// The stable names are still written afterwards, because every other tool and
+// every note in STATE.md refers to them.
+const runShot = (side) => `refs/.run-${process.pid}-${side}.png`
+
+await shoot(liveUrl, runShot('live'))
+await shoot(mineUrl, runShot('mine'))
 
 // Two carts in different states are not a comparison. This is the same rule as
 // the not-found and the checkout-redirect guards: refuse rather than print a
@@ -394,8 +619,111 @@ if (page === 'cart' && cartEmptiness.live !== cartEmptiness.mine) {
 if (page === 'cart' && cartEmptiness.mine) {
   console.log('cart: measuring the EMPTY state on both sides.')
 }
-copyFileSync('refs/live.png', `refs/live-${page}.png`)
-copyFileSync('refs/mine.png', `refs/mine-${page}.png`)
+
+// A grid of 13 scored against a grid of 2 produces a percentage, and the
+// percentage is about the catalogue rather than the design. Refuse it, the same
+// way the cart refuses two different cart states, and name both counts so the
+// reader can see which side to change. COMPARE_ALLOW_GRID_MISMATCH=1 measures
+// it anyway, for the run that only wants the header and footer bands.
+// The live side is the one that arrives over the internet, so it is the one
+// that shows up half-loaded. Ours is a `next start` on loopback and has never
+// been seen with a hole in it, but both are named because a hole on our side
+// would be the same lie in the other direction.
+if (
+  (pendingImages.live > 0 || pendingImages.mine > 0) &&
+  process.env.COMPARE_ALLOW_PENDING_IMAGES !== '1'
+) {
+  console.error(
+    `REFUSING to measure: ${pendingImages.live} image(s) on live and ${pendingImages.mine} on the local page had still not loaded when the shutter fired.`,
+  )
+  console.error(
+    'The unloaded blocks collapse and the page is short, which scores as a design difference. Re-run; set COMPARE_ALLOW_PENDING_IMAGES=1 to score it anyway.',
+  )
+  process.exit(3)
+}
+
+if (
+  COUNTED_GRIDS.has(page) &&
+  gridCounts.live !== gridCounts.mine &&
+  process.env.COMPARE_ALLOW_GRID_MISMATCH !== '1'
+) {
+  console.error(
+    `REFUSING to measure: live shows ${gridCounts.live} product cards and the local page shows ${gridCounts.mine}.`,
+  )
+  console.error(
+    'Seed the two catalogues to the same count, pin a category that already matches, or run with COMPARE_ALLOW_GRID_MISMATCH=1 to score the mismatch deliberately.',
+  )
+  process.exit(3)
+}
+
+// SAME COUNT, DIFFERENT PRODUCTS, AND THE COUNT CANNOT SEE IT.
+//
+// MEASURED 2026-08-19 on `--page=products`: both grids held exactly 24 cards,
+// so the count guard above passed and the run scored 31.92% as though that were
+// a fidelity number. The titles say otherwise. Both sides sort alphabetically,
+// 14 of the 24 products exist on both, and the local catalogue carries 10 that
+// live does not while missing 9 that it has -- so from the fourth card on,
+// every slot holds a different product, and only 7 of 24 slots agree.
+//
+// The test is POSITIONAL and not set overlap, because position is what pixels
+// are: a product that exists on both sides but sits two rows lower contributes
+// exactly as much mismatch as one that does not exist at all. Set overlap was
+// 58% on the run that produced 31.92%, which would have passed a threshold on
+// overlap and taught the next reader that the shop page has a design problem.
+if (
+  COUNTED_GRIDS.has(page) &&
+  gridTitles.live.length > 0 &&
+  gridTitles.mine.length > 0 &&
+  process.env.COMPARE_ALLOW_GRID_MISMATCH !== '1'
+) {
+  const slots = Math.min(gridTitles.live.length, gridTitles.mine.length)
+  let aligned = 0
+  for (let i = 0; i < slots; i++) if (gridTitles.live[i] === gridTitles.mine[i]) aligned++
+  const share = aligned / slots
+  if (share < 0.8) {
+    const inBoth = new Set(gridTitles.live)
+    const shared = gridTitles.mine.filter((t) => inBoth.has(t)).length
+    console.error(
+      `REFUSING to measure: the two grids hold ${gridCounts.live} cards each, but only ${aligned} of ${slots} slots hold the same product (${Math.round(share * 100)}%). ${shared} of the products exist on both sides, in different places.`,
+    )
+    console.error(
+      'A percentage between two catalogues in different order is a content difference wearing a fidelity number. Seed the local catalogue from live, or run with COMPARE_ALLOW_GRID_MISMATCH=1 to score it deliberately.',
+    )
+    process.exit(3)
+  }
+}
+
+// ONE SIDE SHOWS THE PRODUCT, THE OTHER SHOWS WHITE.
+//
+// The reasoning and the measurements are with the probe in `shoot()`. In short:
+// live's gallery carries an inline `opacity: 0` that nothing on the page clears
+// any more, so a 470x478 rectangle of the reference is blank where our page has
+// the product photo, and it was worth 3.61 points of the 16.17% this page
+// scored. Matching that reference means removing the photo.
+//
+// The flag is the same one, because it is the same kind of refusal: a content
+// difference, not a design one.
+if (
+  page === 'product' &&
+  heroImages.live !== null &&
+  heroImages.mine !== null &&
+  (heroImages.live === 0) !== (heroImages.mine === 0) &&
+  process.env.COMPARE_ALLOW_GRID_MISMATCH !== '1'
+) {
+  const blank = heroImages.live === 0 ? 'live' : 'the local page'
+  const shown = heroImages.live === 0 ? 'the local page' : 'live'
+  console.error(
+    `REFUSING to measure: ${shown} paints a main product image and ${blank} paints none (live ${heroImages.live}, mine ${heroImages.mine}).`,
+  )
+  console.error(
+    `Live's gallery holds a loaded, laid-out image under an inline opacity: 0 that no rule on the page clears. Fix it there, or run with COMPARE_ALLOW_GRID_MISMATCH=1 to score a product page against a blank one deliberately.`,
+  )
+  process.exit(3)
+}
+for (const side of ['live', 'mine']) {
+  copyFileSync(runShot(side), `refs/${side}-${page}.png`)
+  copyFileSync(runShot(side), `refs/${side}.png`)
+}
 
 await b.close()
 
@@ -404,9 +732,21 @@ await new Promise((resolvePromise, reject) => {
   const child = spawn(process.execPath, [resolve('scripts/diff-bands.mjs')], {
     stdio: 'inherit',
     cwd: process.cwd(),
-    env: { ...process.env, COMPARE_PAGE: page },
+    env: {
+      ...process.env,
+      COMPARE_PAGE: page,
+      // Read the per-process shots, not the shared names. Without this the
+      // isolation above buys nothing: the diff would still be taken across
+      // whatever refs/live.png happens to hold by the time the child starts.
+      COMPARE_LIVE_PNG: runShot('live'),
+      COMPARE_MINE_PNG: runShot('mine'),
+    },
   })
   child.on('exit', (code) =>
     code === 0 ? resolvePromise() : reject(new Error(`diff-bands exited ${code}`)),
   )
 })
+
+// The stable copies above are the ones anybody looks at; these two only existed
+// to keep a concurrent run out of this one's diff.
+for (const side of ['live', 'mine']) rmSync(runShot(side), { force: true })

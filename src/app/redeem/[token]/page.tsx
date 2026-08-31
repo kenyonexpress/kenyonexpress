@@ -1,3 +1,5 @@
+import { agorot } from '@/lib/money'
+import { shekels } from '@/lib/money-format'
 import { getSupplierMemberships, getSupplierSession } from '@/lib/supplier/rbac'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
@@ -39,13 +41,6 @@ export const metadata: Metadata = {
 }
 
 type Props = { params: Promise<{ token: string }> }
-
-function shekels(agorot: number): string {
-  return `₪${(agorot / 100).toLocaleString('he-IL', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`
-}
 
 function formatCode(code: string): string {
   return code.length > 5 ? `${code.slice(0, 5)}-${code.slice(5, 10)}` : code
@@ -146,13 +141,41 @@ async function RedeemTokenBody({ params }: Props) {
   // 2. Only now is a session required. The order matters: asking to sign in
   //    first would send a forged token through a login round trip and lose the
   //    record of it.
-  const session = await getSupplierSession()
+  // A READ THAT FAILED IS NOT A VOUCHER THAT DOES NOT EXIST, and it is not a
+  // session that does not exist either. All three reads throw on failure rather
+  // than returning the null that means "not a member" or "not your code":
+  // without this the failure took one of the two branches below - a signed-in
+  // supplier bounced to a login form they have already satisfied, or a customer
+  // who has already paid told the code is not theirs, with a refusal row
+  // written saying so, into the log that exists so a disputed scan can be
+  // reconstructed. Each throw is already logged, once, at the read.
+  //
+  // The membership reads are inside the try because
+  // `getVoucherForRedemption` returns null for an empty membership set BEFORE
+  // its own guarded query runs, so an unreadable membership set that arrives
+  // here as `[]` steps straight over that guard.
+  let session: Awaited<ReturnType<typeof getSupplierSession>>
+  let voucher: Awaited<ReturnType<typeof getVoucherForRedemption>>
+  try {
+    session = await getSupplierSession()
+    // A real "you staff nobody" still bounces to login, as before.
+    if (session) {
+      voucher = await getVoucherForRedemption(code, await getSupplierMemberships())
+    } else {
+      voucher = null
+    }
+  } catch {
+    return (
+      <Refusal
+        title="לא ניתן לבדוק את השובר כרגע"
+        detail="התרחשה תקלה זמנית בקריאת השובר. נסו לסרוק שוב בעוד רגע; לא בוצע שום שינוי בשובר."
+      />
+    )
+  }
+
   if (!session) {
     redirect(`/login?next=${encodeURIComponent(`/redeem/${token}`)}`)
   }
-
-  const supplierIds = await getSupplierMemberships()
-  const voucher = await getVoucherForRedemption(code, supplierIds)
 
   if (!voucher) {
     await recordRefusedScan({
@@ -183,9 +206,9 @@ async function RedeemTokenBody({ params }: Props) {
         status={voucher.status}
         productName={voucher.productName}
         customerName={voucher.customerName}
-        faceValue={shekels(voucher.faceValueAgorot)}
-        paidOnline={shekels(voucher.couponPriceAgorot)}
-        toCollect={shekels(voucher.remainingAmountDueAgorot)}
+        faceValue={shekels(agorot(voucher.faceValueAgorot))}
+        paidOnline={shekels(agorot(voucher.couponPriceAgorot))}
+        toCollect={shekels(agorot(voucher.remainingAmountDueAgorot))}
         expiresAtLabel={formatDate(voucher.expiresAt)}
         redeemedAtLabel={voucher.redeemedAt ? formatDate(voucher.redeemedAt) : null}
         expired={new Date(voucher.expiresAt).getTime() <= Date.now()}

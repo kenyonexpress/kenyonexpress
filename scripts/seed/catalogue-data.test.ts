@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 // Plain .mjs on purpose: the seeding script runs under bare node with no build
 // step, so its data lives in a module TypeScript infers rather than checks.
 import { PRODUCTS, SUPPLIERS, seedId, seededIds } from './catalogue-data.mjs'
+import { CANONICAL_CATEGORIES, OPEN_TAXONOMIES } from './launch-bar.mjs'
 
 /**
  * Every assertion here is a rule the catalogue enforces somewhere else and that
@@ -71,8 +72,14 @@ describe('the ids', () => {
 })
 
 describe('the suppliers, which exist to be complete', () => {
-  it('are ten', () => {
-    expect(suppliers).toHaveLength(10)
+  it('are fourteen', () => {
+    // Ten, plus the four the pets / baby-kids / professionals / phone-repair
+    // deals needed.
+    expect(suppliers).toHaveLength(14)
+  })
+
+  it('gives every supplier its own city, so the geo filter has something to do', () => {
+    expect(new Set(suppliers.map((s) => s.city)).size).toBe(suppliers.length)
   })
 
   it('every one has an address, a city, a phone and a logo', () => {
@@ -96,9 +103,9 @@ describe('the suppliers, which exist to be complete', () => {
 })
 
 describe('the products', () => {
-  it('are thirty, with unique slugs', () => {
-    expect(products).toHaveLength(30)
-    expect(new Set(products.map((p) => p.slug)).size).toBe(30)
+  it('are forty, with unique slugs', () => {
+    expect(products).toHaveLength(40)
+    expect(new Set(products.map((p) => p.slug)).size).toBe(40)
   })
 
   it('gives every product a DIFFERENT platform percent than its neighbours', () => {
@@ -146,23 +153,35 @@ describe('the products', () => {
   })
 
   it('uses only categories that already exist in production', () => {
-    // Measured 2026-08-06: 12 active category slugs. Inventing one would put a
-    // demo entry in the site navigation.
-    const existing = new Set([
-      'hot-deals',
-      'under-99',
-      'new',
-      'restaurants-cafes',
-      'beauty-health',
-      'phones-computers',
-      'baby-kids',
-      'vacation',
-      'pets',
-      'electronics',
-      'professionals',
-      'courses',
-    ])
+    // Measured 2026-08-06 and again 2026-08-19: 12 category slugs. Inventing
+    // one would put a demo entry in the site navigation. The list is the one
+    // the auditor holds, so the two cannot disagree about what exists.
+    const existing = new Set((CANONICAL_CATEGORIES as { slug: string }[]).map((c) => c.slug))
+    expect(existing.size).toBe(12)
     for (const p of products) expect(existing.has(p.categorySlug), p.categorySlug).toBe(true)
+  })
+
+  it('covers every open taxonomy with at least one coupon deal', () => {
+    // The gap this closes: production covers 0 of the 7 with a real coupon,
+    // and until 19.08 the seed covered 4 of them. A staging reset that also
+    // left three empty could not show what the fixed catalogue looks like.
+    const covered = new Set(products.filter((p) => p.type === 'coupon').map((p) => p.categorySlug))
+    for (const slug of OPEN_TAXONOMIES as string[]) {
+      expect(covered.has(slug), slug).toBe(true)
+    }
+  })
+
+  it('puts nothing in the collections or in courses', () => {
+    // hot-deals / under-99 / new are rules about price and recency that
+    // `categories` has no column for, so a row placed in one by hand is a
+    // hand-placed row and not a working collection. courses stays closed until
+    // there is a subscription product.
+    for (const slug of ['hot-deals', 'under-99', 'new', 'courses']) {
+      expect(
+        products.some((p) => p.categorySlug === slug),
+        slug,
+      ).toBe(false)
+    }
   })
 
   it('names every product in Hebrew', () => {

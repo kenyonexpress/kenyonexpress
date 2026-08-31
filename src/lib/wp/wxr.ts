@@ -257,10 +257,28 @@ function countBy(values: readonly string[]): Map<string, number> {
 /**
  * Products whose slug has nothing to do with their title.
  *
- * 18 of 45 in the real export are recycled posts: a breakfast served at
+ * 18 of the 44 in the real export are recycled posts: a breakfast served at
  * `/product/שעון-אפל-חכם-apple-watch-series-7`, another at `/product/6253`.
  * WordPress served those URLs, so keeping them preserves continuity and
  * re-slugging needs a 301. Either way it is a decision, so it is surfaced.
+ *
+ * BOTH SIDES ARE NORMALISED, AND THE TWO PRODUCTS THAT PROVE WHY. This used to
+ * compare the decoded slug against raw title words, which is case sensitive and
+ * keeps punctuation, and it produced two false positives on the real export:
+ *
+ *   samsung-galaxy-s22-128gb-...   "סמסונג גלקסי Samsung Galaxy S22 128GB- 5G"
+ *   קוסמטיקאית                      "קוסמטיקאית.   אזל המלאי"
+ *
+ * The first shares four words with its title and was flagged only because the
+ * slug is lower case and the title is not. The second IS its title, minus a
+ * full stop. Neither is a recycled post, and both would have been handed to
+ * somebody as a 301 decision that does not exist. `xml-fxp-dryrun.mjs`, the
+ * independent reader kept as a cross-check, reported 18 against this function's
+ * 20; that disagreement is what surfaced it.
+ *
+ * Trimming happens BEFORE the length filter and the `slice`, so a word that is
+ * only long enough with its punctuation attached does not survive on that
+ * basis, and stripped-to-nothing tokens do not consume one of the four slots.
  */
 export function recycledSlugs(products: readonly WxrProduct[]): WxrProduct[] {
   return products.filter((product) => {
@@ -268,10 +286,11 @@ export function recycledSlugs(products: readonly WxrProduct[]): WxrProduct[] {
     if (/^\d+$/.test(product.slug)) return true
     const titleWords = product.title
       .split(/\s+/)
+      .map((word) => word.replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '').toLowerCase())
       .filter((word) => word.length > 2)
       .slice(0, 4)
     if (titleWords.length === 0) return false
-    const slug = decodeURIComponent(product.slug)
+    const slug = decodeURIComponent(product.slug).toLowerCase()
     return !titleWords.some((word) => slug.includes(word))
   })
 }

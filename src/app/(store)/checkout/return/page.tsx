@@ -5,6 +5,8 @@ import {
   readOrderMoney,
   resolveOrderGeneration,
 } from '@/lib/commerce/order-money-columns'
+import { agorot } from '@/lib/money'
+import { shekels } from '@/lib/money-format'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { WALLET_AMOUNT_CANDIDATES, readFirstAvailableColumn } from '@/lib/supabase/optional-columns'
 import { voucherQrDataUrl } from '@/lib/vouchers/qr-image'
@@ -26,10 +28,6 @@ import '@/styles/checkout-page.css'
 
 export const metadata: Metadata = {
   title: 'אישור הזמנה',
-}
-
-function shekels(value: number): string {
-  return `₪${value.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
 type Props = {
@@ -129,14 +127,17 @@ async function CheckoutReturnBody({ searchParams }: Props) {
   const couponsWithQr = await Promise.all(
     (vouchers ?? []).map(async (voucher) => ({
       ...voucher,
-      // Agorot are the stored unit (059). The share text and the labels below
-      // speak shekels, so the conversion happens once, here.
-      collect_amount_ils: voucher.remaining_amount_due_agorot / 100,
+      // Agorot all the way to the formatter now. This used to divide by 100
+      // here and hand shekel floats to a PRIVATE `shekels()` defined at the top
+      // of this file -- the same private-formatter-per-component pattern that
+      // `pricing.test.ts` exists to prevent, on the one page whose whole job is
+      // telling a customer what they were just charged.
+      collect_amount_agorot: agorot(voucher.remaining_amount_due_agorot),
       qrDataUrl: await voucherQrDataUrl(voucher.qr_payload, { width: 264 }),
     })),
   )
 
-  const cashback = (cashbackAgorot ?? 0) / 100
+  const cashbackAmount = agorot(cashbackAgorot ?? 0)
 
   return (
     <div className="checkout-page">
@@ -144,7 +145,7 @@ async function CheckoutReturnBody({ searchParams }: Props) {
         <h1 className="checkout-success__title">התשלום הצליח!</h1>
         <p className="checkout-success__sub">
           הזמנה {order.id.slice(0, 8).toUpperCase()} · שולם באתר{' '}
-          {shekels(orderMoney.totalAgorot / 100)}
+          {shekels(agorot(orderMoney.totalAgorot))}
         </p>
 
         {couponsWithQr.length > 0 && (
@@ -158,7 +159,7 @@ async function CheckoutReturnBody({ searchParams }: Props) {
                 buildCouponShareText({
                   productName: productName ?? null,
                   code: coupon.code,
-                  collectAmountIls: Number(coupon.collect_amount_ils),
+                  collectAmountAgorot: coupon.collect_amount_agorot,
                   expiresAt: coupon.expires_at,
                   siteUrl: process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il',
                 }),
@@ -170,9 +171,9 @@ async function CheckoutReturnBody({ searchParams }: Props) {
                     <div className="coupon-card__code" dir="ltr">
                       {formatVoucherCode(coupon.code)}
                     </div>
-                    {Number(coupon.collect_amount_ils) > 0 && (
+                    {coupon.collect_amount_agorot > 0 && (
                       <div className="coupon-card__collect">
-                        לתשלום בעסק במימוש: {shekels(Number(coupon.collect_amount_ils))}
+                        לתשלום בעסק במימוש: {shekels(coupon.collect_amount_agorot)}
                       </div>
                     )}
                     <div className="coupon-card__note">
@@ -219,8 +220,8 @@ async function CheckoutReturnBody({ searchParams }: Props) {
           </section>
         )}
 
-        {cashback > 0 && (
-          <p className="checkout-wallet-note">נוסף לארנק שלך: {shekels(cashback)} קאשבק</p>
+        {cashbackAmount > 0 && (
+          <p className="checkout-wallet-note">נוסף לארנק שלך: {shekels(cashbackAmount)} קאשבק</p>
         )}
 
         {(() => {

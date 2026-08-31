@@ -63,6 +63,7 @@ function AddressForm({
             name="phone"
             type="tel"
             inputMode="tel"
+            dir="ltr"
             defaultValue={address?.phone ?? ''}
             required
           />

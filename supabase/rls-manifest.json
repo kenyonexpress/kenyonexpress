@@ -1,0 +1,800 @@
+{
+  "$comment": [
+    "MEASURED against production (project ixvwfbuvfxxsjiywhbbb) on 2026-08-19, not derived",
+    "from supabase/migrations/. Those files describe a different lineage than the live",
+    "database (see docs/DB-HARDENING-AUDIT.md), so the catalog is the only honest source.",
+    "Re-measure with `node scripts/check-rls.mjs`, or with the SQL in docs/AUTH-MODEL.md.",
+    "src/lib/auth/rls-manifest.test.ts is the CI gate that reads this file."
+  ],
+  "measured_at": "2026-08-19",
+  "reverified_at": "2026-08-20",
+  "$reverified_comment": "Re-measured against the same production project on 2026-08-20 via a read-only pg_class/pg_policy query. 53 tables both sides, zero drift in rls_enabled or policy_count, and the eight zero-policy tables still match service_role_only exactly.",
+  "project_ref": "ixvwfbuvfxxsjiywhbbb",
+  "schema": "public",
+  "service_role_only": {
+    "$comment": [
+      "RLS on with zero policies is not a gap. Postgres denies every row to every",
+      "non-superuser role when a table has RLS and no policy matches, so these tables",
+      "are reachable only by the service key and by SECURITY DEFINER functions.",
+      "That is deny-by-default and it is the intent. Adding policies here to satisfy",
+      "the advisor's rls_enabled_no_policy INFO would LOOSEN them."
+    ],
+    "legacy_percent_archive_112": "frozen pre-112 commission snapshot; nobody reads it at runtime",
+    "payment_webhook_events": "Cardcom webhook journal; written by the webhook route on the service key",
+    "rate_limits": "counters, reached only through the SECURITY DEFINER check_rate_limit()",
+    "referral_signals": "raw attribution signals; aggregated into referrals before anyone sees them",
+    "search_index_dlq": "failed index jobs; drained by the cron route on CRON_SECRET",
+    "settlement_events": "money ledger; written by settlement code, never by a browser",
+    "stock_reservations": "held by the checkout server path and reaped by cron",
+    "user_rate_limits": "per-user counters for check_user_rate_limit(), which is not granted to authenticated"
+  },
+  "tables": [
+    {
+      "table_name": "abandoned_cart_nudges",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "affiliates",
+      "rls_enabled": true,
+      "policy_count": 4
+    },
+    {
+      "table_name": "audit_log",
+      "rls_enabled": true,
+      "policy_count": 4
+    },
+    {
+      "table_name": "carts",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "cashback_rules",
+      "rls_enabled": true,
+      "policy_count": 4
+    },
+    {
+      "table_name": "categories",
+      "rls_enabled": true,
+      "policy_count": 5
+    },
+    {
+      "table_name": "coupon_codes",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "coupon_deals",
+      "rls_enabled": true,
+      "policy_count": 4
+    },
+    {
+      "table_name": "coupons",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "discount_campaigns",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "discount_redemptions",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "email_suppressions",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "escrow_holds",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "invoices",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "legacy_percent_archive_112",
+      "rls_enabled": true,
+      "policy_count": 0
+    },
+    {
+      "table_name": "media_assets",
+      "rls_enabled": true,
+      "policy_count": 4
+    },
+    {
+      "table_name": "newsletter_subscribers",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "notification_outbox",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "order_items",
+      "rls_enabled": true,
+      "policy_count": 4
+    },
+    {
+      "table_name": "orders",
+      "rls_enabled": true,
+      "policy_count": 4
+    },
+    {
+      "table_name": "payment_tokens",
+      "rls_enabled": true,
+      "policy_count": 3
+    },
+    {
+      "table_name": "payment_webhook_events",
+      "rls_enabled": true,
+      "policy_count": 0
+    },
+    {
+      "table_name": "payments",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "popular_searches",
+      "rls_enabled": true,
+      "policy_count": 5
+    },
+    {
+      "table_name": "product_images",
+      "rls_enabled": true,
+      "policy_count": 4
+    },
+    {
+      "table_name": "product_variants",
+      "rls_enabled": true,
+      "policy_count": 5
+    },
+    {
+      "table_name": "products",
+      "rls_enabled": true,
+      "policy_count": 5
+    },
+    {
+      "table_name": "profiles",
+      "rls_enabled": true,
+      "policy_count": 2
+    },
+    {
+      "table_name": "push_tokens",
+      "rls_enabled": true,
+      "policy_count": 4
+    },
+    {
+      "table_name": "rate_limits",
+      "rls_enabled": true,
+      "policy_count": 0
+    },
+    {
+      "table_name": "referral_program_settings",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "referral_signals",
+      "rls_enabled": true,
+      "policy_count": 0
+    },
+    {
+      "table_name": "referrals",
+      "rls_enabled": true,
+      "policy_count": 4
+    },
+    {
+      "table_name": "search_events",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "search_index_dlq",
+      "rls_enabled": true,
+      "policy_count": 0
+    },
+    {
+      "table_name": "seo_redirects",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "settlement_events",
+      "rls_enabled": true,
+      "policy_count": 0
+    },
+    {
+      "table_name": "split_executions",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "stock_reservations",
+      "rls_enabled": true,
+      "policy_count": 0
+    },
+    {
+      "table_name": "supplier_leads",
+      "rls_enabled": true,
+      "policy_count": 2
+    },
+    {
+      "table_name": "supplier_members",
+      "rls_enabled": true,
+      "policy_count": 4
+    },
+    {
+      "table_name": "supplier_staff",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "suppliers",
+      "rls_enabled": true,
+      "policy_count": 4
+    },
+    {
+      "table_name": "user_addresses",
+      "rls_enabled": true,
+      "policy_count": 4
+    },
+    {
+      "table_name": "user_rate_limits",
+      "rls_enabled": true,
+      "policy_count": 0
+    },
+    {
+      "table_name": "user_recent_searches",
+      "rls_enabled": true,
+      "policy_count": 2
+    },
+    {
+      "table_name": "vendors",
+      "rls_enabled": true,
+      "policy_count": 4
+    },
+    {
+      "table_name": "voucher_redemptions",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "vouchers",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "wallet_accounts",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "wallet_balances",
+      "rls_enabled": true,
+      "policy_count": 4
+    },
+    {
+      "table_name": "wallet_entries",
+      "rls_enabled": true,
+      "policy_count": 1
+    },
+    {
+      "table_name": "wallet_transactions",
+      "rls_enabled": true,
+      "policy_count": 4
+    }
+  ],
+  "write_policies": {
+    "$what": "Every policy in public whose cmd is not SELECT, measured against production.",
+    "$why": "rls-manifest.json counts policies. A count cannot say whether a ledger or an audit trail can be REWRITTEN through PostgREST, which is the question the voucher redemption trail, order_items and the wallet ledger each turn on.",
+    "$measured_at": "2026-08-19",
+    "$project_ref": "ixvwfbuvfxxsjiywhbbb",
+    "$how": "node scripts/check-rls.mjs --sql-writes | run through Supabase MCP | node scripts/check-rls.mjs --writes --from rows.json",
+    "$no_write_policy_means": "RLS is on and no policy grants the command, so Postgres denies it for every non-superuser role. Writes reach these tables only through the service role or a SECURITY DEFINER function. That is the tightest state available, not a gap.",
+    "no_write_policy": [
+      "abandoned_cart_nudges",
+      "coupon_codes",
+      "coupons",
+      "discount_campaigns",
+      "discount_redemptions",
+      "email_suppressions",
+      "escrow_holds",
+      "invoices",
+      "legacy_percent_archive_112",
+      "newsletter_subscribers",
+      "notification_outbox",
+      "payment_webhook_events",
+      "payments",
+      "rate_limits",
+      "referral_program_settings",
+      "referral_signals",
+      "search_events",
+      "search_index_dlq",
+      "seo_redirects",
+      "settlement_events",
+      "split_executions",
+      "stock_reservations",
+      "supplier_staff",
+      "user_rate_limits",
+      "voucher_redemptions",
+      "vouchers",
+      "wallet_accounts",
+      "wallet_entries"
+    ],
+    "policies": [
+      {
+        "tablename": "affiliates",
+        "policyname": "affiliates_delete_unified",
+        "cmd": "DELETE",
+        "qual": "is_admin()",
+        "with_check": ""
+      },
+      {
+        "tablename": "affiliates",
+        "policyname": "affiliates_insert_unified",
+        "cmd": "INSERT",
+        "qual": "",
+        "with_check": "is_admin()"
+      },
+      {
+        "tablename": "affiliates",
+        "policyname": "affiliates_update_unified",
+        "cmd": "UPDATE",
+        "qual": "(is_admin() OR (user_id = ( SELECT auth.uid() AS uid)))",
+        "with_check": "(is_admin() OR (user_id = ( SELECT auth.uid() AS uid)))"
+      },
+      {
+        "tablename": "audit_log",
+        "policyname": "audit_log_no_delete",
+        "cmd": "DELETE",
+        "qual": "false",
+        "with_check": ""
+      },
+      {
+        "tablename": "audit_log",
+        "policyname": "audit_log_no_insert",
+        "cmd": "INSERT",
+        "qual": "",
+        "with_check": "false"
+      },
+      {
+        "tablename": "audit_log",
+        "policyname": "audit_log_no_update",
+        "cmd": "UPDATE",
+        "qual": "false",
+        "with_check": ""
+      },
+      {
+        "tablename": "carts",
+        "policyname": "carts: owner all",
+        "cmd": "ALL",
+        "qual": "((profile_id = ( SELECT auth.uid() AS uid)) OR (session_id = ((( SELECT current_setting('request.cookies'::text, true) AS current_setting))::json ->> 'session_id'::text)) OR is_admin())",
+        "with_check": "((profile_id = ( SELECT auth.uid() AS uid)) OR (profile_id IS NULL) OR is_admin())"
+      },
+      {
+        "tablename": "cashback_rules",
+        "policyname": "cashback_rules_delete_unified",
+        "cmd": "DELETE",
+        "qual": "is_admin()",
+        "with_check": ""
+      },
+      {
+        "tablename": "cashback_rules",
+        "policyname": "cashback_rules_insert_unified",
+        "cmd": "INSERT",
+        "qual": "",
+        "with_check": "is_admin()"
+      },
+      {
+        "tablename": "cashback_rules",
+        "policyname": "cashback_rules_update_unified",
+        "cmd": "UPDATE",
+        "qual": "is_admin()",
+        "with_check": "is_admin()"
+      },
+      {
+        "tablename": "categories",
+        "policyname": "categories_delete_unified",
+        "cmd": "DELETE",
+        "qual": "is_admin()",
+        "with_check": ""
+      },
+      {
+        "tablename": "categories",
+        "policyname": "categories_insert_unified",
+        "cmd": "INSERT",
+        "qual": "",
+        "with_check": "is_admin()"
+      },
+      {
+        "tablename": "categories",
+        "policyname": "categories_update_unified",
+        "cmd": "UPDATE",
+        "qual": "is_admin()",
+        "with_check": "is_admin()"
+      },
+      {
+        "tablename": "coupon_deals",
+        "policyname": "coupon_deals_delete_unified",
+        "cmd": "DELETE",
+        "qual": "is_admin()",
+        "with_check": ""
+      },
+      {
+        "tablename": "coupon_deals",
+        "policyname": "coupon_deals_insert_unified",
+        "cmd": "INSERT",
+        "qual": "",
+        "with_check": "is_admin()"
+      },
+      {
+        "tablename": "coupon_deals",
+        "policyname": "coupon_deals_update_unified",
+        "cmd": "UPDATE",
+        "qual": "is_admin()",
+        "with_check": "is_admin()"
+      },
+      {
+        "tablename": "media_assets",
+        "policyname": "media_assets: admin delete",
+        "cmd": "DELETE",
+        "qual": "is_admin()",
+        "with_check": ""
+      },
+      {
+        "tablename": "media_assets",
+        "policyname": "media_assets: staff insert",
+        "cmd": "INSERT",
+        "qual": "",
+        "with_check": "(has_role('content_uploader'::text) OR is_admin())"
+      },
+      {
+        "tablename": "media_assets",
+        "policyname": "media_assets: staff update",
+        "cmd": "UPDATE",
+        "qual": "(has_role('content_uploader'::text) OR is_admin())",
+        "with_check": "(has_role('content_uploader'::text) OR is_admin())"
+      },
+      {
+        "tablename": "order_items",
+        "policyname": "order_items_delete_unified",
+        "cmd": "DELETE",
+        "qual": "is_admin()",
+        "with_check": ""
+      },
+      {
+        "tablename": "order_items",
+        "policyname": "order_items_insert_unified",
+        "cmd": "INSERT",
+        "qual": "",
+        "with_check": "is_admin()"
+      },
+      {
+        "tablename": "order_items",
+        "policyname": "order_items_update_unified",
+        "cmd": "UPDATE",
+        "qual": "is_admin()",
+        "with_check": "is_admin()"
+      },
+      {
+        "tablename": "orders",
+        "policyname": "orders_delete_unified",
+        "cmd": "DELETE",
+        "qual": "is_admin()",
+        "with_check": ""
+      },
+      {
+        "tablename": "orders",
+        "policyname": "orders_insert_unified",
+        "cmd": "INSERT",
+        "qual": "",
+        "with_check": "is_admin()"
+      },
+      {
+        "tablename": "orders",
+        "policyname": "orders_update_unified",
+        "cmd": "UPDATE",
+        "qual": "is_admin()",
+        "with_check": "is_admin()"
+      },
+      {
+        "tablename": "payment_tokens",
+        "policyname": "payment_tokens_owner_delete",
+        "cmd": "DELETE",
+        "qual": "(profile_id = ( SELECT auth.uid() AS uid))",
+        "with_check": ""
+      },
+      {
+        "tablename": "payment_tokens",
+        "policyname": "payment_tokens_owner_update",
+        "cmd": "UPDATE",
+        "qual": "(profile_id = ( SELECT auth.uid() AS uid))",
+        "with_check": "(profile_id = ( SELECT auth.uid() AS uid))"
+      },
+      {
+        "tablename": "popular_searches",
+        "policyname": "popular_searches_delete_unified",
+        "cmd": "DELETE",
+        "qual": "has_role('admin'::text)",
+        "with_check": ""
+      },
+      {
+        "tablename": "popular_searches",
+        "policyname": "popular_searches_insert_unified",
+        "cmd": "INSERT",
+        "qual": "",
+        "with_check": "has_role('admin'::text)"
+      },
+      {
+        "tablename": "popular_searches",
+        "policyname": "popular_searches_update_unified",
+        "cmd": "UPDATE",
+        "qual": "has_role('admin'::text)",
+        "with_check": "has_role('admin'::text)"
+      },
+      {
+        "tablename": "product_images",
+        "policyname": "product_images_delete_unified",
+        "cmd": "DELETE",
+        "qual": "is_admin()",
+        "with_check": ""
+      },
+      {
+        "tablename": "product_images",
+        "policyname": "product_images_insert_unified",
+        "cmd": "INSERT",
+        "qual": "",
+        "with_check": "is_admin()"
+      },
+      {
+        "tablename": "product_images",
+        "policyname": "product_images_update_unified",
+        "cmd": "UPDATE",
+        "qual": "is_admin()",
+        "with_check": "is_admin()"
+      },
+      {
+        "tablename": "product_variants",
+        "policyname": "product_variants_delete_unified",
+        "cmd": "DELETE",
+        "qual": "(is_admin() OR has_role('content_uploader'::text))",
+        "with_check": ""
+      },
+      {
+        "tablename": "product_variants",
+        "policyname": "product_variants_insert_unified",
+        "cmd": "INSERT",
+        "qual": "",
+        "with_check": "(is_admin() OR has_role('content_uploader'::text))"
+      },
+      {
+        "tablename": "product_variants",
+        "policyname": "product_variants_update_unified",
+        "cmd": "UPDATE",
+        "qual": "(is_admin() OR has_role('content_uploader'::text))",
+        "with_check": "(is_admin() OR has_role('content_uploader'::text))"
+      },
+      {
+        "tablename": "products",
+        "policyname": "products_delete_unified",
+        "cmd": "DELETE",
+        "qual": "is_admin()",
+        "with_check": ""
+      },
+      {
+        "tablename": "products",
+        "policyname": "products_insert_unified",
+        "cmd": "INSERT",
+        "qual": "",
+        "with_check": "(is_admin() OR has_role('content_uploader'::text) OR ((current_user_role() = 'content_uploader'::user_role) AND (created_by = ( SELECT auth.uid() AS uid))))"
+      },
+      {
+        "tablename": "products",
+        "policyname": "products_update_unified",
+        "cmd": "UPDATE",
+        "qual": "(is_admin() OR has_role('content_uploader'::text) OR ((current_user_role() = 'content_uploader'::user_role) AND (created_by = ( SELECT auth.uid() AS uid))))",
+        "with_check": "(is_admin() OR has_role('content_uploader'::text) OR ((current_user_role() = 'content_uploader'::user_role) AND (created_by = ( SELECT auth.uid() AS uid))))"
+      },
+      {
+        "tablename": "profiles",
+        "policyname": "profiles_update_unified",
+        "cmd": "UPDATE",
+        "qual": "(id = ( SELECT auth.uid() AS uid))",
+        "with_check": "(id = ( SELECT auth.uid() AS uid))"
+      },
+      {
+        "tablename": "push_tokens",
+        "policyname": "push_tokens_delete_own",
+        "cmd": "DELETE",
+        "qual": "(user_id = ( SELECT auth.uid() AS uid))",
+        "with_check": ""
+      },
+      {
+        "tablename": "push_tokens",
+        "policyname": "push_tokens_insert_own",
+        "cmd": "INSERT",
+        "qual": "",
+        "with_check": "(user_id = ( SELECT auth.uid() AS uid))"
+      },
+      {
+        "tablename": "push_tokens",
+        "policyname": "push_tokens_update_own",
+        "cmd": "UPDATE",
+        "qual": "(user_id = ( SELECT auth.uid() AS uid))",
+        "with_check": "(user_id = ( SELECT auth.uid() AS uid))"
+      },
+      {
+        "tablename": "referrals",
+        "policyname": "referrals_delete_unified",
+        "cmd": "DELETE",
+        "qual": "is_admin()",
+        "with_check": ""
+      },
+      {
+        "tablename": "referrals",
+        "policyname": "referrals_insert_unified",
+        "cmd": "INSERT",
+        "qual": "",
+        "with_check": "is_admin()"
+      },
+      {
+        "tablename": "referrals",
+        "policyname": "referrals_update_unified",
+        "cmd": "UPDATE",
+        "qual": "is_admin()",
+        "with_check": "is_admin()"
+      },
+      {
+        "tablename": "supplier_leads",
+        "policyname": "supplier_leads: staff write",
+        "cmd": "UPDATE",
+        "qual": "has_role('admin'::text)",
+        "with_check": "has_role('admin'::text)"
+      },
+      {
+        "tablename": "supplier_members",
+        "policyname": "supplier_members_delete_unified",
+        "cmd": "DELETE",
+        "qual": "is_supplier_owner(supplier_id)",
+        "with_check": ""
+      },
+      {
+        "tablename": "supplier_members",
+        "policyname": "supplier_members_insert_unified",
+        "cmd": "INSERT",
+        "qual": "",
+        "with_check": "is_supplier_owner(supplier_id)"
+      },
+      {
+        "tablename": "supplier_members",
+        "policyname": "supplier_members_update_unified",
+        "cmd": "UPDATE",
+        "qual": "is_supplier_owner(supplier_id)",
+        "with_check": "is_supplier_owner(supplier_id)"
+      },
+      {
+        "tablename": "suppliers",
+        "policyname": "suppliers_delete_unified",
+        "cmd": "DELETE",
+        "qual": "is_admin()",
+        "with_check": ""
+      },
+      {
+        "tablename": "suppliers",
+        "policyname": "suppliers_insert_unified",
+        "cmd": "INSERT",
+        "qual": "",
+        "with_check": "(is_admin() OR has_role('content_uploader'::text))"
+      },
+      {
+        "tablename": "suppliers",
+        "policyname": "suppliers_update_unified",
+        "cmd": "UPDATE",
+        "qual": "(is_admin() OR has_role('content_uploader'::text))",
+        "with_check": "(is_admin() OR has_role('content_uploader'::text))"
+      },
+      {
+        "tablename": "user_addresses",
+        "policyname": "user_addresses_delete_unified",
+        "cmd": "DELETE",
+        "qual": "(is_admin() OR (user_id = ( SELECT auth.uid() AS uid)))",
+        "with_check": ""
+      },
+      {
+        "tablename": "user_addresses",
+        "policyname": "user_addresses_insert_unified",
+        "cmd": "INSERT",
+        "qual": "",
+        "with_check": "(is_admin() OR (user_id = ( SELECT auth.uid() AS uid)))"
+      },
+      {
+        "tablename": "user_addresses",
+        "policyname": "user_addresses_update_unified",
+        "cmd": "UPDATE",
+        "qual": "(is_admin() OR (user_id = ( SELECT auth.uid() AS uid)))",
+        "with_check": "(is_admin() OR (user_id = ( SELECT auth.uid() AS uid)))"
+      },
+      {
+        "tablename": "user_recent_searches",
+        "policyname": "user_recent_searches: own delete",
+        "cmd": "DELETE",
+        "qual": "(user_id = ( SELECT auth.uid() AS uid))",
+        "with_check": ""
+      },
+      {
+        "tablename": "vendors",
+        "policyname": "vendors: super_admin delete",
+        "cmd": "DELETE",
+        "qual": "(current_user_role() = 'super_admin'::user_role)",
+        "with_check": ""
+      },
+      {
+        "tablename": "vendors",
+        "policyname": "vendors: super_admin insert",
+        "cmd": "INSERT",
+        "qual": "",
+        "with_check": "(current_user_role() = 'super_admin'::user_role)"
+      },
+      {
+        "tablename": "vendors",
+        "policyname": "vendors: super_admin update",
+        "cmd": "UPDATE",
+        "qual": "(current_user_role() = 'super_admin'::user_role)",
+        "with_check": "(current_user_role() = 'super_admin'::user_role)"
+      },
+      {
+        "tablename": "wallet_balances",
+        "policyname": "wallet_balances_delete_unified",
+        "cmd": "DELETE",
+        "qual": "is_admin()",
+        "with_check": ""
+      },
+      {
+        "tablename": "wallet_balances",
+        "policyname": "wallet_balances_insert_unified",
+        "cmd": "INSERT",
+        "qual": "",
+        "with_check": "is_admin()"
+      },
+      {
+        "tablename": "wallet_balances",
+        "policyname": "wallet_balances_update_unified",
+        "cmd": "UPDATE",
+        "qual": "is_admin()",
+        "with_check": "is_admin()"
+      },
+      {
+        "tablename": "wallet_transactions",
+        "policyname": "wallet_transactions_delete_unified",
+        "cmd": "DELETE",
+        "qual": "is_admin()",
+        "with_check": ""
+      },
+      {
+        "tablename": "wallet_transactions",
+        "policyname": "wallet_transactions_insert_unified",
+        "cmd": "INSERT",
+        "qual": "",
+        "with_check": "is_admin()"
+      },
+      {
+        "tablename": "wallet_transactions",
+        "policyname": "wallet_transactions_update_unified",
+        "cmd": "UPDATE",
+        "qual": "is_admin()",
+        "with_check": "is_admin()"
+      }
+    ]
+  }
+}

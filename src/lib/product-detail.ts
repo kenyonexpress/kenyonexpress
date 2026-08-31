@@ -1,5 +1,8 @@
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
+import { orFail } from '@/lib/catalogue-read'
 import { type CouponOffer, buildCouponOffer } from '@/lib/commerce/coupon-offer'
+import { resolveStorefrontProductType } from '@/lib/commerce/product-type'
+import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createPublicClient } from '@/lib/supabase/anon'
 import {
@@ -49,20 +52,24 @@ export async function loadProductBySlug(slug: string) {
 
   const supabase = createPublicClient()
 
-  const { data: product } = await supabase
-    .from('products')
-    .select(
-      `id, slug, name_he, name_en, description_he,
+  const product = orFail(
+    await supabase
+      .from('products')
+      .select(
+        `id, slug, name_he, name_en, description_he,
        kenyon_price, full_price, is_coupon_enabled,
        coupon_expiry_days, coupon_terms_he, redemption_instructions_he,
        requires_shipping, weight_grams, warranty_months,
        type, sku, images, stock_quantity, category_id, supplier_id,
        categories!products_category_id_fkey(id, name_he, slug)`,
-    )
-    .eq('slug', slug)
-    .eq('status', 'active')
-    .is('deleted_at', null)
-    .maybeSingle()
+      )
+      .eq('slug', slug)
+      .eq('status', 'active')
+      .is('deleted_at', null)
+      .maybeSingle(),
+    'product_detail.read_failed',
+    { slug },
+  )
 
   if (!product) return null
 
@@ -77,7 +84,7 @@ export async function loadProductBySlug(slug: string) {
   // are read HERE, inside the cache, because they are catalogue data like the
   // rest; left on the page they stayed two per-request round trips on exactly
   // the coupon products the shop exists to sell.
-  const isCoupon = product.type === 'coupon' || product.is_coupon_enabled
+  const isCoupon = resolveStorefrontProductType(product) === 'coupon'
   const probe = (select: string, ids: string[]) =>
     createPublicClient().from('products').select(select).in('id', ids) as never
 
@@ -156,11 +163,20 @@ export async function loadProductBySlug(slug: string) {
  */
 async function loadSupplierPublicContact(supplierId: string | null) {
   if (!supplierId) return null
-  const { data } = await createAdminClient()
+  const { data, error } = await createAdminClient()
     .from('suppliers')
     .select('id, name, city, address, contact_phone, whatsapp')
     .eq('id', supplierId)
     .maybeSingle()
+  // The error was dropped, and dropping it is invisible in exactly the way that
+  // costs: `SupplierInfo` reads a null supplier as "no details on file" and
+  // prints "פרטי הספק יתעדכנו בקרוב", the same sentence it prints for the
+  // suppliers that genuinely have none. MEASURED here on a built server -- a
+  // stale service key returned 401 "Invalid API key" and all five probed
+  // product pages hid a supplier that has a name, a city and a phone in the
+  // table, with not one line in the log. A key that expires in production would
+  // silently take the mandatory block off EVERY product page.
+  if (error) log.error('product_detail.supplier_load_failed', { supplier_id: supplierId, error })
   return data
 }
 
@@ -169,10 +185,14 @@ async function loadGalleryAssets(
   images: string[],
 ): Promise<Record<string, { alt: string | null; blurDataURL: string | null }>> {
   if (images.length === 0) return {}
-  const { data } = await createPublicClient()
-    .from('media_assets')
-    .select('url, alt_he, blur_data_url')
-    .in('url', images)
+  const data = orFail(
+    await createPublicClient()
+      .from('media_assets')
+      .select('url, alt_he, blur_data_url')
+      .in('url', images),
+    'product_detail.gallery_assets_failed',
+    { image_count: images.length },
+  )
   return Object.fromEntries(
     (data ?? []).map((a) => [a.url, { alt: a.alt_he, blurDataURL: a.blur_data_url }]),
   )
@@ -193,13 +213,17 @@ export async function listProductSlugsForPrerender(limit = 200): Promise<string[
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
 
-  const { data } = await createPublicClient()
-    .from('products')
-    .select('slug')
-    .eq('status', 'active')
-    .is('deleted_at', null)
-    .order('created_at', { ascending: false })
-    .limit(limit)
+  const data = orFail(
+    await createPublicClient()
+      .from('products')
+      .select('slug')
+      .eq('status', 'active')
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+      .limit(limit),
+    'product_detail.prerender_slugs_failed',
+    { limit },
+  )
 
   return (data ?? []).map((row) => row.slug)
 }

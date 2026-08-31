@@ -73,6 +73,48 @@ async function searchMeili(
   }
 }
 
+/**
+ * The words of the query, capped.
+ *
+ * `sanitizeOrTerm` has already collapsed runs of whitespace and stripped every
+ * character PostgREST treats as structure, so a plain split on the space is
+ * safe and each word is a literal. The cap bounds the number of `or=` groups a
+ * single request can ask Postgres to AND together; eight words is far past any
+ * real product name here and the longest is five.
+ */
+const MAX_TERMS = 8
+
+function queryWords(q: string): string[] {
+  return q.split(' ').filter(Boolean).slice(0, MAX_TERMS)
+}
+
+/**
+ * EVERY WORD MUST MATCH, RATHER THAN THE WHOLE PHRASE AS ONE SUBSTRING.
+ *
+ * This was a single `ilike '%<the entire query>%'`, which means the customer's
+ * words had to appear in the product in that order with nothing between them.
+ * ALL 61 active product names are more than one word, so that is a real
+ * shopper typing a real thing and being told we do not sell it:
+ *
+ *   query               phrase   every-word
+ *   צימר צפון                0            1   <- "צימר שוויץ בצפון" exists
+ *   אוזניות אלחוטיות         1            2
+ *   טיפול פנים               2            2
+ *   עיסוי מפנק               1            1
+ *
+ * Nothing gets fewer results, because a phrase that matches as a substring
+ * also matches word by word.
+ *
+ * Each word becomes its own `.or(name, description)` group, and PostgREST ANDs
+ * separate top-level filters - verified against this project rather than
+ * assumed, since supabase-js appends a repeated `or=` key: one group returned
+ * "צימר שוויץ בצפון" and "! צימר מאסטר", the two groups returned the first
+ * alone.
+ *
+ * This is still the stage-1 ILIKE fallback and is not trying to be a search
+ * engine: no stemming, no ranking, no typo tolerance. Meilisearch is stage 3
+ * and takes over above.
+ */
 async function searchDb(
   q: string,
   limit: number,
@@ -87,7 +129,10 @@ async function searchDb(
     )
     .eq('status', 'active')
     .is('deleted_at', null)
-    .or(`name_he.ilike.%${q}%,description_he.ilike.%${q}%`)
+
+  for (const word of queryWords(q)) {
+    query = query.or(`name_he.ilike.%${word}%,description_he.ilike.%${word}%`)
+  }
 
   // Same coupon/physical facet the archives expose, applied in the query so the
   // count stays truthful rather than filtering an already-capped page.

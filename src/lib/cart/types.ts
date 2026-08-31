@@ -54,7 +54,53 @@ export type CartViewItem = {
   platform_percent_snapshot: number | null
   /** Coupon lines only: the admin-set absolute on-site price per unit, agorot. */
   coupon_price_unit: Agorot | null
+  /**
+   * The largest quantity this line may hold, from the live stock the cart was
+   * priced against, or null when the catalogue tracks no stock for it.
+   *
+   * The stock was always read -- `pricing.ts` compares it to the quantity to
+   * decide `available` -- and was then thrown away. Keeping it is what lets the
+   * quantity stepper stop at the ceiling instead of firing a server round trip
+   * that can only come back "אין מספיק במלאי", and what lets the line say how many
+   * are actually left rather than only that the shopper asked for too many.
+   *
+   * It is a display and input ceiling, never an authority: every write still
+   * re-reads stock server-side in `validateProductForCart`, because this number
+   * is as old as the last cart render and the shelf is not.
+   */
+  max_quantity: number | null
+  /**
+   * Why `available` is false, or null when the line is fine.
+   *
+   * `available` alone left the cart able to say only "המוצר אינו זמין" for
+   * four conditions a shopper would act on differently: a product that stopped
+   * being sold, one that is out of stock entirely, one where only fewer are
+   * left than asked for (reduce the quantity and it is fine), and one the admin
+   * has not finished configuring, which is not the shopper's problem at all.
+   */
+  unavailable_reason: UnavailableReason | null
 }
+
+/**
+ * The four ways a line stops being orderable, in the order they are decided.
+ *
+ * `delisted` outranks `unpriced` because a product that is gone is gone
+ * whatever its commission column says, and `unpriced` outranks the stock
+ * reasons because a line the money engine refuses to price has no meaningful
+ * quantity to be short of.
+ */
+export type UnavailableReason = 'delisted' | 'unpriced' | 'out_of_stock' | 'insufficient_stock'
+
+/**
+ * The hard ceiling on one cart line, matching `max(99)` in
+ * `src/lib/validations/cart.ts`.
+ *
+ * Named here rather than written as a bare `99` in the stepper so the UI cap
+ * and the schema that rejects the write cannot drift into disagreeing -- a
+ * stepper that goes to 100 against a schema that stops at 99 is a button whose
+ * only outcome is a validation toast.
+ */
+export const CART_LINE_MAX_QUANTITY = 99
 
 /**
  * A discount code the shopper has applied, as the cart renders it.

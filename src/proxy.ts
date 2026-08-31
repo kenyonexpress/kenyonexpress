@@ -1,5 +1,8 @@
+import { loginRedirectUrl } from '@/lib/auth/login-redirect'
 import { GUEST_SESSION_COOKIE, guestSessionCookieOptions } from '@/lib/cart/guest-session-cookie'
 import { REQUEST_ID_HEADER, resolveRequestId } from '@/lib/observability/request-id'
+import { REFERRAL_QUERY_PARAM, normalizeReferralCode } from '@/lib/referrals/code'
+import { REFERRAL_COOKIE, referralCookieOptions } from '@/lib/referrals/cookie'
 import { isPaymentFramePath } from '@/lib/security/frame-policy'
 import { lookupRedirect } from '@/lib/seo/redirects'
 import { createServerClient } from '@supabase/ssr'
@@ -140,18 +143,12 @@ export async function proxy(request: NextRequest) {
     (pathname.startsWith('/supplier') && !supplierPublic)
 
   if (needsAuth && !user) {
-    const loginUrl = request.nextUrl.clone()
-    loginUrl.pathname = '/login'
-    loginUrl.searchParams.set('next', pathname)
-    return withRequestId(NextResponse.redirect(loginUrl), requestId)
+    return withRequestId(NextResponse.redirect(loginRedirectUrl(request.nextUrl)), requestId)
   }
 
   if (pathname.startsWith('/admin')) {
     if (!user) {
-      const loginUrl = request.nextUrl.clone()
-      loginUrl.pathname = '/login'
-      loginUrl.searchParams.set('next', pathname)
-      return withRequestId(NextResponse.redirect(loginUrl), requestId)
+      return withRequestId(NextResponse.redirect(loginRedirectUrl(request.nextUrl)), requestId)
     }
     // Role is authoritative in the profiles table, not app_metadata (which may be stale).
     const { data: profile } = await supabase
@@ -169,6 +166,40 @@ export async function proxy(request: NextRequest) {
       profile?.role === 'support'
     if (!isPanel) {
       return withRequestId(NextResponse.redirect(new URL('/', request.url)), requestId)
+    }
+  }
+
+  // A share link's `?ref=` code, written down before the visit goes anywhere.
+  //
+  // WHY HERE AND NOT ON THE LANDING PAGE
+  //
+  // The claim happens at /auth/callback, which is reached from an email client
+  // or from Google and therefore carries none of this app's query strings. The
+  // code has to be recorded on the click that started the visit, and this is
+  // the one place every click passes through.
+  //
+  // LAST TOUCH, NOT FIRST. Someone holding a code from two weeks ago who then
+  // clicks a different friend's link today is attributed to today's link. That
+  // is the click that actually did the work, and neither ordering opens an
+  // abuse the database does not already close: `fn_claim_referral` refuses a
+  // self-referral outright, and `referrals` allows one row per referred person
+  // for life, so a code cannot be swapped after a claim in any case.
+  //
+  // Written only for a code that is genuinely one (eight characters over the
+  // 098 alphabet), so `?ref=` carrying a scraper's payload sets nothing.
+  //
+  // The URL is NOT rewritten to strip the parameter. A redirect would cost a
+  // round trip on the most valuable landing this site has, and the duplicate
+  // it would be avoiding is already handled: the root layout declares
+  // `alternates.canonical`, so `/?ref=ABC12345` is canonical to `/`.
+  if (request.method === 'GET') {
+    const code = normalizeReferralCode(request.nextUrl.searchParams.get(REFERRAL_QUERY_PARAM))
+    if (code && request.cookies.get(REFERRAL_COOKIE)?.value !== code) {
+      supabaseResponse.cookies.set(
+        REFERRAL_COOKIE,
+        code,
+        referralCookieOptions(request.headers.get('x-forwarded-proto') ?? request.nextUrl.protocol),
+      )
     }
   }
 

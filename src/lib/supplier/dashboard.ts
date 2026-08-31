@@ -157,6 +157,72 @@ export function sumPayoutBreakdown(lines: PayoutBreakdownLine[]): {
   )
 }
 
+export type SupplierSettlementBalance = {
+  /** Owed by the platform. Physical residual only; a coupon never adds here. */
+  platformOwedAgorot: number
+  /** Already taken over the counter on redeemed coupons. Never our money. */
+  tillCollectedAgorot: number
+  /** What the platform kept, across both kinds. */
+  platformFeeAgorot: number
+  /** Line counts by settlement_status, for the history breakdown. */
+  byStatus: Array<{ status: string; count: number; supplierDueAgorot: number }>
+}
+
+/**
+ * The two balances a supplier has, kept apart on purpose.
+ *
+ * A single "balance" number cannot be honest here, because the two halves of
+ * this business settle in opposite directions (section 0.2). Physical sales
+ * leave the platform holding money it owes the shop. Coupons leave the shop
+ * holding money the platform never touches: the customer prepaid us the coupon
+ * price, and the till balance is collected at the counter in cash that does not
+ * enter our ledger. Adding them produces a figure that is neither a receivable
+ * nor a takings report, and reading it as "what KenyonExpress will transfer"
+ * -- which is how anyone reads a number labelled balance -- overstates the
+ * transfer by the entire coupon column.
+ *
+ * So: `platformOwedAgorot` is the receivable, `tillCollectedAgorot` is the
+ * takings, and no function in this file ever returns their sum.
+ */
+export function summarizeSettlement(input: {
+  sales: SupplierSaleLine[]
+  redemptions: SupplierRedemptionRow[]
+}): SupplierSettlementBalance {
+  let platformOwed = 0
+  let platformFee = 0
+  const buckets = new Map<string, { count: number; supplierDueAgorot: number }>()
+
+  for (const sale of input.sales) {
+    const due = supplierDueAgorot(sale)
+    platformOwed += due
+    platformFee += Math.max(0, sale.platformFeeAgorot)
+
+    const key = sale.settlementStatus ?? 'pending'
+    const bucket = buckets.get(key)
+    if (bucket) {
+      bucket.count += 1
+      bucket.supplierDueAgorot += due
+    } else {
+      buckets.set(key, { count: 1, supplierDueAgorot: due })
+    }
+  }
+
+  let tillCollected = 0
+  for (const redemption of input.redemptions) {
+    if (redemption.status !== 'redeemed') continue
+    tillCollected += Math.max(0, redemption.remainingAmountDueAgorot)
+  }
+
+  return {
+    platformOwedAgorot: platformOwed,
+    tillCollectedAgorot: tillCollected,
+    platformFeeAgorot: platformFee,
+    byStatus: [...buckets.entries()]
+      .map(([status, value]) => ({ status, ...value }))
+      .sort((a, b) => b.count - a.count || a.status.localeCompare(b.status)),
+  }
+}
+
 export const SETTLEMENT_LABEL_HE: Record<string, string> = {
   pending: 'ממתין',
   paid: 'שולם באתר',

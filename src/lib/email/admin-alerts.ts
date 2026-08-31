@@ -12,9 +12,11 @@
  * lock screen is exactly the leak that gate exists to prevent.
  */
 
+import { contactEmail } from '@/lib/contact-address'
+
 /** Where operator mail goes. Same variable the contact form already uses. */
 export function adminAlertRecipient(env: NodeJS.ProcessEnv = process.env): string {
-  return (env.CONTACT_TO ?? 'info@kenyonexpress.co.il').trim()
+  return contactEmail(env)
 }
 
 export type AdminAlertKind = 'invoice_dead' | 'low_stock' | 'reconciliation_gap'

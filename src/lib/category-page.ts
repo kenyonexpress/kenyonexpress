@@ -1,5 +1,6 @@
 import type { SortValue } from '@/components/category/CategoryControlBar'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
+import { orFail, orFailWithCount } from '@/lib/catalogue-read'
 import { cityBySlug } from '@/lib/geo/cities'
 import { filterByCity } from '@/lib/geo/distance'
 import { createPublicClient } from '@/lib/supabase/anon'
@@ -33,6 +34,38 @@ import { cache } from 'react'
  */
 
 export const CATEGORY_PAGE_SIZE = 12
+
+/**
+ * Both unwrappers live in `src/lib/catalogue-read.ts`, not here.
+ *
+ * They were written in this file first, on 2026-08-20, and five other cached
+ * readers kept the original bug for exactly as long as the helper was private
+ * to it. Shared is what makes "every cached catalogue read fails loudly" a
+ * property of the codebase rather than of one file.
+ */
+
+type Orderable<T> = { order(column: string, opts: { ascending: boolean }): T }
+
+/**
+ * The menu order, with the tie-break that makes it an order at all.
+ *
+ * `categories.sort_order` is not unique and, measured against production on
+ * 19.08.2026, is not distinct either: `electronics` and `professionals` both
+ * sit on 10, and the 12 rows carry the values 1..11. Ordering by that column
+ * alone leaves the position of those two to whatever the planner returns, and
+ * because these reads are `use cache` with an hour of life, a reshuffle can
+ * survive in the sidebar long after the query that produced it.
+ *
+ * The second key is `slug`, which is UNIQUE, so the result is total. It is not
+ * a UNIQUE constraint on `sort_order`, deliberately: `CategoryTree` reorders
+ * by swapping two rows in two separate `updateCategorySortOrder` calls, and a
+ * unique index would fail the first of them and break the admin's reordering.
+ * `migrations/pending/006-categories-sort-order.sql` renumbers the data; this
+ * is what holds regardless of the data.
+ */
+export function orderedByMenu<T extends Orderable<T>>(query: T): T {
+  return query.order('sort_order', { ascending: true }).order('slug', { ascending: true })
+}
 
 export type CategoryRow = {
   id: string
@@ -69,17 +102,35 @@ type SupplierJoin = {
   longitude?: number | null
 }
 
+/**
+ * The description a category page falls back to when the row has none.
+ *
+ * Kept out of the page component so it can be tested without a database: the
+ * failure it exists for is silent (a missing tag, not a wrong one) and only
+ * Lighthouse ever noticed it.
+ */
+export function categoryMetaDescription(nameHe: string): string {
+  const name = nameHe.trim()
+  return name
+    ? `${name} בקניון אקספרס. דילים, קופונים ומוצרים במחירים של קניון אקספרס.`
+    : 'דילים, קופונים ומוצרים במחירים של קניון אקספרס.'
+}
+
 export async function getCategoryBySlug(slug: string): Promise<CategoryRow | null> {
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
   const supabase = createPublicClient()
-  const { data } = await supabase
-    .from('categories')
-    .select('id, slug, name_he, description_he, parent_id')
-    .eq('slug', slug)
-    .eq('is_active', true)
-    .single()
+  const data = orFail(
+    await supabase
+      .from('categories')
+      .select('id, slug, name_he, description_he, parent_id')
+      .eq('slug', slug)
+      .eq('is_active', true)
+      .single(),
+    'catalogue.category_by_slug_failed',
+    { slug },
+  )
   return data
 }
 
@@ -88,11 +139,10 @@ export async function getAllCategorySlugs(): Promise<string[]> {
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
   const supabase = createPublicClient()
-  const { data } = await supabase
-    .from('categories')
-    .select('slug')
-    .eq('is_active', true)
-    .order('sort_order', { ascending: true })
+  const data = orFail(
+    await orderedByMenu(supabase.from('categories').select('slug').eq('is_active', true)),
+    'catalogue.category_slugs_failed',
+  )
   return (data ?? []).map((c) => c.slug)
 }
 
@@ -103,11 +153,11 @@ export async function getCategoryParent(
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
   const supabase = createPublicClient()
-  const { data } = await supabase
-    .from('categories')
-    .select('slug, name_he')
-    .eq('id', parentId)
-    .single()
+  const data = orFail(
+    await supabase.from('categories').select('slug, name_he').eq('id', parentId).single(),
+    'catalogue.category_parent_failed',
+    { parent_id: parentId },
+  )
   return data
 }
 
@@ -118,12 +168,17 @@ export async function getCategoryChildren(
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
   const supabase = createPublicClient()
-  const { data } = await supabase
-    .from('categories')
-    .select('id, slug, name_he')
-    .eq('parent_id', categoryId)
-    .eq('is_active', true)
-    .order('sort_order', { ascending: true })
+  const data = orFail(
+    await orderedByMenu(
+      supabase
+        .from('categories')
+        .select('id, slug, name_he')
+        .eq('parent_id', categoryId)
+        .eq('is_active', true),
+    ),
+    'catalogue.category_children_failed',
+    { category_id: categoryId },
+  )
   return data ?? []
 }
 
@@ -186,6 +241,109 @@ export function parseProductType(
   return raw === 'coupon' || raw === 'physical' ? raw : undefined
 }
 
+/**
+ * Three of the twelve categories are not taxonomies. They are collections:
+ * membership is a rule about the product, not an editor's choice, and
+ * `categories` has no column that expresses one.
+ *
+ * The consequence, measured on production 19.08.2026: `hot-deals` held 4 active
+ * products, `under-99` 3 and `new` 3, and all but one of those ten were demo
+ * rows placed there by hand. Nothing falls into a collection on its own, so a
+ * collection that nobody hand-fills stays a menu entry with an empty page.
+ *
+ * Each rule is ADDITIVE to the hand-assigned rows rather than replacing them:
+ * membership is `category_id = X OR <rule>`. A row an editor deliberately put
+ * in `hot-deals` keeps showing there, which also means turning this on can
+ * only ever add products to a page.
+ */
+export type CollectionRule =
+  | { kind: 'price_max'; maxIls: number }
+  | { kind: 'featured' }
+  | { kind: 'newest'; limit: number }
+
+/**
+ * `price_max` reads `kenyon_price`, the price the card shows and the same
+ * column the min/max facet already filters on, so "עד ₪99" means what the
+ * shopper sees on the tile. It is a comparison against a whole-shekel bound and
+ * not an arithmetic step, so it does not go through the money module.
+ *
+ * `newest` is capped rather than open-ended. Without a cap "החדשים" is the
+ * whole active catalogue in date order, which is not a collection. 24 is two
+ * pages of `CATEGORY_PAGE_SIZE`.
+ */
+const COLLECTION_RULES = new Map<string, CollectionRule>([
+  ['under-99', { kind: 'price_max', maxIls: 99 }],
+  ['hot-deals', { kind: 'featured' }],
+  ['new', { kind: 'newest', limit: 24 }],
+])
+
+/**
+ * The rule for a category slug, or undefined for the nine taxonomies.
+ *
+ * A `Map` and not an object literal. Indexing an object literal by a slug also
+ * finds `Object.prototype`, so `collectionRule('constructor')` returned the
+ * Object constructor -- truthy, with no `kind`, which reaches `collectionFilter`
+ * and falls off the end of the switch. A category slug comes out of the URL.
+ */
+export function collectionRule(slug: string): CollectionRule | undefined {
+  return COLLECTION_RULES.get(slug)
+}
+
+/**
+ * The PostgREST `or` group for `category_id = X OR <rule>`.
+ *
+ * Returned as a string rather than applied, so it is testable without a
+ * database. `newestIds` is passed in because the ids come from a query.
+ *
+ * Repeated `or=` parameters are ANDed by PostgREST, not ORed. Measured against
+ * this project on 19.08.2026: the membership group alone returned 13 rows, and
+ * adding the coupon facet's own `or` returned 5, which is the intersection.
+ * That is what makes it safe for this to sit alongside `productTypeFilter`.
+ */
+export function collectionFilter(
+  categoryId: string,
+  rule: CollectionRule,
+  newestIds: string[] = [],
+): string {
+  const mine = `category_id.eq.${categoryId}`
+  switch (rule.kind) {
+    case 'price_max':
+      return `${mine},kenyon_price.lte.${rule.maxIls}`
+    case 'featured':
+      return `${mine},is_featured.is.true`
+    case 'newest':
+      // An empty `in.()` is a syntax error, so with no ids the group collapses
+      // to the hand-assigned rows, which is the pre-collection behaviour.
+      return newestIds.length === 0 ? mine : `${mine},id.in.(${newestIds.join(',')})`
+  }
+}
+
+/**
+ * The ids of the N most recently created active products.
+ *
+ * A separate round trip because PostgREST cannot express "the newest 24" as a
+ * filter on the same query that also paginates and sorts. It runs inside the
+ * caller's `use cache` scope, so it is cached with the page rather than on
+ * every request.
+ */
+async function newestProductIds(
+  supabase: ReturnType<typeof createPublicClient>,
+  limit: number,
+): Promise<string[]> {
+  const data = orFail(
+    await supabase
+      .from('products')
+      .select('id')
+      .eq('status', 'active')
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false })
+      .limit(limit),
+    'catalogue.recent_product_ids_failed',
+    { limit },
+  )
+  return (data ?? []).map((row) => row.id)
+}
+
 export async function getCategoryProducts(opts: {
   categoryId: string
   category: { name_he: string; slug: string }
@@ -196,11 +354,14 @@ export async function getCategoryProducts(opts: {
   productType?: ProductTypeFilter
   /** City slug. Part of the cache key, so two cities never share a page. */
   city?: string
+  /** Set for the three collection slugs. See `collectionRule`. */
+  collection?: CollectionRule
 }): Promise<{ items: CategoryProductRow[]; total: number }> {
   'use cache'
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
-  const { categoryId, category, sort, page, priceMin, priceMax, productType, city } = opts
+  const { categoryId, category, sort, page, priceMin, priceMax, productType, city, collection } =
+    opts
   const supabase = createPublicClient()
   const from = (page - 1) * CATEGORY_PAGE_SIZE
 
@@ -216,9 +377,20 @@ export async function getCategoryProducts(opts: {
       'id, slug, name_he, kenyon_price, full_price, images, stock_quantity, created_at, type, categories!products_category_id_fkey(name_he, slug), suppliers(city)',
       { count: 'exact' },
     )
-    .eq('category_id', categoryId)
     .eq('status', 'active')
     .is('deleted_at', null)
+
+  if (collection) {
+    query = query.or(
+      collectionFilter(
+        categoryId,
+        collection,
+        collection.kind === 'newest' ? await newestProductIds(supabase, collection.limit) : [],
+      ),
+    )
+  } else {
+    query = query.eq('category_id', categoryId)
+  }
 
   if (priceMin != null) query = query.gte('kenyon_price', priceMin)
   if (priceMax != null) query = query.lte('kenyon_price', priceMax)
@@ -246,7 +418,11 @@ export async function getCategoryProducts(opts: {
       query = query.order('name_he', { ascending: true })
   }
 
-  const { data, count } = await query.range(from, from + CATEGORY_PAGE_SIZE - 1)
+  const { data, count } = orFailWithCount(
+    await query.range(from, from + CATEGORY_PAGE_SIZE - 1),
+    'catalogue.category_products_failed',
+    { category_id: opts.categoryId, page },
+  )
   const items = (data ?? []).map((row) =>
     normalizeCategoryJoin(row as CategoryProductRow, category),
   )
@@ -277,11 +453,10 @@ export async function getAllCategories(): Promise<{ slug: string; name_he: strin
   cacheLife('hours')
   cacheTag(CATALOGUE_TAG)
   const supabase = createPublicClient()
-  const { data } = await supabase
-    .from('categories')
-    .select('slug, name_he')
-    .eq('is_active', true)
-    .order('sort_order', { ascending: true })
+  const data = orFail(
+    await orderedByMenu(supabase.from('categories').select('slug, name_he').eq('is_active', true)),
+    'catalogue.all_categories_failed',
+  )
   return data ?? []
 }
 
@@ -335,7 +510,11 @@ export async function getShopProducts(opts: {
       query = query.order('name_he', { ascending: true })
   }
 
-  const { data, count } = await query.range(from, from + SHOP_PAGE_SIZE - 1)
+  const { data, count } = orFailWithCount(
+    await query.range(from, from + SHOP_PAGE_SIZE - 1),
+    'catalogue.shop_products_failed',
+    { page, sort },
+  )
   const items = (data ?? []).map((row) => {
     const r = row as CategoryProductRow
     const joined = r.categories

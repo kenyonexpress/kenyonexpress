@@ -1,3 +1,4 @@
+import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 
@@ -29,6 +30,32 @@ const VOUCHER_SELECT = `id, code, qr_payload, status,
        product:products(name_he, slug),
        supplier:suppliers(name)`
 
+/**
+ * A voucher read, or a throw. Never a silent absence.
+ *
+ * A voucher is a thing the customer has already PAID for, and every caller of
+ * these reads renders "not there" as a fact: the account page says the customer
+ * has no coupons, and the counter's lookup answers `not_found`, 404, and writes
+ * a refusal row saying the code does not exist. A discarded `error` produced
+ * exactly those, from a query that never got an answer at all - and the refusal
+ * log, which exists so a disputed scan can be reconstructed, was left holding a
+ * record of something that did not happen.
+ *
+ * PGRST116 is exempt for `.single()` / `.maybeSingle()`, where it is the "no
+ * row" answer these callers already handle, and is the reason this is not the
+ * same helper the cart uses.
+ */
+function voucherReadOrFail<T>(
+  result: { data: T; error: { code?: string; message?: string } | null },
+  event: string,
+  context: Record<string, unknown> = {},
+): T {
+  if (!result.error) return result.data
+  if (result.error.code === 'PGRST116') return result.data
+  log.error(event, { ...context, error: result.error })
+  throw new Error(`${event}: ${result.error.message ?? 'voucher read failed'}`)
+}
+
 export async function getCustomerVouchers(): Promise<CustomerVoucher[]> {
   const supabase = await createClient()
   const {
@@ -36,13 +63,17 @@ export async function getCustomerVouchers(): Promise<CustomerVoucher[]> {
   } = await supabase.auth.getUser()
   if (!user) return []
 
-  const { data } = await supabase
-    .from('vouchers')
-    .select(VOUCHER_SELECT)
-    .eq('user_id', user.id)
-    // active vouchers first, then most recent
-    .order('status', { ascending: true })
-    .order('issued_at', { ascending: false })
+  const data = voucherReadOrFail(
+    await supabase
+      .from('vouchers')
+      .select(VOUCHER_SELECT)
+      .eq('user_id', user.id)
+      // active vouchers first, then most recent
+      .order('status', { ascending: true })
+      .order('issued_at', { ascending: false }),
+    'voucher.customer_list_read_failed',
+    { userId: user.id },
+  )
 
   return (data ?? []) as unknown as CustomerVoucher[]
 }
@@ -77,22 +108,26 @@ export async function getCustomerVoucher(id: string): Promise<CustomerVoucherDet
   } = await supabase.auth.getUser()
   if (!user) return null
 
-  const { data } = await supabase
-    .from('vouchers')
-    .select(
-      // No platform_percent here on purpose: that column is mid-rename to
-      // platform_bp (059) and the hosted project has not been cut over, so
-      // naming it would tie this page to whichever side of the rename it lands
-      // on. The customer's page has no use for the split anyway.
-      `id, code, qr_payload, status,
+  const data = voucherReadOrFail(
+    await supabase
+      .from('vouchers')
+      .select(
+        // No platform_percent here on purpose: that column is mid-rename to
+        // platform_bp (059) and the hosted project has not been cut over, so
+        // naming it would tie this page to whichever side of the rename it
+        // lands on. The customer's page has no use for the split anyway.
+        `id, code, qr_payload, status,
        face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot,
        offer_valid_until, expires_at, issued_at, redeemed_at,
        product:products(name_he, slug),
        supplier:suppliers(name, city, address, contact_phone, whatsapp)`,
-    )
-    .eq('id', id)
-    .eq('user_id', user.id)
-    .maybeSingle()
+      )
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .maybeSingle(),
+    'voucher.customer_detail_read_failed',
+    { voucherId: id, userId: user.id },
+  )
 
   return (data as unknown as CustomerVoucherDetail | null) ?? null
 }
@@ -143,22 +178,29 @@ export async function getVoucherForRedemption(
   if (supplierIds.length === 0) return null
 
   const admin = createAdminClient()
-  const { data } = await admin
-    .from('vouchers')
-    .select(
-      `id, code, status, supplier_id, user_id,
+  const data = voucherReadOrFail(
+    await admin
+      .from('vouchers')
+      .select(
+        `id, code, status, supplier_id, user_id,
        face_value_agorot, coupon_price_agorot, remaining_amount_due_agorot,
        expires_at, redeemed_at,
        product:products(name_he)`,
-    )
-    .eq('code', code)
-    .maybeSingle()
+      )
+      .eq('code', code)
+      .maybeSingle(),
+    'voucher.redemption_read_failed',
+    { code },
+  )
 
   if (!data) return null
   // Anti-enumeration: another supplier's voucher is indistinguishable from one
   // that does not exist, which is the same collapse redeem_voucher() performs.
   if (!supplierIds.includes(data.supplier_id)) return null
 
+  // NOT through the guard: a missing customer name degrades one line on the
+  // confirm screen, and refusing the whole scan over it would send a paying
+  // customer away for a display field.
   const { data: profile } = await admin
     .from('profiles')
     .select('full_name')

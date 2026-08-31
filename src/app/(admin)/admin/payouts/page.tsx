@@ -7,7 +7,7 @@ import {
   PAYOUT_STATE_VARIANTS,
   isHeld,
   payoutState,
-  shekels,
+  shekelsFromIls,
 } from '@/lib/admin/payouts'
 import { requireSection } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
@@ -146,13 +146,15 @@ export default async function AdminPayoutsPage(props: {
     {
       id: 'gross',
       header: 'ברוטו',
-      cell: (row) => <span className="tabular-nums">{shekels(row.total_gross_ils)}</span>,
+      cell: (row) => <span className="tabular-nums">{shekelsFromIls(row.total_gross_ils)}</span>,
     },
     {
       id: 'fee',
       header: 'עמלת פלטפורמה',
       cell: (row) => (
-        <span className="tabular-nums text-gray-600">{shekels(row.total_platform_fee_ils)}</span>
+        <span className="tabular-nums text-gray-600">
+          {shekelsFromIls(row.total_platform_fee_ils)}
+        </span>
       ),
     },
     {
@@ -160,10 +162,10 @@ export default async function AdminPayoutsPage(props: {
       header: 'לתשלום לספק',
       cell: (row) => (
         <div>
-          <span className="font-semibold tabular-nums">{shekels(row.total_payout_ils)}</span>
+          <span className="font-semibold tabular-nums">{shekelsFromIls(row.total_payout_ils)}</span>
           {payoutState(row) === 'rolled_over' && (
             <span className="block text-xs text-gray-500">
-              מתחת למינימום {shekels(row.min_payout_ils)}
+              מתחת למינימום {shekelsFromIls(row.min_payout_ils)}
             </span>
           )}
         </div>

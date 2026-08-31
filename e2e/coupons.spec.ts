@@ -50,4 +50,46 @@ test.describe('coupons catalogue', () => {
       expect((await cards.count()) > 0 || (await empty.count()) > 0).toBe(true)
     }).toPass({ timeout: 10000 })
   })
+
+  /**
+   * AN ID NOBODY ISSUED MUST 404, NOT 200.
+   *
+   * The lookup sat inside a `<Suspense>` whose fallback was the card outline,
+   * so the shell went out with the status line and `notFound()` could not
+   * change it: every uuid on earth answered `200 OK` with a not-found body.
+   * The boundary is gone - see the note above the page - and there was nothing
+   * to lose with it, since this route has no `generateStaticParams` and reads
+   * through the cookie-scoped client.
+   */
+  test('an id that was never issued 404s', async ({ request }) => {
+    const response = await request.get('/coupons/00000000-0000-0000-0000-000000000000')
+    expect(response.status()).toBe(404)
+  })
+
+  /**
+   * THE DETAIL PAGE MUST NOT QUOTE THE ABOLISHED 10%/90% SPLIT.
+   *
+   * `platform_price` is an absolute amount an admin sets per deal. This page
+   * printed "(10%)" and "(90%)" next to the two figures and, when the price was
+   * missing, invented one at a tenth of the sticker - the model abolished on
+   * 2026-07-24 and already corrected in `CouponCard`, which links here.
+   *
+   * The seed rows are all exactly a tenth of their sticker, so the labels read
+   * as true and no assertion about the NUMBERS would catch this. The absence of
+   * the percentage text is what the test asserts, and it is checked in the
+   * served HTML so it holds for a reader that runs no scripts.
+   */
+  test('the detail page names the split in shekels, not in percentages', async ({
+    page,
+    request,
+  }) => {
+    await page.goto('/coupons')
+    const href = await page.locator('a[href^="/coupons/"]').first().getAttribute('href')
+    test.skip(!href, 'no active coupon deals to open')
+
+    const html = await (await request.get(href as string)).text()
+    expect(html).toContain('עכשיו')
+    expect(html, 'the 10%/90% split was abolished on 2026-07-24').not.toContain('(10%)')
+    expect(html, 'the 10%/90% split was abolished on 2026-07-24').not.toContain('(90%)')
+  })
 })

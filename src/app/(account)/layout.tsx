@@ -80,7 +80,7 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
                 </Suspense>
                 {/* Every /account page reads rows scoped to the signed-in user,
                     so each one is request-time work. One boundary here covers
-                    all nine rather than nine boundaries in nine files. */}
+                    all ten rather than ten boundaries in ten files. */}
                 <div className="account-content">
                   <Suspense fallback={null}>{children}</Suspense>
                 </div>

@@ -1,5 +1,6 @@
 import ProductsTable, { type ProductRow } from '@/components/admin/ProductsTable'
 import { productListParamsSchema } from '@/lib/admin/page-params'
+import { requireSection } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
 import { Plus } from 'lucide-react'
 import Link from 'next/link'
@@ -24,6 +25,12 @@ interface Props {
 }
 
 export default async function AdminProductsPage({ searchParams }: Props) {
+  // The (admin) layout only proves panel entry, and `support` has panel entry.
+  // Without this the catalog list was the one admin screen a support user could
+  // open, while every sibling under /admin/products/* refused them. `read`, not
+  // `write`: content_uploader lists and edits, support gets neither.
+  await requireSection('catalog', 'read')
+
   const raw = await searchParams
   const parsed = productListParamsSchema.safeParse({
     q: typeof raw.q === 'string' ? raw.q : undefined,

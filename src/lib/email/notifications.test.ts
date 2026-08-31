@@ -261,3 +261,81 @@ describe('the order confirmation links a receipt', () => {
     expect(built?.html).not.toContain('/invoice')
   })
 })
+
+describe('the refund-done mail, which is (21) closing', () => {
+  const SITE = 'https://kenyonexpress.co.il'
+  const base = {
+    order_id: '9f3c1a2b-0000-0000-0000-000000000000',
+    order_ref: '9F3C1A2B',
+    refunded_agorot: 12500,
+    cancellation_fee_agorot: 0,
+    cancel_only: false,
+  }
+
+  it('states the amount that was credited and the order it belongs to', () => {
+    const built = buildNotification('refund_completed', base, SITE)
+    expect(built?.subject).toContain('125')
+    expect(built?.text).toContain('9F3C1A2B')
+    expect(built?.html).toContain('/account/orders')
+  })
+
+  it('never promises a date the issuer controls', () => {
+    // A refund mail that names a day generates a support ticket on that day.
+    const built = buildNotification('refund_completed', base, SITE)
+    for (const forbidden of ['ימי עסקים', 'תוך', 'עד יום']) {
+      expect(built?.text).not.toContain(forbidden)
+    }
+    expect(built?.text).toContain('תלויה במנפיק הכרטיס')
+  })
+
+  it('prints a cancellation fee only when one was actually taken', () => {
+    // "דמי ביטול: ₪0" on a defect claim reads as though a fee nearly happened.
+    const free = buildNotification('refund_completed', base, SITE)
+    expect(free?.text).not.toContain('דמי ביטול')
+
+    const charged = buildNotification(
+      'refund_completed',
+      { ...base, cancellation_fee_agorot: 625 },
+      SITE,
+    )
+    expect(charged?.text).toContain('דמי ביטול')
+  })
+
+  it('says the charge was voided, not credited, on the same-clearing-day path', () => {
+    // cancel_only means the charge never reached a statement, so a "credit"
+    // would be describing money that has no debit to sit next to.
+    const built = buildNotification('refund_completed', { ...base, cancel_only: true }, SITE)
+    expect(built?.text).toContain('לא ייגבה')
+    expect(built?.text).not.toContain('זיכינו את הכרטיס')
+  })
+
+  it('renders nothing for a zero or missing amount', () => {
+    expect(buildNotification('refund_completed', { ...base, refunded_agorot: 0 }, SITE)).toBeNull()
+    expect(buildNotification('refund_completed', { order_ref: 'X' }, SITE)).toBeNull()
+  })
+})
+
+describe('the welcome mail, which is (21) closing', () => {
+  const SITE = 'https://kenyonexpress.co.il'
+
+  it('greets by name when the profile has one, and plainly when it does not', () => {
+    expect(buildNotification('welcome', { full_name: 'דנה' }, SITE)?.text).toContain('שלום דנה')
+    expect(buildNotification('welcome', {}, SITE)?.text).toContain('שלום,')
+  })
+
+  it('carries no offer and no coupon', () => {
+    // The same sender address has to carry voucher codes and refund
+    // confirmations later. Opening with a discount trains the reader to
+    // file it as marketing.
+    const built = buildNotification('welcome', {}, SITE)
+    for (const forbidden of ['הנחה', 'קופון מתנה', '₪', '%']) {
+      expect(built?.text).not.toContain(forbidden)
+    }
+  })
+
+  it('points at the account area, which is the only thing a new user can use', () => {
+    const built = buildNotification('welcome', {}, SITE)
+    expect(built?.text).toContain('/account/coupons')
+    expect(built?.html).toContain('/account/coupons')
+  })
+})

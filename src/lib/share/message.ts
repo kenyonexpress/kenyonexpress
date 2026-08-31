@@ -5,7 +5,7 @@ import type { CouponOffer } from '@/lib/commerce/coupon-offer'
  *
  * WHY THIS IS NOT A TEMPLATE STRING AT THE CALL SITE, WHICH IS WHAT IT WAS
  *
- * The share button quoted `shekels(price)`, and for a COUPON `price` is
+ * The share button quoted `shekelsFromIls(price)`, and for a COUPON `price` is
  * `basePrice` — `products.price_ils`, the sticker price of the goods at the
  * business. The page beside it renders `<CouponPricing>` off `couponOffer` and
  * shows a different, smaller number. So a customer sharing a ₪80 coupon sent
@@ -29,7 +29,7 @@ export interface ShareSubject {
 }
 
 /** `₪399`, not `₪399.00`. Agorot appear only when the price has them. */
-function shekels(value: number): string {
+function shekelsFromIls(value: number): string {
   return `₪${value.toLocaleString('he-IL', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`
 }
 
@@ -47,8 +47,8 @@ export function buildShareMessage(subject: ShareSubject): string {
     // do and for the same reason.
     const price =
       balanceAtBusinessIls > 0
-        ? `${shekels(paidOnlineIls)} באתר ועוד ${shekels(balanceAtBusinessIls)} בבית העסק`
-        : shekels(paidOnlineIls)
+        ? `${shekelsFromIls(paidOnlineIls)} באתר ועוד ${shekelsFromIls(balanceAtBusinessIls)} בבית העסק`
+        : shekelsFromIls(paidOnlineIls)
     const saving = discountPercent > 0 ? ` (${discountPercent}% הנחה)` : ''
     return `${lead} — ${price}${saving}`
   }
@@ -59,5 +59,5 @@ export function buildShareMessage(subject: ShareSubject): string {
   if (subject.offer && !subject.offer.sellable) return lead
 
   if (subject.priceIls === null) return lead
-  return `${lead} — ${shekels(subject.priceIls)}`
+  return `${lead} — ${shekelsFromIls(subject.priceIls)}`
 }

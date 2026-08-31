@@ -13,6 +13,7 @@ import {
 } from '@/lib/auth/phone-otp'
 import { safeNextPath } from '@/lib/auth/safe-next'
 import { GUEST_SESSION_COOKIE, getGuestSessionId } from '@/lib/cart/guest-session'
+import { siteUrl } from '@/lib/site-url'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
@@ -26,6 +27,7 @@ import {
   signupSchema,
 } from '@/lib/validations/auth'
 import { mergeGuestCart } from '@/server/actions/cart'
+import { claimReferralOnce } from '@/server/referrals/claim'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
@@ -39,16 +41,74 @@ const ERROR_MAP: Record<string, string> = {
   'Signup is disabled': 'ההרשמה סגורה כרגע',
   'Email rate limit exceeded': 'יותר מדי ניסיונות — נסו שוב מאוחר יותר',
   'Too many requests': 'יותר מדי ניסיונות — נסו שוב מאוחר יותר',
+  /*
+    THE ONLY WAY /reset-password FAILS FOR A REAL CUSTOMER, AND IT USED TO SAY
+    NOTHING.
+
+    `updateUser` is authorised by the recovery session the mail link opens, so
+    a link that expired, was already used, or was never followed at all leaves
+    no session and this is what Supabase returns. It was unmapped, so the page
+    said "אירעה שגיאה, נסו שוב" - true, useless, and with no next step on a
+    screen that has no other link on it.
+
+    Not guessed. The string was READ OUT OF THE LOG that the unmapped-fallback
+    warning above started writing: `auth.error_unmapped … reason: "Auth session
+    missing!"`, from a direct visit to /reset-password. Sibling wordings for an
+    expired link are deliberately NOT listed here - they have not been seen on
+    this project, and the fallback now names anything new rather than hiding it.
+  */
+  'Auth session missing': 'קישור האיפוס פג או שכבר נעשה בו שימוש — בקשו קישור חדש',
 }
 
+/**
+ * THE FALLBACK IS LOGGED, BECAUSE IT IS INDISTINGUISHABLE FROM WORKING.
+ *
+ * Every key above is an ENGLISH STRING SUPABASE CHOOSES, matched by substring.
+ * Nothing here is under our control and nothing warns when one of them is
+ * reworded upstream: the match simply stops firing, "כתובת אימייל או סיסמה
+ * שגויים" quietly becomes "אירעה שגיאה, נסו שוב", and the sign-in form still
+ * looks like it is behaving. The customer is told nothing useful and we are
+ * told nothing at all.
+ *
+ * So an unmapped message is a warning with the message on it. The reason goes
+ * to the log and never into the response - the same split the API routes are
+ * held to by `log-coverage.test.ts`.
+ */
 function toHebrew(msg: string): string {
   for (const [key, val] of Object.entries(ERROR_MAP)) {
     if (msg.includes(key)) return val
   }
+  log.warn('auth.error_unmapped', { reason: msg })
   return 'אירעה שגיאה, נסו שוב'
 }
 
 const safeNext = safeNextPath
+
+/**
+ * WHERE SUPABASE SENDS THE CUSTOMER BACK. `siteUrl()`, NOT A BARE ENV READ.
+ *
+ * These three URLs used to interpolate `process.env.NEXT_PUBLIC_APP_URL`
+ * directly, and that variable is not in the required list in `lib/env.ts`, so
+ * nothing refuses to boot without it. MEASURED against `pnpm start` on this
+ * machine: clicking "כניסה עם Google" sent the customer to Google carrying
+ * `redirect_to=undefined%2Fauth%2Fcallback%3Fnext%3D%2F` - the literal word
+ * "undefined" as the origin, because template interpolation stringifies it
+ * instead of failing.
+ *
+ * That is the worst shape a missing variable can take: `signInWithOAuth`
+ * returns no error, the button works, the customer reaches a real Google
+ * screen, and only the trip back is broken. The same read is behind the magic
+ * link and the password-reset mail, so all three ways into an account share
+ * one unguarded variable.
+ *
+ * `siteUrl()` is what the other ten call sites in the repo already use -
+ * `layout.tsx`, `sitemap`, `robots`, the feeds, invoices, `finalize.ts` - and
+ * it falls back to the canonical origin. These were the only three that did
+ * not, which is exactly why they were the ones that broke.
+ */
+function authRedirect(path: string): string {
+  return `${siteUrl()}${path}`
+}
 
 // ──────────────────────────────────────────────
 // Google OAuth
@@ -59,7 +119,7 @@ async function runSignInWithGoogle(_: AuthState, formData: FormData): Promise<Au
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=${encodeURIComponent(next)}`,
+      redirectTo: authRedirect(`/auth/callback?next=${encodeURIComponent(next)}`),
       scopes: 'openid email profile',
     },
   })
@@ -82,15 +142,36 @@ async function runSignInWithEmail(_: AuthState, formData: FormData): Promise<Aut
   })
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
 
+  // Per-account as well as per-IP, for the same reason `phone-otp-number` exists
+  // below: the IP ceiling alone is a ceiling on one attacker's connection, not
+  // on one customer's password. A list of proxies turns ten tries an hour into
+  // ten per proxy against the same address. Lower-cased so `A@b.com` and
+  // `a@b.com` cannot each buy their own allowance for one account.
+  //
+  // Twenty is above any real person's typo rate and far below a dictionary.
+  const accountAllowed = await checkRateLimit(
+    `login-account:${parsed.data.email.trim().toLowerCase()}`,
+    20,
+    3600,
+  )
+  // Deliberately the SAME sentence the IP refusal returns. Saying "too many
+  // attempts on this account" to someone who has made none from this IP
+  // confirms the address is registered.
+  if (!accountAllowed) return { error: 'יותר מדי ניסיונות כניסה — נסו שוב בעוד שעה' }
+
   const supabase = await createClient()
   const { data: signInData, error } = await supabase.auth.signInWithPassword(parsed.data)
   if (error) return { error: toHebrew(error.message) }
 
   const sessionId = await getGuestSessionId()
   if (signInData.user && sessionId) {
-    await mergeGuestCart(supabase, signInData.user.id, sessionId)
-    const cookieStore = await cookies()
-    cookieStore.delete(GUEST_SESSION_COOKIE)
+    // Only on a merge that actually ran: see the same guard in
+    // app/auth/callback/route.ts. A cleared cookie orphans the guest cart.
+    const merged = await mergeGuestCart(supabase, signInData.user.id, sessionId)
+    if (merged) {
+      const cookieStore = await cookies()
+      cookieStore.delete(GUEST_SESSION_COOKIE)
+    }
   }
 
   redirect(safeNext(formData.get('next')))
@@ -139,7 +220,7 @@ async function runSendMagicLink(_: AuthState, formData: FormData): Promise<AuthS
   const { error } = await supabase.auth.signInWithOtp({
     email: parsed.data.email,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+      emailRedirectTo: authRedirect('/auth/callback'),
     },
   })
   if (error) return { error: toHebrew(error.message) }
@@ -280,9 +361,13 @@ async function runVerifyPhoneOtp(_: AuthState, formData: FormData): Promise<Auth
 
   const sessionId = await getGuestSessionId()
   if (data.user && sessionId) {
-    await mergeGuestCart(supabase, data.user.id, sessionId)
-    const cookieStore = await cookies()
-    cookieStore.delete(GUEST_SESSION_COOKIE)
+    // Gated on the return value, same as the other two login paths: clearing
+    // the cookie after a merge that did not run orphans the guest cart.
+    const merged = await mergeGuestCart(supabase, data.user.id, sessionId)
+    if (merged) {
+      const cookieStore = await cookies()
+      cookieStore.delete(GUEST_SESSION_COOKIE)
+    }
   }
 
   // A phone-only account has no profile row, because the trigger that creates
@@ -293,6 +378,16 @@ async function runVerifyPhoneOtp(_: AuthState, formData: FormData): Promise<Auth
     await admin
       .from('profiles')
       .upsert({ id: data.user.id, phone: e164 }, { onConflict: 'id', ignoreDuplicates: true })
+  }
+
+  // The referral claim for the ONE signup path that never reaches
+  // /auth/callback: `verifyOtp` establishes the session right here, so the
+  // claim the callback makes for email, magic link and Google has to be made
+  // again for phone. `sessionId` is read above, before the merge deletes the
+  // cookie, which is deliberate - it is the device fingerprint the fraud guard
+  // scores on. Best-effort, and never a reason a sign-in fails.
+  if (data.user) {
+    await claimReferralOnce(data.user.id, sessionId)
   }
 
   redirect(safeNext(formData.get('next')))
@@ -327,9 +422,21 @@ async function runSendPasswordReset(_: AuthState, formData: FormData): Promise<A
   const parsed = passwordResetSchema.safeParse({ email: formData.get('email') })
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? 'נתונים לא תקינים' }
 
+  // Per-address too: the IP ceiling does not stop a rotating connection from
+  // mailing one customer a reset link every minute until they click one.
+  const addressAllowed = await checkRateLimit(
+    `reset-address:${parsed.data.email.trim().toLowerCase()}`,
+    5,
+    3600,
+  )
+  // Still the neutral reply. A refusal that differs from the success message
+  // would turn this endpoint into a registration oracle, which is the whole
+  // point of `passwordResetResult` below.
+  if (!addressAllowed) return passwordResetResult(null)
+
   const supabase = await createClient()
   const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback?next=/reset-password`,
+    redirectTo: authRedirect('/auth/callback?next=/reset-password'),
   })
 
   // Never let the reply reveal whether the address is registered. Failures are
@@ -342,6 +449,14 @@ async function runSendPasswordReset(_: AuthState, formData: FormData): Promise<A
 // Update password (after recovery flow)
 // ──────────────────────────────────────────────
 async function runUpdatePassword(_: AuthState, formData: FormData): Promise<AuthState> {
+  // The recovery session is what authorises this, so the ceiling is not about
+  // guessing. It is about a leaked or replayed recovery link being used to
+  // cycle a password repeatedly, and about the same session being driven in a
+  // loop; ten an hour is more than a real recovery ever needs.
+  const ip = await getClientIp()
+  const allowed = await checkRateLimit(`update-password:${ip}`, 10, 3600)
+  if (!allowed) return { error: 'יותר מדי ניסיונות — נסו שוב בעוד שעה' }
+
   const parsed = newPasswordSchema.safeParse({
     password: formData.get('password'),
     confirm_password: formData.get('confirm_password'),

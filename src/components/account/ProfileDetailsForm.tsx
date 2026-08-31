@@ -53,6 +53,7 @@ export default function ProfileDetailsForm({
             name="phone"
             type="tel"
             inputMode="tel"
+            dir="ltr"
             defaultValue={phone ?? ''}
             required
             autoComplete="tel"

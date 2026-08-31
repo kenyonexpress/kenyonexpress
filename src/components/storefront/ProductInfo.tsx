@@ -5,6 +5,7 @@ import CityTag from '@/components/geo/CityTag'
 import FacebookShareButton from '@/components/shared/FacebookShareButton'
 import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import CouponPricing from '@/components/storefront/CouponPricing'
+import { productQuantityCeiling } from '@/lib/cart/format'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
 import { cityByName } from '@/lib/geo/cities'
 import { buildShareMessage } from '@/lib/share/message'
@@ -64,7 +65,7 @@ interface Props {
  * Live prints ₪399, not ₪399.00, and the pixel comparison counts every glyph.
  * Agorot are still shown when a price actually has them.
  */
-function shekels(value: number): string {
+function shekelsFromIls(value: number): string {
   return `₪${value.toLocaleString('he-IL', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`
 }
 
@@ -126,15 +127,27 @@ export default function ProductInfo({
   // The commission engine refuses a coupon line with no absolute price, so the
   // button must not offer a purchase the checkout would reject.
   const couponUnsellable = isCoupon && couponOffer !== null && !couponOffer.sellable
+  // The same refusal for the other type. A physical product whose price is null
+  // or 0 would otherwise paint ₪0.00 beside a live add-to-cart button; the cart
+  // marks such a line unpriced and beginCheckout refuses it, so offering the
+  // purchase here only moves the refusal to the worst possible moment.
+  const priceUnsellable = !isCoupon && !(price > 0)
 
   const hasDiscount = oldPrice != null && oldPrice > price
   const discountPct = hasDiscount ? Math.round((1 - price / oldPrice) * 100) : 0
-  const maxQty = stock != null && stock > 0 ? stock : 99
-  const blocked = outOfStock || needsVariant || couponUnsellable || isPending
+  // Not `stock ?? 99`. The schema stops a cart line at 99 whatever the shelf
+  // holds, and /product/demo-coupon-1 rendered `max="100"` against it -
+  // measured on a built server. `CART_LINE_MAX_QUANTITY` exists precisely so
+  // this number and the one that rejects the write cannot drift.
+  const maxQty = productQuantityCeiling(stock)
+  const blocked = outOfStock || needsVariant || couponUnsellable || priceUnsellable || isPending
 
   const handleAddToCart = async () => {
     if (blocked) return
-    await addToCart(productId, selected, qty, name)
+    // Only confirm what happened. The store resolves for a refusal as well, so
+    // the unconditional version showed "נוסף לסל" over a cart the server had
+    // just declined to change, next to the error toast contradicting it.
+    if (!(await addToCart(productId, selected, qty, name))) return
     setAdded(true)
     setTimeout(() => setAdded(false), 2000)
   }
@@ -144,13 +157,18 @@ export default function ProductInfo({
   // on login with the item already saved rather than losing the selection.
   const handleBuyNow = async () => {
     if (blocked) return
-    await addToCart(productId, selected, qty, name)
+    // The navigation is the add's consequence, so it waits on the add's answer.
+    // A refused item used to push anyway, and /checkout bounces an empty cart
+    // to /cart — the shopper pressed "קנה עכשיו" and landed two pages away
+    // from the product with nothing saying why. Staying put leaves them on the
+    // product with the error toast that does.
+    if (!(await addToCart(productId, selected, qty, name))) return
     router.push('/checkout')
   }
 
   const buyLabel = outOfStock
     ? 'אזל מהמלאי'
-    : couponUnsellable
+    : couponUnsellable || priceUnsellable
       ? 'לא זמין לרכישה'
       : isCoupon
         ? 'קנה עכשיו'
@@ -219,17 +237,17 @@ export default function ProductInfo({
           <ul className="pdp-summary__list">
             {oldPrice != null && (
               <li>
-                מחיר רגיל: <del>{shekels(oldPrice)}</del>
+                מחיר רגיל: <del>{shekelsFromIls(oldPrice)}</del>
               </li>
             )}
-            <li>מחיר בקניון: {shekels(price)}</li>
+            <li>מחיר בקניון: {shekelsFromIls(price)}</li>
           </ul>
 
           <p className="pdp-summary__price">
-            <span>{shekels(price)}</span>
+            <span>{shekelsFromIls(price)}</span>
             {hasDiscount && (
               <>
-                <del>{shekels(oldPrice)}</del>
+                <del>{shekelsFromIls(oldPrice)}</del>
                 <span className="pdp-summary__badge">{discountPct}%-</span>
               </>
             )}
@@ -245,7 +263,19 @@ export default function ProductInfo({
               <button
                 type="button"
                 key={v.id}
-                onClick={() => setSelected(v.id)}
+                onClick={() => {
+                  setSelected(v.id)
+                  // The ceiling belongs to the SELECTION, so switching selection
+                  // has to move the number under it. Picking a 50-in-stock
+                  // variant, typing 20, then switching to one with 3 left left
+                  // `20` sitting in an input whose `max` had just become 3 --
+                  // and the add went out at 20, for the server to refuse. That
+                  // is the same drift `productQuantityCeiling` exists to stop,
+                  // one state update further along.
+                  setQty((current) =>
+                    Math.min(current, productQuantityCeiling(v.stock_quantity ?? baseStock)),
+                  )
+                }}
                 disabled={v.stock_quantity === 0}
                 className={`px-4 py-2 rounded-lg text-sm border transition-colors ${
                   selected === v.id

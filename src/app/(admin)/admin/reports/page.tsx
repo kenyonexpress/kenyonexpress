@@ -2,6 +2,7 @@ import StatsCard from '@/components/admin/StatsCard'
 import SalesChart, { type SalesPoint } from '@/components/admin/reports/SalesChart'
 import { requireSection } from '@/lib/admin/rbac'
 import { agorot, agorotToIls } from '@/lib/commerce/money'
+import { shekels } from '@/lib/money-format'
 import {
   type PeriodTotals,
   type ReportRange,
@@ -40,15 +41,6 @@ const GRANULARITIES = [
   { value: 'day', label: 'יומי' },
   { value: 'month', label: 'חודשי' },
 ] as const
-
-function shekels(agorotValue: number): string {
-  // Display only. Every figure this page shows is summed as an agorot integer
-  // first and converted once, here, at the edge.
-  return `₪${agorotToIls(agorot(agorotValue)).toLocaleString('he-IL', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`
-}
 
 function shortShekels(agorotValue: number): string {
   return `₪${Math.round(agorotToIls(agorot(agorotValue))).toLocaleString('he-IL')}`
@@ -296,11 +288,15 @@ export default async function ReportsPage({
                   <td className="py-2 text-black/70">
                     {periodLabel(bucket.period, range.granularity)}
                   </td>
-                  <td className="py-2 font-medium text-heading">{shekels(bucket.grossAgorot)}</td>
-                  <td className="py-2 text-black/70">{shekels(bucket.commissionAgorot)}</td>
-                  <td className="py-2 text-black/70">{shekels(bucket.supplierDueAgorot)}</td>
-                  <td className="py-2 text-black/70">{shekels(bucket.refundedAgorot)}</td>
-                  <td className="py-2 text-black/70">{shekels(bucket.discountAgorot)}</td>
+                  <td className="py-2 font-medium text-heading">
+                    {shekels(agorot(bucket.grossAgorot))}
+                  </td>
+                  <td className="py-2 text-black/70">{shekels(agorot(bucket.commissionAgorot))}</td>
+                  <td className="py-2 text-black/70">
+                    {shekels(agorot(bucket.supplierDueAgorot))}
+                  </td>
+                  <td className="py-2 text-black/70">{shekels(agorot(bucket.refundedAgorot))}</td>
+                  <td className="py-2 text-black/70">{shekels(agorot(bucket.discountAgorot))}</td>
                   <td className="py-2 text-black/70">{bucket.orders.toLocaleString('he-IL')}</td>
                 </tr>
               ))}
@@ -361,9 +357,9 @@ export default async function ReportsPage({
                       {row.supplierName ?? 'ללא שם'}
                     </Link>
                   </td>
-                  <td className="py-2 text-black/70">{shekels(row.earnedAgorot)}</td>
-                  <td className="py-2 text-black/70">{shekels(row.debitedAgorot)}</td>
-                  <td className="py-2 text-black/70">{shekels(row.settledAgorot)}</td>
+                  <td className="py-2 text-black/70">{shekels(agorot(row.earnedAgorot))}</td>
+                  <td className="py-2 text-black/70">{shekels(agorot(row.debitedAgorot))}</td>
+                  <td className="py-2 text-black/70">{shekels(agorot(row.settledAgorot))}</td>
                   <td
                     className={
                       row.openAgorot < 0
@@ -371,7 +367,7 @@ export default async function ReportsPage({
                         : 'py-2 font-medium text-heading'
                     }
                   >
-                    {shekels(row.openAgorot)}
+                    {shekels(agorot(row.openAgorot))}
                   </td>
                 </tr>
               ))}

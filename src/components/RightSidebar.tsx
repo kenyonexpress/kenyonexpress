@@ -30,7 +30,7 @@ export default function RightSidebar() {
             key={cat.id}
             href={cat.href}
             className={`flex items-center gap-2 px-3 py-2.5 border-b border-gray-100 last:border-0 transition-colors ${
-              cat.muted ? 'text-gray-400 pointer-events-none' : 'hover:bg-gray-50 text-gray-700'
+              cat.muted ? 'text-gray-500 pointer-events-none' : 'hover:bg-gray-50 text-gray-700'
             }`}
           >
             <span className="text-sm shrink-0">{cat.icon}</span>

@@ -15,7 +15,24 @@ export const loginSchema = z.object({
 })
 
 export const signupSchema = z.object({
-  full_name: z.string().min(2, 'שם מלא חייב להכיל לפחות 2 תווים').trim(),
+  /*
+    `.trim()` BEFORE `.min(2)`, WHICH IS THE ORDER THE OTHER TWO COPIES OF THIS
+    FIELD ALREADY USE. Zod applies a chain in the order it is written, so
+    `.min(2).trim()` measured the length of the RAW string and trimmed the
+    survivor: two spaces are two characters, so `"  "` passed and was stored as
+    `""`, and `" a "` passed and was stored as `"a"`. An account created with a
+    blank display name, from a form whose own rule says two characters.
+
+    Reachable exactly as typed - this is `type="text"`, and the browser hands
+    the spaces over untouched (measured: the serialised FormData value was
+    `"  "`). The email fields next to it are `type="email"`, which the browser
+    DOES strip, which is why only this one mattered.
+
+    `validations/account.ts` and `validations/checkout.ts` both write
+    `.trim().min(2, …)` for the same full_name. This was the only one reversed,
+    and it is the one that creates the account.
+  */
+  full_name: z.string().trim().min(2, 'שם מלא חייב להכיל לפחות 2 תווים'),
   email: z
     .string()
     .min(1, 'אימייל נדרש')

@@ -141,11 +141,29 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   // The select string is built at runtime, so the client cannot infer the row
   // shape from it; the cast is what that costs and is confined to this line.
   const paymentSelect = `id, order_id, status, ${money.amountColumn}, cardcom_account_id`
-  const { data: paymentRow } = await admin
+  const { data: paymentRow, error: paymentReadError } = await admin
     .from('payments')
     .select(paymentSelect)
     .eq('cardcom_low_profile_id', payload.lowprofilecode)
     .maybeSingle()
+  if (paymentReadError) {
+    // A READ THAT FAILED IS NOT A PAYMENT WE DO NOT HAVE, and the two answers
+    // below are both wrong for it. Discarded, the error fell into the branch
+    // underneath: it raised the "a customer may have been charged and has no
+    // order" alarm - the most expensive thing this route can report, here
+    // untrue - and answered 200, which tells Cardcom the event is handled and
+    // stops the retries for a payment we DO hold.
+    //
+    // 5xx is the correct answer to this one specific case, for the same reason
+    // the branch below says 200 is correct to its own: retrying can place this
+    // event, and retrying an unknown payment cannot. The 10-minute
+    // stranded-payments job is the floor under both, not the plan.
+    log.error('cardcom.webhook_payment_read_failed', {
+      low_profile_id: payload.lowprofilecode,
+      reason: paymentReadError.message,
+    })
+    return NextResponse.json({ ok: false, retry: true }, { status: 503 })
+  }
   const payment = paymentRow as unknown as {
     id: string
     order_id: string

@@ -63,7 +63,22 @@ export interface BuiltEmail {
   text: string
 }
 
-const BRAND = '#f5c518'
+/**
+ * The site's brand yellow, and it must stay the site's brand yellow.
+ *
+ * This was `#f5c518` in both email builders while every stylesheet in `src`
+ * used `#fed700`. Nothing failed and nothing looked broken in isolation: a
+ * transactional email simply arrived in a slightly different yellow from the
+ * page it links to, which is the kind of thing only a customer comparing the
+ * two ever notices, and it was hardcoded in exactly two places.
+ *
+ * `src/lib/email/brand-colour.test.ts` now reads the token out of
+ * `src/app/globals.css` and fails if these drift apart again. It cannot be
+ * imported from there at runtime: this module builds a string of inline styles
+ * for mail clients that do not honour stylesheets, so the value has to be a
+ * literal here.
+ */
+const BRAND = '#fed700'
 const INK = '#1a1a1a'
 const MUTED = '#6b7280'
 
@@ -151,7 +166,7 @@ export function buildVoucherEmail(input: VoucherEmailInput): BuiltEmail {
   textLines.push(`הזמנה ${input.orderId.slice(0, 8).toUpperCase()}`)
 
   const html = `
-    <div dir="rtl" style="background:#f5f5f5;padding:24px 12px;font-family:Arial,Helvetica,sans-serif">
+    <div dir="rtl" style="background:#f5f5f5;padding:24px 12px;font-family:Heebo,Arial,Helvetica,sans-serif">
       <div style="max-width:560px;margin:0 auto">
         <div style="font-size:20px;font-weight:800;color:${INK};margin-bottom:4px">KenyonExpress</div>
         <div style="font-size:15px;color:${INK};margin-bottom:18px">${escapeHtml(greeting)} ${

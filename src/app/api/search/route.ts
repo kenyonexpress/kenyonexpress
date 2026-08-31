@@ -1,3 +1,4 @@
+import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
@@ -59,17 +60,41 @@ async function handleGET(request: NextRequest) {
     .limit(limit)
 
   if (category) {
-    const { data: cat } = await supabase
+    // A FAILED LOOKUP HERE IS NOT "NO SUCH CATEGORY". Discarded, the error left
+    // `cat` null, the filter was silently dropped, and the shopper who asked to
+    // search inside one category got results from ALL of them - a WRONG answer
+    // presented as a correct one, which is worse than the empty list every
+    // other failure in this route degrades to. A slug that genuinely does not
+    // exist still returns no rows and no error, and still narrows to nothing.
+    const { data: cat, error: catError } = await supabase
       .from('categories')
       .select('id')
       .eq('slug', category)
       .maybeSingle()
-    if (cat?.id) query = query.eq('category_id', cat.id)
+    if (catError) {
+      log.error('search.category_lookup_failed', { reason: catError.message })
+      return NextResponse.json({ query: q, results: [], error: 'search_failed' }, { status: 500 })
+    }
+    // No row: the slug is not a category, so nothing can match inside it.
+    if (!cat?.id) return NextResponse.json({ query: q, results: [] })
+    query = query.eq('category_id', cat.id)
   }
 
   const { data, error } = await query
   if (error) {
-    return NextResponse.json({ query: q, results: [], error: error.message }, { status: 500 })
+    // THE UPSTREAM MESSAGE DOES NOT GO TO THE CLIENT.
+    //
+    // This line used to return `error.message`, and every other route in
+    // src/app/api logs the message and answers with a code instead. Measured on
+    // 2026-08-19: `/api/search?q=' or 1=1--` is refused by the WAF sitting in
+    // front of the database, whose reply is a full HTML challenge page, and this
+    // endpoint put that page inside the JSON body of a public GET. Anyone could
+    // ask a search box what infrastructure is behind it.
+    //
+    // The status stays 500 and the shape stays the same, so the dropdown and
+    // the results page keep degrading to "no results" exactly as before.
+    log.error('search.query_failed', { reason: error.message })
+    return NextResponse.json({ query: q, results: [], error: 'search_failed' }, { status: 500 })
   }
 
   const results: SearchResult[] = (data ?? []).map((p) => {

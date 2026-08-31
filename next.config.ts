@@ -166,15 +166,30 @@ const nextConfig: NextConfig = {
      * ZERO bytes, because no replay integration is imported anywhere; they are
      * left out rather than kept as decoration.
      *
-     * `__SENTRY_TRACING__: false` is safe because tracing is off by decision in
-     * all three runtimes: `tracesSampleRate: 0` in instrumentation-client.ts,
-     * sentry.server.config.ts and sentry.edge.config.ts. Turn any of those up
-     * and this flag has to come out first, or the spans are shaken out of the
-     * build and the sample rate silently governs nothing.
+     * `__SENTRY_TRACING__` IS NO LONGER SET, and its removal is the load-bearing
+     * half of turning tracing on.
+     *
+     * It used to be `false`, which was correct while `tracesSampleRate` was 0
+     * in all three runtimes. The three configs now sample at 0.1, and the note
+     * that used to sit here spelled out the trap this avoids:
+     *
+     *   "Turn any of those up and this flag has to come out first, or the spans
+     *    are shaken out of the build and the sample rate silently governs
+     *    nothing."
+     *
+     * That is exactly what it does. The flag is a bundler-level constant, so
+     * `false` deletes the span code at build time; the SDK then reads 0.1,
+     * reports no error, and emits no transaction. A config that looks enabled
+     * and is not.
+     *
+     * The removal is not free, and the number is the one already measured on
+     * this build: __SENTRY_TRACING__ was worth 53322 bytes of client JS
+     * (1797197 -> 1743875 with it on). Tracing costs that back. It is charged
+     * on the client bundle only; `__SENTRY_DEBUG__: false` stays, and it was
+     * independently worth 5471 bytes.
      */
     define: {
       __SENTRY_DEBUG__: false,
-      __SENTRY_TRACING__: false,
     },
   },
   experimental: {
@@ -235,7 +250,16 @@ export default withSentryConfig(withMDX(withNextIntl(nextConfig)), {
   // Uploaded and then DELETED from the deployed output. A .map served publicly
   // hands anyone the unminified source of the checkout, including every
   // client-side guard and every route name.
-  sourcemaps: { deleteSourcemapsAfterUpload: true },
+  //
+  // The deletion also hides the thing most worth checking. Locally there is no
+  // SENTRY_AUTH_TOKEN, so the upload is a no-op while the delete still runs,
+  // and `.next/static` ends up with zero .map files either way: whether the
+  // maps were generated and removed, or never generated at all, looks
+  // identical. Those are very different states - the second one means the
+  // Vercel build uploads nothing and every production stack trace stays
+  // minified - so SENTRY_KEEP_SOURCEMAPS=1 keeps them in place and makes the
+  // difference visible. Build-time only, never set on a deploy.
+  sourcemaps: { deleteSourcemapsAfterUpload: process.env.SENTRY_KEEP_SOURCEMAPS !== '1' },
 
   // Routes the browser SDK's own requests through our origin, so an ad blocker
   // (which most Israeli shoppers run) cannot silently drop error reports. The

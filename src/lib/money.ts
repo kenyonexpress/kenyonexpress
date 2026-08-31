@@ -44,8 +44,25 @@ export type Bp = number & { readonly [bpBrand]: 'Bp' }
 /** 100% expressed in basis points. */
 export const BP_WHOLE = 10_000
 
-/** Israeli VAT, 17%, expressed in basis points (the ledger default). */
-export const VAT_RATE_BP = 1700
+/**
+ * Israeli VAT, in basis points. ONE definition, for the whole app.
+ *
+ * This said 1700 while `src/lib/invoices/document.ts` said 18, with its own
+ * comment reading "Standard Israeli VAT since 2025-01-01". Both were describing
+ * the same tax and they disagreed by a point, which is the kind of split that
+ * survives review because each file reads correct on its own.
+ *
+ * 18% is right: the rate rose from 17% to 18% on 2025-01-01. The invoice module
+ * was the accurate one, and it is now derived from this constant rather than
+ * carrying a second copy of the number.
+ *
+ * Scoped honestly, so nobody reads a fix into it that was not needed:
+ * `extractVat` had NO application callers, only tests, so the stale 1700 was
+ * never booked against a real sale. Every document that has actually been
+ * issued went through the invoice path at 18. What this closes is the next
+ * caller, which would have taken the canonical module's word for it.
+ */
+export const VAT_RATE_BP = 1800
 
 function assertSafeInteger(value: number, label: string): void {
   if (!Number.isSafeInteger(value)) {

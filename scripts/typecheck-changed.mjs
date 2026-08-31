@@ -37,9 +37,17 @@ console.log(`typecheck-changed: range ${range}`)
 console.log(`typecheck-changed: ${files.length} file(s)`)
 for (const file of files) console.log(`  ${file}`)
 
-const roots = []
-if (existsSync('next-env.d.ts')) roots.push('next-env.d.ts')
-roots.push(...files)
+// Ambient roots. `include: []` below switches off tsconfig's own globs, so any
+// file that only augments global types has to be named here or its
+// declarations vanish. `vitest.setup.ts` imports @testing-library/jest-dom,
+// which augments vitest's `Assertion` interface; without it every changed
+// `.test.tsx` using `toBeDisabled`/`toBeInTheDocument` fails TS2339 while the
+// full-project `tsc` passes. That is a gate failing on correct code, so it is
+// worse than no gate: measured 2026-08-20, five false errors on one file.
+const AMBIENT_ROOTS = ['next-env.d.ts', 'vitest.setup.ts']
+
+const roots = AMBIENT_ROOTS.filter((root) => existsSync(root))
+roots.push(...files.filter((file) => !roots.includes(file)))
 
 const config = {
   extends: './tsconfig.json',

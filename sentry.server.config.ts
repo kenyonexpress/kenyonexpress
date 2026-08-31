@@ -16,9 +16,23 @@ Sentry.init({
   // fallback keeps a self-hosted build from reporting no release at all.
   release: process.env.SENTRY_RELEASE ?? process.env.VERCEL_GIT_COMMIT_SHA,
 
-  // Off. Tracing is high-volume by nature and this project is one operator with
-  // a phone: what is wanted is every error, not a sample of every request.
-  tracesSampleRate: 0,
+  // 10% of server requests carry a full trace.
+  //
+  // This was 0, on the grounds that "what is wanted is every error, not a
+  // sample of every request". Errors are still all of them: tracesSampleRate
+  // governs TRANSACTIONS only and has never gated captureException. What the 0
+  // actually cost was the span tree hanging off an error - which query, which
+  // fetch, how long each took - on a checkout whose failures are the reason
+  // this file exists.
+  //
+  // 10% rather than 100% because a trace is billed per transaction and this
+  // plan's quota is small. It is a floor, not a ceiling: an error's own event
+  // is never sampled away, so the 90% that carry no trace still report.
+  //
+  // COUPLED TO next.config.ts. `compiler.define.__SENTRY_TRACING__` must stay
+  // absent or false-y-removed; set it to `false` and the bundler shakes the
+  // span code out, after which this number governs nothing and says otherwise.
+  tracesSampleRate: 0.1,
 
   // Never. PII here would be customer emails and addresses in a third-party
   // system, and the money path already carries everything an investigation

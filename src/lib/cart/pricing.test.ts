@@ -198,6 +198,174 @@ describe('buildCartView: unpriceable lines', () => {
   })
 })
 
+/**
+ * `available: false` used to be the whole answer, and it is four different
+ * answers wearing one label.
+ *
+ * A shopper facing a delisted product, an empty shelf, a shelf with fewer than
+ * they asked for, and a product an admin has not finished configuring were all
+ * told the same sentence -- and only one of those four has an action they can
+ * take. The stock ceiling is the other half: it was read here to decide
+ * `available` and then discarded, so the quantity stepper had no idea when to
+ * stop and the line could not say how many were actually left.
+ */
+describe('buildCartView: why a line is unavailable', () => {
+  it('names a short shelf and reports what is on it', () => {
+    const cart = buildCartView(
+      'cart-1',
+      [stored({ quantity: 5 })],
+      [product({ stock_quantity: 2 })],
+      [],
+    )
+
+    expect(line(cart).available).toBe(false)
+    expect(line(cart).unavailable_reason).toBe('insufficient_stock')
+    expect(line(cart).max_quantity).toBe(2)
+  })
+
+  it('separates an empty shelf from a short one', () => {
+    const cart = buildCartView('cart-1', [stored()], [product({ stock_quantity: 0 })], [])
+
+    expect(line(cart).unavailable_reason).toBe('out_of_stock')
+    expect(line(cart).max_quantity).toBe(0)
+  })
+
+  it('calls a delisted product delisted, whatever its stock says', () => {
+    const cart = buildCartView(
+      'cart-1',
+      [stored()],
+      [product({ status: 'draft', stock_quantity: 40 })],
+      [],
+    )
+
+    expect(line(cart).unavailable_reason).toBe('delisted')
+  })
+
+  it('outranks an unpriced product with the fact that it is gone', () => {
+    // Both conditions hold. `delisted` is the one that survives: a product that
+    // is no longer sold is no longer sold whatever its commission column says,
+    // and "we have not configured this" is not a sentence a shopper can use.
+    const cart = buildCartView(
+      'cart-1',
+      [stored()],
+      [product({ deleted_at: '2026-01-01', platform_percent: null })],
+      [],
+    )
+
+    expect(line(cart).unavailable_reason).toBe('delisted')
+  })
+
+  it('calls a product with no percent unpriced rather than out of stock', () => {
+    const cart = buildCartView(
+      'cart-1',
+      [stored({ quantity: 5 })],
+      [product({ platform_percent: null, stock_quantity: 2 })],
+      [],
+    )
+
+    // Short of stock as well, but a line the money engine refuses to price has
+    // no meaningful quantity to be short of.
+    expect(line(cart).unavailable_reason).toBe('unpriced')
+  })
+
+  /**
+   * ZERO IS A MISSING PRICE, NOT A GIVEAWAY.
+   *
+   * The coupon half of the `priceable` gate has been there since the commission
+   * engine landed; the physical half had nothing. `resolveUnitPrice` returns 0
+   * for a product whose `kenyon_price` is null or 0, `ilsToAgorot` makes that a
+   * perfectly valid ZERO, and every layer below accepted it: the product page
+   * painted ₪0.00 beside a live add-to-cart, the cart priced the line at zero,
+   * and `beginCheckout`'s physical branch had no price check either.
+   *
+   * Measured against production the same day: ONE active product sits at
+   * kenyon_price 0.00, and it escapes only because it is is_coupon_enabled and
+   * takes the coupon branch.
+   */
+  for (const [label, value] of [
+    ['null', null],
+    ['zero', 0],
+  ] as const) {
+    it(`calls a physical product priced ${label} unpriced rather than free`, () => {
+      const cart = buildCartView('cart-1', [stored()], [product({ kenyon_price: value })], [])
+
+      expect(line(cart).unavailable_reason).toBe('unpriced')
+      expect(line(cart).available).toBe(false)
+    })
+  }
+
+  it('refuses the live zero-price row through the COUPON rule, not the new one', () => {
+    // `restaurants-meat-2` exactly as production holds it on 2026-08-19:
+    // kenyon_price 0.00, coupon_price_ils null, is_coupon_enabled true. It was
+    // already refused before the physical rule existed, and it has to stay
+    // refused for the coupon reason - a coupon is priced by its absolute
+    // coupon_price_ils, so the physical rule is deliberately scoped away from it.
+    //
+    // There is no such thing as a sellable coupon at kenyon_price 0 either way:
+    // the commission engine requires the coupon price to be positive AND no
+    // greater than the unit price, so zero fails that pair before this gate.
+    const cart = buildCartView(
+      'cart-1',
+      [stored()],
+      [product({ kenyon_price: 0, is_coupon_enabled: true, coupon_price_ils: null })],
+      [],
+    )
+
+    expect(line(cart).unavailable_reason).toBe('unpriced')
+  })
+
+  it('still shows the lines when not one of them can be priced', () => {
+    // The regression this pins: `commissionLines.length === 0` shared a branch
+    // with "no lines at all" and returned EMPTY_CART. An out-of-stock line is
+    // still priced and still rendered, so it takes a cart of nothing but
+    // half-configured products -- no `platform_percent`, no coupon price -- to
+    // reach it, and it rendered as an empty cart over a row that held both.
+    const cart = buildCartView(
+      'cart-1',
+      [stored({ quantity: 3 }), stored({ product_id: 'c2', quantity: 1 })],
+      [
+        product({ platform_percent: null }),
+        product({ id: 'c2', slug: 'c2', type: 'coupon', coupon_price_ils: null }),
+      ],
+      [],
+    )
+
+    expect(cart.items).toHaveLength(2)
+    expect(cart.item_count).toBe(4)
+    expect(cart.items.every((i) => i.unavailable_reason === 'unpriced')).toBe(true)
+    // No money was invented for lines the engine never saw.
+    expect(cart.subtotal).toBe(0)
+    expect(cart.total).toBe(0)
+    expect(cart.platform_fee).toBe(0)
+    expect(cart.supplier_due).toBe(0)
+  })
+
+  it('leaves both fields null-and-clear on a line that is simply fine', () => {
+    const cart = buildCartView(
+      'cart-1',
+      [stored({ quantity: 2 })],
+      [product({ stock_quantity: 9 })],
+      [],
+    )
+
+    expect(line(cart).available).toBe(true)
+    expect(line(cart).unavailable_reason).toBeNull()
+    expect(line(cart).max_quantity).toBe(9)
+  })
+
+  it('reports no ceiling for a product the catalogue tracks no stock for', () => {
+    const cart = buildCartView(
+      'cart-1',
+      [stored({ quantity: 40 })],
+      [product({ stock_quantity: null })],
+      [],
+    )
+
+    expect(line(cart).available).toBe(true)
+    expect(line(cart).max_quantity).toBeNull()
+  })
+})
+
 describe('buildCartView: discounts', () => {
   it('takes the discount off the on-site charge', () => {
     const cart = buildCartView('cart-1', [stored()], [product()], [], {
@@ -326,6 +494,20 @@ describe('buildCartView: variants', () => {
     expect(line(cart).unit_price).toBe(11_500)
   })
 
+  it('takes the ceiling from the variant, including when the variant is empty', () => {
+    // The product has forty in the warehouse and this size has none. Falling
+    // back to the product's count here would sell a size that is sold out.
+    const cart = buildCartView(
+      'cart-1',
+      [stored({ variant_id: 'v1' })],
+      [product({ stock_quantity: 40 })],
+      [variant({ stock_quantity: 0 })],
+    )
+
+    expect(line(cart).max_quantity).toBe(0)
+    expect(line(cart).unavailable_reason).toBe('out_of_stock')
+  })
+
   it('drops a line whose variant belongs to another product', () => {
     const cart = buildCartView(
       'cart-1',
@@ -382,10 +564,29 @@ describe('buildCartView: a type the cart cannot price', () => {
     expect(cart.subtotal).toBe(agorot(10000))
   })
 
-  it('drops the cart to empty when every line is an unpriceable type', () => {
+  it('keeps the lines and zeroes the money when every line is an unpriceable type', () => {
+    // This test asserted `toHaveLength(0)` when it was written on
+    // feat/supplier-portal, against the behaviour phase5/homepage had already
+    // replaced. Reconciled at the merge, 2026-08-19, in favour of the newer
+    // side, whose reasoning is in the `commissionLines.length === 0` branch of
+    // buildCartView: a cart where nothing is priceable is not an empty cart.
+    // Returning EMPTY_CART told the shopper their cart was empty while the
+    // `carts` row still held every line, so re-adding an item silently rejoined
+    // a line that had been there all along, and the banner offering to clear
+    // unavailable lines could never appear in exactly the case where the whole
+    // cart was unavailable.
     const cart = buildCartView('cart-1', [stored()], [product({ type: 'service' })], [])
-    expect(cart.items).toHaveLength(0)
+
+    expect(cart.items).toHaveLength(1)
+    expect(cart.items[0]?.available).toBe(false)
+    expect(cart.item_count).toBe(1)
+
+    // The line is visible, and it is still kept out of the money engine.
     expect(cart.total).toBe(0)
+    expect(cart.subtotal).toBe(0)
+    expect(cart.items[0]?.platform_fee).toBe(0)
+    expect(cart.items[0]?.supplier_due).toBe(0)
+    expect(cart.items[0]?.customer_pays_now).toBe(0)
   })
 
   it('still honours is_coupon_enabled on an unrecognised type', () => {

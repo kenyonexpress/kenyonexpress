@@ -1,6 +1,15 @@
 import { expect, test } from '@playwright/test'
 import { firstCategorySlug } from './helpers'
 
+/**
+ * The result count once its boundary has resolved.
+ *
+ * Two things make the bare class ambiguous: the streaming placeholder carries
+ * it so the box stays the same height, and the archive prints the count twice,
+ * in the header and again under the grid as `--bottom`.
+ */
+const SETTLED_COUNT = '.category-page__count:not(.category-page__count--pending)'
+
 test.describe('category archive', () => {
   test('renders the title, result count, breadcrumb and a product grid', async ({ page }) => {
     const slug = await firstCategorySlug(page)
@@ -51,40 +60,122 @@ test.describe('category archive', () => {
   })
 
   /**
-   * This asserted `status() === 404` until the route started streaming.
+   * THIS ASSERTED `noindex` INSTEAD OF THE STATUS, BECAUSE THE STATUS WAS 200.
    *
-   * Under `cacheComponents` the category page sends a prerendered shell before
-   * it knows whether the slug exists, so by the time `notFound()` runs the
-   * status line is already on the wire and cannot be changed. Next documents
-   * this exactly (file-conventions/loading, "Status Codes") and compensates by
-   * injecting `<meta name="robots" content="noindex">` into the streamed HTML,
-   * which is what actually keeps the URL out of the index - Google's own
-   * guidance is that a `noindex` page is not indexed whatever the status.
+   * The route sent a prerendered shell before it knew whether the slug existed,
+   * so `notFound()` ran with the status line already on the wire and the
+   * not-found page was served as `200 OK`. The test was rewritten around the
+   * `noindex` tag Next injects to compensate, and the soft 404 stayed.
    *
-   * So the assertion moved to the thing that does the work, and it is a
-   * STRICTER test than the one it replaces: a status check would have passed a
-   * response that 404'd without the meta tag, and this one does not. It is
-   * checked in the served HTML rather than the DOM, because a crawler that
-   * does not run scripts sees only the former.
+   * It did not have to. The lookup moved OUT of the `<Suspense>` - see the note
+   * above `CategoryPage` - and the twelve real slugs come from
+   * `generateStaticParams`, so the shell is still prerendered and still
+   * postponed on `searchParams` alone. Both assertions hold now, so the test
+   * makes both: the status a crawler acts on, and the tag it reads.
    */
-  test('an unknown category slug is noindex and shows the not-found page', async ({
+  test('an unknown category slug 404s, is noindex, and shows the not-found page', async ({
     page,
     request,
   }) => {
-    const html = await (await request.get('/category/no-such-category-slug-12345')).text()
-    expect(html).toContain('<meta name="robots" content="noindex"/>')
+    const response = await request.get('/category/no-such-category-slug-12345')
+    expect(response.status()).toBe(404)
+    expect(await response.text()).toContain('<meta name="robots" content="noindex"/>')
 
     await page.goto('/category/no-such-category-slug-12345')
     await expect(page.getByRole('heading', { name: 'הדף שחיפשתם לא נמצא' })).toBeVisible()
   })
 
-  test('an out-of-range page number clamps instead of erroring', async ({ page }) => {
+  /**
+   * A REAL category must not pay for that: it keeps its postponed shell.
+   *
+   * This is the half of the change that could regress silently. Awaiting
+   * `params` outside the boundary would make the page fully dynamic if the slug
+   * were not build-time known, and nothing else in the suite would notice - the
+   * page would simply render slower.
+   */
+  test('a real category still streams a prerendered shell', async ({ page }) => {
+    const slug = await firstCategorySlug(page)
+    test.skip(!slug, 'catalog exposes no category links')
+
+    const response = await page.goto(`/category/${slug}`)
+    expect(response?.status()).toBe(200)
+
+    // POSTPONED **OR** PRERENDER, because those are the two shapes of "not
+    // dynamic" and this route legitimately answers with either.
+    //
+    // MEASURED 2026-08-20, after this failed three times in one night and
+    // passed every time it ran alone. The failing responses were not missing a
+    // shell: they carried `x-nextjs-cache: HIT` and `x-nextjs-prerender: 1`
+    // and no `x-nextjs-postponed` - the whole route came out of the full-route
+    // cache as a COMPLETED prerender rather than as a shell to resume. That is
+    // the stronger of the two outcomes, and the old assertion read it as the
+    // regression it was written to catch. Which one arrives depends on whether
+    // that cache entry is warm, so at two workers it moved run to run. A first
+    // theory - that the header was missing only from the first request after
+    // boot - was measured and abandoned: twenty concurrent cookie-less curls
+    // to a nine-second-old server all carried it.
+    //
+    // The regression is still caught. A route that has gone fully dynamic
+    // carries NEITHER header: verified on the same build against
+    // `/account/orders`, which carries neither, while `/category/[slug]`,
+    // `/cart`, `/checkout`, `/search` and `/coupons` each carry at least one.
+    const headers = response?.headers() ?? {}
+    expect(
+      `${headers['x-nextjs-postponed'] ?? ''}${headers['x-nextjs-prerender'] ?? ''}`,
+      `neither postponed nor prerendered, so the archive is rendering dynamically (cache=${headers['x-nextjs-cache'] ?? 'none'})`,
+    ).not.toBe('')
+  })
+
+  /**
+   * THIS TEST HAD THIS NAME AND DID NOT CHECK IT.
+   *
+   * It asserted a 200 and a visible h1, both of which an out-of-range page
+   * returned while showing nothing: `?page=9999` offset past the last row, the
+   * grid printed "nothing matches your selection" - blaming filters the shopper
+   * never set - and the count line printed nothing at all.
+   *
+   * The missing count is the tell. PostgREST answers an out-of-range `range()`
+   * with no rows AND NO COUNT, so `total` came back 0 and the page could not
+   * tell "past the end" from "nothing matched". Both boundaries go through
+   * `categoryPageOrLast` now, which re-reads page 1 to recover the total.
+   *
+   * So the assertion is that the page shows the LAST page: cards present, the
+   * count line present, and the empty state absent. A 200 was never the
+   * question.
+   */
+  test('an out-of-range page number clamps to the last page', async ({ page }) => {
     const slug = await firstCategorySlug(page)
     test.skip(!slug, 'catalog exposes no category links')
 
     const response = await page.goto(`/category/${slug}?page=9999`)
     expect(response?.status()).toBe(200)
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+
+    // A category with a single page clamps to page 1 and is still a pass; what
+    // must never happen is the empty state on a category that has products.
+    const firstCard = page.locator('a[href^="/product/"]').first()
+    await expect(firstCard).toBeVisible({ timeout: 15_000 })
+    // `.first()` and `:not(--pending)` are both load-bearing. The streaming
+    // placeholder carries the same class so it holds the same box open, and the
+    // archive prints the count TWICE, once in the header and once under the
+    // grid as `--bottom`. Either alone leaves strict mode with two matches.
+    await expect(page.locator(SETTLED_COUNT).first()).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByText('לא נמצאו מוצרים התואמים את הבחירה שלך.')).toHaveCount(0)
+  })
+
+  test('the shop archive clamps an out-of-range page the same way', async ({ page }) => {
+    // /products is the bigger archive and the one with more than one page, so
+    // it is where the clamp is visible as a page NUMBER rather than a fallback
+    // to page 1.
+    await page.goto('/products?page=9999')
+    const clampedCount = await page.locator(SETTLED_COUNT).first().textContent({ timeout: 15_000 })
+
+    await page.goto('/products')
+    const total = await page.locator(SETTLED_COUNT).first().textContent({ timeout: 15_000 })
+
+    expect(clampedCount, 'the clamped page printed no count').toBeTruthy()
+    expect(clampedCount, 'page=9999 rendered the first page instead of the last').not.toBe(total)
+    await expect(page.getByText('לא נמצאו מוצרים התואמים את הבחירה שלך.')).toHaveCount(0)
   })
 
   test('a price filter narrows the archive without breaking it', async ({ page }) => {

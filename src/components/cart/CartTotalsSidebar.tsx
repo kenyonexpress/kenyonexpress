@@ -1,8 +1,8 @@
 'use client'
 
 import CartCouponForm from '@/components/cart/CartCouponForm'
-import { shekels } from '@/lib/cart/format'
 import type { CartView } from '@/lib/cart/types'
+import { shekels } from '@/lib/money-format'
 
 export default function CartTotalsSidebar({ cart }: { cart: CartView }) {
   return (

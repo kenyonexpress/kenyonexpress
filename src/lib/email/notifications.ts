@@ -19,7 +19,22 @@ import { formatAgorot, formatCouponCode } from '@/lib/vouchers/coupon-view'
  * into shekels. Nothing here divides by 100.
  */
 
-const BRAND = '#f5c518'
+/**
+ * The site's brand yellow, and it must stay the site's brand yellow.
+ *
+ * This was `#f5c518` in both email builders while every stylesheet in `src`
+ * used `#fed700`. Nothing failed and nothing looked broken in isolation: a
+ * transactional email simply arrived in a slightly different yellow from the
+ * page it links to, which is the kind of thing only a customer comparing the
+ * two ever notices, and it was hardcoded in exactly two places.
+ *
+ * `src/lib/email/brand-colour.test.ts` now reads the token out of
+ * `src/app/globals.css` and fails if these drift apart again. It cannot be
+ * imported from there at runtime: this module builds a string of inline styles
+ * for mail clients that do not honour stylesheets, so the value has to be a
+ * literal here.
+ */
+const BRAND = '#fed700'
 const INK = '#1a1a1a'
 const MUTED = '#6b7280'
 
@@ -46,6 +61,10 @@ export type NotificationKind =
   | 'low_stock'
   /** Operator alert: our records and the terminal's disagree about money. */
   | 'reconciliation_gap'
+  /** The card credit went through. Enqueued by `refundOrder` after the money moved. */
+  | 'refund_completed'
+  /** First successful sign-in. Deduped on the user id, so only the first one lands. */
+  | 'welcome'
 
 function escapeHtml(value: string): string {
   return value
@@ -61,7 +80,7 @@ function trimSite(siteUrl: string): string {
 
 function shell(bodyHtml: string, footer: string): string {
   return `
-    <div dir="rtl" style="background:#f5f5f5;padding:24px 12px;font-family:Arial,Helvetica,sans-serif">
+    <div dir="rtl" style="background:#f5f5f5;padding:24px 12px;font-family:Heebo,Arial,Helvetica,sans-serif">
       <div style="max-width:560px;margin:0 auto">
         <div style="font-size:20px;font-weight:800;color:${INK};margin-bottom:16px">KenyonExpress</div>
         ${bodyHtml}
@@ -667,6 +686,113 @@ export function buildReconciliationGapEmail(
   return { subject, html, text }
 }
 
+/**
+ * Refund done, to the customer whose card was credited.
+ *
+ * WHAT THIS EMAIL MUST NOT DO: promise a date. Cardcom credits the card; when
+ * the money actually appears is the issuer's business and is routinely several
+ * business days later. An email that names a day generates a support ticket on
+ * that day. So it states what happened, the amount, and the fee if one was
+ * taken, and stops.
+ *
+ * The fee line is only rendered when a fee was actually taken. Printing
+ * "דמי ביטול: ₪0" on a defect claim reads as though a fee nearly happened,
+ * and `computeCancellationFee` returns 0 for exactly the cases where the
+ * customer is entitled to the whole sum back.
+ */
+export function buildRefundCompletedEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification | null {
+  const refundedAgorot = Math.round(asNumber(payload.refunded_agorot))
+  if (refundedAgorot <= 0) return null
+
+  const feeAgorot = Math.max(0, Math.round(asNumber(payload.cancellation_fee_agorot)))
+  const ref = asText(payload.order_ref)
+  const cancelOnly = payload.cancel_only === true
+  const url = `${trimSite(siteUrl)}/account/orders`
+  const amount = formatAgorot(refundedAgorot)
+  const subject = `הזיכוי שלך בוצע: ${amount}`
+
+  // `cancel_only` is the same-clearing-day path: the charge was voided before
+  // it ever reached the customer's statement, so "זוכה" would be describing a
+  // credit that has no debit to sit next to.
+  const headline = cancelOnly
+    ? `ביטלנו את החיוב${ref ? ` על הזמנה ${ref}` : ''}. הסכום לא ייגבה כלל.`
+    : `זיכינו את הכרטיס שלך ב-${amount}${ref ? ` על הזמנה ${ref}` : ''}.`
+
+  const text = [
+    'שלום,',
+    '',
+    headline,
+    ...(feeAgorot > 0 ? [`נוכו דמי ביטול בסך ${formatAgorot(feeAgorot)} לפי התקנון.`] : []),
+    '',
+    'הזיכוי מבוצע מול חברת האשראי, וההופעה בפועל בדף החשבון תלויה במנפיק הכרטיס.',
+    '',
+    'ההזמנות שלך:',
+    url,
+  ].join('\n')
+
+  const html = shell(
+    `<div dir="rtl" style="background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+        <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
+        <div style="font-size:15px;color:${INK};margin-top:10px">${escapeHtml(headline)}</div>
+        ${feeAgorot > 0 ? `<div style="font-size:14px;color:${MUTED};margin-top:8px">נוכו דמי ביטול בסך ${escapeHtml(formatAgorot(feeAgorot))} לפי התקנון.</div>` : ''}
+        <div style="font-size:13px;color:${MUTED};margin-top:12px">הזיכוי מבוצע מול חברת האשראי, וההופעה בפועל בדף החשבון תלויה במנפיק הכרטיס.</div>
+        <a href="${escapeHtml(url)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">להזמנות שלי</a>
+      </div>`,
+    'קיבלת את המייל הזה כי בוצע זיכוי על הזמנה שלך ב-KenyonExpress.',
+  )
+
+  return { subject, html, text }
+}
+
+/**
+ * Welcome, sent once on the first successful sign-in.
+ *
+ * "Once" is not enforced here and is not enforced by a trigger either: the
+ * enqueue uses `welcome:<user id>` as the dedupe key and the outbox has a
+ * UNIQUE on it with ON CONFLICT DO NOTHING. The auth callback therefore runs
+ * on every single login and only the first one ever produces a row. That is
+ * cheaper and harder to get wrong than a "have they been welcomed" column
+ * somebody has to remember to set.
+ *
+ * Deliberately makes no offer and carries no coupon. A welcome mail that opens
+ * with a discount trains the reader to treat this sender as marketing, and the
+ * same address has to carry voucher codes and refund confirmations later.
+ */
+export function buildWelcomeEmail(
+  payload: Record<string, unknown>,
+  siteUrl: string,
+): BuiltNotification | null {
+  const site = trimSite(siteUrl)
+  const name = asText(payload.full_name)
+  const greeting = name ? `שלום ${name},` : 'שלום,'
+  const subject = 'ברוכים הבאים ל-KenyonExpress'
+
+  const text = [
+    greeting,
+    '',
+    'החשבון שלך מוכן. מכאן אפשר לקנות קופונים ומוצרים מעסקים בישראל,',
+    'והקופונים שתקנו יחכו לך באזור האישי עם קוד לסריקה בבית העסק.',
+    '',
+    `הקופונים שלי: ${site}/account/coupons`,
+    `ההזמנות שלי: ${site}/account/orders`,
+  ].join('\n')
+
+  const html = shell(
+    `<div dir="rtl" style="background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;padding:22px">
+        <div style="font-size:18px;font-weight:700;color:${INK}">${escapeHtml(subject)}</div>
+        <div style="font-size:15px;color:${INK};margin-top:10px">${escapeHtml(greeting)} החשבון שלך מוכן.</div>
+        <div style="font-size:14px;color:${MUTED};margin-top:8px">הקופונים שתקנו יחכו לך באזור האישי, עם קוד לסריקה בבית העסק.</div>
+        <a href="${escapeHtml(`${site}/account/coupons`)}" style="display:block;margin-top:18px;background:${BRAND};color:${INK};text-decoration:none;text-align:center;font-weight:700;padding:13px 18px;border-radius:10px">לקופונים שלי</a>
+      </div>`,
+    'קיבלת את המייל הזה כי נפתח חשבון ב-KenyonExpress עם כתובת המייל הזאת.',
+  )
+
+  return { subject, html, text }
+}
+
 /** Dispatch by queued kind. Unknown kinds return null so the drain can park them. */
 export function buildNotification(
   kind: string,
@@ -694,6 +820,10 @@ export function buildNotification(
       return buildLowStockEmail(payload, siteUrl)
     case 'reconciliation_gap':
       return buildReconciliationGapEmail(payload, siteUrl)
+    case 'refund_completed':
+      return buildRefundCompletedEmail(payload, siteUrl)
+    case 'welcome':
+      return buildWelcomeEmail(payload, siteUrl)
     default:
       return null
   }

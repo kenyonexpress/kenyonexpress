@@ -6,45 +6,68 @@ should be replaced with logical properties that flip automatically.
 
 ## Summary
 
-- Generated: 2026-07-22
-- Files scanned: 206
-- Files with violations: 16
-- Total violations: 35
+- Generated: 2026-08-19
+- Files scanned: 787
+- Files with violations: 36
+- Total violations: 61
 
 ### By token
 
 | Physical | Count |
 | --- | --- |
+| `right-` | 12 |
+| `text-right` | 11 |
+| `left-` | 11 |
 | `pl-` | 7 |
-| `text-right` | 6 |
-| `left-` | 6 |
-| `right-` | 5 |
+| `mr-` | 5 |
 | `pr-` | 4 |
-| `mr-` | 2 |
-| `border-l` | 2 |
+| `text-align:right` | 3 |
+| `right:` | 3 |
 | `ml-` | 2 |
+| `left:` | 1 |
 | `text-left` | 1 |
+| `margin-left` | 1 |
 
 ## Violations
 
 | File | Line | Physical | Logical replacement |
 | --- | --- | --- | --- |
-| src/app/(admin)/admin/audit-log/page.tsx | 40 | `text-right` | `text-end` |
-| src/app/(admin)/admin/orders/[id]/page.tsx | 74 | `text-right` | `text-end` |
-| src/app/(admin)/admin/orders/page.tsx | 56 | `mr-` | `me-` |
-| src/app/(admin)/admin/orders/page.tsx | 82 | `text-right` | `text-end` |
-| src/app/(admin)/admin/suppliers/[id]/VendorDetailClient.tsx | 70 | `left-` | `start-` |
-| src/app/(admin)/admin/suppliers/page.tsx | 62 | `mr-` | `me-` |
-| src/app/(admin)/admin/suppliers/page.tsx | 75 | `text-right` | `text-end` |
-| src/app/(auth)/signup/SignupForm.tsx | 116 | `text-right` | `text-end` |
-| src/app/(main)/coupons/[id]/page.tsx | 49 | `right-` | `end-` |
+| src/app/(admin)/admin/discounts/page.tsx | 77 | `text-right` | `text-end` |
+| src/app/(admin)/admin/growth/page.tsx | 180 | `text-right` | `text-end` |
+| src/app/(admin)/admin/queues/page.tsx | 131 | `mr-` | `me-` |
+| src/app/(admin)/admin/search/page.tsx | 99 | `text-right` | `text-end` |
+| src/app/(admin)/admin/search/page.tsx | 139 | `mr-` | `me-` |
+| src/app/(admin)/admin/status/page.tsx | 67 | `text-right` | `text-end` |
+| src/app/(admin)/admin/vendors/[id]/VendorDetailClient.tsx | 70 | `left-` | `start-` |
+| src/app/(admin)/admin/vendors/page.tsx | 65 | `mr-` | `me-` |
+| src/app/(admin)/admin/vendors/page.tsx | 78 | `text-right` | `text-end` |
+| src/app/(auth)/login/PhoneOtpForm.tsx | 65 | `text-right` | `text-end` |
+| src/app/(auth)/signup/SignupForm.tsx | 101 | `text-right` | `text-end` |
+| src/app/(main)/coupons/[id]/page.tsx | 96 | `right-` | `end-` |
+| src/app/(store)/product/[slug]/opengraph-image.tsx | 81 | `left-` | `start-` |
+| src/app/(supplier)/supplier/payouts/page.tsx | 68 | `mr-` | `me-` |
+| src/app/api/cron/abandoned-cart/route.ts | 112 | `text-align:right` | `text-align: end` |
+| src/app/not-found.tsx | 7 | `left-` | `start-` |
+| src/app/redeem/[token]/RedeemConfirm.tsx | 88 | `right:` | `inset-inline-end:` |
+| src/components/a11y/SkipLink.test.tsx | 31 | `right-` | `end-` |
+| src/components/a11y/SkipLink.test.tsx | 32 | `left-` | `start-` |
+| src/components/a11y/SkipLink.tsx | 15 | `right-` | `end-` |
+| src/components/a11y/SkipLink.tsx | 15 | `left-` | `start-` |
+| src/components/a11y/SkipLink.tsx | 15 | `right-` | `end-` |
+| src/components/a11y/SkipLink.tsx | 32 | `right-` | `end-` |
 | src/components/admin/CategoryDialog.tsx | 78 | `right-` | `end-` |
-| src/components/admin/CouponDealForm.tsx | 336 | `right-` | `end-` |
-| src/components/admin/ProductForm.tsx | 330 | `text-right` | `text-end` |
-| src/components/CouponCard.tsx | 40 | `right-` | `end-` |
-| src/components/home/BenefitBar.tsx | 21 | `border-l` | `border-s` |
-| src/components/home/BenefitBar.tsx | 21 | `border-l` | `border-s` |
-| src/components/home/HeroSlider.tsx | 329 | `left-` | `start-` |
+| src/components/admin/CouponDealForm.tsx | 361 | `right-` | `end-` |
+| src/components/admin/ProductForm.tsx | 1250 | `text-right` | `text-end` |
+| src/components/admin/ReferralQueueRow.tsx | 61 | `mr-` | `me-` |
+| src/components/admin/reports/SalesChart.tsx | 65 | `right:` | `inset-inline-end:` |
+| src/components/admin/reports/SalesChart.tsx | 65 | `left:` | `inset-inline-start:` |
+| src/components/geo/CityTag.tsx | 21 | `right-` | `end-` |
+| src/components/home/HeroSlider.tsx | 708 | `left-` | `start-` |
+| src/components/layout/MastheadNav.tsx | 9 | `right-` | `end-` |
+| src/components/shared/share-buttons.test.tsx | 54 | `right-` | `end-` |
+| src/components/storefront/SupplierLeadForm.tsx | 85 | `text-right` | `text-end` |
+| src/components/storefront/SupplierLeadForm.tsx | 100 | `text-right` | `text-end` |
+| src/components/storefront/SupplierLeadForm.tsx | 140 | `text-right` | `text-end` |
 | src/components/ui/dialog.tsx | 41 | `left-` | `start-` |
 | src/components/ui/dialog.tsx | 47 | `right-` | `end-` |
 | src/components/ui/dialog.tsx | 57 | `text-left` | `text-start` |
@@ -64,3 +87,9 @@ should be replaced with logical properties that flip automatically.
 | src/components/ui/select.tsx | 114 | `pl-` | `ps-` |
 | src/components/ui/select.tsx | 114 | `pr-` | `pe-` |
 | src/components/ui/select.tsx | 119 | `left-` | `start-` |
+| src/lib/electro-hero-tokens.ts | 100 | `right-` | `end-` |
+| src/lib/vouchers/offline-scan.ts | 4 | `right:` | `inset-inline-end:` |
+| src/server/actions/contact.ts | 70 | `text-align:right` | `text-align: end` |
+| src/server/actions/newsletter.ts | 109 | `text-align:right` | `text-align: end` |
+| src/styles/newsletter.css | 2 | `margin-left` | `margin-inline-start` |
+| src/styles/tokens.ts | 92 | `left-` | `start-` |

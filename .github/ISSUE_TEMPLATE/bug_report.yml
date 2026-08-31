@@ -1,0 +1,85 @@
+name: דיווח על תקלה
+description: משהו שעובד לא נכון, באתר החי או בפיתוח
+title: 'תקלה: '
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        <div dir="rtl" align="right">
+
+        מלא מה שאתה יודע. שדה ריק עדיף על ניחוש: ניחוש שנרשם כעובדה שולח את מי
+        שיטפל בזה לכיוון הלא נכון.
+
+        </div>
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: מה קרה
+      description: הסימפטום כפי שנראה על המסך, לא ההשערה לגבי הסיבה.
+      placeholder: לחצתי "הוסף לסל" בעמוד המוצר והמונה נשאר 0.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: מה היה אמור לקרות
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: שחזור
+      description: הדרך הקצרה ביותר להגיע לתקלה. אם היא לא עקבית, כתוב את זה.
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: where
+    attributes:
+      label: איפה
+      options:
+        - ייצור (kenyonexpress.vercel.app)
+        - preview של PR
+        - פיתוח מקומי (pnpm dev)
+        - בנייה מקומית (pnpm start)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: money-path
+    attributes:
+      label: האם זה נוגע בכסף
+      description: תשלום, קופון, החזר, עמלה או כל סכום שמוצג למשתמש. אם כן, זה נבדק לפני כל דבר אחר.
+      options:
+        - 'לא'
+        - 'כן'
+        - 'לא בטוח'
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: ראיות
+      description: 'הודעת שגיאה, קוד תגובה, ‏request id של Sentry, צילום מסך. הדבק טקסט ולא תמונה של טקסט.'
+      render: text
+
+  - type: input
+    id: url
+    attributes:
+      label: כתובת מלאה
+      placeholder: https://kenyonexpress.vercel.app/product/...
+
+  - type: input
+    id: when
+    attributes:
+      label: מתי, כולל אזור זמן
+      placeholder: '2026-09-01 07:20 Asia/Jerusalem'

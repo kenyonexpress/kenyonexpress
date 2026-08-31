@@ -102,7 +102,7 @@ export function buildCouponOffer(input: CouponOfferInput): CouponOffer {
 }
 
 /** `₪1,234.50`, Hebrew locale, always two decimals so prices align in a column. */
-export function shekels(value: number): string {
+export function shekelsFromIls(value: number): string {
   return `₪${value.toLocaleString('he-IL', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,

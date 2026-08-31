@@ -1,0 +1,37 @@
+[
+  {
+    "name": "search-after",
+    "performance": 67,
+    "lcp_ms": 3543.3109999999997,
+    "cls": 0.6207825317582396,
+    "tbt_ms": 37.50000000000023
+  },
+  {
+    "name": "home-after",
+    "performance": 86,
+    "lcp_ms": 4107.0464999999995,
+    "cls": 0.002397475865079521,
+    "tbt_ms": 35
+  },
+  {
+    "name": "search-run1",
+    "performance": 71,
+    "lcp_ms": 3771.013,
+    "cls": 0.3502636577050573,
+    "tbt_ms": 19
+  },
+  {
+    "name": "search-run2",
+    "performance": 71,
+    "lcp_ms": 3768.8070000000007,
+    "cls": 0.3502636577050573,
+    "tbt_ms": 18.5
+  },
+  {
+    "name": "search-run3",
+    "performance": 71,
+    "lcp_ms": 3762.1309999999994,
+    "cls": 0.35112477095748756,
+    "tbt_ms": 15
+  }
+]

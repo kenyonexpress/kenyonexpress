@@ -2,7 +2,6 @@
 
 import { trackCommerce } from '@/lib/analytics/commerce-client'
 import { track } from '@/lib/analytics/tracker'
-import { shekels } from '@/lib/cart/format'
 import type { CartView } from '@/lib/cart/types'
 import { sectionsFromElectro } from '@/lib/checkout/electro-content'
 import { checkOptionalIsraeliPostalCode } from '@/lib/checkout/israeli-postal-code'
@@ -18,7 +17,9 @@ import {
   previousStep,
   validateStep,
 } from '@/lib/checkout/steps'
+import { clampWalletIls } from '@/lib/checkout/wallet-input'
 import { type Agorot, parseIls, sumAgorot } from '@/lib/money'
+import { shekels } from '@/lib/money-format'
 import { type AuthState, signInWithGoogle } from '@/server/actions/auth'
 import { type CheckoutFormState, submitCheckout } from '@/server/actions/payments/checkout'
 import { useActionState, useEffect, useRef, useState } from 'react'
@@ -153,10 +154,21 @@ export default function CheckoutForm({
 
   /**
    * A saved address is submitted by id, so its fields are never rendered. With
-   * nothing in the DOM to read, the address rules would report three missing
-   * required fields and trap the shopper on a step that shows only a summary.
+   * nothing in the DOM to read, the step rules would report missing required
+   * fields and trap the shopper on a step that shows only a summary.
+   *
+   * BOTH steps, not just the address one. The personal-details block collapses
+   * to the saved name on the same condition, so the details rules were checking
+   * `first_name`, `last_name`, `phone` and `email` against a form that renders
+   * none of the four - and `goNext` refused to move with no error to show,
+   * because the error slots live inside the branch that was not rendered
+   * either. A returning customer pressed "המשך" and nothing happened at all.
+   *
+   * The submission never wanted those fields here: `submitCheckout` reads them
+   * only inside `if (needsAddress && !addressId)` and takes the email from the
+   * session.
    */
-  const addressStepIsAutomatic = Boolean(address.id)
+  const savedAddressAnswersFor: CheckoutStep[] = address.id ? ['details', 'address'] : []
 
   /** Current values straight off the form, so the gate reads what is really there. */
   const readValues = (): StepValues => {
@@ -171,7 +183,7 @@ export default function CheckoutForm({
   }
 
   const checkStep = (target: CheckoutStep): StepErrors => {
-    if (target === 'address' && addressStepIsAutomatic) return {}
+    if (savedAddressAnswersFor.includes(target)) return {}
     return validateStep(target, readValues())
   }
 
@@ -462,6 +474,15 @@ export default function CheckoutForm({
                         inputMode="tel"
                         autoComplete="tel"
                         placeholder="05XXXXXXXX"
+                        /*
+                          LTR, like the gift-recipient email a few fields down
+                          already is. A number and an address are Latin on a
+                          Hebrew page; the form around them stays RTL. Measured
+                          before this line: the BUYER's own phone and email
+                          rendered flush right while the RECIPIENT's rendered
+                          flush left, in the same form, on the same screen.
+                        */
+                        dir="ltr"
                         aria-invalid={errorFor('phone') ? 'true' : undefined}
                       />
                       {errorFor('phone') && (
@@ -484,6 +505,7 @@ export default function CheckoutForm({
                         type="email"
                         defaultValue={prefill.email}
                         autoComplete="email"
+                        dir="ltr"
                         aria-invalid={errorFor('email') ? 'true' : undefined}
                       />
                       {errorFor('email') && (
@@ -813,6 +835,23 @@ export default function CheckoutForm({
                       max={walletMaxIls}
                       step="0.01"
                       defaultValue={0}
+                      /*
+                        The three attributes above enforce nothing: this form is
+                        `noValidate`, which is what lets it run its own step
+                        gate and which also switches off every native
+                        constraint in it. See lib/checkout/wallet-input.ts for
+                        what a number above the ceiling used to reach the
+                        shopper as.
+
+                        On blur rather than on change, so the clamp never
+                        rewrites a half-typed number under the cursor.
+                      */
+                      onBlur={(event) => {
+                        event.currentTarget.value = clampWalletIls(
+                          event.currentTarget.value,
+                          walletMaxIls,
+                        )
+                      }}
                     />
                   </div>
                 )}

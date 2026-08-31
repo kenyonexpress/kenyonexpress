@@ -10,7 +10,10 @@ import Pagination from '@/components/category/Pagination'
 import CityTags from '@/components/geo/CityTags'
 import {
   CATEGORY_PAGE_SIZE,
+  type CollectionRule,
   type ProductTypeFilter,
+  categoryMetaDescription,
+  collectionRule,
   getAllCategories,
   getAllCategorySlugs,
   getCategoryBySlug,
@@ -62,9 +65,39 @@ function resultCountText(total: number, from: number, to: number): string {
 export async function generateMetadata({ params }: Props) {
   const { slug } = await params
   const category = await getCategoryBySlug(slug)
+
+  // A slug nobody has: the body calls notFound(), which emits noindex through
+  // app/not-found.tsx. State it here too, so a crawler that only reads metadata
+  // never treats the empty shell as an indexable page.
+  if (!category) {
+    return {
+      title: 'קטגוריה לא נמצאה',
+      description: 'הקטגוריה לא נמצאה או שאינה פעילה בקניון אקספרס.',
+      robots: { index: false, follow: true },
+    }
+  }
+
+  // Almost no category row carries description_he -- /category/hot-deals, the
+  // one linked from the home page, is one of them -- and `undefined` here meant
+  // the page shipped with no <meta name="description"> at all. Lighthouse SEO
+  // scored it 92 against 100 for every page that has one. Same fallback shape
+  // as the PDP in lib/product-seo.ts: a short Hebrew line built from the name
+  // the page already shows, rather than invented marketing copy.
+  const description = category.description_he?.trim() || categoryMetaDescription(category.name_he)
+
   return {
-    title: category?.name_he ?? 'קטגוריה',
-    description: category?.description_he ?? undefined,
+    title: category.name_he,
+    description,
+    // The same category is reachable with sort, page, price and city query
+    // strings, and without a canonical each of those competes as its own page.
+    alternates: { canonical: `/category/${encodeURIComponent(category.slug)}` },
+    openGraph: {
+      title: category.name_he,
+      description,
+      url: `/category/${encodeURIComponent(category.slug)}`,
+      type: 'website',
+      locale: 'he_IL',
+    },
   }
 }
 
@@ -97,6 +130,8 @@ type QueryArgs = {
    * minting a cache entry per coordinate.
    */
   near?: Coordinates | null
+  /** The collection rule for this slug, if it is one of the three. */
+  collection?: CollectionRule
 }
 
 /**
@@ -120,9 +155,29 @@ function pageWindow(total: number, page: number) {
   return { totalPages, currentPage, from, to }
 }
 
+/**
+ * A page past the end is not an empty filter. Same helper as /products, for the
+ * same reason: PostgREST answers an out-of-range `range()` with no rows AND no
+ * count, so `total` comes back 0 and cannot tell "past the end" from "nothing
+ * matched". The second read of page 1 only runs on a page that already had
+ * nothing to show, and both boundaries call this so they describe one page.
+ */
+async function categoryPageOrLast(args: QueryArgs) {
+  const first = await getCategoryProductsCached(cacheableArgs(args))
+  if (first.items.length > 0 || args.page <= 1) return first
+
+  const head = await getCategoryProductsCached(cacheableArgs({ ...args, page: 1 }))
+  if (head.total === 0) return first
+
+  const lastPage = Math.max(1, Math.ceil(head.total / CATEGORY_PAGE_SIZE))
+  return lastPage === 1
+    ? head
+    : getCategoryProductsCached(cacheableArgs({ ...args, page: lastPage }))
+}
+
 /** Header count. Shares one query with the grid via getCategoryProductsCached. */
 async function ResultCount({ args }: { args: QueryArgs }) {
-  const { total } = await getCategoryProductsCached(cacheableArgs(args))
+  const { total } = await categoryPageOrLast(args)
   if (total === 0) return null
   const { from, to } = pageWindow(total, args.page)
   return <p className="category-page__count">{resultCountText(total, from, to)}</p>
@@ -137,7 +192,7 @@ async function ResultGrid({
   pathname: string
   linkParams: Record<string, string | undefined>
 }) {
-  const { items, total } = await getCategoryProductsCached(cacheableArgs(args))
+  const { items, total } = await categoryPageOrLast(args)
 
   // Nearest first, applied after the cached read. `sortByDistance` returns the
   // list unchanged when there is no origin, so the default page is untouched.
@@ -224,16 +279,44 @@ function CategoryPageFallback() {
   )
 }
 
-export default function CategoryPage(props: Props) {
+/**
+ * THE SLUG LOOKUP SITS OUTSIDE THE BOUNDARY SO THAT A DEAD SLUG CAN STILL 404.
+ *
+ * It used to live in `CategoryPageBody`, inside the `<Suspense>`, and the cost
+ * of that was measured, not theorised: `/category/no-such-slug` answered
+ * **`200 OK`** with `x-nextjs-postponed: 1`. The shell had already been
+ * committed to the wire by the time `notFound()` ran, so the status line could
+ * not be changed and the not-found page was served under a success code - a
+ * soft 404 on an infinite family of crawlable URLs.
+ *
+ * Hoisting it costs nothing, and that is the part that is not obvious. The
+ * twelve real slugs come from `generateStaticParams`, so `params` resolves at
+ * BUILD time and `getCategoryBySlug` is `use cache`: the outer component still
+ * finishes during the prerender and the shell below is still postponed on
+ * `searchParams` alone. Measured after the change: a real category keeps
+ * `x-nextjs-postponed: 1`, and an unknown slug answers `404`.
+ *
+ * `/product/[slug]` reached the same place from the other direction - see the
+ * note above `ProductPage` - which is why the two routes now behave alike.
+ */
+export default async function CategoryPage(props: Props) {
+  const { slug } = await props.params
+  const category = await getCategoryBySlug(slug)
+  if (!category) notFound()
+
   return (
     <Suspense fallback={<CategoryPageFallback />}>
-      <CategoryPageBody {...props} />
+      <CategoryPageBody {...props} category={category} />
     </Suspense>
   )
 }
 
-async function CategoryPageBody({ params, searchParams }: Props) {
-  const { slug } = await params
+async function CategoryPageBody({
+  searchParams,
+  category,
+}: Omit<Props, 'params'> & {
+  category: NonNullable<Awaited<ReturnType<typeof getCategoryBySlug>>>
+}) {
   const sp = await searchParams
   const sort = parseSort(sp.sort)
   const page = parsePage(sp.page)
@@ -242,9 +325,6 @@ async function CategoryPageBody({ params, searchParams }: Props) {
   const productType = parseProductType(sp.type)
   const city = parseCity(sp.city)
   const near = parseNear(sp.near)
-
-  const category = await getCategoryBySlug(slug)
-  if (!category) notFound()
 
   // Cheap shell data only. The product query is deferred to the boundaries
   // below so the breadcrumb, title, control bar and sidebar can stream first.
@@ -263,6 +343,10 @@ async function CategoryPageBody({ params, searchParams }: Props) {
     productType,
     city,
     near,
+    // hot-deals / under-99 / new are collections, and nothing falls into a
+    // collection on its own. Undefined for the nine taxonomies, which keep
+    // matching on category_id alone.
+    collection: collectionRule(category.slug),
   }
 
   const pathname = `/category/${category.slug}`
@@ -287,7 +371,14 @@ async function CategoryPageBody({ params, searchParams }: Props) {
 
         <header className="category-page__header">
           <h1 className="category-page__title">{category.name_he}</h1>
-          <Suspense fallback={null}>
+          {/* The count's box, held open while it streams. See the note on the
+              same boundary in search/page.tsx: a null fallback inserts a line
+              into the header on resolve and moves everything below it. */}
+          <Suspense
+            fallback={
+              <div className="category-page__count category-page__count--pending" aria-hidden />
+            }
+          >
             <ResultCount args={args} />
           </Suspense>
         </header>

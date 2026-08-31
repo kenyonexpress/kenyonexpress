@@ -1,6 +1,7 @@
 'use client'
 
 import { type AuthState, updatePassword } from '@/server/actions/auth'
+import Link from 'next/link'
 import { useActionState } from 'react'
 
 export default function ResetPasswordForm() {
@@ -48,7 +49,24 @@ export default function ResetPasswordForm() {
           />
         </div>
 
-        {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
+        {error && (
+          <div className="space-y-2">
+            <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
+            {/*
+              A way out, shown only once something has failed. This page is
+              reached from a mail link and otherwise carries no navigation at
+              all, so a customer whose link had expired was left on a dead end:
+              the message now tells them to request a new one, and this is the
+              only place on the screen that can.
+            */}
+            <Link
+              href="/forgot-password"
+              className="block text-center text-sm text-link hover:underline"
+            >
+              שליחת קישור איפוס חדש
+            </Link>
+          </div>
+        )}
 
         <button
           type="submit"

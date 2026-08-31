@@ -1,4 +1,4 @@
-import { type Page, expect } from '@playwright/test'
+import { type Locator, type Page, expect } from '@playwright/test'
 
 /**
  * Catalog content is DB-driven and the slugs are Hebrew, so specs discover a
@@ -96,13 +96,26 @@ export async function firstCategorySlug(page: Page): Promise<string | null> {
     .toBeVisible({ timeout: DISCOVERY_TIMEOUT })
     .catch(() => undefined)
 
-  const count = await links.count()
-  const candidates: string[] = []
-  for (let i = 0; i < count; i += 1) {
-    const href = await links.nth(i).getAttribute('href')
-    const slug = href?.split('?')[0]?.replace('/category/', '')
-    if (slug && !candidates.includes(slug)) candidates.push(slug)
-  }
+  // ONE ROUND TRIP, NOT ONE PER LINK.
+  //
+  // This was `links.nth(i).getAttribute()` in a loop. The homepage carries more
+  // than fifty category links between the navigation, the strip and the promo
+  // banners, so the loop was fifty protocol calls before the function had even
+  // started visiting candidates, and under load it spent the whole 30s test
+  // timeout: three specs failed on `waiting for locator(...).nth(49)`, reported
+  // as a missing breadcrumb or a missing sort control. `evaluateAll` reads them
+  // all in the page, in one call.
+  const candidates = [
+    ...new Set(
+      (
+        await links.evaluateAll((els) =>
+          els.map((el) => el.getAttribute('href') ?? '').filter(Boolean),
+        )
+      )
+        .map((href) => href.split('?')[0]?.replace('/category/', ''))
+        .filter((slug): slug is string => Boolean(slug)),
+    ),
+  ]
 
   // Returning the first link was not the same thing as this function's
   // contract, which is "a category that actually has products". The homepage
@@ -178,9 +191,82 @@ export async function addOpenProductToCart(page: Page): Promise<void> {
   await expect(addButton).toBeVisible()
   await expect(addButton).toBeEnabled()
   await addButton.click()
-  await expect
-    .poll(async () => (await addButton.isEnabled()) && (await headerCartCount(page)) > before, {
-      timeout: DISCOVERY_TIMEOUT,
+  try {
+    await expect
+      .poll(async () => (await addButton.isEnabled()) && (await headerCartCount(page)) > before, {
+        timeout: DISCOVERY_TIMEOUT,
+      })
+      .toBe(true)
+  } catch {
+    // A REFUSAL AND A DEAD BUTTON FAIL IDENTICALLY, AND ONE OF THEM IS NOT A BUG.
+    //
+    // The poll above is correct and stays: on a refusal `settle()` rolls the
+    // count back, so the condition is false either way. What it cannot do is
+    // say WHICH, and every caller inherited the same message -- "Timeout
+    // 15000ms exceeded while waiting on the predicate" at this line -- for two
+    // completely different situations. STATE.md carries a whole paragraph
+    // explaining that a recurring set of these is not a regression, which is
+    // the cost of a failure that does not name itself.
+    //
+    // On this machine the usual cause is the third case and not a product bug
+    // at all: the guest cart's stock read goes through the admin client, the
+    // local SUPABASE_SECRET_KEY is the stock demo key, and the hosted project
+    // answers `Invalid API key`. Measured 2026-08-19, the server logging
+    // `stock.available_read_failed` with that reason while this poll timed out.
+    //
+    // `toast.error` in CartProvider carries the server's own words, so they go
+    // into the message when there are any.
+    const refusal = await page
+      .locator('[data-sonner-toast][data-type="error"]')
+      .first()
+      .textContent({ timeout: 1000 })
+      .catch(() => null)
+    const after = await headerCartCount(page)
+    throw new Error(
+      [
+        `add-to-cart did not stick: the header badge went ${before} -> ${after}.`,
+        refusal
+          ? `The cart refused it and said: ${refusal.trim()}`
+          : 'No error toast was raised, so the click either never reached the server or the answer never came back.',
+        'If the server log shows `Invalid API key`, this is the known SUPABASE_SECRET_KEY blocker and not a regression.',
+      ].join(' '),
+    )
+  }
+}
+
+/**
+ * Raises the PWA install banner, and keeps asking until it is up.
+ *
+ * WHY IT DISPATCHES MORE THAN ONCE. The banner renders off a captured
+ * `beforeinstallprompt`, and the listener that captures it is attached by a
+ * client component on mount. Both callers used to fire the event once, right
+ * after `domcontentloaded`, which is BEFORE hydration - so the whole test hung
+ * on whether hydration won a race against one synchronous dispatch. Measured
+ * 2026-08-20 at two workers: both install-banner tests failed in the same full
+ * run with "the install banner did not render", and both passed alone. The
+ * component was never involved; nothing was scanned and nothing was measured,
+ * which is the worst way for an a11y check to be green or red.
+ *
+ * Re-dispatching costs nothing - the component's handler only calls
+ * `preventDefault` and stores the event - and it turns a race into a poll.
+ */
+export async function raiseInstallBanner(page: Page): Promise<Locator> {
+  const banner = page.getByRole('region', { name: 'התקנת האפליקציה' })
+  const fire = () =>
+    page.evaluate(() => {
+      const event = new Event('beforeinstallprompt') as Event & {
+        prompt: () => Promise<void>
+        userChoice: Promise<{ outcome: string }>
+      }
+      event.prompt = async () => {}
+      event.userChoice = Promise.resolve({ outcome: 'dismissed' })
+      window.dispatchEvent(event)
     })
-    .toBe(true)
+
+  for (let attempt = 0; attempt < 20; attempt++) {
+    await fire()
+    if (await banner.isVisible().catch(() => false)) return banner
+    await page.waitForTimeout(250)
+  }
+  return banner
 }

@@ -13,6 +13,7 @@ import type { CartActionResult, CartStorageItem, CartView } from '@/lib/cart/typ
 import { growthClient } from '@/lib/growth/client'
 import { evaluateDiscount } from '@/lib/growth/discount'
 import { withActionContext } from '@/lib/observability/action-context'
+import { log } from '@/lib/observability/log'
 import { createGuestCartClient, createPublicClient } from '@/lib/supabase/anon'
 import { createClient } from '@/lib/supabase/server'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
@@ -166,7 +167,11 @@ async function resolveAppliedCoupon(
 async function resolveCartView(cartId: string | null, items: CartStorageItem[]): Promise<CartView> {
   const { products, variants } = await loadCartProductData(items)
   const priced = buildCartView(cartId, items, products, variants)
-  if (priced.items.length === 0) return priced
+  // Nothing to discount, so neither code table is worth two round trips. This
+  // covers the empty cart and, since the pricer stopped blanking them, the cart
+  // whose every line is unpriceable: both charge zero, and every discount path
+  // caps itself at the payable total anyway, so the answer is already known.
+  if (priced.items.length === 0 || priced.subtotal === 0) return priced
   // Priced twice on purpose: the coupon needs the payable total to judge a
   // minimum and to cap itself, and that total is only known after the lines are
   // priced. The second pass costs no query.
@@ -187,23 +192,47 @@ async function getCartRow(): Promise<{
   } = await supabase.auth.getUser()
 
   if (user) {
-    const { data } = await supabase
+    const result = await supabase
       .from('carts')
       .select('id, items')
       .eq('profile_id', user.id)
       .maybeSingle()
-    return { row: data, isGuest: false, userId: user.id }
+    return { row: cartRowOrFail(result, user.id), isGuest: false, userId: user.id }
   }
 
   const sessionId = (await getGuestSessionId()) ?? (await ensureGuestSessionId())
-  const { data } = await createGuestCartClient(sessionId)
+  const result = await createGuestCartClient(sessionId)
     .from('carts')
     .select('id, items')
     .eq('session_id', sessionId)
     .is('profile_id', null)
     .maybeSingle()
 
-  return { row: data, isGuest: true, userId: null }
+  return { row: cartRowOrFail(result, sessionId), isGuest: true, userId: null }
+}
+
+/**
+ * The shopper's own cart row, or a throw. Never a silent null.
+ *
+ * `.maybeSingle()` reports a genuinely absent cart as `data: null` with NO
+ * error, so every error here is exceptional - and one of them is a trap that
+ * repairs nothing on its own. postgrest-js synthesises PGRST116 when the filter
+ * matched MORE than one row (`dist/index.mjs`: `if (isMaybeSingle &&
+ * Array.isArray(data)) if (data.length > 1)`), and `public.carts` has no unique
+ * index on `profile_id` to stop a second row existing. Discarded, that error
+ * read as "this account has no cart": the cart showed empty on every request,
+ * and every write, seeing no existing id, inserted yet another row. Note that
+ * `orFail` is deliberately NOT used - it exempts PGRST116 as "a `.single()`
+ * found no row", which is the right call for the catalogue and the exact wrong
+ * one here, where PGRST116 can only mean duplicates.
+ */
+function cartRowOrFail(
+  result: { data: CartRow | null; error: { code?: string; message?: string } | null },
+  owner: string,
+): CartRow | null {
+  if (!result.error) return result.data
+  log.error('cart.row_read_failed', { owner, error: result.error })
+  throw new Error(`cart.row_read_failed: ${result.error.message ?? 'cart read failed'}`)
 }
 
 async function saveCartItems(
@@ -453,6 +482,51 @@ async function runRemoveFromCart(
   return runUpdateCartItem(productId, variantId, 0)
 }
 
+/**
+ * Drops every line the priced cart marks unavailable, in one write.
+ *
+ * WHY IT DOES NOT TAKE A LIST. The obvious shape is for the browser to send the
+ * keys it has rendered as unavailable, and it is the wrong one: the cart on
+ * screen is as old as the last render, so a list built from it can name a line
+ * that has since come back into stock, and the shopper would press "remove the
+ * unavailable ones" and lose an item that was fine. Worse, a hand-sent list is
+ * an arbitrary delete of anything in the cart under a name that reads harmless.
+ * So the server re-prices the cart it actually holds and decides for itself;
+ * the browser is asking a question, not naming rows.
+ *
+ * Removing nothing is a success, not an error. The banner offering this is
+ * rendered from the same possibly-stale view, so "you pressed it and by then
+ * there was nothing left to remove" is a normal race and not a failure the
+ * shopper should be shown.
+ */
+async function runRemoveUnavailableItems(): Promise<CartActionResult> {
+  const { row, isGuest, userId } = await getCartRow()
+  if (!row) return { ok: true, cart: await resolveCartView(null, []) }
+
+  const items = parseItems(row.items)
+  if (items.length === 0) return { ok: true, cart: await resolveCartView(row.id, items) }
+
+  const priced = await resolveCartView(row.id, items)
+  const unavailable = new Set(priced.items.filter((i) => !i.available).map((i) => itemKey(i)))
+  // A line the pricer dropped entirely -- a product row that no longer exists,
+  // which `buildCartView` skips with `continue` rather than rendering -- never
+  // appears in `priced.items` at all. It is unavailable in the only sense that
+  // matters and is exactly what a shopper stuck behind this banner cannot see
+  // or remove, so it goes too.
+  const rendered = new Set(priced.items.map((i) => itemKey(i)))
+  const kept = items.filter((i) => rendered.has(itemKey(i)) && !unavailable.has(itemKey(i)))
+
+  if (kept.length === items.length) return { ok: true, cart: priced }
+
+  const allowed = await checkCartWriteRateLimit(userId)
+  if (!allowed) return fail('יותר מדי פעולות — נסו שוב מאוחר יותר', 'RATE_LIMITED')
+
+  const saved = await saveCartItems(kept, isGuest, userId, row.id)
+  const cart = await resolveCartView(saved.id, parseItems(saved.items))
+  revalidateCartPaths()
+  return { ok: true, cart }
+}
+
 async function runClearCart(): Promise<CartActionResult> {
   const { row, isGuest, userId } = await getCartRow()
   if (!row) return { ok: true, cart: await resolveCartView(null, []) }
@@ -486,10 +560,10 @@ async function runMergeGuestCart(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
   sessionId: string,
-): Promise<void> {
+): Promise<boolean> {
   const guest = createGuestCartClient(sessionId)
 
-  const [{ data: guestCart }, { data: userCart }] = await Promise.all([
+  const [guestResult, userResult] = await Promise.all([
     guest
       .from('carts')
       .select('id, items')
@@ -499,7 +573,28 @@ async function runMergeGuestCart(
     supabase.from('carts').select('id, items').eq('profile_id', userId).maybeSingle(),
   ])
 
-  if (!guestCart || !Array.isArray(guestCart.items) || guestCart.items.length === 0) return
+  // NEITHER read may be discarded, and the account one is the dangerous half.
+  // Every branch below reads "no id" as "this account has no cart yet", so a
+  // failed read took the INSERT branch - and `public.carts` has no unique index
+  // on `profile_id` (measured against production 2026-08-20), so the insert
+  // SUCCEEDS and the profile ends up owning two rows. `getCartRow` then reads
+  // both with `.maybeSingle()`, which is the PGRST116 `cartRowOrFail` exists
+  // for. The guest half matters for the other direction: it is deleted below
+  // unconditionally, so a failed read there loses the items it was about to
+  // merge. Returning false rather than throwing because all three callers are
+  // on the login path, after the session is already exchanged: a login that
+  // succeeded must not fail over a cart. The caller keeps the guest cookie on false, and
+  // the merge is retried at the next login instead of being orphaned.
+  const failure = guestResult.error ?? userResult.error
+  if (failure) {
+    log.error('cart.merge_read_failed', { userId, sessionId, error: failure })
+    return false
+  }
+
+  const guestCart = guestResult.data
+  const userCart = userResult.data
+
+  if (!guestCart || !Array.isArray(guestCart.items) || guestCart.items.length === 0) return true
 
   const guestItems = parseItems(guestCart.items)
   const userItems = parseItems(userCart?.items)
@@ -525,6 +620,8 @@ async function runMergeGuestCart(
       : supabase.from('carts').insert({ profile_id: userId, items: mergedItems }),
     guest.from('carts').delete().eq('id', guestCart.id),
   ])
+
+  return true
 }
 
 async function runClearGuestSessionCookie(): Promise<void> {
@@ -681,11 +778,17 @@ export async function clearCart(): Promise<CartActionResult> {
   return withActionContext('cart.clear', () => runClearCart())
 }
 
+export async function removeUnavailableItems(): Promise<CartActionResult> {
+  return withActionContext('cart.remove_unavailable', () => runRemoveUnavailableItems())
+}
+
+/** True when the merge ran (or had nothing to merge); false when a read failed
+ * and the caller must keep the guest cookie so it can be retried. */
 export async function mergeGuestCart(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
   sessionId: string,
-): Promise<void> {
+): Promise<boolean> {
   return withActionContext('cart.merge_guest', () => runMergeGuestCart(supabase, userId, sessionId))
 }
 

@@ -58,7 +58,7 @@ function clip(value: string, max: number): string {
   return `${(lastSpace > max - 12 ? hard.slice(0, lastSpace) : hard).trimEnd()}…`
 }
 
-function shekels(value: number): string {
+function shekelsFromIls(value: number): string {
   return `₪${value.toLocaleString('he-IL', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`
 }
 
@@ -71,13 +71,14 @@ export function buildOgCard(input: OgCardInput): OgCard {
     return {
       title,
       supplier,
-      price: shekels(paidOnlineIls),
+      price: shekelsFromIls(paidOnlineIls),
       priceLabel: 'שולם באתר',
-      balance: balanceAtBusinessIls > 0 ? `+ ${shekels(balanceAtBusinessIls)} בבית העסק` : null,
+      balance:
+        balanceAtBusinessIls > 0 ? `+ ${shekelsFromIls(balanceAtBusinessIls)} בבית העסק` : null,
       // Only when the sticker price is genuinely higher. A strike-through on an
       // equal number claims a saving that does not exist — the same rule the
       // Merchant feed applies to `g:sale_price`.
-      wasPrice: fullPriceIls > paidOnlineIls ? shekels(fullPriceIls) : null,
+      wasPrice: fullPriceIls > paidOnlineIls ? shekelsFromIls(fullPriceIls) : null,
       discountBadge: discountPercent > 0 ? `${discountPercent}%-` : null,
     }
   }
@@ -100,7 +101,7 @@ export function buildOgCard(input: OgCardInput): OgCard {
   return {
     title,
     supplier,
-    price: shekels(input.priceIls),
+    price: shekelsFromIls(input.priceIls),
     priceLabel: null,
     balance: null,
     wasPrice: null,

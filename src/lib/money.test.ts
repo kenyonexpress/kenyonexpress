@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { agorot } from './commerce/money'
+import { type Agorot, agorot } from './commerce/money'
 import {
   BP_WHOLE,
   VAT_RATE_BP,
@@ -81,16 +81,21 @@ describe('extractVat', () => {
   it('splits a gross amount into net + vat that sum back exactly', () => {
     // Coupon on-site charge P = 1000 agorot (from the doc balance example).
     const { net, vat, gross } = extractVat(agorot(1000))
-    expect(net).toBe(855) // round(1000 * 10000 / 11700)
-    expect(vat).toBe(145) // 1000 - 855
+    expect(net).toBe(847) // round(1000 * 10000 / 11800)
+    expect(vat).toBe(153) // 1000 - 847
     expect(net + vat).toBe(gross)
   })
 
   it('splits the physical-line commission example', () => {
-    // Physical F=10000, comm=1000 -> net 855, vat 145 (doc §2.2 balance).
+    // Physical F=10000, comm=1000 -> net 847, vat 153 (doc §2.2 balance).
+    //
+    // The doc's worked example was written at 17% and reads 855/145. The rate
+    // is 18% since 2025-01-01 and VAT_RATE_BP now says so; the INVARIANT the
+    // example exists to demonstrate is `net + vat === gross`, which is checked
+    // above and is rate-independent, so only the two numerals move.
     const { net, vat } = extractVat(agorot(1000))
-    expect(net).toBe(855)
-    expect(vat).toBe(145)
+    expect(net).toBe(847)
+    expect(vat).toBe(153)
   })
 
   it('is loss-free across a sweep of amounts', () => {
@@ -102,10 +107,12 @@ describe('extractVat', () => {
     }
   })
 
-  it('uses the 17% default rate', () => {
-    expect(VAT_RATE_BP).toBe(1700)
+  it('uses the 18% default rate, the one in force since 2025-01-01', () => {
+    // Pinned deliberately. This asserted 1700 while the invoice module used 18,
+    // and each file read correct on its own, which is how they stayed apart.
+    expect(VAT_RATE_BP).toBe(1800)
     const { vatRateBp } = extractVat(agorot(100))
-    expect(vatRateBp).toBe(1700)
+    expect(vatRateBp).toBe(1800)
   })
 })
 
@@ -147,5 +154,59 @@ describe('parseIls', () => {
 
   it('rejects more than two fraction digits', () => {
     expect(() => parseIls('1.234')).toThrow()
+  })
+})
+
+/**
+ * The guards below were the only uncovered code in this module: 89.83% lines,
+ * 85% branches, measured 2026-08-20, and every uncovered line was a `throw`.
+ *
+ * That is the worst place for a coverage hole to sit. CLAUDE.md's hardest rule
+ * is that no float ever touches the money path, and `assertSafeInteger` is the
+ * runtime that enforces it. A guard with no test is an assumption, not a guard:
+ * it can be weakened or deleted and every other test in this file still passes.
+ */
+describe('money-path guards (the no-float invariant at runtime)', () => {
+  it('rejects a float amount rather than silently truncating it', () => {
+    // 149.5 agorot is not a representable amount. The rule is that this
+    // throws, not that it rounds - rounding here is how half-agorot drift
+    // enters a ledger that is supposed to balance to zero.
+    //
+    // The cast is the point of the test, not a way around it. The `Agorot`
+    // brand already rejects this at compile time (verified: tsc raises TS2345
+    // without the cast), but a float parsed from JSON or read off a DB row is
+    // branded by assertion, not by proof. The runtime guard is what covers
+    // that path, so the test has to enter through it.
+    expect(() => applyBp(149.5 as Agorot, 1000)).toThrow(RangeError)
+    expect(() => divRoundHalfUp(10.5, 2)).toThrow(RangeError)
+  })
+
+  it('names the offending value in the error, so a failure is debuggable', () => {
+    expect(() => divRoundHalfUp(10.5, 2)).toThrow(/safe integer.*10\.5/)
+  })
+
+  it('rejects amounts past Number.MAX_SAFE_INTEGER', () => {
+    expect(() => divRoundHalfUp(Number.MAX_SAFE_INTEGER + 2, 2)).toThrow(RangeError)
+    expect(() => applyBp(agorot(Number.MAX_SAFE_INTEGER), BP_WHOLE)).toThrow(RangeError)
+  })
+
+  it('rejects a non-finite percent instead of producing NaN basis points', () => {
+    // NaN would flow through `bp()` and land in order_items as a snapshot
+    // nobody can reconcile, so this has to fail loudly at the boundary.
+    expect(() => percentToBp(Number.NaN)).toThrow(TypeError)
+    expect(() => percentToBp(Number.POSITIVE_INFINITY)).toThrow(TypeError)
+    expect(() => percentToBp('not a number')).toThrow(TypeError)
+  })
+
+  it('rejects a VAT rate outside 0..10000 bp', () => {
+    expect(() => extractVat(agorot(10_000), -1)).toThrow(RangeError)
+    expect(() => extractVat(agorot(10_000), BP_WHOLE + 1)).toThrow(RangeError)
+    // The boundaries themselves are legal: 0% and 100% are both valid rates.
+    expect(extractVat(agorot(10_000), 0).vat).toBe(0)
+    expect(extractVat(agorot(10_000), BP_WHOLE).net).toBe(5_000)
+  })
+
+  it('rejects a fractional VAT rate', () => {
+    expect(() => extractVat(agorot(10_000), VAT_RATE_BP + 0.5)).toThrow(RangeError)
   })
 })

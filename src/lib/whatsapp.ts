@@ -1,3 +1,5 @@
+import { agorot } from '@/lib/money'
+import { shekels } from '@/lib/money-format'
 /**
  * WhatsApp deep-link helpers (client-safe, no dependencies).
  *
@@ -96,31 +98,43 @@ export function storeWhatsAppLink(text?: string): string | null {
   return phone ? waChatLink(phone, text) : null
 }
 
-export function buildProductShareText(name: string, priceIls: number, url: string): string {
-  const price = `₪${priceIls.toLocaleString('he-IL', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`
-  return `מצאתי משהו שווה ב-KenyonExpress: ${name} ב-${price}\n${url}`
-}
+/**
+ * There is deliberately no product-share builder here.
+ *
+ * There was one, `buildProductShareText`, and it was wrong for exactly the case
+ * the storefront cares about most: for a coupon it quoted `products.price_ils`,
+ * the sticker price of the goods at the business, so a customer sharing an
+ * ₪80 coupon sent their friend "₪200" and the friend landed on a page quoting
+ * ₪80. It also baked the URL into the text, which every channel then appended
+ * again. `src/lib/share/message.ts` replaced it and explains the pricing rule at
+ * length; by the time it was removed here nothing imported this one.
+ *
+ * Kept as a comment rather than deleted silently, because the tempting thing to
+ * do next is to write it back.
+ */
 
 export function buildCouponShareText(input: {
   productName: string | null
   code: string
-  collectAmountIls: number
+  /**
+   * What is still owed at the business, in integer AGOROT.
+   *
+   * This took shekels, which meant every caller had to divide a stored agorot
+   * column by 100 first and hand over a float. `vouchers
+   * .remaining_amount_due_agorot` is the only source there has ever been for
+   * this number, so the division was pure loss: it converted an exact integer
+   * into a value that has to be rounded back, in the one message a customer
+   * forwards to someone else as a record of what they will pay.
+   */
+  collectAmountAgorot: number
   expiresAt: string
   siteUrl: string
 }): string {
   const lines = ['קופון מ-KenyonExpress 🎁']
   if (input.productName) lines.push(input.productName)
   lines.push(`קוד: ${input.code}`)
-  if (input.collectAmountIls > 0) {
-    lines.push(
-      `לתשלום בעסק במימוש: ₪${input.collectAmountIls.toLocaleString('he-IL', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}`,
-    )
+  if (input.collectAmountAgorot > 0) {
+    lines.push(`לתשלום בעסק במימוש: ${shekels(agorot(input.collectAmountAgorot))}`)
   }
   lines.push(
     `בתוקף עד ${new Date(input.expiresAt).toLocaleDateString('he-IL', {

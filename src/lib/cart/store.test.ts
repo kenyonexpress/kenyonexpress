@@ -18,12 +18,14 @@ const addToCart = vi.fn()
 const updateCartItem = vi.fn()
 const removeFromCart = vi.fn()
 const clearCart = vi.fn()
+const removeUnavailableItems = vi.fn()
 
 vi.mock('@/server/actions/cart', () => ({
   addToCart: (...args: unknown[]) => addToCart(...args),
   updateCartItem: (...args: unknown[]) => updateCartItem(...args),
   removeFromCart: (...args: unknown[]) => removeFromCart(...args),
   clearCart: () => clearCart(),
+  removeUnavailableItems: () => removeUnavailableItems(),
 }))
 
 const { CART_MIRROR_KEY, applyOptimistic, createCartStore, displayItemCount } = await import(
@@ -49,6 +51,8 @@ function item(overrides: Partial<CartViewItem> = {}): CartViewItem {
     platform_percent_bp: 500,
     platform_percent_snapshot: 5,
     coupon_price_unit: null,
+    max_quantity: null,
+    unavailable_reason: null,
     ...overrides,
   }
 }
@@ -173,7 +177,7 @@ describe('cart store', () => {
     addToCart.mockResolvedValue({ ok: true, cart: cart([item({ quantity: 1 })]) })
     const feedback = vi.fn()
     const store = createCartStore(EMPTY_CART, feedback)
-    await store.getState().addToCart('p1', null, 1, 'אוזניות')
+    expect(await store.getState().addToCart('p1', null, 1, 'אוזניות')).toBe(true)
     expect(store.getState().drawerOpen).toBe(true)
     expect(feedback).toHaveBeenCalledWith({ kind: 'added', message: 'אוזניות נוסף לעגלה' })
   })
@@ -183,7 +187,9 @@ describe('cart store', () => {
     const feedback = vi.fn()
     const store = createCartStore(EMPTY_CART, feedback)
 
-    await store.getState().addToCart('p1', null, 1)
+    // The boolean, not just the toast. Every caller's follow-up hangs off it:
+    // the analytics event, the "added" confirmation, and the push to /checkout.
+    expect(await store.getState().addToCart('p1', null, 1)).toBe(false)
 
     expect(store.getState().cart.item_count).toBe(0)
     expect(store.getState().drawerOpen).toBe(false)
@@ -197,7 +203,7 @@ describe('cart store', () => {
     const feedback = vi.fn()
     const store = createCartStore(EMPTY_CART, feedback)
 
-    await store.getState().addToCart('p1', null, 1)
+    expect(await store.getState().addToCart('p1', null, 1)).toBe(false)
 
     expect(store.getState().cart.item_count).toBe(0)
     expect(store.getState().isPending).toBe(false)
@@ -365,6 +371,87 @@ describe('cart store', () => {
 
       expect(store.getState().cart.item_count).toBe(0)
       expect(store.getState().mirrorCount).toBe(0)
+    })
+  })
+
+  describe('removeUnavailable', () => {
+    /**
+     * The one write action that starts no optimistic edit, and this is why.
+     *
+     * The others know which line they touch. This one is asking the server
+     * which lines are unavailable, so guessing the result from the rendered
+     * `available` flags would be guessing at exactly the thing being asked --
+     * and those flags are as old as the last render, so the guess can be wrong
+     * in the direction that hides an item the shopper still has.
+     */
+    it('leaves the cart untouched until the server answers', async () => {
+      const before = cart([item({ available: false })])
+      const store = createCartStore(before)
+      let release!: (value: unknown) => void
+      removeUnavailableItems.mockReturnValue(
+        new Promise((r) => {
+          release = r
+        }),
+      )
+
+      const pending = store.getState().removeUnavailable()
+      expect(store.getState().isPending).toBe(true)
+      expect(store.getState().cart.items).toHaveLength(1)
+
+      release({ ok: true, cart: EMPTY_CART })
+      await pending
+      expect(store.getState().cart.items).toHaveLength(0)
+      expect(store.getState().isPending).toBe(false)
+    })
+
+    it('reports how many lines went, in the plural the count calls for', async () => {
+      const feedback = vi.fn()
+      const store = createCartStore(
+        cart([
+          item({ product_id: 'p1', available: false }),
+          item({ product_id: 'p2', available: false }),
+          item({ product_id: 'p3' }),
+        ]),
+        feedback,
+      )
+      removeUnavailableItems.mockResolvedValue({
+        ok: true,
+        cart: cart([item({ product_id: 'p3' })]),
+      })
+
+      await store.getState().removeUnavailable()
+
+      expect(feedback).toHaveBeenCalledWith({
+        kind: 'removed',
+        message: '2 פריטים שאינם זמינים הוסרו מהעגלה',
+      })
+    })
+
+    it('says nothing when the race meant there was nothing left to remove', async () => {
+      const feedback = vi.fn()
+      const unchanged = cart([item()])
+      const store = createCartStore(unchanged, feedback)
+      removeUnavailableItems.mockResolvedValue({ ok: true, cart: unchanged })
+
+      await store.getState().removeUnavailable()
+
+      expect(feedback).not.toHaveBeenCalled()
+    })
+
+    it('restores the confirmed cart and speaks up when the action throws', async () => {
+      const feedback = vi.fn()
+      const before = cart([item({ available: false })])
+      const store = createCartStore(before, feedback)
+      removeUnavailableItems.mockRejectedValue(new Error('boom'))
+
+      await store.getState().removeUnavailable()
+
+      expect(store.getState().cart.items).toHaveLength(1)
+      expect(store.getState().isPending).toBe(false)
+      expect(feedback).toHaveBeenCalledWith({
+        kind: 'error',
+        message: 'הפעולה נכשלה, נסו שוב',
+      })
     })
   })
 

@@ -102,7 +102,7 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
 
       <div className="my-5 flex items-center gap-3">
         <div className="flex-1 border-t border-gray-200" />
-        <span className="text-xs text-gray-400">או</span>
+        <span className="text-xs text-gray-500">או</span>
         <div className="flex-1 border-t border-gray-200" />
       </div>
 
@@ -121,6 +121,15 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
             required
             autoComplete="email"
             placeholder="you@example.com"
+            /*
+              An address is Latin on a Hebrew page, so the FIELD is LTR while
+              the form around it stays RTL - the same call `NewsletterSignup`,
+              `ContactForm` and the signup phone input already make, and the
+              reasoning is written out in the first of those. MEASURED before
+              this line existed: `you@example.com` sat flush RIGHT here and
+              flush LEFT on /contact, one address rendered two ways on one site.
+            */
+            dir="ltr"
             className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
           />
         </div>
@@ -130,7 +139,7 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">
               סיסמה
             </label>
-            <Link href="/forgot-password" className="text-xs text-brand hover:underline">
+            <Link href="/forgot-password" className="text-xs text-link hover:underline">
               שכחתם סיסמה?
             </Link>
           </div>
@@ -166,7 +175,7 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
           <button
             type="button"
             onClick={() => setShowMagic(true)}
-            className="w-full text-sm text-center text-gray-500 hover:text-brand"
+            className="w-full text-sm text-center text-gray-500 hover:text-link"
           >
             כניסה ללא סיסמה (קישור מאובטח לאימייל)
           </button>
@@ -182,6 +191,7 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
               required
               autoComplete="email"
               placeholder="you@example.com"
+              dir="ltr"
               className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
             />
             {getSuccess(magicState) && (
@@ -197,7 +207,7 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
             <button
               type="submit"
               disabled={magicPending}
-              className="w-full border border-brand text-brand hover:bg-brand/5 disabled:opacity-60 font-semibold rounded-lg py-2.5 text-sm transition-colors"
+              className="w-full border border-brand text-heading hover:bg-brand/5 disabled:opacity-60 font-semibold rounded-lg py-2.5 text-sm transition-colors"
             >
               {magicPending ? 'שולחים...' : 'שלחו לי קישור'}
             </button>
@@ -209,7 +219,7 @@ export default function LoginForm({ next, callbackError, magic, phoneEnabled = f
         אין לכם חשבון?{' '}
         <Link
           href={next ? `/signup?next=${encodeURIComponent(next)}` : '/signup'}
-          className="text-brand font-medium hover:underline"
+          className="text-link font-medium hover:underline"
         >
           הרשמה
         </Link>

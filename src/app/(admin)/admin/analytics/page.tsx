@@ -35,7 +35,16 @@ const TYPE_LABELS: Record<string, string> = {
   physical: 'מוצרים פיזיים',
 }
 
-function shekels(value: number): string {
+/**
+ * Named `shekelsFromIls`, not `shekels`, and the name is the point.
+ *
+ * There were six functions called `shekels` in `src/` and they disagreed about
+ * their unit: three took agorot and three, including this one, took shekels.
+ * Same name, same output, opposite contracts. `@/lib/money-format` now owns the
+ * agorot one for the whole app; every caller here reads an `...Ils` column, so
+ * this stays as it is and merely stops sharing a name with its own opposite.
+ */
+function shekelsFromIls(value: number): string {
   return `₪${value.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
@@ -157,8 +166,8 @@ export default async function AnalyticsPage({
         points={points}
         valueLabel="מחזור"
         secondaryLabel="הכנסות פלטפורמה"
-        formatValue={shekels}
-        formatSecondary={shekels}
+        formatValue={shekelsFromIls}
+        formatSecondary={shekelsFromIls}
       />
 
       <section className="rounded-xl border border-gray-200 bg-white p-5">
@@ -217,8 +226,8 @@ export default async function AnalyticsPage({
                     <td className="py-2 text-black/70">
                       {TYPE_LABELS[row.productType] ?? row.productType}
                     </td>
-                    <td className="py-2 font-medium text-heading">{shekels(row.gmvIls)}</td>
-                    <td className="py-2 text-black/70">{shekels(row.chargedOnSiteIls)}</td>
+                    <td className="py-2 font-medium text-heading">{shekelsFromIls(row.gmvIls)}</td>
+                    <td className="py-2 text-black/70">{shekelsFromIls(row.chargedOnSiteIls)}</td>
                     <td className="py-2 text-black/70">{row.gmvSharePct}%</td>
                   </tr>
                 ))}
@@ -268,7 +277,7 @@ export default async function AnalyticsPage({
                     </td>
                     <td className="py-2 text-black/70">{integer(row.items)}</td>
                     <td className="py-2 font-medium text-heading">
-                      {shekels(row.platformRevenueIls)}
+                      {shekelsFromIls(row.platformRevenueIls)}
                     </td>
                     <td className="py-2 text-black/70">
                       {row.effectiveTakeRatePct === null ? '—' : `${row.effectiveTakeRatePct}%`}
@@ -334,8 +343,8 @@ export default async function AnalyticsPage({
                     {TYPE_LABELS[row.productType] ?? row.productType}
                   </td>
                   <td className="py-2 text-black/70">{integer(row.units)}</td>
-                  <td className="py-2 font-medium text-heading">{shekels(row.gmvIls)}</td>
-                  <td className="py-2 text-black/70">{shekels(row.platformRevenueIls)}</td>
+                  <td className="py-2 font-medium text-heading">{shekelsFromIls(row.gmvIls)}</td>
+                  <td className="py-2 text-black/70">{shekelsFromIls(row.platformRevenueIls)}</td>
                 </tr>
               ))}
             </tbody>

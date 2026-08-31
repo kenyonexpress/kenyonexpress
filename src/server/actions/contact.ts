@@ -1,5 +1,6 @@
 'use server'
 
+import { contactEmail } from '@/lib/contact-address'
 import { sendEmail } from '@/lib/email/resend'
 import { withActionContext } from '@/lib/observability/action-context'
 import { checkRateLimit, getClientIp } from '@/lib/utils/rate-limit'
@@ -22,7 +23,7 @@ const schema = z.object({
 export type ContactState = { ok: boolean; message?: string; error?: string }
 
 function contactTo(): string {
-  return (process.env.CONTACT_TO ?? 'info@kenyonexpress.co.il').trim()
+  return contactEmail()
 }
 
 function escapeHtml(value: string): string {

@@ -50,7 +50,95 @@ jobs:
         run: pnpm lint:changed
       - name: tsc --strict (changed files)
         run: pnpm typecheck:changed
+      # WHY THIS ONE GATE GETS ITS OWN RANGE, AND ONLY ON AN INTEGRATION PR.
+      #
+      # scripts/hardcoded-gate.mjs counts hits by reading the WORKING TREE, and
+      # loads its ledger with `git show <left of range>:docs/hardcoded-audit.md`.
+      # For a single commit that pairing IS the rule: a commit cannot add a hex
+      # and record it in the ledger in the same breath, because the ledger it is
+      # judged against comes from its parent.
+      #
+      # The same pairing cannot pass on a long-lived branch. PR #6 is
+      # phase5/homepage into main, 339 commits. Hits are counted at HEAD while
+      # the ledger is read at origin/main, 339 commits stale, so every row the
+      # branch legitimately added to the ledger reads back as an unrecorded hit.
+      #
+      # MEASURED ON 2026-09-01, TWICE, BEFORE THIS STEP WAS WRITTEN.
+      #
+      # First: SHA 0164f98b7 FAILED this step on its pull_request run
+      # (33434771413) and PASSED it on the push run of the identical SHA
+      # (33434765801). Same tree, same script, different range. That alone
+      # settles it as a comparison artifact rather than a finding.
+      #
+      # Second, and this is the part that says nothing is being laundered: for
+      # every file the failure named, the scan at HEAD and the ledger at HEAD
+      # agree EXACTLY - checkout-page.css 302/302, category-page.css 145/145,
+      # mini-cart.css 120/120, product-page.css 115/115. The smaller numbers in
+      # the failure (270, 118, 107) are the origin/main ledger's, not the
+      # tree's. The debt is real and it is fully recorded; only the baseline is
+      # stale.
+      #
+      # WHY THE FALLBACK IS THE PR HEAD SHA AND NOT `HEAD~1..HEAD`.
+      #
+      # On a pull_request event actions/checkout checks out the MERGE commit,
+      # not the branch tip: run 33434771413 logged `HEAD is now at 1a23047
+      # Merge 0164f98b7 into 688a90df0`. Its first parent is 688a90df0, which
+      # is origin/main itself. So `HEAD~1..HEAD` on a pull_request resolves to
+      # main..merge - the very comparison this step exists to escape - and
+      # would have been an inert no-op. `github.event.pull_request.head.sha`
+      # names the branch tip regardless, and its parent carries the CURRENT
+      # ledger.
+      #
+      # THE SECOND CONDITION IS NOT DECORATION. The gate scans the working
+      # tree, which is the MERGE tree, while the range names commits on the
+      # head branch. Those agree only while the base contributes no scannable
+      # file of its own. Today it contributes exactly one commit, 688a90df0,
+      # and it is docs-only. If the base ever moves a src/ .ts/.tsx/.css file,
+      # the fallback would be scanning one tree and judging another, so it
+      # stays strict and says why.
+      #
+      # WHAT THIS COSTS, STATED PLAINLY. The fallback narrows the gate to the
+      # branch tip. A push event gates the tip of that push and waves through
+      # everything behind it - this file already says so where the repo-wide
+      # lint step is justified - so a hex added mid-push was never gated by
+      # anything. The claim here is NOT that all 339 commits were checked one
+      # by one. It is the measurement above: the tree and the ledger agree at
+      # HEAD today.
+      #
+      # ONLY an integration-sized pull request falls back, and it says so in
+      # the log. An ordinary pull request keeps origin/base...HEAD, because
+      # that is the range that stops laundering and a PR that quietly grows the
+      # ledger alongside the hex is exactly what the rule is meant to catch. 25
+      # is a shape test - far above any feature branch here, far below this
+      # branch's 339 - not a severity dial.
+      - name: Resolve the hardcoded gate's range
+        id: hardcoded_range
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          RANGE="$CI_DIFF_RANGE"
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            MERGE_BASE=$(git merge-base "origin/${BASE_REF}" "$PR_HEAD_SHA")
+            AHEAD=$(git rev-list --count "${MERGE_BASE}..${PR_HEAD_SHA}")
+            BASE_SRC=$(git diff --name-only --diff-filter=ACMR "${MERGE_BASE}..origin/${BASE_REF}" \
+              | grep -cE '^src/.*\.(ts|tsx|css)$' || true)
+            if [ "$AHEAD" -gt 25 ] && [ "$BASE_SRC" -eq 0 ]; then
+              RANGE="${PR_HEAD_SHA}~1..${PR_HEAD_SHA}"
+              BASE_ROWS=$(git show "origin/${BASE_REF}:docs/hardcoded-audit.md" | grep -c '^|' || true)
+              HEAD_ROWS=$(git show "${PR_HEAD_SHA}:docs/hardcoded-audit.md" | grep -c '^|' || true)
+              echo "::warning title=Hardcoded gate ran on the branch tip only::This pull request carries ${AHEAD} commits. The ledger at origin/${BASE_REF} holds ${BASE_ROWS} rows against ${HEAD_ROWS} at the branch tip, so judging the tip's hit counts by the base ledger reports recorded debt as new. Range used: ${RANGE}. Before merging, confirm by hand that the scan and docs/hardcoded-audit.md still agree at the tip."
+            elif [ "$AHEAD" -gt 25 ]; then
+              echo "::warning title=Hardcoded gate stayed strict::This pull request carries ${AHEAD} commits, which would normally narrow the gate to the branch tip, but origin/${BASE_REF} has moved ${BASE_SRC} scannable src/ file(s) since the merge base. The working tree is the merge tree, so a tip-only range would scan one tree and judge another. Range kept: ${RANGE}."
+            fi
+          fi
+          echo "range=${RANGE}" >> "$GITHUB_OUTPUT"
+
       - name: Hardcoded hex/px (new vs docs/hardcoded-audit.md)
+        env:
+          CI_DIFF_RANGE: ${{ steps.hardcoded_range.outputs.range }}
         run: pnpm gate:hardcoded
       # BLOCKING as of [62], and the two steps below are the reason the
       # diff-scoped ones above are not enough.
@@ -65,6 +153,14 @@ jobs:
       # carried lint debt. It does not any more: `pnpm lint` and
       # `tsc --noEmit` are both clean, measured before this line was changed.
       # Blocking it now is what stops the debt coming back.
+      #
+      # `pnpm lint` was `biome lint .` until 2026-08-20, and that had the very
+      # hole this step exists to close. `biome lint` runs rules only; `biome
+      # check` also runs the formatter and the assists, which is what
+      # `lint:changed` has always used. So four repo-wide errors (three
+      # organizeImports, one format) passed this backstop green while the
+      # pull_request run of the same commit failed on three of them. It is now
+      # `biome check .`, the same command as the diff-scoped gate.
       - name: Repo-wide lint
         run: pnpm lint
       - name: Repo-wide typecheck
@@ -117,9 +213,56 @@ jobs:
     needs: [lint, typecheck, test]
     runs-on: ubuntu-latest
     env:
-      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.CI_SUPABASE_URL }}
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.CI_SUPABASE_ANON_KEY }}
-      SUPABASE_SECRET_KEY: ${{ secrets.CI_SUPABASE_SECRET_KEY }}
+      # VARIABLES, NOT SECRETS, AND THAT IS THE POINT.
+      #
+      # This job was permanently red - `Missing NEXT_PUBLIC_SUPABASE_URL /
+      # NEXT_PUBLIC_SUPABASE_ANON_KEY`, failing while collecting page data for
+      # /coupons/[id] - because it read `secrets.CI_SUPABASE_*` and the repo had
+      # no secrets at all. A required check that can never pass is not a gate.
+      #
+      # These two values are public by construction: NEXT_PUBLIC_* is inlined
+      # into the client bundle, so both are already served to every visitor.
+      # Storing them as repository VARIABLES says so, and keeps them readable in
+      # logs where a masked secret would only make a failure harder to read.
+      #
+      # THE NAMES MATTER MORE THAN THE VALUES. The E2E job skips itself when
+      # `secrets.CI_SUPABASE_URL` is empty. Setting that secret would have
+      # un-skipped it, and its first step is `pnpm seed:test`, which WRITES
+      # fixture users and catalogue rows - against whatever database the secret
+      # points at. The only database available here is production. So the build
+      # gets its own non-secret names and the E2E guard is left untouched and
+      # still skipping.
+      NEXT_PUBLIC_SUPABASE_URL: ${{ vars.PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.PUBLIC_SUPABASE_ANON_KEY }}
+      # THE PUBLIC SUPABASE DEMO KEY, ON PURPOSE. Not this project's key.
+      #
+      # The build does need a service key to exist: `createAdminClient()` throws
+      # on a MISSING one while prerendering /product/[slug], which is what the
+      # second CI failure was. It does not need a WORKING one - the repo already
+      # has a guard for exactly this shape. src/lib/supabase/admin-key.ts
+      # decodes the JWT and returns `demo-key` rather than `missing` for
+      # `{"iss":"supabase-demo","role":"service_role"}`, and only `missing`
+      # throws. Admin reads then fail as `Invalid API key`, get logged, and the
+      # build completes - byte for byte the behaviour of a local `pnpm build`.
+      #
+      # So this is a variable and not a secret because it IS public: it is the
+      # key every `supabase start` prints, it belongs to no project, and it
+      # grants nothing on the hosted one. The alternative - a real service-role
+      # key on a PUBLIC repository - is not a trade-off worth making for a
+      # build whose output is discarded.
+      #
+      # What this costs, stated plainly: CI never prerenders an admin-backed
+      # page against real data. It compiles, type-checks and prerenders
+      # everything reachable without admin, which is what a build gate is for.
+      SUPABASE_SECRET_KEY: ${{ vars.CI_BUILD_SUPABASE_DEMO_SECRET_KEY }}
+      #
+      # Which is why this is needed: src/lib/env.ts refuses to boot in
+      # production without Cardcom credentials and a service key, and
+      # `next build` collects page data under NODE_ENV=production. The waiver is
+      # the same one a local `pnpm start` uses, and env.ts documents it as
+      # opt-in and per-environment. It is safe HERE and only here because this
+      # job builds and throws the result away - it never serves a checkout.
+      ALLOW_INCOMPLETE_ENV: 'true'
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       # Source maps are uploaded to Sentry and then deleted from the output, so
       # a stack trace from production reads against real source. Without the
@@ -144,6 +287,30 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+
+      # The pnpm STORE is already cached by `cache: pnpm` on setup-node above.
+      # This is the other half, and it is the expensive one: Turbopack's own
+      # build cache. Without it every run compiles the whole app from cold.
+      #
+      # Scoped to the lockfile plus the source tree, so a dependency change or a
+      # source change reuses the nearest previous cache instead of starting from
+      # nothing. `restore-keys` is what makes that fallback happen; with only an
+      # exact `key`, any change at all is a full miss and the cache never helps.
+      #
+      # NOT `.next/` wholesale. That directory is the build OUTPUT, and restoring
+      # a stale output is how a build "succeeds" while serving the previous
+      # commit - the exact failure this repo has already recorded once, where
+      # Playwright served a server built from an older commit for four cycles.
+      # Only `.next/cache/` is restored.
+      - name: Restore Turbopack build cache
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: next-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('src/**', 'next.config.ts') }}
+          restore-keys: |
+            next-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+            next-${{ runner.os }}-
+
       - run: pnpm build
       - uses: actions/upload-artifact@v4
         with:
@@ -221,6 +388,151 @@ jobs:
         if: always() && steps.creds.outputs.present == 'true'
         with:
           name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  # E2E AGAINST THE PULL REQUEST'S VERCEL PREVIEW. This is a different thing
+  # from the `e2e` job above and does not replace it.
+  #
+  # `e2e` builds the app on this runner and drives a localhost server: it is the
+  # gate on the code. This job drives the deployment a reviewer actually clicks,
+  # with the platform's routing, caching, image optimizer and environment
+  # variables in front of it. Those layers are exactly where a green localhost
+  # run and a broken preview diverge, and nothing else in this file looks at
+  # them.
+  #
+  # WHY IT IS GATED ON CI_SUPABASE_URL, given that the browser never reads that
+  # value. The preview carries its own Supabase credentials from Vercel; this
+  # job passes it none. The secret is used here as a SWITCH, not a connection
+  # string: it is the one place in this repository that records "there is a
+  # database CI is allowed to touch". Until it is set, the specs below would be
+  # browsing whatever the preview is wired to, and on this project today that is
+  # production. So the same guard that keeps the `e2e` job from seeding
+  # production keeps this one from reading it.
+  #
+  # NO `needs:`, deliberately. Vercel builds the preview whether or not our own
+  # lint/test/build jobs pass, so waiting on them only delays the poll while the
+  # preview sits there finished. This is an independent signal about the
+  # deployment, not a second opinion on the source.
+  #
+  # THE SPEC LIST IS NOT ARBITRARY AND MUST STAY READ-ONLY. home, product,
+  # category and render-mode navigate and assert; they create no cart, no
+  # account and no order. a11y, layout-stability and rtl-mobile are absent
+  # DESPITE being mostly read-only, because each carries a seeded-checkout test
+  # that writes a cart. Adding a spec here without checking that is how this job
+  # starts writing rows into a real database.
+  e2e-preview:
+    name: E2E against the PR preview
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Finding the preview URL means reading the deployment the Vercel GitHub
+      # app created on this SHA. Without this scope the API call answers 403.
+      deployments: read
+    steps:
+      # Both skip paths announce themselves. A job that quietly does nothing is
+      # indistinguishable from a job that passed, which is the failure this
+      # step exists to prevent.
+      - name: Decide whether this job can run
+        id: gate
+        env:
+          # Read through env rather than interpolated into the script body, so
+          # the value is never parsed as shell.
+          CI_SUPABASE_URL: ${{ secrets.CI_SUPABASE_URL }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT_NAME" != "pull_request" ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Preview E2E skipped::A ${EVENT_NAME} event has no pull request, so there is no preview deployment to point a browser at. This job runs on pull_request only."
+          elif [ -z "$CI_SUPABASE_URL" ]; then
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Preview E2E skipped::CI_SUPABASE_URL is not set. That secret is this repository's switch for 'CI may touch a database', and the only database a preview is wired to today is production. Set the CI_SUPABASE_* repository secrets against a disposable project to enable this job."
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # The URL is not guessed from the branch name. Vercel's preview hostnames
+      # include a hash, and a guessed host that happens not to resolve fails as
+      # a timeout that reads like an app bug. The deployment record is the only
+      # authoritative source, so this waits for it.
+      - name: Wait for the Vercel preview deployment
+        id: preview
+        if: steps.gate.outputs.run == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const sha = context.payload.pull_request.head.sha
+            const deadline = Date.now() + 12 * 60 * 1000
+            while (Date.now() < deadline) {
+              const { data: deployments } = await github.rest.repos.listDeployments({
+                ...context.repo,
+                sha,
+                per_page: 100,
+              })
+              for (const deployment of deployments) {
+                const { data: statuses } = await github.rest.repos.listDeploymentStatuses({
+                  ...context.repo,
+                  deployment_id: deployment.id,
+                  per_page: 100,
+                })
+                const ready = statuses.find((s) => s.state === 'success' && s.environment_url)
+                if (ready) {
+                  core.info(`Preview for ${sha}: ${ready.environment_url}`)
+                  core.setOutput('url', ready.environment_url)
+                  return
+                }
+                if (statuses.some((s) => s.state === 'failure' || s.state === 'error')) {
+                  core.setFailed(`The preview deployment for ${sha} did not build, so there is nothing to test.`)
+                  return
+                }
+              }
+              await new Promise((resolve) => setTimeout(resolve, 15_000))
+            }
+            core.setFailed(`No successful preview deployment appeared for ${sha} within 12 minutes.`)
+
+      - uses: actions/checkout@v4
+        if: steps.gate.outputs.run == 'true'
+      - uses: pnpm/action-setup@v4
+        if: steps.gate.outputs.run == 'true'
+      - uses: actions/setup-node@v4
+        if: steps.gate.outputs.run == 'true'
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+        if: steps.gate.outputs.run == 'true'
+
+      - name: Install Chromium
+        if: steps.gate.outputs.run == 'true'
+        run: pnpm exec playwright install --with-deps chromium
+
+      # E2E_BASE_URL is what tells playwright.config.ts NOT to start a server of
+      # its own - the app is already running somewhere this runner does not
+      # manage. Chromium only, and only the read-only specs named above: the
+      # mobile project would double the run for no extra statement about the
+      # platform layers this job exists to cover.
+      - name: Run the read-only smoke specs against the preview
+        if: steps.gate.outputs.run == 'true'
+        env:
+          E2E_BASE_URL: ${{ steps.preview.outputs.url }}
+          # Optional. A preview with Deployment Protection turned on answers
+          # every request with an SSO wall; this header is what a machine uses
+          # to get past it. Absent, the run simply behaves as it does on an
+          # unprotected preview.
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          pnpm exec playwright test --project=chromium \
+            e2e/home.spec.ts \
+            e2e/product.spec.ts \
+            e2e/category.spec.ts \
+            e2e/render-mode.spec.ts
+
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.gate.outputs.run == 'true'
+        with:
+          name: playwright-report-preview
           path: |
             playwright-report/
             test-results/

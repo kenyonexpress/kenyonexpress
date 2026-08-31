@@ -11,9 +11,19 @@ import * as Sentry from '@sentry/nextjs'
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
   environment: process.env.NEXT_PUBLIC_SENTRY_ENVIRONMENT ?? process.env.NODE_ENV,
-  release: process.env.NEXT_PUBLIC_SENTRY_RELEASE,
+  // NEXT_PUBLIC_SENTRY_RELEASE first, then the SHA Vercel exposes to the
+  // browser. The fallback is what makes the uploaded source maps usable on a
+  // Vercel deploy without a hand-set variable: the maps are attached to the
+  // commit sha, and a client that reports no release (or a different one) gets
+  // its stack traces left minified with nothing saying why. The plain
+  // VERCEL_GIT_COMMIT_SHA cannot be used here - without the NEXT_PUBLIC_
+  // prefix it is not inlined into the client bundle and reads as undefined.
+  release: process.env.NEXT_PUBLIC_SENTRY_RELEASE ?? process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA,
 
-  tracesSampleRate: 0,
+  // Matches the server, so one page view and the request it makes land in the
+  // same trace rather than two unrelated halves. See sentry.server.config.ts.
+  tracesSampleRate: 0.1,
+
   // Session replay is off. It records the DOM, and this DOM contains addresses,
   // order contents and a voucher QR; shipping that to a third party is a
   // privacy decision nobody has taken.

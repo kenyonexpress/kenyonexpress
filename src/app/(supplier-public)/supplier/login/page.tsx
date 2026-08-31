@@ -23,7 +23,13 @@ export const metadata = { title: 'כניסת ספקים' }
  * It renders nothing: its whole output is the redirect, or the absence of one.
  */
 async function SupplierLoginRedirect() {
-  const session = await getSupplierSession()
+  // getSupplierSession throws when the membership cannot be READ, and this is
+  // the one caller for which that is not worth an error page: the page's whole
+  // output is a redirect, the markup behind this boundary is already painted,
+  // and the safe answer to "should this visitor skip the login form" when the
+  // read failed is no. A member sees the form and signs in again; nobody is
+  // shown a portal, and nobody is told they are not staff.
+  const session = await getSupplierSession().catch(() => null)
   if (session) redirect('/supplier')
 
   const supabase = await createClient()

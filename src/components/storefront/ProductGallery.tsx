@@ -41,10 +41,30 @@ export default function ProductGallery({ images, name, assets = {} }: Props) {
           neither is drawn here: an outline where live has bare photo is a
           contour the pixel comparison sees on every edge. */}
       <div className="pdp-gallery__frame">
+        {/* `priority` on the FIRST image only, and it is the LCP fix rather than
+            a tuning knob. Measured against production on 2026-09-01, the mobile
+            product page scored 87 with a Largest Contentful Paint of 3.6s, and
+            Lighthouse's own discovery checklist said why in three lines:
+
+              fetchpriority=high should be applied ............ false
+              Request is discoverable in initial document ..... false
+              LCP resources should not use loading=lazy ....... false
+
+            with `resourceLoadDelay` at 1313ms. This is a client component, so
+            without the hint the browser only learns about the main photo after
+            the bundle runs, and the largest element on the page starts loading
+            more than a second late. `priority` emits fetchpriority="high",
+            drops loading="lazy" and preloads it from the document.
+
+            Gated on `active === 0` so it applies to the image that is actually
+            painted first. Once a shopper picks a thumbnail the LCP has already
+            happened, and marking every swapped-in image high-priority would
+            just contend with whatever else is loading. */}
         <Image
           src={activeUrl}
           alt={activeAsset?.alt ?? name}
           fill
+          priority={active === 0}
           sizes="(max-width: 768px) 100vw, 40vw"
           className="object-contain"
           {...(activeAsset?.blurDataURL
