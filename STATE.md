@@ -59,7 +59,49 @@ Updated: 2026-08-31 21:45 (‏תוכנית ההפניות הייתה בנויה 
 קודם: 2026-08-19 22:01 (הצ'ק-אאוט ירד מתחת לשער הפיקסלים, ו-CLS שלו תוקן)
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
-## המשך מ: אין. חסום על חיבור פרויקט Vercel לריפו הנכון, ואז env + Cardcom prod + 127.
+## המשך מ: חסום על החלטת בעלים אחת: לחבר את פרויקט Vercel לריפו הנכון (או ליצור פרויקט חדש). ‏127, ‏health ו-ntfy ממתינים ל-200 אמיתי.
+
+### ‏01.09: **הראיה הסופית שאין דיפלוי: דחיפה לריפו הזה לא מפעילה כלום.**
+
+הפעם זה נמדד מקצה לקצה ולא הוסק:
+
+```
+gh api repos/kenyonexpress/kenyonexpress/commits/phase5/homepage  ->  1d44fe2a0
+pnpm build (מ-.next ריק)                                          ->  exit 0
+curl -sI https://kenyonexpress.vercel.app  x6 כל 30 שניות          ->  404 404 404 404 404 404
+list_deployments אחרי הדחיפה                                       ->  0 דיפלויים
+```
+
+‏**ה-commit נמצא ב-GitHub, הבילד ירוק, ו-Vercel לא בנה כלום.** כי הפרויקט
+‏`prj_oqr4NKtSaB2h3szrxnT0DknAv9Xk` מאזין ל-`kenyonexpress/kenyonexpress-web`,
+לא לריפו הזה. ‏404 אינו בילד שנפל: **אין host כזה בכלל**, הדומיינים של הפרויקט
+הם `kenyonexpress-web-*.vercel.app`.
+
+**מה בוצע ונדחף בכל זאת (‏`vercel.json`):** ‏`framework`, ‏`installCommand`,
+‏`buildCommand`, ‏`outputDirectory`, לפי הבקשה. הבילד המקומי ירוק אחרי השינוי.
+
+**מה לא בוצע, פעם שלישית, כי אין לו על מה לחול:** ‏`transpilePackages` ו-paths
+ל-`@kenyonexpress/money`. **אין `packages/`, אין `packages/money`**, והשם
+‏`@kenyonexpress/` מופיע בעץ פעם אחת בלבד: `apps/mobile/package.json`, אפליקציית
+Expo שאינה חברת workspace ושאפליקציית הווב לא מייבאת. הכסף הוא `src/lib/money.ts`
+ונפתר דרך ה-alias `@/lib/*` שכבר קיים. וזה **אינו monorepo של workspace**:
+ל-`pnpm-workspace.yaml` אין מפתח `packages:` בכלל.
+
+**החלטה שהתקבלה לבד, ומתועדת:** ‏`--no-frozen-lockfile` נוסף לפי בקשה מפורשת
+שנייה, למרות ההסתייגות. ההסתייגות נשארת רשומה: הדגל מונע כשל התקנה כשה-lock
+ו-`package.json` חלוקים, כלומר מתקין גרסאות שלא נבדקו כאן. כרגע ה-lock מסונכרן
+ולכן הדגל לא משנה דבר. ביטול = שורה אחת.
+
+‏**‏127 לא הוחלה, ‏`/api/health` לא נבדק, ו-ntfy "LIVE" לא נשלח.** שלושתם
+מותנים ב-200 שלא קיים. שליחת "LIVE on Vercel" עכשיו הייתה הודעה שקרית.
+
+‏**‏⚠️ ולמה זו לא רק בעיית חיווט: דיפלוי עכשיו ייבנה בלי משתני סביבה.** אין
+ב-Vercel `SUPABASE_SECRET_KEY`, ‏`CARDCOM_*`, ‏`CRON_SECRET`, ‏`RESEND_API_KEY`
+ו-`NEXT_PUBLIC_SENTRY_DSN`. שניים מהם נקראים **בזמן בנייה**, וזה בדיוק הכשל
+שכבר קרה ב-CI לפני שהוגדרו variables. הסדר הנכון הוא: לחבר את הריפו, להגדיר
+env, ואז לבנות.
+
+
 
 ### BUILD-DEBUG (01.09): **הבילד לא נכשל. ‏Vercel בונה ריפו אחר, והשגיאה שנצפתה היא מ-29.05 מקוד אחר.**
 
