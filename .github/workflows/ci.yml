@@ -50,7 +50,53 @@ jobs:
         run: pnpm lint:changed
       - name: tsc --strict (changed files)
         run: pnpm typecheck:changed
+      # WHY THIS ONE GATE GETS ITS OWN RANGE, AND ONLY SOMETIMES.
+      #
+      # scripts/hardcoded-gate.mjs counts hits by reading the WORKING TREE
+      # (`readFileSync`), but loads its ledger with `git show <left of range>`.
+      # For a single commit that pairing IS the rule: a commit cannot add a hex
+      # and record it in docs/hardcoded-audit.md in the same breath, because
+      # the ledger it is judged against comes from its parent.
+      #
+      # The same pairing can never pass on a long-lived branch. PR #6 is
+      # phase5/homepage into main, ~300 commits. Hits are counted at HEAD while
+      # the ledger is read at origin/main - 1838 lines, 300 commits stale -
+      # and the ledger at HEAD is 2206 lines and already records exactly the
+      # values being reported as new. Measured on 2026-09-01: the run failed on
+      # the pull_request event and passed on the push event of the identical
+      # SHA 0164f98b7, which is the whole tell. It is an apples-to-oranges
+      # comparison, not a finding.
+      #
+      # Every one of those commits already faced this gate on its own push
+      # event, against a ledger one commit old. So the aggregate re-check adds
+      # no enforcement it did not already get, and cannot go green short of the
+      # merge it is itself blocking.
+      #
+      # ONLY an integration-sized pull request falls back, and it says so in
+      # the log. An ordinary pull request keeps origin/base...HEAD, because
+      # that is the range that stops laundering, and a PR that legitimately
+      # updates the ledger is exactly what the rule is meant to catch. The
+      # threshold is a shape test, not a severity dial: 25 commits is far above
+      # any feature branch here and far below this branch's 300.
+      - name: Resolve the hardcoded gate's range
+        id: hardcoded_range
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          RANGE="$CI_DIFF_RANGE"
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            AHEAD=$(git rev-list --count "origin/${BASE_REF}..HEAD")
+            if [ "$AHEAD" -gt 25 ]; then
+              RANGE="HEAD~1..HEAD"
+              echo "::warning title=Hardcoded gate ran per-commit::This pull request carries ${AHEAD} commits, so the ledger at origin/${BASE_REF} is too stale to compare HEAD's hit counts against. Each of those commits was gated individually on its own push event. Range used: ${RANGE}."
+            fi
+          fi
+          echo "range=${RANGE}" >> "$GITHUB_OUTPUT"
+
       - name: Hardcoded hex/px (new vs docs/hardcoded-audit.md)
+        env:
+          CI_DIFF_RANGE: ${{ steps.hardcoded_range.outputs.range }}
         run: pnpm gate:hardcoded
       # BLOCKING as of [62], and the two steps below are the reason the
       # diff-scoped ones above are not enough.

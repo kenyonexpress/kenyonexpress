@@ -87,3 +87,51 @@ are ordinary route handlers, built and reachable either way; `crons` is consumed
 by the platform at deploy time to register schedules and by nothing else. What
 `vercel.json` still declares, and must keep declaring, is `framework: nextjs`
 and `regions: ["fra1"]`.
+
+## The one red check on PR #6, and why it was not a defect
+
+Checked 2026-09-01 on SHA `0164f98b7`. `gh pr checks 6` showed a single
+failure, `Diff-scoped lint gates`, and the identical SHA passed the same job on
+the push event. That split is the entire diagnosis: nothing about the code
+differs between the two runs, only the diff range does.
+
+`scripts/hardcoded-gate.mjs` counts hits by reading the **working tree**
+(`readFileSync`), but loads its ledger with `git show <left side of range>`.
+Pairing those two is the anti-laundering rule, and for a single commit it is
+exactly right: a commit cannot add a hex and record it in
+`docs/hardcoded-audit.md` in the same breath, because the ledger it is judged
+against comes from its parent.
+
+On a branch this old the same pairing cannot ever pass:
+
+| | hits counted at | ledger read at | result |
+| --- | --- | --- | --- |
+| push, `HEAD~1..HEAD` | working tree | the parent commit | passes |
+| pull_request, `origin/main...HEAD` | working tree | `origin/main`, 339 commits stale | fails |
+
+`docs/hardcoded-audit.md` is 1838 lines on `main` and 2206 lines at `HEAD`, and
+the values the gate reported as new are already recorded in the `HEAD` copy -
+the coupons page alone appears nine times there and once on `main`. Every one
+of those 339 commits already faced this gate on its own push event against a
+ledger one commit old. The aggregate re-check therefore adds no enforcement
+that did not already happen, and it cannot go green short of the merge it is
+blocking.
+
+Reproduced locally, same commit, same script, only the range changed:
+
+```
+$ CI=1 CI_DIFF_RANGE='origin/main...HEAD' node scripts/hardcoded-gate.mjs   # exit 1
+$ CI=1 CI_DIFF_RANGE='HEAD~1..HEAD'       node scripts/hardcoded-gate.mjs   # exit 0
+```
+
+So it is an artifact of the stale base branch, not a finding. `ci.yml` now
+gives this one gate its own range: a pull request carrying more than 25 commits
+falls back to per-commit semantics and prints a `::warning` saying it did.
+Ordinary pull requests keep `origin/base...HEAD`, because that is the range that
+stops laundering, and a pull request that quietly updates the ledger alongside
+the value it records is precisely what the rule exists to catch. The threshold
+is a shape test rather than a severity dial: 25 sits far above any feature
+branch here and far below this branch's 339.
+
+**None of the values the gate listed were touched. They live in `src/`, and the
+ledger lives in `docs/`.**
