@@ -42,6 +42,19 @@ Generate it once:
 openssl rand -hex 32
 ```
 
+**The real value is deliberately not written in this file.** It is set in Vercel
+and it is a credential: a doc in a public repository is the one place it must
+not be. Verified live on 2026-09-01 instead, which proves it is set without
+disclosing it: all ten routes answer **401** to an unauthenticated GET.
+
+```
+/api/cron/health 401   /api/cron/notifications 401   /api/cron/invoices 401
+/api/cron/reconcile 401   /api/cron/stranded-payments 401
+```
+
+Paste the value from Vercel into the scheduler's Authorization header; the shape
+is `Bearer <64 hex characters>`.
+
 Set it in **Vercel > Project Settings > Environment Variables > Production**,
 and paste the same value into the scheduler.
 
