@@ -59,7 +59,69 @@ Updated: 2026-08-31 21:45 (‏תוכנית ההפניות הייתה בנויה 
 קודם: 2026-08-19 22:01 (הצ'ק-אאוט ירד מתחת לשער הפיקסלים, ו-CLS שלו תוקן)
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
-## המשך מ: אופיר מחבר את פרויקט Vercel לריפו הנכון ומגדיר env. אחרי 200: ‏127, ‏`/api/health`, ‏STATE, ‏ntfy.
+## המשך מ: להגדיר `NEXT_PUBLIC_SUPABASE_URL` ו-`NEXT_PUBLIC_SUPABASE_ANON_KEY` ב-Production. אחרי 200: ‏127, ‏`/api/health`, ‏ntfy.
+
+### ‏01.09: **‏`.vercelignore` מחק את `src/lib/supabase/` מכל דיפלוי. סלאש אחד.**
+
+‏**קודם כל, טעות שלי:** קבעתי שאין דיפלוי מהריפו הזה, על סמך `list_deployments`
+שהחזיר ריק. שאלתי את ה-scope הלא נכון (`team_TUMTPVDP...` במקום
+`kenyonexpress`). הפרויקט `prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP` **כן** בונה
+מ-`kenyonexpress/kenyonexpress` על `phase5/homepage`, וכל דיפלוי נכשל.
+התלונה על module-not-found בכל ה-server actions הייתה **מדויקת**.
+
+‏**הסיבה, מהלוג:** `.vercelignore` הכיל `supabase/` **בלי עוגן**. דפוס כזה
+תופס תיקייה בשם הזה **בכל עומק**. היעד המכוון היה `supabase/` בשורש
+(מיגרציות ו-edge functions). מה שהוא תפס בנוסף: **`src/lib/supabase/`**, שלושה
+עשר המודולים שבונים כל לקוח Supabase באפליקציה. ‏**‏155 קבצים** מייבאים
+‏`@/lib/supabase/*`, ולכן ההעלאה הגיעה בלי התיקייה היחידה שכולם צריכים.
+
+הראיה ישבה בלוג כל הזמן, שורה אחת מעל השגיאות וקל לעבור לידה:
+
+```
+Found .vercelignore
+Removed 392 ignored files defined in .vercelignore
+```
+
+וכל שורת כשל הצביעה על אותו ייבוא: `account.ts:4`, `auth.ts:18`,
+`referrals.ts:3`, `rbac.ts:3` - כולן
+`import { createClient } from '@/lib/supabase/server'`.
+
+‏**למה זה לא שוחזר מקומית:** ‏`.vercelignore` משפיע רק על מה **שמועלה**.
+הבילד המקומי רואה את כל העץ ולכן ירוק תמיד. זו בדיוק תבנית
+"עובד אצלי, נשבר בדיפלוי" שאין דרך לתפוס בלי לקרוא את לוג הבנייה.
+
+**התיקון:** כל דפוס ב-`.vercelignore` עוגן בסלאש מוביל, כולל `e2e/` שאין לו
+תאום מקונן היום אבל היה מסתיר את אותה תקלה מחר. הקובץ מסביר את הכלל.
+
+‏**התוצאה, נמדדת:** ‏module-not-found **נעלם לחלוטין**. ‏TypeScript קומפל
+(‏20.9 שניות) והבנייה הגיעה עד `Collecting page data`.
+
+### השגיאה הבאה, והיא מוכרת
+
+```
+⨯ Error: Missing NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY
+    at c (src/lib/supabase/anon.ts:31:11)
+Failed to collect page data for /coupons/[id]
+```
+
+**זו אותה שגיאה בדיוק, על אותו עמוד בדיוק**, שנרשמה כאן ב-21.08 לגבי שער
+ה-Build ב-CI. שני המשתנים נקראים **בזמן בנייה**, ולכן הוספה אחריה מחייבת
+redeploy ולא restart.
+
+**מה שצריך, ואין לי כלי לעשות אותו:** ל-MCP של Vercel אין כלי לניהול env.
+ב-`Settings > Environment Variables > Production`:
+
+```
+NEXT_PUBLIC_SUPABASE_URL       https://ixvwfbuvfxxsjiywhbbb.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY  (המפתח הפומבי, זהה ל-GitHub variable PUBLIC_SUPABASE_ANON_KEY)
+```
+
+שניהם **פומביים בהגדרה**: הם מוטמעים ב-bundle של הדפדפן ומוגשים לכל מבקר.
+לכן ב-CI הם הוגדרו כ-**variables ולא secrets**, וזה נשאר הסיווג הנכון.
+
+‏**‏127 עדיין לא הוחלה**, ובצדק: היא דורשת שהקוד יהיה חי בפרודקשן קודם.
+
+
 
 **ההחלטה שהתקבלה (01.09, נבחרה על ידי אופיר):** הפרויקט הקיים נשאר, ואופיר
 מחליף בו את חיבור ה-Git. **לא נוצר פרויקט שני**, כדי שלא יתחרו על אותם שמות
