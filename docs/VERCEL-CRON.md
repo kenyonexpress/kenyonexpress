@@ -1,20 +1,17 @@
 # Vercel cron
 
 <!-- stale-banner:2026-09-01 -->
-> ⚠️ **SUPERSEDED on 2026-09-01. Do not follow this document.**
+> ⛔ **‏מיושן החל מ-01.09.2026. המסמך המחייב הוא `docs/CRON-EXTERNAL.md`.**
 >
-> Its premise, that `vercel.json` carries the schedule, stopped being true in
-> commit `21342fc4`. The ten schedules were moved OUT of `vercel.json` because
-> Vercel's cron allowance is a plan feature (two jobs, daily granularity, on
-> Hobby) and declaring ten neither failed the build nor warned: the platform ran
-> what the plan covered and silently ignored the rest.
+> ‏הנחת היסוד כאן מתה בקומיט `21342fc4`: עשרת התזמונים הוצאו מ-`vercel.json`,
+> ‏כי מכסת ה-cron של Vercel היא תכונת תוכנית (‏Hobby: שני jobs, ברזולוציה
+> יומית). הצהרה על עשרה לא נכשלה ולא התריעה, והפלטפורמה פשוט הריצה את מה
+> שהתוכנית כיסתה והתעלמה מהשאר.
 >
-> This file also describes **one** scheduled job. There are **ten**.
+> ‏המסמך הזה גם מתאר job **אחד** מתוזמן. יש **עשרה**.
 >
-> The current document is **`docs/CRON-EXTERNAL.md`**. What is still accurate
-> here, and worth reading there instead, is the reasoning about why
-> `expire-vouchers` owes customers money and why an unset `CRON_SECRET` fails
-> closed rather than open.
+> ‏מה שעדיין נכון כאן, וכתוב טוב יותר במסמך המחייב: למה `expire-vouchers` חייב
+> כסף ללקוחות, ולמה `CRON_SECRET` לא מוגדר סוגר את המסלול במקום לפתוח אותו.
 
 
 `vercel.json` exists for one reason: without it **no scheduled job runs at all**,
