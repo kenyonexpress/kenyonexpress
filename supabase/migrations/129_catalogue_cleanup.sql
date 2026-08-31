@@ -1,6 +1,16 @@
 -- PENDING 129: catalogue cleanup, scoped to what the data actually supports
 -- ============================================================================
 --
+-- ✅ APPLIED to ixvwfbuvfxxsjiywhbbb on 2026-09-01 via MCP `apply_migration`,
+-- after a BEGIN/ROLLBACK dry run whose counts matched the verification block
+-- below exactly. Moved out of `migrations/pending/` for that reason: that
+-- directory means "not run anywhere", and an applied file left in it is how the
+-- inventory stops meaning anything (`pending-migrations-inventory.test.ts`
+-- fails on exactly this, which is how it was caught).
+--
+-- Post-apply, measured: active 45, zero_priced 0, no_supplier 0, no_category 0,
+-- picsum 0, platform supplier logo set.
+--
 -- Idempotent by `slug` and by supplier name. Every statement is an UPDATE whose
 -- WHERE stops matching once it has run. Nothing is deleted.
 --
