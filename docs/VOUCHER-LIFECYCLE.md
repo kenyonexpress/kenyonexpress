@@ -34,6 +34,14 @@ stateDiagram-v2
 `voucher_status` in production is exactly: `issued`, `redeemed`, `expired`,
 `cancelled`, `refunded`.
 
+**There is no transition guard on `vouchers`.** Migration 137 is applied and
+guards `orders`, `order_items` and `payments`; it never covered this table and
+production carries no trigger on it (checked against `pg_trigger`, 2026-09-01).
+The diagram above is therefore an application contract, held up by the atomic
+`UPDATE ... WHERE status = 'issued'` in §3 and by the cron in §5, not by
+anything the database will refuse on your behalf. A `service_role` statement can
+put a voucher into any state the enum carries.
+
 **Every non-`issued` state is terminal, and that is a deliberate property rather
 than an omission.** Once a voucher leaves `issued` there is nothing left to
 move: either the value was consumed at the business, or the money went back to
@@ -242,8 +250,12 @@ The order line is moved to `settlement_status = 'redeemed'` separately, by
 `REDEEMABLE_SETTLEMENT_STATUSES = platform_settled, paid, split_executed`.
 
 **Two writers, two tables.** Any transition guard has to know both, and the
-first version of migration 137 did not, which is why it was blocked. See
-`docs/ARCHITECTURE-OVERVIEW.md` §8.2.
+first version of migration 137 did not: it had no rule reaching `redeemed` at
+all, so every scan would have raised `23514` after the customer had already been
+charged. That is why it was blocked and rewritten. The version now applied
+carries `platform_settled -> redeemed`, `paid -> redeemed` and
+`split_executed -> redeemed`, which is `REDEEMABLE_SETTLEMENT_STATUSES` exactly.
+See `docs/PAYMENT-FLOW.md` §2.1.
 
 ---
 

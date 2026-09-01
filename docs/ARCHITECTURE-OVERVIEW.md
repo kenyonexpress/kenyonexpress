@@ -86,9 +86,9 @@ src/
     domain/orders/          settlement.ts state-machine.ts
     domain/vouchers/        issue.ts code.ts qr.ts state-machine.ts redemption.ts
 supabase/migrations/        115 files, 001–129. Does NOT describe production;
-                            production's own ledger holds 98. See §8.
-migrations/pending/         22 .sql files, of which 21 are ALREADY APPLIED to
-                            production under other names. Only 137 is genuinely
+                            production's own ledger holds 99. See §8.
+migrations/pending/         23 .sql files, ALL of them applied to production,
+                            several under other names. Nothing here is
                             outstanding. See §8.1.
 apps/mobile/                second RPC caller, a till app. Any grants audit
                             that greps only src/ will miss it.
@@ -105,21 +105,28 @@ rather than argued about.
 
 | Measure | Production |
 |---|---|
-| Migrations applied | **98** |
+| Migrations applied | **99** |
 | Base tables in `public` | **61** |
 | Tables with RLS **disabled** | **0** |
 | RLS policies | **133** |
 | Views (all `security_invoker`) | **12** |
-| Functions / of which `SECURITY DEFINER` | **69 / 61** |
+| Functions / of which `SECURITY DEFINER` | **72 / 61** |
 | `SECURITY DEFINER` functions with an unpinned `search_path` | **0** |
 | EXECUTE grants to `anon` | **6** |
 | Columns named `*_agorot` | **78** |
 | Of those, `GENERATED ALWAYS ... STORED` | **26** |
-| Non-internal triggers | **53** |
+| Non-internal triggers | **56** |
 
 All eight tables from the 2026-08/09 wave are live: `payment_events`, `refunds`,
 `search_index_outbox`, `supplier_branches`, `subscriptions`,
 `subscription_charges`, `homepage_sections`, `banners`.
+
+**Three of the counts moved on 2026-09-01 and the reason is one migration.**
+Applying 137 added three functions (`fn_orders_status_guard`,
+`fn_order_items_settlement_status_guard`, `fn_payments_status_guard`) and the
+three triggers that call them, which is why functions went 69 → 72 and
+non-internal triggers 53 → 56. None of the three is `SECURITY DEFINER`, so that
+count is unchanged at 61.
 
 ### 2.1 Core commerce
 
@@ -763,20 +770,24 @@ Two consequences worth stating plainly, because both have caused wasted work:
   and `126_percent_range_checks`) and two numbered 127
   (`127_revoke_check_rate_limit_execute` and `127_homepage_cms`). Cite
   migrations by name, never by number alone.
-- **`migrations/pending/` is not a queue of unapplied work.** Twenty-one of its
-  twenty-two `.sql` files are already live in production, applied through MCP
-  under the names in §8.1. Only one is genuinely outstanding: 137.
+- **`migrations/pending/` is not a queue of unapplied work. It is not a queue at
+  all.** All 23 of its `.sql` files are live in production, applied through MCP
+  under the names in §8.1. The directory name is now purely historical, and `ls`
+  on it is not evidence of anything.
 
 ### 8.1 State as of 2026-09-01
 
-Verified against `supabase_migrations.schema_migrations`: **98 migrations
-applied**.
+Verified against `supabase_migrations.schema_migrations`: **99 migrations
+applied**. Nothing is outstanding.
 
 | | Numbers |
 |---|---|
-| Applied | 122, 123, 125, 126, 127, 130, 131, 132, 133, 134, 135, 136, 138, 139, 140, 141, 146 |
+| Applied | 122, 123, 125, 126, 127, 130, 131, 132, 133, 134, 135, 136, **137**, 138, 139, 140, 141, 146 |
 | Applied earlier under different numbers | 124, 143, 144, 145 |
-| **Pending, not applied** | **137** |
+| Pending, not applied | *(none)* |
+
+137 was the last to land, at ledger version `20260901110706`, after everything
+else in the batch.
 
 The renumbering is real and it trips people up. In the production migration
 history these appear under their old names:
@@ -790,11 +801,19 @@ history these appear under their old names:
 | `138`–`141` (four money files) | one migration, `138_141_money_agorot_generated_columns` |
 | `135_recurring_subscriptions` | two, `135a_product_type_recurring` + `135b_recurring_subscriptions` |
 
-### 8.2 Migration 137: rewritten, still pending
+### 8.2 Migration 137: rewritten, and applied
 
 `137_order_transition_guard.sql` adds a transition guard to `orders`,
-`order_items` and `payments`. **It is not applied.** It is not in production's
-ledger, and nothing in the live database enforces its rules today.
+`order_items` and `payments`. **It is applied.** Three
+`BEFORE UPDATE ... FOR EACH ROW` triggers are live and enabled:
+`tg_orders_status_guard`, `tg_order_items_settlement_status_guard`,
+`tg_payments_status_guard`. An illegal move raises `23514` naming both ends of
+the attempted transition. The full transition tables are in
+`docs/PAYMENT-FLOW.md` §2.1, which is authoritative.
+
+It covers **three** tables. It does not touch `vouchers` and it does not touch
+`audit_log`, so double redemption is still held off by the application's atomic
+`UPDATE ... WHERE status = 'issued'` alone, and the audit log is still editable.
 
 Its first version was blocked, and the reasons are the most useful lesson in
 this document, because each defect traced to a **writer in the application
@@ -814,9 +833,16 @@ It was **rewritten against the production enums at commit `37892b88d`**, with
 no-op, plus a named regression test for each of the four defects above. That
 rewrite passed `tsc`, 3370 Vitest tests, the build and Biome.
 
-**It is still pending.** Applying it to production is one of the four
-stop-and-ask actions (§9.6), so it waits for explicit approval. Any document
-that describes 137's guards as live is describing the intent, not the database.
+**It is now in production**, applied through MCP with the approval that §9.6
+requires. Any document that still describes 137 as pending is out of date; the
+guard bodies read out of `pg_proc` are the only authority, and
+`src/server/domain/orders/status-transitions.json` is checked against them by
+`status-transitions.test.ts`.
+
+Two artefacts have not caught up and are traps for the next reader: the header
+of the migration file itself still ends with `NOT APPLIED`, and the docstring of
+`src/server/domain/orders/status-transitions.ts` still cites the file under
+`migrations/pending/`. Both are prose; both tables are correct.
 
 ---
 
