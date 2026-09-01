@@ -361,8 +361,13 @@ It holds 115 files numbered 001 to 129. Production's own ledger holds **99**
 applied migrations, under partly different names, from a different lineage.
 Reading the migration files will teach you a schema that does not exist.
 
-**`src/types/database.ts` describes production.** Regenerate it with
-`pnpm db:types`. For the schema as prose, `docs/DATA-MODEL.md`.
+**`src/types/database.ts` is the closest thing to production in the repo, and
+it is five weeks stale.** Last regenerated 2026-07-28: 33 tables against
+production's 61, missing `refunds`, `payment_events`, `search_index_outbox`,
+`supplier_branches`, `subscriptions`, `subscription_charges`,
+`homepage_sections`, `banners`, `invoices`, `stock_reservations`,
+`gift_vouchers` and `push_tokens`. **Run `pnpm db:types` first.** For the schema
+as prose, `docs/DATA-MODEL.md`.
 
 And a corollary: `migrations/pending/` holds 23 `.sql` files and **all of them
 are applied**. The directory name is historical. `ls` on it is not evidence of

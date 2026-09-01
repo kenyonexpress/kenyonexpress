@@ -155,8 +155,14 @@ This is not the Next.js you know. Read the relevant guide in
 - `supabase/migrations/` holds 115 files numbered 001 to 129 and **does not
   describe production**, whose own ledger holds 99 applied migrations under
   partly different names.
-- **`src/types/database.ts` describes production.** Regenerate with
-  `pnpm db:types`.
+- **`src/types/database.ts` is five weeks stale.** Last regenerated
+  **2026-07-28**; it describes 33 tables where production has 61, and misses
+  every table added in the 2026-08/09 wave (`refunds`, `payment_events`,
+  `search_index_outbox`, `supplier_branches`, `subscriptions`,
+  `subscription_charges`, `homepage_sections`, `banners`) plus `invoices`,
+  `stock_reservations`, `gift_vouchers` and `push_tokens`. **Run
+  `pnpm db:types` before trusting it.** It is still a better guide than
+  `supabase/migrations/`, which describes a different lineage.
 
 Development runs against the hosted Supabase project. Be aware that you are
 sharing it: `parallel sessions` on this repo are normal, and other people's

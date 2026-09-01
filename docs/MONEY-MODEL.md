@@ -332,7 +332,9 @@ payments.wallet_applied_agorot    vouchers.platform_bp
 `platform_bp` in particular exists nowhere. The live column is
 `platform_percent`, a whole-percent `numeric`.
 
-**`src/types/database.ts` describes production. `supabase/migrations/` does
+**`src/types/database.ts` is stale as of 2026-09-01** — regenerated 2026-07-28,
+33 tables against production's 61 — so run `pnpm db:types` before reading it.
+Even stale it is closer than the migration files. **`supabase/migrations/` does
 not.**
 
 > **Known live defect.** `src/server/payments/finalize.ts` still selects
