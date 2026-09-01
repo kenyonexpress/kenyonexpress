@@ -36,6 +36,7 @@ export default defineConfig({
     include: [
       'src/**/*.test.ts',
       'src/**/*.test.tsx',
+      'tests/**/*.test.ts',
       'scripts/wp-import/**/*.test.mjs',
       'scripts/seed/**/*.test.ts',
     ],
@@ -55,6 +56,7 @@ export default defineConfig({
         'src/lib/commerce/**/*.ts',
         'src/lib/checkout/split.ts',
         'src/server/domain/orders/**/*.ts',
+        'src/server/payments/refund.ts',
       ],
       exclude: ['**/*.test.ts', '**/*.test.tsx'],
       thresholds: {
@@ -64,6 +66,12 @@ export default defineConfig({
         'src/lib/checkout/split.ts': MONEY_MODULE_FLOOR,
         'src/server/domain/orders/settlement.ts': MONEY_MODULE_FLOOR,
         'src/server/domain/orders/state-machine.ts': MONEY_MODULE_FLOOR,
+        'src/server/payments/refund.ts': {
+          lines: 100,
+          branches: 100,
+          functions: 100,
+          statements: 100,
+        },
       },
     },
   },

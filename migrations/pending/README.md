@@ -242,6 +242,24 @@ list from this directory and checks it against every `.ts`/`.tsx` in **both**
 `src/` and `apps/`, so revoking a function the Expo till uses fails a test
 rather than a till.
 
+## `148_wallet_transfer_order_audit.sql` and `149_refund_executions.sql`, added 2026-09-01
+
+Refund architecture. Neither file has been applied to any database.
+
+`148_wallet_transfer_order_audit.sql` replaces the live six-argument
+`fn_wallet_transfer` so a real (non-replay) transfer with `p_order_id` writes
+one `audit_log` row on the order. The RPC boundary stays numeric ILS
+(`p_amount_ils`); integer agorot are recorded once via
+`round(p_amount_ils * 100)::bigint`. Replay of the same `idempotency_key`
+returns the existing entry and does not write a second audit row.
+
+`149_refund_executions.sql` adds `refund_executions` and
+`refund_execution_state` for the money-path machine
+(`pending` -> `wallet_credited` -> `method_reversed` -> `completed`). It does
+not rewrite the paperwork table from 131. Amounts are integer agorot.
+
+Sandbox first. Never production from these files without a human.
+
 ## `147_money_agorot_remaining_twins.sql`, added 2026-09-01
 
 Generated `_agorot` twins for the last four money columns that had none:

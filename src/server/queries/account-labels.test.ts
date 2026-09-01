@@ -19,6 +19,12 @@ function reasonCodesEmittedByFinalize(): string[] {
   return [...new Set(codes.filter((c): c is string => typeof c === 'string'))]
 }
 
+function reasonCodesEmittedByRefund(): string[] {
+  const source = readFileSync(resolve(process.cwd(), 'src/server/payments/refund.ts'), 'utf8')
+  const match = source.match(/REFUND_WALLET_REASON = '([^']+)'/)
+  return match?.[1] ? [match[1]] : []
+}
+
 describe('wallet reason labels', () => {
   it('finds the reason codes in finalize.ts', () => {
     const codes = reasonCodesEmittedByFinalize()
@@ -26,7 +32,7 @@ describe('wallet reason labels', () => {
   })
 
   it('has a Hebrew label for every reason the payment flow writes', () => {
-    for (const code of reasonCodesEmittedByFinalize()) {
+    for (const code of [...reasonCodesEmittedByFinalize(), ...reasonCodesEmittedByRefund()]) {
       expect(WALLET_REASON_LABELS, `missing Hebrew label for reason "${code}"`).toHaveProperty(code)
       expect(walletReasonLabel(code)).not.toBe(code)
     }

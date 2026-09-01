@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-01 22:59 UTC (מכונת ביצוע זיכוי: ארנק קודם, כרטיס אחר כך. 148/149 ממתינות. סנדבוקס לא הוחל: אין DATABASE_URL)
 Updated: 2026-09-01 12:20 UTC (‏אין כותב ל-escrow_held בשום מקום; ‏144/144 מעברים מול הטריגרים החיים; קיפאון ה-380/768 נמצא ותוקן; ‏payment_events היה טבלה ריקה בלי אף כותב)
 Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשישה כבר היו, ושני באגים אמיתיים נמצאו בדרך)
 קודם: 2026-09-01 03:02 UTC (‏שער הפיקסלים חצה את התקרה: ‏11.06% מול 11%, וזה לא שינוי שלנו)
@@ -67,7 +68,45 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 קודם: 2026-08-19 22:01 (הצ'ק-אאוט ירד מתחת לשער הפיקסלים, ו-CLS שלו תוקן)
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
-## המשך מ: ‏PRIORITY TWO — ‏refunds בשני המסלולים, ומירוץ מימוש הקופון
+## המשך מ: חיבור פעולת האדמין למכונת הביצוע (ארנק קודם), ומירוץ מימוש הקופון
+
+### 01.09 Refund Architecture Complete (`cursor/refund-state-machine-47b2`)
+
+מכונת ביצוע הכסף נכתבה. פעולת האדמין ב-
+src/server/actions/payments/refund.ts
+עדיין קוראת ל-Cardcom קודם. לא חוברה בפריט הזה, כי 149 לא הוחלה ואסור לשבור את מסלול הזיכוי החי.
+
+**מה נסגר**
+
+1. `fn_wallet_transfer` (שישה ארגומנטים, כמו בפרודקשן) כותב `audit_log` על ההזמנה אחרי insert אמיתי. Replay על אותו `idempotency_key` לא כותב שורת audit שנייה. סכום באגורות פעם אחת:
+   `round(p_amount_ils * 100)::bigint`
+2. מכונת מצבים:
+   `pending` -> `wallet_credited` -> `method_reversed` -> `completed`
+   בקובץ
+   src/server/payments/refund.ts
+3. Webhook של Cardcom: אין HMAC. אימות הוא `?s=` (כל הסודות, בלי קיצור) + GetLpResult. גוף `Amount` לא נאמן. `Operation` מסוג refund/credit/cancelonly לא רץ במסלול החיוב ולא מסמן את תשלום המקור כ-failed.
+4. `tests/refunds.test.ts`: כל 12 הצירופים (3 חוקיים, 9 לא), כישלון סוד, כישלון GetLpResult, אי-התאמת סכום, replay, reverse מוקדם, כישלון ספק. כיסוי המודול 100% שורות/ענפים/פונקציות.
+5. מיגרציות ממתינות:
+   migrations/pending/148_wallet_transfer_order_audit.sql
+   migrations/pending/149_refund_executions.sql
+
+**החלטות שהתקבלו לבד**
+
+- ארנק קודם, כרטיס אחר כך. הפעולה הקיימת הפוכה. המכונה החדשה לא מחליפה אותה עד ש-149 חיה.
+- טבלה חדשה `refund_executions`, לא שינוי ל-enum של 131 (ניירת: requested/approved/rejected/executing/completed).
+- לא הומצא HMAC. Cardcom לא חותם callbacks.
+- שמות הארגומנטים של `fn_wallet_transfer` לא השתנו (`p_amount_ils`).
+
+**חוסם: החלת 148 על סנדבוקס**
+
+שלוש דרכים נבדקו, כולן ריקות: אין `DATABASE_URL` / `SUPABASE_DB_URL`, אין `supabase` CLI, אין `psql`, אין MCP של Supabase בסוכן הזה. לא הוחל על פרודקשן. הקבצים נשארים ב-
+migrations/pending/
+
+אימות יתרה אחרי החלה (כשיהיה סנדבוקס): העברה עם `p_order_id` יוצרת שורת `audit_log` אחת; replay לא יוצר שנייה; `sum(wallet_accounts.balance_ils)` לא זז נטו כי זו העברה פנימית.
+
+**שערים:** type-check נקי. כיסוי
+src/server/payments/refund.ts
+100%. לא merge ל-main.
 
 ### ‏01.09 גל החוסן (`feat/resilience`, מוזג ל-main)
 
