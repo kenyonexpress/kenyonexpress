@@ -422,23 +422,38 @@ const shoot = async (url, out) => {
       const step = window.innerHeight
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
-      // BOUNDED, AND THAT IS THE WHOLE POINT.
+      // BOUNDED, THOUGH NOT FOR THE REASON THIS COMMENT FIRST GAVE.
       //
-      // This read `y < document.body.scrollHeight` with the height re-evaluated
-      // on every iteration. Scrolling is what triggers the lazy images, and a
-      // lazy image that arrives makes the page taller, so the bound receded as
-      // fast as the loop advanced.
+      // The loop read `y < document.body.scrollHeight` with the height
+      // re-evaluated each iteration, and the first version of this comment said
+      // that was why a --width=380 run hung: lazy images load, the page grows,
+      // the bound recedes. THAT IS MEASURED FALSE and is corrected here rather
+      // than quietly deleted, because it was committed and is wrong.
       //
-      // At 1440 that terminates, because the live page stops growing. At 380 it
-      // does not: the mobile layout is several times taller and keeps growing,
-      // and `page.evaluate` has no timeout, so the whole run hangs with no
-      // output. MEASURED: `--width=380` ran for 1h26m and produced nothing,
-      // which is why the 380 and 768 numbers had never been obtained.
+      // Measured against the live homepage, both widths:
       //
-      // So: snapshot the height, walk it, then allow a bounded number of extra
-      // sweeps for whatever the walk revealed. MAX_SWEEPS is the guarantee of
-      // termination; the height check is the optimisation that usually ends it
-      // sooner.
+      //   width 1440   height before 5492   after 5492   grew 0   1.5s
+      //   width  380   height before 17791  after 17791  grew 0   2.0s
+      //
+      // The page does not grow during the sweep at either width, so the
+      // original loop terminated. The bound below is therefore a guarantee
+      // rather than a fix: it costs nothing and it removes a shape that CAN
+      // fail to terminate on a page that does lazily extend.
+      //
+      // THE 380 HANG IS STILL UNEXPLAINED, and none of the obvious candidates
+      // survived measurement:
+      //
+      //   live 1440 fullPage screenshot   1.5MB in 0.3s
+      //   live  380 fullPage screenshot   2.9MB in 0.4s
+      //   mine 1440 (h=5695)              2.6MB in 0.4s
+      //   mine  380 (h=10358)             1.2MB in 0.2s
+      //
+      // Load, height and capture are all fast at 380. Every wait in this file
+      // carries a timeout, so nothing here should block forever, and yet a full
+      // --width=380 run produced no output in 1h26m and again in 10m. The cause
+      // is downstream of these steps and is not yet identified. 380 and 768
+      // have therefore never been measured, and every three-width figure quoted
+      // for this gate is a 1440 figure.
       const MAX_SWEEPS = 4
       let previousHeight = 0
       for (let sweep = 0; sweep < MAX_SWEEPS; sweep += 1) {
