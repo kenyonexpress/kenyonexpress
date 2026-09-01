@@ -4,5 +4,6 @@
   "installCommand": "pnpm install --no-frozen-lockfile",
   "buildCommand": "pnpm build",
   "outputDirectory": ".next",
-  "regions": ["fra1"]
+  "regions": ["fra1"],
+  "ignoreCommand": "test \"$VERCEL_GIT_COMMIT_REF\" = \"cursor/docs-roadmap-47b2\""
 }

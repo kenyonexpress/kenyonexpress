@@ -11,6 +11,29 @@ import { z } from 'zod'
  * request, so the same mistake fails the boot instead.
  */
 
+/**
+ * When the production secret contract does not apply.
+ *
+ * `next build` and `next start` both set NODE_ENV=production. GitHub Actions
+ * opts into ALLOW_INCOMPLETE_ENV so the CI Build job can collect page data
+ * without Cardcom. Vercel Preview is the same situation (NODE_ENV=production,
+ * no live terminal) but must not set ALLOW_INCOMPLETE_ENV on the project:
+ * that variable is shared with Production if it is set for the whole app.
+ * Vercel injects VERCEL_ENV=preview on Preview builds only, so that is the
+ * scoped waiver. Production (VERCEL_ENV=production, or a Vercel-less
+ * NODE_ENV=production boot) still hard-fails.
+ */
+export function skipProductionEnvHardFail(source: {
+  NODE_ENV?: string
+  ALLOW_INCOMPLETE_ENV?: string
+  VERCEL_ENV?: string
+}): boolean {
+  if (source.NODE_ENV !== 'production') return true
+  if (source.ALLOW_INCOMPLETE_ENV === 'true') return true
+  if (source.VERCEL_ENV === 'preview') return true
+  return false
+}
+
 const schema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -52,22 +75,15 @@ const schema = z
   })
   .superRefine((e, ctx) => {
     const fail = (message: string) => ctx.addIssue({ code: 'custom', message })
-    if (e.NODE_ENV !== 'production') return
-
-    // `next start` on a laptop is ALSO NODE_ENV=production, and that is not a
-    // detail: it is how the Lighthouse runs and the whole Playwright suite are
-    // measured, because both must run against the real build rather than dev.
-    // Without this escape hatch this file refuses to boot that server over
-    // missing Cardcom secrets, and the observability merge silently takes the
-    // E2E suite and the performance numbers with it. Verified, not assumed —
-    // `pnpm start` answered 500 on every route with
-    // "An error occurred while loading instrumentation hook".
-    //
-    // The waiver is opt-in, per-environment and loud. Vercel never sets it, so
-    // a real deploy still refuses to serve a checkout it cannot charge through;
-    // setting it there is an explicit act, not an omission, which is the
-    // distinction NODE_ENV alone cannot make.
-    if (e.ALLOW_INCOMPLETE_ENV === 'true') return
+    if (
+      skipProductionEnvHardFail({
+        NODE_ENV: e.NODE_ENV,
+        ALLOW_INCOMPLETE_ENV: e.ALLOW_INCOMPLETE_ENV,
+        VERCEL_ENV: process.env.VERCEL_ENV,
+      })
+    ) {
+      return
+    }
 
     for (const k of [
       'NEXT_PUBLIC_SUPABASE_URL',
@@ -125,6 +141,17 @@ if (parsed.data.NODE_ENV === 'production' && parsed.data.ALLOW_INCOMPLETE_ENV ==
   log.warn('env.checks_skipped', {
     detail:
       'ALLOW_INCOMPLETE_ENV=true. Correct for a local `next start`; wrong anywhere a customer can reach.',
+  })
+}
+
+if (
+  parsed.data.NODE_ENV === 'production' &&
+  process.env.VERCEL_ENV === 'preview' &&
+  parsed.data.ALLOW_INCOMPLETE_ENV !== 'true'
+) {
+  log.warn('env.preview_checks_skipped', {
+    detail:
+      'VERCEL_ENV=preview. Secret checks skipped so Preview can build; Production still requires them.',
   })
 }
 
