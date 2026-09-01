@@ -1,8 +1,13 @@
 -- 148: fn_wallet_transfer writes an order-scoped audit_log row.
 --
--- STATUS: DRAFT, NOT APPLIED. Requires explicit approval and MCP
--- apply_migration. Never `db push`. Sandbox first, never production from this
--- file without a human.
+-- STATUS: Verified 2026-09-01 on local Postgres 16, database `ke_sandbox`.
+-- That database is not the hosted project and is not production.
+-- Measured after apply: reserve 1000.00 -> 982.90, user 0.00 -> 17.10,
+-- sum of balances stayed 1000.00, audit_log.changes.amount_agorot = 1710
+-- for 17.10 ILS, replay returned the same wallet_entries id and did not
+-- insert a second audit row. Repeat with scripts/sandbox/148-*.sql.
+-- Still requires a human before MCP apply_migration on any hosted project.
+-- Never `db push`.
 --
 -- WHAT THIS FINISHES. Every wallet movement that names an order was invisible
 -- in audit_log: the ledger row existed, the order page did not. Cashback,
@@ -24,7 +29,8 @@
 --   (the six-argument form). audit_log rows already written stay; they are
 --   append-only.
 --
--- NOT APPLIED. `migrations/pending/` is unapplied by definition.
+-- NOT APPLIED to the hosted project. `migrations/pending/` is unapplied there
+-- by definition. Local sandbox apply does not change that.
 
 CREATE OR REPLACE FUNCTION public.fn_wallet_transfer(
   p_debit_account uuid,

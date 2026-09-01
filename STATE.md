@@ -1,6 +1,6 @@
 # KenyonExpress — Project State
 
-Updated: 2026-09-01 22:59 UTC (מכונת ביצוע זיכוי: ארנק קודם, כרטיס אחר כך. 148/149 ממתינות. סנדבוקס לא הוחל: אין DATABASE_URL)
+Updated: 2026-09-01 23:04 UTC (148 הוחל על Postgres מקומי ke_sandbox: יתרה נשמרה 1000.00, audit 1710 אגורות, replay בלי שורת audit שנייה. לא הוחל על הפרויקט המאוחסן)
 Updated: 2026-09-01 12:20 UTC (‏אין כותב ל-escrow_held בשום מקום; ‏144/144 מעברים מול הטריגרים החיים; קיפאון ה-380/768 נמצא ותוקן; ‏payment_events היה טבלה ריקה בלי אף כותב)
 Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשישה כבר היו, ושני באגים אמיתיים נמצאו בדרך)
 קודם: 2026-09-01 03:02 UTC (‏שער הפיקסלים חצה את התקרה: ‏11.06% מול 11%, וזה לא שינוי שלנו)
@@ -96,15 +96,29 @@ src/server/actions/payments/refund.ts
 - טבלה חדשה `refund_executions`, לא שינוי ל-enum של 131 (ניירת: requested/approved/rejected/executing/completed).
 - לא הומצא HMAC. Cardcom לא חותם callbacks.
 - שמות הארגומנטים של `fn_wallet_transfer` לא השתנו (`p_amount_ils`).
+- סנדבוקס מאוחסן לא היה זמין (אין DATABASE_URL לפרויקט). הוקם Postgres 16 מקומי בשם `ke_sandbox`. זה לא הפרויקט המאוחסן ולא פרודקשן.
 
-**חוסם: החלת 148 על סנדבוקס**
+**148 על הסנדבוקס המקומי, נמדד 2026-09-01**
 
-שלוש דרכים נבדקו, כולן ריקות: אין `DATABASE_URL` / `SUPABASE_DB_URL`, אין `supabase` CLI, אין `psql`, אין MCP של Supabase בסוכן הזה. לא הוחל על פרודקשן. הקבצים נשארים ב-
-migrations/pending/
+הוחל הקובץ
+migrations/pending/148_wallet_transfer_order_audit.sql
+על
+ke_sandbox
+אחרי סכימה מינימלית מ-
+scripts/sandbox/148-bootstrap.sql
 
-אימות יתרה אחרי החלה (כשיהיה סנדבוקס): העברה עם `p_order_id` יוצרת שורת `audit_log` אחת; replay לא יוצר שנייה; `sum(wallet_accounts.balance_ils)` לא זז נטו כי זו העברה פנימית.
+העברה 17.10 מ-`platform:cashback_reserve` לחשבון משתמש עם `p_order_id`:
 
-**שערים:** type-check נקי. כיסוי
+- יתרת reserve: 1000.00 -> 982.90
+- יתרת משתמש: 0.00 -> 17.10
+- סכום היתרות: 1000.00 (נשמר)
+- `audit_log.changes.amount_agorot`: 1710
+- replay על אותו `idempotency_key`: אותו `wallet_entries.id`, שורת audit אחת
+- העברה שנייה בלי `p_order_id`: בלי שורת audit נוספת, סכום היתרות עדיין 1000.00
+
+לא הוחל על הפרויקט המאוחסן. לא הוחל על פרודקשן.
+
+**שערים:** type-check נקי. `pnpm test` 3526. כיסוי
 src/server/payments/refund.ts
 100%. לא merge ל-main.
 
