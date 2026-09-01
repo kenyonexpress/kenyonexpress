@@ -195,3 +195,58 @@ cron guard answers `401` to an unauthenticated call, and the catalogue served in
 production is the real one. RLS is on for all 53 tables. The rate limit layer,
 a sliding window with a Postgres fallback behind all thirty callsites, is merged
 to `main` and green.
+
+## Production smoke, 2026-09-02
+
+Run against `https://kenyonexpress.vercel.app` from this machine.
+
+| Path | Status | Time | Bytes |
+| --- | --- | --- | --- |
+| `/` | 200 | 4.89s | 379,811 |
+| `/products` | 200 | 2.22s | 217,874 |
+| `/sitemap.xml` | 200 | 0.84s | 12,893 |
+| `/robots.txt` | 200 | 0.83s | 342 |
+| `/checkout` | 200 | 2.08s | 74,853 |
+| `/cart` | 200 | 0.95s | 67,385 |
+
+All ten cron endpoints answer **401**, which is the correct answer and the
+useful one: the routes are deployed and `CRON_SECRET` is set in production. A
+404 would have meant the routes were missing; a 200 would have meant the secret
+was not being checked.
+
+```
+notifications 401   health 401   invoices 401   stock 401
+stranded-payments 401   abandoned-cart 401   subscriptions 401
+reap-carts 401   reconcile 401   expire-vouchers 401
+```
+
+### `/checkout` returning 200 does not mean checkout works
+
+The launch brief expects `/checkout` to stop returning "404/disabled" once
+`CHECKOUT_ENABLED=true` is set. It was never going to return either. The page
+renders regardless, with `<title>תשלום | קניון אקספרס</title>` and no
+disabled-state text in the body.
+
+`CHECKOUT_ENABLED` gates the **server action**, not the page:
+
+```
+src/server/actions/payments/checkout.ts:252   if (!env.checkoutEnabled) { ... }
+src/lib/payments/env.ts:76                    NODE_ENV === 'production'
+                                                ? CHECKOUT_ENABLED === 'true'
+                                                : CHECKOUT_ENABLED !== 'false'
+```
+
+It fails **closed** in production: unset means payments are refused. So the
+observable symptom of the variable being unset is not a 404 on the page, it is a
+customer filling in the whole form and being refused at submit. A smoke test
+that only fetches `/checkout` cannot see it, and the only honest check is either
+reading the variable in the Vercel dashboard or driving a real submit.
+
+Two cron routes carry the same gate (`reconcile`, `stranded-payments`), so they
+no-op while it is unset even though they answer 401 to an unauthenticated call.
+
+### Front page timing
+
+4.89s to first byte-through-completion on a cold path is slow enough to be worth
+a look before launch, though it is one sample from one machine over the public
+internet and is not a Lighthouse measurement.
