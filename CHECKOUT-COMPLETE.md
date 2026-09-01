@@ -1,5 +1,21 @@
 # CHECKOUT-COMPLETE
 
+
+<!-- schema-reality-check:2026-09-01 -->
+> ### Schema reality check (verified 2026-09-01 against `main` @ `7bf79b45c`)
+>
+> This document describes **5 tables that do not exist in the production
+> database**: `idempotency_keys`, `ledger_journals`, `security_events`, `settlement_batches`, `settlement_items`.
+>
+> They are created by files in `supabase/migrations/`, but that directory
+> describes a different lineage than the live database. Production has 53
+> tables, measured in `supabase/rls-manifest.json`. Treat the sections below as
+> a design that was specified and not built, not as a description of a running
+> system.
+>
+> See `docs/ARCHITECTURE-OVERVIEW.md` section 1 for the three-schema problem and
+> how to re-measure.
+
 kenyonexpress.co.il. Branch `phase6/complete-architecture`. **Design only. No UI files.**
 
 End-to-end checkout and payment: Cardcom Low Profile, 3DS, the webhook contract, idempotency at every money step, order state wired to payment state, and a sandbox test matrix. Integrates `ARCHITECTURE-CHECKOUT-PAYMENT.md` with the money-integer reality of migrations `046` (runtime) and `051` (agorot conversion), and the ledger posting rules of `LEDGER-DESIGN.md`.

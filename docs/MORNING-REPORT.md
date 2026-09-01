@@ -1,5 +1,20 @@
 # דוח בוקר
 
+
+<!-- cron-reality-check:2026-09-01 -->
+> ### Scheduler reality check (verified 2026-09-01 against `main` @ `7bf79b45c`)
+>
+> Any claim below that Vercel Cron runs the scheduled jobs is **stale, and it
+> never worked**. `vercel.json` deliberately has no `crons` key: the Hobby plan
+> registers two jobs at daily granularity and silently ignores the rest, so four
+> of the ten jobs (three on the money path, plus the only sender of voucher
+> email) were believed scheduled and were not.
+>
+> The ten jobs now run from GitHub Actions, `.github/workflows/cron.yml`, and
+> they are **off until two settings exist**: repository variable
+> `CRON_SCHEDULER_ENABLED=true` and secret `CRON_SECRET`. See
+> `docs/CRON-EXTERNAL.md` and `docs/ARCHITECTURE-OVERVIEW.md` section 7.
+
 <!-- stale-banner:2026-09-01 -->
 > ⛔ **‏מיושן החל מ-01.09.2026. המסמך המחייב הוא `docs/OWNER-CHECKLIST.md`.**
 >
@@ -37,6 +52,14 @@
 6. **סיווג הקופון מול 14ח (עו"ד):** 5 שנים לתו קנייה מול 4 חודשים + ארנק. זמנית: 4 חודשים + C6.
 7. **דמי ביטול ב-soft-launch:** לגבות 5%/100 או אפס. זמנית: אפס, והעמוד חייב להגיד את זה.
 8. **מע"מ 17% ב-ledger מול 18% בחשבוניות.** חשבונית ראשונה תהיה שגויה עד תיקון קוד.
+
+> **RESOLVED (2026-09-01, docs/final-pass).** VAT is now defined once, as
+> `VAT_RATE_BP = 1800` in `src/lib/money.ts`, and `src/lib/invoices/document.ts`
+> derives from that constant instead of carrying its own copy. 18% is correct:
+> the Israeli rate rose from 17% on 2025-01-01. The extraction divisor is 11800
+> (`src/lib/money.test.ts` asserts `round(1000 * 10000 / 11800) = 847`).
+> No invoice was ever issued at 17%: `extractVat` had no application callers,
+> only tests. See `docs/ARCHITECTURE-OVERVIEW.md` section 3.
 9. **ח.פ, כתובת, רכז נגישות, חתימת עו"ד** על תקנון/פרטיות/ביטולים.
 10. **11 ספקים בלי כתובת ובלי לוגו.** אי אפשר לממש קופון, ואי אפשר לשמור מוצר פעיל באדמין.
 

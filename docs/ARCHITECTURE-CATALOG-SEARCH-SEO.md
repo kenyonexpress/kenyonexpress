@@ -1,5 +1,39 @@
 # ארכיטקטורת קטלוג, חיפוש ו-SEO
 
+
+
+<!-- search-reality-check:2026-09-01 -->
+> ### Search reality check (verified 2026-09-01 against `main` @ `7bf79b45c`)
+>
+> The Postgres full text search design below (a `search_vector` column
+> maintained by trigger, GIN and trigram indexes, `ts_headline` highlighting,
+> `pg_trgm` typo fallback, A/B/C ranking weights) **is not implemented**. There
+> is no `search_vector` reference anywhere in `src/`.
+>
+> What actually runs is a per-word `ILIKE` over `products.name_he` and
+> `products.description_he` in `searchDb()` (`src/lib/search-server.ts`), capped
+> at 8 words, with no stemming, ranking or typo tolerance. Meilisearch takes
+> over automatically when `MEILISEARCH_HOST` and `MEILISEARCH_API_KEY` are both
+> set, over plain `fetch`; there is no Meilisearch client library in
+> `package.json`.
+>
+> See `docs/ARCHITECTURE-OVERVIEW.md` section 6.
+
+<!-- schema-reality-check:2026-09-01 -->
+> ### Schema reality check (verified 2026-09-01 against `main` @ `7bf79b45c`)
+>
+> This document describes **5 tables that do not exist in the production
+> database**: `attribute_definitions`, `category_attributes`, `product_categories`, `search_queries`, `search_synonyms`.
+>
+> They are created by files in `supabase/migrations/`, but that directory
+> describes a different lineage than the live database. Production has 53
+> tables, measured in `supabase/rls-manifest.json`. Treat the sections below as
+> a design that was specified and not built, not as a description of a running
+> system.
+>
+> See `docs/ARCHITECTURE-OVERVIEW.md` section 1 for the three-schema problem and
+> how to re-measure.
+
 > **גובר עליו `docs/CONTRADICTIONS.md` (2026-07-24).** כל מספר עמלה, ברירת מחדל
 > (10%/5%) או נוסח Escrow במסמך הזה הוא שריד. ההכרעה: `platform_percent`
 > פר-מוצר, חובה, בלי ברירת מחדל בשום מקום; ה-held הוא רישום פנימי ב-ledger בלבד.

@@ -1,5 +1,23 @@
 # ARCHITECTURE-SEARCH-DISCOVERY.md
 
+
+<!-- search-reality-check:2026-09-01 -->
+> ### Search reality check (verified 2026-09-01 against `main` @ `7bf79b45c`)
+>
+> The Postgres full text search design below (a `search_vector` column
+> maintained by trigger, GIN and trigram indexes, `ts_headline` highlighting,
+> `pg_trgm` typo fallback, A/B/C ranking weights) **is not implemented**. There
+> is no `search_vector` reference anywhere in `src/`.
+>
+> What actually runs is a per-word `ILIKE` over `products.name_he` and
+> `products.description_he` in `searchDb()` (`src/lib/search-server.ts`), capped
+> at 8 words, with no stemming, ranking or typo tolerance. Meilisearch takes
+> over automatically when `MEILISEARCH_HOST` and `MEILISEARCH_API_KEY` are both
+> set, over plain `fetch`; there is no Meilisearch client library in
+> `package.json`.
+>
+> See `docs/ARCHITECTURE-OVERVIEW.md` section 6.
+
 Search, autocomplete, faceting, sorting, and how the index is kept honest.
 
 Status: BINDING. Branch `docs/architecture-night`, 2026-08-19.

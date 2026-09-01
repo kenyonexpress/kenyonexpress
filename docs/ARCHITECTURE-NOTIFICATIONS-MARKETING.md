@@ -1,5 +1,36 @@
 # ארכיטקטורת התראות, הודעות ואוטומציית שיווק (Notifications, Messaging & Marketing)
 
+
+
+<!-- cron-reality-check:2026-09-01 -->
+> ### Scheduler reality check (verified 2026-09-01 against `main` @ `7bf79b45c`)
+>
+> Any claim below that Vercel Cron runs the scheduled jobs is **stale, and it
+> never worked**. `vercel.json` deliberately has no `crons` key: the Hobby plan
+> registers two jobs at daily granularity and silently ignores the rest, so four
+> of the ten jobs (three on the money path, plus the only sender of voucher
+> email) were believed scheduled and were not.
+>
+> The ten jobs now run from GitHub Actions, `.github/workflows/cron.yml`, and
+> they are **off until two settings exist**: repository variable
+> `CRON_SCHEDULER_ENABLED=true` and secret `CRON_SECRET`. See
+> `docs/CRON-EXTERNAL.md` and `docs/ARCHITECTURE-OVERVIEW.md` section 7.
+
+<!-- schema-reality-check:2026-09-01 -->
+> ### Schema reality check (verified 2026-09-01 against `main` @ `7bf79b45c`)
+>
+> This document describes **9 tables that do not exist in the production
+> database**: `agent_escalations`, `channel_suppressions`, `consent_events`, `notification_conversions`, `notification_delivery_events`, `notification_events`, `notification_templates`, `notifications_outbox`, `user_notification_preferences`.
+>
+> They are created by files in `supabase/migrations/`, but that directory
+> describes a different lineage than the live database. Production has 53
+> tables, measured in `supabase/rls-manifest.json`. Treat the sections below as
+> a design that was specified and not built, not as a description of a running
+> system.
+>
+> See `docs/ARCHITECTURE-OVERVIEW.md` section 1 for the three-schema problem and
+> how to re-measure.
+
 מסמך תכנון. מיגרציה נלווית (טיוטה, **לא הוחלה**):
 `supabase/migrations/031_notifications.sql`
 

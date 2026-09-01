@@ -1,5 +1,36 @@
 # COMPLETE-SYSTEM-ARCHITECTURE
 
+
+
+<!-- cron-reality-check:2026-09-01 -->
+> ### Scheduler reality check (verified 2026-09-01 against `main` @ `7bf79b45c`)
+>
+> Any claim below that Vercel Cron runs the scheduled jobs is **stale, and it
+> never worked**. `vercel.json` deliberately has no `crons` key: the Hobby plan
+> registers two jobs at daily granularity and silently ignores the rest, so four
+> of the ten jobs (three on the money path, plus the only sender of voucher
+> email) were believed scheduled and were not.
+>
+> The ten jobs now run from GitHub Actions, `.github/workflows/cron.yml`, and
+> they are **off until two settings exist**: repository variable
+> `CRON_SCHEDULER_ENABLED=true` and secret `CRON_SECRET`. See
+> `docs/CRON-EXTERNAL.md` and `docs/ARCHITECTURE-OVERVIEW.md` section 7.
+
+<!-- schema-reality-check:2026-09-01 -->
+> ### Schema reality check (verified 2026-09-01 against `main` @ `7bf79b45c`)
+>
+> This document describes **13 tables that do not exist in the production
+> database**: `cart_items`, `coupon_redemptions`, `coupon_scan_events`, `hero_slides`, `idempotency_keys`, `ledger_accounts`, `ledger_journal_lines`, `ledger_journals`, `payout_statements`, `reconciliation_discrepancies`, `reconciliation_runs`, `settlement_batches`, `settlement_items`.
+>
+> They are created by files in `supabase/migrations/`, but that directory
+> describes a different lineage than the live database. Production has 53
+> tables, measured in `supabase/rls-manifest.json`. Treat the sections below as
+> a design that was specified and not built, not as a description of a running
+> system.
+>
+> See `docs/ARCHITECTURE-OVERVIEW.md` section 1 for the three-schema problem and
+> how to re-measure.
+
 kenyonexpress.co.il. Branch `phase6/complete-architecture`. **Design only. No UI files.**
 
 This document is the single integration point for three prior bodies of work:
@@ -7,7 +38,7 @@ This document is the single integration point for three prior bodies of work:
 | Source | Contributes |
 |---|---|
 | `MASTER-ARCHITECTURE.md` (v2, `arch/master-v2`) | Binding owner money model, domain ERD, enums, RBAC, caching, jobs, risk register |
-| `LEDGER-DESIGN.md` (`arch/money-ledger`) | Double-entry ledger, posting rules per event, 17% VAT, settlement, reconciliation |
+| `LEDGER-DESIGN.md` (`arch/money-ledger`) | Double-entry ledger, posting rules per event, 18% VAT, settlement, reconciliation |
 | `ARCHITECTURE-CHECKOUT-PAYMENT.md` | Cardcom Low Profile pipeline, webhook contract, `checkout_finalize`, refunds |
 | Migrations `042`, `046`–`056` | The applied-file reality this document must match |
 
@@ -29,7 +60,7 @@ Reproduced from MASTER v2 so this file is self-contained. These are non-negotiab
 | D-LEDGER | **Hybrid model:** true double-entry for internal wallet + revenue + VAT + supplier payable; conserved custody + nightly Cardcom reconcile for external card cash. | Cardcom is the external system of record for card money; the wallet is the only pure internal liability. |
 | D-PSP | **Cardcom Low Profile** is the only PSP (SAQ-A). C9 rules out Stripe, Payoneer and Cloudways; a second PSP would need a new owner decision. | Israeli cards + hosted page, PAN never on our origin. |
 | D-EXPIRY | An unredeemed coupon that expires **credits the customer wallet** with what they paid, and the supplier hold is reversed (C6). No breakage revenue. | Owner 2026-07-27: nobody keeps money for a service never rendered. |
-| D-VAT | Platform issues a tax invoice **only on its own commission**. Commission is gross-inclusive; extract `net = round(gross * 10000 / 11700)`, `vat = gross - net`, booked to `vat_output`. Amounts the supplier collects are the supplier's VAT obligation, not the platform's. | Israeli 17% VAT, cash-basis recognition at payment. |
+| D-VAT | Platform issues a tax invoice **only on its own commission**. Commission is gross-inclusive; extract `net = round(gross * 10000 / 11800)`, `vat = gross - net`, booked to `vat_output`. Amounts the supplier collects are the supplier's VAT obligation, not the platform's. | Israeli 18% VAT, cash-basis recognition at payment. |
 
 ---
 

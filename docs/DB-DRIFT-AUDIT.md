@@ -1,5 +1,21 @@
 # DB Drift Audit
 
+
+<!-- schema-reality-check:2026-09-01 -->
+> ### Schema reality check (verified 2026-09-01 against `main` @ `7bf79b45c`)
+>
+> This document describes **18 tables that do not exist in the production
+> database**: `admin_audit_log`, `cardcom_settlement_txns`, `cardcom_settlements`, `coupon_redemptions`, `coupon_scan_events`, `hero_slides`, `idempotency_keys`, `payout_statement_lines`, `payout_statements`, `product_categories`, `security_events`, `statements`, `supplier_applications`, `supplier_bank_accounts`, `supplier_disputes`, `supplier_payout_items`, `supplier_payouts`, `wallets`.
+>
+> They are created by files in `supabase/migrations/`, but that directory
+> describes a different lineage than the live database. Production has 53
+> tables, measured in `supabase/rls-manifest.json`. Treat the sections below as
+> a design that was specified and not built, not as a description of a running
+> system.
+>
+> See `docs/ARCHITECTURE-OVERVIEW.md` section 1 for the three-schema problem and
+> how to re-measure.
+
 Audit of the gap between `supabase/migrations/` and the live remote Postgres
 (project `ixvwfbuvfxxsjiywhbbb`, eu-north-1, Postgres 17.6).
 

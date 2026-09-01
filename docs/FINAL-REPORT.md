@@ -1,5 +1,20 @@
 # KenyonExpress: final report
 
+
+<!-- cron-reality-check:2026-09-01 -->
+> ### Scheduler reality check (verified 2026-09-01 against `main` @ `7bf79b45c`)
+>
+> Any claim below that Vercel Cron runs the scheduled jobs is **stale, and it
+> never worked**. `vercel.json` deliberately has no `crons` key: the Hobby plan
+> registers two jobs at daily granularity and silently ignores the rest, so four
+> of the ten jobs (three on the money path, plus the only sender of voucher
+> email) were believed scheduled and were not.
+>
+> The ten jobs now run from GitHub Actions, `.github/workflows/cron.yml`, and
+> they are **off until two settings exist**: repository variable
+> `CRON_SCHEDULER_ENABLED=true` and secret `CRON_SECRET`. See
+> `docs/CRON-EXTERNAL.md` and `docs/ARCHITECTURE-OVERVIEW.md` section 7.
+
 Rewritten 2026-09-01. The previous version was written 2026-08-31 and its
 headline claim, "**NOTHING HAS EVER DEPLOYED**", stopped being true a few hours
 later. It is corrected below rather than quietly edited, because the reason it

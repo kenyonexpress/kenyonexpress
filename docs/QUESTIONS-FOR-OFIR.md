@@ -1,5 +1,20 @@
 # שאלות פתוחות לבעלים
 
+
+<!-- cron-reality-check:2026-09-01 -->
+> ### Scheduler reality check (verified 2026-09-01 against `main` @ `7bf79b45c`)
+>
+> Any claim below that Vercel Cron runs the scheduled jobs is **stale, and it
+> never worked**. `vercel.json` deliberately has no `crons` key: the Hobby plan
+> registers two jobs at daily granularity and silently ignores the rest, so four
+> of the ten jobs (three on the money path, plus the only sender of voucher
+> email) were believed scheduled and were not.
+>
+> The ten jobs now run from GitHub Actions, `.github/workflows/cron.yml`, and
+> they are **off until two settings exist**: repository variable
+> `CRON_SCHEDULER_ENABLED=true` and secret `CRON_SECRET`. See
+> `docs/CRON-EXTERNAL.md` and `docs/ARCHITECTURE-OVERVIEW.md` section 7.
+
 תאריך: 2026-08-19.
 ענף: `ke-arch`.
 היקף: docs בלבד. אין כאן הכרעה שמחליפה את
@@ -197,6 +212,14 @@ VCL2 דורש Production Branch מאושר.
 **החלטה זמנית.** הקוד יכול לחשב. המדיניות המומלצת ליום עלייה: אפס דמי ביטול, מתועד בתקנון.
 
 ### Q8. מע"מ 17% מול 18%
+
+> **RESOLVED (2026-09-01, docs/final-pass).** VAT is now defined once, as
+> `VAT_RATE_BP = 1800` in `src/lib/money.ts`, and `src/lib/invoices/document.ts`
+> derives from that constant instead of carrying its own copy. 18% is correct:
+> the Israeli rate rose from 17% on 2025-01-01. The extraction divisor is 11800
+> (`src/lib/money.test.ts` asserts `round(1000 * 10000 / 11800) = 847`).
+> No invoice was ever issued at 17%: `extractVat` had no application callers,
+> only tests. See `docs/ARCHITECTURE-OVERVIEW.md` section 3.
 
 **הקשר.** סתירה חיה בקוד ובמסמכים, לא רק בהיסטוריה.
 

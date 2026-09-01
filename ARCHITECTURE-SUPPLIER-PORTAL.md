@@ -1,5 +1,21 @@
 # ארכיטקטורת פורטל הספקים (Supplier Portal)
 
+
+<!-- schema-reality-check:2026-09-01 -->
+> ### Schema reality check (verified 2026-09-01 against `main` @ `7bf79b45c`)
+>
+> This document describes **12 tables that do not exist in the production
+> database**: `commission_ledger`, `coupon_redemptions`, `coupon_scan_events`, `listing_drafts`, `notification_events`, `notifications_outbox`, `payout_statement_lines`, `payout_statements`, `statements`, `supplier_applications`, `supplier_disputes`, `user_notification_preferences`.
+>
+> They are created by files in `supabase/migrations/`, but that directory
+> describes a different lineage than the live database. Production has 53
+> tables, measured in `supabase/rls-manifest.json`. Treat the sections below as
+> a design that was specified and not built, not as a description of a running
+> system.
+>
+> See `docs/ARCHITECTURE-OVERVIEW.md` section 1 for the three-schema problem and
+> how to re-measure.
+
 מסמך תכנון מלא לדומיין פורטל הספקים. תכנון בלבד, אפס קוד ואפס מיגרציות.
 תאריך: 2026-07-19. ענף: `phase5/homepage`. מיקום מחייב לפי המשימה:
 שורש הפרויקט.

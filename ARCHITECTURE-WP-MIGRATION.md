@@ -1,5 +1,21 @@
 # ARCHITECTURE-WP-MIGRATION: מיגרציית דאטה מלאה מ-WordPress ל-Supabase
 
+
+<!-- schema-reality-check:2026-09-01 -->
+> ### Schema reality check (verified 2026-09-01 against `main` @ `7bf79b45c`)
+>
+> This document describes **2 tables that do not exist in the production
+> database**: `commission_ledger`, `product_categories`.
+>
+> They are created by files in `supabase/migrations/`, but that directory
+> describes a different lineage than the live database. Production has 53
+> tables, measured in `supabase/rls-manifest.json`. Treat the sections below as
+> a design that was specified and not built, not as a description of a running
+> system.
+>
+> See `docs/ARCHITECTURE-OVERVIEW.md` section 1 for the three-schema problem and
+> how to re-measure.
+
 תאריך: 2026-07-20. ענף: `phase5/homepage`. מעמד: design only, אפס יישום.
 
 מעמד מול מסמכים קודמים: המסמך הזה הוא העדכון המחייב של

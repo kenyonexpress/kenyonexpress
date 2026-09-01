@@ -1,5 +1,21 @@
 # MASTER ARCHITECTURE: Checkout, Commission, Coupon Redemption, Personal Area, Supplier Dashboard
 
+
+<!-- schema-reality-check:2026-09-01 -->
+> ### Schema reality check (verified 2026-09-01 against `main` @ `7bf79b45c`)
+>
+> This document describes **8 tables that do not exist in the production
+> database**: `cart_items`, `cashback_reversal_debts`, `commission_ledger`, `coupon_redemptions`, `coupon_scan_events`, `notifications_outbox`, `statements`, `supplier_payouts`.
+>
+> They are created by files in `supabase/migrations/`, but that directory
+> describes a different lineage than the live database. Production has 53
+> tables, measured in `supabase/rls-manifest.json`. Treat the sections below as
+> a design that was specified and not built, not as a description of a running
+> system.
+>
+> See `docs/ARCHITECTURE-OVERVIEW.md` section 1 for the three-schema problem and
+> how to re-measure.
+
 Status: DESIGN (print before code). Verified against live DB `ixvwfbuvfxxsjiywhbbb` on 2026-07-23.
 Money rule: agorot integers only, zero floats past the ILS/agorot boundary.
 Scope: reconciles the authoritative business rules with the applied live schema (007 + 044 + 045 + 046 + 047) and the unapplied drafts (026, 027, 042).

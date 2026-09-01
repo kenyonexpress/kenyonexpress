@@ -1,5 +1,21 @@
 # ARCHITECTURE-LEGAL-COMPLIANCE.md
 
+
+<!-- schema-reality-check:2026-09-01 -->
+> ### Schema reality check (verified 2026-09-01 against `main` @ `7bf79b45c`)
+>
+> This document describes **19 tables that do not exist in the production
+> database**: `account_deletion_requests`, `agent_run_steps`, `analytics_daily`, `analytics_events`, `cardcom_settlements`, `cart_items`, `consent_events`, `coupon_redemptions`, `coupon_scan_events`, `notification_delivery_events`, `notification_events`, `notifications_outbox`, `payout_statements`, `search_queries`, `security_events`, `supplier_applications`, `supplier_bank_accounts`, `supplier_disputes`, `user_notification_preferences`.
+>
+> They are created by files in `supabase/migrations/`, but that directory
+> describes a different lineage than the live database. Production has 53
+> tables, measured in `supabase/rls-manifest.json`. Treat the sections below as
+> a design that was specified and not built, not as a description of a running
+> system.
+>
+> See `docs/ARCHITECTURE-OVERVIEW.md` section 1 for the three-schema problem and
+> how to re-measure.
+
 ארכיטקטורת ציות משפטי ורגולטורי של KenyonExpress. מסמך הכרעות: כל סעיף מכריע, אין אופציות פתוחות.
 תאריך: 2026-07-17. ענף: `phase5/homepage`.
 

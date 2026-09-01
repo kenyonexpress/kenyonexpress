@@ -1,7 +1,23 @@
 # LEDGER-DESIGN: ארכיטקטורת ספר חשבונות כפול ושלמות כספית
 
+
+<!-- schema-reality-check:2026-09-01 -->
+> ### Schema reality check (verified 2026-09-01 against `main` @ `7bf79b45c`)
+>
+> This document describes **9 tables that do not exist in the production
+> database**: `coupon_redemptions`, `idempotency_keys`, `ledger_accounts`, `ledger_journal_lines`, `ledger_journals`, `reconciliation_discrepancies`, `reconciliation_runs`, `settlement_batches`, `settlement_items`.
+>
+> They are created by files in `supabase/migrations/`, but that directory
+> describes a different lineage than the live database. Production has 53
+> tables, measured in `supabase/rls-manifest.json`. Treat the sections below as
+> a design that was specified and not built, not as a description of a running
+> system.
+>
+> See `docs/ARCHITECTURE-OVERVIEW.md` section 1 for the three-schema problem and
+> how to re-measure.
+
 מסמך תכנון עבור branch בשם `arch/money-ledger`. קובע את מודל ה-ledger הכפול (double-entry),
-כללי הרישום (posting rules) לכל אירוע כספי, טיפול במע"מ 17%, מעבר ליחידות שלמות (אגורות
+כללי הרישום (posting rules) לכל אירוע כספי, טיפול במע"מ 18%, מעבר ליחידות שלמות (אגורות
 ונקודות בסיס), והקשחות שלמות: idempotency, מימוש קופון חד-פעמי, settlement לפי ספק
 ו-reconciliation. כל הפרוזה בעברית; כל המזהים, ה-SQL והקוד באנגלית.
 
@@ -69,7 +85,7 @@
 |---|---|---|---|---|
 | `cardcom_clearing` | נכס | debit | גלובלי (יחיד) | כסף שנסלק בכרטיס דרך Cardcom וטרם הותאם או שולם הלאה |
 | `platform_revenue` | הכנסה | credit | גלובלי (יחיד) | עמלת הפלטפורמה נטו ממע"מ; משמש גם כ-contra לקאשבק ולזיכויים |
-| `vat_output` | התחייבות | credit | גלובלי (יחיד) | מע"מ עסקאות 17% על עמלת הפלטפורמה, לתשלום לרשות המסים |
+| `vat_output` | התחייבות | credit | גלובלי (יחיד) | מע"מ עסקאות 18% על עמלת הפלטפורמה, לתשלום לרשות המסים |
 | `supplier_payable` | התחייבות | credit | פר ספק (`supplier_id`) | חוב הפלטפורמה לספק על פריטים פיזיים שנגבו באתר במלואם |
 | `customer_wallet` | התחייבות | credit | פר משתמש (`user_id`) | קרדיט ארנק: התחייבות הפלטפורמה ללקוח; לעולם לא נמשך החוצה |
 
@@ -84,7 +100,7 @@
 - `ledger_journals`: כותרת תנועה. `event_type` (enum `ledger_event`), `event_key` ייחודי
   (idempotency: רישום כפול של אותו אירוע הוא no-op ברמת ה-DB), הפניות הקשר אופציונליות
   (`order_id`, `order_item_id`, `payment_id`, `coupon_code_id`), `vat_rate_bp` (ברירת מחדל
-  1700), `reverses_journal_id` לתנועות היפוך.
+  1800), `reverses_journal_id` לתנועות היפוך.
 - `ledger_journal_lines`: שורות התנועה. `amount_agorot` הוא bigint חתום:
   חיובי = debit, שלילי = credit, ואסור אפס. `line_no` ייחודי בתוך journal.
 
@@ -115,9 +131,9 @@ CHECK ב-Postgres מוערך על שורה בודדת ואינו יכול לבצ
   העסק, וחלק הספק במוצר פיזי) אינם הכנסת פלטפורמה ואינם חייבים במע"מ פלטפורמה; חובת
   המע"מ עליהם היא של הספק.
 - העמלה נגבית ברוטו (כוללת מע"מ). החילוץ בשורת הרישום:
-  `net = round(gross * 10000 / 11700)` ; `vat = gross - net`.
+  `net = round(gross * 10000 / 11800)` ; `vat = gross - net`.
   דוגמה: עמלה ברוטו 1000 אגורות: net = 855, vat = 145.
-- שיעור המע"מ נשמר ב-`ledger_journals.vat_rate_bp` (1700) כדי ששינוי חקיקה עתידי לא
+- שיעור המע"מ נשמר ב-`ledger_journals.vat_rate_bp` (1800) כדי ששינוי חקיקה עתידי לא
   ידרוס היסטוריה; שורות המע"מ נרשמות לחשבון `vat_output`.
 - נקודת החיוב: בעת התשלום (order_paid), בהתאם לכלל מס של שירותים על בסיס מזומן. לכן
   אין חשבון deferred revenue בתרשים: ההכנסה והמע"מ מוכרים במלואם בעת הסליקה, ומימוש,

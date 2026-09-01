@@ -1,5 +1,36 @@
 # ארכיטקטורת אנליטיקה ו-BI: מסמך מאוחד (v3)
 
+
+
+<!-- cron-reality-check:2026-09-01 -->
+> ### Scheduler reality check (verified 2026-09-01 against `main` @ `7bf79b45c`)
+>
+> Any claim below that Vercel Cron runs the scheduled jobs is **stale, and it
+> never worked**. `vercel.json` deliberately has no `crons` key: the Hobby plan
+> registers two jobs at daily granularity and silently ignores the rest, so four
+> of the ten jobs (three on the money path, plus the only sender of voucher
+> email) were believed scheduled and were not.
+>
+> The ten jobs now run from GitHub Actions, `.github/workflows/cron.yml`, and
+> they are **off until two settings exist**: repository variable
+> `CRON_SCHEDULER_ENABLED=true` and secret `CRON_SECRET`. See
+> `docs/CRON-EXTERNAL.md` and `docs/ARCHITECTURE-OVERVIEW.md` section 7.
+
+<!-- schema-reality-check:2026-09-01 -->
+> ### Schema reality check (verified 2026-09-01 against `main` @ `7bf79b45c`)
+>
+> This document describes **12 tables that do not exist in the production
+> database**: `agent_runs`, `analytics_daily`, `analytics_event_definitions`, `analytics_events`, `analytics_events_default`, `analytics_identity_links`, `coupon_scan_events`, `notification_conversions`, `notifications_outbox`, `payout_statements`, `search_queries`, `supplier_payouts`.
+>
+> They are created by files in `supabase/migrations/`, but that directory
+> describes a different lineage than the live database. Production has 53
+> tables, measured in `supabase/rls-manifest.json`. Treat the sections below as
+> a design that was specified and not built, not as a description of a running
+> system.
+>
+> See `docs/ARCHITECTURE-OVERVIEW.md` section 1 for the three-schema problem and
+> how to re-measure.
+
 תאריך: 2026-07-20. ענף: `phase5/homepage`. design only, אפס מימוש.
 
 > **עדכון 2026-07-24:** המסמך אינו עוד design only. הדומיין מומש בענף

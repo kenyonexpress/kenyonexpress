@@ -1,5 +1,36 @@
 # MASTER ARCHITECTURE v2: המסמך המאוחד (business-model-first)
 
+
+
+<!-- cron-reality-check:2026-09-01 -->
+> ### Scheduler reality check (verified 2026-09-01 against `main` @ `7bf79b45c`)
+>
+> Any claim below that Vercel Cron runs the scheduled jobs is **stale, and it
+> never worked**. `vercel.json` deliberately has no `crons` key: the Hobby plan
+> registers two jobs at daily granularity and silently ignores the rest, so four
+> of the ten jobs (three on the money path, plus the only sender of voucher
+> email) were believed scheduled and were not.
+>
+> The ten jobs now run from GitHub Actions, `.github/workflows/cron.yml`, and
+> they are **off until two settings exist**: repository variable
+> `CRON_SCHEDULER_ENABLED=true` and secret `CRON_SECRET`. See
+> `docs/CRON-EXTERNAL.md` and `docs/ARCHITECTURE-OVERVIEW.md` section 7.
+
+<!-- schema-reality-check:2026-09-01 -->
+> ### Schema reality check (verified 2026-09-01 against `main` @ `7bf79b45c`)
+>
+> This document describes **33 tables that do not exist in the production
+> database**: `account_deletion_requests`, `agent_escalations`, `agent_flags`, `agent_prompts`, `agent_run_steps`, `agent_runs`, `analytics_daily`, `analytics_event_definitions`, `analytics_events`, `analytics_identity_links`, `cardcom_settlements`, `cart_items`, `channel_suppressions`, `consent_events`, `coupon_redemptions`, `coupon_scan_events`, `hero_slides`, `listing_drafts`, `notification_conversions`, `notification_delivery_events`, `notification_events`, `notification_templates`, `notifications_outbox`, `payout_statement_lines`, `payout_statements`, `search_queries`, `search_synonyms`, `security_events`, `supplier_applications`, `supplier_bank_accounts`, `supplier_disputes`, `supplier_payouts`, `user_notification_preferences`.
+>
+> They are created by files in `supabase/migrations/`, but that directory
+> describes a different lineage than the live database. Production has 53
+> tables, measured in `supabase/rls-manifest.json`. Treat the sections below as
+> a design that was specified and not built, not as a description of a running
+> system.
+>
+> See `docs/ARCHITECTURE-OVERVIEW.md` section 1 for the three-schema problem and
+> how to re-measure.
+
 > **מהדורה: 2026-07-24. ענף: `feat/analytics-bi` (worktree של `phase5/homepage`).**
 > מסמך זה מאחד את כל 12 מסמכי הארכיטקטורה של KenyonExpress סביב **המודל העסקי
 > המחייב** (סעיף 1), ומוסיף עליהם תרשים מערכת, סכמות, flows, סדר מיגרציות סופי,

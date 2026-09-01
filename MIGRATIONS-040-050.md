@@ -1,5 +1,21 @@
 # MIGRATIONS-040-050
 
+
+<!-- schema-reality-check:2026-09-01 -->
+> ### Schema reality check (verified 2026-09-01 against `main` @ `7bf79b45c`)
+>
+> This document describes **12 tables that do not exist in the production
+> database**: `commission_ledger`, `coupon_redemptions`, `idempotency_keys`, `ledger_accounts`, `ledger_journal_lines`, `ledger_journals`, `payout_statements`, `reconciliation_discrepancies`, `reconciliation_runs`, `settlement_batches`, `settlement_items`, `supplier_payouts`.
+>
+> They are created by files in `supabase/migrations/`, but that directory
+> describes a different lineage than the live database. Production has 53
+> tables, measured in `supabase/rls-manifest.json`. Treat the sections below as
+> a design that was specified and not built, not as a description of a running
+> system.
+>
+> See `docs/ARCHITECTURE-OVERVIEW.md` section 1 for the three-schema problem and
+> how to re-measure.
+
 kenyonexpress.co.il. Branch `phase6/complete-architecture`. **Design + migration-file documentation. No UI files.**
 
 This document is the authoritative index for the money-convergence migration set. It records **what each migration does, how it stays idempotent, its rollback path, and whether it is backward compatible or a full replacement.**
@@ -42,7 +58,7 @@ Every file in this set obeys, so a re-run is a no-op, never an error:
 - Every internal amount is `integer` agorot (`bigint` on ledger tables, where long-run per-account accumulation can exceed int4). One currency: ILS. No new `numeric` money.
 - Every rate is `integer` basis points: 10% = 1000 bp, 100% = 10000 bp. Same ×100 conversion as money.
 - Rounding: `round(amount_agorot * bp / 10000.0)::integer` (Postgres half-up on positive numeric) at every amount×rate multiplication.
-- VAT (17%) carried as `vat_rate_bp` (default 1700); extraction `net = round(gross*10000/11700)`, `vat = gross - net`.
+- VAT (18%) carried as `vat_rate_bp` (default 1800); extraction `net = round(gross*10000/11800)`, `vat = gross - net`.
 
 ## 3. Per-migration reference
 

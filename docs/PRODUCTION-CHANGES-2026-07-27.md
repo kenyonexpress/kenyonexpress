@@ -1,5 +1,21 @@
 # Production changes made on 2026-07-27, and how to undo them
 
+
+<!-- schema-reality-check:2026-09-01 -->
+> ### Schema reality check (verified 2026-09-01 against `main` @ `7bf79b45c`)
+>
+> This document describes **1 table that do not exist in the production
+> database**: `statements`.
+>
+> They are created by files in `supabase/migrations/`, but that directory
+> describes a different lineage than the live database. Production has 53
+> tables, measured in `supabase/rls-manifest.json`. Treat the sections below as
+> a design that was specified and not built, not as a description of a running
+> system.
+>
+> See `docs/ARCHITECTURE-OVERVIEW.md` section 1 for the three-schema problem and
+> how to re-measure.
+
 Two changes were made directly to the hosted Supabase project
 (`ixvwfbuvfxxsjiywhbbb`) during an autonomous session. Both are recorded here
 because a schema change to a live project is not something that should only

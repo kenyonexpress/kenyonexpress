@@ -1,5 +1,21 @@
 # Migration Backlog
 
+
+<!-- schema-reality-check:2026-09-01 -->
+> ### Schema reality check (verified 2026-09-01 against `main` @ `7bf79b45c`)
+>
+> This document describes **25 tables that do not exist in the production
+> database**: `admin_audit_log`, `cardcom_settlement_txns`, `cardcom_settlements`, `cart_items`, `cashback_reversal_debts`, `commission_ledger`, `coupon_redemptions`, `coupon_scan_events`, `hero_slides`, `idempotency_keys`, `ledger_accounts`, `ledger_journal_lines`, `ledger_journals`, `payout_statement_lines`, `payout_statements`, `reconciliation_discrepancies`, `reconciliation_runs`, `settlement_batches`, `settlement_items`, `supplier_applications`, `supplier_bank_accounts`, `supplier_disputes`, `supplier_payout_items`, `supplier_payouts`, `wallets`.
+>
+> They are created by files in `supabase/migrations/`, but that directory
+> describes a different lineage than the live database. Production has 53
+> tables, measured in `supabase/rls-manifest.json`. Treat the sections below as
+> a design that was specified and not built, not as a description of a running
+> system.
+>
+> See `docs/ARCHITECTURE-OVERVIEW.md` section 1 for the three-schema problem and
+> how to re-measure.
+
 מצב המיגרציות ב-`supabase/migrations/` מול הפרודקשן החי.
 
 נמדד 2026-07-29 מול הפרויקט
