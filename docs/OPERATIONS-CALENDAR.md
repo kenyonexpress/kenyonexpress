@@ -27,7 +27,7 @@ So `supabase/schedules/analytics_cron.sql`, which begins
 `CREATE EXTENSION IF NOT EXISTS pg_cron`, has **never been run**. The analytics
 rollups it schedules have never executed, and two of the functions it references
 (`fn_rollup_analytics_daily`, `fn_refresh_analytics_matviews`) do not exist
-among the 69 functions in production.
+among the 72 functions in production.
 
 **Everything below is the intended schedule, not an observed one.** The routes
 are correct, deployed, guarded and idle.

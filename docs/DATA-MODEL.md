@@ -268,12 +268,37 @@ Two enums have **no tables behind them**: `payout_status`
 `docs/SCHEMA-REALITY-CHECK.md` §4.
 
 `escrow_held` and `escrow_released` in `settlement_status` are **dead labels
-nothing can write**. `coupon_status` uses `used` where `voucher_status` uses
-`redeemed`; they are different enums for different generations of the model.
+nothing can enter**. Two locks, not one: `SettlementState` in
+`src/server/domain/orders/state-machine.ts` refuses them as a TypeScript type,
+and since migration 137 the database refuses them too —
+`fn_order_items_settlement_status_guard` has no transition leading *into*
+either. Both carry outbound edges so that rows written before the 2026-07-24
+cutover can still be redeemed or refunded.
+
+`coupon_status` uses `used` where `voucher_status` uses `redeemed`; they are
+different enums for different generations of the model.
 
 ---
 
 ## 6. Integrity worth knowing
+
+### 6.0 Status transitions are enforced by triggers
+
+Migration 137 is applied. Three `BEFORE UPDATE ... FOR EACH ROW` triggers refuse
+an illegal status move with `23514`:
+
+| Trigger | Table | Column |
+|---|---|---|
+| `tg_orders_status_guard` | `orders` | `status` |
+| `tg_order_items_settlement_status_guard` | `order_items` | `settlement_status` |
+| `tg_payments_status_guard` | `payments` | `status` |
+
+The permitted tables are in `docs/PAYMENT-FLOW.md` §2.1, which is authoritative,
+and are mirrored in the repository as
+`src/server/domain/orders/status-transitions.json`. A no-op update is always
+legal; `INSERT` is not guarded; `vouchers` is not guarded at all.
+
+### 6.1 Conservation
 
 Conservation, enforced as CHECK constraints:
 

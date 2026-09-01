@@ -539,7 +539,7 @@ status = 'active' AND deleted_at IS NULL
 ```
 
 **Helper functions are `SECURITY DEFINER` and their execute grants are the real
-access surface**, not the policies. Production carries 69 functions, 61 of them
+access surface**, not the policies. Production carries 72 functions, 61 of them
 `SECURITY DEFINER`, and **all 61 pin `search_path`**, zero unpinned, which
 closes the search-path hijack class outright.
 
@@ -899,10 +899,10 @@ Every figure in §2 came from one of these, run through Supabase MCP
 number that matters; do not copy a count forward from another document.
 
 ```sql
--- 98 migrations applied
+-- 99 migrations applied
 select count(*) from supabase_migrations.schema_migrations;
 
--- 61 tables, 0 with RLS off, 12 views, 69 functions, 61 SECURITY DEFINER
+-- 61 tables, 0 with RLS off, 12 views, 72 functions, 61 SECURITY DEFINER
 select
   (select count(*) from pg_class c join pg_namespace n on n.oid = c.relnamespace
     where n.nspname = 'public' and c.relkind = 'r')                    as tables,
@@ -934,7 +934,7 @@ select count(*) from pg_proc p join pg_namespace n on n.oid = p.pronamespace,
 where n.nspname = 'public' and ax.privilege_type = 'EXECUTE'
   and r.rolname = 'anon';
 
--- 133 policies; 53 non-internal triggers
+-- 133 policies; 56 non-internal triggers
 select (select count(*) from pg_policies where schemaname = 'public') as policies,
        (select count(*) from pg_trigger tg
           join pg_class c on c.oid = tg.tgrelid

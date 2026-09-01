@@ -356,7 +356,10 @@ reaches us.
 `settlement_status` labels `escrow_held` and `escrow_released` are dead:
 `SettlementState` in `src/server/domain/orders/state-machine.ts` deliberately
 refuses them, so a value the type will not admit is a row this code cannot
-produce.
+produce, and since migration 137 the database agrees —
+`fn_order_items_settlement_status_guard` permits no transition *into* either
+label. The outbound edges are kept on purpose, so the legacy rows are not
+stranded.
 
 **There is no payout system either.** On the coupon path the platform owes the
 supplier nothing, so there is nothing to pay out. `payout_status` and

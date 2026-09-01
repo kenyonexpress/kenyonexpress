@@ -327,7 +327,7 @@ reading "0 policies" as "unprotected" and adding one would be the mistake.
 
 ## 8. Function execute grants
 
-Production carries 69 functions, **61 `SECURITY DEFINER`, all 61 with a pinned
+Production carries 72 functions, **61 `SECURITY DEFINER`, all 61 with a pinned
 `search_path`** and zero unpinned.
 
 `anon` holds **six** EXECUTE grants. Three are real RPCs; three are trigger

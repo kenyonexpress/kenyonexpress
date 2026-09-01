@@ -83,7 +83,7 @@ the supplier nothing, so there is nothing to pay out. The `payout_status` and
 | English | עברית | Meaning here |
 |---|---|---|
 | **RLS** | אבטחה ברמת השורה | Row Level Security. On for all 61 tables. **The only database-level defence on the money tables**, since the `authenticated` DML grant is still present. |
-| **`SECURITY DEFINER`** | | A function running as its owner rather than its caller. 61 of 69 functions, all with a pinned `search_path`. |
+| **`SECURITY DEFINER`** | | A function running as its owner rather than its caller. 61 of 72 functions, all with a pinned `search_path`. The three added by migration 137 are not among them. |
 | **Deny-all** | חסימה מלאה | RLS on with no permissive policy. Denies every client role. Nine tables, in two shapes. |
 | **`anon` / `authenticated` / `service_role`** | | The three Postgres roles. `service_role` bypasses RLS and is server-side only. |
 | **Supplier member** | חבר צוות ספק | A row in `supplier_members`. **This, not `profiles.role`, is what makes someone a supplier.** |
