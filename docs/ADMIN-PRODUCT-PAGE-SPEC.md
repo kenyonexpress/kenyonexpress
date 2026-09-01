@@ -158,7 +158,17 @@ Written once at checkout (`buildOrderItemSnapshot` + settlement billed percent).
 
 Related settlement money columns (not the four knobs themselves) stay as today: `supplier_payout_ils`, `face_value_agorot`, `paid_on_site_agorot`, `commission_agorot`, `balance_due_agorot`, `settlement_status`, etc.
 
-Coupon lines under 28.07: `supplier_payout_ils` / supplier due from platform = **0**; `settlement_status = platform_settled` at payment. Do not write `escrow_holds`.
+Coupon lines under 28.07: `supplier_payout_ils` / supplier due from platform = **0**. Do not write `escrow_holds`.
+
+> <!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **Corrected 2026-09-01.** This line previously said
+> `settlement_status = platform_settled` at payment. The code writes
+> **`split_executed`**, for both coupon and physical lines:
+> `pending -> paid -> split_executed`, a coupon simply splitting 100/0.
+> `SettlementState` in `src/server/domain/orders/state-machine.ts` does not
+> admit `platform_settled` as a writable value at all; it survives only in the
+> redemption **read** path (`REDEEMABLE_SETTLEMENT_STATUSES`), which has to keep
+> recognising rows written before the rule changed.
 
 ### 3.2 Semantics
 

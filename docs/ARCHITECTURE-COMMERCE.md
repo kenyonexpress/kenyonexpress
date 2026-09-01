@@ -129,6 +129,16 @@ cart_items (
 
 One row per Cardcom attempt (charge or refund). Never updated by users.
 
+> <!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **Both enums below are the design, not production.** Live values,
+> verified 2026-09-01:
+> `payment_kind` is **`charge, refund`** (there is no `token_charge`; a saved
+> card charge is a `charge` that never passes through `redirected`), and
+> `payment_status` is
+> **`initiated, redirected, succeeded, failed, refunded, platform_settled`**
+> (there is no `cancelled`, and `platform_settled` is missing below).
+> Writing either absent value raises `22P02`. See `docs/PAYMENT-FLOW.md` §3.
+
 ```sql
 payment_kind:   'charge' | 'token_charge' | 'refund'
 payment_status: 'initiated' | 'redirected' | 'succeeded' | 'failed' | 'cancelled' | 'refunded'

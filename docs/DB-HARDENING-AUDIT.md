@@ -131,6 +131,23 @@ legacy_percent_archive_112   payment_webhook_events   rate_limits   referral_sig
 search_index_dlq             settlement_events        stock_reservations   user_rate_limits
 ```
 
+> <!-- v1-final-banner:2026-09-01 -->
+> **Re-measured 2026-09-01: the set is now 9, and it has split in two.** The
+> conclusion below is unchanged and still correct; only the shape moved.
+>
+> Migration **122** gave five of the eight an explicit `RESTRICTIVE` policy with
+> `USING (false)` (`legacy_percent_archive_112`, `referral_signals`,
+> `search_index_dlq`, `settlement_events`, `stock_reservations`), so they are no
+> longer "zero policies" and the advisor no longer flags them. Migration **132**
+> added `search_index_outbox`, which has no policy at all.
+>
+> Current: **4** flagged `rls_enabled_no_policy` (`payment_webhook_events`,
+> `rate_limits`, `search_index_outbox`, `user_rate_limits`) and **5** carrying an
+> explicit deny. Nine tables closed to every client role, reached two ways.
+> Making the deny explicit is strictly better than relying on absence, because
+> a later `CREATE POLICY` cannot silently open a table that carries a
+> `RESTRICTIVE` false.
+
 Every one is a service-key-only table: a money journal, a queue, a limiter store
 or an archive. **RLS enabled with zero policies denies every client role**,
 which is exactly the intended configuration, and it is why these are INFO rather

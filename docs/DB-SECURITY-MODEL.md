@@ -10,7 +10,17 @@
 
 **‏53** טבלאות ב-`public`, כולן עם RLS מופעל, כולן `rls_forced = false` (הבעלים ו-`service_role` עוקפים).
 
-**‏45** טבלאות עם policy אחד לפחות. **‏8** טבלאות עם אפס policies = deny-all מכוון (סעיף 6).
+**‏52** טבלאות עם policy מתירני (PERMISSIVE) אחד לפחות. **‏9** טבלאות server-only (סעיף ‏6), ובהן שתי צורות שונות של deny-all שכדאי להבחין ביניהן:
+
+| צורה | טבלאות | ‏מה ה-advisor אומר |
+|---|---|---|
+| אפס policies בכלל (**‏4**) | `payment_webhook_events`, `rate_limits`, `search_index_outbox`, `user_rate_limits` | ‏`rls_enabled_no_policy`, ‏INFO |
+| ‏policy יחיד `RESTRICTIVE` עם `USING (false)` (**‏5**) | `legacy_percent_archive_112`, `referral_signals`, `search_index_dlq`, `settlement_events`, `stock_reservations` | לא מסומן: יש policy |
+
+‏**המספר ‏8 שהופיע כאן קודם קדם לשתי מיגרציות.** ‏122 הוסיפה את
+‏`deny_all_client_roles` לחמש הטבלאות בשורה השנייה, כך שהן כבר לא "אפס
+policies", ו-132 הוסיפה את `search_index_outbox` שאין לה policy כלל.
+‏9 = 4 + 5, וכל התשע חסומות לחלוטין ל-anon ול-authenticated.
 
 **‏61** פונקציות SECURITY DEFINER מתוך **‏69** בסך הכל (נמדד 01.09): **‏4** מהן חשופות ל-anon (וגם ל-authenticated), **‏13** חשופות ל-authenticated, השאר service_role בלבד וטריגרים. **כל ‏61 מצמידות `search_path`, אפס לא מוצמדות.**
 

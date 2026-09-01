@@ -125,7 +125,16 @@
 policies ובלי נימוק. מה שהוא **לא** תופס: drift שאף אחד לא מדד מחדש. לכן
 ה-manifest נושא את תאריך המדידה, ולכן קיים `scripts/check-rls.mjs`.
 
-### ‏8 טבלאות בלי policies — וזה המצב ההדוק, לא הרפוי
+### ‏9 טבלאות server-only — וזה המצב ההדוק, לא הרפוי
+
+> <!-- v1-final-banner:2026-09-01 -->
+> ‏**נמדד מחדש 01.09: ‏9, לא ‏8, ובשתי צורות.** ‏4 בלי שום policy
+> (`payment_webhook_events`, `rate_limits`, `search_index_outbox`,
+> `user_rate_limits`) ו-5 עם policy יחיד `RESTRICTIVE` ‏`USING (false)`
+> (`legacy_percent_archive_112`, `referral_signals`, `search_index_dlq`,
+> `settlement_events`, `stock_reservations`). מיגרציה ‏122 הפכה את החמש
+> מ"אפס policies" ל"deny מפורש", ו-132 הוסיפה את `search_index_outbox`.
+> ‏רק ה-4 הראשונות מסומנות `rls_enabled_no_policy` על ידי ה-advisor.
 
 ‏Postgres חוסם **כל שורה לכל תפקיד** כשה-RLS דלוקה ואף policy לא מתאימה.
 טבלה עם RLS ובלי policies נגישה רק ל-service key ולפונקציות SECURITY DEFINER.
