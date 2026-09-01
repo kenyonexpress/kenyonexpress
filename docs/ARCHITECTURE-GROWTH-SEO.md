@@ -330,8 +330,9 @@ old_path,decision,new_path,status_code,rule,gsc_clicks_12m,notes
    ‏rollback. זה כשל תפעולי, לא תנודת דירוג.
 
 ביום 30: דוח סיכום (קליקים מול baseline, עמודים באינדקס, רשימת
-queries שאבדו) נשמר ב-`docs/growth/baseline/day30-report.md`, ומחליטים
-על סבב שיפורי תוכן לפי הפערים.
+queries שאבדו) ייכתב אל `docs/growth/baseline/day30-report.md`, ומחליטים
+על סבב שיפורי תוכן לפי הפערים. **הנתיב הזה טרם נוצר** — הוא היעד המתוכנן,
+לא מסמך קיים, והמדידה שהוא אמור לסכם לא החלה.
 
 ---
 
