@@ -72,6 +72,40 @@ have `generateMetadata`. The conclusion the original finding invited -- that SEO
 needs work before launch -- was the opposite of the truth, which is why this is a
 correction and not a silent edit.
 
+## Stage 4 features: all four already exist
+
+Verified in code rather than rebuilt, which is what the brief asked for.
+
+| Feature | Verdict | Evidence |
+| --- | --- | --- |
+| WhatsApp on the PDP with a per-product admin toggle | EXISTS | `SupplierInfo.tsx:72` reads `products.whatsapp_enabled`; the admin control is `ProductForm.tsx:1051`; column from `123_products_whatsapp_enabled.sql` |
+| Geo city tags + sorting | EXISTS | `src/components/geo/CityTags.tsx`, `src/lib/geo/cities.ts`, consumed by `src/lib/category-page.ts:4` |
+| Trust icons | EXISTS | `src/components/home/BenefitBar.tsx`, `src/components/layout/InfoBar.tsx` |
+| WordPress catalogue import | NOT NEEDED | The catalogue is real, not demo: 80 products, 45 active, with genuine Hebrew deals (hotels, treatments, restaurant platters) |
+
+**`whatsapp_enabled` is false on all 80 products.** The feature is built and
+switched off. That is a content task, not a gap.
+
+## A data problem in the live catalogue
+
+Of the 45 active products, **14 carry a slug that does not match the product**:
+
+```
+slug contains "copy"                 3
+slug is numeric only                 1
+Latin-script slug, Hebrew-only name 10
+```
+
+Two sampled examples: "ארוחת בוקר זוגית בקפה גן סיפור" is served at
+`/product/שעון-אפל-חכם-apple-watch-series-7`, and "פינוק גלידה" at
+`/product/צימר-מאסטר-copy-copy`. These are leftovers from an import that copied
+rows without regenerating slugs.
+
+It is a content problem rather than a code one, and it is not fixed here:
+rewriting 14 slugs changes 14 public URLs and needs redirects and a decision
+about which slug each product should have. But it is a launch-visible defect --
+the URL is part of what a customer sees and what a search engine indexes.
+
 ## Two premises in the brief that do not hold
 
 **QStash is not the payment webhook's idempotency mechanism** and never was. It
