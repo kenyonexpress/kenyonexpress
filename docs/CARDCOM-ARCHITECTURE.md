@@ -1,15 +1,24 @@
 # CARDCOM-ARCHITECTURE.md
 
 > <!-- v1-final-banner:2026-09-01 -->
-> ⚠️ **This document names tables that do not exist in production.**
+> ⛔ **HISTORICAL. This is the 2026-07-23 research and design document, and the
+> system was built differently in four ways.** Read `docs/PAYMENT-FLOW.md` and
+> `docs/ARCHITECTURE-CHECKOUT-CARDCOM-E2E.md` for what runs.
 >
-> | Named here | In production |
+> | This document | `src/lib/payments/cardcom.ts`, 2026-09-01 |
 > |---|---|
+> | Cardcom **v11 JSON REST** | the **legacy `/Interface/*.aspx` form API**, by a decision recorded in the client on 23.07: `LowProfile.aspx`, `ChargeToken.aspx`, `RefundDeal.aspx`, `ListTransactions.aspx`, `BillGoldPost.aspx` |
+> | `apps/web/src/app/api/checkout/route.ts` | `apps/web` does not exist. Checkout is a server action, `src/server/actions/payments/checkout.ts`; the callback is `src/app/api/payments/cardcom/webhook/route.ts` |
+> | `@kenyon/payments`, `@kenyon/db` | no `packages/` directory exists. There are no `@kenyon/*` workspace packages |
+> | `payment_intents` table, Drizzle schema | no such table. The live tables are `payments` and `payment_events` |
 > | `ledger_entries` | nothing; `wallet_entries` is a different model |
+> | amounts as `.toFixed(2)` decimal strings | **integer agorot only**, through `src/lib/money.ts`. No float touches the money path |
+> | `commissionPct ?? 5` default | `platform_percent` is per product, **mandatory, with no default anywhere**, snapshotted onto `order_items` at purchase |
 >
-> The design below may still be sound; the schema it assumes was not built, or
-> was built under another name. Verify against `docs/DATA-MODEL.md` before
-> writing a query, and see `docs/SCHEMA-REALITY-CHECK.md` for the full mapping.
+> The Cardcom API research in §1 is still worth reading. **Every TypeScript
+> snippet below is a sketch that was never written**, and the last two rows of
+> the table are business-rule violations if copied. See
+> `docs/SCHEMA-REALITY-CHECK.md` for the full name mapping.
 
 # ארכיטקטורת סליקה — KenyonExpress × Cardcom
 

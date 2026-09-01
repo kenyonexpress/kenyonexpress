@@ -8,6 +8,9 @@
 > ‏1. **‏`supplier_payouts` ו-`payout_statements` אינם קיימים.** אין בבסיס הנתונים
 >    הזה שום טבלת payout. ה-enums `payout_status` ו-`payout_line_type` חיים בלי
 >    אף טבלה מאחוריהם.
+> ‏1א. **אין `apps/web` ואין `apps/api`, ואין `packages/`.** ‏`R27` ו-`R34`
+>    למטה מתארים מבנה monorepo שלא נבנה. ‏`apps/` מכיל `mobile` בלבד;
+>    אפליקציית ה-web היא `src/app/` בשורש. ההכרעות עצמן נשארות כתוכנית.
 > ‏2. **הענף אינו `phase5/homepage`.** ‏PR #6 מוזג, ו-`main` הוא הענף היחיד
 >    שעובדים עליו ויעד כל push.
 > ‏3. **אין Escrow בשום צורה,** גם לא כרישום פנימי ב-ledger. כל התשלום המקוון

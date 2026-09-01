@@ -95,6 +95,16 @@ apps/mobile/                second RPC caller, a till app. Any grants audit
 refs/ke_live_singlefile.html   the pixel reference the UI is compared against
 ```
 
+**`apps/` holds `mobile` and nothing else.** There is no `apps/web`, no
+`apps/api`, and no `packages/` directory anywhere in this repository. The web
+application is `src/app/`; server code is `src/server/` and `src/lib/`. Several
+older documents describe a Turborepo layout with `apps/web`, `apps/api` (Hono)
+and `packages/*` — `ARCHITECTURE-MOBILE-SUPERAPP.md` §2, `MASTER-ARCHITECTURE.md`
+R27 and R34, and every code sketch in `CARDCOM-ARCHITECTURE.md`. **That is a
+migration plan that was never executed, not a description of the tree.** Each of
+those documents now carries a banner saying so. A path, an import or a Vercel
+Root Directory setting taken from any of them will not resolve.
+
 ---
 
 ## 2. Data model
