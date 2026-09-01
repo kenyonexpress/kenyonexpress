@@ -1,4 +1,5 @@
 import { createClient as createServerClient } from '@/lib/supabase/server'
+import { timeoutFetch } from '@/lib/supabase/timeout-fetch'
 import { createClient } from '@supabase/supabase-js'
 import type { User } from '@supabase/supabase-js'
 
@@ -46,7 +47,10 @@ export async function authenticateRequest(request: Request): Promise<RequestIden
   const anon = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    { auth: { persistSession: false, autoRefreshToken: false } },
+    {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: { fetch: timeoutFetch },
+    },
   )
   const {
     data: { user },
@@ -87,7 +91,7 @@ export async function identityScopedClient(request: Request) {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         auth: { persistSession: false, autoRefreshToken: false },
-        global: { headers: { Authorization: `Bearer ${token}` } },
+        global: { headers: { Authorization: `Bearer ${token}` }, fetch: timeoutFetch },
       },
     ),
   }
