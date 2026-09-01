@@ -14,9 +14,17 @@ export const metadata = { title: 'לוג פעילות' }
 
 const AUDIT_ACTIONS = Object.keys(AUDIT_ACTION_LABELS) as AuditAction[]
 
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
+
 const paramsSchema = baseListParamsSchema.extend({
   action: z.enum(AUDIT_ACTIONS as [AuditAction, ...AuditAction[]]).optional(),
   entity: z.string().trim().max(40).optional(),
+  // Who did it. A uuid, because the value comes from the actor list below
+  // rather than being typed: matching a name here would silently drop every
+  // action by a person whose profile has no full_name.
+  actor: z.string().uuid().optional(),
+  from: z.string().regex(ISO_DATE).optional(),
+  to: z.string().regex(ISO_DATE).optional(),
 })
 
 const ACTION_COLORS: Partial<Record<AuditAction, string>> = {
@@ -66,6 +74,11 @@ export default async function AuditLogPage(props: {
     .range(from, to)
   if (params.action) query = query.eq('action', params.action)
   if (params.entity) query = query.eq('entity_type', params.entity)
+  if (params.actor) query = query.eq('actor_id', params.actor)
+  if (params.from) query = query.gte('created_at', params.from)
+  // End of day, not start: `to=2026-09-01` has to include what happened on the
+  // 1st, or a single-day range returns nothing and reads as "no activity".
+  if (params.to) query = query.lte('created_at', `${params.to}T23:59:59`)
   // See the note in the users page: a raw term in an `.or()` expression is
   // filter syntax, not a value.
   if (params.q) {
@@ -92,6 +105,9 @@ export default async function AuditLogPage(props: {
     q: params.q,
     action: params.action,
     entity: params.entity,
+    actor: params.actor,
+    from: params.from,
+    to: params.to,
     per: params.per,
     page: params.page,
   }
@@ -153,8 +169,22 @@ export default async function AuditLogPage(props: {
         basePath="/admin/audit-log"
         searchPlaceholder="חיפוש לפי ישות או תפקיד..."
         defaultQuery={params.q}
-        preserve={{ per: params.per }}
+        preserve={{ per: params.per, actor: params.actor }}
       >
+        <input
+          name="from"
+          type="date"
+          defaultValue={params.from ?? ''}
+          className="h-9 rounded-md border border-black/10 bg-surface px-2 text-sm"
+          aria-label="מתאריך"
+        />
+        <input
+          name="to"
+          type="date"
+          defaultValue={params.to ?? ''}
+          className="h-9 rounded-md border border-black/10 bg-surface px-2 text-sm"
+          aria-label="עד תאריך"
+        />
         <select
           name="action"
           defaultValue={params.action ?? ''}
