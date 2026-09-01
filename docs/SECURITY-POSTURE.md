@@ -299,7 +299,9 @@ the route exists.
 | 2 | No RLS test suite | **High** | Policies are asserted by reading them, never by attempting a forbidden read as `authenticated`. Given gap 1, this is the largest untested surface in the system. `docs/TESTING.md` §7. |
 | 3 | No sign constraint on `order_items` money columns | Medium | Eight columns; the tables around them are all constrained. `docs/MONEY-MODEL.md` §3.2. |
 | 4 | No conservation constraint on `order_items` | Medium | `face = paid_on_site + balance_due` holds in code and tests, not in the schema. |
-| 5 | Migration 137 unapplied | Medium | No transition guard in the database. Rewritten at `37892b88d`, pending. |
+| 5 | ~~Migration 137 unapplied~~ | **Closed 2026-09-01** | Applied. `tg_orders_status_guard`, `tg_order_items_settlement_status_guard` and `tg_payments_status_guard` are live; an illegal move raises `23514`. Tables in `docs/PAYMENT-FLOW.md` §2.1. |
+| 5a | No transition guard on `vouchers` | Medium | 137 covered three tables and not this one. Double redemption is held off by the atomic `UPDATE ... WHERE status = 'issued'` in the application, which stops a race but not a `service_role` statement. |
+| 5b | `audit_log` accepts UPDATE and DELETE | Medium | Zero triggers on the table (`pg_trigger`, 2026-09-01). An editable log is a statement, not evidence. 137 did not cover this either, despite an older doc saying it would. |
 | 6 | `super_admin` confers nothing `admin` does not | Low | Not a separation boundary today. |
 | 7 | Service-role writes bypass the profile privilege trigger | Low | By design; responsibility moves to server code. |
 | 8 | No scheduler | **Operational** | Nothing expires, nothing reconciles, no emails. `docs/OPERATIONS-CALENDAR.md`. |

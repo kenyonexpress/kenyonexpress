@@ -251,11 +251,29 @@ A conservation CHECK was violated:
 vouchers_conservation  face_value = coupon_price + remaining_amount_due
 ```
 
-If migration 137 has been applied by the time you read this, `23514` on a scan
-may instead be its transition guard. **The guard forbidding `paid -> redeemed`
-was the defect that blocked 137's first version**, and the failure mode is a
-scan that fails *after* the customer was charged. If that is what you are
-seeing, the guard was applied in its unfixed form. Roll it back (§5.3).
+**Migration 137 is applied, so `23514` on a scan now has two possible sources.**
+Read the message before assuming which:
+
+| Message | Source | What it means |
+|---|---|---|
+| names a constraint, e.g. `vouchers_conservation` | a CHECK | the amounts on the row do not add up |
+| `illegal order_items.settlement_status transition: X -> Y` | `fn_order_items_settlement_status_guard` | the move itself was refused |
+
+If you see the second form on a scan, note which move it names. The applied
+guard permits `paid -> redeemed`, `split_executed -> redeemed` and
+`platform_settled -> redeemed`, which is `REDEEMABLE_SETTLEMENT_STATUSES`
+exactly, so a scan of a normally-paid line cannot trip it. **A `23514` naming
+`paid -> redeemed` means the guard in the database is not the version that
+shipped** — that was the defect that blocked 137's first draft, and the failure
+mode is a scan failing *after* the customer was charged. Verify the live body
+before touching anything:
+
+```sql
+select prosrc from pg_proc
+where proname = 'fn_order_items_settlement_status_guard';
+```
+
+If `('paid','redeemed')` is missing from the permitted list, roll back (§5.3).
 
 ### 4.4 Search returns results but no facets and no typo tolerance
 
@@ -311,21 +329,44 @@ Postgres has no undo for DDL. Reversing a migration means writing and applying a
 second, forward migration. Before applying anything to production, have that
 reverse migration written.
 
-### 5.3 Reversing migration 137, if it has been applied
+### 5.3 Reversing migration 137
 
-137 adds transition guards as trigger functions. It is **not applied today**, so
-this is contingency. Reversal is a forward migration dropping the triggers it
-created. The guard is enforcement only, so dropping it restores the previous
-behaviour exactly and loses nothing but the enforcement.
+**137 is applied.** It added three transition guards as trigger functions, and
+reversal is a forward migration dropping them. The guards are enforcement only:
+dropping them restores the previous behaviour exactly and loses nothing but the
+enforcement. No data is touched and no state is rewritten.
 
-Confirm the current state before acting:
+Confirm what is actually live before acting:
 
 ```sql
-select version, name from supabase_migrations.schema_migrations
-order by version desc limit 20;
+select tgname, c.relname, pg_get_triggerdef(t.oid)
+from pg_trigger t join pg_class c on c.oid = t.tgrelid
+where tgname in (
+  'tg_orders_status_guard',
+  'tg_order_items_settlement_status_guard',
+  'tg_payments_status_guard'
+);
 ```
 
-If `137` does not appear, it is not applied.
+The rollback, written as a forward migration:
+
+```sql
+DROP TRIGGER IF EXISTS tg_orders_status_guard ON public.orders;
+DROP FUNCTION IF EXISTS public.fn_orders_status_guard();
+DROP TRIGGER IF EXISTS tg_order_items_settlement_status_guard ON public.order_items;
+DROP FUNCTION IF EXISTS public.fn_order_items_settlement_status_guard();
+DROP TRIGGER IF EXISTS tg_payments_status_guard ON public.payments;
+DROP FUNCTION IF EXISTS public.fn_payments_status_guard();
+```
+
+**Drop the trigger before the function**, or the `DROP FUNCTION` fails on the
+dependency. Dropping only one of the three is legitimate: they are independent,
+and if only voucher scanning is failing, only the `order_items` guard is
+implicated.
+
+**Prefer disabling to dropping while you are still diagnosing.**
+`ALTER TABLE public.order_items DISABLE TRIGGER tg_order_items_settlement_status_guard;`
+is reversible in one statement and keeps the function body available to read.
 
 ### 5.4 What cannot be rolled back
 
@@ -454,8 +495,8 @@ Ordered by what breaks worst if skipped.
    knowingly (§4.4).
 5. Run `/api/cron/health` and confirm each of the seven dependencies is either
    `ok` or knowingly unconfigured.
-6. Apply migration 137, or decide not to. It is pending, and nothing in the live
-   database enforces transition rules today.
+6. ~~Apply migration 137.~~ **Done, 2026-09-01.** The three transition guards
+   are live. Nothing to decide.
 7. Add the two missing foreign key indexes on the money path
    (`docs/INDEX-USAGE-REPORT.md` §3).
 8. Re-run the index usage report one week after real traffic starts. Do not drop

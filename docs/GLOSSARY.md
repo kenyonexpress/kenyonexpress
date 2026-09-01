@@ -102,7 +102,8 @@ the supplier nothing, so there is nothing to pay out. The `payout_status` and
 | **Phantom table** | A table name used in documentation that does not exist in production. 31 of them. See `docs/SCHEMA-REALITY-CHECK.md`. |
 | **The pixel gate** | Comparison against `refs/ke_live_singlefile.html`; must stay under **11%**. |
 | **The four stop-and-ask situations** | A production push to Vercel; deleting a database or files; running a migration against production; a second code agent on the same repository. |
-| **Pending migration** | A file in `migrations/pending/`. **Note:** 21 of its 22 files are already applied in production under other names. Only 137 is genuinely outstanding. |
+| **Pending migration** | A file in `migrations/pending/`. **The name is now a lie.** All 23 `.sql` files there are applied in production, several under other numbers. Nothing in that directory is outstanding, and `ls` on it is not evidence. See `docs/ARCHITECTURE-OVERVIEW.md` §8.1. |
+| **The transition guards** | The three `BEFORE UPDATE` triggers migration 137 put on `orders`, `order_items` and `payments`. They refuse a status move that is not in their table and raise `23514` naming both ends. They are a **superset** of `state-machine.ts`, because they also govern rows written under rules that no longer apply. Tables in `docs/PAYMENT-FLOW.md` §2.1. |
 
 ---
 

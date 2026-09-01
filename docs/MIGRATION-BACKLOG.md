@@ -10,12 +10,17 @@
 >    `pending, paid, partially_fulfilled, fulfilled, cancelled, refunded,
 >    platform_settled`, and it is also live in `payment_status` and
 >    `settlement_status`.
-> 2. **Most of the backlog is applied.** As of 2026-09-01: 122, 123, 125, 126,
->    127, 130 through 136, 138 through 141 and 146 are in production; 124, 143,
->    144 and 145 were applied earlier under different numbers; **137 is pending, not
->    applied** (rewritten against the production enums at `37892b88d`) and is
->    the only one left. The renumbering table is in
->    `ARCHITECTURE-OVERVIEW.md` §8.1.
+> 2. **The backlog is empty. All of it is applied.** As of 2026-09-01: 122, 123,
+>    125, 126, 127, 130 through 137, 138 through 141 and 146 are in production,
+>    and 124, 143, 144 and 145 were applied earlier under different numbers.
+>    **137 included** — it was rewritten against the production enums at
+>    `37892b88d` and landed last, at ledger version `20260901110706`. Production's
+>    ledger holds 99 migrations. Nothing is outstanding. The renumbering table is
+>    in `ARCHITECTURE-OVERVIEW.md` §8.1.
+>
+>    `migrations/pending/` still holds 23 `.sql` files on disk, and the header of
+>    `137_order_transition_guard.sql` still ends with the line `NOT APPLIED`.
+>    Neither is evidence. The ledger is.
 >
 > `supplier_payouts` appears here as a table to migrate. It does not exist.
 
