@@ -44,7 +44,7 @@ file or a prior document.
 | [VOUCHER-LIFECYCLE.md](VOUCHER-LIFECYCLE.md) | ✅ | Issue, code, QR, redemption, expiry. The `redeem_voucher` guard order. |
 | [SUPPLIER-PAGE.md](SUPPLIER-PAGE.md) | ✅ | The supplier portal and its authorisation model. |
 | [SEARCH-PIPELINE-SPEC.md](SEARCH-PIPELINE-SPEC.md) | ✅ | Two write paths, the outbox, Meilisearch settings as implemented. |
-| [API-REFERENCE.md](API-REFERENCE.md) | ✅ | 30 routes and 34 server actions: method, auth, shapes. |
+| [API-REFERENCE.md](API-REFERENCE.md) | ✅ | 30 routes and 85 server actions: method, auth, shapes. |
 | [ROLES-AND-PERMISSIONS.md](ROLES-AND-PERMISSIONS.md) | ✅ | Three role systems, and three traps in `has_role`. |
 | [DECISIONS.md](DECISIONS.md) | ✅ | 41 architecture decisions with reasoning, plus 7 superseded. |
 | [DECISIONS-PROVISIONAL.md](DECISIONS-PROVISIONAL.md) | ✅ | Decisions taken in Ofir's absence, still awaiting approval. |

@@ -14,9 +14,9 @@ when one of these fails).
 
 ## 0. How this application actually exposes itself
 
-Three surfaces, and the first is the largest:
+Three surfaces, and the first is by far the largest:
 
-1. **Server actions** (34 exported functions across 30 modules). The primary
+1. **Server actions** (85 exported functions across 31 modules). The primary
    mutation surface. Not HTTP endpoints you can curl: Next serializes them over
    a POST to the page URL with an action id. Callable only from the app.
 2. **Route handlers** (30 files under `src/app/api`). Used where something
@@ -274,9 +274,9 @@ for f in $(find src/app/api -name route.ts | sort); do
     | awk '{print $NF}' | sort -u | tr '\n' ',')"
 done
 
-# every server action
+# every server action: 85 across 31 modules
 grep -rl "^'use server'" src/server/actions src/app/actions \
-  | xargs grep -oE 'export async function [a-zA-Z0-9_]+'
+  | xargs grep -ohE 'export async function [a-zA-Z0-9_]+' | wc -l
 ```
 
 ```sql
