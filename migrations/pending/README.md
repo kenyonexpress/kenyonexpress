@@ -109,7 +109,10 @@ running. Order is the position in the apply sequence.
 | 139 | `139_money_agorot_wallet.sql` | Adds a **generated** `_agorot` on `wallet_accounts`, `wallet_balances`, `wallet_entries`, `wallet_transactions` | **None.** Additive. No `>= 0` check on balances: `wallet_accounts.balance_ils` has a live minimum of −1.80 | 16 | 138 | `alter table public.wallet_accounts drop column if exists balance_ils_agorot;` (+ the other 3 tables) |
 | 140 | `140_money_agorot_catalog.sql` | Adds a **generated** `_agorot` on `products`, `product_variants`, `coupon_codes`, `coupon_deals`, `coupons` | **None at apply.** Additive. `price_modifier` stays signed — a variant may be cheaper than its base | 17 | 138 | `alter table public.products drop column if exists price_ils_agorot, drop column if exists coupon_price_ils_agorot, drop column if exists cost_ils_agorot, drop column if exists full_price_agorot;` (+ the other 4 tables) |
 | 141 | `141_money_agorot_growth.sql` | Adds a **generated** `_agorot` on `affiliates`, `referrals` | **None at apply.** Additive. Both are cumulative earnings, so both take the non-negative check | 18 | 138 | `alter table public.affiliates drop column if exists total_earnings_ils_agorot; alter table public.referrals drop column if exists bonus_paid_amount_ils_agorot;` |
-| 143 | `143_revoke_unused_definer_execute.sql` | Revokes `EXECUTE` on 5 SECURITY DEFINER functions from `anon`/`authenticated` | **Medium.** Closes a live RLS bypass in `voucher_success_payload`. `supplier_app_context` was withdrawn from this file — the Expo till calls it | 19 | `src/__tests__/revoked-functions-have-no-callers.test.ts` green | `GRANT EXECUTE ON FUNCTION public.<fn> TO anon, authenticated;` (5 statements, listed in the file) |
+| 143 | `131_refunds.sql` | `20260901013505` | `131_refunds` | `refunds` table + trigger `refunds_due_by_is_derived` |
+| `132_search_index_outbox.sql` | `20260901013525` | `132_search_index_outbox` | `search_index_outbox` + trigger `products_enqueue_search_index` |
+| `133_supplier_branches.sql` | `20260901013612` | `133_supplier_branches` | `supplier_branches` + 3 policies |
+| `143_revoke_unused_definer_execute.sql` | Revokes `EXECUTE` on 5 SECURITY DEFINER functions from `anon`/`authenticated` | **Medium.** Closes a live RLS bypass in `voucher_success_payload`. `supplier_app_context` was withdrawn from this file — the Expo till calls it | 19 | `src/__tests__/revoked-functions-have-no-callers.test.ts` green | `GRANT EXECUTE ON FUNCTION public.<fn> TO anon, authenticated;` (5 statements, listed in the file) |
 | 144 | `144_revoke_authenticated_dml.sql` | Revokes INSERT/UPDATE/DELETE from `authenticated` on the 8 RLS-on-zero-policy tables | **Low.** Defence in depth; RLS already blocks these, but RLS does not cover `TRUNCATE` | 20 | 122 (same 5 tables, policies first) | `GRANT INSERT, UPDATE, DELETE ON public.<t> TO authenticated;` (8 statements, listed in the file) |
 | 145 | `145_revoke_check_rate_limit_execute.sql` | Revokes `EXECUTE` on `check_rate_limit` from `anon`/`authenticated` | **HIGH IF MISORDERED.** See below | **21 — LAST** | ⛔ **CODE-FIRST: commit `d5c2739d4`** | `GRANT EXECUTE ON FUNCTION public.check_rate_limit(text, integer, integer) TO anon, authenticated;` |
 
@@ -286,3 +289,42 @@ the wrong thing here produces a confident, wrong "not applied".
 **The fail-open hazard around `145` is closed.** `check_rate_limit` carries zero
 EXECUTE grants for `anon` and `authenticated`, and the limiter runs on the
 service-role client, so there is no still-anon caller left to fail open.
+
+## Two files were corrected on disk so the repo matches production
+
+Both were rejected at apply time and fixed during the apply. The versions in
+this directory now describe what actually ran.
+
+**`131_refunds.sql`.** `refund_due_by` was
+
+```sql
+GENERATED ALWAYS AS (requested_at + interval '14 days') STORED
+```
+
+which PostgreSQL rejects: a generation expression must be IMMUTABLE, and
+`timestamptz + interval` is only STABLE, because the result depends on the
+session `TimeZone`. It is now a plain `timestamptz` plus
+`refunds_force_due_by()` on `BEFORE INSERT OR UPDATE`, with
+`SET search_path TO ''`.
+
+The guarantee is unchanged: nobody can extend the statutory deadline. What
+changed is the failure mode. A generated column **refuses** a write to that
+column with `428C9`; the trigger **accepts** the write and silently overwrites
+the value. The verification note in the file was corrected to match, because it
+still told a reader to expect `428C9`.
+
+**`133_supplier_branches.sql`.** The member-write policy named `m.role`. There is
+no such column: it is `member_role`, of enum `supplier_member_role`
+(`owner`, `manager`, `scanner`). The applied policy also requires `m.is_active`,
+and that addition matters more than the rename. Without it, revoking somebody's
+access by clearing the flag would leave them able to write branches, because the
+membership row still carries its role. Deactivation has to mean deactivation in
+the policy, not only in the UI that stops drawing the button.
+
+## `124`, `143`, `144`, `145` are out of the apply order
+
+All four were confirmed applied in production under their old numbers, and they
+sit in the APPLIED table above. `check_rate_limit` holds zero `anon` EXECUTE
+grants and `authenticated` holds zero DML on the eight deny-all tables. **There
+is no fail-open hazard left to sequence around**, which was the only reason the
+apply order previously insisted `145` go last.

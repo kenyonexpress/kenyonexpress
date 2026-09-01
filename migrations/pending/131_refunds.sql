@@ -66,8 +66,20 @@ CREATE TABLE IF NOT EXISTS public.refunds (
   decided_at    timestamptz,
   completed_at  timestamptz,
 
-  -- Generated, so nobody can quietly extend it. STORED so it is indexable.
-  refund_due_by timestamptz GENERATED ALWAYS AS (requested_at + interval '14 days') STORED,
+  -- The deadline. Forced by a trigger, not generated.
+  --
+  -- WHY NOT `GENERATED ALWAYS AS (requested_at + interval '14 days') STORED`,
+  -- which is what this was: PostgreSQL rejects it. A generation expression must
+  -- be IMMUTABLE, and `timestamptz + interval` is only STABLE, because adding
+  -- an interval to a timestamptz depends on the session TimeZone setting. The
+  -- migration failed at apply time on exactly this line.
+  --
+  -- `refunds_force_due_by()` below overwrites this column on every INSERT and
+  -- every UPDATE, so the guarantee is unchanged: nobody can quietly extend the
+  -- deadline. What changes is the error a writer gets. A generated column
+  -- rejects the write with 428C9; the trigger accepts it and silently replaces
+  -- the value. Both end with the correct date stored.
+  refund_due_by timestamptz,
 
   -- Who pressed cancel. NULL means the platform initiated it (duplicate charge,
   -- supplier withdrawal), which is a real and different case from "the customer
@@ -128,7 +140,27 @@ CREATE TABLE IF NOT EXISTS public.refunds (
 COMMENT ON TABLE public.refunds IS
   'The cancellation notice and its adjudication. NOT the money movement: payments(kind=refund) is. requested_at starts the statutory 14-day refund deadline.';
 COMMENT ON COLUMN public.refunds.refund_due_by IS
-  'Generated: requested_at + 14 days. Consumer Protection Law. Generated so it cannot be quietly extended.';
+  'Forced by trigger refunds_due_by_is_derived to requested_at + 14 days. Consumer Protection Law. Not a generated column: timestamptz + interval is STABLE, not IMMUTABLE, so PostgreSQL rejects it as a generation expression.';
+
+-- The trigger that replaces the generation expression. `SET search_path TO ''`
+-- because this is a definer-shaped function in everything but name: it runs on
+-- every write to the table and must not resolve an unqualified name against a
+-- caller-controlled search_path.
+CREATE OR REPLACE FUNCTION public.refunds_force_due_by()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path TO ''
+AS $$
+BEGIN
+  NEW.refund_due_by := NEW.requested_at + interval '14 days';
+  RETURN NEW;
+END
+$$;
+
+DROP TRIGGER IF EXISTS refunds_due_by_is_derived ON public.refunds;
+CREATE TRIGGER refunds_due_by_is_derived
+  BEFORE INSERT OR UPDATE ON public.refunds
+  FOR EACH ROW EXECUTE FUNCTION public.refunds_force_due_by();
 
 -- One open refund per order at a time. A second cancellation request while one
 -- is in flight is a double-click, and a partial unique index says so without
@@ -182,13 +214,19 @@ GRANT SELECT ON public.refunds TO authenticated;
 -- 2. A defect carries no fee:
 --      ... VALUES (..., 'defect', 100000, 1);   -> expect 23514.
 --
--- 3. refund_due_by cannot be written:
---      ... (refund_due_by) VALUES (now())       -> expect 428C9.
+-- 3. refund_due_by cannot be set by the writer:
+--      ... (requested_at, refund_due_by) VALUES (now(), now())
+--      -> the INSERT succeeds, and refund_due_by comes back as
+--         requested_at + 14 days, not now(). The trigger overwrites it.
+--      (This expected 428C9 when the column was generated. It is a trigger now,
+--       so the write is accepted and corrected rather than refused.)
 --
 -- 4. Two open refunds on one order:
 --      insert twice with state 'requested'      -> expect 23505 on the second.
 --
 -- ROLLBACK
+--   DROP TRIGGER IF EXISTS refunds_due_by_is_derived ON public.refunds;
+--   DROP FUNCTION IF EXISTS public.refunds_force_due_by();
 --   DROP TABLE IF EXISTS public.refunds;
 --   DROP TYPE  IF EXISTS public.refund_state;
 --   DROP TYPE  IF EXISTS public.refund_ground;

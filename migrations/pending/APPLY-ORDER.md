@@ -4,12 +4,12 @@
 MCP `apply_migration`, one at a time, after Ofir approves it. `db push` is
 forbidden by project rule.
 
-Eight files in this directory are **already in production** and are not listed
+Twelve files in this directory are **already in production** and are not listed
 below. See the "APPLIED IN PRODUCTION" table in `README.md`, which carries the
 version string and the query that proved each one. Running any of them again is
 at best a no-op and at worst an error.
 
-## The thirteen that remain, in order
+## The ten that remain, in order
 
 Order matters only where a **depends on** column is filled. Everything else is
 independent and may be applied in any sequence, or not at all.
@@ -20,9 +20,6 @@ independent and may be applied in any sequence, or not at all.
 | 2 | `125_expire_vouchers_drop_escrow.sql` | voucher expiry, drops the dead escrow promise | — | in file header |
 | 3 | `126_percent_range_checks.sql` | `check (0 <= x <= 100)` on 12 percent columns | — | `drop constraint <table>_<col>_range` |
 | 4 | `127_homepage_cms.sql` | homepage CMS tables | — | in file header |
-| 5 | `131_refunds.sql` | `refunds` table | `130` (applied) | `drop table public.refunds` |
-| 6 | `132_search_index_outbox.sql` | search outbox + enqueue trigger on products | — | `drop trigger products_enqueue_search_index on public.products` |
-| 7 | `133_supplier_branches.sql` | `supplier_branches` table | — | `drop table public.supplier_branches` |
 | 8 | `135_recurring_subscriptions.sql` | `recurring` enum member, `subscriptions`, billing columns | — | in file header |
 | 9 | `137_order_transition_guard.sql` | order state transition guard + audit-log immutability triggers | — | `drop trigger audit_log_no_delete on public.audit_log` |
 | 10 | `138_money_agorot_money_path.sql` | `_agorot` columns on orders, order_items, payments | — | `drop column <col>_agorot` |
@@ -73,3 +70,10 @@ additive money migrations are the cheapest to reverse — dropping a column no
 code reads yet costs nothing. The trigger and constraint migrations are next.
 `135` is the most expensive, because it adds an enum member, and PostgreSQL
 cannot drop one.
+
+## Renumbering note
+
+The table above keeps its original numbering column even though rows were
+removed as migrations were applied, so a row's number is a stable reference in
+conversation rather than a position. What is authoritative is the file list: ten
+files, and the APPLIED table in `README.md` holds the other twelve.

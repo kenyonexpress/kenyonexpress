@@ -109,6 +109,17 @@ CREATE POLICY supplier_branches_public_read ON public.supplier_branches
 -- The supplier's own members manage their branches. (SELECT auth.uid()) rather
 -- than auth.uid(): InitPlan once, not once per row -- the same fix commit
 -- 0f8359bc applied across the schema.
+-- THE COLUMN IS `member_role`, NOT `role`, AND `is_active` IS NOT OPTIONAL.
+--
+-- This policy named `m.role` and the migration failed to apply: there is no
+-- such column on `supplier_members`. The real column is `member_role`, of enum
+-- `supplier_member_role` (owner, manager, scanner).
+--
+-- `m.is_active` is added for a second reason, and it is the one that matters:
+-- without it, revoking somebody's access by clearing the flag would leave them
+-- still able to write branches, because the membership row is still there with
+-- its role intact. Deactivation has to mean deactivation at the policy level,
+-- not only in the UI that stops showing them the button.
 DROP POLICY IF EXISTS supplier_branches_member_write ON public.supplier_branches;
 CREATE POLICY supplier_branches_member_write ON public.supplier_branches
   FOR ALL TO authenticated
@@ -116,13 +127,15 @@ CREATE POLICY supplier_branches_member_write ON public.supplier_branches
     SELECT 1 FROM public.supplier_members m
     WHERE m.supplier_id = supplier_branches.supplier_id
       AND m.user_id = (SELECT auth.uid())
-      AND m.role IN ('owner','manager')
+      AND m.is_active
+      AND m.member_role IN ('owner','manager')
   ))
   WITH CHECK (EXISTS (
     SELECT 1 FROM public.supplier_members m
     WHERE m.supplier_id = supplier_branches.supplier_id
       AND m.user_id = (SELECT auth.uid())
-      AND m.role IN ('owner','manager')
+      AND m.is_active
+      AND m.member_role IN ('owner','manager')
   ));
 
 DROP POLICY IF EXISTS supplier_branches_admin_all ON public.supplier_branches;
@@ -153,7 +166,8 @@ GRANT SELECT ON public.supplier_branches TO anon, authenticated;
 --    Expect 0.
 --
 -- 4. A scanner cannot write:
---      a supplier_members row with role 'scanner' -> INSERT must fail 42501.
+--      a supplier_members row with member_role 'scanner' -> INSERT fails 42501.
+--      the same row with member_role 'owner' but is_active false -> also 42501.
 --
 -- ROLLBACK
 --   DROP TABLE IF EXISTS public.supplier_branches;
