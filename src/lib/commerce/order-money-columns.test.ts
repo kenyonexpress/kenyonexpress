@@ -2,6 +2,7 @@ import {
   __resetMoneyGenerationCache,
   buildOrderItemMoneyRow,
   buildOrderMoneyRow,
+  readOrderMoney,
   resolveOrderGeneration,
   resolveOrderItemGeneration,
   resolveVoucherRateColumn,
@@ -272,5 +273,66 @@ describe('generation resolution', () => {
     expect(await resolveVoucherRateColumn(vi.fn().mockResolvedValue(missing))).toBe(
       'platform_percent',
     )
+  })
+})
+
+describe('readOrderMoney on the ils generation reads the generated agorot twins', () => {
+  // These columns are GENERATED ALWAYS AS round(<col> * 100)::bigint STORED,
+  // applied to production 2026-09-01. The point of reading them is that the
+  // multiply happens in Postgres against the numeric source, once, instead of
+  // in JavaScript against a value that has already crossed a JSON boundary.
+  //
+  // There was no test for this read path at all before the change that
+  // introduced it, only for the write path, so the whole branch could be
+  // rewritten without a single assertion moving.
+
+  it('takes subtotal and total from the agorot columns, not the numeric ones', () => {
+    const money = readOrderMoney('ils', {
+      subtotal_ils_agorot: 21990,
+      total_ils_agorot: 20490,
+      cashback_applied_ils: 15,
+      // The numeric sources are present and deliberately disagree. If the
+      // reader ever falls back to them, these values are what it would report.
+      subtotal_ils: 1,
+      total_ils: 2,
+    })
+
+    expect(money.subtotalAgorot).toBe(21990)
+    expect(money.totalAgorot).toBe(20490)
+  })
+
+  it('still converts cashback_applied_ils, which has no generated twin', () => {
+    // Four columns the readers use never got an agorot twin:
+    //   orders.cashback_applied_ils      orders.discount_ils
+    //   order_items.supplier_payout_ils  order_items.cashback_earned_ils
+    const money = readOrderMoney('ils', {
+      subtotal_ils_agorot: 21990,
+      total_ils_agorot: 20490,
+      cashback_applied_ils: 15,
+    })
+
+    expect(money.walletAppliedAgorot).toBe(1500)
+  })
+
+  it('reads an agorot column that arrives as a string, which is how bigint comes back', () => {
+    // Postgres bigint is serialised as a string by PostgREST past 2^53. These
+    // values are small, but the column type is bigint and the wire shape is a
+    // string either way, so the reader must not depend on getting a number.
+    const money = readOrderMoney('ils', {
+      subtotal_ils_agorot: '21990',
+      total_ils_agorot: '20490',
+      cashback_applied_ils: '15',
+    })
+
+    expect(money.subtotalAgorot).toBe(21990)
+    expect(money.totalAgorot).toBe(20490)
+    expect(money.walletAppliedAgorot).toBe(1500)
+  })
+
+  it('reports zero rather than NaN when the agorot column is absent', () => {
+    const money = readOrderMoney('ils', { cashback_applied_ils: 0 })
+
+    expect(money.subtotalAgorot).toBe(0)
+    expect(money.totalAgorot).toBe(0)
   })
 })

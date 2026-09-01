@@ -132,7 +132,7 @@ export function buildOrderMoneyRow(
 export function orderMoneySelect(generation: MoneySchemaGeneration): string {
   return generation === 'agorot'
     ? 'subtotal_agorot, total_agorot, customer_pays_now_agorot, cashback_applied_agorot'
-    : 'subtotal_ils, total_ils, cashback_applied_ils'
+    : 'subtotal_ils_agorot, total_ils_agorot, cashback_applied_ils'
 }
 
 export interface OrderMoneyRead {
@@ -175,9 +175,20 @@ export function readOrderMoney(
       walletAppliedAgorot: fromAgorot(row.cashback_applied_agorot),
     }
   }
+  // `subtotal_ils_agorot` and `total_ils_agorot` are GENERATED ALWAYS AS
+  // `round(<col> * 100)::bigint` STORED, applied 2026-09-01. Reading them means
+  // the multiply happens once, in Postgres, against the numeric source. The
+  // `fromIls` path below did the same multiply in JavaScript on a value that
+  // had already crossed a JSON boundary as a string, which is the arithmetic
+  // this module exists to keep out of the callers.
+  //
+  // `cashback_applied_ils` has NO generated twin, so it still converts here.
+  // Four columns are in that position and none of them got one:
+  //   orders.cashback_applied_ils   orders.discount_ils
+  //   order_items.supplier_payout_ils   order_items.cashback_earned_ils
   return {
-    subtotalAgorot: fromIls(row.subtotal_ils),
-    totalAgorot: fromIls(row.total_ils),
+    subtotalAgorot: fromAgorot(row.subtotal_ils_agorot),
+    totalAgorot: fromAgorot(row.total_ils_agorot),
     walletAppliedAgorot: fromIls(row.cashback_applied_ils),
   }
 }

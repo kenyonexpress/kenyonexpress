@@ -12,6 +12,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
  * checked on both sides of the rename and the pre-059 case is checked for the
  * value, not just for "it did not throw": 89.90 shekels has to arrive as 8990
  * agorot and not as 8989 or 8990.0000001.
+ *
+ * UPDATED 2026-09-01. The pre-059 read no longer multiplies in JavaScript. The
+ * `_agorot` twins are GENERATED ALWAYS AS `round(<col> * 100)::bigint` STORED
+ * in production, so `orderMoneySelect('ils')` names `total_ils_agorot` and the
+ * multiply happens once, in Postgres, against the numeric source. The mock row
+ * therefore carries what PostgREST actually returns for a bigint: a string.
  */
 
 const rpc = vi.fn()
@@ -78,7 +84,7 @@ describe('completeReferralForOrder', () => {
   it('reads shekels and sends agorot on the pre-059 lineage, which production is', async () => {
     preO59()
     selectResult.mockReturnValue({
-      data: { subtotal_ils: 100, total_ils: 89.9, cashback_applied_ils: 0 },
+      data: { subtotal_ils_agorot: '10000', total_ils_agorot: '8990', cashback_applied_ils: 0 },
       error: null,
     })
 
