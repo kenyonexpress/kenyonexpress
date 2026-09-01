@@ -1,5 +1,16 @@
 # Launch readiness
 
+
+> <!-- v1-final-historical:2026-09-01 -->
+> 🕯️ **Historical snapshot. Not current guidance.**
+>
+> This is a launch-readiness assessment, true on the date it carries. It is kept as a record of what
+> was measured and decided then, and it is **not** maintained against
+> production. Numbers, table names and statuses in it may since have changed.
+>
+> For the current state see `docs/ARCHITECTURE-OVERVIEW.md`, and
+> `docs/INDEX.md` for which document is authoritative on a given subject.
+
 Measured on `main` at `dd10a9504`, 2026-09-01. Every number below is command
 output or a live query against the production database, not a recollection.
 Where a claim from the audit brief disagreed with the measurement, the

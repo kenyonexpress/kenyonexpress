@@ -1,5 +1,16 @@
 # ‏KenyonExpress — הפרויקט הושלם
 
+
+> <!-- v1-final-historical:2026-09-01 -->
+> 🕯️ **Historical snapshot. Not current guidance.**
+>
+> This is a completion report, true on the date it carries. It is kept as a record of what
+> was measured and decided then, and it is **not** maintained against
+> production. Numbers, table names and statuses in it may since have changed.
+>
+> For the current state see `docs/ARCHITECTURE-OVERVIEW.md`, and
+> `docs/INDEX.md` for which document is authoritative on a given subject.
+
 <!-- stale-banner:2026-09-01 -->
 > ⛔ **‏מיושן החל מ-01.09.2026. המסמך המחייב הוא `docs/OWNER-CHECKLIST.md`.**
 >
