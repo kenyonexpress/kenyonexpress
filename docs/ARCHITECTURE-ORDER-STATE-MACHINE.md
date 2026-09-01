@@ -1,7 +1,20 @@
 # ARCHITECTURE-ORDER-STATE-MACHINE.md
 
 <!-- v1-final-banner:2026-09-01 -->
-> ⚠️ **Read with `docs/ARCHITECTURE-OVERVIEW.md` §2.2 and §3.5 (2026-09-01).**
+> ⚠️ **Read with `docs/PAYMENT-FLOW.md` §2.1, which is authoritative for every
+> transition (2026-09-01).**
+>
+> **‏137 הוחלה. שלושה שומרים חיים בפרודקשן** —
+> `tg_orders_status_guard`, `tg_order_items_settlement_status_guard`,
+> `tg_payments_status_guard` — כולם `BEFORE UPDATE ... FOR EACH ROW`, כולם
+> זורקים `23514`. ‏`migrations/pending/` ריקה מבחינת עבודה פתוחה, והכל עד 146
+> נמצא בפרודקשן.
+>
+> **‏השומרים אינם נוגעים ב-`vouchers` ואינם נוגעים ב-`audit_log`.** ‏§7.3 כאן
+> טען שכן; זה תוקן.
+>
+> ‏המעברים המצוירים במסמך הזה הם מה שהקוד כותב. הטבלה שהמסד **אוכף** רחבה
+> מהם, והיא ב-§8.
 >
 > The escrow states discussed here are **dead enum values kept for history**.
 > `settlement_status` in production is
@@ -21,7 +34,9 @@ Status: **BINDING** · branch `docs/architecture-night` · 2026-08-19
 Scope: **docs only.**
 Companions: `ARCHITECTURE-CHECKOUT-CARDCOM-E2E.md`,
 `ARCHITECTURE-REFUNDS-CANCELLATIONS.md`, `ARCHITECTURE-SECURITY-HARDENING.md`.
-Draft SQL: `migrations/pending/137_order_transition_guard.sql` (לא הורצה).
+SQL: `migrations/pending/137_order_transition_guard.sql` — **הוחלה בפרודקשן.**
+הקובץ נשאר על הדיסק תחת `pending/` ושורת ה-`NOT APPLIED` בתחתית הכותרת שלו
+מיושנת. ‏`ls` אינו ראיה כאן; ראה `docs/MIGRATION-BACKLOG.md`.
 
 ---
 
@@ -52,7 +67,11 @@ Draft SQL: `migrations/pending/137_order_transition_guard.sql` (לא הורצה)
 
 ```
 pending | paid | partially_fulfilled | fulfilled | cancelled | refunded
+| platform_settled
 ```
+
+**‏`platform_settled` חסר כאן עד 01.09 והוא ערך חי ב-enum.** הוא גם משתתף
+בשלושה מעברים שהשומר מתיר. ראה §8.
 
 ### 1.2 המעברים החוקיים
 
@@ -63,11 +82,20 @@ stateDiagram-v2
     pending --> cancelled: מחסור במלאי · כשל reserve · כשל INSERT פריטים · הריפר (expires_at)
     paid --> refunded: refundOrder (אדמין)
     paid --> partially_fulfilled: (מוגדר, לא נכתב היום)
+    paid --> fulfilled: (מוגדר, לא נכתב היום)
+    paid --> platform_settled: (מוגדר, לא נכתב היום)
     partially_fulfilled --> fulfilled: (מוגדר, לא נכתב היום)
+    partially_fulfilled --> refunded: (מוגדר, לא נכתב היום)
+    fulfilled --> platform_settled: (מוגדר, לא נכתב היום)
+    fulfilled --> refunded: חלון מחווה
+    platform_settled --> refunded: (מוגדר, לא נכתב היום)
     cancelled --> [*]
     refunded --> [*]
-    fulfilled --> [*]
 ```
+
+**‏זה בדיוק מה ש-`fn_orders_status_guard` מתיר, לא פחות ולא יותר.** האחת עשרה
+הקשתות כאן הן אחת עשרה השורות שבגוף הפונקציה. `cancelled` ו-`refunded` סופיים:
+אף כלל אינו יוצא מהם.
 
 ### 1.3 טבלת ההרשאות. מי רשאי לבצע כל מעבר
 
@@ -184,6 +212,25 @@ stateDiagram-v2
 ```
 
 ארבעה אירועים בלבד: `PAYMENT_CONFIRMED`, `EXECUTE_SPLIT`, `REFUND`, `CANCEL`.
+‏`redeemed` אינו נכתב על ידי המכונה הזו כלל; הוא נכתב בנפרד ב-`mark-order-item-redeemed.ts`.
+
+**‏המסד אוכף טבלה רחבה יותר.** ‏`fn_order_items_settlement_status_guard` מכיר
+שמונה עשר מעברים, כי הוא חייב לשרת גם שורות legacy:
+
+```
+escrow_held       -> escrow_released, redeemed, refunded
+escrow_released   -> redeemed, refunded
+paid              -> cancelled, platform_settled, redeemed, refunded, split_executed
+pending           -> cancelled, paid, refunded, split_executed
+platform_settled  -> redeemed, refunded
+split_executed    -> redeemed, refunded
+סופיים: cancelled, redeemed, refunded
+```
+
+**‏שום מעבר אינו נכנס ל-`escrow_held`.** הוא מופיע רק בצד השמאלי. זה מה שכלל
+ה-no-escrow נראה כמו כשכותבים אותו כשומר: אי אפשר להיכנס, ומותר לצאת, כדי ששורה
+שנכתבה לפני 24.07.26 לא תיתקע בלי דרך למימוש או לזיכוי. **שומר שאוסר לצאת אינו
+אוכף את הכלל, הוא מקפיא את השורה.**
 
 **שני הטיפוסים נוחתים באותו `split_executed`, וזה עיקר המודל.** שורה פיזית
 מתפצלת לפי `platform_percent` שצולם; שורת קופון "מתפצלת" ‏100/0, כי הפלטפורמה
@@ -193,11 +240,15 @@ stateDiagram-v2
 ### 3.3 ‏`transition()` זורק, ולא מחזיר `false`
 
 ```ts
-transition(from, event, productType) // -> SettlementState | throws SettlementTransitionError
-canTransition(from, event, productType) // -> boolean
+transition(from, event)    // -> SettlementState | throws SettlementTransitionError
+canTransition(from, event) // -> boolean
 ```
 
-שתי שגיאות: `ILLEGAL_TRANSITION` ו-`WRONG_PRODUCT_TYPE`. **החוק:** קוד שמחליט
+**‏⚠️ תוקן ב-01.09: אין `productType` ואין `WRONG_PRODUCT_TYPE`.** המסמך תיאר
+חתימה בת שלושה פרמטרים ושתי שגיאות. בקוד יש חתימה בת שניים ושגיאה אחת,
+`ILLEGAL_TRANSITION`. שדה ה-`productType` היה שריד לכלל C11(a), שבו לשורת קופון
+היה מסלול משלה; ‏C11(b) ביטל אותו, שני הטיפוסים רצים
+`pending -> paid -> split_executed`, ואף כלל לא הציב את השדה שוב. **החוק:** קוד שמחליט
 מה לכתוב חייב לעבור דרך `transition()`. קוד ש**שואל** משתמש ב-`canTransition()`.
 ‏`UPDATE` ישיר על `settlement_status` בלי אחד מהשניים הוא הפרה.
 
@@ -221,8 +272,10 @@ scanned"), כולל מסלול `pending -> paid -> escrow_held -> escrow_release
 **מה מחייב, ללא שינוי:** הקוד. אין Escrow. ההבדל היחיד הוא שהתיעוד בקוד כבר לא
 סותר אותו.
 
-`migrations/pending/125_expire_vouchers_drop_escrow.sql` מסיים את אותו ניקוי
-בצד ה-DB: `expire_vouchers()` בפרודקשן עדיין נוגע ב-`escrow_holds`.
+‏`125_expire_vouchers_drop_escrow.sql` **הוחלה**, והיא מסיימת את אותו ניקוי בצד
+ה-DB. הטענה הקודמת כאן — ש-`expire_vouchers()` בפרודקשן עדיין נוגע
+ב-`escrow_holds` — מיושנת. ‏`escrow_holds` נשארה כטבלה היסטורית עם שתי שורות
+ובלי כותב.
 
 ### 3.5 הגלגול לרמת ההזמנה, והמלכודת שבו
 
@@ -250,8 +303,12 @@ deriveOrderStatus(lineStates): SettlementState
 ## 4. ‏`payments.status` — מכונת הסליקה
 
 ```
-initiated | redirected | succeeded | failed | refunded
+initiated | redirected | succeeded | failed | refunded | platform_settled
 ```
+
+**‏`platform_settled` חסר כאן עד 01.09.** הוא ערך חי,
+‏`terminal-reconciliation.ts` מתייחס אליו כאל אותה תוצאה כמו `succeeded`, ושני
+מעברים נוגעים בו.
 
 ```mermaid
 stateDiagram-v2
@@ -263,7 +320,12 @@ stateDiagram-v2
     initiated --> succeeded: chargeWithToken הצליח (בלי דף מתארח)
     initiated --> failed: chargeWithToken נדחה
     succeeded --> refunded: זיכוי מלא
+    succeeded --> platform_settled: התאמה סימנה כהכנסת פלטפורמה
+    platform_settled --> refunded: זיכוי אחרי הסדרה
 ```
+
+שמונה קשתות, והן בדיוק שמונה השורות ב-`fn_payments_status_guard`. `failed`
+ו-`refunded` סופיים.
 
 | מעבר | מי | תנאי |
 | --- | --- | --- |
@@ -466,10 +528,20 @@ create unique index orders_one_open_per_user_idx
 
 ### 7.2 שלוש הבעיות ב-`audit_log`
 
-1. **אין אכיפה.** אין טריגר שחוסם UPDATE/DELETE. יומן שאפשר לערוך אינו ראיה.
-2. **‏`actor_id: null` על פעולות אדמין.** ב-`runRefundOrder` נכתב
-   `actor_id: null, actor_role: 'admin'`, למרות ש-`requireAdminSession()` יודע מי
-   המשתמש. היומן אומר "אדמין כלשהו", וזו בדיוק השאלה שיומן קיים כדי לענות עליה.
+1. **אין אכיפה. עדיין.** אין טריגר שחוסם UPDATE/DELETE על `audit_log`. נבדק מול
+   `pg_trigger` ב-01.09: הטבלה נושאת אפס טריגרים. יומן שאפשר לערוך אינו ראיה.
+   ‏**137 אינה סוגרת את זה** — היא נוגעת ב-`orders`, ב-`order_items`
+   וב-`payments` בלבד.
+2. **‏`actor_id: null` על פעולת הזיכוי.** ב-`src/server/actions/payments/refund.ts:325`
+   עדיין נכתב `actor_id: null, actor_role: 'admin'`, למרות ש-`requireAdminSession()`
+   יודע מי המשתמש. היומן אומר "אדמין כלשהו", וזו בדיוק השאלה שיומן קיים כדי
+   לענות עליה.
+
+   **‏שאר מסלולי האדמין תוקנו.** עשרה מודולים תחת `src/server/actions/admin/`
+   כותבים דרך `writeAuditLog` ב-`src/lib/admin/audit.ts`, שמעביר `actorId`
+   אמיתי וגם ממלא `ip_address` ו-`user_agent` מתוך ה-headers. שלושה מקומות
+   עוקפים את ה-helper ומבצעים `insert` ישיר: ה-webhook של Cardcom,
+   ‏`finalize.ts` ו-`refund.ts`. לשניים הראשונים אין אדם לרשום; לשלישי יש.
 3. **אזעקות כסף מעורבבות עם כניסות.** `cardcom_amount_mismatch` נרשם כ-`manual_override`
    עם ה-alarm ב-`metadata`, לצד logins. זה מה ש-`payment_events` בא לפתור.
 
@@ -478,14 +550,33 @@ create unique index orders_one_open_per_user_idx
 > **כל מעבר סטטוס על מסלול הכסף נרשם, עם `actor_id` אמיתי כשיש אדם,
 > ל-טבלה שאי אפשר לערוך.**
 
-`migrations/pending/137_order_transition_guard.sql` מוסיף את החלק שאפשר לאכוף
-ב-DB: טריגר שחוסם מעברים בלתי חוקיים על `orders`, ‏`order_items`, ‏`payments`
-ו-`vouchers`, וטריגר שחוסם UPDATE/DELETE על `audit_log`. שני התיקונים
-הנותרים (‏`actor_id` אמיתי, כתיבה ל-`payment_events`) הם שינויי קוד.
+**‏137 הוחלה ומכסה חלק מזה, פחות ממה שנטען כאן קודם.** מה שחי בפרודקשן הוא
+שלושה טריגרים בלבד:
+
+| טריגר | טבלה |
+| --- | --- |
+| `tg_orders_status_guard` | `orders` |
+| `tg_order_items_settlement_status_guard` | `order_items` |
+| `tg_payments_status_guard` | `payments` |
+
+**‏אין טריגר על `vouchers` ואין טריגר על `audit_log`.** הגרסה הקודמת של הסעיף
+הזה טענה ששניהם כלולים ב-137; הקובץ מעולם לא הכיל אותם, וגם הפרודקשן לא. שתי
+הפרצות פתוחות:
+
+- **מימוש כפול נחסם באפליקציה בלבד**, על ידי ה-`UPDATE ... WHERE status='issued'`
+  האטומי של §5.3. זה מספיק כנגד מרוץ, ואינו מספיק כנגד `UPDATE` ידני מ-service role.
+- **‏`audit_log` עדיין ניתן לעריכה ולמחיקה.** זו הפרצה הרצינית מבין השתיים, כי
+  היא הופכת את היומן מראיה להצהרה.
+
+שני התיקונים הנותרים בצד הקוד (‏`actor_id` אמיתי ב-`refund.ts`, כתיבה
+ל-`payment_events`) הם שינויי קוד ולא נעשו כאן.
 
 ---
 
-## 8. טבלת המעברים המלאה, לעותק אחד להדפסה
+## 8. שתי טבלאות, ולא אחת
+
+**‏8.1 מה שהקוד כותב, ומי רשאי.** זו הטבלה לעותק שתולים על הקיר: היא צרה
+מהטבלה שהמסד אוכף, כי היא מתארת מסלולים שיש להם כותב.
 
 | ישות | מ | אל | אירוע | מי | תנאי |
 | --- | --- | --- | --- | --- | --- |
@@ -512,6 +603,45 @@ create unique index orders_one_open_per_user_idx
 | voucher | issued | cancelled | CANCEL | אדמין | |
 | voucher | issued | refunded | REFUND | אדמין | |
 
+**‏8.2 מה שהמסד אוכף.** זו הטבלה שקובעת אם `UPDATE` יעבור או יזרוק `23514`.
+היא **מעתק מילה במילה** מגוף שלוש פונקציות השומר בפרודקשן, נקראו מ-`pg_proc`
+ב-01.09. אם ציור כלשהו במסמך כלשהו מראה קשת שאינה כאן, הציור שגוי.
+
+```
+orders.status
+  fulfilled            -> platform_settled, refunded
+  paid                 -> fulfilled, partially_fulfilled, platform_settled, refunded
+  partially_fulfilled  -> fulfilled, refunded
+  pending              -> cancelled, paid
+  platform_settled     -> refunded
+  סופיים: cancelled, refunded
+
+order_items.settlement_status
+  escrow_held       -> escrow_released, redeemed, refunded
+  escrow_released   -> redeemed, refunded
+  paid              -> cancelled, platform_settled, redeemed, refunded, split_executed
+  pending           -> cancelled, paid, refunded, split_executed
+  platform_settled  -> redeemed, refunded
+  split_executed    -> redeemed, refunded
+  סופיים: cancelled, redeemed, refunded
+
+payments.status
+  initiated         -> failed, redirected, succeeded
+  platform_settled  -> refunded
+  redirected        -> failed, succeeded
+  succeeded         -> platform_settled, refunded
+  סופיים: failed, refunded
+```
+
+שלוש הערות שנושאות משקל:
+
+1. **‏no-op תמיד חוקי.** כל שומר יוצא מוקדם כש-`NEW = OLD` וכש-אחד הצדדים
+   ‏`NULL`. בלי זה כל כתיבה של `set_updated_at` ל-`orders` הייתה נכשלת.
+2. **‏`INSERT` אינו נשמר.** שלושת הטריגרים הם `BEFORE UPDATE` בלבד. המצב
+   ההתחלתי הוא עניינו של הכותב; המעברים הם עניינו של השומר.
+3. **‏`vouchers.status` אינו בטבלה הזו.** אין עליו שומר. §5 הוא חוזה של
+   האפליקציה, לא של המסד.
+
 ---
 
 ## 9. תשע החלטות שלא ישתנו בלי מסמך שגובר
@@ -524,4 +654,5 @@ create unique index orders_one_open_per_user_idx
 6. **שובר נצרך או שפג חוסם החזר לכרטיס.** המסלול היחיד הוא זיכוי לארנק.
 7. **זיכוי חלקי: בלי דמי ביטול, בלי `cancelOnly`, שורת `payments` חדשה.**
 8. **`deriveOrderStatus` לעולם לא נכתב ל-`orders.status`.**
-9. **אין Escrow.** ה-docblock ב-`state-machine.ts` תוקן ב-19.08 ותואם לקוד (‏§3.4).
+9. **אין Escrow.** ה-docblock ב-`state-machine.ts` תוקן ב-19.08 ותואם לקוד (‏§3.4),
+   ומ-01.09 גם המסד אומר זאת: אין ולו מעבר אחד שנכנס ל-`escrow_held`.
