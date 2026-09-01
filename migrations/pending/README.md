@@ -253,3 +253,36 @@ Ofir chose the additive path. `the in-place money migration (deleted 2026-09-01)
 deleted, not archived: the two paths produce nine identically-named columns on
 the same tables, and a file left in a directory called `pending/` is a file
 somebody may apply. The reasoning is in `docs/DECISIONS.md`.
+
+## APPLIED IN PRODUCTION — do not apply again
+
+Verified 2026-09-01 by querying the live database for each migration's own
+effect, not by trusting this list. The version string is from
+`supabase_migrations.schema_migrations`.
+
+| File | Production version | Applied as | Verified by |
+| --- | --- | --- | --- |
+| `123_products_whatsapp_enabled.sql` | `20260901013104` | `123_products_whatsapp_enabled` | `products.whatsapp_enabled` exists |
+| `130_payment_events.sql` | `20260901013413` | `130_payment_events` | `payment_events` table + `payment_events_no_mutation` trigger |
+| `134_order_items_delivered_at.sql` | `20260901013122` | `134_order_items_delivered_at` | `delivered_at` + `shipped_at` + `order_item_cancellation_deadline()` |
+| `136_supplier_coordinates.sql` | `20260901013134` | `136_supplier_coordinates` | `suppliers.latitude` + `.longitude` |
+| `146_wallet_balance_floor.sql` | `20260901013143` | `146_wallet_balance_floor` | constraint `wallet_accounts_user_balance_floor` |
+| `143_revoke_unused_definer_execute.sql` | `20260821041759` | `revoke_orphan_security_definer_grants_125` | all 5 target functions have zero anon/authenticated grants |
+| `144_revoke_authenticated_dml.sql` | `20260831140841` | `126_revoke_authenticated_dml` | all 8 target tables have zero anon/authenticated INSERT/UPDATE/DELETE |
+| `145_revoke_check_rate_limit_execute.sql` | `20260831184356` | `127_revoke_check_rate_limit_execute` | `check_rate_limit` has zero anon/authenticated EXECUTE |
+
+**`124_categories_sort_order.sql` is a different case.** `categories.sort_order`
+exists in production, so the migration must not be run again, but there is **no
+row for it in `schema_migrations` under any name**. The effect is present and the
+record is not. Treat it as applied; do not expect to find its version string.
+
+**Two of these needed a precise test, not a broad one.** A schema-wide count of
+`authenticated` DML grants returns 144 and looks like `144` never ran. It did:
+that migration revokes on a named list of eight tables, and against those eight
+the count is zero. The 144 remaining grants are on ordinary catalogue and order
+tables, which are protected by RLS rather than by revoking the grant. Measuring
+the wrong thing here produces a confident, wrong "not applied".
+
+**The fail-open hazard around `145` is closed.** `check_rate_limit` carries zero
+EXECUTE grants for `anon` and `authenticated`, and the limiter runs on the
+service-role client, so there is no still-anon caller left to fail open.
