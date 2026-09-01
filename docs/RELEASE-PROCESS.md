@@ -14,6 +14,13 @@ copied forward from a previous document.
 
 ## 0. Four facts that shape everything below
 
+0. **The deploy half of this pipeline is not connected.** The Vercel project
+   watches `kenyonexpress/kenyonexpress-web`, a different private repository
+   last pushed 2026-05-29, and all 11 of its deployments are `ERROR` including
+   the only production one. **Merging to `main` here deploys nothing and opens
+   no preview.** §1 through §5 are real and enforced today; §6 onward describes
+   what will happen once the project is relinked.
+   `docs/THIRD-PARTY-DEPENDENCIES.md` §0.
 1. **`main` is the default branch and the only mainline.** PR #6 merged
    `phase5/homepage` into it. Any document describing `phase5/homepage` as where
    work happens is out of date.
@@ -217,6 +224,11 @@ passing one**, which would intermittently block PRs on the required checks.
 
 ## 6. Deploy
 
+> **Not connected today.** See §0. Merging to `main` in this repository
+> currently triggers nothing. The rest of this section is what happens once the
+> Vercel project is relinked to `kenyonexpress/kenyonexpress` and its Root
+> Directory is cleared so `vercel.json` supplies the commands.
+
 Merging to `main` triggers a Vercel production deployment. `vercel.json`:
 
 ```json
@@ -307,9 +319,11 @@ Say these out loud before assuming a release is complete.
 | **No scheduler is deployed** | Ten cron routes exist; `vercel.json` declares none. Nothing expires, nothing reconciles, no voucher email is ever sent. Vercel's cron allowance is a plan feature, declaring ten anyway does not fail the build, and the platform silently runs only what the plan covers. Removing them was the honest choice. |
 | **No browser tests a release** | §3.3. |
 | **No RLS test suite** | 133 policies, `authenticated` holds DML on 56 relations, and no test attempts a forbidden write. A policy regression ships green. |
-| **No staging database** | Previews point at production. |
+| **No staging database** | Previews point at production — when previews exist at all (§0). |
+| **Vercel is on the Hobby plan** | Hobby prohibits commercial use, and caps cron at two daily jobs. A launch blocker, not a preference. |
 | **No point-in-time restore configured** | §7.3. |
 | **`enforce_admins` is off** | Protection is advisory for the owner. |
+| **The pipeline stops at the merge** | Nothing downstream of it is wired up. §0. |
 
 ---
 

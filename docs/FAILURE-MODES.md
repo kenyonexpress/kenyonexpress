@@ -41,6 +41,7 @@ matching a symptom, not reading prose:
 
 | # | Failure | Likelihood | Impact | § |
 |---|---|---|---|---|
+| 0 | **There is no deployment at all** | **Certain** | **Critical** | §2.0 |
 | 1 | Nothing scheduled runs | **Certain** | **Critical** | §2.1 |
 | 2 | The first real payment raises `42703` | **Certain** | **Critical** | §2.2 |
 | 3 | No browser has ever tested a change in CI | **Certain** | High | §2.3 |
@@ -66,6 +67,38 @@ matching a symptom, not reading prose:
 ---
 
 ## 2. Certain. These are the current state.
+
+### 2.0 There is no deployment at all
+
+**What the user sees.** Nothing. There is no site to visit.
+
+**What the logs show.** Nothing from the application, because it has never run
+anywhere but a laptop. The evidence is in Vercel: **11 deployments, all
+`ERROR`**, including the only one ever marked `target: production`.
+
+**What to do.** In the Vercel dashboard, relink the project to
+`kenyonexpress/kenyonexpress`, clear the Root Directory so it is the repository
+root, and let `vercel.json` supply `installCommand` and `buildCommand`. Then
+deploy and read the log rather than assuming.
+
+**Why it happens.** The single Vercel project, `kenyonexpress-web`, is connected
+to a **different GitHub repository** — `kenyonexpress/kenyonexpress-web`,
+private, last pushed 2026-05-29. This repository is
+`kenyonexpress/kenyonexpress`. Merging here deploys nothing and opens no
+preview.
+
+The last failure names three faults at once, each of which this project has
+already written down as a rule:
+
+```
+./kenyonexpress/next.config.ts        a NESTED kenyonexpress/ directory
+Cannot find module 'next-intl/plugin'
+Command "npm run build" exited with 1  npm, in a repo where npm install cannot work
+```
+
+**This outranks every other entry on this page**, because most of them describe
+a production system misbehaving and there is no production system.
+`docs/THIRD-PARTY-DEPENDENCIES.md` §0.
 
 ### 2.1 Nothing scheduled runs
 

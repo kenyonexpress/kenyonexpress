@@ -13,6 +13,31 @@ Companion documents: `docs/ONBOARDING.md` (local),
 
 ## 0. Before anything
 
+> ⛔ **‏There is no deployment. Read this before anything else in this document.**
+>
+> Read from the Vercel API on 2026-09-01. There is one team
+> (`kenyonexpress' projects`, plan **Hobby**) and one project
+> (`kenyonexpress-web`), and:
+>
+> 1. **The project is linked to a different GitHub repository.** It watches
+>    `kenyonexpress/kenyonexpress-web` — private, last pushed **2026-05-29**.
+>    This repository is `kenyonexpress/kenyonexpress`. **Merging to `main` here
+>    deploys nothing, and opens no preview.**
+> 2. **All 11 deployments on that project are `ERROR`**, including the only one
+>    ever marked `target: production` (2026-05-14). There is no production site
+>    — not a stale one, none.
+> 3. The most recent failure names three faults at once:
+>    ```
+>    ./kenyonexpress/next.config.ts   <- a NESTED kenyonexpress/ directory
+>    Cannot find module 'next-intl/plugin'
+>    Command "npm run build" exited with 1   <- npm, in a pnpm-only repo
+>    ```
+>
+> Everything below describes how a deploy is *meant* to work, and all of it is
+> correct once the project is relinked and its Root Directory cleared. None of
+> it is describing something that has happened. Full detail and the fix:
+> `docs/THIRD-PARTY-DEPENDENCIES.md` §0.
+
 **A production push to Vercel is one of the four stop-and-ask actions.** So is
 running a migration against production. Neither is done without explicit
 approval, and nothing in this document should be read as authorising either.
@@ -31,8 +56,12 @@ approval, and nothing in this document should be read as authorising either.
 `ixvwfbuvfxxsjiywhbbb`. There is no staging database and no local Postgres.
 A destructive query run "locally" is run against production data.
 
-**DNS is not switched over.** Pointing the domain is a manual step Ofir
-approves; nothing in this repository should run it.
+**DNS is not switched over**, and there is nothing to point it at yet (§0).
+Pointing the domain is a manual step Ofir approves; nothing in this repository
+should run it.
+
+**The Preview row is aspirational.** No preview is built for a pull request in
+this repository, because the Vercel project is watching a different one.
 
 ---
 
