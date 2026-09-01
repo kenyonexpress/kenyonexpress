@@ -48,10 +48,28 @@
 | RLS | policies ב-Postgres | אילו שורות אתה רואה |
 | SECURITY DEFINER | פונקציות כמו `redeem_voucher` | פעולה שדורשת יותר מהקורא, ובודקת בעצמה |
 
-תפקידי פאנל חיים ב-`profiles.role` (`src/lib/admin/roles.ts`). כניסה לפורטל ספק היא חברות ב-`supplier_members`, לא `profiles.role = 'vendor'`.
+תפקידי פאנל חיים ב-`profiles.role` (`src/lib/admin/roles.ts`): `customer`, `vendor`, `content_uploader`, `support`, `admin`, `super_admin`. כניסה לפורטל ספק היא חברות ב-`supplier_members`, לא `profiles.role = 'vendor'`.
 
 לקוח Supabase בדפדפן / SSR: `src/lib/supabase/client.ts` ו-`server.ts` (anon + RLS).
 אדמין שעוקף RLS: `src/lib/supabase/admin.ts`. כל קריאה אליו היא חור מכוון. אל תייבא אותו לקומפוננטה של לקוח.
+
+ה-actions האמיתיים של התחברות: `src/server/actions/auth.ts`. `src/app/actions/auth.ts` הוא re-export לתאימות בלבד. אל תוסיף לוגיקה שם.
+
+ב-Next.js 16 אין `middleware.ts`. נקודת ה-Edge היא `src/proxy.ts` (סשן, cookie אורח, הפניות SEO).
+
+### Server actions
+
+הנקודה האמיתית היא `src/server/actions/`, לא `src/app/actions/`.
+
+| דומיין | קובץ |
+| --- | --- |
+| עגלה | `src/server/actions/cart.ts` |
+| checkout | `src/server/actions/payments/checkout.ts` |
+| החזר | `src/server/actions/payments/refund.ts` |
+| auth | `src/server/actions/auth.ts` |
+| חשבון | `src/server/actions/account.ts` |
+| אדמין | `src/server/actions/admin/` |
+| ניוזלטר / הסכמה | `src/server/actions/newsletter.ts`, `consent.ts` |
 
 ### מסכים
 
@@ -61,7 +79,10 @@
 | חשבון | `src/app/(account)` | `src/components/account` |
 | אדמין | `src/app/(admin)` | `src/components/admin` |
 | ספק | `src/app/(supplier)` | `src/components/supplier` |
+| כניסת ספק | `src/app/(supplier-public)` |  |
 | Auth | `src/app/(auth)` |  |
+| משפט קנוני | `src/app/(legal)/legal/*` |  |
+| משפט תואם WP | `(store)/terms-and-conditions` ודומיו |  |
 | API | `src/app/api` |  |
 | מימוש שובר | `src/app/redeem`, `src/app/coupon` | `src/components/coupon` |
 
@@ -86,7 +107,13 @@ UI עברית RTL. Skill מחייב: `.claude/skills/rtl-hebrew-ui/SKILL.md`. י
 | SQL | `tests/sql/` | RLS ומחזור שובר מול Postgres |
 | CI | `.github/workflows/ci.yml` | lint, typecheck, test, build על כל PR. E2E מדלג עד שיש `CI_SUPABASE_URL` |
 
-אין `deploy.yml`. Vercel מפרסם דרך האינטגרציה ל-GitHub. להוסיף workflow שמריץ `vercel deploy` זה שני דיפלוימנטים שרצים על אותו alias.
+אין `deploy.yml`. Vercel מפרסם דרך האינטגרציה ל-GitHub. להוסיף workflow שמריץ `vercel deploy` זה שני דיפלוימנטים שרצים על אותו alias. פירוט: `.github/workflows/README.md`.
+
+שאר ה-workflows: `cron.yml` (כבוי עד `CRON_SCHEDULER_ENABLED=true` + סוד), `production-smoke.yml`, `load.yml`, `commit-monitor.yml`, `dependabot-auto-merge.yml`.
+
+### Cron
+
+עשרה `GET /api/cron/*`. מקור האמת לשמות וללוחות: `scripts/cron-jobs.json`. הטסט `src/__tests__/cron-schedule-inventory.test.ts` משווה את הקובץ ל-workflow ולראוטים. פירוט: [docs/CRON-EXTERNAL.md](CRON-EXTERNAL.md).
 
 ### אפליקציה
 
@@ -178,13 +205,15 @@ PostgREST חושף את ה-DB לשני תפקידים ציבוריים. כל מ�
 
 **Cardcom לא חותם webhooks.** האימות הוא `?s=` מול `CARDCOM_WEBHOOK_SECRET` (השוואה בזמן קבוע) ואז `GetLpResult`. 200 על קריאה כושלת עוצר retries. אל תחזיר 200 אם לא טיפלת.
 
-**Cron לא רץ מ-Vercel.** עשרה `GET /api/cron/*` עם `Authorization: Bearer <CRON_SECRET>`. המתזמן החיצוני מתועד ב-`docs/CRON-EXTERNAL.md`. חסר סוד = 401 על כולם, לא "פתוח".
+**Cron לא רץ מ-Vercel.** עשרה `GET /api/cron/*` עם `Authorization: Bearer <CRON_SECRET>`. המתזמן החיצוני מתועד ב-`docs/CRON-EXTERNAL.md`. חסר סוד = 401 על כולם, לא "פתוח". `.github/workflows/cron.yml` כבוי עד ש-`CRON_SCHEDULER_ENABLED` הוא `true` ויש סוד ב-Actions.
 
 **עברית RTL.** `dir="rtl"` ב-layout. אל תיישר שמאלה "רק לדף הזה". שדות לטיניים (אימייל, מספר כרטיס) מקבלים `dir="ltr"` נקודתית.
 
 **שער פיקסלים.** שינוי חזותי בדף הבית נמדד עם `scripts/compare.mjs`. הסף הוא מתחת ל-11% הבדל מול האתר החי. אל תנחש.
 
 **שני סוכני קוד על אותו ריפו.** עצור. אל תדחוף מעל העבודה של האחר.
+
+**אין `middleware.ts`.** הקובץ הוא `src/proxy.ts`. קובץ בשם הישן ב-Next 16 לא רץ.
 
 ## איך נראית עבודה תקינה
 

@@ -2,15 +2,26 @@
 
 שוק קופונים ודילים בעברית (RTL). הלקוח משלם באתר דרך Cardcom, מקבל שובר עם QR חתום, ומממש אותו אצל הספק. אין escrow. הכסף במנוע הוא אגורות שלמות (`bigint`), אף פעם לא `float`.
 
-האתר רץ על Next.js 16 (App Router) ב-Vercel, מול Postgres ב-Supabase עם RLS על כל טבלה. אפליקציית Expo חיה ב-
+האתר רץ על Next.js 16.2 (App Router, React 19) ב-Vercel, מול Postgres 17 ב-Supabase עם RLS על כל טבלה. אפליקציית Expo חיה ב-
 
 ```
 apps/mobile
 ```
 
-והיא מחוץ ל-workspace של pnpm בכוונה: אין כאן Turborepo, ואין `packages/`.
+והיא מחוץ ל-workspace של pnpm בכוונה: אין כאן Turborepo, ואין `packages/`. `pnpm-workspace.yaml` בשורש מחזיק רק `allowBuilds` ו-`overrides` (בעיקר `sharp`). זה לא monorepo של חבילות.
 
 יום ראשון בפרויקט, הכללים הקדושים, ואיפה כל דבר: [docs/ONBOARDING.md](docs/ONBOARDING.md).
+
+**תוכן**
+
+1. [מה זה](#מה-זה)
+2. [ארכיטקטורה](#ארכיטקטורה)
+3. [מבנה הריפו](#מבנה-הריפו)
+4. [הרמת סביבת פיתוח מאפס](#הרמת-סביבת-פיתוח-מאפס)
+5. [משתני סביבה](#משתני-סביבה)
+6. [פקודות נפוצות](#פקודות-נפוצות)
+7. [כללים שאי אפשר לשבור](#כללים-שאי-אפשר-לשבור)
+8. [לאן הלאה](#לאן-הלאה)
 
 ## מה זה
 
@@ -43,8 +54,10 @@ flowchart TB
   end
 
   subgraph Vercel["Next.js 16 על Vercel"]
+    Proxy["src/proxy.ts (Edge)"]
     AppRouter["App Router"]
     Actions["Server Actions"]
+    Finalize["finalize.ts"]
     CronAPI["GET /api/cron/*"]
     Webhook["POST /api/payments/cardcom/webhook"]
     SearchAPI["/api/search/*"]
@@ -68,16 +81,18 @@ flowchart TB
     Scheduler["מתזמן חיצוני"]
   end
 
-  Browser --> AppRouter
-  AdminUI --> AppRouter
-  SupplierUI --> AppRouter
+  Browser --> Proxy
+  AdminUI --> Proxy
+  SupplierUI --> Proxy
   Expo --> AppRouter
+  Proxy --> AppRouter
   AppRouter --> Actions
   Actions --> Auth
   Actions --> PG
   Actions --> Cardcom
   Cardcom --> Webhook
-  Webhook --> PG
+  Webhook --> Finalize
+  Finalize --> PG
   Actions --> Resend
   EdgeFn --> Resend
   AppRouter --> SearchAPI
@@ -114,60 +129,91 @@ src/lib/money.ts
 
 החוזה של הסביבה בזמן עלייה: `src/lib/env.ts`. בפרודקשן השרת מסרב לעלות בלי סודות Cardcom / Supabase / QR / cron, ומסרב גם אם `CARDCOM_SANDBOX=true`.
 
+ב-Next.js 16 אין `middleware.ts`. נקודת ה-Edge היא `src/proxy.ts` (הפונקציה חייבת להיקרא `proxy`). `src/instrumentation.ts` רץ לפני הבקשה הראשונה ומפעיל את בדיקת ה-env.
+
+עשרת ה-cron (מקור האמת: `scripts/cron-jobs.json`):
+
+| שם | נתיב |
+| --- | --- |
+| notifications | `/api/cron/notifications` |
+| health | `/api/cron/health` |
+| invoices | `/api/cron/invoices` |
+| stock | `/api/cron/stock` |
+| stranded-payments | `/api/cron/stranded-payments` |
+| abandoned-cart | `/api/cron/abandoned-cart` |
+| subscriptions | `/api/cron/subscriptions` |
+| reap-carts | `/api/cron/reap-carts` |
+| reconcile | `/api/cron/reconcile` |
+| expire-vouchers | `/api/cron/expire-vouchers` |
+
+כולם `GET` עם `Authorization: Bearer <CRON_SECRET>`. המתזמן עצמו מתועד ב-`docs/CRON-EXTERNAL.md`. אין מפתח `crons` ב-`vercel.json`.
+
 ## מבנה הריפו
 
 זה לא monorepo של pnpm. השורש הוא אפליקציית Next אחת. `apps/mobile` מותקנת בנפרד (`pnpm install --ignore-workspace`) כי שילוב `expo` + `react-native` באותו עץ שובר את `sharp` של האתר.
 
 ```
 .
-├── src/                      האתר כולו
-│   ├── app/                  App Router: דפים, layouts, route handlers
-│   │   ├── (store)/          חנות ציבורית: בית, מוצר, קטגוריה, עגלה, checkout
-│   │   ├── (account)/        אזור אישי
-│   │   ├── (admin)/          פאנל אדמין
-│   │   ├── (auth)/           התחברות, הרשמה, איפוס סיסמה
-│   │   ├── (supplier)/       פורטל ספק (אחרי התחברות)
-│   │   ├── (supplier-public)/ כניסת ספק ודף סירוב
-│   │   ├── (legal)/          תקנון, פרטיות, נגישות, ביטולים
-│   │   ├── (main)/           קופונים, ניוזלטר
-│   │   ├── (shop)/           ריק (placeholder)
-│   │   ├── (marketing)/      ריק (placeholder)
-│   │   ├── api/              webhooks, cron, חיפוש, בריאות, ארנק
-│   │   ├── auth/callback/    OAuth callback של Supabase
-│   │   ├── coupon/           דף שובר לפי מזהה
-│   │   ├── redeem/           מימוש לפי token
-│   │   ├── debug/            /debug/sentry (סגור עד שהסוד המדויק מוגדר)
-│   │   └── offline/          דף PWA כשאין רשת
-│   ├── components/           UI לפי דומיין: cart, admin, supplier, storefront
-│   ├── lib/                  כסף, env, supabase, תשלומים, חיפוש, RBAC
-│   ├── server/               server actions, דומיין (orders/vouchers), finalize
-│   ├── db/schema/            Drizzle: קריאה בלבד, לא מקור הסכימה
-│   ├── types/                database.ts שנוצר מ-Supabase (לא לערוך ביד)
-│   ├── hooks/                hooks של הלקוח
-│   ├── i18n/                 next-intl
-│   ├── styles/               CSS גלובלי
-│   ├── content/              MDX
-│   ├── assets/               פונטים ותמונות סטטיות
-│   └── __tests__/            שערי ריפו: RLS, מיגרציות ממתינות, הרשאות
-├── apps/mobile/              Expo Router. מחוץ ל-workspace. בלי מסלול כסף משלה
+├── src/                         האתר כולו
+│   ├── app/                     App Router: דפים, layouts, route handlers
+│   │   ├── (store)/             חנות: בית, מוצר, קטגוריה, עגלה, checkout, חיפוש
+│   │   ├── (account)/           אזור אישי: הזמנות, שוברים, ארנק, מנויים
+│   │   ├── (admin)/             פאנל אדמין
+│   │   ├── (auth)/              login, signup, איפוס סיסמה
+│   │   ├── (supplier)/          פורטל ספק (אחרי התחברות): סריקה, מימושים
+│   │   ├── (supplier-public)/   /supplier/login ו-/supplier/access-denied
+│   │   ├── (legal)/             /legal/{terms,privacy,returns,accessibility}
+│   │   ├── (main)/              /coupons, ניוזלטר confirm/unsubscribe
+│   │   ├── (shop)/              ריק (.gitkeep)
+│   │   ├── (marketing)/         ריק (.gitkeep)
+│   │   ├── actions/             re-export תאימות ל-src/server/actions/auth
+│   │   ├── api/                 webhooks, cron, חיפוש, בריאות, ארנק, ספק
+│   │   ├── auth/callback/       OAuth callback של Supabase
+│   │   ├── coupon/              דף שובר לפי מזהה
+│   │   ├── redeem/              מימוש לפי token
+│   │   ├── debug/               /debug/sentry (סגור עד שהסוד המדויק מוגדר)
+│   │   └── offline/             דף PWA כשאין רשת
+│   ├── components/              UI לפי דומיין: cart, admin, supplier, storefront, home
+│   ├── lib/                     כסף, env, supabase, תשלומים, חיפוש, RBAC
+│   ├── server/                  server actions, דומיין (orders/vouchers), finalize
+│   │   ├── actions/             נקודת הכניסה האמיתית ל-actions (checkout, cart, admin)
+│   │   ├── payments/            finalize, invoices, webhook DLQ
+│   │   └── domain/              orders, vouchers, reports
+│   ├── db/schema/               Drizzle: קריאה בלבד, לא מקור הסכימה
+│   ├── types/                   database.ts שנוצר מ-Supabase (לא לערוך ביד)
+│   ├── hooks/                   hooks של הלקוח
+│   ├── i18n/                    next-intl
+│   ├── styles/                  CSS גלובלי
+│   ├── content/                 MDX
+│   ├── assets/                  פונטים ותמונות סטטיות
+│   ├── proxy.ts                 Edge: סשן, הפניות SEO, cookie אורח. מחליף middleware.ts
+│   ├── instrumentation.ts       בדיקת env + Sentry לפני הבקשה הראשונה
+│   └── __tests__/               שערי ריפו: RLS, מיגרציות ממתינות, הרשאות, cron
+├── apps/mobile/                 Expo Router. מחוץ ל-workspace. בלי מסלול כסף משלה
 ├── supabase/
-│   ├── migrations/           מיגרציות שכבר הוחלו בפרודקשן. אל תכתוב לכאן קובץ חדש
-│   ├── functions/            Edge Functions (notifications-worker)
-│   ├── seed/                 זריעת קטגוריות וכו'
-│   ├── schedules/            תיאור לוחות, לא הרצה
-│   └── rls-manifest.json     מניפסט מדיניות שנמדד מול הפרודקשן
-├── migrations/pending/       מיגרציות שטרם הוחלו. הנתיב היחיד לשינוי סכימה
-├── scripts/                  compare.mjs, seed, ביקורות, ייבוא WP
-├── e2e/                      Playwright (locale he-IL)
-├── tests/sql/                בדיקות SQL מול Postgres (RLS, מחזור שובר)
-├── load/                     בדיקות עומס
-├── docs/                     ארכיטקטורה, הרצה, ציות. אינדקס: ARCHITECTURE-DOCS-INDEX.md
-├── public/                   סטטי: אייקונים, PWA, robots
-├── messages/                 מחרוזות he / en
-├── .github/workflows/        ci.yml, cron.yml (כבוי עד שסודות קיימים). אין deploy.yml
-├── .env.example              רשימת env כפי שהקוד קורא. בלי ערכים אמיתיים. Upstash עדיין רק בטבלה למטה
-└── STATE.md                  מצב הסשן בין סוכנים. לא מדריך למפתח
+│   ├── migrations/              מיגרציות שכבר הוחלו בפרודקשן. אל תכתוב לכאן קובץ חדש
+│   ├── functions/               Edge Functions (notifications-worker)
+│   ├── seed/                    זריעת קטגוריות וכו'
+│   ├── schedules/               תיאור לוחות, לא הרצה
+│   └── rls-manifest.json        מניפסט מדיניות שנמדד מול הפרודקשן
+├── migrations/pending/          מיגרציות שטרם הוחלו. הנתיב היחיד לשינוי סכימה
+├── scripts/                     compare.mjs, seed, ביקורות, ייבוא WP, cron-jobs.json
+├── e2e/                         Playwright (locale he-IL)
+├── tests/sql/                   בדיקות SQL מול Postgres (RLS, מחזור שובר)
+├── test/                        stub ל-server-only בטסטים
+├── load/                        בדיקות עומס
+├── docs/                        ארכיטקטורה, הרצה, ציות. אינדקס: ARCHITECTURE-DOCS-INDEX.md
+├── public/                      סטטי: אייקונים, PWA, robots
+├── messages/                    מחרוזות he / en
+├── data-import/                 גיבויי WP לייבוא. לא קוד רץ
+├── refs/                        ייחוס ויזואלי מקומי (ke_live_singlefile.html לא ב-git)
+├── .github/workflows/           ci, cron (כבוי), smoke, load, dependabot. אין deploy.yml
+├── pnpm-workspace.yaml          overrides + allowBuilds בלבד. אין packages
+├── .env.example                 רשימת env כפי שהקוד קורא. בלי ערכים אמיתיים
+└── STATE.md                     מצב הסשן בין סוכנים. לא מדריך למפתח
 ```
+
+דפי משפט תואמי WordPress (`/terms-and-conditions`, `/privacy-policy`, `/refund_returns`, `/accessibility`) חיים גם תחת `(store)`. המסלול הקנוני החדש הוא `(legal)/legal/*`.
 
 קבצים בשורש עם שמות `ARCHITECTURE-*.md` ו-`MASTER-ARCHITECTURE*.md` הם שרידים. המקור המחייב חי ב-`docs/`.
 
@@ -222,6 +268,8 @@ cp .env.example .env.local
 
 `pnpm start` (בילד פרודקשן על הלפטופ) דורש גם `ALLOW_INCOMPLETE_ENV=true`, אחרת `src/lib/env.ts` מפיל את ה-instrumentation על סודות Cardcom חסרים. אסור להגדיר את המשתנה הזה ב-Vercel.
 
+אל תצביע `.env.local` לפרודקשן אם אתה כותב כתיבות.
+
 ### 4. Auth ב-Supabase
 
 ב-Supabase Dashboard, תחת Authentication:
@@ -271,6 +319,9 @@ pnpm type-check
 - **אופציונלי**: יש נפילה מתועדת
 - **כלי**: סקריפטים / בדיקות / CI. אסור ב-Vercel
 - **פלטפורמה**: Vercel או ה-runner מזריקים. אל תגדיר ביד
+- **GitHub**: משתנה או סוד ב-Actions, לא ב-Vercel
+
+אל תגדיר `ESCROW_FLOW_ENABLED`. המודל בוטל. חסר או `false` בלבד.
 
 ### Supabase
 
@@ -324,6 +375,15 @@ pnpm type-check
 | --- | --- | --- | --- |
 | `CRON_SECRET` | פרודקשן | שרת | Bearer לכל `src/app/api/cron/*` ולמשימות האינדוקס. חסר = כל העבודות מחזירות 401 (סגור, לא פתוח) |
 | `ABANDONED_CART_HOURS` | אופציונלי | שרת | כמה שעות עגלה יושבת לפני תזכורת. ברירת מחדל: 3 |
+
+משתני GitHub Actions ל-`.github/workflows/cron.yml` (לא ב-Vercel):
+
+| משתנה | חובה | תפקיד |
+| --- | --- | --- |
+| `CRON_SCHEDULER_ENABLED` | GitHub variable | חייב להיות המחרוזת `true` כדי שה-workflow בכלל ירוץ |
+| `CRON_SECRET` | GitHub secret | אותו ערך כמו ב-Vercel. בלי זה הקריאות מחזירות 401 |
+| `CRON_BASE_URL` | GitHub variable | בסיס ה-URL שהסקריפט קורא. עד cutover DNS זה לא האפקס הישן של WordPress |
+| `CRON_NTFY_TOPIC` | GitHub variable | נושא ntfy לכשלי המתזמן |
 
 עשרת הלוחות עצמם מתועדים ב-`docs/CRON-EXTERNAL.md`, לא ב-`vercel.json`.
 
@@ -525,3 +585,4 @@ pnpm add -D <pkg>
 | [docs/ARCHITECTURE-DOCS-INDEX.md](docs/ARCHITECTURE-DOCS-INDEX.md) | אינדקס כל מסמכי הארכיטקטורה |
 | [apps/mobile/README.md](apps/mobile/README.md) | לפני נגיעה באפליקציה |
 | [src/server/payments/README.md](src/server/payments/README.md) | לפני checkout / refund / שובר |
+| [.github/workflows/README.md](.github/workflows/README.md) | לפני הוספת workflow (אין `deploy.yml`) |
