@@ -44,6 +44,7 @@ Measured behaviour, with the test that holds it. `src/lib/resilience/chaos.test.
 | Meilisearch | Nothing to fall back from. Search is Postgres `ILIKE` over `name_he` + `description_he` and always has been; Meilisearch exists only as an indexer and a settings file, not in the query path. | `src/app/api/search/route.ts` |
 | Cardcom | 15s timeout on every call (`CARDCOM_TIMEOUT_MS`), and ONE retry on transport failure for read-only calls only. See below. | `src/lib/payments/cardcom.ts` |
 | R2 | When the R2 variables are absent, uploads fall back to Supabase Storage. | `src/lib/storage/r2.ts`, `isR2Configured()` |
+| Supabase | 10s deadline on every call (`SUPABASE_TIMEOUT_MS`), applied at client construction so all seven factories and every query through them are covered. A timeout raises `SupabaseTimeoutError`, distinct from a network error. | `src/lib/supabase/timeout-fetch.ts` |
 
 ### Cardcom: why the retry is not uniform
 
@@ -83,6 +84,9 @@ failure to reach the provider, and it is returned as-is.
 
 - The kill switches are env-based. A DB-backed override needs a table and a
   migration, and no migration is applied by an agent.
+- A Supabase timeout surfaces as `SupabaseTimeoutError`. Callers that want a
+  Hebrew message on the page rather than a thrown error have to catch it; that
+  is per-page work and is not done everywhere yet.
 - `payment_events` is wired into the Cardcom webhook only. The checkout,
   hosted-page, saved-card, voucher, refund, DLQ and reconciliation events have
   no emitter yet.

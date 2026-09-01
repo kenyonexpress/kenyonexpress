@@ -1,5 +1,6 @@
 import { log } from '@/lib/observability/log'
 import { checkAdminKey } from '@/lib/supabase/admin-key'
+import { timeoutFetch } from '@/lib/supabase/timeout-fetch'
 import { createClient } from '@supabase/supabase-js'
 
 let warned = false
@@ -30,5 +31,7 @@ export function createAdminClient() {
   // all. So: say it once, loudly, and let the request fail where it fails.
   if (!verdict.ok) warnOnce(verdict.message)
 
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, key as string)
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, key as string, {
+    global: { fetch: timeoutFetch },
+  })
 }
