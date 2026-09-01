@@ -421,9 +421,38 @@ const shoot = async (url, out) => {
     .evaluate(async () => {
       const step = window.innerHeight
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-      for (let y = 0; y < document.body.scrollHeight; y += step) {
-        window.scrollTo(0, y)
-        await sleep(120)
+
+      // BOUNDED, AND THAT IS THE WHOLE POINT.
+      //
+      // This read `y < document.body.scrollHeight` with the height re-evaluated
+      // on every iteration. Scrolling is what triggers the lazy images, and a
+      // lazy image that arrives makes the page taller, so the bound receded as
+      // fast as the loop advanced.
+      //
+      // At 1440 that terminates, because the live page stops growing. At 380 it
+      // does not: the mobile layout is several times taller and keeps growing,
+      // and `page.evaluate` has no timeout, so the whole run hangs with no
+      // output. MEASURED: `--width=380` ran for 1h26m and produced nothing,
+      // which is why the 380 and 768 numbers had never been obtained.
+      //
+      // So: snapshot the height, walk it, then allow a bounded number of extra
+      // sweeps for whatever the walk revealed. MAX_SWEEPS is the guarantee of
+      // termination; the height check is the optimisation that usually ends it
+      // sooner.
+      const MAX_SWEEPS = 4
+      let previousHeight = 0
+      for (let sweep = 0; sweep < MAX_SWEEPS; sweep += 1) {
+        const height = document.body.scrollHeight
+        if (height <= previousHeight) break
+        // From 0 each sweep, not from previousHeight: the original always
+        // walked the page from the top, and an image low in the viewport can
+        // need the ones above it laid out first. Resuming part-way changed the
+        // measured diff on the home page from 9.83% to 11.05%, deterministically.
+        for (let y = 0; y < height; y += step) {
+          window.scrollTo(0, y)
+          await sleep(120)
+        }
+        previousHeight = height
       }
       window.scrollTo(0, document.body.scrollHeight)
       await sleep(300)
