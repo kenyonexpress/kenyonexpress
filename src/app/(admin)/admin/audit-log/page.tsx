@@ -1,3 +1,4 @@
+import AuditDiffCell from '@/components/admin/AuditDiff'
 import FilterBar from '@/components/admin/FilterBar'
 import ServerDataTable, { type ServerColumn } from '@/components/admin/ServerDataTable'
 import TablePagination from '@/components/admin/TablePagination'
@@ -113,6 +114,14 @@ export default async function AuditLogPage(props: {
       header: 'מזהה',
       className: 'font-mono text-xs text-black/40',
       cell: (log) => (log.entity_id ? `${log.entity_id.slice(0, 8)}…` : ''),
+    },
+    {
+      // The reason this page exists. `changes` holds two whole row snapshots,
+      // so without a diff the answer to "what did they change" was sitting in
+      // the database and shown nowhere.
+      id: 'changes',
+      header: 'שינויים',
+      cell: (log) => <AuditDiffCell changes={log.changes} />,
     },
     { id: 'actor', header: 'משתמש', cell: (log) => log.actorName },
     {
