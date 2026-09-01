@@ -250,3 +250,48 @@ no-op while it is unset even though they answer 401 to an unauthenticated call.
 4.89s to first byte-through-completion on a cold path is slow enough to be worth
 a look before launch, though it is one sample from one machine over the public
 internet and is not a Lighthouse measurement.
+
+## Visual gate, 2026-09-02
+
+Measured against a clean `pnpm build` on a server started for the run, so no
+stale-server reading. Ceiling is 11%.
+
+| Page | 1440 | 768 | 380 |
+| --- | --- | --- | --- |
+| home | **9.83%** | 40.81% | 42.44% |
+| cart | **8.60%** | 14.17% | 19.74% |
+| checkout | **9.72%** | 13.11% | 14.64% |
+| product | refused | refused | refused |
+
+**1440 passes on every page that can be measured. 768 and 380 fail on every
+page.** This is not a regression: those two widths had never been measured
+before this week, because `compare.mjs` hung on them. Every three-width figure
+ever quoted for this gate was a 1440 figure.
+
+`home` at 380 additionally trips the script's own structural guard — live is
+17,825px tall against our 10,358px, a ratio of 0.58 — and the script says so
+itself: at that ratio the percentage is not a pixel gate, it is two different
+pages. So the mobile numbers are a statement that the mobile layouts diverge
+structurally from live, not a styling delta anyone can close by moving tokens.
+
+`product` refuses at every width and the refusal is correct: live renders **1**
+related-product card and our page renders **4**. That is a catalogue difference
+wearing a fidelity number, which is exactly what the guard exists to stop.
+
+`account` and `supplier` were not measured: the live site has no comparable
+authenticated pages to score against.
+
+### What this means for launch
+
+The 11% gate is met at desktop and is nowhere near met at mobile. Closing the
+mobile gap is a layout project, not a tuning pass, and it is the largest single
+piece of work left. Most Israeli shoppers are on mobile.
+
+## Quality gates, 2026-09-02
+
+```
+pnpm type-check   clean
+pnpm biome check  984 files, no findings
+pnpm test         3478 passed, 258 files
+pnpm build        green
+```
