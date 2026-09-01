@@ -417,7 +417,18 @@ const shoot = async (url, out) => {
   // finish, then return to the top. Placed before the hero freeze on purpose:
   // scrolling advances live's slider, so the freeze has to be the last thing
   // that happens before the shutter.
-  await p
+  // BOUNDED FROM THIS SIDE TOO, AS A GUARANTEE RATHER THAN A FIX.
+  //
+  // The fix is that nothing inside the evaluate can wait forever any more. This
+  // bound is here because `page.evaluate` has no timeout of its own, so a future
+  // edit that reintroduces an unsettleable promise would reintroduce a silent
+  // infinite hang rather than a loud slow run. 90s is far above the ~20s the
+  // sweep takes on the tallest page measured.
+  //
+  // Not fatal: a sweep that timed out has still scrolled the page and asked for
+  // its images, and the pending-image guard below is what decides whether the
+  // result is measurable.
+  const sweep = p
     .evaluate(async () => {
       const step = window.innerHeight
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
@@ -440,20 +451,27 @@ const shoot = async (url, out) => {
       // rather than a fix: it costs nothing and it removes a shape that CAN
       // fail to terminate on a page that does lazily extend.
       //
-      // THE 380 HANG IS STILL UNEXPLAINED, and none of the obvious candidates
-      // survived measurement:
+      // THE HANG IS FOUND, AND IT WAS NOT THE SCROLL LOOP OR THE WIDTH.
+      //
+      // The measurements below stand, and they are why this loop was never the
+      // culprit:
       //
       //   live 1440 fullPage screenshot   1.5MB in 0.3s
       //   live  380 fullPage screenshot   2.9MB in 0.4s
       //   mine 1440 (h=5695)              2.6MB in 0.4s
       //   mine  380 (h=10358)             1.2MB in 0.2s
       //
-      // Load, height and capture are all fast at 380. Every wait in this file
-      // carries a timeout, so nothing here should block forever, and yet a full
-      // --width=380 run produced no output in 1h26m and again in 10m. The cause
-      // is downstream of these steps and is not yet identified. 380 and 768
-      // have therefore never been measured, and every three-width figure quoted
-      // for this gate is a 1440 figure.
+      // Load, height and capture are all fast at every width. The claim that
+      // went with them -- "every wait in this file carries a timeout, so
+      // nothing here should block forever" -- was the false step. `settle()`
+      // below awaited `img.decode()` on images that can never load, and
+      // `page.evaluate()` has NO default timeout in Playwright. See the note on
+      // `settle()` for the mechanism and the per-width counts.
+      //
+      // It was never a property of 380. It is a property of any width where the
+      // desktop side-banner column is display:none, which is 380 and 768 and
+      // not 1440, and 380 happens to escape it because those images are not in
+      // its layout at all.
       const MAX_SWEEPS = 4
       let previousHeight = 0
       for (let sweep = 0; sweep < MAX_SWEEPS; sweep += 1) {
@@ -475,10 +493,39 @@ const shoot = async (url, out) => {
       // been asked for reports complete=false, and one that failed reports
       // complete=true with zero natural width. Both are settled states and
       // neither is worth waiting on, so failures resolve rather than reject.
+      // A decode() THAT CAN NEVER RESOLVE, AWAITED WITHOUT A TIMEOUT.
+      //
+      // MEASURED 2026-09-01, and this is the 380/768 hang that three commits
+      // looked for in the wrong place. The homepage carries
+      // `div.slider-das-block`, a desktop side-banner column that Tailwind
+      // `hidden` sets to `display:none` below lg. It holds three
+      // `loading="lazy"` images. A lazy image inside a display:none subtree is
+      // never intersected, so the browser never issues the request, so it sits
+      // at `complete=false, naturalWidth=0` forever -- and `img.decode()` on it
+      // returns a promise that NEVER SETTLES. Not rejects. Never settles.
+      //
+      //   width  380  0 such images   run completes in 25s
+      //   width  768  3 such images   run never completes
+      //   width 1440  0 such images (the column is displayed, they load)
+      //
+      // `page.evaluate()` has no default timeout in Playwright, so the
+      // unsettled promise blocked the whole run with the live shot already on
+      // disk. That is the signature every hung run left behind: a
+      // `refs/.run-<pid>-live.png` with no `-mine.png` beside it.
+      //
+      // Race every decode. A picture that has not decoded in two seconds is not
+      // worth the run, and 'settled' here means 'stopped being worth waiting
+      // for', which is the only thing the caller does with it.
+      const DECODE_TIMEOUT_MS = 2000
       const settle = () =>
         Promise.all(
           [...document.images].map((img) =>
-            img.decode ? img.decode().catch(() => {}) : Promise.resolve(),
+            img.decode
+              ? Promise.race([
+                  img.decode().catch(() => {}),
+                  new Promise((r) => setTimeout(r, DECODE_TIMEOUT_MS)),
+                ])
+              : Promise.resolve(),
           ),
         )
       await settle()
@@ -503,7 +550,25 @@ const shoot = async (url, out) => {
       // So the scroll is repeated while any image is still incomplete, and the
       // count that remains is handed to the caller, which refuses to score a
       // live capture that still has holes in it.
-      const stillLoading = () => [...document.images].filter((img) => !img.complete).length
+      // AN IMAGE THAT IS NOT RENDERED IS NOT A HOLE IN THE PAGE.
+      //
+      // The guard this feeds refuses to score a capture with unloaded images,
+      // because an unloaded image collapses its block and shortens the page.
+      // That reasoning holds only for an image the layout actually shows. The
+      // three lazy images inside the display:none side-banner column above are
+      // CORRECTLY not loaded: they occupy no space, they collapse nothing, and
+      // counting them makes the guard refuse a run that is perfectly good.
+      //
+      // So count only images the page is actually trying to display.
+      const rendered = (img) => {
+        if (img.getBoundingClientRect().width > 0) return true
+        for (let n = img; n && n !== document.documentElement; n = n.parentElement) {
+          if (getComputedStyle(n).display === 'none') return false
+        }
+        return true
+      }
+      const stillLoading = () =>
+        [...document.images].filter((img) => !img.complete && rendered(img)).length
       for (let attempt = 0; attempt < 4 && stillLoading() > 0; attempt++) {
         for (let y = 0; y < document.body.scrollHeight; y += step) {
           window.scrollTo(0, y)
@@ -517,6 +582,18 @@ const shoot = async (url, out) => {
       await sleep(400)
     })
     .catch(() => {})
+
+  const SWEEP_TIMEOUT_MS = 90000
+  const sweepTimedOut = Symbol('sweep-timeout')
+  const sweepResult = await Promise.race([
+    sweep.then(() => null),
+    new Promise((r) => setTimeout(() => r(sweepTimedOut), SWEEP_TIMEOUT_MS)),
+  ])
+  if (sweepResult === sweepTimedOut) {
+    console.log(
+      `  WARNING: the scroll/settle sweep for ${url} did not finish in ${SWEEP_TIMEOUT_MS}ms; continuing to the shutter.`,
+    )
+  }
 
   pendingImages[external ? 'live' : 'mine'] = await p
     .evaluate(() => window.__comparePendingImages ?? 0)

@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import {
   GUARDED_COLUMNS,
@@ -23,7 +23,28 @@ import { describe, expect, it } from 'vitest'
  * unrelated statements.
  */
 
-const MIGRATION = resolve(process.cwd(), 'migrations/pending/137_order_transition_guard.sql')
+/**
+ * 137 is APPLIED in production (verified 2026-09-01: all three triggers present
+ * and enabled on orders, order_items and payments). An applied migration
+ * eventually moves out of `migrations/pending/`, and this test reads the file
+ * to prove the table below has not drifted from it. So look in both places and
+ * say which one was missing if neither is there, rather than failing with a
+ * bare ENOENT that reads like the test is broken.
+ */
+const MIGRATION_CANDIDATES = [
+  'migrations/pending/137_order_transition_guard.sql',
+  'supabase/migrations/137_order_transition_guard.sql',
+]
+
+const MIGRATION = (() => {
+  for (const candidate of MIGRATION_CANDIDATES) {
+    const full = resolve(process.cwd(), candidate)
+    if (existsSync(full)) return full
+  }
+  throw new Error(
+    `137_order_transition_guard.sql is in neither ${MIGRATION_CANDIDATES.join(' nor ')}. The guards are live in production; this test needs the file to compare them against.`,
+  )
+})()
 
 /** The `('from','to')` pairs the migration actually contains, per column. */
 function pairsInMigration(): Record<string, Set<string>> {
