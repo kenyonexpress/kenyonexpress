@@ -68,7 +68,10 @@ Copy the template and fill it in:
 cp .env.example .env.local
 ```
 
-`.env.example` documents roughly 120 variables. The minimum for the app to boot
+`.env.example` is 534 lines, and a test keeps it honest:
+`src/lib/env-example-is-complete.test.ts` fails if a key in the boot schema is
+missing from it. The full annotated list is `docs/ENV-REFERENCE.md`. The minimum
+for the app to boot
 and serve pages:
 
 ```bash
@@ -150,7 +153,7 @@ This is not the Next.js you know. Read the relevant guide in
 - A from-zero reset is **not runnable** here: Docker wedges, and the migration
   file chain and production are different lineages anyway.
 - `supabase/migrations/` holds 115 files numbered 001 to 129 and **does not
-  describe production**, whose own ledger holds 98 applied migrations under
+  describe production**, whose own ledger holds 99 applied migrations under
   partly different names.
 - **`src/types/database.ts` describes production.** Regenerate with
   `pnpm db:types`.
@@ -168,7 +171,7 @@ production is one of the four stop-and-ask actions.
 ## 6. The gates, before you push
 
 ```bash
-pnpm test           # vitest, 242 test files
+pnpm test           # vitest, 246 test files
 pnpm type-check     # tsc --noEmit
 pnpm lint           # biome
 pnpm build          # a SEPARATE gate, see above
@@ -227,7 +230,8 @@ Three things are true right now and will otherwise read as bugs you introduced:
 1. **No scheduler is running.** Ten cron routes exist and are never called, so
    voucher emails are not sent and vouchers do not expire.
    `docs/OPERATIONS-CALENDAR.md`.
-2. **`finalize.ts` names two columns production does not have**, so the first
-   real payment raises `42703`. `docs/RUNBOOK.md` §4.1.
+2. **`finalize.ts` and `queries/orders.ts` name four columns production does
+   not have**, so the first real payment raises `42703`.
+   `docs/PAYMENT-FLOW.md` §11.2.
 3. **The catalogue has 80 products and zero completed purchases.** Empty
    `vouchers`, `payment_events` and `refunds` tables are expected.
