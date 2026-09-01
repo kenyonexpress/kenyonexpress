@@ -244,7 +244,14 @@ rather than a till.
 
 ## `148_wallet_transfer_order_audit.sql` and `149_refund_executions.sql`, added 2026-09-01
 
-Refund architecture. Neither file has been applied to any database.
+Refund architecture. Neither file has been applied to the hosted project.
+
+`148_wallet_transfer_order_audit.sql` was applied and measured on a local
+Postgres 16 database named `ke_sandbox` on 2026-09-01 (not the hosted
+project): reserve 1000.00 -> 982.90, user 0.00 -> 17.10, sum stayed 1000.00,
+audit amount_agorot 1710, replay did not write a second audit row. Repeat with
+`scripts/sandbox/148-bootstrap.sql` then the pending file then
+`scripts/sandbox/148-verify.sql`.
 
 `148_wallet_transfer_order_audit.sql` replaces the live six-argument
 `fn_wallet_transfer` so a real (non-replay) transfer with `p_order_id` writes
