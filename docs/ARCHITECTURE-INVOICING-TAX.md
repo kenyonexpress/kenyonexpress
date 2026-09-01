@@ -1,5 +1,16 @@
 # ARCHITECTURE-INVOICING-TAX.md
 
+<!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **Correction 2026-09-01. See `docs/ARCHITECTURE-OVERVIEW.md` §3.1.**
+>
+> **VAT is 18%**, one definition for the whole app: `VAT_RATE_BP = 1800` in
+> `src/lib/money.ts`. The rate rose from 17% on 2025-01-01. The invoice module
+> derives from that constant rather than carrying a second copy.
+>
+> VAT is extracted from a gross, VAT-inclusive amount, and the VAT half is
+> computed by subtraction so `net + vat === gross` exactly. The platform books
+> VAT only on its own commission. There is no escrow leg to tax.
+
 ארכיטקטורת **חשבוניות / מס** (מסגרת מוצר לשיגור בישראל).
 
 Status: BINDING product skeleton · `ke-arch` · Date: 2026-07-31 · docs only.  

@@ -4,6 +4,32 @@
 של שאילתה, לא הערכה. השאילתות עצמן מופיעות בסוף המסמך כדי שאפשר יהיה לחזור
 ולמדוד.
 
+<!-- v1-final-banner:2026-09-01 -->
+
+> ‏**נמדד מחדש 01.09.2026. שלוש מיגרציות הרשאות נחתו מאז 19.08, והן משנות
+> מספרים בגוף המסמך:**
+>
+> ‏1. ‏**`check_rate_limit` אינה חשופה יותר** ל-`anon` ול-`authenticated`, אלא
+>    ל-`service_role` בלבד. קודם לכן קורא אנונימי בחר גם את המפתח וגם את הסף.
+> ‏2. ‏**‏`authenticated` איבד INSERT/UPDATE/DELETE על שמונה טבלאות server-only**
+>    ‏(`legacy_percent_archive_112`, `payment_webhook_events`, `rate_limits`,
+>    `referral_signals`, `search_index_dlq`, `settlement_events`,
+>    `stock_reservations`, `user_rate_limits`). זו לא הייתה חשיפה פעילה, כי RLS
+>    בלי policy דוחה הכל ממילא, אלא סגירת דלת סתרים: מי שיוסיף שם policy אחת
+>    לקריאה היה מקבל גם כתיבה.
+> ‏3. שש פונקציות עזר יתומות איבדו EXECUTE מ-`authenticated`.
+>
+> ‏**המספרים החיים היום:** ‏`anon` עם DML על טבלה **אחת** בלבד (`carts`),
+> ‏`authenticated` על ‏**56**, ‏`service_role` על ‏**73**. ‏**133** policies על
+> ‏**61** טבלאות, RLS דלוק על כולן. ‏**69** פונקציות, מתוכן ‏**61**
+> ‏`SECURITY DEFINER`, וכולן מצמידות `search_path` (אפס לא מוצמדות). ל-`anon`
+> יש בדיוק ‏**6** הרשאות EXECUTE, ושלוש מהן פונקציות trigger שאינן ניתנות
+> לקריאה שימושית דרך PostgREST.
+>
+> ‏**מיפוי מספרים, כי הם התחלפו:** המיגרציות האלה מופיעות בפרודקשן כ-125, 126
+> ו-127, ובקבצים תחת `migrations/pending/` הן **143**, **144** ו-**145**.
+> הטבלה המלאה: `docs/ARCHITECTURE-OVERVIEW.md` סעיף 8.1.
+
 ---
 
 ## 1. ארבע שכבות, וכל אחת עונה על שאלה אחרת

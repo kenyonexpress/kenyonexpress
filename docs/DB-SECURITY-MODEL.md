@@ -135,7 +135,19 @@ policy יחיד ומאוחד לכל צירוף טבלה/פעולה, בשם `<tab
 
 `legacy_percent_archive_112`, `payment_webhook_events`, `rate_limits`, `referral_signals`, `search_index_dlq`, `settlement_events`, `stock_reservations`, `user_rate_limits`. פירוט בסעיף 6.
 
-## 5. 59 פונקציות SECURITY DEFINER — מי מורשה להריץ (סופי, אחרי 125 ו-127)
+## 5. ‏61 פונקציות SECURITY DEFINER — מי מורשה להריץ (סופי, אחרי 125 ו-127)
+
+> ‏**נמדד מחדש 01.09.2026:** ‏`public` מחזיקה **69 פונקציות**, מתוכן **61**
+> ‏`SECURITY DEFINER`. ‏61 הוא מספר ה-overloads; שמות שונים יש **60**, כי
+> ‏`fn_enqueue_notification` קיימת בשתי חתימות. הספירה 59 שהופיעה כאן קודם
+> קדמה לגל 130-146.
+>
+> ‏**כל 61 מצמידות `search_path`. אפס לא מוצמדות** — מחלקת חטיפת ה-search_path
+> סגורה לגמרי.
+>
+> ‏**מיפוי המספרים, כי הם התחלפו.** ‏125 ו-127 כאן הם שמות ההחלה בפרודקשן;
+> בקבצים תחת `migrations/pending/` אותן מיגרציות נקראות **143** ו-**145**.
+> הטבלה המלאה: `docs/ARCHITECTURE-OVERVIEW.md` סעיף 8.1.
 
 ### 5.1 חשופות ל-anon + authenticated (3, ולא 4)
 

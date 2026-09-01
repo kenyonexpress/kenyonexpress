@@ -293,7 +293,7 @@ SENTRY_AUTH_TOKEN
 | DB5 | `auth_leaked_password_protection` דלוק | P1 | FAIL | כבוי; הדלקה ב-Dashboard (Q33) |
 | DB6 | PITR / גיבוי אוטומטי על פרויקט prod | P0 | OPEN | `ARCHITECTURE-BACKUP-DR.md` |
 | DB7 | גיבוי ידני לפני cutover | P0 | OPEN | |
-| DB8 | מע"מ 18% בחשבונית, לא 17% ב-ledger | P0 | FAIL סתירה | Q8: `VAT_RATE_BP=1700` מול `DEFAULT_VAT_PERCENT=18` |
+| DB8 | מע"מ 18% בחשבונית ובמודול הכסף | P0 | **PASS 01.09** | ‏`VAT_RATE_BP = 1800` ב-`src/lib/money.ts` הוא ההגדרה היחידה; מודול החשבוניות נגזר ממנה ולא מחזיק עותק שני. הסתירה מ-Q8 נסגרה. |
 
 ---
 

@@ -1,5 +1,15 @@
 # ארכיטקטורה: סוגי מוצר
 
+<!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **Partly stale 2026-09-01. See `docs/ARCHITECTURE-OVERVIEW.md` §0.**
+>
+> `product_type` in production has four values: `coupon, physical, service,
+> recurring`. `recurring` is backed by `subscriptions` and `subscription_charges`
+> (migration 135) and by `/account/subscriptions`. `service` has schema support
+> but no distinct money path; it settles like `physical`.
+>
+> Escrow is not a property of any product type.
+
 קופון / פיזי / מנוי חוזר: מה משתנה בכל שכבה.
 
 Status: **BINDING** · עודכן: 2026-08-12  

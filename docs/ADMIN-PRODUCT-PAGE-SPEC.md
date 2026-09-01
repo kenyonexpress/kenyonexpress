@@ -1,5 +1,15 @@
 # ADMIN-PRODUCT-PAGE-SPEC.md
 
+<!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **Partly stale 2026-09-01. See `docs/ARCHITECTURE-OVERVIEW.md` §0 and §3.**
+>
+> The coupon price field is an **absolute shekel amount**
+> (`products.coupon_price_ils`), not a percentage, and it has no default. A
+> product saved without it cannot be sold, only described. `platform_percent` is
+> separately mandatory on both product types.
+>
+> Escrow is not a product setting; it does not exist.
+
 מפרט דף המוצר באדמין: ארבעת שדות הכסף הדינמיים, שדות ספק חובה, snapshot ל-
 `order_items`, וכללי validation.
 

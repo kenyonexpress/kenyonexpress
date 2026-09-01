@@ -1,5 +1,23 @@
 # Migration Backlog
 
+<!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **Superseded 2026-09-01 by `docs/ARCHITECTURE-OVERVIEW.md` §8.**
+>
+> Two things in this backlog are now measurably wrong:
+>
+> 1. **`platform_settled` IS in `order_status`.** The section below concluding
+>    that it is missing was measured before it was added. The live enum is
+>    `pending, paid, partially_fulfilled, fulfilled, cancelled, refunded,
+>    platform_settled`, and it is also live in `payment_status` and
+>    `settlement_status`.
+> 2. **Most of the backlog is applied.** As of 2026-09-01: 122, 123, 125, 126,
+>    127, 130 through 136, 138 through 141 and 146 are in production; 124, 143,
+>    144 and 145 were applied earlier under different numbers; **137 is blocked**
+>    and is the only one left. The renumbering table is in
+>    `ARCHITECTURE-OVERVIEW.md` §8.1.
+>
+> `supplier_payouts` appears here as a table to migrate. It does not exist.
+
 מצב המיגרציות ב-`supabase/migrations/` מול הפרודקשן החי.
 
 נמדד 2026-07-29 מול הפרויקט

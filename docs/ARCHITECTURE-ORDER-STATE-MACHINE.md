@@ -1,5 +1,19 @@
 # ARCHITECTURE-ORDER-STATE-MACHINE.md
 
+<!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **Read with `docs/ARCHITECTURE-OVERVIEW.md` §2.2 and §3.5 (2026-09-01).**
+>
+> The escrow states discussed here are **dead enum values kept for history**.
+> `settlement_status` in production is
+> `pending, paid, split_executed, escrow_held, escrow_released, redeemed,
+> refunded, cancelled, platform_settled`, but `SettlementState` in
+> `src/server/domain/orders/state-machine.ts` deliberately does not admit
+> `escrow_held`, `escrow_released` or `platform_settled`, so no transition can
+> produce them. `platform_settled` survives only in the redemption read path.
+>
+> Both product types run `pending -> paid -> split_executed`. A coupon line
+> splits 100/0.
+
 מכונות המצב של ההזמנה, הפריט, התשלום והשובר. כל הסטטוסים, כל המעברים החוקיים,
 מי מורשה לכל מעבר, מקרי הקצה, ומסלול הביקורת שאי אפשר לערוך.
 

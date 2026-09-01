@@ -1,5 +1,32 @@
 # MASTER ARCHITECTURE: Checkout, Commission, Coupon Redemption, Personal Area, Supplier Dashboard
 
+<!-- v1-final-banner:2026-09-01 -->
+> ⛔ **Superseded 2026-09-01. The current system is `docs/ARCHITECTURE-OVERVIEW.md`.**
+>
+> This document is the 2026-07-23 design. Four of its load-bearing pieces were
+> never built, and production contradicts them:
+>
+> 1. **Escrow does not exist.** Section 2 and the D1 decision describe held
+>    funds released to a supplier. The rule settled on 2026-07-24 is that the
+>    platform keeps the entire coupon prepayment permanently and the supplier
+>    collects the balance in cash at the counter. No coupon money is ever held
+>    for a supplier and none is ever paid out to one. `escrow_holds` survives in
+>    production with 2 legacy rows and no writer.
+> 2. **`supplier_payouts` and `supplier_payout_items` do not exist** in this
+>    database and never have. Section 2.8 describes a payout ledger that was not
+>    created. The enums `payout_status` and `payout_line_type` are live with no
+>    tables behind them.
+> 3. **"Coupons are 10% on-site / 90% in-store" is wrong.** The online charge is
+>    `products.coupon_price_ils`, an absolute shekel amount set per product.
+>    There is no percentage and no default; a product without it cannot be sold.
+> 4. **Cardcom Multi-Account split at transaction time (D6) was not adopted.**
+>    The integration is single-terminal against the legacy `/Interface/*.aspx`
+>    API. See `docs/CARDCOM-ARCHITECTURE.md`.
+>
+> The live settlement path for both product types is
+> `pending -> paid -> split_executed`, written only by
+> `src/server/payments/finalize.ts`.
+
 Status: DESIGN (print before code). Verified against live DB `ixvwfbuvfxxsjiywhbbb` on 2026-07-23.
 Money rule: agorot integers only, zero floats past the ILS/agorot boundary.
 Scope: reconciles the authoritative business rules with the applied live schema (007 + 044 + 045 + 046 + 047) and the unapplied drafts (026, 027, 042).
@@ -390,7 +417,7 @@ Live `user_role = customer | content_uploader | vendor | admin | super_admin | s
 | `/admin/*` | no | products/catalog only | no | yes | read-only |
 | `POST /api/supplier/redeem` | no | no | yes (own supplier) | yes | no |
 
-- Middleware (`src/middleware.ts` or proxy): redirect unauthenticated `/account|/supplier|/admin` to login; block `/admin` and `/supplier` for `customer`. Middleware is a UX gate only.
+- Edge gate (`src/proxy.ts`, exported function `proxy`; Next 16 removed `middleware.ts`): redirect unauthenticated `/account|/supplier|/admin` to login; block `/admin` and `/supplier` for `customer`. Middleware is a UX gate only.
 - RLS is authoritative: even if middleware is bypassed, `supplier_id = current_user_supplier_id()` and `user_id = auth.uid()` policies prevent cross-tenant reads. Admin reads use the service client after `requireAdminSession()`.
 - `content_uploader` gets catalog write on `/admin/products` only (product approval workflow already live: `products.approval_status`).
 

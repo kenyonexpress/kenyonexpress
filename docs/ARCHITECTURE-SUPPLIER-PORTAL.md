@@ -1,5 +1,19 @@
 # ARCHITECTURE-SUPPLIER-PORTAL.md
 
+<!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **Partly stale 2026-09-01. Money model: `docs/ARCHITECTURE-OVERVIEW.md` §3.**
+>
+> `/supplier/payouts` is designed here against a `supplier_payouts` table that
+> **does not exist in production and never did**. Under the settled model the
+> platform owes a supplier nothing on a coupon sale: the supplier collects the
+> balance in cash at the counter, and that money never passes through the
+> platform's clearing account. A physical sale settles immediately at charge
+> time. There is consequently no payout batch to state.
+>
+> The redemption, scanning and order views in this document are accurate.
+> `supplier_branches` (migration 133) is live and adds multiple locations per
+> supplier; it is not described below.
+
 KenyonExpress supplier-facing portal architecture.
 
 Status: BINDING for `arch/admin-supplier` (2026-07-28)
