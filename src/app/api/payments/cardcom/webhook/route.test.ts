@@ -338,3 +338,125 @@ describe('cardcom webhook when the payment read itself fails', () => {
     )
   })
 })
+
+describe('a refund Operation never runs the charge path', () => {
+  it('does not finalize, and does not mark the original payment failed, on a declined refund', async () => {
+    seedHappyPath()
+    const response = await POST(
+      request(SECRET, callbackBody({ Operation: 'Refund', ResponseCode: 500 })),
+    )
+    expect(await response.json()).toEqual({ ok: true, refund_declined: true })
+    expect(finalizeOrder).not.toHaveBeenCalled()
+    expect(calls.some((c) => c.table === 'payments' && c.op === 'update')).toBe(false)
+  })
+
+  it('does not finalize when there is no refund_executions row', async () => {
+    seedHappyPath()
+    const response = await POST(request(SECRET, callbackBody({ Operation: 'Refund' })))
+    expect(await response.json()).toEqual({ ok: true, unknown_refund_execution: true })
+    expect(finalizeOrder).not.toHaveBeenCalled()
+  })
+
+  it('treats a missing refund_executions table as unknown, not as a retry loop', async () => {
+    seedHappyPath()
+    queue('refund_executions.select', {
+      data: null,
+      error: { code: '42P01', message: 'relation refund_executions does not exist' },
+    })
+    const response = await POST(request(SECRET, callbackBody({ Operation: 'Refund' })))
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({ ok: true, unknown_refund_execution: true })
+    expect(finalizeOrder).not.toHaveBeenCalled()
+  })
+
+  it('answers 503 on any other refund_executions read failure', async () => {
+    seedHappyPath()
+    queue('refund_executions.select', {
+      data: null,
+      error: { code: '57014', message: 'statement timeout' },
+    })
+    const response = await POST(request(SECRET, callbackBody({ Operation: 'Refund' })))
+    expect(response.status).toBe(503)
+    expect(finalizeOrder).not.toHaveBeenCalled()
+  })
+
+  it('closes a credited execution without calling finalizeOrder', async () => {
+    seedHappyPath()
+    queue('refund_executions.select', {
+      data: {
+        id: 're-1',
+        order_id: 'order-1',
+        payment_id: 'pay-1',
+        charge_transaction_id: 'tx-charge',
+        refund_transaction_id: null,
+        wallet_entry_id: 'we-1',
+        state: 'wallet_credited',
+        amount_agorot: 10_000,
+        cancel_only: false,
+        idempotency_key: 'refund:order-1',
+        low_profile_id: LOW_PROFILE,
+        wallet_credited_at: '2026-09-01T00:00:00.000Z',
+        method_reversed_at: null,
+        completed_at: null,
+      },
+      error: null,
+    })
+    const response = await POST(request(SECRET, callbackBody({ Operation: 'Refund' })))
+    expect(await response.json()).toEqual({ ok: true, refund: true, replay: false })
+    expect(finalizeOrder).not.toHaveBeenCalled()
+    expect(calls.some((c) => c.table === 'refund_executions' && c.op === 'update')).toBe(true)
+  })
+
+  it('answers 503 when the wallet is not yet credited, so Cardcom retries', async () => {
+    seedHappyPath()
+    queue('refund_executions.select', {
+      data: {
+        id: 're-1',
+        order_id: 'order-1',
+        payment_id: 'pay-1',
+        charge_transaction_id: 'tx-charge',
+        refund_transaction_id: null,
+        wallet_entry_id: null,
+        state: 'pending',
+        amount_agorot: 10_000,
+        cancel_only: false,
+        idempotency_key: 'refund:order-1',
+        low_profile_id: LOW_PROFILE,
+        wallet_credited_at: null,
+        method_reversed_at: null,
+        completed_at: null,
+      },
+      error: null,
+    })
+    const response = await POST(request(SECRET, callbackBody({ Operation: 'Refund' })))
+    expect(response.status).toBe(503)
+    expect(await response.json()).toEqual({ ok: false, error: 'wallet_not_credited' })
+    expect(finalizeOrder).not.toHaveBeenCalled()
+  })
+
+  it('replays a completed execution without writing the row again', async () => {
+    seedHappyPath()
+    queue('refund_executions.select', {
+      data: {
+        id: 're-1',
+        order_id: 'order-1',
+        payment_id: 'pay-1',
+        charge_transaction_id: 'tx-charge',
+        refund_transaction_id: 'refund-tx',
+        wallet_entry_id: 'we-1',
+        state: 'completed',
+        amount_agorot: 10_000,
+        cancel_only: false,
+        idempotency_key: 'refund:order-1',
+        low_profile_id: LOW_PROFILE,
+        wallet_credited_at: '2026-09-01T00:00:00.000Z',
+        method_reversed_at: '2026-09-01T00:01:00.000Z',
+        completed_at: '2026-09-01T00:02:00.000Z',
+      },
+      error: null,
+    })
+    const response = await POST(request(SECRET, callbackBody({ Operation: 'Refund' })))
+    expect(await response.json()).toEqual({ ok: true, refund: true, replay: true })
+    expect(calls.some((c) => c.table === 'refund_executions' && c.op === 'update')).toBe(false)
+  })
+})

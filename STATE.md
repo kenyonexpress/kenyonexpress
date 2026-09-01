@@ -1,5 +1,7 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-01 23:22 UTC (148 נמדד שוב על ke_sandbox: reserve 982.90, user 17.10, sum 1000.00, audit 1710 אגורות, replay אותו wallet_entries.id. GitHub Actions ירוק על PR #22. Vercel Preview אדום כמו על main.)
+Updated: 2026-09-01 23:04 UTC (148 הוחל על Postgres מקומי ke_sandbox: יתרה נשמרה 1000.00, audit 1710 אגורות, replay בלי שורת audit שנייה. לא הוחל על הפרויקט המאוחסן)
 Updated: 2026-09-01 12:20 UTC (‏אין כותב ל-escrow_held בשום מקום; ‏144/144 מעברים מול הטריגרים החיים; קיפאון ה-380/768 נמצא ותוקן; ‏payment_events היה טבלה ריקה בלי אף כותב)
 Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשישה כבר היו, ושני באגים אמיתיים נמצאו בדרך)
 קודם: 2026-09-01 03:02 UTC (‏שער הפיקסלים חצה את התקרה: ‏11.06% מול 11%, וזה לא שינוי שלנו)
@@ -67,7 +69,59 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 קודם: 2026-08-19 22:01 (הצ'ק-אאוט ירד מתחת לשער הפיקסלים, ו-CLS שלו תוקן)
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
-## המשך מ: ‏PRIORITY TWO — ‏refunds בשני המסלולים, ומירוץ מימוש הקופון
+## המשך מ: חיבור פעולת האדמין למכונת הביצוע (ארנק קודם), ומירוץ מימוש הקופון
+
+### 01.09 Refund Architecture Complete (`cursor/refund-state-machine-47b2`)
+
+מכונת ביצוע הכסף נכתבה. פעולת האדמין ב-
+src/server/actions/payments/refund.ts
+עדיין קוראת ל-Cardcom קודם. לא חוברה בפריט הזה, כי 149 לא הוחלה ואסור לשבור את מסלול הזיכוי החי.
+
+**מה נסגר**
+
+1. `fn_wallet_transfer` (שישה ארגומנטים, כמו בפרודקשן) כותב `audit_log` על ההזמנה אחרי insert אמיתי. Replay על אותו `idempotency_key` לא כותב שורת audit שנייה. סכום באגורות פעם אחת:
+   `round(p_amount_ils * 100)::bigint`
+2. מכונת מצבים:
+   `pending` -> `wallet_credited` -> `method_reversed` -> `completed`
+   בקובץ
+   src/server/payments/refund.ts
+3. Webhook של Cardcom: אין HMAC. אימות הוא `?s=` (כל הסודות, בלי קיצור) + GetLpResult. גוף `Amount` לא נאמן. `Operation` מסוג refund/credit/cancelonly לא רץ במסלול החיוב ולא מסמן את תשלום המקור כ-failed.
+4. `tests/refunds.test.ts`: כל 12 הצירופים (3 חוקיים, 9 לא), כישלון סוד, כישלון GetLpResult, אי-התאמת סכום, replay, reverse מוקדם, כישלון ספק. כיסוי המודול 100% שורות/ענפים/פונקציות.
+5. מיגרציות ממתינות:
+   migrations/pending/148_wallet_transfer_order_audit.sql
+   migrations/pending/149_refund_executions.sql
+
+**החלטות שהתקבלו לבד**
+
+- ארנק קודם, כרטיס אחר כך. הפעולה הקיימת הפוכה. המכונה החדשה לא מחליפה אותה עד ש-149 חיה.
+- טבלה חדשה `refund_executions`, לא שינוי ל-enum של 131 (ניירת: requested/approved/rejected/executing/completed).
+- לא הומצא HMAC. Cardcom לא חותם callbacks.
+- שמות הארגומנטים של `fn_wallet_transfer` לא השתנו (`p_amount_ils`).
+- סנדבוקס מאוחסן לא היה זמין (אין DATABASE_URL לפרויקט). הוקם Postgres 16 מקומי בשם `ke_sandbox`. זה לא הפרויקט המאוחסן ולא פרודקשן.
+
+**148 על הסנדבוקס המקומי, נמדד 2026-09-01**
+
+הוחל הקובץ
+migrations/pending/148_wallet_transfer_order_audit.sql
+על
+ke_sandbox
+אחרי סכימה מינימלית מ-
+scripts/sandbox/148-bootstrap.sql
+
+העברה 17.10 מ-`platform:cashback_reserve` לחשבון משתמש עם `p_order_id`:
+
+- יתרת reserve: 1000.00 -> 982.90
+- יתרת משתמש: 0.00 -> 17.10
+- סכום היתרות: 1000.00 (נשמר)
+- `audit_log.changes.amount_agorot`: 1710
+- replay על אותו `idempotency_key`: אותו `wallet_entries.id`, שורת audit אחת
+- העברה שנייה בלי `p_order_id`: בלי שורת audit נוספת, סכום היתרות עדיין 1000.00
+
+לא הוחל על הפרויקט המאוחסן. לא הוחל על פרודקשן.
+
+**שערים:** type-check נקי. `pnpm test` 3526. כיסוי
+src/server/payments/refund.ts
+100%. לא merge ל-main.
 
 ### ‏01.09 גל החוסן (`feat/resilience`, מוזג ל-main)
 

@@ -1,4 +1,8 @@
-import { cardcomWebhookPayloadSchema, isCardcomSuccess } from '@/lib/contracts/webhooks'
+import {
+  type CardcomWebhookPayload,
+  cardcomWebhookPayloadSchema,
+  isCardcomSuccess,
+} from '@/lib/contracts/webhooks'
 import { log } from '@/lib/observability/log'
 import { capturePaymentAlarm } from '@/lib/observability/sentry'
 import { withRequestLog } from '@/lib/observability/with-request-log'
@@ -9,6 +13,13 @@ import { secretEquals } from '@/lib/security/constant-time'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { finalizeOrder } from '@/server/payments/finalize'
 import { recordPaymentEvent } from '@/server/payments/payment-events'
+import {
+  type RefundExecutionRow,
+  handleRefundWebhook,
+  isRefundOperation,
+  refundExecutionFromRow,
+  refundExecutionToPatch,
+} from '@/server/payments/refund'
 import type { Json } from '@/types/database'
 import { type NextRequest, NextResponse } from 'next/server'
 
@@ -29,6 +40,135 @@ function anySecretMatches(provided: string, accepted: readonly string[]): boolea
 
 /** Postgres: unique_violation. The only insert failure here that means "replay". */
 const UNIQUE_VIOLATION = '23505'
+
+type LocatedPayment = {
+  id: string
+  order_id: string
+  status: string
+  cardcom_account_id: string | null
+}
+
+const REFUND_EXECUTION_COLUMNS =
+  'id, order_id, payment_id, charge_transaction_id, refund_transaction_id, wallet_entry_id, state, amount_agorot, cancel_only, idempotency_key, low_profile_id, wallet_credited_at, method_reversed_at, completed_at'
+
+/**
+ * A refund callback must never run the charge path. Marking the original
+ * payment failed on a declined refund, or finalizing the order on a successful
+ * one, would corrupt a charge that already settled.
+ *
+ * `149_refund_executions.sql` is still pending. A missing table (42P01) is
+ * treated as "no execution row", not as a retry loop.
+ */
+async function respondToRefundCallback(input: {
+  admin: ReturnType<typeof createAdminClient>
+  payload: CardcomWebhookPayload
+  payment: LocatedPayment
+  providedSecret: string
+  acceptedSecrets: readonly string[]
+  externalEventId: string
+}): Promise<NextResponse> {
+  if (!isCardcomSuccess(input.payload)) {
+    await recordPaymentEvent({
+      eventType: 'callback_provider_failure',
+      stage: 'cardcom_webhook_refund',
+      externalEventId: input.externalEventId,
+      orderId: input.payment.order_id,
+      paymentId: input.payment.id,
+      lowProfileId: input.payload.lowprofilecode,
+      detail: { response_code: input.payload.ResponseCode, refund: true },
+    })
+    return NextResponse.json({ ok: true, refund_declined: true })
+  }
+
+  const { data: row, error: executionError } = (await input.admin
+    .from('refund_executions' as never)
+    .select(REFUND_EXECUTION_COLUMNS)
+    .eq('order_id', input.payment.order_id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()) as {
+    data: RefundExecutionRow | null
+    error: { code?: string; message: string } | null
+  }
+
+  if (executionError) {
+    if (executionError.code === '42P01' || executionError.code === '42703') {
+      return NextResponse.json({ ok: true, unknown_refund_execution: true })
+    }
+    log.error('cardcom.webhook_refund_execution_read_failed', {
+      order_id: input.payment.order_id,
+      reason: executionError.message,
+    })
+    return NextResponse.json({ ok: false, retry: true }, { status: 503 })
+  }
+  if (!row) {
+    await recordPaymentEvent({
+      eventType: 'callback_unknown_payment',
+      stage: 'cardcom_webhook_refund',
+      externalEventId: input.externalEventId,
+      orderId: input.payment.order_id,
+      paymentId: input.payment.id,
+      lowProfileId: input.payload.lowprofilecode,
+      detail: { refund: true },
+    })
+    return NextResponse.json({ ok: true, unknown_refund_execution: true })
+  }
+
+  const provider = getPaymentProvider(input.payment.cardcom_account_id)
+  const result = await handleRefundWebhook({
+    providedSecret: input.providedSecret,
+    acceptedSecrets: input.acceptedSecrets,
+    operation: input.payload.Operation,
+    lowProfileId: input.payload.lowprofilecode,
+    execution: refundExecutionFromRow(row),
+    verifyLowProfile: (id) => provider.verifyLowProfile(id),
+    now: new Date(),
+  })
+
+  if (!result.ok) {
+    if (result.code === 'WALLET_NOT_CREDITED') {
+      return NextResponse.json({ ok: false, error: 'wallet_not_credited' }, { status: 503 })
+    }
+    if (result.code === 'VERIFY_FAILED') {
+      await capturePaymentAlarm('cardcom refund webhook reported success but GetLpResult did not', {
+        stage: 'cardcom_webhook_refund_verify',
+        orderId: input.payment.order_id,
+        paymentId: input.payment.id,
+        detail: { low_profile_id: input.payload.lowprofilecode },
+      })
+      return NextResponse.json({ ok: true, verified: false })
+    }
+    if (result.code === 'AMOUNT_MISMATCH') {
+      await capturePaymentAlarm('cardcom refund amount did not match the execution', {
+        stage: 'cardcom_webhook_refund_amount',
+        orderId: input.payment.order_id,
+        paymentId: input.payment.id,
+        detail: { low_profile_id: input.payload.lowprofilecode },
+      })
+      return NextResponse.json({ ok: true, amount_mismatch: true })
+    }
+    return NextResponse.json({ ok: true, refund: result.code })
+  }
+
+  if (!result.replay) {
+    await input.admin
+      .from('refund_executions' as never)
+      .update(refundExecutionToPatch(result.execution) as never)
+      .eq('id', result.execution.id)
+  }
+
+  await input.admin
+    .from('payment_webhook_events')
+    .update({
+      verified_against_api: true,
+      payment_id: input.payment.id,
+      processed_at: new Date().toISOString(),
+    })
+    .eq('provider', 'cardcom')
+    .eq('external_event_id', input.externalEventId)
+
+  return NextResponse.json({ ok: true, refund: true, replay: result.replay })
+}
 
 /**
  * Cardcom webhook (IndicatorUrl). Cardcom does NOT sign its callbacks — there is
@@ -189,12 +329,7 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     })
     return NextResponse.json({ ok: false, retry: true }, { status: 503 })
   }
-  const payment = paymentRow as unknown as {
-    id: string
-    order_id: string
-    status: string
-    cardcom_account_id: string | null
-  } | null
+  const payment = paymentRow as unknown as LocatedPayment | null
   if (!payment) {
     // A callback for a Low Profile id we hold no payment for.
     //
@@ -226,6 +361,17 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
       },
     })
     return NextResponse.json({ ok: true, unknown_payment: true })
+  }
+
+  if (isRefundOperation(payload.Operation)) {
+    return respondToRefundCallback({
+      admin,
+      payload,
+      payment,
+      providedSecret: request.nextUrl.searchParams.get('s') ?? '',
+      acceptedSecrets: acceptedWebhookSecrets(env),
+      externalEventId,
+    })
   }
 
   if (!isCardcomSuccess(payload)) {

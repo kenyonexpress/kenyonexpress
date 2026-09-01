@@ -25,7 +25,8 @@
 | `src/server/domain/orders/state-machine.ts` | מצבי שורה: `paid -> platform_settled` (קופון) / `split_executed` (פיזי) |
 | `src/server/actions/payments/checkout.ts` | ‏beginCheckout: ולידציה, snapshot, ‏Cardcom hosted page |
 | `src/server/payments/finalize.ts` | הכותב היחיד של המעבר ל-paid; מנפיק ואוצ'רים דרך `src/server/domain/vouchers/` |
-| `src/server/actions/payments/refund.ts` | זיכוי: חוקי רק כשכל הוואוצ'רים עדיין `issued` |
+| `src/server/actions/payments/refund.ts` | זיכוי אדמין: חוקי רק כשכל הוואוצ'רים עדיין `issued` |
+| `src/server/payments/refund.ts` | מכונת ביצוע הכסף: `pending` -> `wallet_credited` -> `method_reversed` -> `completed` |
 | `src/server/domain/vouchers/` | הנפקה, קוד, QR חתום, מכונת מצבים, מימוש |
 
 ## אינווריאנטים
