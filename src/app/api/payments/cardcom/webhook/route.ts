@@ -8,6 +8,7 @@ import { readAmountAgorot, resolvePaymentMoneySchema } from '@/lib/payments/paym
 import { secretEquals } from '@/lib/security/constant-time'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { finalizeOrder } from '@/server/payments/finalize'
+import { recordPaymentEvent } from '@/server/payments/payment-events'
 import type { Json } from '@/types/database'
 import { type NextRequest, NextResponse } from 'next/server'
 
@@ -82,6 +83,12 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     // was never written, so nothing knows. A 5xx here is the whole recovery
     // mechanism: Cardcom retries it.
     if (eventError.code === UNIQUE_VIOLATION) {
+      await recordPaymentEvent({
+        eventType: 'callback_replay',
+        stage: 'cardcom_webhook_persist',
+        externalEventId,
+        lowProfileId: parsed.success ? parsed.data.lowprofilecode : null,
+      })
       return NextResponse.json({ ok: true, replay: true })
     }
     await capturePaymentAlarm('cardcom webhook could not be journalled', {
@@ -106,6 +113,13 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     // open. It is also exactly what the two-secret window exists to prevent, so
     // it must be loud enough that the window is noticed while it is open.
     if (parsed.success) {
+      await recordPaymentEvent({
+        eventType: 'callback_rejected',
+        stage: 'cardcom_webhook_secret',
+        externalEventId,
+        lowProfileId: parsed.data.lowprofilecode,
+        detail: { accepted_secrets: acceptedWebhookSecrets(env).length },
+      })
       await capturePaymentAlarm('cardcom callback rejected: no accepted secret matched', {
         stage: 'cardcom_webhook_secret',
         detail: {
@@ -123,6 +137,17 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true })
   }
   const payload = parsed.data
+
+  // The callback is authenticated, parsed and journalled. Everything after this
+  // point is our own finding rather than the provider's statement.
+  await recordPaymentEvent({
+    eventType: 'callback_received',
+    stage: 'cardcom_webhook_persist',
+    externalEventId,
+    lowProfileId: payload.lowprofilecode,
+    transactionId: payload.InternalDealNumber ? String(payload.InternalDealNumber) : null,
+    detail: { succeeded_at_provider: isCardcomSuccess(payload) },
+  })
 
   // 2. Locate our payment by the hosted-page id.
   //
@@ -185,6 +210,13 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     //
     // Still a 200: there is nothing Cardcom can do by retrying, and a 5xx would
     // make it retry an event we will keep failing to place.
+    await recordPaymentEvent({
+      eventType: 'callback_unknown_payment',
+      stage: 'cardcom_webhook_unknown_payment',
+      externalEventId,
+      lowProfileId: payload.lowprofilecode,
+      detail: { succeeded_at_provider: isCardcomSuccess(payload) },
+    })
     await capturePaymentAlarm('cardcom callback for a payment that does not exist here', {
       stage: 'cardcom_webhook_unknown_payment',
       detail: {
@@ -206,6 +238,15 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
       })
       .eq('id', payment.id)
       .in('status', ['initiated', 'redirected'])
+    await recordPaymentEvent({
+      eventType: 'callback_provider_failure',
+      stage: 'cardcom_webhook_persist',
+      externalEventId,
+      orderId: payment.order_id,
+      paymentId: payment.id,
+      lowProfileId: payload.lowprofilecode,
+      detail: { response_code: payload.ResponseCode },
+    })
     return NextResponse.json({ ok: true })
   }
 
@@ -214,11 +255,28 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   //    resolves on the terminal that created it, so asking any other one would
   //    answer not_found for a customer who was charged.
   const provider = getPaymentProvider(payment.cardcom_account_id)
+  await recordPaymentEvent({
+    eventType: 'verify_requested',
+    stage: 'cardcom_webhook_verify',
+    externalEventId,
+    orderId: payment.order_id,
+    paymentId: payment.id,
+    lowProfileId: payload.lowprofilecode,
+  })
   const verified = await provider.verifyLowProfile(payload.lowprofilecode)
   if (!verified.success || verified.amountAgorot === null) {
     // Cardcom said the deal succeeded and the re-verify disagrees. Someone is
     // wrong about whether the customer was charged, and it is not resolvable
     // from here.
+    await recordPaymentEvent({
+      eventType: 'verify_contradicted_callback',
+      stage: 'cardcom_webhook_verify',
+      externalEventId,
+      orderId: payment.order_id,
+      paymentId: payment.id,
+      lowProfileId: payload.lowprofilecode,
+      detail: { verified_success: verified.success, amount_agorot: verified.amountAgorot },
+    })
     await capturePaymentAlarm('cardcom webhook reported success but GetLpResult did not', {
       stage: 'cardcom_webhook_verify',
       orderId: payment.order_id,
@@ -236,6 +294,14 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
   // assumed.
   const expectedAgorot = readAmountAgorot(money, payment as Record<string, unknown>)
   if (expectedAgorot === null) {
+    await recordPaymentEvent({
+      eventType: 'amount_unreadable',
+      stage: 'cardcom_webhook_amount',
+      externalEventId,
+      orderId: payment.order_id,
+      paymentId: payment.id,
+      detail: { column: money.amountColumn },
+    })
     await capturePaymentAlarm('payment row carries no readable amount', {
       stage: 'cardcom_webhook_amount',
       orderId: payment.order_id,
@@ -257,6 +323,15 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
         expected_agorot: expectedAgorot,
         got_agorot: verified.amountAgorot,
       } as unknown as Json,
+    })
+    await recordPaymentEvent({
+      eventType: 'amount_mismatch',
+      stage: 'cardcom_webhook_amount',
+      externalEventId,
+      orderId: payment.order_id,
+      paymentId: payment.id,
+      amountAgorot: verified.amountAgorot,
+      detail: { expected_agorot: expectedAgorot, got_agorot: verified.amountAgorot },
     })
     await capturePaymentAlarm('cardcom charged an amount we did not ask for', {
       stage: 'cardcom_webhook_amount',
@@ -282,7 +357,25 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     .eq('provider', 'cardcom')
     .eq('external_event_id', externalEventId)
 
+  await recordPaymentEvent({
+    eventType: 'verify_succeeded',
+    stage: 'cardcom_webhook_verify',
+    externalEventId,
+    orderId: payment.order_id,
+    paymentId: payment.id,
+    transactionId: verified.transactionId,
+    amountAgorot: verified.amountAgorot,
+  })
+
   // 4. The single valuable transition
+  await recordPaymentEvent({
+    eventType: 'finalize_started',
+    stage: 'cardcom_webhook_finalize',
+    externalEventId,
+    orderId: payment.order_id,
+    paymentId: payment.id,
+    amountAgorot: verified.amountAgorot,
+  })
   const result = await finalizeOrder({
     orderId: payment.order_id,
     paymentId: payment.id,
@@ -295,6 +388,15 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     // single worst state in the system, so it alerts unconditionally. The row
     // keeps processed_at null, which is what puts it in the dead-letter queue
     // that `server/payments/webhook-dlq.ts` replays.
+    await recordPaymentEvent({
+      eventType: 'finalize_failed',
+      stage: 'cardcom_webhook_finalize',
+      externalEventId,
+      orderId: payment.order_id,
+      paymentId: payment.id,
+      amountAgorot: verified.amountAgorot,
+      detail: { error: result.error, code: result.code },
+    })
     await capturePaymentAlarm('payment verified but finalize failed', {
       stage: 'cardcom_webhook_finalize',
       orderId: payment.order_id,
@@ -303,6 +405,16 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     })
     return NextResponse.json({ ok: false })
   }
+
+  await recordPaymentEvent({
+    eventType: 'finalize_succeeded',
+    stage: 'cardcom_webhook_finalize',
+    externalEventId,
+    orderId: payment.order_id,
+    paymentId: payment.id,
+    amountAgorot: verified.amountAgorot,
+    transactionId: verified.transactionId,
+  })
 
   await admin
     .from('payment_webhook_events')

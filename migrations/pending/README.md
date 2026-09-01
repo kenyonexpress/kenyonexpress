@@ -242,6 +242,31 @@ list from this directory and checks it against every `.ts`/`.tsx` in **both**
 `src/` and `apps/`, so revoking a function the Expo till uses fails a test
 rather than a till.
 
+## `147_money_agorot_remaining_twins.sql`, added 2026-09-01
+
+Generated `_agorot` twins for the last four money columns that had none:
+`orders.discount_ils`, `orders.cashback_applied_ils`,
+`order_items.supplier_payout_ils` and `order_items.cashback_earned_ils`.
+
+They are the four that still convert in JavaScript, in
+`src/lib/commerce/order-money-columns.ts`, on a value that has already crossed a
+JSON boundary as a string. Everything else in the read path already reads a
+twin and lets Postgres do the multiply against the numeric source.
+
+`generated always as (round(<col> * 100)::bigint) stored`, like the 26 already
+live: it cannot drift, and Postgres refuses any write that names it (428C9), so
+no writer changes and the numeric column stays the source of truth.
+
+**Dry run against production, in a transaction that was rolled back:** all four
+were created, all four reported `is_generated = ALWAYS`, and the arithmetic is
+right on real rows (17.10 -> 1710, 759.05 -> 75905). Confirmed afterwards that
+zero columns of these names exist in production. The nonneg checks are safe on
+current data, measured: minimums 0.00, 0.00, 17.10, 0.00, no negatives.
+
+**No reader changes with it.** A select naming a column that does not exist
+fails 42703 and takes the whole row with it. The reader moves in a separate
+commit after this is applied.
+
 ## `146_wallet_balance_floor.sql`, added 2026-09-01
 
 `check (user_id is null or balance_ils >= 0)` on `wallet_accounts`. A customer
