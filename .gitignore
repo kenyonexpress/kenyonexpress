@@ -61,3 +61,4 @@ wp_import/
 
 # DR schema dumps: real data, rotated by scripts/backup-schema.sh. Never committed.
 backups/
+.env*

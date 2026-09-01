@@ -295,3 +295,62 @@ pnpm biome check  984 files, no findings
 pnpm test         3478 passed, 258 files
 pnpm build        green
 ```
+
+## BLOCKER: production checkout is enabled and wired to the mock provider
+
+Found 2026-09-02, by reading the production environment directly after
+`vercel link`. Both facts are from `vercel env pull --environment=production`.
+
+```
+CHECKOUT_ENABLED = "true"
+CARDCOM_USE_MOCK = "true"
+```
+
+`CHECKOUT_ENABLED=true` was **already set** — the launch task to add it was
+done a day earlier. The dangerous variable is the other one.
+
+`src/lib/payments/env.ts:61`:
+
+```js
+const useMock =
+  source.CARDCOM_USE_MOCK === 'true' ||
+  source.NODE_ENV === 'test' ||
+  (!source.CARDCOM_TERMINAL_NUMBER && source.NODE_ENV !== 'production')
+```
+
+`CARDCOM_USE_MOCK === 'true'` is tested first and **there is no production
+override**. So `getPaymentProvider()` returns `getSharedMockCardcom()`, and the
+mock answers `success: true` to `createLowProfile`, `verifyLowProfile`,
+`chargeWithToken` and `refundByTransactionId` alike.
+
+**A customer would complete checkout, the payment would "succeed", the order
+would finalize and a voucher would be issued, and no card would ever be
+charged.** The shop would give away goods.
+
+There are also no real terminal credentials in production. The only Cardcom
+variables present are `CARDCOM_USE_MOCK` and `CARDCOM_WEBHOOK_SECRET`;
+`CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME` and `CARDCOM_API_PASSWORD` are
+absent.
+
+### Why this was not fixed here
+
+Deleting `CARDCOM_USE_MOCK` on its own makes it **worse, not better**. The
+non-mock branch calls `required('CARDCOM_TERMINAL_NUMBER', ...)`, which throws
+when the variable is missing, so checkout would move from silently-fake to
+hard-failing.
+
+The two changes are one change and they are Ofir's:
+
+1. add `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD`
+   from the production terminal (Cardcom, 03-9436100), then
+2. remove `CARDCOM_USE_MOCK`, then
+3. redeploy, then place one real low-value order and confirm it appears in the
+   Cardcom dashboard.
+
+**Until then, the safe state is `CHECKOUT_ENABLED=false`.** A checkout that
+refuses is a bad shop; a checkout that fakes success is a shop that ships goods
+for free. That flip was not made here because the launch instruction was
+explicitly to set it to `true`, and choosing the opposite is a business call.
+
+**This is a DNS-cutover blocker.** Pointing the real domain at this deployment
+today would open a shop that charges nobody.
