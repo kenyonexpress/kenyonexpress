@@ -1,4 +1,5 @@
 import { agorot } from '@/lib/commerce/money'
+import { log } from '@/lib/observability/log'
 import { type CardcomAccount, loadCardcomAccounts } from '@/lib/payments/accounts'
 import {
   parseTerminalAmountAgorot,
@@ -50,6 +51,20 @@ function asNumber(value: unknown): number | null {
  * `getPaymentProvider(accountId)` and carry the id alongside whatever they
  * store.
  */
+/**
+ * How long any single Cardcom call may take.
+ *
+ * Read per call rather than at module load, for the same reason the Upstash
+ * config is: a value pinned at module load survives for the life of a warm
+ * instance. 15s is well past Cardcom's normal response and well under the
+ * platform's own request ceiling, which is what leaves room for the one retry
+ * on the read-only paths.
+ */
+function cardcomTimeoutMs(): number {
+  const parsed = Number(process.env.CARDCOM_TIMEOUT_MS)
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : 15_000
+}
+
 export class CardcomProvider implements PaymentProvider {
   readonly name = 'cardcom' as const
   readonly account: CardcomAccount
@@ -76,13 +91,70 @@ export class CardcomProvider implements PaymentProvider {
     return configured.replace(/\/+$/, '')
   }
 
-  private async postForm(path: string, fields: Record<string, string>): Promise<CardcomJson> {
-    const body = new URLSearchParams(fields)
-    const response = await fetch(`${this.baseUrl()}${path}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body,
-    })
+  /**
+   * A CALL THAT CHARGES A CARD IS NOT RETRIED. Everything here follows from
+   * that.
+   *
+   * This used to be a bare `fetch` with no timeout and no retry. No timeout
+   * means a Cardcom that accepts the connection and never answers holds the
+   * request open until the platform kills it, with the customer watching a
+   * spinner and the order in `pending`.
+   *
+   * A timeout alone would be an improvement and a trap. The dangerous half is
+   * the retry: a POST to `ChargeToken.aspx` that times out has NOT necessarily
+   * failed. The request may have arrived, the card may be charged, and only the
+   * response may be lost. Retrying that is how a customer is charged twice, and
+   * the legacy interface offers no idempotency key to make it safe -- verified
+   * against the endpoints actually in use, all six of which are
+   * `/Interface/*.aspx` form posts.
+   *
+   * So retry is OPT-IN, per call site, and off by default:
+   *
+   *   GetLpResult.aspx       read-only          RETRY
+   *   ListTransactions.aspx  read-only          RETRY
+   *   LowProfile.aspx        creates a page,
+   *                          charges nothing    RETRY (a duplicate page is
+   *                                             abandoned, not billed)
+   *   ChargeToken.aspx       CHARGES            never
+   *   RefundDeal.aspx        MOVES MONEY        never
+   *   BillGoldPost.aspx      issues a document  never (a duplicate invoice is
+   *                                             a real-world problem)
+   *
+   * The one retry is for a TRANSPORT failure only -- a timeout or a thrown
+   * fetch. A response that arrives and says something we did not like is an
+   * answer, not a failure to reach the provider, and it is returned as-is.
+   */
+  private async postForm(
+    path: string,
+    fields: Record<string, string>,
+    options: { retryOnTransportFailure?: boolean } = {},
+  ): Promise<CardcomJson> {
+    const attempt = async (): Promise<Response> => {
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), cardcomTimeoutMs())
+      try {
+        return await fetch(`${this.baseUrl()}${path}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams(fields),
+          signal: controller.signal,
+        })
+      } finally {
+        // Always, including on the success path: an uncleared timer keeps the
+        // event loop alive and, in a long-lived process, aborts nothing while
+        // still holding a reference to the controller.
+        clearTimeout(timer)
+      }
+    }
+
+    let response: Response
+    try {
+      response = await attempt()
+    } catch (err) {
+      if (!options.retryOnTransportFailure) throw err
+      log.warn('cardcom.transport_retry', { path, reason: String(err) })
+      response = await attempt()
+    }
     const text = await response.text()
     try {
       return JSON.parse(text) as CardcomJson
@@ -100,20 +172,27 @@ export class CardcomProvider implements PaymentProvider {
   }
 
   async createLowProfile(input: CreateLowProfileInput): Promise<CreateLowProfileResult> {
-    const raw = await this.postForm('/Interface/LowProfile.aspx', {
-      TerminalNumber: this.account.terminalNumber,
-      ApiName: this.account.apiName,
-      Amount: this.ilsFromAgorot(input.amountAgorot),
-      CoinId: '1',
-      Language: 'he',
-      ProductName: input.description.slice(0, 120),
-      SuccessRedirectUrl: input.successRedirectUrl,
-      ErrorRedirectUrl: input.failedRedirectUrl,
-      IndicatorUrl: input.webhookUrl,
-      ReturnValue: input.paymentId,
-      Operation: input.saveToken ? 'ChargeAndCreateToken' : 'ChargeOnly',
-      Codepage: '65001',
-    })
+    const raw = await this.postForm(
+      '/Interface/LowProfile.aspx',
+      {
+        TerminalNumber: this.account.terminalNumber,
+        ApiName: this.account.apiName,
+        Amount: this.ilsFromAgorot(input.amountAgorot),
+        CoinId: '1',
+        Language: 'he',
+        ProductName: input.description.slice(0, 120),
+        SuccessRedirectUrl: input.successRedirectUrl,
+        ErrorRedirectUrl: input.failedRedirectUrl,
+        IndicatorUrl: input.webhookUrl,
+        ReturnValue: input.paymentId,
+        Operation: input.saveToken ? 'ChargeAndCreateToken' : 'ChargeOnly',
+        Codepage: '65001',
+      },
+      // Creating a hosted page charges nothing. A duplicate page is abandoned
+      // rather than billed, and the customer is waiting at checkout, so this is
+      // the one write-shaped call where a retry is clearly worth it.
+      { retryOnTransportFailure: true },
+    )
 
     const responseCode = asNumber(raw.ResponseCode ?? raw.responsecode) ?? -1
     const lowProfileId = asString(raw.LowProfileCode ?? raw.lowprofilecode)
@@ -406,12 +485,19 @@ export class CardcomProvider implements PaymentProvider {
   }
 
   async verifyLowProfile(lowProfileId: string): Promise<VerifyLowProfileResult> {
-    const raw = await this.postForm('/Interface/GetLpResult.aspx', {
-      TerminalNumber: this.account.terminalNumber,
-      ApiName: this.account.apiName,
-      LowProfileCode: lowProfileId,
-      Codepage: '65001',
-    })
+    const raw = await this.postForm(
+      '/Interface/GetLpResult.aspx',
+      {
+        TerminalNumber: this.account.terminalNumber,
+        ApiName: this.account.apiName,
+        LowProfileCode: lowProfileId,
+        Codepage: '65001',
+      },
+      // Read-only: asking again what a Low Profile resulted in cannot move
+      // money, and this is the call the webhook depends on to decide whether
+      // the customer was charged at all.
+      { retryOnTransportFailure: true },
+    )
 
     const responseCode = asNumber(raw.ResponseCode ?? raw.responsecode) ?? -1
     // The terminal's DIGITS, not a double built from them. This read is the
