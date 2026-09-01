@@ -15,7 +15,7 @@ renumbered into the sequence below:
 | --- | --- |
 | `supabase/migrations/PENDING-109-recurring-subscriptions.sql` | `135_recurring_subscriptions.sql` |
 | `supabase/migrations/PENDING-110-supplier-coordinates.sql` | `136_supplier_coordinates.sql` |
-| `supabase/migrations/PENDING-money-integer-fix.sql` | `142_money_integer_fix_in_place.sql` |
+| `supabase/migrations/PENDING-money-integer-fix.sql` | superseded; the in-place path was deleted 2026-09-01, see DECISIONS |
 
 Every reference to the old paths across `src/`, `apps/`, `docs/`, `scripts/`
 and the root `*.md` files was rewritten in the same commit. There is no second
@@ -30,7 +30,7 @@ skipping `128` and `129`, which are taken by
 Highest number applied in production is `129`. No number now repeats across the
 two directories.
 
-## ⚠️ 138-141 and 142 are MUTUALLY EXCLUSIVE. Apply one path, never both.
+## RESOLVED 2026-09-01: the additive path (138-141) won. 142 is deleted.
 
 Both convert money to integer agorot and they collide.
 
@@ -200,7 +200,7 @@ the hole 145 closes.
 
 ## Reference only — not in the apply order
 
-### `142_money_integer_fix_in_place.sql`
+### `the in-place money migration (deleted 2026-09-01)`
 
 **NOT FOR EXECUTION. Superseded by the additive approach in 138-141. Retained as
 the written specification of the eventual in-place end state. Do not apply.**
@@ -210,7 +210,7 @@ without this README sees it too.
 
 | # | File | What it changes | Blast radius | Order | Prerequisite | Rollback |
 | --- | --- | --- | --- | --- | --- | --- |
-| 142 | `142_money_integer_fix_in_place.sql` | Converts 41 money columns in place, numeric ILS → bigint agorot; rebuilds `fn_wallet_transfer`, `fn_pay_referral`, 2 wallet views | **CATASTROPHIC. PARKED — DO NOT APPLY.** Mutually exclusive with 138-141; ~55 code files still read the old ILS names | — | Abandoning 138-141 **and** rewriting every reader first | Inverse rename + `ALTER TYPE ... USING <col> / 100.0`, plus restoring both functions and both views. **Treat as one-way in practice.** |
+| 142 | `the in-place money migration (deleted 2026-09-01)` | Converts 41 money columns in place, numeric ILS → bigint agorot; rebuilds `fn_wallet_transfer`, `fn_pay_referral`, 2 wallet views | **CATASTROPHIC. PARKED — DO NOT APPLY.** Mutually exclusive with 138-141; ~55 code files still read the old ILS names | — | Abandoning 138-141 **and** rewriting every reader first | Inverse rename + `ALTER TYPE ... USING <col> / 100.0`, plus restoring both functions and both views. **Treat as one-way in practice.** |
 
 It is kept, not deleted, for the reason recorded in `docs/DECISIONS.md`: it is
 the only written description of the eventual in-place end state, and the
@@ -246,3 +246,10 @@ wallet may not go negative; a house account may, because it is the funding side
 of every cashback pair. The reasoning, and the measurements behind it, are in
 `docs/DECISIONS.md`. The migration refuses to run if any user-owned account is
 negative when it is applied.
+
+## The 138-141 vs 142 question is closed
+
+Ofir chose the additive path. `the in-place money migration (deleted 2026-09-01)` has been
+deleted, not archived: the two paths produce nine identically-named columns on
+the same tables, and a file left in a directory called `pending/` is a file
+somebody may apply. The reasoning is in `docs/DECISIONS.md`.

@@ -19,7 +19,11 @@ const argOf = (name, dflt) => {
   return hit ? hit.slice(name.length + 3) : dflt
 }
 const page = argOf('page', 'home')
-const VIEW = { width: 1440, height: 2600 }
+// Width is an argument because the gate is quoted at three widths (380, 768,
+// 1440) and this was hardcoded to 1440, so the two phone widths had never once
+// been measured. Height stays 2600: the diff is banded down the page and the
+// bands must line up run to run for the numbers to be comparable.
+const VIEW = { width: Number(argOf('width', '1440')), height: 2600 }
 const LOCAL = process.env.LOCAL_BASE ?? 'http://localhost:3000'
 const LIVE_HOME = 'https://kenyonexpress.co.il/'
 const LIVE_PRODUCT = 'https://kenyonexpress.co.il/product/מוצר-לדוגמא/'

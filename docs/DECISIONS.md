@@ -161,3 +161,29 @@ constraining bad data into place.
 all three were created in the same second, which looks like a seed. Only one of
 them is in use. Whether the other two should exist is a separate question and is
 not answered by this constraint.
+
+## 2026-09-01: the money conversion takes the additive path. 142 is deleted
+
+**Decision by Ofir, recorded verbatim in reasoning.** Migrations `138`-`141`
+(additive) are the money conversion. `142_money_integer_fix_in_place.sql` is
+deleted.
+
+**Why in-place loses.** It renames the column as it converts, so it breaks every
+reader the moment it applies. There is no window in which to deploy the code,
+and no rollback without downtime.
+
+**Why additive wins.** It gives a sequence where each step is separately
+reversible:
+
+```
+1. apply 138-141        -> a no-op for the running application
+2. deploy the readers   -> pointing at the new _agorot columns
+3. verify in production -> both representations are live and comparable
+4. drop the old columns -> a separate migration, later
+```
+
+**The two paths were never compatible.** They produce nine identically-named
+columns on the same tables, so applying both double-converts. That is why one
+had to go rather than both being kept "for reference": a file sitting in
+`migrations/pending/` is, by the name of the directory, a thing somebody may
+apply.
