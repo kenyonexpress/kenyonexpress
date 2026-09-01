@@ -1,5 +1,32 @@
 # DNS cutover plan
 
+> **READ `docs/DNS-SNAPSHOT-PRE-CUTOVER.md` FIRST. The premise below changed on
+> 2026-09-02.**
+>
+> There are two Cloudflare zones for this domain. The registrar delegates to
+> `derek`/`elma.ns.cloudflare.com`, and the account we hold a token for
+> (`13a3f166…`) holds a *staged* zone on `ignat`/`tess` that has never been
+> activated (`status: initializing`, `activated_on: null`, created 2026-08-10).
+>
+> **Editing DNS in the staged zone changes nothing publicly.** Every write
+> returns `success: true` and the internet keeps answering from `derek`/`elma`.
+>
+> So the apex/www commands further down are correct *as commands* and are aimed
+> at the wrong zone until one of these happens:
+>
+> 1. the registrar's nameservers move to `ignat`/`tess`, activating all 30
+>    staged records at once, including mail; or
+> 2. someone gets access to the account owning `derek`/`elma` and edits there.
+>
+> **Before option 1, two staged records must be fixed.** Both contain a literal
+> `[...]`: a 32-character duplicate `resend._domainkey` TXT (delete it; a valid
+> 220-character one exists) and the `send` SPF (`include[...].nses.com` is not a
+> domain, so it evaluates to `permerror`). Neither is live today, so nothing is
+> broken now; they break on the day the nameservers move.
+>
+> Zone id, for the commands below: `8e8f82c441280a764a69b36fee104272`.
+
+
 **Nothing here has been run.** Executing the cutover is a hard stop and needs
 Ofir. This file is the prepared commands, the rollback, and the two things that
 have to be true before either is worth typing.
@@ -23,10 +50,9 @@ payment means the first real customer cannot buy. See
 
 ```bash
 export CF_API_TOKEN='<token with Zone:Read + Zone:DNS:Edit on kenyonexpress.co.il>'
-export ZONE_ID="$(curl -sS -H "Authorization: Bearer $CF_API_TOKEN" \
-  'https://api.cloudflare.com/client/v4/zones?name=kenyonexpress.co.il' \
-  | python3 -c 'import sys,json; print(json.load(sys.stdin)["result"][0]["id"])')"
-echo "$ZONE_ID"
+# The STAGED zone in account 13a3f166…, resolved 2026-09-02.
+# Confirm it is the zone you mean before writing to it: see the banner above.
+export ZONE_ID='8e8f82c441280a764a69b36fee104272'
 ```
 
 ## Take the snapshot that the rollback depends on
@@ -104,10 +130,12 @@ has been serving the domain for a day.
 | `_dmarc TXT v=DMARC1; p=none;` | DMARC policy. |
 | `mail.kenyonexpress.co.il` | Resolves to the proxy today; not part of the web cutover. |
 
-**The brief says to preserve "Resend MX/TXT/DKIM records". There are none.** The
-mail on this domain is `spd.co.il`, and three common DKIM selectors were checked
-and are absent. Do not go looking for Resend records to keep, and do not delete
-the `spd.co.il` ones thinking they are stale.
+**Correction.** An earlier version of this file said there were no Resend
+records. That is true of the LIVE zone and wrong about the staged one, which
+carries `resend._domainkey`, `send` MX to `feedback-smtp.us-east-1.amazonses.com`
+and a `send` SPF. Two of those are corrupt (see the banner). Mail on the live
+zone is `spd.co.il`, and those records must survive either route, because
+deleting them stops mail delivery immediately.
 
 ## Verify, before telling anyone it is done
 
