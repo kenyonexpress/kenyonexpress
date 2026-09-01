@@ -2,6 +2,10 @@
 -- PENDING: money columns from numeric ILS to integer agorot
 -- ============================================================================
 --
+-- NOT FOR EXECUTION. Superseded by the additive approach in 138-141.
+-- Retained as the written specification of the eventual in-place end state.
+-- Do not apply.
+--
 -- STATUS: NOT APPLIED. Awaiting Ofir's explicit approval.
 -- Apply ONLY through MCP apply_migration, never db push. The filename
 -- deliberately breaks the NNN_ prefix convention so no tooling picks it up
