@@ -1,11 +1,49 @@
 # Documentation Index
 
+---
+
+## What this is, in ten lines
+
+For someone who will read nothing else.
+
+1. **KenyonExpress is an Israeli coupon marketplace.** A customer pays a small
+   absolute price online for a coupon worth much more, then pays the balance in
+   cash at the business when they redeem it.
+2. **The platform keeps the entire online payment, permanently.** There is no
+   escrow, no hold, and no payout to a supplier on the coupon path. The cash at
+   the counter is the supplier's and never touches us.
+3. **Money is an integer number of agorot.** No float touches it anywhere, and
+   every calculation goes through one module, `src/lib/money.ts`.
+4. **The stack is Next.js 16 on Vercel, Postgres on Supabase, Cardcom for
+   card payments.** One Next app at `src/app/`; `apps/` holds a mobile till app
+   and nothing else.
+5. **The database enforces the rules, not just the code.** 133 RLS policies,
+   conservation CHECK constraints, an append-only payment journal, and three
+   transition-guard triggers that refuse an illegal status move with `23514`.
+6. **The catalogue is built and the money path is written.** 80 products, 12
+   suppliers, 61 tables, 99 applied migrations.
+7. **No customer has ever bought anything.** The four orders in production are
+   E2E fixtures, and **zero vouchers have ever been issued**.
+8. **There is no production site.** The Vercel project points at a different,
+   abandoned repository, and all 11 of its deployments failed.
+9. **Nothing scheduled runs.** Ten cron routes exist and nothing calls them, so
+   vouchers do not expire and no voucher email is ever sent.
+10. **Three defects stand between this and taking real money**: the deployment
+    (8), the scheduler (9), and four column names on the money path that
+    production does not have, which make the first real payment raise `42703`.
+
+**In one sentence:** the system is substantially built and carefully
+constrained, and it has never been switched on.
+
+---
+
 Every document in `docs/`, what it is for, and whether you can trust it.
 
-**161 documents.** 89 current, 50 carrying a correction banner, 22 marked as
+**170 documents.** 98 current, 50 carrying a correction banner, 22 marked as
 historical snapshots.
 
-Last reconciled against production (`ixvwfbuvfxxsjiywhbbb`) on **2026-09-01**.
+Last reconciled against production (`ixvwfbuvfxxsjiywhbbb`), the GitHub API and
+the Vercel API on **2026-09-01**.
 
 ---
 
@@ -29,6 +67,8 @@ file or a prior document.
 |---|---|---|
 | [ARCHITECTURE-OVERVIEW.md](ARCHITECTURE-OVERVIEW.md) | ✅ | **The whole system in one document.** Data model, money, coupon lifecycle, roles, search, deployment. Start here. |
 | [ONBOARDING.md](ONBOARDING.md) | ✅ | Clone to running locally, and the four traps that cost hours. |
+| [ONBOARDING-DAY-ONE.md](ONBOARDING-DAY-ONE.md) | ✅ | The first day hour by hour, clone to first merged PR, with a cut order for when it runs long. |
+| [BUSINESS-RULES.md](BUSINESS-RULES.md) | ✅ | Every rule the code **refuses** to break, with the file and line that refuses. Plus the seven that are stated and enforced by nothing. |
 | [GLOSSARY.md](GLOSSARY.md) | ✅ | Every domain term, Hebrew and English, including the two that mean the opposite of what you would assume. |
 | [SCHEMA-REALITY-CHECK.md](SCHEMA-REALITY-CHECK.md) | ✅ | The 31 table names the docs use that production does not have. **Check here before writing any query from a document.** |
 
@@ -48,6 +88,8 @@ file or a prior document.
 | [ROLES-AND-PERMISSIONS.md](ROLES-AND-PERMISSIONS.md) | ✅ | Three role systems, and three traps in `has_role`. |
 | [DECISIONS.md](DECISIONS.md) | ✅ | 41 architecture decisions with reasoning, plus 7 superseded. |
 | [DECISIONS-PROVISIONAL.md](DECISIONS-PROVISIONAL.md) | ✅ | Decisions taken in Ofir's absence, still awaiting approval. |
+| [ENV-REFERENCE.md](ENV-REFERENCE.md) | ✅ | Every environment variable: what breaks if it is missing, what breaks if it is **wrong**, which are secret, how to rotate. |
+| [THIRD-PARTY-DEPENDENCIES.md](THIRD-PARTY-DEPENDENCIES.md) | ✅ | Every external service, plan and cost read from the provider APIs. **Contains the finding that there is no deployment.** |
 
 ## Security
 
@@ -68,6 +110,9 @@ file or a prior document.
 |---|---|---|
 | [RUNBOOK.md](RUNBOOK.md) | ✅ | Alerts, on-call steps, rollback, common failures. |
 | [INCIDENT-PLAYBOOKS.md](INCIDENT-PLAYBOOKS.md) | ✅ | Six named incidents with steps. |
+| [FAILURE-MODES.md](FAILURE-MODES.md) | ✅ | **Every way this can fail, ranked by likelihood × impact.** Five entries are at certainty, not probability. |
+| [QUERY-COOKBOOK.md](QUERY-COOKBOOK.md) | ✅ | Twenty SQL queries an operator needs, each one executed against production before being written down. |
+| [RELEASE-PROCESS.md](RELEASE-PROCESS.md) | ✅ | Branch to production: who approves what, the gates, and how to roll back. Protection settings read from the API. |
 | [OPERATIONS-CALENDAR.md](OPERATIONS-CALENDAR.md) | ✅ | Every scheduled job, when it should run, what breaks while it does not. **Nothing is scheduled.** |
 | [DEPLOYMENT.md](DEPLOYMENT.md) | ✅ | Environments, secrets, deploy and rollback. |
 | [TESTING.md](TESTING.md) | ✅ | What is tested where, the gates, and what is *not* tested. |
@@ -128,6 +173,12 @@ file or a prior document.
 | [ARCHITECTURE-SUPPLIER-PORTAL.md](ARCHITECTURE-SUPPLIER-PORTAL.md) | ⚠️ | Supplier portal design; see `SUPPLIER-PAGE.md`. |
 
 ## Growth, content, legal
+
+| Document | Status | What it is |
+|---|---|---|
+| [DATA-RETENTION.md](DATA-RETENTION.md) | ✅ | What is kept and for how long, mapped to the Privacy Policy. **The deletion the policy promises is not implemented.** |
+| [ACCESSIBILITY-STATEMENT.md](ACCESSIBILITY-STATEMENT.md) | ✅ | IS 5568 level AA, Hebrew and English, plus what is measured and what only runs locally. |
+
 
 | Document | Status | What it is |
 |---|---|---|
@@ -201,18 +252,103 @@ Kept as evidence. **Not maintained.**
 
 ---
 
-## The five things a newcomer most needs to know
+---
+
+## Everything else
+
+The remaining 31 documents, added to this index on 2026-09-01 so that the index
+is genuinely complete. Most are single-subject architecture notes from the
+design phase; the status column means what it means at the top of this page.
+
+### Admin, account, storefront features
+
+| Document | Status | What it is |
+|---|---|---|
+| [ADMIN-ARCHITECTURE.md](ADMIN-ARCHITECTURE.md) | ✅ | The admin area as built. See also `ARCHITECTURE-ADMIN.md`. |
+| [ARCHITECTURE-ACCOUNT-IDENTITY.md](ARCHITECTURE-ACCOUNT-IDENTITY.md) | ⚠️ | Customer account and identity. |
+| [ARCHITECTURE-CART-ZUSTAND.md](ARCHITECTURE-CART-ZUSTAND.md) | ✅ | The Zustand cart store and its mirror in `localStorage`. |
+| [ARCHITECTURE-WISHLIST.md](ARCHITECTURE-WISHLIST.md) | ✅ | Wishlist design. |
+| [ARCHITECTURE-SHIPPING-RETURNS.md](ARCHITECTURE-SHIPPING-RETURNS.md) | ✅ | Physical shipping and returns. Read with `docs/BUSINESS-RULES.md` §8. |
+| [ARCHITECTURE-SUPPLIER-ONBOARDING.md](ARCHITECTURE-SUPPLIER-ONBOARDING.md) | ✅ | How a supplier joins. |
+| [ARCHITECTURE-FULFILLMENT-SUPPLIER-WORKFLOW.md](ARCHITECTURE-FULFILLMENT-SUPPLIER-WORKFLOW.md) | ⚠️ | The physical fulfilment axis. **Nothing writes `item_status` past `issued` today.** |
+| [ARCHITECTURE-CUSTOMER-SUPPORT.md](ARCHITECTURE-CUSTOMER-SUPPORT.md) | ✅ | Support design. |
+| [ARCHITECTURE-COOKIE-CONSENT.md](ARCHITECTURE-COOKIE-CONSENT.md) | ✅ | Consent banner and versioned consent. See `docs/DATA-RETENTION.md` §4. |
+
+### Platform and infrastructure
+
+| Document | Status | What it is |
+|---|---|---|
+| [ARCHITECTURE-API-CONTRACTS.md](ARCHITECTURE-API-CONTRACTS.md) | ⚠️ | API contracts. Superseded for routes by `API-REFERENCE.md`. |
+| [ARCHITECTURE-ENV-SECRETS.md](ARCHITECTURE-ENV-SECRETS.md) | ✅ | Secret handling. Superseded for the variable list by `ENV-REFERENCE.md`. |
+| [ARCHITECTURE-FEATURE-FLAGS.md](ARCHITECTURE-FEATURE-FLAGS.md) | ✅ | Feature flags, which are environment variables here. |
+| [ARCHITECTURE-MEDIA-R2.md](ARCHITECTURE-MEDIA-R2.md) | ✅ | Cloudflare R2 media storage. |
+| [ARCHITECTURE-OPS.md](ARCHITECTURE-OPS.md) | ✅ | Environments, monitoring, backup and recovery. |
+| [ARCHITECTURE-PRODUCTION-OPS.md](ARCHITECTURE-PRODUCTION-OPS.md) | ⚠️ | Production infrastructure. **Read `THIRD-PARTY-DEPENDENCIES.md` §0 first: there is no deployment.** |
+| [CAPACITY.md](CAPACITY.md) | ✅ | Capacity planning. |
+
+### Testing
+
+| Document | Status | What it is |
+|---|---|---|
+| [ARCHITECTURE-TESTING.md](ARCHITECTURE-TESTING.md) | ✅ | The full testing strategy. Superseded on current state by `TESTING.md`. |
+| [ARCHITECTURE-TESTING-CICD.md](ARCHITECTURE-TESTING-CICD.md) | ⚠️ | Testing and CI/CD. See `RELEASE-PROCESS.md` §3 for what actually runs. |
+
+### AI agents
+
+Designed, not built. Nothing in `src/` implements an agent runtime.
+
+| Document | Status | What it is |
+|---|---|---|
+| [ARCHITECTURE-AI-AGENTS.md](ARCHITECTURE-AI-AGENTS.md) | ✅ | The agent platform design. |
+| [ARCHITECTURE-AI-AGENTS-RUNTIME.md](ARCHITECTURE-AI-AGENTS-RUNTIME.md) | ⚠️ | Runtime detail. |
+| [ARCHITECTURE-AI-AGENTS-SUPPORT.md](ARCHITECTURE-AI-AGENTS-SUPPORT.md) | ✅ | Support-facing agents. |
+
+### Growth, content, marketing
+
+| Document | Status | What it is |
+|---|---|---|
+| [ARCHITECTURE-CATALOG-SEARCH-SEO.md](ARCHITECTURE-CATALOG-SEARCH-SEO.md) | ✅ | Catalogue, search and SEO together. |
+| [ARCHITECTURE-GROWTH-SEO.md](ARCHITECTURE-GROWTH-SEO.md) | ⚠️ | Growth, SEO preservation and lifecycle marketing. |
+| [ARCHITECTURE-LAUNCH-MARKETING.md](ARCHITECTURE-LAUNCH-MARKETING.md) | ✅ | Launch marketing. |
+| [GROWTH-LAUNCH-MARKETING.md](GROWTH-LAUNCH-MARKETING.md) | ✅ | The growth plan for launch. |
+| [CONTENT-SEO-PLAN.md](CONTENT-SEO-PLAN.md) | ✅ | Content and SEO plan. |
+| [ARCHITECTURE-ROADMAP.md](ARCHITECTURE-ROADMAP.md) | ⚠️ | Build order from design to launch. Sequencing has moved on. |
+
+### Superseded master documents
+
+| Document | Status | What it is |
+|---|---|---|
+| [MASTER-ARCHITECTURE.md](MASTER-ARCHITECTURE.md) | ⚠️ | The v3 unified master document. **Superseded by `ARCHITECTURE-OVERVIEW.md`**; describes a Turborepo layout that was never built. |
+| [MASTER-ARCHITECTURE-v2.md](MASTER-ARCHITECTURE-v2.md) | ⚠️ | The v2 master document. |
+| [ARCHITECTURE-DOCS-INDEX.md](ARCHITECTURE-DOCS-INDEX.md) | ⚠️ | An earlier index. **This file supersedes it.** |
+
+### WordPress migration
+
+| Document | Status | What it is |
+|---|---|---|
+| [WP-IMPORT-DRY-RUN.md](WP-IMPORT-DRY-RUN.md) | ✅ | The import dry-run report. |
+
+---
+
+## The six things a newcomer most needs to know
 
 1. **`supabase/migrations/` does not describe production.** 115 files against a
-   98-migration ledger, different lineages. `src/types/database.ts` describes
-   production.
+   **99**-migration ledger, different lineages. `src/types/database.ts` is
+   closer but is **five weeks stale** — 33 tables against production's 61 — so
+   run `pnpm db:types` before trusting it.
 2. **There is no escrow and no payout system.** The platform keeps the whole
-   coupon prepayment; the supplier collects the balance in cash.
+   coupon prepayment; the supplier collects the balance in cash. Since migration
+   137 the database enforces this too: **no transition enters `escrow_held`.**
 3. **`authenticated` still holds DML on 56 relations**, so RLS is the only
-   database-level defence on the money tables.
-4. **Nothing is scheduled.** No Vercel cron, and pg_cron is not installed.
-5. **`finalize.ts` names two columns production does not have**, so the first
-   real payment raises `42703`.
+   database-level defence on the money tables — and **no test attempts a
+   forbidden write**.
+4. **There is no deployment.** The Vercel project watches a different,
+   abandoned repository, and all 11 of its deployments are `ERROR`.
+   [THIRD-PARTY-DEPENDENCIES.md](THIRD-PARTY-DEPENDENCIES.md) §0.
+5. **Nothing is scheduled.** No Vercel cron, and pg_cron is not installed.
+6. **`finalize.ts` and `queries/orders.ts` name four columns production does not
+   have**, so the first real payment raises `42703`.
 
-Items 3, 4 and 5 are the launch blockers. All three are in
+Items 3 through 6 are the launch blockers. The ranked list of everything else is
+[FAILURE-MODES.md](FAILURE-MODES.md); the response to each is
 [RUNBOOK.md](RUNBOOK.md).
