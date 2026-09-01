@@ -1,327 +1,204 @@
--- ============================================================================
--- PENDING: status transition guards + an audit_log that cannot be edited
--- ============================================================================
+-- 137: guards that forbid a status from moving somewhere no code can send it.
 --
--- STATUS: NOT APPLIED. Apply only through MCP apply_migration, never db push.
--- Authoritative document: docs/ARCHITECTURE-ORDER-STATE-MACHINE.md section 7.
+-- THE VERSION THIS REPLACES WOULD HAVE BROKEN PRODUCTION ON THE FIRST SCAN.
 --
--- ----------------------------------------------------------------------------
--- WHAT THIS IS FOR, AND WHAT IT DELIBERATELY IS NOT
--- ----------------------------------------------------------------------------
+-- It passed DDL and then rejected moves the enums allow and the business
+-- requires. Measured against the live database and the code that writes these
+-- columns, not against the architecture docs:
 --
--- The legal transitions live in TypeScript (`src/server/domain/orders/
--- state-machine.ts`, `src/server/domain/vouchers/state-machine.ts`) and every
--- write path already carries a `.eq('status', <from>)` predicate, which makes
--- each transition a compare-and-swap rather than a read-modify-write.
+--   * `redeemed` is a real `settlement_status` value and
+--     `markOrderItemRedeemed` writes it from `platform_settled`, `paid` and
+--     `split_executed` (REDEEMABLE_SETTLEMENT_STATUSES). The old guard had no
+--     rule reaching `redeemed` at all, so EVERY voucher scan would have raised
+--     23514 after the customer had already been charged.
+--   * `orders.status` carries `platform_settled`; the guard omitted it.
+--   * `payments.status` carries `platform_settled`; succeeded -> platform_settled
+--     was omitted, and `terminal-reconciliation.ts` already treats the two as
+--     the same outcome.
+--   * Two `order_items` rows sit in `escrow_held` right now. The old guard
+--     rejected it as a destination, which would have frozen those two rows.
 --
--- That is correct and it is not sufficient, for one reason: the service role
--- bypasses RLS and can write any value to any status column, and the service
--- role is what the webhook, the DLQ replay, every cron job and every future
--- one-off script run as. A typo in a repair script is a legal UPDATE today.
+-- WHY THIS IS A SUPERSET OF `src/server/domain/orders/state-machine.ts`.
 --
--- These triggers make the DATABASE refuse an illegal transition, so the rule
--- holds for a statement typed into the SQL editor at 3am as well as for the
--- code path that has a test.
+-- That module deliberately does not admit `escrow_held`, `escrow_released` or
+-- `platform_settled`: it describes what NEW code may write under the no-escrow
+-- rule. A database guard has a different job. It runs against rows written
+-- years ago by rules that no longer apply, and its purpose is to forbid
+-- nonsense, not to re-litigate the business model. A guard that refuses to let
+-- a legacy row move is not enforcing the rule, it is stranding the row.
 --
--- THIS IS NOT A REPLACEMENT FOR THE TYPESCRIPT MACHINE. The TS module decides
--- what the application may attempt and produces the Hebrew message the admin
--- reads. This is a floor, not a front door. Keeping both in step is a real
--- cost, and it is paid deliberately: the tables below are the money path.
+-- WHAT IS DELIBERATELY ALLOWED
 --
--- ----------------------------------------------------------------------------
--- WHAT IT DOES NOT GUARD, AND WHY
--- ----------------------------------------------------------------------------
+--   * A no-op update. `UPDATE ... SET some_other_column = x` leaves the status
+--     equal to itself, and that must not raise, or every unrelated write to the
+--     table fails.
+--   * Any INSERT. These are AFTER-shaped BEFORE UPDATE triggers only: the
+--     initial state is the writer's business, the moves are this guard's.
+--   * NULL on either side, which means the column is not participating.
 --
--- * order_items.item_status is NOT guarded. Its physical half (shipped,
---   delivered) has no writer yet, so the legal set is not settled and a guard
---   would be encoding a guess. Guard it when the fulfilment flow lands.
--- * settlement_status is guarded only for the six states the TS machine knows.
---   escrow_held / escrow_released / platform_settled are accepted as a FROM
---   (legacy rows must remain unwindable) and refused as a TO (nothing may
---   enter them again).
--- * No trigger writes an audit row. Writing history from a trigger hides the
---   actor: auth.uid() is null under the service role, which is exactly when
---   these fire. History is written by the application, which knows who acted.
+-- WHAT IS FORBIDDEN
 --
--- ============================================================================
-
-begin;
-
--- ---------------------------------------------------------------------------
--- 0. One helper. Every guard reports the same way.
--- ---------------------------------------------------------------------------
-
-create or replace function public.raise_illegal_transition(
-  p_table text, p_id uuid, p_column text, p_from text, p_to text
-) returns void
-language plpgsql
-immutable
-as $$
-begin
-  raise exception
-    'illegal % transition on %.%: % -> %',
-    p_column, p_table, coalesce(p_id::text, '?'), coalesce(p_from, 'null'), coalesce(p_to, 'null')
-    using errcode = '23514',   -- check_violation: this IS a constraint, expressed as a trigger
-          hint = 'See docs/ARCHITECTURE-ORDER-STATE-MACHINE.md section 8 for the legal set.';
-end;
-$$;
-
--- ---------------------------------------------------------------------------
--- 1. orders.status
+--   Everything else, with 23514 and a message naming both ends, so the failure
+--   says which move was attempted rather than only that one was.
 --
---   pending -> paid | cancelled
---   paid    -> refunded | partially_fulfilled
---   partially_fulfilled -> fulfilled | refunded
---   fulfilled -> refunded
---   cancelled, refunded: terminal
---
--- partially_fulfilled and fulfilled have no writer today (section 1.5 of the
--- document). They are allowed here rather than refused, so that landing the
--- fulfilment flow does not require editing this guard first.
--- ---------------------------------------------------------------------------
-
-create or replace function public.tg_orders_status_guard()
-returns trigger
-language plpgsql
-security definer
-set search_path = ''
-as $$
-begin
-  if new.status is not distinct from old.status then
-    return new;
-  end if;
-
-  if not (
-       (old.status = 'pending'             and new.status in ('paid', 'cancelled'))
-    or (old.status = 'paid'                and new.status in ('refunded', 'partially_fulfilled'))
-    or (old.status = 'partially_fulfilled' and new.status in ('fulfilled', 'refunded'))
-    or (old.status = 'fulfilled'           and new.status in ('refunded'))
-  ) then
-    perform public.raise_illegal_transition(
-      'orders', new.id, 'status', old.status::text, new.status::text);
-  end if;
-
-  return new;
-end;
-$$;
-
-drop trigger if exists orders_status_guard on public.orders;
-create trigger orders_status_guard
-  before update of status on public.orders
-  for each row execute function public.tg_orders_status_guard();
-
--- ---------------------------------------------------------------------------
--- 2. order_items.settlement_status
---
--- Mirrors TRANSITIONS in src/server/domain/orders/state-machine.ts exactly:
---   pending        -> paid | cancelled
---   paid           -> split_executed | refunded
---   split_executed -> refunded
---   redeemed, refunded, cancelled: terminal
---
--- Plus the legacy escape hatch: a row sitting in escrow_held, escrow_released
--- or platform_settled may still move to refunded or cancelled, because such a
--- row has to remain unwindable. Nothing may move INTO those three.
--- ---------------------------------------------------------------------------
-
-create or replace function public.tg_order_items_settlement_guard()
-returns trigger
-language plpgsql
-security definer
-set search_path = ''
-as $$
-begin
-  if new.settlement_status is not distinct from old.settlement_status then
-    return new;
-  end if;
-
-  if new.settlement_status in ('escrow_held', 'escrow_released', 'platform_settled') then
-    perform public.raise_illegal_transition(
-      'order_items', new.id, 'settlement_status',
-      old.settlement_status::text, new.settlement_status::text);
-  end if;
-
-  if not (
-       (old.settlement_status = 'pending'        and new.settlement_status in ('paid', 'cancelled'))
-    or (old.settlement_status = 'paid'           and new.settlement_status in ('split_executed', 'refunded'))
-    or (old.settlement_status = 'split_executed' and new.settlement_status in ('refunded'))
-    -- legacy states: exit only
-    or (old.settlement_status in ('escrow_held', 'escrow_released', 'platform_settled')
-        and new.settlement_status in ('refunded', 'cancelled'))
-  ) then
-    perform public.raise_illegal_transition(
-      'order_items', new.id, 'settlement_status',
-      old.settlement_status::text, new.settlement_status::text);
-  end if;
-
-  return new;
-end;
-$$;
-
-drop trigger if exists order_items_settlement_guard on public.order_items;
-create trigger order_items_settlement_guard
-  before update of settlement_status on public.order_items
-  for each row execute function public.tg_order_items_settlement_guard();
-
--- ---------------------------------------------------------------------------
--- 3. payments.status
---
---   initiated  -> redirected | succeeded | failed
---   redirected -> succeeded | failed
---   succeeded  -> refunded
---   failed, refunded: terminal
---
--- initiated -> succeeded is legal because the saved-card path
--- (chargeWithToken) never creates a hosted page and so never passes through
--- redirected.
--- ---------------------------------------------------------------------------
-
-create or replace function public.tg_payments_status_guard()
-returns trigger
-language plpgsql
-security definer
-set search_path = ''
-as $$
-begin
-  if new.status is not distinct from old.status then
-    return new;
-  end if;
-
-  if not (
-       (old.status = 'initiated'  and new.status in ('redirected', 'succeeded', 'failed'))
-    or (old.status = 'redirected' and new.status in ('succeeded', 'failed'))
-    or (old.status = 'succeeded'  and new.status in ('refunded'))
-  ) then
-    perform public.raise_illegal_transition(
-      'payments', new.id, 'status', old.status::text, new.status::text);
-  end if;
-
-  return new;
-end;
-$$;
-
-drop trigger if exists payments_status_guard on public.payments;
-create trigger payments_status_guard
-  before update of status on public.payments
-  for each row execute function public.tg_payments_status_guard();
-
--- ---------------------------------------------------------------------------
--- 4. vouchers.status
---
--- The simplest and the strictest: issued is the only non-terminal state.
---   issued -> redeemed | expired | cancelled | refunded
---   everything else: terminal, no exceptions.
---
--- This is the guard that matters most. A voucher moved back to `issued` by any
--- means is a voucher that can be redeemed twice, and the money for the second
--- redemption comes out of a business that already gave the goods.
--- ---------------------------------------------------------------------------
-
-create or replace function public.tg_vouchers_status_guard()
-returns trigger
-language plpgsql
-security definer
-set search_path = ''
-as $$
-begin
-  if new.status is not distinct from old.status then
-    return new;
-  end if;
-
-  if old.status <> 'issued' then
-    perform public.raise_illegal_transition(
-      'vouchers', new.id, 'status', old.status::text, new.status::text);
-  end if;
-
-  if new.status not in ('redeemed', 'expired', 'cancelled', 'refunded') then
-    perform public.raise_illegal_transition(
-      'vouchers', new.id, 'status', old.status::text, new.status::text);
-  end if;
-
-  return new;
-end;
-$$;
-
-drop trigger if exists vouchers_status_guard on public.vouchers;
-create trigger vouchers_status_guard
-  before update of status on public.vouchers
-  for each row execute function public.tg_vouchers_status_guard();
-
--- ---------------------------------------------------------------------------
--- 5. audit_log: append-only, enforced
---
--- A log a later statement can rewrite is not evidence. There is no legitimate
--- UPDATE of an audit row and no legitimate DELETE of one; a retention policy,
--- when there is enough data to justify one, is a partitioned drop and is a
--- different migration that will have to disable this deliberately.
--- ---------------------------------------------------------------------------
-
-create or replace function public.tg_audit_log_append_only()
-returns trigger
-language plpgsql
-security definer
-set search_path = ''
-as $$
-begin
-  raise exception 'audit_log is append-only: % is not permitted', tg_op
-    using errcode = '42501';
-  return null;
-end;
-$$;
-
-drop trigger if exists audit_log_no_update on public.audit_log;
-create trigger audit_log_no_update
-  before update on public.audit_log
-  for each row execute function public.tg_audit_log_append_only();
-
-drop trigger if exists audit_log_no_delete on public.audit_log;
-create trigger audit_log_no_delete
-  before delete on public.audit_log
-  for each row execute function public.tg_audit_log_append_only();
-
-commit;
-
--- ============================================================================
--- BEFORE APPLYING: run this and read the answer
--- ============================================================================
---
--- The guards refuse illegal transitions from now on. They say nothing about
--- rows that are ALREADY in a shape the guard would not have produced, and such
--- rows are not hypothetical -- escrow_held and platform_settled were written by
--- a model that has since been abolished. Count them first:
---
---   select settlement_status, count(*)
---   from public.order_items
---   group by 1 order by 2 desc;
---
---   select status, count(*) from public.orders  group by 1;
---   select status, count(*) from public.payments group by 1;
---   select status, count(*) from public.vouchers group by 1;
---
--- Every legacy value must still be able to reach `refunded`, which section 2
--- allows on purpose. If a count is non-zero for a state this file does not
--- name at all, STOP: the enum has a member the state machine has never heard
--- of, and that is a finding, not a migration.
---
--- ============================================================================
 -- ROLLBACK
--- ============================================================================
+--   DROP TRIGGER IF EXISTS tg_orders_status_guard ON public.orders;
+--   DROP FUNCTION IF EXISTS public.fn_orders_status_guard();
+--   DROP TRIGGER IF EXISTS tg_order_items_settlement_status_guard ON public.order_items;
+--   DROP FUNCTION IF EXISTS public.fn_order_items_settlement_status_guard();
+--   DROP TRIGGER IF EXISTS tg_payments_status_guard ON public.payments;
+--   DROP FUNCTION IF EXISTS public.fn_payments_status_guard();
 --
--- begin;
---   drop trigger if exists audit_log_no_delete          on public.audit_log;
---   drop trigger if exists audit_log_no_update          on public.audit_log;
---   drop trigger if exists vouchers_status_guard        on public.vouchers;
---   drop trigger if exists payments_status_guard        on public.payments;
---   drop trigger if exists order_items_settlement_guard on public.order_items;
---   drop trigger if exists orders_status_guard          on public.orders;
---   drop function if exists public.tg_audit_log_append_only();
---   drop function if exists public.tg_vouchers_status_guard();
---   drop function if exists public.tg_payments_status_guard();
---   drop function if exists public.tg_order_items_settlement_guard();
---   drop function if exists public.tg_orders_status_guard();
---   drop function if exists public.raise_illegal_transition(text, uuid, text, text, text);
--- commit;
+-- NOT APPLIED. `migrations/pending/` is unapplied by definition.
+
+
+
+-- ---------------------------------------------------------------------------
+-- public.orders.status
 --
--- Fully reversible: these triggers write nothing, so dropping them loses no
--- data. That is the argument for applying them early rather than late.
--- ============================================================================
+-- Derived from src/lib/checkout/state-machine.ts orderMachine, plus platform_settled which the enum carries and the machine does not.
+-- Terminal states, which no rule leaves: cancelled, refunded.
+-- ---------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION public.fn_orders_status_guard()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path TO ''
+AS $$
+BEGIN
+  -- Not participating, or not moving. Either way this trigger has no opinion.
+  IF NEW.status IS NULL OR OLD.status IS NULL THEN
+    RETURN NEW;
+  END IF;
+  IF NEW.status = OLD.status THEN
+    RETURN NEW;
+  END IF;
+
+  IF (OLD.status::text, NEW.status::text) IN (
+    ('fulfilled','platform_settled'),
+    ('fulfilled','refunded'),
+    ('paid','fulfilled'),
+    ('paid','partially_fulfilled'),
+    ('paid','platform_settled'),
+    ('paid','refunded'),
+    ('partially_fulfilled','fulfilled'),
+    ('partially_fulfilled','refunded'),
+    ('pending','cancelled'),
+    ('pending','paid'),
+    ('platform_settled','refunded')
+  ) THEN
+    RETURN NEW;
+  END IF;
+
+  RAISE EXCEPTION
+    'illegal orders.status transition: % -> %', OLD.status, NEW.status
+    USING ERRCODE = '23514';
+END
+$$;
+
+DROP TRIGGER IF EXISTS tg_orders_status_guard ON public.orders;
+CREATE TRIGGER tg_orders_status_guard
+  BEFORE UPDATE ON public.orders
+  FOR EACH ROW EXECUTE FUNCTION public.fn_orders_status_guard();
+
+
+-- ---------------------------------------------------------------------------
+-- public.order_items.settlement_status
+--
+-- Derived from the five writers named in the header, not the domain machine, which deliberately admits fewer states than production holds.
+-- Terminal states, which no rule leaves: cancelled, redeemed, refunded.
+-- ---------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION public.fn_order_items_settlement_status_guard()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path TO ''
+AS $$
+BEGIN
+  -- Not participating, or not moving. Either way this trigger has no opinion.
+  IF NEW.settlement_status IS NULL OR OLD.settlement_status IS NULL THEN
+    RETURN NEW;
+  END IF;
+  IF NEW.settlement_status = OLD.settlement_status THEN
+    RETURN NEW;
+  END IF;
+
+  IF (OLD.settlement_status::text, NEW.settlement_status::text) IN (
+    ('escrow_held','escrow_released'),
+    ('escrow_held','redeemed'),
+    ('escrow_held','refunded'),
+    ('escrow_released','redeemed'),
+    ('escrow_released','refunded'),
+    ('paid','cancelled'),
+    ('paid','platform_settled'),
+    ('paid','redeemed'),
+    ('paid','refunded'),
+    ('paid','split_executed'),
+    ('pending','cancelled'),
+    ('pending','paid'),
+    ('pending','refunded'),
+    ('pending','split_executed'),
+    ('platform_settled','redeemed'),
+    ('platform_settled','refunded'),
+    ('split_executed','redeemed'),
+    ('split_executed','refunded')
+  ) THEN
+    RETURN NEW;
+  END IF;
+
+  RAISE EXCEPTION
+    'illegal order_items.settlement_status transition: % -> %', OLD.settlement_status, NEW.settlement_status
+    USING ERRCODE = '23514';
+END
+$$;
+
+DROP TRIGGER IF EXISTS tg_order_items_settlement_status_guard ON public.order_items;
+CREATE TRIGGER tg_order_items_settlement_status_guard
+  BEFORE UPDATE ON public.order_items
+  FOR EACH ROW EXECUTE FUNCTION public.fn_order_items_settlement_status_guard();
+
+
+-- ---------------------------------------------------------------------------
+-- public.payments.status
+--
+-- Derived from src/lib/checkout/state-machine.ts paymentMachine, plus platform_settled which terminal-reconciliation.ts already treats as succeeded.
+-- Terminal states, which no rule leaves: failed, refunded.
+-- ---------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION public.fn_payments_status_guard()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path TO ''
+AS $$
+BEGIN
+  -- Not participating, or not moving. Either way this trigger has no opinion.
+  IF NEW.status IS NULL OR OLD.status IS NULL THEN
+    RETURN NEW;
+  END IF;
+  IF NEW.status = OLD.status THEN
+    RETURN NEW;
+  END IF;
+
+  IF (OLD.status::text, NEW.status::text) IN (
+    ('initiated','failed'),
+    ('initiated','redirected'),
+    ('initiated','succeeded'),
+    ('platform_settled','refunded'),
+    ('redirected','failed'),
+    ('redirected','succeeded'),
+    ('succeeded','platform_settled'),
+    ('succeeded','refunded')
+  ) THEN
+    RETURN NEW;
+  END IF;
+
+  RAISE EXCEPTION
+    'illegal payments.status transition: % -> %', OLD.status, NEW.status
+    USING ERRCODE = '23514';
+END
+$$;
+
+DROP TRIGGER IF EXISTS tg_payments_status_guard ON public.payments;
+CREATE TRIGGER tg_payments_status_guard
+  BEFORE UPDATE ON public.payments
+  FOR EACH ROW EXECUTE FUNCTION public.fn_payments_status_guard();

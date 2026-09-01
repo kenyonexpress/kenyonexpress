@@ -1,0 +1,30 @@
+{
+  "order_items.settlement_status": {
+    "cancelled": [],
+    "escrow_held": ["escrow_released", "redeemed", "refunded"],
+    "escrow_released": ["redeemed", "refunded"],
+    "paid": ["split_executed", "platform_settled", "redeemed", "refunded", "cancelled"],
+    "pending": ["paid", "split_executed", "cancelled", "refunded"],
+    "platform_settled": ["redeemed", "refunded"],
+    "redeemed": [],
+    "refunded": [],
+    "split_executed": ["redeemed", "refunded"]
+  },
+  "orders.status": {
+    "cancelled": [],
+    "fulfilled": ["refunded", "platform_settled"],
+    "paid": ["partially_fulfilled", "fulfilled", "refunded", "platform_settled"],
+    "partially_fulfilled": ["fulfilled", "refunded"],
+    "pending": ["paid", "cancelled"],
+    "platform_settled": ["refunded"],
+    "refunded": []
+  },
+  "payments.status": {
+    "failed": [],
+    "initiated": ["redirected", "succeeded", "failed"],
+    "platform_settled": ["refunded"],
+    "redirected": ["succeeded", "failed"],
+    "refunded": [],
+    "succeeded": ["refunded", "platform_settled"]
+  }
+}
