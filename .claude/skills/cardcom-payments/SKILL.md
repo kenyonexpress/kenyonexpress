@@ -3,6 +3,17 @@ name: cardcom-payments
 description: Use whenever working on payment flow, checkout, tokenization, or anything in src/server/actions/payments/.
 ---
 
+> <!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **This document names tables that do not exist in production.**
+>
+> | Named here | In production |
+> |---|---|
+> | `supplier_payouts` | nothing; never built |
+>
+> The design below may still be sound; the schema it assumes was not built, or
+> was built under another name. Verify against `docs/DATA-MODEL.md` before
+> writing a query, and see `docs/SCHEMA-REALITY-CHECK.md` for the full mapping.
+
 ## Platform model
 
 KenyonExpress is a PLATFORM, not a supplier. It connects customers to suppliers and takes a commission. The platform never holds inventory.

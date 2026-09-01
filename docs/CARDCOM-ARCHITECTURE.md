@@ -1,4 +1,16 @@
 # CARDCOM-ARCHITECTURE.md
+
+> <!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **This document names tables that do not exist in production.**
+>
+> | Named here | In production |
+> |---|---|
+> | `ledger_entries` | nothing; `wallet_entries` is a different model |
+>
+> The design below may still be sound; the schema it assumes was not built, or
+> was built under another name. Verify against `docs/DATA-MODEL.md` before
+> writing a query, and see `docs/SCHEMA-REALITY-CHECK.md` for the full mapping.
+
 # ארכיטקטורת סליקה — KenyonExpress × Cardcom
 
 > מסמך ארכיטקטורה מלא. מבוסס על מחקר תיעוד רשמי: Swagger v11 של Cardcom

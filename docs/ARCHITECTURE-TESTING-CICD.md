@@ -1,5 +1,17 @@
 # Architecture: Testing and CI/CD (KenyonExpress)
 
+
+> <!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **This document names tables that do not exist in production.**
+>
+> | Named here | In production |
+> |---|---|
+> | `coupon_redemptions` | `voucher_redemptions` |
+>
+> The design below may still be sound; the schema it assumes was not built, or
+> was built under another name. Verify against `docs/DATA-MODEL.md` before
+> writing a query, and see `docs/SCHEMA-REALITY-CHECK.md` for the full mapping.
+
 > **גובר עליו `docs/CONTRADICTIONS.md` (2026-07-24).** כל מספר עמלה, ברירת מחדל
 > (10%/5%) או נוסח Escrow במסמך הזה הוא שריד. ההכרעה: `platform_percent`
 > פר-מוצר, חובה, בלי ברירת מחדל בשום מקום; ה-held הוא רישום פנימי ב-ledger בלבד.

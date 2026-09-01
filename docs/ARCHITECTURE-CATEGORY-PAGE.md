@@ -1,5 +1,19 @@
 # ARCHITECTURE-CATEGORY-PAGE.md
 
+
+> <!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **This document names tables that do not exist in production.**
+>
+> | Named here | In production |
+> |---|---|
+> | `admin_audit_log` | `audit_log` |
+> | `cart_items` | `carts.items`, a jsonb column |
+> | `notification_events` | `notification_outbox` |
+>
+> The design below may still be sound; the schema it assumes was not built, or
+> was built under another name. Verify against `docs/DATA-MODEL.md` before
+> writing a query, and see `docs/SCHEMA-REALITY-CHECK.md` for the full mapping.
+
 ארכיטקטורת דף קטגוריה KenyonExpress: **1:1 מול electro home-v7 / shop-archive**.
 
 Status: BINDING for worktree `/Users/ofir/kenyonexpress-web/ke-arch-category` · branch `arch/category-page` (2026-07-30)

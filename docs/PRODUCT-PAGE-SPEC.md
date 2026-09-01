@@ -1,5 +1,18 @@
 # PRODUCT-PAGE-SPEC - מפרט דף מוצר וטופס הניהול (מסמך אחד)
 
+
+> <!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **This document names tables that do not exist in production.**
+>
+> | Named here | In production |
+> |---|---|
+> | `notifications_outbox` | `notification_outbox` |
+> | `platform_bp` | `platform_percent`, whole-percent numeric |
+>
+> The design below may still be sound; the schema it assumes was not built, or
+> was built under another name. Verify against `docs/DATA-MODEL.md` before
+> writing a query, and see `docs/SCHEMA-REALITY-CHECK.md` for the full mapping.
+
 נוצר: 2026-07-24. עודכן: 2026-07-28. ענף: `feat/checkout-complete`.
 
 **המסמך הזה בולע את `PRODUCT-ADMIN-FORM.md`.** אין שני מסמכים: מה שהאדמין ממלא
