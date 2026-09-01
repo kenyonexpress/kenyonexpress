@@ -168,9 +168,24 @@ ask for that filename; it does not exist and the code does not read one.
 
 ## Indexing
 
+**The webhook payload is a change notification and never data.** The worker
+re-reads the product row from Postgres before touching the index, which is the
+same discipline the Cardcom callback applies to payments. Out-of-order and
+duplicate deliveries therefore converge on the truth instead of fighting, and a
+spoofed payload can at worst schedule a no-op. The job itself is tiny on
+purpose, `{ op, productId, reason, enqueuedAt }` (`pipeline-contracts.ts`);
+everything else is re-read at run time.
+
+Every QStash delivery carries an `Upstash-Signature` JWS signed with one of two
+rotating HMAC keys (`QSTASH_CURRENT_SIGNING_KEY`, `QSTASH_NEXT_SIGNING_KEY`),
+verified by `verifyQstashSignature`. When `QSTASH_TOKEN` is unset, `enqueue`
+degrades to inline execution, so the pipeline works end to end in dev and in
+preview without Upstash.
+
 `src/lib/search/indexer.ts` speaks the Meilisearch REST API directly and returns
 `'skipped: meilisearch not configured'` when the environment is absent, so an
 unconfigured deployment degrades quietly instead of throwing on every write.
+Deletes are idempotent: a 404 on DELETE is treated as success.
 
 `src/lib/search/qstash.ts` carries the retry contract. Its own comment describes
 exponential backoff followed by a POST to `/api/search/index-dlq`, and
