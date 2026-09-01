@@ -6,6 +6,7 @@ import { ORDER_STATUS_LABELS } from '@/lib/admin/labels'
 import { baseListParamsSchema, listRange } from '@/lib/admin/list-params'
 import { requireSection } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
+import { sanitizeOrTerm } from '@/lib/utils/search-escape'
 import type { OrderStatus } from '@/types/database'
 import Link from 'next/link'
 import { z } from 'zod'
@@ -63,12 +64,18 @@ export default async function AdminOrdersPage(props: {
   // Free-text search covers invoice number directly; customer name/email
   // resolves through profiles first (orders.user_id -> auth.users, so no
   // direct PostgREST embed filter).
+  //
+  // The term is sanitised before it enters an `.or()`. PostgREST parses that
+  // argument as an expression, where , ( ) " and \ are structural, so an
+  // operator searching for a business name that contains a comma was not
+  // searching for a comma: they were appending a filter condition.
   let matchedUserIds: string[] | null = null
-  if (params.q) {
+  const searchTerm = params.q ? sanitizeOrTerm(params.q) : ''
+  if (searchTerm) {
     const { data: matched } = await supabase
       .from('profiles')
       .select('id')
-      .or(`full_name.ilike.%${params.q}%,email.ilike.%${params.q}%`)
+      .or(`full_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`)
       .limit(50)
     matchedUserIds = (matched ?? []).map((p) => p.id)
   }
@@ -88,9 +95,9 @@ export default async function AdminOrdersPage(props: {
   if (params.status) query = query.eq('status', params.status)
   if (params.from) query = query.gte('created_at', params.from)
   if (params.to) query = query.lte('created_at', `${params.to}T23:59:59`)
-  if (params.q) {
+  if (searchTerm) {
     const idList = (matchedUserIds ?? []).map((id) => `user_id.eq.${id}`).join(',')
-    query = query.or([`invoice_number.ilike.%${params.q}%`, idList].filter(Boolean).join(','))
+    query = query.or([`invoice_number.ilike.%${searchTerm}%`, idList].filter(Boolean).join(','))
   }
 
   const { data: orders, count, error } = await query

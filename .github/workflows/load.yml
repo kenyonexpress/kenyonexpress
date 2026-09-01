@@ -1,0 +1,112 @@
+name: Load test
+
+# Manual only, and deliberately so.
+#
+# A load test on every push is a bill. One pointed at the wrong host is an
+# outage: `load/redeem.js` writes redemption rows, and a capacity run against
+# the live site is indistinguishable from an attack on it.
+#
+# This is also the only configuration in this project where the load generator
+# and the server are not the same computer. docs/CAPACITY.md records what
+# happens when they are: 100 VUs against a local `pnpm start` reported a 3.14s
+# homepage p95 while the same page served one user in 65ms. Until this workflow
+# has been run, the project has no measured capacity figure.
+on:
+  workflow_dispatch:
+    inputs:
+      base:
+        description: 'Target base URL (a preview deployment, never production)'
+        required: true
+        type: string
+      scenario:
+        description: 'Which scenario to run'
+        required: true
+        default: browse
+        type: choice
+        options: [browse, search, checkout, redeem, pool]
+      vus:
+        description: 'Peak virtual users'
+        required: true
+        default: '200'
+        type: string
+      ramp:
+        description: 'Ramp up and down duration'
+        required: true
+        default: '2m'
+        type: string
+      hold:
+        description: 'Hold duration at peak'
+        required: true
+        default: '5m'
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  k6:
+    name: k6 ${{ inputs.scenario }} at ${{ inputs.vus }} VUs
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v5
+
+      # Refuse before k6 is even installed. `load/lib/guard.js` asserts the same
+      # thing at runtime; this is the cheaper failure, and it fails the job
+      # rather than logging inside a run that has already started sending load.
+      - name: Refuse to point at production
+        run: |
+          case "${{ inputs.base }}" in
+            *kenyonexpress.co.il*)
+              echo "::error::${{ inputs.base }} is the production domain. Load tests run against a preview deployment."
+              exit 1
+              ;;
+          esac
+          case "${{ inputs.base }}" in
+            http://*|https://*) ;;
+            *)
+              echo "::error::base must be an absolute http(s) URL, got: ${{ inputs.base }}"
+              exit 1
+              ;;
+          esac
+          echo "target ok: ${{ inputs.base }}"
+
+      - name: Install k6
+        run: |
+          sudo gpg --no-default-keyring \
+            --keyring /usr/share/keyrings/k6-archive-keyring.gpg \
+            --keyserver hkp://keyserver.ubuntu.com:80 \
+            --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" \
+            | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install -y k6
+          k6 version
+
+      # The target must actually be up. A run against a 404 produces a green
+      # error rate and a meaningless latency figure, which is worse than a
+      # failure because it looks like a result.
+      - name: Confirm the target answers
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "${{ inputs.base }}/")
+          echo "GET ${{ inputs.base }}/ -> $code"
+          [ "$code" = "200" ] || { echo "::error::target did not answer 200"; exit 1; }
+
+      - name: Run ${{ inputs.scenario }}
+        env:
+          LOAD_BASE: ${{ inputs.base }}
+          LOAD_VUS: ${{ inputs.vus }}
+          LOAD_RAMP: ${{ inputs.ramp }}
+          LOAD_HOLD: ${{ inputs.hold }}
+        run: k6 run --summary-export=summary.json "load/${{ inputs.scenario }}.js"
+
+      # Uploaded even when k6 exits 99 on a crossed threshold: a failed run is
+      # the one whose numbers you most want to read.
+      - name: Upload summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-${{ inputs.scenario }}-${{ inputs.vus }}vu
+          path: summary.json
+          if-no-files-found: warn

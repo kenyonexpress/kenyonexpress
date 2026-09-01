@@ -42,11 +42,16 @@ function sqlFilesIn(dir: string, filter: (name: string) => boolean = () => true)
 
 /** Every `NNN_name.sql` the manifest names, deduplicated, in file order. */
 function manifestFilenames(): string[] {
-  return [...new Set(readmeText().match(/\d{3}_[\w-]+\.sql/g) ?? [])].sort()
+  // `\d{3}[a-z]?_` and not `\d{3}_`: a migration that has to be split keeps its
+  // number and takes a letter, the way production recorded 135 as
+  // `135a_product_type_recurring` and `135b_recurring_subscriptions`. The
+  // stricter pattern silently skipped both, so the manifest looked complete
+  // while naming neither, which is the exact failure this file exists to catch.
+  return [...new Set(readmeText().match(/\d{3}[a-z]?_[\w-]+\.sql/g) ?? [])].sort()
 }
 
 describe('the pending migration inventory', () => {
-  it('holds the twenty-two renumbered files and nothing else', () => {
+  it('holds the twenty-three renumbered files and nothing else', () => {
     // A new pending migration is a deliberate diff here, which is the point:
     // schema changes are the one category where a silent addition is expensive.
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
@@ -61,7 +66,8 @@ describe('the pending migration inventory', () => {
       '132_search_index_outbox.sql',
       '133_supplier_branches.sql',
       '134_order_items_delivered_at.sql',
-      '135_recurring_subscriptions.sql',
+      '135a_product_type_recurring.sql',
+      '135b_recurring_subscriptions.sql',
       '136_supplier_coordinates.sql',
       '137_order_transition_guard.sql',
       '138_money_agorot_money_path.sql',

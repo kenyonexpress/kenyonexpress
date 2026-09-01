@@ -5,6 +5,7 @@ import { baseListParamsSchema, listRange } from '@/lib/admin/list-params'
 import { canWriteSection } from '@/lib/admin/permissions'
 import { ROLE_LABELS, ROLE_ORDER, requireSection } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
+import { sanitizeOrTerm } from '@/lib/utils/search-escape'
 import type { UserRole } from '@/types/database'
 import Link from 'next/link'
 import { z } from 'zod'
@@ -33,7 +34,13 @@ export default async function AdminUsersPage(props: {
     .range(from, to)
 
   if (params.role) query = query.eq('role', params.role)
-  if (params.q) query = query.or(`full_name.ilike.%${params.q}%,email.ilike.%${params.q}%`)
+  // sanitizeOrTerm, not the raw term: PostgREST `.or()` takes an expression
+  // string in which , ( ) " and \\ are structural, so a search for a name
+  // containing a comma silently appends a condition of its own.
+  if (params.q) {
+    const safeQ = sanitizeOrTerm(params.q)
+    if (safeQ) query = query.or(`full_name.ilike.%${safeQ}%,email.ilike.%${safeQ}%`)
+  }
 
   const { data: profiles, count } = await query
 

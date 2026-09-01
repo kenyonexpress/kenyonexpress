@@ -1,3 +1,38 @@
+-- ============================================================================
+-- APPLIED IN PRODUCTION, BUT NOT ALL OF IT. READ THIS BEFORE TRUSTING THE FILE.
+-- ============================================================================
+--
+-- What ran in production was a collapsed, table-driven version of 138-141, not
+-- this file. It created SIX of the eight columns below. Verified by querying
+-- information_schema on 2026-09-01, not inferred from the migration record:
+--
+--   orders        subtotal_ils_agorot, total_ils_agorot
+--   order_items   unit_price_ils_agorot, total_price_ils_agorot,
+--                 coupon_price_ils_agorot
+--   payments      amount_ils_agorot
+--
+-- TWO COLUMNS IN THIS FILE DO NOT EXIST IN PRODUCTION:
+--
+--   orders.discount_ils_agorot
+--   order_items.supplier_payout_ils_agorot
+--
+-- The `do $$ ... $$` blocks for both are still below and are still correct, so
+-- running this file would create them. Whether that is wanted is an open
+-- question and is NOT answered here: the reason they were dropped from the
+-- collapsed version was not recorded, and guessing at one in a migration header
+-- is how a wrong reason becomes a fact.
+--
+-- WHY IT MATTERS TO A READER OF THE APPLICATION CODE. Four money columns still
+-- have no generated twin, so they are the four that still convert in
+-- JavaScript rather than in Postgres:
+--
+--   orders.discount_ils              orders.cashback_applied_ils
+--   order_items.supplier_payout_ils  order_items.cashback_earned_ils
+--
+-- `src/lib/commerce/order-money-columns.ts` says the same thing at the call
+-- site. The two lists have to be changed together.
+-- ============================================================================
+
 -- 138: orders, order_items and payments — money to integer agorot, additive and reversible.
 --
 -- WHY ADDITIVE RATHER THAN `ALTER TYPE`

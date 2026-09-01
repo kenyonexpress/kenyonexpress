@@ -1,3 +1,15 @@
+-- 135b: the recurring subscription tables and columns.
+--
+-- SPLIT FROM 135. The `ALTER TYPE ... ADD VALUE` that was here now lives in
+-- `135a_product_type_recurring.sql`, matching the two rows production actually
+-- recorded: `135a_product_type_recurring` and `135b_recurring_subscriptions`.
+--
+-- NOTHING BELOW MAY REFERENCE THE 'recurring' LABEL. Not in a CHECK, a DEFAULT,
+-- an INSERT or a cast. That was true when the two halves shared a transaction
+-- and it stays true as a matter of style now that they do not, because the
+-- whole point of the split is that a reader should not have to hold that rule
+-- in their head.
+
 -- ============================================================================
 -- PENDING: the recurring product type and the subscriptions it creates
 -- ============================================================================
@@ -41,9 +53,6 @@
 -- The same reasoning applies to subscriptions.amount_agorot and to every
 -- amount on subscription_charges.
 --
--- ============================================================================
--- WHY THE ENUM VALUE IS SAFE TO ADD INSIDE A TRANSACTION
--- ============================================================================
 --
 -- Before PostgreSQL 12, ALTER TYPE ... ADD VALUE could not run in a transaction
 -- block at all. This database is PostgreSQL 17.6, where it can. The remaining
@@ -71,9 +80,6 @@ $$;
 -- ---------------------------------------------------------------------------
 -- 1. The third product type
 -- ---------------------------------------------------------------------------
-
-ALTER TYPE public.product_type ADD VALUE IF NOT EXISTS 'recurring';
-
 -- ---------------------------------------------------------------------------
 -- 2. What a recurring product costs, and how often
 -- ---------------------------------------------------------------------------

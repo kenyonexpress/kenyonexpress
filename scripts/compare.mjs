@@ -421,9 +421,53 @@ const shoot = async (url, out) => {
     .evaluate(async () => {
       const step = window.innerHeight
       const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-      for (let y = 0; y < document.body.scrollHeight; y += step) {
-        window.scrollTo(0, y)
-        await sleep(120)
+
+      // BOUNDED, THOUGH NOT FOR THE REASON THIS COMMENT FIRST GAVE.
+      //
+      // The loop read `y < document.body.scrollHeight` with the height
+      // re-evaluated each iteration, and the first version of this comment said
+      // that was why a --width=380 run hung: lazy images load, the page grows,
+      // the bound recedes. THAT IS MEASURED FALSE and is corrected here rather
+      // than quietly deleted, because it was committed and is wrong.
+      //
+      // Measured against the live homepage, both widths:
+      //
+      //   width 1440   height before 5492   after 5492   grew 0   1.5s
+      //   width  380   height before 17791  after 17791  grew 0   2.0s
+      //
+      // The page does not grow during the sweep at either width, so the
+      // original loop terminated. The bound below is therefore a guarantee
+      // rather than a fix: it costs nothing and it removes a shape that CAN
+      // fail to terminate on a page that does lazily extend.
+      //
+      // THE 380 HANG IS STILL UNEXPLAINED, and none of the obvious candidates
+      // survived measurement:
+      //
+      //   live 1440 fullPage screenshot   1.5MB in 0.3s
+      //   live  380 fullPage screenshot   2.9MB in 0.4s
+      //   mine 1440 (h=5695)              2.6MB in 0.4s
+      //   mine  380 (h=10358)             1.2MB in 0.2s
+      //
+      // Load, height and capture are all fast at 380. Every wait in this file
+      // carries a timeout, so nothing here should block forever, and yet a full
+      // --width=380 run produced no output in 1h26m and again in 10m. The cause
+      // is downstream of these steps and is not yet identified. 380 and 768
+      // have therefore never been measured, and every three-width figure quoted
+      // for this gate is a 1440 figure.
+      const MAX_SWEEPS = 4
+      let previousHeight = 0
+      for (let sweep = 0; sweep < MAX_SWEEPS; sweep += 1) {
+        const height = document.body.scrollHeight
+        if (height <= previousHeight) break
+        // From 0 each sweep, not from previousHeight: the original always
+        // walked the page from the top, and an image low in the viewport can
+        // need the ones above it laid out first. Resuming part-way changed the
+        // measured diff on the home page from 9.83% to 11.05%, deterministically.
+        for (let y = 0; y < height; y += step) {
+          window.scrollTo(0, y)
+          await sleep(120)
+        }
+        previousHeight = height
       }
       window.scrollTo(0, document.body.scrollHeight)
       await sleep(300)
