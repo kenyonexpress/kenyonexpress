@@ -30,7 +30,7 @@ reachable, not that every rule inside it has been re-derived.
 | 10 | Referrals | EXISTS | `src/server/referrals/claim.ts`, `program.test.ts`, `wired.test.ts`, wired from `finalize.ts` |
 | 11 | Sentry, env-gated | EXISTS | `src/lib/observability/sentry.ts:51,104` — every capture returns immediately without `SENTRY_DSN`; entirely inert unset |
 | 12 | Playwright E2E | EXISTS | 15 specs in `e2e/`, including `full-purchase-redeem`, `coupon-scan`, `checkout`, `a11y`, `rtl-mobile` |
-| 13 | Perf / SEO | PARTIAL | `src/app/robots.ts` and `sitemap.ts` exist; only **5** files define `generateMetadata`, so most routes carry no per-page metadata |
+| 13 | Perf / SEO | EXISTS | `src/app/robots.ts`, `sitemap.ts`, and **83 of 97** `page.tsx` carry metadata: 4 dynamic (`generateMetadata`) + 79 static (`export const metadata`). Every public page in `(store)` and `(main)` has one. See the correction below. |
 | 14 | CI | EXISTS | `.github/workflows/`: `ci.yml`, `production-smoke.yml`, `cron.yml`, `load.yml`, `commit-monitor.yml`, `dependabot-auto-merge.yml` |
 
 ## The gaps worth acting on
@@ -41,13 +41,36 @@ clock is enforced in the database. What is missing is the choice the brief
 names: wallet credit versus the original payment method is not a column, not an
 enum, and not a branch. Today a refund is one shape.
 
-**13. Metadata coverage is 5 files.** `robots.ts` and `sitemap.ts` are right,
-but product, category and search pages mostly inherit the root metadata, so
-titles and descriptions are not per-page.
+**13 was my error, and it is withdrawn.** See "Correction" below. Metadata
+coverage is complete on every public route.
 
 **Content, not code: 0 `homepage_sections` rows and 0 vouchers in production.**
 The homepage CMS table is live and empty, so the homepage serves its authored
 fallback constants. That is a content task, not a gap in the code.
+
+## Correction to this document, 2026-09-02
+
+**Finding 13 said metadata coverage was 5 files and that product, category and
+search inherit the root metadata. That is wrong, and it is withdrawn.**
+
+The count came from grepping `generateMetadata` alone. That misses
+`export const metadata`, which is how a static route declares metadata in the
+App Router and is what 79 of these pages use, and it counted `og-fonts.test.ts`
+-- a test file -- as one of the five.
+
+Measured properly:
+
+```
+total page.tsx                 97
+generateMetadata                4   product/[slug], category/[slug], search, coupons/[id]
+export const metadata          79
+public pages with NEITHER       0   checked across (store) and (main)
+```
+
+The four dynamic routes that most need per-page titles are exactly the four that
+have `generateMetadata`. The conclusion the original finding invited -- that SEO
+needs work before launch -- was the opposite of the truth, which is why this is a
+correction and not a silent edit.
 
 ## Two premises in the brief that do not hold
 
