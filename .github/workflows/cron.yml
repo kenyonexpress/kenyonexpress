@@ -1,0 +1,85 @@
+# The ten scheduled jobs, run from Actions.
+#
+# `vercel.json` deliberately has no `crons` key: Hobby registers two jobs at
+# daily granularity and silently ignores the rest, so four of the ten - three on
+# the money path plus the only sender of voucher email - were believed scheduled
+# and were not. docs/CRON-EXTERNAL.md is the full account and names cron-job.org
+# as the intended scheduler. It is the better one, and it needs a person to
+# create ten jobs in a browser, which had not happened; this file needs one
+# repository secret and nothing else, so the jobs start running before that.
+#
+# WHAT THIS SCHEDULER IS WORSE AT, stated here rather than discovered later:
+# GitHub's cron is best effort. Runs are delayed under load, routinely by five
+# to fifteen minutes, and a run can be dropped entirely. That is acceptable for
+# ten sweeps with wide windows and would not be for an appointment. `*/5` means
+# "usually every five minutes", not every five minutes.
+#
+# It also stops on its own: GitHub disables scheduled workflows in a repository
+# with 60 days of no commits, with an email and no other symptom.
+#
+# IT IS OFF UNTIL TWO SETTINGS EXIST, and both are deliberate:
+#
+#   Variable CRON_SCHEDULER_ENABLED = true   Settings > Secrets and variables >
+#   Secret   CRON_SECRET            = <the same value as in Vercel>   Actions
+#
+# The variable is the master switch and it is checked before a runner starts, so
+# while it is unset these schedules cost nothing and call nothing. The secret is
+# checked inside the run. Both are needed because either one alone is a way to
+# be wrong quietly: the switch without the secret would answer 401 ten times
+# every five minutes, and the secret without the switch would start calling
+# production the moment somebody added a secret for another reason.
+#
+# Set the variable to anything but `true` to stop it again - which is what to do
+# the day cron-job.org is set up, because running both schedulers calls every
+# job twice. All ten handlers are idempotent so a double run is not a
+# correctness problem, but `notifications` sending twice is customer-visible if
+# the outbox dedupe ever regresses.
+name: Scheduled jobs
+
+on:
+  schedule:
+    # These seven are the distinct expressions in scripts/cron-jobs.json, which
+    # maps each one to the jobs due on it. A run knows which schedule fired it
+    # (`github.event.schedule`), so one workflow covers all ten jobs.
+    - cron: '*/5 * * * *'
+    - cron: '*/10 * * * *'
+    - cron: '0 * * * *'
+    - cron: '30 2 * * *'
+    - cron: '40 3 * * *'
+    - cron: '0 4 * * *'
+    - cron: '15 23 * * *'
+  workflow_dispatch:
+    inputs:
+      job:
+        description: 'A job name from scripts/cron-jobs.json, or "all"'
+        required: true
+        default: health
+        type: string
+
+# One run per schedule at a time. A delayed run must not stack on top of the
+# next one; the newest pending run is the one worth having.
+concurrency:
+  group: cron-${{ github.event.schedule || inputs.job }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  call:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: vars.CRON_SCHEDULER_ENABLED == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Call the jobs due now
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          # Set CRON_BASE_URL to https://kenyonexpress.co.il after the DNS
+          # cutover. Until then the apex still serves the old WordPress install,
+          # so a job pointed there gets a 404 that reads as a broken route.
+          CRON_BASE_URL: ${{ vars.CRON_BASE_URL }}
+          SCHEDULE: ${{ github.event.schedule }}
+          DISPATCH_JOB: ${{ inputs.job }}
+          NTFY_TOPIC: ${{ vars.CRON_NTFY_TOPIC }}
+        run: bash scripts/run-cron-jobs.sh

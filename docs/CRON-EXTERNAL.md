@@ -3,6 +3,13 @@
 Ten jobs. All ten are `GET`, all ten authenticate with the same header, and all
 ten are wired to be run by a scheduler that is not Vercel.
 
+**Which scheduler, as of 2026-09-01.** Two are written down here and only one is
+set up. `.github/workflows/cron.yml` is in this repository and needs two
+settings; cron-job.org is the better scheduler and needs a person in a browser.
+Neither is running yet: `gh secret list` on `kenyonexpress/kenyonexpress`
+returns nothing, so `CRON_SECRET` is not set in Actions, and no variable enables
+the workflow. **Until one of them is switched on, none of the ten runs at all.**
+
 ## Why they left `vercel.json`
 
 Vercel's cron allowance is a plan feature, not a code one. On Hobby it is two
@@ -137,10 +144,62 @@ timing changes with the scheduler.
 - **`reap-carts`** deletes expired guest carts.
 - **`expire-vouchers`** marks vouchers past their date as expired.
 
+## Setting it up from this repository, in two settings
+
+`.github/workflows/cron.yml` fires on the seven distinct cron expressions and
+hands `github.event.schedule` to `scripts/run-cron-jobs.sh`, which looks up the
+jobs due on that expression in `scripts/cron-jobs.json` and calls them. The
+schedule is written once, in the JSON; the workflow, this document and the route
+directory are checked against it by
+`src/__tests__/cron-schedule-inventory.test.ts`, so a schedule cannot be changed
+in one place and stay stale in the others.
+
+Two settings, both under **Settings > Secrets and variables > Actions**:
+
+| Kind | Name | Value |
+| --- | --- | --- |
+| Variable | `CRON_SCHEDULER_ENABLED` | `true` |
+| Secret | `CRON_SECRET` | the same value as `CRON_SECRET` in Vercel |
+
+Both are required, because either alone is a way to be wrong quietly. The
+variable is evaluated before a runner starts, so while it is unset the schedules
+cost nothing and call nothing. The secret is read inside the run; with the
+switch on and no secret, the script calls nothing and prints a notice, rather
+than answering 401 ten times every five minutes and turning the Actions list red
+in a way that means "not configured".
+
+Two more are optional. `CRON_BASE_URL` (variable) overrides the target and is
+what to set to `https://kenyonexpress.co.il` after the DNS cutover;
+`CRON_NTFY_TOPIC` (variable) overrides the ntfy topic a failure is announced on,
+which defaults to `kenyon-ofir-limit`.
+
+**Run one by hand first.** Actions > Scheduled jobs > Run workflow, with the
+default input `health`. It calls exactly one job, the one that is safe to call
+at any moment, and its log prints the HTTP status. Enter `all` to call all ten.
+
+### What this scheduler is worse at
+
+GitHub's cron is best effort, and this is the reason cron-job.org is still the
+one named below. Runs are delayed under load, commonly by five to fifteen
+minutes, and a run can be dropped entirely. `*/5` therefore means "usually every
+five minutes". All ten are sweeps with wide windows rather than appointments, so
+a late or missed run costs latency and not correctness - a voucher email arrives
+eight minutes after the payment instead of three.
+
+It also stops on its own. GitHub disables scheduled workflows in a repository
+with 60 days of no commits, and the only symptom is an email.
+
+**Do not run both schedulers.** Set `CRON_SCHEDULER_ENABLED` to anything but
+`true` on the day cron-job.org is set up. All ten handlers are idempotent so a
+double run is not a correctness problem, but `notifications` sending twice is
+customer-visible if the outbox dedupe ever regresses.
+
 ## Setting it up on cron-job.org
 
 Free, no card, and it can do minute-level schedules, which is the reason it is
-named here rather than a platform cron.
+named here rather than a platform cron. It is the better of the two: it fires on
+time, it does not switch itself off after a quiet 60 days, and its failure
+notifications go to an inbox rather than to a list of workflow runs.
 
 For each of the ten rows:
 
@@ -186,8 +245,8 @@ show a 200. Everything else is downstream of that.
 If the plan is upgraded and platform cron becomes the better answer, the `crons`
 key goes back into `vercel.json` with the same ten paths and the same ten
 schedules, and Vercel signs its own requests with `CRON_SECRET` automatically.
-Delete the ten jobs at the scheduler in the same change, or every job runs
-twice. All ten handlers are idempotent, so a double run is not a correctness
+Delete the ten jobs at the scheduler, and set `CRON_SCHEDULER_ENABLED` to
+`false`, in the same change, or every job runs twice. All ten handlers are idempotent, so a double run is not a correctness
 problem, but `notifications` sending twice would be visible to customers if the
 outbox dedupe ever regressed, and paying twice for the same work is not a habit
 worth acquiring.

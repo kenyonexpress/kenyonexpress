@@ -1,6 +1,6 @@
 # What runs in CI, and what deliberately does not
 
-Three workflows live here, and the absence of a fourth is a decision rather
+Five workflows live here, and the absence of a sixth is a decision rather
 than an oversight. This file records the decision so the next person does not add the
 missing file back.
 
@@ -82,14 +82,23 @@ outage and comments on it thereafter, because seven issues about one week-long
 outage is how a real alert gets scrolled past. It also fails the run, since an
 issue is the record and a red run is what shows in the Actions list.
 
-**It does not run yet.** GitHub fires `schedule`, and accepts
-`workflow_dispatch`, only for workflows on the repository's default branch,
-which is `main`; this file is on `phase5/homepage`. Measured rather than
-assumed: `gh workflow run production-smoke.yml --ref phase5/homepage` answers
-`HTTP 404: workflow production-smoke.yml not found on the default branch`, and
-`gh workflow list --all` returns only CI and Dependabot Updates. The probe
-starts the day the branch reaches `main`, with no change to the file.
-`dependabot-auto-merge.yml` is in the same position for the same reason.
+**It runs now.** GitHub fires `schedule`, and accepts `workflow_dispatch`, only
+for workflows on the repository's default branch. While this file sat on
+`phase5/homepage` it did neither: `gh workflow run production-smoke.yml --ref
+phase5/homepage` answered `HTTP 404: workflow production-smoke.yml not found on
+the default branch`, and `gh workflow list --all` returned only CI and
+Dependabot Updates. PR #6 merged the branch into `main` and the probe started
+with no change to the file. Measured 2026-09-01:
+
+```
+$ gh workflow list --all
+CI  active   Commit Monitor  active   Dependabot auto-merge  active
+Production smoke  active     Dependabot Updates  active
+```
+
+That is also why `cron.yml` needs its own off switch rather than relying on the
+branch it lives on: on `main`, a scheduled workflow is live the moment it is
+pushed.
 
 It reads no secret it cannot do without. `vars.PRODUCTION_URL` overrides the
 target and falls back to the known host with a notice rather than skipping, on
@@ -97,6 +106,40 @@ the grounds that a smoke test which quietly stops running is worse than one
 aimed at a stale hostname. `secrets.PRODUCTION_SMOKE_HEADER` is optional and
 only matters if the site is ever put behind Deployment Protection, at which
 point an unauthenticated probe would read the SSO wall as a healthy 200.
+
+## `cron.yml`
+
+The ten scheduled jobs, moved out of `vercel.json` (see the section below) and
+into Actions. It fires on the seven distinct cron expressions, passes
+`github.event.schedule` to `scripts/run-cron-jobs.sh`, and the script looks the
+due jobs up in `scripts/cron-jobs.json` and calls each one with the bearer
+token. The schedule exists once, in that JSON;
+`src/__tests__/cron-schedule-inventory.test.ts` checks the workflow, the doc and
+`src/app/api/cron/` against it, both ways, so a job cannot be renamed or
+rescheduled in one place alone.
+
+**It is off until a repository variable says otherwise.** `CRON_SCHEDULER_ENABLED`
+must be `true` and `secrets.CRON_SECRET` must hold the deployment's value.
+Neither exists today - `gh secret list` returns nothing on this repository - so
+merging this file starts nothing. The variable is checked in the job's `if`,
+before a runner is allocated, so the schedules cost no minutes while it is off;
+the secret is checked inside the run because the `secrets` context is not
+available to a job-level `if`, and the script exits 0 with a notice rather than
+firing ten 401s every five minutes.
+
+It is a worse scheduler than the `cron-job.org` setup the doc also describes:
+GitHub's cron is best effort, late by five to fifteen minutes under load, drops
+runs, and switches itself off after 60 days without a commit. It is here because
+it needs two settings instead of a person creating ten jobs in a browser, and
+the four money-path and email jobs among the ten had been running nowhere at all
+in the meantime. Turning `CRON_SCHEDULER_ENABLED` off is the whole rollback, and
+it has to happen the day the other scheduler is set up: two schedulers means
+every job runs twice.
+
+## `commit-monitor.yml`
+
+Half-hourly `git log --oneline -3` to the project's ntfy topic, so progress is
+visible from a phone. It reads nothing, writes nothing and cannot fail a build.
 
 ## `dependabot-auto-merge.yml`
 
@@ -109,8 +152,8 @@ own header comment carries the full argument.
 
 Ten scheduled jobs used to be declared there. Hobby runs two of them, at daily
 granularity, and silently ignores the rest - so four money-path and email jobs
-were believed to be scheduled and were not. They now run from `cron-job.org`;
-see `docs/CRON-EXTERNAL.md`.
+were believed to be scheduled and were not. `cron.yml` below is what calls them
+now; `docs/CRON-EXTERNAL.md` is the full account.
 
 Nothing in the build reads that key. The route handlers under `src/app/api/cron/`
 are ordinary route handlers, built and reachable either way; `crons` is consumed
