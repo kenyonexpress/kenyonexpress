@@ -21,6 +21,7 @@ import {
 } from '@/server/domain/orders/refund'
 import type { SettlementState } from '@/server/domain/orders/state-machine'
 import { enqueueRefundCreditNote, issueQueuedInvoice } from '@/server/payments/invoices'
+import { type RefundRecordAdmin, groundFor, recordRefund } from '@/server/payments/refund-record'
 import {
   type SettlementEventRow,
   recordSettlementEvents,
@@ -270,6 +271,36 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
       } as never)
       .select('id')
       .maybeSingle()
+
+    // THE STATUTORY RECORD, which this function has never written.
+    //
+    // `public.refunds` has been live since 131 with a state machine, a ground
+    // classification, a fee cap and a trigger forcing `refund_due_by` to
+    // `requested_at + 14 days`, and it held zero rows because nothing wrote it.
+    // What was recorded instead was `audit_log.metadata`, which is a log line
+    // rather than the record the Consumer Protection Law is about, and which
+    // cannot answer "which refunds are past their deadline".
+    //
+    // Best effort, deliberately, for the same reason the credit note below is
+    // queued rather than called: the card is already credited by the time this
+    // line runs, and a failed insert must not turn a successful refund into an
+    // error an operator retries -- the retry would attempt a second credit.
+    await recordRefund(admin as unknown as RefundRecordAdmin, {
+      orderId: order.id,
+      paymentId,
+      state: 'completed',
+      ground: groundFor({ isDefectClaim: input.isDefectClaim }),
+      // The charge being cancelled, not the sum handed back. The fee cap in 131
+      // is computed against this figure and the planner computes the fee the
+      // same way, so passing the post-fee amount would make a legal fee look
+      // like it broke the cap.
+      requestedAgorot: cardChargedAgorot,
+      grantedAgorot: plan.refundAmountAgorot,
+      cancellationFeeAgorot: plan.cancellationFeeAgorot,
+      cancelOnly: plan.cancelOnly,
+      reasonHe: input.reason,
+      at: now,
+    })
 
     if (plan.voucherRefunds.length > 0) {
       // Conditional update mirrors the voucher state machine: REFUND is legal
