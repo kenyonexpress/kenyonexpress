@@ -130,8 +130,14 @@ src/lib/money.ts
 │   │   ├── (supplier-public)/ כניסת ספק ודף סירוב
 │   │   ├── (legal)/          תקנון, פרטיות, נגישות, ביטולים
 │   │   ├── (main)/           קופונים, ניוזלטר
+│   │   ├── (shop)/           ריק (placeholder)
+│   │   ├── (marketing)/      ריק (placeholder)
 │   │   ├── api/              webhooks, cron, חיפוש, בריאות, ארנק
-│   │   └── coupon/           דף שובר לפי מזהה
+│   │   ├── auth/callback/    OAuth callback של Supabase
+│   │   ├── coupon/           דף שובר לפי מזהה
+│   │   ├── redeem/           מימוש לפי token
+│   │   ├── debug/            /debug/sentry (סגור עד שהסוד המדויק מוגדר)
+│   │   └── offline/          דף PWA כשאין רשת
 │   ├── components/           UI לפי דומיין: cart, admin, supplier, storefront
 │   ├── lib/                  כסף, env, supabase, תשלומים, חיפוש, RBAC
 │   ├── server/               server actions, דומיין (orders/vouchers), finalize
@@ -148,6 +154,7 @@ src/lib/money.ts
 │   ├── migrations/           מיגרציות שכבר הוחלו בפרודקשן. אל תכתוב לכאן קובץ חדש
 │   ├── functions/            Edge Functions (notifications-worker)
 │   ├── seed/                 זריעת קטגוריות וכו'
+│   ├── schedules/            תיאור לוחות, לא הרצה
 │   └── rls-manifest.json     מניפסט מדיניות שנמדד מול הפרודקשן
 ├── migrations/pending/       מיגרציות שטרם הוחלו. הנתיב היחיד לשינוי סכימה
 ├── scripts/                  compare.mjs, seed, ביקורות, ייבוא WP
@@ -155,9 +162,10 @@ src/lib/money.ts
 ├── tests/sql/                בדיקות SQL מול Postgres (RLS, מחזור שובר)
 ├── load/                     בדיקות עומס
 ├── docs/                     ארכיטקטורה, הרצה, ציות. אינדקס: ARCHITECTURE-DOCS-INDEX.md
+├── public/                   סטטי: אייקונים, PWA, robots
 ├── messages/                 מחרוזות he / en
 ├── .github/workflows/        ci.yml, cron.yml (כבוי עד שסודות קיימים). אין deploy.yml
-├── .env.example              רשימת env מלאה כפי שהקוד קורא. בלי ערכים אמיתיים
+├── .env.example              רשימת env כפי שהקוד קורא. בלי ערכים אמיתיים. Upstash עדיין רק בטבלה למטה
 └── STATE.md                  מצב הסשן בין סוכנים. לא מדריך למפתח
 ```
 
@@ -255,7 +263,7 @@ pnpm type-check
 
 ## משתני סביבה
 
-מקור האמת של הרשימה הוא `.env.example` (נוצר מקריאות אמיתיות בקוד). כאן הסבר בלי ערכים. כל `NEXT_PUBLIC_*` ו-`EXPO_PUBLIC_*` נצרב ל-bundle בזמן בילד.
+מקור האמת של הרשימה הוא הקריאות בקוד (אותו מקור שממנו נוצר `.env.example`). כאן הסבר בלי ערכים. כל `NEXT_PUBLIC_*` ו-`EXPO_PUBLIC_*` נצרב ל-bundle בזמן בילד. שלושת משתני Upstash נקראים ב-`src/lib/env.ts` ועדיין לא הועתקו ל-`.env.example`.
 
 מקרא לעמודת **חובה**:
 
@@ -339,7 +347,7 @@ pnpm type-check
 | `SENTRY_RELEASE` / `NEXT_PUBLIC_SENTRY_RELEASE` | אופציונלי | שרת / דפדפן | תג שחרור. נופל ל-`VERCEL_GIT_COMMIT_SHA` |
 | `SENTRY_ORG` / `SENTRY_PROJECT` / `SENTRY_AUTH_TOKEN` | אופציונלי | בילד | העלאת source maps |
 | `SENTRY_KEEP_SOURCEMAPS` | אופציונלי | בילד | משאיר maps ב-bundle. השאר כבוי |
-| `SENTRY_DEBUG_ROUTES` | אופציונלי | שרת | חושף `/debug/sentry`. לכבות אחרי אימות |
+| `SENTRY_DEBUG_ROUTES` | אופציונלי | שרת | נפתח רק במחרוזת המדויקת `i-know-what-this-does`. `true` / `1` לא פותחים. לכבות אחרי אימות |
 | `LOG_LEVEL` | אופציונלי | שרת | `debug` / `info` / `warn` / `error` |
 | `ALERTS_ENABLED` | אופציונלי | שרת | `false` משתיק התראות יוצאות |
 | `NTFY_TOPIC` / `NTFY_BASE_URL` | אופציונלי | שרת | יעד ntfy. שם ה-topic הוא בקרת הגישה |
@@ -368,7 +376,7 @@ pnpm type-check
 
 ### Rate limit (Upstash)
 
-המשתנים האלה נקראים ב-`src/lib/env.ts` וב-`src/lib/rate-limit/`. חצי קונפיגורציה מתייחסת כחסר: נופלים ל-RPC `check_rate_limit` ב-Postgres.
+המשתנים האלה נקראים ב-`src/lib/env.ts` וב-`src/lib/rate-limit/`, גם אם הם עדיין לא מופיעים ב-`.env.example`. חצי קונפיגורציה מתייחסת כחסר: נופלים ל-RPC `check_rate_limit` ב-Postgres.
 
 | משתנה | חובה | חשיפה | תפקיד |
 | --- | --- | --- | --- |
@@ -448,6 +456,9 @@ pnpm type-check
 | `LIVE_PRODUCT_PATH` / `LOCAL_PRODUCT_PATH` / `LIVE_CATEGORY_PATH` / `LOCAL_CATEGORY_PATH` | כלי | נתיבי השוואת פיקסלים |
 | `COMPARE_*` / `MINE_URL` / `PLAYWRIGHT_BROWSERS_PATH` | כלי | כלי ההשוואה הוויזואלית |
 | `CI_DIFF_RANGE` | כלי | טווח ל-lint/typecheck/hardcoded על הדיף. ברירת מחדל `HEAD~1..HEAD` |
+| `CLS_RUNS` / `GEOMETRY_CUTOFF` / `TRAILING_ROUTES` | כלי | בדיקות פריסה ו-CLS |
+| `COUPON_URL` / `COUPON_SLUG` | כלי | מדידת דף שובר |
+| `LIVE_ATC_ID` | כלי | מזהה כפתור הוספה לעגלה באתר החי, להשוואת פיקסלים |
 | `WC_BASE` / `WC_KEY` / `WC_SECRET` | כלי | REST של WooCommerce לייבוא |
 | `WP_IMPORT_ALLOW_WRITES` | כלי | הייבוא לקריאה בלבד עד שזה מוגדר |
 

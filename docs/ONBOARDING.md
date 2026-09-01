@@ -35,7 +35,7 @@
 | חוזה סביבת Cardcom | `src/lib/payments/env.ts` |
 | README של שכבת התשלום | `src/server/payments/README.md` |
 
-אם אתה מוסיף סכום, אתה עובר דרך `agorot()` / `ilsToAgorot()` / `sumAgorot()` / `multiplyAgorot()`. אם אתה כותב `* 100` או `parseFloat` על מחיר, זה באג.
+אם אתה מוסיף סכום, אתה עובר דרך `agorot()` / `parseIls()` / `sumAgorot()` / `multiplyAgorot()`. אם אתה כותב `* 100` או `parseFloat` על מחיר, זה באג.
 
 ### Auth והרשאות
 
@@ -63,6 +63,7 @@
 | ספק | `src/app/(supplier)` | `src/components/supplier` |
 | Auth | `src/app/(auth)` |  |
 | API | `src/app/api` |  |
+| מימוש שובר | `src/app/redeem`, `src/app/coupon` | `src/components/coupon` |
 
 UI עברית RTL. Skill מחייב: `.claude/skills/rtl-hebrew-ui/SKILL.md`. ייחוס ויזואלי לחי: `refs/ke_live_singlefile.html` (נוצר מקומית, לא ב-git).
 
@@ -100,9 +101,11 @@ UI עברית RTL. Skill מחייב: `.claude/skills/rtl-hebrew-ui/SKILL.md`. י
 מותר:
 
 ```ts
-import { agorot, ilsToAgorot, sumAgorot, multiplyAgorot } from '@/lib/money'
-const price = ilsToAgorot('12.34') // 1234
+import { agorot, parseIls, sumAgorot, multiplyAgorot } from '@/lib/money'
+const price = parseIls('12.34') // 1234
 ```
+
+`parseIls` הוא השם ש-`src/lib/money.ts` מייצא ל-`ilsToAgorot`. היישום עצמו חי ב-`src/lib/commerce/money.ts`. אל תייבא משם ישירות ממסך או מ-action: השער הוא `@/lib/money`.
 
 אסור בכל מסלול כסף (עגלה, checkout, שובר, ארנק, עמלה, חשבונית, settlement):
 
