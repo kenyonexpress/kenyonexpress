@@ -302,9 +302,15 @@ They are not bugs you introduced, and each will read like one:
 2. **The first real payment will raise `42703`.** `finalize.ts` and
    `queries/orders.ts` select four column names production does not have.
    `docs/PAYMENT-FLOW.md` §11.2.
-3. **The catalogue has products and zero completed purchases.** Empty
-   `vouchers`, `payment_events` and `refunds` tables are the expected state, not
-   a broken connection.
+3. **80 products, 12 suppliers, and no customer has ever bought anything.** The
+   four orders in production are E2E fixtures; **zero vouchers have ever been
+   issued**. Empty `vouchers`, `payment_events` and `refunds` are the expected
+   state, not a broken connection.
+
+4. **There is no deployment.** The Vercel project watches a different,
+   abandoned repository, and all 11 of its deployments failed. Merging to `main`
+   here deploys nothing and opens no preview.
+   `docs/THIRD-PARTY-DEPENDENCIES.md` §0.
 
 ### Where to go on day two
 

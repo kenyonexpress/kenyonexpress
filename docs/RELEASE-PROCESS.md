@@ -21,9 +21,12 @@ copied forward from a previous document.
    no preview.** §1 through §5 are real and enforced today; §6 onward describes
    what will happen once the project is relinked.
    `docs/THIRD-PARTY-DEPENDENCIES.md` §0.
-1. **`main` is the default branch and the only mainline.** PR #6 merged
-   `phase5/homepage` into it. Any document describing `phase5/homepage` as where
-   work happens is out of date.
+1. **`main` is the default branch and the push target — and it is not the only
+   live branch.** PR #6 merged `phase5/homepage` into it, and the two have since
+   **diverged again**: 348 commits on `phase5/homepage` that `main` does not
+   have, 39 on `main` that it does not, and commits on both on 2026-09-01.
+   `main` is the protected release line; `phase5/homepage` is still being worked
+   on. See §4.1.
 2. **The repository is public.** No real credential belongs in it, in a
    workflow, or in a CI secret that a fork could reach.
 3. **There is one maintainer.** Every "who approves" answer below is shaped by
@@ -157,7 +160,38 @@ branch legitimately added reads back as an unrecorded hit. Measured twice on
 
 ---
 
+## 3.5 The queue nobody is emptying
+
+Measured 2026-09-01:
+
+| | |
+|---|---|
+| Pull requests open against `main` | **11**, oldest 2026-08-02 |
+| Pull requests open against `phase5/homepage` | **6**, all Dependabot |
+
+**PR #16, `feat(cron): מתזמן GitHub Actions לעשרת ה-jobs`, has been open since
+2026-08-31.** It is the fix for the largest operational gap in the system —
+nothing scheduled runs — and it is sitting in review. A backlog is a process
+problem rather than a technical one, and this is the one item in it worth
+naming individually.
+
+**Dependabot still targets `phase5/homepage`.** `.github/dependabot.yml` says in
+capitals that the `target-branch` override must be deleted the day phase5 merges
+into main. It has not been, so dependency PRs open where the release line is
+not. They cannot land on `main` as they stand.
+
+---
+
 ## 4. Review
+
+### 4.1 Which branch am I releasing from?
+
+`main`. It is the default branch, it carries the protection settings in §5.2,
+and the project rules name it as the standing push target.
+
+`phase5/homepage` is also protected and also live. **Before branching, check
+which line the work you are joining is on** — they have diverged once already
+and have diverged again.
 
 | | Today | The day there are two maintainers |
 |---|---|---|

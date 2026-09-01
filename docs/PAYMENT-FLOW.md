@@ -411,8 +411,9 @@ the ones to search for first when a payment is disputed:
 `verify_contradicted_callback`, `amount_mismatch`,
 `reconciliation_amount_differs`, `reconciliation_missing_remotely`.
 
-The table is empty in production today because no customer has completed a
-purchase yet.
+The table is empty in production today because **no customer has ever completed
+a purchase**. The four orders that exist are E2E fixtures from 2026-07-21, and
+zero vouchers have ever been issued.
 
 ---
 

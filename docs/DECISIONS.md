@@ -316,7 +316,8 @@ history attached to their user id.
 **Why:** the multiplication stops happening in JavaScript, and the twin cannot
 drift from its source because the database computes it.
 
-⚠️ **Diverges:** `finalize.ts` still names two columns from the *other*
+⚠️ **Diverges:** `finalize.ts` and `queries/orders.ts` still name **four**
+column names from the *other*
 generation, which do not exist in production. `docs/RUNBOOK.md` §4.1.
 
 ### D-33. `search_index_outbox.product_id` is not a foreign key ✅
@@ -379,7 +380,7 @@ when it is not. Removing them was the honest choice.
 
 ### D-41. Migrations are files applied on approval; `db push` is forbidden ✅
 
-⚠️ **Diverges in practice:** many of the 98 applied migrations were applied
+⚠️ **Diverges in practice:** many of the 99 applied migrations were applied
 through MCP and their SQL was never committed, which is how production's ledger
 and `supabase/migrations/` became different lists. A migration number is not a
 unique key here: two migrations are numbered 126 and two 127.

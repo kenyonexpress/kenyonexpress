@@ -768,7 +768,7 @@ goes through MCP `apply_migration`.
 
 `supabase/migrations/` holds 115 files numbered 001 through 129, but it does
 **not** describe production. The hosted database is the pre-059 lineage, the two
-chains diverged long ago, and **production's own ledger holds 98 applied
+chains diverged long ago, and **production's own ledger holds 99 applied
 migrations** whose names and numbers only partly overlap with those filenames.
 The authoritative descriptions of production are the live schema and
 `src/types/database.ts`. A from-zero reset is not runnable here in any case.

@@ -42,7 +42,7 @@ data read in a server component.
 
 ## 3. Unit tests
 
-242 test files, colocated with the code (`foo.ts` beside `foo.test.ts`) rather
+246 test files, colocated with the code (`foo.ts` beside `foo.test.ts`) rather
 than in a separate tree. Run:
 
 ```bash

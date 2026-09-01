@@ -123,6 +123,10 @@ done
 
 Run `notifications` **first** if customers are waiting on vouchers.
 
+**The fix is written and unmerged.** PR **#16**,
+`feat(cron): מתזמן GitHub Actions לעשרת ה-jobs`, has been open against `main`
+since **2026-08-31**. Before building a scheduler, review that.
+
 **Why it happens.** The ten cron routes were deliberately removed from
 `vercel.json`. Vercel's cron allowance is a plan feature — on Hobby, two jobs at
 daily granularity — and this project needs ten, four of them at five- or
