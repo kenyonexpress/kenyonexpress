@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-01 23:22 UTC (148 נמדד שוב על ke_sandbox: reserve 982.90, user 17.10, sum 1000.00, audit 1710 אגורות, replay אותו wallet_entries.id. GitHub Actions ירוק על PR #22. Vercel Preview אדום כמו על main.)
 Updated: 2026-09-01 23:04 UTC (148 הוחל על Postgres מקומי ke_sandbox: יתרה נשמרה 1000.00, audit 1710 אגורות, replay בלי שורת audit שנייה. לא הוחל על הפרויקט המאוחסן)
 Updated: 2026-09-01 12:20 UTC (‏אין כותב ל-escrow_held בשום מקום; ‏144/144 מעברים מול הטריגרים החיים; קיפאון ה-380/768 נמצא ותוקן; ‏payment_events היה טבלה ריקה בלי אף כותב)
 Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשישה כבר היו, ושני באגים אמיתיים נמצאו בדרך)
