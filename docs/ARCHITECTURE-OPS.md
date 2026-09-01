@@ -551,7 +551,7 @@ find "$BACKUP_DIR" -name 'ke-*.dump.age' -mtime +30 -delete
 ```
 1. פרויקט חדש, eu-central-1
 2. pg_restore מהגיבוי האחרון
-3. אימות: 33 טבלאות, RLS על כולן, ספירות
+3. אימות: 61 טבלאות, RLS על כולן, ספירות
 4. מפתחות חדשים ל-Vercel env
 5. פריסה מחדש
 6. Cardcom: אימות שה-webhook URL עדיין נכון

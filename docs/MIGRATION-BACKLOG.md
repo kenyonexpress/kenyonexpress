@@ -12,8 +12,9 @@
 >    `settlement_status`.
 > 2. **Most of the backlog is applied.** As of 2026-09-01: 122, 123, 125, 126,
 >    127, 130 through 136, 138 through 141 and 146 are in production; 124, 143,
->    144 and 145 were applied earlier under different numbers; **137 is blocked**
->    and is the only one left. The renumbering table is in
+>    144 and 145 were applied earlier under different numbers; **137 is pending, not
+>    applied** (rewritten against the production enums at `37892b88d`) and is
+>    the only one left. The renumbering table is in
 >    `ARCHITECTURE-OVERVIEW.md` §8.1.
 >
 > `supplier_payouts` appears here as a table to migrate. It does not exist.

@@ -12,7 +12,9 @@
 
 **‏45** טבלאות עם policy אחד לפחות. **‏8** טבלאות עם אפס policies = deny-all מכוון (סעיף 6).
 
-**‏59** פונקציות SECURITY DEFINER: **‏3** חשופות ל-anon (וגם ל-authenticated), **‏12** חשופות ל-authenticated בסך הכל, השאר service_role בלבד וטריגרים.
+**‏61** פונקציות SECURITY DEFINER מתוך **‏69** בסך הכל (נמדד 01.09): **‏4** מהן חשופות ל-anon (וגם ל-authenticated), **‏13** חשופות ל-authenticated, השאר service_role בלבד וטריגרים. **כל ‏61 מצמידות `search_path`, אפס לא מוצמדות.**
+
+‏**‏6 הרשאות EXECUTE ל-anon בסך הכל**, לא ‏4: מעבר לארבע ה-SECURITY DEFINER יש ‏`payment_events_append_only` ו-`refunds_force_due_by`, שתיהן פונקציות טריגר שנושאות את ה-grant הציבורי שברירת המחדל של Postgres נותנת. הן מחזירות `trigger` ולא מקבלות ארגומנטים, ולכן קריאה להן דרך PostgREST לא משיגה דבר. ‏audit שסופר grants ולא משטח-תקיפה יראה ‏6 וצריך לדעת שלוש מהן אינרטיות.
 
 Advisors security אחרי 127: **‏23** ממצאים, כולם מכוונים ומתועדים — 8 `rls_enabled_no_policy` (INFO, deny-all מכוון), 3 `anon_security_definer` (WARN, סעיף 5.1), 12 `authenticated_security_definer` (WARN, סעיפים 5.1+5.2). לפני 127 היו 25; שני הממצאים שנעלמו הם בדיוק `check_rate_limit` בשתי הרשימות.
 

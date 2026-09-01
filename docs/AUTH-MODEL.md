@@ -109,7 +109,7 @@
 
 ---
 
-## 4. RLS — ‏53 טבלאות, ‏53 עם RLS דלוקה
+## 4. RLS — ‏61 טבלאות, ‏61 עם RLS דלוקה
 
 נמדד ב-19.08. הצילום שמור ב-`supabase/rls-manifest.json`, והשער ב-CI הוא
 `src/lib/auth/rls-manifest.test.ts`.
@@ -148,7 +148,8 @@ policies ובלי נימוק. מה שהוא **לא** תופס: drift שאף אח
 
 ## 5. הספק הוא קריאה-בלבד ב-RLS — נמדד
 
-שאילתה על כל policy שאינה `SELECT` בכל הסכימה החזירה **‏74 policies**. מתוכן,
+שאילתה על כל policy שאינה `SELECT` בכל הסכימה החזירה **‏76 policies** (נמדד 01.09,
+מתוך **‏133** בסך הכל). מתוכן,
 כאלה שמזכירות ספק בביטוי: **שלוש בלבד**, וכולן על אותה טבלה.
 
 | טבלה | פקודה | ביטוי |
@@ -265,8 +266,9 @@ select p.proname, pg_get_function_identity_arguments(p.oid) as args,
 
 ## 8. מה שנשאר פתוח
 
-1. **‏`REVOKE EXECUTE` על `is_admin()` ואחיותיה — לא לעשות.** ‏123 policies
-   מפנות לשש הפונקציות האלה, וביטוי policy מוערך בהרשאות התפקיד השואל.
+1. **‏`REVOKE EXECUTE` על `is_admin()` ואחיותיה — לא לעשות.** נמדד 01.09:
+   ‏`is_admin` לבדה מוזכרת ב-**‏81** policies מתוך ‏133, ‏`has_role` ב-**‏19**
+   ו-`current_user_role` ב-**‏10**, וביטוי policy מוערך בהרשאות התפקיד השואל.
    הפירוט ב-`docs/DB-HARDENING-AUDIT.md`.
 2. **‏`migrations/pending/143_revoke_unused_definer_execute.sql`** — שש
    פונקציות שנמדדו בלי אף קורא. ממתין לאישור להרצת DDL.

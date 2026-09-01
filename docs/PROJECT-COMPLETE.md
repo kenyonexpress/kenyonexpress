@@ -478,7 +478,7 @@ SUPABASE_SECRET_KEY blocker and not a regression.
 האלה מדלגים על עצמם והסוויטה עדיין ירוקה. לכן יש לקרוא את ספירת הדילוגים יחד
 עם ספירת ההצלחות: ‏`335 passed, 6 skipped` בדגל, ו-**‏6** הוא מה שמוכיח
 שהנתונים היו שם.
-מניפסט ה-RLS נמדד מחדש מול פרודקשן ב-20.08: ‏53 טבלאות, אפס סחיפה, ‏RLS דלוק על
+מניפסט ה-RLS נמדד מחדש מול פרודקשן ב-01.09: ‏61 טבלאות, אפס סחיפה, ‏RLS דלוק על
 כולן. מדיניויות עשר טבלאות הכסף מצמצמות קריאה ל-`auth.uid()`, ולפנקס הכסף
 (`wallet_accounts`, ‏`wallet_entries`, ‏`payments`, ‏`vouchers`,
 ‏`voucher_redemptions`) אין מדיניות כתיבה כלל. ‏`redeem_voucher` ו-`verify_supplier_staff_pin`

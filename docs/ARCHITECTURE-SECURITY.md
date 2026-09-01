@@ -33,7 +33,7 @@ Authorization primitives:
 
 ---
 
-## 1. RLS across all 33 tables
+## 1. RLS across all 61 tables
 
 ### 1.0 Live state, measured
 
@@ -937,7 +937,7 @@ Severity: **C** critical, **H** high, **M** medium. Status as of 2026-07-29.
 |---|---|---|---|---|
 | SEC-QR | **C** | Voucher QR signed with an unkeyed sha256; forgeable by anyone | `src/lib/checkout/coupon-issue.ts` | **Open.** Blocks real coupons |
 | SEC-WALLET | **C** | `fn_wallet_transfer` left with PUBLIC EXECUTE; any user can mint balance | 026 | Fix drafted, not applied |
-| SEC-FORCE | **H** | `FORCE ROW LEVEL SECURITY` on 0 of 33 tables; every definer bypasses RLS | live schema | **New this edition.** Open |
+| SEC-FORCE | **H** | `FORCE ROW LEVEL SECURITY` on 0 of 61 tables; every definer bypasses RLS | live schema | **New this edition.** Open |
 | SEC-UPLOADER | **H** | `products: admin update` gates on `content_uploader`; uploader can edit any product's money fields | live policy | **New this edition.** Open |
 | SEC-06 | **H** | Overlapping permissive policies widen by OR; `products` has 11, and the weakest ignores `deleted_at` | live policy | Open |
 | SEC-02 | **H** | `affiliates_user_update` unrestricted by column: self-approval and balance inflation | 010 | Open (table empty) |

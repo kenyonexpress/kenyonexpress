@@ -23,7 +23,7 @@ Most of it was already done by commit `0f8359bc`.
 | "72 `multiple_permissive_policies`" | **13** |
 | "4 duplicate indexes" | **0** |
 | "35 missing FK indexes" | **0** |
-| "24 SECURITY DEFINER fns" | **26**, and they are the bulk of the remaining WARNs |
+| "24 SECURITY DEFINER fns" | **26** at the time of this audit; **61 of 69** as re-measured 2026-09-01 |
 | "8 `rls_enabled_no_policy`" | **8**, and all 8 are INFO and deliberate (§4) |
 
 ---
@@ -50,7 +50,11 @@ Most of it was already done by commit `0f8359bc`.
 
 ---
 
-## 2. What the 26 SECURITY DEFINER functions are actually for
+## 2. What the SECURITY DEFINER functions are actually for
+
+> Counts in this section are as of the original audit (26 functions). Production
+> now carries **61 SECURITY DEFINER functions out of 69**, all of them with a
+> pinned `search_path`. Current figures: `docs/DB-SECURITY-MODEL.md`.
 
 The advisor cannot tell a helper that RLS policies call from an endpoint that
 strangers can call. That distinction is the entire question, so it was measured:
@@ -89,12 +93,13 @@ select f.fn, count(p.policyname)
 
 ## 3. Why "0 WARN" would take the site down
 
-**`is_admin()` is referenced by 79 policies.**
+**`is_admin()` is referenced by 81 of the 133 policies** (re-measured 2026-09-01;
+this section previously said 79).
 
 Revoking `EXECUTE` on it from `authenticated`, which is what the advisor's first
 suggested remediation says to do, does not quietly reduce a warning count. A
 policy expression is evaluated with the privileges of the querying role, so
-those 79 policies would begin raising `permission denied for function is_admin`
+those 81 policies would begin raising `permission denied for function is_admin`
 for every signed-in user on every table they guard.
 
 The same applies, at smaller blast radius, to `has_role` (17), `is_support` (8),
