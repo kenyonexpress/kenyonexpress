@@ -9,7 +9,7 @@ below. See the "APPLIED IN PRODUCTION" table in `README.md`, which carries the
 version string and the query that proved each one. Running any of them again is
 at best a no-op and at worst an error.
 
-## The eleven that remain, in order
+## The twelve that remain, in order
 
 Order matters only where a **depends on** column is filled. Everything else is
 independent and may be applied in any sequence, or not at all.
@@ -27,6 +27,7 @@ independent and may be applied in any sequence, or not at all.
 | 12 | `140_money_agorot_catalog.sql` | `_agorot` columns on products, variants, coupons | — | `drop column <col>_agorot` |
 | 13 | `141_money_agorot_growth.sql` | `_agorot` columns on affiliates, referrals | — | `drop column <col>_agorot` |
 | 14 | `147_money_agorot_remaining_twins.sql` | the last four money columns with no generated twin | — | `drop column <col>_agorot` |
+| 15 | `148_refund_destination.sql` | where a refund went: card or wallet | — | `drop column destination; drop type refund_destination` |
 
 ## The money set, 138 through 141
 

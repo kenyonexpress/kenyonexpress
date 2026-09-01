@@ -242,6 +242,37 @@ list from this directory and checks it against every `.ts`/`.tsx` in **both**
 `src/` and `apps/`, so revoking a function the Expo till uses fails a test
 rather than a till.
 
+## `148_refund_destination.sql`, added 2026-09-02
+
+`refunds` records the notice, the ground, the fee and the 14-day deadline, and
+says nothing about WHERE the money went. `refundOrder` has exactly one path,
+`provider.refundByTransactionId`, back to the card, so a wallet credit is not a
+second option -- it is a thing the code cannot express. That matters for a
+voucher already redeemed or expired: the value left at the counter, so pulling
+the card money back returns value that was consumed, and a goodwill wallet
+credit is the correct instrument.
+
+Adds `public.refund_destination` (`original_method`, `wallet`) and
+`refunds.destination NOT NULL DEFAULT 'original_method'`. The default states a
+fact rather than a guess: every refund written before this column went back to
+the card, because that was the only path.
+
+Plus `refunds_wallet_has_no_fee`: a wallet refund may carry no cancellation fee.
+The fee is a deduction from money returned to a payment instrument, and a
+goodwill credit that quietly withheld 5% would be a worse product than refusing.
+
+**Dry run against production, rolled back:**
+
+```
+card_with_fee=OK   wallet_with_fee=23514_refused   wallet_no_fee=OK
+default=['original_method'::refund_destination]
+```
+
+**No code ships with it.** `recordRefund` does not send `destination`, because a
+write naming a column that does not exist fails 42703 and would take every
+refund record with it. The wallet path in `refundOrder` follows in a separate
+commit once this is applied.
+
 ## `147_money_agorot_remaining_twins.sql`, added 2026-09-01
 
 Generated `_agorot` twins for the last four money columns that had none:
