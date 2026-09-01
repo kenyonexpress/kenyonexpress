@@ -2,7 +2,7 @@
 
 Every document in `docs/`, what it is for, and whether you can trust it.
 
-**160 documents.** 88 current, 50 carrying a correction banner, 22 marked as
+**161 documents.** 89 current, 50 carrying a correction banner, 22 marked as
 historical snapshots.
 
 Last reconciled against production (`ixvwfbuvfxxsjiywhbbb`) on **2026-09-01**.
