@@ -13,7 +13,7 @@ renumbered into the sequence below:
 
 | was | is now |
 | --- | --- |
-| `supabase/migrations/PENDING-109-recurring-subscriptions.sql` | `135_recurring_subscriptions.sql` |
+| `supabase/migrations/PENDING-109-recurring-subscriptions.sql` | `135b_recurring_subscriptions.sql` |
 | `supabase/migrations/PENDING-110-supplier-coordinates.sql` | `136_supplier_coordinates.sql` |
 | `supabase/migrations/PENDING-money-integer-fix.sql` | superseded; the in-place path was deleted 2026-09-01, see DECISIONS |
 
@@ -102,7 +102,7 @@ running. Order is the position in the apply sequence.
 | 132 | `132_search_index_outbox.sql` | `search_index_outbox`, enqueue trigger on `products`, `claim_search_index_jobs()` | **Low.** Adds a trigger to `products`; every product write now also writes an outbox row | 9 | none | `drop trigger if exists products_enqueue_search_index on public.products; drop function if exists public.enqueue_search_index(); drop function if exists public.claim_search_index_jobs(integer); drop table if exists public.search_index_outbox;` |
 | 133 | `133_supplier_branches.sql` | `supplier_branches` table | **None.** Changes no money and no authorisation; a voucher still redeems against `suppliers.id` | 10 | none | `drop table if exists public.supplier_branches;` |
 | 134 | `134_order_items_delivered_at.sql` | `order_items.delivered_at`, physical-only constraint, `order_item_cancellation_deadline()` | **Low.** Nullable column; the deadline function is new | 11 | none | `drop function if exists public.order_item_cancellation_deadline(uuid); drop index if exists public.order_items_delivered_at_idx; alter table public.order_items drop constraint if exists order_items_delivery_is_physical_only, drop column if exists delivered_at;` |
-| 135 | `135_recurring_subscriptions.sql` | `recurring` enum member, `subscriptions`, `subscription_charges`, 3 billing columns on `products` | **Medium.** `ALTER TYPE ... ADD VALUE` cannot run inside a transaction block and cannot be rolled back | 12 | none | Tables and columns drop cleanly; **the `recurring` enum member is permanent** — Postgres cannot remove an enum value |
+| 135 | `135b_recurring_subscriptions.sql` | `recurring` enum member, `subscriptions`, `subscription_charges`, 3 billing columns on `products` | **Medium.** `ALTER TYPE ... ADD VALUE` cannot run inside a transaction block and cannot be rolled back | 12 | none | Tables and columns drop cleanly; **the `recurring` enum member is permanent** — Postgres cannot remove an enum value |
 | 136 | `136_supplier_coordinates.sql` | `suppliers.latitude`/`.longitude`, GiST index, pair CHECK | **None.** `supplierLocation()`'s exact branch is dead code until the columns exist | 13 | `cube` + `earthdistance` extensions | `drop index if exists public.suppliers_earth_idx; alter table public.suppliers drop constraint if exists suppliers_latlng_pair, drop column if exists latitude, drop column if exists longitude;` |
 | 137 | `137_order_transition_guard.sql` | Status-transition guard triggers on `orders`/`vouchers`/`payments`, immutable `audit_log` | **Medium.** Constrains the service role, which every cron, webhook and repair script runs as. An illegal transition that used to succeed now raises | 14 | 130, 131, 134 (guards reference their statuses) | `drop trigger if exists audit_log_no_delete on public.audit_log; drop trigger if exists audit_log_no_update on public.audit_log; drop trigger if exists vouchers_status_guard on public.vouchers; drop trigger if exists payments_status_guard on public.payments; drop trigger if exists orders_status_guard on public.orders;` (+ the 6 guard functions) |
 | 138 | `138_money_agorot_money_path.sql` | Adds a **generated** `_agorot` beside numeric on `orders`, `order_items`, `payments` | **None at apply.** Additive and unwritable. The `>= 0` checks become live on the numeric column's sign | 15 | none | `alter table public.orders drop column if exists subtotal_ils_agorot, drop column if exists total_ils_agorot, drop column if exists discount_ils_agorot;` (+ `order_items`, `payments`) |
@@ -328,3 +328,43 @@ sit in the APPLIED table above. `check_rate_limit` holds zero `anon` EXECUTE
 grants and `authenticated` holds zero DML on the eight deny-all tables. **There
 is no fail-open hazard left to sequence around**, which was the only reason the
 apply order previously insisted `145` go last.
+
+## 2026-09-01: two drifts between this directory and production, both closed
+
+Found by querying the live database rather than by reading the migration record.
+
+**`135` is two migrations in production, not one.** `schema_migrations` holds
+`135a_product_type_recurring` and `135b_recurring_subscriptions`. The repo
+carried a single combined file whose header argued, correctly, that PostgreSQL
+17 permits `ALTER TYPE ... ADD VALUE` inside a transaction provided the label is
+not used in the same one. The argument holds and the shape was still wrong: the
+restriction binds the whole transaction, and nobody applying a later statement
+can tell from reading it that `'recurring'` must not be referenced. Split into
+`135a_product_type_recurring.sql` and `135b_recurring_subscriptions.sql` so the
+constraint is structural instead of a promise kept by a comment.
+
+**`138` describes eight columns; production has six.** What ran was a collapsed,
+table-driven version of 138-141. These two were never created:
+
+```
+orders.discount_ils_agorot
+order_items.supplier_payout_ils_agorot
+```
+
+The blocks that would create them are still in the file and still correct, so
+running it would add them. Whether that is wanted is left open: the reason they
+were dropped from the collapsed version was not recorded, and inventing one in a
+migration header is how a wrong reason becomes a fact. A banner at the top of
+`138` says all of this, so the file cannot be read as a description of
+production without also reading the correction.
+
+**The consequence for the application code.** Four money columns have no
+generated twin and therefore still convert in JavaScript:
+
+```
+orders.discount_ils              orders.cashback_applied_ils
+order_items.supplier_payout_ils  order_items.cashback_earned_ils
+```
+
+`src/lib/commerce/order-money-columns.ts` carries the same list at the call
+site. The two have to change together.

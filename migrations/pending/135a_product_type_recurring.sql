@@ -1,0 +1,25 @@
+-- 135a: add the `recurring` label to public.product_type. Nothing else.
+--
+-- SPLIT FROM 135 BECAUSE PRODUCTION SPLIT IT. `schema_migrations` holds two
+-- rows, `135a_product_type_recurring` and `135b_recurring_subscriptions`, and a
+-- repo that carries one combined file does not describe what ran.
+--
+-- The single-file version argued, correctly, that PostgreSQL 17 permits
+-- `ALTER TYPE ... ADD VALUE` inside a transaction as long as the new label is
+-- not USED in the same transaction. That argument holds. It is still the wrong
+-- shape, for a reason the argument does not cover: the restriction is on the
+-- transaction, and whoever applies the next migration in this directory has no
+-- way to know from reading it that a later statement must never reference
+-- 'recurring'. Splitting makes the constraint structural instead of a promise
+-- kept by a comment.
+--
+-- ROLLBACK
+--   None. PostgreSQL has no DROP VALUE for an enum. Undoing this means
+--   recreating the type and rewriting every column that uses it. The statement
+--   is additive, reads no row and writes no row, so there is nothing to
+--   restore, but it cannot be reversed.
+--
+-- Apply this BEFORE 135b. 135b does not reference the label, so the order is
+-- about intent rather than dependency.
+
+ALTER TYPE public.product_type ADD VALUE IF NOT EXISTS 'recurring';
