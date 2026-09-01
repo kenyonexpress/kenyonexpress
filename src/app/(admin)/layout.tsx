@@ -1,4 +1,5 @@
 import AdminSidebar from '@/components/admin/AdminSidebar'
+import CommandPalette from '@/components/admin/CommandPalette'
 import { adminLandingPath } from '@/lib/admin/nav'
 import { ROLE_LABELS, requirePanelSession } from '@/lib/admin/rbac'
 import { signOut } from '@/server/actions/auth'
@@ -57,6 +58,10 @@ async function AdminFrame({ children }: { children: React.ReactNode }) {
       <div className="mx-auto flex max-w-7xl items-start gap-6 px-6 py-6">
         <AdminSidebar role={role} />
         <main className="min-w-0 flex-1">{children}</main>
+        {/* Mounted once for the whole panel: the point of Cmd+K is that it
+            answers from wherever the operator is standing when the phone
+            rings, not from a page they have to navigate to first. */}
+        <CommandPalette />
       </div>
     </>
   )
