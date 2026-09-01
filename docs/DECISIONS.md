@@ -111,3 +111,53 @@ in `docs/LAUNCH-READINESS.md`; it is not constrained away here.
 **Percent columns are not money.** The 25 percent columns stay `numeric`.
 Migration `135` bounds the 12 that had no range check to 0..100, and refuses to
 run if any of them already holds a value outside that range.
+
+## 2026-09-01: a negative wallet balance is legitimate, for house accounts only
+
+**Question.** `wallet_accounts.balance_ils` held a negative value, so the
+non-negative constraint the hardening queue asked for would have failed at apply
+time. Bug, or intended?
+
+**Answer: intended.** `fn_wallet_transfer` skips the overdraft check exactly when
+the debit account has no user:
+
+```sql
+IF v_debit.user_id IS NOT NULL AND v_debit.balance_ils < p_amount_ils THEN
+  RAISE EXCEPTION 'insufficient wallet balance';
+END IF;
+```
+
+An account with `user_id IS NULL` is a house account, the platform side of a
+double-entry pair. The one negative row, `02148d50`, sits at -1.80 because two
+`order_cashback` entries of 0.90 each debited it and credited a real customer.
+That is not a debt owed by the platform, it is the running total of cashback
+paid out.
+
+**Measured, not assumed:**
+
+```
+user accounts with a negative balance  : 0
+house accounts with a negative balance : 1   (-1.80)
+house accounts total                   : 3
+sum of every balance                   : 0.00
+sum of every ledger entry              : 1.80
+```
+
+The balances summing to exactly `0.00` is the double-entry invariant holding.
+
+**Decision.** `migrations/pending/146_wallet_balance_floor.sql` adds
+
+```sql
+check (user_id is null or balance_ils >= 0)
+```
+
+which says at the schema level what the function already enforces, so a future
+writer that updates `wallet_accounts` directly instead of calling
+`fn_wallet_transfer` cannot drive a customer negative. The migration refuses to
+run if any user-owned account is negative at the time of apply, rather than
+constraining bad data into place.
+
+**Not decided here.** Three of the thirteen accounts have `user_id IS NULL` and
+all three were created in the same second, which looks like a seed. Only one of
+them is in use. Whether the other two should exist is a separate question and is
+not answered by this constraint.

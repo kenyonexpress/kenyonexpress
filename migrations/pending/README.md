@@ -219,3 +219,11 @@ names exists on disk. It also asserts `supabase/migrations/` contains no
 list from this directory and checks it against every `.ts`/`.tsx` in **both**
 `src/` and `apps/`, so revoking a function the Expo till uses fails a test
 rather than a till.
+
+## `146_wallet_balance_floor.sql`, added 2026-09-01
+
+`check (user_id is null or balance_ils >= 0)` on `wallet_accounts`. A customer
+wallet may not go negative; a house account may, because it is the funding side
+of every cashback pair. The reasoning, and the measurements behind it, are in
+`docs/DECISIONS.md`. The migration refuses to run if any user-owned account is
+negative when it is applied.
