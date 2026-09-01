@@ -130,6 +130,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/contact`, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${base}/faq`, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${base}/about`, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${base}/about/how-it-works`, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${base}/about/payment-security`, changeFrequency: 'monthly', priority: 0.5 },
     // Higher than the other content pages because it is the page a business
     // lands on, and a business is worth more than a session.
     { url: `${base}/suppliers`, changeFrequency: 'monthly', priority: 0.7 },

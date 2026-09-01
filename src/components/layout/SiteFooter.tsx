@@ -33,6 +33,12 @@ const PERSONAL_LINKS: { label: string; href: string; built?: false }[] = [
 
 const SERVICE_LINKS: { label: string; href: string; built?: false }[] = [
   { label: 'אודות', href: '/about' },
+  // The two pages under /about, listed and not folded into it. A shopper who
+  // wants to know what happens to their card is not going to guess that the
+  // answer is one click inside a page labelled "about", and the whole point of
+  // a trust page is being findable before the purchase rather than after it.
+  { label: 'איך זה עובד', href: '/about/how-it-works' },
+  { label: 'אבטחת תשלומים', href: '/about/payment-security' },
   { label: 'צור קשר', href: '/contact' },
   { label: 'שאלות נפוצות', href: '/faq' },
   { label: 'הבלוג', href: '/blog' },
