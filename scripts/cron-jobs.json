@@ -1,0 +1,16 @@
+{
+  "$comment": "The single source of truth for the ten scheduled jobs. docs/CRON-EXTERNAL.md, .github/workflows/cron.yml and src/app/api/cron/ are all checked against this file by src/__tests__/cron-schedule-inventory.test.ts, so a schedule cannot be changed in one place and stay stale in the others.",
+  "defaultBaseUrl": "https://kenyonexpress.vercel.app",
+  "jobs": [
+    { "name": "notifications", "path": "/api/cron/notifications", "cron": "*/5 * * * *" },
+    { "name": "health", "path": "/api/cron/health", "cron": "*/5 * * * *" },
+    { "name": "invoices", "path": "/api/cron/invoices", "cron": "*/10 * * * *" },
+    { "name": "stock", "path": "/api/cron/stock", "cron": "*/10 * * * *" },
+    { "name": "stranded-payments", "path": "/api/cron/stranded-payments", "cron": "*/10 * * * *" },
+    { "name": "abandoned-cart", "path": "/api/cron/abandoned-cart", "cron": "0 * * * *" },
+    { "name": "subscriptions", "path": "/api/cron/subscriptions", "cron": "30 2 * * *" },
+    { "name": "reap-carts", "path": "/api/cron/reap-carts", "cron": "40 3 * * *" },
+    { "name": "reconcile", "path": "/api/cron/reconcile", "cron": "0 4 * * *" },
+    { "name": "expire-vouchers", "path": "/api/cron/expire-vouchers", "cron": "15 23 * * *" }
+  ]
+}
