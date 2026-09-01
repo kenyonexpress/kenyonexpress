@@ -6,6 +6,7 @@ import { AUDIT_ACTION_LABELS, labelFor } from '@/lib/admin/labels'
 import { baseListParamsSchema, listRange } from '@/lib/admin/list-params'
 import { requireSection } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
+import { sanitizeOrTerm } from '@/lib/utils/search-escape'
 import type { AuditAction, AuditLog } from '@/types/database'
 import { z } from 'zod'
 
@@ -65,7 +66,12 @@ export default async function AuditLogPage(props: {
     .range(from, to)
   if (params.action) query = query.eq('action', params.action)
   if (params.entity) query = query.eq('entity_type', params.entity)
-  if (params.q) query = query.or(`entity_type.ilike.%${params.q}%,actor_role.ilike.%${params.q}%`)
+  // See the note in the users page: a raw term in an `.or()` expression is
+  // filter syntax, not a value.
+  if (params.q) {
+    const safeQ = sanitizeOrTerm(params.q)
+    if (safeQ) query = query.or(`entity_type.ilike.%${safeQ}%,actor_role.ilike.%${safeQ}%`)
+  }
 
   const { data: logs, count, error } = await query
 
