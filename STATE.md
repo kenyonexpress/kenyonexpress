@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-02 (MEGA BLOCK 6: CI/CD + launch checklist. Verdict NOT READY. Tag v1.0.0-rc1.)
 Updated: 2026-09-01 12:20 UTC (‏אין כותב ל-escrow_held בשום מקום; ‏144/144 מעברים מול הטריגרים החיים; קיפאון ה-380/768 נמצא ותוקן; ‏payment_events היה טבלה ריקה בלי אף כותב)
 Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשישה כבר היו, ושני באגים אמיתיים נמצאו בדרך)
 קודם: 2026-09-01 03:02 UTC (‏שער הפיקסלים חצה את התקרה: ‏11.06% מול 11%, וזה לא שינוי שלנו)
@@ -67,7 +68,40 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 קודם: 2026-08-19 22:01 (הצ'ק-אאוט ירד מתחת לשער הפיקסלים, ו-CLS שלו תוקן)
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
-## המשך מ: ‏PRIORITY TWO — ‏refunds בשני המסלולים, ומירוץ מימוש הקופון
+## המשך מ: סיום פרויקט stage 1. צעד הבא: מעבר לפרודקשן.
+
+## Current Phase
+Stage 1 complete (Next.js platform, no WordPress runtime). Tagged `v1.0.0-rc1`.
+Waiting on production cutover.
+
+## Last Completed
+MEGA BLOCK 6: CI/CD + Launch Checklist. Jobs: migration dry-run, Lighthouse
+SEO/a11y >95 on product and checkout, 180KB gz bundle gate, ephemeral
+Supabase preview (skip without secrets), print-only git revert rollback,
+secrets audit. Docs: `docs/LAUNCH-READINESS.md`, `docs/APPLY-ORDER.md`,
+`docs/FINAL-REPORT.md`. Verdict: **NOT READY**.
+
+## In Progress
+nothing
+
+## Blocking Issues
+1. No external scheduler for the ten cron jobs (`docs/CRON-EXTERNAL.md`)
+2. Cardcom production credentials not on the deployment
+3. DNS of kenyonexpress.co.il and which Vercel project it attaches to (owner step, do not run from this machine)
+4. Remaining SQL: 122 → 125 → 126 → 127 → 131 → 132 → 133 → 137 → 147 (`docs/APPLY-ORDER.md`)
+
+## Next Task
+Owner actions in `docs/LAUNCH-READINESS.md` blockers. Do not run DNS.
+
+## Working Directory
+/Users/ofir/kenyonexpress-web/kenyonexpress
+
+## Supabase Project URL
+https://ixvwfbuvfxxsjiywhbbb.supabase.co
+
+---
+
+## History: PRIORITY TWO (refunds, coupon race) as of 2026-09-01
 
 ### ‏01.09 גל החוסן (`feat/resilience`, מוזג ל-main)
 
