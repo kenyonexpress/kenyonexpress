@@ -70,6 +70,8 @@ export const RATE_LIMIT_POLICIES = {
   // caught it. Keyed on the user, not the IP, because the action can only touch
   // that user's own row - the limit bounds a held-down button, not an attacker.
   'referral-code': { limit: 10, windowSeconds: 3600, reason: 'referral code mint, per user' },
+  'review-submit': { limit: 5, windowSeconds: 3600, reason: 'review spam, per user' },
+  'wishlist-toggle': { limit: 60, windowSeconds: 3600, reason: 'held-down heart, per user' },
 
   // -- Vouchers and the supplier till. Keyed on the supplier user, never on IP:
   // a shop floor is one NAT address and would share one bucket.

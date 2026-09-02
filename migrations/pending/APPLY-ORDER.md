@@ -33,6 +33,7 @@ independent and may be applied in any sequence, or not at all.
 | 18 | `151_analytics_ingest.sql` | analytics_events + the ingest fn /api/a has been calling into the void | — | in file header |
 | 19 | `152_payout_machinery.sql` | the whole payout subsystem: tables, T+3 math, four verbs, RLS | — | in file header |
 | 20 | `153_ai_usage.sql` | the AI cost ledger, micro-USD integers | — | `drop table ai_usage` |
+| 21 | `154_reviews_wishlist.sql` | verified-purchase reviews + wishlist, verification in the INSERT policy | — | `drop table reviews; drop table wishlists` |
 
 ## The money set, 138 through 141
 

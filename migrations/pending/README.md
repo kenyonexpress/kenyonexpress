@@ -242,6 +242,21 @@ list from this directory and checks it against every `.ts`/`.tsx` in **both**
 `src/` and `apps/`, so revoking a function the Expo till uses fails a test
 rather than a till.
 
+## `154_reviews_wishlist.sql`, added 2026-09-02
+
+Verified-purchase reviews and the wishlist the masthead heart points at. The
+purchase verification IS the INSERT policy: a review row exists only when its
+order_item belongs to a paid-or-later order of the inserting user and sells
+the named product; UNIQUE(order_item_id) is the once-per-purchase barrier.
+Moderation is a status column driven by the service role (no user UPDATE
+policy at all). Wishlists are owner-only both ways. Until applied, every
+reader degrades to "no reviews / empty wishlist" (PGRST205) and the submit
+actions answer in Hebrew that the feature is not open yet.
+
+**Dry run against production, rolled back:** verified insert as a real buyer
+passed; duplicate slot, unverified item, and a foreign user claiming the same
+purchase all refused; the pending row invisible to anon. ok=t problems=[none].
+
 ## `153_ai_usage.sql`, added 2026-09-02
 
 The AI cost ledger: one row per agent call through `src/server/ai/client.ts`

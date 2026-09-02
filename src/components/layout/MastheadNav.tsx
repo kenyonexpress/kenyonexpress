@@ -20,8 +20,7 @@ const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
  * The heart is BACK (it was removed in [28] because there was no wishlist
  * route and a 404 icon is worse than a geometry gap). The 1:1 instruction of
  * 2026-09-02 overrides the gap half of that; the 404 half is avoided by
- * sending it to the customer's coupons, the nearest "saved things" surface
- * this site has. When a wishlist route lands, retarget it.
+ * sending it to the wishlist, which exists now (154 + /account/wishlist).
  *
  * The region selector matches live's secondary-nav (96x45, 14px/500 with a
  * chevron). Live opens a dropdown of regions; ours goes to the suppliers page,
@@ -45,7 +44,7 @@ export default function MastheadNav() {
 
       <nav className="flex shrink-0 items-center gap-[38px]" aria-label="פעולות חשבון ועגלה">
         <Link
-          href="/account/coupons"
+          href="/account/wishlist"
           aria-label="המועדפים שלי"
           className="transition-opacity hover:opacity-70"
           style={{ color: ICON.color }}
