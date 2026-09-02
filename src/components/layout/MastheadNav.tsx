@@ -1,34 +1,58 @@
 import HeaderCart from '@/components/cart/HeaderCart'
 import DeferredHeaderSearch from '@/components/search/DeferredHeaderSearch'
-import { User } from 'lucide-react'
+import { ChevronDown, Heart, User } from 'lucide-react'
 import Link from 'next/link'
 
 const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
 
 /**
- * The masthead's right-hand group: search plus the account and cart icons.
+ * The masthead's left-hand group (RTL): search, the region selector, and the
+ * favorites / account / cart icons, in the live masthead's order.
  *
- * Search is mounted here, not in `layout/Header.tsx`, because that file is on
- * the LOCKED_COMPONENTS list and is measured against the live masthead. This
- * component renders inside the same header row and is not locked, so it is the
- * supported way to put search in the header without touching locked geometry.
+ * Geometry from refs/ke_live_computed.json at 1440, 2026-09-02, x from left:
  *
- * The wrapper grows into the space the logo leaves; the icon row stays
- * `shrink-0` so a long placeholder can never squeeze it.
+ *   cart 135  user 223  heart 284  "בחר אזור" 360..456  search 456..990
  *
- * The live WP heart → /wishlist was removed in [28]: there is no wishlist
- * route here, and a header icon that 404s is worse than a small geometry gap
- * against the live masthead. Re-add with the feature, not before.
+ * so RTL, reading right to left after the search: region selector, heart,
+ * user, cart -- with 38px edge-to-edge between the icons. gap-[38px] is that
+ * measurement, not a taste.
  *
- * Search is deferred ([32]): it is CSS-hidden on phones, so mobile Lighthouse
- * must not download or hydrate its suggest/router client graph.
+ * The heart is BACK (it was removed in [28] because there was no wishlist
+ * route and a 404 icon is worse than a geometry gap). The 1:1 instruction of
+ * 2026-09-02 overrides the gap half of that; the 404 half is avoided by
+ * sending it to the customer's coupons, the nearest "saved things" surface
+ * this site has. When a wishlist route lands, retarget it.
+ *
+ * The region selector matches live's secondary-nav (96x45, 14px/500 with a
+ * chevron). Live opens a dropdown of regions; ours goes to the suppliers page,
+ * where the region actually filters something. Visual parity, honest target.
+ *
+ * Search is deferred ([32]): CSS-hidden on phones, so mobile Lighthouse must
+ * not download or hydrate its suggest/router client graph.
  */
 export default function MastheadNav() {
   return (
-    <div className="flex min-w-0 flex-1 items-center justify-end gap-5 ps-6">
+    <div className="flex min-w-0 flex-1 items-center justify-end ps-6">
       <DeferredHeaderSearch />
 
-      <nav className="flex shrink-0 items-center gap-5" aria-label="פעולות חשבון ועגלה">
+      <Link
+        href="/suppliers"
+        className="me-[14px] ms-[53px] hidden shrink-0 items-center gap-1 text-sm font-medium text-heading transition-opacity hover:opacity-70 lg:flex"
+      >
+        בחר אזור
+        <ChevronDown size={14} strokeWidth={2} aria-hidden="true" />
+      </Link>
+
+      <nav className="flex shrink-0 items-center gap-[38px]" aria-label="פעולות חשבון ועגלה">
+        <Link
+          href="/account/coupons"
+          aria-label="המועדפים שלי"
+          className="transition-opacity hover:opacity-70"
+          style={{ color: ICON.color }}
+        >
+          <Heart size={ICON.size} strokeWidth={ICON.strokeWidth} aria-hidden="true" />
+        </Link>
+
         <Link
           href="/login"
           aria-label="החשבון שלי"

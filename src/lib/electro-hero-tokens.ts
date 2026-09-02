@@ -4,7 +4,9 @@
  */
 export const ELECTRO_HERO = {
   slider: {
-    height: 377,
+    // 370, remeasured off refs/ke_live_computed.json 2026-09-02 (was 377 from
+    // the electro demo, which is a different site).
+    height: 370,
     width: 743,
     /** RevSlider slide bg (ke_live + electro home-v7) */
     bg: '#eef7f9',
@@ -34,14 +36,16 @@ export const ELECTRO_HERO = {
        old 220 came from the electro home-v7 demo, which is a different site; the
        21px it was short went to the slider through flex-1. */
     width: 241,
-    height: 512,
+    // 593: the live hero columns all run y148..y741 (refs, 2026-09-02).
+    height: 593,
     textColor: '#333e48',
   },
   sideBanners: {
     /* 201 measured on live; see the note on categoryColumn.width above. */
     width: 201,
-    blockHeight: 512,
-    itemHeight: 99,
+    // Live: three 197px da-blocks fill the 593px column (refs, 2026-09-02).
+    blockHeight: 593,
+    itemHeight: 197,
     itemWidth: 168,
     offsetTop: 36,
     shopButtonSize: 26,

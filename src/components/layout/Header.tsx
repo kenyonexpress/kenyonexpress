@@ -17,7 +17,7 @@ export default function SiteHeader() {
     <>
       <div dir="rtl" className="w-full border-b border-border bg-white">
         {/* 37.3px + 1px border = the 38.3px top bar measured on the live site. */}
-        <div className="mx-auto flex h-header-topbar max-w-page items-center px-4 text-[0.929em] text-heading">
+        <div className="mx-auto flex h-header-topbar max-w-page items-center px-[15px] text-[0.929em] text-heading">
           <span>ברוך הבא לעולם של קניון Express</span>
 
           <div className="ms-auto hidden items-center gap-3 md:flex">
@@ -51,17 +51,17 @@ export default function SiteHeader() {
         {/* 126px + 1px border = the 127px masthead measured on the live site.
             Everything below the header inherits this offset, so the height has
             to match before any page can be compared band by band. */}
-        <div className="mx-auto flex h-header-masthead max-w-page items-center justify-between px-4">
+        <div className="mx-auto flex h-header-masthead max-w-page items-center justify-between px-[15px]">
           <Link href="/" aria-label="קניון אקספרס, לדף הבית" className="shrink-0">
             <SmartImage
               src={LOGO}
               alt="קניון EXPRESS"
-              width={133}
-              height={102}
-              // Live renders the logo 270x71, but inside a 1170px container. The
-              // project container is 1320px, so matching the live SIZE lands it
-              // on different pixels and measured worse. Size stays at 40px until
-              // the container question is settled.
+              width={300}
+              height={79}
+              // 300x79 at 1440, measured off refs/ke_live_computed.json
+              // (img.img-header-logo, x1005 y53). The old 40px box was a
+              // deliberate mismatch justified by the 1320 container; the
+              // container is now live's 1200, so the justification is gone.
               className="h-logo-h w-auto object-contain"
               fallbackClassName="h-logo-h w-logo-w rounded-md"
               priority

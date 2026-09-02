@@ -126,8 +126,17 @@
 
   /* --- Layout ---------------------------------------------------------------- */
   --header-height: 70px;
-  /* Single source of truth for page container width -> generates `max-w-page`. */
-  --container-page: 1320px;
+  /* Single source of truth for page container width -> generates `max-w-page`.
+     1200, MEASURED, 2026-09-02. The live page body spans x135..x1305 at a 1440
+     viewport on every template inspected -- header (cart x135, logo right edge
+     x1305), hero row, deals, and the store footer's own comment below already
+     recorded the same edges. That is a 1200 container with 15px inline padding.
+     The previous 1320 carried no provenance comment, and the hero row had
+     already been scoped down to 1170 to correct for it; this retires that
+     scoped exception's reason. The audit the old comment asked for
+     ("widen the audit before widening the fix") is docs/HEADER-1TO1-2026-09-02:
+     every above-fold element was measured against refs/ke_live_computed.json. */
+  --container-page: 1200px;
   /* Measured on live: the footer and the deals grid do NOT share the page
      container, they run wider and narrower respectively. */
   --container-footer: 1430px;
@@ -163,7 +172,10 @@
      up as 30-42% band differences that looked like card-level defects. Card
      heights were identical all along: 485px on both sides. */
   --spacing-header-masthead: 109px; /* + 1px border = the 110px live masthead */
-  --spacing-logo-h: 40px; /* header logo box (not live's 270x71; see Header.tsx) */
+  --spacing-logo-h: 79px; /* live header logo: 300x79 at x1005 y53 (refs, 1440).
+     The old 40px was a deliberate mismatch justified by the 1320 container
+     ("matching the live SIZE lands it on different pixels"); with the container
+     at live's 1200 that reasoning no longer holds. */
   --spacing-logo-w: 52px;
   --spacing-footer-logo-h: 42px;
   --spacing-footer-logo-w: 160px;

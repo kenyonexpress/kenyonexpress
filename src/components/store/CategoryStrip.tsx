@@ -46,7 +46,7 @@ const CATEGORIES = [
 // passed as CSS custom properties so the literals stay in tokens, not classes.
 // Direction is handled with logical properties only (border-e / border-s /
 // ms-auto / me-*), so RTL order and mirroring are automatic.
-export default function CategoryStrip() {
+export default function CategoryStrip({ inHero = false }: { inHero?: boolean } = {}) {
   const stripVars = {
     height: C.height,
     '--cat-end': `${C.offsetInlineEnd}px`,
@@ -54,11 +54,17 @@ export default function CategoryStrip() {
     '--cat-hover-shadow': C.hoverShadow,
   } as CSSProperties
 
+  // Inside the hero's center column (live: 728px, five 145.6px cells) the strip
+  // fills its parent; standalone it keeps the page frame for the phone layout.
   return (
     <section aria-label="קטגוריות מובילות" className="bg-white font-sans">
-      <div className="mx-auto max-w-page">
+      <div className={inHero ? 'w-full' : 'mx-auto max-w-page'}>
         <ul
-          className="m-0 flex list-none flex-wrap p-0 lg:ms-auto lg:me-[var(--cat-end)] lg:max-w-[var(--cat-w)] lg:flex-nowrap"
+          className={
+            inHero
+              ? 'm-0 flex w-full list-none flex-nowrap p-0'
+              : 'm-0 flex list-none flex-wrap p-0 lg:ms-auto lg:me-[var(--cat-end)] lg:max-w-[var(--cat-w)] lg:flex-nowrap'
+          }
           style={stripVars}
         >
           {CATEGORIES.map((cat) => (

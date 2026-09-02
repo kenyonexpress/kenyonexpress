@@ -90,7 +90,11 @@ export default function HomePage() {
         To put it back, restore <Suspense><CityTags/></Suspense> here and accept
         ~21.65%. That is Ofir's call, not this session's.
       */}
-      <CategoryStrip />
+      {/* On lg+ the strip renders inside the hero's center column (live
+          geometry); this standalone copy is the phone/tablet layout only. */}
+      <div className="lg:hidden">
+        <CategoryStrip />
+      </div>
       <div className="mt-[50px]">
         <BenefitBar />
       </div>

@@ -226,7 +226,7 @@ export const SITE_CSS_METRICS: Record<string, string> = {
   '--leading-pdp-body': '23.996px',
 
   '--header-height': '70px',
-  '--container-page': '1320px',
+  '--container-page': '1200px',
   '--container-hero-row': '1170px',
   '--container-footer': '1430px',
   '--container-store-footer': '1200px',
@@ -234,7 +234,7 @@ export const SITE_CSS_METRICS: Record<string, string> = {
 
   '--spacing-header-topbar': '37.3px',
   '--spacing-header-masthead': '109px',
-  '--spacing-logo-h': '40px',
+  '--spacing-logo-h': '79px',
   '--spacing-logo-w': '52px',
   '--spacing-footer-logo-h': '42px',
   '--spacing-footer-logo-w': '160px',

@@ -1,5 +1,5 @@
 import { ELECTRO_HERO } from '@/lib/electro-hero-tokens'
-import { HandCoins, Headphones, Tag, ThumbsUp, Truck } from 'lucide-react'
+import { BadgePercent, HandCoins, Headphones, Tag, Truck } from 'lucide-react'
 
 const USP = ELECTRO_HERO.uspBar
 
@@ -35,11 +35,16 @@ const USP = ELECTRO_HERO.uspBar
  * those are what this matches.
  */
 const benefits = [
+  // RE-MEASURED 2026-09-02 off refs/ke_live_computed.json: the live icon order
+  // right-to-left is transport, customers, support, payment, tag -- so
+  // "קניה חכמה" is SECOND today, not last. The note above recorded it last from
+  // an earlier capture; the reference moved, which is what a live third-party
+  // site does. The icon is live's ec-customers (a percent badge), not a thumb.
   { icon: Truck, title: 'לכל חלקי', subtitle: 'הארץ' },
+  { icon: BadgePercent, title: 'קניה', subtitle: 'חכמה' },
   { icon: Headphones, title: 'שירות', subtitle: 'לקוחות' },
   { icon: HandCoins, title: 'מחירים', subtitle: 'מנצחים' },
   { icon: Tag, title: 'מותגי יוקרה', subtitle: 'מובילים !' },
-  { icon: ThumbsUp, title: 'קניה', subtitle: 'חכמה' },
 ]
 
 // All colours and sizes come from ELECTRO_HERO.uspBar (the measured token

@@ -6,7 +6,10 @@ import { HERO_SLIDER_IMAGES } from '@/lib/assets'
 
 export const HERO_SLIDER_BG = '#eef4f7'
 
-export const HERO_SLIDER_HEIGHT = 422
+// 593, remeasured 2026-09-02: the live hero ROW (sidebar | slider+strip |
+// promo blocks) spans y148..y741 at 1440. The old 422 predates the category
+// strip moving inside the center column.
+export const HERO_SLIDER_HEIGHT = 593
 
 const WELCOME_SLIDE: HeroSlide = {
   id: 'rs-18',

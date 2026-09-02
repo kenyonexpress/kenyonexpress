@@ -746,7 +746,12 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
       {slides.length > 1 && (
         <div
           aria-label="ניווט שקופיות"
-          className="absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2"
+          // Live (refs, 1440): rs-bullets is a 200x8 box at x397 y400 -- 61px
+          // from the slider's left edge, 252px from its top, bullets packed to
+          // its right end with 15px gaps. Centered-at-bottom was ours, not
+          // live's. Physical left/top because the measurements are physical.
+          // On phones the mobile hero keeps the old centered-bottom row.
+          className="absolute z-20 flex items-center max-lg:bottom-6 max-lg:left-1/2 max-lg:-translate-x-1/2 max-lg:gap-2 lg:top-[252px] lg:left-[61px] lg:w-[200px] lg:justify-end lg:gap-[15px]"
         >
           {slides.map((s, i) => {
             const isCurrent = i === active

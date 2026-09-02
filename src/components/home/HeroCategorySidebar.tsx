@@ -29,6 +29,9 @@ export default function HeroCategorySidebar() {
           className="vertical-menu-title departments-menu-v2-title shrink-0 bg-brand-secondary"
           style={{
             borderRadius: 0,
+            // Live: the yellow departments title bar is 241x48 (refs,
+            // 2026-09-02). Padding alone rendered it 24px.
+            height: 48,
             padding: '12px 20px',
             fontWeight: 500,
             display: 'flex',
