@@ -97,6 +97,7 @@ file is in a repository.
 8  https://kenyonexpress.vercel.app/api/cron/reap-carts          GET  40 3 * * *    Authorization: Bearer <CRON_SECRET>
 9  https://kenyonexpress.vercel.app/api/cron/reconcile           GET  0 4 * * *     Authorization: Bearer <CRON_SECRET>
 10 https://kenyonexpress.vercel.app/api/cron/expire-vouchers     GET  15 23 * * *   Authorization: Bearer <CRON_SECRET>
+11 https://kenyonexpress.vercel.app/api/cron/retention           GET  0 5 1 * *     Authorization: Bearer <CRON_SECRET>
 ```
 
 Verified against the code at HEAD, not from memory: all ten handlers export
@@ -129,6 +130,7 @@ deliberate and harmless: both are sweeps with a wide window, not appointments.
 | 8 | 03:40 daily | `40 3 * * *` | `https://kenyonexpress.vercel.app/api/cron/reap-carts` |
 | 9 | 04:00 daily | `0 4 * * *` | `https://kenyonexpress.vercel.app/api/cron/reconcile` |
 | 10 | 23:15 daily | `15 23 * * *` | `https://kenyonexpress.vercel.app/api/cron/expire-vouchers` |
+| 11 | 05:00 ב-1 לחודש | `0 5 1 * *` | `https://kenyonexpress.vercel.app/api/cron/retention` |
 
 Those are the schedules `vercel.json` carried, kept exactly, so nothing about
 timing changes with the scheduler.
@@ -152,6 +154,9 @@ timing changes with the scheduler.
 - **`subscriptions`** bills the recurring plans.
 - **`reap-carts`** deletes expired guest carts.
 - **`expire-vouchers`** marks vouchers past their date as expired.
+- **`retention`** ages audit_log IPs older than 365 days to NULL through
+  `fn_audit_retention_sweep()` (pending/157) -- the one write the append-only
+  trigger sanctions. Answers ok with `pending` until 157 is applied.
 
 ## Setting it up from this repository, in two settings
 

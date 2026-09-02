@@ -235,3 +235,21 @@ call sites, ‏sliding window, ‏Upstash + ‏fallback, כותרות 429, עב�
 **נוסף:** ‏`mutating-route-guards.test.ts` — סורק את ‏src/app/api ומפיל כל
 ‏POST/PUT/PATCH/DELETE בלי שער משתי המשפחות. משלים את auth-coverage
 (פעולות שרת), ‏cron-auth (משמעת Bearer) ו-policies (טבלת המגבלות).
+
+## STEP 31 — היגיינת תלויות וסודות: נבנה חלקית, נדחה מנומק (02.09)
+
+**נבנה:** ‏(א) מיגרציה 157 — הזדקנות IP על audit_log append-only: החריג חצוב
+בטריגר של 149 בצורה הצרה שאפשר (רק ip→NULL, רק >365 יום, שום שינוי אחר;
+‏DELETE נשאר אסור), ‏fn_audit_retention_sweep ‏definer עם EXECUTE לשירות
+בלבד, ‏dry-run מגולגל; ‏(ב) ‏cron ‏retention חודשי — ה-job האחד-עשר, מחווט
+בכל ארבעת המקומות שהבדיקות כופות (‏cron-jobs.json, ‏cron.yml,
+‏CRON-EXTERNAL.md, רשימת cron-auth), עונה ok+pending עד ההחלה;
+‏(ג) ‏docs/SECRETS-ROTATION.md — סבב לכל סוד כולל שני מנגנוני ה-`_PREVIOUS`
+והטוקן שהודבק בצ'אט.
+
+**נדחה:** ‏(א) ‏scripts/env-check.mjs ב-CI — ‏src/lib/env.ts הוא כבר חוזה
+boot שנכשל בפרודקשן, ‏env-example-is-complete.test.ts כבר אוכף אי-סחיפה,
+ו-CI רץ בכוונה בלי סודות; בדיקה שלישית הייתה נכשלת שם תמיד או נבדקת ריק.
+‏(ב) ‏dependabot שבועי — קיים ותוקן היום (‏target-branch הוסר).
+‏(ג) מחיקת sessions — אין טבלת sessions משלנו; ‏auth.sessions מנוהל על ידי
+Supabase. ‏pnpm audit: ‏1 low + 2 high טרנזיטיביים, כבר KNOWN-ISSUES ‏#7.

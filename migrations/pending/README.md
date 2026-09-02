@@ -242,6 +242,19 @@ list from this directory and checks it against every `.ts`/`.tsx` in **both**
 `src/` and `apps/`, so revoking a function the Expo till uses fails a test
 rather than a till.
 
+## `157_audit_ip_retention.sql`, added 2026-09-02
+
+IP aging on the append-only audit trail, AFTER 149. The exception is carved
+into 149's trigger as narrowly as it can be written: UPDATE passes only when
+the sole change is ip_address -> NULL on a row older than 365 days; DELETE
+stays refused. fn_audit_retention_sweep() (definer, EXECUTE service-role
+only) is the single caller, driven monthly by /api/cron/retention, which
+answers ok+pending until this applies.
+
+**Dry run against production, rolled back** (149 recreated first inside the
+txn): ordinary UPDATE and DELETE refused 42501; sweep aged the seeded old
+row, left the young row intact; second sweep aged 0.
+
 ## `156_analytics_indexes.sql`, added 2026-09-02
 
 Two partial indexes for the admin analytics windows: orders(paid_at DESC)
