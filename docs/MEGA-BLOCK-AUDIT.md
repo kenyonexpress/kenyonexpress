@@ -379,3 +379,17 @@ Wallet JWT, ‏/api/wallet/apple/[id], כפתורים שמסתירים עצמם 
 יחיד (‏136 pending) ואין בקטלוג ספק מרובה-סניפים אחד; ‏(ב) אנליטיקות
 פר-סניף/פר-עובד — אין נפח; סיכומי היום/30 יום (‏STEP 19) הם הרזולוציה
 המתאימה לנפח הנוכחי. שניהם ייכנסו כשיהיה ספק עם שני סניפים.
+
+## מגה-בלוק 11 (‏STEPS 63–67) — וריאנטים ומלאי: סגור בסריקה (02.09)
+
+**הכל פרוס:** ‏`product_variants` בפרודקשן (‏sku, ‏price/price_modifier,
+‏stock_quantity) עם בורר בעמוד המוצר (‏ProductInfo), נשיאה בעגלה לפי
+מפתח ‏product::variant, וטופס אדמין (‏variantSchema + ‏soft-delete
+בעריכה). מניעת oversell היא שריון מלאי **אטומי** מ-[74] (מיגרציה 117) —
+לא ‏SELECT FOR UPDATE בקוד אלא RPC; ‏"נותרו X" זורם ב-Suspense
+(‏StockScarcity). התראות מלאי נמוך: ‏cron ‏stock קורא ‏v_low_stock מול
+‏low_stock_threshold פר-מוצר ושולח דרך ה-outbox (‏kind ‏low_stock פרוס).
+
+**נדחה:** ‏(א) ‏stock_movements ledger עם view נגזר — ריפקטור של מנגנון
+אטומי עובד למודל אחר, בלי בעיה שמניעה אותו; ‏(ב) ‏CSV וריאנטים —
+כמו 49/66, ערוץ עוקף-טופס בלי משתמש.
