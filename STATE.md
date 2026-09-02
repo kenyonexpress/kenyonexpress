@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-02 12:22 UTC (‏שער Vercel אדום על PR #27: לא הקוד. GitHub Build ירוק. כל דיפלוי מאז 01.09 נכשל בשנייה, כולל main. פרוד חי מ-31.08)
 Updated: 2026-09-02 12:10 UTC (‏MEGA BLOCK 6-ALT נמדד: type-check/test/build ירוקים, Lighthouse מעל 95; אין push ישיר ל-main מסוכן ענן, רק PR)
 Updated: 2026-09-01 12:20 UTC (‏אין כותב ל-escrow_held בשום מקום; ‏144/144 מעברים מול הטריגרים החיים; קיפאון ה-380/768 נמצא ותוקן; ‏payment_events היה טבלה ריקה בלי אף כותב)
 Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשישה כבר היו, ושני באגים אמיתיים נמצאו בדרך)
@@ -134,7 +135,27 @@ nothing (בלוק 6-ALT סגור)
 
 ### Blocking Issues
 
-none ל-6-ALT. DNS נשאר ידני. אין מתזמן חיצוני לעשרת ה-cron (חוסם ישן מ-01.09).
+none ל-6-ALT עצמו. DNS נשאר ידני. אין מתזמן חיצוני לעשרת ה-cron (חוסם ישן מ-01.09).
+
+**שער Vercel על PR #27 אדום, ואינו באג בקוד של 6-ALT.** נמדד 2026-09-02:
+
+- כל שערי GitHub על ה-SHA ירוקים (lint, typecheck, unit, build, שני E2E). Vercel אינו שער חובה.
+- `E2E against the PR preview` ירוק כי דילג: `CI_SUPABASE_URL` ריק.
+- הכשל ב-Vercel הוא בשנייה (created_at = updated_at). בילד Next לא הספיק לרוץ. אין לוג בלי `VERCEL_TOKEN`.
+- אותו כשל על
+`origin/main`
+(`9e76800c`, מחבר kenyonexpress, 01.09 12:36) ועל שש דגימות Preview מה-02.09, כולל ענפים אחרים.
+- דיפלוי Production אחרון שהצליח: 31.08
+`9d920802`.
+האתר החי עדיין 200 על `/` ועל
+`/api/health`.
+- לא נוסף
+`deploy.yml`
+(אסור: אינטגרציית Git כבר מפעילה דיפלוי). לא שונה
+`vercel.json`
+בלי לוג בילד.
+
+התיקון הוא בלוח Vercel (חשבון / חיבור Git / מכסת Hobby), לא ב-PR הזה.
 
 ### Next Task
 
