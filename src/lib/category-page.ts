@@ -460,6 +460,18 @@ export async function getAllCategories(): Promise<{ slug: string; name_he: strin
   return data ?? []
 }
 
+export async function getActiveFilterSuppliers(): Promise<{ id: string; name: string }[]> {
+  'use cache'
+  cacheLife('hours')
+  cacheTag(CATALOGUE_TAG)
+  const supabase = createPublicClient()
+  const data = orFail(
+    await supabase.from('suppliers').select('id, name').eq('status', 'active').order('name'),
+    'catalogue.filter_suppliers_failed',
+  )
+  return data ?? []
+}
+
 export const SHOP_PAGE_SIZE = 24
 
 /** All active products for /products (live /shop/ archive), same sort rules. */

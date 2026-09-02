@@ -70,6 +70,8 @@ const CUSTOMER_EMAIL = env.E2E_CUSTOMER_EMAIL ?? 'e2e-customer@test.kenyonexpres
 const CUSTOMER_PASSWORD = env.E2E_CUSTOMER_PASSWORD ?? 'E2eCustomer!pass1'
 const SUPPLIER_EMAIL = env.E2E_SUPPLIER_EMAIL ?? 'e2e-supplier@test.kenyonexpress.local'
 const SUPPLIER_PASSWORD = env.E2E_SUPPLIER_PASSWORD ?? 'E2eSupplier!pass1'
+const ADMIN_EMAIL = env.E2E_ADMIN_EMAIL ?? 'e2e-admin@test.kenyonexpress.local'
+const ADMIN_PASSWORD = env.E2E_ADMIN_PASSWORD ?? 'E2eAdmin!pass1'
 
 const SUPPLIER = {
   id: IDS.supplier,
@@ -161,7 +163,7 @@ async function findUserByEmail(email) {
   return data.users.find((u) => u.email?.toLowerCase() === email.toLowerCase()) ?? null
 }
 
-async function ensureAuthUser({ email, password, fullName }) {
+async function ensureAuthUser({ email, password, fullName, role = 'customer' }) {
   const existing = await findUserByEmail(email)
   if (existing) {
     const { error } = await admin.auth.admin.updateUserById(existing.id, {
@@ -172,10 +174,7 @@ async function ensureAuthUser({ email, password, fullName }) {
     if (error) throw new Error(`updateUser ${email}: ${error.message}`)
     await admin
       .from('profiles')
-      .upsert(
-        { id: existing.id, email, full_name: fullName, role: 'customer' },
-        { onConflict: 'id' },
-      )
+      .upsert({ id: existing.id, email, full_name: fullName, role }, { onConflict: 'id' })
     console.log(`  ok   auth user ${email} (updated)`)
     return existing.id
   }
@@ -189,10 +188,7 @@ async function ensureAuthUser({ email, password, fullName }) {
   if (error || !data.user) throw new Error(`createUser ${email}: ${error?.message ?? 'no user'}`)
   await admin
     .from('profiles')
-    .upsert(
-      { id: data.user.id, email, full_name: fullName, role: 'customer' },
-      { onConflict: 'id' },
-    )
+    .upsert({ id: data.user.id, email, full_name: fullName, role }, { onConflict: 'id' })
   console.log(`  ok   auth user ${email} (created)`)
   return data.user.id
 }
@@ -241,6 +237,7 @@ async function main() {
       await report('products', IDS.physicalProduct, 'physical product'),
       await reportUser(CUSTOMER_EMAIL, 'customer user'),
       await reportUser(SUPPLIER_EMAIL, 'supplier user'),
+      await reportUser(ADMIN_EMAIL, 'admin user'),
     ]
     process.exit(results.every(Boolean) ? 0 : 1)
   }
@@ -250,6 +247,7 @@ async function main() {
     await remove('supplier_members', IDS.member, 'supplier membership')
     await deleteAuthUser(CUSTOMER_EMAIL, 'customer user')
     await deleteAuthUser(SUPPLIER_EMAIL, 'supplier user')
+    await deleteAuthUser(ADMIN_EMAIL, 'admin user')
     await remove('products', IDS.couponProduct, 'coupon product')
     await remove('products', IDS.physicalProduct, 'physical product')
     await remove('categories', IDS.category, 'category')
@@ -274,9 +272,16 @@ async function main() {
     fullName: 'ספק בדיקות E2E',
   })
   await ensureSupplierMember(supplierUserId)
+  await ensureAuthUser({
+    email: ADMIN_EMAIL,
+    password: ADMIN_PASSWORD,
+    fullName: 'מנהל בדיקות E2E',
+    role: 'admin',
+  })
   console.log('seed-test-data: done')
   console.log(`  customer: ${CUSTOMER_EMAIL}`)
   console.log(`  supplier: ${SUPPLIER_EMAIL}`)
+  console.log(`  admin:    ${ADMIN_EMAIL}`)
 }
 
 main().catch((error) => {

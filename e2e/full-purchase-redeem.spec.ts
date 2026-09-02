@@ -9,16 +9,17 @@ import {
   paidFlowEnabled,
   signInWithEmail,
 } from './auth-session'
-import { BUY_BUTTON, expectHebrewRtl } from './helpers'
+import { addProductBySlug, fillCheckoutAndPay } from './checkout-flow'
+import { expectHebrewRtl } from './helpers'
 
 /**
- * End-to-end money path against Cardcom mock + seeded fixtures:
- * guest cart → login at pay (Google button present; email used in CI) →
- * mock hosted page return → coupon issued with QR → supplier scan redeem.
+ * Guest cart → login at pay (Google CTA present; email used in CI) →
+ * mock hosted page return → coupon issued with QR → supplier scan redeem →
+ * customer wallet shows the purchase credit.
  *
  * Requires:
- *   - scripts/seed-test-data.mjs (products + customer + supplier member)
- *   - CARDCOM_USE_MOCK=true on the app under test (Playwright webServer env)
+ *   - scripts/seed-test-data.mjs
+ *   - CARDCOM_USE_MOCK=true on the app under test
  *
  * Skip with E2E_PAID_FLOW=0 when the shared DB cannot host fixtures.
  */
@@ -30,50 +31,24 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
     test.skip(!paidFlowEnabled(), 'paid flow credentials disabled (E2E_PAID_FLOW=0)')
   })
 
-  test('guest coupon cart → auth gate with Google → mock pay → voucher → supplier redeem', async ({
+  test('guest coupon cart → auth gate with Google → mock pay → voucher → supplier redeem → wallet', async ({
     browser,
   }) => {
     const customer = await browser.newContext({ locale: 'he-IL', timezoneId: 'Asia/Jerusalem' })
     const page = await customer.newPage()
 
-    await page.goto(`/product/${E2E_COUPON_SLUG}`)
-    await expectHebrewRtl(page)
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 15_000 })
+    await addProductBySlug(page, E2E_COUPON_SLUG)
 
-    const buy = page.getByRole('button', { name: BUY_BUTTON }).first()
-    const buyable = await buy.isVisible().catch(() => false)
-    test.skip(!buyable, 'e2e-test-coupon is not purchasable; run pnpm seed:test')
-    test.skip(await buy.isDisabled(), 'e2e-test-coupon is out of stock')
-
-    await buy.click()
-    await expect(page.getByRole('button', { name: /נוסף לסל/ }).first()).toBeVisible()
-
-    // Checkout gate: guest must see Google (and email) before pay.
     await page.goto('/checkout')
-    await expect(page).toHaveURL(/\/login\?.*next=%2Fcheckout/, { timeout: 15_000 })
-    await expect(page.getByRole('heading', { name: 'כניסה לחשבון' })).toBeVisible()
-    await expect(page.getByRole('button', { name: /כניסה עם Google/ })).toBeVisible()
+    await expect(page).toHaveURL(/\/checkout/, { timeout: 15_000 })
+    await expect(page.getByRole('heading', { name: 'קופה' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'יש ללחוץ כאן כדי להתחבר' })).toBeVisible()
     await expectHebrewRtl(page)
 
-    // CI cannot complete real Google OAuth. Email/password hits the same
-    // mergeGuestCart path the Google callback uses after the OAuth hop.
-    await page.getByLabel('אימייל').fill(E2E_CUSTOMER_EMAIL)
-    await page.getByLabel('סיסמה').fill(E2E_CUSTOMER_PASSWORD)
-    await page.getByRole('button', { name: 'כניסה', exact: true }).click()
-    await page.waitForURL(/\/checkout/, { timeout: 20_000 })
+    await signInWithEmail(page, E2E_CUSTOMER_EMAIL, E2E_CUSTOMER_PASSWORD, '/checkout')
+    await page.goto('/checkout')
+    await fillCheckoutAndPay(page)
 
-    await expect(page.getByRole('heading', { name: 'תשלום' })).toBeVisible({ timeout: 15_000 })
-    await expect(page.getByText('קופון בדיקות אוטומטיות')).toBeVisible()
-
-    await page.locator('input[name="accept_terms"]').check()
-    await page.getByRole('button', { name: 'מעבר לתשלום מאובטח' }).click()
-
-    // Mock Cardcom redirects straight back to /checkout/return; reconcile
-    // verifies the in-memory deal and finalizes (issues vouchers).
-    await page.waitForURL(/\/checkout\/return\?.*order_id=/, { timeout: 45_000 })
-    await expect(page.getByRole('heading', { name: 'התשלום הצליח!' })).toBeVisible({
-      timeout: 45_000,
-    })
     await expect(page.getByTestId('coupon-code').first()).toBeVisible()
     await expect(page.getByTestId('coupon-qr').first()).toBeVisible()
     await expectHebrewRtl(page)
@@ -82,7 +57,6 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
     const voucherCode = codeText.replace(/[^0-9A-Za-z]/g, '').toUpperCase()
     expect(voucherCode.length).toBe(10)
 
-    // Coupon also appears in the personal area.
     await page.goto('/account/coupons')
     await expect(page.getByRole('heading', { name: /הקופונים שלי|קופונים/ })).toBeVisible({
       timeout: 15_000,
@@ -91,7 +65,6 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
 
     await customer.close()
 
-    // Supplier redeem (manual code entry; camera is optional and flaky in CI).
     const supplier = await browser.newContext({ locale: 'he-IL', timezoneId: 'Asia/Jerusalem' })
     const scanPage = await supplier.newPage()
     await signInWithEmail(scanPage, E2E_SUPPLIER_EMAIL, E2E_SUPPLIER_PASSWORD, '/supplier/scan')
@@ -109,26 +82,37 @@ test.describe('full purchase to redeem @checkout @redeem @money', () => {
     await expect(scanPage.getByText('השובר מומש בהצלחה')).toBeVisible({ timeout: 20_000 })
     await expect(scanPage.getByText('לגבייה מהלקוח עכשיו')).toBeVisible()
 
+    await scanPage.goto('/supplier')
+    await expect(scanPage.getByRole('heading', { name: 'לוח בקרה' })).toBeVisible()
+    await expect(scanPage.getByText('מימושים היום')).toBeVisible()
+    await expect(scanPage.locator('body')).toContainText(/1|קופון בדיקות/)
+
     await supplier.close()
+
+    const walletCtx = await browser.newContext({ locale: 'he-IL', timezoneId: 'Asia/Jerusalem' })
+    const walletPage = await walletCtx.newPage()
+    await signInWithEmail(walletPage, E2E_CUSTOMER_EMAIL, E2E_CUSTOMER_PASSWORD, '/account/wallet')
+    await walletPage.goto('/account/wallet')
+    await expect(walletPage.getByRole('heading', { name: 'הארנק שלי' })).toBeVisible({
+      timeout: 15_000,
+    })
+    await expect(walletPage.getByText(/קאשבק על רכישה|היתרה שלך/)).toBeVisible()
+    await walletCtx.close()
   })
 
   test('Google button is the primary CTA on the pay gate (no silent email-only)', async ({
     page,
   }) => {
     await clearBrowserSession(page)
-    await page.goto(`/product/${E2E_COUPON_SLUG}`)
-    const buy = page.getByRole('button', { name: BUY_BUTTON }).first()
-    if (!(await buy.isVisible().catch(() => false))) {
-      test.skip(true, 'e2e-test-coupon missing; run pnpm seed:test')
-    }
-    await buy.click()
-    await expect(page.getByRole('button', { name: /נוסף לסל/ }).first()).toBeVisible()
+    await addProductBySlug(page, E2E_COUPON_SLUG)
 
     await page.goto('/checkout')
-    await expect(page).toHaveURL(/\/login\?.*next=%2Fcheckout/)
+    await expect(page).toHaveURL(/\/checkout/)
+    await expect(page.getByRole('button', { name: 'יש ללחוץ כאן כדי להתחבר' })).toBeVisible()
+
+    await page.goto('/login?next=%2Fcheckout')
     const google = page.getByRole('button', { name: /כניסה עם Google/ })
     await expect(google).toBeVisible()
-    // Google is above the email form divider.
     const googleBox = await google.boundingBox()
     const emailBox = await page.getByLabel('אימייל').boundingBox()
     expect(googleBox && emailBox && googleBox.y < emailBox.y).toBeTruthy()

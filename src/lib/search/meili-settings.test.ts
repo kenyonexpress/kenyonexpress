@@ -6,6 +6,7 @@ import {
   SEARCHABLE_ATTRIBUTES,
   SORTABLE_ATTRIBUTES,
   TYPO_TOLERANCE,
+  stickerDiscountPercent,
   toProductDocument,
 } from './meili-settings'
 
@@ -43,7 +44,14 @@ describe('index settings', () => {
   })
 
   it('can filter on every facet the storefront exposes', () => {
-    for (const facet of ['type', 'category_slug', 'kenyon_price', 'in_stock']) {
+    for (const facet of [
+      'type',
+      'category_slug',
+      'kenyon_price',
+      'in_stock',
+      'supplier_id',
+      'discount_percent',
+    ]) {
       expect(FILTERABLE_ATTRIBUTES).toContain(facet)
     }
   })
@@ -57,6 +65,12 @@ describe('toProductDocument', () => {
     stock_quantity: 4,
     categories: { name_he: 'יופי בריאות וטיפוח', slug: 'beauty' },
   }
+
+  it('computes sticker discount as a whole percent without floats', () => {
+    expect(stickerDiscountPercent(400, 40)).toBe(90)
+    expect(stickerDiscountPercent(100, 100)).toBe(0)
+    expect(stickerDiscountPercent(null, 40)).toBe(0)
+  })
 
   it('flattens the category join for filtering and search', () => {
     expect(toProductDocument(row)).toMatchObject({

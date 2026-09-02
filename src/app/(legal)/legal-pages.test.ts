@@ -1,4 +1,4 @@
-import { readdirSync } from 'node:fs'
+import { existsSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { LEGAL_DOCS } from './_content'
@@ -134,6 +134,10 @@ describe('the terms state the product facts the code enforces', () => {
     expect(terms).toContain('הפלטפורמה אינה שומרת את מספר הכרטיס')
   })
 
+  it('points at Cardcom terms for the clearing step', () => {
+    expect(terms).toContain('תנאי השימוש של Cardcom')
+  })
+
   it('never promises escrow, because no money is held for the supplier', () => {
     expect(terms).not.toMatch(/escrow|נאמנות/i)
   })
@@ -168,6 +172,12 @@ describe('the privacy policy matches the stack it describes', () => {
     expect(privacy).toContain('חוק הגנת הפרטיות')
   })
 
+  it('names GDPR and the export/delete endpoints', () => {
+    expect(privacy).toContain('GDPR')
+    expect(privacy).toContain('/api/account/data-export')
+    expect(privacy).toContain('/api/account/data-delete')
+  })
+
   it('lists the cookies by the names the code actually sets', () => {
     for (const cookie of ['ke_session_id', 'ke_consent', 'ke_attr', 'ke_cart_mirror_v1']) {
       expect(privacy).toContain(cookie)
@@ -200,5 +210,12 @@ describe('the accessibility statement names its standard and its gaps', () => {
 
   it('says no external audit has been done, while that is true', () => {
     expect(accessibility).toContain('מורשה נגישות שירות')
+  })
+})
+
+describe('data-rights endpoints exist as routes', () => {
+  it('ships GET export and POST delete', () => {
+    expect(existsSync(join(process.cwd(), 'src/app/api/account/data-export/route.ts'))).toBe(true)
+    expect(existsSync(join(process.cwd(), 'src/app/api/account/data-delete/route.ts'))).toBe(true)
   })
 })

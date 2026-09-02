@@ -1,7 +1,7 @@
 'use client'
 
 import { type OrderActionState, addOrderNote } from '@/server/actions/admin/orders'
-import { refundOrder } from '@/server/actions/payments/refund'
+import { refundOrder, refundOrderToWallet } from '@/server/actions/payments/refund'
 import { AlertTriangle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useActionState, useState, useTransition } from 'react'
@@ -16,13 +16,11 @@ interface Props {
 const INITIAL: OrderActionState = null
 
 /**
- * The two order actions section 4 lists that the screen did not have: a note,
- * and initiating a refund.
+ * Notes plus the two refund destinations: card (Cardcom) and wallet (site credit).
  *
- * The refund button is disabled when `describeRefundBlockers` found a reason,
- * and the reason is already printed above it by the page. planOrderRefund would
- * throw on the same conditions, so this only stops the admin from discovering
- * that after the click.
+ * The card button is disabled when `describeRefundBlockers` found a reason.
+ * Wallet credit is a different movement and stays available on a paid order
+ * that still has an issued voucher.
  */
 export default function OrderAdminActions({ orderId, notes, refundBlockers }: Props) {
   const router = useRouter()
@@ -33,6 +31,11 @@ export default function OrderAdminActions({ orderId, notes, refundBlockers }: Pr
   const [confirming, setConfirming] = useState(false)
   const [refundError, setRefundError] = useState<string | null>(null)
   const [refundOk, setRefundOk] = useState<string | null>(null)
+  const [walletReason, setWalletReason] = useState('')
+  const [walletConfirming, setWalletConfirming] = useState(false)
+  const [walletError, setWalletError] = useState<string | null>(null)
+  const [walletOk, setWalletOk] = useState<string | null>(null)
+  const [walletState, setWalletState] = useState<'idle' | 'pending' | 'wallet_credited'>('idle')
 
   const blocked = refundBlockers.length > 0
 
@@ -42,10 +45,6 @@ export default function OrderAdminActions({ orderId, notes, refundBlockers }: Pr
     startTransition(async () => {
       const result = await refundOrder({ orderId, reason, isDefectClaim: defect })
       if (result.ok) {
-        // Which of the two things happened is worth saying, because they are
-        // not the same event on the statement: a cancellation never reaches the
-        // clearing house, so the customer sees the charge disappear rather than
-        // a separate credit landing days later, and no fee was taken.
         setRefundOk(
           result.replay
             ? 'ההזמנה כבר זוכתה קודם. לא בוצעה פעולה נוספת.'
@@ -59,6 +58,31 @@ export default function OrderAdminActions({ orderId, notes, refundBlockers }: Pr
         router.refresh()
       } else {
         setRefundError(result.error)
+      }
+    })
+  }
+
+  function submitWalletRefund() {
+    setWalletError(null)
+    setWalletOk(null)
+    startTransition(async () => {
+      const result = await refundOrderToWallet({
+        orderId,
+        reason: walletReason,
+        isDefectClaim: defect,
+      })
+      if (result.ok) {
+        setWalletState('wallet_credited')
+        setWalletOk(
+          result.replay
+            ? 'ההזמנה כבר זוכתה קודם. לא בוצעה פעולה נוספת.'
+            : `הארנק זוכה: ${result.refundedIls.toFixed(2)} ש״ח (wallet_credited).`,
+        )
+        setWalletConfirming(false)
+        router.refresh()
+      } else {
+        setWalletState('idle')
+        setWalletError(result.error)
       }
     })
   }
@@ -170,6 +194,61 @@ export default function OrderAdminActions({ orderId, notes, refundBlockers }: Pr
             </p>
           </div>
         )}
+      </section>
+
+      <section
+        className="bg-white border border-gray-200 rounded-xl p-5 md:col-span-2"
+        data-refund-destination="wallet"
+        data-refund-state={walletConfirming ? 'pending' : walletState}
+      >
+        <h2 className="font-semibold text-gray-800 mb-3">החזר לארנק</h2>
+        <p className="mb-3 text-xs text-gray-500">
+          זיכוי קרדיט אתר. החיוב בכרטיס נשאר. המסלול: pending ואז wallet_credited ורשומת יומן.
+        </p>
+        <div className="space-y-2 max-w-md">
+          <label htmlFor="wallet-refund-reason" className="block text-xs font-medium text-gray-700">
+            סיבת הזיכוי לארנק
+          </label>
+          <input
+            id="wallet-refund-reason"
+            value={walletReason}
+            onChange={(e) => setWalletReason(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+          />
+          {walletError && <p className="text-xs text-red-600">{walletError}</p>}
+          {walletOk && <p className="text-xs text-green-600">{walletOk}</p>}
+          {walletConfirming ? (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={submitWalletRefund}
+                disabled={pending}
+                className="bg-heading hover:opacity-90 disabled:opacity-60 text-white text-sm font-semibold rounded-lg px-4 py-2 transition-opacity"
+              >
+                {pending ? 'מבצע...' : 'אישור סופי, זיכוי לארנק'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setWalletConfirming(false)}
+                className="text-sm text-gray-500 hover:underline"
+              >
+                ביטול
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setWalletState('pending')
+                setWalletConfirming(true)
+              }}
+              disabled={walletReason.trim().length < 3 || walletState === 'wallet_credited'}
+              className="border border-heading text-heading hover:bg-gray-50 disabled:opacity-50 text-sm font-semibold rounded-lg px-4 py-2 transition-colors"
+            >
+              יזום החזר לארנק
+            </button>
+          )}
+        </div>
       </section>
     </div>
   )

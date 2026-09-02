@@ -21,6 +21,7 @@ import {
 } from '@/server/domain/orders/refund'
 import type { SettlementState } from '@/server/domain/orders/state-machine'
 import { enqueueRefundCreditNote, issueQueuedInvoice } from '@/server/payments/invoices'
+import { recordPaymentEvent } from '@/server/payments/payment-events'
 import {
   type SettlementEventRow,
   recordSettlementEvents,
@@ -65,6 +66,37 @@ type RefundInput = {
   isDefectClaim?: boolean
   partialAmountIls?: number
   now?: Date
+  /** Site credit instead of a Cardcom card credit. The charge stays captured. */
+  destination?: 'card' | 'wallet'
+}
+
+type AdminClient = ReturnType<typeof createAdminClient>
+
+async function getOrCreateUserWalletAccount(
+  admin: AdminClient,
+  userId: string,
+): Promise<{ id: string } | null> {
+  const { data: existing, error: existingError } = await admin
+    .from('wallet_accounts')
+    .select('id')
+    .eq('user_id', userId)
+    .maybeSingle()
+  if (existingError) throw new Error(existingError.message)
+  if (existing) return existing
+  const { data: created, error: createdError } = await admin
+    .from('wallet_accounts')
+    .insert({ user_id: userId })
+    .select('id')
+    .maybeSingle()
+  if (created) return created
+  if (createdError && createdError.code !== '23505') throw new Error(createdError.message)
+  const { data: reread, error: rereadError } = await admin
+    .from('wallet_accounts')
+    .select('id')
+    .eq('user_id', userId)
+    .maybeSingle()
+  if (rereadError) throw new Error(rereadError.message)
+  return reread ?? null
 }
 
 async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
@@ -212,6 +244,182 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
   // violation with the money already moved.
   if (plan.refundAmountAgorot <= 0) {
     return { ok: false, error: 'סכום הזיכוי הוא אפס', code: 'STATE_INVALID' }
+  }
+
+  const toWallet = input.destination === 'wallet'
+  if (toWallet) {
+    if (!order.user_id) {
+      return { ok: false, error: 'אין חשבון לזיכוי לארנק', code: 'STATE_INVALID' }
+    }
+    await recordPaymentEvent({
+      eventType: 'refund_requested',
+      stage: 'wallet_refund',
+      orderId: order.id,
+      paymentId,
+      amountAgorot: plan.refundAmountAgorot,
+      actorRole: 'admin',
+      detail: { destination: 'wallet', reason: input.reason },
+    })
+
+    const userAccount = await getOrCreateUserWalletAccount(admin, order.user_id)
+    const revenueResult = await admin
+      .from('wallet_accounts')
+      .select('id')
+      .eq('code', 'platform:revenue')
+      .maybeSingle()
+    const revenue = revenueResult.data
+    if (!userAccount || !revenue) {
+      await recordPaymentEvent({
+        eventType: 'refund_failed',
+        stage: 'wallet_refund',
+        orderId: order.id,
+        paymentId,
+        detail: { reason: 'wallet_accounts_missing' },
+      })
+      return { ok: false, error: 'חשבונות הארנק חסרים', code: 'INTERNAL' }
+    }
+
+    const { error: transferError } = await admin.rpc('fn_wallet_transfer', {
+      p_debit_account: revenue.id,
+      p_credit_account: userAccount.id,
+      p_amount_ils: agorotToIls(plan.refundAmountAgorot),
+      p_reason: 'order_refund',
+      p_idempotency: `order:${order.id}:wallet_refund`,
+      p_order_id: order.id,
+    })
+    if (transferError) {
+      await recordPaymentEvent({
+        eventType: 'refund_failed',
+        stage: 'wallet_refund',
+        orderId: order.id,
+        paymentId,
+        detail: { reason: transferError.message },
+      })
+      return { ok: false, error: transferError.message, code: 'INTERNAL' }
+    }
+
+    await recordPaymentEvent({
+      eventType: 'wallet_credited',
+      stage: 'wallet_refund',
+      orderId: order.id,
+      paymentId,
+      amountAgorot: plan.refundAmountAgorot,
+      actorRole: 'admin',
+      detail: { destination: 'wallet' },
+    })
+
+    try {
+      const { data: refundPaymentRow, error: walletPaymentInsertError } = await admin
+        .from('payments')
+        .insert({
+          order_id: order.id,
+          kind: 'refund',
+          status: 'refunded',
+          ...paymentMoneyWrite(money, {
+            amountAgorot: plan.refundAmountAgorot,
+            walletAppliedAgorot: plan.refundAmountAgorot,
+          }),
+          currency: 'ILS',
+          refund_of_payment_id: paymentId,
+          idempotency_key: `wallet_refund:${paymentId}`,
+        } as never)
+        .select('id')
+        .maybeSingle()
+      if (walletPaymentInsertError) {
+        log.warn('refund.wallet_payment_insert_failed', {
+          order_id: order.id,
+          err: walletPaymentInsertError.message,
+        })
+      }
+
+      if (plan.voucherRefunds.length > 0) {
+        await admin
+          .from('vouchers')
+          .update({
+            status: 'refunded',
+            refunded_at: now.toISOString(),
+            status_reason: input.reason,
+          })
+          .in('id', plan.voucherRefunds)
+          .eq('status', 'issued')
+      }
+
+      for (const t of plan.lineTransitions) {
+        await admin
+          .from('order_items')
+          .update({ settlement_status: 'refunded', item_status: 'refunded' })
+          .eq('id', t.orderItemId)
+          .eq('settlement_status', t.from)
+      }
+
+      await admin
+        .from('payments')
+        .update({ status: 'refunded' })
+        .eq('id', paymentId)
+        .eq('status', payment.status as string)
+
+      await admin
+        .from('orders')
+        .update({ status: 'refunded' })
+        .eq('id', order.id)
+        .eq('status', 'paid')
+
+      await recordSettlementEvents(admin, buildRefundEvents(order.id, paymentId, plan, now))
+
+      const refundPaymentId = (refundPaymentRow as { id: string } | null)?.id ?? null
+      if (refundPaymentId) {
+        const queued = await enqueueRefundCreditNote(admin, {
+          orderId: order.id,
+          refundPaymentId,
+          refundedAgorot: plan.refundAmountAgorot,
+          reason: input.reason,
+        })
+        if (queued.enqueued && !queued.replay) await issueQueuedInvoice(admin, queued.invoiceId)
+      }
+
+      await admin.from('audit_log').insert({
+        actor_id: null,
+        actor_role: 'admin',
+        action: 'status_change',
+        entity_type: 'order',
+        entity_id: order.id,
+        changes: { status: { from: 'paid', to: 'refunded' } } as unknown as Json,
+        metadata: {
+          source: 'refund_order_wallet',
+          payment_id: paymentId,
+          destination: 'wallet',
+          refunded_agorot: plan.refundAmountAgorot,
+          cancellation_fee_agorot: plan.cancellationFeeAgorot,
+          reason: input.reason,
+        } as unknown as Json,
+      })
+
+      return {
+        ok: true,
+        replay: false,
+        orderId: order.id,
+        refundedIls: agorotToIls(plan.refundAmountAgorot),
+        feeIls: agorotToIls(plan.cancellationFeeAgorot),
+        cancelOnly: false,
+      }
+    } catch (error) {
+      capturePaymentError(
+        error instanceof Error ? error : new Error('wallet refund persist failed'),
+        {
+          stage: 'refund_persist',
+          orderId: order.id,
+          paymentId,
+          detail: { destination: 'wallet' },
+        },
+      )
+      const message = error instanceof Error ? error.message : 'wallet refund persist failed'
+      log.error('refund.wallet_persist_failed', {
+        order_id: order.id,
+        payment_id: paymentId,
+        err: message,
+      })
+      return { ok: false, error: message, code: 'INTERNAL' }
+    }
   }
 
   // Cardcom refund (money moves back to the card). Refunding through any
@@ -461,5 +669,13 @@ function buildRefundEvents(
 }
 
 export async function refundOrder(input: RefundInput): Promise<RefundOutcome> {
-  return withActionContext('order.refund', () => runRefundOrder(input))
+  return withActionContext('order.refund', () => runRefundOrder({ ...input, destination: 'card' }))
+}
+
+export async function refundOrderToWallet(
+  input: Omit<RefundInput, 'destination'>,
+): Promise<RefundOutcome> {
+  return withActionContext('order.refund_wallet', () =>
+    runRefundOrder({ ...input, destination: 'wallet' }),
+  )
 }

@@ -14,7 +14,12 @@ const eq = vi.fn()
 const is = vi.fn()
 const limit = vi.fn()
 
-type Recorded = { orGroups: string[]; eqPairs: [string, unknown][] }
+type Recorded = {
+  orGroups: string[]
+  eqPairs: [string, unknown][]
+  gtePairs: [string, unknown][]
+  ltePairs: [string, unknown][]
+}
 let recorded: Recorded
 
 function fakeQuery() {
@@ -23,6 +28,14 @@ function fakeQuery() {
     eq: (col: string, value: unknown) => {
       recorded.eqPairs.push([col, value])
       eq(col, value)
+      return self
+    },
+    gte: (col: string, value: unknown) => {
+      recorded.gtePairs.push([col, value])
+      return self
+    },
+    lte: (col: string, value: unknown) => {
+      recorded.ltePairs.push([col, value])
       return self
     },
     is: (col: string, value: unknown) => {
@@ -49,7 +62,7 @@ vi.mock('@/lib/supabase/server', () => ({
 const { searchProductsServer } = await import('./search-server')
 
 beforeEach(() => {
-  recorded = { orGroups: [], eqPairs: [] }
+  recorded = { orGroups: [], eqPairs: [], gtePairs: [], ltePairs: [] }
   vi.clearAllMocks()
   process.env.MEILISEARCH_HOST = ''
   process.env.MEILISEARCH_API_KEY = ''
@@ -107,5 +120,22 @@ describe('the ILIKE fallback', () => {
     await searchProductsServer('צימר צפון', 48, 'coupon')
 
     expect(recorded.eqPairs).toContainEqual(['type', 'coupon'])
+  })
+
+  it('applies supplier and price facets in the query', async () => {
+    await searchProductsServer('צימר צפון', 48, undefined, {
+      supplierId: 'sup-1',
+      priceMin: 20,
+      priceMax: 80,
+    })
+
+    expect(recorded.eqPairs).toContainEqual(['supplier_id', 'sup-1'])
+    expect(recorded.gtePairs).toContainEqual(['kenyon_price', 20])
+    expect(recorded.ltePairs).toContainEqual(['kenyon_price', 80])
+  })
+
+  it('does not send a discount column to postgres (sticker is computed after read)', async () => {
+    await searchProductsServer('צימר צפון', 48, undefined, { discountOnly: true })
+    expect(recorded.eqPairs.some(([col]) => col.includes('discount'))).toBe(false)
   })
 })

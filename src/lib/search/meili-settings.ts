@@ -68,6 +68,8 @@ export const FILTERABLE_ATTRIBUTES = [
   'supplier_id',
   'kenyon_price',
   'in_stock',
+  // Integer percent: floor(((full - kenyon) * 100) / full). 0 means no deal.
+  'discount_percent',
   // Enables `_geoRadius(lat, lng, metres)`. Filtering by distance and sorting
   // by it are separate permissions in Meilisearch, so `_geo` has to appear in
   // both lists.
@@ -142,6 +144,8 @@ export interface ProductDocument {
   category_name_he: string | null
   supplier_id: string | null
   supplier_name: string | null
+  /** 0 when there is no sticker discount. Never a float. */
+  discount_percent: number
   /** Effective city: products.city, else the supplier's. Null when neither. */
   city: string | null
   /** Always an array. Absent or NULL in the row reads as no tags. */
@@ -221,6 +225,16 @@ function readGeo(row: unknown): { lat: number; lng: number } | undefined {
   return { lat, lng }
 }
 
+/** Sticker discount as a whole percent. 0 when either price is missing or there is no cut. */
+export function stickerDiscountPercent(
+  fullPrice: number | null | undefined,
+  kenyonPrice: number | null | undefined,
+): number {
+  if (fullPrice == null || kenyonPrice == null) return 0
+  if (!(fullPrice > 0) || kenyonPrice < 0 || kenyonPrice >= fullPrice) return 0
+  return Math.floor(((fullPrice - kenyonPrice) * 100) / fullPrice)
+}
+
 function readTags(row: unknown): string[] {
   const value = (row as Record<string, unknown> | null)?.tags
   if (!Array.isArray(value)) return []
@@ -258,6 +272,7 @@ export function toProductDocument(
     category_name_he: category?.name_he ?? null,
     supplier_id: row.supplier_id ?? null,
     supplier_name: supplierName,
+    discount_percent: stickerDiscountPercent(row.full_price ?? null, row.kenyon_price ?? null),
     // The COALESCE is resolved HERE, once, so the search facet and the
     // catalogue's productLocation() cannot disagree about which city a deal is
     // in. Read defensively: `city` reaches the row only when the query selects
