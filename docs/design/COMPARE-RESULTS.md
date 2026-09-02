@@ -85,3 +85,60 @@ count rather than the design.
 difference wearing a fidelity number -- and refusing to chase it is the
 documented position. Re-snapshotting the fixture to today's catalogue would move
 the number without changing a pixel of design.
+
+
+## Category — STEP D6, 2026-09-03
+
+**The gate refuses to score this page, at all three widths:**
+
+```
+REFUSING to measure: the two grids hold 2 cards each, but only 1 of 2 slots
+hold the same product (50%). 1 of the products exist on both sides, in
+different places.
+```
+
+That is `compare.mjs` working as designed, not a design signal. Live's
+`hot-deals` category holds two products today and one of them is not the one in
+our fixture, so any percentage it printed would be a catalogue difference
+wearing a fidelity number. The refusal is the same guard that
+`docs/KNOWN-ISSUES.md` and the script's own comments describe.
+
+### What was verified instead, from `refs/ke_live_computed.json`
+
+The product grid geometry is already exact. Card x and width, ours against
+live:
+
+| width | ours | live |
+| --- | --- | --- |
+| 380 | x190 w175 | x190 w175 |
+| 768 | x519 w234 | x499 w230 |
+| 1440 | x1071 w234 | x1071 w234 |
+
+380 and 1440 match to the pixel; 768 is 20px out in x and 4px in width. The
+column counts implied by those widths (2 / 3 / 5) are live's.
+
+### The two references disagree about the header, and nothing can satisfy both
+
+| | top bar | header |
+| --- | --- | --- |
+| `home` @380 | 113 | 84 |
+| `category` @380 | **76** | **40** |
+| `home` @1440 | 38 | 110 |
+| `category` @1440 | 38 | **127** |
+
+Both come out of the same capture. A 40px header at 380 is Electro's sticky bar
+in its collapsed, scrolled state, so the category snapshot was almost certainly
+taken mid-scroll. The shell is tuned to the `home` reference, which is the one
+the gate can actually score, and it is left alone here.
+
+Our category grid therefore starts lower than the category snapshot (464 against
+310 at 380) almost entirely because our header is the taller, un-collapsed one.
+No blind correction was made: with the gate refusing there is no way to prove a
+change is an improvement, and restyling against a reference that contradicts the
+measurable one is how a regression ships.
+
+### Fixed under D6
+
+The 404 page linked to `/search`. After D3 removed the header field that was the
+last search entry point left in the storefront, and the rule is that there is
+none anywhere. It now points at the product listing.
