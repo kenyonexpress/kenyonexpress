@@ -185,3 +185,60 @@ its own source.
 today, so this locks the current state rather than changing a pixel. The four
 with no site counterpart (`action`, `rule`, `buy`, `buyHover`) are excluded:
 they are measured values that exist only on that template.
+
+
+## Products index + suppliers — STEP D8, 2026-09-03
+
+**The gate refuses, and this one is the closest of the three:**
+
+```
+REFUSING to measure: the two grids hold 24 cards each, but only 15 of 24 slots
+hold the same product (63%). 21 of the products exist on both sides, in
+different places.
+```
+
+24 cards on both sides and 21 of the 24 products shared. Three differ, and three
+differences are enough to shift every slot after the first of them, which is
+what takes 21 shared products down to 15 shared slots.
+
+### Live's archive order, established from the reference
+
+`src/lib/category-page.ts` claimed live's default order "matches
+Hebrew-alphabetical name order". Checked against `refs/ke_live_products.html`:
+after de-duplicating the markup the 24 slots read
+
+```
+אייפון 13   ! צימר מאסטר   אבחון וטיפול רפסולוגי   אוזניות AirPods 3
+אייפון 13   ארוחה בשרית   ארוחה בשרית זוגית   ארוחה זוגית עם פלטת ...
+```
+
+Alphabetical from slot two onward, with one product out of order at the top
+**and again in its own alphabetical place**. That is a pin, not a sort. The
+comment was half right: the rule is featured-first, then alphabetical.
+
+The query now orders `is_featured` descending before `name_he`. It changed
+nothing measurable today -- the score stayed at 15/24 -- because no row in the
+current fixture carries `is_featured`. It is still the correct rule, and it is
+the rule live is running.
+
+### Suppliers
+
+The route is `/s/[id]`, not `/suppliers/[slug]` as the step text has it;
+`/suppliers` is the join-us marketing page. `/s/[id]` arrived with the D1 merge
+and prerenders 7 supplier paths from the live database. There is no
+`refs/ke_live_supplier.html`, so there is nothing to score it against and no
+1:1 claim is made for it here.
+
+### Summary: three pages, three refusals, one cause
+
+| page | guard | shared products |
+| --- | --- | --- |
+| category | 1 of 2 slots | 1 of 2 |
+| product | 1 card against our 4 | related carousel |
+| products | 15 of 24 slots | 21 of 24 |
+
+All three are the same thing: `refs/` was captured 2026-08-12 and live's
+catalogue has moved since. None of them is a design signal, and the guard
+exists precisely so that a catalogue difference cannot be reported as a
+fidelity score. Home is the one storefront page whose fixture still lines up,
+and it is the one that scores.

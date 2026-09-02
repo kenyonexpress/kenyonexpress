@@ -413,9 +413,25 @@ export async function getCategoryProducts(opts: {
       query = query.order('created_at', { ascending: false })
       break
     default:
-      // menu_order / popularity / rating: live default archive order matches
-      // Hebrew-alphabetical name order; there is no menu_order column here.
-      query = query.order('name_he', { ascending: true })
+      /*
+       * menu_order / popularity / rating.
+       *
+       * Live's archive order is Hebrew-alphabetical by name, WITH FEATURED
+       * PRODUCTS PINNED ABOVE IT. Verified 2026-09-03 against
+       * refs/ke_live_products.html: after de-duplicating the markup the shop's
+       * 24 slots read `אייפון 13` first and then `! צימר מאסטר`, `אבחון`,
+       * `אוזניות`, `אייפון 13` again, `ארוחה בשרית` ... -- alphabetical from
+       * slot two on, with one product appearing out of order at the top AND
+       * again in its own alphabetical place. That is a pin, not a sort.
+       *
+       * Ordering by name alone put those pinned rows in the middle, which is
+       * most of why compare.mjs refused this page: 21 of 24 products existed on
+       * both sides but only 15 sat in the same slot. There is still no
+       * menu_order column; `is_featured` is the pin this schema has.
+       */
+      query = query
+        .order('is_featured', { ascending: false, nullsFirst: false })
+        .order('name_he', { ascending: true })
   }
 
   const { data, count } = orFailWithCount(
