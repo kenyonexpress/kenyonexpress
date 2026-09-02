@@ -537,3 +537,9 @@ the 14 wrong product slugs, and the 768/380 mobile layout project.
 | 50 | **נבנה** — שער ממדי תמונה צד-שרת (‏≥800px, יחס 1:2–2:1, ‏sharp); ‏dedupe/crop נדחו |
 | 51 | נדחה עד שיש יותר ממעלה אחד |
 | 52 | לולאה ×3, תג ‏v2.1.0-rc1 |
+
+## נספח מתוארך: מגה-בלוק 9 (‏STEPS 53–57), נמדד 02.09.2026
+
+‏contact (‏zod+honeypot+rate-limit+reply-to) ו-FAQ (‏12 שאלות, ‏JSON-LD)
+קיימים ומכסים את הספק; מערכת טיקטים מלאה נדחתה כמשטח מוצר מוקדם מדי לערוץ
+עם אפס פניות (‏MEGA-BLOCK-AUDIT). תג ‏v2.2.0-rc1.
