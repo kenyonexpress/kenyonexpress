@@ -242,6 +242,20 @@ list from this directory and checks it against every `.ts`/`.tsx` in **both**
 `src/` and `apps/`, so revoking a function the Expo till uses fails a test
 rather than a till.
 
+## `155_shipment_tracking.sql`, added 2026-09-02
+
+Physical fulfillment's two missing columns -- order_items.carrier +
+tracking_number (the state machine itself already lives in item_status /
+shipped_at / delivered_at, per line) -- and 'order_shipped' added to the
+outbox kind check. **Must run after 150** (the file refuses otherwise: both
+rebuild the same constraint, and running first would drop account_deleted).
+Transitions stay in code (audited server action, portal §5.2); production
+has no item_status trigger by design.
+
+**Dry run against production, rolled back:** columns added, a real physical
+line moved pending→shipped with carrier+tracking, order_shipped accepted,
+a bogus kind still 23514.
+
 ## `154_reviews_wishlist.sql`, added 2026-09-02
 
 Verified-purchase reviews and the wishlist the masthead heart points at. The

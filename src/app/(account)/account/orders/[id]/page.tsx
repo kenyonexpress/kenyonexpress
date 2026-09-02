@@ -84,6 +84,10 @@ export default async function OrderDetailPage({ params }: Props) {
                 {line.productType === 'coupon' && line.balanceDueAgorot > 0
                   ? ` · ${formatIls(line.balanceDueAgorot)} לתשלום בבית העסק`
                   : ''}
+                {line.productType === 'physical' && line.itemStatus === 'shipped' ? ' · נשלח' : ''}
+                {line.productType === 'physical' && line.itemStatus === 'delivered'
+                  ? ' · נמסר'
+                  : ''}
               </p>
               {line.supplier && (
                 <p className="account-row__meta">
