@@ -1,6 +1,51 @@
 # `migrations/pending/`
 
-## 2026-09-03: this directory is EMPTY, and the rows below are APPLIED
+## 2026-09-03: this directory is EMPTY. Every row below is APPLIED.
+
+### `158_revoke_anon_public_on_new_functions.sql` — APPLIED 2026-09-03
+
+Applied to production through MCP by the cloud session and verified
+(`anon_exec` 3, `migrations` 111). The file now lives in `migrations/applied/`.
+
+Revokes `EXECUTE` from `public`, `anon` and `authenticated` on ten functions
+added by 130/131/137/149/152/157 and by `118_search_intelligence`, in an
+idempotent `DO` loop. All ten were confirmed to exist before the file was
+written. **Not applied.**
+
+**TWO THINGS THAT ARE NOW LIVE IN PRODUCTION.** Both were raised before the
+file was applied and neither was changed, so both are in effect now. Neither is
+a crash; both are silent. They are recorded here so the next person to see the
+symptom does not have to rediscover the cause.
+
+1. **`fn_record_recent_search(text)` has a live `authenticated` caller.**
+   `118_search_intelligence.sql` grants it to `authenticated, service_role` on
+   purpose, and `src/lib/search/record.ts:52` calls it **with the visitor's own
+   client** (`recordRecentSearch(client, term)`), from
+   `src/app/(store)/search/page.tsx`. Revoking `authenticated` stops that RPC.
+   It fails soft -- the caller logs `search.recent_record_failed` and returns --
+   so nothing crashes and nothing tells you: recent-search recording just stops
+   for signed-in users. This is the same situation that got `supplier_app_context`
+   withdrawn from 143. **To restore it:**
+   `GRANT EXECUTE ON FUNCTION public.fn_record_recent_search(text) TO authenticated;`
+
+2. **`add_business_days` and `payout_available_at` rely on the default `PUBLIC`
+   grant.** `152_payout_machinery.sql` contains no `GRANT` for either, and both
+   are plain `STABLE` functions, not `SECURITY DEFINER`. Revoking from `PUBLIC`
+   therefore removes the only grant they have. Anything that calls them and is
+   not the owner -- including `service_role`, which the cron and repair paths
+   run as -- gets `permission denied`. **To restore it:**
+   `GRANT EXECUTE ON FUNCTION public.add_business_days(timestamptz, integer) TO service_role;`
+   and the same for `public.payout_available_at(timestamptz)`.
+
+**The automated gate does not cover this file.**
+`src/__tests__/revoked-functions-have-no-callers.test.ts` finds revokes with
+`/REVOKE\s+EXECUTE\s+ON\s+FUNCTION\s+public\.(\w+)/`. This migration builds
+its statement with `format('... %s ...', f)`, so the literal never appears and
+the scanner matches nothing. Both findings above were established by hand.
+
+---
+
+## The rows below are APPLIED
 
 All thirty-four files listed in this README were applied to production through
 MCP `apply_migration` on 2026-09-03 and moved to **`migrations/applied/`**. The

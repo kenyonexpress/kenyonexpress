@@ -56,7 +56,7 @@ function manifestFilenames(): string[] {
 }
 
 describe('the pending migration inventory', () => {
-  it('holds the thirty-four renumbered files and nothing else', () => {
+  it('holds the applied migrations and nothing else', () => {
     // A new pending migration is a deliberate diff here, which is the point:
     // schema changes are the one category where a silent addition is expensive.
     // The list moved wholesale into `applied/` on 2026-09-03; the assertion is
@@ -98,6 +98,7 @@ describe('the pending migration inventory', () => {
       '155_shipment_tracking.sql',
       '156_analytics_indexes.sql',
       '157_audit_ip_retention.sql',
+      '158_revoke_anon_public_on_new_functions.sql',
     ])
   })
 
@@ -112,10 +113,10 @@ describe('the pending migration inventory', () => {
     ).toEqual([])
   })
 
-  // ---- pending really is empty now ---------------------------------------
-  it('leaves nothing unapplied in the pending directory', () => {
-    // The counterpart to the assertion above. If a future migration is written
-    // it lands here and this test is the deliberate diff that says so.
+  // ---- what is actually unapplied right now -------------------------------
+  it('holds exactly the migrations still awaiting approval', () => {
+    // Nothing is pending. 158 was written and applied on the same day
+    // (2026-09-03, through MCP), so it moved straight to applied/.
     expect(sqlFilesIn(PENDING_DIR)).toEqual([])
   })
 
