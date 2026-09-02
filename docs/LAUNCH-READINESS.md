@@ -505,3 +505,25 @@ the 14 wrong product slugs, and the 768/380 mobile layout project.
 | 40 | **נבנה** — ‏weekly-digest, ה-job ה-12 (שישי בוקר, ‏Resend ישיר למפעיל) |
 | 41 | נסגר בסריקה — הקונסולה קיימת (‏payments/queues/status); ledger פרסיסטנטי נדחה עד שיש עסקאות אמת |
 | 42 | לולאה ×3, תג ‏v1.8.0-rc1-block6 |
+
+---
+
+## הרגרסיה הסופית (‏STEP 46), נמדדה 02.09.2026 ערב
+
+| Gate | תוצאה |
+| --- | --- |
+| ‏type-check / lint / test / migration-lint / bundle-gate | ירוק ×3 (‏3573+ בדיקות, ‏34 קבצי מיגרציה נקיים, ‏255.6KB מול ratchet) |
+| ‏build | ירוק |
+| ‏e2e מלא, ‏chromium + ‏mobile-chrome, מול ‏pnpm start | **‏454 עברו, ‏0 נכשלו**, ‏8 דולגו |
+| ‏פיקסלים ‏1440 | בית ‏8.07%, עגלה ‏8.6%, ‏checkout ‏9.58% — כולם מתחת ל-11% (‏VISUAL-PARITY.md; מוצר לא-מדיד בשל ווידג'ט קשורים שונה בחי) |
+| ‏k6 | ‏browse ירוק ב-40VU, ‏0% כשלים (‏LOAD-TEST-RESULTS.md) |
+| ‏Uptime | ‏Sentry monitor 2159284 על ‏/api/health, פעיל |
+
+## פסק דין אחד
+
+**הקוד סגור.** ‏47 השלבים של שבעת מגה-הבלוקים הסתיימו — מה שנבנה נבנה
+(ביקורות+משאלות, משלוחים, ‏TOTP, ‏retention, ‏digest, ‏CSV, אינדקסים,
+תיקוני ‏320px/סורק-מצלמה), מה שכבר היה זוהה ותועד, ומה שסתר את המודל
+הפרוס נדחה בנימוק כתוב (‏MEGA-BLOCK-AUDIT.md). מה שנשאר אינו קוד:
+‏docs/OWNER-CHECKLIST.md — מיגרציות ‏147–157 + ‏db:types, ‏Cardcom ייצור,
+‏DNS, מיזוג ה-PR.
