@@ -4,7 +4,12 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { gzipSync } from 'node:zlib'
 import { describe, expect, it } from 'vitest'
-import { MAX_FIRST_LOAD_GZ, gzipSize, measureFirstLoad } from '../../scripts/bundle-gate.mjs'
+import {
+  MAX_FIRST_LOAD_GZ,
+  entryJsFromClientReference,
+  gzipSize,
+  measureFirstLoad,
+} from '../../scripts/bundle-gate.mjs'
 import {
   A11Y_MIN,
   SEO_MIN,
@@ -52,6 +57,14 @@ describe('migration dry-run helpers', () => {
 describe('bundle gate', () => {
   it('keeps the 180KB gz ceiling (not raised to make a fat graph pass)', () => {
     expect(MAX_FIRST_LOAD_GZ).toBe(180 * 1024)
+  })
+
+  it('parses entryJSFiles from a Next 16 client-reference manifest', () => {
+    const text = `globalThis.__RSC_MANIFEST["/(store)/checkout/page"] = {"entryCSSFiles":{"[project]/src/app/(store)/checkout/page":[{"path":"static/chunks/x.css"}]},"entryJSFiles":{"[project]/src/app/(store)/checkout/page":["static/chunks/a.js","static/chunks/b.js"]}};`
+    expect(entryJsFromClientReference(text, '(store)/checkout/page')).toEqual([
+      'static/chunks/a.js',
+      'static/chunks/b.js',
+    ])
   })
 
   it('gzipSize matches zlib', () => {

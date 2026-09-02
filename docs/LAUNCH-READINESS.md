@@ -29,7 +29,7 @@ from this machine.
 | Build | `pnpm build` | CI `Build` job; local rebuild on this branch |
 | Migration dry-run | `pnpm gate:migrations` | Structural pass. Live ROLLBACK skipped (no disposable DB URL) |
 | Secrets (tree) | `pnpm gate:secrets` | Working tree. Git history still holds a foreign expired service_role JWT documented on 2026-08-20; that is not HEAD |
-| Bundle | `pnpm gate:bundle` | After `pnpm build`. Ceiling 180KB gz first-load JS on product and checkout |
+| Bundle | `pnpm gate:bundle` | FAIL. Measured 2026-09-02 against this SHA's Turbopack output: product **312.0KB gz**, checkout **312.3KB gz**, ceiling 180KB. The gate is the requirement; the number was not raised |
 | Lighthouse | `pnpm lighthouse:ci` | Product + checkout, a11y and SEO >95. Checkout `is-crawlable` is dropped only while `robots.txt` disallows `/checkout` (measured SEO raw ~69 on 2026-08-19) |
 | E2E | `pnpm exec playwright test` | CI skips until `CI_SUPABASE_URL` points at a disposable project |
 | Pixel | `compare.mjs --page=home` | Last measured **9.83%** against the 11% ceiling (2026-08-19) |
@@ -41,7 +41,7 @@ from this machine.
 | --- | --- | --- |
 | type-check, lint, unit tests, E2E, build, migration dry-run | `.github/workflows/ci.yml` jobs `lint`, `typecheck`, `test`, `e2e`, `build`, `migration-dry-run` | PASS (E2E skips loudly without `CI_SUPABASE_URL`) |
 | Lighthouse CI on product + checkout, SEO/a11y >95 | job `Lighthouse product + checkout`; floors in `scripts/lighthouse-ci.mjs` are 96 | PASS as a gate. Checkout raw SEO stays ~69 while robots.txt disallows the path |
-| Bundle gate JS >180KB gz fails the build | job `Bundle gate (JS 180KB gz)`; `MAX_FIRST_LOAD_GZ = 180 * 1024` | PASS as a gate |
+| Bundle gate JS >180KB gz fails the build | job `Bundle gate (JS 180KB gz)`; `MAX_FIRST_LOAD_GZ = 180 * 1024`. Measured first-load **312KB gz** on product and checkout | FAIL (gate holds; graph is over) |
 | Preview deploys: ephemeral Supabase + Vercel | Vercel GitHub integration already deploys previews. `.github/workflows/preview-supabase.yml` creates a branch DB when secrets exist, refuses `ixvwfbuvfxxsjiywhbbb` | PASS as a gate. Secrets unset today, so the job skips |
 | Gated production + one-command rollback | Required checks + Vercel on `main`. `git revert --no-edit <sha> && git push origin main`. `docs/APPLY-ORDER.md`. Print-only `production-rollback.yml` | PASS as a procedure. No second `vercel deploy` |
 | Secrets audit, nothing in repo | `pnpm gate:secrets` plus `.next/static` name grep after build | PASS as a gate on HEAD |

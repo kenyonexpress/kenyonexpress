@@ -3,48 +3,97 @@
  * Fail the build when first-load JS for the product or checkout route exceeds
  * 180KB gzipped.
  *
- * Reads .next/app-build-manifest.json (App Router) and gzips each unique file
- * listed for those routes. Shared chunks that appear on both still count once
- * per route, which is how Next reports First Load JS.
+ * Next 16 (Turbopack) does not write app-build-manifest.json. First-load is
+ * `entryJSFiles` in the route's `page_client-reference-manifest.js` plus
+ * `rootMainFiles` and `polyfillFiles` from build-manifest.json.
  *
  * Exit: 0 under the ceiling, 1 over, 2 no build output.
  */
 
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { gzipSync } from 'node:zlib'
 
 export const MAX_FIRST_LOAD_GZ = 180 * 1024
-export const GATED_ROUTE_PATTERNS = [/\/product\//, /\/checkout/]
+
+export const GATED_CLIENT_MANIFESTS = [
+  {
+    route: '/checkout',
+    file: 'server/app/(store)/checkout/page_client-reference-manifest.js',
+    pageKey: '(store)/checkout/page',
+  },
+  {
+    route: '/product/[slug]',
+    file: 'server/app/(store)/product/[slug]/page_client-reference-manifest.js',
+    pageKey: '(store)/product/[slug]/page',
+  },
+]
 
 export function gzipSize(buffer) {
   return gzipSync(buffer).length
 }
 
-function walkJs(dir, acc = []) {
-  if (!existsSync(dir)) return acc
-  for (const name of readdirSync(dir)) {
-    const full = join(dir, name)
-    const st = statSync(full)
-    if (st.isDirectory()) walkJs(full, acc)
-    else if (name.endsWith('.js')) acc.push(full)
+export function entryJsFromClientReference(text, pageKey) {
+  const start = text.indexOf('"entryJSFiles"')
+  const slice = start >= 0 ? text.slice(start) : text
+  const escaped = pageKey.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const re = new RegExp(`"[^"]*${escaped}":\\s*(\\[[^\\]]*\\])`)
+  const match = slice.match(re)
+  if (!match) return []
+  try {
+    return JSON.parse(match[1])
+  } catch {
+    return []
   }
-  return acc
 }
 
-function loadManifest(nextDir) {
+function runtimeFiles(nextDir) {
+  const buildPath = join(nextDir, 'build-manifest.json')
+  if (!existsSync(buildPath)) return []
+  const build = JSON.parse(readFileSync(buildPath, 'utf8'))
+  return [...(build.rootMainFiles ?? []), ...(build.polyfillFiles ?? [])]
+}
+
+function gzipListed(nextDir, listed) {
+  const unique = [...new Set(listed)]
+  let gz = 0
+  const existing = []
+  for (const rel of unique) {
+    const full = rel.startsWith('/') ? rel : join(nextDir, rel)
+    if (!existsSync(full)) continue
+    existing.push(full)
+    gz += gzipSize(readFileSync(full))
+  }
+  return { files: existing.length, gz }
+}
+
+function fromAppBuildManifest(nextDir) {
   const appManifestPath = join(nextDir, 'app-build-manifest.json')
-  if (!existsSync(appManifestPath)) return null
-  return JSON.parse(readFileSync(appManifestPath, 'utf8'))
+  if (!existsSync(appManifestPath)) return []
+  const manifest = JSON.parse(readFileSync(appManifestPath, 'utf8'))
+  const routes = []
+  for (const [route, listed] of Object.entries(manifest.pages ?? {})) {
+    if (!/\/product\/|\/checkout/.test(route)) continue
+    const measured = gzipListed(nextDir, listed)
+    routes.push({ route, ...measured })
+  }
+  return routes
 }
 
-function filesForRoute(nextDir, listed) {
-  const out = []
-  for (const rel of listed) {
-    const full = join(nextDir, rel)
-    if (existsSync(full)) out.push(full)
+function fromClientReference(nextDir) {
+  const runtime = runtimeFiles(nextDir)
+  const routes = []
+  for (const spec of GATED_CLIENT_MANIFESTS) {
+    const full = join(nextDir, spec.file)
+    if (!existsSync(full)) continue
+    const listed = [
+      ...entryJsFromClientReference(readFileSync(full, 'utf8'), spec.pageKey),
+      ...runtime,
+    ]
+    const measured = gzipListed(nextDir, listed)
+    routes.push({ route: spec.route, ...measured })
   }
-  return out
+  return routes
 }
 
 export function measureFirstLoad(nextDir = '.next') {
@@ -52,27 +101,13 @@ export function measureFirstLoad(nextDir = '.next') {
   if (!existsSync(root)) {
     return { ok: false, reason: 'missing-build', routes: [], over: [] }
   }
-  const manifest = loadManifest(root)
-  const routes = []
 
-  if (manifest?.pages) {
-    for (const [route, listed] of Object.entries(manifest.pages)) {
-      if (!GATED_ROUTE_PATTERNS.some((re) => re.test(route))) continue
-      const files = filesForRoute(root, listed)
-      const unique = [...new Set(files)]
-      let gz = 0
-      for (const file of unique) gz += gzipSize(readFileSync(file))
-      routes.push({ route, files: unique.length, gz })
-    }
-  }
+  const fromClient = fromClientReference(root)
+  const fromApp = fromAppBuildManifest(root)
+  const routes = fromClient.length > 0 ? fromClient : fromApp
 
   if (routes.length === 0) {
-    // Manifest missing the gated routes (build graph changed). Fall back to the
-    // whole client JS graph so the gate cannot go silent.
-    const chunks = walkJs(join(root, 'static'))
-    let gz = 0
-    for (const file of chunks) gz += gzipSize(readFileSync(file))
-    routes.push({ route: '(all static JS)', files: chunks.length, gz })
+    return { ok: false, reason: 'missing-routes', routes: [], over: [] }
   }
 
   const over = routes.filter((r) => r.gz > MAX_FIRST_LOAD_GZ)
@@ -87,6 +122,12 @@ function main() {
   const result = measureFirstLoad()
   if (result.reason === 'missing-build') {
     console.error('bundle-gate: .next is missing. Run pnpm build first.')
+    process.exit(2)
+  }
+  if (result.reason === 'missing-routes') {
+    console.error(
+      'bundle-gate: no product or checkout client-reference-manifest (and no app-build-manifest pages).',
+    )
     process.exit(2)
   }
   console.log(`bundle-gate: ceiling ${formatKb(MAX_FIRST_LOAD_GZ)} gz`)
