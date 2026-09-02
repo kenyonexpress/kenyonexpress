@@ -253,3 +253,22 @@ boot שנכשל בפרודקשן, ‏env-example-is-complete.test.ts כבר או
 ‏(ב) ‏dependabot שבועי — קיים ותוקן היום (‏target-branch הוסר).
 ‏(ג) מחיקת sessions — אין טבלת sessions משלנו; ‏auth.sessions מנוהל על ידי
 Supabase. ‏pnpm audit: ‏1 low + 2 high טרנזיטיביים, כבר KNOWN-ISSUES ‏#7.
+
+## STEPS 33–35 — ‏cache/queue/scale: שלושתם סגורים בסריקה (02.09)
+
+**33 ‏Redis cache — נדחה.** שכבת ה-cache הפרוסה היא `use cache` של Next עם
+‏`CATALOGUE_TAG` (‏catalogue-cache.ts): מוצר/קטגוריה/קשורים רצים בתוכה,
+וכל מוטציית אדמין כבר קוראת `updateTag`. ‏cache שני ב-Upstash לצד זה =
+שתי שכבות עם שני מנגנוני פינוי שמתבדרים בדיוק ברגע שחשוב; ‏Upstash כבר
+משרת את מה שהוא טוב בו כאן (‏rate limiting) עם fallback ל-Postgres.
+
+**34 תור מייל — נדחה.** ‏outbox קיים וחזק מהספק: ‏`notification_outbox`
+בפרודקשן עם ‏attempts, ‏backoff מעריכי (2·4^n דקות), ‏dedupe_key ייחודי
+שמוגש ל-Resend כמפתח אידמפוטנטיות, ‏status=dead, ניקוז דרך ‏cron
+‏notifications, ועמוד ‏/admin/queues עם Retry לכל dead. מעבר ל-QStash push
+היה מחליף מנגנון עובד-ונמדד במנגנון עם עוד ספק בדרך של כל שובר.
+
+**35 פרטישנים — נדחה.** ‏audit_log מחזיק **568 שורות**; פרטישן חודשי הוא
+תקורה בלי בעיה. אינדקסים "רק על סריקות מוכחות" — בדיוק מה ש-156 עשה
+(שני החלונות של האנליטיקות). ‏DB-SCHEMA.md + ‏DB-HARDENING-AUDIT.md כבר
+מכסים את צד התיעוד; ‏pooling הוא של Supabase (‏pgbouncer מובנה).
