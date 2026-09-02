@@ -58,12 +58,14 @@ export default function SiteHeader() {
               alt="קניון EXPRESS"
               width={300}
               height={79}
-              // 300x79 at 1440, measured off refs/ke_live_computed.json
+              // 300x79 at 1440 (lg+), measured off refs/ke_live_computed.json;
+              // below lg the 1:1 measurement has no referent and 300px does
+              // not fit a 320 viewport, so the logo drops to 40px tall
               // (img.img-header-logo, x1005 y53). The old 40px box was a
               // deliberate mismatch justified by the 1320 container; the
               // container is now live's 1200, so the justification is gone.
-              className="h-logo-h w-auto object-contain"
-              fallbackClassName="h-logo-h w-logo-w rounded-md"
+              className="h-10 w-auto object-contain lg:h-logo-h"
+              fallbackClassName="h-10 w-logo-w rounded-md lg:h-logo-h"
               priority
             />
           </Link>

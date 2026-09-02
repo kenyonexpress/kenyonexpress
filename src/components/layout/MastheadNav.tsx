@@ -14,7 +14,8 @@ const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
  *   cart 135  user 223  heart 284  "בחר אזור" 360..456  search 456..990
  *
  * so RTL, reading right to left after the search: region selector, heart,
- * user, cart -- with 38px edge-to-edge between the icons. gap-[38px] is that
+ * user, cart -- with 38px edge-to-edge between the icons at lg (the measured
+ * breakpoint; phones get gap-4 so 320px keeps zero sideways scroll). gap-[38px] is that
  * measurement, not a taste.
  *
  * The heart is BACK (it was removed in [28] because there was no wishlist
@@ -42,7 +43,10 @@ export default function MastheadNav() {
         <ChevronDown size={14} strokeWidth={2} aria-hidden="true" />
       </Link>
 
-      <nav className="flex shrink-0 items-center gap-[38px]" aria-label="פעולות חשבון ועגלה">
+      <nav
+        className="flex shrink-0 items-center gap-4 lg:gap-[38px]"
+        aria-label="פעולות חשבון ועגלה"
+      >
         <Link
           href="/account/wishlist"
           aria-label="המועדפים שלי"

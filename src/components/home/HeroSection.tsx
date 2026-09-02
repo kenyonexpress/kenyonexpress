@@ -36,10 +36,11 @@ export default function HeroSection({
             -- the strip is not bottom-anchored. mt-auto put it at the bottom
             and stretched the slider to 423, which is where the y500-700 bands
             came from. */}
-        <div className="hidden lg:block" style={{ height: 370 }}>
-          <HeroSlider slides={slides} />
-        </div>
-        <div className="flex min-h-0 flex-1 flex-col lg:hidden">
+        {/* ONE HeroSlider instance, wrapper shape switching by breakpoint:
+            fixed 370 at lg (the measured slot), flex-fill below. Two mounted
+            instances meant two rotation timers and broke the e2e guard that
+            counts exactly one [data-hero-slider]. */}
+        <div className="flex min-h-0 flex-1 flex-col lg:block lg:h-[370px] lg:min-h-[370px] lg:flex-none">
           <HeroSlider slides={slides} />
         </div>
         <div className="hidden lg:block">
