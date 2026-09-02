@@ -3,17 +3,17 @@ import { isAdminRole, isStaffRole } from './roles'
 
 // Admin sections keyed by base href. `staffAllowed` marks the sections a
 // content_uploader (staff who is not an admin) may reach. Everything else is
-// admin-only. content_uploader manages product content, so only /admin/products
-// is open to them.
+// admin-only. content_uploader manages catalogue copy: products, categories,
+// and coupon deals. Money, suppliers, orders and users stay admin-only.
 export const ADMIN_SECTIONS = [
   { href: '/admin/dashboard', staffAllowed: false },
   { href: '/admin/analytics', staffAllowed: false },
   { href: '/admin/products', staffAllowed: true },
-  { href: '/admin/categories', staffAllowed: false },
+  { href: '/admin/categories', staffAllowed: true },
+  { href: '/admin/coupons', staffAllowed: true },
   { href: '/admin/suppliers', staffAllowed: false },
   { href: '/admin/vendors', staffAllowed: false },
   { href: '/admin/orders', staffAllowed: false },
-  { href: '/admin/coupons', staffAllowed: false },
   { href: '/admin/users', staffAllowed: false },
   { href: '/admin/audit-log', staffAllowed: false },
 ] as const

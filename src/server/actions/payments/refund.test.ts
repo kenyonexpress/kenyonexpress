@@ -132,7 +132,7 @@ function seedHappyPath(overrides: { succeededAt?: string | null; items?: unknown
 beforeEach(() => {
   calls.length = 0
   queues.clear()
-  requireAdminSession.mockReset().mockResolvedValue(undefined)
+  requireAdminSession.mockReset().mockResolvedValue({ userId: 'admin-1', role: 'admin' })
   capturePaymentError.mockReset()
   refundByTransactionId.mockReset().mockResolvedValue({
     success: true,

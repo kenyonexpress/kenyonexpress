@@ -118,9 +118,26 @@ describe('productSchema: the split pair, in every mode', () => {
     ).toBe(true)
   })
 
-  it('never defaults platform_percent when it is missing', () => {
-    // C1: the percent is the only split handle and has no default anywhere.
-    const result = productSchema.safeParse({ ...base(), platform_percent: undefined })
-    expect(result.success).toBe(false)
+  it('allows a content draft without money fields, and does not invent a percent', () => {
+    const result = productSchema.safeParse({
+      slug: 'deal-1',
+      name_he: 'מוצר בדיקה',
+      type: 'physical',
+      status: 'draft',
+    })
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.platform_percent ?? null).toBeNull()
+      expect(result.data.kenyon_price ?? null).toBeNull()
+    }
+  })
+
+  it('treats an empty money field as null rather than zero', () => {
+    const result = productSchema.safeParse(base({ platform_percent: '', kenyon_price: '' }))
+    expect(result.success).toBe(true)
+    if (result.success) {
+      expect(result.data.platform_percent ?? null).toBeNull()
+      expect(result.data.kenyon_price ?? null).toBeNull()
+    }
   })
 })

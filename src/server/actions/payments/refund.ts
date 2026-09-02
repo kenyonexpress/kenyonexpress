@@ -1,5 +1,6 @@
 'use server'
 
+import { writeAuditLog } from '@/lib/admin/audit'
 import { requireAdminSession } from '@/lib/admin/rbac'
 import { agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
 import { withActionContext } from '@/lib/observability/action-context'
@@ -69,8 +70,9 @@ type RefundInput = {
 }
 
 async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
   try {
-    await requireAdminSession()
+    session = await requireAdminSession()
   } catch {
     return { ok: false, error: 'אין הרשאה', code: 'FORBIDDEN' }
   }
@@ -404,6 +406,22 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
         log.warn('refund.notify_not_queued', { order_id: order.id, err: notifyError.message })
       }
     }
+
+    await writeAuditLog({
+      actorId: session.userId,
+      actorRole: session.role,
+      action: 'manual_override',
+      entityType: 'orders',
+      entityId: order.id,
+      changes: {
+        old: { status: 'paid' },
+        new: {
+          status: 'refunded',
+          reason: input.reason,
+          refunded_agorot: plan.refundAmountAgorot,
+        },
+      },
+    })
 
     return {
       ok: true,

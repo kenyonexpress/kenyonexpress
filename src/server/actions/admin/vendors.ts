@@ -1,5 +1,6 @@
 'use server'
 
+import { writeAuditLog } from '@/lib/admin/audit'
 import { requireAdminSession } from '@/lib/admin/rbac'
 import { parseVendorForm } from '@/lib/admin/vendor-form'
 import { withActionContext } from '@/lib/observability/action-context'
@@ -15,8 +16,9 @@ async function runUpsertVendor(
   _: VendorActionState,
   formData: FormData,
 ): Promise<VendorActionState> {
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
   try {
-    await requireAdminSession()
+    session = await requireAdminSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
@@ -59,6 +61,14 @@ async function runUpsertVendor(
 
   revalidatePath('/admin/vendors')
   if (id) revalidatePath(`/admin/vendors/${id}`)
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: id ? 'updated' : 'created',
+    entityType: 'vendors',
+    entityId: id,
+    changes: { old: null, new: { id: id ?? null, business_name: fields.business_name } },
+  })
   return { success: id ? 'ספק עודכן' : 'ספק נוצר' }
 }
 
@@ -87,7 +97,7 @@ async function runUpdateVendorStatus(
 
 async function runUpdateVendorCommission(
   _: VendorActionState,
-  formData: FormData,
+  _formData: FormData,
 ): Promise<VendorActionState> {
   try {
     await requireAdminSession()

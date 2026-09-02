@@ -1,11 +1,20 @@
 import { z } from 'zod'
 
+function emptyToNull(value: unknown): unknown {
+  if (value === '' || value === null || value === undefined) return null
+  return value
+}
+
 /**
  * The product form's validation, lifted out of `src/server/actions/admin/products.ts`
  * on 2026-08-11. It lives here because a `'use server'` module may export only
  * async functions, which made the single most branch-heavy piece of logic in the
  * admin, the type-dependent refinements below, impossible to unit test. Nothing
  * about the rules changed in the move.
+ *
+ * Money fields are nullable so a content_uploader can save catalogue copy
+ * without seeing or sending prices. Publishing still goes through
+ * `assertPublishable`, which refuses an active product with missing money.
  */
 export const productSchema = z
   .object({
@@ -28,16 +37,24 @@ export const productSchema = z
     recurring_amount_ils: z.coerce.number().positive().nullable().optional(),
     billing_interval: z.enum(['monthly', 'yearly']).nullable().optional(),
     billing_interval_count: z.coerce.number().int().min(1).nullable().optional(),
-    kenyon_price: z.coerce.number().min(0, 'מחיר בקניון נדרש'),
-    full_price: z.coerce.number().min(0).nullable().optional(),
+    kenyon_price: z.preprocess(
+      emptyToNull,
+      z.coerce.number().min(0, 'מחיר בקניון נדרש').nullable().optional(),
+    ),
+    full_price: z.preprocess(emptyToNull, z.coerce.number().min(0).nullable().optional()),
     // CONTRADICTIONS C1: no default exists anywhere, on purpose. It is the only
     // split handle, and since 2026-07-27 it governs coupons too. A product
     // without it cannot be priced, so the storefront hides it rather than
-    // guessing; that is why this is required rather than nullable.
-    platform_percent: z.coerce
-      .number({ invalid_type_error: 'עמלת פלטפורמה נדרשת' })
-      .min(0, 'עמלה לא יכולה להיות שלילית')
-      .max(100, 'עמלה לא יכולה לעלות על 100'),
+    // guessing. Required to publish, optional on a content-only draft.
+    platform_percent: z.preprocess(
+      emptyToNull,
+      z.coerce
+        .number({ invalid_type_error: 'עמלת פלטפורמה נדרשת' })
+        .min(0, 'עמלה לא יכולה להיות שלילית')
+        .max(100, 'עמלה לא יכולה לעלות על 100')
+        .nullable()
+        .optional(),
+    ),
     // The supplier's half. Sent so the admin can type either side; the pair is
     // completed and checked against 100 by completeSplitPair before it is
     // written, and the DB CHECK products_split_pair_sums_to_100 backs that up.
@@ -55,12 +72,15 @@ export const productSchema = z
     // other integer. No default: an unset value used to become a silent 90 days
     // in finalize, which is a consumer-facing promise nobody made. Required on a
     // coupon product, meaningless on a physical one.
-    coupon_expiry_days: z.coerce
-      .number({ invalid_type_error: 'תוקף קופון בימים נדרש' })
-      .int('תוקף חייב להיות מספר שלם של ימים')
-      .min(1, 'תוקף חייב להיות לפחות יום אחד')
-      .nullable()
-      .optional(),
+    coupon_expiry_days: z.preprocess(
+      emptyToNull,
+      z.coerce
+        .number({ invalid_type_error: 'תוקף קופון בימים נדרש' })
+        .int('תוקף חייב להיות מספר שלם של ימים')
+        .min(1, 'תוקף חייב להיות לפחות יום אחד')
+        .nullable()
+        .optional(),
+    ),
     sku: z.string().nullable().optional(),
     stock_quantity: z.coerce.number().int().min(0).nullable().optional(),
     is_featured: z.coerce.boolean().default(false),
@@ -106,7 +126,11 @@ export const productSchema = z
         path: ['coupon_expiry_days'],
       })
     }
-    if (data.full_price != null && data.full_price < data.kenyon_price) {
+    if (
+      data.full_price != null &&
+      data.kenyon_price != null &&
+      data.full_price < data.kenyon_price
+    ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'מחיר מלא חייב להיות גדול או שווה למחיר בקניון',
@@ -115,7 +139,11 @@ export const productSchema = z
     }
     // Mirrors products_coupon_price_within_price, which was added NOT VALID and
     // so cannot be relied on alone for rows that predate it.
-    if (data.coupon_price_ils != null && data.coupon_price_ils > data.kenyon_price) {
+    if (
+      data.coupon_price_ils != null &&
+      data.kenyon_price != null &&
+      data.coupon_price_ils > data.kenyon_price
+    ) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'מחיר הקופון לא יכול לעלות על המחיר הרגיל',
@@ -140,7 +168,7 @@ export const productSchema = z
         })
       }
     }
-    if (data.supplier_split_percent != null) {
+    if (data.supplier_split_percent != null && data.platform_percent != null) {
       const sum = Math.round((data.platform_percent + data.supplier_split_percent) * 100) / 100
       if (sum !== 100) {
         ctx.addIssue({

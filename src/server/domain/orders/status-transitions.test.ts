@@ -32,6 +32,8 @@ import { describe, expect, it } from 'vitest'
  * bare ENOENT that reads like the test is broken.
  */
 const MIGRATION_CANDIDATES = [
+  // Applied through MCP on 2026-09-03 and moved out of `pending/`.
+  'migrations/applied/137_order_transition_guard.sql',
   'migrations/pending/137_order_transition_guard.sql',
   'supabase/migrations/137_order_transition_guard.sql',
 ]

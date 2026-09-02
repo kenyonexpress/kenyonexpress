@@ -1,5 +1,6 @@
 'use server'
 
+import { writeAuditLog } from '@/lib/admin/audit'
 import { requireAdminSession } from '@/lib/admin/rbac'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { IMAGE_HOST_ERROR, isAllowedImageUrl } from '@/lib/images/remote-hosts'
@@ -43,8 +44,9 @@ async function runUpsertCouponDeal(
   _: CouponDealFormState,
   formData: FormData,
 ): Promise<CouponDealFormState> {
+  let session: Awaited<ReturnType<typeof requireAdminSession>>
   try {
-    await requireAdminSession()
+    session = await requireAdminSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
@@ -108,6 +110,17 @@ async function runUpsertCouponDeal(
   // is spelled out in full in catalogue-cache.ts.
   updateTag(CATALOGUE_TAG)
   revalidatePath('/admin/coupons')
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: id ? 'updated' : 'created',
+    entityType: 'coupon_deals',
+    entityId: id,
+    changes: {
+      old: null,
+      new: { id: id ?? null, title_he: fields.title_he, status: fields.status },
+    },
+  })
   redirect('/admin/coupons')
 }
 

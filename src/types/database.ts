@@ -5283,3 +5283,54 @@ export const Constants = {
     },
   },
 } as const
+
+// ---------------------------------------------------------------------------
+// Hand-written convenience aliases. `supabase gen types` rewrites this file
+// whole and drops everything below `Constants`, which is exactly what happened
+// in d7906bcec: 40+ modules import `UserRole`, `Product`, `Category` and so on
+// from here, and the regeneration silently removed every one of them. Anything
+// added here must be re-appended after a regeneration.
+// ---------------------------------------------------------------------------
+export type Profile = Tables<'profiles'>
+export type Vendor = Tables<'vendors'>
+export type Category = Tables<'categories'>
+export type Product = Tables<'products'>
+export type ProductVariant = Tables<'product_variants'>
+export type ProductImage = Tables<'product_images'>
+export type Coupon = Tables<'coupons'>
+export type Order = Tables<'orders'>
+export type OrderItem = Tables<'order_items'>
+export type WalletBalance = Tables<'wallet_balances'>
+export type WalletTransaction = Tables<'wallet_transactions'>
+export type WalletAccount = Tables<'wallet_accounts'>
+export type WalletEntry = Tables<'wallet_entries'>
+export type PaymentToken = Tables<'payment_tokens'>
+export type Cart = Tables<'carts'>
+export type CouponDeal = Tables<'coupon_deals'>
+export type Supplier = Tables<'suppliers'>
+export type CouponCode = Tables<'coupon_codes'>
+export type Voucher = Tables<'vouchers'>
+export type Payment = Tables<'payments'>
+export type PaymentWebhookEvent = Tables<'payment_webhook_events'>
+export type EscrowHold = Tables<'escrow_holds'>
+export type SplitExecution = Tables<'split_executions'>
+export type AuditLog = Tables<'audit_log'>
+export type Affiliate = Tables<'affiliates'>
+export type Referral = Tables<'referrals'>
+export type UserAddress = Tables<'user_addresses'>
+export type AdminPendingQueue = Tables<'v_admin_pending_queues'>
+
+export type UserRole = Enums<'user_role'>
+export type OrderStatus = Enums<'order_status'>
+export type OrderItemStatus = Enums<'order_item_status'>
+export type SettlementStatus = Enums<'settlement_status'>
+export type EscrowStatus = Enums<'escrow_status'>
+export type PaymentKind = Enums<'payment_kind'>
+export type PaymentStatus = Enums<'payment_status'>
+export type CouponStatus = Enums<'coupon_status'>
+export type ProductStatus = Enums<'product_status'>
+export type ProductType = Enums<'product_type'>
+export type ProductApprovalStatus = Enums<'product_approval_status'>
+export type AuditAction = Enums<'audit_action'>
+export type AffiliateStatus = Enums<'affiliate_status'>
+export type ReferralStatus = Enums<'referral_status'>

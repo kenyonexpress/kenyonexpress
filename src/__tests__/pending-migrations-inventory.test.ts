@@ -28,6 +28,11 @@ import { describe, expect, it } from 'vitest'
  */
 
 const PENDING_DIR = 'migrations/pending'
+// Applied through MCP on 2026-09-03 and moved here out of `pending/`. The
+// README stays the manifest for both: it is the only written description of
+// what each file does, and a reader checking "was this applied" needs the row
+// to still exist. What changed is which directory the row's file lives in.
+const APPLIED_DIR = 'migrations/applied'
 const SUPABASE_DIR = 'supabase/migrations'
 
 function readmeText(): string {
@@ -54,7 +59,11 @@ describe('the pending migration inventory', () => {
   it('holds the thirty-four renumbered files and nothing else', () => {
     // A new pending migration is a deliberate diff here, which is the point:
     // schema changes are the one category where a silent addition is expensive.
-    expect(sqlFilesIn(PENDING_DIR)).toEqual([
+    // The list moved wholesale into `applied/` on 2026-09-03; the assertion is
+    // still "these thirty-four and nothing else", now against that directory,
+    // because the alternative -- deleting the list -- would drop the only
+    // record of which numbers exist.
+    expect(sqlFilesIn(APPLIED_DIR)).toEqual([
       '122_deny_all_on_server_only_tables.sql',
       '123_products_whatsapp_enabled.sql',
       '124_categories_sort_order.sql',
@@ -95,16 +104,28 @@ describe('the pending migration inventory', () => {
   // ---- direction 1: disk -> manifest -------------------------------------
   it('names every file that is on disk', () => {
     const named = new Set(manifestFilenames())
-    const unlisted = sqlFilesIn(PENDING_DIR).filter((name) => !named.has(name))
+    const onDisk = [...sqlFilesIn(PENDING_DIR), ...sqlFilesIn(APPLIED_DIR)].sort()
+    const unlisted = onDisk.filter((name) => !named.has(name))
     expect(
       unlisted,
-      `these files are in ${PENDING_DIR} but have no row in README.md: ${unlisted.join(', ')}`,
+      `these files are in ${PENDING_DIR} or ${APPLIED_DIR} but have no row in README.md: ${unlisted.join(', ')}`,
     ).toEqual([])
+  })
+
+  // ---- pending really is empty now ---------------------------------------
+  it('leaves nothing unapplied in the pending directory', () => {
+    // The counterpart to the assertion above. If a future migration is written
+    // it lands here and this test is the deliberate diff that says so.
+    expect(sqlFilesIn(PENDING_DIR)).toEqual([])
   })
 
   // ---- direction 2: manifest -> disk -------------------------------------
   it('names no file that is not on disk', () => {
-    const present = new Set([...sqlFilesIn(PENDING_DIR), ...sqlFilesIn(SUPABASE_DIR)])
+    const present = new Set([
+      ...sqlFilesIn(PENDING_DIR),
+      ...sqlFilesIn(APPLIED_DIR),
+      ...sqlFilesIn(SUPABASE_DIR),
+    ])
     const missing = manifestFilenames().filter((name) => !present.has(name))
     expect(
       missing,
@@ -128,8 +149,10 @@ describe('the pending migration inventory', () => {
         .map((n) => n.slice(0, 3))
         .filter((n) => /^\d{3}$/.test(n))
 
-    const applied = new Set(numbersOf(SUPABASE_DIR))
-    const clash = [...new Set(numbersOf(PENDING_DIR))].filter((n) => applied.has(n))
+    const historical = new Set(numbersOf(SUPABASE_DIR))
+    const clash = [...new Set([...numbersOf(PENDING_DIR), ...numbersOf(APPLIED_DIR)])].filter((n) =>
+      historical.has(n),
+    )
 
     expect(
       clash,

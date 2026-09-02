@@ -8,6 +8,11 @@ import type { Instrumentation } from 'next'
  *
  * WHAT CHANGED, AND WHY THE OLD REASONING STILL HOLDS.
  *
+ * Cron routes under `src/app/api/cron/` run on this same Node runtime. There is
+ * no separate worker process. Loading `sentry.server.config.ts` here is what
+ * gives those jobs a release and a source map, which is the "workers" half of
+ * the Sentry setup. The edge half is `sentry.edge.config.ts` below.
+ *
  * This used to forward only money-path errors, on the grounds that "an alert
  * channel that also carries catalogue render errors is one nobody reads". That
  * is correct about an ALERT CHANNEL and it is now enforced where it belongs:

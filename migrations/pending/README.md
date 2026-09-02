@@ -1,9 +1,26 @@
 # `migrations/pending/`
 
-Unapplied migrations. **Nothing in this directory has been run against any
-database.** Nothing here may be applied with `db push` — the project forbids it.
-The route to production is `apply_migration` through MCP, after Ofir approves
-the file.
+## 2026-09-03: this directory is EMPTY, and the rows below are APPLIED
+
+All thirty-four files listed in this README were applied to production through
+MCP `apply_migration` on 2026-09-03 and moved to **`migrations/applied/`**. The
+rows stay here because this README is still the only written description of what
+each migration does, and the number sequence has to stay readable. To find a
+file named below, look in `migrations/applied/`.
+
+**Nothing is awaiting approval right now.** A newly written migration goes back
+into this directory and is listed as pending again.
+
+`pnpm test` enforces both halves: `pending-migrations-inventory.test.ts` asserts
+this directory holds no `.sql`, and that every row below resolves to a file in
+`applied/`.
+
+---
+
+Unapplied migrations live here. **Nothing placed in this directory has been run
+against any database.** Nothing here may be applied with `db push` — the project
+forbids it. The route to production is `apply_migration` through MCP, after Ofir
+approves the file.
 
 ## This is now the only pending location
 

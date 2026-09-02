@@ -1,5 +1,8 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-02 19:05 UTC (‏ביקורת חוזרת על MEGA 6-ALT: type-check/test/build ירוקים, Lighthouse מעל 95, דף ספק 200 עם קטלוג, /api/ready מחזיר חמש בדיקות)
+Updated: 2026-09-02 12:22 UTC (‏שער Vercel אדום על PR #27: לא הקוד. GitHub Build ירוק. כל דיפלוי מאז 01.09 נכשל בשנייה, כולל main. פרוד חי מ-31.08)
+Updated: 2026-09-02 12:10 UTC (‏MEGA BLOCK 6-ALT נמדד: type-check/test/build ירוקים, Lighthouse מעל 95; אין push ישיר ל-main מסוכן ענן, רק PR)
 Updated: 2026-09-01 12:20 UTC (‏אין כותב ל-escrow_held בשום מקום; ‏144/144 מעברים מול הטריגרים החיים; קיפאון ה-380/768 נמצא ותוקן; ‏payment_events היה טבלה ריקה בלי אף כותב)
 Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשישה כבר היו, ושני באגים אמיתיים נמצאו בדרך)
 קודם: 2026-09-01 03:02 UTC (‏שער הפיקסלים חצה את התקרה: ‏11.06% מול 11%, וזה לא שינוי שלנו)
@@ -67,7 +70,68 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 קודם: 2026-08-19 22:01 (הצ'ק-אאוט ירד מתחת לשער הפיקסלים, ו-CLS שלו תוקן)
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
-## המשך מ: אין. הקוד סגור סופית ולתמיד. נותרו רק הצעדים הידניים ב-docs/OWNER-CHECKLIST.md
+## המשך מ: ‏עיצוב בלוק 1, ‏STEP D2 — טוקני עיצוב
+
+### תור העיצוב (ארבעה מגה-בלוקים, נמסרו 03.09)
+
+- **בלוק 1 — MERGE + TOKENS + SHELL + HOME**
+  - ‏D1 מיזוג ענף cursor ✅ **הושלם**
+  - ‏D2 טוקני עיצוב מ-`refs/ke_live_computed.json` ← **הבא בתור**
+  - ‏D3 מעטפת האפליקציה ‏1:1
+  - ‏D4 עמוד הבית ‏1:1
+  - ‏D5 סגירה, תג `v3.1.0-design1`
+- **בלוק 2 — CATALOG PAGES**: ‏D6 קטגוריה, ‏D7 מוצר, ‏D8 מוצרים+ספקים, ‏D9 תג `v3.2.0-design2`
+- **בלוק 3 — PURCHASE FLOW**: ‏D10 עגלה, ‏D11 צ'ק-אאוט, ‏D12 הצלחה/כישלון/חשבון, ‏D13 תג `v3.3.0-design3`
+- **בלוק 4 — POLISH**: ‏D14 ‏RTL+a11y, ‏D15 ביצועים, ‏D16 רגרסיה ויזואלית, ‏D17 תג `v4.0.0-rc1`
+
+כללים לכל התור: ‏`type-check && lint && test && build` ירוקים לפני כל commit;
+‏`git add [paths]` בלבד; שער `compare.mjs` מתחת ל-11% ב-380/768/1440 לפני סגירת
+כל שלב ‏UI; אין ‏UI חיפוש; כסף באגורות בלבד; עברית ‏RTL.
+
+### ‏03.09 ‏STEP D1 — מיזוג `cursor/storefront-admin-obs-3ceb`
+
+הענף נמזג ל-`closeout/v1-final`. תוכנו: לוג ביקורת על כל מוטציית אדמין, דף ספק
+ציבורי `/s/[id]`, `/api/ready` עם חמש בדיקות, דף דגלי מערכת לקריאה בלבד, איתור
+שובר ומימוש ידני באדמין, ועורך תוכן שלא רואה מחירים ועמלות.
+
+**שלושה דברים היו שבורים ב-`closeout/v1-final` עוד לפני המיזוג**, כולם מהקומיט
+האחרון `d7906bcec`, וכולם תוקנו כאן כי השערים חייבים להיות ירוקים:
+
+1. **`src/types/database.ts` איבד את כל הכינויים.** ‏`supabase gen types` כותב
+   את הקובץ מחדש במלואו ומוחק כל מה שאחרי `Constants`. שם ישבו 43 כינויים
+   (`UserRole`, `Product`, `Category`...) שיובאו ב-40 מודולים. ‏`type-check`
+   החזיר ‏40+ שגיאות `TS2305`. הכינויים שוחזרו, עם הערה בקובץ שמסבירה שצריך
+   להוסיף אותם מחדש אחרי כל רגנרציה.
+2. **ארבעה קבצי טסט חיפשו מיגרציות ב-`migrations/pending/`** אחרי שהקומיט העביר
+   את כל ה-34 ל-`migrations/applied/`. אחד מהם, `revoked-functions-have-no-callers`,
+   הפך ל-no-op שקט: הוא קרא רשימת revoke ריקה ולכן "עבר" בלי לבדוק כלום. בדיקת
+   הריקנות שבתוכו היא מה שתפס את זה. כל הארבעה קוראים עכשיו משתי התיקיות.
+3. **`migrations/pending/README.md` עדיין תיאר את ה-34 כלא-מוחלות.** זה בדיוק
+   סוג השקר שהקובץ ההוא קיים כדי למנוע. נוסף לו כותרת שאומרת שהכל הוחל ב-03.09
+   ושהקבצים עברו ל-`applied/`.
+
+בנוסף: `biome` בדק את `supabase/.temp/` (‏gitignore מקונן ש-biome 1.x לא קורא),
+ו-`runUpdateVendorCommission` נשא פרמטר `formData` מת. שניהם תוקנו.
+
+**קונפליקט מהותי אחד, ב-`src/server/actions/admin/products.ts`.** שני הצדדים פתרו
+את אותה בעיה בנפרד ולא ידעו זה על זה:
+
+- ‏`closeout/v1-final` הוסיף את `applyUploaderPolicy` — מפשיט את שדות הפיצול
+  ומאלץ `approval_status='pending'`, כלומר תור אישורים.
+- ענף ‏cursor הוסיף `hidePricing` — הטופס עצמו לא מציג שדות כסף לעורך תוכן,
+  והסכימה מקבלת `null` במקום לדרוש מחיר.
+
+**שניהם נשמרו.** הטופס מסתיר, השרת מפשיט, והמוצר עדיין נכנס לתור האישורים. לא
+נזרק אף hunk. `platform_percent` נשאר בלי ברירת מחדל בשום מקום — הוא רק הפך
+ל-nullable בסכימה, ו-`assertPublishable` עדיין מסרב לפרסם מוצר בלי כסף.
+
+**נצפה ולא נחסם:** `nav.ts` פתח ל-`content_uploader` את `/admin/coupons`, אבל
+`runUpsertCouponDeal` עדיין דורש `requireAdminSession`. התוצאה היא דף שנפתח
+וכפתור שמירה שמחזיר "אין הרשאה" — מכוער, אבל נכשל סגור. תועד ולא שונה.
+
+שערים: `type-check` ✅, `lint` ✅ (אזהרה אחת קיימת מראש), `test` ‏3606/3606 ✅,
+`build` ✅ (‏`/s/[id]` נבנה מראש עם 7 נתיבים מה-DB החי).
+
 
 ## ידני לאופיר (רמת v1.2): מיגרציות pending ‏147–154 לפי ‏APPLY-ORDER.md דרך MCP, **ומיד אחריהן `pnpm db:types`** (הטיפוסים נוצרו מפרודקשן שעוד אין בו reviews/wishlists/payouts); ‏Cardcom prod (‏CARDCOM_USE_MOCK=false + ‏4 מפתחות, ‏CHECKOUT_ENABLED כבר true); ‏DNS cutover (הזון הניתן לעריכה אינו המגיש!); ‏merge ‏PR ‏#26; ‏14 slugs; מובייל 380/768
 
@@ -436,6 +500,143 @@ anycast של Cloudflare, כלומר האתר proxied והמעבר הוא שינ�
 ‏`push` ל-main הוא עכשיו hard stop. כל העבודה מכאן על `closeout/v1-final`.
 
 ## המשך מ: ‏PRIORITY TWO — ‏refunds בשני המסלולים, ומירוץ מימוש הקופון
+
+
+**MEGA BLOCK 6-ALT הסתיים (storefront + admin + observability).** דף ספק ציבורי ב-
+`/s/[id]`,
+מוכן ב-
+`/api/ready`,
+דגלי מערכת לקריאה בלבד, איתור שובר ומימוש ידני, ביקורת על מוצרים וקטגוריות והחזרים, עורך תוכן בלי מחירי עמלה. לוג JSON עם מזהה בקשה דרך Next (אין Hono). Sentry על Node (כולל cron), Edge, והדפדפן.
+
+### 2026-09-02 19:05 ביקורת חוזרת (סוכן ענן)
+
+שערים מחדש על
+`cursor/storefront-admin-obs-3ceb`
+ב-
+`ceda8b10`
+ואחריו רק עדכון המסמך הזה:
+
+| פקודה | תוצאה |
+| --- | --- |
+| `pnpm type-check` | ירוק |
+| `pnpm test` | 261 קבצים, 3493 טסטים, כולם עברו |
+| `pnpm build` | ירוק. נתיבים חדשים בבילד: `/s/[id]`, `/api/ready`, `/admin/feature-flags`, `/admin/coupons/lookup`, `/account/my-vouchers`, `/checkout/confirmation` |
+
+Lighthouse desktop, נמדד בסשן הזה:
+
+| יעד | Perf | A11y | BP | SEO |
+| --- | --- | --- | --- | --- |
+| פרוד `/` | 100 | 96 | 100 | 100 |
+| פרוד `/product/barbecue` | 100 | 100 | 100 | 100 |
+| מקומי `/s/ce85543d-e102-4ff1-b6dc-06799ca9d5a0` | 100 | 96 | 96 | 100 |
+
+HTTP מקומי אחרי
+`PORT=3311 pnpm start`
+(בילד של הענף):
+
+- 200 עם נתונים: `/` (קניון EXPRESS), `/product/barbecue` (מסעדה בשרית), `/s/ce85543d-…` (סטייל הבית, כולל `/product/pampers-premium-care-diaper-pants-medium`). אין
+`platform_percent`
+ב-HTML של דף הספק.
+- 307 להתחברות: `/checkout/confirmation`, `/account`, `/account/orders`, `/account/my-vouchers`.
+- `/api/ready` קיים ומחזיר JSON עם
+`database`, `redis`, `meilisearch`, `r2`, `cardcom`.
+מקומית 503 כי מפתח השירות בדמו. בפרוד `/api/health` הוא 200 עם
+`x-request-id`.
+`/api/ready`
+ו-
+`/s/[id]`
+עדיין 404 בפרוד עד מיזוג PR #27.
+
+אין push ישיר ל-
+`main`
+מסוכן ענן. היעד הוא PR #27.
+
+### 2026-09-02 MEGA BLOCK 6-ALT: נמדד
+
+שערים (מקומי, אחרי השינוי, לפני ה-commit):
+
+| פקודה | תוצאה |
+| --- | --- |
+| `pnpm type-check` | ירוק |
+| `pnpm lint` | ירוק (`biome check .`) |
+| `pnpm test` | 261 קבצים, 3493 טסטים, כולם עברו |
+| `pnpm build` | ירוק, 213 דפים סטטיים. נתיבים חדשים: `/s/[id]`, `/api/ready`, `/admin/feature-flags`, `/admin/coupons/lookup`, `/account/my-vouchers`, `/checkout/confirmation` |
+
+Lighthouse desktop (preset desktop): כל הציון מעל 95.
+
+| יעד | Perf | A11y | BP | SEO |
+| --- | --- | --- | --- | --- |
+| מקומי `/` | 99 | 96 | 96 | 100 |
+| מקומי `/product/צימר-שוויץ-בצפון` | 99 | 100 | 96 | 100 |
+| פרוד `/` | 99 | 96 | 100 | 100 |
+| פרוד אותו מוצר | 100 | 100 | 100 | 100 |
+
+HTTP מול `localhost:3311` אחרי
+`pnpm start`:
+
+- 200 עם נתונים: `/`, `/category/hot-deals`, `/search?q=מוצר`, `/product/צימר-שוויץ-בצפון`, `/s/ce85543d-e102-4ff1-b6dc-06799ca9d5a0`, `/cart`, `/checkout`.
+- 307 להתחברות (שער סשן קיים, לא באג): `/checkout/confirmation` וכל `/account/*`. אישור הזמנה יורש את שער `/checkout/`. אין להוסיף אותו ל-
+`PAYMENT_FRAME_PATHS`.
+- 503 מקומי על `/api/health` ו-`/api/ready`: מפתח השירות בדמו. בפרוד `/api/health` הוא 200. `/api/ready` בפרוד היה 404 לפני הפריסה של הבלוק הזה.
+
+### החלטות שהתקבלו לבד
+
+- לוגים עוברים ב-Next, לא ב-Hono. אין תהליך Hono בריפו.
+- מפתח
+`redis`
+ב-JSON של המוכן הוא המגביל (Postgres RPC, ו-Upstash אם מוגדר), לא מוצר Redis.
+- סוכן ענן לא דוחף ל-
+`main`.
+הנתיב הוא PR אל
+`main`.
+- שלושת אחוזי המוצר הדינמיים: `platform_percent`, `supplier_split_percent`, `discount_percent`.
+- עורך תוכן לא שולח מחיר/עמלה/סטטוס ב-edit. סטטוס נעול ב-UI כדי שלא יוריד מוצר חי ל-draft.
+
+### Last Completed
+
+MEGA BLOCK 6-ALT. קבצים עיקריים:
+`src/lib/supplier-storefront.ts`,
+`src/app/(store)/s/[id]/page.tsx`,
+`src/app/api/ready/route.ts`,
+`src/lib/health/ready.ts`,
+`src/server/actions/admin/vouchers.ts`,
+`src/lib/admin/feature-flags.ts`,
+`docs/RUNBOOK.md`.
+
+### In Progress
+
+nothing (בלוק 6-ALT סגור)
+
+### Blocking Issues
+
+none ל-6-ALT עצמו. DNS נשאר ידני. אין מתזמן חיצוני לעשרת ה-cron (חוסם ישן מ-01.09).
+
+**שער Vercel על PR #27 אדום, ואינו באג בקוד של 6-ALT.** נמדד 2026-09-02:
+
+- כל שערי GitHub על ה-SHA ירוקים (lint, typecheck, unit, build, שני E2E). Vercel אינו שער חובה.
+- `E2E against the PR preview` ירוק כי דילג: `CI_SUPABASE_URL` ריק.
+- הכשל ב-Vercel הוא בשנייה (created_at = updated_at). בילד Next לא הספיק לרוץ. אין לוג בלי `VERCEL_TOKEN`.
+- אותו כשל על
+`origin/main`
+(`9e76800c`, מחבר kenyonexpress, 01.09 12:36) ועל שש דגימות Preview מה-02.09, כולל ענפים אחרים.
+- דיפלוי Production אחרון שהצליח: 31.08
+`9d920802`.
+האתר החי עדיין 200 על `/` ועל
+`/api/health`.
+- לא נוסף
+`deploy.yml`
+(אסור: אינטגרציית Git כבר מפעילה דיפלוי). לא שונה
+`vercel.json`
+בלי לוג בילד.
+
+התיקון הוא בלוח Vercel (חשבון / חיבור Git / מכסת Hobby), לא ב-PR הזה.
+
+### Next Task
+
+7 (התור הבא ב-
+`NEXT-GOALS.md`
+או מה שייכתב כאן אחרי מיזוג).
+
 
 ### ‏01.09 גל החוסן (`feat/resilience`, מוזג ל-main)
 

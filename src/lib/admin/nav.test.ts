@@ -31,8 +31,12 @@ describe('canAccessAdminSection', () => {
 })
 
 describe('visibleAdminHrefs', () => {
-  it('shows content_uploader only the products section', () => {
-    expect(visibleAdminHrefs('content_uploader')).toEqual(['/admin/products'])
+  it('shows content_uploader catalog sections', () => {
+    expect(visibleAdminHrefs('content_uploader')).toEqual([
+      '/admin/products',
+      '/admin/categories',
+      '/admin/coupons',
+    ])
   })
 
   it('shows admins all sections', () => {

@@ -14,6 +14,7 @@
       "out",
       "build",
       "src/types/database.ts",
+      "supabase/.temp",
       "*.config.mjs",
       "coverage",
       "playwright-report",
