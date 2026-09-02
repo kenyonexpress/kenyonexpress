@@ -41,10 +41,13 @@ const NOT_RENDERED = /^src\/app\/api\//
  * Server-only files that legitimately handle the token, each with the reason
  * and the marker that proves it is still that file.
  */
-const SERVER_ONLY: Record<string, { because: string; mustContain: string }> = {
+const SERVER_ONLY: Record<string, { because: string; mustContain: string | RegExp }> = {
   'src/server/payments/finalize.ts': {
     because: 'writes the token when Cardcom returns one; the only writer',
-    mustContain: "from('payment_tokens').insert(",
+    // Matched with whitespace tolerance: biome splits the builder chain across
+    // lines, and the invariant is "this file inserts payment_tokens", not
+    // "this file formats the call on one line".
+    mustContain: /from\('payment_tokens'\)\s*\.insert\(/,
   },
   'src/server/actions/payments/checkout.ts': {
     because: 'reads the token to charge a returning customer, server side only',
@@ -138,7 +141,7 @@ describe('the saved card surface', () => {
       // An allowlisted file rewritten into something else stops being covered by
       // its own reason, so the reason is checked rather than trusted.
       const code = readFileSync(resolve(process.cwd(), file), 'utf8')
-      expect(code, `${file} is allowed because it ${allowance.because}`).toContain(
+      expect(code, `${file} is allowed because it ${allowance.because}`).toMatch(
         allowance.mustContain,
       )
       expect(code.startsWith("'use client'"), `${file} became a client component`).toBe(false)

@@ -616,7 +616,9 @@ export async function finalizeOrder(input: {
 
     let savedTokenId: string | null = null
     if (input.token) {
-      const { data: tokenRow } = await admin
+      // Kept as a single from().insert( expression: saved-cards.test.ts pins
+      // this file as the ONLY payment_tokens writer by matching that literal.
+      const { data: tokenRow, error: tokenInsertError } = await admin
         .from('payment_tokens')
         .insert({
           profile_id: order.user_id,
@@ -631,6 +633,15 @@ export async function finalizeOrder(input: {
         })
         .select('id')
         .maybeSingle()
+      if (tokenInsertError) {
+        // Not fatal to the order -- the charge is already verified -- but a
+        // recurring line below cannot become a subscription without this row,
+        // and the shopper asked for the card to be saved. Loud, not silent.
+        log.error('finalize.token_not_saved', {
+          orderId: order.id,
+          reason: tokenInsertError.message,
+        })
+      }
       savedTokenId = (tokenRow as { id: string } | null)?.id ?? null
     }
 
@@ -654,13 +665,22 @@ export async function finalizeOrder(input: {
           platformPercent: i.platform_percent ?? null,
         }))
       if (recurringLines.length > 0) {
-        const { data: billing } = await admin
+        const { data: billing, error: billingReadError } = await admin
           .from('products')
           .select('id, recurring_amount_agorot, billing_interval, billing_interval_count')
           .in(
             'id',
             recurringLines.map((l) => l.productId),
           )
+        if (billingReadError) {
+          // The empty product list below makes the planner refuse with
+          // product_not_billable, which alarms -- but with the WRONG diagnosis.
+          // Name the real one.
+          log.error('finalize.billing_read_failed', {
+            orderId: order.id,
+            reason: billingReadError.message,
+          })
+        }
         const plan = planSubscriptions({
           userId: order.user_id,
           paymentTokenId: savedTokenId,
