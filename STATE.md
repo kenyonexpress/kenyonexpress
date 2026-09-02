@@ -69,7 +69,7 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 
 ## המשך מ: STEP 15 — עגלות נטושות (מגה-בלוק 2)
 
-## המשך מ: פרויקט הושלם ברמת v1.2. ידני לאופיר: מיגרציות pending לפי סדר דרך MCP; Cardcom prod (‏CARDCOM_USE_MOCK=false + ‏4 מפתחות, ‏CHECKOUT_ENABLED כבר true); ‏DNS cutover (הזון הניתן לעריכה אינו המגיש!); ‏merge ‏PR ‏#26; ‏14 slugs; מובייל 380/768
+## ידני לאופיר (רמת v1.2): ידני לאופיר: מיגרציות pending לפי סדר דרך MCP; Cardcom prod (‏CARDCOM_USE_MOCK=false + ‏4 מפתחות, ‏CHECKOUT_ENABLED כבר true); ‏DNS cutover (הזון הניתן לעריכה אינו המגיש!); ‏merge ‏PR ‏#26; ‏14 slugs; מובייל 380/768
 
 ### ‏02.09 תור הלילה G10-G14 הושלם (תג `v1.2.0-closeout`)
 
