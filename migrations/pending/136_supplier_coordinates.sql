@@ -1,3 +1,4 @@
+-- ROLLBACK: alter table suppliers drop column if exists lat, drop column if exists lng;
 -- ============================================================================
 -- PENDING: per-supplier coordinates and the distance index
 -- ============================================================================

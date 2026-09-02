@@ -1,3 +1,4 @@
+-- ROLLBACK: drop table subscription_charges, then subscriptions; see file body for columns added to products.
 -- 135b: the recurring subscription tables and columns.
 --
 -- SPLIT FROM 135. The `ALTER TYPE ... ADD VALUE` that was here now lives in

@@ -1,3 +1,4 @@
+-- ROLLBACK: alter table categories drop column if exists sort_order;
 -- ============================================================================
 -- PENDING: categories.sort_order -- one number per category, and only one
 -- ============================================================================

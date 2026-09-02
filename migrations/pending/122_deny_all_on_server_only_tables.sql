@@ -1,4 +1,5 @@
 -- 130: explicit deny-all on the five server-only tables that carry RLS and no policy.
+-- ROLLBACK: drop policy deny_all_client_roles on each table below.
 --
 -- WHAT THE AUDIT FOUND, AND WHY IT IS NOT A HOLE
 --

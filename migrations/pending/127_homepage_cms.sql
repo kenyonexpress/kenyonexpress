@@ -1,3 +1,4 @@
+-- ROLLBACK: drop the tables this file creates (homepage_sections, banners), lines first.
 -- 127_homepage_cms.sql
 --
 -- ⛔ PENDING. NOT APPLIED TO PRODUCTION, by instruction.

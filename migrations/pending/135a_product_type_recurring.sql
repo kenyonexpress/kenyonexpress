@@ -1,3 +1,4 @@
+-- NOT APPLIED. migrations/pending/ is unapplied by definition.
 -- 135a: add the `recurring` label to public.product_type. Nothing else.
 --
 -- SPLIT FROM 135 BECAUSE PRODUCTION SPLIT IT. `schema_migrations` holds two
