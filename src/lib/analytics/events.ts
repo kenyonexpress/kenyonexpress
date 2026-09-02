@@ -11,6 +11,13 @@ export const CLIENT_EVENT_NAMES = [
   'remove_from_cart',
   'checkout_step',
   'web_vital',
+  // A WhatsApp tap is an exit the funnel cannot see otherwise: the shopper
+  // leaves for a chat and any purchase happens off-platform. Counted with the
+  // product when the tap came from a PDP. Lands with migration 151, which is
+  // also what turns the REST of this pipeline on -- fn_ingest_analytics_events
+  // did not exist in production until it, so every event above was silently
+  // failing too.
+  'whatsapp_click',
 ] as const
 
 export type ClientEventName = (typeof CLIENT_EVENT_NAMES)[number]
@@ -35,6 +42,8 @@ export const REQUIRED_PROPS: Record<ClientEventName, readonly string[]> = {
   remove_from_cart: ['product_id'],
   checkout_step: ['step'],
   web_vital: ['metric', 'value'],
+  // No required props: the float button has no product to name.
+  whatsapp_click: [],
 }
 
 export const MAX_BATCH_SIZE = 20

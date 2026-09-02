@@ -375,6 +375,7 @@ export default function ProductInfo({
             beside it quotes at ₪80. See lib/share/message.ts. */}
         <span className="inline-flex items-center gap-4">
           <WhatsAppShareButton
+            productId={productId}
             message={buildShareMessage({ name, priceIls: price, offer: couponOffer })}
             appendCurrentUrl
           />

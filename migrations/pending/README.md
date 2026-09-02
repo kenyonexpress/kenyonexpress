@@ -242,6 +242,25 @@ list from this directory and checks it against every `.ts`/`.tsx` in **both**
 `src/` and `apps/`, so revoking a function the Expo till uses fails a test
 rather than a till.
 
+## `151_analytics_ingest.sql`, added 2026-09-02
+
+`/api/a` validates consented client events and calls
+`fn_ingest_analytics_events`. That function did not exist and neither did any
+events table: every batch ever sent returned "function not found" and vanished
+-- a caller without its function, the fourth instance of the closeout's
+recurring pattern.
+
+The table plus the definer function, written to the CALLER's payload exactly,
+so applying this turns the existing pipeline on without touching app code.
+Unknown event names are skipped rather than failing the batch; event_id dedups
+replays; the IP is accepted and not stored; RLS on with zero policies so only
+the definer path writes. Adds `whatsapp_click` to the accepted names -- the
+client emits it from the PDP share button as of the same commit, and like every
+other event it goes nowhere until this applies.
+
+**Dry run against production, rolled back:** 3-event batch -> 2 stored + 1
+unknown skipped; replayed event_id -> 0 new rows; non-array -> 22023.
+
 ## `150_account_deletion.sql`, added 2026-09-02
 
 The deletion the privacy policy promises, with no code behind the promise until
