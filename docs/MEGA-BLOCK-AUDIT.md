@@ -222,3 +222,16 @@ campaign_redemptions) על אותה הזמנה. קידום מוצרים נעשה
 הספק, הסרה, יציאה מכל המכשירים (‏signOut global). הרשמה נשארת וולונטרית:
 אכיפת-הרשמה שנשלחת מריצה אוטונומית היא הדרך לנעול את האדם היחיד עם גישת
 פרודקשן מחוץ לפאנל של עצמו. אין מיגרציה — אין סכמה משלנו.
+
+## STEP 30 — ‏rate limits: סגור בסריקה + טסט שער אחד (02.09)
+
+**קיים:** שכבת rate-limit שלמה (‏policies.ts עם טבלת מדיניות בדוקה-סנכרון מול
+call sites, ‏sliding window, ‏Upstash + ‏fallback, כותרות 429, עברית).
+כל ‏11 המסלולים המשנים מוגנים: אנושיים ב-checkRateLimit, מכונות בחתימה
+(‏Cardcom secret ב-timingSafeEqual, ‏QStash signature, ‏Bearer). ‏limiter
+"publicRead 100/min" נדחה — ‏rate-limit על GET ציבורי שכבר יושב מאחורי
+‏CDN/cache הוא עלות בלי איום מוגדר.
+
+**נוסף:** ‏`mutating-route-guards.test.ts` — סורק את ‏src/app/api ומפיל כל
+‏POST/PUT/PATCH/DELETE בלי שער משתי המשפחות. משלים את auth-coverage
+(פעולות שרת), ‏cron-auth (משמעת Bearer) ו-policies (טבלת המגבלות).
