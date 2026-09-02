@@ -5,9 +5,13 @@ vi.mock('@/lib/observability/log', () => ({
   log: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
 }))
 
-const OFF = {} as NodeJS.ProcessEnv
+const OFF = {} as unknown as NodeJS.ProcessEnv
 const ON = (agent: string) =>
-  ({ AI_AGENTS_ENABLED: 'true', [agent]: 'true', ANTHROPIC_API_KEY: 'k' }) as NodeJS.ProcessEnv
+  ({
+    AI_AGENTS_ENABLED: 'true',
+    [agent]: 'true',
+    ANTHROPIC_API_KEY: 'k',
+  }) as unknown as NodeJS.ProcessEnv
 
 describe('off by default, twice over', () => {
   it('every agent is disabled with an empty environment', () => {
@@ -15,11 +19,13 @@ describe('off by default, twice over', () => {
   })
 
   it('the master flag alone is not enough, and neither is the agent flag alone', () => {
-    expect(agentEnabled('support_chat', { AI_AGENTS_ENABLED: 'true' } as NodeJS.ProcessEnv)).toBe(
-      false,
-    )
     expect(
-      agentEnabled('support_chat', { AI_AGENT_SUPPORT_CHAT: 'true' } as NodeJS.ProcessEnv),
+      agentEnabled('support_chat', { AI_AGENTS_ENABLED: 'true' } as unknown as NodeJS.ProcessEnv),
+    ).toBe(false)
+    expect(
+      agentEnabled('support_chat', {
+        AI_AGENT_SUPPORT_CHAT: 'true',
+      } as unknown as NodeJS.ProcessEnv),
     ).toBe(false)
     expect(agentEnabled('support_chat', ON('AI_AGENT_SUPPORT_CHAT'))).toBe(true)
   })
@@ -30,7 +36,7 @@ describe('off by default, twice over', () => {
         agentEnabled('support_chat', {
           AI_AGENTS_ENABLED: raw,
           AI_AGENT_SUPPORT_CHAT: raw,
-        } as NodeJS.ProcessEnv),
+        } as unknown as NodeJS.ProcessEnv),
         raw,
       ).toBe(raw.trim().toLowerCase() === 'true')
     }
@@ -51,7 +57,10 @@ describe('a disabled agent never reaches the network', () => {
   })
 
   it('an enabled agent with no key refuses loudly rather than throwing vaguely', async () => {
-    const env = { AI_AGENTS_ENABLED: 'true', AI_AGENT_SUPPORT_CHAT: 'true' } as NodeJS.ProcessEnv
+    const env = {
+      AI_AGENTS_ENABLED: 'true',
+      AI_AGENT_SUPPORT_CHAT: 'true',
+    } as unknown as NodeJS.ProcessEnv
     const result = await runAgent({ agent: 'support_chat', system: 's', prompt: 'p' }, { env })
     expect(result.ok).toBe(false)
     if (!result.ok) expect(result.reason).toBe('no_api_key')

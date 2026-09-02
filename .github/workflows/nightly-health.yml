@@ -1,0 +1,39 @@
+# G13: the nightly health loop, 02:00 UTC. Same caveats as cron.yml: GitHub's
+# schedule is best effort, and scheduled workflows only fire from main -- this
+# file does nothing until it is merged there (scheduled-workflows-only-fire-
+# from-main, project memory).
+name: Nightly health
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: nightly-health
+  cancel-in-progress: false
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Health gates
+        run: bash scripts/nightly-health.sh
+      - name: Open an issue on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create --repo "$GITHUB_REPOSITORY" \
+            --title "nightly-health failed $(date -u +%F)" \
+            --label auto \
+            --body "Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" || true
+          curl -s -m 10 -d "nightly-health FAILED (CI)" "https://ntfy.sh/${{ vars.CRON_NTFY_TOPIC || 'kenyon-ofir-limit' }}" > /dev/null || true
