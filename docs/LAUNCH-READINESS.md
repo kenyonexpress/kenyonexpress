@@ -481,3 +481,15 @@ the 14 wrong product slugs, and the 768/380 mobile layout project.
 | 30 | נסגר בסריקה + ‏mutating-route-guards.test (כל מסלול משנה מחזיק שער; ‏11/11 כבר מוגנים) |
 | 31 | **נבנה** — מיגרציה 157 (הזדקנות IP על audit append-only) + ‏cron ‏retention (ה-11) + ‏SECRETS-ROTATION.md |
 | 32 | לולאה ×3, תג ‏v1.6.0-rc1-block4 |
+
+## נספח מתוארך: מגה-בלוק 5 (‏STEPS 33–37), נמדד 02.09.2026
+
+לולאת הביקורת ירוקה ×3; ‏build ירוק.
+
+| STEP | מה קרה |
+| --- | --- |
+| 33 | נדחה — ‏use cache+CATALOGUE_TAG הוא שכבת ה-cache; ‏Redis שני = שני מנגנוני פינוי מתבדרים |
+| 34 | נדחה — ‏notification_outbox (‏backoff, ‏dedupe, ‏dead+Retry) הוא התור; ‏QStash push היה מחליף עובד-ונמדד |
+| 35 | נדחה — ‏568 שורות audit אינן צריכות פרטישן; האינדקסים המוכחים נוספו ב-156 |
+| 36 | **נמדד** — ‏browse ירוק ב-40VU (בית p95 691ms, ‏0% כשלים), נקודת קריסה מקומית ~68VU תועדה, חיפוש 979ms על ‏ILIKE fallback; תרחישי כתיבה לא רצים בהעדר staging (guard חוסם פרודקשן) |
+| 37 | לולאה ×3, תג ‏v1.7.0-rc1-block5 |
