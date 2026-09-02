@@ -64,3 +64,29 @@ text lands.
 במקום שהעיצוב הקיים צמצם; ‏(ג) ‏type חדש `abandoned_cart_incentive` נוגד את
 ה-enum הפרוס של wallet_transactions (enums פרוסים = חוק). אם אופיר ירצה
 תמריץ, זה שינוי מוצר + מיגרציה שידונו בנפרד.
+
+## STEP 16 — הפניות: סגור בסריקה (02.09)
+
+קיים במלואו וחזק מהספק: טבלת `referrals` בפרודקשן (098), הכרעה כולה ב-SQL
+ב-`fn_complete_referral` — ‏FOR UPDATE על שורת ההפניה, חלון זכאות, מינימום,
+שני מבחני הונאה (fingerprint), תקרות חודשית ושנתית, תשלום דרך הארנק עם מפתח
+אידמפוטנטיות — קרוא מ-`completeReferralForOrder` שכבר מחווט ל-finalize (מסלול
+ה-webhook). ‏cookie/קוד/עמודי account+admin קיימים עם טסטים
+(claim/complete/program/wired). אין מה להוסיף.
+
+## STEP 17 — קמפיינים: סגור בסריקה + דחייה מנומקת (02.09)
+
+מנוע ההנחות הקיים (`discount_campaigns`/`discount_redemptions`, מיגרציה 096,
+‏`src/lib/growth/discount.ts`) מכסה את הצורך העסקי בעיצוב קשיח יותר:
+‏basis points במקום percent, תקרת מימון מהעמלה (הנחה לעולם לא יורדת מחלקו של
+הספק), ‏UNIQUE (campaign_id, order_id) כמחסום replay, ו-snapshot של
+‏amount_agorot בזמן ההזמנה.
+
+**נדחה במכוון:** טבלת `campaigns` שנייה עם `product_ids[]` והנחה אוטומטית על
+מחיר המוצר. שלוש סיבות: ‏(א) זהו אתר דילים — המוצר עצמו הוא ההנחה
+(‏original_price מול platform_price על coupon_deals); מנוע הנחות אוטומטי שני
+על אותם מחירים הוא פיצול מקור אמת למחיר, בדיוק מה שכלל ה-snapshot של C10 בא
+למנוע; ‏(ב) הנחה בלי קוד עוקפת את כלל המימון-מהעמלה של discount.ts (חוק 2) —
+אין לה guard מי מממן אותה; ‏(ג) redemptions כפולים (discount_redemptions +
+campaign_redemptions) על אותה הזמנה. קידום מוצרים נעשה דרך ה-CMS של דף הבית
+(homepage/cms.ts) שכבר קיים.
