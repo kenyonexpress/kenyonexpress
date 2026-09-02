@@ -469,3 +469,15 @@ the 14 wrong product slugs, and the 768/380 mobile layout project.
 | 25 | נסגר בסריקה + ‏CSV ספק (‏/api/supplier/payouts/csv, אותו fold של העמוד) |
 | 26 | נסגר בסריקה + עשרת הספקים המובילים + מיגרציה 156 (שני אינדקסים חלקיים) |
 | 27 | לולאה ×3, תג ‏v1.5.0-rc1-block3 |
+
+## נספח מתוארך: מגה-בלוק 4 (‏STEPS 28–32), נמדד 02.09.2026
+
+לולאת הביקורת ירוקה ×3; ‏build ירוק; ‏migration-lint ‏34 קבצים נקיים.
+
+| STEP | מה קרה |
+| --- | --- |
+| 28 | נסגר בסריקה + תיקון: ‏Permissions-Policy סטטי חסם מצלמה גם על סורק ה-QR — עכשיו ‏camera=(self) רק על מסלולי הסורק, אומת חי |
+| 29 | **נבנה** — ‏TOTP צוות על ה-MFA המובנה של Supabase (‏aal2 בשערי rbac, עמוד אתגר, ‏/account/security); טבלת admin_totp נדחתה |
+| 30 | נסגר בסריקה + ‏mutating-route-guards.test (כל מסלול משנה מחזיק שער; ‏11/11 כבר מוגנים) |
+| 31 | **נבנה** — מיגרציה 157 (הזדקנות IP על audit append-only) + ‏cron ‏retention (ה-11) + ‏SECRETS-ROTATION.md |
+| 32 | לולאה ×3, תג ‏v1.6.0-rc1-block4 |
