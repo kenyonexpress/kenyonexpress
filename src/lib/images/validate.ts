@@ -28,3 +28,27 @@ export function validateImageFile(file: File): string | null {
   if (file.size > MAX_ORIGINAL_BYTES) return 'הקובץ גדול מדי (מקסימום 8MB)'
   return null
 }
+
+/** Product photos below this width pixelate in the 800px rendition slot. */
+export const MIN_IMAGE_WIDTH = 800
+
+/** Height/width must sit inside [0.5, 2]: banners and slivers break the card grid. */
+export const MIN_ASPECT = 0.5
+export const MAX_ASPECT = 2
+
+/**
+ * Dimension gate, called by the server pipeline AFTER sharp has decoded the
+ * original (the client cannot be trusted to report dimensions). Null when
+ * acceptable; a Hebrew reason otherwise.
+ */
+export function validateImageDimensions(width: number, height: number): string | null {
+  if (width < MIN_IMAGE_WIDTH) {
+    return `התמונה צרה מדי (${width}px) — נדרש רוחב של לפחות ${MIN_IMAGE_WIDTH}px`
+  }
+  if (height <= 0) return 'לתמונה אין גובה'
+  const aspect = height / width
+  if (aspect < MIN_ASPECT || aspect > MAX_ASPECT) {
+    return 'יחס הממדים חורג (מותר בין 1:2 ל-2:1) — חתוך את התמונה לפני ההעלאה'
+  }
+  return null
+}
