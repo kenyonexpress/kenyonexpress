@@ -242,6 +242,23 @@ list from this directory and checks it against every `.ts`/`.tsx` in **both**
 `src/` and `apps/`, so revoking a function the Expo till uses fails a test
 rather than a till.
 
+## `149_audit_log_append_only.sql`, added 2026-09-02
+
+Production has NO triggers on `audit_log`, and RLS does not bind service_role,
+so the application's own key can UPDATE or DELETE any audit row. An audit trail
+the audited code can edit is a log, not an audit trail.
+
+One trigger, BEFORE UPDATE OR DELETE, raising 42501 for every role including
+service_role -- which is the point, because no policy can restrain that role.
+Redaction under a legal order stays possible as a deliberate human act: drop the
+trigger, redact, re-create it, leaving that sequence in the database logs.
+
+**Dry run against production, rolled back:** UPDATE refused 42501, DELETE
+refused 42501, INSERT unaffected.
+
+(The APPLY-ORDER row for 137 claimed "audit-log immutability triggers"; the 137
+file contains none. That row was wrong; this file is the real thing.)
+
 ## `148_refund_destination.sql`, added 2026-09-02
 
 `refunds` records the notice, the ground, the fee and the 14-day deadline, and
