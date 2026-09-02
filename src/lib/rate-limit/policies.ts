@@ -89,6 +89,19 @@ export const RATE_LIMIT_POLICIES = {
   'supplier-lead': { limit: 5, windowSeconds: 3600, reason: 'supplier lead mail' },
   newsletter: { limit: 5, windowSeconds: 3600, reason: 'newsletter subscription mail' },
 
+  // Admin voucher console. Keyed on the staff user, never on IP: the panel sits
+  // behind a session and a shared office NAT would otherwise share one bucket.
+  'admin-voucher-lookup': {
+    limit: 60,
+    windowSeconds: 3600,
+    reason: 'admin voucher code lookup, per staff user',
+  },
+  'admin-voucher-redeem': {
+    limit: 30,
+    windowSeconds: 3600,
+    reason: 'admin manual voucher burn, per staff user',
+  },
+
   // -- Mobile app surfaces (`apps/mobile` is a second caller of these routes).
   'app-session': { limit: 30, windowSeconds: 600, reason: 'app session exchange, per IP' },
   'push-register': { limit: 60, windowSeconds: 3600, reason: 'push token registration' },

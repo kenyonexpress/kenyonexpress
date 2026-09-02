@@ -80,6 +80,59 @@ failure to reach the provider, and it is returned as-is.
 3. Two `succeeded` payment rows for one order is a real double charge. One row
    with two journal entries is not.
 
+## Health versus ready
+
+| Route | Meaning | 503 when |
+| --- | --- | --- |
+| `/api/health` | Liveness plus one HEAD count on `categories`. For an uptime ping. | Database probe fails. |
+| `/api/ready` | The five named dependencies: database, redis (the rate limiter), meilisearch, r2, cardcom. Status only, no details, no terminal numbers. | Any mapped check is `down`. `not_configured` is not an outage. |
+
+JSON logs and request ids go through Next, not Hono. This app is App Router. `src/proxy.ts` mints the id. `src/lib/observability/with-request-log.ts` binds it onto every wrapped route. `src/lib/observability/log.ts` emits one JSON object per line with `request_id`. There is no Hono process.
+
+## Sentry
+
+Three runtimes, one DSN, release from `SENTRY_RELEASE` or `VERCEL_GIT_COMMIT_SHA`.
+
+| Runtime | Loaded by | Covers |
+| --- | --- | --- |
+| Node | `src/instrumentation.ts` then `sentry.server.config.ts` | Pages, server actions, cron routes (`src/app/api/cron/*`). Those cron routes are the workers. |
+| Edge | `src/instrumentation.ts` then `sentry.edge.config.ts` | `src/proxy.ts` |
+| Browser | `@sentry/nextjs` via `withSentryConfig` in `next.config.ts` | Client errors, tunnel `/monitoring` |
+
+Source maps upload when `SENTRY_AUTH_TOKEN` is set, then delete from the deploy unless `SENTRY_KEEP_SOURCEMAPS=1`.
+
+## Alerts
+
+| Channel | What fires it | Who it is for |
+| --- | --- | --- |
+| Sentry | Any server exception. Money path tagged `area=payments`. | Searchable record. |
+| ntfy money | `alertMoneyFailure` on the payment / voucher / checkout path only. | Phone. |
+| ntfy health | `buildHealthAlert` when a dependency is `down`. Unconfigured never pages. | Phone. |
+| `/api/health` 503 | Database unreachable. | Uptime monitor. |
+| `/api/ready` 503 | A mapped dependency is down. | Deploy gate / load balancer. |
+
+Kill switch state is on `/admin/feature-flags` (read-only) and in this file.
+
+## Rollback
+
+A bad deploy on `main` is reverted, not patched forward, unless the revert itself is known broken.
+
+```bash
+git revert --no-edit <sha>
+git push origin main
+```
+
+Vercel ships the revert. Cron and serverless pick it up on the next instance.
+
+If the bad change is a merge with many commits:
+
+```bash
+git revert --no-edit -m 1 <merge-sha>
+git push origin main
+```
+
+Do not `db push`. Do not apply a pending migration from an agent. Schema rollback is a pending SQL file and an owner apply.
+
 ## Open
 
 - The kill switches are env-based. A DB-backed override needs a table and a

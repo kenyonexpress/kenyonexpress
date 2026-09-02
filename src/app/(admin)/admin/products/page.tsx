@@ -1,5 +1,6 @@
 import ProductsTable, { type ProductRow } from '@/components/admin/ProductsTable'
 import { productListParamsSchema } from '@/lib/admin/page-params'
+import { canSeeMoney } from '@/lib/admin/permissions'
 import { requireSection } from '@/lib/admin/rbac'
 import { createClient } from '@/lib/supabase/server'
 import { Plus } from 'lucide-react'
@@ -29,7 +30,7 @@ export default async function AdminProductsPage({ searchParams }: Props) {
   // Without this the catalog list was the one admin screen a support user could
   // open, while every sibling under /admin/products/* refused them. `read`, not
   // `write`: content_uploader lists and edits, support gets neither.
-  await requireSection('catalog', 'read')
+  const session = await requireSection('catalog', 'read')
 
   const raw = await searchParams
   const parsed = productListParamsSchema.safeParse({
@@ -130,7 +131,11 @@ export default async function AdminProductsPage({ searchParams }: Props) {
         </form>
       </div>
 
-      <ProductsTable products={rows} categories={categories ?? []} />
+      <ProductsTable
+        products={rows}
+        categories={categories ?? []}
+        hidePricing={!canSeeMoney(session.role)}
+      />
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">

@@ -1,8 +1,10 @@
 'use server'
 
+import { writeAuditLog } from '@/lib/admin/audit'
+import { canSeeMoney } from '@/lib/admin/permissions'
 import { productSchema as schema, variantSchema } from '@/lib/admin/product-form-schema'
 import { variantIdsToRemove } from '@/lib/admin/product-variants'
-import { requireStaffSession } from '@/lib/admin/rbac'
+import { type AdminSessionInfo, requireSection } from '@/lib/admin/rbac'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { ilsToAgorot } from '@/lib/commerce/money'
 import { assertPublishable, buildProductMoneyWrite } from '@/lib/commerce/product-money'
@@ -19,15 +21,24 @@ import { z } from 'zod'
 
 export type ProductFormState = { error: string } | { success: string } | null
 
+const PRODUCT_AUDIT_SELECT =
+  'id, slug, name_he, status, kenyon_price, platform_percent, supplier_split_percent, discount_percent, category_id, supplier_id'
+
+async function requireCatalogWriter(): Promise<AdminSessionInfo | null> {
+  try {
+    return await requireSection('catalog', 'write')
+  } catch {
+    return null
+  }
+}
+
 async function runUpsertProduct(
   _: ProductFormState,
   formData: FormData,
 ): Promise<ProductFormState> {
-  try {
-    await requireStaffSession()
-  } catch {
-    return { error: 'אין הרשאה' }
-  }
+  const session = await requireCatalogWriter()
+  if (!session) return { error: 'אין הרשאה' }
+  const hidePricing = !canSeeMoney(session.role)
 
   const parsed = schema.safeParse({
     id: formData.get('id') || undefined,
@@ -153,6 +164,32 @@ async function runUpsertProduct(
     ...fields
   } = parsed.data
 
+  const { data: before, error: beforeError } = id
+    ? await supabase.from('products').select(PRODUCT_AUDIT_SELECT).eq('id', id).maybeSingle()
+    : { data: null, error: null }
+  if (beforeError) return { error: beforeError.message }
+
+  // Content-uploader must not publish, and must not accidentally unpublish.
+  // The hidden field is a schema dummy (`draft`); on edit we omit `status`
+  // so a live or sold_out row stays as it is. A new product is always a
+  // draft until an admin publishes it. Money keys are omitted so an empty
+  // form cannot null an admin split.
+  const {
+    kenyon_price,
+    full_price: _fullPrice,
+    platform_percent,
+    supplier_split_percent,
+    discount_percent,
+    coupon_price_ils,
+    status: submittedStatus,
+    ...contentFields
+  } = fields
+  const writeFields = hidePricing
+    ? id
+      ? contentFields
+      : { ...contentFields, status: 'draft' as const }
+    : fields
+
   /**
    * The row always carries `whatsapp_enabled`; the WRITE drops it if the column
    * turns out not to exist yet.
@@ -199,22 +236,26 @@ async function runUpsertProduct(
       : null
 
   // Every money column this write must set, derived once by the same pure
-  // module the form preview and checkout use.
-  const money = buildProductMoneyWrite({
-    type: fields.type,
-    kenyonPrice: fields.kenyon_price,
-    platformPercent: fields.platform_percent,
-    supplierSplitPercent: fields.supplier_split_percent,
-    discountPercent: fields.discount_percent,
-    couponPriceIls: fields.coupon_price_ils,
-    couponExpiryDays: fields.coupon_expiry_days,
-    recurringAmountAgorot,
-    billingInterval,
-    billingIntervalCount: billingIntervalCount ?? 1,
-  })
-  if (!money.ok) return { error: money.message }
+  // module the form preview and checkout use. A content_uploader never sends
+  // these, and must not overwrite an admin's existing split by writing nulls.
+  const money = hidePricing
+    ? null
+    : buildProductMoneyWrite({
+        type: fields.type,
+        kenyonPrice: kenyon_price,
+        platformPercent: platform_percent,
+        supplierSplitPercent: supplier_split_percent,
+        discountPercent: discount_percent,
+        couponPriceIls: coupon_price_ils,
+        couponExpiryDays: fields.coupon_expiry_days,
+        recurringAmountAgorot,
+        billingInterval,
+        billingIntervalCount: billingIntervalCount ?? 1,
+      })
+  if (money && !money.ok) return { error: money.message }
+  const moneyFields = money?.ok ? money.fields : {}
 
-  if (fields.status === 'active') {
+  if (!hidePricing && money && money.ok && submittedStatus === 'active') {
     // Publishing needs a complete supplier, so the identity is loaded rather
     // than assumed. Service role: this is a staff read of a table with no
     // permissive select policy for `authenticated`.
@@ -261,7 +302,7 @@ async function runUpsertProduct(
     const { error } = await writeWithWhatsAppFallback(async (extra) =>
       supabase
         .from('products')
-        .update({ ...fields, ...money.fields, ...extra, images })
+        .update({ ...writeFields, ...moneyFields, ...extra, images })
         .eq('id', id)
         .select('id')
         .maybeSingle(),
@@ -278,7 +319,7 @@ async function runUpsertProduct(
     const { data, error } = await writeWithWhatsAppFallback<{ id: string }>(async (extra) =>
       supabase
         .from('products')
-        .insert({ ...fields, ...money.fields, ...extra, images, created_by: user!.id })
+        .insert({ ...writeFields, ...moneyFields, ...extra, images, created_by: user!.id })
         .select('id')
         .single(),
     )
@@ -328,22 +369,52 @@ async function runUpsertProduct(
 
   revalidatePath('/admin/products')
   updateTag(CATALOGUE_TAG)
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: id ? 'updated' : 'created',
+    entityType: 'products',
+    entityId: productId,
+    changes: {
+      old: before ?? null,
+      new: {
+        id: productId,
+        slug: fields.slug,
+        name_he: fields.name_he,
+        status: hidePricing ? (before?.status ?? 'draft') : submittedStatus,
+        kenyon_price: hidePricing ? undefined : kenyon_price,
+        platform_percent: hidePricing ? undefined : platform_percent,
+      },
+    },
+  })
   redirect('/admin/products')
 }
 
 async function runDeleteProduct(id: string): Promise<{ error?: string }> {
-  try {
-    await requireStaffSession()
-  } catch {
-    return { error: 'אין הרשאה' }
-  }
+  const session = await requireCatalogWriter()
+  if (!session) return { error: 'אין הרשאה' }
 
   const supabase = await createClient()
+  const { data: before, error: beforeError } = await supabase
+    .from('products')
+    .select(PRODUCT_AUDIT_SELECT)
+    .eq('id', id)
+    .maybeSingle()
+  if (beforeError) return { error: beforeError.message }
   const { error } = await supabase
     .from('products')
     .update({ deleted_at: new Date().toISOString(), status: 'archived' })
     .eq('id', id)
   if (error) return { error: error.message }
+
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'deleted',
+    entityType: 'products',
+    entityId: id,
+    changes: { old: before ?? null, new: { id, status: 'archived', deleted: true } },
+  })
 
   revalidatePath('/admin/products')
   updateTag(CATALOGUE_TAG)
@@ -354,15 +425,23 @@ async function runBulkUpdateProductStatus(
   ids: string[],
   status: 'draft' | 'active' | 'paused' | 'archived',
 ): Promise<{ error?: string }> {
-  try {
-    await requireStaffSession()
-  } catch {
-    return { error: 'אין הרשאה' }
+  const session = await requireCatalogWriter()
+  if (!session) return { error: 'אין הרשאה' }
+  if (status === 'active' && !canSeeMoney(session.role)) {
+    return { error: 'רק מנהל יכול לפרסם מוצר או לשנות מחירים ועמלות' }
   }
 
   const supabase = await createClient()
   const { error } = await supabase.from('products').update({ status }).in('id', ids)
   if (error) return { error: error.message }
+
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'status_change',
+    entityType: 'products',
+    changes: { old: { ids }, new: { ids, status } },
+  })
 
   revalidatePath('/admin/products')
   updateTag(CATALOGUE_TAG)
@@ -373,11 +452,8 @@ async function runBulkAssignCategory(
   ids: string[],
   categoryId: string | null,
 ): Promise<{ error?: string }> {
-  try {
-    await requireStaffSession()
-  } catch {
-    return { error: 'אין הרשאה' }
-  }
+  const session = await requireCatalogWriter()
+  if (!session) return { error: 'אין הרשאה' }
   if (ids.length === 0) return { error: 'לא נבחרו מוצרים' }
   if (categoryId != null && !z.string().uuid().safeParse(categoryId).success) {
     return { error: 'קטגוריה לא תקינה' }
@@ -392,6 +468,13 @@ async function runBulkAssignCategory(
 
   revalidatePath('/admin/products')
   updateTag(CATALOGUE_TAG)
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'updated',
+    entityType: 'products',
+    changes: { old: { ids }, new: { ids, category_id: categoryId } },
+  })
   return {}
 }
 
@@ -418,10 +501,10 @@ async function runBulkAdjustPrices(
   ids: string[],
   input: BulkPriceInput,
 ): Promise<{ error?: string; updated?: number; skipped?: string[] }> {
-  try {
-    await requireStaffSession()
-  } catch {
-    return { error: 'אין הרשאה' }
+  const session = await requireCatalogWriter()
+  if (!session) return { error: 'אין הרשאה' }
+  if (!canSeeMoney(session.role)) {
+    return { error: 'רק מנהל יכול לפרסם מוצר או לשנות מחירים ועמלות' }
   }
   if (ids.length === 0) return { error: 'לא נבחרו מוצרים' }
 
@@ -466,15 +549,19 @@ async function runBulkAdjustPrices(
 
   revalidatePath('/admin/products')
   updateTag(CATALOGUE_TAG)
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'updated',
+    entityType: 'products',
+    changes: { old: { ids }, new: { ids, prices: parsed.data, updated, skipped } },
+  })
   return { updated, skipped }
 }
 
 async function runBulkSoftDeleteProducts(ids: string[]): Promise<{ error?: string }> {
-  try {
-    await requireStaffSession()
-  } catch {
-    return { error: 'אין הרשאה' }
-  }
+  const session = await requireCatalogWriter()
+  if (!session) return { error: 'אין הרשאה' }
   if (ids.length === 0) return { error: 'לא נבחרו מוצרים' }
 
   const supabase = await createClient()
@@ -484,17 +571,22 @@ async function runBulkSoftDeleteProducts(ids: string[]): Promise<{ error?: strin
     .in('id', ids)
   if (error) return { error: error.message }
 
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'deleted',
+    entityType: 'products',
+    changes: { old: { ids }, new: { ids, status: 'archived', deleted: true } },
+  })
+
   revalidatePath('/admin/products')
   updateTag(CATALOGUE_TAG)
   return {}
 }
 
 async function runDeleteVariant(id: string): Promise<{ error?: string }> {
-  try {
-    await requireStaffSession()
-  } catch {
-    return { error: 'אין הרשאה' }
-  }
+  const session = await requireCatalogWriter()
+  if (!session) return { error: 'אין הרשאה' }
 
   const supabase = await createClient()
   const { error } = await supabase
@@ -502,6 +594,15 @@ async function runDeleteVariant(id: string): Promise<{ error?: string }> {
     .update({ deleted_at: new Date().toISOString(), is_active: false })
     .eq('id', id)
   if (error) return { error: error.message }
+
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'deleted',
+    entityType: 'product_variants',
+    entityId: id,
+    changes: { old: { id }, new: { id, deleted: true } },
+  })
 
   return {}
 }

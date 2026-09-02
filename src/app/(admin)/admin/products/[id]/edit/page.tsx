@@ -1,4 +1,5 @@
 import ProductForm, { type SupplierOption } from '@/components/admin/ProductForm'
+import { canSeeMoney } from '@/lib/admin/permissions'
 import { requireSection } from '@/lib/admin/rbac'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
@@ -14,7 +15,7 @@ export default async function EditProductPage({ params }: Props) {
   const { id } = await params
   // Layer 3 of the four-layer guard: the panel layout gates entry, the section
   // matrix gates the section.
-  await requireSection('catalog', 'write')
+  const session = await requireSection('catalog', 'write')
 
   const supabase = await createClient()
   const admin = createAdminClient()
@@ -59,6 +60,7 @@ export default async function EditProductPage({ params }: Props) {
         variants={variants ?? []}
         categories={categories ?? []}
         suppliers={(suppliers ?? []) as SupplierOption[]}
+        hidePricing={!canSeeMoney(session.role)}
       />
     </div>
   )

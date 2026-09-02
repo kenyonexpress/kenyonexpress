@@ -1,6 +1,7 @@
 'use server'
 
-import { requireAdminSession } from '@/lib/admin/rbac'
+import { writeAuditLog } from '@/lib/admin/audit'
+import { requireSection } from '@/lib/admin/rbac'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { IMAGE_HOST_ERROR, isAllowedImageUrl } from '@/lib/images/remote-hosts'
 import { withActionContext } from '@/lib/observability/action-context'
@@ -27,15 +28,20 @@ const schema = z.object({
 
 export type CategoryFormState = { error: string } | { success: string } | null
 
+async function requireCatalogWriter() {
+  try {
+    return await requireSection('catalog', 'write')
+  } catch {
+    return null
+  }
+}
+
 async function runUpsertCategory(
   _: CategoryFormState,
   formData: FormData,
 ): Promise<CategoryFormState> {
-  try {
-    await requireAdminSession()
-  } catch {
-    return { error: 'אין הרשאה' }
-  }
+  const session = await requireCatalogWriter()
+  if (!session) return { error: 'אין הרשאה' }
 
   const parsed = schema.safeParse({
     id: formData.get('id') || undefined,
@@ -56,6 +62,13 @@ async function runUpsertCategory(
   } = await supabase.auth.getUser()
 
   const { id, ...fields } = parsed.data
+  const { data: before } = id
+    ? await supabase
+        .from('categories')
+        .select('id, slug, name_he, parent_id, is_active')
+        .eq('id', id)
+        .maybeSingle()
+    : { data: null }
 
   if (id) {
     const { error } = await supabase.from('categories').update(fields).eq('id', id)
@@ -65,17 +78,23 @@ async function runUpsertCategory(
     if (error) return { error: error.message }
   }
 
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: id ? 'updated' : 'created',
+    entityType: 'categories',
+    entityId: id,
+    changes: { old: before ?? null, new: { id: id ?? null, ...fields } },
+  })
+
   revalidatePath('/admin/categories')
   updateTag(CATALOGUE_TAG)
   return { success: id ? 'קטגוריה עודכנה' : 'קטגוריה נוצרה' }
 }
 
 async function runSoftDeleteCategory(id: string): Promise<{ error?: string }> {
-  try {
-    await requireAdminSession()
-  } catch {
-    return { error: 'אין הרשאה' }
-  }
+  const session = await requireCatalogWriter()
+  if (!session) return { error: 'אין הרשאה' }
 
   const supabase = await createClient()
   const { error } = await supabase
@@ -84,21 +103,36 @@ async function runSoftDeleteCategory(id: string): Promise<{ error?: string }> {
     .eq('id', id)
   if (error) return { error: error.message }
 
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'deleted',
+    entityType: 'categories',
+    entityId: id,
+    changes: { old: { id }, new: { id, deleted: true } },
+  })
+
   revalidatePath('/admin/categories')
   updateTag(CATALOGUE_TAG)
   return {}
 }
 
 async function runDeleteCategory(id: string): Promise<{ error?: string }> {
-  try {
-    await requireAdminSession()
-  } catch {
-    return { error: 'אין הרשאה' }
-  }
+  const session = await requireCatalogWriter()
+  if (!session) return { error: 'אין הרשאה' }
 
   const supabase = await createClient()
   const { error } = await supabase.from('categories').delete().eq('id', id)
   if (error) return { error: error.message }
+
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'deleted',
+    entityType: 'categories',
+    entityId: id,
+    changes: { old: { id }, new: null },
+  })
 
   revalidatePath('/admin/categories')
   updateTag(CATALOGUE_TAG)
@@ -109,15 +143,21 @@ async function runUpdateCategorySortOrder(
   id: string,
   sort_order: number,
 ): Promise<{ error?: string }> {
-  try {
-    await requireAdminSession()
-  } catch {
-    return { error: 'אין הרשאה' }
-  }
+  const session = await requireCatalogWriter()
+  if (!session) return { error: 'אין הרשאה' }
 
   const supabase = await createClient()
   const { error } = await supabase.from('categories').update({ sort_order }).eq('id', id)
   if (error) return { error: error.message }
+
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'updated',
+    entityType: 'categories',
+    entityId: id,
+    changes: { old: { id }, new: { id, sort_order } },
+  })
 
   revalidatePath('/admin/categories')
   updateTag(CATALOGUE_TAG)

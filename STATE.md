@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-02 12:10 UTC (‏MEGA BLOCK 6-ALT נמדד: type-check/test/build ירוקים, Lighthouse מעל 95; אין push ישיר ל-main מסוכן ענן, רק PR)
 Updated: 2026-09-01 12:20 UTC (‏אין כותב ל-escrow_held בשום מקום; ‏144/144 מעברים מול הטריגרים החיים; קיפאון ה-380/768 נמצא ותוקן; ‏payment_events היה טבלה ריקה בלי אף כותב)
 Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשישה כבר היו, ושני באגים אמיתיים נמצאו בדרך)
 קודם: 2026-09-01 03:02 UTC (‏שער הפיקסלים חצה את התקרה: ‏11.06% מול 11%, וזה לא שינוי שלנו)
@@ -67,7 +68,85 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 קודם: 2026-08-19 22:01 (הצ'ק-אאוט ירד מתחת לשער הפיקסלים, ו-CLS שלו תוקן)
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
-## המשך מ: ‏PRIORITY TWO — ‏refunds בשני המסלולים, ומירוץ מימוש הקופון
+## המשך מ: 7
+
+**MEGA BLOCK 6-ALT הסתיים (storefront + admin + observability).** דף ספק ציבורי ב-
+`/s/[id]`,
+מוכן ב-
+`/api/ready`,
+דגלי מערכת לקריאה בלבד, איתור שובר ומימוש ידני, ביקורת על מוצרים וקטגוריות והחזרים, עורך תוכן בלי מחירי עמלה. לוג JSON עם מזהה בקשה דרך Next (אין Hono). Sentry על Node (כולל cron), Edge, והדפדפן.
+
+### 2026-09-02 MEGA BLOCK 6-ALT: נמדד
+
+שערים (מקומי, אחרי השינוי, לפני ה-commit):
+
+| פקודה | תוצאה |
+| --- | --- |
+| `pnpm type-check` | ירוק |
+| `pnpm lint` | ירוק (`biome check .`) |
+| `pnpm test` | 261 קבצים, 3493 טסטים, כולם עברו |
+| `pnpm build` | ירוק, 213 דפים סטטיים. נתיבים חדשים: `/s/[id]`, `/api/ready`, `/admin/feature-flags`, `/admin/coupons/lookup`, `/account/my-vouchers`, `/checkout/confirmation` |
+
+Lighthouse desktop (preset desktop): כל הציון מעל 95.
+
+| יעד | Perf | A11y | BP | SEO |
+| --- | --- | --- | --- | --- |
+| מקומי `/` | 99 | 96 | 96 | 100 |
+| מקומי `/product/צימר-שוויץ-בצפון` | 99 | 100 | 96 | 100 |
+| פרוד `/` | 99 | 96 | 100 | 100 |
+| פרוד אותו מוצר | 100 | 100 | 100 | 100 |
+
+HTTP מול `localhost:3311` אחרי
+`pnpm start`:
+
+- 200 עם נתונים: `/`, `/category/hot-deals`, `/search?q=מוצר`, `/product/צימר-שוויץ-בצפון`, `/s/ce85543d-e102-4ff1-b6dc-06799ca9d5a0`, `/cart`, `/checkout`.
+- 307 להתחברות (שער סשן קיים, לא באג): `/checkout/confirmation` וכל `/account/*`. אישור הזמנה יורש את שער `/checkout/`. אין להוסיף אותו ל-
+`PAYMENT_FRAME_PATHS`.
+- 503 מקומי על `/api/health` ו-`/api/ready`: מפתח השירות בדמו. בפרוד `/api/health` הוא 200. `/api/ready` בפרוד היה 404 לפני הפריסה של הבלוק הזה.
+
+### החלטות שהתקבלו לבד
+
+- לוגים עוברים ב-Next, לא ב-Hono. אין תהליך Hono בריפו.
+- מפתח
+`redis`
+ב-JSON של המוכן הוא המגביל (Postgres RPC, ו-Upstash אם מוגדר), לא מוצר Redis.
+- סוכן ענן לא דוחף ל-
+`main`.
+הנתיב הוא PR אל
+`main`.
+- שלושת אחוזי המוצר הדינמיים: `platform_percent`, `supplier_split_percent`, `discount_percent`.
+- עורך תוכן לא שולח מחיר/עמלה/סטטוס ב-edit. סטטוס נעול ב-UI כדי שלא יוריד מוצר חי ל-draft.
+
+### Last Completed
+
+MEGA BLOCK 6-ALT. קבצים עיקריים:
+`src/lib/supplier-storefront.ts`,
+`src/app/(store)/s/[id]/page.tsx`,
+`src/app/api/ready/route.ts`,
+`src/lib/health/ready.ts`,
+`src/server/actions/admin/vouchers.ts`,
+`src/lib/admin/feature-flags.ts`,
+`docs/RUNBOOK.md`.
+
+### In Progress
+
+nothing (בלוק 6-ALT סגור)
+
+### Blocking Issues
+
+none ל-6-ALT. DNS נשאר ידני. אין מתזמן חיצוני לעשרת ה-cron (חוסם ישן מ-01.09).
+
+### Next Task
+
+7 (התור הבא ב-
+`NEXT-GOALS.md`
+או מה שייכתב כאן אחרי מיזוג).
+
+### Working Directory
+
+`/Users/ofir/kenyonexpress-web/kenyonexpress`
+
+## המשך מ: PRIORITY TWO. refunds בשני המסלולים, ומירוץ מימוש הקופון
 
 ### ‏01.09 גל החוסן (`feat/resilience`, מוזג ל-main)
 

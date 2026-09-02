@@ -1,5 +1,6 @@
 'use server'
 
+import { writeAuditLog } from '@/lib/admin/audit'
 import { requireSection } from '@/lib/admin/rbac'
 import { normalizeDiscountCode } from '@/lib/growth/discount'
 import { withActionContext } from '@/lib/observability/action-context'
@@ -150,6 +151,18 @@ async function runSaveDiscountCampaign(
     return { ok: false, error: `שמירה נכשלה: ${error.message}` }
   }
 
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: v.id ? 'updated' : 'created',
+    entityType: 'discount_campaigns',
+    entityId: v.id,
+    changes: {
+      old: null,
+      new: { id: v.id ?? null, code: row.code, kind: row.kind, is_active: row.is_active },
+    },
+  })
+
   revalidatePath('/admin/discounts')
   return { ok: true }
 }
@@ -161,15 +174,30 @@ async function runSaveDiscountCampaign(
  * order was cheaper than its lines.
  */
 async function runArchiveDiscountCampaign(id: string): Promise<DiscountActionState> {
-  await requireSection('discounts', 'write')
+  const session = await requireSection('discounts', 'write')
   const admin = createAdminClient()
+  const { data: before, error: beforeError } = await admin
+    .from('discount_campaigns')
+    .select('id, code, is_active, deleted_at')
+    .eq('id', id)
+    .maybeSingle()
+  if (beforeError) return { ok: false, error: `ארכוב נכשל: ${beforeError.message}` }
 
+  const deletedAt = new Date().toISOString()
   const { error } = await admin
     .from('discount_campaigns')
-    .update({ deleted_at: new Date().toISOString(), is_active: false })
+    .update({ deleted_at: deletedAt, is_active: false })
     .eq('id', id)
 
   if (error) return { ok: false, error: `ארכוב נכשל: ${error.message}` }
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'deleted',
+    entityType: 'discount_campaigns',
+    entityId: id,
+    changes: { old: before ?? null, new: { id, is_active: false, deleted_at: deletedAt } },
+  })
   revalidatePath('/admin/discounts')
   return { ok: true }
 }
@@ -185,8 +213,14 @@ async function runSetDiscountCampaignActive(
   id: string,
   isActive: boolean,
 ): Promise<DiscountActionState> {
-  await requireSection('discounts', 'write')
+  const session = await requireSection('discounts', 'write')
   const admin = createAdminClient()
+  const { data: before, error: beforeError } = await admin
+    .from('discount_campaigns')
+    .select('id, code, is_active')
+    .eq('id', id)
+    .maybeSingle()
+  if (beforeError) return { ok: false, error: `עדכון נכשל: ${beforeError.message}` }
 
   const { error } = await admin
     .from('discount_campaigns')
@@ -194,6 +228,14 @@ async function runSetDiscountCampaignActive(
     .eq('id', id)
   if (error) return { ok: false, error: `עדכון נכשל: ${error.message}` }
 
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'status_change',
+    entityType: 'discount_campaigns',
+    entityId: id,
+    changes: { old: before ?? null, new: { id, is_active: isActive } },
+  })
   revalidatePath('/admin/discounts')
   return { ok: true }
 }

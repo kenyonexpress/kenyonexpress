@@ -34,12 +34,13 @@ export type ProductRow = {
 interface Props {
   products: ProductRow[]
   categories: { id: string; name_he: string }[]
+  hidePricing?: boolean
 }
 
 const bulkBtn =
   'rounded-lg px-3 py-1.5 text-xs font-medium border border-black/10 transition-colors disabled:opacity-50'
 
-export default function ProductsTable({ products, categories }: Props) {
+export default function ProductsTable({ products, categories, hidePricing = false }: Props) {
   const router = useRouter()
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [busy, setBusy] = useState(false)
@@ -110,7 +111,7 @@ export default function ProductsTable({ products, categories }: Props) {
     }
   }
 
-  const columns: DataTableColumn<ProductRow>[] = [
+  const allColumns: DataTableColumn<ProductRow>[] = [
     {
       id: 'select',
       header: '',
@@ -206,6 +207,9 @@ export default function ProductsTable({ products, categories }: Props) {
       ),
     },
   ]
+  const columns = hidePricing
+    ? allColumns.filter((col) => col.id !== 'price' && col.id !== 'platform_percent')
+    : allColumns
 
   return (
     <div className="space-y-3">
@@ -228,16 +232,18 @@ export default function ProductsTable({ products, categories }: Props) {
       {selected.size > 0 && (
         <div className="flex flex-wrap items-center gap-2 rounded-xl border border-black/10 bg-warning-surface px-3 py-2">
           {/* Publish / hide / archive */}
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() =>
-              void runBulk(() => bulkUpdateProductStatus(ids, 'active'), 'המוצרים פורסמו')
-            }
-            className={`${bulkBtn} bg-green-100 text-green-800 hover:bg-green-200`}
-          >
-            פרסום
-          </button>
+          {!hidePricing && (
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() =>
+                void runBulk(() => bulkUpdateProductStatus(ids, 'active'), 'המוצרים פורסמו')
+              }
+              className={`${bulkBtn} bg-green-100 text-green-800 hover:bg-green-200`}
+            >
+              פרסום
+            </button>
+          )}
           <button
             type="button"
             disabled={busy}
@@ -280,34 +286,38 @@ export default function ProductsTable({ products, categories }: Props) {
           </button>
 
           {/* Price adjustment */}
-          <span className="mx-1 h-5 w-px bg-black/10" aria-hidden />
-          <select
-            value={priceMode}
-            onChange={(e) => setPriceMode(e.target.value as 'percent' | 'set')}
-            aria-label="סוג עדכון מחיר"
-            className="rounded-lg border border-black/10 bg-white px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
-          >
-            <option value="percent">שינוי באחוזים</option>
-            <option value="set">קביעת מחיר (₪)</option>
-          </select>
-          <input
-            type="number"
-            step="0.01"
-            value={priceValue}
-            onChange={(e) => setPriceValue(e.target.value)}
-            placeholder={priceMode === 'percent' ? 'למשל: -10' : 'למשל: 99.90'}
-            aria-label="ערך עדכון מחיר"
-            dir="ltr"
-            className="w-28 rounded-lg border border-black/10 bg-white px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
-          />
-          <button
-            type="button"
-            disabled={busy || !priceValue}
-            onClick={() => void applyPrices()}
-            className={`${bulkBtn} bg-purple-100 text-purple-800 hover:bg-purple-200`}
-          >
-            עדכון מחירים
-          </button>
+          {!hidePricing && (
+            <>
+              <span className="mx-1 h-5 w-px bg-black/10" aria-hidden />
+              <select
+                value={priceMode}
+                onChange={(e) => setPriceMode(e.target.value as 'percent' | 'set')}
+                aria-label="סוג עדכון מחיר"
+                className="rounded-lg border border-black/10 bg-white px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
+              >
+                <option value="percent">שינוי באחוזים</option>
+                <option value="set">קביעת מחיר (₪)</option>
+              </select>
+              <input
+                type="number"
+                step="0.01"
+                value={priceValue}
+                onChange={(e) => setPriceValue(e.target.value)}
+                placeholder={priceMode === 'percent' ? 'למשל: -10' : 'למשל: 99.90'}
+                aria-label="ערך עדכון מחיר"
+                dir="ltr"
+                className="w-28 rounded-lg border border-black/10 bg-white px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+              <button
+                type="button"
+                disabled={busy || !priceValue}
+                onClick={() => void applyPrices()}
+                className={`${bulkBtn} bg-purple-100 text-purple-800 hover:bg-purple-200`}
+              >
+                עדכון מחירים
+              </button>
+            </>
+          )}
 
           {/* Soft delete */}
           <span className="mx-1 h-5 w-px bg-black/10" aria-hidden />

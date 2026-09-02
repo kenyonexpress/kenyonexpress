@@ -12,9 +12,11 @@ import {
   CreditCard,
   FileSpreadsheet,
   FileText,
+  Flag,
   LayoutDashboard,
   Package,
   Plus,
+  ScanLine,
   Search,
   Share2,
   ShoppingCart,
@@ -51,6 +53,7 @@ const NAV_ITEMS: NavItem[] = [
   },
   { href: '/admin/categories', label: 'קטגוריות', icon: Tag, section: 'catalog' },
   { href: '/admin/coupons', label: 'קופונים ודילים', icon: FileText, section: 'catalog' },
+  { href: '/admin/coupons/lookup', label: 'איתור שובר', icon: ScanLine, section: 'catalog' },
   { href: '/admin/approvals', label: 'תור אישורים', icon: BadgeCheck, section: 'catalog' },
   { href: '/admin/orders', label: 'הזמנות', icon: ShoppingCart, section: 'orders' },
   { href: '/admin/users', label: 'משתמשים', icon: Users, section: 'users' },
@@ -74,6 +77,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/analytics', label: 'אנליטיקה', icon: BarChart3, section: 'analytics' },
   { href: '/admin/search', label: 'חיפוש', icon: Search, section: 'analytics' },
   { href: '/admin/queues', label: 'תורים תקועים', icon: AlertTriangle, section: 'analytics' },
+  { href: '/admin/feature-flags', label: 'דגלי מערכת', icon: Flag, section: 'analytics' },
   { href: '/admin/audit-log', label: 'לוג פעילות', icon: ClipboardList, section: 'audit-log' },
 ]
 
