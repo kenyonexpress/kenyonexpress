@@ -22,14 +22,14 @@ https://kenyonexpress.vercel.app/          200
 
 | # | פריט | זמן | חוסם מה |
 |---|---|---|---|
-| ‏1 | ‏עשרת ה-cron ב-cron-job.org | ‏20 דקות | שוברים לא נשלחים ללקוחות |
+| ‏1 | ‏עשרת ה-cron ב-cron-job.org (אופציונלי — המתזמן ב-GitHub Actions כבר חי מ-02.09; אם תפעיל אותו, כבה קודם את CRON_SCHEDULER_ENABLED) | ‏20 דקות | שוברים לא נשלחים ללקוחות |
 | ‏2 | מסוף Cardcom לייצור | שיחת טלפון + ‏10 דקות | אי אפשר לגבות שקל |
 | ‏3 | ניתוק ה-DNS | ‏30 דקות + המתנה | האתר האמיתי לא באוויר |
 | ‏4 | מיזוג ‏PR #6 | ‏2 דקות | ‏`main` מתאר מוצר שלא קיים |
 
 ---
 
-## ‏1. עשרת ה-cron ב-cron-job.org
+## ‏1. עשרת ה-cron ב-cron-job.org (אופציונלי — המתזמן ב-GitHub Actions כבר חי מ-02.09; אם תפעיל אותו, כבה קודם את CRON_SCHEDULER_ENABLED)
 
 ‏**זה הפריט הכי דחוף ברשימה.** כרגע **שום דבר לא מתוזמן**: המסלולים פרוסים
 ומאובטחים, ואף אחד לא קורא להם. ‏`notifications` הוא **המסלול היחיד** שדרכו לקוח
@@ -60,7 +60,7 @@ openssl rand -hex 32
 
 ### ‏1.2 עשר השורות
 
-‏**Chrome > <https://cron-job.org> > הרשמה (חינם, בלי כרטיס אשראי)**
+‏**Chrome > <https://cron-job.org (אופציונלי — המתזמן ב-GitHub Actions כבר חי מ-02.09; אם תפעיל אותו, כבה קודם את CRON_SCHEDULER_ENABLED)> > הרשמה (חינם, בלי כרטיס אשראי)**
 
 לכל אחת מעשר השורות: **Create cronjob**, ואז מלא לפי השורה.
 
@@ -113,10 +113,10 @@ curl -s -o /dev/null -w '%{http_code}\n' \
 
 ‏אם הראשון מחזיר משהו שאינו ‏401, **עצור**: המסלול לא מאובטח באותו דיפלוימנט.
 
-‏אם השני מחזיר ‏401, הערך ב-cron-job.org והערך ב-Vercel שונים. **זאת הדרך הכי
+‏אם השני מחזיר ‏401, הערך ב-cron-job.org (אופציונלי — המתזמן ב-GitHub Actions כבר חי מ-02.09; אם תפעיל אותו, כבה קודם את CRON_SCHEDULER_ENABLED) והערך ב-Vercel שונים. **זאת הדרך הכי
 נפוצה שההגדרה הזאת נכשלת**, כי שני הצדדים נראים נכונים כשמסתכלים על כל אחד לחוד.
 
-‏אחרי חמש דקות, ההיסטוריה של `notifications` ב-cron-job.org צריכה להראות ‏200.
+‏אחרי חמש דקות, ההיסטוריה של `notifications` ב-cron-job.org (אופציונלי — המתזמן ב-GitHub Actions כבר חי מ-02.09; אם תפעיל אותו, כבה קודם את CRON_SCHEDULER_ENABLED) צריכה להראות ‏200.
 
 ---
 
@@ -364,7 +364,7 @@ curl -s https://kenyonexpress.co.il/ | grep -c wp-content     # מצפים ל-0
 
 ### ‏3.6 אחרי שהדומיין זז
 
-‏1. ‏**‏cron-job.org**: עדכן את כל עשרת ה-URL מ-`kenyonexpress.vercel.app`
+‏1. ‏**‏cron-job.org (אופציונלי — המתזמן ב-GitHub Actions כבר חי מ-02.09; אם תפעיל אותו, כבה קודם את CRON_SCHEDULER_ENABLED)**: עדכן את כל עשרת ה-URL מ-`kenyonexpress.vercel.app`
    ל-`kenyonexpress.co.il`. כתובת ה-vercel.app ממשיכה לעבוד, אבל ה-apex הוא
    המקור הקנוני ואליו מכוונים ה-redirects, ה-sitemap וה-cookies.
 ‏2. ‏**Google Search Console**: הוסף את ה-property והגש את `sitemap.xml`.

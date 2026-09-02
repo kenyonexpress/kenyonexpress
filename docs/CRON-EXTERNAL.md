@@ -1,5 +1,14 @@
 # Scheduled jobs, run from outside Vercel
 
+> **STATUS 2026-09-02: THE ACTIONS SCHEDULER IS LIVE.** `CRON_SECRET` and
+> `CRON_SCHEDULER_ENABLED=true` are set on the repository
+> (`scripts/set-github-secrets.sh`, run against a Vercel production env pull),
+> and a dispatched `health` run completed green against production. All ten
+> schedules now fire from `.github/workflows/cron.yml` on main. cron-job.org is
+> therefore OPTIONAL, not required; if it is ever set up, flip
+> `CRON_SCHEDULER_ENABLED` off first -- two schedulers call every job twice.
+> `scripts/setup-cron-jobs.mjs` remains ready for that day.
+
 Ten jobs. All ten are `GET`, all ten authenticate with the same header, and all
 ten are wired to be run by a scheduler that is not Vercel.
 

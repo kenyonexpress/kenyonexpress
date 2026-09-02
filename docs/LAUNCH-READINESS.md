@@ -415,9 +415,15 @@ tables/functions -> 152).
 The six from this closeout (147-152) each carry a rolled-back dry run against
 production in their headers. None is applied. 122-146: see APPLY-ORDER.md.
 
-### Still manual for Ofir (unchanged)
+### No longer manual: the cron scheduler
+
+Armed and verified 2026-09-02: repository secret + master-switch variable set,
+one dispatched health run green against production. The ten jobs now run from
+GitHub Actions (best-effort timing; see cron.yml's own header).
+
+### Still manual for Ofir
 
 Cardcom prod terminal + removing CARDCOM_USE_MOCK (**the blocker** -- checkout
-is live against the mock), cron-job.org key + CRON_SECRET (script ready), DNS
+is live against the mock), DNS
 cutover (the editable zone is NOT the serving zone), merging the release PR,
 the 14 wrong product slugs, and the 768/380 mobile layout project.
