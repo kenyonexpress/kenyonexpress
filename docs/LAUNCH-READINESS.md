@@ -493,3 +493,15 @@ the 14 wrong product slugs, and the 768/380 mobile layout project.
 | 35 | נדחה — ‏568 שורות audit אינן צריכות פרטישן; האינדקסים המוכחים נוספו ב-156 |
 | 36 | **נמדד** — ‏browse ירוק ב-40VU (בית p95 691ms, ‏0% כשלים), נקודת קריסה מקומית ~68VU תועדה, חיפוש 979ms על ‏ILIKE fallback; תרחישי כתיבה לא רצים בהעדר staging (guard חוסם פרודקשן) |
 | 37 | לולאה ×3, תג ‏v1.7.0-rc1-block5 |
+
+## נספח מתוארך: מגה-בלוק 6 (‏STEPS 38–42), נמדד 02.09.2026
+
+לולאת הביקורת ירוקה ×3.
+
+| STEP | מה קרה |
+| --- | --- |
+| 38 | ‏DR-RUNBOOK.md (שחזור מגיבוי Supabase, ‏RTO<2h/RPO 24h); ‏tar יומי רץ (‏770MB, 3 נשמרים); ‏backup-verify ב-API נדחה (אין token) |
+| 39 | **‏monitor חי**: ‏Sentry Uptime על ‏/api/health (‏60s, ‏id 2159284, דרך MCP); ‏ops/sentry-alerts.json — ‏live מול desired |
+| 40 | **נבנה** — ‏weekly-digest, ה-job ה-12 (שישי בוקר, ‏Resend ישיר למפעיל) |
+| 41 | נסגר בסריקה — הקונסולה קיימת (‏payments/queues/status); ledger פרסיסטנטי נדחה עד שיש עסקאות אמת |
+| 42 | לולאה ×3, תג ‏v1.8.0-rc1-block6 |

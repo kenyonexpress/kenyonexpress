@@ -285,3 +285,15 @@ Management API נדחה: אין token, ו-nightly-health + ‏tar יומי (רץ
 נוספים אי אפשר ליצור מכאן (הקטלוג חושף find/get בלבד ואין SENTRY_AUTH_TOKEN)
 — ‏ops/sentry-alerts.json מתעד live (הקיים + החדש) מול desired, עם ההערה
 שנתיב ה-pager האמיתי הוא ntfy הישיר של alert.ts.
+
+## STEP 41 — קונסולת אירועים: סגור בסריקה (02.09)
+
+הקונסולה קיימת כשלושה מסכים ממוקדים: ‏/admin/payments עם ‏ReconcileClient
+(הרצת התאמה מול המסוף + טיפול בפערים), ‏/admin/queues (שורות dead עם
+Retry, כולל DLQ של החיפוש), ‏/admin/status (בריאות תלויות). פערי התאמה
+מחושבים מחדש בכל ריצה מ-terminal-reconciliation.ts ומתריעים דרך
+‏reconciliation_gap — אין state שהולך לאיבוד בהיעדר טבלה.
+
+**נדחה/נדחה-לעתיד:** טבלת `payment_discrepancies` פרסיסטנטית עם notes
+ו-resolve. עם אפס עסקאות אמת (מסוף mock) אין עדיין פער אחד לתעד; שכבת
+מעקב-טיפול נכנסת כשיש היסטוריה לטפל בה. נרשם כהרחבה עתידית, לא כחוב.
