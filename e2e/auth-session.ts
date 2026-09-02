@@ -18,6 +18,9 @@ export const E2E_SUPPLIER_PASSWORD = process.env.E2E_SUPPLIER_PASSWORD ?? 'E2eSu
 
 /** Fixture product from scripts/seed-test-data.mjs */
 export const E2E_COUPON_SLUG = 'e2e-test-coupon'
+export const E2E_PHYSICAL_SLUG = 'e2e-test-physical'
+export const E2E_ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL ?? 'e2e-admin@test.kenyonexpress.local'
+export const E2E_ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD ?? 'E2eAdmin!pass1'
 
 /**
  * True when the paid-flow suite should run. Locally and in CI the defaults

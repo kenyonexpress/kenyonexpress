@@ -5,8 +5,13 @@ import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
 import SearchBox from '@/components/search/SearchBox'
-import { type ProductTypeFilter, getAllCategories, parseProductType } from '@/lib/category-page'
-import { searchProductsCached } from '@/lib/search-server'
+import {
+  type ProductTypeFilter,
+  getActiveFilterSuppliers,
+  getAllCategories,
+  parseProductType,
+} from '@/lib/category-page'
+import { type SearchFacets, searchProductsCached } from '@/lib/search-server'
 import { recordRecentSearch, recordSearchTerm } from '@/lib/search/record'
 import { createClient } from '@/lib/supabase/server'
 import type { Metadata } from 'next'
@@ -34,8 +39,16 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 }
 
 /** Count and grid share one search call via searchProductsCached. */
-async function ResultCount({ q, productType }: { q: string; productType?: ProductTypeFilter }) {
-  const { total, engine } = await searchProductsCached(q, 48, productType)
+async function ResultCount({
+  q,
+  productType,
+  facets,
+}: {
+  q: string
+  productType?: ProductTypeFilter
+  facets?: SearchFacets
+}) {
+  const { total, engine } = await searchProductsCached(q, 48, productType, facets)
 
   // Recorded HERE, on the results page, and never in the type-ahead route: the
   // suggest endpoint fires on every keystroke, so recording there would fill
@@ -57,8 +70,16 @@ async function ResultCount({ q, productType }: { q: string; productType?: Produc
   )
 }
 
-async function ResultGrid({ q, productType }: { q: string; productType?: ProductTypeFilter }) {
-  const { results } = await searchProductsCached(q, 48, productType)
+async function ResultGrid({
+  q,
+  productType,
+  facets,
+}: {
+  q: string
+  productType?: ProductTypeFilter
+  facets?: SearchFacets
+}) {
+  const { results } = await searchProductsCached(q, 48, productType, facets)
 
   if (results.length === 0) {
     return (
@@ -182,9 +203,20 @@ async function SearchPageBody({ searchParams }: Props) {
   const sp = await searchParams
   const q = firstStr(sp.q).trim()
   const productType = parseProductType(sp.type)
+  const priceMin = firstStr(sp.min)
+  const priceMax = firstStr(sp.max)
+  const facets: SearchFacets = {
+    supplierId: firstStr(sp.supplier) || undefined,
+    discountOnly: firstStr(sp.discount) === '1',
+    priceMin: priceMin && Number.isFinite(Number(priceMin)) ? Number(priceMin) : undefined,
+    priceMax: priceMax && Number.isFinite(Number(priceMax)) ? Number(priceMax) : undefined,
+  }
 
   // Shell only. The search itself streams in behind the boundaries below.
-  const allCategories = await getAllCategories()
+  const [allCategories, suppliers] = await Promise.all([
+    getAllCategories(),
+    getActiveFilterSuppliers(),
+  ])
 
   return (
     <div className="category-page">
@@ -206,7 +238,7 @@ async function SearchPageBody({ searchParams }: Props) {
                 <div className="category-page__count category-page__count--pending" aria-hidden />
               }
             >
-              <ResultCount q={q} productType={productType} />
+              <ResultCount q={q} productType={productType} facets={facets} />
             </Suspense>
           )}
         </header>
@@ -223,16 +255,19 @@ async function SearchPageBody({ searchParams }: Props) {
               </div>
             ) : (
               <Suspense fallback={<CategoryGridSkeleton count={SEARCH_SKELETON_CARDS} />}>
-                <ResultGrid q={q} productType={productType} />
+                <ResultGrid q={q} productType={productType} facets={facets} />
               </Suspense>
             )}
           </div>
 
           <CategoryFilterSidebar
             categories={allCategories}
-            priceMin={undefined}
-            priceMax={undefined}
+            priceMin={facets.priceMin}
+            priceMax={facets.priceMax}
             productType={productType}
+            suppliers={suppliers}
+            currentSupplierId={facets.supplierId}
+            discountOnly={facets.discountOnly}
           />
         </div>
       </div>

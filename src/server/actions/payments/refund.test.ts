@@ -66,6 +66,10 @@ const adminClient = {
     update: (payload: unknown) => builder(table, 'update', payload),
     upsert: (payload: unknown) => builder(table, 'upsert', payload),
   }),
+  rpc: (fn: string, args?: unknown) => {
+    calls.push({ table: 'rpc', op: fn, payload: args, chain: [] })
+    return Promise.resolve(settle(`rpc.${fn}`))
+  },
 }
 
 const requireAdminSession = vi.fn()
@@ -81,7 +85,7 @@ vi.mock('@/lib/observability/sentry', () => ({
   capturePaymentError: (...args: unknown[]) => capturePaymentError(...args),
 }))
 
-import { refundOrder } from './refund'
+import { refundOrder, refundOrderToWallet } from './refund'
 
 /** The pre-059 hosted project: `amount_agorot` does not exist. */
 const NO_AGOROT_COLUMN: Result = { data: null, error: { code: '42703', message: 'no such column' } }
@@ -102,7 +106,10 @@ function paymentLookup(): Call {
 }
 
 function seedHappyPath(overrides: { succeededAt?: string | null; items?: unknown[] } = {}): void {
-  queue('orders.select', { data: { id: 'order-1', status: 'paid' }, error: null })
+  queue('orders.select', {
+    data: { id: 'order-1', status: 'paid', user_id: 'user-1' },
+    error: null,
+  })
   queue('payments.select', NO_AGOROT_COLUMN, {
     data: {
       id: 'pay-1',
@@ -165,7 +172,10 @@ describe('refundOrder: the columns this database actually has', () => {
   })
 
   it('reads the agorot column on a database that has been through 059', async () => {
-    queue('orders.select', { data: { id: 'order-1', status: 'paid' }, error: null })
+    queue('orders.select', {
+      data: { id: 'order-1', status: 'paid', user_id: 'user-1' },
+      error: null,
+    })
     queue('payments.select', HAS_AGOROT_COLUMN, {
       data: {
         id: 'pay-1',
@@ -302,7 +312,10 @@ describe('refundOrder: supplier debits', () => {
 
 describe('refundOrder: refusals', () => {
   it('answers MANUAL_RESOLUTION on a redeemed voucher, in Hebrew', async () => {
-    queue('orders.select', { data: { id: 'order-1', status: 'paid' }, error: null })
+    queue('orders.select', {
+      data: { id: 'order-1', status: 'paid', user_id: 'user-1' },
+      error: null,
+    })
     queue('payments.select', NO_AGOROT_COLUMN, {
       data: {
         id: 'pay-1',
@@ -402,5 +415,70 @@ describe('refundOrder: refusals', () => {
     const result = await refundOrder({ orderId: 'order-1', reason: 'test' })
     expect(result).toMatchObject({ ok: false, code: 'FORBIDDEN' })
     expect(calls).toHaveLength(0)
+  })
+})
+
+describe('refundOrderToWallet: pending then wallet_credited then ledger', () => {
+  it('credits the customer wallet and never calls Cardcom', async () => {
+    seedHappyPath()
+    queue('wallet_accounts.select', { data: { id: 'acct-user' }, error: null })
+    queue('wallet_accounts.select', { data: { id: 'acct-rev' }, error: null })
+    queue('rpc.fn_wallet_transfer', { data: true, error: null })
+
+    const result = await refundOrderToWallet({ orderId: 'order-1', reason: 'test' })
+
+    expect(result).toMatchObject({ ok: true, cancelOnly: false, refundedIls: 95 })
+    expect(refundByTransactionId).not.toHaveBeenCalled()
+
+    const transfer = find('rpc', 'fn_wallet_transfer')?.payload as Record<string, unknown>
+    expect(transfer).toMatchObject({
+      p_debit_account: 'acct-rev',
+      p_credit_account: 'acct-user',
+      p_reason: 'order_refund',
+      p_idempotency: 'order:order-1:wallet_refund',
+      p_order_id: 'order-1',
+    })
+
+    const insert = find('payments', 'insert')?.payload as Record<string, unknown>
+    expect(insert.idempotency_key).toBe('wallet_refund:pay-1')
+    expect(insert.kind).toBe('refund')
+
+    const events = calls.filter((c) => c.table === 'payment_events' && c.op === 'insert')
+    const types = events.map((c) => (c.payload as { event_type: string }).event_type)
+    expect(types).toContain('refund_requested')
+    expect(types).toContain('wallet_credited')
+    expect(types.indexOf('refund_requested')).toBeLessThan(types.indexOf('wallet_credited'))
+  })
+
+  it('refuses a guest order with no user', async () => {
+    queue('orders.select', { data: { id: 'order-1', status: 'paid', user_id: null }, error: null })
+    queue('payments.select', NO_AGOROT_COLUMN, {
+      data: {
+        id: 'pay-1',
+        amount_ils: 100,
+        cardcom_transaction_id: 'tx-9',
+        status: 'succeeded',
+        cardcom_account_id: 'acct-1',
+        succeeded_at: null,
+      },
+      error: null,
+    })
+    queue('order_items.select', {
+      data: [
+        {
+          id: 'line-1',
+          product_type: 'physical',
+          settlement_status: 'paid',
+          supplier_id: 'sup-1',
+          supplier_immediate_agorot: 0,
+        },
+      ],
+      error: null,
+    })
+    queue('vouchers.select', { data: [], error: null })
+
+    const result = await refundOrderToWallet({ orderId: 'order-1', reason: 'test' })
+    expect(result).toMatchObject({ ok: false, code: 'STATE_INVALID' })
+    expect(find('rpc', 'fn_wallet_transfer')).toBeUndefined()
   })
 })

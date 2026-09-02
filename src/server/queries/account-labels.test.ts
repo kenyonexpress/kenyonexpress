@@ -13,20 +13,28 @@ import { WALLET_REASON_LABELS, walletReasonLabel } from './account'
  * This reads the actual source rather than restating the codes, so adding a new
  * p_reason without a Hebrew label fails the suite.
  */
-function reasonCodesEmittedByFinalize(): string[] {
-  const source = readFileSync(resolve(process.cwd(), 'src/server/payments/finalize.ts'), 'utf8')
-  const codes = [...source.matchAll(/p_reason:\s*'([^']+)'/g)].map((m) => m[1])
-  return [...new Set(codes.filter((c): c is string => typeof c === 'string'))]
+function reasonCodesEmittedByMoneyPath(): string[] {
+  const files = [
+    resolve(process.cwd(), 'src/server/payments/finalize.ts'),
+    resolve(process.cwd(), 'src/server/actions/payments/refund.ts'),
+  ]
+  const codes: string[] = []
+  for (const file of files) {
+    const source = readFileSync(file, 'utf8')
+    codes.push(...[...source.matchAll(/p_reason:\s*'([^']+)'/g)].map((m) => m[1] as string))
+  }
+  return [...new Set(codes)]
 }
 
 describe('wallet reason labels', () => {
-  it('finds the reason codes in finalize.ts', () => {
-    const codes = reasonCodesEmittedByFinalize()
+  it('finds the reason codes in the money path', () => {
+    const codes = reasonCodesEmittedByMoneyPath()
     expect(codes.length).toBeGreaterThan(0)
+    expect(codes).toContain('order_refund')
   })
 
   it('has a Hebrew label for every reason the payment flow writes', () => {
-    for (const code of reasonCodesEmittedByFinalize()) {
+    for (const code of reasonCodesEmittedByMoneyPath()) {
       expect(WALLET_REASON_LABELS, `missing Hebrew label for reason "${code}"`).toHaveProperty(code)
       expect(walletReasonLabel(code)).not.toBe(code)
     }

@@ -20,6 +20,14 @@ function meiliConfigured(): boolean {
   return Boolean(process.env.MEILISEARCH_HOST && process.env.MEILISEARCH_API_KEY)
 }
 
+export type SearchFacets = {
+  supplierId?: string
+  /** True means only products whose sticker is below face value. */
+  discountOnly?: boolean
+  priceMin?: number
+  priceMax?: number
+}
+
 type MeiliHit = {
   id: string
   slug: string
@@ -31,26 +39,45 @@ type MeiliHit = {
   category?: { name_he: string; slug: string } | null
 }
 
+function meiliFilter(
+  productType?: 'coupon' | 'physical',
+  facets?: SearchFacets,
+): string | undefined {
+  const parts: string[] = []
+  if (productType) parts.push(`type = ${productType}`)
+  if (facets?.supplierId) parts.push(`supplier_id = "${facets.supplierId.replace(/"/g, '')}"`)
+  if (facets?.priceMin != null && Number.isFinite(facets.priceMin)) {
+    parts.push(`kenyon_price >= ${Number(facets.priceMin)}`)
+  }
+  if (facets?.priceMax != null && Number.isFinite(facets.priceMax)) {
+    parts.push(`kenyon_price <= ${Number(facets.priceMax)}`)
+  }
+  if (facets?.discountOnly) parts.push('discount_percent >= 1')
+  return parts.length > 0 ? parts.join(' AND ') : undefined
+}
+
 async function searchMeili(
   q: string,
   limit: number,
   productType?: 'coupon' | 'physical',
+  facets?: SearchFacets,
 ): Promise<SearchOutcome | null> {
   try {
     const host = (process.env.MEILISEARCH_HOST as string).replace(/\/$/, '')
     const index = process.env.MEILISEARCH_INDEX ?? 'products'
+    const filter = meiliFilter(productType, facets)
     const res = await fetch(`${host}/indexes/${index}/search`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${process.env.MEILISEARCH_API_KEY}`,
       },
-      // `type` is a filterable attribute (see lib/search/meili-settings.ts), so
-      // the facet is applied in the engine and estimatedTotalHits stays truthful.
+      // Facets are filterable attributes (see lib/search/meili-settings.ts), so
+      // they are applied in the engine and estimatedTotalHits stays truthful.
       body: JSON.stringify({
         q,
         limit,
-        ...(productType ? { filter: `type = ${productType}` } : {}),
+        ...(filter ? { filter } : {}),
       }),
       // Search is request-time; do not cache across queries.
       cache: 'no-store',
@@ -119,6 +146,7 @@ async function searchDb(
   q: string,
   limit: number,
   productType?: 'coupon' | 'physical',
+  facets?: SearchFacets,
 ): Promise<SearchOutcome> {
   const supabase = await createClient()
   let query = supabase
@@ -137,10 +165,13 @@ async function searchDb(
   // Same coupon/physical facet the archives expose, applied in the query so the
   // count stays truthful rather than filtering an already-capped page.
   if (productType) query = query.eq('type', productType)
+  if (facets?.supplierId) query = query.eq('supplier_id', facets.supplierId)
+  if (facets?.priceMin != null) query = query.gte('kenyon_price', facets.priceMin)
+  if (facets?.priceMax != null) query = query.lte('kenyon_price', facets.priceMax)
 
   const { data, count } = await query.limit(limit)
 
-  const results: Product[] = (data ?? []).map((p) => {
+  let results: Product[] = (data ?? []).map((p) => {
     const cat = Array.isArray(p.categories) ? (p.categories[0] ?? null) : p.categories
     return {
       id: p.id,
@@ -153,26 +184,41 @@ async function searchDb(
       category: cat,
     }
   })
-  return { results, total: count ?? results.length, engine: 'database' }
+  // Sticker discount is not a Postgres column. Filter after the read so the
+  // count matches the grid (the page asks for 48, which is the whole seed).
+  if (facets?.discountOnly) {
+    results = results.filter(
+      (p) =>
+        p.full_price != null &&
+        p.kenyon_price != null &&
+        Number(p.full_price) > Number(p.kenyon_price),
+    )
+  }
+  return {
+    results,
+    total: facets?.discountOnly ? results.length : (count ?? results.length),
+    engine: 'database',
+  }
 }
 
 export async function searchProductsServer(
   query: string,
   limit = 48,
   productType?: 'coupon' | 'physical',
+  facets?: SearchFacets,
 ): Promise<SearchOutcome> {
   const q = sanitize(query)
   if (q.length < 2) return { results: [], total: 0, engine: 'database' }
 
   // scripts/setup-meilisearch.mjs declares `type` filterable, so the facet is
   // honoured by the engine. If the index has not been configured the filtered
-  // request 400s, searchMeili returns null, and the database path takes over —
+  // request 400s, searchMeili returns null, and the database path takes over,
   // which is correct behaviour, not a silent unfiltered result set.
   if (meiliConfigured()) {
-    const meili = await searchMeili(q, limit, productType)
+    const meili = await searchMeili(q, limit, productType, facets)
     if (meili) return meili
   }
-  return searchDb(q, limit, productType)
+  return searchDb(q, limit, productType, facets)
 }
 
 /**

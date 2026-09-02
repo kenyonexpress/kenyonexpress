@@ -12,6 +12,9 @@ type Props = {
   priceMin?: number
   priceMax?: number
   productType?: 'coupon' | 'physical'
+  suppliers?: { id: string; name: string }[]
+  currentSupplierId?: string
+  discountOnly?: boolean
 }
 
 const TYPE_OPTIONS = [
@@ -26,6 +29,9 @@ export default function CategoryFilterSidebar({
   priceMin,
   priceMax,
   productType,
+  suppliers = [],
+  currentSupplierId,
+  discountOnly = false,
 }: Props) {
   const router = useRouter()
   const pathname = usePathname()
@@ -143,6 +149,70 @@ export default function CategoryFilterSidebar({
                 סינון
               </button>
             </form>
+          </div>
+
+          {suppliers.length > 0 && (
+            <div className="category-sidebar__widget">
+              <h3 className="category-sidebar__title">ספק</h3>
+              <ul className="category-sidebar__list">
+                <li>
+                  <button
+                    type="button"
+                    className={`category-sidebar__filter-btn${currentSupplierId ? '' : ' is-current'}`}
+                    onClick={() =>
+                      pushWith((params) => {
+                        params.delete('supplier')
+                      })
+                    }
+                    disabled={isPending}
+                    aria-pressed={!currentSupplierId}
+                  >
+                    כל הספקים
+                  </button>
+                </li>
+                {suppliers.map((supplier) => (
+                  <li key={supplier.id}>
+                    <button
+                      type="button"
+                      className={`category-sidebar__filter-btn${
+                        currentSupplierId === supplier.id ? ' is-current' : ''
+                      }`}
+                      onClick={() =>
+                        pushWith((params) => {
+                          params.set('supplier', supplier.id)
+                        })
+                      }
+                      disabled={isPending}
+                      aria-pressed={currentSupplierId === supplier.id}
+                    >
+                      {supplier.name}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="category-sidebar__widget">
+            <h3 className="category-sidebar__title">הנחה</h3>
+            <ul className="category-sidebar__list">
+              <li>
+                <button
+                  type="button"
+                  className={`category-sidebar__filter-btn${discountOnly ? ' is-current' : ''}`}
+                  onClick={() =>
+                    pushWith((params) => {
+                      if (discountOnly) params.delete('discount')
+                      else params.set('discount', '1')
+                    })
+                  }
+                  disabled={isPending}
+                  aria-pressed={discountOnly}
+                >
+                  רק דילים בהנחה
+                </button>
+              </li>
+            </ul>
           </div>
         </div>
       </details>

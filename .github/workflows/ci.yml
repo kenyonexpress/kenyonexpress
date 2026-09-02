@@ -343,6 +343,8 @@ jobs:
       E2E_CUSTOMER_PASSWORD: E2eCustomer!pass1
       E2E_SUPPLIER_EMAIL: e2e-supplier@test.kenyonexpress.local
       E2E_SUPPLIER_PASSWORD: E2eSupplier!pass1
+      E2E_ADMIN_EMAIL: e2e-admin@test.kenyonexpress.local
+      E2E_ADMIN_PASSWORD: E2eAdmin!pass1
     steps:
       - uses: actions/checkout@v4
 
