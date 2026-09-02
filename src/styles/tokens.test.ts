@@ -4,8 +4,10 @@ import { describe, expect, it } from 'vitest'
 import {
   CATALOG_CSS_METRICS,
   CATALOG_CSS_VARS,
+  PDP,
   PDP_CSS_METRICS,
   PDP_CSS_VARS,
+  SITE,
   SITE_CSS_METRICS,
   SITE_CSS_VARS,
 } from './tokens'
@@ -204,6 +206,41 @@ function tsxFiles(dir = resolve(process.cwd(), 'src'), out: string[] = []): stri
 // supplies its own <html> and <body>, and inline hex is the only thing
 // guaranteed to render at that point.
 const HEX_ALLOWLIST = new Set(['src/components/shared/GoogleLogo.tsx', 'src/app/global-error.tsx'])
+
+/**
+ * THE PDP PALETTE AND THE SITE PALETTE MUST NOT DRIFT APART.
+ *
+ * `product-page.css` declares its own `--pdp-*` colours, and `PDP_CSS_VARS`
+ * already gates those against `tokens.ts`. What nothing gated is the pair of
+ * palettes against EACH OTHER: eight of the twelve PDP colours are the same
+ * value as a `SITE` colour, and the two are maintained in different objects.
+ *
+ * The failure that allows is quiet and total. Rebranding through
+ * `SITE.brand.primary` -- which the tokens file names as the way to rebrand --
+ * moves the header, the cards and every button on the site, and leaves the
+ * product page's add-to-cart the old yellow. No test fails, because each half
+ * still agrees with its own source. The page just stops matching the site.
+ *
+ * The four PDP colours with no site counterpart (`action`, `rule`, `buy`,
+ * `buyHover`) are deliberately absent from this table: they are measured
+ * values that exist only on that template.
+ */
+describe('the PDP palette tracks the site palette', () => {
+  const SHARED: Array<[keyof typeof PDP.color, string]> = [
+    ['ink', SITE.functional.heading],
+    ['muted', SITE.neutral.muted2],
+    ['sale', SITE.functional.price],
+    ['strike', SITE.functional.priceStrike],
+    ['line', SITE.neutral.border],
+    ['brand', SITE.brand.primary],
+    ['brandHover', SITE.brand.primaryHover],
+    ['surface', SITE.surface.page],
+  ]
+
+  it.each(SHARED)('PDP.color.%s equals its site token', (key, siteValue) => {
+    expect(PDP.color[key].toLowerCase()).toBe(siteValue.toLowerCase())
+  })
+})
 
 describe('site colour tokens', () => {
   it('declares every token from tokens.ts in the @theme block with the same value', () => {

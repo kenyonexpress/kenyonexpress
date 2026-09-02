@@ -142,3 +142,46 @@ measurable one is how a regression ships.
 The 404 page linked to `/search`. After D3 removed the header field that was the
 last search entry point left in the storefront, and the rule is that there is
 none anywhere. It now points at the product listing.
+
+
+## Product — STEP D7, 2026-09-03
+
+**The gate refuses this page too, at all three widths:**
+
+```
+REFUSING to measure: live shows 1 product cards and the local page shows 4.
+```
+
+Live's related-products carousel currently holds one card and ours holds four.
+That is a catalogue difference, not a design one, and `docs/KNOWN-ISSUES.md`
+already records it with the instruction not to chase slugs to make the number
+move. Cutting our carousel to one card to satisfy the guard would be fitting the
+measurement rather than the design.
+
+### Spec items verified present
+
+| spec | state |
+| --- | --- |
+| add-to-cart yellow `#fed700`, hover `#fedd26` | `--pdp-brand` / `--pdp-brand-hover`, both correct |
+| quantity control | present, and a plain number input on purpose: live has no +/- stepper, measured 2026-07-28 |
+| supplier block with locations and Waze | `SupplierInfo.tsx`, `wazeHref` |
+| reviews section | `components/product/Reviews.tsx` |
+| gallery, price block, coupon vs physical branch | `ProductGallery`, `ProductInfo`, `CouponPricing` |
+
+### Fixed under D7: the two palettes could drift apart silently
+
+`product-page.css` declares its own `--pdp-*` colours, and `PDP_CSS_VARS` gates
+those against `tokens.ts`. Nothing gated the two palettes against **each other**,
+and eight of the twelve PDP colours are the same value as a `SITE` colour held
+in a different object.
+
+The failure that allowed is quiet and total: rebranding through
+`SITE.brand.primary` -- which `tokens.ts` names as the way to rebrand -- moves
+the header, the cards and every button on the site and leaves the product page's
+add-to-cart the old yellow. No test fails, because each half still agrees with
+its own source.
+
+`tokens.test.ts` now asserts the eight shared colours are equal. All eight pass
+today, so this locks the current state rather than changing a pixel. The four
+with no site counterpart (`action`, `rule`, `buy`, `buyHover`) are excluded:
+they are measured values that exist only on that template.
