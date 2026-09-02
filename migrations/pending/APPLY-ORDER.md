@@ -35,6 +35,7 @@ independent and may be applied in any sequence, or not at all.
 | 20 | `153_ai_usage.sql` | the AI cost ledger, micro-USD integers | — | `drop table ai_usage` |
 | 21 | `154_reviews_wishlist.sql` | verified-purchase reviews + wishlist, verification in the INSERT policy | — | `drop table reviews; drop table wishlists` |
 | 22 | `155_shipment_tracking.sql` | order_items.carrier/tracking_number + order_shipped outbox kind | **after 150** (same constraint) | drop the two columns; restore 150's kind list |
+| 23 | `156_analytics_indexes.sql` | two partial indexes for analytics windows | — | drop both indexes |
 
 ## The money set, 138 through 141
 

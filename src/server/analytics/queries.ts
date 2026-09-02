@@ -31,6 +31,8 @@ type OrderItemRow = {
   supplier_immediate_agorot: number | null
   escrow_release_agorot: number | null
   products: { name_he: string } | { name_he: string }[] | null
+  supplier_id: string | null
+  suppliers: { name: string } | { name: string }[] | null
   orders: { paid_at: string } | { paid_at: string }[] | null
 }
 
@@ -68,6 +70,7 @@ export async function loadSalesLines(days: number): Promise<SalesLoad> {
        face_value_agorot, paid_on_site_agorot, commission_agorot,
        supplier_immediate_agorot, escrow_release_agorot,
        products(name_he),
+       supplier_id, suppliers(name),
        orders!inner(paid_at)`,
     )
     .is('deleted_at', null)
@@ -103,6 +106,8 @@ export async function loadSalesLines(days: number): Promise<SalesLoad> {
       orderId: row.order_id,
       productId: row.product_id,
       productName: firstOf(row.products)?.name_he ?? null,
+      supplierId: row.supplier_id ?? null,
+      supplierName: firstOf(row.suppliers)?.name ?? null,
       productType: row.product_type,
       // upfront_percent is the settlement snapshot; platform_percent is the
       // legacy mirror written alongside it.

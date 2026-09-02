@@ -242,6 +242,17 @@ list from this directory and checks it against every `.ts`/`.tsx` in **both**
 `src/` and `apps/`, so revoking a function the Expo till uses fails a test
 rather than a till.
 
+## `156_analytics_indexes.sql`, added 2026-09-02
+
+Two partial indexes for the admin analytics windows: orders(paid_at DESC)
+where paid and not deleted (production has only the OPPOSITE half,
+idx_orders_pending_expiry), and vouchers(redeemed_at DESC) where redeemed
+(the existing redeemed index leads on supplier_id, useless for admin-wide
+window scans).
+
+**Dry run against production, rolled back:** both created, pg_indexes
+count=2 inside the transaction.
+
 ## `155_shipment_tracking.sql`, added 2026-09-02
 
 Physical fulfillment's two missing columns -- order_items.carrier +
