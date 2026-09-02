@@ -365,3 +365,59 @@ explicitly to set it to `true`, and choosing the opposite is a business call.
 
 **This is a DNS-cutover blocker.** Pointing the real domain at this deployment
 today would open a shop that charges nobody.
+
+## v1.1.0 closeout, 2026-09-02
+
+Gates at the tag: 3539 vitest passed, type-check clean, biome clean (984
+files), build green. Branch `release/v1.1` (= `closeout/v1-final` tip), PR into
+main open; merging is Ofir's hard stop.
+
+### The recurring finding of this closeout
+
+Five whole subsystems existed on one side of the wire only, every one now
+closed: payment_events (table, no writers -> wired), refunds (statutory table,
+no writers -> wired), subscriptions (renewal+cancel, no creator -> built),
+analytics ingest (caller, no function -> 151), payouts (four verbs + page, no
+tables/functions -> 152).
+
+### migrations/pending — 29 files, apply through MCP in APPLY-ORDER.md order
+
+- 122_deny_all_on_server_only_tables.sql
+- 123_products_whatsapp_enabled.sql
+- 124_categories_sort_order.sql
+- 125_expire_vouchers_drop_escrow.sql
+- 126_percent_range_checks.sql
+- 127_homepage_cms.sql
+- 130_payment_events.sql
+- 131_refunds.sql
+- 132_search_index_outbox.sql
+- 133_supplier_branches.sql
+- 134_order_items_delivered_at.sql
+- 135a_product_type_recurring.sql
+- 135b_recurring_subscriptions.sql
+- 136_supplier_coordinates.sql
+- 137_order_transition_guard.sql
+- 138_money_agorot_money_path.sql
+- 139_money_agorot_wallet.sql
+- 140_money_agorot_catalog.sql
+- 141_money_agorot_growth.sql
+- 143_revoke_unused_definer_execute.sql
+- 144_revoke_authenticated_dml.sql
+- 145_revoke_check_rate_limit_execute.sql
+- 146_wallet_balance_floor.sql
+- 147_money_agorot_remaining_twins.sql
+- 148_refund_destination.sql
+- 149_audit_log_append_only.sql
+- 150_account_deletion.sql
+- 151_analytics_ingest.sql
+- 152_payout_machinery.sql
+
+The six from this closeout (147-152) each carry a rolled-back dry run against
+production in their headers. None is applied. 122-146: see APPLY-ORDER.md.
+
+### Still manual for Ofir (unchanged)
+
+Cardcom prod terminal + removing CARDCOM_USE_MOCK (**the blocker** -- checkout
+is live against the mock), cron-job.org key + CRON_SECRET (script ready), DNS
+cutover (the editable zone is NOT the serving zone), merging the release PR,
+the 14 wrong product slugs, and the 768/380 mobile layout project.
