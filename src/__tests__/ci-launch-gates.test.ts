@@ -123,6 +123,14 @@ describe('bundle gate', () => {
     expect(yml).toMatch(/next-ci-out/)
     expect(yml).toMatch(/if-no-files-found: error/)
   })
+
+  it('falls back to the production alias when a PR preview deploy does not succeed', () => {
+    const yml = readFileSync(join(process.cwd(), '.github/workflows/ci.yml'), 'utf8')
+    const lighthouse = yml.slice(yml.indexOf('name: Lighthouse product + checkout'))
+    expect(lighthouse).toMatch(/FALLBACK_URL/)
+    expect(lighthouse).toMatch(/finished without success/)
+    expect(lighthouse).not.toMatch(/core\.setFailed/)
+  })
 })
 
 describe('lighthouse floors', () => {

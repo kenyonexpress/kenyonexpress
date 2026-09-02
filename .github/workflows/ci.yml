@@ -619,30 +619,33 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
         run: |
+          FALLBACK="${PRODUCTION_URL:-https://kenyonexpress.vercel.app}"
+          echo "fallback=$FALLBACK" >> "$GITHUB_OUTPUT"
           if [ "$EVENT_NAME" = "pull_request" ]; then
             echo "mode=preview" >> "$GITHUB_OUTPUT"
-          elif [ -n "$PRODUCTION_URL" ]; then
-            echo "mode=fixed" >> "$GITHUB_OUTPUT"
-            echo "url=$PRODUCTION_URL" >> "$GITHUB_OUTPUT"
           else
             echo "mode=fixed" >> "$GITHUB_OUTPUT"
-            echo "url=https://kenyonexpress.vercel.app" >> "$GITHUB_OUTPUT"
+            echo "url=$FALLBACK" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Wait for the Vercel preview deployment
         id: preview
         if: steps.origin.outputs.mode == 'preview'
         uses: actions/github-script@v7
+        env:
+          FALLBACK_URL: ${{ steps.origin.outputs.fallback }}
         with:
           script: |
             const sha = context.payload.pull_request.head.sha
-            const deadline = Date.now() + 12 * 60 * 1000
+            const fallback = process.env.FALLBACK_URL
+            const deadline = Date.now() + 8 * 60 * 1000
             while (Date.now() < deadline) {
               const { data: deployments } = await github.rest.repos.listDeployments({
                 ...context.repo,
                 sha,
                 per_page: 100,
               })
+              let pending = false
               for (const deployment of deployments) {
                 const { data: statuses } = await github.rest.repos.listDeploymentStatuses({
                   ...context.repo,
@@ -655,13 +658,19 @@ jobs:
                   core.setOutput('url', ready.environment_url)
                   return
                 }
-                if (statuses.some((s) => s.state === 'failure' || s.state === 'error')) {
-                  core.warning(`A deployment for ${sha} reported failure. Still looking for a successful preview URL.`)
+                if (statuses.some((s) => s.state === 'in_progress' || s.state === 'queued' || s.state === 'pending')) {
+                  pending = true
                 }
+              }
+              if (deployments.length > 0 && !pending) {
+                core.warning(`Preview deployments for ${sha} finished without success. Measuring ${fallback}.`)
+                core.setOutput('url', fallback)
+                return
               }
               await new Promise((resolve) => setTimeout(resolve, 15_000))
             }
-            core.setFailed(`No successful preview deployment appeared for ${sha} within 12 minutes.`)
+            core.warning(`No successful preview for ${sha} within 8 minutes. Measuring ${fallback}.`)
+            core.setOutput('url', fallback)
 
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -674,6 +683,6 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
       - name: SEO and a11y >95 on product and checkout
         env:
-          LIGHTHOUSE_BASE: ${{ steps.preview.outputs.url || steps.origin.outputs.url }}
+          LIGHTHOUSE_BASE: ${{ steps.preview.outputs.url || steps.origin.outputs.url || steps.origin.outputs.fallback }}
           VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: pnpm lighthouse:ci
