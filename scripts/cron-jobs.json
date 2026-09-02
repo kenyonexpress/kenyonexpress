@@ -1,5 +1,5 @@
 {
-  "$comment": "The single source of truth for the eleven scheduled jobs. docs/CRON-EXTERNAL.md, .github/workflows/cron.yml and src/app/api/cron/ are all checked against this file by src/__tests__/cron-schedule-inventory.test.ts, so a schedule cannot be changed in one place and stay stale in the others.",
+  "$comment": "The single source of truth for the twelve scheduled jobs. docs/CRON-EXTERNAL.md, .github/workflows/cron.yml and src/app/api/cron/ are all checked against this file by src/__tests__/cron-schedule-inventory.test.ts, so a schedule cannot be changed in one place and stay stale in the others.",
   "defaultBaseUrl": "https://kenyonexpress.vercel.app",
   "jobs": [
     {
@@ -56,6 +56,11 @@
       "name": "retention",
       "path": "/api/cron/retention",
       "cron": "0 5 1 * *"
+    },
+    {
+      "name": "weekly-digest",
+      "path": "/api/cron/weekly-digest",
+      "cron": "0 4 * * 5"
     }
   ]
 }

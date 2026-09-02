@@ -1,4 +1,4 @@
-# The eleven scheduled jobs, run from Actions.
+# The twelve scheduled jobs, run from Actions.
 #
 # `vercel.json` deliberately has no `crons` key: Hobby registers two jobs at
 # daily granularity and silently ignores the rest, so four of the ten - three on
@@ -49,6 +49,7 @@ on:
     - cron: '0 4 * * *'
     - cron: '15 23 * * *'
     - cron: '0 5 1 * *'
+    - cron: '0 4 * * 5'
   workflow_dispatch:
     inputs:
       job:

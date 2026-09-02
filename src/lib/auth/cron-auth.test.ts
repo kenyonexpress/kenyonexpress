@@ -141,6 +141,7 @@ describe('scheduled routes authenticate', () => {
       'src/app/api/cron/stock/route.ts',
       'src/app/api/cron/stranded-payments/route.ts',
       'src/app/api/cron/subscriptions/route.ts',
+      'src/app/api/cron/weekly-digest/route.ts',
     ])
   })
 })
