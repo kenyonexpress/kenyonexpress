@@ -454,3 +454,19 @@ override ‏INVOICE_VAT_PERCENT שזורק על ערך לא-תקין — לא נ
 - **85:** ‏12 ‏ADRs ב-`docs/adr/` — כל אחד תקציר + מצביע לאכיפה.
 - **86:** ‏`docs/ONBOARDING.md`; ‏ARCHITECTURE.md לא שוכפל —
   ‏ARCHITECTURE-OVERVIEW.md (953 שורות) ו-INDEX.md מחזיקים את התפקיד.
+
+## מגה-בלוק 16 (‏STEPS 88–92) — הונאות: סגור בסריקה + דחייה מנומקת (02.09)
+
+**שכבת המניעה הפרוסה היא ההגנה, והיא חוסמת ולא רק מסמנת:** טבלת מדיניות
+‏rate-limit על כל ‏prefix (‏login פר-IP ופר-חשבון, ‏begin_checkout ‏10/דקה,
+‏redeem פר-ספק, ‏PIN בקופה, ‏contact) — כל "‏velocity rules" של הספק
+קיימות שם כמגבלות אוכפות; מחסומי replay (‏UNIQUE של discount פר-הזמנה,
+‏idempotency במימוש ובוובהוק); ומערך הונאות ההפניות
+(‏referral_signals + ‏fingerprint + תקרות חודשיות/שנתיות ב-fn_complete_referral)
+— ה-flow היחיד עם משטח abuse אמיתי כבר היום מכוסה עומק.
+
+**נדחה כמוקדם, עם המסוף עדיין mock ואפס עסקאות אמת:** טבלאות
+‏fraud_events/blocklist/chargebacks ודשבורד — אין עדיין אירוע אחד לסווג,
+ומודל chargeback נגזר מהתנהגות מסוף אמיתי שטרם חובר. הקפאת שוברים בעת
+chargeback (‏frozen_at) נרשמת כדרישה למכת-פתיחה של המסוף האמיתי — יחד עם
+בדיקת ההתאמה שכבר רצה (‏reconcile), שהיא גלאי הפערים בפועל.

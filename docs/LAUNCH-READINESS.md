@@ -573,3 +573,8 @@ the 14 wrong product slugs, and the 768/380 mobile layout project.
 
 ‏DEAD-CODE.md (מחיקה מחכה לאישור), ‏12 ‏ADRs, ‏ONBOARDING.md; ‏hotspots
 נדחה. לולאה ×3 ירוקה. תג ‏v2.8.0-rc1.
+
+## נספח מתוארך: מגה-בלוק 16 (‏STEPS 88–92), נמדד 02.09.2026
+
+שכבת המניעה (חוסמת) פרוסה: ‏rate-limits, מחסומי replay, הונאות הפניות
+בעומק; טבלאות פורנזיקה ודשבורד נדחו עד מסוף אמיתי. תג ‏v2.9.0-rc1.
