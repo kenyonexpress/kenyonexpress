@@ -90,3 +90,22 @@ text lands.
 אין לה guard מי מממן אותה; ‏(ג) redemptions כפולים (discount_redemptions +
 campaign_redemptions) על אותה הזמנה. קידום מוצרים נעשה דרך ה-CMS של דף הבית
 (homepage/cms.ts) שכבר קיים.
+
+## STEP 19 — מובייל ספקים: נסגר בסריקה + תוספת אחת (02.09)
+
+**קיים וחזק מהספק:** הסורק (`/scan`, ScanClient) עם צעד אימות לפני שריפה
+(‏lookup קורא-בלבד לפני redeem), ‏idempotency_key נגד דאבל-טאפ, קלט ידני עם
+‏inputMode, כפתורי py-3 ברוחב מלא, והודעות עברית מהשרת לכל תוצאה
+(לא נמצא/מומש/פג/ספק אחר — ההכרעה ב-redeem_voucher בפרודקשן).
+‏coupon-scan.spec.ts כבר רץ גם על פרויקט mobile-chrome (רק
+‏full-purchase-redeem מוחרג שם).
+
+**נוסף:** סיכומי היום/30 יום (ספירה + לגבייה בעסק, ‏sumAgorot) בראש
+‏/supplier/redemptions.
+
+**נדחה במכוון:** ‏(א) manifest נפרד "קניון EXPRESS ספקים" — יש manifest אחד
+לאפליקציה המשולבת (‏src/app/manifest.ts, החלטת bundle משותף מ-G10);
+‏manifest שני על אותו origin היה מחליף את של החנות. ‏(ב) ‏compare.mjs למסכי
+ספק — ‏refs/ke_live_singlefile.html הוא תבנית החנות; אין refs למסכי ספק,
+אין מול מה למדוד. ‏(ג) route בשם /supplier/vouchers — הסורק חי ב-/scan
+ו-/supplier/scan; שם שלישי לאותו מסך מוסיף בלבול בלי יכולת.
