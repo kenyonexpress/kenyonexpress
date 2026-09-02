@@ -23,25 +23,25 @@ from this machine.
 
 | Gate | Command | Result |
 | --- | --- | --- |
-| Types | `pnpm type-check` | PASS, `tsc --noEmit` clean (2026-09-02) |
-| Lint | `pnpm lint` | PASS, biome 1041 files, 0 findings (2026-09-02) |
-| Unit | `pnpm test` | PASS, 3493 tests in 259 files (2026-09-02). Launch-gate tests additional |
-| Build | `pnpm build` | CI `Build` job; local rebuild on this branch |
-| Migration dry-run | `pnpm gate:migrations` | Structural pass. Live ROLLBACK skipped (no disposable DB URL) |
-| Secrets (tree) | `pnpm gate:secrets` | Working tree. Git history still holds a foreign expired service_role JWT documented on 2026-08-20; that is not HEAD |
-| Bundle | `pnpm gate:bundle` | PASS. CI run 33581530979 on `f2291926`: product **56.2KB gz**, checkout **56.5KB gz**, Next runtime **255.8KB gz** (logged, not gated). Ceiling 180KB held |
-| Lighthouse | `pnpm lighthouse:ci` | PASS 2026-09-02 against `https://kenyonexpress.vercel.app`. Product `/product/barbecue`: a11y 100, SEO 100. Checkout empty-cart redirect to `/cart`: a11y 100, gated SEO 100 (raw 69, `is-crawlable` dropped). Sitemap loc still points at `kenyonexpress.co.il` (WordPress until DNS); the job rewrites onto `LIGHTHOUSE_BASE` |
+| Types | `pnpm type-check` | PASS, `tsc --noEmit` clean (2026-09-02, this machine) |
+| Lint | `pnpm lint` | PASS, biome 1041 files, 0 findings (2026-09-02, this machine) |
+| Unit | `pnpm test` | PASS, 3499 tests in 259 files (2026-09-02, this machine), including launch-gate tests |
+| Build | `pnpm build` | CI `Build` job on run 33582183720, conclusion success |
+| Migration dry-run | `pnpm gate:migrations` | Structural pass, pending=24. Live ROLLBACK skipped (no disposable DB URL) |
+| Secrets (tree) | `pnpm gate:secrets` | Working tree clean. Git history still holds a foreign expired service_role JWT documented on 2026-08-20; that is not HEAD |
+| Bundle | `pnpm gate:bundle` | PASS. CI run 33582183720 on `503d278a`: product **56.2KB gz**, checkout **56.5KB gz**, Next runtime **255.8KB gz** (logged, not gated). Ceiling 180KB held |
+| Lighthouse | `pnpm lighthouse:ci` | PASS. Same run, after preview failed, against `https://kenyonexpress.vercel.app`. Product `/product/barbecue`: a11y 100, SEO 100. Checkout empty-cart redirect to `/cart`: a11y 100, gated SEO 100 (raw 69, `is-crawlable` dropped). Sitemap loc still points at `kenyonexpress.co.il` (WordPress until DNS); the job rewrites onto `LIGHTHOUSE_BASE` |
 | E2E | `pnpm exec playwright test` | CI skips until `CI_SUPABASE_URL` points at a disposable project |
 | Pixel | `compare.mjs --page=home` | Last measured **9.83%** against the 11% ceiling (2026-08-19) |
-| Health | `curl https://kenyonexpress.vercel.app/api/health` | Live 2026-09-01: `{"ok":true,"database":"ok"}` |
+| Health | `curl https://kenyonexpress.vercel.app/api/health` | Live 2026-09-02: HTTP 200, `{"ok":true,"database":"ok","latency_ms":392}` |
 
 ## CI/CD (this branch)
 
 | Item | Evidence | Pass/Fail |
 | --- | --- | --- |
 | type-check, lint, unit tests, E2E, build, migration dry-run | `.github/workflows/ci.yml` jobs `lint`, `typecheck`, `test`, `e2e`, `build`, `migration-dry-run` | PASS (E2E skips loudly without `CI_SUPABASE_URL`) |
-| Lighthouse CI on product + checkout, SEO/a11y >95 | job `Lighthouse product + checkout`; floors 96. CI run 33581530979: product a11y 100 SEO 100 on `https://kenyonexpress.vercel.app/product/barbecue`. Checkout/cart a11y 100, gated SEO 100 (raw 69). Sitemap loc on `kenyonexpress.co.il` is rewritten onto `LIGHTHOUSE_BASE` | PASS |
-| Bundle gate JS >180KB gz fails the build | job `Bundle gate (JS 180KB gz)`. CI run 33581530979: product 56.2KB, checkout 56.5KB, runtime 255.8KB not gated. `next-ci-out` upload | PASS |
+| Lighthouse CI on product + checkout, SEO/a11y >95 | job `Lighthouse product + checkout`; floors 96. CI run 33582183720 on `503d278a`: product a11y 100 SEO 100 on `https://kenyonexpress.vercel.app/product/barbecue`. Checkout/cart a11y 100, gated SEO 100 (raw 69). Sitemap loc on `kenyonexpress.co.il` is rewritten onto `LIGHTHOUSE_BASE` | PASS |
+| Bundle gate JS >180KB gz fails the build | job `Bundle gate (JS 180KB gz)`. CI run 33582183720 on `503d278a`: product 56.2KB, checkout 56.5KB, runtime 255.8KB not gated | PASS |
 | Preview deploys: ephemeral Supabase + Vercel | Vercel GitHub integration. This SHA's Preview on `kenyonexpress-projects` **failed** (`x-matched-path: /[[...slug]]`, not the storefront). Lighthouse then measures `kenyonexpress.vercel.app`. Ephemeral Supabase skips without secrets and refuses `ixvwfbuvfxxsjiywhbbb` | FAIL on the Vercel preview for this SHA. Gate for the disposable DB is in place |
 | Gated production + one-command rollback | Required checks + Vercel on `main`. `git revert --no-edit <sha> && git push origin main`. `docs/APPLY-ORDER.md`. Print-only `production-rollback.yml` | PASS as a procedure. No second `vercel deploy` |
 | Secrets audit, nothing in repo | `pnpm gate:secrets` plus `.next/static` name grep after build | PASS as a gate on HEAD |

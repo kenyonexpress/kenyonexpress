@@ -1,5 +1,6 @@
-# KenyonExpress — Project State
+# KenyonExpress: Project State
 
+Updated: 2026-09-02 (MEGA BLOCK 6 audit: CI run 33582183720 on 503d278a all Actions green. Local 3499 tests, type-check, lint, gates. Vercel Preview still [[...slug]]. Verdict NOT READY.)
 Updated: 2026-09-02 (MEGA BLOCK 6: push CI all green. Bundle product 56.2KB / checkout 56.5KB gz. Lighthouse 100/100. Vercel preview on kenyonexpress-projects failed.)
 Updated: 2026-09-02 (MEGA BLOCK 6: CI/CD + launch checklist. Verdict NOT READY. Tag v1.0.0-rc1.)
 Updated: 2026-09-01 12:20 UTC (‏אין כותב ל-escrow_held בשום מקום; ‏144/144 מעברים מול הטריגרים החיים; קיפאון ה-380/768 נמצא ותוקן; ‏payment_events היה טבלה ריקה בלי אף כותב)
@@ -82,15 +83,20 @@ Supabase preview (skip without secrets), print-only git revert rollback,
 secrets audit. Docs: `docs/LAUNCH-READINESS.md`, `docs/APPLY-ORDER.md`,
 `docs/FINAL-REPORT.md`. Verdict: **NOT READY**.
 
-Lighthouse 2026-09-02 CI run 33581530979 against
+Lighthouse 2026-09-02 CI run 33582183720 on `503d278a` against
 `https://kenyonexpress.vercel.app/product/barbecue`: a11y 100, SEO 100. Empty
-checkout redirects to `/cart`: a11y 100, gated SEO 100.
+checkout redirects to `/cart`: a11y 100, gated SEO 100 (raw 69).
 
 Bundle gate same run: product 56.2KB gz, checkout 56.5KB gz, Next runtime
-255.8KB gz logged not gated. Artifact upload via `next-ci-out/`.
+255.8KB gz logged not gated.
 
-Vercel GitHub Preview for this SHA failed on `kenyonexpress-projects`
-(`x-matched-path: /[[...slug]]`). Lighthouse falls back to vercel.app.
+Local re-measure 2026-09-02: `tsc --noEmit` clean, biome 1041 files 0 findings,
+3499 tests in 259 files, `gate:migrations` structural pass, `gate:secrets` clean.
+
+Vercel GitHub Preview for `503d278a` failed on `kenyonexpress-projects`
+(`x-matched-path: /[[...slug]]`, still 200 on 2026-09-02). Live storefront
+`https://kenyonexpress.vercel.app/` is `x-matched-path: /`. Lighthouse falls
+back to vercel.app. That GitHub check is not an Actions job.
 
 ### החלטות שהתקבלו לבד (MEGA BLOCK 6, 2026-09-02)
 1. Lighthouse followed sitemap loc on `kenyonexpress.co.il` and scored WordPress
