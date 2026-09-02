@@ -123,7 +123,7 @@ export default async function ProductPage({ params }: Props) {
   const detail = await loadProductBySlug(slug)
   if (!detail) notFound()
 
-  const { product, images, supplier, variants, galleryAssets, couponOffer } = detail
+  const { product, images, supplier, variants, galleryAssets, couponOffer, recurringOffer } = detail
 
   const category = Array.isArray(product.categories)
     ? null
@@ -269,6 +269,7 @@ export default async function ProductPage({ params }: Props) {
             variants={variants ?? []}
             isCoupon={isCoupon}
             couponOffer={couponOffer}
+            recurringOffer={recurringOffer}
           />
         </div>
 

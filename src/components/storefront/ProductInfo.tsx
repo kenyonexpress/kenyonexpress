@@ -7,6 +7,7 @@ import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import CouponPricing from '@/components/storefront/CouponPricing'
 import { productQuantityCeiling } from '@/lib/cart/format'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
+import { type RecurringOffer, describeRecurringPrice } from '@/lib/commerce/recurring'
 import { cityByName } from '@/lib/geo/cities'
 import { buildShareMessage } from '@/lib/share/message'
 import { Check, ShoppingCart } from 'lucide-react'
@@ -59,6 +60,11 @@ interface Props {
    * bills; deriving it here from a percent is what caused the two to disagree.
    */
   couponOffer: CouponOffer | null
+  /**
+   * Present only for recurring products. Built server-side from the billing
+   * columns, so the page quotes exactly what the renewal worker will charge.
+   */
+  recurringOffer?: RecurringOffer | null
 }
 
 /**
@@ -95,6 +101,7 @@ export default function ProductInfo({
   variants,
   isCoupon,
   couponOffer,
+  recurringOffer = null,
 }: Props) {
   const { addToCart, isPending } = useCart()
 
@@ -170,9 +177,11 @@ export default function ProductInfo({
     ? 'אזל מהמלאי'
     : couponUnsellable || priceUnsellable
       ? 'לא זמין לרכישה'
-      : isCoupon
-        ? 'קנה עכשיו'
-        : 'הוסף לסל'
+      : recurringOffer
+        ? 'הצטרף למנוי'
+        : isCoupon
+          ? 'קנה עכשיו'
+          : 'הוסף לסל'
 
   return (
     <div data-pdp="summary" className="pdp-summary">
@@ -226,9 +235,26 @@ export default function ProductInfo({
       */}
       {!outOfStock && scarcitySlot}
 
+      {/* A subscription is priced per cycle; quoting the one-off price here
+          would promise the wrong number. The renewal terms sit next to the
+          amount because clicking the CTA both charges the first cycle and
+          saves the card -- the server forces tokenisation -- and that must be
+          said BEFORE the click, not discovered on a statement. */}
+      {recurringOffer && (
+        <div className="pdp-summary__recurring" data-pdp="recurring">
+          <p className="text-2xl font-bold text-heading" dir="rtl">
+            {describeRecurringPrice(recurringOffer)}
+          </p>
+          <p className="mt-1 text-sm text-gray-600">
+            החיוב מתחדש אוטומטית בכרטיס שנשמר בקנייה. ביטול בכל עת מאזור האישי, בתוקף עד סוף התקופה
+            ששולמה.
+          </p>
+        </div>
+      )}
+
       {/* A coupon is priced by its own absolute model, so it gets the whole
           pricing block. Everything else shows the ordinary sale price. */}
-      {couponOffer ? (
+      {recurringOffer ? null : couponOffer ? (
         <div className="pdp-coupon">
           <CouponPricing offer={couponOffer} />
         </div>

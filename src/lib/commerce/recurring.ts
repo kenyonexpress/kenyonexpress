@@ -413,3 +413,45 @@ export function isRecurringProduct(row: unknown): boolean {
 export function subscriptionChargeAgorot(sub: Pick<BillableSubscription, 'amount_agorot'>): Agorot {
   return agorot(sub.amount_agorot)
 }
+
+/** The storefront's one-line price for a subscription: "₪49 לחודש". */
+export interface RecurringOffer {
+  amountAgorot: number
+  interval: BillingInterval
+  intervalCount: number
+}
+
+/**
+ * Null when the product is not sellable as a subscription -- missing amount or
+ * interval -- so the PDP can fall back to the regular price block instead of
+ * quoting "₪0 לחודש", which is an offer nobody made.
+ */
+export function buildRecurringOffer(product: {
+  recurring_amount_agorot?: number | null
+  billing_interval?: string | null
+  billing_interval_count?: number | null
+}): RecurringOffer | null {
+  const amount = product.recurring_amount_agorot
+  const count = normalizeIntervalCount(product.billing_interval_count ?? 1)
+  if (
+    amount == null ||
+    !Number.isInteger(amount) ||
+    amount <= 0 ||
+    !isBillingInterval(product.billing_interval) ||
+    count == null
+  ) {
+    return null
+  }
+  return { amountAgorot: amount, interval: product.billing_interval, intervalCount: count }
+}
+
+/** "₪49 לחודש" / "₪49 לכל 3 חודשים". Money stays integer; ILS only for display. */
+export function describeRecurringPrice(offer: RecurringOffer): string {
+  const ils = offer.amountAgorot / 100
+  const amountText = Number.isInteger(ils) ? `₪${ils}` : `₪${ils.toFixed(2)}`
+  const unit = offer.interval === 'monthly' ? 'חודש' : 'שנה'
+  const unitPlural = offer.interval === 'monthly' ? 'חודשים' : 'שנים'
+  return offer.intervalCount === 1
+    ? `${amountText} ל${unit}`
+    : `${amountText} לכל ${offer.intervalCount} ${unitPlural}`
+}

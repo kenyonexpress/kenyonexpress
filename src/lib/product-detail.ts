@@ -2,6 +2,7 @@ import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail } from '@/lib/catalogue-read'
 import { type CouponOffer, buildCouponOffer } from '@/lib/commerce/coupon-offer'
 import { resolveStorefrontProductType } from '@/lib/commerce/product-type'
+import { buildRecurringOffer } from '@/lib/commerce/recurring'
 import { log } from '@/lib/observability/log'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createPublicClient } from '@/lib/supabase/anon'
@@ -61,6 +62,7 @@ export async function loadProductBySlug(slug: string) {
        coupon_expiry_days, coupon_terms_he, redemption_instructions_he,
        requires_shipping, weight_grams, warranty_months,
        type, sku, images, stock_quantity, category_id, supplier_id,
+       recurring_amount_agorot, billing_interval, billing_interval_count,
        categories!products_category_id_fkey(id, name_he, slug)`,
       )
       .eq('slug', slug)
@@ -121,6 +123,14 @@ export async function loadProductBySlug(slug: string) {
   // is legal and, better, honest: the answer is re-evaluated every time the
   // entry refills, so "expired" tracks the same hourly budget as every other
   // field on the page instead of being frozen at build time.
+  // Sellable-as-subscription, or null. Built here for the same reason the
+  // coupon offer is: the page quotes exactly what checkout will bill. The
+  // billing columns are NAMED in the select above rather than probed -- 135a/b
+  // are verified applied in production (2026-09-02), unlike the 054/059 era
+  // columns that still need the probe.
+  const recurringOffer =
+    resolveStorefrontProductType(product) === 'recurring' ? buildRecurringOffer(product) : null
+
   const couponOffer: CouponOffer | null = isCoupon
     ? buildCouponOffer({
         fullPriceIls: stickerPriceIls ?? product.full_price ?? basePrice,
@@ -139,6 +149,7 @@ export async function loadProductBySlug(slug: string) {
     coupon054,
     stickerPriceIls,
     couponOffer,
+    recurringOffer,
   }
 }
 
