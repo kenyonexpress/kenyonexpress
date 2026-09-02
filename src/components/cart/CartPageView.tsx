@@ -33,7 +33,9 @@ export default function CartPageView() {
           document with no level-one heading is a real accessibility defect,
           and screen readers are not what the pixel diff is measuring. */}
       <nav className="cart-page__breadcrumb" aria-label="פירורי לחם">
-        <Link href="/">עמוד הבית</Link>
+        <Link href="/" className="inline-block py-1">
+          עמוד הבית
+        </Link>
         <span aria-hidden="true">›</span>
         <span aria-current="page">סל הקניות</span>
       </nav>

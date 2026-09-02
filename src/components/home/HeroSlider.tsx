@@ -777,7 +777,7 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
                   ...dotHitBox(dotWidth(isCurrent)),
                   background: 'transparent',
                 }}
-                className="flex shrink-0 items-center justify-center border-0 p-0"
+                className="flex shrink-0 items-center justify-center border-0 p-0 max-lg:min-w-6"
               >
                 <span
                   aria-hidden="true"

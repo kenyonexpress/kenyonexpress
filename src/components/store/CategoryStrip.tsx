@@ -75,7 +75,7 @@ export default function CategoryStrip({ inHero = false }: { inHero?: boolean } =
             >
               <Link
                 href={cat.href}
-                className={`group mx-auto flex h-full flex-col items-center text-center transition-shadow hover:shadow-[var(--cat-hover-shadow)] ${
+                className={`group mx-auto flex h-full flex-col items-center text-center transition-shadow hover:shadow-[var(--cat-hover-shadow)] max-lg:min-h-11 max-lg:justify-center ${
                   cat.image ? 'justify-start' : 'justify-center'
                 }`}
                 style={{
