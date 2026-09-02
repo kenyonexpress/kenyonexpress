@@ -578,3 +578,13 @@ the 14 wrong product slugs, and the 768/380 mobile layout project.
 
 שכבת המניעה (חוסמת) פרוסה: ‏rate-limits, מחסומי replay, הונאות הפניות
 בעומק; טבלאות פורנזיקה ודשבורד נדחו עד מסוף אמיתי. תג ‏v2.9.0-rc1.
+
+## נספח מתוארך: מגה-בלוק 17 (‏STEPS 93–97), נמדד 02.09.2026
+
+‏chaos קיים; ‏DEPENDENCIES.md + ‏HANDOVER.md נכתבו; לולאה אחרונה ×3 +
+‏build ירוקים. תג ‏v3.0.0-rc1.
+
+# הפסקה הסופית
+
+**הקוד סגור. ‏STEPS 2–97 הושלמו.** מה שנשאר אינו קוד ונמצא כולו
+ב-`docs/OWNER-CHECKLIST.md`.

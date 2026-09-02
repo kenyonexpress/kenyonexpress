@@ -470,3 +470,15 @@ override ‏INVOICE_VAT_PERCENT שזורק על ערך לא-תקין — לא נ
 ומודל chargeback נגזר מהתנהגות מסוף אמיתי שטרם חובר. הקפאת שוברים בעת
 chargeback (‏frozen_at) נרשמת כדרישה למכת-פתיחה של המסוף האמיתי — יחד עם
 בדיקת ההתאמה שכבר רצה (‏reconcile), שהיא גלאי הפערים בפועל.
+
+## מגה-בלוק 17 (‏STEPS 93–97) — הקשחה סופית ומסירה (02.09)
+
+- **93 ‏chaos — קיים:** ‏chaos.test.ts (‏Cardcom timeout בלי retry לחיובים,
+  ‏kill-switches לכל ארבעת התלויות עם ערכי degradation), ‏resilience.test
+  של ה-webhook (‏replay = no-op), ‏Meili→ILIKE ו-Redis→Postgres מתועדים
+  ונבדקים בשכבותיהם.
+- **94:** ‏docs/DEPENDENCIES.md — הנעילה היא ה-pin; ‏pinning ידני נדחה.
+- **95:** הרגרסיה המלאה רצה היום פעמיים (‏STEP 46: ‏454/454 e2e; לולאה
+  אחרונה ×3 + build ירוקים כעת). ‏compare — ‏VISUAL-PARITY.md.
+- **96:** ‏docs/HANDOVER.md — כולל ה-roadmap של כל מה שנדחה בכוונה.
+- **97:** תג ‏v3.0.0-rc1. ‏**STEPS 2–97, שבעה-עשר מגה-בלוקים — הסתיימו.**
