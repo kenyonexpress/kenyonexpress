@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-02 19:05 UTC (‏ביקורת חוזרת על MEGA 6-ALT: type-check/test/build ירוקים, Lighthouse מעל 95, דף ספק 200 עם קטלוג, /api/ready מחזיר חמש בדיקות)
 Updated: 2026-09-02 12:22 UTC (‏שער Vercel אדום על PR #27: לא הקוד. GitHub Build ירוק. כל דיפלוי מאז 01.09 נכשל בשנייה, כולל main. פרוד חי מ-31.08)
 Updated: 2026-09-02 12:10 UTC (‏MEGA BLOCK 6-ALT נמדד: type-check/test/build ירוקים, Lighthouse מעל 95; אין push ישיר ל-main מסוכן ענן, רק PR)
 Updated: 2026-09-01 12:20 UTC (‏אין כותב ל-escrow_held בשום מקום; ‏144/144 מעברים מול הטריגרים החיים; קיפאון ה-380/768 נמצא ותוקן; ‏payment_events היה טבלה ריקה בלי אף כותב)
@@ -76,6 +77,49 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 מוכן ב-
 `/api/ready`,
 דגלי מערכת לקריאה בלבד, איתור שובר ומימוש ידני, ביקורת על מוצרים וקטגוריות והחזרים, עורך תוכן בלי מחירי עמלה. לוג JSON עם מזהה בקשה דרך Next (אין Hono). Sentry על Node (כולל cron), Edge, והדפדפן.
+
+### 2026-09-02 19:05 ביקורת חוזרת (סוכן ענן)
+
+שערים מחדש על
+`cursor/storefront-admin-obs-3ceb`
+ב-
+`ceda8b10`
+ואחריו רק עדכון המסמך הזה:
+
+| פקודה | תוצאה |
+| --- | --- |
+| `pnpm type-check` | ירוק |
+| `pnpm test` | 261 קבצים, 3493 טסטים, כולם עברו |
+| `pnpm build` | ירוק. נתיבים חדשים בבילד: `/s/[id]`, `/api/ready`, `/admin/feature-flags`, `/admin/coupons/lookup`, `/account/my-vouchers`, `/checkout/confirmation` |
+
+Lighthouse desktop, נמדד בסשן הזה:
+
+| יעד | Perf | A11y | BP | SEO |
+| --- | --- | --- | --- | --- |
+| פרוד `/` | 100 | 96 | 100 | 100 |
+| פרוד `/product/barbecue` | 100 | 100 | 100 | 100 |
+| מקומי `/s/ce85543d-e102-4ff1-b6dc-06799ca9d5a0` | 100 | 96 | 96 | 100 |
+
+HTTP מקומי אחרי
+`PORT=3311 pnpm start`
+(בילד של הענף):
+
+- 200 עם נתונים: `/` (קניון EXPRESS), `/product/barbecue` (מסעדה בשרית), `/s/ce85543d-…` (סטייל הבית, כולל `/product/pampers-premium-care-diaper-pants-medium`). אין
+`platform_percent`
+ב-HTML של דף הספק.
+- 307 להתחברות: `/checkout/confirmation`, `/account`, `/account/orders`, `/account/my-vouchers`.
+- `/api/ready` קיים ומחזיר JSON עם
+`database`, `redis`, `meilisearch`, `r2`, `cardcom`.
+מקומית 503 כי מפתח השירות בדמו. בפרוד `/api/health` הוא 200 עם
+`x-request-id`.
+`/api/ready`
+ו-
+`/s/[id]`
+עדיין 404 בפרוד עד מיזוג PR #27.
+
+אין push ישיר ל-
+`main`
+מסוכן ענן. היעד הוא PR #27.
 
 ### 2026-09-02 MEGA BLOCK 6-ALT: נמדד
 
