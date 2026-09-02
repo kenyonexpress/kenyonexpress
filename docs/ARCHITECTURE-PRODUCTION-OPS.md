@@ -1,5 +1,17 @@
 # ארכיטקטורת תשתית פרודקשן ותפעול - KenyonExpress
 
+
+> <!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **This document names tables that do not exist in production.**
+>
+> | Named here | In production |
+> |---|---|
+> | `coupon_scan_events` | `voucher_redemptions` |
+>
+> The design below may still be sound; the schema it assumes was not built, or
+> was built under another name. Verify against `docs/DATA-MODEL.md` before
+> writing a query, and see `docs/SCHEMA-REALITY-CHECK.md` for the full mapping.
+
 מסמך תכנון תשתית. סטטוס: DESIGN. אין בו מיגרציות ואין בו קוד להחלה.
 תאריך: 2026-07-08. ענף: `phase5/homepage`.
 מסמכים קשורים: `ARCHITECTURE-COMMERCE.md` (026), `ARCHITECTURE-SUPPLIER-REDEMPTION.md` (027), `ARCHITECTURE-AI-AGENTS.md` (028).

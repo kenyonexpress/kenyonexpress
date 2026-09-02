@@ -1,5 +1,20 @@
 # DB Drift Audit
 
+<!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **Captured 2026-07-28, partly stale 2026-09-01. Live shape: `docs/ARCHITECTURE-OVERVIEW.md` §2.**
+>
+> The drift this document measured is still real, and its central finding still
+> holds: **`supabase/migrations/` does not describe production.** The hosted
+> database is the pre-059 lineage; the two chains diverged and a from-zero reset
+> is not runnable here. The authoritative descriptions of production are the live
+> schema and `src/types/database.ts`.
+>
+> Two rows in the tables below are wrong today. `supplier_payouts` is listed as
+> coming from `026_commerce.sql`; that migration was never applied and the table
+> does not exist. The `order_status` row lists the `001` enum
+> (`pending, paid, processing, shipped, delivered, cancelled, refunded`), which
+> is not the live one: see `ARCHITECTURE-OVERVIEW.md` §2.2.
+
 Audit of the gap between `supabase/migrations/` and the live remote Postgres
 (project `ixvwfbuvfxxsjiywhbbb`, eu-north-1, Postgres 17.6).
 
@@ -206,6 +221,7 @@ supersedes. `006`, `007` and `008` do this deliberately.
 | | `046` | issued, used, expired, refunded |
 | `order_status` | `001` | pending, paid, processing, shipped, delivered, cancelled, refunded |
 | | `007` **(DROPs first, wins)** | pending, paid, partially_fulfilled, fulfilled, cancelled, refunded |
+| | **live 2026-09-01** | pending, paid, partially_fulfilled, fulfilled, cancelled, refunded, **platform_settled** |
 | `wallet_tx_type` | `001` | cashback_earned, order_payment, refund, adjustment |
 | | `006` **(DROPs first, wins)** | earn, redeem, expire, refund |
 | `product_status` | `001` **(wins)** | draft, active, paused, archived |

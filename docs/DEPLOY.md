@@ -7,7 +7,8 @@
 >
 > ‏1. ‏**‏Production Branch אינו `cursor/add-supabase-3c830`.** זה ענף נטוש,
 >    וההצבעה אליו היא הסיבה שאף קומיט מהמיינליין לא נבנה. הענף הוא
->    ‏`phase5/homepage`.
+>    ‏`main`. **‏עדכון 01.09.2026:** ‏`phase5/homepage` מוזג ‏(PR #6) ו-`main` הוא
+>    היום הענף היחיד שעובדים עליו, ברירת המחדל ב-GitHub, ויעד כל push.
 > ‏2. ‏**התיאור של `.vercelignore` מתאר את הבאג ולא את התיקון.** ‏`supabase/`
 >    בלי לוכסן מוביל מוחק גם את `src/lib/supabase/`, שהאפליקציה מייבאת ‏155
 >    פעם. הקובץ היום מעגן נתיבים בלוכסן מוביל, וההסבר המלא כתוב בתוכו.
@@ -166,7 +167,7 @@ npx --yes vercel@latest link
 | Build Command | ברירת מחדל (`next build`) |
 | Install Command | `pnpm install` |
 | Node Version | 20.x |
-| Production Branch | `cursor/add-supabase-3c830` |
+| Production Branch | **`main`** ‏(לא `cursor/add-supabase-3c830`; ראה הבאנר בראש הקובץ) |
 
 אין צורך ב-Build Command מותאם. הפרויקט הוא אפליקציית Next.js יחידה בשורש הריפו, עם `pnpm-lock.yaml` אחד. `next.config.ts` כבר מקבע את `turbopack.root` לתיקייה הזו.
 
@@ -195,7 +196,7 @@ npx --yes vercel@latest env ls
 ### Preview מול Production
 
 - כל push ל-branch שאינו ה-Production Branch יוצר Preview Deployment עם כתובת ייעודית. זו התנהגות ברירת המחדל ולא צריך להגדיר אותה.
-- Production עולה אך ורק מ-`cursor/add-supabase-3c830`.
+- Production עולה אך ורק מ-**`main`**.
 - ל-Preview חייב להיות `NEXT_PUBLIC_APP_URL` נפרד שמצביע על כתובת ה-preview, אחרת auth callbacks וחזרות מ-Cardcom ינותבו לדומיין הפרודקשן.
 
 ### Supabase Auth

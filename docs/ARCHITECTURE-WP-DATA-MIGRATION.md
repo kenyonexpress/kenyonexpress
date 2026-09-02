@@ -428,11 +428,11 @@ hit one row.
 
 ### 4.5 App Router redirect handling
 
-Redirects are served in `middleware.ts` (edge), not per-page, so they fire
+Redirects are served in `src/proxy.ts` (edge; Next 16 removed `middleware.ts`), not per-page, so they fire
 before rendering and cost one indexed lookup:
 
 ```ts
-// middleware.ts (sketch)
+// src/proxy.ts (sketch) - Next 16: the export must be named `proxy`
 export async function middleware(req: NextRequest) {
   const path = normalize(req.nextUrl.pathname); // lowercase, strip trailing slash
   const hit = await lookupRedirect(path);       // cached seo_redirects lookup

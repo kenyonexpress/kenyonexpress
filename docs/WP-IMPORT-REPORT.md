@@ -1,5 +1,16 @@
 # ‏(16) WP IMPORT DRY-RUN — דוח
 
+
+> <!-- v1-final-historical:2026-09-01 -->
+> 🕯️ **Historical snapshot. Not current guidance.**
+>
+> This is a WordPress import report, true on the date it carries. It is kept as a record of what
+> was measured and decided then, and it is **not** maintained against
+> production. Numbers, table names and statuses in it may since have changed.
+>
+> For the current state see `docs/ARCHITECTURE-OVERVIEW.md`, and
+> `docs/INDEX.md` for which document is authoritative on a given subject.
+
 Status: **הושלם, dry-run בלבד** · ‏2026-08-19 · ענף `feat/payments-verify`
 מקור: `data-import/wp-backup/kenyonexpress-wxr-2026-07-29.xml` (‏5,942,638 בתים)
 

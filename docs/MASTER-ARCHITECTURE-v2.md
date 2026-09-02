@@ -1,5 +1,12 @@
 # MASTER-ARCHITECTURE-v2.md
 
+<!-- v1-final-banner:2026-09-01 -->
+> ⛔ **‏מיושן החל מ-01.09.2026. המסמך המחייב הוא `docs/ARCHITECTURE-OVERVIEW.md`.**
+>
+> ‏זו מהדורה שהוחלפה פעמיים: קודם ב-`MASTER-ARCHITECTURE.md` ואחר כך במסמך
+> הסקירה. כל אזכור של Escrow, של ‏`supplier_payouts` או של עמלה באחוז קבוע הוא
+> שריד, ולא תיאור של הפרודקשן.
+
 המסמך המאוחד **business-model-first** ל-KenyonExpress (מהדורת docs-queue).
 
 Status: BINDING index + money layer · worktree

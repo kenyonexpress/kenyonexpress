@@ -1,5 +1,16 @@
 # ‏E2E, נמדד לראשונה. ‏19.08.2026
 
+
+> <!-- v1-final-historical:2026-09-01 -->
+> 🕯️ **Historical snapshot. Not current guidance.**
+>
+> This is an end-to-end measurement run, true on the date it carries. It is kept as a record of what
+> was measured and decided then, and it is **not** maintained against
+> production. Numbers, table names and statuses in it may since have changed.
+>
+> For the current state see `docs/ARCHITECTURE-OVERVIEW.md`, and
+> `docs/INDEX.md` for which document is authoritative on a given subject.
+
 ‏`docs/LAUNCH-READINESS.md` רשם את הסוויטה כ-**"לא הורץ"**. היא הורצה כאן מול
 ‏`pnpm start` על בילד טרי (`E2E_PORT=3314`, ‏`E2E_WEB_COMMAND="pnpm start"`),
 כי הרצה מול `pnpm dev` היא הרצה מול קוד אחר: ‏`next start` מקומי הוא

@@ -1,5 +1,14 @@
 # Production changes made on 2026-07-27, and how to undo them
 
+<!-- v1-final-banner:2026-09-01 -->
+> 📅 **Historical record. Current system: `docs/ARCHITECTURE-OVERVIEW.md` (2026-09-01).**
+>
+> This describes what was applied on 2026-07-27, under the escrow model that was
+> abandoned three days later. Every escrow mechanism it introduces is dead code
+> today: no path writes `escrow_held` or `escrow_released`, and `escrow_holds`
+> holds 2 rows with no writer. The enum values survive only because dropping one
+> from a live database is not a thing you do over a rule change.
+
 Two changes were made directly to the hosted Supabase project
 (`ixvwfbuvfxxsjiywhbbb`) during an autonomous session. Both are recorded here
 because a schema change to a live project is not something that should only

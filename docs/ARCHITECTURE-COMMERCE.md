@@ -1,5 +1,21 @@
 # KenyonExpress Commerce Architecture
 
+<!-- v1-final-banner:2026-09-01 -->
+> ⛔ **Superseded 2026-09-01. The current system is `docs/ARCHITECTURE-OVERVIEW.md`.**
+>
+> Beyond the 2026-07-24 note already below, production contradicts this document
+> on two structural points:
+>
+> 1. **`supplier_payouts` / `supplier_payout_items` (section 2.7) do not exist.**
+>    Migration `026_commerce.sql` was never applied. There is no payout ledger in
+>    this database, because the coupon model owes suppliers nothing: they collect
+>    the balance in cash at the counter.
+> 2. **There is no escrow and no `held` ledger record.** The whole online
+>    prepayment is platform revenue at the moment of the charge.
+>
+> The live money engine is `src/lib/commerce/commission.ts`, and the invariants
+> it satisfies are listed in `ARCHITECTURE-OVERVIEW.md` section 3.
+
 > **גובר עליו `docs/CONTRADICTIONS.md` (2026-07-24).** כל מספר עמלה, ברירת מחדל
 > (10%/5%) או נוסח Escrow במסמך הזה הוא שריד. ההכרעה: `platform_percent`
 > פר-מוצר, חובה, בלי ברירת מחדל בשום מקום; ה-held הוא רישום פנימי ב-ledger בלבד.
@@ -112,6 +128,16 @@ cart_items (
 ### 2.3 `payments` + `payment_webhook_events`
 
 One row per Cardcom attempt (charge or refund). Never updated by users.
+
+> <!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **Both enums below are the design, not production.** Live values,
+> verified 2026-09-01:
+> `payment_kind` is **`charge, refund`** (there is no `token_charge`; a saved
+> card charge is a `charge` that never passes through `redirected`), and
+> `payment_status` is
+> **`initiated, redirected, succeeded, failed, refunded, platform_settled`**
+> (there is no `cancelled`, and `platform_settled` is missing below).
+> Writing either absent value raises `22P02`. See `docs/PAYMENT-FLOW.md` §3.
 
 ```sql
 payment_kind:   'charge' | 'token_charge' | 'refund'

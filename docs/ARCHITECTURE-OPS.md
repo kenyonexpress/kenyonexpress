@@ -217,6 +217,15 @@ export const env = server.parse(process.env)
 >
 > **מה שכן עדיין תקף בסעיף הזה: הערת ה-Hobby.** היא הסיבה שהוא לא נמחק.
 
+> ‏**עדכון 01.09.2026:** ל-`vercel.json` **אין יותר מפתח `crons` בכלל**, וזה
+> מכוון. עשרת ה-jobs חיים כ-routes תחת `src/app/api/cron/`, כולם `GET`, כולם
+> דורשים `Authorization: Bearer <CRON_SECRET>`, ו-**אף מתזמן חיצוני אינו דלוק**.
+> הצהרה על עשרה crons ב-Hobby אינה נכשלת ואינה מזהירה: הפלטפורמה מריצה את מה
+> שהתוכנית מכסה ומתעלמת בשקט מהשאר, ולכן reconciler של תשלומים נראה כאילו הוא
+> רץ. שלושה מהעשרה על מסלול הכסף (`invoices`, `reconcile`,
+> `stranded-payments`), ו-`notifications` הוא הדבר היחיד ששולח ללקוח את השובר.
+> הפירוט: `docs/CRON-EXTERNAL.md`.
+
 ```json
 {
   "regions": ["fra1"],
@@ -542,7 +551,7 @@ find "$BACKUP_DIR" -name 'ke-*.dump.age' -mtime +30 -delete
 ```
 1. פרויקט חדש, eu-central-1
 2. pg_restore מהגיבוי האחרון
-3. אימות: 33 טבלאות, RLS על כולן, ספירות
+3. אימות: 61 טבלאות, RLS על כולן, ספירות
 4. מפתחות חדשים ל-Vercel env
 5. פריסה מחדש
 6. Cardcom: אימות שה-webhook URL עדיין נכון

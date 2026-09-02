@@ -4,6 +4,32 @@
 של שאילתה, לא הערכה. השאילתות עצמן מופיעות בסוף המסמך כדי שאפשר יהיה לחזור
 ולמדוד.
 
+<!-- v1-final-banner:2026-09-01 -->
+
+> ‏**נמדד מחדש 01.09.2026. שלוש מיגרציות הרשאות נחתו מאז 19.08, והן משנות
+> מספרים בגוף המסמך:**
+>
+> ‏1. ‏**`check_rate_limit` אינה חשופה יותר** ל-`anon` ול-`authenticated`, אלא
+>    ל-`service_role` בלבד. קודם לכן קורא אנונימי בחר גם את המפתח וגם את הסף.
+> ‏2. ‏**‏`authenticated` איבד INSERT/UPDATE/DELETE על שמונה טבלאות server-only**
+>    ‏(`legacy_percent_archive_112`, `payment_webhook_events`, `rate_limits`,
+>    `referral_signals`, `search_index_dlq`, `settlement_events`,
+>    `stock_reservations`, `user_rate_limits`). זו לא הייתה חשיפה פעילה, כי RLS
+>    בלי policy דוחה הכל ממילא, אלא סגירת דלת סתרים: מי שיוסיף שם policy אחת
+>    לקריאה היה מקבל גם כתיבה.
+> ‏3. שש פונקציות עזר יתומות איבדו EXECUTE מ-`authenticated`.
+>
+> ‏**המספרים החיים היום:** ‏`anon` עם DML על טבלה **אחת** בלבד (`carts`),
+> ‏`authenticated` על ‏**56**, ‏`service_role` על ‏**73**. ‏**133** policies על
+> ‏**61** טבלאות, RLS דלוק על כולן. ‏**69** פונקציות, מתוכן ‏**61**
+> ‏`SECURITY DEFINER`, וכולן מצמידות `search_path` (אפס לא מוצמדות). ל-`anon`
+> יש בדיוק ‏**6** הרשאות EXECUTE, ושלוש מהן פונקציות trigger שאינן ניתנות
+> לקריאה שימושית דרך PostgREST.
+>
+> ‏**מיפוי מספרים, כי הם התחלפו:** המיגרציות האלה מופיעות בפרודקשן כ-125, 126
+> ו-127, ובקבצים תחת `migrations/pending/` הן **143**, **144** ו-**145**.
+> הטבלה המלאה: `docs/ARCHITECTURE-OVERVIEW.md` סעיף 8.1.
+
 ---
 
 ## 1. ארבע שכבות, וכל אחת עונה על שאלה אחרת
@@ -83,7 +109,7 @@
 
 ---
 
-## 4. RLS — ‏53 טבלאות, ‏53 עם RLS דלוקה
+## 4. RLS — ‏61 טבלאות, ‏61 עם RLS דלוקה
 
 נמדד ב-19.08. הצילום שמור ב-`supabase/rls-manifest.json`, והשער ב-CI הוא
 `src/lib/auth/rls-manifest.test.ts`.
@@ -99,7 +125,16 @@
 policies ובלי נימוק. מה שהוא **לא** תופס: drift שאף אחד לא מדד מחדש. לכן
 ה-manifest נושא את תאריך המדידה, ולכן קיים `scripts/check-rls.mjs`.
 
-### ‏8 טבלאות בלי policies — וזה המצב ההדוק, לא הרפוי
+### ‏9 טבלאות server-only — וזה המצב ההדוק, לא הרפוי
+
+> <!-- v1-final-banner:2026-09-01 -->
+> ‏**נמדד מחדש 01.09: ‏9, לא ‏8, ובשתי צורות.** ‏4 בלי שום policy
+> (`payment_webhook_events`, `rate_limits`, `search_index_outbox`,
+> `user_rate_limits`) ו-5 עם policy יחיד `RESTRICTIVE` ‏`USING (false)`
+> (`legacy_percent_archive_112`, `referral_signals`, `search_index_dlq`,
+> `settlement_events`, `stock_reservations`). מיגרציה ‏122 הפכה את החמש
+> מ"אפס policies" ל"deny מפורש", ו-132 הוסיפה את `search_index_outbox`.
+> ‏רק ה-4 הראשונות מסומנות `rls_enabled_no_policy` על ידי ה-advisor.
 
 ‏Postgres חוסם **כל שורה לכל תפקיד** כשה-RLS דלוקה ואף policy לא מתאימה.
 טבלה עם RLS ובלי policies נגישה רק ל-service key ולפונקציות SECURITY DEFINER.
@@ -122,7 +157,8 @@ policies ובלי נימוק. מה שהוא **לא** תופס: drift שאף אח
 
 ## 5. הספק הוא קריאה-בלבד ב-RLS — נמדד
 
-שאילתה על כל policy שאינה `SELECT` בכל הסכימה החזירה **‏74 policies**. מתוכן,
+שאילתה על כל policy שאינה `SELECT` בכל הסכימה החזירה **‏76 policies** (נמדד 01.09,
+מתוך **‏133** בסך הכל). מתוכן,
 כאלה שמזכירות ספק בביטוי: **שלוש בלבד**, וכולן על אותה טבלה.
 
 | טבלה | פקודה | ביטוי |
@@ -239,8 +275,9 @@ select p.proname, pg_get_function_identity_arguments(p.oid) as args,
 
 ## 8. מה שנשאר פתוח
 
-1. **‏`REVOKE EXECUTE` על `is_admin()` ואחיותיה — לא לעשות.** ‏123 policies
-   מפנות לשש הפונקציות האלה, וביטוי policy מוערך בהרשאות התפקיד השואל.
+1. **‏`REVOKE EXECUTE` על `is_admin()` ואחיותיה — לא לעשות.** נמדד 01.09:
+   ‏`is_admin` לבדה מוזכרת ב-**‏81** policies מתוך ‏133, ‏`has_role` ב-**‏19**
+   ו-`current_user_role` ב-**‏10**, וביטוי policy מוערך בהרשאות התפקיד השואל.
    הפירוט ב-`docs/DB-HARDENING-AUDIT.md`.
 2. **‏`migrations/pending/143_revoke_unused_definer_execute.sql`** — שש
    פונקציות שנמדדו בלי אף קורא. ממתין לאישור להרצת DDL.

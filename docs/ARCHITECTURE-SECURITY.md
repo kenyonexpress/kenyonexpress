@@ -33,7 +33,7 @@ Authorization primitives:
 
 ---
 
-## 1. RLS across all 33 tables
+## 1. RLS across all 61 tables
 
 ### 1.0 Live state, measured
 
@@ -52,7 +52,9 @@ Two of these numbers are findings.
 
 **FORCE ROW LEVEL SECURITY is on nothing.** The previous edition of this document asserted that every table carries `ENABLE` plus `FORCE`. That is not the live state and never has been. The difference matters exactly once, and it is the case that matters most: without `FORCE`, the **table owner bypasses RLS entirely**. Any `SECURITY DEFINER` function owned by `postgres` therefore reads and writes past every policy, whether or not that was the intent when the function was written. RLS is being relied on as the truth boundary while the boundary has a documented hole in it. See SEC-FORCE in section 10.
 
-**Three tables have RLS enabled and no policy at all.** `payment_webhook_events`, `rate_limits` and `user_rate_limits`. This is deny-all for `anon` and `authenticated` (RLS with no permissive policy denies everything) while `service_role` passes through, and for these three tables it is exactly right: a webhook event log and two rate-limit counters must never be readable or writable from a browser. This is documented here so a future audit does not read "0 policies" as "unprotected" and add one.
+**Four tables have RLS enabled and no policy at all** (re-measured 2026-09-01; this section previously said three): `payment_webhook_events`, `rate_limits`, `search_index_outbox` and `user_rate_limits`. `search_index_outbox` arrived with migration 132, after this section was written.
+
+A further **five** are equally server-only but reach it differently, through a single `RESTRICTIVE` policy with `USING (false)` added by migration 122: `legacy_percent_archive_112`, `referral_signals`, `search_index_dlq`, `settlement_events` and `stock_reservations`. Nine tables are therefore closed to every client role; only the first four are flagged `rls_enabled_no_policy` by the advisor, because the other five do technically have a policy. This is deny-all for `anon` and `authenticated` (RLS with no permissive policy denies everything) while `service_role` passes through, and for these three tables it is exactly right: a webhook event log and two rate-limit counters must never be readable or writable from a browser. This is documented here so a future audit does not read "0 policies" as "unprotected" and add one.
 
 ### 1.1 The full matrix
 
@@ -937,7 +939,7 @@ Severity: **C** critical, **H** high, **M** medium. Status as of 2026-07-29.
 |---|---|---|---|---|
 | SEC-QR | **C** | Voucher QR signed with an unkeyed sha256; forgeable by anyone | `src/lib/checkout/coupon-issue.ts` | **Open.** Blocks real coupons |
 | SEC-WALLET | **C** | `fn_wallet_transfer` left with PUBLIC EXECUTE; any user can mint balance | 026 | Fix drafted, not applied |
-| SEC-FORCE | **H** | `FORCE ROW LEVEL SECURITY` on 0 of 33 tables; every definer bypasses RLS | live schema | **New this edition.** Open |
+| SEC-FORCE | **H** | `FORCE ROW LEVEL SECURITY` on 0 of 61 tables; every definer bypasses RLS | live schema | **New this edition.** Open |
 | SEC-UPLOADER | **H** | `products: admin update` gates on `content_uploader`; uploader can edit any product's money fields | live policy | **New this edition.** Open |
 | SEC-06 | **H** | Overlapping permissive policies widen by OR; `products` has 11, and the weakest ignores `deleted_at` | live policy | Open |
 | SEC-02 | **H** | `affiliates_user_update` unrestricted by column: self-approval and balance inflation | 010 | Open (table empty) |

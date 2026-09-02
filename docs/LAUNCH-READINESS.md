@@ -1,5 +1,16 @@
 # Launch readiness
 
+
+> <!-- v1-final-historical:2026-09-01 -->
+> 🕯️ **Historical snapshot. Not current guidance.**
+>
+> This is a launch-readiness assessment, true on the date it carries. It is kept as a record of what
+> was measured and decided then, and it is **not** maintained against
+> production. Numbers, table names and statuses in it may since have changed.
+>
+> For the current state see `docs/ARCHITECTURE-OVERVIEW.md`, and
+> `docs/INDEX.md` for which document is authoritative on a given subject.
+
 Measured on `main` at `dd10a9504`, 2026-09-01. Every number below is command
 output or a live query against the production database, not a recollection.
 Where a claim from the audit brief disagreed with the measurement, the
@@ -38,9 +49,9 @@ nothing: they should be cleared on the first maintenance pass after launch.
 | Check | Expected by the brief | Measured | Verdict |
 | --- | --- | --- | --- |
 | Public tables | 50+ | 53 | PASS |
-| RLS enabled | all | 53 of 53, 0 without | PASS |
+| RLS enabled | all | 61 of 61, 0 without | PASS |
 | Tables with RLS and no policy | 3 | 8 | see B2 |
-| `SECURITY DEFINER` functions | "0 or minimal" | 59 | by design, see B3 |
+| `SECURITY DEFINER` functions | "0 or minimal" | 61 of 69 | by design, see B3 |
 | EXECUTE grants to anon/authenticated | 13 | 20 | see B3 |
 | Money columns held as numeric | 31 | **32** | confirmed, see B1 |
 | Applied migration head | >= 125 | `20260831193325` | PASS |
@@ -192,7 +203,7 @@ to production through MCP `apply_migration` after approval, one at a time.
 
 The site answers `200`, `/api/health` reports `{"ok":true,"database":"ok"}`, the
 cron guard answers `401` to an unauthenticated call, and the catalogue served in
-production is the real one. RLS is on for all 53 tables. The rate limit layer,
+production is the real one. RLS is on for all 61 tables. The rate limit layer,
 a sliding window with a Postgres fallback behind all thirty callsites, is merged
 to `main` and green.
 

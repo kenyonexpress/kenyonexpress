@@ -770,7 +770,7 @@ export default async function OgImage({ params }: { params: { slug: string } }) 
 ומחפש התאמה. לביצועים: קאש בזיכרון של המפה עם revalidate, לא שאילתת DB לכל בקשה.
 
 ```ts
-// src/middleware.ts
+// src/proxy.ts  (Next 16 removed middleware.ts; the export must be named `proxy`)
 import { NextResponse, type NextRequest } from 'next/server'
 import { getRedirectMap } from '@/lib/seo/redirects' // קאש עם revalidate מ-seo_redirects
 
@@ -824,7 +824,7 @@ export const config = {
 5. מוצר/קטגוריה: `generateMetadata` מלא + הזרקת JSON-LD + `opengraph-image.tsx`.
 6. `app/sitemap.ts` + `app/robots.ts`.
 7. `next.config.ts`: `trailingSlash: false`.
-8. `src/middleware.ts` + `src/lib/seo/redirects.ts`: אכיפת 301 מ-`seo_redirects`.
+8. `src/proxy.ts` + `src/lib/seo/redirects.ts`: אכיפת 301 מ-`seo_redirects`.
 9. `app/not-found.tsx`: 404 בעברית; route ל-410 לפי הצורך.
 10. אימות: Rich Results Test (Product/Breadcrumb), Search Console sitemap submit,
     בדיקת canonical/hreflang בכל סוג עמוד, בדיקת OG image render עם עברית.

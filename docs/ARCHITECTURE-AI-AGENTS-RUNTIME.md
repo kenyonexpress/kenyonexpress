@@ -1,5 +1,17 @@
 # ARCHITECTURE-AI-AGENTS-RUNTIME: העמקת פלטפורמת סוכני ה-AI
 
+
+> <!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **This document names tables that do not exist in production.**
+>
+> | Named here | In production |
+> |---|---|
+> | `coupon_scan_events` | `voucher_redemptions` |
+>
+> The design below may still be sound; the schema it assumes was not built, or
+> was built under another name. Verify against `docs/DATA-MODEL.md` before
+> writing a query, and see `docs/SCHEMA-REALITY-CHECK.md` for the full mapping.
+
 סטטוס: טיוטה מחייבת v2.0 (2026-07-17). בעלים: ארכיטקט פלטפורמת ה-AI.
 מסמך זה מעמיק את `docs/ARCHITECTURE-AI-AGENTS.md` (להלן "V1") לרמת מימוש.
 היררכיית סמכות: `docs/MASTER-ARCHITECTURE.md` גובר; `docs/ARCHITECTURE-SECURITY.md` גובר בבקרות אבטחה; מסמך זה גובר על V1 בכל סתירה פנימית של דומיין הסוכנים.

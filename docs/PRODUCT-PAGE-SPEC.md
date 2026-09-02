@@ -1,5 +1,18 @@
 # PRODUCT-PAGE-SPEC - מפרט דף מוצר וטופס הניהול (מסמך אחד)
 
+
+> <!-- v1-final-banner:2026-09-01 -->
+> ⚠️ **This document names tables that do not exist in production.**
+>
+> | Named here | In production |
+> |---|---|
+> | `notifications_outbox` | `notification_outbox` |
+> | `platform_bp` | `platform_percent`, whole-percent numeric |
+>
+> The design below may still be sound; the schema it assumes was not built, or
+> was built under another name. Verify against `docs/DATA-MODEL.md` before
+> writing a query, and see `docs/SCHEMA-REALITY-CHECK.md` for the full mapping.
+
 נוצר: 2026-07-24. עודכן: 2026-07-28. ענף: `feat/checkout-complete`.
 
 **המסמך הזה בולע את `PRODUCT-ADMIN-FORM.md`.** אין שני מסמכים: מה שהאדמין ממלא
@@ -183,9 +196,16 @@
 
 ### 3.1 ‏C11 הוכרעה (2026-07-27) - גרסה (ב)
 
-השאלה שהייתה פתוחה כאן, מי מקבל את המקדמה כשה-held נסגר, נסגרה: **הפלטפורמה
-שומרת `platform_percent` מהמקדמה, והיתרה משוחררת לספק במימוש.** הקופון הוא
-Escrow פנימי (`escrow_holds`), בלי נאמן חיצוני ובלי J5 (C3).
+השאלה שהייתה פתוחה כאן, מי מקבל את המקדמה כשה-held נסגר, נסגרה סופית ‏**וההכרעה
+הפוכה ממה שנכתב כאן קודם**: ‏**הפלטפורמה שומרת ‏100% מהמקדמה, לצמיתות, ושום חלק
+ממנה לא משוחרר לספק, לא במימוש ולא אחריו.** הספק גובה את היתרה במזומן מהלקוח
+בדלפק, והכסף הזה לא עובר דרך חשבון הסליקה שלנו.
+
+‏**אין Escrow בשום צורה** (הוכרע 24.07.2026, מיגרציה ‏125 הסירה את המסלול):
+אין נאמן חיצוני, אין ‏J5, אין החזקה על הכרטיס ואין ‏held פנימי.
+‏`escrow_holds` עדיין קיימת בפרודקשן עם ‏2 שורות היסטוריות ואף כותב בקוד לא נוגע
+בה, וערכי ה-enum ‏`escrow_held` ו-`escrow_released` הם תוויות מתות ש-`SettlementState`
+מסרב להן במפורש. פירוט: `docs/PAYMENT-FLOW.md` §5.
 
 מה שנובע מכך למסמך הזה:
 
