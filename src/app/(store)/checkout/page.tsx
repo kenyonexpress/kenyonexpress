@@ -15,6 +15,7 @@ import '@/styles/checkout-page.css'
 
 export const metadata: Metadata = {
   title: 'תשלום',
+  description: 'השלמת הזמנה בכינון אקספרס. עגלה, כתובת ותשלום מאובטח.',
 }
 
 const EMPTY_ADDRESS: CheckoutAddressPrefill = {

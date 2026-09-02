@@ -1,8 +1,15 @@
 # What runs in CI, and what deliberately does not
 
-Five workflows live here, and the absence of a sixth is a decision rather
-than an oversight. This file records the decision so the next person does not add the
-missing file back.
+Five workflows lived here when this file was first written. Two more were
+added for launch, and neither is a `deploy.yml`.
+
+- `preview-supabase.yml` creates an ephemeral database branch per PR when
+  dedicated secrets exist, and refuses the production project by name.
+- `production-rollback.yml` prints `git revert --no-edit <sha>`. It does not
+  push.
+
+The absence of `deploy.yml` is still a decision rather than an oversight.
+This file records the decision so the next person does not add that file back.
 
 ## There is no `deploy.yml`, and there must not be one
 
@@ -42,7 +49,7 @@ workflow while the integration is live is what produces the race in (1).
 
 ## `ci.yml`
 
-Five jobs. The first four block:
+Ten jobs. The first four plus the new launch gates block. E2E still skips.
 
 | Job | Blocks | What it proves |
 | --- | --- | --- |
@@ -50,10 +57,14 @@ Five jobs. The first four block:
 | `typecheck` | yes | `tsc --strict` over the changed file set |
 | `test` | yes | `pnpm test:coverage`, including the per-file money coverage floors |
 | `build` | yes | `pnpm build` - a separate gate that tests and lint do not stand in for |
+| `migration-dry-run` | yes | Every `.sql` file is non-empty and free of `DROP DATABASE`; `docs/APPLY-ORDER.md` matches `migrations/pending/`. Live `BEGIN; ... ROLLBACK` only if `CI_SUPABASE_DB_URL` is set, and never against `ixvwfbuvfxxsjiywhbbb` |
+| `secrets-audit` | yes | Tracked files contain no private keys, live tokens, or service_role JWTs |
+| `bundle-gate` | yes | First-load JS for product and checkout is at most 180KB gz. Also greps `.next/static` for secret env names |
+| `lighthouse` | yes | Accessibility and SEO both >95 on a product URL and on `/checkout`. Checkout's `is-crawlable` fail is dropped only while `robots.txt` disallows that path |
 | `e2e` | skips | Playwright on a localhost production build. Skips until `CI_SUPABASE_URL` exists |
 | `e2e-preview` | skips | Playwright against the pull request's Vercel preview. Same gate |
 
-None of the first four carries `continue-on-error`, and none is conditional, so
+None of the blocking jobs carries `continue-on-error`, and none is conditional, so
 a red one is a red check on the pull request.
 
 The two E2E jobs are not duplicates. `e2e` is the gate on the **code**: it
@@ -67,6 +78,32 @@ only database either could reach today is production. Each prints an annotation
 saying so; a job that quietly does nothing is indistinguishable from a job that
 passed. Promote either to a required check once the secret points at a
 disposable project.
+
+## `preview-supabase.yml`
+
+Creates an ephemeral Supabase branch named `pr-<number>` when
+`SUPABASE_ACCESS_TOKEN` and `SUPABASE_PREVIEW_PROJECT_REF` are both set.
+Skips with a warning when they are not. **Refuses** if the preview project ref
+is the production project `ixvwfbuvfxxsjiywhbbb`.
+
+This is not a second Vercel deploy. Vercel still creates the preview via its
+GitHub integration. Wiring the branch URL into that preview is a dashboard
+step (the Supabase Vercel integration), not a `VERCEL_TOKEN` in this
+repository.
+
+## `production-rollback.yml`
+
+`workflow_dispatch` with a SHA. Prints `git revert --no-edit <sha>` and points
+at `docs/APPLY-ORDER.md`. It does not push and it does not call Vercel. A
+workflow that did would need a production credential on a public repo.
+
+The one-command rollback remains, in Terminal:
+
+```
+git revert --no-edit <production-sha> && git push origin main
+```
+
+Vercel builds the revert because it already deploys `main`.
 
 ## `production-smoke.yml`
 

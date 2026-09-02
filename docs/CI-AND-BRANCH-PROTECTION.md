@@ -66,6 +66,10 @@ build reads.
 | Typecheck (changed files) | `tsc --strict` over the diff |
 | Unit tests + money coverage floors | `vitest` with per-file coverage floors on the money path |
 | Build | `pnpm build` (Turbopack) |
+| Migration dry-run | Structural SQL + APPLY-ORDER. Live ROLLBACK skipped until `CI_SUPABASE_DB_URL` |
+| Secrets audit | Tracked-tree secret values |
+| Bundle gate (JS 180KB gz) | First-load JS ceiling after Build, plus `.next/static` secret names |
+| Lighthouse product + checkout | SEO and a11y >95 against the preview or production host |
 | E2E (Playwright) | **skips**, by design, until it has a database that is not production |
 
 ### Caching

@@ -72,6 +72,9 @@ Same ruleset, still under `Branch rules`:
     | `Typecheck (changed files)`       | `pnpm typecheck:changed`              |
     | `Unit tests + money coverage floors` | `pnpm test:coverage`               |
     | `Build`                           | `pnpm build`                          |
+    | `Migration dry-run`               | SQL structural pass + APPLY-ORDER inventory |
+    | `Secrets audit`                   | no secret values in tracked files     |
+    | `Bundle gate (JS 180KB gz)`       | first-load JS ceiling + client bundle secret names |
 
 A check only becomes selectable after it has reported on this repository at
 least once. If a name does not appear in the picker, push any branch, let CI
@@ -81,6 +84,10 @@ run, and come back.
 `CI_SUPABASE_URL` is absent, and a required check that skips can never
 report success, so the PR stays unmergeable forever. Add it after step 4.
 
+**Add `Lighthouse product + checkout` after it has reported green once.** It
+waits up to 12 minutes for the Vercel preview, so a required check that
+times out on a missing preview would block every PR.
+
 ---
 
 ## 4. Repository secrets, which is what unblocks E2E
@@ -89,9 +96,12 @@ report success, so the PR stays unmergeable forever. Add it after step 4.
 
 | Secret                     | Needed by                        |
 | -------------------------- | -------------------------------- |
-| `CI_SUPABASE_URL`          | E2E, Build                       |
-| `CI_SUPABASE_ANON_KEY`     | E2E, Build                       |
-| `CI_SUPABASE_SECRET_KEY`   | E2E, Build                       |
+| `CI_SUPABASE_URL`          | E2E (not Build)                  |
+| `CI_SUPABASE_ANON_KEY`     | E2E                              |
+| `CI_SUPABASE_SECRET_KEY`   | E2E                              |
+| `CI_SUPABASE_DB_URL`       | Migration dry-run live ROLLBACK (disposable DB only) |
+| `SUPABASE_ACCESS_TOKEN`    | Preview Supabase branch          |
+| `SUPABASE_PREVIEW_PROJECT_REF` | Preview Supabase branch (must not be `ixvwfbuvfxxsjiywhbbb`) |
 | `SENTRY_ORG`               | source map upload (optional)     |
 | `SENTRY_PROJECT`           | source map upload (optional)     |
 | `SENTRY_AUTH_TOKEN`        | source map upload (optional)     |
