@@ -297,3 +297,21 @@ Retry, כולל DLQ של החיפוש), ‏/admin/status (בריאות תלוי�
 **נדחה/נדחה-לעתיד:** טבלת `payment_discrepancies` פרסיסטנטית עם notes
 ו-resolve. עם אפס עסקאות אמת (מסוף mock) אין עדיין פער אחד לתעד; שכבת
 מעקב-טיפול נכנסת כשיש היסטוריה לטפל בה. נרשם כהרחבה עתידית, לא כחוב.
+
+## STEPS 43–45 — ‏PWA/פוש/ארנק: שלושתם סגורים בסריקה (02.09)
+
+**43 ‏PWA:** קיים במלואו — ‏manifest.ts (‏standalone, אייקונים מ-script
+ייעודי, ‏start_url נקי בכוונה), ‏public/sw.js שכל עיצובו הוא "לא לכלוא
+deploy שבור" (מסמכים לעולם לא cache-first; ‏API/checkout/account מוחרגים),
+‏/offline בעברית, ‏ServiceWorkerRegistrar. ‏install prompt "אחרי רכישה
+ראשונה" נדחה — ‏prompt כפוי הוא anti-pattern מתועד; הדפדפן מציע לבד.
+
+**44 ‏web-push:** נדחה — צינור הפוש הפרוס הוא Expo push (‏push_tokens
+בפרודקשן, ‏expo.ts, עמודות push_* על ה-outbox, ניקוז באותו cron). ‏VAPID
+web-push היה טרנספורט שלישי מקביל לאותם התראות; האפליקציה המשולבת (G10)
+היא ערוץ המובייל.
+
+**45 ‏passes ושיתוף:** קיים — חבילת ‏lib/wallet מלאה (‏pkpass, ‏Google
+Wallet JWT, ‏/api/wallet/apple/[id], כפתורים שמסתירים עצמם כשה-env חסר),
+‏WhatsAppShareButton/FacebookShareButton עם טסטים, ועמוד ‏/coupon/[id]
+הוא תצוגת ה-QR הניתנת להדפסה (עם תיקון wa.me למספר מקומי).
