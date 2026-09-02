@@ -20,7 +20,6 @@ export const vendorFormSchema = z.object({
   bank_name: z.string().nullable().optional(),
   bank_branch: z.string().nullable().optional(),
   bank_account: z.string().nullable().optional(),
-  commission_rate: z.coerce.number().min(0).max(100).default(90),
   logo_url: z.string().nullable().optional(),
   status: vendorStatusSchema.default('pending'),
 })

@@ -24,6 +24,9 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   fulfilled: 'סופקה',
   cancelled: 'בוטלה',
   refunded: 'הוחזרה',
+  // The coupon settlement terminal: the prepayment settled to the platform at
+  // payment time. Reached by the 137 guard's paid -> platform_settled edge.
+  platform_settled: 'סולק לפלטפורמה',
 }
 
 export const ORDER_ITEM_STATUS_LABELS: Record<OrderItemStatus, string> = {
@@ -41,6 +44,7 @@ export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   succeeded: 'הצליח',
   failed: 'נכשל',
   refunded: 'הוחזר',
+  platform_settled: 'סולק לפלטפורמה',
 }
 
 export const PAYMENT_KIND_LABELS: Record<PaymentKind, string> = {
@@ -67,6 +71,8 @@ export const PRODUCT_TYPE_LABELS: Record<ProductType, string> = {
   coupon: 'קופון',
   physical: 'מוצר פיזי',
   service: 'שירות',
+  // 135a. Billed on a schedule through a saved card rather than once.
+  recurring: 'מנוי',
 }
 
 export const APPROVAL_STATUS_LABELS: Record<ProductApprovalStatus, string> = {
@@ -117,6 +123,8 @@ export const REFERRAL_STATUS_LABELS: Record<ReferralStatus, string> = {
   pending: 'ממתין',
   completed: 'הושלם',
   rejected: 'נדחה',
+  // Held for a human: the automatic checks matched a fraud pattern.
+  flagged: 'סומן לבדיקה',
 }
 
 export const PENDING_QUEUE_LABELS: Record<string, string> = {
