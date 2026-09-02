@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto'
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { gzipSync } from 'node:zlib'
@@ -13,8 +13,10 @@ import {
 import {
   A11Y_MIN,
   SEO_MIN,
+  failedBinaryAudits,
   gatedCategoryScore,
   parseRobotsDisallow,
+  rewriteToMeasuredOrigin,
   robotsDisallows,
 } from '../../scripts/lighthouse-ci.mjs'
 import {
@@ -85,6 +87,42 @@ describe('bundle gate', () => {
     expect(result.ok).toBe(false)
     expect(result.over[0]?.route).toContain('product')
   })
+
+  it('does not count Next runtime toward the 180KB first-load gate', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'bundle-gate-'))
+    mkdirSync(join(dir, 'static', 'chunks'), { recursive: true })
+    mkdirSync(join(dir, 'server/app/(store)/checkout'), { recursive: true })
+    mkdirSync(join(dir, 'server/app/(store)/product/[slug]'), { recursive: true })
+    writeFileSync(join(dir, 'static', 'chunks', 'tiny-checkout.js'), randomBytes(40 * 1024))
+    writeFileSync(join(dir, 'static', 'chunks', 'tiny-product.js'), randomBytes(40 * 1024))
+    writeFileSync(join(dir, 'static', 'chunks', 'huge-runtime.js'), randomBytes(200 * 1024))
+    writeFileSync(
+      join(dir, 'build-manifest.json'),
+      JSON.stringify({
+        rootMainFiles: ['static/chunks/huge-runtime.js'],
+        polyfillFiles: [],
+      }),
+    )
+    writeFileSync(
+      join(dir, 'server/app/(store)/checkout/page_client-reference-manifest.js'),
+      `globalThis.__RSC_MANIFEST["/(store)/checkout/page"] = {"entryJSFiles":{"[project]/src/app/(store)/checkout/page":["static/chunks/tiny-checkout.js"]}};`,
+    )
+    writeFileSync(
+      join(dir, 'server/app/(store)/product/[slug]/page_client-reference-manifest.js'),
+      `globalThis.__RSC_MANIFEST["/(store)/product/[slug]/page"] = {"entryJSFiles":{"[project]/src/app/(store)/product/[slug]/page":["static/chunks/tiny-product.js"]}};`,
+    )
+    const result = measureFirstLoad(dir)
+    expect(result.ok).toBe(true)
+    expect(result.runtime.gz).toBeGreaterThan(180 * 1024)
+    expect(result.routes.every((r) => r.gz < 180 * 1024)).toBe(true)
+  })
+
+  it('stages Next output into a visible directory because upload-artifact skips .next', () => {
+    const yml = readFileSync(join(process.cwd(), '.github/workflows/ci.yml'), 'utf8')
+    expect(yml).toMatch(/Stage Next output for the bundle gate/)
+    expect(yml).toMatch(/next-ci-out/)
+    expect(yml).toMatch(/if-no-files-found: error/)
+  })
 })
 
 describe('lighthouse floors', () => {
@@ -97,6 +135,33 @@ describe('lighthouse floors', () => {
     const disallow = parseRobotsDisallow('User-agent: *\nDisallow: /checkout\nDisallow: /cart\n')
     expect(robotsDisallows(disallow, '/checkout')).toBe(true)
     expect(robotsDisallows(disallow, '/product/airpods')).toBe(false)
+  })
+
+  it('rewrites a sitemap loc on another host onto the measured origin', () => {
+    expect(
+      rewriteToMeasuredOrigin(
+        'https://kenyonexpress.co.il/product/barbecue/',
+        'https://kenyonexpress.vercel.app',
+      ),
+    ).toBe('https://kenyonexpress.vercel.app/product/barbecue/')
+    expect(rewriteToMeasuredOrigin('/product/airpods', 'https://kenyonexpress.vercel.app/')).toBe(
+      'https://kenyonexpress.vercel.app/product/airpods',
+    )
+  })
+
+  it('lists failed binary a11y audits', () => {
+    const report = {
+      categories: {
+        accessibility: {
+          auditRefs: [{ id: 'color-contrast' }, { id: 'document-title' }],
+        },
+      },
+      audits: {
+        'color-contrast': { score: 0, scoreDisplayMode: 'binary' },
+        'document-title': { score: 1, scoreDisplayMode: 'binary' },
+      },
+    }
+    expect(failedBinaryAudits(report, 'accessibility')).toEqual(['color-contrast'])
   })
 
   it('drops is-crawlable from SEO only when asked', () => {

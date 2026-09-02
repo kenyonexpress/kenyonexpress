@@ -3,9 +3,12 @@
  * Fail the build when first-load JS for the product or checkout route exceeds
  * 180KB gzipped.
  *
- * Next 16 (Turbopack) does not write app-build-manifest.json. First-load is
- * `entryJSFiles` in the route's `page_client-reference-manifest.js` plus
- * `rootMainFiles` and `polyfillFiles` from build-manifest.json.
+ * Next 16 (Turbopack) does not write app-build-manifest.json. The gated
+ * first-load is `entryJSFiles` in the route's `page_client-reference-manifest.js`
+ * (page + layout client graph). `rootMainFiles` and `polyfillFiles` are the
+ * Next runtime. They are logged, not added to the 180KB ceiling: that runtime
+ * alone is already over 180KB gz on Next 16, so including it makes the gate
+ * permanently red without measuring the app.
  *
  * Exit: 0 under the ceiling, 1 over, 2 no build output.
  */
@@ -81,15 +84,11 @@ function fromAppBuildManifest(nextDir) {
 }
 
 function fromClientReference(nextDir) {
-  const runtime = runtimeFiles(nextDir)
   const routes = []
   for (const spec of GATED_CLIENT_MANIFESTS) {
     const full = join(nextDir, spec.file)
     if (!existsSync(full)) continue
-    const listed = [
-      ...entryJsFromClientReference(readFileSync(full, 'utf8'), spec.pageKey),
-      ...runtime,
-    ]
+    const listed = entryJsFromClientReference(readFileSync(full, 'utf8'), spec.pageKey)
     const measured = gzipListed(nextDir, listed)
     routes.push({ route: spec.route, ...measured })
   }
@@ -99,19 +98,32 @@ function fromClientReference(nextDir) {
 export function measureFirstLoad(nextDir = '.next') {
   const root = resolve(process.cwd(), nextDir)
   if (!existsSync(root)) {
-    return { ok: false, reason: 'missing-build', routes: [], over: [] }
+    return {
+      ok: false,
+      reason: 'missing-build',
+      routes: [],
+      over: [],
+      runtime: { files: 0, gz: 0 },
+    }
   }
 
   const fromClient = fromClientReference(root)
   const fromApp = fromAppBuildManifest(root)
   const routes = fromClient.length > 0 ? fromClient : fromApp
+  const runtime = gzipListed(root, runtimeFiles(root))
 
   if (routes.length === 0) {
-    return { ok: false, reason: 'missing-routes', routes: [], over: [] }
+    return { ok: false, reason: 'missing-routes', routes: [], over: [], runtime }
   }
 
   const over = routes.filter((r) => r.gz > MAX_FIRST_LOAD_GZ)
-  return { ok: over.length === 0, reason: over.length ? 'over-budget' : 'ok', routes, over }
+  return {
+    ok: over.length === 0,
+    reason: over.length ? 'over-budget' : 'ok',
+    routes,
+    over,
+    runtime,
+  }
 }
 
 function formatKb(bytes) {
@@ -130,7 +142,10 @@ function main() {
     )
     process.exit(2)
   }
-  console.log(`bundle-gate: ceiling ${formatKb(MAX_FIRST_LOAD_GZ)} gz`)
+  console.log(`bundle-gate: ceiling ${formatKb(MAX_FIRST_LOAD_GZ)} gz (page + layout client graph)`)
+  console.log(
+    `  info runtime ${formatKb(result.runtime.gz)} gz (${result.runtime.files} files, not gated)`,
+  )
   for (const route of result.routes) {
     const flag = route.gz > MAX_FIRST_LOAD_GZ ? 'FAIL' : 'ok'
     console.log(`  ${flag} ${route.route} ${formatKb(route.gz)} gz (${route.files} files)`)

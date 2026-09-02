@@ -11,6 +11,10 @@
  * URL; every other SEO audit still has to pass. Product pages are allowed to
  * be crawled, so their SEO score includes `is-crawlable`.
  *
+ * Sitemap loc entries currently use kenyonexpress.co.il, which still serves
+ * WordPress until DNS cutover. Product URLs are rewritten onto LIGHTHOUSE_BASE
+ * so this job measures the Next app, not WordPress.
+ *
  * Usage (Terminal):
  *   LIGHTHOUSE_BASE=https://kenyonexpress.vercel.app node scripts/lighthouse-ci.mjs
  */
@@ -59,21 +63,46 @@ export function gatedCategoryScore(report, category, options = {}) {
   return Math.round((scoreSum / weightSum) * 100)
 }
 
+export function rewriteToMeasuredOrigin(href, base) {
+  const origin = new URL(base).origin
+  const page = new URL(href, `${origin}/`)
+  return new URL(`${page.pathname}${page.search}${page.hash}`, `${origin}/`).href
+}
+
 export async function firstProductUrl(base) {
   const headers = bypassHeaders()
   const sitemapRes = await fetch(`${base.replace(/\/$/, '')}/sitemap.xml`, { headers })
   if (sitemapRes.ok) {
     const xml = await sitemapRes.text()
     const match = xml.match(/https?:\/\/[^<\s]+\/product\/[^<\s]+/)
-    if (match) return match[0].replace(/&amp;/g, '&')
+    if (match) {
+      return rewriteToMeasuredOrigin(match[0].replace(/&amp;/g, '&'), base)
+    }
   }
   const productsRes = await fetch(`${base.replace(/\/$/, '')}/products`, { headers })
   if (productsRes.ok) {
     const html = await productsRes.text()
     const href = html.match(/href="(\/product\/[^"]+)"/)
-    if (href) return `${base.replace(/\/$/, '')}${href[1]}`
+    if (href) return rewriteToMeasuredOrigin(href[1], base)
   }
   return null
+}
+
+export function failedBinaryAudits(report, category) {
+  const cat = report.categories[category]
+  if (!cat) return []
+  const failed = []
+  for (const ref of cat.auditRefs ?? []) {
+    const audit = report.audits[ref.id]
+    if (!audit) continue
+    if (audit.scoreDisplayMode === 'notApplicable' || audit.scoreDisplayMode === 'informative') {
+      continue
+    }
+    if (typeof audit.score === 'number' && audit.score < 1) {
+      failed.push(ref.id)
+    }
+  }
+  return failed
 }
 
 function bypassHeaders() {
@@ -137,7 +166,8 @@ async function main() {
   }
 
   const chrome = chromePath()
-  const product = process.env.LIGHTHOUSE_PRODUCT_URL || (await firstProductUrl(base))
+  const productRaw = process.env.LIGHTHOUSE_PRODUCT_URL || (await firstProductUrl(base))
+  const product = productRaw ? rewriteToMeasuredOrigin(productRaw, base) : null
   const checkout = `${base}/checkout`
   if (!product) {
     console.error('lighthouse-ci: no /product/ URL in sitemap or /products')
@@ -173,6 +203,8 @@ async function main() {
         crawlableDropped: scores.crawlableDropped,
       })
       if (scores.accessibility < A11Y_MIN) {
+        const failed = failedBinaryAudits(report, 'accessibility')
+        console.error(`failed a11y audits (${page.name}): ${failed.join(', ') || '(none listed)'}`)
         failures.push(`${page.name}: a11y ${scores.accessibility} < ${A11Y_MIN}`)
       }
       if (scores.seo < SEO_MIN) {

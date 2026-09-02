@@ -312,10 +312,21 @@ jobs:
             next-${{ runner.os }}-
 
       - run: pnpm build
+      # upload-artifact@v4 skips hidden paths by default. Measured 2026-09-02
+      # on run 33580665364: path `.next/` logged "No files were found" and the
+      # bundle-gate job then failed to download `next-build`. Copy into a
+      # visible directory and keep `.next/cache` here so the cache post-step
+      # still has something to save.
+      - name: Stage Next output for the bundle gate
+        run: |
+          mkdir -p next-ci-out
+          tar -C .next -cf - --exclude=cache . | tar -C next-ci-out -xf -
+          test -f next-ci-out/build-manifest.json
       - uses: actions/upload-artifact@v4
         with:
           name: next-build
-          path: .next/
+          path: next-ci-out/
+          if-no-files-found: error
           retention-days: 3
 
   # E2E drives a real browser against a real database, so it needs a Supabase
