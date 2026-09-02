@@ -9,7 +9,7 @@ below. See the "APPLIED IN PRODUCTION" table in `README.md`, which carries the
 version string and the query that proved each one. Running any of them again is
 at best a no-op and at worst an error.
 
-## The thirteen that remain, in order
+## The fourteen that remain, in order
 
 Order matters only where a **depends on** column is filled. Everything else is
 independent and may be applied in any sequence, or not at all.
@@ -29,6 +29,7 @@ independent and may be applied in any sequence, or not at all.
 | 14 | `147_money_agorot_remaining_twins.sql` | the last four money columns with no generated twin | — | `drop column <col>_agorot` |
 | 15 | `148_refund_destination.sql` | where a refund went: card or wallet | — | `drop column destination; drop type refund_destination` |
 | 16 | `149_audit_log_append_only.sql` | audit_log refuses UPDATE/DELETE for every role, service_role included | — | `drop trigger tg_audit_log_append_only on audit_log` |
+| 17 | `150_account_deletion.sql` | fn_anonymize_user + the account_deleted outbox kind | — | in file header |
 
 ## The money set, 138 through 141
 

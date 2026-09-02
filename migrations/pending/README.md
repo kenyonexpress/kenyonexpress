@@ -242,6 +242,25 @@ list from this directory and checks it against every `.ts`/`.tsx` in **both**
 `src/` and `apps/`, so revoking a function the Expo till uses fails a test
 rather than a till.
 
+## `150_account_deletion.sql`, added 2026-09-02
+
+The deletion the privacy policy promises, with no code behind the promise until
+now. `fn_anonymize_user` (SECURITY DEFINER, EXECUTE for service_role only)
+anonymizes the profile in place -- orders keep their FK and their statutory
+7-year retention -- deletes the personal satellites (addresses, saved cards,
+push tokens, carts, recent searches), and writes the erasure to audit_log.
+Owner columns verified against production: three tables key on `user_id`, two
+on `profile_id`. Plus the `account_deleted` outbox kind for the goodbye email.
+
+**Dry run against production, rolled back, on a real profile:** email hashed to
+`deleted+…@anonymized.invalid`, name replaced, satellites 0, orders preserved,
+idempotent rerun OK, null uid refused 22004.
+
+The server action works before this is applied: it tries the RPC, and on
+PGRST202 falls back to the same steps through the service client, deriving the
+same email hash byte-for-byte (verified: node and Postgres agree on
+`deleted+9f89c84a559f5736@…` for the zero uuid).
+
 ## `149_audit_log_append_only.sql`, added 2026-09-02
 
 Production has NO triggers on `audit_log`, and RLS does not bind service_role,
