@@ -22,11 +22,19 @@ function read(path: string): string {
   return readFileSync(resolve(process.cwd(), path), 'utf8')
 }
 
-/** `--color-brand-primary: #fed700;` out of the stylesheet the site renders from. */
+/**
+ * `--color-brand-primary: #fed700;` out of the stylesheet the site renders from.
+ *
+ * The `@theme` block moved from `src/app/globals.css` to
+ * `src/styles/tokens.css` on 2026-09-03. Both are read, newest location first,
+ * so this keeps working wherever the declaration lives.
+ */
 function siteBrandColour(): string {
-  const css = read('src/app/globals.css')
+  const css = [read('src/styles/tokens.css'), read('src/app/globals.css')].join('\n')
   const match = css.match(/--color-brand-primary:\s*(#[0-9a-fA-F]{6})/)
-  if (!match?.[1]) throw new Error('globals.css no longer declares --color-brand-primary')
+  if (!match?.[1]) {
+    throw new Error('neither tokens.css nor globals.css declares --color-brand-primary')
+  }
   return match[1].toLowerCase()
 }
 

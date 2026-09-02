@@ -15,7 +15,7 @@ const MENU_LINK_STYLE = {
   fontSize: 14,
   lineHeight: 1.5,
   whiteSpace: 'normal' as const,
-  borderBottom: '1px solid rgb(221, 221, 221)',
+  borderBottom: '1px solid var(--color-border)',
 } as const
 
 export default function HeroCategorySidebar() {

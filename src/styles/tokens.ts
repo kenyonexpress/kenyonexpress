@@ -10,7 +10,7 @@ export const ELECTRO = {
 
 /**
  * The site-wide palette. Every colour a component may use lives here, is
- * mirrored into `@theme` in `src/app/globals.css` as `--color-<name>`, and is
+ * mirrored into `@theme` in `src/styles/tokens.css` as `--color-<name>`, and is
  * consumed only through the Tailwind utility that property generates
  * (`bg-brand`, `text-heading`, `border-rule`, ...). No `.tsx` file is allowed
  * to name a hex; `tokens.test.ts` enforces both halves of that rule.
@@ -99,7 +99,7 @@ export const SITE = {
     /**
      * Banner CTA button. Darkened from #ff6b00 for WCAG AA: the button's label
      * is white, bold and 12px, and white on #ff6b00 is 2.86:1. See the note on
-     * --color-promo-flame in globals.css.
+     * --color-promo-flame in tokens.css.
      */
     flame: '#c24d00',
   },
@@ -140,7 +140,7 @@ export const SITE = {
 } as const
 
 /**
- * Every custom property `globals.css` must declare in its `@theme` block, and
+ * Every custom property `tokens.css` must declare in its `@theme` block, and
  * the value it must carry. `tokens.test.ts` asserts the stylesheet agrees with
  * this map, so a colour can only be changed here.
  *
@@ -200,7 +200,7 @@ export const SITE_CSS_VARS: Record<string, string> = {
 }
 
 /**
- * Non-colour tokens `globals.css` must declare, and the value each carries.
+ * Non-colour tokens `tokens.css` must declare, and the value each carries.
  *
  * Only two kinds of number get in here: a size that MORE THAN ONE component
  * uses (the shared type scale), and a box that was MEASURED off the live site

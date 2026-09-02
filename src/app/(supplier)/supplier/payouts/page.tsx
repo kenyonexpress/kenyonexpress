@@ -153,11 +153,11 @@ export default async function SupplierPayoutsPage() {
 function Summary({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <div className="rounded-2xl border border-gray-200 bg-white p-3 text-center shadow-sm">
-      <p className="text-[11px] text-gray-500">{label}</p>
+      <p className="text-micro text-gray-500">{label}</p>
       <p className="mt-1 text-base font-extrabold text-heading" dir="ltr">
         {value}
       </p>
-      {hint ? <p className="mt-0.5 text-[11px] text-gray-400">{hint}</p> : null}
+      {hint ? <p className="mt-0.5 text-micro text-gray-400">{hint}</p> : null}
     </div>
   )
 }

@@ -154,15 +154,30 @@ describe('product page tokens', () => {
  * a token" was a convention: 74 raw hexes had accumulated across 33 components
  * because nothing objected when one more was pasted in. Now a hex in a .tsx
  * fails the suite, and the only way to add a colour is to name it in tokens.ts
- * and mirror it into globals.css.
+ * and mirror it into tokens.css.
+ *
+ * The `@theme` block moved from `src/app/globals.css` to `src/styles/tokens.css`
+ * on 2026-09-03. Both files are read and concatenated rather than just the new
+ * one: if a `@theme` block is ever added back to globals.css, the tokens in it
+ * have to face this same contract instead of quietly sitting outside it.
  */
 function globalsCss(): string {
-  return readFileSync(resolve(process.cwd(), 'src/app/globals.css'), 'utf8')
+  return [
+    readFileSync(resolve(process.cwd(), 'src/styles/tokens.css'), 'utf8'),
+    readFileSync(resolve(process.cwd(), 'src/app/globals.css'), 'utf8'),
+  ].join('\n')
 }
 
 function themeBlock(source: string): string {
-  const start = source.indexOf('@theme {')
-  return source.slice(start, source.indexOf('\n}', start))
+  // Every `@theme` block in the concatenated sources, not just the first.
+  const blocks: string[] = []
+  let start = source.indexOf('@theme {')
+  while (start !== -1) {
+    const end = source.indexOf('\n}', start)
+    blocks.push(source.slice(start, end === -1 ? undefined : end))
+    start = source.indexOf('@theme {', end === -1 ? source.length : end)
+  }
+  return blocks.join('\n')
 }
 
 /** Every .tsx under src/, repo-relative. */
@@ -223,6 +238,29 @@ describe('site colour tokens', () => {
       }
     }
     expect(offenders, `raw hex in components:\n  ${offenders.join('\n  ')}`).toHaveLength(0)
+  })
+
+  /**
+   * THE HEX RULE HAD A HOLE THE SAME SIZE AS ITSELF.
+   *
+   * `rgb(221, 221, 222)` is `#dddddd` written another way, and the assertion
+   * above never looked at it. Five of them had settled into components by
+   * 2026-09-03 -- a border already tokenised as `--color-border`, the slider's
+   * inactive dot, and the consent banner's hairline, shadow and body ink --
+   * and every one of them was invisible to the gate that exists to prevent
+   * exactly that.
+   *
+   * Same allowlist as the hex rule, for the same two reasons.
+   */
+  it('carries no raw rgb() or rgba() in any component', () => {
+    const offenders: string[] = []
+    for (const file of tsxFiles()) {
+      if (HEX_ALLOWLIST.has(file)) continue
+      for (const fn of readFileSync(file, 'utf8').match(/\brgba?\(\s*\d[^)]*\)/g) ?? []) {
+        offenders.push(`${file}: ${fn}`)
+      }
+    }
+    expect(offenders, `raw rgb() in components:\n  ${offenders.join('\n  ')}`).toHaveLength(0)
   })
 
   it('keeps the Google mark out of the palette', () => {

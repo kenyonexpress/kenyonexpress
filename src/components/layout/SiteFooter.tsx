@@ -122,10 +122,10 @@ export default function SiteFooter() {
             </svg>
             {/* live: 20.006px / 48.5946px / 500, with the marketing line beside
                 it at 14.994px / 25.6997px */}
-            <h2 className="m-0 text-[20.006px] font-medium leading-[48.5946px]">
+            <h2 className="m-0 text-newsletter-head font-medium leading-newsletter-head">
               קנה וחסוך, הירשם ל Newsletter
             </h2>
-            <span className="text-[14.994px] leading-[25.6997px]">
+            <span className="text-newsletter-note leading-newsletter-note">
               לקבלת הנחות והטבות $ נוספות . . .
             </span>
           </div>

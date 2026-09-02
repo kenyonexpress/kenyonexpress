@@ -118,7 +118,7 @@ export default async function AdminVouchersPage(props: {
             variant={VOUCHER_STATUS_VARIANTS[v.status]}
           />
           {isLapsedButUnswept(v) && (
-            <span className="text-[11px] text-amber-700">פג בפועל, טרם נסרק על ידי הטאטוא</span>
+            <span className="text-micro text-amber-700">פג בפועל, טרם נסרק על ידי הטאטוא</span>
           )}
         </div>
       ),

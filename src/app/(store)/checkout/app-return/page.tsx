@@ -54,7 +54,7 @@ export default function AppReturnPage(props: Props) {
     <Suspense
       fallback={
         <div dir="rtl" className="flex min-h-[60vh] items-center justify-center p-6 text-center">
-          <p className="text-[15px] leading-relaxed text-muted">חוזרים לאפליקציה...</p>
+          <p className="text-body-lg leading-relaxed text-muted">חוזרים לאפליקציה...</p>
         </div>
       }
     >
@@ -88,7 +88,7 @@ async function AppReturnBody({ searchParams }: Props) {
       <meta httpEquiv="refresh" content={`0;url=${deepLink}`} />
       <div className="max-w-[420px]">
         <h1 className="mb-2.5 text-xl font-extrabold text-heading">{heading}</h1>
-        <p className="text-[15px] leading-relaxed text-muted">{message}</p>
+        <p className="text-body-lg leading-relaxed text-muted">{message}</p>
         {/*
           The manual escape hatch. A user whose phone blocked both the
           interception and the refresh is otherwise stranded on a blank page
@@ -100,7 +100,7 @@ async function AppReturnBody({ searchParams }: Props) {
         >
           חזרה לאפליקציה
         </a>
-        <div className="mt-3.5 text-[13px]">
+        <div className="mt-3.5 text-small">
           <Link href={`/checkout/return?order_id=${encodeURIComponent(orderId)}`}>
             להמשך באתר במקום
           </Link>

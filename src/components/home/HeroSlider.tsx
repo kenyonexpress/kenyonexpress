@@ -48,7 +48,7 @@ export type HeroSlide = {
 const T = ELECTRO_HERO.typography
 const SLIDE = ELECTRO_HERO.slider
 const DOT_ACTIVE = 'var(--color-brand-primary)'
-const DOT_INACTIVE = 'rgba(125, 125, 125, 0.5)'
+const DOT_INACTIVE = 'var(--color-slider-dot-idle)'
 
 // Live slider geometry: an 8px round dot, 30x8 rounded bar for the current one.
 const DOT_HEIGHT = 8
@@ -155,22 +155,23 @@ const AUTOPLAY_MS = 5000
 const RS = {
   /** headline 1: rs-layer .tp-caption headline */
   // 51 at lg, remeasured off refs 2026-09-02 (live "Open Sans" 51px; 58 was the electro demo)
-  h1: 'text-[43px] font-light lg:text-[51px]',
+  h1: 'text-hero-line1 font-light lg:text-hero-line1-lg',
   h1Leading: 'leading-[43px] lg:leading-[58px]',
   /** headline 2: the lighter second line, always 5px shy of h1 */
   // 45 at lg, remeasured off refs 2026-09-02 (58/51 were the electro demo's sizes)
-  h2: 'text-[38px] font-light lg:text-[45px]',
+  h2: 'text-hero-line2 font-light lg:text-hero-line2-lg',
   h2Leading: 'leading-[38px] lg:leading-[51px]',
   /** tagline strip under the headlines */
-  tagline: 'text-[11px] font-bold leading-[11px] lg:text-[19px] lg:leading-[19px]',
+  tagline: 'text-micro font-bold leading-[11px] lg:text-hero-tagline-lg lg:leading-[19px]',
   /** "standard" caption line (product slide only) */
-  standard: 'text-[11px] font-bold leading-[15px] lg:text-[15px]',
+  standard: 'text-micro font-bold leading-[15px] lg:text-body-lg',
   /** small promo line above the big price */
-  promoSmall: 'text-[12px] leading-[13px] lg:text-[13px]',
-  promoSmallWelcome: 'text-[12px] font-normal leading-[15px] lg:text-[15px]',
+  promoSmall: 'text-tiny leading-[13px] lg:text-small',
+  promoSmallWelcome: 'text-tiny font-normal leading-[15px] lg:text-body-lg',
   /** the big promo price */
-  promoLarge: 'text-[35px] font-bold leading-[35px] lg:text-[50px] lg:leading-[50px]',
-  promoLargeWelcome: 'text-[35px] font-bold leading-[40px] lg:text-[45px] lg:leading-[50px]',
+  promoLarge: 'text-hero-promo font-bold leading-[35px] lg:text-hero-promo-lg lg:leading-[50px]',
+  promoLargeWelcome:
+    'text-hero-promo font-bold leading-[40px] lg:text-hero-promo-welcome-lg lg:leading-[50px]',
   /** copy column: 31px gutter from the slide edge */
   /**
    * `hero-copy-column` and `hero-headline` are hooks for the handheld override
@@ -223,8 +224,8 @@ const RS = {
  * wrap comes back at any size the column cannot hold.
  */
 const WELCOME_HEAD = {
-  line1: 'text-[43px] leading-[43px] lg:text-[51px] lg:leading-[51px]',
-  line2: 'text-[38px] leading-[38px] lg:text-[45px] lg:leading-[45px]',
+  line1: 'text-hero-line1 leading-[43px] lg:text-hero-line1-lg lg:leading-[51px]',
+  line2: 'text-hero-line2 leading-[38px] lg:text-hero-line2-lg lg:leading-[45px]',
 } as const
 
 /**
