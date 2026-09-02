@@ -87,6 +87,12 @@ export const SITE = {
     /** Inline warning banner (unsaved changes, validation notice). */
     warning: '#fffbe6',
     footer: '#333e48',
+    /**
+     * The off-canvas mobile drawer's paper. Measured on live at 380 and 768:
+     * `div.off-canvas-navigation.light` is rgb(253,252,252) -- not white, and
+     * the one-point-off-white is visible against the page behind it.
+     */
+    drawer: '#fdfcfc',
   },
   /**
    * Promo tints for the left-rail banner cards. Three near-white washes that
@@ -177,6 +183,7 @@ export const SITE_CSS_VARS: Record<string, string> = {
   '--color-bottom-bar': SITE.surface.bottomBar,
   '--color-warning-surface': SITE.surface.warning,
   '--color-footer-bg': SITE.surface.footer,
+  '--color-drawer-bg': SITE.surface.drawer,
 
   '--color-promo-rose': SITE.promo.rose,
   '--color-promo-violet': SITE.promo.violet,

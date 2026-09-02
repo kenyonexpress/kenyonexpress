@@ -94,6 +94,7 @@
   --color-bottom-bar: #eaeaea; /* footer copyright bar */
   --color-warning-surface: #fffbe6; /* inline warning banner */
   --color-footer-bg: #333e48; /* dark footer body (electro home-v7) */
+  --color-drawer-bg: #fdfcfc; /* off-canvas drawer paper (live: rgb(253,252,252)) */
 
   /* --- Promo rail tints ------------------------------------------------------- */
   --color-promo-rose: #fff5f5;
@@ -219,6 +220,42 @@
   --spacing-newsletter-field: 41px;
   --spacing-newsletter-bar: 80px; /* live newsletter bar height */
   --spacing-deals-top: 30px; /* live deals grid top offset */
+
+  /* --- The app shell, measured at all three widths ---------------------------
+     Read off refs/ke_live_computed.json on 2026-09-03. The live shell is
+     RESPONSIVE and ours was not: one fixed 37.3 + 109 masthead was served at
+     every width, which is 51px short of live at 380 and 24px tall at 768, and
+     everything below the header inherits that offset band by band.
+
+       width   top bar   header   what the header is
+       ------  --------  -------  ---------------------------------------
+       380     113       84       handheld: icons, logo, hamburger
+       768      38       84       handheld: same, wider
+       1440     38      110       masthead: logo + nav, no hamburger
+
+     The 113 at 380 is not a taste: the top bar's four info items (account,
+     secure checkout, fast delivery, nationwide) do not fit one 380px line, so
+     live wraps them onto three 37px rows. Ours hid them below md entirely,
+     which is why our top bar was one row where live has three. */
+  --spacing-topbar-handheld: 112px; /* + 1px border = live's 113 at 380 */
+  --spacing-header-handheld: 83px; /* + 1px border = live's 84 at 380 and 768 */
+  --spacing-topbar-row: 37px; /* one info row; three of them make the 380 bar */
+
+  /* The handheld logo, measured: 100x26 at x205 y141 (380) and x578 y66 (768).
+     The desktop logo is --spacing-logo-w/h above and is four times the size. */
+  --spacing-handheld-logo-w: 100px;
+  --spacing-handheld-logo-h: 26px;
+
+  /* The off-canvas drawer. 280 at 380 and 350 at 768, both measured; the rows
+     are a flat 50px at 14px type, and there are eleven of them (550px), which
+     is exactly KE_LIVE_CATEGORIES. */
+  --spacing-drawer-mobile: 280px;
+  --spacing-drawer-tablet: 350px;
+  --spacing-drawer-row: 50px;
+  /* WCAG 2.5.5 / the brief's 44px floor. Live's hamburger is 34x36, which is
+     under it; ours keeps live's PAINTED size and pads the hit area out to 44,
+     so the pixel comparison sees live's button and a thumb gets the target. */
+  --spacing-touch-min: 44px;
 
   /* --- Type scale, the rest of it (measured) ---------------------------------
      Added 2026-09-03 when the arbitrary `text-[Npx]` values left in components

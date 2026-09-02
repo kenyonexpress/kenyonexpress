@@ -1,5 +1,4 @@
 import HeaderCart from '@/components/cart/HeaderCart'
-import DeferredHeaderSearch from '@/components/search/DeferredHeaderSearch'
 import { ChevronDown, Heart, User } from 'lucide-react'
 import Link from 'next/link'
 
@@ -27,14 +26,17 @@ const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
  * chevron). Live opens a dropdown of regions; ours goes to the suppliers page,
  * where the region actually filters something. Visual parity, honest target.
  *
- * Search is deferred ([32]): CSS-hidden on phones, so mobile Lighthouse must
- * not download or hydrate its suggest/router client graph.
+ * NO SEARCH FIELD. Live's masthead carries a 534px search form at x456..x990
+ * and this component used to render <DeferredHeaderSearch/> in that slot. The
+ * standing project rule is that there is no search UI anywhere, so the slot is
+ * gone rather than hidden: a CSS-hidden field is still in the DOM, still in the
+ * tab order, and still ships its client chunk. `justify-end` closes the gap it
+ * left, which is the one place this component knowingly departs from the
+ * measured layout. The pixel cost is recorded in STATE.md.
  */
 export default function MastheadNav() {
   return (
     <div className="flex min-w-0 flex-1 items-center justify-end ps-6">
-      <DeferredHeaderSearch />
-
       <Link
         href="/suppliers"
         className="me-[14px] ms-[53px] hidden shrink-0 items-center gap-1 text-sm font-medium text-heading transition-opacity hover:opacity-70 lg:flex"
