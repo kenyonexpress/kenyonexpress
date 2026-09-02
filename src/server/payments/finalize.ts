@@ -18,6 +18,12 @@ import {
   buildChargeSettledEvents,
   recordSettlementEvents,
 } from '@/server/payments/settlement-events'
+import {
+  type RecurringProductBilling,
+  type SubscriptionAdmin,
+  createSubscriptionsForOrder,
+  planSubscriptions,
+} from '@/server/payments/subscription-create'
 import { sendVoucherEmail } from '@/server/payments/voucher-email'
 import { completeReferralForOrder } from '@/server/referrals/complete'
 import type { Json } from '@/types/database'
@@ -608,18 +614,85 @@ export async function finalizeOrder(input: {
     // seen by a browser that DID survive is still counted once.
     await reportPurchase(admin, order.id, order.user_id, items as OrderItemRow[])
 
+    let savedTokenId: string | null = null
     if (input.token) {
-      await admin.from('payment_tokens').insert({
-        profile_id: order.user_id,
-        cardcom_token: input.token.token,
-        last_4: input.token.last4,
-        card_brand: input.token.brand,
-        expiry_month: input.token.expiryMonth,
-        expiry_year: input.token.expiryYear,
-        // A token is only chargeable on the terminal that minted it, so the
-        // saved card is useless without knowing which account that was.
-        cardcom_account_id: cardcomAccountId,
-      })
+      const { data: tokenRow } = await admin
+        .from('payment_tokens')
+        .insert({
+          profile_id: order.user_id,
+          cardcom_token: input.token.token,
+          last_4: input.token.last4,
+          card_brand: input.token.brand,
+          expiry_month: input.token.expiryMonth,
+          expiry_year: input.token.expiryYear,
+          // A token is only chargeable on the terminal that minted it, so the
+          // saved card is useless without knowing which account that was.
+          cardcom_account_id: cardcomAccountId,
+        })
+        .select('id')
+        .maybeSingle()
+      savedTokenId = (tokenRow as { id: string } | null)?.id ?? null
+    }
+
+    // THE SUBSCRIPTION IS BORN HERE, and only here. Renewal
+    // (api/cron/subscriptions) and cancellation existed while nothing anywhere
+    // inserted a subscriptions row -- the tables from 135b were applied and
+    // writerless, the same shape as payment_events and refunds before them.
+    //
+    // A recurring line reaching this point means the customer has already been
+    // charged for the first cycle, so a refusal to create the row is LOUD: a
+    // silent skip would take the money once and never renew or deliver.
+    {
+      // product_id is nullable on the row type (a deleted product leaves the
+      // line); a recurring line with no product cannot be planned and is
+      // filtered here so the planner's refusal names a real product id.
+      const recurringLines = (items as OrderItemRow[])
+        .filter((i) => i.product_type === 'recurring' && i.product_id != null)
+        .map((i) => ({
+          productId: i.product_id as string,
+          supplierId: i.supplier_id ?? null,
+          platformPercent: i.platform_percent ?? null,
+        }))
+      if (recurringLines.length > 0) {
+        const { data: billing } = await admin
+          .from('products')
+          .select('id, recurring_amount_agorot, billing_interval, billing_interval_count')
+          .in(
+            'id',
+            recurringLines.map((l) => l.productId),
+          )
+        const plan = planSubscriptions({
+          userId: order.user_id,
+          paymentTokenId: savedTokenId,
+          lines: recurringLines,
+          products: (billing ?? []) as RecurringProductBilling[],
+          now,
+        })
+        if (!plan.ok) {
+          capturePaymentError(new Error('recurring line paid but no subscription plannable'), {
+            stage: 'finalize_order',
+            orderId: order.id,
+            paymentId: input.paymentId,
+            detail: { reason: plan.reason, product_id: plan.productId ?? null },
+          })
+        } else if (order.user_id && savedTokenId) {
+          const created = await createSubscriptionsForOrder(admin as unknown as SubscriptionAdmin, {
+            orderId: order.id,
+            userId: order.user_id,
+            paymentTokenId: savedTokenId,
+            rows: plan.rows,
+            now,
+          })
+          if (created.error) {
+            capturePaymentError(new Error('subscription insert failed after charge'), {
+              stage: 'finalize_order',
+              orderId: order.id,
+              paymentId: input.paymentId,
+              detail: { error: created.error },
+            })
+          }
+        }
+      }
     }
 
     const { error: orderError } = await admin

@@ -379,6 +379,22 @@ async function runBeginCheckout(
     (productRows ?? []).map((p) => [p.id, p as unknown as SettlementProductRow]),
   )
 
+  // A SUBSCRIPTION IS BOUGHT ALONE. The first cycle's charge doubles as the
+  // card tokenisation (ChargeAndCreateToken), and the renewal worker will
+  // charge that token for exactly the subscription amount. A physical or
+  // coupon line in the same order would fold into the same first charge, and
+  // there is no honest way to split one token charge into "the part that
+  // renews" and "the part that was a one-off". Refused rather than untangled.
+  const cartTypes = cart.items.map((i) => productMap.get(i.product_id)?.type ?? 'unknown')
+  const hasRecurring = cartTypes.includes('recurring')
+  if (hasRecurring && cart.items.length > 1) {
+    return {
+      ok: false,
+      error: 'מנוי נרכש בהזמנה נפרדת. סיימו קודם את רכישת המנוי או הסירו אותו מהעגלה',
+      code: 'VALIDATION',
+    }
+  }
+
   // Supplier identity for the snapshot. Loaded in one round trip keyed by the
   // supplier ids the cart's products point at.
   const supplierIds = [
@@ -820,7 +836,10 @@ async function runBeginCheckout(
       orderId: order.id,
       orderNumber: order.id.slice(0, 8).toUpperCase(),
       amountAgorot: settlement.cardCharge,
-      saveToken: input.save_card,
+      // A recurring purchase MUST tokenise: the renewal worker charges the
+      // saved token, so "don't save my card" and "subscribe" cannot both hold.
+      // The PDP says so next to the CTA; this is the server making it true.
+      saveToken: input.save_card || hasRecurring,
       // Both return into the framable stub, never straight into a page that
       // needs a session: Cardcom's navigation into our iframe is cross-site and
       // the Lax session cookie is withheld on it. The stub moves the top window
