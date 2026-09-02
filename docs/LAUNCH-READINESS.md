@@ -427,3 +427,32 @@ Cardcom prod terminal + removing CARDCOM_USE_MOCK (**the blocker** -- checkout
 is live against the mock), DNS
 cutover (the editable zone is NOT the serving zone), merging the release PR,
 the 14 wrong product slugs, and the 768/380 mobile layout project.
+
+---
+
+## נספח מתוארך: מגה-בלוק 2 (‏STEPS 14–22), נמדד 02.09.2026
+
+ה-snapshot למעלה קפוא; הנספח הזה הוא מדידה חדשה על ‏`closeout/v1-final`.
+
+| Gate | תוצאה |
+| --- | --- |
+| `pnpm type-check` | PASS |
+| `pnpm lint` | PASS (biome, 0 findings) |
+| `pnpm test` | PASS — ‏3555 בדיקות ב-264 קבצים |
+| `pnpm build` | PASS |
+| `node scripts/migration-lint.mjs` | PASS — ‏31 קבצים, ‏0 hard, ‏0 soft |
+| `node scripts/bundle-gate.mjs` | PASS — ‏255.6KB gz מול ratchet ‏260KB (יעד ‏180KB = ‏KNOWN-ISSUES ‏#9) |
+| ‏e2e מלא, ‏chromium + ‏mobile-chrome, מול ‏`pnpm start` | ‏453 עברו, ‏8 דולגו, ‏1 flake (‏coupons a11y ב-mobile; ‏3/3 ירוק בחזרה ממוקדת) |
+| `compare.mjs --page=home` ‏1440 | ‏9.08% מול תקרת ‏11% |
+
+| STEP | מה קרה |
+| --- | --- |
+| 14 | ‏migration-lint + ‏bundle-gate + ‏smoke-all-routes; לולאה ירוקה ×3 |
+| 15 | נסגר בסריקה — עגלות נטושות חיות (‏fn_due + ‏UNIQUE + הסכמה); תזכורת שנייה נדחתה |
+| 16 | נסגר בסריקה — ‏fn_complete_referral שלם ומחווט |
+| 17 | נסגר בסריקה — קמפיינים אוטומטיים נדחו (פיצול מקור אמת למחיר) |
+| 18 | **נבנה** — ביקורות מאומתות + רשימת משאלות (מיגרציה 154, ‏RLS היא האימות) |
+| 19 | סורק קיים; נוספו סיכומי היום/30 יום למימושים |
+| 20 | ‏SEO קיים; נוסף ‏BreadcrumbList לקטגוריה |
+| 21 | ‏WP import הושלם 07.08; ‏seed מוצרים בדויים נדחה; נכתב ‏SEED.md |
+| 22 | תוקנו שתי רגרסיות מעבודת ה-fold (‏320px overflow, שני sliders); לולאה ×3 + ‏e2e; תג ‏v1.4.0-rc1-block2 |

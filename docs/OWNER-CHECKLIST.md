@@ -394,6 +394,13 @@ curl -s https://kenyonexpress.co.il/ | grep -c wp-content     # מצפים ל-0
 
 ## פריטים פתוחים שאינם חוסמים השקה
 
+- ‏**מיגרציות ממתינות (147–154)**: שמונה קבצים ב-`migrations/pending/`, כל אחד
+  עם dry-run שבוצע מול פרודקשן וגולגל לאחור, מחכים לאישורך. הסדר המחייב:
+  ‏`migrations/pending/APPLY-ORDER.md`, ההרצה דרך ‏Supabase MCP
+  ‏(`apply_migration`). מיד אחרי ההרצה: ‏`pnpm db:types` לרענון
+  ‏`src/types/database.ts` (ביקורות, רשימת משאלות, payout, refunds — כולם
+  ממתינים לזה כדי לצאת ממצב "מושבת בעדינות").
+
 - ‏**Resend**: <https://resend.com/domains/8cbce0e7-2334-40dc-aba6-fce92e80371f>.
   העתק את שלוש רשומות ה-DNS ל-Cloudflare ולחץ **Verify**. **תעשה את זה מוקדם**:
   עד שהדומיין מאומת כל דואר טרנזקציוני נדחה, כלומר אף קונה לא מקבל שובר.

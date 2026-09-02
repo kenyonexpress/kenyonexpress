@@ -67,9 +67,33 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 קודם: 2026-08-19 22:01 (הצ'ק-אאוט ירד מתחת לשער הפיקסלים, ו-CLS שלו תוקן)
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
-## המשך מ: STEP 22 — סגירת מגה-בלוק 2 (v1.1.0-rc1)
+## המשך מ: STEP 23 — מנוע ארנק (מגה-בלוק 3)
 
-## ידני לאופיר (רמת v1.2): ידני לאופיר: מיגרציות pending לפי סדר דרך MCP; Cardcom prod (‏CARDCOM_USE_MOCK=false + ‏4 מפתחות, ‏CHECKOUT_ENABLED כבר true); ‏DNS cutover (הזון הניתן לעריכה אינו המגיש!); ‏merge ‏PR ‏#26; ‏14 slugs; מובייל 380/768
+## ידני לאופיר (רמת v1.2): מיגרציות pending ‏147–154 לפי ‏APPLY-ORDER.md דרך MCP, **ומיד אחריהן `pnpm db:types`** (הטיפוסים נוצרו מפרודקשן שעוד אין בו reviews/wishlists/payouts); ‏Cardcom prod (‏CARDCOM_USE_MOCK=false + ‏4 מפתחות, ‏CHECKOUT_ENABLED כבר true); ‏DNS cutover (הזון הניתן לעריכה אינו המגיש!); ‏merge ‏PR ‏#26; ‏14 slugs; מובייל 380/768
+
+### ‏02.09 מגה-בלוק 2 (‏STEPS 14–22) — יומן
+
+- ‏STEP 14: ‏migration-lint.mjs (30 קבצים נקיים), ‏bundle-gate.mjs (‏ratchet
+  ‏260KB על baseline נמדד 255.6KB; יעד ‏180KB = ‏KNOWN-ISSUES ‏#9),
+  ‏smoke-all-routes.spec.ts (‏29 מסלולים), טור Owner ב-KNOWN-ISSUES. לולאה
+  ירוקה ×3 + ‏e2e. קומיט ‏2eceb4263.
+- ‏STEP 15–17: נסגרו בסריקה עם דחיות מנומקות (עגלות נטושות חיות וחזקות
+  מהספק; הפניות שלמות ב-SQL; קמפיינים = פיצול מקור אמת למחיר). פירוט
+  ב-MEGA-BLOCK-AUDIT.md.
+- ‏STEP 18: ‏**נבנה** — ביקורות רכישה מאומתת + רשימת משאלות. מיגרציה 154
+  (‏dry-run מגולגל מול פרודקשן: קונה אמיתי עבר, כפול/זר/לא-מאומת נדחו),
+  ‏RLS היא האימות, ‏UI מדורג עד ההחלה (‏PGRST205), ‏AggregateRating רק
+  כשיש ביקורות, לב ה-masthead הופנה ל-/account/wishlist.
+- ‏STEP 19: סורק קיים; נוספו סיכומי היום/30 יום ל-/supplier/redemptions.
+- ‏STEP 20: ‏SEO קיים; נוסף ‏BreadcrumbList לקטגוריה; ‏SearchAction נשמר
+  (‏/search אמיתי).
+- ‏STEP 21: ‏WP import הושלם עוד ב-07.08; ‏seed-dev של מוצרים בדויים נדחה
+  (‏DB יחיד = פרודקשן). נכתב ‏docs/SEED.md.
+- ‏STEP 22: הושלם. ‏e2e מלא חשף שתי רגרסיות מעבודת ה-fold — ‏masthead של
+  ‏300px+gap-38 גלש ב-320 (40 כשלונות rtl-mobile), ושני ‏HeroSlider רכובים
+  (4 כשלונות home). תוקנו (לוגו/gap רספונסיביים מתחת ל-lg, ‏slider יחיד);
+  ‏1440 לא זז — ‏compare ‏9.08%. ‏e2e: ‏453 עברו, ‏1 flake (אומת ‏3/3).
+  לולאה ×3 ירוקה. תג ‏v1.4.0-rc1-block2. **סיום בלוק 2.**
 
 ### ‏02.09 תור הלילה G10-G14 הושלם (תג `v1.2.0-closeout`)
 
