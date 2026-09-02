@@ -242,6 +242,32 @@ list from this directory and checks it against every `.ts`/`.tsx` in **both**
 `src/` and `apps/`, so revoking a function the Expo till uses fails a test
 rather than a till.
 
+## `152_payout_machinery.sql`, added 2026-09-02
+
+The FIFTH instance of the pattern: `admin/payouts.ts` calls four payout
+functions and the supplier page reads `payout_statements`, and production has
+none of it -- not the tables, not the functions, not the supplier payout-terms
+columns. Only the enum exists. Every payout action has failed at runtime since
+the module shipped.
+
+A faithful port of the payout sections of 027 + 051 + 079, stitched in
+dependency order, ADAPTED where 079 was written for the post-059 schema the
+hosted database never got: the generate reads `total_price_ils`,
+`platform_percent`, `commission_agorot` and `supplier_immediate_agorot` -- the
+numbers settlement actually books -- instead of `platform_bp` and
+`supplier_payout_agorot`, which exist nowhere in production. The legacy
+coupon_codes section is deliberately not ported (different shape, zero rows to
+pay). mark_paid's dispute/bank reads became dynamic-if-table-exists, because
+supplier_disputes and supplier_bank_accounts do not exist and 027's refusal
+would have made mark_paid permanently uncallable -- the disease this file
+cures.
+
+**Dry run against production, rolled back:** generate created a statement,
+totalled zero, rolled it over per C8 (cancelled + rolled_over + lines
+deleted); approve/paid/cancel each refused the rolled-over statement with their
+own exact errors. The dry run itself caught a composition bug (a 3-arg grant
+before the 4-arg definition).
+
 ## `151_analytics_ingest.sql`, added 2026-09-02
 
 `/api/a` validates consented client events and calls
