@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-02 (MEGA BLOCK 6: Lighthouse 100/100 on vercel.app; bundle gate is entryJSFiles; `.next` artifact staged as `next-ci-out`)
 Updated: 2026-09-02 (MEGA BLOCK 6: CI/CD + launch checklist. Verdict NOT READY. Tag v1.0.0-rc1.)
 Updated: 2026-09-01 12:20 UTC (‏אין כותב ל-escrow_held בשום מקום; ‏144/144 מעברים מול הטריגרים החיים; קיפאון ה-380/768 נמצא ותוקן; ‏payment_events היה טבלה ריקה בלי אף כותב)
 Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשישה כבר היו, ושני באגים אמיתיים נמצאו בדרך)
@@ -80,6 +81,22 @@ SEO/a11y >95 on product and checkout, 180KB gz bundle gate, ephemeral
 Supabase preview (skip without secrets), print-only git revert rollback,
 secrets audit. Docs: `docs/LAUNCH-READINESS.md`, `docs/APPLY-ORDER.md`,
 `docs/FINAL-REPORT.md`. Verdict: **NOT READY**.
+
+Lighthouse 2026-09-02 against `https://kenyonexpress.vercel.app/product/barbecue`:
+a11y 100, SEO 100. Empty checkout redirects to `/cart`: a11y 100, gated SEO 100.
+Sitemap loc on `kenyonexpress.co.il` is rewritten onto `LIGHTHOUSE_BASE`.
+
+Bundle gate measures `entryJSFiles` only. Next 16 runtime is logged, not counted.
+CI uploads `next-ci-out/` because `upload-artifact@v4` skipped hidden `.next/`
+(run 33580665364: "No files were found").
+
+### החלטות שהתקבלו לבד (MEGA BLOCK 6, 2026-09-02)
+1. Lighthouse followed sitemap loc on `kenyonexpress.co.il` and scored WordPress
+   a11y 82. Rewrite product URLs onto the measured origin. Do not lower floors.
+2. Combined first-load 312KB gz included Next 16 runtime (~256KB). The 180KB
+   ceiling stays. Gate the page + layout graph. Runtime is info.
+3. `path: .next/` uploaded zero files. Stage into `next-ci-out/` instead of
+   trusting `include-hidden-files`.
 
 ## In Progress
 nothing

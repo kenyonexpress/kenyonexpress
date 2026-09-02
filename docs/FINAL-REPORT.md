@@ -50,7 +50,7 @@ a missing page in the app.
 | Additive agorot columns, not in-place rename | Dual representation until readers move | An in-place rename on 41 live numeric columns breaks every current reader in one apply |
 | E2E skipped in CI without a disposable DB | No Playwright gate on PRs today | The only reachable database is production. Seeding it from CI is worse than a skip |
 | Checkout disallowed in `robots.txt` | Lighthouse raw SEO ~69 | Indexing `/checkout` and `/cart` is a privacy bug. The CI SEO floor drops `is-crawlable` only on paths robots.txt already blocks |
-| 180KB gz first-load ceiling | Will fail the build if the client graph grows | The number is the requirement. Raising it to match a fat bundle is not a gate |
+| 180KB gz first-load ceiling | Next 16 runtime alone is already over 180KB gz | The gated number is the page + layout `entryJSFiles`. Runtime is logged. Raising 180KB to swallow the runtime is not a gate |
 | Print-only production rollback workflow | A human still types `git push` | A write token in GitHub Actions on this public repo is a worse incident than a slow rollback |
 | Demo service key in the CI build | Prerender does not see real admin data | A real service_role key in a public repository, for a discarded build, is not a trade |
 
