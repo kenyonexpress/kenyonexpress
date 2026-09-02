@@ -2,7 +2,6 @@ import BenefitBar from '@/components/home/BenefitBar'
 import CmsHero from '@/components/home/CmsHero'
 import DealsOfTheDay from '@/components/home/DealsOfTheDay'
 import HeroSection from '@/components/home/HeroSection'
-import CategoryStrip from '@/components/store/CategoryStrip'
 import { buildSiteJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { Suspense } from 'react'
 // home-handheld.css is imported by the root layout (see the note there): as a
@@ -90,14 +89,20 @@ export default function HomePage() {
         To put it back, restore <Suspense><CityTags/></Suspense> here and accept
         ~21.65%. That is Ofir's call, not this session's.
       */}
-      {/* On lg+ the strip renders inside the hero's center column (live
-          geometry); this standalone copy is the phone/tablet layout only. */}
-      <div className="lg:hidden">
-        <CategoryStrip />
-      </div>
-      <div className="mt-[50px]">
-        <BenefitBar />
-      </div>
+      {/*
+        THE STANDALONE CATEGORY STRIP IS GONE, and the hero owns the only copy.
+
+        This rendered a second full-width strip below `lg`, on the reasoning
+        that the in-hero copy was desktop-only. Measured against
+        refs/ke_live_computed.json, live renders the strip INSIDE the hero
+        column at 768 (y426 h170) and does not render it AT ALL at 380
+        (`product-categories-list` is absent from that viewport). So this copy
+        was a duplicate at 768 and an invention at 380, and it was part of the
+        967px by which our product grid started too low on a phone.
+
+        The hero's own copy is now `hidden md:block`, which is live's rule.
+      */}
+      <BenefitBar />
       <DealsOfTheDay />
     </>
   )

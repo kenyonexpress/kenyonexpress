@@ -5,7 +5,7 @@ import { orderItemStatus, productType, products, suppliers } from './commerce'
 import { orders } from './orders'
 
 // Column shape must stay identical to the order_items projection in commerce.ts.
-// The created_at index ships in migrations/pending/005_orders.sql (order_items
+// The created_at index ships in migrations/pending/159_orders_indexes.sql (order_items
 // has no user_id column, so only created_at is indexed here).
 
 export const orderItems = pgTable(

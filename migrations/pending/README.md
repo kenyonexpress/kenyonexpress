@@ -1,6 +1,28 @@
 # `migrations/pending/`
 
-## 2026-09-03: this directory is EMPTY. Every row below is APPLIED.
+## 2026-09-03: `159_orders_indexes.sql` is PENDING. Every row below is APPLIED.
+
+### `159_orders_indexes.sql` — AWAITING APPROVAL
+
+Written by a parallel agent session (commit `fbdd8e1f5`) alongside Drizzle
+schemas at `src/db/schema/orders.ts` and `order-items.ts`. Creates `orders` and
+`order_items` guarded by `IF NOT EXISTS`, plus three indexes on
+`orders(user_id)`, `orders(created_at)` and `order_items(created_at)`.
+**Not applied.**
+
+**It arrived numbered `005` and was renamed.** `supabase/migrations/` already
+holds `005_products_schema.sql`, so the original name meant two different things
+in the two directories, and `005` sorted ahead of the entire 122-158 applied
+series -- every member of which already assumes these two tables exist. The
+numbering assertion in `pending-migrations-inventory.test.ts` is what caught it.
+
+The file itself is honest about the rest: its header records that both tables
+are already live on the hosted DB, so every `CREATE` is guarded and the net
+effect on production is the three indexes. `APPLY-ORDER.md` does not list it.
+
+---
+
+## Every row below is APPLIED.
 
 ### `158_revoke_anon_public_on_new_functions.sql` — APPLIED 2026-09-03
 

@@ -39,6 +39,15 @@ export const SITE = {
     priceStrike: '#6f6f6f',
     /** Deals-card price ink. Measured on live; darker than `brand.dark`. */
     dealPrice: '#2d2d2d',
+    /**
+     * The home card's SALE price, measured rgb(201,54,54) on 57 elements. It is
+     * deliberately not `price` (#dc3545, 456 elements): the two are different
+     * reds on the live site, the site-wide one on the category and product
+     * pages and this one only on the home grid's cards.
+     */
+    dealSale: '#c93636',
+    /** The home card's discount badge, measured rgb(238,0,0) behind white 12/700. */
+    dealBadge: '#ee0000',
     success: '#5cb85c',
     link: '#0062bd',
     heading: '#333e48',
@@ -163,6 +172,8 @@ export const SITE_CSS_VARS: Record<string, string> = {
   '--color-price': SITE.functional.price,
   '--color-price-strike': SITE.functional.priceStrike,
   '--color-deal-price': SITE.functional.dealPrice,
+  '--color-deal-sale': SITE.functional.dealSale,
+  '--color-deal-badge': SITE.functional.dealBadge,
   '--color-success': SITE.functional.success,
   '--color-link': SITE.functional.link,
   '--color-heading': SITE.functional.heading,
@@ -248,7 +259,11 @@ export const SITE_CSS_METRICS: Record<string, string> = {
   '--spacing-newsletter-min': '470px',
   '--spacing-newsletter-field': '41px',
   '--spacing-newsletter-bar': '80px',
-  '--spacing-deals-top': '30px',
+  // 3px, remeasured 2026-09-03 against refs/ke_live_computed.json: live's gap
+  // between the feature bar and the first card row is 3px at 1440 and 2px at
+  // 380. The old 30 was compensating for a feature bar that was the wrong
+  // height; once that was fixed it pushed the whole grid a row out of step.
+  '--spacing-deals-top': '3px',
 }
 
 /**

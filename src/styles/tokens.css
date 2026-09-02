@@ -62,6 +62,11 @@
      the coupon product page's "regular price". #6f6f6f is 5.02. */
   --color-price-strike: #6f6f6f; /* crossed-out original price */
   --color-deal-price: #2d2d2d; /* deals-card price ink (live measured) */
+  /* The home card's SALE price. NOT --color-price: live paints two different
+     reds, #dc3545 site-wide (456 elements) and this one only on the home
+     grid's cards (57 elements). Measured, 2026-09-03. */
+  --color-deal-sale: #c93636;
+  --color-deal-badge: #ee0000; /* home card discount badge, white 12/700 on it */
   --color-success: #5cb85c; /* confirmation, in-stock */
   /* BRAND YELLOW IS NOT A TEXT COLOUR, and this is the token that replaces it.
      `text-brand` is #fed700: 1.41:1 against white where AA wants 4.5, which axe
@@ -219,7 +224,41 @@
   --spacing-newsletter-min: 470px; /* live newsletter pill: 470x41 */
   --spacing-newsletter-field: 41px;
   --spacing-newsletter-bar: 80px; /* live newsletter bar height */
-  --spacing-deals-top: 30px; /* live deals grid top offset */
+  /* 3px, remeasured 2026-09-03. Live's gap between the feature bar and the
+     first card row is 3px at 1440 (bar ends 895, grid starts 898) and 2px at
+     380. The old 30px was compensating for a feature bar that was the wrong
+     height; with that fixed, 30 pushed the whole grid a row out of step. */
+  --spacing-deals-top: 3px;
+
+  /* --- The hero row, measured at all three widths ----------------------------
+     HeroSection carried ONE inline height (HERO_SLIDER_HEIGHT = 593) at every
+     viewport. Live's hero is a different height at each, and because the whole
+     page sits under it the error compounds: the product grid started 967px too
+     low at 380 and 434px too low at 768, while 1440 was exact.
+
+       width   hero row   slider   category strip   side columns
+       ------  ---------  -------  ---------------  ------------
+       380       213       213     absent           absent
+       768       495       304     170              absent
+       1440      613       370     170              present
+
+     The side columns are already `hidden lg:flex`; what was missing is that
+     the ROW kept its desktop height with nothing in it. */
+  --spacing-hero-mobile: 213px;
+  --spacing-hero-tablet: 495px;
+  /* 613, remeasured 2026-09-03. The old 593 was 20px short and had been
+     cancelling out against a 50px margin on the feature bar and a 30px pad on
+     the grid; with those two corrected to live's values it has to be right on
+     its own. */
+  --spacing-hero-desktop: 613px;
+  --spacing-hero-slider-tablet: 304px;
+  --spacing-hero-slider-desktop: 370px;
+  /* Live collapses the feature bar to an empty 31px strip at 380: the five
+     `.feature` blocks are not rendered at all below md. From md up it is a
+     flat 134px at BOTH 768 and 1440 -- ours was 223 at 768 and 76 at 1440,
+     because it was sized by its content instead of by the measurement. */
+  --spacing-feature-bar-mobile: 31px;
+  --spacing-feature-bar: 134px;
 
   /* --- The app shell, measured at all three widths ---------------------------
      Read off refs/ke_live_computed.json on 2026-09-03. The live shell is

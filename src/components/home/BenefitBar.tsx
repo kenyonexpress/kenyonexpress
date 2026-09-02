@@ -54,10 +54,26 @@ const benefits = [
 // All colours and sizes come from ELECTRO_HERO.uspBar (the measured token
 // module). Direction handling uses CSS logical properties only, so the bar
 // mirrors correctly under dir="rtl".
+/**
+ * LIVE DOES NOT RENDER THE FIVE BLOCKS ON A PHONE.
+ *
+ * Measured off refs/ke_live_computed.json: at 768 and 1440 the feature bar is
+ * 134px tall and `.feature` appears five times. At 380 the section collapses to
+ * an EMPTY 31px strip -- `.feature` is absent from that viewport entirely.
+ * Ours rendered all five at every width, stacked, and that height was part of
+ * the 967px by which the product grid started too low at 380.
+ *
+ * The list is hidden rather than unmounted so the strip keeps live's 31px of
+ * vertical space, and `aria-hidden` follows the visibility: a screen reader
+ * should not read five items that are not on the page.
+ */
 export default function BenefitBar() {
   return (
-    <section dir="rtl" className="w-full bg-white font-sans">
-      <div className="mx-auto" style={{ maxWidth: USP.maxWidth }}>
+    <section
+      dir="rtl"
+      className="h-feature-bar-mobile w-full bg-white font-sans md:flex md:h-feature-bar md:items-center"
+    >
+      <div className="mx-auto hidden w-full md:block" style={{ maxWidth: USP.maxWidth }}>
         <ul
           className="flex flex-wrap justify-between lg:flex-nowrap"
           style={{ border: `1px solid ${USP.borderColor}`, borderRadius: USP.borderRadius }}

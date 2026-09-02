@@ -115,9 +115,12 @@ describe('the pending migration inventory', () => {
 
   // ---- what is actually unapplied right now -------------------------------
   it('holds exactly the migrations still awaiting approval', () => {
-    // Nothing is pending. 158 was written and applied on the same day
-    // (2026-09-03, through MCP), so it moved straight to applied/.
-    expect(sqlFilesIn(PENDING_DIR)).toEqual([])
+    // Added by a parallel agent session on 2026-09-03 (fbdd8e1f5) as
+    // 005_orders.sql and renamed into this series: supabase/migrations/ already
+    // holds a 005, and the clash is what the numbering assertion below catches.
+    // NOT applied. This assertion is the deliberate diff that makes a new
+    // pending migration visible.
+    expect(sqlFilesIn(PENDING_DIR)).toEqual(['159_orders_indexes.sql'])
   })
 
   // ---- direction 2: manifest -> disk -------------------------------------

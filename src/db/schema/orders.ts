@@ -3,7 +3,7 @@ import { index, integer, pgTable, timestamp, uuid } from 'drizzle-orm/pg-core'
 import { authUsers, orderStatus } from './commerce'
 
 // Column shape must stay identical to the orders projection in commerce.ts.
-// The user_id and created_at indexes ship in migrations/pending/005_orders.sql.
+// The user_id and created_at indexes ship in migrations/pending/159_orders_indexes.sql.
 
 export const orders = pgTable(
   'orders',

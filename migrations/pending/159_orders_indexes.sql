@@ -1,5 +1,11 @@
--- 005_orders: orders + order_items base tables, plus indexes on
+-- 159_orders_indexes: orders + order_items base tables, plus indexes on
 -- orders(user_id), orders(created_at) and order_items(created_at).
+--
+-- RENAMED FROM 005_orders.sql on 2026-09-03. `supabase/migrations/` already
+-- holds a 005 (005_products_schema.sql), so the old name meant two different
+-- things in the two directories -- which pending-migrations-inventory.test.ts
+-- refuses. 005 also sorted ahead of the entire 122-158 applied series, every
+-- member of which already assumes these two tables exist.
 --
 -- CONTEXT. Both tables already exist on the hosted DB (the applied 1xx series
 -- assumes them throughout), so every statement here is guarded: on production
