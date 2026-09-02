@@ -1,5 +1,6 @@
 import { type AdminSection, canReadSection, canWriteSection } from '@/lib/admin/permissions'
 import { isAdminRole, isPanelRole, isStaffRole } from '@/lib/admin/roles'
+import { decideMfaGate, readMfaLevels } from '@/lib/auth/mfa'
 import { createClient } from '@/lib/supabase/server'
 import type { UserRole } from '@/types/database'
 import { redirect } from 'next/navigation'
@@ -25,12 +26,27 @@ export async function getSessionWithRole(): Promise<AdminSessionInfo | null> {
   return { userId: user.id, role: profile.role }
 }
 
+/**
+ * The MFA half of the staff gates. A staff account that HAS a verified TOTP
+ * factor must have proven it in this session (aal2); a session that has not
+ * is sent to the challenge, not to /login -- the password half already
+ * passed. Unreadable levels gate CLOSED here: this only ever runs on staff
+ * paths, where failing open is the wrong direction.
+ */
+async function requireStaffMfa(): Promise<void> {
+  const supabase = await createClient()
+  const levels = await readMfaLevels(supabase)
+  if (!levels) redirect('/login')
+  if (!decideMfaGate(levels).pass) redirect('/auth/mfa')
+}
+
 // Server-component guard: redirects if caller is not admin/super_admin.
 export async function requireAdminSession(): Promise<AdminSessionInfo> {
   const session = await getSessionWithRole()
   if (!session || !isAdminRole(session.role)) {
     redirect('/login')
   }
+  await requireStaffMfa()
   return session
 }
 
@@ -41,6 +57,7 @@ export async function requireStaffSession(): Promise<AdminSessionInfo> {
   if (!session || !isStaffRole(session.role)) {
     redirect('/login')
   }
+  await requireStaffMfa()
   return session
 }
 
@@ -55,6 +72,7 @@ export async function requireAdminPage(): Promise<{ userId: string; role: UserRo
   if (!isAdminRole(session.role)) {
     redirect('/admin/products')
   }
+  await requireStaffMfa()
   return session
 }
 
@@ -65,6 +83,7 @@ export async function requirePanelSession(): Promise<AdminSessionInfo> {
   if (!session || !isPanelRole(session.role)) {
     redirect('/login')
   }
+  await requireStaffMfa()
   return session
 }
 
