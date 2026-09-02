@@ -242,6 +242,16 @@ list from this directory and checks it against every `.ts`/`.tsx` in **both**
 `src/` and `apps/`, so revoking a function the Expo till uses fails a test
 rather than a till.
 
+## `153_ai_usage.sql`, added 2026-09-02
+
+The AI cost ledger: one row per agent call through `src/server/ai/client.ts`
+with tokens, micro-USD cost (integers, same reason money is agorot), outcome
+and latency. The runtime works before this applies and logs
+`ai.usage_not_recorded` at warn. RLS on, zero policies.
+
+**Dry run against production, rolled back:** insert accepted, negative token
+count refused 23514.
+
 ## `152_payout_machinery.sql`, added 2026-09-02
 
 The FIFTH instance of the pattern: `admin/payouts.ts` calls four payout

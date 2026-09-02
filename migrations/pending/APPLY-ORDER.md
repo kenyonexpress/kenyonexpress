@@ -9,7 +9,7 @@ below. See the "APPLIED IN PRODUCTION" table in `README.md`, which carries the
 version string and the query that proved each one. Running any of them again is
 at best a no-op and at worst an error.
 
-## The sixteen that remain, in order
+## The seventeen that remain, in order
 
 Order matters only where a **depends on** column is filled. Everything else is
 independent and may be applied in any sequence, or not at all.
@@ -32,6 +32,7 @@ independent and may be applied in any sequence, or not at all.
 | 17 | `150_account_deletion.sql` | fn_anonymize_user + the account_deleted outbox kind | — | in file header |
 | 18 | `151_analytics_ingest.sql` | analytics_events + the ingest fn /api/a has been calling into the void | — | in file header |
 | 19 | `152_payout_machinery.sql` | the whole payout subsystem: tables, T+3 math, four verbs, RLS | — | in file header |
+| 20 | `153_ai_usage.sql` | the AI cost ledger, micro-USD integers | — | `drop table ai_usage` |
 
 ## The money set, 138 through 141
 
