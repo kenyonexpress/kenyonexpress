@@ -109,3 +109,20 @@ campaign_redemptions) על אותה הזמנה. קידום מוצרים נעשה
 ספק — ‏refs/ke_live_singlefile.html הוא תבנית החנות; אין refs למסכי ספק,
 אין מול מה למדוד. ‏(ג) route בשם /supplier/vouchers — הסורק חי ב-/scan
 ו-/supplier/scan; שם שלישי לאותו מסך מוסיף בלבול בלי יכולת.
+
+## STEP 20 — ‏SEO וסכמה: נסגר בסריקה + תוספת אחת (02.09)
+
+**קיים:** ‏`src/lib/seo/json-ld.ts` (‏Organization, ‏WebSite, ‏BreadcrumbList,
+‏Product+Offer ב-ILS מאגורות, ‏priceValidUntil לקופונים) עם ‏json-ld.test.ts;
+‏sitemap.ts (‏lastmod.ts, ‏normalize-path.ts); ‏robots.ts עם רשימת disallow
+ביטחונית (‏/redeem/ ראשון — טוקן חתום); metadata על 83/97 עמודים (הממצא
+ההפוך מ-GAP-AUDIT היה טעות grep שנמשכה). ‏AggregateRating נוסף ב-STEP 18.
+
+**נוסף:** ‏BreadcrumbList לעמוד קטגוריה, נבנה מאותו מערך `crumbs` של פירור
+הלחם הנראה כדי שלא יוכלו לסתור זה את זה.
+
+**נשמר בניגוד לספק:** ‏SearchAction ב-WebSite. הספק אמר "בלי SearchAction",
+נגזרת של "אין UI חיפוש" — אבל ‏/search קיים ופעיל (וה-header 1:1 כולל אותו
+בהוראת 02.09). ‏SearchAction שמצביע על route אמיתי הוא SEO נכון; להסירו היה
+צעד אחורה. עמוד ספקים הוא דף נחיתה לליד — אין שם מבנה שראוי לסכמה; עמוד
+קמפיינים לא קיים (נדחה ב-STEP 17).

@@ -24,6 +24,7 @@ import {
 } from '@/lib/category-page'
 import { type SortValue, parseSort } from '@/lib/category-tokens'
 import { type Coordinates, parseNear, sortByDistance } from '@/lib/geo/distance'
+import { buildBreadcrumbJsonLd, jsonLdScript } from '@/lib/seo/json-ld'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import '@/styles/category-page.css'
@@ -363,8 +364,25 @@ async function CategoryPageBody({
     { label: category.name_he },
   ]
 
+  // The same trail the visible breadcrumb renders, as BreadcrumbList: the two
+  // are built from one `crumbs` array so they cannot disagree.
+  const siteUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://kenyonexpress.co.il'
+  const breadcrumbLd = buildBreadcrumbJsonLd(
+    [
+      { name: 'בית', path: '/' },
+      ...(parent ? [{ name: parent.name_he, path: `/category/${parent.slug}` }] : []),
+      { name: category.name_he, path: pathname },
+    ],
+    siteUrl,
+  )
+
   return (
     <div className="category-page">
+      <script
+        type="application/ld+json"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD has no other insertion point, and jsonLdScript escapes every angle bracket.
+        dangerouslySetInnerHTML={{ __html: jsonLdScript(breadcrumbLd) }}
+      />
       <ViewTracker event="view_category" props={{ category_id: category.id }} />
       <div className="category-page__inner">
         <CategoryBreadcrumb items={crumbs} />
