@@ -35,7 +35,11 @@ const USP = ELECTRO_HERO.uspBar
  * those are what this matches.
  */
 const benefits = [
-  // RE-MEASURED 2026-09-02 off refs/ke_live_computed.json: the live icon order
+  // WRAPPED BELOW lg, 2026-09-02: five nowrap fifths of a 380px viewport are
+  // 76px cells, and the reordered labels overflowed the page to 385px -- the
+  // exact horizontal-overflow defect the mobile audit hunts. Live's 380 render
+  // has no five-across bar at all, so wrapping is nearer the reference than
+  // clipping. RE-MEASURED off refs/ke_live_computed.json: the live icon order
   // right-to-left is transport, customers, support, payment, tag -- so
   // "קניה חכמה" is SECOND today, not last. The note above recorded it last from
   // an earlier capture; the reference moved, which is what a live third-party
@@ -55,7 +59,7 @@ export default function BenefitBar() {
     <section dir="rtl" className="w-full bg-white font-sans">
       <div className="mx-auto" style={{ maxWidth: USP.maxWidth }}>
         <ul
-          className="flex flex-nowrap justify-between"
+          className="flex flex-wrap justify-between lg:flex-nowrap"
           style={{ border: `1px solid ${USP.borderColor}`, borderRadius: USP.borderRadius }}
         >
           {benefits.map((b, i) => {
@@ -69,7 +73,7 @@ export default function BenefitBar() {
                 // cannot be overridden by a media query and the narrowest
                 // phones need both smaller. See .benefit-bar__item in
                 // globals.css for the measurement.
-                className="benefit-bar__item w-1/5 flex items-center justify-center"
+                className="benefit-bar__item w-full sm:w-1/2 lg:w-1/5 flex items-center justify-center"
                 style={
                   {
                     '--usp-gap': `${USP.gap}px`,

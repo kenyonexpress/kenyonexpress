@@ -154,10 +154,12 @@ const AUTOPLAY_MS = 5000
  */
 const RS = {
   /** headline 1: rs-layer .tp-caption headline */
-  h1: 'text-[43px] font-light lg:text-[58px]',
+  // 51 at lg, remeasured off refs 2026-09-02 (live "Open Sans" 51px; 58 was the electro demo)
+  h1: 'text-[43px] font-light lg:text-[51px]',
   h1Leading: 'leading-[43px] lg:leading-[58px]',
   /** headline 2: the lighter second line, always 5px shy of h1 */
-  h2: 'text-[38px] font-light lg:text-[51px]',
+  // 45 at lg, remeasured off refs 2026-09-02 (58/51 were the electro demo's sizes)
+  h2: 'text-[38px] font-light lg:text-[45px]',
   h2Leading: 'leading-[38px] lg:leading-[51px]',
   /** tagline strip under the headlines */
   tagline: 'text-[11px] font-bold leading-[11px] lg:text-[19px] lg:leading-[19px]',
@@ -179,7 +181,10 @@ const RS = {
   copyColumn:
     'hero-copy-column pointer-events-none absolute end-0 top-0 z-10 max-w-[50%] pe-[31px] text-end',
   /** headline box reserves its live height so shorter titles do not reflow */
-  headBox: 'm-0 min-h-[86px] lg:min-h-[118px]',
+  // 110 at lg: live's tagline top is 157 and the headline paddingTop is 47
+  // (refs), so the reserved headline box is exactly 157-47 = 110. The old 118
+  // plus the tagline's mt-4 pushed everything below the headline ~25px down.
+  headBox: 'm-0 min-h-[86px] lg:min-h-[110px]',
   /** headline 2 rides -1px tighter than headline 1 on every variant */
   h2Tracking: '-1px',
   /** app slide: headline starts 52px down, badge is a fixed 46x286 box */
@@ -529,7 +534,7 @@ function ProductSlideCopy({ slide }: { slide: HeroSlide }) {
       )}
 
       {tagline && (
-        <p style={{ color: T.tagline.color }} className={`mt-3 lg:mt-4 ${RS.tagline}`}>
+        <p style={{ color: T.tagline.color }} className={`mt-3 lg:mt-0 ${RS.tagline}`}>
           {tagline}
         </p>
       )}
@@ -548,7 +553,7 @@ function ProductSlideCopy({ slide }: { slide: HeroSlide }) {
         <p
           dir="ltr"
           style={{ color: T.priceLabel.color }}
-          className={`mt-2 text-start lg:mt-3 ${RS.promoSmall}`}
+          className={`mt-2 text-start lg:mt-[27px] ${RS.promoSmall}`}
         >
           {slide.promo_small}
         </p>

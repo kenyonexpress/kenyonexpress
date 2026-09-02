@@ -60,8 +60,12 @@ export const ELECTRO_HERO = {
     bottomOffset: 6,
   },
   typography: {
-    headline1: { desktop: 58, mobile: 43, weight: 300, color: '#333e48' },
-    headline2: { desktop: 51, mobile: 38, weight: 300, letterSpacing: '-0.01em', color: '#333e48' },
+    // 51/45, remeasured off refs/ke_live_computed.json 2026-09-02: the live
+    // headline layers are "Open Sans" 51px and 45px. 58/51 came from the
+    // electro demo. (The FONT stays Heebo by standing project rule; the size
+    // is the half of the delta that is ours to close.)
+    headline1: { desktop: 51, mobile: 43, weight: 300, color: '#333e48' },
+    headline2: { desktop: 45, mobile: 38, weight: 300, letterSpacing: '-0.01em', color: '#333e48' },
     /** RevSlider layer-4 tagline (live site: 19px bold) */
     tagline: { desktop: 19, mobile: 11, weight: 700, color: '#333e48' },
     /** RevSlider "FROM" label */

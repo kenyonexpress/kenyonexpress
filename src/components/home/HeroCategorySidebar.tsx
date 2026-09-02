@@ -8,6 +8,11 @@ const CC = ELECTRO_HERO.categoryColumn
 const MENU_LI_STYLE = { padding: '0 1em' } as const
 const MENU_LINK_STYLE = {
   padding: '6.5px 5px 6.5px 0',
+  // 14px explicitly: the live rows are 34.66px = 2x6.5 padding + 14x1.5 line
+  // + border. Inheriting the 16px body size made every row 38-40px, which
+  // accumulated to a 17px drift by the fourth row and pushed the whole list
+  // past live's.
+  fontSize: 14,
   lineHeight: 1.5,
   whiteSpace: 'normal' as const,
   borderBottom: '1px solid rgb(221, 221, 221)',
