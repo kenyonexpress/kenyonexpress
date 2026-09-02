@@ -3,6 +3,7 @@
 import { productSchema as schema, variantSchema } from '@/lib/admin/product-form-schema'
 import { variantIdsToRemove } from '@/lib/admin/product-variants'
 import { requireStaffSession } from '@/lib/admin/rbac'
+import { applyUploaderPolicy } from '@/lib/admin/uploader-policy'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { ilsToAgorot } from '@/lib/commerce/money'
 import { assertPublishable, buildProductMoneyWrite } from '@/lib/commerce/product-money'
@@ -23,8 +24,9 @@ async function runUpsertProduct(
   _: ProductFormState,
   formData: FormData,
 ): Promise<ProductFormState> {
+  let session: Awaited<ReturnType<typeof requireStaffSession>>
   try {
-    await requireStaffSession()
+    session = await requireStaffSession()
   } catch {
     return { error: 'אין הרשאה' }
   }
@@ -214,6 +216,16 @@ async function runUpsertProduct(
   })
   if (!money.ok) return { error: money.message }
 
+  // The uploader money boundary + forced pending approval (see the policy
+  // module for the full why; until 2026-09-02 an uploader could type any
+  // commission percent straight into a live, auto-approved product).
+  const policy = applyUploaderPolicy(
+    session.role,
+    money.fields as unknown as Record<string, unknown>,
+  )
+  const moneyWrite = policy.fields
+  const isUploader = policy.forcePendingApproval
+
   if (fields.status === 'active') {
     // Publishing needs a complete supplier, so the identity is loaded rather
     // than assumed. Service role: this is a staff read of a table with no
@@ -261,7 +273,13 @@ async function runUpsertProduct(
     const { error } = await writeWithWhatsAppFallback(async (extra) =>
       supabase
         .from('products')
-        .update({ ...fields, ...money.fields, ...extra, images })
+        .update({
+          ...fields,
+          ...moneyWrite,
+          ...extra,
+          images,
+          ...(isUploader ? { approval_status: 'pending' } : {}),
+        })
         .eq('id', id)
         .select('id')
         .maybeSingle(),
@@ -278,7 +296,14 @@ async function runUpsertProduct(
     const { data, error } = await writeWithWhatsAppFallback<{ id: string }>(async (extra) =>
       supabase
         .from('products')
-        .insert({ ...fields, ...money.fields, ...extra, images, created_by: user!.id })
+        .insert({
+          ...fields,
+          ...moneyWrite,
+          ...extra,
+          images,
+          created_by: user!.id,
+          ...(isUploader ? { approval_status: 'pending' } : {}),
+        })
         .select('id')
         .single(),
     )

@@ -315,3 +315,18 @@ web-push היה טרנספורט שלישי מקביל לאותם התראות; 
 Wallet JWT, ‏/api/wallet/apple/[id], כפתורים שמסתירים עצמם כשה-env חסר),
 ‏WhatsAppShareButton/FacebookShareButton עם טסטים, ועמוד ‏/coupon/[id]
 הוא תצוגת ה-QR הניתנת להדפסה (עם תיקון wa.me למספר מקומי).
+
+## STEP 48 — תור העלאות: המודל הפרוס + אכיפה שנבנתה (02.09)
+
+**המודל קיים:** ‏products.approval_status (‏draft/pending/approved/rejected,
+‏enum פרוס), תפקיד ‏content_uploader עם גישת catalog בלבד, עמוד
+‏/admin/approvals עם אישור/דחייה מבוקרי-audit. טבלת ‏product_submissions
+נפרדת עם payload jsonb נדחתה — תור שני מקביל לאותה שאלה.
+
+**שני חורים אמיתיים שהספק תפס, נסגרו:**
+1. ‏content_uploader יכול היה לכתוב ‏platform_percent/supplier_split_percent
+   ישירות (המסמך אומר "admin-only write") — עכשיו ‏applyUploaderPolicy
+   (מודול טהור + טסטים) מפשיט את זוג-הפיצול מכתיבת uploader; ביצירה הפיצול
+   נשאר NULL (העגלה מסמנת לא-זמין, ‏C1), בעריכה הערך השמור שורד.
+2. ברירת המחדל של ‏approval_status היא **'approved'** — מוצר של uploader
+   דילג על תור האישורים לגמרי. עכשיו כל כתיבת uploader נוחתת ‏'pending'.
