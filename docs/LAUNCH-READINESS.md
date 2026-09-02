@@ -527,3 +527,13 @@ the 14 wrong product slugs, and the 768/380 mobile layout project.
 הפרוס נדחה בנימוק כתוב (‏MEGA-BLOCK-AUDIT.md). מה שנשאר אינו קוד:
 ‏docs/OWNER-CHECKLIST.md — מיגרציות ‏147–157 + ‏db:types, ‏Cardcom ייצור,
 ‏DNS, מיזוג ה-PR.
+
+## נספח מתוארך: מגה-בלוק 8 (‏STEPS 48–52), נמדד 02.09.2026
+
+| STEP | מה קרה |
+| --- | --- |
+| 48 | **נאכף** — גבול הכסף של מעלי תוכן (‏applyUploaderPolicy: פיצול העמלה מופשט, ‏approval_status נכפה ל-pending; ברירת המחדל הפרוסה הייתה 'approved' ודילגה על התור) |
+| 49 | נדחה — ‏wp-import הוא הייבוא המרוכז; ‏UI CSV לצד מעלה יחיד = ערוץ עוקף-טופס |
+| 50 | **נבנה** — שער ממדי תמונה צד-שרת (‏≥800px, יחס 1:2–2:1, ‏sharp); ‏dedupe/crop נדחו |
+| 51 | נדחה עד שיש יותר ממעלה אחד |
+| 52 | לולאה ×3, תג ‏v2.1.0-rc1 |
