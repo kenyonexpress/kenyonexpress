@@ -3,7 +3,12 @@ import { withSentryConfig } from '@sentry/nextjs'
 import type { NextConfig } from 'next'
 import createNextIntlPlugin from 'next-intl/plugin'
 import { REMOTE_IMAGE_PATTERNS } from './src/lib/images/remote-hosts'
-import { PAYMENT_FRAME_PATHS, contentSecurityPolicyFor } from './src/lib/security/frame-policy'
+import {
+  CAMERA_PATHS,
+  PAYMENT_FRAME_PATHS,
+  contentSecurityPolicyFor,
+  permissionsPolicyFor,
+} from './src/lib/security/frame-policy'
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 
@@ -35,7 +40,11 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 // src/proxy.ts overwrites both framing headers on those two routes. Overwrites,
 // not adds: two Content-Security-Policy headers are both enforced and the
 // strictest wins, which would undo the exception without saying so.
-const headersWithPolicy = (csp: string, frameOptions: 'DENY' | 'SAMEORIGIN') => [
+const headersWithPolicy = (
+  csp: string,
+  frameOptions: 'DENY' | 'SAMEORIGIN',
+  permissions: string,
+) => [
   { key: 'Content-Security-Policy', value: csp },
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
   // Moves in step with frame-ancestors. Browsers that honour both enforce both,
@@ -43,7 +52,9 @@ const headersWithPolicy = (csp: string, frameOptions: 'DENY' | 'SAMEORIGIN') => 
   { key: 'X-Frame-Options', value: frameOptions },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), payment=(self)' },
+  // Path-dependent for the same reason as the CSP: camera=() on the scanner
+  // route is a scanner that cannot see (frame-policy.ts, CAMERA_PATHS).
+  { key: 'Permissions-Policy', value: permissions },
 ]
 
 const nextConfig: NextConfig = {
@@ -71,18 +82,40 @@ const nextConfig: NextConfig = {
     // This is also why the relaxation is not done in src/proxy.ts: headers from
     // this config are applied after middleware and overwrite what it set.
     const framable = PAYMENT_FRAME_PATHS.map((path) => path.replace(/^\//, '')).join('|')
+    // Anchored so `scan` does not swallow a future /scanner-esque route.
+    const cameraSources = CAMERA_PATHS.map((path) => `${path.replace(/^\//, '')}(?:$|/)`).join('|')
     return [
       {
-        source: `/((?!${framable}).*)`,
-        headers: headersWithPolicy(contentSecurityPolicyFor('/'), 'DENY'),
+        source: `/((?!${framable}|${cameraSources}).*)`,
+        headers: headersWithPolicy(
+          contentSecurityPolicyFor('/'),
+          'DENY',
+          permissionsPolicyFor('/'),
+        ),
       },
       ...PAYMENT_FRAME_PATHS.map((path) => ({
         source: `${path}/:path*`,
-        headers: headersWithPolicy(contentSecurityPolicyFor(path), 'SAMEORIGIN'),
+        headers: headersWithPolicy(
+          contentSecurityPolicyFor(path),
+          'SAMEORIGIN',
+          permissionsPolicyFor(path),
+        ),
+      })),
+      ...CAMERA_PATHS.map((path) => ({
+        source: `${path}{/:path}?`,
+        headers: headersWithPolicy(
+          contentSecurityPolicyFor(path),
+          'DENY',
+          permissionsPolicyFor(path),
+        ),
       })),
       ...PAYMENT_FRAME_PATHS.map((path) => ({
         source: path,
-        headers: headersWithPolicy(contentSecurityPolicyFor(path), 'SAMEORIGIN'),
+        headers: headersWithPolicy(
+          contentSecurityPolicyFor(path),
+          'SAMEORIGIN',
+          permissionsPolicyFor(path),
+        ),
       })),
     ]
   },

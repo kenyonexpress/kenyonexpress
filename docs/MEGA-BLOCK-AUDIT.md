@@ -190,3 +190,18 @@ campaign_redemptions) על אותה הזמנה. קידום מוצרים נעשה
 ו-`topSuppliers` הוא אותו fold של topProducts (עם טסט); ‏(ב) מיגרציה 156 —
 שני אינדקסים חלקיים לחלונות האנליטיקות (‏orders.paid_at למשולמות,
 ‏vouchers.redeemed_at לממומשים), ‏dry-run מגולגל.
+
+## STEP 28 — ‏CSP וכותרות: סגור בסריקה + תיקון באג אמיתי (02.09)
+
+**קיים (אבטחה-360):** ‏CSP מלא ב-next.config.ts + ‏frame-policy.ts (חריג
+‏frame-ancestors לשני מסלולי החזרה של Cardcom, מקורות לא-חופפים עם lookahead
+כדי שלא יישלחו שתי כותרות CSP), ‏HSTS ‏63072000 preload, ‏nosniff,
+‏Referrer-Policy. ‏nonce+strict-dynamic מתועד כמגבלה (דורש יצירה פר-בקשה
+ב-proxy; ‏unsafe-inline בינתיים) — לא שונה.
+
+**הבאג שהספק תפס:** ‏`Permissions-Policy: camera=()` היה סטטי על **כל**
+מסלול — כולל סורק ה-QR של הספקים, שמשתמש במצלמה. סורק שלא רואה, בשקט.
+תוקן בתבנית הקיימת: ‏`CAMERA_PATHS` + ‏`permissionsPolicyFor(pathname)`
+ב-frame-policy.ts, מקור נפרד ב-headers() עם עוגן ‏`(?:$|/)` כדי ש-`scan`
+לא יבלע מסלול עתידי. אומת חי: ‏`/` ו-frame-return מקבלים ‏camera=(),
+‏`/supplier/scan` מקבל ‏camera=(self).
