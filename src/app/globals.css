@@ -163,3 +163,34 @@ html [data-sonner-toaster][data-sonner-theme="light"] {
   --warning-text: hsl(31, 92%, 35.5%);
   --error-text: hsl(360, 100%, 43.5%);
 }
+
+/* The footer's two link columns are <details> so they collapse into live's two
+   49px accordion rows on a phone. From lg up live shows them open as plain
+   columns, and a <details> cannot be "open" by breakpoint from the markup --
+   the attribute is boolean and would have to be toggled in JS. Forcing the
+   panel visible in CSS keeps the desktop layout byte-identical without making
+   the site footer a client component. */
+@media (min-width: 1024px) {
+  .footer-disclosure > summary {
+    pointer-events: none;
+  }
+
+  .footer-disclosure > summary::marker,
+  .footer-disclosure > summary::-webkit-details-marker {
+    content: "";
+    display: none;
+  }
+
+  .footer-disclosure > *:not(summary) {
+    display: block !important;
+  }
+}
+
+/* The phone rows carry live's disclosure affordance, not the browser's. */
+.footer-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+
+.footer-disclosure > summary {
+  list-style: none;
+}

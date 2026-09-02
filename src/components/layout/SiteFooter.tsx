@@ -1,7 +1,7 @@
 import SmartImage from '@/components/ui/SmartImage'
 import { LOGO_FOOTER } from '@/lib/assets'
 import { storeWhatsAppLink } from '@/lib/whatsapp'
-import { Headphones } from 'lucide-react'
+import { ChevronDown, Headphones } from 'lucide-react'
 import Link from 'next/link'
 
 /**
@@ -101,7 +101,20 @@ export default function SiteFooter() {
       {/* 1. Newsletter bar. Measured on the live single-product template
           (scripts/_footer-probe.mjs): the bar is 80px, its row 65px, and the
           title and marketing line sit side by side on ONE line, not stacked. */}
-      <div className="bg-brand-secondary text-heading">
+      {/*
+        THE NEWSLETTER BAR IS DESKTOP-ONLY, which is live's rule and not a
+        preference. Live ships two different footers -- `.desktop-footer
+        .d-none.d-lg-block` and `.handheld-footer.d-lg-none` -- and the handheld
+        one contains no newsletter bar, no logo and no address block. Measured
+        on refs/ke_live_computed.json, live's whole mobile footer is 355px:
+        a 108px widget menu, a 65px social row and a 137px dark bar.
+
+        Ours rendered the full desktop footer stacked into one column at every
+        width: 1155px at 380 against live's 355. That is 800px of difference
+        sitting inside the 2600px compare window on every mobile page, which is
+        why the cart scored 19.61% at 380 while passing at 1440.
+      */}
+      <div className="hidden bg-brand-secondary text-heading lg:block">
         <div className="mx-auto flex min-h-newsletter-bar max-w-store-footer flex-col items-center justify-between gap-4 px-[15px] lg:flex-row">
           {/* right side: paper-plane + title + subtitle */}
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-center lg:justify-start lg:text-start">
@@ -166,9 +179,10 @@ export default function SiteFooter() {
         {/* Measured on live: three columns of 492 / 335 / 335 with no gutter of
             their own inside the 1170 content width, and 60px of clearance under
             the newsletter bar before the headings. */}
-        <div className="mx-auto grid max-w-store-footer grid-cols-1 gap-y-8 px-[15px] pt-[60px] pb-10 md:grid-cols-[492fr_335fr_335fr] md:gap-x-0">
-          {/* right column: logo + contact + address */}
-          <div>
+        <div className="mx-auto grid max-w-store-footer grid-cols-1 gap-y-0 px-[15px] pt-0 pb-0 lg:grid-cols-[492fr_335fr_335fr] lg:gap-x-0 lg:gap-y-8 lg:pt-[60px] lg:pb-10">
+          {/* right column: logo + contact + address. Desktop-only: live's
+              handheld footer carries none of it (see the note above). */}
+          <div className="hidden lg:block">
             <SmartImage
               src={LOGO_FOOTER}
               alt="קניון EXPRESS"
@@ -202,10 +216,21 @@ export default function SiteFooter() {
             </div>
           </div>
 
-          {/* middle column: שירות לקוחות */}
-          <div>
-            <h3 className="mb-4 text-base font-bold text-heading">שירות לקוחות</h3>
-            <ul className="space-y-2.5">
+          {/* middle column: שירות לקוחות.
+              Below lg this is one of live's two 49px accordion rows. `<details>`
+              and not a client component on purpose: the footer is on every page
+              and a disclosure widget is not worth a hydration boundary. `open`
+              is forced from lg up by CSS, so the desktop layout is unchanged. */}
+          <details className="footer-disclosure group border-b border-border lg:border-0">
+            <summary className="flex h-drawer-row cursor-pointer items-center justify-between text-base font-bold text-heading lg:mb-4 lg:h-auto lg:cursor-default lg:justify-start">
+              שירות לקוחות
+              <ChevronDown
+                size={18}
+                aria-hidden="true"
+                className="shrink-0 transition-transform group-open:rotate-180 lg:hidden"
+              />
+            </summary>
+            <ul className="space-y-2.5 pb-4 lg:pb-0">
               {SERVICE_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
@@ -218,12 +243,19 @@ export default function SiteFooter() {
                 </li>
               ))}
             </ul>
-          </div>
+          </details>
 
-          {/* left column: אזור אישי */}
-          <div>
-            <h3 className="mb-4 text-base font-bold text-heading">אזור אישי</h3>
-            <ul className="space-y-2.5">
+          {/* left column: אזור אישי — live's second accordion row below lg. */}
+          <details className="footer-disclosure group border-b border-border lg:border-0">
+            <summary className="flex h-drawer-row cursor-pointer items-center justify-between text-base font-bold text-heading lg:mb-4 lg:h-auto lg:cursor-default lg:justify-start">
+              אזור אישי
+              <ChevronDown
+                size={18}
+                aria-hidden="true"
+                className="shrink-0 transition-transform group-open:rotate-180 lg:hidden"
+              />
+            </summary>
+            <ul className="space-y-2.5 pb-4 lg:pb-0">
               {PERSONAL_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
@@ -236,7 +268,7 @@ export default function SiteFooter() {
                 </li>
               ))}
             </ul>
-          </div>
+          </details>
         </div>
 
         {/* 3. Social icons row — dark circular */}

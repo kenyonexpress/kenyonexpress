@@ -242,3 +242,62 @@ catalogue has moved since. None of them is a design signal, and the guard
 exists precisely so that a catalogue difference cannot be reported as a
 fidelity score. Home is the one storefront page whose fixture still lines up,
 and it is the one that scores.
+
+
+## Cart — STEP D10, 2026-09-03
+
+The cart **does** score: unlike category, product and products, both sides show
+the same empty-cart state, so there is no catalogue to disagree about.
+
+| width | before | after | gate |
+| --- | --- | --- | --- |
+| 380 | 19.61% | 14.81% | over |
+| 768 | 13.83% | **10.28%** | pass |
+| 1440 | 8.44% | **8.37%** | pass |
+
+### What moved it: the mobile footer
+
+Live ships **two** footers -- `.desktop-footer.d-none.d-lg-block` and
+`.handheld-footer.d-lg-none` -- and the handheld one has no newsletter bar, no
+logo and no address. Measured, live's entire mobile footer is 355px: a 108px
+widget menu of two 49px accordion rows, a 65px social row, and a 137px dark bar.
+
+Ours rendered the full desktop footer stacked into one column at every width:
+**1155px at 380 against live's 355**. On a short page like the cart that 800px
+sits inside the 2600px compare window, which is why the cart scored 19.61% at
+380 while passing at 1440, where the footer falls outside it.
+
+The two link columns are now native `<details>`, forced open from lg up in CSS.
+No client component: the footer is on every page and a disclosure widget is not
+worth a hydration boundary.
+
+380 is still over at 14.81%. The remainder is the shell: the cart reference has
+a 76+83 shell where the home reference has 113+84, the same collapsed-sticky
+disagreement recorded under D6. The shell stays tuned to home.
+
+## The home 380 score is not reproducible, and that settles the D4 question
+
+Measured three times across this session, same code in the scored region:
+
+| live page height | our height | home 380 score |
+| --- | --- | --- |
+| 380x18180 | 10837 | 40.45% |
+| 380x17825 | 19138 | **11.0%** |
+| 380x17791 | 18257 | **28.29%** |
+
+Between the last two, the only change was the mobile footer, which lives at
+y≈17900 -- **6900px below the bottom of the 2600px window being scored**. It
+cannot have moved those bands, and the control proves it: home at 1440 read
+6.01% before the footer change and 6.01% after.
+
+What did move is live. Its own page height changed by 389px across the three
+runs without us touching anything, and the bands that swung -- y600-800,
+y1100-1300, y1700-1800 -- are the card image areas. Live's catalogue rotates,
+so which products land in the first four cards changes between runs.
+
+The 11.0% recorded for D4 was therefore a snapshot of one favourable draw, not
+a stable score. The honest statement is that home at 380 is **content-volatile
+between roughly 11% and 28%**, that its geometry is verified exact against the
+reference to within 1-2px at every landmark, and that no further design work can
+stabilise it while the fixture is a 2026-08-12 snapshot of a catalogue that
+keeps moving.
