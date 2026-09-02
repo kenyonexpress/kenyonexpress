@@ -408,3 +408,19 @@ Wallet JWT, ‏/api/wallet/apple/[id], כפתורים שמסתירים עצמם 
   חדשה וסנאפשוטים הוא ריפקטור בלי באג שמניע אותו.
 - **70 סגמנטים ושיגורים — נדחה:** מנוע קמפיינים המוני לרשימת תפוצה בת
   אפסים; ‏RESEND_AUDIENCE_ID כבר מוכן לרגע שיש רשימה.
+
+## מגה-בלוק 13 (‏STEPS 73–77) — חשבונאות ישראלית: סגור בסריקה (02.09)
+
+**המסמכים מונפקים על ידי Cardcom, לא על ידינו — וזה העיצוב.** [73] קבע:
+קבלה לקופון (‏document type 4), חשבונית מס לפיזי, ‏credit note בהחזר
+(‏type 3), תור הנפקה שמוזן מ-finalize ומנוקז ב-cron ‏invoices, עם התראת
+‏invoice_dead כשמסמך נתקע. ‏VAT באגורות דרך ‏extractVat (‏1800bp, עם
+override ‏INVOICE_VAT_PERCENT שזורק על ערך לא-תקין — לא נופל לברירת מחדל
+שקטה). הורדת מסמך ללקוח: ‏/account/orders/[id]/invoice (מוגש רק אחרי
+בדיקת session מחדש — לא URL של הספק). מסב/ייצוא: ‏/admin/reports +
+‏/api/admin/reports/[report] (‏CSV עם BOM) + ‏settlement-report עם טסטים.
+
+**נדחה:** ‏(א) ‏PDF משלנו ב-@react-pdf + ‏R2 — מנפיק מסמכים מקומי מקביל
+ל-Cardcom הוא בדיוק מה שרגולציית מסמכים ממוחשבים לא צריכה מאיתנו; ‏(ב)
+טבלת `invoices` נפרדת — המסמך חי אצל Cardcom, ‏orders.invoice_number הוא
+הרפרנס; ‏(ג) ‏self-billing לספקים — נכנס עם הפעלת מכונת ה-payouts (152).
