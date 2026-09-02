@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 import { agorot } from '@/lib/commerce/money'
 import { log } from '@/lib/observability/log'
 import { type CardcomAccount, loadCardcomAccounts } from '@/lib/payments/accounts'
@@ -19,6 +21,7 @@ import type {
   TerminalTransactionRow,
   VerifyLowProfileResult,
 } from '@/lib/payments/types'
+import { secretEquals } from '@/lib/security/constant-time'
 
 type CardcomJson = Record<string, unknown>
 
@@ -528,4 +531,116 @@ export class CardcomProvider implements PaymentProvider {
       raw,
     }
   }
+}
+
+// --- zod-validated service functions --------------------------------------
+//
+// Thin, deterministic entry points over the adapter above. None of them touch
+// the network, the environment or any global state on their own: the two
+// money-moving ones do nothing but validate and delegate to the provider the
+// CALLER hands in (`getPaymentProvider(accountId)` is where instances come
+// from), and the webhook check is a pure function of its arguments. Validation
+// throws `ZodError` on bad input BEFORE anything reaches Cardcom, which is the
+// point: a malformed amount must die here, not become a malformed charge.
+
+/**
+ * Amounts are integer agorot end to end (D-MONEY-1); the schema refuses
+ * floats and non-positive values, and the parse output is branded via
+ * `agorot()` so it satisfies the `Agorot` type the provider contract demands.
+ */
+const agorotAmountSchema = z
+  .number()
+  .int()
+  .positive()
+  .transform((n) => agorot(n))
+
+export const tokenizedChargeInputSchema = z.object({
+  /** Correlation id stored as payments.id / ReturnValue. */
+  paymentId: z.string().min(1),
+  orderId: z.string().min(1),
+  amountAgorot: agorotAmountSchema,
+  /** The saved Cardcom token from `payment_tokens`, never a raw card number. */
+  cardcomToken: z.string().min(1),
+  description: z.string().min(1),
+})
+
+export type TokenizedChargeInput = z.input<typeof tokenizedChargeInputSchema>
+
+/**
+ * Charge a previously tokenized card (one-click checkout).
+ *
+ * The provider is a parameter, not a default constructed here: constructing
+ * one reads `CARDCOM_*` from the environment, and this function promises to
+ * have no effects of its own. Note the adapter's rule still applies through
+ * the delegation: a token charge is never retried.
+ */
+export async function createTokenizedCharge(
+  input: TokenizedChargeInput,
+  provider: Pick<PaymentProvider, 'chargeWithToken'>,
+): Promise<ChargeWithTokenResult> {
+  return provider.chargeWithToken(tokenizedChargeInputSchema.parse(input))
+}
+
+export const refundChargeInputSchema = z
+  .object({
+    /** Cardcom transaction id (InternalDealNumber) of the ORIGINAL charge. */
+    transactionId: z.string().min(1),
+    /** Full amount of the original charge, agorot. */
+    amountAgorot: agorotAmountSchema,
+    /** Partial refund, agorot; omit to refund `amountAgorot` in full. */
+    partialAmountAgorot: agorotAmountSchema.optional(),
+    /** Same-day void instead of a credit; see `RefundInput.cancelOnly`. */
+    cancelOnly: z.boolean().optional(),
+    description: z.string().min(1),
+  })
+  .refine((v) => v.partialAmountAgorot === undefined || v.partialAmountAgorot <= v.amountAgorot, {
+    message: 'partialAmountAgorot must not exceed amountAgorot',
+    path: ['partialAmountAgorot'],
+  })
+
+export type RefundChargeInput = z.input<typeof refundChargeInputSchema>
+
+/**
+ * Refund (or same-day cancel) a settled charge by its transaction id.
+ *
+ * A refund over the original amount is rejected by the schema rather than
+ * left for Cardcom to notice; through the delegation, the adapter's no-retry
+ * rule for money-moving calls applies.
+ */
+export async function refundCharge(
+  input: RefundChargeInput,
+  provider: Pick<PaymentProvider, 'refundByTransactionId'>,
+): Promise<RefundResult> {
+  return provider.refundByTransactionId(refundChargeInputSchema.parse(input))
+}
+
+export const webhookSignatureInputSchema = z.object({
+  /** The `?s=` value from the callback URL; null/absent when Cardcom's caller sent none. */
+  providedSecret: z.string().nullish(),
+  /** The active `CARDCOM_WEBHOOK_SECRET`. */
+  currentSecret: z.string().min(1),
+  /** The previous secret during a rotation window, when one is configured. */
+  previousSecret: z.string().min(1).nullish(),
+})
+
+export type WebhookSignatureInput = z.input<typeof webhookSignatureInputSchema>
+
+/**
+ * Is a webhook call carrying a secret we recognise?
+ *
+ * "Signature" is the project's term for the only signature Cardcom has:
+ * CARDCOM DOES NOT SIGN ITS CALLBACKS -- no HMAC, no signature header. What
+ * authenticates a callback is the unguessable shared secret embedded in the
+ * callback URL when the Low Profile page was created, compared in constant
+ * time (`secretEquals`) against up to two configured secrets so a rotation
+ * has a window. Do not "upgrade" this to an HMAC over the POST body; the body
+ * is untrusted either way, because the webhook must re-verify server-to-server
+ * via `GetLpResult` before believing anything about amount, status or token.
+ *
+ * Pure: same inputs, same answer, nothing read from the environment.
+ */
+export function verifyWebhookSignature(input: WebhookSignatureInput): boolean {
+  const { providedSecret, currentSecret, previousSecret } = webhookSignatureInputSchema.parse(input)
+  if (secretEquals(providedSecret, currentSecret)) return true
+  return previousSecret != null && secretEquals(providedSecret, previousSecret)
 }
