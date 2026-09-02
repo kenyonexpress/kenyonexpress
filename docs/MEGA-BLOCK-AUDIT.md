@@ -42,3 +42,25 @@ The block's message truncated mid-sentence inside STEP 3's migration item.
 Steps 4 through 13 have no content in this repository or in the instruction,
 and are not executable as named. This ledger takes them one by one when their
 text lands.
+
+## STEP 15 — עגלות נטושות: סגור בסריקה (02.09)
+
+הכל קיים ופעיל, בעיצוב חזק מהספק:
+
+- **מעקב פעילות:** `carts.updated_at` מתעדכן בטריגר (001) על כל UPDATE — אין
+  צורך ב-`last_activity_at` ידני ולא במיגרציה.
+- **בחירת זכאים:** ‏`fn_due_abandoned_carts` (מיגרציות 031/103, חי בפרודקשן) —
+  חלון גיל, עגלה לא ריקה, הבעלים לא הזמין מאז, **הסכמת ניוזלטר מאושרת**, לא
+  ב-suppression. הכללים ב-SQL ולא בקוד המסלול.
+- **מסלול:** ‏`src/app/api/cron/abandoned-cart/route.ts`, ‏Bearer CRON_SECRET,
+  ‏limit 100.
+- **תזמון:** ‏`.github/workflows/cron.yml` (המתזמן החמוש), בדוק על ידי
+  ‏`cron-schedule-inventory.test.ts` (עשרה jobs, דו-כיווני מול הדיסק).
+
+**נדחה במכוון:** תזכורת שנייה אחרי 24 שעות עם תמריץ 5% לארנק. שלוש סיבות,
+כולן מבניות: ‏(א) UNIQUE על cart_id ב-`abandoned_cart_nudges` אוכף "נודג' אחד
+לעולם" — זו החלטת עיצוב מתועדת בקובץ המסלול (ספאם = כפתור spam); ‏(ב) דוא"ל
+עגלה נטושה הוא דיוור מסחרי לפי 30א', ותזכורת שנייה מגדילה את החשיפה בדיוק
+במקום שהעיצוב הקיים צמצם; ‏(ג) ‏type חדש `abandoned_cart_incentive` נוגד את
+ה-enum הפרוס של wallet_transactions (enums פרוסים = חוק). אם אופיר ירצה
+תמריץ, זה שינוי מוצר + מיגרציה שידונו בנפרד.
