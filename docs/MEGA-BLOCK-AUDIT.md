@@ -272,3 +272,16 @@ Supabase. ‏pnpm audit: ‏1 low + 2 high טרנזיטיביים, כבר KNOWN-
 תקורה בלי בעיה. אינדקסים "רק על סריקות מוכחות" — בדיוק מה ש-156 עשה
 (שני החלונות של האנליטיקות). ‏DB-SCHEMA.md + ‏DB-HARDENING-AUDIT.md כבר
 מכסים את צד התיעוד; ‏pooling הוא של Supabase (‏pgbouncer מובנה).
+
+## STEPS 38–39 — ‏DR והתראות (02.09)
+
+**38:** נכתב ‏docs/DR-RUNBOOK.md (שחזור מגיבוי Supabase — לא מקבצי מיגרציה,
+שהם lineage אחר; ‏RTO<2h, ‏RPO 24h; רשימת מה-לא-לסובב). ‏backup-verify דרך
+Management API נדחה: אין token, ו-nightly-health + ‏tar יומי (רץ היום,
+‏770MB, שלושה נשמרים) הם הבקרה הקיימת. בדיקת הדשבורד = פריט של אופיר.
+
+**39:** ‏**נוצר monitor אמיתי**: ‏Sentry Uptime על ‏/api/health כל 60ש',
+‏timeout 10s, ‏down אחרי 3 כשלים (‏id 2159284, נוצר דרך MCP). ‏alert rules
+נוספים אי אפשר ליצור מכאן (הקטלוג חושף find/get בלבד ואין SENTRY_AUTH_TOKEN)
+— ‏ops/sentry-alerts.json מתעד live (הקיים + החדש) מול desired, עם ההערה
+שנתיב ה-pager האמיתי הוא ntfy הישיר של alert.ts.
