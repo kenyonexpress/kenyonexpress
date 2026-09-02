@@ -29,7 +29,7 @@ from this machine.
 | Build | `pnpm build` | CI `Build` job; local rebuild on this branch |
 | Migration dry-run | `pnpm gate:migrations` | Structural pass. Live ROLLBACK skipped (no disposable DB URL) |
 | Secrets (tree) | `pnpm gate:secrets` | Working tree. Git history still holds a foreign expired service_role JWT documented on 2026-08-20; that is not HEAD |
-| Bundle | `pnpm gate:bundle` | Ceiling 180KB gz held. Gated first-load is `entryJSFiles` (page + layout). Next 16 runtime is logged, not gated: including it (measured 312KB gz on 2026-09-02) made the gate permanently red. Artifact upload now stages `.next` into `next-ci-out` because `upload-artifact@v4` skipped the hidden path |
+| Bundle | `pnpm gate:bundle` | PASS. CI run 33581530979 on `f2291926`: product **56.2KB gz**, checkout **56.5KB gz**, Next runtime **255.8KB gz** (logged, not gated). Ceiling 180KB held |
 | Lighthouse | `pnpm lighthouse:ci` | PASS 2026-09-02 against `https://kenyonexpress.vercel.app`. Product `/product/barbecue`: a11y 100, SEO 100. Checkout empty-cart redirect to `/cart`: a11y 100, gated SEO 100 (raw 69, `is-crawlable` dropped). Sitemap loc still points at `kenyonexpress.co.il` (WordPress until DNS); the job rewrites onto `LIGHTHOUSE_BASE` |
 | E2E | `pnpm exec playwright test` | CI skips until `CI_SUPABASE_URL` points at a disposable project |
 | Pixel | `compare.mjs --page=home` | Last measured **9.83%** against the 11% ceiling (2026-08-19) |
@@ -40,9 +40,9 @@ from this machine.
 | Item | Evidence | Pass/Fail |
 | --- | --- | --- |
 | type-check, lint, unit tests, E2E, build, migration dry-run | `.github/workflows/ci.yml` jobs `lint`, `typecheck`, `test`, `e2e`, `build`, `migration-dry-run` | PASS (E2E skips loudly without `CI_SUPABASE_URL`) |
-| Lighthouse CI on product + checkout, SEO/a11y >95 | job `Lighthouse product + checkout`; floors 96. Measured 2026-09-02: product a11y 100 SEO 100 on `https://kenyonexpress.vercel.app/product/barbecue`. Checkout/cart a11y 100, gated SEO 100. Sitemap loc on `kenyonexpress.co.il` is rewritten onto `LIGHTHOUSE_BASE` so the job does not score WordPress | PASS |
-| Bundle gate JS >180KB gz fails the build | job `Bundle gate (JS 180KB gz)`; `MAX_FIRST_LOAD_GZ = 180 * 1024`. Measures `entryJSFiles` only. Next runtime logged. `next-ci-out` upload so the hidden `.next` directory actually reaches the job | PASS as a gate (runtime no longer stuffed into the ceiling) |
-| Preview deploys: ephemeral Supabase + Vercel | Vercel GitHub integration already deploys previews. `.github/workflows/preview-supabase.yml` creates a branch DB when secrets exist, refuses `ixvwfbuvfxxsjiywhbbb` | PASS as a gate. Secrets unset today, so the job skips |
+| Lighthouse CI on product + checkout, SEO/a11y >95 | job `Lighthouse product + checkout`; floors 96. CI run 33581530979: product a11y 100 SEO 100 on `https://kenyonexpress.vercel.app/product/barbecue`. Checkout/cart a11y 100, gated SEO 100 (raw 69). Sitemap loc on `kenyonexpress.co.il` is rewritten onto `LIGHTHOUSE_BASE` | PASS |
+| Bundle gate JS >180KB gz fails the build | job `Bundle gate (JS 180KB gz)`. CI run 33581530979: product 56.2KB, checkout 56.5KB, runtime 255.8KB not gated. `next-ci-out` upload | PASS |
+| Preview deploys: ephemeral Supabase + Vercel | Vercel GitHub integration. This SHA's Preview on `kenyonexpress-projects` **failed** (`x-matched-path: /[[...slug]]`, not the storefront). Lighthouse then measures `kenyonexpress.vercel.app`. Ephemeral Supabase skips without secrets and refuses `ixvwfbuvfxxsjiywhbbb` | FAIL on the Vercel preview for this SHA. Gate for the disposable DB is in place |
 | Gated production + one-command rollback | Required checks + Vercel on `main`. `git revert --no-edit <sha> && git push origin main`. `docs/APPLY-ORDER.md`. Print-only `production-rollback.yml` | PASS as a procedure. No second `vercel deploy` |
 | Secrets audit, nothing in repo | `pnpm gate:secrets` plus `.next/static` name grep after build | PASS as a gate on HEAD |
 
@@ -64,7 +64,7 @@ Already applied (do not re-run): 123, 124, 130, 134, 135a, 135b, 136, 138-141
 | --- | --- | --- | --- |
 | 1 | critical | No scheduler is firing the ten cron jobs | `docs/CRON-EXTERNAL.md`. `cron.yml` is off until `CRON_SCHEDULER_ENABLED=true` and `CRON_SECRET` exist. `gh secret list` was empty on 2026-09-01 |
 | 2 | critical | Cardcom production credentials are not on the deployment | `src/lib/payments/env.ts` throws `Missing required env` without `CARDCOM_TERMINAL_NUMBER`, `CARDCOM_API_NAME`, `CARDCOM_API_PASSWORD`. Sandbox/mock is what is wired |
-| 3 | high | DNS of `kenyonexpress.co.il` and which Vercel project that name attaches to | Owner step. Not run from this machine. Live host today is `kenyonexpress.vercel.app` |
+| 3 | high | DNS of `kenyonexpress.co.il` and which Vercel project that name attaches to | Owner step. This SHA's GitHub Preview on `kenyonexpress-projects` failed (`[[...slug]]`). Live storefront is `kenyonexpress.vercel.app` |
 | 4 | medium | Nine unapplied files in APPLY-ORDER remaining | `122, 125, 126, 127, 131, 132, 133, 137, 147`. `db push` is forbidden |
 
 None of these four is a missing feature in the Next.js app. All four need a

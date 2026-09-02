@@ -1,6 +1,6 @@
 # KenyonExpress — Project State
 
-Updated: 2026-09-02 (MEGA BLOCK 6: Lighthouse 100/100 on vercel.app; bundle gate is entryJSFiles; `.next` artifact staged as `next-ci-out`)
+Updated: 2026-09-02 (MEGA BLOCK 6: push CI all green. Bundle product 56.2KB / checkout 56.5KB gz. Lighthouse 100/100. Vercel preview on kenyonexpress-projects failed.)
 Updated: 2026-09-02 (MEGA BLOCK 6: CI/CD + launch checklist. Verdict NOT READY. Tag v1.0.0-rc1.)
 Updated: 2026-09-01 12:20 UTC (‏אין כותב ל-escrow_held בשום מקום; ‏144/144 מעברים מול הטריגרים החיים; קיפאון ה-380/768 נמצא ותוקן; ‏payment_events היה טבלה ריקה בלי אף כותב)
 Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשישה כבר היו, ושני באגים אמיתיים נמצאו בדרך)
@@ -82,13 +82,15 @@ Supabase preview (skip without secrets), print-only git revert rollback,
 secrets audit. Docs: `docs/LAUNCH-READINESS.md`, `docs/APPLY-ORDER.md`,
 `docs/FINAL-REPORT.md`. Verdict: **NOT READY**.
 
-Lighthouse 2026-09-02 against `https://kenyonexpress.vercel.app/product/barbecue`:
-a11y 100, SEO 100. Empty checkout redirects to `/cart`: a11y 100, gated SEO 100.
-Sitemap loc on `kenyonexpress.co.il` is rewritten onto `LIGHTHOUSE_BASE`.
+Lighthouse 2026-09-02 CI run 33581530979 against
+`https://kenyonexpress.vercel.app/product/barbecue`: a11y 100, SEO 100. Empty
+checkout redirects to `/cart`: a11y 100, gated SEO 100.
 
-Bundle gate measures `entryJSFiles` only. Next 16 runtime is logged, not counted.
-CI uploads `next-ci-out/` because `upload-artifact@v4` skipped hidden `.next/`
-(run 33580665364: "No files were found").
+Bundle gate same run: product 56.2KB gz, checkout 56.5KB gz, Next runtime
+255.8KB gz logged not gated. Artifact upload via `next-ci-out/`.
+
+Vercel GitHub Preview for this SHA failed on `kenyonexpress-projects`
+(`x-matched-path: /[[...slug]]`). Lighthouse falls back to vercel.app.
 
 ### החלטות שהתקבלו לבד (MEGA BLOCK 6, 2026-09-02)
 1. Lighthouse followed sitemap loc on `kenyonexpress.co.il` and scored WordPress
@@ -97,6 +99,10 @@ CI uploads `next-ci-out/` because `upload-artifact@v4` skipped hidden `.next/`
    ceiling stays. Gate the page + layout graph. Runtime is info.
 3. `path: .next/` uploaded zero files. Stage into `next-ci-out/` instead of
    trusting `include-hidden-files`.
+4. Vercel Preview for this SHA failed on `kenyonexpress-projects`. Lighthouse
+   on pull_request falls back to `kenyonexpress.vercel.app` instead of failing
+   the job after 12 minutes. Do not point Lighthouse at a failed `[[...slug]]`
+   host.
 
 ## In Progress
 nothing
@@ -104,7 +110,7 @@ nothing
 ## Blocking Issues
 1. No external scheduler for the ten cron jobs (`docs/CRON-EXTERNAL.md`)
 2. Cardcom production credentials not on the deployment
-3. DNS of kenyonexpress.co.il and which Vercel project it attaches to (owner step, do not run from this machine)
+3. DNS of kenyonexpress.co.il and which Vercel project it attaches to (owner step; this SHA's Preview on kenyonexpress-projects failed)
 4. Remaining SQL: 122 → 125 → 126 → 127 → 131 → 132 → 133 → 137 → 147 (`docs/APPLY-ORDER.md`)
 
 ## Next Task
