@@ -543,3 +543,9 @@ the 14 wrong product slugs, and the 768/380 mobile layout project.
 ‏contact (‏zod+honeypot+rate-limit+reply-to) ו-FAQ (‏12 שאלות, ‏JSON-LD)
 קיימים ומכסים את הספק; מערכת טיקטים מלאה נדחתה כמשטח מוצר מוקדם מדי לערוץ
 עם אפס פניות (‏MEGA-BLOCK-AUDIT). תג ‏v2.2.0-rc1.
+
+## נספח מתוארך: מגה-בלוק 10 (‏STEPS 58–62), נמדד 02.09.2026
+
+‏supplier_members עם scanner/manager/owner + ייחוס מימושים פר-משתמש הם
+המודל המבוקש, פרוס וחי; רב-סניפיות ואנליטיקות פר-עובד נדחו כמוקדמים.
+תג ‏v2.3.0-rc1.
