@@ -71,7 +71,84 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 קודם: 2026-08-19 22:01 (הצ'ק-אאוט ירד מתחת לשער הפיקסלים, ו-CLS שלו תוקן)
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
-## המשך מ: תור המרתון — בניית הצ'קליסט מניתוח פערים ואז שלב 1
+## המשך מ: תור המרתון, שלב 1
+
+## תור המרתון (20 שלבים, נבנה 04.09 מניתוח פערים מול docs/)
+
+הסקר המלא (שני סוכני חקירה, specs מול מימוש): רוב הליבה קיימת ונבדקת.
+השלבים הם הפערים שנמצאו, בסדר שהוגדר ב-CLOSEOUT §4. ‏DDL תמיד כטיוטה
+ב-`migrations/pending/` עם ‏preflight, לעולם לא apply.
+
+1. ‏[ ] ‏Cardcom: תיקון ‏42703 — ‏`finalize.ts` ו-`queries/orders.ts` בוחרים
+   שמות עמודות שאינם בפרודקשן (‏`cashback_applied_agorot` מול
+   ‏`cashback_applied_ils`, ‏`unit_price_agorot` מול ‏`unit_price_ils_agorot`;
+   ‏PAYMENT-FLOW §defect) + טסטים.
+2. ‏[ ] ניקוי ‏float במסלול הכסף: ‏`finalize.ts:479/:498`,
+   ‏`invoices.ts:200`, ‏`admin/products.ts:519/:554` — הכל דרך ‏money.ts.
+3. ‏[ ] ‏cron: טסט ‏401 לכל אחד מ-12 ה-routes (‏CLOSEOUT §8d; ‏9 חסרים).
+4. ‏[ ] שוברים: טסטים ל-`redeem-batch` + טיוטת ‏166 ‏guard מעברים על
+   ‏`vouchers` (‏VOUCHER-LIFECYCLE מציין שאין אחד) עם ‏preflight.
+5. ‏[ ] ‏platform_percent ושימור: טיוטת ‏167 — ‏CHECK
+   ‏`face = paid_on_site + balance_due` על ‏order_items + אילוצי סימן על
+   עמודות הכסף (‏BUSINESS-RULES §10) + אכיפת ‏JS במקביל.
+6. ‏[ ] ארנק: ‏`wallet_balances`/`wallet_transactions` חורגים מבלוק הכסף
+   (‏policies ל-authenticated על ארבע הפקודות; ‏DB-SECURITY) — טיוטת ‏168
+   + טסטי ‏RLS.
+7. ‏[ ] ‏Resend: טסטים ל-`growth/resend.ts` ו-`admin-alerts.ts` (אין להם).
+8. ‏[ ] ‏WhatsApp ‏Twilio: מודול שליחה טרנזקציוני מאחורי ‏env (אינרטי בלי
+   ‏TWILIO_*), ניקוז ‏outbox לשובר-הונפק ותזכורת-תוקף, טסטי mock. חסם:
+   ‏creds + תבניות מאושרות.
+9. ‏[ ] ‏Meilisearch (בלי ‏UI): סולם ‏backoff על ‏claim, בודק ‏drift
+   ‏(count ‏DB מול index), ‏harness ‏golden-queries אופליין + טסטים.
+10. ‏[ ] בדיקות מלאות: ‏Playwright ‏E2E — רכישת קופון כאורח, רכישה פיזית
+    מחובר, מימוש ‏QR ע"י ‏Coupon-Partner, ביטול והחזר אדמין; ‏snapshot
+    ‏RTL בשלושת הרוחבים; ‏contract tests ל-Cardcom (‏mock server, כל מצבי
+    ה-webhook); טסטי ‏RLS לכל ‏role (‏Customer, ‏Content-Uploader,
+    ‏Coupon-Partner, ‏Admin, ‏anon); ‏money: אפס ‏floats בכל ה-repo
+    ‏(grep + חוק lint).
+11. ‏[ ] אדמין: ‏`refund.ts:325` כותב ‏`actor_id: null` למרות שהאדמין ידוע
+    — תיקון + טסט; כיסוי לשלושת המסלולים שכותבים ‏audit_log ישירות.
+12. ‏[ ] ספק: טסטים ל-`payouts/csv` ו-`app/pin` אם חסרים; נראות
+    ‏redemptions לפי ‏role.
+13. ‏[ ] ‏content_uploader: כיסוי איסורים (הנחות/הזמנות/משתמשים) בטסטים.
+14. ‏[ ] ‏observability: ‏transport ל-Axiom (אינרטי בלי ‏token) + לוגי
+    ‏cron דרכו; אירועי ‏PostHog לרכישה/מימוש/ביטול + טסטים.
+15. ‏[ ] ‏Sentry: ‏release+sourcemaps ב-build; טסט ‏scrub לגופי ‏Cardcom.
+16. ‏[ ] ‏seeding: זרע דמו-פרודקשן שנפלט כ-SQL בלבד (חוקי ‏SEED.md), ‏3
+    ספקים / ‏40 פיזיים / ‏20 קופונים + טסטים; לא מריצים.
+17. ‏[ ] ‏cron ops: רענון ‏docs/CRON-EXTERNAL.md מול ‏162; ‏runbook זריעת
+    ‏vault (החסם למטה).
+18. ‏[ ] אבטחה: הרחבת ‏revoked-functions ל-165; אודיט ‏grants כולל
+    ‏apps/mobile (זוכר: ‏grep על ‏src בלבד מפספס אותו).
+19. ‏[ ] ‏CHANGELOG.md + רענון מסמכים שהשתנו (‏PAYMENT-FLOW defect סעיף).
+20. ‏[ ] שערים סופיים (‏typecheck/lint/test/build + ‏Playwright + ‏compare)
+    ‏→ תג ‏v5.3.0-rc1 + ‏PR ל-main (בלי למזג).
+
+## חסמים לאופיר (מעודכן 04.09)
+
+1. **זריעת ‏vault ל-162 (מאושרת אך חסומה):** אין ‏vercel ‏CLI ואין ‏MCP
+   ‏Supabase בסשן. להריץ:
+   ```bash
+   npm i -g vercel && vercel login
+   cd /Users/ofir/kenyonexpress-web/kenyonexpress
+   vercel link --yes   # פרויקט kenyonexpress, org kenyonexpress-projects
+   vercel env pull .env.vercel --environment=production --yes
+   grep CRON_SECRET .env.vercel   # אם ריק: openssl rand -hex 32 ואז
+   # vercel env add CRON_SECRET production (וגם preview), ולעדכן את .env.vercel
+   ```
+   ואז דרך ‏MCP ‏execute_sql (לא לשמור סודות בקבצים, למחוק ‏.env.vercel):
+   ```sql
+   select vault.create_secret('<CRON_SECRET>', 'cron_secret');
+   select vault.create_secret('https://kenyonexpress.vercel.app', 'app_url');
+   ```
+   אחר כך: ‏preflight_162.sql בלוק-בלוק, ואם הכל תואם — ‏apply_migration
+   ‏162, אימות ‏`select jobname, schedule, active from cron.job`, העברת
+   הקובץ ל-applied.
+2. **‏Cardcom prod:** ‏`TODO(cardcom)` ב-`cardcom.ts:249/:312` — אימות שדות
+   ‏endpoint ההחזר מול המסוף האמיתי דורש ‏CARDCOM_* של פרודקשן.
+3. **אישור מיגרציות ‏165 ומעלה** (טיוטות עם ‏preflight ליד כל אחת).
+4. **‏Twilio + ‏Resend domain + ‏DNS:** ‏creds ותבניות ‏WhatsApp מאושרות;
+   אימות דומיין שליחה ב-Resend; הפניית ‏DNS (ידני, אסור להריץ).
 
 ### ‏04.09 ‏D27 בוצע: ‏v4.1.0-rc1 מתויג ונדחף
 
