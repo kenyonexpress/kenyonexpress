@@ -4,13 +4,14 @@
 MCP `apply_migration`, one at a time, after Ofir approves it. `db push` is
 forbidden by project rule.
 
-## 2026-09-04: THREE PENDING FILES, ONE OF THEM APPROVED
+## 2026-09-04: FOUR PENDING FILES, ONE OF THEM APPROVED
 
 | File | State | Preflight |
 | --- | --- | --- |
 | `162_cron_schedule.sql` | **approved by Ofir (CLOSEOUT §7)**, blocked on vault seeding: the vault holds neither `cron_secret` nor `app_url`, and seeding them needs the Vercel env (§8a), which this machine cannot reach (no `vercel` CLI, no link, no token — and since 04.09 the Vercel project itself is gone, STATE.md blocker 0). Exact commands under "## חסמים לאופיר" in STATE.md. | `preflight_162.sql` |
 | `166_voucher_transition_guard.sql` | waiting for approval. Closes the gap VOUCHER-LIFECYCLE.md §1 records: 137 guards orders/order_items/payments and never covered `vouchers`, so nothing stops service_role from un-redeeming a burned voucher. Allows exactly the four `issued -> *` moves; every non-issued state stays terminal. | `preflight_166.sql` |
 | `167_order_items_money_constraints.sql` | waiting for approval. BUSINESS-RULES §10: sign constraints on the eight unconstrained agorot columns + `face = paid_on_site + balance_due` conservation CHECK (NULL passes). The JS half is already live in `buildOrderItemMoneyRow`, so the writer cannot produce a violating row; refuses rather than corrupts on apply, like 126. | `preflight_167.sql` |
+| `168_wallet_ledger_client_readonly.sql` | waiting for approval. Drops the six authenticated write policies on `wallet_balances`/`wallet_transactions` (measured live 04.09: gated on `is_admin()`, i.e. an admin browser session can write ledger rows off the audited server path). SELECT policies untouched; service_role unaffected; every code path that touches the tables is SELECT-only. Brings the two tables into the DB-SECURITY §4.3 money block. | `preflight_168.sql` |
 
 `165_revoke_anon_helpers.sql` was **CANCELLED on 2026-09-04 (CLOSEOUT §13)**
 and moved to `migrations/cancelled/` with its preflight. Eighteen RLS policies

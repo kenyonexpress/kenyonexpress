@@ -131,7 +131,7 @@ describe('the pending migration inventory', () => {
 
   // ---- what is actually unapplied right now -------------------------------
   it('holds exactly the migrations still awaiting approval', () => {
-    // THREE pending migrations as of 2026-09-04, each with its preflight audit
+    // FOUR pending migrations as of 2026-09-04, each with its preflight audit
     // beside it (a CLOSEOUT §5 requirement: no migration file without the
     // execute_sql audit that has to pass before it).
     //
@@ -141,6 +141,8 @@ describe('the pending migration inventory', () => {
     //                                       VOUCHER-LIFECYCLE.md §1 records
     //   167_order_items_money_constraints   awaiting approval; the two BUSINESS-RULES
     //                                       §10 holes on order_items (signs, conservation)
+    //   168_wallet_ledger_client_readonly   awaiting approval; the wallet ledger joins
+    //                                       the money block (client write policies drop)
     //
     // 164 stays unused; 165 was written under §8c and CANCELLED under §13
     // (eighteen public-role RLS policies call the helpers, so the revoke would
@@ -150,9 +152,11 @@ describe('the pending migration inventory', () => {
       '162_cron_schedule.sql',
       '166_voucher_transition_guard.sql',
       '167_order_items_money_constraints.sql',
+      '168_wallet_ledger_client_readonly.sql',
       'preflight_162.sql',
       'preflight_166.sql',
       'preflight_167.sql',
+      'preflight_168.sql',
     ])
   })
 

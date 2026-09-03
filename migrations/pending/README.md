@@ -1,6 +1,6 @@
 # `migrations/pending/`
 
-## 2026-09-04: three files pending, one approved (165 cancelled)
+## 2026-09-04: four files pending, one approved (165 cancelled)
 
 ### `162_cron_schedule.sql` — PENDING, approved (CLOSEOUT §7), blocked on vault
 
@@ -52,6 +52,19 @@ row and the apply is safe for it. Refuses rather than corrupts, like 126: ADD
 CONSTRAINT validates all rows and raises on a violator. Preflight:
 `preflight_167.sql` — columns exist, names free, zero negative rows, zero
 non-conserving rows, table scale.
+
+### `168_wallet_ledger_client_readonly.sql` — PENDING, not approved
+
+Drops the six authenticated INSERT/UPDATE/DELETE policies on
+`wallet_balances` and `wallet_transactions` (marathon step 6). Measured live
+on 04.09: the write policies are gated on `is_admin()`, which is the wrong
+door — an admin's browser session can write ledger rows directly, a money
+movement with no audit_log row. Every code path that touches the tables
+(admin user page, apps/mobile wallet screen) is SELECT-only, so nothing
+running loses anything; service_role bypasses RLS and the audited server
+writers are untouched. The two SELECT policies (admin/support/owner) stay.
+Live regression net: `src/db/__tests__/wallet-rls.test.ts` (anon half; the
+full per-role matrix is marathon step 10). Preflight: `preflight_168.sql`.
 
 ## 2026-09-03: every row below is APPLIED (history)
 
