@@ -1,6 +1,6 @@
 # `migrations/pending/`
 
-## 2026-09-04: two files pending, one approved (165 cancelled)
+## 2026-09-04: three files pending, one approved (165 cancelled)
 
 ### `162_cron_schedule.sql` — PENDING, approved (CLOSEOUT §7), blocked on vault
 
@@ -37,6 +37,21 @@ state is terminal by design (value restored later is a wallet credit, not a
 state change). No-op updates, INSERTs and NULLs pass untouched. Preflight:
 `preflight_166.sql` — enum labels, column type, no existing trigger, row
 counts per status.
+
+### `167_order_items_money_constraints.sql` — PENDING, not approved
+
+Sign constraints (`col IS NULL OR col >= 0`) on the eight agorot columns of
+`order_items` that carry none — balance_due, cashback_amount, commission,
+escrow_held, escrow_release, face_value, paid_on_site, supplier_immediate —
+plus the conservation CHECK `face = paid_on_site + balance_due` (NULL on any
+side passes; pre-070 rows keep moving). Both are BUSINESS-RULES §10 entries:
+stated rules nothing refuses to break. The JS half shipped first
+(`assertOrderItemMoneyInvariants` in `src/lib/commerce/order-money-columns.ts`
+throws on every insert path), so the running writer cannot produce a violating
+row and the apply is safe for it. Refuses rather than corrupts, like 126: ADD
+CONSTRAINT validates all rows and raises on a violator. Preflight:
+`preflight_167.sql` — columns exist, names free, zero negative rows, zero
+non-conserving rows, table scale.
 
 ## 2026-09-03: every row below is APPLIED (history)
 

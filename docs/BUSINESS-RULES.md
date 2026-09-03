@@ -551,8 +551,8 @@ impression of coverage.
 | Voucher states are single-use and terminal | one atomic `UPDATE` in the application | **No database guard on `vouchers`.** 137 covered three tables and not this one. Safe against a race; not against a `service_role` statement. |
 | The audit log is evidence | nothing | **`audit_log` accepts `UPDATE` and `DELETE`.** Zero triggers on the table. A log that can be edited is a statement, not evidence. |
 | Every money movement names its actor | convention | `refund.ts:325` writes `actor_id: null, actor_role: 'admin'` while `requireAdminSession()` knows exactly who it is. |
-| `order_items` money columns are non-negative | nothing | Eight columns with no sign constraint, in a table surrounded by constrained ones. |
-| `face = paid_on_site + balance_due` on a line | code and tests | Not a CHECK constraint. `vouchers` has the equivalent; `order_items` does not. |
+| `order_items` money columns are non-negative | `assertOrderItemMoneyInvariants` throws on every insert path (04.09) | DB half is draft `167_order_items_money_constraints.sql`, pending approval. |
+| `face = paid_on_site + balance_due` on a line | `assertOrderItemMoneyInvariants` throws on every insert path (04.09) | DB half is draft 167, pending. `vouchers` has the equivalent CHECK already. |
 | One open order per customer | nothing | Two tabs, two `client_ref`s, two real charges. The draft unique index is deliberately unwritten because it would also block a legitimate abandon-and-restart. Decision: measure first. |
 | `authenticated` cannot write freely | RLS alone | DML is granted on 56 relations; RLS is the only layer, and **no test attempts a forbidden write as `authenticated`**. |
 

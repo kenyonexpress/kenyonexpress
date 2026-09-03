@@ -73,7 +73,7 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 קודם: 2026-08-19 22:01 (הצ'ק-אאוט ירד מתחת לשער הפיקסלים, ו-CLS שלו תוקן)
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
-## המשך מ: תור המרתון, שלב 5
+## המשך מ: תור המרתון, שלב 6
 
 ## תור המרתון (20 שלבים, נבנה 04.09 מניתוח פערים מול docs/)
 
@@ -92,9 +92,10 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 4. ‏[x] שוברים: ‏12 טסטים ל-`redeem-batch` (‏settled/retryable, תקרה
    משותפת עם ‏single-scan, סדר נשמר) + טיוטת ‏166 ‏guard מעברים על
    ‏`vouchers` עם ‏preflight_166. לא הוחלה.
-5. ‏[ ] ‏platform_percent ושימור: טיוטת ‏167 — ‏CHECK
-   ‏`face = paid_on_site + balance_due` על ‏order_items + אילוצי סימן על
-   עמודות הכסף (‏BUSINESS-RULES §10) + אכיפת ‏JS במקביל.
+5. ‏[x] ‏platform_percent ושימור: טיוטת ‏167 (אילוצי סימן על ‏8 עמודות
+   האגורות + ‏CHECK שימור, ‏NULL עובר) עם ‏preflight_167; אכיפת ‏JS חיה
+   ב-`assertOrderItemMoneyInvariants` בצוואר היחיד של כתיבת הכסף + ‏4
+   טסטים. ‏BUSINESS-RULES §10 עודכן.
 6. ‏[ ] ארנק: ‏`wallet_balances`/`wallet_transactions` חורגים מבלוק הכסף
    (‏policies ל-authenticated על ארבע הפקודות; ‏DB-SECURITY) — טיוטת ‏168
    + טסטי ‏RLS.

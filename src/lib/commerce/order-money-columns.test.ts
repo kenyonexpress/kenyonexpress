@@ -216,6 +216,47 @@ describe('order_items row', () => {
   })
 })
 
+describe('the line invariants (JS half of draft 167, BUSINESS-RULES §10)', () => {
+  it('refuses a line that does not conserve, on both generations', () => {
+    // face != paid_on_site + balance_due. Before the guard this row went to
+    // the database untouched -- nothing on the hosted project checks it.
+    const short = { ...ITEM_MONEY, balanceDueAgorot: 39581 }
+    expect(() => buildOrderItemMoneyRow('ils', short)).toThrow(/does not conserve/)
+    expect(() => buildOrderItemMoneyRow('agorot', short)).toThrow(/does not conserve/)
+  })
+
+  it('refuses a negative amount', () => {
+    expect(() => buildOrderItemMoneyRow('ils', { ...ITEM_MONEY, commissionAgorot: -1 })).toThrow(
+      /non-negative integer/,
+    )
+  })
+
+  it('refuses a fractional amount, because agorot are integers by definition', () => {
+    expect(() =>
+      buildOrderItemMoneyRow('ils', {
+        ...ITEM_MONEY,
+        paidOnSiteAgorot: 4398.5,
+        balanceDueAgorot: 39581.5,
+      }),
+    ).toThrow(/non-negative integer/)
+  })
+
+  it('accepts the all-zero line a 100% wallet-covered freebie produces', () => {
+    expect(() =>
+      buildOrderItemMoneyRow('ils', {
+        unitPriceAgorot: 0,
+        faceValueAgorot: 0,
+        paidOnSiteAgorot: 0,
+        commissionAgorot: 0,
+        supplierDueAgorot: 0,
+        balanceDueAgorot: 0,
+        cashbackAgorot: 0,
+        platformBasisPoints: 3000,
+      }),
+    ).not.toThrow()
+  })
+})
+
 describe('generation resolution', () => {
   const missing = { error: { code: '42703', message: 'no column' } }
 

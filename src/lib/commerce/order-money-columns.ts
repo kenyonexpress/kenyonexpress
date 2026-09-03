@@ -275,10 +275,42 @@ export interface OrderItemMoney {
  * legacy 046/047 shape, the escrow model is abolished, and writing 0 says that
  * plainly rather than leaving NULL to be read as unknown.
  */
+/**
+ * The JS half of draft migration 167 (BUSINESS-RULES §10): the line must
+ * conserve -- `face = paid_on_site + balance_due` -- and every amount must be
+ * a non-negative integer. This is the single chokepoint every order_items
+ * money write passes through, so refusing here refuses everywhere, including
+ * on a hosted project where 167 has not been applied yet. A thrown line is an
+ * order that is NOT created, which is strictly better than a row whose money
+ * does not add up.
+ */
+function assertOrderItemMoneyInvariants(money: OrderItemMoney): void {
+  const amounts: [string, number][] = [
+    ['unitPriceAgorot', money.unitPriceAgorot],
+    ['faceValueAgorot', money.faceValueAgorot],
+    ['paidOnSiteAgorot', money.paidOnSiteAgorot],
+    ['commissionAgorot', money.commissionAgorot],
+    ['supplierDueAgorot', money.supplierDueAgorot],
+    ['balanceDueAgorot', money.balanceDueAgorot],
+    ['cashbackAgorot', money.cashbackAgorot],
+  ]
+  for (const [name, value] of amounts) {
+    if (!Number.isSafeInteger(value) || value < 0) {
+      throw new RangeError(`order item money: ${name} must be a non-negative integer, got ${value}`)
+    }
+  }
+  if (money.faceValueAgorot !== money.paidOnSiteAgorot + money.balanceDueAgorot) {
+    throw new RangeError(
+      `order item money does not conserve: face ${money.faceValueAgorot} != paid_on_site ${money.paidOnSiteAgorot} + balance_due ${money.balanceDueAgorot}`,
+    )
+  }
+}
+
 export function buildOrderItemMoneyRow(
   generation: MoneySchemaGeneration,
   money: OrderItemMoney,
 ): Record<string, number> {
+  assertOrderItemMoneyInvariants(money)
   if (generation === 'agorot') {
     return {
       unit_price_agorot: money.unitPriceAgorot,
