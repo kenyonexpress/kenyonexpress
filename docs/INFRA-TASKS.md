@@ -34,3 +34,34 @@
 **הגדרת סיום:** הקובץ קיים, בקשת POST עם secret שגוי מחזירה 401,
 עם secret נכון מחזירה 200 ומריצה `revalidateTag`, טסטים ירוקים
 (`pnpm test`, `pnpm type-check`, `pnpm lint`).
+
+## משימה 2: מיגרציית אימות לכיסוי RLS (assertion migration)
+
+**סטטוס:** פתוח.
+
+**הבעיה:** אין מיגרציה שנועלת את כיסוי ה-RLS כקוד
+(נמדד 03.09: אין קובץ `rls_coverage` תחת
+`supabase/migrations/`
+או
+`migrations/`,
+והמספר 032 שהוצע ב-INFRA-AUDIT.md כבר תפוס על ידי
+`032_wp_import_staging.sql`).
+ה-RLS עצמו נכון (נבדק ב-audit ומחוזק במיגרציות 111 ו-122), אבל שום דבר
+לא אוכף את זה קדימה: טבלה חדשה שתיווצר בלי RLS תעבור בשקט.
+
+**הפתרון (לפי שורת הממצא P2 בטבלת INFRA-AUDIT.md):**
+
+1. כתיבת מיגרציית אימות אידמפוטנטית, בלי שום שינוי סכימה, תחת
+   `migrations/pending/`
+   עם המספר הפנוי הבא אחרי האחרון ב-`migrations/applied/` (לא 032):
+   בלוק `DO $$` שסורק את `pg_catalog.pg_tables` בסכימת `public` ומרים
+   `EXCEPTION` עם רשימת הטבלאות אם קיימת טבלה עם `rowsecurity = false`.
+2. בלי לקבע את מספר הטבלאות בקוד. הסכימה בפרודקשן היא lineage שונה
+   מקבצי `supabase/migrations/` (ראה DB-DRIFT-AUDIT.md), ולכן האימות
+   חייב להיות דינמי על כל הטבלאות שקיימות בפועל.
+3. הקובץ ממתין לאישור לפי חוקי CLAUDE.md: אין `db push` ואין הרצת
+   migration על פרודקשן בלי אישור.
+
+**הגדרת סיום:** קובץ המיגרציה קיים ב-`migrations/pending/`, עומד בחוקי
+האידמפוטנטיות של supabase-migrations, טסטים ירוקים
+(`pnpm test`, `pnpm type-check`, `pnpm lint`).
