@@ -373,3 +373,86 @@ INFRA-AUDIT.md, שכל שורותיה הפתוחות כבר מכוסות במש�
 מפורש מקומית; צעד ה-freshness קיים ב-workflow עם חלון החסד ותנאי
 ה-`"unknown"`; טסטים ירוקים
 (`pnpm test`, `pnpm type-check`, `pnpm lint`).
+
+## משימה 8: גיבוי DB מתוזמן ומוצפן אל מחוץ ל-Supabase (offsite pg_dump)
+
+**סטטוס:** פתוח.
+
+**מקור:** ‏`docs/ARCHITECTURE-BACKUP-DR.md`, לא טבלת INFRA-AUDIT.md
+(שכבר מכוסה במשימות 1 עד 4). המסמך עצמו קובע: ‏Supabase Free הוא בלי
+גיבויים יומיים ובלי PITR, כלומר פרויקט שנמחק הוא אובדן נתונים סופי
+(עיקרון 1 שם), ו-`pg_dump` חיצוני נדרש גם ב-Pro (עיקרון 3 שם). המסמך
+מתאר את המדיניות; המשימה כאן היא שמשהו יריץ אותה בפועל.
+
+**הבעיה (נמדד 03.09):**
+
+1. `scripts/backup-schema.sh`
+   קיים, אבל הוא **schema-only במוצהר** (הערת הראש שלו: הוא נכתב כי
+   `supabase/migrations/`
+   אינו lineage של פרודקשן, ראה DB-DRIFT-AUDIT.md), ושום דבר לא מריץ
+   אותו: אפס אזכורי backup בכל שבעת קובצי
+   `.github/workflows/`,
+   אפס ב-
+   `scripts/cron-jobs.json`,
+   ואין תיקיית `backups/` בריפו. גיבוי **נתונים** לא קיים בכלל, בשום
+   מנגנון.
+2. ההשלכה חמורה מהרגיל דווקא בגלל הדריפט: כיוון שהמיגרציות לא מתארות
+   את פרודקשן, אי אפשר לשחזר אפילו את הסכימה מהריפו. בלי dump חיצוני,
+   אובדן הפרויקט הוא אובדן הסכימה והנתונים גם יחד.
+3. שנים עשר מסלולי ה-cron אינם פתרון: פונקציית serverless בלי בינארי
+   `pg_dump`
+   ועם timeout לא יכולה להפיק dump. המתזמן שכבר קיים לעבודות ריפו הוא
+   GitHub Actions
+   (‏`cron.yml` ו-`nightly-health.yml` רצים שם היום).
+
+**הפתרון:**
+
+1. workflow חדש
+   `.github/workflows/db-backup.yml`:
+   ‏schedule יומי + ‏workflow_dispatch. הצעדים: ‏dump מלא (סכימה ונתונים)
+   עם
+   `pg_dump --format=custom`
+   מול secret חדש
+   `SUPABASE_DB_URL`,
+   ולצידו dump סכימה דרך הסקריפט הקיים. אימות לפני שמירה, באותה גישה
+   שכבר כתובה ב-
+   `scripts/backup-schema.sh`:
+   גודל מינימלי, ‏`pg_restore --list` מצליח, והרשימה מכילה את אובייקטי
+   מסלול הכסף שהסקריפט כבר מגדיר (‏vouchers, ‏payments, ‏order_items,
+   ‏settlement_status). קובץ שנכשל באימות לא נשמר.
+2. **מוקש קובע-עיצוב: הריפו ציבורי** (נמדד:
+   `gh repo view`
+   מחזיר
+   `"isPrivate": false`).
+   ‏artifacts של ריפו ציבורי ניתנים להורדה על ידי כל אחד, ו-dump נתונים
+   מכיל PII של לקוחות ואת מסלול הכסף. לכן הצפנה סימטרית של הקובץ עוד על
+   ה-runner
+   (‏`openssl enc -aes-256-cbc -pbkdf2` עם secret חדש
+   `BACKUP_PASSPHRASE`)
+   היא חובה, ו-upload-artifact מקבל **אך ורק** את הקובץ המוצפן, עם
+   retention של 14 יום. ה-dump הגלוי לא עוזב את ה-runner.
+3. שני ה-secrets נוצרים בלוח GitHub ביד (סיסמת ה-DB אינה בידי סוכן),
+   ולכן זהו צעד ידני מתועד. עד שהם קיימים ה-workflow **נכשל בקול** עם
+   הודעה שנוקבת בשם ה-secret החסר, לא מדלג בשקט, ושולח התראת כשל
+   ל-ntfy באותה תבנית שכבר קיימת ב-
+   `nightly-health.yml`
+   (‏topic דרך
+   `vars.CRON_NTFY_TOPIC`
+   עם fallback ל-`kenyon-ofir-limit`).
+4. **מוקש מדוד:** ‏workflows מתוזמנים רצים רק מה-default branch (מתועד
+   בהערת הראש של
+   `production-smoke.yml`
+   ובמשימה 7 סעיף 4). לתעד בראש הקובץ, לא לעקוף.
+5. עדכון
+   `docs/ARCHITECTURE-BACKUP-DR.md`:
+   סעיף "מה ממומש" עם נוהל השחזור המלא (פקודת הפענוח ופקודת
+   `pg_restore`),
+   והצעדים הידניים בלוח. תרגיל שחזור אמיתי אל DB זמני מתועד שם
+   כ-follow-up ידני; הסוכן לא מריץ שחזור, בהתאם למצבי העצירה של
+   CLAUDE.md.
+
+**הגדרת סיום:** ‏`db-backup.yml` קיים עם schedule ו-dispatch; ה-dump
+מאומת ומוצפן לפני העלאה ואף קובץ גלוי לא עולה כ-artifact; היעדר secret
+מפיל את הריצה עם הודעה מפורשת והתראת ntfy; נוהל השחזור מתועד
+ב-`docs/ARCHITECTURE-BACKUP-DR.md`; טסטים ירוקים
+(`pnpm test`, `pnpm type-check`, `pnpm lint`).
