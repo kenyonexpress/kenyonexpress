@@ -73,7 +73,16 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 קודם: 2026-08-19 22:01 (הצ'ק-אאוט ירד מתחת לשער הפיקסלים, ו-CLS שלו תוקן)
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
-## המשך מ: תור המרתון, שלב 9
+## המשך מ: תור המרתון, שלב 10
+
+### החלטה שהתקבלה לבד (04.09 06:16): חזרה מ-checkout זר ל-main
+
+באמצע שלב 9 ה-HEAD זז ל-`main` המקומי (reflog: ‏"moving from
+closeout/v1-final to main" ב-06:16:29) — לא פעולה של הסשן הזה, וה-ps לא
+מראה סוכן קוד שני. שום דבר לא אבד: ‏closeout/v1-final נשאר זהה ל-origin,
+ה-WIP של שלב 9 (קבצים לא-מנוהלים + עריכת route) שרד את המעבר, ואף push
+ל-main לא קרה. חזרתי ל-closeout/v1-final ומעתה כל commit מוודא branch
+קודם. אם זה חוזר — לחשוד ב-script רקע ישן (kenyon-loop) שממשיך לרוץ.
 
 ## תור המרתון (20 שלבים, נבנה 04.09 מניתוח פערים מול docs/)
 
@@ -107,8 +116,12 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
    אינרטי בלי ‏TWILIO_*) + ‏`lib/whatsapp/outbox.ts` (שתי התבניות, רוכב
    על מעבר ה-pending→sent של רגל המייל, לעולם לא זורק) מחוברים לניקוז;
    ‏14 טסטי mock. החסם (creds+תבניות) עודכן עם שמות ה-env המדויקים.
-9. ‏[ ] ‏Meilisearch (בלי ‏UI): סולם ‏backoff על ‏claim, בודק ‏drift
-   ‏(count ‏DB מול index), ‏harness ‏golden-queries אופליין + טסטים.
+9. ‏[x] ‏Meilisearch (בלי ‏UI): ‏`outbox-drain.ts` — הצרכן החסר של ‏132
+   (סולם ‏2→8→32→128→512 דק׳ על ‏next_try_at, בלי מוות אחרי 5); ‏`drift.ts`
+   — ‏count ‏DB מול ‏stats של האינדקס; שניהם רוכבים על ‏cron ה-health כל
+   ‏5 דק׳, אינרטיים בלי ‏MEILISEARCH_*; ‏harness ‏golden-queries אופליין
+   (9 מסעות + 2 היעדרויות, מ-synonyms+settings+projection האמיתיים).
+   ‏27 טסטים.
 10. ‏[ ] בדיקות מלאות: ‏Playwright ‏E2E — רכישת קופון כאורח, רכישה פיזית
     מחובר, מימוש ‏QR ע"י ‏Coupon-Partner, ביטול והחזר אדמין; ‏snapshot
     ‏RTL בשלושת הרוחבים; ‏contract tests ל-Cardcom (‏mock server, כל מצבי
