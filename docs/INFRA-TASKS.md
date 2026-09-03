@@ -456,3 +456,71 @@ INFRA-AUDIT.md, שכל שורותיה הפתוחות כבר מכוסות במש�
 מפיל את הריצה עם הודעה מפורשת והתראת ntfy; נוהל השחזור מתועד
 ב-`docs/ARCHITECTURE-BACKUP-DR.md`; טסטים ירוקים
 (`pnpm test`, `pnpm type-check`, `pnpm lint`).
+
+## משימה 9: שער אימות ה-cutover של הדומיין והסבת הניטור אל kenyonexpress.co.il
+
+**סטטוס:** פתוח.
+
+**מקור:** ‏STATE.md (שלב 99: הכל סגור, מחכים להפניית ה-DNS, שהיא צעד
+ידני מאושר בלבד) ו-`docs/ARCHITECTURE-GO-LIVE-CHECKLIST.md` סעיפים 1
+ו-2.2. לא טבלת INFRA-AUDIT.md, שכבר מכוסה במשימות 1 עד 4.
+
+**הבעיה (נמדד 03.09):**
+
+1. שורות שער הדומיין בצ'קליסט (‏DOM1 עד DOM4, ‏SSL3, ‏SSL8, ‏VCL6,
+   ‏VCL7) קיימות רק כפקודות `dig` ו-`curl` להרצה ידנית, ועמודת הסימון
+   שלהן ריקה. אין אף סקריפט ב-`scripts/` שבודק DNS (‏grep על
+   `dig`/`resolveDns`/`dns`: אפס פגיעות), ומצב האוטונומיה של CLAUDE.md
+   קובע שאין מי שיריץ אותן ביד: בדיקות `dig` הן חלק מה-goals במפורש.
+2. אחרי ה-cutover כל הניטור ממשיך לכוון אל המארח הישן:
+   `production-smoke.yml`
+   קורא את `vars.PRODUCTION_URL` עם fallback קשיח ל-
+   `https://kenyonexpress.vercel.app`
+   (הודעת ה-notice שלו עצמה מודה בסיכון של "stale host"), ו-`cron.yml`
+   קורא את `vars.CRON_BASE_URL`. המארח ב-vercel.app ימשיך לענות 200
+   לנצח גם אם ה-cutover של co.il שבור, ולכן cutover כושל בלתי נראה לכל
+   מנגנון קיים: ‏smoke ירוק, ‏cron ירוק, ‏nightly ירוק.
+3. רדיוס הפגיעה הוא מסלול הכסף: ‏DOM8 (כתובות Success/Fail/Webhook של
+   Cardcom) ו-DOM5 (‏redirect allowlist של Supabase Auth) הם צעדי לוח
+   במערכות אחרות. שום דבר בריפו לא יכול לבצע אותם, אבל גם שום דבר לא
+   מאמת אותם.
+
+**הפתרון:**
+
+1. סקריפט חדש
+   `scripts/verify-cutover.mjs`
+   לפי תבנית סקריפטי ה-mjs הקיימים (‏`compare.mjs`, ‏`sentry-verify.mjs`):
+   ‏`node:dns/promises` ו-fetch, בלי תלות חדשה. הבדיקות, לפי סדר: רזולוציית
+   apex ו-www; ‏redirect ‏301/308 מ-http ל-https; ‏TLS תקין בשני המארחים;
+   ‏`/` עונה 200; ‏`/api/health` עונה 200 עם `database: ok`; וזהות: התשובה
+   מ-co.il נושאת כותרת `x-vercel-id` וגוף ה-health שלה תואם את זה של
+   ‏kenyonexpress.vercel.app. אימות לפי התנהגות ולא לפי IP קשיח, כי כתובות
+   ה-anycast של Vercel שלהם לשנות, והצ'קליסט עצמו כותב "לפי UI Domains".
+2. שלושה מצבי יציאה נקובים, לא הצלחה/כישלון בינארי: ‏0 = הופנה ותקין;
+   ‏2 = טרם הופנה (‏NXDOMAIN או רזולוציה שלא אל Vercel, המצב הצפוי היום,
+   וההודעה אומרת זאת); ‏1 = הופנה אבל שבור (רזולוציה אל Vercel אך TLS,
+   ‏200 או הזהות נכשלים, וזה המצב שמתריעים עליו). שער בינארי היה הופך
+   את התקופה שלפני ה-cutover לקיר אדום שמאלף את כולם להתעלם מהסקריפט.
+3. **מוקש מדוד: propagation הוא יחסי ל-resolver.** ‏runner של GitHub
+   פותר דרך ה-resolvers של ה-DC שלו, ו-TTL ישן (שורת DOM4 בצ'קליסט)
+   משאיר caches מקומיים מאחור. הפלט נוקב באיזה resolver נעשתה הבדיקה,
+   ו"הופנה" הוא היגד על אותו resolver בלבד, לא אמת גלובלית.
+4. צעד ב-
+   `production-smoke.yml`
+   (שכבר רץ יומית מול פרודקשן): כאשר `vars.PRODUCTION_URL` מוגדר על
+   co.il, מצב יציאה 1 מפיל את הריצה דרך מנגנון ה-issue הקיים; כל עוד
+   המשתנה לא הוגדר, הסקריפט רץ במצב דיווח בלבד ומדפיס את מצב 2 בלי
+   להיכשל. המוקש הקבוע בתוקף: ‏workflows מתוזמנים רצים רק מ-main
+   (מתועד בהערת הראש של אותו קובץ). לתעד, לא לעקוף.
+5. תיעוד: שורות DOM1 עד SSL8 בצ'קליסט מקבלות הפניה לסקריפט במקום
+   פקודות להעתקה ידנית, ו-`docs/DEPLOYMENT.md` מקבל את רשימת ההסבה
+   ליום שאחרי: החלפת `vars.PRODUCTION_URL` ו-`vars.CRON_BASE_URL` בלוח
+   GitHub, ‏`NEXT_PUBLIC_APP_URL` בסביבת Vercel, ‏DOM5 ו-DOM8 בלוחות
+   Supabase ו-Cardcom. כל צעדי הלוח ידניים בהגדרה, והפניית ה-DNS עצמה
+   נשארת ידנית לפי CLAUDE.md: הסקריפט מאמת בלבד ולעולם לא משנה DNS.
+
+**הגדרת סיום:** ‏`verify-cutover.mjs` קיים עם שלושת מצבי היציאה והודעה
+נקובה לכל בדיקה; הרצה היום מחזירה מצב 2 עם הודעת "טרם הופנה" מפורשת;
+צעד ה-smoke קיים וממותג על המשתנה; הצ'קליסט ו-`docs/DEPLOYMENT.md`
+מפנים לסקריפט; טסטים ירוקים
+(`pnpm test`, `pnpm type-check`, `pnpm lint`).
