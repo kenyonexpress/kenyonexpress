@@ -100,6 +100,7 @@ describe('the pending migration inventory', () => {
       '157_audit_ip_retention.sql',
       '158_revoke_anon_public_on_new_functions.sql',
       '159_pin_search_path_and_revoke_enqueue.sql',
+      '160_fk_indexes.sql',
     ])
   })
 
@@ -119,9 +120,12 @@ describe('the pending migration inventory', () => {
     // Added by a parallel agent session on 2026-09-03 (fbdd8e1f5) as
     // 005_orders.sql and renamed into this series: supabase/migrations/ already
     // holds a 005, and the clash is what the numbering assertion below catches.
+    // Renamed again the same day: 160_fk_indexes.sql was applied to production
+    // and took 160, and 161-162 are reserved for the cron work that follows.
+    // This file is the only thing still awaiting approval.
     // NOT applied. This assertion is the deliberate diff that makes a new
     // pending migration visible.
-    expect(sqlFilesIn(PENDING_DIR)).toEqual(['160_orders_indexes.sql'])
+    expect(sqlFilesIn(PENDING_DIR)).toEqual(['163_orders_indexes.sql'])
   })
 
   // ---- direction 2: manifest -> disk -------------------------------------

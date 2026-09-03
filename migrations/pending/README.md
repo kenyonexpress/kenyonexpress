@@ -1,6 +1,6 @@
 # `migrations/pending/`
 
-## 2026-09-03: `160_orders_indexes.sql` is PENDING. Every row below is APPLIED.
+## 2026-09-03: `163_orders_indexes.sql` is PENDING. Every row below is APPLIED.
 
 ### `159_pin_search_path_and_revoke_enqueue.sql` — APPLIED 2026-09-03
 
@@ -10,11 +10,28 @@ Applied to production through MCP alongside 158 and verified. Pins
 `enqueue_search_index()` from `public`/`anon`/`authenticated`.
 
 The number 159 briefly belonged to the pending orders-indexes file; that one was
-renamed to `160_orders_indexes.sql` the same day (its second rename -- it
-arrived as `005`). New migrations start at 160... which 160 now occupies, so in
-practice: at 161.
+renamed the same day (its second rename -- it arrived as `005`), and is now
+`163_orders_indexes.sql`: `160_fk_indexes.sql` was applied to production on
+2026-09-03 and took 160, and 161-162 are reserved for the cron work that
+follows. **New migrations start at 164.**
 
-### `160_orders_indexes.sql` — AWAITING APPROVAL
+### `160_fk_indexes.sql` — APPLIED 2026-09-03
+
+Applied to production through MCP and verified. Ten `create index if not
+exists` statements covering foreign keys that had no index behind them:
+`payment_events.actor_id`, `payout_statements.approved_by`, three on `refunds`
+(`decided_by`, `payment_id`, `requested_by`), two on `reviews` (`reviewed_by`,
+`user_id`), two on `subscriptions` (`origin_order_id`, `payment_token_id`) and
+`wishlists.product_id`.
+
+Every statement is `if not exists`, so re-running it is a no-op. There is no
+rollback row because dropping an index that supports a foreign key is not a
+restoration of anything: `drop index if exists public.<name>;` per line, if one
+is ever actually wanted.
+
+**This is the file that pushed the orders-indexes migration off 160.**
+
+### `163_orders_indexes.sql` — AWAITING APPROVAL
 
 Written by a parallel agent session (commit `fbdd8e1f5`) alongside Drizzle
 schemas at `src/db/schema/orders.ts` and `order-items.ts`. Creates `orders` and
@@ -22,11 +39,15 @@ schemas at `src/db/schema/orders.ts` and `order-items.ts`. Creates `orders` and
 `orders(user_id)`, `orders(created_at)` and `order_items(created_at)`.
 **Not applied.**
 
-**It arrived numbered `005` and was renamed.** `supabase/migrations/` already
-holds `005_products_schema.sql`, so the original name meant two different things
-in the two directories, and `005` sorted ahead of the entire 122-158 applied
+**It arrived numbered `005` and was renamed twice.** `supabase/migrations/`
+already holds `005_products_schema.sql`, so the original name meant two different
+things in the two directories, and `005` sorted ahead of the entire 122-158 applied
 series -- every member of which already assumes these two tables exist. The
 numbering assertion in `pending-migrations-inventory.test.ts` is what caught it.
+The later rename, `160` -> `163`, is the same rule once more: `160_fk_indexes.sql`
+went to production on 2026-09-03 and `161`-`162` are reserved for the cron work,
+and a number that names both an applied file and an unapplied one is the exact
+confusion this directory keeps paying for.
 
 The file itself is honest about the rest: its header records that both tables
 are already live on the hosted DB, so every `CREATE` is guarded and the net
