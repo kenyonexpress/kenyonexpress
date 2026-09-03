@@ -70,7 +70,13 @@
     "zustand": "^5.0.14"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["@biomejs/biome", "@parcel/watcher", "@swc/core", "esbuild", "sharp"]
+    "onlyBuiltDependencies": [
+      "@biomejs/biome",
+      "@parcel/watcher",
+      "@swc/core",
+      "esbuild",
+      "sharp"
+    ]
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
@@ -94,6 +100,6 @@
     "lint-staged": "^15.3.0",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^3.1.2"
+    "vitest": "^3.2.7"
   }
 }
