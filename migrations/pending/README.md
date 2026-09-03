@@ -11,9 +11,10 @@ Applied to production through MCP alongside 158 and verified. Pins
 
 The number 159 briefly belonged to the pending orders-indexes file; that one was
 renamed the same day (its second rename -- it arrived as `005`), and is now
-`163_orders_indexes.sql`: `160_fk_indexes.sql` was applied to production on
-2026-09-03 and took 160, and 161-162 are reserved for the cron work that
-follows. **New migrations start at 164.**
+`163_orders_indexes.sql`: `160_fk_indexes.sql`
+and `161_enable_pg_cron_pg_net.sql` were both applied to production on 2026-09-03,
+and `162` is reserved for the cron schedule those two make possible.
+**New migrations start at 164.**
 
 ### `160_fk_indexes.sql` — APPLIED 2026-09-03
 
@@ -31,6 +32,26 @@ is ever actually wanted.
 
 **This is the file that pushed the orders-indexes migration off 160.**
 
+### `161_enable_pg_cron_pg_net.sql` — APPLIED 2026-09-03
+
+Applied to production through MCP and verified. Enables `pg_cron` (schema
+`pg_catalog`, version 1.6.4) and `pg_net` (schema `extensions`, version 0.20.0),
+then grants `usage on schema cron` to `postgres`.
+
+The schemas are read off production, not chosen: `pg_cron` lives in whatever
+schema it was installed into and cannot be moved, so naming a different one
+would make the file describe a database that does not exist.
+
+**Why both, and why the grant.** `pg_cron` schedules but cannot make an outbound
+request; `pg_net` supplies `net.http_post`, which is what lets a job reach a
+Vercel route. The grant is what lets `postgres` call `cron.schedule` at all --
+without it, `162` fails on its first statement.
+
+This migration is what closes the standing GO/NO-GO blocker recorded in
+`STATE.md`: the cron routes existed and nothing in the world called them.
+Verified at the time of writing: `select count(*) from cron.job` returned **0**,
+so no job is scheduled yet -- that is `162`, which is pending.
+
 ### `163_orders_indexes.sql` — AWAITING APPROVAL
 
 Written by a parallel agent session (commit `fbdd8e1f5`) alongside Drizzle
@@ -44,10 +65,10 @@ already holds `005_products_schema.sql`, so the original name meant two differen
 things in the two directories, and `005` sorted ahead of the entire 122-158 applied
 series -- every member of which already assumes these two tables exist. The
 numbering assertion in `pending-migrations-inventory.test.ts` is what caught it.
-The later rename, `160` -> `163`, is the same rule once more: `160_fk_indexes.sql`
-went to production on 2026-09-03 and `161`-`162` are reserved for the cron work,
-and a number that names both an applied file and an unapplied one is the exact
-confusion this directory keeps paying for.
+The later renames, `160` -> `163`, are the same rule once more: `160_fk_indexes.sql`
+and `161_enable_pg_cron_pg_net.sql` went to production on 2026-09-03 and `162` is
+reserved for the cron schedule, and a number that names both an applied file and an
+unapplied one is the exact confusion this directory keeps paying for.
 
 The file itself is honest about the rest: its header records that both tables
 are already live on the hosted DB, so every `CREATE` is guarded and the net
