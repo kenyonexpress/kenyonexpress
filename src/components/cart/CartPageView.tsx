@@ -28,10 +28,11 @@ export default function CartPageView() {
 
   return (
     <div className="cart-page">
-      {/* The live page names this route in a breadcrumb and has no visible
-          heading at all. The h1 is kept and hidden rather than dropped: a
-          document with no level-one heading is a real accessibility defect,
-          and screen readers are not what the pixel diff is measuring. */}
+      {/* The h1 was hidden here on a claim that live has no visible heading.
+          refs/ke_live_computed.json disagrees at all three widths: live draws
+          h1.entry-title at 39.998px/500, 48px tall, above the cart table. D25
+          made it visible again; the styling notes live's geometry in
+          cart-page.css. */}
       <nav className="cart-page__breadcrumb" aria-label="פירורי לחם">
         <Link href="/" className="inline-block py-1">
           עמוד הבית
