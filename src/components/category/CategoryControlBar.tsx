@@ -59,6 +59,24 @@ export default function CategoryControlBar({ value }: { value: SortValue }) {
 
   return (
     <div className="category-control-bar">
+      {/* Phone only; the view switcher below owns this slot from 768 up.
+
+          FIRST in the DOM, which in this space-between RTL bar means the
+          RIGHT. D24 moved it after the sort on a hand re-measurement of live
+          that said the opposite; every stored reference disagrees with that
+          measurement and they all agree with each other:
+          refs/ke_live_products.html puts .handheld-sidebar-toggle first in
+          .shop-control-bar (itself flex space-between), and
+          refs/ke_live_computed.json measures it at x281 (right) with
+          select.orderby at x35 (left) on both /products and /category at 380.
+          category-page.css said the same all along. The stored capture is the
+          project's mandated visual source, so filters-first is restored. */}
+      <a className="category-control-bar__filters" href="#category-filters">
+        <svg viewBox="0 0 20 20" width={18} height={18} aria-hidden="true" fill="currentColor">
+          <path d="M2 5h9a2.5 2.5 0 0 0 4.9 0H18v2h-2.1a2.5 2.5 0 0 0-4.9 0H2V5Zm0 8h4.1a2.5 2.5 0 0 1 4.9 0h7v2h-7a2.5 2.5 0 0 1-4.9 0H2v-2Z" />
+        </svg>
+        סינון
+      </a>
       <ViewSwitcher />
       <div className="category-control-bar__sort">
         <label className="sr-only" htmlFor="category-orderby">
@@ -80,23 +98,6 @@ export default function CategoryControlBar({ value }: { value: SortValue }) {
           ))}
         </select>
       </div>
-
-      {/* Phone only; the view switcher above owns this slot from 768 up.
-
-          AFTER the sort in the DOM, and that is the whole point. The bar is
-          `justify-content: space-between` in an RTL document, so DOM order is
-          side order: first child right, last child left. Live puts the sort pill
-          on the right and "Filters" on the left, and rendering this first put
-          ours in exactly the mirrored position -- the same defect D21 found in
-          the handheld header icon row, in a second bar.
-
-          See the note in category-page.css for why it is an anchor. */}
-      <a className="category-control-bar__filters" href="#category-filters">
-        <svg viewBox="0 0 20 20" width={18} height={18} aria-hidden="true" fill="currentColor">
-          <path d="M2 5h9a2.5 2.5 0 0 0 4.9 0H18v2h-2.1a2.5 2.5 0 0 0-4.9 0H2V5Zm0 8h4.1a2.5 2.5 0 0 1 4.9 0h7v2h-7a2.5 2.5 0 0 1-4.9 0H2v-2Z" />
-        </svg>
-        סינון
-      </a>
     </div>
   )
 }
