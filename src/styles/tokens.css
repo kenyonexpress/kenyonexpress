@@ -296,6 +296,14 @@
      so the pixel comparison sees live's button and a thumb gets the target. */
   --spacing-touch-min: 44px;
 
+  /* The region menu ("בחר אזור"), live's `secondary-nav`. Read off the rendered
+     page at 1440 on 2026-09-03: the nav row is 44.996px of line-height, and the
+     dropdown under it is a flat 200px wide with 8px 0 padding on a 2px
+     rgb(254,215,0) top border -- which is --color-brand-primary exactly. The
+     row height inside the panel is the same 14px type as the drawer. */
+  --spacing-nav-row: 45px;
+  --spacing-region-menu: 200px;
+
   /* --- Type scale, the rest of it (measured) ---------------------------------
      Added 2026-09-03 when the arbitrary `text-[Npx]` values left in components
      were swept. Frequency across the reference: 14px is the body size on 8364

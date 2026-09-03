@@ -1,5 +1,6 @@
 import HeaderCart from '@/components/cart/HeaderCart'
-import { ChevronDown, Heart, User } from 'lucide-react'
+import RegionMenu from '@/components/layout/RegionMenu'
+import { Heart, User } from 'lucide-react'
 import Link from 'next/link'
 
 const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
@@ -23,8 +24,10 @@ const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
  * sending it to the wishlist, which exists now (154 + /account/wishlist).
  *
  * The region selector matches live's secondary-nav (96x45, 14px/500 with a
- * chevron). Live opens a dropdown of regions; ours goes to the suppliers page,
- * where the region actually filters something. Visual parity, honest target.
+ * chevron). It is now a real dropdown -- see RegionMenu.tsx. It used to be a
+ * flat link to /suppliers, which is the join-us-as-a-supplier marketing page:
+ * a control labelled "choose a region" whose target has no regions on it. The
+ * seventeen regions it now opens are live's own, read off the rendered page.
  *
  * NO SEARCH FIELD. Live's masthead carries a 534px search form at x456..x990
  * and this component used to render <DeferredHeaderSearch/> in that slot. The
@@ -37,13 +40,7 @@ const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
 export default function MastheadNav() {
   return (
     <div className="flex min-w-0 flex-1 items-center justify-end ps-6">
-      <Link
-        href="/suppliers"
-        className="me-[14px] ms-[53px] hidden shrink-0 items-center gap-1 text-sm font-medium text-heading transition-opacity hover:opacity-70 lg:flex"
-      >
-        בחר אזור
-        <ChevronDown size={14} strokeWidth={2} aria-hidden="true" />
-      </Link>
+      <RegionMenu />
 
       <nav
         className="flex shrink-0 items-center gap-4 lg:gap-[38px]"
