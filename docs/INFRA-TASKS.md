@@ -113,3 +113,69 @@
 פלט `pnpm build` מראה שהמסלולים הסטטיים של `(store)` נשארו סטטיים;
 חריגי ה-framing של Cardcom ממשיכים לעבוד; טסטים ירוקים
 (`pnpm test`, `pnpm type-check`, `pnpm lint`, וגם `pnpm build` כשער נפרד).
+
+## משימה 4: מיגרציית תזמון ה-cron (המספר השמור 162) מעל pg_cron + pg_net
+
+**סטטוס:** פתוח.
+
+**הבעיה:** שנים עשר מסלולי cron קיימים תחת
+`src/app/api/cron/`
+(כולם GET עם
+`Authorization: Bearer <CRON_SECRET>`,
+נמדד 03.09: ‏12 קובצי route, ‏12 עם GET, ‏0 עם POST), ואין להם מתזמן ב-DB:
+‏STATE.md ‏(03.09) מתעד ש-
+`select count(*) from cron.job`
+מחזיר 0 וש-`vercel.json` לא מגדיר אף cron. מיגרציה
+`161_enable_pg_cron_pg_net.sql`
+כבר הוחלה בפרודקשן (‏`pg_cron` ‏1.6.4, ‏`pg_net` ‏0.20.0, ו-grant על
+סכימת `cron` ל-postgres) והכותרת שלה מפנה במפורש ל-162 כמי שתתזמן.
+המספר 162 שמור לזה ב-STATE.md ‏(סעיף "מספור": ‏160 ו-161 תפוסות, האינדקסים
+עברו ל-163), אבל נמדד 03.09: אין שום קובץ 162 לא ב-
+`migrations/pending/`
+ולא ב-
+`migrations/applied/`.
+המספר שמור, הקובץ לא קיים, והעבודות לא רצות.
+
+**הפתרון:**
+
+1. כתיבת
+   `migrations/pending/162_schedule_cron_jobs.sql`
+   שרושמת את שנים עשר הג'ובים בדיוק כפי שהם מוגדרים ב-
+   `scripts/cron-jobs.json`
+   (מקור האמת היחיד לפי ההערה בראשו): לכל ג'וב קריאת
+   `cron.schedule('<name>', '<cron>', $$ select net.http_get(...) $$)`
+   כשה-URL הוא `defaultBaseUrl` ועליו ה-path מה-JSON, וה-headers כוללים
+   `Authorization: Bearer <CRON_SECRET>`.
+   ‏`cron.schedule` בשמות היא upsert לפי שם ב-pg_cron, וזה מה שנותן את
+   האידמפוטנטיות: הרצה חוזרת מעדכנת ולא משכפלת.
+2. **אסור שהסוד יופיע בקובץ.** הריפו ציבורי ל-git, וקובץ מיגרציה עם
+   `CRON_SECRET`
+   מוטבע הוא הדלפה. בדיקה מדודה לפני מימוש: האם
+   `supabase_vault`
+   מותקן בפרודקשן (‏`select extname from pg_extension`; לא נמדד עד כה,
+   אין שום אזכור Vault במיגרציות). אם כן, פקודת הג'וב קוראת את הסוד
+   בזמן ריצה מ-
+   `vault.decrypted_secrets`
+   והקובץ נקי לחלוטין. אם לא, הקובץ נושא placeholder מפורש
+   (`{{CRON_SECRET}}`)
+   שמוחלף רק בזמן ההחלה, עם הערת אזהרה בראש הקובץ.
+3. הרחבת
+   `src/__tests__/cron-schedule-inventory.test.ts`
+   כך שגם 162 נבדקת מול ה-JSON. הטסט הזה כבר אוכף היום ש-
+   `docs/CRON-EXTERNAL.md`,
+   ‏`.github/workflows/cron.yml`
+   והמסלולים לא סוטים מהמקור; מיגרציה עם לוחות זמנים מוטבעים היא עותק
+   חמישי, ובלי השער הזה היא תתיישן בשקט.
+4. **מוקש מתועד:** ‏`defaultBaseUrl` הוא
+   `https://kenyonexpress.vercel.app`,
+   והפניית ה-DNS לדומיין הסופי היא שלב ידני שממתין לאישור. הג'ובים
+   מתוזמנים מול כתובת ה-vercel.app, ואחרי ה-cutover תידרש מיגרציית
+   עדכון כתובות. לתעד את זה בראש הקובץ, לא לנחש את הדומיין מראש.
+5. הקובץ ממתין לאישור לפי חוקי CLAUDE.md: אין `db push` ואין הרצת
+   migration על פרודקשן בלי אישור.
+
+**הגדרת סיום:** הקובץ קיים ב-`migrations/pending/` עם שנים עשר הג'ובים,
+שמות, נתיבים ולוחות זמנים זהים אחד לאחד ל-
+`scripts/cron-jobs.json`;
+אף מחרוזת סוד לא מופיעה בקובץ; טסט האינוונטר המורחב עובר; טסטים ירוקים
+(`pnpm test`, `pnpm type-check`, `pnpm lint`).
