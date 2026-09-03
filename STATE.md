@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-03 22:15 UTC (‏מרתון 1+2: תיקון ה-42703 נדחף בסשן קודם בלי לעדכן מצביע; ניקוי ה-float ב-bulk price הושלם דרך מודול טהור `src/lib/admin/bulk-price.ts` עם 10 טסטים; ‏3696 ירוקים, build ירוק)
 Updated: 2026-09-03 08:00 UTC (‏ריצת העיצוב: ‏D1–D14 בוצעו, שלושה תגים v3.1–v3.3; ‏158+159 הוחלו בפרודקשן; סוכן מקביל תועד)
 Updated: 2026-09-02 19:05 UTC (‏ביקורת חוזרת על MEGA 6-ALT: type-check/test/build ירוקים, Lighthouse מעל 95, דף ספק 200 עם קטלוג, /api/ready מחזיר חמש בדיקות)
 Updated: 2026-09-02 12:22 UTC (‏שער Vercel אדום על PR #27: לא הקוד. GitHub Build ירוק. כל דיפלוי מאז 01.09 נכשל בשנייה, כולל main. פרוד חי מ-31.08)
@@ -71,7 +72,7 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 קודם: 2026-08-19 22:01 (הצ'ק-אאוט ירד מתחת לשער הפיקסלים, ו-CLS שלו תוקן)
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
-## המשך מ: תור המרתון, שלב 1
+## המשך מ: תור המרתון, שלב 3
 
 ## תור המרתון (20 שלבים, נבנה 04.09 מניתוח פערים מול docs/)
 
@@ -79,12 +80,11 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 השלבים הם הפערים שנמצאו, בסדר שהוגדר ב-CLOSEOUT §4. ‏DDL תמיד כטיוטה
 ב-`migrations/pending/` עם ‏preflight, לעולם לא apply.
 
-1. ‏[ ] ‏Cardcom: תיקון ‏42703 — ‏`finalize.ts` ו-`queries/orders.ts` בוחרים
-   שמות עמודות שאינם בפרודקשן (‏`cashback_applied_agorot` מול
-   ‏`cashback_applied_ils`, ‏`unit_price_agorot` מול ‏`unit_price_ils_agorot`;
-   ‏PAYMENT-FLOW §defect) + טסטים.
-2. ‏[ ] ניקוי ‏float במסלול הכסף: ‏`finalize.ts:479/:498`,
-   ‏`invoices.ts:200`, ‏`admin/products.ts:519/:554` — הכל דרך ‏money.ts.
+1. ‏[x] ‏Cardcom: תיקון ‏42703 — בוצע ב-872b86c7c (‏order-money-columns.ts
+   ‏+ טסטים; הקריאות מיישרות את הדור דרך אותו probe של מסלול הכתיבה).
+2. ‏[x] ניקוי ‏float במסלול הכסף — ‏finalize/invoices נוקו ב-872b86c7c;
+   ‏bulk price של האדמין עבר לאגורות דרך ‏`src/lib/admin/bulk-price.ts`
+   (‏applyBp, בלי ‏round2) + ‏10 טסטים.
 3. ‏[ ] ‏cron: טסט ‏401 לכל אחד מ-12 ה-routes (‏CLOSEOUT §8d; ‏9 חסרים).
 4. ‏[ ] שוברים: טסטים ל-`redeem-batch` + טיוטת ‏166 ‏guard מעברים על
    ‏`vouchers` (‏VOUCHER-LIFECYCLE מציין שאין אחד) עם ‏preflight.

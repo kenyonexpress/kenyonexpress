@@ -1,13 +1,14 @@
 'use server'
 
 import { writeAuditLog } from '@/lib/admin/audit'
+import { catalogueIlsToAgorot, scaleCatalogueIls } from '@/lib/admin/bulk-price'
 import { canSeeMoney } from '@/lib/admin/permissions'
 import { productSchema as schema, variantSchema } from '@/lib/admin/product-form-schema'
 import { variantIdsToRemove } from '@/lib/admin/product-variants'
 import { type AdminSessionInfo, requireSection } from '@/lib/admin/rbac'
 import { applyUploaderPolicy } from '@/lib/admin/uploader-policy'
 import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
-import { ilsToAgorot } from '@/lib/commerce/money'
+import { agorotToIls, ilsToAgorot } from '@/lib/commerce/money'
 import { assertPublishable, buildProductMoneyWrite } from '@/lib/commerce/product-money'
 import { recurringSchemaError } from '@/lib/commerce/recurring-schema-error'
 import { whatsappSchemaError } from '@/lib/commerce/whatsapp-schema-error'
@@ -515,14 +516,16 @@ const bulkPriceSchema = z.discriminatedUnion('mode', [
 
 export type BulkPriceInput = z.infer<typeof bulkPriceSchema>
 
-function round2(n: number): number {
-  return Math.round(n * 100) / 100
-}
-
 /**
  * Bulk price update. Percent mode scales kenyon_price and full_price together;
  * set mode writes kenyon_price and skips products whose full_price would fall
  * below it (those are reported back, not silently broken).
+ *
+ * The math runs in integer agorot through scaleCatalogueIls (applyBp under
+ * the hood) -- not in ILS floats. The old body computed
+ * `round2(current * factor)` where both operands were floats, which is genuine
+ * float price math on the money path (marathon step 2); a -10% on 33.35 could
+ * land a hundredth off depending on the binary representation.
  */
 async function runBulkAdjustPrices(
   ids: string[],
@@ -549,19 +552,32 @@ async function runBulkAdjustPrices(
   const skipped: string[] = []
 
   for (const p of products ?? []) {
-    const current = Number(p.kenyon_price ?? 0)
     if (parsed.data.mode === 'percent') {
-      const factor = 1 + parsed.data.value / 100
-      const patch: { kenyon_price: number; full_price?: number } = {
-        kenyon_price: round2(current * factor),
+      const nextKenyon = scaleCatalogueIls(p.kenyon_price ?? 0, parsed.data.value)
+      if (nextKenyon == null) {
+        skipped.push(p.name_he)
+        continue
       }
-      if (p.full_price != null) patch.full_price = round2(Number(p.full_price) * factor)
+      const patch: { kenyon_price: number; full_price?: number } = {
+        kenyon_price: nextKenyon,
+      }
+      if (p.full_price != null) {
+        const nextFull = scaleCatalogueIls(p.full_price, parsed.data.value)
+        if (nextFull == null) {
+          skipped.push(p.name_he)
+          continue
+        }
+        patch.full_price = nextFull
+      }
       const { error } = await supabase.from('products').update(patch).eq('id', p.id)
       if (error) return { error: error.message, updated }
       updated += 1
     } else {
-      const next = round2(parsed.data.value)
-      if (p.full_price != null && Number(p.full_price) < next) {
+      const nextAgorot = catalogueIlsToAgorot(parsed.data.value)
+      if (nextAgorot == null) return { error: 'ערך מחיר לא תקין' }
+      const next = agorotToIls(nextAgorot)
+      const fullAgorot = p.full_price != null ? catalogueIlsToAgorot(p.full_price) : null
+      if (fullAgorot != null && fullAgorot < nextAgorot) {
         skipped.push(p.name_he)
         continue
       }
