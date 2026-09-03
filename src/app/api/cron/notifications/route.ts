@@ -5,6 +5,7 @@ import { withRequestLog } from '@/lib/observability/with-request-log'
 import { pushOutboxRow } from '@/lib/push/dispatch'
 import { bearerMatches } from '@/lib/security/constant-time'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { sendOutboxWhatsapp } from '@/lib/whatsapp/outbox'
 import { type NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -113,6 +114,8 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   let pushSkipped = 0
   let pushFailed = 0
   let pushDead = 0
+  let whatsapped = 0
+  let whatsappFailed = 0
 
   for (const row of rows) {
     const emailDue = row.status === 'pending' && row.next_attempt_at <= now
@@ -148,6 +151,13 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
               last_error: null,
             })
             .eq('id', row.id)
+          // WhatsApp rides the email leg's exactly-once pending->sent
+          // transition (see lib/whatsapp/outbox.ts for why it has no state
+          // machine of its own). Inert without TWILIO_*, never throws, never
+          // touches the row.
+          const wa = await sendOutboxWhatsapp(admin, row)
+          if (wa === 'sent') whatsapped++
+          else if (wa === 'failed') whatsappFailed++
         } else if (result.skipped) {
           // No API key is not a failure of this row. Counting it as an attempt
           // would burn the whole queue's retries on a machine that was never
@@ -242,6 +252,8 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     pushSkipped,
     pushFailed,
     pushDead,
+    whatsapped,
+    whatsappFailed,
   })
 }
 
