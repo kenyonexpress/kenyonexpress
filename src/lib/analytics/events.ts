@@ -22,8 +22,18 @@ export const CLIENT_EVENT_NAMES = [
 
 export type ClientEventName = (typeof CLIENT_EVENT_NAMES)[number]
 
-// Emitted server-side only (from beginCheckout), never accepted from a browser.
-export const SERVER_EVENT_NAMES = ['begin_checkout'] as const
+// Emitted server-side only, never accepted from a browser. begin_checkout
+// comes from beginCheckout; the other three are the funnel's money moments
+// (marathon step 14): finalize, the voucher scan, and the admin refund.
+// NOTE: the DB whitelist in fn_ingest_analytics_events must carry the same
+// names -- draft migration 169 widens it (151 shipped with only the client
+// eight, so server events were silently skipped until it applies).
+export const SERVER_EVENT_NAMES = [
+  'begin_checkout',
+  'purchase',
+  'voucher_redeemed',
+  'order_refunded',
+] as const
 export type ServerEventName = (typeof SERVER_EVENT_NAMES)[number]
 
 export const CHECKOUT_STEPS = ['identity', 'address', 'payment_redirect'] as const

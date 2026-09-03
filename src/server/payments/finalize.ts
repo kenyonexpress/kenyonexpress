@@ -15,6 +15,7 @@ import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
 import { resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { trackServerEvent } from '@/server/analytics/track'
 import { type VoucherIssueClient, issueVoucher } from '@/server/domain/vouchers/issue'
 import { readGiftIntent, sendOrderGifts } from '@/server/payments/gift-vouchers'
 import { enqueueOrderInvoice, issueQueuedInvoice } from '@/server/payments/invoices'
@@ -761,6 +762,15 @@ export async function finalizeOrder(input: {
       entity_id: order.id,
       changes: { status: { from: 'pending', to: 'paid' } } as unknown as Json,
       metadata: { source: 'checkout_finalize', payment_id: input.paymentId } as unknown as Json,
+    })
+
+    // The funnel's terminal event (marathon step 14). Swallows its own
+    // errors; a finalize that already charged a card must never fail on
+    // analytics. Skipped by the DB whitelist until draft 169 applies.
+    await trackServerEvent({
+      eventName: 'purchase',
+      userId: order.user_id,
+      props: { order_id: order.id, payment_id: input.paymentId },
     })
 
     // Best-effort: the purchased cart is done; leftovers confuse the header badge.

@@ -1,6 +1,12 @@
 # `migrations/pending/`
 
-## 2026-09-04 (audit): one file pending — 162, blocked on vault
+## 2026-09-04: two files pending — 162 (blocked on vault) and 169
+
+> The "audit" paragraph below records the file moves; STATE.md's incident
+> section (04.09 06:24) records the fuller truth: 166-168 were applied to
+> production that morning by a parallel agent without prior approval, and
+> Ofir owes a retroactive yes/no. The moves themselves correctly reflect the
+> database.
 
 An audit on 2026-09-04 ran every preflight against production and found that
 166, 167 and 168 are **already applied and recorded** in
@@ -12,6 +18,19 @@ preflights moved to `migrations/applied/`; their rows joined the APPLIED IN
 PRODUCTION table below. Every file in `migrations/applied/` now has a SHA-256
 line in `migrations/applied/CHECKSUMS.sha256`
 (verify with `cd migrations/applied && shasum -c CHECKSUMS.sha256`).
+
+### `169_analytics_server_event_names.sql` — PENDING, not approved
+
+CREATE OR REPLACE of `fn_ingest_analytics_events`, byte-identical to 151's
+except the name whitelist, which gains the four `SERVER_EVENT_NAMES` of
+`src/lib/analytics/events.ts` (`begin_checkout`, `purchase`,
+`voucher_redeemed`, `order_refunded`). 151 shipped with only the eight
+client names, and the function skips unknown names by design — so every
+server event ever emitted (begin_checkout since the checkout wave, the three
+step-14 additions) has been silently dropped. Until this applies they keep
+being dropped, harmlessly and documented at the emit sites. Preflight:
+`preflight_169.sql` — signature, before-picture of the whitelist,
+service_role-only grants.
 
 ### `162_cron_schedule.sql` — PENDING, approved (CLOSEOUT §7), blocked on vault
 

@@ -13,6 +13,7 @@ import {
   resolvePaymentMoneySchema,
 } from '@/lib/payments/payment-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { trackServerEvent } from '@/server/analytics/track'
 import {
   RefundError,
   type RefundLineInput,
@@ -424,6 +425,18 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
           reason: input.reason,
           refunded_agorot: plan.refundAmountAgorot,
         },
+      },
+    })
+
+    // Funnel event (marathon step 14). Swallows its own errors; the card is
+    // already credited. Skipped by the DB whitelist until draft 169 applies.
+    await trackServerEvent({
+      eventName: 'order_refunded',
+      userId: order.user_id,
+      props: {
+        order_id: order.id,
+        refunded_agorot: plan.refundAmountAgorot,
+        cancel_only: plan.cancelOnly,
       },
     })
 

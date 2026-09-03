@@ -1,3 +1,4 @@
+import { isAxiomEnabled, shipAxiomEvent } from './axiom'
 import { getRequestContext } from './request-context'
 import { redact } from './scrub'
 
@@ -78,7 +79,7 @@ function emit(level: LogLevel, event: string, fields: Fields): void {
 
   try {
     const context = getRequestContext()
-    const line = JSON.stringify({
+    const entry = {
       ts: new Date().toISOString(),
       level,
       // The one required field, and the reason this is not a message string:
@@ -89,11 +90,18 @@ function emit(level: LogLevel, event: string, fields: Fields): void {
       route: context?.route,
       method: context?.method,
       ...normalize(fields),
-    })
+    }
+    const line = JSON.stringify(entry)
 
     if (level === 'error') console.error(line)
     else if (level === 'warn') console.warn(line)
     else console.log(line)
+
+    // The Axiom leg (marathon step 14): the SAME redacted entry, shipped
+    // fire-and-forget. Inert without AXIOM_TOKEN/AXIOM_DATASET; nothing here
+    // is awaited or allowed to throw, so the console transport above remains
+    // the source of truth and this is strictly additive.
+    if (isAxiomEnabled()) void shipAxiomEvent(entry)
   } catch {
     // A logger that throws turns a handled failure into an unhandled one, and
     // every error call site here is already on a failure branch. JSON.stringify

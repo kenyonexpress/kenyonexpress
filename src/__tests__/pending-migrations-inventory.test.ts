@@ -166,7 +166,12 @@ describe('the pending migration inventory', () => {
     // CANCELLED under §13 (eighteen public-role RLS policies call the
     // helpers, so the revoke would 42501 every anonymous catalogue read) --
     // it burned its number and sits in migrations/cancelled/, asserted below.
-    expect(sqlFilesIn(PENDING_DIR)).toEqual(['162_cron_schedule.sql', 'preflight_162.sql'])
+    expect(sqlFilesIn(PENDING_DIR)).toEqual([
+      '162_cron_schedule.sql',
+      '169_analytics_server_event_names.sql',
+      'preflight_162.sql',
+      'preflight_169.sql',
+    ])
   })
 
   it('keeps the cancelled revoke where nobody will apply it', () => {

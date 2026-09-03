@@ -6,6 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { identityScopedClient } from '@/lib/supabase/bearer'
 import { checkRateLimit } from '@/lib/utils/rate-limit'
 import { expireWalletPasses } from '@/lib/wallet/notify'
+import { trackServerEvent } from '@/server/analytics/track'
 import { normalizeVoucherCode } from '@/server/domain/vouchers/code'
 import { verifyVoucherQrPayload } from '@/server/domain/vouchers/qr'
 import { readScanContext, recordRefusedScan } from '@/server/domain/vouchers/scan-context'
@@ -289,6 +290,16 @@ async function handlePOST(request: NextRequest): Promise<NextResponse> {
     // `staff_id` must never be read as "the redemption did not happen".
     if (staff_id && idempotency_key) {
       await stampStaff(idempotency_key, staff_id, user.id)
+    }
+
+    // Funnel event (marathon step 14), replays excluded so one scan is one
+    // event. Swallows its own errors; skipped by the DB whitelist until 169.
+    if (!replayed) {
+      await trackServerEvent({
+        eventName: 'voucher_redeemed',
+        userId: user.id,
+        props: { code: (result.code as string) ?? shortCode },
+      })
     }
 
     // A redemption is a funnel step worth measuring - it is the moment a coupon
