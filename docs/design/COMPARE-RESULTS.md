@@ -301,3 +301,42 @@ between roughly 11% and 28%**, that its geometry is verified exact against the
 reference to within 1-2px at every landmark, and that no further design work can
 stabilise it while the fixture is a 2026-08-12 snapshot of a catalogue that
 keeps moving.
+
+
+## Checkout — STEP D11, 2026-09-03
+
+| width | score | gate |
+| --- | --- | --- |
+| 380 | 11.9% | over by 0.9 |
+| 768 | **8.16%** | pass |
+| 1440 | **9.38%** | pass |
+
+Checkout scores for the same reason the cart does: both sides render the same
+form, with no catalogue to disagree about.
+
+380 is 0.9 over, and the cause is the shell offset already recorded under D6 and
+D10. The checkout reference has a 76+83 = 159 shell where the home reference has
+113+84 = 197, so every element on the page sits 38px lower than the reference
+before any content is drawn. Live's `entry-content` begins at y311; ours cannot
+begin earlier than y349 without breaking the shell that home -- the only page
+whose fixture still lines up -- is measured against. The worst band is y300-400
+at 57.8%, exactly where that offset lands.
+
+Nothing was changed to chase the 0.9. Re-tuning the shell per page would trade a
+passing home for a passing checkout.
+
+### Fixed under D11: the error messages were unannounced
+
+The form set `aria-invalid` on eight fields and **no `aria-describedby` on any
+of them**. A screen reader landed on the input, announced "invalid", and the
+Hebrew message beside it was not part of the accessible description -- visible,
+and silent. Israeli standard 5568 adopts WCAG 2.0 AA, so 3.3.1 Error
+Identification is a legal requirement here rather than a nicety.
+
+All eight inputs now point at their error node, and each error node carries the
+matching id. Two extra cases were found while wiring it:
+
+- the postcode already had `aria-describedby`, but only on the `zipError`
+  branch -- when the server returned a `zip` error instead, the span rendered
+  and the link did not
+- the terms checkbox had the same gap as the eight fields
