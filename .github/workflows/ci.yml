@@ -312,10 +312,21 @@ jobs:
             next-${{ runner.os }}-
 
       - run: pnpm build
+      # upload-artifact@v4 skips hidden paths by default. Measured 2026-09-02
+      # on run 33580665364: path `.next/` logged "No files were found" and the
+      # bundle-gate job then failed to download `next-build`. Copy into a
+      # visible directory and keep `.next/cache` here so the cache post-step
+      # still has something to save.
+      - name: Stage Next output for the bundle gate
+        run: |
+          mkdir -p next-ci-out
+          tar -C .next -cf - --exclude=cache . | tar -C next-ci-out -xf -
+          test -f next-ci-out/build-manifest.json
       - uses: actions/upload-artifact@v4
         with:
           name: next-build
-          path: .next/
+          path: next-ci-out/
+          if-no-files-found: error
           retention-days: 3
 
   # E2E drives a real browser against a real database, so it needs a Supabase
@@ -537,3 +548,141 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 7
+
+  migration-dry-run:
+    name: Migration dry-run
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Structural dry-run of every SQL file plus APPLY-ORDER
+        env:
+          # Live ROLLBACK against a disposable database only. The script
+          # refuses the production project ref by name. Unset = structural pass.
+          CI_SUPABASE_DB_URL: ${{ secrets.CI_SUPABASE_DB_URL }}
+        run: pnpm gate:migrations
+
+  secrets-audit:
+    name: Secrets audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Working tree must not contain secret values
+        run: pnpm gate:secrets
+
+  bundle-gate:
+    name: Bundle gate (JS 180KB gz)
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with:
+          name: next-build
+          path: .next/
+      - name: Fail if product or checkout first-load JS exceeds 180KB gz
+        run: pnpm gate:bundle
+      - name: Server secret names must not appear in the client graph
+        run: node scripts/secrets-audit.mjs --bundle
+
+  # Lighthouse against the deployment a reviewer clicks, not against localhost.
+  # Product pages on a CI build with the demo key 404, so a local run cannot
+  # prove SEO. The preview (PR) or the production host (push) has the catalogue.
+  # Read-only GETs. No seed, no CI_SUPABASE_URL gate.
+  lighthouse:
+    name: Lighthouse product + checkout
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: read
+    steps:
+      - name: Resolve the origin to measure
+        id: origin
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+        run: |
+          FALLBACK="${PRODUCTION_URL:-https://kenyonexpress.vercel.app}"
+          echo "fallback=$FALLBACK" >> "$GITHUB_OUTPUT"
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            echo "mode=preview" >> "$GITHUB_OUTPUT"
+          else
+            echo "mode=fixed" >> "$GITHUB_OUTPUT"
+            echo "url=$FALLBACK" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Wait for the Vercel preview deployment
+        id: preview
+        if: steps.origin.outputs.mode == 'preview'
+        uses: actions/github-script@v7
+        env:
+          FALLBACK_URL: ${{ steps.origin.outputs.fallback }}
+        with:
+          script: |
+            const sha = context.payload.pull_request.head.sha
+            const fallback = process.env.FALLBACK_URL
+            const deadline = Date.now() + 8 * 60 * 1000
+            while (Date.now() < deadline) {
+              const { data: deployments } = await github.rest.repos.listDeployments({
+                ...context.repo,
+                sha,
+                per_page: 100,
+              })
+              let pending = false
+              for (const deployment of deployments) {
+                const { data: statuses } = await github.rest.repos.listDeploymentStatuses({
+                  ...context.repo,
+                  deployment_id: deployment.id,
+                  per_page: 100,
+                })
+                const ready = statuses.find((s) => s.state === 'success' && s.environment_url)
+                if (ready) {
+                  core.info(`Preview for ${sha}: ${ready.environment_url}`)
+                  core.setOutput('url', ready.environment_url)
+                  return
+                }
+                if (statuses.some((s) => s.state === 'in_progress' || s.state === 'queued' || s.state === 'pending')) {
+                  pending = true
+                }
+              }
+              if (deployments.length > 0 && !pending) {
+                core.warning(`Preview deployments for ${sha} finished without success. Measuring ${fallback}.`)
+                core.setOutput('url', fallback)
+                return
+              }
+              await new Promise((resolve) => setTimeout(resolve, 15_000))
+            }
+            core.warning(`No successful preview for ${sha} within 8 minutes. Measuring ${fallback}.`)
+            core.setOutput('url', fallback)
+
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install Chromium for Lighthouse
+        run: pnpm exec playwright install --with-deps chromium
+      - name: SEO and a11y >95 on product and checkout
+        env:
+          LIGHTHOUSE_BASE: ${{ steps.preview.outputs.url || steps.origin.outputs.url || steps.origin.outputs.fallback }}
+          VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: pnpm lighthouse:ci

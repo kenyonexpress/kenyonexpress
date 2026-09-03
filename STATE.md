@@ -1,5 +1,8 @@
-# KenyonExpress — Project State
+# KenyonExpress: Project State
 
+Updated: 2026-09-02 (MEGA BLOCK 6 audit: CI run 33582183720 on 503d278a all Actions green. Local 3499 tests, type-check, lint, gates. Vercel Preview still [[...slug]]. Verdict NOT READY.)
+Updated: 2026-09-02 (MEGA BLOCK 6: push CI all green. Bundle product 56.2KB / checkout 56.5KB gz. Lighthouse 100/100. Vercel preview on kenyonexpress-projects failed.)
+Updated: 2026-09-02 (MEGA BLOCK 6: CI/CD + launch checklist. Verdict NOT READY. Tag v1.0.0-rc1.)
 Updated: 2026-09-01 12:20 UTC (‏אין כותב ל-escrow_held בשום מקום; ‏144/144 מעברים מול הטריגרים החיים; קיפאון ה-380/768 נמצא ותוקן; ‏payment_events היה טבלה ריקה בלי אף כותב)
 Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשישה כבר היו, ושני באגים אמיתיים נמצאו בדרך)
 קודם: 2026-09-01 03:02 UTC (‏שער הפיקסלים חצה את התקרה: ‏11.06% מול 11%, וזה לא שינוי שלנו)
@@ -67,7 +70,67 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 קודם: 2026-08-19 22:01 (הצ'ק-אאוט ירד מתחת לשער הפיקסלים, ו-CLS שלו תוקן)
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
-## המשך מ: ‏PRIORITY TWO — ‏refunds בשני המסלולים, ומירוץ מימוש הקופון
+## המשך מ: סיום פרויקט stage 1. צעד הבא: מעבר לפרודקשן.
+
+## Current Phase
+Stage 1 complete (Next.js platform, no WordPress runtime). Tagged `v1.0.0-rc1`.
+Waiting on production cutover.
+
+## Last Completed
+MEGA BLOCK 6: CI/CD + Launch Checklist. Jobs: migration dry-run, Lighthouse
+SEO/a11y >95 on product and checkout, 180KB gz bundle gate, ephemeral
+Supabase preview (skip without secrets), print-only git revert rollback,
+secrets audit. Docs: `docs/LAUNCH-READINESS.md`, `docs/APPLY-ORDER.md`,
+`docs/FINAL-REPORT.md`. Verdict: **NOT READY**.
+
+Lighthouse 2026-09-02 CI run 33582183720 on `503d278a` against
+`https://kenyonexpress.vercel.app/product/barbecue`: a11y 100, SEO 100. Empty
+checkout redirects to `/cart`: a11y 100, gated SEO 100 (raw 69).
+
+Bundle gate same run: product 56.2KB gz, checkout 56.5KB gz, Next runtime
+255.8KB gz logged not gated.
+
+Local re-measure 2026-09-02: `tsc --noEmit` clean, biome 1041 files 0 findings,
+3499 tests in 259 files, `gate:migrations` structural pass, `gate:secrets` clean.
+
+Vercel GitHub Preview for `503d278a` failed on `kenyonexpress-projects`
+(`x-matched-path: /[[...slug]]`, still 200 on 2026-09-02). Live storefront
+`https://kenyonexpress.vercel.app/` is `x-matched-path: /`. Lighthouse falls
+back to vercel.app. That GitHub check is not an Actions job.
+
+### החלטות שהתקבלו לבד (MEGA BLOCK 6, 2026-09-02)
+1. Lighthouse followed sitemap loc on `kenyonexpress.co.il` and scored WordPress
+   a11y 82. Rewrite product URLs onto the measured origin. Do not lower floors.
+2. Combined first-load 312KB gz included Next 16 runtime (~256KB). The 180KB
+   ceiling stays. Gate the page + layout graph. Runtime is info.
+3. `path: .next/` uploaded zero files. Stage into `next-ci-out/` instead of
+   trusting `include-hidden-files`.
+4. Vercel Preview for this SHA failed on `kenyonexpress-projects`. Lighthouse
+   on pull_request falls back to `kenyonexpress.vercel.app` instead of failing
+   the job after 12 minutes. Do not point Lighthouse at a failed `[[...slug]]`
+   host.
+
+## In Progress
+nothing
+
+## Blocking Issues
+1. No external scheduler for the ten cron jobs (`docs/CRON-EXTERNAL.md`)
+2. Cardcom production credentials not on the deployment
+3. DNS of kenyonexpress.co.il and which Vercel project it attaches to (owner step; this SHA's Preview on kenyonexpress-projects failed)
+4. Remaining SQL: 122 → 125 → 126 → 127 → 131 → 132 → 133 → 137 → 147 (`docs/APPLY-ORDER.md`)
+
+## Next Task
+Owner actions in `docs/LAUNCH-READINESS.md` blockers. Do not run DNS.
+
+## Working Directory
+/Users/ofir/kenyonexpress-web/kenyonexpress
+
+## Supabase Project URL
+https://ixvwfbuvfxxsjiywhbbb.supabase.co
+
+---
+
+## History: PRIORITY TWO (refunds, coupon race) as of 2026-09-01
 
 ### ‏01.09 גל החוסן (`feat/resilience`, מוזג ל-main)
 

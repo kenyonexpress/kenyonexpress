@@ -1,0 +1,51 @@
+name: Production rollback (print only)
+
+# Prints the one-command code rollback. Does not push, does not talk to Vercel,
+# does not apply SQL. A workflow that did any of those would need a credential
+# that can mutate production, held next to a public repository.
+#
+# The actual rollback, from Terminal, after reading the live SHA off Vercel:
+#
+#   git revert --no-edit <production-sha>
+#   git push origin main
+#
+# Then docs/APPLY-ORDER.md if that SHA also applied a remaining migration.
+
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Production deployment SHA to revert
+        required: true
+        type: string
+
+jobs:
+  print:
+    name: Print git revert + APPLY-ORDER
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Print the rollback (no push)
+        env:
+          SHA: ${{ inputs.sha }}
+        run: |
+          set -euo pipefail
+          if ! git cat-file -e "${SHA}^{commit}" 2>/dev/null; then
+            echo "::error title=Unknown SHA::${SHA} is not a commit in this clone. Fetch depth on workflow_dispatch is shallow; the command below is still the rollback."
+          fi
+          echo "Terminal, from the repo root:"
+          echo ""
+          echo "  git fetch origin main"
+          echo "  git checkout main"
+          echo "  git pull origin main"
+          echo "  git revert --no-edit ${SHA}"
+          echo "  git push origin main"
+          echo ""
+          echo "Vercel builds the revert because the GitHub integration deploys main."
+          echo "Do not also run vercel rollback of the same SHA."
+          echo ""
+          echo "If ${SHA} applied a file from the Remaining table in docs/APPLY-ORDER.md,"
+          echo "git revert does not undo SQL. Apply that file's Rollback column first."
+          echo ""
+          echo "Remaining sequence:"
+          grep -A1 '122 →' docs/APPLY-ORDER.md || true
