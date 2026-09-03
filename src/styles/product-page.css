@@ -106,7 +106,11 @@
 .pdp-gallery__badge {
   position: absolute;
   inset-inline-start: 0;
-  bottom: 0;
+  /* TOP-anchored, unlike the grid card it borrows its box from. Live's PDP
+     onsale sits 16px below the top of the image block at both 380 and 1440
+     (y266 in a block starting y250 at 1440); the grid card's badge really is
+     bottom-anchored, but the PDP hero is the measured exception. */
+  top: 16px;
   z-index: 2;
   background-color: var(--pdp-sale);
   color: var(--pdp-surface);
@@ -314,8 +318,11 @@
   font-weight: 700;
 }
 
-/* Buy controls. Live: quantity 140x45 on the inline-end of the row, a 192x53
-   pill next to it, then a full-width button 10px below. */
+/* Buy controls. Live: quantity 140x45 on the inline-START of the row (x665
+   against the button's x469 at 1440 -- the right in RTL, matching the qty-first
+   markup in ProductInfo), a 192x53 pill next to it, then a full-width button
+   10px below. The comment used to say inline-end, which contradicted both the
+   markup below it and the measurement. */
 .pdp-buy {
   display: flex;
   align-items: center;
