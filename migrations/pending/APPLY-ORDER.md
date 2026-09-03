@@ -4,7 +4,17 @@
 MCP `apply_migration`, one at a time, after Ofir approves it. `db push` is
 forbidden by project rule.
 
-## 2026-09-03: THERE IS NOTHING LEFT TO APPLY
+## 2026-09-04: TWO PENDING FILES, ONE OF THEM APPROVED
+
+| File | State | Preflight |
+| --- | --- | --- |
+| `162_cron_schedule.sql` | **approved by Ofir (CLOSEOUT §7)**, blocked on vault seeding: the vault holds neither `cron_secret` nor `app_url`, and seeding them needs the Vercel env (§8a), which this machine cannot reach (no `vercel` CLI, no link, no token). Exact commands under "## חסמים לאופיר" in STATE.md. | `preflight_162.sql` |
+| `165_revoke_anon_helpers.sql` | waiting for approval like every other number | `preflight_165.sql` |
+
+`164` stays unused; §8c named the revoke file 165 and the number is kept
+stable. The section below is unchanged history.
+
+## 2026-09-03: THERE IS NOTHING LEFT TO APPLY (history)
 
 `migrations/pending/` holds no `.sql` file. The last three went to production on
 2026-09-03 -- `160_fk_indexes.sql`, `161_enable_pg_cron_pg_net.sql` and

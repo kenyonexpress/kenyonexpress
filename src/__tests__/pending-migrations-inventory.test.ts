@@ -109,7 +109,14 @@ describe('the pending migration inventory', () => {
   // ---- direction 1: disk -> manifest -------------------------------------
   it('names every file that is on disk', () => {
     const named = new Set(manifestFilenames())
-    const onDisk = [...sqlFilesIn(PENDING_DIR), ...sqlFilesIn(APPLIED_DIR)].sort()
+    // preflight_NNN.sql files are audit companions (read-only execute_sql
+    // blocks run BEFORE their migration), not migrations; the NNN_ manifest
+    // regex cannot name them and they are asserted by filename in the
+    // pending-contents test below instead.
+    const onDisk = [
+      ...sqlFilesIn(PENDING_DIR, (n) => !n.startsWith('preflight_')),
+      ...sqlFilesIn(APPLIED_DIR),
+    ].sort()
     const unlisted = onDisk.filter((name) => !named.has(name))
     expect(
       unlisted,
@@ -119,16 +126,22 @@ describe('the pending migration inventory', () => {
 
   // ---- what is actually unapplied right now -------------------------------
   it('holds exactly the migrations still awaiting approval', () => {
-    // EMPTY, as of 2026-09-03, and that is the assertion.
+    // TWO pending migrations as of 2026-09-04, each with its preflight audit
+    // beside it (a CLOSEOUT §5 requirement: no migration file without the
+    // execute_sql audit that has to pass before it).
     //
-    // The last three files went to production the same day: 160_fk_indexes,
-    // 161_enable_pg_cron_pg_net and 163_orders_indexes. 162 is deliberately
-    // unused, reserved for the pg_cron schedule that 161 makes possible.
+    //   162_cron_schedule.sql        approved (CLOSEOUT §7), blocked on vault
+    //                                seeding -- see "## חסמים לאופיר" in STATE.md
+    //   165_revoke_anon_helpers.sql  awaiting approval like any other number
     //
-    // An empty directory is worth asserting rather than deleting the test: the
-    // next pending migration is a deliberate diff on this line, which is the
-    // whole point of the file. A new migration starts at 164.
-    expect(sqlFilesIn(PENDING_DIR)).toEqual([])
+    // 164 stays unused; §8c named the revoke file 165 and the number is kept
+    // stable the same way 162 was reserved before it was written.
+    expect(sqlFilesIn(PENDING_DIR)).toEqual([
+      '162_cron_schedule.sql',
+      '165_revoke_anon_helpers.sql',
+      'preflight_162.sql',
+      'preflight_165.sql',
+    ])
   })
 
   // ---- direction 2: manifest -> disk -------------------------------------

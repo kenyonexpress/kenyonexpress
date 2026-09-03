@@ -1,6 +1,27 @@
 # `migrations/pending/`
 
-## 2026-09-03: `migrations/pending/` is EMPTY. Every row below is APPLIED.
+## 2026-09-04: two files pending, one approved
+
+### `162_cron_schedule.sql` — PENDING, approved (CLOSEOUT §7), blocked on vault
+
+Schedules the twelve jobs of `scripts/cron-jobs.json` through pg_cron + pg_net
+(161 installed both). Job commands read `cron_secret` and `app_url` from vault
+at run time, so `cron.job.command` stores neither value. BLOCKED: the vault
+holds neither secret and seeding them needs the Vercel production env, which
+this machine cannot reach (no `vercel` CLI, no link). The exact seeding
+commands are under "## חסמים לאופיר" in STATE.md. Preflight:
+`preflight_162.sql` — every block must pass through MCP `execute_sql` first.
+
+### `165_revoke_anon_helpers.sql` — PENDING, not approved
+
+Revokes EXECUTE on `public.is_admin()` and `public.is_supplier_member(uuid)`
+from `anon` and grants them to `authenticated` (CLOSEOUT §8c). The uuid
+signature is production's (generated types), not the zero-arg one §8c wrote.
+Preflight: `preflight_165.sql`; its third block lists RLS policies referencing
+the helpers — any hit on a table `anon` can SELECT is a stop-and-think, because
+RLS quals run as the caller and a revoked helper turns those reads into 42501.
+
+## 2026-09-03: every row below is APPLIED (history)
 
 ### `159_pin_search_path_and_revoke_enqueue.sql` — APPLIED 2026-09-03
 
