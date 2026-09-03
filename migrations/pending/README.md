@@ -1,6 +1,6 @@
 # `migrations/pending/`
 
-## 2026-09-03: `163_orders_indexes.sql` is PENDING. Every row below is APPLIED.
+## 2026-09-03: `migrations/pending/` is EMPTY. Every row below is APPLIED.
 
 ### `159_pin_search_path_and_revoke_enqueue.sql` — APPLIED 2026-09-03
 
@@ -10,11 +10,10 @@ Applied to production through MCP alongside 158 and verified. Pins
 `enqueue_search_index()` from `public`/`anon`/`authenticated`.
 
 The number 159 briefly belonged to the pending orders-indexes file; that one was
-renamed the same day (its second rename -- it arrived as `005`), and is now
-`163_orders_indexes.sql`: `160_fk_indexes.sql`
-and `161_enable_pg_cron_pg_net.sql` were both applied to production on 2026-09-03,
-and `162` is reserved for the cron schedule those two make possible.
-**New migrations start at 164.**
+renamed the same day (its second rename -- it arrived as `005`), and ended at
+`163_orders_indexes.sql`: `160_fk_indexes.sql` and `161_enable_pg_cron_pg_net.sql`
+were both applied to production on 2026-09-03, and `162` is reserved for the cron
+schedule those two make possible. **New migrations start at 164.**
 
 ### `160_fk_indexes.sql` — APPLIED 2026-09-03
 
@@ -52,13 +51,15 @@ This migration is what closes the standing GO/NO-GO blocker recorded in
 Verified at the time of writing: `select count(*) from cron.job` returned **0**,
 so no job is scheduled yet -- that is `162`, which is pending.
 
-### `163_orders_indexes.sql` — AWAITING APPROVAL
+### `163_orders_indexes.sql` — APPLIED 2026-09-03
 
 Written by a parallel agent session (commit `fbdd8e1f5`) alongside Drizzle
 schemas at `src/db/schema/orders.ts` and `order-items.ts`. Creates `orders` and
 `order_items` guarded by `IF NOT EXISTS`, plus three indexes on
 `orders(user_id)`, `orders(created_at)` and `order_items(created_at)`.
-**Not applied.**
+**Applied to production through MCP on 2026-09-03 and verified.** Both tables
+were already live, so the CREATEs no-opped and the net effect was the three
+indexes, exactly as the file header predicted.
 
 **It arrived numbered `005` and was renamed twice.** `supabase/migrations/`
 already holds `005_products_schema.sql`, so the original name meant two different

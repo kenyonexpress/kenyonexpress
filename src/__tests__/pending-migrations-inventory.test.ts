@@ -102,6 +102,7 @@ describe('the pending migration inventory', () => {
       '159_pin_search_path_and_revoke_enqueue.sql',
       '160_fk_indexes.sql',
       '161_enable_pg_cron_pg_net.sql',
+      '163_orders_indexes.sql',
     ])
   })
 
@@ -118,16 +119,16 @@ describe('the pending migration inventory', () => {
 
   // ---- what is actually unapplied right now -------------------------------
   it('holds exactly the migrations still awaiting approval', () => {
-    // Added by a parallel agent session on 2026-09-03 (fbdd8e1f5) as
-    // 005_orders.sql and renamed into this series: supabase/migrations/ already
-    // holds a 005, and the clash is what the numbering assertion below catches.
-    // Renamed twice more the same day: 160_fk_indexes.sql and
-    // 161_enable_pg_cron_pg_net.sql were applied to production and took those
-    // numbers, and 162 is reserved for the cron schedule that 161 makes
-    // possible. This file is the only thing still awaiting approval.
-    // NOT applied. This assertion is the deliberate diff that makes a new
-    // pending migration visible.
-    expect(sqlFilesIn(PENDING_DIR)).toEqual(['163_orders_indexes.sql'])
+    // EMPTY, as of 2026-09-03, and that is the assertion.
+    //
+    // The last three files went to production the same day: 160_fk_indexes,
+    // 161_enable_pg_cron_pg_net and 163_orders_indexes. 162 is deliberately
+    // unused, reserved for the pg_cron schedule that 161 makes possible.
+    //
+    // An empty directory is worth asserting rather than deleting the test: the
+    // next pending migration is a deliberate diff on this line, which is the
+    // whole point of the file. A new migration starts at 164.
+    expect(sqlFilesIn(PENDING_DIR)).toEqual([])
   })
 
   // ---- direction 2: manifest -> disk -------------------------------------

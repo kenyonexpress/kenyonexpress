@@ -4,6 +4,22 @@
 MCP `apply_migration`, one at a time, after Ofir approves it. `db push` is
 forbidden by project rule.
 
+## 2026-09-03: THERE IS NOTHING LEFT TO APPLY
+
+`migrations/pending/` holds no `.sql` file. The last three went to production on
+2026-09-03 -- `160_fk_indexes.sql`, `161_enable_pg_cron_pg_net.sql` and
+`163_orders_indexes.sql` -- and all three are recorded in `migrations/applied/`
+with the row that describes them in `README.md`.
+
+`162` is deliberately unused and reserved for the pg_cron schedule that `161`
+makes possible: twelve cron routes exist under `src/app/api/cron/` and, measured
+on 2026-09-03, `select count(*) from cron.job` returns 0 and `vercel.json`
+declares no crons at all. Nothing calls them.
+
+**The table below is history.** Every row in it has been applied. It is kept
+because a reader asking "was this applied, and what did it do" needs the row to
+still exist. A new migration starts at **164**.
+
 Twelve files in this directory are **already in production** and are not listed
 below. See the "APPLIED IN PRODUCTION" table in `README.md`, which carries the
 version string and the query that proved each one. Running any of them again is
@@ -86,5 +102,6 @@ cannot drop one.
 
 The table above keeps its original numbering column even though rows were
 removed as migrations were applied, so a row's number is a stable reference in
-conversation rather than a position. What is authoritative is the file list: ten
-files, and the APPLIED table in `README.md` holds the other twelve.
+conversation rather than a position. What is authoritative is the file list, and as of
+2026-09-03 that list is empty: every migration this directory ever described now
+lives in `migrations/applied/`.
