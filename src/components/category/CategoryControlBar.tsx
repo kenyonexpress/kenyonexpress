@@ -60,6 +60,14 @@ export default function CategoryControlBar({ value }: { value: SortValue }) {
   return (
     <div className="category-control-bar">
       <ViewSwitcher />
+      {/* Phone only; the view switcher above owns this slot from 768 up. See
+          the note in category-page.css for why it is an anchor. */}
+      <a className="category-control-bar__filters" href="#category-filters">
+        <svg viewBox="0 0 20 20" width={18} height={18} aria-hidden="true" fill="currentColor">
+          <path d="M2 5h9a2.5 2.5 0 0 0 4.9 0H18v2h-2.1a2.5 2.5 0 0 0-4.9 0H2V5Zm0 8h4.1a2.5 2.5 0 0 1 4.9 0h7v2h-7a2.5 2.5 0 0 1-4.9 0H2v-2Z" />
+        </svg>
+        סינון
+      </a>
       <div className="category-control-bar__sort">
         <label className="sr-only" htmlFor="category-orderby">
           מיון מוצרים

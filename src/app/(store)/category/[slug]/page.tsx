@@ -403,18 +403,26 @@ async function CategoryPageBody({
 
         <CategoryControlBar value={sort} />
 
-        {/* The city picker. Same component as the row under the hero, so the
-            two cannot drift apart in behaviour or in what "one city" means. */}
-        <Suspense fallback={null}>
-          <CityTags className="mt-3" />
-        </Suspense>
-
         <div className="category-page__body">
           <div className="category-page__main">
             <Suspense fallback={<CategoryGridSkeleton count={CATEGORY_PAGE_SIZE} />}>
               <ResultGrid args={args} pathname={pathname} linkParams={linkParams} />
             </Suspense>
           </div>
+
+          {/* The city picker. Same component as the row under the hero, so the
+              two cannot drift apart in behaviour or in what "one city" means.
+
+              BELOW THE GRID, for the reason category-page.css already gives for
+              the filter sidebar: live has zero gap between the control bar and
+              its first card, so anything inserted there pushes every row of the
+              page down against live's. Measured at 380 on 2026-09-03, this row
+              was ~100px of exactly that, and it sat ABOVE the grid while the
+              filters -- the same kind of control, with the same argument
+              written next to them -- sat below. It is one rule now. */}
+          <Suspense fallback={null}>
+            <CityTags className="mt-3" />
+          </Suspense>
 
           <CategoryFilterSidebar
             categories={allCategories}

@@ -63,7 +63,7 @@ export default function CategoryFilterSidebar({
   }
 
   return (
-    <aside className="category-sidebar" aria-label="סינון מוצרים">
+    <aside id="category-filters" className="category-sidebar" aria-label="סינון מוצרים">
       {/* Collapsed by default. The live archive has no filter UI at all, so an
           always-open panel would push our footer far below live's (y871) and
           cost more in the comparison than the column ever did. Closed, it is a
