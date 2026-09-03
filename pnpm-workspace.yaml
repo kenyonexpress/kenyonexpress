@@ -51,3 +51,8 @@ overrides:
   # @esbuild-kit/esm-loader inside drizzle-kit, which pins ~0.18 and is
   # unmaintained (folded into tsx), so a scoped override is the only bump.
   '@esbuild-kit/core-utils>esbuild': ^0.25.0
+
+  # esbuild 0.27.3..0.28.0 allows arbitrary file read from the Windows dev
+  # server (GHSA-g7r4-m6w7-qqqr). vite 7.3.6 still pins ^0.27, so scope the
+  # bump to that edge; tsx already resolves 0.28.1 on its own.
+  'vite>esbuild': ^0.28.1
