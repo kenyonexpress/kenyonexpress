@@ -1,3 +1,4 @@
+import { ogImage } from '@/app/api/og/url'
 import { getActiveCouponDealIds, getCouponDeal } from '@/lib/coupon-deals'
 import { MapPin, Tag } from 'lucide-react'
 import Image from 'next/image'
@@ -12,7 +13,30 @@ export async function generateMetadata({ params }: Props) {
   // The same cached read the body makes, so the title and the page cannot
   // describe different rows and the two do not cost two round trips.
   const deal = await getCouponDeal(id)
-  return { title: deal ? `${deal.title_he} — ${deal.business_name}` : 'קופון' }
+  const title = deal ? `${deal.title_he} — ${deal.business_name}` : 'קופון'
+
+  /*
+   * A DEAL IS THE MOST FORWARDED LINK ON THIS SITE AND IT HAD NO CARD.
+   *
+   * The root layout declares `twitter.card: 'summary_large_image'`, and a
+   * large-image card with no image is a blank grey rectangle with the title
+   * underneath - worse than the small card it would otherwise have got. The
+   * generated card carries the business, the price, the saving and how long is
+   * left, which is the whole of what makes somebody forward a deal.
+   *
+   * The countdown is why this one is worth a PNG at all, and it is also the
+   * reason `/api/og` caches a deal card for five minutes rather than an hour:
+   * the image states a duration as of the moment it was rendered.
+   */
+  return {
+    title,
+    openGraph: {
+      title,
+      type: 'website',
+      locale: 'he_IL',
+      images: [ogImage({ template: 'deal', id }, title)],
+    },
+  }
 }
 
 export async function generateStaticParams() {

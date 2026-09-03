@@ -1,3 +1,4 @@
+import { ogImage } from '@/app/api/og/url'
 import ViewTracker from '@/components/analytics/ViewTracker'
 import CategoryBreadcrumb, { defaultHomeCrumb } from '@/components/category/CategoryBreadcrumb'
 import CategoryControlBar from '@/components/category/CategoryControlBar'
@@ -97,6 +98,13 @@ export async function generateMetadata({ params }: Props) {
       url: `/category/${encodeURIComponent(category.slug)}`,
       type: 'website',
       locale: 'he_IL',
+      // The generated card, not the category's own artwork -- there is none, and
+      // the root layout declares `twitter.card: 'summary_large_image'`, so a
+      // shared category link was a blank grey rectangle with the name under it.
+      // The card is drawn from this same row plus its first three products;
+      // `/api/og` reads them through the very loaders this file calls, so the
+      // picture and the page cannot describe different categories.
+      images: [ogImage({ template: 'category', slug: category.slug }, category.name_he)],
     },
   }
 }

@@ -1,10 +1,28 @@
+import { ogImage } from '@/app/api/og/url'
 import CouponCard, { type Coupon } from '@/components/CouponCard'
 import { CouponsGridSkeleton } from '@/components/CouponCardSkeleton'
 import { orFail } from '@/lib/catalogue-read'
 import { createClient } from '@/lib/supabase/server'
 import { Suspense } from 'react'
 
-export const metadata = { title: 'קופונים' }
+/*
+ * The listing shares as the brand card.
+ *
+ * There is no single row to draw here, and the root layout's
+ * `twitter.card: 'summary_large_image'` turns "no image" into a blank grey
+ * rectangle rather than into a small card. `t=default` is the generated
+ * fallback the whole route is built around: it is what an unknown slug, a
+ * deleted deal and a page with nothing of its own to show all render as.
+ */
+export const metadata = {
+  title: 'קופונים',
+  openGraph: {
+    title: 'קופונים פעילים',
+    type: 'website',
+    locale: 'he_IL',
+    images: [ogImage({ template: 'default' }, 'קניון אקספרס')],
+  },
+}
 
 /**
  * The heading is the same for everyone, so it is the shell and the grid streams
