@@ -544,8 +544,25 @@ test('the install banner has no WCAG A/AA violations', async ({ page }) => {
  * is the only thing that would have caught it.
  */
 test('the search combobox says which suggestion is selected', async ({ page, viewport }) => {
-  // `DeferredHeaderSearch` is `hidden ... md:flex`, so below 768px this widget
-  // is not on the page at all and there is nothing to assert.
+  /*
+   * SKIPPED SINCE 2026-09-03, AND NOT BECAUSE IT BROKE.
+   *
+   * STEP D3 removed the masthead search field. The standing project rule is
+   * that there is no search UI anywhere, and the field was deleted rather than
+   * hidden: a CSS-hidden input is still in the DOM, still in the tab order and
+   * still ships its client chunk. `#masthead-search` therefore does not exist
+   * on any page, and this test times out clicking it.
+   *
+   * Skipped rather than deleted on purpose. Everything below is the correct
+   * assertion for a combobox, and it documents a real bug it once caught: a
+   * full axe scan of the open popup reported ZERO violations while the listbox
+   * wiring was missing, because axe has no rule for it. If a search widget ever
+   * comes back, this is the test it has to pass, and the note above says why it
+   * went quiet.
+   */
+  test.skip(true, 'no search UI anywhere: the masthead field was removed in D3')
+  // Below 768 the widget was hidden even before D3, so there was nothing to
+  // assert there either.
   test.skip((viewport?.width ?? 0) < 768, 'the masthead search is hidden below md')
 
   await page.goto('/')

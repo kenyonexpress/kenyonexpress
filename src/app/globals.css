@@ -194,3 +194,146 @@ html [data-sonner-toaster][data-sonner-theme="light"] {
 .footer-disclosure > summary {
   list-style: none;
 }
+
+/* ============================================================================
+   FOCUS APPEARANCE AND REDUCED MOTION — added STEP D14, 2026-09-03
+   ============================================================================ */
+
+/*
+  THERE WAS NO GLOBAL FOCUS RING. Exactly one rule in the whole project styled
+  `:focus-visible` (`.account-field__input`), so every other control fell back
+  to the browser default -- which Chrome draws as a thin dark ring that is
+  nearly invisible against this site's dark headings and disappears entirely on
+  the dark footer.
+
+  WHY THE RING IS TWO COLOURS. The brief asks for a 3px yellow ring, and the
+  brand yellow alone cannot carry it: #fed700 on white measures 1.41:1, where
+  WCAG 2.4.11 Focus Appearance wants 3:1 against what it sits on. tokens.css
+  already records that yellow is not a foreground colour here. So the yellow
+  3px ring is delineated by a 1px dark edge on its outside: the yellow reads on
+  dark surfaces, the dark edge reads on light ones, and the pair is visible on
+  both without inventing a third brand colour.
+
+  Layered as outline + box-shadow because `outline` cannot be two colours:
+    0-2px   dark   (the shadow, showing through the outline offset)
+    2-5px   yellow (the outline)
+    5-6px   dark   (the shadow's outer 1px)
+*/
+:focus-visible {
+  outline: 3px solid var(--color-brand-primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px var(--color-heading);
+  border-radius: 2px;
+}
+
+/*
+  REDUCED MOTION. Only one stylesheet honoured it (category-page.css), so the
+  hero slider's rotation, every hover transition and the drawer's 300ms slide
+  ran regardless of the setting. WCAG 2.3.3.
+
+  `!important` and the near-zero durations rather than `none`: a zero-length
+  animation still fires its `animationend`, so components that advance state on
+  that event keep working instead of silently stalling. The hero slider is one
+  of them.
+*/
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================================================
+   FOCUS APPEARANCE AND REDUCED MOTION — STEP D14, 2026-09-03
+   ============================================================================ */
+
+/*
+  THERE WAS NO GLOBAL FOCUS RING. Exactly one rule in the project styled
+  `:focus-visible` (`.account-field__input`), so every other control fell back
+  to the browser default -- which disappears against this site's dark headings
+  and entirely on the dark footer.
+
+  WHY THE RING IS TWO COLOURS. The brief asks for a 3px yellow ring, and the
+  brand yellow cannot carry it alone: #fed700 on white measures 1.41:1 where
+  WCAG 2.4.11 Focus Appearance wants 3:1 against what it sits on, and tokens.css
+  already records that yellow is not a foreground colour here. The yellow ring
+  is therefore delineated by a dark edge outside it: yellow reads on dark
+  surfaces, the dark edge reads on light ones, and no third brand colour is
+  invented.
+
+  Layered as outline + box-shadow because `outline` cannot be two colours:
+    0-2px   dark   (shadow, through the outline offset)
+    2-5px   yellow (the outline)
+    5-6px   dark   (the shadow's outer edge)
+*/
+:focus-visible {
+  outline: 3px solid var(--color-brand-primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px var(--color-heading);
+  border-radius: 2px;
+}
+
+/*
+  REDUCED MOTION. Only category-page.css honoured it, so the hero rotation,
+  every hover transition and the drawer's 300ms slide ran regardless of the
+  setting. WCAG 2.3.3.
+
+  Near-zero durations rather than `none`: a zero-length animation still fires
+  `animationend`, so components that advance state on that event keep working
+  instead of stalling silently. The hero slider is one of them.
+*/
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================================================
+   FOCUS APPEARANCE AND REDUCED MOTION — STEP D14, 2026-09-03
+   ============================================================================ */
+
+/*
+  THERE WAS NO GLOBAL FOCUS RING. Exactly one rule in the project styled
+  `:focus-visible` (`.account-field__input`); every other control fell back to
+  the browser default, which disappears against the dark footer.
+
+  WHY TWO COLOURS. The brief asks for a 3px yellow ring, and the brand yellow
+  cannot carry it alone: #fed700 on white is 1.41:1 where WCAG 2.4.11 wants
+  3:1, and tokens.css already records that yellow is not a foreground colour.
+  The yellow ring gets a dark edge outside it: yellow reads on dark surfaces,
+  the dark edge on light ones. outline + box-shadow because `outline` cannot
+  be two colours: 0-2px dark, 2-5px yellow, 5-6px dark.
+*/
+:focus-visible {
+  outline: 3px solid var(--color-brand-primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px var(--color-heading);
+  border-radius: 2px;
+}
+
+/*
+  REDUCED MOTION. Only category-page.css honoured it; the hero rotation, hover
+  transitions and the drawer slide ran regardless. WCAG 2.3.3. Near-zero
+  durations rather than `none`: a zero-length animation still fires
+  `animationend`, so components that advance state on it (the hero slider)
+  keep working instead of stalling.
+*/
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
