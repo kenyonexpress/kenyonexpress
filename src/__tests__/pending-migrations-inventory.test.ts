@@ -33,6 +33,10 @@ const PENDING_DIR = 'migrations/pending'
 // what each file does, and a reader checking "was this applied" needs the row
 // to still exist. What changed is which directory the row's file lives in.
 const APPLIED_DIR = 'migrations/applied'
+// Written, then rejected before ever touching production, and kept because a
+// cancelled number must stay burned: 165 was cancelled on 2026-09-04
+// (CLOSEOUT §13) when its own preflight's stop-and-think came back positive.
+const CANCELLED_DIR = 'migrations/cancelled'
 const SUPABASE_DIR = 'supabase/migrations'
 
 function readmeText(): string {
@@ -116,6 +120,7 @@ describe('the pending migration inventory', () => {
     const onDisk = [
       ...sqlFilesIn(PENDING_DIR, (n) => !n.startsWith('preflight_')),
       ...sqlFilesIn(APPLIED_DIR),
+      ...sqlFilesIn(CANCELLED_DIR, (n) => !n.startsWith('preflight_')),
     ].sort()
     const unlisted = onDisk.filter((name) => !named.has(name))
     expect(
@@ -126,26 +131,31 @@ describe('the pending migration inventory', () => {
 
   // ---- what is actually unapplied right now -------------------------------
   it('holds exactly the migrations still awaiting approval', () => {
-    // THREE pending migrations as of 2026-09-04, each with its preflight audit
+    // TWO pending migrations as of 2026-09-04, each with its preflight audit
     // beside it (a CLOSEOUT §5 requirement: no migration file without the
     // execute_sql audit that has to pass before it).
     //
     //   162_cron_schedule.sql            approved (CLOSEOUT §7), blocked on vault
     //                                    seeding -- see "## חסמים לאופיר" in STATE.md
-    //   165_revoke_anon_helpers.sql      awaiting approval like any other number
     //   166_voucher_transition_guard.sql awaiting approval; closes the guard gap
     //                                    VOUCHER-LIFECYCLE.md §1 records
     //
-    // 164 stays unused; §8c named the revoke file 165 and the number is kept
-    // stable the same way 162 was reserved before it was written.
+    // 164 stays unused; 165 was written under §8c and CANCELLED under §13
+    // (eighteen public-role RLS policies call the helpers, so the revoke would
+    // 42501 every anonymous catalogue read) -- it burned its number and sits in
+    // migrations/cancelled/, asserted below.
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
       '162_cron_schedule.sql',
-      '165_revoke_anon_helpers.sql',
       '166_voucher_transition_guard.sql',
       'preflight_162.sql',
-      'preflight_165.sql',
       'preflight_166.sql',
     ])
+  })
+
+  it('keeps the cancelled revoke where nobody will apply it', () => {
+    // A cancelled migration is not deleted: the number stays burned and the
+    // file is the only written record of WHY the revoke must not happen.
+    expect(sqlFilesIn(CANCELLED_DIR)).toEqual(['165_revoke_anon_helpers.sql', 'preflight_165.sql'])
   })
 
   // ---- direction 2: manifest -> disk -------------------------------------
@@ -153,6 +163,7 @@ describe('the pending migration inventory', () => {
     const present = new Set([
       ...sqlFilesIn(PENDING_DIR),
       ...sqlFilesIn(APPLIED_DIR),
+      ...sqlFilesIn(CANCELLED_DIR),
       ...sqlFilesIn(SUPABASE_DIR),
     ])
     const missing = manifestFilenames().filter((name) => !present.has(name))

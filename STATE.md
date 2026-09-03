@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-03 22:55 UTC (‏CLOSEOUT §13 בוצע: ‏165 בוטלה סופית והועברה ל-`migrations/cancelled/` עם הסיבה בראשה — ‏18 ‏policies ציבוריות קוראות לעזרים ו-revoke היה מפיל את כל הקטלוג האנונימי ל-42501; נוסף `src/db/__tests__/anon-catalog.test.ts` שהוכח חי מול פרודקשן 9/9 עם מפתח anon בלבד, ורץ ב-CI עם ‏SUPABASE_URL+ANON_KEY; ‏DB-SECURITY-MODEL עודכן "by design")
 Updated: 2026-09-03 22:15 UTC (‏מרתון 1+2: תיקון ה-42703 נדחף בסשן קודם בלי לעדכן מצביע; ניקוי ה-float ב-bulk price הושלם דרך מודול טהור `src/lib/admin/bulk-price.ts` עם 10 טסטים; ‏3696 ירוקים, build ירוק)
 Updated: 2026-09-03 08:00 UTC (‏ריצת העיצוב: ‏D1–D14 בוצעו, שלושה תגים v3.1–v3.3; ‏158+159 הוחלו בפרודקשן; סוכן מקביל תועד)
 Updated: 2026-09-02 19:05 UTC (‏ביקורת חוזרת על MEGA 6-ALT: type-check/test/build ירוקים, Lighthouse מעל 95, דף ספק 200 עם קטלוג, /api/ready מחזיר חמש בדיקות)

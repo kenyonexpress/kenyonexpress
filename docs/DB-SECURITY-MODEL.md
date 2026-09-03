@@ -167,6 +167,15 @@ policy יחיד ומאוחד לכל צירוף טבלה/פעולה, בשם `<tab
 |---|---|
 | `is_admin()` | עזר policy, false ל-anon |
 | `is_supplier_member(uuid)` | עזר policy, false ל-anon |
+
+> ‏**‏EXECUTE של ‏anon על שני העזרים הוא ‏by design, לא חוב.** ‏18 ‏policies
+> ברולים ‏public/anon (בין השאר ‏product_images, ‏coupon_deals, ‏suppliers,
+> ‏seo_redirects, ‏cashback_rules, ‏categories, ‏wallet_*, ‏split_executions,
+> ‏escrow_holds, ‏payments, ‏carts, ‏notification_outbox) קוראות להן בתוך
+> ‏USING/WITH CHECK, ו-quals רצים כזהות הקורא — ‏revoke היה מפיל כל ‏SELECT
+> אנונימי בקטלוג ל-42501. מיגרציה ‏165 שניסתה בדיוק את זה בוטלה ב-04.09
+> (‏CLOSEOUT §13) ויושבת ב-`migrations/cancelled/` עם הסיבה בראשה. רשת
+> הרגרסיה: `src/db/__tests__/anon-catalog.test.ts`.
 | `fn_record_recent_search(text)` | רישום חיפוש אחרון. מקבלת את לקוח הסשן של הקורא, קוראת `auth.uid()`, ולא כותבת כלום בלי סשן |
 
 ‏**‏`check_rate_limit(text, int, int)` הוסרה מהרשימה הזו ב-01.09 על ידי מיגרציה 127.** היא הייתה `SECURITY DEFINER` עם `anon=X | authenticated=X`, והגוף שלה מכניס את `p_key` כמו שהוא ומעלה את המונה **לפני** ההשוואה ל-`p_max_attempts`. כלומר קורא אנונימי בחר גם את המפתח וגם את הסף: חמש קריאות עם `phone-otp-number:<קורבן>` נעלו מספר ידוע משעה של התחברות ב-OTP, וכל קריאה הייתה כתיבה בלתי מוגבלת של שורות שהתוקף בוחר ל-`rate_limits`.

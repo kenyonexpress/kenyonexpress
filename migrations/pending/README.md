@@ -1,6 +1,6 @@
 # `migrations/pending/`
 
-## 2026-09-04: three files pending, one approved
+## 2026-09-04: two files pending, one approved (165 cancelled)
 
 ### `162_cron_schedule.sql` — PENDING, approved (CLOSEOUT §7), blocked on vault
 
@@ -12,14 +12,19 @@ this machine cannot reach (no `vercel` CLI, no link). The exact seeding
 commands are under "## חסמים לאופיר" in STATE.md. Preflight:
 `preflight_162.sql` — every block must pass through MCP `execute_sql` first.
 
-### `165_revoke_anon_helpers.sql` — PENDING, not approved
+### `165_revoke_anon_helpers.sql` — CANCELLED 2026-09-04, moved to `migrations/cancelled/`
 
-Revokes EXECUTE on `public.is_admin()` and `public.is_supplier_member(uuid)`
-from `anon` and grants them to `authenticated` (CLOSEOUT §8c). The uuid
-signature is production's (generated types), not the zero-arg one §8c wrote.
-Preflight: `preflight_165.sql`; its third block lists RLS policies referencing
-the helpers — any hit on a table `anon` can SELECT is a stop-and-think, because
-RLS quals run as the caller and a revoked helper turns those reads into 42501.
+Would have revoked EXECUTE on `public.is_admin()` and
+`public.is_supplier_member(uuid)` from `anon` (CLOSEOUT §8c). Cancelled by
+CLOSEOUT §13: the stop-and-think its own preflight flagged came back positive.
+Eighteen RLS policies on public/anon-readable tables (product_images,
+coupon_deals, suppliers, seo_redirects, cashback_rules, categories, wallet_*,
+split_executions, escrow_holds, payments, carts, notification_outbox) call the
+helpers inside USING/WITH CHECK; quals run as the caller, so the revoke turns
+every anonymous catalogue SELECT into 42501. anon EXECUTE here is **by
+design** — the helpers return false for a caller with no uid. Regression net:
+`src/db/__tests__/anon-catalog.test.ts`. The file and `preflight_165.sql` live
+in `migrations/cancelled/` with the reason at the top.
 
 ### `166_voucher_transition_guard.sql` — PENDING, not approved
 

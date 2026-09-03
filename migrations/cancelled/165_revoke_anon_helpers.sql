@@ -1,4 +1,17 @@
--- 165_revoke_anon_helpers.sql (idempotent)
+-- 165_revoke_anon_helpers.sql -- CANCELLED 2026-09-04, MUST NEVER BE APPLIED.
+--
+-- WHY CANCELLED (CLOSEOUT §13). Eighteen RLS policies on public/anon-readable
+-- tables (product_images, coupon_deals, suppliers, seo_redirects,
+-- cashback_rules, categories, wallet_*, split_executions, escrow_holds,
+-- payments, carts, notification_outbox) call is_admin() or
+-- is_supplier_member() inside their USING/WITH CHECK. RLS quals run AS THE
+-- CALLER, so revoking EXECUTE from anon turns every anonymous SELECT on the
+-- public catalogue into `permission denied for function` (42501) -- the whole
+-- storefront goes dark for logged-out visitors. anon EXECUTE on these helpers
+-- is BY DESIGN: they return false for a caller with no uid and appear in
+-- public policies. The regression net is src/db/__tests__/anon-catalog.test.ts.
+--
+-- The original (pre-cancellation) header follows unchanged.
 --
 -- NOT APPLIED, NOT APPROVED. Written under CLOSEOUT §8c; waits for Ofir like
 -- every other pending file. 164 stays unused (the same way 162 was reserved),
