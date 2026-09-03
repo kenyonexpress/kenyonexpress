@@ -179,3 +179,67 @@
 `scripts/cron-jobs.json`;
 אף מחרוזת סוד לא מופיעה בקובץ; טסט האינוונטר המורחב עובר; טסטים ירוקים
 (`pnpm test`, `pnpm type-check`, `pnpm lint`).
+
+## משימה 5: שער boot נגד checkout חי מעל ספק מדומה
+
+**סטטוס:** פתוח.
+
+**מקור:** החוסם המתועד ב-STATE.md ‏(‏02.09, סגירת v1.0), לא טבלת
+INFRA-AUDIT.md, שכל שורותיה הפתוחות כבר מכוסות במשימות 1 עד 4 או סגורות
+(נמדד 03.09: ‏logger, ‏CI, ‏instrumentation, ‏JSON-LD ו-openGraph קיימים).
+
+**הבעיה:** בפרודקשן מוגדרים גם
+`CHECKOUT_ENABLED="true"`
+וגם
+`CARDCOM_USE_MOCK="true"`
+‏(STATE.md ‏02.09). נמדד 03.09 בקוד:
+`loadCardcomEnv`
+ב-
+`src/lib/payments/env.ts`
+(שורות 61 עד 64) מחזיר `useMock: true` בכל פעם ש-
+`CARDCOM_USE_MOCK === 'true'`,
+בלי שום סייג לפרודקשן, ו-`checkoutEnabled` נקבע בנפרד. השילוב הוא צ'קאאוט
+חי מול ספק מדומה שמחזיר `success: true` לכל קריאה: לקוח משלים רכישה, מקבל
+שובר, ואף כרטיס לא מחויב. ה-`superRefine` ב-
+`src/lib/env.ts`
+כבר מפיל boot בפרודקשן על
+`CARDCOM_SANDBOX === 'true'`
+(מאותו נימוק בדיוק, מתועד שם), אבל לא בודק את
+`CARDCOM_USE_MOCK`
+בכלל. תיקון ה-env עצמו (מחיקת הדגל + אישורי טרמינל אמיתיים) נשאר שינוי
+ידני שממתין לאישור; המשימה כאן היא שהקוד יסרב לרוץ במצב הזה במקום לסמוך
+על זיכרון.
+
+**הפתרון:**
+
+1. הוספת בדיקה ל-`superRefine` ב-
+   `src/lib/env.ts`,
+   צמוד לבדיקת
+   `CARDCOM_SANDBOX`
+   הקיימת: בפרודקשן, `CARDCOM_USE_MOCK === 'true'` מפיל את ה-boot עם
+   הודעה מפורשת.
+2. **מוקש מדוד שקובע את המיקום:** ‏`next start` מקומי הוא גם הוא
+   `NODE_ENV=production`,
+   וכל סוויטת ה-E2E ומדידות ה-Lighthouse רצות ככה עם המוק. שער שנבדק
+   לפי `NODE_ENV` בלבד מנתק את כולן (נמדד בעבר, מתועד בהערה בראש אותו
+   `superRefine`: ‏`pnpm start` ענה 500 על כל מסלול). לכן הבדיקה חייבת
+   לשבת מאחורי אותו escape hatch קיים,
+   `ALLOW_INCOMPLETE_ENV === 'true'`,
+   כמו שאר בדיקות הפרודקשן באותו בלוק. אין להמציא דגל חדש.
+3. **מוקש סדר פעולות:** הדיפלוי הנוכחי ב-vercel.app רץ היום עם
+   `CARDCOM_USE_MOCK="true"`,
+   ולכן דיפלוי של השער לפני עדכון ה-env בפרודקשן יפיל את ה-boot של
+   הדיפלוי הבא. השער נכנס לקוד עכשיו; ה-deploy לפרודקשן מתואם עם עדכון
+   ה-env, שממילא נופל תחת מצב העצירה "push לפרודקשן" בחוקי CLAUDE.md.
+4. טסטי יחידה על הסכימה: פרודקשן עם
+   `CARDCOM_USE_MOCK="true"`
+   נכשל; אותו env עם
+   `ALLOW_INCOMPLETE_ENV="true"`
+   עובר; מחוץ לפרודקשן עובר.
+
+**הגדרת סיום:** ‏parse של env עם `NODE_ENV=production` ו-
+`CARDCOM_USE_MOCK="true"`
+בלי waiver זורק עם הודעה שמזכירה את שם המשתנה; עם
+`ALLOW_INCOMPLETE_ENV="true"`
+עובר; בדיקת ה-`CARDCOM_SANDBOX` הקיימת לא נשברת; טסטים ירוקים
+(`pnpm test`, `pnpm type-check`, `pnpm lint`).
