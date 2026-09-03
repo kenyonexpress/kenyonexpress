@@ -289,6 +289,22 @@ describe('refundOrder: supplier debits', () => {
     })
   })
 
+  it('names the admin who refunded in the audit row, not "an admin, unknown which"', async () => {
+    // requireAdminSession() knows exactly who this is; the row used to write
+    // actor_id: null anyway (BUSINESS-RULES §10, fixed marathon step 11). A
+    // money reversal whose log names nobody is a statement, not evidence.
+    seedHappyPath()
+    await refundOrder({ orderId: 'order-1', reason: 'test' })
+
+    const audit = find('audit_log', 'insert')?.payload as Record<string, unknown>
+    expect(audit).toMatchObject({
+      actor_id: 'admin-1',
+      actor_role: 'admin',
+      action: 'status_change',
+      entity_type: 'order',
+    })
+  })
+
   it('selects the supplier columns the debit is computed from', async () => {
     // Without these two in the select, every debit silently computes to zero
     // and the supplier keeps a share the customer has been given back.

@@ -355,8 +355,12 @@ async function runRefundOrder(input: RefundInput): Promise<RefundOutcome> {
     }
 
     await admin.from('audit_log').insert({
-      actor_id: null,
-      actor_role: 'admin',
+      // requireAdminSession() proved WHO this is at the top of the action;
+      // writing null here made the one log that justifies a money reversal
+      // say "an admin, we don't know which" (BUSINESS-RULES §10, fixed
+      // marathon step 11).
+      actor_id: session.userId,
+      actor_role: session.role,
       action: 'status_change',
       entity_type: 'order',
       entity_id: order.id,
