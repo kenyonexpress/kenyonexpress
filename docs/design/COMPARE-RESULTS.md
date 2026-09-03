@@ -382,3 +382,29 @@ same or a closer colour. Measured after, against before:
 | home | 6.01% | 5.99% |
 | cart | 8.37% | 8.37% |
 | checkout | 9.38% | 9.38% |
+
+
+## Final regression table — STEP D16, 2026-09-03
+
+Production build, `PORT=3311 pnpm start`, `scripts/compare.mjs` at the three
+gate widths. "Refused" is the script's own content guard, quoted per page in
+the sections above.
+
+| page | 380 | 768 | 1440 | note |
+| --- | --- | --- | --- | --- |
+| home | 11.0-28.3% volatile | 7.93% | **5.99%** | 380 swings with live's rotating catalogue; geometry verified to 1-2px |
+| category | refused | refused | refused | 1 of 2 products shared with live today |
+| product | refused | refused | refused | live related-carousel holds 1 card, ours 4 |
+| products | refused | refused | refused | 21/24 products shared, 15/24 slots after 3 catalogue changes |
+| cart | 14.81% | **10.28%** | **8.37%** | 380 blocked by the 38px shell-reference conflict |
+| checkout | 11.9% | **8.16%** | **9.38%** | same 38px conflict; worst band sits exactly on it |
+| search | not scored | not scored | not scored | no search UI is a standing rule; the page is an orphan route |
+
+Shell band (scripts/shell-band.mjs, same metric, header rows only):
+380 **9.47%**, 768 **7.98%**, 1440 inside the 5.99% whole-page pass.
+
+What blocks each remaining red is recorded once and applies everywhere: the
+inner-page references were captured mid-scroll with the sticky header collapsed
+(76+83) while home's was captured full (113+84), and `refs/` is a 2026-08-12
+snapshot of a catalogue that has visibly moved during this session. Neither is
+addressable in CSS.
