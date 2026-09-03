@@ -16,7 +16,10 @@
      checkout behind put a 150px step between the two pages of one flow. */
   max-width: var(--container-page, 1320px);
   margin-inline: auto;
-  padding: 1.5rem 15px 3rem;
+  /* Top padding 0: live's breadcrumb is flush with the top of site-content at
+     every width (y159 at 380, y165 at 1440). The 24px that used to sit here
+     pushed the whole page down against the reference. */
+  padding: 0 15px 3rem;
   color: #333e48;
   font-size: 14px;
   line-height: 23.996px;
@@ -27,12 +30,27 @@
    there between the container top and the heading. The two pages of one flow
    now open the same way. */
 .checkout-page__breadcrumb {
+  /* Below 768 live draws the breadcrumb as a compact full-bleed gray band:
+     refs/ke_live_computed.json, checkout 380 -- nav y159, 42px tall, padding
+     9px, background #f7f6f6. The transparent 71px treatment starts at 768. */
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 25.004px 0 22.4px;
+  margin-inline: -15px;
+  padding: 9px 15px;
+  min-height: 42px;
+  background: #f7f6f6;
   font-size: 14px;
   color: #333e48;
+}
+
+@media (min-width: 768px) {
+  .checkout-page__breadcrumb {
+    margin-inline: 0;
+    padding: 25.004px 0 22.4px;
+    min-height: 0;
+    background: transparent;
+  }
 }
 
 .checkout-page__breadcrumb a:hover {
@@ -44,7 +62,10 @@
   line-height: 47.9976px;
   font-weight: 500;
   color: #333e48;
-  margin: 0 0 48px;
+  /* 22px above (the gap under the 380 breadcrumb band, 201 -> 223) and 40px
+     below (h1 ends 271, entry-content starts 311). From 768 the breadcrumb's
+     own 22.4px bottom padding closes the top gap (192 -> 193). */
+  margin: 22px 0 40px;
   /* Measured on the live /checkout/ with an item in the cart, not chosen:
      `header.entry-header` there computes to `text-align: center` while every
      other block on the page computes to `start`. The centres coincide exactly
@@ -53,6 +74,12 @@
      on the same pixels. Left as `start` this was the single largest fixable
      contribution to the y200-400 bands. */
   text-align: center;
+}
+
+@media (min-width: 768px) {
+  .checkout-page__title {
+    margin-top: 0;
+  }
 }
 
 /* Guest notice. Live renders the same strip above the form for a visitor with
