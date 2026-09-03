@@ -612,8 +612,39 @@ const shoot = async (url, out) => {
   // Pointer-enter is the component's own supported way to hold a slide, so use
   // that rather than reaching into its state. Pages without a hero match
   // nothing and are untouched.
+  //
+  // SYNTHETIC EVENTS DO NOT HOLD LIVE'S SLIDER, AND THAT MADE THE 380 GATE A
+  // COIN FLIP. Measured 2026-09-03, same build, same server, three consecutive
+  // `--page=home --width=380` runs:
+  //
+  //   run 1   live 17825   mine 18257   10.96%
+  //   run 2   live 17825   mine 18257   10.96%
+  //   run 3   live 17791   mine 18257   28.25%
+  //
+  // Our side is byte-identical across all three; the reference is what moved.
+  // Probing the live page directly found the movers, and they are all Revolution
+  // Slider internals -- `rs-mask-wrap` 4337px against 5896px, a single `rs-layer`
+  // 137px against 800px, `rs-loader.spinner0` 40px against 0. The slider was
+  // simply on a different slide when the shutter fired. A gate that swings from
+  // 10.96% to 28.25% on carousel phase is not measuring layout, and 10.96% was
+  // never a pass -- it was one face of a coin.
+  //
+  // The bullet click above is why. `rs-bullet` is painted by the slider engine,
+  // but an untrusted synthetic click is not how that engine changes slide, so
+  // the call was a no-op that looked like a fix. Revolution Slider publishes a
+  // real API instead: a `window.revapi<N>` jQuery object carrying `revpause`
+  // and `revshowslide`. Verified present on the live homepage as `revapi6`
+  // (`rev_slider_6_1`, five slides), and driving it pins the reference exactly
+  // -- three consecutive loads returned slide 1, mask 137px, module 193px,
+  // body 17791, spinner 0, with no variation at all.
+  //
+  // Pause, then show slide 1, then pause again: `revshowslide` restarts the
+  // autoplay timer on its way in, so a single pause before it holds the wrong
+  // slide and a single pause after it races the transition.
   await p
-    .evaluate(() => {
+    .evaluate(async () => {
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+
       const hero = document.querySelector(
         '[data-hero-slider], .home-v1-slider, rs-module, [class*="hero"]',
       )
@@ -628,10 +659,65 @@ const shoot = async (url, out) => {
       firstSlide?.dispatchEvent(
         new MouseEvent('click', { bubbles: true, cancelable: true, view: window }),
       )
+
+      // Every Revolution Slider on the page, by its own API. Discovered rather
+      // than hardcoded to `revapi6`: the number is assigned by the plugin and
+      // changes when the slider is rebuilt in WordPress.
+      const apis = Object.keys(window)
+        .filter((k) => /^revapi\d+$/.test(k))
+        .map((k) => window[k])
+        .filter((a) => a && typeof a.revpause === 'function')
+
+      for (const a of apis) {
+        try {
+          a.revpause()
+        } catch {}
+      }
+      for (const a of apis) {
+        try {
+          a.revshowslide(1)
+        } catch {}
+      }
+      await sleep(900)
+      for (const a of apis) {
+        try {
+          a.revpause()
+        } catch {}
+      }
     })
     .catch(() => {})
   // 700ms opacity transition on our slider, plus room for live's.
   await p.waitForTimeout(1200)
+
+  // THE FREEZE HAS TO BE PROVEN, NOT ASSUMED.
+  //
+  // The bullet click was silently a no-op for months and the gate still printed
+  // a number, which is the failure worth guarding: a frozen-looking reference
+  // that is still moving produces a score with no meaning, and it produces it
+  // quietly. Sample the hero geometry twice, 600ms apart, and record whether it
+  // held. `heroFrozen` is read at the bottom of the run, next to the other
+  // refusals, so a moving hero is reported rather than scored.
+  const heroGeometry = () =>
+    p
+      .evaluate(() => {
+        const el =
+          document.querySelector('rs-module') ??
+          document.querySelector('[data-hero-slider], .home-v1-slider')
+        if (!el) return 'no-hero'
+        const r = el.getBoundingClientRect()
+        const mask = document.querySelector('rs-mask-wrap')
+        return [
+          Math.round(r.height),
+          Math.round(mask ? mask.getBoundingClientRect().height : 0),
+          document.body.scrollHeight,
+        ].join('/')
+      })
+      .catch(() => 'unreadable')
+
+  const heroBefore = await heroGeometry()
+  await p.waitForTimeout(600)
+  const heroAfter = await heroGeometry()
+  heroStability[external ? 'live' : 'mine'] = { before: heroBefore, after: heroAfter }
 
   // COUNTED AT THE SHUTTER, NOT BEFORE IT. This block used to run right after
   // load, several waits earlier than the screenshot. Our related-products row
@@ -673,6 +759,10 @@ const cartEmptiness = { live: null, mine: null }
 const gridCounts = { live: null, mine: null }
 const gridTitles = { live: [], mine: [] }
 const heroImages = { live: null, mine: null }
+// Filled by the freeze block: whether each side's hero held still across a
+// 600ms sample. A side that moved makes the score meaningless -- see the
+// refusal near the bottom of this file.
+const heroStability = { live: null, mine: null }
 // THE SEARCH PAGE BELONGS HERE TOO, AND LEAVING IT OUT COST A DAY OF NUMBERS.
 //
 // The rule below was written for /category and /shop. `--page=search` scores
@@ -845,6 +935,37 @@ if (
   )
   process.exit(3)
 }
+// A HERO THAT IS STILL MOVING MAKES THE SCORE MEANINGLESS.
+//
+// This is the refusal that the 10.96%/28.25% split earned. Both numbers were
+// printed by a run that believed it had frozen the slider; only the second one
+// looked wrong. Refusing here is what makes the difference visible at the time
+// rather than three commits later, when a page has been "tuned" against a
+// reference that was never holding still.
+//
+// Escape hatch on the same pattern as the grid mismatch above, because a
+// deliberate run against a moving hero is occasionally what you want.
+const heroMoved = ['live', 'mine'].filter(
+  (side) =>
+    heroStability[side] !== null &&
+    heroStability[side].before !== 'no-hero' &&
+    heroStability[side].before !== 'unreadable' &&
+    heroStability[side].before !== heroStability[side].after,
+)
+if (heroMoved.length > 0 && process.env.COMPARE_ALLOW_MOVING_HERO !== '1') {
+  for (const side of heroMoved) {
+    const { before, after } = heroStability[side]
+    console.error(
+      `REFUSING to measure: ${side}'s hero moved between two samples 600ms apart (${before} -> ${after}, as module/mask/body height).`,
+    )
+  }
+  console.error(
+    'The freeze did not take. Live is driven through window.revapi<N>.revpause()/revshowslide(1); if that API is gone or renamed the reference is on an arbitrary slide and the score is carousel phase, not layout. Re-run, or set COMPARE_ALLOW_MOVING_HERO=1 to score it anyway.',
+  )
+  await b.close()
+  process.exit(4)
+}
+
 for (const side of ['live', 'mine']) {
   copyFileSync(runShot(side), `refs/${side}-${page}.png`)
   copyFileSync(runShot(side), `refs/${side}.png`)
