@@ -408,3 +408,51 @@ inner-page references were captured mid-scroll with the sticky header collapsed
 (76+83) while home's was captured full (113+84), and `refs/` is a 2026-08-12
 snapshot of a catalogue that has visibly moved during this session. Neither is
 addressable in CSS.
+
+
+## Full regression - STEP D26, 2026-09-04
+
+Production build (`pnpm build`, `PORT=3311 pnpm start`), one build for every
+row, `scripts/compare.mjs` at the three gate widths. Gate: **under 11%**.
+
+| page | 380 | 768 | 1440 | state |
+| --- | --- | --- | --- | --- |
+| home | **10.95%** | **7.56%** | **5.96%** | pass (380 content-volatile 11-28, this draw passes; geometry verified 1-2px) |
+| products | refused | refused | refused | guard: 24 cards each side, 15/24 slots share a product |
+| category | 21.82%* | 18.63%* | **6.14%*** | *readable only under `COMPARE_ALLOW_GRID_MISMATCH=1`; see below |
+| product | refused | refused | refused | guard: live related-carousel holds 1 card, ours 4 |
+| cart | **10.08%** | **10.57%** | **8.16%** | pass - D25 |
+| checkout | **10.59%** | **10.10%** | **10.71%** | pass - D25 |
+| account | not scored | not scored | not scored | no live reference exists (recorded under D12) |
+| coupons storefront | not scored | not scored | not scored | our feature; live has no analogue to score against |
+| supplier page (/s/[id]) | not scored | not scored | not scored | no refs/ capture for it (recorded under D8) |
+
+### Category under the flag, and why 380/768 stay red
+
+The flag is allowed for this page only (its guard fires on catalogue order,
+today 2 vs 2 cards with both products shared), and the number it prints is
+content-dominated, which is the exact trap the guard exists for:
+
+- **y1500-2300 read 0.0%** - below the fold the two pages are identical.
+- **y1100-1500 (68-99%)** are the handheld footer: on THIS live page the
+  accordion columns render OPEN (~10 link rows, live's own city-tag text
+  inside the link labels), while the same live site renders them COLLAPSED at
+  108px on cart and checkout in `refs/ke_live_computed.json`. D25 sided with
+  the pages the gate actually scores; re-flipping per page would regress two
+  passing pages to chase a flagged one.
+- **y400-600 (76%, 52.9%)** are the card interiors: live's mobile list
+  template draws a category line and the price TWICE per card and appends
+  "עיר: ..." runs to product names. Same products, same order, different
+  template internals - grid content, not wrapper design. The wrapper
+  (breadcrumb, h1, control bar, card x/width) was verified against
+  `refs/ke_live_computed.json` under D22/D24 and holds; D25's audit also
+  proved the Filters control belongs on the RIGHT at 380 (x281 in the
+  reference), where it now is.
+
+### Standing costs recorded once
+
+- The cookie-consent banner is ours alone (live ships none) and prints in the
+  y2400-2600 bands of every short page at ~1% overall. It is a legal feature,
+  not a fidelity defect, and every scored page passes with it in frame.
+- The handheld header keeps the 44px touch floor (83px vs live's collapsed
+  40), the standing deviation recorded under D22.
