@@ -92,8 +92,12 @@ export default async function CouponDealPage({ params }: Props) {
               <Tag size={48} />
             </div>
           )}
+          {/* start-3, logical: the same corner CouponCard pins its badge to,
+              so the card a shopper clicked and the page it opens agree about
+              where the discount sits. right-3 happened to be the same pixel
+              in RTL but was the physical property this audit is removing. */}
           {discountPct != null && discountPct > 0 && (
-            <div className="absolute top-3 right-3 bg-brand text-heading text-sm font-bold px-3 py-1.5 rounded-lg">
+            <div className="absolute top-3 start-3 bg-brand text-heading text-sm font-bold px-3 py-1.5 rounded-lg">
               {discountPct}% הנחה
             </div>
           )}

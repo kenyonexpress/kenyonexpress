@@ -66,7 +66,11 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
           <div // White on brand yellow is 1.41:1. This badge carries the discount
             // percentage, so an unreadable one loses the single number the card
             // exists to advertise.
-            className="absolute top-2 end-2 bg-brand text-heading text-xs font-bold px-2 py-1 rounded-lg"
+            // start-2, the inline-start corner (the right in RTL): the corner
+            // the measured .category-card__badge uses for grid cards, and the
+            // corner the coupon DETAIL page pins the same badge to. This card
+            // had it on the opposite corner from its own detail page.
+            className="absolute top-2 start-2 bg-brand text-heading text-xs font-bold px-2 py-1 rounded-lg"
           >
             {discountPct}% הנחה
           </div>
