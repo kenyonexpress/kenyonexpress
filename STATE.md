@@ -128,10 +128,37 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 20. ‏[ ] שערים סופיים (‏typecheck/lint/test/build + ‏Playwright + ‏compare)
     ‏→ תג ‏v5.3.0-rc1 + ‏PR ל-main (בלי למזג).
 
+## Vercel (‏CLOSEOUT §12, נמדד 04.09 דרך ‏MCP)
+
+| מה | ערך |
+|---|---|
+| ‏scope | ‏`kenyonexpress-projects` (‏team_TUMTPVDP8218QHwedSjmgJWl, ‏Hobby) |
+| פרויקט `kenyonexpress` | ‏**לא קיים** — ‏`prj_v49dZbPUpk1UxyHbXTCiIJlQ7opP` (מ-`.vercel/repo.json` המקומי) מחזיר ‏404. הפרויקט שנשא את פריסות ה-CLI של 31.08 נמחק או הועבר |
+| פרויקט `kenyonexpress-web` (ישן) | ‏`prj_oqr4NKtSaB2h3szrxnT0DknAv9Xk`, ‏Git מחובר ל-`kenyonexpress/kenyonexpress-web` (ה-repo הישן, לא זה), ‏`live: false`, כל ‏11 הפריסות ‏ERROR, האחרונה 29.05. לא נמחק, רק מתועד |
+| פריסת ‏preview של ‏closeout/v1-final | אין. ה-repo הזה (`kenyonexpress/kenyonexpress`) לא מחובר לשום פרויקט |
+| ‏env production | לא ניתן לקריאה — הפרויקט שהחזיק אותם איננו. כל ‏129 המשתנים שהקוד קורא (האודיט מ-STATE, כולל ‏NEXT_PUBLIC_SUPABASE_*, ‏SUPABASE_SERVICE_ROLE_KEY, ‏CRON_SECRET, ‏CARDCOM_*, ‏RESEND_API_KEY, ‏VOUCHER_QR_SECRET) חסרים עד שיוקם פרויקט |
+| ‏vercel CLI מקומי | לא מותקן, אין ‏token, אין ‏link תקף |
+
+‏§12(א) קובע: פרויקט שלא נמצא בשום ‏scope = חסם עם הפקודה המדויקת, לא
+יצירת פרויקט עצמאית (זו תשתית פרודקשן). ראה חסם ‏0 למטה. עד שהוא נפתר אין
+שער "פריסת ‏preview ירוקה לפני תג" — מתועד כחריגה כפויה.
+
 ## חסמים לאופיר (מעודכן 04.09)
 
+0. **פרויקט ה-Vercel של האתר איננו (חוסם את 162, את ה-preview ואת ה-DNS):**
+   ‏`kenyonexpress` מחזיר ‏404 ב-team; נשאר רק ‏`kenyonexpress-web` הישן
+   שמחובר ל-repo הישן. לשחזר:
+   ```bash
+   npm i -g vercel && vercel login
+   cd /Users/ofir/kenyonexpress-web/kenyonexpress
+   rm -rf .vercel && vercel link --yes   # ליצור/לבחור פרויקט kenyonexpress ב-scope kenyonexpress-projects
+   vercel git connect                     # אל kenyonexpress/kenyonexpress (לא kenyonexpress-web)
+   # ואז להזין את משתני ה-env (רשימה מלאה באודיט ה-129 ב-STATE) ולפרוס preview מ-closeout/v1-final:
+   vercel deploy
+   ```
 1. **זריעת ‏vault ל-162 (מאושרת אך חסומה):** אין ‏vercel ‏CLI ואין ‏MCP
-   ‏Supabase בסשן. להריץ:
+   ‏Supabase בסשן, ומאז 04.09 גם אין פרויקט ‏Vercel (חסם 0) לקרוא ממנו
+   ‏CRON_SECRET. להריץ אחרי פתרון חסם 0:
    ```bash
    npm i -g vercel && vercel login
    cd /Users/ofir/kenyonexpress-web/kenyonexpress
