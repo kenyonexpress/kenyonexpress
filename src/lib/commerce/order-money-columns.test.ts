@@ -2,6 +2,9 @@ import {
   __resetMoneyGenerationCache,
   buildOrderItemMoneyRow,
   buildOrderMoneyRow,
+  orderCashbackSelect,
+  orderItemPriceSelect,
+  readOrderCashbackAgorot,
   readOrderMoney,
   resolveOrderGeneration,
   resolveOrderItemGeneration,
@@ -334,5 +337,38 @@ describe('readOrderMoney on the ils generation reads the generated agorot twins'
 
     expect(money.subtotalAgorot).toBe(0)
     expect(money.totalAgorot).toBe(0)
+  })
+})
+
+describe('the generation-resolved read fragments (marathon step 1)', () => {
+  // These three exist because finalize, the order detail query and the invoice
+  // issuer all hardcoded post-059 names into their selects. On the hosted
+  // pre-059 project one unknown name is 42703 and the WHOLE select fails --
+  // which aborts a finalize for a card that has already been charged
+  // (PAYMENT-FLOW, known defect). The fragments answer per generation.
+
+  it('names the cashback column each generation actually has', () => {
+    expect(orderCashbackSelect('agorot')).toBe('cashback_applied_agorot')
+    expect(orderCashbackSelect('ils')).toBe('cashback_applied_ils')
+  })
+
+  it('normalises the cashback spend to integer agorot from either generation', () => {
+    expect(readOrderCashbackAgorot('agorot', { cashback_applied_agorot: 1500 })).toBe(1500)
+    // Pre-059 stores shekels; 12.30 must come back 1230, not 1229.9999...,
+    // which is what a bare Number('12.30') * 100 produces.
+    expect(readOrderCashbackAgorot('ils', { cashback_applied_ils: '12.30' })).toBe(1230)
+    expect(readOrderCashbackAgorot('ils', { cashback_applied_ils: 15 })).toBe(1500)
+    expect(readOrderCashbackAgorot('agorot', null)).toBe(0)
+    expect(readOrderCashbackAgorot('ils', {})).toBe(0)
+  })
+
+  it('aliases the pre-059 generated price twins back to the post-059 names', () => {
+    // Unit-safe on purpose: unit_price_ils_agorot is GENERATED AS
+    // round(ils * 100)::bigint, so both fragments answer in integer agorot
+    // and a caller typed against unit_price_agorot never notices.
+    expect(orderItemPriceSelect('agorot')).toBe('unit_price_agorot, total_price_agorot')
+    expect(orderItemPriceSelect('ils')).toBe(
+      'unit_price_agorot:unit_price_ils_agorot, total_price_agorot:total_price_ils_agorot',
+    )
   })
 })

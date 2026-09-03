@@ -193,6 +193,49 @@ export function readOrderMoney(
   }
 }
 
+/**
+ * The order cashback/wallet column for this generation, as a select fragment.
+ *
+ * Post-059 the number lives in `cashback_applied_agorot` (integer agorot); the
+ * hosted pre-059 schema carries `cashback_applied_ils` (numeric shekels) with
+ * NO generated agorot twin -- it is one of the four columns 138 left without
+ * one. The units differ, so unlike the price columns below this cannot be
+ * papered over with a PostgREST alias; read it back through
+ * `readOrderCashbackAgorot`, which knows which conversion applies.
+ */
+export function orderCashbackSelect(generation: MoneySchemaGeneration): string {
+  return generation === 'agorot' ? 'cashback_applied_agorot' : 'cashback_applied_ils'
+}
+
+/** Normalises the cashback/wallet spend to integer agorot, per generation. */
+export function readOrderCashbackAgorot(
+  generation: MoneySchemaGeneration,
+  row: Record<string, unknown> | null | undefined,
+): number {
+  if (!row) return 0
+  return generation === 'agorot'
+    ? fromAgorot(row.cashback_applied_agorot)
+    : fromIls(row.cashback_applied_ils)
+}
+
+/**
+ * The line price columns for this generation, as PostgREST select fragments
+ * that ALIAS the pre-059 names back to the post-059 ones.
+ *
+ * This is unit-safe in a way the cashback column above is not:
+ * `unit_price_ils_agorot` and `total_price_ils_agorot` are GENERATED ALWAYS AS
+ * `round(<ils> * 100)::bigint` STORED, so both generations answer in integer
+ * agorot and a caller typed against `unit_price_agorot` keeps working
+ * untouched. Selecting the bare post-059 names on the hosted project is 42703
+ * and fails the WHOLE select -- which is how finalize could abort for a card
+ * that had already been charged (PAYMENT-FLOW, known defect).
+ */
+export function orderItemPriceSelect(generation: MoneySchemaGeneration): string {
+  return generation === 'agorot'
+    ? 'unit_price_agorot, total_price_agorot'
+    : 'unit_price_agorot:unit_price_ils_agorot, total_price_agorot:total_price_ils_agorot'
+}
+
 // ---------------------------------------------------------------------------
 // order_items
 // ---------------------------------------------------------------------------

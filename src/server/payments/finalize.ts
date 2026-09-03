@@ -4,6 +4,11 @@ import { agorot, agorotToIls } from '@/lib/commerce/money'
 import {
   type VoucherRateColumn,
   moneyColumnProbe,
+  orderCashbackSelect,
+  orderItemPriceSelect,
+  readOrderCashbackAgorot,
+  resolveOrderGeneration,
+  resolveOrderItemGeneration,
   resolveVoucherRateColumn,
 } from '@/lib/commerce/order-money-columns'
 import { log } from '@/lib/observability/log'
@@ -411,15 +416,32 @@ export async function finalizeOrder(input: {
     // and sent whoever answered the page hunting a missing row instead of a
     // database that stopped answering. The dead-letter replay is identical
     // either way; only the diagnosis changes, and only it was wrong.
-    const order = orFail(
+    // The wallet column is `cashback_applied_agorot` post-059 and
+    // `cashback_applied_ils` on the hosted pre-059 schema; naming the wrong
+    // one is 42703 and fails the WHOLE select, aborting a finalize for a card
+    // that has already been charged. Same trap `resolvePaymentMoneySchema`
+    // already guards on `payments`, now guarded here too.
+    const orderGeneration = await resolveOrderGeneration(moneyColumnProbe(admin, 'orders'))
+    const orderRow = orFail(
       await admin
         .from('orders')
-        .select('id, user_id, status, paid_at, cashback_applied_agorot')
+        .select(`id, user_id, status, paid_at, ${orderCashbackSelect(orderGeneration)}`)
         .eq('id', input.orderId)
         .maybeSingle(),
       'finalize.order_read_failed',
       { orderId: input.orderId },
     )
+    // The dynamic select string defeats supabase-js's row inference; the four
+    // fixed fields are what the code below reads, and the generation-specific
+    // cashback column goes through readOrderCashbackAgorot, which knows both.
+    const order = orderRow as unknown as
+      | (Record<string, unknown> & {
+          id: string
+          user_id: string
+          status: string
+          paid_at: string | null
+        })
+      | null
     if (!order) return { ok: false, error: 'order not found', code: 'NOT_FOUND' }
     if (order.paid_at) return { ok: true, replay: true, orderId: order.id }
     if (order.status !== 'pending') {
@@ -430,16 +452,21 @@ export async function finalizeOrder(input: {
       }
     }
 
+    // `unit_price_agorot` is a post-059 name; the hosted project calls the
+    // same integer-agorot number `unit_price_ils_agorot` (a generated column),
+    // and the fragment aliases it back so the row shape below is identical on
+    // both generations.
+    const itemGeneration = await resolveOrderItemGeneration(moneyColumnProbe(admin, 'order_items'))
     const items = orFail(
       await admin
         .from('order_items')
         .select(
-          'id, order_id, product_id, product_type, supplier_id, quantity, unit_price_agorot, platform_percent, upfront_percent, commission_percent_snapshot, paid_on_site_agorot, commission_agorot, face_value_agorot, balance_due_agorot, supplier_immediate_agorot, cashback_amount_agorot, settlement_status',
+          `id, order_id, product_id, product_type, supplier_id, quantity, ${orderItemPriceSelect(itemGeneration)}, platform_percent, upfront_percent, commission_percent_snapshot, paid_on_site_agorot, commission_agorot, face_value_agorot, balance_due_agorot, supplier_immediate_agorot, cashback_amount_agorot, settlement_status`,
         )
         .eq('order_id', order.id),
       'finalize.order_items_read_failed',
       { orderId: order.id },
-    )
+    ) as unknown as OrderItemRow[] | null
     if (!items || items.length === 0) {
       return { ok: false, error: 'order has no items', code: 'STATE_INVALID' }
     }
@@ -475,8 +502,9 @@ export async function finalizeOrder(input: {
         | null
       if (!payment) return { ok: false, error: 'payment not found', code: 'NOT_FOUND' }
       // walletApplied is spent downstream in shekels, which is what this
-      // variable has always held.
-      walletApplied = (money.toAgorot(payment[money.walletAppliedColumn]) ?? 0) / 100
+      // variable has always held; the agorot -> shekel step goes through the
+      // money module's one conversion instead of a bare divide.
+      walletApplied = agorotToIls(agorot(money.toAgorot(payment[money.walletAppliedColumn]) ?? 0))
       cardcomAccountId = payment.cardcom_account_id
 
       const { error: payError } = await admin
@@ -492,10 +520,11 @@ export async function finalizeOrder(input: {
         return { ok: false, error: `payment update failed: ${payError.message}`, code: 'INTERNAL' }
       }
     } else {
-      // spendWallet speaks shekels (fn_wallet_transfer takes p_amount_ils), the
-      // column has held agorot since 059. Reading it as shekels credited a
-      // hundredth of what the customer actually spent from their wallet.
-      walletApplied = Number(order.cashback_applied_agorot ?? 0) / 100
+      // spendWallet speaks shekels (fn_wallet_transfer takes p_amount_ils);
+      // the stored number is agorot post-059 and shekels pre-059, and the
+      // helper normalises either to integer agorot before the one boundary
+      // conversion below.
+      walletApplied = agorotToIls(agorot(readOrderCashbackAgorot(orderGeneration, order)))
     }
 
     await spendWallet(admin, order.id, order.user_id, walletApplied)
