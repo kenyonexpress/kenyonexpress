@@ -243,7 +243,13 @@ export default async function ProductPage({ params }: Props) {
             border plus 32px of padding we used to draw round them offset every
             row inside by the width of the chrome. */}
         <div data-pdp="columns" className="pdp__columns">
-          <ProductGallery images={images} name={product.name_he} assets={galleryAssets} />
+          <ProductGallery
+            images={images}
+            name={product.name_he}
+            assets={galleryAssets}
+            price={basePrice}
+            oldPrice={oldPrice}
+          />
           <ProductInfo
             productId={product.id}
             name={product.name_he}

@@ -26,6 +26,7 @@
   --pdp-summary: 700px;
   --pdp-column-gap: 15px;
   --pdp-crumb-h: 84px;
+  --pdp-crumb-phone-h: 55px; /* live at 380, measured 2026-09-03 */
   --pdp-eyebrow-size: 11.998px;
   --pdp-eyebrow-line: 17.2771px;
   --pdp-title-size: 25.004px;
@@ -77,15 +78,42 @@
 
 /* Breadcrumb: live gives the row 84px and centres the 14px line in it, which
    is what lands the columns block on y250. */
+/* --pdp-crumb-h IS A DESKTOP MEASUREMENT. Live's product breadcrumb is 55px at
+   380 and ours was the full 84, the same mistake the category breadcrumb was
+   making with its own desktop padding (D22). Everything in the product column
+   below it inherits the difference. Measured 2026-09-03. */
 .pdp-breadcrumb {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 6px;
-  min-height: var(--pdp-crumb-h);
+  min-height: var(--pdp-crumb-phone-h);
   font-size: var(--pdp-body-size);
   line-height: var(--pdp-body-line);
   color: var(--pdp-ink);
+}
+
+@media (min-width: 768px) {
+  .pdp-breadcrumb {
+    min-height: var(--pdp-crumb-h);
+  }
+}
+
+/* The discount badge live paints over the main product photo. Same box as
+   .category-card__badge so the grid and the product page cannot disagree about
+   what a sale looks like; the frame is already positioned, so this only needs
+   to anchor to it. */
+.pdp-gallery__badge {
+  position: absolute;
+  inset-inline-start: 0;
+  bottom: 0;
+  z-index: 2;
+  background-color: var(--pdp-sale);
+  color: var(--pdp-surface);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 4px;
 }
 
 .pdp-breadcrumb a {
