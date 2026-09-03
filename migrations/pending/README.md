@@ -1,6 +1,17 @@
 # `migrations/pending/`
 
-## 2026-09-04: four files pending, one approved (165 cancelled)
+## 2026-09-04 (audit): one file pending — 162, blocked on vault
+
+An audit on 2026-09-04 ran every preflight against production and found that
+166, 167 and 168 are **already applied and recorded** in
+`supabase_migrations.schema_migrations` (versions `20260903232445`,
+`20260903232455`, `20260903232504` — 2026-09-03 23:24 UTC), with the live
+definitions matching the files byte-for-file (function body, trigger,
+constraint expressions, policy set all compared). The three files and their
+preflights moved to `migrations/applied/`; their rows joined the APPLIED IN
+PRODUCTION table below. Every file in `migrations/applied/` now has a SHA-256
+line in `migrations/applied/CHECKSUMS.sha256`
+(verify with `cd migrations/applied && shasum -c CHECKSUMS.sha256`).
 
 ### `162_cron_schedule.sql` — PENDING, approved (CLOSEOUT §7), blocked on vault
 
@@ -26,7 +37,7 @@ design** — the helpers return false for a caller with no uid. Regression net:
 `src/db/__tests__/anon-catalog.test.ts`. The file and `preflight_165.sql` live
 in `migrations/cancelled/` with the reason at the top.
 
-### `166_voucher_transition_guard.sql` — PENDING, not approved
+### `166_voucher_transition_guard.sql` — APPLIED, verified 2026-09-04 (moved to `migrations/applied/`)
 
 BEFORE UPDATE trigger on `public.vouchers.status`, in 137's idiom. Closes the
 gap VOUCHER-LIFECYCLE.md §1 records: 137 guards orders/order_items/payments
@@ -38,7 +49,7 @@ state change). No-op updates, INSERTs and NULLs pass untouched. Preflight:
 `preflight_166.sql` — enum labels, column type, no existing trigger, row
 counts per status.
 
-### `167_order_items_money_constraints.sql` — PENDING, not approved
+### `167_order_items_money_constraints.sql` — APPLIED, verified 2026-09-04 (moved to `migrations/applied/`)
 
 Sign constraints (`col IS NULL OR col >= 0`) on the eight agorot columns of
 `order_items` that carry none — balance_due, cashback_amount, commission,
@@ -53,7 +64,7 @@ CONSTRAINT validates all rows and raises on a violator. Preflight:
 `preflight_167.sql` — columns exist, names free, zero negative rows, zero
 non-conserving rows, table scale.
 
-### `168_wallet_ledger_client_readonly.sql` — PENDING, not approved
+### `168_wallet_ledger_client_readonly.sql` — APPLIED, verified 2026-09-04 (moved to `migrations/applied/`)
 
 Drops the six authenticated INSERT/UPDATE/DELETE policies on
 `wallet_balances` and `wallet_transactions` (marathon step 6). Measured live
@@ -678,6 +689,9 @@ effect, not by trusting this list. The version string is from
 | `143_revoke_unused_definer_execute.sql` | `20260821041759` | `revoke_orphan_security_definer_grants_125` | all 5 target functions have zero anon/authenticated grants |
 | `144_revoke_authenticated_dml.sql` | `20260831140841` | `126_revoke_authenticated_dml` | all 8 target tables have zero anon/authenticated INSERT/UPDATE/DELETE |
 | `145_revoke_check_rate_limit_execute.sql` | `20260831184356` | `127_revoke_check_rate_limit_execute` | `check_rate_limit` has zero anon/authenticated EXECUTE |
+| `166_voucher_transition_guard.sql` | `20260903232445` | `voucher_transition_guard_166` | `tg_vouchers_status_guard` trigger + `fn_vouchers_status_guard` body match the file (compared 2026-09-04) |
+| `167_order_items_money_constraints.sql` | `20260903232455` | `order_items_money_constraints_167` | all 8 `order_items_*_nonneg` constraints + `order_items_money_conservation` exist, expressions match |
+| `168_wallet_ledger_client_readonly.sql` | `20260903232504` | `wallet_ledger_client_readonly_168` | the six write policies are gone; only the two SELECT policies remain, RLS enabled on both tables |
 
 **`124_categories_sort_order.sql` is a different case.** `categories.sort_order`
 exists in production, so the migration must not be run again, but there is **no

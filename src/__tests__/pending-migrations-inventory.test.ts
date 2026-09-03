@@ -67,7 +67,7 @@ describe('the pending migration inventory', () => {
     // still "these thirty-four and nothing else", now against that directory,
     // because the alternative -- deleting the list -- would drop the only
     // record of which numbers exist.
-    expect(sqlFilesIn(APPLIED_DIR)).toEqual([
+    expect(sqlFilesIn(APPLIED_DIR, (n) => !n.startsWith('preflight_'))).toEqual([
       '122_deny_all_on_server_only_tables.sql',
       '123_products_whatsapp_enabled.sql',
       '124_categories_sort_order.sql',
@@ -107,7 +107,28 @@ describe('the pending migration inventory', () => {
       '160_fk_indexes.sql',
       '161_enable_pg_cron_pg_net.sql',
       '163_orders_indexes.sql',
+      '166_voucher_transition_guard.sql',
+      '167_order_items_money_constraints.sql',
+      '168_wallet_ledger_client_readonly.sql',
     ])
+  })
+
+  it('carries a checksum line for every applied file, preflights included', () => {
+    // The 2026-09-04 audit found 166-168 live in production while the repo
+    // still listed them as pending: the directory and the database can drift.
+    // A checksum pins WHICH bytes a filename stood for when it was recorded,
+    // so a later edit to an applied file cannot silently rewrite history.
+    // Regenerate after a legitimate move:
+    //   cd migrations/applied && shasum -a 256 *.sql > CHECKSUMS.sha256
+    // Verify: shasum -c CHECKSUMS.sha256
+    const lines = readFileSync(resolve(process.cwd(), APPLIED_DIR, 'CHECKSUMS.sha256'), 'utf8')
+      .trim()
+      .split('\n')
+    const checksummed = lines.map((l) => l.split(/\s+/)[1]).sort()
+    expect(checksummed).toEqual(sqlFilesIn(APPLIED_DIR))
+    for (const line of lines) {
+      expect(line).toMatch(/^[0-9a-f]{64}\s+\S+\.sql$/)
+    }
   })
 
   // ---- direction 1: disk -> manifest -------------------------------------
@@ -119,7 +140,7 @@ describe('the pending migration inventory', () => {
     // pending-contents test below instead.
     const onDisk = [
       ...sqlFilesIn(PENDING_DIR, (n) => !n.startsWith('preflight_')),
-      ...sqlFilesIn(APPLIED_DIR),
+      ...sqlFilesIn(APPLIED_DIR, (n) => !n.startsWith('preflight_')),
       ...sqlFilesIn(CANCELLED_DIR, (n) => !n.startsWith('preflight_')),
     ].sort()
     const unlisted = onDisk.filter((name) => !named.has(name))
@@ -131,33 +152,21 @@ describe('the pending migration inventory', () => {
 
   // ---- what is actually unapplied right now -------------------------------
   it('holds exactly the migrations still awaiting approval', () => {
-    // FOUR pending migrations as of 2026-09-04, each with its preflight audit
-    // beside it (a CLOSEOUT §5 requirement: no migration file without the
-    // execute_sql audit that has to pass before it).
+    // ONE pending migration as of the 2026-09-04 audit, with its preflight
+    // audit beside it (a CLOSEOUT §5 requirement: no migration file without
+    // the execute_sql audit that has to pass before it).
     //
     //   162_cron_schedule.sql               approved (CLOSEOUT §7), blocked on vault
     //                                       seeding -- see "## חסמים לאופיר" in STATE.md
-    //   166_voucher_transition_guard.sql    awaiting approval; closes the guard gap
-    //                                       VOUCHER-LIFECYCLE.md §1 records
-    //   167_order_items_money_constraints   awaiting approval; the two BUSINESS-RULES
-    //                                       §10 holes on order_items (signs, conservation)
-    //   168_wallet_ledger_client_readonly   awaiting approval; the wallet ledger joins
-    //                                       the money block (client write policies drop)
     //
-    // 164 stays unused; 165 was written under §8c and CANCELLED under §13
-    // (eighteen public-role RLS policies call the helpers, so the revoke would
-    // 42501 every anonymous catalogue read) -- it burned its number and sits in
-    // migrations/cancelled/, asserted below.
-    expect(sqlFilesIn(PENDING_DIR)).toEqual([
-      '162_cron_schedule.sql',
-      '166_voucher_transition_guard.sql',
-      '167_order_items_money_constraints.sql',
-      '168_wallet_ledger_client_readonly.sql',
-      'preflight_162.sql',
-      'preflight_166.sql',
-      'preflight_167.sql',
-      'preflight_168.sql',
-    ])
+    // 166, 167 and 168 were found ALREADY APPLIED by the 2026-09-04 audit
+    // (schema_migrations versions 20260903232445/232455/232504, live
+    // definitions matching the files) and moved with their preflights to
+    // migrations/applied/. 164 stays unused; 165 was written under §8c and
+    // CANCELLED under §13 (eighteen public-role RLS policies call the
+    // helpers, so the revoke would 42501 every anonymous catalogue read) --
+    // it burned its number and sits in migrations/cancelled/, asserted below.
+    expect(sqlFilesIn(PENDING_DIR)).toEqual(['162_cron_schedule.sql', 'preflight_162.sql'])
   })
 
   it('keeps the cancelled revoke where nobody will apply it', () => {
