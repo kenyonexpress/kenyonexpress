@@ -80,6 +80,16 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
           </p>
         )}
 
+        {/* Below 768 the line renders as live's stacked WooCommerce rows
+            (remove / name / unit price / quantity / line total, measured
+            57+83+54+75+54 in refs/ke_live_computed.json cart@380). This row is
+            the unit price, which the desktop card never shows; CSS hides it
+            from 768 up and orders the interactive controls around it. */}
+        <div className="cart-line__unit">
+          <span>מחיר:</span>
+          <span>{shekels(item.unit_price)}</span>
+        </div>
+
         {/* DOM order is side order in this RTL flex row. Live's cart row reads
             right-to-left: remove (x1236, the far right of a 135..1305 row),
             then price (x497), then quantity (x267) with the subtotal leftmost
@@ -97,8 +107,16 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
             <Trash2 size={16} aria-hidden="true" />
           </button>
 
+          {/* Mobile-only labels for the stacked rows; aria-hidden because the
+              controls beside them are already named. */}
+          <span className="cart-line__mlabel" aria-hidden="true">
+            מחיר:
+          </span>
           <span className="cart-line__price">{shekels(item.line_total)}</span>
 
+          <span className="cart-line__mlabel" aria-hidden="true">
+            כמות:
+          </span>
           <div className="cart-line__qty">
             <button
               type="button"
