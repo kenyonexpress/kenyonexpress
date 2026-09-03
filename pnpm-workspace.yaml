@@ -45,3 +45,9 @@ overrides:
   # line, so the advisory stays closed on this edge too.
   minimatch@9>brace-expansion: ^2.0.2
   fast-uri: ^3.1.5
+
+  # esbuild <=0.24.2 lets any website send requests to the dev server and read
+  # the response (GHSA-67mh-4wv8-2f99). The vulnerable 0.18.20 copy comes from
+  # @esbuild-kit/esm-loader inside drizzle-kit, which pins ~0.18 and is
+  # unmaintained (folded into tsx), so a scoped override is the only bump.
+  '@esbuild-kit/core-utils>esbuild': ^0.25.0
