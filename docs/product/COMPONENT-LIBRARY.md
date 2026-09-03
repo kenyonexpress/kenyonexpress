@@ -135,8 +135,11 @@ Radix Select. `Select`, `Group`, `Value`, `Trigger`, `Content` (`position`: `pop
 | `layout/MastheadNav.tsx` | category links | `בקרוב` disabled | first item START; ₪ in `dir=ltr` |
 | `layout/InfoBar.tsx` | top trust/login strip | desktop ~38px; mobile into drawer | live copy from `KE_LIVE_SPEC` |
 | `layout/SiteFooter.tsx` | legal + account links | newsletter 80px yellow | contact column START |
+| `SiteFooter.tsx` (root) | column links + social lucide | older WP-ish; prefer layout footer on store | do not invent “הזולים בארץ” |
 | `home/Footer.tsx` | storefront footer variant | widgets / copyright | `--container-footer` |
 | `Header.tsx` (root) | cart+account icons | badge count | `--color-brand-primary` badge |
+| `a11y/SkipLink.tsx` | none (href `#main-content`) | visually hidden until focus | first Tab; `focus:right-4` = START in RTL; target `tabIndex={-1}` on `<main>` |
+| `RightSidebar.tsx` | none (hardcoded cats) | muted `בקרוב` | START category list; prefer CMS `CategorySidebar` on home |
 | `CopyrightYear.tsx` | none | current year | |
 | `LeftSidebar.tsx` | departments | home only desktop | first column START (~241px live) |
 | `shared/WhatsAppFloat.tsx` | none | hidden on some legal? | bottom **inline-end**; 972524635550 |
@@ -167,6 +170,7 @@ Radix Select. `Select`, `Group`, `Value`, `Trigger`, `Content` (`position`: `pop
 | `home/CategoryStrip` via `store/CategoryStrip.tsx` | cats | 5-up desktop; scroll 380 | |
 | `home/FeaturedProducts.tsx` `FeaturedProductsTabs.tsx` `DealsOfTheDay.tsx` `store/DealsSection.tsx` `CategoryProductSection.tsx` | products[] | tabs / empty | 3-col desktop home, 2-col 380 |
 | `ProductCard.tsx` `CouponCard.tsx` `category/CategoryProductCard.tsx` | `Product` (id, slug, name_he, kenyon_price, images, stock, full_price, category) | default, sale (del+ins), out of stock, hover shadow | title START; sale badge **inline-end** of image; price `dir=ltr`; ATC icon |
+| `ProductDealCard.tsx` | same `Product` shape (local type, no import of Client `ProductCard`) | Server Component deals tile; only `AddToCartButton` is client | `sizes` from `scripts/_deal-card-paint.mjs`; price via `shekelsFromIls` (agorot/ILS integer round, not float money math) |
 | `CouponCardSkeleton.tsx` `CategoryGridSkeleton.tsx` | count | loading | same grid |
 | `category/CategoryBreadcrumb.tsx` | crumbs | home hidden | בית at START |
 | `category/CategoryControlBar.tsx` `CategorySort.tsx` `CategoryFilterSidebar.tsx` `Pagination.tsx` | sort, page, filters | sheet on 380 | 44px hits |
