@@ -179,13 +179,17 @@ body:has([data-home]) .topbar-greeting {
   display: flex;
 }
 
-/* The footer's two link columns are <details>.
-   THE "TWO 49px ACCORDION ROWS ON A PHONE" THIS COMMENT USED TO CLAIM ARE NOT
-   WHAT LIVE DOES. Measured at 380 on 2026-09-03, live's `.handheld-widget-menu`
-   is 365px tall and holds both columns OPEN as plain lists -- "שירות לקוחות"
-   131px with its links visible, "אזור אישי" 224px with its five. Nothing there
-   collapses. The columns are therefore `open` in the markup now, which is
-   live's default state, and a phone user can still collapse one.
+/* The footer's two link columns are <details>, CLOSED below lg.
+   D20 re-measured one live page, found `.handheld-widget-menu` open at 365px,
+   and flipped the markup to `open`. That measurement was real but taken on a
+   page the pixel gate never scores. The gate's own source disagrees on every
+   page it does score: refs/ke_live_computed.json holds `handheld-widget-menu`
+   at 108px -- two collapsed 49px rows -- on BOTH cart and checkout, at BOTH
+   380 and 768, and the live cart screenshot from the D25 run shows the same
+   two collapsed rows. Open columns pushed our social row and dark bar ~300px
+   below live's on every short page, which is where the cart's 91.9% and 99.5%
+   bands came from. When two live measurements conflict, the reference the
+   gate scores against wins.
    From lg up a <details> cannot be "open" by breakpoint from the markup -- the
    attribute is boolean and would have to be toggled in JS -- so the panel is
    forced visible in CSS, which keeps the desktop layout byte-identical without

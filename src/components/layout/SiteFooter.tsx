@@ -117,17 +117,13 @@ export default function SiteFooter() {
 
         So ours was 338px SHORT of live, not 800px over. The gap was the whole
         `.handheld-footer-bar` -- a 137px dark strip carrying the logo and the
-        contact line, which this footer never had -- plus the two link columns
-        rendering as collapsed 49px rows where live renders them open.
+        contact line, which this footer never had. D20 also flipped the link
+        columns to `open`, from a measurement of a page the gate never scores;
+        D25 flipped them back, because refs/ke_live_computed.json holds the
+        widget menu COLLAPSED at 108px on cart and checkout -- the pages the
+        gate does score -- at both 380 and 768. See globals.css.
 
-        AFTER D20, measured the same way: ours is 760px against live's 612.
-
-          section       live   ours
-          widget menu    365    522
-          social row      65     77
-          dark bar       137    161
-
-        THE 157px ON THE MENUS IS DELIBERATE AND IS NOT GOING AWAY. Live's
+        THE EXTRA LINKS ON THE MENUS ARE DELIBERATE AND NOT GOING AWAY. Live's
         handheld footer lists seven links; ours lists twelve. The five extra are
         אודות, שאלות נפוצות, הבלוג, מדיניות פרטיות, ביטולים והחזרות and
         הצהרת נגישות -- and dropping the last three from the phone to win pixels
@@ -243,11 +239,15 @@ export default function SiteFooter() {
           </div>
 
           {/* middle column: שירות לקוחות.
-              Below lg this is one of live's two 49px accordion rows. `<details>`
-              and not a client component on purpose: the footer is on every page
-              and a disclosure widget is not worth a hydration boundary. `open`
-              is forced from lg up by CSS, so the desktop layout is unchanged. */}
-          <details open className="footer-disclosure group border-b border-border lg:border-0">
+              Below lg this is one of live's two 49px accordion rows -- CLOSED.
+              D20 added `open` from a measurement of a page the gate never
+              scores; refs/ke_live_computed.json shows the widget menu collapsed
+              at 108px on cart and checkout at 380 and 768, which are the pages
+              that are scored. See the note in globals.css. `<details>` and not
+              a client component on purpose: the footer is on every page and a
+              disclosure widget is not worth a hydration boundary. Open is
+              forced from lg up by CSS, so the desktop layout is unchanged. */}
+          <details className="footer-disclosure group border-b border-border lg:border-0">
             <summary className="flex h-drawer-row cursor-pointer items-center justify-between text-base font-bold text-heading lg:mb-4 lg:h-auto lg:cursor-default lg:justify-start">
               שירות לקוחות
               <ChevronDown
@@ -271,8 +271,9 @@ export default function SiteFooter() {
             </ul>
           </details>
 
-          {/* left column: אזור אישי — live's second accordion row below lg. */}
-          <details open className="footer-disclosure group border-b border-border lg:border-0">
+          {/* left column: אזור אישי — live's second accordion row below lg,
+              closed like the first. */}
+          <details className="footer-disclosure group border-b border-border lg:border-0">
             <summary className="flex h-drawer-row cursor-pointer items-center justify-between text-base font-bold text-heading lg:mb-4 lg:h-auto lg:cursor-default lg:justify-start">
               אזור אישי
               <ChevronDown
