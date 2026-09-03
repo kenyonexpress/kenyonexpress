@@ -278,7 +278,13 @@
      which is why our top bar was one row where live has three. */
   --spacing-topbar-handheld: 112px; /* + 1px border = live's 113 at 380 */
   --spacing-header-handheld: 83px; /* + 1px border = live's 84 at 380 and 768 */
-  --spacing-topbar-row: 37px; /* one info row; three of them make the 380 bar */
+  /* 112/3, NOT 37. Three rows of a flat 37px are 111px inside a 112px box, and
+     the leftover pixel is not harmless: it moves every divider between the top
+     bar's three rows a little further from live's. Measured with
+     scripts/shell-band.mjs at 380 on 2026-09-03, the same rows failed on both
+     inner pages -- y52/y53 at 51-57%, and y75, y112 and y115 at a full 100% --
+     which are exactly live's row boundaries at 37.33, 74.67 and 112. */
+  --spacing-topbar-row: 37.333px; /* one info row; three of them make the 380 bar */
 
   /* The handheld logo, measured: 100x26 at x205 y141 (380) and x578 y66 (768).
      The desktop logo is --spacing-logo-w/h above and is four times the size. */

@@ -164,6 +164,21 @@ html [data-sonner-toaster][data-sonner-theme="light"] {
   --error-text: hsl(360, 100%, 43.5%);
 }
 
+/* THE TOP-BAR GREETING IS A HOME-PAGE ROW, AND THAT IS MEASURED.
+   Live renders "ברוך הבא לעולם של קניון Express" on the home page only. With
+   it, the four info items wrap onto three rows and the bar is 113px at 380;
+   without it they fit two and the bar is 76px. Measured on the live site
+   2026-09-03: / is 113, /products/ and /cart are both 76.
+
+   Gated here rather than in the component because the alternative is reading
+   the pathname in the shared header, which opts every route under it into
+   dynamic rendering and fails the build on unrelated prerendered pages -- the
+   trap MobileDrawer.tsx records in full. The home page renders an inert
+   `[data-home]` marker; `:has()` does the rest. No client JS, no dynamic API. */
+body:has([data-home]) .topbar-greeting {
+  display: flex;
+}
+
 /* The footer's two link columns are <details>.
    THE "TWO 49px ACCORDION ROWS ON A PHONE" THIS COMMENT USED TO CLAIM ARE NOT
    WHAT LIVE DOES. Measured at 380 on 2026-09-03, live's `.handheld-widget-menu`

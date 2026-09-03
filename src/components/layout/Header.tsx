@@ -18,6 +18,40 @@ import Link from 'next/link'
  *   768      38       84       the same, wider
  *   1440     38      110       logo 300x79 + nav; no hamburger
  *
+ * ...AND THAT TABLE IS THE HOME PAGE ONLY, WHICH IS WHAT D21 FOUND. The stored
+ * `refs/ke_live_computed.json` was captured on the homepage, and the 113 was
+ * read as a property of the width. It is not. Measured against the live site
+ * directly on 2026-09-03, at 380:
+ *
+ *   page         top bar   header
+ *   -----------  --------  ------
+ *   /                 113      50
+ *   /products/         76      83
+ *   /cart              76      83
+ *
+ * The 37px difference is one top-bar row, and the row is the greeting: live
+ * renders "ברוך הבא לעולם של קניון Express" on the HOME PAGE ONLY. Without it
+ * the four info items wrap onto two rows instead of three.
+ *
+ * This file pinned the bar to a fixed 112px and rendered the greeting on every
+ * page, so every inner page was 36px too tall at 380 -- and because everything
+ * below the header inherits the offset, every band of every inner-page
+ * comparison was measured against the wrong rows of live. That is the "shell
+ * contradiction" STATE.md recorded; the mechanism it guessed at (references
+ * shot with a collapsed sticky bar) was not it.
+ *
+ * THE FIX IS CONTENT-DRIVEN HEIGHT, NOT A SECOND MAGIC NUMBER. The handheld bar
+ * no longer carries a height at all: the rows wrap and the bar is as tall as
+ * they make it, which is 2 x 37.333 on an inner page and 3 x 37.333 on home --
+ * 75 and 112, against live's 76 and 113 including its 1px border.
+ *
+ * THE GREETING IS GATED IN CSS, NOT BY `usePathname()`. Reading the pathname
+ * here would opt the whole subtree into dynamic rendering and fail the build on
+ * unrelated prerendered routes -- the trap MobileDrawer.tsx already records in
+ * full. Instead the home page renders an inert marker and `globals.css` reveals
+ * the greeting with `:has()`. No client JS, no dynamic API, and the header
+ * stays a server component.
+ *
  * This file used to serve one fixed 37.3 + 109 at every width. That is 51px
  * SHORT of live at 380 and 24px TALL at 768, and because everything below the
  * header inherits the offset, the whole page shifts and every band in the
@@ -77,12 +111,18 @@ export default function SiteHeader() {
     <>
       <div dir="rtl" className="w-full border-b border-border bg-white">
         {/*
-          h-topbar-handheld (112) below md, h-header-topbar (37.3) from md up:
-          live's 113 and 38 respectively, each less its 1px border. The items
-          wrap inside it, so the three rows fill the tall variant exactly.
+          NO handheld height below md: the rows wrap and the bar is as tall as
+          they make it, which is the whole point (see the header note). Two rows
+          of 37.333 on an inner page, three on home. h-header-topbar (37.3) from
+          md up is live's 38 less its 1px border.
         */}
-        <div className="mx-auto flex h-topbar-handheld max-w-page flex-wrap items-center px-[15px] text-[0.929em] text-heading md:h-header-topbar md:flex-nowrap">
-          <span className="flex h-topbar-row items-center">ברוך הבא לעולם של קניון Express</span>
+        <div className="mx-auto flex max-w-page flex-wrap items-center px-[15px] text-[0.929em] text-heading md:h-header-topbar md:flex-nowrap">
+          {/* Home only. See the note above: revealed by `:has()` in globals.css
+              against the marker the home page renders, because reading the
+              pathname here would turn every prerendered route dynamic. */}
+          <span className="topbar-greeting hidden h-topbar-row items-center">
+            ברוך הבא לעולם של קניון Express
+          </span>
 
           <div className="flex flex-wrap items-center gap-x-3 md:ms-auto">
             {INFO_ITEMS.map((item, index) => (
@@ -105,19 +145,16 @@ export default function SiteHeader() {
           variants -- the handheld header is what 768 AND 1024 get.
         */}
         <div className="mx-auto flex h-header-handheld max-w-page items-center justify-between gap-4 px-[15px] xl:h-header-masthead">
-          {/* HANDHELD (below xl): cart + account on the right, logo centred,
-              hamburger on the left. Live's icon row sits at x15/x57 with 22px
-              glyphs, so the icons are 22 and the row owns the 44px hit area. */}
-          <div className="flex items-center gap-2 xl:hidden">
-            <HeaderCart />
-            <Link
-              href="/login"
-              aria-label="החשבון שלי"
-              className="grid size-touch-min place-items-center text-icon transition-opacity hover:opacity-70"
-            >
-              <User size={22} strokeWidth={1.8} aria-hidden="true" />
-            </Link>
-          </div>
+          {/* HANDHELD (below xl), in live's order: hamburger on the right,
+              logo centred, cart + account on the left. */}
+          {/* THE HAMBURGER IS ON THE INLINE-START, WHICH IN RTL IS THE RIGHT,
+              and it is first in the DOM for exactly that reason. Measured on
+              live at 380: hamburger x=319, cart x=15. This header had them the
+              other way round -- hamburger left, cart and account right -- a
+              straight mirror of live's handheld row, on every page. The
+              container is `justify-between`, so DOM order IS side order here.
+              Both halves of MobileDrawer are xl:hidden internally. */}
+          <MobileDrawer />
 
           <Link href="/" aria-label="קניון אקספרס, לדף הבית" className="shrink-0">
             <SmartImage
@@ -134,8 +171,19 @@ export default function SiteHeader() {
             />
           </Link>
 
-          {/* The hamburger and its drawer. Both are xl:hidden internally. */}
-          <MobileDrawer />
+          {/* Live's icon row sits at x15/x57 with 22px glyphs, so the icons are
+              22 and the row owns the 44px hit area. Last in the DOM puts it on
+              the inline-end, which in RTL is the left, where live has it. */}
+          <div className="flex items-center gap-2 xl:hidden">
+            <HeaderCart />
+            <Link
+              href="/login"
+              aria-label="החשבון שלי"
+              className="grid size-touch-min place-items-center text-icon transition-opacity hover:opacity-70"
+            >
+              <User size={22} strokeWidth={1.8} aria-hidden="true" />
+            </Link>
+          </div>
 
           {/* DESKTOP (xl and up): the measured masthead nav. */}
           <div className="hidden min-w-0 flex-1 xl:flex">

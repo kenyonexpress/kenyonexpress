@@ -33,6 +33,16 @@ export default function HomePage() {
 
   return (
     <>
+      {/*
+        THE MARKER THE TOP-BAR GREETING HANGS OFF. Live shows "ברוך הבא לעולם
+        של קניון Express" on this page and no other, which is worth one whole
+        top-bar row at 380 (113px here against 76px on an inner page). The
+        shared header cannot read the pathname without turning every route under
+        it dynamic, so it renders the greeting hidden and `globals.css` reveals
+        it with `body:has([data-home])`. Inert, unstyled, and never painted.
+      */}
+      <div data-home hidden />
+
       {siteLd.map((node) => (
         <script
           key={node['@type'] as string}
