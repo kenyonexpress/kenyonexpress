@@ -588,3 +588,20 @@ the 14 wrong product slugs, and the 768/380 mobile layout project.
 
 **הקוד סגור. ‏STEPS 2–97 הושלמו.** מה שנשאר אינו קוד ונמצא כולו
 ב-`docs/OWNER-CHECKLIST.md`.
+
+## Design run — 2026-09-03 (D1-D17, tags v3.1.0-design1 … v4.0.0-rc1)
+
+| item | state | evidence |
+| --- | --- | --- |
+| Design tokens single-source (`src/styles/tokens.css`) | done | tokens.test.ts: no raw hex, no rgb(), no Tailwind default palette in the storefront, PDP tracks SITE |
+| Responsive shell 1:1 (380/768/1440) | done | shell-band.mjs 9.47% / 7.98% / in-pass |
+| Mobile drawer (did not exist) | done | MobileDrawer.tsx, 44px targets, Escape/focus return |
+| Home 1:1 | done | 5.99% at 1440; 380 volatile 11-28% with live's catalogue, geometry exact to 1-2px |
+| Cart / checkout | 768+1440 pass | 380 blocked by the shell-reference conflict (COMPARE-RESULTS.md) |
+| Category / product / products | unmeasurable | compare.mjs content guard; refs/ is 2026-08-12 |
+| Search UI removed everywhere | done | header field deleted, 404 link repointed; only orphan /search route remains |
+| axe WCAG A/AA | zero violations | e2e/a11y.spec.ts 80 passed |
+| Global focus ring + reduced motion | done | two-tone ring (yellow fails 3:1 alone), near-zero durations |
+| Checkout errors aria-describedby | done | 8 fields + zip + terms wired |
+| Full e2e | 412 passed / 0 failed | chromium + mobile-chrome, production build |
+| Bundle gate | green | 255.8 KB gz / 260 KB budget |
