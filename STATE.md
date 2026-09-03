@@ -73,7 +73,7 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 קודם: 2026-08-19 22:01 (הצ'ק-אאוט ירד מתחת לשער הפיקסלים, ו-CLS שלו תוקן)
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
-## המשך מ: תור המרתון, שלב 10
+## המשך מ: תור המרתון, שלב 11
 
 ### החלטה שהתקבלה לבד (04.09 06:16): חזרה מ-checkout זר ל-main
 
@@ -122,12 +122,17 @@ closeout/v1-final to main" ב-06:16:29) — לא פעולה של הסשן הזה
    ‏5 דק׳, אינרטיים בלי ‏MEILISEARCH_*; ‏harness ‏golden-queries אופליין
    (9 מסעות + 2 היעדרויות, מ-synonyms+settings+projection האמיתיים).
    ‏27 טסטים.
-10. ‏[ ] בדיקות מלאות: ‏Playwright ‏E2E — רכישת קופון כאורח, רכישה פיזית
-    מחובר, מימוש ‏QR ע"י ‏Coupon-Partner, ביטול והחזר אדמין; ‏snapshot
-    ‏RTL בשלושת הרוחבים; ‏contract tests ל-Cardcom (‏mock server, כל מצבי
-    ה-webhook); טסטי ‏RLS לכל ‏role (‏Customer, ‏Content-Uploader,
-    ‏Coupon-Partner, ‏Admin, ‏anon); ‏money: אפס ‏floats בכל ה-repo
-    ‏(grep + חוק lint).
+10. ‏[x] בדיקות מלאות: ארבעת המסעות — קופון-כאורח ומימוש-QR-ספק היו
+    (‏full-purchase-redeem), נוספו ‏physical-purchase.spec (מחובר, בלי
+    שובר) ו-admin-refund.spec (ביטול+החזר, ‏role=admin החלש ביותר; אדמין
+    נוסף ל-seed:test); ‏rtl-three-widths.spec ב-380/768/1440 רץ ירוק
+    ‏12/12; ‏contract Cardcom כבר מכוסה (‏50 טסטים: רוטציית סוד, ‏replay,
+    ‏re-verify, ‏declined, כשלי journal); ‏RLS — ‏anon חי (‏anon-catalog,
+    ‏wallet-rls), שאר ה-roles ב-`tests/sql/` שרץ רק מול stack מקומי/CI
+    ‏branch (‏Docker תקוע כאן — ‏CLOSEOUT §9ד); שער סטטי חדש
+    ‏money-no-float.test (‏4 חוקים + allowlist שמות-ונימוקים; זה ה-lint,
+    ‏Biome בלי חוקים מותאמים). ‏specs בתשלום מדלגים-עצמית על ‏DB לא זרוע
+    — פרודקשן לא נזרעת בכוונה.
 11. ‏[ ] אדמין: ‏`refund.ts:325` כותב ‏`actor_id: null` למרות שהאדמין ידוע
     — תיקון + טסט; כיסוי לשלושת המסלולים שכותבים ‏audit_log ישירות.
 12. ‏[ ] ספק: טסטים ל-`payouts/csv` ו-`app/pin` אם חסרים; נראות
