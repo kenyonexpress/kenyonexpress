@@ -13,43 +13,70 @@
      which showed up as a 150px inset against every other route. */
   max-width: var(--container-page, 1320px);
   margin-inline: auto;
-  /* 138px of bottom padding, not 3rem. Measured: the live page leaves 138px
-     between the last control and the newsletter band, ours left 48, and the
-     92px shortfall pulled the whole footer up the page. Everything below it
-     then scored against the wrong rows of the reference, which is why two
-     100px bands read 56% and 78% while every element above them was landing
-     within a handful of pixels. */
-  padding: 1.5rem 15px 138px;
+  /* Top padding 0: live's breadcrumb sits flush at the top of site-content at
+     every width (y159 at 380, y165 at 1440); the breadcrumb's own padding is
+     the spacing.
+     Bottom: refs/ke_live_computed.json, cart 380 -- entry-content ends y1010
+     and the footer starts y1090, an 80px gap. The 138px this rule used to hold
+     at every width is live's DESKTOP clearance (last control to newsletter
+     band) and it applies from lg only, below. */
+  padding: 0 15px 80px;
   color: #333e48;
   font-size: 14px;
 }
 
-/* Measured off the live cart: 14px, padding 25.004px 0 22.4px. */
+@media (min-width: 1024px) {
+  .cart-page {
+    padding-bottom: 138px;
+  }
+}
+
+/* Two live breadcrumb treatments, per refs/ke_live_computed.json:
+   at 380 a compact full-bleed gray band, nav y159 42px tall on #f7f6f6;
+   from 768 the transparent 71px nav with padding 25.004px 0 22.4px. */
 .cart-page__breadcrumb {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 25.004px 0 22.4px;
+  margin-inline: -15px;
+  padding: 11.5px 15px;
+  min-height: 42px;
+  background: #f7f6f6;
   font-size: 14px;
   color: #333e48;
+}
+
+@media (min-width: 768px) {
+  .cart-page__breadcrumb {
+    margin-inline: 0;
+    padding: 25.004px 0 22.4px;
+    min-height: 0;
+    background: transparent;
+  }
 }
 
 .cart-page__breadcrumb a:hover {
   color: #0062bd;
 }
 
-/* Present for the document outline, absent from the layout. See the note in
-   CartPageView for why this is hidden rather than removed. */
+/* VISIBLE, at every width. The comment that stood here said the live page has
+   no visible heading; refs/ke_live_computed.json says otherwise at all three
+   widths -- h1.entry-title, 48px tall at 39.998px/500 in #333e48, 40px above
+   entry-content (y223/311 at 380, y237/325 at 1440). The 22px top margin is
+   the gap under the 380 breadcrumb band (201 -> 223); from 768 the
+   breadcrumb's own 22.4px bottom padding is the whole gap (192 -> 193). */
 .cart-page__title {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-  border: 0;
+  margin: 22px 0 40px;
+  font-size: 39.998px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: #333e48;
+}
+
+@media (min-width: 768px) {
+  .cart-page__title {
+    margin-top: 0;
+  }
 }
 
 .cart-page__grid {
@@ -141,6 +168,10 @@
   border-radius: 22px;
   overflow: hidden;
   height: var(--cart-touch);
+  /* The auto margin rides on the LAST flex child so the row splits
+     remove+price (inline-start, the right) from the qty pill (inline-end, the
+     left) -- live's side order, see the note in CartLineItem. */
+  margin-inline-start: auto;
 }
 
 .cart-line__qty-btn {
@@ -178,7 +209,6 @@
   /* The price is the one thing on the row that has to be findable at a glance,
      and on Electro it is the accent red rather than the body slate. */
   color: var(--cart-price-red);
-  margin-inline-start: auto;
 }
 
 .cart-line__remove {

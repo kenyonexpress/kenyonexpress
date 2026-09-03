@@ -80,7 +80,25 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
           </p>
         )}
 
+        {/* DOM order is side order in this RTL flex row. Live's cart row reads
+            right-to-left: remove (x1236, the far right of a 135..1305 row),
+            then price (x497), then quantity (x267) with the subtotal leftmost
+            (refs/ke_live_computed.json, cart@1440). Ours had the exact mirror:
+            qty right, remove far left. Remove renders first (right), price
+            next, and the qty pill carries the auto margin to the far left. */}
         <div className="cart-line__footer">
+          <button
+            type="button"
+            onClick={remove}
+            disabled={isPending}
+            aria-label={`הסר ${item.name_he} מהעגלה`}
+            className="cart-line__remove"
+          >
+            <Trash2 size={16} aria-hidden="true" />
+          </button>
+
+          <span className="cart-line__price">{shekels(item.line_total)}</span>
+
           <div className="cart-line__qty">
             <button
               type="button"
@@ -102,18 +120,6 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
               <Plus size={14} />
             </button>
           </div>
-
-          <span className="cart-line__price">{shekels(item.line_total)}</span>
-
-          <button
-            type="button"
-            onClick={remove}
-            disabled={isPending}
-            aria-label={`הסר ${item.name_he} מהעגלה`}
-            className="cart-line__remove"
-          >
-            <Trash2 size={16} aria-hidden="true" />
-          </button>
         </div>
       </div>
     </article>
