@@ -428,7 +428,7 @@ export default function CheckoutForm({
         {address.id && <input type="hidden" name="address_id" value={address.id} />}
 
         <div className="checkout-col-main">
-          <div className="checkout-step" hidden={step !== 'details'}>
+          <div className="checkout-step" data-inactive={step !== 'details' ? '' : undefined}>
             <section className="checkout-section" aria-label="פרטים אישיים">
               <h2 className="checkout-section__title">
                 <span>פרטים אישיים</span>
@@ -538,7 +538,7 @@ export default function CheckoutForm({
             </section>
           </div>
 
-          <div className="checkout-step" hidden={step !== 'address'}>
+          <div className="checkout-step" data-inactive={step !== 'address' ? '' : undefined}>
             <section className="checkout-section" aria-label="כתובת למשלוח">
               <h2 className="checkout-section__title">
                 <span>כתובת למשלוח</span>
@@ -743,13 +743,20 @@ export default function CheckoutForm({
           )}
         </div>
 
-        <aside className="checkout-step" hidden={step !== 'review' && step !== 'confirm'}>
+        {/* Visible on EVERY step, not just review/confirm. Live's checkout
+            keeps the "ההזמנה שלך" panel on screen beside the billing form the
+            whole way through (refs/live-checkout capture: panel x~120..470 at
+            1440 while the form is filled), and hiding it until review left our
+            second grid column empty on the step the compare gate actually
+            shoots. The step-scoped blocks inside it keep their own hidden
+            flags, so nothing interactive appears early. */}
+        <aside className="checkout-step">
           <section className="checkout-review" aria-label="ההזמנה שלך">
             <h2 className="checkout-section__title">
               <span>ההזמנה שלך</span>
             </h2>
 
-            <div className="checkout-step" hidden={step === 'confirm'}>
+            <div className="checkout-step" data-inactive={step === 'confirm' ? '' : undefined}>
               <table className="checkout-review__table">
                 <thead>
                   <tr>
@@ -795,7 +802,7 @@ export default function CheckoutForm({
             </div>
 
             <div className="checkout-payment">
-              <div className="checkout-step" hidden={step !== 'confirm'}>
+              <div className="checkout-step" data-inactive={step !== 'confirm' ? '' : undefined}>
                 {/*
                 Sourced from refs/electro-checkout-text.json, captured with a
                 real browser against Electro's own checkout. Electro has no

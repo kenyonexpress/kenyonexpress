@@ -809,3 +809,47 @@
   background: #f7f7f7;
   border-radius: 50px;
 }
+
+/* ===========================================================================
+   BELOW 768 THE WIZARD RENDERS AS LIVE'S SINGLE LONG PAGE.
+   refs/ke_live_computed.json checkout@380 is one continuous document: billing
+   fields y410..1458, "מידע נוסף" + notes 1507..1765, the order panel 1806
+   onward, payment, terms and the submit at y2544 -- no stepper anywhere. The
+   wizard chunks the same fields behind tabs, which left a 380 page ~450px of
+   form against live's 2341 and put our footer where live is mid-form.
+   CSS only: the `hidden` attribute is a UA display hint, so display:block
+   overrides it and every step section paints stacked in wizard DOM order,
+   which is live's order. The logic already supports it -- handleSubmit
+   validates EVERY step before the action fires, so the one visible submit
+   behaves; the per-step continue/back buttons are the only controls hidden.
+   Desktop keeps the wizard untouched.
+   =========================================================================== */
+/* The step gate. `data-inactive` and not the `hidden` attribute, because the
+   attribute cannot be re-shown from here: Tailwind's preflight pins [hidden]
+   with a LAYERED !important, and layered important beats any unlayered
+   important this file could write. The semantics are identical -- display:none
+   removes the step from the accessibility tree and the tab order exactly as
+   hidden did -- and the breakpoint below gets to flip it. */
+.checkout-step[data-inactive] {
+  display: none;
+}
+
+/* 991, not 767: live's checkout is the single long column everywhere below
+   Bootstrap's lg -- checkout@768 in the reference is a 2233px single-column
+   entry-content with no stepper -- and 992 is exactly where our own grid
+   (above) goes two-column. The wizard exists only where the two-column layout
+   does. */
+@media (max-width: 991px) {
+  .checkout-steps {
+    display: none;
+  }
+
+  .checkout-step[data-inactive] {
+    display: block;
+  }
+
+  .checkout-nav__next,
+  .checkout-nav__back {
+    display: none;
+  }
+}

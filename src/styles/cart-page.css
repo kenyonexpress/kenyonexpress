@@ -330,8 +330,9 @@
     order: 7;
     justify-self: end;
     margin-inline-start: 0;
-    min-height: 40px;
-    height: 40px;
+    /* Height stays var(--cart-touch): live's input is 40px but the 44px
+       touch floor is a standing project rule and outranks the 4px. The row's
+       75px comes from the label beside it either way. */
   }
 
   .cart-line__price {
@@ -577,6 +578,11 @@
   cursor: pointer;
   color: #657888;
   font-size: 14px;
+  /* The 44px touch floor is a standing project rule; the summary is the one
+     control a phone shopper taps to reach the coupon field. */
+  display: flex;
+  align-items: center;
+  min-height: var(--cart-touch);
 }
 
 .cart-coupon__summary::-webkit-details-marker {
@@ -707,9 +713,10 @@
     padding: 8px 0;
   }
 
-  /* Collapsed coupon costs one summary row; see CartCouponForm. */
+  /* Collapsed coupon costs one 44px summary row; the summary's own touch
+     height is the row, so the block needs no padding of its own. */
   .cart-coupon {
-    padding-block: 8px;
+    padding-block: 0;
   }
 }
 

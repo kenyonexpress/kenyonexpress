@@ -395,7 +395,7 @@ test.describe('the checkout with a seeded cart', () => {
  * "המשך" button refuses a step whose fields do not validate.
  */
 test.describe('the checkout wizard, step by step', () => {
-  test('every step of the checkout has no WCAG A/AA violations', async ({ page }) => {
+  test('every step of the checkout has no WCAG A/AA violations', async ({ page, viewport }) => {
     await openPurchasableProduct(page)
     await addOpenProductToCart(page)
     await page.goto('/checkout')
@@ -403,6 +403,24 @@ test.describe('the checkout wizard, step by step', () => {
     expect(page.url(), 'checkout bounced to the cart; the seed did not stick').toContain(
       '/checkout',
     )
+
+    // Below 768 there is no wizard since D25: checkout-page.css stacks every
+    // step section into live's single long page and hides the continue
+    // buttons. One scan therefore covers ALL sections at once -- including
+    // the error state, raised through the same submit the shopper uses.
+    if ((viewport?.width ?? 1280) < 768) {
+      await page.locator('.checkout-pay-btn').click()
+      await expect(
+        page.locator('.checkout-field__error').first(),
+        'submitting the empty single-page checkout raised no error to scan',
+      ).toBeVisible()
+      const single = await scan(page)
+      expect(
+        single.violations.map((v) => v.id),
+        `single-page checkout with validation errors\n  ${describe(single)}`,
+      ).toEqual([])
+      return
+    }
 
     const next = page.locator('.checkout-nav__next').first()
     const advance = async (to: string) => {
