@@ -105,14 +105,40 @@ export default function SiteFooter() {
         THE NEWSLETTER BAR IS DESKTOP-ONLY, which is live's rule and not a
         preference. Live ships two different footers -- `.desktop-footer
         .d-none.d-lg-block` and `.handheld-footer.d-lg-none` -- and the handheld
-        one contains no newsletter bar, no logo and no address block. Measured
-        on refs/ke_live_computed.json, live's whole mobile footer is 355px:
-        a 108px widget menu, a 65px social row and a 137px dark bar.
+        one contains no newsletter bar and no address block.
 
-        Ours rendered the full desktop footer stacked into one column at every
-        width: 1155px at 380 against live's 355. That is 800px of difference
-        sitting inside the 2600px compare window on every mobile page, which is
-        why the cart scored 19.61% at 380 while passing at 1440.
+        BOTH NUMBERS THIS COMMENT USED TO CARRY WERE STALE, and they are
+        corrected here rather than quietly replaced. It said live's mobile
+        footer is 355px and ours was 1155px. Re-measured against the live site
+        at 380 on 2026-09-03, after the earlier fix had already landed:
+
+          live   612px   widget menu 365 + social 65 + dark bar 137
+          ours   274px
+
+        So ours was 338px SHORT of live, not 800px over. The gap was the whole
+        `.handheld-footer-bar` -- a 137px dark strip carrying the logo and the
+        contact line, which this footer never had -- plus the two link columns
+        rendering as collapsed 49px rows where live renders them open.
+
+        AFTER D20, measured the same way: ours is 760px against live's 612.
+
+          section       live   ours
+          widget menu    365    522
+          social row      65     77
+          dark bar       137    161
+
+        THE 157px ON THE MENUS IS DELIBERATE AND IS NOT GOING AWAY. Live's
+        handheld footer lists seven links; ours lists twelve. The five extra are
+        אודות, שאלות נפוצות, הבלוג, מדיניות פרטיות, ביטולים והחזרות and
+        הצהרת נגישות -- and dropping the last three from the phone to win pixels
+        would take the privacy policy, the refunds policy and the accessibility
+        statement off the viewport most Israeli shoppers actually use. Live also
+        lists הסטוריה (recently-viewed), which this app has no route for; it is
+        omitted rather than shipped as a visible 404, which is the same rule the
+        `built: false` note above records.
+
+        Note the footer sits BELOW the 2600px compare window, so none of this
+        moves the home-page gate. It is a 1:1 gap, not a scoring one.
       */}
       <div className="hidden bg-brand-secondary text-heading lg:block">
         <div className="mx-auto flex min-h-newsletter-bar max-w-store-footer flex-col items-center justify-between gap-4 px-[15px] lg:flex-row">
@@ -221,7 +247,7 @@ export default function SiteFooter() {
               and not a client component on purpose: the footer is on every page
               and a disclosure widget is not worth a hydration boundary. `open`
               is forced from lg up by CSS, so the desktop layout is unchanged. */}
-          <details className="footer-disclosure group border-b border-border lg:border-0">
+          <details open className="footer-disclosure group border-b border-border lg:border-0">
             <summary className="flex h-drawer-row cursor-pointer items-center justify-between text-base font-bold text-heading lg:mb-4 lg:h-auto lg:cursor-default lg:justify-start">
               שירות לקוחות
               <ChevronDown
@@ -246,7 +272,7 @@ export default function SiteFooter() {
           </details>
 
           {/* left column: אזור אישי — live's second accordion row below lg. */}
-          <details className="footer-disclosure group border-b border-border lg:border-0">
+          <details open className="footer-disclosure group border-b border-border lg:border-0">
             <summary className="flex h-drawer-row cursor-pointer items-center justify-between text-base font-bold text-heading lg:mb-4 lg:h-auto lg:cursor-default lg:justify-start">
               אזור אישי
               <ChevronDown
@@ -273,7 +299,7 @@ export default function SiteFooter() {
 
         {/* 3. Social icons row — dark circular */}
         <div className="border-t border-border">
-          <div className="mx-auto flex max-w-store-footer items-center justify-center gap-3 px-4 py-6">
+          <div className="mx-auto flex max-w-store-footer items-center justify-center gap-3 px-4 py-4 lg:py-6">
             {SOCIALS.map((s) => (
               <a
                 key={s.label}
@@ -281,7 +307,7 @@ export default function SiteFooter() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={s.label}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-footer-bg text-white transition-colors hover:bg-brand-secondary hover:text-heading"
+                className="flex size-touch-min items-center justify-center rounded-full bg-footer-bg text-white transition-colors hover:bg-brand-secondary hover:text-heading lg:h-10 lg:w-10"
               >
                 <SocialGlyph path={s.path} />
               </a>
@@ -290,8 +316,49 @@ export default function SiteFooter() {
         </div>
       </div>
 
-      {/* 4. Bottom gray bar — bg bottom-bar, copyright (right) + payment (left) */}
-      <div className="bg-bottom-bar text-heading">
+      {/*
+        4a. THE HANDHELD DARK BAR — live's `.handheld-footer-bar`, below lg only.
+        Measured at 380: 137px on the dark footer ink (--color-footer-bg), carrying the
+        190x50 logo and the contact line. This footer had no equivalent at all,
+        which was most of the 338px it was short.
+
+        It replaces the light copyright bar below lg rather than stacking on top
+        of it, because live's handheld footer ends here and two bottom bars is
+        neither live's layout nor a sensible one. The copyright text rides along
+        so a phone does not simply lose it.
+      */}
+      <div className="bg-footer-bg text-white lg:hidden">
+        <div className="mx-auto flex max-w-store-footer flex-col items-center gap-0.5 px-[15px] py-4 text-center">
+          <SmartImage
+            src={LOGO_FOOTER}
+            alt="קניון EXPRESS"
+            width={190}
+            height={50}
+            className="h-footer-logo-h w-auto object-contain"
+            fallbackClassName="h-footer-logo-h w-footer-logo-w rounded-md"
+          />
+          <p className="m-0 text-sm text-white/80">יש לך שאלות, הצעות או הערות ?</p>
+          <Link
+            href="/contact"
+            className="inline-flex min-h-touch-min items-center gap-2 text-lg font-bold text-white transition-opacity hover:opacity-70"
+          >
+            <Headphones
+              size={28}
+              strokeWidth={1.5}
+              className="shrink-0 text-brand-secondary"
+              aria-hidden="true"
+            />
+            צור קשר
+          </Link>
+          <p className="m-0 text-micro text-white/70">
+            כל הזכויות שמורות © <strong className="font-bold">Kenyon Express</strong>
+          </p>
+        </div>
+      </div>
+
+      {/* 4b. Bottom gray bar — bg bottom-bar, copyright (right) + payment (left).
+          Desktop only: 4a is live's handheld ending. */}
+      <div className="hidden bg-bottom-bar text-heading lg:block">
         <div className="mx-auto flex max-w-store-footer flex-col items-center justify-between gap-3 px-4 py-3 sm:flex-row">
           <p className="m-0 text-sm">
             כל הזכויות שמורות © <strong className="font-bold">Kenyon Express</strong>

@@ -164,12 +164,17 @@ html [data-sonner-toaster][data-sonner-theme="light"] {
   --error-text: hsl(360, 100%, 43.5%);
 }
 
-/* The footer's two link columns are <details> so they collapse into live's two
-   49px accordion rows on a phone. From lg up live shows them open as plain
-   columns, and a <details> cannot be "open" by breakpoint from the markup --
-   the attribute is boolean and would have to be toggled in JS. Forcing the
-   panel visible in CSS keeps the desktop layout byte-identical without making
-   the site footer a client component. */
+/* The footer's two link columns are <details>.
+   THE "TWO 49px ACCORDION ROWS ON A PHONE" THIS COMMENT USED TO CLAIM ARE NOT
+   WHAT LIVE DOES. Measured at 380 on 2026-09-03, live's `.handheld-widget-menu`
+   is 365px tall and holds both columns OPEN as plain lists -- "שירות לקוחות"
+   131px with its links visible, "אזור אישי" 224px with its five. Nothing there
+   collapses. The columns are therefore `open` in the markup now, which is
+   live's default state, and a phone user can still collapse one.
+   From lg up a <details> cannot be "open" by breakpoint from the markup -- the
+   attribute is boolean and would have to be toggled in JS -- so the panel is
+   forced visible in CSS, which keeps the desktop layout byte-identical without
+   making the site footer a client component. */
 @media (min-width: 1024px) {
   .footer-disclosure > summary {
     pointer-events: none;
