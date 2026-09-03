@@ -225,6 +225,49 @@ const HEX_ALLOWLIST = new Set(['src/components/shared/GoogleLogo.tsx', 'src/app/
  * `buyHover`) are deliberately absent from this table: they are measured
  * values that exist only on that template.
  */
+/**
+ * THE STOREFRONT MAY NOT REACH FOR TAILWIND'S DEFAULT PALETTE.
+ *
+ * `bg-gray-200` is not a raw hex, so the rule above never saw it, and it is not
+ * a project colour either: it is Tailwind's own scale, which no token controls.
+ * A rebrand through `tokens.ts` moves everything the design system owns and
+ * leaves every `text-gray-600` exactly where it was. Twenty-eight of them had
+ * accumulated across the account pages, the checkout, the cart, the footer and
+ * the hero by 2026-09-03.
+ *
+ * SCOPED TO THE STOREFRONT ON PURPOSE. The admin panel uses the Tailwind scale
+ * throughout and is not customer-facing chrome; bringing it in would be a much
+ * larger sweep with no rebrand argument behind it. These are the surfaces a
+ * shopper sees.
+ */
+describe('the storefront uses tokens, not Tailwind default colours', () => {
+  const STOREFRONT = [
+    'src/app/(account)',
+    'src/app/(store)',
+    'src/components/layout',
+    'src/components/cart',
+    'src/components/home',
+  ]
+  // Neutral + semantic ramps. Utility prefixes that take a colour.
+  const PALETTE =
+    /(?<![\w-])(bg|text|border|ring|divide|from|via|to|outline|decoration|shadow|accent|caret|fill|stroke)-(gray|slate|zinc|neutral|stone)-\d{2,3}(?![\w-])/g
+
+  it('names no gray/slate/zinc/neutral/stone utility', () => {
+    const offenders: string[] = []
+    for (const root of STOREFRONT) {
+      for (const file of tsxFiles(resolve(process.cwd(), root))) {
+        for (const hit of readFileSync(file, 'utf8').match(PALETTE) ?? []) {
+          offenders.push(`${file}: ${hit}`)
+        }
+      }
+    }
+    expect(
+      offenders,
+      `Tailwind default colours in the storefront:\n  ${offenders.join('\n  ')}`,
+    ).toHaveLength(0)
+  })
+})
+
 describe('the PDP palette tracks the site palette', () => {
   const SHARED: Array<[keyof typeof PDP.color, string]> = [
     ['ink', SITE.functional.heading],

@@ -56,7 +56,7 @@ export default function CartLineItem({ item }: { item: CartViewItem }) {
             fallbackClassName="h-full w-full"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-slate-100 text-slate-400 text-xs">
+          <div className="flex h-full w-full items-center justify-center bg-surface-hover text-icon-empty text-xs">
             אין תמונה
           </div>
         )}

@@ -340,3 +340,45 @@ matching id. Two extra cases were found while wiring it:
   branch -- when the server returned a `zip` error instead, the span rendered
   and the link did not
 - the terms checkbox had the same gap as the eight fields
+
+
+## Post-purchase and account — STEP D12, 2026-09-03
+
+No live reference exists for `checkout/success`, `checkout/failed` or any
+`/account` page, so there is no score to report and none is claimed. The check
+that could be made is the token contract, and it was failing.
+
+### The storefront was reaching past the design system
+
+`bg-gray-200` is not a raw hex, so the existing rule never saw it, and it is not
+a project colour either -- it is Tailwind's own scale, which no token controls.
+A rebrand through `tokens.ts` moves everything the design system owns and leaves
+every `text-gray-600` exactly where it was.
+
+28 of them had accumulated across the account pages, the checkout, the cart, the
+footer and the hero. All 28 now use tokens:
+
+| was | now | note |
+| --- | --- | --- |
+| `border-gray-200` | `border-border-alt` | #e5e7eb → #e7e7e7 |
+| `border-gray-300` | `border-border` | #d1d5db → #dddddd |
+| `text-gray-600` / `-700` | `text-muted` | → #6f6f6f, which is the AA-corrected value |
+| `text-gray-800` | `text-heading` | → #333e48 |
+| `text-gray-900` | `text-ink` | → #000000 |
+| `bg-gray-100` / `bg-slate-100` | `bg-surface-hover` | → #f5f5f5 |
+| `text-slate-400` | `text-icon-empty` | → #cccccc |
+
+`tokens.test.ts` now fails on any `gray|slate|zinc|neutral|stone` utility under
+`src/app/(account)`, `src/app/(store)`, `components/layout`, `components/cart`
+and `components/home`. Scoped to the storefront deliberately: the admin panel
+uses the Tailwind scale throughout, is not customer-facing chrome, and has no
+rebrand argument behind it.
+
+**The sweep is pixel-neutral**, which is the point -- every substitution is the
+same or a closer colour. Measured after, against before:
+
+| page | 1440 before | 1440 after |
+| --- | --- | --- |
+| home | 6.01% | 5.99% |
+| cart | 8.37% | 8.37% |
+| checkout | 9.38% | 9.38% |

@@ -103,7 +103,7 @@ export default function HeroPromoBanners() {
           key={banner.id}
           href={banner.href}
           className={`group relative flex min-h-0 flex-1 items-stretch overflow-hidden px-3 py-4 transition-colors hover:bg-brand-accent/40 ${
-            idx < PROMO_BANNERS.length - 1 ? 'border-b border-gray-200' : ''
+            idx < PROMO_BANNERS.length - 1 ? 'border-b border-border-alt' : ''
           }`}
         >
           <div className="relative z-10 flex min-w-0 flex-1 flex-col items-end justify-center">

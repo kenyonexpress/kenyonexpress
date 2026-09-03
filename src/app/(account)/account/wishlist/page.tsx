@@ -22,7 +22,7 @@ export default async function WishlistPage() {
     <>
       <h1 className="account-title">רשימת המשאלות שלי</h1>
       {entries.length === 0 ? (
-        <p className="text-gray-600">
+        <p className="text-muted">
           עוד לא שמרת מוצרים. לחיצה על הלב בעמוד מוצר שומרת אותו כאן.{' '}
           <Link href="/products" className="font-semibold text-price underline">
             לכל המוצרים
@@ -40,7 +40,7 @@ export default async function WishlistPage() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={image} alt="" className="h-16 w-16 rounded-lg object-cover" />
                 ) : (
-                  <span aria-hidden="true" className="h-16 w-16 rounded-lg bg-gray-100" />
+                  <span aria-hidden="true" className="h-16 w-16 rounded-lg bg-surface-hover" />
                 )}
                 <span>
                   <span className="block font-semibold">{name}</span>
@@ -53,7 +53,7 @@ export default async function WishlistPage() {
               </span>
             )
             return (
-              <li key={entry.product_id} className="rounded-lg border border-gray-200 p-3">
+              <li key={entry.product_id} className="rounded-lg border border-border-alt p-3">
                 {href ? <Link href={href}>{body}</Link> : body}
               </li>
             )

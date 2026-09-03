@@ -24,7 +24,7 @@ export default function DeleteAccountSection() {
   return (
     <section className="bg-white border border-red-200 rounded-xl p-5 space-y-4">
       <h2 className="font-semibold text-red-700">מחיקת חשבון</h2>
-      <div className="text-sm text-gray-600 space-y-2">
+      <div className="text-sm text-muted space-y-2">
         <p>
           המחיקה מיידית ובלתי הפיכה: הפרטים האישיים (שם, אימייל, טלפון), הכתובות, כרטיסי האשראי
           השמורים והעגלה יימחקו, וההתחברות תבוטל.
@@ -35,7 +35,7 @@ export default function DeleteAccountSection() {
         </p>
       </div>
       <form action={action} className="space-y-3">
-        <label className="flex items-start gap-2 text-sm text-gray-700">
+        <label className="flex items-start gap-2 text-sm text-muted">
           <input
             type="checkbox"
             checked={understood}
@@ -45,7 +45,7 @@ export default function DeleteAccountSection() {
           <span>אני מבין/ה שהמחיקה בלתי הפיכה ושלא אוכל להתחבר שוב לחשבון זה</span>
         </label>
         <div>
-          <label htmlFor="delete-confirm" className="block text-xs font-medium text-gray-700 mb-1">
+          <label htmlFor="delete-confirm" className="block text-xs font-medium text-muted mb-1">
             הקלידו למטה: "{DELETE_CONFIRMATION_PHRASE}"
           </label>
           <input
@@ -55,7 +55,7 @@ export default function DeleteAccountSection() {
             onChange={(e) => setTyped(e.target.value)}
             dir="rtl"
             autoComplete="off"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+            className="w-full border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
           />
         </div>
         {state && 'error' in state && state.error && (

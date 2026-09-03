@@ -43,14 +43,14 @@ const ITEMS = [
 
 export default function InfoBar() {
   return (
-    <div dir="rtl" className="w-full bg-white border-t border-gray-200">
+    <div dir="rtl" className="w-full bg-white border-t border-border-alt">
       <div className="max-w-page mx-auto">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
           {ITEMS.map((item, i) => (
             <div
               key={item.title}
               className={`flex items-center gap-3 px-4 py-4 ${
-                i < ITEMS.length - 1 ? 'border-e border-gray-200' : ''
+                i < ITEMS.length - 1 ? 'border-e border-border-alt' : ''
               }`}
             >
               <item.Icon
@@ -60,8 +60,8 @@ export default function InfoBar() {
                 aria-hidden="true"
               />
               <div>
-                <p className="text-xs font-bold text-gray-900 leading-tight">{item.title}</p>
-                <p className="text-micro text-gray-500 leading-tight mt-0.5">{item.subtitle}</p>
+                <p className="text-xs font-bold text-ink leading-tight">{item.title}</p>
+                <p className="text-micro text-muted leading-tight mt-0.5">{item.subtitle}</p>
               </div>
             </div>
           ))}

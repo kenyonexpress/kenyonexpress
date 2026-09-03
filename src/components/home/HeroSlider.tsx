@@ -720,7 +720,7 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
       dir="rtl"
       data-hero-slider=""
       style={{ backgroundColor: HERO_SLIDER_BG }}
-      className="relative h-full min-h-0 w-full min-w-0 flex-1 overflow-hidden border-x border-gray-200 font-sans"
+      className="relative h-full min-h-0 w-full min-w-0 flex-1 overflow-hidden border-x border-border-alt font-sans"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
