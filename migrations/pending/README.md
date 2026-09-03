@@ -1,6 +1,6 @@
 # `migrations/pending/`
 
-## 2026-09-04: two files pending, one approved
+## 2026-09-04: three files pending, one approved
 
 ### `162_cron_schedule.sql` — PENDING, approved (CLOSEOUT §7), blocked on vault
 
@@ -20,6 +20,18 @@ signature is production's (generated types), not the zero-arg one §8c wrote.
 Preflight: `preflight_165.sql`; its third block lists RLS policies referencing
 the helpers — any hit on a table `anon` can SELECT is a stop-and-think, because
 RLS quals run as the caller and a revoked helper turns those reads into 42501.
+
+### `166_voucher_transition_guard.sql` — PENDING, not approved
+
+BEFORE UPDATE trigger on `public.vouchers.status`, in 137's idiom. Closes the
+gap VOUCHER-LIFECYCLE.md §1 records: 137 guards orders/order_items/payments
+and never covered `vouchers`, so a service_role statement can un-redeem a
+burned voucher and let it be collected twice. Allows exactly the four
+`issued -> redeemed | expired | cancelled | refunded` moves; every non-issued
+state is terminal by design (value restored later is a wallet credit, not a
+state change). No-op updates, INSERTs and NULLs pass untouched. Preflight:
+`preflight_166.sql` — enum labels, column type, no existing trigger, row
+counts per status.
 
 ## 2026-09-03: every row below is APPLIED (history)
 

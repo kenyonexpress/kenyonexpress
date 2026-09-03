@@ -4,12 +4,13 @@
 MCP `apply_migration`, one at a time, after Ofir approves it. `db push` is
 forbidden by project rule.
 
-## 2026-09-04: TWO PENDING FILES, ONE OF THEM APPROVED
+## 2026-09-04: THREE PENDING FILES, ONE OF THEM APPROVED
 
 | File | State | Preflight |
 | --- | --- | --- |
 | `162_cron_schedule.sql` | **approved by Ofir (CLOSEOUT §7)**, blocked on vault seeding: the vault holds neither `cron_secret` nor `app_url`, and seeding them needs the Vercel env (§8a), which this machine cannot reach (no `vercel` CLI, no link, no token). Exact commands under "## חסמים לאופיר" in STATE.md. | `preflight_162.sql` |
 | `165_revoke_anon_helpers.sql` | waiting for approval like every other number | `preflight_165.sql` |
+| `166_voucher_transition_guard.sql` | waiting for approval. Closes the gap VOUCHER-LIFECYCLE.md §1 records: 137 guards orders/order_items/payments and never covered `vouchers`, so nothing stops service_role from un-redeeming a burned voucher. Allows exactly the four `issued -> *` moves; every non-issued state stays terminal. | `preflight_166.sql` |
 
 `164` stays unused; §8c named the revoke file 165 and the number is kept
 stable. The section below is unchanged history.

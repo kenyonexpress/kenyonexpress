@@ -126,21 +126,25 @@ describe('the pending migration inventory', () => {
 
   // ---- what is actually unapplied right now -------------------------------
   it('holds exactly the migrations still awaiting approval', () => {
-    // TWO pending migrations as of 2026-09-04, each with its preflight audit
+    // THREE pending migrations as of 2026-09-04, each with its preflight audit
     // beside it (a CLOSEOUT §5 requirement: no migration file without the
     // execute_sql audit that has to pass before it).
     //
-    //   162_cron_schedule.sql        approved (CLOSEOUT §7), blocked on vault
-    //                                seeding -- see "## חסמים לאופיר" in STATE.md
-    //   165_revoke_anon_helpers.sql  awaiting approval like any other number
+    //   162_cron_schedule.sql            approved (CLOSEOUT §7), blocked on vault
+    //                                    seeding -- see "## חסמים לאופיר" in STATE.md
+    //   165_revoke_anon_helpers.sql      awaiting approval like any other number
+    //   166_voucher_transition_guard.sql awaiting approval; closes the guard gap
+    //                                    VOUCHER-LIFECYCLE.md §1 records
     //
     // 164 stays unused; §8c named the revoke file 165 and the number is kept
     // stable the same way 162 was reserved before it was written.
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
       '162_cron_schedule.sql',
       '165_revoke_anon_helpers.sql',
+      '166_voucher_transition_guard.sql',
       'preflight_162.sql',
       'preflight_165.sql',
+      'preflight_166.sql',
     ])
   })
 
