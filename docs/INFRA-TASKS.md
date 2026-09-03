@@ -65,3 +65,51 @@
 **הגדרת סיום:** קובץ המיגרציה קיים ב-`migrations/pending/`, עומד בחוקי
 האידמפוטנטיות של supabase-migrations, טסטים ירוקים
 (`pnpm test`, `pnpm type-check`, `pnpm lint`).
+
+## משימה 3: שדרוג CSP ל-nonce פר-בקשה עם strict-dynamic
+
+**סטטוס:** פתוח.
+
+**הבעיה:** ה-CSP הגלובלי עדיין מכיל
+`'unsafe-inline'`
+ב-`script-src` וב-`style-src`
+(נמדד 03.09: ההערה בראש בלוק ה-headers ב-
+`next.config.ts`
+מתעדת את זה במפורש כ-fallback). INFRA-AUDIT.md, פרק
+"Security headers", רשם את זה כסטייה מהספק וקבע את השדרוג כ-follow-up
+ברמת P1: header סטטי ב-config לא יכול לשאת nonce שמתחלף בכל בקשה,
+ולכן הפתרון עובר דרך
+`src/proxy.ts`.
+
+**הפתרון (לפי הסטייה המתועדת ב-INFRA-AUDIT.md, פרק 2):**
+
+1. יצירת nonce אקראי פר-בקשה ב-
+   `src/proxy.ts`
+   (16 בייטים מ-`crypto.getRandomValues`, מקודדים base64), וכתיבת
+   header תגובה
+   `Content-Security-Policy`
+   עם
+   `script-src 'self' 'nonce-<value>' 'strict-dynamic'`
+   במקום
+   `'unsafe-inline'`.
+2. בניית מחרוזת ה-CSP נשארת ב-
+   `src/lib/security/frame-policy.ts`,
+   שכבר היום בונה את החלק תלוי-הנתיב (חריגי ה-framing של Cardcom),
+   כדי שהמדיניות תישאר במקום אחד. ה-proxy דורס (לא מוסיף) את ה-header,
+   מאותה סיבה שמתועדת שם: שני headers של CSP נאכפים שניהם והמחמיר מנצח.
+3. **מוקש מדוד שחובה לבדוק לפני מימוש:** השחלת ה-nonce לתגי
+   `<script>`
+   דורשת קריאת state פר-בקשה בעץ הרינדור (למשל `headers()`), וזה מחזיר
+   את מסלולי ה-`(store)` הסטטיים לרינדור דינמי, בדיוק מה שהוסר בעבודת
+   ה-ISR (ראה ההערה בראש
+   `src/app/(store)/layout.tsx`).
+   אם המדידה מאשרת את הרגרסיה, הפתרון השמרני הוא nonce על המסלולים
+   הדינמיים בלבד (דרך ה-proxy) והשארת המדיניות הנוכחית על הסטטיים,
+   עם תיעוד ההחלטה.
+
+**הגדרת סיום:** על מסלול דינמי, ה-header
+`Content-Security-Policy`
+מכיל `nonce` ו-`'strict-dynamic'` בלי `'unsafe-inline'` ב-`script-src`;
+פלט `pnpm build` מראה שהמסלולים הסטטיים של `(store)` נשארו סטטיים;
+חריגי ה-framing של Cardcom ממשיכים לעבוד; טסטים ירוקים
+(`pnpm test`, `pnpm type-check`, `pnpm lint`, וגם `pnpm build` כשער נפרד).
