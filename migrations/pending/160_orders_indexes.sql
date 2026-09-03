@@ -1,4 +1,4 @@
--- 159_orders_indexes: orders + order_items base tables, plus indexes on
+-- 160_orders_indexes: orders + order_items base tables, plus indexes on
 -- orders(user_id), orders(created_at) and order_items(created_at).
 --
 -- RENAMED FROM 005_orders.sql on 2026-09-03. `supabase/migrations/` already

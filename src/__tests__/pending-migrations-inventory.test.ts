@@ -99,6 +99,7 @@ describe('the pending migration inventory', () => {
       '156_analytics_indexes.sql',
       '157_audit_ip_retention.sql',
       '158_revoke_anon_public_on_new_functions.sql',
+      '159_pin_search_path_and_revoke_enqueue.sql',
     ])
   })
 
@@ -120,7 +121,7 @@ describe('the pending migration inventory', () => {
     // holds a 005, and the clash is what the numbering assertion below catches.
     // NOT applied. This assertion is the deliberate diff that makes a new
     // pending migration visible.
-    expect(sqlFilesIn(PENDING_DIR)).toEqual(['159_orders_indexes.sql'])
+    expect(sqlFilesIn(PENDING_DIR)).toEqual(['160_orders_indexes.sql'])
   })
 
   // ---- direction 2: manifest -> disk -------------------------------------

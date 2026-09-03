@@ -1,8 +1,20 @@
 # `migrations/pending/`
 
-## 2026-09-03: `159_orders_indexes.sql` is PENDING. Every row below is APPLIED.
+## 2026-09-03: `160_orders_indexes.sql` is PENDING. Every row below is APPLIED.
 
-### `159_orders_indexes.sql` — AWAITING APPROVAL
+### `159_pin_search_path_and_revoke_enqueue.sql` — APPLIED 2026-09-03
+
+Applied to production through MCP alongside 158 and verified. Pins
+`search_path = pg_catalog, public` on `set_updated_at`, `add_business_days`,
+`payout_available_at` and `enforce_payout_availability`, and revokes EXECUTE on
+`enqueue_search_index()` from `public`/`anon`/`authenticated`.
+
+The number 159 briefly belonged to the pending orders-indexes file; that one was
+renamed to `160_orders_indexes.sql` the same day (its second rename -- it
+arrived as `005`). New migrations start at 160... which 160 now occupies, so in
+practice: at 161.
+
+### `160_orders_indexes.sql` — AWAITING APPROVAL
 
 Written by a parallel agent session (commit `fbdd8e1f5`) alongside Drizzle
 schemas at `src/db/schema/orders.ts` and `order-items.ts`. Creates `orders` and
