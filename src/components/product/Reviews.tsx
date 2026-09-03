@@ -23,7 +23,7 @@ export default async function Reviews({ productId }: { productId: string }) {
       <h2 id="reviews-heading" className="mb-4 text-xl font-bold">
         ביקורות מאומתות
         {summary ? (
-          <span className="mr-2 text-base font-normal text-gray-600">
+          <span className="me-2 text-base font-normal text-gray-600">
             {summary.average} מתוך 5 · {summary.count} ביקורות
           </span>
         ) : null}

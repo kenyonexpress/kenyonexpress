@@ -45,7 +45,14 @@ export default function ReviewForm({
       <p className="text-sm font-semibold">קנית את המוצר? ספר לנו איך היה</p>
       <fieldset className="border-0 p-0">
         <legend className="sr-only">דירוג</legend>
-        <div className="flex flex-row-reverse justify-end gap-1">
+        {/* Plain flex: this document is RTL, so star 1 already renders on the
+            right and the scale reads 1..5 right-to-left the way a Hebrew
+            reader expects. The flex-row-reverse that stood here is the LTR
+            star-widget trick (reverse the row so sibling selectors can paint
+            leftward); nothing here uses sibling selectors -- the fill is
+            driven by value <= rating in JS -- and in RTL the reverse put star
+            1 on the LEFT. */}
+        <div className="flex gap-1">
           {[1, 2, 3, 4, 5].map((value) => (
             <label key={value} className="cursor-pointer">
               <input
