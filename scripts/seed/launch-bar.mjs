@@ -67,9 +67,16 @@ export const OPEN_TAXONOMIES = CANONICAL_CATEGORIES.filter((c) => c.kind === 'ta
  * `scripts/wp-dry-run.mjs` says so in prose.
  *
  * This list and `KE_LIVE_DEALS` both mirrored the live DOM verbatim, so both
- * carried a row the importer was already excluding. The count below is 31 for
- * that reason and not 32: live really does render 32 cards, and one of them is
- * a ledger entry.
+ * carried a row the importer was already excluding.
+ *
+ * The count is 32 again, and the 32nd is NOT the ledger row. Dropping to 31
+ * left a 4-column grid one cell short and reflowed every row below the rail:
+ * `--page=home` at 1440 measured 7.08% before and 14.48% after, against an 11%
+ * gate, with the damage confined entirely to bands below y1400. The slot at
+ * live's index 6 now holds `טיפול-פנים-עמוק`, a real product in live's own
+ * catalogue, so the grid keeps live's shape without carrying live's artifact.
+ * `KE_LIVE_DEALS` carries the same substitution and `launch-bar.test.ts`
+ * asserts the two lists slug for slug, so they cannot drift apart.
  */
 export const GRID_SLUGS = [
   'עוזרת-אישית-שירותי-משרד',
@@ -78,6 +85,7 @@ export const GRID_SLUGS = [
   'טיפול-פנים-copy',
   'קופון-טסט',
   'מוצר-לדוגמא',
+  'טיפול-פנים-עמוק',
   'צימר-מאסטר-copy-copy',
   'צימר-מאסטר-copy',
   'חופשה-חלומית-באחוזת-דניאל',

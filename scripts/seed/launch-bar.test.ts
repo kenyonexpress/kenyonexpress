@@ -40,12 +40,18 @@ describe('the grid list the auditor carries', () => {
     expect(GRID_SLUGS).toEqual(KE_LIVE_DEALS.map((d) => d.slug))
   })
 
-  it('is 31 cards: live renders 32 and one of them is not a product', () => {
-    // Live's grid has 32 cards. The 32nd is `reverse-withdrawal-payment`, Dokan
-    // bookkeeping that the WordPress importer already excludes by slug in
+  it('is 32 cards, and none of them is the ledger row', () => {
+    // Live's grid has 32 cards and its index 6 is `reverse-withdrawal-payment`,
+    // Dokan bookkeeping that the WordPress importer already excludes by slug in
     // scripts/wp-import/config.mjs -- this list and KE_LIVE_DEALS were the two
     // places still mirroring the live DOM verbatim, artifact included.
-    expect(GRID_SLUGS).toHaveLength(31)
+    //
+    // The count matters as much as the contents. Shipping 31 into a 4-column
+    // grid moved every card below the rail up one cell and took `--page=home`
+    // at 1440 from 7.08% to 14.48% against an 11% gate. The slot is filled by a
+    // real live product instead of the artifact, so both hold.
+    expect(GRID_SLUGS).toHaveLength(32)
+    expect(GRID_SLUGS).not.toContain('reverse-withdrawal-payment')
   })
 })
 
