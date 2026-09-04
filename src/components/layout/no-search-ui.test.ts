@@ -29,6 +29,7 @@ const ROOT = process.cwd()
 const SHELL = [
   'src/app/layout.tsx',
   'src/components/layout/Header.tsx',
+  'src/components/layout/TopBar.tsx',
   'src/components/layout/MastheadNav.tsx',
   'src/components/layout/MobileDrawer.tsx',
   'src/components/layout/SiteFooter.tsx',

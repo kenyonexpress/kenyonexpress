@@ -1,13 +1,19 @@
 import HeaderCart from '@/components/cart/HeaderCart'
 import MastheadNav from '@/components/layout/MastheadNav'
 import MobileDrawer from '@/components/layout/MobileDrawer'
+import TopBar from '@/components/layout/TopBar'
 import SmartImage from '@/components/ui/SmartImage'
 import { LOGO } from '@/lib/assets'
-import { MapPin, ShoppingBag, Truck, User } from 'lucide-react'
+import { User } from 'lucide-react'
 import Link from 'next/link'
 
 /**
- * kenyonexpress.co.il — top bar + header.
+ * kenyonexpress.co.il — the shell: `<TopBar>` (component 01) then the masthead.
+ *
+ * THE TOP BAR IS ITS OWN FILE. Everything about it -- live's four info items,
+ * the `|` separators, the home-only greeting and the three-row wrap at 380 --
+ * moved to `TopBar.tsx` when the component queue reached 01, with the measured
+ * table it is built from. This file keeps the masthead and mounts it.
  *
  * THE SHELL IS RESPONSIVE ON LIVE AND WAS NOT HERE. Measured off
  * refs/ke_live_computed.json at all three compare widths, 2026-09-03:
@@ -29,39 +35,13 @@ import Link from 'next/link'
  *   /products/         76      83
  *   /cart              76      83
  *
- * The 37px difference is one top-bar row, and the row is the greeting: live
- * renders "ברוך הבא לעולם של קניון Express" on the HOME PAGE ONLY. Without it
- * the four info items wrap onto two rows instead of three.
- *
- * This file pinned the bar to a fixed 112px and rendered the greeting on every
- * page, so every inner page was 36px too tall at 380 -- and because everything
- * below the header inherits the offset, every band of every inner-page
- * comparison was measured against the wrong rows of live. That is the "shell
- * contradiction" STATE.md recorded; the mechanism it guessed at (references
- * shot with a collapsed sticky bar) was not it.
- *
- * THE FIX IS CONTENT-DRIVEN HEIGHT, NOT A SECOND MAGIC NUMBER. The handheld bar
- * no longer carries a height at all: the rows wrap and the bar is as tall as
- * they make it, which is 2 x 37.333 on an inner page and 3 x 37.333 on home --
- * 75 and 112, against live's 76 and 113 including its 1px border.
- *
- * THE GREETING IS GATED IN CSS, NOT BY `usePathname()`. Reading the pathname
- * here would opt the whole subtree into dynamic rendering and fail the build on
- * unrelated prerendered routes -- the trap MobileDrawer.tsx already records in
- * full. Instead the home page renders an inert marker and `globals.css` reveals
- * the greeting with `:has()`. No client JS, no dynamic API, and the header
- * stays a server component.
+ * The 37px difference is one top-bar row, the greeting, and TopBar.tsx explains
+ * how it is gated without making the route dynamic.
  *
  * This file used to serve one fixed 37.3 + 109 at every width. That is 51px
  * SHORT of live at 380 and 24px TALL at 768, and because everything below the
  * header inherits the offset, the whole page shifts and every band in the
  * comparison below the fold is measured against the wrong rows of live.
- *
- * WHY THE TOP BAR IS THREE ROWS ON A PHONE. Its four info items do not fit one
- * 380px line, so live wraps them onto three 37px rows: 3 x 37 + 1px border =
- * the 113 measured above. This file previously hid all four below `md`, so our
- * top bar was one row where live has three -- which is most of that 51px.
- * `flex-wrap` with a fixed row height reproduces it without a media query.
  *
  * NO SEARCH UI, deliberately and against live. Live puts a search icon in the
  * handheld header, a full search form under it at 768, and a 534px search
@@ -70,72 +50,10 @@ import Link from 'next/link'
  * rather than quietly absorbed.
  */
 
-type InfoItemProps = {
-  Icon: typeof User
-  label: string
-  /** Only the account item is a link on live; the other three are plain text. */
-  href?: string
-}
-
-/** The top bar's four items, in live's RTL order (right to left). */
-const INFO_ITEMS: readonly InfoItemProps[] = [
-  { Icon: User, label: 'התחברות', href: '/login' },
-  { Icon: ShoppingBag, label: 'קניה בטוחה' },
-  { Icon: Truck, label: 'משלוח מהיר חינם' },
-  { Icon: MapPin, label: 'בפריסה ארצית' },
-]
-
-function InfoItem({ Icon, label, href }: InfoItemProps) {
-  const body = (
-    <>
-      <Icon size={14} strokeWidth={1.8} aria-hidden="true" />
-      {label}
-    </>
-  )
-  // The row is 37px, which already clears the 44px floor only for the link;
-  // `min-h` on the anchor keeps the tappable one honest at any type size.
-  return href ? (
-    <Link
-      href={href}
-      className="flex h-topbar-row items-center gap-1.5 transition-opacity hover:opacity-70"
-    >
-      {body}
-    </Link>
-  ) : (
-    <span className="flex h-topbar-row items-center gap-1.5">{body}</span>
-  )
-}
-
 export default function SiteHeader() {
   return (
     <>
-      <div dir="rtl" className="w-full border-b border-border bg-white">
-        {/*
-          NO handheld height below md: the rows wrap and the bar is as tall as
-          they make it, which is the whole point (see the header note). Two rows
-          of 37.333 on an inner page, three on home. h-header-topbar (37.3) from
-          md up is live's 38 less its 1px border.
-        */}
-        <div className="mx-auto flex max-w-page flex-wrap items-center px-gutter text-[0.929em] text-heading md:h-header-topbar md:flex-nowrap">
-          {/* Home only. See the note above: revealed by `:has()` in globals.css
-              against the marker the home page renders, because reading the
-              pathname here would turn every prerendered route dynamic. */}
-          <span className="topbar-greeting hidden h-topbar-row items-center">
-            ברוך הבא לעולם של קניון Express
-          </span>
-
-          <div className="flex flex-wrap items-center gap-x-3 md:ms-auto">
-            {INFO_ITEMS.map((item, index) => (
-              <div key={item.label} className="flex items-center gap-x-3">
-                {index > 0 ? (
-                  <span className="hidden h-3 w-px bg-border md:block" aria-hidden="true" />
-                ) : null}
-                <InfoItem {...item} />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <TopBar />
 
       <header dir="rtl" className="sticky top-0 z-40 w-full border-b border-border bg-white">
         {/*
