@@ -29,22 +29,43 @@ export default function HeroCategorySidebar() {
       className="home-vertical-nav departments-menu-v2 hidden h-full shrink-0 flex-col overflow-hidden bg-white font-sans lg:flex"
     >
       <div className="dropdown show-dropdown flex h-full min-h-0 flex-col">
+        {/*
+          THE YELLOW BAR HAD NO CONTENT IN IT, and shipped as an empty coloured
+          box above the departments list.
+
+          It was `aria-hidden` and self-closing: 48px of brand yellow with
+          nothing inside. Live's markup is
+          `<div class="vertical-menu-title departments-menu-v2-title"><span
+          class="title">קטגוריות</span><a href=""></a></div>` -- the heading was
+          simply never carried across, and the geometry was reproduced without
+          it, so the box was right and empty.
+
+          The empty `<a href="">` beside it on live is a WordPress theme artifact
+          with no destination; it is not reproduced. `aria-hidden` is gone with
+          the emptiness -- there is text to read now -- and the inner nav's
+          duplicate `aria-label` went with it, because the aside already names
+          the region and a screen reader was hearing "קטגוריות" three times.
+
+          Type from live: `.vertical-menu-title{padding:12px 20px;font-weight:500}`
+          and `.vertical-menu-title .title{font-weight:700}`. Height 48 measured
+          on refs 2026-09-02; padding alone rendered it 24px.
+        */}
         <div
-          aria-hidden="true"
-          className="vertical-menu-title departments-menu-v2-title shrink-0 bg-brand-secondary"
+          className="vertical-menu-title departments-menu-v2-title shrink-0 bg-brand-secondary text-brand-dark"
           style={{
             borderRadius: 0,
-            // Live: the yellow departments title bar is 241x48 (refs,
-            // 2026-09-02). Padding alone rendered it 24px.
             height: 48,
             padding: '12px 20px',
             fontWeight: 500,
             display: 'flex',
+            alignItems: 'center',
             justifyContent: 'space-between',
           }}
-        />
+        >
+          <span className="title font-bold">קטגוריות</span>
+        </div>
 
-        <nav aria-label="קטגוריות" className="min-h-0 flex-1">
+        <nav className="min-h-0 flex-1">
           <ul
             className="dropdown-menu yamm m-0 list-none p-0"
             style={{ borderWidth: 0, borderRadius: 0 }}

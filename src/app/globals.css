@@ -92,20 +92,49 @@ html[data-consent="decided"] [data-consent-banner] {
    the text and the buttons on one line there, and at exactly 640 the text still
    wraps to two. A third tier at 768 keeps the widest pages from reserving the
    28px that only 640 needs. */
-html:not([data-consent="decided"]) body {
-  padding-bottom: 14.5rem;
+/* TWO BANNERS CAN BE UP AT ONCE, AND `padding-bottom` ONLY HAS ONE VALUE.
+ *
+ * The reservation used to be written straight onto `body`, which worked while
+ * the consent banner was the only fixed thing at the bottom of the page. The
+ * PWA install prompt is a second one, and with two plain `padding-bottom`
+ * declarations the later rule simply wins: whichever banner lost would go back
+ * to overlaying the fold, which is the exact defect the block above was written
+ * to fix.
+ *
+ * Each banner now contributes a variable and `body` adds them. A banner that is
+ * not showing contributes 0rem, so the sum is the same number it always was
+ * when only one is up. */
+:root {
+  --reserve-consent: 0rem;
+  --reserve-pwa: 0rem;
+}
+
+html:not([data-consent="decided"]) {
+  --reserve-consent: 14.5rem;
 }
 
 @media (min-width: 640px) {
-  html:not([data-consent="decided"]) body {
-    padding-bottom: 8rem;
+  html:not([data-consent="decided"]) {
+    --reserve-consent: 8rem;
   }
 }
 
 @media (min-width: 768px) {
-  html:not([data-consent="decided"]) body {
-    padding-bottom: 7rem;
+  html:not([data-consent="decided"]) {
+    --reserve-consent: 7rem;
   }
+}
+
+/* The install prompt, measured on the production build 2026-09-04: 76px tall at
+   380 (icon 40 + 12 padding each side) and 76 at 768 and 1440, because its
+   contents are one row at every width. 6rem reserves it plus the 12px inset it
+   floats on, with room for a two-line Hebrew wrap on the narrowest phones. */
+html[data-pwa-prompt] {
+  --reserve-pwa: 6rem;
+}
+
+body {
+  padding-bottom: calc(var(--reserve-consent) + var(--reserve-pwa));
 }
 
 /* Turbopack caches this file's compiled output by CONTENT hash, not mtime.

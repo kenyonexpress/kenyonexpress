@@ -50,19 +50,27 @@ Project `ixvwfbuvfxxsjiywhbbb`.
 | Variable | Status |
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | OK |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | **OK** — 200 from `/auth/v1/settings`, 200 from `/rest/v1/products` |
-| `SUPABASE_SECRET_KEY` | **REJECTED** — 401 from `/auth/v1/settings`, `/rest/v1/products` and `/auth/v1/admin/users`, as `apikey`, as `Bearer`, and as both |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | OK — 200 from `/auth/v1/settings` and `/rest/v1/products` |
+| `SUPABASE_SECRET_KEY` | **OK** — 200 from both, after the second replacement |
 
-The key is no longer the `iss=supabase-demo` stock key, so that defect is fixed.
-It is now an `sb_secret_` key of the right shape that this project does not
-recognise: either it belongs to a different project or it has been revoked.
-**Fix:** Supabase Dashboard → Project `ixvwfbuvfxxsjiywhbbb` → Project Settings →
-API Keys → copy the secret key.
+### It took two replacements, and the probe is why we know
 
-**What stays broken until then:** every admin-client path. The guest cart, the
-checkout address write, and the wallet balance all authenticate with this key and
-fail silently — the guest add-to-cart returns HTTP 200, sets a session cookie and
-writes no row.
+The key went through three values today, and only the third works. This is the
+sequence, because it is the argument for the probe existing:
+
+| Value | Shape check | Live check |
+|---|---|---|
+| `eyJ…` with `iss=supabase-demo` | **caught** by `admin-key.ts` | — |
+| `sb_secret_y4…` (82 chars) | **passed** — opaque, nothing to inspect | **401 everywhere** |
+| `sb_secret_Gd…` (41 chars) | passed | **200** |
+
+The middle one is the whole point. It was present, well-formed, not a demo
+value, and the shape layer had nothing to say about it, while every admin path
+failed silently underneath. Only a request to the project could tell the second
+row from the third.
+
+**⚠️ The key in use was exposed during setup and must be rotated before
+production traffic.** Steps in `docs/RUNBOOK.md`.
 
 ## The variables
 

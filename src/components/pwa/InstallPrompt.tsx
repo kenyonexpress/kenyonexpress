@@ -21,6 +21,31 @@ import { useEffect, useState } from 'react'
 const DISMISSED_KEY = 'ke:pwa-install-dismissed'
 const HIDDEN_ON = ['/checkout', '/cart', '/account', '/supplier', '/admin', '/scan']
 
+/**
+ * NOT ON THE FIRST THING A VISITOR SEES.
+ *
+ * Chrome fires `beforeinstallprompt` as soon as the engagement heuristic is
+ * satisfied, which can be within a second of the page painting. Asking somebody
+ * to install an app they have not looked at yet is how a prompt gets dismissed
+ * permanently -- and the dismissal is remembered, so there is no second chance.
+ *
+ * The gate is a real interaction on THIS visit: a scroll, a pointer down or a
+ * key. Not a timer, because a timer fires at a shopper who walked away.
+ */
+const INTERACTION_EVENTS = ['scroll', 'pointerdown', 'keydown'] as const
+
+/**
+ * The attribute `globals.css` reserves space off. The banner is `fixed`, so
+ * without this it lies on top of the bottom of the page -- which is what it was
+ * doing, over the fold, on every page it appeared on.
+ *
+ * Set when the banner mounts and removed when it goes. The layout change lands
+ * within 500ms of the interaction that allowed the banner, which is the window
+ * browsers exclude from CLS, so reserving here costs nothing on the metric this
+ * project holds at 0.
+ */
+const RESERVE_ATTRIBUTE = 'data-pwa-prompt'
+
 type InstallPromptEvent = Event & {
   prompt: () => Promise<void>
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
@@ -28,6 +53,18 @@ type InstallPromptEvent = Event & {
 
 export default function InstallPrompt() {
   const [deferred, setDeferred] = useState<InstallPromptEvent | null>(null)
+  const [engaged, setEngaged] = useState(false)
+
+  // The interaction gate. Registered once, torn down after the first signal.
+  useEffect(() => {
+    const onInteract = () => setEngaged(true)
+    for (const type of INTERACTION_EVENTS) {
+      window.addEventListener(type, onInteract, { once: true, passive: true })
+    }
+    return () => {
+      for (const type of INTERACTION_EVENTS) window.removeEventListener(type, onInteract)
+    }
+  }, [])
 
   useEffect(() => {
     // `matchMedia` rather than a userAgent test: this is the only reliable way
@@ -47,7 +84,16 @@ export default function InstallPrompt() {
     return () => window.removeEventListener('beforeinstallprompt', onPrompt)
   }, [])
 
-  if (!deferred) return null
+  const visible = deferred !== null && engaged
+
+  // Reserve the space for exactly as long as the banner occupies it.
+  useEffect(() => {
+    if (!visible) return
+    document.documentElement.setAttribute(RESERVE_ATTRIBUTE, '')
+    return () => document.documentElement.removeAttribute(RESERVE_ATTRIBUTE)
+  }, [visible])
+
+  if (!visible) return null
 
   const dismiss = () => {
     localStorage.setItem(DISMISSED_KEY, '1')
@@ -73,7 +119,13 @@ export default function InstallPrompt() {
     <section
       dir="rtl"
       aria-label="התקנת האפליקציה"
-      className="fixed inset-x-3 bottom-3 z-40 flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-3 shadow-lg sm:inset-x-auto sm:end-4 sm:max-w-sm"
+      // `bottom` is the consent reservation plus the inset, not a fixed 12px.
+      // Both banners are `fixed` at the bottom of the viewport, so with a
+      // constant offset this one lands ON TOP of the consent banner whenever a
+      // visitor has not answered it yet -- covering the two buttons they have
+      // to press before anything else on the site works.
+      style={{ insetBlockEnd: 'calc(0.75rem + var(--reserve-consent))' }}
+      className="fixed inset-x-3 z-40 flex items-center gap-3 rounded-2xl border border-gray-200 bg-white p-3 shadow-lg sm:inset-x-auto sm:end-4 sm:max-w-sm"
     >
       <img src="/icons/icon-192.png" alt="" width={40} height={40} className="rounded-xl" />
       <div className="min-w-0 flex-1">
@@ -84,14 +136,14 @@ export default function InstallPrompt() {
         <button
           type="button"
           onClick={dismiss}
-          className="min-h-11 rounded-xl px-2 text-gray-500 text-xs transition-colors hover:text-gray-900"
+          className="min-h-touch-min min-w-touch-min rounded-xl px-2 text-gray-500 text-xs transition-colors hover:text-gray-900 focus-visible:outline-2 focus-visible:outline-brand-dark focus-visible:outline-offset-2"
         >
           לא עכשיו
         </button>
         <button
           type="button"
           onClick={install}
-          className="min-h-11 rounded-xl bg-brand-primary px-4 font-bold text-heading text-xs transition-opacity hover:opacity-90"
+          className="min-h-touch-min rounded-xl bg-brand-primary px-4 font-bold text-heading text-xs transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-brand-dark focus-visible:outline-offset-2"
         >
           התקנה
         </button>

@@ -650,3 +650,57 @@ Do not `db push`. Do not apply a pending migration from an agent. Schema rollbac
 - `payment_events` is wired into the Cardcom webhook only. The checkout,
   hosted-page, saved-card, voucher, refund, DLQ and reconciliation events have
   no emitter yet.
+
+## Rotate `SUPABASE_SECRET_KEY` before production traffic
+
+**Status: REQUIRED, not done.** The secret key currently in `.env.local` was
+exposed during setup on 2026-09-04. It works — it authenticates against project
+`ixvwfbuvfxxsjiywhbbb` — and that is exactly why it has to be replaced: it is a
+working key that bypasses every RLS policy on the database, and it has been
+handled outside a secret store.
+
+A secret key is not scoped. It reads and writes every table, every user row,
+every order and every voucher, and it can mint tokens for any user. There is no
+partial exposure of one.
+
+### Steps
+
+1. **Mint the replacement first.** Supabase Dashboard → project
+   `ixvwfbuvfxxsjiywhbbb` → Project Settings → API Keys → *Create new secret
+   key*. Name it with the date so the next rotation knows what it is replacing.
+   Do not revoke the old one yet: revoking before the new key is in place takes
+   the site down.
+
+2. **Put it where the app reads it.**
+   - Local: `SUPABASE_SECRET_KEY=` in `.env.local` (gitignored; never commit it).
+   - Vercel: `vercel env add SUPABASE_SECRET_KEY production` and again for
+     `preview`. **Blocked today** — the Vercel project for this repo does not
+     exist; see blocker 0 in `STATE.md`.
+
+3. **Verify before revoking.** Boot the server and read the log:
+
+   ```bash
+   PORT=3311 pnpm start
+   # then, in the log:  "event":"env.probe_ok"
+   ```
+
+   `src/lib/env-probe.ts` asks `/auth/v1/settings` with the key at boot. If it
+   reports `env.probe_failed` naming `SUPABASE_SECRET_KEY`, the new key is not
+   right and the old one must stay until it is.
+
+4. **Then revoke the old key**, in the same dashboard screen. Not before step 3
+   passes.
+
+5. **Confirm the paths that use it actually work**, because they are the ones
+   that fail silently rather than loudly: add an item to the cart as a guest,
+   reach the checkout address step, and open a wallet balance. A guest
+   add-to-cart with a bad key returns HTTP 200, sets a session cookie and writes
+   no row — which is how the first bad key survived unnoticed.
+
+6. **Record it** in `STATE.md` with the date, so the next person can tell an
+   un-rotated key from a rotated one.
+
+### While it is not done
+
+Treat the current key as compromised: it is fine for local development against
+this project, and it must not be the key that serves production traffic.
