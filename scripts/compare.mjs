@@ -981,6 +981,10 @@ await new Promise((resolvePromise, reject) => {
     env: {
       ...process.env,
       COMPARE_PAGE: page,
+      // The viewport this run was shot at. `report.W` in the child is the
+      // narrower of the two images, which is not the same thing when the live
+      // page and ours differ in width.
+      COMPARE_WIDTH: String(VIEW.width),
       // Read the per-process shots, not the shared names. Without this the
       // isolation above buys nothing: the diff would still be taken across
       // whatever refs/live.png happens to hold by the time the child starts.

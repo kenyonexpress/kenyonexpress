@@ -42,6 +42,16 @@ export async function register(): Promise<void> {
     // failure from a process that should not have started.
     await import('@/lib/env')
     await import('../sentry.server.config')
+
+    // Then the liveness half, which env.ts cannot do: it decides offline and
+    // throws, while this makes one request per key and only reports. A key can
+    // be present, non-demo and well-formed and still be rejected by the
+    // project -- measured on 2026-09-04, when SUPABASE_SECRET_KEY was a valid
+    // `sb_secret_` key that answered 401 to everything.
+    //
+    // NOT awaited: a slow or unreachable Supabase must not delay the first
+    // response, and a network blip must not become an outage.
+    void import('@/lib/env-probe').then(({ reportEnvironment }) => reportEnvironment())
   }
 
   // The edge runtime gets its own module instance. src/proxy.ts runs there, and
