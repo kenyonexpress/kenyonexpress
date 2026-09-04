@@ -15,7 +15,7 @@ const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
  *
  * so RTL, reading right to left after the search: region selector, heart,
  * user, cart -- with 38px edge-to-edge between the icons at lg (the measured
- * breakpoint; phones get gap-4 so 320px keeps zero sideways scroll). gap-[38px] is that
+ * breakpoint; phones get gap-4 so 320px keeps zero sideways scroll). gap-nav-gap is that
  * measurement, not a taste.
  *
  * The heart is BACK (it was removed in [28] because there was no wishlist
@@ -43,7 +43,7 @@ export default function MastheadNav() {
       <RegionMenu />
 
       <nav
-        className="flex shrink-0 items-center gap-4 lg:gap-[38px]"
+        className="flex shrink-0 items-center gap-4 lg:gap-nav-gap"
         aria-label="פעולות חשבון ועגלה"
       >
         <Link

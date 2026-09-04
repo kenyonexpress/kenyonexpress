@@ -27,7 +27,7 @@ export default async function DealsOfTheDay() {
   return (
     <section
       aria-label="מוצרים מובילים"
-      className="mx-auto w-full max-w-deals px-[25px] pt-deals-top pb-6 md:px-[49px] xl:px-0"
+      className="mx-auto w-full max-w-deals px-deals-pad pt-deals-top pb-6 md:px-deals-pad-md xl:px-0"
     >
       <div className="jet-listing-grid-deals bg-white">
         {products.map((product) => (

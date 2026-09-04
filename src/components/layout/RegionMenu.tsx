@@ -146,7 +146,7 @@ export default function RegionMenu() {
   return (
     <div
       ref={wrapRef}
-      className="relative me-[14px] ms-[53px] hidden shrink-0 lg:block"
+      className="relative me-lg ms-region-inset hidden shrink-0 lg:block"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >

@@ -157,11 +157,11 @@ export default function HeaderSearch() {
       aria-label="חיפוש מוצרים באתר"
       className="relative hidden min-w-0 flex-1 justify-center md:flex"
     >
-      <div className="relative w-full max-w-[534px]">
+      <div className="relative w-full max-w-search-pill">
         {/* Live (refs, 1440): the whole control is 534x41, a 22px-radius pill
             with the yellow button at the inline end. h-11 (44) and rounded-lg
             were ours; 41px and the pill are the measurement. */}
-        <div className="flex h-[41px] w-full items-stretch overflow-hidden rounded-[22px] border-2 border-brand-primary bg-white">
+        <div className="flex h-newsletter-field w-full items-stretch overflow-hidden rounded-pill border-2 border-brand-primary bg-white">
           <label htmlFor="masthead-search" className="sr-only">
             חיפוש מוצרים
           </label>

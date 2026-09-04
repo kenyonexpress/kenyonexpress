@@ -137,7 +137,7 @@ export default function SiteFooter() {
         moves the home-page gate. It is a 1:1 gap, not a scoring one.
       */}
       <div className="hidden bg-brand-secondary text-heading lg:block">
-        <div className="mx-auto flex min-h-newsletter-bar max-w-store-footer flex-col items-center justify-between gap-4 px-[15px] lg:flex-row">
+        <div className="mx-auto flex min-h-newsletter-bar max-w-store-footer flex-col items-center justify-between gap-4 px-gutter lg:flex-row">
           {/* right side: paper-plane + title + subtitle */}
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-center lg:justify-start lg:text-start">
             <svg
@@ -201,7 +201,7 @@ export default function SiteFooter() {
         {/* Measured on live: three columns of 492 / 335 / 335 with no gutter of
             their own inside the 1170 content width, and 60px of clearance under
             the newsletter bar before the headings. */}
-        <div className="mx-auto grid max-w-store-footer grid-cols-1 gap-y-0 px-[15px] pt-0 pb-0 lg:grid-cols-[492fr_335fr_335fr] lg:gap-x-0 lg:gap-y-8 lg:pt-[60px] lg:pb-10">
+        <div className="mx-auto grid max-w-store-footer grid-cols-1 gap-y-0 px-gutter pt-0 pb-0 lg:grid-cols-[492fr_335fr_335fr] lg:gap-x-0 lg:gap-y-8 lg:pt-footer-columns-top lg:pb-10">
           {/* right column: logo + contact + address. Desktop-only: live's
               handheld footer carries none of it (see the note above). */}
           <div className="hidden lg:block">
@@ -329,7 +329,7 @@ export default function SiteFooter() {
         so a phone does not simply lose it.
       */}
       <div className="bg-footer-bg text-white lg:hidden">
-        <div className="mx-auto flex max-w-store-footer flex-col items-center gap-0.5 px-[15px] py-4 text-center">
+        <div className="mx-auto flex max-w-store-footer flex-col items-center gap-0.5 px-gutter py-4 text-center">
           <SmartImage
             src={LOGO_FOOTER}
             alt="קניון EXPRESS"

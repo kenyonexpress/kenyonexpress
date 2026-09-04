@@ -74,7 +74,60 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 קודם: 2026-08-19 22:01 (הצ'ק-אאוט ירד מתחת לשער הפיקסלים, ו-CLS שלו תוקן)
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
-## המשך מ: תור המרתון, שלב 16
+## המשך מ: ‏UI-CLOSEOUT, שלב 2 (‏RTL FOUNDATION)
+
+‏04.09: התקבל תור חדש, ‏UI-CLOSEOUT — ‏13 שלבים, שער ‏compare.mjs מתחת
+ל-11% ב-380/768/1440 אחרי כל שלב חזותי. תור המרתון (למטה) נסגר על שלב 16;
+‏17-20 שלו לא בוצעו והם מתועדים שם כפתוחים.
+
+### ‏[x] שלב 1 — ‏TOKEN LAYER
+
+שכבת ה-tokens כבר הייתה קיימת ומתועדת (`src/styles/tokens.css` +
+`src/styles/tokens.ts`, ‏@theme של ‏Tailwind v4, כל ערך עם מקור מדוד מ-
+`refs/ke_live_computed.json`). **החלטה שהתקבלה לבד:** לא הועברה
+ל-`packages/ui/` כפי שהתור ביקש — אין ‏workspace ‏packages בריפו, ‏globals.css
+מייבא משם, ו-30 קבצי טסט מפנים לנתיב הזה. המיקום הקיים הוא אותה שכבה בדיוק.
+
+מה שבאמת היה חסר, ונסגר: **שער ה-hex סרק ‏`.tsx` בלבד**, ולכן כל צבע
+שברח מהפלטה ב-09/2026 ברח דרך קובץ ‏`.ts`:
+
+| מה נמצא | היכן |
+|---|---|
+| ‏`HERO_SLIDER_BG = '#eef4f7'` צובע את הבלוק הגדול בדף הבית כ-inline style | ‏`src/lib/hero-singlefile-data.ts` |
+| שבעה ליטרלים בכל אחד משני בוני המייל (הצהוב כבר סטה פעם ל-#f5c518) | ‏`src/lib/email/*.ts` |
+| ‏CTA שחור ב-system-ui בשלושה מיילים נוספים — המותג פשוט לא היה בהם | ‏abandoned-cart, ‏weekly-digest, ‏newsletter |
+| האדום של ה-wallet כתוב פעמיים (hex + rgb) תחת הערה שטענה שזה "האדום שהאתר נמדד מולו" — האתר נמדד מול ‏#dc3545 | ‏`src/lib/wallet/pass-model.ts` |
+
+נוסף ‏`OFF_PAGE` ב-tokens.ts (הפלטה למשטחים שגיליון סגנונות לא מגיע אליהם:
+‏HTML של מייל, ‏Apple/Google Wallet), וכל חמשת המודולים מייבאים ממנו במקום
+להחזיק ליטרל. ‏`--color-hero-slider-bg` נוסף ל-@theme וה-slider צובע דרך
+מחלקה.
+
+הכלל עצמו עבר ל-`scripts/raw-value-scan.mjs` — קורא אחד, שני צרכנים:
+‏`src/styles/tokens.test.ts` (נופל ב-`pnpm test`) ו-`scripts/tokens-gate.mjs`
+שמחובר ל-`pnpm lint` (נופל ב-build/CI; הריפו הוא ‏Biome, אין ‏ESLint, וזה
+המקבילה המדויקת ל-"ESLint rule שמפילה את הבילד"). הוא סורק ‏`.ts` ו-`.tsx`,
+כולל ‏`[Npx]` שרירותי ב-tsx, ולכל רשומת ‏allowlist יש נימוק כתוב.
+
+גם ‏31 ערכי ‏`[Npx]` נסחפו: ‏7 מהם ‏`px-[15px]` שהוא ‏`--spacing-gutter` הקיים,
+‏השאר קיבלו ‏token מדוד (search pill ‏534/41, ‏nav-gap ‏38, ‏region-inset ‏53,
+‏deals-pad ‏25/49, ‏footer-columns-top ‏60, ‏admin/supplier header, ‏radius-cta).
+שני ה-honeypots אוחדו למחלקה אחת — אחד מהם השתמש ב-`-left-` פיזי במסמך RTL.
+
+**ראיות שלב 1 (04.09, בילד טרי, ‏PORT=3311):**
+
+| שער | תוצאה |
+|---|---|
+| ‏`pnpm type-check` | נקי |
+| ‏`pnpm lint` | נקי, כולל ‏`tokens gate: clean` |
+| ‏`pnpm test` | ‏3878 עוברים, ‏12 מדולגים, ‏306 קבצים |
+| ‏`pnpm build` | ירוק |
+| ‏compare home 380 | **10.95%** |
+| ‏compare home 768 | **7.56%** |
+| ‏compare home 1440 | **5.97%** |
+| ‏grep raw hex מחוץ ל-tokens | **0** |
+
+### (היסטוריה) המשך מ: תור המרתון, שלב 16
 
 ### ⚠️ תקרית (04.09 06:24): סוכן מקביל החיל את 166-168 על פרודקשן בלי אישור
 

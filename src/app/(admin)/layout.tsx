@@ -76,7 +76,7 @@ async function AdminFrame({ children }: { children: React.ReactNode }) {
  * border. Computing it from the class names gave 57 and was wrong.
  */
 function AdminFrameFallback() {
-  return <div className="h-[53px] border-b border-gray-200 bg-white" aria-hidden="true" />
+  return <div className="h-admin-header border-b border-gray-200 bg-white" aria-hidden="true" />
 }
 
 /**

@@ -99,7 +99,7 @@ export default function CartPageView() {
                 disabled={hasUnavailable || isEmpty}
               />
             </div>
-            <p className="cart-sidebar__note mt-3 px-[15px]">
+            <p className="cart-sidebar__note mt-3 px-gutter">
               המחירים מחושבים בזמן אמת ועשויים להשתנות לפני התשלום
             </p>
           </div>

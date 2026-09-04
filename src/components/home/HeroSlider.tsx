@@ -2,7 +2,7 @@
 
 import SmartImage from '@/components/ui/SmartImage'
 import { ELECTRO_HERO } from '@/lib/electro-hero-tokens'
-import { HERO_SLIDER_BG } from '@/lib/hero-singlefile-data'
+import { HERO_SLIDER_BG_CLASS } from '@/lib/hero-singlefile-data'
 import { getImageProps } from 'next/image'
 import { useCallback, useEffect, useState } from 'react'
 
@@ -719,8 +719,7 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
     <div
       dir="rtl"
       data-hero-slider=""
-      style={{ backgroundColor: HERO_SLIDER_BG }}
-      className="relative h-full min-h-0 w-full min-w-0 flex-1 overflow-hidden border-x border-border-alt font-sans"
+      className={`${HERO_SLIDER_BG_CLASS} relative h-full min-h-0 w-full min-w-0 flex-1 overflow-hidden border-x border-border-alt font-sans`}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}

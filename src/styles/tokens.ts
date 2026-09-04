@@ -102,6 +102,16 @@ export const SITE = {
      * the one-point-off-white is visible against the page behind it.
      */
     drawer: '#fdfcfc',
+    /**
+     * The hero slider's own ground, measured off refs/ke_live_home.html.
+     *
+     * It lived as `HERO_SLIDER_BG = '#eef4f7'` in `src/lib/hero-singlefile-data.ts`
+     * and was applied as an inline `backgroundColor`. That is a colour painting
+     * the largest block on the homepage from outside the palette entirely: the
+     * hex gate only ever read `.tsx`, so a `.ts` constant was invisible to it,
+     * and a rebrand through this file would have left the hero alone.
+     */
+    heroSlider: '#eef4f7',
   },
   /**
    * Promo tints for the left-rail banner cards. Three near-white washes that
@@ -155,6 +165,67 @@ export const SITE = {
 } as const
 
 /**
+ * THE PALETTE FOR SURFACES A STYLESHEET CANNOT REACH.
+ *
+ * `SITE` above is consumed through Tailwind utilities, which means it is only
+ * available where our CSS is. Three renderers are not:
+ *
+ *   - the transactional emails (`src/lib/email/*`), which emit inline styles
+ *     because mail clients drop <style> blocks and do not resolve custom
+ *     properties;
+ *   - the Apple Wallet pass (`src/lib/wallet/pass-model.ts`), whose colours are
+ *     `rgb(r, g, b)` strings in a JSON manifest;
+ *   - the Google Wallet object in the same file, which takes a hex string.
+ *
+ * Those three carried SEVEN colours as bare literals, and the gate that forbids
+ * a hex in a component never looked at a `.ts` file, so nothing objected. The
+ * yellow had already drifted once: both email builders shipped `#f5c518` while
+ * the site painted `#fed700`, and it survived until somebody held an email next
+ * to the page it links to.
+ *
+ * These are IMPORTED by those modules, not copied. A rebrand edits one value
+ * here and the email, the pass and the page move together.
+ */
+export const OFF_PAGE = {
+  /** The site yellow. Same value as SITE.brand.primary, asserted in tokens.test.ts. */
+  brand: SITE.brand.primary,
+  /** Body ink. Same value as SITE.brand.dark. */
+  ink: SITE.brand.dark,
+  /** Secondary text in an email. Tailwind's gray-500; email chrome has no live counterpart to measure. */
+  muted: '#6b7280',
+  /** Hairlines and table rules in an email. Tailwind's gray-200. */
+  rule: '#e5e7eb',
+  /** Tinted panel behind a total or a code. Tailwind's gray-50. */
+  panel: '#f9fafb',
+  /** The paper an email card sits on. */
+  paper: '#ffffff',
+  /** A second, warmer panel: the voucher code block. */
+  panelWarm: '#f5f5f5',
+  /**
+   * THE BRAND RED, AND IT IS DELIBERATELY NOT `SITE.functional.price`.
+   *
+   * The 2026 brief names #E4002B. The live site measures #dc3545 (456
+   * elements) and #E4002B appears nowhere in `refs/`, so the on-page price red
+   * stays measured -- `compare.mjs` scores against live and the brief's red
+   * would cost fidelity on every listing.
+   *
+   * A wallet pass is not on the page and is not scored by any pixel gate. It is
+   * the one surface where the brief's red is the right red, so it is named here
+   * rather than being a literal nobody can grep for. `pass-model.ts` used to
+   * carry it twice, once as hex and once as rgb(), with a comment claiming it
+   * was "the brand red the whole site is measured against" -- which was the
+   * opposite of true.
+   */
+  brandRed: '#e4002b',
+} as const
+
+/** `OFF_PAGE.brandRed` as the `rgb(r, g, b)` string an Apple Wallet pass requires. */
+export function offPageRgb(hex: string): string {
+  const n = Number.parseInt(hex.slice(1), 16)
+  return `rgb(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255})`
+}
+
+/**
  * Every custom property `tokens.css` must declare in its `@theme` block, and
  * the value it must carry. `tokens.test.ts` asserts the stylesheet agrees with
  * this map, so a colour can only be changed here.
@@ -195,6 +266,7 @@ export const SITE_CSS_VARS: Record<string, string> = {
   '--color-warning-surface': SITE.surface.warning,
   '--color-footer-bg': SITE.surface.footer,
   '--color-drawer-bg': SITE.surface.drawer,
+  '--color-hero-slider-bg': SITE.surface.heroSlider,
 
   '--color-promo-rose': SITE.promo.rose,
   '--color-promo-violet': SITE.promo.violet,
@@ -264,6 +336,20 @@ export const SITE_CSS_METRICS: Record<string, string> = {
   // 380. The old 30 was compensating for a feature bar that was the wrong
   // height; once that was fixed it pushed the whole grid a row out of step.
   '--spacing-deals-top': '3px',
+
+  // The last arbitrary [Npx] values in components, promoted 2026-09-04 when
+  // scripts/tokens-gate.mjs started failing lint on them. Provenance per token
+  // in tokens.css; the ones with no live counterpart say so there.
+  '--spacing-search-pill': '534px',
+  '--spacing-nav-gap': '38px',
+  '--spacing-region-inset': '53px',
+  '--spacing-deals-pad': '25px',
+  '--spacing-deals-pad-md': '49px',
+  '--spacing-footer-columns-top': '60px',
+  '--spacing-admin-header': '53px',
+  '--spacing-supplier-header': '49.5px',
+  '--spacing-app-return-card': '420px',
+  '--radius-cta': '10px',
 }
 
 /**

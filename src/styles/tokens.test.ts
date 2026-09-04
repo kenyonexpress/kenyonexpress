@@ -1,6 +1,7 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join, relative, resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { formatOffenders, scanRawValues, sourceFiles } from '../../scripts/raw-value-scan.mjs'
 import {
   CATALOG_CSS_METRICS,
   CATALOG_CSS_VARS,
@@ -306,41 +307,34 @@ describe('site colour tokens', () => {
     }
   })
 
-  it('carries no raw hex in any component', () => {
-    const offenders: string[] = []
-    for (const file of tsxFiles()) {
-      if (HEX_ALLOWLIST.has(file)) continue
-      // Comments are documentation and may name a token, not a hex; the sweep
-      // rewrote the provenance notes to say "bg = brand-primary" for exactly
-      // that reason, so nothing here needs stripping first.
-      for (const hex of readFileSync(file, 'utf8').match(/#[0-9a-fA-F]{3,8}\b/g) ?? []) {
-        offenders.push(`${file}: ${hex}`)
-      }
-    }
-    expect(offenders, `raw hex in components:\n  ${offenders.join('\n  ')}`).toHaveLength(0)
+  /**
+   * THE RAW-VALUE RULE NOW LIVES IN `scripts/raw-value-scan.mjs`.
+   *
+   * It used to be two assertions right here, and both walked `.tsx` only. That
+   * was the hole, and it was exactly the size of the rule: every colour that
+   * escaped the palette in 2026-09 escaped through a `.ts` file. The hero
+   * slider's ground, seven literals in each email builder, a black CTA in three
+   * more transactional emails, and the wallet red written twice under a comment
+   * that named the wrong red.
+   *
+   * The scanner is shared with `scripts/tokens-gate.mjs`, which `pnpm lint`
+   * runs, so the same rule fails the build and fails the suite. Its allowlists
+   * carry the reason for every entry.
+   */
+  it('names no raw hex, rgb() or arbitrary px anywhere under src/', () => {
+    const offenders = scanRawValues()
+    expect(offenders, `raw values outside the token layer:\n${formatOffenders(offenders)}`).toEqual(
+      [],
+    )
   })
 
-  /**
-   * THE HEX RULE HAD A HOLE THE SAME SIZE AS ITSELF.
-   *
-   * `rgb(221, 221, 222)` is `#dddddd` written another way, and the assertion
-   * above never looked at it. Five of them had settled into components by
-   * 2026-09-03 -- a border already tokenised as `--color-border`, the slider's
-   * inactive dot, and the consent banner's hairline, shadow and body ink --
-   * and every one of them was invisible to the gate that exists to prevent
-   * exactly that.
-   *
-   * Same allowlist as the hex rule, for the same two reasons.
-   */
-  it('carries no raw rgb() or rgba() in any component', () => {
-    const offenders: string[] = []
-    for (const file of tsxFiles()) {
-      if (HEX_ALLOWLIST.has(file)) continue
-      for (const fn of readFileSync(file, 'utf8').match(/\brgba?\(\s*\d[^)]*\)/g) ?? []) {
-        offenders.push(`${file}: ${fn}`)
-      }
-    }
-    expect(offenders, `raw rgb() in components:\n  ${offenders.join('\n  ')}`).toHaveLength(0)
+  it('scans .ts as well as .tsx, which is the hole this rule was opened for', () => {
+    // A guard on the guard: if sourceFiles() ever stops walking .ts the
+    // assertion above keeps passing and stops meaning anything.
+    const files = sourceFiles()
+    expect(files.some((f) => f.endsWith('.ts'))).toBe(true)
+    expect(files).toContain('src/lib/email/notifications.ts')
+    expect(files).toContain('src/lib/wallet/pass-model.ts')
   })
 
   it('keeps the Google mark out of the palette', () => {

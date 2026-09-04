@@ -160,7 +160,7 @@ export default function SupplierLeadForm() {
         trick is old enough that several bot frameworks skip hidden fields on
         purpose, while an off-screen input still looks fillable to them.
       */}
-      <div className="absolute -left-[9999px]" aria-hidden="true">
+      <div className="honeypot-offscreen" aria-hidden="true">
         <label htmlFor="lead-company">אל תמלאו שדה זה</label>
         <input id="lead-company" name="company" tabIndex={-1} autoComplete="off" />
       </div>

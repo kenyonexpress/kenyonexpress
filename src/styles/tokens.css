@@ -100,6 +100,10 @@
   --color-warning-surface: #fffbe6; /* inline warning banner */
   --color-footer-bg: #333e48; /* dark footer body (electro home-v7) */
   --color-drawer-bg: #fdfcfc; /* off-canvas drawer paper (live: rgb(253,252,252)) */
+  /* The hero slider's ground, measured off refs/ke_live_home.html. Was an
+     inline backgroundColor fed by a `.ts` constant, which the hex gate could
+     not see because it only read `.tsx`. */
+  --color-hero-slider-bg: #eef4f7;
 
   /* --- Promo rail tints ------------------------------------------------------- */
   --color-promo-rose: #fff5f5;
@@ -309,6 +313,49 @@
      row height inside the panel is the same 14px type as the drawer. */
   --spacing-nav-row: 45px;
   --spacing-region-menu: 200px;
+
+  /* --- The last arbitrary lengths in components, promoted 2026-09-04 ---------
+     `scripts/tokens-gate.mjs` now fails `pnpm lint` on a `[Npx]` in a .tsx, and
+     these are the values that were left. Each had a call site that could not be
+     expressed on Tailwind's own scale (which covers every multiple of 4px, and
+     4.5/5.5 steps besides), so each is named here instead. Provenance per line;
+     the ones with no live counterpart say so rather than pretending. */
+
+  /* The live search pill, measured at 1440: 534 wide, 41 tall, 22 radius --
+     the same height as the newsletter field and the same radius as
+     --radius-pill, both of which it deliberately shares rather than restates. */
+  --spacing-search-pill: 534px;
+
+  /* The masthead nav's gap between top-level items, from lg up. Phones get
+     gap-4 so 320px keeps zero sideways scroll; this is the desktop figure. */
+  --spacing-nav-gap: 38px;
+
+  /* The region menu's inset from the nav beside it. */
+  --spacing-region-inset: 53px;
+
+  /* The deals carousel's inline padding: 25px on phones, 49px from md, and
+     zero from xl where --container-deals takes over. */
+  --spacing-deals-pad: 25px;
+  --spacing-deals-pad-md: 49px;
+
+  /* The store footer's column block, top padding from lg. */
+  --spacing-footer-columns-top: 60px;
+
+  /* Header placeholders that reserve the exact height of the bar that
+     hydrates into them, so neither console shifts on load. No live
+     counterpart: these are admin and supplier chrome, not the storefront. */
+  --spacing-admin-header: 53px;
+  --spacing-supplier-header: 49.5px;
+
+  /* The mobile-app return page's card. Not a storefront template and not in
+     the pixel comparison; it renders inside the app's web view. */
+  --spacing-app-return-card: 420px;
+
+  /* The transactional call-to-action's corner: the button in the voucher
+     email, in the four notification builders, and on the app-return page.
+     Deliberately NOT one of the five measured radii below -- those are the
+     live site's, and none of these three surfaces is the live site. */
+  --radius-cta: 10px;
 
   /* --- Type scale, the rest of it (measured) ---------------------------------
      Added 2026-09-03 when the arbitrary `text-[Npx]` values left in components

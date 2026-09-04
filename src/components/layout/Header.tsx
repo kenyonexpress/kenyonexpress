@@ -116,7 +116,7 @@ export default function SiteHeader() {
           of 37.333 on an inner page, three on home. h-header-topbar (37.3) from
           md up is live's 38 less its 1px border.
         */}
-        <div className="mx-auto flex max-w-page flex-wrap items-center px-[15px] text-[0.929em] text-heading md:h-header-topbar md:flex-nowrap">
+        <div className="mx-auto flex max-w-page flex-wrap items-center px-gutter text-[0.929em] text-heading md:h-header-topbar md:flex-nowrap">
           {/* Home only. See the note above: revealed by `:has()` in globals.css
               against the marker the home page renders, because reading the
               pathname here would turn every prerendered route dynamic. */}
@@ -144,7 +144,7 @@ export default function SiteHeader() {
           live's own switch is `hidden-xl-up` / `d-xl-block` on the two header
           variants -- the handheld header is what 768 AND 1024 get.
         */}
-        <div className="mx-auto flex h-header-handheld max-w-page items-center justify-between gap-4 px-[15px] xl:h-header-masthead">
+        <div className="mx-auto flex h-header-handheld max-w-page items-center justify-between gap-4 px-gutter xl:h-header-masthead">
           {/* HANDHELD (below xl), in live's order: hamburger on the right,
               logo centred, cart + account on the left. */}
           {/* THE HAMBURGER IS ON THE INLINE-START, WHICH IN RTL IS THE RIGHT,

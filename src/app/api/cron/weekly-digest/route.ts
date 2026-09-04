@@ -6,6 +6,7 @@ import { withRequestLog } from '@/lib/observability/with-request-log'
 import { bearerMatches } from '@/lib/security/constant-time'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { loadSalesLines } from '@/server/analytics/queries'
+import { OFF_PAGE } from '@/styles/tokens'
 import { type NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -50,15 +51,15 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
     ['שוברים שפגים בשבוע הקרוב', String(expiring.count ?? 0)],
   ]
 
-  const html = `<div dir="rtl" style="font-family:sans-serif">
+  const html = `<div dir="rtl" style="font-family:Heebo,Arial,Helvetica,sans-serif">
     <h2>סיכום שבועי — KenyonExpress</h2>
     <table style="border-collapse:collapse">${rows
       .map(
         ([label, value]) =>
-          `<tr><td style="padding:4px 12px 4px 0;color:#555">${label}</td><td style="padding:4px 0;font-weight:bold">${value}</td></tr>`,
+          `<tr><td style="padding:4px 12px 4px 0;color:${OFF_PAGE.ink}">${label}</td><td style="padding:4px 0;font-weight:bold">${value}</td></tr>`,
       )
       .join('')}</table>
-    <p style="color:#888;font-size:12px">שבעת הימים האחרונים · נשלח אוטומטית מ-cron ‏weekly-digest</p>
+    <p style="color:${OFF_PAGE.muted};font-size:12px">שבעת הימים האחרונים · נשלח אוטומטית מ-cron ‏weekly-digest</p>
   </div>`
 
   const result = await sendEmail({

@@ -138,7 +138,7 @@ export default function MobileDrawer() {
           open ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <div className="flex h-drawer-row items-center justify-between border-b border-border px-[15px]">
+        <div className="flex h-drawer-row items-center justify-between border-b border-border px-gutter">
           <h2 id={titleId} className="m-0 text-sm font-bold text-heading">
             {DRAWER_TITLE}
           </h2>
@@ -161,7 +161,7 @@ export default function MobileDrawer() {
                   // 50px is live's row height and clears the 44px touch floor
                   // on its own, so no padding trick is needed here.
                   onClick={close}
-                  className={`flex h-drawer-row items-center border-b border-border px-[15px] text-sm transition-colors hover:bg-surface-hover ${
+                  className={`flex h-drawer-row items-center border-b border-border px-gutter text-sm transition-colors hover:bg-surface-hover ${
                     category.highlight ? 'font-bold text-heading' : 'text-heading'
                   }`}
                 >

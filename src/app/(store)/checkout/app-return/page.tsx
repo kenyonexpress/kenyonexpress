@@ -86,7 +86,7 @@ async function AppReturnBody({ searchParams }: Props) {
         without one.
       */}
       <meta httpEquiv="refresh" content={`0;url=${deepLink}`} />
-      <div className="max-w-[420px]">
+      <div className="max-w-app-return-card">
         <h1 className="mb-2.5 text-xl font-extrabold text-heading">{heading}</h1>
         <p className="text-body-lg leading-relaxed text-muted">{message}</p>
         {/*
@@ -96,7 +96,7 @@ async function AppReturnBody({ searchParams }: Props) {
         */}
         <a
           href={deepLink}
-          className="mt-[18px] inline-block rounded-[10px] bg-brand-primary px-[22px] py-3 font-bold text-brand-dark no-underline"
+          className="mt-4.5 inline-block rounded-cta bg-brand-primary px-5.5 py-3 font-bold text-brand-dark no-underline"
         >
           חזרה לאפליקציה
         </a>

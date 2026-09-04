@@ -76,7 +76,7 @@ export default async function CityPage({ params }: Props) {
   )
 
   return (
-    <div dir="rtl" className="mx-auto max-w-page px-[15px] py-8">
+    <div dir="rtl" className="mx-auto max-w-page px-gutter py-8">
       <script
         type="application/ld+json"
         // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD has no other insertion point, and jsonLdScript escapes every angle bracket.

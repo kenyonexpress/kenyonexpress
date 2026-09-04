@@ -361,3 +361,24 @@ body:has([data-home]) .topbar-greeting {
     scroll-behavior: auto !important;
   }
 }
+
+/* THE HONEYPOT'S OFF-SCREEN BOX, in one place instead of two.
+ *
+ * Two forms carry a decoy field that a bot fills and a person never sees. They
+ * had two different implementations of "off screen": one was
+ * `absolute -left-[9999px]` with no size, the other `absolute -start-[9999px]
+ * h-0 w-0 overflow-hidden`. The first is a PHYSICAL offset on an RTL document,
+ * and with no width or overflow clamp it can extend the scrollable area.
+ *
+ * NOT `sr-only`: that utility exists to keep content available to screen
+ * readers, which is the opposite of what a honeypot wants. The field stays in
+ * the DOM and fillable (several bot frameworks skip display:none inputs on
+ * purpose) and is taken out of the accessibility tree by aria-hidden on the
+ * wrapper. */
+.honeypot-offscreen {
+  position: absolute;
+  inset-inline-start: -9999px;
+  block-size: 0;
+  inline-size: 0;
+  overflow: hidden;
+}

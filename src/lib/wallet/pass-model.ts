@@ -1,4 +1,5 @@
 import { couponMoneyView, couponStatusView, formatCouponCode } from '@/lib/vouchers/coupon-view'
+import { OFF_PAGE, offPageRgb } from '@/styles/tokens'
 
 /**
  * What a voucher looks like inside Apple Wallet and inside Google Wallet.
@@ -49,8 +50,20 @@ export interface ApplePassOptions {
   origin: string
 }
 
-/** `#E4002B` on white, the brand red the whole site is measured against. */
-const BRAND_RGB = 'rgb(228, 0, 43)'
+/**
+ * The pass background, as the `rgb(r, g, b)` string PassKit requires.
+ *
+ * THE COMMENT HERE USED TO SAY "the brand red the whole site is measured
+ * against", and that was backwards. The site measures #dc3545 on 456 elements
+ * of `refs/ke_live_computed.json`; #E4002B is the 2026 brief's red and appears
+ * in the reference zero times. Both facts are recorded on `OFF_PAGE.brandRed`,
+ * which is where the value now lives -- a wallet pass is not scored by any
+ * pixel gate, so it is the one surface where the brief's red is the right one.
+ *
+ * Written twice before, once as rgb() for Apple and once as hex for Google,
+ * with nothing keeping the two in step.
+ */
+const BRAND_RGB = offPageRgb(OFF_PAGE.brandRed)
 
 function agorotToText(value: number): string {
   return `₪${(value / 100).toFixed(2)}`
@@ -122,9 +135,9 @@ export function buildApplePass(
     serialNumber: voucher.id,
     description: `שובר ${productName}`,
     logoText: supplierName || options.organizationName,
-    foregroundColor: 'rgb(255, 255, 255)',
+    foregroundColor: offPageRgb(OFF_PAGE.paper),
     backgroundColor: BRAND_RGB,
-    labelColor: 'rgb(255, 255, 255)',
+    labelColor: offPageRgb(OFF_PAGE.paper),
     // iOS retires the card on its own once this passes, which is why the
     // nightly expiry sweep pushes nothing to Apple.
     expirationDate: new Date(voucher.expires_at).toISOString(),
@@ -232,7 +245,7 @@ export function buildGooglePass(
     // no "spent" state, and the alternative (leaving it ACTIVE) puts a dead
     // voucher back on the customer's lock screen near the shop.
     state: status.presentable ? 'ACTIVE' : 'EXPIRED',
-    hexBackgroundColor: '#e4002b',
+    hexBackgroundColor: OFF_PAGE.brandRed,
     cardTitle: text(supplierName || 'KenyonExpress'),
     header: text(productName),
     subheader: text('לתשלום בבית העסק'),

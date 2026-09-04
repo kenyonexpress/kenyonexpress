@@ -113,7 +113,7 @@ export default function HeroPromoBanners() {
 
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute bottom-[-20px] end-[-10px] z-0 w-[80px] rotate-[16deg]"
+            className="pointer-events-none absolute -bottom-5 -end-2.5 z-0 w-20 rotate-[16deg]"
             style={{ height: BANNER_IMAGE_HEIGHT }}
           >
             <SmartImage

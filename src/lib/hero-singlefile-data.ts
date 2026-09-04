@@ -4,7 +4,14 @@
 import type { HeroSlide } from '@/components/home/HeroSlider'
 import { HERO_SLIDER_IMAGES } from '@/lib/assets'
 
-export const HERO_SLIDER_BG = '#eef4f7'
+/**
+ * The slider's ground. The VALUE is `--color-hero-slider-bg` in
+ * `src/styles/tokens.css`; this re-exports the Tailwind utility that property
+ * generates, so the colour is named once and the component keeps a single
+ * import. Applied as a class rather than an inline style -- an inline hex is a
+ * colour no rebrand can reach, which is how #eef4f7 sat outside the palette.
+ */
+export const HERO_SLIDER_BG_CLASS = 'bg-hero-slider-bg'
 
 // 593, remeasured 2026-09-02: the live hero ROW (sidebar | slider+strip |
 // promo blocks) spans y148..y741 at 1440. The old 422 predates the category
