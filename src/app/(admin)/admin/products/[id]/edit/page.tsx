@@ -1,5 +1,6 @@
 import ProductForm, { type SupplierOption } from '@/components/admin/ProductForm'
 import { requireSection } from '@/lib/admin/rbac'
+import { excludeDeleted } from '@/lib/soft-delete'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
@@ -40,7 +41,10 @@ export default async function EditProductPage({ params }: Props) {
         .eq('id', id)
         .is('deleted_at', null)
         .single(),
-      supabase.from('categories').select('id, name_he').eq('is_active', true).order('name_he'),
+      excludeDeleted(
+        supabase.from('categories').select('id, name_he').eq('is_active', true),
+        'categories',
+      ).order('name_he'),
       supabase.from('product_variants').select('*').eq('product_id', id).is('deleted_at', null),
       admin
         .from('suppliers')

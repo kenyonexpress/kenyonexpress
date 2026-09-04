@@ -1,5 +1,6 @@
 import ProductForm, { type SupplierOption } from '@/components/admin/ProductForm'
 import { requireSection } from '@/lib/admin/rbac'
+import { excludeDeleted } from '@/lib/soft-delete'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 
@@ -14,7 +15,10 @@ export default async function NewProductPage() {
   const admin = createAdminClient()
 
   const [{ data: categories }, { data: suppliers }] = await Promise.all([
-    supabase.from('categories').select('id, name_he').eq('is_active', true).order('name_he'),
+    excludeDeleted(
+      supabase.from('categories').select('id, name_he').eq('is_active', true),
+      'categories',
+    ).order('name_he'),
     admin
       .from('suppliers')
       .select('id, name, contact_phone, address, logo_url, status')

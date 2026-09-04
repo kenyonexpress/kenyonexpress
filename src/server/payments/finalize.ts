@@ -193,6 +193,8 @@ async function reportPurchase(
     const productIds = [...new Set(items.map((i) => i.product_id).filter((v): v is string => !!v))]
     const names = new Map<string, string>()
     if (productIds.length > 0) {
+      // No deleted_at filter, on purpose: a paid order is fulfilled even if the
+      // product was soft-deleted since checkout. See src/lib/soft-delete.ts.
       const { data: products } = await admin
         .from('products')
         .select('id, name_he')
@@ -507,6 +509,8 @@ export async function finalizeOrder(input: {
       // and C7 below refuses with "product has no coupon_expiry_days" - telling
       // an admin to go set a field that is already set, on an order that is
       // stuck for an entirely different reason.
+      // No deleted_at filter: expiry terms of an already-paid coupon must be
+      // readable even after the product is soft-deleted.
       const products = orFail(
         await admin
           .from('products')
