@@ -194,21 +194,6 @@ function tsxFiles(dir = resolve(process.cwd(), 'src'), out: string[] = []): stri
 }
 
 /**
- * The one file allowed to name a hex. Google's sign-in mark is a trademark
- * reproduced to their branding guidelines, so it is deliberately NOT a design
- * token: a KenyonExpress rebrand must leave it alone. It is declared once, in
- * a file whose only job is to be that mark.
- */
-// GoogleLogo carries Google's brand hexes, which are not ours to tokenise.
-//
-// global-error.tsx is the root-layout boundary: it renders when the layout
-// itself threw, which includes the case where the stylesheet is what failed to
-// load. It therefore cannot reference a CSS variable for the same reason it
-// supplies its own <html> and <body>, and inline hex is the only thing
-// guaranteed to render at that point.
-const HEX_ALLOWLIST = new Set(['src/components/shared/GoogleLogo.tsx', 'src/app/global-error.tsx'])
-
-/**
  * THE PDP PALETTE AND THE SITE PALETTE MUST NOT DRIFT APART.
  *
  * `product-page.css` declares its own `--pdp-*` colours, and `PDP_CSS_VARS`

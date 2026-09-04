@@ -4,7 +4,6 @@ import CategoryGridSkeleton from '@/components/category/CategoryGridSkeleton'
 import CategoryProductCard, {
   type CategoryProduct,
 } from '@/components/category/CategoryProductCard'
-import SearchBox from '@/components/search/SearchBox'
 import { type ProductTypeFilter, getAllCategories, parseProductType } from '@/lib/category-page'
 import { searchProductsCached } from '@/lib/search-server'
 import { recordRecentSearch, recordSearchTerm } from '@/lib/search/record'
@@ -17,6 +16,19 @@ type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }
 
+/**
+ * THIS PAGE HAS NO SEARCH FIELD, AND THAT IS THE PRODUCT RULE, NOT AN OMISSION.
+ *
+ * KenyonExpress ships no search input anywhere: not in the masthead, not in the
+ * handheld header, not in the off-canvas drawer, and not here. The Meilisearch
+ * backend is untouched and this route still answers `?q=`, so a link from a
+ * campaign, a sitemap or an internal redirect resolves to real results -- what
+ * is gone is the box a visitor could type into.
+ *
+ * `src/components/layout/__tests__/no-search-ui.test.ts` fails the suite if a
+ * text/search input, a search role or a search-shaped component comes back
+ * anywhere in the shell.
+ */
 const MIN_QUERY = 2
 
 function firstStr(v: string | string[] | undefined): string {
@@ -155,9 +167,6 @@ function SearchPageFallback() {
               that replaces it. */}
           <div className="category-page__count category-page__count--pending" aria-hidden="true" />
         </header>
-        <div className="category-search__box">
-          <SearchBox defaultValue="" />
-        </div>
         <div className="category-page__body">
           <div className="category-page__main category-page__main--search">
             {/* ONE ROW, not three. See SEARCH_SKELETON_ROWS below. */}
@@ -210,10 +219,6 @@ async function SearchPageBody({ searchParams }: Props) {
             </Suspense>
           )}
         </header>
-
-        <div className="category-search__box">
-          <SearchBox defaultValue={q} />
-        </div>
 
         <div className="category-page__body">
           <div className="category-page__main category-page__main--search">

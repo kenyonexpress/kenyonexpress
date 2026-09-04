@@ -22,6 +22,33 @@ test.describe('homepage', () => {
     await expect(html).toHaveAttribute('lang', 'he')
   })
 
+  /**
+   * THE SITE HAS NO SEARCH FIELD, asserted against the rendered DOM.
+   *
+   * `src/components/layout/no-search-ui.test.ts` reads the source; this reads
+   * the page. Both are needed: source can be clean while a third-party widget
+   * or a dynamic import puts an input on screen, and a rendered check alone
+   * cannot see a component sitting in the tree waiting to be imported again.
+   *
+   * The newsletter's address field is the one input the shell carries. It
+   * subscribes and never queries the catalogue, so it is matched by name here
+   * rather than exempted by a blanket count.
+   */
+  test('renders no search field anywhere in the shell', async ({ page }) => {
+    await page.goto('/')
+
+    await expect(page.locator('input[type="search"]')).toHaveCount(0)
+    await expect(page.locator('[role="search"], [role="searchbox"]')).toHaveCount(0)
+
+    const typed = page.locator('input:not([type="hidden"])')
+    for (const input of await typed.all()) {
+      const type = await input.getAttribute('type')
+      expect(type, 'the newsletter address field is the only input the shell may carry').toBe(
+        'email',
+      )
+    }
+  })
+
   test('renders product links with add-to-cart buttons', async ({ page }) => {
     await page.goto('/')
 
