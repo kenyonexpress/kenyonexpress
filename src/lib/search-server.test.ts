@@ -13,9 +13,17 @@ const or = vi.fn()
 const eq = vi.fn()
 const is = vi.fn()
 const limit = vi.fn()
+const rpc = vi.fn()
 
 type Recorded = { orGroups: string[]; eqPairs: [string, unknown][] }
 let recorded: Recorded
+
+/**
+ * What supabase.rpc('search_products', ...) answers. The default is the
+ * missing-function error a database WITHOUT migration 171 produces, so every
+ * ILIKE test below is exercising the real fallback branch, not a shortcut.
+ */
+let rpcResponse: { data: unknown; error: { code?: string; message?: string } | null }
 
 function fakeQuery() {
   const self = {
@@ -43,7 +51,13 @@ function fakeQuery() {
 }
 
 vi.mock('@/lib/supabase/server', () => ({
-  createClient: async () => ({ from: () => fakeQuery() }),
+  createClient: async () => ({
+    from: () => fakeQuery(),
+    rpc: (name: string, args: unknown) => {
+      rpc(name, args)
+      return Promise.resolve(rpcResponse)
+    },
+  }),
 }))
 
 const { searchProductsServer } = await import('./search-server')
@@ -51,6 +65,10 @@ const { searchProductsServer } = await import('./search-server')
 beforeEach(() => {
   recorded = { orGroups: [], eqPairs: [] }
   vi.clearAllMocks()
+  rpcResponse = {
+    data: null,
+    error: { code: 'PGRST202', message: 'Could not find the function public.search_products' },
+  }
   process.env.MEILISEARCH_HOST = ''
   process.env.MEILISEARCH_API_KEY = ''
 })
@@ -107,5 +125,81 @@ describe('the ILIKE fallback', () => {
     await searchProductsServer('צימר צפון', 48, 'coupon')
 
     expect(recorded.eqPairs).toContainEqual(['type', 'coupon'])
+  })
+
+  it('is only reached AFTER the FTS RPC has answered "no such function"', async () => {
+    await searchProductsServer('צימר')
+
+    expect(rpc).toHaveBeenCalledWith('search_products', { q: 'צימר', max_results: 48 })
+    expect(recorded.orGroups).toHaveLength(1)
+  })
+})
+
+describe('the search_products FTS path (migration 171)', () => {
+  const row = {
+    id: 'p1',
+    slug: 'airpods-3',
+    name_he: 'אוזניות AirPods 3',
+    kenyon_price: 499,
+    full_price: 749,
+    images: ['a.webp'],
+    stock_quantity: 4,
+    category_name_he: 'אלקטרוניקה',
+    category_slug: 'electronics',
+    rank: 0.6,
+  }
+
+  it('returns the RPC rows in the ProductCard shape without touching ILIKE', async () => {
+    rpcResponse = { data: [row], error: null }
+
+    const outcome = await searchProductsServer('אוזניות', 12, 'physical')
+
+    expect(rpc).toHaveBeenCalledWith('search_products', {
+      q: 'אוזניות',
+      max_results: 12,
+      product_type: 'physical',
+    })
+    expect(outcome).toEqual({
+      engine: 'database-fts',
+      total: 1,
+      results: [
+        {
+          id: 'p1',
+          slug: 'airpods-3',
+          name_he: 'אוזניות AirPods 3',
+          kenyon_price: 499,
+          full_price: 749,
+          images: ['a.webp'],
+          stock_quantity: 4,
+          category: { name_he: 'אלקטרוניקה', slug: 'electronics' },
+        },
+      ],
+    })
+    expect(recorded.orGroups).toEqual([])
+  })
+
+  it('a product without a category maps to category: null, not a half-empty object', async () => {
+    rpcResponse = { data: [{ ...row, category_name_he: null, category_slug: null }], error: null }
+
+    const outcome = await searchProductsServer('אוזניות')
+
+    expect(outcome.results[0]?.category).toBeNull()
+  })
+
+  /**
+   * A REAL FAILURE MUST NOT FALL THROUGH TO ILIKE. "This database has no FTS"
+   * and "the FTS query failed" take different branches on purpose: the first
+   * is a working stage-1 setup, the second is an outage that should degrade
+   * to empty results (like every other search failure here), not silently
+   * halve search quality by running the unindexed scan the index exists to
+   * replace.
+   */
+  it('degrades a genuine RPC error to empty results instead of the ILIKE scan', async () => {
+    rpcResponse = { data: null, error: { code: '57014', message: 'canceling statement' } }
+
+    const outcome = await searchProductsServer('אוזניות')
+
+    expect(outcome).toEqual({ results: [], total: 0, engine: 'database-fts' })
+    expect(recorded.orGroups).toEqual([])
   })
 })

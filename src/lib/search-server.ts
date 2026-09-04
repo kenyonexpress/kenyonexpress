@@ -1,9 +1,19 @@
 // Server-side product search. Uses Meilisearch when MEILISEARCH_HOST is set
-// (ARCHITECTURE section 10 stage 3), otherwise falls back to Postgres ILIKE via
-// the Supabase client (stage 1). Both paths return the ProductCard shape.
+// (ARCHITECTURE section 10 stage 3), otherwise Postgres full-text search via
+// the `search_products` RPC (migration 171: GIN over a `simple`+unaccent
+// tsvector, prefix-matched, ts_rank-ordered), and only on a database without
+// that migration the original unindexed ILIKE (stage 1). All paths return the
+// ProductCard shape.
 
 import 'server-only'
 import type { Product } from '@/components/ProductCard'
+import { log } from '@/lib/observability/log'
+import {
+  type PendingSearchProductRow,
+  type SearchProductsArgs,
+  callSearchProductsRpc,
+  pendingSearchRpc,
+} from '@/lib/supabase/pending-search'
 import { createClient } from '@/lib/supabase/server'
 import { sanitizeOrTerm } from '@/lib/utils/search-escape'
 import { cache } from 'react'
@@ -11,7 +21,7 @@ import { cache } from 'react'
 export type SearchOutcome = {
   results: Product[]
   total: number
-  engine: 'meilisearch' | 'database'
+  engine: 'meilisearch' | 'database-fts' | 'database'
 }
 
 const sanitize = sanitizeOrTerm
@@ -115,6 +125,64 @@ function queryWords(q: string): string[] {
  * engine: no stemming, no ranking, no typo tolerance. Meilisearch is stage 3
  * and takes over above.
  */
+/** Maps a search_products row onto the ProductCard shape every path returns. */
+function ftsRowToProduct(row: PendingSearchProductRow): Product {
+  return {
+    id: row.id,
+    slug: row.slug,
+    name_he: row.name_he,
+    kenyon_price: row.kenyon_price,
+    full_price: row.full_price,
+    images: row.images ?? [],
+    stock_quantity: row.stock_quantity,
+    category:
+      row.category_name_he && row.category_slug
+        ? { name_he: row.category_name_he, slug: row.category_slug }
+        : null,
+  }
+}
+
+/**
+ * Stage 2: the `search_products` RPC. SECURITY INVOKER, so the request client
+ * is the right client - RLS already scopes anon to active, non-deleted
+ * products and the function can never widen that.
+ *
+ * Returns null in exactly one case: the function does not exist (a database
+ * without migration 171), which is "use ILIKE", not an error. A real failure
+ * is logged and surfaces as an empty result, the same degradation every other
+ * search failure here takes.
+ *
+ * `total` is the row count rather than an exact overflow count: FTS results
+ * are ranked, capped at `limit`, and the RPC keeps one round-trip. On this
+ * catalog (80 products) the cap is rarely reached; if a paginated search page
+ * ever needs the true total, add a count to the RPC rather than a second
+ * query here.
+ */
+async function searchFts(
+  q: string,
+  limit: number,
+  productType?: 'coupon' | 'physical',
+  categorySlug?: string,
+): Promise<SearchOutcome | null> {
+  const supabase = await createClient()
+  const args: SearchProductsArgs = { q, max_results: limit }
+  if (productType) args.product_type = productType
+  if (categorySlug) args.category = categorySlug
+
+  const outcome = await callSearchProductsRpc(() =>
+    supabase.rpc(pendingSearchRpc('search_products'), args as never),
+  )
+
+  if (!outcome.ok) {
+    if (outcome.missing) return null
+    log.error('search.fts_failed', { reason: outcome.message })
+    return { results: [], total: 0, engine: 'database-fts' }
+  }
+
+  const results = outcome.rows.map(ftsRowToProduct)
+  return { results, total: results.length, engine: 'database-fts' }
+}
+
 async function searchDb(
   q: string,
   limit: number,
@@ -172,6 +240,10 @@ export async function searchProductsServer(
     const meili = await searchMeili(q, limit, productType)
     if (meili) return meili
   }
+  // Postgres FTS (migration 171). Null means the RPC does not exist on this
+  // database, so the stage-1 ILIKE below still carries local/preview setups.
+  const fts = await searchFts(q, limit, productType)
+  if (fts) return fts
   return searchDb(q, limit, productType)
 }
 

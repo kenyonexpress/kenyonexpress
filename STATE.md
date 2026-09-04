@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-04 01:05 UTC (‏חיפוש טקסט מלא בעברית: מיגרציה 171 הוחלה דרך MCP, ‏GIN על products ו-coupon_deals, ‏RPC בשם search_products, טסטים ב-Playwright)
 Updated: 2026-09-04 00:50 UTC (‏טבלאות דיווח מנורמלות-הפוך: מיגרציה 170 הוחלה דרך MCP, ‏pg_cron לילי ב-01:30 UTC, חמישה RPC לאדמין בלבד)
 Updated: 2026-09-04 00:25 UTC (‏soft delete על ארבע הטבלאות שנותרו: מיגרציה 149 ממתינה, הקוד נפרס קודם ובטוח לשני המצבים)
 Updated: 2026-09-01 12:20 UTC (‏אין כותב ל-escrow_held בשום מקום; ‏144/144 מעברים מול הטריגרים החיים; קיפאון ה-380/768 נמצא ותוקן; ‏payment_events היה טבלה ריקה בלי אף כותב)
@@ -70,6 +71,66 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
 ## המשך מ: ‏PRIORITY TWO — ‏refunds בשני המסלולים, ומירוץ מימוש הקופון
+
+### ‏04.09 ‏goal בוצע: חיפוש טקסט מלא בעברית, ‏GIN + ‏RPC בשם search_products (branch ‏autopilot)
+
+ה-goal ביקש במפורש: "Add full-text search GIN indexes for products and deals
+in Hebrew via Supabase MCP using simple config with unaccent extension and
+expose via search_products RPC, add Playwright test". מה שנבנה:
+
+1. **מיגרציה** `migrations/pending/171_search_fts.sql`, הוחלה על פרודקשן דרך
+   MCP בשם `search_fts_171` (תקדים 169/170, פירוט בהחלטות למטה): הרחבת
+   `unaccent` הותקנה לסכימת extensions; שלוש פונקציות עזר IMMUTABLE
+   (`fts_unaccent` עוטפת את המילון הקבוע, `fts_join` ל-tags, ‏`fts_prefix_query`
+   שהופכת קלט חופשי ל-tsquery של prefix עם AND בין מילים, עד 8 מילים, בלי
+   שום דרך להזריק אופרטורים); עמודת `search_vector` מסוג tsvector כ-GENERATED
+   STORED על `products` (שם A, מותג+tags B, תיאור קצר C, תיאור D) ועל
+   `coupon_deals` (כותרת A, שם עסק B, מיקום C, תנאים D), קונפיג `simple` כפי
+   שה-goal הכתיב; שני אינדקסי GIN; ו-RPC ‏`search_products(q, max_results,
+   product_type, category)` שהוא SECURITY INVOKER + STABLE, ממוין ‏ts_rank,
+   פתוח ל-anon כי RLS של הקורא הוא שקובע מה נראה.
+2. **צד אפליקציה**: ‏`src/lib/supabase/pending-search.ts` (אותה תבנית גישור
+   כמו pending-reports.ts של 170, עם אותה נקודת מחיקה כש-database.ts יחודש).
+   ‏`search-server.ts` מנסה עכשיו FTS לפני ה-ILIKE (‏Meili נשאר שלב 3), עם
+   נפילה ל-ILIKE רק כשהפונקציה לא קיימת (DB מקומי בלי 171); שגיאה אמיתית
+   מתנוונת לתוצאה ריקה ולא מריצה בשקט את הסריקה הלא-מאונדקסת. ‏`/api/search`
+   עבר לאותו מסלול, כולל סינון קטגוריה בתוך ה-RPC (‏slug שאינו קטגוריה מצמצם
+   לכלום, אותו חוזה כמו קודם), וה-rate limit נשאר בדיוק איפה שהיה.
+3. **טסטים**: ‏17 יחידה בשני קבצים קיימים (כולל שלושה חדשים על מסלול ה-FTS:
+   מיפוי שורות, קטגוריה ריקה, ושגיאה אמיתית שלא נופלת ל-ILIKE) + ‏spec חדש
+   `e2e/search.spec.ts` עם 6 טסטים (12 ריצות בשני הדפדפנים, כולם ירוקים מול
+   שרת prod מקומי): ‏RPC דרך PostgREST כ-anon מוצא מוצר חי לפי מילה משמו,
+   לפי prefix של המילה, ובסדר מילים הפוך; קלט שהוא רק תחביר tsquery מחזיר
+   רשימה ריקה ולא 400; ‏`/api/search` מגיש את אותו מוצר; וג'יבריש מחזיר 200
+   ריק. הטסטים מגלים מוצר אמיתי בזמן ריצה במקום slug קשיח שנרקב.
+
+**החלטות שהתקבלו לבד.**
+1. **המיגרציה הוחלה על פרודקשן דרך MCP** (`search_fts_171`), לפי אותו תקדים
+   מתועד של 169 ו-170 מאותו יום: נוסח ה-goal מורה "via Supabase MCP... Use
+   Supabase MCP for DB, RLS, migrations", וזה נלקח כאישור. לפני ההחלה הקובץ
+   כולו הורץ מול פרודקשן בתוך DO block שגולגל לאחור, עם שישה probes:
+   התאמת מילה בעברית, ‏RPC בסדר מילים הפוך + prefix ‏("airpods אוזנ" מצא את
+   "אוזניות AirPods 3"), קלט פיסוק בלבד, וקטורי הדילים, הרצה כ-role anon
+   תחת RLS, ו-EXPLAIN שהוכיח שימוש ב-GIN. אחרי ההחלה אומתו 80 וקטורי
+   מוצרים, 8 וקטורי דילים, שני האינדקסים וה-RPC. הסיכון: עמודות GENERATED
+   ופונקציות חדשות בלבד, אפס שינוי בשורות קיימות, ‏rollback מלא בכותרת.
+2. **"deals" פורש כ-`coupon_deals`**: אין טבלת deals אחרת בפרודקשן. הטבלה
+   קיבלה וקטור ואינדקס כפי שה-goal ביקש, אבל ה-RPC היחיד שה-goal נקב בשמו
+   הוא search_products, ולכן אין עדיין RPC לדילים; כשמשטח חיפוש דילים יקום,
+   הוא משתמש באותו `fts_prefix_query`.
+3. **‏`simple` לא מוריד תחיליות עברית** (ה' הידיעה וכו'): "מקרר" לא ימצא מוצר
+   שכתוב בו רק "המקרר". זו המגבלה הידועה של הקונפיג שה-goal הכתיב, מתועדת
+   בכותרת המיגרציה; ‏Meilisearch נשאר מסלול הבריחה של שלב 3.
+4. **שגיאת FTS אמיתית לא נופלת ל-ILIKE**: "אין פונקציה" ו"החיפוש נכשל" הם
+   ענפים שונים בכוונה, כדי שתקלה חיה לא תסתתר מאחורי הסריקה שהאינדקס בא
+   להחליף. מקובע בטסט.
+5. **‏database.ts לא חודש**, מאותה סיבה כמו ב-170; הגשר הוא pending-search.ts.
+6. ה-advisors אחרי ההחלה: אפס ממצאים חדשים. ‏search_products לא מופיע
+   באזהרות ה-definer כי הוא INVOKER.
+
+שערים: ‏3541 טסטים ירוקים, ‏type-check נקי, ‏lint נקי, ‏build עבר, ‏e2e
+‏12/12. רעש `rate_limit.open` בריצת ה-e2e הוא חוסם ה-SUPABASE_SECRET_KEY
+הידוע (המפתח המקומי הוא מפתח הדמו) ולא רגרסיה: ה-limiter נכשל פתוח בתכנון.
 
 ### ‏04.09 ‏goal בוצע: טבלאות דיווח מנורמלות-הפוך + ‏pg_cron לילי + ‏RPC לאדמין (branch ‏autopilot)
 
