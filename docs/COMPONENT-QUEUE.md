@@ -33,7 +33,7 @@ sent somebody looking for a block that was never there.
 |---|---|---|---|---|
 | 01 | Top bar | `top-bar` (4 / 4) | live top strip | **complete** |
 | 02 | Masthead + header icon cluster | `masthead` (3 / 3) | live logo, real cart state | **complete** |
-| 03 | Departments menu + mega panel | `departments-menu-v2` (4 / 1) | `KE_LIVE_CATEGORIES` | not started |
+| 03 | Departments menu | `departments-menu-v2` (4 / 1) | `KE_LIVE_CATEGORIES` | **complete** — mega panel refused, see below |
 | 04 | Hero slider | `home-v1-slider` (1 / 0) | live slide copy; imagery pending | not started |
 | 05 | Category strip | `product-categories-list` (1 / 1) | live departments | not started — **read the note** |
 | 06 | Deals + tabs block, with countdown | `section-onsale-product` (4 / 3), `deals-block` (1 / 0), `tabs-block` (1 / 0), `countdown` (8 / 5) | live deal products | not started |
@@ -76,6 +76,28 @@ component fails its own lint gate after being built exactly to spec.
 
 Geometry only from Electro there. Every string from live or written Hebrew;
 every image from live or `BrandPlaceholder`.
+
+### ⚠️ 03 shipped WITHOUT the mega panel, and that is a measurement
+
+The row was written "Departments menu + mega panel". Electro's
+`departments-menu-v2` is a `yamm` dropdown where every department opens a
+full-width panel of sub-departments. **Live's is a flat list of eleven links.**
+
+Measured on 2026-09-04 by walking the `<li>` elements inside live's
+`.home-vertical-nav.departments-menu-v2`: 11 items, `menu-item-has-children` on
+**none** of them, and live's `sub-menu` count for the whole page is zero.
+
+`KE_LIVE_CATEGORIES` already matched that list 11 for 11 and in order, so 03 was
+built; what was not built is the panel. The governing rule decides it -- live
+wins on which sections exist -- and the queue already refuses
+`section-product-cards-carousel` on the same grounds. Building the panel would
+additionally have to **invent** the sub-departments to fill it, because live has
+none to source, and invented navigation is Electro demo content wearing Hebrew.
+
+Pinned by `src/lib/ke-live-categories.test.ts`, which holds the exact list, its
+flatness, and the two places our version deliberately departs from live: live's
+`עד ₪99` puts the shekel sign left of the digits, and live's `עד ₪99` and
+`החדשים` are both `href="#"`.
 
 ### ⚠️ The note on 05
 
@@ -149,4 +171,4 @@ in live's `/shop/`) took 1440 from 14.48% to 8.13% and touched nothing else.
 Removing an artifact from a fixture that mirrors live's DOM is only half a fix;
 the slot has to be refilled or everything below it is measured against the wrong
 rows of live.
-
+| 2026-09-04 | 03 Departments menu | already matched live 11/11 in order; mega panel refused with evidence and pinned by `ke-live-categories.test.ts` | 10.68 / 7.71 / 8.13 (unchanged, no render change) |
