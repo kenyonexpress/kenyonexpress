@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-04 00:50 UTC (‏טבלאות דיווח מנורמלות-הפוך: מיגרציה 170 הוחלה דרך MCP, ‏pg_cron לילי ב-01:30 UTC, חמישה RPC לאדמין בלבד)
 Updated: 2026-09-04 00:25 UTC (‏soft delete על ארבע הטבלאות שנותרו: מיגרציה 149 ממתינה, הקוד נפרס קודם ובטוח לשני המצבים)
 Updated: 2026-09-01 12:20 UTC (‏אין כותב ל-escrow_held בשום מקום; ‏144/144 מעברים מול הטריגרים החיים; קיפאון ה-380/768 נמצא ותוקן; ‏payment_events היה טבלה ריקה בלי אף כותב)
 Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשישה כבר היו, ושני באגים אמיתיים נמצאו בדרך)
@@ -69,6 +70,51 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
 ## המשך מ: ‏PRIORITY TWO — ‏refunds בשני המסלולים, ומירוץ מימוש הקופון
+
+### ‏04.09 ‏goal בוצע: טבלאות דיווח מנורמלות-הפוך + ‏pg_cron לילי + ‏RPC לאדמין (branch ‏autopilot)
+
+ה-goal ביקש במפורש: "Create denormalized reporting tables via Supabase MCP
+refreshed nightly via pg_cron... exposed via admin RPC". מה שנבנה:
+
+1. **מיגרציה** `migrations/pending/170_reporting_tables.sql`: ארבע טבלאות
+   (`report_revenue_daily`, `report_orders_daily`, `report_top_products`
+   לחלונות 7/30/90 יום, `report_cohort_retention` לפי חודש הצטרפות),
+   פונקציית `refresh_report_tables()` שבונה את כולן מחדש בטרנזקציה אחת,
+   וחמישה RPC בסגנון definer שכולם נפתחים ב-`is_admin()` ונסגרים ב-42501.
+   כל הכסף אגורות bigint מהעמודות הגנרטיביות של 138; כל הימים ימי ישראל
+   (`Asia/Jerusalem`), אותה עמדה כמו דוח הסליקה.
+2. **‏pg_cron**: ‏job בשם `report_tables_nightly` ב-`30 1 * * *` ‏UTC
+   (03:30/04:30 שעון ישראל). זה ה-job הראשון ב-`cron.job` של הפרויקט.
+3. **צד אפליקציה**: `src/lib/supabase/pending-reports.ts` (אותה תבנית כמו
+   pending-schema.ts של 135), `src/server/queries/admin-reports.ts` (ארבעה
+   קוראים דרך ה-client של הבקשה, כי ההרשאה נאכפת ב-DB), ו-action רענון
+   ידני ב-`src/server/actions/admin/reports.ts` עם שורת audit.
+4. **טסטים**: ‏22 חדשים בשלושה קבצים, כולל טסט שמצמיד את אינווריאנטות
+   קובץ המיגרציה (שער is_admin בכל RPC, ‏search_path ריק, ‏revoke על
+   refresh, ‏cron מתוזמן, אפס כסף צף).
+
+**החלטות שהתקבלו לבד.**
+1. **המיגרציה הוחלה על פרודקשן דרך MCP** (`reporting_tables_170`), לפי
+   התקדים המתועד של 169 באותו יום: נוסח ה-goal מורה במפורש "via Supabase
+   MCP... Use Supabase MCP for DB, RLS, migrations", וזה נלקח כאישור, כמו
+   שנעשה ב-169. לפני ההחלה הקובץ כולו הורץ מול פרודקשן בתוך טרנזקציה
+   שגולגלה לאחור (כולל refresh מלא על הזמנות אמיתיות), ואחרי ההחלה אומתו
+   ספירות השורות, ה-job, ומסלול הסירוב 42501 לקורא לא-אדמין (probe
+   מגולגל לאחור). הסיכון: טבלאות ופונקציות חדשות בלבד, אפס קורא קיים,
+   ‏rollback מלא בכותרת הקובץ.
+2. **‏RLS פועל בלי אף policy** על ארבע הטבלאות, ננעלו גם ב-revoke: אותה
+   עמדת "שירות בלבד" כמו settlement_events. ה-advisors מדווחים על זה INFO
+   בלבד, ואותו WARN גנרי על definer שיש לכל פונקציות האדמין הקיימות.
+3. **‏database.ts לא חודש**: חידוש היה גורר פנימה גם את שינויי 169 וכל מה
+   שסשנים מקבילים החילו, אדווה שלא שייכת ל-goal הזה. הגשר הוא
+   pending-reports.ts, עם נקודת מחיקה מתועדת.
+4. הכנסות נספרות רק על הזמנות בשושלת paid (‏paid/partially_fulfilled/
+   fulfilled/platform_settled), לפי `paid_at`, בלי refunded/cancelled;
+   שורות פריט מבוטלות/מוחזרות מוחרגות גם כשההזמנה שולמה. ‏refunds
+   נשארים בבעלות קונסולת ההחזרים.
+
+שערים: ‏3537 טסטים ירוקים, ‏type-check נקי, ‏lint נקי, ‏build עבר. ‏cron
+הלילי ירוץ לבד; אין תלות ב-Vercel cron ואין צעד ידני.
 
 ### ‏04.09 ‏goal בוצע: ‏soft delete על טבלאות הפונות למשתמש (commit ‏`dcd132967`, branch ‏autopilot)
 
