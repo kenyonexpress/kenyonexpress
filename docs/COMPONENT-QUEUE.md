@@ -31,8 +31,8 @@ sent somebody looking for a block that was never there.
 
 | # | Component | Electro geometry key (occurrences in home / shop) | Content source | Status |
 |---|---|---|---|---|
-| 01 | Top bar | `top-bar` (4 / 4) | live top strip | not started |
-| 02 | Masthead + header icon cluster | `masthead` (3 / 3) | live logo, real cart state | not started |
+| 01 | Top bar | `top-bar` (4 / 4) | live top strip | **complete** |
+| 02 | Masthead + header icon cluster | `masthead` (3 / 3) | live logo, real cart state | **complete** |
 | 03 | Departments menu + mega panel | `departments-menu-v2` (4 / 1) | `KE_LIVE_CATEGORIES` | not started |
 | 04 | Hero slider | `home-v1-slider` (1 / 0) | live slide copy; imagery pending | not started |
 | 05 | Category strip | `product-categories-list` (1 / 1) | live departments | not started — **read the note** |
@@ -122,3 +122,31 @@ often broken mid-component:
 | Date | Component | What changed | compare 380 / 768 / 1440 |
 |---|---|---|---|
 | 2026-09-04 | (pre-queue) HOME-DEFECTS 1–4 | search UI removed and gated; Electro English purged and gated; Electro photography removed and gated; shekel sign moved to the right of the digits site-wide | 10.69 / 7.36 / 7.07 |
+| 2026-09-04 | 01 Top bar | `TopBar.tsx` split out of `Header.tsx`, live's four info items in live's DOM order, `\|` separators at live's 1em metric, home-only greeting gated by `:has()` rather than `usePathname()` | 10.69 / 7.71 / 8.13 |
+| 2026-09-04 | (gate) deals grid | the grid was one cell short after the ledger row was removed without replacement, so rows 2-7 reflowed; live's index 6 refilled with a real live product | 10.69 / 7.71 / 8.13 |
+| 2026-09-04 | 02 Masthead + icon cluster | account icon removed from BOTH clusters, heart added to the handheld one, heart-then-cart order fixed; account entry point down from three to one; gated by `header-icons.test.ts` | 10.68 / 7.71 / 8.13 |
+
+### The 1440 failure that was blamed on two agents sharing a checkout
+
+`docs/UI-PARITY-REPORT.md` carried 14.48% at 1440 against an 11% gate, recorded
+in STATE.md as an unattributable build of two half-finished jobs. It was not.
+**That row carries a clean commit hash with no `-dirty` suffix**, and it
+reproduced exactly on a fresh build of `51d4eb9c5`.
+
+The cause was component-shaped, not process-shaped. `6bc219b24` removed
+`reverse-withdrawal-payment` from the deals fixture -- correctly, it is a Dokan
+ledger row the WordPress importer already excludes by slug -- but removed it
+without replacement, and the deals grid is four columns wide. Live renders 32
+cards and the ledger row is its **index 6, not its last**, so every card below
+it moved up one cell and rows 2-7 reflowed.
+
+The band shape is the proof it was an offset and not a defect: every band above
+y1400 unchanged, every band below it 30-58%. Refilling the slot with a real
+live product (`טיפול-פנים-עמוק`, verified 200 on live's `/product/` and present
+in live's `/shop/`) took 1440 from 14.48% to 8.13% and touched nothing else.
+
+**The lesson for the rest of this queue: card COUNT is load-bearing in a grid.**
+Removing an artifact from a fixture that mirrors live's DOM is only half a fix;
+the slot has to be refilled or everything below it is measured against the wrong
+rows of live.
+
