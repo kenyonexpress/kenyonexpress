@@ -1,3 +1,4 @@
+import { shekelsFromIlsRounded } from '@/lib/money-format'
 import { getMyWishlist } from '@/server/queries/wishlist'
 import Link from 'next/link'
 
@@ -46,7 +47,7 @@ export default async function WishlistPage() {
                   <span className="block font-semibold">{name}</span>
                   {entry.product?.price_ils != null ? (
                     <span className="block text-sm text-price">
-                      ₪{entry.product.price_ils.toLocaleString('he-IL')}
+                      {shekelsFromIlsRounded(entry.product.price_ils)}
                     </span>
                   ) : null}
                 </span>

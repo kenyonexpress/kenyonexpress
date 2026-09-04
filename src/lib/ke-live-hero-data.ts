@@ -3,6 +3,8 @@
  * RevSlider rs-18 … rs-19, slider-das-block banners, departments-menu-v2.
  */
 import { ELECTRO_HERO } from '@/lib/electro-hero-tokens'
+import { agorot } from '@/lib/money'
+import { shekelsRounded } from '@/lib/money-format'
 
 export const KE_LIVE_HERO = {
   slider: {
@@ -40,6 +42,21 @@ export const KE_LIVE_HERO = {
  * and `KE_LIVE_CATEGORIES` (live's own Hebrew department list).
  */
 
+/**
+ * THE "UNDER 99" DEPARTMENT'S LABEL, IN ONE PLACE.
+ *
+ * It was written by hand in five: the hero rail, the category strip, the
+ * masthead nav, the home footer and this list -- and the five did not agree.
+ * Four read `עד ₪99`, which puts the sign to the LEFT of the digits in an RTL
+ * document (see money-format.ts for the measurement), one read a bare `עד 99`
+ * with no currency at all, and the (main) sidebar read `עד %%%`, an unfilled
+ * template placeholder that had been shipping as a category name.
+ *
+ * Built through `shekelsRounded`, so the label is the same price string as every
+ * other price on the site: digits, then the sign, inside an LTR isolate.
+ */
+export const UNDER_99_LABEL = `עד ${shekelsRounded(agorot(9900))}`
+
 export type KeLiveCategoryItem = {
   slug: string
   label: string
@@ -50,7 +67,7 @@ export type KeLiveCategoryItem = {
 /** Live's own department list, in live's own Hebrew. */
 export const KE_LIVE_CATEGORIES: KeLiveCategoryItem[] = [
   { slug: 'hot-deals', label: 'דילים חמים 🔥', highlight: true },
-  { slug: 'under-99', label: 'עד ₪99', highlight: true },
+  { slug: 'under-99', label: UNDER_99_LABEL, highlight: true },
   { slug: 'new', label: 'החדשים', highlight: true },
   { slug: 'restaurants-cafes', label: 'מסעדות ובתי קפה' },
   { slug: 'beauty-health', label: 'יופי בריאות וטיפוח' },

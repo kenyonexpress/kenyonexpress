@@ -62,7 +62,7 @@ describe('evaluateCoupon', () => {
   })
 
   it('caps a discount at the payable amount instead of paying the shopper', () => {
-    // A ₪50 code on a ₪30 cart is worth ₪30. The extra ₪20 would be a payout.
+    // A ⁦50 ₪⁩ code on a ⁦30 ₪⁩ cart is worth ⁦30 ₪⁩. The extra ⁦20 ₪⁩ would be a payout.
     const result = evaluateCoupon(coupon({ discount_value: 50 }), cart(3000), NOW)
     expect(result).toMatchObject({ ok: true, discountAgorot: 3000 })
   })
@@ -134,7 +134,7 @@ describe('evaluateCoupon', () => {
       cart(5000),
       NOW,
     )
-    expect(fixed.ok && fixed.label).toBe('₪10 הנחה')
+    expect(fixed.ok && fixed.label).toBe('⁦10 ₪⁩ הנחה')
     expect(percent.ok && percent.label).toBe('10% הנחה')
   })
 
@@ -214,8 +214,8 @@ describe('evaluateCoupon', () => {
 
   it('treats an unrecognised discount_type as a fixed shekel amount', () => {
     // The column is free text. Reading an unknown value as a percentage would
-    // turn a ₪10 code into a 10% one silently, which is a pricing bug on every
-    // cart over ₪100.
+    // turn a ⁦10 ₪⁩ code into a 10% one silently, which is a pricing bug on every
+    // cart over ⁦100 ₪⁩.
     const result = evaluateCoupon(
       coupon({ discount_type: 'something-else', discount_value: 10 }),
       cart(50000),

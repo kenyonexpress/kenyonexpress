@@ -218,9 +218,9 @@ describe('formatCouponCode', () => {
 
 describe('formatAgorot', () => {
   it('renders agorot as shekels with two decimals', () => {
-    expect(formatAgorot(18000)).toBe('₪180.00')
-    expect(formatAgorot(0)).toBe('₪0.00')
-    expect(formatAgorot(1)).toBe('₪0.01')
+    expect(formatAgorot(18000)).toBe('⁦180.00 ₪⁩')
+    expect(formatAgorot(0)).toBe('⁦0.00 ₪⁩')
+    expect(formatAgorot(1)).toBe('⁦0.01 ₪⁩')
   })
 
   it('renders a missing or non-finite amount as a dash, never as zero', () => {

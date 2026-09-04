@@ -2,6 +2,7 @@ import StatusBadge, { orderStatusBadge } from '@/components/admin/StatusBadge'
 import { COUPON_STATUS_LABELS, labelFor } from '@/lib/admin/labels'
 import { canWriteSection } from '@/lib/admin/permissions'
 import { ROLE_LABELS, requireSection } from '@/lib/admin/rbac'
+import { shekelsFromIlsRounded } from '@/lib/money-format'
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -111,10 +112,10 @@ export default async function AdminUserDetailPage(props: {
         <section className="rounded-xl border border-black/10 bg-white p-5">
           <h2 className="mb-3 text-sm font-semibold text-gray-800">ארנק</h2>
           <p className="text-2xl font-bold text-heading">
-            ₪{(wallet?.balance_ils ?? 0).toLocaleString('he-IL')}
+            {shekelsFromIlsRounded(wallet?.balance_ils ?? 0)}
           </p>
           <p className="mt-1 text-xs text-black/50">
-            נצבר: ₪{(wallet?.lifetime_earned_ils ?? 0).toLocaleString('he-IL')} | מומש: ₪
+            נצבר: {shekelsFromIlsRounded(wallet?.lifetime_earned_ils ?? 0)} | מומש: ₪
             {(wallet?.lifetime_redeemed_ils ?? 0).toLocaleString('he-IL')}
           </p>
           <ul className="mt-3 space-y-1.5 border-t border-black/5 pt-3 text-xs">
@@ -123,7 +124,7 @@ export default async function AdminUserDetailPage(props: {
                 <span className="text-black/60">
                   {tx.type === 'earn' ? 'זיכוי' : tx.type === 'redeem' ? 'מימוש' : tx.type}
                 </span>
-                <span>₪{tx.amount_ils.toLocaleString('he-IL')}</span>
+                <span>{shekelsFromIlsRounded(tx.amount_ils)}</span>
                 <span className="text-black/40">
                   {new Date(tx.created_at).toLocaleDateString('he-IL')}
                 </span>
@@ -176,7 +177,7 @@ export default async function AdminUserDetailPage(props: {
                       {order.invoice_number ?? order.id.slice(0, 8)}
                     </Link>
                   </td>
-                  <td className="px-5 py-2.5">₪{order.total_ils.toLocaleString('he-IL')}</td>
+                  <td className="px-5 py-2.5">{shekelsFromIlsRounded(order.total_ils)}</td>
                   <td className="px-5 py-2.5">
                     <StatusBadge label={badge.label} variant={badge.variant} />
                   </td>

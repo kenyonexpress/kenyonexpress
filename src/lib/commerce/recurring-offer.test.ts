@@ -12,7 +12,7 @@ describe('what a product may be sold as', () => {
     ).toEqual({ amountAgorot: 4_900, interval: 'monthly', intervalCount: 1 })
   })
 
-  // "₪0 לחודש" is an offer nobody made. Anything incomplete is null and the
+  // "⁦0 ₪⁩ לחודש" is an offer nobody made. Anything incomplete is null and the
   // PDP falls back to the ordinary price block.
   it('refuses an incomplete or absurd configuration', () => {
     for (const broken of [
@@ -39,18 +39,18 @@ describe('the one-line price', () => {
   it('speaks whole shekels without decimals and agorot with them', () => {
     expect(
       describeRecurringPrice({ amountAgorot: 4_900, interval: 'monthly', intervalCount: 1 }),
-    ).toBe('₪49 לחודש')
+    ).toBe('⁦49 ₪⁩ לחודש')
     expect(
       describeRecurringPrice({ amountAgorot: 4_990, interval: 'monthly', intervalCount: 1 }),
-    ).toBe('₪49.90 לחודש')
+    ).toBe('⁦49.90 ₪⁩ לחודש')
   })
 
   it('names the multi-cycle interval', () => {
     expect(
       describeRecurringPrice({ amountAgorot: 10_000, interval: 'monthly', intervalCount: 3 }),
-    ).toBe('₪100 לכל 3 חודשים')
+    ).toBe('⁦100 ₪⁩ לכל 3 חודשים')
     expect(
       describeRecurringPrice({ amountAgorot: 50_000, interval: 'yearly', intervalCount: 1 }),
-    ).toBe('₪500 לשנה')
+    ).toBe('⁦500 ₪⁩ לשנה')
   })
 })

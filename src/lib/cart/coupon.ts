@@ -29,6 +29,7 @@
 //    supplier's till, which is not a discount, it is a transfer.
 
 import { agorot, ilsToAgorot, percentToBasisPoints, percentageOf } from '@/lib/commerce/money'
+import { shekelsFromIlsRounded } from '@/lib/money-format'
 
 export type CouponRecord = {
   id: string
@@ -185,5 +186,5 @@ function discountFor(coupon: CouponRecord, payableAgorot: number): number | null
 function labelFor(coupon: CouponRecord): string {
   const type = (coupon.discount_type ?? 'fixed').toLowerCase()
   if (type === 'percent' || type === 'percentage') return `${coupon.discount_value}% הנחה`
-  return `₪${coupon.discount_value} הנחה`
+  return `${shekelsFromIlsRounded(coupon.discount_value)} הנחה`
 }

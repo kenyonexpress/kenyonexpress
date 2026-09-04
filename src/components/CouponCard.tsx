@@ -1,3 +1,4 @@
+import { shekelsFromIls } from '@/lib/money-format'
 import { MapPin, Tag } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -90,8 +91,8 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
         <div className="pt-1 flex items-baseline gap-2">
           {platformPrice != null ? (
             <>
-              <span className="text-lg font-bold text-price">₪{platformPrice.toFixed(2)}</span>
-              <span className="text-xs text-gray-500 line-through">₪{original.toFixed(2)}</span>
+              <span className="text-lg font-bold text-price">{shekelsFromIls(platformPrice)}</span>
+              <span className="text-xs text-gray-500 line-through">{shekelsFromIls(original)}</span>
             </>
           ) : (
             <span className="text-sm text-gray-500">המחיר יעודכן בקרוב</span>
@@ -99,7 +100,7 @@ export default function CouponCard({ coupon }: { coupon: Coupon }) {
         </div>
         {platformPrice != null && (
           <p className="text-micro text-gray-500">
-            ₪{platformPrice.toFixed(2)} באתר, היתרה בבית העסק
+            {shekelsFromIls(platformPrice)} באתר, היתרה בבית העסק
           </p>
         )}
       </div>

@@ -9,6 +9,7 @@ import { productQuantityCeiling } from '@/lib/cart/format'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
 import { type RecurringOffer, describeRecurringPrice } from '@/lib/commerce/recurring'
 import { cityByName } from '@/lib/geo/cities'
+import { shekelsFromIls as sharedShekelsFromIls } from '@/lib/money-format'
 import { buildShareMessage } from '@/lib/share/message'
 import { Check, ShoppingCart } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -72,7 +73,7 @@ interface Props {
  * Agorot are still shown when a price actually has them.
  */
 function shekelsFromIls(value: number): string {
-  return `₪${value.toLocaleString('he-IL', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`
+  return sharedShekelsFromIls(value)
 }
 
 /**

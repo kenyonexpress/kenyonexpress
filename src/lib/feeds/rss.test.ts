@@ -95,11 +95,11 @@ describe('an item', () => {
   })
 
   it('states what is paid online AND what is due at the business', () => {
-    // A line that said only "₪80" puts a customer at a counter expecting to owe
+    // A line that said only "80 ₪" puts a customer at a counter expecting to owe
     // nothing — the same mistake `coupon-offer.ts` exists to stop.
     const description = items(buildRssFeed([deal()], OPTIONS))[0]?.description as string
-    expect(description).toContain('₪80.00')
-    expect(description).toContain('₪120.00')
+    expect(description).toContain('80.00 ₪')
+    expect(description).toContain('120.00 ₪')
   })
 
   it('says nothing about a balance when there is none', () => {
@@ -128,7 +128,7 @@ describe('an item', () => {
     const description = items(
       buildRssFeed([deal({ offer: null, payableIls: 49.9, type: 'physical' })], OPTIONS),
     )[0]?.description as string
-    expect(description).toContain('₪49.90')
+    expect(description).toContain('49.90 ₪')
   })
 
   it('omits pubDate rather than inventing one', () => {

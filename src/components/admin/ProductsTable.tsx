@@ -3,6 +3,7 @@
 import DataTable, { type DataTableColumn } from '@/components/admin/DataTable'
 import DeleteButton from '@/components/admin/DeleteButton'
 import StatusBadge, { productStatusBadge, productTypeBadge } from '@/components/admin/StatusBadge'
+import { shekelsFromIlsRounded } from '@/lib/money-format'
 import {
   type BulkPriceInput,
   bulkAdjustPrices,
@@ -159,8 +160,8 @@ export default function ProductsTable({ products, categories, hidePricing = fals
       cell: (p) => (
         <span className="text-black/80" dir="ltr">
           {p.type === 'coupon' && p.coupon_price_ils != null
-            ? `₪${Number(p.coupon_price_ils).toLocaleString('he-IL')} באתר`
-            : `₪${(p.kenyon_price ?? 0).toLocaleString('he-IL')}`}
+            ? `${shekelsFromIlsRounded(p.coupon_price_ils)} באתר`
+            : shekelsFromIlsRounded(p.kenyon_price ?? 0)}
         </span>
       ),
     },

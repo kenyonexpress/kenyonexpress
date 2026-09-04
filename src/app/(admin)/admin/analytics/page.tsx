@@ -12,6 +12,10 @@ import {
   topSuppliers,
   totalsOf,
 } from '@/lib/analytics/aggregate'
+import {
+  shekelsFromIls as sharedShekelsFromIls,
+  shekelsFromIlsRounded as sharedShekelsFromIlsRounded,
+} from '@/lib/money-format'
 import { loadFunnel, loadSalesLines } from '@/server/analytics/queries'
 import { Coins, Receipt, ShoppingCart, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
@@ -46,11 +50,11 @@ const TYPE_LABELS: Record<string, string> = {
  * this stays as it is and merely stops sharing a name with its own opposite.
  */
 function shekelsFromIls(value: number): string {
-  return `₪${value.toLocaleString('he-IL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  return sharedShekelsFromIls(value)
 }
 
 function shortShekels(value: number): string {
-  return `₪${Math.round(value).toLocaleString('he-IL')}`
+  return sharedShekelsFromIlsRounded(value)
 }
 
 function integer(value: number): string {

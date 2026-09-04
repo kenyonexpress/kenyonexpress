@@ -3,6 +3,7 @@ import { CATALOGUE_TAG } from '@/lib/catalogue-cache'
 import { orFail, orFailWithCount } from '@/lib/catalogue-read'
 import { cityBySlug } from '@/lib/geo/cities'
 import { filterByCity } from '@/lib/geo/distance'
+import { repairPriceOrder } from '@/lib/money-format'
 import { createPublicClient } from '@/lib/supabase/anon'
 import { cacheLife, cacheTag } from 'next/cache'
 import { cache } from 'react'
@@ -473,7 +474,11 @@ export async function getAllCategories(): Promise<{ slug: string; name_he: strin
     await orderedByMenu(supabase.from('categories').select('slug, name_he').eq('is_active', true)),
     'catalogue.all_categories_failed',
   )
-  return data ?? []
+  // `עד ₪99` is a live category name, and sign-first renders the glyph to the
+  // left of the digits in RTL. The row itself is fixed by pending migration
+  // 171; this repairs it on the way out so the page is right before that is
+  // approved, and so a name typed into the admin form later gets it too.
+  return (data ?? []).map((row) => ({ ...row, name_he: repairPriceOrder(row.name_he) }))
 }
 
 export const SHOP_PAGE_SIZE = 24

@@ -3,7 +3,7 @@ import { type CouponOfferInput, buildCouponOffer, shekelsFromIls } from './coupo
 
 const NOW = new Date('2026-07-27T00:00:00Z')
 
-// The live "קופון טסט" page: מחיר רגיל ₪100, מחיר בקניון ₪50.
+// The live "קופון טסט" page: מחיר רגיל ⁦100, ₪⁩ מחיר בקניון ⁦50 ₪⁩.
 const base: CouponOfferInput = {
   fullPriceIls: 100,
   couponPriceIls: 50,
@@ -85,7 +85,7 @@ describe('buildCouponOffer refuses to sell what it cannot price', () => {
 
 describe('shekelsFromIls', () => {
   it('always shows two decimals so prices align in a column', () => {
-    expect(shekelsFromIls(50)).toBe('₪50.00')
-    expect(shekelsFromIls(1234.5)).toBe('₪1,234.50')
+    expect(shekelsFromIls(50)).toBe('⁦50.00 ₪⁩')
+    expect(shekelsFromIls(1234.5)).toBe('⁦1,234.50 ₪⁩')
   })
 })

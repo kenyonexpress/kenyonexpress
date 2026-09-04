@@ -16,17 +16,17 @@ describe('buildShareMessage', () => {
   it('quotes what the site charges for a coupon, not the sticker price', () => {
     // The bug: the button interpolated `shekels(price)`, and for a coupon
     // `price` is `products.price_ils` — what the goods cost AT THE BUSINESS.
-    // A customer sharing an ₪80 coupon sent their friend "₪200", and the friend
-    // landed on a page quoting ₪80.
+    // A customer sharing an ⁦80 ₪⁩ coupon sent their friend "⁦200 ₪⁩", and the friend
+    // landed on a page quoting ⁦80 ₪⁩.
     const message = buildShareMessage({ name: 'ארוחה זוגית', priceIls: 200, offer: SELLABLE })
-    expect(message).toContain('₪80')
-    expect(message).not.toContain('₪200')
+    expect(message).toContain('⁦80 ₪⁩')
+    expect(message).not.toContain('⁦200 ₪⁩')
   })
 
   it('states the balance due at the business alongside it', () => {
-    // "₪80" alone sends someone to a counter believing they owe nothing.
+    // "⁦80 ₪⁩" alone sends someone to a counter believing they owe nothing.
     expect(buildShareMessage({ name: 'x', priceIls: 200, offer: SELLABLE })).toContain(
-      '₪120 בבית העסק',
+      '⁦120 ₪⁩ בבית העסק',
     )
   })
 
@@ -56,12 +56,12 @@ describe('buildShareMessage', () => {
   })
 
   it('quotes the plain price for a product that is not a coupon', () => {
-    expect(buildShareMessage({ name: 'אוזניות', priceIls: 399, offer: null })).toContain('₪399')
+    expect(buildShareMessage({ name: 'אוזניות', priceIls: 399, offer: null })).toContain('⁦399 ₪⁩')
   })
 
   it('drops the agorot when a price has none, as the page does', () => {
-    expect(buildShareMessage({ name: 'x', priceIls: 399, offer: null })).toContain('₪399')
-    expect(buildShareMessage({ name: 'x', priceIls: 399.5, offer: null })).toContain('₪399.5')
+    expect(buildShareMessage({ name: 'x', priceIls: 399, offer: null })).toContain('⁦399 ₪⁩')
+    expect(buildShareMessage({ name: 'x', priceIls: 399.5, offer: null })).toContain('⁦399.5 ₪⁩')
   })
 
   it('carries no URL: the channel appends its own', () => {

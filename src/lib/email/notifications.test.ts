@@ -21,16 +21,16 @@ describe('buildOrderPaidEmail', () => {
   it('states the reference and the total the customer actually paid', () => {
     const mail = buildOrderPaidEmail(payload, SITE)
     expect(mail.subject).toContain('79F488AA')
-    expect(mail.text).toContain('₪817.00')
-    expect(mail.html).toContain('₪817.00')
+    expect(mail.text).toContain('⁦817.00 ₪⁩')
+    expect(mail.html).toContain('⁦817.00 ₪⁩')
   })
 
   it('reads the amount as agorot and never divides it a second time', () => {
-    // 81700 agorot is ₪817.00. A builder that treated the payload as shekels
-    // would say ₪81,700.00, which is the failure this asserts against.
+    // 81700 agorot is ⁦817.00 ₪⁩. A builder that treated the payload as shekels
+    // would say ⁦81,700.00 ₪⁩, which is the failure this asserts against.
     const mail = buildOrderPaidEmail(payload, SITE)
     expect(mail.text).not.toContain('81,700')
-    expect(mail.text).not.toContain('₪8.17')
+    expect(mail.text).not.toContain('⁦8.17 ₪⁩')
   })
 
   it('greets by name when there is one and stays polite when there is not', () => {
@@ -52,7 +52,7 @@ describe('buildOrderPaidEmail', () => {
   it('survives a payload with nothing in it rather than throwing at send time', () => {
     const mail = buildOrderPaidEmail({}, SITE)
     expect(mail.subject).toBeTruthy()
-    expect(mail.text).toContain('₪0.00')
+    expect(mail.text).toContain('⁦0.00 ₪⁩')
   })
 })
 
@@ -79,7 +79,7 @@ describe('buildSupplierSaleEmail', () => {
   // Calling this one a payout in a message to a business starts a dispute.
   it('calls the amount the order value and never a payout', () => {
     const mail = buildSupplierSaleEmail(payload, SITE)
-    expect(mail.text).toContain('סכום ההזמנה אצלכם: ₪360.00')
+    expect(mail.text).toContain('סכום ההזמנה אצלכם: ⁦360.00 ₪⁩')
     expect(mail.text).not.toContain('תשלום לספק')
     expect(mail.text).not.toContain('עמלה')
   })
@@ -121,7 +121,7 @@ describe('buildVoucherRedeemedEmail', () => {
     const mail = buildVoucherRedeemedEmail(payload, SITE)
     expect(mail.subject).toContain('ארוחה בשרית')
     expect(mail.text).toContain('טעמים גורמה')
-    expect(mail.text).toContain('₪180.00')
+    expect(mail.text).toContain('⁦180.00 ₪⁩')
   })
 
   it('groups the code the way the counter reads it aloud', () => {
@@ -171,8 +171,8 @@ describe('buildVoucherIssuedEmail', () => {
 
   it('states both amounts in the locked coupon money order', () => {
     const mail = buildVoucherIssuedEmail(payload, SITE)
-    expect(mail.text).toContain('שולם באתר: ₪220.00')
-    expect(mail.text).toContain('לתשלום בבית העסק: ₪180.00')
+    expect(mail.text).toContain('שולם באתר: ⁦220.00 ₪⁩')
+    expect(mail.text).toContain('לתשלום בבית העסק: ⁦180.00 ₪⁩')
     expect(mail.html).toContain('/coupon/57002c6d-f917-4adc-804e-65e6c4bde594')
   })
 

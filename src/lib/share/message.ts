@@ -1,4 +1,5 @@
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
+import { shekelsFromIlsCompact } from '@/lib/money-format'
 
 /**
  * The Hebrew text a shared product carries, derived once for every channel.
@@ -30,7 +31,7 @@ export interface ShareSubject {
 
 /** `₪399`, not `₪399.00`. Agorot appear only when the price has them. */
 function shekelsFromIls(value: number): string {
-  return `₪${value.toLocaleString('he-IL', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`
+  return shekelsFromIlsCompact(value)
 }
 
 /**

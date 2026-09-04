@@ -1,6 +1,7 @@
 'use client'
 
 import { type Reconciled, VERDICT_LABELS } from '@/lib/admin/payment-reconciliation'
+import { shekelsFromIls } from '@/lib/money-format'
 import { retryFinalizePayment } from '@/server/actions/admin/payments'
 import { AlertTriangle, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
@@ -60,8 +61,8 @@ export default function ReconcileClient({ rows, strandedIls }: Props) {
         <div className="flex items-start gap-2 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-800">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />
           <span>
-            ₪{strandedIls.toLocaleString('he-IL', { minimumFractionDigits: 2 })} נגבו מלקוחות
-            בהזמנות שלא נסגרו. כל שורה כזאת היא לקוח ששילם ולא קיבל.
+            {shekelsFromIls(strandedIls)} נגבו מלקוחות בהזמנות שלא נסגרו. כל שורה כזאת היא לקוח
+            ששילם ולא קיבל.
           </span>
         </div>
       )}
@@ -107,9 +108,7 @@ export default function ReconcileClient({ rows, strandedIls }: Props) {
                   <div className="mt-1 max-w-md text-xs text-gray-500">{row.message}</div>
                 </td>
                 <td className="px-4 py-3 text-gray-700" dir="ltr">
-                  {row.amountIls === null
-                    ? '—'
-                    : `₪${row.amountIls.toLocaleString('he-IL', { minimumFractionDigits: 2 })}`}
+                  {row.amountIls === null ? '—' : shekelsFromIls(row.amountIls)}
                 </td>
                 <td className="px-4 py-3 text-xs text-gray-500">
                   {row.succeededAt ? new Date(row.succeededAt).toLocaleString('he-IL') : '—'}

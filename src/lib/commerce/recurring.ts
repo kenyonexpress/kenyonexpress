@@ -18,6 +18,7 @@
  * default percent, because there is no default percent anywhere in this system.
  */
 
+import { shekelsFromIls, shekelsFromIlsRounded } from '@/lib/money-format'
 import { type Agorot, agorot, ilsToAgorot } from './money'
 import { type SplitAmounts, normalizeIls, round2, splitOnSiteCharge } from './product-money'
 
@@ -448,7 +449,7 @@ export function buildRecurringOffer(product: {
 /** "₪49 לחודש" / "₪49 לכל 3 חודשים". Money stays integer; ILS only for display. */
 export function describeRecurringPrice(offer: RecurringOffer): string {
   const ils = offer.amountAgorot / 100
-  const amountText = Number.isInteger(ils) ? `₪${ils}` : `₪${ils.toFixed(2)}`
+  const amountText = Number.isInteger(ils) ? shekelsFromIlsRounded(ils) : shekelsFromIls(ils)
   const unit = offer.interval === 'monthly' ? 'חודש' : 'שנה'
   const unitPlural = offer.interval === 'monthly' ? 'חודשים' : 'שנים'
   return offer.intervalCount === 1

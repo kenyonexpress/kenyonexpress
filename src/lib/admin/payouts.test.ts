@@ -128,8 +128,8 @@ describe('markPaidSchema', () => {
 
 describe('shekelsFromIls', () => {
   it('formats the numeric(12,2) strings postgrest returns for money columns', () => {
-    expect(shekelsFromIls('1234.5')).toBe('₪1,234.50')
-    expect(shekelsFromIls(0)).toBe('₪0.00')
-    expect(shekelsFromIls(null)).toBe('₪0.00')
+    expect(shekelsFromIls('1234.5')).toBe('⁦1,234.50 ₪⁩')
+    expect(shekelsFromIls(0)).toBe('⁦0.00 ₪⁩')
+    expect(shekelsFromIls(null)).toBe('⁦0.00 ₪⁩')
   })
 })

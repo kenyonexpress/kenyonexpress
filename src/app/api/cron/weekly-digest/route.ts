@@ -1,6 +1,7 @@
 import { bucketSales, totalsOf } from '@/lib/analytics/aggregate'
 import { contactEmail } from '@/lib/contact-address'
 import { sendEmail } from '@/lib/growth/resend'
+import { shekelsFromIlsRounded } from '@/lib/money-format'
 import { log } from '@/lib/observability/log'
 import { withRequestLog } from '@/lib/observability/with-request-log'
 import { bearerMatches } from '@/lib/security/constant-time'
@@ -44,9 +45,9 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
   const rows: [string, string][] = [
     ['הזמנות ששולמו', String(totals.orders)],
     ['פריטים', String(totals.items)],
-    ['GMV', `₪${totals.gmvIls.toLocaleString('he-IL')}`],
-    ['הכנסות פלטפורמה', `₪${totals.platformRevenueIls.toLocaleString('he-IL')}`],
-    ['חלק ספקים', `₪${totals.supplierDueIls.toLocaleString('he-IL')}`],
+    ['GMV', shekelsFromIlsRounded(totals.gmvIls)],
+    ['הכנסות פלטפורמה', shekelsFromIlsRounded(totals.platformRevenueIls)],
+    ['חלק ספקים', shekelsFromIlsRounded(totals.supplierDueIls)],
     ['מיילים במצב dead', String(dead.count ?? 0)],
     ['שוברים שפגים בשבוע הקרוב', String(expiring.count ?? 0)],
   ]
@@ -64,7 +65,7 @@ async function handleGET(request: NextRequest): Promise<NextResponse> {
 
   const result = await sendEmail({
     to: contactEmail(),
-    subject: `סיכום שבועי: ${totals.orders} הזמנות, ₪${Math.round(totals.gmvIls).toLocaleString('he-IL')} GMV`,
+    subject: `סיכום שבועי: ${totals.orders} הזמנות, ${shekelsFromIlsRounded(totals.gmvIls)} GMV`,
     html,
     tag: 'weekly-digest',
   })

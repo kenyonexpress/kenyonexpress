@@ -1,5 +1,17 @@
 # `migrations/pending/`
 
+## 2026-09-04: 171 added — the shekel sign in a category name
+
+`171_category_name_shekel_order.sql` rewrites `categories.name_he` for the
+`under-99` department from `עד ₪99` to the digits-then-sign form the whole site
+now renders, wrapped in an LTR isolate. **Not applied.**
+
+The page does not wait on it: `getAllCategories` repairs the order on read, and
+`e2e/price-bidi.spec.ts` measures the rendered geometry at 380/768/1440. The
+migration fixes the datum so exports and feeds agree with the page. It has no
+preflight because it touches one row of one text column and its own `where`
+clause is the check.
+
 ## 2026-09-04: two files pending — 162 (blocked on vault) and 169
 
 > The "audit" paragraph below records the file moves; STATE.md's incident

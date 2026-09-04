@@ -1,4 +1,5 @@
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
+import { shekelsFromIlsCompactPlain } from '@/lib/money-format'
 
 /**
  * Everything the Open Graph card SAYS, decided here rather than inside the JSX
@@ -59,7 +60,7 @@ function clip(value: string, max: number): string {
 }
 
 function shekelsFromIls(value: number): string {
-  return `₪${value.toLocaleString('he-IL', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`
+  return shekelsFromIlsCompactPlain(value)
 }
 
 export function buildOgCard(input: OgCardInput): OgCard {

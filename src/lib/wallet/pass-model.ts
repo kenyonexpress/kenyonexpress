@@ -1,3 +1,5 @@
+import { agorot } from '@/lib/money'
+import { shekelsPlain } from '@/lib/money-format'
 import { couponMoneyView, couponStatusView, formatCouponCode } from '@/lib/vouchers/coupon-view'
 import { OFF_PAGE, offPageRgb } from '@/styles/tokens'
 
@@ -66,7 +68,7 @@ export interface ApplePassOptions {
 const BRAND_RGB = offPageRgb(OFF_PAGE.brandRed)
 
 function agorotToText(value: number): string {
-  return `₪${(value / 100).toFixed(2)}`
+  return shekelsPlain(agorot(value))
 }
 
 function hebrewDate(iso: string): string {

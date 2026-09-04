@@ -1,6 +1,7 @@
 import SmartImage from '@/components/ui/SmartImage'
 import { HERO_CATEGORY_BANNERS } from '@/lib/assets'
 import { ELECTRO_HERO } from '@/lib/electro-hero-tokens'
+import { UNDER_99_LABEL } from '@/lib/ke-live-hero-data'
 import Link from 'next/link'
 import type { CSSProperties } from 'react'
 
@@ -34,7 +35,7 @@ const CATEGORIES = [
   },
   {
     id: 'under99',
-    label: 'עד 99',
+    label: UNDER_99_LABEL,
     href: '/category/under-99',
     /* singlefile renders this tile as text-only (no icon) */
     image: null,

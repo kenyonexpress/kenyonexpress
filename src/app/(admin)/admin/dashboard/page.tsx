@@ -2,6 +2,7 @@ import StatsCard from '@/components/admin/StatsCard'
 import { AUDIT_ACTION_LABELS, PENDING_QUEUE_LABELS, labelFor } from '@/lib/admin/labels'
 import { canSeeMoney } from '@/lib/admin/permissions'
 import { requireSection } from '@/lib/admin/rbac'
+import { shekelsFromIlsRounded } from '@/lib/money-format'
 import { createClient } from '@/lib/supabase/server'
 import { Coins, FileText, Package, QrCode, ShoppingCart, UserPlus } from 'lucide-react'
 import Link from 'next/link'
@@ -95,7 +96,7 @@ export default async function DashboardPage() {
         {showMoney ? (
           <StatsCard
             label="נגבה באתר היום"
-            value={`₪${cashInToday.toLocaleString('he-IL')}`}
+            value={shekelsFromIlsRounded(cashInToday)}
             icon={Coins}
             variant="admin"
           />

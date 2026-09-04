@@ -1,8 +1,9 @@
+import { UNDER_99_LABEL } from '@/lib/ke-live-hero-data'
 import Link from 'next/link'
 
 const categories = [
   { id: 'hot', label: 'דילים חמים', icon: '🔥', href: '/products' },
-  { id: 'pct', label: 'עד %%%', icon: '💰', href: '/coupons' },
+  { id: 'pct', label: UNDER_99_LABEL, icon: '💰', href: '/category/under-99' },
   { id: 'new', label: 'החדשים', icon: '✨', href: '/products' },
   { id: 'restaurants', label: 'מסעדות ובתי קפה', icon: '🍽️', href: '/products' },
   { id: 'beauty', label: 'יופי בריאות וטיפוח', icon: '💆', href: '/products' },

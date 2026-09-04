@@ -170,6 +170,7 @@ describe('the pending migration inventory', () => {
       '162_cron_schedule.sql',
       '169_analytics_server_event_names.sql',
       '170_composite_indexes_top_queries.sql',
+      '171_category_name_shekel_order.sql',
       'preflight_162.sql',
       'preflight_169.sql',
       'preflight_170.sql',

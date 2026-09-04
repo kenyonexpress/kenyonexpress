@@ -1,3 +1,4 @@
+import { shekelsFromIls as sharedShekelsFromIls } from '@/lib/money-format'
 /**
  * What a coupon product offers the customer, derived once so the product page,
  * the card and the tests all read the same numbers.
@@ -103,8 +104,5 @@ export function buildCouponOffer(input: CouponOfferInput): CouponOffer {
 
 /** `₪1,234.50`, Hebrew locale, always two decimals so prices align in a column. */
 export function shekelsFromIls(value: number): string {
-  return `₪${value.toLocaleString('he-IL', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`
+  return sharedShekelsFromIls(value)
 }

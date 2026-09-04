@@ -1,6 +1,7 @@
 'use client'
 
 import AddToCartButton from '@/components/cart/AddToCartButton'
+import { shekelsFromIlsRounded } from '@/lib/money-format'
 import Image from 'next/image'
 import Link from 'next/link'
 // product-card-deals.css is imported by the root layout. See the note there.
@@ -73,7 +74,7 @@ const DEAL_IMAGE_SIZES = [
 ].join(', ')
 
 function shekelsFromIls(value: number): string {
-  return `₪${Math.round(value)}`
+  return shekelsFromIlsRounded(value)
 }
 
 function CartPlusIcon() {
