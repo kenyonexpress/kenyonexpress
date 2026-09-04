@@ -1,20 +1,20 @@
 import HeaderCart from '@/components/cart/HeaderCart'
 import RegionMenu from '@/components/layout/RegionMenu'
-import { Heart, User } from 'lucide-react'
+import { Heart } from 'lucide-react'
 import Link from 'next/link'
 
 const ICON = { size: 22, color: 'var(--color-icon)', strokeWidth: 1.8 } as const
 
 /**
- * The masthead's left-hand group (RTL): search, the region selector, and the
- * favorites / account / cart icons, in the live masthead's order.
+ * The masthead's left-hand group (RTL): the region selector and the two-icon
+ * cluster -- favorites then cart, which is the whole cluster.
  *
  * Geometry from refs/ke_live_computed.json at 1440, 2026-09-02, x from left:
  *
  *   cart 135  user 223  heart 284  "בחר אזור" 360..456  search 456..990
  *
  * so RTL, reading right to left after the search: region selector, heart,
- * user, cart -- with 38px edge-to-edge between the icons at lg (the measured
+ * cart -- with 38px edge-to-edge between the icons at lg (the measured
  * breakpoint; phones get gap-4 so 320px keeps zero sideways scroll). gap-nav-gap is that
  * measurement, not a taste.
  *
@@ -55,15 +55,15 @@ export default function MastheadNav() {
           <Heart size={ICON.size} strokeWidth={ICON.strokeWidth} aria-hidden="true" />
         </Link>
 
-        <Link
-          href="/login"
-          aria-label="החשבון שלי"
-          className="-m-1 p-1 transition-opacity hover:opacity-70"
-          style={{ color: ICON.color }}
-        >
-          <User size={ICON.size} strokeWidth={ICON.strokeWidth} aria-hidden="true" />
-        </Link>
-
+        {/* THE ACCOUNT ICON IS NOT HERE, AND ITS ABSENCE IS THE RULE.
+            The cluster is exactly two icons at every breakpoint -- heart then
+            cart -- and the account entry point lives in the shell's top-left,
+            in exactly one place: TopBar's התחברות. This slot used to hold a
+            third <User> link to /login, which made three icons here, two more
+            account entry points than the rule allows (this one and the
+            handheld one in Header.tsx), and three places to keep in sync.
+            Live's own x at 1440 was cart 135, user 223, heart 284; dropping
+            the middle one closes to cart 135, heart 223. */}
         <HeaderCart />
       </nav>
     </div>

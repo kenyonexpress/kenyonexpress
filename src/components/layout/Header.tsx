@@ -4,7 +4,7 @@ import MobileDrawer from '@/components/layout/MobileDrawer'
 import TopBar from '@/components/layout/TopBar'
 import SmartImage from '@/components/ui/SmartImage'
 import { LOGO } from '@/lib/assets'
-import { User } from 'lucide-react'
+import { Heart } from 'lucide-react'
 import Link from 'next/link'
 
 /**
@@ -64,7 +64,7 @@ export default function SiteHeader() {
         */}
         <div className="mx-auto flex h-header-handheld max-w-page items-center justify-between gap-4 px-gutter xl:h-header-masthead">
           {/* HANDHELD (below xl), in live's order: hamburger on the right,
-              logo centred, cart + account on the left. */}
+              logo centred, the two-icon cluster on the left. */}
           {/* THE HAMBURGER IS ON THE INLINE-START, WHICH IN RTL IS THE RIGHT,
               and it is first in the DOM for exactly that reason. Measured on
               live at 380: hamburger x=319, cart x=15. This header had them the
@@ -91,16 +91,28 @@ export default function SiteHeader() {
 
           {/* Live's icon row sits at x15/x57 with 22px glyphs, so the icons are
               22 and the row owns the 44px hit area. Last in the DOM puts it on
-              the inline-end, which in RTL is the left, where live has it. */}
+              the inline-end, which in RTL is the left, where live has it.
+
+              TWO ICONS, HEART THEN CART, THE SAME PAIR THE MASTHEAD SHOWS.
+              This cluster used to be cart + a <User> link to /login, which
+              broke the rule twice over: no wishlist affordance below xl, an
+              account icon in a cluster that may not carry one, and a second
+              account entry point competing with TopBar's התחברות.
+
+              The DOM order also fixes a mirror. In an RTL flex row the FIRST
+              child renders RIGHTMOST, so cart-first put the cart on the right
+              while live measures it at x=15, hard against the left edge. Heart
+              first, cart second puts the cart back on the left and gives the
+              heart live's x=57 slot. */}
           <div className="flex items-center gap-2 xl:hidden">
-            <HeaderCart />
             <Link
-              href="/login"
-              aria-label="החשבון שלי"
+              href="/account/wishlist"
+              aria-label="המועדפים שלי"
               className="grid size-touch-min place-items-center text-icon transition-opacity hover:opacity-70"
             >
-              <User size={22} strokeWidth={1.8} aria-hidden="true" />
+              <Heart size={22} strokeWidth={1.8} aria-hidden="true" />
             </Link>
+            <HeaderCart />
           </div>
 
           {/* DESKTOP (xl and up): the measured masthead nav. */}
