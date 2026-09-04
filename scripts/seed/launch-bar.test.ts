@@ -40,8 +40,12 @@ describe('the grid list the auditor carries', () => {
     expect(GRID_SLUGS).toEqual(KE_LIVE_DEALS.map((d) => d.slug))
   })
 
-  it('is 32 cards, which is what the live DOM has', () => {
-    expect(GRID_SLUGS).toHaveLength(32)
+  it('is 31 cards: live renders 32 and one of them is not a product', () => {
+    // Live's grid has 32 cards. The 32nd is `reverse-withdrawal-payment`, Dokan
+    // bookkeeping that the WordPress importer already excludes by slug in
+    // scripts/wp-import/config.mjs -- this list and KE_LIVE_DEALS were the two
+    // places still mirroring the live DOM verbatim, artifact included.
+    expect(GRID_SLUGS).toHaveLength(31)
   })
 })
 
