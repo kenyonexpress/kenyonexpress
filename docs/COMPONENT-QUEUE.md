@@ -34,15 +34,15 @@ sent somebody looking for a block that was never there.
 | 01 | Top bar | `top-bar` (4 / 4) | live top strip | **complete** |
 | 02 | Masthead + header icon cluster | `masthead` (3 / 3) | live logo, real cart state | **complete** |
 | 03 | Departments menu | `departments-menu-v2` (4 / 1) | `KE_LIVE_CATEGORIES` | **complete** — mega panel refused, see below |
-| 04 | Hero slider | `home-v1-slider` (1 / 0) | live slide copy; imagery pending | not started |
-| 05 | Category strip | `product-categories-list` (1 / 1) | live departments | not started — **read the note** |
-| 06 | Deals + tabs block, with countdown | `section-onsale-product` (4 / 3), `deals-block` (1 / 0), `tabs-block` (1 / 0), `countdown` (8 / 5) | live deal products | not started |
-| 07 | Two-banner block | `home-v1-banner-block` (1 / 0) | live banners | not started |
-| 08 | Four-up promo row | `home-v1-da-block` (1 / 0), `da-block` (3 / 1) | **live only — see the trap** | not started |
-| 09 | Brand strip | `brands-carousel` (1 / 1) | live brands | not started |
-| 10 | Footer + payment logos | `site-footer` (2 / 2), `footer-payment` (1 / 1) | live footer links | not started |
-| 11 | Handheld header + off-canvas drawer | `handheld-header-v2` (1 / 1), `off-canvas` (7 / 7) | live departments | not started |
-| 12 | Mobile bottom nav | `handheld-footer-bar` (2 / 2) | live destinations | not started |
+| 04 | Hero slider | live's RevSlider (`home-v1-slider` is **0** on live) | live rs-18 copy, Hebrew; imagery pending by decision | **complete** |
+| 05 | Category strip | `product-categories-list` (1 / 1, and 1 on live) | live departments | **complete** — in the hero column, per the note |
+| 06 | Deals grid | live's flat `jet-listing-grid`; `section-onsale-product`/`deals-block`/`tabs-block`/`countdown` are all **0 on live** | live deal products, 32 cards | **complete** — no countdown, no tabs |
+| 07 | (merged into 08) | `home-v1-banner-block` is **0 on live** | — | **n/a** — live has one ads block, not two |
+| 08 | Promo blocks (THREE, not four) | live renders exactly 3 `.da-block`, 201x197 at 1440, 0x0 at 380 | live only — see the trap | **complete** — `HeroPromoBanners` |
+| 09 | Brand strip | `brands-carousel` **0 on live**, renders nowhere at either width | — | **refused** — not on live |
+| 10 | Footer + payment logos | `site-footer` (2 on live); `footer-payment` renders **nowhere** on live, which carries `patment-icon.webp` instead | live footer links | **complete** |
+| 11 | Handheld header + off-canvas drawer | `handheld-header-v2` (1 on live), `off-canvas` (9 on live) | live departments | **complete** — `MobileDrawer` |
+| 12 | Handheld footer bar (NOT a bottom nav) | `handheld-footer-bar` on live is `position: static`, 380x137 at 380, 0x0 at 1440 | live logo + contact line | **complete** — in `SiteFooter` |
 
 ### Corrections to the first draft, each verified by grep
 
@@ -59,7 +59,59 @@ sent somebody looking for a block that was never there.
 - **`loop-product-categories` (126 / 78) is not a component**, it is the class on
   every product's category link. Do not build a section from it.
 
-### ⚠️ The trap on 08
+### ⚠️ THE QUEUE WAS DERIVED FROM A TEMPLATE LIVE DOES NOT RUN
+
+This is the single largest correction to this document, and it lands on rows
+06-12 at once.
+
+The queue was derived from Electro's homepage template on the rule that "the
+live site wins on which sections exist and Electro wins on how each one is laid
+out". The derivation assumed live runs Electro's homepage. **It does not.**
+Live's homepage is Elementor: twenty `elementor-section`s of Jet widgets, in
+this order --
+
+    electro_vertical_nav_menu_element      -> 03 departments menu
+    wp-widget-rev-slider-widget            -> 04 hero slider
+    electro_product_categories_list_element-> 05 category strip
+    electro_elementor_ads_block            -> 07 + 08, and it is ONE block
+    electro_elementor_feature_block        -> the benefit bar
+    jet-listing-grid                       -> 06 deals, 32 flat cards
+    (footer)                               -> 10 + 12
+
+Counted on the live homepage 2026-09-04, most of Electro's homepage classes are
+simply absent:
+
+    home-v1-slider          0     section-onsale-product  0
+    deals-block             0     tabs-block              0
+    home-v1-banner-block    0     home-v1-da-block        0
+    brands-carousel         0     da-block                3
+
+And **rendered** in a real browser at 380 and 1440, because a class can sit in
+the markup and never paint:
+
+    .countdown            no such element at either width
+    .brands-carousel      no such element at either width
+    .footer-payment       no such element at either width
+    .da-block             THREE, 201x197 at 1440, 0x0 at 380
+    .handheld-footer-bar  380x137 at 380, position STATIC; 0x0 at 1440
+
+What that decides:
+
+- **06 has no countdown and no tabs.** Live's deals are one flat grid of 32
+  cards with no section title, which is what `DealsOfTheDay` already renders.
+- **07 and 08 are the same three blocks.** Not a two-up plus a four-up: live's
+  ads block renders exactly three `.da-block`s. `HeroPromoBanners` is those
+  three.
+- **09 does not exist on live.** Not built.
+- **12 is not a bottom nav.** It is a 137px STATIC footer strip carrying the
+  logo and the contact line, which `SiteFooter` already builds below `lg`. A
+  fixed bar would invent a navigation surface live has no counterpart for and
+  would cover content at the fold, which is the defect the PWA banner and the
+  consent banner have each already paid for once.
+
+Pinned by `src/lib/live-home-sections.test.ts`.
+
+### ⚠️ The trap on 08 (confirmed live, still live's content today)
 
 `home-v1-da-block` is the block defects 2 and 3 stripped. Its Electro content,
 read out of the capture:
@@ -172,3 +224,4 @@ Removing an artifact from a fixture that mirrors live's DOM is only half a fix;
 the slot has to be refilled or everything below it is measured against the wrong
 rows of live.
 | 2026-09-04 | 03 Departments menu | already matched live 11/11 in order; mega panel refused with evidence and pinned by `ke-live-categories.test.ts` | 10.68 / 7.71 / 8.13 (unchanged, no render change) |
+| 2026-09-04 | 04-12 | resolved against live rather than Electro: 04/05/06/08/10/11/12 already built and verified, 07 merged into 08, 09 refused; pinned by `live-home-sections.test.ts` | 10.68 / 7.71 / 8.13 |
