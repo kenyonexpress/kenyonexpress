@@ -1,26 +1,37 @@
 // `bg` names a promo tint from the @theme block in globals.css, which mirrors
 // SITE.promo in src/styles/tokens.ts. Kept as a var() string rather than a
 // Tailwind class because it is data on the banner, not markup.
+/**
+ * HEBREW, AND ABOUT THIS CATALOGUE.
+ *
+ * The three headings were Electro's demo copy -- Teslas, games consoles and
+ * laptops -- in English, on a Hebrew storefront that sells vouchers for
+ * restaurants, spas, hotels and tradespeople. The emoji went with them: a car,
+ * a gamepad and a laptop illustrated a catalogue that does not exist here.
+ *
+ * The same three blocks in the homepage hero are `HeroPromoBanners`; this is
+ * the (main) route group's copy of them and it had drifted out of sight.
+ */
 const banners = [
   {
-    id: 'hottest',
-    heading: 'SHOP THE HOTTEST PRODUCTS',
-    emoji: '🚗',
-    emojiLabel: 'Tesla',
+    id: 'hot-deals',
+    heading: 'הדילים החמים של השבוע',
+    emoji: '🔥',
+    emojiLabel: 'דילים חמים',
     bg: 'var(--color-promo-rose)',
   },
   {
-    id: 'consoles',
-    heading: 'CATCH BIG DEALS ON THE CONSOLES',
-    emoji: '🎮',
-    emojiLabel: 'Consoles',
+    id: 'vacation',
+    heading: 'מבצעים גדולים על צימרים ומלונות',
+    emoji: '🏨',
+    emojiLabel: 'צימרים ובתי מלון',
     bg: 'var(--color-promo-violet)',
   },
   {
-    id: 'laptops',
-    heading: 'LAPTOPS NOTEBOOKS AND MORE',
-    emoji: '💻',
-    emojiLabel: 'Laptops',
+    id: 'restaurants',
+    heading: 'מסעדות, בתי קפה ועוד',
+    emoji: '🍽️',
+    emojiLabel: 'מסעדות ובתי קפה',
     bg: 'var(--color-promo-sky)',
   },
 ]
@@ -39,7 +50,7 @@ export default function LeftSidebar() {
           </div>
           {/* Text + button */}
           <div className="p-3">
-            <p className="font-extrabold text-xs text-gray-900 leading-snug uppercase tracking-tight">
+            <p className="font-extrabold text-xs text-gray-900 leading-snug tracking-tight">
               {b.heading}
             </p>
             <button
@@ -47,7 +58,7 @@ export default function LeftSidebar() {
               className="mt-2.5 w-full text-white text-xs font-bold py-1.5 rounded-full transition-colors hover:opacity-90"
               style={{ background: 'var(--color-promo-flame)' }}
             >
-              Shop now ←
+              לרכישה ←
             </button>
           </div>
         </div>

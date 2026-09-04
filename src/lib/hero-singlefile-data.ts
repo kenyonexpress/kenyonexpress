@@ -25,8 +25,8 @@ const WELCOME_SLIDE: HeroSlide = {
   title_secondary: 'לקניון Express',
   title_secondary_indent: true,
   tagline: 'מסדרים לך בילוי . . .',
-  promo_small: 'SIMPLY THE',
-  promo_large: 'BEST',
+  promo_small: 'פשוט',
+  promo_large: 'הכי טוב',
   image_url: HERO_SLIDER_IMAGES[0],
   link_url: '/products',
   // Measured on kenyonexpress.co.il 2026-07-30. The slider is 728x370 at x=336
@@ -36,14 +36,28 @@ const WELCOME_SLIDE: HeroSlide = {
   imageLayout: { offsetTop: 18, widthPercent: 44.5, insetPercent: 11.8, minHeight: 434 },
 }
 
+/**
+ * HEBREW, LIKE EVERY OTHER SLIDE.
+ *
+ * This one and the promo pair below it were the last English left in the hero.
+ * They came from the Electro RevSlider export and describe its demo catalogue
+ * ("PREMIUM PRODUCT", "THE NEW STANDARD", "SIMPLY THE BEST"); the live site
+ * still shows them because it runs the same theme, so `refs/` holds no Hebrew
+ * counterpart to copy and these are written, not measured.
+ *
+ * The display ramp they render through (--text-hero-*) is measured and is
+ * unchanged. Hebrew sets narrower than the English it replaces at the same
+ * size, which moves the hero band in the pixel comparison; that cost is
+ * recorded in STATE.md rather than absorbed by leaving the site in English.
+ */
 const PREMIUM_SLIDE: HeroSlide = {
   id: 'rs-35',
   variant: 'product',
-  title: 'PREMIUM',
-  title_secondary: 'PRODUCT',
-  standard_line: 'THE NEW STANDARD',
-  promo_small: 'SIMPLY THE',
-  promo_large: 'BEST',
+  title: 'חוויות',
+  title_secondary: 'פרימיום',
+  standard_line: 'הסטנדרט החדש',
+  promo_small: 'פשוט',
+  promo_large: 'הכי טוב',
   image_url: HERO_SLIDER_IMAGES[1],
   link_url: '/products',
   imageLayout: { offsetTop: -15, widthPercent: 58.7, minHeight: 447 },
@@ -59,9 +73,9 @@ export const HERO_SINGLEFILE_SLIDES: HeroSlide[] = [
     title: 'ממשק',
     title_secondary: 'מהיר ונוח',
     title_indent: true,
-    standard_line: 'THE NEW STANDARD',
-    promo_small: 'SIMPLY THE',
-    promo_large: 'BEST',
+    standard_line: 'הסטנדרט החדש',
+    promo_small: 'פשוט',
+    promo_large: 'הכי טוב',
     image_url: HERO_SLIDER_IMAGES[2],
     link_url: '/products',
     imageLayout: { offsetTop: 17, widthPercent: 49.3, minHeight: 376 },
@@ -72,9 +86,9 @@ export const HERO_SINGLEFILE_SLIDES: HeroSlide[] = [
     title: 'תצוגה',
     title_secondary: 'מושלמת',
     title_indent: true,
-    standard_line: 'THE NEW STANDARD',
-    promo_small: 'SIMPLY THE',
-    promo_large: 'BEST',
+    standard_line: 'הסטנדרט החדש',
+    promo_small: 'פשוט',
+    promo_large: 'הכי טוב',
     image_url: HERO_SLIDER_IMAGES[3],
     link_url: '/products',
     imageLayout: { offsetTop: 9, widthPercent: 51.5, minHeight: 392 },
