@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-04 05:30 UTC (‏RLS מפורש לעשר טבלאות אפס-מדיניות: מיגרציה 172 הוחלה דרך MCP, ‏harness שלוש פרסונות ירוק מול פרודקשן בגלגול לאחור, ‏vitest מצמיד את שני הקבצים)
 Updated: 2026-09-04 01:05 UTC (‏חיפוש טקסט מלא בעברית: מיגרציה 171 הוחלה דרך MCP, ‏GIN על products ו-coupon_deals, ‏RPC בשם search_products, טסטים ב-Playwright)
 Updated: 2026-09-04 00:50 UTC (‏טבלאות דיווח מנורמלות-הפוך: מיגרציה 170 הוחלה דרך MCP, ‏pg_cron לילי ב-01:30 UTC, חמישה RPC לאדמין בלבד)
 Updated: 2026-09-04 00:25 UTC (‏soft delete על ארבע הטבלאות שנותרו: מיגרציה 149 ממתינה, הקוד נפרס קודם ובטוח לשני המצבים)
@@ -71,6 +72,39 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
 ## המשך מ: ‏PRIORITY TWO — ‏refunds בשני המסלולים, ומירוץ מימוש הקופון
+
+### ‏04.09 ‏goal בוצע: ‏RLS מפורש לכל טבלה + אימות שלוש פרסונות (commit ‏`4c98f6021`, branch ‏autopilot)
+
+ה-goal ביקש: "Write comprehensive RLS policies via Supabase MCP for every
+table, verify with automated tests using three personas... block cross-tenant
+access". נמדד קודם: כל 71 הטבלאות הציבוריות עם RLS דלוק, ועשר מהן עם אפס
+מדיניות. מה שנעשה:
+
+1. **מיגרציה** `migrations/pending/172_rls_zero_policy_tables.sql`, הוחלה על
+   פרודקשן דרך MCP בשם `rls_zero_policy_tables_172` (‏+ ‏`_report_grants`),
+   לפי תקדים 169/170/171 ונוסח ה-goal: ‏deny_all_client_roles **מצמצם**
+   (restrictive) על שלוש טבלאות התשתית (‏rate_limits, user_rate_limits,
+   search_index_outbox), ‏`<t>_admin_read` בשער `is_admin()` על שבע טבלאות
+   התצפית (‏payment_webhook_events, ai_usage, analytics_events וארבע טבלאות
+   ה-report), ו-grant SELECT ל-authenticated על טבלאות ה-report שנוצרו ב-170
+   בלי אף grant. הדלתא היחידה: אדמינים מקבלים קריאה על שבע טבלאות; הדחיות
+   כבר היו ברירת המחדל. תוקן בדרך באג אמיתי: טאב ה-webhooks באדמין קרא את
+   payment_webhook_events דרך ה-client של הבקשה וקיבל בשקט אפס שורות.
+2. **‏harness שלוש פרסונות** `tests/sql/rls_three_personas.sql`: זורע לבד שני
+   לקוחות ואדמין, מריץ anon / user A / admin, כולל חוצה-דיירים (A לא קורא,
+   לא שותל ולא מעדכן כתובת או push token של B), והכל מתגלגל לאחור. הורץ
+   מול פרודקשן דרך MCP עם `RAISE EXCEPTION 'RLS_HARNESS_PASS'` בסוף: עבר,
+   ואומת אפס שאריות (‏auth.users, rate_limits, webhook_events, reports).
+3. **‏vitest** `src/__tests__/rls-zero-policy-migration.test.ts` מצמיד את
+   אינווריאנטות שני הקבצים (‏restrictive, ‏idempotency מול pg_policy, ‏SELECT
+   בלבד, שתי הפרסונות המאומתות ועוד), ו-inventory עודכן לשלושים קבצים.
+
+**החלטות שהתקבלו לבד.** ‏(א) המיגרציה כבר הייתה מוחלת על ידי סשן קודם שנקטע
+לפני טקס הסיום (שני שמות המיגרציה ב-list_migrations, ‏01:07 UTC); הסשן הזה
+אימת מחדש מדיניות-מדיניות מול pg_policy, הריץ את ה-harness, והשלים את הטקס.
+‏(ב) ‏advisors אחרי ההחלה: אפס ממצאים חדשים; אותם 22 WARN ידועים על definer.
+
+שערים: ‏3551 טסטים ירוקים, ‏type-check נקי, ‏lint נקי, ‏build עבר.
 
 ### ‏04.09 ‏goal בוצע: חיפוש טקסט מלא בעברית, ‏GIN + ‏RPC בשם search_products (branch ‏autopilot)
 
