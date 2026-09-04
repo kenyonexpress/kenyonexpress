@@ -169,8 +169,10 @@ describe('the pending migration inventory', () => {
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
       '162_cron_schedule.sql',
       '169_analytics_server_event_names.sql',
+      '170_composite_indexes_top_queries.sql',
       'preflight_162.sql',
       'preflight_169.sql',
+      'preflight_170.sql',
     ])
   })
 

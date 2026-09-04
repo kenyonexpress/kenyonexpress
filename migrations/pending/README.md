@@ -19,6 +19,15 @@ PRODUCTION table below. Every file in `migrations/applied/` now has a SHA-256
 line in `migrations/applied/CHECKSUMS.sha256`
 (verify with `cd migrations/applied && shasum -c CHECKSUMS.sha256`).
 
+### `170_composite_indexes_top_queries.sql` — PENDING, not approved
+
+Expand-only composite indexes for the ten hottest query patterns
+(ARCHITECTURE-PERFORMANCE §6.3 + measured plans; baselines in
+`docs/perf/indexes.md`). `CREATE INDEX IF NOT EXISTS` only, no drops, no
+data changes; each pattern matched to the live code path that issues it and
+checked non-duplicate against `pg_indexes`. Written by the parallel
+autopilot session on 04.09. Preflight: `preflight_170.sql`.
+
 ### `169_analytics_server_event_names.sql` — PENDING, not approved
 
 CREATE OR REPLACE of `fn_ingest_analytics_events`, byte-identical to 151's

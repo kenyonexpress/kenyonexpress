@@ -13,6 +13,7 @@ itself.
 | --- | --- | --- |
 | `scripts/seed-test-data.mjs` | The deterministic E2E fixtures: 1 supplier, 1 category, 1 coupon + 1 physical product, a customer and a supplier-member user, all on fixed UUIDs in the `…-0e02b2c3d###` namespace | Upserts only; `--check` reports, `--clean` removes exactly what it created |
 | `scripts/seed-catalogue.mjs` | Emits SQL for the catalogue seed rather than executing it (the local service key is not this project's — `docs/CONTRADICTIONS.md` + memory) | Output is reviewed and applied by a human via MCP |
+| `scripts/seed-catalogue.mjs --demo` | The demo-production profile (CLOSEOUT step 16): 3 suppliers, 40 physical, 20 coupons on the `d3e30000-…` namespace, through the same emitter. Data in `scripts/seed/demo-data.mjs` | Same as above: `--sql` / `--clean-sql` emit only; never executed by a script |
 | `scripts/wp-import/` | The full WordPress migration pipeline. **Already ran to completion 07.08** (61→80 products, idempotent on `products.wp_id`) | Dry-run by default; writes need `WP_IMPORT_ALLOW_WRITES=1` **and** `--apply` |
 
 ## Environment
