@@ -115,6 +115,9 @@ running. Order is the position in the apply sequence.
 | `143_revoke_unused_definer_execute.sql` | Revokes `EXECUTE` on 5 SECURITY DEFINER functions from `anon`/`authenticated` | **Medium.** Closes a live RLS bypass in `voucher_success_payload`. `supplier_app_context` was withdrawn from this file — the Expo till calls it | 19 | `src/__tests__/revoked-functions-have-no-callers.test.ts` green | `GRANT EXECUTE ON FUNCTION public.<fn> TO anon, authenticated;` (5 statements, listed in the file) |
 | 144 | `144_revoke_authenticated_dml.sql` | Revokes INSERT/UPDATE/DELETE from `authenticated` on the 8 RLS-on-zero-policy tables | **Low.** Defence in depth; RLS already blocks these, but RLS does not cover `TRUNCATE` | 20 | 122 (same 5 tables, policies first) | `GRANT INSERT, UPDATE, DELETE ON public.<t> TO authenticated;` (8 statements, listed in the file) |
 | 145 | `145_revoke_check_rate_limit_execute.sql` | Revokes `EXECUTE` on `check_rate_limit` from `anon`/`authenticated` | **HIGH IF MISORDERED.** See below | **21 — LAST** | ⛔ **CODE-FIRST: commit `d5c2739d4`** | `GRANT EXECUTE ON FUNCTION public.check_rate_limit(text, integer, integer) TO anon, authenticated;` |
+| 148 | `148_orders_monthly_partitioning.sql` | Converts `orders` to monthly range partitions on `created_at`; PK becomes `(id, created_at)`, 16 referencing tables gain a trigger-filled twin column and composite FKs | **HIGH.** Structural conversion of the busiest financial table; apply only in a maintenance window, details in the file header | after 137 | pg_cron (installed) | in file header |
+| 149 | `149_soft_delete_user_facing_remainder.sql` | `deleted_at` + partial index + RLS select filters on `categories`, `product_images`, `reviews`, `wishlists`; splits `wishlists_owner_all` into four per-command policies | **Low.** Additive column; policies only narrow client reads. Service-role call sites are gated by `src/lib/soft-delete.ts`, whose pending list is flipped to live after apply | any | none | in file header |
+| 169 | `169_audit_full_coverage.sql` | `audit_log` before/after/request_id columns, `entity_id` uuid→text, generic trigger v2 on every financial and user table | **✅ APPLIED 2026-09-04** via MCP as `audit_full_coverage_169`, on the explicit instruction of the /goal that requested it. Validated first against production inside a rolled-back DO block (snapshots, header capture, ip parsing all probed), then applied; 34 audit triggers verified after. The file stays here as the record, like 122-147 | any | none | in file header |
 
 ## 138-141 add GENERATED columns, and that is what makes step 2 possible
 
@@ -241,6 +244,38 @@ names exists on disk. It also asserts `supabase/migrations/` contains no
 list from this directory and checks it against every `.ts`/`.tsx` in **both**
 `src/` and `apps/`, so revoking a function the Expo till uses fails a test
 rather than a till.
+
+## `149_soft_delete_user_facing_remainder.sql`, added 2026-09-04
+
+Soft delete for the four user-facing tables that still lack it. Measured
+against production 2026-09-04 over MCP: `products`, `product_variants`,
+`suppliers`, `user_addresses`, `vendors` and `coupon_deals` already carry
+`deleted_at` with RLS filters; `categories`, `product_images`, `reviews` and
+`wishlists` have no such column at all. This file adds `deleted_at
+timestamptz`, the house partial index, and rewrites the client-facing SELECT
+policies so a deleted row disappears for shoppers while admin keeps it for
+restore. It also closes a live gap: `product_images` were readable for a
+soft-deleted product, because the old policy only checked
+`products.status = 'active'`.
+
+**The code side ships first and is safe either way.** Service-role readers
+bypass RLS, so their filter lives in `src/lib/soft-delete.ts`, which keeps a
+live list (filters now) and a pending list (no-op until this file is
+applied — filtering on a missing column is a 42703 that kills the whole
+query). After apply: regenerate types, and `src/lib/soft-delete.test.ts`
+fails on purpose until the four names move to the live list.
+
+## `148_orders_monthly_partitioning.sql`, added 2026-09-03
+
+Found on disk unlisted on 2026-09-04 and inventoried then; written by a
+parallel session. Converts `orders` to a table partitioned by range on
+`created_at`, one partition per UTC month, provisioned twelve months ahead by
+pg_cron. The primary key becomes `(id, created_at)`; each of the sixteen
+referencing tables gains a trigger-filled `created_at` twin and a composite
+FK preserving its ON DELETE semantics and constraint name. Global invoice
+uniqueness moves to an `orders_invoice_numbers` registry table. Read the file
+header in full before considering apply: it is a structural conversion of the
+busiest financial table.
 
 ## `147_money_agorot_remaining_twins.sql`, added 2026-09-01
 

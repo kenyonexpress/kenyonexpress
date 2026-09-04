@@ -1,4 +1,4 @@
-import { timeoutFetch } from '@/lib/supabase/timeout-fetch'
+import { requestIdFetch } from '@/lib/supabase/request-id-fetch'
 import type { Database } from '@/types/database'
 import { createClient } from '@supabase/supabase-js'
 
@@ -17,6 +17,6 @@ export function createPublicClient() {
   }
   return createClient<Database>(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
-    global: { fetch: timeoutFetch },
+    global: { fetch: requestIdFetch },
   })
 }

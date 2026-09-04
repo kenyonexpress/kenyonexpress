@@ -1,4 +1,5 @@
 import { log } from '@/lib/observability/log'
+import { getRequestId } from '@/lib/observability/request-context'
 import { createAdminClient } from '@/lib/supabase/admin'
 import type { AuditAction, Json, UserRole } from '@/types/database'
 import { headers } from 'next/headers'
@@ -64,6 +65,9 @@ export async function writeAuditLog(entry: {
       // dropped to null instead: a row without an IP still records who and what.
       ip_address: ip && /^[0-9a-fA-F.:]+$/.test(ip) ? ip : null,
       user_agent: userAgent?.slice(0, 500) ?? null,
+      // Same id the response echoes and every log line for this request
+      // carries (169). Null outside a request, which is the honest answer.
+      request_id: getRequestId(),
     })
     if (error) {
       log.error('audit.write_failed', { reason: error.message })

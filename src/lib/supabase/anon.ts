@@ -1,4 +1,4 @@
-import { timeoutFetch } from '@/lib/supabase/timeout-fetch'
+import { requestIdFetch } from '@/lib/supabase/request-id-fetch'
 import { createClient } from '@supabase/supabase-js'
 
 // Server-side clients that carry NO elevated key.
@@ -53,7 +53,7 @@ export function createPublicClient() {
   const { url, key } = anonEnv()
   return createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
-    global: { fetch: timeoutFetch },
+    global: { fetch: requestIdFetch },
   })
 }
 
@@ -78,6 +78,6 @@ export function createGuestCartClient(sessionId: string) {
   const { url, key } = anonEnv()
   return createClient(url, key, {
     auth: { persistSession: false, autoRefreshToken: false },
-    global: { headers: { Cookie: `session_id=${sessionId}` }, fetch: timeoutFetch },
+    global: { headers: { Cookie: `session_id=${sessionId}` }, fetch: requestIdFetch },
   })
 }

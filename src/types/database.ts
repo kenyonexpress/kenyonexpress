@@ -76,6 +76,8 @@ export type Database = {
           action: Database["public"]["Enums"]["audit_action"]
           actor_id: string | null
           actor_role: string | null
+          after: Json | null
+          before: Json | null
           changes: Json
           created_at: string
           entity_id: string
@@ -83,12 +85,15 @@ export type Database = {
           id: string
           ip_address: unknown
           metadata: Json
+          request_id: string | null
           user_agent: string | null
         }
         Insert: {
           action: Database["public"]["Enums"]["audit_action"]
           actor_id?: string | null
           actor_role?: string | null
+          after?: Json | null
+          before?: Json | null
           changes?: Json
           created_at?: string
           entity_id: string
@@ -96,12 +101,15 @@ export type Database = {
           id?: string
           ip_address?: unknown
           metadata?: Json
+          request_id?: string | null
           user_agent?: string | null
         }
         Update: {
           action?: Database["public"]["Enums"]["audit_action"]
           actor_id?: string | null
           actor_role?: string | null
+          after?: Json | null
+          before?: Json | null
           changes?: Json
           created_at?: string
           entity_id?: string
@@ -109,6 +117,7 @@ export type Database = {
           id?: string
           ip_address?: unknown
           metadata?: Json
+          request_id?: string | null
           user_agent?: string | null
         }
         Relationships: []

@@ -51,7 +51,7 @@ function manifestFilenames(): string[] {
 }
 
 describe('the pending migration inventory', () => {
-  it('holds the twenty-four renumbered files and nothing else', () => {
+  it('holds the twenty-seven renumbered files and nothing else', () => {
     // A new pending migration is a deliberate diff here, which is the point:
     // schema changes are the one category where a silent addition is expensive.
     expect(sqlFilesIn(PENDING_DIR)).toEqual([
@@ -79,6 +79,9 @@ describe('the pending migration inventory', () => {
       '145_revoke_check_rate_limit_execute.sql',
       '146_wallet_balance_floor.sql',
       '147_money_agorot_remaining_twins.sql',
+      '148_orders_monthly_partitioning.sql',
+      '149_soft_delete_user_facing_remainder.sql',
+      '169_audit_full_coverage.sql',
     ])
   })
 
