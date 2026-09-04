@@ -1,0 +1,252 @@
+/* ============================================================================
+   DERIVED TOKENS — measured, never invented
+   ============================================================================
+
+   Every value in this file was counted out of `refs/ke_live_computed.json` or
+   `refs/ke_live_states.json`, both captured from the live production site on
+   2026-09-04 by:
+
+     node scripts/measure-live-computed.mjs     21 captures, 7 templates x 3 widths
+     node scripts/measure-live-states.mjs       hover / active / disabled
+
+   `docs/TOKEN-PROVENANCE.md` carries one row per token: the measured value, the
+   source selector, and the source width. A token that cannot be traced to a
+   measured selector is not in this file. Where the live site paints no instance
+   of a state, the provenance table says UNMEASURED and this file declares
+   nothing for it.
+
+   HOW THIS FILE RELATES TO src/styles/tokens.css. That file is the app's token
+   layer and remains the single source of truth for everything already in it;
+   `src/styles/tokens.test.ts` reads it directly and asserts it against
+   `src/styles/tokens.ts`. This file is imported by it, so every token has
+   exactly ONE physical definition and Tailwind resolves both through the same
+   `@theme` cascade.
+
+   NOTHING HERE REDECLARES A TOKEN THAT ALREADY EXISTS THERE. This codebase has
+   paid twice for a second copy of a value (six functions named `shekels` with
+   two opposite contracts; `--cart-touch` nearly redeclared in three
+   stylesheets), so where the new measurement CONFIRMS an existing token, the
+   provenance table records the confirmation and this file stays silent. Where
+   the new measurement CONTRADICTS one, the table says so in the Verdict column
+   and the token is NOT changed here: a contradiction is a finding to act on
+   deliberately, not something a token file resolves on its own.
+   ============================================================================ */
+
+@theme {
+  /* --- Buttons ---------------------------------------------------------------
+
+     Measured on the live controls themselves, at rest and with a real pointer
+     driven onto them. Live has no single button component: it paints four
+     distinct shapes, and they do not share a radius, an ink, or a height. They
+     are declared as four families rather than flattened into one "primary",
+     because flattening them would be the invention this file exists to avoid.
+
+     THE ONE THING THEY DO SHARE is the hover. Every measured button on live
+     goes to BLACK on hover, and every one of them uses the same transition. */
+
+  /* The hover every live button shares. Measured identical on
+     atc-product, cart-checkout, place-order and login-submit. */
+  --btn-hover-bg: #000000;
+  --btn-hover-ink: #ffffff;
+  --btn-transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+
+  /* Family 1: the product add-to-cart. RESPONSIVE, and this is the finding
+     that matters most in this file: live paints it slate with a 6px corner on
+     a phone and brand yellow as a 25.2px pill from 768 up. Two shapes, two
+     tokens; a single value would be wrong at one of the two widths. */
+  --btn-atc-bg-handheld: #333e48;
+  --btn-atc-ink-handheld: #ffffff; /* 10.92:1 on the slate, passes AA */
+  --btn-atc-radius-handheld: 6px;
+  --btn-atc-bg: #fed700;
+  --btn-atc-radius: 25.2px;
+  --btn-atc-pad: 14.504px 48.076px;
+  --btn-atc-h: 52.98px;
+  --btn-atc-w: 192.17px; /* 768 and 1440; full-width at 380 */
+  --btn-atc-size: 14px;
+  --btn-atc-weight: 700;
+  /* NO --btn-atc-ink FOR THE YELLOW VARIANT, DELIBERATELY.
+     Live paints WHITE on #fed700 here: rgb(254,215,0) with rgb(255,255,255),
+     measured at 768 and at 1440. That is 1.41:1 against the 4.5:1 AA needs,
+     and `src/lib/a11y/brand-contrast.test.ts` fails the build on exactly this
+     pairing. So the measurement is recorded in the provenance table and the
+     token is NOT emitted: a component must reach for --color-heading (7.76:1)
+     or --color-primary-foreground (12.38:1). This is the one place where
+     copying live is forbidden by a gate this repo already enforces. */
+
+  /* Family 2: the cart's checkout button. Brand yellow, slate ink, pill. */
+  --btn-checkout-bg: #fed700;
+  --btn-checkout-ink: #333e48; /* 7.76:1 */
+  --btn-checkout-radius: 21.994px;
+  --btn-checkout-pad: 14.504px 29.876px;
+  --btn-checkout-h: 47.52px;
+  --btn-checkout-size: 14px;
+  --btn-checkout-weight: 700;
+  /* Measured with the mouse held down. Not a guess and not a derived shade:
+     rgb(167,142,0). It carries the slate ink at 3.39:1, which is below AA for
+     14px text, so it is declared for fidelity and must not be a resting state. */
+  --btn-checkout-active-bg: #a78e00;
+
+  /* Family 3: the checkout's place-order. Same yellow, a much larger pill and
+     a larger type size than any other button on the site. */
+  --btn-order-bg: #fed700;
+  --btn-order-ink: #333e48;
+  --btn-order-radius: 50px;
+  --btn-order-pad: 14.512px 16px;
+  --btn-order-h: 64.28px;
+  --btn-order-size: 19.418px;
+  --btn-order-weight: 700;
+
+  /* Family 4: secondary. Live's update-cart and account login share one fill. */
+  --btn-secondary-bg: #efecec;
+  --btn-secondary-ink: #333e48; /* 9.30:1 */
+  --btn-secondary-radius: 22px;
+  --btn-secondary-pad: 14.504px 29.876px;
+  --btn-secondary-h: 47.2px;
+  --btn-secondary-size: 14px;
+
+  /* The only disabled treatment live actually paints, measured on the one
+     control that ships disabled (`button[name="update_cart"]`): the fill and
+     the ink do not change, opacity drops. The other four buttons have NO
+     disabled instance on live and are recorded UNMEASURED in the provenance
+     table; this value is not silently generalised to them there. */
+  --btn-disabled-opacity: 0.65;
+
+  /* The card's own add-to-cart, which is not a filled button at all: a
+     transparent pill with slate ink, 37.14x33.88 in a 186.03 card. */
+  --btn-card-atc-bg: transparent;
+  --btn-card-atc-ink: #333e48;
+  --btn-card-atc-radius: 22px;
+  --btn-card-atc-w: 37.14px;
+  --btn-card-atc-h: 33.88px;
+
+  /* --- Radius scale, recounted ------------------------------------------------
+
+     23952 elements across 7 templates x 3 widths. The site is overwhelmingly
+     square: 22740 elements (94.9%) carry 0px against 1212 that carry anything.
+
+       22740  0px            611  22px           138  4px
+          96  200px           55  50%             45  50px
+          45  0 0 7px 7px     42  7px             21  25px
+          21  8px             21  0 22px 22px 0   21  22px 0 0 22px
+          21  50px 0 0 50px   21  0 25.136px..     9  3px
+           9  20.006px         9  20px             7  21.994px
+           6  2px              3  4.998px
+
+     The five values already in src/styles/tokens.css (0, 4, 7, 22, 25, 200) are
+     all confirmed by this recount and are NOT redeclared here. The three below
+     are values the recount found that the existing scale has no entry for, each
+     appearing often enough to be a real step rather than a stray. */
+  --radius-half: 50%; /* 55 elements: circular avatars and icon chips */
+  --radius-order: 50px; /* 45 elements: the place-order pill and the skip link */
+  --radius-panel: 8px; /* 21 elements: the USP / benefit panel */
+
+  /* The two split radii the search and newsletter pills use. Written as full
+     four-value shorthands because that is what they measure as; a single 22px
+     would square the two corners live leaves round.
+     PHYSICAL, and deliberately so: these are logical-property candidates, but
+     the measured values come off an RTL document, so `0 22px 22px 0` is
+     already the RTL-correct painting. A component must apply them with
+     `border-start-start-radius` and friends if it needs them to flip. */
+  --radius-pill-start: 0 22px 22px 0; /* input#search */
+  --radius-pill-end: 22px 0 0 22px; /* the search submit beside it */
+
+  /* --- Product card, measured at all three widths -----------------------------
+
+     Live's card is `div.product-outer > div.product-inner`, and its DOM order
+     is NOT the order a card is usually written in. Measured on
+     `li.product` in the category archive:
+
+       1  span.loop-product-categories   the category links
+       2  span.price                     price, ABOVE the title
+       3  h2.woocommerce-loop-product__title
+       4  div.product-thumbnail          image, with span.onsale over it
+       5  div.product-loop-footer        price AGAIN, plus the add-to-cart
+
+     Price appears twice, and the title sits between the price and the image.
+     Anything that renders image-title-price is not this card. */
+  --card-w: 234px; /* 1440; 230 at 768, 175 at 380 */
+  --card-w-tablet: 230px;
+  --card-w-mobile: 175px;
+  --card-h: 437.52px;
+  --card-h-tablet: 424.69px;
+  --card-h-mobile: 369.69px;
+  --card-pad: 23.98px; /* inline AND top at 1440 the top is 20 */
+  --card-pad-top: 20px;
+  --card-pad-handheld: 14px; /* inline and top, at both 768 and 380 */
+  --card-thumb: 186.03px;
+  --card-thumb-tablet: 202px;
+  --card-thumb-mobile: 147px;
+  /* The four measured gaps, identical in shape at every width and different
+     only where the type size changes. */
+  --card-gap-cats-price: 7.98px; /* 4.47 at 768, 4.48 at 380 */
+  --card-gap-cats-price-handheld: 4.48px;
+  --card-gap-price-title: 0.99px; /* 1.98 at 768 and 380 */
+  --card-gap-price-title-handheld: 1.98px;
+  --card-gap-title-thumb: 8px; /* 8.00 at all three widths */
+  --card-gap-thumb-footer: 9.98px; /* 9.99 at 768, 9.98 at 380 */
+  --card-footer-h: 114.94px;
+  --card-footer-h-handheld: 107.94px;
+  /* Card type. The title is SMALLER at 768 than at 1440, which is live's own
+     ramp and not a mistake in the reading: 14px at 1440, 11.998px at both
+     768 and 380. */
+  --card-title-size: 14px;
+  --card-title-size-handheld: 11.998px;
+  --card-title-h: 36px; /* two 18px lines; 28px (two 14px lines) handheld */
+  --card-title-h-handheld: 28px;
+  --card-cats-size: 11.998px;
+  --card-cats-size-handheld: 11.2px;
+  --card-price-size: 20.006px;
+  --card-price-size-handheld: 16.002px;
+  --card-price-del-size: 12.0036px;
+  --card-price-del-size-handheld: 9.6012px;
+  /* The on-sale badge, measured: 47.81x28 at 4px radius with 2px/10px padding,
+     white 11.998/700. Its live FILL is rgb(68,184,27) and is deliberately not
+     declared here: white on it measures 2.59:1, and `--color-sale-badge`
+     (#328614, 4.61:1) is the corrected value this project already ships. */
+  --card-badge-w: 47.81px;
+  --card-badge-h: 28px;
+  --card-badge-size: 11.998px;
+  --card-badge-weight: 700;
+
+  /* --- Hero, measured at all three widths -------------------------------------
+
+     It is a SLIDER, not a static banner: `rs-module` with FIVE `rs-slide` and
+     five `rs-bullet` at every one of the three widths. Any rebuild that ships
+     a single static image is not this hero.
+
+     The row is `div.elementor-section.elementor-top-section`:
+
+       width   row            slider module      third column
+       380     350 x 213      350 x 193          absent
+       768     690 x 495      729 x 304          absent
+       1440    1170 x 613     727.89 x 370       240.67 x 593
+
+     The row heights confirm --spacing-hero-mobile/-tablet/-desktop exactly and
+     the third column confirms ELECTRO_HERO.categoryColumn (241 x 593), so none
+     of those is redeclared here. What the existing tokens did not carry is the
+     module's own size and therefore its aspect. */
+  --hero-slides: 5;
+  --hero-module-w: 727.89px;
+  --hero-module-h: 370px;
+  --hero-aspect: 1.9673; /* 727.89 / 370 at 1440 */
+  --hero-module-w-tablet: 729px;
+  --hero-module-h-tablet: 304px;
+  --hero-aspect-tablet: 2.398; /* 729 / 304 */
+  --hero-module-w-mobile: 350px;
+  --hero-module-h-mobile: 193px;
+  --hero-aspect-mobile: 1.8135; /* 350 / 193 */
+  /* The side-banner column: three stacked blocks, measured 201.36 wide and 197
+     tall each, at x135.08 in a 135..1305 row. Present at 1440 only. */
+  --hero-side-w: 201.36px;
+  --hero-side-block-h: 197px;
+  /* The category strip inside the hero row: 5-up, 727.89 x 170, each item
+     145.58 wide, sharing the slider's x and width and sitting directly under
+     it. NOT right-offset by 517: `section.product-categories-list` measures
+     x336.44..1064.33 and the slider measures the same, so the strip is the
+     slider column's own second row. ELECTRO_HERO.categoryStrip.offsetInlineEnd
+     records 517 and does not agree with this capture; see the provenance table. */
+  --hero-strip-w: 727.89px;
+  --hero-strip-h: 170px;
+  --hero-strip-item-w: 145.58px;
+}

@@ -48,6 +48,12 @@
    The brief and the existing decision agree here; only live differs.
    ============================================================================ */
 
+/* The derived token set, measured 2026-09-04 from the live site and documented
+   row by row in docs/TOKEN-PROVENANCE.md. Imported rather than pasted so every
+   token has exactly one physical definition; nothing in it redeclares anything
+   below. @import must precede the @theme block to be valid CSS. */
+@import "../../packages/ui/tokens.css";
+
 @theme {
   /* --- Brand identity -------------------------------------------------------- */
   --color-brand-primary: #fed700; /* CTAs, active state, badges */
