@@ -1,5 +1,6 @@
 'use client'
 
+import BrandPlaceholder from '@/components/ui/BrandPlaceholder'
 import SmartImage from '@/components/ui/SmartImage'
 import { ELECTRO_HERO } from '@/lib/electro-hero-tokens'
 import { HERO_SLIDER_BG_CLASS } from '@/lib/hero-singlefile-data'
@@ -58,8 +59,13 @@ const DOT_WIDTH_IDLE = 8
  * Animated WebP files under /public. A file extension cannot tell an animated
  * WebP from a still one, so the ones we ship animated are listed explicitly.
  */
-export const ANIMATED_WEBP_SOURCES = new Set([
-  '/images/hero/slider/ios13-iphone-11pro-airpods-pro-setup-animation-steps.webp',
+export const ANIMATED_WEBP_SOURCES = new Set<string>([
+  // Empty since 2026-09-04. Its one entry was Electro's iPhone-and-AirPods
+  // animation, deleted with the rest of the template's photography. The
+  // mechanism stays because the lesson does: an animated source is
+  // `unoptimized`, so it ships its full authored weight to every viewport, and
+  // that one 777KB file was the whole distance between this page and a 90+
+  // mobile Lighthouse score.
 ])
 
 /**
@@ -80,8 +86,9 @@ export const ANIMATED_WEBP_SOURCES = new Set([
  * A source with no entry here keeps the old behaviour exactly.
  */
 export const HERO_STILL_FRAMES: Record<string, string> = {
-  '/images/hero/slider/ios13-iphone-11pro-airpods-pro-setup-animation-steps.webp':
-    '/images/hero/slider/ios13-iphone-11pro-airpods-pro-setup-animation-still.webp',
+  // Empty since 2026-09-04, with ANIMATED_WEBP_SOURCES above and for the same
+  // reason. A source with no entry here keeps the ordinary behaviour, so an
+  // empty map costs nothing and the mechanism is ready for a real photograph.
 }
 
 /**
@@ -422,8 +429,6 @@ function SlideImage({
   slide: HeroSlide
   priority: boolean
 }) {
-  if (!slide.image_url) return null
-
   const layout = slide.imageLayout ?? {
     offsetTop: ELECTRO_HERO.slider.image.offsetTop,
     widthPercent: ELECTRO_HERO.slider.image.widthPercent,
@@ -449,11 +454,19 @@ function SlideImage({
         }}
       >
         <div className="relative h-full w-full" style={{ minHeight: layout.minHeight }}>
-          <HeroSlideImage src={slide.image_url} priority={false} />
+          {slide.image_url ? (
+            <HeroSlideImage src={slide.image_url} priority={false} />
+          ) : (
+            <BrandPlaceholder className="absolute inset-0" markWidth={220} />
+          )}
         </div>
       </div>
       <div className="absolute end-0 bottom-0 h-[42%] w-full overflow-hidden lg:hidden">
-        <HeroSlideImage src={slide.image_url} priority={priority} />
+        {slide.image_url ? (
+          <HeroSlideImage src={slide.image_url} priority={priority} />
+        ) : (
+          <BrandPlaceholder className="absolute inset-0" markWidth={120} />
+        )}
       </div>
     </>
   )

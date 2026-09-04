@@ -1,5 +1,4 @@
-import SmartImage from '@/components/ui/SmartImage'
-import { SIDE_BANNERS } from '@/lib/assets'
+import BrandPlaceholder from '@/components/ui/BrandPlaceholder'
 import { ELECTRO_HERO } from '@/lib/electro-hero-tokens'
 import { ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
@@ -13,7 +12,6 @@ type BannerLine = { text: string; bold?: boolean }[]
 type PromoBanner = {
   id: string
   href: string
-  image: string
   lines: BannerLine[]
 }
 
@@ -39,19 +37,16 @@ const PROMO_BANNERS: PromoBanner[] = [
   {
     id: 'das-1',
     href: '/category/hot-deals',
-    image: SIDE_BANNERS[0],
     lines: [[{ text: 'הדילים ' }, { text: 'החמים', bold: true }, { text: ' של השבוע' }]],
   },
   {
     id: 'das-2',
     href: '/category/vacation',
-    image: SIDE_BANNERS[1],
     lines: [[{ text: 'מבצעים ' }, { text: 'גדולים', bold: true }], [{ text: 'על צימרים ומלונות' }]],
   },
   {
     id: 'das-3',
     href: '/category/restaurants-cafes',
-    image: SIDE_BANNERS[2],
     lines: [[{ text: 'מסעדות, בתי קפה' }, { text: ' ועוד', bold: true }]],
   },
 ]
@@ -139,14 +134,9 @@ export default function HeroPromoBanners() {
             className="pointer-events-none absolute -bottom-5 -end-2.5 z-0 w-20 rotate-[16deg]"
             style={{ height: BANNER_IMAGE_HEIGHT }}
           >
-            <SmartImage
-              src={banner.image}
-              alt=""
-              fill
-              sizes="80px"
-              quality={90}
-              className="object-contain transition-transform duration-300 group-hover:scale-105"
-              fallbackClassName="absolute inset-0"
+            <BrandPlaceholder
+              className="absolute inset-0 rounded-sm transition-transform duration-300 group-hover:scale-105"
+              markWidth={64}
             />
           </div>
         </Link>

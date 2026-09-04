@@ -34,7 +34,7 @@ const SCANNED = ['src/components', 'src/app', 'src/lib', 'src/content']
 /**
  * Files exempt, each for a stated reason.
  *
- * The three `ke-live-*` modules are verbatim dumps of the live site's own
+ * The two `ke-live-*` modules left here are verbatim dumps of the live site's own
  * markup, kept so measurements and the pixel comparison describe one page. Their
  * English is a RECORD of what live shows, not copy this site renders -- the
  * slides the homepage actually paints are in `hero-singlefile-data.ts`, which is
@@ -43,7 +43,6 @@ const SCANNED = ['src/components', 'src/app', 'src/lib', 'src/content']
  */
 const FILE_ALLOWLIST = new Set([
   'src/lib/ke-live-revslider-slides.ts',
-  'src/lib/ke-live-hero-data.ts',
   'src/lib/ke-live-deals-data.ts',
   // A developer-only route behind /debug, not linked from anywhere a customer
   // reaches. Its three buttons name the Next.js constructs they throw from --

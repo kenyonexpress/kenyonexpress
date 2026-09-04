@@ -1,8 +1,19 @@
 /**
- * Hero slider — rs-18 welcome copy from refs/ke_live_home.html (RevSlider layer-2…7).
+ * Hero slider -- rs-18 welcome copy from refs/ke_live_home.html (RevSlider layer-2...7).
+ *
+ * EVERY `image_url` IS null, AND THAT IS THE CONTENT DECISION, NOT A GAP IN THE
+ * DATA. The seven images these slides used to name were Electro's demo
+ * photography -- an iPhone 11 Pro with AirPods, an iPad Pro, Samsung Gear
+ * smartwatches, a red phone, a MacBook, and a mockup of Electro's own storefront
+ * with its name in the masthead -- on a site that sells vouchers for
+ * restaurants, spas and hotels. `HeroSlider` renders `BrandPlaceholder` in the
+ * slot, which says out loud that the photograph has not been taken yet.
+ *
+ * Live serves the same seven files from its own uploads, so "source content from
+ * live" could not supply a replacement here; see the note on BrandPlaceholder
+ * for why that tie goes the way it does.
  */
 import type { HeroSlide } from '@/components/home/HeroSlider'
-import { HERO_SLIDER_IMAGES } from '@/lib/assets'
 
 /**
  * The slider's ground. The VALUE is `--color-hero-slider-bg` in
@@ -27,7 +38,7 @@ const WELCOME_SLIDE: HeroSlide = {
   tagline: 'מסדרים לך בילוי . . .',
   promo_small: 'פשוט',
   promo_large: 'הכי טוב',
-  image_url: HERO_SLIDER_IMAGES[0],
+  image_url: null,
   link_url: '/products',
   // Measured on kenyonexpress.co.il 2026-07-30. The slider is 728x370 at x=336
   // and this slide's image box is 324x434 at x=654, so relative to the slider it
@@ -58,7 +69,7 @@ const PREMIUM_SLIDE: HeroSlide = {
   standard_line: 'הסטנדרט החדש',
   promo_small: 'פשוט',
   promo_large: 'הכי טוב',
-  image_url: HERO_SLIDER_IMAGES[1],
+  image_url: null,
   link_url: '/products',
   imageLayout: { offsetTop: -15, widthPercent: 58.7, minHeight: 447 },
 }
@@ -76,7 +87,7 @@ export const HERO_SINGLEFILE_SLIDES: HeroSlide[] = [
     standard_line: 'הסטנדרט החדש',
     promo_small: 'פשוט',
     promo_large: 'הכי טוב',
-    image_url: HERO_SLIDER_IMAGES[2],
+    image_url: null,
     link_url: '/products',
     imageLayout: { offsetTop: 17, widthPercent: 49.3, minHeight: 376 },
   },
@@ -89,7 +100,7 @@ export const HERO_SINGLEFILE_SLIDES: HeroSlide[] = [
     standard_line: 'הסטנדרט החדש',
     promo_small: 'פשוט',
     promo_large: 'הכי טוב',
-    image_url: HERO_SLIDER_IMAGES[3],
+    image_url: null,
     link_url: '/products',
     imageLayout: { offsetTop: 9, widthPercent: 51.5, minHeight: 392 },
   },
@@ -99,8 +110,7 @@ export const HERO_SINGLEFILE_SLIDES: HeroSlide[] = [
     title: 'האפליקציה',
     title_secondary: 'בקרוב',
     title_secondary_indent: true,
-    image_url: HERO_SLIDER_IMAGES[6],
-    badge_image_url: HERO_SLIDER_IMAGES[5],
+    image_url: null,
     link_url: '/products',
     imageLayout: { offsetTop: -1, widthPercent: 50.4, minHeight: 425 },
   },

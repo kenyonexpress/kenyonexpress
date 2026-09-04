@@ -16,10 +16,22 @@ import { ANIMATED_WEBP_SOURCES, ArtDirectedHeroImage, HERO_STILL_FRAMES } from '
  * see this state on localhost, where hydration and the swap land inside the
  * first second; the E2E swap test holds the file on the wire instead.
  */
-const animated = [...ANIMATED_WEBP_SOURCES][0]
-if (!animated) throw new Error('no animated hero source registered')
-const still = HERO_STILL_FRAMES[animated]
-if (!still) throw new Error(`no still frame registered for ${animated}`)
+/**
+ * A FIXTURE PAIR, NOT THE PRODUCTION REGISTRY.
+ *
+ * This used to read `[...ANIMATED_WEBP_SOURCES][0]` and throw if it was empty.
+ * On 2026-09-04 both registries were emptied on purpose: their one entry was
+ * Electro's iPhone-and-AirPods animation, deleted with the rest of the
+ * template's photography, and the test went from testing the swap to failing on
+ * its absence.
+ *
+ * The component takes both paths as props, so the behaviour under test does not
+ * need a registered file -- and testing it through a fixture means it keeps
+ * working the day a real animated photograph is registered. The registries being
+ * empty is itself asserted below, so neither fact goes unrecorded.
+ */
+const animated = '/images/hero/slider/__fixture-animated.webp'
+const still = '/images/hero/slider/__fixture-still.webp'
 
 describe('ArtDirectedHeroImage server markup', () => {
   const html = renderToStaticMarkup(
@@ -29,6 +41,13 @@ describe('ArtDirectedHeroImage server markup', () => {
   it('ships no animated source before the client swap', () => {
     expect(html).not.toContain('<source')
     expect(html).not.toContain('animation-steps')
+  })
+
+  it('registers no animated source, which is the current content decision', () => {
+    // Emptied on 2026-09-04 with the Electro photography. The mechanism above
+    // is kept and tested; what is gone is the file it was carrying.
+    expect(ANIMATED_WEBP_SOURCES.size).toBe(0)
+    expect(Object.keys(HERO_STILL_FRAMES)).toEqual([])
   })
 
   it('paints the optimized still, eager and high priority', () => {
