@@ -1,5 +1,15 @@
 # `migrations/pending/`
 
+## 2026-09-04: 172 added — a test row is on sale for one shekel
+
+`172_hide_master_product_test_row.sql` zeroes the stock on
+`מוצר ראשי מאסטר Master Product` (`restaurants-meat-3`), which renders on the
+homepage at ₪1 against a ₪400 compare-at price with ten in stock. **Not applied.**
+
+Stock zero rather than a delete: the row may be referenced by an `order_items`
+line and deleting it would orphan a historical order. No preflight — one row,
+one integer column, and the `where` clause is its own check.
+
 ## 2026-09-04: 171 added — the shekel sign in a category name
 
 `171_category_name_shekel_order.sql` rewrites `categories.name_he` for the

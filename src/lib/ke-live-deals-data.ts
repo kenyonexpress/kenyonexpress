@@ -9,6 +9,23 @@
  */
 import type { Product } from '@/components/ProductCard'
 
+/**
+ * `Reverse Withdrawal Payment` WAS IN THIS LIST AND WAS NOT A PRODUCT.
+ *
+ * Removed 2026-09-04. It is a WooCommerce internal ledger entry -- the record
+ * of a reversed payout -- that the WordPress import carried across as if it
+ * were something a customer could buy. It rendered in the deals rail on the
+ * homepage as a card with an English name, a price of zero, no image and no
+ * category.
+ *
+ * It came from live, and the sourcing rule says content comes from live. This
+ * is the same exception `docs/SOURCING-RULES.md` records for the Electro demo
+ * copy: an artifact of the platform the old site runs on is not this business's
+ * content, and "live has it" is not a reason to sell it.
+ *
+ * `ke-live-deals.test.ts` fails if an entry with no price and no category comes
+ * back, which is the shape every import artifact of this kind has.
+ */
 export const KE_LIVE_DEALS: Product[] = [
   {
     id: 'ke-deal-9132',
@@ -69,16 +86,6 @@ export const KE_LIVE_DEALS: Product[] = [
     images: ['/images/products/ke-live-deal-5.avif'],
     stock_quantity: 1,
     category: { name_he: 'דילים חמים', slug: 'hot-deals' },
-  },
-  {
-    id: 'ke-deal-rw',
-    slug: 'reverse-withdrawal-payment',
-    name_he: 'Reverse Withdrawal Payment',
-    kenyon_price: 0,
-    full_price: null,
-    images: [],
-    stock_quantity: 1,
-    category: null,
   },
   {
     id: 'ke-deal-icecream',
