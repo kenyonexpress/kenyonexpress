@@ -88,8 +88,20 @@ export type CartViewItem = {
  * whatever its commission column says, and `unpriced` outranks the stock
  * reasons because a line the money engine refuses to price has no meaningful
  * quantity to be short of.
+ *
+ * `price_error` sits second because it is a statement about the price itself:
+ * the line has a price, the money engine would happily charge it, and that is
+ * the problem. It has to be decided before `unpriced` -- which means "no usable
+ * price" -- and before the stock reasons, because a shopper told to lower their
+ * quantity would reasonably conclude that buying one is fine. See
+ * `lib/commerce/implausible-discount.ts` for the measured threshold.
  */
-export type UnavailableReason = 'delisted' | 'unpriced' | 'out_of_stock' | 'insufficient_stock'
+export type UnavailableReason =
+  | 'delisted'
+  | 'price_error'
+  | 'unpriced'
+  | 'out_of_stock'
+  | 'insufficient_stock'
 
 /**
  * The hard ceiling on one cart line, matching `max(99)` in

@@ -15,7 +15,7 @@ approval; the apply order and its preconditions are in `docs/RUNBOOK.md`.
 | 169 | Widens the analytics event whitelist | independent | yes, `CREATE OR REPLACE` back | **APPLY FIRST** — four funnel events are being silently discarded right now |
 | 170 | Ten indexes | independent | yes, `DROP INDEX` | **SAFE** — verified column by column, tables are tiny |
 | 171 | One category name's shekel order | independent | yes, one `UPDATE` | **SAFE, optional** — the app already repairs this on read |
-| 172 | Takes a ₪1 test row off sale | independent | yes, one `UPDATE` | **URGENT** — the row is live and purchasable as you read this |
+| 172 | Takes a ₪1 test row off sale | independent | yes, one `UPDATE` | **STILL REQUIRED** — no longer purchasable since 2026-09-06 (application guard), but the row is still active in the catalogue |
 
 None of the five depends on another. There is no ordering hazard between them;
 the order below is by urgency, not by dependency.
@@ -48,6 +48,20 @@ exact name so a second run changes nothing.
 **Why zero stock and not a delete:** an `order_items` row may reference the
 product, and deleting it would orphan a historical order line. Zero stock takes
 it out of every listing query the app makes and leaves history intact.
+
+**2026-09-06: the money consequence is closed, the migration is not.** The row
+can no longer be bought — `src/lib/commerce/implausible-discount.ts` refuses to
+sell any line priced at an implausible fraction of its own compare-at, the cart
+marks it `price_error`, and `validateCartView` stops `beginCheckout` before any
+payment branch. The threshold is 95% off, measured against production: the
+deepest real discount in the catalogue is 60% and this row is at 99.75%. It
+keys on the ratio, never on the name or the id, so the same row sells the
+moment its price is corrected.
+
+That downgrades 172 from URGENT to STILL REQUIRED. It does not close it. The
+row remains `status = 'active'` with ten in stock, it still answers a direct
+query, and it still renders in listings that do not go through the cart. Apply
+order and preconditions are unchanged; 172 stays first in batch A1.
 
 **On the brief's instruction to gate it behind a non-production guard or remove
 it entirely:** neither applies. There is no fixture to gate — this is a row in

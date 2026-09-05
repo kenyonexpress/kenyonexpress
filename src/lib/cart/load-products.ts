@@ -39,8 +39,16 @@ export async function loadCartProductData(items: CartStorageItem[]) {
   // is the same bug facing the other way. It is read below from whichever
   // column exists, and a cart is not worth losing over a perk that defaults to
   // zero.
+  // `full_price` is the compare-at the storefront badge divides by, and the
+  // cart pricer refuses a line whose price is an implausible fraction of it
+  // (`lib/commerce/implausible-discount.ts`). It is safe to name here, unlike
+  // the two columns below: it has existed since the WordPress import, it is in
+  // the generated types, and it was confirmed present on the hosted project on
+  // 2026-09-06. Omitting it would not fail the read -- it would silently make
+  // every compare-at null and switch the guard off for the whole catalogue,
+  // which is the worse failure because it is invisible.
   const productSelect =
-    'id, slug, name_he, type, kenyon_price, stock_quantity, status, deleted_at, images, is_coupon_enabled, platform_percent'
+    'id, slug, name_he, type, kenyon_price, full_price, stock_quantity, status, deleted_at, images, is_coupon_enabled, platform_percent'
 
   // `orFail`, not `const { data }`. A discarded error here does not just show a
   // thin cart: `buildCartView` skips every line whose product it cannot find,

@@ -27,7 +27,7 @@ a name at all.
 | Page(s) | String | Where | Verdict |
 |---|---|---|---|
 | `/` | `Reverse Withdrawal Payment` | deals rail card, `H2` + its add-to-cart `aria-label` | **FIXED** — see below |
-| `/` | `מוצר ראשי מאסטר Master Product` | product grid card, `H2` + `aria-label` | **OPEN** — see below |
+| `/` | `מוצר ראשי מאסטר Master Product` | product grid card, `H2` + `aria-label` | **OPEN, not purchasable** — see below |
 | `/` | `סמסונג גלקסי Samsung Galaxy S22 128GB- 5G` | product grid card | **OK** — live's own product, brand name in Latin |
 | all | `Google Analytics`, `Meta` | consent banner paragraph | **OK** — brand names, and the banner names who receives the data |
 | all | `Kenyon Express` | footer, `STRONG` | **OK** — the company's own name |
@@ -90,6 +90,36 @@ real product the day one is legitimately called "master".
 — not a delete, because an `order_items` row may reference it and deleting would
 orphan a historical order line. **Not applied.** Applying a migration to
 production needs Ofir's approval.
+
+### 2026-09-06: it can no longer be bought, and 172 is still required
+
+Both halves of that are load-bearing, so they are stated separately.
+
+**It can no longer be bought.** `src/lib/commerce/implausible-discount.ts`
+refuses to sell a line whose price is an implausible fraction of its own
+compare-at, and the cart pricer returns the new `price_error` reason for one.
+`beginCheckout` consults `validateCartView`, which rejects any unavailable
+line, so no payment branch is reachable. The add-to-cart action refuses it up
+front and the buy button on the product page is disabled.
+
+**It is a ratio, not a name.** The objection above still stands and this does
+not violate it — nothing keys on "master", on this id, or on this slug.
+Correct the price on the very same row and it sells again; there are three
+other live products with "מאסטר" in the name and all three are unaffected.
+The threshold was measured against production rather than chosen: over the 24
+active products carrying both a sell price and a compare-at, the deepest
+discount a human has ever entered is **60%**, and this row sits alone at
+**99.75%**. The ceiling is 95%, so a 90%-off campaign still sells. The
+measurement, and the four real listings it was taken from, are in the module's
+header comment and asserted in `implausible-discount.test.ts`.
+
+**172 is still required, and this does not close it.** An application guard
+stops the money moving. It does not take the row out of the catalogue: the row
+is still `status = 'active'` with ten in stock, it still answers a direct
+query, it still appears in any listing that does not go through the cart, and
+it still renders on the homepage grid. "We stopped it being bought" and "we
+removed it from the catalogue" are different claims, and only the second one
+survives someone querying the database. 172 remains **pending approval**.
 
 ## Standing gates
 

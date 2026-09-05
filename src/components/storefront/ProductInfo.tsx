@@ -7,6 +7,7 @@ import WhatsAppShareButton from '@/components/shared/WhatsAppShareButton'
 import CouponPricing from '@/components/storefront/CouponPricing'
 import { productQuantityCeiling } from '@/lib/cart/format'
 import type { CouponOffer } from '@/lib/commerce/coupon-offer'
+import { isImplausibleDiscount } from '@/lib/commerce/implausible-discount'
 import { type RecurringOffer, describeRecurringPrice } from '@/lib/commerce/recurring'
 import { cityByName } from '@/lib/geo/cities'
 import { shekelsFromIls as sharedShekelsFromIls } from '@/lib/money-format'
@@ -140,6 +141,13 @@ export default function ProductInfo({
   // marks such a line unpriced and beginCheckout refuses it, so offering the
   // purchase here only moves the refusal to the worst possible moment.
   const priceUnsellable = !isCoupon && !(price > 0)
+  // A price that is an implausible fraction of its own compare-at is a data
+  // error rather than an offer, and the cart and `beginCheckout` both refuse
+  // such a line. Same argument as the two gates above: the button must not
+  // offer a purchase the server has already decided to reject. The badge below
+  // divides the same two numbers, so without this the page paints "-100%" over
+  // a live buy button.
+  const priceImplausible = isImplausibleDiscount(price, oldPrice)
 
   const hasDiscount = oldPrice != null && oldPrice > price
   const discountPct = hasDiscount ? Math.round((1 - price / oldPrice) * 100) : 0
@@ -148,7 +156,13 @@ export default function ProductInfo({
   // measured on a built server. `CART_LINE_MAX_QUANTITY` exists precisely so
   // this number and the one that rejects the write cannot drift.
   const maxQty = productQuantityCeiling(stock)
-  const blocked = outOfStock || needsVariant || couponUnsellable || priceUnsellable || isPending
+  const blocked =
+    outOfStock ||
+    needsVariant ||
+    couponUnsellable ||
+    priceUnsellable ||
+    priceImplausible ||
+    isPending
 
   const handleAddToCart = async () => {
     if (blocked) return

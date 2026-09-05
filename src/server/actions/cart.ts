@@ -10,6 +10,7 @@ import { loadCartProductData } from '@/lib/cart/load-products'
 import { buildCartView } from '@/lib/cart/pricing'
 import { parsePercentSnapshot } from '@/lib/cart/snapshot'
 import type { CartActionResult, CartStorageItem, CartView } from '@/lib/cart/types'
+import { isImplausibleDiscount } from '@/lib/commerce/implausible-discount'
 import { growthClient } from '@/lib/growth/client'
 import { evaluateDiscount } from '@/lib/growth/discount'
 import { withActionContext } from '@/lib/observability/action-context'
@@ -313,11 +314,27 @@ async function validateProductForCart(
 
   const { data: product } = await catalogue
     .from('products')
-    .select('id, status, deleted_at, stock_quantity, type, is_coupon_enabled, platform_percent')
+    .select(
+      'id, status, deleted_at, stock_quantity, type, is_coupon_enabled, platform_percent, kenyon_price, full_price',
+    )
     .eq('id', productId)
     .maybeSingle()
 
   if (!product || product.status !== 'active' || product.deleted_at) {
+    return { ok: false, error: 'המוצר לא זמין', code: 'NOT_FOUND' }
+  }
+
+  // A price that is an implausible fraction of its own compare-at is a data
+  // error, not an offer, and this refuses to put one in a cart at all.
+  //
+  // The cart pricer refuses the same line again when it prices it, and
+  // `beginCheckout` refuses it a third time through `validateCartView`. That is
+  // deliberate rather than redundant: this gate only sees an ADD, so it cannot
+  // help a line already sitting in a cart from before the price broke, or one
+  // whose compare-at was edited afterwards. The pricer is the gate that holds
+  // for those. Refusing here as well is what keeps the shopper from being told
+  // "נוסף לסל" about something the cart will immediately mark unavailable.
+  if (isImplausibleDiscount(product.kenyon_price, product.full_price)) {
     return { ok: false, error: 'המוצר לא זמין', code: 'NOT_FOUND' }
   }
 
