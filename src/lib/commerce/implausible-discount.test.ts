@@ -107,6 +107,35 @@ describe('what is deliberately not a finding', () => {
   })
 })
 
+describe('a compare-at that is wrong, rather than a price that is wrong', () => {
+  /**
+   * Raised by the second agent reviewing this, and it is the case that decides
+   * whether the guard is usable rather than merely correct.
+   *
+   * The denominator is the compare-at, so a fat-fingered compare-at trips the
+   * same wire as a fat-fingered price -- except here the LISTING is genuine and
+   * only one column is wrong. The refusal is still the right call: a product
+   * advertising 99.4% off is not sellable on either reading, and guessing which
+   * of the two numbers the merchant meant would be inventing a price.
+   *
+   * What that obliges is legibility, not leniency. `ProductsTable` renders both
+   * numbers and the ceiling next to the product, because the person reading the
+   * admin is the one who can fix it -- unlike the shopper, who gets the vague
+   * sentence on purpose.
+   */
+  it('refuses a real ₪250 product whose compare-at gained a zero', () => {
+    // ₪250 against ₪40,000: 99.375% off. A digit slipped, not a bargain.
+    expect(isImplausibleDiscount(250, 40000)).toBe(true)
+  })
+
+  it('still sells at the fat-finger one order of magnitude smaller', () => {
+    // ₪250 against ₪4,000 is 93.75% off -- deep, implausible-looking, and
+    // BELOW the ceiling. Asserted so the boundary is understood rather than
+    // assumed: the guard does not catch every typo and is not meant to.
+    expect(isImplausibleDiscount(250, 4000)).toBe(false)
+  })
+})
+
 describe('the two forms agree', () => {
   it('gives the same verdict through agorot as through shekels', () => {
     for (const listing of [...REAL_LISTINGS, MASTER_PRODUCT]) {

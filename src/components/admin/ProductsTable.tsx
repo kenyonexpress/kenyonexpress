@@ -3,6 +3,10 @@
 import DataTable, { type DataTableColumn } from '@/components/admin/DataTable'
 import DeleteButton from '@/components/admin/DeleteButton'
 import StatusBadge, { productStatusBadge, productTypeBadge } from '@/components/admin/StatusBadge'
+import {
+  MAX_PLAUSIBLE_DISCOUNT_PERCENT,
+  isImplausibleDiscount,
+} from '@/lib/commerce/implausible-discount'
 import { shekelsFromIlsRounded } from '@/lib/money-format'
 import {
   type BulkPriceInput,
@@ -30,6 +34,13 @@ export type ProductRow = {
   platform_percent: number | null
   /** Coupon absolute on-site price. Null for physical or unset coupons. */
   coupon_price_ils: number | null
+  /**
+   * The compare-at price. Needed here and not only on the storefront: the cart
+   * refuses to sell a line priced at an implausible fraction of it, and without
+   * this column the admin cannot see why one of its own products stopped
+   * selling. See the price cell below.
+   */
+  full_price: number | null
 }
 
 interface Props {
@@ -157,13 +168,42 @@ export default function ProductsTable({ products, categories, hidePricing = fals
       header: 'מחיר',
       sortable: true,
       accessor: (p) => p.kenyon_price ?? 0,
-      cell: (p) => (
-        <span className="text-black/80" dir="ltr">
-          {p.type === 'coupon' && p.coupon_price_ils != null
-            ? `${shekelsFromIlsRounded(p.coupon_price_ils)} באתר`
-            : shekelsFromIlsRounded(p.kenyon_price ?? 0)}
-        </span>
-      ),
+      cell: (p) => {
+        // THE ONE PLACE A MERCHANT CAN FIND OUT WHY A PRODUCT STOPPED SELLING.
+        //
+        // The cart refuses any line priced at an implausible fraction of its
+        // own compare-at, and returns `price_error`. On the storefront that is
+        // deliberately vague -- the shopper can neither cause nor cure it. Here
+        // it has to be the opposite: the person reading this table is the one
+        // who can fix it, so it names BOTH numbers and the ceiling.
+        //
+        // The case that makes this necessary is not the ₪1 test row, which
+        // wants deleting. It is a compare-at fat-fingered too HIGH: ₪40,000
+        // typed against a real ₪250 product is 99.4% off, and the listing goes
+        // unsellable with nothing on the storefront to explain it.
+        const priceError = isImplausibleDiscount(p.kenyon_price, p.full_price)
+        return (
+          <div>
+            <span className="text-black/80" dir="ltr">
+              {p.type === 'coupon' && p.coupon_price_ils != null
+                ? `${shekelsFromIlsRounded(p.coupon_price_ils)} באתר`
+                : shekelsFromIlsRounded(p.kenyon_price ?? 0)}
+            </span>
+            {priceError && (
+              <div className="mt-1 text-xs font-medium text-red-600">
+                <span>לא ניתן למכירה: מחיר שגוי</span>
+                <span className="block font-normal text-black/60" dir="ltr">
+                  {shekelsFromIlsRounded(p.kenyon_price ?? 0)} /{' '}
+                  {shekelsFromIlsRounded(p.full_price ?? 0)}
+                </span>
+                <span className="block font-normal text-black/60">
+                  {`הנחה מעל ${MAX_PLAUSIBLE_DISCOUNT_PERCENT}% נחסמת. תקנו את המחיר או את מחיר ההשוואה.`}
+                </span>
+              </div>
+            )}
+          </div>
+        )
+      },
     },
     {
       id: 'platform_percent',
