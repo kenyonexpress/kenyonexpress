@@ -55,3 +55,4 @@ the tree had uncommitted changes when it was measured.
 | 2026-09-05 22:01 | home | 380 | 10.68% | PASS | `a16989d14-dirty` |  |
 | 2026-09-05 22:03 | home | 1440 | 8.13% | PASS | `a16989d14-dirty` | merge: main security bumps into closeout/v1-final |
 | 2026-09-05 22:03 | home | 768 | 7.71% | PASS | `a16989d14-dirty` |  |
+| 2026-09-05 22:05 | home | 1440 | 8.13% | PASS | `13775cab0` |  |
