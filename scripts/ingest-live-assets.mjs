@@ -59,6 +59,24 @@ const DERIVE = !process.argv.includes('--no-derive')
  * `scripts/template-asset-scan.mjs`, kept in step deliberately: if that gate
  * would reject a file, this must not hand it to the build.
  */
+/**
+ * KEPT BY NAME, AGAINST THE PATTERNS BELOW.
+ *
+ * `galaxy-s22_highlights_kv_img` matches `\bgalaxy-s\d` and is NOT demo
+ * content: live's catalogue really does list a Samsung Galaxy S22, and this is
+ * its product photograph. The pattern is right about the filename and wrong
+ * about the thing.
+ *
+ * Reviewed by name on 2026-09-06 and kept deliberately, by two sessions
+ * independently. The rule it is exempt from is "no Electro demo content"; a
+ * real photograph of a real product this shop sells is content, and
+ * `docs/SOURCING-RULES.md` says content comes from live.
+ *
+ * Do not re-quarantine it on the pattern. If the product ever leaves the
+ * catalogue, this entry goes with it.
+ */
+const KEEP_BY_NAME = [/galaxy-s22_highlights_kv_img/i]
+
 const QUARANTINE_PATTERNS = [
   /\biphone\b/i,
   /\bairpods?\b/i,
@@ -80,7 +98,10 @@ const QUARANTINE_PATTERNS = [
 /** Pages worth crawling for imagery: the shop archive carries every product. */
 const SEED_PATHS = ['/', '/shop/', '/cart/']
 
-const quarantineReason = (url) => QUARANTINE_PATTERNS.find((p) => p.test(url))?.source ?? null
+const quarantineReason = (url) => {
+  if (KEEP_BY_NAME.some((p) => p.test(url))) return null
+  return QUARANTINE_PATTERNS.find((p) => p.test(url))?.source ?? null
+}
 
 /**
  * The real blurhash, plus the dominant colour for a one-line CSS fallback.

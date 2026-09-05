@@ -129,28 +129,24 @@ destination is decided: one row per asset with its source URL, its path, byte
 size, dimensions, format, alt text, the pages it appeared on, and every
 derivative with its own size.
 
-### First run, 2026-09-06
+### Full crawl, 2026-09-06
 
 | | |
 |---|---|
-| pages crawled | 10 (home, shop, cart, seven category archives) |
-| assets kept | 80 |
-| derivatives | 200 |
-| quarantined | 9 |
+| pages crawled | 53 (home, shop, cart, seven category archives, every product page reachable from them) |
+| assets kept | 107 |
+| derivatives | 268 |
+| quarantined | 7 |
 | failed | 0 |
-| source bytes | 2,834,976 |
-| derivative bytes | 3,502,597 |
+| uploader sees | 375 objects, 8.0MB |
 
-**Derivatives are larger than sources, and that is expected here.** Live already
-serves optimised AVIF at 600x600 or smaller, so `withoutEnlargement` caps most
-assets at two derivatives and re-encoding an AVIF at quality 50 does not
-reliably beat the original. The pipeline earns its keep on the day real
-photography arrives at 2000px, not on live's already-shrunk copies.
+An earlier run stopped at 10 pages and 80 assets because `--pages` defaulted low;
+that did not satisfy "every product image" and the crawl was rerun at 60.
 
-### The nine quarantined, and why the filter exists
+### The seven quarantined, and why the filter exists
 
 An unfiltered "download every image from live" walks the Electro demo kit
-straight back in, past the gate that exists to keep it out. These nine went to
+straight back in, past the gate that exists to keep it out. These seven went to
 `refs/live-assets/_quarantine/` with their reason recorded rather than being
 skipped silently:
 
@@ -162,9 +158,26 @@ Screen-Shot-2021-11-09-at-6.41.46.png
 tesla-logo-main.avif
 apple-140-new.avif
 home-sl-da-3.avif
-galaxy-s22_highlights_kv_img-1536x993.avif
-galaxy-s22_highlights_kv_img-600x600.avif
 ```
+
+### The one that was quarantined and then deliberately kept
+
+`galaxy-s22_highlights_kv_img` (both sizes) matches `\bgalaxy-s\d` and was
+quarantined by the first run. **It is now kept, by name, on purpose.**
+
+Live's catalogue really does list a Samsung Galaxy S22 and this is its product
+photograph. The pattern was right about the filename and wrong about the thing.
+The rule it is exempt from is "no Electro demo content"; a real photograph of a
+real product this shop sells is content, and `docs/SOURCING-RULES.md` says
+content comes from live.
+
+Reviewed by name and agreed independently by two sessions. It sits in
+`KEEP_BY_NAME` in `scripts/ingest-live-assets.mjs` so the pattern cannot
+re-quarantine it. **If the product ever leaves the catalogue, that entry goes
+with it.**
+
+This is why the first run quarantined rather than deleted: the call was
+reversible, and reversing it cost one array entry.
 
 The patterns are kept in step with `scripts/template-asset-scan.mjs` on purpose:
 if that gate would reject a file, this must not hand it to the build.
