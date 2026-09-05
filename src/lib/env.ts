@@ -1,4 +1,5 @@
 import { compromisedKeyMessage, scanEnvironmentForCompromisedKeys } from '@/lib/compromised-keys'
+import { isDeployedRuntime } from '@/lib/deployed-runtime'
 import { log } from '@/lib/observability/log'
 import { z } from 'zod'
 
@@ -103,24 +104,34 @@ const schema = z
 /**
  * A KNOWN-EXPOSED KEY MUST NOT SERVE PRODUCTION TRAFFIC.
  *
- * This throws, unlike `env-probe.ts`, and the difference is deliberate: the
- * probe makes a network call and a transient DNS failure must not become an
- * outage, while this is a hash comparison that cannot be wrong for an
- * environmental reason. If the digest matches, the key is the exposed one, and
- * the correct response is to refuse to serve.
+ * IT THROWS ON A DEPLOYMENT AND WARNS EVERYWHERE ELSE, and the signal it keys
+ * on is `isDeployedRuntime()`, not `NODE_ENV`.
  *
- * Outside production it warns instead. The exposed key is still the working key
- * for local development against this project until it is rotated, and bricking
- * every developer's `pnpm dev` over a credential they cannot rotate themselves
- * is how a security control gets commented out.
+ * The first version keyed on `NODE_ENV === 'production'` and that was wrong for
+ * the reason documented forty lines above, which I then reproduced: **`next
+ * start` on a laptop is also NODE_ENV=production**. It is how the Playwright
+ * suite, the Lighthouse runs and the pixel gate are all measured. Throwing there
+ * took the local server down with `An error occurred while loading
+ * instrumentation hook`, every route answered 500, and the compare gate
+ * dutifully measured the error page at 26.3% / 24.64% / 20.26% instead of
+ * refusing to measure. Verified, not assumed.
+ *
+ * The discrimination itself lives in `lib/deployed-runtime.ts`, which checks
+ * the platform marker first so that pasting a local waiver into Vercel's
+ * environment cannot disarm this guard.
+ *
+ * The enforcement that actually prevents shipping is
+ * `scripts/deploy-preflight.mjs`, which runs before the build in `vercel.json`
+ * and refuses there -- earlier than boot, and before the key is ever in an
+ * artifact. This is the second line, not the first.
  */
-function assertNoCompromisedKeys(isProduction: boolean): void {
+function assertNoCompromisedKeys(onDeployment: boolean): void {
   const findings = scanEnvironmentForCompromisedKeys()
   if (findings.length === 0) return
 
   for (const finding of findings) {
     const message = compromisedKeyMessage(finding)
-    if (isProduction) throw new Error(`refusing to boot: ${message}`)
+    if (onDeployment) throw new Error(`refusing to boot: ${message}`)
     log.warn('env.compromised_key', { variable: finding.variable, detail: message })
   }
 }
@@ -154,9 +165,8 @@ if (parsed.data.NODE_ENV === 'production' && parsed.data.ALLOW_INCOMPLETE_ENV ==
   })
 }
 
-// After parsing, so the thrown message names a real NODE_ENV rather than
-// guessing at one, and so a malformed environment fails on its own terms first.
-assertNoCompromisedKeys(parsed.data.NODE_ENV === 'production')
+// After parsing, so a malformed environment fails on its own terms first.
+assertNoCompromisedKeys(isDeployedRuntime())
 
 export const env = parsed.data
 export type Env = typeof env
