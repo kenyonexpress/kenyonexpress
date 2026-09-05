@@ -307,6 +307,64 @@ it before concluding a fix did not work. Related: `pnpm start` runs with
 measured, so production-only boot guards apply. `ALLOW_INCOMPLETE_ENV` is the
 escape hatch.
 
+### 4.x A merge you did not start, with conflict markers already staged
+
+**Symptom.** `git status` looks like an ordinary large staged change.
+`git diff --diff-filter=U` returns nothing, so git believes every conflict is
+resolved. The build, `pnpm start`, `compare.mjs` and the three lint gates are
+all down, usually with a JSON parse error naming a byte offset in
+`package.json`.
+
+**What has actually happened.** Something ran `git add` across a conflicted
+tree, staging the raw `<<<<<<<` / `=======` / `>>>>>>>` lines as if they were
+the resolution. Once markers are staged, git no longer counts the path as
+unmerged and **neither `git status` nor `--diff-filter=U` will warn you.**
+Seen 2026-09-06: a merge of `feat/product-type` with 155 files staged, 41 of
+them carrying markers, including `CLAUDE.md`, `.github/workflows/ci.yml`,
+`biome.json`, `src/types/database.ts`, `src/server/payments/finalize.ts` and
+`scripts/compare.mjs`. The reflog showed `checkout: moving from
+closeout/v1-final to main` immediately before it, and
+`~/Library/LaunchAgents/com.kenyonexpress.autopilot.plist` is loaded and drives
+tmux.
+
+**Detect it. `git status` is not enough:**
+
+```bash
+ls .git/MERGE_HEAD 2>/dev/null && echo "a merge is in progress"
+git grep -lE '^(<<<<<<< |>>>>>>> |={7}$)' -- '*.ts' '*.tsx' '*.json' '*.mjs' '*.css' '*.yaml' '*.yml' '*.md'
+```
+
+Run both before every commit, not only when something looks wrong.
+
+**Decide before you resolve.** Do not hand-resolve a merge nobody reviewed.
+Check first that abandoning it is lossless -- the source branch must still
+exist at origin:
+
+```bash
+git ls-remote --heads origin <branch>
+```
+
+If it does, every commit survives and the merge can be redone deliberately
+later. A conflicted `finalize.ts` on the money path, or a conflicted
+`compare.mjs`, makes every number measured afterwards unattributable, which is
+worse than a re-merge.
+
+**Two traps in the abort itself.**
+
+1. `git merge --abort` **refuses** if you have already hand-edited a staged
+   file: `error: Entry 'package.json' not uptodate. Cannot merge.` The fix is
+   to `git add` the very file you just fixed, so the index and the worktree
+   agree, and then abort. This is the moment somebody reaches for
+   `git reset --hard`; do not.
+2. Abort hard-resets the worktree. Files that were new but got swept into the
+   index are reset **out of existence**, not left untracked. If another agent
+   or another window has work in progress, back it up first and tell them
+   before you run it.
+
+**After the abort**, confirm the tree rather than assuming: no `.git/MERGE_HEAD`,
+the marker grep returns nothing, `node -e "require('./package.json')"` parses,
+then `pnpm test`, `pnpm type-check` and `pnpm lint`.
+
 ---
 
 ## 5. Rollback
