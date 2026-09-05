@@ -338,6 +338,14 @@
   --spacing-deals-pad: 25px;
   --spacing-deals-pad-md: 49px;
 
+  /* The gap live leaves between the last row of deal cards and the footer.
+     Measured in a real browser at 1440 on 2026-09-06: live's grid ends at 4908
+     and its footer starts at 4968, while ours ended at 4930 with the footer
+     beginning on the same pixel -- the footer butted straight into the cards.
+     Below the 2600px the pixel gate scores, so this is a fidelity fix and not a
+     points fix; see docs/LIVE-DELTA.md. */
+  --spacing-deals-footer-gap: 60px;
+
   /* The store footer's column block, top padding from lg. */
   --spacing-footer-columns-top: 60px;
 

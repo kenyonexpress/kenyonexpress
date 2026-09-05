@@ -345,6 +345,7 @@ export const SITE_CSS_METRICS: Record<string, string> = {
   '--spacing-region-inset': '53px',
   '--spacing-deals-pad': '25px',
   '--spacing-deals-pad-md': '49px',
+  '--spacing-deals-footer-gap': '60px',
   '--spacing-footer-columns-top': '60px',
   '--spacing-admin-header': '53px',
   '--spacing-supplier-header': '49.5px',
