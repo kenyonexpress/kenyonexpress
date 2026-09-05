@@ -453,12 +453,36 @@
      unaffected; these are the named steps for values the default scale has no
      entry for. */
   --spacing-gutter: 15px; /* the grid gutter; the single most common value */
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 10px;
-  --spacing-lg: 14px;
-  --spacing-xl: 20px;
-  --spacing-2xl: 24px;
+
+  /* THERE ARE NO --spacing-xs/sm/md/lg/xl/2xl TOKENS HERE, AND THAT IS THE FIX.
+     They existed until 2026-09-06 as 4/8/10/14/20/24px, and they silently broke
+     31 layouts.
+
+     In Tailwind v4 `max-w-sm` resolves from the SPACING namespace when a
+     spacing key of that name exists, ahead of the container scale. Declaring
+     `--spacing-sm: 8px` therefore did not add a `p-sm` utility and leave
+     `max-w-sm` alone -- it redefined `max-w-sm` from 24rem to 8px. The built
+     stylesheet said so outright: `.max-w-sm{max-width:var(--spacing-sm)}`, and
+     the same for md, lg, xl, 2xl and xs.
+
+     MEASURED on a built server at 320px before the removal: the auth card
+     (`w-full max-w-sm`) computed to `max-width: 8px`, so /login, /signup,
+     /forgot-password, /reset-password and /suppliers all laid out an 8px-wide
+     column with "KenyonExpress" -- one unbreakable 208px word -- overflowing
+     it, centred, spilling 44px past the start edge. document.scrollWidth was
+     364 in a 320 viewport, which is what `rtl-mobile.spec.ts` had been failing
+     on. Also affected: /redeem/[token], /coupon/[id], error.tsx, not-found.tsx,
+     every `dialog.tsx`, the command palette and the install banner.
+
+     Adding `--container-sm` alongside does NOT fix it; verified against the
+     Tailwind CLI, the emitted rule still read `var(--spacing-sm)`. Spacing wins
+     the name. The only fix is for the name not to be taken.
+
+     Not one of the six was ever used as a spacing utility -- zero `p-sm`,
+     `gap-md`, `me-lg` anywhere in src -- and none was referenced as a raw
+     `var()` or asserted by the tokens gate. Their entire measurable effect was
+     the breakage above. If a named spacing step is wanted later, give it a name
+     Tailwind does not already own: `--spacing-gutter` above is the pattern. */
 
   /* --- Shadows ----------------------------------------------------------------
      NOT measured: the reference dump records geometry, colour, type and radius,
