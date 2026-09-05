@@ -73,7 +73,7 @@ jobs:
     timeout-minutes: 10
     if: vars.CRON_SCHEDULER_ENABLED == 'true'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Call the jobs due now
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
