@@ -64,3 +64,67 @@ text, not a content model. `refs/ke_live_home.html` and its siblings are the
 saved live markup.
 
 See `docs/REFS-INDEX.md` for what each file actually holds.
+
+## 4. The Cloudflare R2 destination was never specified
+
+`scripts/ingest-live-assets.mjs` crawls `kenyonexpress.co.il`, downloads every
+product image, banner, category image and hero slide into `refs/live-assets/`
+preserving source paths, and builds AVIF and WebP derivatives at 380/768/1440/2000
+plus a placeholder for each. That half is done and reproducible.
+
+**The upload is not, because the instruction ended mid-sentence** at "upload to
+Cloudflare R2 under" — no bucket, no prefix. Guessing a bucket name would put a
+catalogue of live imagery somewhere nobody chose, and R2 buckets are not free to
+create and forget.
+
+`refs/live-assets/manifest.json` is the input that upload needs whenever the
+destination is decided: one row per asset with its source URL, its path, byte
+size, dimensions, format, alt text, the pages it appeared on, and every
+derivative with its own size.
+
+### First run, 2026-09-06
+
+| | |
+|---|---|
+| pages crawled | 10 (home, shop, cart, seven category archives) |
+| assets kept | 80 |
+| derivatives | 200 |
+| quarantined | 9 |
+| failed | 0 |
+| source bytes | 2,834,976 |
+| derivative bytes | 3,502,597 |
+
+**Derivatives are larger than sources, and that is expected here.** Live already
+serves optimised AVIF at 600x600 or smaller, so `withoutEnlargement` caps most
+assets at two derivatives and re-encoding an AVIF at quality 50 does not
+reliably beat the original. The pipeline earns its keep on the day real
+photography arrives at 2000px, not on live's already-shrunk copies.
+
+### The nine quarantined, and why the filter exists
+
+An unfiltered "download every image from live" walks the Electro demo kit
+straight back in, past the gate that exists to keep it out. These nine went to
+`refs/live-assets/_quarantine/` with their reason recorded rather than being
+skipped silently:
+
+```
+ios13-iphone-11pro-airpods-pro-setup-animation-steps.gif
+redPhone-1-1.png
+Screen-Shot-2021-11-12-at-0.20.17.png
+Screen-Shot-2021-11-09-at-6.41.46.png
+tesla-logo-main.avif
+apple-140-new.avif
+home-sl-da-3.avif
+galaxy-s22_highlights_kv_img-1536x993.avif
+galaxy-s22_highlights_kv_img-600x600.avif
+```
+
+The patterns are kept in step with `scripts/template-asset-scan.mjs` on purpose:
+if that gate would reject a file, this must not hand it to the build.
+
+**One judgement call worth revisiting.** `galaxy-s22_highlights_kv_img` is
+quarantined by pattern, but live's catalogue really does list a Samsung Galaxy
+S22 and that is its product photograph — real content for a real product, not
+demo filler. It is quarantined rather than deleted precisely so that call can be
+reversed by moving one file, and `docs/COPY-AUDIT.md` already records the same
+tension.

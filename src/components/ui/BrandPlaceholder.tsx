@@ -18,30 +18,51 @@ import Image from 'next/image'
  * a competitor's product photography is a decision, and shipping it because the
  * old site did is not a reason.
  *
- * WHY NOT A GREY BOX. A grey box reads as a bug and gets ignored. This reads as
- * a slot: the mark, on brand-accent, at the aspect ratio the real photograph
- * will have. `data-awaiting-photography` makes every one of them greppable and
+ * WHY THE MARK AND NOT A BARE GREY BOX. A bare grey box reads as a bug and gets
+ * ignored. This reads as a slot: the site's own mark, centred on a neutral grey
+ * ground (`--color-surface-hover`, #f5f5f5), at the aspect ratio the real
+ * photograph will have.
+ *
+ * The ground was `bg-brand-accent` until 2026-09-06. That token is #eaf4f6, a
+ * pale blue tint, and on a page whose brand colour is yellow it read as a
+ * deliberate coloured panel rather than as an empty slot. Neutral is the point:
+ * nothing about a placeholder should look chosen. `data-awaiting-photography` makes every one of them greppable and
  * countable, and `scripts/template-asset-scan.mjs` fails the build if one of the
  * ten filenames comes back.
  */
 export default function BrandPlaceholder({
   className = '',
   markWidth = 160,
+  slot,
 }: {
   /** Positioning and sizing from the caller; this component owns only its ground. */
   className?: string
   /** The mark's rendered width in px. The slot's own size comes from `className`. */
   markWidth?: number
+  /**
+   * WHAT THIS SLOT IS FOR, IN HEBREW. Becomes the image's accessible name.
+   *
+   * It used to be `aria-hidden` with an empty alt, on the reasoning that a
+   * placeholder is decoration. That is right for a spacer and wrong for this:
+   * a sighted visitor can see that a photograph is missing and a screen-reader
+   * user could not, so the slot was silently absent for them rather than
+   * visibly empty. Naming it says the same thing to both.
+   *
+   * Omit it only where the surrounding link already names the destination, in
+   * which case the mark really is decoration and repeating it is noise.
+   */
+  slot?: string
 }) {
+  const decorative = !slot
   return (
     <div
       data-awaiting-photography=""
-      aria-hidden="true"
-      className={`flex items-center justify-center overflow-hidden bg-brand-accent ${className}`}
+      {...(decorative ? { 'aria-hidden': true as const } : {})}
+      className={`flex items-center justify-center overflow-hidden bg-surface-hover ${className}`}
     >
       <Image
         src="/images/logo.webp"
-        alt=""
+        alt={slot ? `${slot} — התמונה טרם צולמה` : ''}
         width={markWidth}
         height={Math.round(markWidth * 0.263)}
         // The site's own mark, and the only image here: 300x79 on live, so the

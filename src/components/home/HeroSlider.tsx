@@ -457,7 +457,11 @@ function SlideImage({
           {slide.image_url ? (
             <HeroSlideImage src={slide.image_url} priority={false} />
           ) : (
-            <BrandPlaceholder className="absolute inset-0" markWidth={220} />
+            <BrandPlaceholder
+              className="absolute inset-0"
+              markWidth={220}
+              slot="תמונת הבאנר הראשי"
+            />
           )}
         </div>
       </div>
@@ -465,7 +469,7 @@ function SlideImage({
         {slide.image_url ? (
           <HeroSlideImage src={slide.image_url} priority={priority} />
         ) : (
-          <BrandPlaceholder className="absolute inset-0" markWidth={120} />
+          <BrandPlaceholder className="absolute inset-0" markWidth={120} slot="תמונת הבאנר הראשי" />
         )}
       </div>
     </>
