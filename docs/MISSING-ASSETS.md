@@ -89,8 +89,40 @@ rather than by eye. Every hash is 28 characters for 4x3 components.
    even if it had been named.
 
 Guessing a bucket name would have put a catalogue of live imagery somewhere
-nobody chose, on a service that is switched off. **To unblock:** enable R2 in
-the Cloudflare dashboard, create the bucket, and say what it is called.
+nobody chose, on a service that is switched off.
+
+### The uploader is written and one command away
+
+`scripts/upload-r2.mjs` exists, is dry-runnable today, and refuses loudly with
+these two reasons when the environment is absent. Verified 2026-09-06:
+
+```
+$ node scripts/upload-r2.mjs --dry-run
+upload-r2: 223 objects, 5.1MB
+  prefix: live-assets/
+  skipping 8 quarantined Electro/vendor assets
+  ...
+$ node scripts/upload-r2.mjs        # exit 1, names both blockers
+```
+
+It signs SigV4 with `node:crypto` rather than pulling `@aws-sdk/client-s3`, ~20MB
+of dependency for a PutObject — the same trade made for blurhash. It sets
+`Content-Type` per extension and `Cache-Control: public, max-age=31536000,
+immutable` on every object, which is safe because each key is the asset's own
+source path and a changed asset gets a new path from WordPress. It does **not**
+upload the quarantined assets: keeping the Electro kit out of anything the site
+can reach is the entire point of quarantining it.
+
+**To unblock, in order:**
+
+1. Enable R2 in the Cloudflare dashboard.
+2. Create the bucket and decide the prefix.
+3. Run:
+   ```
+   R2_ACCOUNT_ID=<id> R2_ACCESS_KEY_ID=<key> \
+   R2_SECRET_ACCESS_KEY=<secret> R2_BUCKET=<bucket> \
+   node scripts/upload-r2.mjs --prefix=live-assets/
+   ```
 
 `refs/live-assets/manifest.json` is the input that upload needs whenever the
 destination is decided: one row per asset with its source URL, its path, byte
