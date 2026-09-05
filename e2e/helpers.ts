@@ -249,11 +249,29 @@ export async function addOpenProductToCart(page: Page): Promise<void> {
  *
  * Re-dispatching costs nothing - the component's handler only calls
  * `preventDefault` and stores the event - and it turns a race into a poll.
+ *
+ * WHY IT ALSO SYNTHESISES AN INTERACTION. `InstallPrompt` renders on
+ * `deferred !== null && engaged`, and `engaged` is set by a one-shot listener
+ * on `scroll` / `pointerdown` / `keydown`. That second half of the condition
+ * arrived with eb918c3e9 and this helper was never told, so from that commit
+ * until 2026-09-06 BOTH install-banner tests failed with "the install banner
+ * did not render" - which means the banner's accessibility had not actually
+ * been scanned in all that time. The assertion in the caller is what kept that
+ * honest instead of green.
+ *
+ * `pointerdown` is dispatched rather than driven through `page.mouse` or
+ * `page.keyboard` deliberately: a real click moves focus and a real scroll
+ * moves the viewport, and both change what axe then measures. A synthesised
+ * event on `window` satisfies the same one-shot listener and leaves the page
+ * exactly as the scan expects to find it - the same argument that already
+ * applies to `beforeinstallprompt` two lines below.
  */
 export async function raiseInstallBanner(page: Page): Promise<Locator> {
   const banner = page.getByRole('region', { name: 'התקנת האפליקציה' })
   const fire = () =>
     page.evaluate(() => {
+      window.dispatchEvent(new Event('pointerdown'))
+
       const event = new Event('beforeinstallprompt') as Event & {
         prompt: () => Promise<void>
         userChoice: Promise<{ outcome: string }>
