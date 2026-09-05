@@ -38,6 +38,7 @@ import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { chromium } from '@playwright/test'
 import sharp from 'sharp'
+import { encodeBlurhash } from './blurhash.mjs'
 
 process.env.PLAYWRIGHT_BROWSERS_PATH ??= resolve(homedir(), 'Library/Caches/ms-playwright')
 
@@ -82,27 +83,29 @@ const SEED_PATHS = ['/', '/shop/', '/cart/']
 const quarantineReason = (url) => QUARANTINE_PATTERNS.find((p) => p.test(url))?.source ?? null
 
 /**
- * A blurhash-shaped placeholder, computed here rather than pulled in.
+ * The real blurhash, plus the dominant colour for a one-line CSS fallback.
  *
- * The `blurhash` package is not a dependency and adding one to produce a string
- * that only ever feeds a CSS background is not worth a supply-chain entry --
- * this repo already pins four transitive packages to close advisories. What a
- * placeholder has to do is paint the right colours in the right places before
- * the real bytes land, and a 4x3 downscale encoded as a data URI does that in
- * ~120 bytes, decodes natively, and needs no client-side decoder at all.
+ * The first version of this emitted a 4x3 WebP data URI and called it `lqip`,
+ * honestly, because it was not a blurhash and saying otherwise would have cost
+ * the next person an afternoon. `scripts/blurhash.mjs` is the actual algorithm
+ * now -- eighty lines rather than a dependency, with a decoder beside it so the
+ * encoder can be tested by round trip rather than by eye.
  *
- * Recorded as `lqip` and not `blurhash` in the manifest, because calling it a
- * blurhash when it is not one is how the next person wastes an afternoon.
+ * 32x32 is the sample size the reference recommends: large enough that the DCT
+ * sees the image's structure, small enough that the transform is instant.
  */
-async function lqip(buffer) {
-  const raw = await sharp(buffer).resize(4, 3, { fit: 'fill' }).removeAlpha().raw().toBuffer()
-  const png = await sharp(raw, { raw: { width: 4, height: 3, channels: 3 } })
-    .webp({ quality: 40 })
-    .toBuffer()
+async function placeholder(buffer) {
+  const { data, info } = await sharp(buffer)
+    .resize(32, 32, { fit: 'fill' })
+    .removeAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true })
   const { dominant } = await sharp(buffer).stats()
   return {
-    lqip: `data:image/webp;base64,${png.toString('base64')}`,
-    dominant: `#${[dominant.r, dominant.g, dominant.b].map((v) => v.toString(16).padStart(2, '0')).join('')}`,
+    blurhash: encodeBlurhash(data, info.width, info.height, 4, 3),
+    dominant: `#${[dominant.r, dominant.g, dominant.b]
+      .map((v) => v.toString(16).padStart(2, '0'))
+      .join('')}`,
   }
 }
 
@@ -230,7 +233,7 @@ async function main() {
         row.width = width
         row.height = height
         row.format = format
-        Object.assign(row, await lqip(buffer))
+        Object.assign(row, await placeholder(buffer))
 
         for (const w of WIDTHS) {
           if (width && w > width) continue // never upscale

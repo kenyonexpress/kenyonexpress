@@ -70,12 +70,27 @@ See `docs/REFS-INDEX.md` for what each file actually holds.
 `scripts/ingest-live-assets.mjs` crawls `kenyonexpress.co.il`, downloads every
 product image, banner, category image and hero slide into `refs/live-assets/`
 preserving source paths, and builds AVIF and WebP derivatives at 380/768/1440/2000
-plus a placeholder for each. That half is done and reproducible.
+plus a real blurhash for each. That half is done and reproducible.
 
-**The upload is not, because the instruction ended mid-sentence** at "upload to
-Cloudflare R2 under" — no bucket, no prefix. Guessing a bucket name would put a
-catalogue of live imagery somewhere nobody chose, and R2 buckets are not free to
-create and forget.
+**The blurhash is a genuine blurhash**, not a stand-in. The first version emitted
+a 4x3 WebP data URI and called it `lqip`, honestly, because it was not one.
+`scripts/blurhash.mjs` is the reference algorithm — a DCT in linear light
+quantised into base83 — implemented in eighty lines rather than added as a
+dependency, with a decoder beside it so the encoder is tested by round trip
+rather than by eye. Every hash is 28 characters for 4x3 components.
+
+**The upload is not, and it is blocked twice over.**
+
+1. The instruction ended mid-sentence at "upload to Cloudflare R2 under" — no
+   bucket, no prefix.
+2. **R2 is not enabled on the Cloudflare account.** Listing buckets returns
+   `403 {"code":10042,"message":"Please enable R2 through the Cloudflare
+   Dashboard."}` — measured 2026-09-06. So the destination could not exist yet
+   even if it had been named.
+
+Guessing a bucket name would have put a catalogue of live imagery somewhere
+nobody chose, on a service that is switched off. **To unblock:** enable R2 in
+the Cloudflare dashboard, create the bucket, and say what it is called.
 
 `refs/live-assets/manifest.json` is the input that upload needs whenever the
 destination is decided: one row per asset with its source URL, its path, byte
