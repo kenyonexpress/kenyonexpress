@@ -704,3 +704,66 @@ partial exposure of one.
 
 Treat the current key as compromised: it is fine for local development against
 this project, and it must not be the key that serves production traffic.
+
+## Apply the pending migrations (needs Ofir's approval first)
+
+Five are pending. The full review, with what each changes and why, is in
+`docs/MIGRATION-REVIEW.md`. **Nothing below has been run.**
+
+None of the five depends on another, so this order is by urgency, not by
+dependency. Batch A can be applied today. Batch B cannot be applied at all until
+the Vercel project exists.
+
+### Batch A — four migrations, no external preconditions
+
+Apply in this order. Each is independently reversible and each has its rollback
+written at the foot of its own file.
+
+| Step | File | Precondition | Verify after |
+|---|---|---|---|
+| A1 | `172_hide_master_product_test_row.sql` | none | `select stock_quantity from products where id = '9bb347f8-03ec-48ce-8ff2-2503fb74c895';` → `0` |
+| A2 | `169_analytics_server_event_names.sql` | none | RPC `fn_ingest_analytics_events` with `{"event_name":"purchase"}` → inserts, does not return `0` |
+| A3 | `170_composite_indexes_top_queries.sql` | run `preflight_170.sql` first | `select count(*) from pg_indexes where indexname like 'products_active%';` → `4` |
+| A4 | `171_category_name_shekel_order.sql` | none | `select name_he from categories where slug = 'under-99';` → digits before the glyph |
+
+**A1 first, deliberately.** It is the only one with a live money consequence: the
+row is purchasable at ₪1 with ten in stock right now, and every hour it stays
+that way is an hour somebody can buy it.
+
+**A3 takes a write lock** on each table it indexes — reads are unaffected. On
+today's row counts (largest is `carts` at 1813) that is milliseconds. If `orders`
+has grown large by the time this runs, switch to
+`CREATE INDEX CONCURRENTLY`, which must then be applied one statement at a time
+because it cannot run inside a transaction block.
+
+**After the batch:** move each applied file to `migrations/applied/`, add its
+sha256 to `migrations/applied/CHECKSUMS.sha256`, add a row to the APPLIED IN
+PRODUCTION table in that directory's README, and update
+`src/__tests__/pending-migrations-inventory.test.ts` — the inventory test asserts
+the exact file list in both directories and will fail until it agrees.
+
+### Batch B — 162, blocked
+
+`162_cron_schedule.sql` schedules twelve pg_cron jobs. Its own first statement
+refuses to run unless the vault carries `cron_secret` and `app_url`, and that
+guard is correct: without them the jobs would POST into the void every five
+minutes.
+
+Neither can be seeded honestly today, because **there is no deployed URL and no
+deployment to hold a matching `CRON_SECRET`**. The chain, in order:
+
+1. Create the Vercel project (blocker 0 in `STATE.md`) and deploy.
+2. Take the deployment URL and the `CRON_SECRET` from its environment.
+3. Seed both into the vault:
+   ```sql
+   select vault.create_secret('<CRON_SECRET>', 'cron_secret');
+   select vault.create_secret('https://<the real host>', 'app_url');
+   ```
+4. Run `preflight_162.sql` block by block and read each result.
+5. Apply `162`, then verify:
+   ```sql
+   select jobname, schedule, active from cron.job order by jobname;
+   ```
+   Twelve rows, all `active = true`.
+
+**Rollback:** `cron.unschedule` on the same twelve job names.

@@ -1,3 +1,4 @@
+import { compromisedKeyMessage, scanEnvironmentForCompromisedKeys } from '@/lib/compromised-keys'
 import { log } from '@/lib/observability/log'
 import { z } from 'zod'
 
@@ -99,6 +100,31 @@ const schema = z
  * happened at build time: NEXT_PUBLIC_* is inlined into the client bundle.
  * Refusing to boot is the only response that helps.
  */
+/**
+ * A KNOWN-EXPOSED KEY MUST NOT SERVE PRODUCTION TRAFFIC.
+ *
+ * This throws, unlike `env-probe.ts`, and the difference is deliberate: the
+ * probe makes a network call and a transient DNS failure must not become an
+ * outage, while this is a hash comparison that cannot be wrong for an
+ * environmental reason. If the digest matches, the key is the exposed one, and
+ * the correct response is to refuse to serve.
+ *
+ * Outside production it warns instead. The exposed key is still the working key
+ * for local development against this project until it is rotated, and bricking
+ * every developer's `pnpm dev` over a credential they cannot rotate themselves
+ * is how a security control gets commented out.
+ */
+function assertNoCompromisedKeys(isProduction: boolean): void {
+  const findings = scanEnvironmentForCompromisedKeys()
+  if (findings.length === 0) return
+
+  for (const finding of findings) {
+    const message = compromisedKeyMessage(finding)
+    if (isProduction) throw new Error(`refusing to boot: ${message}`)
+    log.warn('env.compromised_key', { variable: finding.variable, detail: message })
+  }
+}
+
 function assertNoPublicSecrets(): void {
   const LEAKY = /^NEXT_PUBLIC_.*(SECRET|PASSWORD|SERVICE_ROLE|PRIVATE_KEY|API_KEY)/i
   for (const key of Object.keys(process.env)) {
@@ -127,6 +153,10 @@ if (parsed.data.NODE_ENV === 'production' && parsed.data.ALLOW_INCOMPLETE_ENV ==
       'ALLOW_INCOMPLETE_ENV=true. Correct for a local `next start`; wrong anywhere a customer can reach.',
   })
 }
+
+// After parsing, so the thrown message names a real NODE_ENV rather than
+// guessing at one, and so a malformed environment fails on its own terms first.
+assertNoCompromisedKeys(parsed.data.NODE_ENV === 'production')
 
 export const env = parsed.data
 export type Env = typeof env

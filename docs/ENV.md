@@ -74,6 +74,40 @@ production traffic.** Steps in `docs/RUNBOOK.md`.
 
 ## The variables
 
+### Build-time vs runtime
+
+Vercel needs both at build, but they fail differently, and knowing which is which
+saves an hour when a deploy goes wrong.
+
+**Build-time** — read while `next build` runs, so a wrong value produces a broken
+*artifact* and the failure is in the build log:
+
+| Variable | Why at build |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | inlined into the client bundle |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | inlined into the client bundle |
+| `NEXT_PUBLIC_*` (any) | by definition — `NEXT_PUBLIC_` is substituted at build |
+| `SENTRY_AUTH_TOKEN` | source-map upload during the build; absent means maps are skipped and the build still succeeds |
+| `SUPABASE_SECRET_KEY` / `SUPABASE_SERVICE_ROLE_KEY` | prerendering reads the catalogue |
+
+Because the two `NEXT_PUBLIC_` values are *inlined*, changing them in the Vercel
+dashboard does nothing until you redeploy. A stale anon key in a built bundle is
+a real failure mode and it looks like a database problem.
+
+**Runtime** — read per request, so a wrong value fails on the first customer who
+touches that path and the failure is in the runtime log:
+
+| Variable | Fails on |
+|---|---|
+| `CARDCOM_*` | the first payment |
+| `CRON_SECRET` | the first scheduled job (401) |
+| `VOUCHER_QR_SECRET` | the first voucher issued or scanned |
+| `RESEND_API_KEY` | the first email (inert, reports `skipped`) |
+| `TWILIO_*` | the first WhatsApp message (inert) |
+| `UPSTASH_REDIS_REST_*` | never — falls back to Postgres rate limiting |
+| `AXIOM_*` | never — the log leg is inert |
+| `MEILISEARCH_*` | never — the search backend is inert |
+
 ### Required in production
 
 | Variable | What it is | What breaks without it |
