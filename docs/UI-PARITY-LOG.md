@@ -97,6 +97,59 @@ Honest statement for 380: geometry vs `refs/ke_live_computed.json` is within 1�
 
 Defects that used to dominate the score: desktop hero height on a phone, a second category strip below `lg`, five stacked USP blocks, card footer always one-line, 30px grid gap vs 3px.
 
+#### 2.2.1 Landmarks re-verified against the committed capture (pass 13)
+
+The numbers above were carried from dated markdown. They are now checkable:
+`refs/ke_live_computed.json` is committed, so the **live** side of each landmark
+can be read directly rather than trusted. Measured on `home@{380,768,1440}`.
+
+| Landmark | Element measured | 380 | 768 | 1440 | Verdict |
+|---|---|---|---|---|---|
+| Hero row | `div.elementor-section.elementor-top-section` | 350 x **213** | 690 x **495** | 1170 x **613** | **confirmed exactly** |
+| Feature bar | `div.elementor-section` (the outer one) | **31.00** | **134.39** | **134.39** | **confirmed exactly** |
+| First grid item | `div.jet-listing-grid__item` | y**408.66** | y**719.36** | y**897.67** | 1440 confirmed; see note |
+| Cards in first row | same | 2 | 3 | 5 | **confirmed** (1/2/4 in §2.2 is the *our-side* column count, not live's) |
+
+Two things this settles and one it does not.
+
+**Settled: the feature bar's 134 is the OUTER section, not the inner list.** The
+same band holds five nested boxes and only one of them is 134:
+
+```
+.elementor-section        134.39      <- the token, and the landmark
+.elementor-container      104.39
+.elementor-column         104.39
+.elementor-widget-wrap    104.39
+.elementor-widget-container 81.39
+.features-list             81.39
+.feature (item)            79.39      w234
+```
+
+A measurement that grabs `.features-list` reports **81** and looks like a
+regression against a token that is correct. This is written down because it
+already caught one reader in this pass: the first query here returned 104 and
+81 and read as a contradiction of `--spacing-feature-bar`, which is right.
+
+**Settled: the bar-to-grid gap is 2.00px at all three widths, not 3.**
+`--spacing-deals-top` is `3px` and its comment reasons from "bar ends 895, grid
+starts 898". The precise values are **895.67** and **897.67**, so the true gap is
+**2.00px**, identical at 380, 768 and 1440. The token rounds two sub-pixel
+values in opposite directions and lands one pixel high. One pixel on one edge is
+inside the noise of an 11 percent gate, so this is a note rather than a defect;
+it is recorded so the next person to remeasure does not "find" it again.
+
+**Not settled: the 444 / 754 grid-start numbers at 380 and 768.** The element
+measured here starts at 408.66 and 719.36. Those may be different elements (the
+grid *item* wrapper versus the first painted card, which can be inset by its own
+padding) rather than a disagreement. The 1440 value matches to within a third of
+a pixel, which suggests the method agrees there and the two smaller widths are
+measuring different boxes. Resolve by naming the element before quoting the
+number, the way the table above does.
+
+**Rule going forward: a landmark without a named element is not a landmark.**
+Every row in the table above says which box it measured. Three of the four
+"disagreements" found in this pass were selector mismatches, not regressions.
+
 Standing pixel cost: **no search field**. Live has one (534×41 at 1440, yellow `#fed700` top border). We do not.
 
 ---
@@ -501,3 +554,4 @@ PY
 | 2026-09-07 | Pass 12: live reference heights pinned from the 2026-09-04 capture; renumbered the trailing section around a concurrent §12 |
 | 2026-09-07 | Pass 12: refusal reference. All eight refusals with exit codes 2/3/4 and escape hatches, plus the three warnings that print an untrustworthy number instead of exiting |
 | 2026-09-07 | Pass 13: band map derived from refs/ke_live_computed.json. Band to region at all three widths, and why one wrong product costs six of the twenty-six scored bands at 380 |
+| 2026-09-07 | Pass 13: landmarks re-verified against the committed capture. Hero and feature bar confirmed exactly; bar-to-grid gap is 2.00px not 3px; "a landmark without a named element is not a landmark" |
