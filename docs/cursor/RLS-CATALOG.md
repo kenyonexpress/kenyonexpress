@@ -236,3 +236,13 @@ If an admin page uses
 as the money gate, support can move money. Use
 `is_admin()`
 for money.
+
+---
+
+## 13. CHECKs that are not RLS
+
+`refunds_fee_within_statutory_cap`,
+`refunds_no_fee_when_our_fault`,
+`vouchers_conservation`,
+`subscription_charges_split_is_exact`
+will 23514 a service_role writer. Pack roles cannot bypass them. Do not "open RLS" to fix a CHECK failure.
