@@ -220,11 +220,13 @@ Password hints stay Hebrew. Email placeholder Latin `you@example.com` LTR.
 
 ---
 
-## 9. Offline PWA
+## 9. Offline PWA and legal H1s
 
 Must paint from cache. Retry is a `Link` to `/`, not an `onClick` chunk.
 
-Copy lives in COPY-HE §15. Ink on `#fed700` is `#333e48`.
+Copy lives in COPY-HE §15. Ink on `#fed700` is `#333e48`. H1 `אין חיבור לאינטרנט`. Title `אין חיבור`.
+
+Legal H1s: `תקנון` / `פרטיות` / `ביטולים והחזרים` / `הצהרת נגישות`. Returns: no escrow language.
 
 ---
 
@@ -246,3 +248,4 @@ Copy lives in COPY-HE §15. Ink on `#fed700` is `#333e48`.
 | 2026-09-07 | Catalogue of empty, validation, page errors, checkout fail, confirmations, scan outcomes, wallet/coupons/wishlist |
 | 2026-09-07 | Pass 9: supplier empty vs 404 (inactive is 404, not empty) |
 | 2026-09-07 | Pass 10: city empty is a real answer; unknown slug 404 |
+| 2026-09-07 | Pass 11: legal H1s and offline, no escrow in returns |
