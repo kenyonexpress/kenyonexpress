@@ -97,6 +97,26 @@ The only transformation is the `ke-` prefix on the job name, which is what makes
 the rollback (`unschedule ... where jobname like 'ke-%'`) safe to run without
 touching a job somebody else created.
 
+**The header shape 162 sends is accepted by all twelve routes.** Checked
+directly, because a mismatch here would 401 silently forever (see risk 1).
+Every one of the twelve calls:
+
+```
+bearerMatches(request.headers.get('authorization'), process.env.CRON_SECRET ?? '')
+```
+
+and returns `401 {ok:false}` on a miss. `bearerMatches`
+(`src/lib/security/constant-time.ts:40`) requires the literal `Bearer ` prefix
+and then compares with `secretEquals`, constant-time. Its first line is
+`if (!header || !expected) return false`, so an **unset `CRON_SECRET` denies
+every request** rather than accepting any: the auth fails closed, which is the
+right direction for a route that can spend money.
+
+162 sends `'Bearer ' || <vault secret>` uniformly to all twelve, so the shapes
+agree. This was worth confirming rather than assuming: two of the twelve read
+the secret through the shared helper in a way a grep does not show, and an
+earlier note in this pass wrongly flagged them as using a different shape.
+
 **The idempotency claim holds.** `cron.schedule(jobname, ...)` upserts by name
 in pg_cron >= 1.4, and `migrations/applied/161` records the installed version as
 **1.6.4**. Re-running replaces rather than duplicating.

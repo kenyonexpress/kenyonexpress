@@ -587,11 +587,21 @@ state without one".
    search-index routes. A leak exposes all fourteen; there is no per-job
    credential. That is a deliberate simplification, not an oversight, but it is
    the blast radius.
-2. **Two cron routes read `CRON_SECRET` without the `Bearer` prefix pattern**
-   (`health`, `weekly-digest`). Worth confirming they accept the same header
-   shape the scheduler sends, because migration 162 sends
-   `Authorization: Bearer <secret>` to all twelve uniformly. If either expects a
-   bare value, it will 401 under 162 while the other ten succeed.
+2. **All twelve cron routes share one auth pattern, and it fails closed.**
+   Every one calls
+   `bearerMatches(request.headers.get('authorization'), process.env.CRON_SECRET ?? '')`
+   and returns `401 {ok:false}` on a miss. `bearerMatches`
+   (`src/lib/security/constant-time.ts:40`) requires the literal `Bearer `
+   prefix, then compares with `secretEquals`, a constant-time comparison. Its
+   first line is `if (!header || !expected) return false`, so an **unset
+   `CRON_SECRET` denies every request** rather than accepting any. That
+   confirms migration 162's uniform `Authorization: Bearer <secret>` header is
+   correct for all twelve.
+
+   An earlier revision of this list claimed `health` and `weekly-digest` used a
+   different header shape and would 401 under 162. **That was wrong**: it came
+   from a grep that did not print the shared helper, not from the code. All
+   twelve were then opened and are identical.
 3. **`api/debug/sentry` is unguarded and reachable in production.** It exists to
    throw. Confirm it is either removed or gated before launch.
 4. `api/supplier/*` routes gate on rate limiting plus their own body checks
