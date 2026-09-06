@@ -130,6 +130,10 @@ Test/junk catalogue rows (`קופון טסט`, empty `₪`, `Reverse Withdrawal 
 
 Keep existing `BreadcrumbList` (`buildBreadcrumbJsonLd`). Do not emit a second breadcrumb graph. `CollectionPage` optional. Per-branch `LocalBusiness` is still queue, not required on day one.
 
+Seventeen `REGIONS` only. Empty region still **indexable** (it answers the query). Unknown slug: 404, noindex. Internal chips go to `/products?city=` which is **noindex**; do not hreflang those query URLs. Link `/s/{id}` when a supplier in that region exists. Do not mint thin extra city landing pages.
+
+Title: `דילים ב{name}`. Description: remainder-at-business sentence. `hreflang="he-IL"` (+ `x-default` same canonical).
+
 ### 3.6 Legal / about
 
 `WebPage` + `Organization` publisher. Accessibility statement may use `WebPage` only.
@@ -196,3 +200,4 @@ Home: do not replace the live brand title with a stuffed “קופונים די�
 |---|---|
 | 2026-09-07 | Plan with live title `קניון אקספרס`, `lang="he-IL"`, no live hreflang; schema per page; linking including account empties |
 | 2026-09-07 | Pass 9: LocalBusiness data gate; `@id` `/s/{id}#business`; hreflang `x-default` matches ARCHITECTURE-SEO (same canonical) |
+| 2026-09-07 | Pass 10: city seventeen regions; empty indexable; query chips noindex |
