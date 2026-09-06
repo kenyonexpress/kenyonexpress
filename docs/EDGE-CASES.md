@@ -210,9 +210,9 @@ Customer copy lives in COPY-HE. This file owns control flow.
 
 **What happened.** Someone opens a `KEV1` URL that is tampered, or a valid URL without being that supplier.
 
-**Expected.** Forged: `invalid_signature`, recorded, no voucher body. No session: login round-trip. Other supplier: `not_found` (do not name the owner). Valid owner: remainder `{price}` then `redeem_voucher`. Photographing a customer's QR does not bypass membership.
+**Expected.** Forged: `קוד השובר אינו תקין`, recorded, no voucher body. No session: login round-trip **after** the signature check (so the forge is still logged). Other supplier: `השובר לא נמצא` (do not name the owner). Valid owner: remainder `{price}` then `אשר מימוש`. Photographing a customer's QR does not bypass membership. Rate limit 60/hour per address; limiter fail-open. Network drop mid confirm: keep the **same** idempotency key and allow retry (`אין חיבור לרשת...`).
 
-**Forbidden.** Treating HMAC as single-use. Indexing `/gift/*` or `/redeem/*`.
+**Forbidden.** Treating HMAC as single-use. Indexing `/gift/*` or `/redeem/*`. Claiming a gift on GET.
 
 ---
 

@@ -192,6 +192,31 @@ Field names (Hebrew visible labels): first/last name, phone, email, city, street
 | acc.orders.h1 | ההזמנות שלי | |
 | acc.orders.count | `{n}` הזמנות | `{n}` |
 | acc.orders.meta | `{date} · {n} פריטים` | optional ` · כולל קופונים` |
+| acc.orders.detailTitle | פרטי הזמנה | |
+| acc.orders.detailH1 | הזמנה מתאריך `{date}` | `{date}` |
+| acc.orders.summary | סיכום | |
+| acc.orders.subtotal | סכום ביניים | `{price}` |
+| acc.orders.wallet | שולם מהארנק | minus `{price}` |
+| acc.orders.paidOnSite | סך הכל שולם באתר | `{price}` |
+| acc.orders.invoice | חשבונית מס / קבלה `{ref}` | `{ref}` optional |
+| acc.orders.invoiceCta | הורדת חשבונית | |
+| acc.orders.items | פריטים | |
+| acc.orders.qty | `{n}` יחידות · `{price}` ליחידה | `{n}` `{price}` |
+| acc.orders.remainder | `{price}` לתשלום בבית העסק | `{price}` |
+| acc.orders.shipped | נשלח | |
+| acc.orders.delivered | נמסר | |
+| acc.orders.back | חזרה להזמנות | |
+| acc.orders.status.pending | ממתינה לתשלום | |
+| acc.orders.status.paid | שולמה | |
+| acc.orders.status.split | הושלמה | |
+| acc.orders.status.redeemed | מומשה | |
+| acc.orders.status.refunded | זוכתה | |
+| acc.orders.status.cancelled | בוטלה | |
+| acc.coupon.issued | פעיל | clock, not stored column |
+| acc.coupon.redeemed | מומש | |
+| acc.coupon.expired | פג תוקף | |
+| acc.coupon.cancelled | בוטל | |
+| acc.coupon.refunded | הוחזר | |
 | acc.wishlist.h1 | רשימת מועדפים | |
 | acc.wishlist.cta | להמשך קניות | |
 | voucher.pageTitle | הקופון שלי | |
@@ -309,7 +334,7 @@ Do not toast a successful payment. Confirmation is a route (`/checkout/return`) 
 | Delete account | Typed confirm. Destructive. Never a single click. Body must say the ledger is retained as required by law (privacy page), not "everything vanishes". |
 | Remove cart line | Instant; named `הסר`. No extra dialog. |
 | Place order | The terms tick on checkout confirm is the confirmation. Label `תנאי שימוש`. |
-| Supplier scan confirm | אשר וממש (scan UX). Double submit blocked by idempotency key, not by copy. |
+| Supplier scan confirm | אשר וממש on `/scan`. אשר מימוש on `/redeem/[token]`. Double submit blocked by idempotency key, not by copy. |
 
 ---
 
@@ -473,9 +498,43 @@ Ink on `#fed700` for the tile (TOKENS: never white on yellow).
 | Id | String |
 |---|---|
 | gift.title | קיבלת מתנה |
+| gift.helloNamed | `{name}, קיבלת מתנה` |
 | gift.loading | רגע, טוענים את המתנה… |
+| gift.fallbackH1 | קופון |
+| gift.until | הקופון בתוקף עד `{date}` |
+| gift.unusable | לא ניתן לקבל את הקופון הזה. אם לדעתכם מדובר בטעות, פנו אלינו. |
+| gift.claimed | המתנה כבר נאספה. אם אתם אספתם אותה, היא נמצאת בקופונים שלי. |
+| gift.needAuth | כדי לקבל את הקופון לחשבון שלכם צריך להתחבר או להירשם. הקופון יישמר בחשבון שאיתו תתחברו. |
+| gift.loginCta | התחברות וקבלת הקופון |
+| gift.claimCta | קבלת הקופון לחשבון שלי |
+| gift.claimPending | מעביר את הקופון... |
+| gift.err.bad | קישור המתנה אינו תקין |
+| gift.err.auth | יש להתחבר כדי לקבל את המתנה |
+| gift.err.claimed | המתנה כבר נאספה |
+| gift.err.unusable | לא ניתן לקבל את הקופון הזה |
+| gift.err.expired | תוקף הקופון פג |
+| gift.err.retry | קבלת המתנה נכשלה, נסו שוב |
 | redeem.title | מימוש שובר |
 | redeem.toScan | למסך הסריקה |
+| redeem.rate | יותר מדי נסיונות / בוצעו יותר מדי סריקות מכתובת זו בשעה האחרונה. המתינו מעט ונסו שוב, או הזינו את הקוד ידנית במסך הסריקה. |
+| redeem.forged | קוד השובר אינו תקין / הקישור אינו נושא חתימה תקפה של KenyonExpress. אם סרקתם QR מהטלפון של הלקוח, בקשו ממנו לפתוח מחדש את השובר באזור האישי. |
+| redeem.readFail | לא ניתן לבדוק את השובר כרגע / התרחשה תקלה זמנית בקריאת השובר. נסו לסרוק שוב בעוד רגע; לא בוצע שום שינוי בשובר. |
+| redeem.notFound | השובר לא נמצא / הקוד אינו משויך לבית העסק שלכם, או שאינו קיים. ודאו שאתם מחוברים לחשבון הספק הנכון. |
+| redeem.collect | לגבות מהלקוח בקופה `{price}` |
+| redeem.paidOnline | שולם באתר `{price}` |
+| redeem.face | שווי מלא `{price}` |
+| redeem.until | בתוקף עד `{date}` |
+| redeem.customer | לקוח: `{name}` |
+| redeem.confirm | אשר מימוש (`/redeem/[token]` only) |
+| redeem.working | מאשר... |
+| redeem.again | סריקה נוספת |
+| redeem.already | השובר כבר מומש ב־`{date}` |
+| redeem.lapsed | תוקף השובר פג |
+| redeem.net | אין חיבור לרשת. בדקו את החיבור ונסו שוב |
+| redeem.sys | שגיאת מערכת, נסו שוב |
+| scan.confirm | אשר וממש (`/scan` only; not the same string as redeem.confirm) |
+
+GET on `/gift/[token]` must not claim. Claim errors paint under the button (today a red `<p>`, not yet `role="alert"`).
 
 ---
 
@@ -485,3 +544,4 @@ Ink on `#fed700` for the tile (TOKENS: never white on yellow).
 |---|---|
 | 2026-09-07 | Initial catalogue: chrome, buttons, labels, validation, toasts, empty, dialogs, errors, email subjects, WhatsApp, scan outcomes |
 | 2026-09-07 | Deepen: checkout return and city strings |
+| 2026-09-07 | Deepen: order-detail labels, gift claim errors, redeem refusals, scan vs redeem confirm split |

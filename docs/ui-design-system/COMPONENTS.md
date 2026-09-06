@@ -611,11 +611,24 @@ Unused Electro chrome we do **not** reproduce: header search, handheld search fo
 ### 9.3 GiftClaimForm
 
 - **File:** `src/components/gifts/GiftClaimForm.tsx`
-- **Purpose:** Claim a gift token.
-- **States:** default; loading; error; success.
-- **RTL:** token `dir="ltr"`.
-- **A11y:** labelled fields, `role="alert"` on failure.
+- **Purpose:** Deliberate POST claim of a gift token. Must not run on GET (mail scanners).
+- **Props:** `{ token: string }` (path credential, never painted).
+- **Variants:** one button.
+- **States:** default `קבלת הקופון לחשבון שלי` on `#fed700` / heading ink; hover `bg-brand-primary-hover`; focus-visible 2px; active UNMEASURED; disabled + opacity 0.6 while pending; loading label `מעביר את הקופון...`; error: server Hebrew string in red `<p>` (no `role="alert"` yet; gap); empty n/a; success: navigate `/account/coupons`.
+- **RTL:** button inherits page RTL. Token not shown.
+- **A11y:** `type="button"`; disabled while `useTransition`. Add `aria-busy` and `role="alert"` on error in a later UI pass. Do not auto-submit.
 - **Electro:** none.
+
+### 9.3b RedeemConfirm
+
+- **File:** `src/app/redeem/[token]/RedeemConfirm.tsx` (route-local, not shared)
+- **Purpose:** Show remainder `{price}` then irreversible `redeem_voucher` with one idempotency key per mount.
+- **Props:** token, code, `codeDisplay`, status, names, `faceValue`/`paidOnline`/`toCollect` already formatted through `shekels(agorot())`, `{date}` labels, `expired` boolean.
+- **States:** ready (`אשר מימוש`); working (`מאשר...`, button disabled); done (button gone, `סריקה נוספת`); already closed: start at done with used/expired copy; network: message + return to ready **same key**; server: `output aria-live="polite"`.
+- **RTL:** `dir="rtl"` page, code `dir="ltr"` mono.
+- **A11y:** remainder is the primary number. Confirm min height ~44px. Do not treat HMAC as single-use in the UI.
+- **Electro:** none.
+- **Copy split:** `/scan` uses `אשר וממש`. This screen uses `אשר מימוש`.
 
 ### 9.4 SupplierLeadForm / ContactForm
 
@@ -709,3 +722,4 @@ Focus-visible for all of the above: 2px solid `#333e48` (or white on dark fills)
 |---|---|
 | 2026-09-07 | Initial inventory of storefront components with props, states, RTL, a11y, and Electro home-v7 mapping |
 | 2026-09-07 | Deepen: checkout return voucher card (reads `vouchers`, generation probe) |
+| 2026-09-07 | Deepen: GiftClaimForm real states; RedeemConfirm remainder + idempotency |

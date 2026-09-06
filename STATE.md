@@ -79,10 +79,10 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 Updated: 2026-09-07. Branch `docs/ui-design-system`. This agent writes `.md` files only and does not touch `kenyonexpress` or any `.ts` / `.tsx` / `.css` / `.sql` / `.json`.
 
 ### Last completed
-Deepen pass 5: gift claim and `/redeem/[token]` anatomy (URL is the credential, noindex).
+Deepen pass 7: order detail anatomy, `/products` H1, checkout failed, gift/redeem copy from source, RedeemConfirm, TOKENS offline tile.
 
 ### In progress
-Deepen pass 6: ROLE-JOURNEYS scan can land on `/redeem/[token]`, EDGE-CASES forged QR.
+Deepen pass 8: remaining account sibling routes (wallet, coupons, wishlist) plus live-site title check.
 
 ### Next
 Keep deepening every document. Repeat. Never stop.

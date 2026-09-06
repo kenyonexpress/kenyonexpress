@@ -556,6 +556,21 @@ A Hebrew word cannot be hyphenated by the browser. `overflow-wrap: break-word` w
 | `#fed700` as text on white | 1.41:1 | Forbidden. Use `--color-link` or `--color-heading` |
 | `#a78e00` with slate ink | 3.39:1 | Allowed only as a momentary `:active` fill, never at rest |
 
+### 11.1 Offline tile (`/offline`)
+
+Service-worker fallback. Must paint from cache with **zero fetches**.
+
+| Token | Value | Use |
+|---|---|---|
+| Tile size | `size-16` (64px) | Lightning mark, `aria-hidden` |
+| Tile radius | `rounded-2xl` | `--radius-xl` family |
+| Tile fill | `--color-brand-primary` `#fed700` | Surface only |
+| Tile / CTA ink | `--color-heading` `#333e48` | Never white on yellow |
+| CTA | `min-h-11`, `rounded-xl`, `bg-brand-primary` | Plain `Link` to `/`, hover opacity 0.9 |
+| Body | `text-gray-500` 14px | Secondary copy |
+
+Do not turn the retry into an `onClick` that needs a JS chunk: that chunk may be what failed to load.
+
 ---
 
 ## 12. Revision
@@ -563,3 +578,4 @@ A Hebrew word cannot be hyphenated by the browser. `overflow-wrap: break-word` w
 | Date | Change |
 |---|---|
 | 2026-09-07 | Initial `docs/ui-design-system/TOKENS.md`: full token reference compiled from `tokens.css`, `packages/ui/tokens.css`, `TOKEN-PROVENANCE.md`, `DESIGN-SYSTEM.md`, `RTL-PITFALLS.md`, and the 2026-09-04 live capture |
+| 2026-09-07 | Offline tile: ink on `#fed700`, static retry link |

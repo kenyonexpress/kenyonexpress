@@ -83,9 +83,9 @@ Cron: ten jobs, external scheduler. `docs/VERCEL-CRON.md` is stale. `docs/CRON-E
 
 ## 7. Routes PAGE-ANATOMY vs app tree
 
-Covered: home, category, coupon PDP, physical PDP, cart, checkout, account, orders, `/coupon/[id]`, `/s/[id]`, search, 404, 500.
+Covered: home, category, coupon PDP, physical PDP, cart, checkout, account, orders **and order detail**, `/coupon/[id]`, `/s/[id]`, search, 404, 500, `/checkout/return`, `/checkout/failed`, `/products` (`חנות`), `/city/[slug]`, legal, `/offline`, `/gift/[token]`, `/redeem/[token]`. Map: `docs/STOREFRONT-ROUTES.md`.
 
-Mentioned but not full anatomy (deepen next): `/checkout/return`, `/checkout/failed`, `/city/[slug]`, `/products`, `/account/orders/[id]`, gift claim, legal pages, offline.
+Copy split: `/scan` `אשר וממש` vs `/redeem/[token]` `אשר מימוש`. Both are live. Do not "fix" one toward the other in docs.
 
 Public supplier is `/s/[id]`, not `/suppliers/[slug]`. `/suppliers` is join-us marketing.
 

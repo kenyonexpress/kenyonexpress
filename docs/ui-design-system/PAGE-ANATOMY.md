@@ -169,6 +169,10 @@ Unknown slug is not this empty: it is 404.
 | Bad page number | Clamp or empty grid with the empty copy above, not a crash |
 | Image per card | fallback tile |
 
+### 2.6 Shop archive `/products` (not a category slug)
+
+Same chrome as §2. File: `src/app/(store)/products/page.tsx`. H1 is `חנות`, never a category name. Meta description: `כל המוצרים, הדילים והקופונים של קניון Express במקום אחד.` Breadcrumb home + shop. Count copy uses decimal `he-IL` and bidi isolates around `{n}` when painting "all results". Filtered query strings stay `noindex`. Empty copy is the same as §2.4.
+
 ---
 
 ## 3. Product page, coupon type `/product/[slug]`
@@ -441,6 +445,10 @@ Not an empty state: redirect `/cart`.
 
 Never tell the customer that money is in escrow. Never show `platform_percent`.
 
+### 6.5 Checkout failed `/checkout/failed`
+
+File: `src/app/(store)/checkout/failed/page.tsx`. Title `התשלום נכשל`. Same H1/body/CTA as the table above. Cart rows must still exist (test: cart-survives-failure). noindex. Skeleton: none (static). This is not a 500.
+
 ---
 
 ## 7. Account `/account`
@@ -515,14 +523,14 @@ Layout nav paints immediately. Main: title bar + 88px wallet block + two cards (
    - `{price}` + status chip (`orderStatusLabel`)
    - `{date} · {n} פריטים` and ` · כולל קופונים` when `hasVouchers`
    - Link `פרטים` → `/account/orders/[id]`
-4. Detail page (not the list): line items, snapshots (unit price, **snapshotted** `platform_percent` is internal; do not show the percent to the customer), voucher links for coupon lines, physical fulfilment status, refund state
+4. Detail (own route `/account/orders/[id]`, title `פרטי הזמנה`): see §8.6
 
 ### 8.2 Data per section
 
 | Section | Needs |
 |---|---|
 | List | `getMyOrders()`: id, `totalAgorot`, `settlementStatus`, `createdAt`, `itemCount`, `hasVouchers` |
-| Detail | order + `order_items` snapshots (prices, qty, product name at purchase, voucher ids). Catalogue edits must not rewrite these rows |
+| Detail | `getOrderDetail(id)` scoped to the session. Foreign id: 404, never a leak |
 
 ### 8.3 Loading skeleton
 
@@ -539,6 +547,25 @@ Keep the H1. CTA optional: `לחנות` → `/products`.
 ### 8.5 Error
 
 Unknown id: 404 inside the account shell (or notFound). RLS miss is indistinguishable from missing: same 404. Do not leak another user's order.
+
+### 8.6 Order detail `/account/orders/[id]`
+
+File: `src/app/(account)/account/orders/[id]/page.tsx`. Same account shell. noindex.
+
+Section order:
+
+1. H1 `הזמנה מתאריך {date}` (`formatDate`, Asia/Jerusalem)
+2. Status chip from `orderStatusLabel` / `orderStatusTone`: `ממתינה לתשלום` / `שולמה` / `הושלמה` / `מומשה` / `זוכתה` / `בוטלה`. Unknown status paints the raw English token (do not invent Hebrew)
+3. Card `סיכום`: `סכום ביניים` `{price}`; optional `שולם מהארנק` as minus `{price}`; `סך הכל שולם באתר` `{price}`; optional invoice row `חשבונית מס / קבלה {ref}` + `הורדת חשבונית` → `/account/orders/{id}/invoice` (session re-check, never a raw provider URL)
+4. Card `פריטים`: each line product name (link `/product/{slug}` if still live), `{n} יחידות · {price} ליחידה`, coupon remainder ` · {price} לתשלום בבית העסק` when `balanceDueAgorot > 0`, physical ` · נשלח` / ` · נמסר`, supplier name / city / phone LTR
+5. Nested voucher cards: QR 120px if presentable, code LTR, chip from `couponStatusView` (clock, not the stored column), `בתוקף עד {date}`, remainder `לתשלום בבית העסק: {price}`
+6. `חזרה להזמנות` → `/account/orders`
+
+Forbidden on this page: `platform_percent` (snapshotted on the row, never painted), Cardcom invoice CDN, another customer's order.
+
+Skeleton: title pulse, summary card 160px, three line rows with 120px QR slots.
+
+Empty: does not apply (missing is 404). A paid order with zero lines is a data bug: still show totals, do not invent products.
 
 ---
 
@@ -895,28 +922,40 @@ Both URLs **are credentials**. `noindex, nofollow`. Never sitemap. Never Open Gr
 
 ### 20.1 Gift `/gift/[token]`
 
-Customer claims a gifted voucher. Title `קיבלת מתנה`.
+File: `src/app/(store)/gift/[token]/page.tsx`. Store `max-w-page` card, not the cashier shell. Title `קיבלת מתנה`. GET must not claim: a mail scanner would steal the voucher.
 
-1. Card shell. Suspense: `רגע, טוענים את המתנה…`
-2. Invalid token: 404 (do not distinguish "used" vs "forged" if that enumerates)
-3. Valid: product name, `{date}` expiry, `GiftClaimForm` (login if needed)
-4. Success: redirect toward `/coupon/{id}` or account coupons
+1. Card. Suspense: `רגע, טוענים את המתנה…`
+2. Missing preview: `notFound()` (same 404 as a forged token; do not enumerate)
+3. Greeting: `{name}, קיבלת מתנה` or `קיבלת מתנה`
+4. H1: `{productName}` fallback `קופון`
+5. Optional supplier, optional message blockquote (`dir="auto"`)
+6. `הקופון בתוקף עד {date}` (`he-IL` long month)
+7. Branch:
+   - not usable: `לא ניתן לקבל את הקופון הזה` + `פנו אלינו` → `/contact`
+   - already claimed: `המתנה כבר נאספה` + `בקופונים שלי` → `/account/coupons`
+   - signed in: `GiftClaimForm` (POST `claimGift`)
+   - signed out: login copy + `התחברות וקבלת הקופון` → `/login?next=/gift/{token}`
+8. Success: `router.push('/account/coupons')` (not `/coupon/{id}`)
 
-Data: `loadGiftPreview(token)` only. Token in path. Logged: claim; `voucher_gifted` already mailed the recipient.
+Logged: claim. Mail `voucher_gifted` already went to the recipient.
 
 ### 20.2 Redeem `/redeem/[token]`
 
-Supplier camera often opens this URL (signed `KEV1` payload). Title `מימוש שובר`. HMAC proves mint, **not** single-use.
+File: `src/app/redeem/[token]/page.tsx` + `RedeemConfirm`. Title `מימוש שובר`. HMAC proves mint, **not** single-use. Rate limit `redeem:{ip}` 60/hour; limiter fail-open so a till still works.
 
 | Branch | Visible | Forbidden | Logged |
 |---|---|---|---|
-| forged | `invalid_signature` refusal, even with no session | stack / supplier name | `recordRefusedScan` |
-| no session | login then back | seeing the code | |
-| wrong supplier | not found (anti-enumeration) | "belongs to X" | not_found |
-| expired / used | honest copy **only** to owning supplier | QR still spendable | redemption row |
-| ok | confirm + remainder `{price}` | percent | then `redeem_voucher` |
+| rate limit | `יותר מדי נסיונות` | voucher body | none extra |
+| forged | `קוד השובר אינו תקין` even logged-out | stack / supplier | `invalid_signature` |
+| read fail | `לא ניתן לבדוק את השובר כרגע` (no mutation) | "not yours" | throw already logged |
+| no session | login round-trip **after** signature check | seeing the code | |
+| wrong supplier | `השובר לא נמצא` | owner name | `not_found` |
+| expired / used | honest copy **only** to owning supplier; `RedeemConfirm` starts `done` | QR still spendable | existing row |
+| ok | remainder `{price}` amber, then `אשר מימוש` | percent | `redeem_voucher` |
 
-CTA `למסך הסריקה` → `/scan`. Rate limit by address.
+Done: `סריקה נוספת` → `/scan`. Refusal CTA: `למסך הסריקה`. Network drop mid confirm: `אין חיבור לרשת. בדקו את החיבור ונסו שוב` and **same** idempotency key (EDGE-CASES).
+
+`/scan` still uses `אשר וממש`. `/redeem/[token]` uses `אשר מימוש`. Do not unify the strings until a dedicated copy pass.
 
 ---
 
@@ -926,3 +965,4 @@ CTA `למסך הסריקה` → `/scan`. Rate limit by address.
 |---|---|
 | 2026-09-07 | Initial anatomy for home, category, coupon PDP, physical PDP, cart, checkout, account, orders, voucher/QR, supplier, search, 404, 500 |
 | 2026-09-07 | Deepen: `/checkout/return` paid/pending/QR, `/city/[slug]` empty vs city chips |
+| 2026-09-07 | Deepen: order detail, `/products` H1 `חנות`, checkout failed, gift claim branches, redeem refusals |

@@ -107,7 +107,10 @@ Avoid saying `cart_items` (there is no table; lines are `carts.items` jsonb).
 | בוטל | `cancelled` |
 | הוחזר | `refunded` (voucher) |
 | מימוש | redemption, `redeem_voucher()` |
-| אשר וממש | scan confirm |
+| אשר וממש | `/scan` confirm |
+| אשר מימוש | `/redeem/[token]` confirm (not the scan string) |
+| קיבלת מתנה | `/gift/[token]` (URL is the credential) |
+| מימוש שובר | `/redeem/[token]` page title |
 | השובר מומש בהצלחה | scan success |
 | השובר כבר מומש | `already_redeemed` |
 | תוקף השובר פג | `expired` at scan |
@@ -154,8 +157,6 @@ Do not name a new `user_role` `coupon_partner`.
 | וואטסאפ | WhatsApp, never rebranded yellow |
 | ניווט ב-Waze | Waze stays Latin |
 | הדף שחיפשתם לא נמצא | 404 |
-| קיבלת מתנה | `/gift/[token]` (the URL is the credential) |
-| מימוש שובר | `/redeem/[token]` (signed QR payload) |
 | משהו השתבש אצלנו | 500 |
 | פירורי לחם | breadcrumb |
 
