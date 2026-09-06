@@ -134,3 +134,97 @@ Judgements are based on the actual file contents (with `file:line` references wh
 ## src/components/features and src/components/shared
 
 Both contain only a `.gitkeep` file. No components.
+
+---
+
+## Pass 8: account siblings (wallet, coupons, wishlist)
+
+The tables above are a source scan. This section is the binding UI contract for the three remaining account routes. Props are the server-page contracts, not invented. Tokens: `docs/DESIGN-SYSTEM.md` §8. Anatomy: `docs/ui-design-system/PAGE-ANATOMY.md` §7.6. Copy: `docs/ERROR-COPY.md` and `docs/COPY-HE.md`.
+
+States every interactive control must consider: default, hover, focus-visible, active, disabled, loading, error, empty.
+
+### AccountCouponsPage
+
+- **File:** `src/app/(account)/account/coupons/page.tsx`
+- **Purpose:** List this session's vouchers. No QR in the list (cashier screen is `/coupon/[id]`).
+- **Props:** none (server). Data from `getMyVouchers()` scoped to `auth.uid()`.
+- **Variants:** presentable (`issued`, clock not past `expires_at`) vs closed (redeemed / expired / cancelled / refunded).
+- **States:**
+  - default: rows with `{name}`, `{code}` LTR, remainder `{price}`, status chip
+  - hover: row surface `#f5f5f5`; CTA `#fedd26` if yellow, else black if it is a purchase-family button (this CTA is yellow-to-yellow)
+  - focus-visible: 2px `#333e48`
+  - active: UNMEASURED
+  - disabled: n/a on the list; a missing voucher 404s on the detail route
+  - loading: four `account-row` pulses, `aria-label="טוען את האזור האישי"`
+  - error: account banner, then 500 copy
+  - empty: `עדיין לא רכשת קופונים.`
+- **RTL:** full. Code and UUID `dir="ltr"`. Back arrow on the detail page stays the character `←` (it is a back control).
+- **A11y:** H1 `הקופונים שלי`. Status not by colour alone. Presentable CTA name `הצגת הקופון ו-QR`. Closed CTA `פרטי הקופון`. Do not put a live QR in a list that can be screenshotted in a shared session.
+- **RLS:** `vouchers` SELECT own. Another person's UUID looks like missing.
+- **Electro:** none. Redirects `/account/vouchers` and `/account/my-vouchers` must not render a second component.
+
+### AccountWalletPage
+
+- **File:** `src/app/(account)/account/wallet/page.tsx`
+- **Purpose:** Show internal credit and an append-only ledger. No withdrawal control.
+- **Props:** none (server). Balance from `wallet_accounts` / view; rows from `v_wallet_ledger` (security invoker, `auth.uid()`).
+- **Variants:** zero balance vs positive. Guest never reaches this page (account layout).
+- **States:**
+  - default: H1 `הארנק שלי`, `היתרה שלך` `{price}` in heading ink (not price red)
+  - hover: order link `#0062bd`
+  - focus-visible: 2px
+  - active: n/a
+  - disabled: n/a (no spend button here; spend is checkout clamp)
+  - loading: 88px wallet pulse
+  - error: do not invent `₪0` on a query fail. Banner + retry
+  - empty ledger: `עדיין אין תנועות בארנק.` (balance may still be 0 and that is not empty-error)
+- **RTL:** amounts `dir="ltr"` / `<bdi>`. Columns logical. Credit `+{price}`, debit `-{price}` with minus before shekel.
+- **A11y:** table headers `תאריך` `פעולה` `סכום` `הזמנה`. Note `קרדיט לשימוש באתר בלבד. לא ניתן למשיכה.` is visible text, not title-only.
+- **RLS:** owner SELECT on `wallet_accounts` / `wallet_entries`. Client INSERT/UPDATE/DELETE denied (draft 168: ledger client-read-only). Writes only via `fn_wallet_transfer` as `service_role`.
+- **Electro:** none.
+- **Forbidden:** `platform_percent`, PAN, treating credit as cash-out.
+
+### AccountWishlistPage
+
+- **File:** `src/app/(account)/account/wishlist/page.tsx`
+- **Purpose:** Saved catalogue products. Not money. Checkout re-resolves agorot.
+- **Props:** none (server for auth). Guest list is `localStorage` key `ke_wishlist` if a guest route still exists; canonical customer URL is this account page.
+- **Variants:** auth list vs guest (if still mounted). Header heart is **not** a variant: it must not mount (standing rule vs live YITH).
+- **States:**
+  - default: grid 2 / 3 / 5 at 380 / 768 / 1440
+  - hover: card shadow Electro (`0px 4px 16px rgba(0, 0, 0, 0.12)`) only if the archive card lifts; live cards are mostly flat
+  - focus-visible: heart and product link
+  - active: UNMEASURED
+  - disabled: product no longer active is pruned on read, not shown grey
+  - loading: `CategoryGridSkeleton`
+  - error: toast `הפעולה נכשלה.` on toggle fail; page fail uses account banner
+  - empty: `עוד לא שמרת מוצרים. לחיצה על הלב בעמוד מוצר שומרת אותו כאן.` CTA `לכל המוצרים` → `/products`
+- **RTL:** heart is an object glyph, do not mirror. Price `<bdi>`.
+- **A11y:** H1 `רשימת המשאלות שלי`. Add/remove names `הוסף למועדפים` / `הסר ממועדפים`. Cap 100: Hebrew refusal, not silent drop.
+- **RLS:** `wishlists` / `wishlist_items` own rows. No public share URL in v1.
+- **Electro:** YITH wishlist page structure only. Do not restore header compare or header heart to chase live pixels.
+- **Money:** integer agorot formatter. Do not copy `toLocaleString` on `price_ils`.
+
+### WishlistToggle (PDP / card)
+
+- **File:** product info / card heart (not in header)
+- **Props:** `{ productId, productName, initialSaved?: boolean }`
+- **States:** default outline heart; hover heading ink; focus-visible 2px; active UNMEASURED; disabled while `useTransition`; loading `aria-busy`; error toast; empty n/a; success `נוסף למועדפים`
+- **RTL:** no mirror
+- **A11y:** `aria-pressed` when it is a toggle. Do not rely on fill colour alone
+- **Electro:** `yith-wcwl-add-to-wishlist--link-style` at ~13px `#333e48`
+
+### WalletButtons (voucher screen, not the ledger)
+
+- **File:** `src/components/coupon/WalletButtons.tsx`
+- **Props:** `{ voucher: WalletVoucher; presentable: boolean }`
+- **States:** default platform links; empty/null: render **nothing** (no disabled fake); loading n/a (server)
+- **RTL:** Apple / Google marks not mirrored, not recoloured with `#fed700`
+- **A11y:** named links. Pass chrome may use brief `#E4002B`
+- **Electro:** none
+
+## Revision
+
+| Date | Change |
+|---|---|
+| 2026-09-07 | Pass 8: wallet, coupons, wishlist pages with props, states, RTL, a11y, RLS notes |
