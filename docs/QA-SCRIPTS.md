@@ -186,6 +186,48 @@ Roles: `docs/ROLE-MATRIX.md` §4.
 | 4 | History | own supplier, including failures |
 | 5 | No split %, no live unredeemed book | |
 
+### 8.1 Every refusal outcome, and the trap in them
+
+Nine outcomes, verified against `OUTCOME_MESSAGES` in
+`src/app/api/supplier/vouchers/redeem/route.ts` (see `docs/ERROR-COPY.md` 6.1).
+A till that has only ever been tested on `success` and `already_redeemed` has
+not been tested.
+
+| # | Set up | Expected copy | Status |
+|---|---|---|---|
+| 1 | valid unredeemed voucher | השובר מומש בהצלחה | 200 |
+| 2 | scan the same code twice | השובר כבר מומש | 409 |
+| 3 | voucher past its expiry | תוקף השובר פג | 409 |
+| 4 | **voucher cancelled by an admin** | השובר בוטל | 409 |
+| 5 | **voucher whose order was refunded** | השובר הוחזר ללקוח | 409 |
+| 6 | a code that does not exist | קוד שובר לא נמצא | 404 |
+| 7 | **malformed QR / truncated payload** | בקשה לא תקינה | 400 |
+| 8 | signed in, staffs nobody | אין הרשאת ספק | 401 |
+| 9 | scan repeatedly past the ceiling | יותר מדי סריקות, המתן רגע | 429 |
+
+**Rows 4, 5 and 7 are the ones normally skipped**, and row 5 is the one that
+costs money: a refunded voucher is the case where the customer genuinely
+believes the code is good, because they were holding it before the refund
+happened.
+
+**The 409 trap.** Four different outcomes share `409`. A till app that branches
+on the HTTP status instead of on `outcome` will show one sentence for all four,
+and will tell a customer holding a refunded voucher that it was "already
+redeemed". Test rows 2, 3, 4 and 5 and confirm **four different sentences**, not
+four 409s.
+
+### 8.2 The authorization is in the database, so test it there
+
+`redeem_voucher()` derives the supplier from `supplier_members` via
+`auth.uid()`. The route only carries identity. Two checks a UI pass misses:
+
+| # | Step | Pass |
+|---|---|---|
+| 1 | Member of supplier A scans a voucher belonging to supplier B | refused, and the refusal is logged against A |
+| 2 | Member of **two** suppliers scans their **second** supplier's voucher | **accepted.** A pass that only tests the first membership hides this |
+| 3 | Same scan from the web portal (cookie) and the till app (bearer) | identical outcome. Both must reach Postgres with an identity |
+| 4 | `staff_id` in the body set to another supplier's staff uuid | changes attribution only, grants nothing |
+
 ---
 
 ## 9. A11y and RTL sweep (every flow)
@@ -199,6 +241,8 @@ Roles: `docs/ROLE-MATRIX.md` §4.
 | 5 | Icons | arrows mirror; logo, WhatsApp, QR, hearts do **not** |
 | 6 | 404 / 500 | Hebrew only |
 | 7 | Consent | Accept / Decline equal weight |
+| 8 | **In-flight state is announced** | press any submit with a screen reader on: the busy state must be spoken, not only shown. 24 of 38 stateful components currently do not announce (`docs/COMPONENT-INVENTORY.md` 12.1); `cart/AddToCartButton` is the highest-traffic one |
+| 9 | **Visible label is the accessible name** | say the words on a button with voice control and it must activate. An `aria-label` that differs from the visible text breaks this |
 
 ---
 
@@ -260,3 +304,4 @@ Not `/suppliers` (join-us) and not `/supplier/login`. No pixel twin.
 | 2026-09-07 | Pass 9: public `/s/[id]` including JSON-LD gate and 2/3/4 grid |
 | 2026-09-07 | Pass 10: city landing empty vs 404 vs chips |
 | 2026-09-07 | Pass 11: legal aliases and offline tile |
+| 2026-09-07 | Scan flow: all nine redemption outcomes with statuses, the 409 collision trap, DB-side authorization checks; a11y sweep gains announce and voice-control rows |
