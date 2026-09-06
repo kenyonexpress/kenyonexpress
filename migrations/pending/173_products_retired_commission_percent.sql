@@ -1,0 +1,124 @@
+-- 173: the retired commission column disagrees with the real split on every
+--      product, and nineteen products carry only half the split pair.
+--
+-- NOT APPLIED. Drafted 2026-09-07 in the closeout audit of the split engine.
+-- Rollback is at the foot. Preflight: preflight_173.sql, run first.
+--
+-- ----------------------------------------------------------------------------
+-- WHAT IS WRONG, MEASURED AGAINST PRODUCTION ON 2026-09-07
+-- ----------------------------------------------------------------------------
+--
+--   80 products, 0 soft-deleted.
+--   platform_percent      15.00 / 25.00 / 30.00, never null.
+--   supplier_split_percent 100 - platform_percent on 61 rows, NULL on 19.
+--   commission_percent     5.00 on 65 rows, 10.00 on 15. Disagrees with
+--                          platform_percent on ALL 80.
+--
+-- `commission_percent` is not a second fee. It arrived with 047 as "the
+-- physical cut" with a DEFAULT of 5, was retired as the split knob by C2, and
+-- 050 unified everything on `platform_percent`
+-- (docs/ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md, row R2). What is in
+-- production is 047's default, never overwritten, on every row.
+--
+-- The application already treats the two as one number:
+-- `src/lib/commerce/product-money.ts` writes `commission_percent` equal to
+-- `platform_percent` on every product save and says so in its header, and
+-- `order-money-columns.ts` does the same for the order line. So a product
+-- edited today is repaired and one nobody has touched since 047 is not: the
+-- column says 5 where the platform actually keeps 30.
+--
+-- ----------------------------------------------------------------------------
+-- WHY IT HAS NOT COST ANYTHING YET, AND WHY IT STILL WANTS FIXING
+-- ----------------------------------------------------------------------------
+--
+-- Nothing reads it. Measured three ways on 2026-09-07: no `pg_proc` body in
+-- `public` mentions `products.commission_percent`; no generated column or
+-- default is derived from it; and in the repo it appears only in WRITES
+-- (`product-money.ts`, `order-money-columns.ts`) and in the admin's SUPPLIER
+-- form, which is `suppliers.commission_percent`, a different column. The money
+-- path reads `platform_percent` and `supplier_split_percent`, and
+-- `completeSplitPair` fills whichever half is missing -- which is why the 19
+-- NULL halves have not broken a checkout either.
+--
+-- It wants fixing because "inert" is a property of today's readers. An export,
+-- a BI query, a partner feed or the next person to write `select
+-- commission_percent from products` gets 5 for a product the platform takes 30
+-- of, with nothing anywhere to contradict it.
+--
+-- ----------------------------------------------------------------------------
+-- BLAST RADIUS, MEASURED
+-- ----------------------------------------------------------------------------
+--
+-- 80 rows in one 480kB table. Four triggers fire, and the third is the only
+-- one with a cost worth naming:
+--
+--   audit_products             -> 80 rows in audit_log. Correct: the rows did
+--                                 change, and this is the record of it.
+--   products_enqueue_search_index -> 80 `upsert` rows in search_index_outbox.
+--                                 The existing drain handles them; the indexed
+--                                 document does not contain either column, so
+--                                 the reindex is a no-op in content.
+--   set_updated_at             -> `NEW.updated_at := now()` UNCONDITIONALLY on
+--                                 all 80. `src/app/sitemap.ts` derives every
+--                                 product's lastmod from `updated_at`, and the
+--                                 home / products / categories entries from the
+--                                 newest of them, so the whole catalogue claims
+--                                 it changed on the apply date. That is
+--                                 inaccurate, one-time, and bounded; it is the
+--                                 real price of this migration and it is why it
+--                                 is worth applying in the SAME window as any
+--                                 other catalogue-wide write rather than on its
+--                                 own.
+--   enforce_product_approval   -> returns NEW untouched when `auth.uid()` is
+--                                 null, which is every service-role apply. Read
+--                                 off pg_proc, not assumed. It does NOT bounce
+--                                 these rows to `pending` review.
+--
+-- No RLS policy is involved: this runs as the migration role, and RLS on
+-- `products` is not applied to it.
+--
+-- Idempotent both ways: the WHERE clauses match only rows that still disagree,
+-- so a second run updates nothing and fires no trigger.
+
+-- (1) The retired column, made to agree with the knob that is actually used.
+update public.products
+   set commission_percent = platform_percent
+ where platform_percent is not null
+   and commission_percent is distinct from platform_percent;
+
+-- (2) The missing half of the split pair, on the nineteen rows that carry only
+--     one. `products_split_pair_sums_to_100` already forbids a pair that does
+--     not sum to 100 but permits either half to be NULL, so this writes what
+--     the constraint would have required had it been NOT NULL, and what
+--     `completeSplitPair` computes on every read today.
+update public.products
+   set supplier_split_percent = 100 - platform_percent
+ where platform_percent is not null
+   and supplier_split_percent is null;
+
+-- Verify:
+--   select count(*) filter (where commission_percent <> platform_percent) as still_disagreeing,
+--          count(*) filter (where supplier_split_percent is null)          as still_half,
+--          count(*) filter (where platform_percent + supplier_split_percent <> 100) as broken_pair
+--     from public.products;
+--   EXPECT 0, 0, 0.
+--
+-- Rollback. There is no faithful one: 047's default is not recoverable per row
+-- from anything left in the table, and restoring "5 on 65 rows and 10 on 15" by
+-- hand would be inventing the split again. What the audit_log holds is the
+-- per-row before-image, so a true rollback reads from there:
+--
+--   update public.products p
+--      set commission_percent     = (a.before ->> 'commission_percent')::numeric,
+--          supplier_split_percent = nullif(a.before ->> 'supplier_split_percent', '')::numeric
+--     from public.audit_log a
+--    where a.entity_type = 'products'
+--      and a.entity_id   = p.id::text          -- entity_id is TEXT, not uuid
+--      and a.action      = 'updated'           -- the enum value, not 'UPDATE'
+--      and a.created_at >= '<the apply timestamp>'
+--      and a.before ? 'commission_percent';
+--
+-- Those column names were read off `audit_log` and `audit_log_trigger_fn` on
+-- 2026-09-07 rather than guessed: the first draft of this rollback named
+-- `table_name`, `record_id` and `old_data`, none of which exist. Block (6) of
+-- preflight_173.sql re-checks the shape before anyone leans on it.

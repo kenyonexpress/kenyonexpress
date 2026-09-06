@@ -1,5 +1,30 @@
 # `migrations/pending/`
 
+## 2026-09-07: 173 added — the retired commission column disagrees on all 80 products
+
+`173_products_retired_commission_percent.sql` makes `products.commission_percent`
+equal `products.platform_percent`, and fills `supplier_split_percent` on the
+nineteen products that carry only half the split pair. **Not applied.**
+`preflight_173.sql` beside it was run block by block against production on
+2026-09-07 and every block answered as its EXPECT says.
+
+Measured, not assumed: 80 products, `platform_percent` 15 / 25 / 30 and never
+null, `commission_percent` **5.00 on 65 rows and 10.00 on 15 — disagreeing with
+the real split on every single row**. That is migration 047's `DEFAULT 5`,
+never overwritten, on a column C2 retired as the split knob and 050 unified onto
+`platform_percent`. The app writes the two equal on every product save, so a
+product edited since is repaired and one untouched since 047 is not.
+
+Nothing reads it: no `pg_proc` body in `public` mentions it, no generated
+column or default derives from it, and in the repo it appears only in writes.
+So this is not a live money bug — it is a number that will be true the moment
+somebody exports it.
+
+The price is in the header of the file and is the reason it should be applied in
+the same window as another catalogue-wide write: `set_updated_at` is
+unconditional, so all 80 `updated_at` values move to the apply date and every
+product lastmod in `sitemap.ts` moves with them.
+
 ## 2026-09-07: audited, and 171/172 now have preflights
 
 `docs/MIGRATION-AUDIT-162-172.md` (closeout §2) covers all five pending files

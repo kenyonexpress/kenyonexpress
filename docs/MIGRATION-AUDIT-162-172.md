@@ -226,6 +226,65 @@ update public.products set stock_quantity = 10
 
 ---
 
+## 173 — נכתבה 07.09, אחרי שהביקורת הזאת נכתבה
+
+**מה זה משנה.** מיישרת את `products.commission_percent` ל-`platform_percent`,
+וממלאת את `supplier_split_percent` ב-19 המוצרים שמחזיקים רק חצי מזוג הפיצול.
+
+**מה נמדד מול פרודקשן ב-07.09.**
+
+| מה | ערך |
+| --- | --- |
+| מוצרים (אף אחד לא מחוק רך) | 80 |
+| `platform_percent` | 15.00 / 25.00 / 30.00, אף פעם לא NULL |
+| `commission_percent` | 5.00 ב-65 שורות, 10.00 ב-15 |
+| שורות שבהן השתיים חלוקות | **80 מתוך 80** |
+| `supplier_split_percent` שהוא NULL | 19 |
+| זוגות פיצול שלא מסתכמים ל-100 | 0 |
+
+‏`commission_percent` אינה עמלה שנייה. היא הגיעה עם 047 עם `DEFAULT 5`, בוטלה
+כידית הפיצול ב-C2, ו-050 איחדה הכל על `platform_percent`
+(‏`docs/ARCHITECTURE-MASTER-CHECKOUT-REDEMPTION.md`, שורה R2). מה שיושב
+בפרודקשן הוא ברירת המחדל ההיא, שמעולם לא נדרסה.
+
+**למה זה לא עלה כלום עד היום.** אף אחד לא קורא אותה. נמדד בשלוש דרכים: אף גוף
+פונקציה ב-`public` לא מזכיר אותה, אף עמודה מחושבת או `default` לא נגזרת ממנה,
+ובריפו היא מופיעה רק ב**כתיבות** (`product-money.ts`, `order-money-columns.ts`)
+ובטופס ה**ספק** באדמין, שהוא `suppliers.commission_percent` ועמודה אחרת לגמרי.
+מסלול הכסף קורא `platform_percent` ו-`supplier_split_percent`,
+ו-`completeSplitPair` משלים את החצי החסר, ולכן גם 19 החצאים לא הפילו צ'ק-אאוט.
+
+**רדיוס פגיעה.** 80 שורות בטבלה של 480kB. ארבעה טריגרים נורים, ורק לשלישי יש
+מחיר ששווה לנקוב בו:
+
+- ‏`audit_products` — 80 שורות ב-`audit_log`. נכון: השורות באמת השתנו.
+- ‏`products_enqueue_search_index` — 80 שורות `upsert` ב-outbox. הניקוז הקיים
+  מטפל בהן, והמסמך המאונדקס לא מכיל אף אחת מהעמודות, ולכן זה no-op בתוכן.
+- ‏`set_updated_at` — `now()` ללא תנאי על כל 80. ‏`src/app/sitemap.ts` גוזר את
+  ה-lastmod של כל מוצר מ-`updated_at`, ואת הבית/products/categories מהחדש
+  שבהם, ולכן **כל הקטלוג יטען שהשתנה בתאריך ההחלה.** לא מדויק, חד פעמי, חסום
+  בהיקפו, וזה המחיר האמיתי של הקובץ. לכן: להחיל אותו באותו חלון עם כתיבה
+  קטלוגית אחרת ולא לבד.
+- ‏`enforce_product_approval` — מחזיר `NEW` בלי לגעת כש-`auth.uid()` הוא NULL,
+  שזו כל החלה בתפקיד service. נקרא מ-`pg_proc`, לא הונח. **הוא לא מחזיר את
+  השורות ל-`pending` review.**
+
+**מדיניות RLS.** אין. רץ בתפקיד המיגרציה, ו-RLS על `products` לא חל עליו.
+
+**חזרה לאחור.** אין אחת נאמנה מהקובץ עצמו: ברירת המחדל של 047 אינה שחזירה
+פר שורה מכלום שנשאר בטבלה. מה שכן מחזיק את ה-before-image הוא `audit_log`,
+והשאילתה בתחתית 173 קוראת משם. שמות העמודות שם נקראו ולא נוחשו: הטיוטה
+הראשונה נקבה ב-`table_name`, ‏`record_id` ו-`old_data`, ואף אחת מהן לא קיימת.
+הצורה האמיתית היא `entity_type`, `entity_id` (טקסט), `action` (הערך
+`'updated'` באותיות קטנות), `before`, `after`. בלוק (6) ב-`preflight_173.sql`
+בודק את זה שוב לפני שמישהו נשען עליו.
+
+**בטיחות בפרודקשן: בטוח להחיל.** שתי `update` אידמפוטנטיות שנוגעות רק בשורות
+שעדיין חלוקות. הבלוקים (1)–(7) של `preflight_173.sql` הורצו מול פרודקשן ב-07.09
+וכולם ענו כמו ה-EXPECT שלהם.
+
+---
+
 ## סיכום: מה מוכן להחלה
 
 | קובץ | מוכן טכנית | ממתין ל | preflight |
@@ -235,6 +294,7 @@ update public.products set stock_quantity = 10
 | `170_composite_indexes_top_queries.sql` | **כן** | אישור | `preflight_170.sql` |
 | `171_category_name_shekel_order.sql` | **כן** | אישור | `preflight_171.sql` (חדש) |
 | `172_hide_master_product_test_row.sql` | **כן** | אישור | `preflight_172.sql` (חדש) |
+| `173_products_retired_commission_percent.sql` | **כן** | אישור | `preflight_173.sql` (חדש) |
 
 ‏169 ו-172 הן שתי השורות הפתוחות בראש `CLAUDE.md`. שתיהן בטוחות, שתיהן
 נבדקו עמודה-עמודה מול פרודקשן, ואף אחת מהן לא הוחלה — `migrations/pending/`

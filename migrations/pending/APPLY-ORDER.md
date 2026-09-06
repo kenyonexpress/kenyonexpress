@@ -18,6 +18,7 @@ SQL, and a production-safety verdict per file.
 | `170_composite_indexes_top_queries.sql` | **yes** | approval | `preflight_170.sql` |
 | `171_category_name_shekel_order.sql` | **yes** | approval | `preflight_171.sql` (new) |
 | `172_hide_master_product_test_row.sql` | **yes** | approval | `preflight_172.sql` (new) |
+| `173_products_retired_commission_percent.sql` | **yes** | approval | `preflight_173.sql` (new) |
 
 Two findings from that audit that change how the files should be read:
 
@@ -31,6 +32,13 @@ Two findings from that audit that change how the files should be read:
    `/product/restaurants-meat-3` keeps rendering after 172, marked out of
    stock. A 404 would need `status <> 'active'`, which is a different
    migration and is not written.
+
+A sixth file, `173`, was written on the same day by the closeout audit of the
+split engine and is listed above. It is last in this batch on purpose: 169 to
+172 each close something a reader can see, and 173 repairs a column nobody
+reads yet. Its own cost — every product's `updated_at`, and therefore every
+product lastmod in the sitemap, moving to the apply date — is worth paying
+alongside another catalogue write rather than on its own.
 
 `172` was **not** rewritten to gate its statement on `app.env = 'development'`.
 It contains no insert; it contains the UPDATE that is the fix, and gating that

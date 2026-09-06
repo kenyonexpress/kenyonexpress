@@ -152,7 +152,7 @@ describe('the pending migration inventory', () => {
 
   // ---- what is actually unapplied right now -------------------------------
   it('holds exactly the migrations still awaiting approval', () => {
-    // FIVE pending migrations as of the 2026-09-07 audit
+    // SIX pending migrations as of the 2026-09-07 audit
     // (docs/MIGRATION-AUDIT-162-172.md), each with its preflight beside it (a
     // CLOSEOUT §5 requirement: no migration file without the execute_sql audit
     // that has to pass before it). 171 and 172 got theirs on 2026-09-07; the
@@ -162,6 +162,10 @@ describe('the pending migration inventory', () => {
     //                                       seeding -- see "## חסמים לאופיר" in STATE.md
     //   169, 170, 171, 172                  audited against production, ready,
     //                                       awaiting approval
+    //   173                                 written in the closeout split-engine
+    //                                       audit; repairs the retired
+    //                                       commission_percent column and the
+    //                                       nineteen half-filled split pairs
     //
     // 166, 167 and 168 were found ALREADY APPLIED by the 2026-09-04 audit
     // (schema_migrations versions 20260903232445/232455/232504, live
@@ -176,11 +180,13 @@ describe('the pending migration inventory', () => {
       '170_composite_indexes_top_queries.sql',
       '171_category_name_shekel_order.sql',
       '172_hide_master_product_test_row.sql',
+      '173_products_retired_commission_percent.sql',
       'preflight_162.sql',
       'preflight_169.sql',
       'preflight_170.sql',
       'preflight_171.sql',
       'preflight_172.sql',
+      'preflight_173.sql',
     ])
   })
 
