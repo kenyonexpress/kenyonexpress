@@ -152,12 +152,16 @@ describe('the pending migration inventory', () => {
 
   // ---- what is actually unapplied right now -------------------------------
   it('holds exactly the migrations still awaiting approval', () => {
-    // ONE pending migration as of the 2026-09-04 audit, with its preflight
-    // audit beside it (a CLOSEOUT §5 requirement: no migration file without
-    // the execute_sql audit that has to pass before it).
+    // FIVE pending migrations as of the 2026-09-07 audit
+    // (docs/MIGRATION-AUDIT-162-172.md), each with its preflight beside it (a
+    // CLOSEOUT §5 requirement: no migration file without the execute_sql audit
+    // that has to pass before it). 171 and 172 got theirs on 2026-09-07; the
+    // pairing is now asserted below rather than only listed here.
     //
     //   162_cron_schedule.sql               approved (CLOSEOUT §7), blocked on vault
     //                                       seeding -- see "## חסמים לאופיר" in STATE.md
+    //   169, 170, 171, 172                  audited against production, ready,
+    //                                       awaiting approval
     //
     // 166, 167 and 168 were found ALREADY APPLIED by the 2026-09-04 audit
     // (schema_migrations versions 20260903232445/232455/232504, live
@@ -175,7 +179,26 @@ describe('the pending migration inventory', () => {
       'preflight_162.sql',
       'preflight_169.sql',
       'preflight_170.sql',
+      'preflight_171.sql',
+      'preflight_172.sql',
     ])
+  })
+
+  it('gives every pending migration a preflight to run first', () => {
+    // The list above is an inventory: it goes stale the moment a file lands
+    // and says nothing about what the file is missing. This is the rule
+    // itself, so a sixth pending migration written without its execute_sql
+    // audit fails here the moment it is added, not at the next hand audit.
+    const migrations = sqlFilesIn(PENDING_DIR, (n) => !n.startsWith('preflight_'))
+    const preflights = new Set(sqlFilesIn(PENDING_DIR, (n) => n.startsWith('preflight_')))
+    const unaudited = migrations.filter((name) => {
+      const number = name.match(/^(\d+)_/)?.[1]
+      return !number || !preflights.has(`preflight_${number}.sql`)
+    })
+    expect(
+      unaudited,
+      `these pending migrations have no preflight_<n>.sql beside them: ${unaudited.join(', ')}`,
+    ).toEqual([])
   })
 
   it('keeps the cancelled revoke where nobody will apply it', () => {
