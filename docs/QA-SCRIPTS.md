@@ -289,6 +289,63 @@ Not `/suppliers` (join-us) and not `/supplier/login`. No pixel twin.
 
 ---
 
+## 8b. Refund (admin-initiated)
+
+The brief names refund as a flow of its own and it had only passing mentions
+(§7 row 5, §8 row 5). This is the script. Rules read from
+`src/server/actions/payments/refund.ts` and `src/server/domain/orders/refund.ts`.
+
+**Who:** `admin` / `super_admin` only. `refundOrder` calls `requireAdminSession`
+first and returns `{ code: 'FORBIDDEN', error: 'אין הרשאה' }` to anyone else.
+`support` cannot refund; `content_uploader` cannot see the order.
+
+**The cancellation fee is legally capped and must never be improvised.** Israeli
+distance-selling law: the fee is the **lower of 5% of the transaction or ₪100**.
+In code, `CANCELLATION_FEE_BP = 500` and `CANCELLATION_FEE_CAP_AGOROT = 10_000`,
+combined with `Math.min`. A tester who sees a fee above ₪100, or above 5% on a
+small order, has found a legal defect, not a rounding bug.
+
+| # | Case | Setup | Expect |
+|---|---|---|---|
+| 1 | Full refund, physical, in window | paid order, no defect claim | refunded minus the capped fee; order `status: refunded`; `refunded_at` set |
+| 2 | Fee cap, large order | charge well above ₪2,000 | fee is exactly **₪100**, not 5% |
+| 3 | Fee percentage, small order | charge under ₪2,000 | fee is exactly **5%**, not ₪100 |
+| 4 | **Defect claim** | `isDefectClaim: true` | **zero fee.** Full amount returned |
+| 5 | **Partial refund** | `partialAmountIls` set | **zero fee.** Only the named amount returns |
+| 6 | Cancel before transmission | order not yet passed to the supplier | `cancelOnly: true`; the deal is cancelled rather than credited, and **no** cancellation fee is charged for a pass-on that never happened |
+| 7 | **Idempotency** | run the same refund twice | second call finds the order already `refunded` and no-ops. `replay: true`. **Not** a double credit, not an error toast |
+| 8 | Redeemed coupon in the order | voucher already scanned at the business | blocked. `הערך נצרך ולא ניתן להחזיר אותו`. The value was consumed at the till |
+| 9 | Expired voucher in the order | voucher past its date | `ערכם נזקף כפחת ולא חוזר לכרטיס` |
+| 10 | Every line already redeemed or released | mixed order, nothing refundable | `אין שורות שניתן להחזיר: כולן כבר מומשו או שוחררו לספק.` |
+| 11 | Provider failure | Cardcom returns an error | `PROVIDER_ERROR`. Order **stays paid**. No partial state |
+| 12 | Manual resolution | the state the code cannot settle alone | `MANUAL_RESOLUTION`. Must reach a human, never a silent success |
+| 13 | Unknown order | bad id | `NOT_FOUND` |
+| 14 | Wrong state | already refunded / never paid | `STATE_INVALID` |
+
+### 8b.1 What must be true afterwards, every time
+
+| Check | Where |
+|---|---|
+| `orders.status` = `refunded`, `refunded_at` set, `status_reason` = the reason given | order row |
+| order items `settlement_status` and `item_status` = `refunded` | order_items |
+| an `audit_log` row exists with `{ status: { from: 'paid', to: 'refunded' } }` | audit_log |
+| a `refund_issued` outbox event, and a `supplier_debit` where the supplier had been credited | outbox |
+| a `refund_completed` notification | notifications |
+| the wallet ledger moved by exactly the refunded amount, and **only** if the destination was wallet | wallet |
+
+Migration 148 added `refund_destination` (card or wallet). Confirm the money
+went to the destination the UI told the customer it would, and that the two
+never disagree.
+
+### 8b.2 Money rules that apply to every row above
+
+- Every figure is **integer agorot**. No `toFixed`, no float anywhere on this
+  path. A fee of `₪99.99999` is a defect.
+- The customer-facing copy must never say "you were not charged" for a refund
+  that failed mid-flight. `MANUAL_RESOLUTION` exists precisely so that case is
+  escalated rather than narrated.
+- `platform_percent` never appears in customer-visible refund copy.
+
 ## 11. What not to test here
 
 - Pixel percents (log them in `docs/UI-PARITY-LOG.md`)
@@ -305,3 +362,4 @@ Not `/suppliers` (join-us) and not `/supplier/login`. No pixel twin.
 | 2026-09-07 | Pass 10: city landing empty vs 404 vs chips |
 | 2026-09-07 | Pass 11: legal aliases and offline tile |
 | 2026-09-07 | Scan flow: all nine redemption outcomes with statuses, the 409 collision trap, DB-side authorization checks; a11y sweep gains announce and voice-control rows |
+| 2026-09-07 | Pass 12: refund flow script (8b). Fourteen cases, the legal fee cap (lower of 5% or 100 ILS), idempotency, and the six post-conditions |
