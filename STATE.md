@@ -74,6 +74,19 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 קודם: 2026-08-19 22:01 (הצ'ק-אאוט ירד מתחת לשער הפיקסלים, ו-CLS שלו תוקן)
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
+## Docs agent (ke-arch worktree, markdown only)
+
+Updated: 2026-09-07. Branch `docs/ui-design-system`. This agent writes `.md` files only and does not touch `kenyonexpress` or any `.ts` / `.tsx` / `.css` / `.sql` / `.json`.
+
+### Last completed
+TASK 1: `docs/ui-design-system/TOKENS.md` (full token reference: colour, type at 380/768/1440, spacing, radius, shadow, z-index, breakpoints, containers, RTL).
+
+### In progress
+TASK 2: `docs/ui-design-system/COMPONENTS.md`
+
+### Next
+TASK 2, then 3 through 10, then deepen every document. Repeat.
+
 ## המשך מ: תור המרתון, שלב 16
 
 ### ⚠️ תקרית (04.09 06:24): סוכן מקביל החיל את 166-168 על פרודקשן בלי אישור
