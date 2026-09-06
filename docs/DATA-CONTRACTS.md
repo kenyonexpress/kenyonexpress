@@ -247,7 +247,7 @@ Table `order_items` (42 columns). **The money row.** Customer reads via parent o
 
 ## 8. `voucher`
 
-Canonical issuance table. Fossil: `coupon_codes` (2 rows, do not mint). Status enum: `issued, redeemed, expired, cancelled, refunded`. Non-`issued` is terminal. **No status trigger** on this table; single-use is `UPDATE … WHERE status = 'issued'` inside `redeem_voucher()`.
+Canonical issuance table. Fossil: `coupon_codes` (2 rows, do not mint). Confirmation and account lists read **`vouchers` only**. Status enum: `issued, redeemed, expired, cancelled, refunded`. Non-`issued` is terminal. **No status trigger** on this table; single-use is `UPDATE … WHERE status = 'issued'` inside `redeem_voucher()`.
 
 | Field | Type | Null | Invariants | customer | content_uploader | coupon_partner | admin |
 |---|---|---|---|---|---|---|---|

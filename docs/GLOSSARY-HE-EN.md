@@ -85,7 +85,9 @@ Direction:
 | זוכתה | `refunded` |
 | בוטלה | `cancelled` |
 | התשלום לא הושלם | `/checkout/failed` |
-| בודקים את התשלום… | `/checkout/return` |
+| אישור הזמנה | `/checkout/return` title |
+| מאמתים את התשלום... | pending reconcile |
+| התשלום הצליח! | paid return H1 |
 | קוד לא תקין | promo `discount_campaigns` (not a voucher) |
 
 Avoid saying `cart_items` (there is no table; lines are `carts.items` jsonb).

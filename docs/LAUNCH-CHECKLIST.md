@@ -123,7 +123,7 @@ Prefer a **real payment on vercel.app before DNS**. After DNS, repeat on the ape
 - [ ] `GET /api/health` and `/api/ready` (documented checks)
 - [ ] Category + product coupon PDP: split prices, no `platform_percent` in HTML
 - [ ] Guest add to cart → `/cart` → login-at-pay → Cardcom **production** charge of a small coupon
-- [ ] Webhook / return → voucher issued, email, `/coupon/{id}` QR
+- [ ] Webhook / return → voucher issued, email, `/checkout/return` shows `התשלום הצליח!` and codes (not an empty `coupon_codes` read), `/coupon/{id}` QR
 - [ ] Supplier scan success + second scan `השובר כבר מומש`
 - [ ] Checkout fail path: cart survives
 - [ ] 404 Hebrew, 500 not English LTR

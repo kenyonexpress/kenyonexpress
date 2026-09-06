@@ -79,10 +79,10 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 Updated: 2026-09-07. Branch `docs/ui-design-system`. This agent writes `.md` files only and does not touch `kenyonexpress` or any `.ts` / `.tsx` / `.css` / `.sql` / `.json`.
 
 ### Last completed
-Deepen pass 1: `docs/ui-design-system/INDEX.md`, `docs/DOCS-CROSSWALK.md`, PAGE-ANATOMY + COPY-HE for `/checkout/return` and `/city/[slug]`.
+Deepen pass 2 to 3: return coupon card, city SEO titles, 42703 confirmation, journeys/launch/glossary/data-contracts aligned to `vouchers`.
 
 ### In progress
-Deepen pass 2: COMPONENTS (checkout return coupon card), SEO city titles, EDGE-CASES return-page 42703.
+Deepen pass 4: TOKENS focus-visible vs yellow, SEO JSON-LD city already ships BreadcrumbList, legal routes anatomy stub.
 
 ### Next
 Keep deepening every document. Repeat. Never stop.

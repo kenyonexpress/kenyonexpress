@@ -41,7 +41,7 @@ Customer copy lives in COPY-HE. This file owns control flow.
 **Expected.**
 
 1. `payment_webhook_events` unique / idempotency on provider event + payment id. Second delivery returns **200** (so Cardcom stops) without a second `paid` transition.
-2. Voucher issue is keyed on `order_item_id` + quantity cap. Five webhooks → one set of codes (`UNIQUE(code)` backstop).
+2. Voucher issue is keyed on `order_item_id` + quantity cap. Five webhooks → one set of codes (`UNIQUE(code)` backstop). Confirmation must load `vouchers`, not `coupon_codes`.
 3. `notification_outbox` for `voucher_issued` / `order_paid` is deduped on the event; the customer gets one mail.
 
 **Forbidden.** 500 on the duplicate (that retriggers). A second QR email. Double `commission_agorot`.
@@ -193,6 +193,16 @@ Customer copy lives in COPY-HE. This file owns control flow.
 4. Offline: no local "mark used" cache that can desync. Manual code entry is the fallback (`לא ניתן לגשת למצלמה`).
 
 **Forbidden.** A client-only redeemed flag. A second cash collection because the first response was lost.
+
+---
+
+## 12a. Confirmation page column miss (42703)
+
+**What happened.** `/checkout/return` selected `*_agorot` columns a database generation does not have. Postgres `42703`, `order` null, `notFound()` **after a successful charge**. Historical bug; generation probe is the expected path.
+
+**Expected.** Resolve `ils` vs `agorot` generation, read twins, never 404 a paid order because a column name drifted. Pending UI until webhook/reconcile. Failed only when Cardcom/reconcile says failed.
+
+**Forbidden.** Hard-coding post-059 column names as the only SELECT. Reading `coupon_codes` instead of `vouchers` (empty confirmation).
 
 ---
 

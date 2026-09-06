@@ -53,7 +53,7 @@ Guest may browse and cart. Login is required at pay (Google / OTP), then `mergeG
 
 13. **Webhook `succeeded` (source of truth, idempotent).** Visible later: `/checkout/return` then account. Forbidden: a second voucher set on retry. Logged: `payment_webhook_events`; finalize; `notification_outbox` `voucher_issued` (not a duplicate `order_paid` if vouchers exist).
 
-14. **Email + `/coupon/{id}`.** Visible: code, QR if presentable, `{price}` paid and due, `{date}` expiry. Forbidden: QR on redeemed/expired; `platform_percent`. Logged: email drain; no QR image in the mail.
+14. **Return page then email + `/coupon/{id}`.** Visible: pending `מאמתים את התשלום...` until paid; then `התשלום הצליח!`, `{ref}`, `{price}` on site, voucher cards. Forbidden: 404 because of a missing money column (probe); QR on failed payment; `platform_percent`. Logged: email drain; reconcile.
 
 ### Decision tree (short)
 

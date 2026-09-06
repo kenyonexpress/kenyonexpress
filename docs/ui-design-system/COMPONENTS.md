@@ -673,6 +673,19 @@ If `/search` exists as a route, PAGE-ANATOMY describes it. Do not reintroduce a 
 
 ---
 
+## 11.1 Checkout success coupon card (deepen)
+
+- **File:** inline in `src/app/(store)/checkout/return/page.tsx` (not a shared component yet)
+- **Purpose:** After pay, show each issued voucher with code, remainder `{price}`, `{date}`, QR 264px, WhatsApp share of **this customer's** coupon (code allowed here).
+- **Props:** voucher row + `qrDataUrl` + `collect_amount_agorot` as `Agorot`.
+- **States:** default paid; pending is a different page state (H1 `מאמתים את התשלום...`); empty list: omit section; QR error: still show code (same rule as `/coupon/[id]`).
+- **RTL:** code `dir="ltr"`. QR not mirrored. Share glyph not mirrored.
+- **A11y:** section `aria-label="הקופונים שלך"`. Images alt from product name + code.
+- **Electro:** none (ours). Must not read `coupon_codes`.
+- **Money:** `shekels(agorot(...))` only. Generation probe on `orders` so a missing column cannot 404 a charged customer (EDGE-CASES).
+
+---
+
 ## 12. State × token cheat sheet (purchase controls)
 
 | Control | Default | Hover | Active | Disabled | Loading |
@@ -695,3 +708,4 @@ Focus-visible for all of the above: 2px solid `#333e48` (or white on dark fills)
 | Date | Change |
 |---|---|
 | 2026-09-07 | Initial inventory of storefront components with props, states, RTL, a11y, and Electro home-v7 mapping |
+| 2026-09-07 | Deepen: checkout return voucher card (reads `vouchers`, generation probe) |

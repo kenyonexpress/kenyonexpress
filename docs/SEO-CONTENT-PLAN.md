@@ -70,7 +70,7 @@ Root template in layout: `'%s | קניון אקספרס'` except home (full defa
 | Product coupon | `seo_title` or `{name} | קופון {cat}` | `{name}: מחיר בקניון {price}. יתרה לתשלום בבית העסק. תוקף לפי ימי השובר. {city}` |
 | Product physical | `seo_title` or `{name} | {cat}` | `{name} בקניון אקספרס. מחיר {price} כולל מע״מ, תשלום מלא באתר. {city}` |
 | Supplier | `{name}` (and city in title if it fits: `{name} ב{city}`) | `{name}{ בcity} בקניון אקספרס. קופונים, מבצעים ומוצרים.` (matches `/s/[id]` generateMetadata) |
-| City | קופונים ודילים ב{city} | בתי עסק ודילים באזור {city} בקניון אקספרס. |
+| City | `דילים ב{name}` (matches `/city/[slug]` generateMetadata) | `קופונים ומבצעים מבתי עסק ב{name}. כל שובר נסרק פעם אחת, והתוקף מוצג לפני הרכישה.` |
 | Products archive | כל המוצרים | כל הדילים והקופונים בקניון אקספרס. |
 | Search | תוצאות חיפוש: `{q}` | noindex, no description targeting |
 | 404 | הדף לא נמצא | none |
