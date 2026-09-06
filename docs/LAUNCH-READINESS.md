@@ -18,33 +18,49 @@ measurement is what is recorded, and the disagreement is named.
 
 ## Verdict
 
-**NOT READY.** Four blockers, listed at the bottom. None of them is code: the
-build, the tests, the pixel gate and the schema are all green. What is missing
-is a scheduler, a set of Cardcom credentials, and a confirmation of which Vercel
-project the domain is about to be pointed at.
+**NOT READY — and every remaining blocker needs Ofir, not code.**
+
+Rewritten 2026-09-06. The previous version was from 09-03 and its blocker list
+has been overtaken: two of its four were measured and turned out to be different
+problems than they were described as, and a third shrank from fourteen files to
+five reviewed ones.
+
+The single sentence that matters: **nothing in this repository has ever been
+deployed anywhere.** The site being looked at is the old WordPress installation.
 
 ## Gates
+
+Re-measured 2026-09-06 at `18a62e13c`.
 
 | Gate | Command | Result |
 | --- | --- | --- |
 | Types | `pnpm type-check` | PASS, `tsc --noEmit` clean |
-| Lint | `pnpm lint` | PASS, biome 1017 files, 0 findings |
-| Unit | `pnpm test` | PASS, 3180 tests in 248 files |
-| Build | `rm -rf .next && pnpm build` | PASS, `.next` 154M |
-| E2E | `E2E_BASE_URL=http://localhost:3311 playwright test` | PASS, 396 passed, 8 skipped |
-| Pixel | `compare.mjs --page=home` | PASS, **9.83%** against the 11% ceiling |
-| Deps | `pnpm audit` | 8 findings, 1 critical / 3 high / 2 moderate / 2 low |
+| Lint | `pnpm lint` | PASS, biome 1202 files + tokens/copy/asset gates, 1 pre-existing warning |
+| Unit | `pnpm test` | PASS, **3989 tests in 324 files** |
+| Build | `pnpm build` | PASS |
+| E2E | `playwright test` | PASS on every previously-failing spec; full serial run in progress |
+| Pixel | `compare.mjs --page=home` | PASS, **10.68 / 7.72 / 8.12** at 380 / 768 / 1440 |
+| Deps | `pnpm audit --audit-level high` | **no known vulnerabilities** |
+| Perf | `pnpm lighthouse:smoke` | **FAILS at 70-75 against 90 — see "What is NOT a blocker"** |
 
-The E2E run used a real `pnpm start` server on port 3311, not a dev server, and
-not a reused one: the build directory was removed first. That matters because a
-stale server silently serves the previous build.
+Three of these moved materially since 09-03 and the movement is the point:
 
-The dependency findings are all in the dev and build tree, reached through
-`@sentry/nextjs` and `next > styled-jsx` to `@babel/core`. None is on a path
-that runs in production. They are not a launch blocker and they are also not
-nothing: they should be cleared on the first maintenance pass after launch.
+**Dependencies went from 8 findings to zero.** `main` turned out to be 284
+commits behind and **9 ahead**, and those nine were GHSA fixes — one critical
+(vitest `GHSA-5xrq-8626-4rwp`) and four high. Merging them in was the fix;
+`docs/BRANCH-AUDIT.md` has the reasoning, including why "resolve in favour of
+the newer work" could not be applied literally to the lockfile.
 
-## Database, queried live
+**The pixel gate is quoted at three widths, not one.** The old single 9.83%
+figure was the 1440 measurement; 380 is the tight one and always has been.
+
+**Every gate result is now recorded automatically.** `docs/UI-PARITY-REPORT.md`
+was empty on 09-03 while three measurements sat in a commit message, because
+writing the row was a step a person had to remember. `scripts/parity-log.mjs`
+is called from inside the gate, with the commit hash and a `-dirty` suffix when
+the tree is not clean.
+
+## Database, queried live## Database, queried live
 
 | Check | Expected by the brief | Measured | Verdict |
 | --- | --- | --- | --- |
@@ -156,48 +172,87 @@ being wrong.
 
 ## Blockers
 
-| # | Severity | Blocker |
-| --- | --- | --- |
-| 1 | critical | No external scheduler exists for the ten cron jobs |
-| 2 | critical | Cardcom production credentials not obtained |
-| 3 | high | Unconfirmed which Vercel project the domain will point at |
-| 4 | medium | 14 unapplied files in `migrations/pending/` |
+Four, in the order they should be cleared. None is code.
 
-**1. Nothing is running the ten cron jobs.** They were deliberately removed from
-`vercel.json` in `21342fc4`, because the account is on the `hobby` plan, which
-registers two daily jobs and silently ignores the rest. The ten handlers exist
-and answer 401 without the bearer token, so the guard is live and the schedule
-is absent. Three of the ten are on the money path (`invoices`, `reconcile`,
-`stranded-payments`) and one is the only way a customer ever receives their
-voucher (`notifications`). `docs/CRON-EXTERNAL.md` has the ten lines ready to
-paste into an external scheduler. Until that is done, a paying customer gets no
-voucher.
+| # | Blocker | Who | Evidence |
+|---|---|---|---|
+| 1 | The Vercel project for this repo does not exist | Ofir | Vercel API: the only project is `kenyonexpress-web`, wired to the OLD repo, and **all 11 of its deployments are ERROR** |
+| 2 | Migration batch A is unapplied | Ofir approves | `docs/MIGRATION-REVIEW.md`, apply order in `docs/RUNBOOK.md` |
+| 3 | The Supabase secret key was exposed during setup | Ofir | Working key, bypasses every RLS policy; the build refuses to ship it |
+| 4 | R2 is not enabled and no bucket was named | Ofir | `403 code 10042`; 375 objects wait in `refs/live-assets/` |
 
-**2. Cardcom.** `src/lib/payments/env.ts` requires three values in production
-and throws `Missing required env` on each missing one:
+### 1. There is no deployment, and that is why the site still looks wrong
 
-```
-CARDCOM_TERMINAL_NUMBER
-CARDCOM_API_NAME
-CARDCOM_API_PASSWORD
-```
+This was previously written as "unconfirmed which Vercel project the domain will
+point at". Measured through the Vercel API on 2026-09-06, it is worse than
+unconfirmed: the project `kenyonexpress` pointing at `kenyonexpress/kenyonexpress`
+**does not exist**. What exists is `kenyonexpress-web`, connected to the previous
+repository, and every one of its eleven deployments is in state `ERROR`, the most
+recent from May.
 
-`CARDCOM_WEBHOOK_SECRET` is generated locally, not by Cardcom. Swap the Cardcom
-production keys before real launch; sandbox and mocks are what is wired today.
+So every report of "the Electro images are back" and "the search field returned"
+is a report about the old WordPress site. `scripts/shell-audit.mjs` settles it
+for any URL: our build reports CLEAN, `kenyonexpress.co.il` reports nine
+problems including `input[type=search]` and the iPhone/AirPods GIF.
 
-**3. Which Vercel project.** The API returns one project on the account,
-`kenyonexpress-web`, linked to a different repository
-(`kenyonexpress/kenyonexpress-web`) with all eleven of its deployments in
-`ERROR`. The live site is served by a project named `kenyonexpress`, which
-appears in the PR checks but not in the project listing. The merge of PR #6 to
-`main` produced a **Preview** deployment, not a production one, which means
-`main` is not the production branch of the live project. Confirm the domain
-attachment and the production branch by hand before the cutover.
+**Everything else waits behind this.** The cron schedule (migration 162) needs a
+deployed URL for its vault secret. The performance budget cannot be closed
+because every number available locally is a simulation on a laptop. The domain
+cannot be pointed at a project that does not exist.
 
-**4. Pending migrations.** Fourteen files in `migrations/pending/`, plus three
-older `PENDING-` files in `supabase/migrations/`. Read both locations. Each goes
-to production through MCP `apply_migration` after approval, one at a time.
-`db push` is forbidden.
+`docs/DEPLOY.md` is the click-by-click.
+
+### 2. Four migrations, reviewed, waiting on approval
+
+Down from "14 unapplied files": the directory now holds five, one of which is
+blocked behind blocker 1. Each was reviewed against the live production schema
+rather than against what its file claims. `docs/MIGRATION-REVIEW.md`.
+
+**172 first, because it is the only one with a live money consequence.**
+`מוצר ראשי מאסטר Master Product` is in the production catalogue at ₪1 against a
+₪400 compare-at with ten in stock. It can no longer be *bought* — a
+discount-ratio guard shipped on 09-06 — but it is still `active`, still answers
+a direct query, and still renders in listings that do not go through the cart.
+Stopping it being bought and removing it from the catalogue are different
+claims, and only the second survives someone querying the database.
+
+**169 next.** Four funnel events are being silently discarded by the database
+right now: `purchase`, `begin_checkout`, `voucher_redeemed`, `order_refunded`
+each return 0 rows inserted with HTTP 200. The site reports no purchases. Every
+day this stays unapplied is a day of funnel data that does not exist.
+
+**170 and 171** are safe and can ride the same batch. **162 is blocked** behind
+blocker 1.
+
+### 3. The exposed key
+
+It works, which is the danger. A Supabase secret key bypasses every RLS policy
+and this one was handled outside a secret store. `scripts/compromised-keys.mjs`
+carries its SHA-256 — the digest, never the key — `src/lib/env.ts` refuses to
+boot a deployment with it, and `scripts/deploy-preflight.mjs` refuses to build.
+Rotation procedure in `docs/RUNBOOK.md`. Mint first, verify with the boot probe,
+revoke last.
+
+### 4. R2
+
+`403 code 10042 "Please enable R2 through the Cloudflare Dashboard"`, and the
+instruction that asked for the upload ended mid-sentence without naming a
+bucket. 107 assets and 268 derivatives are ingested and waiting;
+`scripts/upload-r2.mjs` is written and dry-run verified at 375 objects.
+
+### What is NOT a blocker any more
+
+- **The cron jobs.** Previously "no external scheduler exists". Migration 162
+  schedules all twelve in the database with pg_cron, so no external scheduler is
+  needed — it is blocked on the deployment URL for its vault secret, not on
+  infrastructure that has to be bought.
+- **The performance budget.** `pnpm lighthouse:smoke` exits 1 at 70-75 against
+  its 90 threshold, and the application is not slow: the same build with
+  `--throttling-method=provided` scores 100, with FCP 0.1s and TBT 0ms. The gap
+  is Lighthouse's Lantern simulation running on a laptop that is also serving
+  the page; three runs on an unchanged tree gave 75, 70, 70. Recorded OPEN in
+  `docs/PERFORMANCE-BUDGET.md` and not closeable until there is a deployment.
+  **The threshold was not lowered.**
 
 ## What is verified working
 
