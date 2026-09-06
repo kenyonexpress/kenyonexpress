@@ -248,10 +248,48 @@ falsifiable.
 | 1 | **No `CONCURRENTLY`, so each `CREATE INDEX` blocks writes on its table for the duration.** A plain `CREATE INDEX` takes a `SHARE` lock, which permits reads and blocks `INSERT`/`UPDATE`/`DELETE`. Five of the ten are on `products`; one is on `carts`, which is written on **every cart mutation**; one is on `orders`. | **High** | This is the finding for 170. On a small table it is milliseconds. The blast radius scales with row count, and nothing in the file or the preflight measures that. |
 | 2 | **`CONCURRENTLY` cannot simply be added.** It is illegal inside a transaction block, and MCP `apply_migration` wraps its statements in one. So the choice is a real one: accept the write lock, or apply these outside the migration mechanism. | **High** | Worth deciding explicitly before approval rather than at apply time. Preflight block 4's row counts are the input to that decision, and the preflight does not currently gather them. |
 | 3 | **Three indexes on `products` share one predicate and differ only in sort column** (1, 3, 5: `category_id` + created / price / name). Correct for three sort orders, and it is 3x index maintenance on every `products` write, plus a fourth (2) and fifth (4). | Medium | Five indexes on one table is a real write cost. Justified only if all five sorts are actually used; the file cites a code path for each, so the evidence is there, but the cost is not stated anywhere. |
-| 4 | **Existing single-column indexes become redundant and are not dropped.** Preflight block 4 names them: `products_category_id_idx`, `carts_session_id_idx`, `orders_user_id_idx`, `idx_orders_user_status`, `idx_user_addresses_user_default`, `vouchers_order_item_idx`, `idx_invoices_order`. A composite whose leading column is the single index's column serves the same queries. | Medium | Expand-only is the right call for step one. The follow-up contract migration that drops the now-redundant singles is not written and is not mentioned in `APPLY-ORDER.md`. Without it, the tables carry both forever. |
+| 4 | **Existing single-column indexes become redundant and are not dropped.** Preflight block 4 names seven: `products_category_id_idx`, `carts_session_id_idx`, `orders_user_id_idx`, `idx_orders_user_status`, `idx_user_addresses_user_default`, `vouchers_order_item_idx`, `idx_invoices_order`. A composite whose leading column is the single index's column serves the same queries. | Medium, **and only production can confirm it** | See 3.2.1. Expand-only is the right call for step one; the follow-up contract migration that drops the redundant singles is not written and is not mentioned in `APPLY-ORDER.md`. |
 | 5 | Index 2's leading column is `status`, which is low cardinality. A partial index `WHERE status = 'active'` keyed on `(created_at DESC)` alone would be smaller and serve the same shop-wide listing. | Low | Style, not correctness. The current form also serves queries filtering a non-active status, if any exist. |
 | 6 | Index 9 relies on btree indexing NULLs so the composite serves the `profile_id IS NULL` arm. | None | Correct, and the file says so. btree does index NULLs. |
 | 7 | Ten indexes add disk. No estimate is given. | Low | Worth measuring on the five `products` indexes specifically. |
+
+### 3.2.1 Risk 4 cannot be settled from this repository
+
+Checked, because the claim was worth testing rather than asserting. Of the seven
+single-column indexes preflight block 4 names, **exactly one is traceable to the
+file chain**:
+
+| Index | In `migrations/applied/` |
+|---|---|
+| `orders_user_id_idx` | **yes**, `163_orders_indexes.sql:84`, which also carries its own `drop index` rollback line |
+| `products_category_id_idx` | no |
+| `carts_session_id_idx` | no |
+| `idx_orders_user_status` | no |
+| `idx_user_addresses_user_default` | no |
+| `vouchers_order_item_idx` | no |
+| `idx_invoices_order` | no |
+
+Six of seven exist in the preflight's expectation list and in no file in this
+repository. That is not a bug in the preflight: its block 4 was written from
+**measuring production**, not from reading the chain. `migrations/applied/`
+holds 45 files, and the live schema has history the chain does not describe.
+
+Two consequences, and the second matters more:
+
+1. **Risk 4 is real but unquantified from here.** Whether those six exist
+   today, and therefore whether 170 creates a genuine duplicate, is a question
+   only a query against production can answer. Preflight block 4 is exactly
+   that query, which is why it is in the preflight rather than in the migration.
+2. **Do not audit index coverage by reading `migrations/applied/`.** A reader who
+   greps the chain and finds six of the seven missing will conclude they do not
+   exist and that 170 is not duplicating anything. That conclusion would be
+   drawn from an incomplete record. The file chain is a log of what this
+   repository applied, not a description of the live schema.
+
+The same caution applies to every risk in this document that depends on the
+current shape of production: the row counts in 3.2, the vault contents in 1.4,
+and the "before" whitelist in 2.6. All three are preflight questions for the
+same reason.
 
 ### 3.3 The lock question, stated plainly
 
