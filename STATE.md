@@ -79,13 +79,13 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 Updated: 2026-09-07. Branch `docs/ui-design-system`. This agent writes `.md` files only and does not touch `kenyonexpress` or any `.ts` / `.tsx` / `.css` / `.sql` / `.json`.
 
 ### Last completed
-TASK 1: `docs/ui-design-system/TOKENS.md` (full token reference: colour, type at 380/768/1440, spacing, radius, shadow, z-index, breakpoints, containers, RTL).
+TASK 2: `docs/ui-design-system/COMPONENTS.md` (storefront inventory: props, variants, states, RTL, a11y, Electro map).
 
 ### In progress
-TASK 2: `docs/ui-design-system/COMPONENTS.md`
+TASK 3: `docs/ui-design-system/PAGE-ANATOMY.md`
 
 ### Next
-TASK 2, then 3 through 10, then deepen every document. Repeat.
+TASK 3, then 4 through 10, then deepen every document. Repeat.
 
 ## המשך מ: תור המרתון, שלב 16
 
