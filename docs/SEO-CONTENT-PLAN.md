@@ -74,7 +74,7 @@ Root template in layout: `'%s | קניון אקספרס'` except home (full defa
 | Products archive | כל המוצרים | כל הדילים והקופונים בקניון אקספרס. |
 | Search | תוצאות חיפוש: `{q}` | noindex, no description targeting |
 | 404 | הדף לא נמצא | none |
-| Legal | document H1 | first-paragraph summary |
+| Legal | document H1 (תקנון / פרטיות / ביטולים / נגישות) | first-paragraph summary. Routes: `/legal/*` plus WP aliases `/terms-and-conditions`, `/privacy-policy`, `/refund_returns`, `/accessibility` |
 | Account / cart / checkout / voucher QR | short functional title | **noindex** |
 
 Open Graph: `locale: he_IL`, home `type: website`, product `type: product`, supplier `website`. Image: first product image from R2, not a random Electro demo asset.
@@ -201,6 +201,8 @@ Coupon extra in `description` (not a second fake Offer for the remainder): state
 
 AggregateRating only when review count > 0 (approved reviews).
 
+City `/city/[slug]` already emits `BreadcrumbList` (`buildBreadcrumbJsonLd`). Keep that graph. Do not add a second breadcrumb block. LocalBusiness per branch is still queue J3, not this page.
+
 ### 5.4 Supplier page
 
 `LocalBusiness` or `Organization` with `name`, `address` (if any), `url` `/s/{id}`, `containedInPlace` city. Plus `ItemList` of products. Breadcrumb Home → ספק → name.
@@ -229,7 +231,7 @@ Include:
 
 Exclude forever:
 
-`/account/**`, `/supplier/**`, `/admin/**`, `/checkout*`, `/cart`, `/login`, `/signup`, `/search`, `/coupon/*`, `/redeem/*`, `/gift/*`, debug, filtered category query strings, `?page=` copies if canonical is page 1 only (pick one strategy and stick: either paginated URLs in sitemap with self canonical, or page 1 only).
+`/account/**`, `/supplier/**`, `/admin/**`, `/checkout*`, `/cart`, `/login`, `/signup`, `/search`, `/coupon/*`, `/redeem/*`, `/gift/*`, `/offline`, debug, filtered category query strings, `?page=` copies if canonical is page 1 only (pick one strategy and stick: either paginated URLs in sitemap with self canonical, or page 1 only).
 
 Admin client for generation so RLS cannot hide a public URL that 200s, and cannot include drafts.
 

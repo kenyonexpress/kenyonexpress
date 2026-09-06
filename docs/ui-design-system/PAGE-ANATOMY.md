@@ -865,6 +865,30 @@ Not yet: branch map, LocalBusiness per branch (queue J3). SEO-CONTENT-PLAN: do n
 
 ---
 
+## 19. Legal, content, offline (deepen)
+
+Store shell. Indexable except offline. Copy is counsel-owned (`docs/legal/`); this file only owns chrome.
+
+Architecture 2026-07 named `/terms`. The app tree has **both** WP-style aliases and `/legal/*`. Footer must use the routes that 200. Do not invent a third slug.
+
+| Route | H1 / title (functional) | Data | Empty | Error |
+|---|---|---|---|---|
+| `/legal/terms`, `/terms-and-conditions` | תקנון | static MD/TS content + last-updated date | n/a | 500 |
+| `/legal/privacy`, `/privacy-policy` | פרטיות | same | n/a | 500 |
+| `/legal/returns`, `/refund_returns` | ביטולים והחזרים | must match money model: coupon remainder at business, no escrow, redeemed = done | n/a | 500 |
+| `/legal/accessibility`, `/accessibility` | הצהרת נגישות | ISR | n/a | 500 |
+| `/about` | about H1 from page | static | n/a | 500 |
+| `/contact` | contact + `ContactForm` | form states COPY-HE | n/a | validation |
+| `/faq` | FAQ | static | n/a | 500 |
+| `/blog` | blog index | posts or empty | empty list Hebrew | 500 |
+| `/offline` | `אין חיבור לאינטרנט` | **no fetches** (SW cache). Title `אין חיבור`. CTA is a **link** retry, not a JS button | n/a | this page **is** the error |
+
+Skeleton: none (static). Newsletter still in footer except offline (may be the cached shell).
+
+Legal body must not say escrow or a fixed 10% commission. Checkout terms tick links here in a new tab.
+
+---
+
 ## 16. Revision
 
 | Date | Change |

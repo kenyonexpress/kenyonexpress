@@ -455,6 +455,19 @@ Do not ship:
 
 ---
 
+## 15. Offline PWA
+
+| Id | String |
+|---|---|
+| off.title | אין חיבור |
+| off.h1 | אין חיבור לאינטרנט |
+| off.body | לא הצלחנו לטעון את העמוד. בדקו את החיבור ונסו שוב. עמודים שכבר ביקרתם בהם עשויים להיטען גם ללא חיבור. |
+| off.retry | נסו שוב (plain `Link` to `/`, not `onClick`) |
+
+Ink on `#fed700` for the tile (TOKENS: never white on yellow).
+
+---
+
 ## 14. Revision
 
 | Date | Change |
