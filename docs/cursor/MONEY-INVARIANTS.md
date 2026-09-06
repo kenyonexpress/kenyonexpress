@@ -317,3 +317,9 @@ here is a §7 violation.
 
 `discount_campaigns.percent_bp`
 is already Bp. Do not multiply that one by 100 again.
+
+Refund fee is integer-only:
+`LEAST((requested_agorot + 19) / 20, 10000)`
+is 5% (rounded) or ₪100. JS that uses
+`requested * 0.05`
+is a §7 violation and can disagree with the CHECK (`23514` on insert).
