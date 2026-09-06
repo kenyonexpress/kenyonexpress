@@ -220,11 +220,7 @@ on already-sold lines (snapshot forbids it).
 |---|---|
 | **Estimate** | 15–25 days (lead→draft catalogue→invite member→scan training→admin approve). KYC/legal review is owner calendar, not those days. |
 | **Depends on** | R2 (H2). Admin approvals UI. RLS: partner writes drafts of **their** `supplier_id` only (`is_supplier_member`). Money invariants: no default percent. Launch not required to build; required to onboard a real restaurant. |
-| **Risks** | Partner publish without
-  `coupon_price_ils`.
-  Partner reading issued voucher inventory (forbidden). Self-promotion via
-  `profiles.role = vendor`
-  without membership. Calling dead payout actions. |
+| **Risks** | Partner publish without `coupon_price_ils`. Partner reading issued voucher inventory (forbidden). Self-promotion via `profiles.role = vendor` without membership. Calling dead payout actions. |
 
 ---
 
@@ -238,3 +234,18 @@ on already-sold lines (snapshot forbids it).
 6. P5 (i18n) last. Hebrew-only is the product.
 
 Do not parallel P4 and P5. Both are copy + vendor + DNS attention, the same human who is also the launch operator.
+
+---
+
+## Cross-links from the rest of this pack
+
+| Roadmap item | Invariant it must not break |
+|---|---|
+| P1 reviews | Not money. Join to **paid** `order_items`. Never `has_role('customer')`. |
+| P2 wishlist | Re-price at checkout. Guest = `localStorage` only. |
+| P3 abandoned cart | Marketing consent. Re-price. One scheduler. Skip the 172 row. |
+| P4 Twilio | Opt-in. Do not use the Test Store fallback number. Meta still approves templates. |
+| P5 i18n | Agorot stay integers. Hebrew legal stays source. New refs for pixel gate. |
+| P6 self-serve | No default `platform_percent`. No issued-voucher dump. No payout tables. |
+
+Payout self-serve is **not** a seventh item. It needs a schema that does not exist. When physical volume needs it, it is a new migration pack with conservation CHECKs, not a UI on `admin/payouts.ts`.
