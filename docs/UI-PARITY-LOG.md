@@ -228,3 +228,4 @@ If a later agent can run the gate from the main checkout, append a dated row. Do
 | 2026-09-07 | Initial log: home, category, product, products, cart, checkout, search, account siblings; D4–D11 and STEP 46 numbers |
 | 2026-09-07 | Pass 9: `/s/[id]` not scored; 2/3/4 grid; do not use join-us as twin |
 | 2026-09-07 | Pass 10: `/city/[slug]` n/a (seventeen regions, no refs twin) |
+| 2026-09-07 | Pass 11: legal indexable, `/offline` noindex, neither scored |
