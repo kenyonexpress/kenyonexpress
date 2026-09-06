@@ -34,7 +34,7 @@ One locale. No English site. Do not advertise `en`.
 |---|---|
 | HTML | `lang="he-IL"` (live) or `lang="he"` (valid). Open Graph `locale: he_IL` |
 | Alternate | `<link rel="alternate" hreflang="he-IL" href="{canonical}" />` |
-| x-default | **omit** until a second language exists. A lone `x-default` pointing at Hebrew is optional; skip to avoid implying a language picker |
+| x-default | **Runtime plan** (`docs/ARCHITECTURE-SEO.md` §5.1): `alternates.languages` ships `'he-IL'` and `'x-default'` **both pointing at the same canonical**. That is not a second language. It is a market signal. Live WP (2026-09-07) has **neither** tag |
 | Regional | no `he-US`. Israel is `he-IL` only |
 | Pagination / sort | canonical **without** `?orderby=` / filters. Do not hreflang each sort URL |
 | noindex routes | still can carry `lang`. Do **not** list them in the hreflang sitemap |
@@ -195,3 +195,4 @@ Home: do not replace the live brand title with a stuffed “קופונים די�
 | Date | Change |
 |---|---|
 | 2026-09-07 | Plan with live title `קניון אקספרס`, `lang="he-IL"`, no live hreflang; schema per page; linking including account empties |
+| 2026-09-07 | Pass 9: LocalBusiness data gate; `@id` `/s/{id}#business`; hreflang `x-default` matches ARCHITECTURE-SEO (same canonical) |
