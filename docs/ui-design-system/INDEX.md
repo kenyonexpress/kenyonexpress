@@ -15,6 +15,7 @@ Map of storefront presentation docs in this worktree. Layout and structure: Elec
 | `../LAUNCH-CHECKLIST.md` | Day-of checkboxes and rollback |
 | `../GLOSSARY-HE-EN.md` | Hebrew UI vs English identifiers |
 | `../STOREFRONT-ROUTES.md` | Every customer/cashier URL, robots, anatomy pointer |
+| `../LIVE-HOME-2026-09.md` | GET of live WP title, meta, shop H1, Electro English not to copy |
 
 Authority when these disagree with older research: `BUSINESS-MODEL-RULES.md` then `docs/PRODUCT-TYPES.md` then `docs/ARCHITECTURE-PRODUCT-TYPES.md`. Presentation conflicts: TOKENS 0.1 (brief vs live vs shipped) wins for paint; COPY-HE wins for consumer-protection wording (coupon split table).
 
@@ -32,3 +33,4 @@ Standing rules this pack must not undo:
 |---|---|
 | 2026-09-07 | Index after tasks 1 to 10 |
 | 2026-09-07 | Point at STOREFRONT-ROUTES after gift/redeem/legal deepen |
+| 2026-09-07 | Point at LIVE-HOME-2026-09 |

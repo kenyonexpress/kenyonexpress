@@ -88,7 +88,9 @@ Missing date renders `לא זמין`, never `Invalid Date`.
 |---|---|---|
 | home.dealsEmpty | אין מוצרים להצגה | deals grid |
 | home.heroCta | לרכישה / קנה עכשיו | hero / promo (live) |
-| home.metadata | קניון EXPRESS: מסדרים לך בילוי | document title (keep live) |
+| home.metadata | `קניון אקספרס` is live WP title 2026-09-07. Shipped Next is `קניון EXPRESS` plus tagline. See `docs/LIVE-HOME-2026-09.md` | document title |
+| home.metaDesc | המקום למבצעים חמים במגוון תחומים, בילוי, תיירות, צריכה ועוד. | live WP |
+| home.tagline | מסדרים לך בילוי | hero, not `<title>` on live WP |
 
 USP labels and category names are catalogue/live content, not invented here.
 

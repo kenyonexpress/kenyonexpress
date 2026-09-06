@@ -57,7 +57,7 @@ Copy voice: second person, Hebrew, no English except proper nouns, SKUs, Latin b
 |---|---|
 | File | `src/app/(store)/page.tsx` |
 | Robots | index, follow |
-| H1 | None on the page chrome. Hero welcome line is display type, not the document H1. Live metadata title: `קניון EXPRESS: מסדרים לך בילוי` (keep the live string) |
+| H1 | None on the page chrome. Hero welcome line is display type, not the document H1. Live WP `<title>` 2026-09-07: `קניון אקספרס`. Shipped Next title uses `קניון EXPRESS` plus tagline `מסדרים לך בילוי` (U+2014 in source; do not copy that character). See `docs/LIVE-HOME-2026-09.md` |
 | Electro | home-v7: departments + slider + ads, category strip, features, deals of the day, footer |
 | Pixel gate | `compare.mjs --page=home` at 380 / 768 / 1440, under 11 percent |
 

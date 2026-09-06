@@ -65,13 +65,13 @@ Root template in layout: `'%s | קניון אקספרס'` except home (full defa
 
 | Page type | Title template | Meta description template |
 |---|---|---|
-| Home | Live: `קניון EXPRESS: מסדרים לך בילוי` (keep live if already ranked) else `קניון אקספרס: קופונים, דילים ומבצעים` | קופונים ודילים לבתי עסק בישראל. משלמים באתר, ממשים עם QR בבית העסק. בלי נאמנות. |
+| Home | Live WP 2026-09-07: `קניון אקספרס`. Shipped: `קניון EXPRESS` plus `מסדרים לך בילוי`. Do not copy U+2014. After DNS, pick **one** title and keep it | Live WP description: `המקום למבצעים חמים במגוון תחומים, בילוי, תיירות, צריכה ועוד.` Keep until an SEO replace is planned. Do not say escrow |
 | Category | `{cat} | קופונים ומבצעים` | דילים וקופונים בקטגוריית `{cat}` בקניון אקספרס. מחיר בקניון באתר, יתרה בבית העסק בקופונים. |
 | Product coupon | `seo_title` or `{name} | קופון {cat}` | `{name}: מחיר בקניון {price}. יתרה לתשלום בבית העסק. תוקף לפי ימי השובר. {city}` |
 | Product physical | `seo_title` or `{name} | {cat}` | `{name} בקניון אקספרס. מחיר {price} כולל מע״מ, תשלום מלא באתר. {city}` |
 | Supplier | `{name}` (and city in title if it fits: `{name} ב{city}`) | `{name}{ בcity} בקניון אקספרס. קופונים, מבצעים ומוצרים.` (matches `/s/[id]` generateMetadata) |
 | City | `דילים ב{name}` (matches `/city/[slug]` generateMetadata) | `קופונים ומבצעים מבתי עסק ב{name}. כל שובר נסרק פעם אחת, והתוקף מוצג לפני הרכישה.` |
-| Products archive | כל המוצרים | כל הדילים והקופונים בקניון אקספרס. |
+| Products archive | חנות | Shipped: `כל המוצרים, הדילים והקופונים של קניון Express במקום אחד.` Never port live `מוצרים Archive` |
 | Search | תוצאות חיפוש: `{q}` | noindex, no description targeting |
 | 404 | הדף לא נמצא | none |
 | Legal | document H1 (תקנון / פרטיות / ביטולים / נגישות) | first-paragraph summary. Routes: `/legal/*` plus WP aliases `/terms-and-conditions`, `/privacy-policy`, `/refund_returns`, `/accessibility` |
@@ -272,3 +272,4 @@ Sitemap URL absolute. Staging/preview: `Disallow: /` if a separate Vercel env.
 | Date | Change |
 |---|---|
 | 2026-09-07 | Clusters, templates, H1, linking, JSON-LD (Product, BreadcrumbList, Organization, Offer ILS), sitemap/robots |
+| 2026-09-07 | Live WP title is `קניון אקספרס`; do not port shop `Archive` meta |

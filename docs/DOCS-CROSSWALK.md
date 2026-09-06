@@ -118,8 +118,17 @@ ARCHITECTURE-SEO-SITEMAP (2026-07-29) said zero JSON-LD in repo. SEO-CONTENT-PLA
 
 ---
 
+## 11. Live WP title vs shipped Next
+
+`docs/LIVE-HOME-2026-09.md` (GET 2026-09-07): live `<title>` is `קניון אקספרס`, description is the "מבצעים חמים" sentence. PAGE-ANATOMY / COPY-HE previously treated the Next title as live. That was wrong.
+
+Shop H1 `חנות` agrees. Live shop meta contains English `Archive`. Shipped Hebrew wins.
+
+---
+
 ## Revision
 
 | Date | Change |
 |---|---|
 | 2026-09-07 | First crosswalk after tasks 1 to 10 |
+| 2026-09-07 | Live WP title vs Next title |

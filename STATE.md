@@ -79,10 +79,10 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 Updated: 2026-09-07. Branch `docs/ui-design-system`. This agent writes `.md` files only and does not touch `kenyonexpress` or any `.ts` / `.tsx` / `.css` / `.sql` / `.json`.
 
 ### Last completed
-Deepen pass 9: auth routes and `/scan` till anatomy (manual always, confirm niqqud).
+Deepen pass 10: live WP GET (`קניון אקספרס` title, shop H1 `חנות`, do not port Archive).
 
 ### In progress
-Deepen pass 10: live kenyonexpress.co.il title/meta check vs SEO-CONTENT-PLAN.
+Deepen pass 11: supplier public page and JSON-LD vs ARCHITECTURE-SEO.
 
 ### Next
 Keep deepening every document. Repeat. Never stop.
