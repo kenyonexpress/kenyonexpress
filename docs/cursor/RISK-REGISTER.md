@@ -253,3 +253,23 @@ Companions:
 7. R2 last (DNS)
 8. R6 watch (do not edit policies in the launch window)
 9. R5 / R13 / R14 accepted or deferred in writing
+10. R16 (live Cloudflare zone only) before any DNS click
+11. R17 (no surprise SQL) during the freeze
+
+---
+
+## R16. Editing the staged Cloudflare zone (silent no-op)
+
+- **Likelihood:** High if the operator holds a token for account `13a3f166…` and follows
+  `docs/DNS-CUTOVER-PLAN.md`
+  without the 2026-09-02 banner.
+- **Impact:** Critical. Dashboards show success. Apex still WordPress. Hours lost during the cutover window. If someone then "fixes" it by switching registrar NS to the staged zone, mail SPF `include[...].nses.com` becomes `permerror` the same day.
+- **Mitigation:** Launch H0. Confirm `derek` / `elma`. Treat staged-zone API success as a failed cutover until public `dig` shows `76.76.21.21`.
+
+---
+
+## R17. Parallel production SQL without a human ticket
+
+- **Likelihood:** Already happened (STATE 2026-09-04: 166–168 applied by a parallel agent). Pattern can repeat.
+- **Impact:** High (schema moves under a freeze) to Critical (a revoke like the cancelled 165).
+- **Mitigation:** One code agent per repo (ADR 0012). This pack does not apply SQL. 172 stays pending until the owner applies it.
