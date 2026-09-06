@@ -13,8 +13,8 @@
  * Lighthouse's default throttling is `simulate`: it loads the page unthrottled
  * and then MODELS a mid-tier phone on 4G (4x CPU, 150ms RTT, ~1.6 Mbps). On
  * localhost that model is extrapolating from a machine that is also serving the
- * page, and it is unstable -- three consecutive runs on an unchanged tree
- * returned 75, 70 and 70. Measured 2026-09-06, the same build scores 70-75 here
+ * page, and it is unstable -- two consecutive runs on an unchanged tree
+ * returned 75 and 70. Measured 2026-09-06, the same build scores 70-75 here
  * and 100 with `--throttling-method=provided`, with FCP 0.1s, LCP 0.2s, TBT 0ms
  * and no render-blocking resources.
  *

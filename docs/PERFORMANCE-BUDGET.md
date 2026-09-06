@@ -43,8 +43,9 @@ Recorded already, and this is the second time it has cost someone a session: a
 **2.7 s real improvement showed up as noise** in this metric. Lantern computes
 LCP over a dependency graph covering the whole page, so a change that plainly
 helps a visitor can move the reported number by less than the run-to-run
-variance. Three consecutive runs of the smoke script today returned 75, 70 and
-70 with no change to the tree between them.
+variance. Two consecutive runs of the smoke script today returned **75 and 70**
+with no change to the tree between them -- a 5-point spread on an identical
+build, which is larger than most changes anyone would make deliberately.
 
 So a red here is not evidence of a regression, and a green would not be
 evidence of a fix.
