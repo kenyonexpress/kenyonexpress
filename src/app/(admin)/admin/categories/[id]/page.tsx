@@ -1,5 +1,6 @@
 import CategoryForm from '@/components/admin/CategoryForm'
-import { requireSection } from '@/lib/admin/rbac'
+import { requireAdminPage } from '@/lib/admin/rbac'
+import { excludeDeleted } from '@/lib/soft-delete'
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 
@@ -16,7 +17,10 @@ export default async function EditCategoryPage({ params }: Props) {
 
   const [{ data: category }, { data: categories }] = await Promise.all([
     supabase.from('categories').select('*').eq('id', id).single(),
-    supabase.from('categories').select('id, name_he').eq('is_active', true).order('name_he'),
+    excludeDeleted(
+      supabase.from('categories').select('id, name_he').eq('is_active', true),
+      'categories',
+    ).order('name_he'),
   ])
 
   if (!category) notFound()

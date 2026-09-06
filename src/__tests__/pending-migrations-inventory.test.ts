@@ -60,7 +60,7 @@ function manifestFilenames(): string[] {
 }
 
 describe('the pending migration inventory', () => {
-  it('holds the applied migrations and nothing else', () => {
+  it('holds the thirty renumbered files and nothing else', () => {
     // A new pending migration is a deliberate diff here, which is the point:
     // schema changes are the one category where a silent addition is expensive.
     // The list moved wholesale into `applied/` on 2026-09-03; the assertion is
@@ -92,24 +92,12 @@ describe('the pending migration inventory', () => {
       '145_revoke_check_rate_limit_execute.sql',
       '146_wallet_balance_floor.sql',
       '147_money_agorot_remaining_twins.sql',
-      '148_refund_destination.sql',
-      '149_audit_log_append_only.sql',
-      '150_account_deletion.sql',
-      '151_analytics_ingest.sql',
-      '152_payout_machinery.sql',
-      '153_ai_usage.sql',
-      '154_reviews_wishlist.sql',
-      '155_shipment_tracking.sql',
-      '156_analytics_indexes.sql',
-      '157_audit_ip_retention.sql',
-      '158_revoke_anon_public_on_new_functions.sql',
-      '159_pin_search_path_and_revoke_enqueue.sql',
-      '160_fk_indexes.sql',
-      '161_enable_pg_cron_pg_net.sql',
-      '163_orders_indexes.sql',
-      '166_voucher_transition_guard.sql',
-      '167_order_items_money_constraints.sql',
-      '168_wallet_ledger_client_readonly.sql',
+      '148_orders_monthly_partitioning.sql',
+      '149_soft_delete_user_facing_remainder.sql',
+      '169_audit_full_coverage.sql',
+      '170_reporting_tables.sql',
+      '171_search_fts.sql',
+      '172_rls_zero_policy_tables.sql',
     ])
   })
 

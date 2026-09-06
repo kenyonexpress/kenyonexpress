@@ -221,6 +221,8 @@ async function loadOrderContext(
   const productIds = [...new Set(items.map((i) => i.product_id).filter((v): v is string => !!v))]
   const names = new Map<string, string>()
   if (productIds.length > 0) {
+    // No deleted_at filter, on purpose: this names lines on a tax document for
+    // an order that already happened. See src/lib/soft-delete.ts.
     const { data: products } = await admin
       .from('products')
       .select('id, name_he')

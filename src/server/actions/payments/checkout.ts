@@ -361,12 +361,16 @@ async function runBeginCheckout(
 
   // 3. Settlement snapshot from product rows (never from the client)
   const productIds = [...new Set(cart.items.map((i) => i.product_id))]
+  // Soft-deleted products drop out of the map here, so the line-loop below
+  // rejects them: a deleted product must not be sellable, and the service role
+  // does not get that from RLS.
   const { data: productRows, error: productRowsError } = await admin
     .from('products')
     .select(
       'id, type, is_coupon_enabled, supplier_id, platform_percent, supplier_split_percent, discount_percent, coupon_price_ils, cashback_percent',
     )
     .in('id', productIds)
+    .is('deleted_at', null)
   // Fails closed either way - an empty map makes the loop below reject the
   // first line - but on the wrong grounds: "מוצר בעגלה אינו קיים עוד" is a
   // sentence about the catalogue, and a shopper who reads it clears the cart

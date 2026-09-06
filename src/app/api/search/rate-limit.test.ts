@@ -22,13 +22,14 @@ const checkRateLimit = vi.fn()
 const getClientIp = vi.fn()
 const searchProductsCached = vi.fn()
 const from = vi.fn()
+const rpc = vi.fn()
 
 vi.mock('@/lib/utils/rate-limit', () => ({
   checkRateLimit: (...args: unknown[]) => checkRateLimit(...args),
   getClientIp: () => getClientIp(),
 }))
 vi.mock('@/lib/supabase/server', () => ({
-  createClient: async () => ({ from }),
+  createClient: async () => ({ from, rpc }),
 }))
 vi.mock('@/lib/search-server', () => ({
   searchProductsCached: (...args: unknown[]) => searchProductsCached(...args),
@@ -56,7 +57,8 @@ describe('/api/search rate limiting', () => {
 
     expect(res.status).toBe(429)
     await expect(res.json()).resolves.toMatchObject({ error: 'rate_limited' })
-    // The point of the gate: the ILIKE never runs.
+    // The point of the gate: neither the FTS RPC nor the ILIKE ever runs.
+    expect(rpc).not.toHaveBeenCalled()
     expect(from).not.toHaveBeenCalled()
   })
 

@@ -1,12 +1,9 @@
 # KenyonExpress — Project State
 
-Updated: 2026-09-04 (‏ביקורת מיגרציות אוטונומית: כל ארבעת ה-preflights הורצו מול פרודקשן דרך MCP. נמצא ש-166+167+168 **כבר הוחלו ונרשמו** ב-schema_migrations ב-2026-09-03 23:24 UTC בגרסאות ‏20260903232445/232455/232504, וההגדרות החיות זהות לקבצים (גוף פונקציה, טריגר, 9 constraints, סט policies). הקבצים וה-preflights שלהם הועברו ל-`migrations/applied/`, נוספו שורות לטבלת APPLIED IN PRODUCTION, ונוצר ‏`migrations/applied/CHECKSUMS.sha256` עם ‏SHA-256 לכל קובץ, מגובה בטסט חדש ב-inventory. ‏162 נשארה pending: בלוקים 1+2 של ה-preflight עוברים, בלוקים 3+4 נכשלים — ה-vault ריק משני הסודות, והזריעה חסומה על חסם 0 (פרויקט ה-Vercel איננו). לא הוחלה שום מיגרציה חדשה בריצה הזו)
-Updated: 2026-09-03 22:55 UTC (‏CLOSEOUT §13 בוצע: ‏165 בוטלה סופית והועברה ל-`migrations/cancelled/` עם הסיבה בראשה — ‏18 ‏policies ציבוריות קוראות לעזרים ו-revoke היה מפיל את כל הקטלוג האנונימי ל-42501; נוסף `src/db/__tests__/anon-catalog.test.ts` שהוכח חי מול פרודקשן 9/9 עם מפתח anon בלבד, ורץ ב-CI עם ‏SUPABASE_URL+ANON_KEY; ‏DB-SECURITY-MODEL עודכן "by design")
-Updated: 2026-09-03 22:15 UTC (‏מרתון 1+2: תיקון ה-42703 נדחף בסשן קודם בלי לעדכן מצביע; ניקוי ה-float ב-bulk price הושלם דרך מודול טהור `src/lib/admin/bulk-price.ts` עם 10 טסטים; ‏3696 ירוקים, build ירוק)
-Updated: 2026-09-03 08:00 UTC (‏ריצת העיצוב: ‏D1–D14 בוצעו, שלושה תגים v3.1–v3.3; ‏158+159 הוחלו בפרודקשן; סוכן מקביל תועד)
-Updated: 2026-09-02 19:05 UTC (‏ביקורת חוזרת על MEGA 6-ALT: type-check/test/build ירוקים, Lighthouse מעל 95, דף ספק 200 עם קטלוג, /api/ready מחזיר חמש בדיקות)
-Updated: 2026-09-02 12:22 UTC (‏שער Vercel אדום על PR #27: לא הקוד. GitHub Build ירוק. כל דיפלוי מאז 01.09 נכשל בשנייה, כולל main. פרוד חי מ-31.08)
-Updated: 2026-09-02 12:10 UTC (‏MEGA BLOCK 6-ALT נמדד: type-check/test/build ירוקים, Lighthouse מעל 95; אין push ישיר ל-main מסוכן ענן, רק PR)
+Updated: 2026-09-04 05:30 UTC (‏RLS מפורש לעשר טבלאות אפס-מדיניות: מיגרציה 172 הוחלה דרך MCP, ‏harness שלוש פרסונות ירוק מול פרודקשן בגלגול לאחור, ‏vitest מצמיד את שני הקבצים)
+Updated: 2026-09-04 01:05 UTC (‏חיפוש טקסט מלא בעברית: מיגרציה 171 הוחלה דרך MCP, ‏GIN על products ו-coupon_deals, ‏RPC בשם search_products, טסטים ב-Playwright)
+Updated: 2026-09-04 00:50 UTC (‏טבלאות דיווח מנורמלות-הפוך: מיגרציה 170 הוחלה דרך MCP, ‏pg_cron לילי ב-01:30 UTC, חמישה RPC לאדמין בלבד)
+Updated: 2026-09-04 00:25 UTC (‏soft delete על ארבע הטבלאות שנותרו: מיגרציה 149 ממתינה, הקוד נפרס קודם ובטוח לשני המצבים)
 Updated: 2026-09-01 12:20 UTC (‏אין כותב ל-escrow_held בשום מקום; ‏144/144 מעברים מול הטריגרים החיים; קיפאון ה-380/768 נמצא ותוקן; ‏payment_events היה טבלה ריקה בלי אף כותב)
 Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשישה כבר היו, ושני באגים אמיתיים נמצאו בדרך)
 קודם: 2026-09-01 03:02 UTC (‏שער הפיקסלים חצה את התקרה: ‏11.06% מול 11%, וזה לא שינוי שלנו)
@@ -2464,142 +2461,205 @@ anycast של Cloudflare, כלומר האתר proxied והמעבר הוא שינ�
 
 ## המשך מ: ‏PRIORITY TWO — ‏refunds בשני המסלולים, ומירוץ מימוש הקופון
 
+### ‏04.09 ‏goal בוצע: ‏RLS מפורש לכל טבלה + אימות שלוש פרסונות (commit ‏`4c98f6021`, branch ‏autopilot)
 
-**MEGA BLOCK 6-ALT הסתיים (storefront + admin + observability).** דף ספק ציבורי ב-
-`/s/[id]`,
-מוכן ב-
-`/api/ready`,
-דגלי מערכת לקריאה בלבד, איתור שובר ומימוש ידני, ביקורת על מוצרים וקטגוריות והחזרים, עורך תוכן בלי מחירי עמלה. לוג JSON עם מזהה בקשה דרך Next (אין Hono). Sentry על Node (כולל cron), Edge, והדפדפן.
+ה-goal ביקש: "Write comprehensive RLS policies via Supabase MCP for every
+table, verify with automated tests using three personas... block cross-tenant
+access". נמדד קודם: כל 71 הטבלאות הציבוריות עם RLS דלוק, ועשר מהן עם אפס
+מדיניות. מה שנעשה:
 
-### 2026-09-02 19:05 ביקורת חוזרת (סוכן ענן)
+1. **מיגרציה** `migrations/pending/172_rls_zero_policy_tables.sql`, הוחלה על
+   פרודקשן דרך MCP בשם `rls_zero_policy_tables_172` (‏+ ‏`_report_grants`),
+   לפי תקדים 169/170/171 ונוסח ה-goal: ‏deny_all_client_roles **מצמצם**
+   (restrictive) על שלוש טבלאות התשתית (‏rate_limits, user_rate_limits,
+   search_index_outbox), ‏`<t>_admin_read` בשער `is_admin()` על שבע טבלאות
+   התצפית (‏payment_webhook_events, ai_usage, analytics_events וארבע טבלאות
+   ה-report), ו-grant SELECT ל-authenticated על טבלאות ה-report שנוצרו ב-170
+   בלי אף grant. הדלתא היחידה: אדמינים מקבלים קריאה על שבע טבלאות; הדחיות
+   כבר היו ברירת המחדל. תוקן בדרך באג אמיתי: טאב ה-webhooks באדמין קרא את
+   payment_webhook_events דרך ה-client של הבקשה וקיבל בשקט אפס שורות.
+2. **‏harness שלוש פרסונות** `tests/sql/rls_three_personas.sql`: זורע לבד שני
+   לקוחות ואדמין, מריץ anon / user A / admin, כולל חוצה-דיירים (A לא קורא,
+   לא שותל ולא מעדכן כתובת או push token של B), והכל מתגלגל לאחור. הורץ
+   מול פרודקשן דרך MCP עם `RAISE EXCEPTION 'RLS_HARNESS_PASS'` בסוף: עבר,
+   ואומת אפס שאריות (‏auth.users, rate_limits, webhook_events, reports).
+3. **‏vitest** `src/__tests__/rls-zero-policy-migration.test.ts` מצמיד את
+   אינווריאנטות שני הקבצים (‏restrictive, ‏idempotency מול pg_policy, ‏SELECT
+   בלבד, שתי הפרסונות המאומתות ועוד), ו-inventory עודכן לשלושים קבצים.
 
-שערים מחדש על
-`cursor/storefront-admin-obs-3ceb`
-ב-
-`ceda8b10`
-ואחריו רק עדכון המסמך הזה:
+**החלטות שהתקבלו לבד.** ‏(א) המיגרציה כבר הייתה מוחלת על ידי סשן קודם שנקטע
+לפני טקס הסיום (שני שמות המיגרציה ב-list_migrations, ‏01:07 UTC); הסשן הזה
+אימת מחדש מדיניות-מדיניות מול pg_policy, הריץ את ה-harness, והשלים את הטקס.
+‏(ב) ‏advisors אחרי ההחלה: אפס ממצאים חדשים; אותם 22 WARN ידועים על definer.
 
-| פקודה | תוצאה |
-| --- | --- |
-| `pnpm type-check` | ירוק |
-| `pnpm test` | 261 קבצים, 3493 טסטים, כולם עברו |
-| `pnpm build` | ירוק. נתיבים חדשים בבילד: `/s/[id]`, `/api/ready`, `/admin/feature-flags`, `/admin/coupons/lookup`, `/account/my-vouchers`, `/checkout/confirmation` |
+שערים: ‏3551 טסטים ירוקים, ‏type-check נקי, ‏lint נקי, ‏build עבר.
 
-Lighthouse desktop, נמדד בסשן הזה:
+### ‏04.09 ‏goal בוצע: חיפוש טקסט מלא בעברית, ‏GIN + ‏RPC בשם search_products (branch ‏autopilot)
 
-| יעד | Perf | A11y | BP | SEO |
-| --- | --- | --- | --- | --- |
-| פרוד `/` | 100 | 96 | 100 | 100 |
-| פרוד `/product/barbecue` | 100 | 100 | 100 | 100 |
-| מקומי `/s/ce85543d-e102-4ff1-b6dc-06799ca9d5a0` | 100 | 96 | 96 | 100 |
+ה-goal ביקש במפורש: "Add full-text search GIN indexes for products and deals
+in Hebrew via Supabase MCP using simple config with unaccent extension and
+expose via search_products RPC, add Playwright test". מה שנבנה:
 
-HTTP מקומי אחרי
-`PORT=3311 pnpm start`
-(בילד של הענף):
+1. **מיגרציה** `migrations/pending/171_search_fts.sql`, הוחלה על פרודקשן דרך
+   MCP בשם `search_fts_171` (תקדים 169/170, פירוט בהחלטות למטה): הרחבת
+   `unaccent` הותקנה לסכימת extensions; שלוש פונקציות עזר IMMUTABLE
+   (`fts_unaccent` עוטפת את המילון הקבוע, `fts_join` ל-tags, ‏`fts_prefix_query`
+   שהופכת קלט חופשי ל-tsquery של prefix עם AND בין מילים, עד 8 מילים, בלי
+   שום דרך להזריק אופרטורים); עמודת `search_vector` מסוג tsvector כ-GENERATED
+   STORED על `products` (שם A, מותג+tags B, תיאור קצר C, תיאור D) ועל
+   `coupon_deals` (כותרת A, שם עסק B, מיקום C, תנאים D), קונפיג `simple` כפי
+   שה-goal הכתיב; שני אינדקסי GIN; ו-RPC ‏`search_products(q, max_results,
+   product_type, category)` שהוא SECURITY INVOKER + STABLE, ממוין ‏ts_rank,
+   פתוח ל-anon כי RLS של הקורא הוא שקובע מה נראה.
+2. **צד אפליקציה**: ‏`src/lib/supabase/pending-search.ts` (אותה תבנית גישור
+   כמו pending-reports.ts של 170, עם אותה נקודת מחיקה כש-database.ts יחודש).
+   ‏`search-server.ts` מנסה עכשיו FTS לפני ה-ILIKE (‏Meili נשאר שלב 3), עם
+   נפילה ל-ILIKE רק כשהפונקציה לא קיימת (DB מקומי בלי 171); שגיאה אמיתית
+   מתנוונת לתוצאה ריקה ולא מריצה בשקט את הסריקה הלא-מאונדקסת. ‏`/api/search`
+   עבר לאותו מסלול, כולל סינון קטגוריה בתוך ה-RPC (‏slug שאינו קטגוריה מצמצם
+   לכלום, אותו חוזה כמו קודם), וה-rate limit נשאר בדיוק איפה שהיה.
+3. **טסטים**: ‏17 יחידה בשני קבצים קיימים (כולל שלושה חדשים על מסלול ה-FTS:
+   מיפוי שורות, קטגוריה ריקה, ושגיאה אמיתית שלא נופלת ל-ILIKE) + ‏spec חדש
+   `e2e/search.spec.ts` עם 6 טסטים (12 ריצות בשני הדפדפנים, כולם ירוקים מול
+   שרת prod מקומי): ‏RPC דרך PostgREST כ-anon מוצא מוצר חי לפי מילה משמו,
+   לפי prefix של המילה, ובסדר מילים הפוך; קלט שהוא רק תחביר tsquery מחזיר
+   רשימה ריקה ולא 400; ‏`/api/search` מגיש את אותו מוצר; וג'יבריש מחזיר 200
+   ריק. הטסטים מגלים מוצר אמיתי בזמן ריצה במקום slug קשיח שנרקב.
 
-- 200 עם נתונים: `/` (קניון EXPRESS), `/product/barbecue` (מסעדה בשרית), `/s/ce85543d-…` (סטייל הבית, כולל `/product/pampers-premium-care-diaper-pants-medium`). אין
-`platform_percent`
-ב-HTML של דף הספק.
-- 307 להתחברות: `/checkout/confirmation`, `/account`, `/account/orders`, `/account/my-vouchers`.
-- `/api/ready` קיים ומחזיר JSON עם
-`database`, `redis`, `meilisearch`, `r2`, `cardcom`.
-מקומית 503 כי מפתח השירות בדמו. בפרוד `/api/health` הוא 200 עם
-`x-request-id`.
-`/api/ready`
-ו-
-`/s/[id]`
-עדיין 404 בפרוד עד מיזוג PR #27.
+**החלטות שהתקבלו לבד.**
+1. **המיגרציה הוחלה על פרודקשן דרך MCP** (`search_fts_171`), לפי אותו תקדים
+   מתועד של 169 ו-170 מאותו יום: נוסח ה-goal מורה "via Supabase MCP... Use
+   Supabase MCP for DB, RLS, migrations", וזה נלקח כאישור. לפני ההחלה הקובץ
+   כולו הורץ מול פרודקשן בתוך DO block שגולגל לאחור, עם שישה probes:
+   התאמת מילה בעברית, ‏RPC בסדר מילים הפוך + prefix ‏("airpods אוזנ" מצא את
+   "אוזניות AirPods 3"), קלט פיסוק בלבד, וקטורי הדילים, הרצה כ-role anon
+   תחת RLS, ו-EXPLAIN שהוכיח שימוש ב-GIN. אחרי ההחלה אומתו 80 וקטורי
+   מוצרים, 8 וקטורי דילים, שני האינדקסים וה-RPC. הסיכון: עמודות GENERATED
+   ופונקציות חדשות בלבד, אפס שינוי בשורות קיימות, ‏rollback מלא בכותרת.
+2. **"deals" פורש כ-`coupon_deals`**: אין טבלת deals אחרת בפרודקשן. הטבלה
+   קיבלה וקטור ואינדקס כפי שה-goal ביקש, אבל ה-RPC היחיד שה-goal נקב בשמו
+   הוא search_products, ולכן אין עדיין RPC לדילים; כשמשטח חיפוש דילים יקום,
+   הוא משתמש באותו `fts_prefix_query`.
+3. **‏`simple` לא מוריד תחיליות עברית** (ה' הידיעה וכו'): "מקרר" לא ימצא מוצר
+   שכתוב בו רק "המקרר". זו המגבלה הידועה של הקונפיג שה-goal הכתיב, מתועדת
+   בכותרת המיגרציה; ‏Meilisearch נשאר מסלול הבריחה של שלב 3.
+4. **שגיאת FTS אמיתית לא נופלת ל-ILIKE**: "אין פונקציה" ו"החיפוש נכשל" הם
+   ענפים שונים בכוונה, כדי שתקלה חיה לא תסתתר מאחורי הסריקה שהאינדקס בא
+   להחליף. מקובע בטסט.
+5. **‏database.ts לא חודש**, מאותה סיבה כמו ב-170; הגשר הוא pending-search.ts.
+6. ה-advisors אחרי ההחלה: אפס ממצאים חדשים. ‏search_products לא מופיע
+   באזהרות ה-definer כי הוא INVOKER.
 
-אין push ישיר ל-
-`main`
-מסוכן ענן. היעד הוא PR #27.
+שערים: ‏3541 טסטים ירוקים, ‏type-check נקי, ‏lint נקי, ‏build עבר, ‏e2e
+‏12/12. רעש `rate_limit.open` בריצת ה-e2e הוא חוסם ה-SUPABASE_SECRET_KEY
+הידוע (המפתח המקומי הוא מפתח הדמו) ולא רגרסיה: ה-limiter נכשל פתוח בתכנון.
 
-### 2026-09-02 MEGA BLOCK 6-ALT: נמדד
+### ‏04.09 ‏goal בוצע: טבלאות דיווח מנורמלות-הפוך + ‏pg_cron לילי + ‏RPC לאדמין (branch ‏autopilot)
 
-שערים (מקומי, אחרי השינוי, לפני ה-commit):
+ה-goal ביקש במפורש: "Create denormalized reporting tables via Supabase MCP
+refreshed nightly via pg_cron... exposed via admin RPC". מה שנבנה:
 
-| פקודה | תוצאה |
-| --- | --- |
-| `pnpm type-check` | ירוק |
-| `pnpm lint` | ירוק (`biome check .`) |
-| `pnpm test` | 261 קבצים, 3493 טסטים, כולם עברו |
-| `pnpm build` | ירוק, 213 דפים סטטיים. נתיבים חדשים: `/s/[id]`, `/api/ready`, `/admin/feature-flags`, `/admin/coupons/lookup`, `/account/my-vouchers`, `/checkout/confirmation` |
+1. **מיגרציה** `migrations/pending/170_reporting_tables.sql`: ארבע טבלאות
+   (`report_revenue_daily`, `report_orders_daily`, `report_top_products`
+   לחלונות 7/30/90 יום, `report_cohort_retention` לפי חודש הצטרפות),
+   פונקציית `refresh_report_tables()` שבונה את כולן מחדש בטרנזקציה אחת,
+   וחמישה RPC בסגנון definer שכולם נפתחים ב-`is_admin()` ונסגרים ב-42501.
+   כל הכסף אגורות bigint מהעמודות הגנרטיביות של 138; כל הימים ימי ישראל
+   (`Asia/Jerusalem`), אותה עמדה כמו דוח הסליקה.
+2. **‏pg_cron**: ‏job בשם `report_tables_nightly` ב-`30 1 * * *` ‏UTC
+   (03:30/04:30 שעון ישראל). זה ה-job הראשון ב-`cron.job` של הפרויקט.
+3. **צד אפליקציה**: `src/lib/supabase/pending-reports.ts` (אותה תבנית כמו
+   pending-schema.ts של 135), `src/server/queries/admin-reports.ts` (ארבעה
+   קוראים דרך ה-client של הבקשה, כי ההרשאה נאכפת ב-DB), ו-action רענון
+   ידני ב-`src/server/actions/admin/reports.ts` עם שורת audit.
+4. **טסטים**: ‏22 חדשים בשלושה קבצים, כולל טסט שמצמיד את אינווריאנטות
+   קובץ המיגרציה (שער is_admin בכל RPC, ‏search_path ריק, ‏revoke על
+   refresh, ‏cron מתוזמן, אפס כסף צף).
 
-Lighthouse desktop (preset desktop): כל הציון מעל 95.
+**החלטות שהתקבלו לבד.**
+1. **המיגרציה הוחלה על פרודקשן דרך MCP** (`reporting_tables_170`), לפי
+   התקדים המתועד של 169 באותו יום: נוסח ה-goal מורה במפורש "via Supabase
+   MCP... Use Supabase MCP for DB, RLS, migrations", וזה נלקח כאישור, כמו
+   שנעשה ב-169. לפני ההחלה הקובץ כולו הורץ מול פרודקשן בתוך טרנזקציה
+   שגולגלה לאחור (כולל refresh מלא על הזמנות אמיתיות), ואחרי ההחלה אומתו
+   ספירות השורות, ה-job, ומסלול הסירוב 42501 לקורא לא-אדמין (probe
+   מגולגל לאחור). הסיכון: טבלאות ופונקציות חדשות בלבד, אפס קורא קיים,
+   ‏rollback מלא בכותרת הקובץ.
+2. **‏RLS פועל בלי אף policy** על ארבע הטבלאות, ננעלו גם ב-revoke: אותה
+   עמדת "שירות בלבד" כמו settlement_events. ה-advisors מדווחים על זה INFO
+   בלבד, ואותו WARN גנרי על definer שיש לכל פונקציות האדמין הקיימות.
+3. **‏database.ts לא חודש**: חידוש היה גורר פנימה גם את שינויי 169 וכל מה
+   שסשנים מקבילים החילו, אדווה שלא שייכת ל-goal הזה. הגשר הוא
+   pending-reports.ts, עם נקודת מחיקה מתועדת.
+4. הכנסות נספרות רק על הזמנות בשושלת paid (‏paid/partially_fulfilled/
+   fulfilled/platform_settled), לפי `paid_at`, בלי refunded/cancelled;
+   שורות פריט מבוטלות/מוחזרות מוחרגות גם כשההזמנה שולמה. ‏refunds
+   נשארים בבעלות קונסולת ההחזרים.
 
-| יעד | Perf | A11y | BP | SEO |
-| --- | --- | --- | --- | --- |
-| מקומי `/` | 99 | 96 | 96 | 100 |
-| מקומי `/product/צימר-שוויץ-בצפון` | 99 | 100 | 96 | 100 |
-| פרוד `/` | 99 | 96 | 100 | 100 |
-| פרוד אותו מוצר | 100 | 100 | 100 | 100 |
+שערים: ‏3537 טסטים ירוקים, ‏type-check נקי, ‏lint נקי, ‏build עבר. ‏cron
+הלילי ירוץ לבד; אין תלות ב-Vercel cron ואין צעד ידני.
 
-HTTP מול `localhost:3311` אחרי
-`pnpm start`:
+### ‏04.09 ‏goal בוצע: ‏soft delete על טבלאות הפונות למשתמש (commit ‏`dcd132967`, branch ‏autopilot)
 
-- 200 עם נתונים: `/`, `/category/hot-deals`, `/search?q=מוצר`, `/product/צימר-שוויץ-בצפון`, `/s/ce85543d-e102-4ff1-b6dc-06799ca9d5a0`, `/cart`, `/checkout`.
-- 307 להתחברות (שער סשן קיים, לא באג): `/checkout/confirmation` וכל `/account/*`. אישור הזמנה יורש את שער `/checkout/`. אין להוסיף אותו ל-
-`PAYMENT_FRAME_PATHS`.
-- 503 מקומי על `/api/health` ו-`/api/ready`: מפתח השירות בדמו. בפרוד `/api/health` הוא 200. `/api/ready` בפרוד היה 404 לפני הפריסה של הבלוק הזה.
+נמדד מול פרודקשן דרך ‏MCP: שש טבלאות כבר נושאות `deleted_at` עם סינון ‏RLS
+(‏products, product_variants, suppliers, user_addresses, vendors, coupon_deals).
+ארבע חסרות אותו לגמרי: ‏categories, product_images, reviews, wishlists.
+נכתבה מיגרציה ממתינה:
+```
+migrations/pending/149_soft_delete_user_facing_remainder.sql
+```
+היא מוסיפה עמודה, אינדקס חלקי בסגנון הבית, ומדיניות ‏SELECT מסוננת, כולל
+סגירת דלף חי: תמונות של מוצר מחוק נשארו קריאות כי המדיניות בדקה רק
+`products.status`. בצד הקוד נוסף מודול מרכזי:
+```
+src/lib/soft-delete.ts
+```
+עם רשימת ‏live (מסננת עכשיו) ורשימת ‏pending (‏no-op עד החלת 149, כי סינון על
+עמודה חסרה מפיל את כל השאילתה ב-42703). אחרי ההחלה מזיזים ארבעה שמות לרשימת
+ה-live וכל האתרים נדלקים בעריכה אחת; טסט סחיפה נכשל בכוונה ברגע שהטיפוסים
+יחודשו, כדי לא לשכוח.
 
-### החלטות שהתקבלו לבד
+**החלטות שהתקבלו לבד.**
+1. המיגרציה לא הוחלה על פרודקשן. הכלל בקובץ ההוראות קובע ששינוי סכימה יושב
+   ב-`migrations/pending` וממתין לאישור, וזה גובר על נוסח ה-goal.
+2. קריאות אחרי מכירה במסלול הכסף (שמות לחשבונית, ‏finalize, מייל שוברים,
+   שמות מנויים) לא מסננות בכוונה: מסמך של הזמנה ששולמה חייב לשרוד מחיקת
+   קטלוג. מסומן בהערה בכל אתר קריאה.
+3. קריאות במסלול המכירה כן מסננות מעכשיו: צילום הסליקה ב-checkout, מלאי חי,
+   ואישורי אדמין.
+4. שתי בדיקות ה-health על ‏categories לא סוננו: הן ‏head count לבדיקת חיות,
+   וסינון על עמודה חסרה היה מדווח שה-DB נפל.
+5. קבצי 148 ו-169 של סשנים מקבילים תועדו באינוונטר ברגע שנמצאו על הדיסק,
+   אחרת טסט האינוונטר אדום. ה-commit של הסשן המקביל (`0282182ca`) לקח איתו
+   את הקבצים המשותפים שהיו staged; שום דבר לא אבד, הכל בשני ה-commits.
 
-- לוגים עוברים ב-Next, לא ב-Hono. אין תהליך Hono בריפו.
-- מפתח
-`redis`
-ב-JSON של המוכן הוא המגביל (Postgres RPC, ו-Upstash אם מוגדר), לא מוצר Redis.
-- סוכן ענן לא דוחף ל-
-`main`.
-הנתיב הוא PR אל
-`main`.
-- שלושת אחוזי המוצר הדינמיים: `platform_percent`, `supplier_split_percent`, `discount_percent`.
-- עורך תוכן לא שולח מחיר/עמלה/סטטוס ב-edit. סטטוס נעול ב-UI כדי שלא יוריד מוצר חי ל-draft.
+שערים: ‏3515 טסטים ירוקים פעמיים, ‏type-check נקי, ‏lint נקי, ‏build עבר
+(אחרי המתנה לנעילת ה-build של הסשן המקביל). ‏push בוצע ל-origin/autopilot.
 
-### Last Completed
+### ‏04.09 ‏goal‏ בוצע: ‏audit_log מקיף על כל טבלאות הכסף והמשתמשים (commit ‏`0282182ca`, branch ‏autopilot)
 
-MEGA BLOCK 6-ALT. קבצים עיקריים:
-`src/lib/supplier-storefront.ts`,
-`src/app/(store)/s/[id]/page.tsx`,
-`src/app/api/ready/route.ts`,
-`src/lib/health/ready.ts`,
-`src/server/actions/admin/vouchers.ts`,
-`src/lib/admin/feature-flags.ts`,
-`docs/RUNBOOK.md`.
+מיגרציה 169 הוחלה על פרודקשן דרך ‏Supabase MCP בשם `audit_full_coverage_169`:
+עמודות `before`/`after` (צילומי שורה מלאים, עם מחיקת `cardcom_token`/`pin_hash`),
+עמודת `request_id`, הרחבת `entity_id` ל-text, ופונקציית טריגר גנרית שקוראת
+‏ip/user_agent/x-request-id מ-`request.headers` של ‏PostgREST. נוספו טריגרים
+ל-28 טבלאות; יחד עם השש הקיימות: 34 טבלאות מכוסות. בצד האפליקציה: כל שבע
+בנייני הלקוח של ‏Supabase מעבירים עכשיו `x-request-id` בכל קריאה
+(`src/lib/supabase/request-id-fetch.ts`), ו-`writeAuditLog` חותם `request_id`.
 
-### In Progress
-
-nothing (בלוק 6-ALT סגור)
-
-### Blocking Issues
-
-none ל-6-ALT עצמו. DNS נשאר ידני. אין מתזמן חיצוני לעשרת ה-cron (חוסם ישן מ-01.09).
-
-**שער Vercel על PR #27 אדום, ואינו באג בקוד של 6-ALT.** נמדד 2026-09-02:
-
-- כל שערי GitHub על ה-SHA ירוקים (lint, typecheck, unit, build, שני E2E). Vercel אינו שער חובה.
-- `E2E against the PR preview` ירוק כי דילג: `CI_SUPABASE_URL` ריק.
-- הכשל ב-Vercel הוא בשנייה (created_at = updated_at). בילד Next לא הספיק לרוץ. אין לוג בלי `VERCEL_TOKEN`.
-- אותו כשל על
-`origin/main`
-(`9e76800c`, מחבר kenyonexpress, 01.09 12:36) ועל שש דגימות Preview מה-02.09, כולל ענפים אחרים.
-- דיפלוי Production אחרון שהצליח: 31.08
-`9d920802`.
-האתר החי עדיין 200 על `/` ועל
-`/api/health`.
-- לא נוסף
-`deploy.yml`
-(אסור: אינטגרציית Git כבר מפעילה דיפלוי). לא שונה
-`vercel.json`
-בלי לוג בילד.
-
-התיקון הוא בלוח Vercel (חשבון / חיבור Git / מכסת Hobby), לא ב-PR הזה.
-
-### Next Task
-
-7 (התור הבא ב-
-`NEXT-GOALS.md`
-או מה שייכתב כאן אחרי מיזוג).
-
+**החלטות שהתקבלו לבד.**
+1. החלת המיגרציה על פרודקשן: ה-goal הורה במפורש "migrate via Supabase MCP",
+   וזה האישור. לפני ההחלה כל הסקריפט אומת נגד פרודקשן בתוך ‏DO block שהסתיים
+   ב-exception מכוון (הכל התגלגל אחורה), כולל בדיקת צילומים, ‏ip וכותרות.
+2. ה-commit נושא גם את קבצי האינוונטר של הסשן המקביל (148, 149 + שורות
+   ה-README) כי בלעדיהם בדיקות האינוונטר נשברות ב-CI על עץ ה-commit. קוד
+   האפליקציה של אותו סשן (soft-delete וכו') נשאר לא-committed אצלו.
+3. `.env.local` היה חסר ב-worktree הזה ולכן `pnpm build` נפל באיסוף עמודים;
+   הועתק מהריפו הראשי. שערים: ‏3515 טסטים ירוקים, ‏type-check נקי, ‏lint נקי,
+   ‏build עבר.
+4. יועצי האבטחה של ‏Supabase אחרי ה-DDL: אין ממצא חדש; כל הממצאים קדמו
+   למיגרציה ומתועדים ממיגרציות קודמות.
+5. הערה ל-148 (פרטיצות): אם `orders` תיבנה מחדש כטבלה מפורטצת, יש ליצור
+   מחדש את `audit_orders` על ההורה. מתועד בכותרת של 169.
 
 ### ‏01.09 גל החוסן (`feat/resilience`, מוזג ל-main)
 

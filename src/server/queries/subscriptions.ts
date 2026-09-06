@@ -83,6 +83,9 @@ export async function getMySubscriptions(): Promise<SubscriptionsResult> {
   // Product names in one round trip rather than one per row. The products table
   // exists regardless of 135, so this read is typed normally.
   const productIds = [...new Set(rows.map((r) => r.product_id))]
+  // No deleted_at filter, on purpose: this names subscriptions the customer
+  // already holds; hiding the name does not cancel the subscription. See
+  // src/lib/soft-delete.ts.
   const { data: products } = await supabase
     .from('products')
     .select('id, name_he, slug')

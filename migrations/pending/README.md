@@ -381,6 +381,12 @@ running. Order is the position in the apply sequence.
 | `143_revoke_unused_definer_execute.sql` | Revokes `EXECUTE` on 5 SECURITY DEFINER functions from `anon`/`authenticated` | **Medium.** Closes a live RLS bypass in `voucher_success_payload`. `supplier_app_context` was withdrawn from this file — the Expo till calls it | 19 | `src/__tests__/revoked-functions-have-no-callers.test.ts` green | `GRANT EXECUTE ON FUNCTION public.<fn> TO anon, authenticated;` (5 statements, listed in the file) |
 | 144 | `144_revoke_authenticated_dml.sql` | Revokes INSERT/UPDATE/DELETE from `authenticated` on the 8 RLS-on-zero-policy tables | **Low.** Defence in depth; RLS already blocks these, but RLS does not cover `TRUNCATE` | 20 | 122 (same 5 tables, policies first) | `GRANT INSERT, UPDATE, DELETE ON public.<t> TO authenticated;` (8 statements, listed in the file) |
 | 145 | `145_revoke_check_rate_limit_execute.sql` | Revokes `EXECUTE` on `check_rate_limit` from `anon`/`authenticated` | **HIGH IF MISORDERED.** See below | **21 — LAST** | ⛔ **CODE-FIRST: commit `d5c2739d4`** | `GRANT EXECUTE ON FUNCTION public.check_rate_limit(text, integer, integer) TO anon, authenticated;` |
+| 148 | `148_orders_monthly_partitioning.sql` | Converts `orders` to monthly range partitions on `created_at`; PK becomes `(id, created_at)`, 16 referencing tables gain a trigger-filled twin column and composite FKs | **HIGH.** Structural conversion of the busiest financial table; apply only in a maintenance window, details in the file header | after 137 | pg_cron (installed) | in file header |
+| 149 | `149_soft_delete_user_facing_remainder.sql` | `deleted_at` + partial index + RLS select filters on `categories`, `product_images`, `reviews`, `wishlists`; splits `wishlists_owner_all` into four per-command policies | **Low.** Additive column; policies only narrow client reads. Service-role call sites are gated by `src/lib/soft-delete.ts`, whose pending list is flipped to live after apply | any | none | in file header |
+| 169 | `169_audit_full_coverage.sql` | `audit_log` before/after/request_id columns, `entity_id` uuid→text, generic trigger v2 on every financial and user table | **✅ APPLIED 2026-09-04** via MCP as `audit_full_coverage_169`, on the explicit instruction of the /goal that requested it. Validated first against production inside a rolled-back DO block (snapshots, header capture, ip parsing all probed), then applied; 34 audit triggers verified after. The file stays here as the record, like 122-147 | any | none | in file header |
+| 170 | `170_reporting_tables.sql` | 4 denormalized reporting tables (`report_revenue_daily`, `report_orders_daily`, `report_top_products`, `report_cohort_retention`), nightly `pg_cron` rebuild at 01:30 UTC, 5 admin-only definer RPCs gated on `is_admin()` | **✅ APPLIED 2026-09-04** via MCP as `reporting_tables_170`, on the explicit instruction of the /goal that requested it. Validated first end-to-end inside a rolled-back transaction (full refresh over real orders), then applied; row counts, the cron job and the 42501 deny path for a non-admin were verified after. New tables only, no existing reader | any | none | in file header |
+| 171 | `171_search_fts.sql` | Hebrew FTS: `unaccent` extension, generated `search_vector` tsvector (config `simple`) + GIN index on `products` and `coupon_deals`, INVOKER `search_products` RPC (prefix tsquery, ts_rank, anon-callable) | **✅ APPLIED 2026-09-04** via MCP as `search_fts_171`, on the explicit instruction of the /goal that requested it. Validated first inside a rolled-back DO block (Hebrew word match, reversed-order prefix query, punctuation-only input, anon RLS path, GIN plan), then applied; 80 product + 8 deal vectors and both indexes verified after. Additive columns and new functions only | any | none | in file header |
+| 172 | `172_rls_zero_policy_tables.sql` | Explicit policies for the ten RLS-on-zero-policy tables: restrictive `deny_all_client_roles` on `rate_limits`/`user_rate_limits`/`search_index_outbox`, `<t>_admin_read` (`is_admin()`) on `payment_webhook_events`, `ai_usage`, `analytics_events` and the 4 report tables, + `SELECT` grant to `authenticated` on the report tables. Fixes the admin webhooks tab, which read `payment_webhook_events` through the request client and silently got zero rows | **✅ APPLIED 2026-09-04** via MCP as `rls_zero_policy_tables_172` (+ `_report_grants`), on the explicit instruction of the /goal that requested it. Verified after apply with the self-seeding three-persona harness `tests/sql/rls_three_personas.sql` run through MCP in a rolled-back transaction: anon/user/admin assertions all held, incl. cross-tenant denial between two users. Only delta: admins gain SELECT on 7 observational tables; the denies were already the default | any | none | in file header |
 
 ## 138-141 add GENERATED columns, and that is what makes step 2 possible
 
@@ -508,180 +514,37 @@ list from this directory and checks it against every `.ts`/`.tsx` in **both**
 `src/` and `apps/`, so revoking a function the Expo till uses fails a test
 rather than a till.
 
-## `157_audit_ip_retention.sql`, added 2026-09-02
+## `149_soft_delete_user_facing_remainder.sql`, added 2026-09-04
 
-IP aging on the append-only audit trail, AFTER 149. The exception is carved
-into 149's trigger as narrowly as it can be written: UPDATE passes only when
-the sole change is ip_address -> NULL on a row older than 365 days; DELETE
-stays refused. fn_audit_retention_sweep() (definer, EXECUTE service-role
-only) is the single caller, driven monthly by /api/cron/retention, which
-answers ok+pending until this applies.
+Soft delete for the four user-facing tables that still lack it. Measured
+against production 2026-09-04 over MCP: `products`, `product_variants`,
+`suppliers`, `user_addresses`, `vendors` and `coupon_deals` already carry
+`deleted_at` with RLS filters; `categories`, `product_images`, `reviews` and
+`wishlists` have no such column at all. This file adds `deleted_at
+timestamptz`, the house partial index, and rewrites the client-facing SELECT
+policies so a deleted row disappears for shoppers while admin keeps it for
+restore. It also closes a live gap: `product_images` were readable for a
+soft-deleted product, because the old policy only checked
+`products.status = 'active'`.
 
-**Dry run against production, rolled back** (149 recreated first inside the
-txn): ordinary UPDATE and DELETE refused 42501; sweep aged the seeded old
-row, left the young row intact; second sweep aged 0.
+**The code side ships first and is safe either way.** Service-role readers
+bypass RLS, so their filter lives in `src/lib/soft-delete.ts`, which keeps a
+live list (filters now) and a pending list (no-op until this file is
+applied — filtering on a missing column is a 42703 that kills the whole
+query). After apply: regenerate types, and `src/lib/soft-delete.test.ts`
+fails on purpose until the four names move to the live list.
 
-## `156_analytics_indexes.sql`, added 2026-09-02
+## `148_orders_monthly_partitioning.sql`, added 2026-09-03
 
-Two partial indexes for the admin analytics windows: orders(paid_at DESC)
-where paid and not deleted (production has only the OPPOSITE half,
-idx_orders_pending_expiry), and vouchers(redeemed_at DESC) where redeemed
-(the existing redeemed index leads on supplier_id, useless for admin-wide
-window scans).
-
-**Dry run against production, rolled back:** both created, pg_indexes
-count=2 inside the transaction.
-
-## `155_shipment_tracking.sql`, added 2026-09-02
-
-Physical fulfillment's two missing columns -- order_items.carrier +
-tracking_number (the state machine itself already lives in item_status /
-shipped_at / delivered_at, per line) -- and 'order_shipped' added to the
-outbox kind check. **Must run after 150** (the file refuses otherwise: both
-rebuild the same constraint, and running first would drop account_deleted).
-Transitions stay in code (audited server action, portal §5.2); production
-has no item_status trigger by design.
-
-**Dry run against production, rolled back:** columns added, a real physical
-line moved pending→shipped with carrier+tracking, order_shipped accepted,
-a bogus kind still 23514.
-
-## `154_reviews_wishlist.sql`, added 2026-09-02
-
-Verified-purchase reviews and the wishlist the masthead heart points at. The
-purchase verification IS the INSERT policy: a review row exists only when its
-order_item belongs to a paid-or-later order of the inserting user and sells
-the named product; UNIQUE(order_item_id) is the once-per-purchase barrier.
-Moderation is a status column driven by the service role (no user UPDATE
-policy at all). Wishlists are owner-only both ways. Until applied, every
-reader degrades to "no reviews / empty wishlist" (PGRST205) and the submit
-actions answer in Hebrew that the feature is not open yet.
-
-**Dry run against production, rolled back:** verified insert as a real buyer
-passed; duplicate slot, unverified item, and a foreign user claiming the same
-purchase all refused; the pending row invisible to anon. ok=t problems=[none].
-
-## `153_ai_usage.sql`, added 2026-09-02
-
-The AI cost ledger: one row per agent call through `src/server/ai/client.ts`
-with tokens, micro-USD cost (integers, same reason money is agorot), outcome
-and latency. The runtime works before this applies and logs
-`ai.usage_not_recorded` at warn. RLS on, zero policies.
-
-**Dry run against production, rolled back:** insert accepted, negative token
-count refused 23514.
-
-## `152_payout_machinery.sql`, added 2026-09-02
-
-The FIFTH instance of the pattern: `admin/payouts.ts` calls four payout
-functions and the supplier page reads `payout_statements`, and production has
-none of it -- not the tables, not the functions, not the supplier payout-terms
-columns. Only the enum exists. Every payout action has failed at runtime since
-the module shipped.
-
-A faithful port of the payout sections of 027 + 051 + 079, stitched in
-dependency order, ADAPTED where 079 was written for the post-059 schema the
-hosted database never got: the generate reads `total_price_ils`,
-`platform_percent`, `commission_agorot` and `supplier_immediate_agorot` -- the
-numbers settlement actually books -- instead of `platform_bp` and
-`supplier_payout_agorot`, which exist nowhere in production. The legacy
-coupon_codes section is deliberately not ported (different shape, zero rows to
-pay). mark_paid's dispute/bank reads became dynamic-if-table-exists, because
-supplier_disputes and supplier_bank_accounts do not exist and 027's refusal
-would have made mark_paid permanently uncallable -- the disease this file
-cures.
-
-**Dry run against production, rolled back:** generate created a statement,
-totalled zero, rolled it over per C8 (cancelled + rolled_over + lines
-deleted); approve/paid/cancel each refused the rolled-over statement with their
-own exact errors. The dry run itself caught a composition bug (a 3-arg grant
-before the 4-arg definition).
-
-## `151_analytics_ingest.sql`, added 2026-09-02
-
-`/api/a` validates consented client events and calls
-`fn_ingest_analytics_events`. That function did not exist and neither did any
-events table: every batch ever sent returned "function not found" and vanished
--- a caller without its function, the fourth instance of the closeout's
-recurring pattern.
-
-The table plus the definer function, written to the CALLER's payload exactly,
-so applying this turns the existing pipeline on without touching app code.
-Unknown event names are skipped rather than failing the batch; event_id dedups
-replays; the IP is accepted and not stored; RLS on with zero policies so only
-the definer path writes. Adds `whatsapp_click` to the accepted names -- the
-client emits it from the PDP share button as of the same commit, and like every
-other event it goes nowhere until this applies.
-
-**Dry run against production, rolled back:** 3-event batch -> 2 stored + 1
-unknown skipped; replayed event_id -> 0 new rows; non-array -> 22023.
-
-## `150_account_deletion.sql`, added 2026-09-02
-
-The deletion the privacy policy promises, with no code behind the promise until
-now. `fn_anonymize_user` (SECURITY DEFINER, EXECUTE for service_role only)
-anonymizes the profile in place -- orders keep their FK and their statutory
-7-year retention -- deletes the personal satellites (addresses, saved cards,
-push tokens, carts, recent searches), and writes the erasure to audit_log.
-Owner columns verified against production: three tables key on `user_id`, two
-on `profile_id`. Plus the `account_deleted` outbox kind for the goodbye email.
-
-**Dry run against production, rolled back, on a real profile:** email hashed to
-`deleted+…@anonymized.invalid`, name replaced, satellites 0, orders preserved,
-idempotent rerun OK, null uid refused 22004.
-
-The server action works before this is applied: it tries the RPC, and on
-PGRST202 falls back to the same steps through the service client, deriving the
-same email hash byte-for-byte (verified: node and Postgres agree on
-`deleted+9f89c84a559f5736@…` for the zero uuid).
-
-## `149_audit_log_append_only.sql`, added 2026-09-02
-
-Production has NO triggers on `audit_log`, and RLS does not bind service_role,
-so the application's own key can UPDATE or DELETE any audit row. An audit trail
-the audited code can edit is a log, not an audit trail.
-
-One trigger, BEFORE UPDATE OR DELETE, raising 42501 for every role including
-service_role -- which is the point, because no policy can restrain that role.
-Redaction under a legal order stays possible as a deliberate human act: drop the
-trigger, redact, re-create it, leaving that sequence in the database logs.
-
-**Dry run against production, rolled back:** UPDATE refused 42501, DELETE
-refused 42501, INSERT unaffected.
-
-(The APPLY-ORDER row for 137 claimed "audit-log immutability triggers"; the 137
-file contains none. That row was wrong; this file is the real thing.)
-
-## `148_refund_destination.sql`, added 2026-09-02
-
-`refunds` records the notice, the ground, the fee and the 14-day deadline, and
-says nothing about WHERE the money went. `refundOrder` has exactly one path,
-`provider.refundByTransactionId`, back to the card, so a wallet credit is not a
-second option -- it is a thing the code cannot express. That matters for a
-voucher already redeemed or expired: the value left at the counter, so pulling
-the card money back returns value that was consumed, and a goodwill wallet
-credit is the correct instrument.
-
-Adds `public.refund_destination` (`original_method`, `wallet`) and
-`refunds.destination NOT NULL DEFAULT 'original_method'`. The default states a
-fact rather than a guess: every refund written before this column went back to
-the card, because that was the only path.
-
-Plus `refunds_wallet_has_no_fee`: a wallet refund may carry no cancellation fee.
-The fee is a deduction from money returned to a payment instrument, and a
-goodwill credit that quietly withheld 5% would be a worse product than refusing.
-
-**Dry run against production, rolled back:**
-
-```
-card_with_fee=OK   wallet_with_fee=23514_refused   wallet_no_fee=OK
-default=['original_method'::refund_destination]
-```
-
-**No code ships with it.** `recordRefund` does not send `destination`, because a
-write naming a column that does not exist fails 42703 and would take every
-refund record with it. The wallet path in `refundOrder` follows in a separate
-commit once this is applied.
+Found on disk unlisted on 2026-09-04 and inventoried then; written by a
+parallel session. Converts `orders` to a table partitioned by range on
+`created_at`, one partition per UTC month, provisioned twelve months ahead by
+pg_cron. The primary key becomes `(id, created_at)`; each of the sixteen
+referencing tables gains a trigger-filled `created_at` twin and a composite
+FK preserving its ON DELETE semantics and constraint name. Global invoice
+uniqueness moves to an `orders_invoice_numbers` registry table. Read the file
+header in full before considering apply: it is a structural conversion of the
+busiest financial table.
 
 ## `147_money_agorot_remaining_twins.sql`, added 2026-09-01
 

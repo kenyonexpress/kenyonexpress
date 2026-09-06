@@ -52,7 +52,7 @@ below. See the "APPLIED IN PRODUCTION" table in `README.md`, which carries the
 version string and the query that proved each one. Running any of them again is
 at best a no-op and at worst an error.
 
-## The seventeen that remain, in order
+## The thirteen that remain, in order
 
 Order matters only where a **depends on** column is filled. Everything else is
 independent and may be applied in any sequence, or not at all.
@@ -70,16 +70,10 @@ independent and may be applied in any sequence, or not at all.
 | 12 | `140_money_agorot_catalog.sql` | `_agorot` columns on products, variants, coupons | — | `drop column <col>_agorot` |
 | 13 | `141_money_agorot_growth.sql` | `_agorot` columns on affiliates, referrals | — | `drop column <col>_agorot` |
 | 14 | `147_money_agorot_remaining_twins.sql` | the last four money columns with no generated twin | — | `drop column <col>_agorot` |
-| 15 | `148_refund_destination.sql` | where a refund went: card or wallet | — | `drop column destination; drop type refund_destination` |
-| 16 | `149_audit_log_append_only.sql` | audit_log refuses UPDATE/DELETE for every role, service_role included | — | `drop trigger tg_audit_log_append_only on audit_log` |
-| 17 | `150_account_deletion.sql` | fn_anonymize_user + the account_deleted outbox kind | — | in file header |
-| 18 | `151_analytics_ingest.sql` | analytics_events + the ingest fn /api/a has been calling into the void | — | in file header |
-| 19 | `152_payout_machinery.sql` | the whole payout subsystem: tables, T+3 math, four verbs, RLS | — | in file header |
-| 20 | `153_ai_usage.sql` | the AI cost ledger, micro-USD integers | — | `drop table ai_usage` |
-| 21 | `154_reviews_wishlist.sql` | verified-purchase reviews + wishlist, verification in the INSERT policy | — | `drop table reviews; drop table wishlists` |
-| 22 | `155_shipment_tracking.sql` | order_items.carrier/tracking_number + order_shipped outbox kind | **after 150** (same constraint) | drop the two columns; restore 150's kind list |
-| 23 | `156_analytics_indexes.sql` | two partial indexes for analytics windows | — | drop both indexes |
-| 24 | `157_audit_ip_retention.sql` | audit IP aging carve-out + sweep fn | **after 149** (same trigger fn) | restore 149's fn body; drop the sweep fn |
+| 15 | `148_orders_monthly_partitioning.sql` | monthly range partitioning of `orders`, composite FKs on 16 tables | `137` | in file header |
+| 16 | `149_soft_delete_user_facing_remainder.sql` | `deleted_at` + RLS filter on categories, product_images, reviews, wishlists | — | in file header |
+| — | `169_audit_full_coverage.sql` | **already applied 2026-09-04** (MCP, `audit_full_coverage_169`): audit_log before/after/request_id + triggers on all financial/user tables | — | in file header |
+| — | `170_reporting_tables.sql` | **already applied 2026-09-04** (MCP, `reporting_tables_170`): 4 reporting tables + nightly pg_cron rebuild + 5 admin-only RPCs | — | in file header |
 
 ## The money set, 138 through 141
 
