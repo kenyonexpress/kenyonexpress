@@ -87,7 +87,22 @@ export const WALLET_REASON_LABELS: Record<string, string> = {
   order_refund: 'החזר על ביטול',
   refund_to_wallet: 'זיכוי לארנק',
   admin_credit: 'זיכוי ידני',
+  // Written by fn_pay_referral and by credit_expired_vouchers, in the DATABASE.
+  // Both were missing here until 2026-09-07 and both are reachable by a
+  // customer: a referral that pays out and a voucher that lapses are the two
+  // wallet credits nobody has to buy anything to receive.
+  referral_bonus: 'בונוס הזמנת חבר',
+  voucher_expiry_credit: 'קרדיט על שובר שפג',
+  // Legacy, and all three measured against production on 2026-09-07 as having
+  // NO live writer: `coupon_expired` was superseded by `voucher_expiry_credit`,
+  // and `cashback_earn` / `manual_adjust` come from the 042-era wallet that no
+  // function in `public` mentions any more. They are kept because a row written
+  // under the old name would otherwise render as a raw Latin code, and because
+  // the label costs nothing while a customer seeing `manual_adjust` costs
+  // trust.
   coupon_expired: 'קרדיט על קופון שפג',
+  cashback_earn: 'קאשבק',
+  manual_adjust: 'תיקון ידני',
 }
 
 export function walletReasonLabel(reason: string): string {

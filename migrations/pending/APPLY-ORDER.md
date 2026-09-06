@@ -20,6 +20,7 @@ SQL, and a production-safety verdict per file.
 | `172_hide_master_product_test_row.sql` | **yes** | approval | `preflight_172.sql` (new) |
 | `173_products_retired_commission_percent.sql` | **yes** | approval | `preflight_173.sql` (new) |
 | `174_wallet_topups.sql` | **yes** | approval | `preflight_174.sql` (new) |
+| `175_referral_program_settings.sql` | **yes** | approval, and the three amounts | `preflight_175.sql` (new) |
 
 Two findings from that audit that change how the files should be read:
 

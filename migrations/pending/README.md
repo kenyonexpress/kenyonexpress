@@ -1,5 +1,24 @@
 # `migrations/pending/`
 
+## 2026-09-07: 175 added — the referral engine is off because a row is missing
+
+`175_referral_program_settings.sql` inserts the settings singleton the referral
+programme reads. **Not applied**, and it inserts the row with `is_active =
+false`: configured and off. Turning it on is a separate one-line UPDATE at the
+foot of the file, because applying a migration should never be the same act as
+starting to spend money.
+
+Measured on 2026-09-07: `referral_program_settings` 0 rows, `referrals` 0,
+`referral_signals` 0, profiles with a code 0. `fn_claim_referral` returns
+`program_inactive` when that row is absent, so every claim fails and
+`fn_complete_referral` never has a referral to complete. The code, the capture
+in the proxy, the claim at signup, the fraud guard, the two wallet credits and
+the admin queue are all built and all inert.
+
+The three amounts are NOT NULL with no default, which is the schema saying they
+are a decision. The file proposes ₪20 / ₪20 / ₪100 minimum and says why; they
+are Ofir's to change before approval.
+
 ## 2026-09-07: 174 added — a customer cannot put money into their own wallet
 
 `174_wallet_topups.sql` creates `public.wallet_topups`: the row a card top-up
