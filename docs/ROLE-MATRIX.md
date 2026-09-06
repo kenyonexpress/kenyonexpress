@@ -538,6 +538,49 @@ circulation says these webhooks are unsigned: **they are not**. There is a
 shared-secret check and it is constant-time. Anything relying on the older
 claim should be re-checked against this file.
 
+### 11.4 The till routes say `checkRateLimit`, and that is not their guard
+
+Three rows in 11.2 read `checkRateLimit | till`. That is what the route file
+*enforces*, and it is not what authorizes the call. **The authorization for
+voucher redemption lives in the database**, and the route's only job is to carry
+an identity into it.
+
+`public.redeem_voucher()` (migration 051) is `SECURITY DEFINER` and derives the
+supplier from `supplier_members` using `auth.uid()`. So:
+
+| The route must | Because |
+|---|---|
+| call the RPC through the **user-scoped** client | the service-role client has no `auth.uid()` at all, so **every scan would be refused as unauthorized** |
+| **never** pass the supplier id, or the code's supplier, from the request | the RPC ignores anything but the caller's own membership |
+| accept cookie **and** bearer | cookie for the web portal, bearer for the till app, and in both cases a client carrying the caller's identity into Postgres |
+
+`identityScopedClient(request)` is the function that resolves those two shapes
+into one scoped client. A `null` return is a `401`, not a silent fallback to the
+admin client. That distinction is the whole guard: swapping the scoped client
+for the service-role client here does not loosen the check, it **inverts** it,
+turning a membership test into no test with an identity of nobody.
+
+`staff_id` in the request body is **attribution only and grants nothing**
+(migration 115). It names who was at the till; it does not widen what that till
+may redeem.
+
+This is also why the earlier passes' rule matters: a check performed in the app
+*before* the RPC must use the caller's **full** membership set, not the first
+membership. `getSupplierSession()` answers "which portal am I in" and takes the
+earliest row; using it to decide whether a voucher belongs to this scanner
+refuses a two-supplier member their own second supplier's vouchers.
+
+### 11.5 The rate limit on the redeem route is not decoration
+
+The lookup route next door had a ceiling from the day it was written and the
+redeem route did not, which made the lookup ceiling **decorative**: an attacker
+walking the code space would simply use whichever endpoint is unlimited, and the
+unlimited one was the one that *burns* the voucher rather than describing it.
+
+Both are limited now. When reviewing any future till endpoint, the question is
+not "does this route have a limit" but "is there a sibling that reaches the same
+state without one".
+
 ### 11.4 Observations
 
 1. **`CRON_SECRET` is one secret for fourteen routes.** Twelve cron plus the two
