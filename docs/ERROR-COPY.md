@@ -27,6 +27,9 @@ Rules:
 | Supplier products | אין מוצרים פעילים לספק הזה כרגע. | |
 | Supplier count 1 | מציג תוצאה יחידה | |
 | Supplier count n | מציג `{from}` עד `{to}` מתוך `{total}` תוצאות | |
+| Supplier 404 title | ספק לא נמצא | |
+| Supplier 404 body | הספק לא נמצא או שאינו פעיל בקניון אקספרס. | |
+| Supplier eyebrow | ספק | |
 | City landing | עדיין אין אצלנו בית עסק רשום באזור הזה. אפשר לראות את כל הדילים באתר… | `/` or `/products` |
 | Cart page | סל הקניות שלך ריק כרגע. | חזור לחנות |
 | Mini-cart | אין מוצרים בסל הקניות | |
@@ -239,3 +242,4 @@ Copy lives in COPY-HE §15. Ink on `#fed700` is `#333e48`.
 | Date | Change |
 |---|---|
 | 2026-09-07 | Catalogue of empty, validation, page errors, checkout fail, confirmations, scan outcomes, wallet/coupons/wishlist |
+| 2026-09-07 | Pass 9: supplier empty vs 404 (inactive is 404, not empty) |
