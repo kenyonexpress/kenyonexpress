@@ -48,6 +48,21 @@ import { type Agorot, ilsToAgorot } from '@/lib/commerce/money'
  * catches the one that is wrong -- the business can run a 90%-off campaign and
  * nothing here fires.
  *
+ * READING ONLY `full_price` IS COMPLETE, NOT PARTIAL, AND THAT WAS CHECKED.
+ * `products` carries three compare-at columns -- `full_price`,
+ * `compare_at_price_ils` and `compare_at_price` -- so a guard on one of them
+ * would be a hole if the others could reach a shopper. They cannot: grepping
+ * every `.tsx` outside the generated types finds no reference to
+ * `compare_at_price*` at all, and both surfaces that paint a discount badge
+ * divide by `full_price` -- `ProductCard.tsx` through `old`, and
+ * `ProductInfo.tsx` through `oldPrice`, which `product/[slug]/page.tsx` fills
+ * from `product.full_price`.
+ *
+ * That is the property that matters. This guard refuses to sell any discount a
+ * shopper can actually SEE advertised, because the number it divides is the
+ * number the badge divides. A ratio held in a column nothing renders is not an
+ * advertised discount and there is nothing to refuse.
+ *
  * WHAT IT CATCHES BESIDES. The general shape is a misplaced decimal: a supplier
  * entering 10 where they meant 1000, against a compare-at they typed
  * correctly. That is the same defect and it has not happened yet only because
