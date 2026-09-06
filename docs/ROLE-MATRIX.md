@@ -618,3 +618,4 @@ state without one".
 | 2026-09-07 | `/city/[slug]` seventeen regions; unknown 404; no extra URLs |
 | 2026-09-07 | Legal public; offline public cache; no escrow in returns |
 | 2026-09-07 | Pass 12: the /api/* surface, 34 route handlers, six authorization mechanisms; four that read as unguarded and are not; CRON_SECRET blast radius |
+| 2026-09-07 | Pass 13: the fourteen customer-facing action files section 6 omitted; refund is the only admin-gated action outside admin/ |
