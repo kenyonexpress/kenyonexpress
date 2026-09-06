@@ -16,6 +16,13 @@ Map of storefront presentation docs in this worktree. Layout and structure: Elec
 | `../GLOSSARY-HE-EN.md` | Hebrew UI vs English identifiers |
 | `../STOREFRONT-ROUTES.md` | Every customer/cashier URL, robots, anatomy pointer |
 | `../LIVE-HOME-2026-09.md` | GET of live WP title, meta, shop H1, Electro English not to copy |
+| `../DESIGN-SYSTEM.md` | Token layer plus account sibling paint (wallet, coupons, wishlist) |
+| `../COMPONENT-INVENTORY.md` | Component scan plus account sibling states / RTL / a11y |
+| `../UI-PARITY-LOG.md` | `compare.mjs` history per route per breakpoint |
+| `../ROLE-MATRIX.md` | Four brief roles vs RLS: allow or deny |
+| `../ERROR-COPY.md` | Hebrew empty, errors, confirmations, scan, checkout fail |
+| `../SEO-PLAN.md` | Schema, meta, linking, `hreflang` `he-IL` |
+| `../QA-SCRIPTS.md` | Manual QA per flow |
 
 Authority when these disagree with older research: `BUSINESS-MODEL-RULES.md` then `docs/PRODUCT-TYPES.md` then `docs/ARCHITECTURE-PRODUCT-TYPES.md`. Presentation conflicts: TOKENS 0.1 (brief vs live vs shipped) wins for paint; COPY-HE wins for consumer-protection wording (coupon split table).
 
@@ -34,3 +41,4 @@ Standing rules this pack must not undo:
 | 2026-09-07 | Index after tasks 1 to 10 |
 | 2026-09-07 | Point at STOREFRONT-ROUTES after gift/redeem/legal deepen |
 | 2026-09-07 | Point at LIVE-HOME-2026-09 |
+| 2026-09-07 | Point at DESIGN-SYSTEM, COMPONENT-INVENTORY, UI-PARITY-LOG, ROLE-MATRIX, ERROR-COPY, SEO-PLAN, QA-SCRIPTS |
