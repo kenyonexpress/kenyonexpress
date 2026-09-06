@@ -21,7 +21,9 @@ export type EnsureCodeState = { ok: boolean; code?: string; error?: string }
  * customer holding another customer's uuid could POST
  * `/rest/v1/rpc/fn_ensure_referral_code` and both read that person's code and,
  * if they had none, mint one for them. That is written up in STATE for
- * 2026-08-20 01:48 and `migrations/pending/143` carries the REVOKE.
+ * 2026-08-20 01:48. 143 carried the REVOKE and is applied: measured against
+ * production 2026-09-07, `fn_ensure_referral_code` grants EXECUTE to neither
+ * anon nor authenticated.
  *
  * The shape that keeps it closed is the shape of this file:
  *

@@ -61,8 +61,8 @@ type Orderable<T> = { order(column: string, opts: { ascending: boolean }): T }
  * a UNIQUE constraint on `sort_order`, deliberately: `CategoryTree` reorders
  * by swapping two rows in two separate `updateCategorySortOrder` calls, and a
  * unique index would fail the first of them and break the admin's reordering.
- * `migrations/pending/124_categories_sort_order.sql` renumbers the data; this
- * is what holds regardless of the data.
+ * 124 renumbered the data and is applied (`categories.sort_order` is live in
+ * production, measured 2026-09-07); this is what holds regardless of the data.
  */
 export function orderedByMenu<T extends Orderable<T>>(query: T): T {
   return query.order('sort_order', { ascending: true }).order('slug', { ascending: true })

@@ -3,9 +3,12 @@
  * sentence an admin can act on.
  *
  * Same shape and same reason as `recurring-schema-error.ts`: the WhatsApp
- * toggle ships as code before it ships as schema. The migration is
- * `migrations/pending/123_products_whatsapp_enabled.sql` and applying it is
- * Ofir's call, not this session's.
+ * toggle shipped as code before it shipped as schema. The migration,
+ * `123_products_whatsapp_enabled.sql`, IS APPLIED -- `products.whatsapp_enabled`
+ * is live in production, measured 2026-09-07, and the generated types carry it.
+ * This is therefore unreachable against production today and is kept for the
+ * database that is not production: a branch, a fresh local stack, a restore
+ * taken before 123.
  *
  * WHAT AN ADMIN SEES WITHOUT THIS. Ticking the box and saving returns the raw
  * PostgREST string:
@@ -26,7 +29,7 @@
  */
 
 /** Named here so the message and the file cannot drift apart. */
-export const WHATSAPP_MIGRATION_FILE = 'migrations/pending/123_products_whatsapp_enabled.sql'
+export const WHATSAPP_MIGRATION_FILE = 'migrations/applied/123_products_whatsapp_enabled.sql'
 
 // One template literal, not several joined with `+`. Concatenating template
 // literals has already corrupted a production build in this repo once: the

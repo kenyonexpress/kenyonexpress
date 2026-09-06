@@ -7,10 +7,10 @@ import { createAdminClient } from '@/lib/supabase/admin'
  * The home page, read from the database when it is there and from the authored
  * constants when it is not.
  *
- * THE FALLBACK IS THE DESIGN, NOT A STOPGAP FOR THE PENDING MIGRATION.
- * `migrations/pending/127` has not been applied and may not be for a while, but
- * even after it is, a deployment that cannot reach these tables must still
- * render a home page. This is the rule `server/payments/invoices.ts` already
+ * THE FALLBACK IS THE DESIGN, NOT A STOPGAP FOR A PENDING MIGRATION.
+ * 127 is applied -- `homepage_sections` is live in production, measured
+ * 2026-09-07 -- and the fallback still runs, because a deployment that cannot
+ * reach these tables, or finds them empty, must still render a home page. This is the rule `server/payments/invoices.ts` already
  * follows for a database without 107: a missing table is an ordinary state, not
  * an error.
  *

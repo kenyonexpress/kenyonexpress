@@ -13,9 +13,12 @@ import { type NextRequest, NextResponse } from 'next/server'
  *      2026-07-28: a coupon's whole prepayment is the platform's at payment,
  *      the supplier is due nothing from us on it, and no hold is ever written.
  *      The function in production still carries that refund block; it matches
- *      nothing, because every escrow_holds row has voucher_id NULL, and
- *      migrations/pending/125 removes it. See 085, which cut the identical
- *      dead branch out of redeem_voucher() and missed this one.
+ *      nothing, because every escrow_holds row has voucher_id NULL. 125 cut
+ *      it out and IS APPLIED: read off pg_proc on 2026-09-07, neither
+ *      expire_vouchers() nor credit_expired_vouchers() mentions escrow at all.
+ *      The file is migrations/applied/125_expire_vouchers_no_escrow.sql. See
+ *      085, which cut the identical dead branch out of redeem_voucher() and
+ *      missed this one.
  *   2. `credit_expired_vouchers()` credits the customer's wallet with what they
  *      paid online for each expired voucher (C6: expiry is not forfeiture).
  *

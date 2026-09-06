@@ -196,8 +196,10 @@ async function runUpsertProduct(
    * The row always carries `whatsapp_enabled`; the WRITE drops it if the column
    * turns out not to exist yet.
    *
-   * The column arrives with `migrations/pending/123_products_whatsapp_enabled
-   * .sql`, which is not applied. Three cheaper-looking options were rejected:
+   * The column arrived with `123_products_whatsapp_enabled.sql`, which IS
+   * applied in production (measured 2026-09-07), so the fallback below is dead
+   * weight there and alive on any database taken before it -- a branch, a fresh
+   * local stack, an old restore. Three cheaper-looking options were rejected:
    *
    *  - Always send it. PostgREST answers PGRST204 for EVERY product an admin
    *    edits: the whole admin broken by a feature nobody switched on.
