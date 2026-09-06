@@ -273,3 +273,11 @@ Companions:
 - **Likelihood:** Already happened (STATE 2026-09-04: 166–168 applied by a parallel agent). Pattern can repeat.
 - **Impact:** High (schema moves under a freeze) to Critical (a revoke like the cancelled 165).
 - **Mitigation:** One code agent per repo (ADR 0012). This pack does not apply SQL. 172 stays pending until the owner applies it.
+
+---
+
+## R18. `NEXT_PUBLIC_WHATSAPP_PHONE` unset at apex launch
+
+- **Likelihood:** High (optional env, degrades to the published Test Store number `972524635550`).
+- **Impact:** Medium-High. Every float and PDP share contacts the wrong business. Not a charge bug. Trust and privacy.
+- **Mitigation:** Set the real number in Production **and redeploy** (it is `NEXT_PUBLIC_`). Do not start P4 Twilio campaigns until this is the real number.
