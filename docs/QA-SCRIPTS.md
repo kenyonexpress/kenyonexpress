@@ -220,6 +220,19 @@ Not `/suppliers` (join-us) and not `/supplier/login`. No pixel twin.
 
 ---
 
+## 10b. City `/city/[slug]`
+
+| # | Step | Pass |
+|---|---|---|
+| 1 | Known region | H1 `דילים ב{name}` |
+| 2 | Has municipalities | chips; each → `/products?city={slug}` |
+| 3 | Empty region | empty copy is **not** an error; CTA to catalogue |
+| 4 | Unknown slug | 404 |
+| 5 | JSON-LD | one BreadcrumbList. No invented LocalBusiness |
+| 6 | Count of landings | seventeen. Fail if a new thin city was added without `REGIONS` |
+
+---
+
 ## 11. What not to test here
 
 - Pixel percents (log them in `docs/UI-PARITY-LOG.md`)
@@ -233,3 +246,4 @@ Not `/suppliers` (join-us) and not `/supplier/login`. No pixel twin.
 |---|---|
 | 2026-09-07 | Manual scripts: home, catalogue, PDP, checkout fail/success, wallet, coupons, wishlist, gift/redeem, uploader, scan |
 | 2026-09-07 | Pass 9: public `/s/[id]` including JSON-LD gate and 2/3/4 grid |
+| 2026-09-07 | Pass 10: city landing empty vs 404 vs chips |
