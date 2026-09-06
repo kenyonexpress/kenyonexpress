@@ -4,6 +4,40 @@
 MCP `apply_migration`, one at a time, after Ofir approves it. `db push` is
 forbidden by project rule.
 
+## 2026-09-07 (closeout §2): five pending files, four ready, one blocked
+
+`docs/MIGRATION-AUDIT-162-172.md` audits all five against production, read
+only, through MCP `execute_sql`: what each changes, blast radius measured
+against real table sizes, the RLS policies each touches, paste-able rollback
+SQL, and a production-safety verdict per file.
+
+| File | Ready | Waiting on | Preflight |
+| --- | --- | --- | --- |
+| `162_cron_schedule.sql` | no | vault seeding (`cron_secret`, `app_url` — still 0 of 2 on 07.09) | `preflight_162.sql` |
+| `169_analytics_server_event_names.sql` | **yes** | approval | `preflight_169.sql` |
+| `170_composite_indexes_top_queries.sql` | **yes** | approval | `preflight_170.sql` |
+| `171_category_name_shekel_order.sql` | **yes** | approval | `preflight_171.sql` (new) |
+| `172_hide_master_product_test_row.sql` | **yes** | approval | `preflight_172.sql` (new) |
+
+Two findings from that audit that change how the files should be read:
+
+1. **172 closes a display defect, not an open till.** The ₪1 row cannot be
+   bought today: `implausible-discount.ts` refuses any line at or under 5% of
+   its compare-at, and 100 agorot against 40000 fails it at `addToCart`, at the
+   cart pricer, and at `beginCheckout`. It is still worth applying — a 99.75%
+   badge on a row named "Master Product" is on the homepage — but it is not
+   the emergency `CLAUDE.md` item 1 describes.
+2. **Zero stock does not delist.** `products_select_anon` has no stock term, so
+   `/product/restaurants-meat-3` keeps rendering after 172, marked out of
+   stock. A 404 would need `status <> 'active'`, which is a different
+   migration and is not written.
+
+`172` was **not** rewritten to gate its statement on `app.env = 'development'`.
+It contains no insert; it contains the UPDATE that is the fix, and gating that
+would make it a no-op in production. The dev fixture that request implies is
+`seeds/dev_only_172.sql`, guarded, creating a separate row. Reasoning in the
+audit.
+
 ## 2026-09-04 (audit): ONE PENDING FILE — 162, BLOCKED ON VAULT
 
 The 2026-09-04 audit ran every preflight against production and found 166,

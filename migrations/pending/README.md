@@ -1,5 +1,20 @@
 # `migrations/pending/`
 
+## 2026-09-07: audited, and 171/172 now have preflights
+
+`docs/MIGRATION-AUDIT-162-172.md` (closeout §2) covers all five pending files
+against production. `preflight_171.sql` and `preflight_172.sql` were written
+with it, so the "no preflight — one row, one column" note under 171 and 172
+below is superseded: both now have one, and both were run read-only against
+production. 172's preflight also records the two limits the audit found — the
+row is already unbuyable (implausible-discount refuses it three times over),
+and zero stock does not delist it, because `products_select_anon` has no stock
+term.
+
+172 keeps its UPDATE ungated. See the audit for why gating it on
+`app.env = 'development'` would have been backwards; the dev fixture lives in
+`seeds/dev_only_172.sql`.
+
 ## 2026-09-04: 172 added — a test row is on sale for one shekel
 
 `172_hide_master_product_test_row.sql` zeroes the stock on
