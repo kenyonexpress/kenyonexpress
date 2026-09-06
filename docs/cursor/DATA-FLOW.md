@@ -233,3 +233,20 @@ is the writer of the wallet entry.
 Those belong in
 `docs/cursor/API-SURFACE.md`,
 not here.
+
+---
+
+## 9. Recovery and adjacent writers (learned from the API / cron surface)
+
+| Path | Writer | Tables | RLS |
+|---|---|---|---|
+| Charged, not `paid` | `GET /api/cron/stranded-payments` then `finalizeOrder` | same as §1.3 | Bearer cron. Idempotent. Must not use webhook POST body as money |
+| Operator retry | `retryFinalizePayment`, `retryDeadLetter` | `payments`, `orders`, `vouchers`, outbox | admin `requireSection` |
+| Voucher expiry | `GET /api/cron/expire-vouchers` | `vouchers` `issued` → `expired`; optional `wallet_entries` goodwill | Cron. No voucher status trigger. Do not Cardcom-refund an expired unit; that is §4 |
+| Gift claim | `claimGift` / `loadGiftPreview` | voucher ownership / gift token tables as implemented | Owner after claim. Invalid token: Hebrew error, no leak whether the token existed |
+| Recurring | `GET /api/cron/subscriptions` | `subscription_charges` (`period_key` idempotency), `payments`, `orders` | Split CHECK exact. Token charge, no iframe |
+| 172 hide | human apply SQL | `products.stock_quantity = 0` for the master test id | Admin/service. Not a money path. Cart already refuses the line |
+
+`notification_outbox` is on the coupon happy path (§1.4). If H5 cron is 401, §1.3 still happened and the customer has a voucher in
+`/account/coupons`
+with no email. That is a launch blocker, not a data-model bug.
