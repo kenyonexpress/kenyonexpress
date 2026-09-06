@@ -249,3 +249,12 @@ Do not parallel P4 and P5. Both are copy + vendor + DNS attention, the same huma
 | P6 self-serve | No default `platform_percent`. No issued-voucher dump. No payout tables. |
 
 Payout self-serve is **not** a seventh item. It needs a schema that does not exist. When physical volume needs it, it is a new migration pack with conservation CHECKs, not a UI on `admin/payouts.ts`.
+
+---
+
+## P4 vs the existing click-to-chat
+
+Do not block P3 on Twilio. Abandoned cart v1 is Resend. WhatsApp marketing templates wait on Meta approval even when the vendor is Twilio. Click-to-chat (P4 "3 days" slice) only needs H4 addendum (real
+`NEXT_PUBLIC_WHATSAPP_PHONE`)
+and per-product
+`whatsapp_enabled`.
