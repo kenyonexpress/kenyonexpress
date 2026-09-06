@@ -221,6 +221,107 @@ Exclude: `/search`, `/cart`, `/checkout*`, `/account/**`, `/coupon/*`, `/gift/*`
 
 robots: `hreflang` is not a robots directive. Keep `Disallow` for account and checkout. Do not `Disallow` `/products`.
 
+### 5.1 Audited against source (2026-09-07)
+
+The two paragraphs above are the **plan**. `src/app/sitemap.ts` and
+`src/app/robots.ts` are what **ships**. They differ, and the differences run in
+both directions.
+
+#### What the sitemap actually emits
+
+| Entry | `changeFrequency` | `priority` | In the plan above? |
+|---|---|---|---|
+| `/` | daily | 1 | yes |
+| `/products` | daily | 0.9 | yes |
+| `/coupons` | daily | 0.9 | **no, plan omits it** |
+| `/suppliers` | monthly | 0.7 | **no, plan omits it** |
+| `/blog` | weekly | 0.6 | yes (blog index) |
+| `/blog/{slug}` | monthly | 0.5 | **no, plan omits posts** |
+| `/about` `/contact` `/faq` | monthly | 0.5 | yes |
+| legal slugs (`LEGAL_PAGE_SLUGS`) | yearly | 0.3 | yes |
+| `/category/{slug}` | daily | 0.8 | yes |
+| `/product/{slug}` | weekly | 0.7 | yes |
+| `/s/{id}` | weekly | 0.6 | yes |
+
+`lastModified` is set on `/` (from `catalogueTouched`), on blog posts, and on
+the legal pages. The legal ones carry a real `updatedAt` field on the document,
+which is why they are dated where `/contact` is not, and they are listed rather
+than left to be discovered because they are the four addresses the old site
+already has indexed.
+
+#### The gap: `/city/{slug}` is planned and not shipped
+
+**`src/app/sitemap.ts` contains no `city` entry at all.** Verified by grep:
+zero occurrences.
+
+That matters because the city pages are indexable. `generateMetadata` in
+`src/app/(store)/city/[slug]/page.tsx` sets
+`alternates: { canonical: '/city/' + encodeURIComponent(region.slug) }` and sets
+**no `robots` directive**, so the default applies. Only an unknown slug is
+noindexed, and only because `notFound()` emits that itself.
+
+So there are **17 indexable region landing pages with self-canonicals and no
+sitemap entry**. `REGIONS` in `src/lib/regions.ts` holds exactly 17:
+
+```
+תל-אביב                    נתניה-והסביבה        גליל-תחתון
+רמת-גן-גבעתיים-בני-ברק      חדרה-והסביבה         גליל-עליון
+חולון-בת-ים-ראשון-לציון     ירושלים-והסביבה       גולן
+פתח-תקוה                   השפלה                באר-שבע-והסביבה
+השרון                      רחובות-נס-ציונה       אילת
+                          אשדוד-אשקלון
+```
+
+**Every region slug is Hebrew**, so each URL is percent-encoded on the wire.
+The page already calls `encodeURIComponent` for its own canonical; a sitemap
+entry must encode identically, or the canonical and the sitemap URL will not
+match and the entry is wasted.
+
+This is the one actionable SEO finding in this pass. It is a `.ts` change, so
+it is recorded here and not made.
+
+#### robots.ts: the plan holds, and the file is stricter
+
+| Plan says | robots.ts |
+|---|---|
+| Keep `Disallow` for account and checkout | **holds**: `/account/`, `/checkout` |
+| Do not `Disallow` `/products` | **holds**: not listed |
+| `hreflang` is not a robots directive | **holds**: none present |
+
+The shipped `disallow` list is longer than the plan's:
+
+```
+/redeem/   /coupon/   /account/   /supplier/   /scan   /admin/
+/checkout  /cart      /auth/      /api/        /reset-password
+/forgot-password
+```
+
+`/redeem/` is deliberately first, and the file says why: **that path IS a signed
+voucher token.** A crawler fetching one is fetching somebody's coupon, and an
+indexed one is a coupon in a search result. It is the outermost of three layers,
+the others being the page's own noindex and the supplier-session requirement.
+The file also states the principle plainly: robots.txt is a request, not access
+control, and everything listed is gated server-side as well.
+
+#### Three plan exclusions that are absent from robots, correctly
+
+`/search`, `/gift/*` and `/offline` appear in the plan's exclude list and **not**
+in the shipped `disallow`. That is not a defect: two of them use the stronger
+control instead.
+
+| Route | Control |
+|---|---|
+| `/search` | `robots: { index: false }` in `page.tsx:32` |
+| `/gift/[token]` | `robots: { index: false, follow: false }` in `page.tsx:18` |
+| `/offline` | neither. Covered elsewhere; see section 3's note that it is omitted from JSON-LD |
+
+A `Disallow` and a `noindex` are not interchangeable. A disallowed URL cannot be
+crawled, so its `noindex` is never read, and a disallowed page can still be
+indexed URL-only from inbound links. For `/gift/[token]`, where the token is
+secret, `Disallow` is the right outer layer *and* `noindex` the right inner one,
+which is exactly the belt-and-braces `/redeem/` already gets. `/gift/` currently
+has only the inner layer.
+
 ---
 
 ## 5.1 Section 5 audited against the source (pass 12)
@@ -347,3 +448,4 @@ Home: do not replace the live brand title with a stuffed “קופונים די�
 | 2026-09-07 | Pass 11: legal alias canonical; offline omitted from JSON-LD |
 | 2026-09-07 | hreflang audited against source: lang="he" and og locale confirmed, hreflang/x-default confirmed unshipped in all 15 canonical routes |
 | 2026-09-07 | Pass 12: section 5 audited against src/app/sitemap.ts and robots.ts. Four findings: /city missing from sitemap, three groups ship unlisted, /offline is NOT noindex, and the exclude list vs disallow list are different tools |
+| 2026-09-07 | Pass 12: sitemap and robots audited against source. /city/{slug} indexable but absent from sitemap.ts (17 Hebrew slugs); /gift/[token] has noindex but no Disallow, unlike /redeem/ |
