@@ -185,3 +185,34 @@ It is not a substitute for
 on production. Counts move when a migration lands. Re-run the verification query in
 `docs/DATA-MODEL.md`
 §9 after any apply. This pack does not apply migrations.
+
+---
+
+## 10. content-uploader vs money (explicit deny)
+
+content-uploader is staff for **catalogue**. It is not a wallet operator.
+
+| Surface | content-uploader |
+|---|---|
+| `refunds`, `payments`, `vouchers` DML | deny (admin actions `requireSection` money) |
+| `wallet_*` DML | deny |
+| `updateUserRole` | deny |
+| `retryFinalizePayment` | deny |
+| `products` / `categories` / images | allow via staff policies |
+| `/admin/payments`, `/admin/payouts` | proxy may let them **hit** `/admin/*` (role is in the optimistic set). Page + action must 403. If a page forgets `requireSection`, this is the hole to test first |
+
+coupon-partner is **not** `content_uploader`. A restaurant scanner with a
+`supplier_members`
+row and
+`profiles.role = customer`
+is the common case. Gating the till on
+`vendor`
+alone would lock them out.
+
+---
+
+## 11. Migration 165 (do not "tighten" anon helpers)
+
+165 would have revoked public EXECUTE on helpers that public SELECT policies call. Measured result: anonymous catalogue
+`42501`.
+Cancelled. An audit that counts "anon EXECUTE on DEFINER" as a finding is counting the RLS implementation, not a leak. Real leaks are §6 items 1–3.
