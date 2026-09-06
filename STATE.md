@@ -79,10 +79,10 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 Updated: 2026-09-07. Branch `docs/ui-design-system`. This agent writes `.md` files only and does not touch `kenyonexpress` or any `.ts` / `.tsx` / `.css` / `.sql` / `.json`.
 
 ### Last completed
-Canonical seven files exist at `docs/DESIGN-SYSTEM.md`, `docs/COMPONENT-INVENTORY.md`, `docs/UI-PARITY-LOG.md`, `docs/ROLE-MATRIX.md`, `docs/ERROR-COPY.md`, `docs/SEO-PLAN.md`, `docs/QA-SCRIPTS.md`. Pass 8: wallet/coupons/wishlist + live title `קניון אקספרס`. Pass 9: `/s/[id]` 2/3/4 grid, LocalBusiness data gate, hreflang `he-IL` plus ARCHITECTURE-SEO `x-default` on the same canonical.
+Canonical seven files exist at `docs/DESIGN-SYSTEM.md`, `docs/COMPONENT-INVENTORY.md`, `docs/UI-PARITY-LOG.md`, `docs/ROLE-MATRIX.md`, `docs/ERROR-COPY.md`, `docs/SEO-PLAN.md`, `docs/QA-SCRIPTS.md`. Pass 8: wallet/coupons/wishlist + live title `קניון אקספרס`. Pass 9: `/s/[id]`. Pass 10: `/city/[slug]` seventeen regions.
 
 ### In progress
-Keep deepening the same seven files. Next: city landing vs `/s/[id]` linking and empty-city copy.
+Keep deepening the same seven files.
 
 ### Next
 Keep deepening every document. Repeat. Never stop.
