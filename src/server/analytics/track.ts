@@ -32,7 +32,7 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
     const attribution = parseAttribution(cookieStore.get(ATTRIBUTION_COOKIE)?.value)
 
     const admin = createAdminClient()
-    await admin.rpc('fn_ingest_analytics_events', {
+    const { data: accepted, error } = await admin.rpc('fn_ingest_analytics_events', {
       p_events: [
         {
           event_id: crypto.randomUUID(),
@@ -51,8 +51,50 @@ export async function trackServerEvent(input: ServerEventInput): Promise<void> {
       p_ip: null,
       p_user_agent: null,
     })
+
+    // POSTGREST RETURNS ITS ERRORS, IT DOES NOT THROW THEM.
+    //
+    // The `try` around this block only ever caught the cookie reads and a
+    // network failure. An ingest that the database refused -- a bad grant, a
+    // constraint, a malformed payload -- came back as a resolved promise
+    // carrying `{ error }`, was assigned to nothing, and vanished. Rule 2 at
+    // the top of this file says analytics must never throw into a checkout, and
+    // that is still honoured: this logs and returns.
+    if (error) {
+      log.error('analytics.track_failed', { eventName: input.eventName, err: error })
+      return
+    }
+
+    // THE EVENT WAS ACCEPTED BY THE CONNECTION AND THROWN AWAY BY THE FUNCTION.
+    //
+    // `fn_ingest_analytics_events` filters every event against a name whitelist
+    // and `CONTINUE`s past anything not on it -- no error, no log, HTTP 200 --
+    // then returns the number it kept. One event in, zero back, means this one
+    // was discarded at the door.
+    //
+    // MEASURED against production on 2026-09-06 by reading the deployed
+    // function body: the live whitelist is page_view, view_product,
+    // view_category, add_to_cart, remove_from_cart, checkout_step, web_vital
+    // and whatsapp_click. `begin_checkout`, `purchase`, `voucher_redeemed` and
+    // `order_refunded` are on none of it, so EVERY server-side money event this
+    // file emits is currently going nowhere, and has been since migration 151
+    // narrowed the list.
+    //
+    // `migrations/pending/169` adds the four names and is the actual fix; it
+    // needs approval before it touches production. This does not fix the loss.
+    // It makes the loss visible, which is the part that can be done without
+    // approval -- silent data loss on the money funnel is indistinguishable
+    // from no data at all, and the version of this that logs nothing is how it
+    // survived from 151 until now.
+    if (typeof accepted === 'number' && accepted < 1) {
+      log.error('analytics.event_rejected', {
+        eventName: input.eventName,
+        detail:
+          'fn_ingest_analytics_events accepted 0 of 1 events: this event name is not on the database whitelist and was discarded. See migrations/pending/169.',
+      })
+    }
   } catch (error) {
-    log.error('analytics.track_failed', { err: error })
+    log.error('analytics.track_failed', { eventName: input.eventName, err: error })
   }
 }
 
