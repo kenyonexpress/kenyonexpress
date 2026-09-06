@@ -24,8 +24,25 @@ export default defineConfig({
    * project. That is a shared, finite backend, not a per-worker fixture: at
    * full parallelism the cart specs fail with an empty cart, and the pass count
    * varies run to run (53, then 50, then 44) — the signature of contention
-   * rather than a regression. The same suite passes 53/53 at two workers and in
-   * isolation.
+   * rather than a regression.
+   *
+   * TWO IS NO LONGER ENOUGH, MEASURED 2026-09-06. This comment used to end
+   * "the same suite passes 53/53 at two workers", and that is now false: the
+   * suite has grown to 530 cases and two consecutive full runs at two workers
+   * failed 10 and then 20 of them. NINETEEN of the 21 errors in the second run
+   * were the identical sentence —
+   *
+   *   add-to-cart did not stick: the header badge went 0 -> 0
+   *
+   * — which is the contention signature and not a product defect. The same
+   * specs pass serially: `E2E_WORKERS=1` gave cart.spec 21/21, a11y 80/80,
+   * rtl-mobile 162/162, and production-smoke plus purchase-flow 6/6 on both
+   * projects.
+   *
+   * The default is LEFT AT TWO deliberately. Serial is ~45 minutes against 8,
+   * which is a cost paid on every run to fix a failure mode that announces
+   * itself in one recognisable sentence. Drop to `E2E_WORKERS=1` when a cart or
+   * checkout spec fails, and believe the serial answer over the parallel one.
    *
    * E2E_WORKERS overrides it for a machine with a local database, where the
    * contention does not apply.
