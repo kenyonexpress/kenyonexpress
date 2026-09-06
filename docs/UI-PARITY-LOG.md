@@ -221,6 +221,94 @@ No `pnpm`. No `compare.mjs`. No checkout of `closeout/v1-final`. No files under 
 
 If a later agent can run the gate from the main checkout, append a dated row. Do not overwrite history.
 
+## 12. The refusal reference
+
+Section 0 defines `refuse` as one thing. It is eight, they are checked in a
+fixed order, and they carry two different exit codes. An operator staring at a
+refusal needs to know which one fired, so this is the full list, read off
+`scripts/compare.mjs` and verified line by line.
+
+**A refusal is the script working.** It means the two pages were not comparable
+and no honest number exists. It is never a fail, and the fix is never to change
+the page to make the refusal go away.
+
+### 12.1 Exit 2: the argument is wrong
+
+| Condition | Message |
+|---|---|
+| unknown `--page` | `unknown --page=<x> (use home, product, category, products, search, cart or checkout)` |
+
+Note this list does **not** include `account`, even though section 1 documents
+`COMPARE_STORAGE_STATE` for it. Check the script before quoting an `--page=account`
+run as a gate result.
+
+### 12.2 Exit 3: the two pages are not the same page
+
+In the order the script checks them:
+
+| # | Refusal | Fires on | Escape hatch |
+|---|---|---|---|
+| 1 | Either side rendered a **not-found** page: title contains `404`, or the body matches `This page could not be found` / `לא נמצא` | any `--page` | **none** |
+| 2 | `--page=checkout` and the URL is **no longer `/checkout`**: the seeded cart did not stick, so both sides would be photographs of the cart | `checkout` | **none** |
+| 3 | The two **carts are in different fill states** (one empty, one filled) | `cart` | `COMPARE_CART_EMPTY=1` measures the empty state on both sides deliberately |
+| 4 | A **rendered image had not loaded** when the shutter fired, on either side | any | `COMPARE_ALLOW_PENDING_IMAGES=1` |
+| 5 | The two grids hold a **different number of cards** | `category`, `products`, `search`, `product` | `COMPARE_ALLOW_GRID_MISMATCH=1` |
+| 6 | Same count, but **fewer than 80% of slots hold the same product title** | same four | `COMPARE_ALLOW_GRID_MISMATCH=1` |
+| 7 | One side **paints a main product image and the other paints none** | `product` | `COMPARE_ALLOW_GRID_MISMATCH=1` |
+
+Refusals 1 and 2 have no escape hatch on purpose: there is no reading of a 404,
+or of a cart photographed as a checkout, that is worth a percentage.
+
+Refusal 6 is **positional, not set overlap**, and that distinction is the whole
+point of it. A product that exists on both sides but sits two rows lower
+contributes exactly as much pixel mismatch as one that does not exist at all.
+The rows in section 5 that read "24 cards each, 15 of 24 slots same product
+(63%)" are this check: set overlap on that run was far higher and would have
+passed a naive threshold, teaching the next reader that the shop page has a
+design problem it does not have.
+
+Refusal 7 is the one that is **live's defect, not ours**. Live's gallery holds a
+loaded, laid-out image under an inline `opacity: 0` that no rule on the page
+clears. Matching that reference means removing our product photo. Do not.
+
+### 12.3 Exit 4: the reference was moving
+
+| # | Refusal | Escape hatch |
+|---|---|---|
+| 8 | Either side's **hero moved between two samples 600ms apart** | `COMPARE_ALLOW_MOVING_HERO=1` |
+
+Distinct exit code because it is a distinct kind of failure: the page was fine,
+the shutter was not. Live is frozen through `window.revapi<N>.revpause()` and
+`revshowslide(1)`; if that API is ever renamed, the reference sits on an
+arbitrary slide and the score is carousel phase rather than layout.
+
+### 12.4 The three warnings, which are more dangerous than any refusal
+
+A refusal exits. **These print a number and keep going**, so the number reaches
+a log, a commit message or this file looking exactly like a real score.
+
+| Warning | Text | What the number means |
+|---|---|---|
+| Styles never confirmed | `WARNING: styles never confirmed for <url>; treat any diff as unmeasured` | The page may have been shot before its stylesheet parsed. A flash of unstyled content scores enormous. **Discard the run.** |
+| Sweep timed out | `WARNING: the scroll/settle sweep for <url> did not finish in 90000ms; continuing to the shutter.` | Lazy images below the fold may never have been requested. Treat as suspect; re-run. |
+| Height ratio | `!! HEIGHT RATIO <N>x — the percentage above is NOT a pixel gate.` (fires above 1.6 or below 0.62) | The two captures are structurally different pages. Printed by `diff-bands.mjs`, deliberately as a warning and not an exit, because `--page=search` legitimately differs in length. |
+
+The height-ratio warning exists because a stale `next start` held the port and
+served an old build: the same commit scored **45.53%** against that server and
+**11.07%** against a current one, and nothing in the output said which to
+believe.
+
+**Rule for this log: never append a row from a run that printed any of the
+three.** If a row's provenance is unknown, mark it `volatile` rather than
+quoting it as a score.
+
+### 12.5 Reading a forced number
+
+Rows above that say "forced" were produced with an escape hatch set. A forced
+number is a **measurement of a known-incomparable pair**, useful only for
+reading the bands that are not affected (header, footer, shell). It is not a
+gate result and must never be compared against 11 percent.
+
 ## Revision
 
 | Date | Change |
@@ -229,3 +317,4 @@ If a later agent can run the gate from the main checkout, append a dated row. Do
 | 2026-09-07 | Pass 9: `/s/[id]` not scored; 2/3/4 grid; do not use join-us as twin |
 | 2026-09-07 | Pass 10: `/city/[slug]` n/a (seventeen regions, no refs twin) |
 | 2026-09-07 | Pass 11: legal indexable, `/offline` noindex, neither scored |
+| 2026-09-07 | Pass 12: refusal reference. All eight refusals with exit codes 2/3/4 and escape hatches, plus the three warnings that print an untrustworthy number instead of exiting |
