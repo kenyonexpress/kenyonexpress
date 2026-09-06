@@ -216,3 +216,23 @@ alone would lock them out.
 165 would have revoked public EXECUTE on helpers that public SELECT policies call. Measured result: anonymous catalogue
 `42501`.
 Cancelled. An audit that counts "anon EXECUTE on DEFINER" as a finding is counting the RLS implementation, not a leak. Real leaks are §6 items 1–3.
+
+---
+
+## 12. `support` is not in this pack's four names
+
+Live enum has six values. Pack four: customer, content-uploader, coupon-partner, admin.
+
+`support` is closest to a read-only admin:
+`is_support()`
+is true for support+admin+super_admin. They must not
+`refundOrder`,
+must not
+`updateUserRole`,
+must not
+`bulkAdjustPrices`.
+If an admin page uses
+`is_support()`
+as the money gate, support can move money. Use
+`is_admin()`
+for money.
