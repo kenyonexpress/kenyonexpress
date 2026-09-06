@@ -120,7 +120,7 @@ Portal `/supplier/scan` (alias `/scan`). Auth + active membership. `coupon_partn
 
 2. **Branch: authenticated but no membership.** Visible: `/supplier/access-denied`. Forbidden: enumerating other suppliers' vouchers. Logged: deny.
 
-3. **Scan UI.** Visible: camera and **always** manual entry, RTL, code LTR, confirm `אשר וממש`. Forbidden: platform percent, payout dashboard as if coupon prepaid were owed (it is not). Logged: rate limit by IP/member.
+3. **Scan UI or camera opens `/redeem/{token}`.** Visible: camera and **always** manual entry, RTL, code LTR, confirm `אשר וממש`. A photographed customer QR without membership is login or not-found, never a spend. Forbidden: platform percent, payout dashboard as if coupon prepaid were owed (it is not). Logged: rate limit by IP/member; forged HMAC `invalid_signature` even logged-out.
 
 4. **Confirm.** Visible: normalised code. Forbidden: double submit creating two `redeemed` (idempotency_key). Logged: lookup may write a non-success `voucher_redemptions` row.
 

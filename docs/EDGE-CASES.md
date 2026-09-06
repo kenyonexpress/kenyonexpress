@@ -206,6 +206,16 @@ Customer copy lives in COPY-HE. This file owns control flow.
 
 ---
 
+## 12b. Forged or photographed QR (`/redeem/{token}`)
+
+**What happened.** Someone opens a `KEV1` URL that is tampered, or a valid URL without being that supplier.
+
+**Expected.** Forged: `invalid_signature`, recorded, no voucher body. No session: login round-trip. Other supplier: `not_found` (do not name the owner). Valid owner: remainder `{price}` then `redeem_voucher`. Photographing a customer's QR does not bypass membership.
+
+**Forbidden.** Treating HMAC as single-use. Indexing `/gift/*` or `/redeem/*`.
+
+---
+
 ## 13. Related cases (same invariants)
 
 | Case | Expected |

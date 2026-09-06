@@ -889,6 +889,37 @@ Legal body must not say escrow or a fixed 10% commission. Checkout terms tick li
 
 ---
 
+## 20. Gift claim `/gift/[token]` and scan landing `/redeem/[token]` (deepen)
+
+Both URLs **are credentials**. `noindex, nofollow`. Never sitemap. Never Open Graph images that leak the token.
+
+### 20.1 Gift `/gift/[token]`
+
+Customer claims a gifted voucher. Title `קיבלת מתנה`.
+
+1. Card shell. Suspense: `רגע, טוענים את המתנה…`
+2. Invalid token: 404 (do not distinguish "used" vs "forged" if that enumerates)
+3. Valid: product name, `{date}` expiry, `GiftClaimForm` (login if needed)
+4. Success: redirect toward `/coupon/{id}` or account coupons
+
+Data: `loadGiftPreview(token)` only. Token in path. Logged: claim; `voucher_gifted` already mailed the recipient.
+
+### 20.2 Redeem `/redeem/[token]`
+
+Supplier camera often opens this URL (signed `KEV1` payload). Title `מימוש שובר`. HMAC proves mint, **not** single-use.
+
+| Branch | Visible | Forbidden | Logged |
+|---|---|---|---|
+| forged | `invalid_signature` refusal, even with no session | stack / supplier name | `recordRefusedScan` |
+| no session | login then back | seeing the code | |
+| wrong supplier | not found (anti-enumeration) | "belongs to X" | not_found |
+| expired / used | honest copy **only** to owning supplier | QR still spendable | redemption row |
+| ok | confirm + remainder `{price}` | percent | then `redeem_voucher` |
+
+CTA `למסך הסריקה` → `/scan`. Rate limit by address.
+
+---
+
 ## 16. Revision
 
 | Date | Change |

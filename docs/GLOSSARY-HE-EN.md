@@ -154,7 +154,8 @@ Do not name a new `user_role` `coupon_partner`.
 | וואטסאפ | WhatsApp, never rebranded yellow |
 | ניווט ב-Waze | Waze stays Latin |
 | הדף שחיפשתם לא נמצא | 404 |
-| אין חיבור לאינטרנט | `/offline` (service worker) |
+| קיבלת מתנה | `/gift/[token]` (the URL is the credential) |
+| מימוש שובר | `/redeem/[token]` (signed QR payload) |
 | משהו השתבש אצלנו | 500 |
 | פירורי לחם | breadcrumb |
 

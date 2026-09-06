@@ -468,6 +468,17 @@ Ink on `#fed700` for the tile (TOKENS: never white on yellow).
 
 ---
 
+## 16. Gift and scan-landing
+
+| Id | String |
+|---|---|
+| gift.title | קיבלת מתנה |
+| gift.loading | רגע, טוענים את המתנה… |
+| redeem.title | מימוש שובר |
+| redeem.toScan | למסך הסריקה |
+
+---
+
 ## 14. Revision
 
 | Date | Change |
