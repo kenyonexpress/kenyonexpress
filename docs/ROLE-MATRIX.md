@@ -437,3 +437,31 @@ docs/MIGRATION-REVIEW.md      pending migrations, read as text
 ARCHITECTURE-ADMIN.md         section 3.2, the matrix this implements
 ARCHITECTURE-SUPPLIER-PORTAL.md  section 1, the membership rule
 ```
+
+---
+
+## 10. Storefront allow/deny (customer surfaces, deepened)
+
+Section 5 lists guards. This table is the product brief's four columns against those surfaces. Dimensions stay orthogonal (§0.3): a scanner is still a `customer` on `/account/wallet`.
+
+| Route / action | customer (anon or auth) | content-uploader | coupon-partner (membership) | admin |
+|---|---|---|---|---|
+| `GET /s/[id]` active | allow pub | allow | allow (own shop is still public chrome) | allow |
+| `GET /s/[id]` inactive or missing | deny 404, noindex | same | same | same |
+| JSON-LD LocalBusiness | allow only if address+city are real | same | same | same |
+| JSON-LD `@id` on `/supplier/{uuid}` | **deny** (portal) | deny | deny | deny |
+| `GET /account/wallet` | own SELECT; no client write | own as buyer | own as buyer | own as buyer |
+| `GET /account/coupons` | own vouchers; no QR in the list | own | own customer vouchers, not the shop book | own |
+| `GET /account/wishlist` | own | own | own | own |
+| Header heart (live YITH) | **deny** (standing chrome rule) | deny | deny | deny |
+| Read `platform_percent` in customer DOM | **deny** | deny on storefront | deny | allow on admin form only |
+| Wallet cash-out | **deny** | deny | deny | deny |
+
+Inactive supplier must not paint the old H1 on an empty grid. That leak is a 404, matching `docs/ERROR-COPY.md`.
+
+## 11. Revision
+
+| Date | Change |
+|---|---|
+| 2026-09-07 | Guard-derived matrix (parallel pass) |
+| 2026-09-07 | Storefront `/s/[id]` active-only, LocalBusiness, account siblings |
