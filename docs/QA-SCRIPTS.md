@@ -233,6 +233,18 @@ Not `/suppliers` (join-us) and not `/supplier/login`. No pixel twin.
 
 ---
 
+## 10c. Legal and `/offline`
+
+| # | Step | Pass |
+|---|---|---|
+| 1 | Footer links | 200, Hebrew H1, no third slug |
+| 2 | Returns | no escrow, no numbered commission, redeemed = done |
+| 3 | WP alias | 301 or 200 with one canonical |
+| 4 | `/offline` | paints with network off; retry is a link; ink `#333e48` on `#fed700` |
+| 5 | Offline robots | noindex, no JSON-LD |
+
+---
+
 ## 11. What not to test here
 
 - Pixel percents (log them in `docs/UI-PARITY-LOG.md`)
@@ -247,3 +259,4 @@ Not `/suppliers` (join-us) and not `/supplier/login`. No pixel twin.
 | 2026-09-07 | Manual scripts: home, catalogue, PDP, checkout fail/success, wallet, coupons, wishlist, gift/redeem, uploader, scan |
 | 2026-09-07 | Pass 9: public `/s/[id]` including JSON-LD gate and 2/3/4 grid |
 | 2026-09-07 | Pass 10: city landing empty vs 404 vs chips |
+| 2026-09-07 | Pass 11: legal aliases and offline tile |
