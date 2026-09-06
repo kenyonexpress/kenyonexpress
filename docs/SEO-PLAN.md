@@ -41,6 +41,43 @@ One locale. No English site. Do not advertise `en`.
 
 Self-referencing canonical + matching `hreflang="he-IL"` on every **indexable** URL. Account, cart, checkout, QR, gift token, redeem token, search: noindex, no hreflang cluster.
 
+### 1.1 Audited against source, 2026-09-07
+
+Three claims in this section were checked against the code rather than
+restated.
+
+| Claim | Source | Verdict |
+|---|---|---|
+| `lang` | `src/app/layout.tsx:111` ships `<html lang="he" dir="rtl">` | **confirmed.** The valid short form, not `he-IL`. Live WP uses `he-IL`; both are valid and this is not a parity defect |
+| Open Graph locale | root `metadata.openGraph.locale: 'he_IL'` | **confirmed** |
+| `alternates.languages` | **not present in any file under `src/`** | **confirmed UNSHIPPED** |
+
+The third is the one worth stating positively. This document already calls
+`x-default` a "runtime plan", which is accurate, but the stronger fact is now
+checked: **no `hreflang` tag of any kind is emitted anywhere on the site.**
+`alternates` appears 15 times across `src/app`, and every occurrence sets
+`canonical` only. The single richer one is the root layout, which adds
+`types` for the RSS feed and still no `languages`.
+
+So the current state is:
+
+```
+canonical      shipped, 15 routes
+hreflang he-IL NOT shipped
+x-default      NOT shipped
+```
+
+That is a defensible position for a one-locale site: `hreflang` with a single
+self-referencing language is inert, and Google treats a lone `x-default` as a
+market hint rather than a requirement. It is recorded here so nobody
+"restores" a tag that was never there and then reports it as a regression when
+it disappears again.
+
+Where it would go, if it is ever wanted: `alternates.languages` in the root
+layout's `metadata`, with `'he-IL'` and `'x-default'` both pointing at the same
+canonical. One place, not fifteen: Next merges nested `alternates` over the
+root, so a per-route `canonical` does not erase a root `languages`.
+
 ---
 
 ## 2. Meta templates
@@ -206,3 +243,4 @@ Home: do not replace the live brand title with a stuffed “קופונים די�
 | 2026-09-07 | Pass 9: LocalBusiness data gate; `@id` `/s/{id}#business`; hreflang `x-default` matches ARCHITECTURE-SEO (same canonical) |
 | 2026-09-07 | Pass 10: city seventeen regions; empty indexable; query chips noindex |
 | 2026-09-07 | Pass 11: legal alias canonical; offline omitted from JSON-LD |
+| 2026-09-07 | hreflang audited against source: lang="he" and og locale confirmed, hreflang/x-default confirmed unshipped in all 15 canonical routes |
