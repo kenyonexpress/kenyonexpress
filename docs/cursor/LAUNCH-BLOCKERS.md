@@ -249,6 +249,12 @@ redeploy. Catalogue stays up.
 
 **Stop if:** 42703, 0 vouchers, webhook 401, or amount mismatch. That is a code/credentials incident, not a DNS problem. Do not cut the domain to paper over it.
 
+Returns copy on
+`/legal/returns`
+must describe cash-at-counter remainder and 14-day
+`distance_sale_14d`,
+not escrow. If that page still says escrow, fix copy before H8 (customers will screenshot it).
+
 ---
 
 ## H7. Attach the domain in Vercel (still do not change public DNS)
