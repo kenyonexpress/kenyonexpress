@@ -217,8 +217,24 @@ Field names (Hebrew visible labels): first/last name, phone, email, city, street
 | acc.coupon.expired | פג תוקף | |
 | acc.coupon.cancelled | בוטל | |
 | acc.coupon.refunded | הוחזר | |
-| acc.wishlist.h1 | רשימת מועדפים | |
-| acc.wishlist.cta | להמשך קניות | |
+| acc.wishlist.h1 | רשימת המשאלות שלי | |
+| acc.wishlist.empty | עוד לא שמרת מוצרים. לחיצה על הלב בעמוד מוצר שומרת אותו כאן. | |
+| acc.wishlist.cta | לכל המוצרים | `/products` |
+| acc.wallet.h1 | הארנק שלי | |
+| acc.wallet.yours | היתרה שלך | `{price}` |
+| acc.coupons.h1 | הקופונים שלי | |
+| acc.coupons.sub | הצגת הקוד או ה-QR בבית העסק. היתרה משולמת שם בזמן הסריקה. | |
+| acc.coupons.show | הצגת הקופון ו-QR | presentable |
+| acc.coupons.detail | פרטי הקופון | not presentable |
+| acc.coupons.today | הקופון פג היום | |
+| acc.coupons.days | נותרו `{n}` ימים לניצול הקופון | `{n}` |
+| acc.ref.h1 | חבר מביא חבר | |
+| acc.ref.off | התוכנית עדיין לא פעילה | |
+| acc.ref.flagged | בבדיקה | never "חשד" |
+| acc.sub.h1 | המנויים שלי | |
+| acc.sub.empty | אין לך מנויים פעילים. | |
+| acc.tokens.h1 | אמצעי תשלום | |
+| acc.addr.h1 | כתובות | |
 | voucher.pageTitle | הקופון שלי | |
 | voucher.back | לכל הקופונים שלי | |
 | voucher.showCode | הציגו את הקוד בבית העסק | |
@@ -320,7 +336,11 @@ Do not toast a successful payment. Confirmation is a route (`/checkout/return`) 
 | Coupons list | עדיין לא רכשת קופונים. | |
 | Active coupons tile | אין כרגע קופונים שממתינים למימוש | |
 | Wallet ledger | עדיין אין תנועות בארנק. | |
-| Wishlist | עדיין אין מוצרים במועדפים | להמשך קניות |
+| Wishlist | עוד לא שמרת מוצרים. לחיצה על הלב בעמוד מוצר שומרת אותו כאן. | לכל המוצרים → `/products` |
+| Addresses | עדיין לא הוספת כתובת. | |
+| Subscriptions | אין לך מנויים פעילים. | לדילים באתר → `/` (not `/products`) |
+| Subscriptions load fail | לא הצלחנו לטעון את המנויים כרגע. נסה שוב עוד רגע. | must not look like empty |
+| Referrals program off | תוכנית ההפניות תיפתח בקרוב. ברגע שהיא תופעל, יופיע כאן קוד אישי לשיתוף והמעקב אחרי הבונוסים שצברתם. | no share UI |
 | Saved cards | אין כרטיסים שמורים. כרטיס נשמר אוטומטית בתשלום הראשון, אם בחרת בכך. | |
 | Referrals | עדיין לא הצטרף אף אחד דרך הקוד שלכם. | |
 | City landing | עדיין אין אצלנו בית עסק רשום באזור הזה. אפשר לראות את כל הדילים באתר… | |
@@ -545,3 +565,4 @@ GET on `/gift/[token]` must not claim. Claim errors paint under the button (toda
 | 2026-09-07 | Initial catalogue: chrome, buttons, labels, validation, toasts, empty, dialogs, errors, email subjects, WhatsApp, scan outcomes |
 | 2026-09-07 | Deepen: checkout return and city strings |
 | 2026-09-07 | Deepen: order-detail labels, gift claim errors, redeem refusals, scan vs redeem confirm split |
+| 2026-09-07 | Deepen: account siblings (wishlist, wallet, coupons, referrals, subscriptions) from source |

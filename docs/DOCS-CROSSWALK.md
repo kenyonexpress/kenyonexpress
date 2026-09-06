@@ -95,6 +95,8 @@ Public supplier is `/s/[id]`, not `/suppliers/[slug]`. `/suppliers` is join-us m
 
 COPY-HE vs account pages: mix of `שלך` and `שלכם` (referrals). Canonical: keep the string that is already on that screen; new screens use `שלך` except scan (cashier, no person) and emails (`שלום {name}`).
 
+Wishlist empty used to be documented as `עדיין אין מוצרים במועדפים`. Live page is `עוד לא שמרת מוצרים...` / H1 `רשימת המשאלות שלי`. Wishlist list still paints `price_ils` via `toLocaleString` (float path). Recorded, not a token.
+
 Share message in `buildShareMessage` uses a dash in source. COPY-HE canonical is a colon.
 
 ---

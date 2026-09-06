@@ -469,9 +469,9 @@ Nav (layout, `aria-current` on the active item), then the overview.
 3. Wallet balance: label `יתרת הארנק`, `{price}`, note `קרדיט לשימוש באתר בלבד. לא ניתן למשיכה.`
 4. Card: `ההזמנה האחרונה` or empty
 5. Card: `קופונים פעילים` count + helper
-6. Shortcuts into: orders, coupons/vouchers, details, security, wishlist, referrals, wallet, addresses, tokens, subscriptions
+6. Shortcuts into: orders, coupons, details, security, wishlist, referrals, wallet, addresses, tokens, subscriptions
 
-Sibling routes (same shell, not this page's sections): `/account/details`, `/security`, `/wishlist`, `/referrals`, `/wallet`, `/addresses`, `/tokens`, `/subscriptions`, `/coupons`, `/vouchers`, `/my-vouchers`.
+Canonical siblings: `/account/details`, `/account/security`, `/account/wishlist`, `/account/referrals`, `/account/wallet`, `/account/addresses`, `/account/tokens`, `/account/subscriptions`, `/account/coupons`. `/account/vouchers` and `/account/my-vouchers` are **permanent redirects** to `/account/coupons`. Full anatomy: §7.6.
 
 ### 7.2 Data per section
 
@@ -493,7 +493,7 @@ Layout nav paints immediately. Main: title bar + 88px wallet block + two cards (
 | Active coupons | `אין כרגע קופונים שממתינים למימוש` |
 | Wallet movements (`/account/wallet`) | `עדיין אין תנועות בארנק.` |
 | Coupons list | `עדיין לא רכשת קופונים.` |
-| Wishlist | `עדיין אין מוצרים במועדפים` + CTA `להמשך קניות` |
+| Wishlist | `עוד לא שמרת מוצרים. לחיצה על הלב בעמוד מוצר שומרת אותו כאן.` + `לכל המוצרים` |
 | Saved cards | `אין כרטיסים שמורים. כרטיס נשמר אוטומטית בתשלום הראשון, אם בחרת בכך.` |
 | Referrals unused | `עדיין לא הצטרף אף אחד דרך הקוד שלכם.` |
 
@@ -504,6 +504,32 @@ Layout nav paints immediately. Main: title bar + 88px wallet block + two cards (
 | Query fail | account banner, then §13 if the layout throws |
 | Delete account | dialog + typed confirm (destructive). Never a single click |
 | Wishlist toggle | `הפעולה נכשלה.` |
+
+### 7.6 Account sibling pages
+
+All noindex. Session required.
+
+| Route | Title / H1 | Empty | Error |
+|---|---|---|---|
+| `/account/coupons` | `הקופונים שלי` / subtitle `הצגת הקוד או ה-QR בבית העסק. היתרה משולמת שם בזמן הסריקה.` | `עדיין לא רכשת קופונים.` | §13 |
+| `/account/wallet` | `הארנק שלי` / `קרדיט פנימי לשימוש באתר` | ledger `עדיין אין תנועות בארנק.` | §13 |
+| `/account/wishlist` | `רשימת המשאלות שלי` | `עוד לא שמרת מוצרים. לחיצה על הלב בעמוד מוצר שומרת אותו כאן.` + `לכל המוצרים` → `/products` | §13 |
+| `/account/details` | `הפרטים שלי` | n/a (profile missing is 404) | delete is typed confirm |
+| `/account/security` | `אבטחת החשבון` | n/a | login bounce |
+| `/account/referrals` | `חבר מביא חבר` | program off: `התוכנית עדיין לא פעילה` body (no share code). List empty: `עדיין לא הצטרף אף אחד דרך הקוד שלכם.` | flagged shows `בבדיקה`, never "חשד" |
+| `/account/addresses` | `כתובות` / `כתובות למשלוח מוצרים פיזיים` | `עדיין לא הוספת כתובת.` | save `role="alert"` |
+| `/account/tokens` | `אמצעי תשלום` | `אין כרטיסים שמורים. כרטיס נשמר אוטומטית בתשלום הראשון, אם בחרת בכך.` | last4 only, never PAN |
+| `/account/subscriptions` | `המנויים שלי` | `אין לך מנויים פעילים.` + `לדילים באתר` → `/` | **distinct** from empty: `לא הצלחנו לטעון את המנויים כרגע. נסה שוב עוד רגע.` |
+
+Coupons list: **no QR in the list**. Code LTR. Status from `couponStatusView` (clock). Remainder `{price}` at business. CTA `הצגת הקופון ו-QR` if presentable else `פרטי הקופון` → `/coupon/{id}`. Expiring: `הקופון פג היום` or `נותרו {n} ימים לניצול הקופון`.
+
+Wallet: `היתרה שלך` `{price}`. Note is `acc.wallet.pageNote`. Ledger columns `תאריך` `פעולה` `סכום` `הזמנה`. Reasons: `קאשבק על רכישה` / `שימוש בארנק` / `החזר על ביטול` / `זיכוי ידני` / `קרדיט על קופון שפג`. Credit `+{price}` debit `-{price}`. Order link `לצפייה`.
+
+Wishlist **paint drift**: list still formats `price_ils` with `toLocaleString`. New work must go through `formatIls` / `shekels(agorot())`. Do not treat the live `₪{n}` on this list as a token.
+
+Referrals: do not paint name or address of the referred person. Bonus on a completed row is the **snapshot**; pending shows `עד {price}` from current program terms. Program table empty in prod means **no code**, not a ₪0 promise.
+
+Subscriptions: cancel is two-step (`ביטול המנוי` then `אישור ביטול`). Notice from `cancellationNotice`: no refund for time already paid.
 
 ---
 
