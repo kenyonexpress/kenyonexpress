@@ -1343,6 +1343,23 @@ Seventeen regions from `REGIONS`. Unknown slug: 404. Container same as category 
 
 Do not mint extra city URLs beyond the seventeen. Filtered `/products?city=` is noindex.
 
+### 8.9 Legal aliases and `/offline`
+
+Legal lives in the store shell. Indexable. Counsel owns the body (`docs/legal/`). Tokens: Heebo, RTL, page container 1200px (not 1320), link `#0062bd`, no yellow as text.
+
+Architecture 2026-07 named `/terms`. The app has **both** `/legal/*` and WP aliases. Footer must 200. Do not invent a third slug.
+
+| Route | H1 |
+|---|---|
+| `/legal/terms`, `/terms-and-conditions` | תקנון |
+| `/legal/privacy`, `/privacy-policy` | פרטיות |
+| `/legal/returns`, `/refund_returns` | ביטולים והחזרים |
+| `/legal/accessibility`, `/accessibility` | הצהרת נגישות |
+
+Returns copy: remainder at the business, no escrow, redeemed = done. No numbered platform commission.
+
+`/offline`: service-worker tile. Zero fetches. Fill `#fed700`, ink `#333e48`, CTA is a `Link` to `/` not an `onClick`. Copy: `אין חיבור לאינטרנט`. Robots noindex. No JSON-LD.
+
 ---
 
 ## 9. Related documents
@@ -1368,3 +1385,4 @@ src/lib/electro-hero-tokens.ts  ELECTRO_HERO, the Electro home-v7 measurements
 | 2026-09-07 | Pass 8: account sibling tokens (wallet, coupons, wishlist) at 380/768/1440; live home title `קניון אקספרס`, `lang="he-IL"`, no hreflang |
 | 2026-09-07 | Pass 9: `/s/[id]` tokens, 2/3/4 grid, LocalBusiness paint gate |
 | 2026-09-07 | Pass 10: `/city/[slug]` seventeen regions, empty is a real answer |
+| 2026-09-07 | Pass 11: legal aliases + offline tile (no fetch, ink on yellow) |
