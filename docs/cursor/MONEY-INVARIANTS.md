@@ -276,3 +276,28 @@ rows can still move out.
 Any new code that writes
 `escrow_held`
 is a violation of the business rule, even if the trigger allowed an outbound later.
+
+---
+
+## 10. Mapping the brief's `packages/money.ts`
+
+| Brief name | Live name | Do this |
+|---|---|---|
+| `packages/money.ts` | `src/lib/money.ts` | Import only this from app code |
+| `packages/money` types | `src/lib/commerce/money.ts` | Do not import from features |
+| global `PLATFORM_PERCENT` | **does not exist** | Fail the product |
+| `platform_bp` on products | **does not exist** | `platform_percent` is whole-percent numeric; convert to Bp at the engine boundary |
+| escrow hold percent | **removed 2026-07-24** | |
+
+Generated-column error (what a violation looks like at runtime): Postgres rejects INSERT/UPDATE that names a
+`GENERATED ALWAYS`
+column. The fix is to write
+`price_ils`
+(or the hand-written agorot column) and read
+`price_ils_agorot`.
+It is the most common query-from-old-docs failure.
+
+172's ₪1 price is **not** a global rate and **not** a 0.25% platform take. It is a catalogue mistake. The guard is a ratio against
+`full_price`
+(the only compare-at the guard reads). Do not "fix" it by adding a default
+`platform_percent`.
