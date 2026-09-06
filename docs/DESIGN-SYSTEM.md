@@ -1309,6 +1309,26 @@ Electro supplies **order of blocks**, not copy:
 Account siblings sit **outside** that skeleton. Do not wrap wallet or coupon
 lists in a 241px departments column.
 
+### 8.7 Public supplier `/s/[id]` (not the portal)
+
+No `refs/ke_live_supplier.html`. Electro shop-archive chrome only. Container is
+`--cat-container` `1170px`, gutter 15px. Brief 1320px still not painted.
+
+| Slot | 380 | 768 | 1440 |
+|---|---|---|---|
+| Eyebrow `ספק` | 12px / 400 / `#657888` | same | same |
+| H1 name | 25.004px / 500 / `#333e48` | same | same |
+| City / address | 14px / 400 / muted | same | same |
+| Count line | 14px | same | same |
+| Grid columns | **2** | **3** | **4** (archive category is 5-up; this page is 4-up) |
+| Card | same `--card-w-*` family as category | | |
+| Empty | heading stays, body `אין מוצרים פעילים לספק הזה כרגע.` | | |
+| 404 | Hebrew `ספק לא נמצא` | | |
+
+Phone and Waze: LTR islands. WhatsApp mark not yellow. Inactive supplier is 404, not a grey empty shop (that would leak a deactivated name in the H1).
+
+JSON-LD LocalBusiness only when address+city exist (`docs/SEO-PLAN.md` §3.4). Missing address: omit the row in the header too (never `כתובת:` with a blank).
+
 ---
 
 ## 9. Related documents
@@ -1332,3 +1352,4 @@ src/lib/electro-hero-tokens.ts  ELECTRO_HERO, the Electro home-v7 measurements
 | Date | Change |
 |---|---|
 | 2026-09-07 | Pass 8: account sibling tokens (wallet, coupons, wishlist) at 380/768/1440; live home title `קניון אקספרס`, `lang="he-IL"`, no hreflang |
+| 2026-09-07 | Pass 9: `/s/[id]` tokens, 2/3/4 grid, LocalBusiness paint gate |
