@@ -20,23 +20,40 @@ refs/ke_live_computed.json
 electro_madrasthemes_com-DESIGN.md
 ```
 
-Neither file exists in this worktree. Checked by name, by glob and by content
-across the whole tree excluding `node_modules` and `.git`. The second name does
-not exist anywhere in the repository under any spelling.
+**`refs/ke_live_computed.json` now exists and is committed.** It was absent when
+this section was first written, which is what the paragraphs below originally
+recorded. It was regenerated from the live site on **2026-09-04** and locked
+into git, so every provenance comment that names it now points at a file a
+reader can open. `.gitignore` carries `refs/*` with a negation for exactly this
+file and `refs/ke_live_states.json`; the negation is written against `refs/*`
+and not `refs/`, because git will not re-include a file whose parent directory
+is excluded.
 
-That is a naming problem, not a data problem. Every number in this document is
-still measured, and the measurements are the ones those two names refer to:
+`electro_madrasthemes_com-DESIGN.md` still does not exist anywhere in the
+repository under any spelling. Checked by name, by glob and by content across
+the whole tree excluding `node_modules` and `.git`.
 
-| The brief's name | What actually carries those values here |
+| The brief's name | What carries those values here |
 |---|---|
-| `refs/ke_live_computed.json` | `src/styles/tokens.css` (every token carries a provenance comment naming that dump), plus `DESIGN-MEASURED.md` |
-| `electro_madrasthemes_com-DESIGN.md` | `src/lib/electro-hero-tokens.ts` (`ELECTRO_HERO`), measured off `electro.madrasthemes.com/home-v7` |
+| `refs/ke_live_computed.json` | **the file itself**, committed 2026-09-04, plus `src/styles/tokens.css` and `docs/TOKEN-PROVENANCE.md` |
+| `electro_madrasthemes_com-DESIGN.md` | `src/lib/electro-hero-tokens.ts` (`ELECTRO_HERO`), measured off `electro.madrasthemes.com/home-v7`. Every value in it was **confirmed exactly** by the 2026-09-04 capture; see section 4.6. |
 
-`refs/ke_live_computed.json` is a computed-style dump of the live site
-(`kenyonexpress.co.il`) across seven templates at 380, 768 and 1440, captured
-with Playwright chromium via `getComputedStyle` and `getBoundingClientRect`. It
-is not committed. Its findings were counted out into the token file at the time
-of capture, comment by comment, and it is the token file that the tests read:
+The capture is a computed-style dump of the live site (`kenyonexpress.co.il`)
+across seven templates at 380, 768 and 1440, taken with Playwright chromium via
+`getComputedStyle` and `getBoundingClientRect`: **21 captures, 23952 elements**,
+all fifteen properties plus the bounding rect, zero pending images on any
+capture. Style rows are interned, so the file is 5.57 MB rather than tens of MB
+and every element still carries every property. Regenerate with:
+
+```
+node scripts/measure-live-computed.mjs      # the rest dump + screenshots
+node scripts/measure-live-states.mjs        # hover / active / disabled
+node scripts/derive-tokens.mjs              # the derivation report
+```
+
+`docs/TOKEN-PROVENANCE.md` carries one row per derived token: token name,
+measured value, source selector, source width. Its findings are the token file
+the tests read:
 
 ```
 src/styles/tokens.test.ts
@@ -548,6 +565,96 @@ Measured roles with their colour and line height, for reviewing a screenshot.
 ---
 
 ## 4. Component anatomy
+
+### 4.0 Buttons, measured at rest and under a real pointer
+
+A computed-style dump records elements **at rest**. Hover, active and disabled
+live in `:hover` / `:active` / `[disabled]` rules that only apply while the
+pseudo-class matches, so they cannot be derived from it. They were measured
+separately by driving a real pointer onto each control
+(`scripts/measure-live-states.mjs`, `refs/ke_live_states.json`).
+
+**Live has no single button component.** It paints four families that share no
+radius, no ink and no height. Flattening them into one "primary" would be an
+invention. Declared as four in `packages/ui/tokens.css`.
+
+| Family | Rest fill | Rest ink | Radius | Padding | Height | Type |
+|---|---|---|---|---|---|---|
+| Product add-to-cart, **380** | `#333e48` | `#ffffff` (10.92:1) | `6px` | `14.504px 48.076px` | 52.98 | 14 / 700 |
+| Product add-to-cart, **768 and 1440** | `#fed700` | `#ffffff` **(1.41:1)** | `25.2px` | `14.504px 48.076px` | 52.98 | 14 / 700 |
+| Cart checkout | `#fed700` | `#333e48` (7.76:1) | `21.994px` | `14.504px 29.876px` | 47.52 | 14 / 700 |
+| Place order (`#place_order`) | `#fed700` | `#333e48` | `50px` | `14.512px 16px` | 64.28 | 19.418 / 700 |
+| Secondary (update cart, login) | `#efecec` | `#333e48` (9.30:1) | `22px` | `14.504px 29.876px` | 47.2 | 14 |
+| Card add-to-cart | `transparent` | `#333e48` | `22px` | | 33.88 | 14 / 400 |
+
+#### The hover the brief names is not the hover live paints
+
+The brief specifies `hover fedd26`. That value is real, but it is
+`--color-brand-primary-hover`, a **fill token**, and it is not what any live
+button does on hover.
+
+**Every measured button on live goes to black.** Measured identical on
+`button.single_add_to_cart_button`, `.checkout-button`, `#place_order` and
+`button[name="login"]`:
+
+| State | Fill | Ink |
+|---|---|---|
+| hover | `#000000` | `#ffffff` (21.00:1) |
+| transition | `color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out` | |
+
+`button[name="update_cart"]` is the one exception: rest and hover measured
+byte-identical, so it does not react at all.
+
+The two are not interchangeable and both are correct in their own place:
+
+- **`#fedd26`** is the resting-yellow hover for a control **we** own that is not
+  a live WooCommerce twin, and is therefore not pixel-scored against one.
+- **`#000000`** is what a control must do if it is being scored against a live
+  twin at 380/768/1440.
+
+Section 8 already applies this distinction on the account surfaces; this is the
+measurement behind it.
+
+#### Active
+
+Measured with the mouse held down, not derived as a shade:
+
+| Control | Active fill | Note |
+|---|---|---|
+| `.checkout-button` | `#a78e00` | Carries `#333e48` at **3.39:1**, below AA for 14px. Acceptable for a momentary pressed state, never for a resting one. |
+| `single_add_to_cart_button`, `#place_order`, `login` | `#000000` | Same as hover. |
+
+#### Disabled is mostly UNMEASURED, and that is the honest answer
+
+| Control | Disabled |
+|---|---|
+| `button[name="update_cart"]` | **measured**: fill and ink unchanged, `opacity: 0.65` |
+| `single_add_to_cart_button` | **UNMEASURED**: live paints no disabled instance |
+| `.checkout-button` | **UNMEASURED** |
+| `#place_order` | **UNMEASURED** |
+| `button[name="login"]` | **UNMEASURED** |
+
+`--btn-disabled-opacity: 0.65` comes from the one control that actually ships
+disabled and is deliberately **not** generalised to the other four. Synthesising
+the state by setting the attribute ourselves was considered and rejected: that
+measures *our* disabled styling inside *live's* page, which is a different
+thing and would be a fabricated row. `scripts/derive-tokens.mjs` exits non-zero
+while those four rows stand, so the gap fails loudly.
+
+#### Two findings from this measurement
+
+1. **The product add-to-cart is responsive and ours is not.** Live is slate with
+   a 6px corner at 380 and a yellow 25.2px pill from 768 up.
+   `src/styles/product-page.css` uses `--pdp-brand: #fed700` at every width, so
+   at 380 our page is yellow where live is slate. That is a real, currently
+   unpaid pixel cost on `--page=product --width=380`.
+2. **Live paints white on `#fed700` on that button: 1.41:1.** Measured at 768 and
+   1440. It is recorded here and deliberately **not** emitted as a token:
+   `src/lib/a11y/brand-contrast.test.ts` fails the build on exactly this
+   pairing. A component must reach for `--color-heading` (7.76:1) or
+   `--color-primary-foreground` (12.38:1). This is the one place where copying
+   the measurement is forbidden by a gate the repo already enforces, and it is
+   documented so nobody "fixes" our page toward live's failure.
 
 ### 4.1 Header
 
