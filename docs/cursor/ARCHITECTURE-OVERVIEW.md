@@ -571,3 +571,34 @@ Money, RLS, APIs, risks, human launch steps, and post-launch work have their own
 **Search UI vs engine.** Meilisearch is the backend. `/search` + header field exist for Electro pixel refs (ADR 0010). That is not a search product.
 
 **Next.js 15 vs 16.** Brief said 15. This branch is 16.2.12. `src/proxy.ts` replaces `middleware.ts`.
+
+---
+
+## 14. `apps/mobile` (till), not a second web
+
+The till app is an RPC client of the same Postgres. It calls
+`redeem_voucher`,
+`verify_supplier_staff_pin`,
+`supplier_app_context`.
+It is not a Cardcom merchant. It must not embed the service role. Grants audits that only grep
+`src/`
+miss this caller.
+
+---
+
+## 15. Boot and leak guards
+
+`src/instrumentation.ts`
+runs
+`src/lib/env.ts`
+before the first request.
+`ALLOW_INCOMPLETE_ENV`
+exists because
+`next start`
+on a laptop is
+`NODE_ENV=production`
+(Lighthouse, Playwright). Production Vercel must not set that escape hatch.
+
+Any name matching
+`NEXT_PUBLIC_.*(SECRET|PASSWORD|SERVICE_ROLE|PRIVATE_KEY|API_KEY)`
+refuses boot: the leak already shipped in the bundle.
