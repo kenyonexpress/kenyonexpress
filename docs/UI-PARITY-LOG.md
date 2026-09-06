@@ -380,6 +380,116 @@ No `pnpm`. No `compare.mjs`. No checkout of `closeout/v1-final`. No files under 
 
 If a later agent can run the gate from the main checkout, append a dated row. Do not overwrite history.
 
+## 13. Band map: turning a band percentage into a diagnosis
+
+`diff-bands.mjs` prints a percentage per 100px band and the twelve worst. The
+log above records overall scores, so a reader who sees `y900-1000 42%` has no
+way to know what is at y900. This maps band to page region, derived from
+`refs/ke_live_computed.json` (committed 2026-09-04, live geometry at all three
+widths), so a band number becomes a place.
+
+Bands are 100px. The diff crops at **2600px**, so everything below band 25 is
+never scored at any width.
+
+### 13.1 `home@1440`, live body 5492px
+
+| Bands | y | Region | Size |
+|---|---|---|---|
+| 0 | 0-38 | top bar | 1440x38 |
+| 0-1 | 38-147 | masthead | 1200x109 |
+| 1-7 | 148-761 | **hero row** | 1170x613 |
+| 1-7 | 148-741 | side banners, 3 stacked | 201x197 each |
+| 5-6 | 518-688 | category strip, 5-up | 728x170 |
+| 7-8 | 761-895 | feature bar row | 1170x134 |
+| 7-8 | 791-872 | feature bar content | 1170x81 |
+| **8-25** | **898-2600** | **deal grid** (`jet-listing-grid__items grid-col-desk-4`) | 1150 wide, 4008px deep |
+
+The grid begins at y898 and runs 4008px, so **every band from 9 to the 2600
+crop is deal grid**. Eighteen of the twenty-six scored bands are catalogue.
+
+### 13.2 `home@768`, live body 9409px
+
+| Bands | y | Region | Size |
+|---|---|---|---|
+| 0 | 0-38 | top bar | |
+| 0 | 38-87 | masthead (handheld) | 768x50 |
+| 0-5 | 88-583 | **hero row** | 690x495 |
+| 3-5 | 392-562 | category strip | 729x170 |
+| 5-7 | 583-717 | feature bar row | 690x134 |
+| 6 | 613-694 | feature bar content | 690x81 |
+| 12-17 | 1220-1721 | deal card 1 | 335x501 |
+| 17-22 | 1721-2222 | deal card 2 | 335x501 |
+| 22-25+ | 2222-2723 | deal card 3 | 335x501 |
+
+### 13.3 `home@380`, live body 17791px
+
+| Bands | y | Region | Size |
+|---|---|---|---|
+| 1 | 113-162 | masthead (handheld) | 380x50 |
+| 1-3 | 163-376 | **hero row** | 350x213 |
+| 9-14 | 957-1505 | deal card 1 | 330x548 |
+| 11 | 1109-1354 | card 1 image | 281x245 |
+| 13 | 1386-1473 | card 1 price (`₪50 ₪20`) | 281x87 |
+| 15-20 | 1505-2053 | deal card 2 | 330x548 |
+| 16 | 1657-1902 | card 2 image | 281x245 |
+| 19 | 1934-2021 | card 2 price (`₪5600 ₪3900`) | 281x87 |
+| 20-25 | 2054-2602 | deal card 3 | 330x548 |
+| 22 | 2206-2451 | card 3 image | 281x245 |
+| 24 | 2483-2570 | card 3 price (`₪500 ₪250`) | 281x87 |
+
+### 13.4 What the map explains
+
+**One wrong product costs five or six whole bands at 380.** A card is 548px
+tall there, which is 5.5 bands, and its image alone is 245px. Only three cards
+fit inside the 2600px crop. So if card 2 differs between the two catalogues,
+bands 15 to 20 go dark at once, and that is **six of the twenty-six scored
+bands from a single product**.
+
+That is the mechanism behind the home@380 row in section 2.1 reading "11.0% at
+the line then 28.29%", and behind the honest statement under it that geometry
+is within 1-2px at every landmark while the percentage lives in image bands. It
+is not a hypothesis any more: three cards, six bands each, is most of the page.
+
+**Shell offsets are cheap; grid offsets are not.** At 1440 the entire chrome
+(top bar, masthead, hero, strip, feature bar) occupies bands 0 to 8. Everything
+from band 9 down is catalogue. A one-band shell error moves 8 bands of chrome;
+a one-row grid error moves 17.
+
+**Diagnosis shortcuts:**
+
+| Worst bands | Look at |
+|---|---|
+| 0-1 | top bar rows / masthead height. At 380 remember home has **three** top-bar rows and inner pages two |
+| 1-7 (1440), 0-5 (768), 1-3 (380) | hero row height, then the slider inside it. Check the freeze took |
+| 5-6 (1440), 3-5 (768) | category strip. Absent at 380 by design; if it appears there, that is the defect |
+| 7-8 | feature bar. 31px empty strip at 380, flat 134px at both 768 and 1440 |
+| 9 and below | **catalogue, not design.** Check the refusal guards in section 12 before touching a token |
+
+**A band map is not a fidelity claim.** These are live's coordinates. If our
+page puts the same element at a different y, the band that reports the
+difference is where the element *should* be, not where ours is. Read the map to
+find what region a band covers, then compare the two screenshots at that y.
+
+### 13.5 Re-deriving it
+
+```bash
+python3 - <<'PY'
+import json
+d = json.load(open('refs/ke_live_computed.json'))
+for w in (380, 768, 1440):
+    c = d['captures'][f'home@{w}']
+    print(f"--- home@{w}  body {c['document']['bodyScrollHeight']}px ---")
+    for e in c['elements']:
+        x, y, ww, hh = e['r']
+        if y > 2600 or hh < 60 or ww < w * 0.35: continue
+        cl = (e.get('c') or '')
+        if any(k in cl for k in ('masthead','elementor-top-section','rs-module',
+                                 'product-categories-list','feature',
+                                 'jet-listing-grid__item','colophon')):
+            print(f"  bands {int(y)//100:2}-{int(y+hh)//100:<3} y{int(y):5} {cl.split()[0][:34]:34} {int(ww)}x{int(hh)}")
+PY
+```
+
 ## Revision
 
 | Date | Change |
@@ -390,3 +500,4 @@ If a later agent can run the gate from the main checkout, append a dated row. Do
 | 2026-09-07 | Pass 11: legal indexable, `/offline` noindex, neither scored |
 | 2026-09-07 | Pass 12: live reference heights pinned from the 2026-09-04 capture; renumbered the trailing section around a concurrent §12 |
 | 2026-09-07 | Pass 12: refusal reference. All eight refusals with exit codes 2/3/4 and escape hatches, plus the three warnings that print an untrustworthy number instead of exiting |
+| 2026-09-07 | Pass 13: band map derived from refs/ke_live_computed.json. Band to region at all three widths, and why one wrong product costs six of the twenty-six scored bands at 380 |
