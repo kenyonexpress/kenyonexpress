@@ -210,8 +210,7 @@ describe('issueVoucher', () => {
         return built
       }
       return api
-      // biome-ignore lint/suspicious/noExplicitAny: test shim
-    }) as any
+    }) as VoucherIssueClient['from']
     const { id } = await issueVoucher(client, input())
     expect(id).toBe('voucher-1')
     expect(inserted).toHaveLength(1)

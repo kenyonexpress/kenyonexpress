@@ -58,8 +58,7 @@ describe('the enum and the TypeScript union describe the same journal', () => {
 
 /** The one row the stub was called with. Narrowed once, so the assertions below
  * do not each have to prove to TypeScript that a call happened. */
-// biome-ignore lint/suspicious/noExplicitAny: a vitest mock's recorded args are untyped by construction.
-function firstRow(insert: { mock: { calls: any[][] } }): Record<string, unknown> {
+function firstRow(insert: { mock: { calls: unknown[][] } }): Record<string, unknown> {
   const row = insert.mock.calls[0]?.[0]
   if (!row) throw new Error('insert was never called')
   return row as Record<string, unknown>

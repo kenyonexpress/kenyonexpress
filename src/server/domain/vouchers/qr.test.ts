@@ -59,8 +59,7 @@ describe('voucher QR sign/verify', () => {
     expect(verifyVoucherQrPayload('')).toBeNull()
     expect(verifyVoucherQrPayload('KEV1.only-two')).toBeNull()
     expect(verifyVoucherQrPayload('a.b.c.d')).toBeNull()
-    // biome-ignore lint/suspicious/noExplicitAny: exercising a bad input
-    expect(verifyVoucherQrPayload(null as any)).toBeNull()
+    expect(verifyVoucherQrPayload(null as unknown as string)).toBeNull()
   })
 
   it('rejects a validly signed payload whose code is malformed', () => {

@@ -1,7 +1,7 @@
 'use client'
 
 import { createClient } from '@/lib/supabase/client'
-import { useEffect, useState, useTransition } from 'react'
+import { useCallback, useEffect, useState, useTransition } from 'react'
 
 type Factor = { id: string; status: string; friendly_name?: string | null }
 
@@ -19,14 +19,14 @@ export default function SecurityClient({ isStaff }: { isStaff: boolean }) {
   const [message, setMessage] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
-  async function refresh() {
+  const refresh = useCallback(async () => {
     const supabase = createClient()
     const { data } = await supabase.auth.mfa.listFactors()
     setFactors((data?.totp ?? []) as Factor[])
-  }
+  }, [])
   useEffect(() => {
     void refresh()
-  }, [])
+  }, [refresh])
 
   function beginEnroll() {
     setMessage(null)
