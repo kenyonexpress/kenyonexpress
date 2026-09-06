@@ -203,61 +203,38 @@ test.describe('homepage', () => {
   })
 
   /**
-   * A phone must not be handed the desktop hero raster.
+   * THE HERO ASKS FOR NO RASTER AT ALL, because it has no photograph.
    *
-   * The five slide images sit in a full-bleed box that is only `h-[42%]` of the
-   * slider, and the frames are near-square under `object-contain`, so height is
-   * the constraint: measured at 320/360/390/412/768/1023 the painted width is a
-   * constant 174-193px at every one of them. They declared `100vw` anyway, so a
-   * 412px phone at dpr 1.75 asked the optimizer for 750px - four slides at
-   * 55-96KB each to paint 193px.
+   * This asserted that a phone got a phone-sized hero raster rather than the
+   * desktop one -- a real fix, measured: the five slides painted a constant
+   * 174-193px at every width below 1024 while declaring `100vw`, so a 412px
+   * phone at dpr 1.75 fetched 750px-wide files, four of them at 55-96KB, to
+   * paint 193px.
    *
-   * The assertion is on the `w` the browser actually picked out of the srcset,
-   * because that is the byte count. A viewport is set explicitly rather than
-   * inherited from the desktop project: this only means anything below 1024px.
+   * There are no slides now. b51a69b7e removed the Electro demo photography and
+   * the 2026-09-06 ingest of live found no replacement: every hero-slider image
+   * live serves is one of the quarantined template files. The slot renders
+   * `BrandPlaceholder`.
+   *
+   * So the byte guarantee is stronger than it was and states itself directly:
+   * the hero fetches NOTHING from the slider directory. The rung arithmetic
+   * that used to live here belongs with the photograph and comes back with it.
    */
-  test('the hero serves a phone-sized raster to a phone', async ({ page }) => {
+  test('the hero fetches no slider raster, because it has no photograph', async ({ page }) => {
     await page.setViewportSize({ width: 412, height: 823 })
     await page.goto('/')
-    await page.waitForTimeout(2500)
+    await page.waitForTimeout(2000)
 
-    const picked = await page.evaluate(() =>
+    const sliderRequests = await page.evaluate(() =>
       [...document.querySelectorAll('img')]
-        // The app slide's store badge lives in the copy column and is a
-        // different box with its own sizes, so it is not one of these five.
-        .filter((el) => !el.closest('.hero-copy-column'))
         .map((el) => (el as HTMLImageElement).currentSrc)
-        .filter((src) => /hero(%2F|\/)slider/.test(src))
-        .map((src) => Number(new URL(src, location.href).searchParams.get('w')))
-        .filter((w) => Number.isFinite(w) && w > 0),
+        .filter((src) => /hero(%2F|\/)slider/.test(src)),
     )
 
-    expect(picked.length, 'no hero slide image resolved').toBeGreaterThan(0)
-
-    // The bound is DERIVED from the device pixel ratio, not hardcoded.
-    //
-    // It used to be a flat 384, which is the rung above 193 * 1.75 -- correct
-    // for the 412px dpr-1.75 phone this test was written against, and wrong the
-    // moment it also ran under the `mobile-chrome` project, whose Pixel 5 is
-    // dpr 2.75. There 193 * 2.75 is 531 and the smallest rung that covers it is
-    // 640, so the browser was doing exactly the right thing and the assertion
-    // called it a regression. Setting a viewport does not change the ratio; it
-    // comes from the project.
-    //
-    // What this actually guards is unchanged: that the slide asks for the rung
-    // its 193px paint needs and not one above it. With `100vw` back in place
-    // the request goes to the full viewport width and still fails.
-    const dpr = await page.evaluate(() => window.devicePixelRatio)
-    const RUNGS = [16, 32, 48, 64, 96, 128, 256, 288, 384, 640, 750, 828, 1080, 1200, 1920, 2048]
-    const needed = 193 * dpr
-    const allowed = (RUNGS.find((r) => r >= needed) ?? RUNGS[RUNGS.length - 1]) as number
-
-    for (const w of picked) {
-      expect(
-        w,
-        `hero slide fetched at w=${w} for a 193px paint at dpr ${dpr} (rung ${allowed} covers it)`,
-      ).toBeLessThanOrEqual(allowed)
-    }
+    expect(
+      sliderRequests,
+      'the hero fetched a slider raster; if a real photograph was added, restore the rung assertion this replaced',
+    ).toEqual([])
   })
 
   /**
@@ -536,59 +513,62 @@ test.describe('homepage', () => {
   })
 
   /**
-   * The desktop hero paints the optimized still first and swaps the animation
-   * in only after the animated file has fully arrived.
+   * THE HERO SLOT RENDERS THE BRANDED PLACEHOLDER, NOT A PHOTOGRAPH.
    *
-   * Both halves are the test, for the same reason the autoplay test above
-   * guards both of its halves. The first half is the LCP fix of [22](ד): with
-   * the animated `<source>` in the initial markup plus its head preload, the
-   * desktop's first hero paint waited for all 794404 bytes and LCP was
-   * 12.1-12.9s on slow 4G + cpu/4 against a ~1s FCP. The second half is [16]'s
-   * measured trade - desktop gets the animation - which the swap must still
-   * honour; without this assertion, deleting the swap effect would pass every
-   * other test in the suite and quietly serve desktops a still forever.
+   * This asserted that the desktop hero painted an optimized still and then
+   * swapped in an animated WebP. Both halves were real and measured: the
+   * animated source in the initial markup put desktop LCP at 12.1-12.9s on slow
+   * 4G, and the swap was the trade that gave desktop its animation back.
    *
-   * The animated file is held on the wire because localhost cannot show the
-   * pre-swap state otherwise: download and swap land inside the first second.
-   * Holding the request is the slow connection, made deterministic.
+   * The photograph it asserted is gone, deliberately. b51a69b7e removed ten
+   * Electro demo images and the hero's five slides were among them -- an iPhone
+   * 11 Pro with AirPods, a red phone, and two mockups of Electro's own
+   * storefront. `docs/SOURCING-RULES.md` records why.
+   *
+   * AND THE INGEST CONFIRMED THERE IS NO REPLACEMENT. Crawling live on
+   * 2026-09-06 pulled 107 assets; every hero-slider image among them is one of
+   * the seven quarantined Electro files. Live's hero is the template's
+   * photography end to end. So the slot stays a placeholder until somebody
+   * shoots a picture, and asserting a raster asserts a decision that was
+   * reversed.
+   *
+   * WHAT THIS GUARDS NOW: the slot is not blank, it is named for a screen
+   * reader, and no vendor raster has crept back in. The art-direction mechanism
+   * did not go anywhere -- `src/components/home/hero-animation-swap.test.tsx`
+   * drives it with a fixture pair, so it keeps working the day a real
+   * photograph is registered.
+   *
+   * WHEN TO REVERT: the day `HERO_SLIDER_IMAGES` is non-empty again. Then the
+   * still-then-swap assertions are the right ones and this is the stale test.
    */
-  test('the desktop hero paints the still first, then swaps in the animation once it arrives', async ({
+  test('the hero slot renders the branded placeholder, named, with no vendor raster', async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1440, height: 900 })
-
-    let releaseAnimation = () => {}
-    const gate = new Promise<void>((resolve) => {
-      releaseAnimation = resolve
-    })
-    await page.route('**/*animation-steps.webp', async (route) => {
-      await gate
-      await route.continue()
-    })
-
     await page.goto('/')
 
     // Same Suspense fallback race as the autoplay test above: until React drops
-    // the fallback there are two sliders, and `.first()` would measure the one
-    // that is about to be removed.
+    // the fallback there are two sliders.
     await expect(page.locator('[data-hero-slider]')).toHaveCount(1)
-    const heroImg = page.locator('[data-hero-slider] picture img').first()
-    await expect
-      .poll(() => heroImg.evaluate((el: HTMLImageElement) => el.currentSrc), {
-        message: 'hero never painted the optimized still',
-      })
-      .toContain('animation-still')
-    expect(
-      await page.locator('[data-hero-slider] picture source').count(),
-      'animated <source> mounted before its file arrived',
-    ).toBe(0)
 
-    releaseAnimation()
-    await expect
-      .poll(() => heroImg.evaluate((el: HTMLImageElement) => el.currentSrc), {
-        timeout: 15000,
-        message: 'desktop never swapped the animation in - the [16] trade was silently reversed',
-      })
-      .toContain('animation-steps')
+    const slot = page.locator('[data-hero-slider] [data-awaiting-photography]').first()
+    await expect(slot, 'the hero slot is empty rather than placeheld').toBeVisible()
+
+    await expect(
+      slot.getByRole('img', { name: /התמונה טרם צולמה/ }),
+      'the placeholder does not say the photograph is still to be taken',
+    ).toBeVisible()
+
+    // The regression that actually matters: a vendor product shot reappearing.
+    // Named individually so the failure says which one came back.
+    const sources = await page.evaluate(() =>
+      [...document.images].map((i) => i.currentSrc || i.src),
+    )
+    for (const banned of ['iphone', 'airpod', 'ipad', 'macbook', 'tesla', 'redphone']) {
+      expect(
+        sources.filter((s) => s.toLowerCase().includes(banned)),
+        `a ${banned} image is being served from the homepage again`,
+      ).toEqual([])
+    }
   })
 })
