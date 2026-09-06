@@ -79,13 +79,13 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 Updated: 2026-09-07. Branch `docs/ui-design-system`. This agent writes `.md` files only and does not touch `kenyonexpress` or any `.ts` / `.tsx` / `.css` / `.sql` / `.json`.
 
 ### Last completed
-TASK 5: `docs/DATA-CONTRACTS.md` (entities, fields, R/W by role, order_items platform_percent snapshot freeze).
+TASK 6: `docs/ROLE-JOURNEYS.md` (six end-to-end journeys with visible / forbidden / logged).
 
 ### In progress
-TASK 6: `docs/ROLE-JOURNEYS.md`
+TASK 7: `docs/EDGE-CASES.md`
 
 ### Next
-TASK 6, then 7 through 10, then deepen every document. Repeat.
+TASK 7, then 8 through 10, then deepen every document. Repeat.
 
 ## המשך מ: תור המרתון, שלב 16
 
