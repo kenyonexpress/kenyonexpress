@@ -11,6 +11,29 @@ async function navCartCount(page: Page): Promise<number> {
   return match ? Number(match[1]) : 0
 }
 
+/**
+ * The mini-cart dropdown that is actually on screen.
+ *
+ * `.mini-cart__panel` matches TWO elements whenever the cart is open, and that
+ * is by design rather than a bug: the shell renders `HeaderCart` twice, once in
+ * the phone masthead (`layout/Header.tsx`) and once in the desktop nav
+ * (`layout/MastheadNav.tsx`), and CSS picks between them. Both mount a
+ * `MiniCartDropdown`, so opening the cart opens both panels -- one of them
+ * inside a `display: none` container.
+ *
+ * MEASURED on a built server: at 380 the masthead copy is 52x22 and the nav
+ * copy is 0x0; at 1280 it is the other way round. Only ONE cart button is in
+ * the accessibility tree at either width, so the header-icon rule still holds
+ * and axe is right to pass -- the hidden copy is `display: none` and out of the
+ * tree entirely.
+ *
+ * The unscoped locator was a strict-mode violation ("resolved to 2 elements"),
+ * which reads exactly like a duplicate-dialog defect and is not one. Filtering
+ * on visibility asks the question the tests here mean: what does a shopper at
+ * THIS width see.
+ */
+const miniCartPanel = (page: Page) => page.locator('.mini-cart__panel').filter({ visible: true })
+
 test.describe('shopping cart (guest)', () => {
   test('add to cart from product page then see it in the cart', async ({ page }) => {
     await openPurchasableProduct(page)
@@ -172,7 +195,7 @@ test.describe('shopping cart (guest)', () => {
       await page.locator('.cart-drawer__overlay').click({ force: true })
       await expect(sheet).toBeHidden()
     } else {
-      const panel = page.locator('.mini-cart__panel')
+      const panel = miniCartPanel(page)
       await expect(panel).toBeVisible()
       // Top-left of the page, clear of the panel and of the cart trigger.
       await page.mouse.click(60, 500)
@@ -285,7 +308,7 @@ test.describe('the cart sheet and the keyboard', () => {
 
     await openPurchasableProduct(page)
     await addOpenProductToCart(page)
-    await expect(page.locator('.mini-cart__panel')).toBeVisible()
+    await expect(miniCartPanel(page)).toBeVisible()
 
     // `.cart-drawer-root` is `display: none` here and its markup is still in
     // the document. If focus is inside it, the width guard has broken and a
