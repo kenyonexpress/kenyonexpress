@@ -56,6 +56,15 @@ After the fix, screenshots go to `refs/.run-<pid>-<side>.png`.
 
 No `--page` for: `/account/wallet`, `/account/coupons`, `/account/wishlist`, `/coupon/{id}`, `/s/{id}`, `/city/{slug}`, `/gift/{token}`, `/redeem/{token}`, `/offline`, legal, supplier portal, admin. Those have no WooCommerce 1:1 twin worth scoring. Layout still uses Electro structure + Heebo RTL; content comes from live copy docs.
 
+### 1.1 `/s/[id]` (logged, not scored)
+
+| Date | 380 | 768 | 1440 |
+|---|---|---|---|
+| 2026-09-03 D8 | n/a | n/a | n/a | no `refs/ke_live_supplier.html` |
+| 2026-09-07 this log | n/a | n/a | n/a | Manual: 2 / 3 / 4 columns (not category 5-up). Inactive = 404 |
+
+Do not invent a percent by screenshotting `/suppliers` (join-us) against a store page.
+
 ---
 
 ## 2. Home `/`
@@ -213,3 +222,4 @@ If a later agent can run the gate from the main checkout, append a dated row. Do
 | Date | Change |
 |---|---|
 | 2026-09-07 | Initial log: home, category, product, products, cart, checkout, search, account siblings; D4–D11 and STEP 46 numbers |
+| 2026-09-07 | Pass 9: `/s/[id]` not scored; 2/3/4 grid; do not use join-us as twin |
