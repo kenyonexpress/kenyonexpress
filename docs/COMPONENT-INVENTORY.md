@@ -223,8 +223,30 @@ States every interactive control must consider: default, hover, focus-visible, a
 - **A11y:** named links. Pass chrome may use brief `#E4002B`
 - **Electro:** none
 
+### SupplierStorefrontPage `/s/[id]`
+
+- **File:** `src/app/(store)/s/[id]/page.tsx`
+- **Purpose:** Public shop for one supplier. Not `/supplier/*` (portal) and not `/suppliers` (join-us).
+- **Props:** none (server). `params.id`. Data: `loadSupplierStorefrontCached` + paged products `SUPPLIER_PAGE_SIZE`.
+- **Variants:** has products / empty active supplier / 404 inactive or missing.
+- **States:**
+  - default: eyebrow `ספק`, H1 name, city, address (omit empty), count, grid 2 / 3 / 4
+  - hover: cards as category cards; tel/Waze/WhatsApp if present
+  - focus-visible: 2px
+  - active: n/a
+  - disabled: n/a
+  - loading: title bars + `CategoryGridSkeleton`
+  - error: 404 `ספק לא נמצא` / `הספק לא נמצא או שאינו פעיל בקניון אקספרס.`
+  - empty (active, zero products): `אין מוצרים פעילים לספק הזה כרגע.` Keep H1
+- **RTL:** full. Phone LTR. Pagination arrows mirror.
+- **A11y:** one H1 (supplier name). Count is text, not colour. Pagination named.
+- **RLS:** public SELECT on published `suppliers` + their active products. No `platform_percent`. No outstanding voucher book.
+- **Electro:** shop archive. No pixel twin.
+- **SEO:** `docs/SEO-PLAN.md` §3.4. `@id` `{origin}/s/{id}#business`. Never `/supplier/{uuid}` in JSON-LD.
+
 ## Revision
 
 | Date | Change |
 |---|---|
 | 2026-09-07 | Pass 8: wallet, coupons, wishlist pages with props, states, RTL, a11y, RLS notes |
+| 2026-09-07 | Pass 9: `/s/[id]` storefront page contract |
