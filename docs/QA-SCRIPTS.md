@@ -202,7 +202,25 @@ Roles: `docs/ROLE-MATRIX.md` §4.
 
 ---
 
-## 10. What not to test here
+## 10. Public supplier `/s/[id]`
+
+Not `/suppliers` (join-us) and not `/supplier/login`. No pixel twin.
+
+| # | Step | Pass |
+|---|---|---|
+| 1 | Active supplier | eyebrow `ספק`, one H1 = `name`, city then address (omit blanks) |
+| 2 | Grid | 2 / 3 / 4 at 380 / 768 / 1440 (not category 5-up) |
+| 3 | Count | `מציג תוצאה יחידה` or `מציג {from} עד {to} מתוך {total} תוצאות` |
+| 4 | Empty active | H1 stays; `אין מוצרים פעילים לספק הזה כרגע.` |
+| 5 | Inactive / bad id | 404 `ספק לא נמצא`, **noindex**. Must not show the old name |
+| 6 | Cards | no `platform_percent`. Prices agorot formatter |
+| 7 | JSON-LD | LocalBusiness only with real address+city. `@id` ends `#business` on `/s/{id}`. View source: no `/supplier/` in ld+json |
+| 8 | Pagination | only if `totalPages > 1`; arrows mirror |
+| 9 | Join-us `/suppliers` | marketing form, not a product grid twin of `/s/{id}` |
+
+---
+
+## 11. What not to test here
 
 - Pixel percents (log them in `docs/UI-PARITY-LOG.md`)
 - SQL policies (CI / `anon-catalog` / `wallet-rls`)
@@ -214,3 +232,4 @@ Roles: `docs/ROLE-MATRIX.md` §4.
 | Date | Change |
 |---|---|
 | 2026-09-07 | Manual scripts: home, catalogue, PDP, checkout fail/success, wallet, coupons, wishlist, gift/redeem, uploader, scan |
+| 2026-09-07 | Pass 9: public `/s/[id]` including JSON-LD gate and 2/3/4 grid |
