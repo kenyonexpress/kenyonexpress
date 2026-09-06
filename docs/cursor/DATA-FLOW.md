@@ -250,3 +250,18 @@ not here.
 `notification_outbox` is on the coupon happy path (§1.4). If H5 cron is 401, §1.3 still happened and the customer has a voucher in
 `/account/coupons`
 with no email. That is a launch blocker, not a data-model bug.
+
+---
+
+## 10. `split_executions` vs `settlement_events`
+
+Both are written at finalize. Conservation CHECK on
+`split_executions`
+is
+`face = commission + supplier`.
+`settlement_events`
+is append-only (no rewrite trigger). Clients read split rows; they cannot read settlement_events (server deny). A report that "joins settlement_events as the shopper" is a query that returns nothing, not a 403.
+
+Physical: `supplier` column on the split is
+`supplier_immediate_agorot`.
+Coupon: that column is 0. There is still a split row. Do not skip writing it on coupons "because payout is zero".
