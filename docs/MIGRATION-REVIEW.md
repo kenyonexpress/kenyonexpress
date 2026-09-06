@@ -53,8 +53,9 @@ it out of every listing query the app makes and leaves history intact.
 can no longer be bought — `src/lib/commerce/implausible-discount.ts` refuses to
 sell any line priced at an implausible fraction of its own compare-at, the cart
 marks it `price_error`, and `validateCartView` stops `beginCheckout` before any
-payment branch. The threshold is 95% off, measured against production: the
-deepest real discount in the catalogue is 60% and this row is at 99.75%. It
+payment branch. The threshold is 95% off, measured against production: on `full_price`, the
+only compare-at column the guard reads, the deepest real discount is 50% and
+this row is at 99.75%. It
 keys on the ratio, never on the name or the id, so the same row sells the
 moment its price is corrected.
 

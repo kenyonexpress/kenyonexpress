@@ -20,23 +20,33 @@ import { type Agorot, ilsToAgorot } from '@/lib/commerce/money'
  * מאסטר", "! צימר מאסטר" -- and every one of them is a genuine listing.
  *
  * THE THRESHOLD IS MEASURED, NOT CHOSEN. Queried against production on
- * 2026-09-06, over the 24 active products that carry both a sell price and a
- * compare-at, sorted by depth of discount:
+ * 2026-09-06 over `full_price`, which is the ONLY compare-at column this guard
+ * reads and therefore the only one the numbers may be taken from. 16 active
+ * products carry one. Sorted by depth of discount:
  *
  *   99.75%   מוצר ראשי מאסטר Master Product      ₪1 of ₪400
- *   60.00%   תספורת לגבר, ילד, סידור זקן         ₪20 of ₪50
  *   50.00%   הסרת שיער בלייזר קר                 ₪250 of ₪500
  *   49.23%   תיק עור JEEP יוקרתי                 ₪99 of ₪195
  *   37.56%   קמפיין ענק בפייסבוק                 ₪999 of ₪1600
+ *   34.00%   טיפול פנים                          ₪99 of ₪150
  *   ...
  *
- * The deepest discount a human has ever entered on this catalogue is 60%. The
- * offending row sits alone at 99.75%, nearly forty points clear of it. A
- * ceiling of 95% therefore has 35 points of headroom above every real listing
- * and still catches the one that is wrong -- the business can run a 90%-off
- * campaign and nothing here fires. Counted at each step: 3 products are at or
- * past 50% off, exactly 1 is past 80%, and that 1 is the same row at every
- * threshold from 80% to 98%.
+ * The deepest genuine discount visible to this guard is 50%, and the offending
+ * row sits alone at 99.75% -- FIFTY points clear of it. Running the guard's own
+ * arithmetic in SQL over the live table returns exactly 1 blocked row.
+ *
+ * ONE FIGURE CORRECTED, because the whole claim here is precision. An earlier
+ * revision said "24 products, deepest 60%". That came from coalescing
+ * `full_price` with `compare_at_price_ils` and `compare_at_price`, and this
+ * code reads none of those: the 60% row (תספורת לגבר, ילד, סידור זקן, ₪20 of
+ * ₪50) keeps its compare-at in another column, so the guard never sees a ratio
+ * for it at all. Widening the numbers to columns the code ignores overstated
+ * how close the ceiling sits to real data. The corrected figure has MORE
+ * headroom, not less.
+ *
+ * A ceiling of 95% therefore clears every real listing by 45 points and still
+ * catches the one that is wrong -- the business can run a 90%-off campaign and
+ * nothing here fires.
  *
  * WHAT IT CATCHES BESIDES. The general shape is a misplaced decimal: a supplier
  * entering 10 where they meant 1000, against a compare-at they typed

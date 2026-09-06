@@ -16,10 +16,18 @@ import { describe, expect, it } from 'vitest'
 /** The row `migrations/pending/172` exists to take out of the catalogue. */
 const MASTER_PRODUCT = { name: 'מוצר ראשי מאסטר Master Product', sell: 1, compareAt: 400 }
 
-/** Live, legitimate, and the four deepest real discounts in the catalogue. */
+/**
+ * Live, legitimate, and the deepest real discounts in the catalogue.
+ *
+ * The first three are the deepest that carry a `full_price`, which is the only
+ * compare-at column the guard reads. תספורת is kept deliberately even though
+ * its compare-at lives in another column and the guard therefore never sees a
+ * ratio for it: at 60% it is the deepest discount anyone has entered ANYWHERE
+ * in this catalogue, so it is the strongest case that the ceiling must clear.
+ */
 const REAL_LISTINGS = [
   { name: 'תספורת לגבר, ילד, סידור זקן בפתח תקווה', sell: 20, compareAt: 50 }, // 60%
-  { name: 'הסרת שיער בלייזר קר', sell: 250, compareAt: 500 }, // 50%
+  { name: 'הסרת שיער בלייזר קר', sell: 250, compareAt: 500 }, // 50%, deepest on full_price
   { name: 'תיק עור JEEP יוקרתי', sell: 99, compareAt: 195 }, // 49.23%
   { name: 'קמפיין ענק בפייסבוק', sell: 999, compareAt: 1600 }, // 37.56%
 ]
@@ -42,7 +50,8 @@ describe('the implausible-discount guard against the real catalogue', () => {
   })
 
   it('keeps real headroom on both sides rather than sitting on a boundary', () => {
-    // The deepest real discount is 60% off and the offender is 99.75% off. A
+    // The deepest real discount is 60% off anywhere in the catalogue (50% on
+    // the column this guard reads) and the offender is 99.75% off. A
     // threshold wedged against either end would be one price edit away from
     // being wrong, so assert the gap itself, not just the verdicts.
     expect(MAX_PLAUSIBLE_DISCOUNT_PERCENT).toBeGreaterThanOrEqual(80)

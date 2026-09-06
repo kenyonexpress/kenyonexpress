@@ -106,10 +106,13 @@ front and the buy button on the product page is disabled.
 not violate it — nothing keys on "master", on this id, or on this slug.
 Correct the price on the very same row and it sells again; there are three
 other live products with "מאסטר" in the name and all three are unaffected.
-The threshold was measured against production rather than chosen: over the 24
-active products carrying both a sell price and a compare-at, the deepest
-discount a human has ever entered is **60%**, and this row sits alone at
-**99.75%**. The ceiling is 95%, so a 90%-off campaign still sells. The
+The threshold was measured against production rather than chosen. Over the
+**16** active products carrying a `full_price` -- the only compare-at column
+the guard reads -- the deepest genuine discount is **50%**, and this row sits
+alone at **99.75%**, fifty points clear. The ceiling is 95%, so a 90%-off
+campaign still sells. (An earlier revision said "24 products, deepest 60%";
+that came from coalescing two further compare-at columns the code does not
+read, and it overstated how close the ceiling sits to real data.) The
 measurement, and the four real listings it was taken from, are in the module's
 header comment and asserted in `implausible-discount.test.ts`.
 
