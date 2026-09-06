@@ -19,6 +19,7 @@ SQL, and a production-safety verdict per file.
 | `171_category_name_shekel_order.sql` | **yes** | approval | `preflight_171.sql` (new) |
 | `172_hide_master_product_test_row.sql` | **yes** | approval | `preflight_172.sql` (new) |
 | `173_products_retired_commission_percent.sql` | **yes** | approval | `preflight_173.sql` (new) |
+| `174_wallet_topups.sql` | **yes** | approval | `preflight_174.sql` (new) |
 
 Two findings from that audit that change how the files should be read:
 

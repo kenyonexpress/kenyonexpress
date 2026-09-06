@@ -152,7 +152,7 @@ describe('the pending migration inventory', () => {
 
   // ---- what is actually unapplied right now -------------------------------
   it('holds exactly the migrations still awaiting approval', () => {
-    // SIX pending migrations as of the 2026-09-07 audit
+    // SEVEN pending migrations as of the 2026-09-07 closeout
     // (docs/MIGRATION-AUDIT-162-172.md), each with its preflight beside it (a
     // CLOSEOUT §5 requirement: no migration file without the execute_sql audit
     // that has to pass before it). 171 and 172 got theirs on 2026-09-07; the
@@ -166,6 +166,10 @@ describe('the pending migration inventory', () => {
     //                                       audit; repairs the retired
     //                                       commission_percent column and the
     //                                       nineteen half-filled split pairs
+    //   174                                 wallet top-ups. payments.order_id is
+    //                                       NOT NULL and payment_kind has no
+    //                                       top-up value, so a card top-up has
+    //                                       nowhere to be recorded today
     //
     // 166, 167 and 168 were found ALREADY APPLIED by the 2026-09-04 audit
     // (schema_migrations versions 20260903232445/232455/232504, live
@@ -181,12 +185,14 @@ describe('the pending migration inventory', () => {
       '171_category_name_shekel_order.sql',
       '172_hide_master_product_test_row.sql',
       '173_products_retired_commission_percent.sql',
+      '174_wallet_topups.sql',
       'preflight_162.sql',
       'preflight_169.sql',
       'preflight_170.sql',
       'preflight_171.sql',
       'preflight_172.sql',
       'preflight_173.sql',
+      'preflight_174.sql',
     ])
   })
 
@@ -205,6 +211,21 @@ describe('the pending migration inventory', () => {
       unaudited,
       `these pending migrations have no preflight_<n>.sql beside them: ${unaudited.join(', ')}`,
     ).toEqual([])
+  })
+
+  it('keeps the generated manifest equal to what is on disk', async () => {
+    // The admin migrations page imports this module rather than reading the
+    // directories, because `migrations/` is data no import reaches and Next's
+    // file tracer does not put it in the deployed bundle: a readdir there works
+    // locally and ENOENTs in production. A generated module is traced, and this
+    // is what stops it from going quietly stale -- it rebuilds the list from the
+    // same directories and fails with the command that fixes it.
+    const { buildManifest } = await import('../../scripts/build-migration-manifest.mjs')
+    const { MIGRATION_MANIFEST } = await import('@/lib/admin/migration-manifest')
+    expect(
+      MIGRATION_MANIFEST,
+      'run `node scripts/build-migration-manifest.mjs` and commit the result',
+    ).toEqual(buildManifest(process.cwd()))
   })
 
   it('keeps the cancelled revoke where nobody will apply it', () => {

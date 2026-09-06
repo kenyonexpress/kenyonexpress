@@ -70,14 +70,22 @@ export interface AccountPaymentToken {
 /**
  * Hebrew labels for the ledger `reason` codes.
  *
- * These MUST match the strings finalize.ts passes as `p_reason`, which are
- * `order_cashback` and `order_spend` (verified against the live ledger). An
- * unknown code falls through to itself rather than to a wrong label.
+ * These MUST match every string the app passes to `fn_wallet_transfer` as
+ * `p_reason`. `account-labels.test.ts` reads those strings out of the SOURCE of
+ * every file that emits one, so a new reason without a label here fails the
+ * suite rather than reaching a customer's ledger as a bare code. An unknown
+ * code still falls through to itself rather than to a wrong label.
+ *
+ * `refund_to_wallet` was exactly that failure: the goodwill credit added on
+ * 2026-09-07 emitted it from `refund-to-wallet.ts`, and the gate only read
+ * `finalize.ts`, so the customer's first sight of a refund would have been the
+ * words "refund_to_wallet" in Latin script on an RTL page.
  */
 export const WALLET_REASON_LABELS: Record<string, string> = {
   order_cashback: 'קאשבק על רכישה',
   order_spend: 'שימוש בארנק',
   order_refund: 'החזר על ביטול',
+  refund_to_wallet: 'זיכוי לארנק',
   admin_credit: 'זיכוי ידני',
   coupon_expired: 'קרדיט על קופון שפג',
 }

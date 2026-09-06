@@ -1,5 +1,29 @@
 # `migrations/pending/`
 
+## 2026-09-07: 174 added — a customer cannot put money into their own wallet
+
+`174_wallet_topups.sql` creates `public.wallet_topups`: the row a card top-up
+needs and does not have. **Not applied.** `preflight_174.sql` was run block by
+block against production on 2026-09-07 and every block answered as its EXPECT
+says.
+
+Why a new table rather than an `ALTER`: `payments.order_id` is `NOT NULL` and
+`payment_kind` is exactly `charge, refund` (measured). A top-up has no order,
+and making `order_id` nullable would put an order-less row in front of every
+reader on the money path that finds a charge by `order_id` — the refund action,
+reconciliation, the invoice queue. The new table leaves that invariant alone.
+
+Shape copied from `refunds`: RLS on, SELECT for the owner and for staff, no
+write policy for any client role, so writes are service-role only. Money is
+`amount_agorot bigint` with no numeric twin, bounded by CHECK to 20–5,000
+shekels.
+
+It does not make the balance withdrawable, and nothing here weakens the floor
+that keeps a user account at or above zero. The decision half of the feature —
+bounds, state machine, idempotency key — is already written and tested in
+`src/server/payments/wallet-topup.ts`; the action and the callback branch are
+what wait on this file.
+
 ## 2026-09-07: 173 added — the retired commission column disagrees on all 80 products
 
 `173_products_retired_commission_percent.sql` makes `products.commission_percent`
