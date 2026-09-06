@@ -79,13 +79,13 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 Updated: 2026-09-07. Branch `docs/ui-design-system`. This agent writes `.md` files only and does not touch `kenyonexpress` or any `.ts` / `.tsx` / `.css` / `.sql` / `.json`.
 
 ### Last completed
-TASK 10: `docs/GLOSSARY-HE-EN.md` (Hebrew UI to English identifiers; no drift).
+Deepen pass 1: `docs/ui-design-system/INDEX.md`, `docs/DOCS-CROSSWALK.md`, PAGE-ANATOMY + COPY-HE for `/checkout/return` and `/city/[slug]`.
 
 ### In progress
-Deepen pass 1: cross-check the ten documents and fill gaps.
+Deepen pass 2: COMPONENTS (checkout return coupon card), SEO city titles, EDGE-CASES return-page 42703.
 
 ### Next
-Deepen TOKENS, COMPONENTS, PAGE-ANATOMY, COPY-HE, DATA-CONTRACTS, ROLE-JOURNEYS, EDGE-CASES, SEO, LAUNCH, GLOSSARY. Open new docs for remaining gaps. Repeat.
+Keep deepening every document. Repeat. Never stop.
 
 ## המשך מ: תור המרתון, שלב 16
 

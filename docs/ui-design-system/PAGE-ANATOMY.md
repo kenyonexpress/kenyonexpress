@@ -829,8 +829,45 @@ Canonical user-facing catalogue continues in `docs/COPY-HE.md`. This table is th
 
 ---
 
+## 17. Checkout return `/checkout/return` (deepen)
+
+Cardcom land. Alias `/checkout/confirmation` redirects here. Title `אישור הזמנה`. Robots noindex. Requires `order_id`. Missing or `not_found` → 404. `failed` → `/checkout/failed?order_id=`.
+
+### 17.1 Section order
+
+1. **Pending** (Suspense fallback and `status === 'pending'`): H1 `מאמתים את התשלום...` Body `ההזמנה נקלטה ואנחנו ממתינים לאישור הסליקה. העמוד יתעדכן אוטומטית.` AutoRefresh. Do not say they were not charged (EDGE-CASES §1).
+2. **Paid:** H1 `התשלום הצליח!` Sub: `הזמנה {ref} · שולם באתר {price}`
+3. If vouchers: section `הקופונים שלך` (`aria-label` same). Per voucher: `{name}`, `{code}` LTR, `לתשלום בעסק במימוש: {price}`, `בתוקף עד {date} · הציגו את הקוד או את ה-QR בבית העסק`, QR 264, WhatsApp share via `buildCouponShareText` (includes `{code}` because the **customer** forwards their own coupon, unlike supplier inquiry)
+4. Optional cashback line if wallet entry > 0
+5. WhatsApp order inquiry
+
+Reads `vouchers`, not fossil `coupon_codes`. Money via generation probe (no 42703 → fake 404 after a charge).
+
+### 17.2 Skeleton
+
+The pending block **is** the skeleton. Same height as success title+sub so the footer does not jump.
+
+### 17.3 Empty / error
+
+No vouchers on a physical-only order: omit the coupons section, keep success. Failed verify: failed route, cart kept.
+
+---
+
+## 18. City `/city/[slug]` (deepen)
+
+Seventeen regions from `REGIONS`. Unknown slug: 404. Title `דילים ב{name}`. Breadcrumb JSON-LD Home → region. H1 `דילים ב{name}`.
+
+Has cities: body `בתי העסק שאנחנו מכירים באזור הזה נמצאים ביישובים הבאים...` links `/products?city={slug}`.
+
+Empty (six regions with no geo municipality): `עדיין אין אצלנו בית עסק רשום באזור הזה. אפשר לראות את כל הדילים באתר...` plus catalogue CTA. This empty is a real answer, not a failed query.
+
+Not yet: branch map, LocalBusiness per branch (queue J3). SEO-CONTENT-PLAN: do not invent thin extra city URLs beyond these seventeen.
+
+---
+
 ## 16. Revision
 
 | Date | Change |
 |---|---|
 | 2026-09-07 | Initial anatomy for home, category, coupon PDP, physical PDP, cart, checkout, account, orders, voucher/QR, supplier, search, 404, 500 |
+| 2026-09-07 | Deepen: `/checkout/return` paid/pending/QR, `/city/[slug]` empty vs city chips |

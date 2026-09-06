@@ -433,8 +433,31 @@ Do not ship:
 
 ---
 
-## 13. Revision
+## 13. Checkout return and city (deepen)
+
+| Id | String | Slot |
+|---|---|---|
+| ret.title | אישור הזמנה | metadata |
+| ret.pending.h1 | מאמתים את התשלום... | pending / Suspense |
+| ret.pending.body | ההזמנה נקלטה ואנחנו ממתינים לאישור הסליקה. העמוד יתעדכן אוטומטית. | |
+| ret.ok.h1 | התשלום הצליח! | paid |
+| ret.ok.sub | הזמנה `{ref}` · שולם באתר `{price}` | `{ref}` LTR, `{price}` formatter |
+| ret.coupons | הקופונים שלך | h2 + aria-label |
+| ret.collect | לתשלום בעסק במימוש: `{price}` | |
+| ret.until | בתוקף עד `{date}` · הציגו את הקוד או את ה-QR בבית העסק | `{date}` he-IL |
+| city.title | דילים ב`{name}` | H1 and title |
+| city.meta | קופונים ומבצעים מבתי עסק ב`{name}`. כל שובר נסרק פעם אחת, והתוקף מוצג לפני הרכישה. | |
+| city.body | בתי העסק שאנחנו מכירים באזור הזה נמצאים ביישובים הבאים. בחרו יישוב כדי לראות את הדילים שלו. | |
+| crumb.homeAlt | דף הבית | city trail (elsewhere `בית`) |
+| nav.trail | מסלול ניווט | city `aria-label` (elsewhere `פירורי לחם`) |
+
+`דף הבית` vs `בית` is live drift. New breadcrumbs use `בית` (COPY-HE §3.1). Do not mass-edit city until a dedicated unify pass.
+
+---
+
+## 14. Revision
 
 | Date | Change |
 |---|---|
 | 2026-09-07 | Initial catalogue: chrome, buttons, labels, validation, toasts, empty, dialogs, errors, email subjects, WhatsApp, scan outcomes |
+| 2026-09-07 | Deepen: checkout return and city strings |
