@@ -31,6 +31,8 @@ Rules:
 | Supplier 404 body | הספק לא נמצא או שאינו פעיל בקניון אקספרס. | |
 | Supplier eyebrow | ספק | |
 | City landing | עדיין אין אצלנו בית עסק רשום באזור הזה. אפשר לראות את כל הדילים באתר… | `/` or `/products` |
+| City has municipalities | בתי העסק שאנחנו מכירים באזור הזה נמצאים ביישובים הבאים... | chips → `/products?city={slug}` |
+| City unknown slug | 404 (same as forged) | |
 | Cart page | סל הקניות שלך ריק כרגע. | חזור לחנות |
 | Mini-cart | אין מוצרים בסל הקניות | |
 | Cart drawer | העגלה ריקה | |
@@ -243,3 +245,4 @@ Copy lives in COPY-HE §15. Ink on `#fed700` is `#333e48`.
 |---|---|
 | 2026-09-07 | Catalogue of empty, validation, page errors, checkout fail, confirmations, scan outcomes, wallet/coupons/wishlist |
 | 2026-09-07 | Pass 9: supplier empty vs 404 (inactive is 404, not empty) |
+| 2026-09-07 | Pass 10: city empty is a real answer; unknown slug 404 |
