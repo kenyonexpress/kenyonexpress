@@ -1088,6 +1088,72 @@ document and the wrong one for the storefront.
 
 ---
 
+### 5.4 The hand-written stylesheets are fully logical, measured
+
+Section 5.1 says what the rules are. This is whether they are kept, in the nine
+files that carry the measured layout:
+
+```
+src/app/globals.css        src/styles/cart-page.css      src/styles/mini-cart.css
+src/styles/account.css     src/styles/category-page.css  src/styles/newsletter.css
+src/styles/checkout-page.css  src/styles/product-page.css
+src/styles/product-card-deals.css
+```
+
+About 4700 lines. **Zero physical direction declarations**, with comments
+stripped: no `padding-left`, `padding-right`, `margin-left`, `margin-right`,
+`border-left`, `border-right`, bare `left:` / `right:`, no
+`text-align: left|right`, no `float: left|right`. Every one is the logical form,
+and `checkout-page.css` alone carries 16 of them.
+
+That is worth recording as a positive result. The RTL risk in this codebase is
+**not** in the stylesheets.
+
+#### `scripts/rtl-lint.mjs`, and the two hits it reports that are not real
+
+A dependency-free scanner exists and can be run without `pnpm`:
+
+```
+node scripts/rtl-lint.mjs
+```
+
+It writes `docs/rtl-violations.md`. **That file carries a historical marker
+dated 2026-08-19; running the lint overwrites it.** Back it up, or restore with
+`git checkout -- docs/rtl-violations.md`, before regenerating for a look.
+
+Run on 2026-09-06 for this pass:
+
+| | 2026-08-19 (the committed snapshot) | 2026-09-06 (this pass) |
+|---|---|---|
+| Files scanned | 787 | **972** |
+| Files with violations | 36 | 41 |
+| Total violations | 61 | **68** |
+
+The rise is not a regression: 185 more files were scanned. By token, the current
+68 are `right-` 17, `left-` 12, `text-right` 9, `pl-` 7, `mr-` 6, `right:` 4,
+`pr-` 4, `text-align:right` 3, `left:` 2, `ml-` 2, `text-left` 1,
+`margin-left` 1.
+
+**Sixty-six of the sixty-eight are in `.tsx`. Both `.css` hits are false
+positives, and both are comment text:**
+
+| Reported | Reality |
+|---|---|
+| `src/styles/mini-cart.css:289` `right-` | the phrase `right-edge-to-icon` inside a prose comment |
+| `src/styles/newsletter.css:2` `margin-left` | a comment that says a physical `margin-left` here *would be* the bug the report catalogues |
+
+**The lint does not strip comments.** That is its one known limitation and it is
+worth knowing before quoting its CSS numbers: a file can be perfectly logical
+and still appear in the report because it *discusses* a physical property. The
+`.tsx` counts are unaffected by this, because a Tailwind class in a comment is
+rare where a property name in prose is not.
+
+The seven RTL-risky components `docs/COMPONENT-INVENTORY.md` names
+(`CouponCard`, `admin/CouponDealForm`, `admin/ProductForm`, `home/BenefitBar`,
+`ui/dialog`, `ui/dropdown-menu`, `ui/select`) are where the real 66 live. Four
+of those are Radix wrappers, where the physical utility comes from the vendored
+default rather than from this project's own markup.
+
 ## 6. The `compare.mjs` gate
 
 ```
