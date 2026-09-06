@@ -215,11 +215,76 @@ Yellow `#fed700` and hover `#fedd26` and link `#0062bd` **do** appear (yellow as
 
 ---
 
-## 11. What this pass did not re-run
+## 11. The reference side, pinned (2026-09-04)
 
-No `pnpm`. No `compare.mjs`. No checkout of `closeout/v1-final`. No files under the main repo folder.
+Every score in this log is a diff between two pictures, and this log has only
+ever recorded one of them. The **live** side is now measured and committed, so
+the other half is checkable.
 
-If a later agent can run the gate from the main checkout, append a dated row. Do not overwrite history.
+Source: `refs/ke_live_computed.json`, captured 2026-09-04T04:00:44Z with
+`scripts/measure-live-computed.mjs`. 21 captures, 7 templates x 3 widths, the
+hero frozen through the slider's own `revapi<N>` API before every shot.
+
+### 11.1 Live body height, by template and width
+
+| Template | @380 | @768 | @1440 | Elements | Pending images |
+|---|---|---|---|---|---|
+| `home` `/` | **17791** | 9409 | **5492** | 2347 | 0 / 0 / 0 |
+| `shop` `/shop/` | 5642 | 4861 | 3730 | 2519 | 0 / 0 / 0 |
+| `product` | 2242 | 1924 | 1967 | 717 | 0 / 0 / 0 |
+| `category` | 1506 | 1389 | 1396 | 726 | 0 / 0 / 0 |
+| `cart` | 1445 | 1244 | 1458 | 443 | 0 / 0 / 0 |
+| `checkout` | 3116 | 2949 | 2294 | 725 | 0 / 0 / 0 |
+| `account` `/my-account/` | 1325 | 1192 | 1408 | 507 | 0 / 0 / 0 |
+
+Element counts are identical across all three widths for every template, which
+is what a responsive CSS layout should look like: the same DOM, laid out
+differently. A capture whose element count differs by width fetched a different
+page.
+
+### 11.2 Why this table is a capture-validity check
+
+`diff-bands.mjs` crops to `min(live.h, mine.h, 2600)` and warns when
+`mine.h / live.h` leaves the 0.62–1.6 band. Both inputs depend on live's height
+being **right**, and the failure mode is that it silently is not: a lazy image
+that has not loaded has no intrinsic height and collapses the block it sits in,
+so the live page is captured short and our footer is scored against live's
+mid-page.
+
+Two numbers in this log's history are that failure:
+
+| Recorded | Live height | Correct height | What it actually was |
+|---|---|---|---|
+| home 34.54 percent | 3730 | **5492** | 1762px of the live homepage missing |
+| category 25.58 percent | 3730 | **1396** | same capture, same morning |
+
+**Before trusting any score, check the live height against 11.1.** If
+`--page=home --width=1440` reports a live height that is not 5492, the number
+is not a fidelity measurement and no amount of band-reading will make it one.
+
+The 3730 coincidence is worth naming so it is not mistaken for a pattern:
+3730 is `shop@1440`'s own legitimate height. The broken home captures landing
+on the same number is chance, not a shared cause.
+
+### 11.3 The two widths where home is enormous
+
+`home@380` is **17791px**, over three times its 1440 height, and `@768` is
+9409. The 2600px crop therefore scores **15 percent of the mobile homepage**
+and everything below is unmeasured. A "pass" at 380 on the home route is a
+statement about the first 2600px only.
+
+17791 is also the number `compare.mjs` records for a correctly frozen slider.
+A home capture at 380 reporting 17825 instead had the hero on a different
+slide: that 34px is the carousel, and it was worth the difference between
+10.96 and 28.25 percent on three otherwise identical runs.
+
+### 11.4 What this does not give you
+
+These are live's numbers only. Nothing here says what **our** side measures, so
+no score in sections 2 through 9 changes. It closes the question "was the
+reference sound", not "how close are we".
+
+---
 
 ## 12. The refusal reference
 
@@ -309,6 +374,12 @@ number is a **measurement of a known-incomparable pair**, useful only for
 reading the bands that are not affected (header, footer, shell). It is not a
 gate result and must never be compared against 11 percent.
 
+## 13. What this pass did not re-run
+
+No `pnpm`. No `compare.mjs`. No checkout of `closeout/v1-final`. No files under the main repo folder.
+
+If a later agent can run the gate from the main checkout, append a dated row. Do not overwrite history.
+
 ## Revision
 
 | Date | Change |
@@ -317,4 +388,5 @@ gate result and must never be compared against 11 percent.
 | 2026-09-07 | Pass 9: `/s/[id]` not scored; 2/3/4 grid; do not use join-us as twin |
 | 2026-09-07 | Pass 10: `/city/[slug]` n/a (seventeen regions, no refs twin) |
 | 2026-09-07 | Pass 11: legal indexable, `/offline` noindex, neither scored |
+| 2026-09-07 | Pass 12: live reference heights pinned from the 2026-09-04 capture; renumbered the trailing section around a concurrent §12 |
 | 2026-09-07 | Pass 12: refusal reference. All eight refusals with exit codes 2/3/4 and escape hatches, plus the three warnings that print an untrustworthy number instead of exiting |
