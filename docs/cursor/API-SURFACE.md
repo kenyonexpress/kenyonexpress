@@ -288,3 +288,10 @@ document as 42P01. Do not "fix" by creating tables from an old brief. Coupon mod
 | `PHONE_AUTH_ENABLED` off | public | `sendPhoneOtp` unavailable; Google/email still work |
 
 `/api/a` must not 200-swallow money events. If the ingest function is missing, that is a silent launch lie (measured once already).
+
+`/legal/returns`
+and aliases are RSC, not refund APIs.
+`refundOrder`
+is the only refund mutation. A form that POSTs to a made-up
+`/api/refund`
+does not exist.
