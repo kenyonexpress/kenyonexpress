@@ -1329,6 +1329,20 @@ Phone and Waze: LTR islands. WhatsApp mark not yellow. Inactive supplier is 404,
 
 JSON-LD LocalBusiness only when address+city exist (`docs/SEO-PLAN.md` §3.4). Missing address: omit the row in the header too (never `כתובת:` with a blank).
 
+### 8.8 City landing `/city/[slug]`
+
+Seventeen regions from `REGIONS`. Unknown slug: 404. Container same as category (`1170px`, 15px gutter). No Electro home-v7 row.
+
+| Slot | Paint | Copy |
+|---|---|---|
+| H1 | 25.004px / 500 / `#333e48` | `דילים ב{name}` |
+| Has municipalities | 14px body, links `#0062bd` | `בתי העסק שאנחנו מכירים באזור הזה נמצאים ביישובים הבאים...` each → `/products?city={slug}` |
+| Empty region | same H1 | `עדיין אין אצלנו בית עסק רשום באזור הזה. אפשר לראות את כל הדילים באתר...` plus catalogue CTA. This is a **real answer**, not a failed query |
+| JSON-LD | BreadcrumbList Home → region | no second breadcrumb. No LocalBusiness per branch (queue) |
+| Pixel | n/a | no `refs/` twin |
+
+Do not mint extra city URLs beyond the seventeen. Filtered `/products?city=` is noindex.
+
 ---
 
 ## 9. Related documents
@@ -1353,3 +1367,4 @@ src/lib/electro-hero-tokens.ts  ELECTRO_HERO, the Electro home-v7 measurements
 |---|---|
 | 2026-09-07 | Pass 8: account sibling tokens (wallet, coupons, wishlist) at 380/768/1440; live home title `קניון אקספרס`, `lang="he-IL"`, no hreflang |
 | 2026-09-07 | Pass 9: `/s/[id]` tokens, 2/3/4 grid, LocalBusiness paint gate |
+| 2026-09-07 | Pass 10: `/city/[slug]` seventeen regions, empty is a real answer |
