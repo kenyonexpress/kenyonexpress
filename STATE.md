@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-07 04:30 UTC (‏הקמת Vercel: ‏devCommand נוסף ל-vercel.json, ‏docs/VERCEL-SETUP.md נכתב: מדריך דשבורד מלא, טבלאות env לפי env.ts, אימות פריסה ראשונה, הפעלת המתזמן. ‏DNS נשאר ידני)
 Updated: 2026-09-04 05:30 UTC (‏RLS מפורש לעשר טבלאות אפס-מדיניות: מיגרציה 172 הוחלה דרך MCP, ‏harness שלוש פרסונות ירוק מול פרודקשן בגלגול לאחור, ‏vitest מצמיד את שני הקבצים)
 Updated: 2026-09-04 01:05 UTC (‏חיפוש טקסט מלא בעברית: מיגרציה 171 הוחלה דרך MCP, ‏GIN על products ו-coupon_deals, ‏RPC בשם search_products, טסטים ב-Playwright)
 Updated: 2026-09-04 00:50 UTC (‏טבלאות דיווח מנורמלות-הפוך: מיגרציה 170 הוחלה דרך MCP, ‏pg_cron לילי ב-01:30 UTC, חמישה RPC לאדמין בלבד)
@@ -72,6 +73,28 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 קודם: 2026-08-19 22:10 לפי שעון סוכן מקביל (‏שלב 26 הורץ שוב; תג `v1.0.0-rc3`)
 
 ## המשך מ: ‏PRIORITY TWO — ‏refunds בשני המסלולים, ומירוץ מימוש הקופון
+
+### ‏07.09 ‏goal בוצע: הקמת פריסת Vercel (commit ‏`1b049ec65`, branch ‏autopilot)
+
+ה-goal ביקש: "Set up Vercel deployment: create vercel.json with build/dev
+commands, configure all env vars from .env.example as required in Vercel
+dashboard docs... Create docs/VERCEL-SETUP.md". מה שנעשה:
+
+1. **`vercel.json`**: כבר היה קיים עם framework/install/build/region. נוסף
+   `devCommand: pnpm dev`. ‏`crons` לא הוחזר בכוונה, לפי
+   `docs/CRON-EXTERNAL.md` (‏Hobby מריץ בשקט רק שניים ומתעלם מהשאר).
+2. **`docs/VERCEL-SETUP.md` חדש**: מדריך דשבורד בלבד (אין קישור CLI מקומי,
+   נמדד: אין `.vercel/` ואין token). כולל: Production Branch חייב להיות
+   `main` (התקלה שהפילה 11 פריסות), ארבע טבלאות env הנגזרות מ-`.env.example`
+   ומ-`src/lib/env.ts` (חובה / מומלץ / לפי פיצ'ר / אסור להגדיר לעולם,
+   ובראש האחרונה `ALLOW_INCOMPLETE_ENV`), ‏curl-ים לאימות פריסה ראשונה כולל
+   401/200 על ‏cron, הפעלת המתזמן החיצוני עם השמות האמיתיים מ-`cron.yml`
+   (‏`CRON_SECRET`, ‏`CRON_BASE_URL`, ‏`CRON_SCHEDULER_ENABLED`), ועצירה
+   מפורשת לפני DNS ולפני `CHECKOUT_ENABLED=true`.
+3. **שערים**: ‏3551 טסטים ירוקים, ‏type-check נקי, ‏lint נקי, ‏`pnpm build`
+   עבר (exit 0, בילד יחיד, נבדק שאין בילד מקביל לפני ההרצה).
+
+לא הופעלה שום פריסה בפועל ולא נגעתי ב-DNS: שניהם שערי אישור לפי CLAUDE.md.
 
 ### ‏04.09 ‏goal בוצע: ‏RLS מפורש לכל טבלה + אימות שלוש פרסונות (commit ‏`4c98f6021`, branch ‏autopilot)
 
