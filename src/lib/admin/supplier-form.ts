@@ -70,15 +70,15 @@ function text(value: unknown): string | null {
  * +972 50 …, and landlines as (03) 555-1234. The point is to catch a typo, not
  * to impose a format on an admin copying a number off a business card.
  */
-function isPhoneish(value: string): boolean {
+export function isPhoneish(value: string): boolean {
   return /^[+(\d][\d\s()-]{6,19}$/.test(value)
 }
 
-function isEmailish(value: string): boolean {
+export function isEmailish(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
 }
 
-function isUrlish(value: string): boolean {
+export function isUrlish(value: string): boolean {
   return /^https?:\/\/\S+$/i.test(value)
 }
 

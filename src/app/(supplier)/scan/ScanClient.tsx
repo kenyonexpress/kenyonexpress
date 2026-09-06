@@ -18,9 +18,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
  * a wrong code, a spent voucher or a lapsed one is caught while it still costs
  * nothing to be wrong.
  *
- * Redemption itself is one POST to /api/supplier/vouchers/redeem carrying a
- * fresh idempotency_key, so a double tap on a flaky till connection cannot
- * redeem twice.
+ * Redemption itself is one POST to /api/supplier/redeem carrying a fresh
+ * idempotency_key, so a double tap on a flaky till connection cannot redeem
+ * twice. That path is the documented alias; it re-exports the handler in
+ * /api/supplier/vouchers/redeem and adds nothing, so the guards are the same
+ * ones either address reaches.
  */
 
 type Stage = 'input' | 'confirm' | 'result'
@@ -66,6 +68,15 @@ type BarcodeDetectorLike = {
 }
 type BarcodeDetectorCtor = new (opts?: { formats?: string[] }) => BarcodeDetectorLike
 
+/** `crypto.randomUUID` where it exists, and a time-plus-random string where it
+ * does not. A till browser without it is old, not hostile: the key only has to
+ * be unique among this user's recent scans for the database to tell them apart.
+ */
+function newIdempotencyKey(): string {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID()
+  return `${Date.now()}-${Math.round(Math.random() * 1e9)}`
+}
+
 export default function ScanClient({ supplierName }: { supplierName: string }) {
   const [stage, setStage] = useState<Stage>('input')
   const [rawInput, setRawInput] = useState('')
@@ -77,6 +88,24 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
   const [error, setError] = useState<string | null>(null)
   const [lookup, setLookup] = useState<LookupResponse | null>(null)
   const [result, setResult] = useState<RedeemResponse | null>(null)
+  /**
+   * One key per SCANNED VOUCHER, not one per tap on the button.
+   *
+   * This used to be minted inside `redeem()`, which defeated the guard it was
+   * written for. `redeem_voucher` dedupes on `idempotency_key`: a repeat with
+   * the same key returns the FIRST answer, success payload and all. A fresh key
+   * on every tap is a new request to the database, so the second tap fell
+   * through to the atomic single-use UPDATE, matched nothing, and came back
+   * `already_redeemed` with a 409.
+   *
+   * The money was never at risk -- the UPDATE is the real single-use guard and
+   * it held. What broke was the sentence on the till screen: a cashier who
+   * double-tapped, or whose connection dropped and pressed again, was told
+   * "השובר כבר מומש" about the voucher they were in the middle of redeeming,
+   * with no balance to collect shown. That reads as "this customer already
+   * used it", and the customer is standing there.
+   */
+  const [redeemKey, setRedeemKey] = useState<string | null>(null)
 
   const [cameraOn, setCameraOn] = useState(false)
   const cameraSupported = typeof window !== 'undefined' && 'BarcodeDetector' in window
@@ -100,6 +129,10 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
       setPendingCode(code)
       setPendingToken(token)
       setMethod(scanMethod)
+      // Minted here, once, for the voucher about to be confirmed. Every attempt
+      // to redeem THIS voucher carries it, so a retry is a replay the database
+      // recognises rather than a second request it has to refuse.
+      setRedeemKey(newIdempotencyKey())
       setError(null)
       setChecking(true)
       try {
@@ -188,10 +221,9 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
   const redeem = async () => {
     setSubmitting(true)
     setError(null)
-    const idempotencyKey =
-      typeof crypto !== 'undefined' && 'randomUUID' in crypto
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.round(Math.random() * 1e9)}`
+    // Falls back to a fresh key only if the flow was entered without one, which
+    // no path does today; it is here so a future entry point cannot send null.
+    const idempotencyKey = redeemKey ?? newIdempotencyKey()
     try {
       const res = await fetch('/api/supplier/redeem', {
         method: 'POST',
@@ -222,6 +254,11 @@ export default function ScanClient({ supplierName }: { supplierName: string }) {
     setLookup(null)
     setResult(null)
     setError(null)
+    // The next voucher is a different request and must not inherit this key: a
+    // reused key with a different code is refused outright by redeem_voucher
+    // (`invalid_request`), which is the correct answer to a client that has
+    // confused two vouchers, and not something to make it say.
+    setRedeemKey(null)
   }
 
   if (stage === 'confirm' && lookup) {
