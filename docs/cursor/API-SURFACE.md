@@ -276,3 +276,15 @@ must still require the payments section. A 403 plain-text miss here dumps HTML i
 and
 `admin/payouts.ts`:
 document as 42P01. Do not "fix" by creating tables from an old brief. Coupon model has nothing to pay out. Physical payout is a post-launch schema, not a launch unblock.
+
+---
+
+## 9. Feature flags and MFA
+
+| Surface | Auth | Failure |
+|---|---|---|
+| `/admin/feature-flags` | admin | content-uploader 403 |
+| `/mfa` | session | incomplete enrollment must not lock checkout guests (checkout is ungated until Pay) |
+| `PHONE_AUTH_ENABLED` off | public | `sendPhoneOtp` unavailable; Google/email still work |
+
+`/api/a` must not 200-swallow money events. If the ingest function is missing, that is a silent launch lie (measured once already).
