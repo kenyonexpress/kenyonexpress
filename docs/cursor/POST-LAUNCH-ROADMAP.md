@@ -258,3 +258,10 @@ Do not block P3 on Twilio. Abandoned cart v1 is Resend. WhatsApp marketing templ
 `NEXT_PUBLIC_WHATSAPP_PHONE`)
 and per-product
 `whatsapp_enabled`.
+
+P1 reviews must not encode refunds. A 1-star review is not
+`refund_ground`.
+Moderation is
+`admin/reviews.ts`,
+money is
+`refundOrder`.
