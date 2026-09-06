@@ -456,6 +456,9 @@ Section 5 lists guards. This table is the product brief's four columns against t
 | Header heart (live YITH) | **deny** (standing chrome rule) | deny | deny | deny |
 | Read `platform_percent` in customer DOM | **deny** | deny on storefront | deny | allow on admin form only |
 | Wallet cash-out | **deny** | deny | deny | deny |
+| `GET /city/[slug]` known region | allow (empty is allow) | allow | allow | allow |
+| `GET /city/[slug]` unknown | deny 404 | same | same | same |
+| Invent extra city URLs | **deny** | deny | deny | deny |
 
 Inactive supplier must not paint the old H1 on an empty grid. That leak is a 404, matching `docs/ERROR-COPY.md`.
 
@@ -465,3 +468,4 @@ Inactive supplier must not paint the old H1 on an empty grid. That leak is a 404
 |---|---|
 | 2026-09-07 | Guard-derived matrix (parallel pass) |
 | 2026-09-07 | Storefront `/s/[id]` active-only, LocalBusiness, account siblings |
+| 2026-09-07 | `/city/[slug]` seventeen regions; unknown 404; no extra URLs |
