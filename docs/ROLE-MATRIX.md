@@ -459,6 +459,8 @@ Section 5 lists guards. This table is the product brief's four columns against t
 | `GET /city/[slug]` known region | allow (empty is allow) | allow | allow | allow |
 | `GET /city/[slug]` unknown | deny 404 | same | same | same |
 | Invent extra city URLs | **deny** | deny | deny | deny |
+| `GET /legal/*` and WP aliases | allow | allow | allow | allow |
+| `GET /offline` | allow (cache) | allow | allow | allow |
 
 Inactive supplier must not paint the old H1 on an empty grid. That leak is a 404, matching `docs/ERROR-COPY.md`.
 
@@ -469,3 +471,4 @@ Inactive supplier must not paint the old H1 on an empty grid. That leak is a 404
 | 2026-09-07 | Guard-derived matrix (parallel pass) |
 | 2026-09-07 | Storefront `/s/[id]` active-only, LocalBusiness, account siblings |
 | 2026-09-07 | `/city/[slug]` seventeen regions; unknown 404; no extra URLs |
+| 2026-09-07 | Legal public; offline public cache; no escrow in returns |
