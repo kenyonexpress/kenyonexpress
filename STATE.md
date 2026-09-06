@@ -79,10 +79,10 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 Updated: 2026-09-07. Branch `docs/ui-design-system`. This agent writes `.md` files only and does not touch `kenyonexpress` or any `.ts` / `.tsx` / `.css` / `.sql` / `.json`.
 
 ### Last completed
-Deepen pass 10: live WP GET (`קניון אקספרס` title, shop H1 `חנות`, do not port Archive).
+Canonical seven files exist at `docs/DESIGN-SYSTEM.md`, `docs/COMPONENT-INVENTORY.md`, `docs/UI-PARITY-LOG.md`, `docs/ROLE-MATRIX.md`, `docs/ERROR-COPY.md`, `docs/SEO-PLAN.md`, `docs/QA-SCRIPTS.md`. Pass 8: wallet/coupons/wishlist + live title `קניון אקספרס`. Pass 9: `/s/[id]` 2/3/4 grid, LocalBusiness data gate, hreflang `he-IL` plus ARCHITECTURE-SEO `x-default` on the same canonical.
 
 ### In progress
-Deepen pass 11: supplier public page and JSON-LD vs ARCHITECTURE-SEO.
+Keep deepening the same seven files. Next: city landing vs `/s/[id]` linking and empty-city copy.
 
 ### Next
 Keep deepening every document. Repeat. Never stop.
