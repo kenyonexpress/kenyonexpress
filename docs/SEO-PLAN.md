@@ -223,6 +223,108 @@ robots: `hreflang` is not a robots directive. Keep `Disallow` for account and ch
 
 ---
 
+## 5.1 Section 5 audited against the source (pass 12)
+
+Section 5 above states what the sitemap and robots **should** contain. This is
+what they **do** contain, read off `src/app/sitemap.ts` and `src/app/robots.ts`.
+
+### What `sitemap.ts` actually emits
+
+| Group | Entries | `changeFrequency` | `priority` |
+|---|---|---|---|
+| `/` | 1, `lastModified` = `catalogueTouched` | daily | 1 |
+| `/products` | 1 | daily | 0.9 |
+| `/coupons` | 1 | daily | 0.9 |
+| `/suppliers` | 1 | monthly | 0.7 |
+| `/blog` | 1 | weekly | 0.6 |
+| `/about`, `/contact`, `/faq` | 3 | monthly | 0.5 |
+| `/category/{slug}` | per category | daily | 0.8 |
+| `/product/{slug}` | per active product | weekly | 0.7 |
+| `/s/{id}` | per public supplier | weekly | 0.6 |
+| `/blog/{slug}` | per post | monthly | 0.5 |
+| legal (`LEGAL_PAGE_SLUGS`) | 4, `lastModified` = the document's own `updatedAt` | yearly | 0.3 |
+
+Legal carries a real date because the document has one, which `/contact` does
+not; the file's comment records that they are also the four addresses the old
+site already has indexed, which is why they are listed rather than left to be
+discovered.
+
+### Finding 1: `/city/{slug}` is in the plan and not in the sitemap
+
+Section 5 lists "`/city/{slug}` with suppliers" as included. `sitemap.ts`
+contains **no occurrence of `city` at all**. Pass 10 documented the seventeen
+region landings as real, indexable pages, and `city/[slug]/page.tsx` confirms
+it: the only `noindex` in that file is a comment explaining that an unknown
+slug is handled by `notFound()`, which emits its own.
+
+So seventeen indexable pages are absent from the sitemap. Either add them or
+change section 5; today the two documents disagree.
+
+### Finding 2: three groups ship and are not in the plan
+
+`/coupons`, `/suppliers` and `/blog/{slug}` are emitted and section 5's include
+list does not mention them. The plan's list is incomplete in both directions.
+
+### Finding 3: `/offline` is indexable
+
+Section 9 of this file and the pass 11 revision row both record `/offline` as
+noindex. It is not. `src/app/offline/page.tsx` declares:
+
+```
+export const metadata = { title: 'אין חיבור' }
+```
+
+No `robots` key. It has no layout of its own, the root layout sets no `robots`
+default, it is **not** in the `robots.txt` disallow list, and it is **not** in
+the sitemap. A page absent from the sitemap is still indexable if it is linked
+or discovered; absence is not a directive. Add `robots: { index: false }` to
+that file, or stop recording it as noindex.
+
+### What `robots.ts` actually disallows
+
+```
+/redeem/   /coupon/   /account/   /supplier/   /scan   /admin/
+/checkout  /cart      /auth/      /api/        /reset-password  /forgot-password
+```
+
+`/redeem/` is first deliberately: **that path is a signed voucher token**. A
+crawler fetching one is fetching somebody's coupon, and an indexed one is a
+coupon in a search result. The file states the principle plainly, and it is the
+right one: **robots.txt is a request, not access control.** Every path listed is
+also gated server-side, so this only stops well-behaved crawlers from spending
+budget. `/redeem/` additionally sets its own noindex and requires a supplier
+session, making robots the outermost of three layers.
+
+### Finding 4: the plan's exclude list and the disallow list are different tools
+
+Section 5 lists `/search`, `/gift/*` and filtered category URLs as excluded.
+None of them is in the disallow list, and **that is correct**, not a gap:
+
+| Path | How it is actually excluded |
+|---|---|
+| `/search` | `robots: { index: false }` in its own `generateMetadata` |
+| `/gift/[token]` | `robots: { index: false, follow: false }` |
+
+Using `Disallow` for these would be **worse**, and the reason is worth stating
+because it is a common mistake: a crawler blocked by robots.txt never fetches
+the page, so it never sees the `noindex`, and a URL discovered from an external
+link can still be indexed URL-only. Noindex requires the crawl to work.
+
+The two directives the plan does assert about robots both hold: account and
+checkout are disallowed, and `/products` is not.
+
+### Corrected summary
+
+| Claim in section 5 | Status |
+|---|---|
+| include `/`, categories, products, `/s/{id}`, legal, about, contact, faq, blog index, `/products` | **holds** |
+| include `/city/{slug}` | **does not ship** (finding 1) |
+| exclude `/search`, `/gift/*` | holds, via noindex rather than disallow (finding 4) |
+| exclude `/offline` | **does not ship**, and it is not noindex either (finding 3) |
+| `Disallow` account and checkout | **holds** |
+| do not `Disallow` `/products` | **holds** |
+| `lastmod` from `updated_at` where cheap | holds; legal uses the document's own `updatedAt` |
+
 ## 6. H1 rules (short)
 
 One H1. Hebrew. Live category/product names, not English slugs. Account H1s are functional (`הארנק שלי`, `הקופונים שלי`, `רשימת המשאלות שלי`) and noindex, so they do not compete with commercial H1s.
@@ -244,3 +346,4 @@ Home: do not replace the live brand title with a stuffed “קופונים די�
 | 2026-09-07 | Pass 10: city seventeen regions; empty indexable; query chips noindex |
 | 2026-09-07 | Pass 11: legal alias canonical; offline omitted from JSON-LD |
 | 2026-09-07 | hreflang audited against source: lang="he" and og locale confirmed, hreflang/x-default confirmed unshipped in all 15 canonical routes |
+| 2026-09-07 | Pass 12: section 5 audited against src/app/sitemap.ts and robots.ts. Four findings: /city missing from sitemap, three groups ship unlisted, /offline is NOT noindex, and the exclude list vs disallow list are different tools |
