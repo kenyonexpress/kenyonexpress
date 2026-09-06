@@ -390,3 +390,13 @@ If anything money-shaped fails: till kill switch first (
 4. Leave the domain attached in Vercel.
 5. Do not apply extra migrations in that window.
 6. Do not enable cron-job.org "to help" while Actions is still on.
+
+---
+
+## H4 addendum. WhatsApp public number
+
+If
+`NEXT_PUBLIC_WHATSAPP_PHONE`
+is empty, the storefront falls back to
+`972524635550`
+(Test Store on the WordPress site). Set the real business number in Production and **Redeploy** before H8, even if campaigns (P4) are months away. This is a one-line env paste, still a human.
