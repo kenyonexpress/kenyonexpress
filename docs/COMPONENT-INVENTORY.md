@@ -257,6 +257,17 @@ States every interactive control must consider: default, hover, focus-visible, a
 - **Electro:** none. No pixel twin.
 - **Linking:** chips → `/products?city={slug}` (noindex). Supplier cards if present → `/s/{id}`. Empty CTA → `/` or `/products`.
 
+### LegalDocumentPage and OfflinePage
+
+- **Files:** `src/app/(store)/legal/*`, WP aliases, `src/app/offline/page.tsx`
+- **Purpose:** Counsel documents + PWA fallback. Not Electro.
+- **Props:** none. Static / MD.
+- **States:** default document; hover on footer legal links `#0062bd`; focus-visible; empty n/a; error 500 Hebrew; offline **is** the error state.
+- **RTL:** full. Dates `he-IL` not wrapped LTR.
+- **A11y:** one H1 per document. Offline lightning `aria-hidden`. CTA named.
+- **RLS:** public. No money tables.
+- **Forbidden:** escrow, fixed commission, PAN. Offline: no network in the retry control.
+
 ## Revision
 
 | Date | Change |
@@ -264,3 +275,4 @@ States every interactive control must consider: default, hover, focus-visible, a
 | 2026-09-07 | Pass 8: wallet, coupons, wishlist pages with props, states, RTL, a11y, RLS notes |
 | 2026-09-07 | Pass 9: `/s/[id]` storefront page contract |
 | 2026-09-07 | Pass 10: `/city/[slug]` region hub |
+| 2026-09-07 | Pass 11: legal aliases + offline (no JS retry chunk) |
