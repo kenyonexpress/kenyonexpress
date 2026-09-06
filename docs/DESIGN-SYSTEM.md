@@ -291,6 +291,62 @@ Measured by frequency of every non-zero padding across the reference:
 is built on. That is why the container tokens below carry 15px of inline padding
 rather than a round 16.
 
+### 2.0 Recounted against the committed capture (pass 13)
+
+The list above predates `refs/ke_live_computed.json` being committed. Recounted
+against it: 21 captures, 23952 elements, every non-zero `px` in the padding
+shorthand, counted **per side** (a `10px 15px` contributes to both).
+
+```
+768  15px       338  9.504px     103  4px
+612  10px       228  8px          96  11px
+483  19.418px   226  20px         96  32px
+341  16px       127  14px         93  12px
+                105  24px
+```
+
+**The methodology differs from the original count**, which is why the absolute
+numbers do not line up: this counts sides, the original appears to have counted
+declarations. Ordering and membership are still comparable, and three things
+change.
+
+**1. 15px and 10px hold their first two places.** `--spacing-gutter` is
+confirmed as the single most common value on the site, which is the claim the
+container tokens rest on.
+
+**2. 24px is not the third step.** It ranked third in the original list (387)
+and ranks **tenth** here (105), behind 16px, 8px and 20px. `--spacing-2xl` is
+still a real value; it is not the third rung of the ladder.
+
+**3. Three high-frequency values have no token, and all three are identifiable.**
+
+| Value | Count | What carries it |
+|---|---|---|
+| `19.418px` | 483 | almost entirely `<a>` (462), including the home deal links (`דילים חמים 🔥`, `עד ₪99`), plus the WooCommerce payment boxes. The same odd number as `--btn-order-size`, so it is one `em`-derived value resolving in two places |
+| `9.504px` | 338 | form controls: `input-text` (174), `woocommerce-Input` (81), `woocommerce-button` (30, the `התחברות` / `הרשמה` pair). It is the vertical half of the measured secondary-button padding `9.504px 32px` |
+| `32px` | 96 | the horizontal half of that same button padding, plus `ul` and `wpforms-field-large` |
+| `2px` | 183 | `span.onsale` (60), the cart count badge, and the discount chip. Already carried by `--card-badge` metrics in 4.0 rather than by a spacing token |
+
+None of these is a defect. They are theme-derived values on surfaces the app
+either does not rebuild (WooCommerce payment boxes) or already tokenises
+elsewhere (the button padding lives in `--btn-secondary-pad`, the badge in the
+card metrics). They are listed so that a future "add the missing spacing steps"
+pass does not add `19.418px` as a general-purpose rung: **it belongs to two
+specific components, not to the scale.**
+
+### 2.0.1 Gap is its own distribution
+
+`gap` was never counted separately, and it does not follow the padding ladder:
+
+```
+252  8px     207  20px     194  16px     45  7px     15  5px     6  10px
+```
+
+`16px` is the third most common gap and has no named token. It needs none:
+Tailwind's own `gap-4` is 16px and remains available. The named `--spacing-*`
+steps exist for values the default scale has no entry for, and 16 is not one of
+them. `7px` and `5px` are single-component values.
+
 Declared as `--spacing-*` so Tailwind generates `p-` / `m-` / `gap-` / `h-` /
 `w-` utilities from them. Numeric Tailwind spacing (`p-4` and friends) still
 works and is unaffected; these are named steps for values the default scale has
