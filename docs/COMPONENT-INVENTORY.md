@@ -268,6 +268,122 @@ States every interactive control must consider: default, hover, focus-visible, a
 - **RLS:** public. No money tables.
 - **Forbidden:** escrow, fixed commission, PAN. Offline: no network in the retry control.
 
+## Pass 12: the busy-state sweep, across every component at once
+
+The per-page sections above carry states and a11y notes for the surfaces they
+cover. This section is the orthogonal cut: one property, checked against all 72
+component files, so the gap is visible as a set rather than one page at a time.
+
+### The finding: 24 components go busy without saying so
+
+A component that carries `isPending`, `useTransition` or a `pending` flag
+changes its appearance while a server action is in flight. Twenty-four of them
+change **only** their appearance: no `aria-busy`, no `aria-live`, no
+`role="status"`, no `<output>`. A screen-reader user presses "add to cart" and
+hears nothing at all until the page happens to change under them.
+
+| Announces | Silent while pending |
+|---|---|
+| 14 components | **24 components** |
+
+Silent (`pending` state, no announcement):
+
+```
+account/ReferralShareCard      admin/CategoryDialog       cart/AddToCartButton
+account/SubscriptionList       admin/CategoryForm         cart/CartCouponForm
+admin/CouponDealForm           admin/DeleteButton         cart/CartNavLink
+admin/ProductForm              admin/ReferralQueueRow     cart/CartPageView
+admin/StatusBadge              admin/SupplierForm         cart/MiniCartDropdown
+admin/VendorForm               category/CategoryControlBar
+category/CategoryFilterSidebar category/CategorySort      gifts/GiftClaimForm
+home/CmsHero                   product/Reviews            storefront/ProductInfo
+storefront/SupplierLeadForm
+```
+
+Announcing already, and the pattern to copy:
+
+```
+CouponCardSkeleton        account/AddressManager     cart/CartDrawer
+category/CategoryGridSkeleton  account/ProfileDetailsForm  cart/CartLineItem
+storefront/ContactForm    account/TokenManager       geo/CityTags
+storefront/StockScarcity  admin/DiscountCampaignForm growth/NewsletterSignup
+product/ReviewForm        product/WishlistButton
+```
+
+**`cart/CartLineItem.tsx` is the reference implementation.** It uses `<output>`
+rather than `<p role="status">`, and the reason generalises: `<output>` carries
+the same implicit role and it *is* what the element is, a message produced in
+response to the shopper's own action. It is announced when a quantity change
+turns a line unavailable, rather than only being read on load.
+
+Priority inside the silent set, by how much the shopper is relying on feedback:
+
+| Rank | Component | Why it matters most |
+|---|---|---|
+| 1 | `cart/AddToCartButton` | The primary conversion action on every product surface. Nothing is announced between press and cart update. |
+| 2 | `cart/CartCouponForm` | Already has `aria-invalid` and `aria-describedby` for the error, so the failure path is announced and the **success** path is not. |
+| 3 | `cart/CartPageView`, `cart/MiniCartDropdown` | Quantity and removal both mutate money on screen. |
+| 4 | `gifts/GiftClaimForm`, `storefront/SupplierLeadForm` | One-shot submissions where a second press is a real risk. |
+| 5 | the eight admin forms | Staff surfaces; lower reach, same defect. |
+
+### Exactly one form field is unlabelled
+
+`admin/FilterBar.tsx:35` renders `<input type="search" name="q">` with a
+`placeholder` and no `<label>` and no `aria-label`. A placeholder is not an
+accessible name: it is inconsistently announced and it disappears the moment
+the field has content.
+
+Nothing else in the tree has this. That is worth stating explicitly, because
+two searches that look like they find more do not:
+
+- **`ui/input.tsx` and `ui/textarea.tsx` carry no label by design.** They are
+  primitives; the consumer supplies the label, and `ui/form.tsx` wires
+  `<Label>` to them.
+- **`account/TokenManager.tsx`'s two inputs are `type="hidden"`.** A hidden
+  input needs no label.
+
+### The "no aria attribute" list is not a defect list
+
+Thirty-plus components contain no `aria-` or `role=` at all, and **that is
+mostly correct**. A scan that reports them as findings is wrong, and this
+section records the check so it is not run again as if it were new:
+
+- Twenty-two components have `<button>` and no `aria-label`. Every one that was
+  opened carries **visible Hebrew text** inside the button
+  (`admin/DeleteButton` renders `כן, מחיקה` / `ביטול`,
+  `admin/ReferralQueueRow` renders `דחייה` / `ביטול` / `כן, שלם`). Text content
+  is an accessible name. `aria-label` on top of it would be a second, competing
+  name.
+- Presentational components (`CopyrightYear`, `admin/StatusBadge`,
+  `admin/AuditDiff`) have nothing to name.
+
+The genuine icon-only cases are already handled elsewhere and already have
+labels: the header cart and account links, `cart/CartLineItem`'s remove button
+(`aria-label={\`הסר ${name} מהעגלה\`}`), and the drawer toggle.
+
+### How to re-run this sweep
+
+```bash
+# silent while pending
+for f in $(find src/components -name '*.tsx' ! -name '*.test.tsx' | sort); do
+  if grep -qE "isPending|useTransition|\bpending\b" "$f" \
+     && ! grep -qE "aria-busy|aria-live|role=\"status\"|<output" "$f"; then
+    echo "${f#src/components/}"
+  fi
+done
+
+# fields with no label -- then OPEN each hit, because hidden inputs and
+# primitives are expected to have none
+for f in $(find src/components -name '*.tsx' ! -name '*.test.tsx'); do
+  i=$(grep -cE "<input|<textarea|<select" "$f")
+  l=$(grep -cE "<label|aria-label" "$f")
+  [ "$i" -gt 0 ] && [ "$l" -eq 0 ] && echo "${f#src/components/} fields:$i"
+done
+```
+
+Quote the `--include` globs when grepping: zsh expands an unquoted `*.tsx`
+before grep sees it and aborts the whole command on no match.
+
 ## Revision
 
 | Date | Change |
@@ -276,3 +392,4 @@ States every interactive control must consider: default, hover, focus-visible, a
 | 2026-09-07 | Pass 9: `/s/[id]` storefront page contract |
 | 2026-09-07 | Pass 10: `/city/[slug]` region hub |
 | 2026-09-07 | Pass 11: legal aliases + offline (no JS retry chunk) |
+| 2026-09-07 | Pass 12: busy-state sweep across all 72 components; 24 silent while pending, one unlabelled field, and the false-positive lists recorded so they are not re-reported |
