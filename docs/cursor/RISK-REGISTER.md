@@ -281,3 +281,15 @@ Companions:
 - **Likelihood:** High (optional env, degrades to the published Test Store number `972524635550`).
 - **Impact:** Medium-High. Every float and PDP share contacts the wrong business. Not a charge bug. Trust and privacy.
 - **Mitigation:** Set the real number in Production **and redeploy** (it is `NEXT_PUBLIC_`). Do not start P4 Twilio campaigns until this is the real number.
+
+---
+
+## R19. Escrow language on legal / returns at cutover
+
+- **Likelihood:** Medium (old copy decks). Architecture forbids escrow; some docs still narrate it.
+- **Impact:** High (regulator / customer screenshot) not a charge bug.
+- **Mitigation:** H6 addendum: read
+  `/legal/returns`
+  on vercel.app. Remainder is cash at the partner. 14 days is
+  `distance_sale_14d`.
+  No hold, no J5.
