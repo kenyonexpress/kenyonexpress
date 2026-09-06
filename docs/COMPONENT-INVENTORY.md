@@ -7,7 +7,7 @@ Judgements are based on the actual file contents (with `file:line` references wh
 ## Summary
 
 - Total component files: 72 `.tsx` (of which 6 are one line re-export shims: `admin/CouponForm`, `layout/SiteHeader`, `store/CategorySidebar`, `store/HeroSlider`, `store/HomeHeroSection`, `store/PromoBanners`).
-- NOT token compliant (hardcoded hex or arbitrary values): 33 components.
+- ~~NOT token compliant (hardcoded hex or arbitrary values): 33 components.~~ **Stale as of pass 13. Recounted: zero raw hex, 24 components with arbitrary sizes. See "Pass 13" below.**
 - RTL risky (physical direction utilities that can break in `dir="rtl"`): 7 components (`CouponCard`, `admin/CouponDealForm`, `admin/ProductForm`, `home/BenefitBar`, `ui/dialog`, `ui/dropdown-menu`, `ui/select`).
 - `src/components/features/` and `src/components/shared/` contain only `.gitkeep` (no components).
 - Note: many "NOT compliant" cases mix valid tokens (`bg-brand`, `text-[#333e48]`-equivalent heading) with the raw hex of that same token, so the fix is usually swapping `[#fed700]` for `brand-primary`, `[#333e48]` for `heading`, etc.
@@ -473,6 +473,80 @@ because a data table is where `scope` and a caption start to matter.
 
 ---
 
+## Pass 13: the token-compliance count is stale, and the hex half is finished
+
+The summary's "33 components NOT token compliant (hardcoded hex or arbitrary
+values)" merged two different things and is no longer true of either.
+
+### Raw hex: zero, and it is gated
+
+Counted across every `.tsx` under `src/`, applying the same rule
+`src/styles/tokens.test.ts` applies:
+
+```
+raw hex in .tsx outside the allowlist:  0 occurrences, 0 files
+```
+
+The allowlist has exactly two entries and both have a stated reason:
+
+| File | Why it is allowed |
+|---|---|
+| `src/app/global-error.tsx` | It renders before the stylesheet loads and supplies its own `<html>` and `<body>`, so it cannot reference a CSS variable. Inline hex is the only thing guaranteed to paint at that point. |
+| `src/components/shared/GoogleLogo.tsx` | A third-party mark. Recolouring it with a project token is forbidden by the same rule that protects the WhatsApp and Facebook marks. |
+
+So the hex half of the old count is **finished**, not merely reduced. The
+inventory tables above still carry per-component `NO (text-[#768b9e] …)` cells
+from before that sweep; treat the table cells as historical and this count as
+current until they are rewritten.
+
+This is enforced, not merely tidy: `tokens.test.ts` fails the suite on any new
+hex in a `.tsx`, and names the file. A cell in the tables above that says a
+component holds `#0062bd` today would be a failing build.
+
+### Arbitrary sizes: 24 components, and no arbitrary colour among them
+
+```
+11  [15px]    3  [8rem]    2  [80px]   2  [50px]     1  [534px]
+ 4  [38px]    3  [42%]     2  [43px]   2  [9999px]   1  [90vh] (x2 files)
+ 3  [50%]     2  [-50%]    2  [51px]   2  [12rem]    1  [20%]
+             2  [48%]     2  [11px]   2  [18rem]
+```
+
+**Not one arbitrary value is a colour.** Every remaining `[...]` is a size, a
+percentage or a radius. That matters because the two halves of the old count
+have different severities: an arbitrary colour bypasses the palette, an
+arbitrary size does not.
+
+Three groups, by what should happen to each:
+
+| Group | Components | Verdict |
+|---|---|---|
+| **`[15px]`, the gutter** | `layout/Header` x2, `layout/MobileDrawer` x2, `layout/SiteFooter` x3, `home/HeroSlider` x3, `cart/CartPageView` | **Should become `--spacing-gutter`.** It is the single most common padding on the live site (768 occurrences, section 2.0 of DESIGN-SYSTEM) and it already has a token. Eleven call sites, one token, no measurement risk. |
+| **Measured one-offs** | `search/HeaderSearch` `[534px]` `[41px]` `[22px]`, `home/HeroSlider` `[43px]` `[51px]` `[42%]`, `layout/MastheadNav` `[38px]`, `layout/RegionMenu` `[53px]` | **Leave, or promote deliberately.** Each is a measured live value. `[43px]`/`[51px]` are already `--text-hero-line1`/`-lg`; `[534px]`/`[41px]`/`[22px]` are the header search, which this project deliberately does not ship. |
+| **Radix / layout primitives** | `ui/dialog` `[50%]` `[-50%]` `[48%]`, `ui/dropdown-menu` `[8rem]`, `ui/select` `[8rem]`, `ui/textarea` `[80px]`, `admin/*` `[12rem]` `[18rem]` `[90vh]` | **Leave.** Centring transforms and menu min-widths are component mechanics, not design tokens. `[9999px]` in the two forms is a pill radius and could use `--radius-round` (200px), though 9999 and 200 both round the same on those elements. |
+
+Only the first group is worth changing, and it is a single find-and-replace
+across five files.
+
+### How to re-run both counts
+
+```bash
+python3 - <<'PY'
+import re, pathlib
+allow = {'src/components/shared/GoogleLogo.tsx', 'src/app/global-error.tsx'}
+hexre = re.compile(r'#[0-9a-fA-F]{3,8}\b')
+arb   = re.compile(r'\[(#[0-9a-fA-F]{3,8}|-?\d+(?:\.\d+)?(?:px|rem|vh|vw|%))\]')
+hexoff, arboff = [], set()
+for p in pathlib.Path('src').rglob('*.tsx'):
+    f, t = str(p), p.read_text(encoding='utf-8')
+    if f not in allow:
+        hexoff += [(f, h) for h in hexre.findall(t)]
+    if arb.search(t) and f.startswith('src/components/'):
+        arboff.add(f)
+print('raw hex:', len(hexoff), 'arbitrary:', len(arboff))
+PY
+```
+
 ## Revision
 
 | Date | Change |
@@ -483,3 +557,4 @@ because a data table is where `scope` and a caption start to matter.
 | 2026-09-07 | Pass 11: legal aliases + offline (no JS retry chunk) |
 | 2026-09-07 | Pass 12: tree-wide states and a11y sweep; 24 of 38 in-flight states unannounced; three form-field false positives retired |
 | 2026-09-07 | Pass 12: busy-state sweep across all 72 components; 24 silent while pending, one unlabelled field, and the false-positive lists recorded so they are not re-reported |
+| 2026-09-07 | Pass 13: token-compliance recount. Raw hex is ZERO and gated; 24 components hold arbitrary SIZES only, none a colour; the eleven [15px] are the one group worth changing |
