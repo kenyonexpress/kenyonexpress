@@ -79,11 +79,21 @@ describe('a line whose price is an implausible fraction of its compare-at', () =
     expect(verdict.ok).toBe(false)
   })
 
-  it('tells the shopper something true and actionable', () => {
+  it('tells the shopper something true and actionable, and the action works', () => {
     const cart = buildCartView('cart-1', [stored()], [masterProductRow()], [])
     expect(unavailableMessage(line(cart))).toBe(
       'המוצר אינו זמין להזמנה כרגע — הסירו מהעגלה כדי להמשיך',
     )
+
+    // THE COPY PROMISES A REMEDY, SO THE REMEDY HAS TO REACH THIS LINE.
+    // `runRemoveUnavailableItems` selects on exactly `!item.available` and
+    // nothing finer, so a `price_error` line is swept by the existing
+    // "remove unavailable" control with no change to it. Asserted here rather
+    // than left implicit: making this reason block checkout while leaving the
+    // line `available: true` is a plausible future edit, and it would strand a
+    // shopper behind a banner telling them to remove something the remover
+    // cannot see.
+    expect(cart.items.filter((i) => !i.available)).toHaveLength(1)
   })
 
   it('outranks the stock reasons even when the shelf is also short', () => {
