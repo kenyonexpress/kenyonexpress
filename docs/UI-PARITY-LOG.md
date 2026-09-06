@@ -65,6 +65,10 @@ No `--page` for: `/account/wallet`, `/account/coupons`, `/account/wishlist`, `/c
 
 Do not invent a percent by screenshotting `/suppliers` (join-us) against a store page.
 
+### 1.2 `/city/[slug]` (logged, not scored)
+
+Seventeen `REGIONS` only. Empty region is a real page (not a refuse). No `refs/` twin. Do not screenshot `/products?city=` as if it were this landing (that query is noindex).
+
 ---
 
 ## 2. Home `/`
@@ -223,3 +227,4 @@ If a later agent can run the gate from the main checkout, append a dated row. Do
 |---|---|
 | 2026-09-07 | Initial log: home, category, product, products, cart, checkout, search, account siblings; D4–D11 and STEP 46 numbers |
 | 2026-09-07 | Pass 9: `/s/[id]` not scored; 2/3/4 grid; do not use join-us as twin |
+| 2026-09-07 | Pass 10: `/city/[slug]` n/a (seventeen regions, no refs twin) |
