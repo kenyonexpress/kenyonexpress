@@ -134,9 +134,13 @@ Seventeen `REGIONS` only. Empty region still **indexable** (it answers the query
 
 Title: `דילים ב{name}`. Description: remainder-at-business sentence. `hreflang="he-IL"` (+ `x-default` same canonical).
 
-### 3.6 Legal / about
+### 3.6 Legal / about / contact / faq / blog
 
 `WebPage` + `Organization` publisher. Accessibility statement may use `WebPage` only.
+
+Canonical + `hreflang="he-IL"` (and `x-default` same URL). Both `/legal/terms` and `/terms-and-conditions` must not compete: one canonical, the other 301. Footer ships the 200 URL. Same for privacy, returns, accessibility.
+
+About/contact/faq/blog: index. Contact form errors are noindex (same URL). `/offline`: **no** JSON-LD (already in §3.7).
 
 ### 3.7 Do not emit JSON-LD on
 
@@ -201,3 +205,4 @@ Home: do not replace the live brand title with a stuffed “קופונים די�
 | 2026-09-07 | Plan with live title `קניון אקספרס`, `lang="he-IL"`, no live hreflang; schema per page; linking including account empties |
 | 2026-09-07 | Pass 9: LocalBusiness data gate; `@id` `/s/{id}#business`; hreflang `x-default` matches ARCHITECTURE-SEO (same canonical) |
 | 2026-09-07 | Pass 10: city seventeen regions; empty indexable; query chips noindex |
+| 2026-09-07 | Pass 11: legal alias canonical; offline omitted from JSON-LD |
