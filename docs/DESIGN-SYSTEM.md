@@ -1182,7 +1182,136 @@ affordable. It is not a licence to leave a token unmeasured.
 
 ---
 
-## 7. Related documents
+## 8. Account sibling tokens (wallet, coupons, wishlist)
+
+These three routes share the account shell. They are **not** Electro home-v7
+blocks. They are scored only when `COMPARE_STORAGE_STATE` is present, and even
+then `compare.mjs` has no WooCommerce 1:1 twin for the KenyonExpress wallet.
+Paint from this section, not from a guessed admin table.
+
+### 8.1 Shared account chrome (380 / 768 / 1440)
+
+| Token / slot | 380 | 768 | 1440 |
+|---|---|---|---|
+| Page H1 | 32px / 500 / `#333e48` | 36px / 500 | 40px / 500 |
+| Subtitle | 14px / 400 / `#6f6f6f` | same | same |
+| Shell max width | full, 15px gutter | 1200px page token | 1200px. Brief names 1320px; do not widen this shell to chase the brief (see 0, live never paints 1320) |
+| Nav `aria-current` | yellow underline 2px `#fed700` | same | same |
+| Table / ledger row | 56px min, 14px | same | same |
+| Empty glyph | `#cccccc`, decorative | same | same |
+| Focus-visible | 2px `#333e48`, offset 2px | same | same |
+
+Heebo on every string. Digits, codes, last4, order `{ref}`: `dir="ltr"` / `<bdi>`.
+
+### 8.2 `/account/wallet`
+
+Internal credit only. No withdrawal, no transfer to another user.
+
+| Slot | Paint | Copy / formatter |
+|---|---|---|
+| H1 | 8.1 H1 | `הארנק שלי` |
+| Subtitle | muted | `קרדיט פנימי לשימוש באתר` |
+| Balance label | 14px / 400 | `היתרה שלך` |
+| Balance value | 32px / 700 / `#333e48` (not price red) | `{price}` via `shekels(agorot())`. Credit is not a sale price. Do not use `#E4002B` or `#dc3545` on the running balance |
+| Page note | 13px muted | `קרדיט לשימוש באתר בלבד. לא ניתן למשיכה.` (`acc.wallet.pageNote`) |
+| Ledger columns | 13px / 700 heading | `תאריך` `פעולה` `סכום` `הזמנה` |
+| Credit amount | `#328614` or success surface + heading ink | `+{price}` |
+| Debit amount | heading ink, leading minus | `-{price}` (minus before shekel: `-₪12.00`) |
+| Order link | `#0062bd` | `לצפייה` |
+| Empty | 8.1 empty glyph | `עדיין אין תנועות בארנק.` |
+| Skeleton | 88px pulse block | `aria-label="טוען את האזור האישי"` inherited from account layout |
+
+Reason labels (never invent English): `קאשבק על רכישה` / `שימוש בארנק` / `החזר על ביטול` / `זיכוי ידני` / `קרדיט על קופון שפג`.
+
+Wallet-pass chrome (Apple / Google, not this page) may use brief price red `#E4002B`. Storefront prices stay `#dc3545`. Mixing the two on the ledger would look like a sale markdown.
+
+### 8.3 `/account/coupons`
+
+| Slot | Paint | Copy |
+|---|---|---|
+| H1 | 8.1 H1 | `הקופונים שלי` |
+| Subtitle | muted | `הצגת הקוד או ה-QR בבית העסק. היתרה משולמת שם בזמן הסריקה.` |
+| List | **no QR** | remainder `{price}` at the business in `#dc3545` (live price) or `#E4002B` only if this surface is later taken off the pixel gate |
+| Code | 14px mono, `dir="ltr"` | grouped `{code}` |
+| Status chip | 11px / 700 | `פעיל` / `מומש` / `פג תוקף` / `בוטל` / `הוחזר` |
+| Expiring | warning surface `#fffbe6` | `הקופון פג היום` or `נותרו {n} ימים לניצול הקופון` |
+| CTA presentable | `#fed700` fill, `#333e48` ink, radius 22 | `הצגת הקופון ו-QR` |
+| CTA closed | outline, heading ink | `פרטי הקופון` |
+| Empty | | `עדיין לא רכשת קופונים.` |
+| Hover on CTA | `#fedd26` if the control stays yellow; live purchase buttons go black. This list is not a live WooCommerce twin, so yellow-to-`#fedd26` is allowed | |
+
+Aliases `/account/vouchers` and `/account/my-vouchers` are permanent redirects. Do not paint a second list.
+
+### 8.4 `/account/wishlist`
+
+Standing chrome rule: **no heart in the header, no heart in the drawer.** Live YITH puts a heart in the masthead. We do not. Cost in `compare.mjs` is accepted. The list lives here.
+
+| Slot | Paint | Copy |
+|---|---|---|
+| H1 | 8.1 H1 | `רשימת המשאלות שלי` (COPY-HE). Older architecture draft said `רשימת מועדפים`. Do not ship both |
+| Empty | | `עוד לא שמרת מוצרים. לחיצה על הלב בעמוד מוצר שומרת אותו כאן.` plus CTA `לכל המוצרים` → `/products`. Anatomy also records `עדיין אין מוצרים במועדפים` + `להמשך קניות`. Prefer the longer empty + `/products` so the shop archive is the recovery, not home Electro English |
+| Card | category card tokens | price through `shekels(agorot())`. Known paint drift: list still formats `price_ils` with `toLocaleString`. New work must not copy that |
+| Heart on PDP | 13px `#333e48` link style | `הוסף למועדפים` / `הסר ממועדפים` |
+| Toast | Sonner | `נוסף למועדפים` / fail `הפעולה נכשלה.` |
+| Cap | n/a visually | 100 products. Reject in Hebrew rather than silently drop |
+
+Grid columns follow category archive: **2 / 3 / 5** at 380 / 768 / 1440. Radius 0 on cards (live storefront cards are square).
+
+### 8.5 Live-site title check (2026-09-07)
+
+Fetched the public home HTML. Not a pixel score. This worktree does not run
+`compare.mjs`.
+
+| Field | Live `kenyonexpress.co.il` | What older docs assumed |
+|---|---|---|
+| `<title>` | `קניון אקספרס` | `קניון EXPRESS: מסדרים לך בילוי` |
+| meta description | `המקום למבצעים חמים במגוון תחומים, בילוי, תיירות, צריכה ועוד.` | longer coupon-split sentence |
+| `og:title` | `קניון אקספרס` | same as the long title |
+| `<html>` | `dir="rtl"` `lang="he-IL"` | `lang="he"` in the Next root (keep `he-IL` as the locale token; `lang="he"` on `<html>` is still valid BCP 47) |
+| `hreflang` | **absent** | plan still emits `he-IL` as the only locale. Do not invent `x-default` until a second language exists |
+
+Hero on live still paints Electro English demo lines (`SIMPLY THE BEST` and
+friends). RTL reverses those Latin runs. That is a **content** debt on the
+reference, not a token. Our Heebo Hebrew headlines stay. Do not restore Open
+Sans to chase those glyphs.
+
+Info-bar strings on live match chrome copy: `ברוך הבא לעולם של קניון Express`,
+`בפריסה ארצית`, `משלוח מהיר חינם`, `קניה בטוחה`, `התחברות`.
+
+USP tiles on live: `לכל חלקי הארץ`, `שירות לקוחות`, `מחירים מנצחים`, `מותגי יוקרה מובילים !`.
+
+Brand tokens that remain binding regardless of live paint:
+
+| Brief | Hex / value | Role |
+|---|---|---|
+| Brand yellow | `#fed700` | CTA surface |
+| Brand hover | `#fedd26` | yellow-to-yellow hover (account list CTAs). Purchase buttons still hover to black |
+| Price red (brief) | `#E4002B` | wallet-pass chrome, non-scored surfaces |
+| Price red (live) | `#dc3545` | storefront sale price |
+| Link | `#0062bd` | names, ledger order links |
+| Container (brief) | `1320px` | named only |
+| Container (shipped) | `1200px` page, `1170px` hero | pixel gate |
+| Type | Heebo, RTL | always |
+| Breakpoints | 380, 768, 1440 | compare widths |
+
+### 8.6 Electro home-v7 structure (unchanged, restated)
+
+Electro supplies **order of blocks**, not copy:
+
+1. Top bar
+2. Header / masthead (no search field on our storefront)
+3. Home-v7 row: departments column 241×593, slider, ads
+4. Category strip (absent at 380, in-hero at 768+)
+5. Features / icon boxes (31px empty strip at 380, 134px from 768)
+6. Deals grid 1 / 2 / 4 columns
+7. Footer widgets + newsletter
+
+Account siblings sit **outside** that skeleton. Do not wrap wallet or coupon
+lists in a 241px departments column.
+
+---
+
+## 9. Related documents
 
 ```
 DESIGN-MEASURED.md              the measured palette, type and layout, with sources
@@ -1190,8 +1319,16 @@ docs/RTL-PITFALLS.md            Hebrew typography, bidi, number and icon directi
 docs/UI-QA-CHECKLIST.md         the manual visual pass, page by page
 docs/ARCHITECTURE-DESIGN-SYSTEM.md   the earlier Hebrew design-language note
 docs/HEADER-1TO1-2026-09-02     the audit that moved the container to 1200
+docs/ui-design-system/TOKENS.md the storefront token companion
+docs/UI-PARITY-LOG.md           compare.mjs history per route per breakpoint
 src/styles/tokens.css           the enforced source of truth
 src/styles/tokens.test.ts       the gate on it
 src/lib/a11y/brand-contrast.test.ts  the gate on white-on-yellow
 src/lib/electro-hero-tokens.ts  ELECTRO_HERO, the Electro home-v7 measurements
 ```
+
+## 10. Revision
+
+| Date | Change |
+|---|---|
+| 2026-09-07 | Pass 8: account sibling tokens (wallet, coupons, wishlist) at 380/768/1440; live home title `קניון אקספרס`, `lang="he-IL"`, no hreflang |
