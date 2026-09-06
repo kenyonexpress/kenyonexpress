@@ -185,6 +185,24 @@ Cancellation fee, when allowed, is deducted from
 `granted_agorot`.
 Statutory cap is in the CHECK, not in JS.
 
+`refund_ground`
+values:
+`distance_sale_14d`,
+`defect`,
+`service_not_provided`,
+`duplicate_charge`,
+`extended_window`,
+`goodwill`.
+Fee must be 0 on
+`defect`
+and
+`duplicate_charge`.
+After any voucher left
+`issued`,
+only
+`goodwill`
+(wallet, §4) is honest. Do not send Cardcom a refund for a scanned unit and leave the partner unpaid at the counter.
+
 ---
 
 ## 6. Referral bonus
