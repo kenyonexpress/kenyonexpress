@@ -981,7 +981,31 @@ File: `src/app/redeem/[token]/page.tsx` + `RedeemConfirm`. Title `מימוש ש�
 
 Done: `סריקה נוספת` → `/scan`. Refusal CTA: `למסך הסריקה`. Network drop mid confirm: `אין חיבור לרשת. בדקו את החיבור ונסו שוב` and **same** idempotency key (EDGE-CASES).
 
-`/scan` still uses `אשר וממש`. `/redeem/[token]` uses `אשר מימוש`. Do not unify the strings until a dedicated copy pass.
+`/scan` confirm is `אשר ומַמֵש` (niqqud in source; E2E also accepts `אשר וממש`). `/redeem/[token]` uses `אשר מימוש`. Do not unify.
+
+---
+
+## 21. Auth and till scan
+
+Auth group: noindex. Shell is the auth card, not the store masthead. Emails and phones `dir="ltr"`. Google mark does not mirror.
+
+Document titles in source currently insert U+2014 before `KenyonExpress`. This pack does not copy that character. New titles: `כניסה: KenyonExpress`.
+
+| Route | Title (intent) | Visible H1/H2 | Notes |
+|---|---|---|---|
+| `/login` | כניסה | `כניסה לחשבון` | Google, optional SMS if `phoneAuthEnabled()`, email+password, magic link. `next` preserved. Error `auth_callback_error` → `הכניסה נכשלה` plus retry. Skeleton: **null** (do not remount the form) |
+| `/signup` | הרשמה | `יצירת חשבון` | Google + name/email/phone/password. Phone hint `מספר ישראלי (050, 052, 054 וכו׳)` |
+| `/signup/confirm` | אמתו את האימייל | `בדקו את תיבת הדואר` | `חזרה לכניסה` |
+| `/forgot-password` | שחזור סיסמה | same | Success is generic (do not enumerate emails) |
+| `/reset-password` | איפוס סיסמה | `בחרו סיסמה חדשה` | 8 chars + digit |
+| `/mfa` | אימות דו-שלבי | same | Help mentions the **admin panel**. TOTP `dir="ltr"` tracking. `output aria-live="assertive"` |
+| `/supplier/login` | כניסת ספקים | `כניסה לאזור הספקים` | Real auth is `/login?next=/supplier`. Member → `/supplier`. Signed-in non-member → `/supplier/access-denied`. Read-fail: stay on form, do not deny |
+| `/scan` | סריקת שובר | same | Membership required. Always show **manual** `הקלדת קוד ידנית` + `בדוק שובר`. Camera optional. Confirm `אשר ומַמֵש`. Irreversible copy. Connected as `{supplierName}` |
+| `/supplier/scan` | (redirect) | | `redirect('/scan')` |
+
+Supplier login body mentions platform commission in Hebrew. That page is **partner**, not customer. Still do not print a number. `platform_percent` stays off the customer DOM.
+
+Logged: auth events via Supabase; scan lookups and `redeem_voucher`; forged tokens on `/redeem/[token]` not on `/scan` until a code is submitted.
 
 ---
 
@@ -992,3 +1016,5 @@ Done: `סריקה נוספת` → `/scan`. Refusal CTA: `למסך הסריקה`.
 | 2026-09-07 | Initial anatomy for home, category, coupon PDP, physical PDP, cart, checkout, account, orders, voucher/QR, supplier, search, 404, 500 |
 | 2026-09-07 | Deepen: `/checkout/return` paid/pending/QR, `/city/[slug]` empty vs city chips |
 | 2026-09-07 | Deepen: order detail, `/products` H1 `חנות`, checkout failed, gift claim branches, redeem refusals |
+| 2026-09-07 | Deepen: account siblings (coupons list without QR, wallet ledger, wishlist copy, referrals program-off) |
+| 2026-09-07 | Deepen: auth routes and `/scan` till (manual always; confirm niqqud) |

@@ -250,8 +250,15 @@ Field names (Hebrew visible labels): first/last name, phone, email, city, street
 | Id | String |
 |---|---|
 | auth.login | כניסה לחשבון |
+| auth.login.google | כניסה עם Google |
+| auth.login.sms | כניסה עם קוד ב-SMS |
+| auth.login.magic | כניסה ללא סיסמה (קישור מאובטח לאימייל) |
+| auth.login.submit | כניסה |
+| auth.login.fail | הכניסה נכשלה (source uses U+2014 before נסו שוב; do not copy it) |
 | auth.or | או |
 | auth.signup | יצירת חשבון |
+| auth.confirm.h2 | בדקו את תיבת הדואר |
+| auth.confirm.body | שלחנו לכם קישור לאימות. לחצו עליו כדי להפעיל את החשבון. |
 | auth.forgot | שחזור סיסמה |
 | auth.reset | בחרו סיסמה חדשה |
 | auth.reset.help | הסיסמה חייבת להכיל לפחות 8 תווים וספרה אחת. |
@@ -261,6 +268,18 @@ Field names (Hebrew visible labels): first/last name, phone, email, city, street
 | auth.phone.hint | מספר ישראלי (050, 052, 054 וכו׳) |
 | auth.pass.ph | לפחות 8 תווים + ספרה |
 | auth.pass.again | הזינו שוב את הסיסמה |
+| supplier.login.h1 | כניסה לאזור הספקים |
+| supplier.login.cta | התחברות לספקים |
+| supplier.login.back | חזרה לחנות |
+| scan.h1 | סריקת שובר |
+| scan.sub | סרקו QR או הקלידו את הקוד, בדקו את פרטי השובר, אשרו, וגבו את היתרה מהלקוח. |
+| scan.manual | הקלדת קוד ידנית |
+| scan.check | בדוק שובר |
+| scan.checking | בודק... |
+| scan.camera | סרוק QR במצלמה |
+| scan.confirm | אשר ומַמֵש (source niqqud; also match `אשר וממש`) |
+| scan.working | מבצע... |
+| scan.irreversible | המימוש סופי ואינו ניתן לביטול. השובר יפוג מיד עם האישור. |
 
 Email placeholders stay Latin `you@example.com` (`dir="ltr"`). Phone placeholder `050-1234567` (`dir="ltr"`).
 
@@ -552,7 +571,7 @@ Ink on `#fed700` for the tile (TOKENS: never white on yellow).
 | redeem.lapsed | תוקף השובר פג |
 | redeem.net | אין חיבור לרשת. בדקו את החיבור ונסו שוב |
 | redeem.sys | שגיאת מערכת, נסו שוב |
-| scan.confirm | אשר וממש (`/scan` only; not the same string as redeem.confirm) |
+| scan.confirm | אשר ומַמֵש (`/scan`; E2E also accepts `אשר וממש`) |
 
 GET on `/gift/[token]` must not claim. Claim errors paint under the button (today a red `<p>`, not yet `role="alert"`).
 

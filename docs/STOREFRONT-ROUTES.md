@@ -25,9 +25,10 @@ Status: binding map. Docs only.
 | `/gift/[token]` | recipient | noindex nofollow | §20.1 URL is the credential |
 | `/redeem/[token]` | cashier | noindex nofollow | §20.2 |
 | `/account/**` | customer | noindex | §7 to §8.6 |
-| `/login` `/signup` `/forgot-password` `/reset-password` `/mfa` | auth | noindex follow | COPY-HE §3.5 |
-| `/supplier/login` `/supplier/access-denied` | partner | noindex | ROLE-JOURNEYS §4 |
-| `/supplier/**` `/scan` | partner | noindex | scan + history |
+| `/login` `/signup` `/forgot-password` `/reset-password` `/mfa` `/signup/confirm` | auth | noindex follow | PAGE-ANATOMY §21 |
+| `/supplier/login` `/supplier/access-denied` | partner | noindex | §21 |
+| `/supplier/**` | partner | noindex | portal |
+| `/scan` | cashier | noindex | §21; `/supplier/scan` redirects here |
 | `/legal/*` plus WP aliases | customer | index | §19 |
 | `/about` `/contact` `/faq` `/blog` | customer | index | §19 |
 | `/offline` | PWA | noindex | §19 |

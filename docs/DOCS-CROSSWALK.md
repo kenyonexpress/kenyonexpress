@@ -85,7 +85,9 @@ Cron: ten jobs, external scheduler. `docs/VERCEL-CRON.md` is stale. `docs/CRON-E
 
 Covered: home, category, coupon PDP, physical PDP, cart, checkout, account, orders **and order detail**, `/coupon/[id]`, `/s/[id]`, search, 404, 500, `/checkout/return`, `/checkout/failed`, `/products` (`חנות`), `/city/[slug]`, legal, `/offline`, `/gift/[token]`, `/redeem/[token]`. Map: `docs/STOREFRONT-ROUTES.md`.
 
-Copy split: `/scan` `אשר וממש` vs `/redeem/[token]` `אשר מימוש`. Both are live. Do not "fix" one toward the other in docs.
+Copy split: `/scan` `אשר ומַמֵש` vs `/redeem/[token]` `אשר מימוש`. Both are live. Do not "fix" one toward the other in docs.
+
+Auth document titles currently use U+2014. This pack does not copy that character.
 
 Public supplier is `/s/[id]`, not `/suppliers/[slug]`. `/suppliers` is join-us marketing.
 

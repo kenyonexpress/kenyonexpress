@@ -107,7 +107,7 @@ Avoid saying `cart_items` (there is no table; lines are `carts.items` jsonb).
 | בוטל | `cancelled` |
 | הוחזר | `refunded` (voucher) |
 | מימוש | redemption, `redeem_voucher()` |
-| אשר וממש | `/scan` confirm |
+| אשר ומַמֵש | `/scan` confirm (niqqud in source) |
 | אשר מימוש | `/redeem/[token]` confirm (not the scan string) |
 | קיבלת מתנה | `/gift/[token]` (URL is the credential) |
 | מימוש שובר | `/redeem/[token]` page title |
