@@ -243,3 +243,36 @@ content-uploader: catalogue sections only. Money sections must 403.
 ## 5. RSC (no handler)
 
 Product, category, home, legal, city, supplier directory, account reads: server component + user-scoped or anon client. If a page "has no API", that is the design. Do not add public REST for catalogue reads; it would duplicate RLS and drift.
+
+---
+
+## 6. Pages that look like APIs (and are not)
+
+| URL | Kind | Auth |
+|---|---|---|
+| `/redeem/[token]` | signed redeem page | token in URL, not session |
+| `/gift/[token]` | gift preview/claim | token; claim needs session |
+| `/checkout/frame-return` | Cardcom iframe return | **ungated** |
+| `/coupon/[id]` | voucher UI | session |
+| `/scan` | till | session + membership |
+
+Do not add a second HTTP redeem next to
+`/api/supplier/vouchers/redeem`
+that takes
+`supplier_id`
+from the client.
+
+## 7. content-uploader on the admin HTTP surface
+
+Optimistic proxy allow-list includes
+`content_uploader`.
+CSV
+`/api/admin/reports/[report]`
+must still require the payments section. A 403 plain-text miss here dumps HTML into a `.csv` or dumps payments.
+
+## 8. Dead handler to keep in the inventory
+
+`/api/supplier/payouts/csv`
+and
+`admin/payouts.ts`:
+document as 42P01. Do not "fix" by creating tables from an old brief. Coupon model has nothing to pay out. Physical payout is a post-launch schema, not a launch unblock.
