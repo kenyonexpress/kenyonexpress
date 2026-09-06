@@ -540,3 +540,34 @@ or
 `.json`.
 
 Money, RLS, APIs, risks, human launch steps, and post-launch work have their own files in this directory.
+
+---
+
+## 12. Pack index (this directory)
+
+| File | Question it answers |
+|---|---|
+| `ARCHITECTURE-OVERVIEW.md` | What runs where |
+| `DATA-FLOW.md` | Which table each money step writes, which policy |
+| `MONEY-INVARIANTS.md` | Agorot contract. There is no `packages/money.ts` |
+| `RLS-CATALOG.md` | Four pack roles × every public table |
+| `API-SURFACE.md` | Handlers, actions, auth, failures |
+| `RISK-REGISTER.md` | Ranked launch breakage |
+| `LAUNCH-BLOCKERS.md` | Human-only ordered steps. DNS last |
+| `POST-LAUNCH-ROADMAP.md` | Reviews, wishlist, abandoned cart, Twilio WhatsApp, i18n, self-serve partners |
+
+---
+
+## 13. Facts learned while writing the rest of this pack
+
+**Two Cloudflare zones.** Registrar NS are `derek` / `elma`. Account `13a3f166…` also holds a staged zone (`ignat` / `tess`, never activated). Editing the staged zone is a silent no-op. Launch H0 is "open the live zone".
+
+**Test catalogue row.** Id `9bb347f8-03ec-48ce-8ff2-2503fb74c895` is a ₪1 / ₪400 "Master Product". Application refuses the sale (95% discount ceiling). Migration 172 (stock 0, not delete) is unapplied. Homepage can still render it.
+
+**Cron count.** Ten jobs in the original money set; this tree also has `/api/cron/retention` and `/api/cron/weekly-digest`. Scheduler of record is GitHub Actions, not `vercel.json`.
+
+**Payout.** Admin actions exist. Production has no payout tables. Coupon partners are owed nothing on the coupon path. Physical residual is accounting, not a live ledger.
+
+**Search UI vs engine.** Meilisearch is the backend. `/search` + header field exist for Electro pixel refs (ADR 0010). That is not a search product.
+
+**Next.js 15 vs 16.** Brief said 15. This branch is 16.2.12. `src/proxy.ts` replaces `middleware.ts`.
