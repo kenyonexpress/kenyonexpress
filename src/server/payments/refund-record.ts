@@ -33,6 +33,9 @@ export type RefundState =
   | 'completed'
   | 'failed'
 
+/** `public.refund_destination`, as 148 declares it. */
+export type RefundDestination = 'original_method' | 'wallet'
+
 /** `public.refund_ground`, as production declares it. */
 export type RefundGround =
   | 'distance_sale_14d'
@@ -68,6 +71,21 @@ export interface RefundRecord {
   requestedBy?: string | null
   decidedBy?: string | null
   at: Date
+  /**
+   * Which instrument the money went back through.
+   *
+   * 148 added `refunds.destination` with a DEFAULT of `original_method`, and
+   * this writer never named the column -- which was harmless while the card was
+   * the only path, and stops being harmless the moment a wallet credit is
+   * written, because it would be filed as a card refund. Defaulted here to the
+   * same value the column defaults to, so the card path is unchanged and the
+   * wallet path has to say so.
+   *
+   * `refunds_wallet_has_no_fee` (148) is a CHECK: a `wallet` row with a
+   * non-zero `cancellation_fee_agorot` is rejected by the database, and
+   * `planWalletCredit` refuses it one layer earlier.
+   */
+  destination?: RefundDestination
 }
 
 type RefundRow = {
@@ -85,6 +103,7 @@ type RefundRow = {
   requested_at: string
   decided_at: string | null
   completed_at: string | null
+  destination: RefundDestination
 }
 
 /** Minimal structural client shape; `src/types/database.ts` predates 131. */
@@ -122,6 +141,7 @@ export async function recordRefund(
       requested_at: at,
       decided_at: closed ? at : null,
       completed_at: closed ? at : null,
+      destination: record.destination ?? 'original_method',
     })
     if (error) {
       log.error('refund.record_not_written', {

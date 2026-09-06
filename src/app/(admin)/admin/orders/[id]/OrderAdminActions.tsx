@@ -2,6 +2,7 @@
 
 import { type OrderActionState, addOrderNote } from '@/server/actions/admin/orders'
 import { refundOrder } from '@/server/actions/payments/refund'
+import { refundOrderToWallet } from '@/server/actions/payments/refund-to-wallet'
 import { AlertTriangle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useActionState, useState, useTransition } from 'react'
@@ -33,6 +34,11 @@ export default function OrderAdminActions({ orderId, notes, refundBlockers }: Pr
   const [confirming, setConfirming] = useState(false)
   const [refundError, setRefundError] = useState<string | null>(null)
   const [refundOk, setRefundOk] = useState<string | null>(null)
+  const [walletReason, setWalletReason] = useState('')
+  const [walletAmount, setWalletAmount] = useState('')
+  const [walletConfirming, setWalletConfirming] = useState(false)
+  const [walletError, setWalletError] = useState<string | null>(null)
+  const [walletOk, setWalletOk] = useState<string | null>(null)
 
   const blocked = refundBlockers.length > 0
 
@@ -59,6 +65,46 @@ export default function OrderAdminActions({ orderId, notes, refundBlockers }: Pr
         router.refresh()
       } else {
         setRefundError(result.error)
+      }
+    })
+  }
+
+  /**
+   * The wallet credit, which had no button on this screen even though the
+   * blocked-refund notice beside it already told the admin it was the way out.
+   *
+   * It is NOT gated on `refundBlockers`, and that is the point: the blockers
+   * are all reasons the CARD must not be touched (a voucher redeemed at the
+   * counter, one that expired), and every one of them is a reason to reach for
+   * this instead. A wallet credit carries no cancellation fee and moves no
+   * order, line or voucher out of the state it is in.
+   */
+  function submitWalletRefund() {
+    setWalletError(null)
+    setWalletOk(null)
+    const trimmed = walletAmount.trim()
+    const partial = trimmed === '' ? undefined : Number(trimmed)
+    if (partial !== undefined && (!Number.isFinite(partial) || partial <= 0)) {
+      setWalletError('סכום לא תקין')
+      return
+    }
+    startTransition(async () => {
+      const result = await refundOrderToWallet({
+        orderId,
+        reason: walletReason,
+        isDefectClaim: defect,
+        partialAmountIls: partial,
+      })
+      if (result.ok) {
+        setWalletOk(
+          result.replay
+            ? 'הזיכוי הזה כבר בוצע. לא נזקף סכום נוסף.'
+            : `נזקפו ₪${result.creditedIls.toLocaleString('he-IL', { minimumFractionDigits: 2 })} לארנק הלקוח.`,
+        )
+        setWalletConfirming(false)
+        router.refresh()
+      } else {
+        setWalletError(result.error)
       }
     })
   }
@@ -170,6 +216,69 @@ export default function OrderAdminActions({ orderId, notes, refundBlockers }: Pr
             </p>
           </div>
         )}
+      </section>
+
+      <section className="bg-white border border-gray-200 rounded-xl p-5 md:col-span-2">
+        <h2 className="font-semibold text-gray-800 mb-1">זיכוי לארנק</h2>
+        <p className="mb-3 text-xs text-gray-500">
+          לשובר שכבר מומש או שפג, ולזיכוי רצון טוב אחרי חלון 14 הימים. הכסף נזקף לארנק הלקוח, ההזמנה
+          והשובר נשארים במצב שבו הם נמצאים, ואין דמי ביטול.
+        </p>
+
+        <div className="space-y-2">
+          <label htmlFor="wallet-reason" className="block text-xs font-medium text-gray-700">
+            סיבת הזיכוי
+          </label>
+          <input
+            id="wallet-reason"
+            value={walletReason}
+            onChange={(e) => setWalletReason(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-start focus:outline-none focus:ring-2 focus:ring-brand"
+          />
+
+          <label htmlFor="wallet-amount" className="block text-xs font-medium text-gray-700">
+            סכום בשקלים (ריק = מלוא החיוב)
+          </label>
+          <input
+            id="wallet-amount"
+            inputMode="decimal"
+            value={walletAmount}
+            onChange={(e) => setWalletAmount(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-start focus:outline-none focus:ring-2 focus:ring-brand"
+          />
+
+          {walletError && <p className="text-xs text-red-600">{walletError}</p>}
+          {walletOk && <p className="text-xs text-green-600">{walletOk}</p>}
+
+          {walletConfirming ? (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={submitWalletRefund}
+                disabled={pending}
+                className="bg-brand hover:bg-brand-primary-hover disabled:opacity-60 text-brand-dark text-sm font-semibold rounded-lg px-4 py-2 transition-colors"
+              >
+                {pending ? 'מזכה...' : 'אישור סופי, זיכוי לארנק'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setWalletConfirming(false)}
+                className="text-sm text-gray-500 hover:underline"
+              >
+                ביטול
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setWalletConfirming(true)}
+              disabled={walletReason.trim().length < 3}
+              className="border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 text-sm font-semibold rounded-lg px-4 py-2 transition-colors"
+            >
+              יזום זיכוי לארנק
+            </button>
+          )}
+        </div>
       </section>
     </div>
   )
