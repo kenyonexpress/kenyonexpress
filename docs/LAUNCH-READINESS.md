@@ -38,7 +38,7 @@ Re-measured 2026-09-06 at `18a62e13c`.
 | Lint | `pnpm lint` | PASS, biome 1202 files + tokens/copy/asset gates, 1 pre-existing warning |
 | Unit | `pnpm test` | PASS, **3989 tests in 324 files** |
 | Build | `pnpm build` | PASS |
-| E2E | `playwright test` | PASS on every previously-failing spec; full serial run in progress |
+| E2E | `E2E_WORKERS=1 playwright test` | PASS serially — cart 21/21, a11y 80/80, rtl-mobile 162/162, smoke+purchase 6/6 both projects. **Read the note below before trusting a parallel run.** |
 | Pixel | `compare.mjs --page=home` | PASS, **10.68 / 7.72 / 8.12** at 380 / 768 / 1440 |
 | Deps | `pnpm audit --audit-level high` | **no known vulnerabilities** |
 | Perf | `pnpm lighthouse:smoke` | **FAILS at 70-75 against 90 — see "What is NOT a blocker"** |
@@ -53,6 +53,19 @@ the newer work" could not be applied literally to the lockfile.
 
 **The pixel gate is quoted at three widths, not one.** The old single 9.83%
 figure was the 1440 measurement; 380 is the tight one and always has been.
+
+**The E2E suite must be believed serially, not in parallel.** At two workers a
+full run failed ~20 cases, and **19 of the 21 errors were the identical
+sentence** — "add-to-cart did not stick: the header badge went 0 -> 0". That is
+Supabase contention between workers, not a product defect: every one of those
+specs passes at one worker. `playwright.config.ts` previously claimed "the same
+suite passes 53/53 at two workers", which was true of a 53-case suite and is not
+true of the 530-case one it grew into; the comment now names the sentence to
+look for and says to believe the serial answer.
+
+The default stays at two workers deliberately. Serial is ~45 minutes against 8,
+which is too much to pay on every run for a failure mode that announces itself
+in one repeated sentence.
 
 **Every gate result is now recorded automatically.** `docs/UI-PARITY-REPORT.md`
 was empty on 09-03 while three measurements sat in a commit message, because
