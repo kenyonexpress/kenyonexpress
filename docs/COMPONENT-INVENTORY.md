@@ -244,9 +244,23 @@ States every interactive control must consider: default, hover, focus-visible, a
 - **Electro:** shop archive. No pixel twin.
 - **SEO:** `docs/SEO-PLAN.md` §3.4. `@id` `{origin}/s/{id}#business`. Never `/supplier/{uuid}` in JSON-LD.
 
+### CityLandingPage `/city/[slug]`
+
+- **File:** `src/app/(store)/city/[slug]/page.tsx` (path as in PAGE-ANATOMY)
+- **Purpose:** Region hub for seventeen `REGIONS`. Not a thin extra city factory. Not `/s/[id]`.
+- **Props:** none (server). Unknown slug: `notFound()`.
+- **Variants:** has geo municipalities / empty region.
+- **States:** default list of city chips; hover `#0062bd`; focus-visible 2px; empty copy below; loading: title + chip pulses; error: 404 or §13; empty is **valid**.
+- **RTL:** chips `text-start`. City names Hebrew.
+- **A11y:** one H1 `דילים ב{name}`. Empty not announced as an error (`role="status"` not `alert`).
+- **RLS:** public suppliers filtered by region. No voucher book.
+- **Electro:** none. No pixel twin.
+- **Linking:** chips → `/products?city={slug}` (noindex). Supplier cards if present → `/s/{id}`. Empty CTA → `/` or `/products`.
+
 ## Revision
 
 | Date | Change |
 |---|---|
 | 2026-09-07 | Pass 8: wallet, coupons, wishlist pages with props, states, RTL, a11y, RLS notes |
 | 2026-09-07 | Pass 9: `/s/[id]` storefront page contract |
+| 2026-09-07 | Pass 10: `/city/[slug]` region hub |
