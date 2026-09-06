@@ -283,6 +283,156 @@ Legal H1s: `תקנון` / `פרטיות` / `ביטולים והחזרים` / `ה
 
 `role="status"` unless the page also needs `role="alert"`.
 
+## 11. Coverage map: what this document does and does not hold
+
+The sections above were written surface by surface. This is the orthogonal cut,
+counted against the source, so the size of the remaining gap is a number rather
+than a feeling.
+
+### 11.1 The count
+
+Hebrew string literals under `src/server` and `src/lib`, excluding tests:
+
+| | Count |
+|---|---|
+| Distinct Hebrew literals | **1075** |
+| Already quoted in this document | 82 |
+| Not in this document | **993** |
+
+**993 is not a to-do list.** Most of those literals are not UX copy at all, and
+a pass that tried to paste them in would bury the strings that matter. The
+breakdown by origin, largest first:
+
+| Count | Origin | Is it UX copy? |
+|---|---|---|
+| 379 | `src/server/actions` | **Yes.** Action results and validation failures. The real gap. |
+| 145 | `src/lib/admin` | **No.** Mostly Hebrew *code comments* (`מטמון קטלוג`, `הקריאות עוברות ישר ל-Postgres`). |
+| 129 | `src/lib/email` | Partly. Email and WhatsApp templates, a separate surface from in-page copy. |
+| 92 | `src/lib/search` | **No.** Synonym and taxonomy data (`{"מסעדה": ["מסעדות"]}`). |
+| 85 | `src/lib/ke-live-deals-data.ts` | **No.** Seed catalogue content. |
+| 59 | `src/lib/commerce` | Partly. Product-type labels (`מוצר פיזי`). |
+| 58 | `src/lib/validations` | **Yes.** Form validation. Fully listed in 11.2. |
+| 38 | `src/lib/regions.ts` | **No.** Place names. |
+| 26 | `src/lib/geo` | **No.** City names. |
+| 26 | `src/lib/supplier` | Partly. Payout status labels (`ממתין`, `פוצל`). |
+| 24 | `src/lib/cart` | **Yes.** Cart availability messages. |
+| 20 | `src/server/domain` | **Yes.** Refund-eligibility explanations. |
+| 19 | `src/lib/ke-live-hero-data.ts` | **No.** Hero slide copy. |
+| 17 | `src/lib/push` | Partly. Relative-day labels (`מחר`, `2 ימים`). |
+| 16 | `src/lib/health` | **No.** Operator-facing health descriptions. |
+| 14 | `src/lib/wallet` | Partly. Wallet-pass field labels. |
+
+Narrowing to strings that are actually **returned to the UI as an error or a
+validation message** (an `error:` / `message:` property, or a Zod
+`.min()` / `.max()` / `.regex()` / `required_error` message):
+
+| | Count |
+|---|---|
+| Error and validation strings found | **207** |
+| Already in this document | 11 |
+| **Undocumented** | **196** |
+
+### 11.2 Validation messages, complete
+
+The one cluster small enough to finish in a single pass, so it is finished here.
+
+`src/lib/validations/auth.ts`
+
+```
+אימייל נדרש                              סיסמה נדרשת
+אישור סיסמה נדרש                          מספר טלפון נדרש
+הסיסמאות אינן תואמות                       מספר טלפון לא תקין
+הסיסמה חייבת להכיל לפחות 8 תווים            הקוד מורכב מספרות בלבד
+הסיסמה חייבת להכיל לפחות ספרה אחת           שם מלא חייב להכיל לפחות 2 תווים
+```
+
+`src/lib/validations/checkout.ts`
+
+```
+יש למלא שם פרטי          יש למלא רחוב            אימייל לא תקין
+יש למלא שם משפחה         יש למלא מספר בית         אימייל ארוך מדי
+יש למלא עיר              יש לאשר את התקנון        שם מלא נדרש
+טלפון בפורמט 05XXXXXXXX  שם עיר ארוך מדי          שם רחוב ארוך מדי
+מספר בית ארוך מדי         מספר דירה ארוך מדי       קומה ארוכה מדי
+ההערות ארוכות מדי         הברכה ארוכה מדי
+כתובת המייל של המקבל אינה תקינה
+סכום ארנק לא יכול להיות שלילי
+```
+
+`src/lib/validations/account.ts`
+
+```
+יש להזין שם מלא     השם ארוך מדי        מספר טלפון קצר מדי
+יש להזין עיר        שם העיר ארוך מדי     מספר טלפון ארוך מדי
+יש להזין רחוב       שם הרחוב ארוך מדי    ההערה ארוכה מדי
+```
+
+`src/lib/validations/cart.ts`
+
+```
+כמות לא תקינה        כמות מינימלית: 1        כמות מקסימלית: 99
+```
+
+`src/lib/cart/store.ts`
+
+```
+הפעולה נכשלה, נסו שוב            הפריט הוסר מהעגלה
+```
+
+#### Two wording inconsistencies visible only once they are side by side
+
+1. **Three verbs for "fill this in".** `checkout.ts` says `יש למלא`,
+   `account.ts` says `יש להזין`, and `steps.ts` (documented in section 2) says
+   `שדה חובה`. All three mean the same thing and a shopper meets at least two of
+   them in one purchase.
+2. **Two phone formats.** `auth.ts` says `מספר טלפון לא תקין`, `checkout.ts`
+   says `טלפון בפורמט 05XXXXXXXX`, and `steps.ts` says
+   `מספר נייד ישראלי הוא 10 ספרות ומתחיל ב-05`. The third is the most useful
+   because it says what to do; the first says only that something is wrong.
+
+Neither is a defect. Both are worth one decision rather than three.
+
+### 11.3 The remaining gap, by file
+
+240 undocumented error strings across 32 files under `src/server/actions`.
+Largest first, so a later pass can take them in order of reach:
+
+```
+20  account.ts            13  reviews.ts          8  admin/discounts.ts
+17  payments/checkout.ts  13  auth.ts             8  admin/categories.ts
+17  admin/products.ts     11  admin/vouchers.ts   7  payments/refund.ts
+13  supplier-lead.ts       9  contact.ts          7  admin/images.ts
+                           9  newsletter.ts       6  gifts.ts
+                           9  admin/orders.ts     6  subscriptions.ts
+                           8  admin/coupon-deals.ts  6  admin/payouts.ts
+```
+
+`payments/checkout.ts` and `payments/refund.ts` are the two to take first: they
+are the money path, and a shopper who meets one of those strings has already
+tried to pay.
+
+### 11.4 How to re-run the count
+
+```bash
+python3 - <<'PY'
+import re, pathlib, collections
+he = re.compile(r"[֐-׿]")
+doc = pathlib.Path('docs/ERROR-COPY.md').read_text(encoding='utf-8')
+pat = re.compile(r"(?:error|message|msg)\s*:\s*['\"]([^'\"\\\n]{2,120})['\"]|"
+                 r"\.(?:min|max|regex|refine|length|email|url)\([^)]*?['\"]([^'\"\\\n]{2,120})['\"]\s*\)|"
+                 r"required_error\s*:\s*['\"]([^'\"\\\n]{2,120})['\"]")
+out = collections.defaultdict(set)
+for base in ('src/server/actions', 'src/lib/validations', 'src/lib/cart'):
+    for p in pathlib.Path(base).rglob('*.ts'):
+        if '.test.' in p.name: continue
+        for m in pat.finditer(p.read_text(encoding='utf-8')):
+            s = next((g for g in m.groups() if g), '').strip()
+            if s and he.search(s) and s not in doc:
+                out[s].add(str(p))
+print(len(out), "undocumented")
+PY
+```
+
 ## Revision
 
 | Date | Change |
@@ -292,3 +442,4 @@ Legal H1s: `תקנון` / `פרטיות` / `ביטולים והחזרים` / `ה
 | 2026-09-07 | Pass 10: city empty is a real answer; unknown slug 404 |
 | 2026-09-07 | Pass 11: legal H1s and offline, no escrow in returns |
 | 2026-09-07 | Redemption copy audited against source: 6/6 match, 3 outcomes were missing, HTTP status map added |
+| 2026-09-07 | Pass 12: coverage map counted against source (1075 Hebrew literals, 196 undocumented error strings); validations completed in full; two wording inconsistencies |
