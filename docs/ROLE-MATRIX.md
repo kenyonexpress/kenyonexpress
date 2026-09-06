@@ -464,7 +464,99 @@ Section 5 lists guards. This table is the product brief's four columns against t
 
 Inactive supplier must not paint the old H1 on an empty grid. That leak is a 404, matching `docs/ERROR-COPY.md`.
 
-## 11. Revision
+## 11. The `/api/*` surface, which the earlier passes missed entirely
+
+Passes 1 to 11 covered pages and server actions. There are **34 route handlers**
+under `src/app/api/` and none of them appeared in this document. They are a
+different authorization surface: no middleware section gate applies, no MFA
+gate, and several are reached by machines rather than by a signed-in person.
+
+### 11.1 Six authorization mechanisms, not one
+
+| Mechanism | Routes | Who passes |
+|---|---|---|
+| `CRON_SECRET` bearer | 12 cron + 2 search index | the scheduler only |
+| Section matrix (`canReadSection`) | `api/admin/reports/[report]` | `payments:read`, so admin |
+| Supplier member rank | `api/supplier/payouts/csv` | `owner` |
+| Rate limit + own body auth | 6 supplier / app routes | per-route |
+| Shared webhook secret, constant-time | `api/payments/cardcom/webhook` | Cardcom |
+| `WEBHOOK_SECRET` | `api/webhooks/products` | the feed publisher |
+| Session (`auth.getUser`) | `api/a`, `api/cart`, `api/search/quick-links`, `api/app/session` | any signed-in user |
+| None, by design | `api/health`, `api/ready`, `api/debug/sentry` | anyone |
+
+### 11.2 The table
+
+| Route | Guard | Effective caller |
+|---|---|---|
+| `api/cron/abandoned-cart` | `Bearer CRON_SECRET` | scheduler |
+| `api/cron/expire-vouchers` | `Bearer CRON_SECRET` | scheduler |
+| `api/cron/health` | `CRON_SECRET` | scheduler |
+| `api/cron/invoices` | `Bearer CRON_SECRET` | scheduler |
+| `api/cron/notifications` | `Bearer CRON_SECRET` | scheduler |
+| `api/cron/reap-carts` | `Bearer CRON_SECRET` | scheduler |
+| `api/cron/reconcile` | `Bearer CRON_SECRET` | scheduler |
+| `api/cron/retention` | `Bearer CRON_SECRET` | scheduler |
+| `api/cron/stock` | `Bearer CRON_SECRET` | scheduler |
+| `api/cron/stranded-payments` | `Bearer CRON_SECRET` | scheduler |
+| `api/cron/subscriptions` | `Bearer CRON_SECRET` | scheduler |
+| `api/cron/weekly-digest` | `CRON_SECRET` | scheduler |
+| `api/search/index-job` | `Bearer CRON_SECRET` | scheduler |
+| `api/search/index-dlq` | `Bearer CRON_SECRET` | scheduler |
+| `api/admin/reports/[report]` | `getSessionWithRole` + `canReadSection(role,'payments')` | **admin only** |
+| `api/supplier/payouts/csv` | `requireSupplierRole` | supplier `owner` |
+| `api/supplier/vouchers/lookup` | `checkRateLimit` | till |
+| `api/supplier/vouchers/redeem` | `checkRateLimit` | till |
+| `api/supplier/vouchers/redeem-batch` | `checkRateLimit` | till |
+| `api/supplier/redeem` | **alias**, re-exports `POST` from `vouchers/redeem` | till |
+| `api/supplier/app/pin` | `checkRateLimit` | till app |
+| `api/payments/cardcom/webhook` | shared secret via `acceptedWebhookSecrets` + `secretEquals` | Cardcom |
+| `api/webhooks/products` | `WEBHOOK_SECRET` | feed publisher |
+| `api/wallet/apple/[id]` | voucher id is **not** a capability; `getCustomerVoucher` scopes it | owner of the voucher |
+| `api/a` | `auth.getUser` + `checkRateLimit` | anyone, user attached if present |
+| `api/cart` | `auth.getUser` | anyone, cart scoped |
+| `api/search`, `api/search/suggest` | `checkRateLimit` | anyone |
+| `api/search/quick-links` | `auth.getUser` | anyone |
+| `api/app/session`, `api/app/push-tokens` | `checkRateLimit` | app |
+| `api/health`, `api/ready` | none | anyone, by design |
+| `api/debug/sentry` | none | anyone, by design |
+
+### 11.3 Four that read as unguarded and are not
+
+A `grep` for the usual guard names reports `NONE` on four routes. All four were
+opened and all four are guarded. Recorded so the next audit does not re-raise
+them:
+
+| Route | Why the grep missed it | Actual guard |
+|---|---|---|
+| `api/admin/reports/[report]` | uses `canReadSection`, not a `requireX` | `getSessionWithRole` then `canReadSection(role, 'payments')`, returning **403 with `אין הרשאה`** rather than an HTML redirect. The file says why: a CSV client handed a login page is worse than an honest 403. |
+| `api/supplier/redeem` | a one-line file | `export { POST } from '@/app/api/supplier/vouchers/redeem/route'`. It is an alias and inherits that route's guard. Its comment records that the earlier `export { POST, runtime }` could not have worked, because Next reads `runtime` statically and does not follow a re-export. |
+| `api/wallet/apple/[id]` | no auth call in the first lines | `getCustomerVoucher(id)` is session-scoped. The file states the rule outright: **the id in the path is a voucher UUID and NOT a capability.** Missing config is 404, not 500. |
+| `api/payments/cardcom/webhook` | no `requireX`, no `getUser` | `acceptedWebhookSecrets(env)` compared with `secretEquals`, a **constant-time** comparison. Multiple accepted secrets so a rotation does not drop live callbacks. |
+
+The webhook finding is worth stating positively, because an older note in
+circulation says these webhooks are unsigned: **they are not**. There is a
+shared-secret check and it is constant-time. Anything relying on the older
+claim should be re-checked against this file.
+
+### 11.4 Observations
+
+1. **`CRON_SECRET` is one secret for fourteen routes.** Twelve cron plus the two
+   search-index routes. A leak exposes all fourteen; there is no per-job
+   credential. That is a deliberate simplification, not an oversight, but it is
+   the blast radius.
+2. **Two cron routes read `CRON_SECRET` without the `Bearer` prefix pattern**
+   (`health`, `weekly-digest`). Worth confirming they accept the same header
+   shape the scheduler sends, because migration 162 sends
+   `Authorization: Bearer <secret>` to all twelve uniformly. If either expects a
+   bare value, it will 401 under 162 while the other ten succeed.
+3. **`api/debug/sentry` is unguarded and reachable in production.** It exists to
+   throw. Confirm it is either removed or gated before launch.
+4. `api/supplier/*` routes gate on rate limiting plus their own body checks
+   rather than on `supplier_members` membership at the route boundary. The
+   membership check lives deeper, in the redemption path itself, which is where
+   `redeem_voucher()` matches against the caller's full membership set.
+
+## 12. Revision
 
 | Date | Change |
 |---|---|
@@ -472,3 +564,4 @@ Inactive supplier must not paint the old H1 on an empty grid. That leak is a 404
 | 2026-09-07 | Storefront `/s/[id]` active-only, LocalBusiness, account siblings |
 | 2026-09-07 | `/city/[slug]` seventeen regions; unknown 404; no extra URLs |
 | 2026-09-07 | Legal public; offline public cache; no escrow in returns |
+| 2026-09-07 | Pass 12: the /api/* surface, 34 route handlers, six authorization mechanisms; four that read as unguarded and are not; CRON_SECRET blast radius |
