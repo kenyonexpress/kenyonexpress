@@ -168,6 +168,48 @@ Largest number on success is `{price}` **remainder at the business**, not the on
 | camera | לא ניתן לגשת למצלמה |
 | lookup unavailable | לא ניתן לבדוק את השובר כרגע, נסו שוב בעוד רגע |
 
+### 6.1 Audited against source, 2026-09-07
+
+Checked the table above against `OUTCOME_MESSAGES` in
+`src/app/api/supplier/vouchers/redeem/route.ts`. **Six of the six documented
+server outcomes match the source byte for byte.** No drift.
+
+`camera` and `lookup unavailable` are not in that record: they are client-side
+strings from the scan screen and the lookup route, a different source. Kept in
+the table because the cashier cannot tell the difference, but noted here so a
+future audit does not go looking for them in the wrong file.
+
+**Three outcomes exist in the source and were missing from this document:**
+
+| Outcome | Copy | Note |
+|---|---|---|
+| `cancelled` | השובר בוטל | Distinct from `expired`: someone cancelled it, it did not lapse |
+| `refunded` | השובר הוחזר ללקוח | The money went back. The till must not honour it |
+| `invalid_request` | בקשה לא תקינה | Malformed body or an unparseable QR payload |
+
+`refunded` matters most at a till: it is the one outcome where the customer may
+genuinely believe the voucher is good, because they were holding it before the
+refund happened.
+
+### 6.2 The HTTP status each outcome returns
+
+Not previously recorded anywhere. A till app that branches on status rather than
+on `outcome` needs this, and so does anyone reading a log.
+
+| Status | Outcomes |
+|---|---|
+| `200` | `success` |
+| `400` | `invalid_request` |
+| `401` | `unauthorized` |
+| `404` | `not_found` |
+| `409` | `already_redeemed`, `expired`, `cancelled`, `refunded` |
+| `429` | `rate_limited` |
+
+**All four "the voucher exists but you may not burn it" outcomes share `409`.**
+So status alone cannot tell a cashier why, and any UI that shows a message must
+read `outcome`, not the code. A client that maps 409 to one sentence will tell a
+customer their refunded voucher was "already redeemed".
+
 Holder screen when not presentable:
 
 | Status | Copy |
@@ -249,3 +291,4 @@ Legal H1s: `תקנון` / `פרטיות` / `ביטולים והחזרים` / `ה
 | 2026-09-07 | Pass 9: supplier empty vs 404 (inactive is 404, not empty) |
 | 2026-09-07 | Pass 10: city empty is a real answer; unknown slug 404 |
 | 2026-09-07 | Pass 11: legal H1s and offline, no escrow in returns |
+| 2026-09-07 | Redemption copy audited against source: 6/6 match, 3 outcomes were missing, HTTP status map added |
