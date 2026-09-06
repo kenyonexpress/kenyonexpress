@@ -371,3 +371,22 @@ If anything money-shaped fails: till kill switch first (
 - Meilisearch (optional degrade to ILIKE).
 - Physical-product commercial push (no live payout ledger).
 - i18n, Twilio campaigns, wishlist polish (post-launch).
+
+---
+
+## H10. After a failed H8 (checklist)
+
+1. Till:
+   `CHECKOUT_ENABLED=false`
+   + Redeploy.
+2. DNS: restore proxied A pair from the Desktop snapshot. Do not recreate AAAA.
+3. Confirm
+   `dig`
+   is Cloudflare anycast again, then
+   `curl`
+   shows WordPress
+   `wp-content`
+   (that is the rollback success signal).
+4. Leave the domain attached in Vercel.
+5. Do not apply extra migrations in that window.
+6. Do not enable cron-job.org "to help" while Actions is still on.
