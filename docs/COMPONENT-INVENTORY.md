@@ -384,6 +384,95 @@ done
 Quote the `--include` globs when grepping: zsh expands an unquoted `*.tsx`
 before grep sees it and aborts the whole command on no match.
 
+## Pass 12: the states and a11y sweep, tree-wide
+
+The per-page sections above carry states and a11y notes for the surfaces they
+cover. This pass asks the same two questions of **every** component file, so the
+answer is a count rather than a sample.
+
+Method: `find src/components -name '*.tsx' ! -name '*.test.tsx'`, then grep for
+the state markers (`isPending`, `useTransition`, `pending`, `disabled=`) and the
+announcement markers (`aria-live`, `aria-busy`, `role="status"`, `<output>`).
+
+### 12.1 The finding: a busy state that is visible but not announced
+
+**38 components carry an in-flight state. 14 announce it. 24 do not.**
+
+A sighted user sees the button go dim and the label change to `שולח...`. A
+screen-reader user pressing the same button hears nothing at all, and nothing
+again when it finishes. On the cart and checkout path that is a shopper who
+cannot tell whether their money moved.
+
+The 24 with a pending or transition state and **no** announcement:
+
+| Area | Components |
+|---|---|
+| cart | `AddToCartButton`, `CartCouponForm`, `CartNavLink`, `CartPageView`, `MiniCartDropdown` |
+| category | `CategoryControlBar`, `CategoryFilterSidebar`, `CategorySort` |
+| account | `ReferralShareCard`, `SubscriptionList` |
+| admin | `CategoryDialog`, `CategoryForm`, `CouponDealForm`, `DeleteButton`, `ProductForm`, `ReferralQueueRow`, `StatusBadge`, `SupplierForm`, `VendorForm` |
+| storefront / other | `ProductInfo`, `SupplierLeadForm`, `GiftClaimForm`, `CmsHero`, `product/Reviews` |
+
+`cart/AddToCartButton` is the one to fix first: it is the most-pressed control
+on the site and it sits at the top of the purchase funnel.
+
+### 12.2 The pattern to copy, from the 14 that do announce
+
+| Component | Mechanism |
+|---|---|
+| `cart/CartLineItem` | `<output role="status">` |
+| `product/WishlistButton` | `<output aria-live="polite">` |
+| `account/AddressManager`, `account/ProfileDetailsForm`, `account/TokenManager` | `<output>` |
+| `storefront/StockScarcity`, `storefront/ContactForm` | `<output>` |
+| `admin/DiscountCampaignForm` | `aria-describedby` + `aria-invalid` |
+| `cart/CartDrawer`, `geo/CityTags`, `growth/NewsletterSignup`, `product/ReviewForm`, `CouponCardSkeleton`, `category/CategoryGridSkeleton` | `<output>` / `aria-busy` |
+
+`<output>` is the house pattern and it is the right one: it carries an implicit
+`role="status"`, so it is announced politely without a redundant attribute, and
+it *is* what these elements are, a result produced in response to the user's own
+action. `cart/CartLineItem` states this reasoning in place.
+
+### 12.3 Form fields: one real defect, not the twenty-two a naive grep reports
+
+A grep for "component has `<input>` but no `<label>`" returns four files, and
+**three of them are false positives.** Recorded here so the next pass does not
+re-raise them:
+
+| Component | Verdict |
+|---|---|
+| `admin/FilterBar` | **REAL.** The `type="search"` field carries a `placeholder` and no label, no `aria-label`. A placeholder is not an accessible name: it disappears on first keystroke and is announced inconsistently. |
+| `account/TokenManager` | Not a defect. Both inputs are `type="hidden"`. |
+| `ui/input`, `ui/textarea` | Not a defect. Primitives; the consumer supplies the label, and `ui/form` + `ui/label` are the wrappers that do. |
+
+### 12.4 The "buttons with no `aria-label`" list is not a defect list
+
+22 components contain a `<button>` and no `aria-label`. **Checked, and they are
+overwhelmingly fine**: a button with visible text takes its accessible name from
+its content. Spot-verified in `admin/DeleteButton` (`כן, מחיקה`, `ביטול`),
+`admin/ReferralQueueRow` (`דחייה`, `ביטול`, `כן, שלם`), `admin/DataTable`,
+`admin/CategoriesTable` and `home/FeaturedProductsTabs`.
+
+`aria-label` is only required where the control is **icon-only**. The components
+that do it correctly are the ones that need it: `cart/CartLineItem`'s remove
+button names the product (`הסר {name} מהעגלה`), and the header's cart and
+account icons carry theirs.
+
+**Do not "fix" this list.** Adding `aria-label` to a button that already has
+visible text overrides the visible name, which breaks voice control: the user
+says the words they can see and nothing happens.
+
+### 12.5 Components with no `aria-` or `role=` at all
+
+30 files. Most are presentational and correctly carry none: `CopyrightYear`,
+`admin/StatusBadge`, `admin/AuditDiff`, `analytics/*` (which render no UI),
+`cart/CartProvider` and `cart/CartBootstrap` (providers, no DOM).
+
+The count is recorded as a denominator, not as a defect list. The two that are
+worth a look on a later pass are `admin/CategoriesTable` and `admin/UsersTable`,
+because a data table is where `scope` and a caption start to matter.
+
+---
+
 ## Revision
 
 | Date | Change |
@@ -392,4 +481,5 @@ before grep sees it and aborts the whole command on no match.
 | 2026-09-07 | Pass 9: `/s/[id]` storefront page contract |
 | 2026-09-07 | Pass 10: `/city/[slug]` region hub |
 | 2026-09-07 | Pass 11: legal aliases + offline (no JS retry chunk) |
+| 2026-09-07 | Pass 12: tree-wide states and a11y sweep; 24 of 38 in-flight states unannounced; three form-field false positives retired |
 | 2026-09-07 | Pass 12: busy-state sweep across all 72 components; 24 silent while pending, one unlabelled field, and the false-positive lists recorded so they are not re-reported |
