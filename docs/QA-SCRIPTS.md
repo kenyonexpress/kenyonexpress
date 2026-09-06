@@ -230,6 +230,92 @@ four 409s.
 
 ---
 
+## 8b. Refund (admin), the flow the brief names and this file had no section for
+
+Refund appeared only as two incidental rows (7.5 and 8.5). It is one of the
+five flows the brief names and it moves money backwards, so it gets its own
+script.
+
+**Who:** `admin` / `super_admin` only. `src/server/actions/payments/refund.ts`
+calls `requireAdminSession()`, which is stricter than the `payments:write`
+section gate the other money actions use, and stricter than `support`, which
+has no `payments` access at all. A `content_uploader` cannot see the order page
+to begin with.
+
+**Where:** `/admin/orders/[id]`, via `OrderAdminActions.tsx`.
+
+### 8b.1 The blocker check runs before anything else
+
+`describeRefundBlockers()` answers "may this order be refunded at all", and the
+admin screen must ask it **first** and show the reason beside the button. Three
+blockers, each with fixed Hebrew copy:
+
+| # | Condition | Copy | Notes |
+|---|---|---|---|
+| 1 | any voucher `status = 'redeemed'` | `{n} שוברים כבר מומשו בבית העסק. הערך נצרך ולא ניתן להחזיר אותו לכרטיס.` | `{n}` is a real count, not "some" |
+| 2 | any voucher `status = 'expired'` | `{n} שוברים פגו. ערכם נזקף כפחת ולא חוזר לכרטיס.` | breakage, not a refund |
+| 3 | no line can transition to `REFUND` | `אין שורות שניתן להחזיר: כולן כבר מומשו או שוחררו לספק.` **or** `אין שורות שניתן להחזיר בהזמנה הזו.` | **two different strings**: the first when lines exist but are stuck, the second when none are refundable at all |
+
+| # | Step | Pass |
+|---|---|---|
+| 1 | Open a refundable order as `admin` | refund control enabled, no blocker text |
+| 2 | Open one with a **redeemed** voucher | control blocked, blocker 1 verbatim, correct count |
+| 3 | Open one with an **expired** voucher | blocker 2 verbatim. Expired is breakage: value does **not** return to the card |
+| 4 | Open one already fully refunded | blocker 3, and the **second** variant (`...בהזמנה הזו`), because nothing is stuck |
+| 5 | Open one whose lines are all released to the supplier | blocker 3, **first** variant (`...או שוחררו לספק`) |
+| 6 | Same order as `support` | `/admin/payments` is denied; support has no `payments` access |
+| 7 | Same order as `content_uploader` | cannot reach `/admin/orders` at all |
+
+Step 4 versus step 5 is the one to actually perform. The two strings look
+interchangeable and are not: the first names the reason, the second says there
+is none to give.
+
+### 8b.2 The cancellation fee is statute, not a setting
+
+`computeCancellationFee(chargedAgorot, isDefectClaim)` returns the **lower of 5%
+or ₪100**, and zero when the claim is for a defect.
+
+| # | Step | Pass |
+|---|---|---|
+| 1 | Refund a ₪500 order, not a defect | fee ₪25 (5% is below the ₪100 cap) |
+| 2 | Refund a ₪5000 order, not a defect | fee **₪100**, not ₪250. The cap binds |
+| 3 | Refund a ₪2000 order, **defect claim** | fee **₪0** |
+| 4 | Refund a ₪0 or negative charge | fee ₪0, no throw |
+| 5 | Read the fee off the screen | integer agorot throughout. Never a `toFixed` float |
+
+These are the Israeli distance-selling law's numbers. **If a QA run disagrees
+with the statute, the statute is right and the constants change with a dated
+note** (`CANCELLATION_FEE_CAP_AGOROT`, `CANCELLATION_FEE_BP`). Do not "fix" a
+failing test by editing the expectation.
+
+### 8b.3 Card versus wallet, and the order of operations
+
+| # | Step | Pass |
+|---|---|---|
+| 1 | Refund an order paid fully by card | money returns to the card via Cardcom; `refund_destination` records card |
+| 2 | Refund an order that used wallet credit | the wallet portion returns to the wallet, the card portion to the card. Two destinations, one refund |
+| 3 | Cardcom declines the refund | Hebrew failure on screen, `capturePaymentError` with `stage: 'cardcom_refund'`, **no** ledger row claiming success |
+| 4 | Refund succeeds but the follow-up queue fails | the customer is still refunded. Those steps are **queued, not called**, precisely because the card is already credited by then |
+| 5 | Re-submit the same refund | no double credit |
+| 6 | Check `audit_log` | one row naming the actor. `requireAdminSession()` proved who at the top of the action; the log must carry it |
+
+Step 4 is the property worth understanding before testing: the code queues the
+invoice and the notification rather than calling them inline, and its comments
+say why twice. A failure after the card is credited must never be surfaced as a
+failed refund.
+
+### 8b.4 What a refund must never do
+
+- Never pull card money back for a **consumed** voucher. `planOrderRefund`
+  throws `RefundError('NOT_REFUNDABLE')` for redeemed or expired vouchers. The
+  commercial answer there is goodwill wallet credit or a claim, and that is a
+  decision, not a refund.
+- Never show `platform_percent` to the customer.
+- Never partially un-transmit a released supplier share: "half a deal cannot be
+  un-transmitted." A partial refund still claws the released share back whole.
+- Never tell the customer they were not charged when the capture succeeded and
+  only the webhook was lost. That is the pending copy, not a refund.
+
 ## 9. A11y and RTL sweep (every flow)
 
 | # | Step | Pass |
@@ -363,3 +449,4 @@ never disagree.
 | 2026-09-07 | Pass 11: legal aliases and offline tile |
 | 2026-09-07 | Scan flow: all nine redemption outcomes with statuses, the 409 collision trap, DB-side authorization checks; a11y sweep gains announce and voice-control rows |
 | 2026-09-07 | Pass 12: refund flow script (8b). Fourteen cases, the legal fee cap (lower of 5% or 100 ILS), idempotency, and the six post-conditions |
+| 2026-09-07 | Pass 12: refund flow added (8b). It is one of the five flows the brief names and had no section; three blockers with two distinct "nothing to refund" strings, the statutory cancellation fee, card vs wallet, and the queued-not-called property |
