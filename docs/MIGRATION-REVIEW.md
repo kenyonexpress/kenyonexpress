@@ -330,6 +330,66 @@ does not, and the convention is otherwise consistent across `applied/`.
 
 ---
 
+### 3.5 The ten index-to-query claims, verified against the cited code
+
+170 is unusually good about provenance: every index names the file and line
+range of the query it claims to serve. That makes each claim falsifiable, so
+this pass falsified them. Nine of ten hold exactly. One does not, and the reason
+is precise enough to act on.
+
+| # | Index | Cited path | Verdict |
+|---|---|---|---|
+| 1 | `(category_id, created_at DESC)` partial | `category-page.ts:380-392,413` | **holds**: `.eq('status','active')`, `.is('deleted_at',null)`, `.eq('category_id',…)`, `.order('created_at',desc)` |
+| 2 | `(status, created_at DESC)` partial | `category-page.ts:337-339` | **holds**: same minus the category filter |
+| 3 | `(category_id, kenyon_price)` partial | `category-page.ts:404-407` | **half**: see below |
+| 4 | `(kenyon_price, created_at DESC)` partial | `category-page.ts:514-517` | **half**: same defect |
+| 5 | `(category_id, name_he)` partial | `category-page.ts:410,520` | **holds**: `.order('name_he', asc)` |
+| 6 | `(user_id, created_at DESC)` partial | `orders.ts:141-148` | **holds exactly**: `.eq('user_id')`, `.is('deleted_at',null)`, `.order('created_at',desc)`, `.limit(50)` |
+| 7 | `(order_item_id, issued_at)` | `orders.ts:281-286` | holds |
+| 8 | `(order_id, document_type, status)` | `orders.ts:403-411` | holds |
+| 9 | `(session_id, profile_id)` | `cart.ts:205-209` | **holds exactly**: `.eq('session_id')`, `.is('profile_id',null)` |
+| 10 | `(user_id, is_default DESC, created_at DESC)` partial | `account.ts:168-174` | holds |
+
+#### Indexes 3 and 4 serve the ascending price sort and not the descending one
+
+`products.kenyon_price` is **nullable** (`number | null` in
+`src/types/database.ts`), and every price sort in the code passes
+`nullsFirst: false`:
+
+```
+category-page.ts:404   .order('kenyon_price', { ascending: true,  nullsFirst: false })
+category-page.ts:407   .order('kenyon_price', { ascending: false, nullsFirst: false })
+category-page.ts:514   .order('kenyon_price', { ascending: true,  nullsFirst: false })
+category-page.ts:517   .order('kenyon_price', { ascending: false, nullsFirst: false })
+```
+
+A plain btree index column is `ASC NULLS LAST`. So:
+
+| Query | Wants | Index gives | Match |
+|---|---|---|---|
+| ascending price | `ASC NULLS LAST` | forward scan: `ASC NULLS LAST` | **yes** |
+| descending price | `DESC NULLS LAST` | backward scan: `DESC NULLS FIRST` | **no** |
+
+The descending sort cannot take its ordering from these indexes. The planner can
+still use them to *filter*, then adds an explicit sort on top, which is most of
+what the index was meant to avoid on a large category.
+
+Serving both directions needs the null ordering declared on the index:
+
+```
+... ON public.products (category_id, kenyon_price DESC NULLS LAST) WHERE ...
+```
+
+as a second index, or `nullsFirst: true` on the descending query so a backward
+scan matches. **The second option is a behaviour change** (products with no
+price would sort to the top of "most expensive first"), so the index is the
+safer of the two.
+
+This is not a reason to hold 170. Eight of the ten indexes are unambiguously
+right and the two half-cases are still an improvement on no index at all. It is
+a reason not to record "price sort is now indexed" as done when only one of its
+two directions is.
+
 ## 4. The preflights
 
 All three follow the same shape: numbered blocks, each with an `EXPECT` comment,
