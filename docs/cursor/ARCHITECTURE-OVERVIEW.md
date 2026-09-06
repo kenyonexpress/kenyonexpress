@@ -602,3 +602,15 @@ on a laptop is
 Any name matching
 `NEXT_PUBLIC_.*(SECRET|PASSWORD|SERVICE_ROLE|PRIVATE_KEY|API_KEY)`
 refuses boot: the leak already shipped in the bundle.
+
+Legal URLs: canonical
+`/legal/*`
+plus storefront aliases
+`/privacy-policy`,
+`/terms-and-conditions`,
+`/refund_returns`,
+`/accessibility`.
+`/offline`
+is the PWA tile,
+`noindex`.
+Neither legal nor offline is in the pixel compare set. Returns copy must not mention escrow.
