@@ -301,3 +301,19 @@ It is the most common query-from-old-docs failure.
 `full_price`
 (the only compare-at the guard reads). Do not "fix" it by adding a default
 `platform_percent`.
+
+---
+
+## 11. Whole percent → basis points
+
+`products.platform_percent`
+is a whole-percent numeric (10 means 10%, not 0.10, not 1000). The engine needs
+`Bp`.
+Conversion is integer:
+`points = platform_percent * 100`
+so 10 → 1000, 100 → 10000. A float
+`percent / 100`
+here is a §7 violation.
+
+`discount_campaigns.percent_bp`
+is already Bp. Do not multiply that one by 100 again.
