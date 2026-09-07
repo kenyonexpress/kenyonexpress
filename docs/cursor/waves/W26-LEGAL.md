@@ -72,6 +72,10 @@ Counsel for EN legal (W10). Cardcom merchant of record is the platform.
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (no נאמנות)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- Launch H10: `/legal/returns` must not say escrow or נאמנות.
+- 14-day remote cancel, fee 5% or ₪100 cap (`applyBp` 500 / 10000 agorot). Defect: fee 0.
+- Coupon prepaid is platform revenue, not a hold for the shop (`LEDGER.md`).
+- Do not machine-translate legal for `/en` (W10 off).
+
