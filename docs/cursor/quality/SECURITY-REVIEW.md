@@ -31,4 +31,4 @@ Full write-up: `docs/cursor/SECURITY-REVIEW.md`.
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+Webhook ignores body. GetLpResult. Guest cookie constructed. createPublicClient stays anon. Uploader/support cannot refund. Leaked key denylist.
