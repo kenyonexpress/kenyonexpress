@@ -68,6 +68,15 @@ N/A.
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (must-keep)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- Do not delete
+  `money-no-float`
+  ,
+  webhook GetLpResult tests, redemption WHERE issued, e2e pay+scan.
+- Gaps: G15 duplicate pending prefixes, two cookie names, cashback-at-finalize not scan.
+- Full map:
+  `docs/cursor/TEST-MAP.md`
+  and
+  `docs/cursor/quality/TEST-MAP.md`.
+
