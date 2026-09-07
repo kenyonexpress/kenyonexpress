@@ -76,3 +76,13 @@ Physical clawback on refund via `supplierDebits` (payout adjustment, not a live 
 - Coupon `supplier_payable` is 0. Physical residual is snapshot. Admin 42P01 is honest.
 - See `contracts/LEDGER.md`, `business/PRICING-EXAMPLES.md`, `business/SUPPLIER-FAQ.md`.
 - Do not add bank details on onboarding (W07).
+
+---
+
+## Third pass
+
+Hebrew stub: אין תשלומים מהפלטפורמה על קופונים. היתרה נגבית במעמד המימוש. Do not add
+`payout_statements`
+to silence
+`42P01`.
+
