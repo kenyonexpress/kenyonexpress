@@ -253,6 +253,21 @@ export name
 `proxy`.
 The original brief for this pack said 15. The tree wins.
 
+### Q30. Is coupon-partner a role?
+**Best answer:** No. `supplier_members`. `vendor` is an enum leftover.
+
+### Q31. Hash chain on audit_log?
+**Best answer:** Unverified. Do not claim Merkle until 169 audit SQL is read.
+
+### Q32. Cashback engine vs product percent?
+**Best answer:** Checkout sends product `cashback_percent`. Treat `cashback/engine.ts` as unused until a caller is found.
+
+### Q33. Twilio in production?
+**Best answer:** Not required. Click-to-chat + optional Meta. Twilio down runbook is mostly no-op.
+
+### Q34. Which 169/170/171/172?
+**Best answer:** Full filename. Analytics vs audit. Indexes vs reporting. FTS vs shekel name. Hide SKU vs zero-policy RLS.
+
 ---
 
 ## How to close a question
