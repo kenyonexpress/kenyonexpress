@@ -41,3 +41,9 @@ Provider error after we decided: `PROVIDER_ERROR` / `MANUAL_RESOLUTION` + ntfy. 
 | Q | Best answer |
 |---|---|
 | Customer self-service refund? | **Not v1.** Admin planner only. |
+
+---
+
+## Second pass
+
+Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
