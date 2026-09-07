@@ -5,7 +5,11 @@ Hebrew and English as **this codebase** uses them. General commerce vocabulary i
 is a sibling; where they disagree, this pack follows the live tree on
 `ke-cursor-docs`
 (cashback credits at finalize; 172 is still a human apply; Next.js 16
-`src/proxy.ts`).
+`src/proxy.ts`;
+browser cookie
+`ke_session_id`
+vs PostgREST
+`session_id`).
 
 Put a file path or identifier on its own line when you copy it.
 
@@ -245,3 +249,52 @@ Replay with the same idempotency key returns the first outcome. Same key, differ
 plus
 `refunded`
 as used on the refund path. There is **no** status trigger. Terminal states stay terminal.
+
+---
+
+## 11. Cookies, telemetry, deletion (after items 11–20)
+
+| English | עברית | Meaning here |
+|---|---|---|
+| Guest browser cookie | עוגיית אורח בדפדפן |
+`ke_session_id`
+(
+`GUEST_SESSION_COOKIE`).
+httpOnly, 30 days. Identifies the guest to Next. |
+| Guest PostgREST cookie | עוגיית אורח ל-PostgREST | Constructed
+`Cookie: session_id=<uuid>`.
+What RLS reads. Not the jar. |
+| Anonymous id | מזהה אנונימי | Analytics:
+`ke_session_id`
+parsed →
+`anonymous_id`.
+Not a login. |
+| Types-ahead | טיפוסים לפני הסכימה |
+`database.ts`
+has tables production may not. Payouts. |
+| Pending number collision | התנגשות מספר מיגרציה | Same `\d{3}_` twice in
+`migrations/pending/`
+(169–172). Full filename. |
+| Anonymize | הפיכה לאנונימי |
+`fn_anonymize_user`
+(150) or TS fallback. Profile row stays for FKs. |
+| Soft-delete auth | מחיקה רכה של התחברות |
+`auth.admin.deleteUser(id, true)`.
+Hard delete orphans orders. |
+| Audit IP sweep | מחיקת IP ביומן | 157:
+`fn_audit_retention_sweep`,
+NULL after 365 days. WHO/WHAT remain. |
+| ntfy | התראת טלפון | Money interrupt. Default topic is guessable. No amounts. |
+| Axiom | אקסיום | Optional searchable copy of
+`log.ts`
+JSON. Must not fail checkout. |
+| PostHog | פוסטהוק | HTTP `/capture/`, no SDK. Not the ledger. |
+| QStash | קיו-סטאש | Optional search index queue. Else inline. |
+| ILIKE fallback | חיפוש ILIKE | Search without Meilisearch. Not a product. |
+| `proxy` | פרוקסי | `src/proxy.ts`
+export name on Next 16. Not
+`middleware.ts`. |
+| Hobby cron silence | שתיקת cron ב-Hobby | Vercel runs two jobs, ignores the rest, no error. Why Actions exists. |
+| Confirmation phrase | משפט אישור מחיקה |
+`מחק את החשבון שלי`.
+Typed, trimmed, not fuzzed. |
