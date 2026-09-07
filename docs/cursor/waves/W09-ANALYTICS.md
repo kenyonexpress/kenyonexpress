@@ -76,3 +76,12 @@ None on the storefront. Admin empty state: אין אירועי רכישה עדי
 - Four funnel events (`purchase`, `begin_checkout`, `voucher_redeemed`, `order_refunded`) must not be invented as outbox kinds.
 - Analytics is not the ledger. Money truth stays journals (`contracts/LEDGER.md`).
 - Flag: ingest may be silent-zero. Do not treat PostHog as launch H0.
+
+---
+
+## Third pass
+
+HTTP
+`/capture/`
+no SDK. Not the ledger. Admin empty state: אין אירועי רכישה עדיין (honest: ingest may be dropping them).
+
