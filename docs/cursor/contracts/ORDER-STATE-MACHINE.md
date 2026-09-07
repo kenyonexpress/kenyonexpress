@@ -42,6 +42,11 @@ Forbidden: `paid → pending`, client-set status, catch-and-set past `23514`.
 
 ---
 
-## Second pass
+## Second pass (pay writer)
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+- Only `finalizeOrder` writes `paid`. Webhook timeout → stranded cron, not a status UPDATE.
+- `paid → pending` is forbidden even during rollback of a deploy (`ops/RUNBOOK-ROLLBACK.md`).
+- `disputed` is not a status. Chargeback stays `paid`/`refunded` plus ops note.
+- Coupon lines: `split_executed` with supplier 0. Do not set escrow_held.
+- Mixed cart: one order, multiple `order_items`. Review and refund are per line / per unit, not "the order is one voucher".
+
