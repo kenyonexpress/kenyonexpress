@@ -839,3 +839,212 @@ Browser purchase pixels are lost to ad blockers and closed tabs. Finalize report
 `vercel.json`.
 
 **RLS snapshot:** 53 tables (2026-08-19). Pack narratives that say 61 are later notes. CI cannot see the delta (R23, H3b).
+
+---
+
+## 25. Third pass (facts from the live tree on this branch)
+
+Measured 2026-09-07 by reading this worktree. No pnpm. No production query.
+
+### 25.1 App Router census
+
+107
+`page.tsx`
+files, 38
+`route.ts`
+handlers. Extra storefront pages this pack previously folded into "content":
+
+| Path | Kind |
+|---|---|
+| `/blog/how-coupons-work` | MDX, not a CMS table. Only blog post on this branch. |
+| `/admin/queues` | Operator queue debugger (`v_admin_pending_queues`). |
+| `/admin/growth` | Growth dashboard. |
+| `/admin/feature-flags` | Staff flags. |
+| `/admin/dashboard` vs `/admin` | Two admin landings. |
+| `/account/tokens` | Saved cards UI. Inserts still only happen in finalize. |
+| `/account/my-vouchers` vs `/account/vouchers` vs `/account/coupons` | Three voucher surfaces. Same RLS owner SELECT. |
+
+Non-handler metadata routes (not in the 38):
+`src/app/sitemap.ts`,
+`src/app/robots.ts`,
+`src/app/manifest.ts`,
+`src/app/opengraph-image.tsx`,
+`src/app/(store)/product/[slug]/opengraph-image.tsx`.
+
+### 25.2 Guest cookie vs PostgREST cookie
+
+Browser cookie:
+`ke_session_id`
+(httpOnly, built in
+`src/lib/cart/guest-session-cookie.ts`).
+
+RLS on
+`carts`
+reads:
+
+```
+request.cookies->>'session_id'
+```
+
+The mapping is
+`createGuestCartClient`
+in
+`src/lib/supabase/anon.ts`.
+It sends **exactly one** Cookie header,
+`session_id=<uuid>`,
+and never forwards the visitor's real Cookie jar (that jar holds auth tokens). A "fix" that points the policy at
+`ke_session_id`
+without changing the client, or that forwards the browser Cookie header to PostgREST, is a cart-fixation or session-leak bug.
+
+Catalogue reads use
+`createPublicClient`
+(always
+`anon`,
+never the visitor's JWT). An admin browsing the storefront must see the same active catalogue as a guest.
+
+### 25.3 Two money modules, not one
+
+The brief's
+`packages/money.ts`
+still does not exist. Live split:
+
+| File | What it actually holds |
+|---|---|
+| `src/lib/commerce/money.ts` | `Agorot` brand, `ilsToAgorot`, `percentageOf`, `percentToBasisPoints` |
+| `src/lib/money.ts` | Re-exports the brand, **plus** `Bp`, `applyBp`, `divRoundHalfUp`, `VAT_RATE_BP`, `extractVat`, `percentToBp` |
+
+`src/lib/commerce/commission.ts`
+imports
+`percentageOf`
+from
+`./money`
+(the commerce file), **not**
+`applyBp`.
+The two rounding implementations must stay equivalent on non-negative integers. Feature code that needs rates should still enter through
+`src/lib/money.ts`.
+See
+`MONEY-INVARIANTS.md`
+§17.
+
+### 25.4 Generated types vs the 53-table snapshot vs production
+
+`src/types/database.ts`
+on this branch names tables the 2026-08-19 snapshot never saw, including:
+
+`ai_usage`,
+`analytics_events`,
+`banners`,
+`homepage_sections`,
+`payment_events`,
+`payout_statement_lines`,
+`payout_statements`,
+`refunds`,
+`reviews`,
+`search_index_outbox`,
+`subscription_charges`,
+`subscriptions`,
+`supplier_branches`,
+`wishlists`.
+
+That file is a generated sketch of **some** database this repo has talked to. It is not a live
+`pg_class`
+listing. Historically
+`admin/payouts.ts`
+raised
+`42P01`
+against production. Until H3b re-measures, treat payout tables as **types-ahead**, not as a live ledger.
+
+Wishlist on this branch is **one** table
+`wishlists`
+(`user_id`, `product_id`), not
+`wishlists` + `wishlist_items`.
+Older architecture that invents a second table is describing a draft. Reviews already have
+`order_item_id`
+UNIQUE: one review per paid line.
+
+### 25.5 Pending SQL number collisions
+
+`migrations/pending/`
+on this branch holds **two files per number** for 169, 170, 171, and 172. A human applying "172" without the full filename can run the wrong file.
+
+| Number | File A | File B |
+|---|---|---|
+| 169 | `169_analytics_server_event_names.sql` (whitelist four server events; still pending) | `169_audit_full_coverage.sql` |
+| 170 | `170_reporting_tables.sql` (**header claims applied 2026-09-04**, file still sits in pending/) | `170_composite_indexes_top_queries.sql` (expand-only indexes, pending) |
+| 171 | `171_search_fts.sql` (Postgres FTS `search_products`, INVOKER, anon-safe) | `171_category_name_shekel_order.sql` (bidi isolate on `under-99`; page already repairs on read) |
+| 172 | `172_hide_master_product_test_row.sql` (stock 0 on the ₪1 master row) | `172_rls_zero_policy_tables.sql` (explicit deny / admin SELECT on zero-policy tables) |
+
+162 remains approved and **blocked on vault** (
+`cron_secret`
+/
+`app_url`
+not seeded). GitHub Actions is the live scheduler until 162 can run. Do not enable both.
+
+`172_rls_zero_policy_tables.sql`
+is the file that would make the admin payments **webhooks** tab show rows. Today that tab uses the request-scoped client against
+`payment_webhook_events`
+(zero policies = deny). The tab is an empty table for every admin, not proof that Cardcom is silent.
+
+### 25.6 Mobile session bridge
+
+Till checkout is a WebView of the **same**
+`/checkout`.
+The app holds tokens in SecureStore (2 KB Android limit; setter warns at 2000 bytes). Before the WebView mounts it POSTs those tokens to
+`/api/app/session`.
+The handler calls
+`setSession`
+and writes **website** cookies. It mints nothing. Rate limit 30 / 10 min / IP. Failures return
+`unauthorized`
+without saying which half of the pair is dead.
+
+WebView must have
+`sharedCookiesEnabled`.
+DELETE on the same route signs the WebView out. A second money API for the phone was rejected on purpose (one till, one
+`beginCheckout`).
+
+Offline scan queue key:
+`ke.supplier.scan_queue.v1`
+in AsyncStorage (not SecureStore: a day's queue will not fit in 2 KB). FIFO. Drain removes only keys the **server** settled. Sign-out clears the queue.
+
+### 25.7 Admin payments still has an escrow tab
+
+`/admin/payments`
+tabs include
+`נאמנות (Escrow)`.
+The money path does not write
+`escrow_holds`.
+The tab is a fossil UI. It is not a launch blocker for charges. It is a trust/copy trap if a staff screenshot leaks. Legal copy is R19; this tab is the staff analogue.
+
+### 25.8 Search engines, three not two
+
+Today: Meilisearch if configured, else Postgres
+`ILIKE`.
+Pending 171 FTS would add
+`search_products`
+(SECURITY INVOKER, stored tsvector, GIN). It does not replace Meili. It does not add search chrome. Hebrew stemmer does not exist in Postgres; config is
+`simple` + `unaccent`.
+Clitics (`המקרר` vs `מקרר`) will miss. That is accepted.
+
+### 25.9 Google Wallet vs Apple Wallet
+
+Apple:
+`GET /api/wallet/apple/[id]`
+(RLS on voucher UUID, missing creds → 404).
+
+Google: library
+`src/lib/wallet/google-wallet.ts`
+(
+`pushGoogleObjectState`
+). **No**
+`/api/wallet/google`
+route on this branch. Do not document a Google pass URL as live.
+
+### 25.10 What "61 tables" counted
+
+The 53-row snapshot is the CI truth. Generated
+`database.ts`
+plus views plus later notes is how "61" appeared. Do not treat 61 as a live
+`pg_class`
+count until a human re-runs
+`node scripts/check-rls.mjs`.
+This pack still does not run it (that script talks to the database; this pack does not).
