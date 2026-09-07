@@ -74,3 +74,13 @@ Float hidden when env unset. `whatsapp_click` schema. No send to test-store numb
 |---|---|
 | Twilio or Meta direct? | **Meta direct** for a young catalogue (no BSP fee). Twilio does not skip Meta approval. |
 | Enable all products? | **No.** Per-product flag. H4 number first. |
+
+---
+
+## Second pass (after contracts)
+
+- Click-to-chat is not WhatsApp marketing opt-in (`contracts/CONSENT-MODEL.md`).
+- Utility templates only for kinds already in CHECK. Adding `voucher_expiring` already exists; do not invent `whatsapp_campaign` here (`contracts/OUTBOX.md`).
+- Twilio down: click-to-chat still works. `ops/RUNBOOK-TWILIO-DOWN.md` is mostly no-op if Meta is unused.
+- Amounts in templates: snapshot `*_agorot`, format with `formatIls`. Never let Meta round (`contracts/LEDGER.md`).
+- `profiles.role = vendor` does not enable the float. Product `whatsapp_enabled` plus env number.
