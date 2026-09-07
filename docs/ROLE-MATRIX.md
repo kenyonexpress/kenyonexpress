@@ -206,6 +206,42 @@ The pattern across all four: **middleware can only answer questions
 (section 0.2), so it necessarily lives at the page. That is not a weaker guard,
 it is the only place the guard can correctly be.
 
+### 1.0c Layer 2 sits inside a Suspense boundary, and that shape is load-bearing
+
+Both staff route groups guard in their layout, and **neither awaits at the top
+of the layout**. The guard lives in an inner async component rendered behind a
+Suspense boundary:
+
+| Group | Layout | Guard, and where |
+|---|---|---|
+| `(admin)` | `src/app/(admin)/layout.tsx` | `requirePanelSession()` inside `AdminFrame` |
+| `(supplier)` | `src/app/(supplier)/layout.tsx` | `requireSupplierMember('/supplier')` inside `SupplierFrame` |
+| `(account)` | `src/app/(account)/layout.tsx` | `supabase.auth.getUser()` then `redirect` |
+
+**Why the inner component.** The admin layout states it: `children` is a
+**pass-through slot**, rendered and never inspected, so the boundary the frame
+sits behind covers every page in the group. All 34 admin routes call a guard of
+their own, and "without a boundary above them each one would need its own".
+
+The supplier layout adds the cost of getting it wrong: the portal branch wrote
+the guard at the top of the layout itself, and that shape "makes everything
+beneath it uncacheable and put **78 prerender errors** in the build". Its markup
+was kept and moved behind the boundary.
+
+**What this does not change.** Layer 2 is still real protection: a caller
+without panel access is redirected by the layout before any page renders, and
+the page re-checks anyway. Section 1's "each one re-decides; none trusts the one
+before it" holds.
+
+**What it does mean.** Anyone "simplifying" either layout by awaiting the
+session at the top will reintroduce 78 build errors, and the failure will look
+like a caching problem rather than an auth one. The guard is where it is on
+purpose.
+
+Note also that `requireSupplierMember` takes an argument, so a grep for
+`require[A-Za-z]+\(\)` with empty parens reports the supplier layout as
+unguarded. It is not.
+
 ### 1.1 MFA is part of every staff guard
 
 `requireStaffMfa()` runs inside `requireAdminSession`, `requireStaffSession`,
@@ -909,3 +945,4 @@ shipped (`docs/COMPONENT-INVENTORY.md` Pass 14 dead-code).
 | 2026-09-07 | Pass 14: guard layer 2 verified across all eight layouts; the supplier portal is gated at the layout as well as per page |
 | 2026-09-07 | Pass 15: what layer 1 runs on (the matcher covers /api too), the two decisions it makes, and four paths outside needsAuth that are deliberate rather than gaps |
 | 2026-09-07 | Pass 15: guard layer 1 in full. Four more prefixes beyond /admin, and the two exclusions (guest checkout, and the Cardcom frame-return path) with the reasoning that makes them load-bearing |
+| 2026-09-07 | Pass 16: layer 2 sits inside a Suspense boundary in both staff groups, with children as a pass-through slot. Awaiting at the top of the layout cost 78 prerender errors once |
