@@ -6,10 +6,10 @@ Judgements are based on the actual file contents (with `file:line` references wh
 
 ## Summary
 
-- Total component files: 72 `.tsx` (of which 6 are one line re-export shims: `admin/CouponForm`, `layout/SiteHeader`, `store/CategorySidebar`, `store/HeroSlider`, `store/HomeHeroSection`, `store/PromoBanners`).
+- ~~Total component files: 72 `.tsx`~~ **Stale as of pass 15. Recounted: `138` `.tsx` excluding tests (148 including them).** The six one-line re-export shims (`admin/CouponForm`, `layout/SiteHeader`, `store/CategorySidebar`, `store/HeroSlider`, `store/HomeHeroSection`, `store/PromoBanners`) are unchanged. **25 components are not listed anywhere below**; see "Pass 15".
 - ~~NOT token compliant (hardcoded hex or arbitrary values): 33 components.~~ **Stale as of pass 13. Recounted: zero raw hex, 24 components with arbitrary sizes. See "Pass 13" below.**
 - RTL risky (physical direction utilities that can break in `dir="rtl"`): 7 components (`CouponCard`, `admin/CouponDealForm`, `admin/ProductForm`, `home/BenefitBar`, `ui/dialog`, `ui/dropdown-menu`, `ui/select`).
-- `src/components/features/` and `src/components/shared/` contain only `.gitkeep` (no components).
+- ~~`src/components/features/` and `src/components/shared/` contain only `.gitkeep`.~~ **Half stale as of pass 15.** `features/` is still only `.gitkeep`. **`shared/` now holds six components**: `FacebookIcon`, `FacebookShareButton`, `GoogleLogo`, `WhatsAppFloat`, `WhatsAppIcon`, `WhatsAppShareButton`.
 - Note: many "NOT compliant" cases mix valid tokens (`bg-brand`, `text-[#333e48]`-equivalent heading) with the raw hex of that same token, so the fix is usually swapping `[#fed700]` for `brand-primary`, `[#333e48]` for `heading`, etc.
 
 ## src/components/ui
@@ -782,6 +782,63 @@ as a live control until something imports `WishlistButton`.
 - **A11y:** name is the product title. ATC in the footer. No percent
 - **Electro:** home-v7 deals grid. Elevation is the documented departure
 
+## Pass 15: the inventory is 66 components short of the tree
+
+The Summary's counts predate a lot of the tree. Recounted by walking
+`src/components` rather than by trusting the header.
+
+| Claim | Was | Is |
+|---|---|---|
+| Total component files | 72 `.tsx` | **138** excluding tests (148 with them) |
+| `src/components/shared/` | "only `.gitkeep`" | **six components** |
+| `src/components/features/` | "only `.gitkeep`" | still only `.gitkeep`, correct |
+
+### The 25 components this document does not mention at all
+
+Not "listed without detail": absent. Their filenames appear nowhere in the file.
+
+| Area | Components |
+|---|---|
+| Root | `ProductDealCard` |
+| Account | `account/AccountNav` |
+| Admin | `admin/CommandPalette`, `admin/ServerDataTable`, `admin/TablePagination`, `admin/VoucherLookupForm` |
+| Admin charts | `admin/analytics/BarSeries`, `admin/analytics/FunnelBars`, `admin/reports/SalesChart` |
+| Analytics | `analytics/AnalyticsProvider`, `analytics/ThirdPartyTags`, `analytics/ViewTracker` |
+| Cart | `cart/HeaderCart` |
+| PWA | `pwa/InstallPrompt`, `pwa/ServiceWorkerRegistrar` |
+| Search | `search/DeferredHeaderSearch`, `search/SearchBox` |
+| Shared | `shared/FacebookIcon`, `shared/FacebookShareButton`, `shared/WhatsAppIcon`, `shared/WhatsAppShareButton` |
+| Store | `store/DeferredStoreChrome` |
+| Storefront | `storefront/ShippingInfo`, `storefront/SupplierInfo` |
+| Supplier | `supplier/SupplierNav` |
+
+Four of them are load-bearing for things other documents already assert, which
+is why the gap is worth closing rather than noting:
+
+- **`cart/HeaderCart`** is the cart badge in the masthead. `docs/DESIGN-SYSTEM.md`
+  section 4.1 specifies its geometry (21x21, `#fed700`, `#333e48` at 12px) and
+  the component behind that spec is not inventoried.
+- **`search/SearchBox` and `search/DeferredHeaderSearch` exist.** Every other
+  document in this set records "no search UI anywhere" as a standing rule and a
+  known pixel cost. Two search components being present in the tree does not
+  break that rule (a component can exist unmounted) but it does mean the rule is
+  a rendering decision rather than an absence, and nothing here said so.
+- **`shared/WhatsAppShareButton` and `shared/FacebookShareButton`** carry the
+  third-party marks whose colour rules `docs/DESIGN-SYSTEM.md` section 1.4 sets
+  out (`--color-whatsapp-ink` at 7.67:1, `--color-facebook` `#166fe5`, and the
+  standing "never rebrand a mark with `--color-brand-*`"). The tokens are
+  documented; their only consumers are not.
+
+### What this does not change
+
+The per-component judgements already in this file were made by opening those
+files, so they stand. The RTL-risky seven and the pass-13 token recount were
+both derived from scans over the whole tree, not from this list, so neither is
+affected by the list being short.
+
+What is affected is any reader who treats the tables as exhaustive. They are
+not, and the header said 72 while the tree held 138.
+
 ## Revision
 
 | Date | Change |
@@ -797,3 +854,4 @@ as a live control until something imports `WishlistButton`.
 | 2026-09-07 | Pass 15: CouponPricing (split amounts, never percent), RegionMenu (seventeen regions), WhatsAppFloat (mark not yellow) |
 | 2026-09-07 | Pass 16: ProductCard deals stay radius 0; hover lift is Electro, live is flat |
 | 2026-09-07 | Pass 14: dead-code sweep. Eleven components never imported, including WishlistButton, so the PDP wishlist heart does not ship despite three documents describing it |
+| 2026-09-07 | Pass 15: recounted the tree. 138 components not 72, shared/ is no longer empty, and 25 components are absent from the file entirely |
