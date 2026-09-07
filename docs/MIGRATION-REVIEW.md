@@ -653,6 +653,82 @@ these two.
 section 8c named this file 165, and a stable reference in conversation beats a
 dense sequence.
 
+## 3d. `analytics_cron.sql`, and an ordering conflict with 162
+
+Section 1.3b named `supabase/schedules/analytics_cron.sql` as the file stating
+the cron split. It also schedules three jobs, so 162 is not the only thing that
+would write to `cron.job`. Read as text here, because 162's fate is entangled
+with it.
+
+### 3d.1 What it schedules
+
+| Job | Cron (UTC) | Command |
+|---|---|---|
+| `analytics_rollup_daily` | `10 23 * * *` | `fn_rollup_analytics_daily()` |
+| `analytics_refresh_matviews` | `40 23 * * *` | `fn_refresh_analytics_matviews()` |
+| `analytics_partitions_monthly` | `0 0 1 * *` | `fn_ensure_analytics_partitions(2)`, `fn_drop_old_analytics_partitions(13)` |
+
+All three are **pure in-database SQL**. No `net.http_post`, no URL, no secret.
+This file honours the split it documents; 162 is the one that departs from it.
+
+Its partition job is ordered correctly and says so: create ahead **first**, then
+drop beyond retention, "never leave the table without a home for an incoming
+event".
+
+### 3d.2 162's rollback cannot touch these, confirmed
+
+Section 1.2 claimed the `ke-` prefix makes
+`unschedule ... where jobname like 'ke-%'` safe "without touching a job somebody
+else created". That was reasoning; here is the check. The three job names are
+`analytics_rollup_daily`, `analytics_refresh_matviews`,
+`analytics_partitions_monthly`. **None begins with `ke-`.** The rollback is safe
+against the only other scheduler file in the repository.
+
+### 3d.3 The conflict: the rollup would run *before* the expiry sweep
+
+`analytics_rollup_daily` carries an explicit ordering requirement:
+
+> Yesterday's rollup. 23:10 UTC = 02:10 Israel (winter), after the coupon expiry
+> sweep at 01:50 so expired coupons are already in their final state.
+
+**162 schedules `ke-expire-vouchers` at `15 23 * * *`, which is 23:15 UTC.**
+
+| Job | UTC | Israel (+2) | Israel (+3) |
+|---|---|---|---|
+| `analytics_rollup_daily` | **23:10** | 01:10 | 02:10 |
+| `ke-expire-vouchers` | **23:15** | 01:15 | 02:15 |
+| `analytics_refresh_matviews` | 23:40 | 01:40 | 02:40 |
+
+The rollup runs **five minutes before** the expiry sweep, not after it. Its own
+invariant, that expired coupons are already in their final state when the day is
+rolled up, is inverted. Yesterday's figures would be computed against coupons
+that expire minutes later and land in the next day's rollup, or in none.
+
+Two further notes on the same comment:
+
+- It says the expiry sweep is "at 01:50". Nothing in 162 runs at 01:50 in either
+  offset. The comment describes a schedule that is not the one 162 proposes, so
+  it predates 162 or refers to something else.
+- Its "= 02:10 Israel (winter)" is the **summer** offset. Israel winter is UTC+2,
+  giving 01:10. Minor, and it means the comment's own arithmetic should not be
+  used to reason about ordering.
+
+### 3d.4 It is a conflict on paper, not yet in production
+
+`preflight_162.sql` block 2 counts `cron.job` and reports `foreign_jobs`, jobs
+not matching `ke-%`. `APPLY-ORDER.md` records that block passing on 2026-09-04
+with **`cron.job` empty**. So `analytics_cron.sql` has not been applied either,
+and the two schedules have never coexisted.
+
+That makes this cheap to settle and easy to miss: whichever is applied second
+will silently invert or restore the ordering, and **preflight 162 block 2 is the
+only place it would surface** as a non-zero `foreign_jobs` count.
+
+**Recommendation:** decide the order before either is applied. Moving
+`analytics_rollup_daily` later (or `ke-expire-vouchers` earlier) is a one-line
+change in whichever file is applied second. Doing nothing means the rollup's
+stated precondition is false from the first night both are live.
+
 ## 4. The preflights
 
 All three follow the same shape: numbered blocks, each with an `EXPECT` comment,
@@ -810,3 +886,4 @@ docs/QA-SCRIPTS.md                  the manual pass per flow
 docs/DECISIONS.md                   why the in-place money conversion was deleted
 STATE.md                            "חסמים לאופיר", where 162's blocker lives
 ```
+| 2026-09-07 | Pass 17: reviewed analytics_cron.sql. It honours the cron split, its names cannot be hit by 162 rollback, and its rollup would run five minutes BEFORE 162 expire-vouchers, inverting its own stated precondition |
