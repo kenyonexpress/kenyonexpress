@@ -81,3 +81,10 @@ Id `9bb347f8-03ec-48ce-8ff2-2503fb74c895`. Three real products named מאסטר 
 - Scanner `member_role` cannot raise stock. Uploader cannot either (W08).
 - Hebrew cart: אזל מהמלאי. Never "test product".
 
+---
+
+## Third pass
+
+Unavailable: המוצר לא זמין. Consume-after-pay failure must not un-pay. Id allowlist for the ₪1 row, never a string match on מאסטר.
+
+
