@@ -80,6 +80,35 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 
 ## המשך מ: ‏PRIORITY TWO — ‏refunds בשני המסלולים, ומירוץ מימוש הקופון
 
+### ‏07.09 ‏goal בוצע: ‏PostHog מקצה לקצה (commit ‏`847be07da`, branch ‏autopilot)
+
+ארבעה commits נקטפו מ-`closeout/v1-final` (מודול capture בלי SDK, ‏fan-out
+מ-trackCommerce ומ-trackServerEvent, לוג על אירוע שנזרק ב-0-accepted), ומעליהם:
+
+- ‏`$pageview` לכל ניווט מ-AnalyticsProvider, מאחורי שער ההסכמה, עם אותו
+  route template של ה-rollup הפנימי.
+- ‏`referral_link_clicked` על נחיתת `?ref=` עם קוד תקין, פעם אחת לטאב לקוד
+  (dedupe ב-sessionStorage), מאחורי אותו שער. תוכנית ההפניות עצמה לא נגועה:
+  ה-attribution ממשיך לרכוב על ה-cookie ה-httpOnly.
+- שלושת אירועי הכסף קיבלו פולטים: ‏purchase ב-finalize (אחרי חותמת paid_at,
+  כך ש-replay לא פולט פעמיים), ‏voucher_redeemed ב-route המימוש (בלי replays),
+  ‏order_refunded ב-refund. ‏SERVER_EVENT_NAMES נושא את הארבעה.
+- ‏whatsapp_click צורף למראה הצד-לקוח כי ה-whitelist הפרוס בפרודקשן מכיל אותו
+  (נקרא דרך MCP ‏07.09); בלעדיו טסט הכיוון ההפוך של 180 אדום.
+- ‏session replay: ‏posthog-js נטען עצל רק אחרי הסכמה ועם מפתח, מקליט בלבד
+  (autocapture/pageview/exceptions כבויים, כל input ממוסך), עם אותו distinct id
+  של מסלול ה-fetch. אחרי שעלה, ‏trackEvent מנתב דרכו כדי שאירוע יישא
+  ‏$session_id ויקשר להקלטה. ‏distinctId מפורש (שרת) נשאר על fetch.
+- ‏`migrations/pending/180_analytics_server_event_names.sql` (אצל closeout זה
+  169; המספור כאן שונה) מרחיב את ה-whitelist בארבעת שמות השרת, ‏preflight
+  בפנים. אומת מול פרודקשן דרך MCP שהפונקציה עדיין ברשימת השמונה. ממתין
+  לאישור לפי הכלל הקבוע.
+- ‏pnpm-workspace.yaml: ‏core-js (הגיע עם posthog-js) נחסם ל-build scripts;
+  ה-placeholder ש-pnpm כתב הפיל כל install עד שהוחלף ב-false.
+
+שערים: ‏3783 טסטים ירוקים, ‏type-check, ‏lint, ‏build נקיים. ‏push עלה ל-origin.
+עד שאופיר יגדיר ‏NEXT_PUBLIC_POSTHOG_KEY הכול אינרטי: אפס אירועים, אפס רשת.
+
 ### ‏07.09 ‏goal בוצע: יסודות PWA (commit ‏`8aa57ce0b`, branch ‏autopilot)
 
 מה שכבר היה קיים ולא נגעתי בו: manifest.ts (אייקונים, צבעים מ-tokens, RTL),
