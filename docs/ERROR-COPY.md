@@ -50,7 +50,7 @@ Rules:
 | Referrals program off | תוכנית ההפניות תיפתח בקרוב. ברגע שהיא תופעל, יופיע כאן קוד אישי לשיתוף והמעקב אחרי הבונוסים שצברתם. | no share UI |
 | WalletButtons missing | render nothing | no fake disabled Apple button |
 
-Wishlist: prefer the long empty on `/account/wishlist` (pass 8). Heart is on the PDP, not in the header.
+Wishlist: prefer the long empty on `/account/wishlist` (pass 8). The heart is specified for the PDP and not the header, and **as of pass 14 it ships in neither**: `product/WishlistButton.tsx` has zero import sites and no `WishlistToggle` exists. So the two empty states above are currently the *only* reachable wishlist copy, and `נוסף למועדפים` has no trigger. Keep the strings; they are correct for when the control is wired in. See `docs/COMPONENT-INVENTORY.md` pass 14.
 
 ---
 

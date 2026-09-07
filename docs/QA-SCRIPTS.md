@@ -73,7 +73,7 @@ Gate refuses when related-card counts differ. Do not delete related cards to pas
 | 4 | ATC 768+ | `#fed700` / `#333e48` (not white on yellow), radius 25.2 |
 | 5 | Qty | plain number, no fake +/- if live has none |
 | 6 | Unsellable | `המבצע הסתיים` or `הקופון אינו זמין לרכישה` or `אזל מהמלאי`; ATC dead |
-| 7 | Wishlist heart | on PDP, not header. `הוסף למועדפים` / toast `נוסף למועדפים` |
+| 7 | Wishlist heart | **DOES NOT SHIP (pass 14).** `product/WishlistButton.tsx` exists and nothing imports it; there is no `WishlistToggle` in the tree. There is no way to add to the wishlist from a PDP, so this row cannot pass. Verify it is still absent, then either wire the component in or delete this row. `/account/wishlist` itself does render |
 | 8 | WhatsApp share | coupon share must not use sticker face as the only price; no `{code}` to the business |
 | 9 | Supplier | Waze, phone LTR, mark not recoloured |
 
