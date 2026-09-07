@@ -295,3 +295,195 @@ and aliases are RSC, not refund APIs.
 is the only refund mutation. A form that POSTs to a made-up
 `/api/refund`
 does not exist.
+
+---
+
+## 10. Complete action inventory (this tree)
+
+Every
+`export async function`
+under
+`src/server/actions/`.
+Failures are Hebrew
+`{ error }`
+or discriminated
+`{ ok: false }`
+unless noted.
+
+### Auth (`auth.ts`)
+
+`signInWithGoogle`,
+`signInWithEmail`,
+`signUpWithEmail`,
+`sendMagicLink`,
+`sendPhoneOtp`,
+`verifyPhoneOtp`,
+`signOut`,
+`signOutAll`,
+`sendPasswordReset`,
+`updatePassword`.
+
+Phone pair is a no-op when
+`PHONE_AUTH_ENABLED`
+is not the expected on-value.
+
+### Cart (`cart.ts`)
+
+`getCart`,
+`addToCart`,
+`updateCartItem`,
+`removeFromCart`,
+`clearCart`,
+`removeUnavailableItems`,
+`mergeGuestCart`,
+`clearGuestSessionCookie`,
+`applyCouponCode`,
+`removeCouponCode`,
+`resolveCheckoutDiscountAgorot`.
+
+### Checkout / refunds / orders
+
+| Action | File | Auth | Distinct failure |
+|---|---|---|---|
+| `beginCheckout` | `payments/checkout.ts` | guest until Pay | `CHECKOUT_ENABLED` not exact `true`; unsellable; missing percent or coupon price |
+| `submitCheckout` | same | session + saved token | no `redirected` state |
+| `reconcileOrderReturn` | same | return page | poll; ignore query amount |
+| `getOrderPaymentStatus` | `orders.ts` | owner | other ids 404 |
+| `refundOrder` | `payments/refund.ts` | admin / policy | any voucher not `issued` blocks Cardcom path |
+
+`finalizeOrder`
+is not an action.
+
+### Account (`account.ts`)
+
+`updateProfileDetails`,
+`saveAddress`,
+`deleteAddress`,
+`setDefaultAddress`,
+`deletePaymentToken`,
+`setDefaultPaymentToken`,
+`deleteAccount`.
+
+`deleteAccount`
+must not refund, must not consume vouchers, must not credit wallet. Trigger blocks self-set
+`role`
+/
+`supplier_id`
+(
+`42501`).
+
+### Gifts, referrals, subscriptions, consent, contact, newsletter, leads
+
+`claimGift`,
+`loadGiftPreview`,
+`ensureMyReferralCode`,
+`cancelSubscription`,
+`decideConsent`,
+`submitContactForm`,
+`subscribeToNewsletter`,
+`confirmNewsletter`,
+`unsubscribeByToken`,
+`submitSupplierLead`.
+
+Gift invalid token: Hebrew empty, no existence oracle.
+
+### Reviews and wishlist (`reviews.ts`)
+
+`submitReview`,
+`toggleWishlist`,
+`getWishlistSaved`,
+`getMyReviewableItem`.
+
+Not money. A 1-star review is not
+`refund_ground`.
+
+### Admin money-adjacent
+
+| Action | File | Section | Failure |
+|---|---|---|---|
+| `retryFinalizePayment` | `admin/payments.ts` | payments write | idempotent |
+| `retryDeadLetter` | `admin/dead-letters.ts` | payments write | idempotent |
+| `lookupAdminVoucher` | `admin/vouchers.ts` | **catalog read** | uploader can inspect codes |
+| `redeemAdminVoucher` | same | **orders write** | reason required; `WHERE status = 'issued'`; does not call `redeem_voucher` |
+| `cancelPendingOrder` | `admin/orders.ts` | orders | cannot cancel `paid` |
+| `addOrderNote` | same | orders | |
+| `markItemShipped` / `markItemDelivered` | `admin/shipping.ts` | shipping | physical only |
+| `approveReferral` / `rejectReferral` | `admin/referrals.ts` | referrals | wallet on approve |
+| `bulkAdjustPrices` | `admin/products.ts` | catalog write | integer only via `bulk-price.ts` |
+| `generatePayoutStatement` and siblings | `admin/payouts.ts` | payouts | **DEAD** `42P01` |
+| `refreshReports` | `admin/reports.ts` | reports | |
+| `quickSearchOrders` | `admin/quick-search.ts` | orders | |
+
+### Admin catalogue / people
+
+`upsertProduct`,
+`deleteProduct`,
+`bulkUpdateProductStatus`,
+`bulkAssignCategory`,
+`bulkSoftDeleteProducts`,
+`deleteVariant`,
+`upsertCategory`,
+`softDeleteCategory`,
+`deleteCategory`,
+`updateCategorySortOrder`,
+`upsertSupplier`,
+`setSupplierStatus`,
+`softDeleteSupplier`,
+`addSupplierMember`,
+`deactivateSupplierMember`,
+`upsertVendor`,
+`updateVendorStatus`,
+`updateVendorCommission`,
+`softDeleteVendor`,
+`approveProduct`,
+`rejectProduct`,
+`saveDiscountCampaign`,
+`archiveDiscountCampaign`,
+`setDiscountCampaignActive`,
+`decideAffiliate`,
+`updateUserRole`,
+`upsertCouponDeal`,
+`softDeleteCouponDeal`,
+`savePopularSearch`,
+`removePopularSearch`,
+`processAndUploadImage`,
+`requestUploadUrl`,
+`moderateReview`.
+
+---
+
+## 11. `/scan` vs `/supplier/scan`
+
+Both pages exist.
+Proxy only gates
+`/supplier*`
+(except login / access-denied).
+`/scan`
+must authenticate in the page. HTTP redeem remains
+
+```
+POST /api/supplier/vouchers/redeem
+```
+
+Do not add
+`POST /api/scan`
+that takes
+`supplier_id`
+from JSON.
+
+---
+
+## 12. Cron method and scheduler
+
+Every
+`/api/cron/*`
+is GET + Bearer. POST is 405. Missing secret is 401 on **all** of them (including health). Probing health **without** a secret and seeing 401 is a pass. Seeing 200 without a secret is a launch stop.
+
+Twelve GET routes on this tree (ten money-era +
+`retention`
++
+`weekly-digest`).
+Tests:
+`src/__tests__/cron-schedule-inventory.test.ts`
+plus per-route
+`src/app/api/cron/*/route.test.ts`.
