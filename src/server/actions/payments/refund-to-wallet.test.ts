@@ -277,3 +277,54 @@ describe('refundOrderToWallet', () => {
     expect(lookups[1]?.payload).not.toContain('amount_agorot')
   })
 })
+
+describe('a live voucher and the money going back', () => {
+  it("voids the order's still-issued vouchers, with the reason, before it credits", () => {
+    // THE DOUBLE DIP. The wallet button is deliberately not gated on
+    // refundBlockers, so it is reachable on an order whose vouchers are still
+    // `issued`. Credited and left scannable, the customer has the money back
+    // AND a coupon the business will honour for the balance alone.
+    seed()
+    return refundOrderToWallet({ orderId: 'order-1', reason: 'ויתור' }).then(() => {
+      const update = find('vouchers', 'update')
+      expect(update?.payload).toMatchObject({ status: 'refunded', status_reason: 'ויתור' })
+      expect(update?.chain).toContainEqual(['eq', ['order_id', 'order-1']])
+      // The narrowing that keeps the module's promise: a redeemed voucher
+      // matches nothing here and stays redeemed, because it is true.
+      expect(update?.chain).toContainEqual(['eq', ['status', 'issued']])
+    })
+  })
+
+  it('voids on a partial credit too, exactly as the card path does', async () => {
+    // planRefund voids every still-issued voucher for any refund, partial
+    // included. Two instruments answering the same question differently is
+    // how the next hole gets opened.
+    seed({ amountIls: 100 })
+    await refundOrderToWallet({ orderId: 'order-1', reason: 'חלקי', partialAmountIls: 25 })
+    expect(find('vouchers', 'update')?.payload).toMatchObject({ status: 'refunded' })
+  })
+
+  it('does not credit at all when the voucher void fails', async () => {
+    // Ordering is the whole point. A dead coupon with no credit is visible to
+    // the admin and heals on retry; a credited customer holding a live coupon
+    // is visible to nobody until it is spent.
+    seed()
+    queue('vouchers.update', { data: null, error: { message: 'permission denied' } })
+
+    const result = await refundOrderToWallet({ orderId: 'order-1', reason: 'ויתור' })
+
+    expect(result).toEqual({
+      ok: false,
+      error: 'ביטול השוברים של ההזמנה נכשל, ולכן לא בוצע זיכוי. נסה שוב',
+      code: 'INTERNAL',
+    })
+    expect(rpcCalls).toHaveLength(0)
+    expect(find('refunds', 'insert')).toBeUndefined()
+  })
+
+  it('touches no voucher on a replay, since the first call already did', async () => {
+    seed({ existingEntry: { id: 'entry-1' } })
+    await refundOrderToWallet({ orderId: 'order-1', reason: 'שוב' })
+    expect(find('vouchers', 'update')).toBeUndefined()
+  })
+})

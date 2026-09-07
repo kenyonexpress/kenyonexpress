@@ -235,6 +235,54 @@ async function runRefundOrderToWallet(input: WalletRefundInput): Promise<WalletR
     return { ok: false, error: 'חשבונות הארנק חסרים', code: 'INTERNAL' }
   }
 
+  // A LIVE VOUCHER MUST NOT SURVIVE THE MONEY GOING BACK.
+  //
+  // This module's own header says a wallet credit is the instrument for value
+  // ALREADY CONSUMED - a voucher redeemed at the counter, or one that expired -
+  // and that it moves no voucher out of the state it is in. Both sentences are
+  // right about the case they describe and neither was ever enforced, so the
+  // case they do not describe was reachable from the admin screen: an order
+  // whose vouchers are still `issued`. The button is deliberately NOT gated on
+  // `refundBlockers`, which is what makes it reachable on any order at all.
+  //
+  // The customer is then credited the coupon price into their wallet AND still
+  // holds a scannable coupon. `redeem_voucher` would burn it, the business
+  // would hand over the goods and collect only the balance, and the platform
+  // would have returned the money it kept against value a supplier delivered.
+  // That is a double dip, and no constraint anywhere refuses it: the voucher
+  // machine's own REFUND edge exists for exactly this and nothing drove it.
+  //
+  // The rule is the CARD path's rule, not a new one. `planRefund` voids every
+  // still-issued voucher on the order for any refund, partial included
+  // (server/domain/orders/refund.ts, `voucherRefunds`), and a wallet credit
+  // that voided differently would be drift between two instruments that answer
+  // the same question. `.eq('status', 'issued')` is what keeps the header's
+  // promise: a redeemed voucher matches nothing and stays redeemed, because it
+  // is true that the customer ate the meal. Same for expired and cancelled.
+  //
+  // BEFORE the transfer, and refusing on a write failure, because the two
+  // orderings fail differently. Void-then-credit can leave a dead coupon with
+  // no credit, which the admin sees immediately and which a retry heals - the
+  // second run matches no `issued` row and credits. Credit-then-void can leave
+  // a credited customer holding a live coupon, which nobody sees until it is
+  // spent and which no retry repairs.
+  const { error: voucherVoidError } = await admin
+    .from('vouchers')
+    .update({ status: 'refunded', refunded_at: now.toISOString(), status_reason: input.reason })
+    .eq('order_id', order.id)
+    .eq('status', 'issued')
+  if (voucherVoidError) {
+    log.error('refund.wallet_voucher_void_failed', {
+      order_id: order.id,
+      reason: voucherVoidError.message,
+    })
+    return {
+      ok: false,
+      error: 'ביטול השוברים של ההזמנה נכשל, ולכן לא בוצע זיכוי. נסה שוב',
+      code: 'INTERNAL',
+    }
+  }
+
   const { error: transferError } = await admin.rpc('fn_wallet_transfer', {
     p_debit_account: houseAccount.id,
     p_credit_account: userAccount.id,
