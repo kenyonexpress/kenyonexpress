@@ -1054,6 +1054,40 @@ The single most valuable change to this directory is not to any migration: it is
 adding a response check for 162, because without one the crons cannot be
 observed at all, and 162 is the file that is already approved.
 
+### 5.1 Everything found after pass 1, gathered (pass 22)
+
+The table above was written in pass 1. Nine passes have since added findings
+that change what an operator should do, and none of them changed a verdict.
+Gathered here so the summary is the summary.
+
+**Blocking or decision-shaped, before anything is applied:**
+
+| # | Finding | Where | Affects |
+|---|---|---|---|
+| 1 | `APPLY-ORDER.md` says **"ONE PENDING FILE"** and never mentions 169 or 170. It is the operator-facing document. | 3b | routing the work |
+| 2 | `analytics_cron.sql`'s rollup would run **five minutes before** 162's `ke-expire-vouchers`, inverting its own stated precondition. Neither is applied, so it is settleable now and invisible later. | 3d | **162** |
+| 3 | `idx_orders_user_status` is **not** superseded by 170 and must survive the contract migration. Six of the seven singles are; that one is not. | 3.2b | **170** follow-up |
+| 4 | `pending/` has **no checksum file**, so "162 is approved" cannot be pinned to bytes. | 3f | **162** |
+
+**Verified, and load-bearing:**
+
+| # | Finding | Where |
+|---|---|---|
+| 5 | All twelve cron routes accept 162's `Bearer` header, via one shared `bearerMatches`, and fail **closed** on an unset secret | 1.2 |
+| 6 | Risk 1 is **unmitigated**: nothing anywhere reads `net._http_response`, and the `scheduler` health check only asserts `CRON_SECRET` is set | 1.3a |
+| 7 | Nine of 170's ten index-to-query claims hold; the two price ones serve **ascending only**, because every call site passes `nullsFirst: false` | 3.5 |
+| 8 | 169's return value counts **whitelisted names**, so a mixed batch reads as partial success and the discard is invisible | 2.4a |
+| 9 | `applied/` is byte-intact: **45 of 45** checksums verify | 3e |
+| 10 | The README manifest and `applied/` agree; all ten apparent mismatches are explainable | 3a |
+| 11 | 165 must stay cancelled, and the regression net guarding that **silently skips** without the anon key | 3c |
+
+**The order this review recommends is unchanged: 169, then 170, then 162.**
+Findings 1 to 4 are things to settle *before* starting, not reasons to reorder.
+
+If only one thing is done: **fix `APPLY-ORDER.md`.** Every other finding here is
+recoverable by reading; that one actively routes an operator away from 169,
+which is discarding four funnel events every day it waits.
+
 ---
 
 ## 6. How to re-derive this document
@@ -1101,3 +1135,4 @@ STATE.md                            "חסמים לאופיר", where 162's block
 | 2026-09-07 | Pass 19: named the seven indexes 170 makes redundant and paired each with its superseding composite. Six are redundant, one (idx_orders_user_status) is NOT and must be kept |
 | 2026-09-07 | Pass 20: verified CHECKSUMS.sha256. 45 of 45 OK, zero failed, covering every applied migration and preflight; and named the one question no checksum can answer |
 | 2026-09-07 | Pass 21: pinned the reviewed pending files by hash. applied/ has CHECKSUMS.sha256 and pending/ has none, so an approval cannot currently be attached to bytes |
+| 2026-09-07 | Pass 22: refreshed the summary to gather all findings from passes 12-21. Four are decision-shaped before anything is applied; the recommended order is unchanged |
