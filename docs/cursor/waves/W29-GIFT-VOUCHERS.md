@@ -69,3 +69,9 @@ Guest buyer gift: need an email on the order. Wrong token: identical 404.
 | Q | Best answer |
 |---|---|
 | Transfer after claim? | W32. v1 gift is one claim, not a forward chain. |
+
+---
+
+## Second pass (after contracts and ops)
+
+Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
