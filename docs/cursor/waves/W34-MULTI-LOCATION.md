@@ -78,3 +78,11 @@ One legal entity, two brands: two `suppliers` rows, not two branches, if till is
 - Hours/maps are display. They do not change money or voucher state.
 - Do not promise "כל הסניפים" in supplier onboarding copy (W07 FAQ).
 
+---
+
+## Third pass
+
+Display only: סניפים / שעות פתיחה / ניווט. Redeem stays shop-level
+`wrong_supplier`.
+
+
