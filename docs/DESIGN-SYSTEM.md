@@ -911,6 +911,79 @@ has one, and it is why this departure costs pixels and buys correctness.
   the `star` font is the rating widget's, which is worth knowing before anyone
   tries to match a star glyph by character rather than by SVG.
 
+### 3.0d Weights and line-heights, counted (pass 21)
+
+The last two uncounted columns of the capture.
+
+#### Font weight: eight values, two of which are 97.5% of the site
+
+| Count | Weight | Share | First seen |
+|---|---|---|---|
+| **20998** | **400** | **87.7%** | `html` |
+| **2339** | **700** | **9.8%** | `sr-only` |
+| 333 | 500 | 1.4% | `dropdown-toggle` |
+| 129 | 600 | 0.5% | `sign-in-button` |
+| 96 | 300 | 0.4% | `rs-layer` (the hero) |
+| 24 | 100 | | `call-us-text` |
+| 18 | 200 | | `da-text` |
+| 15 | 900 | | `fas` (an icon font) |
+
+**Regular and bold carry the site.** 400 and 700 together are 23337 of 23952
+elements. 500 and 600 are the section-heading and control weights, and 300 is
+the hero display weight — which confirms
+`ELECTRO_HERO.typography.headline1.weight: 300` from the other direction.
+
+The role table in 3.5 lists exactly 300, 400, 500, 600 and 700. **That is the
+right set**: it covers 99.8% of the reference and omits nothing that matters.
+
+`100`, `200` and `900` total **57 elements**, 0.24%, and `900` is an icon font
+rather than text. None should be tokenised, by the same ten-occurrence
+reasoning section 2.4 applies to radii — except these are above ten and still
+wrong to adopt, because they are theme chrome we do not ship.
+
+#### Heebo is loaded as a variable font, so every weight is available
+
+`src/app/layout.tsx:38` declares **no `weight` array**:
+
+```
+Heebo({ variable: '--font-heebo', subsets: ['latin','hebrew'],
+        display: 'swap', preload: false })
+```
+
+With `next/font/google` and a variable family, omitting `weight` loads the full
+variable axis. So 300, 400, 500, 600 and 700 are all **real** weights, not
+browser-synthesised bolds.
+
+That matters because synthesised weight is visibly different: a faux-bold is a
+smeared 400, and on Hebrew it damages letterforms more than on Latin. Declaring
+a weight the font does not carry is a defect that never errors, and here it
+cannot happen.
+
+#### Line-height: 104 distinct values, and one of them is the site
+
+| Count | `line-height` | Share |
+|---|---|---|
+| **13402** | **23.996px** | **56.0%** |
+| 1710 | 20.9965px | 7.1% |
+| 984 | 18.004px | 4.1% |
+| 652 | 16.002px | 2.7% |
+| 609 | 18.0133px | 2.5% |
+| 462 | 49px | 1.9% |
+| …98 more | | |
+
+`23.996px` is the body line-height and is already a token
+(`--leading-pdp-body`). It covers more than half the site on its own.
+
+**104 distinct values is not a scale**, and no attempt should be made to make it
+one. The long tail is what a theme produces when line-height is set as a
+unitless multiplier at many different font sizes: each combination computes to
+its own px value. Tokenising past the top few would be recording arithmetic, not
+design.
+
+The four already tokenised (`--leading-pdp-body` 23.996, `--leading-pdp-title`
+32.0051, `--leading-newsletter-head` 48.5946, `--leading-newsletter-note`
+25.6997) are the ones attached to a named role. That is the right stopping point.
+
 ### 3.1 Body and UI
 
 | Token | Value | Usage |
@@ -2171,3 +2244,4 @@ src/lib/electro-hero-tokens.ts  ELECTRO_HERO, the Electro home-v7 measurements
 | 2026-09-07 | Pass 18: letter-spacing counted. Live sets -0.14px on 92.4% of elements, inherited from the root; ours is normal everywhere. A page-wide gate contributor no document had named |
 | 2026-09-07 | Pass 19: border widths counted. 93.5% carry none; the dominant shape is bottom-only hairline, and with radius and shadow this completes one statement: the reference is flat, square and line-separated |
 | 2026-09-07 | Pass 20: font stack counted. 85.8% of live declares bare "Open Sans" with NO fallback, so its Hebrew has no declared typeface on any platform; the strongest form of the Heebo argument |
+| 2026-09-07 | Pass 21: weights and line-heights counted, completing all fifteen capture columns. 400 and 700 are 97.5% of the site, Heebo loads as a variable font so no weight is synthesised, and 104 line-heights is arithmetic rather than a scale |
