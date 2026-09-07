@@ -50,3 +50,9 @@ None. Until 169 applies, skip is the designed behaviour. Do not 500 the webhook 
 ## Docs / edges / close
 
 `OBSERVABILITY-MAP.md`, `LAUNCH-BLOCKERS.md` (169 is not H0–H8; it is dashboard honesty). Duplicate pending number 169: **full filename only**. Close: production SELECT of `purchase` after one staging pay, or documented skip remaining.
+
+---
+
+## Second pass (after contracts and ops)
+
+Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
