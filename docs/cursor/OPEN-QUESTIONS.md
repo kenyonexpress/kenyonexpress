@@ -268,6 +268,9 @@ The original brief for this pack said 15. The tree wins.
 ### Q34. Which 169/170/171/172?
 **Best answer:** Full filename. Analytics vs audit. Indexes vs reporting. FTS vs shekel name. Hide SKU vs zero-policy RLS.
 
+### Q35. When does cashback credit?
+**Best answer:** `finalizeOrder` via `fn_wallet_transfer`, key `order:<id>:cashback`. Not at scan.
+
 ---
 
 ## How to close a question
