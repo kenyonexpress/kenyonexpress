@@ -21,4 +21,4 @@ Upgrade trigger: checkout p95 or stranded >0 daily, not dashboard GMV (ingest ma
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+Money path must not depend on Meili/Upstash. First paid trigger is SLO miss, not dashboard GMV. Hobby cron must never return.
