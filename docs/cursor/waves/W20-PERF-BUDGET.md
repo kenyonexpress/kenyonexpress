@@ -68,6 +68,13 @@ None.
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (gate)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- Home compare: 380 / 768 / 1440, under 11%, write
+  `docs/UI-PARITY-REPORT.md`
+  including `-dirty` when the tree is dirty.
+- JS ratchet: `scripts/bundle-gate.mjs`. Do not add `@dnd-kit` to the storefront.
+- sharp **0.35.3**. Nested 0.34 serves original AVIF.
+- Checkout must not load a Meili SDK. Kill switch cache is slower, not a budget cheat.
+- This pack does not run `pnpm` or the compare script.
+
