@@ -5,3 +5,9 @@
 3. Wrong_supplier scans: membership, not a payment bug.
 4. Do not create `payout_statements` to "show goodwill" without a product change.
 5. Escrow language: forbidden. If legal page says נאמנות, that is a copy bug (W26).
+
+---
+
+## Second pass
+
+Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
