@@ -79,3 +79,10 @@ Guest buyer gift: need an email on the order. Wrong token: identical 404.
 - After claim the voucher is the recipient's. Screenshot is a leak, not a product.
 - Gift columns on delete: conservative hash if 150 does not (`RUNBOOK-CUSTOMER-DATA-REQUEST.md`).
 
+---
+
+## Third pass
+
+Hebrew: שליחה במתנה / מימוש המתנה / הקופון מחכה אצלך בחשבון. Claim is not a second Cardcom charge. W32 transfer is skipped for v7.
+
+
