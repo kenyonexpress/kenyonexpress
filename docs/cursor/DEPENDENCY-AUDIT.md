@@ -307,3 +307,12 @@ and a test in
 `docs/cursor/TEST-MAP.md`.
 If it talks to rows, it obeys
 `docs/cursor/RLS-CATALOG.md`.
+
+Do not add
+`@upstash/redis`
+or a Meilisearch JS client "for types". The HTTP doors exist so a
+`pnpm add`
+in a worktree cannot rewrite the main checkout's
+`node_modules`
+(comment in
+`src/lib/rate-limit/upstash.ts`).
