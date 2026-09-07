@@ -704,3 +704,57 @@ Recorded, not changed: this file is documentation and the fix is in `.ts`.
 | 2026-09-07 | Pass 13: the money path complete (11.2a). checkout.ts and refund.ts verbatim; the double-submit string is success-adjacent; refund copy is operator-facing and may name Cardcom |
 | 2026-09-07 | Pass 13: the money path documented in full (checkout.ts, refund.ts). Five strings interpolate a raw Postgres or Cardcom message and are rendered verbatim to the shopper, breaking rule 10 of this file |
 | 2026-09-07 | Pass 14: three failed-payment strings are not one; two pending strings are not one; gift claim catalogue from COPY-HE; admin refund blockers must never paint on `/checkout/failed` |
+
+## 14. Auth chrome, and the wishlist empty that cannot be filled from the PDP (pass 15)
+
+### 14.1 Auth (COPY-HE §3.5)
+
+| Id | Copy |
+|---|---|
+| auth.login | כניסה לחשבון |
+| auth.login.google | כניסה עם Google |
+| auth.login.sms | כניסה עם קוד ב-SMS |
+| auth.login.magic | כניסה ללא סיסמה (קישור מאובטח לאימייל) |
+| auth.login.submit | כניסה |
+| auth.login.fail | הכניסה נכשלה (source comments contain U+2014; do not copy it) |
+| auth.or | או |
+| auth.signup | יצירת חשבון |
+| auth.confirm.h2 | בדקו את תיבת הדואר |
+| auth.confirm.body | שלחנו לכם קישור לאימות. לחצו עליו כדי להפעיל את החשבון. |
+| auth.forgot | שחזור סיסמה |
+| auth.reset | בחרו סיסמה חדשה |
+| auth.reset.help | הסיסמה חייבת להכיל לפחות 8 תווים וספרה אחת. |
+| auth.mfa | אימות דו-שלבי |
+| auth.mfa.help | הזן את הקוד מאפליקציית האימות שלך כדי להמשיך לפאנל. |
+| auth.mfa.aria | קוד אימות |
+| supplier.login.h1 | כניסה לאזור הספקים |
+| supplier.login.cta | התחברות לספקים |
+| supplier.login.back | חזרה לחנות |
+
+`auth.mfa.*` is staff-only (`docs/ROLE-MATRIX.md` §10.1). Do not show it after a
+customer login.
+
+### 14.2 Wishlist empty is currently the only reachable state from the storefront
+
+Section 1 documents two empty strings and says the heart is on the PDP.
+`docs/COMPONENT-INVENTORY.md` Pass 14: `product/WishlistButton` has **zero
+import sites**. `/account/wishlist` renders. Nothing on the PDP writes to it.
+
+Keep the empty copy. Stop documenting `הוסף למועדפים` / `נוסף למועדפים` as a
+shipped shopper path until a caller exists. The account page empty is not a
+defect; a QA script that requires adding from the PDP cannot pass.
+
+## Revision
+
+| Date | Change |
+|---|---|
+| 2026-09-07 | Catalogue of empty, validation, page errors, checkout fail, confirmations, scan outcomes, wallet/coupons/wishlist |
+| 2026-09-07 | Pass 9: supplier empty vs 404 (inactive is 404, not empty) |
+| 2026-09-07 | Pass 10: city empty is a real answer; unknown slug 404 |
+| 2026-09-07 | Pass 11: legal H1s and offline, no escrow in returns |
+| 2026-09-07 | Redemption copy audited against source: 6/6 match, 3 outcomes were missing, HTTP status map added |
+| 2026-09-07 | Pass 12: coverage map counted against source (1075 Hebrew literals, 196 undocumented error strings); validations completed in full; two wording inconsistencies |
+| 2026-09-07 | Pass 13: the money path complete (11.2a). checkout.ts and refund.ts verbatim; the double-submit string is success-adjacent; refund copy is operator-facing and may name Cardcom |
+| 2026-09-07 | Pass 13: the money path documented in full (checkout.ts, refund.ts). Five strings interpolate a raw Postgres or Cardcom message and are rendered verbatim to the shopper, breaking rule 10 of this file |
+| 2026-09-07 | Pass 14: three failed-payment strings are not one; two pending strings are not one; gift claim catalogue from COPY-HE; admin refund blockers must never paint on `/checkout/failed` |
+| 2026-09-07 | Pass 15: auth chrome from COPY-HE; PDP wishlist heart is not a shipped path (`WishlistButton` unimported) |
