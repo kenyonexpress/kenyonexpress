@@ -54,4 +54,4 @@ stranded-payments. אל תכניסו שורת תשלום ידנית. אל תסמ
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+No default commission. vendor without membership is denied. Duplicate 169-172 by filename. Analytics zeros are not proof of no sales.
