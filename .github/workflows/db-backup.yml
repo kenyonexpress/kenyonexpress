@@ -1,0 +1,75 @@
+# Daily offsite pg_dump of the hosted Supabase Postgres to Cloudflare R2.
+# docs/ARCHITECTURE-BACKUP-DR.md §5 (offsite dumps run even on Supabase Pro;
+# platform backups are necessary but not sufficient) and
+# docs/DB-RESTORE-RUNBOOK.md (how to use what this writes).
+#
+# The heavy lifting is scripts/dr/pg-dump-to-r2.mjs: dump, verify the TOC
+# BEFORE upload, upload dump + sha256 sidecar, then prune to 30 days while
+# never keeping fewer than the newest 7 dumps. Stdlib only (no pnpm install),
+# so a lockfile problem can never stop the backups.
+#
+# OFF UNTIL TWO SETTINGS EXIST (same pattern and same reasoning as cron.yml):
+#
+#   Variable DB_BACKUP_ENABLED = true          Settings > Secrets and variables
+#   Secrets  SUPABASE_DB_URL                   > Actions
+#            BACKUP_R2_ACCOUNT_ID
+#            BACKUP_R2_ACCESS_KEY_ID           (an R2 API token scoped to the
+#            BACKUP_R2_SECRET_ACCESS_KEY        backup bucket ONLY, not the
+#            BACKUP_R2_BUCKET                   media token)
+#
+# GitHub cron is best effort and pauses after 60 days without commits; the
+# 36h-staleness warning in restore-latest.mjs and the quarterly drill are the
+# watchdogs that notice.
+name: DB backup
+
+on:
+  schedule:
+    - cron: '0 3 * * *' # 03:00 UTC daily
+  workflow_dispatch:
+
+concurrency:
+  group: db-backup
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: vars.DB_BACKUP_ENABLED == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      # The server is Postgres 17.6; a 16.x pg_dump refuses to connect, and
+      # ubuntu-latest ships 16. PGDG has 17.
+      - name: Install postgresql-client-17
+        run: |
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+            | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/pgdg.gpg
+          echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17
+
+      - name: Dump, verify, upload, prune
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          BACKUP_R2_ACCOUNT_ID: ${{ secrets.BACKUP_R2_ACCOUNT_ID }}
+          BACKUP_R2_ACCESS_KEY_ID: ${{ secrets.BACKUP_R2_ACCESS_KEY_ID }}
+          BACKUP_R2_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_R2_SECRET_ACCESS_KEY }}
+          BACKUP_R2_BUCKET: ${{ secrets.BACKUP_R2_BUCKET }}
+          PGDUMP: /usr/lib/postgresql/17/bin/pg_dump
+          PGRESTORE: /usr/lib/postgresql/17/bin/pg_restore
+        run: node scripts/dr/pg-dump-to-r2.mjs
+
+      - name: Notify on failure
+        if: failure()
+        env:
+          NTFY_TOPIC: ${{ vars.CRON_NTFY_TOPIC }}
+        run: |
+          [ -n "$NTFY_TOPIC" ] || exit 0
+          curl -sS -H "Title: KE DB backup FAILED" \
+            -d "Daily pg_dump to R2 failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            "ntfy.sh/${NTFY_TOPIC}" || true
