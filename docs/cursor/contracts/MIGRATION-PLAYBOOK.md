@@ -39,3 +39,9 @@ Column on `suppliers` (and archive `legacy_percent_archive_112`). Form leftover.
 | Q | Best answer |
 |---|---|
 | 166–168 applied? | README says yes 2026-09-04; still verify `schema_migrations`. |
+
+---
+
+## Second pass
+
+Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
