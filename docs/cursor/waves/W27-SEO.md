@@ -69,6 +69,10 @@ Titles/descriptions stay Hebrew. No English title tags at launch.
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (JSON-LD)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- `aggregateRating` off until published reviews exist (W03 + H6).
+- Wishlist `/wishlist` noindex (W04). Account noindex.
+- Titles Hebrew. og:locale `he_IL`.
+- Do not index the ₪1 master as a deal. Canonical PDP only for `active` and not deleted.
+
