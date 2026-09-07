@@ -36,6 +36,17 @@ Approve does not grant a global split. Products still unsellable without per-pro
 
 ---
 
-## Second pass
+## Second pass (membership)
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+- Approve must insert
+  `supplier_members`
+  owner. `profiles.role = vendor` alone is access-denied.
+- No bank/payout fields on approve (coupon 100/0).
+- Suspend: till
+  `wrong_supplier`
+  / unauthorized, not a Cardcom action.
+- Unsellable until per-product
+  `platform_percent`.
+  Ignore
+  `default_split_percent`.
+
