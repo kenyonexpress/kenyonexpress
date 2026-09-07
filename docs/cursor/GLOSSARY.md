@@ -297,4 +297,21 @@ export name on Next 16. Not
 | Hobby cron silence | שתיקת cron ב-Hobby | Vercel runs two jobs, ignores the rest, no error. Why Actions exists. |
 | Confirmation phrase | משפט אישור מחיקה |
 `מחק את החשבון שלי`.
+
+---
+
+## 12. Terms from the 100-item queue (2026-09-07)
+
+| English | עברית | Meaning here |
+|---|---|---|
+| vendor | ספק (ערך enum) | `profiles.role`. **Not** till access. |
+| coupon-partner | שגיאת שם בתיעוד | Use `supplier_members`. |
+| member_role | תפקיד בחברות | owner / manager / scanner |
+| pay_at_business | יתרה בעסק | face − coupon prepaid; never through platform |
+| default_split_percent | שדה שאסור לקופה | Prefill leftover. Not a global rate. Remove. |
+| constructed cookie | עוגייה בנויה | `Cookie: session_id=<uuid>` to PostgREST |
+| CancelOnly | ביטול לפני שידור | Same Israel calendar day as charge |
+| types-ahead | טיפוסים לפני הסכימה | `escrow_holds`, `payout_statements` may exist in types only |
+| wave index | מדד גלים | `docs/cursor/waves/WAVE-INDEX.md` toward v7.0.0-rc1 |
+
 Typed, trimmed, not fuzzed. |
