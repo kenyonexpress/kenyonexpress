@@ -210,3 +210,38 @@ Do not translate legal without counsel (P5).
 | SKU | Catalogue row. ~80 live. |
 | PDP | Product detail page `/product/[slug]`. |
 | GMV | If it appears on a dashboard it must be a safe integer of agorot. |
+| SecureStore | Hardware-backed session store on the till app. Not AsyncStorage. |
+| Remainder agora | Leftover 1 agora when splitting a line into N vouchers. First unit absorbs it. |
+| `consume_order_stock` | Finalize RPC. Failure must not un-pay. |
+| `reportPurchase` | Server purchase event at finalize, deduped on order id. |
+
+---
+
+## 10. Scan outcomes and voucher statuses (enums)
+
+`voucher_scan_outcome` (eleven values, Hebrew to the till, English to machines):
+
+`success`,
+`already_redeemed`,
+`expired`,
+`cancelled`,
+`refunded`,
+`wrong_supplier`,
+`not_found`,
+`invalid_signature`,
+`invalid_request`,
+`unauthorized`,
+`rate_limited`.
+
+Replay with the same idempotency key returns the first outcome. Same key, different body:
+`invalid_request`
+(not an oracle).
+
+`voucher_status`:
+`issued`,
+`redeemed`,
+`expired`,
+`cancelled`,
+plus
+`refunded`
+as used on the refund path. There is **no** status trigger. Terminal states stay terminal.
