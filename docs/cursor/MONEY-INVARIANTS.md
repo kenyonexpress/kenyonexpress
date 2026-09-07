@@ -526,3 +526,22 @@ hit **that fossil pair as anon**, not
 `wallet_entries`.
 That is a coverage gap: see
 `docs/cursor/TEST-MAP.md`.
+
+---
+
+## 16. Remainder agora and non-money failures at finalize
+
+Quantity × unit price is exact integer. Splitting a line into N voucher rows is not always exact per unit. **First unit absorbs the remainder** so each voucher still satisfies
+`face = coupon_price + remaining_due`
+and the N rows still sum to the line. Tests:
+`src/server/domain/orders/settlement.test.ts`.
+
+Stock consume and purchase reporting after pay are **not** money rounding. Stock failure must not roll back
+`paid`
+(the card kept the money). Inventing a second
+`fn_wallet_transfer`
+because "stock failed so the customer needs compensation" is a double-pay. Ops grants goodwill via
+`refundOrder`
+wallet path with a new
+`refunds`
+row.
