@@ -524,6 +524,61 @@ anything else reusing the size).
 Frequency across the reference: **14px is the body size on 8364 elements**, then
 16.002 (746), 20.006 (387), 11.998 (345), 12.0036 (144), 14.994 (49).
 
+### 3.0 Recounted against the committed capture (pass 14)
+
+Same treatment as the spacing scale in 2.0. Every element's `font-size` across
+21 captures, 23952 elements.
+
+```
+15583  14px        459  16px         288  9.6012px    191  21.994px
+ 2539  11.998px    393  26px         256  11.2px      147  15.988px
+  804  13.006px    365  20.006px     312  12px        144  17.5px
+  694  16.002px    330  20px         237  22px        144  12.0036px
+```
+
+Top size/weight pairs:
+
+```
+14327  14px / 400     783  13.006px / 400    378  26px / 400
+ 1970  11.998px / 400 652  16.002px / 400    344  20.006px / 400
+ 1229  14px / 700     569  11.998px / 700    330  20px / 400
+```
+
+**14px at weight 400 is 60% of every element on the site.** The existing claim
+that 14px is the body size is confirmed with room to spare; `14px / 700` at 1229
+is the second-largest pair, which is the bold UI label.
+
+#### One ordering correction
+
+The list in 3.1's preamble puts `11.998px` **fourth** with 345 occurrences. It is
+**second, with 2539**. That is a seven-fold difference in count and a two-place
+difference in rank, far past what the per-side versus per-declaration
+methodology gap in 2.0 explains. `11.998px` is the card title at 768 and 380,
+the category tag, and the sale badge, so a size that paints three separate
+recurring components was ranked below one that paints a heading.
+
+`--card-cats-size` and `--card-badge-size` already carry it (section 4.0). No
+token changes; the frequency note was simply wrong about its weight.
+
+#### Four sizes with no token, and none of them needs one
+
+| Size | Count | Carried by | Verdict |
+|---|---|---|---|
+| `26px` | 393 | `li` (147) and `fab` (147), plus `float` (21) | **FontAwesome glyph size.** `fab` is the FontAwesome Brands class. This is an icon font, not text |
+| `21.994px` | 191 | `fab` (147), `call-us-number` (21) | same icon font, plus the phone widget |
+| `17.5px` | 144 | `navbar-toggler` (72), `ec` (72) | the hamburger's icon font and the Electro icon set |
+| `15.988px` | 147 | `dropdown-toggle`, `cart-items-total-price` | live chrome |
+
+**All four are icon-font sizes or WooCommerce chrome, not typography.** This
+project paints its icons with `lucide-react` SVGs sized by prop, so a
+FontAwesome glyph size has nothing to bind to. They are listed so that a future
+"complete the type scale" pass does not add `26px` as a heading step: **nothing
+on this site sets 26px type.**
+
+That is the same conclusion the spacing recount reached about `19.418px`, by the
+same method: count, then **trace the carrier** before deciding whether a
+frequent value is a missing token or someone else's furniture.
+
 ### 3.1 Body and UI
 
 | Token | Value | Usage |
@@ -1591,6 +1646,112 @@ Returns copy: remainder at the business, no escrow, redeemed = done. No numbered
 
 ---
 
+## 11. Pass 14: the three compare widths are not the CSS cascade
+
+The brief names breakpoints `380`, `768` and `1440`. Those three numbers are
+the **`compare.mjs` viewports**. They are not the cascade the layout switches
+on, and treating them as if they were is how a component grows a
+`min-[380px]` that nobody can grep for.
+
+### 11.1 Three layers of "where the layout changes"
+
+| Layer | Stops | What it is for |
+|---|---|---|
+| Compare gate | **380, 768, 1440** | `--breakpoint-mobile/tablet/desktop`. The pixel log. A screenshot taken at any other width is not a gate result |
+| Tailwind defaults | `sm` 640, `md` 768, `lg` 1024, `xl` 1280, `2xl` 1536 | The cascade most utilities actually switch on. `md` equals the middle compare width by coincidence; `xl` does **not** equal 1440 |
+| Electro / Bootstrap 3 | 768, **992**, **1200** | The live theme. Checkout becomes one column below 992. The live page container is 1170 / 1200, never the brief's 1320 |
+| Measured one-offs | 320, **374**, 375, **560**, 640 | One element each. Documented in §2.5. Do not promote them to the named scale |
+
+The header switch is the one that bites. Live (and ours) stay on the **handheld**
+masthead through `lg` (1024). The desktop masthead (logo + nav, no hamburger)
+arrives at **`xl` (1280)**. A 1440 screenshot therefore shows desktop chrome; a
+1024 screenshot still shows the hamburger. Scoring 1024 against a 1440
+reference is a different page.
+
+Heebo, RTL, `#fed700` / `#fedd26`, link `#0062bd` do not change at any of these
+stops. Price red does not either: storefront stays live `#dc3545` (home-grid
+sale `#c93636`). Brief `#E4002B` remains wallet-pass chrome only. Container
+`1320px` remains a named brief value that live never paints (§0, §2.1).
+
+### 11.2 Button radii sit outside the five-token scale
+
+§2.4 counted every `border-radius` that appears more than ten times and froze
+five tokens (`0`, `4`, `7`, `25`, `22`, `200`). Purchase controls do not use
+those five. They were measured as **families**, not as a scale, in §4.0:
+
+| Family | Radius | In the §2.4 scale? |
+|---|---|---|
+| Product add-to-cart at 380 | `6px` | **no** |
+| Product add-to-cart at 768 / 1440 | `25.2px` | no (`--radius-lg` is a flat `25px`) |
+| Cart checkout | `21.994px` | no (near `--radius-pill` 22) |
+| Place order | `50px` | **no** |
+| Card add-to-cart / newsletter pill | `22px` | yes, `--radius-pill` |
+| Secondary login | `22px` | yes |
+
+Rounding `25.2` to `--radius-lg` (25) and `21.994` to `--radius-pill` (22)
+is inside the noise of the 11 percent gate. Rounding place-order `50` to
+anything on the scale is not: `--radius-round` is 200 and would still look
+pill-shaped, but it is a different token with a different job (avatars). Leave
+the four family radii on the button tokens in `packages/ui/tokens.css`. Do not
+"tidy" them into §2.4.
+
+Cards and category tiles stay `--radius-none` (`0px`). Live storefront cards
+are square. A 8px card radius is an invention and it shows in the grid bands.
+
+### 11.3 Electro home-v7 boxes at 1440, so 1320 has nowhere to go
+
+Electro home-v7 is a **three-column hero** plus a category strip that shares the
+slider's x, plus a feature bar, plus a deals grid. At the 1440 compare width
+the identity is:
+
+```
+viewport                         1440
+page container                   1200   x135 .. x1305
+hero row                         1170   same content edges, 15px gutter
+  departments (inline-start)      241 x 593     visual right in RTL
+  slider                          728 x 370     (token 727.89)
+  ads, three stacked              201 x 197     visual left
+  241 + 728 + 201               = 1170
+category strip                    728 x 170     shares the slider's x
+feature bar                       1170 x 134
+deals grid                        1150, 4 columns
+home footer                       1430          not the page container
+```
+
+`241 + 728 + 201 = 1170` is why the brief's `1320px` cannot be adopted on this
+skeleton: there is no 150px of slack in the hero row. Widening the page
+container to 1320 without widening the three inner columns leaves 150px of
+empty gutter; widening the inner columns moves every landmark the log pins.
+
+At 768 the side columns drop. Slider 729 × 304, strip 729 × 170, feature bar
+690 × 134, deals 2 columns. At 380 the strip and the side columns are absent,
+the hero is 350 × 213, the feature bar is a 31px empty strip, deals 1 column.
+
+Heebo paints every string. Latin demo lines on the live slider (`SIMPLY THE
+BEST`) are content debt on the reference, not a type-token miss.
+
+### 11.4 Stacking (absent from this file until now)
+
+Named layers, copied from `docs/ui-design-system/TOKENS.md` §6 so a reviewer
+does not invent `z-[999]` on a storefront overlay. Consent is not in this
+table: it is `fixed bottom-0` with `padding-bottom` on `body`, not a z fight.
+
+| Layer | z | Surfaces |
+|---|---|---|
+| `z-base` | 0 | Page flow, inactive hero slides |
+| `z-raised` | 2 | Sale badge on a thumbnail |
+| `z-hero-copy` | 10 | Hero text over the slide |
+| `z-hero-controls` | 20 | Hero bullets |
+| `z-popover-inline` | 30 | Reserved for header search suggestions. **The storefront ships no search UI.** Keep the slot so a future field does not collide with the masthead |
+| `z-sticky` | 40 | Masthead. WhatsApp float and PWA prompt share this band, below overlays |
+| `z-overlay` | 50 | Drawer, dialog, dropdown, select, mini-cart |
+| `z-overlay-plus` | 60 | Mini-cart nested chrome, checkout sticky pay bar |
+| `z-skip` | 100 | Skip link on focus |
+| `z-outlier-deals` | 999 | Existing deals-card hover overlay. Do not copy |
+
+A sticky pay bar under an undecided consent banner on a phone is a known miss
+(`docs/QA-SCRIPTS.md` §0). The banner steals the click, not the z-index.
+
 ## 9. Related documents
 
 ```
@@ -1615,3 +1776,4 @@ src/lib/electro-hero-tokens.ts  ELECTRO_HERO, the Electro home-v7 measurements
 | 2026-09-07 | Pass 9: `/s/[id]` tokens, 2/3/4 grid, LocalBusiness paint gate |
 | 2026-09-07 | Pass 10: `/city/[slug]` seventeen regions, empty is a real answer |
 | 2026-09-07 | Pass 11: legal aliases + offline tile (no fetch, ink on yellow) |
+| 2026-09-07 | Pass 14: 380/768/1440 are compare viewports, not the CSS cascade; header stays handheld through 1024; four purchase radii sit outside the five-token scale; Electro home-v7 241+728+201=1170 so 1320 has nowhere to go; stacking layers |
