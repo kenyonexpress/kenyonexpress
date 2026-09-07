@@ -16636,3 +16636,41 @@ Session 2026-07-23 (המשך) - יעד 1/20: אינטגרציית WhatsApp (קו
 **נשאר פתוח, בלי שינוי:** עשר מיגרציות ב-`migrations/pending/`
 (‏162 חסומה על vault, ‏169 עד ‏177 מוכנות לאישור), רוטציית
 `SUPABASE_SECRET_KEY`, ו-delta של Elementor.
+
+## (החלטה) המשך מ: ‏MEGA 163-167 נדחתה, לא בוצעה
+
+**החלטות שהתקבלו לבד — 08.09, ‏MEGA 163-167 (משימות רקע).**
+
+הפקודה שהתקבלה לא הורצה. ארבע סיבות, כולן נמדדו ולא הונחו:
+
+1. **הפקודה לא עוברת parse.** ‏`EOF` ואחריו שורה שמתחילה ב-`&&` הוא
+   `zsh: parse error near '&&'`. כלומר גם בלי כל שאר הסיבות, הריצה לא
+   הייתה יוצרת אף קובץ ולא מגיעה ל-`git`. נבדק ב-`zsh -n`.
+2. **‏`apps/web/` לא קיים.** בריפו יש `apps/mobile` בלבד; אפליקציית הווב
+   יושבת ב-`src/`. ‏`find -type d -name web` מחוץ ל-node_modules מחזיר כלום.
+3. **חמשת הקבצים לא היו עוברים `type-check`.** כל גוף פונקציה קורא
+   לפונקציות שאינן מוגדרות ואינן מיובאות (‏`generateDailyReport`,
+   `sendMarketingEmails`, `updateTrendingProducts`, `processWeeklyPayouts`,
+   `cacheProduct` ועוד). ‏`&&` היה עוצר לפני ה-commit.
+4. **‏`PubSub` אינו תלות בפרויקט** ואין לו מקום כאן: מנוי ארוך-חיים
+   (`pubsub.subscribe`) לא שורד ב-Vercel serverless. המקבילה האמיתית היא
+   ‏Supabase realtime, לא ספריית PubSub.
+
+**מעבר לכך, ארבע מתוך חמש היכולות כבר בנויות.** יש שנים עשר crons חיים
+ב-`src/app/api/cron/`, והם רשומים ב-`scripts/cron-jobs.json`:
+‏`weekly-digest` (סיכום שבועי), ‏`invoices` (חשבוניות), ‏`retention`
+(ארכוב, חודשי ב-`0 5 1 * *`), ‏`reconcile`, ‏`subscriptions`, ‏`stock`,
+`abandoned-cart`, ‏`notifications`, ‏`reap-carts`, ‏`expire-vouchers`,
+`stranded-payments`, ‏`health`.
+
+**ולכן הוספת cron חדש אינה קובץ אחד.** ‏`src/__tests__/cron-schedule-inventory.test.ts`
+מצליב את `src/app/api/cron/` מול `scripts/cron-jobs.json`, מול
+`.github/workflows/cron.yml` ומול `docs/CRON-EXTERNAL.md`, ונופל על
+"names the twelve jobs and nothing else". ‏route חדש בלי ארבע העדכונים
+מפיל את הסוויטה.
+
+**ההחלטה:** לא נכתבו חמשת קבצי ה-stub. כתיבתם הייתה מוסיפה קוד שלא מתקמפל,
+בתיקייה שלא קיימת, שמשכפל crons שכבר רצים. אם נדרשת יכולת רקע חדשה, היא
+נכתבת כ-route ב-`src/app/api/cron/` לפי האידיום הקיים (‏`bearerMatches`
+מול `CRON_SECRET`, ‏`withRequestLog`, ‏`createAdminClient`), ובאותו commit
+מעודכנים גם המניפסט, ה-workflow, הדוק והטסט.
