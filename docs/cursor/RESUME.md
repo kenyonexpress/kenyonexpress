@@ -2,8 +2,8 @@
 
 **Queue of 100:** first write complete; deepen pass in progress.
 
-**Next item:** 5 (`docs/cursor/waves/W07-SUPPLIER-ONBOARDING.md`).
+**Next item:** 8 (`docs/cursor/waves/W10-I18N.md`).
 
-Items 50–64 contracts and W14/W24 received a second money/auth pass this turn. Continue 1→100. Markdown only under `docs/cursor/`. Never `-A`.
+Just deepened: W07, W15, LEDGER, VOUCHER/ORDER/REFUND machines. Continue 1→100. Markdown only under `docs/cursor/`. Never `-A`.
 
 **Branch:** `ke-cursor-docs`
