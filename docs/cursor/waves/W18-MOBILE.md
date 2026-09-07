@@ -76,3 +76,10 @@ Till copy comes from server outcomes: לא נמצא / כבר מומש / פג / �
 - Offline queue: drain to `/api/supplier/vouchers/redeem`. Local UI cannot say "מומש" until the RPC says so.
 - Camera/wallet extras are W42. This wave is till + no secrets.
 
+---
+
+## Third pass
+
+Till outcomes from server: לא נמצא / כבר מומש / פג / ספק אחר / אין הרשאה / יותר מדי ניסיונות. PIN is not website login.
+
+
