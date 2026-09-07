@@ -392,6 +392,62 @@ The one cluster small enough to finish in a single pass, so it is finished here.
 
 Neither is a defect. Both are worth one decision rather than three.
 
+### 11.2a The money path, complete (pass 13)
+
+11.3 named `payments/checkout.ts` and `payments/refund.ts` as the two to take
+first, because a shopper who meets one of these has already tried to pay. Both
+are now complete, verbatim from source.
+
+**`src/server/actions/payments/checkout.ts`**
+
+| Situation | Copy |
+|---|---|
+| Not signed in at pay time | יש להתחבר לפני התשלום |
+| Rate limited | יותר מדי ניסיונות תשלום, המתינו דקה |
+| Duplicate submit | בקשת תשלום כפולה |
+| Provider unreachable | שגיאה בחיבור לספק הסליקה |
+| Payments switched off | התשלום מושבת כרגע, נסו שוב מאוחר יותר |
+| Saved card missing | הכרטיס השמור לא נמצא |
+| Saved card expired | תוקף הכרטיס השמור פג |
+| Address required (physical) | נדרשת כתובת למשלוח |
+| Address fields incomplete | יש למלא שם, עיר, רחוב ומספר בית למשלוח |
+| Address invalid | כתובת לא תקינה |
+| Address save failed | שמירת הכתובת נכשלה, נסו שוב |
+| Cart line vanished | מוצר בעגלה אינו קיים עוד |
+| Wallet short | יתרת הארנק אינה מספיקה |
+| Stock reservation failed | לא הצלחנו לשריין את המלאי, נסו שוב |
+| Subscription mixed into a normal cart | מנוי נרכש בהזמנה נפרדת. סיימו קודם את רכישת המנוי או הסירו אותו מהעגלה |
+
+Five `לא ניתן לאמת…` / `לא ניתן לטעון…` strings on this path are already in
+section 2 and are not repeated here.
+
+**`src/server/actions/payments/refund.ts`**
+
+| Situation | Copy | Code |
+|---|---|---|
+| Caller is not admin | אין הרשאה | `FORBIDDEN` |
+| Unknown order | הזמנה לא נמצאה | `NOT_FOUND` |
+| Nothing to credit | לא נמצא תשלום לזיכוי | `STATE_INVALID` |
+| No Cardcom transaction id | לתשלום אין מזהה עסקה ב-Cardcom | `STATE_INVALID` |
+| Unreadable amount | לתשלום אין סכום קריא | `STATE_INVALID` |
+| Order has no items | להזמנה אין פריטים | `STATE_INVALID` |
+| Computed refund is zero | סכום הזיכוי הוא אפס | `STATE_INVALID` |
+
+#### Three notes on this set
+
+1. **`בקשת תשלום כפולה` is the double-submit guard, and it is a success-adjacent
+   message.** A shopper who sees it may already have a payment in flight. It must
+   never sit next to "you were not charged". Pair it with the pending copy in
+   section 4, not with the failure copy.
+2. **Every refund string is operator-facing.** They surface in the admin panel,
+   not to a customer, which is why `לתשלום אין מזהה עסקה ב-Cardcom` may name the
+   provider. Do not reuse these on a customer surface: section 3's rule against
+   Cardcom codes in customer copy still holds.
+3. **`מנוי נרכש בהזמנה נפרדת…` is the only string here that tells the shopper
+   what to do next**, and it is the model the rest should follow. Compare it with
+   `כתובת לא תקינה`, which says only that something is wrong. Same wording
+   problem as the phone messages in 11.2.
+
 ### 11.3 The remaining gap, by file
 
 240 undocumented error strings across 32 files under `src/server/actions`.
@@ -443,3 +499,4 @@ PY
 | 2026-09-07 | Pass 11: legal H1s and offline, no escrow in returns |
 | 2026-09-07 | Redemption copy audited against source: 6/6 match, 3 outcomes were missing, HTTP status map added |
 | 2026-09-07 | Pass 12: coverage map counted against source (1075 Hebrew literals, 196 undocumented error strings); validations completed in full; two wording inconsistencies |
+| 2026-09-07 | Pass 13: the money path complete (11.2a). checkout.ts and refund.ts verbatim; the double-submit string is success-adjacent; refund copy is operator-facing and may name Cardcom |
