@@ -14,4 +14,4 @@ If Twilio was never wired: this runbook is "no action; float links still work if
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+v7 does not require Twilio. Click-to-chat is wa.me. Do not fail checkout on WhatsApp 502. Kill switch notifications also kills email (too coarse).
