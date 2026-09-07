@@ -2,8 +2,8 @@
 
 **Queue of 100:** first write complete; deepen pass in progress.
 
-**Next item:** 30 (`docs/cursor/waves/W32-TRANSFER.md`).
+**Next item:** 33 (`docs/cursor/waves/W35-STAFF-ROLES.md`).
 
-Just deepened: W26–W29, W31, W33. Continue 1→100. Markdown only under `docs/cursor/`. Never `-A`.
+Just deepened: W30, W32, W34. Continue 1→100. Markdown only under `docs/cursor/`. Never `-A`.
 
 **Branch:** `ke-cursor-docs`
