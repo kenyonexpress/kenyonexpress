@@ -2213,6 +2213,55 @@ Electro. At `home@380` the shutter sees three deal cards (`docs/UI-PARITY-LOG.md
 home percent by flattening or lifting cards. Catalogue images still dominate
 those bands.
 
+## 8c. Drift check: this document against the token files (pass 22)
+
+Every `| \`--token\` | \`value\` |` row in this document was compared with the
+declared value in `src/styles/tokens.css` and `packages/ui/tokens.css`.
+
+| | Count |
+|---|---|
+| Token rows in this document | **117** |
+| Value matches | **117** |
+| Mismatches | **0** |
+| Rows naming something that is not a declared token | **0** |
+
+**Zero drift.** Every token this document quotes exists, and every value it
+quotes is the value that ships.
+
+### 8c.1 Why this document is clean and the copy document was not
+
+The same check run against `docs/ERROR-COPY.md` in pass 21 found **2 real
+mismatches in 196 quoted strings** (the wishlist labels). The difference is not
+diligence. It is enforcement.
+
+| | Enforced by | Result |
+|---|---|---|
+| Tokens | `src/styles/tokens.test.ts` — asserts every `SITE` colour appears in `tokens.css` with the same value, and refuses a raw hex in any `.tsx` | 117 / 117 |
+| Hebrew copy | **nothing** | 194 / 196 |
+
+A token cannot drift far, because a test fails the moment a component writes a
+hex instead of reaching for the utility. A string can drift silently forever: a
+developer renames a label, no test knows what the label should say, and the
+document that specifies it is never opened.
+
+That is the general shape and it is worth stating once: **a document stays true
+in proportion to how much of it a machine can check.** This one is
+machine-checked in its most important dimension; `ERROR-COPY` is not, which is
+why it needs the periodic drift pass and this one needs it less.
+
+### 8c.2 Re-running it
+
+Parse every `| \`--token\` | \`value\` |` row out of this file, load
+`--name: value` pairs from both token files with comments stripped, and print
+any row where the two disagree or where the name is not declared.
+
+Expected output: 117 match, 0 mismatch, 0 absent.
+
+Run it after any token change. It is the cheapest way to know whether this
+document is still describing the software.
+
+---
+
 ## 9. Related documents
 
 ```
@@ -2245,3 +2294,4 @@ src/lib/electro-hero-tokens.ts  ELECTRO_HERO, the Electro home-v7 measurements
 | 2026-09-07 | Pass 19: border widths counted. 93.5% carry none; the dominant shape is bottom-only hairline, and with radius and shadow this completes one statement: the reference is flat, square and line-separated |
 | 2026-09-07 | Pass 20: font stack counted. 85.8% of live declares bare "Open Sans" with NO fallback, so its Hebrew has no declared typeface on any platform; the strongest form of the Heebo argument |
 | 2026-09-07 | Pass 21: weights and line-heights counted, completing all fifteen capture columns. 400 and 700 are 97.5% of the site, Heebo loads as a variable font so no weight is synthesised, and 104 line-heights is arithmetic rather than a scale |
+| 2026-09-07 | Pass 22: drift check against the token files. 117 of 117 rows match exactly, against 194 of 196 for ERROR-COPY, and the difference is enforcement rather than diligence |
