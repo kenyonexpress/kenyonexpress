@@ -76,8 +76,14 @@ export default function OrderAdminActions({ orderId, notes, refundBlockers }: Pr
    * It is NOT gated on `refundBlockers`, and that is the point: the blockers
    * are all reasons the CARD must not be touched (a voucher redeemed at the
    * counter, one that expired), and every one of them is a reason to reach for
-   * this instead. A wallet credit carries no cancellation fee and moves no
-   * order, line or voucher out of the state it is in.
+   * this instead. A wallet credit carries no cancellation fee.
+   *
+   * It leaves the order and the line where they are, and it leaves a REDEEMED
+   * voucher redeemed, because that one is true: the customer ate the meal. A
+   * voucher still `issued` is voided with the credit. This paragraph used to
+   * promise that no voucher moved at all, and that promise was what made the
+   * ungated button reachable on an order holding a live coupon: the money went
+   * back and the coupon stayed scannable for the balance alone.
    */
   function submitWalletRefund() {
     setWalletError(null)
@@ -221,8 +227,9 @@ export default function OrderAdminActions({ orderId, notes, refundBlockers }: Pr
       <section className="bg-white border border-gray-200 rounded-xl p-5 md:col-span-2">
         <h2 className="font-semibold text-gray-800 mb-1">זיכוי לארנק</h2>
         <p className="mb-3 text-xs text-gray-500">
-          לשובר שכבר מומש או שפג, ולזיכוי רצון טוב אחרי חלון 14 הימים. הכסף נזקף לארנק הלקוח, ההזמנה
-          והשובר נשארים במצב שבו הם נמצאים, ואין דמי ביטול.
+          לשובר שכבר מומש או שפג, ולזיכוי רצון טוב אחרי חלון 14 הימים. הכסף נזקף לארנק הלקוח ואין
+          דמי ביטול. שובר שמומש נשאר מומש וההזמנה נשארת במצבה. שובר שעדיין פעיל מבוטל יחד עם הזיכוי,
+          כדי שלא ייווצר מצב שבו הכסף חזר ללקוח והקופון עדיין ניתן למימוש בבית העסק.
         </p>
 
         <div className="space-y-2">
