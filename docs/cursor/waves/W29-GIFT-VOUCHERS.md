@@ -72,6 +72,10 @@ Guest buyer gift: need an email on the order. Wrong token: identical 404.
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (not a second charge)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- Claim token is a capability. No existence oracle (`gift-vouchers` tests).
+- Pay once at buyer checkout. Claim does not call Cardcom.
+- After claim the voucher is the recipient's. Screenshot is a leak, not a product.
+- Gift columns on delete: conservative hash if 150 does not (`RUNBOOK-CUSTOMER-DATA-REQUEST.md`).
+
