@@ -53,6 +53,22 @@ That is the reverse of the numeric order, and deliberately so. 162 is the only
 one of the three that causes anything to *happen* on a schedule; it should be
 last, and it is blocked anyway.
 
+### 0.1a Scope: three on this branch is not three everywhere
+
+This document reviews `migrations/pending/` **as it stands on
+`docs/ui-design-system`**, where it holds exactly three SQL files. That is worth
+saying, because it is not the only answer in this repository.
+
+`git branch --contains` places further pending-migration work (numbers past 170)
+on `closeout/v1-final` and `ke-cursor-docs`. Those branches are out of scope
+here and are deliberately not read: this worktree is instructed never to check
+out `closeout/v1-final`, and reviewing a file from a branch that is not checked
+out would be reviewing text without its context.
+
+So: **before acting on "there are three pending migrations", confirm which
+branch you are on.** A merge from either of those branches changes the answer,
+and this document would then be describing a subset.
+
 ### 0.2 Status inherited from the 2026-09-04 audit
 
 `APPLY-ORDER.md` records that 166, 167 and 168 were found already applied and
@@ -389,6 +405,35 @@ This is not a reason to hold 170. Eight of the ten indexes are unambiguously
 right and the two half-cases are still an improvement on no index at all. It is
 a reason not to record "price sort is now indexed" as done when only one of its
 two directions is.
+
+## 3a. The directory's own bookkeeping, cross-checked
+
+`migrations/pending/README.md` carries the "APPLIED IN PRODUCTION" table, and
+`migrations/applied/` carries the files. If those two disagree, every status in
+this document is built on sand. They were compared.
+
+| | Count |
+|---|---|
+| Files in `migrations/applied/` | 45 |
+| Distinct migration numbers on disk | 41 |
+| Numbers named in `README.md` | 49 |
+
+A naive diff reports ten mismatches. **All ten are explainable and none is a
+real discrepancy.** Each was opened rather than counted:
+
+| Reported | Reality |
+|---|---|
+| `135` on disk, not in README | The files are `135a_product_type_recurring.sql` and `135b_recurring_subscriptions.sql`. The README names them with their letter suffix; a `(\d+)` capture drops it. Naming artefact. |
+| `165` in README, not on disk | **Correct.** It was cancelled on 2026-09-04 and lives in `migrations/cancelled/165_revoke_anon_helpers.sql` with its preflight, exactly as `APPLY-ORDER.md` records. |
+| `162`, `169`, `170` in README, not on disk | **Correct.** They are the three still pending. |
+| `005`, `085`, `118`, `128`, `129` in README, not on disk | All five appear in **prose**, not in the applied table, and every one points at `supabase/migrations/` (the other lineage): "already holds `005_products_schema.sql`", "restore the prior body from `085_…`", "`118_search_intelligence.sql` grants it to…", "`128_wp_publish.sql` and `129_catalogue_cleanup.sql`". They are citations, not claims of application. |
+
+**Result: zero real discrepancies.** The bookkeeping in this directory is
+trustworthy, and the statuses in sections 1 to 3 rest on it safely.
+
+That is a positive result and is recorded as one. A future audit that re-runs
+the naive comparison will get the same ten hits; this table is here so it does
+not spend its budget rediscovering that all ten are fine.
 
 ## 4. The preflights
 
