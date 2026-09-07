@@ -718,6 +718,53 @@ eighteen policies on public-readable tables call them inside `USING`, RLS quals
 run as the caller, and the revoke would have turned every anonymous catalogue
 `SELECT` into a 42501.
 
+#### The supplier helpers, and why they are safe
+
+Section 7.4's list of four was short by two. The supplier side has its own
+family, all `SECURITY DEFINER` with `SET search_path = public`:
+
+```sql
+is_supplier_member(p_supplier_id)
+  SELECT 1 FROM supplier_members
+  WHERE supplier_id = p_supplier_id AND user_id = auth.uid() AND is_active
+
+is_supplier_owner(p_supplier_id)
+  ... same, AND member_role = 'owner'
+
+current_supplier_id()
+```
+
+Three things fall out, and all three matter.
+
+**1. `is_active` is honoured on both sides.** The app filters
+`.eq('is_active', true)` in `getSupplierSession`; the DB adds `AND is_active` in
+both predicates. **A membership deactivated mid-session stops working at the
+next query**, not at the next login, because RLS re-evaluates per statement.
+That is the correct behaviour for revoking a till operator and it is worth
+knowing it is already true.
+
+**2. These are the counter-example to section 7.3's caution.** That section warns
+that a `SECURITY DEFINER` function taking an identity argument hands an
+authenticated user other people's rows. `is_supplier_member` **takes a
+`p_supplier_id`, not a user id**, and pins the identity internally to
+`auth.uid()`. The argument names *which supplier is being asked about*, never
+*who is asking*. That is exactly the shape 7.3 asks for, and it is worth
+recording as the pattern to copy rather than leaving the caution unanswered.
+
+**3. `is_supplier_owner` is the DB half of the portal's `owner` rank.**
+`src/lib/supplier/roles.ts` ranks `scanner < manager < owner` in the app;
+`is_supplier_owner` enforces the top rank in RLS, on `supplier_members` itself:
+
+```
+USING (user_id = auth.uid() OR is_supplier_owner(supplier_id))   -- read
+USING (is_supplier_owner(supplier_id)) WITH CHECK (...)          -- write
+```
+
+So a member can read **their own** membership row, and only an owner can read
+the whole team or change it. The app's `requireSupplierRole('owner', ...)` on
+`/supplier/payouts` and the DB's `is_supplier_owner` are the same rule stated
+twice, which is the pattern section 1 describes for the admin side.
+
 #### The consequence to check: support's reads
 
 The app grants `support` **read** on orders, users, suppliers, affiliates and
@@ -1052,3 +1099,4 @@ shipped (`docs/COMPONENT-INVENTORY.md` Pass 14 dead-code).
 | 2026-09-07 | Pass 16: layer 2 sits inside a Suspense boundary in both staff groups, with children as a pass-through slot. Awaiting at the top of the layout cost 78 prerender errors once |
 | 2026-09-07 | Pass 17: finding 5 traced to its cause. Not a loop but a bounce to /login, and the fix is in adminLandingPath, not in the guard, which currently prevents a worse loop |
 | 2026-09-07 | Pass 18: the twelve non-admin server actions. Eight owner-scoped via auth.getUser, four deliberately public with three rate-limited, and no supplier actions at all |
+| 2026-09-07 | Pass 19: the supplier helper family. is_active is honoured app-side and DB-side so revocation takes effect at the next query; and these are the counter-example to the 7.3 definer caution |
