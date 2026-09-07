@@ -1153,6 +1153,69 @@ gate needs the gate, which this worktree cannot run. What it does establish:
 Contributor #2, shell height, remains unpriced and is the more tractable of the
 two: it is a fixed offset per template and section 17 already tabulates it.
 
+## 25. Pricing contributor #2: shell height (pass 24)
+
+Section 24 priced letter-spacing and called shell height "the more tractable of
+the two". Priced here, from section 17's measured table.
+
+The premise is section 3's standing rule: **the shell stays tuned to home.** So
+on every non-home template our shell is home's, and the offset is
+`home shell - live's shell for that template`.
+
+| Width | Template family | Live shell | Home shell | Offset | Bands |
+|---|---|---|---|---|---|
+| 380 | cart / checkout / account | 159 | 163 | **+4** | 0.04 |
+| 380 | category / product / shop | 116 | 163 | **+47** | **0.47** |
+| 768 | cart / checkout / account | 121 | 88 | **-33** | 0.33 |
+| 768 | category / product / shop | 78 | 88 | **+10** | 0.10 |
+| 1440 | cart / checkout / account | 165 | 148 | **-17** | 0.17 |
+| 1440 | category / product / shop | 165 | 148 | **-17** | 0.17 |
+
+### 25.1 The worst case is `category@380`, at nearly half a band
+
+**+47px.** Everything below the shell on a category, product or shop page at
+380 sits 47px lower on our side than on live's, before any other difference.
+
+That is 0.47 of a 100px band, which is the awkward magnitude: too small to look
+like a structural fault in a screenshot, too large to be absorbed. Every
+landmark below it lands in a different bucket about half the time, and the band
+report shows it as a diffuse mismatch spread down the page rather than as one
+displaced element.
+
+### 25.2 The offset changes sign, which rules out one obvious fix
+
+| | 380 | 768 | 1440 |
+|---|---|---|---|
+| cart family | +4 | **-33** | **-17** |
+| catalogue family | **+47** | +10 | -17 |
+
+**There is no single number to add or subtract.** A tuning constant that fixed
+`category@380` would make `cart@768` worse by the same reasoning, because the
+two want opposite corrections.
+
+That is the arithmetic behind section 17.1's finding that live has **three shell
+families below 1440**. Matching it needs three shells, not one shell plus an
+adjustment, and section 3's rule ("shell stays tuned to home") is a decision to
+accept the offset rather than a claim that it is small.
+
+### 25.3 Where the two priced contributors leave the picture
+
+| # | Contributor | Priced | Magnitude |
+|---|---|---|---|
+| 1 | letter-spacing | pass 23 | ~2.3% of text width, discrete at wrap boundaries |
+| 2 | shell height | **here** | +47px worst case (`category@380`), sign-changing |
+| 3 | search field | decided, cost accepted | one 534x41 region at 1440 |
+| 4 | card elevation | not priced | card edges only |
+| 5 | header position | costs nothing at the shutter | n/a |
+
+Two of the five now have numbers. Both are **largest at 380**, which is the
+width section 2.1 records as failing, and neither is a token anyone can move.
+
+That is the useful conclusion: **the 380 gap is substantially structural, not
+chromatic.** Section 2.1's honest statement — geometry within 1-2px at every
+landmark while the percentage stays high — is consistent with exactly these two
+compounding.
+
 ## Revision
 
 | Date | Change |
@@ -1177,3 +1240,4 @@ two: it is a fixed offset per template and section 17 already tabulates it.
 | 2026-09-07 | Pass 21: section 3 card geometry re-verified, three of three exact. It reproduced where section 2.2 could not, because it names an element rather than a boundary |
 | 2026-09-07 | Pass 22: drift check on the refusal reference. Seven exit(3), one exit(4), one exit(2), four escape hatches, two warnings: all still match |
 | 2026-09-07 | Pass 23: priced contributor #1. Our text is ~2.3% wider at body size, measured in a browser on real Hebrew strings; the effect shrinks as type grows and fails discretely at wrap boundaries |
+| 2026-09-07 | Pass 24: priced contributor #2. Shell offset is +47px worst case at category@380 and CHANGES SIGN across widths, so no single tuning constant fixes it |
