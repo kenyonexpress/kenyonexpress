@@ -52,3 +52,9 @@ None. Program settings row is the off switch (min/cap/window = 0).
 ## Docs / edges / close
 
 Update `DATA-FLOW.md` §6, `LEDGER-CONTRACT.md`. Self-referral, same card fingerprint, monthly/yearly caps stay in SQL. Close: UI matches SQL, admin can settle a logged miss, no second credit path.
+
+---
+
+## Second pass (after contracts and ops)
+
+Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
