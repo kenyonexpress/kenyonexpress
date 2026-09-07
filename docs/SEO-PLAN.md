@@ -406,6 +406,64 @@ Silo: vertical category ↔ PDP ↔ supplier ↔ city. Home is the hub. Do not o
 
 ---
 
+## 4.1 Section 4 audited against source (pass 15)
+
+The map above is the intent. This is what the tree actually links.
+
+### 4.1.1 The city pages are reachable from exactly one place
+
+Section 4 ends with "Do not orphan city pages without suppliers". Pass 12 found
+they are **absent from `sitemap.ts` entirely**. So the question is whether
+anything links to them, and the answer is: one component.
+
+| Inbound link to `/city/{slug}` | Where |
+|---|---|
+| `RegionMenu.tsx:187`, `href={regionHref(region)}` | the region dropdown |
+
+`regionHref` is `src/lib/regions.ts:83`, which builds
+`/city/${encodeURIComponent(region.slug)}`. Nothing else in `src/` links there.
+A literal grep for `href="/city/` finds nothing, which is worth noting because
+it is how this was nearly recorded as "no inbound links at all": the href is
+built by a helper.
+
+**And that one place is desktop-only.** The chain:
+
+```
+Header.tsx:190      <MastheadNav />   inside  hidden min-w-0 flex-1 xl:flex
+MastheadNav.tsx:43  <RegionMenu />
+MobileDrawer.tsx    no REGIONS, no regionHref, no /city
+```
+
+So below `xl`, the seventeen region pages have **no inbound link and no sitemap
+entry**. They are reachable only by typing the URL or arriving from outside.
+
+### 4.1.2 What that means for the silo
+
+Section 4's silo is "vertical category ↔ PDP ↔ supplier ↔ city. Home is the
+hub." The city corner of that silo is attached by a single desktop-only
+dropdown, and crawlers that render at a mobile viewport, or do not render the
+menu at all, see no path to it.
+
+Two independent fixes, and they are not alternatives:
+
+1. **The sitemap entry** (pass 12, section 5.1) gives crawlers the URLs.
+2. **A mobile path** gives shoppers and mobile-rendering crawlers a link.
+
+Doing only the first leaves seventeen indexable pages with one desktop link,
+which is thin but legitimate. Doing only the second leaves them undiscoverable
+except by crawl. The map's own instruction not to orphan them argues for both.
+
+### 4.1.3 The rest of the map holds
+
+| Claim | Verdict |
+|---|---|
+| PDP links `/s/{id}` | **confirmed**, `storefront/SupplierInfo.tsx` |
+| No header search link | **confirmed**: `MastheadNav` deleted the slot outright (see `docs/COMPONENT-INVENTORY.md` pass 15) |
+| City breadcrumb names the region | **confirmed**, `city/[slug]/page.tsx:73` |
+| Account empty states link out | **confirmed**, and their copy is in `docs/ERROR-COPY.md` section 1 |
+
+---
+
 ## 5. Sitemap and robots
 
 Include: `/`, indexable categories, active products, `/s/{id}` public, `/city/{slug}` with suppliers, legal, about, contact, faq, blog index, `/products`.
@@ -754,3 +812,4 @@ row 13). Do not mint a second Organization to fill that gap.
 | 2026-09-07 | Pass 15: SearchAction vs no header search is a settle-or-drop, not a restore-the-field; one Organization @id |
 | 2026-09-07 | Pass 14: section 2 audited against source. Coverage is near-total (one redirect alias aside), and the shipped home title is the exact string section 0 says is not live, with the U+2014 section 0 forbids |
 | 2026-09-07 | Pass 14: merged a duplicate 2.1. A concurrent audit had already covered home (including the em-dash); my Home row was WRONG (root default, not the page's own title) and is removed. Kept 2.1.4 category/product and 2.1.5 the description chain |
+| 2026-09-07 | Pass 15: section 4 audited. City pages have exactly one inbound link, RegionMenu, and it is desktop-only; below xl they have neither a link nor a sitemap entry |
