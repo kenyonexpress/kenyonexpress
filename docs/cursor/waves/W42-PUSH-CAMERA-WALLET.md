@@ -73,6 +73,10 @@ Pass must not print a price that checkout would not charge. Coupon on-site vs fa
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (capabilities)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- pkpass is `no-store`. QR is a capability. Do not email screenshots as a workaround (`RUNBOOK-R2-DOWN.md`).
+- Push: `PUSH_ENABLED` + token + template. Withdraw = delete token (`CONSENT-MODEL.md`).
+- Camera on till: membership session. No service_role in the APK (W18).
+- Apple pass images can 404 if R2 is down; on-site QR still works.
+
