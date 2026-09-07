@@ -1,5 +1,6 @@
 'use client'
 
+import * as Sentry from '@sentry/nextjs'
 import Link from 'next/link'
 import { useEffect } from 'react'
 
@@ -34,17 +35,26 @@ export default function AppError({
   reset: () => void
 }) {
   useEffect(() => {
-    // console, not the Sentry helpers in lib/observability: those run on
+    // The plain SDK, not the helpers in lib/observability: those run on
     // @sentry/node and tag everything area=payments, so importing them into a
     // client boundary would both fail to bundle and mislabel every UI error as
-    // a money-path one. Wiring a browser SDK is a separate decision.
-    //
-    // The same reasoning now covers `lib/observability/log.ts`, which took over
-    // the other 33 console call sites in src/ and deliberately did not take
-    // this one: it reads its request id from node:async_hooks, which is a build
-    // error in a client bundle. This line runs in the browser, where there is
-    // no server request to correlate to and `digest` is the only handle that
-    // ties it to the server-side event anyway.
+    // a money-path one. The browser SDK itself is already initialised by
+    // instrumentation-client.ts, but its global handlers never see this error:
+    // a boundary CATCHES it, so nothing reaches window.onerror, and without
+    // this call a client-side render crash is invisible except to the one
+    // customer looking at this page. `digest` is tagged because it is the only
+    // handle that ties the browser event to the server-side one
+    // onRequestError already reported.
+    Sentry.withScope((scope) => {
+      scope.setTag('boundary', 'app-error')
+      if (error.digest) scope.setTag('digest', error.digest)
+      Sentry.captureException(error)
+    })
+
+    // Kept alongside, not replaced: lib/observability/log.ts reads its request
+    // id from node:async_hooks, which is a build error in a client bundle, so
+    // this stays a bare console line. It is also what still works when the
+    // DSN is unset and every Sentry call above is inert.
     console.error('app error boundary:', error.digest ?? '', error)
   }, [error])
 

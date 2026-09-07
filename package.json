@@ -29,8 +29,9 @@
     "lighthouse:smoke": "node scripts/lighthouse-smoke.mjs",
     "sentry:verify": "node scripts/sentry-verify.mjs",
     "sentry:verify:ci": "node scripts/sentry-verify.mjs --ci --dry",
-    "prepare": "husky || true",
-    "deploy:preflight": "node scripts/deploy-preflight.mjs"
+    "sentry:alerts": "node scripts/sentry-alert-rules.mjs",
+    "sentry:alerts:dry": "node scripts/sentry-alert-rules.mjs --dry",
+    "prepare": "husky || true"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1127.0",

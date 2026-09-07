@@ -312,6 +312,16 @@ jobs:
             next-${{ runner.os }}-
 
       - run: pnpm build
+
+      # Alert rules are code (scripts/sentry-alert-rules.mjs), applied by
+      # upsert after a green build and only from main: a PR editing the rules
+      # must not rewrite live alerting before it merges. Without the auth
+      # token the script prints one line and exits 0, same posture as the
+      # source-map upload above.
+      - name: Apply Sentry alert rules
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: node scripts/sentry-alert-rules.mjs --ci
+
       - uses: actions/upload-artifact@v4
         with:
           name: next-build

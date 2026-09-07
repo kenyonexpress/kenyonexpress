@@ -1,5 +1,5 @@
 import { requireAnonKey } from '@/lib/supabase/anon-key'
-import { requestIdFetch } from '@/lib/supabase/request-id-fetch'
+import { rlsReportFetch } from '@/lib/supabase/rls-report-fetch'
 import { createClient as createServerClient } from '@/lib/supabase/server'
 import { createClient } from '@supabase/supabase-js'
 import type { User } from '@supabase/supabase-js'
@@ -47,7 +47,7 @@ export async function authenticateRequest(request: Request): Promise<RequestIden
 
   const anon = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, requireAnonKey(), {
     auth: { persistSession: false, autoRefreshToken: false },
-    global: { fetch: requestIdFetch },
+    global: { fetch: rlsReportFetch },
   })
   const {
     data: { user },
@@ -85,7 +85,7 @@ export async function identityScopedClient(request: Request) {
     identity,
     client: createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, requireAnonKey(), {
       auth: { persistSession: false, autoRefreshToken: false },
-      global: { headers: { Authorization: `Bearer ${token}` }, fetch: requestIdFetch },
+      global: { headers: { Authorization: `Bearer ${token}` }, fetch: rlsReportFetch },
     }),
   }
 }
