@@ -72,6 +72,10 @@ Admin "0 sales" vs shop's local scan count can disagree until 169. Teach operato
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (not GMV vanity)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- Partner "due" on coupons is 0. Cash at till is not a platform journal.
+- Physical residual is snapshot, not live `platform_percent`.
+- 170 reports must not join live products. Duplicate 170 is indexes, full filename.
+- Analytics 169 zeros do not mean zero sales. Read `orders`.
+
