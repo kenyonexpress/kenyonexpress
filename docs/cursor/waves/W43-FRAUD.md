@@ -75,6 +75,11 @@ Do not explain fingerprint details to the user.
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (SQL stays)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- Referral self/fingerprint refuse is in SQL. Do not "fix" with a wallet grant.
+- Master ₪1: app guard + 172 stock 0. Not a string match on מאסטר.
+- Leaked service role: rotate (`RUNBOOK-SECRET-ROTATION.md`). Denylist SHA-256.
+- Scan 30/min. PIN 15/hour. Checkout `CHECKOUT_ENABLED` off if card testing.
+- Support cannot refund. Actor in audit is the human (`RUNBOOK-SUSPECTED-FRAUD.md`).
+
