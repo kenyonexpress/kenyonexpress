@@ -63,3 +63,9 @@ Coupon `supplier_payable` is **0**. Do not post escrow holds. `escrow_holds` tab
 | Q | Best answer |
 |---|---|
 | Is `postJournal` on every finalize? | Read `finalize.ts` on the code branch. Wallet transfer for cashback **is** there. Do not assume 050 trigger exists if unapplied. |
+
+---
+
+## Second pass
+
+Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
