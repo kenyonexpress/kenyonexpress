@@ -1009,6 +1009,51 @@ This is the same lesson as `docs/QA-SCRIPTS.md` 0.2 and section 17.2a, in a
 third costume: **a number without its provenance is not reproducible, and a
 number nobody can reproduce cannot gate anything.**
 
+## 22. Section 3's card geometry re-verified (pass 21)
+
+Section 3 records category card geometry "ours / live … verified without a
+score". The **live** column was re-measured against
+`refs/ke_live_computed.json`, `div.product-outer` on the category template.
+
+| Width | Claimed (live) | Measured | |
+|---|---|---|---|
+| 380 | x190 w175 | **x190 w175** | match |
+| 768 | x499 w230 | **x499 w230** | match |
+| 1440 | x1071 w234 | **x1071 w234** | match |
+
+**Three of three, exact.** No caveat, no selector ambiguity: `product-outer` is
+the card box and the numbers reproduce to the pixel.
+
+### 22.1 Why this row verified cleanly and section 2.2's did not
+
+Section 21 could not settle two of section 2.2's landmarks because the table
+named no selector. This one settled immediately, and the difference is
+instructive:
+
+| | Section 2.2 "grid starts" | Section 3 card geometry |
+|---|---|---|
+| What it names | a **position** ("grid starts") | a **thing** (a card) |
+| Candidate elements | the container, the first card, a heading wrapper, a padded inner | one: `div.product-outer` |
+| Reproducible? | no, 35px ambiguity at two widths | yes, exactly, at three |
+
+A landmark that names an **element** survives; a landmark that names a
+**boundary** does not, because a boundary is between two things and the table
+does not say which one it was measured from.
+
+That is the concrete form of the rule section 21 proposes. It is not "add
+selectors because it is tidy": it is that `x190 w175` is checkable years later
+and `grid starts 444` is not.
+
+### 22.2 What this does and does not confirm
+
+It confirms the **live** column. The "ours" column
+(380 x190 w175, 768 x519 w234, 1440 x1071 w234) cannot be checked here, because
+that requires running our build, which this worktree cannot do.
+
+So the 768 delta section 3 records — ours x519 w234 against live x499 w230, "20px
+x, 4px w" — is **half verified**: live's side of it is exactly right, and
+whether ours still differs by that amount is unknown. It was true when written.
+
 ## Revision
 
 | Date | Change |
@@ -1030,3 +1075,4 @@ number nobody can reproduce cannot gate anything.**
 | 2026-09-07 | Pass 18: consolidated the systematic contributors (19). Five page-wide differences, three of which reach the shutter, ordered by scope; letter-spacing is per character and therefore the diffuse one |
 | 2026-09-07 | Pass 19: the procedure for adding a trustworthy row (20). Five pre-run checks, five output signals that invalidate a score, and what a row must carry beyond a percentage |
 | 2026-09-07 | Pass 20: re-measured the section 2.2 landmarks. Hero heights and column counts exact at all three widths; grid start exact at 1440 and 35px off at both handheld widths because the table names no selectors |
+| 2026-09-07 | Pass 21: section 3 card geometry re-verified, three of three exact. It reproduced where section 2.2 could not, because it names an element rather than a boundary |
