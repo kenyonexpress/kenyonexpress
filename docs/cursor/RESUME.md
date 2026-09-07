@@ -2,8 +2,6 @@
 
 **Queue of 100:** first write complete; deepen pass in progress.
 
-**Next item:** 49 (`docs/cursor/waves/WAVE-INDEX.md`) then remaining ops/quality/business generic second-pass replacements, then meta 96–100 third pass, then return to item 1.
-
-Just deepened: W44–W50 plus FEATURE-FLAGS, SCHEDULER, CONSENT, AUDIT. Continue. Markdown only under `docs/cursor/`. Never `-A`.
+**Next item:** 65 (`docs/cursor/ops/RUNBOOK-PAYMENT-DOWN.md`) replacing remaining generic second-pass stubs on ops/quality/business, then meta 96–100, then return to item 1.
 
 **Branch:** `ke-cursor-docs`
