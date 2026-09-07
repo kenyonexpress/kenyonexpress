@@ -1,10 +1,13 @@
 'use server'
 
 import { writeAuditLog } from '@/lib/admin/audit'
+import { ORDER_STATUS_LABELS } from '@/lib/admin/labels'
 import { type AdminSessionInfo, requireAdminSession } from '@/lib/admin/rbac'
+import type { OrderStatus } from '@/lib/checkout/state-machine'
 import { withActionContext } from '@/lib/observability/action-context'
 import { log } from '@/lib/observability/log'
 import { createClient } from '@/lib/supabase/server'
+import { canAdminOverride, effectsFor } from '@/server/domain/orders/order-transitions'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -20,9 +23,10 @@ const cancelSchema = z.object({
 })
 
 // F2: order status is owned by the payment/fulfillment flow (webhooks,
-// finalize, redemption). The ONLY manual admin transition is
-// pending -> cancelled, with a mandatory reason and an audit row.
-// Refunds of paid orders belong to the refund console (037, not built yet).
+// finalize, redemption). Manual moves go through the override policy in
+// order-transitions.ts; this dedicated cancel action predates it and keeps
+// the one-click pending -> cancelled path, with a mandatory reason and an
+// audit row. Refunds of paid orders belong to the refund console.
 async function runCancelPendingOrder(
   _: OrderActionState,
   formData: FormData,
@@ -160,6 +164,119 @@ async function runAddOrderNote(_: OrderActionState, formData: FormData): Promise
   return { success: 'ההערה נוספה' }
 }
 
+const overrideSchema = z.object({
+  id: z.string().uuid({ message: 'מזהה הזמנה לא תקין' }),
+  // The money states are absent on purpose, not merely rejected later:
+  // `paid` exists only when finalize.ts confirmed a real charge and
+  // `refunded` only when the refund console moved real money back. The
+  // policy in order-transitions.ts enforces the same rule server-side.
+  to: z.enum(['partially_fulfilled', 'fulfilled', 'cancelled'], {
+    message: 'סטטוס יעד לא תקין',
+  }),
+  reason: z
+    .string()
+    .trim()
+    .min(3, 'חובה לציין סיבה לשינוי הסטטוס (לפחות 3 תווים)')
+    .max(500, 'הסיבה ארוכה מדי'),
+})
+
+/**
+ * Admin state override: assert a fulfilment fact by hand, with a mandatory
+ * reason and a `manual_override` audit row.
+ *
+ * The move must be legal in `orderMachine` AND overridable per
+ * `canAdminOverride`: which together allow exactly the fulfilment lane
+ * (paid -> partially_fulfilled -> fulfilled) and pending -> cancelled. The
+ * side effects are not chosen here: `effectsFor` returns the declared plan
+ * for the edge and this action executes it, so a writer added later runs the
+ * same hooks instead of remembering its own subset.
+ */
+async function runOverrideOrderStatus(
+  _: OrderActionState,
+  formData: FormData,
+): Promise<OrderActionState> {
+  let session: AdminSessionInfo
+  try {
+    session = await requireAdminSession()
+  } catch {
+    return { error: 'אין הרשאה' }
+  }
+
+  const parsed = overrideSchema.safeParse({
+    id: formData.get('id'),
+    to: formData.get('to'),
+    reason: formData.get('reason'),
+  })
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? 'קלט לא תקין' }
+  }
+  const { id, to, reason } = parsed.data
+
+  const supabase = await createClient()
+  const { data: order, error: readError } = await supabase
+    .from('orders')
+    .select('id, status, notes')
+    .eq('id', id)
+    .single()
+  if (readError || !order) return { error: 'הזמנה לא נמצאה' }
+
+  const from = order.status as OrderStatus
+  if (!canAdminOverride(from, to)) {
+    return {
+      error: `אין מעבר ידני מ"${ORDER_STATUS_LABELS[from]}" ל"${ORDER_STATUS_LABELS[to]}"`,
+    }
+  }
+  const effects = effectsFor(from, to) ?? []
+
+  const update: { status: OrderStatus; notes?: string } = { status: to }
+  if (effects.includes('append_note')) {
+    const stamp = new Date().toISOString()
+    const line = `[${stamp}] ${session.userId}: שינוי סטטוס ידני ${ORDER_STATUS_LABELS[from]} > ${ORDER_STATUS_LABELS[to]}: ${reason}`
+    update.notes = order.notes ? `${order.notes}\n${line}` : line
+  }
+
+  // CAS on the source status: if another writer moved the order between the
+  // read and this write, zero rows match and the admin sees the race instead
+  // of silently overwriting the newer state.
+  const { data: moved, error } = await supabase
+    .from('orders')
+    .update(update)
+    .eq('id', id)
+    .eq('status', from)
+    .select('id')
+    .maybeSingle()
+  if (error) return { error: error.message }
+  if (!moved) return { error: 'הסטטוס השתנה בינתיים על ידי תהליך אחר. רענן ונסה שוב.' }
+
+  if (effects.includes('release_stock')) {
+    // Best effort, same as the cancel path: an expired reservation frees
+    // itself within minutes, so a failure here costs shelf time, not the move.
+    const { error: releaseError } = await supabase.rpc('release_order_stock', {
+      p_order_id: id,
+    })
+    if (releaseError) {
+      log.warn('admin.order_override_stock_release_failed', {
+        orderId: id,
+        reason: releaseError.message,
+      })
+    }
+  }
+
+  await writeAuditLog({
+    actorId: session.userId,
+    actorRole: session.role,
+    action: 'manual_override',
+    entityType: 'orders',
+    entityId: id,
+    changes: { status: { from, to } },
+    metadata: { reason },
+  })
+
+  revalidatePath('/admin/orders')
+  revalidatePath(`/admin/orders/${id}`)
+  return { success: `הסטטוס עודכן ל"${ORDER_STATUS_LABELS[to]}"` }
+}
+
 export async function cancelPendingOrder(
   _: OrderActionState,
   formData: FormData,
@@ -172,4 +289,11 @@ export async function addOrderNote(
   formData: FormData,
 ): Promise<OrderActionState> {
   return withActionContext('admin.order.add_note', () => runAddOrderNote(_, formData))
+}
+
+export async function overrideOrderStatus(
+  _: OrderActionState,
+  formData: FormData,
+): Promise<OrderActionState> {
+  return withActionContext('admin.order.override_status', () => runOverrideOrderStatus(_, formData))
 }
