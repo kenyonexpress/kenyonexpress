@@ -66,6 +66,9 @@ Skip: no UI. If built: מועדון (marketing only).
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (skip)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- WAVE-INDEX skips W40 for v7.0.0-rc1.
+- Do not invent a second wallet type for "gold members". Cashback path already exists (W39).
+- Segments must not change `platform_percent` at checkout.
+
