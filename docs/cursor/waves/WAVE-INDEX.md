@@ -93,4 +93,6 @@ Skip on purpose for v7: W10, W32, W40, W03 as a marketed feature, W07 self-serve
 - **DNS last** (`ops/RUNBOOK-DNS-CUTOVER.md`). Apex is WordPress until cutover.
 - **v7.0.0-rc1** is not a git tag on this docs branch. Code worktree tags after H0–H8 human list in `business/LAUNCH-BLOCKERS.md`.
 - Leftover wave filenames (`W06-NEWSLETTER.md`, `W16-ACCOUNT.md`, …) are extra briefs from an earlier numbering. Canonical names are this index.
+- Cashback credits at finalize, not scan. Till is `supplier_members`, not `vendor`. Two cookies on purpose. Pending 169–172 by full filename. Twelve crons in JSON, not Hobby vercel.json.
+
 
