@@ -68,3 +68,9 @@ Refund: any unit left `issued` vs any unit redeemed. Card refund illegal if any 
 | Q | Best answer |
 |---|---|
 | One QR for the whole qty? | **No.** One code per unit. Already the issuer rule. |
+
+---
+
+## Second pass (after contracts and ops)
+
+Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
