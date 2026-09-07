@@ -73,6 +73,11 @@ Guest order: no profile email; refund mail may have no recipient. Invoice kinds 
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (outbox)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- Drain is `/api/cron/notifications` every 5 minutes. Finalize does not send.
+- Adding a kind: CHECK + enqueue + `buildNotification` + test together (`contracts/OUTBOX.md`).
+- Transactional voucher mail does not need the marketing checkbox. Abandoned cart does (`CONSENT-MODEL.md`).
+- `email_suppressions` wins. Dead after 5: admin requeue. Do not Gmail a QR.
+- `KILL_SWITCH_NOTIFICATIONS` parks email **and** WhatsApp. Too coarse for Twilio-only incidents.
+
