@@ -9,3 +9,9 @@ If a future Twilio adapter is live:
 3. Do not fail checkout because WhatsApp 502.
 
 If Twilio was never wired: this runbook is "no action; float links still work if the number env is set".
+
+---
+
+## Second pass
+
+Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
