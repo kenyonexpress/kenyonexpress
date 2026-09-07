@@ -1,5 +1,34 @@
 # `migrations/pending/`
 
+## 2026-09-07: 176 added — one known PIN buys unlimited guesses at the others
+
+`176_supplier_pin_rate_limit_per_staff.sql` replaces
+`verify_supplier_staff_pin`. Found by item 5 of the Supabase audit queue,
+recorded in `docs/ADVISORS-LOG.md` finding 5a. **Not applied.**
+
+The function limits PIN attempts to five per fifteen minutes on the key
+`supplier_pin:<uid>`, and on a SUCCESSFUL verification it runs
+`DELETE FROM public.rate_limits WHERE key = v_key`. The key is per caller, not
+per staff member, so an active supplier member who knows one valid staff PIN
+can clear the counter whenever they like: four guesses, one known-good PIN,
+four more guesses. The lockout is fully defeated against a space of 10,000.
+176 replaces the delete with a decrement that leaves the window in place, and
+scopes the key to the supplier.
+
+What it buys an attacker is another employee's PIN, and therefore the wrong
+name in `voucher_redemptions.staff_id`, which is the column a disputed scan is
+settled with. It is an audit-integrity defect, not a route to money, and it
+needs the attacker to already be a member of that business.
+
+Measured by `preflight_176.sql` on 2026-09-07, all six blocks against
+production: the defect is present, there is exactly one overload with the
+signature 176 replaces, `rate_limits` carries two unique indexes so
+`ON CONFLICT (key)` resolves, there are zero live `supplier_pin:` windows, and
+**`active_staff` is 0**. With no active staff row the function cannot succeed
+at all, so the free-reset path is unreachable today. This is a fix to land
+before the first supplier onboards staff, not an incident, and it cannot be
+exercised against production until staff exist.
+
 ## 2026-09-07: 175 added — the referral engine is off because a row is missing
 
 `175_referral_program_settings.sql` inserts the settings singleton the referral

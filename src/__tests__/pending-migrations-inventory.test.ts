@@ -174,6 +174,16 @@ describe('the pending migration inventory', () => {
     //                                       engine is built and wired and every
     //                                       claim returns program_inactive,
     //                                       because the table holds no row
+
+    //   176                                 verify_supplier_staff_pin DELETEs
+    //                                       its rate-limit row on success, and
+    //                                       the key is per caller, so one known
+    //                                       PIN buys unlimited guesses at the
+    //                                       others. Found by the Supabase audit
+    //                                       queue item 5; active_staff is 0 in
+    //                                       production, so it is unreachable
+    //                                       today and must land before the
+    //                                       first supplier onboards staff
     //
     // 166, 167 and 168 were found ALREADY APPLIED by the 2026-09-04 audit
     // (schema_migrations versions 20260903232445/232455/232504, live
@@ -191,6 +201,7 @@ describe('the pending migration inventory', () => {
       '173_products_retired_commission_percent.sql',
       '174_wallet_topups.sql',
       '175_referral_program_settings.sql',
+      '176_supplier_pin_rate_limit_per_staff.sql',
       'preflight_162.sql',
       'preflight_169.sql',
       'preflight_170.sql',
@@ -199,6 +210,7 @@ describe('the pending migration inventory', () => {
       'preflight_173.sql',
       'preflight_174.sql',
       'preflight_175.sql',
+      'preflight_176.sql',
     ])
   })
 
