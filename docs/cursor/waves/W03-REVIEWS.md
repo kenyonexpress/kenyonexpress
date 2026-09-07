@@ -110,6 +110,42 @@ If the table is missing, the action already returns Hebrew "not open yet". That 
 - **Does not block** W49 commercial launch. Launch copy must not claim "ביקורות מאומתות" until this wave is closed **and** H6 has real rows.
 - **Blocks:** W24 supplier NPS must not reuse `reviews` for business-level scores.
 
+## Hebrew UX strings
+
+| Key | Copy |
+|---|---|
+| Empty PDP | עדיין אין ביקורות |
+| Need login | צריך להתחבר כדי לכתוב ביקורת. |
+| Rate limit | יותר מדי ביקורות בשעה האחרונה. נסה שוב מאוחר יותר. |
+| Not buyer | ביקורת אפשר לכתוב רק על מוצר שרכשת. |
+| Duplicate | כבר כתבת ביקורת על הרכישה הזו. |
+| Table missing | הביקורות עוד לא פתוחות. נסה שוב בקרוב. |
+| Save fail | שמירת הביקורת נכשלה. נסה שוב. |
+| Rating bounds | דירוג בין 1 ל-5 |
+| Body cap | עד 1000 תווים |
+| Submit | שלח ביקורת |
+| Pending notice | הביקורת ממתינה לאישור |
+| Published badge | רכישה מאומתת |
+| Moderate publish | פרסם |
+| Moderate reject | דחה |
+| Do not claim at launch | ביקורות מאומתות (forbidden on homepage until this wave + H6) |
+
+Gender: use mixed/neutral where possible (`נסה/י` only if the rest of the shop already does; current actions use `נסה`). Do not switch this wave alone.
+
+---
+
+## Open questions
+
+| Q | Best answer |
+|---|---|
+| Is `reviews` in production? | Treat as maybe missing (`PGRST205`). Action already degrades. Human apply 154 if not present. |
+| May a refunded paid order still review? | **No.** SQL policy must refuse. If 154 allows it, fix SQL on a code/migration branch. |
+| Photos in v1? | **No.** R2 photos are a later add-on. |
+| JSON-LD `aggregateRating`? | **Off** until published count > 0. |
+| Support role moderate? | **No.** Admin / super_admin only. |
+
+---
+
 ## Close
 
 PDP shows only published stars, unpaid users cannot insert, admin can reject, tests above green, no money path touched.
