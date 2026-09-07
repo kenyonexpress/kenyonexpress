@@ -1,7 +1,7 @@
 # Resume point
 
-**Queue of 100:** first write complete; deepen pass in progress.
+**Queue of 100:** first write complete; deepen pass looping.
 
-**Next item:** 65 (`docs/cursor/ops/RUNBOOK-PAYMENT-DOWN.md`) replacing remaining generic second-pass stubs on ops/quality/business, then meta 96–100, then return to item 1.
+**Next item:** 1 (`docs/cursor/waves/W03-REVIEWS.md`) third pass after meta 96–100 this turn.
 
 **Branch:** `ke-cursor-docs`
