@@ -985,6 +985,57 @@ an absolute elsewhere in this document set, and this is the documented exception
 **structured data is a document, not a page**, and the same distinction that
 makes `formatIls` right for an invoice and wrong for a cart applies.
 
+## 1.2 Canonicals, audited (pass 20)
+
+Section 1 requires "self-referencing canonical … on every **indexable** URL" and
+section 2's table requires the canonical to be "without `?orderby=` / filters".
+
+### 1.2.1 The rule holds where a canonical exists
+
+No canonical anywhere in `src/app` interpolates `searchParams`. Grepped: every
+one is a static path or a slug. So the sort/filter rule is not merely followed,
+it is **structurally impossible to break** in the current shape.
+
+The category page states the reasoning inline, and it is the clearest statement
+of why the rule exists:
+
+> The same category is reachable with sort, page, price and city query strings,
+> and **without a canonical each of those competes as its own page**.
+
+### 1.2.2 `/products` is indexable, takes sort params, and has no canonical
+
+Nineteen routes set a canonical. `/products` is not one of them.
+
+It is:
+
+- **indexable** — it carries no `robots` directive, and `sitemap.ts` lists it at
+  `priority 0.9`, the joint-highest after `/`
+- **parameterised** — `shopArgs()` reads `searchParams` and `parseSort(sp.sort)`
+  drives the ordering, exactly like the category page
+
+So `/products`, `/products?sort=price-asc`, `/products?sort=name` and any other
+combination are each reachable, each indexable, and each competing as its own
+page. That is precisely the failure the category page's comment describes, on
+the archive with the higher sitemap priority.
+
+`/blog/[slug]` is also absent from the canonical list and is lower risk: it takes
+no sort params.
+
+### 1.2.3 What to add
+
+One line, matching the category page's shape:
+
+```
+alternates: { canonical: '/products' }
+```
+
+No slug to encode, no params to strip. It is the same fix already applied to
+`/category/[slug]`, `/s/[id]` and `/city/[slug]`, and `/products` appears to have
+been missed rather than excluded: nothing in this document or in the source
+gives a reason for it to differ.
+
+Recorded, not changed: `.tsx`.
+
 ## Revision
 
 | Date | Change |
@@ -1006,3 +1057,4 @@ makes `formatIls` right for an invoice and wrong for a cart applies.
 | 2026-09-07 | Pass 17: section 7 audited. All four CWV claims hold; preload:false is a deliberate LCP trade and the consent banner uses display:none specifically to leave the LCP candidate set |
 | 2026-09-07 | Pass 18: corrected 5.1 (lastModified is on every dynamic entry, not three) and recorded orFail: an empty sitemap is a deindexing request |
 | 2026-09-07 | Pass 19: the four money rules in JSON-LD verified. platform_percent absent, Offer.price is the on-site amount, no second Offer, and the unsellable branch omits price rather than zeroing it |
+| 2026-09-07 | Pass 20: canonicals audited. No canonical interpolates searchParams anywhere, but /products is indexable at priority 0.9, takes sort params, and has no canonical at all |
