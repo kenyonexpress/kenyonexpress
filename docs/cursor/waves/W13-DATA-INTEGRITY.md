@@ -70,3 +70,12 @@ None.
 | Q | Best answer |
 |---|---|
 | Drop `escrow_holds`? | Types exist; coupon path must not write. Drop is a human migration. Do not revive escrow in UI. |
+
+---
+
+## Second pass
+
+- Journals sum zero. Corrections are `reversal` rows (`contracts/LEDGER.md`).
+- `default_split_percent` is not a fill-in (`contracts/MIGRATION-PLAYBOOK.md`).
+- Master SKU: app guard plus 172 stock 0. Duplicate 172_rls is a different file.
+- Types-ahead `payout_statements` / `escrow_holds` must not gain writers.
