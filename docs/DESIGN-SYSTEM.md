@@ -2312,6 +2312,59 @@ build on it.
 
 ---
 
+## 8e. Component anatomy re-verified (pass 24)
+
+Section 4's anatomy tables were written in pass 1 by reading the source. Passes
+22 and 23 verified the token layer and the ratios; this verifies the **component
+numbers**, which are the ones a reader most likely copies into a component.
+
+| Checked | Count | Mismatches |
+|---|---|---|
+| Checkout stepper values (4.5) against `checkout-page.css` | 11 | **0** |
+| PDP variables (4.3) against `product-page.css` | 24 | **0** |
+
+Every value holds: the stepper's `gap: 8px`, `margin: 0 auto 28px`,
+`padding: 10px 12px`, `#f7f7f7` fill, `#616161` ink, `14px/700`, and the 26x26
+`#e4e4e4` numeral at 13px; and all twenty-four `--pdp-*` colours and metrics,
+including `--pdp-price-size: 35px` / `--pdp-price-line: 45.01px`,
+`--pdp-atc-w: 192px` / `--pdp-atc-h: 53px`, and `--pdp-buy: #c94b28`.
+
+### 8e.1 Coverage of the verification, and the one gap in it
+
+With passes 22, 23 and 24 the document is now checked in four dimensions:
+
+| Dimension | Method | Result |
+|---|---|---|
+| Token names and values | parse both token files | 117 / 117 |
+| Contrast ratios | recompute from the hexes | 65 / 65 |
+| Stepper and PDP anatomy | parse the page stylesheets | 35 / 35 |
+| Live measurements | the committed capture | mined across passes 12-21 |
+
+**What is still unverified: the header, product card and cart line anatomy in
+4.1, 4.2 and 4.4.** Those describe JSX structure and DOM order rather than CSS
+values, so they cannot be parsed the way the stepper and PDP can. They were read
+carefully and they are the sections most likely to rot, because a component can
+be reordered without any stylesheet changing.
+
+The cheapest guard for them is not a parser. It is
+`docs/QA-SCRIPTS.md`'s existing instruction to check DOM order by eye at each
+width, since **DOM order is side order** in those three components
+(section 5.2), and a reorder is exactly what would invalidate them.
+
+### 8e.2 Why 217 checked values is not the same as "the document is right"
+
+Everything verified above is a **number or a name**. What none of these checks
+touch is the reasoning — why `#616161` rather than `#7a7a7a`, why the ATC is
+responsive, why the stepper hides its label with clip-path rather than
+`display: none`. That is most of the document's value and none of it is
+machine-checkable.
+
+The checks establish that the facts are current. Whether the explanations are
+still true of the code is a reading job, and the drift checks make that reading
+cheaper by ruling out the mechanical half.
+
+---
+
 ## 9. Related documents
 
 ```
@@ -2346,3 +2399,4 @@ src/lib/electro-hero-tokens.ts  ELECTRO_HERO, the Electro home-v7 measurements
 | 2026-09-07 | Pass 21: weights and line-heights counted, completing all fifteen capture columns. 400 and 700 are 97.5% of the site, Heebo loads as a variable font so no weight is synthesised, and 104 line-heights is arithmetic rather than a scale |
 | 2026-09-07 | Pass 22: drift check against the token files. 117 of 117 rows match exactly, against 194 of 196 for ERROR-COPY, and the difference is enforcement rather than diligence |
 | 2026-09-07 | Pass 23: recomputed all 65 published contrast ratios from their hexes. Zero mismatches at 0.015 tolerance; with pass 22 this covers the whole chain from shipped hex to published ratio |
+| 2026-09-07 | Pass 24: re-verified component anatomy. 11 stepper values and 24 PDP variables, zero mismatches; named the three anatomy sections that cannot be machine-checked |
