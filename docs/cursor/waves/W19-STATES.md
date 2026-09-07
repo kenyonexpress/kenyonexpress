@@ -74,6 +74,11 @@ Same Israel calendar day: Cardcom `CancelOnly` vs credit. `en-CA` format Asia/Je
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (graphs)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- Order: only finalize writes `paid`. No `disputed` member (`ORDER-STATE-MACHINE.md`).
+- Voucher: terminal states stay terminal (`VOUCHER-STATE-MACHINE.md`).
+- Refund: redeemed blocks card (`REFUND-STATE-MACHINE.md`).
+- Catch-and-set past `23514` is forbidden. Application mirror must match 137 / 166 guards.
+- Hebrew till strings come from server outcomes, not a client map that invents statuses.
+
