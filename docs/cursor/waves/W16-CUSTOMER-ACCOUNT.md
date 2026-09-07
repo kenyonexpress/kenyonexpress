@@ -82,3 +82,10 @@ Frame-return ungated. `/coupon/[id]` gated. Gift claim token is a capability.
 - Wallet display: `v_wallet_ledger`. If `*_ils`, parse, do not ×100. Cashback already posted at finalize.
 - Guest merge: cart + wishlist in the same login callback (W04). Two cookie names stay split.
 
+---
+
+## Third pass
+
+Hebrew: הארנק שלי / הקופונים שלי / יתרת הארנק אינה מספיקה. Wallet is site credit only, not a bank payout.
+
+
