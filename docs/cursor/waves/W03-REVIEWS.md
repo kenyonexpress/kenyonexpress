@@ -160,3 +160,17 @@ PDP shows only published stars, unpaid users cannot insert, admin can reject, te
 - Admin moderate writes `audit_log`. Hash chain is unverified; still append (`contracts/AUDIT-LOG.md`).
 - Cache: review HTML may be cached as public catalogue; never cache pending moderation payloads (`contracts/CACHE-POLICY.md`).
 - Rate limit: 5/hour is action-level; also list in `contracts/RATE-LIMITS.md` when the code branch adds a shared limiter.
+
+---
+
+## Third pass
+
+Do not market
+ביקורות מאומתות
+until H6 has paid
+`order_items`
+and this wave is closed. JSON-LD
+`aggregateRating`
+stays off. Ratings never change
+`coupon_price_ils`.
+
