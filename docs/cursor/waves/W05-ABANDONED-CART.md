@@ -108,3 +108,13 @@ Abandoned cart is **marketing** (30א'), not transactional. The footer must not 
 ## Depends on / close
 
 Depends on H1 (Resend delivers) and H5 (cron 200). Does not block W49 storefront. Close: consent, re-price, unique, tests, no wallet incentive.
+
+---
+
+## Second pass (after contracts)
+
+- Marketing consent is `CONSENT-MODEL.md`: confirmed newsletter, not checkout. `email_suppressions` wins.
+- Frequency: unique `cart_id` forever is the cap. Do not add a daily unique (`contracts/OUTBOX.md`).
+- Scheduler: this is one of the twelve jobs in `scripts/cron-jobs.json` (`contracts/SCHEDULER-JOBS.md`). Hobby `vercel.json` silence is not a retry.
+- Deep link `/cart` re-prices. Never send agorot in the email body (`contracts/LEDGER.md`: cart jsonb is not a journal).
+- Feature flag: `KILL_SWITCH_NOTIFICATIONS` parks the send; the unique nudge row must not be inserted until send succeeds, or a failed first attempt blocks recovery forever. Measure live insert-vs-send order before changing SQL.
