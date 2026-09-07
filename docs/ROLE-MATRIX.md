@@ -397,6 +397,111 @@ acting on it.
 
 ---
 
+### 7.4 The DB-side role model, read from the function bodies
+
+Sections 1 and 2 are the application's role model. This is the database's, and
+they agree in the one place it matters most.
+
+Four helper functions carry every RLS decision. All four are **called** from
+policies in `migrations/applied/`; **none is defined there.** Their bodies live
+in `supabase/migrations/003_rbac.sql`, and `src/types/database.ts` confirms the
+signatures exist in production:
+
+```
+has_role(required_role text)           -> boolean
+is_admin()                             -> boolean
+is_supplier_member(p_supplier_id uuid) -> boolean
+current_user_role()                    -> user_role
+```
+
+#### `has_role()` is a hierarchy, and `support` is not in it
+
+```
+customer          -> true for ANY signed-in user
+vendor            -> vendor | content_uploader | admin | super_admin
+content_uploader  -> content_uploader | admin | super_admin
+admin             -> admin | super_admin
+super_admin       -> super_admin
+anything else     -> false
+```
+
+**`support` appears nowhere in that `CASE`.** For a support account:
+
+| Call | Result |
+|---|---|
+| `has_role('customer')` | true (true for everyone signed in) |
+| `has_role('vendor')` | **false** |
+| `has_role('content_uploader')` | **false** |
+| `has_role('admin')` | **false** |
+| `is_admin()` | **false** |
+
+That is exactly what `src/lib/admin/roles.ts` claims when it says support "sits
+outside the `has_role()` hierarchy (V2 section 6.1)". The comment and the
+function body agree: a verified match, not a restated assertion.
+
+#### `is_admin()` and `has_role('admin')` are the same predicate
+
+```sql
+is_admin()          role   IN ('admin','super_admin')
+has_role('admin')   v_role IN ('admin','super_admin')
+```
+
+Identical. Two helpers, one meaning, used **22** and **4** times respectively
+across the applied migrations. Not a defect, but worth knowing so a reader does
+not hunt for a distinction that is not there.
+
+Both are `SECURITY DEFINER` with `SET search_path = public`, and both return
+**false when `auth.uid()` is null**, so an anonymous caller fails closed. That
+is also why revoking `anon` EXECUTE on them was cancelled (migration 165):
+eighteen policies on public-readable tables call them inside `USING`, RLS quals
+run as the caller, and the revoke would have turned every anonymous catalogue
+`SELECT` into a 42501.
+
+#### The consequence to check: support's reads
+
+The app grants `support` **read** on orders, users, suppliers, affiliates and
+discounts (section 2). Any of those tables whose RLS is written `is_admin()` or
+`has_role('admin')` **denies support at the database.**
+
+Not currently a live bug: staff pages read through the server and `service_role`
+bypasses RLS. It becomes one the moment a support-visible read moves to a
+user-scoped client. The rule to carry: **a policy written `is_admin()`
+implements the admin column of section 2, never the support column.** A
+support-readable table needs its own predicate.
+
+#### The 24 policies this repository records
+
+| Table | Commands | Predicate family |
+|---|---|---|
+| `banners` | SELECT anon+auth; ALL auth | `is_active`; `has_role('admin')` |
+| `homepage_sections` | SELECT anon+auth; ALL auth | `has_role('admin')` |
+| `payment_events` | SELECT x2 | `auth.uid()` owner; `current_user_role()` staff |
+| `refunds` | SELECT x2 | `auth.uid()` owner; `current_user_role()` staff |
+| `payout_statements` | ALL; SELECT | `is_admin()`; `is_supplier_member(supplier_id)` |
+| `payout_statement_lines` | ALL; SELECT | `is_admin()`; `is_supplier_member(supplier_id)` |
+| `subscriptions` | SELECT; UPDATE | SELECT owner OR admin OR supplier member; **UPDATE owner OR admin only** |
+| `subscription_charges` | SELECT | owner OR admin OR supplier member |
+| `supplier_branches` | SELECT anon+auth; ALL x2 | public read; `auth.uid()` / `current_user_role()` |
+| `reviews` | SELECT x2, INSERT, DELETE | `auth.uid()`, verified purchase in the INSERT policy |
+| `wishlists` | ALL | `auth.uid()` |
+
+`subscriptions` is the one to notice: a supplier member may **read** a
+subscription and may not **update** it. That asymmetry is the database
+expressing the same split the portal's `manager` versus `owner` ranks do.
+
+#### The limit of this section, stated plainly
+
+**These 24 policies are not the whole RLS surface.** They are what
+`migrations/applied/` records, and that directory is a partial lineage: every
+helper the policies depend on is called there and defined elsewhere, and this
+project's own notes record that the hosted database and `supabase/migrations/`
+are different lineages, with the generated types the reliable description of
+production.
+
+Treat the table as *the policies this repository can show you*. Verify against
+the live database before acting on an absence: **a table missing from it is not
+a table without RLS.**
+
 ## 8. How to re-derive this document
 
 ```bash
@@ -619,3 +724,4 @@ state without one".
 | 2026-09-07 | Legal public; offline public cache; no escrow in returns |
 | 2026-09-07 | Pass 12: the /api/* surface, 34 route handlers, six authorization mechanisms; four that read as unguarded and are not; CRON_SECRET blast radius |
 | 2026-09-07 | Pass 13: the fourteen customer-facing action files section 6 omitted; refund is the only admin-gated action outside admin/ |
+| 2026-09-07 | Pass 13: the DB-side role model from the function bodies. has_role() is a hierarchy that excludes support, is_admin() is the same predicate, and the 24 policies this repo can show are not the whole surface |
