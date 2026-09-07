@@ -751,6 +751,61 @@ If any of the three is proposed, the evidence against it is in
 `src/app/globals.css` around the `data-consent` rules and in
 `docs/SEO-PLAN.md` 7.1.2.
 
+## 14. Copy consistency, one purchase end to end (pass 19)
+
+`docs/ERROR-COPY.md` has counted four voice inconsistencies against the source.
+None is visible when reading one screen; all four are visible walking one
+purchase. This is that walk, for a Hebrew reader.
+
+Do it in one sitting, as one shopper, writing down the exact wording each time.
+
+| # | Screen | Trigger | Note the wording of |
+|---|---|---|---|
+| 1 | `/signup` | submit with a 6-character password | the minimum stated. `auth.ts` says **6**, `validations/auth.ts` says **8**. Which one did you see? |
+| 2 | `/login` | submit empty | the "fill this in" verb |
+| 3 | PDP | write a review while signed out | `צריך להתחבר…` — and the retry verb, which is **singular** `נסה` here |
+| 4 | Cart | add more than stock allows | the per-line warning. It should name the remaining quantity |
+| 5 | Cart | apply a bad coupon | the rate-limit noun: `ניסיונות` |
+| 6 | Cart | mutate quickly, hit the limit | the rate-limit noun: `פעולות`. Different noun, same screen area |
+| 7 | Checkout | leave a field blank | the "fill this in" verb again. Compare with step 2 |
+| 8 | Checkout | enter a landline | the phone message. Three variants exist; only one says what to do |
+| 9 | Checkout | force a server failure if you can | **is a raw Postgres message on screen?** See `ERROR-COPY` 12.3 |
+| 10 | `/contact` | submit and fail | the retry verb: **plural** `נסו` here, against step 3's singular |
+
+### 14.1 What you should end up with
+
+Four lists, and each should be short:
+
+1. **Verbs for "fill this in".** Five exist in the codebase
+   (`יש למלא`, `יש להזין`, `נא למלא`, `נא להזין`, `שדה חובה`). How many did one
+   purchase show you?
+2. **`נסה` versus `נסו`.** 20 singular against 50 plural repo-wide. Steps 3 and
+   10 are the pair that makes it obvious.
+3. **The password minimum.** One number, or two?
+4. **Em-dash separators.** 27 exist, 14 of them in `auth.ts`, so steps 1 and 2
+   are where you meet them.
+
+### 14.2 The honeypot check, which needs two submissions
+
+`docs/ERROR-COPY.md` 16.3: the supplier-lead form answers a honeypot hit with
+`תודה, קיבלנו את הפרטים ונחזור אליכם.` and a real submission with the same
+sentence **plus `בהקדם`**.
+
+| # | Step | Pass |
+|---|---|---|
+| 1 | Submit `/suppliers` normally | note the exact success string |
+| 2 | Submit again with the hidden `company` field filled (devtools) | **the two strings must be byte-identical** |
+
+They currently are not, and that is the whole finding: a decoy that answers
+differently is a decoy that can be identified, after which it catches nothing.
+
+### 14.3 Why this is a QA pass and not a lint
+
+Every one of these is a **correct** string in isolation. No scan can flag them,
+because nothing is misspelled, nothing is wrong, and each file is internally
+consistent. They are only visible to someone who meets them in sequence, which
+is exactly what a shopper does and what a per-file review does not.
+
 ## 11. What not to test here
 
 - Pixel percents (log them in `docs/UI-PARITY-LOG.md`)
@@ -778,3 +833,4 @@ If any of the three is proposed, the evidence against it is in
 | 2026-09-07 | Pass 16: environment verification before a QA session (0.1) and the three false-positive patterns this set has already paid for (0.2) |
 | 2026-09-07 | Pass 17: perceived-performance steps by eye (13), plus the three ways to undo the LCP work while believing you are cleaning up |
 | 2026-09-07 | Pass 18: added the stale-service-worker check to 0.1. It produces the same symptom as a stale next start and has a different fix |
+| 2026-09-07 | Pass 19: copy consistency as one walked purchase (14), including the two-submission honeypot check |
