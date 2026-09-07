@@ -38,6 +38,12 @@
 
 ---
 
-## Second pass
+## Second pass (never-cache)
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+- Pay, webhook, frame-return, pkpass, ingest, account, scan, admin: `no-store`.
+- Public catalogue may cache only through `createPublicClient` (anon). An admin JWT on that client leaks drafts.
+- Guest `Set-Cookie` for `ke_session_id` must not ride a public CDN response.
+- Product save already `revalidatePath`. Search invalidation is the search outbox, not a Redis flush.
+- `KILL_SWITCH_CACHE` is slower-correct, not a money fix. `NEXT_PUBLIC_*` needs a rebuild.
+- Wishlist and account pages: `private` + `noindex` (W04).
+
