@@ -128,3 +128,37 @@ Production project:
 Apex
 `kenyonexpress.co.il`
 is WordPress until the owner cuts DNS.
+
+---
+
+## 100-item queue (canonical additions)
+
+Reading order: `ONBOARDING.md` → `GLOSSARY.md` → `waves/WAVE-INDEX.md` → `MONEY-INVARIANTS.md` → `contracts/ROLE-VENDOR.md` → `contracts/PAYMENT-BOUNDARY.md` → `business/LAUNCH-BLOCKERS.md` → `ops/ON-CALL-GUIDE.md`.
+
+| Path | One line |
+|---|---|
+| `RESUME.md` | Next item if interrupted |
+| `waves/W03-REVIEWS.md` … `W50-MAINTENANCE.md` | Code-agent specs |
+| `waves/WAVE-INDEX.md` | Dependencies and path to v7.0.0-rc1 |
+| `contracts/OUTBOX.md` | Outbox row, consent, retry, kinds |
+| `contracts/LEDGER.md` | Journals, wallet, no escrow writer |
+| `contracts/FEATURE-FLAGS.md` | Env kill switches, no table |
+| `contracts/AUDIT-LOG.md` | Append-only; hash chain unverified |
+| `contracts/VOUCHER-STATE-MACHINE.md` | issued/redeemed/expired/cancelled/refunded |
+| `contracts/ORDER-STATE-MACHINE.md` | paid only from finalize; no disputed enum |
+| `contracts/REFUND-STATE-MACHINE.md` | Card vs wallet; redeemed blocks card |
+| `contracts/SUPPLIER-STATE-MACHINE.md` | Lead approve; membership |
+| `contracts/ROLE-VENDOR.md` | vendor ≠ till; supplier_members |
+| `contracts/MIGRATION-PLAYBOOK.md` | Pending files; drop default_split_percent |
+| `contracts/PAYMENT-BOUNDARY.md` | GetLpResult; no HMAC |
+| `contracts/SCHEDULER-JOBS.md` | Twelve jobs in JSON |
+| `contracts/CACHE-POLICY.md` | Never cache pay/webhook/pkpass |
+| `contracts/RATE-LIMITS.md` | Scan 30/min; PIN 15/hour |
+| `contracts/CONSENT-MODEL.md` | Necessary vs marketing |
+| `ops/RUNBOOK-*.md` | Incidents |
+| `ops/ON-CALL-GUIDE.md` | What pages a human |
+| `quality/*` | Test/a11y/perf/Hebrew/security plans |
+| `business/*` | FAQs, launch list, cost, Groo |
+
+Leftover `waves/W06-NEWSLETTER.md` and similar names from an earlier pass are extra, not canonical.
+
