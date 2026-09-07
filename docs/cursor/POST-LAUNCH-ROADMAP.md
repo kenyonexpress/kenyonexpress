@@ -265,3 +265,50 @@ Moderation is
 `admin/reviews.ts`,
 money is
 `refundOrder`.
+
+---
+
+## P1 / P2 are not greenfield
+
+This tree already has:
+
+| Surface | Status |
+|---|---|
+| `submitReview` / `getMyReviewableItem` | Actions live. Honesty remaining: join to **paid** `order_items` only. |
+| `moderateReview` | Admin live. Must not call `refundOrder`. |
+| `/account/wishlist` | Route live. |
+| `toggleWishlist` / `getWishlistSaved` | Actions live in `reviews.ts`. |
+| Guest list | `localStorage` key `ke_wishlist`. |
+
+Estimates in P1/P2 above are **finish and pixel**, not create-from-zero. Do not open a second wishlist table.
+
+---
+
+## P3 must re-price and must not promise cashback
+
+Cashback is credited in
+`finalizeOrder`,
+not at abandoned-cart time. A nudge that says "complete checkout and get 10% cashback" must re-read the live offer. The master test row must not be nudged (172 + implausible-discount).
+
+---
+
+## Payout is still not a seventh item
+
+`admin/payouts.ts`
+and
+`/api/supplier/payouts/csv`
+are dead (
+`42P01`).
+Physical residual is accounting. A real payout ledger is a new migration pack with conservation CHECKs, owner approval, and a TEST-MAP row. It is not a weekend UI ticket.
+
+---
+
+## Suggested sequence, revised after this pack
+
+1. P3 correctness (Resend already required by H1/H5).
+2. P2 pixel finish (heart already has actions).
+3. P1 paid-buyer join (need H6 orders).
+4. Close G1/G5/G6 on a **code** branch (not this markdown pack): live wallet RLS test, admin-redeem contract, cashback-at-finalize assertion.
+5. P6 before the second dozen partners.
+6. P4 campaigns after consent. Click-to-chat only needs the real WhatsApp number (H4 addendum).
+7. P5 last.
