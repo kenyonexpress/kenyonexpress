@@ -118,3 +118,10 @@ Depends on H1 (Resend delivers) and H5 (cron 200). Does not block W49 storefront
 - Scheduler: this is one of the twelve jobs in `scripts/cron-jobs.json` (`contracts/SCHEDULER-JOBS.md`). Hobby `vercel.json` silence is not a retry.
 - Deep link `/cart` re-prices. Never send agorot in the email body (`contracts/LEDGER.md`: cart jsonb is not a journal).
 - Feature flag: `KILL_SWITCH_NOTIFICATIONS` parks the send; the unique nudge row must not be inserted until send succeeds, or a failed first attempt blocks recovery forever. Measure live insert-vs-send order before changing SQL.
+
+---
+
+## Third pass
+
+No 5% wallet second touch. MEGA-BLOCK STEP 15. Copy must not quote a stale ₪. Guest without email: no send. Marketing footer, not an order confirmation.
+
