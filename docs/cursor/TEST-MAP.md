@@ -489,3 +489,39 @@ Closing G1–G20 is a **code** branch. This pack still does not run
 and still does not edit
 `.ts`.
 
+---
+
+## 12. Deepen after items 11–20
+
+New pack files are not tests. Gaps they imply:
+
+| Id | Missing protection | Evidence |
+|---|---|---|
+| **G21** | Browser cookie name vs PostgREST name | `GUEST_SESSION_COOKIE = 'ke_session_id'`
+and
+`Cookie: session_id=`
+are both load-bearing. `anon.test.ts` pins the constructed header. Nothing fails if
+`guest-session-cookie.ts`
+is renamed without the policy SQL. |
+| **G22** | `fn_anonymize_user` satellites = `DELETION_EFFECTS` = fallback loop | Three lists. Deletion tests cover the planner phrase, not 150 vs TS drift (Q24, Q26). |
+| **G23** | ntfy fires when Sentry DSN is unset | Comment in
+`sentry.ts`
+says the early-return was a bug. No test that
+`alertMoneyFailure`
+is called on finalize-after-pay failure without DSN. |
+| **G24** | `@dnd-kit` stays unused | Abandoned dep. A future import onto home JS blows the bundle gate with no TEST-MAP row today. |
+| **G25** | Cron inventory is 12 | Older docs say 10. `cron-schedule-inventory.test.ts` is the pin. Deleting it lets Hobby Vercel cron come back as a "simplification". |
+
+`src/lib/account/delete-account.test.ts`
+protects the phrase and the kept/erased **labels**, not the RPC grant.
+
+`src/lib/observability/log-coverage.test.ts`
+protects "no raw console" and "no upstream error in public JSON", not ntfy.
+
+Error classes in
+`ERROR-TAXONOMY.md`
+that have no dedicated test: `CardcomAccountError`
+cross-terminal charge,
+`VoucherQrSecretMissingError`
+on boot of the till. Those are launch-ops, not unit holes, but they are still holes.
+
