@@ -35,3 +35,9 @@
 | Q | Best answer |
 |---|---|
 | `ke_cart_mirror_v1`? | Legal cookie list. Confirm it is a tiny mirror, not a second money cart. |
+
+---
+
+## Second pass
+
+Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
