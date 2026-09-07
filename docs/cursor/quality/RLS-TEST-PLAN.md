@@ -23,4 +23,4 @@ Re-measure: `node scripts/check-rls.mjs` (human; this pack does not run).
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+Zero-policy is deny. Anon carts via constructed session_id=. Scanner cannot UPDATE stock. Manifest pin is not live drift. 165 cancelled.
