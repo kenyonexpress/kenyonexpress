@@ -68,6 +68,12 @@ None.
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (Actions not Hobby)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- Twelve jobs in
+  `scripts/cron-jobs.json`.
+  Do not put them in Hobby
+  `vercel.json`.
+- 162 pg_cron blocked on vault. Do not double-fire with Actions.
+- Upgrade trigger is checkout p95 or stranded >0, not vanity GMV (169 may be 0).
+
