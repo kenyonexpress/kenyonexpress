@@ -68,3 +68,9 @@ Wallet-only pay: cashback of zero on-site is zero. Referral min uses on-site cas
 | Q | Best answer |
 |---|---|
 | Engine vs product percent? | **Product percent** is what checkout sends. Treat engine as unused until a caller is grepped on a code branch. |
+
+---
+
+## Second pass (after contracts and ops)
+
+Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
