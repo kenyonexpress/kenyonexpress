@@ -31,4 +31,4 @@ Rotate in vendor dashboards; rebuild if `NEXT_PUBLIC_` involved (Sentry DSN publ
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+Service role SHA-256 denylist + Vercel server env. Webhook `s` CURRENT+RETIRING. QR current+previous. CRON_SECRET in Actions and Vercel together. ntfy topic unguessable.
