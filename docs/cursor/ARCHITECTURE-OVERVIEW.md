@@ -789,3 +789,53 @@ A query that omits the schema near an import script will hit the wrong table. Pr
 This pack does not treat
 `wp_import`
 as a money path.
+
+---
+
+## 24. Second pass (facts from the rest of this pack)
+
+**Cashback** credits inside
+`finalizeOrder`,
+not at scan. Idempotency
+`order:<id>:cashback`.
+See
+`DATA-FLOW.md`
+§11 and
+`MONEY-INVARIANTS.md`
+§6.
+
+**Admin redeem** is a second consume path. See
+`DATA-FLOW.md`
+§12,
+`API-SURFACE.md`
+§10,
+risk R20.
+
+**Mobile till**
+`apps/mobile`
+uses the **anon** key + session in SecureStore (not AsyncStorage). It POSTs to the Next.js site (
+`/api/supplier/vouchers/*`
+), it does not embed service_role. Offline queue
+`apps/mobile/src/lib/supplier/queue.ts`
+must not locally mark success; the server verdict is the only settle. Checkout in the app is a WebView of the same
+`/checkout`.
+
+**Stock at finalize.**
+`consume_order_stock`
+runs after pay. Failure is logged and **must not** fail finalize (card already charged). Idempotent via
+`stock_reservations.consumed_at`.
+A replayed webhook must not decrement twice.
+
+**Server
+`reportPurchase`.**
+Browser purchase pixels are lost to ad blockers and closed tabs. Finalize reports purchase keyed on order id. Migration 169 silence (R24) is an ingest/schema problem, not "nobody paid".
+
+**Subscriptions are born in finalize.** Cron renews. Tables from 135 with no insert would take money once and never recur.
+
+**`payment_tokens`.** Finalize is the only insert site (pinned by
+`saved-cards.test.ts`).
+
+**Cron count:** twelve GET routes. Scheduler: GitHub Actions, not
+`vercel.json`.
+
+**RLS snapshot:** 53 tables (2026-08-19). Pack narratives that say 61 are later notes. CI cannot see the delta (R23, H3b).
