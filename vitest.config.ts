@@ -59,6 +59,16 @@ export default defineConfig({
         'src/lib/commerce/**/*.ts',
         'src/lib/checkout/split.ts',
         'src/server/domain/orders/**/*.ts',
+        // THE VOUCHER LIFECYCLE, absent until 2026-09-07 for exactly the
+        // reason money.ts was absent until 2026-08-20: it carried no floor and
+        // did not appear in the report, so nobody could see whether it was
+        // covered at all. It was, at 91% branch, but that was luck rather than
+        // a gate. A voucher is the thing a customer paid for and the thing a
+        // counter burns; it belongs on the same footing as the split.
+        'src/server/domain/vouchers/**/*.ts',
+        // The wallet half of the refund pipeline. Same reasoning: it moves
+        // money out of a house account into a customer's balance.
+        'src/server/payments/refund-wallet.ts',
       ],
       exclude: ['**/*.test.ts', '**/*.test.tsx'],
       thresholds: {
@@ -68,6 +78,12 @@ export default defineConfig({
         'src/lib/checkout/split.ts': MONEY_MODULE_FLOOR,
         'src/server/domain/orders/settlement.ts': MONEY_MODULE_FLOOR,
         'src/server/domain/orders/state-machine.ts': MONEY_MODULE_FLOOR,
+        // Floored at the measured value, not at an aspiration. Both of these
+        // are at 100% today; pinning them there means a change that drops a
+        // branch fails the run instead of passing quietly.
+        'src/server/domain/vouchers/redemption.ts': MONEY_MODULE_FLOOR,
+        'src/server/domain/vouchers/state-machine.ts': MONEY_MODULE_FLOOR,
+        'src/server/payments/refund-wallet.ts': MONEY_MODULE_FLOOR,
       },
     },
   },
