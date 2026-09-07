@@ -381,3 +381,21 @@ Companions:
   Medium if someone "fixes" delayed-credit briefs by adding a second credit at scan.
 - **Impact:** High (platform pays cashback twice).
 - **Mitigation:** One writer. Replay finalize must no-op. Do not credit at redeem. G6.
+
+---
+
+## R26. Service role inside `apps/mobile`
+
+- **Likelihood:** Low today (anon key + SecureStore). High if someone "fixes" offline scan by putting the service key in Expo config.
+- **Impact:** Catastrophic (BYPASSRLS on every install, backups, jailbreaks).
+- **Mitigation:** Mobile stays anon. Drain through HTTP redeem. Never
+  `NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY`
+  and never a non-public extra in the app binary.
+
+---
+
+## R27. Finalize throws on stock consume
+
+- **Likelihood:** Low unless a future patch "tightens" error handling.
+- **Impact:** Critical. Card charged, order not `paid`, no voucher. Same shape as R7.
+- **Mitigation:** Current code logs and continues. Tests G11. Do not invert that in the launch window.
