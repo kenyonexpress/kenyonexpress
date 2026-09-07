@@ -2,6 +2,6 @@
 
 **Queue of 100:** first write complete; deepen pass looping.
 
-**Next item:** 23 (`docs/cursor/waves/W25-PAYOUTS.md`) third pass.
+**Next item:** 27 (`docs/cursor/waves/W29-GIFT-VOUCHERS.md`) third pass.
 
 **Branch:** `ke-cursor-docs`
