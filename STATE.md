@@ -87,6 +87,41 @@ Updated: 2026-09-01 03:58 UTC (‏גל כלי האדמין: ארבעה מהשי�
 
 ### ‏07.09: בלוק 10, ‏E2E — מה נמדד עד כה
 
+**‏`coupon-partner` אינו קיים, ולא נמדד קודם.** התור מבקש שוב ושוב גבולות
+‏RLS ל-"customer, content-uploader, coupon-partner, admin", ו-W7 מבקש
+ש"אישור אדמין ייצור ספק ויעניק את תפקיד coupon-partner". נקרא מפרודקשן:
+
+```
+user_role = customer, content_uploader, vendor, admin, super_admin, support
+```
+
+ומתוך ‏146 מדיניויות ב-public:
+
+| תפקיד | מדיניויות שמזכירות אותו |
+|---|---|
+| `content_uploader` | ‏12 |
+| `vendor` | ‏0 |
+| `coupon_partner` | ‏0, וגם לא ב-enum |
+
+כלומר: ‏`content_uploader` הוא תפקיד אמיתי עם שיניים. ‏`vendor` קיים ב-enum
+ואף מדיניות לא מסתכלת עליו. ‏**גישת ספק אינה תפקיד פרופיל בכלל** אלא חברות
+ב-`supplier_members`, וזה מה ש-`redeem_voucher` נגזר ממנו.
+
+**המשמעות לשני מקומות בתור:**
+
+1. **בלוק 10:** חבילת הגבולות תכסה את מה שקיים, ‏customer,
+   ‏`content_uploader`, ‏admin, ועוד גבול הספק דרך `supplier_members`.
+   טסט ל-"coupon-partner" היה ממציא תפקיד.
+2. **‏W7:** "להעניק את תפקיד coupon-partner" דורש **מיגרציה שמוסיפה ערך
+   ל-enum** לפני שיש מה להעניק, או החלטה שהתפקיד הוא `vendor` הקיים ושצריך
+   לכתוב לו מדיניויות. זו החלטת מודל ולא פרט מימוש, והיא נרשמת כאן כדי
+   ש-W7 לא יגלה אותה תוך כדי.
+
+**‏fixtures חסרים:** ‏`scripts/seed-test-data.mjs` יוצר customer, supplier
+(‏`supplier_members` owner) ו-admin. אין fixture ל-`content_uploader`.
+חבילת הגבולות דורשת אחד.
+
+
 **‏`hebrew-copy.test.ts` אינו כושל, והוא גם לא גוטט.** התור אמר "לתקן את
 הטסט הכושל במקום למחוק אותו", והוא ‏3/3 ירוק. נקרא במלואו: יש בו שומר
 על השומר (`copyFiles()` חייב להכיל שלושה קבצים נקובים ולהיות מעל 200),
