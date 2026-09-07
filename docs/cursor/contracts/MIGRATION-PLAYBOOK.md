@@ -42,6 +42,12 @@ Column on `suppliers` (and archive `legacy_percent_archive_112`). Form leftover.
 
 ---
 
-## Second pass
+## Second pass (collisions)
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+- Apply by **full filename**. 169 analytics vs 169 audit. 170 reports vs 170 indexes. 171 FTS vs 171 shekel name. 172 hide SKU vs 172 RLS deny.
+- 162 approved but blocked on vault. Do not run pg_cron while GitHub Actions already fires the twelve jobs.
+- 165 cancelled. Do not revive.
+- 148 partition: skip for v7 unless a DBA owns it.
+- `default_split_percent`: strip/prefill only today; DROP after a deploy that does not read it. Checkout must ignore it forever until gone.
+- This worktree never applies SQL. Human + MCP after yes. No `db push`.
+
