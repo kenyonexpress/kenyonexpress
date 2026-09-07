@@ -120,3 +120,12 @@ Depends on `mergeGuestCart` behaviour. Does not block W49. Close: heart, badge, 
 - Rate limits: toggle must share a user-keyed limiter so a script cannot flood unique pairs (`contracts/RATE-LIMITS.md`).
 - Consent: hearts are not marketing. Abandoned-cart later must not harvest wishlist emails (`contracts/CONSENT-MODEL.md`).
 - `profiles.role = vendor` does not list other shoppers' hearts. Owner RLS only.
+
+---
+
+## Third pass
+
+Cap 100 returns Hebrew, does not drop oldest. Merge on login next to cart merge without duplicating
+`product_id`.
+Prices are not stored on the heart row. Checkout re-resolves.
+
