@@ -312,3 +312,7 @@ Physical residual is accounting. A real payout ledger is a new migration pack wi
 5. P6 before the second dozen partners.
 6. P4 campaigns after consent. Click-to-chat only needs the real WhatsApp number (H4 addendum).
 7. P5 last.
+
+Also on a code branch, not this pack: G11 (stock consume must not un-pay), G12 (already pinned), G13 (mobile queue), G14 (`reportPurchase` dedupe). None of those are launch blockers if the current finalize code is what Production runs. They become blockers the moment someone "hardens" them without the tests.
+
+P6 must not ship a partner-facing issued-voucher export. The till app already scans; self-serve is onboarding, not a liability dump.
