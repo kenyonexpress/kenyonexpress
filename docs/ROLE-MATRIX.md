@@ -777,6 +777,39 @@ user-scoped client. The rule to carry: **a policy written `is_admin()`
 implements the admin column of section 2, never the support column.** A
 support-readable table needs its own predicate.
 
+#### And it already has one: `current_user_role()` (pass 20)
+
+The concern above is answered by the fourth helper, which exists precisely
+because `is_admin()` cannot express "admin **or** support".
+
+```sql
+current_user_role() RETURNS public.user_role
+  SELECT role FROM public.profiles WHERE id = auth.uid()
+```
+
+It returns the **enum**, not a boolean, so a policy can list the roles it wants.
+Every place support genuinely needs DB read access already uses it:
+
+| Policy | Predicate | Support? |
+|---|---|---|
+| `refunds_staff_read` | `current_user_role() IN ('admin','super_admin','support')` | **yes** |
+| `payment_events_admin_read` | `current_user_role() IN ('admin','super_admin','support')` | **yes** |
+| `supplier_branches_admin_all` | `current_user_role() IN ('admin','super_admin')` | no, and it is a **write** policy, so that is correct |
+
+So the codebase already draws the distinction this section warns about: boolean
+`is_admin()` where only admins belong, enum `current_user_role()` where the
+answer is a set. The two are not interchangeable and the choice between them is
+the choice between the admin column and the admin-plus-support column of
+section 2.
+
+One naming wrinkle: **`payment_events_admin_read` includes `support`** despite
+its name. The predicate is right and the name reads narrower than the policy is.
+Worth knowing before someone "tidies" it to match its label.
+
+`current_user_role()` returns `NULL` for a caller with no `auth.uid()`, and
+`NULL IN (...)` is `NULL`, which RLS treats as false. So it fails closed for
+anonymous callers the same way `is_admin()` does, by a different mechanism.
+
 #### The 24 policies this repository records
 
 | Table | Commands | Predicate family |
@@ -1100,3 +1133,4 @@ shipped (`docs/COMPONENT-INVENTORY.md` Pass 14 dead-code).
 | 2026-09-07 | Pass 17: finding 5 traced to its cause. Not a loop but a bounce to /login, and the fix is in adminLandingPath, not in the guard, which currently prevents a worse loop |
 | 2026-09-07 | Pass 18: the twelve non-admin server actions. Eight owner-scoped via auth.getUser, four deliberately public with three rate-limited, and no supplier actions at all |
 | 2026-09-07 | Pass 19: the supplier helper family. is_active is honoured app-side and DB-side so revocation takes effect at the next query; and these are the counter-example to the 7.3 definer caution |
+| 2026-09-07 | Pass 20: traced current_user_role(). It answers the support-reads concern: it returns the enum so a policy can name a SET, and refunds and payment_events already include support |
