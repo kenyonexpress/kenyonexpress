@@ -421,3 +421,17 @@ are the e2e closest to money. They are not a substitute for G1–G10.
 It is not coverage %. It is not permission to delete a "misc" test because this pack called it not-money. `legal-duplication` and `hebrew-copy` stop escrow language on
 `/legal/returns`
 (R19). That is launch-adjacent even though it never touches agorot.
+
+---
+
+## 9. Second-pass gaps
+
+| Id | Missing protection | If someone "fixes" without a test |
+|---|---|---|
+| **G11** | Stock consume failure must not un-pay | A later patch throws from `consume_order_stock` and leaves a charged customer without a voucher |
+| **G12** | `payment_tokens` has a single insert site (finalize) | A checkout client insert of tokens bypasses Cardcom |
+| **G13** | Mobile queue must not settle locally | Offline "success" then drain double-consumes or lies |
+| **G14** | `reportPurchase` dedupe on order id | Thank-you page + finalize = two purchases in ad spend |
+
+`src/lib/account/saved-cards.test.ts`
+already pins G12. G11/G13/G14 are still holes.
