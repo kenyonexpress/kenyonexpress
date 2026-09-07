@@ -599,3 +599,51 @@ the transaction did not commit. Do not retry with a client policy change. The fa
 `MONEY-INVARIANTS.md`
 §5. service_role does not escape it. The only honest retry is to send a row that conserves.
 
+---
+
+## 26. Deepen after items 11–20
+
+Deletion, alerts, and the guest cookie split are not extra money paths. They sit beside §1–§6.
+
+### 26.1 Account deletion vs the ledger
+
+`deleteAccount`
+does not reverse §1–§6. It anonymizes the person (A) and keeps orders, payments, invoices, audit (B). Gift recipient columns on
+`orders` /
+`vouchers`
+are not in
+`DELETION_EFFECTS.erased`
+(
+`OPEN-QUESTIONS.md`
+Q24). A deletion must not
+`DELETE FROM payment_events`
+(append-only) and must not hard-delete
+`auth.users`
+(cascades, orphans §1 rows).
+
+### 26.2 Guest cart write (before §1)
+
+| Step | Table | Policy |
+|---|---|---|
+| Browser holds | none (cookie
+`ke_session_id`) | N/A |
+| Insert/update cart | `carts` | Anon; PostgREST cookie is constructed
+`session_id=<uuid>`, not the jar |
+| Merge on login | `carts` | User session;
+`mergeGuestCart`; then
+`ke_session_id`
+deleted |
+
+Pay (§1) never trusts cart JSON for agorot. It re-reads products.
+
+### 26.3 After pay: outbox is not a money table
+
+Voucher row is §1. Voucher email is
+`notification_outbox`
+(server/service). Cron drain. Failure here does not un-pay. ntfy/Sentry if issue failed; Resend 400 is H1, not a refund.
+
+### 26.4 Analytics writes are optional for the till
+
+`trackServerEvent`
+after beginCheckout / finalize / redeem / refund. Until 169, ingest drops those names. The tables in §1–§6 still write. Do not add a compensating fake purchase row.
+
