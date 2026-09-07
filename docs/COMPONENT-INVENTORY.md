@@ -716,6 +716,54 @@ so that:
    `category/CategorySort` appears in the pass 12 silent-while-pending list and
    is unreachable, so it is not worth fixing.
 
+### Pass 15 correction: it is 23, not 11
+
+**The eleven above is wrong and this supersedes it.** Pass 14 grepped for
+`import ... <ComponentName>`, which misses two real import forms:
+
+| Missed form | Example | Effect |
+|---|---|---|
+| lowercase module paths | `from '@/components/ui/button'` | all five unused `ui/` primitives were scored as used |
+| relative imports | `Reviews.tsx` does `from './ReviewFormGate'` | components imported by a sibling were scored as unused |
+
+The correct test is **any import specifier ending in the filename**, in either
+form. That gives **23 of 138**, and it passes a control (`ui/dialog`, imported
+once by `admin/CategoriesTable`, is correctly excluded):
+
+```
+admin/CategoryTree          search/DeferredHeaderSearch   store/PromoBanners
+category/CategorySort       search/HeaderSearch           storefront/BlogPostHeader
+growth/NewsletterSignup     store/CategoryNav             ui/button
+home/FeaturedProducts       store/CategoryProductSection  ui/dropdown-menu
+home/Footer                 store/CategorySidebar         ui/form
+home/HeroExact              store/DealsSection            ui/select
+layout/InfoBar              store/HomeHeroSection         ui/textarea
+legal/LegalDocumentView     product/WishlistButton
+```
+
+Three consequences.
+
+**1. Five of the six `ui/` primitives are dead**, and only `ui/dialog` ships.
+That descopes findings in two earlier passes:
+
+- The Summary's "RTL risky: 7 components" includes `ui/dropdown-menu` and
+  `ui/select`. Both are unreachable, so their `pl-8` / `left-2` risks cannot
+  affect a rendered page. The live RTL-risk count is **5**, not 7.
+- Pass 13's arbitrary-value list includes `ui/textarea` `[80px]`,
+  `ui/dropdown-menu` `[8rem]` and `ui/select` `[8rem]`. All unreachable.
+
+**2. Both search components are dead, and that is the standing rule made
+visible.** `search/HeaderSearch` and `search/DeferredHeaderSearch` have zero
+import sites. This project deliberately ships **no search UI**
+(`DESIGN-SYSTEM.md` 4.1, and it is a recorded pixel cost against live). The
+components exist and nothing renders them, which is exactly what that rule looks
+like in the tree. **Do not "fix" this by wiring them in.**
+
+**3. `growth/NewsletterSignup` was a false positive in pass 14's other
+direction.** Pass 14 said it was live, "used by `LoginForm` and `SiteFooter`".
+It is not: `SiteFooter.tsx:180` mentions it **in a comment**. It has zero import
+sites and belongs on this list.
+
 ### Method, and the false positives it produced first
 
 The first attempt matched import **paths** and reported **27**. That was wrong:
@@ -873,3 +921,4 @@ not, and the header said 72 while the tree held 138.
 | 2026-09-07 | Pass 16: ProductCard deals stay radius 0; hover lift is Electro, live is flat |
 | 2026-09-07 | Pass 14: dead-code sweep. Eleven components never imported, including WishlistButton, so the PDP wishlist heart does not ship despite three documents describing it |
 | 2026-09-07 | Pass 15: recounted the tree. 138 components not 72, shared/ is no longer empty, and 25 components are absent from the file entirely |
+| 2026-09-07 | Pass 15: dead-code count corrected from 11 to 23. Five of six ui/ primitives are dead (descopes two RTL risks), both search components are dead by design, NewsletterSignup was a pass-14 false positive |
