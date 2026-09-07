@@ -78,3 +78,10 @@ Offline batch: mixed success/already_redeemed in one drain is OK. Do not abort t
 - Mixed cart: review/refund per `order_item` / unit (`VOUCHER-STATE-MACHINE.md`).
 - Hebrew: אי אפשר לממש חלק מהקופון.
 
+---
+
+## Third pass
+
+מומשו 2 מתוך 3 is for **units**, not remaining agorot on one QR. Value-off coupons are not v1.
+
+
