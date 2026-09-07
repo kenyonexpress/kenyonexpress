@@ -510,6 +510,93 @@ Home: do not replace the live brand title with a stuffed “קופונים די�
 
 ---
 
+## 8. Pass 14: silo graph, FAQPage, and the two sitemap decisions that stay decisions
+
+Section 4 is a from/to table. This is the same map as a silo, plus the schema
+and robots choices pass 12 measured and this pass will not silently "fix" in
+`.ts`.
+
+### 8.1 Silo (Hebrew storefront, one locale `he-IL`)
+
+```
+                         Home `/`
+              (hub: deals, strip, footer)
+                 /        |         \
+        `/category/{slug}` `/products`  `/city/{slug}`
+                 \        |         /
+                    `/product/{slug}`
+                           |
+                      `/s/{id}`  (public shop)
+                           |
+                    city chip URLs `/products?city=`  (noindex)
+```
+
+Rules that keep the silo from leaking money or tokens:
+
+| Edge | Allow | Deny |
+|---|---|---|
+| Home card → PDP | product `name_he`, link `#0062bd` | `platform_percent` in the anchor |
+| PDP → `/s/{id}` | supplier name | `/supplier/{uuid}` (portal) |
+| PDP coupon → `/coupon/{uuid}` | **after purchase only** | before pay (the QR is a capability) |
+| City → `/s/{id}` | when a public supplier exists | inventing a thin city for a missing region |
+| City → `/products?city=` | chips, **noindex** | hreflang on the query URL |
+| Empty city → `/` or `/products` | recovery | `/search` |
+| 404 → `/` and `/products` | recovery | `/search` |
+| Account empty wishlist | `/products` (`לכל המוצרים`) | home Electro English |
+| Account empty subscriptions | `/` (`לדילים באתר`) | `/products` |
+| Checkout success | `/coupon/{id}`, `/account/orders/{id}` | public index of those URLs |
+| Gift success | `/account/coupons` | indexing the gift token |
+
+Home is the only page that may carry Electro home-v7 structure. City, supplier,
+legal, account, gift, redeem do not grow a 241px departments column to "look
+like home" for internal PageRank.
+
+`hreflang="he-IL"` and `x-default` (same canonical) stay a **runtime plan**.
+Pass 12 confirmed they are unshipped. Do not advertise `en`. HTML `lang="he"`
+with OG `he_IL` is the shipped pair.
+
+### 8.2 Schema additions that section 3 skipped
+
+| Page | `@type` | Notes |
+|---|---|---|
+| `/faq` | `FAQPage` + `Question`/`AcceptedAnswer` **only** for visible Q&A in the DOM | Do not emit answers that are not on the page. Hebrew `inLanguage: he-IL` |
+| `/about` | `AboutPage` + `Organization` `@id` `{origin}/#organization` | Same org node as home, do not mint a second Organization |
+| `/contact` | `ContactPage`. `telephone` LTR only if real | No `LocalBusiness` for the marketplace itself |
+| `/blog` index | `Blog` + `ItemList` of posts | Posts already in sitemap (pass 12 finding 2) |
+| `/blog/{slug}` | `BlogPosting` + `Organization` publisher | `datePublished` / `dateModified` from the document |
+| `/coupons` (listing) | `CollectionPage` + `ItemList` | Shipped in sitemap, omitted from the old include list. Treat as a deals index, not a second home |
+| `/suppliers` join-us | `WebPage` only | **Not** `LocalBusiness`. It is a prospect form |
+
+Still omitted from JSON-LD (section 3.7): cart, checkout, account, QR, gift
+token, redeem token, search, 404, 500. `/offline`: pass 12 found it is **not**
+noindex in source. Until that `.ts` change ships, do not emit JSON-LD on it
+anyway (a service-worker tile is not a document).
+
+Prices in any `Offer`: ILS from integer agorot. Coupon `Offer.price` is the
+on-site amount. Remainder is a sentence, not a second Offer.
+
+### 8.3 Two sitemap decisions, restated as rules (not silent `.ts` edits)
+
+This worktree does not edit `.ts`. The two findings from pass 12 stay findings
+until a code agent takes them.
+
+| Finding | Rule until the code changes |
+|---|---|
+| `/city/{slug}`: 17 indexable Hebrew slugs, self-canonical, **absent from `sitemap.ts`** | Keep the pages indexable. Do not noindex them to make the sitemap look complete. When adding entries, percent-encode identically to the page's own `encodeURIComponent` |
+| `/offline` has no `robots` key | Recorded as a gap. Manual QA still treats it as a PWA tile, not a landing page. Do not add it to the sitemap |
+| `/gift/[token]` has `noindex,nofollow` and no `Disallow` | Correct for a token that must be crawlable to read noindex, **except** the token is secret. `/redeem/` already has both layers. Prefer matching `/redeem/` (Disallow + noindex) when a code agent next touches `robots.ts`. Until then, do not "fix" it by adding Disallow in a docs-only pass |
+
+`/coupons`, `/suppliers`, `/blog/{slug}` ship in the sitemap and belong in
+section 5's include list. This pass treats that as a plan correction, not a
+code change.
+
+Include (corrected): `/`, `/products`, `/coupons`, `/suppliers`, `/blog`,
+`/blog/{slug}`, `/about`, `/contact`, `/faq`, legal slugs, `/category/{slug}`,
+`/product/{slug}`, `/s/{id}`, and `/city/{slug}` **once the sitemap emits them**.
+
+Exclude: account, cart, checkout, QR, gift, redeem, admin, supplier portal,
+scan, auth, search (via noindex), filtered category and `?city=` (via noindex).
+
 ## 7. Core Web Vitals vs pixel gate
 
 `compare.mjs` under 11 percent is **not** a CWV gate. LCP/CLS/INP still apply. Heebo `display: swap`, `preload: false` so the LCP paragraph can stay Arial on purpose. Consent banner is a known LCP risk on home.
@@ -525,4 +612,5 @@ Home: do not replace the live brand title with a stuffed “קופונים די�
 | 2026-09-07 | hreflang audited against source: lang="he" and og locale confirmed, hreflang/x-default confirmed unshipped in all 15 canonical routes |
 | 2026-09-07 | Pass 12: section 5 audited against src/app/sitemap.ts and robots.ts. Four findings: /city missing from sitemap, three groups ship unlisted, /offline is NOT noindex, and the exclude list vs disallow list are different tools |
 | 2026-09-07 | Pass 12: sitemap and robots audited against source. /city/{slug} indexable but absent from sitemap.ts (17 Hebrew slugs); /gift/[token] has noindex but no Disallow, unlike /redeem/ |
+| 2026-09-07 | Pass 14: silo graph; FAQPage/AboutPage/ContactPage/BlogPosting; city stays indexable until sitemap.ts emits it; gift Disallow is a code-agent follow-up matching `/redeem/` |
 | 2026-09-07 | Pass 13: section 3 audited against src/lib/seo/json-ld.ts. SearchAction ships though 3.1 forbids it; LocalBusiness does not ship at all; three routes emit undocumented JSON-LD |
