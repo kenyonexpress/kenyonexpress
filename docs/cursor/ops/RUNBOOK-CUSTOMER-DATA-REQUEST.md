@@ -11,4 +11,4 @@
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+Phrase `מחק את החשבון שלי`. Soft-delete auth. Keep books. Prefer `fn_anonymize_user`. Hard-delete `auth.users` is forbidden.
