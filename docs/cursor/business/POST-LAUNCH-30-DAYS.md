@@ -12,4 +12,4 @@ Upgrade Vercel: when Hobby cron temptation appears (already moved to Actions), o
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+Watch stranded and cron 200. Do not add escrow or global 10%. Upgrade on p95/stranded, not vanity GMV.
