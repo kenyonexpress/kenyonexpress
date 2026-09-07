@@ -461,7 +461,7 @@ Proxy only gates
 `/scan`
 must authenticate in the page. HTTP redeem remains
 
-```
+```http
 POST /api/supplier/vouchers/redeem
 ```
 
@@ -487,3 +487,30 @@ Tests:
 `src/__tests__/cron-schedule-inventory.test.ts`
 plus per-route
 `src/app/api/cron/*/route.test.ts`.
+
+---
+
+## 13. Mobile HTTP (same handlers, extra client)
+
+The till app calls the supplier routes in §1.3 with a Bearer access token. Checkout is a WebView of
+`/checkout`
+(plus
+`/checkout/app-return`).
+Wallet tab is not a second ledger; it displays
+`wallet_accounts`
+through the same RLS.
+
+There is no
+`/api/mobile/*`
+tree. Do not add one that accepts
+`supplier_id`
+or prices.
+
+## 14. Not a server action (callers only)
+
+| Function | Called from | Must not become a public action |
+|---|---|---|
+| `finalizeOrder` | webhook, stranded cron, `retryFinalizePayment` | Shopper must not trigger paid |
+| `reportPurchase` | finalize | Must not double-count on thank-you |
+| `consume_order_stock` | finalize | Must not run from a browser |
+| `fn_wallet_transfer` | finalize, refund-wallet, referral approve | No admin "adjust balance" form |
