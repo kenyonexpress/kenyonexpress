@@ -52,3 +52,9 @@ Pause = `is_active` on the campaign row. Env kill not required. Off: codes 404 H
 ## Docs / edges / close
 
 `MONEY-INVARIANTS.md`, admin form spec. Edge: stacking two codes (forbid). Master SKU still blocked by 95% guard before campaign math. Close: one engine, tests green, no second price list.
+
+---
+
+## Second pass (after contracts and ops)
+
+Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
