@@ -1036,6 +1036,44 @@ gives a reason for it to differ.
 
 Recorded, not changed: `.tsx`.
 
+## 8. Gap re-verification (pass 21)
+
+A stale "known gap" costs a launch pass more than an undocumented one: someone
+checks it, finds it fixed, and stops trusting the list. All six gaps this
+document and `docs/QA-SCRIPTS.md` 10d record were re-checked against source.
+
+| # | Gap | Check | Still a gap? |
+|---|---|---|---|
+| 1 | `/city/{slug}` absent from the sitemap | `grep -c city src/app/sitemap.ts` -> **0** | **yes** |
+| 2 | `/offline` has no `robots` directive | `grep -c robots src/app/offline/page.tsx` -> **0** | **yes** |
+| 3 | `/products` has no canonical | `grep -c canonical` on its `page.tsx` -> **0** | **yes** |
+| 4 | `SearchAction` emitted while 3.1 forbids it | `json-ld.ts` -> **2** occurrences; `(store)/page.tsx` -> **0** | **yes**, and see 8.1 |
+| 5 | `/s/{id}` emits no JSON-LD | its `page.tsx` -> **0** | **yes** |
+| 6 | `api/debug/sentry` unguarded | route file **still present** | **yes** |
+
+**Six of six unchanged.** Every "Known gap" row in `QA-SCRIPTS` 10d is still
+accurate, and rows 5, 6, 13, 17, 18 and 19 there will still fail as that section
+predicts.
+
+### 8.1 Gap 4 is narrower than it reads
+
+`SearchAction` appears **twice in `src/lib/seo/json-ld.ts` and zero times in the
+home page**. So the builder can emit it and the home route may or may not call
+that branch; a `grep` of the page alone would report the conflict as resolved
+when it is not.
+
+That distinction matters for `QA-SCRIPTS` 10d row 11, which checks the **rendered
+home page** (`curl … | grep -c SearchAction`). That is the right check: it
+answers what ships rather than what the library can build. This note is here so
+a source-level grep is not mistaken for it.
+
+### 8.2 Why re-verification belongs in the document
+
+Four of these six were first recorded on 2026-09-07 by earlier passes. Nothing
+in a markdown file expires, so a gap list is only worth what its last check is
+worth. Recording the date and the exact command makes the next check cheap and
+makes a silently-fixed gap visible rather than merely absent.
+
 ## Revision
 
 | Date | Change |
@@ -1058,3 +1096,4 @@ Recorded, not changed: `.tsx`.
 | 2026-09-07 | Pass 18: corrected 5.1 (lastModified is on every dynamic entry, not three) and recorded orFail: an empty sitemap is a deindexing request |
 | 2026-09-07 | Pass 19: the four money rules in JSON-LD verified. platform_percent absent, Offer.price is the on-site amount, no second Offer, and the unsellable branch omits price rather than zeroing it |
 | 2026-09-07 | Pass 20: canonicals audited. No canonical interpolates searchParams anywhere, but /products is indexable at priority 0.9, takes sort params, and has no canonical at all |
+| 2026-09-07 | Pass 21: re-verified all six known gaps against source. Six of six unchanged, with the exact command for each |
