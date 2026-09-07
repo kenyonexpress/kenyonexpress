@@ -86,6 +86,143 @@ function need(ctx: { skip: (note?: string) => void }, role: RoleName): Session {
   return session
 }
 
+/**
+ * Every table in `public`, as of the 2026-09-07 sweep. Hard-coded rather than
+ * discovered at runtime: PostgREST's root introspection answers 401 to anon
+ * (correctly), and a list the test cannot read is a list the test cannot
+ * silently shrink. A new table not named here fails the count assertion below.
+ */
+const ALL_PUBLIC_TABLES = [
+  'abandoned_cart_nudges',
+  'affiliates',
+  'ai_usage',
+  'analytics_events',
+  'audit_log',
+  'banners',
+  'carts',
+  'cashback_rules',
+  'categories',
+  'coupon_codes',
+  'coupon_deals',
+  'coupon_qr_batches',
+  'coupon_qr_codes',
+  'coupons',
+  'discount_campaigns',
+  'discount_redemptions',
+  'email_suppressions',
+  'escrow_holds',
+  'homepage_sections',
+  'invoices',
+  'legacy_percent_archive_112',
+  'media_assets',
+  'newsletter_subscribers',
+  'notification_outbox',
+  'order_items',
+  'orders',
+  'payment_events',
+  'payment_tokens',
+  'payment_webhook_events',
+  'payments',
+  'payout_statement_lines',
+  'payout_statements',
+  'popular_searches',
+  'product_images',
+  'product_variants',
+  'products',
+  'profiles',
+  'push_tokens',
+  'rate_limits',
+  'referral_program_settings',
+  'referral_signals',
+  'referrals',
+  'refunds',
+  'report_cohort_retention',
+  'report_orders_daily',
+  'report_revenue_daily',
+  'report_top_products',
+  'reviews',
+  'search_events',
+  'search_index_dlq',
+  'search_index_outbox',
+  'seo_redirects',
+  'settlement_events',
+  'split_executions',
+  'stock_reservations',
+  'subscription_charges',
+  'subscriptions',
+  'supplier_branches',
+  'supplier_leads',
+  'supplier_members',
+  'supplier_staff',
+  'suppliers',
+  'user_addresses',
+  'user_rate_limits',
+  'user_recent_searches',
+  'vendors',
+  'voucher_redemptions',
+  'vouchers',
+  'wallet_accounts',
+  'wallet_balances',
+  'wallet_entries',
+  'wallet_transactions',
+  'wishlists',
+] as const
+
+/**
+ * The only tables a logged-out visitor may get ROWS from. Five are the
+ * catalogue. `cashback_rules` is the sixth and it is deliberate: its SELECT
+ * policy is `is_admin() OR (is_active AND inside its date window)`, so what
+ * anon sees is the live offer a customer is meant to read, and never a future
+ * or retired one.
+ */
+const ANON_READABLE = [
+  'cashback_rules',
+  'categories',
+  'coupon_deals',
+  'product_images',
+  'products',
+  'suppliers',
+] as const
+
+describe.skipIf(!configured)('the anonymous surface, every table', () => {
+  /**
+   * THIS ONE NEEDS NO FIXTURES, which is why it is here rather than beside the
+   * signed-in cases. anon is a credential every visitor already holds, so this
+   * half of the boundary suite runs on every machine and in CI, while the
+   * four-role half skips until `pnpm seed:test` has run.
+   *
+   * WHAT IT PROVED ON 2026-09-07. Five tables that hold real rows returned
+   * ZERO of them: escrow_holds has 2, analytics_events 28, voucher_redemptions
+   * 3, wallet_accounts 13, profiles 10. That is RLS filtering measured against
+   * live data rather than inferred from a policy definition, and it is the
+   * assertion that would catch a policy loosened by accident.
+   */
+  it('returns rows from the six intended tables and no others', async () => {
+    if (!url || !anonKey) return
+    const client = createClient(url, anonKey, { auth: { persistSession: false } })
+    const leaked: string[] = []
+
+    for (const table of ALL_PUBLIC_TABLES) {
+      const { data, error } = await client.from(table).select('*').limit(1)
+      if (error) continue // refused outright, which is stricter than needed
+      if ((data ?? []).length === 0) continue // allowed, and RLS filtered it to nothing
+      if (!(ANON_READABLE as readonly string[]).includes(table)) leaked.push(table)
+    }
+
+    expect(
+      leaked,
+      `these tables handed rows to a logged-out visitor and are not on the catalogue allowlist:\n${leaked.join('\n')}`,
+    ).toEqual([])
+  }, 120_000)
+
+  it('names every table, so a new one cannot slip past the sweep', () => {
+    // The guard on the guard. The list is hard-coded because anon cannot
+    // introspect; if a migration adds a table and nobody adds it here, the
+    // sweep would skip it silently. This count is what makes that loud.
+    expect(ALL_PUBLIC_TABLES).toHaveLength(73)
+  })
+})
+
 describe.skipIf(!configured)('RLS role boundaries, against the live policies', () => {
   describe('the money tables are scoped to the owner', () => {
     it('a wallet account row is only ever the reader own', async (ctx) => {
