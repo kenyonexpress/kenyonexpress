@@ -43,7 +43,7 @@ docs/CONTRADICTIONS.md
 
 | # | הכרעה |
 |---|---|
-| PT1 | שלושה סוגים קנוניים ב-`products.type`: `coupon` \| `physical` \| `subscription`. |
+| PT1 | ארבעה ערכים חיים ב-`products.type`: `coupon` \| `physical` \| `service` \| `recurring` (נמדד בפרודקשן; לא `subscription`). |
 | PT2 | ה-discriminator הוא `type` (לא `is_coupon_enabled` לבד). דגל ישן יכול לרמז ב-cart אבל כתיבה חדשה חייבת `type` עקבי. |
 | PT3 | `commission_type` נגזר מ-`type` (CHECK): coupon → `coupon_absolute`; אחרת → `physical_percent`. לא מקור החלטה נפרד. |
 | PT4 | קופון: חיוב באתר = `coupon_price` מוחלט; יתרה בעסק; `supplier_due` מהפלטפורמה = 0; הנפקת voucher אחרי `paid`. |

@@ -907,8 +907,10 @@ compare.mjs, commit, push, עדכון STATE.md.
 **תנאי כניסה:** ‏`v6.0.0` מתויג ודחוף. **אין לזה סוף.** מתחיל מחדש ב-A בכל
 פעם שמגיעים לסוף.
 
-- **A** לקרוא `BUSINESS-MODEL-RULES.md`, ‏`docs/PRODUCT-TYPES.md`
-  ו-`docs/DB-SECURITY-MODEL.md`. להוכיח בטסט שהקוד עדיין תואם כל כלל. לתקן סחיפה.
+- **A** לקרוא `docs/BUSINESS-RULES.md`, ‏`docs/ARCHITECTURE-PRODUCT-TYPES.md`
+  ו-`docs/DB-SECURITY-MODEL.md` (השמות הישנים `BUSINESS-MODEL-RULES.md` /
+  `docs/PRODUCT-TYPES.md` אינם קיימים; נמדד ב-W2-A). להוכיח בטסט שהקוד
+  עדיין תואם כל כלל. לתקן סחיפה.
 - **B** לבקר כל קובץ להפרות כסף: צף על כסף, אחוזים קשיחים, צילומים חסרים,
   ‏escrow על הזמנת קופון. לתקן ולהוסיף טסט שהיה תופס את זה.
 - **C** להעלות כיסוי ענפים ב-`money.ts`, מנוע הפיצול, מחזור חיי השובר,
@@ -1116,10 +1118,10 @@ compare.mjs, commit, push, עדכון STATE.md.
 
 ## גל 15: בלוקים 100 עד 105 (‏v6.9.0) — גרסת ההשקה
 
-100. **אימות כללים מלא.** לקרוא מחדש `BUSINESS-MODEL-RULES.md`,
-     ‏`docs/PRODUCT-TYPES.md`, ‏`docs/DB-SECURITY-MODEL.md` וכל קובץ
-     ‏`docs/cursor`. לכל כלל, לנקוב בטסט שאוכף אותו. כלל בלי טסט מקבל אחד.
-     לכתוב `docs/COMPLIANCE-REPORT.md`.
+100. **אימות כללים מלא.** לקרוא מחדש `docs/BUSINESS-RULES.md`,
+     ‏`docs/ARCHITECTURE-PRODUCT-TYPES.md`, ‏`docs/DB-SECURITY-MODEL.md` וכל
+     קובץ ‏`docs/cursor`. לכל כלל, לנקוב בטסט שאוכף אותו. כלל בלי טסט מקבל
+     אחד. לכתוב `docs/COMPLIANCE-REPORT.md`.
 101. **התאמת תיעוד.** כל מסמך ב-`docs/` וב-`docs/cursor/` נבדק מול הקוד. כל
      דבר מיושן מתוקן, כל דבר חסר נכתב. אינדקס ה-README מעודכן.
 102. **צ'קליסט השקה סופי.** ‏`docs/LAUNCH-CHECKLIST.md` נכתב מחדש כ-runbook
