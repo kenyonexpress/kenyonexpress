@@ -76,3 +76,16 @@ Titles/descriptions stay Hebrew. No English title tags at launch.
 - Titles Hebrew. og:locale `he_IL`.
 - Do not index the ₪1 master as a deal. Canonical PDP only for `active` and not deleted.
 
+---
+
+## Third pass
+
+Titles stay Hebrew. Prefer
+`noindex`
+on
+`/search`
+query pages. JSON-LD
+`aggregateRating`
+off until W03 + H6.
+
+
