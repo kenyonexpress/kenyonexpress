@@ -427,6 +427,72 @@ recorded under the blockers heading in `STATE.md`.
 
 ---
 
+## 4.3 The cancelled one, and why it belongs in a review of the pending ones
+
+`migrations/cancelled/165_revoke_anon_helpers.sql` is out of scope by folder and
+in scope by lesson. It was written, reasoned, preflighted and **cancelled on
+2026-09-04**, and its header is the most useful thing in the migrations tree for
+anyone about to write a `REVOKE`.
+
+**What it would have done.** Revoke `EXECUTE` on `is_admin()` and
+`is_supplier_member(uuid)` from `anon`. The argument was sound on its face:
+neither function has business answering an anonymous caller, both are a constant
+`false` for a caller with no uid, and a `SECURITY DEFINER` function is surface
+worth shrinking.
+
+**Why it would have taken the storefront down.** Eighteen RLS policies on
+public, anon-readable tables call one of those two helpers inside their
+`USING` / `WITH CHECK`:
+
+```
+product_images   coupon_deals   suppliers      seo_redirects
+cashback_rules   categories     wallet_*       split_executions
+escrow_holds     payments       carts          notification_outbox
+```
+
+**RLS quals run as the caller.** So revoking `EXECUTE` from `anon` turns every
+anonymous `SELECT` on the public catalogue into `42501 permission denied for
+function`. Not a degraded page: the whole storefront goes dark for every
+logged-out visitor, which is nearly all of them.
+
+`anon` `EXECUTE` on these helpers is therefore **by design**, not an oversight.
+
+### Four rules this yields for any future migration
+
+1. **A `REVOKE` is not a local change.** Grep every RLS policy for the function
+   name before revoking `EXECUTE` on it. A permission a policy depends on is
+   part of the read path, not part of the attack surface.
+2. **"Returns false for anon" is not "unused by anon".** The helper being inert
+   for an anonymous caller is exactly why policies can call it unconditionally.
+   Inertness is the feature.
+3. **The generated types are the authority on production, not the file chain.**
+   165's own signature note records that CLOSEOUT wrote
+   `is_supplier_member()` while production's types say
+   `is_supplier_member(p_supplier_id uuid)`, and that the types win because
+   `supabase/migrations/` is a different lineage. This is the same caution as
+   3.2.1: **the files do not describe the live schema.**
+4. **Cancel by moving, not by deleting.** The file survives with a
+   `MUST NEVER BE APPLIED` banner and its original header kept unchanged below
+   the cancellation note. A deleted file takes its reasoning with it, and the
+   next person writes it again.
+
+### It has a live regression net
+
+`src/db/__tests__/anon-catalog.test.ts` exists so that this specific failure
+cannot return silently. `APPLY-ORDER.md` records it passing 14/14 after the
+166 to 168 batch. Any future change to those helpers or their grants should be
+run against it first.
+
+### Relevance to the three pending files
+
+None of 162, 169 or 170 revokes anything, so none carries this risk directly.
+The one adjacent point is **169**: it is a `CREATE OR REPLACE` on a
+`SECURITY DEFINER` function whose grants are `service_role` only, and
+`preflight_169` block 3 asserts exactly that. Keep that assertion. If
+`fn_ingest_analytics_events` were ever granted to `authenticated`, its
+`p_user_id` argument would become caller-controlled, which is the same family
+of defect 165's header names as already proven in this project.
+
 ## 5. Summary
 
 | File | Approved | Blocked | Risk | Recommendation |
