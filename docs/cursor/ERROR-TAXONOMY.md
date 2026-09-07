@@ -279,7 +279,8 @@ TS fallback hashes email. Operator: apply 150 rather than living on the fallback
 | Search empty | Meilisearch unset → ILIKE; or query WAF | Return upstream HTML |
 | Image full resolution | sharp 0.34 nested copy, AVIF `bad seek` | Blame R2 |
 | `CARDCOM_SANDBOX` boot fail | Intentional | Bypass in production |
-| Legal page says נאמנות | Copy bug, not a runtime error | Leave it; it is a cutover trust risk |
+| Empty `/admin/payments` webhooks | User client + zero policies (`42501` / `[]`) | Not "Cardcom is down" |
+| Guest cart empty after a rename | `ke_session_id` vs `session_id=` mismatch | Not a "cache" bug |
 
 ---
 
