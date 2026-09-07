@@ -739,6 +739,40 @@ done
 
 Three methods, three answers (27, 13, 11). **Quote the method with the number.**
 
+## Pass 15: CouponPricing, RegionMenu, WhatsAppFloat
+
+Money, chrome, and a third-party mark. Still not in the original 72-file
+tables. Props from `docs/ui-design-system/COMPONENTS.md`. The PDP heart in
+Pass 8 is **not shipped** (Pass 14 dead-code sweep); do not treat WishlistToggle
+as a live control until something imports `WishlistButton`.
+
+### CouponPricing (PDP, coupon branch only)
+
+- **File:** storefront coupon price block (COMPONENTS §6.3)
+- **Props:** `{ kenyonAgorot, remainderAgorot, faceAgorot?, expiresAt? }` all integers. Never `platform_percent`
+- **Variants:** coupon (two amounts) vs physical (this component must not mount)
+- **States:** default two rows `לתשלום באתר עכשיו` / `יתרה לתשלום בבית העסק`; hover n/a; disabled when unsellable (parent kills ATC); loading skeleton two bars; error if agorot missing (`מחיר הקופון טרם הוגדר`)
+- **RTL:** each `{price}` in `<bdi>` / `dir="ltr"`. Labels `text-start`
+- **A11y:** the split is text, not colour. On-site amount uses `--color-price` (`#dc3545`). Do not paint remainder in brand yellow
+- **Electro:** single product summary. Live often shows one Woo price; our split is the product rule
+
+### RegionMenu
+
+- **File:** `src/components/layout/RegionMenu.tsx`
+- **Props:** none. Seventeen `REGIONS` only
+- **States:** default closed; hover/focus-visible on the trigger (2px heading, not yellow-on-yellow); open: 200px panel, 2px `#fed700` top border (`--spacing-region-menu`)
+- **RTL:** panel follows live DOM order. City names Hebrew
+- **A11y:** trigger named. Links to `/city/{slug}`
+- **Electro:** header secondary nav. `[53px]` in the arbitrary-size leftover list is this control
+
+### WhatsAppFloat
+
+- **File:** layout / home WhatsApp FAB
+- **Props:** `href` from env / live number. Prefill Hebrew **without** `{code}` when the share is aimed at the business
+- **States:** default mark `#25d366`; hover darkens the mark, never `#fed700`; focus-visible 2px
+- **RTL:** mark does **not** mirror. `z-sticky` (40)
+- **A11y:** named link, not icon-only without a name
+
 ## Revision
 
 | Date | Change |
