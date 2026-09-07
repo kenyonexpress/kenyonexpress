@@ -25,6 +25,12 @@ Topic must be unguessable in production. `ALERTS_ENABLED` must not be false.
 
 ---
 
-## Second pass
+## Second pass (first ten minutes)
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+- Pages: charged-not-finalized, voucher issue failed after pay, refund provider error, redeem RPC failed after valid QR.
+- Does not page: single 429, empty search, empty webhooks tab (zero-policy), guest empty cart after cookie rename (dev).
+- Cron health fail twice (10 min). Stranded count > 0. Reconcile critical > 0.
+- Classify then open
+  `ops/RUNBOOK-*.md`.
+  Never mock Cardcom. Never apply pending SQL. Never forward the Cookie jar.
+
