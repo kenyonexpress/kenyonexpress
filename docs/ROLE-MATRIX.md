@@ -114,6 +114,48 @@ layout, specific rank per page.
 on `(store)` would gate the catalogue; a guard on the root would gate `/login`
 and make signing in impossible. The absence is load-bearing in both cases.
 
+### 1.0a What layer 1 actually runs on
+
+Section 1 calls the middleware "layer 1" without saying where it applies. From
+`src/proxy.ts`:
+
+```
+matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)']
+```
+
+It runs on **everything** except static assets, the image optimizer, the favicon
+and direct image requests. That includes `/api/*`, so every route handler in
+section 11 passes through it before its own guard.
+
+The middleware makes two separate decisions:
+
+**1. `needsAuth`, a signed-in check with no role in it:**
+
+```
+/account…            /coupon/…
+/checkout/…          except isPaymentFramePath(...)
+/supplier…           except /supplier/login and /supplier/access-denied
+```
+
+**2. The `/admin` branch**, which additionally reads `profiles.role` and demands
+one of the four panel roles.
+
+### 1.0b Four paths that look like gaps and are not
+
+Each was traced rather than assumed.
+
+| Path | In `needsAuth`? | Why that is correct |
+|---|---|---|
+| `/checkout` (no trailing slash) | **no** | Deliberate. The page's own comment: "A guest reaches this page and fills it in. The account is required to pay, not to shop: the sign-in happens on the pay button." Only `/checkout/…` sub-routes (return, confirmation, failed) are gated. |
+| `/checkout/frame-return` | **no**, excluded by `isPaymentFramePath` | Also deliberate, and the sharper of the two. Gating it would "put a login form inside Cardcom's iframe". |
+| `/scan` | no | Guarded at the page by `requireSupplierMember`, which is the membership check, not a role check. Middleware could not do it: membership lives in `supplier_members`, not in `profiles.role`. |
+| `/redeem/[token]` | no | Guarded at the page by `getSupplierSession` + `getSupplierMemberships`, and it sets `robots: { index: false, follow: false }`. `robots.txt` disallows `/redeem/` as a third, outermost layer. |
+
+The pattern across all four: **middleware can only answer questions
+`profiles.role` can answer.** Supplier authorization is membership-based
+(section 0.2), so it necessarily lives at the page. That is not a weaker guard,
+it is the only place the guard can correctly be.
+
 ### 1.1 MFA is part of every staff guard
 
 `requireStaffMfa()` runs inside `requireAdminSession`, `requireStaffSession`,
@@ -815,3 +857,4 @@ shipped (`docs/COMPONENT-INVENTORY.md` Pass 14 dead-code).
 | 2026-09-07 | Pass 14: auth, MFA, gift GET-vs-POST, redeem membership, checkout empty-cart bounce. Panel role does not widen shopper routes |
 | 2026-09-07 | Pass 15: money tables vs the brief's four names; wallet_entries client-write deny; PDP wishlist has no UI caller |
 | 2026-09-07 | Pass 14: guard layer 2 verified across all eight layouts; the supplier portal is gated at the layout as well as per page |
+| 2026-09-07 | Pass 15: what layer 1 runs on (the matcher covers /api too), the two decisions it makes, and four paths outside needsAuth that are deliberate rather than gaps |
