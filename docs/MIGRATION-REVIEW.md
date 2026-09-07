@@ -454,6 +454,55 @@ current shape of production: the row counts in 3.2, the vault contents in 1.4,
 and the "before" whitelist in 2.6. All three are preflight questions for the
 same reason.
 
+### 3.2b The seven indexes 170 makes redundant, named
+
+Risk 4 says existing single-column indexes become redundant and are not dropped.
+`preflight_170.sql` block 4 already names them; this pairs each with the
+composite that supersedes it, so the follow-up contract migration can be written
+without re-deriving the mapping.
+
+| Existing index | Superseded by | Why |
+|---|---|---|
+| `products_category_id_idx` | `products_active_category_created_idx` (1) | same leading column, plus a sort column and a partial predicate |
+| `carts_session_id_idx` | `carts_session_profile_idx` (9) | same leading column, plus `profile_id` |
+| `orders_user_id_idx` | `orders_user_created_active_idx` (6) | same leading column, plus `created_at DESC`, partial on `deleted_at` |
+| `idx_orders_user_status` | **not** superseded | leading column matches but the second is `status`, which no new index carries. **Keep.** |
+| `idx_user_addresses_user_default` | `user_addresses_user_default_created_idx` (10) | same first two columns, plus `created_at DESC` |
+| `vouchers_order_item_idx` | `vouchers_order_item_issued_idx` (7) | same leading column, plus `issued_at` |
+| `idx_invoices_order` | `invoices_order_doc_status_idx` (8) | same leading column, plus two more |
+
+**Six of the seven are genuinely redundant. One is not.** A btree index on
+`(a, b)` serves any query that could use `(a)`, so the singles above are
+dead weight once their composite exists — except `idx_orders_user_status`,
+whose second column is `status` and which therefore still serves
+`WHERE user_id = ? AND status = ?` better than
+`(user_id, created_at DESC)` does.
+
+That distinction is the reason to name them rather than say "drop the singles":
+a contract migration written from the preflight's list alone would drop an index
+that is still earning its place.
+
+#### Why not drop them in 170
+
+170 is expand-only, and that is correct for step one: adding an index is
+reversible by dropping it, while dropping one is reversible only by rebuilding
+it, which on a large table is the expensive direction. The safe sequence is the
+same shape as the money-column migrations described in `APPLY-ORDER.md`:
+
+```
+1. apply 170            both index sets exist, queries pick the better one
+2. verify in production  confirm the composites are actually being chosen
+3. drop the six          a separate migration, written after step 2
+```
+
+Step 2 is not optional. A composite is only redundant-making if the planner
+actually uses it, and that is a `pg_stat_user_indexes` question, not a
+reading-the-DDL question.
+
+**The contract migration does not exist and is not mentioned in
+`APPLY-ORDER.md`.** Without it, the six survive indefinitely and every write to
+those six tables maintains both.
+
 ### 3.3 The lock question, stated plainly
 
 The safe sequence, if the tables turn out to be large:
@@ -943,3 +992,4 @@ STATE.md                            "חסמים לאופיר", where 162's block
 ```
 | 2026-09-07 | Pass 17: reviewed analytics_cron.sql. It honours the cron split, its names cannot be hit by 162 rollback, and its rollup would run five minutes BEFORE 162 expire-vouchers, inverting its own stated precondition |
 | 2026-09-07 | Pass 18: traced what fn_ingest_analytics_events actually returns. It counts whitelisted names, so a mixed batch reads as partial success and the discard is invisible. Same anti-pattern three other files refuse |
+| 2026-09-07 | Pass 19: named the seven indexes 170 makes redundant and paired each with its superseding composite. Six are redundant, one (idx_orders_user_status) is NOT and must be kept |
