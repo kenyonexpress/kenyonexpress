@@ -185,6 +185,82 @@ Cart, checkout, account (including wallet, coupons, wishlist), `/coupon/{id}`, `
 
 ---
 
+## 3.9 Section 3 audited against the source (pass 13)
+
+Section 3 prescribes JSON-LD per page. This is what `src/lib/seo/json-ld.ts`
+actually builds and which routes actually call `jsonLdScript`.
+
+**Routes that emit JSON-LD** (six): `/`, `/category/[slug]`, `/product/[slug]`,
+`/city/[slug]`, `/faq`, `/blog`.
+
+**Types that ship:** `Organization`, `WebSite`, `SearchAction`, `EntryPoint`,
+`Product`, `Offer` (x3), `Brand` (x2), `BreadcrumbList`, `ListItem`,
+`FAQPage`, `Question`, `Answer`, `Blog`, `BlogPosting`.
+
+### Finding 1: `SearchAction` ships, and section 3.1 forbids it
+
+Section 3.1 says, in bold, **"No `SearchAction` (search is noindex and absent
+from the header)"**. `src/lib/seo/json-ld.ts:223` emits one on every home page
+render, inside `WebSite.potentialAction`, targeting
+`{site}/search?q={search_term_string}`.
+
+The code carries its own reasoning, and it is not careless:
+
+> `SearchAction` points at the search route that exists (`/search?q=`). A
+> sitelinks searchbox declared against a route that does not answer is worse
+> than none: it is a promise the site fails in front of the person who uses it.
+
+Both positions are defensible and they cannot both be shipped:
+
+| Position | Argument |
+|---|---|
+| Section 3.1 (omit) | `/search` is `robots: { index: false }`. Advertising a search endpoint Google is told not to index is incoherent, and there is no header search box for a user to find. |
+| The code (keep) | The route *works*. A sitelinks searchbox is a query interface, not an indexable page, and pointing it at a live route is honest. |
+
+**This document is binding for this worktree, so the discrepancy is real and
+unresolved.** It is recorded rather than decided here, because it is a product
+call: either delete the `potentialAction` block or amend 3.1. What must not
+happen is the next reader "fixing" one side without noticing the other.
+
+### Finding 2: `LocalBusiness` does not ship at all
+
+Section 3.4 specifies `LocalBusiness` for `/s/[id]` with
+`@id: {origin}/s/{id}#business`, and the pass 9 revision row records a
+"LocalBusiness data gate". Grepped across `src/`: the string `LocalBusiness`
+appears **once**, in a comment in `city/[slug]/page.tsx` describing a planned
+feature. No file builds it.
+
+`/s/[id]/page.tsx` emits `title`, `description` and `openGraph` and **no JSON-LD
+at all**: it is not among the six routes that call `jsonLdScript`.
+
+So section 3.4 describes an intention, not an implementation. Marked as such
+rather than left reading like a shipped contract.
+
+### Finding 3: `CollectionPage` and `ItemList` do not ship
+
+Section 3.2 specifies `BreadcrumbList` + `CollectionPage` + `ItemList` for
+category and `/products`. Only `BreadcrumbList` ships (with `ListItem`, which is
+its own child type, not `ItemList`). `AggregateRating` from 3.3 is likewise
+absent, which is consistent with 3.3's own condition that it appear only when
+the approved review count is above zero.
+
+### Corrected status table
+
+| Section | Prescribes | Ships | Status |
+|---|---|---|---|
+| 3.1 Home | `Organization` + `WebSite`, **no** `SearchAction` | both, **plus `SearchAction`** | **conflict, finding 1** |
+| 3.2 Category | `BreadcrumbList` + `CollectionPage` + `ItemList` | `BreadcrumbList` only | partial |
+| 3.3 Product | `Product` + `Offer` + `BreadcrumbList` | all three, plus `Brand` | **holds** |
+| 3.3 `AggregateRating` | only when reviews > 0 | absent | consistent |
+| 3.4 Supplier `/s/[id]` | `LocalBusiness` with `#business` `@id` | **nothing** | **not implemented** |
+| (unlisted) `/faq` | not in section 3 | `FAQPage` + `Question` + `Answer` | **ships, undocumented** |
+| (unlisted) `/blog` | not in section 3 | `Blog` + `BlogPosting` | **ships, undocumented** |
+| (unlisted) `/city/[slug]` | not in section 3 | emits JSON-LD | **ships, undocumented** |
+
+Same shape as the section 5 audit: the plan is incomplete in **both**
+directions. Three routes emit structured data this document does not mention,
+and two types this document specifies do not exist.
+
 ## 4. Internal linking map
 
 | From | To | Anchor idea |
@@ -449,3 +525,4 @@ Home: do not replace the live brand title with a stuffed “קופונים די�
 | 2026-09-07 | hreflang audited against source: lang="he" and og locale confirmed, hreflang/x-default confirmed unshipped in all 15 canonical routes |
 | 2026-09-07 | Pass 12: section 5 audited against src/app/sitemap.ts and robots.ts. Four findings: /city missing from sitemap, three groups ship unlisted, /offline is NOT noindex, and the exclude list vs disallow list are different tools |
 | 2026-09-07 | Pass 12: sitemap and robots audited against source. /city/{slug} indexable but absent from sitemap.ts (17 Hebrew slugs); /gift/[token] has noindex but no Disallow, unlike /redeem/ |
+| 2026-09-07 | Pass 13: section 3 audited against src/lib/seo/json-ld.ts. SearchAction ships though 3.1 forbids it; LocalBusiness does not ship at all; three routes emit undocumented JSON-LD |
