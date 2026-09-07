@@ -60,4 +60,4 @@
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+Till is supplier_members. Prepaid stays on platform. Remainder at till. No payout file on coupons. Scanner is a member_role.
