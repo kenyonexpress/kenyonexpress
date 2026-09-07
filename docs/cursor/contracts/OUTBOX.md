@@ -76,3 +76,10 @@ PAN, Cardcom tokens, service_role, live `products.platform_percent`, float ILS.
 | Q | Best answer |
 |---|---|
 | Abandoned cart kind in CHECK? | Confirm on code branch. If direct Resend, do not add a kind in W05 alone. |
+
+---
+
+## Second pass
+
+Drain is cron, not finalize. Three lists must move together. Marketing vs transactional consent in `CONSENT-MODEL.md`. Unique `cart_id` for abandoned cart is forever. `KILL_SWITCH_NOTIFICATIONS` parks send, does not delete rows.
+
