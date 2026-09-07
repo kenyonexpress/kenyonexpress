@@ -1,5 +1,6 @@
 # KenyonExpress — Project State
 
+Updated: 2026-09-07 11:00 UTC (‏יומן קאשבק: טבלת ‏cashback_ledger הוספה-בלבד, בונוס 10% לרכישה ראשונה ו-5% לכל חמישית, מסך התאמות אדמין עם שובל ביקורת. מיגרציה 177 ממתינה ולא הוחלה)
 Updated: 2026-09-07 06:25 UTC (‏WhatsApp Business flow: ‏webhook נכנס של Twilio, תור עדכוני סטטוס הזמנה, פתיחת פניות תמיכה, ניהול הצטרפות/הסרה. מיגרציה 173 ממתינה ולא הוחלה)
 Updated: 2026-09-07 04:30 UTC (‏הקמת Vercel: ‏devCommand נוסף ל-vercel.json, ‏docs/VERCEL-SETUP.md נכתב: מדריך דשבורד מלא, טבלאות env לפי env.ts, אימות פריסה ראשונה, הפעלת המתזמן. ‏DNS נשאר ידני)
 Updated: 2026-09-04 05:30 UTC (‏RLS מפורש לעשר טבלאות אפס-מדיניות: מיגרציה 172 הוחלה דרך MCP, ‏harness שלוש פרסונות ירוק מול פרודקשן בגלגול לאחור, ‏vitest מצמיד את שני הקבצים)
@@ -2462,6 +2463,49 @@ anycast של Cloudflare, כלומר האתר proxied והמעבר הוא שינ�
 ‏`push` ל-main הוא עכשיו hard stop. כל העבודה מכאן על `closeout/v1-final`.
 
 ## המשך מ: ‏PRIORITY TWO — ‏refunds בשני המסלולים, ומירוץ מימוש הקופון
+
+### ‏07.09 ‏goal בוצע: יומן קאשבק (commit ‏`1281b9cfb`, branch ‏autopilot)
+
+ה-goal ביקש: "transactional ledger table, first-purchase 10% rule,
+every-fifth-purchase 5% rule, ILS amounts, admin adjustment interface with
+audit trail". נבנה מעל הארנק הקיים (wallet_accounts/wallet_entries +
+fn_wallet_transfer): הארנק נשאר אמת הכסף, והיומן החדש הוא רשומת ההחלטה
+(איזה כלל ירה, באיזה שיעור, על איזה בסיס).
+
+1. **מיגרציה** `migrations/pending/177_cashback_ledger.sql` (ממתינה, לא הוחלה):
+   ‏`cashback_ledger` (הוספה-בלבד: טריגר חוסם UPDATE/DELETE גם ל-service role,
+   אגורות שלמות חתומות, ‏RLS קריאה-עצמית + קריאת אדמין, אפס כתיבה ללקוח),
+   ‏`fn_cashback_order_bonus` (נעילת advisory פר משתמש, דירוג לפי
+   ‏paid_at IS NOT NULL, ‏10% לרכישה 1, ‏5% לדירוג 5/10/15..., אידמפוטנטי על
+   ‏`order:<id>:count_bonus`, משלם דרך ‏fn_wallet_transfer מ-
+   ‏platform:cashback_reserve, וגם משקף את קאשבק המוצרים הקיים לשורת יומן),
+   ‏`fn_cashback_admin_adjust` (סכום חתום, בודק ‏is_admin() בעצמו, קיזוז
+   נכשל כשהיתרה כבר נוצלה, רושם ‏auth.uid()). קריאת סכומי ההזמנה נעשית
+   ‏generation-agnostic (‏total_agorot / total_ils_agorot / total_ils) בגלל
+   שתי השושלות. נרשמה ב-README/APPLY-ORDER.
+2. **‏finalize**: ‏`awardOrderCountBonus` נקרא מיד אחרי ‏creditCashback
+   (הסדר מהותי: ה-RPC מקשר את תנועת הארנק של קאשבק המוצרים), נרשם ולא זורק,
+   באותה עמדה כמו ההפניות והמלאי. ‏DB בלי 177 עונה 42883 וזה דילוג מתועד.
+3. **אדמין** `/admin/cashback`: טבלת 200 התנועות האחרונות + טופס התאמה
+   (אימייל, סכום בשקלים חיובי/שלילי, נימוק חובה, מפתח אידמפוטנטיות פר
+   שליחה). ה-RPC רץ על לקוח הסשן כדי ש-created_by יירשם, ו-writeAuditLog
+   מוסיף שורת audit_log עם IP/request_id. נוסף לסיידבר ול-nav.ts.
+4. **כללים משוקפים** `src/lib/cashback/rules.ts` + טסט drift שקורא את קובץ
+   ה-SQL ונכשל אם המספרים זזים; ‏`src/server/cashback/wired.test.ts` מצמיד
+   את החיווט (לקח ההפניות: פיצ'ר DB בלי קורא עובר כל טסט יחידה).
+5. **שערים**: ‏3668 טסטים ירוקים (18 חדשים), ‏type-check נקי, ‏lint נקי,
+   ‏`pnpm build` עבר. שלושה שערי מלאי (inventory של מיגרציות ממתינות,
+   ‏brand-contrast, ‏discarded-read) תפסו את הקבצים החדשים ועודכנו/תוקנו.
+
+**החלטות שהתקבלו לבד:** (א) המיגרציה לא הוחלה דרך MCP למרות ניסוח ה-goal:
+החלת migration על פרודקשן היא אחד מארבעת המצבים הקריטיים; עד ההחלה המסך
+מציג הודעת "לא מותקן" וה-finalize מדלג ברישום, ללא נזק. (ב) מספור 177 ולא
+174: ‏closeout/v1-final מחזיק 174-176 ב-pending שלו, והפער מונע התנגשות
+במיזוג. (ג) בסיס הבונוס הוא ‏total של ההזמנה (מה ששולם באתר), אותה קריאה
+שמרנית של תוכנית ההפניות: הזמנה ששולמה כולה מיתרת ארנק לא מייצרת בונוס.
+(ד) בלי PR: אין כלי GitHub MCP בסשן, וה-branch ‏autopilot נדחף ישירות כמו
+ב-goals הקודמים. (ה) העבודה בוצעה ב-worktree ‏kenyonexpress-autopilot לפי
+הגדרת הסביבה של הסשן, לא בצ'ק-אאוט הראשי שיושב על ‏closeout/v1-final.
 
 ### ‏07.09 ‏goal בוצע: ‏WhatsApp Business flow (commit ‏`2b1a529e5`, branch ‏autopilot)
 
