@@ -9,6 +9,7 @@ import {
   Banknote,
   BarChart3,
   ClipboardList,
+  Coins,
   CreditCard,
   FileSpreadsheet,
   FileText,
@@ -66,6 +67,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/admin/vendors', label: 'ספקים (מערכת ישנה)', icon: Store, section: 'suppliers' },
   { href: '/admin/payments', label: 'תשלומים', icon: CreditCard, section: 'payments' },
   { href: '/admin/payouts', label: 'תשלומים לספקים', icon: Banknote, section: 'payments' },
+  { href: '/admin/cashback', label: 'יומן קאשבק', icon: Coins, section: 'payments' },
   // Reads settlement_events, which is the journal that actually exists here.
   // Separate from תשלומים לספקים above, which reads payout_statements (081,
   // never applied to this database).

@@ -9,7 +9,7 @@ below. See the "APPLIED IN PRODUCTION" table in `README.md`, which carries the
 version string and the query that proved each one. Running any of them again is
 at best a no-op and at worst an error.
 
-## The thirteen that remain, in order
+## The fourteen that remain, in order
 
 Order matters only where a **depends on** column is filled. Everything else is
 independent and may be applied in any sequence, or not at all.
@@ -30,6 +30,7 @@ independent and may be applied in any sequence, or not at all.
 | 15 | `148_orders_monthly_partitioning.sql` | monthly range partitioning of `orders`, composite FKs on 16 tables | `137` | in file header |
 | 16 | `149_soft_delete_user_facing_remainder.sql` | `deleted_at` + RLS filter on categories, product_images, reviews, wishlists | — | in file header |
 | 17 | `173_whatsapp_flow.sql` | WhatsApp consent + outbox + inbound log + support tickets, order-status trigger | — | in file header |
+| 18 | `177_cashback_ledger.sql` | append-only cashback ledger, first-purchase 10% / every-fifth 5% bonus fn, admin adjustment fn (174-176 are taken by files on `closeout/v1-final`, hence the gap) | `046` (applied) | in file header |
 | — | `169_audit_full_coverage.sql` | **already applied 2026-09-04** (MCP, `audit_full_coverage_169`): audit_log before/after/request_id + triggers on all financial/user tables | — | in file header |
 | — | `170_reporting_tables.sql` | **already applied 2026-09-04** (MCP, `reporting_tables_170`): 4 reporting tables + nightly pg_cron rebuild + 5 admin-only RPCs | — | in file header |
 

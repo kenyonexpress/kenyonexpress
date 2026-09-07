@@ -10,6 +10,7 @@ import { log } from '@/lib/observability/log'
 import { capturePaymentError } from '@/lib/observability/sentry'
 import { resolvePaymentMoneySchema } from '@/lib/payments/payment-money-columns'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { awardOrderCountBonus } from '@/server/cashback/bonus'
 import { type VoucherIssueClient, issueVoucher } from '@/server/domain/vouchers/issue'
 import { readGiftIntent, sendOrderGifts } from '@/server/payments/gift-vouchers'
 import { enqueueOrderInvoice, issueQueuedInvoice } from '@/server/payments/invoices'
@@ -563,6 +564,14 @@ export async function finalizeOrder(input: {
       0,
     )
     await creditCashback(admin, order.id, order.user_id, cashbackTotal)
+
+    // The order-count bonus (first purchase 10%, every fifth 5%). Directly
+    // after the item cashback on purpose: the RPC also mirrors that credit
+    // into cashback_ledger, and the wallet entry it links to must exist by
+    // the time it looks. Every rule lives in fn_cashback_order_bonus; like
+    // the referral call below, a failure is logged and does not fail the
+    // finalize: the card is already charged.
+    await awardOrderCountBonus(admin, order.id)
 
     // The referral bonus, if this buyer was referred and this order qualifies.
     //
