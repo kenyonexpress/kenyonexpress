@@ -24,3 +24,9 @@ Missing Upstash: Postgres path, not "unlimited".
 | Q | Best answer |
 |---|---|
 | Exact search numbers? | Read `src/lib/rate-limit` on code branch; comments above are the pack's measured intent. |
+
+---
+
+## Second pass
+
+Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
