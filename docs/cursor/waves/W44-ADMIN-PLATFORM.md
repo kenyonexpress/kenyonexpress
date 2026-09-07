@@ -72,6 +72,10 @@ Duplicate 170 files (indexes vs reporting). Full name.
 
 ---
 
-## Second pass (after contracts and ops)
+## Second pass (admin)
 
-Binding: `WAVE-INDEX.md`, `contracts/ROLE-VENDOR.md` (till is `supplier_members`), `contracts/LEDGER.md` (integer agorot, cashback at finalize), `contracts/PAYMENT-BOUNDARY.md` (GetLpResult, no HMAC), `contracts/MIGRATION-PLAYBOOK.md` (full pending filenames). Feature flags are env. Do not invent payout or escrow writers. Hebrew UX stays RTL source-of-truth.
+- Payouts stub, not 42P01 crash (W15). Webhooks tab needs admin client (zero-policy).
+- Flags page is env readout. No `feature_flags` table.
+- `requireSection`. Uploader/support never refund.
+- Duplicate pending numbers: show full filename.
+
