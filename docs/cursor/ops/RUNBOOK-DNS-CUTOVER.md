@@ -25,4 +25,4 @@ Home Hebrew, checkout frame-return, one webhook 200, images not WP 404.
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+Last step. Live Cloudflare zone derek/elma, not staged ignat/tess. Webhook URL must hit Vercel before HTML cutover. Rollback restores WP A records on the live zone.
