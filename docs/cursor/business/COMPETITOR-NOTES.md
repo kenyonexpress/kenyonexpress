@@ -19,4 +19,4 @@ Matters: trust copy (no נאמנות), honest prepaid vs till, scan reliability.
 
 ## Second pass
 
-Read with `waves/WAVE-INDEX.md` and `business/LAUNCH-BLOCKERS.md`. Tree on this branch wins over older briefs. Do not apply SQL from this worktree.
+Do not copy % off face. Do not copy merchant payout rail. Do not copy escrow. Facets and EN are not v7.
